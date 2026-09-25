@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Git helpers for the kb (stdlib only): post-merge cleanup, canonical ledger formatting, and a queryable history.
 
-  kbgit.py fix [--check] [--base REV] [--side REV ...]   post-merge cleanup; safe to run any time, idempotent
+  kbgit.py fix [--check] [--base REV] [--upstream REV] [--side REV ...]   post-merge cleanup; safe any time, idempotent
   kbgit.py fmt [--check]                                   only canonical CSV formatting and order (never adds or drops a row)
   kbgit.py trailers [--staged | REV | --amend] [--verified YYYY-MM-DD]   the KB-* trailers of the staged change or a commit
   kbgit.py install-hooks [--uninstall]                     core.hooksPath=.githooks: commits get their KB-* trailers
@@ -47,7 +47,7 @@ Sync (the only way to push; people push straight to main, CI is a safety net):
   b. git fetch REMOTE BRANCH; prints how far HEAD is ahead of / behind REMOTE/BRANCH.
   c. git rebase REMOTE/BRANCH (merge commits are linearised: they would carry no trailers). A step that conflicts only
      in MECHANICAL paths (the union ledgers, _coverage.csv, _tools/lint_baseline.txt, the README coverage table) is
-     resolved with `fix --base <merge-base> --side REMOTE/BRANCH --side <old HEAD>`, `git add -u`, `git rebase
+     resolved with `fix --base <merge-base> --upstream REMOTE/BRANCH --side <old HEAD>`, `git add -u`, `git rebase
      --continue`. Any other conflicted path (an article, a tool, docs, README outside the table) stops with exit 3
      and the rebase left in progress: `needs-human: PATH` lines, a `sync-state: base=.. upstream=.. orig_head=..` line
      and the commands to finish (or `git rebase --abort`). Article text is never resolved automatically.
@@ -68,14 +68,17 @@ each add rows or answers merge without conflict markers. Union keeps every line 
 sides touched can appear twice. `fix` turns that into one clean, canonical state:
 
 _sources.csv   conflict markers (a merge made without our .gitattributes) are dropped with union semantics; repeated
-               header lines and exact duplicate rows are removed. Rows sharing an id:
+               header lines and exact duplicate rows are removed. A branch from before a column was appended
+               (LATER_COLUMNS: superseded_by) writes the older layout: its header line counts as a repeated header
+               and its rows get the new column(s) empty. Rows sharing an id:
                - same normalized url: merged field-wise. With --base, a row identical to the base's row is the stale
                  copy and yields to the edited one. retrieved_utc/version_or_date come from the row with the latest
                  retrieved_utc; a non-empty value beats an empty one; superseded_by is kept if either row has it.
                  Two different non-empty title/publisher/licence/artifact_sha256 values: the latest row wins and
                  the conflict is reported (a tie on retrieved_utc, or two different superseded_by, needs a human).
                - different urls: a real collision (two branches both took the next legacy number, e.g. S2205).
-                 Needs --base: an id present at base keeps its base url; every other url gets its own id (the
+                 Needs --base: an id present at base keeps its base url, else the --upstream side's url keeps it
+                 (it is already pushed: published ids are never renumbered); every other url gets its own id (the
                  existing id of that url if it has a row, else its hash id `kbid.py url`). Citations are rewritten
                  line by line: a line citing the id that only one side's version of the file has (and the base's
                  has not) belongs to that side. A line on both sides or on none, or an old citation of an id the
@@ -85,7 +88,11 @@ _fetch_state.csv  one row per id: checked_utc/error from the row with the latest
                (fetched_utc, sha256, text_sha256, bytes) from the row with the latest fetch, changed_utc the max.
 _answers.md, _gaps.md, _conflicts.md  conflict markers dropped (union semantics); verbatim duplicate `##`/`###`
                sections, duplicate list items (20+ characters) in one section and duplicate rows in one table removed.
-               The same answer id heading twice with different text: reported, exit 2.
+               Answer ids: a `QK<n>` id (from before QK-<slug> ids) becomes kbid.answer_id(question), made unique
+               with -2...; its mentions on lines the base did not have follow. One id heading two different
+               questions: the heading at base or on --upstream keeps it (else the first), the others get their
+               QK-<slug>, and lines naming the id follow their side (as citations do). The same heading twice
+               with different bodies: reported, exit 2.
 _tools/lint_baseline.txt  if a merge touched it (markers, unsorted or duplicate lines), it becomes the current lint
                errors that either side had accepted, sorted: a merge never accepts new lint debt by itself.
 .gitattributes  the block between `# pinned:start` and `# pinned:end` lists every _artifacts.csv path as `-text`.
@@ -93,7 +100,9 @@ Then build_index.py regenerates _coverage.csv, the README coverage table (confli
 with it) and used_in. Conflict markers left anywhere else in a ledger, README or an article: exit 2.
 
 Sides of the merge (for collisions): --side REV (repeatable), else MERGE_HEAD during a merge (HEAD + MERGE_HEAD),
-else the parents of HEAD when HEAD is a merge commit. Base: --base REV (e.g. `git merge-base A B`).
+else the parents of HEAD when HEAD is a merge commit. Base: --base REV (e.g. `git merge-base A B`). --upstream REV is
+a side that is already pushed (sync passes REMOTE/BRANCH; after a cherry-pick or a rebase by hand, pass the branch you
+put your commits on): its source and answer ids win a collision.
 
 Exit (fix, fmt): 0 clean (or fixed), 1 --check and something would change, 2 a problem needs a human (nothing is written).
 Exit (history): 0 ok; 1 check-trailers found bad commits, log found nothing, asof/blame found no such file or line;
@@ -203,23 +212,51 @@ def csv_text(header, rows):
     return buf.getvalue()
 
 
-def parse_csv(text, name, required=("id",)):
-    """(header, rows as dicts, repeated header lines dropped) of a ledger; Problem on a malformed row."""
+# Columns appended to a ledger after it was first written. A branch from before the change still writes the older,
+# shorter layout; a union merge with it mixes both layouts (and both header lines) in one file.
+LATER_COLUMNS = {"_sources.csv": ("superseded_by",)}
+
+
+def layouts(header, later):
+    """The header and its older forms: the header without a trailing run of `later` columns (longest first)."""
+    out, h = [list(header)], list(header)
+    while h and h[-1] in later:
+        h = h[:-1]
+        out.append(list(h))
+    return out
+
+
+def parse_csv(text, name, required=("id",), padded=None):
+    """(header, rows as dicts, repeated header lines dropped) of a ledger; Problem on a malformed row.
+    A ledger with LATER_COLUMNS also accepts its older layout (a branch from before the column existed): the widest
+    header line wins, older header lines count as repeated headers, and short rows get the later columns empty
+    (their number is added to padded[0] when a list is given)."""
     rows = list(csv.reader(io.StringIO(text)))
     rows = [r for r in rows if r]
     if not rows:
         raise Problem(f"{name}: empty")
-    header, out, dropped = rows[0], [], 0
+    later = LATER_COLUMNS.get(name.rpartition(":")[2], ())
+    header = rows[0]
+    for r in rows[1:]:  # an older header first and the current one later in the file: the current one wins
+        if len(r) > len(header) and r[:len(header)] == header and all(c in later for c in r[len(header):]):
+            header = r
+    olds = layouts(header, later)
+    out, dropped, pad = [], 0, 0
     missing = [c for c in required if c not in header]
     if missing:
         raise Problem(f"{name}: lacks column(s) {', '.join(missing)}")
-    for n, r in enumerate(rows[1:], 2):
-        if r == header:
-            dropped += 1
+    for n, r in enumerate(rows, 1):
+        if r in olds:
+            dropped += n > 1 or r != header
             continue
         if len(r) != len(header):
-            raise Problem(f"{name}: record {n} has {len(r)} fields, the header {len(header)} ({r[0][:20]!r}...)")
+            if not any(len(r) == len(o) for o in olds[1:]):
+                raise Problem(f"{name}: record {n} has {len(r)} fields, the header {len(header)} ({r[0][:20]!r}...)")
+            r = r + [""] * (len(header) - len(r))
+            pad += 1
         out.append(dict(zip(header, r)))
+    if padded is not None:
+        padded.append(pad)
     return header, out, dropped
 
 
@@ -261,14 +298,19 @@ def merge_rows(sid, rows, report):
     return out
 
 
-def resolve_sources(text, base_rows, sides, report):
-    """(header, rows, renames) where renames = {old id: [(url, new id, side names), ...]}."""
+def resolve_sources(text, base_rows, sides, report, upstream=None):
+    """(header, rows, renames) where renames = {old id: [(url, new id, side names), ...]}. `upstream` names the side
+    in `sides` that is already pushed: on a collision of an id the base did not have, its url keeps the id."""
     text, n = strip_markers(lf(text), SOURCES)
     if n:
         report.append(f"{SOURCES}: dropped markers of {n} conflict region(s) (union)")
-    header, rows, dropped = parse_csv(text, SOURCES, ("id", "url"))
+    padded = []
+    header, rows, dropped = parse_csv(text, SOURCES, ("id", "url"), padded)
     if dropped:
         report.append(f"{SOURCES}: removed {dropped} repeated header line(s)")
+    if padded[0]:
+        report.append(f"{SOURCES}: {padded[0]} row(s) in the older layout (before "
+                      f"{', '.join(c for c in LATER_COLUMNS[SOURCES] if c in header)}) got the new column(s) empty")
     groups, order = {}, []
     for r in rows:
         if r["id"] not in groups:
@@ -277,26 +319,26 @@ def resolve_sources(text, base_rows, sides, report):
     by_url = {}
     for r in rows:
         by_url.setdefault(kbid.normalize_url(r["url"]), set()).add(r["id"])
-    out, renames = [], {}
+    out, renames, dups, stale, merged = [], {}, [], [], []
+    strip = lambda r: {k: v for k, v in r.items() if k != "used_in" and v}  # noqa: E731  (a missing column = empty)
     for sid in order:
         g = []
         for r in groups[sid]:
             if r not in g:
                 g.append(r)
         if len(groups[sid]) > len(g):
-            report.append(f"{SOURCES}: {sid}: removed {len(groups[sid]) - len(g)} exact duplicate row(s)")
+            dups.append(sid)
         if len(g) > 1 and base_rows is not None and sid in base_rows:
-            strip = lambda r: {k: v for k, v in r.items() if k != "used_in"}  # noqa: E731
             edited = [r for r in g if strip(r) != strip(base_rows[sid])]
             if edited and len(edited) < len(g):
-                report.append(f"{SOURCES}: {sid}: dropped the unedited base copy of the row")
+                stale.append(sid)
                 g = edited
         urls = {}
         for r in g:
             urls.setdefault(kbid.normalize_url(r["url"]), []).append(r)
         if len(urls) == 1:
             if len(g) > 1:
-                report.append(f"{SOURCES}: {sid}: merged {len(g)} rows")
+                merged.append(sid)
             out.append(merge_rows(sid, g, report))
             continue
         # a real collision: one id, several urls
@@ -306,6 +348,9 @@ def resolve_sources(text, base_rows, sides, report):
             raise Problem(f"{SOURCES}: {sid} names {len(urls)} different urls (two branches took the same id); "
                           f"rerun with --base <merge-base> so the new one(s) can be renumbered")
         keep = kbid.normalize_url(base_rows[sid]["url"]) if sid in base_rows else None
+        if keep is None and upstream and sid in sides.get(upstream, {}):
+            keep = kbid.normalize_url(sides[upstream][sid]["url"])  # already pushed: never renumbered
+            report.append(f"{SOURCES}: {sid}: the pushed side ({upstream}) keeps the id")
         for u, rs in urls.items():
             row = merge_rows(sid, rs, report)
             if u == keep:
@@ -318,6 +363,10 @@ def resolve_sources(text, base_rows, sides, report):
             if not other:
                 out.append({**row, "id": new})
             report.append(f"{SOURCES}: {sid} collision: {u} -> {new}" + (" (its existing id)" if other else " (hash id)"))
+    for ids, what in ((dups, "removed exact duplicate rows"), (stale, "dropped the unedited base copy of the row"),
+                      (merged, "merged the rows")):
+        if ids:
+            report.append(f"{SOURCES}: {what} of {len(ids)} id(s): {', '.join(ids[:8])}" + (", ..." if len(ids) > 8 else ""))
     if len({r["id"] for r in out}) != len(out):
         dup = sorted({r["id"] for r in out if sum(1 for x in out if x["id"] == r["id"]) > 1})
         raise Problem(f"{SOURCES}: renumbering produced duplicate ids {', '.join(dup)}")
@@ -333,48 +382,138 @@ def cite_count(text, sid):
     return len(re.findall(rf"(?<![\w-]){re.escape(sid)}(?![\w-])", text or ""))
 
 
-def citing_files(sid):
-    """Text files outside tools/config that may cite a source id: content files and root ledgers."""
+def id_files():
+    """Text files outside tools/config that may cite a source id or name an answer id: content files and root ledgers."""
     out = [f for f in build_index.content_files()]
     out += sorted(f for f in os.listdir(KB) if f.endswith((".md", ".csv")) and f not in (SOURCES, STATE, "_coverage.csv"))
     out += [build_index.EXTRA]
-    return [f for f in out if cite_count(read(f) if os.path.isfile(os.path.join(KB, f)) else "", sid)]
+    return [f for f in out if os.path.isfile(os.path.join(KB, f))]
 
 
-def rewrite_citations(renames, base_rev, base_ids, side_revs, texts, pinned, problems, report):
-    """Apply renames to texts {path: text} (loaded on demand), line by line: a merge (union or not) keeps each
-    side's lines verbatim, so a line citing the id that only one side's version of the file has belongs to that
-    side. A line both sides have, or that neither has, is ambiguous and goes to problems."""
-    for sid, targets in renames.items():
-        by_side = {o: new for url, new, owners in targets for o in owners}
-        kept = sid in base_ids  # the id still names its base url
-        for f in citing_files(sid):
-            cur = texts.get(f) if f in texts else read(f)
-            base_lines = set((show(base_rev, f) or "").splitlines())
-            side_lines = {s: set((show(rev, f) or "").splitlines()) for s, rev in side_revs.items()}
-            lines, n, bad = cur.split("\n"), 0, False
-            for k, ln in enumerate(lines):
-                if not cite_count(ln, sid) or MARKER_LINE.match(ln):
-                    continue  # a conflict marker line carries a commit subject, not a citation
+def source_plan(renames, rows):
+    """rewrite_ids plan for renumbered source ids: each side's lines get the id of that side's url."""
+    kept = {r["id"] for r in rows}
+    return {sid: {"by_side": {o: new for url, new, owners in targets for o in owners}, "default": None,
+                  "strict_base": sid not in kept, "what": "url"} for sid, targets in renames.items()}
+
+
+def rewrite_ids(plan, base_rev, side_revs, texts, pinned, problems, report):
+    """Apply id renames to texts {path: text} (loaded on demand), line by line. A merge (union or not) keeps each
+    side's lines verbatim, so a line naming an id that only one side's version of the file has belongs to that side
+    and gets that side's new id; a line both sides have, or that neither has, is ambiguous and goes to problems.
+    A plan entry with a `default` (a single new id; the old one names nothing any more) renames it on every line the
+    base did not have. Lines are attributed on their text before any rename, so one line may carry several ids.
+    plan = {old id: {"by_side": {side: new id}, "default": new id or None, "strict_base": a base line naming the old
+    id is an error, "what": noun for messages}}."""
+    if not plan:
+        return
+    rx = {old: re.compile(rf"(?<![\w-]){re.escape(old)}(?![\w-])") for old in plan}
+    for f in id_files():
+        cur = texts.get(f) if f in texts else read(f)
+        if not cur or not any(r.search(cur) for r in rx.values()):
+            continue
+        base_lines = set((show(base_rev, f) or "").splitlines()) if base_rev else set()
+        side_lines = {s: set((show(rev, f) or "").splitlines()) for s, rev in side_revs.items()}
+        lines, n, bad = cur.split("\n"), {}, False
+        for k, ln in enumerate(lines):
+            if MARKER_LINE.match(ln):
+                continue  # a conflict marker line carries a commit subject, not a citation
+            new_ln = ln
+            for old, p in plan.items():
+                if not rx[old].search(ln):
+                    continue
                 if ln in base_lines:
-                    if not kept:
-                        problems.append(f"{f}:{k + 1} cited {sid} before the merge, when it named no source")
+                    if p["strict_base"]:
+                        problems.append(f"{f}:{k + 1} cited {old} before the merge, when it named no source")
                         bad = True
                     continue
-                want = sorted({by_side.get(s, sid) for s, sl in side_lines.items() if ln in sl})
+                want = [p["default"]] if p["default"] else \
+                    sorted({p["by_side"].get(s, old) for s, sl in side_lines.items() if ln in sl})
                 if len(want) != 1:
-                    problems.append(f"{f}:{k + 1}: cannot tell which url {sid} means here "
+                    problems.append(f"{f}:{k + 1}: cannot tell which {p['what']} {old} means here "
                                     + (f"(the line is on several sides: {', '.join(want)})" if want else "(no side has this line)"))
                     bad = True
                     continue
-                if want[0] != sid:
-                    lines[k] = re.sub(rf"(?<![\w-]){re.escape(sid)}(?![\w-])", want[0], ln)
-                    n += 1
-            if n and f in pinned:
-                problems.append(f"{f} is a pinned artifact citing {sid}; not rewritten")
-            elif n and not bad:
-                texts[f] = "\n".join(lines)
-                report.append(f"{f}: {sid} renumbered on {n} line(s)")
+                if want[0] != old:
+                    new_ln = rx[old].sub(lambda _m, w=want[0]: w, new_ln)
+                    n[old] = n.get(old, 0) + 1
+            lines[k] = new_ln
+        if n and f in pinned:
+            problems.append(f"{f} is a pinned artifact naming {', '.join(sorted(n))}; not rewritten")
+        elif n and not bad:
+            texts[f] = "\n".join(lines)
+            for old, c in sorted(n.items()):
+                report.append(f"{f}: {old} renumbered on {c} line(s)")
+
+
+# ---------------------------------------------------------------- answer ids
+
+def answer_heads(text):
+    """[(id, heading line, question)] of the `## <ID>. <question>` headings of _answers.md, in order."""
+    out = []
+    for ln in (text or "").split("\n"):
+        m = kbid.ANSWER_HEAD.match(ln)
+        if m:
+            out.append((m.group(1), ln, ln[m.end():].strip()))
+    return out
+
+
+def answer_plan(text, base_text, upstream_text, side_texts, report, problems):
+    """rewrite_ids plan for _answers.md ids a merge left invalid or doubled.
+    - A `QK<...>` id that is not QK-<slug> (a branch from before QK-<slug> ids: QK1, QK2...) gets
+      kbid.answer_id(question), made unique with -2, -3...; its mentions (the heading, `_answers.md QK1` in an
+      article) are renamed on every line the base did not have.
+    - One id heading several different questions (two branches took the same id): the heading the base or the pushed
+      side (`upstream_text`) already has keeps the id, else the first one; the others get new ids, and each line naming
+      the id gets the id of the question on its side (`side_texts` {side: _answers.md text}).
+    An id whose headings are identical is left to resolve_md (verbatim duplicates dropped, different bodies: a human).
+    Ids the base or the pushed side already has in an invalid form are left alone (WARN): they are published."""
+    heads = answer_heads(strip_markers(lf(text or ""), "_answers.md")[0])
+    protected = {ln for _, ln, _ in answer_heads(base_text) + answer_heads(upstream_text)}
+    taken = {i for i, _, _ in heads}
+    lines_of = {}
+    for aid, ln, q in heads:
+        lines_of.setdefault(aid, {}).setdefault(ln, q)
+    plan = {}
+
+    def fresh(question):
+        cand = kbid.answer_id(question)
+        new, k = cand, 2
+        while new in taken:
+            new, k = f"{cand}-{k}", k + 1
+        taken.add(new)
+        return new
+
+    for aid, hl in lines_of.items():
+        invalid = aid.startswith("QK") and not kbid.QK_ID.fullmatch(aid)
+        if len(hl) == 1 and not invalid:
+            continue
+        prot = [ln for ln in hl if ln in protected]
+        if invalid and prot:
+            report.append(f"WARN _answers.md: {aid} is not QK-<slug> but is already published; left as it is")
+            continue
+        if len(prot) > 1:
+            problems.append(f"_answers.md: {aid} heads {len(prot)} different published questions; resolve by hand")
+            continue
+        keep = None if invalid else (prot[0] if prot else next(iter(hl)))
+        renamed = {ln: fresh(q) for ln, q in hl.items() if ln != keep}
+        if keep is None and len(renamed) == 1:
+            new = next(iter(renamed.values()))
+            plan[aid] = {"by_side": {}, "default": new, "strict_base": False, "what": "answer"}
+            report.append(f"_answers.md: {aid} -> {new} (answer ids are QK-<slug>)")
+            continue
+        by_side = {}
+        for ln, new in renamed.items():
+            owners = [s for s, t in side_texts.items() if ln in (t or "").split("\n")]
+            if not owners:
+                problems.append(f"_answers.md: no side of the merge has the heading {ln[:60]!r}; cannot rename {aid}")
+            for o in owners:
+                if o in by_side:
+                    problems.append(f"_answers.md: side {o} has {aid} twice; resolve by hand")
+                by_side[o] = new
+            report.append(f"_answers.md: {aid} collision: {ln[len(aid) + 5:][:50]!r} -> {new}")
+        plan[aid] = {"by_side": by_side, "default": None, "strict_base": False, "what": "answer"}
+    return plan
 
 
 # ---------------------------------------------------------------- _fetch_state.csv
@@ -592,12 +731,17 @@ def fix_texts(a, report, problems):
         base = {"rev": rev}
         bt = show(rev, SOURCES)
         base_rows = {r["id"]: r for r in parse_csv(lf(bt), f"{a.base}:{SOURCES}")[1]} if bt else {}
-    side_revs = {}
-    for s in merge_sides(a.side):
+    side_revs, upstream = {}, None
+    upstream_arg = getattr(a, "upstream", None)
+    for s in ([upstream_arg] if upstream_arg else []) + [x for x in merge_sides(a.side) if x != upstream_arg]:
         rev = (git("rev-parse", "--verify", "-q", s + "^{commit}") or "").strip()
         if not rev:
-            raise Problem(f"--side {s}: not a commit here")
+            raise Problem(f"--{'upstream' if s == upstream_arg else 'side'} {s}: not a commit here")
+        if rev in side_revs.values():
+            continue
         side_revs[s[:12]] = rev
+        if s == upstream_arg:
+            upstream = s[:12]
     side_rows = {}
     for name, rev in side_revs.items():
         st = show(rev, SOURCES)
@@ -606,7 +750,7 @@ def fix_texts(a, report, problems):
     text = read(SOURCES)
     if text is None:
         raise Problem(f"cannot read {SOURCES}")
-    header, rows, renames = resolve_sources(text, base_rows, side_rows, report)
+    header, rows, renames = resolve_sources(text, base_rows, side_rows, report, upstream)
     if renames:
         if not side_revs:
             raise Problem("ids were renumbered but the merge's sides are unknown (not in a merge, HEAD is no merge commit); "
@@ -629,8 +773,16 @@ def fix_texts(a, report, problems):
                     problems.append(f"{SOURCES}: {r['id']} superseded_by {sup}: cannot tell which url it means")
     out[SOURCES] = csv_text(header, rows)
     pinned = set(pinned_paths(read(ARTIFACTS)))
-    if renames:
-        rewrite_citations(renames, base["rev"], set(base_rows), side_revs, out, pinned, problems, report)
+    plan = source_plan(renames, rows) if renames else {}
+    ans = read("_answers.md")
+    if ans is not None:
+        aplan = answer_plan(ans, show(base["rev"], "_answers.md") if base else None,
+                            show(side_revs[upstream], "_answers.md") if upstream else None,
+                            {s: show(rev, "_answers.md") for s, rev in side_revs.items()}, report, problems)
+        if any(p["by_side"] for p in aplan.values()) and not side_revs:
+            problems.append("answer ids collide but the merge's sides are unknown; pass --side REV for each merged branch")
+        plan.update(aplan)
+    rewrite_ids(plan, base["rev"] if base else None, side_revs, out, pinned, problems, report)
 
     st = read(STATE)
     if st is not None:
@@ -1339,16 +1491,18 @@ def short(rev):
     return (rev or "")[:9]
 
 
-def fix_args(base, sides):
-    return ["fix"] + (["--base", base] + [x for s in sides for x in ("--side", s)] if base else [])
+def fix_args(base, up, orig):
+    """kbgit.py fix arguments after rebasing orig onto up: up is already pushed, so its ids and answer ids stay."""
+    return ["fix"] + (["--base", base, "--upstream", up, "--side", orig] if base else [])
 
 
 def renumbered(output):
-    return [ln.strip() for ln in output.splitlines() if " collision: " in ln]
+    """fix's report lines about renumbered source ids and renamed answer ids."""
+    return [ln.strip() for ln in output.splitlines() if " collision: " in ln or re.match(r"\s*_answers\.md: \S+ -> ", ln)]
 
 
 def conflict_help(r, up, base, orig, manual, mech, step):
-    fix_cmd = "python3 _tools/kbgit.py " + " ".join(fix_args(base, [up, orig]))
+    fix_cmd = "python3 _tools/kbgit.py " + " ".join(fix_args(base, up, orig))
     print(f"CONFLICT rebasing onto {r['target']}, at local commit {step}")
     for p in manual:
         print(f"needs-human: {p}")
@@ -1394,7 +1548,7 @@ def do_rebase(r, up, base, orig):
         if manual:
             conflict_help(r, up, base, orig, manual, mech, step)
             return 3
-        fcode, fout = tool("kbgit.py", *fix_args(base, [up, orig]))
+        fcode, fout = tool("kbgit.py", *fix_args(base, up, orig))
         if fcode:
             print(fout.rstrip())
             probs = [ln[len("PROBLEM "):] for ln in fout.splitlines() if ln.startswith("PROBLEM ")]
@@ -1518,7 +1672,7 @@ def sync_once(a, r):
             return code
         r["rebased"] += ahead
     both_sides = bool(up and behind and ahead)
-    code, out = tool("kbgit.py", *fix_args(base if both_sides else None, [up, orig]))
+    code, out = tool("kbgit.py", *fix_args(base if both_sides else None, up, orig))
     if code:
         print(out.rstrip())
         print("kbgit.py fix needs a human (listed above); the rebase is complete and nothing was written or pushed. "
@@ -1616,6 +1770,7 @@ def main():
     f.add_argument("--check", action="store_true", help="write nothing; exit 1 if fix would change something")
     f.add_argument("--base", help="the merge base (git merge-base A B); needed to renumber colliding legacy ids")
     f.add_argument("--side", action="append", default=[], help="a merged branch/commit (repeatable; default: MERGE_HEAD or HEAD's parents)")
+    f.add_argument("--upstream", help="the side that is already pushed (sync: REMOTE/BRANCH): on a collision its source and answer ids stay")
     m = sub.add_parser("fmt", help="canonical CSV quoting, order and newlines of the ledgers")
     m.add_argument("--check", action="store_true", help="write nothing; exit 1 if fmt would change something")
     t = sub.add_parser("trailers", help="print the KB-* trailers of the staged change (default) or of a commit")

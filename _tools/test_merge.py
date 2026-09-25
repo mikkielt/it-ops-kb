@@ -63,6 +63,49 @@ class MergeRules(unittest.TestCase):
         self.assertEqual(sorted(r["id"] for r in out), sorted([kbid.source_id("https://a.example.com/x"), kbid.source_id("https://b.example.com/y")]))
         self.assertEqual(sorted(o for _, _, owners in renames["S9999"] for o in owners), ["a", "b"])
 
+    def test_older_layout_is_padded(self):
+        """A branch from before superseded_by existed, union-merged: two headers, 9- and 10-field rows (CRLF too)."""
+        old_h = HEADER.replace(",superseded_by", "")
+        u = "https://learn.microsoft.com/en-us/a"
+        new_row, old_row = f"S100,{u},T,Microsoft,,2026-01-01,v1,,x.md,\n", f"S100,{u},T,Microsoft,,2026-01-01,v1,,x.md\r\n"
+        extra = "S101,https://b.example.com/,t,p,l,2026-01-02,v,,,\r\n".replace(",,,\r", ",,\r")
+        for text in (HEADER + new_row + old_h.replace("\n", "\r\n") + old_row + extra, old_h + old_row + extra + HEADER + new_row):
+            report = []
+            header, out, _ = kbgit.resolve_sources(text, None, {}, report)
+            self.assertEqual(header[-1], "superseded_by")
+            self.assertEqual([(r["id"], r["superseded_by"]) for r in out], [("S100", ""), ("S101", "")])
+            self.assertTrue(any("older layout" in x for x in report), report)
+        with self.assertRaises(kbgit.Problem):  # a row short by a column that is not a later one stays an error
+            kbgit.resolve_sources(HEADER + "S102,https://c.example.com/,t,p,l,d,v,,\n".replace(",,\n", ",\n"), None, {}, [])
+
+    def test_pushed_side_keeps_a_colliding_id(self):
+        a, b = "https://a.example.com/x", "https://b.example.com/y"
+        t = HEADER + f"S9999,{a},a,p,l,2026-01-01,v,,,\nS9999,{b},b,p,l,2026-01-01,v,,,\n"
+        side = {"up": {"S9999": {"url": a}}, "mine": {"S9999": {"url": b}}}
+        _, out, renames = kbgit.resolve_sources(t, {}, side, [], upstream="up")
+        self.assertEqual({r["id"]: r["url"] for r in out}, {"S9999": a, kbid.source_id(b): b})
+        self.assertEqual(renames, {"S9999": [(b, kbid.source_id(b), ["mine"])]})
+        self.assertEqual(kbgit.source_plan(renames, out)["S9999"]["strict_base"], False)  # S9999 still names a's url
+
+    def test_answer_ids_invalid_or_colliding_are_renamed(self):
+        up = "# A\n\n## QK-shared. What does clone a ask?\n\nA. [DOC S1]\n"
+        mine = "# A\n\n## QK-shared. What does clone b ask about sync?\n\nB.\n\n## QK1. Old style question from clone b\n\nC.\n"
+        merged = up + "\n## QK-shared. What does clone b ask about sync?\n\nB.\n\n## QK1. Old style question from clone b\n\nC.\n"
+        report, problems = [], []
+        plan = kbgit.answer_plan(merged, "# A\n", up, {"up": up, "mine": mine}, report, problems)
+        self.assertEqual(problems, [])
+        self.assertEqual(plan["QK1"]["default"], kbid.answer_id("Old style question from clone b"))
+        self.assertEqual(plan["QK-shared"]["by_side"], {"mine": kbid.answer_id("What does clone b ask about sync?")})
+        self.assertEqual(kbgit.renumbered("\n".join("  " + x for x in report)), report)
+        # no base, no pushed side: the first heading keeps the id; a valid, unique id is never touched
+        plan = kbgit.answer_plan(merged.replace("## QK1.", "## QK-old."), None, None, {"up": up, "mine": mine}, [], [])
+        self.assertEqual(list(plan), ["QK-shared"])
+        self.assertEqual(kbgit.answer_plan(up, None, None, {}, [], []), {})
+        # an invalid id already published is left alone
+        report = []
+        self.assertEqual(kbgit.answer_plan("## QK7. q\n", "## QK7. q\n", None, {}, report, []), {})
+        self.assertTrue(report and report[0].startswith("WARN"))
+
     def test_fetch_state_one_row_per_id(self):
         h = "id,url,checked_utc,fetched_utc,changed_utc,sha256,text_sha256,bytes,error\n"
         a = "S100,https://x.example.com/,2026-03-01T00:00:00Z,2026-02-01T00:00:00Z,2026-01-01T00:00:00Z,old,old,1,timeout\n"
