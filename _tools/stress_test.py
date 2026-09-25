@@ -95,7 +95,7 @@ def main():
         # 2. hostile arguments
         vocab = [w for w in read(base, "README.md").lower().split() if w.isalpha() and len(w) > 3]
         case("search 10k-word query", base, "rag.py", ["search", " ".join(random.choices(vocab, k=10000))], 0)
-        case("search 200k-char single token", base, "rag.py", ["search", "a" * 200000], 1, "no match")
+        case("search 120k-char single token", base, "rag.py", ["search", "a" * 120000], 1, "no match")  # Linux caps one argv string at 128 KiB
         case("search regex and shell characters", base, "rag.py", ["search", r".*[](){}^$|\?+ %s %n ' \" ; rm -rf /"], (0, 1))
         case("search unicode, emoji, RTL, zero-width", base, "rag.py", ["search", "zażółć 🔐 ключ 密钥 ‮kerberos​"], (0, 1))
         case("search -k 0 rejected", base, "rag.py", ["search", "kerberos", "-k", "0"], 2, "must be >= 1")
