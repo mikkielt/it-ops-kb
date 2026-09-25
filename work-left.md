@@ -1,96 +1,66 @@
 # Work left (as of 2026-09-25)
 
-Branch `chore/kb-tools-hardening`, not pushed. Git-regime tasks 1-5 are done and committed (369beef, 82aeefb, e5dadde, ae3c67f, 47c5568). Task 6 was stopped partway through. Task 7 was never started.
+Branch `claude/relaxed-keller-e8qyl3`, fast-forwarded into GitHub `main`. Done and committed: task 6 (sync fixes, the 6b replay as a test), task 7 (plugin, `kb` MCP server, runbook), the research-skill fixes, and the census tooling (`/kb-census`, `_tools/census.py`); see `git log`. Still open:
 
-## Task 6: `/kb-git-sync` skill, tested on a real parallel merge (partly done)
+## 1. Census 2026-09-25: finish what this environment could not reach
+Log: `_census/2026-09-25.csv` (`python3 _tools/census.py summary _census/2026-09-25.csv`).
+- **Phase 1 (mechanical):** OK=450, CHANGED=20, GONE=1, NEWER-VERSION=12, NEEDS-READING=601.
+- **Phase 2:** the 68 readable non-OK sources were read in full by one subagent per domain group. Outcomes: 42 confirmed, 10 updated, 5 superseded, 11 unconfirmed. The superseded ones:
+  - S1500 -> S743;
+  - S1546 -> S1862;
+  - S1868 -> S-qso6o6wu (new row);
+  - S1882 -> S1935;
+  - S1897 -> S1898.
+  New rows: S-mmshotst, S-qso6o6wu.
+- **Phase 3:** 502 confirmed sources and 77 articles were dated 2026-09-25, with `confirmed 2026-09-25: <proof>` in `version_or_date` and `checked_utc` in `_fetch_state.csv`.
+- **Phase 4:** an independent subagent re-read a sample of 27 sources (2 of 15 changed, 25 of 492 confirmed): 24 agreed, 3 disagreed. All 3 were old fact errors in sources the census correctly found unchanged: garak's licence, the log that events 1006/1007 go to, and an unsupported KSP+TPM row. All three are fixed in `351f00b`. The follow-up sample with another seed, which `/kb-census` calls for after a disagreement, was **not run**.
 
-### Already committed by agent 6
-- `0c32883` fix(kb): `kbgit.py fix` handles pre-regime branches and keeps ids that are already pushed.
-- `5519660` feat(kb): `.claude/skills/kb-git-sync/SKILL.md`.
-- `0c0978a` fix(kb): `kbgit.py fix` renames an answer id only in its own side's lines.
+**Unconfirmed after reading (11); their dates were not moved:**
+- S1508, S1509, S1525, S1597: docs.pypi.org and blog.pypi.org answer 403 here.
+- S838, S1008, S1009, S1017, S1019, S2196, S2197: GitHub repository metadata, a latest-release marker or an api.github.com redirect. None is observable here, and GitHub MCP search was deliberately not used as evidence (this session's GitHub access is scoped to mikkielt/it-ops-kb).
+- To decide (`_conflicts.md`):
+  - what `prior-art/projects.csv` `latest_release` means: newer tags exist for Puppet 8.10.0, InSpec v7.3.1 and Teleport v18.11.1;
+  - two mis-cited facts: the Ansible check-mode fact on S1009 (`prior-art/drift-detection.md`) and the modelcontextprotocol-repos fact on S1019 (`prior-art/mcp-microsoft-endpoint-mgmt.md`).
 
-### Uncommitted in the working tree
-The edits were in progress when it stopped. Review them before keeping them.
-- `.claude/skills/kb-git-sync/SKILL.md`
-- `_tools/kbgit.py`
-- `_tools/test_sync.py`
+**Blocked by this environment's network policy (566); not confirmed and not dated:**
+- **Hosts denied:** learn.microsoft.com (also through WebFetch and the Microsoft Learn MCP server), github.com pages, api.github.com, modelcontextprotocol.io, docs.gitlab.com, csrc.nist.gov, huggingface.co, docs.pypi.org and about 110 other hosts.
+- **What is left:**
+  - 399 pages on denied hosts (note `blocked`);
+  - 45 github.com pages;
+  - 8 Learn pages whose source repos are not public (defender-docs, powerbi-docs);
+  - 114 `MicrosoftDocs/memdocs` pins. The repo is archived (last commit 2026-09-02). Each pin is re-sourced to its live Learn page: a new row with the Learn url and its `git_commit_id`, `superseded_by` on the pin, and the citations re-pointed.
+- **To finish:** in an environment that allows those hosts (Network access in the environment settings), run `/kb-census 2026-09-25 --resume`. It reads the rows whose outcome is empty or `unconfirmed`; then `census.py confirm` dates them.
 
-### Two issues it was investigating when stopped
-1. One test fails when the full `tests.py` suite runs in a fresh clone of the scratch remote (`sync-test/verify`).
-2. B's commit trailers also list A's answer id. The trailer diff after a rebase or fix is taken against the wrong base.
+**Census tag: not created.** `census-2026-09-25` would state that the whole kb was confirmed current, but more than half of the sources could not be read here. Create and push it once the list above is done: `python3 _tools/kbgit.py tag-census <date>`, then `git push origin census-<date>`.
 
-### What task 6 had to do
+## 2. Plugin: install from the real GitLab remote
+The plugin was installed and tested end to end from a local bare repo reached through the SSH url (`git@gitlab.com:mikkielt/it-ops-kb.git`, rewritten by git's `insteadOf`). `claude mcp list` showed `plugin:it-ops-kb:kb` connected, and `claude -p` answered from the kb tools with `path:line` citations and urls.
 
-**6a. Write the skill.**
-It is user-invoked, the intelligent layer for when `kbgit.py sync` exits with code 3:
-- Start with `sync --dry-run`, then `sync`, and branch on the exit code.
-- Exit 3, articles: resolve by meaning, not by taking one side.
-  - Different facts added on both sides: keep both.
-  - The same fact changed on both sides: newer confirmed evidence wins, and DOC beats COMMUNITY. Otherwise record both sides in `_conflicts.md` and tell the user.
-  - Deleted on one side, edited on the other: ask the user.
-  - Front matter: `sources` = the ids actually cited after resolving; `retrieved_utc` = the later of the two; `status` = partial if any UNK remains; `files` = the union of both.
-- Exit 3, tools and docs: merge conservatively, or ask. Then run the printed `fix` command, `git add`, `git rebase --continue`, repeat until the rebase ends, and rerun `sync`.
-- Exit 1: fix the cause of the failed check. Don't silence it through the lint baseline or the allowlist.
-- Exit 2: explain and stop.
-- Push only if the user asked. Never use `--force` or `--no-verify`.
-- End with a report.
-- Mention the skill in AGENTS.md and README.
+Not done here:
+- an install from gitlab.com itself (no SSH key for it in this session);
+- pushing to the GitLab remote (this session pushes to GitHub `mikkielt/it-ops-kb`).
 
-**6b. Test it on a real case, in scratch only.**
-- The inputs are two Sonnet research branches, both created from 6bc0981 before the redesign:
-  - `scratchpad/research-runs/kb-a`, branch `research-a` (Dataverse topic);
-  - `scratchpad/research-runs/kb-b`, branch `research-b` (Keeper facts);
-  - both used the same legacy ids (S2205 upward) and the same answer id `QK1`.
-- Push the real branch HEAD as `main` into the bare repo `scratchpad/sync-test/remote.git`.
-- Person A syncs `research-a`, then person B syncs `research-b`.
-- The collisions must then be resolved: the colliding ids get hash ids with their citations rewritten, and the answers get distinct `QK-<slug>` ids.
-- Verify in a fresh clone:
-  - `check.py`, `build_index.py --check`, `kbgit.py fix --check`, `tests.py` and `check-trailers` all pass;
-  - both research results are present;
-  - there are no duplicate ids;
-  - `kbgit.py log <new hash id>` finds the commit.
-- The scratch state so far is in `scratchpad/sync-test/`: remote.git and remote2.git, the clones a, b, b2 and c, probe, probe2 and probe3 (the last two are stuck with conflicts), and verify.
+### Docs the plugin was built to (read 2026-09-25 through the claude-code-docs MCP server)
+- https://code.claude.com/docs/en/plugins/create-marketplace: marketplace layout, entry name = manifest name, relative sources from the marketplace root, `claude plugin validate`.
+- https://code.claude.com/docs/en/plugins/marketplace-reference: `marketplace.json` fields; `"."` as a relative source is the root itself; marketplace source type `git` for `git@host:path` (used in `extraKnownMarketplaces`).
+- https://code.claude.com/docs/en/plugins/manifest-reference covers `plugin.json`:
+  - `skills` adds to the default scan and accepts a folder holding `SKILL.md`;
+  - `agents` replaces the default `agents/` scan;
+  - `mcpServers` merges with the root `.mcp.json`;
+  - `${CLAUDE_PLUGIN_ROOT}`;
+  - plugin `settings` honours only `agent` and `subagentStatusLine`, so a plugin cannot ship permission rules;
+  - no `version` means the version tracks commits.
+- https://code.claude.com/docs/en/plugins/loading: the computed version (the commit SHA of the installed directory for a relative path in a git-hosted marketplace); cached copies in `cache/<marketplace>/<plugin>/<version>/`.
+- https://code.claude.com/docs/en/plugins/host-marketplace and https://code.claude.com/docs/en/plugins/install: private marketplaces over SSH (key in `ssh-agent`, host in `known_hosts`, no prompts); auto-update is off by default; `/plugin marketplace update`; `claude plugin update`.
+- https://code.claude.com/docs/en/mcp (Plugin-provided MCP servers): tool names are `mcp__plugin_<plugin>_<server>__<tool>`.
+- https://code.claude.com/docs/en/hooks: a PreToolUse hook's exit code 2 blocks the call; exec form with `args`.
+- https://code.claude.com/docs/en/skills: the `allowed-tools` and `disallowed-tools` frontmatter.
+- https://code.claude.com/docs/en/plugins/org and https://code.claude.com/docs/en/plugins/cli-reference: `extraKnownMarketplaces` + `enabledPlugins`, `--scope project`.
 
-### To finish
-1. Review the three uncommitted files, then fix issues 1 and 2.
-2. Rerun 6b from a clean scratch dir.
-3. Run the gate: `kbgit.py fix --check`, `build_index.py --check`, `check.py`, `tests.py`, `stress_test.py`, `fetch.py --offline`, `kbgit.py check-trailers 47c5568..HEAD`.
-4. Commit.
-
-## Task 7: plugin and runbook for other projects (not started)
-- The goal: another project "subscribes" to this KB.
-- It must use the GitLab SSH remote `git@gitlab.com:mikkielt/it-ops-kb.git`. Consumers need an SSH key with access to the project.
-- Package this repo as a Claude Code plugin marketplace plus plugin, installed with `/plugin marketplace add git@gitlab.com:mikkielt/it-ops-kb.git` then `/plugin install it-ops-kb@...`.
-- Before building, confirm the current `.claude-plugin/marketplace.json` and `plugin.json` formats, the plugin-root variable and the update behaviour against the docs.
-- **What the plugin contains:**
-  - **A small stdlib stdio MCP server `kb`**, wrapping `rag.py`. Its tools:
-    - `kb_search`: returns source urls plus the weak-match and not-found notes;
-    - `kb_show`;
-    - `kb_source`;
-    - `kb_status`: the KB commit, its date and the latest `census-*` tag, so consumers can see how current it is.
-  - **The `/kb-lookup` skill**, switched to call these tools; still read-only and auto-invocable.
-  - **The three docs MCP servers**, with `submit_feedback` still denied.
-  - **No writing skills.** Research, refresh, add-topic and git-sync stay in a clone of this repo, because the plugin copy is replaced on every update.
-- **README additions:**
-  - a runbook "Use from another project": install, check `kb_status`, ask a question, update with `/plugin marketplace update`;
-  - a paste-ready operator prompt for people who don't use plugins: clone to a fixed path, add it as an additional directory, add a CLAUDE.md note on how to query it with `rag.py ... -u`, and add the three docs servers;
-  - a contributor section: clone, `/kb-setup`, `kbgit.py install-hooks`, work, `kbgit.py sync --push`, and `/kb-git-sync` on exit 3.
-- Test it end to end in a scratch project: install from a local marketplace path, ask one question, and check that the answer is cited.
-
-## Other pending work (decided, not started)
-- **Research-skill fixes**, from the Sonnet research review:
-  - read the full page before citing (MCP fetch for Learn; for other sites, a short verbatim quote of the key sentence);
-  - rules for extending an existing topic versus creating a new one, and where a topic with no home goes;
-  - `/kb-verify` should compare against the branch the work started from, not `main`.
-- **Sonnet research A (Dataverse):** three facts are not found on their cited pages: the gateway 2 MB/8 MB caps (S2219), Fabric's 15-45 minute latency (S2214) and the 2026-11-30 Data Lake export end (S2213). Re-source or drop them before merging.
-- **Census (plan agreed; phases 0-4 in the conversation):**
-  - "refreshed" means "confirmed up to date";
-  - a pinned source that changed upstream gets a new row, with `superseded_by` on the old one;
-  - memdocs pins are re-sourced to live Learn pages, recording `git_commit_id`;
-  - phase 1 is mechanical: compare Learn `updated_at`/`git_commit_id` metadata, run `git log <pin>..HEAD -- <path>` on blobless clones of the 27 repos, check for newer releases, check URL liveness;
-  - phase 2: one subagent per domain group, reviewing only the sources that aren't OK;
-  - phase 3: set the dates by script;
-  - phase 4: an independent sample check, then `kbgit.py tag-census 2026-09-25`.
-- **Known debt:**
-  - 25 lint errors are in `_tools/lint_baseline.txt` (untagged facts, tags with no source id);
-  - `_gaps.md` still refers to the old ids QS1/QS5/QS7, whose second copies were renamed QS1a/QS5a/QS7a.
+## 3. Known debt
+- 25 lint errors are recorded in `_tools/lint_baseline.txt` (untagged facts, tags with no source id). Several articles also list header ids their body never cites (lint warnings), left alone because removing them could empty a source's `used_in`.
+- `_gaps.md` still refers to the old ids QS1, QS5 and QS7, whose second copies were renamed QS1a, QS5a and QS7a.
+- **Task D, not done:** the Sonnet research branches (`scratch/research-a`, `scratch/research-b`) were not on the remote, so they were not merged. If they turn up:
+  1. Re-verify research-a's three unsupported facts against the pages that actually state them: the gateway 2 MB/8 MB caps (S2219), Fabric's 15-45 min latency (S2214) and the Export to Data Lake end date 2026-11-30 (S2213).
+  2. Spot-check five facts per branch.
+  3. Bring them in with `kbgit.py sync` and `/kb-git-sync`. The procedure is tested on synthetic copies in `_tools/test_research_merge.py`.
