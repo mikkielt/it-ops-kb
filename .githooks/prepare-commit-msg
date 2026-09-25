@@ -1,0 +1,11 @@
+#!/bin/sh
+# it-ops-kb: note an --amend, so commit-msg computes the KB-* trailers against HEAD's parent.
+# Enabled by `python3 _tools/kbgit.py install-hooks` (git config core.hooksPath .githooks). Never blocks a commit.
+top=$(git rev-parse --show-toplevel 2>/dev/null) || exit 0
+for py in python3 python; do
+  if command -v "$py" >/dev/null 2>&1; then
+    "$py" "$top/_tools/kbgit.py" hook prepare-commit-msg "$@" || true
+    break
+  fi
+done
+exit 0

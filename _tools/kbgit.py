@@ -1,8 +1,44 @@
 #!/usr/bin/env python3
-"""Git helpers for the kb (stdlib only): deterministic cleanup after a merge, and canonical ledger formatting.
+"""Git helpers for the kb (stdlib only): post-merge cleanup, canonical ledger formatting, and a queryable history.
 
   kbgit.py fix [--check] [--base REV] [--side REV ...]   post-merge cleanup; safe to run any time, idempotent
   kbgit.py fmt [--check]                                   only canonical CSV formatting and order (never adds or drops a row)
+  kbgit.py trailers [--staged | REV | --amend] [--verified YYYY-MM-DD]   the KB-* trailers of the staged change or a commit
+  kbgit.py install-hooks [--uninstall]                     core.hooksPath=.githooks: commits get their KB-* trailers
+  kbgit.py check-trailers [A..B | REV]                     exit 1 listing kb commits whose KB-* trailers are missing or wrong
+  kbgit.py log <S-id | topic | QK-id | path> [-n N]        commits that touched it (trailers first, then diff/path history)
+  kbgit.py blame <path:line>                               the commit that wrote that line, and the sources it cites
+  kbgit.py asof <YYYY-MM-DD | tag | rev> <path>            the file as of the last commit on or before that date (or at the tag)
+  kbgit.py tag-census YYYY-MM-DD                           annotated tag census-YYYY-MM-DD on HEAD: "kb confirmed current" (no push)
+
+History (trailers). Every commit that changes kb content ends with git trailers, so `git log` can answer "which commits
+changed topic X / source S / answer QK-..." without reading diffs:
+  KB-Topics:              topic ids whose article or data files changed (the topic -> files mapping of _coverage.csv at
+                          both ends of the diff; an article not in it counts under its own path)
+  KB-Sources-Added:       _sources.csv ids of new rows
+  KB-Sources-Changed:     ids of rows edited (used_in, which is generated, is ignored) or removed
+  KB-Sources-Superseded:  ids whose superseded_by became non-empty (not also listed as changed)
+  KB-Answers:             _answers.md answer ids whose section was added, edited or removed
+  KB-Verified: YYYY-MM-DD only on request (`trailers --verified`, or KB_VERIFIED=YYYY-MM-DD in the hook's environment, or
+                          `git commit --trailer "KB-Verified: 2026-09-25"`): the commit confirms its sources are current.
+One line per key, values sorted and joined by ", ". A key with more than MAX_IDS (40) values is written as a count,
+e.g. `KB-Sources-Added: 312 ids (see diff)`: trailers cannot wrap, and `log` finds such commits by their diff anyway.
+A commit is diffed against its first parent (the empty tree for a root commit). Merge commits carry no trailers and
+are not checked: their content is attributed to the commits they merge. Commits up to TRAILERS_SINCE (the last
+commit before trailers existed) are exempt; history is never rewritten.
+
+Hooks (`install-hooks`, once per clone): sets `git config core.hooksPath .githooks` (versioned scripts). commit-msg
+replaces any KB-Topics/KB-Sources-*/KB-Answers lines with the computed ones via `git interpret-trailers` (so
+re-running, `-m`, editor commits and --amend never duplicate them), skips merges, skips a rebase re-application whose
+message already has KB-* trailers, and never blocks a commit (any error is a warning). prepare-commit-msg only
+notes an --amend so commit-msg diffs against HEAD's parent. `git commit --no-verify` skips commit-msg: CI's
+check-trailers catches that. Fix unpushed commits with `trailers --amend` (HEAD) or
+`git rebase --exec "python3 _tools/kbgit.py trailers --amend" @{upstream}`.
+
+check-trailers without a range: in GitLab CI, CI_COMMIT_BEFORE_SHA..CI_COMMIT_SHA (only CI_COMMIT_SHA when the
+before sha is all zeros or unknown); elsewhere @{upstream}..HEAD, or HEAD alone without an upstream.
+Census tags: an annotated tag `census-YYYY-MM-DD` marks "the kb was confirmed current as of that date"; its message
+counts the sources and the _fetch_state.csv checks. `asof census-2026-09-25 PATH` reads a file as of a census.
 
 Why: `.gitattributes` merges the append-only ledgers with git's built-in union driver, so two branches that
 each add rows or answers merge without conflict markers. Union keeps every line of both sides, so a row both
@@ -36,9 +72,11 @@ with it) and used_in. Conflict markers left anywhere else in a ledger, README or
 Sides of the merge (for collisions): --side REV (repeatable), else MERGE_HEAD during a merge (HEAD + MERGE_HEAD),
 else the parents of HEAD when HEAD is a merge commit. Base: --base REV (e.g. `git merge-base A B`).
 
-Exit: 0 clean (or fixed), 1 --check and something would change, 2 a problem needs a human (nothing is written).
+Exit (fix, fmt): 0 clean (or fixed), 1 --check and something would change, 2 a problem needs a human (nothing is written).
+Exit (history): 0 ok; 1 check-trailers found bad commits, log found nothing, asof/blame found no such file or line;
+2 bad arguments, not a git clone, or a git error. Hooks always exit 0.
 """
-import argparse, csv, io, os, re, subprocess, sys
+import argparse, csv, datetime, io, os, re, stat, subprocess, sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import kbid  # noqa: E402
@@ -73,13 +111,18 @@ def write(rel, text):
         f.write(text)
 
 
-def git(*args):
-    """stdout of a git command in the kb, or None when git or the object is unavailable."""
+def git_run(*args, stdin=None):
+    """The finished git process (bytes output), or None when git cannot be started."""
     try:
-        p = subprocess.run(["git", *args], cwd=KB, capture_output=True)
+        return subprocess.run(["git", *args], cwd=KB, capture_output=True, input=stdin)
     except OSError:
         return None
-    return p.stdout.decode("utf-8", "replace") if p.returncode == 0 else None
+
+
+def git(*args, stdin=None):
+    """stdout of a git command in the kb, or None when git or the object is unavailable."""
+    p = git_run(*args, stdin=stdin)
+    return p.stdout.decode("utf-8", "replace") if p is not None and p.returncode == 0 else None
 
 
 def show(rev, rel):
@@ -638,6 +681,568 @@ def run(a):
     return 0
 
 
+# ---------------------------------------------------------------- history: trailers
+
+# The last commit before KB-* trailers existed: it and its ancestors are exempt from check-trailers.
+TRAILERS_SINCE = "e5dadde122a08111128e48eec9656c5d617ab631"
+MAX_IDS = 40  # more values than this: "N ids (see diff)" instead of the list
+KEYS = ("KB-Topics", "KB-Sources-Added", "KB-Sources-Changed", "KB-Sources-Superseded", "KB-Answers")
+VERIFIED = "KB-Verified"
+NOUN = {"KB-Topics": "topics", "KB-Answers": "answers"}
+SUMMARY = re.compile(r"^(\d+) (?:ids|topics|answers) \(see diff\)$")
+KEY_LINE = re.compile(r"^(" + "|".join(re.escape(k) for k in KEYS) + r")\s*:", re.I)
+DATE = re.compile(r"\d{4}-\d{2}-\d{2}")
+INDEX = None  # compute() target: the index (staged changes)
+HOOKS_DIR = ".githooks"
+HOOKS = ("prepare-commit-msg", "commit-msg")
+AMEND_MARK = "kb-trailers-base"
+
+
+def valid_date(s):
+    if not DATE.fullmatch(s or ""):
+        return False
+    try:
+        datetime.date.fromisoformat(s)
+    except ValueError:
+        return False
+    return True
+
+
+def rev_parse(rev):
+    return (git("rev-parse", "-q", "--verify", rev + "^{commit}") or "").strip() or None
+
+
+def empty_tree():
+    return (git("hash-object", "-t", "tree", "--stdin", stdin=b"") or "").strip()
+
+
+def git_path(name):
+    p = (git("rev-parse", "--git-path", name) or "").strip()
+    return os.path.join(KB, p) if p else None
+
+
+def blob(rev, rel):
+    """Text of rel at a commit, in the index (rev INDEX) or nowhere (rev "" = the empty tree): None when absent."""
+    if rev == "":
+        return None
+    return git("show", (":" if rev is INDEX else rev + ":") + "./" + rel)
+
+
+def changed_paths(base, target):
+    """Paths that differ between base (a commit or the empty tree) and target (a commit, or INDEX)."""
+    base = base or empty_tree()
+    out = (git("diff-index", "--cached", "--name-only", "-z", base) if target is INDEX
+           else git("diff-tree", "-r", "--name-only", "-z", base, target))
+    if out is None:
+        raise Problem(f"git diff {base[:12]} {'(index)' if target is INDEX else target[:12]} failed")
+    return sorted(p for p in out.split("\0") if p)
+
+
+def is_content(path):
+    top = path.split("/", 1)[0]
+    return "/" in path and not top.startswith(("_", "."))
+
+
+def topic_map(coverage_texts):
+    """({file: {topic}}, [(dir/, topic)]) from _coverage.csv texts."""
+    files, dirs = {}, []
+    for t in coverage_texts:
+        if not t:
+            continue
+        try:
+            t = strip_markers(lf(t), "_coverage.csv")[0]
+            rows = list(csv.DictReader(io.StringIO(t)))
+        except (Problem, csv.Error):
+            continue
+        for r in rows:
+            for f in (r.get("files") or "").split(";"):
+                f = f.strip()
+                if f.endswith("/"):
+                    dirs.append((f, r.get("topic", "")))
+                elif f:
+                    files.setdefault(f, set()).add(r.get("topic", ""))
+    return files, dirs
+
+
+def source_rows_of(text):
+    if not text:
+        return {}
+    try:
+        text = strip_markers(lf(text), SOURCES)[0]
+    except Problem:
+        pass
+    try:
+        return {r["id"]: r for r in csv.DictReader(io.StringIO(text)) if r.get("id") and r["id"] != "id"}
+    except csv.Error:
+        return {}
+
+
+def answer_sections(text):
+    """{answer id: section text} of _answers.md."""
+    out = {}
+    for part in re.split(r"(?m)^(?=## )", text or ""):
+        m = kbid.ANSWER_HEAD.match(part)
+        if m:
+            out[m.group(1)] = out.get(m.group(1), "") + part.rstrip() + "\n"
+    return out
+
+
+def trailers_from(paths, old, new):
+    """{key: sorted values} for a change of `paths`; old(rel)/new(rel) give a file's text before/after (None: absent)."""
+    out = {}
+    content = [p for p in paths if is_content(p)]
+    if content:
+        files, dirs = topic_map([new("_coverage.csv"), old("_coverage.csv")])
+        topics = set()
+        for p in content:
+            t = set(files.get(p, ())) | {topic for d, topic in dirs if p.startswith(d)}
+            if not t and p.endswith(".md"):
+                fm = build_index.front_matter(lf(new(p) or old(p) or ""))
+                if fm is not None:
+                    t.add(p[:-3])
+            topics |= t
+        out["KB-Topics"] = sorted(t for t in topics if t)
+    if SOURCES in paths:
+        a, b = source_rows_of(old(SOURCES)), source_rows_of(new(SOURCES))
+        strip = lambda r: {k: v for k, v in r.items() if k != "used_in" and v}  # noqa: E731  (a new empty column is no edit)
+        sup = {i for i in b if (b[i].get("superseded_by") or "").strip() and not (a.get(i, {}).get("superseded_by") or "").strip() and i in a}
+        out["KB-Sources-Added"] = sorted(set(b) - set(a), key=id_key)
+        out["KB-Sources-Superseded"] = sorted(sup, key=id_key)
+        out["KB-Sources-Changed"] = sorted(({i for i in a if i in b and strip(a[i]) != strip(b[i])} - sup) | (set(a) - set(b)), key=id_key)
+    if "_answers.md" in paths:
+        a, b = answer_sections(old("_answers.md")), answer_sections(new("_answers.md"))
+        out["KB-Answers"] = sorted(i for i in set(a) | set(b) if a.get(i) != b.get(i))
+    return {k: out[k] for k in KEYS if out.get(k)}
+
+
+def compute(base, target):
+    """Trailers for base (commit sha, or "" for the empty tree) -> target (commit sha, or INDEX)."""
+    return trailers_from(changed_paths(base, target), lambda rel: blob(base, rel), lambda rel: blob(target, rel))
+
+
+def first_parent(rev):
+    """The commit a commit's trailers are computed against: its first parent, or "" (empty tree) for a root."""
+    parents = (git("rev-list", "--parents", "-n", "1", rev) or "").split()[1:]
+    return parents[0] if parents else ""
+
+
+def trailer_lines(computed, verified=None):
+    out = []
+    for k in KEYS:
+        v = computed.get(k)
+        if v:
+            out.append(f"{k}: " + (", ".join(v) if len(v) <= MAX_IDS else f"{len(v)} {NOUN.get(k, 'ids')} (see diff)"))
+    if verified:
+        out.append(f"{VERIFIED}: {verified}")
+    return out
+
+
+def parse_trailers(text):
+    """{canonical key: [values]} of the KB-* trailers in `git log %(trailers:only,unfold)` output."""
+    out = {}
+    canon = {k.lower(): k for k in KEYS + (VERIFIED,)}
+    for ln in (text or "").splitlines():
+        k, sep, v = ln.partition(":")
+        if sep and k.strip().lower() in canon:
+            out.setdefault(canon[k.strip().lower()], []).append(v.strip())
+    return out
+
+
+def values_match(actual, want):
+    """Does a trailer value (list of occurrences) state exactly the ids `want`?"""
+    if not actual:
+        return not want
+    if len(actual) > 1:
+        return False
+    m = SUMMARY.match(actual[0])
+    if m:
+        return len(want) > MAX_IDS and int(m.group(1)) == len(want)
+    return sorted(x.strip() for x in actual[0].split(",") if x.strip()) == sorted(want)
+
+
+def comment_char():
+    c = (git("config", "--get", "core.commentChar") or "#").strip()
+    return c if len(c) == 1 else "#"
+
+
+def apply_trailers(message, computed, verified=None):
+    """The message with its KB-* trailers replaced by the computed ones (appended with git interpret-trailers).
+    An empty message (the user aborted in the editor) is returned unchanged, so the commit still aborts."""
+    cc = comment_char()
+    if not any(ln.strip() and not ln.startswith(cc) for ln in message.splitlines()):
+        return message
+    drop = lambda ln: KEY_LINE.match(ln) or (verified and ln.lower().startswith(VERIFIED.lower() + ":"))  # noqa: E731
+    kept = "".join(ln for ln in message.splitlines(keepends=True) if not drop(ln))
+    lines = trailer_lines(computed, verified)
+    if not lines:
+        return kept
+    args = ["interpret-trailers", "--if-exists", "replace"]
+    for ln in lines:
+        args += ["--trailer", ln]
+    out = git(*args, stdin=kept.encode("utf-8"))
+    if out is None:
+        raise Problem("git interpret-trailers failed")
+    return out
+
+
+def cmd_trailers(a):
+    if a.verified and not valid_date(a.verified):
+        print(f"--verified {a.verified!r}: expected YYYY-MM-DD")
+        return 2
+    if a.amend:
+        head = rev_parse("HEAD")
+        if not head:
+            print("no commit to amend")
+            return 2
+        if (git("rev-list", "--parents", "-n", "1", "HEAD") or "").count(" ") > 1:
+            print("HEAD is a merge commit: merges carry no trailers")
+            return 2
+        if git("diff-index", "--cached", "--quiet", "HEAD") is None:
+            print("staged changes present: commit or unstage them first (--amend only rewrites the message)")
+            return 2
+        msg = git("log", "-1", "--format=%B", "HEAD") or ""
+        new = apply_trailers(msg, compute(first_parent(head), head), a.verified)
+        if new.strip() == msg.strip():
+            print("trailers already correct")
+            return 0
+        p = git_run("commit", "--amend", "--no-verify", "--allow-empty", "--cleanup=whitespace", "-F", "-", stdin=new.encode("utf-8"))
+        if p is None or p.returncode:
+            print("git commit --amend failed: " + (p.stderr.decode("utf-8", "replace") if p else "no git"))
+            return 2
+        print(git("log", "-1", "--format=%h %s%n%(trailers:only,unfold)", "HEAD") or "")
+        return 0
+    if a.rev and not a.staged:
+        rev = rev_parse(a.rev)
+        if not rev:
+            print(f"{a.rev}: not a commit here")
+            return 2
+        computed = compute(first_parent(rev), rev)
+    else:
+        computed = compute(rev_parse("HEAD") or "", INDEX)
+    for ln in trailer_lines(computed, a.verified):
+        print(ln)
+    return 0
+
+
+# ---------------------------------------------------------------- history: hooks
+
+def hook_prepare(args):
+    """Note an --amend (git passes `commit HEAD`; -c/-C pass `commit <rev>`), so commit-msg diffs against HEAD's parent, not HEAD."""
+    mark = git_path(AMEND_MARK)
+    if mark and os.path.exists(mark):
+        os.remove(mark)
+    if mark and len(args) >= 3 and args[1] == "commit" and rev_parse(args[2]) == rev_parse("HEAD"):
+        parents = (git("rev-list", "--parents", "-n", "1", "HEAD") or "").split()[1:]
+        with open(mark, "w", encoding="utf-8") as f:
+            f.write("merge" if len(parents) > 1 else (parents[0] if parents else "root"))
+
+
+def hook_commit_msg(args):
+    mark, base = git_path(AMEND_MARK), None
+    if mark and os.path.exists(mark):
+        with open(mark, encoding="utf-8") as f:
+            base = f.read().strip()
+        os.remove(mark)
+    if base == "merge" or rev_parse("MERGE_HEAD"):
+        return  # merge commits carry no trailers
+    with open(args[0], encoding="utf-8", errors="replace", newline="") as f:
+        msg = f.read()
+    rebasing = any(os.path.isdir(p or "") for p in (git_path("rebase-merge"), git_path("rebase-apply")))
+    if rebasing and any(KEY_LINE.match(ln) for ln in msg.splitlines()):
+        return
+    if base is None:
+        base = rev_parse("HEAD") or ""
+    elif base == "root":
+        base = ""
+    verified = os.environ.get("KB_VERIFIED", "").strip() or None
+    if verified and not valid_date(verified):
+        print(f"kbgit.py: KB_VERIFIED={verified!r} is not YYYY-MM-DD; not added", file=sys.stderr)
+        verified = None
+    new = apply_trailers(msg, compute(base, INDEX), verified)
+    if new != msg:
+        with open(args[0], "w", encoding="utf-8", newline="") as f:
+            f.write(new)
+
+
+def cmd_hook(a):
+    try:
+        (hook_prepare if a.name == "prepare-commit-msg" else hook_commit_msg)(a.args)
+    except Exception as e:  # noqa: BLE001 - a hook must never block a commit
+        print(f"kbgit.py {a.name}: KB trailers not added ({type(e).__name__}: {e})", file=sys.stderr)
+    return 0
+
+
+def cmd_install_hooks(a):
+    if git("rev-parse", "--git-dir") is None:
+        print("not a git clone (or git is missing)")
+        return 2
+    cur = (git("config", "--get", "core.hooksPath") or "").strip()
+    if a.uninstall:
+        if cur.rstrip("/") == HOOKS_DIR:
+            git("config", "--unset", "core.hooksPath")
+            print(f"uninstalled: core.hooksPath unset ({HOOKS_DIR}/ stays in the repo)")
+        else:
+            print("not installed" + (f" (core.hooksPath is {cur!r}; left alone)" if cur else ""))
+        return 0
+    for name in HOOKS:
+        p = os.path.join(KB, HOOKS_DIR, name)
+        if not os.path.isfile(p):
+            print(f"{HOOKS_DIR}/{name} is missing from this checkout")
+            return 2
+        mode = os.stat(p).st_mode
+        if not mode & stat.S_IXUSR:
+            os.chmod(p, mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
+    if cur and cur.rstrip("/") != HOOKS_DIR:
+        print(f"core.hooksPath is already {cur!r}; not changed. Chain {HOOKS_DIR}/commit-msg and "
+              f"{HOOKS_DIR}/prepare-commit-msg from there, or `git config --unset core.hooksPath` and rerun")
+        return 2
+    if cur:
+        print(f"already installed (core.hooksPath={cur})")
+        return 0
+    old = git_path("hooks")  # .git/hooks while core.hooksPath is unset
+    if old and os.path.isdir(old):
+        own = sorted(f for f in os.listdir(old) if not f.endswith(".sample"))
+        if own:
+            print(f"WARN hooks in {os.path.relpath(old, KB)}/ stop running while core.hooksPath is set: {', '.join(own)}")
+    if git("config", "core.hooksPath", HOOKS_DIR) is None:
+        print("git config core.hooksPath failed")
+        return 2
+    print(f"installed: core.hooksPath={HOOKS_DIR} ({', '.join(HOOKS)}); kb commits now get KB-* trailers")
+    return 0
+
+
+# ---------------------------------------------------------------- history: check, log, blame, asof, census
+
+def log_records(*args):
+    """[(sha, short, date, subject, trailers text)] of `git log ARGS`, newest first."""
+    out = git("log", "--format=%H%x1f%h%x1f%cs%x1f%s%x1f%(trailers:only,unfold)%x1e", *args)
+    if out is None:
+        return None
+    recs = []
+    for r in out.split("\x1e"):
+        f = r.strip("\n").split("\x1f")
+        if len(f) == 5:
+            recs.append(tuple(f))
+    return recs
+
+
+def default_range():
+    before, sha = os.environ.get("CI_COMMIT_BEFORE_SHA", ""), os.environ.get("CI_COMMIT_SHA", "")
+    if sha:
+        if before and set(before) != {"0"} and rev_parse(before):
+            return f"{before}..{sha}"
+        return sha
+    return "@{upstream}..HEAD" if rev_parse("@{upstream}") else "HEAD"
+
+
+def cmd_check_trailers(a):
+    rng = a.range or default_range()
+    spec = [rng] if ".." in rng else [rng + "^!"]
+    since = rev_parse(TRAILERS_SINCE)
+    if since:
+        spec.append("^" + since)
+    else:
+        print(f"note: exemption cutoff {TRAILERS_SINCE[:12]} is not in this clone; every commit in the range is checked")
+    recs = log_records("--no-merges", *spec)
+    if recs is None:
+        print(f"{rng}: not a valid revision range here")
+        return 2
+    bad = kb = 0
+    for sha, short, date, subject, trailers in recs:
+        want = compute(first_parent(sha), sha)
+        have = parse_trailers(trailers)
+        wrong = [k for k in KEYS if not values_match(have.get(k), want.get(k, []))]
+        v = have.get(VERIFIED)
+        if v and (len(v) > 1 or not valid_date(v[0])):
+            wrong.append(VERIFIED)
+        kb += bool(want)
+        if wrong:
+            bad += 1
+            print(f"BAD {short} {date} {subject[:70]}")
+            for k in wrong:
+                exp = next((ln for ln in trailer_lines(want) if ln.startswith(k + ":")), f"(no {k})" if k != VERIFIED else "YYYY-MM-DD, once")
+                print(f"    {k}: has {', '.join(have.get(k, [])) or '(none)'}; expected {exp}")
+    print(f"check-trailers {rng}: commits={len(recs)} kb_commits={kb} bad={bad}")
+    if bad:
+        print("fix unpushed commits: python3 _tools/kbgit.py trailers --amend (HEAD), or "
+              "git rebase --exec \"python3 _tools/kbgit.py trailers --amend\" <base>; "
+              "install the hook once per clone: python3 _tools/kbgit.py install-hooks")
+    return 1 if bad else 0
+
+
+def id_regex(sid):
+    """POSIX ERE for a source id as a whole word (git log -G)."""
+    return rf"(^|[^A-Za-z0-9_-]){re.escape(sid)}([^A-Za-z0-9_-]|$)"
+
+
+def classify(arg):
+    if kbid.is_source_id(kbid.canonical_id(arg)) and not os.path.exists(os.path.join(KB, arg)):
+        return "source", kbid.canonical_id(arg)
+    if kbid.QK_ID.fullmatch(arg) or arg in kbid.answer_ids(read("_answers.md") or ""):
+        return "answer", arg
+    topics = {r["topic"]: r for r in csv.DictReader(io.StringIO(lf(read("_coverage.csv") or "")))}
+    if arg in topics or (os.path.isfile(os.path.join(KB, arg + ".md")) and is_content(arg + ".md")):
+        return "topic", arg
+    return "path", arg[2:] if arg.startswith("./") else arg
+
+
+def cmd_log(a):
+    if rev_parse("HEAD") is None:
+        print("not a git clone, or no commits")
+        return 2
+    kind, what = classify(a.target)
+    keys = {"source": ("KB-Sources-Added", "KB-Sources-Changed", "KB-Sources-Superseded"),
+            "topic": ("KB-Topics",), "answer": ("KB-Answers",), "path": ()}[kind]
+    recs = log_records("HEAD") or []
+    how = {}
+    for sha, _, _, _, trailers in recs:
+        t = parse_trailers(trailers)
+        if any(what in [x.strip() for v in t.get(k, []) for x in v.split(",")] for k in keys):
+            how[sha] = "trailer"
+    fallback = []
+    if kind == "source":
+        fallback = [("diff", ["-G", id_regex(what)])]
+    elif kind == "answer":
+        fallback = [("diff", ["-G", rf"^## {re.escape(what)}\. ", "--", "_answers.md"])]
+    elif kind == "topic":
+        row = {r["topic"]: r for r in csv.DictReader(io.StringIO(lf(read("_coverage.csv") or "")))}.get(what)
+        files = [f for f in (row["files"].split(";") if row else [what + ".md"]) if f]
+        fallback = [("path", ["--"] + files)]
+    else:
+        fallback = [("path", ["--follow", "--", what])]
+    for label, args in fallback:
+        for sha in (git("log", "--format=%H", "HEAD", *args) or "").split():
+            how.setdefault(sha, label)
+    hits = [r for r in recs if r[0] in how]
+    print(f"# {kind} {what}: {len(hits)} commit(s)" + (f", newest {a.n}" if len(hits) > a.n else ""))
+    for sha, short, date, subject, _ in hits[:a.n]:
+        print(f"{short}  {date}  {subject[:80]}  [{how[sha]}]")
+    return 0 if hits else 1
+
+
+def blame_line(path, n, ignore_ws):
+    args = ["blame", "--porcelain", "-M", "-C", "-L", f"{n},{n}"] + (["-w"] if ignore_ws else []) + ["--", path]
+    out = git(*args)
+    if not out:
+        return None
+    lines = out.splitlines()
+    info = {"sha": lines[0].split()[0]}
+    for ln in lines[1:]:
+        if ln.startswith("\t"):
+            info["text"] = ln[1:]
+            break
+        k, _, v = ln.partition(" ")
+        info[k] = v
+    return info
+
+
+def cmd_blame(a):
+    path, _, line = a.target.rpartition(":")
+    if not path or not line.isdigit() or int(line) < 1:
+        print(f"{a.target!r}: expected PATH:LINE")
+        return 2
+    path = path[2:] if path.startswith("./") else path
+    if rev_parse("HEAD") is None:
+        print("not a git clone, or no commits")
+        return 2
+    b = blame_line(path, int(line), True)
+    if b is None:
+        print(f"{path}:{line}: no such tracked file or line")
+        return 1
+    zero = set(b["sha"]) == {"0"}
+    when = datetime.datetime.fromtimestamp(int(b.get("author-time", "0")), datetime.timezone.utc).date() if not zero else ""
+    print(f"{path}:{line}: {b.get('text', '')}")
+    if zero:
+        print("  introduced by: not committed yet")
+    else:
+        rec = (log_records("-1", b["sha"]) or [("", b["sha"][:7], str(when), b.get("summary", ""), "")])[0]
+        print(f"  introduced by: {rec[1]}  {rec[2]}  {rec[3][:80]}  ({b.get('author', '?')})"
+              + (f"  [as {b['filename']}]" if b.get("filename") and b["filename"] != path else ""))
+        plain = blame_line(path, int(line), False)
+        later = int((git("rev-list", "--count", f"{b['sha']}..HEAD", "--", path) or "0").strip() or 0)
+        if plain and plain["sha"] != b["sha"]:
+            print(f"  touched since: whitespace only, in {plain['sha'][:7]}")
+        else:
+            print("  touched since: no" + (f" (the file changed in {later} later commit(s))" if later else ""))
+    ids = sorted(set(build_index.CITE.findall(b.get("text", ""))), key=id_key)
+    rows = {r.get("id"): r for r in kbid.read_sources()} if ids else {}
+    for sid in ids:
+        r = rows.get(sid)
+        added = (git("log", "--reverse", "--format=%h %cs", "-G", rf"^{re.escape(sid)},", "HEAD", "--", SOURCES) or "").split("\n")[0]
+        sup = (r or {}).get("superseded_by", "").strip()
+        print(f"  {sid}  {(r or {}).get('url') or 'UNKNOWN id'}" + (f"  superseded by {sup}" if sup else "")
+              + (f"  (row added in {added})" if added else ""))
+    return 0
+
+
+def cmd_asof(a):
+    if valid_date(a.when):
+        rev = (git("rev-list", "-1", "--first-parent", f"--before={a.when} 23:59:59", "HEAD") or "").strip()
+        if not rev:
+            print(f"no commit on or before {a.when}", file=sys.stderr)
+            return 1
+    else:
+        rev = rev_parse(a.when)
+        if not rev:
+            print(f"{a.when!r}: neither YYYY-MM-DD nor a tag or commit here", file=sys.stderr)
+            return 2
+    path = a.path[2:] if a.path.startswith("./") else a.path
+    p = git_run("show", f"{rev}:./{path}")
+    rec = (log_records("-1", rev) or [("", rev[:7], "", "", "")])[0]
+    if p is None or p.returncode:
+        print(f"{path} did not exist at {rec[1]} ({rec[2]})", file=sys.stderr)
+        return 1
+    print(f"# {path} at {rec[1]}  {rec[2]}  {rec[3][:80]}", file=sys.stderr)
+    sys.stdout.flush()
+    sys.stdout.buffer.write(p.stdout)
+    return 0
+
+
+def census_message(date):
+    lines = [f"kb confirmed current as of {date}", ""]
+    rows = source_rows_of(blob("HEAD", SOURCES))
+    sup = sum(1 for r in rows.values() if (r.get("superseded_by") or "").strip())
+    lines.append(f"sources: {len(rows)} in {SOURCES} ({sup} superseded)")
+    st = blob("HEAD", STATE)
+    if st:
+        state = list(csv.DictReader(io.StringIO(lf(st))))
+        ok = [r for r in state if r.get("checked_utc") and not (r.get("error") or "").strip()]
+        err = sum(1 for r in state if (r.get("error") or "").strip())
+        latest = max((r.get("checked_utc", "") for r in state), default="")
+        never = len(set(rows) - {r.get("id") for r in state})
+        lines.append(f"fetch state: {len(ok)} sources verified (checked without error), {err} with an error, "
+                     f"{never} never checked; latest check {latest[:10] or 'none'}")
+    else:
+        lines.append(f"fetch state: none ({STATE} is not committed)")
+    return "\n".join(lines) + "\n"
+
+
+def cmd_tag_census(a):
+    if not valid_date(a.date):
+        print(f"{a.date!r}: expected YYYY-MM-DD")
+        return 2
+    head = rev_parse("HEAD")
+    if not head:
+        print("not a git clone, or no commits")
+        return 2
+    name = f"census-{a.date}"
+    if rev_parse(f"refs/tags/{name}"):
+        print(f"tag {name} already exists")
+        return 2
+    if a.date > datetime.date.today().isoformat():
+        print(f"WARN {a.date} is in the future")
+    if (git("status", "--porcelain", "--untracked-files=no") or "").strip():
+        print("WARN uncommitted changes are not part of the census (the tag is on HEAD)")
+    msg = census_message(a.date)
+    p = git_run("tag", "-a", name, "-F", "-", head, stdin=msg.encode("utf-8"))
+    if p is None or p.returncode:
+        print("git tag failed: " + (p.stderr.decode("utf-8", "replace") if p else "no git"))
+        return 2
+    print(f"created annotated tag {name} on {head[:12]}\n" + msg.rstrip())
+    print(f"not pushed; to share it: git push origin {name}")
+    return 0
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -647,7 +1252,38 @@ def main():
     f.add_argument("--side", action="append", default=[], help="a merged branch/commit (repeatable; default: MERGE_HEAD or HEAD's parents)")
     m = sub.add_parser("fmt", help="canonical CSV quoting, order and newlines of the ledgers")
     m.add_argument("--check", action="store_true", help="write nothing; exit 1 if fmt would change something")
-    sys.exit(run(ap.parse_args()))
+    t = sub.add_parser("trailers", help="print the KB-* trailers of the staged change (default) or of a commit")
+    t.add_argument("rev", nargs="?", help="a commit (diffed against its first parent)")
+    t.add_argument("--staged", action="store_true", help="the staged change against HEAD (the default)")
+    t.add_argument("--amend", action="store_true", help="rewrite HEAD's message with the correct trailers (no content change)")
+    t.add_argument("--verified", metavar="YYYY-MM-DD", help="add KB-Verified: the commit confirms its sources are current")
+    i = sub.add_parser("install-hooks", help="git config core.hooksPath .githooks (commit-msg adds KB-* trailers)")
+    i.add_argument("--uninstall", action="store_true", help="unset core.hooksPath if it points at .githooks")
+    c = sub.add_parser("check-trailers", help="exit 1 listing kb commits with missing or wrong KB-* trailers")
+    c.add_argument("range", nargs="?", help="A..B or one commit (default: the CI push range, else @{upstream}..HEAD)")
+    lg = sub.add_parser("log", help="commits that touched a source id, topic, answer id or path")
+    lg.add_argument("target")
+    lg.add_argument("-n", type=int, default=20, help="show at most N commits (default 20)")
+    b = sub.add_parser("blame", help="the commit that introduced a line, and the sources it cites")
+    b.add_argument("target", metavar="PATH:LINE")
+    s = sub.add_parser("asof", help="a file as of a date (last commit on or before it) or a tag")
+    s.add_argument("when", metavar="YYYY-MM-DD|TAG")
+    s.add_argument("path")
+    g = sub.add_parser("tag-census", help="annotated tag census-YYYY-MM-DD on HEAD (not pushed)")
+    g.add_argument("date", metavar="YYYY-MM-DD")
+    h = sub.add_parser("hook", help="internal: run by the .githooks scripts")
+    h.add_argument("name", choices=HOOKS)
+    h.add_argument("args", nargs="*")
+    a = ap.parse_args()
+    cmds = {"trailers": cmd_trailers, "install-hooks": cmd_install_hooks, "check-trailers": cmd_check_trailers,
+            "log": cmd_log, "blame": cmd_blame, "asof": cmd_asof, "tag-census": cmd_tag_census, "hook": cmd_hook}
+    if a.cmd in cmds:
+        try:
+            sys.exit(cmds[a.cmd](a))
+        except Problem as e:
+            print(f"ERROR {e}")
+            sys.exit(2)
+    sys.exit(run(a))
 
 
 if __name__ == "__main__":

@@ -56,6 +56,13 @@ python _tools/kbid.py check                            # hash ids: collisions, i
 python _tools/rag.py show agents/agent-rbac.md:139 -n 30
 python _tools/build_index.py                           # regenerate _coverage.csv, the README coverage table and used_in (--check: only report)
 python _tools/kbgit.py fix                             # after any merge or pull: clean the union-merged ledgers, rebuild the index (--check, --base REV)
+python _tools/kbgit.py install-hooks                   # once per clone: core.hooksPath=.githooks, commits get KB-* trailers (--uninstall)
+python _tools/kbgit.py trailers                        # KB-* trailers of the staged change (or of a commit: REV; --verified YYYY-MM-DD; --amend fixes HEAD)
+python _tools/kbgit.py check-trailers origin/main..HEAD   # exit 1 listing kb commits with missing or wrong trailers (CI: the pushed range)
+python _tools/kbgit.py log S-k3f7q2zd -n 10            # commits that touched a source id, topic, QK- answer id or path (trailer, diff or path)
+python _tools/kbgit.py blame auth/kerberos.md:42       # the commit that wrote that line, the urls of the sources it cites, touched since?
+python _tools/kbgit.py asof 2026-06-30 auth/kerberos.md   # the file as of the last commit on or before that date (or a tag: census-2026-06-30)
+python _tools/kbgit.py tag-census 2026-09-25           # annotated tag census-2026-09-25 on HEAD: kb confirmed current as of that date (not pushed)
 python _tools/check.py                                 # unique and valid source ids, superseded_by, answer ids, known citations, artifacts, front matter
 python _tools/fetch.py --offline                       # check local artifacts against their sha256
 python _tools/fetch.py --verify                        # re-download pinned sources and compare sha256
@@ -70,13 +77,16 @@ python _tools/tests.py                                 # CI: docs cohesion + lea
 
 - `rag.py` builds no index file; a query takes about 0.1 s. `search` skips the root-level index files (`README.md`, `_answers.md`, `_gaps.md`, `_conflicts.md`, `_coverage.csv`, ...); `--index` includes them. `--json` gives machine output, and each hit carries `path`, `line`, `heading`, `text` and the source ids it cites. With `-u`/`--urls`, each hit also carries `urls`, mapping those source ids to their origin url in `_sources.csv`.
 - `fetch.py --diff` exits 0 when nothing changed, 1 when a source changed and 2 when a fetch or the selection failed, as `diff` does. `--max-lines N` caps each diff, `--no-save` compares without moving the baseline, `--delay` sets the per-host pause (default 1.1 s). HTML is reduced to its main text first, so page chrome does not count as a change.
+- Commit trailers make the history queryable. With the hook installed, every kb commit ends with `KB-Topics:`, `KB-Sources-Added:`, `KB-Sources-Changed:`, `KB-Sources-Superseded:` and `KB-Answers:` lines (only the non-empty ones; sorted, `, `-joined; more than 40 values become `N ids (see diff)`), computed from the diff against the first parent. `KB-Verified: YYYY-MM-DD` is added only on request (`KB_VERIFIED=YYYY-MM-DD git commit`, or `git commit --trailer`) by a commit that confirms its sources are current. Merge commits carry none, and commits made before trailers existed (up to `e5dadde`) are exempt. `git log --format='%h %(trailers:key=KB-Topics,valueonly)'` reads them directly.
+- Census tags `census-YYYY-MM-DD` (annotated, from `tag-census`) mark the dates the kb was confirmed current; the tag message counts the sources and the `_fetch_state.csv` checks.
+- History commands exit 0 on success, 1 when check-trailers finds a bad commit or log/blame/asof find nothing, 2 on bad arguments or outside a git clone.
 - Only pinned URLs carry `artifact_sha256`: raw files at a commit or tag, and release downloads. For live pages, the hash taken at retrieval sits in `version_or_date`.
 
 ## Contributing
 
 - Add a source row first. Its id comes from `python3 _tools/kbid.py url <URL>`; never invent or hand-type an id, and never take "the next number". If the url already has a row (legacy or hash id), reuse that id. `check.py` rejects a hash id that does not match its url.
 - When a pinned source is replaced (its upstream changed), add a new row for the new url, set the old row's `superseded_by` to the new id, and re-point the citations of the facts you re-verified. Never delete or reuse an id.
-- Write the fact with its tag, then run `python3 _tools/build_index.py` and `python _tools/check.py`.
+- Write the fact with its tag, then run `python3 _tools/build_index.py` and `python _tools/check.py`. Commit the source row with the facts that cite it, one logical change per commit, with the commit hook installed (`python3 _tools/kbgit.py install-hooks`) so the commit gets its KB-* trailers.
 - Never hand-edit the generated index: `_coverage.csv`, the README coverage table, `n_sources` and `used_in` are rebuilt by `build_index.py` after any content change (CI runs `build_index.py --check`). A topic's row comes from its front matter (`topic`, `priority`, `status`, `sources`); its files are the `.md` plus sibling files sharing its stem (`auth/flows.csv`), plus any extras listed in `files: [dsc/cli/, graph/csdl/device.v1.0.xml]` (kb-root paths, directories end in `/`). An article named in another article's `files:` (an artifact digest) is part of that topic. A topic with no `.md` (a CSV-only table) is a row of `_tools/index_extra.csv` (`topic,priority,status,files`). Rows are ordered by domain, priority, topic id.
 - Save structured data as a pinned artifact, with a row in `_artifacts.csv` and a digest.
 - Record disagreements in `_conflicts.md` and failed lookups in `_gaps.md`.

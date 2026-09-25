@@ -10,6 +10,7 @@ files (_coverage.csv, README coverage table, used_in) are up to date (build_inde
 in that tool; .mcp.json, .claude/settings.json and AGENTS.md agree; skills are well-formed.
 Ids: kbid.py hash source ids are deterministic and normalization-stable; bad ids and answer-id clashes are caught.
 Merges (test_merge.py): union-merged ledgers plus kbgit.py fix give a clean kb; the git scenario is skipped without git.
+History (test_history.py): KB-* trailers, the commit-msg hook, check-trailers, log, blame, asof, tag-census; git parts skip without git.
 Leaks (tracked files): secrets in any file; in authored files also home-directory paths, private IPv4 addresses,
 non-placeholder e-mail addresses and GUIDs outside the reviewed allowlist (_tools/tests_allowlist.txt); files that
 must never be committed; oversized files.
@@ -25,6 +26,7 @@ MAX_BYTES = 10 * 1024 * 1024
 sys.path.insert(0, TOOLS)
 import kbid  # noqa: E402
 from test_merge import MergeRules, MergeInGit  # noqa: E402,F401  (run here too; MergeInGit skips without git)
+from test_history import TrailerRules, HistoryInGit  # noqa: E402,F401  (HistoryInGit skips without git)
 
 
 def run(*args):

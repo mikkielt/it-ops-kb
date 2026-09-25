@@ -1,4 +1,4 @@
-# Minimal CI for it-ops-kb: documentation cohesion and leak detection. Stdlib Python only, nothing to install.
+# Minimal CI for it-ops-kb: documentation cohesion, leak detection and KB-* commit trailers. Stdlib Python only.
 workflow:
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
@@ -29,3 +29,17 @@ tool-stress:
     - changes:
         - _tools/**/*
         - .claude/skills/**/*.py
+
+# KB-* commit trailers (kbgit.py check-trailers) on the pushed commits: CI_COMMIT_BEFORE_SHA..CI_COMMIT_SHA, or only
+# CI_COMMIT_SHA for a new branch (before sha all zeros). Needs git, which python:3.12-slim lacks: the full python:3.12
+# image has it. GIT_DEPTH 0 (full clone): a shallow clone may miss the before sha or the exemption cutoff commit.
+kb-trailers:
+  stage: test
+  image: python:3.12
+  variables:
+    GIT_DEPTH: "0"
+  script:
+    - git config --global --add safe.directory "$CI_PROJECT_DIR"
+    - python3 _tools/kbgit.py check-trailers
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH
