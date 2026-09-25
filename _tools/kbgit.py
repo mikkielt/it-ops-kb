@@ -73,7 +73,8 @@ _sources.csv   conflict markers (a merge made without our .gitattributes) are dr
                (LATER_COLUMNS: superseded_by) writes the older layout: its header line counts as a repeated header
                and its rows get the new column(s) empty. Rows sharing an id:
                - same normalized url: merged field-wise. With --base, a row identical to the base's row is the stale
-                 copy and yields to the edited one. retrieved_utc/version_or_date come from the row with the latest
+                 copy and yields to the edited one; on a retrieved_utc tie a row in the older layout yields to one in
+                 the current layout (a pre-column branch's union merge doubles every row). retrieved_utc/version_or_date come from the row with the latest
                  retrieved_utc; a non-empty value beats an empty one; superseded_by is kept if either row has it.
                  Two different non-empty title/publisher/licence/artifact_sha256 values: the latest row wins and
                  the conflict is reported (a tie on retrieved_utc, or two different superseded_by, needs a human).
@@ -232,11 +233,11 @@ def layouts(header, later):
     return out
 
 
-def parse_csv(text, name, required=("id",), padded=None):
+def parse_csv(text, name, required=("id",), padded=None, older=None):
     """(header, rows as dicts, repeated header lines dropped) of a ledger; Problem on a malformed row.
     A ledger with LATER_COLUMNS also accepts its older layout (a branch from before the column existed): the widest
     header line wins, older header lines count as repeated headers, and short rows get the later columns empty
-    (their number is added to padded[0] when a list is given)."""
+    (their number is added to padded[0] when a list is given; with a set `older`, the id() of each padded row too)."""
     rows = list(csv.reader(io.StringIO(text)))
     rows = [r for r in rows if r]
     if not rows:
@@ -260,6 +261,10 @@ def parse_csv(text, name, required=("id",), padded=None):
                 raise Problem(f"{name}: record {n} has {len(r)} fields, the header {len(header)} ({r[0][:20]!r}...)")
             r = r + [""] * (len(header) - len(r))
             pad += 1
+            out.append(dict(zip(header, r)))
+            if older is not None:
+                older.add(id(out[-1]))
+            continue
         out.append(dict(zip(header, r)))
     if padded is not None:
         padded.append(pad)
@@ -275,9 +280,11 @@ def id_key(sid):
 MERGE_CONFLICT = ("title", "publisher", "licence", "artifact_sha256")
 
 
-def merge_rows(sid, rows, report):
-    """One row from rows that share an id and a normalized url."""
-    rows = sorted(rows, key=lambda r: r.get("retrieved_utc", ""), reverse=True)  # stable: first seen wins a tie
+def merge_rows(sid, rows, report, older=frozenset()):
+    """One row from rows that share an id and a normalized url. On a retrieved_utc tie a row in the current layout beats
+    one in the older layout (`older`: id() of padded rows): a branch from before the column existed carries the stale
+    copy (a union merge of such a branch keeps every row of both sides, since every row differs by the new column)."""
+    rows = sorted(rows, key=lambda r: (r.get("retrieved_utc", ""), id(r) not in older), reverse=True)  # stable otherwise
     latest = rows[0]
     out = dict(latest)
     for col in latest:
@@ -295,6 +302,8 @@ def merge_rows(sid, rows, report):
         winner = next(r for r in rows if r.get(col))
         if len(vals) > 1 and col in MERGE_CONFLICT:
             tied = [r for r in rows if r.get(col) and r.get("retrieved_utc", "") == winner.get("retrieved_utc", "")]
+            if len({r[col] for r in tied}) > 1 and id(winner) not in older:
+                tied = [r for r in tied if id(r) not in older]  # the older layout's copy is stale
             if len({r[col] for r in tied}) > 1:
                 raise Problem(f"{SOURCES}: {sid} {col} differs between rows with the same retrieved_utc "
                               f"{winner.get('retrieved_utc')!r}: {' vs '.join(vals)}")
@@ -310,8 +319,8 @@ def resolve_sources(text, base_rows, sides, report, upstream=None):
     text, n = strip_markers(lf(text), SOURCES)
     if n:
         report.append(f"{SOURCES}: dropped markers of {n} conflict region(s) (union)")
-    padded = []
-    header, rows, dropped = parse_csv(text, SOURCES, ("id", "url"), padded)
+    padded, older = [], set()
+    header, rows, dropped = parse_csv(text, SOURCES, ("id", "url"), padded, older)
     if dropped:
         report.append(f"{SOURCES}: removed {dropped} repeated header line(s)")
     if padded[0]:
@@ -345,7 +354,7 @@ def resolve_sources(text, base_rows, sides, report, upstream=None):
         if len(urls) == 1:
             if len(g) > 1:
                 merged.append(sid)
-            out.append(merge_rows(sid, g, report))
+            out.append(merge_rows(sid, g, report, older))
             continue
         # a real collision: one id, several urls
         if kbid.is_hash_id(sid):
@@ -358,7 +367,7 @@ def resolve_sources(text, base_rows, sides, report, upstream=None):
             keep = kbid.normalize_url(sides[upstream][sid]["url"])  # already pushed: never renumbered
             report.append(f"{SOURCES}: {sid}: the pushed side ({upstream}) keeps the id")
         for u, rs in urls.items():
-            row = merge_rows(sid, rs, report)
+            row = merge_rows(sid, rs, report, older)
             if u == keep:
                 out.append(row)
                 continue

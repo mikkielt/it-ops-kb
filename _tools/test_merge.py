@@ -78,6 +78,22 @@ class MergeRules(unittest.TestCase):
         with self.assertRaises(kbgit.Problem):  # a row short by a column that is not a later one stays an error
             kbgit.resolve_sources(HEADER + "S102,https://c.example.com/,t,p,l,d,v,,\n".replace(",,\n", ",\n"), None, {}, [])
 
+    def test_older_layout_copy_yields_on_a_tie(self):
+        """A pre-column branch's union merge doubles every row; its stale copy loses a same-date field conflict."""
+        old_h = HEADER.replace(",superseded_by", "")
+        u = "https://github.com/o/r"
+        current = f"S100,{u},T,P,Apache-2.0,2026-09-25,v; confirmed 2026-09-25: x,,a.md,\n"
+        stale = f"S100,{u},T,P,GPL-3.0,2026-09-25,v,,a.md\n"
+        for text in (HEADER + current + old_h + stale, old_h + stale + HEADER + current):
+            report = []
+            _, out, _ = kbgit.resolve_sources(text, None, {}, report)
+            self.assertEqual((out[0]["licence"], out[0]["version_or_date"]), ("Apache-2.0", "v; confirmed 2026-09-25: x"))
+        newer = f"S100,{u},T,P,MIT,2026-09-26,v2,,a.md\n"  # a later date still wins, whatever its layout
+        _, out, _ = kbgit.resolve_sources(HEADER + current + old_h + newer, None, {}, [])
+        self.assertEqual(out[0]["licence"], "MIT")
+        with self.assertRaises(kbgit.Problem):  # two current-layout rows, same date, different licence: a human decides
+            kbgit.resolve_sources(HEADER + current + current.replace("Apache-2.0", "MIT"), None, {}, [])
+
     def test_pushed_side_keeps_a_colliding_id(self):
         a, b = "https://a.example.com/x", "https://b.example.com/y"
         t = HEADER + f"S9999,{a},a,p,l,2026-01-01,v,,,\nS9999,{b},b,p,l,2026-01-01,v,,,\n"
