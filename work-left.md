@@ -1,6 +1,6 @@
 # Work left (as of 2026-09-25)
 
-Branch `claude/relaxed-keller-e8qyl3`, fast-forwarded into GitHub `main`. Done and committed: task 6 (sync fixes, the 6b replay as a test), task 7 (plugin, `kb` MCP server, runbook), the research-skill fixes, and the census tooling (`/kb-census`, `_tools/census.py`); see `git log`. Still open:
+Branch `claude/relaxed-keller-e8qyl3` on GitHub, not yet merged into GitLab `main`. Done and committed: task 6 (sync fixes, the 6b replay as a test), task 7 (plugin, `kb` MCP server, runbook), the research-skill fixes, and the census tooling (`/kb-census`, `_tools/census.py`); see `git log`. Still open:
 
 ## 1. Census 2026-09-25: finish what this environment could not reach
 Log: `_census/2026-09-25.csv` (`python3 _tools/census.py summary _census/2026-09-25.csv`).
@@ -66,9 +66,15 @@ Not done here:
   3. Bring them in with `kbgit.py sync` and `/kb-git-sync`. The procedure is tested on synthetic copies in `_tools/test_research_merge.py`.
 
 ## 4. Token usage: make lookups deterministic
-**Next: `plan-token-optimization.md`** (decided 2026-09-25, not started): tasks T1-T14, in order, including plugin/host-project constraints and the host-project measurement.
+**`plan-token-optimization.md` T1-T14: done** (see `token-usage-report.md`, "Measurement in a host project").
+- **Plugin split:** two plugins, `it-ops-kb` and `it-ops-kb-docs`. There is no root `.mcp.json`: a clone runs `python3 _tools/kb_mcp.py --register-local` once (`/kb-setup` and the web SessionStart hook do it).
+- **Six questions, fresh Sonnet sessions:** 13 turns and 312k input in a clone, 14 turns and 306k in a host project. On 2026-09-25 it was 19 turns and 691k.
+- **Subagent startup:** `kb-lookup` starts at 3.9k tokens.
+- **Review:** `/kb-review-workspace` found all five planted problems in the test host, each with the host line and the kb citation.
+- **Fixed on the way:** the kb server lacked `resultType` (MCP 2026-07-28), so no kb tool loaded from the plugin.
+- **Not done:** an install from gitlab.com itself (see section 2) and a push to GitLab `main`.
 
-Done; see `token-usage-report.md`, "Re-measurement after the changes":
+Earlier; see `token-usage-report.md`, "Re-measurement after the changes":
 - The six measured questions in fresh sessions: -74% input tokens, -72% output tokens, 351 -> 118 s.
 - A `kb:` prompt the kb covers costs no model tokens.
 

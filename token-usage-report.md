@@ -197,4 +197,93 @@ The only pattern still reading whole articles was a multi-part question (T4 in s
 - 233 ledger entries have no explicit topic link. 125 of them (118 in `_gaps.md`, 7 in `_conflicts.md`) are not even linked through their sources, because they name no source id and no path. `rag.py audit` cannot attribute them until someone adds a marker; `rag.py audit --unlinked [DOMAIN]` lists them. This is a one-time triage.
 - The 13 DOC/COMMUNITY tags without a source id need their sources found or their tag changed.
 - Grow `lookup_eval.csv` from real questions that miss: every failed `kb:` lookup is a candidate row.
-- Further optimizations (a lean lookup agent, batch packs, plugin split, aliases, a workspace review skill) and their effect when the kb runs as a plugin in another project are planned in `plan-token-optimization.md`.
+- Further optimizations (a lean lookup agent, batch packs, plugin split, aliases, a workspace review skill) and their effect when the kb runs as a plugin in another project were planned in `plan-token-optimization.md`; they are done, and measured in the next section.
+
+## Measurement in a host project (plan T1-T14, 2026-09-25)
+
+`plan-token-optimization.md` T1-T13 are implemented (commit "feat(kb): token plan T1-T13"). This section is T14: the kb used as a plugin from another project, compared with the same questions in a clone.
+
+### Setup
+- **Host:** a throwaway git repo outside the kb, "a TypeScript MCP server for MECM and AD". It has a short `CLAUDE.md` and four `.ts` files: AdminService calls with Negotiate and an NTLM fallback, `ldapjs` with a simple bind over `ldap://`, MSAL `PublicClientApplication` with broad Graph scopes, and an MCP stdio server that logs to stdout.
+- **Plugin loading:** `claude --plugin-dir <kb clone>` (the docs plugin left out unless stated).
+- **Clone:** this repository, with `kb` and the docs servers registered at local scope (`kb_mcp.py --register-local`).
+- **Runs:** Claude Code 2.1.282, `claude -p "<question>" --model sonnet --output-format stream-json --verbose`, one fresh session per question.
+  - Allowed tools: the kb tools, Skill, Agent, Read, Grep and Glob, plus `rag.py` in the clone.
+  - `--setting-sources project,local` and `ENABLE_CLAUDEAI_MCP_SERVERS=false`, so the operator's own plugins and connectors are not counted.
+  - Each run's stdin was closed: `claude -p` reads stdin, and a first attempt fed it the rest of the question list.
+
+### A bug the host run found
+Claude Code negotiates MCP 2026-07-28 with the kb server. That revision requires `resultType` on every result. The server omitted it, so Claude Code rejected its `tools/list`. The debug log said: "missing required resultType — servers implementing protocol revision 2026-07-28 MUST include it".
+
+The effect: no kb tool reached any plugin session, and the model fell back to ToolSearch loops and a subagent. The same happened with the previous commit, so the plugin had been unusable with this Claude Code version. Every result now carries `resultType: "complete"`, and a test holds it.
+
+### Always-on cost in a host
+From `/context` in the host (`claude plugin details` misses agents listed by path and inline MCP servers, and counts the manual-only skill):
+
+| component | tokens |
+|---|---|
+| `kb_pack` schema (always loaded, T3) | 456 |
+| the other 7 kb tools (deferred: names only until ToolSearch) | 1.9k counted as deferred |
+| agents `it-ops-kb:kb-lookup` + `it-ops-kb:kb-reviewer` (descriptions) | 187 |
+| skill `it-ops-kb:kb-lookup` (description; `/kb-review-workspace` is not listed) | ~150 |
+| docs plugin, if installed | 3 servers' names and instructions, deferred tools |
+
+The `kb_pack` schema is about 450 tokens, not the 150 the plan estimated, because of its description and the `questions` and `response_format` fields. It is still paid once per session, and saves a ToolSearch round trip on the first lookup.
+
+Whole session, "Reply ok": 20.1k tokens in the host, 22.3k in the clone. The clone's extra is `AGENTS.md` (1.5k).
+
+### Six questions, host vs clone (fresh sessions, Sonnet)
+
+| task | host: turns / input / output / time | clone: turns / input / output / time | clone on 2026-09-25 (previous section) |
+|---|---|---|---|
+| fixed context ("ok") | 1 / 20.1k / 4 / 1 s | 1 / 22.3k / 4 / 1 s | 1 / 41.2k |
+| T1 one fact | 2 / 42.1k / 561 / 6 s | 2 / 46.5k / 478 / 5 s | 2 / 84.2k |
+| T2 source id S1216 | 3 / 62.9k / 589 / 6 s | 3 / 68.0k / 558 / 6 s | 4 / 167.3k |
+| T3 medium, one topic | 2 / 43.9k / 1309 / 13 s | 2 / 51.1k / 1655 / 16 s | 3 / 129.3k |
+| T4 cross-topic synthesis | 2 / 48.9k / 1597 / 15 s | 2 / 52.9k / 1777 / 15 s | 6 / 139.5k |
+| T5 not in kb | 2 / 40.5k / 271 / 4 s | 2 / 44.9k / 334 / 4 s | 2 / 83.0k |
+| T6 domain audit | 3 / 67.2k / 3071 / 21 s | 2 / 49.0k / 2666 / 21 s | 2 / 88.1k |
+| **T1-T6** | **14 / 306k / 7398 / 65 s** | **13 / 312k / 7468 / 67 s** | **19 / 691k / 7686 / 118 s** |
+
+What the sessions did:
+- **T1, T3, T4, T5:** one `kb_pack`, then the answer. T3 and T4 put their parts into one call with `questions`. No ToolSearch before the first kb call, in the host too (T3 accepted).
+- **T4 took 2 turns**, against 6 on 2026-09-25 (T4 accepted: 3 or fewer).
+- **T2:** ToolSearch for `kb_source` (deferred), then `kb_source` with `cited`.
+- **T6:** in the host, ToolSearch then `kb_audit`. In the clone, `rag.py audit` through Bash, which needs no tool loading.
+- **T5:** both said the kb does not cover the question, and added nothing from memory.
+- **Answers:** all six were correct in both places, with `path:line`, tags and urls.
+
+How to read the change against 2026-09-25: the clone's input fell from 691k to 312k (-55%) and its turns from 19 to 13. About half of the drop is Claude Code's own: the fixed context fell from 41.2k to 22.3k between versions, and every turn re-sends it. The rest is fewer turns (T2-T4) from batch packs, concise tool output and `kb_pack` being always loaded. The host costs the same as the clone, a little less, because it does not load `AGENTS.md`.
+
+### Subagents (host)
+Each was measured as the first request of the subagent's transcript:
+
+| subagent | model | startup context | whole lookup |
+|---|---|---|---|
+| `it-ops-kb:kb-lookup` (T1: kb tools only, `omitClaudeMd`, `/kb-lookup` preloaded) | Haiku, effort low | **3.9k** | 2 requests, 13.2k input: one batch `kb_pack` with 3 parts, then the answer |
+| general-purpose (same question) | Sonnet | 13.5k | - |
+
+The T1 hypothesis (under 10k, against 50k for a general-purpose agent in the 2026-09-25 setup) holds: 3.9k. The general-purpose agent is itself down to 13.5k in this Claude Code version. The preloaded skill was confirmed in the subagent transcript. `experimental.cacheTtl` stays unset: nothing here spawns the agent repeatedly.
+
+### `/kb-review-workspace` in the host (T13)
+- **Run:** `claude -p "/it-ops-kb:kb-review-workspace"`, Sonnet. It forked into `it-ops-kb:kb-reviewer` (confirmed in the subagent's `.meta.json`).
+- **Tool calls (9):** Glob, `kb_topics_for`, 4 Reads, 2 `kb_pack` with `questions`, 1 `kb_facts`.
+- **Cost:** 11 subagent requests, first request 6.4k tokens; 73.1k input and 3.9k output in all; 32 s.
+- **Findings, all five planted problems:**
+  1. the NTLM fallback against the AdminService (NTLM rejected since 2509);
+  2. a malformed SPN built from a url;
+  3. simple bind over plain LDAP (signing and channel binding);
+  4. `console.log` on a stdio MCP server;
+  5. Graph scopes wider than least privilege.
+- **Check notes:** LAPS password exposure, and device-code flow under Conditional Access.
+- **Citations:** every finding gave the host `path:line`, the kb `path:line`, the tag and the source url. The report named the topics checked without a finding and the ones the kb has no facts for.
+
+### Plugin split and the clone (T7, T1)
+- **Docs servers out of the kb plugin:** a plugin sourced from the root loads the root `.mcp.json` whatever `plugin.json` declares (manifest reference: `.mcp.json` first, then `mcpServers`, later names replace earlier). So the docs servers moved to `.claude-plugin/it-ops-kb-docs/`, a second plugin with its own `submit_feedback` hook. The root has no `.mcp.json`.
+- **A clone** registers `kb` and the three docs servers at local scope (`python3 _tools/kb_mcp.py --register-local`, also run by `/kb-setup` and the web SessionStart hook). The docs tools keep their old names, so the permission rules still apply. The agents list the kb tools under both the plugin and the local names.
+- **No duplicates:** `/context` in the clone showed each tool, skill and agent once, and only `/kb-lookup` in the skill listing (T6).
+- **Not recommended:** `--plugin-dir .` in a clone. It would load the project skills and agents a second time under plugin names.
+
+### Watch
+- `kb_pack`'s always-on schema (456 tokens) could be trimmed if more tools become always loaded.
+- `claude plugin details` undercounts plugins like this one; use `/context`.
