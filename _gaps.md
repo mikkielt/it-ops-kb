@@ -593,3 +593,9 @@ Still open:
   remain readable through GitHub).
 - The Claude Code Docs and MCP docs MCP servers carry no explicit GA statement; they are kept because Anthropic's
   own quickstart documents the first and both report version 1.0.0 with no preview label.
+
+## windows/smart-app-control
+
+- No documented Intune setting, ADMX/Group Policy setting or CSP node for Smart App Control's own mode (Off/On/Evaluation) was found. Tried (2026-09-25, Microsoft Learn MCP search): "Smart App Control policy CSP VerifiedAndReputablePolicyState ApplicationControl Intune configure"; "Smart App Control App Control for Business policy Intune Group Policy manage"; fetched the SAC overview, the test-your-app page and the App Control for Windows page. Only the `VerifiedAndReputablePolicyState` registry value (turn off) and App Control for Business policies surfaced.
+- "Enterprise managed" (48-hour evaluation rule) is not defined on the pages read. Tried: same searches plus "enterprise managed devices turned off evaluation 48 hours domain joined Intune enrolled".
+- The consumer FAQ at support.microsoft.com (linked from S2200) was not read: the Learn MCP server does not serve it. It may state the re-enable path and region list.

@@ -266,3 +266,4 @@ Each source's licence is recorded in `_sources.csv`.
 | `windows/gitlab-runner-windows` | P0 | partial | `windows/gitlab-runner-windows.md` | 11 |
 | `windows/gmsa` | P0 | partial | `windows/gmsa.md` | 6 |
 | `windows/openssh-server` | P0 | complete | `windows/openssh-server.md` | 3 |
+| `windows/smart-app-control` | P1 | partial | `windows/smart-app-control.md` | 7 |

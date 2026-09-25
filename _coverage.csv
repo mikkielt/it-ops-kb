@@ -61,6 +61,7 @@ windows/execution-policy-signing,P0,complete,windows/execution-policy-signing.md
 windows/gitlab-runner-windows,P0,partial,windows/gitlab-runner-windows.md,11
 windows/gmsa,P0,partial,windows/gmsa.md,6
 windows/openssh-server,P0,complete,windows/openssh-server.md,3
+windows/smart-app-control,P1,partial,windows/smart-app-control.md,7
 ad/computer-attributes,P1,complete,ad/computer-attributes.md;ad/computer-attributes.csv,9
 ad/ldap-paging-filters,P1,complete,ad/ldap-paging-filters.md,5
 agents/agent-caching,P1,complete,agents/agent-caching.md,8
