@@ -264,8 +264,9 @@ def id_cases(mutated):
         write(d, "ad/hashid.md", f"---\ntopic: ad/hashid\npriority: P3\nretrieved_utc: 2026-09-25\nsources: [{hid}, S100]\n"
                                  f"status: complete\n---\n# t\n## Facts\n- zanzibarquux fact [DOC {hid}, S100]\n")
     hits = lambda o: json.loads(o)[0]["sources"] == ["S100", hid]  # noqa: E731
+    n_hash = sum(1 for r in kbid.read_sources() if kbid.is_hash_id(r.get("id") or ""))  # the kb's own, before the row
     mutated("hash id cited next to a legacy id", with_hash, [
-        ("check.py", [], 0), ("kbid.py", ["check"], 0, "hash_ids=1"),
+        ("check.py", [], 0), ("kbid.py", ["check"], 0, f"hash_ids={n_hash + 1}"),
         ("rag.py", ["src", hid, "S100"], 0, "hash id test page"),
         ("rag.py", ["src", hid.upper()], 0, "hash id test page"),
         ("rag.py", ["--json", "search", "zanzibarquux", "-u"], 0, "", hits),

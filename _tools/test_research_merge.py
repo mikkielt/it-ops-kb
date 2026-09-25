@@ -6,7 +6,7 @@
 ResearchMergeInGit replays task 6b in a temp dir, never against the real origin:
   - the kb as it is now (history plus the working tree) is pushed as `main` to a throwaway bare remote;
   - research-a and research-b fork from FORK (6bc0981: no kbgit.py, no hooks, _sources.csv without superseded_by)
-    and both take the legacy ids S2205.. for different urls and the answer id QK1, with the same `_Agent: kb-research_`
+    and both take the next legacy ids (S2205.. today) for different urls and the answer id QK1, with the same `_Agent: kb-research_`
     footer, hand-edited coverage rows, and (B) a front-matter edit next to one upstream made since;
   - person A: `git -c merge.conflictStyle=diff3 rebase origin/main`, install-hooks, `sync --push`;
   - person B: the same rebase stops on the article (and the README table); it is resolved as /kb-git-sync says
@@ -29,10 +29,23 @@ GIT = shutil.which("git")
 FORK = "6bc0981ec03eab2c2c53c5562778b3967fbb5a9f"
 A_URLS = [f"https://learn.microsoft.com/en-us/power-apps/maker/data-platform/research-merge-a{i}" for i in range(1, 6)]
 B_URLS = [f"https://docs.keeper.io/en/research-merge/b{i}" for i in range(1, 4)]
-Q_A = "How does Dataverse sync with an on-prem SQL Server estate?"
-Q_B = "Can Keeper Secrets Manager hold the agent's API tokens?"
+Q_A = "Research-merge test: how does Dataverse reach an on-prem SQL Server?"
+Q_B = "Research-merge test: can Keeper Secrets Manager hold agent tokens?"
+ARTICLE_A = "powerbi/research-merge-test-dataverse.md"
 ARTICLE_B = "agents/api-tokens-issue-and-store.md"
+KEEPER = "### Research-merge test: Keeper Secrets Manager"
 FOOTER = "_Agent: kb-research_"
+
+
+def next_legacy():
+    """The number both branches take: the next legacy id after the kb's own (6bc0981 era writers took S2205)."""
+    with open(os.path.join(KB, "_sources.csv"), encoding="utf-8", newline="") as f:
+        nums = [int(r["id"][1:]) for r in csv.DictReader(f) if re.fullmatch(r"S\d+", r["id"] or "")]
+    return max(nums + [2204]) + 1
+
+
+FIRST = next_legacy()
+LEG = [f"S{FIRST + i}" for i in range(5)]
 
 
 def has_fork():
@@ -126,40 +139,39 @@ class ResearchMergeInGit(unittest.TestCase):
 
     @classmethod
     def research_a(cls, d):
-        cls.append(d, "_sources.csv", rows9(2205, A_URLS, "Microsoft", "Microsoft Learn terms of use (paraphrased; quote <=25 words)"))
-        ids = [f"S{2205 + i}" for i in range(5)]
-        facts = ["Dataverse reaches an on-prem SQL Server only through the on-premises data gateway. [DOC S2205]",
-                 "Virtual tables expose external rows without copying them. [DOC S2206]",
-                 "Azure Synapse Link replaces the retired Export to Data Lake service. [DOC S2207]",
-                 "Dataflows can load SQL Server tables into Dataverse on a schedule. [DOC S2208]",
-                 "Fabric shortcuts read Dataverse tables without an export job. [DOC S2209]",
-                 "The research answer is `_answers.md` QK1. [DER S2205, S2206]",
+        cls.append(d, "_sources.csv", rows9(FIRST, A_URLS, "Microsoft", "Microsoft Learn terms of use (paraphrased; quote <=25 words)"))
+        facts = [f"Dataverse reaches an on-prem SQL Server only through the on-premises data gateway. [DOC {LEG[0]}]",
+                 f"Virtual tables expose external rows without copying them. [DOC {LEG[1]}]",
+                 f"Azure Synapse Link replaces the retired Export to Data Lake service. [DOC {LEG[2]}]",
+                 f"Dataflows can load SQL Server tables into Dataverse on a schedule. [DOC {LEG[3]}]",
+                 f"Fabric shortcuts read Dataverse tables without an export job. [DOC {LEG[4]}]",
+                 f"The research answer is `_answers.md` QK1. [DER {LEG[0]}, {LEG[1]}]",
                  "The exact refresh latency is not documented. [UNK]"]
-        cls.write(d, "powerbi/dataverse-sql-sync.md",
-                  f"---\ntopic: powerbi/dataverse-sql-sync\npriority: P3\napplies_to: \"Dataverse\"\nretrieved_utc: 2026-09-25\n"
-                  f"sources: [{', '.join(ids)}]\nstatus: partial\n---\n\n# Dataverse and an on-prem SQL Server estate\n\n"
+        cls.write(d, ARTICLE_A,
+                  f"---\ntopic: {ARTICLE_A[:-3]}\npriority: P3\napplies_to: \"Dataverse\"\nretrieved_utc: 2026-09-25\n"
+                  f"sources: [{', '.join(LEG)}]\nstatus: partial\n---\n\n# Dataverse and an on-prem SQL Server estate\n\n"
                   "## Summary\n\nResearch-a.\n\n## Facts\n\n" + "".join(f"- {f}\n" for f in facts)
                   + "\n## Reference\n\n- powerbi/on-prem-gateway-sql.md\n\n## Examples\n\n- `PL-SRV-0042` in `corp.example.com`.\n")
-        cls.before_r1(d, answer(Q_A, ["Through the gateway, with virtual tables or dataflows. [DOC S2205, S2206, S2208]"],
-                                "powerbi/dataverse-sql-sync.md"))
-        cls.append(d, "_gaps.md", "\n## powerbi/dataverse-sql-sync\n\n- Refresh latency of virtual tables: not on the pages searched. (research-a)\n")
+        cls.before_r1(d, answer(Q_A, [f"Through the gateway, with virtual tables or dataflows. [DOC {LEG[0]}, {LEG[1]}, {LEG[3]}]"],
+                                ARTICLE_A))
+        cls.append(d, "_gaps.md", f"\n## {ARTICLE_A[:-3]}\n\n- Refresh latency of virtual tables: not on the pages searched. (research-a)\n")
         cls.write(d, "_coverage.csv", cls.read(d, "_coverage.csv").replace(
             "powerbi/configmgr-views,P2,partial,powerbi/configmgr-views.md,2\n",
-            "powerbi/configmgr-views,P2,partial,powerbi/configmgr-views.md,2\npowerbi/dataverse-sql-sync,P3,partial,powerbi/dataverse-sql-sync.md,5\n"))
+            f"powerbi/configmgr-views,P2,partial,powerbi/configmgr-views.md,2\n{ARTICLE_A[:-3]},P3,partial,{ARTICLE_A},5\n"))
 
     @classmethod
     def research_b(cls, d):
-        cls.append(d, "_sources.csv", rows9(2205, B_URLS, "Keeper Security", "not verified (summarized only)"))
+        cls.append(d, "_sources.csv", rows9(FIRST, B_URLS, "Keeper Security", "not verified (summarized only)"))
         t = cls.read(d, ARTICLE_B)
-        t = t.replace("S2056, S2057]\nstatus: complete\n", "S2056, S2057, S2205, S2206, S2207]\nstatus: partial\n", 1)
-        t = t.replace("\n## Reference: each option's threat", "\n### External secret stores: Keeper Secrets Manager\n\n"
-                      "- Keeper Secrets Manager serves secrets through a zero-knowledge client device. [COMMUNITY S2205]\n"
-                      "- Its Python SDK binds with a one-time access token. [COMMUNITY S2206]\n"
+        t = t.replace("S2056, S2057]\nstatus: complete\n", f"S2056, S2057, {', '.join(LEG[:3])}]\nstatus: partial\n", 1)
+        t = t.replace("\n## Reference: each option's threat", f"\n{KEEPER}\n\n"
+                      f"- Keeper Secrets Manager serves secrets through a zero-knowledge client device. [COMMUNITY {LEG[0]}]\n"
+                      f"- Its Python SDK binds with a one-time access token. [COMMUNITY {LEG[1]}]\n"
                       "- Rotation of the client device's config is not described. [UNK]\n"
-                      "- The research answer is `_answers.md` QK1. [COMMUNITY S2207]\n"
+                      f"- The research answer is `_answers.md` QK1. [COMMUNITY {LEG[2]}]\n"
                       "\n## Reference: each option's threat", 1)
         cls.write(d, ARTICLE_B, t)
-        cls.before_r1(d, answer(Q_B, ["Yes, through its SDK and a client device per host. [COMMUNITY S2205, S2206]",
+        cls.before_r1(d, answer(Q_B, [f"Yes, through its SDK and a client device per host. [COMMUNITY {LEG[0]}, {LEG[1]}]",
                                       "Open: config rotation. [UNK]"], ARTICLE_B))
         cls.write(d, "_coverage.csv", cls.read(d, "_coverage.csv").replace(
             "agents/api-tokens-issue-and-store,P1,complete,", "agents/api-tokens-issue-and-store,P1,partial,"))
@@ -168,17 +180,20 @@ class ResearchMergeInGit(unittest.TestCase):
 
     @classmethod
     def resolve_article(cls, d):
-        """The front-matter conflict, resolved by meaning: the ids the body cites, partial (an [UNK] is left), files: union."""
+        """Resolved by meaning, as /kb-git-sync says: facts added on both sides are both kept (upstream's first); the
+        front matter gets the ids the resolved body cites, partial (an [UNK] is left) and the union of files:."""
+        rx = re.compile(r"^<<<<<<< [^\n]*\n(.*?)^(?:\|\|\|\|\|\|\| [^\n]*\n.*?)?^=======\n(.*?)^>>>>>>> [^\n]*\n", re.S | re.M)
         t = cls.read(d, ARTICLE_B)
-        m = re.search(r"^<<<<<<< .*?^>>>>>>> [^\n]*\n", t, re.S | re.M)
-        if not m:
-            return
-        region = t[m.start():m.end()]
-        files = re.search(r"^files: .*\n", region, re.M)
-        body = t[m.end():]
-        cited = sorted(set(kbid.SOURCE_ID.findall(body)), key=kbid.sort_key)
-        new = f"sources: [{', '.join(cited)}]\nstatus: {'partial' if '[UNK]' in body else 'complete'}\n" + (files.group(0) if files else "")
-        cls.write(d, ARTICLE_B, t[:m.start()] + new + body)
+        fm = [m for m in rx.finditer(t) if "sources:" in m.group(0)]
+        t = rx.sub(lambda m: m.group(0) if "sources:" in m.group(0) else m.group(1) + m.group(2), t)
+        m = next(rx.finditer(t), None) if fm else None
+        if m:
+            body = t[m.end():]
+            files = re.search(r"^files: .*\n", m.group(0), re.M)
+            cited = sorted(set(kbid.SOURCE_ID.findall(body)), key=kbid.sort_key)
+            new = f"sources: [{', '.join(cited)}]\nstatus: {'partial' if '[UNK]' in body else 'complete'}\n" + (files.group(0) if files else "")
+            t = t[:m.start()] + new + body
+        cls.write(d, ARTICLE_B, t)
 
     # ---------------------------------------------------------------- helpers
 
@@ -246,20 +261,21 @@ class ResearchMergeInGit(unittest.TestCase):
 
     def test_pushed_ids_stay_and_collisions_get_hash_ids(self):
         src = self.sources()
-        for i, u in enumerate(A_URLS):
-            self.assertEqual(src[f"S{2205 + i}"]["url"], u)
+        for sid, u in zip(LEG, A_URLS):
+            self.assertEqual(src[sid]["url"], u)
         hb = [kbid.source_id(u) for u in B_URLS]
         for h, u in zip(hb, B_URLS):
             self.assertEqual(src[h]["url"], u)
         art = self.read(self.v, ARTICLE_B)
-        keeper = art[art.index("### External secret stores: Keeper"):art.index("## Reference: each option")]
-        self.assertNotRegex(keeper + art.split("---")[1], r"S220[5-9]\b")
+        keeper = art[art.index(KEEPER):art.index("## Reference: each option")]
+        for sid in LEG:
+            self.assertNotRegex(keeper + art.split("---")[1], rf"{sid}\b")
         for h in hb:
             self.assertIn(h, keeper)
             self.assertIn(h, art.split("---")[1], "front matter sources: must list the renumbered ids")
         self.assertIn("files: [agents/api-tokens.csv, agents/secret-storage-options.csv]", art)
         self.assertIn("status: partial", art)
-        self.assertIn("[DOC S2205]", self.read(self.v, "powerbi/dataverse-sql-sync.md"))
+        self.assertIn(f"[DOC {LEG[0]}]", self.read(self.v, ARTICLE_A))
 
     def test_answers_distinct_and_whole(self):
         ans = self.read(self.v, "_answers.md")
@@ -271,7 +287,7 @@ class ResearchMergeInGit(unittest.TestCase):
             sec = sec[:sec.index("\n## ", 1)].rstrip()
             self.assertTrue(sec.endswith(FOOTER), sec)
         self.assertIn(f"`_answers.md` {qb}.", self.read(self.v, ARTICLE_B))
-        self.assertIn(f"`_answers.md` {qa}.", self.read(self.v, "powerbi/dataverse-sql-sync.md"))
+        self.assertIn(f"`_answers.md` {qa}.", self.read(self.v, ARTICLE_A))
 
     def test_b_trailers_name_only_b_and_log_finds_it(self):
         hb = kbid.source_id(B_URLS[0])
@@ -280,7 +296,7 @@ class ResearchMergeInGit(unittest.TestCase):
         tb = recs["docs(kb): research-b"]
         self.assertIn(f"KB-Answers: {kbid.answer_id(Q_B)}\n", tb + "\n")
         self.assertIn("KB-Topics: agents/api-tokens-issue-and-store", tb)
-        self.assertNotIn("S2205", tb)
+        self.assertNotIn(LEG[0], tb)
         log = self.kbgit(self.v, "log", hb)
         self.assertEqual(log.returncode, 0, log.stdout)
         self.assertIn("docs(kb): research-b", log.stdout)
