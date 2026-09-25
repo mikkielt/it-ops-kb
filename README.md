@@ -76,7 +76,7 @@ python _tools/fetch.py --diff --topic auth/kerberos     # re-fetch a topic's sou
 python _tools/fetch.py --diff --dir dsc --full --json   # same for a directory, with unified text diffs, as JSON
 python _tools/fetch.py --diff --older-than 30           # only sources not fetched in 30 days (also --file PATH, --source S123)
 python _tools/fetch.py --status --file auth/kerberos.md # offline: last fetch and change dates
-python _tools/stress_test.py                           # robustness tests of the tools on throwaway kb copies (~10 s; --scale N, -k NAME)
+python _tools/stress_test.py                           # robustness tests of the tools on throwaway kb copies (about 35 s; --scale N, -k NAME)
 python _tools/tests.py                                 # CI: docs cohesion + leak scan (reviewed exceptions in _tools/tests_allowlist.txt)
 ```
 

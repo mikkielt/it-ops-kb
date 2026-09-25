@@ -18,7 +18,7 @@ Run each command on its own (no `;`, `&&`, pipes into other tools or loops): the
 Run each and record exit code and last line:
 - `python3 _tools/check.py` (expect `errors=0`)
 - `python3 _tools/fetch.py --offline` (expect `mismatch=0 unknown=0`)
-- `python3 _tools/stress_test.py` (expect `0 failed`; takes about 10 s)
+- `python3 _tools/stress_test.py` (expect `0 failed`; takes about 35 s)
 - `python3 _tools/tests.py` (expect `OK`; this is what CI runs)
 - `python3 _tools/rag.py search "kerberos delegation" -k 3 -u` (expect hits; `->` url lines appear only under chunks that cite a source)
 
