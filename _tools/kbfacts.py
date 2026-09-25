@@ -23,7 +23,7 @@ a path of an existing topic file in its text, or a `## <domain>/<slug>` section 
 (a source id in the entry whose `used_in` names the topic's files). New entries carry an explicit
 `topic: <domain>/<slug>` marker.
 """
-import csv, io, math, os, re, sys
+import csv, hashlib, io, math, os, re, sys
 from collections import Counter, defaultdict
 
 TOOLS = os.path.dirname(os.path.abspath(__file__))
@@ -394,6 +394,7 @@ ALIAS_WEIGHT = 0.5  # an alias the question did not use counts half as much as a
 TITLE_WEIGHT = 2    # the article title counts twice in each of its units
 SUMMARY_WEIGHT = 0.1  # the article's Summary text is indexed into each of its units at this weight
 PART_WEIGHT = 0.2  # a part of a compound identifier the question used (US_NPI -> npi): helps, never dominates
+EXPANSION_WEIGHT = 1.0  # words of the generated questions a fact answers (doc2query, _tools/doc2query/)
 UNTAGGED_WEIGHT = 0.8  # an untagged row or line (reference data, Summary, Examples) ranks below a tagged fact
 
 
@@ -450,8 +451,26 @@ def summary_text(rel):
     return m.group(1) if m else ""
 
 
+def expansions():
+    """{fact key: [generated questions]} from _tools/doc2query/expansions.csv; {} when absent or KB_DOC2QUERY=0."""
+    path = os.path.join(TOOLS, "doc2query", "expansions.csv")
+    if os.environ.get("KB_DOC2QUERY") == "0" or not os.path.exists(path):
+        return {}
+    out = defaultdict(list)
+    with open(path, encoding="utf-8", newline="") as f:
+        for r in csv.DictReader(f):
+            out[r["key"]].append(r["question"])
+    return out
+
+
+def fact_key(text):
+    """The doc2query key of a fact: sha256 of its whitespace-collapsed text, 12 hex digits."""
+    return hashlib.sha256(" ".join(text.split()).encode()).hexdigest()[:12]
+
+
 def _corpus(domain):
     metas = articles()
+    exps = expansions()
     us = units(domain, untagged=True)  # untagged rows and lines too: a word the kb has is never "not in the kb"
     summaries = {}
     for u in us:
@@ -467,6 +486,9 @@ def _corpus(domain):
                 summaries[art] = Counter(terms(summary_text(art)))
             for t, c in summaries[art].items():
                 tf[t] += SUMMARY_WEIGHT * c
+        for q in exps.get(fact_key(u["text"]), ()) if exps and u["tags"] else ():
+            for t in terms(q):
+                tf[t] += EXPANSION_WEIGHT  # ranks the fact for other wordings; never a verdict word (not in own)
         u["tf"] = tf
     return us
 

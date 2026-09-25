@@ -340,4 +340,34 @@ Checked how well `pack` finds what the kb actually holds, beyond the eval set:
 
 ### Left, and how it is handled
 - **Adjacent unanswerable questions** (Teams shared-channel size, SharePoint upload limit) match related facts. Retrieval scores cannot separate these, a known limit of answerability signals. In fresh sessions the model read the pack and said the kb does not cover them, at the cost of one extra lookup.
-- **Pure paraphrase** ("required keyword" vs "needs at least one"): only document expansion (doc2query) addresses it; a pilot follows.
+- **Pure paraphrase** ("required keyword" vs "needs at least one"): only document expansion (doc2query) addresses it; see the pilot below.
+
+## doc2query pilot (2026-09-25)
+
+Protocol and tool: `_tools/doc2query/README.md`, `python3 _tools/doc2query.py`.
+
+- **Arms:** 12 pilot articles (169 facts) and 12 control articles (185 facts), stratified by domain (`arms.json`, seed 7).
+- **Generation:** Haiku wrote 3 questions per pilot fact, 507 in all. The Doc2Query-- filter (keep a question only if `pack` without expansion reaches its fact's article) kept 473 and dropped 34.
+- **Blind test:** Sonnet wrote one paraphrased question for each of 80 facts, 40 per arm, from the fact text alone. It never saw the generated questions.
+
+| expansion weight | pilot: line in pack | control: line in pack | eval | off-kb `good` | mean pack (chars) |
+|---|---|---|---|---|---|
+| off | 36/40 (90%) | 38/40 | 37/37 | 2/20 | 3345 |
+| 0.3 | 37/40 | 38/40 | 37/37 | 2/20 | 3262 |
+| **1.0 (chosen)** | **39/40 (97.5%)** | 38/40 | 37/37 | 2/20 | 3256 |
+| 2.0 | 39/40 | 38/40 | 37/37 | 2/20 | 3215 |
+
+- **What it fixed:** the three misses at 0.3 were pure paraphrase: "app-only vs delegated permission model", "RBAC permission needed to send a notification", "registry key to enable verbose kerberos logging".
+- **No harm elsewhere:** the 72 audit questions stayed at 68/72, the keyword probes did not change, and packs got slightly smaller.
+- **Verdicts unchanged by design:** expansion words rank facts but are never verdict words, so a generated question cannot turn an off-kb question into `good`.
+
+**Caveats**
+- 40 questions per arm is a small sample: the gain is 3 questions.
+- The weight was chosen on the test questions themselves.
+- Generated and test questions both come from models, and may share a phrasing style that real users do not.
+
+**Decision:** keep the pilot expansions at weight 1.0. Before expanding the whole kb (about 4,400 facts, about 13k generated questions on Haiku), confirm on a fresh blind set with new arms (`doc2query.py split --seed N`).
+
+**Maintenance:**
+- After editing facts, `doc2query.py stale` lists the expansion keys whose fact text changed. Regenerate those with `batch` and `ingest`.
+- A stale key does no harm: nothing matches it.

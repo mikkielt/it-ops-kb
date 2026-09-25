@@ -1,0 +1,31 @@
+{
+ "seed": 7,
+ "pilot": [
+  "autopilot/lifecycle.md",
+  "prior-art/secret-vault-encryption.md",
+  "standards/owasp.md",
+  "mcp/elicitation.md",
+  "defender/permissions-limits.md",
+  "logs/sources.md",
+  "windows/openssh-server.md",
+  "sqlserver/sp-getapplock.md",
+  "claude/hooks.md",
+  "privacy/presidio-recognizer-yaml.md",
+  "intune/co-management.md",
+  "mecm/collect-client-logs.md"
+ ],
+ "control": [
+  "autopilot/device-identity.md",
+  "mcp/python-sdk.md",
+  "defender/machine-resource.md",
+  "logs/ecs-log-fields.md",
+  "windows/gitlab-runner-windows.md",
+  "sqlserver/linux-container.md",
+  "claude/tool-output-limits.md",
+  "privacy/nist-sp800-38g.md",
+  "intune/collect-diagnostics.md",
+  "mecm/adminservice.md",
+  "dsc/cli-reference.md",
+  "ad/computer-attributes.md"
+ ]
+}

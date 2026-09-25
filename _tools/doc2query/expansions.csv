@@ -1,0 +1,474 @@
+key,question
+a1fc32598099,Autopilot duplicate Entra device objects
+a1fc32598099,Why does Autopilot create duplicate device objects in hybrid join scenarios?
+ac21ade81b8b,Autopilot naming variables hybrid join
+ac21ade81b8b,What naming variables does Autopilot support in hybrid join naming?
+ac21ade81b8b,Can you use SERIAL or other variables in Autopilot device names?
+91f6e13f36d1,Intune Connector Active Directory requirements
+91f6e13f36d1,What are the minimum Windows Server and .NET Framework versions for ODJ connector?
+91f6e13f36d1,Intune Connector for AD dependencies
+7b6ae1ca761b,motherboard replacement Autopilot hash
+7b6ae1ca761b,What happens to the device hash when hardware significantly changes?
+7b6ae1ca761b,Autopilot registration after motherboard replacement
+d3ef2d560b59,Autopilot motherboard replacement steps
+d3ef2d560b59,How do you re-register a device after replacing the motherboard?
+d3ef2d560b59,Autopilot device imaging and registration after hardware swap
+5bffe074599f,Autopilot BIOS fields captured
+5bffe074599f,What BIOS information does Autopilot record?
+5bffe074599f,Autopilot hardware hash composition
+54a9142d191f,when to deregister Autopilot devices
+54a9142d191f,Should devices be deregistered when they're repaired or end of life?
+54a9142d191f,device deregistration policy Autopilot
+a59397477901,Autopilot device deregistration order
+a59397477901,Do you delete from Intune or Autopilot first?
+a59397477901,proper device removal from Autopilot steps
+7702b51edff7,Entra joined deregistration cleanup
+7702b51edff7,Should the AD computer object be deleted after deregistering a hybrid-joined device?
+7702b51edff7,post-deregistration device object removal hybrid join
+078df9305980,Entra device object removal after deregistration
+078df9305980,When does the Entra device get removed after Autopilot deregistration?
+078df9305980,MDM enrollment and device object cleanup
+3acbd2e2f91d,Graph API Autopilot deregister endpoint
+3acbd2e2f91d,How do you deregister a device through Microsoft Graph?
+3acbd2e2f91d,windowsAutopilotDeviceIdentities DELETE endpoint
+6c6f1f61bb47,deleting Autopilot device in Entra consequences
+6c6f1f61bb47,What happens when you manually delete a system-managed device in Entra?
+6c6f1f61bb47,Autopilot device Entra deletion risks
+737dd9cfdacb,MCP tool matcher wildcard syntax
+10da3ef29913,PreToolUse mcp_server field structure
+10da3ef29913,What should PreToolUse trust decisions be based on?
+10da3ef29913,MCP server name vs source in tool permissions
+42e3693e2896,PreToolUse permission decision types
+42e3693e2896,What are the possible values for PreToolUse permissionDecision?
+42e3693e2896,PreToolUse hook input fields
+1b4df7ac8955,updatedInput permission hook replacement
+1b4df7ac8955,How does modifying updatedInput affect permission evaluation?
+1b4df7ac8955,replacing tool input in permission rules
+f093b80cf3fe,multiple PreToolUse rules precedence order
+f093b80cf3fe,deny defer ask allow priority
+a7f90cc855f4,PreToolUse denial exit codes
+a7f90cc855f4,How do you deny a tool in a PreToolUse hook?
+a7f90cc855f4,exit code 2 tool rejection
+1862745fb28f,PreToolUse deprecated fields
+1862745fb28f,Are approve and block fields still supported?
+1862745fb28f,decision field deprecation PreToolUse
+f78b0f88c54b,requiresUserInteraction tool approval bypass
+f78b0f88c54b,Can hooks skip approval for tools marked requiresUserInteraction?
+f78b0f88c54b,anthropic annotation tool approval
+49f51fd81d42,PostToolUse output modification options
+49f51fd81d42,How can you modify tool output in PostToolUse hooks?
+49f51fd81d42,PostToolUse decision and reason fields
+618e7ab1d182,updatedToolOutput feature version history
+618e7ab1d182,When was updatedToolOutput added for all tool types?
+a5b3f3afa66a,tool output modification analytics visibility
+a5b3f3afa66a,Does updatedToolOutput affect what's recorded in system logs?
+a5b3f3afa66a,hook modified output observability
+29496656e6bd,MCP tool output schema validation hooks
+29496656e6bd,Are MCP outputs validated when modified by hooks?
+29496656e6bd,hook output replacement validation
+d82b0763da82,hook types PreToolUse PostToolUse support
+d82b0763da82,Which hook types support tool permission controls?
+d82b0763da82,PreToolUse compatible hook types
+927846748f20,MCP Elicitation hook request handling
+927846748f20,How does an Elicitation hook respond to choices?
+927846748f20,MCP server elicitation request structure
+4dbaa624f401,ElicitationResult hook action override
+4dbaa624f401,Can you change the elicitation action after user response?
+4dbaa624f401,ElicitationResult content modification
+cafc5fd00fd0,Elicitation hook release version
+cafc5fd00fd0,When were Elicitation hooks introduced?
+d3fbd48af67c,Defender API list machines permissions
+d3fbd48af67c,What permissions do you need to list devices in Defender?
+d3fbd48af67c,Microsoft Defender machine enumeration
+34a4f11d256b,Defender delegated API device filtering
+34a4f11d256b,How are Defender API results filtered for delegated access?
+34a4f11d256b,View Data role device group visibility
+7c336779935e,Defender get machine by ID permissions
+7c336779935e,What permissions are required for single machine lookup?
+7c336779935e,Defender machine detail endpoint access
+699ae8b243d9,Defender list machines API rate limits
+699ae8b243d9,What are the throttling limits for list machines?
+699ae8b243d9,Defender API call frequency restrictions
+8b40e1cd0e70,Defender get machine rate limit throttling
+8b40e1cd0e70,How many calls per minute on the get machine endpoint?
+8b40e1cd0e70,Defender API call quotas
+c0e26daf969e,HTTP 429 Retry-After throttling
+c0e26daf969e,How do you know when to retry after API throttling?
+c0e26daf969e,rate limit recovery timing
+d242b6903977,Defender API 403 error codes
+d242b6903977,What different 403 error types can the API return?
+d242b6903977,API error code meanings
+ee52313c5754,API request body parameter case sensitivity
+ee52313c5754,Are API fields case-sensitive in the request body?
+ee52313c5754,Defender API formatting rules
+d03a42830cd9,Defender API base URL and endpoints
+d03a42830cd9,What's the endpoint URL for Defender API?
+d03a42830cd9,Microsoft security API regional hosts
+9d2030a2e51b,Defender API authentication context types
+9d2030a2e51b,What's the difference between application and delegated context?
+9d2030a2e51b,API access mode options
+ce539553d355,Defender user context API setup
+ce539553d355,How do you configure delegated permissions for Defender API?
+ce539553d355,WindowsDefenderATP API permission registration
+0cabfbada00d,Defender legacy resource token audience
+0cabfbada00d,Why might api.security.microsoft.com fail with 403?
+0cabfbada00d,legacy securitycenter resource requirement
+8709ad736799,co-management supported workloads
+8709ad736799,Which workloads can be managed by Intune in co-management?
+8709ad736799,ConfigMgr Intune workload types
+5f823a7dc0c6,switching workload back to ConfigMgr impact
+76904acfb82d,Device Configuration workload dependencies
+76904acfb82d,Does changing Device Configuration affect other workloads?
+76904acfb82d,ConfigMgr workload coupling
+0061a7d0f15f,ConfigMgr baselines Intune Device Configuration
+0061a7d0f15f,Can ConfigMgr deploy when Device Configuration is in Intune?
+0061a7d0f15f,co-managed baseline deployment
+848bbef8be03,settings catalog Device Configuration control
+848bbef8be03,What determines settings catalog policy application?
+848bbef8be03,Intune Device Configuration workload scope
+143bf4ef176c,Resource access workload deprecation timeline
+143bf4ef176c,co-management workload sunset date
+1756736f1100,Intune compliance policy custom baseline
+1756736f1100,How do you add ConfigMgr baselines to compliance assessment?
+1756736f1100,compliance evaluation configuration
+74d290b38f09,Intune PowerShell scripts co-managed Windows 10
+74d290b38f09,Do Intune scripts run on co-managed devices?
+74d290b38f09,Client apps workload script execution
+5a34cd132973,co-management workload slider options
+5a34cd132973,What are the three workload management modes?
+5a34cd132973,Configuration Manager Pilot Intune slider
+cb7882216826,Pilot Intune policy unassignment behavior
+cb7882216826,Are policies removed when unassigned in Pilot mode?
+cb7882216826,policy cleanup Intune pilot workload
+d0215dade503,MDM policy sync workload switch
+d0215dade503,What happens to policy when you switch a workload?
+d0215dade503,Intune synchronization after workload change
+1b50e014cb1d,ConfigMgr co-management console navigation
+1b50e014cb1d,Where do you configure workloads in the ConfigMgr console?
+1b50e014cb1d,Cloud Attach Cloud Services path
+199cea91682e,enrollment paths co-management
+199cea91682e,How do devices become co-managed?
+199cea91682e,Windows co-management registration flows
+71e77857f6c3,co-management licensing requirements
+71e77857f6c3,What licenses are needed for co-management?
+26d481838de0,ConfigMgr internet device management CMG
+26d481838de0,Can ConfigMgr manage internet devices without CMG?
+e972896699cb,co-managed status WMI class
+e972896699cb,How do you query if a device is co-managed?
+e972896699cb,SMS_Client_ComanagementState properties
+7b717e9fe14d,co-managed devices WQL query fields
+7b717e9fe14d,What WMI properties show co-management status?
+7b717e9fe14d,MDMProvisioned WMI field
+0252e1bfc86b,what does CoMgmtSettingsProd count
+0252e1bfc86b,How are co-management deployment policies tracked - by ConfigMgr or Intune enrollment?
+0252e1bfc86b,does Intune enrollment count towards co-management policy deployment
+33f543130330,co-managed device token type windows 10 1803
+33f543130330,What token does a new co-managed device use for enrollment?
+33f543130330,does a co-managed computer register with Azure AD using device or user token
+052d156a36c1,CoManagementFlags documentation
+052d156a36c1,Where can I find the per-workload bitmask values for co-management?
+052d156a36c1,what do the co-management workload flags mean
+859daf1f34a0,MDM event log channels
+859daf1f34a0,How do I enable MDM debug logging in Event Viewer?
+859daf1f34a0,where are mobile device management diagnostic logs stored
+741808a3da9b,windows autopilot event viewer location
+741808a3da9b,Where can I find Autopilot diagnostic logs?
+741808a3da9b,how to check autopilot deployment logs
+f5e06604f545,Modern Deployment Diagnostics Provider Autopilot channel name
+f5e06604f545,What is the full event log channel name for Autopilot diagnostics?
+f5e06604f545,autopilot wevtutil channel
+828f45b635b4,hybrid join failure event ids
+828f45b635b4,Where are hybrid join error logs located in Event Viewer?
+6729ebdf98b0,User Device Registration event log channel
+6729ebdf98b0,What is the full event log channel name for hybrid join?
+6729ebdf98b0,device registration diagnostic events wevtutil
+82c0d62ece42,PRT acquisition event ids 1006 1007
+82c0d62ece42,where are CloudAP diagnostic logs stored
+0918b703ccb6,ESP provisioning event log file paths
+0918b703ccb6,how to export ESP provisioning logs
+c06a33c9ac8e,Intune Connector for Active Directory event logs
+c06a33c9ac8e,Where did the IMCAC logs move to in Event Viewer?
+c06a33c9ac8e,ODJ connector diagnostics location
+85a627d8b2fc,enable group policy service debug logging
+85a627d8b2fc,How do I enable GPSvc debug logging on Windows?
+26baebf7d966,capture group policy applied settings
+26baebf7d966,How do I export Group Policy events from Event Viewer?
+26baebf7d966,what does gpresult show
+cb6b76715f42,netlogon debug logging windows
+cb6b76715f42,How do I enable Netlogon debug logging for domain authentication issues?
+cb6b76715f42,where is netlogon debug log file
+e166457ffe53,netlogon.log file size limit
+e166457ffe53,How large can the netlogon.log file get before it rotates?
+e166457ffe53,netlogon backup log file size
+f26340f9f752,kerberos authentication debug logging
+f26340f9f752,How do I enable Kerberos debug logging in Windows?
+f26340f9f752,kerberos events system log
+72dc97ced1e2,windows update log file location
+72dc97ced1e2,How do I generate a Windows Update log file?
+72dc97ced1e2,get-windowsupdatelog powershell command
+c4a57dbcdc7e,CBS DISM log file paths
+c4a57dbcdc7e,system update service logs windows
+3db908a5b771,windows setup logs panther
+1a7965ab695f,IntuneManagementExtension log location
+1a7965ab695f,Where are the Intune Management Extension logs?
+ff97a822963a,tenant attach logs configmgr
+5e1f7ab5865a,DeviceManagement-Enterprise-Diagnostics-Provider Operational channel
+5e1f7ab5865a,Is there an Operational channel for Device Management diagnostics?
+5e1f7ab5865a,MDM operational events event viewer
+3cd8013baefe,MRTR roots/list sampling createMessage
+3cd8013baefe,What replaced server-initiated requests in MCP?
+3cd8013baefe,how to migrate from old MCP request pattern
+362995f2b12c,InputRequiredResult MCP methods
+362995f2b12c,On which MCP methods can InputRequiredResult be returned?
+362995f2b12c,where to use InputRequiredResult
+55f11a7a6ba7,inputRequests ElicitRequest CreateMessageRequest ListRootsRequest
+55f11a7a6ba7,What are the valid values for inputRequests in MCP?
+55f11a7a6ba7,which request types does MCP support
+b9825cda33f4,requestState integrity protection MCP security
+b9825cda33f4,How should I protect requestState from tampering?
+b9825cda33f4,MCP requestState validation requirements
+9857aa19d358,requestState handling MCP client
+9857aa19d358,How should a client handle requestState in retries?
+9857aa19d358,mcp retry state management
+766c90522bed,MCP server inputRequest capability check
+766c90522bed,How do I verify the client supports an input request?
+766c90522bed,should i assume clients will retry mcp
+2ee55f15f4e1,MCP client elicitation capability
+2ee55f15f4e1,How does a client declare elicitation support in MCP?
+2ee55f15f4e1,clientCapabilities elicitation form
+b69dc2e1386a,elicitation form url modes MCP
+b69dc2e1386a,What are the different elicitation modes in MCP?
+b69dc2e1386a,how to request user input in mcp
+ec7670d64179,MCP form mode security sensitive data
+ec7670d64179,Can I request passwords using form mode in MCP?
+ec7670d64179,elicitation url mode credentials
+8683ffa7b112,MCP client UI requirements elicitation
+8683ffa7b112,What must an MCP client show when a server requests input?
+8683ffa7b112,elicitation user consent form review
+2626100bd291,MCP elicitation response actions
+2626100bd291,What actions can a user take when an MCP server requests input?
+2626100bd291,accept decline cancel elicitation
+6b45748adaf7,MCP URL mode accept behavior
+6b45748adaf7,What does accepting a URL elicitation request mean?
+6b45748adaf7,elicitationId notifications completion deprecation
+fb89d744cc24,MCP URL security pre-fetch
+fb89d744cc24,Should I automatically open URLs from elicitation requests?
+fb89d744cc24,url elicitation user consent
+ff2b3196861a,Python SDK ctx.elicit legacy connections
+ff2b3196861a,How do I request user input in the MCP Python SDK?
+ff2b3196861a,elicit_url deprecated
+e0cc4641487b,Python SDK Annotated Resolve Elicit
+e0cc4641487b,How can I request input that works on both legacy and new MCP connections?
+e0cc4641487b,InputRequiredResult Python SDK
+3aa28a5ed48c,Python SDK elicitation schema limitations
+3aa28a5ed48c,Why can't I use nested objects in MCP elicitation?
+3aa28a5ed48c,flat primitive fields elicitation
+ca679fbe2589,Python SDK elicitation capability check
+ca679fbe2589,What happens if I elicit on an MCP client without capability?
+ca679fbe2589,Elicitation not supported error
+71295b6debe2,Python SDK MCPServer requestState security
+71295b6debe2,How does the MCP Python SDK protect requestState?
+71295b6debe2,RequestStateSecurity multi-instance
+c2c2eb8daeae,CCM log level verbose enable
+d018e63ba597,collect client logs configmgr how it works
+d018e63ba597,How does ConfigMgr collect client diagnostic logs?
+d018e63ba597,CCM logs MP software inventory channel
+6f6946bd6c73,client log collection size limit
+6f6946bd6c73,How large can collected ConfigMgr logs be?
+6f6946bd6c73,compressed diagnostics file size maximum
+1bb3ef70f289,client log collection status logs
+1bb3ef70f289,Which ConfigMgr logs show diagnostic file collection status?
+1bb3ef70f289,sinvproc mp_sinvcollfile diagnostics.log
+db9070f539e5,collected diagnostic files storage location configmgr
+db9070f539e5,Where are collected client logs stored on the site server?
+db9070f539e5,sinv.box file collection
+698b1b80c2f3,how to retrieve collected diagnostics configmgr console
+698b1b80c2f3,Where can I download collected diagnostic files in ConfigMgr?
+698b1b80c2f3,Support_guid.zip resource explorer
+b1707547e5ee,collect client logs permission configmgr
+b1707547e5ee,Which RBAC role can collect ConfigMgr diagnostic logs?
+b1707547e5ee,Notify resource permission
+36e07a5b1435,ConfigMgr 1912 technical preview permissions
+36e07a5b1435,Full Administrator Operations Administrator
+f0a8016ddb83,diagnostic files cleanup configmgr
+f0a8016ddb83,How long are collected diagnostic files retained in ConfigMgr?
+f0a8016ddb83,delete aged files site maintenance task
+4c76c909842f,SMS_G_System_CollectedFile configmgr
+4c76c909842f,How do I query collected files in ConfigMgr?
+4c76c909842f,v_GS_CollectedFile SQL view
+6dd46bc55a7e,support zip files SMS_G_System_CollectedFile
+6dd46bc55a7e,AdminService collected files
+aa48fe09f00a,client notification operation type collect logs
+aa48fe09f00a,What is the notification type for collecting client logs?
+aa48fe09f00a,mecm2 agent client notification
+5ca436358133,diagnostic file compressed size
+5ca436358133,What's the maximum size for client diagnostic collection?
+5ca436358133,100 MB log limit configmgr
+b6ec42b06cd1,configmgr diagnostic file storage path
+b6ec42b06cd1,Where on the site server are diagnostic files stored?
+b6ec42b06cd1,inboxes sinv.box filecol
+97f244ad3bfd,What format are ConfigMgr diagnostic files named?
+97f244ad3bfd,support zip guid naming
+ddd63f6d8338,How long before ConfigMgr deletes old diagnostic files?
+ddd63f6d8338,14 day cleanup schedule
+f9c27e195107,collect logs rbac permission
+f9c27e195107,Notify resource role
+0ceba47b7c57,sops encryption formats
+0ceba47b7c57,What formats of files can sops encrypt?
+0ceba47b7c57,What key sources does sops support for encryption?
+6ddec84e70bc,.sops.yaml routing configuration
+6ddec84e70bc,How do you configure which encryption keys are used for different files in sops?
+6ddec84e70bc,Can you change sops recipients without re-encrypting the data values?
+6183591bdb16,age encryption recipients
+6183591bdb16,How do you encrypt files with age and specify who can decrypt them?
+6183591bdb16,Does age support key expiry or revocation?
+116f9f50acf7,Vault transit encrypt decrypt
+116f9f50acf7,What does Vault's transit engine do and how does it work?
+116f9f50acf7,Do callers get access to the raw encryption key in Vault transit operations?
+9551a506b59f,HashiCorp Vault license open source
+9551a506b59f,What license does HashiCorp Vault use starting in version 1.11?
+9551a506b59f,Is Vault considered open source software?
+cb9c20c6f1aa,Python Fernet symmetric encryption
+cb9c20c6f1aa,How does Python's cryptography Fernet class implement encryption?
+cb9c20c6f1aa,Can Fernet tokens have an expiration time without external scheduling?
+b99b09578957,git-crypt transparent encryption
+b99b09578957,How does git-crypt encrypt files in a git repository?
+b99b09578957,How are git-crypt keys shared with team members?
+e3e0242105a7,encryption audit logging reveal events
+e3e0242105a7,Which encryption tool has built-in logging for access to decrypted data?
+e3e0242105a7,"Do sops, age, Vault, Python cryptography, or git-crypt track secret access?"
+30ddeba18ce6,RecognizerRegistryConfig top level fields
+30ddeba18ce6,What fields are defined in the top-level RecognizerRegistryConfig?
+30ddeba18ce6,How do you specify supported languages in the recognizer registry?
+41ae11fc9c9b,Recognizer configuration fields
+41ae11fc9c9b,What are the available fields for defining a recognizer?
+41ae11fc9c9b,How do you specify which languages a recognizer supports?
+55b132e9347c,custom recognizers patterns deny_list
+55b132e9347c,How do you define a custom recognizer with regex patterns?
+55b132e9347c,What is required to create a custom recognizer?
+b619823e5d71,recognizer type field default value
+b619823e5d71,How do you distinguish a predefined recognizer from a custom one?
+2c6e7635dff5,deny_list_score default value
+2c6e7635dff5,What is the default deny_list_score for recognizers?
+2c6e7635dff5,Has the default deny_list_score changed between versions?
+d5bc6ba8175c,supported_languages registry analyzer match
+d5bc6ba8175c,How should the registry's supported_languages match the analyzer?
+d5bc6ba8175c,What languages must be consistent between recognizer registry and analyzer engine?
+9b3ab6172c9a,score_thresholds recognizer entity confidence
+9b3ab6172c9a,How do you set custom confidence thresholds for recognizers?
+9b3ab6172c9a,Can different entity types have different score thresholds?
+6bf2eb01d1c9,supported_countries restrict recognizers
+6bf2eb01d1c9,How does supported_countries control which recognizers load?
+84d24fda0c05,PatternRecognizer regex compile timeout
+84d24fda0c05,How does PatternRecognizer compile and match regex patterns?
+84d24fda0c05,What is the timeout for pattern matching operations?
+5f4d49447699,REGEX_TIMEOUT_SECONDS environment variable
+5f4d49447699,What is the default regex timeout and how do you change it?
+9f4ae9cecd28,RecognizerRegistry global_regex_flags defaults
+9f4ae9cecd28,What are the default regex compilation flags?
+9f4ae9cecd28,Are patterns case-insensitive by default in the recognizer registry?
+9d713daec4c4,regex flags DOTALL MULTILINE IGNORECASE value
+9d713daec4c4,What do the default regex flags allow in pattern matching?
+9d713daec4c4,Do patterns match across newlines and ignore case by default?
+8606437939d9,JSON Schema validators field_validator model_validator
+8606437939d9,What validations are applied but not expressed in the JSON Schema?
+8606437939d9,How are custom validation rules enforced for recognizers?
+5e1e95b7aaff,@Resource parameter length truncated plain text
+5e1e95b7aaff,How many characters of @Resource can you read back in plain text?
+74e644f2a69d,@LockMode lock mode options
+74e644f2a69d,What are the valid lock mode values?
+74e644f2a69d,Which lock modes can you specify with sp_getapplock?
+d223d49219c5,@LockOwner Transaction Session
+d223d49219c5,What are the lock owner options and what do they mean?
+d223d49219c5,Must an application lock be called within a transaction?
+e8d2a2a4989f,@LockTimeout milliseconds default
+e8d2a2a4989f,How is the lock timeout specified in sp_getapplock?
+e8d2a2a4989f,What does a timeout value of 0 do for application locks?
+c6e433dc6608,@DbPrincipal public role permissions
+c6e433dc6608,What is the default database principal for application locks?
+c6e433dc6608,Who can call sp_getapplock on an application lock?
+77ea7cd7e650,sp_getapplock return codes deadlock timeout
+77ea7cd7e650,What do different return codes from sp_getapplock mean?
+77ea7cd7e650,How do you distinguish between timeout and deadlock errors?
+9cd6ad97c098,application lock release transaction session logout
+9cd6ad97c098,When are transaction-owned application locks released?
+9cd6ad97c098,What happens to session-owned locks when you log out?
+1efc7c2b1f8e,application lock identity database scope
+1efc7c2b1f8e,What makes an application lock unique?
+1efc7c2b1f8e,Are application locks with the same name in different databases the same?
+e9453277fec8,sp_releaseapplock call balance count
+e9453277fec8,How many times must you release a lock per acquisition?
+e9453277fec8,Do you need to match sp_getapplock and sp_releaseapplock calls?
+81f2bfb73d67,application lock mode escalation union
+81f2bfb73d67,What happens when you acquire a lock with different modes?
+81f2bfb73d67,Can you upgrade an application lock to a stronger mode?
+6678cae4aa55,application lock deadlock transaction rollback
+6678cae4aa55,Does a deadlock on an application lock cause a transaction rollback?
+6678cae4aa55,How should you handle a -3 deadlock victim response?
+a0cff617f9b4,sp_getapplock permission public role
+a0cff617f9b4,What permissions are required to use application locks?
+a0cff617f9b4,Can any user call sp_getapplock?
+de0978c4ecd8,view application locks currently held
+de0978c4ecd8,How do you see which application locks are active?
+46a7f162fe47,OWASP agentic applications top 10 2026
+46a7f162fe47,When was the OWASP Top 10 for Agentic Applications published?
+0d3a704e928e,ASI01 ASI10 agentic vulnerability categories
+0d3a704e928e,What are the OWASP agentic application vulnerability categories?
+0d3a704e928e,How many items are in the OWASP agentic security list?
+0f0e717921e2,OWASP MCP Top 10 2025
+0f0e717921e2,What is the OWASP MCP Top 10 and when is it coming out?
+0f0e717921e2,What version of MCP security guidance does OWASP provide?
+b08de361c0bd,OWASP MCP Top 10 CC BY-NC-SA license
+b08de361c0bd,What license applies to the OWASP MCP Top 10?
+b08de361c0bd,Can you use OWASP MCP Top 10 freely in commercial work?
+0245e2d8fb5a,OWASP Top 10 LLM Applications 2025
+0245e2d8fb5a,What is the OWASP Top 10 for LLM Applications?
+0245e2d8fb5a,How many items are in the OWASP LLM security guidance?
+e526a0cbfd72,OWASP GenAI LLM Top 10 2026 publication date
+e526a0cbfd72,When was the OWASP GenAI LLM Top 10 2026 published?
+e526a0cbfd72,Where can you find the OWASP 2026 LLM security best practices?
+0260134df84f,OWASP GenAI 2026 Top 10 announcement date
+0260134df84f,When did OWASP announce the 2026 LLM Top 10?
+0260134df84f,What date was the LLM security guidelines 2026 released?
+b4ea814fdd5f,LLM Top 10 2026 identifiers titles list
+b4ea814fdd5f,Where are the OWASP LLM Top 10 2026 item titles listed?
+b4ea814fdd5f,Are the LLM Top 10 2026 vulnerability IDs available online?
+2ee93a62dc5a,OWASP MCP Top 10 beta release status
+2ee93a62dc5a,What is the current status of OWASP MCP Top 10?
+2ee93a62dc5a,Is the OWASP MCP Top 10 released or still in beta?
+75f2293ca4ed,OpenSSH Windows minimum version requirements
+75f2293ca4ed,What is the minimum Windows version for OpenSSH?
+75f2293ca4ed,Can you install OpenSSH on Windows 10 version 1809?
+9b5021c552c8,OpenSSH Feature on Demand Windows Update
+9b5021c552c8,How is the in-box OpenSSH updated on Windows?
+9b5021c552c8,Do PowerShell and in-box OpenSSH versions stay in sync?
+0917955ef9a6,Get-WindowsCapability OpenSSH.Client Server
+0917955ef9a6,How do you check if OpenSSH is installed on Windows?
+0917955ef9a6,What are the names of the OpenSSH packages on Windows?
+60899c03e199,start enable sshd service Windows PowerShell
+60899c03e199,How do you start the OpenSSH server on Windows?
+60899c03e199,What command makes sshd start automatically?
+75ef13153ad8,OpenSSH firewall rule TCP 22 inbound
+75ef13153ad8,Does OpenSSH setup create a Windows Firewall rule?
+75ef13153ad8,How does OpenSSH configure firewall access for port 22?
+c347e997d9ee,Windows Server 2025 OpenSSH Users group restrict
+c347e997d9ee,How do you control who can SSH into Windows Server 2025?
+c347e997d9ee,Is OpenSSH pre-installed on Windows Server 2025?
+fdd855a208ca,sshd_config location %programdata% ssh
+fdd855a208ca,Where does sshd look for its configuration file on Windows?
+fdd855a208ca,How do you specify a custom sshd configuration path?
+81a4dafa7ad1,DefaultShell registry OpenSSH Windows shell
+81a4dafa7ad1,How do you change the default shell for SSH connections on Windows?
+81a4dafa7ad1,What registry setting controls the OpenSSH default shell?
+db33f0c76902,sshd_config access control rule order DenyUsers AllowUsers
+db33f0c76902,In what order are SSH access rules evaluated?
+db33f0c76902,How do DenyUsers and AllowUsers interact in sshd_config?
+adf9c0c4e2be,SSH host keys location C:\ProgramData\ssh Windows
+adf9c0c4e2be,Where are SSH host keys stored on Windows systems?
+adf9c0c4e2be,How do you back up OpenSSH host keys?
+a94bab378798,administrators_authorized_keys ACL Administrators SYSTEM
+a94bab378798,How are SSH keys for admin accounts stored separately?
+a94bab378798,What permissions does the administrators SSH key file have?
+1acd81981fb6,ssh-agent service disabled default Windows
+1acd81981fb6,Is ssh-agent enabled by default on Windows?
+1acd81981fb6,How do you enable ssh-agent on Windows?

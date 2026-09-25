@@ -309,6 +309,19 @@ class Lookup(unittest.TestCase):
         self.assertNotIn("configmgr", kbfacts.key_terms("SCCM AdminService"), "an expansion is never a key word")
         self.assertIn(("mecm",), variants["sccm"])
 
+    def test_doc2query_expansions(self):
+        """expansions.csv is well-formed, and its words only rank facts: KB_DOC2QUERY=0 turns them off."""
+        import kbfacts
+        path = os.path.join(TOOLS, "doc2query", "expansions.csv")
+        with open(path, encoding="utf-8", newline="") as f:
+            rows = list(csv.reader(f))
+        self.assertEqual(rows[0], ["key", "question"])
+        self.assertTrue(all(len(r) == 2 and re.fullmatch(r"[0-9a-f]{12}", r[0]) and r[1].strip() for r in rows[1:]))
+        self.assertEqual(kbfacts.fact_key("a  b\n c"), kbfacts.fact_key("a b c"), "keys ignore whitespace")
+        code = ("import os, sys; os.environ['KB_DOC2QUERY'] = '0'; sys.path.insert(0, {!r}); import kbfacts; "
+                "sys.exit(len(kbfacts.expansions()))").format(TOOLS)
+        self.assertEqual(subprocess.run([sys.executable, "-c", code], capture_output=True).returncode, 0)
+
     def test_lookup_eval_passes(self):
         code, out = run(os.path.join(TOOLS, "rag.py"), "eval")
         self.assertEqual(code, 0, out[-3000:])
