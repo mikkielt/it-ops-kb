@@ -1,5 +1,5 @@
 ---
-topic: agents-authz/api-tokens-issue-and-store
+topic: agents/api-tokens-issue-and-store
 priority: P1
 applies_to: "GitLab (docs current 2026-09), python keyring 25.7.0, msal-extensions (main branch 2026-09), Azure Key Vault (docs 2025-12), HashiCorp Vault (docs current 2026-09), Claude Code 2.1.x"
 retrieved_utc: 2026-09-25

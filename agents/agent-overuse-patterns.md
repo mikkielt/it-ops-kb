@@ -1,5 +1,5 @@
 ---
-topic: agents-overuse/agent-overuse-patterns
+topic: agents/agent-overuse-patterns
 priority: P1
 applies_to: "Anthropic/OpenAI/Google/Microsoft agent guidance (2025-2026 docs), Thoughtworks Technology Radar Vol 34 (2026-04), jq 1.8, Renovate (docs 44.115.4), conventional-commits v1.0.0, semantic-release, LSP 3.18, DSC 3.3.0, Presidio 2.2.364"
 retrieved_utc: 2026-09-25

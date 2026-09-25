@@ -1,5 +1,5 @@
 ---
-topic: agents-mcp/subagents-vs-deterministic-tools
+topic: agents/subagents-vs-deterministic-tools
 priority: P1
 applies_to: "Claude Code / Agent Skills (2026-09 docs), MCP spec 2025-06-18, Microsoft Agent Framework 1.0 (GA 2026-04-03)"
 retrieved_utc: 2026-09-25
