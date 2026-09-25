@@ -1,31 +1,34 @@
 {
- "seed": 7,
+ "seed": 29,
+ "excluded": [
+  "_tools/doc2query/arms-seed7.json"
+ ],
  "pilot": [
-  "autopilot/lifecycle.md",
-  "prior-art/secret-vault-encryption.md",
-  "standards/owasp.md",
-  "mcp/elicitation.md",
-  "defender/permissions-limits.md",
-  "logs/sources.md",
-  "windows/openssh-server.md",
-  "sqlserver/sp-getapplock.md",
-  "claude/hooks.md",
-  "privacy/presidio-recognizer-yaml.md",
-  "intune/co-management.md",
-  "mecm/collect-client-logs.md"
+  "arch/sql-auth-containers.md",
+  "auth/transport-crypto.md",
+  "windows/execution-policy-signing.md",
+  "privacy/gdpr-pseudonymisation.md",
+  "powerbi/scheduled-refresh.md",
+  "mecm/log-files.md",
+  "mcp/spec-overview.md",
+  "entra/bitlocker-key-deletion.md",
+  "agents/agent-caching.md",
+  "graph/delta-query.md",
+  "ad/ldap-paging-filters.md",
+  "logs/otel-log-data-model.md"
  ],
  "control": [
-  "autopilot/device-identity.md",
-  "mcp/python-sdk.md",
-  "defender/machine-resource.md",
-  "logs/ecs-log-fields.md",
-  "windows/gitlab-runner-windows.md",
-  "sqlserver/linux-container.md",
-  "claude/tool-output-limits.md",
-  "privacy/nist-sp800-38g.md",
-  "intune/collect-diagnostics.md",
-  "mecm/adminservice.md",
-  "dsc/cli-reference.md",
-  "ad/computer-attributes.md"
+  "arch/kerberos-linux-containers.md",
+  "auth/audit-events.md",
+  "windows/smart-app-control.md",
+  "privacy/presidio-operators-deanonymize.md",
+  "powerbi/on-prem-gateway-sql.md",
+  "mecm/baselines.md",
+  "mcp/authorization.md",
+  "entra/hybrid-deviceid-objectguid.md",
+  "agents/agent-dispatch-and-shared-services.md",
+  "graph/permissions.md",
+  "logs/otel-collector-receivers.md",
+  "dsc/mcp-server.md"
  ]
 }

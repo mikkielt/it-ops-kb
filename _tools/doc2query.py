@@ -7,8 +7,10 @@ the model runs only when facts are written or changed. Filtered as in Doc2Query-
 if pack, without expansion, already places it in its fact's article), so hallucinated questions do not pollute the
 index.
 
-  doc2query.py split [--seed 7] [--n 12]      choose the pilot and control articles (stratified by domain), write
-                                              _tools/doc2query/arms.json
+  doc2query.py split [--seed 7] [--n 12] [--exclude ARMS.json ...]
+                                              choose the pilot and control articles (stratified by domain), write
+                                              _tools/doc2query/arms.json; --exclude leaves out the articles of earlier
+                                              rounds' arms files, so a confirmation round tests fresh articles
   doc2query.py batch ARM [--out FILE]         the facts of an arm (pilot or control) as JSON [{key, path, line, text}]:
                                               the input for question generation or for blind test questions
   doc2query.py ingest GENERATED.json          filter generated [{key, questions: [...]}] and write the kept ones to
@@ -40,13 +42,18 @@ def facts(paths=None):
     return [u for u in kbfacts.units() if u["tags"] and u["path"].endswith(".md") and (paths is None or u["path"] in paths)]
 
 
-def split(seed, n):
+def split(seed, n, exclude=()):
     """n pilot and n control articles, alternating within each domain so both arms span the same domains."""
     import kbfacts
+    used = set()
+    for path in exclude:
+        with open(path, encoding="utf-8") as f:
+            prev = json.load(f)
+        used |= set(prev.get("pilot", [])) | set(prev.get("control", []))
     by = collections.defaultdict(list)
     counts = collections.Counter(u["path"] for u in facts())
     for rel in sorted(kbfacts.articles()):
-        if counts[rel] >= 8:  # enough facts to test
+        if counts[rel] >= 8 and rel not in used:  # enough facts to test, not in an earlier round
             by[rel.split("/")[0]].append(rel)
     rng = random.Random(seed)
     doms = sorted(by)
@@ -60,7 +67,7 @@ def split(seed, n):
                 arms[arm].append(a)
     os.makedirs(DIR, exist_ok=True)
     with open(ARMS, "w", encoding="utf-8") as f:
-        json.dump({"seed": seed, **arms}, f, indent=1)
+        json.dump({"seed": seed, "excluded": sorted(os.path.relpath(p, KB) for p in exclude), **arms}, f, indent=1)
     for arm, arts in arms.items():
         print(f"{arm}: {len(arts)} articles, {sum(counts[a] for a in arts)} facts")
     return arms
@@ -169,13 +176,14 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
     s = sub.add_parser("split"); s.add_argument("--seed", type=int, default=7); s.add_argument("--n", type=int, default=12)
+    s.add_argument("--exclude", nargs="*", default=[], help="arms files of earlier rounds whose articles are left out")
     b = sub.add_parser("batch"); b.add_argument("arm", choices=["pilot", "control"]); b.add_argument("--out")
     i = sub.add_parser("ingest"); i.add_argument("file")
     e = sub.add_parser("evaluate"); e.add_argument("file")
     sub.add_parser("stale")
     a = ap.parse_args()
     if a.cmd == "split":
-        split(a.seed, a.n)
+        split(a.seed, a.n, a.exclude)
     elif a.cmd == "batch":
         out = json.dumps(batch(a.arm), indent=1, ensure_ascii=False)
         if a.out:

@@ -75,7 +75,8 @@ Not done here:
 - **Not done:** an install from gitlab.com itself (see section 2) and a push to GitLab `main`.
 - **Retrieval audit done** (`token-usage-report.md`, "Retrieval quality audit"): untagged content and code blocks are searchable now, there is no false `none` on the blind questions, and line recall is 94%.
 - **doc2query pilot done** (`token-usage-report.md`, "doc2query pilot"): pilot line recall 90% -> 97.5%, control unchanged.
-  - **Next:** confirm on a fresh blind set with new arms, then expand the whole kb (protocol: `_tools/doc2query/README.md`).
+  - **Confirmation round (seed 29, fresh arms):** no gain, 95% both ways. The baseline is already 95-98%.
+  - **Whole-kb expansion: not done.** Decision in `token-usage-report.md`: expand only articles where real lookups miss.
 
 Earlier; see `token-usage-report.md`, "Re-measurement after the changes":
 - The six measured questions in fresh sessions: -74% input tokens, -72% output tokens, 351 -> 118 s.

@@ -366,8 +366,30 @@ Protocol and tool: `_tools/doc2query/README.md`, `python3 _tools/doc2query.py`.
 - The weight was chosen on the test questions themselves.
 - Generated and test questions both come from models, and may share a phrasing style that real users do not.
 
-**Decision:** keep the pilot expansions at weight 1.0. Before expanding the whole kb (about 4,400 facts, about 13k generated questions on Haiku), confirm on a fresh blind set with new arms (`doc2query.py split --seed N`).
+**Decision after round 1:** keep the pilot expansions at weight 1.0, and confirm on fresh arms before expanding the whole kb.
 
 **Maintenance:**
 - After editing facts, `doc2query.py stale` lists the expansion keys whose fact text changed. Regenerate those with `batch` and `ingest`.
 - A stale key does no harm: nothing matches it.
+
+### Confirmation round (seed 29, fresh arms)
+- **Arms:** `split --seed 29 --exclude arms-seed7.json` gave 12 new pilot articles (155 facts) and 12 new control articles (194 facts), none from round 1.
+- **Generation:** the same prompts. Haiku wrote 465 questions for all 155 facts, and the filter kept 442.
+- **Blind test:** 80 new Sonnet questions, 40 per arm.
+- **Weight:** fixed at 1.0, not retuned.
+
+| | pilot: line in pack | control: line in pack | eval | off-kb `good` | mean pack (chars) |
+|---|---|---|---|---|---|
+| expansion off | 38/40 (95%) | 39/40 | 37/37 | 2/20 | 3345 |
+| expansion on | 38/40 (95%) | 39/40 | 37/37 | 2/20 | 3273 |
+
+The two pilot misses are not expansion failures:
+- the test question asks about Claude prompt caching, but its fact is about OpenAI's cache TTL (a bad test item);
+- for the Power BI refresh timing question, the right article is in the pack, but another line of it ranks higher.
+
+**Both rounds together** (80 pilot questions): with expansion, 3 more questions found their line and none were lost. All 3 gains are from round 1, where the weight was tuned on the test set. The audit's lexical fixes already put the baseline at 90-98%, which leaves little room.
+
+**Decision:**
+- **Do not expand the whole kb now.** The confirmed gain is too small for about 13k generated questions and their upkeep.
+- **Keep the two pilot rounds' expansions.** They cost nothing at query time and made packs slightly smaller.
+- **Revisit with real misses.** Add failed real-world lookups to `_tools/lookup_eval.csv`. If paraphrase misses show up there, expand only the affected articles (`doc2query.py batch`, then `ingest`).

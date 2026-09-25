@@ -472,3 +472,445 @@ a94bab378798,What permissions does the administrators SSH key file have?
 1acd81981fb6,ssh-agent service disabled default Windows
 1acd81981fb6,Is ssh-agent enabled by default on Windows?
 1acd81981fb6,How do you enable ssh-agent on Windows?
+bfe193b4b519,MaxPageSize default value
+bfe193b4b519,What is the maximum number of objects returned in a single LDAP search result?
+bfe193b4b519,LDAP paging: how many records per page by default
+6c10f2adb437,MaxQueryDuration default
+6c10f2adb437,How long can a single LDAP query run before timing out?
+6c10f2adb437,LDAP query timeout: default duration and error response
+5aa3b48a613a,MaxResultSetSize default bytes
+5aa3b48a613a,What is the maximum size of intermediate data held between paged results?
+5aa3b48a613a,LDAP paging memory buffer size limit
+8332fb31c7ca,MaxValRange default
+8332fb31c7ca,How many values per attribute are returned by default?
+8332fb31c7ca,LDAP attribute value limit per field
+bb88e1fccc81,Windows Server hard-coded LDAP limits
+bb88e1fccc81,What are the maximum LDAP limits on Windows Server 2008 and later?
+bb88e1fccc81,Server 2008 R2 MaxPageSize and MaxQueryDuration caps override
+bcd105413600,LDAP paged result OID
+bcd105413600,What is the object identifier for the LDAP paging control?
+bcd105413600,paged results control OID 1.2.840.113556.1.4.319
+73f2b2a8ab7d,ADSI default search result limit
+73f2b2a8ab7d,How many records does an ADSI search return without paging?
+73f2b2a8ab7d,ADSI ADS_SEARCHPREF_PAGESIZE when to use
+26ee78bc9c24,LDAP filter operators
+26ee78bc9c24,What operators can be used in LDAP search filters?
+26ee78bc9c24,LDAP search syntax: comparison and logical operators
+95d694c30fa2,LDAP matching rules OID
+95d694c30fa2,What are the OIDs for bitwise AND and bitwise OR in LDAP filters?
+95d694c30fa2,"DN matching rule, bitwise operations in Active Directory search"
+d30c42262cf4,LDAP escape sequences
+d30c42262cf4,How do you escape special characters in LDAP filters?
+d30c42262cf4,"LDAP filter special characters: asterisk, parenthesis, backslash, null byte"
+03c5e50a4eb0,LDAP filter objectGUID
+03c5e50a4eb0,How do you filter by GUID in LDAP search?
+03c5e50a4eb0,objectGUID binary data representation in filter expressions
+489a1fd829cb,Anthropic prompt caching architecture
+489a1fd829cb,How does Anthropic's prompt caching store and invalidate cached content?
+489a1fd829cb,"Claude prompt cache: cache_control breakpoints, TTL, pricing structure"
+33da81b5cafd,cache_control breakpoints limit
+33da81b5cafd,How many cache breakpoints can be used in a single request?
+33da81b5cafd,prompt cache: maximum number of explicit cache boundaries
+f9afed7bacc7,prompt cache TTL options
+f9afed7bacc7,What time-to-live options are available for cached data?
+f9afed7bacc7,Claude cache: ephemeral vs. long-term retention periods
+649a15850639,prompt cache minimum prefix length
+649a15850639,What is the minimum token count for a cacheable prefix on different Claude models?
+649a15850639,"cache eligibility: token threshold by model (Haiku, Opus, Sonnet, Fable)"
+174c06de8cb6,prompt cache write cost
+174c06de8cb6,How much do cache writes cost compared to base input tokens?
+174c06de8cb6,Claude cached token pricing: 5-minute vs. 1-hour TTL
+8b45db4b4b05,prompt cache read cost
+8b45db4b4b05,What is the pricing for reading from cache?
+8b45db4b4b05,Claude cache hit pricing: cost multiplier per cached token
+76507ce623d4,prompt cache invalidation hierarchy
+76507ce623d4,What order does cache invalidation follow when different parts change?
+76507ce623d4,Claude cache: when does tool definition change affect system and messages
+6927e9b5e6b3,cache tokens in usage response
+6927e9b5e6b3,How are cached tokens reported in usage information?
+6927e9b5e6b3,prompt cache: API response fields for cache hits and writes
+a46aa63d4b1a,cache breakpoint placement
+a46aa63d4b1a,How should cache breakpoints be positioned in a request?
+a46aa63d4b1a,"prompt cache: which blocks are safe to cache, pre-warming requests"
+b5e0c3c4f709,Claude Code prompt cache display
+b5e0c3c4f709,How does Claude Code display cache statistics?
+b5e0c3c4f709,/usage command output: Prompt cache (main) information
+7a8f46aa0cb1,prompt cache miss counting
+7a8f46aa0cb1,When does a cache miss get counted?
+7a8f46aa0cb1,"Claude cache: 5% threshold and 2,000 token minimum for miss"
+510be511d39e,Claude Code cache invalidation triggers
+510be511d39e,What actions cause the prompt cache to rebuild?
+510be511d39e,"session cache: tool definitions, MCP servers, settings, model switch impact"
+c3eaaab60663,prompt cache TTL by account
+c3eaaab60663,How long does the prompt cache persist on different Claude subscriptions?
+c3eaaab60663,"cache lifetime: subscription credits, API key, cloud deployment differences"
+f4476da2f97e,deferred MCP tool definitions
+f4476da2f97e,How does Claude Code handle MCP tool definitions for caching?
+f4476da2f97e,prompt cache impact when MCP servers added or reconfigured
+4ec590410e48,/clear /compact cache impact
+4ec590410e48,How do the /clear and /compact commands affect the session cache?
+4ec590410e48,"Claude Code: session reset, conversation summarization, cache behavior"
+e90af99d0253,cache metrics and diagnostics
+e90af99d0253,What built-in tools show cache hit rate and diagnostics?
+e90af99d0253,"Claude Code /usage, OTel export for cache monitoring"
+775919aea31d,OpenAI GPT prompt caching
+775919aea31d,How is prompt caching different on OpenAI models?
+775919aea31d,"GPT-5.6 cache: minimum tokens, discount, cross-organization isolation"
+b69485a497ea,OpenAI prompt cache TTL
+b69485a497ea,What cache retention options does OpenAI support?
+b69485a497ea,GPT-5.6+ prompt_cache_options.ttl and prompt_cache_retention
+86411328ff25,Azure OpenAI prompt cache
+86411328ff25,How does prompt caching work on Azure OpenAI?
+86411328ff25,Microsoft Foundry Models: prompt cache on Standard and Provisioned
+993ff0d27c5b,MCP tools/list response caching
+993ff0d27c5b,How does the MCP specification support caching of tool lists?
+993ff0d27c5b,"MCP: ttlMs, cacheScope, CacheableResult mechanism"
+eb275435b2f6,MCP tools capability notifications
+eb275435b2f6,How do MCP servers notify clients about tool list changes?
+eb275435b2f6,"toolsListChanged subscription, notifications/tools/list_changed event"
+231c5dcf3e89,MCP deterministic tool ordering
+231c5dcf3e89,Why does the MCP spec recommend deterministic tool ordering?
+231c5dcf3e89,tool list order impact on prompt cache hit rates in LLM context
+b5392ef99125,MCP tools/list by authorization
+b5392ef99125,Can an MCP server return different tool lists based on authorization?
+b5392ef99125,MCP tiered access: tool set variation by scopes and caller credentials
+1ae34268ac92,cache invalidation hierarchy
+1ae34268ac92,What is the order of cache invalidation in prompt caching?
+1ae34268ac92,"tool definitions, system prompt, messages: cascading invalidation"
+11c42d9b8243,MCP server cache best practices
+11c42d9b8243,How should an MCP server be designed for prompt caching?
+11c42d9b8243,"stdio MCP: alphabetical tool ordering, timestamp handling"
+8bdf89782c59,container SQL Server authentication
+8bdf89782c59,How do you authenticate a container to an on-premises SQL Server?
+8bdf89782c59,Kerberos vs. Entra: on-prem SQL Server from Linux container
+9c067be79f8b,msodbcsql18 Entra authentication
+9c067be79f8b,What authentication methods does ODBC Driver 18 support for Entra?
+9c067be79f8b,"ActiveDirectoryMsi, workload identity: SQL Server auth on Linux"
+63154df8fc47,SQL login fallback authentication
+63154df8fc47,When is SQL login (username/password) used for authentication?
+63154df8fc47,SQL Server fallback: basic auth outside AD/Entra authorization
+7d1621d5e5bd,ODBC Driver 18 Kerberos TGT
+7d1621d5e5bd,How do you enable Kerberos authentication for SQL Server on Linux?
+7d1621d5e5bd,Trusted_Connection ODBC kinit credential refresh cron
+ba5c3b4ea313,ODBC Kerberos failure behavior
+ba5c3b4ea313,What happens when Kerberos fails on the Linux ODBC driver?
+ba5c3b4ea313,"ODBC Driver 18: NTLM fallback disabled, no retry"
+126ad36e32a0,on-premises SQL Server Entra auth
+126ad36e32a0,What is required to use Entra authentication on an on-premises SQL Server?
+126ad36e32a0,Azure Arc SQL Server 2025: primary managed identity configuration
+d615be194629,Entra groups SQL authorization
+d615be194629,How do Entra groups work for SQL Server authorization?
+d615be194629,"group membership changes, permission inheritance on next connection"
+1069353ecdd1,msodbcsql18 managed identity types
+1069353ecdd1,What managed identity types does ActiveDirectoryMsi support?
+1069353ecdd1,system-assigned vs. user-assigned: ODBC Entra authentication
+a336982fdce3,workload identity authentication mode
+a336982fdce3,What is the difference between ActiveDirectoryMsi and workload identity?
+a336982fdce3,User Id parameter: workload identity client ID in ODBC connection
+2c52500508b2,managed identity on-prem SQL Server
+2c52500508b2,Why don't Entra auth modes work on non-Arc on-premises SQL Server?
+2c52500508b2,ActiveDirectoryMsi workload identity Arc-enabled requirement
+6663e0924e29,ActiveDirectoryDefault ODBC Linux
+6663e0924e29,Is there documentation for ActiveDirectoryDefault on the Linux ODBC driver?
+6663e0924e29,msodbcsql18 ActiveDirectoryDefault on-premises SQL Server behavior
+5a3f67a51e2b,Entra OAuth token exchange support
+5a3f67a51e2b,Does Entra support OAuth 2.0 Token Exchange?
+5a3f67a51e2b,"RFC 8693: Entra grant types, On-Behalf-Of, client-credentials"
+f4c703f8bcbe,Windows Server 2025 TLS cipher suite
+f4c703f8bcbe,What is the TLS cipher suite list for Windows Server 2025?
+f4c703f8bcbe,"Schannel: TLS 1.3 support, Server 2025 vs. Server 2022"
+f5986a17b8c8,LDAP channel binding SMB signing
+f5986a17b8c8,What are the LDAP and SMB signing defaults for Server 2025 and Windows 11 24H2?
+f5986a17b8c8,SMB client outbound signing encryption settings
+0d873efc7574,Kerberos AES encryption default date
+0d873efc7574,When do Kerberos AES enctypes become the domain default?
+0d873efc7574,"RC4 fallback removal, msDS-SupportedEncryptionTypes timeline"
+604809dc5cc6,"Entra token protection, device binding"
+604809dc5cc6,What is Microsoft Entra Token Protection and how does it work?
+604809dc5cc6,"Primary Refresh Token (PRT): device-bound key, sender-constrained"
+6e1923b83bee,MSAL PoP token support DPoP replacement
+6e1923b83bee,What proof-of-possession token standard does MSAL use for public clients?
+6e1923b83bee,Which mechanism replaced Signed HTTP Request in MSAL?
+500418700482,DPoP RFC 9449 GA status Entra ID
+500418700482,Is DPoP generally available for Entra ID access tokens outside specific scenarios?
+500418700482,What is the general availability status of RFC 9449 proof-of-possession?
+7f8b8faee87b,RFC 8693 Entra ID token exchange
+7f8b8faee87b,Does Azure Entra support RFC 8693 OAuth 2.0 Token Exchange?
+7f8b8faee87b,What alternatives to RFC 8693 does Entra provide?
+e73588d155da,SMB 3.1.1 cipher AES-GCM specifics
+e73588d155da,What encryption algorithms can be negotiated in SMB 3.1.1?
+e73588d155da,How does SMB 3.1.1 select between AES cipher variants?
+1f8a019a9c9c,BitLocker key storage location Windows 10
+1f8a019a9c9c,Where are BitLocker keys stored for modern Windows devices?
+1f8a019a9c9c,What happens to encryption keys on the device when it's removed?
+aaa54ddd4e53,BitLocker recovery key backup device deletion
+aaa54ddd4e53,What should you do with BitLocker keys before deleting a device?
+757a7f85d9a0,Device deletion data loss BitLocker
+757a7f85d9a0,Is device deletion reversible?
+757a7f85d9a0,What information is lost when you delete a device?
+39a7be25ae21,Device deletion required roles Autopilot
+39a7be25ae21,Who can delete devices in Entra?
+39a7be25ae21,What restrictions apply to deleting Autopilot devices?
+3904bed9cee0,Soft delete device grace period recovery keys
+3904bed9cee0,What happens during soft deletion of devices?
+3904bed9cee0,How long can you recover data from a soft-deleted device?
+616fcc19dc49,Soft-deleted device visibility portal Graph
+616fcc19dc49,Are soft-deleted devices visible in the Entra portal?
+616fcc19dc49,What HTTP response does Graph return for soft-deleted queries?
+b52be0e7c5f6,Soft delete hybrid joined registered device types
+b52be0e7c5f6,Which device types support soft deletion?
+b52be0e7c5f6,Does soft delete work on all Entra join types?
+172b6710775c,Hard-deleted device recovery BitLocker keys
+172b6710775c,Can hard-deleted devices and their keys be recovered?
+172b6710775c,Is permanent device deletion irreversible?
+21ce5467cc34,Entra Connect soft-deleted device auto-restore
+21ce5467cc34,Can Azure AD Connect restore soft-deleted hybrid devices automatically?
+21ce5467cc34,What happens when Entra Connect syncs a previously deleted device?
+32db7168e571,BitLocker recovery key view audit log
+32db7168e571,What audit log captures BitLocker key access?
+32db7168e571,Where is showing a recovery key logged?
+298677b5c1ab,Graph delta device supported resources
+298677b5c1ab,Which resources support delta queries in Microsoft Graph?
+298677b5c1ab,Can you incrementally query device changes?
+9d7223c2ed14,Graph delta function device collection binding
+9d7223c2ed14,What's the difference between device and managed device delta queries?
+9d7223c2ed14,Is delta available for graph.device collections?
+1e613567779a,Graph ChangeTracking managed device support
+1e613567779a,Does managed device have ChangeTracking enabled?
+1e613567779a,Which Graph resources support change tracking?
+c7043d552115,Intune managed devices delta query
+c7043d552115,Can you use delta synchronization on Intune devices?
+95e72d051c33,Graph devices delta $filter $select options
+95e72d051c33,What filters can you use with devices/delta?
+95e72d051c33,How do you select specific properties in delta queries?
+391a80b308a5,Delta token expiration seven days
+391a80b308a5,How long are Graph delta tokens valid?
+391a80b308a5,What error indicates an expired delta token?
+b4adcc06aa92,Graph 410 Gone deltatoken reset
+b4adcc06aa92,What does a 410 Gone response mean in delta queries?
+b4adcc06aa92,How do you recover from expired delta tokens?
+457e962b594c,Graph delta replay replication delay
+457e962b594c,Can changes appear multiple times in delta responses?
+457e962b594c,What latency exists in Graph delta synchronization?
+1a5fa84c4682,OpenTelemetry Logs Data Model status
+1a5fa84c4682,Is the Logs Data Model specification stable?
+1a5fa84c4682,What is the maturity level of OTEL logs?
+e71045c57931,Timestamp nanoseconds UNIX epoch field
+e71045c57931,How is timestamp formatted in logs?
+b8d01e2e99db,ObservedTimestamp collection system time
+b8d01e2e99db,When should ObservedTimestamp be set in logs?
+b8d01e2e99db,What's the difference between Timestamp and ObservedTimestamp?
+687ba5240aff,Log SeverityNumber range mapping levels
+687ba5240aff,What are the numeric ranges for log severity levels?
+687ba5240aff,How is FATAL encoded in OpenTelemetry?
+d10c12d96f55,Log level severity mapping source range
+d10c12d96f55,How do you map log levels to SeverityNumber?
+d10c12d96f55,What's the mapping for Error versus Critical?
+a2d9a7084c8c,Log Body field AnyValue type optional
+a2d9a7084c8c,What types can the Body field contain?
+a2d9a7084c8c,Is Body mandatory in log records?
+9cbec000d89d,Resource InstrumentationScope log batch
+9cbec000d89d,What does Resource describe in logs?
+9cbec000d89d,How is InstrumentationScope used?
+eaa20f67966d,Log attributes exception semantic conventions
+eaa20f67966d,How should exceptions be formatted in attributes?
+eaa20f67966d,What semantic rules apply to exception details?
+a924b3427d19,EventName unique event class identifier
+a924b3427d19,What is the purpose of EventName?
+a924b3427d19,How should EventName be structured?
+01d48d1a348b,MCP specification directories latest version
+01d48d1a348b,What versions of the MCP spec exist?
+01d48d1a348b,Where are the protocol specification files?
+16cb18f4c0a1,MCP LATEST_PROTOCOL_VERSION schema
+16cb18f4c0a1,What is the current MCP protocol version?
+16cb18f4c0a1,Where are the authoritative protocol requirements?
+dc3fb74a567f,MCP code spec license Apache CC-BY
+dc3fb74a567f,Can MCP specification be used commercially?
+7727b6d3ec2d,MCP initialize handshake _meta protocolVersion
+7727b6d3ec2d,How do clients initialize MCP connections?
+7727b6d3ec2d,What replaced the initialize sequence?
+13b72899d096,MCP missing _meta malformed -32602 400
+13b72899d096,What error means _meta is missing?
+13b72899d096,How should servers reject malformed requests?
+3ea94cb3bf13,MCP clientInfo serverInfo security self-reported
+3ea94cb3bf13,Should serverInfo be trusted for security?
+3ea94cb3bf13,What do clientInfo and serverInfo contain?
+612dc3ddb313,MCP server/discover -32022 version mismatch
+612dc3ddb313,What happens with protocol version incompatibility?
+612dc3ddb313,How do servers respond to unsupported versions?
+2c960610e4d6,MCP undeclared client capabilities -32021
+2c960610e4d6,What error code means missing capability?
+2c960610e4d6,How should servers validate capabilities?
+e8a9d7c516a8,MCP session state handles cross-call
+e8a9d7c516a8,What replaced Mcp-Session-Id?
+80606e804d8e,MCP ping logging/setLevel removed log level
+e1b794395df1,MCP resultType complete input_required values
+e1b794395df1,What result types exist in MCP?
+e45aa7fd809f,MCP OpenTelemetry W3C context propagation
+e45aa7fd809f,What reserved keys support distributed tracing?
+7684d03a616b,MCP error code allocation -32000 -32099
+07fa2e232a5d,MCP eras legacy modern dual-era versions
+07fa2e232a5d,What are the protocol eras?
+23b4f60f7eb5,MCP extensions vendor prefix official naming
+23b4f60f7eb5,What naming do official extensions use?
+781721685528,MCP tool user consent security untrusted
+781721685528,What are MCP security principles?
+781721685528,When should tool annotations be trusted?
+6b810f793b56,ConfigMgr client server logs list
+55f5fc1263b9,ConfigMgr compliance CI DCM Agent logs
+55f5fc1263b9,Where are CI and DCM log files?
+bde6cdbe99c2,ConfigMgr client state CI policy logs
+3aacc653d261,ConfigMgr adminservice.log SMS Provider REST
+3aacc653d261,Where are REST API calls logged?
+3aacc653d261,What log tracks administration service?
+beff1d314546,ConfigMgr CMG logs Azure storage sync delay
+beff1d314546,How often are CMG logs synchronized?
+25bfed935129,WSUS log location
+25bfed935129,Where are WSUS server logs stored?
+25bfed935129,What is the path to Windows Update Services log files?
+7c443396f9c7,Where are Configuration Manager logs stored?
+7c443396f9c7,What are the default log directories for SCCM components?
+6f8c16f1f599,CmRcService.log location
+6f8c16f1f599,Where is the CmRcService.log file stored?
+9ef615f894ee,Power BI refresh limits
+9ef615f894ee,How many scheduled refreshes per day for Premium capacity?
+9ef615f894ee,What is the maximum refresh frequency by SKU?
+ee5ccacd2557,shared capacity refresh quota
+ee5ccacd2557,What is the daily refresh limit for shared Power BI capacity?
+ee5ccacd2557,When does the refresh quota reset?
+00bdee2fff7e,Power BI refresh types counted
+00bdee2fff7e,What types of refreshes count toward the daily limit?
+00bdee2fff7e,Does manual refresh count in the scheduling quota?
+6a94332a0b35,Premium API refresh limits
+6a94332a0b35,Are there limits on programmatic refreshes with XMLA?
+6a94332a0b35,How many API refreshes can run on Premium capacity?
+01f0739bfe84,Premium frequent refresh feature
+01f0739bfe84,What allows more than 8 daily refreshes?
+01f0739bfe84,Is high-frequency scheduling available in Pro workspaces?
+915d294f4621,Power BI refresh timeout
+915d294f4621,How long can a refresh take?
+915d294f4621,What is the maximum duration for a semantic model refresh?
+b03668be05bc,refresh timing window
+b03668be05bc,When does a scheduled refresh run relative to its time slot?
+b03668be05bc,What is the acceptable lateness for Power BI refresh?
+cb954056da9c,refresh auto-pause
+cb954056da9c,When is scheduled refresh automatically disabled?
+cb954056da9c,What inactivity triggers refresh suspension?
+6512f0306244,refresh failure threshold
+6512f0306244,How many consecutive failures pause refresh?
+6512f0306244,What error conditions deactivate a schedule?
+cfbc1e45b58b,Power BI refresh intervals
+cfbc1e45b58b,What refresh interval options are available?
+cfbc1e45b58b,Can you schedule monthly refreshes?
+17df37ca1dda,semantic model refresh requirement
+17df37ca1dda,Which semantic model types require refresh?
+17df37ca1dda,Do DirectQuery models need data refresh?
+db8515a0323a,gateway credential configuration
+db8515a0323a,Where are data source credentials defined on a gateway?
+db8515a0323a,Who manages gateway credentials?
+a5b22476f107,Power BI refresh history
+a5b22476f107,Where do you view semantic model refresh history?
+a5b22476f107,How do you check if a Power BI refresh succeeded?
+b72ecdc7a4bd,Pro workspace refresh frequency
+b72ecdc7a4bd,How often can refreshes run in a Pro workspace?
+b72ecdc7a4bd,What is the average refresh interval on shared capacity?
+fd8a436263f8,GDPR pseudonymisation definition
+fd8a436263f8,What is the GDPR definition of pseudonymisation?
+fd8a436263f8,How does GDPR Article 4(5) define data processing to prevent attribution?
+9f67b2c377c6,GDPR pseudonymisation identifiability
+9f67b2c377c6,Under GDPR when is pseudonymised data personal data?
+9f67b2c377c6,What makes pseudonymised information identifiable?
+076881552573,GDPR pseudonymisation risk reduction
+076881552573,Does GDPR recommend pseudonymisation?
+076881552573,Can pseudonymisation be combined with other measures?
+0348fcfd6c31,EUR-Lex reuse license
+0348fcfd6c31,What are the reuse terms for EUR-Lex documents?
+0348fcfd6c31,Can you use EU legal database content commercially?
+8c836402df45,EDPB pseudonymisation guidelines adoption
+8c836402df45,When was EDPB guidance on pseudonymisation adopted?
+8c836402df45,Are there official European privacy guidelines on pseudonymisation?
+4b6b3d87be45,EDPB pseudonymised data ruling
+4b6b3d87be45,Can pseudonymised data still be personal data according to EDPB?
+4b6b3d87be45,What is the EDPB position on identifiable pseudonymised information?
+a752ffc9b9d0,EDPB consultation deadline
+a752ffc9b9d0,When was the consultation period for EDPB guidelines?
+a752ffc9b9d0,What was the comment deadline for pseudonymisation guidance?
+13a076753a3d,EDPB pseudonymisation work status
+13a076753a3d,Has EDPB published final pseudonymisation guidelines?
+13a076753a3d,What pseudonymisation resources does EDPB offer?
+af95a22e1438,EDPB Guidelines 01/2025 final version
+af95a22e1438,Is a final version of EDPB Guidelines 01/2025 available?
+af95a22e1438,Did EDPB release pseudonymisation guidance after consultation?
+0ff3c43a5ee4,Court of Justice pseudonymisation case
+0ff3c43a5ee4,What did the Court of Justice decide about pseudonymisation?
+0ff3c43a5ee4,What was the outcome of case C-413/23 P?
+aef480da3af0,controller identifiability obligation
+aef480da3af0,When must a controller consider data identifiable?
+aef480da3af0,How does the controller's perspective affect pseudonymisation?
+d0ca697cabb6,EU institutions data regulation
+d0ca697cabb6,Which regulation applies to EU institution data?
+d0ca697cabb6,What is the difference between EU institutions and GDPR rules?
+dd2c67a09c88,court judgment authority
+dd2c67a09c88,Are court press releases officially binding?
+dd2c67a09c88,What is the official source for court decisions?
+e566f33e85f8,PowerShell execution policy security
+e566f33e85f8,Is execution policy a real security boundary?
+e566f33e85f8,Can users bypass execution policy?
+93763cb52694,PowerShell non-Windows execution policy
+93763cb52694,Can you change PowerShell policy on Mac?
+955fe6ebf518,PowerShell execution policies
+955fe6ebf518,What execution policies are available?
+955fe6ebf518,What does AllSigned policy require?
+e3273af67494,PowerShell default policy undefined
+e3273af67494,What is the default execution policy if all scopes are undefined?
+e3273af67494,Is RemoteSigned default on Windows Server?
+8f53a9e41d55,PowerShell Default policy version differences
+8f53a9e41d55,What does Default policy mean in different versions?
+8f53a9e41d55,Did execution policy change between PowerShell versions?
+2d7764078fd0,PowerShell execution policy scope precedence
+2d7764078fd0,What is the precedence order for execution policies?
+2d7764078fd0,Does Group Policy override local execution policy?
+9d0ebd68150f,PowerShell execution policy storage
+9d0ebd68150f,Where is the execution policy stored?
+9d0ebd68150f,How does PowerShell 7 store execution policy differently?
+8732087304a2,Group Policy script execution settings
+8732087304a2,How do Group Policy settings map to execution policies?
+8732087304a2,What Group Policy controls PowerShell execution?
+3b556558db42,PowerShell session execution policy
+3b556558db42,How do you set execution policy for one session?
+3b556558db42,Does the ExecutionPolicy parameter affect future sessions?
+0f7512cdd7a0,GitLab Runner PowerShell policy
+0f7512cdd7a0,What execution policy does GitLab Runner use?
+0f7512cdd7a0,Can GitLab Runner execute unsigned scripts?
+a3c74788f4d2,PowerShell signature file types
+a3c74788f4d2,Which file types require PowerShell signatures?
+a3c74788f4d2,Does PowerShell verify .xaml file signatures?
+dbfeb3436964,PowerShell script signing requirements
+dbfeb3436964,What certificates can sign PowerShell scripts?
+dbfeb3436964,How do you verify a script is signed by a trusted publisher?
+dbf25f09cb14,PowerShell signature block format
+dbf25f09cb14,What does a PowerShell signature block look like?
+dbf25f09cb14,How does Set-AuthenticodeSignature format signatures?
+639d3708065c,PowerShell script encoding requirements
+639d3708065c,What encodings support PowerShell signatures?
+639d3708065c,Can you use UTF-16 in signed PowerShell scripts?
+cc1dc96e561e,PowerShell signature validity period
+cc1dc96e561e,How long does a PowerShell signature stay valid?
+cc1dc96e561e,Can an expired certificate validate an old signature?
+81f425e4637d,ConfigMgr client PowerShell policy options
+81f425e4637d,What execution policies can ConfigMgr enforce on clients?
+81f425e4637d,Can SCCM require script signatures?
+e1d95032e1fc,ConfigMgr script signing error codes
+e1d95032e1fc,What error indicates an unsigned script in ConfigMgr?
+e1d95032e1fc,How do you diagnose script failures in SCCM?
+2c97db61c47d,PowerShell Bypass security guidance
+2c97db61c47d,When should you use Bypass execution policy?
+2c97db61c47d,Is it safe to allow unsigned scripts?
+89925d431bb5,ConfigMgr WMI execution policy values
+89925d431bb5,What WMI property controls ConfigMgr execution policy?
+89925d431bb5,How do you query SCCM policy settings via WMI?
+6823ddaeb4ee,CMPivot certificate signing
+6823ddaeb4ee,How do you trust Microsoft tools under AllSigned?
+46fde71f8f1b,PowerShell CI script loading
+46fde71f8f1b,How do you load a signed script without breaking the signature?
+46fde71f8f1b,Why does copy-paste break PowerShell signatures?

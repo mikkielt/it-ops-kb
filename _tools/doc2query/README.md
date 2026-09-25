@@ -10,7 +10,7 @@ Document expansion for `pack`: a model writes a few questions each fact answers,
 Background: the retrieval audit in `token-usage-report.md`, and Doc2Query-- (<https://arxiv.org/abs/2301.03266>): filtered expansion, up to 16% more effective, a third smaller index.
 
 ## Files
-- `arms.json`: the pilot and control articles (`doc2query.py split`: stratified by domain, articles with 8 or more facts).
+- `arms.json`: the latest round's pilot and control articles (`doc2query.py split`: stratified by domain, articles with 8 or more facts). `arms-seed7.json` is round 1; round 2 used `--seed 29 --exclude arms-seed7.json`.
 - `expansions.csv`: `key,question`. The key is `kbfacts.fact_key(text)`, sha256 of the whitespace-collapsed fact text, so it survives line moves and changes with the text. `doc2query.py stale` lists orphaned keys.
 - `offkb_questions.txt`: 20 near-domain questions the kb does not cover. Expansion must not make them `good`.
 
@@ -31,3 +31,7 @@ Background: the retrieval audit in `token-usage-report.md`, and Doc2Query-- (<ht
 
 ## Results
 See `token-usage-report.md`, "doc2query pilot".
+- **Round 1:** pilot 90% -> 97.5%, with the weight tuned on the test set.
+- **Round 2 (fresh arms):** no change, 95% both ways.
+
+The whole kb is not expanded. Expand an article when real lookups show paraphrase misses in it.
