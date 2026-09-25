@@ -106,6 +106,29 @@ class MergeRules(unittest.TestCase):
         self.assertEqual(kbgit.answer_plan("## QK7. q\n", "## QK7. q\n", None, {}, report, []), {})
         self.assertTrue(report and report[0].startswith("WARN"))
 
+    def test_answer_mentions_follow_only_the_owning_side(self):
+        """A renamed QK1 is rewritten on the owner's lines; the pushed side's own mention of QK1 and docs stay."""
+        self.assertFalse({"README.md", "AGENTS.md", "CLAUDE.md"} & set(kbgit.id_files()))
+        up = {"x/a.md": "# A\n- The other kb calls it QK1.\n", "_answers.md": "# A\n"}
+        mine = {"x/a.md": "# A\n- Answer: `_answers.md` QK1.\n", "_answers.md": "# A\n\n## QK1. Old style question\n"}
+        merged = {"x/a.md": "# A\n- The other kb calls it QK1.\n- Answer: `_answers.md` QK1.\n",
+                  "_answers.md": "# A\n\n## QK1. Old style question\n"}
+        revs = {"base": {"x/a.md": "# A\n", "_answers.md": "# A\n"}, "up": up, "mine": mine}
+        saved = kbgit.id_files, kbgit.read, kbgit.show
+        try:
+            kbgit.id_files, kbgit.read = (lambda: sorted(merged)), merged.get
+            kbgit.show = lambda rev, f: revs[rev].get(f)
+            plan = kbgit.answer_plan(merged["_answers.md"], revs["base"]["_answers.md"], up["_answers.md"],
+                                     {"up": up["_answers.md"], "mine": mine["_answers.md"]}, [], [])
+            texts, problems = {}, []
+            kbgit.rewrite_ids(plan, "base", {"up": "up", "mine": "mine"}, texts, set(), problems, [])
+        finally:
+            kbgit.id_files, kbgit.read, kbgit.show = saved
+        new = kbid.answer_id("Old style question")
+        self.assertEqual(problems, [])
+        self.assertEqual(texts["x/a.md"], f"# A\n- The other kb calls it QK1.\n- Answer: `_answers.md` {new}.\n")
+        self.assertEqual(texts["_answers.md"], f"# A\n\n## {new}. Old style question\n")
+
     def test_fetch_state_one_row_per_id(self):
         h = "id,url,checked_utc,fetched_utc,changed_utc,sha256,text_sha256,bytes,error\n"
         a = "S100,https://x.example.com/,2026-03-01T00:00:00Z,2026-02-01T00:00:00Z,2026-01-01T00:00:00Z,old,old,1,timeout\n"

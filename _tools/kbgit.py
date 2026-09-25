@@ -383,9 +383,11 @@ def cite_count(text, sid):
 
 
 def id_files():
-    """Text files outside tools/config that may cite a source id or name an answer id: content files and root ledgers."""
+    """Text files that may cite a source id or name an answer id: content files and the root ledgers (`_*.md`,
+    `_*.csv`). README.md, AGENTS.md and the tools mention ids only as examples and are never rewritten."""
     out = [f for f in build_index.content_files()]
-    out += sorted(f for f in os.listdir(KB) if f.endswith((".md", ".csv")) and f not in (SOURCES, STATE, "_coverage.csv"))
+    out += sorted(f for f in os.listdir(KB) if f.startswith("_") and f.endswith((".md", ".csv"))
+                  and f not in (SOURCES, STATE, "_coverage.csv"))
     out += [build_index.EXTRA]
     return [f for f in out if os.path.isfile(os.path.join(KB, f))]
 
@@ -402,9 +404,10 @@ def rewrite_ids(plan, base_rev, side_revs, texts, pinned, problems, report):
     side's lines verbatim, so a line naming an id that only one side's version of the file has belongs to that side
     and gets that side's new id; a line both sides have, or that neither has, is ambiguous and goes to problems.
     A plan entry with a `default` (a single new id; the old one names nothing any more) renames it on every line the
-    base did not have. Lines are attributed on their text before any rename, so one line may carry several ids.
-    plan = {old id: {"by_side": {side: new id}, "default": new id or None, "strict_base": a base line naming the old
-    id is an error, "what": noun for messages}}."""
+    base did not have, except lines a side outside its `owners` has (e.g. the pushed side's own text). Lines are
+    attributed on their text before any rename, so one line may carry several ids.
+    plan = {old id: {"by_side": {side: new id}, "default": new id or None, "owners": sides the default applies to,
+    "strict_base": a base line naming the old id is an error, "what": noun for messages}}."""
     if not plan:
         return
     rx = {old: re.compile(rf"(?<![\w-]){re.escape(old)}(?![\w-])") for old in plan}
@@ -427,8 +430,13 @@ def rewrite_ids(plan, base_rev, side_revs, texts, pinned, problems, report):
                         problems.append(f"{f}:{k + 1} cited {old} before the merge, when it named no source")
                         bad = True
                     continue
-                want = [p["default"]] if p["default"] else \
-                    sorted({p["by_side"].get(s, old) for s, sl in side_lines.items() if ln in sl})
+                on = [s for s, sl in side_lines.items() if ln in sl]
+                if p["default"]:
+                    if any(s not in p.get("owners", ()) for s in on):
+                        continue  # a line of a side without the renamed answer: it means something else
+                    want = [p["default"]]
+                else:
+                    want = sorted({p["by_side"].get(s, old) for s in on})
                 if len(want) != 1:
                     problems.append(f"{f}:{k + 1}: cannot tell which {p['what']} {old} means here "
                                     + (f"(the line is on several sides: {', '.join(want)})" if want else "(no side has this line)"))
@@ -499,7 +507,8 @@ def answer_plan(text, base_text, upstream_text, side_texts, report, problems):
         renamed = {ln: fresh(q) for ln, q in hl.items() if ln != keep}
         if keep is None and len(renamed) == 1:
             new = next(iter(renamed.values()))
-            plan[aid] = {"by_side": {}, "default": new, "strict_base": False, "what": "answer"}
+            owners = {s for s, t in side_texts.items() if next(iter(renamed)) in (t or "").split("\n")}
+            plan[aid] = {"by_side": {}, "default": new, "owners": owners, "strict_base": False, "what": "answer"}
             report.append(f"_answers.md: {aid} -> {new} (answer ids are QK-<slug>)")
             continue
         by_side = {}
