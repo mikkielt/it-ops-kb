@@ -3,7 +3,7 @@ topic: security/baselines-catalog
 priority: P0
 applies_to: "Windows 11 Enterprise 24H2/25H2, Windows Server 2025"
 retrieved_utc: 2026-09-24
-sources: [S1470, S1471, S1472, S1598, S1400, S1401, S1402, S1403, S1404, S1406, S1407, S1408, S1409, S1410, S1411, S1418, S1419, S1420, S1421, S1422, S1423, S1424, S1425, S1426]
+sources: [S1470, S1471, S1472, S1598, S1400, S1401, S1402, S1403, S1404, S1405, S1406, S1407, S1408, S1409, S1410, S1411, S1418, S1419, S1420, S1421, S1422, S1423, S1424, S1425, S1426]
 status: partial
 ---
 
@@ -22,9 +22,10 @@ attribution. NCSC (UK)/BSI/ANSSI rows remain UNK.
 
 ## Facts
 
-- The Security Compliance Toolkit download page (id 55319) lists separate packages for Windows 11
-  24H2 and 25H2 baselines; the page's own file list did not resolve to a direct URL through the
-  fetch tool used here (Microsoft Download Center requires a JS-driven selection flow) [DOC S1400].
+- The Security Compliance Toolkit 1.0 download page (id 55319) lists separate packages for Windows 11
+  23H2, 24H2 and 25H2 baselines (alongside Windows Server 2025, Edge, Microsoft 365 Apps, LGPO and
+  Policy Analyzer); the page's HTML embeds a direct `download.microsoft.com` URL for each file, so a
+  plain HTTP fetch of the page yields the file list without the interactive selection flow [DOC S1400].
 - Microsoft published a Windows 11 version 24H2 security baseline blog post announcing the release,
   covering changed protections to LAN Manager, Kerberos, UAC and Defender Antivirus [DOC S1401].
 - Microsoft published a Windows 11 version 25H2 security baseline blog post [DOC S1402]; exact

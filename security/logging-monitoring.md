@@ -3,7 +3,7 @@ topic: security/logging-monitoring
 priority: P1
 applies_to: "an audit table (SQL Server, temporal); normalized device logs via ConfigMgr; Claude Code OTel"
 retrieved_utc: 2026-09-24
-sources: [S1492, S1493, S1494, S1495, S1496, S1497, S1498, S1499, S1500, S1526, S1527, S1528, S1529]
+sources: [S1492, S1493, S1494, S1495, S1496, S1497, S1498, S1499, S743, S1526, S1527, S1528, S1529]
 status: partial
 ---
 
@@ -21,7 +21,7 @@ CIS Controls v8.1 sets a 90-day minimum for audit-log retention (Safeguard 8.10)
 - ISO/IEC 27001:2022 Annex A control **8.15 "Logging"** covers producing, storing, protecting and analysing logs of activities, exceptions, faults and other relevant events. Control **8.16 "Monitoring activities"** covers monitoring networks, systems and applications for anomalous behaviour and taking appropriate action; this is new versus the 2013 edition. Titles only — the standard's clause text is paid and not reproduced here. [DOC S1495,S1496]
 - OWASP's Top 10 for Agentic Applications (2026 edition, published 2025-12-10) calls for **strong observability**: comprehensive, tamper-evident, signed audit logs of agent actions, tool-use patterns, decision pathways and inter-agent communication, for forensic analysis — paired with authentication/authorization as defense in depth, not a substitute for it. [DOC S1526]
 - NIST AI 600-1 (the Generative AI profile of the AI RMF, July 2024) recommends logging and metadata annotation sufficient to reconstruct an agent's tool calls and their outputs after the fact, and source attribution "where technically feasible," as part of its MEASURE/MANAGE suggested actions. It does not mandate a specific log format or retention period. [DOC S1527]
-- Claude Code's own OpenTelemetry integration emits structured events per action — `claude_code.api_request`, `claude_code.tool_result` among them — enabled via `CLAUDE_CODE_ENABLE_TELEMETRY` and `OTEL_LOGS_EXPORTER`, with an `OTEL_LOG_TOOL_DETAILS` flag specifically for security/audit use, in addition to hooks that can capture lifecycle events for a custom audit trail. Session transcripts are also written locally regardless of OTel configuration. [DOC S1498,S1500]
+- Claude Code's own OpenTelemetry integration emits structured events per action — `claude_code.api_request`, `claude_code.tool_result` among them — enabled via `CLAUDE_CODE_ENABLE_TELEMETRY` and `OTEL_LOGS_EXPORTER`, with an `OTEL_LOG_TOOL_DETAILS` flag specifically for security/audit use, in addition to hooks that can capture lifecycle events for a custom audit trail. Session transcripts are also written locally regardless of OTel configuration. [DOC S1498,S743]
 - No single official Microsoft page specifically covering "logging Copilot/agent actions" (as distinct from general Microsoft 365/Purview audit-log collection) was found in this pass. [UNK]
 
 ## Conflicts
