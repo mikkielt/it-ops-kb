@@ -582,3 +582,14 @@ Still open:
   whether its use case falls under EU AI Act Annex III, are open questions this research pass deliberately left as
   facts-only / UNK, per the brief's instruction not to decide policy questions.
 
+
+## agents/doc-lookup-sources
+
+- Anthropic docs terms for storing fetched page text offline: not found on platform.claude.com or code.claude.com
+  (2026-09-25). Until found, Anthropic docs stay summarized with quotes of at most 25 words.
+- No stable (GA) docs MCP server or documented API was found for Windows security baselines (Security Compliance
+  Toolkit and DISA STIG are zip downloads; CIS is licensed) or for Ansible (docs.ansible.com answered scripted
+  requests with HTTP 429; the GitHub repos `ansible/ansible-documentation` and `ansible-collections/ansible.windows`
+  remain readable through GitHub).
+- The Claude Code Docs and MCP docs MCP servers carry no explicit GA statement; they are kept because Anthropic's
+  own quickstart documents the first and both report version 1.0.0 with no preview label.

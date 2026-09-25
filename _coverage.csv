@@ -146,6 +146,7 @@ security/supply-chain,P1,partial,security/supply-chain.md,12
 agents/a2a-protocol,P2,partial,agents/a2a-protocol.md;agents/a2a/a2a-proto-digest.md;agents/a2a/a2a.proto,10
 agents/agent-cost-governance,P2,complete,agents/agent-cost-governance.md,4
 agents/anthropic-materials,P2,partial,agents/anthropic-materials.md;agents/anthropic-materials.csv,23
+agents/doc-lookup-sources,P2,partial,agents/doc-lookup-sources.md;agents/doc-lookup-sources.csv,22
 agents/genai-telemetry,P2,complete,agents/genai-telemetry.md,5
 agents/mcp-server-lifecycle,P2,partial,agents/mcp-server-lifecycle.md,3
 agents/prompt-injection-design-patterns,P2,complete,agents/prompt-injection-design-patterns.md,6

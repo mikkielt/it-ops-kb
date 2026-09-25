@@ -1,0 +1,23 @@
+{
+  "enabledMcpjsonServers": ["microsoft-learn", "claude-code-docs", "mcp-docs"],
+  "permissions": {
+    "allow": [
+      "mcp__microsoft-learn__microsoft_docs_search",
+      "mcp__microsoft-learn__microsoft_docs_fetch",
+      "mcp__microsoft-learn__microsoft_code_sample_search",
+      "mcp__claude-code-docs__search_claude_code_docs",
+      "mcp__claude-code-docs__query_docs_filesystem_claude_code_docs",
+      "mcp__mcp-docs__search_model_context_protocol",
+      "mcp__mcp-docs__query_docs_filesystem_model_context_protocol",
+      "Bash(python3 _tools/rag.py *)",
+      "Bash(python3 _tools/check.py)",
+      "Bash(python3 _tools/fetch.py --offline)",
+      "Bash(python3 _tools/fetch.py --status *)",
+      "Bash(python3 _tools/stress_test.py *)"
+    ],
+    "deny": [
+      "mcp__claude-code-docs__submit_feedback",
+      "mcp__mcp-docs__submit_feedback"
+    ]
+  }
+}
