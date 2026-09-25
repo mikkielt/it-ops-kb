@@ -2,7 +2,7 @@
 """Re-download and verify every kb artifact (stdlib only).
 
 Inputs (paths relative to the repository root):
-  _sources.csv    id,url,title,publisher,licence,retrieved_utc,version_or_date,artifact_sha256,used_in
+  _sources.csv    id,url,title,publisher,licence,retrieved_utc,version_or_date,artifact_sha256,used_in,superseded_by
                   A row with artifact_sha256 is an artifact source: the bytes at `url` must hash to it.
   _artifacts.csv  path,source_id,sha256,zip_member
                   A local file in the repository, where it came from, and its own sha256. With zip_member, the file
@@ -25,7 +25,7 @@ Selection (for --diff and --status; repeatable, combined as a union; none = ever
   --topic auth/kerberos     sources cited by the topic's files (per _coverage.csv) or listed in their used_in
   --dir auth                ... by every .md/.csv under a directory
   --file auth/kerberos.md   ... by one file
-  --source S1208            one source id
+  --source S1208            one source id (legacy S1208 or hash id S-k3f7q2zd)
   --older-than DAYS         then keep only sources not fetched within DAYS (never-fetched included)
 
 State: _fetch_state.csv (committed) keeps per source the last check, last successful fetch, last change,
@@ -38,6 +38,7 @@ HTML is reduced to the text of <main> (or the whole body) before hashing, so pag
 A failed download is reported as `unknown`, never as a match.
 """
 import argparse, csv, datetime, difflib, hashlib, html.parser, io, json, os, re, sys, time, urllib.parse, urllib.request, zipfile
+import kbid
 
 KB = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 STATE = "_fetch_state.csv"
@@ -183,7 +184,7 @@ def write_state(state):
     with open(p + ".tmp", "w", newline="", encoding="utf-8") as f:
         w = csv.DictWriter(f, STATE_COLS, lineterminator="\n", extrasaction="ignore")
         w.writeheader()
-        w.writerows(sorted(state.values(), key=lambda r: int(r["id"][1:]) if r["id"][1:].isdigit() else 0))
+        w.writerows(sorted(state.values(), key=lambda r: kbid.sort_key(r["id"]) if kbid.is_source_id(r["id"]) else (2, 0, r["id"])))
     os.replace(p + ".tmp", p)
 
 
@@ -225,12 +226,12 @@ def select(a, sources, state):
         files.add(f)
     for f in files:
         with open(os.path.join(KB, f), encoding="utf-8", errors="replace") as fh:
-            ids.update(re.findall(r"\bS\d+\b", fh.read()))
+            ids.update(kbid.SOURCE_ID.findall(fh.read()))
         ids.update(sid for sid, r in sources.items() if f in (r.get("used_in") or "").split(";"))
     for sid in a.source:
-        if sid.upper() not in sources:
+        if kbid.canonical_id(sid) not in sources:
             sys.exit(f"unknown source id {sid!r}")
-        ids.add(sid.upper())
+        ids.add(kbid.canonical_id(sid))
     chosen = [sid for sid in sources if sid in ids] if (files or a.source) else list(sources)
     if a.older_than is not None:
         cut = (datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=a.older_than)).strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -295,7 +296,7 @@ def diff_sources(a, sources):
     else:
         for r in results:
             extra = f"+{r['added']} -{r['removed']}" if r["status"] == "changed" and "diff_unavailable" not in r else r.get("error") or r.get("diff_unavailable") or ""
-            print(f"{r['status'].upper():<9} {r['id']:<6} {r['previous_fetched_utc'] or 'never':<20} {extra:<14} {r['url']}")
+            print(f"{r['status'].upper():<9} {r['id']:<10} {r['previous_fetched_utc'] or 'never':<20} {extra:<14} {r['url']}")
             for ln in r.get("diff", []):
                 print("    " + ln)
             if r.get("diff_truncated"):
@@ -319,7 +320,7 @@ def status(a, sources):
     if a.json:
         return print(json.dumps(out, indent=1))
     for r in out:
-        print(f"{r['id']:<6} fetched {r['fetched_utc'] or 'never':<20} changed {r['changed_utc'] or '-':<20} "
+        print(f"{r['id']:<10} fetched {r['fetched_utc'] or 'never':<20} changed {r['changed_utc'] or '-':<20} "
               f"{'age ' + str(r['age_days']) + 'd' if r['age_days'] is not None else '':<9} {('ERROR ' + r['error']) if r['error'] else ''}")
     print(f"selected={len(out)} never_fetched={sum(1 for r in out if not r['fetched_utc'])} with_error={sum(1 for r in out if r['error'])}")
 

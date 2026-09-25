@@ -36,8 +36,9 @@ Run `/kb-setup` (Claude Code), or do the same by hand:
 | command | does |
 |---|---|
 | `python3 _tools/rag.py search "<query>" -k 8 [-d DOMAIN] [-u] [--index]` | BM25 search; `-u` adds source urls; root index files only with `--index` |
-| `python3 _tools/rag.py show PATH:LINE -n 30` / `src S123` / `topics [DOMAIN]` | read lines / resolve a source id / list articles |
-| `python3 _tools/check.py` | source ids, citations, artifacts, front matter, CSV shape |
+| `python3 _tools/rag.py show PATH:LINE -n 30` / `src S123` / `topics [DOMAIN]` | read lines / resolve a source id (`S123` or `S-k3f7q2zd`) / list articles |
+| `python3 _tools/kbid.py url <URL>` / `answer "<question>"` / `check` | id for a new source / `QK-<slug>` for a new answer / hash-id consistency |
+| `python3 _tools/check.py` | source ids, superseded_by, answer ids, citations, artifacts, front matter, CSV shape |
 | `python3 _tools/fetch.py --offline` | pinned artifacts vs their sha256 |
 | `python3 _tools/fetch.py --status --topic T` | offline: when a topic's sources were last fetched or changed |
 | `python3 _tools/fetch.py --diff --topic T [--full] [--json]` | re-fetch a topic's sources and diff against the last fetch (exit 0 same, 1 changed, 2 error) |
@@ -58,7 +59,9 @@ Run `/kb-setup` (Claude Code), or do the same by hand:
 
 - One topic = `<domain>/<topic>.md` with front matter `topic, priority, applies_to, retrieved_utc, sources, status` and sections Summary, Facts, Reference, Examples. `topic` equals the path.
 - Every fact ends in exactly one tag with ids from `_sources.csv`: `DOC`, `DER` (show the derivation), `COMMUNITY` (never the only evidence for a DOC fact), `UNK`.
-- Add the source row before the fact. Ids are `S` + a number, never reused. Write CSVs with a real CSV writer: an unquoted comma breaks the row.
+- Add the source row before the fact. A new source's id is `S-` + 8 characters from `python3 _tools/kbid.py url <URL>` (a hash of the url, so parallel writers converge); never invent one or take "the next number". Legacy `S<number>` ids stay valid; reuse the existing id when the url already has a row. Write CSVs with a real CSV writer: an unquoted comma breaks the row.
+- A replaced source (e.g. a pinned commit url whose upstream changed) gets a new row; the old row's `superseded_by` names the new id. Ids are never deleted or reused.
+- New `_answers.md` entries are `## QK-<slug>. <question>` (`python3 _tools/kbid.py answer "<question>"`); answer ids are unique.
 - Register topics in `_coverage.csv` and the README coverage table. Failed lookups go in `_gaps.md`, disagreements in `_conflicts.md`.
 - Licensing: our own words, quotes of 25 words or fewer; verbatim only under permissive licences (MIT, Apache-2.0, CC BY 4.0) with attribution; never copy CIS or ISO text. Microsoft Learn content fetched through MCP is paraphrased.
 - Placeholders only in examples: `PL-LT-00123`, `PL-SRV-0042`, `corp.example.com`, tenant `00000000-0000-0000-0000-000000000000`, `jan.kowalski`. Never real hostnames, tenants, people or secrets.

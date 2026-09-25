@@ -15,7 +15,7 @@ Run each command on its own (no `;`, `&&`, pipes into other tools or loops): the
 - Topic id (e.g. `auth/kerberos`): `--topic auth/kerberos`
 - Directory (e.g. `dsc`): `--dir dsc`
 - File: `--file auth/kerberos.md`
-- Source id: `--source S1208`
+- Source id: `--source S1208` or `--source S-k3f7q2zd`
 Flags repeat and combine. `--older-than DAYS` skips recently fetched sources.
 
 ## 2. See what changed
@@ -23,7 +23,7 @@ Flags repeat and combine. `--older-than DAYS` skips recently fetched sources.
 2. `python3 _tools/fetch.py --diff <selection> --full --max-lines 200`
    - Exit 0: nothing changed. 1: something changed. 2: a fetch or the selection failed.
    - `NEW` is the first fetch: baseline only, unless the source row recorded a hash at retrieval. Such a live page usually reports `CHANGED` with "no earlier snapshot"; then compare the page with the kb facts by reading it (`microsoft_docs_fetch` for Learn pages).
-   - A url pinned to a commit or release (e.g. `raw.githubusercontent.com/.../<sha>/...`) never changes, so `--diff` can only say `NEW` or `UNCHANGED`. To learn whether the facts are still current, read the live page it was taken from (for MicrosoftDocs files, the matching learn.microsoft.com page) and compare. If the live page differs, cite it as a new source row; keep the pinned row as the historical source.
+   - A url pinned to a commit or release (e.g. `raw.githubusercontent.com/.../<sha>/...`) never changes, so `--diff` can only say `NEW` or `UNCHANGED`. To learn whether the facts are still current, read the live page it was taken from (for MicrosoftDocs files, the matching learn.microsoft.com page) and compare. If the upstream file changed, add a new source row for the new url (e.g. the file at the new commit), set the old row's `superseded_by` to the new id, and re-point the citations of the facts you re-verified to the new id. Keep the old row as the historical source; never edit its url.
    - This saves the fetch date to `_fetch_state.csv` and snapshots to `_cache/` (not committed). Use `--no-save` to look without moving the baseline.
 3. For pinned artifacts (rows with `artifact_sha256`), use `python3 _tools/fetch.py --verify` only if the user asks; those urls are fixed commits and do not drift.
 
@@ -31,7 +31,8 @@ Flags repeat and combine. `--older-than DAYS` skips recently fetched sources.
 For every changed source, find the facts citing it: `python3 _tools/rag.py search "S1234" -k 20` or grep the id.
 - Fact still true: leave it.
 - Fact changed: rewrite it from the new text, same tag, same id. Update that source's `retrieved_utc` and `version_or_date` in `_sources.csv`.
-- New page or url: add a new source row (next free `S` id, never reuse) and cite it.
+- New page or url: add a new source row with the id from `python3 _tools/kbid.py url <URL>` (a hash of the url; never invent one or take the next number; reuse the existing id if the url is already there) and cite it.
+- Replaced source (new commit or moved page): new row as above, old row's `superseded_by` = the new id, citations re-pointed. `check.py` rejects an unknown `superseded_by` id or a cycle.
 - Sources now disagree: record both sides in `_conflicts.md`.
 - Page gone (404) or content withdrawn: mark the fact `[UNK]`, and log what was tried in `_gaps.md`.
 - Update the article's `retrieved_utc`, and its `status` if it changed. Keep `_coverage.csv` and the README coverage row in step (status, source count).

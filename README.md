@@ -10,7 +10,7 @@ Domains: Microsoft DSC v3, ConfigMgr (MECM), Intune, Autopilot, Entra ID, Active
   - Its front matter has `topic`, `priority`, `applies_to`, `retrieved_utc`, `sources` and `status`.
   - Its body has four sections: Summary, Facts, Reference and Examples.
   - Large tables sit beside it as `.csv` or `.yaml`.
-- `_sources.csv` lists every source: `id,url,title,publisher,licence,retrieved_utc,version_or_date,artifact_sha256,used_in`.
+- `_sources.csv` lists every source: `id,url,title,publisher,licence,retrieved_utc,version_or_date,artifact_sha256,used_in,superseded_by`. `superseded_by` is empty unless a newer row replaced this one (for example a pinned commit url whose upstream file changed); it then names that row's id.
 - `_artifacts.csv` lists every pinned structured artifact, such as JSON schemas, DSC manifests, Graph CSDL, the MCP `schema.ts`, the A2A `.proto`, baseline exports and semantic-convention registries. Each row gives its sha256. Each artifact has a Markdown digest beside it.
 - `_answers.md` holds answers to research questions, each with evidence.
 - `_gaps.md` records what could not be confirmed, and where it was looked for.
@@ -31,6 +31,12 @@ Every fact ends in exactly one tag with source ids from `_sources.csv`:
 
 A fact tagged `UNK` or `COMMUNITY` is a lead to verify, not a basis to build on.
 
+Source ids come in two forms, both valid everywhere:
+- legacy `S` + a number (`S100` ... `S2204`): existing rows, kept forever and never renumbered;
+- hash ids `S-` + 8 characters (`S-k3f7q2zd`) for every new source: derived from the url by `python3 _tools/kbid.py url <URL>`, so two people adding the same url get the same id and parallel work merges without clashes.
+
+Answers in `_answers.md` are headed `## <ID>. <question>`. New research answers use `QK-<slug>` (`## QK-dataverse-onprem-sync. ...`); `python3 _tools/kbid.py answer "<question>"` suggests one. An id never appears twice.
+
 Examples use placeholder names only:
 - hosts `PL-LT-00123` and `PL-SRV-0042`;
 - domain `corp.example.com`;
@@ -43,9 +49,12 @@ Examples use placeholder names only:
 python _tools/rag.py topics [DOMAIN]                   # domains -> articles (title, priority, status), subdirectories, data files
 python _tools/rag.py search "pim activation latency" -k 8 [-d auth]   # BM25 over heading-aware chunks of .md and .csv rows
 python _tools/rag.py search "pim activation latency" -u      # same, plus each cited source id's origin url
-python _tools/rag.py src S1824 S2130                   # resolve source ids
+python _tools/rag.py src S1824 S-k3f7q2zd              # resolve source ids (legacy or hash); shows "superseded by" when set
+python _tools/kbid.py url https://example.com/page     # the id for a new source's url (says if the url already has one)
+python _tools/kbid.py answer "question text"           # suggest a QK-<slug> id for _answers.md
+python _tools/kbid.py check                            # hash ids: collisions, ids that do not match their url (check.py runs it too)
 python _tools/rag.py show agents/agent-rbac.md:139 -n 30
-python _tools/check.py                                 # unique source ids, known citations, artifacts present, front matter valid
+python _tools/check.py                                 # unique and valid source ids, superseded_by, answer ids, known citations, artifacts, front matter
 python _tools/fetch.py --offline                       # check local artifacts against their sha256
 python _tools/fetch.py --verify                        # re-download pinned sources and compare sha256
 python _tools/fetch.py --refresh                       # rewrite local copies of pinned sources
@@ -63,7 +72,8 @@ python _tools/tests.py                                 # CI: docs cohesion + lea
 
 ## Contributing
 
-- Add a source row first. Ids are `S` + a number, never reused.
+- Add a source row first. Its id comes from `python3 _tools/kbid.py url <URL>`; never invent or hand-type an id, and never take "the next number". If the url already has a row (legacy or hash id), reuse that id. `check.py` rejects a hash id that does not match its url.
+- When a pinned source is replaced (its upstream changed), add a new row for the new url, set the old row's `superseded_by` to the new id, and re-point the citations of the facts you re-verified. Never delete or reuse an id.
 - Write the fact with its tag, then run `python _tools/check.py`.
 - Save structured data as a pinned artifact, with a row in `_artifacts.csv` and a digest.
 - Record disagreements in `_conflicts.md` and failed lookups in `_gaps.md`.

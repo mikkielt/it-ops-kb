@@ -8,11 +8,12 @@
 Cohesion: check.py and fetch.py --offline pass; no lint errors beyond the recorded baseline; the README coverage
 table equals _coverage.csv; links, backtick paths and used_in paths resolve; every CLI flag the docs mention exists
 in that tool; .mcp.json, .claude/settings.json and AGENTS.md agree; skills are well-formed.
+Ids: kbid.py hash source ids are deterministic and normalization-stable; bad ids and answer-id clashes are caught.
 Leaks (tracked files): secrets in any file; in authored files also home-directory paths, private IPv4 addresses,
 non-placeholder e-mail addresses and GUIDs outside the reviewed allowlist (_tools/tests_allowlist.txt); files that
 must never be committed; oversized files.
 """
-import csv, glob, json, os, re, subprocess, sys, unittest
+import csv, glob, importlib.util, json, os, re, subprocess, sys, unittest
 
 KB = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TOOLS = os.path.join(KB, "_tools")
@@ -20,6 +21,8 @@ LINT = os.path.join(KB, ".claude", "skills", "kb-verify", "lint.py")
 BASELINE = os.path.join(TOOLS, "lint_baseline.txt")
 ALLOWLIST = os.path.join(TOOLS, "tests_allowlist.txt")
 MAX_BYTES = 10 * 1024 * 1024
+sys.path.insert(0, TOOLS)
+import kbid  # noqa: E402
 
 
 def run(*args):
@@ -211,6 +214,59 @@ class Cohesion(unittest.TestCase):
 
     def test_claude_md_imports_agents_md(self):
         self.assertIn("@AGENTS.md", text("CLAUDE.md") or "")
+
+
+class Ids(unittest.TestCase):
+    URL = "https://learn.microsoft.com/en-us/windows/security/example"
+
+    def test_hash_id_is_deterministic_and_well_formed(self):
+        sid = kbid.source_id(self.URL)
+        self.assertEqual(sid, kbid.source_id(self.URL))
+        self.assertRegex(sid, r"^S-[a-z2-7]{8}$")
+        self.assertTrue(kbid.is_source_id(sid) and kbid.is_source_id("S100") and not kbid.is_source_id("S-12"))
+        self.assertEqual(kbid.source_id("https://example.com/"), "S-" + __import__("base64").b32encode(
+            __import__("hashlib").sha256(b"https://example.com/").digest()).decode().lower()[:8])
+
+    def test_normalization_equivalences(self):
+        same = ["HTTPS://Learn.Microsoft.COM/en-us/windows/security/example", self.URL + "/", self.URL + "#section",
+                "https://learn.microsoft.com:443/en-us/windows/security/example", "  " + self.URL + "  ", self.URL + "?"]
+        for u in same:
+            self.assertEqual(kbid.normalize_url(u), self.URL, u)
+        self.assertEqual(kbid.normalize_url("http://Example.com"), "http://example.com/")
+        self.assertEqual(kbid.normalize_url("http://example.com:80/a"), "http://example.com/a")
+        differ = [self.URL.replace("windows", "Windows"), self.URL + "?view=1", "http://learn.microsoft.com/en-us/windows/security/example",
+                  "https://learn.microsoft.com:8443/en-us/windows/security/example", self.URL + "%2F"]
+        for u in differ:
+            self.assertNotEqual(kbid.source_id(u), kbid.source_id(self.URL), u)
+
+    def test_check_sources_catches_hand_typed_and_collisions(self):
+        ok = [{"id": kbid.source_id(self.URL), "url": self.URL + "/"}, {"id": "S100", "url": self.URL}]
+        self.assertEqual(kbid.check_sources(ok), [])
+        typed = kbid.check_sources([{"id": "S-abcdefgh", "url": self.URL}])
+        self.assertTrue(typed and "does not match its url" in typed[0])
+        a, b = "https://example.com/c/266794", "https://example.com/c/514424"  # a real 40-bit collision
+        self.assertEqual(kbid.source_id(a), kbid.source_id(b))
+        self.assertTrue(any("collision" in e for e in kbid.check_sources([{"id": kbid.source_id(a), "url": a}, {"id": "S1", "url": b}])))
+
+    def test_id_regexes_accept_both_forms(self):
+        text = "fact [DOC S1289, S-k3f7q2zd] and S3 sleep, HTTPS-only"
+        self.assertEqual(kbid.SOURCE_ID.findall(text), ["S1289", "S-k3f7q2zd", "S3"])
+        self.assertEqual(kbid.ANY_ID.findall("S1480,S1483: HTTPS-only, S-BAD"), ["S1480", "S1483", "S-BAD"])
+        spec = importlib.util.spec_from_file_location("lint", LINT)
+        lint = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(lint)
+        self.assertEqual(lint.SID.findall("[S100, S-k3f7q2zd]"), ["S100", "S-k3f7q2zd"])
+        self.assertEqual(sorted(["S-bbbbbbbb", "S1000", "S-aaaaaaaa", "S999"], key=kbid.sort_key),
+                         ["S999", "S1000", "S-aaaaaaaa", "S-bbbbbbbb"])
+        self.assertEqual([kbid.canonical_id(x) for x in ("s0100", "s-K3F7Q2ZD")], ["S0100", "S-k3f7q2zd"])
+
+    def test_answer_ids(self):
+        self.assertEqual(kbid.answer_id("How does Dataverse sync with an on-prem SQL Server?"), "QK-dataverse-sync-prem-sql-server")
+        self.assertRegex(kbid.answer_id("???"), kbid.QK_ID.pattern)
+        ids = kbid.answer_ids("## Q1. a\n## QK-x-y. b\n## QK-x-y. c\n### Q2. no\n## QG1 (no dot)\n")
+        self.assertEqual(ids, ["Q1", "QK-x-y", "QK-x-y"])
+        real = kbid.answer_ids(text("_answers.md") or "")
+        self.assertEqual(len(real), len(set(real)), "duplicate answer ids in _answers.md")
 
 
 class Leaks(unittest.TestCase):

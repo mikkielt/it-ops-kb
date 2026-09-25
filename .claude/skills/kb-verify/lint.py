@@ -15,6 +15,7 @@ import csv, glob, json, os, re, sys
 
 KB = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
 TAG = re.compile(r"\[(DOC|DER|COMMUNITY|UNK)\b[^\]]*\]")
+SID = re.compile(r"\bS-[a-z2-7]{8}\b|S\d+")  # hash source ids (S-k3f7q2zd) and legacy ones (S123)
 
 
 def main():
@@ -44,7 +45,7 @@ def main():
             if "/artifacts/" not in p and not p.startswith("agents/a2a/"):
                 add("ERROR", p, "not listed in _coverage.csv")
         else:
-            fms = set(re.findall(r"S\d+", fm.get("sources", "")))
+            fms = set(SID.findall(fm.get("sources", "")))
             for key, have, csv_v in (("status", fm.get("status"), row["status"]), ("priority", fm.get("priority"), row["priority"]),
                                      ("source count", str(len(fms)), row["n_sources"])):
                 if have != csv_v:
@@ -73,8 +74,8 @@ def main():
                     add("ERROR", p, f"untagged fact: {item[2:80]!r}")
                 elif len(kinds) > 1:
                     add("WARN", p, f"fact mixes tags {sorted(kinds)}: {item[2:60]!r}")
-        cited = {s for tag in re.findall(r"\[(?:DOC|DER|COMMUNITY)[^\]]*\]", body) for s in re.findall(r"S\d+", tag)}
-        fms = set(re.findall(r"S\d+", fm.get("sources", "")))
+        cited = {s for tag in re.findall(r"\[(?:DOC|DER|COMMUNITY)[^\]]*\]", body) for s in SID.findall(tag)}
+        fms = set(SID.findall(fm.get("sources", "")))
         if fms - cited:
             add("WARN", p, f"header sources not cited in the body: {' '.join(sorted(fms - cited))}")
         if cited - fms:

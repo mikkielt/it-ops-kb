@@ -23,8 +23,9 @@ Run each command on its own (no `;`, `&&`, pipes into other tools or loops): the
 - Official sources give `DOC` facts. A non-official source is `COMMUNITY` and is never the only evidence for a DOC fact. Unconfirmed items are `UNK`.
 
 ## 3. Add sources first
-Append rows to `_sources.csv`: `id,url,title,publisher,licence,retrieved_utc,version_or_date,artifact_sha256,used_in`.
-- Next id: one above the highest existing `S` number. Never reuse an id. Reuse the existing id if the url is already there.
+Append rows to `_sources.csv`: `id,url,title,publisher,licence,retrieved_utc,version_or_date,artifact_sha256,used_in,superseded_by`.
+- Id: run `python3 _tools/kbid.py url <URL>` (several urls at once are fine) and use the `S-xxxxxxxx` it prints. Never invent an id or take "the next number": the id is a hash of the url, so parallel writers do not collide. If it says the url is already in `_sources.csv`, reuse that id (legacy `S<number>` ids stay valid).
+- `superseded_by` is empty for a new row.
 - `retrieved_utc` is today (`YYYY-MM-DD`). `used_in` lists the new files, separated by `;`.
 - `licence`, by source type (reuse an existing row's wording for the same publisher when there is one):
   - Microsoft Learn page (incl. fetched through the MCP server): `Microsoft Learn terms of use (paraphrased; quote <=25 words)`
@@ -54,7 +55,7 @@ status: complete|partial|unknown
 ## Examples
 ```
 - `topic` equals the path without `.md`. `sources` lists exactly the ids the body cites.
-- Each Facts bullet ends in exactly one tag: `[DOC S123]`, `[DER S1, S2]` (show the derivation), `[COMMUNITY S9]` or `[UNK]`.
+- Each Facts bullet ends in exactly one tag: `[DOC S-k3f7q2zd]`, `[DER S1, S-k3f7q2zd]` (show the derivation), `[COMMUNITY S9]` or `[UNK]`.
 - Our own words. Quotes of 25 words or fewer unless the licence permits copying (MIT, Apache-2.0, CC BY 4.0), with attribution. Never copy CIS or ISO text.
 - Placeholders only: `PL-LT-00123`, `PL-SRV-0042`, `corp.example.com`, tenant `00000000-0000-0000-0000-000000000000`, `jan.kowalski`.
 - Large tables go in `<domain>/<slug>.csv` beside the article.

@@ -344,7 +344,7 @@ _Agent: auth_
 
 _Agent: auth_
 
-## QS1. CIS benchmark versions and reuse terms (coordinator addendum)
+## QS1a. CIS benchmark versions and reuse terms (coordinator addendum)
 - Microsoft's OSConfig Server 2025 baseline v2606 (MIT) publishes a `CIS RuleID` and `CIS Control` column for 329 of 361 settings. That is a Microsoft-published crosswalk to a CIS Windows Server 2025 benchmark; the benchmark version is not stated. [DOC S1598]
 - `settings-crosswalk.csv` column `cis_ws2025_id_via_osconfig` carries 152 of these ids. No CIS text is copied. [DER S1598]
 
@@ -408,7 +408,7 @@ _Agent: security_
 
 _Agent: security_
 
-## QS5. Microsoft baseline (GPO) vs Intune security baseline (coordinator addendum)
+## QS5a. Microsoft baseline (GPO) vs Intune security baseline (coordinator addendum)
 - The Intune "Security Baseline for Windows, version 24H2" states:
   - its settings come from the Windows 11 24H2 security baseline in the Security Compliance Toolkit;
   - it includes only the settings that apply to Windows devices managed through Intune. [DOC S1475]
@@ -442,7 +442,7 @@ _Agent: security_
 
 _Agent: security_
 
-## QS7. OSConfig baseline definitions for Server 2025 (coordinator addendum)
+## QS7a. OSConfig baseline definitions for Server 2025 (coordinator addendum)
 - **Yes, machine-readable.** `microsoft/osconfig/security/SecurityBaseline_WindowsServer_2025-<ver>.csv` exists for 2409, 2411, 2504, 2510 and 2606. Each row gives:
   - the registry key, value and type, or the CSP path;
   - default and expected values per role (DC, member, workgroup);

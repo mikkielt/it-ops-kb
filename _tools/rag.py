@@ -4,7 +4,7 @@
   rag.py topics [DOMAIN]                   domains -> articles, subdirectories, data files
   rag.py search QUERY [-k 8] [-d DOMAIN] [-u]   BM25 over heading-aware chunks of .md and .csv;
                                            -u adds each hit's source origin urls
-  rag.py src S1824 [S1825 ...]             source id -> title, url, version
+  rag.py src S1824 [S-k3f7q2zd ...]        source id -> title, url, version (and "superseded by" when set)
   rag.py show PATH[:LINE] [-n 40]          print lines of a kb file
 
 Add --json to any command for machine output. artifacts/ directories are not indexed. search skips the
@@ -12,11 +12,13 @@ root-level index files (README.md, _answers.md, _gaps.md, _conflicts.md, _covera
 """
 import argparse, csv, io, json, math, os, re, sys
 from collections import Counter, defaultdict
+import kbid
 
 KB = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SKIP_DIRS = {"_tools", "_private", "_cache", "artifacts"}
 TOKEN = re.compile(r"\w+(?:[.\-]\w+)*")  # Unicode words; `gmsa-dmsa`, `dsc.exe` stay whole
 MAX_CHUNK = 900
+CITED = re.compile(r"\bS\d{3,4}\b|\bS-[a-z2-7]{8}\b")  # legacy ids (not prose like S1/S3 sleep states) and hash ids
 csv.field_size_limit(2**31 - 1)  # a very wide cell must not abort the whole search
 
 
@@ -138,7 +140,7 @@ def search(query, k, domain, index=False, notes=None):
             notes.append(f"weak match: the top hit contains {len(informative & set(scored[0][2]))} of "
                          f"{len(informative)} informative query words ({', '.join(sorted(informative))})")
     return [{"score": s, "path": p, "line": ln, "heading": h, "text": t, "matched": m,
-             "sources": sorted(set(re.findall(r"\bS\d{3,4}\b", t)), key=lambda x: int(x[1:]))}
+             "sources": sorted(set(CITED.findall(t)), key=kbid.sort_key)}
             for s, (p, ln, h, t), m in scored[:k]]
 
 
@@ -179,7 +181,7 @@ def source_rows():
 
 def sources(ids):
     rows = source_rows()
-    return [rows.get(i.upper(), {"id": i, "title": "UNKNOWN id"}) for i in ids]
+    return [rows.get(kbid.canonical_id(i), {"id": i, "title": "UNKNOWN id"}) for i in ids]
 
 
 def add_urls(hits):
@@ -238,7 +240,8 @@ def main():
         if a.json:
             return print(json.dumps(res, indent=1))
         for x in res:
-            print(f"{x['id']}  {x['title']}" + (f"\n  {x['url']}  ({x['publisher']}; {x['version_or_date']})" if "url" in x else ""))
+            print(f"{x['id']}  {x['title']}" + (f"\n  {x['url']}  ({x['publisher']}; {x['version_or_date']})" if "url" in x else "")
+                  + (f"\n  superseded by {x['superseded_by']}" if (x.get("superseded_by") or "").strip() else ""))
     else:
         path, _, line = a.target.partition(":")
         root = os.path.realpath(KB)

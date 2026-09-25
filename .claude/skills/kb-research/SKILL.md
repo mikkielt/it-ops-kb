@@ -41,7 +41,7 @@ Follow the contract in README.md and `.claude/skills/kb-add-topic/SKILL.md` (sou
 - "How it fits": implications for this kb's frame (e.g. how an agent should call it, where secrets live, what tier an operation needs) are `DER` facts. State the derivation and the facts it rests on. Do not present a design choice as a vendor fact.
 - Add one answer to `_answers.md`, after the last `QK` entry (or at the end, before the `R` sections if there are none):
   ```
-  ## QK<n>. <the question>
+  ## QK-<slug>. <the question>
   - <answer bullet> [DOC S...]
   - ...
   - Conclusion: <two or three sentences> [DER S..., S...]
@@ -50,7 +50,8 @@ Follow the contract in README.md and `.claude/skills/kb-add-topic/SKILL.md` (sou
 
   _Agent: kb-research_
   ```
-  `<n>` is one above the highest existing `QK` number (start at 1).
+  `QK-<slug>`: a short lowercase hyphenated slug of the question (e.g. `QK-dataverse-onprem-sync`); `python3 _tools/kbid.py answer "<question>"` suggests one and says if it is taken. Never number answers: parallel writers would pick the same number. `check.py` rejects a duplicate answer id.
+- New source rows take their id from `python3 _tools/kbid.py url <URL>`; never invent one.
 - Failed lookups go to `_gaps.md` under the anchor topic's heading: what you looked for and where.
 
 ## 5. Check
@@ -60,7 +61,7 @@ Follow the contract in README.md and `.claude/skills/kb-add-topic/SKILL.md` (sou
 
 ## 6. Report
 - The context map in brief: anchor topics and what the kb already knew.
-- What is new: facts added per topic, with a count by tag, new source ids, the `QK` answer id.
+- What is new: facts added per topic, with a count by tag, new source ids, the `QK-<slug>` answer id.
 - The answer to the question in a few lines, with the vendor status (GA/preview) of every product or feature it relies on.
 - Open items (`UNK`), conflicts found, and anything the user must decide.
 - Do not commit unless asked.

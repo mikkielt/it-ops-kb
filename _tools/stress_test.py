@@ -218,6 +218,9 @@ def main():
         mutated("100k citations in one file", lambda d: write(d, "ad/many.md", "".join(f"- f [DOC S{100 + i % 900}]\n" for i in range(100000))), [
             ("check.py", [], (0, 1)), ("rag.py", ["search", "f", "-u"], 0)])
 
+        # 5b. collision-free ids: hash source ids, superseded_by, answer ids
+        id_cases(mutated)
+
         # 6. fetch.py --diff / --status against a local web server (no internet needed)
         if not FILTER or "diff" in FILTER or "status" in FILTER:
             fetch_diff_cases(tmp)
@@ -227,6 +230,73 @@ def main():
         print(f"{'PASS' if ok else 'FAIL'}  {name:<60} {note}")
     print(f"\n{len(results) - len(failed)} passed, {len(failed)} failed")
     sys.exit(1 if failed else 0)
+
+
+def add_sources(d, new=(), patch=None):
+    """Append rows (dicts) to a copy's _sources.csv and apply `patch` {id: {column: value}} to existing rows."""
+    rows = list(csv.DictReader(io.StringIO(read(d, "_sources.csv"))))
+    for r in rows:
+        r.update((patch or {}).get(r["id"], {}))
+    buf = io.StringIO()
+    w = csv.DictWriter(buf, list(rows[0].keys()), lineterminator="\n")
+    w.writeheader()
+    w.writerows(rows + [{**dict.fromkeys(rows[0], ""), **r} for r in new])
+    write(d, "_sources.csv", buf.getvalue())
+
+
+def id_cases(mutated):
+    """Hash ids (S-xxxxxxxx) work next to legacy ids in every tool; check.py rejects bad ids, supersession and answer ids."""
+    sys.path.insert(0, os.path.join(KB, "_tools"))
+    import kbid
+    url = "https://learn.microsoft.com/en-us/windows/example-hash-id-page"
+    hid = kbid.source_id(url)
+    row = {"id": hid, "url": url, "title": "hash id test page", "publisher": "Microsoft", "licence": "test",
+           "retrieved_utc": "2026-09-25", "version_or_date": "test", "used_in": "ad/hashid.md"}
+
+    def with_hash(d):
+        add_sources(d, [row])
+        write(d, "ad/hashid.md", f"---\ntopic: ad/hashid\npriority: P3\nretrieved_utc: 2026-09-25\nsources: [{hid}, S100]\n"
+                                 f"status: complete\n---\n# t\n## Facts\n- zanzibarquux fact [DOC {hid}, S100]\n")
+    hits = lambda o: json.loads(o)[0]["sources"] == ["S100", hid]  # noqa: E731
+    mutated("hash id cited next to a legacy id", with_hash, [
+        ("check.py", [], 0), ("kbid.py", ["check"], 0, "hash_ids=1"),
+        ("rag.py", ["src", hid, "S100"], 0, "hash id test page"),
+        ("rag.py", ["src", hid.upper()], 0, "hash id test page"),
+        ("rag.py", ["--json", "search", "zanzibarquux", "-u"], 0, "", hits),
+        ("fetch.py", ["--status", "--source", hid], 0, "selected=1"),
+        ("fetch.py", ["--status", "--json", "--file", "ad/hashid.md"], 0, "",
+         lambda o: {x["id"] for x in json.loads(o)} == {hid, "S100"}),
+        ("kbid.py", ["url", url], 0, f"already in _sources.csv as {hid}")])
+    mutated("superseded_by names a known id", lambda d: add_sources(d, [row], {"S100": {"superseded_by": hid}}), [
+        ("check.py", [], 0), ("rag.py", ["src", "S100"], 0, f"superseded by {hid}")])
+    mutated("superseded_by names an unknown id", lambda d: add_sources(d, patch={"S100": {"superseded_by": "S-aaaaaaaa"}}), [
+        ("check.py", [], 1, "S100 superseded_by unknown source S-aaaaaaaa")])
+    mutated("superseded_by cycle", lambda d: add_sources(d, patch={"S100": {"superseded_by": "S101"}, "S101": {"superseded_by": "S102"},
+                                                                   "S102": {"superseded_by": "S100"}}), [
+        ("check.py", [], 1, "forms a cycle")])
+    mutated("superseded_by itself", lambda d: add_sources(d, patch={"S100": {"superseded_by": "S100"}}), [
+        ("check.py", [], 1, "forms a cycle")])
+    mutated("hand-typed hash id", lambda d: add_sources(d, [{**row, "id": "S-abcdefgh"}]), [
+        ("check.py", [], 1, "S-abcdefgh does not match its url"), ("kbid.py", ["check"], 1, "does not match")])
+    a, b = "https://example.com/c/266794", "https://example.com/c/514424"  # a real 40-bit collision
+    mutated("hash id collision", lambda d: add_sources(d, [{**row, "id": kbid.source_id(a), "url": a},
+                                                           {**row, "id": "S99990", "url": b}]), [
+        ("check.py", [], 1, f"hash id collision {kbid.source_id(a)}"), ("kbid.py", ["check"], 1, "collision")])
+    mutated("malformed id in _sources.csv", lambda d: add_sources(d, [{**row, "id": "S-12"}]), [
+        ("check.py", [], 1, "malformed source id")])
+    mutated("malformed hash id cited", lambda d: write(d, "ad/badid.md", "x [DOC S-ZZZZ] y\n"), [
+        ("check.py", [], 1, "cites unknown source S-ZZZZ")])
+    mutated("_sources.csv without superseded_by column", lambda d: write(d, "_sources.csv", "\n".join(
+        ln.rpartition(",")[0] for ln in read(d, "_sources.csv").splitlines()) + "\n"), [
+        ("check.py", [], 1, "lacks column(s) superseded_by"), ("rag.py", ["src", "S100"], 0, "S100"),
+        ("fetch.py", ["--offline"], 0)])
+    dup = "\n## QK-dup-answer. first\n- x [UNK]\n\n## QK-dup-answer. second\n- y [UNK]\n"
+    mutated("duplicate QK answer id", lambda d: write(d, "_answers.md", read(d, "_answers.md") + dup), [
+        ("check.py", [], 1, "duplicate answer id QK-dup-answer"), ("kbid.py", ["answer", "dup answer"], 0, "already used")])
+    mutated("numbered QK answer id", lambda d: write(d, "_answers.md", read(d, "_answers.md") + "\n## QK7. q\n- x [UNK]\n"), [
+        ("check.py", [], 1, "new QK ids are QK-<slug>")])
+    mutated("slug QK answer id", lambda d: write(d, "_answers.md", read(d, "_answers.md") + "\n## QK-dataverse-onprem-sync. q\n- x [UNK]\n"), [
+        ("check.py", [], 0)])
 
 
 def fetch_diff_cases(tmp):
