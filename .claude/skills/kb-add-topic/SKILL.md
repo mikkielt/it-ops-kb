@@ -14,7 +14,7 @@ Read `MAINTAINING.md` first: the content rules, tools, git workflow and commit r
 Run each command on its own (no `;`, `&&`, pipes into other tools or loops): the shared permission rules match single commands, so a chained command asks for approval or is refused in a headless run.
 
 ## 1. Avoid duplicates
-- `python3 _tools/rag.py search "<key terms>" -k 10` and `python3 _tools/rag.py topics <domain>`.
+- `python3 _tools/rag.py pack "<what the topic covers>"` (a `good` verdict names the article that already has it), `python3 _tools/rag.py search "<key terms>" -k 10` and `python3 _tools/rag.py topics <domain>`.
 - If an existing topic covers it, propose extending that topic instead, and stop until the user decides. The rules for extending versus a new topic, and for where a new one goes, are in `/kb-research` step 2.
 - Use an existing domain directory when one fits: the domain of the article that will link to the new topic. Never create a new top-level directory without the user's decision. Slug: lowercase, hyphenated.
 
@@ -69,7 +69,10 @@ files: [<path>, <dir>/]    # optional: only files beyond <slug>.md and <slug>.* 
 ## 5. Register and log
 - Run `python3 _tools/build_index.py`. It adds the topic's row to `_coverage.csv` and the README coverage table (ordered by domain, priority, topic id; `n_sources` = ids in the `sources:` header) and fills `used_in` in `_sources.csv`. Never edit those by hand.
 - Failed lookups go to `_gaps.md` (what, where you looked). Disagreements go to `_conflicts.md` with both sources. End each new entry with `(topic: <domain>/<slug>)`.
+- Retrieval data (`MAINTAINING.md`, Content rules): if code that uses the product has distinctive names (class names, API routes, library or package names, permission scopes), add `signal,<domain>/<slug>` rows to `_tools/signals.csv`, so `topics-for` maps code to the topic; if the product has other names or abbreviations, add `term,canonical` rows to `_tools/aliases.csv` (term lowercase; reuse an existing canonical). Check with `python3 _tools/rag.py topics-for --keywords "<a signal>"`.
 
 ## 6. Check and report
 - `python3 _tools/check.py` must end `errors=0`. Then `python3 .claude/skills/kb-verify/lint.py <domain>/<slug>` must report `errors=0`.
-- Report the files created, the fact count by tag, and the open `UNK` items. Do not commit unless asked.
+- `python3 _tools/rag.py pack "<a question the topic answers>"` finds the new article, and `python3 _tools/rag.py eval` still passes every question (a new article can outrank the expected one).
+- `python3 _tools/tests.py` must end `OK` (leak scan, signals and aliases tables).
+- Report the files created, the fact count by tag, the signal and alias rows added, and the open `UNK` items. Do not commit unless asked.

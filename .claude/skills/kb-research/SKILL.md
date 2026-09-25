@@ -15,7 +15,7 @@ Run each command on its own (no `;`, `&&`, pipes into other tools or loops): the
 
 ## 1. Map what the kb already knows (before any web search)
 - Split the question into its subjects and angles (e.g. product, sync/integration, use by agents, security).
-- For each, run `python3 _tools/rag.py pack "<sub-question>"` (its `coverage:` line and "not in the kb" words show what the kb lacks), then once `python3 _tools/rag.py search "<keywords>" --index` to include `_answers.md`, `_gaps.md` and `_conflicts.md`. `python3 _tools/rag.py audit <domain> --entries` lists the open gaps and conflicts already linked to the anchor topics.
+- Pack them in one batch: `python3 _tools/rag.py pack -q "<sub-question>" -q "<sub-question>"` (up to 6 parts; each part's `coverage:` line and "not in the kb" words show what the kb lacks; `(no tag)` lines are untagged article content). Then once `python3 _tools/rag.py search "<keywords>" --index` to include `_answers.md`, `_gaps.md` and `_conflicts.md`. `python3 _tools/rag.py audit <domain> --entries` lists the open gaps and conflicts already linked to the anchor topics.
 - `python3 _tools/rag.py topics <domain>` for the likely domains. Read the anchor articles in full (`python3 _tools/rag.py show <path>:1 -n 200`).
 - Write down a short context map in your notes, and keep it for the report:
   - anchor topics (the existing articles the answer belongs to) and the facts in them that already answer parts of the question, with ids and tags;
@@ -65,16 +65,19 @@ Follow the contract in README.md and `.claude/skills/kb-add-topic/SKILL.md` (sou
   `QK-<slug>`: a short lowercase hyphenated slug of the question (e.g. `QK-dataverse-onprem-sync`); `python3 _tools/kbid.py answer "<question>"` suggests one and says if it is taken. Never number answers: parallel writers would pick the same number. `check.py` rejects a duplicate answer id.
 - New source rows take their id from `python3 _tools/kbid.py url <URL>`; never invent one.
 - Failed lookups go to `_gaps.md` under the anchor topic's heading: what you looked for and where, ending `(topic: <domain>/<slug>)`.
+- Retrieval data (`MAINTAINING.md`, Content rules): `_tools/signals.csv` rows for a new topic's code names, `_tools/aliases.csv` rows for a product's other names, and a `_tools/lookup_eval.csv` row for each step-1 pack that missed an article the kb already had (`none` or `weak` although an article answered it).
 
 ## 5. Check
 - `python3 _tools/build_index.py` regenerates `_coverage.csv`, the README coverage table and `used_in` from what you wrote.
 - `python3 _tools/check.py` must end `errors=0`.
 - `python3 .claude/skills/kb-verify/lint.py <each topic you edited or created>` must add no errors.
+- `python3 _tools/doc2query.py stale` must print `stale=0`: if you reworded facts that had expansions, `python3 _tools/doc2query.py prune` removes their rows.
+- `python3 _tools/rag.py eval`: every question passes (`passed` = `questions`).
 - `python3 _tools/tests.py` must end `OK`. It includes the leak scan: no real tenant ids, hostnames, addresses or tokens.
 
 ## 6. Report
 - The context map in brief: anchor topics and what the kb already knew.
-- What is new: facts added per topic, with a count by tag, new source ids, the `QK-<slug>` answer id, and for each new `DOC` fact from a non-Microsoft page the verbatim quote it rests on.
+- What is new: facts added per topic, with a count by tag, new source ids, the `QK-<slug>` answer id, and for each new `DOC` fact from a non-Microsoft page the verbatim quote it rests on; rows added to `signals.csv`, `aliases.csv` or `lookup_eval.csv`.
 - Where each fact went (extended topic or new topic) and why, per step 2's rules.
 - The answer to the question in a few lines, with the vendor status (GA/preview) of every product or feature it relies on.
 - Open items (`UNK`), conflicts found, and anything the user must decide.

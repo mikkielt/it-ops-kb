@@ -11,13 +11,17 @@ index.
                                               choose the pilot and control articles (stratified by domain), write
                                               _tools/doc2query/arms.json; --exclude leaves out the articles of earlier
                                               rounds' arms files, so a confirmation round tests fresh articles
-  doc2query.py batch ARM [--out FILE]         the facts of an arm (pilot or control) as JSON [{key, path, line, text}]:
-                                              the input for question generation or for blind test questions
+  doc2query.py batch ARM|--path PREFIX [--out FILE]
+                                              the facts of an arm (pilot or control), or under a path prefix (an
+                                              article to regenerate), as JSON [{key, path, line, text}]: the input for
+                                              question generation or for blind test questions
   doc2query.py ingest GENERATED.json          filter generated [{key, questions: [...]}] and write the kept ones to
                                               _tools/doc2query/expansions.csv (key,question); prints kept/dropped
   doc2query.py evaluate QUESTIONS.json        blind test questions [{key, question}] per arm: fact line in pack with
                                               expansion off and on, verdicts, plus the eval set and the off-kb set
-  doc2query.py stale                          expansion keys whose fact no longer exists (text changed or removed)
+  doc2query.py stale                          expansion keys whose fact no longer exists (text changed or removed);
+                                              exit 1 when there are any
+  doc2query.py prune                          delete the stale keys' rows from expansions.csv
 
 A key is the first 12 hex digits of sha256 over the fact text with whitespace collapsed: stable when lines move,
 new when the text changes. kbfacts.pack reads expansions.csv when it exists and KB_DOC2QUERY is not "0".
@@ -78,9 +82,13 @@ def load_arms():
         return json.load(f)
 
 
-def batch(arm):
-    return [{"key": key_of(u["text"]), "path": u["path"], "line": u["line"], "text": u["text"]}
-            for u in facts(set(load_arms()[arm]))]
+def batch(arm=None, prefix=None):
+    import kbfacts
+    if prefix:
+        us = [u for u in facts() if kbfacts.in_prefix(u["path"], prefix)]
+    else:
+        us = facts(set(load_arms()[arm]))
+    return [{"key": key_of(u["text"]), "path": u["path"], "line": u["line"], "text": u["text"]} for u in us]
 
 
 def load_expansions():
@@ -166,10 +174,29 @@ def evaluate(path):
         print(f"  eval {ev['passed']}/{ev['n']} mean_chars={ev['mean_chars']}; off-kb verdicts {dict(negv)}")
 
 
-def stale():
+def stale_keys():
     live = {key_of(u["text"]) for u in facts()}
-    gone = sorted(set(load_expansions()) - live)
-    print("\n".join(gone) + (f"\nstale={len(gone)}" if gone else "stale=0"))
+    return sorted(set(load_expansions()) - live)
+
+
+def stale():
+    gone = stale_keys()
+    print("\n".join(gone) + (f"\nstale={len(gone)}: python3 _tools/doc2query.py prune removes them" if gone else "stale=0"))
+    return 1 if gone else 0
+
+
+def prune():
+    gone = set(stale_keys())
+    if not gone:
+        print("stale=0: nothing to prune")
+        return 0
+    with open(EXPANSIONS, encoding="utf-8", newline="") as f:
+        rows = list(csv.reader(f))
+    keep = [rows[0]] + [r for r in rows[1:] if r and r[0] not in gone]
+    with open(EXPANSIONS, "w", encoding="utf-8", newline="") as f:
+        csv.writer(f, lineterminator="\n").writerows(keep)
+    print(f"pruned {len(rows) - len(keep)} rows of {len(gone)} stale keys")
+    return 0
 
 
 def main():
@@ -177,15 +204,19 @@ def main():
     sub = ap.add_subparsers(dest="cmd", required=True)
     s = sub.add_parser("split"); s.add_argument("--seed", type=int, default=7); s.add_argument("--n", type=int, default=12)
     s.add_argument("--exclude", nargs="*", default=[], help="arms files of earlier rounds whose articles are left out")
-    b = sub.add_parser("batch"); b.add_argument("arm", choices=["pilot", "control"]); b.add_argument("--out")
+    b = sub.add_parser("batch"); b.add_argument("arm", nargs="?", choices=["pilot", "control"])
+    b.add_argument("--path", help="facts under this path prefix instead of an arm (e.g. auth/kerberos)"); b.add_argument("--out")
     i = sub.add_parser("ingest"); i.add_argument("file")
     e = sub.add_parser("evaluate"); e.add_argument("file")
     sub.add_parser("stale")
+    sub.add_parser("prune")
     a = ap.parse_args()
     if a.cmd == "split":
         split(a.seed, a.n, a.exclude)
     elif a.cmd == "batch":
-        out = json.dumps(batch(a.arm), indent=1, ensure_ascii=False)
+        if not a.arm and not a.path:
+            sys.exit("batch: give an arm (pilot, control) or --path PREFIX")
+        out = json.dumps(batch(a.arm, a.path), indent=1, ensure_ascii=False)
         if a.out:
             with open(a.out, "w", encoding="utf-8") as f:
                 f.write(out)
@@ -196,8 +227,10 @@ def main():
         ingest(a.file)
     elif a.cmd == "evaluate":
         evaluate(a.file)
+    elif a.cmd == "prune":
+        sys.exit(prune())
     else:
-        stale()
+        sys.exit(stale())
 
 
 if __name__ == "__main__":

@@ -49,16 +49,19 @@ Examples use placeholder names only:
 
 ```
 python _tools/rag.py pack "when is NTLMv1 disabled by default"   # evidence pack: coverage good/weak/none, best fact lines by article, one url footer (--budget, -d)
+python _tools/rag.py pack -q "PIM activation" -q "group sync"   # one batch for up to 6 parts: a verdict each, one url footer (--format concise|detailed)
 python _tools/rag.py facts agents --tag UNK,COMMUNITY  # fact lines under a prefix, by tag kind
 python _tools/rag.py audit agents --status partial     # per article: tag counts, linked _gaps.md/_conflicts.md entries (--entries lists them; --unlinked: entries with no topic)
 python _tools/rag.py src S1216 --cited                 # a source row plus every line that cites it
 python _tools/rag.py eval                              # the lookup eval set (_tools/lookup_eval.csv): expected article found, verdict right
+python _tools/rag.py topics-for src/ --keywords "PublicClientApplication"   # kb topics that code touches (_tools/signals.csv)
+python _tools/doc2query.py stale                       # expansion keys whose fact was reworded or removed (exit 1); prune removes them
 python _tools/kb_hook.py --test "kb: question"         # what the kb: prompt hook would answer
 python _tools/rag.py topics [DOMAIN]                   # domains -> articles (title, priority, status), subdirectories, data files
 python _tools/rag.py search "pim activation latency" -k 8 [-d auth]   # BM25 over heading-aware chunks of .md and .csv rows
 python _tools/rag.py search "pim activation latency" -u      # same, plus a footer of the cited source ids' origin urls
 python _tools/rag.py src S1824 S-k3f7q2zd              # resolve source ids (legacy or hash); shows "superseded by" when set
-python _tools/kb_mcp.py --status                       # the kb MCP server (stdio; the plugin starts it): kb_pack, kb_facts, kb_audit, kb_search, kb_show, kb_source, kb_status
+python _tools/kb_mcp.py --status                       # the kb MCP server (stdio; the plugin starts it): kb_pack, kb_facts, kb_audit, kb_search, kb_show, kb_source, kb_status, kb_topics_for (--register-local: a clone's local servers)
 python _tools/kbid.py url https://example.com/page     # the id for a new source's url (says if the url already has one)
 python _tools/kbid.py answer "question text"           # suggest a QK-<slug> id for _answers.md
 python _tools/kbid.py check                            # hash ids: collisions, ids that do not match their url (check.py runs it too)
@@ -82,11 +85,11 @@ python _tools/fetch.py --diff --topic auth/kerberos     # re-fetch a topic's sou
 python _tools/fetch.py --diff --dir dsc --full --json   # same for a directory, with unified text diffs, as JSON
 python _tools/fetch.py --diff --older-than 30           # only sources not fetched in 30 days (also --file PATH, --source S123)
 python _tools/fetch.py --status --file auth/kerberos.md # offline: last fetch and change dates
-python _tools/stress_test.py                           # robustness tests of the tools on throwaway kb copies (about 35 s; --scale N, -k NAME)
+python _tools/stress_test.py                           # robustness tests of the tools on throwaway kb copies (about 20 s; --scale N, -k NAME)
 python _tools/tests.py                                 # CI: docs cohesion + leak scan (reviewed exceptions in _tools/tests_allowlist.txt)
 ```
 
-- `pack`, `facts`, `audit` and `src --cited` read the kb through `_tools/kbfacts.py`, which parses fact units (bullets, table rows, data rows), tags (grammar in its docstring) and ledger entries one way for every tool. `pack` ranks fact lines (BM25 with light stemming) and prints `coverage: none` when the question's named terms are not in the kb or most key words are missing, `weak` when the best article matches under 60% of the key words, else `good`. `rag.py eval` checks it against `_tools/lookup_eval.csv`; tests.py runs it.
+- `pack`, `facts`, `audit` and `src --cited` read the kb through `_tools/kbfacts.py`, which parses fact units (bullets, table rows, data rows), tags (grammar in its docstring) and ledger entries one way for every tool. `pack` ranks fact lines (BM25 with light stemming) and prints `coverage: none` when the question's named terms are not in the kb or most key words are missing, `weak` when the best article matches under 60% of the key words, else `good`; untagged lines (printed `(no tag)`) can lift `none` to `weak`, never to `good`. `rag.py eval` checks it against `_tools/lookup_eval.csv`; tests.py runs it.
 - Typing `kb: <question>` in Claude Code (the UserPromptSubmit hook `_tools/kb_hook.py`, in `.claude/settings.json` and the plugin) answers from the pack without calling the model when coverage is good; otherwise the prompt goes to the model with the pack attached. `kb+: <question>` always goes to the model with the pack.
 - `rag.py` builds no index file; a query takes about 0.1 s. `search` skips the root-level index files (`README.md`, `_answers.md`, `_gaps.md`, `_conflicts.md`, `_coverage.csv`, ...); `--index` includes them. `--json` gives machine output, and each hit carries `path`, `line`, `heading`, `text` and the source ids it cites. With `-u`/`--urls`, each hit also carries `urls`, mapping those source ids to their origin url in `_sources.csv`.
 - `fetch.py --diff` exits 0 when nothing changed, 1 when a source changed and 2 when a fetch or the selection failed, as `diff` does. `--max-lines N` caps each diff, `--no-save` compares without moving the baseline, `--delay` sets the per-host pause (default 1.1 s). HTML is reduced to its main text first, so page chrome does not count as a change.
@@ -193,7 +196,7 @@ Plugin users receive the push at their next update.
 - Save structured data as a pinned artifact, with a row in `_artifacts.csv` and a digest.
 - Record disagreements in `_conflicts.md` and failed lookups in `_gaps.md`.
 - Git: work on `main` (or a short local branch), one logical change per commit, and push straight to `main` with `python3 _tools/kbgit.py sync --push`: it rebases onto `origin/main`, fixes the ledgers, runs the gate and pushes only when it is green. No merge requests; never `git push --force`. Exit 3 is a conflict in an article or tool, left for `/kb-git-sync` (resolves by meaning, keeps both sides' facts, records real disagreements in `_conflicts.md`) or a human (`git rebase --abort` backs out).
-- The ledgers (`_sources.csv`, `_fetch_state.csv`, `_answers.md`, `_gaps.md`, `_conflicts.md`) merge with git's union driver (`.gitattributes`): parallel additions never conflict, but both sides' lines are kept. Only append, one CSV record per line. Merge by hand only with `git -c merge.conflictStyle=diff3 ...` (sync does): git's default keeps lines two added blocks share at their end once, splicing one answer into the other. `sync` cleans them up; after a merge or pull made by hand run `python3 _tools/kbgit.py fix`, then `python3 _tools/tests.py`; exit 2 lists what needs a decision (for two branches that took the same legacy id: `--base $(git merge-base A B)`).
+- The ledgers (`_sources.csv`, `_fetch_state.csv`, `_answers.md`, `_gaps.md`, `_conflicts.md`) merge with git's union driver (`.gitattributes`): parallel additions never conflict, but both sides' lines are kept. Only append, one CSV record per line. The tool data `_tools/signals.csv`, `_tools/aliases.csv`, `_tools/lookup_eval.csv` and `_tools/doc2query/expansions.csv` merges the same way, but `fix` does not clean it (see `/kb-git-sync`). Merge by hand only with `git -c merge.conflictStyle=diff3 ...` (sync does): git's default keeps lines two added blocks share at their end once, splicing one answer into the other. `sync` cleans them up; after a merge or pull made by hand run `python3 _tools/kbgit.py fix`, then `python3 _tools/tests.py`; exit 2 lists what needs a decision (for two branches that took the same legacy id: `--base $(git merge-base A B)`).
 
 ## Licensing
 

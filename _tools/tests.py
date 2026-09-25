@@ -322,6 +322,17 @@ class Lookup(unittest.TestCase):
                 "sys.exit(len(kbfacts.expansions()))").format(TOOLS)
         self.assertEqual(subprocess.run([sys.executable, "-c", code], capture_output=True).returncode, 0)
 
+    def test_lookup_eval_ids_unique(self):
+        """lookup_eval.csv merges with union: two branches can add the same next id; give one the next free E number."""
+        with open(os.path.join(TOOLS, "lookup_eval.csv"), encoding="utf-8", newline="") as f:
+            ids = [r["id"] for r in csv.DictReader(f)]
+        dup = sorted({i for i in ids if ids.count(i) > 1})
+        self.assertFalse(dup, f"duplicate lookup_eval.csv ids: {dup}")
+
+    def test_doc2query_no_stale_keys(self):
+        code, out = run(os.path.join(TOOLS, "doc2query.py"), "stale")
+        self.assertEqual(code, 0, "expansion keys of reworded or removed facts; run python3 _tools/doc2query.py prune\n" + out[-1500:])
+
     def test_lookup_eval_passes(self):
         code, out = run(os.path.join(TOOLS, "rag.py"), "eval")
         self.assertEqual(code, 0, out[-3000:])

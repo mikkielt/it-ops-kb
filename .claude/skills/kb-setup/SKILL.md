@@ -20,9 +20,10 @@ Run each command on its own (no `;`, `&&`, pipes into other tools or loops): the
 Run each and record exit code and last line:
 - `python3 _tools/check.py` (expect `errors=0`)
 - `python3 _tools/fetch.py --offline` (expect `mismatch=0 unknown=0`)
-- `python3 _tools/stress_test.py` (expect `0 failed`; takes about 35 s)
-- `python3 _tools/tests.py` (expect `OK`; this is what CI runs)
-- `python3 _tools/rag.py search "kerberos delegation" -k 3 -u` (expect hits; `->` url lines appear only under chunks that cite a source)
+- `python3 _tools/stress_test.py` (expect `0 failed`; takes about 20 s)
+- `python3 _tools/tests.py` (expect `OK`; this is what CI runs, about 40 s)
+- `python3 _tools/rag.py eval` (expect `passed` equal to `questions` on the last line: the lookup eval set)
+- `python3 _tools/rag.py pack "kerberos delegation"` (expect a `coverage:` line, fact lines with `path:line` and a `sources:` footer)
 
 A failure here is a finding. Do not "fix" kb files to make a check pass.
 
@@ -37,7 +38,7 @@ A clone uses four servers at local scope (this machine and this clone only): `kb
 - Run `claude mcp list` and note each server's state. Servers registered in this session load only after a restart: tell the user to restart and run `/kb-setup` again for the calls below.
 - The deciding test is the read-only call below: a server that answers is a PASS, whatever `claude mcp list` says.
 - `Failed`: note the error. Test reachability with `curl -sI https://learn.microsoft.com/api/mcp` (any HTTP status means the host is reachable; proxies and firewalls are the usual cause).
-- `kb`: call `kb_status` and confirm it names this clone's commit.
+- `kb`: call `kb_status` and confirm it names this clone's commit. Before a restart, `python3 _tools/kb_mcp.py --status` shows the same from a shell.
 - For each connected server make one read-only call and confirm it returns content:
   - `microsoft_docs_search` with query `DSC v3 resource manifest`
   - `search_claude_code_docs` with query `hooks`
@@ -56,4 +57,4 @@ Never ask for the token or put it in a repo file.
 - Commit anything.
 
 ## 7. Report
-End with a short table: step, result (PASS/FAIL/SKIPPED), evidence (last output line or error). Then list what the user must do (e.g. approve servers, install Python). Then point to the other skills: `/kb-lookup`, `/kb-research`, `/kb-refresh`, `/kb-add-topic`, `/kb-census`, `/kb-verify`, `/kb-git-sync`.
+End with a short table: step, result (PASS/FAIL/SKIPPED), evidence (last output line or error). Then list what the user must do (e.g. approve servers, install Python). Then point to the other skills: `/kb-lookup`, `/kb-review-workspace`, `/kb-research`, `/kb-refresh`, `/kb-add-topic`, `/kb-census`, `/kb-verify`, `/kb-git-sync`.

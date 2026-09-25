@@ -22,6 +22,14 @@ _answers.md merge=union
 _gaps.md merge=union
 _conflicts.md merge=union
 
+# Append-style tool data (one record per line): parallel additions keep both sides' rows. fix does not clean them:
+# a row both sides edited stays twice, which tests.py reports (duplicate signal or alias term) or `rag.py eval` shows
+# (a doubled lookup_eval.csv id); keep the newer row. Orphaned doc2query keys: `python3 _tools/doc2query.py stale`.
+_tools/doc2query/expansions.csv merge=union
+_tools/signals.csv merge=union
+_tools/aliases.csv merge=union
+_tools/lookup_eval.csv merge=union
+
 # Generated files: union so a merge never stops on them, then `kbgit.py fix` regenerates them
 # (build_index.py for _coverage.csv; lint_baseline.txt = current lint errors that either side had accepted).
 # README.md is NOT here: it is mostly hand-written and merges normally; if its generated coverage table

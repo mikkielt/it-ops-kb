@@ -39,6 +39,8 @@ For each `needs-human` path, read the three versions: `git show :1:PATH` (base),
 - Ids: write both sides' ids exactly as each side has them, even a legacy id both sides took (`S2205`): `fix` renumbers the local side's afterwards. It attributes a line to the side that has it verbatim, and a new line you wrote (a merged `sources:` line) to the one side whose version of the file cites that id at all. If both sides' versions of this file cite the colliding id, keep each side's lines verbatim instead of merging them into one line.
 - Deleted on one side, edited on the other (`git status` shows `DU`/`UD`): ask the user.
 
+**Tool data** (`_tools/signals.csv`, `_tools/aliases.csv`, `_tools/lookup_eval.csv`, `_tools/doc2query/expansions.csv`): union-merged like the ledgers, so they rarely stop a rebase, but `fix` does not clean them. After the rebase (or on a conflict made without `.gitattributes`): keep both sides' rows and drop exact duplicates. A key both sides changed (a signal, an alias term, an eval id) keeps one row: upstream's, unless the local change is the point of its commit. Two different eval rows under one id: give the local one the next free `E` number. Then `python3 _tools/doc2query.py stale` (a fact reworded on either side orphans its expansion rows: remove the listed keys' rows) and `python3 _tools/rag.py eval` (every question must pass).
+
 **Tools, docs, skills, config** (`_tools/*`, `*.md` outside the domain directories, `.claude/*`, `.gitattributes`, `.gitlab-ci.yml`): merge conservatively so both sides' intents survive (both new flags, both fixes). If the two changes contradict each other, or you cannot tell what one side meant, ask.
 
 Then, one command at a time:
@@ -50,7 +52,7 @@ Then, one command at a time:
 Exit 3 with "the rebase is complete" means `fix` itself needs a decision (e.g. one answer heading twice with different bodies): make it, commit it (`fix(kb): …`), rerun sync.
 
 ## 3. Exit 1: gate failed
-- Read the failing check's output in the report. Fix the cause in the files the user's commits touched (`git diff --name-only origin/main...HEAD`): an unknown source id, a missing front-matter key, a stale index (`python3 _tools/build_index.py`), a new lint error, a leak-scan hit.
+- Read the failing check's output in the report. Fix the cause in the files the user's commits touched (`git diff --name-only origin/main...HEAD`): an unknown source id, a missing front-matter key, a stale index (`python3 _tools/build_index.py`), a new lint error, a leak-scan hit, a duplicate row in the tool data or a failing `rag.py eval` question (see Tool data in section 2).
 - Never silence a check by editing `_tools/lint_baseline.txt`, `_tools/tests_allowlist.txt` or a test, unless the user agrees after you explain why.
 - Commit the fix as its own commit (`fix(kb): …`), then rerun `python3 _tools/kbgit.py sync`. Bad trailers are repaired by sync itself.
 - Push rejected twice: someone keeps pushing; wait, then rerun.

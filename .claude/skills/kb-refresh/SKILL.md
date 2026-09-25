@@ -30,7 +30,7 @@ Flags repeat and combine. `--older-than DAYS` skips recently fetched sources.
 3. For pinned artifacts (rows with `artifact_sha256`), use `python3 _tools/fetch.py --verify` only if the user asks; those urls are fixed commits and do not drift.
 
 ## 3. Update the kb
-For every changed source, find the facts citing it: `python3 _tools/rag.py search "S1234" -k 20` or grep the id.
+For every changed source, find the facts citing it: `python3 _tools/rag.py src S1234 --cited` (the row and every line that names the id).
 - Fact still true: leave it.
 - Fact changed: rewrite it from the new text, same tag, same id. Update that source's `retrieved_utc` and `version_or_date` in `_sources.csv`.
 - New page or url: add a new source row with the id from `python3 _tools/kbid.py url <URL>` (a hash of the url; never invent one or take the next number; reuse the existing id if the url is already there) and cite it.
@@ -38,10 +38,12 @@ For every changed source, find the facts citing it: `python3 _tools/rag.py searc
 - Sources now disagree: record both sides in `_conflicts.md`, ending `(topic: <domain>/<slug>)`.
 - Page gone (404) or content withdrawn: mark the fact `[UNK]`, and log what was tried in `_gaps.md`, ending `(topic: <domain>/<slug>)`.
 - Update the article's `retrieved_utc`, and its `status` if it changed. Then run `python3 _tools/build_index.py`: it regenerates `_coverage.csv`, the README coverage row and `used_in` (never edit those by hand).
+- Rewording a fact changes its doc2query key: `python3 _tools/doc2query.py stale` lists the orphaned keys; `python3 _tools/doc2query.py prune` removes their rows (regenerate only where real lookups miss, `_tools/doc2query/README.md`).
 Follow the README licensing rules: Microsoft Learn text is paraphrased (quotes of 25 words or fewer); verbatim copies only for permissive licences.
 
 ## 4. Check and report
 - `python3 _tools/check.py` must end `errors=0`. Run `python3 .claude/skills/kb-verify/lint.py <paths you edited>`.
+- When facts changed: `python3 _tools/doc2query.py stale` prints `stale=0`, `python3 _tools/rag.py eval` passes every question, and `python3 _tools/tests.py` ends `OK`.
 - A targeted `--diff` writes `_fetch_state.csv` for the sources it checked. Commit that file with the refresh it explains, even when no fact changed: it records when those sources were last verified. (Only a whole-kb baseline is left to the maintainer.)
 - When the user asks you to commit: one commit per refreshed selection, with the source rows, the facts citing them and `_fetch_state.csv` together. If the refresh re-read the sources and confirmed the facts current (changed or not), mark it: `KB_VERIFIED=<today, YYYY-MM-DD> git commit ...` (or `git commit --trailer "KB-Verified: <today>"`); the hook (`python3 _tools/kbgit.py install-hooks`) adds the other KB-* trailers. Check them with `git log -1 --format=%B`. A whole-kb verification is `/kb-census`, which ends with the census tag.
 - To see when a fact or source last changed: `python3 _tools/kbgit.py log S1234` and `python3 _tools/kbgit.py blame <path:line>`.

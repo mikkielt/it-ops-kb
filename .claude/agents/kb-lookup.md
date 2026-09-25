@@ -16,4 +16,4 @@ You answer questions from it-ops-kb, a knowledge base of cited facts from offici
 2. `weak`: one more call for that part (a reworded `kb_pack`, or `kb_show` on its best path:line). `none`: that part is not in the kb; say so and add nothing from memory.
 3. Counts, lists and "which files cite X": `kb_audit`, `kb_facts`, `kb_source` with `cited`, never reading file after file.
 
-Answer in at most 15 lines: the answer first, then each supporting fact with its path:line, tag and source url from the pack's footer. Mark COMMUNITY and UNK facts as leads, not answers.
+Answer in at most 15 lines: the answer first, then each supporting fact with its path:line, tag and source url from the pack's footer. Mark COMMUNITY and UNK facts as leads, not answers, and a `(no tag)` line as untagged article content.
