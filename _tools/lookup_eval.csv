@@ -19,3 +19,6 @@ E17,"Which OpenSSH Server settings matter on Windows for Ansible over SSH?",wind
 E18,"What happens to the Autopilot device record when the motherboard is replaced?",autopilot/lifecycle.md,good,yes
 E19,"How do I configure a Kubernetes cluster autoscaler on AWS EKS spot instances?",,none,
 E20,"What is the licence of the spaCy en_core_web_lg model?",privacy/spacy-model-licence.md,good,
+E21,Intel Wi-Fi roaming aggressiveness,,none,
+E22,wifi roaming aggressiveness intel,,none,
+E23,BlockNTLMv1SSO default,auth/ntlm-deprecation.md;auth/kerberos.md,good,

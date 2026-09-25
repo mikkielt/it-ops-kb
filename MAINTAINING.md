@@ -29,7 +29,7 @@ Run `/kb-setup` (Claude Code), or do the same by hand. In Claude Code on the web
 | command | does |
 |---|---|
 | `python3 _tools/rag.py pack "<question>" [--budget 1200] [-d DOMAIN]` | the evidence pack: `coverage: good/weak/none`, the best fact lines by article, one source footer (start lookups here) |
-| `python3 _tools/rag.py facts PREFIX [--tag UNK,COMMUNITY]` / `audit [PREFIX] [--status partial] [--entries]` | fact lines by tag kind / per-article status, tag counts and linked gap and conflict entries |
+| `python3 _tools/rag.py facts PREFIX [--tag UNK,COMMUNITY]` / `audit [PREFIX] [--status partial] [--entries] [--unlinked]` | fact lines by tag kind / per-article status, tag counts and linked gap and conflict entries (`--unlinked`: entries no topic links yet) |
 | `python3 _tools/rag.py src S123 [--cited]` / `eval` | resolve a source id, with every line that cites it / run the lookup eval set `_tools/lookup_eval.csv` |
 | `python3 _tools/rag.py search "<query>" -k 8 [-d DOMAIN] [-u] [--index]` | BM25 search over chunks; `-u` adds a footer of source urls; root index files only with `--index` |
 | `python3 _tools/rag.py show PATH:LINE -n 30` / `src S123` / `topics [DOMAIN]` | read lines / resolve a source id (`S123` or `S-k3f7q2zd`) / list articles |

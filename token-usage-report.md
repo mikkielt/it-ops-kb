@@ -105,3 +105,95 @@ Until `pack` exists, cheaper defaults for `search`:
 | no coverage (T5) | 144k, 4 calls, unsourced additions | 1 call, `coverage: none`, stop |
 | cross-topic synthesis (T4) | 178-195k, 4-8 calls | 2-4 packs (6-10k); a subagent only if the main context must stay clean, then about 50k fixed + 10k |
 | structural audit (T6) | 363k, 28 calls, 195 s, approximate counts | 1 tool call, about 1k, exact |
+
+## Re-measurement after the changes
+
+Recommendations A-G are implemented. The pieces:
+- `_tools/kbfacts.py`, and in `rag.py` and `kb_mcp.py`: `pack`, `facts`, `audit`, `src --cited` and `eval`;
+- the `kb:` prompt hook `_tools/kb_hook.py`;
+- 55 ledger topic markers;
+- `AGENTS.md` cut to 3.2 KB, with `MAINTAINING.md` for the rest;
+- a rewritten `/kb-lookup`;
+- `_tools/lookup_eval.csv`, 23 questions, all passing.
+
+The same six questions were then asked again three ways.
+
+### 1. The `kb:` hook (no model)
+
+`claude -p "kb: Does deleting an Entra device also delete its BitLocker recovery keys?"` was blocked by the hook, which showed the pack.
+- 0 input tokens, 0 output tokens, $0, 426 ms.
+- The pack was 2.1 KB, with the answer in its first fact line.
+
+### 2. Fresh headless sessions, one question each, old commit vs new commit
+
+`claude -p` on the mid-size model, allowed to use `rag.py`, `Read`, `Grep`, `Glob` and skills, with no web and no subagents. The old commit ran in a worktree of `19010a8`.
+
+| task | turns | cumulative input tokens | output tokens | time |
+|---|---|---|---|---|
+| fixed context only ("ok") | 1 -> 1 | 46.9k -> 41.2k | 4 -> 4 | 3 -> 4 s |
+| T1 one fact | 5 -> 2 | 198.9k -> 84.2k | 853 -> 270 | 17 -> 8 s |
+| T2 source id S1216 | 5 -> 4 | 190.6k -> 167.3k | 1013 -> 625 | 19 -> 15 s |
+| T3 medium, one topic | 8 -> 3 | 259.6k -> 129.3k | 2361 -> 1354 | 38 -> 25 s |
+| T4 cross-topic synthesis | 11 -> 6 | 586.3k -> 139.5k | 3630 -> 2302 | 59 -> 32 s |
+| T5 not in kb | 5 -> 2 | 196.7k -> 83.0k | 761 -> 266 | 16 -> 8 s |
+| T6 domain audit | 52 -> 2 | 1262.6k -> 88.1k | 18449 -> 2869 | 202 -> 30 s |
+| **T1-T6** | **86 -> 19** | **2695k -> 691k (-74%)** | **27067 -> 7686 (-72%)** | **351 -> 118 s (-66%)** |
+
+What the new sessions did:
+- T1, T3, T5: one `pack` each, then the answer.
+- T2: `src S1216 --cited`.
+- T4: packs per part plus one `audit auth --entries`.
+- T6: `audit agents --status partial --entries`, then the answer. The old session spent 52 turns on grep loops, 4 of them denied by the permission rules.
+
+Answer quality:
+- All six answers were correct and cited `path:line` and source urls.
+- T5 said the kb does not cover the question and added nothing from memory; the first run had added registry values.
+- T6's counts come from one parser and are reproducible.
+
+Dollar cost is left out of the table. It depends on which run in a batch pays the cache write, so it is not comparable across batches; the token counts are.
+
+### 3. Subagents from this session (the setup of the first measurement)
+
+| task | calls | turns | cumulative input | tool output | effective input |
+|---|---|---|---|---|---|
+| T1 one fact, guided | 3 -> 2 | 5 -> 4 | 274k -> 217k | 7.7 -> 7.3 KB | 136k -> 130k |
+| T1 one fact, unguided | 1 -> 2 | 3 -> 4 | 161k -> 218k | 5.3 -> 7.9 KB | 122k -> 129k |
+| T2 source id S1216 | 3 -> 2 | 5 -> 3 | 268k -> 159k | 4.4 -> 3.3 KB | 134k -> 121k |
+| T3 medium, one topic | 5 -> 3 | 5 -> 5 | 296k -> 275k | 25.2 -> 8.5 KB | 157k -> 139k |
+| T4 synthesis, guided | 8 -> 7 | 7 -> 9 | 463k -> 549k | 50.6 -> 40.6 KB | 195k -> 194k |
+| T4 synthesis, unguided | 4 -> 7 | 5 -> 7 | 333k -> 468k | 45.7 -> 42.9 KB | 178k -> 188k |
+| T5 not in kb | 4 -> 4 | 5 -> 6 | 282k -> 332k | 14.2 -> 11.9 KB | 144k -> 148k |
+| T6 domain audit | 28 -> 9 | 30 -> 11 | 2021k -> 642k | 33.6 -> 14.8 KB | 363k -> 191k |
+| **total** | | | | | **1430k -> 1240k (-13%)** |
+
+The gain here is small. Every subagent still starts at the same 50.0k tokens, because subagents inherit the `AGENTS.md` their parent session loaded at start. These were spawned from a session that began before the split, so they carried the old 15.9 KB `AGENTS.md`, without the lookup rules or the new commands. Only agents told to read `SKILL.md` saw the new procedure.
+
+That confirms recommendation A: the fixed context is the cost. After changing `AGENTS.md`, start a new session; and do lookups inline or with the hook, not in subagents.
+
+### Found and fixed during the re-measurement
+
+A subagent's reworded query, `Intel Wi-Fi roaming aggressiveness`, got `coverage: good`. Two causes:
+- the hyphen parts of "Wi-Fi" counted as extra matched words;
+- the first word of the query was never treated as a product name.
+
+Fix: the verdict now counts whole words only and treats every capitalised word as a name. The query and its lowercase variant are now eval cases E21 and E22.
+
+The only pattern still reading whole articles was a multi-part question (T4 in subagents). `/kb-lookup` now says to use one pack per part.
+
+### Status of the recommendations
+
+| | status |
+|---|---|
+| A. lookups inline, not in fresh agents | in `AGENTS.md`, `/kb-lookup`, the MCP server instructions and the README note for other projects |
+| B. structural tools | `rag.py audit`, `facts`, `src --cited`; `kb_audit`, `kb_facts`, `kb_source` with `cited` |
+| C. joinable ledgers | explicit links via a `(topic: <domain>/<slug>)` marker, a path in the text, or a section heading. 55 markers were added where an entry's sources point at exactly one topic of its section's domain. Links via sources are reported separately. Skills require the marker on new entries; `check.py` validates markers. One shared tag parser replaces a rewrite of the 128 tag variants in articles, most of which carry meaning in their notes; lint reports DOC/COMMUNITY tags without an id (13 recorded as known debt). |
+| D. evidence pack | `rag.py pack`, `kb_pack` |
+| E. `/kb-lookup` stop rule | done, 3.0 KB |
+| F. `AGENTS.md` split | 15.9 KB -> 3.2 KB, capped at 4 KB by `tests.py`; `MAINTAINING.md` is read by the skills that change the kb |
+| G. deterministic retrieval eval | `_tools/lookup_eval.csv` (23 questions), `rag.py eval`, gated in `tests.py` |
+
+### What is left
+
+- 233 ledger entries have no explicit topic link. 125 of them (118 in `_gaps.md`, 7 in `_conflicts.md`) are not even linked through their sources, because they name no source id and no path. `rag.py audit` cannot attribute them until someone adds a marker; `rag.py audit --unlinked [DOMAIN]` lists them. This is a one-time triage.
+- The 13 DOC/COMMUNITY tags without a source id need their sources found or their tag changed.
+- Grow `lookup_eval.csv` from real questions that miss: every failed `kb:` lookup is a candidate row.

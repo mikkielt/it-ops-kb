@@ -66,11 +66,11 @@ Not done here:
   3. Bring them in with `kbgit.py sync` and `/kb-git-sync`. The procedure is tested on synthetic copies in `_tools/test_research_merge.py`.
 
 ## 4. Token usage: make lookups deterministic
-`token-usage-report.md` measured 8 subagent lookups (2026-09-25): about 50k tokens of fixed context per agent is 74-93% of the input; a mechanical audit took 30 turns where a script takes one call. Its recommendations A-G are not implemented yet. In order:
-- lookups inline, not in fresh subagents;
-- `audit`, `facts` and `src --cited` in `rag.py` and `kb_mcp.py`;
-- a `topic:` key on every `_gaps.md` and `_conflicts.md` entry, and one tag grammar;
-- `rag.py pack` with a coverage verdict;
-- a shorter `/kb-lookup` with a stop rule;
-- `AGENTS.md` split into a lookup core and `docs/maintaining.md`;
-- `lookup_eval.csv` in `tests.py`.
+Done; see `token-usage-report.md`, "Re-measurement after the changes":
+- The six measured questions in fresh sessions: -74% input tokens, -72% output tokens, 351 -> 118 s.
+- A `kb:` prompt the kb covers costs no model tokens.
+
+Still open:
+- 233 ledger entries have no explicit topic link and need a `(topic: <domain>/<slug>)` marker. 125 of them are not even linked through their sources. List them with `python3 _tools/rag.py audit --unlinked [DOMAIN]`.
+- 13 DOC/COMMUNITY tags without a source id (kb-verify lint, in `_tools/lint_baseline.txt`).
+- Add failed real-world lookups to `_tools/lookup_eval.csv`.

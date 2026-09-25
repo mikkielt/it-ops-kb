@@ -241,23 +241,27 @@ def units(prefix=None, with_csv=True):
 # ---------------------------------------------------------------- ledgers
 
 def ledger_entries(name):
-    """Entries of `_gaps.md` or `_conflicts.md`: {file, line, end, section, text}."""
+    """Entries of `_gaps.md` or `_conflicts.md`: {file, line, end, section, text}. A `### ` line followed directly
+    by bullets is a sub-heading, not an entry."""
     text = read(name) or ""
     out, section, cur = [], "", None
+
+    def close(nxt_is_bullet=False):
+        if cur and not (cur["heading"] and not cur["body"] and nxt_is_bullet):
+            out.append({k: v for k, v in cur.items() if k not in ("heading", "body")})
+
     for n, ln in enumerate(text.splitlines(), start=1):
         if ln.startswith("## "):
-            if cur:
-                out.append(cur)
+            close()
             cur, section = None, ln[3:].strip()
         elif ln.startswith("### ") or ln.startswith("- "):
-            if cur:
-                out.append(cur)
-            cur = {"file": name, "line": n, "end": n, "section": section, "text": ln.lstrip("#- ").strip()}
+            close(ln.startswith("- "))
+            cur = {"file": name, "line": n, "end": n, "section": section, "text": ln.lstrip("#- ").strip(),
+                   "heading": ln.startswith("### "), "body": False}
         elif cur is not None and ln.strip():
             cur["text"] += " " + ln.strip()
-            cur["end"] = n
-    if cur:
-        out.append(cur)
+            cur["end"], cur["body"] = n, True
+    close()
     return out
 
 
@@ -348,6 +352,11 @@ def stem(w):
     return w
 
 
+def key_terms(text):
+    """Stems of whole words only (no hyphen/dot parts): what the coverage verdict counts."""
+    return [stem(t) for t in WORD.findall(text.lower()) if t not in STOP and len(t) > 1]
+
+
 def terms(text):
     out = []
     for t in WORD.findall(text.lower()):
@@ -375,16 +384,20 @@ def _corpus(domain):
 def pack(question, budget=1200, domain=None, max_articles=4):
     """Rank fact units for a question and return {verdict, missing, weak_words, groups, sources, text}.
 
-    verdict: `none` when no unit matches any informative query word or under a third of them occur anywhere,
-    `weak` when the best units cover under two thirds of them, else `good`. `budget` is in tokens (about 3.5
+    verdict (counted on whole query words, not hyphen parts): `none` when a third or more of the named words
+    (with a capital or a digit: products, ids) or half or more of the informative words occur nowhere in the kb, or
+    the best article matches under a third of the known ones; `weak` under 60% (or any named word missing); else
+    `good`. `budget` is in tokens (about 3.5
     characters each) and bounds the text."""
     us = corpus(domain)
     q = sorted(set(terms(question)))
     df = Counter(t for u in us for t in q if t in u["tf"])
     n = max(len(us), 1)
     avg = sum(u["len"] for u in us) / n
-    informative = [t for t in q if df[t] < 0.2 * n]
-    missing = [t for t in informative if not df[t]]
+    keys = sorted(set(key_terms(question)))
+    kdf = {t: df[t] if t in df else sum(1 for u in us if t in u["tf"]) for t in keys}
+    informative = [t for t in keys if kdf[t] < 0.2 * n]
+    missing = [t for t in informative if not kdf[t]]
     scored = []
     for u in us:
         s = 0.0
@@ -401,16 +414,14 @@ def pack(question, budget=1200, domain=None, max_articles=4):
     # verdict: named words (product names, ids: a capital or a digit, not the question's first word) that the kb
     # never mentions mean it does not cover the question; else the share of the kb-known key words that the best
     # article's units match
-    first = WORD.search(question)
-    named = {stem(w.lower()) for w in WORD.findall(question)
-             if (re.search(r"[A-Z0-9]", w) and (not first or w != first.group(0))) and w.lower() not in STOP}
-    named = {t for t in named if t in q}
-    named_missing = sorted(t for t in named if not df[t])
-    known = [t for t in informative if df[t]]
+    named = {stem(w.lower()) for w in WORD.findall(question) if re.search(r"[A-Z0-9]", w) and w.lower() not in STOP}
+    named = {t for t in named if t in kdf}
+    named_missing = sorted(t for t in named if not kdf[t])
+    known = [t for t in informative if kdf[t]]
     best_art = scored[0][1]["path"] if scored else None
     hit = {t for s_, u in scored[:40] if u["path"] == best_art for t in known if t in u["tf"]}
     share = len(hit) / len(known) if known else 0.0
-    if not scored or (named and len(named_missing) * 3 >= len(named)) or (informative and len(missing) * 2 > len(informative)):
+    if not scored or (named and len(named_missing) * 3 >= len(named)) or (informative and len(missing) * 2 >= len(informative)):
         verdict = "none"
     elif share >= 0.6 and not named_missing:
         verdict = "good"

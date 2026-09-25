@@ -50,7 +50,7 @@ Examples use placeholder names only:
 ```
 python _tools/rag.py pack "when is NTLMv1 disabled by default"   # evidence pack: coverage good/weak/none, best fact lines by article, one url footer (--budget, -d)
 python _tools/rag.py facts agents --tag UNK,COMMUNITY  # fact lines under a prefix, by tag kind
-python _tools/rag.py audit agents --status partial     # per article: tag counts, linked _gaps.md/_conflicts.md entries (--entries lists them)
+python _tools/rag.py audit agents --status partial     # per article: tag counts, linked _gaps.md/_conflicts.md entries (--entries lists them; --unlinked: entries with no topic)
 python _tools/rag.py src S1216 --cited                 # a source row plus every line that cites it
 python _tools/rag.py eval                              # the lookup eval set (_tools/lookup_eval.csv): expected article found, verdict right
 python _tools/kb_hook.py --test "kb: question"         # what the kb: prompt hook would answer

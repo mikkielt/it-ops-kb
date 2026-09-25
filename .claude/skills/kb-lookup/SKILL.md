@@ -13,6 +13,7 @@ Read-only. Do it here, not in a subagent. Use the `kb` MCP tools (`mcp__plugin_i
    - `coverage: good`: answer from the pack. Stop searching.
    - `coverage: weak`: make one more call, either `kb_pack` with the product's own terms or `kb_show` on the best `path:line` with `n` = 30 (`rag.py show PATH:LINE -n 30`). Then answer with what you have.
    - `coverage: none`: the kb does not cover it. Say so. Do not fill the gap from memory.
+   - A question with several parts: one `kb_pack` per part (each is about 1k tokens), not whole articles. Open and closed gaps for the area: `kb_audit` with `entries` = true.
 2. **Counts, lists, joins**: use a tool, never read file after file.
    - Tag counts and linked gaps/conflicts per article: `kb_audit` (`rag.py audit PREFIX [--status partial] [--entries]`).
    - Fact lines by tag: `kb_facts` (`rag.py facts PREFIX --tag UNK,COMMUNITY`).

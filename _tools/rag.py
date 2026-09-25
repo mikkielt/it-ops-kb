@@ -11,9 +11,10 @@
                                            the best fact lines grouped by article (path:line, tag) and one footer of
                                            the cited sources' urls, within about BUDGET tokens. Start every lookup here.
   rag.py facts PREFIX [--tag UNK,COMMUNITY]   fact lines under a path prefix (a domain, topic or file), by tag kind
-  rag.py audit [PREFIX] [--status partial] [--entries]
+  rag.py audit [PREFIX] [--status partial] [--entries] [--unlinked]
                                            per article: status, retrieved_utc, fact counts by tag kind and the
-                                           _gaps.md/_conflicts.md entries linked to it (named, or via its sources)
+                                           _gaps.md/_conflicts.md entries linked to it (named, or via its sources);
+                                           --unlinked lists the entries no topic marker, path or section links
   rag.py src S1824 --cited                 also every file line that names the id
   rag.py eval [--file _tools/lookup_eval.csv]   pack against the lookup eval set: expected article found, verdict
 
@@ -262,6 +263,7 @@ def main():
     fa = sub.add_parser("facts"); fa.add_argument("prefix"); fa.add_argument("--tag", help="comma-separated kinds, e.g. UNK,COMMUNITY")
     au = sub.add_parser("audit"); au.add_argument("prefix", nargs="?"); au.add_argument("--status")
     au.add_argument("--entries", action="store_true", help="list the linked _gaps.md/_conflicts.md entries")
+    au.add_argument("--unlinked", action="store_true", help="list _gaps.md/_conflicts.md entries no marker, path or section links to a topic")
     ev = sub.add_parser("eval"); ev.add_argument("--file", default=os.path.join("_tools", "lookup_eval.csv"))
     w = sub.add_parser("show"); w.add_argument("target"); w.add_argument("-n", type=positive_int, default=40)
     a = ap.parse_args()
@@ -331,6 +333,15 @@ def main():
             text = u["text"] if len(u["text"]) <= 300 else u["text"][:300] + " ..."
             print(f"{u['path']}:{u['line']}  [{'/'.join(kbfacts.kinds_of(u['tags']))}]  {text}")
         print(f"facts={len(res)}")
+    elif a.cmd == "audit" and a.unlinked:
+        tf, srcs, n = kbfacts.topic_files(), kbfacts.source_rows(), 0
+        for name in ("_gaps.md", "_conflicts.md"):
+            for e in kbfacts.link_entries(kbfacts.ledger_entries(name), tf, srcs):
+                if not e["explicit"] and (not a.prefix or any(kbfacts.in_prefix(t, a.prefix) for t in e["via_sources"]) or e["section"].startswith(a.prefix.split("/")[0])):
+                    n += 1
+                    hint = f"  [via sources: {', '.join(e['via_sources'][:4])}]" if e["via_sources"] else ""
+                    print(f"{name}:{e['line']}  ({e['section']})  {e['text'][:110]}{hint}")
+        print(f"unlinked={n}: add `(topic: <domain>/<slug>)` at the end of each entry")
     elif a.cmd == "audit":
         rows = kbfacts.audit(a.prefix, a.status)
         if a.json:
