@@ -5,6 +5,7 @@ applies_to: "GitLab (docs current 2026-09), python keyring 25.7.0, msal-extensio
 retrieved_utc: 2026-09-25
 sources: [S449, S740, S1297, S2041, S2043, S2044, S2046, S2047, S2048, S2049, S2054, S2055, S2056, S2057]
 status: complete
+files: [agents/api-tokens.csv, agents/secret-storage-options.csv]
 ---
 
 # Issuing and storing API tokens and secrets for agents

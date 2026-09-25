@@ -5,6 +5,7 @@ applies_to: "Microsoft Graph v1.0 and beta, msgraph-metadata commit b8cbef92f695
 retrieved_utc: 2026-09-24
 sources: [S500, S501, S506, S507]
 status: complete
+files: [graph/csdl/managedDevice.v1.0.xml, graph/csdl/managedDevice.beta.xml]
 ---
 
 # Graph `managedDevice` (Intune): CSDL excerpt and property table

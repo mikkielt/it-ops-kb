@@ -13,10 +13,11 @@ Run each command on its own (no `;`, `&&`, pipes into other tools or loops): the
 
 ## 1. Run
 1. `python3 _tools/check.py`: sources, citations, artifacts, front matter, CSV shape.
+   Also `python3 _tools/build_index.py --check`: the generated index files are up to date.
 2. `python3 _tools/fetch.py --offline`: pinned artifacts match their sha256.
 3. `python3 _tools/stress_test.py`: tool robustness, about 10 s.
 4. `python3 .claude/skills/kb-verify/lint.py $ARGUMENTS`: contract checks that `check.py` does not make:
-   - ERROR: topic id vs path; header vs `_coverage.csv` (status, priority, source count); coverage lists a missing file; topic missing from `_coverage.csv` or the README table; missing section; tag without a source id; untagged Facts bullet.
+   - ERROR: topic id vs path; the topic's `_coverage.csv` or README row missing or stale (generated: the fix is `python3 _tools/build_index.py`); coverage lists a missing file (fix `files:`); missing section; tag without a source id; untagged Facts bullet.
    - WARN: no `#` title; a bullet mixing tag kinds; header sources never cited, or cited ids missing from the header.
 5. `python3 _tools/tests.py`: what CI runs. Lint errors listed in `_tools/lint_baseline.txt` are known debt; only new ones fail.
 6. If the working tree has changes (`git status --short`), run the lint on the changed topic paths too, and name them in the report.

@@ -5,6 +5,7 @@ applies_to: "Microsoft DSC 3.0.0 to 3.4.0-preview.1 (list generated from the 3.3
 retrieved_utc: 2026-09-23
 sources: [S116, S117, S124, S129, S130, S131, S100]
 status: complete
+files: [dsc/functions-3.3.0.csv]
 ---
 
 # Configuration expression functions

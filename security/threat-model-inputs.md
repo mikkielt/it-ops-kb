@@ -5,6 +5,7 @@ applies_to: "STRIDE; LINDDUN; Microsoft Threat Modeling Tool; MITRE ATT&CK v19.2
 retrieved_utc: 2026-09-24
 sources: [S1564, S1565, S1566, S1567, S1568, S1569, S1570, S1571, S1572, S1573, S1574, S1576]
 status: complete
+files: [security/artifacts/mitre/attack-subset.csv, security/artifacts/mitre/attack-subset.md]
 ---
 
 # Threat-modeling method and ATT&CK technique inputs

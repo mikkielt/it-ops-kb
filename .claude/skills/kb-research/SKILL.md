@@ -36,7 +36,7 @@ Run each command on its own (no `;`, `&&`, pipes into other tools or loops): the
 
 ## 4. Write
 Follow the contract in README.md and `.claude/skills/kb-add-topic/SKILL.md` (source rows first, written with Python's `csv` module; one tag per fact; licence strings; placeholders only).
-- Extending an anchor topic: add bullets to its Facts section, add the new ids to its `sources:` header, update `retrieved_utc` and, if it changed, `status`; update its row in `_coverage.csv` and the README table (`n_sources` = ids in the header).
+- Extending an anchor topic: add bullets to its Facts section, add the new ids to its `sources:` header, update `retrieved_utc` and, if it changed, `status`. Do not edit `_coverage.csv`, the README table or `used_in`: step 5 regenerates them.
 - New subject with no anchor: create the topic as `/kb-add-topic` describes (priority `P3` unless the user gives one), and link it from the anchor's Reference section.
 - "How it fits": implications for this kb's frame (e.g. how an agent should call it, where secrets live, what tier an operation needs) are `DER` facts. State the derivation and the facts it rests on. Do not present a design choice as a vendor fact.
 - Add one answer to `_answers.md`, after the last `QK` entry (or at the end, before the `R` sections if there are none):
@@ -55,6 +55,7 @@ Follow the contract in README.md and `.claude/skills/kb-add-topic/SKILL.md` (sou
 - Failed lookups go to `_gaps.md` under the anchor topic's heading: what you looked for and where.
 
 ## 5. Check
+- `python3 _tools/build_index.py` regenerates `_coverage.csv`, the README coverage table and `used_in` from what you wrote.
 - `python3 _tools/check.py` must end `errors=0`.
 - `python3 .claude/skills/kb-verify/lint.py <each topic you edited or created>` must add no errors.
 - `python3 _tools/tests.py` must end `OK`. It includes the leak scan: no real tenant ids, hostnames, addresses or tokens.

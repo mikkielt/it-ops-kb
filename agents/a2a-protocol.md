@@ -5,6 +5,7 @@ applies_to: "A2A protocol spec v1.0.0 / v1.0.1; A2A Python SDK (a2a-sdk)"
 retrieved_utc: 2026-09-25
 sources: [S2120, S2121, S2122, S2123, S2124, S2125, S2126, S2127, S2128, S2129]
 status: partial
+files: [agents/a2a/a2a-proto-digest.md, agents/a2a/a2a.proto]
 ---
 
 # Agent2Agent (A2A) protocol

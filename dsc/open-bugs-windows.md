@@ -5,6 +5,7 @@ applies_to: "PowerShell/DSC GitHub issues, state=open, label Issue-Bug, snapshot
 retrieved_utc: 2026-09-23
 sources: [S126]
 status: complete
+files: [dsc/open-bugs.csv]
 ---
 
 # Open DSC bugs affecting Windows resources

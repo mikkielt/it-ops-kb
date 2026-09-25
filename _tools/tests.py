@@ -5,8 +5,8 @@
   tests.py -k Leak       run tests whose name matches (unittest -k)
   tests.py --write-lint-baseline   record today's lint errors as known debt in _tools/lint_baseline.txt
 
-Cohesion: check.py and fetch.py --offline pass; no lint errors beyond the recorded baseline; the README coverage
-table equals _coverage.csv; links, backtick paths and used_in paths resolve; every CLI flag the docs mention exists
+Cohesion: check.py and fetch.py --offline pass; no lint errors beyond the recorded baseline; the generated index
+files (_coverage.csv, README coverage table, used_in) are up to date (build_index.py --check); links, backtick paths and used_in paths resolve; every CLI flag the docs mention exists
 in that tool; .mcp.json, .claude/settings.json and AGENTS.md agree; skills are well-formed.
 Ids: kbid.py hash source ids are deterministic and normalization-stable; bad ids and answer-id clashes are caught.
 Leaks (tracked files): secrets in any file; in authored files also home-directory paths, private IPv4 addresses,
@@ -124,14 +124,10 @@ class ToolChecks(unittest.TestCase):
 
 
 class Cohesion(unittest.TestCase):
-    def test_readme_table_equals_coverage_csv(self):
-        with open(os.path.join(KB, "_coverage.csv"), encoding="utf-8-sig", newline="") as f:
-            cov = {r["topic"]: (r["priority"], r["status"], r["n_sources"]) for r in csv.DictReader(f)}
-        rows = re.findall(r"^\| `([^`]+)` \| (P\d) \| (\w+) \| .*? \| (\d+) \|$", text("README.md"), re.M)
-        readme = {t: (p, s, n) for t, p, s, n in rows}
-        self.assertEqual(len(rows), len(readme), "duplicate topic rows in README")
-        diff = sorted(set(cov.items()) ^ set(readme.items()))
-        self.assertFalse(diff, "README coverage table and _coverage.csv differ:\n" + "\n".join(map(str, diff[:20])))
+    def test_generated_indexes_up_to_date(self):
+        """_coverage.csv, the README coverage table and used_in are generated; a hand edit or a missed rebuild fails."""
+        code, out = run(os.path.join(TOOLS, "build_index.py"), "--check")
+        self.assertEqual(code, 0, "generated index files are out of date; run python3 _tools/build_index.py\n" + out[-3000:])
 
     def test_markdown_links_resolve(self):
         bad = []

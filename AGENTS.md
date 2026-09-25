@@ -38,6 +38,7 @@ Run `/kb-setup` (Claude Code), or do the same by hand:
 | `python3 _tools/rag.py search "<query>" -k 8 [-d DOMAIN] [-u] [--index]` | BM25 search; `-u` adds source urls; root index files only with `--index` |
 | `python3 _tools/rag.py show PATH:LINE -n 30` / `src S123` / `topics [DOMAIN]` | read lines / resolve a source id (`S123` or `S-k3f7q2zd`) / list articles |
 | `python3 _tools/kbid.py url <URL>` / `answer "<question>"` / `check` | id for a new source / `QK-<slug>` for a new answer / hash-id consistency |
+| `python3 _tools/build_index.py [--check]` | regenerate `_coverage.csv`, the README coverage table and `used_in` from the articles (`--check`: report only, exit 1 if stale) |
 | `python3 _tools/check.py` | source ids, superseded_by, answer ids, citations, artifacts, front matter, CSV shape |
 | `python3 _tools/fetch.py --offline` | pinned artifacts vs their sha256 |
 | `python3 _tools/fetch.py --status --topic T` | offline: when a topic's sources were last fetched or changed |
@@ -62,7 +63,7 @@ Run `/kb-setup` (Claude Code), or do the same by hand:
 - Add the source row before the fact. A new source's id is `S-` + 8 characters from `python3 _tools/kbid.py url <URL>` (a hash of the url, so parallel writers converge); never invent one or take "the next number". Legacy `S<number>` ids stay valid; reuse the existing id when the url already has a row. Write CSVs with a real CSV writer: an unquoted comma breaks the row.
 - A replaced source (e.g. a pinned commit url whose upstream changed) gets a new row; the old row's `superseded_by` names the new id. Ids are never deleted or reused.
 - New `_answers.md` entries are `## QK-<slug>. <question>` (`python3 _tools/kbid.py answer "<question>"`); answer ids are unique.
-- Register topics in `_coverage.csv` and the README coverage table. Failed lookups go in `_gaps.md`, disagreements in `_conflicts.md`.
+- `_coverage.csv`, the README coverage table, `n_sources` and `used_in` are generated: after any content change run `python3 _tools/build_index.py`, never edit them by hand (CI fails when they are stale). Extra files of a topic go in its front matter `files: [...]`; a topic with no `.md` goes in `_tools/index_extra.csv`. Failed lookups go in `_gaps.md`, disagreements in `_conflicts.md`.
 - Licensing: our own words, quotes of 25 words or fewer; verbatim only under permissive licences (MIT, Apache-2.0, CC BY 4.0) with attribution; never copy CIS or ISO text. Microsoft Learn content fetched through MCP is paraphrased.
 - Placeholders only in examples: `PL-LT-00123`, `PL-SRV-0042`, `corp.example.com`, tenant `00000000-0000-0000-0000-000000000000`, `jan.kowalski`. Never real hostnames, tenants, people or secrets.
 - `UNK` and `COMMUNITY` facts are leads to verify, not a basis to build on.

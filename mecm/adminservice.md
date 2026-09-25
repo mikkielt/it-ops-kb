@@ -5,6 +5,7 @@ applies_to: "ConfigMgr current branch 2603"
 retrieved_utc: 2026-09-23
 sources: [S300, S301, S302, S303, S304, S305, S306, S307, S308, S309, S310, S311, S312, S313, S314, S344, S345, S346, S347, S348, S350]
 status: partial
+files: [mecm/adminservice-routes.csv]
 ---
 
 # AdminService (administration service)

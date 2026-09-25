@@ -5,6 +5,7 @@ applies_to: "Microsoft Graph v1.0 and beta, msgraph-metadata commit b8cbef92f695
 retrieved_utc: 2026-09-24
 sources: [S500, S501, S504, S505, S530]
 status: complete
+files: [graph/csdl/device.v1.0.xml, graph/csdl/device.beta.xml]
 ---
 
 # Graph `device` (Entra device object): CSDL excerpt and property table

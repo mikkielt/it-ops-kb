@@ -5,6 +5,7 @@ applies_to: "MCP specification 2026-07-28"
 retrieved_utc: 2026-09-23
 sources: [S700, S701, S703, S704, S717, S719, S711]
 status: complete
+files: [mcp/schema/2026-07-28/README.md, mcp/schema/2026-07-28/schema.ts, mcp/schema/2026-07-28/schema.json]
 ---
 # MCP specification 2026-07-28: overview
 

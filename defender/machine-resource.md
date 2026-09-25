@@ -5,6 +5,7 @@ applies_to: "Microsoft Defender for Endpoint API v1.0 (api.security.microsoft.co
 retrieved_utc: 2026-09-24
 sources: [S620, S621, S622, S627, S628, S629, S630, S631]
 status: partial
+files: [defender/machine-properties.csv]
 ---
 # Defender for Endpoint Machine resource
 

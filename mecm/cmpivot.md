@@ -5,6 +5,7 @@ applies_to: "ConfigMgr current branch 2603"
 retrieved_utc: 2026-09-23
 sources: [S302, S312, S315, S316, S317, S318, S319, S320, S321, S322, S341, S345]
 status: partial
+files: [mecm/cmpivot-entities.csv]
 ---
 
 # CMPivot

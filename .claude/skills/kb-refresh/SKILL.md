@@ -35,7 +35,7 @@ For every changed source, find the facts citing it: `python3 _tools/rag.py searc
 - Replaced source (new commit or moved page): new row as above, old row's `superseded_by` = the new id, citations re-pointed. `check.py` rejects an unknown `superseded_by` id or a cycle.
 - Sources now disagree: record both sides in `_conflicts.md`.
 - Page gone (404) or content withdrawn: mark the fact `[UNK]`, and log what was tried in `_gaps.md`.
-- Update the article's `retrieved_utc`, and its `status` if it changed. Keep `_coverage.csv` and the README coverage row in step (status, source count).
+- Update the article's `retrieved_utc`, and its `status` if it changed. Then run `python3 _tools/build_index.py`: it regenerates `_coverage.csv`, the README coverage row and `used_in` (never edit those by hand).
 Follow the README licensing rules: Microsoft Learn text is paraphrased (quotes of 25 words or fewer); verbatim copies only for permissive licences.
 
 ## 4. Check and report

@@ -5,6 +5,7 @@ applies_to: "Elastic Common Schema main @9868ff5 (version file 9.6.0-dev)"
 retrieved_utc: 2026-09-24
 sources: [S644, S645]
 status: complete
+files: [logs/ecs-log.yml]
 ---
 # Elastic Common Schema (ECS) log.* fields
 

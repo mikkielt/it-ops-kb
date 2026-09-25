@@ -5,6 +5,7 @@ applies_to: "ConfigMgr current branch 2603"
 retrieved_utc: 2026-09-23
 sources: [S303, S315, S316, S320, S323, S325, S326, S331, S339, S340, S341, S342, S343, S349, S351]
 status: partial
+files: [mecm/rbac-permissions.csv]
 ---
 
 # RBAC for CMPivot, client notification, Run Scripts and reads

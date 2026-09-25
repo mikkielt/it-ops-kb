@@ -5,6 +5,7 @@ applies_to: "Windows 11 Enterprise 24H2 (Microsoft baseline package 24H2), DISA 
 retrieved_utc: 2026-09-24
 sources: [S1470, S1471, S1472, S1598, S1473, S1475, S1477, S1478, S1479, S1590, S1591, S1413, S1414, S1415, S1416, S1594, S1595, S1596]
 status: partial
+files: [security/artifacts/disa/, security/artifacts/microsoft/, security/artifacts/osconfig/]
 ---
 
 # Settings crosswalk: Microsoft baseline × STIG × Intune × DSC v3

@@ -221,6 +221,9 @@ def main():
         # 5b. collision-free ids: hash source ids, superseded_by, answer ids
         id_cases(mutated)
 
+        # 5c. generated index files: build_index.py
+        index_cases(tmp)
+
         # 6. fetch.py --diff / --status against a local web server (no internet needed)
         if not FILTER or "diff" in FILTER or "status" in FILTER:
             fetch_diff_cases(tmp)
@@ -297,6 +300,79 @@ def id_cases(mutated):
         ("check.py", [], 1, "new QK ids are QK-<slug>")])
     mutated("slug QK answer id", lambda d: write(d, "_answers.md", read(d, "_answers.md") + "\n## QK-dataverse-onprem-sync. q\n- x [UNK]\n"), [
         ("check.py", [], 0)])
+
+
+def coverage(d):
+    return {r["topic"]: r for r in csv.DictReader(io.StringIO(read(d, "_coverage.csv")))}
+
+
+def index_cases(tmp):
+    """build_index.py: files: extras, topics without an article, hand edits caught by --check, idempotency."""
+    if FILTER and FILTER not in "index build_index":
+        return
+    B = "build_index.py"
+    GEN = ("_coverage.csv", "README.md", "_sources.csv")
+    d = copy_kb(tmp, "index")
+    case("index: pristine kb is up to date", d, B, ["--check"], 0, "out_of_date=0")
+    art = lambda topic, extra="": (f"---\ntopic: {topic}\npriority: P3\nretrieved_utc: 2026-09-25\nsources: [S100, S101]\n"  # noqa: E731
+                                   f"status: partial\n{extra}---\n# t\n## Summary\n## Facts\n- quux [DOC S100, S101]\n## Reference\n## Examples\n")
+    write(d, "ad/extras.md", art("ad/extras", "files: [ad/extras-data/, ad/extras-data/digest.md]\n"))
+    write(d, "ad/extras.csv", "a,b\nx,S102\n")
+    write(d, "ad/extras-data/digest.md", art("ad/extras-data/digest"))
+    write(d, "ad/table-only.csv", "op,sources\nx,S100;S101\ny,S101;S999999\n")
+    write(d, "_tools/index_extra.csv", read(d, "_tools/index_extra.csv") + "ad/table-only,P3,partial,ad/table-only.csv\n")
+    case("index: new article and extra row are detected", d, B, ["--check"], 1, "_coverage.csv: ad/extras row missing")
+    case("index: build writes the three files", d, B, [], 0, "written=3")
+    cov = coverage(d)
+    ok = cov.get("ad/extras", {}).get("files") == "ad/extras.md;ad/extras.csv;ad/extras-data/;ad/extras-data/digest.md" \
+        and cov["ad/extras"]["n_sources"] == "2" and "ad/extras-data/digest" not in cov
+    results.append((ok, "index: files: extras follow the md and its stem siblings; a listed digest is no row", str(cov.get("ad/extras"))))
+    ok = cov.get("ad/table-only", {}).get("n_sources") == "2" and cov["ad/table-only"]["files"] == "ad/table-only.csv"
+    results.append((ok, "index: topic without an article from index_extra.csv (known ids only)", str(cov.get("ad/table-only"))))
+    topics = list(cov)
+    ok = topics == sorted(topics, key=lambda t: (t.split("/")[0], cov[t]["priority"], t))
+    results.append((ok, "index: rows ordered by domain, priority, topic", "ok" if ok else "out of order"))
+    ok = "| `ad/extras` | P3 | partial | `ad/extras.md`, `ad/extras.csv`, `ad/extras-data/`, `ad/extras-data/digest.md` | 2 |" in read(d, "README.md")
+    results.append((ok, "index: README row rendered between the markers", "ok" if ok else "row missing"))
+    src = {r["id"]: r for r in csv.DictReader(io.StringIO(read(d, "_sources.csv")))}
+    ok = "ad/extras.csv" in src["S102"]["used_in"].split(";") and "ad/table-only.csv" in src["S101"]["used_in"].split(";") \
+        and not any(u.startswith(("_", ".")) or "/" not in u for r in src.values() for u in r["used_in"].split(";") if u)
+    results.append((ok, "index: used_in cites csv files, never root or tool files", "ok" if ok else src["S102"]["used_in"]))
+    before = {f: read(d, f) for f in GEN}
+    case("index: second build writes nothing", d, B, [], 0, "written=0")
+    ok = all(read(d, f) == before[f] for f in GEN) and all("\r" not in before[f] for f in GEN)
+    results.append((ok, "index: idempotent, \\n line endings", "ok" if ok else "files changed on rebuild"))
+    case("index: --check after build", d, B, ["--check"], 0, "out_of_date=0")
+    case("index: check.py accepts the new files", d, "check.py", [], 0)
+    shutil.rmtree(d)
+
+    def hand_edit(name, mutate, rc, expect, fixes=True):
+        d = copy_kb(tmp, "index")
+        mutate(d)
+        case(f"index: {name} :: --check", d, B, ["--check"], rc, expect)
+        if fixes:
+            case(f"index: {name} :: build repairs it", d, B, [], 0)
+            case(f"index: {name} :: --check after build", d, B, ["--check"], 0, "out_of_date=0")
+        shutil.rmtree(d)
+    t0 = next(iter(csv.DictReader(io.StringIO(read(KB, "_coverage.csv")))))["topic"]
+    hand_edit("hand-edited n_sources", lambda d: write(d, "_coverage.csv", "\n".join(
+        ln.rpartition(",")[0] + ",999" if ln.startswith(t0 + ",") else ln for ln in read(d, "_coverage.csv").split("\n"))),
+        1, f"_coverage.csv: {t0}: n_sources")
+    hand_edit("hand-added coverage row", lambda d: write(d, "_coverage.csv", read(d, "_coverage.csv") + "zz/ghost,P0,complete,zz/ghost.md,1\n"),
+              1, "zz/ghost is not a topic")
+    hand_edit("rows swapped", lambda d: write(d, "_coverage.csv", (lambda ls: "\n".join([ls[0], ls[2], ls[1]] + ls[3:]))(
+        read(d, "_coverage.csv").split("\n"))), 1, "row order")
+    hand_edit("CRLF _coverage.csv", lambda d: write(d, "_coverage.csv", read(d, "_coverage.csv").replace("\n", "\r\n")), 1, "_coverage.csv")
+    hand_edit("hand-edited README row", lambda d: write(d, "README.md", read(d, "README.md").replace(f"| `{t0}` |", f"| `{t0}` | P9 |", 1)),
+              1, "README.md: coverage table differs")
+    hand_edit("hand-edited used_in", lambda d: add_sources(d, patch={"S100": {"used_in": "dsc/nothing.md"}}), 1, "S100 used_in")
+    hand_edit("front matter changed, index not rebuilt", lambda d: write(d, t0 + ".md", read(d, t0 + ".md").replace(
+        "\nstatus: ", "\nstatus: unknown\nold_status: ", 1)), 1, f"_coverage.csv: {t0}: status")
+    hand_edit("README without markers", lambda d: write(d, "README.md", read(d, "README.md").replace("<!-- coverage:start -->", "")),
+              2, "lacks the", fixes=False)
+    hand_edit("files: names a missing path (warned, lint errors)", lambda d: write(d, t0 + ".md", read(d, t0 + ".md").replace(
+        "\nstatus: ", "\nfiles: [ad/nope.csv]\nstatus: ", 1)), 1, "files: lists missing ad/nope.csv")
+    hand_edit("_sources.csv deleted", lambda d: os.remove(os.path.join(d, "_sources.csv")), 2, "cannot read _sources.csv", fixes=False)
 
 
 def fetch_diff_cases(tmp):

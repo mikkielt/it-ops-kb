@@ -5,6 +5,7 @@ applies_to: "Microsoft DSC 3.3.0 (binary --help output; source release/v3.3 @ ea
 retrieved_utc: 2026-09-23
 sources: [S100, S101, S116, S117, S118, S128, S135, S136, S141]
 status: complete
+files: [dsc/cli/]
 ---
 
 # `dsc` 3.3.0 command-line reference

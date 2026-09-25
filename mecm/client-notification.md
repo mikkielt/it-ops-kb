@@ -5,6 +5,7 @@ applies_to: "ConfigMgr current branch 2603"
 retrieved_utc: 2026-09-23
 sources: [S318, S326, S327, S328, S329, S330, S331, S332, S333, S334, S340, S352]
 status: partial
+files: [mecm/client-operation-types.csv]
 ---
 
 # Client notification and SMS_ClientOperation

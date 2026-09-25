@@ -5,6 +5,7 @@ applies_to: "opentelemetry-collector-contrib v0.161.0 (released 2026-09-15)"
 retrieved_utc: 2026-09-23
 sources: [S960, S961, S962, S963, S964]
 status: complete
+files: [logs/otel-filelogreceiver.config.csv, logs/otel-windowseventlogreceiver.config.csv, logs/otel-filelogreceiver.metadata.yaml, logs/otel-windowseventlogreceiver.metadata.yaml]
 ---
 
 # OpenTelemetry Collector: filelog and windowseventlog receivers

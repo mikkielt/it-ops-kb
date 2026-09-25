@@ -5,6 +5,7 @@ applies_to: "Microsoft DSC 3.3.0 (binary-generated) and the repo schema files on
 retrieved_utc: 2026-09-23
 sources: [S116, S117, S137, S146, S147, S148, S149, S150, S151, S152, S153, S154, S155, S145]
 status: complete
+files: [dsc/schemas/]
 ---
 
 # DSC JSON schemas: configuration document, resource manifest, outputs

@@ -5,6 +5,7 @@ applies_to: "OpenTelemetry semantic conventions main @838e414 (CHANGELOG top v1.
 retrieved_utc: 2026-09-24
 sources: [S640, S641, S642, S643, S646]
 status: complete
+files: [logs/otel-semconv-log-registry.yaml, logs/otel-semconv-code-registry.yaml]
 ---
 # OpenTelemetry log semantic conventions (log.*, code.*, exception.*)
 
