@@ -2,7 +2,7 @@
 topic: mcp/elicitation
 priority: P1
 applies_to: "MCP specification 2026-07-28 (with legacy 2025-11-25 contrast); MCP Python SDK 2.2.0"
-retrieved_utc: 2026-09-23
+retrieved_utc: 2026-09-25
 sources: [S709, S710, S701, S720, S721, S733]
 status: complete
 ---

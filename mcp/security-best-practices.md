@@ -2,7 +2,7 @@
 topic: mcp/security-best-practices
 priority: P1
 applies_to: "MCP Security Best Practices, docs 2026-07-28"
-retrieved_utc: 2026-09-23
+retrieved_utc: 2026-09-25
 sources: [S716, S710]
 status: complete
 ---

@@ -2,7 +2,7 @@
 topic: entra/hybrid-deviceid-objectguid
 priority: P1
 applies_to: "Microsoft Entra Connect Sync, Entra Cloud Sync device sync (preview), hybrid join"
-retrieved_utc: 2026-09-24
+retrieved_utc: 2026-09-25
 sources: [S504, S544, S548, S549, S550, S551, S552]
 status: partial
 ---

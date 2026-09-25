@@ -2,7 +2,7 @@
 topic: prior-art/secret-vault-encryption
 priority: P2
 applies_to: "a placeholder vault (per-conversation, short TTL, encrypted values, audited reveal)"
-retrieved_utc: 2026-09-24
+retrieved_utc: 2026-09-25
 sources: [S1000, S1001, S1002, S1003, S1004]
 status: complete
 ---

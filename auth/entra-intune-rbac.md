@@ -2,7 +2,7 @@
 topic: auth/entra-intune-rbac
 priority: P1
 applies_to: "Microsoft Entra Connect Sync, Cloud Sync, PIM for Groups (docs current 2026-09-24)"
-retrieved_utc: 2026-09-24
+retrieved_utc: 2026-09-25
 sources: [S1279, S1280, S1281, S1282, S1283]
 status: partial
 ---

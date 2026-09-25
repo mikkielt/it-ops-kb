@@ -2,7 +2,7 @@
 topic: graph/csdl-windowsAutopilotDeviceIdentity
 priority: P1
 applies_to: "Microsoft Graph v1.0 and beta, msgraph-metadata commit b8cbef92f695"
-retrieved_utc: 2026-09-24
+retrieved_utc: 2026-09-25
 sources: [S500, S501, S508, S509]
 status: complete
 files: [graph/csdl/windowsAutopilotDeviceIdentity.v1.0.xml, graph/csdl/windowsAutopilotDeviceIdentity.beta.xml]

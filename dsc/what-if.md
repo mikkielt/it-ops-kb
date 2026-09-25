@@ -2,7 +2,7 @@
 topic: dsc/what-if
 priority: P0
 applies_to: "Microsoft DSC 3.3.0 (release/v3.3 @ ea572fa) and 3.4.0-preview.1"
-retrieved_utc: 2026-09-23
+retrieved_utc: 2026-09-25
 sources: [S100, S102, S105, S106, S108, S109, S114, S115, S138, S139, S140]
 status: complete
 ---

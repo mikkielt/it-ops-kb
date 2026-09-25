@@ -2,7 +2,7 @@
 topic: dsc/manifests-diff
 priority: P0
 applies_to: "Microsoft DSC 3.3.0 and 3.4.0-preview.1, Windows x64 release zips"
-retrieved_utc: 2026-09-23
+retrieved_utc: 2026-09-25
 sources: [S105, S106, S114, S115, S120, S121, S122]
 status: complete
 files: [dsc/manifests/, dsc/zip-extras/]

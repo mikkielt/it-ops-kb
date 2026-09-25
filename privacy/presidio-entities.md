@@ -2,7 +2,7 @@
 topic: privacy/presidio-entities
 priority: P0
 applies_to: "Presidio main @ e9895a5; since-version from tags 2.2.355-2.2.364"
-retrieved_utc: 2026-09-23
+retrieved_utc: 2026-09-25
 sources: [S809, S810, S811, S812, S813, S814, S815, S816, S817, S818, S819, S820, S843, S844]
 status: complete
 ---

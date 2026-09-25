@@ -2,7 +2,7 @@
 topic: entra/bitlocker-key-deletion
 priority: P1
 applies_to: "Microsoft Entra ID (manage-device-identities ms.date 06/17/2026; soft delete preview ms.date 04/05/2026)"
-retrieved_utc: 2026-09-24
+retrieved_utc: 2026-09-25
 sources: [S545, S546, S547, S531]
 status: complete
 ---

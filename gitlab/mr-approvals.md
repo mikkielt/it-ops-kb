@@ -2,7 +2,7 @@
 topic: gitlab/mr-approvals
 priority: P0
 applies_to: "GitLab 19.5 docs (gitlab-org/gitlab master @56c82a97, 2026-09-23); GitLab.com, Self-Managed, Dedicated"
-retrieved_utc: 2026-09-24
+retrieved_utc: 2026-09-25
 sources: [S440, S441, S442, S443, S444, S450, S452]
 status: complete
 ---

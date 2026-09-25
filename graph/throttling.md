@@ -2,7 +2,7 @@
 topic: graph/throttling
 priority: P1
 applies_to: "Microsoft Graph (throttling-limits ms.date 01/14/2025)"
-retrieved_utc: 2026-09-24
+retrieved_utc: 2026-09-25
 sources: [S525, S526, S527, S528, S529]
 status: partial
 ---

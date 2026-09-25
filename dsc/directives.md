@@ -2,7 +2,7 @@
 topic: dsc/directives
 priority: P0
 applies_to: "Microsoft DSC 3.3.0 (release/v3.3 @ ea572fa); behaviour re-checked on the 3.4.0-preview.1 binary"
-retrieved_utc: 2026-09-23
+retrieved_utc: 2026-09-25
 sources: [S102, S103, S104, S105, S111, S112, S116, S117, S123, S140]
 status: complete
 ---

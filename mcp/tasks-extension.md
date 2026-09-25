@@ -2,7 +2,7 @@
 topic: mcp/tasks-extension
 priority: P1
 applies_to: "MCP Tasks extension io.modelcontextprotocol/tasks for 2026-07-28"
-retrieved_utc: 2026-09-23
+retrieved_utc: 2026-09-25
 sources: [S713, S714, S715, S718, S701]
 status: complete
 ---

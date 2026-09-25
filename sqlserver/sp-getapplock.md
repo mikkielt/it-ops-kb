@@ -2,7 +2,7 @@
 topic: sqlserver/sp-getapplock
 priority: P0
 applies_to: "SQL Server 2017+ (Windows/Linux), Azure SQL Database, Azure SQL MI"
-retrieved_utc: 2026-09-24
+retrieved_utc: 2026-09-25
 sources: [S467]
 status: complete
 ---

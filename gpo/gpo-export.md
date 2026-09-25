@@ -2,7 +2,7 @@
 topic: gpo/gpo-export
 priority: P2
 applies_to: "GroupPolicy PowerShell module (RSAT/GPMC), windowsserver2025-ps reference"
-retrieved_utc: 2026-09-23
+retrieved_utc: 2026-09-25
 sources: [S920, S921, S922, S923]
 status: complete
 ---

@@ -2,7 +2,7 @@
 topic: prior-art/layered-settings-resolution
 priority: P2
 applies_to: "config precedence (flags > env > file > defaults), unknown-key refusal"
-retrieved_utc: 2026-09-24
+retrieved_utc: 2026-09-25
 sources: [S1022, S1023]
 status: complete
 ---

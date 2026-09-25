@@ -2,7 +2,7 @@
 topic: windows/gmsa
 priority: P0
 applies_to: "Windows Server 2012 and later AD DS (docs current to Windows Server 2025)"
-retrieved_utc: 2026-09-24
+retrieved_utc: 2026-09-25
 sources: [S400, S401, S402, S403, S404, S405]
 status: partial
 ---

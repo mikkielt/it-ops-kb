@@ -2,7 +2,7 @@
 topic: entra/device-identity
 priority: P1
 applies_to: "Microsoft Entra ID (docs ms.date 06/27/2025), Graph v1.0"
-retrieved_utc: 2026-09-24
+retrieved_utc: 2026-09-25
 sources: [S504, S540, S541, S542, S543, S544]
 status: complete
 ---

@@ -2,7 +2,7 @@
 topic: privacy/presidio-recognizer-yaml
 priority: P0
 applies_to: "Presidio main @ e9895a5 (the format is also in 2.2.364)"
-retrieved_utc: 2026-09-23
+retrieved_utc: 2026-09-25
 sources: [S821, S822, S823, S824, S825, S826, S809, S800, S801]
 status: complete
 files: [privacy/presidio-recognizer-registry.schema.json, privacy/presidio-example_recognizers.yaml]

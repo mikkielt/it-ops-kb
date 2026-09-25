@@ -2,7 +2,7 @@
 topic: graph/delta-query
 priority: P1
 applies_to: "Microsoft Graph v1.0 and beta"
-retrieved_utc: 2026-09-24
+retrieved_utc: 2026-09-25
 sources: [S500, S501, S502, S503, S510, S511]
 status: complete
 ---

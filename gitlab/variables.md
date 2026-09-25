@@ -2,7 +2,7 @@
 topic: gitlab/variables
 priority: P0
 applies_to: "GitLab 19.5 docs (master @56c82a97)"
-retrieved_utc: 2026-09-24
+retrieved_utc: 2026-09-25
 sources: [S449, S446]
 status: complete
 ---
