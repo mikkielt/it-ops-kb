@@ -62,7 +62,7 @@ Windows.
 | Option | Who can decrypt | Effect of membership change | Rotation | Python path | Sources |
 |---|---|---|---|---|---|
 | DPAPI-NG `SID=` group descriptor | members of the AD group (via GKDI) | [UNK]: not found whether a cached secret remains decryptable after removal without a new logon | re-encrypt to new descriptor | `ctypes`/`cffi` to CNG, or community `dpapi-ng` off-Windows | S1342, S1343, S1349 |
-| CNG KSP + TPM | the machine (non-exportable key) | n/a (machine-bound, not group-bound) | re-provision key in TPM | `ctypes`/`cffi` to CNG; no pure-Python path found | S1343 |
+| CNG KSP + TPM | the machine (non-exportable key) | n/a (machine-bound, not group-bound) | re-provision key in TPM | `ctypes`/`cffi` to CNG; no pure-Python path found | [UNK] no source yet (S1343 covers DPAPI-NG descriptors only) |
 | SQL Always Encrypted (CMK in cert store) | holders of the CMK certificate's private key | revoking cert access revokes decrypt | re-encrypt CEK to new CMK | `pyodbc`+ODBC 18 only; not `mssql-python` | S1340, S1341, S1350 |
 | SQL symmetric keys / EKM | SQL principals granted `VIEW DEFINITION`/key permission on the key | `REVOKE`/`DROP` on the SQL principal | `ALTER ... REGENERATE`/re-key | any SQL driver (T-SQL-level, no client crypto) | S1341 (adjacent) |
 | age + sops | holders of the recipient's private key file | none automatic; must re-encrypt | manual re-encrypt to new recipients | pure Python (`age.py`/`sops.py` wrappers) | S1000, S1001 |

@@ -113,7 +113,8 @@ Remaining gaps:
   a concrete tool is therefore `DER`, not `DOC`. This is expected (such a server is not a public product) and is not
   treated as a failed source attempt.
 - **No published number for how many fetched pages state a licence for promptfoo's or garak's *documentation
-  site* content separately from the code repository.** garak's own GitHub README states GPL-3.0 for the
+  site* content separately from the code repository.** (Census 2026-09-25: garak's code is Apache-2.0 per its LICENSE,
+  README and pyproject.toml; the GPL-3.0 statement below was wrong.) garak's own GitHub README states GPL-3.0 for the
   code; a secondary claim ("Apache 2.0 License" for site content) came from a WebSearch synthesis of
   garak.ai and was not independently re-fetched from garak.ai itself within the 3-attempt/40-page budget for
   this sub-question. Recorded as a soft confirmation gap, not blocking, since the code licence (GPL-3.0,

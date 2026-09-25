@@ -54,7 +54,7 @@ regression suites continuously once a task earns a place there.
   cookbook has a worked MCP-evaluation notebook using its Evals API. [DOC S1893, S1895] As of the retrieval
   date, OpenAI states its hosted **Evals platform becomes read-only 2026-10-31 and shuts down 2026-11-30**
   — a live deprecation relevant to any plan that depends on it going forward. [DOC S1894]
-- **garak** (NVIDIA) is a GPL-3.0 LLM vulnerability scanner (site content separately Apache-2.0) that probes
+- **garak** (NVIDIA) is an Apache-2.0 LLM vulnerability scanner (its LICENSE file) that probes
   for hallucination, data leakage, prompt injection, misinformation, toxicity and jailbreaks against a
   configured generator/target; MCP-specific target support exists only through third-party wrappers
   (e.g. a community "Garak-MCP" MCP server exposing garak, and an open NVIDIA/garak issue tracking native
@@ -104,7 +104,7 @@ regression suites continuously once a task earns a place there.
 | Inspect (`inspect_ai`) | MIT | not confirmed for MCP specifically [UNK] | scored evals via built-in/ReAct agents and model-graded scorers | S1886, S1887 |
 | DeepEval | Apache-2.0 | yes (`MCPServer(transport="stdio")`) | MCPTaskCompletion, MCPUse, MultiTurnMCPUse, ToolCorrectness | S1888, S1889 |
 | OpenAI evals / Evals API | MIT (repo) | via custom completion functions, not MCP-native | correctness/regression across a dataset; hosted platform deprecating Oct-Nov 2026 | S1893, S1894, S1895 |
-| garak | GPL-3.0 (Apache-2.0 site content) | no native MCP client; third-party wrapper only | hallucination, leakage, injection, jailbreak, toxicity probes against a generator | S1890, S1891, S1903 |
+| garak | Apache-2.0 | no native MCP client; third-party wrapper only | hallucination, leakage, injection, jailbreak, toxicity probes against a generator | S1890, S1891, S1903 |
 | PyRIT | MIT | no native MCP target class; custom-target interface + XPIAOrchestrator for indirect injection | red-team attack orchestration and scoring against a configured target | S1892 |
 | mcp-fuzz / mcp-server-fuzzer / mcp-guard / mcpsec | unverified (community) | yes (stdio launch) | schema-derived fuzz calls, protocol/security fault-finding | S1901, S1902, S1904, S1905 |
 

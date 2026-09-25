@@ -82,6 +82,9 @@ described "content on the garak site" (garak.ai) as Apache-2.0. Both claims can 
 licensing of code vs. marketing/docs site prose is common), but the Apache-2.0 claim was not independently
 re-fetched from garak.ai in this pass — see `gaps.md`. Not treated as a contradiction, but flagged so the
 Apache-2.0 claim is not repeated as a `DOC` fact about the *code*.
+Resolved in the census of 2026-09-25: the LICENSE file at `main` is the Apache License 2.0, as are the README badge
+and `pyproject.toml`; the repository moved from a brief GPLv3 licence to Apache-2.0 in June 2023. The GPL-3.0 reading
+was wrong and the kb now says Apache-2.0. [DOC S1891]
 
 ## agents-extra
 

@@ -818,7 +818,7 @@ _Agent: agents-errors_
 - **OpenAI evals**: `openai/evals` (MIT) is the open framework/registry; the hosted Evals **platform** is
   being deprecated (read-only 2026-10-31, shut down 2026-11-30) — a live-fact caveat for anyone building on
   it going forward. [DOC S1893, S1894, S1895]
-- **garak** (NVIDIA, GPL-3.0): a generic LLM vulnerability scanner (injection, leakage, jailbreak, toxicity)
+- **garak** (NVIDIA, Apache-2.0): a generic LLM vulnerability scanner (injection, leakage, jailbreak, toxicity)
   with no native MCP client; MCP exposure exists only via third-party wrappers/an open feature request.
   [DOC S1890, S1891; COMMUNITY S1903]
 - **PyRIT** (Microsoft, MIT, v0.11.0): red-team orchestration with a custom-target interface and

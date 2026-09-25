@@ -20,7 +20,7 @@ channels; the full ConfigMgr log table is `mecm/log-files.csv` (another agent).
 - Channel name `Microsoft-Windows-ModernDeployment-Diagnostics-Provider/Autopilot`: derived from that Event Viewer path using the naming shown for other channels (e.g. `Microsoft-Windows-AAD/Operational` ↔ Microsoft > Windows > AAD). [DER S619,S632]
 - Hybrid join failures: `User Device Registration` log under Microsoft > Windows (event IDs 201, 204, 304, 305). [DOC S632]
 - Exact channel name `Microsoft-Windows-User Device Registration/Admin`. [DOC S649]
-- PRT/CloudAP events: Microsoft > Windows > AAD (Operational), event IDs 1006/1007. [DOC S632]
+- PRT/CloudAP events: Microsoft > Windows > AAD. Event 1006 (start) and 1007 (end, with the final error code) of PRT acquisition are in the Analytic log; the CloudAP plug-in writes errors to Operational and info events to Analytic, and both logs are needed. [DOC S632]
 - ESP/runtime provisioning evtx files: DeviceManagement-Enterprise-Diagnostics-Provider%4Admin, Provisioning-Diagnostics-Provider%4Admin, AAD%4Operational under `%windir%\System32\winevt\Logs`. [DOC S618]
 - Intune Connector for AD logs moved to Applications and Services Logs > Microsoft > Intune > ODJConnectorService. [DOC S619]
 - GPSvc debug: create `HKLM\Software\Microsoft\Windows NT\CurrentVersion\Diagnostics`, DWORD `GPSvcDebugLevel` = 0x30002, then `gpupdate /force`; log `%windir%\debug\usermode\gpsvc.log`; not created if the usermode folder is missing. [DOC S633]
