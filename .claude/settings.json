@@ -1,5 +1,9 @@
 {
-  "enabledMcpjsonServers": ["microsoft-learn", "claude-code-docs", "mcp-docs"],
+  "enabledMcpjsonServers": [
+    "microsoft-learn",
+    "claude-code-docs",
+    "mcp-docs"
+  ],
   "permissions": {
     "allow": [
       "mcp__microsoft-learn__microsoft_docs_search",
@@ -20,6 +24,18 @@
     "deny": [
       "mcp__claude-code-docs__submit_feedback",
       "mcp__mcp-docs__submit_feedback"
+    ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/session-start.sh"
+          }
+        ]
+      }
     ]
   }
 }

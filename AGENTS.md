@@ -8,7 +8,7 @@ An offline knowledge base of facts from official sources about Windows endpoint 
 
 ## Setup (first session in a fresh clone)
 
-Run `/kb-setup` (Claude Code), or do the same by hand:
+Run `/kb-setup` (Claude Code), or do the same by hand. In Claude Code on the web, `.claude/hooks/session-start.sh` (a SessionStart hook in `.claude/settings.json`) already installs the commit hooks, runs `check.py` and points the new session to `work-left.md`, on every start, resume and `/clear`.
 
 1. **Python 3.9+** as `python3`. Nothing to install: the tools use the standard library only.
 2. **Checks pass on a clean tree:**
