@@ -91,6 +91,10 @@ def lint_errors():
     return {ln.strip() for ln in out.splitlines() if ln.startswith("ERROR")}
 
 
+# urls, including git remotes: ssh:// and the scp-like `git@host:path` form (a remote, not an e-mail address)
+URL_RX = re.compile(r"(?:https?|ssh|git)://\S+|(?<![\w.%+-])git@[\w.-]+:[\w./~-]+")
+
+
 def hits(pattern, files, flags=0, strip_urls=False):
     rx = re.compile(pattern, flags)
     found = []
@@ -99,7 +103,7 @@ def hits(pattern, files, flags=0, strip_urls=False):
         if t is None:
             continue
         for n, ln in enumerate(t.splitlines(), 1):
-            src = re.sub(r"https?://\S+", "", ln) if strip_urls else ln
+            src = URL_RX.sub("", ln) if strip_urls else ln
             for m in rx.finditer(src):
                 found.append((f, n, m.group(0)))
     return found
@@ -314,6 +318,12 @@ class Leaks(unittest.TestCase):
                  if not re.search(r"(?i)@([\w-]+\.)*example\.(com|org|net)$|@noreply\.|@users\.noreply\.github\.com$", h[2])
                  and h[2].lower() not in allow]
         self.assertFalse(found, "e-mail addresses outside example.com/noreply (placeholders only):\n" + fmt(found))
+
+    def test_git_remotes_are_urls_not_email(self):
+        self.assertEqual(URL_RX.sub("", "clone git@gitlab.com:group/kb.git here").split(), ["clone", "here"])
+        self.assertEqual(URL_RX.sub("", "ssh://git@gitlab.com/group/kb.git"), "")
+        for mail in ("jan.git@corp.example.com", "git@corp.example.com wrote", "mail git@corp.example.com: hi"):
+            self.assertRegex(URL_RX.sub("", mail), r"@corp\.example\.com", mail)
 
     def test_no_unexpected_guids_in_prose(self):
         allow = allowlist().get("guid", set())
