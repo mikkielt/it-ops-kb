@@ -54,4 +54,4 @@ Never ask for the token or put it in a repo file.
 - Commit anything.
 
 ## 7. Report
-End with a short table: step, result (PASS/FAIL/SKIPPED), evidence (last output line or error). Then list what the user must do (e.g. approve servers, install Python). Then point to the other skills: `/kb-lookup`, `/kb-research`, `/kb-refresh`, `/kb-add-topic`, `/kb-verify`.
+End with a short table: step, result (PASS/FAIL/SKIPPED), evidence (last output line or error). Then list what the user must do (e.g. approve servers, install Python). Then point to the other skills: `/kb-lookup`, `/kb-research`, `/kb-refresh`, `/kb-add-topic`, `/kb-verify`, `/kb-git-sync`.

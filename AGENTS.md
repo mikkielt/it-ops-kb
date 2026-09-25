@@ -40,7 +40,7 @@ Run `/kb-setup` (Claude Code), or do the same by hand:
 | `python3 _tools/rag.py show PATH:LINE -n 30` / `src S123` / `topics [DOMAIN]` | read lines / resolve a source id (`S123` or `S-k3f7q2zd`) / list articles |
 | `python3 _tools/kbid.py url <URL>` / `answer "<question>"` / `check` | id for a new source / `QK-<slug>` for a new answer / hash-id consistency |
 | `python3 _tools/build_index.py [--check]` | regenerate `_coverage.csv`, the README coverage table and `used_in` from the articles (`--check`: report only, exit 1 if stale) |
-| `python3 _tools/kbgit.py fix [--check] [--base REV]` | after any merge or pull: dedupe/merge the union-merged ledgers, renumber colliding legacy ids, rebuild the index (exit 1 `--check` stale, 2 needs a human); `fmt` only canonicalises the CSV ledgers |
+| `python3 _tools/kbgit.py fix [--check] [--base REV] [--upstream REV]` | after any merge or pull: dedupe/merge the union-merged ledgers (older column layouts too), renumber colliding legacy ids (the `--upstream` side, already pushed, keeps its ids), rename `QK<n>` and colliding answer ids to `QK-<slug>`, rebuild the index (exit 1 `--check` stale, 2 needs a human); `fmt` only canonicalises the CSV ledgers |
 | `python3 _tools/kbgit.py sync [--push] [--dry-run] [--remote R] [--branch B]` | the way to push: fetch, rebase onto `origin/main`, fix, gate, push (exit 0 done, 1 gate red or push rejected, 2 refused, 3 conflict needs `/kb-git-sync` or a human) |
 | `python3 _tools/kbgit.py install-hooks [--uninstall]` | once per clone: `core.hooksPath=.githooks`, so commits get their KB-* trailers |
 | `python3 _tools/kbgit.py trailers [--staged] [REV] [--verified YYYY-MM-DD]` | print the KB-* trailers of the staged change or of a commit; `--amend` rewrites HEAD's message with them |
@@ -63,6 +63,7 @@ Run `/kb-setup` (Claude Code), or do the same by hand:
 - `/kb-refresh <topic|dir|file|S-id>`: diff sources and update the facts.
 - `/kb-add-topic <domain>/<slug>`: research and write a new topic.
 - `/kb-verify [prefixes]`: quality gate before a commit or a push.
+- `/kb-git-sync [--push]`: sync with `origin/main` when `kbgit.py sync` stops (exit 1 or 3): resolves article, tool and doc conflicts by meaning, fixes a red gate, pushes only when asked.
 
 ## Content rules (summary; `README.md` is authoritative)
 
@@ -82,14 +83,15 @@ Run `/kb-setup` (Claude Code), or do the same by hand:
 - One logical change per commit. Run `python3 _tools/kbgit.py install-hooks` once per clone (KB-* trailers).
 - Before pushing: `python3 _tools/kbgit.py sync --push`. It refuses a dirty tree (commit or stash first), fetches, rebases your commits onto `origin/main`, resolves the ledgers and generated files mechanically (`kbgit.py fix`, committed as `chore(kb): kbgit fix after sync`), refreshes stale trailers, runs the gate (`build_index.py --check`, `check.py`, fast `tests.py`, `check-trailers`) and pushes only when it is green. `--dry-run` shows what would happen.
 - Never `git push --force`, never push with a red gate, never rewrite pushed history.
-- Exit 3 means a conflict in an article, tool or doc: the rebase is left in progress with the paths listed. Resolve it with `/kb-git-sync` (or by hand, keeping both sides' facts), or back out with `git rebase --abort`.
+- Exit 3 means a conflict in an article, tool or doc: the rebase is left in progress with the paths listed. Resolve it with `/kb-git-sync` (by meaning: both sides' facts kept, newer confirmed evidence wins a changed fact, real disagreements go to `_conflicts.md`), or by hand the same way, or back out with `git rebase --abort`. Exit 1 (red gate): `/kb-git-sync` fixes the cause, never the baseline.
+- A branch from before `kbgit.py` existed cannot run sync: `git fetch origin`, `git rebase origin/main`, then `/kb-git-sync` (its exit-3 steps) and `sync --push`.
 - Census tags: `python3 _tools/kbgit.py tag-census YYYY-MM-DD`, then `git push origin census-YYYY-MM-DD`.
 
 ## Merging (what sync automates)
 
 - `.gitattributes` merges the append-only ledgers (`_sources.csv`, `_fetch_state.csv`, `_answers.md`, `_gaps.md`, `_conflicts.md`) and the generated `_coverage.csv` and `_tools/lint_baseline.txt` with git's built-in union driver: parallel additions merge without conflict markers, but git keeps both sides' lines, so a row both sides touched may appear twice. Nothing to configure per clone.
 - Writers: append rows and blocks, keep each CSV record on one line, never reorder or rewrap existing lines.
-- `sync` runs fix for you. After a merge or pull made by hand: `python3 _tools/kbgit.py fix`, then `python3 _tools/tests.py`. If two branches took the same legacy id, fix asks for `--base $(git merge-base A B)` and renumbers the new rows to hash ids. Exit 2 means a human decision (listed); nothing was written.
+- `sync` runs fix for you. After a merge or pull made by hand: `python3 _tools/kbgit.py fix`, then `python3 _tools/tests.py`. If two branches took the same legacy id, fix asks for `--base $(git merge-base A B)` and renumbers the new rows to hash ids; add `--upstream origin/main` when one side is already pushed, so its ids stay. Pre-`QK-<slug>` answer ids (`QK1`) and answer ids both sides took are renamed to `QK-<slug>`, mentions included. Exit 2 means a human decision (listed); nothing was written.
 - `README.md` merges normally; a conflict inside its coverage table is rebuilt by fix (then `git add README.md`).
 
 ## Commits and history
