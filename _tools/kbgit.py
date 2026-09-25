@@ -1524,7 +1524,7 @@ def conflict_help(r, up, base, orig, manual, mech, step):
     print(f"  {fix_cmd}")
     print("  git add <the resolved paths>")
     print("  git rebase --continue          (later local commits may stop again)")
-    print("  python3 _tools/kbgit.py sync --push")
+    print("  python3 _tools/kbgit.py sync" + (" --push" if r.get("push") else ""))
     print(f"Or give up: git rebase --abort  (back to {short(orig)}, nothing lost)")
 
 
@@ -1739,7 +1739,7 @@ def cmd_sync(a):
             return 2
     if (git("config", "--get", "core.hooksPath") or "").strip().rstrip("/") != HOOKS_DIR:
         print("note: commit hooks not installed (python3 _tools/kbgit.py install-hooks); sync repairs trailers of what it rebases")
-    r = {"ahead": 0, "behind": 0, "rebased": 0, "auto": [], "fixed": [], "renumbered": [], "refreshed": 0,
+    r = {"push": a.push, "ahead": 0, "behind": 0, "rebased": 0, "auto": [], "fixed": [], "renumbered": [], "refreshed": 0,
          "fix_commit": None, "gate": [], "pushed": "no", "notes": []}
     code = sync_once(a, r)
     if code == "retry":

@@ -272,6 +272,7 @@ class SyncInGit(unittest.TestCase):
         self.assertEqual(r.returncode, 3, r.stdout + r.stderr)
         self.assertIn("needs-human: windows/sync-test-a.md", r.stdout)
         self.assertIn("git rebase --abort", r.stdout)
+        self.assertIn("  python3 _tools/kbgit.py sync --push\n", r.stdout)  # the next step repeats the user's own command
         self.assertRegex(r.stdout, r"sync-state: base=[0-9a-f]{40} upstream=[0-9a-f]{40} orig_head=[0-9a-f]{40}")
         self.assertTrue(self.b3_rebasing, "the rebase must be left in progress")
         self.assertEqual(self.b3_again.returncode, 2, self.b3_again.stdout)
