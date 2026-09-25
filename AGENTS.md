@@ -38,6 +38,7 @@ Run `/kb-setup` (Claude Code), or do the same by hand:
 |---|---|
 | `python3 _tools/rag.py search "<query>" -k 8 [-d DOMAIN] [-u] [--index]` | BM25 search; `-u` adds source urls; root index files only with `--index` |
 | `python3 _tools/rag.py show PATH:LINE -n 30` / `src S123` / `topics [DOMAIN]` | read lines / resolve a source id (`S123` or `S-k3f7q2zd`) / list articles |
+| `python3 _tools/census.py check` / `record LOG` / `confirm LOG` / `sample LOG` / `summary LOG` | the census (`/kb-census`): a mechanical verdict per source in `_census/<date>.csv`, phase-2 outcomes, dates only for confirmed sources, the phase-4 sample |
 | `python3 _tools/kb_mcp.py [--status]` | the read-only `kb` MCP server over stdio (`kb_search`, `kb_show`, `kb_source`, `kb_status`); the plugin starts it; `--status` prints kb_status once |
 | `python3 _tools/kbid.py url <URL>` / `answer "<question>"` / `check` | id for a new source / `QK-<slug>` for a new answer / hash-id consistency |
 | `python3 _tools/build_index.py [--check]` | regenerate `_coverage.csv`, the README coverage table and `used_in` from the articles (`--check`: report only, exit 1 if stale) |
@@ -68,6 +69,7 @@ Run `/kb-setup` (Claude Code), or do the same by hand:
 - `/kb-research <question>`: research a question in the context of the topics the kb already has, then extend them.
 - `/kb-refresh <topic|dir|file|S-id>`: diff sources and update the facts.
 - `/kb-add-topic <domain>/<slug>`: research and write a new topic.
+- `/kb-census [date]`: confirm every source is current (census.py checks, reading the undecided ones, dates only for what was confirmed, sample check, census tag).
 - `/kb-verify [prefixes]`: quality gate before a commit or a push.
 - `/kb-git-sync [--push]`: sync with `origin/main` when `kbgit.py sync` stops (exit 1 or 3): resolves article, tool and doc conflicts by meaning, fixes a red gate, pushes only when asked.
 

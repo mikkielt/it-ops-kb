@@ -15,7 +15,7 @@ from collections import Counter, defaultdict
 import kbid
 
 KB = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-SKIP_DIRS = {"_tools", "_private", "_cache", "artifacts"}
+SKIP_DIRS = {"_tools", "_private", "_cache", "_census", "artifacts"}  # _census: dated verdict logs, not facts
 TOKEN = re.compile(r"\w+(?:[.\-]\w+)*")  # Unicode words; `gmsa-dmsa`, `dsc.exe` stay whole
 MAX_CHUNK = 900
 CITED = re.compile(r"\bS\d{3,4}\b|\bS-[a-z2-7]{8}\b")  # legacy ids (not prose like S1/S3 sleep states) and hash ids
@@ -147,7 +147,7 @@ def search(query, k, domain, index=False, notes=None):
 def topics(domain):
     out = defaultdict(lambda: {"articles": [], "dirs": Counter(), "data": []})
     for root, dirs, files in os.walk(KB):
-        dirs[:] = sorted(d for d in dirs if d not in {"_tools", "_private", "_cache"} and not d.startswith("."))
+        dirs[:] = sorted(d for d in dirs if d not in {"_tools", "_private", "_cache", "_census"} and not d.startswith("."))
         for f in sorted(files):
             rel = os.path.relpath(os.path.join(root, f), KB)
             parts = rel.split(os.sep)
