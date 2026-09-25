@@ -9,6 +9,8 @@ argument-hint: "<domain>/<topic-slug> and what it should cover"
 
 Request: $ARGUMENTS. If the domain, slug or scope is unclear, ask before researching.
 
+Read `MAINTAINING.md` first: the content rules, tools, git workflow and commit rules this skill relies on (`AGENTS.md` covers lookups only).
+
 Run each command on its own (no `;`, `&&`, pipes into other tools or loops): the shared permission rules match single commands, so a chained command asks for approval or is refused in a headless run.
 
 ## 1. Avoid duplicates
@@ -66,7 +68,7 @@ files: [<path>, <dir>/]    # optional: only files beyond <slug>.md and <slug>.* 
 
 ## 5. Register and log
 - Run `python3 _tools/build_index.py`. It adds the topic's row to `_coverage.csv` and the README coverage table (ordered by domain, priority, topic id; `n_sources` = ids in the `sources:` header) and fills `used_in` in `_sources.csv`. Never edit those by hand.
-- Failed lookups go to `_gaps.md` (what, where you looked). Disagreements go to `_conflicts.md` with both sources.
+- Failed lookups go to `_gaps.md` (what, where you looked). Disagreements go to `_conflicts.md` with both sources. End each new entry with `(topic: <domain>/<slug>)`.
 
 ## 6. Check and report
 - `python3 _tools/check.py` must end `errors=0`. Then `python3 .claude/skills/kb-verify/lint.py <domain>/<slug>` must report `errors=0`.

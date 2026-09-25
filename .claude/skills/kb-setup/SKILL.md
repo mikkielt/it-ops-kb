@@ -8,6 +8,8 @@ disable-model-invocation: true
 
 Work from the repository root. Change no kb content (the one change is the local git setting in step 3). Do every step even if an earlier one fails, then report.
 
+Read `MAINTAINING.md` first: the content rules, tools, git workflow and commit rules this skill relies on (`AGENTS.md` covers lookups only).
+
 Run each command on its own (no `;`, `&&`, pipes into other tools or loops): the shared permission rules match single commands, so a chained command asks for approval or is refused in a headless run.
 
 ## 1. Python

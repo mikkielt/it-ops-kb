@@ -6,13 +6,23 @@
                                            -u adds each hit's source origin urls
   rag.py src S1824 [S-k3f7q2zd ...]        source id -> title, url, version (and "superseded by" when set)
   rag.py show PATH[:LINE] [-n 40]          print lines of a kb file
+  rag.py pack QUESTION [--budget 1200] [-d DOMAIN]
+                                           the evidence pack for a question: a `coverage: good|weak|none` verdict,
+                                           the best fact lines grouped by article (path:line, tag) and one footer of
+                                           the cited sources' urls, within about BUDGET tokens. Start every lookup here.
+  rag.py facts PREFIX [--tag UNK,COMMUNITY]   fact lines under a path prefix (a domain, topic or file), by tag kind
+  rag.py audit [PREFIX] [--status partial] [--entries]
+                                           per article: status, retrieved_utc, fact counts by tag kind and the
+                                           _gaps.md/_conflicts.md entries linked to it (named, or via its sources)
+  rag.py src S1824 --cited                 also every file line that names the id
+  rag.py eval [--file _tools/lookup_eval.csv]   pack against the lookup eval set: expected article found, verdict
 
 Add --json to any command for machine output. artifacts/ directories are not indexed. search skips the
 root-level index files (README.md, _answers.md, _gaps.md, _conflicts.md, _coverage.csv, ...) unless --index.
 """
 import argparse, csv, io, json, math, os, re, sys
 from collections import Counter, defaultdict
-import kbid
+import kbid, kbfacts
 
 KB = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SKIP_DIRS = {"_tools", "_private", "_cache", "_census", "artifacts"}  # _census: dated verdict logs, not facts
@@ -192,6 +202,51 @@ def add_urls(hits):
     return hits
 
 
+def format_cited(pairs):
+    by = defaultdict(list)
+    for p, n in pairs:
+        by[p].append(n)
+    return "\n".join(f"  cited at {p}:{','.join(map(str, ns))}" for p, ns in by.items()) or "  cited nowhere"
+
+
+def format_audit(rows, entries=False):
+    out = ["| path | status | retrieved | facts | DOC | DER | COMMUNITY | UNK | gaps | conflicts |", "|---|---|---|---|---|---|---|---|---|---|"]
+    for r in rows:
+        g, c = len(r["gaps"]), len(r["conflicts"])
+        gv, cv = len(r["gaps_via_sources"]), len(r["conflicts_via_sources"])
+        out.append(f"| {r['path']} | {r['status']} | {r['retrieved_utc']} | {r['facts']} | {r['DOC']} | {r['DER']} | "
+                   f"{r['COMMUNITY']} | {r['UNK']} | {g}" + (f" (+{gv} via sources)" if gv else "") + f" | {c}"
+                   + (f" (+{cv} via sources)" if cv else "") + " |")
+    if entries:
+        for r in rows:
+            for key in ("gaps", "gaps_via_sources", "conflicts", "conflicts_via_sources"):
+                for e in r[key]:
+                    out.append(f"{r['topic']}  {key}: {e['file']}:{e['line']}  {e['text'][:140]}")
+    out.append(f"articles={len(rows)}; gaps/conflicts: named = the entry names the topic (marker, path or section); "
+               f"via sources = it cites a source the topic uses")
+    return "\n".join(out)
+
+
+def run_eval(path):
+    """Run pack on every question of the eval set: an expected path must be among the pack's articles, and the
+    verdict must equal the expected one (`none` rows expect no path)."""
+    with open(os.path.join(KB, path), encoding="utf-8", newline="") as f:
+        cases = list(csv.DictReader(f))
+    rows = []
+    for c in cases:
+        res = kbfacts.pack(c["question"])
+        want = [p.strip() for p in c["expect_paths"].split(";") if p.strip()]
+        found = [p for p in want if p in res["paths"]]
+        vok = res["verdict"] == c["expect_verdict"] or (c["expect_verdict"] == "good" and res["verdict"] == "weak" and c.get("allow_weak") == "yes")
+        fok = bool(found) if want else True
+        rows.append({"id": c["id"], "verdict": res["verdict"], "want_verdict": c["expect_verdict"], "found": found,
+                     "paths": res["paths"], "chars": len(res["text"]), "ok": vok and fok, "verdict_ok": vok, "found_ok": fok})
+    n = len(rows)
+    return {"n": n, "passed": sum(r["ok"] for r in rows), "verdict_ok": sum(r["verdict_ok"] for r in rows),
+            "found_ok": sum(r["found_ok"] for r in rows), "mean_chars": round(sum(r["chars"] for r in rows) / max(n, 1)),
+            "rows": rows}
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--json", action="store_true")
@@ -201,6 +256,13 @@ def main():
     s.add_argument("-u", "--urls", action="store_true", help="resolve each hit's cited source ids to their origin url")
     s.add_argument("--index", action="store_true", help="also search the root-level index files (README.md, _answers.md, ...)")
     r = sub.add_parser("src"); r.add_argument("ids", nargs="+")
+    r.add_argument("--cited", action="store_true", help="also list every file line that names each id")
+    pk = sub.add_parser("pack"); pk.add_argument("question", nargs="+"); pk.add_argument("--budget", type=positive_int, default=1200)
+    pk.add_argument("-d", "--domain")
+    fa = sub.add_parser("facts"); fa.add_argument("prefix"); fa.add_argument("--tag", help="comma-separated kinds, e.g. UNK,COMMUNITY")
+    au = sub.add_parser("audit"); au.add_argument("prefix", nargs="?"); au.add_argument("--status")
+    au.add_argument("--entries", action="store_true", help="list the linked _gaps.md/_conflicts.md entries")
+    ev = sub.add_parser("eval"); ev.add_argument("--file", default=os.path.join("_tools", "lookup_eval.csv"))
     w = sub.add_parser("show"); w.add_argument("target"); w.add_argument("-n", type=positive_int, default=40)
     a = ap.parse_args()
 
@@ -231,17 +293,60 @@ def main():
         for x in res:
             print(f"\n[{x['score']}] {x['path']}:{x['line']}  § {x['heading']}")
             print("  " + x["text"][:600].replace("\n", "\n  "))
-            for i, u in x.get("urls", {}).items():
+        urls = {i: u for x in res for i, u in x.get("urls", {}).items()}
+        if urls:
+            print("\nsources:")
+            for i, u in urls.items():
                 print(f"  -> {i}  {u or 'UNKNOWN id'}")
         if not res:
             sys.exit("no match")
     elif a.cmd == "src":
         res = sources(a.ids)
+        cited = kbfacts.cited_lines([x["id"] for x in res]) if a.cited else {}
         if a.json:
+            for x in res:
+                if a.cited:
+                    x["cited_at"] = [f"{p}:{n}" for p, n in cited.get(x["id"], [])]
             return print(json.dumps(res, indent=1))
         for x in res:
             print(f"{x['id']}  {x['title']}" + (f"\n  {x['url']}  ({x['publisher']}; {x['version_or_date']})" if "url" in x else "")
-                  + (f"\n  superseded by {x['superseded_by']}" if (x.get("superseded_by") or "").strip() else ""))
+                  + (f"\n  superseded by {x['superseded_by']}" if (x.get("superseded_by") or "").strip() else "")
+                  + (f"\n  used in: {x['used_in'].replace(';', ', ')}" if x.get("used_in") else ""))
+            if a.cited:
+                print(format_cited(cited.get(x["id"], [])))
+    elif a.cmd == "pack":
+        res = kbfacts.pack(" ".join(a.question), a.budget, a.domain)
+        if a.json:
+            return print(json.dumps(res, indent=1))
+        print(res["text"])
+    elif a.cmd == "facts":
+        kinds = {k.strip().upper() for k in (a.tag or "").split(",") if k.strip()}
+        bad = kinds - set(kbfacts.KINDS)
+        if bad:
+            sys.exit(f"unknown tag kind(s): {', '.join(sorted(bad))} (use {', '.join(kbfacts.KINDS)})")
+        res = [u for u in kbfacts.units(a.prefix) if u["tags"] and (not kinds or kinds & set(kbfacts.kinds_of(u["tags"])))]
+        if a.json:
+            return print(json.dumps([{k: u[k] for k in ("path", "line", "section", "text", "tags")} for u in res], indent=1))
+        for u in res:
+            text = u["text"] if len(u["text"]) <= 300 else u["text"][:300] + " ..."
+            print(f"{u['path']}:{u['line']}  [{'/'.join(kbfacts.kinds_of(u['tags']))}]  {text}")
+        print(f"facts={len(res)}")
+    elif a.cmd == "audit":
+        rows = kbfacts.audit(a.prefix, a.status)
+        if a.json:
+            return print(json.dumps(rows, indent=1))
+        print(format_audit(rows, a.entries))
+    elif a.cmd == "eval":
+        res = run_eval(a.file)
+        if a.json:
+            return print(json.dumps(res, indent=1))
+        for r in res["rows"]:
+            print(f"{'ok  ' if r['ok'] else 'FAIL'} {r['id']:<6} verdict={r['verdict']:<5} (want {r['want_verdict']:<5}) "
+                  f"found={','.join(r['found']) or '-'} chars={r['chars']}")
+        print(f"questions={res['n']} passed={res['passed']} verdict_ok={res['verdict_ok']} found_ok={res['found_ok']} "
+              f"mean_chars={res['mean_chars']}")
+        if res["passed"] != res["n"]:
+            sys.exit(1)
     else:
         path, _, line = a.target.partition(":")
         root = os.path.realpath(KB)

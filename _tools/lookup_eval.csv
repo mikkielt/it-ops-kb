@@ -1,0 +1,21 @@
+id,question,expect_paths,expect_verdict,allow_weak
+E01,"When does NTLMv1 become disabled by default on Windows, and what setting's default flips?",auth/ntlm-deprecation.md;auth/kerberos.md,good,
+E02,"An engineer activates PIM for Groups membership in a cloud group meant to grant rights in on-prem Active Directory. How long until it is visible to a new token and in on-prem AD, and what sync is required?",auth/entra-intune-rbac.md,good,
+E03,"Kerberos SPN and Negotiate requirements for a Python CLI calling the ConfigMgr AdminService and SQL Server",auth/kerberos.md;auth/flows.md,good,
+E04,"What is the recommended Intel Wi-Fi adapter Roaming Aggressiveness setting for corporate laptops managed by Intune?",,none,
+E05,"Does deleting an Entra device also delete its BitLocker recovery keys?",entra/bitlocker-key-deletion.md,good,
+E06,"How does DSC v3 what-if mode work and which flags enable it?",dsc/what-if.md,good,
+E07,"What are the Graph throttling limits for device and Intune requests?",graph/throttling.md,good,yes
+E08,"Which least-privileged Graph permission is needed to read managed devices?",graph/permissions.md,good,yes
+E09,"What does sp_getapplock do in SQL Server and what lock modes does it take?",sqlserver/sp-getapplock.md,good,
+E10,"How long do Intune Remediations scripts keep running and what are their limits?",intune/remediations.md,good,yes
+E11,"Where are the Intune Management Extension logs on a Windows device?",intune/ime-logs.md,good,
+E12,"How are CI/CD variables masked and protected in GitLab?",gitlab/variables.md,good,
+E13,"What does Presidio's DeanonymizeEngine do and which operators can be reversed?",privacy/presidio-operators-deanonymize.md,good,
+E14,"How do I export a GPO as XML with Get-GPOReport or Backup-GPO?",gpo/gpo-export.md,good,
+E15,"What changed in the MCP 2026-07-28 stdio transport?",mcp/transports-stdio.md,good,yes
+E16,"How big can an MCP tool output be in Claude Code before it is saved to a file?",claude/tool-output-limits.md,good,
+E17,"Which OpenSSH Server settings matter on Windows for Ansible over SSH?",windows/openssh-server.md;ansible/windows-ssh.md,good,yes
+E18,"What happens to the Autopilot device record when the motherboard is replaced?",autopilot/lifecycle.md,good,yes
+E19,"How do I configure a Kubernetes cluster autoscaler on AWS EKS spot instances?",,none,
+E20,"What is the licence of the spaCy en_core_web_lg model?",privacy/spacy-model-licence.md,good,

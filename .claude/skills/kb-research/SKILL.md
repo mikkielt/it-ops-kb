@@ -9,11 +9,13 @@ argument-hint: "<question or subject, optionally with the angle, e.g. 'X and how
 
 Question: $ARGUMENTS. If it is empty or too broad to answer in one pass, ask for the angle before starting.
 
+Read `MAINTAINING.md` first: the content rules, tools, git workflow and commit rules this skill relies on (`AGENTS.md` covers lookups only).
+
 Run each command on its own (no `;`, `&&`, pipes into other tools or loops): the shared permission rules match single commands, so a chained command asks for approval or is refused in a headless run.
 
 ## 1. Map what the kb already knows (before any web search)
 - Split the question into its subjects and angles (e.g. product, sync/integration, use by agents, security).
-- For each, run `python3 _tools/rag.py search "<keywords>" -k 8 -u` with 2-3 phrasings, then once with `--index` to include `_answers.md`, `_gaps.md` and `_conflicts.md`. Note the `note:` lines: words "not found anywhere" are what the kb lacks.
+- For each, run `python3 _tools/rag.py pack "<sub-question>"` (its `coverage:` line and "not in the kb" words show what the kb lacks), then once `python3 _tools/rag.py search "<keywords>" --index` to include `_answers.md`, `_gaps.md` and `_conflicts.md`. `python3 _tools/rag.py audit <domain> --entries` lists the open gaps and conflicts already linked to the anchor topics.
 - `python3 _tools/rag.py topics <domain>` for the likely domains. Read the anchor articles in full (`python3 _tools/rag.py show <path>:1 -n 200`).
 - Write down a short context map in your notes, and keep it for the report:
   - anchor topics (the existing articles the answer belongs to) and the facts in them that already answer parts of the question, with ids and tags;
@@ -62,7 +64,7 @@ Follow the contract in README.md and `.claude/skills/kb-add-topic/SKILL.md` (sou
   ```
   `QK-<slug>`: a short lowercase hyphenated slug of the question (e.g. `QK-dataverse-onprem-sync`); `python3 _tools/kbid.py answer "<question>"` suggests one and says if it is taken. Never number answers: parallel writers would pick the same number. `check.py` rejects a duplicate answer id.
 - New source rows take their id from `python3 _tools/kbid.py url <URL>`; never invent one.
-- Failed lookups go to `_gaps.md` under the anchor topic's heading: what you looked for and where.
+- Failed lookups go to `_gaps.md` under the anchor topic's heading: what you looked for and where, ending `(topic: <domain>/<slug>)`.
 
 ## 5. Check
 - `python3 _tools/build_index.py` regenerates `_coverage.csv`, the README coverage table and `used_in` from what you wrote.

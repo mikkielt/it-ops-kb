@@ -8,20 +8,20 @@ Merged from `_parts/<agent>/gaps.md`.
 - **Whether any Anthropic product speaks A2A natively.** Checked: A2A GitHub repo listing (no Anthropic in supporting orgs list, S2121), WebSearch for "Claude Agent SDK A2A support" (found only community wrapper projects and one Anthropic+Google Cloud joint webinar demonstrating Claude *inside* an A2A system via Vertex AI, not first-party support, S2129). Did not find an Anthropic docs page stating support or non-support either way. 2 search/fetch attempts; stopping per budget. [UNK]
 - **A2A SDK language list beyond Python.** The claim that Go/JavaScript/Java/.NET/Rust SDKs exist under `a2aproject` came from one WebFetch summary of the main A2A repo page (S2121) and was not verified by listing each sub-repository individually. [DER, low confidence — treat as needing reconfirmation before citing precisely]
 - **`anthropics/courses` repository contents.** Found only via WebSearch snippet, not independently WebFetched in this session (1 attempt, then treated as sufficient given the more pressing budget spent on caching detail). Row is present in `anthropic-materials.csv` marked accordingly. [COMMUNITY-tier evidence for an official repo]
-- **Exact cache-read price multiplier for the newest Anthropic model tier.** The fetched prompt-caching page (S2130) states 0.025x-0.05x for "Opus 5.5, Fable 5.1, Mythos 5.1" versus 0.1x for "other models," which conflicts in precision with the separately fetched pricing page's worked example implying 0.05x for Opus 5.5 specifically (S2131). Recorded as a conflict below rather than resolved. [DOC, conflicting]
+- **Exact cache-read price multiplier for the newest Anthropic model tier.** The fetched prompt-caching page (S2130) states 0.025x-0.05x for "Opus 5.5, Fable 5.1, Mythos 5.1" versus 0.1x for "other models," which conflicts in precision with the separately fetched pricing page's worked example implying 0.05x for Opus 5.5 specifically (S2131). Recorded as a conflict below rather than resolved. [DOC, conflicting] (topic: agents/agent-caching)
 - **JSON Schema (non-proto) artifact for A2A.** Searched the pinned commit's tree for a `.json` schema alongside `a2a.proto` and found none at `specification/`; the spec itself says JSON artifacts are generated, non-normative build outputs, so only the proto was saved as the pinned artifact. Not a gap in effort, but noting no separate JSON schema file exists to pin. [DOC S2120]
 
 ## agents-authz
 
-- **Closed this pass:** PIM-for-Groups activation-to-effect latency now has numbers — see `answers.md` QG26 deepening (S2052): 2-10 min SCIM provisioning for the first 5 activations/10s per app, else the 40-min sync cycle; the active-assignment write itself remains "within seconds" (S1282, reused). Three distinct latency regimes are now named rather than one partial figure.
-- **Closed this pass:** HashiCorp Vault dynamic secrets / database secrets engine — TTL (1h default / 24h max), supported engines, lease-revocation mechanics fetched. See `answers.md` QG27 deepening (S2054) and `agents/api-tokens.csv`.
-- **Closed this pass:** GitLab CI native secrets manager (`ci/secrets/`) and its `id_tokens`-based auth to Vault/Key Vault/GCP/AWS — fetched (S2055, S2056). See `answers.md` QG27/28 deepening and `agents/secret-storage-options.csv`.
-- **Closed this pass:** Claude Code `apiKeyHelper`'s hot-reload behaviour (no restart needed on settings change) — fetched (S2057). See `answers.md` QG28 deepening.
-- **Closed this pass:** App roles vs group claims for a service principal specifically — Microsoft's own documented gap ("Entra ID doesn't add the roles claim" when an app role is assigned to a group containing a service principal) fetched (S2053). See `answers.md` QG25 deepening.
-- **Closed this pass (partially):** OWASP-specific guidance on agent/NHI identity separation and least privilege — the OWASP NHI Top 10 list (S2058) was fetched and mapped to this part's own findings (NHI7, NHI10). The OWASP "Agentic AI – Threats and Mitigations" PDF remains unfetchable by WebFetch (content is inside a PDF, not rendered); still [UNK] for that specific document's threat-ID text.
-- **Still open: Microsoft Entra Agent ID — PIM support for agent identities specifically.** Neither the agent-identities overview (S2040), the PIM-for-Groups page (S2052, this pass), nor the announcement (S2051) states whether an agent identity can be an eligible PIM member/owner of a role-assignable group the way a human or service principal can. Tried across two passes: S2040, S2051, S2052 (no mention in any); WebSearch budget for this session was exhausted before a further targeted search could be attempted this pass. [UNK]
-- **Still open: S2051 (Microsoft Entra Agent ID announcement) was read only as a WebSearch synthesis in the prior pass, not independently WebFetched.** Not re-attempted this pass (WebSearch budget exhausted; WebFetch of the same URL was not separately retried since S2040 already carries the load-bearing mechanics). Treated as DOC per the prior pass's reasoning; flagged for a direct fetch in a future pass. [DOC, flagged]
-- **Narrowed, not closed: HashiCorp Vault's own numeric SLA or default TTL for a *SQL Server* (MSSQL) dynamic role specifically** — the database-secrets-engine page (S2054) gives the *engine's* default (1h/24h TTL) but no MSSQL-specific example or caveat distinct from the generic default; not pursued further this pass (the generic default answers the design-relevance question adequately per the fact already recorded in `answers.md`). [DOC S2054 for the generic default; UNK for an MSSQL-specific worked example]
+- **Closed this pass:** PIM-for-Groups activation-to-effect latency now has numbers — see `answers.md` QG26 deepening (S2052): 2-10 min SCIM provisioning for the first 5 activations/10s per app, else the 40-min sync cycle; the active-assignment write itself remains "within seconds" (S1282, reused). Three distinct latency regimes are now named rather than one partial figure. (topic: agents/agent-rbac)
+- **Closed this pass:** HashiCorp Vault dynamic secrets / database secrets engine — TTL (1h default / 24h max), supported engines, lease-revocation mechanics fetched. See `answers.md` QG27 deepening (S2054) and `agents/api-tokens.csv`. (topic: agents/api-tokens-issue-and-store)
+- **Closed this pass:** GitLab CI native secrets manager (`ci/secrets/`) and its `id_tokens`-based auth to Vault/Key Vault/GCP/AWS — fetched (S2055, S2056). See `answers.md` QG27/28 deepening and `agents/secret-storage-options.csv`. (topic: agents/api-tokens-issue-and-store)
+- **Closed this pass:** Claude Code `apiKeyHelper`'s hot-reload behaviour (no restart needed on settings change) — fetched (S2057). See `answers.md` QG28 deepening. (topic: agents/api-tokens-issue-and-store)
+- **Closed this pass:** App roles vs group claims for a service principal specifically — Microsoft's own documented gap ("Entra ID doesn't add the roles claim" when an app role is assigned to a group containing a service principal) fetched (S2053). See `answers.md` QG25 deepening. (topic: agents/agent-rbac)
+- **Closed this pass (partially):** OWASP-specific guidance on agent/NHI identity separation and least privilege — the OWASP NHI Top 10 list (S2058) was fetched and mapped to this part's own findings (NHI7, NHI10). The OWASP "Agentic AI – Threats and Mitigations" PDF remains unfetchable by WebFetch (content is inside a PDF, not rendered); still [UNK] for that specific document's threat-ID text. (topic: agents/agent-rbac)
+- **Still open: Microsoft Entra Agent ID — PIM support for agent identities specifically.** Neither the agent-identities overview (S2040), the PIM-for-Groups page (S2052, this pass), nor the announcement (S2051) states whether an agent identity can be an eligible PIM member/owner of a role-assignable group the way a human or service principal can. Tried across two passes: S2040, S2051, S2052 (no mention in any); WebSearch budget for this session was exhausted before a further targeted search could be attempted this pass. [UNK] (topic: agents/agent-rbac)
+- **Still open: S2051 (Microsoft Entra Agent ID announcement) was read only as a WebSearch synthesis in the prior pass, not independently WebFetched.** Not re-attempted this pass (WebSearch budget exhausted; WebFetch of the same URL was not separately retried since S2040 already carries the load-bearing mechanics). Treated as DOC per the prior pass's reasoning; flagged for a direct fetch in a future pass. [DOC, flagged] (topic: agents/agent-rbac)
+- **Narrowed, not closed: HashiCorp Vault's own numeric SLA or default TTL for a *SQL Server* (MSSQL) dynamic role specifically** — the database-secrets-engine page (S2054) gives the *engine's* default (1h/24h TTL) but no MSSQL-specific example or caveat distinct from the generic default; not pursued further this pass (the generic default answers the design-relevance question adequately per the fact already recorded in `answers.md`). [DOC S2054 for the generic default; UNK for an MSSQL-specific worked example] (topic: agents/api-tokens-issue-and-store)
 
 ## agents-copilot
 
@@ -31,17 +31,17 @@ Merged from `_parts/<agent>/gaps.md`.
   100 skills — all S1960). No error-string text was found on S1960 or S1980 within budget. Tried:
   requirements-quotas (S1960), faq-billing-licensing (S1980, search-summary only). This belongs
   properly to Topic 2 (`agents-errors`); flagged here because QG17's quota inventory surfaces the
-  numbers but not the error text. [UNK]
+  numbers but not the error text. [UNK] (topic: agents/copilot-studio-inventory)
 - **Teams AI library current status** (`microsoft.github.io/teams-ai`) returned HTTP 404 on fetch;
   a second candidate path was not tried within budget. Tried: 1 WebFetch attempt. The Microsoft 365
   Agents SDK docs (S1968) do not mention Teams AI library by name, and GitHub search for
   `microsoft/teams-ai` was not run as a fallback. QG18/QG19's Teams AI library coverage rests on
-  general knowledge, not a fetched source, and is marked `[UNK]` in the topic file. [UNK]
+  general knowledge, not a fetched source, and is marked `[UNK]` in the topic file. [UNK] (topic: agents/own-chatbot-architecture)
 - **Azure Bot Service SDK overview page** (`learn.microsoft.com/en-us/azure/bot-service/bot-service-overview-introduction`)
   returned HTTP 404 on fetch. The Bot Framework SDK retirement statement is instead sourced from the
   GitHub README (S1976) via WebSearch summary rather than a direct WebFetch of the README file
   itself; the exact retirement date (Dec 31, 2025) was not independently cross-checked against a
-  second Microsoft Learn page. [UNK, low confidence in exact day-of-month]
+  second Microsoft Learn page. [UNK, low confidence in exact day-of-month] (topic: agents/own-chatbot-architecture)
 - **Copilot Credits pricing rates (currency amounts) and the "billing rates" table** referenced by
   S1961 (`requirements-messages-management#copilot-credits-billing-rates`) were not fetched; only
   the mechanism (pay-as-you-go, prepurchase, prepaid pack) is confirmed, not the actual credit
@@ -71,7 +71,7 @@ Remaining gaps:
   `developers.openai.com/api/docs/guides/function-calling` and `.../structured-outputs` (the current successor pages
   to `platform.openai.com/docs/guides/*`) — neither states a character/token ceiling for `instructions`. Community
   forum posts (S1844, S1845) remain the only figures (8,000 for the ChatGPT custom-GPT UI; up to 256,000 cited for a
-  different field, message content). [UNK]
+  different field, message content). [UNK] (topic: agents/instruction-and-context-limits)
 - **The commonly cited "128 tools" limit for OpenAI function calling** was not found on either fetched OpenAI page in
   this pass; the pages instead give a soft, non-enforced recommendation ("fewer than 20 functions... at the start of
   a turn"). Whether "128" is a real, separately documented ceiling (for example on the Assistants API specifically,
@@ -80,7 +80,7 @@ Remaining gaps:
   from an official page: `ai.google.dev/gemini-api/docs/function-calling` was fetched directly in this pass and
   documents neither a `systemInstruction` character/token ceiling nor an enumerated list of unsupported
   OpenAPI-schema keywords for function declarations. The community-reported ~85-90K-token observed boundary (S1846)
-  remains the best available number. [UNK]
+  remains the best available number. [UNK] (topic: agents/instruction-and-context-limits)
 - **Gemini function-declaration count limit and function-name pattern/length restriction** were not found on the
   fetched function-calling guide (style guidance only: "underscores or camelCase"). [UNK]
 - **A single canonical Claude API reference page enumerating all `stop_reason` values** (including `pause_turn`,
@@ -89,7 +89,7 @@ Remaining gaps:
   than quoted from one authoritative stop-reason table. A follow-up should fetch a page specifically titled around
   "handling stop reasons" (linked from `platform.claude.com/docs/en/agents-and-tools/tool-use/overview` as
   `handling-stop-reasons`) and requote each value's exact definition as `DOC`. Resolved in the census of
-  2026-09-25: the page was fetched and the three values are now `DOC` facts citing S-qso6o6wu.
+  2026-09-25: the page was fetched and the three values are now `DOC` facts citing S-qso6o6wu. (topic: agents/agent-error-catalogue)
 - **The full "supported JSON Schema subset" reference pages** linked from both Anthropic's strict-tool-use page
   (`build-with-claude/structured-outputs#json-schema-limitations`) and OpenAI's structured-outputs guide were not
   independently fetched in this pass; both parent pages state restrictions exist without enumerating every excluded
@@ -134,7 +134,7 @@ Remaining gaps:
   commit/sha256 artifact of it. The repo's preview/API-freeze status and field names (name, version, packages,
   remotes) are recorded from the overview page (S2012) only; exact schema types and required/optional markers are
   not confirmed. 2 fetch attempts made (repo root + one guessed raw path that 404'd); stopped short of the 3-attempt
-  ceiling to conserve budget for the other three topics.
+  ceiling to conserve budget for the other three topics. (topic: agents/mcp-server-lifecycle)
 - QG23: "how clients react to a changed tool description (cache, permissions)" is answered only from the MCP spec's
   `listChanged` mechanics (S2135 (reused id, already recorded elsewhere in this kb)) and Claude Code's own cache-invalidation notes already
   in `claude/otel-monitoring.md`/other parts' `agent-caching.md` (topic 9); no vendor doc found stating whether a
@@ -142,14 +142,14 @@ Remaining gaps:
   `UNK` in `mcp-server-lifecycle.md`.
 - QG21: could not fetch the full PDF text of arXiv 2506.08837 with attribution-quality precision beyond WebFetch's
   own extraction; pattern names and one-line trade-offs are taken from that extraction (S2005) and are not verified
-  against the original section headings word-for-word.
+  against the original section headings word-for-word. (topic: agents/prompt-injection-design-patterns)
 - QG24: per-engineer cost attribution specific to a *stdio MCP server tool* (rather than whole-session cost) is not
   published anywhere found; Claude Code's MCP-attribution feature in `/usage` attributes by MCP *server*, not by
   individual MCP *tool* within a server. Recorded as a gap in `agent-cost-governance.md`.
 
 ## agents-mcp
 
-- **No published per-call latency number for Claude subagent spawn overhead** (only qualitative "fresh context, higher latency" from S1923). Tried: code.claude.com/docs/en/sub-agents (S1923, qualitative only), WebSearch for "claude code subagent spawn latency milliseconds" style queries returned no vendor number. [UNK]
+- **No published per-call latency number for Claude subagent spawn overhead** (only qualitative "fresh context, higher latency" from S1923). Tried: code.claude.com/docs/en/sub-agents (S1923, qualitative only), WebSearch for "claude code subagent spawn latency milliseconds" style queries returned no vendor number. [UNK] (topic: agents/subagents-vs-deterministic-tools)
 - **No vendor-published success-rate/eval-pass-rate threshold for "replace this subagent with a tool."** Anthropic's evals guidance (S1935) describes *how* to measure tool-use quality (task success, tool-call count, token count, error rate) but does not publish a numeric threshold at which a workflow step should convert from agent-driven to hard-coded. Tried: S1920, S1935, S1936; no vendor number found. Recorded as `DER` in answers.md instead. [UNK]
 - **No official Anthropic or Microsoft page stating an exact percentage figure for cost escalation from a runaway/recursive subagent** beyond the "another 10x or more" figure from a secondary (COMMUNITY) source (S1930). Anthropic's own multi-agent post (S1921) describes the failure mode (excessive subagent spawning) but not a cost multiplier for it. Tried: S1921 (qualitative), S1930 (COMMUNITY, has the number). [COMMUNITY only, tagged as such]
 - **MCP "tasks" capability (`execution.taskSupport`) details** were found only via a WebSearch summary (S1929-adjacent search, not independently re-fetched from the modelcontextprotocol.io tasks page) — not fetched directly in this session; the fetched tools page (S1928) is the 2025-06-18 revision and does not itself describe `taskSupport`. Tried: one WebSearch, one WebFetch of the tools page only (budget stopped after the outputSchema/annotations facts were confirmed there). Recorded as `UNK` for the exact task-support default value beyond the search snippet. [UNK]
@@ -233,10 +233,10 @@ Remaining gaps:
 
 ## arch
 
-- **No Microsoft-documented way for Linux (Python gssapi/pyspnego/requests-gssapi, adutil, mssql-conf) to retrieve a gMSA's `msDS-ManagedPassword` and turn it into a keytab.** Tried: `adutil keytab createauto` (requires explicit `--password`, built for conventional AD accounts per S1606), Microsoft Learn search for "gMSA Linux", MIT Kerberos docs. Only AWS's `credentials-fetcher` (S1607/S1608, COMMUNITY, Apache-2.0, AWS open source) claims to fetch gMSA credentials over LDAP for Linux. Verification: could be checked by running `credentials-fetcher` against a lab AD gMSA and a lab Linux host, watching whether it produces a usable keytab/ticket — out of scope for this research pass.
+- **No Microsoft-documented way for Linux (Python gssapi/pyspnego/requests-gssapi, adutil, mssql-conf) to retrieve a gMSA's `msDS-ManagedPassword` and turn it into a keytab.** Tried: `adutil keytab createauto` (requires explicit `--password`, built for conventional AD accounts per S1606), Microsoft Learn search for "gMSA Linux", MIT Kerberos docs. Only AWS's `credentials-fetcher` (S1607/S1608, COMMUNITY, Apache-2.0, AWS open source) claims to fetch gMSA credentials over LDAP for Linux. Verification: could be checked by running `credentials-fetcher` against a lab AD gMSA and a lab Linux host, watching whether it produces a usable keytab/ticket — out of scope for this research pass. (topic: arch/kerberos-linux-containers)
 - **No stated Windows-Server-version floor specific to Kubernetes gMSA** beyond the general Windows-container gMSA fix history (2019 fixes for hostname/race-condition issues); kubernetes.io doesn't restate a minimum OS build. Tried: kubernetes.io gmsa page (S1600) — silent on this; would need a targeted Microsoft Learn "Windows container OS compatibility" cross-reference. [UNK, recorded in arch/k8s-gmsa-windows.md]
-- **No GA date for Azure Arc-enabled Kubernetes workload identity federation** — page (S1609) still labelled preview at retrieval (updated 2025-11-18). No separate GA announcement found via search. Verification: not checkable without a live Azure subscription; recheck by re-reading S1609 periodically for a status change.
-- **`Authentication=ActiveDirectoryDefault` behavior for msodbcsql18 against on-prem/Arc-enabled SQL Server specifically** was not confirmed by a fetched page (search summary only, centered on Azure SQL DB/MI). Tried: WebSearch only, did not fetch the full ODBC Entra ID page content beyond the search summary. Could be closed with one more WebFetch of S1610 if this specific mode becomes load-bearing.
+- **No GA date for Azure Arc-enabled Kubernetes workload identity federation** — page (S1609) still labelled preview at retrieval (updated 2025-11-18). No separate GA announcement found via search. Verification: not checkable without a live Azure subscription; recheck by re-reading S1609 periodically for a status change. (topic: arch/workload-identity-onprem-k8s)
+- **`Authentication=ActiveDirectoryDefault` behavior for msodbcsql18 against on-prem/Arc-enabled SQL Server specifically** was not confirmed by a fetched page (search summary only, centered on Azure SQL DB/MI). Tried: WebSearch only, did not fetch the full ODBC Entra ID page content beyond the search summary. Could be closed with one more WebFetch of S1610 if this specific mode becomes load-bearing. (topic: arch/sql-auth-containers)
 
 
 - Whether Power BI "field parameters" or a report-bound SQL/CSV table (as opposed to Analysis
@@ -255,16 +255,16 @@ Remaining gaps:
 
 Closed this pass (see kerberos.md, ntlm-deprecation.md, ad-jit-membership.md, configmgr-rbac-auth.md):
 - RC4-in-Kerberos deprecation dates — found and dated (S1215, S1216, S1217).
-- AD PAM TTL vs Kerberos ticket lifetime — found (S1219): TTL propagates directly into TGT lifetime.
+- AD PAM TTL vs Kerberos ticket lifetime — found (S1219): TTL propagates directly into TGT lifetime. (topic: auth/ad-jit-membership)
 - ConfigMgr RBAC mechanics (QA2) — read 3 official pages (S1218 + 2 more); no provider-cache statement exists, confirmed UNK, LAB line recorded.
 
-Still open:
+Still open: (topic: auth/configmgr-rbac-auth)
 - ConfigMgr-specific provider/role cache behaviour on top of Kerberos PAC group SIDs (QA2): confirmed UNK after 3 official-source attempts (role-based administration fundamentals, configure role-based administration, plan for the SMS Provider, `SMS_Admin` WMI class reference).
   Verification: on an isolated ConfigMgr lab site, add a test admin to a role-granting AD group, call AdminService with an existing ticket, then again after `klist purge`+re-logon → proves whether the SMS Provider adds delay beyond the Kerberos PAC refresh.
 - Mid-ticket TTL group removal (QA10 edge case): does an already-issued, TTL-capped TGT survive an admin's early removal of the membership, or is it invalidated immediately? Not stated in S1219.
-  Verification: in an isolated PAM-enabled forest, add then early-remove a TTL group membership and observe whether the already-issued TGT is honoured until its original (TTL-capped) expiry.
+  Verification: in an isolated PAM-enabled forest, add then early-remove a TTL group membership and observe whether the already-issued TGT is honoured until its original (TTL-capped) expiry. (topic: auth/ad-jit-membership)
 - `python-ldap` on Windows: does it negotiate SASL sign/seal against a signing-enforced DC over plain `ldap://`? API is documented (S1220) but its Windows sign/seal behaviour is not stated by the docs.
-  Verification: attempt `ldap3` vs `python-ldap` vs pywin32/ADSI (`ADS_USE_SIGNING|ADS_USE_SEALING`) GSSAPI binds over plain `ldap://` against a Server 2025 DC with LDAP signing enforced → settles QA15 fully.
+  Verification: attempt `ldap3` vs `python-ldap` vs pywin32/ADSI (`ADS_USE_SIGNING|ADS_USE_SEALING`) GSSAPI binds over plain `ldap://` against a Server 2025 DC with LDAP signing enforced → settles QA15 fully. (topic: auth/ldap-smb-signing)
 - DPoP (RFC 9449) GA status for general Entra ID access tokens (beyond MSAL PoP and Windows Token Protection/PRT binding specifically): not confirmed as GA vs preview from an official source.
 - RFC 8693 Token Exchange support in Entra ID: no official Microsoft statement found either confirming or denying; only community sources describe it as unsupported (OBO/client-credentials offered instead). Tried: Microsoft Learn identity-platform search, RFC 8693 + Entra web search.
 - SMB 3.1.1 cipher negotiation specifics (AES-128-GCM vs AES-256-GCM) beyond the signing/encryption defaults: not researched.
@@ -337,7 +337,7 @@ Still open:
 - **Windows-host execution not done.** Q20 behaviour (Service/FirewallRuleList native what-if; elevation check in what-if) is from code and manifests (S105, S114, S138, S139). Tried: macOS arm64 binaries (S116/S117), which do not include Windows resources. Needs a Windows 11 lab run. [UNK]
 - **What-if for group resources and adapters in a config.** The "error (pretest, no what-if)" classification for Microsoft.DSC/Group, Assertion, Include and the PowerShell adapters is derived from their manifest flags plus `invoke_set` (S105). Not run. [UNK]
 - **MCP `what_if` on 3.3.0 ignored at runtime.** The conclusion is from source (no field, no `deny_unknown_fields`; S108) and binary strings (S114). An MCP stdio call was not captured in this session. [DER only]
-- **Official directives documentation.** No Learn or repo doc page for `directives` was found. Tried: MicrosoftDocs/PowerShell-Docs-DSC `dsc/docs-conceptual/dsc-3.0/reference/schemas/config/document.md` (S145), repo `docs/reference/schemas/config/*.md` on release/v3.3, and a grep of all repo docs for "directives". Only code and tests document it.
+- **Official directives documentation.** No Learn or repo doc page for `directives` was found. Tried: MicrosoftDocs/PowerShell-Docs-DSC `dsc/docs-conceptual/dsc-3.0/reference/schemas/config/document.md` (S145), repo `docs/reference/schemas/config/*.md` on release/v3.3, and a grep of all repo docs for "directives". Only code and tests document it. (topic: dsc/schemas)
 - **Learn docs lag behind 3.2/3.3.** The Learn CLI pages (dsc-3.0 moniker) are dated 2025; there are no pages for `function`, `server`/`mcp`, directives, `secret()` or settings/policy. Facts come from code at the pinned commits.
 - **Trace leakage at `debug` level for adapters.** Tested only with `Microsoft.DSC.Debug/Echo`. Adapter paths (PowerShell) were not tested.
 - **Generated schemas and help text** (`schemas/generated-*`, `cli/help-*.txt`, `functions-3.3.0.csv`) are outputs of running the release binaries (sources S116/S117 = the tarballs). They cannot be re-downloaded byte-for-byte from a URL. `fetch.py --verify` should verify the tarball hash only.
@@ -476,10 +476,10 @@ Still open:
 ## privacy
 
 - Next Presidio release date / version: not announced. Tried GitHub releases API (S801), PyPI JSON (S802), CHANGELOG `[unreleased]` (S800).
-- spaCy `en_core_web_lg` training-data source licences (`LICENSES_SOURCES`): not read. The fetch of https://huggingface.co/spacy/en_core_web_lg/raw/557bf75.../LICENSES_SOURCES was declined during the session. spacy.io/models/en (S852) renders details client-side, so the static HTML has no licence text. The model licence itself (MIT) is confirmed by S850 and S851.
-- nvidia/gliner-PII full label list (55+): not in the model card (S860) or the HF API (S859). The dataset card and NVIDIA licence text were not fetched (the nvidia.com licence is not on an allowed host).
-- EDPB Guidelines 01/2025 final (post-consultation) version: not found. Tried the consultation page (S872), the news item (S873), the topic page (S874), and two WebSearch queries restricted to edpb.europa.eu. Only the "version for public consultation" exists.
-- CJEU C-413/23 P full judgment text: not fetched. Used press release 107/25 (S875) only.
+- spaCy `en_core_web_lg` training-data source licences (`LICENSES_SOURCES`): not read. The fetch of https://huggingface.co/spacy/en_core_web_lg/raw/557bf75.../LICENSES_SOURCES was declined during the session. spacy.io/models/en (S852) renders details client-side, so the static HTML has no licence text. The model licence itself (MIT) is confirmed by S850 and S851. (topic: privacy/spacy-model-licence)
+- nvidia/gliner-PII full label list (55+): not in the model card (S860) or the HF API (S859). The dataset card and NVIDIA licence text were not fetched (the nvidia.com licence is not on an allowed host). (topic: privacy/gliner-models)
+- EDPB Guidelines 01/2025 final (post-consultation) version: not found. Tried the consultation page (S872), the news item (S873), the topic page (S874), and two WebSearch queries restricted to edpb.europa.eu. Only the "version for public consultation" exists. (topic: privacy/gdpr-pseudonymisation)
+- CJEU C-413/23 P full judgment text: not fetched. Used press release 107/25 (S875) only. (topic: privacy/gdpr-pseudonymisation)
 - `surrogate_ahds` operator behaviour over REST: not checked.
 
 ## reuse
@@ -491,7 +491,7 @@ Still open:
   pin instead. Tried: `api.github.com/repos/<org>/<repo>/commits/HEAD` for all five, all 403'd once.
 - LLM Guard's `Vault` class was assessed from the prior-art agent's summary of its own docs (S1006),
   not by reading `llm_guard`'s source directly this session (budget); the "port the class shape" logic
-  verdict should be re-verified against the actual `vault.py` source before any code is written.
+  verdict should be re-verified against the actual `vault.py` source before any code is written. (topic: reuse/pseudonymization-tokenization)
 - Teleport's "Access Requests" approval-workflow mechanics and AWX's workflow-approval-node mechanics
   were not fetched this session (inherited gap from prior-art); the `no` verdict here rests on licence
   (AGPL-3.0) and deployment-model (always-on service) grounds, which do not depend on those mechanics,
@@ -563,7 +563,7 @@ Still open:
 - QS8: no page was found that explicitly classifies ConfigMgr/MECM as "Tier 0" in Microsoft's own enterprise access model docs. Only the general control-plane/management-plane/data-workload-plane tiering principle (Microsoft cloud security benchmark, privileged access) was confirmed; applying it to ConfigMgr is a derivation (`security/management-plane-hardening.md`), not a documented Microsoft statement.
 - QS17: exact GitLab **subscription tier** (Free/Premium/Ultimate) gating for Dependency Scanning vs. SLSA attestation vs. artifact signing was not confirmed against `docs.gitlab.com/subscriptions/features/` in this pass — only the existence and mechanics of the features (`security/supply-chain.md`) were confirmed, not their tier gate. `Verification: cross-check docs.gitlab.com/subscriptions/features/ for the tier of Dependency Scanning, SLSA provenance attestation, and container/artifact signing before using this for a purchasing or gate decision.`
 - QS18 (Run Scripts + AllSigned): confirmed Run Scripts has no signing gate of its own and the client-side AllSigned policy is the enforcement point, but did not find an official page describing whether ConfigMgr's CI (compliance) script deployment path differs from Run Scripts on this point — assumed identical based on both using the same client-side PowerShell execution policy setting (already documented in `windows/execution-policy-signing.md`).
-- No official Microsoft page was found specifically discussing `dsc.exe` (or DSC v3 resource executables) under WDAC/App Control; general PowerShell WDAC script-enforcement mechanics were confirmed but not a DSC-specific statement. Community source only (S1519), not used as sole evidence for any `DOC` fact.
+- No official Microsoft page was found specifically discussing `dsc.exe` (or DSC v3 resource executables) under WDAC/App Control; general PowerShell WDAC script-enforcement mechanics were confirmed but not a DSC-specific statement. Community source only (S1519), not used as sole evidence for any `DOC` fact. (topic: security/script-and-code-signing)
 - PyPI Trusted Publishing's self-managed-GitLab support status is unresolved: the official `docs.pypi.org` page (S1509) does not list self-managed GitLab as supported, while a third-party (Socket) report (S1510, COMMUNITY) claims PyPI expanded support to self-managed GitLab. Recorded as a conflict-worthy discrepancy in `security/supply-chain.md` rather than asserted either way as `DOC`.
 - NIST AI RMF "Agentic Profile" (if any, beyond the Generative AI Profile SP 800-218A/AI 600-1) was not found on nist.gov directly; a third-party (Cloud Security Alliance) reference to such a profile was not treated as authoritative and is not cited.
 
@@ -579,7 +579,7 @@ Still open:
   T1072/T1484/T1098/T1558/T1078/T1219/T1562 are now extracted from the pinned v19.2 STIX bundle into
   `security/artifacts/mitre/attack-subset.csv` and summarized in `threat-model-inputs.md` and QS15.
 - UODO's DPIA list (S1551) is in Polish; only the fact that such a list exists and its URL were captured, not a
-  translated enumeration of its entries.
+  translated enumeration of its entries. (topic: security/privacy-compliance)
 - Whether a given device-log/AI-processing system's specific processing meets two or more EDPB DPIA criteria, and
   whether its use case falls under EU AI Act Annex III, are open questions this research pass deliberately left as
   facts-only / UNK, per the brief's instruction not to decide policy questions.

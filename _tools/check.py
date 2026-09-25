@@ -10,10 +10,11 @@
 - every Markdown file is readable UTF-8;
 - every [DOC|DER|COMMUNITY S...] tag in a Markdown file cites a known source id (S123 or S-k3f7q2zd);
 - no answer id (`## <ID>. ` heading) appears twice in _answers.md; new QK answers use QK-<slug>;
-- every topic file's front matter has topic, priority, retrieved_utc, sources and status in {complete, partial, unknown}.
+- every topic file's front matter has topic, priority, retrieved_utc, sources and status in {complete, partial, unknown};
+- every `topic: <domain>/<slug>` marker in _gaps.md and _conflicts.md names an existing topic (kbfacts.py).
 """
 import csv, glob, os, re, sys
-import kbid
+import kbid, kbfacts
 
 KB = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 errors = []
@@ -102,6 +103,13 @@ for p in glob.glob(os.path.join(KB, "**", "*.md"), recursive=True):
         m = re.search(r"\nstatus:\s*(\S+)", head)
         if m and m.group(1) not in ("complete", "partial", "unknown"):
             errors.append(f"{rel} has status {m.group(1)}")
+topics = set(kbfacts.topic_files())
+for name in ("_gaps.md", "_conflicts.md"):
+    for e in kbfacts.ledger_entries(name):
+        for m in kbfacts.TOPIC_MARK.finditer(e["text"]):
+            t = m.group(1).removesuffix(".md").removesuffix(".csv")
+            if t not in topics:
+                errors.append(f"{name}:{e['line']} names unknown topic {t!r} (topic: <domain>/<slug>)")
 print(f"sources={len(known)} citations={cited} errors={len(errors)}")
 for e in errors:
     print("ERROR", e)

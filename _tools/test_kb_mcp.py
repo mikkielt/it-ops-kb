@@ -7,12 +7,13 @@ KbServer        _tools/kb_mcp.py as a subprocess over stdio: the legacy handshak
                 notifications/initialized), tools/list, kb_search (hits with path:line and source urls; the
                 not-found note), kb_show, kb_source, kb_status, the 2026-07-28 server/discover and its version check,
                 JSON-RPC errors (parse error, unknown method or tool), stdout carrying only JSON-RPC, exit on EOF, and the
-                submit_feedback hook exiting 2.
+                submit_feedback hook exiting 2; kb_pack (coverage verdict, fact lines, url footer), kb_audit,
+                kb_facts and kb_source with cited.
 PluginManifest  .claude-plugin/marketplace.json and plugin.json: one plugin whose entry name equals its manifest name,
                 sourced from the marketplace root; no pinned version (users track commits); only the read-only kb-lookup
                 skill; no default agents/ scan (the kb's agents/ domain holds articles, not subagents); the kb server
                 started from ${CLAUDE_PLUGIN_ROOT}; a PreToolUse hook blocking submit_feedback on every docs server in
-                .mcp.json; the GitLab SSH remote. With the `claude` CLI installed, `claude plugin validate` passes.
+                .mcp.json; the kb: UserPromptSubmit hook from ${CLAUDE_PLUGIN_ROOT}; the GitLab SSH remote. With the `claude` CLI installed, `claude plugin validate` passes.
 """
 import json, os, re, shutil, subprocess, sys, unittest
 
@@ -50,6 +51,14 @@ class KbServer(unittest.TestCase):
              "params": {"_meta": {"io.modelcontextprotocol/protocolVersion": "2026-07-28"}}},
             {"jsonrpc": "2.0", "id": 12, "method": "tools/list",
              "params": {"_meta": {"io.modelcontextprotocol/protocolVersion": "1999-01-01"}}},
+            {"jsonrpc": "2.0", "id": 13, "method": "tools/call",
+             "params": {"name": "kb_pack", "arguments": {"question": "Does deleting an Entra device delete its BitLocker keys?"}}},
+            {"jsonrpc": "2.0", "id": 14, "method": "tools/call",
+             "params": {"name": "kb_audit", "arguments": {"prefix": "ad", "status": "complete"}}},
+            {"jsonrpc": "2.0", "id": 15, "method": "tools/call",
+             "params": {"name": "kb_facts", "arguments": {"prefix": "ad/computer-attributes", "tags": ["UNK"]}}},
+            {"jsonrpc": "2.0", "id": 16, "method": "tools/call",
+             "params": {"name": "kb_source", "arguments": {"ids": ["S100"], "cited": True}}},
         ]
         stdin = "".join(json.dumps(m) + "\n" for m in msgs) + "this is not json\n"
         cls.proc = subprocess.run([sys.executable, SERVER], input=stdin, capture_output=True, text=True, timeout=60, cwd=os.sep)
@@ -63,7 +72,7 @@ class KbServer(unittest.TestCase):
 
     def test_exits_on_eof_and_stdout_is_only_jsonrpc(self):
         self.assertEqual(self.proc.returncode, 0, self.proc.stderr)
-        self.assertEqual(len(self.lines), 13, "one reply per request, none for the notification")  # 12 requests + parse error
+        self.assertEqual(len(self.lines), 17, "one reply per request, none for the notification")  # 16 requests + parse error
         for r in self.replies:
             self.assertEqual(r["jsonrpc"], "2.0")
 
@@ -76,7 +85,7 @@ class KbServer(unittest.TestCase):
 
     def test_tools_list(self):
         tools = {t["name"]: t for t in self.by_id[2]["result"]["tools"]}
-        self.assertEqual(sorted(tools), ["kb_search", "kb_show", "kb_source", "kb_status"])
+        self.assertEqual(sorted(tools), ["kb_audit", "kb_facts", "kb_pack", "kb_search", "kb_show", "kb_source", "kb_status"])
         for t in tools.values():
             self.assertEqual(t["inputSchema"]["type"], "object")
             self.assertTrue(t["annotations"]["readOnlyHint"])
@@ -87,6 +96,22 @@ class KbServer(unittest.TestCase):
         self.assertFalse(err)
         self.assertRegex(text, r"(?m)^\[\d+(\.\d+)?\] [\w./-]+\.(md|csv):\d+  § ")
         self.assertRegex(text, r"(?m)^  -> S[-\w]+  https://")
+
+    def test_kb_pack_audit_facts_cited(self):
+        err, text = self.text(13)
+        self.assertFalse(err)
+        self.assertTrue(text.startswith("coverage: good"), text[:200])
+        self.assertRegex(text, r"(?m)^- entra/bitlocker-key-deletion\.md:\d+ ")
+        self.assertRegex(text, r"(?m)^  -> S[-\w]+  https://")
+        err, text = self.text(14)
+        self.assertFalse(err)
+        self.assertIn("| ad/computer-attributes.md | complete |", text)
+        err, text = self.text(15)
+        self.assertFalse(err)
+        self.assertRegex(text, r"facts=\d+")
+        err, text = self.text(16)
+        self.assertFalse(err)
+        self.assertRegex(text, r"cited at [\w/.-]+:\d+")
 
     def test_kb_search_says_when_the_kb_lacks_it(self):
         err, text = self.text(4)
@@ -186,6 +211,12 @@ class PluginManifest(unittest.TestCase):
         h = hooks[0]["hooks"][0]
         self.assertEqual((h["type"], h["command"], h["args"]),
                          ("command", "python3", ["${CLAUDE_PLUGIN_ROOT}/_tools/kb_mcp.py", "--deny-submit-feedback"]))
+
+    def test_kb_prompt_hook_from_the_plugin_root(self):
+        hooks = self.plugin["hooks"]["UserPromptSubmit"]
+        self.assertEqual(len(hooks), 1)
+        h = hooks[0]["hooks"][0]
+        self.assertEqual((h["type"], h["command"], h["args"]), ("command", "python3", ["${CLAUDE_PLUGIN_ROOT}/_tools/kb_hook.py"]))
 
     @unittest.skipUnless(shutil.which("claude"), "the claude CLI is not installed")
     def test_claude_plugin_validate(self):

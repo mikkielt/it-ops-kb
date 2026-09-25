@@ -9,7 +9,11 @@
 
 Cohesion: check.py and fetch.py --offline pass; no lint errors beyond the recorded baseline; the generated index
 files (_coverage.csv, README coverage table, used_in) are up to date (build_index.py --check); links, backtick paths and used_in paths resolve; every CLI flag the docs mention exists
-in that tool; .mcp.json, .claude/settings.json and AGENTS.md agree; skills are well-formed.
+in that tool; .mcp.json, .claude/settings.json and AGENTS.md agree; skills are well-formed; AGENTS.md stays under 4 KB
+(every session and subagent loads it; maintainer rules live in MAINTAINING.md).
+Lookup (deterministic retrieval): kbfacts.py parses tag variants and ledger topic markers one way; `rag.py eval` passes
+every question of _tools/lookup_eval.csv (expected article in the pack, right coverage verdict); the kb: hook blocks
+a covered question, forwards an uncovered one with the pack, and leaves other prompts alone.
 Ids: kbid.py hash source ids are deterministic and normalization-stable; bad ids and answer-id clashes are caught.
 Merges (test_merge.py): union-merged ledgers plus kbgit.py fix give a clean kb; the git scenario is skipped without git.
 History (test_history.py): KB-* trailers, the commit-msg hook, check-trailers, log, blame, asof, tag-census; git parts skip without git.
@@ -124,7 +128,7 @@ def fmt(found, limit=20):
     return "\n".join(f"  {f}:{n}: {v}" for f, n, v in found[:limit]) + (f"\n  ... +{len(found) - limit}" if len(found) > limit else "")
 
 
-DOCS = ["README.md", "AGENTS.md"] + sorted(os.path.relpath(p, KB) for p in glob.glob(os.path.join(KB, ".claude", "skills", "*", "SKILL.md")))
+DOCS = ["README.md", "AGENTS.md", "MAINTAINING.md"] + sorted(os.path.relpath(p, KB) for p in glob.glob(os.path.join(KB, ".claude", "skills", "*", "SKILL.md")))
 
 
 class ToolChecks(unittest.TestCase):
@@ -236,6 +240,59 @@ class Cohesion(unittest.TestCase):
 
     def test_claude_md_imports_agents_md(self):
         self.assertIn("@AGENTS.md", text("CLAUDE.md") or "")
+        self.assertNotIn("MAINTAINING.md", text("CLAUDE.md") or "", "MAINTAINING.md is read on demand, never imported")
+
+    def test_agents_md_stays_small(self):
+        size = len((text("AGENTS.md") or "").encode())
+        self.assertLessEqual(size, 4096, f"AGENTS.md is {size} bytes: it loads into every session and subagent; "
+                                         "move maintainer detail to MAINTAINING.md")
+        for s in glob.glob(os.path.join(KB, ".claude", "skills", "*", "SKILL.md")):
+            if os.path.basename(os.path.dirname(s)) != "kb-lookup":
+                self.assertIn("MAINTAINING.md", text(os.path.relpath(s, KB)), f"{s}: a skill that changes the kb must point to MAINTAINING.md")
+
+
+class Lookup(unittest.TestCase):
+    def test_tag_grammar_variants_parse_one_way(self):
+        import kbfacts
+        cases = {
+            "[DOC S1208, COMMUNITY S1209]": [("DOC", ["S1208"]), ("COMMUNITY", ["S1209"])],
+            "[DER S328,S329: different property; Type has no table]": [("DER", ["S328", "S329"])],
+            "[DOC\n  S1347, S1354]": [("DOC", ["S1347", "S1354"])],
+            "[DER from S1971, S1970]": [("DER", ["S1971", "S1970"])],
+            "[UNK — fetch failed]": [("UNK", [])],
+            "[DOC S2126; DOC S-k3f7q2zd; UNK]": [("DOC", ["S2126"]), ("DOC", ["S-k3f7q2zd"]), ("UNK", [])],
+        }
+        for tag, want in cases.items():
+            self.assertEqual([(p["kind"], p["ids"]) for p in kbfacts.parse_tag(tag)], want, tag)
+        self.assertEqual(kbfacts.parse_tag("[DER S100: how; why]")[0]["note"], "how; why")
+
+    def test_ledger_topic_markers_link_entries(self):
+        import kbfacts
+        e = kbfacts.link_entries([{"file": "_gaps.md", "line": 1, "end": 1, "section": "x", "text": "a gap (topic: auth/kerberos)"}])[0]
+        self.assertEqual(e["explicit"], ["auth/kerberos"])
+        rows = {r["topic"]: r for r in kbfacts.audit("agents/shared-ner-service")}
+        self.assertTrue(rows["agents/shared-ner-service"]["gaps"], "shared-ner-service's named gap entries are not linked")
+
+    def test_lookup_eval_passes(self):
+        code, out = run(os.path.join(TOOLS, "rag.py"), "eval")
+        self.assertEqual(code, 0, out[-3000:])
+
+    def test_kb_hook(self):
+        def hook(prompt):
+            p = subprocess.run([sys.executable, os.path.join(TOOLS, "kb_hook.py")], input=json.dumps({"prompt": prompt}),
+                               capture_output=True, text=True, cwd=KB, timeout=60)
+            self.assertEqual(p.returncode, 0, p.stderr)
+            return json.loads(p.stdout) if p.stdout.strip() else None
+        self.assertIsNone(hook("fix the build please"))
+        covered = hook("kb: Does deleting an Entra device also delete its BitLocker recovery keys?")
+        self.assertEqual(covered["decision"], "block")
+        self.assertIn("entra/bitlocker-key-deletion.md:", covered["reason"])
+        self.assertTrue(covered["reason"].startswith("coverage: good"))
+        missing = hook("kb: What is the Intel Wi-Fi Roaming Aggressiveness setting?")
+        self.assertNotIn("decision", missing)
+        self.assertIn("coverage: none", missing["hookSpecificOutput"]["additionalContext"])
+        forward = hook("kb+: Does deleting an Entra device also delete its BitLocker recovery keys?")
+        self.assertEqual(forward["hookSpecificOutput"]["hookEventName"], "UserPromptSubmit")
 
 
 class Ids(unittest.TestCase):

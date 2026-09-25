@@ -9,6 +9,8 @@ argument-hint: "[--push]"
 
 Arguments: $ARGUMENTS. Push only if they contain `--push` or the user asked to push; otherwise sync without pushing.
 
+Read `MAINTAINING.md` first: the content rules, tools, git workflow and commit rules this skill relies on (`AGENTS.md` covers lookups only).
+
 Run each command on its own (no `;`, `&&`, pipes into other tools or loops): the shared permission rules match single commands, so a chained command asks for approval or is refused in a headless run.
 
 Never `git push --force`, never `--no-verify`, never `git rebase --skip` a commit that carries the user's work, never rewrite pushed history. When a rule below says "ask", stop, leave the repository as it is (a rebase stays in progress) and explain what is decided and what is open.

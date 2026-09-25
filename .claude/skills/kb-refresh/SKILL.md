@@ -9,6 +9,8 @@ argument-hint: "<topic | directory | file | S-id>"
 
 Target: $ARGUMENTS. If empty, ask which topic, directory or file. Never refresh the whole kb unasked: a full run is about 20 minutes of network traffic.
 
+Read `MAINTAINING.md` first: the content rules, tools, git workflow and commit rules this skill relies on (`AGENTS.md` covers lookups only).
+
 Run each command on its own (no `;`, `&&`, pipes into other tools or loops): the shared permission rules match single commands, so a chained command asks for approval or is refused in a headless run.
 
 ## 1. Pick the selection flag
@@ -33,8 +35,8 @@ For every changed source, find the facts citing it: `python3 _tools/rag.py searc
 - Fact changed: rewrite it from the new text, same tag, same id. Update that source's `retrieved_utc` and `version_or_date` in `_sources.csv`.
 - New page or url: add a new source row with the id from `python3 _tools/kbid.py url <URL>` (a hash of the url; never invent one or take the next number; reuse the existing id if the url is already there) and cite it.
 - Replaced source (new commit or moved page): new row as above, old row's `superseded_by` = the new id, citations re-pointed. `check.py` rejects an unknown `superseded_by` id or a cycle.
-- Sources now disagree: record both sides in `_conflicts.md`.
-- Page gone (404) or content withdrawn: mark the fact `[UNK]`, and log what was tried in `_gaps.md`.
+- Sources now disagree: record both sides in `_conflicts.md`, ending `(topic: <domain>/<slug>)`.
+- Page gone (404) or content withdrawn: mark the fact `[UNK]`, and log what was tried in `_gaps.md`, ending `(topic: <domain>/<slug>)`.
 - Update the article's `retrieved_utc`, and its `status` if it changed. Then run `python3 _tools/build_index.py`: it regenerates `_coverage.csv`, the README coverage row and `used_in` (never edit those by hand).
 Follow the README licensing rules: Microsoft Learn text is paraphrased (quotes of 25 words or fewer); verbatim copies only for permissive licences.
 

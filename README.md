@@ -20,7 +20,7 @@ Domains: Microsoft DSC v3, ConfigMgr (MECM), Intune, Autopilot, Entra ID, Active
 - `_fetch_state.csv` records, per source, when `fetch.py --diff` last checked and fetched it, when it last changed, and the hashes compared. Text snapshots of the last fetch sit in `_cache/snapshots/` (not committed).
 - `_tools/` holds stdlib-only Python tools.
 - `.claude-plugin/` makes the repository a Claude Code plugin marketplace with one read-only plugin (see Use from another project).
-- `AGENTS.md` holds instructions for AI agents (setup, including the shared documentation MCP servers in `.mcp.json`); `.claude/skills/` holds the shared Claude Code skills `/kb-setup`, `/kb-lookup`, `/kb-research`, `/kb-refresh`, `/kb-add-topic`, `/kb-census`, `/kb-verify` and `/kb-git-sync`.
+- `AGENTS.md` holds the short instructions every AI agent session loads (lookups, tags, the shared documentation MCP servers in `.mcp.json`, conduct); `MAINTAINING.md` holds the rules for changing the kb (setup, tools, content rules, git, commits), read by the skills that change it; `.claude/skills/` holds the shared Claude Code skills `/kb-setup`, `/kb-lookup`, `/kb-research`, `/kb-refresh`, `/kb-add-topic`, `/kb-census`, `/kb-verify` and `/kb-git-sync`.
 
 ## Fact tags
 
@@ -48,11 +48,17 @@ Examples use placeholder names only:
 ## Tools
 
 ```
+python _tools/rag.py pack "when is NTLMv1 disabled by default"   # evidence pack: coverage good/weak/none, best fact lines by article, one url footer (--budget, -d)
+python _tools/rag.py facts agents --tag UNK,COMMUNITY  # fact lines under a prefix, by tag kind
+python _tools/rag.py audit agents --status partial     # per article: tag counts, linked _gaps.md/_conflicts.md entries (--entries lists them)
+python _tools/rag.py src S1216 --cited                 # a source row plus every line that cites it
+python _tools/rag.py eval                              # the lookup eval set (_tools/lookup_eval.csv): expected article found, verdict right
+python _tools/kb_hook.py --test "kb: question"         # what the kb: prompt hook would answer
 python _tools/rag.py topics [DOMAIN]                   # domains -> articles (title, priority, status), subdirectories, data files
 python _tools/rag.py search "pim activation latency" -k 8 [-d auth]   # BM25 over heading-aware chunks of .md and .csv rows
-python _tools/rag.py search "pim activation latency" -u      # same, plus each cited source id's origin url
+python _tools/rag.py search "pim activation latency" -u      # same, plus a footer of the cited source ids' origin urls
 python _tools/rag.py src S1824 S-k3f7q2zd              # resolve source ids (legacy or hash); shows "superseded by" when set
-python _tools/kb_mcp.py --status                       # the kb MCP server (stdio; the plugin starts it): kb_search, kb_show, kb_source, kb_status
+python _tools/kb_mcp.py --status                       # the kb MCP server (stdio; the plugin starts it): kb_pack, kb_facts, kb_audit, kb_search, kb_show, kb_source, kb_status
 python _tools/kbid.py url https://example.com/page     # the id for a new source's url (says if the url already has one)
 python _tools/kbid.py answer "question text"           # suggest a QK-<slug> id for _answers.md
 python _tools/kbid.py check                            # hash ids: collisions, ids that do not match their url (check.py runs it too)
@@ -80,6 +86,8 @@ python _tools/stress_test.py                           # robustness tests of the
 python _tools/tests.py                                 # CI: docs cohesion + leak scan (reviewed exceptions in _tools/tests_allowlist.txt)
 ```
 
+- `pack`, `facts`, `audit` and `src --cited` read the kb through `_tools/kbfacts.py`, which parses fact units (bullets, table rows, data rows), tags (grammar in its docstring) and ledger entries one way for every tool. `pack` ranks fact lines (BM25 with light stemming) and prints `coverage: none` when the question's named terms are not in the kb or most key words are missing, `weak` when the best article matches under 60% of the key words, else `good`. `rag.py eval` checks it against `_tools/lookup_eval.csv`; tests.py runs it.
+- Typing `kb: <question>` in Claude Code (the UserPromptSubmit hook `_tools/kb_hook.py`, in `.claude/settings.json` and the plugin) answers from the pack without calling the model when coverage is good; otherwise the prompt goes to the model with the pack attached. `kb+: <question>` always goes to the model with the pack.
 - `rag.py` builds no index file; a query takes about 0.1 s. `search` skips the root-level index files (`README.md`, `_answers.md`, `_gaps.md`, `_conflicts.md`, `_coverage.csv`, ...); `--index` includes them. `--json` gives machine output, and each hit carries `path`, `line`, `heading`, `text` and the source ids it cites. With `-u`/`--urls`, each hit also carries `urls`, mapping those source ids to their origin url in `_sources.csv`.
 - `fetch.py --diff` exits 0 when nothing changed, 1 when a source changed and 2 when a fetch or the selection failed, as `diff` does. `--max-lines N` caps each diff, `--no-save` compares without moving the baseline, `--delay` sets the per-host pause (default 1.1 s). HTML is reduced to its main text first, so page chrome does not count as a change.
 - Commit trailers make the history queryable. With the hook installed, every kb commit ends with `KB-Topics:`, `KB-Sources-Added:`, `KB-Sources-Changed:`, `KB-Sources-Superseded:` and `KB-Answers:` lines (only the non-empty ones; sorted, `, `-joined; more than 40 values become `N ids (see diff)`), computed from the diff against the first parent. `KB-Verified: YYYY-MM-DD` is added only on request (`KB_VERIFIED=YYYY-MM-DD git commit`, or `git commit --trailer`) by a commit that confirms its sources are current. Merge commits carry none, and commits made before trailers existed (up to `e5dadde`) are exempt. `git log --format='%h %(trailers:key=KB-Topics,valueonly)'` reads them directly.
@@ -90,8 +98,9 @@ python _tools/tests.py                                 # CI: docs cohesion + lea
 ## Use from another project
 
 The kb is also a Claude Code plugin marketplace. The repository root is both the marketplace (`.claude-plugin/marketplace.json`) and its one plugin, `it-ops-kb` (`.claude-plugin/plugin.json`). The plugin is read-only:
-- **the `kb` MCP server** (`_tools/kb_mcp.py`, stdlib Python over stdio), with tools `kb_search` (hits with `path:line`, source urls and the weak-match/not-found notes), `kb_show`, `kb_source` and `kb_status` (the copy's commit and date, and the latest census);
+- **the `kb` MCP server** (`_tools/kb_mcp.py`, stdlib Python over stdio), with tools `kb_pack` (the evidence pack: coverage verdict, fact lines with `path:line`, source urls), `kb_facts`, `kb_audit`, `kb_search` (hits with `path:line`, source urls and the weak-match/not-found notes), `kb_show`, `kb_source` and `kb_status` (the copy's commit and date, and the latest census);
 - **the `/it-ops-kb:kb-lookup` skill**, which Claude may also invoke on its own;
+- **the `kb:` prompt hook** (UserPromptSubmit, `_tools/kb_hook.py`): `kb: <question>` is answered from the kb without the model when the kb covers it;
 - **the three documentation servers** from `.mcp.json` (Microsoft Learn, Claude Code docs, MCP spec), with every `submit_feedback` call blocked by the plugin's PreToolUse hook (a plugin cannot ship permission rules).
 
 The writing skills (`/kb-research`, `/kb-refresh`, `/kb-add-topic`, `/kb-git-sync`) and the gate stay in a clone of this repository: the plugin copy is replaced on every update.
@@ -135,15 +144,16 @@ Set up the it-ops-kb knowledge base for this project, read-only:
    claude mcp add --scope local --transport http claude-code-docs https://code.claude.com/docs/mcp
    claude mcp add --scope local --transport http mcp-docs https://modelcontextprotocol.io/mcp
 4. In .claude/settings.local.json add permissions.deny entries "mcp__claude-code-docs__submit_feedback" and
-   "mcp__mcp-docs__submit_feedback", and permissions.allow entries "mcp__kb__kb_search", "mcp__kb__kb_show",
-   "mcp__kb__kb_source" and "mcp__kb__kb_status".
+   "mcp__mcp-docs__submit_feedback", and permissions.allow entries "mcp__kb__kb_pack", "mcp__kb__kb_facts",
+   "mcp__kb__kb_audit", "mcp__kb__kb_search", "mcp__kb__kb_show", "mcp__kb__kb_source" and "mcp__kb__kb_status".
 5. Append this note to the project's CLAUDE.md:
    ## it-ops-kb
    For Windows endpoint management, identity, MCP, Claude Code and AI-agent questions, look in it-ops-kb first:
-   the kb_search, kb_show, kb_source and kb_status tools (MCP server `kb`), or without them
-   `python3 ~/src/it-ops-kb/_tools/rag.py search "<3-8 keywords>" -k 8 -u` and `rag.py show <path>:<line> -n 30`.
-   Every fact ends in one tag: DOC, DER, COMMUNITY or UNK; UNK and COMMUNITY are leads, not answers. Cite path:line
-   and the source url. "weak match" or "not found anywhere" means the kb does not cover it: say so. Never call
+   one kb_pack call with the question (MCP server `kb`), or without it
+   `python3 ~/src/it-ops-kb/_tools/rag.py pack "<question>"`; no subagent for a lookup. coverage: good -> answer
+   from the pack; weak -> one more pack or kb_show; none -> say the kb does not cover it, add nothing from memory.
+   Counts and lists: kb_audit, kb_facts, kb_source with cited=true. Every fact ends in one tag: DOC, DER,
+   COMMUNITY or UNK; UNK and COMMUNITY are leads, not answers. Cite path:line and the source url. Never call
    submit_feedback. The kb is read-only here; contribute through a clone of the repo (its README, Contributing).
 6. Run python3 ~/src/it-ops-kb/_tools/kb_mcp.py --status and show me the output. Tell me to restart Claude Code
    so the servers load, then to ask for kb_status.

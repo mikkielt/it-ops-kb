@@ -5,11 +5,16 @@
   python3 _tools/kb_mcp.py --status   print kb_status once and exit (a quick check from a shell)
   python3 _tools/kb_mcp.py --deny-submit-feedback   the plugin's PreToolUse hook: always exit 2 (blocks the call)
 
-Tools (all read-only; they wrap rag.py and read the kb files, never the network):
-  kb_search  BM25 search, like `rag.py search -u`: hits with path:line, heading, text, the cited source ids and their
-             urls, and rag.py's notes ("not found anywhere", "weak match") that mean the kb likely lacks the answer
+Tools (all read-only; they wrap rag.py and kbfacts.py and read the kb files, never the network):
+  kb_pack    the evidence pack for a question, like `rag.py pack`: a coverage verdict (good, weak, none), the best fact
+             lines grouped by article with path:line and tag, and one footer of the cited sources' urls. Call it first.
+  kb_search  BM25 search, like `rag.py search -u`: hits with path:line, heading and text, one footer of the cited
+             source ids and their urls, and rag.py's notes ("not found anywhere", "weak match")
+  kb_facts   fact lines under a path prefix, optionally only some tag kinds, like `rag.py facts`
+  kb_audit   per article: status, retrieved_utc, fact counts by tag kind, linked gap/conflict entries, like `rag.py audit`
   kb_show    lines of a kb file, like `rag.py show PATH:LINE -n N`
-  kb_source  source rows by id (legacy S123 or hash S-xxxxxxxx), with superseded_by, like `rag.py src`
+  kb_source  source rows by id (legacy S123 or hash S-xxxxxxxx), with superseded_by, like `rag.py src`; `cited`
+             adds every file line that names each id
   kb_status  how current this copy is: its commit and date, the latest census-* tag (or _census/ log), source and
              topic counts, the newest retrieved_utc
 
@@ -23,9 +28,9 @@ import contextlib, csv, io, json, os, re, subprocess, sys
 TOOLS = os.path.dirname(os.path.abspath(__file__))
 KB = os.path.dirname(TOOLS)
 sys.path.insert(0, TOOLS)
-import rag  # noqa: E402
+import rag, kbfacts  # noqa: E402
 
-NAME, VERSION = "kb", "1.0.0"
+NAME, VERSION = "kb", "1.1.0"
 MODERN = "2026-07-28"
 LEGACY = ("2025-11-25", "2025-06-18", "2025-03-26", "2024-11-05")
 SUPPORTED = [MODERN, *LEGACY]
@@ -35,14 +40,42 @@ MAX_LINES = 400
 INSTRUCTIONS = (
     "it-ops-kb: facts from official sources on Windows endpoint management (DSC v3, ConfigMgr, Intune, Autopilot, "
     "Entra ID, AD, Graph, GPO, Defender, SQL Server, Power BI, GitLab CI, Ansible, security baselines, identity, "
-    "Presidio, MCP, Claude Code, AI agents). Search with kb_search first; every fact ends in one tag: DOC (official), "
-    "DER (derived, derivation shown), COMMUNITY (non-official) or UNK (not confirmed). UNK and COMMUNITY are leads, "
-    "not answers. A 'weak match' or 'not found anywhere' note means the kb likely does not cover the question. Cite "
-    "path:line and the source url; resolve ids with kb_source; read around a hit with kb_show; kb_status tells how "
-    "current this copy is.")
+    "Presidio, MCP, Claude Code, AI agents). Call kb_pack with the question first: one call returns a coverage verdict "
+    "and the cited fact lines. coverage: good -> answer from the pack; weak -> one reworded kb_pack or one kb_show; "
+    "none -> say the kb does not cover it and add nothing from memory. Every fact ends in one tag: DOC (official), DER "
+    "(derived), COMMUNITY (non-official) or UNK (not confirmed); UNK and COMMUNITY are leads, not answers. Counts, "
+    "lists and 'which files cite X' are kb_audit, kb_facts and kb_source with cited=true, not searches. Cite path:line "
+    "and the url from the pack's sources footer.")
 
 READ_ONLY = {"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True, "openWorldHint": False}
 TOOL_LIST = [
+    {"name": "kb_pack", "title": "Evidence pack for a question",
+     "description": "Start here. Ranks the kb's fact lines for a natural-language question and returns a coverage verdict "
+                    "(good, weak, none), the best facts grouped by article with path:line and tag, and one footer of "
+                    "the cited sources' urls, within a token budget.",
+     "inputSchema": {"type": "object", "properties": {
+         "question": {"type": "string", "description": "the question as asked, or 3-10 keywords"},
+         "budget": {"type": "integer", "minimum": 200, "maximum": 6000, "default": 1200, "description": "about this many tokens"},
+         "domain": {"type": "string", "description": "limit to one domain directory, e.g. 'auth'"}},
+         "required": ["question"], "additionalProperties": False},
+     "annotations": {"title": "Evidence pack for a question", **READ_ONLY}},
+    {"name": "kb_facts", "title": "Fact lines by prefix and tag",
+     "description": "Every fact line under a path prefix (a domain like 'agents', a topic like 'auth/kerberos', or a "
+                    "file), optionally only facts carrying some tag kinds (e.g. UNK, COMMUNITY).",
+     "inputSchema": {"type": "object", "properties": {
+         "prefix": {"type": "string"},
+         "tags": {"type": "array", "items": {"type": "string", "enum": ["DOC", "DER", "COMMUNITY", "UNK"]}}},
+         "required": ["prefix"], "additionalProperties": False},
+     "annotations": {"title": "Fact lines by prefix and tag", **READ_ONLY}},
+    {"name": "kb_audit", "title": "Audit articles",
+     "description": "Per article under a prefix: status, retrieved_utc, fact counts by tag kind, and the _gaps.md and "
+                    "_conflicts.md entries linked to it (named, or via its sources). Use for counts and weak spots.",
+     "inputSchema": {"type": "object", "properties": {
+         "prefix": {"type": "string", "description": "a domain or topic path; omit for the whole kb"},
+         "status": {"type": "string", "enum": ["complete", "partial", "unknown"]},
+         "entries": {"type": "boolean", "default": False, "description": "also list the linked ledger entries"}},
+         "additionalProperties": False},
+     "annotations": {"title": "Audit articles", **READ_ONLY}},
     {"name": "kb_search", "title": "Search the kb",
      "description": "BM25 search over the kb's articles and data rows. Returns the best chunks with path:line, heading, "
                     "text, cited source ids with their urls, and notes when the match is weak or words are found nowhere.",
@@ -66,7 +99,8 @@ TOOL_LIST = [
      "description": "Rows of _sources.csv by id (legacy S123 or hash S-xxxxxxxx): url, title, publisher, licence, "
                     "retrieved_utc, version_or_date, superseded_by and the files that cite it.",
      "inputSchema": {"type": "object", "properties": {
-         "ids": {"type": "array", "items": {"type": "string"}, "minItems": 1, "maxItems": 50}},
+         "ids": {"type": "array", "items": {"type": "string"}, "minItems": 1, "maxItems": 50},
+         "cited": {"type": "boolean", "default": False, "description": "also list every file line that names each id"}},
          "required": ["ids"], "additionalProperties": False},
      "annotations": {"title": "Resolve source ids", **READ_ONLY}},
     {"name": "kb_status", "title": "kb freshness",
@@ -108,9 +142,40 @@ def kb_search(args):
     for x in hits:
         text = x["text"] if len(x["text"]) <= MAX_TEXT else x["text"][:MAX_TEXT] + " ..."
         out.append(f"\n[{x['score']}] {x['path']}:{x['line']}  § {x['heading']}\n{text}")
-        for sid, url in x.get("urls", {}).items():
-            out.append(f"  -> {sid}  {url or 'UNKNOWN id'}")
+    urls = {sid: url for x in hits for sid, url in x.get("urls", {}).items()}
+    if urls:
+        out.append("\nsources:")
+        out += [f"  -> {sid}  {url or 'UNKNOWN id'}" for sid, url in urls.items()]
     return "\n".join(out).strip()
+
+
+def kb_pack(args):
+    question = str(args.get("question") or "").strip()
+    if not question:
+        raise ToolError("question is empty")
+    budget = min(max(int(args.get("budget") or 1200), 200), 6000)
+    with guarded():
+        return kbfacts.pack(question, budget, args.get("domain") or None)["text"]
+
+
+def kb_facts(args):
+    prefix = str(args.get("prefix") or "").strip()
+    if not prefix:
+        raise ToolError("prefix is empty")
+    kinds = {str(k).upper() for k in (args.get("tags") or [])}
+    with guarded():
+        us = [u for u in kbfacts.units(prefix) if u["tags"] and (not kinds or kinds & set(kbfacts.kinds_of(u["tags"])))]
+    out = [f"{u['path']}:{u['line']}  [{'/'.join(kbfacts.kinds_of(u['tags']))}]  "
+           + (u["text"] if len(u["text"]) <= 300 else u["text"][:300] + " ...") for u in us[:400]]
+    return "\n".join(out + [f"facts={len(us)}" + (" (first 400 shown)" if len(us) > 400 else "")])
+
+
+def kb_audit(args):
+    with guarded():
+        rows = kbfacts.audit(args.get("prefix") or None, args.get("status") or None)
+    if not rows:
+        raise ToolError("no article matches")
+    return rag.format_audit(rows, bool(args.get("entries")))
 
 
 def kb_show(args):
@@ -146,6 +211,7 @@ def kb_source(args):
         raise ToolError("ids is empty")
     with guarded():
         rows = rag.sources(ids[:50])
+        cited = kbfacts.cited_lines([r["id"] for r in rows]) if args.get("cited") else {}
     out = []
     for r in rows:
         if "url" not in r:
@@ -155,7 +221,8 @@ def kb_source(args):
                    f"licence: {r.get('licence', '')}\n  retrieved_utc: {r.get('retrieved_utc', '')}; "
                    f"version_or_date: {r.get('version_or_date', '')}"
                    + (f"\n  superseded by: {r['superseded_by']}" if (r.get("superseded_by") or "").strip() else "")
-                   + (f"\n  used in: {r['used_in'].replace(';', ', ')}" if r.get("used_in") else ""))
+                   + (f"\n  used in: {r['used_in'].replace(';', ', ')}" if r.get("used_in") else "")
+                   + ("\n" + rag.format_cited(cited.get(r["id"], [])) if args.get("cited") else ""))
     return "\n".join(out)
 
 
@@ -212,7 +279,7 @@ def kb_status(_args):
     return "\n".join(f"{k}: {v}" for k, v in status().items())
 
 
-HANDLERS = {"kb_search": kb_search, "kb_show": kb_show, "kb_source": kb_source, "kb_status": kb_status}
+HANDLERS = {"kb_pack": kb_pack, "kb_facts": kb_facts, "kb_audit": kb_audit, "kb_search": kb_search, "kb_show": kb_show, "kb_source": kb_source, "kb_status": kb_status}
 
 
 # ---------------------------------------------------------------- protocol

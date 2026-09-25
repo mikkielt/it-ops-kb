@@ -9,6 +9,8 @@ argument-hint: "[path prefixes to limit the contract checks, e.g. auth dsc/what-
 
 Report only: change no file, even to fix a finding.
 
+Read `MAINTAINING.md` first: the content rules, tools, git workflow and commit rules this skill relies on (`AGENTS.md` covers lookups only).
+
 Run each command on its own (no `;`, `&&`, pipes into other tools or loops): the shared permission rules match single commands, so a chained command asks for approval or is refused in a headless run.
 
 ## 1. Run

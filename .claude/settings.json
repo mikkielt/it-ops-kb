@@ -14,6 +14,7 @@
       "mcp__mcp-docs__search_model_context_protocol",
       "mcp__mcp-docs__query_docs_filesystem_model_context_protocol",
       "Bash(python3 _tools/rag.py *)",
+      "Bash(python3 _tools/kb_hook.py *)",
       "Bash(python3 _tools/check.py)",
       "Bash(python3 _tools/fetch.py --offline)",
       "Bash(python3 _tools/fetch.py --status *)",
@@ -33,6 +34,16 @@
           {
             "type": "command",
             "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/session-start.sh"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/_tools/kb_hook.py\""
           }
         ]
       }

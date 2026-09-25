@@ -9,6 +9,8 @@ argument-hint: "[YYYY-MM-DD, default today] [--resume]"
 
 Census date: the argument, else today (`YYYY-MM-DD`). `--resume`: continue from the existing `_census/<date>.csv` (skip phases done: its `outcome` column shows what phase 2 already read).
 
+Read `MAINTAINING.md` first: the content rules, tools, git workflow and commit rules this skill relies on (`AGENTS.md` covers lookups only).
+
 Run each command on its own (no `;`, `&&`, pipes into other tools or loops): the shared permission rules match single commands.
 
 Rules that hold throughout:
@@ -32,9 +34,9 @@ Scope: every row whose bucket is not OK and whose note is not `blocked`.
    > For each source: read it in full as it is now (for a pinned file, `git -C _cache/census/repos/<repo>.git show <tip>:<path>` and `git diff <pin> <tip> -- <path>`; for a page, fetch it; for Learn, microsoft_docs_fetch). Then check every fact in your files that cites it (`grep -n <id>`).
    > - All facts still hold: outcome `confirmed`.
    > - A fact changed: rewrite it from the new text (same tag). A live page: keep the id, outcome `updated`. A pinned file or release: propose a new row for the new pinned url (id from `python3 _tools/kbid.py url <URL>`), re-point the facts you re-verified, outcome `superseded` with the new id in the note.
-   > - Gone or withdrawn: mark the facts `[UNK]`, outcome `gone`, and give a `_gaps.md` bullet (what, where you looked).
+   > - Gone or withdrawn: mark the facts `[UNK]`, outcome `gone`, and give a `_gaps.md` bullet (what, where you looked, ending `(topic: <domain>/<slug>)`).
    > - Cannot read it: outcome `unconfirmed` with the reason; change nothing.
-   > - Sources that now disagree with a kb fact you cannot settle: give a `_conflicts.md` bullet.
+   > - Sources that now disagree with a kb fact you cannot settle: give a `_conflicts.md` bullet ending `(topic: <domain>/<slug>)`.
    > Update each edited article's `sources:` header and `status`. Do not touch `_sources.csv`, `_gaps.md`, `_conflicts.md`, the index or any file outside your list, and do not commit. Facts in foreign files that need an edit: describe them.
    > Return JSON only: {"outcomes": [{"id", "outcome", "note"}], "new_rows": [{all _sources.csv columns}], "superseded": {"old id": "new id"}, "gaps": [{"topic", "text"}], "conflicts": [{"topic", "text"}], "foreign_edits": [{"file", "line", "change"}]}.
 3. Apply the results yourself, one group at a time: append `new_rows` to `_sources.csv` with a CSV writer (`retrieved_utc` = the census date), set `superseded_by` on the old rows, add the gap and conflict bullets under the topic headings, make the foreign edits, then `python3 _tools/census.py record _census/<date>.csv --from <outcomes.json>`.
