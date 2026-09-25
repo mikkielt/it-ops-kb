@@ -294,6 +294,16 @@ class Lookup(unittest.TestCase):
         self.assertFalse(bad, f"signals.csv names topics that do not exist: {bad}")
         for r in csv.DictReader(open(os.path.join(TOOLS, "aliases.csv"), encoding="utf-8")):
             self.assertEqual(r["term"], r["term"].lower().strip(), "aliases.csv terms are lowercase")
+        self.assertTrue({"last", "sign", "npi"} <= set(kbfacts.terms("approximateLastSignInDateTime US_NPI")),
+                        "compound identifiers are also indexed as their parts")
+        self.assertNotIn("npi", kbfacts.key_terms("US_NPI"), "parts never count as key words")
+        us = kbfacts.corpus()
+        self.assertTrue(any(u.get("code") for u in us), "fenced code blocks are searchable")
+        self.assertTrue(any(not u["tags"] and u["path"].endswith(".csv") for u in us), "untagged data rows are searchable")
+        self.assertEqual(len(kbfacts.units("ad/ldap-paging-filters")), len([u for u in kbfacts.units("ad/ldap-paging-filters") if u["tags"]]),
+                         "fact counts (units) never include untagged content")
+        clipped = kbfacts.clip("x " * 300 + "[DOC S100]", 420)
+        self.assertTrue(clipped.endswith("[DOC S100]"), "a cut fact keeps its tag visible")
         extra, variants = kbfacts.expand("SCCM AdminService")
         self.assertIn("configmgr", extra)
         self.assertNotIn("configmgr", kbfacts.key_terms("SCCM AdminService"), "an expansion is never a key word")

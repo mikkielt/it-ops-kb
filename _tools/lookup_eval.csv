@@ -26,3 +26,13 @@ E24,SCCM AdminService Kerberos,mecm/adminservice.md;auth/kerberos.md,good,
 E25,Azure AD PIM groups writeback,auth/entra-intune-rbac.md,good,
 E26,MEMCM CMPivot query timeout,mecm/cmpivot.md,good,
 E27,AAD device delete BitLocker keys,entra/bitlocker-key-deletion.md,good,
+E28,Graph beta device property isManagementRestricted type,graph/csdl-device.properties.csv,good,yes
+E29,is the US NPI recognizer in Presidio enabled by default,privacy/presidio-entities.md;privacy/presidio-entities.csv,good,yes
+E30,registry setting to hide Defender AV exclusions from local users,security/settings-crosswalk.csv,good,yes
+E31,BitLocker policy to block new DMA devices while the PC is locked,security/settings-crosswalk.csv,good,yes
+E32,dsregcmd what does Credential Type mean in the SSO state section,entra/dsregcmd-fields.csv,good,yes
+E33,How does Okta SCIM provisioning map groups to application roles?,,weak,
+E34,Which Terraform azurerm resource creates a Log Analytics workspace?,,weak,
+E35,can you filter or sort Entra devices by last sign-in date,graph/csdl-device.md,good,yes
+E36,is there a Microsoft security baseline setting for PowerShell script block invocation logging?,security/settings-crosswalk.csv,good,yes
+E37,AWX license and latest release info,prior-art/projects.csv,good,yes

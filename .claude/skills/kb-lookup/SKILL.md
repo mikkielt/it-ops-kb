@@ -19,7 +19,7 @@ Read-only. The `kb` tools hold documentation facts, not live device or directory
    - Fact lines by tag: `kb_facts` (`rag.py facts PREFIX --tag UNK,COMMUNITY`).
    - Who cites a source: `kb_source` with `cited` = true (`rag.py src S123 --cited`).
    - These return `concise` output (no urls); pass `response_format` = `detailed` (`--format detailed`) when the answer needs the full text or urls.
-3. **Weigh the tags.** `DOC` is official. `DER` is derived, with the derivation shown. `COMMUNITY` and `UNK` are leads, never the answer by themselves: say so. An article with `status: partial` has known gaps.
+3. **Weigh the tags.** `DOC` is official. `DER` is derived, with the derivation shown. `COMMUNITY` and `UNK` are leads, never the answer by themselves: say so. A line marked `(no tag)` is untagged reference data or summary from the article: usable, cited by `path:line`, but say it carries no tag. An article with `status: partial` has known gaps.
 4. **Answer.**
    - Lead with the answer.
    - Then the supporting facts, each with `path:line`, tag and source url (from the pack's `sources:` footer; `kb_source` only for ids not in it).

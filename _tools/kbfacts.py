@@ -148,17 +148,25 @@ def topic_files():
 
 # ---------------------------------------------------------------- fact units
 
-def md_units(rel, text):
-    """Fact units of one article: bullets (with continuation lines), table rows and tagged paragraph lines."""
+def md_units(rel, text, untagged=False):
+    """Fact units of one article: bullets (with continuation lines), table rows and tagged paragraph lines. With
+    `untagged`, also the bullets and table rows that carry no tag (Summary, Reference and Examples content; table
+    header and separator rows excluded) and each fenced code block as one unit (line = its first line), with
+    tags=[]: pack searches them, fact counts never include them."""
     lines = text.splitlines()
     body = lines.index("---", 1) + 1 if lines[:1] == ["---"] and "---" in lines[1:] else 0
-    section, cur, fenced = "", None, False
+    section, cur, fenced, block = "", None, False, None
     units = []
 
     def flush():
         if cur and TAG.search(cur["text"]):
             cur["tags"] = tags_in(cur["text"])
             units.append(cur)
+        elif cur and untagged and cur.get("list") and not re.fullmatch(r"\|[\s:|-]*\|?", cur["text"]):
+            nxt = lines[cur["line"]] if cur["line"] < len(lines) else ""
+            if not (cur["text"].startswith("|") and re.fullmatch(r"\s*\|[\s:|-]+\|?\s*", nxt)):  # a header row
+                cur["tags"] = []
+                units.append(cur)
 
     for n, ln in enumerate(lines, start=1):
         if n <= body:
@@ -166,7 +174,14 @@ def md_units(rel, text):
         s = ln.strip()
         if s.startswith(("```", "~~~")):
             fenced = not fenced
+            if fenced:
+                block = {"path": rel, "line": n + 1, "section": section, "text": "", "tags": [], "code": True}
+            elif untagged and block["text"].strip():
+                block["text"] = block["text"].strip()
+                units.append(block)
+            continue
         if fenced:
+            block["text"] += " " + s
             continue
         if ln.startswith("#"):
             flush()
@@ -175,7 +190,7 @@ def md_units(rel, text):
             continue
         if re.match(r"\s*[-*] ", ln) or s.startswith("|"):
             flush()
-            cur = {"path": rel, "line": n, "section": section, "text": s[2:] if not s.startswith("|") else s}
+            cur = {"path": rel, "line": n, "section": section, "text": s[2:] if not s.startswith("|") else s, "list": True}
             if s.startswith("|"):
                 flush()
                 cur = None
@@ -220,8 +235,9 @@ def in_prefix(rel, prefix):
     return rel == p or rel.startswith(p + "/") or ("/" in p and rel.startswith(p))
 
 
-def units(prefix=None, with_csv=True):
-    """Every fact unit under a path prefix (`auth`, `auth/kerberos`, `auth/kerberos.md`)."""
+def units(prefix=None, with_csv=True, untagged=False):
+    """Every fact unit under a path prefix (`auth`, `auth/kerberos`, `auth/kerberos.md`); `untagged` adds the
+    untagged bullets and table rows of articles (csv rows are always all included, tagged or not)."""
     out = []
     exts = (".md", ".csv") if with_csv else (".md",)
     for rel in kb_files(exts):
@@ -232,7 +248,7 @@ def units(prefix=None, with_csv=True):
             continue
         if rel.endswith(".md"):
             if is_article(text):
-                out += md_units(rel, text)
+                out += md_units(rel, text, untagged)
         elif with_csv:
             out += csv_units(rel, text)
     return out
@@ -357,11 +373,19 @@ def key_terms(text):
     return [stem(t) for t in WORD.findall(text.lower()) if t not in STOP and len(t) > 1]
 
 
-def terms(text):
+CAMEL = re.compile(r"[A-Z]+(?=[A-Z][a-z])|[A-Z]?[a-z]+|[A-Z]+|\d+")
+
+
+def terms(text, camel=True):
+    """Stems of the words, plus the parts of compounds: hyphen/dot parts (what-if -> what, if) and identifier parts
+    (approximateLastSignInDateTime -> approximate, last, sign, in, date, time; US_NPI -> us, npi)."""
     out = []
-    for t in WORD.findall(text.lower()):
+    for w in WORD.findall(text):
+        t = w.lower()
         parts = [t] + ([p for p in re.split(r"[.\-]", t) if p] if ("-" in t or "." in t) else [])
-        out += [stem(p) for p in parts if p not in STOP and len(p) > 1]
+        if camel and ("_" in w or re.search(r"[a-z][A-Z]", w)):
+            parts += [p.lower() for seg in re.split(r"[_.\-]", w) for p in CAMEL.findall(seg)]
+        out += [stem(p) for p in dict.fromkeys(parts) if p not in STOP and len(p) > 1]
     return out
 
 
@@ -369,6 +393,8 @@ ALIASES = os.path.join(TOOLS, "aliases.csv")
 ALIAS_WEIGHT = 0.5  # an alias the question did not use counts half as much as a word it did
 TITLE_WEIGHT = 2    # the article title counts twice in each of its units
 SUMMARY_WEIGHT = 0.1  # the article's Summary text is indexed into each of its units at this weight
+PART_WEIGHT = 0.2  # a part of a compound identifier the question used (US_NPI -> npi): helps, never dominates
+UNTAGGED_WEIGHT = 0.8  # an untagged row or line (reference data, Summary, Examples) ranks below a tagged fact
 
 
 def aliases():
@@ -426,7 +452,7 @@ def summary_text(rel):
 
 def _corpus(domain):
     metas = articles()
-    us = [u for u in units(domain) if u["tags"] or u["path"].endswith(".md")]
+    us = units(domain, untagged=True)  # untagged rows and lines too: a word the kb has is never "not in the kb"
     summaries = {}
     for u in us:
         art = u["path"] if u["path"] in metas else u["path"][:-4] + ".md"
@@ -448,17 +474,24 @@ def _corpus(domain):
 def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", footer=True):
     """Rank fact units for a question and return {verdict, missing, weak_words, groups, sources, text}.
 
-    verdict (counted on whole query words, not hyphen parts): `none` when a third or more of the named words
-    (with a capital or a digit: products, ids) or half or more of the informative words occur nowhere in the kb, or
-    the best article matches under a third of the known ones; `weak` under 60% (or any named word missing); else
-    `good`. A word that is a product alias (_tools/aliases.csv) counts as present where any alias of the product is;
+    The corpus is every fact unit plus the untagged bullets, table rows and data rows (Summary, Reference, Examples,
+    untagged csv rows), which rank at UNTAGGED_WEIGHT and print with `(no tag)`: a word the kb has anywhere is never
+    reported as "not in the kb".
+
+    verdict (counted on whole query words, not hyphen parts), on the top-ranked article that matches the most key
+    words: `none` when a third or more of the named words (with a capital or a digit: products, ids) occur nowhere in
+    the kb (unless it is one name among 75%+ matched words, like AV or PC), when half or more of the informative
+    words occur nowhere, or when that article matches under a third of the known ones; `good` when a tagged-fact
+    article matches 60% or more (80% if some word is unknown), no named word is missing, and every informative name
+    appears in a top-ranked tagged fact; else `weak`. Untagged content alone never makes a question `good`. A word that is a product alias (_tools/aliases.csv) counts as present where any alias of the product is;
     the other aliases rank at a lower weight but never count as key words. `budget` is in tokens (about 3.5
     characters each) and bounds the text. fmt `concise` drops the article flags and the source url footer;
     footer=False leaves the footer out of the text (pack_many prints one shared footer)."""
     us = corpus(domain)
     q = sorted(set(terms(question)))
     extra, variants = expand(question)
-    weight = {**extra, **{t: 1.0 for t in q}}
+    whole = set(terms(question, camel=False))
+    weight = {**extra, **{t: 1.0 if t in whole else PART_WEIGHT for t in q}}
     df = Counter(t for u in us for t in u["own"] if t in weight)
     n = max(len(us), 1)
     avg = sum(u["len"] for u in us) / n
@@ -481,6 +514,8 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
         if s:
             if u["section"].startswith("Summary"):
                 s *= 1.15
+            if not u["tags"]:
+                s *= UNTAGGED_WEIGHT
             scored.append((s, u))
     scored.sort(key=lambda x: -x[0])
     # verdict: named words (product names, ids: a capital or a digit, not the question's first word) that the kb
@@ -490,13 +525,24 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
     named = {t for t in named if t in kdf}
     named_missing = sorted(t for t in named if not kdf[t])
     known = [t for t in informative if kdf[t]]
-    best_art = scored[0][1]["path"] if scored else None
-    hit = {t for s_, u in scored[:40] if u["path"] == best_art for t in known if has(u, t)}
+    # the verdict counts the key words of the top-ranked article (among the first 40 units) that matches the most
+    # `good` needs tagged facts; untagged rows and lines (reference data, Summary, Examples) can lift a question
+    # from `none` to `weak` but never to `good`, since a list row that merely names a product is no answer
+    arts_hit, arts_fact = defaultdict(set), defaultdict(set)
+    for s_, u in scored[:40]:
+        words = {t for t in known if has(u, t)}
+        arts_hit[u["path"]] |= words
+        if u["tags"]:
+            arts_fact[u["path"]] |= words
+    hit = max(arts_hit.values(), key=len, default=set())
+    fact_hit = max(arts_fact.values(), key=len, default=set())
     share = len(hit) / len(known) if known else 0.0
-    if not scored or (named and len(named_missing) * 3 >= len(named)) or (informative and len(missing) * 2 >= len(informative)):
+    fact_share = len(fact_hit) / len(known) if known else 0.0
+    lone_name = len(named_missing) == 1 and share >= 0.75  # one unknown abbreviation (AV, PC) among well-matched words
+    if not scored or (named and len(named_missing) * 3 >= len(named) and not lone_name) or (informative and len(missing) * 2 >= len(informative)):
         verdict = "none"
-    elif share >= 0.6 and not named_missing:
-        verdict = "good"
+    elif fact_share >= 0.6 and not named_missing and (not missing or fact_share >= 0.8) and not (named & set(known)) - set().union(*arts_fact.values()):
+        verdict = "good"  # and every informative name the question uses (Okta, SCIM) is in a top-ranked fact
     elif share >= 0.34:
         verdict = "weak"
     else:
@@ -517,8 +563,8 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
         items, picked = [], sorted(sorted((x for x in by_art[art] if x[0] >= 0.4 * best), key=lambda x: -x[0])[:6],
                                    key=lambda x: x[1]["line"])
         for s, u in picked:
-            text = u["text"] if len(u["text"]) <= 420 else u["text"][:420].rsplit(" ", 1)[0] + " ..."
-            line = f"- {u['path']}:{u['line']} {text}"
+            text = clip(u["text"], 420)
+            line = f"- {u['path']}:{u['line']} {text}" + ("" if u["tags"] else " (no tag)")
             new_ids = [i for p in u["tags"] for i in p["ids"]] + ID.findall(text)
             cost = len(line) + url_cost * len(set(new_ids) - set(cited))
             if used + cost > limit and (items or groups):
@@ -528,6 +574,9 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
             used += cost
             cited += new_ids
         if items:
+            more = sum(1 for x in scored if x[1]["path"] == art and x[0] >= 0.4 * best) - len(items)
+            if more > 0:  # e.g. hundreds of similar rows in a data file: the answer may be one of these
+                items.append(f"  (+{more} more matching lines in {art}: kb_search with more words, or kb_show)")
             meta = articles().get(art, {})
             head = f"## {art}" + (f"  {meta.get('title', '')}" if meta else "")
             flags = ", ".join(filter(None, (meta.get("status"), f"retrieved {meta['retrieved_utc']}" if meta.get("retrieved_utc") else "")))
@@ -560,6 +609,15 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
     return {"verdict": verdict, "missing": missing, "matched": sorted(hit), "informative": informative, "known": known,
             "paths": paths, "sources": [s[0] for s in srcs], "source_rows": srcs,
             "text": "\n".join(out)}
+
+
+def clip(text, n):
+    """Cut a fact at about n characters, keeping its tags visible: `start ... [DOC S1]`."""
+    if len(text) <= n:
+        return text
+    head = text[:n].rsplit(" ", 1)[0]
+    tags = [m.group(0) for m in TAG.finditer(text) if m.end() > len(head)]  # tags cut off, straddling ones included
+    return head + " ..." + ("" if TAG.search(head) or not tags else " " + " ".join(tags))
 
 
 def format_sources(srcs):

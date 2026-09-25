@@ -287,3 +287,57 @@ The T1 hypothesis (under 10k, against 50k for a general-purpose agent in the 202
 ### Watch
 - `kb_pack`'s always-on schema (456 tokens) could be trimmed if more tools become always loaded.
 - `claude plugin details` undercounts plugins like this one; use `/context`.
+
+## Retrieval quality audit (2026-09-25)
+
+Checked how well `pack` finds what the kb actually holds, beyond the eval set:
+- keyword probes built from 844 sampled units (tagged facts, untagged csv rows, untagged Summary, Reference and Examples lines);
+- 72 natural-language questions written blind by a subagent from item text alone;
+- 20 near-domain questions the kb does not cover;
+- truncation;
+- the same probes on the pre-plan commit `20607d4`.
+
+### Found (all but the concise cut predate the token plan)
+- **Untagged content was invisible to `pack`.** `pack` indexed only units carrying a `[TAG]`, so 36% of article content lines were never searched: Summary, Reference tables, Examples, and 815 of 2649 csv rows (Graph CSDL properties, Presidio entities, dsregcmd fields). `pack` returned those lines 0% of the time; `search` found 82-100%.
+- **False "not in the kb".** Words present only in untagged content (`isManagementRestricted`, `NPI`, `profileType`) were reported as "not in the kb". The verdict then told the model to add nothing from memory: 11% of blind questions on tagged facts and 30% on untagged content got `none`.
+- **Verdict rules.**
+  - One unknown abbreviation (`AV`, `PC`) vetoed an otherwise well-matched question.
+  - The verdict looked only at the top-scored article.
+- **Truncation.**
+  - The 420-character cut dropped the tag of 180 facts.
+  - Concise `kb_facts` cuts 64% of lines at 160 characters.
+- **Vocabulary mismatch.** Compound identifiers were not split (`approximateLastSignInDateTime` vs "last sign-in"), and spelling variants did not match (license/licence, IE/Internet Explorer).
+
+### Changed
+- **Corpus:** untagged bullets, table rows, csv rows and fenced code blocks, ranked at 0.8 and shown as `(no tag)`.
+- **Verdict:**
+  - untagged content can lift a question from `none` to `weak`, never to `good`;
+  - `good` needs tagged facts at 60% of the key words (80% when a word is unknown), and every informative name in a top-ranked fact;
+  - a lone unknown name among 75% or more matched words is `weak`;
+  - the verdict uses the top-ranked article that matches the most key words.
+- **Tokens:** compound identifiers are also indexed as their parts, at query weight 0.2. New aliases: license/licence, IE/Internet Explorer.
+- **Output:**
+  - a cut fact keeps its tags;
+  - fact listings say how many lines were cut and how to get the full text;
+  - a pack names how many more matching lines a file has.
+- **Eval set:** 37 questions, including E28-E37 from these findings.
+
+### Results
+
+| | before | after |
+|---|---|---|
+| untagged content, line in pack (keyword probes) | 0% | 84-100% |
+| blind questions, line in pack | 36/72 (`20607d4`) | 68/72 (94%) |
+| blind questions, false `none` | 11% tagged, 30% untagged | 0% |
+| off-kb questions answered `good` | 3/20 | 2/20 |
+| cut facts with no visible tag | 180 | 0 |
+| code blocks retrievable | 0/44 | 44/44 |
+
+### Tried and rejected
+- **RM3-style query expansion from the top hits:** line recall 48-61/72 and 1-4 eval regressions. The expansion terms drift off-topic.
+- **Case-sensitive name matching:** no gain, and 2 eval regressions. The kb really does say "Claude for **Teams**".
+- **An instruction to stop after one weak pack when the missing words are the subject:** it saved a turn on Okta but made the model give up on the NPI question, whose answer came in the second pack.
+
+### Left, and how it is handled
+- **Adjacent unanswerable questions** (Teams shared-channel size, SharePoint upload limit) match related facts. Retrieval scores cannot separate these, a known limit of answerability signals. In fresh sessions the model read the pack and said the kb does not cover them, at the cost of one extra lookup.
+- **Pure paraphrase** ("required keyword" vs "needs at least one"): only document expansion (doc2query) addresses it; a pilot follows.

@@ -25,7 +25,8 @@
 
 --format concise|detailed: pack defaults to detailed (answers need the urls); facts, audit and search to concise
 (facts grouped by file with a short tag and text, no url footer). Words that are product aliases
-(_tools/aliases.csv: sccm, memcm, configmgr, ...) also match the product's other names.
+(_tools/aliases.csv: sccm, memcm, configmgr, ...) also match the product's other names. pack also searches untagged
+Summary, Reference and Examples lines and untagged data rows, printed with `(no tag)`; they never make it `good`.
 
 Add --json (before the command) for machine output. artifacts/ directories are not indexed. search skips the
 root-level index files (README.md, _answers.md, _gaps.md, _conflicts.md, _coverage.csv, ...) unless --index.
@@ -234,19 +235,23 @@ def short_tag(parts):
 def format_facts(us, fmt="concise", limit=400):
     """Fact lines. detailed: `path:line  [KINDS]  text` (300 characters). concise: grouped by file, `  LINE [tag] text`
     with the tags moved to the front and the text cut at 160 characters."""
-    out, last = [], None
+    out, last, cut = [], None, 0
     for u in us[:limit]:
         if fmt == "detailed":
-            text = u["text"] if len(u["text"]) <= 300 else u["text"][:300] + " ..."
+            text = kbfacts.clip(u["text"], 300)
+            cut += text != u["text"]
             out.append(f"{u['path']}:{u['line']}  [{'/'.join(kbfacts.kinds_of(u['tags']))}]  {text}")
             continue
         if u["path"] != last:
             out.append(u["path"])
             last = u["path"]
-        text = " ".join(kbfacts.TAG.sub("", u["text"]).split())
-        text = text if len(text) <= 160 else text[:160].rsplit(" ", 1)[0] + " ..."
+        full = " ".join(kbfacts.TAG.sub("", u["text"]).split())
+        text = full if len(full) <= 160 else full[:160].rsplit(" ", 1)[0] + " ..."
+        cut += text != full
         out.append(f"  {u['line']} [{short_tag(u['tags'])}] {text}")
-    return "\n".join(out + [f"facts={len(us)}" + (f" (first {limit} shown)" if len(us) > limit else "")])
+    return "\n".join(out + [f"facts={len(us)}" + (f" (first {limit} shown)" if len(us) > limit else "")
+                            + (f"; {cut} cut at {300 if fmt == 'detailed' else 160} characters (' ...'): kb_show PATH:LINE (in a clone: "
+                               f"rag.py show) for the full text" if cut else "")])
 
 
 def format_hits(hits, fmt="concise"):

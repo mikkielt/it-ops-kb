@@ -73,6 +73,7 @@ Not done here:
 - **Review:** `/kb-review-workspace` found all five planted problems in the test host, each with the host line and the kb citation.
 - **Fixed on the way:** the kb server lacked `resultType` (MCP 2026-07-28), so no kb tool loaded from the plugin.
 - **Not done:** an install from gitlab.com itself (see section 2) and a push to GitLab `main`.
+- **Retrieval audit done** (`token-usage-report.md`, "Retrieval quality audit"): untagged content and code blocks are searchable now, there is no false `none` on the blind questions, and line recall is 94%.
 
 Earlier; see `token-usage-report.md`, "Re-measurement after the changes":
 - The six measured questions in fresh sessions: -74% input tokens, -72% output tokens, 351 -> 118 s.
