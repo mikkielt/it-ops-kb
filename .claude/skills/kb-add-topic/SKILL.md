@@ -9,6 +9,8 @@ argument-hint: "<domain>/<topic-slug> and what it should cover"
 
 Request: $ARGUMENTS. If the domain, slug or scope is unclear, ask before researching.
 
+Run each command on its own (no `;`, `&&`, pipes into other tools or loops): the shared permission rules match single commands, so a chained command asks for approval or is refused in a headless run.
+
 ## 1. Avoid duplicates
 - `python3 _tools/rag.py search "<key terms>" -k 10` and `python3 _tools/rag.py topics <domain>`.
 - If an existing topic covers it, propose extending that topic instead, and stop until the user decides.
@@ -24,6 +26,13 @@ Request: $ARGUMENTS. If the domain, slug or scope is unclear, ask before researc
 Append rows to `_sources.csv`: `id,url,title,publisher,licence,retrieved_utc,version_or_date,artifact_sha256,used_in`.
 - Next id: one above the highest existing `S` number. Never reuse an id. Reuse the existing id if the url is already there.
 - `retrieved_utc` is today (`YYYY-MM-DD`). `used_in` lists the new files, separated by `;`.
+- `licence`, by source type (reuse an existing row's wording for the same publisher when there is one):
+  - Microsoft Learn page (incl. fetched through the MCP server): `Microsoft Learn terms of use (paraphrased; quote <=25 words)`
+  - MicrosoftDocs GitHub file at a commit: the repo's licence, usually `CC BY 4.0 (MicrosoftDocs prose)`
+  - Anthropic docs: `Anthropic docs (summarize; quote <=25 words)`
+  - Open-source repo or spec: its SPDX id (`MIT`, `Apache-2.0`, ...)
+  - Anything else: `not verified (summarized only)`
+- `version_or_date`: the page's own version or date when shown (`ms.date`, release tag), else `retrieved <date>`.
 - Write the CSV with Python's `csv` module (or quote every field that contains a comma). An unquoted comma breaks the row and `check.py` rejects it.
 
 ## 4. Write `<domain>/<slug>.md`
@@ -50,9 +59,10 @@ status: complete|partial|unknown
 - Placeholders only: `PL-LT-00123`, `PL-SRV-0042`, `corp.example.com`, tenant `00000000-0000-0000-0000-000000000000`, `jan.kowalski`.
 - Large tables go in `<domain>/<slug>.csv` beside the article.
 - `status: partial` when anything is `UNK`.
+- `priority`: the research order, not importance (see README). A new topic gets the priority the user gives, else `P3`.
 
 ## 5. Register and log
-- Add a row to `_coverage.csv` (`topic,priority,status,files,n_sources`) and the same row to the README coverage table, keeping their order.
+- Add a row to `_coverage.csv` (`topic,priority,status,files,n_sources`) and the same row to the README coverage table. Both are ordered by domain, then priority, then topic id; insert at that position. `n_sources` is the number of ids in the article's `sources:` header.
 - Failed lookups go to `_gaps.md` (what, where you looked). Disagreements go to `_conflicts.md` with both sources.
 
 ## 6. Check and report

@@ -1,6 +1,6 @@
 # Answers to open research questions
 
-Each answer bullet carries one tag and source ids. `QA` sections answer auth questions, `QS` security questions, `QR` architecture questions, `QG` agentic-tooling questions. `R` sections are reuse verdicts (evidence in `reuse/`).
+Each answer bullet carries one tag and source ids. `QA` sections answer auth questions, `QS` security questions, `QR` architecture questions, `QG` agentic-tooling questions. `QK` questions researched with the `/kb-research` skill. `R` sections are reuse verdicts (evidence in `reuse/`).
 
 ## Q1. Officially documented `SMS_ClientOperation` Type values for machine policy, hardware inventory, app evaluation and software-update evaluation.
 - The SDK method `InitiateClientOperation(Type, TargetCollectionID, RandomizationWindow, TargetResourceIDs[])` documents `Type` only as "Type", with no value table. [DOC S329]

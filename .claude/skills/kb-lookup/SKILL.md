@@ -7,8 +7,11 @@ description: Answer a question from the it-ops-kb knowledge base with cited sour
 
 Read-only: change no file.
 
+Run each command on its own (no `;`, `&&`, pipes into other tools or loops): the shared permission rules match single commands, so a chained command asks for approval or is refused in a headless run.
+
 ## 1. Search the kb first
 - `python3 _tools/rag.py search "<3-8 keywords>" -k 8 -u` returns chunks with `path:line`, the heading, the text and the source urls of each cited id.
+- Watch the `note:` lines on stderr: "not found anywhere" means those words are in no kb file; "weak match" means the top hit misses most of the query. Either one means the kb likely does not cover the question: say so, do not stretch a loosely related hit into an answer.
 - Narrow with `-d <domain>` (e.g. `-d auth`), and try a synonym or the product's own term if the first query misses. `python3 _tools/rag.py topics [DOMAIN]` lists articles.
 - The search leaves out root files. Add `--index` to include `_answers.md` (research answers with evidence), `_gaps.md` and `_conflicts.md` when the question is about open items or disagreements.
 - Read around a hit before quoting it: `python3 _tools/rag.py show <path>:<line> -n 30`.

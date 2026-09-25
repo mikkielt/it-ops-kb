@@ -29,7 +29,7 @@ Run `/kb-setup` (Claude Code), or do the same by hand:
    - Other agents (not Claude Code): register the same three urls as streamable-HTTP MCP servers in your client.
    - Optional, per user: GitHub's read-only repository server needs a personal token. Add it at user scope, never in a repo file:
      `claude mcp add --scope user --transport http github-repos-ro https://api.githubcopilot.com/mcp/x/repos/readonly --header "Authorization: Bearer $GITHUB_PAT"`
-4. **Do not** run `python3 _tools/fetch.py --diff` over the whole kb as part of setup: it is a long network job that writes `_fetch_state.csv`. Creating a first baseline is the maintainer's decision.
+4. **Do not** run `python3 _tools/fetch.py --diff` over the whole kb as part of setup: it is a long network job that writes `_fetch_state.csv`. A whole-kb baseline is the maintainer's decision; a targeted `--diff` from `/kb-refresh` is committed with that refresh.
 
 ## Tools
 
@@ -49,6 +49,7 @@ Run `/kb-setup` (Claude Code), or do the same by hand:
 
 - `/kb-setup`: the setup above, with a pass/fail report.
 - `/kb-lookup`: answer from the kb with citations; Claude may invoke it on its own.
+- `/kb-research <question>`: research a question in the context of the topics the kb already has, then extend them.
 - `/kb-refresh <topic|dir|file|S-id>`: diff sources and update the facts.
 - `/kb-add-topic <domain>/<slug>`: research and write a new topic.
 - `/kb-verify [prefixes]`: quality gate before a commit or merge request.
@@ -68,5 +69,6 @@ Run `/kb-setup` (Claude Code), or do the same by hand:
 - Never call a docs server's `submit_feedback` tool (denied in settings): it posts text outside the repo.
 - Do not edit files listed in `_artifacts.csv` by hand; they are pinned by sha256 (`fetch.py --refresh` rewrites them).
 - `_cache/` and `_private/` are local only; never commit them. Never add tenant ids, object ids, real hostnames, addresses or tokens; the CI leak scan fails on them. Add a value to `_tools/tests_allowlist.txt` only when it is public or a placeholder, with the reason.
-- Before proposing a commit: `python3 _tools/tests.py` passes (CI runs it), `stress_test.py` passes if `_tools/` changed, and `/kb-verify` shows no new errors in the files you touched.
+- Run shell commands one at a time: the shared permission rules match single commands, so `a; b`, `a && b` and loops need approval (or are refused in headless runs).
+- Before proposing a commit: `python3 _tools/tests.py` passes (CI runs it; lint errors in `_tools/lint_baseline.txt` are known debt, new ones fail), `stress_test.py` passes if `_tools/` changed, and `/kb-verify` shows no new errors in the files you touched.
 - Commit messages: conventional prefix (`docs(kb):`, `fix(kb):`, `feat(kb):`, `chore:`), imperative, body explaining why. Commit only when asked.

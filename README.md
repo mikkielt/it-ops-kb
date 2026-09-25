@@ -18,7 +18,7 @@ Domains: Microsoft DSC v3, ConfigMgr (MECM), Intune, Autopilot, Entra ID, Active
 - `_coverage.csv` is the coverage index, also rendered below.
 - `_fetch_state.csv` records, per source, when `fetch.py --diff` last checked and fetched it, when it last changed, and the hashes compared. Text snapshots of the last fetch sit in `_cache/snapshots/` (not committed).
 - `_tools/` holds stdlib-only Python tools.
-- `AGENTS.md` holds instructions for AI agents (setup, including the shared documentation MCP servers in `.mcp.json`); `.claude/skills/` holds the shared Claude Code skills `/kb-setup`, `/kb-lookup`, `/kb-refresh`, `/kb-add-topic` and `/kb-verify`.
+- `AGENTS.md` holds instructions for AI agents (setup, including the shared documentation MCP servers in `.mcp.json`); `.claude/skills/` holds the shared Claude Code skills `/kb-setup`, `/kb-lookup`, `/kb-research`, `/kb-refresh`, `/kb-add-topic` and `/kb-verify`.
 
 ## Fact tags
 

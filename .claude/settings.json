@@ -14,6 +14,7 @@
       "Bash(python3 _tools/fetch.py --offline)",
       "Bash(python3 _tools/fetch.py --status *)",
       "Bash(python3 _tools/stress_test.py *)",
+      "Bash(python3 _tools/tests.py *)",
       "Bash(python3 .claude/skills/kb-verify/lint.py *)"
     ],
     "deny": [

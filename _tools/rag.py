@@ -110,8 +110,10 @@ def tokens(text):
     return out
 
 
-def search(query, k, domain, index=False):
-    """BM25 top-k chunks. Root-level files (the kb's own index and logs) are left out unless `index`."""
+def search(query, k, domain, index=False, notes=None):
+    """BM25 top-k chunks. Root-level files (the kb's own index and logs) are left out unless `index`.
+    `notes`, if a list, receives warnings about a weak match: query words found nowhere in the searched files,
+    or a top hit matching under half of the query's informative words (those in fewer than 25% of chunks)."""
     docs = [c for c in chunks() if (index or os.sep in c[0]) and (not domain or c[0].startswith(domain.rstrip("/") + "/"))]
     toks = [Counter(tokens(f"{c[0]} {c[2]} {c[3]}")) for c in docs]
     q = set(tokens(query))
@@ -124,11 +126,20 @@ def search(query, k, domain, index=False):
             idf = math.log(1 + (len(docs) - df[t] + 0.5) / (df[t] + 0.5))
             s += idf * tf[t] * 2.2 / (tf[t] + 1.2 * (0.25 + 0.75 * dl / avg))
         if s:
-            scored.append((round(s, 2), c))
+            scored.append((round(s, 2), c, sorted(q & tf.keys())))
     scored.sort(key=lambda x: -x[0])
-    return [{"score": s, "path": p, "line": ln, "heading": h, "text": t,
+    if notes is not None:
+        words = {t for t in q if len(t) > 2}
+        missing = sorted(t for t in words if not df[t])
+        if missing:
+            notes.append(f"not found anywhere in the searched files: {', '.join(missing)}")
+        informative = {t for t in words if df[t] < 0.25 * len(docs)}
+        if scored and informative and len(informative & set(scored[0][2])) * 2 < len(informative):
+            notes.append(f"weak match: the top hit contains {len(informative & set(scored[0][2]))} of "
+                         f"{len(informative)} informative query words ({', '.join(sorted(informative))})")
+    return [{"score": s, "path": p, "line": ln, "heading": h, "text": t, "matched": m,
              "sources": sorted(set(re.findall(r"\bS\d{3,4}\b", t)), key=lambda x: int(x[1:]))}
-            for s, (p, ln, h, t) in scored[:k]]
+            for s, (p, ln, h, t), m in scored[:k]]
 
 
 def topics(domain):
@@ -207,7 +218,10 @@ def main():
             if v["data"]:
                 print("  data: " + ", ".join(os.path.basename(p) for p in v["data"]))
     elif a.cmd == "search":
-        res = search(" ".join(a.query), a.k, a.domain, a.index)
+        notes = []
+        res = search(" ".join(a.query), a.k, a.domain, a.index, notes)
+        for n in notes:
+            print(f"note: {n}", file=sys.stderr)
         if a.urls:
             add_urls(res)
         if a.json:

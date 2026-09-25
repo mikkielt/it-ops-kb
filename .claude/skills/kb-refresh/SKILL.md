@@ -9,6 +9,8 @@ argument-hint: "<topic | directory | file | S-id>"
 
 Target: $ARGUMENTS. If empty, ask which topic, directory or file. Never refresh the whole kb unasked: a full run is about 20 minutes of network traffic.
 
+Run each command on its own (no `;`, `&&`, pipes into other tools or loops): the shared permission rules match single commands, so a chained command asks for approval or is refused in a headless run.
+
 ## 1. Pick the selection flag
 - Topic id (e.g. `auth/kerberos`): `--topic auth/kerberos`
 - Directory (e.g. `dsc`): `--dir dsc`
@@ -21,6 +23,7 @@ Flags repeat and combine. `--older-than DAYS` skips recently fetched sources.
 2. `python3 _tools/fetch.py --diff <selection> --full --max-lines 200`
    - Exit 0: nothing changed. 1: something changed. 2: a fetch or the selection failed.
    - `NEW` is the first fetch: baseline only, unless the source row recorded a hash at retrieval. Such a live page usually reports `CHANGED` with "no earlier snapshot"; then compare the page with the kb facts by reading it (`microsoft_docs_fetch` for Learn pages).
+   - A url pinned to a commit or release (e.g. `raw.githubusercontent.com/.../<sha>/...`) never changes, so `--diff` can only say `NEW` or `UNCHANGED`. To learn whether the facts are still current, read the live page it was taken from (for MicrosoftDocs files, the matching learn.microsoft.com page) and compare. If the live page differs, cite it as a new source row; keep the pinned row as the historical source.
    - This saves the fetch date to `_fetch_state.csv` and snapshots to `_cache/` (not committed). Use `--no-save` to look without moving the baseline.
 3. For pinned artifacts (rows with `artifact_sha256`), use `python3 _tools/fetch.py --verify` only if the user asks; those urls are fixed commits and do not drift.
 
@@ -36,5 +39,5 @@ Follow the README licensing rules: Microsoft Learn text is paraphrased (quotes o
 
 ## 4. Check and report
 - `python3 _tools/check.py` must end `errors=0`. Run `python3 .claude/skills/kb-verify/lint.py <paths you edited>`.
-- `_fetch_state.csv` changes belong in the same commit as the facts they explain.
+- A targeted `--diff` writes `_fetch_state.csv` for the sources it checked. Commit that file with the refresh it explains, even when no fact changed: it records when those sources were last verified. (Only a whole-kb baseline is left to the maintainer.)
 - Report: sources checked, changed, errors; the facts you edited (`path:line`, old -> new); anything left for a human. Do not commit unless asked.
