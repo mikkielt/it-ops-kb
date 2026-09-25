@@ -56,6 +56,11 @@ class SyncInGit(unittest.TestCase):
     Q_B = "Does the sync test answer survive a rebase?"
     Q_SHARED_A, Q_SHARED_B = "What does clone a ask?", "What does clone b ask about sync?"
     Q_OLD_A, Q_OLD_B = "Old style question from clone a", "Old style question from clone b"
+    Q_FOOT_A, Q_FOOT_B = "Which footer does clone a write?", "Which footer does clone b write?"
+
+    @classmethod
+    def foot_block(cls, q):
+        return f"\n## {kbid.answer_id(q)}. {q}\n- An answer from the question {q[:26]!r}. [UNK]\n\n_Agent: kb-research_\n"
 
     @classmethod
     def setUpClass(cls):
@@ -116,6 +121,16 @@ class SyncInGit(unittest.TestCase):
         cls.b2_checks = {t: cls.tool(cls.b, t, *args) for t, args in
                          (("check.py", ()), ("build_index.py", ("--check",)), ("kbgit.py", ("fix", "--check")))}
         cls.b2_trailers = cls.kbgit(cls.b, "check-trailers", f"{cls.base}..HEAD")
+
+        # 2b. both clones add a research answer at the same place, with the same footer line (a zealous merge splices)
+        for d, q in ((cls.a, cls.Q_FOOT_A), (cls.b, cls.Q_FOOT_B)):
+            t = cls.read(d, "_answers.md")
+            i = t.index("\n## R1. ")
+            cls.write(d, "_answers.md", t[:i] + cls.foot_block(q) + t[i:])
+            cls.commit(d, f"docs(kb): answer {kbid.answer_id(q)}")
+        cls.push_a4 = cls.kbgit(cls.a, "sync", "--push")
+        cls.push_b4 = cls.kbgit(cls.b, "sync", "--push")
+        cls.b4_log = cls.git(cls.b, "log", "--format=%s%x1f%(trailers:key=KB-Answers,valueonly,unfold)%x1e", "-n", "5")
 
         # 3. the same article line edited on both sides
         cls.pull_a = cls.kbgit(cls.a, "sync")
@@ -265,6 +280,16 @@ class SyncInGit(unittest.TestCase):
         for t, p in self.b2_checks.items():
             self.assertEqual(p.returncode, 0, f"{t}: " + (p.stdout + p.stderr)[-2000:])
         self.assertEqual(self.b2_trailers.returncode, 0, self.b2_trailers.stdout)
+
+    def test_shared_footer_answers_stay_whole(self):
+        """Rebased with diff3: B's answer is added after A's, A's section is untouched, B's trailers name only B's answer."""
+        for r in (self.push_a4, self.push_b4):
+            self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        ans = self.remote_file("_answers.md")
+        blocks = [self.foot_block(q) for q in (self.Q_FOOT_A, self.Q_FOOT_B)]
+        self.assertIn(blocks[0] + blocks[1], ans)
+        subjects = dict(ln.strip("\n").split("\x1f") for ln in self.b4_log.split("\x1e") if "\x1f" in ln)
+        self.assertEqual(subjects.get(f"docs(kb): answer {kbid.answer_id(self.Q_FOOT_B)}", "").strip(), kbid.answer_id(self.Q_FOOT_B))
 
     def test_same_line_edit_needs_a_human(self):
         self.assertEqual(self.pull_a.returncode, 0, self.pull_a.stdout + self.pull_a.stderr)

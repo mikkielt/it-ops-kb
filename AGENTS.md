@@ -91,6 +91,7 @@ Run `/kb-setup` (Claude Code), or do the same by hand:
 
 - `.gitattributes` merges the append-only ledgers (`_sources.csv`, `_fetch_state.csv`, `_answers.md`, `_gaps.md`, `_conflicts.md`) and the generated `_coverage.csv` and `_tools/lint_baseline.txt` with git's built-in union driver: parallel additions merge without conflict markers, but git keeps both sides' lines, so a row both sides touched may appear twice. Nothing to configure per clone.
 - Writers: append rows and blocks, keep each CSV record on one line, never reorder or rewrap existing lines.
+- Merge and rebase with `-c merge.conflictStyle=diff3` (sync does; by hand: `git -c merge.conflictStyle=diff3 pull --rebase`). Without it git keeps lines that two added blocks both end with only once, so two answers ending in `_Agent: kb-research_` interleave and the commit edits the other side's answer. fix restores such a section in the working tree when it knows the sides.
 - `sync` runs fix for you. After a merge or pull made by hand: `python3 _tools/kbgit.py fix`, then `python3 _tools/tests.py`. If two branches took the same legacy id, fix asks for `--base $(git merge-base A B)` and renumbers the new rows to hash ids; add `--upstream origin/main` when one side is already pushed, so its ids stay. Pre-`QK-<slug>` answer ids (`QK1`) and answer ids both sides took are renamed to `QK-<slug>`, mentions included. Exit 2 means a human decision (listed); nothing was written.
 - `README.md` merges normally; a conflict inside its coverage table is rebuilt by fix (then `git add README.md`).
 

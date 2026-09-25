@@ -154,6 +154,20 @@ class MergeRules(unittest.TestCase):
         self.assertEqual(out.count("## not a heading"), 2)  # code blocks are never deduplicated
         self.assertEqual(kbgit.resolve_md(out, "_gaps.md", [], []), out)  # idempotent
 
+    def test_zealous_splice_is_repaired(self):
+        """git keeps a footer both added blocks end with only once: the first answer loses it to the second."""
+        a = "# A\n\n## QK-a. qa\n- a1 [DOC S1]\n\n_Agent: kb-research_\n\n## R1. r\n"
+        b = "# A\n\n## QK1. qb\n- b1 [DOC S2205]\n\n_Agent: kb-research_\n\n## R1. r\n"
+        spliced = "# A\n\n## QK-a. qa\n- a1 [DOC S1]\n## QK-b. qb\n- b1 [DOC S-aaaaaaaa]\n\n_Agent: kb-research_\n\n## R1. r\n"
+        whole = "# A\n\n## QK-a. qa\n- a1 [DOC S1]\n\n_Agent: kb-research_\n\n## QK-b. qb\n- b1 [DOC S-aaaaaaaa]\n\n_Agent: kb-research_\n\n## R1. r\n"
+        report = []
+        self.assertEqual(kbgit.resolve_md(spliced, "_answers.md", report, [], [a, b]), whole)  # ids renamed since: ignored
+        self.assertTrue(any("restored 1 line(s)" in r for r in report), report)
+        self.assertEqual(kbgit.resolve_md(whole, "_answers.md", [], [], [a, b]), whole)  # idempotent
+        self.assertEqual(kbgit.resolve_md(spliced, "_answers.md", [], []), spliced)  # sides unknown: left alone
+        cut = spliced.replace("\n\n_Agent: kb-research_\n\n## R1", "\n\n## R1")  # the tail is not where the merge puts it
+        self.assertEqual(kbgit.resolve_md(cut, "_answers.md", [], [], [a, b]), cut)
+
     def test_answer_id_clash_is_a_problem(self):
         problems = []
         kbgit.resolve_md("# A\n\n## QK-x. q\n\none\n\n## QK-x. q\n\ntwo\n", "_answers.md", [], problems)
@@ -180,6 +194,7 @@ GIT = shutil.which("git")
 class MergeInGit(unittest.TestCase):
     URL_A, URL_B = "https://learn.microsoft.com/en-us/merge-test/branch-a", "https://learn.microsoft.com/en-us/merge-test/branch-b"
     STATE_H = "id,url,checked_utc,fetched_utc,changed_utc,sha256,text_sha256,bytes,error\n"
+    FOOTER = "_Agent: merge-test_"
 
     @classmethod
     def setUpClass(cls):
@@ -238,7 +253,8 @@ class MergeInGit(unittest.TestCase):
                   f"---\ntopic: windows/merge-test-{name}\npriority: P3\napplies_to: [test]\nretrieved_utc: 2026-09-25\n"
                   f"sources: [S9999, {hid}]\nstatus: partial\n---\n# Merge test {name}\n\n## Summary\n\nTest.\n\n## Facts\n\n"
                   f"- Branch {name} says this. [DOC S9999]\n- And this. [DOC {hid}]\n\n## Reference\n\n## Examples\n")
-        cls.write("_answers.md", f"\n## QK-merge-test-{name}. Does branch {name} merge?\n\nYes, says branch {name} [DOC S9999].\n", "a")
+        cls.write("_answers.md", f"\n## QK-merge-test-{name}. Does branch {name} merge?\n\nYes, says branch {name} [DOC S9999].\n"
+                                 f"\n{cls.FOOTER}\n", "a")  # the same last line on both branches: a plain merge splices
         cls.write("_gaps.md", f"\n- **Merge test gap from branch {name}.** Tried nothing, cites S9999. [UNK]\n", "a")
         state = cls.read("_fetch_state.csv").replace(
             "S100,https://x.example.com/,2026-01-01T00:00:00Z,2026-01-01T00:00:00Z,",
@@ -285,6 +301,14 @@ class MergeInGit(unittest.TestCase):
         self.assertNotIn("S9999", ans + self.read("_gaps.md"), "root ledgers were changed on both sides: their citations too")
         ids = [r["id"] for r in rows(self.read("_sources.csv"))]
         self.assertEqual(ids, sorted(ids, key=kbid.sort_key))
+
+    def test_answers_keep_their_shared_footer(self):
+        ans = self.read("_answers.md")
+        for n in ("a", "b"):
+            sec = ans[ans.index(f"## QK-merge-test-{n}."):]
+            sec = sec[:sec.find("\n## ", 1) if "\n## " in sec[1:] else len(sec)].rstrip()
+            self.assertTrue(sec.endswith(self.FOOTER), f"answer of branch {n} lost its footer:\n{sec}")
+        self.assertIn("restored 1 line(s) a merge moved out of", self.fix.stdout)
 
     def test_fetch_state_merged(self):
         st = [r for r in rows(self.read("_fetch_state.csv")) if r["id"] == "S100"]

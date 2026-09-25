@@ -45,7 +45,8 @@ Sync (the only way to push; people push straight to main, CI is a safety net):
   a. refuses (exit 2) with uncommitted tracked changes (lists staged/unstaged: commit or stash them), or while a
      rebase/merge/cherry-pick/revert is in progress; untracked files do not count.
   b. git fetch REMOTE BRANCH; prints how far HEAD is ahead of / behind REMOTE/BRANCH.
-  c. git rebase REMOTE/BRANCH (merge commits are linearised: they would carry no trailers). A step that conflicts only
+  c. git -c merge.conflictStyle=diff3 rebase REMOTE/BRANCH (diff3: see MERGE_CFG; merge commits are linearised: they
+     would carry no trailers). A step that conflicts only
      in MECHANICAL paths (the union ledgers, _coverage.csv, _tools/lint_baseline.txt, the README coverage table) is
      resolved with `fix --base <merge-base> --upstream REMOTE/BRANCH --side <old HEAD>`, `git add -u`, `git rebase
      --continue`. Any other conflicted path (an article, a tool, docs, README outside the table) stops with exit 3
@@ -88,6 +89,9 @@ _fetch_state.csv  one row per id: checked_utc/error from the row with the latest
                (fetched_utc, sha256, text_sha256, bytes) from the row with the latest fetch, changed_utc the max.
 _answers.md, _gaps.md, _conflicts.md  conflict markers dropped (union semantics); verbatim duplicate `##`/`###`
                sections, duplicate list items (20+ characters) in one section and duplicate rows in one table removed.
+               With the merge's sides known, a `##` section that a merge cut short is made whole: git keeps lines that
+               two blocks added at one place both end with (an `_Agent: kb-research_` footer) only once, at the end
+               of the second block (repair_splices; sync avoids it with diff3, see MERGE_CFG).
                Answer ids: a `QK<n>` id (from before QK-<slug> ids) becomes kbid.answer_id(question), made unique
                with -2...; its mentions on lines the base did not have follow. One id heading two different
                questions: the heading at base or on --upstream keeps it (else the first), the others get their
@@ -639,10 +643,71 @@ def dedupe_items(chunk, what, report):
     return out
 
 
-def resolve_md(text, name, report, problems):
+ANY_ID = re.compile(r"(?<![\w-])(?:S\d+|S-[a-z2-7]{8}|QK[\w-]*)(?![\w-])")
+
+
+def repair_splices(text, name, side_texts, report):
+    """Undo git's "zealous" interleaving of two blocks added at one place (see MERGE_CFG). When both blocks end with the
+    same lines (every kb-research answer ends in `_Agent: kb-research_`), the merge keeps those lines once, at the end
+    of the second block: the first `##` section loses its tail. Signature: a merged section that is a strict prefix of
+    its own version on one side, whose missing lines end the next merged section. The tail is copied back from there
+    (lines already renumbered by fix), so the first section is whole again. Ids are ignored when comparing, as fix may
+    have renamed them. side_texts: the ledger's text on each side of the merge."""
+    def norm(lines):
+        return [ANY_ID.sub("<id>", ln) for ln in lines]
+
+    def trim(lines):
+        lines = list(lines)
+        while lines and not lines[-1].strip():
+            lines.pop()
+        return lines
+
+    def key(ln):
+        m = kbid.ANSWER_HEAD.match(ln)
+        return ln[m.end():].strip() if m else ANY_ID.sub("<id>", ln)
+
+    side_secs = []
+    for t in side_texts:
+        if not t:
+            continue
+        ls = strip_markers(lf(t), name)[0].split("\n")
+        secs = {}
+        for c in split_at(ls, fences(ls), 2):
+            if HEADING.match(c[0][0]) and not c[0][1]:
+                secs.setdefault(key(c[0][0]), norm(trim(ln for ln, _ in c)))
+        side_secs.append(secs)
+    if not side_secs:
+        return text
+    lines = text.split("\n")
+    chunks = [[ln for ln, _ in c] for c in split_at(lines, fences(lines), 2)]
+    heads = [HEADING.match(c[0]) and len(HEADING.match(c[0]).group(1)) == 2 for c in chunks]
+    fixed = 0
+    for i in range(len(chunks) - 1):
+        if not heads[i] or not heads[i + 1]:
+            continue
+        cur, nxt = trim(chunks[i]), trim(chunks[i + 1])
+        for secs in side_secs:
+            want = secs.get(key(chunks[i][0]))
+            if not want or len(want) <= len(cur) or want[:len(cur)] != norm(cur):
+                continue
+            tail = want[len(cur):]
+            while tail and not tail[0].strip():
+                tail = tail[1:]
+            if not tail or len(nxt) <= len(tail) or norm(nxt[-len(tail):]) != tail:
+                continue
+            gap = len(want) - len(cur) - len(tail)
+            chunks[i] = cur + [""] * gap + nxt[-len(tail):] + (chunks[i][len(cur):] or [""])
+            fixed += 1
+            report.append(f"{name}: restored {len(tail)} line(s) a merge moved out of {chunks[i][0][:60]!r}")
+            break
+    return "\n".join(ln for c in chunks for ln in c) if fixed else text
+
+
+def resolve_md(text, name, report, problems, side_texts=()):
     text, n = strip_markers(lf(text), name)
     if n:
         report.append(f"{name}: dropped markers of {n} conflict region(s) (union)")
+    text = repair_splices(text, name, side_texts, report)
     lines = text.split("\n")
     fence = fences(lines)
     kept = []
@@ -799,7 +864,7 @@ def fix_texts(a, report, problems):
     for name in MD_LEDGERS:
         t = out.get(name, read(name))
         if t is not None:
-            out[name] = resolve_md(t, name, report, problems)
+            out[name] = resolve_md(t, name, report, problems, [show(rev, name) for rev in side_revs.values()])
     for name in ("_coverage.csv",):
         t = read(name)
         if t is not None and has_markers(t):
@@ -1454,6 +1519,14 @@ IN_PROGRESS = (("rebase-merge", "a rebase", "git rebase --continue, or git rebas
                ("CHERRY_PICK_HEAD", "a cherry-pick", "git cherry-pick --continue, or git cherry-pick --abort"),
                ("REVERT_HEAD", "a revert", "git revert --continue, or git revert --abort"))
 NO_EDITOR = {"GIT_EDITOR": "true", "GIT_SEQUENCE_EDITOR": "true"}
+# Every rebase sync runs or tells a human to run. git's union driver (and plain conflicts) merge at the "zealous" level:
+# lines both sides end (or start) with are pulled out of the conflict and kept once. Two answers that end in the same
+# `_Agent: kb-research_` footer then interleave: the second is spliced into the first, above its footer, and the
+# rebased commit edits the other side's section (its KB-Answers trailer names it). diff3 caps the level at "eager",
+# which keeps each side's block whole (and adds the base to conflict markers, which fix and /kb-git-sync read anyway).
+MERGE_CFG = ("-c", "merge.conflictStyle=diff3")
+REBASE = (*MERGE_CFG, "rebase")
+REBASE_HINT = "git -c merge.conflictStyle=diff3 rebase"
 FIX_COMMIT = "chore(kb): kbgit fix after sync"
 REJECTED = re.compile(r"\[rejected\]|non-fast-forward|fetch first|stale info", re.I)
 
@@ -1523,14 +1596,14 @@ def conflict_help(r, up, base, orig, manual, mech, step):
     print("  edit the needs-human files: keep both sides' facts, no conflict markers left")
     print(f"  {fix_cmd}")
     print("  git add <the resolved paths>")
-    print("  git rebase --continue          (later local commits may stop again)")
+    print(f"  GIT_EDITOR=true {REBASE_HINT} --continue   (later local commits may stop again)")
     print("  python3 _tools/kbgit.py sync" + (" --push" if r.get("push") else ""))
     print(f"Or give up: git rebase --abort  (back to {short(orig)}, nothing lost)")
 
 
 def do_rebase(r, up, base, orig):
     """Rebase HEAD onto up, resolving conflicts in MECHANICAL paths with fix. 0 done, 2 git refused, 3 manual."""
-    code, out = gitx("rebase", up, env=NO_EDITOR)
+    code, out = gitx(*REBASE, up, env=NO_EDITOR)
     for _ in range(1000):
         if not rebasing():
             if code:
@@ -1543,10 +1616,10 @@ def do_rebase(r, up, base, orig):
         if not conflicted:
             if git_run("diff", "--cached", "--quiet", "HEAD").returncode == 0 and \
                     git_run("diff", "--quiet").returncode == 0:
-                code, out = gitx("rebase", "--skip", env=NO_EDITOR)
+                code, out = gitx(*REBASE, "--skip", env=NO_EDITOR)
                 r["notes"].append(f"dropped {step}: empty after the rebase")
             else:
-                code, out = gitx("rebase", "--continue", env=NO_EDITOR)
+                code, out = gitx(*REBASE, "--continue", env=NO_EDITOR)
                 if code and rebasing() and not names("diff", "--name-only", "--diff-filter=U"):
                     print(out.rstrip())
                     conflict_help(r, up, base, orig, ["(rebase stopped without a conflict; see git's message above)"], [], step)
@@ -1570,7 +1643,7 @@ def do_rebase(r, up, base, orig):
         r["renumbered"] += renumbered(fout)
         r["auto"].append(f"{step}: {', '.join(mech)}")
         gitx("add", "-u")
-        code, out = gitx("rebase", "--continue", env=NO_EDITOR)
+        code, out = gitx(*REBASE, "--continue", env=NO_EDITOR)
     print("git rebase did not finish after 1000 steps; inspect with git status")
     return 3
 
@@ -1598,7 +1671,7 @@ def refresh_trailers(r, up):
     if not audit or not audit[2]:
         return True
     exe = " ".join(shlex.quote(x) for x in (sys.executable, os.path.join(KB, "_tools", "kbgit.py"), "trailers", "--amend"))
-    code, out = gitx("rebase", "--exec", exe, up, env=NO_EDITOR)
+    code, out = gitx(*REBASE, "--exec", exe, up, env=NO_EDITOR)
     if code or rebasing():
         print("refreshing trailers failed:\n" + out.rstrip())
         if rebasing():
