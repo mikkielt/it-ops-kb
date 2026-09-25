@@ -1,0 +1,324 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Excerpt of Microsoft Graph beta CSDL for windowsAutopilotDeviceIdentity.
+     Source: https://raw.githubusercontent.com/microsoftgraph/msgraph-metadata/b8cbef92f6959dca8150bf3edcc650863765e529/clean_beta_metadata/cleanMetadataWithDescriptionsAndAnnotationsbeta.xml
+     Copyright (c) 2018 Microsoft Graph. MIT License (https://github.com/microsoftgraph/msgraph-metadata/blob/b8cbef92f6959dca8150bf3edcc650863765e529/LICENSE).
+     Contents: EntityType windowsAutopilotDeviceIdentity, its base types, referenced ComplexType/EnumType definitions (transitive),
+     Annotations targeting those types and the entity set. Element order and text unchanged; extracted with ElementTree. -->
+<Schema Namespace="microsoft.graph" Alias="graph" xmlns="http://docs.oasis-open.org/odata/ns/edm">
+  <EntityType Name="windowsAutopilotDeviceIdentity" BaseType="graph.entity">
+        <Property Name="addressableUserName" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="Addressable user name." />
+        </Property>
+        <Property Name="azureActiveDirectoryDeviceId" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="AAD Device ID - to be deprecated" />
+        </Property>
+        <Property Name="azureAdDeviceId" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="AAD Device ID" />
+        </Property>
+        <Property Name="deploymentProfileAssignedDateTime" Type="Edm.DateTimeOffset" Nullable="false">
+          <Annotation Term="Org.OData.Core.V1.Description" String="Profile set time of the Windows autopilot device." />
+        </Property>
+        <Property Name="deploymentProfileAssignmentDetailedStatus" Type="graph.windowsAutopilotProfileAssignmentDetailedStatus" Nullable="false">
+          <Annotation Term="Org.OData.Core.V1.Description" String="Profile assignment detailed status of the Windows autopilot device. Possible values are: none, hardwareRequirementsNotMet, surfaceHubProfileNotSupported, holoLensProfileNotSupported, windowsPcProfileNotSupported, surfaceHub2SProfileNotSupported, unknownFutureValue." />
+        </Property>
+        <Property Name="deploymentProfileAssignmentStatus" Type="graph.windowsAutopilotProfileAssignmentStatus" Nullable="false">
+          <Annotation Term="Org.OData.Core.V1.Description" String="Profile assignment status of the Windows autopilot device. Possible values are: unknown, assignedInSync, assignedOutOfSync, assignedUnkownSyncState, notAssigned, pending, failed." />
+        </Property>
+        <Property Name="deviceAccountPassword" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="Surface Hub Device Account Password" />
+        </Property>
+        <Property Name="deviceAccountUpn" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="Surface Hub Device Account Upn" />
+        </Property>
+        <Property Name="deviceFriendlyName" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="Surface Hub Device Friendly Name" />
+        </Property>
+        <Property Name="displayName" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="Display Name" />
+        </Property>
+        <Property Name="enrollmentState" Type="graph.enrollmentState" Nullable="false">
+          <Annotation Term="Org.OData.Core.V1.Description" String="Intune enrollment state of the Windows autopilot device. Possible values are: unknown, enrolled, pendingReset, failed, notContacted, blocked." />
+        </Property>
+        <Property Name="groupTag" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="Group Tag of the Windows autopilot device." />
+        </Property>
+        <Property Name="lastContactedDateTime" Type="Edm.DateTimeOffset" Nullable="false">
+          <Annotation Term="Org.OData.Core.V1.Description" String="Intune Last Contacted Date Time of the Windows autopilot device." />
+        </Property>
+        <Property Name="managedDeviceId" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="Managed Device ID" />
+        </Property>
+        <Property Name="manufacturer" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="Oem manufacturer of the Windows autopilot device." />
+        </Property>
+        <Property Name="model" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="Model name of the Windows autopilot device." />
+        </Property>
+        <Property Name="productKey" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="Product Key of the Windows autopilot device." />
+        </Property>
+        <Property Name="purchaseOrderIdentifier" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="Purchase Order Identifier of the Windows autopilot device." />
+        </Property>
+        <Property Name="remediationState" Type="graph.windowsAutopilotDeviceRemediationState" Nullable="false">
+          <Annotation Term="Org.OData.Core.V1.Description" String="Device Remediation State. Possible values are: unknown, noRemediationRequired, automaticRemediationRequired, manualRemediationRequired, unknownFutureValue." />
+        </Property>
+        <Property Name="remediationStateLastModifiedDateTime" Type="Edm.DateTimeOffset" Nullable="false">
+          <Annotation Term="Org.OData.Core.V1.Description" String="RemediationState set time of Autopilot device." />
+        </Property>
+        <Property Name="resourceName" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="Resource Name." />
+        </Property>
+        <Property Name="serialNumber" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="Serial number of the Windows autopilot device." />
+        </Property>
+        <Property Name="skuNumber" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="SKU Number" />
+        </Property>
+        <Property Name="systemFamily" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="System Family" />
+        </Property>
+        <Property Name="userlessEnrollmentStatus" Type="graph.windowsAutopilotUserlessEnrollmentStatus" Nullable="false">
+          <Annotation Term="Org.OData.Core.V1.Description" String="Enrollment status for userless enrollments. Possible values are: unknown, allowed, blocked, unknownFutureValue." />
+        </Property>
+        <Property Name="userPrincipalName" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="User Principal Name." />
+        </Property>
+        <NavigationProperty Name="deploymentProfile" Type="graph.windowsAutopilotDeploymentProfile">
+          <Annotation Term="Org.OData.Core.V1.Description" String="Deployment profile currently assigned to the Windows autopilot device." />
+        </NavigationProperty>
+        <NavigationProperty Name="intendedDeploymentProfile" Type="graph.windowsAutopilotDeploymentProfile">
+          <Annotation Term="Org.OData.Core.V1.Description" String="Deployment profile intended to be assigned to the Windows autopilot device." />
+        </NavigationProperty>
+      </EntityType>
+  <EntityType Name="entity" Abstract="true">
+        <Property Name="id" Type="Edm.String" Nullable="false">
+          <Annotation Term="Org.OData.Core.V1.Description" String="The unique identifier for an entity. Read-only." />
+        </Property>
+        <Key>
+          <PropertyRef Name="id" />
+        </Key>
+      </EntityType>
+  <EnumType Name="enrollmentState">
+        <Member Name="unknown" Value="0" />
+        <Member Name="enrolled" Value="1" />
+        <Member Name="pendingReset" Value="2" />
+        <Member Name="failed" Value="3" />
+        <Member Name="notContacted" Value="4" />
+        <Member Name="blocked" Value="5" />
+      </EnumType>
+  <EnumType Name="windowsAutopilotDeviceRemediationState">
+        <Member Name="unknown" Value="0" />
+        <Member Name="noRemediationRequired" Value="1" />
+        <Member Name="automaticRemediationRequired" Value="2" />
+        <Member Name="manualRemediationRequired" Value="3" />
+        <Member Name="unknownFutureValue" Value="4" />
+      </EnumType>
+  <EnumType Name="windowsAutopilotProfileAssignmentDetailedStatus">
+        <Member Name="none" Value="0" />
+        <Member Name="hardwareRequirementsNotMet" Value="1" />
+        <Member Name="surfaceHubProfileNotSupported" Value="2" />
+        <Member Name="holoLensProfileNotSupported" Value="3" />
+        <Member Name="windowsPcProfileNotSupported" Value="4" />
+        <Member Name="surfaceHub2SProfileNotSupported" Value="5" />
+        <Member Name="unknownFutureValue" Value="99" />
+      </EnumType>
+  <EnumType Name="windowsAutopilotProfileAssignmentStatus">
+        <Member Name="unknown" Value="0" />
+        <Member Name="assignedInSync" Value="1" />
+        <Member Name="assignedOutOfSync" Value="2" />
+        <Member Name="assignedUnkownSyncState" Value="3" />
+        <Member Name="notAssigned" Value="4" />
+        <Member Name="pending" Value="5" />
+        <Member Name="failed" Value="6" />
+      </EnumType>
+  <EnumType Name="windowsAutopilotUserlessEnrollmentStatus">
+        <Member Name="unknown" Value="0" />
+        <Member Name="allowed" Value="1" />
+        <Member Name="blocked" Value="2" />
+        <Member Name="unknownFutureValue" Value="3" />
+      </EnumType>
+  <Annotations Target="microsoft.graph.windowsAutopilotDeviceIdentity">
+        <Annotation Term="Org.OData.Core.V1.Description" String="The windowsAutopilotDeviceIdentity resource represents a Windows Autopilot Device." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.windowsAutopilotDeviceIdentity/addressableUserName">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Addressable user name." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.windowsAutopilotDeviceIdentity/azureActiveDirectoryDeviceId">
+        <Annotation Term="Org.OData.Core.V1.Description" String="AAD Device ID - to be deprecated" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.windowsAutopilotDeviceIdentity/azureAdDeviceId">
+        <Annotation Term="Org.OData.Core.V1.Description" String="AAD Device ID" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.windowsAutopilotDeviceIdentity/deploymentProfile">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Deployment profile currently assigned to the Windows autopilot device." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.windowsAutopilotDeviceIdentity/deploymentProfileAssignedDateTime">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Profile set time of the Windows autopilot device." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.windowsAutopilotDeviceIdentity/deploymentProfileAssignmentDetailedStatus">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Profile assignment detailed status of the Windows autopilot device." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.windowsAutopilotDeviceIdentity/deploymentProfileAssignmentStatus">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Profile assignment status of the Windows autopilot device." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.windowsAutopilotDeviceIdentity/deviceAccountPassword">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Surface Hub Device Account Password" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.windowsAutopilotDeviceIdentity/deviceAccountUpn">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Surface Hub Device Account Upn" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.windowsAutopilotDeviceIdentity/deviceFriendlyName">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Surface Hub Device Friendly Name" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.windowsAutopilotDeviceIdentity/displayName">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Display Name" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.windowsAutopilotDeviceIdentity/enrollmentState">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Intune enrollment state of the Windows autopilot device." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.windowsAutopilotDeviceIdentity/groupTag">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Group Tag of the Windows autopilot device." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.windowsAutopilotDeviceIdentity/intendedDeploymentProfile">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Deployment profile intended to be assigned to the Windows autopilot device." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.windowsAutopilotDeviceIdentity/lastContactedDateTime">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Intune Last Contacted Date Time of the Windows autopilot device." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.windowsAutopilotDeviceIdentity/managedDeviceId">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Managed Device ID" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.windowsAutopilotDeviceIdentity/manufacturer">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Oem manufacturer of the Windows autopilot device." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.windowsAutopilotDeviceIdentity/model">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Model name of the Windows autopilot device." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.windowsAutopilotDeviceIdentity/productKey">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Product Key of the Windows autopilot device." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.windowsAutopilotDeviceIdentity/purchaseOrderIdentifier">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Purchase Order Identifier of the Windows autopilot device." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.windowsAutopilotDeviceIdentity/remediationState">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Device Remediation State" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.windowsAutopilotDeviceIdentity/remediationStateLastModifiedDateTime">
+        <Annotation Term="Org.OData.Core.V1.Description" String="RemediationState set time of Autopilot device." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.windowsAutopilotDeviceIdentity/resourceName">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Resource Name." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.windowsAutopilotDeviceIdentity/serialNumber">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Serial number of the Windows autopilot device." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.windowsAutopilotDeviceIdentity/skuNumber">
+        <Annotation Term="Org.OData.Core.V1.Description" String="SKU Number" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.windowsAutopilotDeviceIdentity/systemFamily">
+        <Annotation Term="Org.OData.Core.V1.Description" String="System Family" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.windowsAutopilotDeviceIdentity/userlessEnrollmentStatus">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Enrollment status for userless enrollments." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.windowsAutopilotDeviceIdentity/userPrincipalName">
+        <Annotation Term="Org.OData.Core.V1.Description" String="User Principal Name." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.windowsAutopilotProfileAssignmentDetailedStatus/hardwareRequirementsNotMet">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Hardware requirements are not met. This can happen if a self-deploying AutoPilot Profile is assigned to a device without TPM 2.0." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.windowsAutopilotProfileAssignmentDetailedStatus/holoLensProfileNotSupported">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Indicates that a HoloLens AutoPilot Profile is assigned to a device that is not HoloLens." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.windowsAutopilotProfileAssignmentDetailedStatus/none">
+        <Annotation Term="Org.OData.Core.V1.Description" String="No assignment detailed status" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.windowsAutopilotProfileAssignmentDetailedStatus/surfaceHub2SProfileNotSupported">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Indicates that a surface Hub 2S  AutoPilot Profile is assigned to a device that is not surface Hub 2S." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.windowsAutopilotProfileAssignmentDetailedStatus/surfaceHubProfileNotSupported">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Indicates that a Surface Hub AutoPilot Profile is assigned to a device that is not Surface Hub(Aruba)." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.windowsAutopilotProfileAssignmentDetailedStatus/unknownFutureValue">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Evolvable enumeration sentinel value. Do not use." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.windowsAutopilotProfileAssignmentDetailedStatus/windowsPcProfileNotSupported">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Indicates that a Windows PC AutoPilot Profile is assigned to a device that is not Windows PC." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.windowsAutopilotProfileAssignmentStatus/assignedInSync">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Assigned successfully in Intune and in sync with Windows auto pilot program" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.windowsAutopilotProfileAssignmentStatus/assignedOutOfSync">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Assigned successfully in Intune and not in sync with Windows auto pilot program" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.windowsAutopilotProfileAssignmentStatus/assignedUnkownSyncState">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Assigned successfully in Intune and either in-sync or out of sync with Windows auto pilot program" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.windowsAutopilotProfileAssignmentStatus/failed">
+        <Annotation Term="Org.OData.Core.V1.Description" String=" Assignment failed" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.windowsAutopilotProfileAssignmentStatus/notAssigned">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Not assigned" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.windowsAutopilotProfileAssignmentStatus/pending">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Pending assignment" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.windowsAutopilotProfileAssignmentStatus/unknown">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Unknown assignment status" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.enrollmentState/blocked">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Device is enrolled as userless, but is blocked from moving to user enrollment because the app failed to install." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.enrollmentState/enrolled">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Device is Enrolled." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.enrollmentState/failed">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Not enrolled and there is enrollment failure record." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.enrollmentState/notContacted">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Device is imported but not enrolled." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.enrollmentState/pendingReset">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Enrolled but it's enrolled via enrollment profile and the enrolled profile is different from the assigned profile." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.enrollmentState/unknown">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Device enrollment state is unknown" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.windowsAutopilotDeviceRemediationState">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Device remediation status, indicating whether or not hardware has been changed for an Autopilot-registered device." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.windowsAutopilotDeviceRemediationState/automaticRemediationRequired">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Hardware change detected on client. Additional remediation is required." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.windowsAutopilotDeviceRemediationState/manualRemediationRequired">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Hardware change detected on client that could not resolved automatically. Additional remediation is required." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.windowsAutopilotDeviceRemediationState/noRemediationRequired">
+        <Annotation Term="Org.OData.Core.V1.Description" String="No hardware change has been detected." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.windowsAutopilotDeviceRemediationState/unknown">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Unknown status." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.windowsAutopilotDeviceRemediationState/unknownFutureValue">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Evolvable enumeration sentinel value. Do not use." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.windowsAutopilotUserlessEnrollmentStatus">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Userless enrollment block status, indicating whether the next device enrollment will be blocked." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.windowsAutopilotUserlessEnrollmentStatus/allowed">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Indicates next userless enrollment can proceed." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.windowsAutopilotUserlessEnrollmentStatus/blocked">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Indicates next userless enrollment cannot proceed without resetting the windowsAutopilotUserlessEnrollmentStatus." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.windowsAutopilotUserlessEnrollmentStatus/unknown">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Unknown userless enrollment block status. Next userless enrollment may fail. This is the default value." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.windowsAutopilotUserlessEnrollmentStatus/unknownFutureValue">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Evolvable enumeration sentinel value. Do not use." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.deviceManagement/windowsAutopilotDeviceIdentities">
+        <Annotation Term="Org.OData.Core.V1.Description" String="The Windows autopilot device identities contained collection." />
+      </Annotations>
+</Schema>

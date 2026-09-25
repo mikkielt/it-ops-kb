@@ -1,0 +1,1011 @@
+{
+  "$defs": {
+    "CustomRecognizerConfig": {
+      "description": "Configuration for custom pattern-based recognizers.",
+      "properties": {
+        "name": {
+          "description": "Instance name for the recognizer",
+          "title": "Name",
+          "type": "string"
+        },
+        "class_name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Python class name for predefined recognizers (if different from instance name)",
+          "title": "Class Name"
+        },
+        "enabled": {
+          "default": true,
+          "description": "Whether the recognizer is enabled",
+          "title": "Enabled",
+          "type": "boolean"
+        },
+        "type": {
+          "default": "custom",
+          "description": "Type of recognizer",
+          "title": "Type",
+          "type": "string"
+        },
+        "supported_language": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Single supported language (legacy)",
+          "title": "Supported Language"
+        },
+        "supported_languages": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "items": {
+                "$ref": "#/$defs/LanguageContextConfig"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Multiple supported languages with optional context",
+          "title": "Supported Languages"
+        },
+        "context": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Global context words",
+          "title": "Context"
+        },
+        "supported_entity": {
+          "description": "Entity type this recognizer detects",
+          "title": "Supported Entity",
+          "type": "string"
+        },
+        "supported_entities": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "List of supported entities for this recognizer",
+          "title": "Supported Entities"
+        },
+        "score_thresholds": {
+          "anyOf": [
+            {},
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Default and entity-specific score thresholds",
+          "title": "Score Thresholds"
+        },
+        "country_code": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional ISO 3166-1 alpha-2 country tag for country filtering",
+          "title": "Country Code"
+        },
+        "patterns": {
+          "anyOf": [
+            {
+              "items": {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "List of patterns",
+          "title": "Patterns"
+        },
+        "deny_list": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Words to deny/exclude",
+          "title": "Deny List"
+        },
+        "deny_list_score": {
+          "default": 1.0,
+          "description": "Deny list score",
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Deny List Score",
+          "type": "number"
+        }
+      },
+      "required": [
+        "name",
+        "supported_entity"
+      ],
+      "title": "CustomRecognizerConfig",
+      "type": "object"
+    },
+    "GLiNERRecognizerConfig": {
+      "additionalProperties": true,
+      "description": "Configuration specifically for GLiNER models.",
+      "properties": {
+        "name": {
+          "description": "Instance name for the recognizer",
+          "title": "Name",
+          "type": "string"
+        },
+        "class_name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Python class name for predefined recognizers (if different from instance name)",
+          "title": "Class Name"
+        },
+        "enabled": {
+          "default": true,
+          "description": "Whether the recognizer is enabled",
+          "title": "Enabled",
+          "type": "boolean"
+        },
+        "type": {
+          "default": "predefined",
+          "description": "Type of recognizer",
+          "title": "Type",
+          "type": "string"
+        },
+        "supported_language": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "The language this recognizer supports",
+          "title": "Supported Language"
+        },
+        "supported_languages": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "items": {
+                "$ref": "#/$defs/LanguageContextConfig"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Multiple supported languages with optional context",
+          "title": "Supported Languages"
+        },
+        "context": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Global context words",
+          "title": "Context"
+        },
+        "supported_entity": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Supported entity for this recognizer",
+          "title": "Supported Entity"
+        },
+        "supported_entities": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "List of supported entities for this recognizer",
+          "title": "Supported Entities"
+        },
+        "score_thresholds": {
+          "anyOf": [
+            {},
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Default and entity-specific score thresholds",
+          "title": "Score Thresholds"
+        },
+        "model_name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "GLiNER model name",
+          "title": "Model Name"
+        },
+        "flat_ner": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Use flat NER",
+          "title": "Flat Ner"
+        },
+        "multi_label": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Use multi-label classification",
+          "title": "Multi Label"
+        },
+        "threshold": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Confidence threshold",
+          "title": "Threshold"
+        },
+        "map_location": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Device (cpu/gpu/etc.)",
+          "title": "Map Location"
+        },
+        "load_onnx_model": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Load ONNX model",
+          "title": "Load Onnx Model"
+        },
+        "onnx_model_file": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "ONNX model file name",
+          "title": "Onnx Model File"
+        },
+        "entity_mapping": {
+          "anyOf": [
+            {
+              "additionalProperties": {
+                "type": "string"
+              },
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Entity mapping",
+          "title": "Entity Mapping"
+        },
+        "text_chunker": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TextChunkerConfig"
+            },
+            {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Text chunker configuration",
+          "title": "Text Chunker"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "title": "GLiNERRecognizerConfig",
+      "type": "object"
+    },
+    "HuggingFaceRecognizerConfig": {
+      "additionalProperties": true,
+      "description": "Configuration specifically for HuggingFace NER models.",
+      "properties": {
+        "name": {
+          "description": "Instance name for the recognizer",
+          "title": "Name",
+          "type": "string"
+        },
+        "class_name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Python class name for predefined recognizers (if different from instance name)",
+          "title": "Class Name"
+        },
+        "enabled": {
+          "default": true,
+          "description": "Whether the recognizer is enabled",
+          "title": "Enabled",
+          "type": "boolean"
+        },
+        "type": {
+          "default": "predefined",
+          "description": "Type of recognizer",
+          "title": "Type",
+          "type": "string"
+        },
+        "supported_language": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "The language this recognizer supports",
+          "title": "Supported Language"
+        },
+        "supported_languages": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "items": {
+                "$ref": "#/$defs/LanguageContextConfig"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Multiple supported languages with optional context",
+          "title": "Supported Languages"
+        },
+        "context": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Global context words",
+          "title": "Context"
+        },
+        "supported_entity": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Supported entity for this recognizer",
+          "title": "Supported Entity"
+        },
+        "supported_entities": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "List of supported entities for this recognizer",
+          "title": "Supported Entities"
+        },
+        "score_thresholds": {
+          "anyOf": [
+            {},
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Default and entity-specific score thresholds",
+          "title": "Score Thresholds"
+        },
+        "model_name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "HuggingFace model name",
+          "title": "Model Name"
+        },
+        "tokenizer_name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "HuggingFace tokenizer name",
+          "title": "Tokenizer Name"
+        },
+        "label_mapping": {
+          "anyOf": [
+            {
+              "additionalProperties": {
+                "type": "string"
+              },
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Label mapping",
+          "title": "Label Mapping"
+        },
+        "threshold": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Confidence threshold",
+          "title": "Threshold"
+        },
+        "aggregation_strategy": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Aggregation strategy",
+          "title": "Aggregation Strategy"
+        },
+        "chunk_overlap": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Chunk overlap",
+          "title": "Chunk Overlap"
+        },
+        "chunk_size": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Chunk size",
+          "title": "Chunk Size"
+        },
+        "device": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Device (cpu/gpu)",
+          "title": "Device"
+        },
+        "label_prefixes": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Prefixes to strip from labels (e.g. B-, I-)",
+          "title": "Label Prefixes"
+        },
+        "text_chunker": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TextChunkerConfig"
+            },
+            {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Text chunker configuration",
+          "title": "Text Chunker"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "title": "HuggingFaceRecognizerConfig",
+      "type": "object"
+    },
+    "LanguageContextConfig": {
+      "description": "Configuration for language-specific validation with context words.\n\n:param language: Language code (e.g., 'en', 'es')\n:param context: Context words for this language",
+      "properties": {
+        "language": {
+          "description": "Language code (e.g., 'en', 'es')",
+          "title": "Language",
+          "type": "string"
+        },
+        "context": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Context words for this language",
+          "title": "Context"
+        }
+      },
+      "required": [
+        "language"
+      ],
+      "title": "LanguageContextConfig",
+      "type": "object"
+    },
+    "PredefinedRecognizerConfig": {
+      "description": "Configuration for predefined recognizers.",
+      "properties": {
+        "name": {
+          "description": "Instance name for the recognizer",
+          "title": "Name",
+          "type": "string"
+        },
+        "class_name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Python class name for predefined recognizers (if different from instance name)",
+          "title": "Class Name"
+        },
+        "enabled": {
+          "default": true,
+          "description": "Whether the recognizer is enabled",
+          "title": "Enabled",
+          "type": "boolean"
+        },
+        "type": {
+          "default": "predefined",
+          "description": "Type of recognizer",
+          "title": "Type",
+          "type": "string"
+        },
+        "supported_language": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "The language this recognizer supports",
+          "title": "Supported Language"
+        },
+        "supported_languages": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "items": {
+                "$ref": "#/$defs/LanguageContextConfig"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Multiple supported languages with optional context",
+          "title": "Supported Languages"
+        },
+        "context": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Global context words",
+          "title": "Context"
+        },
+        "supported_entity": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Supported entity for this recognizer",
+          "title": "Supported Entity"
+        },
+        "supported_entities": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "List of supported entities for this recognizer",
+          "title": "Supported Entities"
+        },
+        "score_thresholds": {
+          "anyOf": [
+            {},
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Default and entity-specific score thresholds",
+          "title": "Score Thresholds"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "title": "PredefinedRecognizerConfig",
+      "type": "object"
+    },
+    "TextChunkerConfig": {
+      "additionalProperties": false,
+      "description": "Validated configuration for text chunker instantiation.\n\n:param chunker_type: Type of chunker (\"character\" or \"tokenizer\").\n:param chunk_size: Character chunk size (character chunker).\n:param chunk_overlap: Character overlap (character chunker).\n:param tokenizer: Tokenizer name or instance (tokenizer chunker).\n:param max_tokens: Max tokens per chunk (tokenizer chunker).\n:param overlap_tokens: Token overlap (tokenizer chunker).",
+      "properties": {
+        "chunker_type": {
+          "description": "Type of chunker",
+          "enum": [
+            "character",
+            "tokenizer"
+          ],
+          "title": "Chunker Type",
+          "type": "string"
+        },
+        "chunk_size": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Character chunk size",
+          "title": "Chunk Size"
+        },
+        "chunk_overlap": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Character overlap",
+          "title": "Chunk Overlap"
+        },
+        "tokenizer": {
+          "anyOf": [
+            {},
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Tokenizer name or instance",
+          "title": "Tokenizer"
+        },
+        "max_tokens": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Max tokens per chunk",
+          "title": "Max Tokens"
+        },
+        "overlap_tokens": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Token overlap",
+          "title": "Overlap Tokens"
+        }
+      },
+      "required": [
+        "chunker_type"
+      ],
+      "title": "TextChunkerConfig",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Complete validation for the recognizer registry.",
+  "properties": {
+    "supported_languages": {
+      "anyOf": [
+        {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "List of supported languages",
+      "title": "Supported Languages"
+    },
+    "global_regex_flags": {
+      "default": 26,
+      "description": "Global regex flags",
+      "title": "Global Regex Flags",
+      "type": "integer"
+    },
+    "recognizers": {
+      "description": "List of recognizer configurations",
+      "items": {
+        "anyOf": [
+          {
+            "$ref": "#/$defs/HuggingFaceRecognizerConfig"
+          },
+          {
+            "$ref": "#/$defs/GLiNERRecognizerConfig"
+          },
+          {
+            "$ref": "#/$defs/PredefinedRecognizerConfig"
+          },
+          {
+            "$ref": "#/$defs/CustomRecognizerConfig"
+          },
+          {
+            "type": "string"
+          }
+        ]
+      },
+      "title": "Recognizers",
+      "type": "array"
+    }
+  },
+  "title": "RecognizerRegistryConfig",
+  "type": "object",
+  "$comment": "Generated with pydantic 2.12.5 model_json_schema() from presidio-analyzer/presidio_analyzer/input_validation/yaml_recognizer_models.py at data-privacy-stack/presidio@e9895a51f5af6a00ed859a1ee38d627868355f8a (MIT, (c) Presidio Contributors). Validators (e.g. pattern name/regex/score checks, patterns-or-deny_list) are not expressed in JSON Schema."
+}

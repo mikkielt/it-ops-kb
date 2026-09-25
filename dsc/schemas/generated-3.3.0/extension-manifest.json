@@ -1,0 +1,429 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ExtensionManifest",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "title": "Extension manifest schema URI",
+      "description": "The version of the extension manifest schema.",
+      "type": "string",
+      "format": "uri",
+      "enum": [
+        "https://aka.ms/dsc/schemas/vNext/bundled/extension/manifest.json",
+        "https://aka.ms/dsc/schemas/v3/bundled/extension/manifest.json",
+        "https://aka.ms/dsc/schemas/v3.2/bundled/extension/manifest.json",
+        "https://aka.ms/dsc/schemas/v3.2.3/bundled/extension/manifest.json",
+        "https://aka.ms/dsc/schemas/v3.2.2/bundled/extension/manifest.json",
+        "https://aka.ms/dsc/schemas/v3.2.1/bundled/extension/manifest.json",
+        "https://aka.ms/dsc/schemas/v3.2.0/bundled/extension/manifest.json",
+        "https://aka.ms/dsc/schemas/v3.1/bundled/extension/manifest.json",
+        "https://aka.ms/dsc/schemas/v3.1.3/bundled/extension/manifest.json",
+        "https://aka.ms/dsc/schemas/v3.1.2/bundled/extension/manifest.json",
+        "https://aka.ms/dsc/schemas/v3.1.1/bundled/extension/manifest.json",
+        "https://aka.ms/dsc/schemas/v3.1.0/bundled/extension/manifest.json",
+        "https://aka.ms/dsc/schemas/v3.0/bundled/extension/manifest.json",
+        "https://aka.ms/dsc/schemas/v3.0.2/bundled/extension/manifest.json",
+        "https://aka.ms/dsc/schemas/v3.0.1/bundled/extension/manifest.json",
+        "https://aka.ms/dsc/schemas/v3.0.0/bundled/extension/manifest.json",
+        "https://aka.ms/dsc/schemas/vNext/bundled/extension/manifest.vscode.json",
+        "https://aka.ms/dsc/schemas/v3/bundled/extension/manifest.vscode.json",
+        "https://aka.ms/dsc/schemas/v3.2/bundled/extension/manifest.vscode.json",
+        "https://aka.ms/dsc/schemas/v3.2.3/bundled/extension/manifest.vscode.json",
+        "https://aka.ms/dsc/schemas/v3.2.2/bundled/extension/manifest.vscode.json",
+        "https://aka.ms/dsc/schemas/v3.2.1/bundled/extension/manifest.vscode.json",
+        "https://aka.ms/dsc/schemas/v3.2.0/bundled/extension/manifest.vscode.json",
+        "https://aka.ms/dsc/schemas/v3.1/bundled/extension/manifest.vscode.json",
+        "https://aka.ms/dsc/schemas/v3.1.3/bundled/extension/manifest.vscode.json",
+        "https://aka.ms/dsc/schemas/v3.1.2/bundled/extension/manifest.vscode.json",
+        "https://aka.ms/dsc/schemas/v3.1.1/bundled/extension/manifest.vscode.json",
+        "https://aka.ms/dsc/schemas/v3.1.0/bundled/extension/manifest.vscode.json",
+        "https://aka.ms/dsc/schemas/v3.0/bundled/extension/manifest.vscode.json",
+        "https://aka.ms/dsc/schemas/v3.0.2/bundled/extension/manifest.vscode.json",
+        "https://aka.ms/dsc/schemas/v3.0.1/bundled/extension/manifest.vscode.json",
+        "https://aka.ms/dsc/schemas/v3.0.0/bundled/extension/manifest.vscode.json",
+        "https://aka.ms/dsc/schemas/vNext/extension/manifest.json",
+        "https://aka.ms/dsc/schemas/v3/extension/manifest.json",
+        "https://aka.ms/dsc/schemas/v3.2/extension/manifest.json",
+        "https://aka.ms/dsc/schemas/v3.2.3/extension/manifest.json",
+        "https://aka.ms/dsc/schemas/v3.2.2/extension/manifest.json",
+        "https://aka.ms/dsc/schemas/v3.2.1/extension/manifest.json",
+        "https://aka.ms/dsc/schemas/v3.2.0/extension/manifest.json",
+        "https://aka.ms/dsc/schemas/v3.1/extension/manifest.json",
+        "https://aka.ms/dsc/schemas/v3.1.3/extension/manifest.json",
+        "https://aka.ms/dsc/schemas/v3.1.2/extension/manifest.json",
+        "https://aka.ms/dsc/schemas/v3.1.1/extension/manifest.json",
+        "https://aka.ms/dsc/schemas/v3.1.0/extension/manifest.json",
+        "https://aka.ms/dsc/schemas/v3.0/extension/manifest.json",
+        "https://aka.ms/dsc/schemas/v3.0.2/extension/manifest.json",
+        "https://aka.ms/dsc/schemas/v3.0.1/extension/manifest.json",
+        "https://aka.ms/dsc/schemas/v3.0.0/extension/manifest.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/vNext/bundled/extension/manifest.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3/bundled/extension/manifest.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.2/bundled/extension/manifest.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.2.3/bundled/extension/manifest.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.2.2/bundled/extension/manifest.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.2.1/bundled/extension/manifest.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.2.0/bundled/extension/manifest.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.1/bundled/extension/manifest.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.1.3/bundled/extension/manifest.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.1.2/bundled/extension/manifest.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.1.1/bundled/extension/manifest.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.1.0/bundled/extension/manifest.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.0/bundled/extension/manifest.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.0.2/bundled/extension/manifest.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.0.1/bundled/extension/manifest.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.0.0/bundled/extension/manifest.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/vNext/bundled/extension/manifest.vscode.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3/bundled/extension/manifest.vscode.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.2/bundled/extension/manifest.vscode.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.2.3/bundled/extension/manifest.vscode.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.2.2/bundled/extension/manifest.vscode.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.2.1/bundled/extension/manifest.vscode.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.2.0/bundled/extension/manifest.vscode.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.1/bundled/extension/manifest.vscode.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.1.3/bundled/extension/manifest.vscode.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.1.2/bundled/extension/manifest.vscode.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.1.1/bundled/extension/manifest.vscode.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.1.0/bundled/extension/manifest.vscode.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.0/bundled/extension/manifest.vscode.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.0.2/bundled/extension/manifest.vscode.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.0.1/bundled/extension/manifest.vscode.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.0.0/bundled/extension/manifest.vscode.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/vNext/extension/manifest.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3/extension/manifest.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.2/extension/manifest.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.2.3/extension/manifest.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.2.2/extension/manifest.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.2.1/extension/manifest.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.2.0/extension/manifest.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.1/extension/manifest.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.1.3/extension/manifest.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.1.2/extension/manifest.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.1.1/extension/manifest.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.1.0/extension/manifest.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.0/extension/manifest.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.0.2/extension/manifest.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.0.1/extension/manifest.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.0.0/extension/manifest.json"
+      ]
+    },
+    "type": {
+      "description": "The namespaced name of the extension.",
+      "$ref": "#/$defs/FullyQualifiedTypeName"
+    },
+    "version": {
+      "description": "The version of the extension using semantic versioning.",
+      "$ref": "#/$defs/https:~1~1aka.ms~1dsc~1schemas~1v3~1definitions~1semver.json"
+    },
+    "condition": {
+      "description": "An optional condition for the extension to be active.  If the condition evaluates to false, the extension is skipped.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "deprecationMessage": {
+      "description": "An optional message indicating the extension is deprecated. If provided, the message will be shown when the extension is used.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "description": {
+      "description": "The description of the extension.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "tags": {
+      "description": "Tags for the extension.",
+      "$ref": "#/$defs/TagList"
+    },
+    "discover": {
+      "description": "Details how to call the Discover method of the extension.",
+      "anyOf": [
+        {
+          "$ref": "#/$defs/DiscoverMethod"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "import": {
+      "description": "Details how to call the Import method of the extension.",
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ImportMethod"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "importParameters": {
+      "description": "Details how to call the ImportParameters method of the extension.",
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ImportMethod"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "secret": {
+      "description": "Details how to call the Secret method of the extension.",
+      "anyOf": [
+        {
+          "$ref": "#/$defs/SecretMethod"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "exitCodes": {
+      "description": "Mapping of exit codes to descriptions.  Zero is always success and non-zero is always failure.",
+      "$ref": "#/$defs/https:~1~1aka.ms~1dsc~1schemas~1v3~1definitions~1exitCodes.json"
+    },
+    "metadata": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "$schema",
+    "type",
+    "version"
+  ],
+  "$defs": {
+    "FullyQualifiedTypeName": {
+      "title": "Fully qualified type name",
+      "description": "Uniquely identifies a DSC resource or extension.",
+      "type": "string",
+      "pattern": "^\\w+(\\.\\w+)*\\/\\w+$",
+      "patternErrorMessage": "Invalid type name. Valid resource type names always define an owner and a name separated by a slash, like `Microsoft/OSInfo`. Type names may optionally include the group, area, and subarea segments to namespace the resource under the owner, like `Microsoft.Windows/Registry`.",
+      "markdownDescription": "The fully qualified type name of a DSC resource or extension uniquely identifies a\nresource or extension.\n\nFully qualified type names use the following syntax:\n\n```yaml\n<owner>[.<namespace>...]/<name>\n```\n\nWhere:\n\n1. The `owner` segment is mandatory and indicates the party responsible for publishing\n   and maintaining the type.\n1. The type may define any number of `namespace` segments for organizing the type.\n   Namespaces must be separated from the `owner` segment and other `namespace` segments\n   by a single dot (`.`).\n1. The `name` segment is mandatory and indicates the specific name of the type. It must\n   be separated from the preceding segment by a forward slash (`/`).\n1. Every segment must consist only of unicode alphanumeric characters and underscores.\n\nConventionally, the first character of each segment is capitalized. When a segment\ncontains a brand or proper name, use the correct casing for that word, like\n`TailspinToys/Settings`, not `Tailspintoys/Settings`.\n\nExample fully qualified type names include:\n\n- `Microsoft/OSInfo`\n- `Microsoft.SqlServer/Database`\n- `Microsoft.Windows.IIS/WebApp`"
+    },
+    "https://aka.ms/dsc/schemas/v3/definitions/semver.json": {
+      "title": "Semantic version",
+      "description": "Defines a valid semantic version (semver) as a string.\n\nFor reference, see https://semver.org/",
+      "type": "string",
+      "markdownDescription": "Defines a valid semantic version ([semver][01]) as a string.\n\nThis value uses the [suggested regular expression][02] to validate whether the string is\nvalid semver. This is the same pattern, made multi-line for easier readability:\n\n```regex\n^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\n(?:-(\n  (?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)\n  (?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))\n*))?\n(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$\n```\n\nThe first line matches the `major.minor.patch` components of the version. The middle\nlines match the pre-release components. The last line matches the build metadata\ncomponent.\n\n[01]: https://semver.org/\n[02]: https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string",
+      "pattern": "^(?<major>(?:0|[1-9]\\d*))\\.(?<minor>(?:0|[1-9]\\d*))\\.(?<patch>(?:0|[1-9]\\d*))(?:-(?<prerelease>(?:(?:0|[1-9]\\d*)|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:(?:0|[1-9]\\d*)|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+(?<buildmetadata>[0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$",
+      "patternErrorMessage": "Invalid value, must be a semantic version like `<major>.<minor>.<patch>`, such as `1.2.3`.\n\nThe value may also include pre-release version information and build metadata."
+    },
+    "TagList": {
+      "title": "Tag list",
+      "description": "Defines a set of short search terms for a DSC resource or extension.",
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "title": "Tag",
+        "description": "Defines a short search term for a DSC resource or extension.",
+        "type": "string",
+        "pattern": "^\\w+$",
+        "patternErrorMessage": "Invalid tag. Tags must be non-empty strings consisting of only unicode word characters.",
+        "markdownDescription": "Defines a short search term for a DSC resource or extension.\n\nTo help with discovery, DSC enables users to filter the list of available resources or\nextensions by tags. DSC treats tags case-insensitively.\n\nDefine each tag as a non-empty string consisting of only unicode word characters. The\nfollowing list contains the valid character sets for a tag:\n\n- `\\p{alpha}` - All alphabetic characters, regardless of casing, use of marks, or script.\n- `\\p{gc=Mark}` - Characters that modify other characters\n- `\\p{digit}` - Characters `[0-9]`\n- `\\p{gc=Connector_Punctuation}` - Underscore (`_`) and similar characters\n- `\\p{Join_Control}` - characters that function for cursive joining and ligatures\n\nA tag with any other characters, including spaces, is invalid.\n\nFor more information about unicode word characters, see\n[Annex C: Compatibility property][01] in [Unicode Technical Standard #18][02].\n\n[01]: https://www.unicode.org/reports/tr18/#Compatibility_Properties\n[02]: https://www.unicode.org/reports/tr18"
+      },
+      "markdownDescription": "Defines a set of short search terms for a DSC resource or extension.\n\nTo help with discovery, DSC enables users to filter the list of available resources or\nextensions by tags. DSC treats tags case-insensitively.\n\nEvery tag in the list must be unique within the list. Defining a list with a repeated tag\nis invalid. This schema will raise a validation error if you define an identical pair of\nstrings as list items, like `[\"macOS\", \"macOS\"]`. However, due to limitations in the\nexpressiveness of JSON Schema, a list that defines the same tag with different casing\nwill pass JSON Schema validation, like `[\"MACOS\", \"macos\", \"macOS\"]`. When DSC\ndeserializes that JSON array value, it only records the _first_ tag for any set of tags\nthat differ only by casing. Subsequent values are discarded.\n\nFor example, the following tag lists are functionally equivalent:\n\n```yaml\ntags: [apt, Linux]\n---\ntags: [apt, Linux, APT]\n```\n\nWhen DSC processes the second tag list, the uppercased `APT` is ignored.\n\nDon't define the same tag, regardless of casing, more than once in any tag list. While\nJSON Schema and DSC are _resilient_ for lists that repeat the same tag with different\ncasing, it is best practice to ensure that every tag in the list is unique regardless of\ncasing."
+    },
+    "DiscoverMethod": {
+      "type": "object",
+      "properties": {
+        "executable": {
+          "description": "The command to run to get the state of the resource.",
+          "type": "string"
+        },
+        "args": {
+          "description": "The arguments to pass to the command to perform a Get.",
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "#/$defs/DiscoverArgKind"
+          }
+        }
+      },
+      "required": [
+        "executable"
+      ]
+    },
+    "DiscoverArgKind": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "extensionsArg": {
+              "description": "The argument that accepts the extensions list.  The extensions list will be passed as a comma separated list of extensions.",
+              "type": "string"
+            },
+            "includeQuotes": {
+              "description": "Whether to include quotes around the extensions list.  If true, the extensions list will be passed as a quoted string.",
+              "type": "boolean",
+              "default": false
+            }
+          },
+          "required": [
+            "extensionsArg"
+          ]
+        }
+      ]
+    },
+    "ImportMethod": {
+      "type": "object",
+      "properties": {
+        "fileExtensions": {
+          "description": "The extensions to import.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "executable": {
+          "description": "The command to run to get the state of the resource.",
+          "type": "string"
+        },
+        "args": {
+          "description": "The arguments to pass to the command to perform an Import.",
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "#/$defs/ImportArgKind"
+          }
+        },
+        "output": {
+          "description": "Enables modifying the resulting output from STDOUT after running the import command.",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "fileExtensions",
+        "executable"
+      ]
+    },
+    "ImportArgKind": {
+      "anyOf": [
+        {
+          "description": "The argument is a string.",
+          "type": "string"
+        },
+        {
+          "description": "The argument accepts the file path.",
+          "type": "object",
+          "properties": {
+            "fileArg": {
+              "description": "The argument that accepts the file path.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "fileArg"
+          ]
+        }
+      ]
+    },
+    "SecretMethod": {
+      "type": "object",
+      "properties": {
+        "executable": {
+          "description": "The command to run to get the state of the resource.",
+          "type": "string"
+        },
+        "args": {
+          "description": "The arguments to pass to the command to perform a Get.",
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "#/$defs/SecretArgKind"
+          }
+        }
+      },
+      "required": [
+        "executable"
+      ]
+    },
+    "SecretArgKind": {
+      "anyOf": [
+        {
+          "description": "The argument is a string.",
+          "type": "string"
+        },
+        {
+          "description": "The argument accepts the secret name.",
+          "type": "object",
+          "properties": {
+            "nameArg": {
+              "description": "The argument that accepts the secret name.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "nameArg"
+          ]
+        },
+        {
+          "description": "The argument accepts the vault name.",
+          "type": "object",
+          "properties": {
+            "vaultArg": {
+              "description": "The argument that accepts the vault name.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "vaultArg"
+          ]
+        }
+      ]
+    },
+    "https://aka.ms/dsc/schemas/v3/definitions/exitCodes.json": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "title": "Exit codes",
+      "description": "Defines a map of valid exit codes for operation commands.",
+      "type": "object",
+      "markdownDescription": "Defines a map of valid exit codes for operation commands. DSC always interprets exit code\n`0` as a successful operation and any other exit code as an error. Use this property to\nindicate human-readable semantic meanings for the DSC resource's exit codes.\n\nWhen this field isn't defined, DSC can only report \"Success\" (for exit code `0`) and\n\"Error\" (for all other exit codes).\n\nDefine the keys in this property as strings representing a valid 32-bit signed integer.\nYou can't use alternate formats for the exit code. For example, instead of the\nhexadecimal value `0x80070005` for \"Access denied\", specify the exit code as\n`-2147024891`.\n\nIf you're authoring your resource manifest in YAML, be sure to wrap the exit code in\nsingle quotes, like `'0': Success` instead of `0: Success` to ensure the YAML file can be\nparsed correctly.\n\nDefine the value for each key as a string explaining what the exit code indicates.",
+      "minProperties": 1,
+      "propertyNames": {
+        "pattern": "^-?[0-9]+$",
+        "patternErrorMessage": "Invalid exit code. Each exit code must be defined as a string representing a 32-bit signed integer, like `5` or `-2147024891`."
+      },
+      "patternProperties": {
+        "^-?[0-9]+$": {
+          "type": "string"
+        }
+      },
+      "unevaluatedProperties": false,
+      "default": {
+        "1": "Error",
+        "0": "Success"
+      },
+      "examples": [
+        {
+          "0": "Success",
+          "1": "Invalid parameter",
+          "2": "Invalid input",
+          "3": "Registry error",
+          "4": "JSON serialization failed"
+        }
+      ]
+    }
+  }
+}

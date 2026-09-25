@@ -1,0 +1,399 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Excerpt of Microsoft Graph v1.0 CSDL for device.
+     Source: https://raw.githubusercontent.com/microsoftgraph/msgraph-metadata/b8cbef92f6959dca8150bf3edcc650863765e529/clean_v10_metadata/cleanMetadataWithDescriptionsAndAnnotationsv1.0.xml
+     Copyright (c) 2018 Microsoft Graph. MIT License (https://github.com/microsoftgraph/msgraph-metadata/blob/b8cbef92f6959dca8150bf3edcc650863765e529/LICENSE).
+     Contents: EntityType device, its base types, referenced ComplexType/EnumType definitions (transitive),
+     Annotations targeting those types and the entity set. Element order and text unchanged; extracted with ElementTree. -->
+<Schema Namespace="microsoft.graph" Alias="graph" xmlns="http://docs.oasis-open.org/odata/ns/edm">
+  <EntityType Name="device" BaseType="graph.directoryObject" OpenType="true">
+        <Property Name="accountEnabled" Type="Edm.Boolean">
+          <Annotation Term="Org.OData.Core.V1.Description" String="true if the account is enabled; otherwise, false. Required. Default is true.  Supports $filter (eq, ne, not, in). Only callers with at least the Cloud Device Administrator role can set this property." />
+        </Property>
+        <Property Name="alternativeSecurityIds" Type="Collection(graph.alternativeSecurityId)" Nullable="false">
+          <Annotation Term="Org.OData.Core.V1.Description" String="For internal use only. Not nullable. Supports $filter (eq, not, ge, le)." />
+        </Property>
+        <Property Name="approximateLastSignInDateTime" Type="Edm.DateTimeOffset">
+          <Annotation Term="Org.OData.Core.V1.Description" String="The timestamp type represents date and time information using ISO 8601 format and is always in UTC time. For example, midnight UTC on Jan 1, 2014 is 2014-01-01T00:00:00Z. Read-only. Supports $filter (eq, ne, not, ge, le, and eq on null values) and $orderby." />
+        </Property>
+        <Property Name="complianceExpirationDateTime" Type="Edm.DateTimeOffset">
+          <Annotation Term="Org.OData.Core.V1.Description" String="The timestamp when the device is no longer deemed compliant. The timestamp type represents date and time information using ISO 8601 format and is always in UTC time. For example, midnight UTC on Jan 1, 2014 is 2014-01-01T00:00:00Z. Read-only." />
+        </Property>
+        <Property Name="deviceCategory" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="User-defined property set by Intune to automatically add devices to groups and simplify managing devices." />
+        </Property>
+        <Property Name="deviceId" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="Unique identifier set by Azure Device Registration Service at the time of registration. This alternate key can be used to reference the device object. Supports $filter (eq, ne, not, startsWith)." />
+        </Property>
+        <Property Name="deviceMetadata" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="For internal use only. Set to null." />
+        </Property>
+        <Property Name="deviceOwnership" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="Ownership of the device. Intune sets this property. The possible values are: unknown, company, personal." />
+        </Property>
+        <Property Name="deviceVersion" Type="Edm.Int32">
+          <Annotation Term="Org.OData.Core.V1.Description" String="For internal use only." />
+        </Property>
+        <Property Name="displayName" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="The display name for the device. Maximum length is 256 characters. Required. Supports $filter (eq, ne, not, ge, le, in, startsWith, and eq on null values), $search, and $orderby." />
+        </Property>
+        <Property Name="enrollmentProfileName" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="Enrollment profile applied to the device. For example, Apple Device Enrollment Profile, Device enrollment - Corporate device identifiers, or Windows Autopilot profile name. This property is set by Intune." />
+        </Property>
+        <Property Name="enrollmentType" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="Enrollment type of the device. Intune sets this property. The possible values are: unknown, userEnrollment, deviceEnrollmentManager, appleBulkWithUser, appleBulkWithoutUser, windowsAzureADJoin, windowsBulkUserless, windowsAutoEnrollment, windowsBulkAzureDomainJoin, windowsCoManagement, windowsAzureADJoinUsingDeviceAuth,appleUserEnrollment, appleUserEnrollmentWithServiceAccount. NOTE: This property might return other values apart from those listed." />
+        </Property>
+        <Property Name="isCompliant" Type="Edm.Boolean">
+          <Annotation Term="Org.OData.Core.V1.Description" String="true if the device complies with Mobile Device Management (MDM) policies; otherwise, false. Read-only. This can only be updated by Intune for any device OS type or by an approved MDM app for Windows OS devices. Supports $filter (eq, ne, not)." />
+        </Property>
+        <Property Name="isManaged" Type="Edm.Boolean">
+          <Annotation Term="Org.OData.Core.V1.Description" String="true if the device is managed by a Mobile Device Management (MDM) app; otherwise, false. This can only be updated by Intune for any device OS type or by an approved MDM app for Windows OS devices. Supports $filter (eq, ne, not)." />
+        </Property>
+        <Property Name="isManagementRestricted" Type="Edm.Boolean">
+          <Annotation Term="Org.OData.Core.V1.Description" String="Indicates whether the device is a member of a restricted management administrative unit. If not set, the default value is null and the default behavior is false. Read-only.  To manage a device that's a member of a restricted management administrative unit, the administrator or calling app must be assigned a Microsoft Entra role at the scope of the restricted management administrative unit. Requires $select to retrieve." />
+        </Property>
+        <Property Name="isRooted" Type="Edm.Boolean">
+          <Annotation Term="Org.OData.Core.V1.Description" String="true if the device is rooted or jail-broken. This property can only be updated by Intune." />
+        </Property>
+        <Property Name="managementType" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="The management channel of the device. This property is set by Intune. The possible values are: eas, mdm, easMdm, intuneClient, easIntuneClient, configurationManagerClient, configurationManagerClientMdm, configurationManagerClientMdmEas, unknown, jamf, googleCloudDevicePolicyController." />
+        </Property>
+        <Property Name="manufacturer" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="Manufacturer of the device. Read-only." />
+        </Property>
+        <Property Name="mdmAppId" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="Application identifier used to register device into MDM. Read-only. Supports $filter (eq, ne, not, startsWith)." />
+        </Property>
+        <Property Name="model" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="Model of the device. Read-only." />
+        </Property>
+        <Property Name="onPremisesLastSyncDateTime" Type="Edm.DateTimeOffset">
+          <Annotation Term="Org.OData.Core.V1.Description" String="The last time at which the object was synced with the on-premises directory. The Timestamp type represents date and time information using ISO 8601 format and is always in UTC time. For example, midnight UTC on Jan 1, 2014 is 2014-01-01T00:00:00Z Read-only. Supports $filter (eq, ne, not, ge, le, in)." />
+        </Property>
+        <Property Name="onPremisesSecurityIdentifier" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="The on-premises security identifier (SID) for the user who was synchronized from on-premises to the cloud. Read-only. Requires $select to retrieve. Supports $filter (eq)." />
+        </Property>
+        <Property Name="onPremisesSyncEnabled" Type="Edm.Boolean">
+          <Annotation Term="Org.OData.Core.V1.Description" String="true if this object is synced from an on-premises directory; false if this object was originally synced from an on-premises directory but is no longer synced; null if this object has never been synced from an on-premises directory (default). Read-only. Supports $filter (eq, ne, not, in, and eq on null values)." />
+        </Property>
+        <Property Name="operatingSystem" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="The type of operating system on the device. Required. Supports $filter (eq, ne, not, ge, le, startsWith, and eq on null values)." />
+        </Property>
+        <Property Name="operatingSystemVersion" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="The version of the operating system on the device. Required. Supports $filter (eq, ne, not, ge, le, startsWith, and eq on null values)." />
+        </Property>
+        <Property Name="physicalIds" Type="Collection(Edm.String)" Nullable="false">
+          <Annotation Term="Org.OData.Core.V1.Description" String="For internal use only. Not nullable. Supports $filter (eq, not, ge, le, startsWith,/$count eq 0, /$count ne 0)." />
+        </Property>
+        <Property Name="profileType" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="The profile type of the device. Possible values: RegisteredDevice (default), SecureVM, Printer, Shared, IoT." />
+        </Property>
+        <Property Name="registrationDateTime" Type="Edm.DateTimeOffset">
+          <Annotation Term="Org.OData.Core.V1.Description" String="Date and time of when the device was registered. The timestamp type represents date and time information using ISO 8601 format and is always in UTC time. For example, midnight UTC on Jan 1, 2014 is 2014-01-01T00:00:00Z. Read-only." />
+        </Property>
+        <Property Name="systemLabels" Type="Collection(Edm.String)" Nullable="false">
+          <Annotation Term="Org.OData.Core.V1.Description" String="List of labels applied to the device by the system. Supports $filter (/$count eq 0, /$count ne 0)." />
+        </Property>
+        <Property Name="trustType" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="Type of trust for the joined device. Read-only. Possible values:  Workplace (indicates bring your own personal devices), AzureAd (Cloud-only joined devices), ServerAd (on-premises domain joined devices joined to Microsoft Entra ID). For more information, see Introduction to device management in Microsoft Entra ID. Supports $filter (eq, ne, not, in)." />
+        </Property>
+        <Annotation Term="Org.OData.Core.V1.AlternateKeys">
+          <Collection>
+            <Record Type="Org.OData.Core.V1.AlternateKey">
+              <PropertyValue Property="Key">
+                <Collection>
+                  <Record Type="Org.OData.Core.V1.PropertyRef">
+                    <PropertyValue Property="Alias" String="deviceId" />
+                    <PropertyValue PropertyPath="deviceId" Property="Name" />
+                  </Record>
+                </Collection>
+              </PropertyValue>
+            </Record>
+          </Collection>
+        </Annotation>
+        <NavigationProperty Name="extensions" Type="Collection(graph.extension)" ContainsTarget="true">
+          <Annotation Term="Org.OData.Core.V1.Description" String="The collection of open extensions defined for the device. Read-only. Nullable." />
+        </NavigationProperty>
+        <NavigationProperty Name="memberOf" Type="Collection(graph.directoryObject)">
+          <Annotation Term="Org.OData.Validation.V1.DerivedTypeConstraint">
+            <Collection>
+              <String>microsoft.graph.group</String>
+              <String>microsoft.graph.administrativeUnit</String>
+            </Collection>
+          </Annotation>
+          <Annotation Term="Org.OData.Capabilities.V1.ReadRestrictions">
+            <Record>
+              <PropertyValue Property="CustomHeaders">
+                <Collection>
+                  <Record>
+                    <PropertyValue Property="Name" String="ConsistencyLevel" />
+                    <PropertyValue Property="Description" String="Indicates the requested consistency level." />
+                    <PropertyValue Property="DocumentationURL" String="https://docs.microsoft.com/graph/aad-advanced-queries" />
+                    <PropertyValue Property="Required" Bool="false" />
+                    <PropertyValue Property="ExampleValues">
+                      <Collection>
+                        <Record>
+                          <PropertyValue Property="Value" String="eventual" />
+                          <PropertyValue Property="Description" String="$search and $count queries require the client to set the ConsistencyLevel HTTP header to 'eventual'." />
+                        </Record>
+                      </Collection>
+                    </PropertyValue>
+                  </Record>
+                </Collection>
+              </PropertyValue>
+            </Record>
+          </Annotation>
+          <Annotation Term="Org.OData.Core.V1.Description" String="Groups and administrative units that this device is a member of. Read-only. Nullable. Supports $expand." />
+        </NavigationProperty>
+        <NavigationProperty Name="registeredOwners" Type="Collection(graph.directoryObject)">
+          <Annotation Term="Org.OData.Validation.V1.DerivedTypeConstraint">
+            <Collection>
+              <String>microsoft.graph.appRoleAssignment</String>
+              <String>microsoft.graph.endpoint</String>
+              <String>microsoft.graph.servicePrincipal</String>
+              <String>microsoft.graph.user</String>
+            </Collection>
+          </Annotation>
+          <Annotation Term="Org.OData.Capabilities.V1.NavigationRestrictions">
+            <Record>
+              <PropertyValue Property="Referenceable" Bool="true" />
+            </Record>
+          </Annotation>
+          <Annotation Term="Org.OData.Capabilities.V1.ReadRestrictions">
+            <Record>
+              <PropertyValue Property="CustomHeaders">
+                <Collection>
+                  <Record>
+                    <PropertyValue Property="Name" String="ConsistencyLevel" />
+                    <PropertyValue Property="Description" String="Indicates the requested consistency level." />
+                    <PropertyValue Property="DocumentationURL" String="https://docs.microsoft.com/graph/aad-advanced-queries" />
+                    <PropertyValue Property="Required" Bool="false" />
+                    <PropertyValue Property="ExampleValues">
+                      <Collection>
+                        <Record>
+                          <PropertyValue Property="Value" String="eventual" />
+                          <PropertyValue Property="Description" String="$search and $count queries require the client to set the ConsistencyLevel HTTP header to 'eventual'." />
+                        </Record>
+                      </Collection>
+                    </PropertyValue>
+                  </Record>
+                </Collection>
+              </PropertyValue>
+            </Record>
+          </Annotation>
+          <Annotation Term="Org.OData.Core.V1.Description" String="The user that cloud joined the device or registered their personal device. The registered owner is set at the time of registration. Read-only. Nullable. Supports $expand." />
+        </NavigationProperty>
+        <NavigationProperty Name="registeredUsers" Type="Collection(graph.directoryObject)">
+          <Annotation Term="Org.OData.Validation.V1.DerivedTypeConstraint">
+            <Collection>
+              <String>microsoft.graph.appRoleAssignment</String>
+              <String>microsoft.graph.endpoint</String>
+              <String>microsoft.graph.servicePrincipal</String>
+              <String>microsoft.graph.user</String>
+            </Collection>
+          </Annotation>
+          <Annotation Term="Org.OData.Capabilities.V1.ReadRestrictions">
+            <Record>
+              <PropertyValue Property="CustomHeaders">
+                <Collection>
+                  <Record>
+                    <PropertyValue Property="Name" String="ConsistencyLevel" />
+                    <PropertyValue Property="Description" String="Indicates the requested consistency level." />
+                    <PropertyValue Property="DocumentationURL" String="https://docs.microsoft.com/graph/aad-advanced-queries" />
+                    <PropertyValue Property="Required" Bool="false" />
+                    <PropertyValue Property="ExampleValues">
+                      <Collection>
+                        <Record>
+                          <PropertyValue Property="Value" String="eventual" />
+                          <PropertyValue Property="Description" String="$search and $count queries require the client to set the ConsistencyLevel HTTP header to 'eventual'." />
+                        </Record>
+                      </Collection>
+                    </PropertyValue>
+                  </Record>
+                </Collection>
+              </PropertyValue>
+            </Record>
+          </Annotation>
+          <Annotation Term="Org.OData.Capabilities.V1.NavigationRestrictions">
+            <Record>
+              <PropertyValue Property="Referenceable" Bool="true" />
+            </Record>
+          </Annotation>
+          <Annotation Term="Org.OData.Core.V1.Description" String="Collection of registered users of the device. For cloud joined devices and registered personal devices, registered users are set to the same value as registered owners at the time of registration. Read-only. Nullable. Supports $expand." />
+        </NavigationProperty>
+        <NavigationProperty Name="transitiveMemberOf" Type="Collection(graph.directoryObject)">
+          <Annotation Term="Org.OData.Validation.V1.DerivedTypeConstraint">
+            <Collection>
+              <String>microsoft.graph.group</String>
+              <String>microsoft.graph.administrativeUnit</String>
+            </Collection>
+          </Annotation>
+          <Annotation Term="Org.OData.Capabilities.V1.ReadRestrictions">
+            <Record>
+              <PropertyValue Property="CustomHeaders">
+                <Collection>
+                  <Record>
+                    <PropertyValue Property="Name" String="ConsistencyLevel" />
+                    <PropertyValue Property="Description" String="Indicates the requested consistency level." />
+                    <PropertyValue Property="DocumentationURL" String="https://docs.microsoft.com/graph/aad-advanced-queries" />
+                    <PropertyValue Property="Required" Bool="false" />
+                    <PropertyValue Property="ExampleValues">
+                      <Collection>
+                        <Record>
+                          <PropertyValue Property="Value" String="eventual" />
+                          <PropertyValue Property="Description" String="$search and $count queries require the client to set the ConsistencyLevel HTTP header to 'eventual'." />
+                        </Record>
+                      </Collection>
+                    </PropertyValue>
+                  </Record>
+                </Collection>
+              </PropertyValue>
+            </Record>
+          </Annotation>
+          <Annotation Term="Org.OData.Core.V1.Description" String="Groups and administrative units that the device is a member of. This operation is transitive. Supports $expand." />
+        </NavigationProperty>
+      </EntityType>
+  <EntityType Name="directoryObject" BaseType="graph.entity" OpenType="true">
+        <Property Name="deletedDateTime" Type="Edm.DateTimeOffset">
+          <Annotation Term="Org.OData.Core.V1.Description" String="Date and time when this object was deleted. Always null when the object hasn't been deleted." />
+        </Property>
+      </EntityType>
+  <EntityType Name="entity" Abstract="true">
+        <Property Name="id" Type="Edm.String" Nullable="false">
+          <Annotation Term="Org.OData.Core.V1.Description" String="The unique identifier for an entity. Read-only." />
+        </Property>
+        <Key>
+          <PropertyRef Name="id" />
+        </Key>
+      </EntityType>
+  <ComplexType Name="alternativeSecurityId">
+        <Property Name="identityProvider" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="For internal use only." />
+        </Property>
+        <Property Name="key" Type="Edm.Binary">
+          <Annotation Term="Org.OData.Core.V1.Description" String="For internal use only." />
+        </Property>
+        <Property Name="type" Type="Edm.Int32">
+          <Annotation Term="Org.OData.Core.V1.Description" String="For internal use only." />
+        </Property>
+      </ComplexType>
+  <Annotations Target="microsoft.graph.device">
+        <Annotation Term="Org.OData.Capabilities.V1.ChangeTracking">
+          <Record>
+            <PropertyValue Property="Supported" Bool="true" />
+          </Record>
+        </Annotation>
+      </Annotations>
+  <Annotations Target="microsoft.graph.directoryObject">
+        <Annotation Term="Org.OData.Core.V1.ExplicitOperationBindings">
+          <Collection>
+            <String>microsoft.graph.getByIds</String>
+            <String>microsoft.graph.delta</String>
+            <String>microsoft.graph.getAvailableExtensionProperties</String>
+            <String>microsoft.graph.validateProperties</String>
+            <String>microsoft.graph.restore</String>
+            <String>microsoft.graph.getMemberObjects</String>
+            <String>microsoft.graph.getMemberGroups</String>
+            <String>microsoft.graph.checkMemberObjects</String>
+            <String>microsoft.graph.checkMemberGroups</String>
+          </Collection>
+        </Annotation>
+      </Annotations>
+  <Annotations Target="microsoft.graph.GraphService/devices">
+        <Annotation Term="Org.OData.Capabilities.V1.ReadRestrictions">
+          <Record>
+            <PropertyValue Property="CustomHeaders">
+              <Collection>
+                <Record>
+                  <PropertyValue Property="Name" String="ConsistencyLevel" />
+                  <PropertyValue Property="Description" String="Indicates the requested consistency level." />
+                  <PropertyValue Property="DocumentationURL" String="https://docs.microsoft.com/graph/aad-advanced-queries" />
+                  <PropertyValue Property="Required" Bool="false" />
+                  <PropertyValue Property="ExampleValues">
+                    <Collection>
+                      <Record>
+                        <PropertyValue Property="Value" String="eventual" />
+                        <PropertyValue Property="Description" String="$search and $count queries require the client to set the ConsistencyLevel HTTP header to 'eventual'." />
+                      </Record>
+                    </Collection>
+                  </PropertyValue>
+                </Record>
+              </Collection>
+            </PropertyValue>
+            <PropertyValue Property="Description" String="List devices" />
+            <PropertyValue Property="LongDescription" String="Retrieve a list of device objects registered in the organization." />
+            <PropertyValue Property="ReadByKeyRestrictions">
+              <Record>
+                <PropertyValue Property="Description" String="Get device" />
+                <PropertyValue Property="LongDescription" String="Get the properties and relationships of a device object." />
+              </Record>
+            </PropertyValue>
+          </Record>
+        </Annotation>
+        <Annotation Term="Org.OData.Core.V1.Links">
+          <Collection>
+            <Record>
+              <PropertyValue Property="rel" String="https://graph.microsoft.com/rels/docs/list" />
+              <PropertyValue Property="href" String="https://learn.microsoft.com/graph/api/device-list?view=graph-rest-1.0" />
+            </Record>
+            <Record>
+              <PropertyValue Property="rel" String="https://graph.microsoft.com/rels/docs/create" />
+              <PropertyValue Property="href" String="https://learn.microsoft.com/graph/api/device-post-devices?view=graph-rest-1.0" />
+            </Record>
+            <Record>
+              <PropertyValue Property="rel" String="https://graph.microsoft.com/rels/docs/delete" />
+              <PropertyValue Property="href" String="https://learn.microsoft.com/graph/api/device-delete?view=graph-rest-1.0" />
+            </Record>
+            <Record>
+              <PropertyValue Property="rel" String="https://graph.microsoft.com/rels/docs/get" />
+              <PropertyValue Property="href" String="https://learn.microsoft.com/graph/api/device-get?view=graph-rest-1.0" />
+            </Record>
+            <Record>
+              <PropertyValue Property="rel" String="https://graph.microsoft.com/rels/docs/update" />
+              <PropertyValue Property="href" String="https://learn.microsoft.com/graph/api/device-update?view=graph-rest-1.0" />
+            </Record>
+          </Collection>
+        </Annotation>
+        <Annotation Term="Org.OData.Capabilities.V1.InsertRestrictions">
+          <Record>
+            <PropertyValue Property="Description" String="Create device" />
+            <PropertyValue Property="LongDescription" String="Create and register a new device in the organization." />
+          </Record>
+        </Annotation>
+        <Annotation Term="Org.OData.Capabilities.V1.DeleteRestrictions">
+          <Record>
+            <PropertyValue Property="Description" String="Delete device" />
+            <PropertyValue Property="LongDescription" String="Delete a registered device." />
+          </Record>
+        </Annotation>
+        <Annotation Term="Org.OData.Capabilities.V1.UpdateRestrictions">
+          <Record>
+            <PropertyValue Property="Description" String="Update device" />
+            <PropertyValue Property="LongDescription" String="Update the properties of a registered device. Only certain properties of a device can be updated through approved Mobile Device Managment (MDM) apps." />
+          </Record>
+        </Annotation>
+      </Annotations>
+  <Annotations Target="microsoft.graph.GraphService/devices">
+        <Annotation Term="Org.OData.Capabilities.V1.ReadRestrictions">
+          <Record>
+            <PropertyValue Property="CustomHeaders">
+              <Collection>
+                <Record>
+                  <PropertyValue Property="Description" String="Indicates the requested consistency level." />
+                  <PropertyValue Property="DocumentationURL" String="https://docs.microsoft.com/en-us/graph/api/orgcontact-list?view=graph-rest-beta" />
+                  <PropertyValue Property="ExampleValues">
+                    <Collection>
+                      <Record>
+                        <PropertyValue Property="Description" String="$search and $count queries require the client to set the ConsistencyLevel HTTP header to 'eventual'." />
+                        <PropertyValue Property="Value" String="eventual" />
+                      </Record>
+                    </Collection>
+                  </PropertyValue>
+                  <PropertyValue Property="Name" String="ConsistencyLevel" />
+                  <PropertyValue Property="Required" Bool="false" />
+                </Record>
+              </Collection>
+            </PropertyValue>
+          </Record>
+        </Annotation>
+      </Annotations>
+</Schema>

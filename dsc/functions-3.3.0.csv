@@ -1,0 +1,84 @@
+name,category,since_version,min_args,max_args,return_types,syntax,description
+add,numeric,3.0.0,2,2,number,"add( <number>, <number> )",Adds two or more numbers together
+and,logical,3.2.0,2,unbounded,boolean,"and( <bool>, <bool>, ... )",Evaluates if all arguments are true
+array,array,3.2.0,1,1,array,array( <string | number | object | array> ),Convert the value to an array
+base64,string,3.2.0,1,1,string,base64( <string> ),Encodes a string to Base64 format
+base64ToString,string,3.2.0,1,1,string,base64ToString( <base64> ),Converts a base64 representation to a string
+bool,logical,3.2.0,1,1,boolean,bool( <string | number> ),Converts a string or number to a boolean
+cidrHost,cidr,3.2.0,2,2,string,"cidrHost( <cidr>, <hostIndex> )",Calculates the usable IP address of the host with the specified index on the specified IP address range in CIDR notation
+cidrSubnet,cidr,3.2.0,3,3,string,"cidrSubnet( <cidr>, <newCidr>, <subnetIndex> )",Splits the specified IP address range in CIDR notation into subnets with a new CIDR value and returns the IP address range of the subnet with the specified index
+coalesce,comparison,3.2.0,1,unbounded,array|boolean|null|number|object|string,"coalesce( <value>, ... )",Returns the first non-null value from a list of arguments
+concat,array|string,3.0.0,2,unbounded,string|array,"concat( <string | array>, <string | array>, ... )",Concatenates two or more strings or arrays
+contains,array|object|string,3.2.0,2,2,boolean,"contains( <array | object | string>, <item> )","Checks if an array, object, or string contains a specific item"
+context,deployment,3.2.0,0,0,object,context(),Retrieves context information about the current execution environment
+copyIndex,numeric,3.2.0,0,2,number,"copyIndex( [offset] ); copyIndex( <loopName>, [offset] )",Returns the current copy index
+createArray,array,3.0.0,0,unbounded,array,"createArray( [value], ... )",Creates an array from the given elements
+createObject,object,3.2.0,0,unbounded,object,"createObject( [key], [value], ... )",Creates an object from the given key-value pairs
+dataUri,string,3.2.0,1,1,string,dataUri( <string> ),Converts a value to a data URI
+dataUriToString,string,3.2.0,1,1,string,dataUriToString( <dataUri> ),Converts a data URI formatted value to a string
+div,numeric,3.0.0,2,2,number,"div( <number>, <number> )",Divides the first number by the second
+empty,array|object|string,3.2.0,1,1,boolean,empty( <array | object | string> ),"Checks if an array, object, or string is empty"
+endsWith,string,3.2.0,2,2,boolean,"endsWith( <string>, <suffix> )",Checks if a string ends with a specific suffix
+envvar,system,3.0.0,1,1,string,envvar( <string> ),Retrieves the value of an environment variable
+equals,comparison,3.1.0,2,2,boolean,"equals( <value>, <value> )",Evaluates if the two values are the same
+false,logical,3.2.0,0,0,boolean,false(),Returns the boolean value false
+filter,array|lambda,3.2.0,2,2,array,"filter( <array>, <lambda> )",Filters an array with a custom filtering function
+first,array|string,3.2.0,1,1,string|number|array|object,first( <array | string> ),Returns the first element of an array or first character of a string
+format,string,3.1.0,2,unbounded,string,"format( <string>, <value>, ... )",Formats a string using the given arguments
+greater,comparison,3.2.0,2,2,boolean,"greater( <value>, <value> )",Evaluates if the first value is greater than the second value
+greaterOrEquals,comparison,3.2.0,2,2,boolean,"greaterOrEquals( <value>, <value> )",Evaluates if the first value is greater than or equal to the second value
+if,logical,3.1.0,3,3,string|number|array|object,"if( <condition>, <value_if_true>, <value_if_false> )","Evaluates a condition and returns second value if true, otherwise returns third value"
+indexOf,array|string,3.2.0,2,2,number,"indexOf( <array>, <item> )",Returns the index of the first occurrence of an item in an array
+int,numeric,3.0.0,1,1,number,int( <string | number> ),Converts a string or number to an integer
+intersection,array|object,3.2.0,2,unbounded,array|object,"intersection( <array | object>, <array | object>, ... )",Returns a single array or object with the common elements from the parameters
+items,object,3.2.0,1,1,array,items( <object> ),Converts a dictionary object to an array of objects with key and value properties
+join,string,3.2.0,2,2,string,"join( <array>, <delimiter> )","Joins the elements of an array into a single string, separated using a delimiter."
+json,object,3.2.0,1,1,object|array|string|number|boolean,json( <string> ),Converts a valid JSON string into a JSON data type
+lambda,lambda,3.2.0,0,0,lambda,"lambda( <param1>, [param2], ..., <body> )",Creates a lambda function with parameters and a body expression
+lambdaVariables,lambda,3.2.0,1,1,array|boolean|null|number|object|string,lambdaVariables( <name> ),Retrieves the value of a lambda parameter
+last,array|string,3.2.0,1,1,string|number|array|object|null,last( <array | string> ),Returns the last element of an array or last character of a string
+lastIndexOf,array|string,3.2.0,2,2,number,"lastIndexOf( <array>, <item> )",Returns the index of the last occurrence of an item in an array
+length,array|object|string,3.2.0,1,1,number,length( <string | array | object> ),"Returns the length of a string, array, or object"
+less,comparison,3.2.0,2,2,boolean,"less( <value>, <value> )",Evaluates if the first value is less than the second value
+lessOrEquals,comparison,3.2.0,2,2,boolean,"lessOrEquals( <value>, <value> )",Evaluates if the first value is less than or equal to the second value
+map,array|lambda,3.2.0,2,2,array,"map( <array>, <lambda> )",Transforms an array by applying a lambda function to each element
+max,numeric,3.0.0,1,unbounded,number,"max( <number>, [number], ... )",Returns the largest number from a list of numbers
+min,numeric,3.0.0,1,unbounded,number,"min( <number>, [number], ... )",Returns the smallest number from a list of numbers
+mod,numeric,3.0.0,2,2,number,"mod( <number>, <number> )",Divides the first number by the second and returns the remainder
+mul,numeric,3.0.0,2,2,number,"mul( <number>, <number>, ... )",Multiplies two or more numbers together
+not,logical,3.2.0,1,1,boolean,not( <bool> ),Negates a boolean value
+null,object,3.2.0,0,0,null,null(),Returns a null value
+objectKeys,object,3.2.0,1,1,array,objectKeys( <object> ),"Returns the keys from an object, where an object is a collection of key-value pairs"
+or,logical,3.2.0,2,unbounded,boolean,"or( <bool>, <bool>, ... )",Evaluates if any arguments are true
+parameters,deployment,3.0.0,1,1,string|number|boolean|object|array|null,parameters( <key> ),Retrieves parameters from the configuration
+parseCidr,cidr,3.2.0,1,1,object,parseCidr( <cidr> ),Parses an IP address range in CIDR notation and returns network properties
+path,string,3.0.0,2,unbounded,string,"path( <string>, <string>, ... )",Concatenates multiple strings into a file path
+range,array,3.2.0,2,2,array,"range( <startIndex>, <count> )",Creates an array of integers from a starting integer and containing a number of items
+reference,resource,3.0.0,1,1,array|boolean|number|object|string,reference( <resourceId> ),Retrieves the output of a previously executed resource
+resourceId,resource,3.0.0,2,2,string,"resourceId( <type>, <name> )",Constructs a resource ID from the given type and name
+restartRequired,system,3.3.0,1,2,boolean,"restartRequired( <process | service | system>, [name] )","Determines if a restart is required.  The `name` argument is required for process and service, but not allowed for system."
+secret,deployment,3.2.0,1,2,string,"secret( <name>, [vault] )",Retrieves a secret from a vault
+shallowMerge,object,3.2.0,1,1,object,shallowMerge( <array_of_objects> ),Combines an array of objects where only the top-level objects are merged
+skip,array|string,3.2.0,2,2,array|string,"skip( <array | string>, <number> )","Returns an array with all elements after the specified number, or a string with all characters after the specified number"
+startsWith,string,3.2.0,2,2,boolean,"startsWith( <string>, <prefix> )",Checks if a string starts with a specific prefix
+stateChanged,system,3.3.0,1,1,boolean,stateChanged( <resourceId> ),"Returns true if the state of the resource has changed since the last execution of the configuration, otherwise returns false.  If the resource has not executed yet or does not exist, an error is returned."
+stdout,system,3.2.0,0,0,string,stdout(),Returns the standard output from the last executed resource.
+string,string,3.2.0,1,1,string,string( <value> ),Converts a value to a string
+sub,numeric,3.0.0,2,2,number,"sub( <number>, <number> )",Subtracts the second number from the first
+substring,string,3.2.0,2,3,string,"substring( <string>, <startIndex>, [length] )",Returns a substring that starts at the specified character position and contains the specified number of characters
+systemRoot,system,3.0.0,0,0,string,systemRoot(),Returns the system root path
+take,array|string,3.2.0,2,2,array|string,"take( <array | string>, <number> )","Returns an array with the specified number of elements from the start, or a string with the specified number of characters from the start"
+toLower,string,3.2.0,1,1,string,toLower( <string> ),Converts the specified string to lower case
+toUpper,string,3.2.0,1,1,string,toUpper( <string> ),Converts the specified string to upper case
+trim,string,3.2.0,1,1,string,trim( <string> ),Removes all leading and trailing white-space characters from the specified string
+true,logical,3.2.0,0,0,boolean,true(),Returns the boolean value true
+tryGet,array|object,3.2.0,2,2,array|boolean|null|number|object|string,"tryGet( <array | object>, <key | index> )",Attempts to retrieve a value from an array (by index) or object (by key).  Null is returned if the key or index does not exist.
+tryIndexFromEnd,array,3.2.0,2,2,array|boolean|null|number|object|string,"tryIndexFromEnd( <array>, <index> )",Retrieves a value from an array by counting backward from the end. Returns null if the index is out of range.
+tryWhich,system,3.2.0,1,1,string|null,tryWhich( <string> ),Attempts to locate an executable in the system PATH.  Null is returned if the executable is not found otherwise the full path to the executable is returned.
+union,array|object,3.2.0,2,unbounded,array|object,"union( <array | object>, <array | object>, ... )",Returns a single array or object with all elements from the parameters
+uniqueString,string,3.2.0,1,unbounded,string,"uniqueString( <string>, [string], ... )",Returns a deterministic unique string from the given strings
+uri,string,3.2.0,2,2,string,"uri( <baseUri>, <relativeUri> )",Creates an absolute URI by combining the baseUri and the relativeUri string
+uriComponent,string,3.2.0,1,1,string,uriComponent( <string> ),Encodes a URI component using percent-encoding
+uriComponentToString,string,3.2.0,1,1,string,uriComponentToString( <string> ),Returns a string of a URI encoded value
+utcNow,date,3.2.0,0,1,string,utcNow( [format] ),Returns the current UTC time
+variables,deployment,3.0.0,1,1,array|boolean|number|object|string,variables( <string> ),Retrieves the value of a variable

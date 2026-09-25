@@ -1,0 +1,1309 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Excerpt of Microsoft Graph v1.0 CSDL for managedDevice.
+     Source: https://raw.githubusercontent.com/microsoftgraph/msgraph-metadata/b8cbef92f6959dca8150bf3edcc650863765e529/clean_v10_metadata/cleanMetadataWithDescriptionsAndAnnotationsv1.0.xml
+     Copyright (c) 2018 Microsoft Graph. MIT License (https://github.com/microsoftgraph/msgraph-metadata/blob/b8cbef92f6959dca8150bf3edcc650863765e529/LICENSE).
+     Contents: EntityType managedDevice, its base types, referenced ComplexType/EnumType definitions (transitive),
+     Annotations targeting those types and the entity set. Element order and text unchanged; extracted with ElementTree. -->
+<Schema Namespace="microsoft.graph" Alias="graph" xmlns="http://docs.oasis-open.org/odata/ns/edm">
+  <EntityType Name="managedDevice" BaseType="graph.entity">
+        <Property Name="activationLockBypassCode" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="The code that allows the Activation Lock on managed device to be bypassed. Default, is Null (Non-Default property) for this property when returned as part of managedDevice entity in LIST call. To retrieve actual values GET call needs to be made, with device id and included in select parameter. Supports: $select. $Search is not supported. Read-only. This property is read-only." />
+        </Property>
+        <Property Name="androidSecurityPatchLevel" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="Android security patch level. This property is read-only." />
+        </Property>
+        <Property Name="azureADDeviceId" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="The unique identifier for the Azure Active Directory device. Read only. This property is read-only." />
+        </Property>
+        <Property Name="azureADRegistered" Type="Edm.Boolean">
+          <Annotation Term="Org.OData.Core.V1.Description" String="Whether the device is Azure Active Directory registered. This property is read-only." />
+        </Property>
+        <Property Name="complianceGracePeriodExpirationDateTime" Type="Edm.DateTimeOffset" Nullable="false">
+          <Annotation Term="Org.OData.Core.V1.Description" String="The DateTime when device compliance grace period expires. This property is read-only." />
+        </Property>
+        <Property Name="complianceState" Type="graph.complianceState" Nullable="false">
+          <Annotation Term="Org.OData.Core.V1.Description" String="Compliance state of the device. Examples: Compliant, Conflict, Error, etc. Default is unknown. Supports $filter operator 'eq' and 'or'. This property is read-only. The possible values are: unknown, compliant, noncompliant, conflict, error, inGracePeriod, configManager." />
+        </Property>
+        <Property Name="configurationManagerClientEnabledFeatures" Type="graph.configurationManagerClientEnabledFeatures">
+          <Annotation Term="Org.OData.Core.V1.Description" String="ConfigrMgr client enabled features. This property is read-only." />
+        </Property>
+        <Property Name="deviceActionResults" Type="Collection(graph.deviceActionResult)">
+          <Annotation Term="Org.OData.Core.V1.Description" String="List of ComplexType deviceActionResult objects. This property is read-only." />
+        </Property>
+        <Property Name="deviceCategoryDisplayName" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="Device category display name. Default is an empty string. Supports $filter operator 'eq' and 'or'. This property is read-only." />
+        </Property>
+        <Property Name="deviceEnrollmentType" Type="graph.deviceEnrollmentType" Nullable="false">
+          <Annotation Term="Org.OData.Core.V1.Description" String="Enrollment type of the device. This property is read-only. The possible values are: unknown, userEnrollment, deviceEnrollmentManager, appleBulkWithUser, appleBulkWithoutUser, windowsAzureADJoin, windowsBulkUserless, windowsAutoEnrollment, windowsBulkAzureDomainJoin, windowsCoManagement, windowsAzureADJoinUsingDeviceAuth, appleUserEnrollment, appleUserEnrollmentWithServiceAccount." />
+        </Property>
+        <Property Name="deviceHealthAttestationState" Type="graph.deviceHealthAttestationState">
+          <Annotation Term="Org.OData.Core.V1.Description" String="The device health attestation state. This property is read-only." />
+        </Property>
+        <Property Name="deviceName" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="Name of the device. This property is read-only." />
+        </Property>
+        <Property Name="deviceRegistrationState" Type="graph.deviceRegistrationState" Nullable="false">
+          <Annotation Term="Org.OData.Core.V1.Description" String="Device registration state. This property is read-only. The possible values are: notRegistered, registered, revoked, keyConflict, approvalPending, certificateReset, notRegisteredPendingEnrollment, unknown." />
+        </Property>
+        <Property Name="easActivated" Type="Edm.Boolean" Nullable="false">
+          <Annotation Term="Org.OData.Core.V1.Description" String="Whether the device is Exchange ActiveSync activated. This property is read-only." />
+        </Property>
+        <Property Name="easActivationDateTime" Type="Edm.DateTimeOffset" Nullable="false">
+          <Annotation Term="Org.OData.Core.V1.Description" String="Exchange ActivationSync activation time of the device. This property is read-only." />
+        </Property>
+        <Property Name="easDeviceId" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="Exchange ActiveSync Id of the device. This property is read-only." />
+        </Property>
+        <Property Name="emailAddress" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="Email(s) for the user associated with the device. This property is read-only." />
+        </Property>
+        <Property Name="enrolledDateTime" Type="Edm.DateTimeOffset" Nullable="false">
+          <Annotation Term="Org.OData.Core.V1.Description" String="Enrollment time of the device. Supports $filter operator 'lt' and 'gt'. This property is read-only." />
+        </Property>
+        <Property Name="enrollmentProfileName" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="Name of the enrollment profile assigned to the device. Default value is empty string, indicating no enrollment profile was assgined. This property is read-only." />
+        </Property>
+        <Property Name="ethernetMacAddress" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="Indicates Ethernet MAC Address of the device. Default, is Null (Non-Default property) for this property when returned as part of managedDevice entity. Individual get call with select query options is needed to retrieve actual values. Example: deviceManagement/managedDevices({managedDeviceId})?$select=ethernetMacAddress Supports: $select. $Search is not supported. Read-only. This property is read-only." />
+        </Property>
+        <Property Name="exchangeAccessState" Type="graph.deviceManagementExchangeAccessState" Nullable="false">
+          <Annotation Term="Org.OData.Core.V1.Description" String="The Access State of the device in Exchange. This property is read-only. The possible values are: none, unknown, allowed, blocked, quarantined." />
+        </Property>
+        <Property Name="exchangeAccessStateReason" Type="graph.deviceManagementExchangeAccessStateReason" Nullable="false">
+          <Annotation Term="Org.OData.Core.V1.Description" String="The reason for the device's access state in Exchange. This property is read-only. The possible values are: none, unknown, exchangeGlobalRule, exchangeIndividualRule, exchangeDeviceRule, exchangeUpgrade, exchangeMailboxPolicy, other, compliant, notCompliant, notEnrolled, unknownLocation, mfaRequired, azureADBlockDueToAccessPolicy, compromisedPassword, deviceNotKnownWithManagedApp." />
+        </Property>
+        <Property Name="exchangeLastSuccessfulSyncDateTime" Type="Edm.DateTimeOffset" Nullable="false">
+          <Annotation Term="Org.OData.Core.V1.Description" String="Last time the device contacted Exchange. This property is read-only." />
+        </Property>
+        <Property Name="freeStorageSpaceInBytes" Type="Edm.Int64" Nullable="false">
+          <Annotation Term="Org.OData.Core.V1.Description" String="Free Storage in Bytes. Default value is 0. Read-only. This property is read-only." />
+        </Property>
+        <Property Name="iccid" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="Integrated Circuit Card Identifier, it is A SIM card's unique identification number. Default is an empty string. To retrieve actual values GET call needs to be made, with device id and included in select parameter. Supports: $select. $Search is not supported. Read-only. This property is read-only." />
+        </Property>
+        <Property Name="imei" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="IMEI. This property is read-only." />
+        </Property>
+        <Property Name="isEncrypted" Type="Edm.Boolean" Nullable="false">
+          <Annotation Term="Org.OData.Core.V1.Description" String="Device encryption status. This property is read-only." />
+        </Property>
+        <Property Name="isSupervised" Type="Edm.Boolean" Nullable="false">
+          <Annotation Term="Org.OData.Core.V1.Description" String="Device supervised status. This property is read-only." />
+        </Property>
+        <Property Name="jailBroken" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="Whether the device is jail broken or rooted. Default is an empty string. Supports $filter operator 'eq' and 'or'. This property is read-only." />
+        </Property>
+        <Property Name="lastSyncDateTime" Type="Edm.DateTimeOffset" Nullable="false">
+          <Annotation Term="Org.OData.Core.V1.Description" String="The date and time that the device last completed a successful sync with Intune. Supports $filter operator 'lt' and 'gt'. This property is read-only." />
+        </Property>
+        <Property Name="managedDeviceName" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="Automatically generated name to identify a device. Can be overwritten to a user friendly name." />
+        </Property>
+        <Property Name="managedDeviceOwnerType" Type="graph.managedDeviceOwnerType" Nullable="false">
+          <Annotation Term="Org.OData.Core.V1.Description" String="Ownership of the device. Can be 'company' or 'personal'. The possible values are: unknown, company, personal." />
+        </Property>
+        <Property Name="managementAgent" Type="graph.managementAgentType" Nullable="false">
+          <Annotation Term="Org.OData.Core.V1.Description" String="Management channel of the device. Examples: Intune, EAS, etc. Default is unknown. Supports $filter operator 'eq' and 'or'. This property is read-only. The possible values are: eas, mdm, easMdm, intuneClient, easIntuneClient, configurationManagerClient, configurationManagerClientMdm, configurationManagerClientMdmEas, unknown, jamf, googleCloudDevicePolicyController." />
+        </Property>
+        <Property Name="managementCertificateExpirationDate" Type="Edm.DateTimeOffset" Nullable="false">
+          <Annotation Term="Org.OData.Core.V1.Description" String="Reports device management certificate expiration date. This property is read-only." />
+        </Property>
+        <Property Name="managementState" Type="graph.managementState" Nullable="false" />
+        <Property Name="manufacturer" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="Manufacturer of the device. This property is read-only." />
+        </Property>
+        <Property Name="meid" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="MEID. This property is read-only." />
+        </Property>
+        <Property Name="model" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="Model of the device. This property is read-only." />
+        </Property>
+        <Property Name="notes" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="Notes on the device created by IT Admin. Default is null. To retrieve actual values GET call needs to be made, with device id and included in select parameter. Supports: $select. $Search is not supported." />
+        </Property>
+        <Property Name="operatingSystem" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="Operating system of the device. Windows, iOS, etc. This property is read-only." />
+        </Property>
+        <Property Name="osVersion" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="Operating system version of the device. This property is read-only." />
+        </Property>
+        <Property Name="partnerReportedThreatState" Type="graph.managedDevicePartnerReportedHealthState" Nullable="false">
+          <Annotation Term="Org.OData.Core.V1.Description" String="Indicates the threat state of a device when a Mobile Threat Defense partner is in use by the account and device. Read Only. This property is read-only. The possible values are: unknown, activated, deactivated, secured, lowSeverity, mediumSeverity, highSeverity, unresponsive, compromised, misconfigured." />
+        </Property>
+        <Property Name="phoneNumber" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="Phone number of the device. This property is read-only." />
+        </Property>
+        <Property Name="physicalMemoryInBytes" Type="Edm.Int64" Nullable="false">
+          <Annotation Term="Org.OData.Core.V1.Description" String="Total Memory in Bytes. Default is 0. To retrieve actual values GET call needs to be made, with device id and included in select parameter. Supports: $select. Read-only. This property is read-only." />
+        </Property>
+        <Property Name="remoteAssistanceSessionErrorDetails" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="An error string that identifies issues when creating Remote Assistance session objects. This property is read-only." />
+        </Property>
+        <Property Name="remoteAssistanceSessionUrl" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="Url that allows a Remote Assistance session to be established with the device. Default is an empty string. To retrieve actual values GET call needs to be made, with device id and included in select parameter. This property is read-only." />
+        </Property>
+        <Property Name="requireUserEnrollmentApproval" Type="Edm.Boolean">
+          <Annotation Term="Org.OData.Core.V1.Description" String="Reports if the managed iOS device is user approval enrollment. This property is read-only." />
+        </Property>
+        <Property Name="serialNumber" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="SerialNumber. This property is read-only." />
+        </Property>
+        <Property Name="subscriberCarrier" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="Subscriber Carrier. This property is read-only." />
+        </Property>
+        <Property Name="totalStorageSpaceInBytes" Type="Edm.Int64" Nullable="false">
+          <Annotation Term="Org.OData.Core.V1.Description" String="Total Storage in Bytes. This property is read-only." />
+        </Property>
+        <Property Name="udid" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="Unique Device Identifier for iOS and macOS devices. Default is an empty string. To retrieve actual values GET call needs to be made, with device id and included in select parameter. Supports: $select. $Search is not supported. Read-only. This property is read-only." />
+        </Property>
+        <Property Name="userDisplayName" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="User display name. This property is read-only." />
+        </Property>
+        <Property Name="userId" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="Unique Identifier for the user associated with the device. This property is read-only." />
+        </Property>
+        <Property Name="userPrincipalName" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="Device user principal name. This property is read-only." />
+        </Property>
+        <Property Name="wiFiMacAddress" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="Wi-Fi MAC. This property is read-only." />
+        </Property>
+        <NavigationProperty Name="deviceCategory" Type="graph.deviceCategory" ContainsTarget="true">
+          <Annotation Term="Org.OData.Capabilities.V1.NavigationRestrictions">
+            <Record>
+              <PropertyValue Property="Referenceable" Bool="true" />
+            </Record>
+          </Annotation>
+          <Annotation Term="Org.OData.Core.V1.Description" String="Device category" />
+        </NavigationProperty>
+        <NavigationProperty Name="deviceCompliancePolicyStates" Type="Collection(graph.deviceCompliancePolicyState)" ContainsTarget="true" />
+        <NavigationProperty Name="deviceConfigurationStates" Type="Collection(graph.deviceConfigurationState)" ContainsTarget="true" />
+        <NavigationProperty Name="logCollectionRequests" Type="Collection(graph.deviceLogCollectionResponse)" ContainsTarget="true">
+          <Annotation Term="Org.OData.Core.V1.Description" String="List of log collection requests" />
+        </NavigationProperty>
+        <NavigationProperty Name="users" Type="Collection(graph.user)">
+          <Annotation Term="Org.OData.Core.V1.Description" String="The primary users associated with the managed device." />
+        </NavigationProperty>
+        <NavigationProperty Name="windowsProtectionState" Type="graph.windowsProtectionState" ContainsTarget="true">
+          <Annotation Term="Org.OData.Core.V1.Description" String="The device protection status. This property is read-only." />
+        </NavigationProperty>
+      </EntityType>
+  <EntityType Name="entity" Abstract="true">
+        <Property Name="id" Type="Edm.String" Nullable="false">
+          <Annotation Term="Org.OData.Core.V1.Description" String="The unique identifier for an entity. Read-only." />
+        </Property>
+        <Key>
+          <PropertyRef Name="id" />
+        </Key>
+      </EntityType>
+  <EnumType Name="actionState">
+        <Member Name="none" Value="0" />
+        <Member Name="pending" Value="1" />
+        <Member Name="canceled" Value="2" />
+        <Member Name="active" Value="3" />
+        <Member Name="done" Value="4" />
+        <Member Name="failed" Value="5" />
+        <Member Name="notSupported" Value="6" />
+      </EnumType>
+  <EnumType Name="complianceState">
+        <Member Name="unknown" Value="0" />
+        <Member Name="compliant" Value="1" />
+        <Member Name="noncompliant" Value="2" />
+        <Member Name="conflict" Value="3" />
+        <Member Name="error" Value="4" />
+        <Member Name="inGracePeriod" Value="254" />
+        <Member Name="configManager" Value="255" />
+      </EnumType>
+  <ComplexType Name="configurationManagerClientEnabledFeatures">
+        <Property Name="compliancePolicy" Type="Edm.Boolean" Nullable="false">
+          <Annotation Term="Org.OData.Core.V1.Description" String="Whether compliance policy is managed by Intune" />
+        </Property>
+        <Property Name="deviceConfiguration" Type="Edm.Boolean" Nullable="false">
+          <Annotation Term="Org.OData.Core.V1.Description" String="Whether device configuration is managed by Intune" />
+        </Property>
+        <Property Name="inventory" Type="Edm.Boolean" Nullable="false">
+          <Annotation Term="Org.OData.Core.V1.Description" String="Whether inventory is managed by Intune" />
+        </Property>
+        <Property Name="modernApps" Type="Edm.Boolean" Nullable="false">
+          <Annotation Term="Org.OData.Core.V1.Description" String="Whether modern application is managed by Intune" />
+        </Property>
+        <Property Name="resourceAccess" Type="Edm.Boolean" Nullable="false">
+          <Annotation Term="Org.OData.Core.V1.Description" String="Whether resource access is managed by Intune" />
+        </Property>
+        <Property Name="windowsUpdateForBusiness" Type="Edm.Boolean" Nullable="false">
+          <Annotation Term="Org.OData.Core.V1.Description" String="Whether Windows Update for Business is managed by Intune" />
+        </Property>
+      </ComplexType>
+  <ComplexType Name="deviceActionResult">
+        <Property Name="actionName" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="Action name" />
+        </Property>
+        <Property Name="actionState" Type="graph.actionState" Nullable="false">
+          <Annotation Term="Org.OData.Core.V1.Description" String="State of the action. The possible values are: none, pending, canceled, active, done, failed, notSupported." />
+        </Property>
+        <Property Name="lastUpdatedDateTime" Type="Edm.DateTimeOffset" Nullable="false">
+          <Annotation Term="Org.OData.Core.V1.Description" String="Time the action state was last updated" />
+        </Property>
+        <Property Name="startDateTime" Type="Edm.DateTimeOffset" Nullable="false">
+          <Annotation Term="Org.OData.Core.V1.Description" String="Time the action was initiated" />
+        </Property>
+      </ComplexType>
+  <EnumType Name="deviceEnrollmentType">
+        <Member Name="unknown" Value="0" />
+        <Member Name="userEnrollment" Value="1" />
+        <Member Name="deviceEnrollmentManager" Value="2" />
+        <Member Name="appleBulkWithUser" Value="3" />
+        <Member Name="appleBulkWithoutUser" Value="4" />
+        <Member Name="windowsAzureADJoin" Value="5" />
+        <Member Name="windowsBulkUserless" Value="6" />
+        <Member Name="windowsAutoEnrollment" Value="7" />
+        <Member Name="windowsBulkAzureDomainJoin" Value="8" />
+        <Member Name="windowsCoManagement" Value="9" />
+        <Member Name="windowsAzureADJoinUsingDeviceAuth" Value="10" />
+        <Member Name="appleUserEnrollment" Value="11" />
+        <Member Name="appleUserEnrollmentWithServiceAccount" Value="12" />
+        <Member Name="unknownFutureValue" Value="26" />
+      </EnumType>
+  <ComplexType Name="deviceHealthAttestationState">
+        <Property Name="attestationIdentityKey" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="TWhen an Attestation Identity Key (AIK) is present on a device, it indicates that the device has an endorsement key (EK) certificate." />
+        </Property>
+        <Property Name="bitLockerStatus" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="On or Off of BitLocker Drive Encryption" />
+        </Property>
+        <Property Name="bootAppSecurityVersion" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="The security version number of the Boot Application" />
+        </Property>
+        <Property Name="bootDebugging" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="When bootDebugging is enabled, the device is used in development and testing" />
+        </Property>
+        <Property Name="bootManagerSecurityVersion" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="The security version number of the Boot Application" />
+        </Property>
+        <Property Name="bootManagerVersion" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="The version of the Boot Manager" />
+        </Property>
+        <Property Name="bootRevisionListInfo" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="The Boot Revision List that was loaded during initial boot on the attested device" />
+        </Property>
+        <Property Name="codeIntegrity" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="When code integrity is enabled, code execution is restricted to integrity verified code" />
+        </Property>
+        <Property Name="codeIntegrityCheckVersion" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="The version of the Boot Manager" />
+        </Property>
+        <Property Name="codeIntegrityPolicy" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="The Code Integrity policy that is controlling the security of the boot environment" />
+        </Property>
+        <Property Name="contentNamespaceUrl" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="The DHA report version. (Namespace version)" />
+        </Property>
+        <Property Name="contentVersion" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="The HealthAttestation state schema version" />
+        </Property>
+        <Property Name="dataExcutionPolicy" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="DEP Policy defines a set of hardware and software technologies that perform additional checks on memory" />
+        </Property>
+        <Property Name="deviceHealthAttestationStatus" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="The DHA report version. (Namespace version)" />
+        </Property>
+        <Property Name="earlyLaunchAntiMalwareDriverProtection" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="ELAM provides protection for the computers in your network when they start up" />
+        </Property>
+        <Property Name="healthAttestationSupportedStatus" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="This attribute indicates if DHA is supported for the device" />
+        </Property>
+        <Property Name="healthStatusMismatchInfo" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="This attribute appears if DHA-Service detects an integrity issue" />
+        </Property>
+        <Property Name="issuedDateTime" Type="Edm.DateTimeOffset" Nullable="false">
+          <Annotation Term="Org.OData.Core.V1.Description" String="The DateTime when device was evaluated or issued to MDM" />
+        </Property>
+        <Property Name="lastUpdateDateTime" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="The Timestamp of the last update." />
+        </Property>
+        <Property Name="operatingSystemKernelDebugging" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="When operatingSystemKernelDebugging is enabled, the device is used in development and testing" />
+        </Property>
+        <Property Name="operatingSystemRevListInfo" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="The Operating System Revision List that was loaded during initial boot on the attested device" />
+        </Property>
+        <Property Name="pcr0" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="The measurement that is captured in PCR[0]" />
+        </Property>
+        <Property Name="pcrHashAlgorithm" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="Informational attribute that identifies the HASH algorithm that was used by TPM" />
+        </Property>
+        <Property Name="resetCount" Type="Edm.Int64" Nullable="false">
+          <Annotation Term="Org.OData.Core.V1.Description" String="The number of times a PC device has hibernated or resumed" />
+        </Property>
+        <Property Name="restartCount" Type="Edm.Int64" Nullable="false">
+          <Annotation Term="Org.OData.Core.V1.Description" String="The number of times a PC device has rebooted" />
+        </Property>
+        <Property Name="safeMode" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="Safe mode is a troubleshooting option for Windows that starts your computer in a limited state" />
+        </Property>
+        <Property Name="secureBoot" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="When Secure Boot is enabled, the core components must have the correct cryptographic signatures" />
+        </Property>
+        <Property Name="secureBootConfigurationPolicyFingerPrint" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="Fingerprint of the Custom Secure Boot Configuration Policy" />
+        </Property>
+        <Property Name="testSigning" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="When test signing is allowed, the device does not enforce signature validation during boot" />
+        </Property>
+        <Property Name="tpmVersion" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="The security version number of the Boot Application" />
+        </Property>
+        <Property Name="virtualSecureMode" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="Indicates whether the device has Virtual Secure Mode (VSM) enabled. Virtual Secure Mode (VSM) is a container that protects high value assets from a compromised kernel. This property will be deprecated in beta from August 2023. Support for this property will end in August 2025 for v1.0 API. A new property virtualizationBasedSecurity is added and used instead. The value used for virtualSecureMode will be passed by virtualizationBasedSecurity during the deprecation process. Possible values are 'enabled', 'disabled' and 'notApplicable'. 'enabled' indicates Virtual Secure Mode (VSM) is enabled. 'disabled' indicates Virtual Secure Mode (VSM) is disabled. 'notApplicable' indicates the device is not a Windows 11 device. Default value is 'notApplicable'." />
+        </Property>
+        <Property Name="windowsPE" Type="Edm.String">
+          <Annotation Term="Org.OData.Core.V1.Description" String="Operating system running with limited services that is used to prepare a computer for Windows" />
+        </Property>
+      </ComplexType>
+  <EnumType Name="deviceManagementExchangeAccessState">
+        <Member Name="none" Value="0" />
+        <Member Name="unknown" Value="1" />
+        <Member Name="allowed" Value="2" />
+        <Member Name="blocked" Value="3" />
+        <Member Name="quarantined" Value="4" />
+      </EnumType>
+  <EnumType Name="deviceManagementExchangeAccessStateReason">
+        <Member Name="none" Value="0" />
+        <Member Name="unknown" Value="1" />
+        <Member Name="exchangeGlobalRule" Value="2" />
+        <Member Name="exchangeIndividualRule" Value="3" />
+        <Member Name="exchangeDeviceRule" Value="4" />
+        <Member Name="exchangeUpgrade" Value="5" />
+        <Member Name="exchangeMailboxPolicy" Value="6" />
+        <Member Name="other" Value="7" />
+        <Member Name="compliant" Value="8" />
+        <Member Name="notCompliant" Value="9" />
+        <Member Name="notEnrolled" Value="10" />
+        <Member Name="unknownLocation" Value="12" />
+        <Member Name="mfaRequired" Value="13" />
+        <Member Name="azureADBlockDueToAccessPolicy" Value="14" />
+        <Member Name="compromisedPassword" Value="15" />
+        <Member Name="deviceNotKnownWithManagedApp" Value="16" />
+      </EnumType>
+  <EnumType Name="deviceRegistrationState">
+        <Member Name="notRegistered" Value="0" />
+        <Member Name="registered" Value="2" />
+        <Member Name="revoked" Value="3" />
+        <Member Name="keyConflict" Value="4" />
+        <Member Name="approvalPending" Value="5" />
+        <Member Name="certificateReset" Value="6" />
+        <Member Name="notRegisteredPendingEnrollment" Value="7" />
+        <Member Name="unknown" Value="8" />
+      </EnumType>
+  <EnumType Name="managedDeviceOwnerType">
+        <Member Name="unknown" Value="0" />
+        <Member Name="company" Value="1" />
+        <Member Name="personal" Value="2" />
+        <Member Name="unknownFutureValue" Value="3" />
+      </EnumType>
+  <EnumType Name="managedDevicePartnerReportedHealthState">
+        <Member Name="unknown" Value="0" />
+        <Member Name="activated" Value="1" />
+        <Member Name="deactivated" Value="2" />
+        <Member Name="secured" Value="3" />
+        <Member Name="lowSeverity" Value="4" />
+        <Member Name="mediumSeverity" Value="5" />
+        <Member Name="highSeverity" Value="6" />
+        <Member Name="unresponsive" Value="7" />
+        <Member Name="compromised" Value="8" />
+        <Member Name="misconfigured" Value="9" />
+      </EnumType>
+  <EnumType Name="managementAgentType">
+        <Member Name="eas" Value="1" />
+        <Member Name="mdm" Value="2" />
+        <Member Name="easMdm" Value="3" />
+        <Member Name="intuneClient" Value="4" />
+        <Member Name="easIntuneClient" Value="5" />
+        <Member Name="configurationManagerClient" Value="8" />
+        <Member Name="configurationManagerClientMdm" Value="10" />
+        <Member Name="configurationManagerClientMdmEas" Value="11" />
+        <Member Name="unknown" Value="16" />
+        <Member Name="jamf" Value="32" />
+        <Member Name="googleCloudDevicePolicyController" Value="64" />
+        <Member Name="microsoft365ManagedMdm" Value="258" />
+        <Member Name="msSense" Value="1024" />
+      </EnumType>
+  <EnumType Name="managementState">
+        <Member Name="managed" Value="0" />
+        <Member Name="retirePending" Value="1" />
+        <Member Name="retireFailed" Value="2" />
+        <Member Name="wipePending" Value="3" />
+        <Member Name="wipeFailed" Value="4" />
+        <Member Name="unhealthy" Value="5" />
+        <Member Name="deletePending" Value="6" />
+        <Member Name="retireIssued" Value="7" />
+        <Member Name="wipeIssued" Value="8" />
+        <Member Name="wipeCanceled" Value="9" />
+        <Member Name="retireCanceled" Value="10" />
+        <Member Name="discovered" Value="11" />
+        <Member Name="unknownFutureValue" Value="12" />
+      </EnumType>
+  <Annotations Target="microsoft.graph.managedDevice/users">
+        <Annotation Term="Org.OData.Capabilities.V1.NavigationRestrictions">
+          <Record>
+            <PropertyValue Property="RestrictedProperties">
+              <Collection>
+                <Record>
+                  <PropertyValue Property="IndexableByKey" Bool="false" />
+                </Record>
+              </Collection>
+            </PropertyValue>
+          </Record>
+        </Annotation>
+      </Annotations>
+  <Annotations Target="microsoft.graph.managedDevice/users">
+        <Annotation Term="Org.OData.Core.V1.Description" String="The primary users associated with the managed device." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.managedDevice">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Devices that are managed or pre-enrolled through Intune. Limited support for $filter: Only properties whose descriptions mention support for $filter may be used, and combinations of those filtered properties must use 'and', not 'or'." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.managedDevice/activationLockBypassCode">
+        <Annotation Term="Org.OData.Core.V1.Computed" Bool="true" />
+        <Annotation Term="Org.OData.Core.V1.Description" String="The code that allows the Activation Lock on managed device to be bypassed. Default, is Null (Non-Default property) for this property when returned as part of managedDevice entity in LIST call. To retrieve actual values GET call needs to be made, with device id and included in select parameter. Supports: $select. $Search is not supported. Read-only. This property is read-only." />
+        <Annotation Term="Org.OData.Core.V1.Permissions">
+          <EnumMember>Org.OData.Core.V1.Permission/Read</EnumMember>
+        </Annotation>
+      </Annotations>
+  <Annotations Target="microsoft.graph.managedDevice/androidSecurityPatchLevel">
+        <Annotation Term="Org.OData.Core.V1.Computed" Bool="true" />
+        <Annotation Term="Org.OData.Core.V1.Description" String="Android security patch level. This property is read-only." />
+        <Annotation Term="Org.OData.Core.V1.Permissions">
+          <EnumMember>Org.OData.Core.V1.Permission/Read</EnumMember>
+        </Annotation>
+      </Annotations>
+  <Annotations Target="microsoft.graph.managedDevice/azureADDeviceId">
+        <Annotation Term="Org.OData.Core.V1.Computed" Bool="true" />
+        <Annotation Term="Org.OData.Core.V1.Description" String="The unique identifier for the Azure Active Directory device. Supports $filter operator 'eq', not combine with count. Read only. This property is read-only." />
+        <Annotation Term="Org.OData.Core.V1.Permissions">
+          <EnumMember>Org.OData.Core.V1.Permission/Read</EnumMember>
+        </Annotation>
+      </Annotations>
+  <Annotations Target="microsoft.graph.managedDevice/azureADRegistered">
+        <Annotation Term="Org.OData.Core.V1.Computed" Bool="true" />
+        <Annotation Term="Org.OData.Core.V1.Description" String="Whether the device is Azure Active Directory registered. This property is read-only." />
+        <Annotation Term="Org.OData.Core.V1.Permissions">
+          <EnumMember>Org.OData.Core.V1.Permission/Read</EnumMember>
+        </Annotation>
+      </Annotations>
+  <Annotations Target="microsoft.graph.managedDevice/complianceGracePeriodExpirationDateTime">
+        <Annotation Term="Org.OData.Core.V1.Computed" Bool="true" />
+        <Annotation Term="Org.OData.Core.V1.Description" String="The DateTime when device compliance grace period expires. Supports $filter operator 'lt' and 'gt'. This property is read-only." />
+        <Annotation Term="Org.OData.Core.V1.Permissions">
+          <EnumMember>Org.OData.Core.V1.Permission/Read</EnumMember>
+        </Annotation>
+      </Annotations>
+  <Annotations Target="microsoft.graph.managedDevice/complianceState">
+        <Annotation Term="Org.OData.Core.V1.Computed" Bool="true" />
+        <Annotation Term="Org.OData.Core.V1.Description" String="Compliance state of the device. Examples: Compliant, Conflict, Error, etc. Default is unknown. Supports $filter operator 'eq' and 'or'. This property is read-only." />
+        <Annotation Term="Org.OData.Core.V1.Permissions">
+          <EnumMember>Org.OData.Core.V1.Permission/Read</EnumMember>
+        </Annotation>
+      </Annotations>
+  <Annotations Target="microsoft.graph.managedDevice/configurationManagerClientEnabledFeatures">
+        <Annotation Term="Org.OData.Core.V1.Computed" Bool="true" />
+        <Annotation Term="Org.OData.Core.V1.Description" String="ConfigrMgr client enabled features. This property is read-only." />
+        <Annotation Term="Org.OData.Core.V1.Permissions">
+          <EnumMember>Org.OData.Core.V1.Permission/Read</EnumMember>
+        </Annotation>
+      </Annotations>
+  <Annotations Target="microsoft.graph.managedDevice/deviceActionResults">
+        <Annotation Term="Org.OData.Core.V1.Computed" Bool="true" />
+        <Annotation Term="Org.OData.Core.V1.Description" String="List of ComplexType deviceActionResult objects. This property is read-only." />
+        <Annotation Term="Org.OData.Core.V1.Permissions">
+          <EnumMember>Org.OData.Core.V1.Permission/Read</EnumMember>
+        </Annotation>
+      </Annotations>
+  <Annotations Target="microsoft.graph.managedDevice/deviceCategory">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Device category" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.managedDevice/deviceCategoryDisplayName">
+        <Annotation Term="Org.OData.Core.V1.Computed" Bool="true" />
+        <Annotation Term="Org.OData.Core.V1.Description" String="Device category display name. Default is an empty string. Supports $filter operator 'eq' and 'or'. This property is read-only." />
+        <Annotation Term="Org.OData.Core.V1.Permissions">
+          <EnumMember>Org.OData.Core.V1.Permission/Read</EnumMember>
+        </Annotation>
+      </Annotations>
+  <Annotations Target="microsoft.graph.managedDevice/deviceCompliancePolicyStates">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Device compliance policy states for this device." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.managedDevice/deviceConfigurationStates">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Device configuration states for this device." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.managedDevice/deviceEnrollmentType">
+        <Annotation Term="Org.OData.Core.V1.Computed" Bool="true" />
+        <Annotation Term="Org.OData.Core.V1.Description" String="Enrollment type of the device. This property is read-only." />
+        <Annotation Term="Org.OData.Core.V1.Permissions">
+          <EnumMember>Org.OData.Core.V1.Permission/Read</EnumMember>
+        </Annotation>
+      </Annotations>
+  <Annotations Target="microsoft.graph.managedDevice/deviceHealthAttestationState">
+        <Annotation Term="Org.OData.Core.V1.Computed" Bool="true" />
+        <Annotation Term="Org.OData.Core.V1.Description" String="The device health attestation state. This property is read-only." />
+        <Annotation Term="Org.OData.Core.V1.Permissions">
+          <EnumMember>Org.OData.Core.V1.Permission/Read</EnumMember>
+        </Annotation>
+      </Annotations>
+  <Annotations Target="microsoft.graph.managedDevice/deviceName">
+        <Annotation Term="Org.OData.Core.V1.Computed" Bool="true" />
+        <Annotation Term="Org.OData.Core.V1.Description" String="Name of the device. Supports $filter operator 'eq' and 'contains'. This property is read-only." />
+        <Annotation Term="Org.OData.Core.V1.Permissions">
+          <EnumMember>Org.OData.Core.V1.Permission/Read</EnumMember>
+        </Annotation>
+      </Annotations>
+  <Annotations Target="microsoft.graph.managedDevice/deviceRegistrationState">
+        <Annotation Term="Org.OData.Core.V1.Computed" Bool="true" />
+        <Annotation Term="Org.OData.Core.V1.Description" String="Device registration state. This property is read-only." />
+        <Annotation Term="Org.OData.Core.V1.Permissions">
+          <EnumMember>Org.OData.Core.V1.Permission/Read</EnumMember>
+        </Annotation>
+      </Annotations>
+  <Annotations Target="microsoft.graph.managedDevice/easActivated">
+        <Annotation Term="Org.OData.Core.V1.Computed" Bool="true" />
+        <Annotation Term="Org.OData.Core.V1.Description" String="Whether the device is Exchange ActiveSync activated. This property is read-only." />
+        <Annotation Term="Org.OData.Core.V1.Permissions">
+          <EnumMember>Org.OData.Core.V1.Permission/Read</EnumMember>
+        </Annotation>
+      </Annotations>
+  <Annotations Target="microsoft.graph.managedDevice/easActivationDateTime">
+        <Annotation Term="Org.OData.Core.V1.Computed" Bool="true" />
+        <Annotation Term="Org.OData.Core.V1.Description" String="Exchange ActivationSync activation time of the device. This property is read-only." />
+        <Annotation Term="Org.OData.Core.V1.Permissions">
+          <EnumMember>Org.OData.Core.V1.Permission/Read</EnumMember>
+        </Annotation>
+      </Annotations>
+  <Annotations Target="microsoft.graph.managedDevice/easDeviceId">
+        <Annotation Term="Org.OData.Core.V1.Computed" Bool="true" />
+        <Annotation Term="Org.OData.Core.V1.Description" String="Exchange ActiveSync Id of the device. This property is read-only." />
+        <Annotation Term="Org.OData.Core.V1.Permissions">
+          <EnumMember>Org.OData.Core.V1.Permission/Read</EnumMember>
+        </Annotation>
+      </Annotations>
+  <Annotations Target="microsoft.graph.managedDevice/emailAddress">
+        <Annotation Term="Org.OData.Core.V1.Computed" Bool="true" />
+        <Annotation Term="Org.OData.Core.V1.Description" String="Email(s) for the user associated with the device. Supports $filter operator 'contains'. This property is read-only." />
+        <Annotation Term="Org.OData.Core.V1.Permissions">
+          <EnumMember>Org.OData.Core.V1.Permission/Read</EnumMember>
+        </Annotation>
+      </Annotations>
+  <Annotations Target="microsoft.graph.managedDevice/enrolledDateTime">
+        <Annotation Term="Org.OData.Core.V1.Computed" Bool="true" />
+        <Annotation Term="Org.OData.Core.V1.Description" String="Enrollment time of the device. Supports $filter operator 'lt' and 'gt'. This property is read-only." />
+        <Annotation Term="Org.OData.Core.V1.Permissions">
+          <EnumMember>Org.OData.Core.V1.Permission/Read</EnumMember>
+        </Annotation>
+      </Annotations>
+  <Annotations Target="microsoft.graph.managedDevice/enrollmentProfileName">
+        <Annotation Term="Org.OData.Core.V1.Computed" Bool="true" />
+        <Annotation Term="Org.OData.Core.V1.Description" String="Name of the enrollment profile assigned to the device. Default value is empty string, indicating no enrollment profile was assgined. This property is read-only." />
+        <Annotation Term="Org.OData.Core.V1.Permissions">
+          <EnumMember>Org.OData.Core.V1.Permission/Read</EnumMember>
+        </Annotation>
+      </Annotations>
+  <Annotations Target="microsoft.graph.managedDevice/ethernetMacAddress">
+        <Annotation Term="Org.OData.Core.V1.Computed" Bool="true" />
+        <Annotation Term="Org.OData.Core.V1.Description" String="Indicates Ethernet MAC Address of the device. Default, is Null (Non-Default property) for this property when returned as part of managedDevice entity. Individual get call with select query options is needed to retrieve actual values. Example: deviceManagement/managedDevices({managedDeviceId})?$select=ethernetMacAddress Supports: $select. $Search is not supported. Read-only. This property is read-only." />
+        <Annotation Term="Org.OData.Core.V1.Permissions">
+          <EnumMember>Org.OData.Core.V1.Permission/Read</EnumMember>
+        </Annotation>
+      </Annotations>
+  <Annotations Target="microsoft.graph.managedDevice/exchangeAccessState">
+        <Annotation Term="Org.OData.Core.V1.Computed" Bool="true" />
+        <Annotation Term="Org.OData.Core.V1.Description" String="The Access State of the device in Exchange. Supports $filter operator 'eq' and 'or'. This property is read-only." />
+        <Annotation Term="Org.OData.Core.V1.Permissions">
+          <EnumMember>Org.OData.Core.V1.Permission/Read</EnumMember>
+        </Annotation>
+      </Annotations>
+  <Annotations Target="microsoft.graph.managedDevice/exchangeAccessStateReason">
+        <Annotation Term="Org.OData.Core.V1.Computed" Bool="true" />
+        <Annotation Term="Org.OData.Core.V1.Description" String="The reason for the device's access state in Exchange. This property is read-only." />
+        <Annotation Term="Org.OData.Core.V1.Permissions">
+          <EnumMember>Org.OData.Core.V1.Permission/Read</EnumMember>
+        </Annotation>
+      </Annotations>
+  <Annotations Target="microsoft.graph.managedDevice/exchangeLastSuccessfulSyncDateTime">
+        <Annotation Term="Org.OData.Core.V1.Computed" Bool="true" />
+        <Annotation Term="Org.OData.Core.V1.Description" String="Last time the device contacted Exchange. This property is read-only." />
+        <Annotation Term="Org.OData.Core.V1.Permissions">
+          <EnumMember>Org.OData.Core.V1.Permission/Read</EnumMember>
+        </Annotation>
+      </Annotations>
+  <Annotations Target="microsoft.graph.managedDevice/freeStorageSpaceInBytes">
+        <Annotation Term="Org.OData.Core.V1.Computed" Bool="true" />
+        <Annotation Term="Org.OData.Core.V1.Description" String="Free Storage in Bytes. Default value is 0. Read-only. This property is read-only." />
+        <Annotation Term="Org.OData.Core.V1.Permissions">
+          <EnumMember>Org.OData.Core.V1.Permission/Read</EnumMember>
+        </Annotation>
+      </Annotations>
+  <Annotations Target="microsoft.graph.managedDevice/iccid">
+        <Annotation Term="Org.OData.Core.V1.Computed" Bool="true" />
+        <Annotation Term="Org.OData.Core.V1.Description" String="Integrated Circuit Card Identifier, it is A SIM card's unique identification number. Default is an empty string. To retrieve actual values GET call needs to be made, with device id and included in select parameter. Supports: $select. $Search is not supported. Read-only. This property is read-only." />
+        <Annotation Term="Org.OData.Core.V1.Permissions">
+          <EnumMember>Org.OData.Core.V1.Permission/Read</EnumMember>
+        </Annotation>
+      </Annotations>
+  <Annotations Target="microsoft.graph.managedDevice/imei">
+        <Annotation Term="Org.OData.Core.V1.Computed" Bool="true" />
+        <Annotation Term="Org.OData.Core.V1.Description" String="IMEI of the device. Supports $filter operator 'eq' and 'or'. This property is read-only." />
+        <Annotation Term="Org.OData.Core.V1.Permissions">
+          <EnumMember>Org.OData.Core.V1.Permission/Read</EnumMember>
+        </Annotation>
+      </Annotations>
+  <Annotations Target="microsoft.graph.managedDevice/isEncrypted">
+        <Annotation Term="Org.OData.Core.V1.Computed" Bool="true" />
+        <Annotation Term="Org.OData.Core.V1.Description" String="Device encryption status. This property is read-only." />
+        <Annotation Term="Org.OData.Core.V1.Permissions">
+          <EnumMember>Org.OData.Core.V1.Permission/Read</EnumMember>
+        </Annotation>
+      </Annotations>
+  <Annotations Target="microsoft.graph.managedDevice/isSupervised">
+        <Annotation Term="Org.OData.Core.V1.Computed" Bool="true" />
+        <Annotation Term="Org.OData.Core.V1.Description" String="Device supervised status. This property is read-only." />
+        <Annotation Term="Org.OData.Core.V1.Permissions">
+          <EnumMember>Org.OData.Core.V1.Permission/Read</EnumMember>
+        </Annotation>
+      </Annotations>
+  <Annotations Target="microsoft.graph.managedDevice/jailBroken">
+        <Annotation Term="Org.OData.Core.V1.Computed" Bool="true" />
+        <Annotation Term="Org.OData.Core.V1.Description" String="Whether the device is jail broken or rooted. Default is an empty string. Supports $filter operator 'eq' and 'or'. This property is read-only." />
+        <Annotation Term="Org.OData.Core.V1.Permissions">
+          <EnumMember>Org.OData.Core.V1.Permission/Read</EnumMember>
+        </Annotation>
+      </Annotations>
+  <Annotations Target="microsoft.graph.managedDevice/lastSyncDateTime">
+        <Annotation Term="Org.OData.Core.V1.Computed" Bool="true" />
+        <Annotation Term="Org.OData.Core.V1.Description" String="The date and time that the device last completed a successful sync with Intune. Supports $filter operator 'lt' and 'gt'. This property is read-only." />
+        <Annotation Term="Org.OData.Core.V1.Permissions">
+          <EnumMember>Org.OData.Core.V1.Permission/Read</EnumMember>
+        </Annotation>
+      </Annotations>
+  <Annotations Target="microsoft.graph.managedDevice/logCollectionRequests">
+        <Annotation Term="Org.OData.Core.V1.Description" String="List of log collection requests" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.managedDevice/managedDeviceName">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Automatically generated name to identify a device. Can be overwritten to a user friendly name." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.managedDevice/managedDeviceOwnerType">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Ownership of the device. Can be 'company' or 'personal'" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.managedDevice/managementAgent">
+        <Annotation Term="Org.OData.Core.V1.Computed" Bool="true" />
+        <Annotation Term="Org.OData.Core.V1.Description" String="Management channel of the device. Examples: Intune, EAS, etc. Default is unknown. Supports $filter operator 'eq' and 'or'. This property is read-only." />
+        <Annotation Term="Org.OData.Core.V1.Permissions">
+          <EnumMember>Org.OData.Core.V1.Permission/Read</EnumMember>
+        </Annotation>
+      </Annotations>
+  <Annotations Target="microsoft.graph.managedDevice/managementCertificateExpirationDate">
+        <Annotation Term="Org.OData.Core.V1.Computed" Bool="true" />
+        <Annotation Term="Org.OData.Core.V1.Description" String="Reports device management certificate expiration date. This property is read-only." />
+        <Annotation Term="Org.OData.Core.V1.Permissions">
+          <EnumMember>Org.OData.Core.V1.Permission/Read</EnumMember>
+        </Annotation>
+      </Annotations>
+  <Annotations Target="microsoft.graph.managedDevice/managementState">
+        <Annotation Term="Org.OData.Core.V1.Computed" Bool="true" />
+        <Annotation Term="Org.OData.Core.V1.Description" String="Management state of the device. Examples: Managed, RetirePending, etc. Default is managed. Supports $filter operator 'eq' and 'or'. This property is read-only." />
+        <Annotation Term="Org.OData.Core.V1.Permissions">
+          <EnumMember>Org.OData.Core.V1.Permission/Read</EnumMember>
+        </Annotation>
+      </Annotations>
+  <Annotations Target="microsoft.graph.managedDevice/manufacturer">
+        <Annotation Term="Org.OData.Core.V1.Computed" Bool="true" />
+        <Annotation Term="Org.OData.Core.V1.Description" String="Manufacturer of the device. Supports $filter operator 'eq' and 'or'. This property is read-only." />
+        <Annotation Term="Org.OData.Core.V1.Permissions">
+          <EnumMember>Org.OData.Core.V1.Permission/Read</EnumMember>
+        </Annotation>
+      </Annotations>
+  <Annotations Target="microsoft.graph.managedDevice/meid">
+        <Annotation Term="Org.OData.Core.V1.Computed" Bool="true" />
+        <Annotation Term="Org.OData.Core.V1.Description" String="MEID. This property is read-only." />
+        <Annotation Term="Org.OData.Core.V1.Permissions">
+          <EnumMember>Org.OData.Core.V1.Permission/Read</EnumMember>
+        </Annotation>
+      </Annotations>
+  <Annotations Target="microsoft.graph.managedDevice/model">
+        <Annotation Term="Org.OData.Core.V1.Computed" Bool="true" />
+        <Annotation Term="Org.OData.Core.V1.Description" String="Model of the device. Supports $filter operator 'eq' and 'contains'. This property is read-only." />
+        <Annotation Term="Org.OData.Core.V1.Permissions">
+          <EnumMember>Org.OData.Core.V1.Permission/Read</EnumMember>
+        </Annotation>
+      </Annotations>
+  <Annotations Target="microsoft.graph.managedDevice/notes">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Notes on the device created by IT Admin. Default is null. To retrieve actual values GET call needs to be made, with device id and included in select parameter. Supports: $select. $Search is not supported." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.managedDevice/operatingSystem">
+        <Annotation Term="Org.OData.Core.V1.Computed" Bool="true" />
+        <Annotation Term="Org.OData.Core.V1.Description" String="Operating system of the device. Windows, iOS, etc. Supports $filter operator 'eq' and 'or'. This property is read-only." />
+        <Annotation Term="Org.OData.Core.V1.Permissions">
+          <EnumMember>Org.OData.Core.V1.Permission/Read</EnumMember>
+        </Annotation>
+      </Annotations>
+  <Annotations Target="microsoft.graph.managedDevice/osVersion">
+        <Annotation Term="Org.OData.Core.V1.Computed" Bool="true" />
+        <Annotation Term="Org.OData.Core.V1.Description" String="Operating system version of the device. Supports $filter operator 'contains'. This property is read-only." />
+        <Annotation Term="Org.OData.Core.V1.Permissions">
+          <EnumMember>Org.OData.Core.V1.Permission/Read</EnumMember>
+        </Annotation>
+      </Annotations>
+  <Annotations Target="microsoft.graph.managedDevice/partnerReportedThreatState">
+        <Annotation Term="Org.OData.Core.V1.Computed" Bool="true" />
+        <Annotation Term="Org.OData.Core.V1.Description" String="Indicates the threat state of a device when a Mobile Threat Defense partner is in use by the account and device. Read Only. This property is read-only." />
+        <Annotation Term="Org.OData.Core.V1.Permissions">
+          <EnumMember>Org.OData.Core.V1.Permission/Read</EnumMember>
+        </Annotation>
+      </Annotations>
+  <Annotations Target="microsoft.graph.managedDevice/phoneNumber">
+        <Annotation Term="Org.OData.Core.V1.Computed" Bool="true" />
+        <Annotation Term="Org.OData.Core.V1.Description" String="Phone number of the device. Supports $filter operator 'contains'. This property is read-only." />
+        <Annotation Term="Org.OData.Core.V1.Permissions">
+          <EnumMember>Org.OData.Core.V1.Permission/Read</EnumMember>
+        </Annotation>
+      </Annotations>
+  <Annotations Target="microsoft.graph.managedDevice/physicalMemoryInBytes">
+        <Annotation Term="Org.OData.Core.V1.Computed" Bool="true" />
+        <Annotation Term="Org.OData.Core.V1.Description" String="Total Memory in Bytes. Default is 0. To retrieve actual values GET call needs to be made, with device id and included in select parameter. Supports: $select. Read-only. This property is read-only." />
+        <Annotation Term="Org.OData.Core.V1.Permissions">
+          <EnumMember>Org.OData.Core.V1.Permission/Read</EnumMember>
+        </Annotation>
+      </Annotations>
+  <Annotations Target="microsoft.graph.managedDevice/remoteAssistanceSessionErrorDetails">
+        <Annotation Term="Org.OData.Core.V1.Computed" Bool="true" />
+        <Annotation Term="Org.OData.Core.V1.Description" String="An error string that identifies issues when creating Remote Assistance session objects. This property is read-only." />
+        <Annotation Term="Org.OData.Core.V1.Permissions">
+          <EnumMember>Org.OData.Core.V1.Permission/Read</EnumMember>
+        </Annotation>
+      </Annotations>
+  <Annotations Target="microsoft.graph.managedDevice/remoteAssistanceSessionUrl">
+        <Annotation Term="Org.OData.Core.V1.Computed" Bool="true" />
+        <Annotation Term="Org.OData.Core.V1.Description" String="Url that allows a Remote Assistance session to be established with the device. Default is an empty string. To retrieve actual values GET call needs to be made, with device id and included in select parameter. This property is read-only." />
+        <Annotation Term="Org.OData.Core.V1.Permissions">
+          <EnumMember>Org.OData.Core.V1.Permission/Read</EnumMember>
+        </Annotation>
+      </Annotations>
+  <Annotations Target="microsoft.graph.managedDevice/requireUserEnrollmentApproval">
+        <Annotation Term="Org.OData.Core.V1.Computed" Bool="true" />
+        <Annotation Term="Org.OData.Core.V1.Description" String="Reports if the managed iOS device is user approval enrollment. This property is read-only." />
+        <Annotation Term="Org.OData.Core.V1.Permissions">
+          <EnumMember>Org.OData.Core.V1.Permission/Read</EnumMember>
+        </Annotation>
+      </Annotations>
+  <Annotations Target="microsoft.graph.managedDevice/serialNumber">
+        <Annotation Term="Org.OData.Core.V1.Computed" Bool="true" />
+        <Annotation Term="Org.OData.Core.V1.Description" String="SerialNumber of the device. Supports $filter operator 'eq' and 'or'. This property is read-only." />
+        <Annotation Term="Org.OData.Core.V1.Permissions">
+          <EnumMember>Org.OData.Core.V1.Permission/Read</EnumMember>
+        </Annotation>
+      </Annotations>
+  <Annotations Target="microsoft.graph.managedDevice/subscriberCarrier">
+        <Annotation Term="Org.OData.Core.V1.Computed" Bool="true" />
+        <Annotation Term="Org.OData.Core.V1.Description" String="Subscriber Carrier. This property is read-only." />
+        <Annotation Term="Org.OData.Core.V1.Permissions">
+          <EnumMember>Org.OData.Core.V1.Permission/Read</EnumMember>
+        </Annotation>
+      </Annotations>
+  <Annotations Target="microsoft.graph.managedDevice/totalStorageSpaceInBytes">
+        <Annotation Term="Org.OData.Core.V1.Computed" Bool="true" />
+        <Annotation Term="Org.OData.Core.V1.Description" String="Total Storage in Bytes. This property is read-only." />
+        <Annotation Term="Org.OData.Core.V1.Permissions">
+          <EnumMember>Org.OData.Core.V1.Permission/Read</EnumMember>
+        </Annotation>
+      </Annotations>
+  <Annotations Target="microsoft.graph.managedDevice/udid">
+        <Annotation Term="Org.OData.Core.V1.Computed" Bool="true" />
+        <Annotation Term="Org.OData.Core.V1.Description" String="Unique Device Identifier for iOS and macOS devices. Default is an empty string. To retrieve actual values GET call needs to be made, with device id and included in select parameter. Supports: $select. $Search is not supported. Read-only. This property is read-only." />
+        <Annotation Term="Org.OData.Core.V1.Permissions">
+          <EnumMember>Org.OData.Core.V1.Permission/Read</EnumMember>
+        </Annotation>
+      </Annotations>
+  <Annotations Target="microsoft.graph.managedDevice/userDisplayName">
+        <Annotation Term="Org.OData.Core.V1.Computed" Bool="true" />
+        <Annotation Term="Org.OData.Core.V1.Description" String="User display name. This property is read-only." />
+        <Annotation Term="Org.OData.Core.V1.Permissions">
+          <EnumMember>Org.OData.Core.V1.Permission/Read</EnumMember>
+        </Annotation>
+      </Annotations>
+  <Annotations Target="microsoft.graph.managedDevice/userId">
+        <Annotation Term="Org.OData.Core.V1.Computed" Bool="true" />
+        <Annotation Term="Org.OData.Core.V1.Description" String="Unique Identifier for the user associated with the device. This property is read-only." />
+        <Annotation Term="Org.OData.Core.V1.Permissions">
+          <EnumMember>Org.OData.Core.V1.Permission/Read</EnumMember>
+        </Annotation>
+      </Annotations>
+  <Annotations Target="microsoft.graph.managedDevice/userPrincipalName">
+        <Annotation Term="Org.OData.Core.V1.Computed" Bool="true" />
+        <Annotation Term="Org.OData.Core.V1.Description" String="Device user principal name. Supports $filter operator 'eq' and 'ne'. This property is read-only." />
+        <Annotation Term="Org.OData.Core.V1.Permissions">
+          <EnumMember>Org.OData.Core.V1.Permission/Read</EnumMember>
+        </Annotation>
+      </Annotations>
+  <Annotations Target="microsoft.graph.managedDevice/wiFiMacAddress">
+        <Annotation Term="Org.OData.Core.V1.Computed" Bool="true" />
+        <Annotation Term="Org.OData.Core.V1.Description" String="Wi-Fi MAC. This property is read-only." />
+        <Annotation Term="Org.OData.Core.V1.Permissions">
+          <EnumMember>Org.OData.Core.V1.Permission/Read</EnumMember>
+        </Annotation>
+      </Annotations>
+  <Annotations Target="microsoft.graph.managedDevice/windowsProtectionState">
+        <Annotation Term="Org.OData.Core.V1.Description" String="The device protection status. This property is read-only." />
+        <Annotation Term="Org.OData.Core.V1.Permissions">
+          <EnumMember>Org.OData.Core.V1.Permission/Read</EnumMember>
+        </Annotation>
+      </Annotations>
+  <Annotations Target="microsoft.graph.complianceState">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Compliance state." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.complianceState/compliant">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Compliant." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.complianceState/configManager">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Managed by Config Manager" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.complianceState/conflict">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Conflict with other rules." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.complianceState/error">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Error." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.complianceState/inGracePeriod">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Device is non-compliant but still has access to corporate resources" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.complianceState/noncompliant">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Device is non-compliant and is blocked from corporate resources." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.complianceState/unknown">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Unknown." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.configurationManagerClientEnabledFeatures">
+        <Annotation Term="Org.OData.Core.V1.Description" String="configuration Manager client enabled features" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.configurationManagerClientEnabledFeatures/compliancePolicy">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Whether compliance policy is managed by Intune" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.configurationManagerClientEnabledFeatures/deviceConfiguration">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Whether device configuration is managed by Intune" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.configurationManagerClientEnabledFeatures/inventory">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Whether inventory is managed by Intune" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.configurationManagerClientEnabledFeatures/modernApps">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Whether modern application is managed by Intune" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.configurationManagerClientEnabledFeatures/resourceAccess">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Whether resource access is managed by Intune" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.configurationManagerClientEnabledFeatures/windowsUpdateForBusiness">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Whether Windows Update for Business is managed by Intune" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.deviceActionResult">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Device action result" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.deviceActionResult/actionName">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Action name" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.deviceActionResult/actionState">
+        <Annotation Term="Org.OData.Core.V1.Description" String="State of the action" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.deviceActionResult/lastUpdatedDateTime">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Time the action state was last updated" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.deviceActionResult/startDateTime">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Time the action was initiated" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.actionState">
+        <Annotation Term="Org.OData.Core.V1.Description" String="State of the action on the device" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.actionState/active">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Action is active." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.actionState/canceled">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Action has been cancelled." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.actionState/done">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Action completed without errors." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.actionState/failed">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Action failed" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.actionState/none">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Not a valid action state" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.actionState/notSupported">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Action is not supported." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.actionState/pending">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Action is pending" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.deviceEnrollmentType">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Possible ways of adding a mobile device to management." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.deviceEnrollmentType/appleBulkWithoutUser">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Apple bulk enrollment without user challenge. (DEP, Apple Configurator, Mobile Config)" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.deviceEnrollmentType/appleBulkWithUser">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Apple bulk enrollment with user challenge. (DEP, Apple Configurator)" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.deviceEnrollmentType/appleUserEnrollment">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Indicates the device is enrolled via Apple User Enrollment with Company Portal. It results in an enrollment with a new partition for managed apps and data and which supports a limited set of management capabilities" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.deviceEnrollmentType/appleUserEnrollmentWithServiceAccount">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Indicates the device is enrolled via Apple User Enrollment with Company Portal using a device enrollment manager user. It results in an enrollment with a new partition for managed apps and data and which supports a limited set of management capabilities" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.deviceEnrollmentType/deviceEnrollmentManager">
+        <Annotation Term="Org.OData.Core.V1.Description" String="User enrollment with a device enrollment manager account." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.deviceEnrollmentType/unknown">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Default value, enrollment type was not collected." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.deviceEnrollmentType/unknownFutureValue">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Evolvable enumeration sentinel value. Do not use." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.deviceEnrollmentType/userEnrollment">
+        <Annotation Term="Org.OData.Core.V1.Description" String="User driven enrollment through BYOD channel." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.deviceEnrollmentType/windowsAutoEnrollment">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Windows 10 automatic enrollment. (Add work account)" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.deviceEnrollmentType/windowsAzureADJoin">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Windows 10 Entra ID (Azure AD) Join." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.deviceEnrollmentType/windowsAzureADJoinUsingDeviceAuth">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Windows 10 Entra ID (Azure AD) Join using Device Auth." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.deviceEnrollmentType/windowsBulkAzureDomainJoin">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Windows 10 bulk Entra ID (Azure AD) Join." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.deviceEnrollmentType/windowsBulkUserless">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Windows 10 Bulk enrollment through ICD with certificate." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.deviceEnrollmentType/windowsCoManagement">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Windows 10 Co-Management triggered by AutoPilot or Group Policy." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.deviceHealthAttestationState/attestationIdentityKey">
+        <Annotation Term="Org.OData.Core.V1.Description" String="TWhen an Attestation Identity Key (AIK) is present on a device, it indicates that the device has an endorsement key (EK) certificate." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.deviceHealthAttestationState/bitLockerStatus">
+        <Annotation Term="Org.OData.Core.V1.Description" String="On or Off of BitLocker Drive Encryption" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.deviceHealthAttestationState/bootAppSecurityVersion">
+        <Annotation Term="Org.OData.Core.V1.Description" String="The security version number of the Boot Application" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.deviceHealthAttestationState/bootDebugging">
+        <Annotation Term="Org.OData.Core.V1.Description" String="When bootDebugging is enabled, the device is used in development and testing" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.deviceHealthAttestationState/bootManagerSecurityVersion">
+        <Annotation Term="Org.OData.Core.V1.Description" String="The security version number of the Boot Application" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.deviceHealthAttestationState/bootManagerVersion">
+        <Annotation Term="Org.OData.Core.V1.Description" String="The version of the Boot Manager" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.deviceHealthAttestationState/bootRevisionListInfo">
+        <Annotation Term="Org.OData.Core.V1.Description" String="The Boot Revision List that was loaded during initial boot on the attested device" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.deviceHealthAttestationState/codeIntegrity">
+        <Annotation Term="Org.OData.Core.V1.Description" String=" When code integrity is enabled, code execution is restricted to integrity verified code" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.deviceHealthAttestationState/codeIntegrityCheckVersion">
+        <Annotation Term="Org.OData.Core.V1.Description" String="The version of the Boot Manager" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.deviceHealthAttestationState/codeIntegrityPolicy">
+        <Annotation Term="Org.OData.Core.V1.Description" String="The Code Integrity policy that is controlling the security of the boot environment" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.deviceHealthAttestationState/contentNamespaceUrl">
+        <Annotation Term="Org.OData.Core.V1.Description" String="The DHA report version. (Namespace version)" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.deviceHealthAttestationState/contentVersion">
+        <Annotation Term="Org.OData.Core.V1.Description" String="The HealthAttestation state schema version" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.deviceHealthAttestationState/dataExcutionPolicy">
+        <Annotation Term="Org.OData.Core.V1.Description" String="DEP Policy defines a set of hardware and software technologies that perform additional checks on memory " />
+      </Annotations>
+  <Annotations Target="microsoft.graph.deviceHealthAttestationState/deviceHealthAttestationStatus">
+        <Annotation Term="Org.OData.Core.V1.Description" String="The DHA report version. (Namespace version)" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.deviceHealthAttestationState/earlyLaunchAntiMalwareDriverProtection">
+        <Annotation Term="Org.OData.Core.V1.Description" String="ELAM provides protection for the computers in your network when they start up" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.deviceHealthAttestationState/healthAttestationSupportedStatus">
+        <Annotation Term="Org.OData.Core.V1.Description" String="This attribute indicates if DHA is supported for the device" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.deviceHealthAttestationState/healthStatusMismatchInfo">
+        <Annotation Term="Org.OData.Core.V1.Description" String="This attribute appears if DHA-Service detects an integrity issue" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.deviceHealthAttestationState/issuedDateTime">
+        <Annotation Term="Org.OData.Core.V1.Description" String="The DateTime when device was evaluated or issued to MDM" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.deviceHealthAttestationState/lastUpdateDateTime">
+        <Annotation Term="Org.OData.Core.V1.Description" String="The Timestamp of the last update." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.deviceHealthAttestationState/operatingSystemKernelDebugging">
+        <Annotation Term="Org.OData.Core.V1.Description" String="When operatingSystemKernelDebugging is enabled, the device is used in development and testing" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.deviceHealthAttestationState/operatingSystemRevListInfo">
+        <Annotation Term="Org.OData.Core.V1.Description" String="The Operating System Revision List that was loaded during initial boot on the attested device" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.deviceHealthAttestationState/pcr0">
+        <Annotation Term="Org.OData.Core.V1.Description" String="The measurement that is captured in PCR[0]" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.deviceHealthAttestationState/pcrHashAlgorithm">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Informational attribute that identifies the HASH algorithm that was used by TPM" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.deviceHealthAttestationState/resetCount">
+        <Annotation Term="Org.OData.Core.V1.Description" String="The number of times a PC device has hibernated or resumed" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.deviceHealthAttestationState/restartCount">
+        <Annotation Term="Org.OData.Core.V1.Description" String="The number of times a PC device has rebooted" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.deviceHealthAttestationState/safeMode">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Safe mode is a troubleshooting option for Windows that starts your computer in a limited state" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.deviceHealthAttestationState/secureBoot">
+        <Annotation Term="Org.OData.Core.V1.Description" String="When Secure Boot is enabled, the core components must have the correct cryptographic signatures" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.deviceHealthAttestationState/secureBootConfigurationPolicyFingerPrint">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Fingerprint of the Custom Secure Boot Configuration Policy" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.deviceHealthAttestationState/testSigning">
+        <Annotation Term="Org.OData.Core.V1.Description" String="When test signing is allowed, the device does not enforce signature validation during boot" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.deviceHealthAttestationState/tpmVersion">
+        <Annotation Term="Org.OData.Core.V1.Description" String="The security version number of the Boot Application" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.deviceHealthAttestationState/virtualSecureMode">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Indicates whether the device has Virtual Secure Mode (VSM) enabled. Virtual Secure Mode (VSM) is a container that protects high value assets from a compromised kernel. This property will be deprecated in beta from August 2023. Support for this property will end in August 2025 for v1.0 API. A new property virtualizationBasedSecurity is added and used instead. The value used for virtualSecureMode will be passed by virtualizationBasedSecurity during the deprecation process. Possible values are &quot;enabled&quot;, &quot;disabled&quot; and &quot;notApplicable&quot;. &quot;enabled&quot; indicates Virtual Secure Mode (VSM) is enabled. &quot;disabled&quot; indicates Virtual Secure Mode (VSM) is disabled. &quot;notApplicable&quot; indicates the device is not a Windows 11 device. Default value is &quot;notApplicable&quot;." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.deviceHealthAttestationState/windowsPE">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Operating system running with limited services that is used to prepare a computer for Windows" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.deviceRegistrationState">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Device registration status." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.deviceRegistrationState/approvalPending">
+        <Annotation Term="Org.OData.Core.V1.Description" String="The device is pending approval." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.deviceRegistrationState/certificateReset">
+        <Annotation Term="Org.OData.Core.V1.Description" String="The device certificate has been reset." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.deviceRegistrationState/keyConflict">
+        <Annotation Term="Org.OData.Core.V1.Description" String="The device has a key conflict." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.deviceRegistrationState/notRegistered">
+        <Annotation Term="Org.OData.Core.V1.Description" String="The device is not registered." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.deviceRegistrationState/notRegisteredPendingEnrollment">
+        <Annotation Term="Org.OData.Core.V1.Description" String="The device is not registered and pending enrollment." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.deviceRegistrationState/registered">
+        <Annotation Term="Org.OData.Core.V1.Description" String="The device is registered." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.deviceRegistrationState/revoked">
+        <Annotation Term="Org.OData.Core.V1.Description" String="The device has been blocked, wiped or retired." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.deviceRegistrationState/unknown">
+        <Annotation Term="Org.OData.Core.V1.Description" String="The device registration status is unknown." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.deviceManagementExchangeAccessState">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Device Exchange Access State." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.deviceManagementExchangeAccessState/allowed">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Device has access to Exchange" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.deviceManagementExchangeAccessState/blocked">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Device is Blocked in Exchange" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.deviceManagementExchangeAccessState/none">
+        <Annotation Term="Org.OData.Core.V1.Description" String="No access state discovered from Exchange" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.deviceManagementExchangeAccessState/quarantined">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Device is Quarantined in Exchange" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.deviceManagementExchangeAccessState/unknown">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Device access state to Exchange is unknown" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.deviceManagementExchangeAccessStateReason">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Device Exchange Access State Reason." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.deviceManagementExchangeAccessStateReason/azureADBlockDueToAccessPolicy">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Access State revoked by AAD Access Policy" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.deviceManagementExchangeAccessStateReason/compliant">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Access state granted by compliance challenge" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.deviceManagementExchangeAccessStateReason/compromisedPassword">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Access State revoked by compromised password" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.deviceManagementExchangeAccessStateReason/deviceNotKnownWithManagedApp">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Access state revoked by managed application challenge" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.deviceManagementExchangeAccessStateReason/exchangeDeviceRule">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Access state determined by Exchange Device rule" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.deviceManagementExchangeAccessStateReason/exchangeGlobalRule">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Access state determined by Exchange Global rule" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.deviceManagementExchangeAccessStateReason/exchangeIndividualRule">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Access state determined by Exchange Individual rule" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.deviceManagementExchangeAccessStateReason/exchangeMailboxPolicy">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Access state determined by Exchange Mailbox Policy" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.deviceManagementExchangeAccessStateReason/exchangeUpgrade">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Access state due to Exchange upgrade" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.deviceManagementExchangeAccessStateReason/mfaRequired">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Access state due to MFA challenge" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.deviceManagementExchangeAccessStateReason/none">
+        <Annotation Term="Org.OData.Core.V1.Description" String="No access state reason discovered from Exchange" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.deviceManagementExchangeAccessStateReason/notCompliant">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Access state revoked by compliance challenge" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.deviceManagementExchangeAccessStateReason/notEnrolled">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Access state revoked by management challenge" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.deviceManagementExchangeAccessStateReason/other">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Access state determined by Exchange" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.deviceManagementExchangeAccessStateReason/unknown">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Unknown access state reason" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.deviceManagementExchangeAccessStateReason/unknownLocation">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Access state due to unknown location" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.managedDeviceOwnerType">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Owner type of device." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.managedDeviceOwnerType/company">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Corporate device owner type." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.managedDeviceOwnerType/personal">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Personal device owner type." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.managedDeviceOwnerType/unknown">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Unknown device owner type." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.managedDeviceOwnerType/unknownFutureValue">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Evolvable enumeration sentinel value. Do not use." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.managementAgentType/configurationManagerClient">
+        <Annotation Term="Org.OData.Core.V1.Description" String="The device is managed by Configuration Manager." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.managementAgentType/configurationManagerClientMdm">
+        <Annotation Term="Org.OData.Core.V1.Description" String="The device is managed by Configuration Manager and MDM." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.managementAgentType/configurationManagerClientMdmEas">
+        <Annotation Term="Org.OData.Core.V1.Description" String="The device is managed by Configuration Manager, MDM and Eas." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.managementAgentType/eas">
+        <Annotation Term="Org.OData.Core.V1.Description" String="The device is managed by Exchange server." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.managementAgentType/easIntuneClient">
+        <Annotation Term="Org.OData.Core.V1.Description" String="The device is EAS and Intune client dual managed." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.managementAgentType/easMdm">
+        <Annotation Term="Org.OData.Core.V1.Description" String="The device is managed by both Exchange server and Intune MDM." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.managementAgentType/googleCloudDevicePolicyController">
+        <Annotation Term="Org.OData.Core.V1.Description" String="The device is managed by Google's CloudDPC." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.managementAgentType/intuneClient">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Intune client managed." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.managementAgentType/jamf">
+        <Annotation Term="Org.OData.Core.V1.Description" String="The device attributes are fetched from Jamf." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.managementAgentType/mdm">
+        <Annotation Term="Org.OData.Core.V1.Description" String="The device is managed by Intune MDM." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.managementAgentType/microsoft365ManagedMdm">
+        <Annotation Term="Org.OData.Core.V1.Description" String="This device is managed by Microsoft 365 through Intune." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.managementAgentType/unknown">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Unknown management agent type." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.managementState">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Management state of device in Microsoft Intune." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.managementState/deletePending">
+        <Annotation Term="Org.OData.Core.V1.Description" String="A delete command is occuring on the device " />
+      </Annotations>
+  <Annotations Target="microsoft.graph.managementState/discovered">
+        <Annotation Term="Org.OData.Core.V1.Description" String="The device is discovered but not fully enrolled." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.managementState/managed">
+        <Annotation Term="Org.OData.Core.V1.Description" String="The device is under management" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.managementState/retireCanceled">
+        <Annotation Term="Org.OData.Core.V1.Description" String="A retire command for this device has been canceled" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.managementState/retireFailed">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Retire command failed on the device" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.managementState/retireIssued">
+        <Annotation Term="Org.OData.Core.V1.Description" String="A retire command was issued for the device" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.managementState/retirePending">
+        <Annotation Term="Org.OData.Core.V1.Description" String="A retire command is occuring on the device and in the process of unenrolling from management" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.managementState/unhealthy">
+        <Annotation Term="Org.OData.Core.V1.Description" String="The device is unhealthy." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.managementState/unknownFutureValue">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Evolvable enumeration sentinel value. Do not use." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.managementState/wipeCanceled">
+        <Annotation Term="Org.OData.Core.V1.Description" String="A wipe command for this device has been canceled" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.managementState/wipeFailed">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Wipe command failed on the device" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.managementState/wipeIssued">
+        <Annotation Term="Org.OData.Core.V1.Description" String="A wipe command was issued for the device" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.managementState/wipePending">
+        <Annotation Term="Org.OData.Core.V1.Description" String="A wipe command is occuring on the device and in the process of unenrolling from management" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.managedDevicePartnerReportedHealthState">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Available health states for the Device Health API" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.managedDevicePartnerReportedHealthState/activated">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Device has been activated by a mobile threat defense partner, but has not yet reported health." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.managedDevicePartnerReportedHealthState/compromised">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Device is considered compromised by the Threat Defense partner. This means the device has an active Threat or Risk which cannot be easily remediated by the end user and the user should contact their IT Admin." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.managedDevicePartnerReportedHealthState/deactivated">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Device has been deactivated by a mobile threat defense partner. The device health is not known." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.managedDevicePartnerReportedHealthState/highSeverity">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Device is considered high threat by the mobile threat defense partner." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.managedDevicePartnerReportedHealthState/lowSeverity">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Device is considered low threat by the mobile threat defense partner." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.managedDevicePartnerReportedHealthState/mediumSeverity">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Device is considered medium threat by the mobile threat defense partner." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.managedDevicePartnerReportedHealthState/misconfigured">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Device is considered misconfigured with the Threat Defense partner. This means the device is missing a required profile or configuration for the Threat Defense Partner to function properly and is thus threat or risk analysis is not able to complete." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.managedDevicePartnerReportedHealthState/secured">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Device is considered secured by the mobile threat defense partner." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.managedDevicePartnerReportedHealthState/unknown">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Device health state is not yet reported" />
+      </Annotations>
+  <Annotations Target="microsoft.graph.managedDevicePartnerReportedHealthState/unresponsive">
+        <Annotation Term="Org.OData.Core.V1.Description" String="Device is considered unresponsive by the mobile threat defense partner. The device health is not known." />
+      </Annotations>
+  <Annotations Target="microsoft.graph.deviceManagement/managedDevices">
+        <Annotation Term="Org.OData.Core.V1.Description" String="The list of managed devices." />
+      </Annotations>
+</Schema>

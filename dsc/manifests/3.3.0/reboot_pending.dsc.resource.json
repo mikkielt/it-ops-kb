@@ -1,0 +1,42 @@
+{
+  "$schema": "https://aka.ms/dsc/schemas/v3/bundled/resource/manifest.json",
+  "description": "Returns info about pending reboot.",
+  "type": "Microsoft.Windows/RebootPending",
+  "version": "0.1.0",
+  "get": {
+    "executable": "powershell",
+    "args": [
+      "-NoLogo",
+      "-NonInteractive",
+      "-NoProfile",
+      "-Command",
+      "reboot_pending.resource.ps1"
+    ]
+  },
+  "exitCodes": {
+    "0": "Success",
+    "1": "Error"
+  },
+  "schema": {
+    "embedded": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "rebootPending": {
+          "type": "boolean",
+          "readOnly": true
+        },
+        "reasons": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "readOnly": true
+        }
+      }
+    }
+  }
+}

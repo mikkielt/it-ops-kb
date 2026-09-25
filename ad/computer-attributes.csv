@@ -1,0 +1,7 @@
+ldap_display_name,cn,attribute_id,system_id_guid,syntax_as_documented,size,single_valued,indexed,in_gc,system_only,update_frequency,source
+objectGUID,Object-Guid,1.2.840.113556.1.4.2,bf9679e7-0de6-11d0-a285-00aa003049e2,Object(Replica-Link),16 bytes,True,True,True,True,set when the object is created and cannot be changed,S560
+objectSid,Object-Sid,1.2.840.113556.1.4.146,bf9679e8-0de6-11d0-a285-00aa003049e2,String(Sid),range 0-28,True,True,True,False,set by the system when the account is created,S561
+lastLogonTimestamp,Last-Logon-Timestamp,1.2.840.113556.1.4.1696,c0e20a04-0e5a-4ff3-9482-5efeaecd7060,Interval,-,True,False,False,False,at logon if older than now minus msDS-LogonTimeSyncInterval,S562
+msDS-LogonTimeSyncInterval,ms-DS-Logon-Time-Sync-Interval,1.2.840.113556.1.4.1784,ad7940f8-e43a-4a42-83bc-d688e59ea605,Enumeration,4 bytes,not captured,not captured,not captured,not captured,rarely (domain policy),S563
+dNSHostName,DNS-Host-Name,1.2.840.113556.1.4.619,72e39547-7b18-11d1-adef-00c04fd8d5cd,String(Unicode),63 per label / 255 total (range 0-2048),True,False,True,False,when the computer is named,S564
+userCertificate,X509-Cert,2.5.4.36,bf967a7f-0de6-11d0-a285-00aa003049e2,Object(Replica-Link),about 4 KB per KRA certificate,False,False,True,False,each time a certificate is issued,S565

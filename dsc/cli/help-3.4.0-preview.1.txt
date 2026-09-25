@@ -1,0 +1,337 @@
+===== dsc  --help
+Apply configuration or invoke specific DSC resources
+
+Usage: dsc [OPTIONS] <COMMAND>
+
+Commands:
+  completer  Generate a shell completion script
+  config     Apply a configuration document
+  extension  Operations on DSC extensions
+  function   Operations on DSC functions
+  server     Use DSC as a server over JSON-RPC (useful as MCP server)
+  resource   Invoke a specific DSC resource
+  schema     Get the JSON schema for a DSC type
+  help       Print this message or the help of the given subcommand(s)
+
+Options:
+  -l, --trace-level <TRACE_LEVEL>
+          Trace level to use
+          
+          [possible values: error, warn, info, debug, trace]
+
+  -t, --trace-format <TRACE_FORMAT>
+          Trace format to use
+          
+          [possible values: default, plaintext, json]
+
+  -p, --progress-format <PROGRESS_FORMAT>
+          Progress format to use
+
+          Possible values:
+          - default: If interactive, use a progress bar. If not interactive, no progress is shown
+          - none:    No progress is shown
+          - json:    Show progress as JSON
+
+      --ignore-settings-file
+          Ignore the settings file when running the command
+
+  -h, --help
+          Print help (see a summary with '-h')
+
+  -V, --version
+          Print version
+===== dsc config --help
+Apply a configuration document
+
+Usage: dsc config [OPTIONS] <COMMAND>
+
+Commands:
+  get     Retrieve the current configuration
+  set     Set the current configuration
+  test    Test the current configuration
+  export  Export the current configuration
+  help    Print this message or the help of the given subcommand(s)
+
+Options:
+  -p, --parameters <PARAMETERS>
+          Parameters to pass to the configuration as JSON or YAML
+  -f, --parameters-file <PARAMETERS_FILE>
+          Parameters to pass to the configuration as a JSON or YAML file
+  -r, --system-root <SYSTEM_ROOT>
+          Specify the operating system root path if not targeting the current running OS
+  -h, --help
+          Print help
+===== dsc config get --help
+Retrieve the current configuration
+
+Usage: dsc config get [OPTIONS]
+
+Options:
+  -i, --input <INPUT>                  The input document as JSON or YAML to pass to the configuration or resource
+  -f, --file <FILE>                    The path to a file used as input to the configuration or resource. Use '-' for the file to read from STDIN.
+  -o, --output-format <OUTPUT_FORMAT>  The output format to use [possible values: json, pretty-json, yaml]
+  -h, --help                           Print help
+===== dsc config set --help
+Set the current configuration
+
+Usage: dsc config set [OPTIONS]
+
+Options:
+  -i, --input <INPUT>                  The input document as JSON or YAML to pass to the configuration or resource
+  -f, --file <FILE>                    The path to a file used as input to the configuration or resource. Use '-' for the file to read from STDIN.
+  -o, --output-format <OUTPUT_FORMAT>  The output format to use [possible values: json, pretty-json, yaml]
+  -w, --what-if                        Run as a what-if operation instead of executing the configuration or resource [aliases: --dry-run, --noop]
+  -h, --help                           Print help
+===== dsc config test --help
+Test the current configuration
+
+Usage: dsc config test [OPTIONS]
+
+Options:
+  -i, --input <INPUT>                  The input document as JSON or YAML to pass to the configuration or resource
+  -f, --file <FILE>                    The path to a file used as input to the configuration or resource. Use '-' for the file to read from STDIN.
+  -o, --output-format <OUTPUT_FORMAT>  The output format to use [possible values: json, pretty-json, yaml]
+  -h, --help                           Print help
+===== dsc config export --help
+Export the current configuration
+
+Usage: dsc config export [OPTIONS]
+
+Options:
+  -i, --input <INPUT>                  The input document as JSON or YAML to pass to the configuration or resource
+  -f, --file <FILE>                    The path to a file used as input to the configuration or resource. Use '-' for the file to read from STDIN.
+  -o, --output-format <OUTPUT_FORMAT>  The output format to use [possible values: json, pretty-json, yaml]
+  -h, --help                           Print help
+===== dsc config validate --help
+Validate the current configuration
+
+Usage: dsc config validate [OPTIONS]
+
+Options:
+  -i, --input <INPUT>                  The input document as JSON or YAML to pass to the configuration or resource
+  -f, --file <FILE>                    The path to a file used as input to the configuration or resource. Use '-' for the file to read from STDIN.
+  -o, --output-format <OUTPUT_FORMAT>  The output format to use [possible values: json, pretty-json, yaml]
+  -h, --help                           Print help
+===== dsc config resolve --help
+Resolve the current configuration
+
+Usage: dsc config resolve [OPTIONS]
+
+Options:
+  -i, --input <INPUT>                  The input document as JSON or YAML to pass to the configuration or resource
+  -f, --file <FILE>                    The path to a file used as input to the configuration or resource. Use '-' for the file to read from STDIN.
+  -o, --output-format <OUTPUT_FORMAT>  The output format to use [possible values: json, pretty-json, yaml]
+  -h, --help                           Print help
+===== dsc resource --help
+Invoke a specific DSC resource
+
+Usage: dsc resource <COMMAND>
+
+Commands:
+  list    List or find resources
+  get     Invoke the get operation to a resource
+  set     Invoke the set operation to a resource
+  test    Invoke the test operation to a resource
+  delete  Invoke the delete operation to a resource
+  schema  Get the JSON schema for a resource
+  export  Retrieve all resource instances
+  help    Print this message or the help of the given subcommand(s)
+
+Options:
+  -h, --help  Print help
+===== dsc resource list --help
+List or find resources
+
+Usage: dsc resource list [OPTIONS] [RESOURCE_NAME]
+
+Arguments:
+  [RESOURCE_NAME]  Optional resource name to filter the list [default: *]
+
+Options:
+  -a, --adapter <ADAPTER_NAME>         Adapter filter to limit the resource search
+  -d, --description <DESCRIPTION>      Description keyword to search for in the resource description
+  -t, --tags <TAGS>                    Tag to search for in the resource tags
+  -o, --output-format <OUTPUT_FORMAT>  The output format to use [possible values: json, pretty-json, yaml, table-no-truncate]
+  -h, --help                           Print help
+===== dsc resource get --help
+Invoke the get operation to a resource
+
+Usage: dsc resource get [OPTIONS] --resource <RESOURCE>
+
+Options:
+  -a, --all
+          Get all instances of the resource
+  -r, --resource <RESOURCE>
+          The name of the resource to invoke
+  -v, --required-version <REQUIRED_VERSION>
+          The version requirement for the resource, like '^1.2' or '>1.2.3, <1.3'
+  -i, --input <INPUT>
+          The input document as JSON or YAML to pass to the configuration or resource
+  -f, --file <FILE>
+          The path to a file used as input to the configuration or resource. Use '-' for the file to read from STDIN.
+  -o, --output-format <OUTPUT_FORMAT>
+          The output format to use [possible values: json, json-array, pass-through, pretty-json, yaml]
+  -h, --help
+          Print help
+===== dsc resource set --help
+Invoke the set operation to a resource
+
+Usage: dsc resource set [OPTIONS] --resource <RESOURCE>
+
+Options:
+  -r, --resource <RESOURCE>
+          The name of the resource to invoke
+  -v, --required-version <REQUIRED_VERSION>
+          The version requirement for the resource, like '^1.2' or '>1.2.3, <1.3'
+  -i, --input <INPUT>
+          The input document as JSON or YAML to pass to the configuration or resource
+  -f, --file <FILE>
+          The path to a file used as input to the configuration or resource. Use '-' for the file to read from STDIN.
+  -o, --output-format <OUTPUT_FORMAT>
+          The output format to use [possible values: json, pretty-json, yaml]
+  -w, --what-if
+          Run as a what-if operation instead of executing the configuration or resource [aliases: --dry-run, --noop]
+  -h, --help
+          Print help
+===== dsc resource test --help
+Invoke the test operation to a resource
+
+Usage: dsc resource test [OPTIONS] --resource <RESOURCE>
+
+Options:
+  -r, --resource <RESOURCE>
+          The name of the resource to invoke
+  -v, --required-version <REQUIRED_VERSION>
+          The version requirement for the resource, like '^1.2' or '>1.2.3, <1.3'
+  -i, --input <INPUT>
+          The input document as JSON or YAML to pass to the configuration or resource
+  -f, --file <FILE>
+          The path to a file used as input to the configuration or resource. Use '-' for the file to read from STDIN.
+  -o, --output-format <OUTPUT_FORMAT>
+          The output format to use [possible values: json, pretty-json, yaml]
+  -h, --help
+          Print help
+===== dsc resource delete --help
+Invoke the delete operation to a resource
+
+Usage: dsc resource delete [OPTIONS] --resource <RESOURCE>
+
+Options:
+  -r, --resource <RESOURCE>
+          The name of the resource to invoke
+  -v, --required-version <REQUIRED_VERSION>
+          The version requirement for the resource, like '^1.2' or '>1.2.3, <1.3'
+  -i, --input <INPUT>
+          The input document as JSON or YAML to pass to the configuration or resource
+  -f, --file <FILE>
+          The path to a file used as input to the configuration or resource. Use '-' for the file to read from STDIN.
+  -o, --output-format <OUTPUT_FORMAT>
+          The output format to use [possible values: json, pretty-json, yaml]
+  -w, --what-if
+          Run as a what-if operation instead of executing the configuration or resource [aliases: --dry-run, --noop]
+  -h, --help
+          Print help
+===== dsc resource export --help
+Retrieve all resource instances
+
+Usage: dsc resource export [OPTIONS] --resource <RESOURCE>
+
+Options:
+  -r, --resource <RESOURCE>
+          The name of the resource to invoke
+  -v, --required-version <REQUIRED_VERSION>
+          The version requirement for the resource, like '^1.2' or '>1.2.3, <1.3'
+  -i, --input <INPUT>
+          The input document as JSON or YAML to pass to the configuration or resource
+  -f, --file <FILE>
+          The path to a file used as input to the configuration or resource. Use '-' for the file to read from STDIN.
+  -o, --output-format <OUTPUT_FORMAT>
+          The output format to use [possible values: json, pretty-json, yaml]
+  -h, --help
+          Print help
+===== dsc resource schema --help
+Get the JSON schema for a resource
+
+Usage: dsc resource schema [OPTIONS] --resource <RESOURCE>
+
+Options:
+  -r, --resource <RESOURCE>
+          The name of the resource to invoke
+  -v, --required-version <REQUIRED_VERSION>
+          The version requirement for the resource, like '^1.2' or '>1.2.3, <1.3'
+  -o, --output-format <OUTPUT_FORMAT>
+          The output format to use [possible values: json, pretty-json, yaml]
+  -h, --help
+          Print help
+===== dsc extension --help
+Operations on DSC extensions
+
+Usage: dsc extension <COMMAND>
+
+Commands:
+  list  List or find extensions
+  help  Print this message or the help of the given subcommand(s)
+
+Options:
+  -h, --help  Print help
+===== dsc extension list --help
+List or find extensions
+
+Usage: dsc extension list [OPTIONS] [EXTENSION_NAME]
+
+Arguments:
+  [EXTENSION_NAME]  Optional extension name to filter the list [default: *]
+
+Options:
+  -o, --output-format <OUTPUT_FORMAT>  The output format to use [possible values: json, pretty-json, yaml, table-no-truncate]
+  -h, --help                           Print help
+===== dsc function --help
+Operations on DSC functions
+
+Usage: dsc function <COMMAND>
+
+Commands:
+  list  List or find functions
+  help  Print this message or the help of the given subcommand(s)
+
+Options:
+  -h, --help  Print help
+===== dsc function list --help
+List or find functions
+
+Usage: dsc function list [OPTIONS] [FUNCTION_NAME]
+
+Arguments:
+  [FUNCTION_NAME]  Optional function name to filter the list
+
+Options:
+  -c, --category <CATEGORY>            Category to filter functions on; specify multiple times to require all categories
+  -d, --description <DESCRIPTION>      Description to search for in the function description, accepts wildcards
+  -o, --output-format <OUTPUT_FORMAT>  The output format to use [possible values: json, pretty-json, yaml, table-no-truncate]
+  -h, --help                           Print help
+===== dsc schema --help
+Get the JSON schema for a DSC type
+
+Usage: dsc schema [OPTIONS] --type <type>
+
+Options:
+  -t, --type <type>                    The type of DSC schema to get [possible values: adapted-dsc-resource-manifest, configuration, configuration-export-result, configuration-get-result, configuration-set-result, configuration-test-result, dsc-resource, extension-discover-result, extension-manifest, function-definition, get-result, include, manifest-list, resolve-result, resource, resource-get-result, resource-set-result, resource-test-result, resource-manifest, restart-required, set-result, test-result]
+  -o, --output-format <OUTPUT_FORMAT>  The output format to use [possible values: json, pretty-json, yaml]
+  -h, --help                           Print help
+===== dsc server --help
+Use DSC as a server over JSON-RPC (useful as MCP server)
+
+Usage: dsc server
+
+Options:
+  -h, --help  Print help
+===== dsc completer --help
+Generate a shell completion script
+
+Usage: dsc completer <SHELL>
+
+Arguments:
+  <SHELL>  The shell to generate a completion script for [possible values: bash, elvish, fish, powershell, zsh]
+
+Options:
+  -h, --help  Print help

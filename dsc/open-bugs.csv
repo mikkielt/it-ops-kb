@@ -1,0 +1,56 @@
+number,title,labels,state,created,affected_area,platform,url
+1727,Microsoft.Filesystem.File/Content - Export don't work / SET strange behaviour,Issue-Bug|Need-Review,open,2026-09-20,Microsoft.Filesystem.File/Content,windows+cross,https://github.com/PowerShell/DSC/issues/1727
+1355,Command: Resource 'powershell' [exit code 1] manifest description: Error,Issue-Bug|Need-Review,open,2026-01-16,Microsoft.Adapter/PowerShell (PS adapter),windows+cross,https://github.com/PowerShell/DSC/issues/1355
+1296,"DSC seems to inject ""Verbose"" key into resource properties, causing an error when ""Verbose"" is not a property in the DSC resource schema file",Issue-Bug|WG-Reviewed,open,2025-11-28,Microsoft.Adapter/PowerShell (PS adapter),windows+cross,https://github.com/PowerShell/DSC/issues/1296
+1293,parameters are not pass to: Microsoft.DSC/Group,Issue-Bug|Need-Review,open,2025-11-26,Microsoft.DSC/Group,cross,https://github.com/PowerShell/DSC/issues/1293
+1292,Explicitly defining PowerShell resources doesn't allow for delete,Issue-Bug|Need-Review,open,2025-11-26,Microsoft.Adapter/PowerShell (PS adapter),windows+cross,https://github.com/PowerShell/DSC/issues/1292
+1283,"Calling ""PSDesiredStateConfiguration/WindowsOptionalFeature"" Fails with Error",Issue-Bug|Need-Review,open,2025-11-21,Microsoft.Adapter/WindowsPowerShell (WinPS adapter),windows,https://github.com/PowerShell/DSC/issues/1283
+1269,Unable to invoke bicep modules in bicep config files,Issue-Bug|Need-Review|Area-Bicep,open,2025-11-18,Bicep extension,cross,https://github.com/PowerShell/DSC/issues/1269
+1245,Exit codes not reliable,Issue-Bug|Need-Review,open,2025-11-08,engine/CLI,cross,https://github.com/PowerShell/DSC/issues/1245
+1237,Resource and Canonical Properties use of null,Issue-Bug|Need-Review,open,2025-11-05,engine/CLI,cross,https://github.com/PowerShell/DSC/issues/1237
+1231,Lambda variables in `map()` function cannot be used as arguments to nested function calls,Issue-Bug|Need-Review,open,2025-11-03,engine/CLI,cross,https://github.com/PowerShell/DSC/issues/1231
+1209,Parameter `secureString` transforms input incorrectly on adapter,Issue-Bug|Need-Review,open,2025-10-24,apt (Linux),linux,https://github.com/PowerShell/DSC/issues/1209
+1181,Canonical property schema refs,Issue-Bug|Need-Review,open,2025-10-13,engine/CLI,cross,https://github.com/PowerShell/DSC/issues/1181
+1120,.NET string formatting in bicep is not supported (only rust style is),Issue-Bug|Need-Review|Area-Bicep,open,2025-09-18,Bicep extension,cross,https://github.com/PowerShell/DSC/issues/1120
+1053,Doc: DSC_RESOURCE_PATH,Issue-Bug|Issue-Documentation|Need-Review,open,2025-08-14,engine/CLI,cross,https://github.com/PowerShell/DSC/issues/1053
+1033,Schema references using $ref cannot be loaded by DSC engine,Issue-Bug|Need-Review,open,2025-08-07,engine/CLI,cross,https://github.com/PowerShell/DSC/issues/1033
+1021,Implement PowerShell import extension,Issue-Bug,open,2025-07-31,Microsoft.Adapter/PowerShell (PS adapter),windows+cross,https://github.com/PowerShell/DSC/issues/1021
+1001,Failed to serialize properties into CimInstance,Issue-Bug,open,2025-07-24,Microsoft.Adapter/PowerShell (PS adapter),windows+cross,https://github.com/PowerShell/DSC/issues/1001
+1000,Parameter null value is not allowed,Issue-Bug|ARM-Language-2.0,open,2025-07-24,engine/CLI,cross,https://github.com/PowerShell/DSC/issues/1000
+983,--parameters-file and --file have the same short alias -f,Issue-Bug|Breaking Change|CLI-UX,open,2025-07-20,engine/CLI,cross,https://github.com/PowerShell/DSC/issues/983
+963,DSC Set does not error when return is not defined and resource returns stdout,Issue-Bug,open,2025-07-13,engine/CLI,cross,https://github.com/PowerShell/DSC/issues/963
+962,DSC does not validate Test method returns _inDesiredState,Issue-Bug|Dev-UX,open,2025-07-13,engine/CLI,cross,https://github.com/PowerShell/DSC/issues/962
+930,APT doesn't install particular version,Issue-Bug,open,2025-06-30,apt (Linux),linux,https://github.com/PowerShell/DSC/issues/930
+924,DNS subdomain address don't work idempotently,Issue-Bug|Waiting on Author,open,2025-06-29,DNS (adapted),unclear,https://github.com/PowerShell/DSC/issues/924
+917,VS Code resource manifest schema error,Issue-Bug,open,2025-06-27,engine/CLI,cross,https://github.com/PowerShell/DSC/issues/917
+883,DSC config does discovery on every resource instance,Issue-Bug,open,2025-06-11,engine/CLI,cross,https://github.com/PowerShell/DSC/issues/883
+854,Class-based resource leveraging types from another module failure,Issue-Bug|Need-Review,open,2025-05-29,Microsoft.Adapter/PowerShell (PS adapter),windows+cross,https://github.com/PowerShell/DSC/issues/854
+853,Class-based resources with Export does not show capability,Issue-Bug|Need-Review,open,2025-05-29,Microsoft.Adapter/PowerShell (PS adapter),windows+cross,https://github.com/PowerShell/DSC/issues/853
+849,differingProperties always propagated on adapter resource,Issue-Bug|Need-Review,open,2025-05-29,apt (Linux),linux,https://github.com/PowerShell/DSC/issues/849
+833,Output during module import or output from Get operation interrupts the parsing process for class-based resource,Issue-Bug|Need-Review,open,2025-05-24,Microsoft.Adapter/PowerShell (PS adapter),windows+cross,https://github.com/PowerShell/DSC/issues/833
+818,Error while testing the `winps_script.dsc.yaml` example,Issue-Bug|Resolution-Answered,open,2025-05-17,Microsoft.Adapter/WindowsPowerShell (WinPS adapter),windows,https://github.com/PowerShell/DSC/issues/818
+817,DSC doesnt propagate exit code correctly,Issue-Bug|Need-Review,open,2025-05-16,engine/CLI,cross,https://github.com/PowerShell/DSC/issues/817
+810,Class-based resources in Windows PowerShell not found when called from PowerShell,Issue-Bug|Need-Review,open,2025-05-13,Microsoft.Adapter/WindowsPowerShell (WinPS adapter),windows,https://github.com/PowerShell/DSC/issues/810
+805,PS Adapter implementedAs property,Issue-Bug|Need-Review,open,2025-05-10,Microsoft.Adapter/PowerShell (PS adapter),windows+cross,https://github.com/PowerShell/DSC/issues/805
+804,Progress color is lost when redirecting,Issue-Bug|Need-Review,open,2025-05-09,engine/CLI,cross,https://github.com/PowerShell/DSC/issues/804
+803,dsc resource schema leaks color to console,Issue-Bug|Need-Review,open,2025-05-09,engine/CLI,cross,https://github.com/PowerShell/DSC/issues/803
+794,PS Adapter doesn't exit if background runspace is busy,Issue-Bug|Need-Review,open,2025-05-09,Microsoft.Adapter/PowerShell (PS adapter),windows+cross,https://github.com/PowerShell/DSC/issues/794
+791,PS Adapter Export does not serialize enums correctly,Issue-Bug|Need-Review,open,2025-05-08,Microsoft.Adapter/PowerShell (PS adapter),windows+cross,https://github.com/PowerShell/DSC/issues/791
+786,Listing adapted resources results in ERROR_NOT_SUPPORTED,Issue-Bug|Need-Review|Partner-WinGet,open,2025-05-07,apt (Linux),linux,https://github.com/PowerShell/DSC/issues/786
+765,Doc: WinPS resources need to be installed for AllUsers,Issue-Bug|Issue-Documentation|Need-Review,open,2025-04-25,Microsoft.Adapter/WindowsPowerShell (WinPS adapter),windows,https://github.com/PowerShell/DSC/issues/765
+757,Problems loading reference while authoring resource manifest,Issue-Bug|Doc-Impact|Need-Review,open,2025-04-18,engine/CLI,cross,https://github.com/PowerShell/DSC/issues/757
+729,Malformed JSON output for `dsc resource get --all`,Issue-Bug|Need-Review,open,2025-03-28,engine/CLI,cross,https://github.com/PowerShell/DSC/issues/729
+717,Document schema requires 1 item in resources array,Issue-Bug|Schema-Impact,open,2025-03-20,engine/CLI,cross,https://github.com/PowerShell/DSC/issues/717
+708,Schemas still refer to `Import` resource kind,Issue-Bug|Schema-Impact,open,2025-03-17,engine/CLI,cross,https://github.com/PowerShell/DSC/issues/708
+705,"MacOS DSC will hang when requesting sudo password, running sudo dsc will cause homebrew to fail",Issue-Bug|Need-Review,open,2025-03-15,brew/macOS,macos,https://github.com/PowerShell/DSC/issues/705
+698,PowerShell DSC resource is not registered as a WMI DSC resource,Issue-Bug|Need-Review,open,2025-03-14,Microsoft.Adapter/PowerShell (PS adapter),windows+cross,https://github.com/PowerShell/DSC/issues/698
+697,MSIX bundle missing from release artifacts,Issue-Bug|Need-Review,open,2025-03-14,packaging,windows,https://github.com/PowerShell/DSC/issues/697
+677,Tracing is not being flushed before `dsc` exits,Issue-Bug|Need-Review,open,2025-03-06,engine/CLI,cross,https://github.com/PowerShell/DSC/issues/677
+640,Microsoft.DSC/PowerShell resource or config file size limit,Issue-Bug|Need-Review,open,2025-02-11,Microsoft.Adapter/PowerShell (PS adapter),windows+cross,https://github.com/PowerShell/DSC/issues/640
+624,Reopen: Enable Modules without specified version,Issue-Bug|Need-Review,open,2025-01-15,engine/CLI,cross,https://github.com/PowerShell/DSC/issues/624
+539,Doc update - Unblock-File for .zip DSC releases,Issue-Bug|Doc-Impact|Need-Review,open,2024-09-06,engine/CLI,cross,https://github.com/PowerShell/DSC/issues/539
+510,Duplicates allowed for parameters and values (or any HashMap),Issue-Bug|Doc-Impact,open,2024-08-03,engine/CLI,cross,https://github.com/PowerShell/DSC/issues/510
+462,Remaining features of cross-platform PSAdapter,Issue-Bug|Need-Review,open,2024-06-15,apt (Linux),linux,https://github.com/PowerShell/DSC/issues/462
+449,Passing resource JSON for invocation no longer works,Issue-Bug|Need-Review,open,2024-06-06,engine/CLI,cross,https://github.com/PowerShell/DSC/issues/449
+366,DSC Resource declared in `yaml` not discovered if `schema:` is present and not working if `schema:` is absent.,Issue-Bug|Need-Review,open,2024-03-17,engine/CLI,cross,https://github.com/PowerShell/DSC/issues/366
+151,Resource Discovery issue as per DSC Community call,Issue-Bug,open,2023-08-09,engine/CLI,cross,https://github.com/PowerShell/DSC/issues/151

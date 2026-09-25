@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Include",
+  "type": "object",
+  "oneOf": [
+    {
+      "description": "The path to the file to include.  Path is relative to the file containing the include\nand not allowed to reference parent directories.  If a configuration document is used\ninstead of a file, then the path is relative to the current working directory.",
+      "type": "object",
+      "properties": {
+        "configurationFile": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "configurationFile"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "configurationContent": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "configurationContent"
+      ]
+    }
+  ],
+  "anyOf": [
+    {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "parametersFile": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "parametersFile"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "parametersContent": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "parametersContent"
+          ]
+        }
+      ]
+    },
+    {}
+  ]
+}

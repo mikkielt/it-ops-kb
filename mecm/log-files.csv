@@ -1,0 +1,434 @@
+log,location_or_role,component,description,source_id
+ADALOperationProvider.log,Client,Client operations,Information about client authentication token requests with Microsoft Entra ID (Azure AD) Authentication Library (Microsoft Authentication Library). (Replaced by CcmAad.log starting in version 2107),S212
+ATPHandler.log,Client,Client operations,Records details about handling ATP Onboarding and policies.,S212
+BitLockerManagementHandler.log,Client,Client operations,Records information about BitLocker management policies.,S212
+CAS.log,Client,Client operations,The Content Access service. Maintains the local package cache on the client.,S212
+Ccm32BitLauncher.log,Client,Client operations,Records actions for starting applications on the client marked run as 32 bit.,S212
+CcmEval.log,Client,Client operations,Records Configuration Manager client status evaluation activities and details for components that are required by the Configuration Manager client.,S212
+CcmEvalTask.log,Client,Client operations,Records the Configuration Manager client status evaluation activities that are initiated by the evaluation scheduled task.,S212
+CcmExec.log,Client,Client operations,Records activities of the client and the SMS Agent Host service. This log file also includes information about enabling and disabling wake-up proxy.,S212
+CcmMessaging.log,Client,Client operations,Records activities related to communication between the client and management points.,S212
+CCMNotificationAgent.log,Client,Client operations,Records activities related to client notification operations.,S212
+Ccmperf.log,Client,Client operations,Records activities related to the maintenance and capture of data related to client performance counters.,S212
+CcmRestart.log,Client,Client operations,Records client service restart activity.,S212
+CCMSDKProvider.log,Client,Client operations,Records activities for the client SDK interfaces.,S212
+ccmsqlce.log,Client,Client operations,"Records activities for the built-in version of SQL Server Compact Edition (CE) that the client uses. This log is typically only used when you enable debug logging, or there's a problem with the component. The client health task (ccmeval) usually self-corrects problems with this component.",S212
+CcmUsrCse.log,Client,Client operations,Records details during user sign on for folder redirection policies.,S212
+CCMVDIProvider.log,Client,Client operations,Records information for clients in a virtual desktop infrastructure (VDI).,S212
+CertEnrollAgent.log,Client,Client operations,Records information for Windows Hello for Business. Specifically communication with the Network Device Enrollment Service (NDES) for certificate requests using the Simple Certificate Enrollment Protocol (SCEP).,S212
+CertificateMaintenance.log,Client,Client operations,Maintains certificates for Active Directory Domain Services and management points.,S212
+CIAgent.log,Client,Client operations,"Records details about the process of remediation and compliance for compliance settings, software updates, and application management.",S212
+CIDownloader.log,Client,Client operations,Records details about configuration item definition downloads.,S212
+CIStateStore.log,Client,Client operations,"Records changes in state for configuration items, such as compliance settings, software updates, and applications.",S212
+CIStore.log,Client,Client operations,"Records information about configuration items, such as compliance settings, software updates, and applications.",S212
+CITaskMgr.log,Client,Client operations,"Records tasks for each application and deployment type, such as content download and install or uninstall actions.",S212
+ClientAuth.log,Client,Client operations,Records signing and authentication activity for the client.,S212
+ClientIDManagerStartup.log,Client,Client operations,Creates and maintains the client GUID and identifies tasks during client registration and assignment.,S212
+ClientLocation.log,Client,Client operations,Records tasks that are related to client site assignment.,S212
+ClientServicing.log,Client,Client operations,Records information for client deployment state messages during auto-upgrade and client piloting.,S212
+CMBITSManager.log,Client,Client operations,Records information for Background Intelligent Transfer Service (BITS) jobs on the device.,S212
+CMHttpsReadiness.log,Client,Client operations,Records the results of running the Configuration Manager HTTPS Readiness Assessment Tool. This tool checks whether computers have a public key infrastructure (PKI) client authentication certificate that can be used with Configuration Manager.,S212
+CmRcService.log,Client,Client operations,Records information for the remote control service.,S212
+CoManagementHandler.log,Client,Client operations,Use to troubleshoot co-management on the client.,S212
+ComplRelayAgent.log,Client,Client operations,Records information for the co-management workload for compliance policies.,S212
+ContentTransferManager.log,Client,Client operations,Schedules the Background Intelligent Transfer Service (BITS) or Server Message Block (SMB) to download or access packages.,S212
+DataTransferService.log,Client,Client operations,Records all BITS communication for policy or package access.,S212
+DCMAgent.log,Client,Client operations,"Records high-level information about the evaluation, conflict reporting, and remediation of configuration items and applications.",S212
+DCMReporting.log,Client,Client operations,Records information about reporting policy platform results into state messages for configuration items.,S212
+DcmWmiProvider.log,Client,Client operations,Records information about reading configuration item synclets from WMI.,S212
+DeltaDownload.log,Client,Client operations,Records information about the download of express updates and updates downloaded using Delivery Optimization.,S212
+Diagnostics.log,Client,Client operations,Records the status of client diagnostic actions.,S212
+EndpointProtectionAgent,Client,Client operations,Records information about the installation of the System Center Endpoint Protection client and the application of antimalware policy to that client.,S212
+execmgr.log,Client,Client operations,Records details about packages and task sequences that run on the client.,S212
+ExpressionSolver.log,Client,Client operations,Records details about enhanced detection methods that are used when verbose or debug logging is turned on.,S212
+ExternalEventAgent.log,Client,Client operations,Records the history of Endpoint Protection malware detection and events related to client status.,S212
+FileBITS.log,Client,Client operations,Records all SMB package access tasks.,S212
+FileSystemFile.log,Client,Client operations,Records the activity of the Windows Management Instrumentation (WMI) provider for software inventory and file collection.,S212
+FSPStateMessage.log,Client,Client operations,Records the activity for state messages that are sent to the fallback status point by the client.,S212
+InternetProxy.log,Client,Client operations,Records the network proxy configuration and use activity for the client.,S212
+InventoryAgent.log,Client,Client operations,"Records activities of hardware inventory, software inventory, and heartbeat discovery actions on the client.",S212
+InventoryProvider.log,Client,Client operations,"More details about hardware inventory, software inventory, and heartbeat discovery actions on the client.",S212
+LocationCache.log,Client,Client operations,Records the activity for location cache use and maintenance for the client.,S212
+LocationServices.log,Client,Client operations,"Records the client activity for locating management points, software update points, and distribution points.",S212
+MaintenanceCoordinator.log,Client,Client operations,Records the activity for general maintenance tasks for the client.,S212
+Mifprovider.log,Client,Client operations,Records the activity of the WMI provider for Management Information Format (MIF) files.,S212
+mtrmgr.log,Client,Client operations,Monitors all software metering processes.,S212
+PolicyAgent.log,Client,Client operations,Records requests for policies made by using the Data Transfer Service.,S212
+PolicyAgentProvider.log,Client,Client operations,Records policy changes.,S212
+PolicyEvaluator.log,Client,Client operations,"Records details about the evaluation of policies on client computers, including policies from software updates.",S212
+PolicyPlatformClient.log,Client,Client operations,"Records the process of remediation and compliance for all providers located in \Program Files\Microsoft Policy Platform, except the file provider.",S212
+PolicySdk.log,Client,Client operations,Records activities for policy system SDK interfaces.,S212
+Pwrmgmt.log,Client,Client operations,Records information about enabling or disabling and configuring the wake-up proxy client settings.,S212
+PwrProvider.log,Client,Client operations,"Records the activities of the power management provider (PWRInvProvider) hosted in the WMI service. On all supported versions of Windows, the provider enumerates the current settings on computers during hardware inventory and applies power plan settings.",S212
+SCClient_<domain>@<username>_1.log,Client,Client operations,Records the activity in Software Center for the specified user on the client computer.,S212
+SCClient_<domain>@<username>_2.log,Client,Client operations,Records the historical activity in Software Center for the specified user on the client computer.,S212
+Scheduler.log,Client,Client operations,Records activities of scheduled tasks for all client operations.,S212
+SCNotify_<domain>@<username>_1.log,Client,Client operations,Records the activity for notifying users about software for the specified user.,S212
+SCNotify_<domain>@<username>_1-<date_time>.log,Client,Client operations,Records the historical information for notifying users about software for the specified user.,S212
+Scripts.log,Client,Client operations,Records the activity of when Configuration Manager scripts run on the client.,S212
+SensorWmiProvider.log,Client,Client operations,Records the activity of the WMI provider for the endpoint analytics sensor.,S212
+SensorEndpoint.log,Client,Client operations,Records the execution of endpoint analytics policy and upload of client data to the site server.,S212
+SensorManagedProvider.log,Client,Client operations,Records the gathering and processing of events and information for endpoint analytics.,S212
+setuppolicyevaluator.log,Client,Client operations,Records configuration and inventory policy creation in WMI.,S212
+SleepAgent_<domain>@SYSTEM_0.log,Client,Client operations,The main log file for wake-up proxy.,S212
+SmsClientMethodProvider.log,Client,Client operations,"Records activity for sending client schedules. For example, with the Send Schedule tool or other programmatic methods.",S212
+smscliui.log,Client,Client operations,Records use of the Configuration Manager client in Control Panel.,S212
+SrcUpdateMgr.log,Client,Client operations,Records activity for installed Windows Installer applications that are updated with current distribution point source locations.,S212
+StateMessageProvider.log,Client,Client operations,Records information for the component that sends state messages from the client to the site.,S212
+StatusAgent.log,Client,Client operations,Records status messages that are created by the client components.,S212
+SWMTRReportGen.log,Client,Client operations,Generates a use data report that is collected by the metering agent. This data is logged in Mtrmgr.log.,S212
+UserAffinity.log,Client,Client operations,Records details about user device affinity.,S212
+UserAffinityProvider.log,Client,Client operations,Technical details from the component that tracks user device affinity.,S212
+VirtualApp.log,Client,Client operations,Records information specific to the evaluation of Application Virtualization (App-V) deployment types.,S212
+Wedmtrace.log,Client,Client operations,Records operations related to write filters on Windows Embedded clients.,S212
+wakeprxy-install.log,Client,Client operations,Records installation information when clients receive the client setting option to turn on wake-up proxy.,S212
+wakeprxy-uninstall.log,Client,Client operations,"Records information about uninstalling wake-up proxy when clients receive the client setting option to turn off wake-up proxy, if wake-up proxy was previously turned on.",S212
+ccmsetup.log,Client,Client installation,"Records ccmsetup.exe tasks for client setup, client upgrade, and client removal. Can be used to troubleshoot client installation problems.",S212
+ccmsetup-ccmeval.log,Client,Client installation,Records ccmsetup.exe tasks for client status and remediation.,S212
+CcmRepair.log,Client,Client installation,Records the repair activities of the client agent.,S212
+client.msi.log,Client,Client installation,Records setup tasks done by client.msi. Can be used to troubleshoot client installation or removal problems.,S212
+ClientServicing.log,Client,Client installation,Records information for client deployment state messages during auto-upgrade and client piloting.,S212
+CCMClient-<date_time>.log,`/Library/Application Support/Microsoft/CCM/Logs`,Client for Mac computers,"Records activities that are related to the Mac client operations, including application management, inventory, and error logging.",S212
+CCMAgent-<date_time>.log,`~/Library/Logs`,Client for Mac computers,"Records information that is related to client operations, including user sign in and sign out operations, and Mac computer activity.",S212
+CCMNotifications-<date_time>.log,`~/Library/Logs`,Client for Mac computers,Records activities that are related to Configuration Manager notifications displayed on the Mac computer.,S212
+CCMPrefPane-<date_time>.log,`~/Library/Logs`,Client for Mac computers,"Records activities related to the Configuration Manager preferences dialog box on the Mac computer, which includes general status and error logging.",S212
+adctrl.log,Site server,Site server and site systems,Records enrollment processing activity.,S212
+ADForestDisc.log,Site server,Site server and site systems,Records Active Directory Forest Discovery actions.,S212
+adminservice.log,Computer with the SMS Provider,Site server and site systems,Records actions for the SMS Provider administration service REST API,S212
+ADService.log,Site server,Site server and site systems,Records account creation and security group details in Active Directory.,S212
+adsgdis.log,Site server,Site server and site systems,Records Active Directory Group Discovery actions.,S212
+adsysdis.log,Site server,Site server and site systems,Records Active Directory System Discovery actions.,S212
+adusrdis.log,Site server,Site server and site systems,Records Active Directory User Discovery actions.,S212
+BusinessAppProcessWorker.log,Site server,Site server and site systems,Records processing for Microsoft Store for Business apps.,S212
+ccm.log,Site server,Site server and site systems,Records activities for client push installation.,S212
+CertMgr.log,Site system server,Site server and site systems,Records certificate activities for intrasite communication.,S212
+chmgr.log,Site server,Site server and site systems,Records activities of the client health manager.,S212
+Cidm.log,Site server,Site server and site systems,Records changes to the client settings by the Client Install Data Manager (CIDM).,S212
+colleval.log,Site server,Site server and site systems,"Records details about when collections are created, changed, and deleted by the Collection Evaluator.",S212
+compmon.log,Site system server,Site server and site systems,Records the status of component threads monitored for the site server.,S212
+compsumm.log,Site server,Site server and site systems,Records Component Status Summarizer tasks.,S212
+ComRegSetup.log,Site system server,Site server and site systems,Records the initial installation of COM registration results for a site server.,S212
+dataldr.log,Site server,Site server and site systems,Records information about the processing of MIF files and hardware inventory in the Configuration Manager database.,S212
+ddm.log,Site server,Site server and site systems,Records activities of the discovery data manager.,S212
+despool.log,Site server,Site server and site systems,Records incoming site-to-site communication transfers.,S212
+distmgr.log,Site server,Site server and site systems,"Records details about package creation, compression, delta replication, and information updates. It can also include other activities from the distribution manager component. For example, installing a distribution point, connection attempts, and installing components. For more information on other functionality that uses this log, see Service connection point and OS deployment.",S212
+EPCtrlMgr.log,Site server,Site server and site systems,Records information about the syncing of malware threat information from the Endpoint Protection site system role server with the Configuration Manager database.,S212
+EPMgr.log,Site system server,Site server and site systems,Records the status of the Endpoint Protection site system role.,S212
+EPSetup.log,Site system server,Site server and site systems,Provides information about the installation of the Endpoint Protection site system role.,S212
+EnrollSrv.log,Site system server,Site server and site systems,Records activities of the enrollment service process.,S212
+EnrollWeb.log,Site system server,Site server and site systems,Records activities of the enrollment website process.,S212
+ExternalNotificationsWorker.log,Site server,Site server and site systems,Records the queue and activities for notifications to external systems like Azure Logic Apps.,S212
+fspmgr.log,Site system server,Site server and site systems,Records activities of the fallback status point site system role.,S212
+hman.log,Site server,Site server and site systems,"Records information about site configuration changes, and about the publishing of site information in Active Directory Domain Services.",S212
+Inboxast.log,Site server,Site server and site systems,Records the files that are moved from the management point to the corresponding INBOXES folder on the site server.,S212
+inboxmgr.log,Site server,Site server and site systems,Records file transfer activities between inbox folders.,S212
+inboxmon.log,Site server,Site server and site systems,Records the processing of inbox files and performance counter updates.,S212
+invproc.log,Site server,Site server and site systems,Records the forwarding of MIF files from a secondary site to its parent site.,S212
+migmctrl.log,"Top-level site in the Configuration Manager hierarchy, and each child primary site. In a multi-primary site hierarchy, use the log file that is created at the central administration site.",Site server and site systems,"Records information for Migration actions that involve migration jobs, shared distribution points, and distribution point upgrades.",S212
+mpcontrol.log,Site system server,Site server and site systems,Records the registration of the management point. Records the availability of the management point every 10 minutes.,S212
+mpfdm.log,Site system server,Site server and site systems,Records the actions of the management point component that moves client files to the corresponding INBOXES folder on the site server.,S212
+mpMSI.log,Site server,Site server and site systems,Records details about the management point installation.,S212
+MPSetup.log,Site server,Site server and site systems,Records the management point installation wrapper process.,S212
+netdisc.log,Site server,Site server and site systems,Records Network Discovery actions.,S212
+NotiCtrl.log,Site server,Site server and site systems,Application request notifications.,S212
+ntsvrdis.log,Site server,Site server and site systems,Records the discovery activity of site system servers.,S212
+Objreplmgr,Site server,Site server and site systems,Records the processing of object change notifications for replication.,S212
+offermgr.log,Site server,Site server and site systems,Records advertisement updates.,S212
+offersum.log,Site server,Site server and site systems,Records the summarization of deployment status messages.,S212
+OfflineServicingMgr.log,Site server,Site server and site systems,Records the activities of applying updates to operating system image files.,S212
+outboxmon.log,Site server,Site server and site systems,Records the processing of outbox files and performance counter updates.,S212
+PerfSetup.log,Site system server,Site server and site systems,Records the results of the installation of performance counters.,S212
+PkgXferMgr.log,Site server,Site server and site systems,Records the actions of the SMS_Executive component that is responsible for sending content from a primary site to a remote distribution point.,S212
+policypv.log,Primary site server,Site server and site systems,Records updates to the client policies to reflect changes to client settings or deployments.,S212
+rcmctrl.log,Site server,Site server and site systems,Records the activities of database replication between sites in the hierarchy.,S212
+replmgr.log,Site server,Site server and site systems,Records the replication of files between the site server components and the Scheduler component.,S212
+ResourceExplorer.log,Computer that runs the Configuration Manager console,Site server and site systems,"Records errors, warnings, and information about running Resource Explorer.",S212
+RESTPROVIDERSetup.log,Computer with the SMS Provider,Site server and site systems,Installation of the SMS Provider administration service REST API,S212
+ruleengine.log,Site server,Site server and site systems,"Records details about automatic deployment rules for the identification, content download, and software update group and deployment creation.",S212
+SCCMReporting.log,Site system server,Site server and site systems,Records details about RBAC checks and resource loads when reports are run.,S212
+schedule.log,Site server,Site server and site systems,Records details about site-to-site job and file replication.,S212
+sender.log,Site server,Site server and site systems,Records the files that transfer by file-based replication between sites.,S212
+sinvproc.log,Site server,Site server and site systems,Records information about the processing of software inventory data to the site database.,S212
+sitecomp.log,Site server,Site server and site systems,Records details about the maintenance of the installed site components on all site system servers in the site.,S212
+sitectrl.log,Site server,Site server and site systems,Records site setting changes made to site control objects in the database.,S212
+sitestat.log,Site server,Site server and site systems,Records the availability and disk space monitoring process of all site systems.,S212
+SMS_AZUREAD_DISCOVERY_AGENT.log,Site server,Site server and site systems,Log file for Microsoft Entra user and user group discovery.,S212
+SMS_BUSINESS_APP_PROCESS_MANAGER.log,Site server,Site server and site systems,Log file for component that synchronizes apps from the Microsoft Store for Business.,S212
+SMS_DataEngine.log,Site server,Site server and site systems,Log file for management insights.,S212
+SMS_ISVUPDATES_SYNCAGENT.log,Top-level software update point in the Configuration Manager hierarchy.,Site server and site systems,Log file for synchronization of third-party software updates.,S212
+SMS_MESSAGE_PROCESSING_ENGINE.log,Site server,Site server and site systems,"Log file for the message processing engine, which the site uses to process results for client actions. For example, run scripts and CMPivot.",S212
+SMS_OrchestrationGroup.log,Site server,Site server and site systems,Log file for orchestration groups,S212
+SMS_PhasedDeployment.log,Top-level site in the Configuration Manager hierarchy,Site server and site systems,Log file for phased deployments,S212
+SMS_REST_PROVIDER.log,Computer with the SMS Provider,Site server and site systems,"Service health state for the SMS Provider administration service REST API, including certificate information",S212
+SmsAdminUI.log,Computer that runs the Configuration Manager console,Site server and site systems,Records Configuration Manager console activity.,S212
+smsbkup.log,Site server,Site server and site systems,Records output from the site backup process.,S212
+smsdbmon.log,Site server,Site server and site systems,Records database changes.,S212
+SMSENROLLSRVSetup.log,Site system server,Site server and site systems,Records the installation activities of the enrollment web service.,S212
+SMSENROLLWEBSetup.log,Site system server,Site server and site systems,Records the installation activities of the enrollment website.,S212
+smsexec.log,Site server or site system server,Site server and site systems,Records the processing of all site server component threads.,S212
+SMSFSPSetup.log,Site system server,Site server and site systems,Records messages generated by the installation of a fallback status point.,S212
+SMSProv.log,Computer with the SMS Provider,Site server and site systems,Records WMI provider access to the site database.,S212
+srsrpMSI.log,Site system server,Site server and site systems,Records detailed results of the reporting point installation process from the MSI output.,S212
+srsrpsetup.log,Site system server,Site server and site systems,Records results of the reporting point installation process.,S212
+statesys.log,Site server,Site server and site systems,Records the processing of state system messages.,S212
+statmgr.log,Site server,Site server and site systems,Records the writing of all status messages to the database.,S212
+swmproc.log,Site server,Site server and site systems,Records the processing of metering files and settings.,S212
+ConfigMgrPrereq.log,Site server,Site server installation,Records prerequisite component evaluation and installation activities.,S212
+ConfigMgrSetup.log,Site Server,Site server installation,Records detailed output from the site server setup.,S212
+ConfigMgrSetupWizard.log,Site Server,Site server installation,Records information related to activity in the Setup Wizard.,S212
+SMS_BOOTSTRAP.log,Site Server,Site server installation,Records information about the progress of launching the secondary site installation process. Details of the actual setup process are contained in ConfigMgrSetup.log.,S212
+smstsvc.log,Site server and site system server,Site server installation,"Records information about the installation, use, and removal of a Windows service. Windows uses this service to test network connectivity and permissions between servers. It uses the computer account of the server that creates the connection.",S212
+DWSSMSI.log,Site system server,Data warehouse service point,Records messages generated by the installation of a data warehouse service point.,S212
+DWSSSetup.log,Site system server,Data warehouse service point,Records messages generated by the installation of a data warehouse service point.,S212
+Microsoft.ConfigMgrDataWarehouse.log,Site system server,Data warehouse service point,Records information about data synchronization between the site database and the data warehouse database.,S212
+FspIsapi,Site system server,Fallback status point,Records details about communications to the fallback status point from mobile device legacy clients and client computers.,S212
+fspMSI.log,Site system server,Fallback status point,Records messages generated by the installation of a fallback status point.,S212
+fspmgr.log,Site system server,Fallback status point,Records activities of the fallback status point site system role.,S212
+CcmIsapi.log,Site system server,Management point,Records client messaging activity on the endpoint.,S212
+CCM_STS.log,Site system server,Management point,"Records activities for authentication tokens, either from Microsoft Entra ID or site-issued client tokens.",S212
+ClientAuth.log,Site system server,Management point,Records signing and authentication activity.,S212
+MP_CliReg.log,Site system server,Management point,Records the client registration activity processed by the management point.,S212
+MP_Ddr.log,Site system server,Management point,"Records the conversion of XML.ddr records from clients, and then copies them to the site server.",S212
+MP_Framework.log,Site system server,Management point,Records the activities of the core management point and client framework components.,S212
+MP_GetAuth.log,Site system server,Management point,Records client authorization activity.,S212
+MP_GetPolicy.log,Site system server,Management point,Records policy request activity from client computers.,S212
+MP_Hinv.log,Site system server,Management point,Records details about the conversion of XML hardware inventory records from clients and the copy of those files to the site server.,S212
+MP_Location.log,Site system server,Management point,Records location request and reply activity from clients.,S212
+MP_OOBMgr.log,Site system server,Management point,Records the management point activities related to receiving an OTP from a client.,S212
+MP_Policy.log,Site system server,Management point,Records policy communication.,S212
+MP_RegistrationManager.log,Site system server,Management point,"Records activities related to client registration, such as validating certificates, CRL, and tokens.",S212
+MP_Relay.log,Site system server,Management point,Records the transfer of files that are collected from the client.,S212
+MP_RelayMsgMgr.log,Site system server,Management point,"Records how the management point handles incoming client messages, such as for scripts or CMPivot.",S212
+MP_Retry.log,Site system server,Management point,Records hardware inventory retry processes.,S212
+MP_Sinv.log,Site system server,Management point,Records details about the conversion of XML software inventory records from clients and the copy of those files to the site server.,S212
+MP_SinvCollFile.log,Site system server,Management point,Records details about file collection.,S212
+MP_Status.log,Site system server,Management point,Records details about the conversion of XML.svf status message files from clients and the copy of those files to the site server.,S212
+mpcontrol.log,Site server,Management point,Records the registration of the management point. Records the availability of the management point every 10 minutes.,S212
+mpfdm.log,Site system server,Management point,Records the actions of the management point component that moves client files to the corresponding INBOXES folder on the site server.,S212
+mpMSI.log,Site server,Management point,Records details about the management point installation.,S212
+MPSetup.log,Site server,Management point,Records the management point installation wrapper process.,S212
+UserService.log,Site system server,Management point,"Records user requests from Software Center, retrieving/installing user-available applications from the server.",S212
+CertMgr.log,Site server,Service connection point,Records certificate and proxy account information.,S212
+CollectionAADGroupSyncWorker.log,Computer with the service connection point,Service connection point,Log file for synchronization of collection membership results to Microsoft Entra ID.,S212
+SMS_AZUREAD_DISCOVERY_AGENT.log,Computer with the service connection point,Service connection point,"Starting 2303, log file for synchronization of collection membership results to Microsoft Entra ID.",S212
+CollEval.log,Primary site and central administration site,Service connection point,"Records details about when collections are created, changed, and deleted by the Collection Evaluator.",S212
+Cloudusersync.log,Computer with the service connection point,Service connection point,Records license enablement for users.,S212
+Dataldr.log,Site server,Service connection point,Records information about the processing of MIF files.,S212
+ddm.log,Site server,Service connection point,Records activities of the discovery data manager.,S212
+Distmgr.log,Top-level site server,Service connection point,Records details about content distribution requests.,S212
+Dmpdownloader.log,Computer with the service connection point,Service connection point,"Records details about downloads from Microsoft, such as site updates.",S212
+Dmpuploader.log,Computer with the service connection point,Service connection point,Records detail related to uploading database changes to Microsoft.,S212
+EndpointConnectivityCheckWorker.log,Computer with the service connection point,Service connection point,Records detail related to checks for important internet endpoints.,S212
+hman.log,Site server,Service connection point,Records information about message forwarding.,S212
+WsfbSyncWorker.log,Computer with the service connection point,Service connection point,Records information about the communication with the Microsoft Store for Business.,S212
+objreplmgr.log,Primary site server,Service connection point,Records the processing of policy and assignment.,S212
+PolicyPV.log,Site server,Service connection point,Records policy generation of all policies.,S212
+outgoingcontentmanager.log,Computer with the service connection point,Service connection point,Records content uploaded to Microsoft.,S212
+ServiceConnectionTool.log,Same location as the tool,Service connection point,"Records details about use of the service connection tool based on the parameter you use. Each time you run the tool, it replaces any existing log file.",S212
+Sitecomp.log,Site server,Service connection point,Records details of service connection point installation.,S212
+SmsAdminUI.log,Computer that runs the Configuration Manager console,Service connection point,Records Configuration Manager console activity.,S212
+SMS_CLOUDCONNECTION.log,Computer with the service connection point,Service connection point,Records information about cloud services.,S212
+Smsprov.log,Computer with the SMS Provider,Service connection point,Records activities of the SMS Provider. Configuration Manager console activities use the SMS Provider.,S212
+SrvBoot.log,Computer with the service connection point,Service connection point,Records details about the service connection point installer service.,S212
+Statesys.log,Primary site and central administration site,Service connection point,Records the processing of mobile device management messages.,S212
+UXAnalyticsUploadWorker.log,Computer with the service connection point,Service connection point,Records data upload to the service for endpoint analytics.,S212
+objreplmgr.log,Site server,Software update point,Records details about the replication of software updates notification files from a parent site to child sites.,S212
+PatchDownloader.log,"When you manually download updates, this file is in your `%temp%` directory on the computer where you use the console. For automatic deployment rules, if the Configuration Manager client is installed on the site server, this file is on the site server in `%windir%\CCM\Logs`.",Software update point,Records details about the process of downloading software updates from the update source to the download destination on the site server.,S212
+ruleengine.log,Site server,Software update point,"Records details about automatic deployment rules for the identification, content download, and software update group and deployment creation.",S212
+SMS_ISVUPDATES_SYNCAGENT.log,Top-level software update point in the Configuration Manager hierarchy.,Software update point,Log file for synchronization of third-party software updates.,S212
+SUPSetup.log,Site system server,Software update point,"Records details about the software update point installation. When the software update point installation completes, Installation was successful is written to this log file.",S212
+WCM.log,Site server that connects to the WSUS server,Software update point,"Records details about the software update point configuration and connections to the WSUS server for subscribed update categories, classifications, and languages.",S212
+WSUSCtrl.log,Site system server,Software update point,"Records details about the configuration, database connectivity, and health of the WSUS server for the site.",S212
+wsyncmgr.log,Site system server,Software update point,Records details about the software updates sync process.,S212
+WUSSyncXML.log,Client computer configured as the sync host for the Inventory Tool for Microsoft Updates,Software update point,Records details about the Inventory Tool for the Microsoft Updates sync process.,S212
+AppIntentEval.log,Client,Application management,"Records details about the current and intended state of applications, their applicability, whether requirements were met, deployment types, and dependencies.",S212
+AppDiscovery.log,Client,Application management,Records details about the discovery or detection of applications on client computers.,S212
+AppEnforce.log,Client,Application management,Records details about enforcement actions (install and uninstall) taken for applications on the client.,S212
+AppGroupHandler.log,Client,Application management,Records detection and enforcement information for application groups,S212
+BusinessAppProcessWorker.log,Site server,Application management,Records processing for Microsoft Store for Business apps.,S212
+Ccmsdkprovider.log,Client,Application management,Records the activities of the application management SDK.,S212
+colleval.log,Site system server,Application management,"Records details about when collections are created, changed, and deleted by the Collection Evaluator.",S212
+WsfbSyncWorker.log,Computer with the service connection point,Application management,Records information about the communication with the Microsoft Store for Business.,S212
+NotiCtrl.log,Site server,Application management,Application request notifications.,S212
+PrestageContent.log,Site system server,Application management,"Records details about the use of the ExtractContent.exe tool on a remote, prestaged distribution point. This tool extracts content that has been exported to a file.",S212
+SettingsAgent.log,Client,Application management,"Enforcement of specific applications, records orchestration of application group evaluation, and details of co-management policies.",S212
+SMS_BUSINESS_APP_PROCESS_MANAGER.log,Site server,Application management,Log file for component that synchronizes apps from the Microsoft Store for Business.,S212
+SMS_CLOUDCONNECTION.log,Computer with the service connection point,Application management,Records information about cloud services.,S212
+SMS_ImplicitUninstall.log,Site server,Application management,Records events from the implicit uninstall background worker process.,S212
+SMSdpmon.log,Site server,Application management,Records details about the distribution point health monitoring scheduled task that is configured on a distribution point.,S212
+SoftwareCenterSystemTasks.log,Client,Application management,Records activities related to Software Center prerequisite component validation.,S212
+TSDTHandler.log,Client,Application management,For the task sequence deployment type. It logs the process from app enforcement (install or uninstall) to the launch of the task sequence. Use it with AppEnforce.log and smsts.log.,S212
+colleval.log,Site server,Application management / Packages and programs,"Records details about when collections are created, changed, and deleted by the Collection Evaluator.",S212
+execmgr.log,Client,Application management / Packages and programs,Records details about packages and task sequences that run.,S212
+AssetAdvisor.log,Client,Asset Intelligence,Records the activities of Asset Intelligence inventory actions.,S212
+aikbmgr.log,Site server,Asset Intelligence,Records details about the processing of XML files from the inbox for updating the Asset Intelligence catalog.,S212
+AIUpdateSvc.log,Site system server,Asset Intelligence,Records the interaction of the Asset Intelligence sync point with the cloud service.,S212
+AIUSMSI.log,Site system server,Asset Intelligence,Records details about the installation of the Asset Intelligence sync point site system role.,S212
+AIUSSetup.log,Site system server,Asset Intelligence,Records details about the installation of the Asset Intelligence sync point site system role.,S212
+ManagedProvider.log,Site system server,Asset Intelligence,Records details about discovering software with an associated software identification tag. Also records activities related to hardware inventory.,S212
+MVLSImport.log,Site system server,Asset Intelligence,Records details about the processing of imported licensing files.,S212
+ConfigMgrSetup.log,Site server,Backup and recovery,Records information about setup and recovery tasks when Configuration Manager recovers a site from backup.,S212
+Smsbkup.log,Site server,Backup and recovery,Records details about the site backup activity.,S212
+smssqlbkup.log,Site database server,Backup and recovery,Records output from the site database backup process when SQL Server is installed on a server that isn't the site server.,S212
+Smswriter.log,Site server,Backup and recovery,Records information about the state of the Configuration Manager VSS writer that is used by the backup process.,S212
+CertEnrollAgent.log,Windows Hello for Business client,Certificate enrollment,Records client communication with NDES for certificate requests using the Simple Certificate Enrollment Protocol (SCEP).,S212
+Crp.log,Certificate registration point,Certificate enrollment,Records enrollment activities.,S212
+Crpctrl.log,Certificate registration point,Certificate enrollment,Records the operational health of the certificate registration point.,S212
+Crpsetup.log,Certificate registration point,Certificate enrollment,Records details about the installation and configuration of the certificate registration point.,S212
+Crpmsi.log,Certificate registration point,Certificate enrollment,Records details about the installation and configuration of the certificate registration point.,S212
+NDESPlugin.log,Configuration Manager Policy Module and the Network Device Enrollment Service,Certificate enrollment,Records challenge verification and certificate enrollment activities.,S212
+bgbmgr.log,Site server,Client notification,Records details about site server activities related to client notification tasks and processing online and task status files.,S212
+BGBServer.log,Management point,Client notification,"Records the activities of the notification server, such as client-server communication and pushing tasks to clients. Also records information about the generation of online and task status files to be sent to the site server.",S212
+BgbSetup.log,Management point,Client notification,Records the activities of the notification server installation wrapper process during installation and uninstallation.,S212
+bgbisapiMSI.log,Management point,Client notification,Records details about the notification server installation and uninstallation.,S212
+BgbHttpProxy.log,Client,Client notification,Records the activities of the notification HTTP proxy as it relays the messages of clients using HTTP to and from the notification server.,S212
+CcmNotificationAgent.log,Client,Client notification,"Records the activities of the notification agent, such as client-server communication and information about tasks received and dispatched to other client agents.",S212
+CloudMgr.log,The installdir folder on the primary site server or CAS.,Cloud management gateway,"Records details about deploying the cloud management gateway service, ongoing service status, and use data associated with the service. To configure the logging level, edit the Logging level value in the following registry key: `HKLM\SOFTWARE\ Microsoft\SMS\COMPONENTS\ SMS_CLOUD_ SERVICES_MANAGER`",S213
+CMGSetup.log,"The %approot%\logs on your Azure server, or the SMS/Logs folder on the site system server",Cloud management gateway,"Records details about the second phase of the cloud management gateway deployment (local deployment in Azure). To configure the logging level, use the setting Trace level (Information (Default), Verbose, Error) on the Azure portal\Cloud services configuration tab.",S213
+CMGService.log,"The %approot%\logs on your Azure server, or the SMS/Logs folder on the site system server",Cloud management gateway,"Records details about the cloud management gateway service core component in Azure. To configure the logging level, use the setting Trace level (Information (Default), Verbose, Error) on the Azure portal\Cloud services configuration tab.",S213
+SMS_Cloud_ProxyConnector.log,Site system server,Cloud management gateway,Records details about setting up connections between the cloud management gateway service and the cloud management gateway connection point.,S213
+CMGContentService.log,"The %approot%\logs on your Azure server, or the SMS/Logs folder on the site system server",Cloud management gateway,"When you enable a CMG to also serve content from Azure storage, this log records the details of that service.",S213
+CIAgent.log,Client,Compliance settings and company resource access,"Records details about the process of remediation and compliance for compliance settings, software updates, and application management.",S212
+CITaskManager.log,Client,Compliance settings and company resource access,Records information about configuration item task scheduling.,S212
+DCMAgent.log,Client,Compliance settings and company resource access,"Records high-level information about the evaluation, conflict reporting, and remediation of configuration items and applications.",S212
+DCMReporting.log,Client,Compliance settings and company resource access,Records information about reporting policy platform results into state messages for configuration items.,S212
+DcmWmiProvider.log,Client,Compliance settings and company resource access,Records information about reading configuration item synclets from WMI.,S212
+ConfigMgrAdminUISetup.log,Computer that runs the Configuration Manager console,Configuration Manager console,Records the installation of the Configuration Manager console.,S212
+SmsAdminUI.log,Computer that runs the Configuration Manager console,Configuration Manager console,Records information about the operation of the Configuration Manager console.,S212
+CMPivot.log,Computer that runs the Configuration Manager console,Configuration Manager console,Records details about each CMPivot task run from the console.,S212
+Smsprov.log,Site server or site system server,Configuration Manager console,Records activities of the SMS Provider. Configuration Manager console activities use the SMS Provider.,S212
+CloudDP-<guid>.log,Site system server,Content management,"Records details for a specific cloud-based content source, including information about storage and content access.",S212
+CloudMgr.log,Site system server,Content management,"Records details about content provisioning, collecting storage and bandwidth statistics, and administrator-initiated actions to stop or start the cloud service that runs a content-enabled cloud management gateway (CMG).",S212
+DataTransferService.log,Computer that is configured as a pull-distribution point,Content management,Records all BITS communication for policy or package access. This log also is used for content management by pull-distribution points.,S212
+distmgr.log,Site server,Content management,"Records details about package creation, compression, delta replication, and information updates. It can also include other activities from the distribution manager component. For example, installing a distribution point, connection attempts, and installing components.",S212
+PullDP.log,Computer that is configured as a pull-distribution point,Content management,Records details about content that the pull-distribution point transfers from source distribution points.,S212
+PrestageContent.log,Site system role,Content management,"Records the details about the use of the ExtractContent.exe tool on a remote, prestaged distribution point. This tool extracts content that has been exported to a file.",S212
+PkgXferMgr.log,Site server,Content management,Records the actions of the SMS_Executive component that is responsible for sending content from a primary site to a remote distribution point.,S212
+SMSdpmon.log,Site system role,Content management,Records details about distribution point health monitoring scheduled tasks that are configured on a distribution point.,S212
+smsdpprov.log,Distribution point computer that isn't colocated with the site server,Content management,Records details about the extraction of compressed files received from a primary site. This log is generated by the WMI provider of the remote distribution point.,S212
+smsdpusage.log,Site system role,Content management,Records details about the smsdpusage.exe that runs and gathers data for the distribution point usage summary report.,S212
+adsgdis.log,Site server,Discovery,Records Active Directory Security Group Discovery actions.,S212
+adsysdis.log,Site server,Discovery,Records Active Directory System Discovery actions.,S212
+adusrdis.log,Site server,Discovery,Records Active Directory User Discovery actions.,S212
+ADForestDisc.Log,Site server,Discovery,Records Active Directory Forest Discovery actions.,S212
+ddm.log,Site server,Discovery,Records activities of the discovery data manager.,S212
+InventoryAgent.log,Client,Discovery,"Records activities of hardware inventory, software inventory, and heartbeat discovery actions on the client.",S212
+netdisc.log,Site server,Discovery,Records Network Discovery actions.,S212
+ntsvrdis.log,Site server,Discovery,Records the discovery activity of site system servers.,S212
+UXAnalyticsUploadWorker.log,Service connection point,Endpoint analytics,Records data upload to the service for endpoint analytics.,S212
+SensorWmiProvider.log,Client,Endpoint analytics,Records the activity of the WMI provider for the endpoint analytics sensor.,S212
+SensorEndpoint.log,Client,Endpoint analytics,Records the execution of endpoint analytics policy and upload of client data to the site server.,S212
+SensorManagedProvider.log,Client,Endpoint analytics,Records the gathering and processing of events and information for endpoint analytics.,S212
+EndpointProtectionAgent.log,Client,Endpoint Protection,Records details about the installation of the Endpoint Protection client and the application of antimalware policy to that client.,S212
+ExternalEventAgent.log,Client,Endpoint Protection,Records the history of Endpoint Protection malware detection and events related to client status.,S212
+EPCtrlMgr.log,Site system server,Endpoint Protection,Records details about the syncing of malware threat information from the Endpoint Protection role server with the Configuration Manager database.,S212
+EPMgr.log,Site system server,Endpoint Protection,Monitors the status of the Endpoint Protection site system role.,S212
+EPSetup.log,Site system server,Endpoint Protection,Provides information about the installation of the Endpoint Protection site system role.,S212
+AdminUI.ExtensionInstaller.log,Computer that runs the Configuration Manager console,Extensions,"Records information about the download of extensions from Microsoft, and the installation and uninstallation of all extensions.",S212
+FeatureExtensionInstaller.log,Computer that runs the Configuration Manager console,Extensions,Records information about the installation and removal of individual extensions when they're enabled or disabled in the Configuration Manager console.,S212
+SmsAdminUI.log,Computer that runs the Configuration Manager console,Extensions,Records Configuration Manager console activity.,S212
+AssetAdvisor.log,Client,Inventory,Records the activities of Asset Intelligence inventory actions.,S212
+InventoryAgent.log,Client,Inventory,"Records activities of hardware inventory, software inventory, and heartbeat discovery actions on the client.",S212
+InventoryProvider.log,Client,Inventory,"More details about hardware inventory, software inventory, and heartbeat discovery actions on the client.",S212
+dataldr.log,Site server,Inventory,Records information about the processing of MIF files and hardware inventory in the Configuration Manager database.,S212
+invproc.log,Secondary site server,Inventory,Records the forwarding of MIF files from a secondary site to its parent site.,S212
+sinvproc.log,Site server,Inventory,Records information about the processing of software inventory data to the site database.,S212
+mtrmgr.log,Client,Metering,Monitors all software metering processes.,S212
+SWMTRReportGen.log,Client,Metering,Generates a use data report that is collected by the metering agent. This data is logged in Mtrmgr.log.,S212
+swmproc.log,Site server,Metering,Records the processing of metering files and settings.,S212
+migmctrl.log,"Top-level site in the Configuration Manager hierarchy, and each child primary site. In a multi-primary site hierarchy, use the log file created at the central administration site.",Migration,"Records information about migration actions that involve migration jobs, shared distribution points, and distribution point upgrades.",S212
+DMPRP.log,Site system server,Mobile devices / Enrollment,Records communication between management points that are enabled for mobile devices and the management point endpoints.,S212
+dmpmsi.log,Site system server,Mobile devices / Enrollment,Records the Windows Installer data for the configuration of a management point that is enabled for mobile devices.,S212
+DMPSetup.log,Site system server,Mobile devices / Enrollment,Records the configuration of the management point when it's enabled for mobile devices.,S212
+enrollsrvMSI.log,Site system server,Mobile devices / Enrollment,Records the Windows Installer data for the configuration of an enrollment point.,S212
+enrollmentweb.log,Site system server,Mobile devices / Enrollment,Records communication between mobile devices and the enrollment proxy point.,S212
+enrollwebMSI.log,Site system server,Mobile devices / Enrollment,Records the Windows Installer data for the configuration of an enrollment proxy point.,S212
+enrollmentservice.log,Site system server,Mobile devices / Enrollment,Records communication between an enrollment proxy point and an enrollment point.,S212
+SMS_DM.log,Site system server,Mobile devices / Enrollment,"Records communication between mobile devices, Mac computers, and the management point that is enabled for mobile devices and Mac computers.",S212
+easdisc.log,Site server,Mobile devices / Exchange Server connector,Records the activities and the status of the Exchange Server connector.,S212
+DmCertEnroll.log,Client,Mobile devices / Mobile device legacy,Records details about certificate enrollment data on mobile device legacy clients.,S212
+DMCertResp.htm,Client,Mobile devices / Mobile device legacy,Records the HTML response from the certificate server when the mobile device legacy client enroller program requests a PKI certificate.,S212
+DmClientHealth.log,Site system server,Mobile devices / Mobile device legacy,Records the GUIDs of all mobile device legacy clients that communicate with the management point that is enabled for mobile devices.,S212
+DmClientRegistration.log,Site system server,Mobile devices / Mobile device legacy,Records registration requests and responses to and from mobile device legacy clients.,S212
+DmClientSetup.log,Client,Mobile devices / Mobile device legacy,Records client setup data for mobile device legacy clients.,S212
+DmClientXfer.log,Client,Mobile devices / Mobile device legacy,Records client transfer data for mobile device legacy clients and for ActiveSync deployments.,S212
+DmCommonInstaller.log,Client,Mobile devices / Mobile device legacy,Records client transfer file installation for configuring mobile device legacy client transfer files.,S212
+DmInstaller.log,Client,Mobile devices / Mobile device legacy,"Records whether DMInstaller correctly calls DmClientSetup, and whether DmClientSetup exits with success or failure for mobile device legacy clients.",S212
+DmpDatastore.log,Site system server,Mobile devices / Mobile device legacy,Records all the site database connections and queries made by the management point that is enabled for mobile devices.,S212
+DmpDiscovery.log,Site system server,Mobile devices / Mobile device legacy,Records all the discovery data from the mobile device legacy clients on the management point that is enabled for mobile devices.,S212
+DmpHardware.log,Site system server,Mobile devices / Mobile device legacy,Records hardware inventory data from mobile device legacy clients on the management point that is enabled for mobile devices.,S212
+DmpIsapi.log,Site system server,Mobile devices / Mobile device legacy,Records mobile device legacy client communication with a management point that is enabled for mobile devices.,S212
+dmpmsi.log,Site system server,Mobile devices / Mobile device legacy,Records the Windows Installer data for the configuration of a management point that is enabled for mobile devices.,S212
+DMPSetup.log,Site system server,Mobile devices / Mobile device legacy,Records the configuration of the management point when it's enabled for mobile devices.,S212
+DmpSoftware.log,Site system server,Mobile devices / Mobile device legacy,Records software distribution data from mobile device legacy clients on a management point that is enabled for mobile devices.,S212
+DmpStatus.log,Site system server,Mobile devices / Mobile device legacy,Records status messages data from mobile device clients on a management point that is enabled for mobile devices.,S212
+DmSvc.log,Client,Mobile devices / Mobile device legacy,Records client communication from mobile device legacy clients with a management point that is enabled for mobile devices.,S212
+FspIsapi.log,Site system server,Mobile devices / Mobile device legacy,Records details about communications to the fallback status point from mobile device legacy clients and client computers.,S212
+CAS.log,Client,OS deployment,Records details when distribution points are found for referenced content.,S212
+ccmsetup.log,Client,OS deployment,"Records ccmsetup tasks for client setup, client upgrade, and client removal. Can be used to troubleshoot client installation problems.",S212
+CreateTSMedia.log,Computer that runs the Configuration Manager console,OS deployment,Records details for task sequence media creation.,S212
+Dism.log,Site system server,OS deployment,Records driver installation actions or update application actions for offline servicing.,S212
+Distmgr.log,Site system server,OS deployment,Records details about the configuration of enabling a distribution point for Preboot Execution Environment (PXE).,S212
+DriverCatalog.log,Site system server,OS deployment,Records details about device drivers that have been imported into the driver catalog.,S212
+mcsisapi.log,Site system server,OS deployment,Records information for multicast package transfer and client request responses.,S212
+mcsexec.log,Site system server,OS deployment,"Records health check, namespace, session creation, and certificate check actions.",S212
+mcsmgr.log,Site system server,OS deployment,"Records changes to configuration, security mode, and availability.",S212
+mcsprv.log,Site system server,OS deployment,Records multicast provider interaction with Windows Deployment Services (WDS).,S212
+MCSSetup.log,Site system server,OS deployment,Records details about multicast server role installation.,S212
+MCSMSI.log,Site system server,OS deployment,Records details about multicast server role installation.,S212
+Mcsperf.log,Site system server,OS deployment,Records details about multicast performance counter updates.,S212
+MP_ClientID.log,Site system server,OS deployment,Records management point responses to client ID requests that task sequences start from PXE or boot media.,S212
+MP_DriverManager.log,Site system server,OS deployment,Records management point responses to Auto Apply Driver task sequence action requests.,S212
+OfflineServicingMgr.log,Site system server,OS deployment,Records details of offline servicing schedules and update apply actions on operating system Windows Imaging Format (WIM) files.,S212
+Setupact.log,Client,OS deployment,"Records details about Windows Sysprep and setup logs. For more information, see Log Files.",S212
+Setupapi.log,Client,OS deployment,Records details about Windows Sysprep and setup logs.,S212
+Setuperr.log,Client,OS deployment,Records details about Windows Sysprep and setup logs.,S212
+smpisapi.log,Client,OS deployment,"Records details about the client state capture and restore actions, and threshold information.",S212
+Smpmgr.log,Site system server,OS deployment,Records details about the results of state migration point health checks and configuration changes.,S212
+smpmsi.log,Site system server,OS deployment,Records installation and configuration details about the state migration point.,S212
+smpperf.log,Site system server,OS deployment,Records the state migration point performance counter updates.,S212
+smspxe.log,Site system server,OS deployment,"Records details about the responses to clients that use PXE boot, and details about the expansion of boot images and boot files.",S212
+smssmpsetup.log,Site system server,OS deployment,Records installation and configuration details about the state migration point.,S212
+SMS_PhasedDeployment.log,Top-level site in the Configuration Manager hierarchy,OS deployment,Log file for phased deployments,S212
+Smsts.log,Client,OS deployment,Records task sequence activities.,S212
+TSAgent.log,Client,OS deployment,Records the outcome of task sequence dependencies before starting a task sequence.,S212
+TaskSequenceProvider.log,Site system server,OS deployment,"Records details about task sequences when they're imported, exported, or edited.",S212
+loadstate.log,Client,OS deployment,Records details about the User State Migration Tool (USMT) and restoring user state data.,S212
+scanstate.log,Client,OS deployment,Records details about the User State Migration Tool (USMT) and capturing user state data.,S212
+pwrmgmt.log,Client,Power management,"Records details about power management activities on the client computer, including monitoring and the enforcement of settings by the Power Management Client Agent.",S212
+CmRcViewer.log,"On the computer that runs the remote control viewer, in the %temp% folder.",Remote control,Records details about the activity of the remote control viewer.,S212
+CmRcService.log,,Remote control,"Records information for the remote control service, in the Client logs folder.",S212
+srsrp.log,Site system server,Reporting,Records information about the activity and status of the reporting services point.,S212
+srsrpMSI.log,Site system server,Reporting,Records detailed results of the reporting services point installation process from the MSI output.,S212
+srsrpsetup.log,Site system server,Reporting,Records results of the reporting services point installation process.,S212
+SCCMReporting.log,Site system server,Reporting,Records details about RBAC checks and resource loads when reports are run.,S212
+hman.log,Site server,Role-based administration,Records information about site configuration changes and the publishing of site information to Active Directory Domain Services.,S212
+SMSProv.log,Computer with the SMS Provider,Role-based administration,Records WMI provider access to the site database.,S212
+AlternateHandler.log,Client,Software updates,Records details when the client calls the Office click-to-run COM interface to download and install Microsoft 365 Apps for enterprise client updates. It's similar to use of WuaHandler when it calls the Windows Update Agent API to download and install Windows updates.,S212
+ccmperf.log,Client,Software updates,Records activities related to the maintenance and capture of data related to client performance counters.,S212
+DeltaDownload.log,Client,Software updates,Records information about the download of express updates and updates downloaded using Delivery Optimization.,S212
+PatchDownloader.log,"When downloading updates manually, this log file is located in the %temp% directory of the user running the console on the machine you're running the console. For Automatic Deployment Rules, this log file is located on the site server in %windir%\CCM\Logs, if the ConfigMgr client is installed on the site server.",Software updates,Records details about the process of downloading software updates from the update source to the download destination on the site server.,S212
+PolicyEvaluator.log,Client,Software updates,"Records details about the evaluation of policies on client computers, including policies from software updates.",S212
+RebootCoordinator.log,Client,Software updates,Records details about the coordination of system restarts on client computers after software update installations.,S212
+ScanAgent.log,Client,Software updates,"Records details about scan requests for software updates, the WSUS location, and related actions.",S212
+SdmAgent.log,Client,Software updates,"Records details about the tracking of remediation and compliance. However, the software updates log file, Updateshandler.log, provides more informative details about installing the software updates that are required for compliance. This log file is shared with compliance settings.",S212
+ServiceWindowManager.log,Client,Software updates,Records details about the evaluation of maintenance windows.,S212
+SMS_ISVUPDATES_SYNCAGENT.log,Top-level software update point in the Configuration Manager hierarchy.,Software updates,Log file for synchronization of third-party software updates.,S212
+SMS_OrchestrationGroup.log,Site server,Software updates,Log file for orchestration groups,S212
+StateMessage.log,Client,Software updates,Records details about software update state messages that are created and sent to the management point.,S212
+SUPSetup.log,Site system server,Software updates,"Records details about the software update point installation. When the software update point installation completes, Installation was successful is written to this log file.",S212
+UpdatesDeployment.log,Client,Software updates,"Records details about deployments on the client, including software update activation, evaluation, and enforcement. Verbose logging shows additional information about the interaction with the client user interface.",S212
+UpdatesHandler.log,Client,Software updates,Records details about software update compliance scanning and about the download and installation of software updates on the client.,S212
+UpdatesStore.log,Client,Software updates,Records details about compliance status for the software updates that were assessed during the compliance scan cycle.,S212
+WCM.log,Site server,Software updates,"Records details about software update point configurations and connections to the WSUS server for subscribed update categories, classifications, and languages.",S212
+WSUSCtrl.log,Site system server,Software updates,"Records details about the configuration, database connectivity, and health of the WSUS server for the site.",S212
+wsyncmgr.log,Site server,Software updates,Records details about the software update sync process.,S212
+WUAHandler.log,Client,Software updates,Records details about the Windows Update Agent on the client when it searches for software updates.,S212
+wolcmgr.log,Site server,Wake On LAN,"Records details about which clients need to be sent wake-up packets, the number of wake-up packets sent, and the number of wake-up packets retried.",S212
+wolmgr.log,Site server,Wake On LAN,"Records details about wake-up procedures, such as when to wake up deployments that are configured for Wake On LAN.",S212
+CBS.log,Client,Windows servicing,Records servicing failures related to changes for Windows Updates or roles and features.,S212
+DISM.log,Client,Windows servicing,"Records all actions using DISM. If necessary, DISM.log will point to CBS.log for more details.",S212
+setupact.log,Client,Windows servicing,Primary log file for most errors that occur during the Windows installation process. The log file is located in the %windir%\$Windows.~BT\sources\panther folder.,S212
+WindowsUpdate.log,Client,Windows Update Agent,"Records details about when the Windows Update Agent connects to the WSUS server and retrieves the software updates for compliance assessment, and whether there are updates to the agent components.",S212
+Change.log,WSUS server,WSUS server,Records details about WSUS server database information that has changed.,S212
+SoftwareDistribution.log,WSUS server,WSUS server,Records details about the software updates that are synced from the configured update source to the WSUS server database.,S212

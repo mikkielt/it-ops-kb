@@ -1,0 +1,24 @@
+route,verb,layer,body_or_query,min_version,purpose,cmg_documented,source
+/AdminService/wmi/<ClassName>,GET;POST,wmi,OData query options,1810,Any SMS Provider WMI class (over 700 classes); class names case-sensitive until 2006,no (only generic: replace provider FQDN with CMG endpoint),S300;S306
+/AdminService/wmi/$metadata,GET,wmi,,1810,OData metadata of the WMI route,no,S302
+/AdminService/wmi/SMS_Site,GET,wmi,,1810,Example: site objects,no,S302
+/AdminService/wmi/SMS_R_System(<ResourceID>),GET,wmi,,1810,Single device (system resource) by ResourceID,no,S302
+"/AdminService/wmi/SMS_Collection?$filter=startswith(Name,'All') eq true",GET,wmi,$filter startswith/endswith,1910,Filter example; startswith and endswith supported on wmi route,no,S302;S306
+/AdminService/wmi/<Class>.<StaticMethod>,POST,wmi,JSON body of method parameters,1910,Invoke a static WMI method,no,S306
+/AdminService/wmi/SMS_Admin.GetAdminExtendedData,POST,wmi,"{""Type"":1}",1910,Example static method call,no,S302;S306
+/AdminService/v1.0/$metadata,GET,v1.0,,1910,OData metadata of the v1.0 route (used to verify setup),no,S301
+/AdminService/v1.0/Device,GET,v1.0,,1910,All devices,yes (Microsoft token sample calls v1.0/Device on AdminService_TokenAuth),S302;S306;S313
+/AdminService/v1.0/Device(<ResourceID>),GET,v1.0,,1910,Single device,no,S302
+/AdminService/v1.0/Device(<ResourceID>)/AdminService.RunCMPivot,POST,v1.0,"{""InputQuery"":""<CMPivot query>""}",not stated,Start a CMPivot query on one device; returns an operation id,no,S302
+/AdminService/v1.0/Device(<ResourceID>)/AdminService.CMPivotResult(OperationId=<id>),GET,v1.0,,not stated,Read the result of a CMPivot job,no,S302
+/AdminService/v1.0/Device(<ResourceID>)/ResourceCollectionMembership?$expand=Collection&$select=Collection,GET,v1.0,$expand;$select,not stated,Collections a device belongs to,no,S302
+/AdminService/v1.0/Device(<ResourceID>)/Events,GET,v1.0,,2002,Events on a device,no,S306
+/AdminService/v1.0/Device(<ResourceID>)/AvailableApplications?$expand=Application,GET,v1.0,$expand,2002,Applications available to a device,no,S306
+/AdminService/v1.0/Device(<ResourceID>)/BoundaryGroups?$expand=BoundaryGroup,GET,v1.0,$expand,2002,Boundary groups of a device,no,S306
+/AdminService/v1.0/Device(<ResourceID>)/AdminService.SetExtensionData,POST,v1.0,"{""ExtensionData"":{""<name>"":""<value>""}}",2107,Set custom properties on a device (Modify Resource),no,S303
+/AdminService/v1.0/Device(<ResourceID>)/AdminService.GetExtensionData,GET,v1.0,,2107,Read custom properties of one device (Read Resource),no,S303
+/AdminService/v1.0/Device/AdminService.GetExtensionData,GET,v1.0,,2107,Read custom properties of all readable devices,no,S303
+/AdminService/v1.0/Device/AdminService.DeleteExtensionData,POST,v1.0,optional device resource id,2107,Remove custom properties (Delete Resource),no,S303
+/AdminService/v1.0/NotificationSubscription/<Subscription_ID>,DELETE,v1.0,,2107,Delete an external-notification subscription,no,S314
+https://<CMG>/CCM_Proxy_MutualAuth/<id>/AdminService/...,any,cmg,Entra ID account required,1906+ (CMG),Internet access: replace provider FQDN with CMG endpoint,yes (generic prefix only),S301;S300
+https://<ProviderFQDN>/AdminService_TokenAuth/v1.0/Device,GET,token-auth,Authorization: Bearer <Entra user token>,not stated,Entra-token variant of the route used by the Microsoft sample,sample only,S313

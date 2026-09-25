@@ -1,0 +1,992 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ConfigurationExportResult",
+  "type": "object",
+  "properties": {
+    "executionInformation": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ExecutionInformation"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "metadata": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Metadata"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "result": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Configuration"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "messages": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/ResourceMessage"
+      }
+    },
+    "hadErrors": {
+      "type": "boolean"
+    },
+    "outputs": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "messages",
+    "hadErrors"
+  ],
+  "$defs": {
+    "ExecutionInformation": {
+      "type": "object",
+      "properties": {
+        "duration": {
+          "description": "The duration of the configuration operation",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "endDatetime": {
+          "description": "The end time of the configuration operation",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "executionType": {
+          "description": "The type of execution",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ExecutionKind"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "operation": {
+          "description": "The operation being performed",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Operation"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "restartRequired": {
+          "description": "Indicates what needs to be restarted after the configuration operation",
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "#/$defs/RestartRequired"
+          }
+        },
+        "copyLoops": {
+          "description": "Copy loop context for resources expanded from copy loops",
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": true
+        },
+        "securityContext": {
+          "description": "The security context used for the configuration operation",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SecurityContextKind"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "startDatetime": {
+          "description": "The start time of the configuration operation",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "version": {
+          "description": "Version of DSC",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "whatIf": {
+          "description": "Information about what-if operations performed during this execution, if any"
+        }
+      }
+    },
+    "ExecutionKind": {
+      "type": "string",
+      "enum": [
+        "actual",
+        "whatIf"
+      ]
+    },
+    "Operation": {
+      "type": "string",
+      "enum": [
+        "get",
+        "set",
+        "test",
+        "export"
+      ]
+    },
+    "RestartRequired": {
+      "type": "object",
+      "properties": {
+        "system": {
+          "type": "string"
+        },
+        "service": {
+          "type": "string"
+        },
+        "process": {
+          "$ref": "#/$defs/Process"
+        }
+      },
+      "minProperties": 1,
+      "maxProperties": 1,
+      "additionalProperties": false
+    },
+    "Process": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "id": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "name",
+        "id"
+      ]
+    },
+    "SecurityContextKind": {
+      "type": "string",
+      "enum": [
+        "current",
+        "elevated",
+        "restricted"
+      ]
+    },
+    "Metadata": {
+      "type": "object",
+      "properties": {
+        "Microsoft.DSC": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/MicrosoftDscMetadata"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "additionalProperties": true
+    },
+    "MicrosoftDscMetadata": {
+      "type": "object",
+      "properties": {
+        "duration": {
+          "description": "The duration of the configuration operation",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "endDatetime": {
+          "description": "The end time of the configuration operation",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "executionType": {
+          "description": "The type of execution",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ExecutionKind"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "operation": {
+          "description": "The operation being performed",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Operation"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "restartRequired": {
+          "description": "Indicates what needs to be restarted after the configuration operation",
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "#/$defs/RestartRequired"
+          }
+        },
+        "copyLoops": {
+          "description": "Copy loop context for resources expanded from copy loops",
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": true
+        },
+        "securityContext": {
+          "description": "The security context of the configuration operation, can be specified to be required",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SecurityContextKind"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "startDatetime": {
+          "description": "The start time of the configuration operation",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "version": {
+          "description": "Version of DSC",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "Configuration": {
+      "type": "object",
+      "properties": {
+        "$schema": {
+          "title": "Configuration document schema URI",
+          "description": "Defines the JSON Schema the configuration document adheres to.",
+          "type": "string",
+          "format": "uri",
+          "enum": [
+            "https://aka.ms/dsc/schemas/vNext/bundled/config/document.json",
+            "https://aka.ms/dsc/schemas/v3/bundled/config/document.json",
+            "https://aka.ms/dsc/schemas/v3.2/bundled/config/document.json",
+            "https://aka.ms/dsc/schemas/v3.2.3/bundled/config/document.json",
+            "https://aka.ms/dsc/schemas/v3.2.2/bundled/config/document.json",
+            "https://aka.ms/dsc/schemas/v3.2.1/bundled/config/document.json",
+            "https://aka.ms/dsc/schemas/v3.2.0/bundled/config/document.json",
+            "https://aka.ms/dsc/schemas/v3.1/bundled/config/document.json",
+            "https://aka.ms/dsc/schemas/v3.1.3/bundled/config/document.json",
+            "https://aka.ms/dsc/schemas/v3.1.2/bundled/config/document.json",
+            "https://aka.ms/dsc/schemas/v3.1.1/bundled/config/document.json",
+            "https://aka.ms/dsc/schemas/v3.1.0/bundled/config/document.json",
+            "https://aka.ms/dsc/schemas/v3.0/bundled/config/document.json",
+            "https://aka.ms/dsc/schemas/v3.0.2/bundled/config/document.json",
+            "https://aka.ms/dsc/schemas/v3.0.1/bundled/config/document.json",
+            "https://aka.ms/dsc/schemas/v3.0.0/bundled/config/document.json",
+            "https://aka.ms/dsc/schemas/vNext/bundled/config/document.vscode.json",
+            "https://aka.ms/dsc/schemas/v3/bundled/config/document.vscode.json",
+            "https://aka.ms/dsc/schemas/v3.2/bundled/config/document.vscode.json",
+            "https://aka.ms/dsc/schemas/v3.2.3/bundled/config/document.vscode.json",
+            "https://aka.ms/dsc/schemas/v3.2.2/bundled/config/document.vscode.json",
+            "https://aka.ms/dsc/schemas/v3.2.1/bundled/config/document.vscode.json",
+            "https://aka.ms/dsc/schemas/v3.2.0/bundled/config/document.vscode.json",
+            "https://aka.ms/dsc/schemas/v3.1/bundled/config/document.vscode.json",
+            "https://aka.ms/dsc/schemas/v3.1.3/bundled/config/document.vscode.json",
+            "https://aka.ms/dsc/schemas/v3.1.2/bundled/config/document.vscode.json",
+            "https://aka.ms/dsc/schemas/v3.1.1/bundled/config/document.vscode.json",
+            "https://aka.ms/dsc/schemas/v3.1.0/bundled/config/document.vscode.json",
+            "https://aka.ms/dsc/schemas/v3.0/bundled/config/document.vscode.json",
+            "https://aka.ms/dsc/schemas/v3.0.2/bundled/config/document.vscode.json",
+            "https://aka.ms/dsc/schemas/v3.0.1/bundled/config/document.vscode.json",
+            "https://aka.ms/dsc/schemas/v3.0.0/bundled/config/document.vscode.json",
+            "https://aka.ms/dsc/schemas/vNext/config/document.json",
+            "https://aka.ms/dsc/schemas/v3/config/document.json",
+            "https://aka.ms/dsc/schemas/v3.2/config/document.json",
+            "https://aka.ms/dsc/schemas/v3.2.3/config/document.json",
+            "https://aka.ms/dsc/schemas/v3.2.2/config/document.json",
+            "https://aka.ms/dsc/schemas/v3.2.1/config/document.json",
+            "https://aka.ms/dsc/schemas/v3.2.0/config/document.json",
+            "https://aka.ms/dsc/schemas/v3.1/config/document.json",
+            "https://aka.ms/dsc/schemas/v3.1.3/config/document.json",
+            "https://aka.ms/dsc/schemas/v3.1.2/config/document.json",
+            "https://aka.ms/dsc/schemas/v3.1.1/config/document.json",
+            "https://aka.ms/dsc/schemas/v3.1.0/config/document.json",
+            "https://aka.ms/dsc/schemas/v3.0/config/document.json",
+            "https://aka.ms/dsc/schemas/v3.0.2/config/document.json",
+            "https://aka.ms/dsc/schemas/v3.0.1/config/document.json",
+            "https://aka.ms/dsc/schemas/v3.0.0/config/document.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/vNext/bundled/config/document.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3/bundled/config/document.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.2/bundled/config/document.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.2.3/bundled/config/document.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.2.2/bundled/config/document.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.2.1/bundled/config/document.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.2.0/bundled/config/document.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.1/bundled/config/document.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.1.3/bundled/config/document.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.1.2/bundled/config/document.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.1.1/bundled/config/document.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.1.0/bundled/config/document.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.0/bundled/config/document.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.0.2/bundled/config/document.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.0.1/bundled/config/document.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.0.0/bundled/config/document.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/vNext/bundled/config/document.vscode.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3/bundled/config/document.vscode.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.2/bundled/config/document.vscode.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.2.3/bundled/config/document.vscode.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.2.2/bundled/config/document.vscode.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.2.1/bundled/config/document.vscode.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.2.0/bundled/config/document.vscode.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.1/bundled/config/document.vscode.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.1.3/bundled/config/document.vscode.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.1.2/bundled/config/document.vscode.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.1.1/bundled/config/document.vscode.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.1.0/bundled/config/document.vscode.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.0/bundled/config/document.vscode.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.0.2/bundled/config/document.vscode.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.0.1/bundled/config/document.vscode.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.0.0/bundled/config/document.vscode.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/vNext/config/document.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3/config/document.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.2/config/document.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.2.3/config/document.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.2.2/config/document.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.2.1/config/document.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.2.0/config/document.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.1/config/document.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.1.3/config/document.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.1.2/config/document.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.1.1/config/document.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.1.0/config/document.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.0/config/document.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.0.2/config/document.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.0.1/config/document.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.0.0/config/document.json"
+          ]
+        },
+        "contentVersion": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "directives": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ConfigDirective"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "executionInformation": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ExecutionInformation"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "functions": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "#/$defs/UserFunction"
+          }
+        },
+        "metadata": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Metadata"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "outputs": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": {
+            "$ref": "#/$defs/Output"
+          }
+        },
+        "parameters": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": {
+            "$ref": "#/$defs/Parameter"
+          }
+        },
+        "resources": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Resource"
+          }
+        },
+        "variables": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "$schema",
+        "resources"
+      ]
+    },
+    "ConfigDirective": {
+      "type": "object",
+      "properties": {
+        "resourceDiscovery": {
+          "description": "Indicates if resources are discovered pre-deployment or during deployment",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ResourceDiscoveryMode"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "securityContext": {
+          "description": "The required security context of the configuration operation",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SecurityContextKind"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "version": {
+          "description": "Required version of DSC",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/https:~1~1aka.ms~1dsc~1schemas~1v3~1definitions~1semverReq.json"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "ResourceDiscoveryMode": {
+      "type": "string",
+      "enum": [
+        "preDeployment",
+        "duringDeployment"
+      ]
+    },
+    "https://aka.ms/dsc/schemas/v3/definitions/semverReq.json": {
+      "title": "Semantic version requirement",
+      "description": "Defines one or more limitations for a semantic version to enable version pinning.",
+      "type": "string",
+      "markdownDescription": "Defines one or more limitations for a semantic version to enable version pinning.\n\nDSC uses the semantic version requirements for Rust, as documented in the\n[\"Specifying dependencies\" section of the Cargo Book][01]. DSC adheres closely to the\nRust syntax for defining semantic version requirements, with the following exceptions:\n\n1. DSC semantic version requirements _forbid_ the inclusion of build metadata.\n\n  Rust allows and ignores them. DSC forbids the inclusion of build metadata to limit confusion\n  and unexpected behavior when specifying a version requirement for a DSC resource or\n  extension.\n1. DSC semantic version requirements _must_ define a major version segment. All other segments\n  are optional.\n\n  Rust technically supports specifying a wildcard-only version requirement (`*`). DSC forbids\n  specifying this version requirement as it maps to the default version selection and is\n  discouraged when specifying version requirements for production systems.\n1. DSC semantic version requirements _must_ explicitly define an operator for every comparator.\n\n   DSC forbids defining a comparator without an operator, like `1.*` or `1.2.3, <1.5`, to\n   reduce ambiguity and unexpected behavior for version pinning. For example, in all other\n   cases, omitting version segments and specifying them as a wildcard has the same behavior\n   _except_ for the comparators `1.2` and `1.2.*`:\n\n   - `1`, `1.*`, and `1.*.*` all have an effective requirement of `>=1.0.0, <2.0.0`.\n   - `>1.2` and `>1.2.*` both have an effective requirement of `>1.2.0`.\n   - `1.2` has an effective requirement of `>=1.2.0, <2.0.0` but `1.2.*` has an effective\n     requirement of `>=1.2.0, <1.3.0`.\n\n   Similarly, it is not immediately obvious to a user who isn't familiar with Rust semantic\n   version requirements that `1.2.3` will match `1.5.7`. It's more common across version\n   requirements to expect an exactly specified version to be an exact match requirement, not\n   a semantically compatible requirement.\n1. DSC semantic version requirements only support the asterisk (`*`) character for wildcards,\n  not `x` or `X`.\n\n  DSC forbids specifying wildcards as non-asterisks to reduce ambiguity and unexpected\n  behavior for prerelease segments, where `1.2.3-X` and `1.2.3-rc.x` are _valid_ requirements\n  but where the characters are _not_ interpreted as wildcards. Forbidding the use of these\n  characters prevents users from accidentally defining a requirement they _believe_ will\n  wildcard match on a prerelease segment but actually won't.\n\nFor more information about defining semantic version requirements with DSC, see\n[Defining semantic version requirements][01].\n\n[01]: https://learn.microsoft.com/en-us/powershell/dsc/concepts/defining-semver-reqs.md",
+      "pattern": "^(?:>=|>|<|<=|=|\\^|~)\\s*(?:(?:(?:0|[1-9]\\d*)(?:\\.(?:0|[1-9]\\d*)(?:\\.(?:0|[1-9]\\d*)(?:-(?:(?:0|[1-9]\\d*)|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:(?:0|[1-9]\\d*)|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*)?)?)?)|(?:0|[1-9]\\d*)(?:\\.(?:(?:(?:0|[1-9]\\d*)(?:\\.(?:(?:0|[1-9]\\d*)|\\*))?)|\\*))?)(?:\\s*,\\s*(?:>=|>|<|<=|=|\\^|~)\\s*(?:(?:(?:0|[1-9]\\d*)(?:\\.(?:0|[1-9]\\d*)(?:\\.(?:0|[1-9]\\d*)(?:-(?:(?:0|[1-9]\\d*)|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:(?:0|[1-9]\\d*)|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*)?)?)?)|(?:0|[1-9]\\d*)(?:\\.(?:(?:(?:0|[1-9]\\d*)(?:\\.(?:(?:0|[1-9]\\d*)|\\*))?)|\\*))?))*$",
+      "patternErrorMessage": "Invalid semantic version requirement. A semantic version requirement must define one or more valid comparators. For more information, see [Defining semantic version requirements](https://learn.microsoft.com/en-us/powershell/dsc/concepts/defining-semver-reqs.md)",
+      "examples": [
+        "=1.2.3",
+        ">=1.2.3, <2.0.0",
+        "^1.2",
+        "~2.3"
+      ]
+    },
+    "UserFunction": {
+      "type": "object",
+      "properties": {
+        "namespace": {
+          "type": "string"
+        },
+        "members": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/UserFunctionDefinition"
+          }
+        }
+      },
+      "required": [
+        "namespace",
+        "members"
+      ]
+    },
+    "UserFunctionDefinition": {
+      "type": "object",
+      "properties": {
+        "parameters": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "#/$defs/UserFunctionParameter"
+          }
+        },
+        "output": {
+          "$ref": "#/$defs/UserFunctionOutput"
+        }
+      },
+      "required": [
+        "output"
+      ]
+    },
+    "UserFunctionParameter": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "type": {
+          "$ref": "#/$defs/DataType"
+        }
+      },
+      "required": [
+        "name",
+        "type"
+      ]
+    },
+    "DataType": {
+      "type": "string",
+      "enum": [
+        "string",
+        "secureString",
+        "int",
+        "bool",
+        "object",
+        "secureObject",
+        "array"
+      ]
+    },
+    "UserFunctionOutput": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "$ref": "#/$defs/DataType"
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "value"
+      ]
+    },
+    "Output": {
+      "type": "object",
+      "properties": {
+        "condition": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "type": {
+          "$ref": "#/$defs/DataType"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "unevaluatedProperties": false,
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "value"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "copy": {
+              "$ref": "#/$defs/Copy"
+            }
+          },
+          "required": [
+            "copy"
+          ]
+        }
+      ]
+    },
+    "Copy": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "count": {
+          "$ref": "#/$defs/IntOrExpression"
+        },
+        "mode": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CopyMode"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "batchSize": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/IntOrExpression"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "count"
+      ]
+    },
+    "IntOrExpression": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "format": "int64"
+        },
+        {
+          "type": "string"
+        }
+      ]
+    },
+    "CopyMode": {
+      "type": "string",
+      "enum": [
+        "serial",
+        "parallel"
+      ]
+    },
+    "Parameter": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "$ref": "#/$defs/DataType"
+        },
+        "defaultValue": true,
+        "allowedValues": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": true
+        },
+        "minValue": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "int64"
+        },
+        "maxValue": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "int64"
+        },
+        "minLength": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "int64"
+        },
+        "maxLength": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "int64"
+        },
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "metadata": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ]
+    },
+    "Resource": {
+      "type": "object",
+      "properties": {
+        "condition": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "type": {
+          "description": "The fully qualified name of the resource type",
+          "$ref": "#/$defs/FullyQualifiedTypeName"
+        },
+        "requireVersion": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ResourceVersionReq"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "name": {
+          "description": "A friendly name for the resource instance",
+          "type": "string",
+          "default": ""
+        },
+        "directives": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ResourceDirective"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "executionInformation": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ExecutionInformation"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "dependsOn": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "copy": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Copy"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "properties": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": true
+        },
+        "resources": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "#/$defs/Resource"
+          }
+        },
+        "metadata": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Metadata"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ]
+    },
+    "FullyQualifiedTypeName": {
+      "title": "Fully qualified type name",
+      "description": "Uniquely identifies a DSC resource or extension.",
+      "type": "string",
+      "pattern": "^\\w+(\\.\\w+)*\\/\\w+$",
+      "patternErrorMessage": "Invalid type name. Valid resource type names always define an owner and a name separated by a slash, like `Microsoft/OSInfo`. Type names may optionally include the group, area, and subarea segments to namespace the resource under the owner, like `Microsoft.Windows/Registry`.",
+      "markdownDescription": "The fully qualified type name of a DSC resource or extension uniquely identifies a\nresource or extension.\n\nFully qualified type names use the following syntax:\n\n```yaml\n<owner>[.<namespace>...]/<name>\n```\n\nWhere:\n\n1. The `owner` segment is mandatory and indicates the party responsible for publishing\n   and maintaining the type.\n1. The type may define any number of `namespace` segments for organizing the type.\n   Namespaces must be separated from the `owner` segment and other `namespace` segments\n   by a single dot (`.`).\n1. The `name` segment is mandatory and indicates the specific name of the type. It must\n   be separated from the preceding segment by a forward slash (`/`).\n1. Every segment must consist only of unicode alphanumeric characters and underscores.\n\nConventionally, the first character of each segment is capitalized. When a segment\ncontains a brand or proper name, use the correct casing for that word, like\n`TailspinToys/Settings`, not `Tailspintoys/Settings`.\n\nExample fully qualified type names include:\n\n- `Microsoft/OSInfo`\n- `Microsoft.SqlServer/Database`\n- `Microsoft.Windows.IIS/WebApp`"
+    },
+    "ResourceVersionReq": {
+      "title": "Resource version requirement",
+      "description": "Defines one or more limitations for a resource version to enable version pinning.",
+      "anyOf": [
+        {
+          "title": "Semantic resource version requirement",
+          "description": "Defines the required version range for a resource using the Rust version requirement syntax.",
+          "$ref": "#/$defs/https:~1~1aka.ms~1dsc~1schemas~1v3~1definitions~1semverReq.json",
+          "markdownDescription": "Defines the required version range for a resource using the Rust version requirement\nsyntax. This is the preferred and recommended way to pin versions for DSC resources.\n\nFor more information about defining semantic version requirements with DSC, see\n[Defining semantic version requirements][01].\n\n[01]: https://learn.microsoft.com/en-us/powershell/dsc/concepts/defining-semver-reqs.md"
+        },
+        {
+          "title": "Date resource version requirement",
+          "description": "Defines the required version for the resource as a date version.",
+          "$ref": "#/$defs/https:~1~1aka.ms~1dsc~1schemas~1v3~1definitions~1dateVersion.json",
+          "deprecated": true,
+          "deprecationMessage": "Defining a resource version requirement as a date version is supported only for compatibility purposes. If possible, define your version requirement as a valid semantic version requirement. For more information about defining semantic version requirements with DSC, see [Defining semantic version requirements](https://learn.microsoft.com/en-us/powershell/dsc/concepts/defining-semver-reqs.md)",
+          "markdownDescription": "Defines the required version for the resource as a date version.\n\nDate version requirements are supported for compatibility purposes but are _not_\nrecommended for production usage.\n\nWhen a resource version requirement is defined as a date version:\n\n1. It can never match a semantically versioned resource.\n1. It only matches a resource with a [date resource version][01] when the resource\n   version and this version requirement are exactly the same. The comparison is\n   case-sensitive when comparing the prerelease segments for date versions and the\n   date version requirement.\n\n[01]: https://learn.microsoft.com/powershell/dsc/reference/schemas/definitions/resourceVersion",
+          "examples": [
+            "2026-02-03",
+            "2026-11-27-preview"
+          ]
+        }
+      ],
+      "markdownDescription": "Defines one or more limitations for a [resource version][01] to enable version pinning.\n\nDSC supports both semantic versioning and date versioning for resources. Semantic\nversioning is the preferred and recommended versioning strategy. DSC only supports\ndate versioning for compatibility scenarios.\n\nBecause DSC supports date versions for compatibility, version requirements\nmust also support date versions as a valid requirement.\n\nWhen a resource version requirement is semantic, it behaves like a\n[semantic version requirement][02] and only matches resource versions that are semantic\n_and_ valid for the given requirement. Date versions never match a semantic\nresource version requirement.\n\nSimilarly, when a resource version requirement is a date version, it can never match\na semantically versioned resource. Instead, it matches a date resource version when\nthe date version is _exactly_ the same as the date resource version requirement.\n\nDate resource versions and date resource version requirements are only defined for\ncompatibility scenarios. You should use semantic versions for resources and resource\nversion requirements.\n\n[01]: https://learn.microsoft.com/powershell/dsc/reference/schemas/definitions/resourceVersion\n[02]: https://learn.microsoft.com/powershell/dsc/reference/schemas/definitions/semverReq"
+    },
+    "https://aka.ms/dsc/schemas/v3/definitions/dateVersion.json": {
+      "$id": "https://aka.ms/dsc/schemas/v3/definitions/dateVersion.json",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "title": "Date version",
+      "description": "Defines the version for a resource as a date instead of a semantic version.",
+      "type": "string",
+      "markdownDescription": "Defines the version for a resource as a date instead of a semantic version. DSC supports\ndate versions for compatibility. Unless required for compatibility scenarios, resources\nshould use semantic versioning.\n\nA date version is represented as one of two string forms, both conforming to ISO8601 for\ndates:\n\n- `YYYY-MM-DD`, like `2026-02-11` or `2027-11-01`. These date versions are defined without\n  the optional `prerelease` segment.\n- `YYYY-MM-DD-PRE`, like `2026-02-11-preview` or `2027-11-01-rc`. These date versions are\n  defined with the optional `prerelease` segment.\n\nA date version _must_ represent a valid date. Defining an invalid month, like `00` or `15`,\nraises a parsing error. Defining an invalid day of the month, like `00` or `33`, raises a\nparsing error. For February, `29` is only a valid day for leap years.\n\nThe year for a date version must not be defined with a leading zero. Defining a date with\na leading zero for the year, like `0123`, raises a parsing error.\n\nIf the date version is for a prerelease, the prerelease segment must be a string of ASCII\nalphabetic characters (`[a-zA-Z]`).\n\nThe following list shows a set of input strings and whether they're valid for this pattern.\nIf the input string is invalid, the list item explains why that input is invalid.\n\n- `2026-07-15` - valid input, defining the year as `2026`, the month as July, and the day\n  of the month as `15`.\n- `2026-07-15-preview` - valid input, defining the year as `2026`, the month as July, the\n  day of the month as `15`, and the prerelease segment as `preview`.\n- `2026-00-01` - invalid input. The month segment must not be defined as `00`.\n- `2026-15-01` - invalid input. The month segment is defined as `15`, which isn't a valid\n  month.\n- `0123-11-01` - invalid input. The year segment must not begin with a leading zero.\n- `2026-05-00` - invalid input. The day segment must not be defined as `00`.\n- `2026-03-38` - invalid input. The day segment must not be defined as a number greater\n  than `31`.\n- `2026-07-15-rc.1` - invalid input. The prerelease segment must be a string consisting of\n  only ASCII alphabetic characters.\n- `2026-02-29` - valid pattern, invalid input. While this construction is valid for the\n  regular expression, defining this value for a [`DateVersion`] fails parsing. It defines\n  the date as February 29, 2026. 2026 isn't a leap year and February 29 isn't a valid date\n  for a non-leap year.",
+      "pattern": "^(?<year>[1-9][0-9]{3})-(?<month>0[1-9]|1[0-2])-(?<day>0[1-9]|[1-2][0-9]|3[0-1])(?:-(?<prerelease>[a-zA-Z]+))?$",
+      "patternErrorMessage": "Invalid date version. A date version must be defined as a string containing an ISO8601 date, like `2026-02-12`. The version may define an optional prerelease segment, like `2026-03-15-rc`."
+    },
+    "ResourceDirective": {
+      "type": "object",
+      "properties": {
+        "requireAdapter": {
+          "description": "Specify specific adapter type used for implicit operations",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FullyQualifiedTypeName"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "securityContext": {
+          "description": "The required security context of the configuration operation",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SecurityContextKind"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "ResourceMessage": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "type": {
+          "$ref": "#/$defs/FullyQualifiedTypeName"
+        },
+        "message": {
+          "type": "string"
+        },
+        "level": {
+          "$ref": "#/$defs/MessageLevel"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "type",
+        "message",
+        "level"
+      ]
+    },
+    "MessageLevel": {
+      "type": "string",
+      "enum": [
+        "error",
+        "warning",
+        "information"
+      ]
+    }
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "RestartRequired",
+  "type": "object",
+  "properties": {
+    "system": {
+      "type": "string"
+    },
+    "service": {
+      "type": "string"
+    },
+    "process": {
+      "$ref": "#/$defs/Process"
+    }
+  },
+  "minProperties": 1,
+  "maxProperties": 1,
+  "additionalProperties": false,
+  "$defs": {
+    "Process": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "id": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "name",
+        "id"
+      ]
+    }
+  }
+}

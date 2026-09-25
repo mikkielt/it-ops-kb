@@ -1,0 +1,25 @@
+project,mechanism,url,licence,language,latest_release,release_date,last_commit,source_id
+sops,secret-vault-encryption,https://github.com/getsops/sops,MPL-2.0,Go,v3.13.3,2026-07-23,2026-09-21,S1000
+age,secret-vault-encryption,https://github.com/FiloSottile/age,BSD-3-Clause,Go,v1.3.2,2026-08-29,2026-08-29,S1001
+HashiCorp Vault (transit engine),secret-vault-encryption,https://github.com/hashicorp/vault,BUSL-1.1 (GitHub reports NOASSERTION),Go,v2.1.1,2026-09-16,2026-09-23,S1002
+Python cryptography (Fernet/AES-GCM),secret-vault-encryption,https://github.com/pyca/cryptography,UNK (GitHub reports NOASSERTION; Apache-2.0 OR BSD-3-Clause per project),Python,50.0.1,UNK,2026-09-23,S1003
+git-crypt,secret-vault-encryption,https://github.com/AGWA/git-crypt,GPL-3.0,C++,0.8.0,2025-09-24,2025-09-24,S1004
+Presidio (analyzer/anonymizer),pseudonymization-tokenization,https://github.com/data-privacy-stack/presidio,MIT,Python,2.2.364,2026-07-22,2026-09-23,S1005
+LLM Guard (Anonymize/Deanonymize),pseudonymization-tokenization,https://github.com/protectai/llm-guard,MIT,Python,v0.3.16,UNK,2026-07-08,S1006
+python-fpe (ff3),pseudonymization-tokenization,https://github.com/mysto/python-fpe,Apache-2.0,Python,v1.0.2,2024-03-13,2026-01-26,S1007
+Puppet,drift-detection,https://github.com/puppetlabs/puppet,Apache-2.0,Ruby,7.34.0,2024-10-22,2026-08-06,S1008
+Chef InSpec,drift-detection,https://github.com/inspec/inspec,UNK (GitHub reports NOASSERTION),Ruby,v5.24.24,2026-06-25,2026-09-23,S1009
+Microsoft365DSC,drift-detection,https://github.com/Microsoft365DSC/Microsoft365DSC,MIT,PowerShell,1.26.909.1,2026-09-11,2026-09-23,S1010
+GLPI,device-identity-correlation,https://github.com/glpi-project/glpi,GPL-3.0,PHP,11.0.9,2026-09-16,2026-09-23,S1011
+Snipe-IT,device-identity-correlation,https://github.com/grokability/snipe-it,AGPL-3.0,PHP,v8.7.2,2026-08-19,2026-09-23,S1012
+NetBox,device-identity-correlation,https://github.com/netbox-community/netbox,Apache-2.0,Python,v4.7.1,2026-09-15,2026-09-23,S1013
+Fleet,device-identity-correlation,https://github.com/fleetdm/fleet,UNK (GitHub reports NOASSERTION; source-available core),Go,fleet-v4.92.0,2026-09-21,2026-09-23,S1014
+Rundeck,tiered-approval-ops,https://github.com/rundeck/rundeck,Apache-2.0,Groovy,v6.2.1,2026-09-09,2026-09-23,S1015
+StackStorm,tiered-approval-ops,https://github.com/StackStorm/st2,Apache-2.0,Python,v3.9.0,2026-01-12,2026-09-02,S1016
+Teleport,tiered-approval-ops,https://github.com/gravitational/teleport,AGPL-3.0,Go,v18.10.0,2026-07-09,2026-09-17,S1017
+Ansible AWX,tiered-approval-ops,https://github.com/ansible/awx,UNK (GitHub reports NOASSERTION; Apache-2.0 per project),Python,24.6.1,2024-07-02,2026-09-23,S1018
+microsoft/mcp (official server catalog),mcp-microsoft-endpoint-mgmt,https://github.com/microsoft/mcp,MIT,multiple,n/a (catalog repo),n/a,2026-09-23,S1019
+OpenTelemetry Collector,log-collection-normalization,https://github.com/open-telemetry/opentelemetry-collector,Apache-2.0,Go,v0.161.0,2026-09-14,2026-09-23,S1020
+Fluent Bit,log-collection-normalization,https://github.com/fluent/fluent-bit,Apache-2.0,C,v5.1.2,2026-09-05,2026-09-23,S1021
+pydantic-settings,layered-settings-resolution,https://github.com/pydantic/pydantic-settings,MIT,Python,v2.15.0,2026-08-07,2026-09-23,S1022
+dynaconf,layered-settings-resolution,https://github.com/dynaconf/dynaconf,MIT,Python,3.3.5,2026-08-05,2026-09-01,S1023

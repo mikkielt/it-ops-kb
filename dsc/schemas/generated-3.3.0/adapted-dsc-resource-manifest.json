@@ -1,0 +1,297 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AdaptedDscResourceManifest",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "title": "Resource manifest schema URI",
+      "description": "The version of the resource manifest schema.",
+      "type": "string",
+      "format": "uri",
+      "enum": [
+        "https://aka.ms/dsc/schemas/vNext/bundled/resource/manifest.json",
+        "https://aka.ms/dsc/schemas/v3/bundled/resource/manifest.json",
+        "https://aka.ms/dsc/schemas/v3.2/bundled/resource/manifest.json",
+        "https://aka.ms/dsc/schemas/v3.2.3/bundled/resource/manifest.json",
+        "https://aka.ms/dsc/schemas/v3.2.2/bundled/resource/manifest.json",
+        "https://aka.ms/dsc/schemas/v3.2.1/bundled/resource/manifest.json",
+        "https://aka.ms/dsc/schemas/v3.2.0/bundled/resource/manifest.json",
+        "https://aka.ms/dsc/schemas/v3.1/bundled/resource/manifest.json",
+        "https://aka.ms/dsc/schemas/v3.1.3/bundled/resource/manifest.json",
+        "https://aka.ms/dsc/schemas/v3.1.2/bundled/resource/manifest.json",
+        "https://aka.ms/dsc/schemas/v3.1.1/bundled/resource/manifest.json",
+        "https://aka.ms/dsc/schemas/v3.1.0/bundled/resource/manifest.json",
+        "https://aka.ms/dsc/schemas/v3.0/bundled/resource/manifest.json",
+        "https://aka.ms/dsc/schemas/v3.0.2/bundled/resource/manifest.json",
+        "https://aka.ms/dsc/schemas/v3.0.1/bundled/resource/manifest.json",
+        "https://aka.ms/dsc/schemas/v3.0.0/bundled/resource/manifest.json",
+        "https://aka.ms/dsc/schemas/vNext/bundled/resource/manifest.vscode.json",
+        "https://aka.ms/dsc/schemas/v3/bundled/resource/manifest.vscode.json",
+        "https://aka.ms/dsc/schemas/v3.2/bundled/resource/manifest.vscode.json",
+        "https://aka.ms/dsc/schemas/v3.2.3/bundled/resource/manifest.vscode.json",
+        "https://aka.ms/dsc/schemas/v3.2.2/bundled/resource/manifest.vscode.json",
+        "https://aka.ms/dsc/schemas/v3.2.1/bundled/resource/manifest.vscode.json",
+        "https://aka.ms/dsc/schemas/v3.2.0/bundled/resource/manifest.vscode.json",
+        "https://aka.ms/dsc/schemas/v3.1/bundled/resource/manifest.vscode.json",
+        "https://aka.ms/dsc/schemas/v3.1.3/bundled/resource/manifest.vscode.json",
+        "https://aka.ms/dsc/schemas/v3.1.2/bundled/resource/manifest.vscode.json",
+        "https://aka.ms/dsc/schemas/v3.1.1/bundled/resource/manifest.vscode.json",
+        "https://aka.ms/dsc/schemas/v3.1.0/bundled/resource/manifest.vscode.json",
+        "https://aka.ms/dsc/schemas/v3.0/bundled/resource/manifest.vscode.json",
+        "https://aka.ms/dsc/schemas/v3.0.2/bundled/resource/manifest.vscode.json",
+        "https://aka.ms/dsc/schemas/v3.0.1/bundled/resource/manifest.vscode.json",
+        "https://aka.ms/dsc/schemas/v3.0.0/bundled/resource/manifest.vscode.json",
+        "https://aka.ms/dsc/schemas/vNext/resource/manifest.json",
+        "https://aka.ms/dsc/schemas/v3/resource/manifest.json",
+        "https://aka.ms/dsc/schemas/v3.2/resource/manifest.json",
+        "https://aka.ms/dsc/schemas/v3.2.3/resource/manifest.json",
+        "https://aka.ms/dsc/schemas/v3.2.2/resource/manifest.json",
+        "https://aka.ms/dsc/schemas/v3.2.1/resource/manifest.json",
+        "https://aka.ms/dsc/schemas/v3.2.0/resource/manifest.json",
+        "https://aka.ms/dsc/schemas/v3.1/resource/manifest.json",
+        "https://aka.ms/dsc/schemas/v3.1.3/resource/manifest.json",
+        "https://aka.ms/dsc/schemas/v3.1.2/resource/manifest.json",
+        "https://aka.ms/dsc/schemas/v3.1.1/resource/manifest.json",
+        "https://aka.ms/dsc/schemas/v3.1.0/resource/manifest.json",
+        "https://aka.ms/dsc/schemas/v3.0/resource/manifest.json",
+        "https://aka.ms/dsc/schemas/v3.0.2/resource/manifest.json",
+        "https://aka.ms/dsc/schemas/v3.0.1/resource/manifest.json",
+        "https://aka.ms/dsc/schemas/v3.0.0/resource/manifest.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/vNext/bundled/resource/manifest.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3/bundled/resource/manifest.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.2/bundled/resource/manifest.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.2.3/bundled/resource/manifest.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.2.2/bundled/resource/manifest.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.2.1/bundled/resource/manifest.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.2.0/bundled/resource/manifest.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.1/bundled/resource/manifest.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.1.3/bundled/resource/manifest.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.1.2/bundled/resource/manifest.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.1.1/bundled/resource/manifest.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.1.0/bundled/resource/manifest.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.0/bundled/resource/manifest.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.0.2/bundled/resource/manifest.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.0.1/bundled/resource/manifest.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.0.0/bundled/resource/manifest.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/vNext/bundled/resource/manifest.vscode.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3/bundled/resource/manifest.vscode.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.2/bundled/resource/manifest.vscode.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.2.3/bundled/resource/manifest.vscode.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.2.2/bundled/resource/manifest.vscode.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.2.1/bundled/resource/manifest.vscode.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.2.0/bundled/resource/manifest.vscode.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.1/bundled/resource/manifest.vscode.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.1.3/bundled/resource/manifest.vscode.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.1.2/bundled/resource/manifest.vscode.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.1.1/bundled/resource/manifest.vscode.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.1.0/bundled/resource/manifest.vscode.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.0/bundled/resource/manifest.vscode.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.0.2/bundled/resource/manifest.vscode.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.0.1/bundled/resource/manifest.vscode.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.0.0/bundled/resource/manifest.vscode.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/vNext/resource/manifest.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3/resource/manifest.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.2/resource/manifest.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.2.3/resource/manifest.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.2.2/resource/manifest.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.2.1/resource/manifest.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.2.0/resource/manifest.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.1/resource/manifest.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.1.3/resource/manifest.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.1.2/resource/manifest.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.1.1/resource/manifest.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.1.0/resource/manifest.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.0/resource/manifest.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.0.2/resource/manifest.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.0.1/resource/manifest.json",
+        "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.0.0/resource/manifest.json"
+      ]
+    },
+    "type": {
+      "description": "The namespaced name of the resource.",
+      "$ref": "#/$defs/FullyQualifiedTypeName"
+    },
+    "kind": {
+      "description": "The kind of resource.",
+      "$ref": "#/$defs/Kind"
+    },
+    "version": {
+      "description": "The version of the resource.",
+      "$ref": "#/$defs/ResourceVersion"
+    },
+    "capabilities": {
+      "description": "The capabilities of the resource.",
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/Capability"
+      }
+    },
+    "condition": {
+      "description": "An optional condition for the resource to be active.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "deprecationMessage": {
+      "description": "An optional message indicating the resource is deprecated.  If provided, the message will be shown when the resource is used.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "description": {
+      "description": "The description of the resource.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "author": {
+      "description": "The author of the resource.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "requireAdapter": {
+      "description": "The required resource adapter for the resource.",
+      "$ref": "#/$defs/FullyQualifiedTypeName"
+    },
+    "schema": {
+      "description": "The JSON Schema of the resource.",
+      "type": "object",
+      "additionalProperties": true
+    }
+  },
+  "required": [
+    "$schema",
+    "type",
+    "kind",
+    "version",
+    "capabilities",
+    "requireAdapter",
+    "schema"
+  ],
+  "unevaluatedProperties": false,
+  "oneOf": [
+    {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "path"
+      ]
+    },
+    {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      },
+      "required": [
+        "content"
+      ]
+    }
+  ],
+  "$defs": {
+    "FullyQualifiedTypeName": {
+      "title": "Fully qualified type name",
+      "description": "Uniquely identifies a DSC resource or extension.",
+      "type": "string",
+      "pattern": "^\\w+(\\.\\w+)*\\/\\w+$",
+      "patternErrorMessage": "Invalid type name. Valid resource type names always define an owner and a name separated by a slash, like `Microsoft/OSInfo`. Type names may optionally include the group, area, and subarea segments to namespace the resource under the owner, like `Microsoft.Windows/Registry`.",
+      "markdownDescription": "The fully qualified type name of a DSC resource or extension uniquely identifies a\nresource or extension.\n\nFully qualified type names use the following syntax:\n\n```yaml\n<owner>[.<namespace>...]/<name>\n```\n\nWhere:\n\n1. The `owner` segment is mandatory and indicates the party responsible for publishing\n   and maintaining the type.\n1. The type may define any number of `namespace` segments for organizing the type.\n   Namespaces must be separated from the `owner` segment and other `namespace` segments\n   by a single dot (`.`).\n1. The `name` segment is mandatory and indicates the specific name of the type. It must\n   be separated from the preceding segment by a forward slash (`/`).\n1. Every segment must consist only of unicode alphanumeric characters and underscores.\n\nConventionally, the first character of each segment is capitalized. When a segment\ncontains a brand or proper name, use the correct casing for that word, like\n`TailspinToys/Settings`, not `Tailspintoys/Settings`.\n\nExample fully qualified type names include:\n\n- `Microsoft/OSInfo`\n- `Microsoft.SqlServer/Database`\n- `Microsoft.Windows.IIS/WebApp`"
+    },
+    "Kind": {
+      "type": "string",
+      "enum": [
+        "adapter",
+        "exporter",
+        "group",
+        "importer",
+        "resource"
+      ]
+    },
+    "ResourceVersion": {
+      "title": "Resource version",
+      "description": "Defines the version of a DSC resource as a semantic version or arbitrary string.",
+      "anyOf": [
+        {
+          "title": "Semantic resource version",
+          "description": "Defines the resource's version as a valid semantic version.",
+          "$ref": "#/$defs/https:~1~1aka.ms~1dsc~1schemas~1v3~1definitions~1semver.json",
+          "markdownDescription": "Defines the resource's version as a valid semantic version. This is\nthe preferred and recommended versioning scheme for DSC resources.\n\nFor more information about defining semantic versions, see\n[Semantic version JSON Schema reference][01]. For more information\nabout semantic versioning, see [semver.org][02].\n\n[01]: https://learn.microsoft.com/powershell/dsc/reference/schemas/definitions/semver\n[02]: https://semver.org"
+        },
+        {
+          "title": "Date resource version",
+          "description": "Defines the resource's version as a date version.",
+          "$ref": "#/$defs/https:~1~1aka.ms~1dsc~1schemas~1v3~1definitions~1dateVersion.json",
+          "deprecated": true,
+          "deprecationMessage": "Defining a resource version as a date version is supported only for compatibility purposes. If possible, define your resource version as a valid semantic version. For more information about defining a semantic version, see [semver.org](https://semver.org).",
+          "markdownDescription": "Defines the resource's version as a date version.\n\nThis variant remains supported for compatibility purposes but is _not_ recommended for\nproduction usage.\n\nWhen a resource defines the version as a date version:\n\n1. The resource only matches a resource version requirement that is defined as a date\n   version when the date and optional prerelease segments are exactly the same. The\n   comparison is case-sensitive for the prerelease segment.\n1. When DSC discovers a multiple manifests for a resource, DSC always treats\n   semantically versioned resources as newer than resources with a date version."
+        }
+      ],
+      "markdownDescription": "Defines the version of a DSC resource.\n\nDSC supports both semantic versioning and date versioning for resources. Semantic\nversioning is the preferred and recommended versioning strategy. DSC only supports\ndate versioning for compatibility scenarios.\n\nWhen the version is defined as a valid [semantic version][01], DSC can correctly compare\nversions to determine the latest version or match a [semantic version requirement][02].\nWhere possible, resource and extension authors should follow semantic versioning for the\nbest user experience.\n\nWhen the version is defined as a valid [date version][03], DSC compares the dates to see\nwhich one is newer. Date versions are only equivalent when they define the same date and\noptional prerelease segment. Both versions must define or omit the prerelease segment. If\nthe prerelease segment is defined, the segments must be identical - the comparison is\ncase sensitive.\n\n[01]: https://learn.microsoft.com/powershell/dsc/reference/schemas/definitions/semver\n[02]: https://learn.microsoft.com/en-us/powershell/dsc/concepts/defining-semver-reqs.md\n[03]: https://learn.microsoft.com/powershell/dsc/reference/schemas/definitions/dateVersion"
+    },
+    "https://aka.ms/dsc/schemas/v3/definitions/semver.json": {
+      "title": "Semantic version",
+      "description": "Defines a valid semantic version (semver) as a string.\n\nFor reference, see https://semver.org/",
+      "type": "string",
+      "markdownDescription": "Defines a valid semantic version ([semver][01]) as a string.\n\nThis value uses the [suggested regular expression][02] to validate whether the string is\nvalid semver. This is the same pattern, made multi-line for easier readability:\n\n```regex\n^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\n(?:-(\n  (?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)\n  (?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))\n*))?\n(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$\n```\n\nThe first line matches the `major.minor.patch` components of the version. The middle\nlines match the pre-release components. The last line matches the build metadata\ncomponent.\n\n[01]: https://semver.org/\n[02]: https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string",
+      "pattern": "^(?<major>(?:0|[1-9]\\d*))\\.(?<minor>(?:0|[1-9]\\d*))\\.(?<patch>(?:0|[1-9]\\d*))(?:-(?<prerelease>(?:(?:0|[1-9]\\d*)|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:(?:0|[1-9]\\d*)|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+(?<buildmetadata>[0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$",
+      "patternErrorMessage": "Invalid value, must be a semantic version like `<major>.<minor>.<patch>`, such as `1.2.3`.\n\nThe value may also include pre-release version information and build metadata."
+    },
+    "https://aka.ms/dsc/schemas/v3/definitions/dateVersion.json": {
+      "$id": "https://aka.ms/dsc/schemas/v3/definitions/dateVersion.json",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "title": "Date version",
+      "description": "Defines the version for a resource as a date instead of a semantic version.",
+      "type": "string",
+      "markdownDescription": "Defines the version for a resource as a date instead of a semantic version. DSC supports\ndate versions for compatibility. Unless required for compatibility scenarios, resources\nshould use semantic versioning.\n\nA date version is represented as one of two string forms, both conforming to ISO8601 for\ndates:\n\n- `YYYY-MM-DD`, like `2026-02-11` or `2027-11-01`. These date versions are defined without\n  the optional `prerelease` segment.\n- `YYYY-MM-DD-PRE`, like `2026-02-11-preview` or `2027-11-01-rc`. These date versions are\n  defined with the optional `prerelease` segment.\n\nA date version _must_ represent a valid date. Defining an invalid month, like `00` or `15`,\nraises a parsing error. Defining an invalid day of the month, like `00` or `33`, raises a\nparsing error. For February, `29` is only a valid day for leap years.\n\nThe year for a date version must not be defined with a leading zero. Defining a date with\na leading zero for the year, like `0123`, raises a parsing error.\n\nIf the date version is for a prerelease, the prerelease segment must be a string of ASCII\nalphabetic characters (`[a-zA-Z]`).\n\nThe following list shows a set of input strings and whether they're valid for this pattern.\nIf the input string is invalid, the list item explains why that input is invalid.\n\n- `2026-07-15` - valid input, defining the year as `2026`, the month as July, and the day\n  of the month as `15`.\n- `2026-07-15-preview` - valid input, defining the year as `2026`, the month as July, the\n  day of the month as `15`, and the prerelease segment as `preview`.\n- `2026-00-01` - invalid input. The month segment must not be defined as `00`.\n- `2026-15-01` - invalid input. The month segment is defined as `15`, which isn't a valid\n  month.\n- `0123-11-01` - invalid input. The year segment must not begin with a leading zero.\n- `2026-05-00` - invalid input. The day segment must not be defined as `00`.\n- `2026-03-38` - invalid input. The day segment must not be defined as a number greater\n  than `31`.\n- `2026-07-15-rc.1` - invalid input. The prerelease segment must be a string consisting of\n  only ASCII alphabetic characters.\n- `2026-02-29` - valid pattern, invalid input. While this construction is valid for the\n  regular expression, defining this value for a [`DateVersion`] fails parsing. It defines\n  the date as February 29, 2026. 2026 isn't a leap year and February 29 isn't a valid date\n  for a non-leap year.",
+      "pattern": "^(?<year>[1-9][0-9]{3})-(?<month>0[1-9]|1[0-2])-(?<day>0[1-9]|[1-2][0-9]|3[0-1])(?:-(?<prerelease>[a-zA-Z]+))?$",
+      "patternErrorMessage": "Invalid date version. A date version must be defined as a string containing an ISO8601 date, like `2026-02-12`. The version may define an optional prerelease segment, like `2026-03-15-rc`."
+    },
+    "Capability": {
+      "type": "string",
+      "enum": [
+        "get",
+        "set",
+        "setHandlesExist",
+        "setWhatIf",
+        "test",
+        "delete",
+        "deleteWhatIf",
+        "export",
+        "resolve"
+      ],
+      "enumDescriptions": [
+        "The resource supports retrieving configuration.",
+        "The resource supports applying configuration.",
+        "The resource supports the `_exist` property directly.",
+        "The resource supports simulating configuration directly for `set`",
+        "The resource supports validating configuration.",
+        "The resource supports deleting configuration.",
+        "The resource supports simulating configuration directly for `delete`",
+        "The resource supports exporting configuration.",
+        "The resource supports resolving imported configuration."
+      ],
+      "enumMarkdownDescriptions": [
+        "The resource supports retrieving configuration.",
+        "The resource supports applying configuration.",
+        "The resource supports the `_exist` property directly.",
+        "The resource supports simulating configuration directly for `set`",
+        "The resource supports validating configuration.",
+        "The resource supports deleting configuration.",
+        "The resource supports simulating configuration directly for `delete`",
+        "The resource supports exporting configuration.",
+        "The resource supports resolving imported configuration."
+      ]
+    }
+  }
+}

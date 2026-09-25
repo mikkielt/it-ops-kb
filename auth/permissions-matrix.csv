@@ -1,0 +1,32 @@
+operation,caller,system,least_privilege,object_or_scope,tag,sources,note
+device.show,client,SQL,SELECT through the reader role,identity database (identity graph tables),DER,S468;S469,reader role is a design name; DENY/GRANT semantics from the cited pages
+drift.show,client,SQL,SELECT through the reader role,identity database (compliance tables),DER,S468;S469,
+drift.explain,client,SQL,SELECT through the reader role,identity database,DER,S468;S469,
+drift.explain,client,ConfigMgr,Read + Run CMPivot (for CcmLog on one device),Collection,DOC,S315;S316,only when live logs are read
+cm.query,client,ConfigMgr,Read on the object class queried,per object class (Collection; Site; Configuration items...),DOC,S300;S305,AdminService applies ConfigMgr RBAC; any caller must be an administrative user
+logs.search,client,SQL,SELECT through the reader role,identity database (normalized log tables),DER,S468;S469,
+live.query,client,ConfigMgr,Run CMPivot + Read,Collection; plus Read on Inventory Reports,DOC,S315;S316,SMS Scripts Read not needed from 2107 except SMS Provider fallback (HTTP 503)
+logs.tail,client,ConfigMgr,Run CMPivot + Read,Collection,DOC,S315;S316,
+client.observe,client,ConfigMgr,Run CMPivot + Read,Collection,DOC,S315;S316,
+logs.collect,client,ConfigMgr,Notify Resource,Collection,DOC,S326;S221,
+client.refresh_policy,client,ConfigMgr,Notify Resource,Collection,DOC,S326,
+client.evaluate,client,ConfigMgr,Notify Resource,Collection,DOC,S326,
+script.run,client,ConfigMgr,Run Script + Site Read + SMS Scripts Read,Collection; Site; SMS Scripts,DOC,S323;S326,Run Script is a superset of Run CMPivot
+change.draft,client,GitLab,Developer (push a branch and open an MR),example-project,DER,S444,change.draft only prepares; no ConfigMgr write
+"any client op (audit row)",client,SQL,INSERT on dbo.operation; DENY UPDATE and DELETE,dbo.operation,DOC,S468;S469,DENY does not bind object owners or sysadmin members
+device.show (live Entra/Intune lookup),client,Graph,delegated Device.Read.All; DeviceManagementManagedDevices.Read.All,tenant,DOC,S512;S518,delegated device reads also need the signed-in user to hold a supported Entra role (S512)
+role check (role groups),client,Graph,delegated User.Read (/me/checkMemberGroups),signed-in user; at most 20 group ids per call,DOC,S1286,app-only not supported for /me
+sync,site,Graph,application Device.Read.All,tenant (Entra devices; /devices/delta),DOC,S512;S514,
+sync,site,Graph,application DeviceManagementManagedDevices.Read.All,tenant (Intune managed devices),DOC,S518,
+sync,site,Graph,application DeviceManagementServiceConfig.Read.All,tenant (Autopilot identities),DOC,S521,
+sync,site,Defender,application Machine.Read.All,WindowsDefenderATP resource,DOC,S621,
+sync,site,ConfigMgr,Read (read-only custom or built-in role),Collection; Site; objects read,DER,S300;S305,exact built-in read-only role choice not settled; see mecm/rbac.md
+sync,site,AD,read of computer attributes over LDAP (default domain read),domain partition,UNK,,no official page read that states the default computer-object read ACL; verification needed
+sync,site,SQL,INSERT UPDATE DELETE on identity graph tables; sp_getapplock caller rights,identity database,DER,S468;S469,single writer via sp_getapplock (sqlserver/sp-getapplock.md)
+ingest,site,SQL,INSERT on compliance and log tables,identity database,DER,S468;S469,
+ingest,site,SMB,read on the collected-logs location,share and NTFS ACL,UNK,,source location of collected logs not fixed in the design
+validate,ci,GitLab,merge request pipeline (Developer pushes the MR branch),example-project,DOC,S446;S444,
+validate,ci,Windows,local rights for dsc --what-if on the runner,runner host,UNK,,what-if rights per DSC resource not documented; see dsc/what-if.md
+release,ci,GitLab,Allowed to create on a protected release tag,example-project protected tags,DOC,S445,pipeline on a protected tag needs create rights on that tag
+release,ci,SMB,write to the package source share,share and NTFS ACL for svc-runner,DER,S1202;S1203,share must accept SMB signing and encryption from Windows 11 24H2 / Server 2025 clients
+release,ci,Graph,none (release reads no Graph data),,DER,,only if a later job needs Graph: federated credential per protected tag pattern (auth/workload-identity.md)

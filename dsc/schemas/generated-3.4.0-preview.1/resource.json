@@ -1,0 +1,469 @@
+{
+  "$id": "https://aka.ms/dsc/schemas/v3/config/document.resource.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Resource",
+  "type": "object",
+  "properties": {
+    "condition": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "type": {
+      "description": "The fully qualified name of the resource type",
+      "$ref": "#/$defs/FullyQualifiedTypeName"
+    },
+    "requireVersion": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ResourceVersionReq"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "name": {
+      "description": "A friendly name for the resource instance",
+      "type": "string",
+      "default": ""
+    },
+    "directives": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ResourceDirective"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "executionInformation": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ExecutionInformation"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "dependsOn": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "string"
+      }
+    },
+    "copy": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Copy"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "properties": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": true
+    },
+    "resources": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "$ref": "#"
+      }
+    },
+    "metadata": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Metadata"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "type"
+  ],
+  "$defs": {
+    "FullyQualifiedTypeName": {
+      "title": "Fully qualified type name",
+      "description": "Uniquely identifies a DSC resource or extension.",
+      "type": "string",
+      "pattern": "^\\w+(\\.\\w+)*\\/\\w+$"
+    },
+    "ResourceVersionReq": {
+      "title": "Resource version requirement",
+      "description": "Defines one or more limitations for a resource version to enable version pinning.",
+      "anyOf": [
+        {
+          "title": "Semantic resource version requirement",
+          "description": "Defines the required version range for a resource using the Rust version requirement syntax.",
+          "$ref": "#/$defs/https:~1~1aka.ms~1dsc~1schemas~1v3~1definitions~1semverReq.json"
+        },
+        {
+          "title": "Date resource version requirement",
+          "description": "Defines the required version for the resource as a date version.",
+          "$ref": "#/$defs/https:~1~1aka.ms~1dsc~1schemas~1v3~1definitions~1dateVersion.json",
+          "deprecated": true,
+          "examples": [
+            "2026-02-03",
+            "2026-11-27-preview"
+          ]
+        }
+      ]
+    },
+    "https://aka.ms/dsc/schemas/v3/definitions/semverReq.json": {
+      "title": "Semantic version requirement",
+      "description": "Defines one or more limitations for a semantic version to enable version pinning.",
+      "type": "string",
+      "examples": [
+        "=1.2.3",
+        ">=1.2.3, <2.0.0",
+        "^1.2",
+        "~2.3"
+      ],
+      "pattern": "^(?:>=|>|<|<=|=|\\^|~)\\s*(?:(?:(?:0|[1-9]\\d*)(?:\\.(?:0|[1-9]\\d*)(?:\\.(?:0|[1-9]\\d*)(?:-(?:(?:0|[1-9]\\d*)|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:(?:0|[1-9]\\d*)|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*)?)?)?)|(?:0|[1-9]\\d*)(?:\\.(?:(?:(?:0|[1-9]\\d*)(?:\\.(?:(?:0|[1-9]\\d*)|\\*))?)|\\*))?)(?:\\s*,\\s*(?:>=|>|<|<=|=|\\^|~)\\s*(?:(?:(?:0|[1-9]\\d*)(?:\\.(?:0|[1-9]\\d*)(?:\\.(?:0|[1-9]\\d*)(?:-(?:(?:0|[1-9]\\d*)|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:(?:0|[1-9]\\d*)|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*)?)?)?)|(?:0|[1-9]\\d*)(?:\\.(?:(?:(?:0|[1-9]\\d*)(?:\\.(?:(?:0|[1-9]\\d*)|\\*))?)|\\*))?))*$"
+    },
+    "MicrosoftDscMetadata": {
+      "type": "object",
+      "properties": {
+        "duration": {
+          "description": "The duration of the configuration operation",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "endDatetime": {
+          "description": "The end time of the configuration operation",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "executionType": {
+          "description": "The type of execution",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ExecutionKind"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "operation": {
+          "description": "The operation being performed",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Operation"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "restartRequired": {
+          "description": "Indicates what needs to be restarted after the configuration operation",
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "#/$defs/RestartRequired"
+          }
+        },
+        "copyLoops": {
+          "description": "Copy loop context for resources expanded from copy loops",
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": true
+        },
+        "securityContext": {
+          "description": "The security context of the configuration operation, can be specified to be required",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SecurityContextKind"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "startDatetime": {
+          "description": "The start time of the configuration operation",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "version": {
+          "description": "Version of DSC",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "ResourceDirective": {
+      "type": "object",
+      "properties": {
+        "requireAdapter": {
+          "description": "Specify specific adapter type used for implicit operations",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FullyQualifiedTypeName"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "securityContext": {
+          "description": "The required security context of the configuration operation",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SecurityContextKind"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "SecurityContextKind": {
+      "type": "string",
+      "enum": [
+        "current",
+        "elevated",
+        "restricted"
+      ]
+    },
+    "ExecutionInformation": {
+      "type": "object",
+      "properties": {
+        "duration": {
+          "description": "The duration of the configuration operation",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "endDatetime": {
+          "description": "The end time of the configuration operation",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "executionType": {
+          "description": "The type of execution",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ExecutionKind"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "operation": {
+          "description": "The operation being performed",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Operation"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "restartRequired": {
+          "description": "Indicates what needs to be restarted after the configuration operation",
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "#/$defs/RestartRequired"
+          }
+        },
+        "copyLoops": {
+          "description": "Copy loop context for resources expanded from copy loops",
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": true
+        },
+        "securityContext": {
+          "description": "The security context used for the configuration operation",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SecurityContextKind"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "startDatetime": {
+          "description": "The start time of the configuration operation",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "version": {
+          "description": "Version of DSC",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "whatIf": {
+          "description": "Information about what-if operations performed during this execution, if any"
+        }
+      }
+    },
+    "ExecutionKind": {
+      "type": "string",
+      "enum": [
+        "actual",
+        "whatIf"
+      ]
+    },
+    "Operation": {
+      "type": "string",
+      "enum": [
+        "get",
+        "set",
+        "test",
+        "export"
+      ]
+    },
+    "RestartRequired": {
+      "type": "object",
+      "properties": {
+        "system": {
+          "type": "string"
+        },
+        "service": {
+          "type": "string"
+        },
+        "process": {
+          "$ref": "#/$defs/Process"
+        }
+      },
+      "minProperties": 1,
+      "maxProperties": 1,
+      "additionalProperties": false
+    },
+    "Process": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "id": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "name",
+        "id"
+      ]
+    },
+    "Copy": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "count": {
+          "$ref": "#/$defs/IntOrExpression"
+        },
+        "mode": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CopyMode"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "batchSize": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/IntOrExpression"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "count"
+      ]
+    },
+    "IntOrExpression": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "format": "int64"
+        },
+        {
+          "type": "string"
+        }
+      ]
+    },
+    "CopyMode": {
+      "type": "string",
+      "enum": [
+        "serial",
+        "parallel"
+      ]
+    },
+    "Metadata": {
+      "type": "object",
+      "properties": {
+        "Microsoft.DSC": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/MicrosoftDscMetadata"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "additionalProperties": true
+    }
+  }
+}

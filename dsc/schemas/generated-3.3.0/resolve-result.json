@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ResolveResult",
+  "type": "object",
+  "properties": {
+    "configuration": {
+      "description": "The resolved configuration."
+    },
+    "parameters": {
+      "description": "The optional resolved parameters.",
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "configuration"
+  ]
+}

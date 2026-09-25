@@ -1,0 +1,117 @@
+<!-- Excerpt from microsoftgraph/msgraph-metadata @ b8cbef92f6959dca8150bf3edcc650863765e529 clean_beta_metadata/cleanMetadata.xml (MIT, Copyright (c) 2018 Microsoft Graph). Tenant Configuration Management types only. -->
+<Excerpt>
+<EntityType Name="configurationManagement" BaseType="graph.entity">
+        <NavigationProperty Name="configurationDrifts" Type="Collection(graph.configurationDrift)" ContainsTarget="true" />
+        <NavigationProperty Name="configurationMonitoringResults" Type="Collection(graph.configurationMonitoringResult)" ContainsTarget="true" />
+        <NavigationProperty Name="configurationMonitors" Type="Collection(graph.configurationMonitor)" ContainsTarget="true" />
+        <NavigationProperty Name="configurationSnapshotJobs" Type="Collection(graph.configurationSnapshotJob)" ContainsTarget="true" />
+        <NavigationProperty Name="configurationSnapshots" Type="Collection(graph.configurationBaseline)" ContainsTarget="true" />
+      </EntityType>
+<EntityType Name="configurationMonitor" BaseType="graph.entity">
+        <Property Name="createdBy" Type="graph.identitySet" Nullable="false" />
+        <Property Name="createdDateTime" Type="Edm.DateTimeOffset" Nullable="false" />
+        <Property Name="description" Type="Edm.String" Nullable="false" />
+        <Property Name="displayName" Type="Edm.String" Nullable="false" />
+        <Property Name="inactivationReason" Type="Edm.String" />
+        <Property Name="lastModifiedBy" Type="graph.identitySet" Nullable="false" />
+        <Property Name="lastModifiedDateTime" Type="Edm.DateTimeOffset" Nullable="false" />
+        <Property Name="mode" Type="graph.monitorMode" Nullable="false" />
+        <Property Name="monitorRunFrequencyInHours" Type="Edm.Int32" Nullable="false" />
+        <Property Name="parameters" Type="graph.openComplexDictionaryType" />
+        <Property Name="status" Type="graph.monitorStatus" Nullable="false" />
+        <Property Name="tenantId" Type="Edm.String" Nullable="false" />
+        <NavigationProperty Name="baseline" Type="graph.configurationBaseline" ContainsTarget="true" Nullable="false" />
+      </EntityType>
+<EntityType Name="configurationMonitoringResult" BaseType="graph.entity">
+        <Property Name="driftsCount" Type="Edm.Int32" Nullable="false" />
+        <Property Name="errorDetails" Type="Collection(graph.errorDetail)" Nullable="false" />
+        <Property Name="monitorId" Type="Edm.String" Nullable="false" />
+        <Property Name="runCompletionDateTime" Type="Edm.DateTimeOffset" Nullable="false" />
+        <Property Name="runInitiationDateTime" Type="Edm.DateTimeOffset" Nullable="false" />
+        <Property Name="runStatus" Type="graph.monitorRunStatus" Nullable="false" />
+        <Property Name="tenantId" Type="Edm.String" Nullable="false" />
+      </EntityType>
+<EntityType Name="configurationDrift" BaseType="graph.entity">
+        <Property Name="baselineResourceDisplayName" Type="Edm.String" Nullable="false" />
+        <Property Name="driftedProperties" Type="Collection(graph.driftedProperty)" Nullable="false" />
+        <Property Name="firstReportedDateTime" Type="Edm.DateTimeOffset" Nullable="false" />
+        <Property Name="monitorId" Type="Edm.String" Nullable="false" />
+        <Property Name="resourceInstanceIdentifier" Type="graph.openComplexDictionaryType" Nullable="false" />
+        <Property Name="resourceType" Type="Edm.String" Nullable="false" />
+        <Property Name="status" Type="graph.driftStatus" Nullable="false" />
+        <Property Name="tenantId" Type="Edm.String" Nullable="false" />
+      </EntityType>
+<EntityType Name="configurationSnapshotJob" BaseType="graph.entity">
+        <Property Name="completedDateTime" Type="Edm.DateTimeOffset" Nullable="false" />
+        <Property Name="createdBy" Type="graph.identitySet" Nullable="false" />
+        <Property Name="createdDateTime" Type="Edm.DateTimeOffset" Nullable="false" />
+        <Property Name="description" Type="Edm.String" Nullable="false" />
+        <Property Name="displayName" Type="Edm.String" Nullable="false" />
+        <Property Name="errorDetails" Type="Collection(Edm.String)" Nullable="false" />
+        <Property Name="resourceLocation" Type="Edm.String" Nullable="false" />
+        <Property Name="resources" Type="Collection(Edm.String)" Nullable="false" />
+        <Property Name="status" Type="graph.snapshotJobStatus" Nullable="false" />
+        <Property Name="tenantId" Type="Edm.String" Nullable="false" />
+      </EntityType>
+<EntityType Name="configurationBaseline" BaseType="graph.entity">
+        <Property Name="description" Type="Edm.String" Nullable="false" />
+        <Property Name="displayName" Type="Edm.String" Nullable="false" />
+        <Property Name="parameters" Type="Collection(graph.baselineParameter)" Nullable="false" />
+        <Property Name="resources" Type="Collection(graph.baselineResource)" Nullable="false" />
+      </EntityType>
+<ComplexType Name="driftedProperty">
+        <Property Name="currentValue" Type="Edm.Untyped" />
+        <Property Name="desiredValue" Type="Edm.Untyped" />
+        <Property Name="propertyName" Type="Edm.String" Nullable="false" />
+      </ComplexType>
+<ComplexType Name="baselineResource">
+        <Property Name="displayName" Type="Edm.String" Nullable="false" />
+        <Property Name="properties" Type="graph.openComplexDictionaryType" Nullable="false" />
+        <Property Name="resourceType" Type="Edm.String" Nullable="false" />
+      </ComplexType>
+<ComplexType Name="baselineParameter">
+        <Property Name="description" Type="Edm.String" />
+        <Property Name="displayName" Type="Edm.String" Nullable="false" />
+        <Property Name="parameterType" Type="graph.baselineParameterType" Nullable="false" />
+      </ComplexType>
+<EnumType Name="monitorMode">
+        <Member Name="monitorOnly" Value="1" />
+        <Member Name="unknownFutureValue" Value="5" />
+      </EnumType>
+<EnumType Name="monitorStatus">
+        <Member Name="active" Value="0" />
+        <Member Name="inactive" Value="1" />
+        <Member Name="unknownFutureValue" Value="2" />
+      </EnumType>
+<EnumType Name="monitorRunStatus">
+        <Member Name="successful" Value="0" />
+        <Member Name="partiallySuccessful" Value="1" />
+        <Member Name="failed" Value="2" />
+        <Member Name="unknownFutureValue" Value="3" />
+      </EnumType>
+<EnumType Name="driftStatus">
+        <Member Name="active" Value="0" />
+        <Member Name="fixed" Value="1" />
+        <Member Name="unknownFutureValue" Value="2" />
+      </EnumType>
+<EnumType Name="snapshotJobStatus">
+        <Member Name="notStarted" Value="0" />
+        <Member Name="running" Value="1" />
+        <Member Name="succeeded" Value="2" />
+        <Member Name="failed" Value="3" />
+        <Member Name="partiallySuccessful" Value="4" />
+        <Member Name="unknownFutureValue" Value="5" />
+      </EnumType>
+<EnumType Name="baselineParameterType">
+        <Member Name="string" Value="0" />
+        <Member Name="integer" Value="1" />
+        <Member Name="boolean" Value="2" />
+        <Member Name="unknownFutureValue" Value="3" />
+      </EnumType>
+<ComplexType Name="errorDetail">
+        <Property Name="errorMessage" Type="Edm.String" Nullable="false" />
+        <Property Name="resourceInstanceName" Type="Edm.String" Nullable="false" />
+        <Property Name="resourceType" Type="Edm.String" />
+      </ComplexType>
+<NavigationProperty Name="configurationManagement" Type="graph.configurationManagement" ContainsTarget="true" />
+</Excerpt>

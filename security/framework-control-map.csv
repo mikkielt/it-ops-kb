@@ -1,0 +1,23 @@
+framework,control_id,title,control_example,sources
+ISO/IEC 27001:2022 Annex A,5.15,Access control,role-based access control + the engineer's own Kerberos/delegated identity; a tier table gating actions by risk [DER],S1560,S1561
+ISO/IEC 27001:2022 Annex A,5.18,Access rights,audit rows recording principal and decision per call [DER],S1560,S1561
+ISO/IEC 27001:2022 Annex A,8.2,Privileged access rights,tier >=2 always-confirmed; agent-driven callers given narrower device limits than human ones [DER],S1560,S1561
+ISO/IEC 27001:2022 Annex A,8.8,Management of technical vulnerabilities,dependency scanning tier noted in supply-chain.md (part B) [DER],S1560,S1561
+ISO/IEC 27001:2022 Annex A,8.9,Configuration management,configuration documents in git, versioned via tags, merge-request change record [DER],S1560,S1561
+ISO/IEC 27001:2022 Annex A,8.15,Logging,an audit table with a long retention period [DER],S1560,S1561
+ISO/IEC 27001:2022 Annex A,8.16,Monitoring activities,an observe loop + an activity-by-tier reporting view [DER],S1560,S1561
+ISO/IEC 27001:2022 Annex A,8.32,Change management,merge request is the change record; the author cannot self-approve [DER],S1560,S1561
+NIST CSF 2.0,GV.OC-01,Organizational mission informs cybersecurity risk management,a written scope statement for the tool [DER],S1562
+NIST CSF 2.0,PR.AA-05,Access permissions incorporate least privilege,role-based access control + a tier table [DER],S1562
+NIST CSF 2.0,PR.PS-01,Configuration management practices established,configuration-as-code documents + merge-request review [DER],S1562
+NIST CSF 2.0,DE.CM-01,Networks and network services monitored,out of scope for a CLI/stdio-only tool with no service/network component [UNK],S1562
+NIST CSF 2.0,RS.MA-01,Incident response plan executed,not yet defined; gap [UNK],S1562
+CIS Controls v8.1,4.1,keep a documented process for configuring systems securely,configuration-as-code documents as the configuration process [DER],S1563
+CIS Controls v8.1,5.4,use separate accounts for admin work,privileged-access-workstation guidance referenced in management-plane-hardening.md (part B) [DER],S1563
+CIS Controls v8.1,6.8,keep role-based access control defined and current,platform RBAC + identity-provider group targets [DER],S1563
+CIS Controls v8.1,8.2,turn on audit logging on in-scope assets,an audit table [DER],S1563
+CIS Controls v8.1,8.10,keep audit logs for a set retention period,a 400-day audit retention vs a 30-day device-log retention; see logging-monitoring.md (part B) conflict note [DER],S1563
+NIS2 Art. 21(2),a,Risk analysis and information system security policies,a design document + this kb as the risk-analysis basis [DER],S1552
+NIS2 Art. 21(2),d,Supply chain security,supply-chain.md (part B): SLSA/SBOM/pinning coverage [DER],S1552
+NIS2 Art. 21(2),i,Human resources security and access control,platform RBAC + the engineer's own identity [DER],S1552
+NIS2 Art. 21(2),j,Use of MFA or continuous authentication,MFA for the SMS Provider noted in management-plane-hardening.md (part B) [DER],S1552

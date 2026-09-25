@@ -1,0 +1,41 @@
+product,limit_name,value,unit,error_text,source
+Microsoft Copilot Studio,agent instructions (per-field),8000,characters,"none documented as a runtime error; UI field cap",S1841
+Microsoft Copilot Studio,combined prompt instructions (agent + node + system),unspecified internal threshold,characters,"OpenAIAdditionalInstructionsLengthExceededLimit",S1843
+Microsoft Copilot Studio,generative-answers node custom instructions,8000,characters,"node field cap, not a hard success guarantee",S1843
+Microsoft 365 Copilot declarative agent (manifest 1.4),instructions,8000,characters,"schema validation: must ... be 8,000 characters or less",S1840
+Microsoft 365 Copilot declarative agent (manifest 1.4),name,100,characters,"schema validation: must ... be 100 characters or less",S1840
+Microsoft 365 Copilot declarative agent (manifest 1.4),description,1000,characters,"schema validation: must ... be 1,000 characters or less",S1840
+Microsoft 365 Copilot declarative agent (manifest 1.4),disclaimer.text,500,characters,"shouldn't exceed 500 characters",S1840
+Microsoft 365 Copilot declarative agent (manifest 1.4),other string properties (default),4000,characters,"limit all string properties to 4,000 characters unless stated otherwise",S1840
+GitHub Copilot,copilot-instructions.md / *.instructions.md (code review),removed (was 4000),characters,"no error; silently stopped reading past the old cap, now unlimited",S1851;S1852
+GitHub Copilot,custom instructions file (best practice),~1000,lines,"no enforced error; quality guidance only",S1851
+OpenAI custom GPT builder (ChatGPT UI),instructions,8000,characters,"UI silently refuses to save past this length",S1844
+OpenAI Assistants API,instructions,"unconfirmed (community cites larger, e.g. up to 256000 for related message content)",characters,not confirmed by direct fetch of platform.openai.com in this pass,S1845
+Google Gemini API,systemInstruction (observed working boundary in one report),~300000 chars / ~84000 tokens,mixed,"400 INVALID_ARGUMENT: Request contains an invalid argument (generic, no length-specific wording)",S1846
+Google Gemini API,input token count (model/backend-dependent),varies (e.g. 32768 reported in one case),tokens,"The input token count (N) exceeds the maximum number of tokens allowed (32768).",S1846
+Claude API (Anthropic),Messages API request size,32,MB,"413 request_too_large",S1847
+Claude API (Anthropic),Batch API request size,256,MB,"413 request_too_large",S1847
+Claude API (Anthropic),Files API request size,500,MB,"413 request_too_large",S1847
+Claude API (Anthropic),tool name,128,characters,"reported API rejection reproduced via Claude Code bug report; exact server error text not quoted in source",S1857
+Claude Code skills,description + when_to_use (listing),1536,characters,"truncated at 1,536 characters in the skill listing to reduce context usage (silent truncation)",S1860
+Claude Code skills,compatibility field,500,characters,"accepts a string of up to 500 characters",S1860
+Claude Code skills,"SKILL.md size (recommendation, not enforced)",500,lines,tip: keep SKILL.md under 500 lines,S1860
+"Agent Skills spec (portability, not Claude-Code-specific)",description,1024,characters,reported as a real failure mode: frontmatter description exceeds 1024-character limit,S1850
+Claude Code,"CLAUDE.md size (community-reported ~40KB warning; SUPERSEDED, see row below)",~40,KB,"could not be traced to any official page in the prior pass; the current code.claude.com/docs/en/memory page documents no KB threshold at all, only 200 lines (soft) / 4 MiB (hard) -- see the confirmed row below",COMMUNITY (refuted by S1863)
+Claude Projects,project knowledge (shares context window),200000 (up to 1000000 on some plans),tokens,"no error text published; RAG mode engages as knowledge approaches the limit",S1859
+OpenAI Chat/Responses API,tools array (soft guidance),~20 recommended per turn,tool count,"no hard limit documented; ""aim for fewer than 20 functions available at the start of a turn"" is a soft suggestion; use dynamic/deferred tool loading for larger sets",S1865
+OpenAI strict function calling,strict-mode schema requirement,additionalProperties:false + all properties required,schema shape,"strict:true requires every object to set additionalProperties:false and list every property as required (optional fields use type:[X,null]); non-conforming schema is rejected at request time",S1865
+OpenAI structured outputs,unsupported JSON Schema keywords,unspecified subset,keywords,"page states some JSON Schema features are unavailable ""for performance or technical reasons"" but does not enumerate them on the fetched page; a separate supported-schemas reference is linked but not confirmed in this pass",S1867
+Gemini API,function declarations count,unspecified,count,"no documented hard limit on the number of function declarations found on the fetched function-calling guide",S1866
+Gemini API,function name convention,underscores or camelCase (style guidance only),style,"guide shows names using underscores or camelCase; no enforced regex/length limit documented on the fetched page",S1866
+Claude API,strict tool use schema requirement,grammar-constrained subset of JSON Schema,keywords,"strict:true compiles input_schema into a constrained-sampling grammar via the same pipeline as structured outputs; full supported subset lives on a separate JSON Schema limitations page, not independently re-fetched in this pass",S1869
+Claude API,strict tool use exclusions,computer_toolset_20260801 / browser_toolset_20260801,tool entries,"a request that sets strict:true on either built-in toolset entry is rejected",S1869
+Claude Code,"CLAUDE.md size (confirmed, replacing prior UNK)",200,lines (soft) / 4 MiB (hard),"no numeric ~40KB warning exists in the official docs; files are read in full up to 4 MiB and skipped above it; files over 200 lines are flagged as consuming more context and reducing adherence, not erroring",S1863
+Claude Code,MEMORY.md (auto memory) read window,200 lines or 25,KB (whichever first),"content beyond the limit is not loaded at session start; if a write pushes the file over the limit, Claude Code returns an error telling Claude to rewrite the index (errors#memory-index-is-over-its-read-limit)",S1863
+Claude Code,MCP_TIMEOUT,10000 (example value; configurable),ms,"global timeout for MCP server startup/initialization; no fixed default documented beyond the example",S1862
+Claude Code,MCP_TOOL_TIMEOUT,600000 (example value),ms,"default tool-execution timeout across all MCP servers when unset is roughly 28 hours (i.e., effectively unbounded)",S1862
+Claude Code,per-server timeout (.mcp.json ``timeout``),>=1000 (floor),ms,"hard wall-clock limit per tool call for that server; also floors the idle timeout (requires Claude Code v2.1.203+ to apply to stdio servers)",S1862
+Claude Code,CLAUDE_CODE_MCP_TOOL_IDLE_TIMEOUT,300000 default (HTTP/SSE/WebSocket/connector); 1800000 default (stdio),ms,"tool call aborts if no response or progress notification arrives within the idle window; 0 disables it",S1862
+Claude Code,MAX_MCP_OUTPUT_TOKENS,25000 default,tokens,"warning threshold fixed at 10,000 tokens; configurable ceiling for total MCP tool output before Claude Code writes it to a file and substitutes a reference",S1862
+Claude Code,anthropic/maxResultSizeChars (per-tool server-declared),up to 500000,characters,"server-declared ceiling in the tools/list _meta annotation; applies independently of MAX_MCP_OUTPUT_TOKENS for text content",S1862
+Claude Code,CLAUDE_CODE_MCP_STARTUP_WAIT_MS,unspecified default,ms,"bounds how long the first non-interactive (headless) turn waits for connecting MCP servers before proceeding, added in 2.1.274",S1864

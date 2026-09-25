@@ -1,0 +1,23 @@
+property,type,description_summary,filterable_get_machines,source_id
+id,String,machine identity,yes,S620;S621
+computerDnsName,String,machine fully qualified name,yes,S620;S621
+firstSeen,DateTimeOffset,first time observed by MDE,no,S620
+lastSeen,DateTimeOffset,time of last full device report (typically every 24 h); not the portal last-seen value,yes,S620;S621
+osPlatform,String,operating system platform,yes,S620;S621
+onboardingStatus,String,"onboarded, CanBeOnboarded, Unsupported, InsufficientInfo (spelled onboardingstatus in the property table)",yes,S620;S621
+osProcessor,String,OS processor (use osArchitecture instead),no,S620
+version,String,OS version,yes,S620;S621
+osBuild,Nullable long,OS build number,no,S620
+lastIpAddress,String,last IP on local NIC,yes,S620;S621
+lastExternalIpAddress,String,last internet-facing IP,no,S620
+healthStatus,Enum,"Active, Inactive, ImpairedCommunication, NoSensorData, NoSensorDataImpairedCommunication, Unknown",yes,S620;S621
+rbacGroupName,String,machine group name,no,S620
+rbacGroupId,String,machine group ID (examples show a number),yes,S620;S621
+riskScore,Nullable Enum,"None, Informational, Low, Medium, High",yes,S620;S621
+aadDeviceId,Nullable Guid,Microsoft Entra device ID (when machine is Microsoft Entra joined),yes,S620;S621
+machineTags,String collection,machine tags,yes,S620;S621
+exposureLevel,Nullable Enum,"None, Low, Medium, High",yes,S620;S621
+deviceValue,Nullable Enum,"Normal, Low, High",yes,S620;S621
+ipAddresses,IpAddress collection,IpAddress objects,no,S620
+osArchitecture,String,"32-bit, 64-bit",no,S620
+isAadJoined,Boolean (from example),appears in response examples only; not in the property table,no,S621;S622

@@ -1,0 +1,1312 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "DscResource",
+  "type": "object",
+  "properties": {
+    "type": {
+      "description": "The namespaced name of the resource.",
+      "$ref": "#/$defs/FullyQualifiedTypeName"
+    },
+    "kind": {
+      "description": "The kind of resource.",
+      "$ref": "#/$defs/Kind"
+    },
+    "version": {
+      "description": "The version of the resource.",
+      "$ref": "#/$defs/ResourceVersion"
+    },
+    "capabilities": {
+      "description": "The capabilities of the resource.",
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/Capability"
+      }
+    },
+    "deprecationMessage": {
+      "description": "An optional message indicating the resource is deprecated.  If provided, the message will be shown when the resource is used.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "path": {
+      "description": "The file path to the resource.",
+      "type": "string"
+    },
+    "description": {
+      "description": "The description of the resource.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "directory": {
+      "type": "string"
+    },
+    "implementedAs": {
+      "description": "The implementation of the resource.",
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ImplementedAs"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "author": {
+      "description": "The author of the resource.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "properties": {
+      "description": "The properties of the resource.",
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "string"
+      }
+    },
+    "requireAdapter": {
+      "description": "The required resource adapter for the resource.",
+      "anyOf": [
+        {
+          "$ref": "#/$defs/FullyQualifiedTypeName"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "schema": {
+      "description": "The JSON Schema of the resource.",
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": true
+    },
+    "targetResource": {
+      "description": "The target resource for the resource adapter.",
+      "anyOf": [
+        {
+          "$ref": "#"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "manifest": {
+      "description": "The manifest of the resource.",
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ResourceManifest"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "adaptedContent": {
+      "description": "The content of the adapted resource, if available.",
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "type",
+    "kind",
+    "version",
+    "capabilities",
+    "path",
+    "directory"
+  ],
+  "$defs": {
+    "FullyQualifiedTypeName": {
+      "title": "Fully qualified type name",
+      "description": "Uniquely identifies a DSC resource or extension.",
+      "type": "string",
+      "pattern": "^\\w+(\\.\\w+)*\\/\\w+$",
+      "patternErrorMessage": "Invalid type name. Valid resource type names always define an owner and a name separated by a slash, like `Microsoft/OSInfo`. Type names may optionally include the group, area, and subarea segments to namespace the resource under the owner, like `Microsoft.Windows/Registry`.",
+      "markdownDescription": "The fully qualified type name of a DSC resource or extension uniquely identifies a\nresource or extension.\n\nFully qualified type names use the following syntax:\n\n```yaml\n<owner>[.<namespace>...]/<name>\n```\n\nWhere:\n\n1. The `owner` segment is mandatory and indicates the party responsible for publishing\n   and maintaining the type.\n1. The type may define any number of `namespace` segments for organizing the type.\n   Namespaces must be separated from the `owner` segment and other `namespace` segments\n   by a single dot (`.`).\n1. The `name` segment is mandatory and indicates the specific name of the type. It must\n   be separated from the preceding segment by a forward slash (`/`).\n1. Every segment must consist only of unicode alphanumeric characters and underscores.\n\nConventionally, the first character of each segment is capitalized. When a segment\ncontains a brand or proper name, use the correct casing for that word, like\n`TailspinToys/Settings`, not `Tailspintoys/Settings`.\n\nExample fully qualified type names include:\n\n- `Microsoft/OSInfo`\n- `Microsoft.SqlServer/Database`\n- `Microsoft.Windows.IIS/WebApp`"
+    },
+    "Kind": {
+      "type": "string",
+      "enum": [
+        "adapter",
+        "exporter",
+        "group",
+        "importer",
+        "resource"
+      ]
+    },
+    "ResourceVersion": {
+      "title": "Resource version",
+      "description": "Defines the version of a DSC resource as a semantic version or arbitrary string.",
+      "anyOf": [
+        {
+          "title": "Semantic resource version",
+          "description": "Defines the resource's version as a valid semantic version.",
+          "$ref": "#/$defs/https:~1~1aka.ms~1dsc~1schemas~1v3~1definitions~1semver.json",
+          "markdownDescription": "Defines the resource's version as a valid semantic version. This is\nthe preferred and recommended versioning scheme for DSC resources.\n\nFor more information about defining semantic versions, see\n[Semantic version JSON Schema reference][01]. For more information\nabout semantic versioning, see [semver.org][02].\n\n[01]: https://learn.microsoft.com/powershell/dsc/reference/schemas/definitions/semver\n[02]: https://semver.org"
+        },
+        {
+          "title": "Date resource version",
+          "description": "Defines the resource's version as a date version.",
+          "$ref": "#/$defs/https:~1~1aka.ms~1dsc~1schemas~1v3~1definitions~1dateVersion.json",
+          "deprecated": true,
+          "deprecationMessage": "Defining a resource version as a date version is supported only for compatibility purposes. If possible, define your resource version as a valid semantic version. For more information about defining a semantic version, see [semver.org](https://semver.org).",
+          "markdownDescription": "Defines the resource's version as a date version.\n\nThis variant remains supported for compatibility purposes but is _not_ recommended for\nproduction usage.\n\nWhen a resource defines the version as a date version:\n\n1. The resource only matches a resource version requirement that is defined as a date\n   version when the date and optional prerelease segments are exactly the same. The\n   comparison is case-sensitive for the prerelease segment.\n1. When DSC discovers a multiple manifests for a resource, DSC always treats\n   semantically versioned resources as newer than resources with a date version."
+        }
+      ],
+      "markdownDescription": "Defines the version of a DSC resource.\n\nDSC supports both semantic versioning and date versioning for resources. Semantic\nversioning is the preferred and recommended versioning strategy. DSC only supports\ndate versioning for compatibility scenarios.\n\nWhen the version is defined as a valid [semantic version][01], DSC can correctly compare\nversions to determine the latest version or match a [semantic version requirement][02].\nWhere possible, resource and extension authors should follow semantic versioning for the\nbest user experience.\n\nWhen the version is defined as a valid [date version][03], DSC compares the dates to see\nwhich one is newer. Date versions are only equivalent when they define the same date and\noptional prerelease segment. Both versions must define or omit the prerelease segment. If\nthe prerelease segment is defined, the segments must be identical - the comparison is\ncase sensitive.\n\n[01]: https://learn.microsoft.com/powershell/dsc/reference/schemas/definitions/semver\n[02]: https://learn.microsoft.com/en-us/powershell/dsc/concepts/defining-semver-reqs.md\n[03]: https://learn.microsoft.com/powershell/dsc/reference/schemas/definitions/dateVersion"
+    },
+    "https://aka.ms/dsc/schemas/v3/definitions/semver.json": {
+      "title": "Semantic version",
+      "description": "Defines a valid semantic version (semver) as a string.\n\nFor reference, see https://semver.org/",
+      "type": "string",
+      "markdownDescription": "Defines a valid semantic version ([semver][01]) as a string.\n\nThis value uses the [suggested regular expression][02] to validate whether the string is\nvalid semver. This is the same pattern, made multi-line for easier readability:\n\n```regex\n^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\n(?:-(\n  (?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)\n  (?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))\n*))?\n(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$\n```\n\nThe first line matches the `major.minor.patch` components of the version. The middle\nlines match the pre-release components. The last line matches the build metadata\ncomponent.\n\n[01]: https://semver.org/\n[02]: https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string",
+      "pattern": "^(?<major>(?:0|[1-9]\\d*))\\.(?<minor>(?:0|[1-9]\\d*))\\.(?<patch>(?:0|[1-9]\\d*))(?:-(?<prerelease>(?:(?:0|[1-9]\\d*)|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:(?:0|[1-9]\\d*)|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+(?<buildmetadata>[0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$",
+      "patternErrorMessage": "Invalid value, must be a semantic version like `<major>.<minor>.<patch>`, such as `1.2.3`.\n\nThe value may also include pre-release version information and build metadata."
+    },
+    "https://aka.ms/dsc/schemas/v3/definitions/dateVersion.json": {
+      "$id": "https://aka.ms/dsc/schemas/v3/definitions/dateVersion.json",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "title": "Date version",
+      "description": "Defines the version for a resource as a date instead of a semantic version.",
+      "type": "string",
+      "markdownDescription": "Defines the version for a resource as a date instead of a semantic version. DSC supports\ndate versions for compatibility. Unless required for compatibility scenarios, resources\nshould use semantic versioning.\n\nA date version is represented as one of two string forms, both conforming to ISO8601 for\ndates:\n\n- `YYYY-MM-DD`, like `2026-02-11` or `2027-11-01`. These date versions are defined without\n  the optional `prerelease` segment.\n- `YYYY-MM-DD-PRE`, like `2026-02-11-preview` or `2027-11-01-rc`. These date versions are\n  defined with the optional `prerelease` segment.\n\nA date version _must_ represent a valid date. Defining an invalid month, like `00` or `15`,\nraises a parsing error. Defining an invalid day of the month, like `00` or `33`, raises a\nparsing error. For February, `29` is only a valid day for leap years.\n\nThe year for a date version must not be defined with a leading zero. Defining a date with\na leading zero for the year, like `0123`, raises a parsing error.\n\nIf the date version is for a prerelease, the prerelease segment must be a string of ASCII\nalphabetic characters (`[a-zA-Z]`).\n\nThe following list shows a set of input strings and whether they're valid for this pattern.\nIf the input string is invalid, the list item explains why that input is invalid.\n\n- `2026-07-15` - valid input, defining the year as `2026`, the month as July, and the day\n  of the month as `15`.\n- `2026-07-15-preview` - valid input, defining the year as `2026`, the month as July, the\n  day of the month as `15`, and the prerelease segment as `preview`.\n- `2026-00-01` - invalid input. The month segment must not be defined as `00`.\n- `2026-15-01` - invalid input. The month segment is defined as `15`, which isn't a valid\n  month.\n- `0123-11-01` - invalid input. The year segment must not begin with a leading zero.\n- `2026-05-00` - invalid input. The day segment must not be defined as `00`.\n- `2026-03-38` - invalid input. The day segment must not be defined as a number greater\n  than `31`.\n- `2026-07-15-rc.1` - invalid input. The prerelease segment must be a string consisting of\n  only ASCII alphabetic characters.\n- `2026-02-29` - valid pattern, invalid input. While this construction is valid for the\n  regular expression, defining this value for a [`DateVersion`] fails parsing. It defines\n  the date as February 29, 2026. 2026 isn't a leap year and February 29 isn't a valid date\n  for a non-leap year.",
+      "pattern": "^(?<year>[1-9][0-9]{3})-(?<month>0[1-9]|1[0-2])-(?<day>0[1-9]|[1-2][0-9]|3[0-1])(?:-(?<prerelease>[a-zA-Z]+))?$",
+      "patternErrorMessage": "Invalid date version. A date version must be defined as a string containing an ISO8601 date, like `2026-02-12`. The version may define an optional prerelease segment, like `2026-03-15-rc`."
+    },
+    "Capability": {
+      "type": "string",
+      "enum": [
+        "get",
+        "set",
+        "setHandlesExist",
+        "setWhatIf",
+        "test",
+        "delete",
+        "deleteWhatIf",
+        "export",
+        "resolve"
+      ],
+      "enumDescriptions": [
+        "The resource supports retrieving configuration.",
+        "The resource supports applying configuration.",
+        "The resource supports the `_exist` property directly.",
+        "The resource supports simulating configuration directly for `set`",
+        "The resource supports validating configuration.",
+        "The resource supports deleting configuration.",
+        "The resource supports simulating configuration directly for `delete`",
+        "The resource supports exporting configuration.",
+        "The resource supports resolving imported configuration."
+      ],
+      "enumMarkdownDescriptions": [
+        "The resource supports retrieving configuration.",
+        "The resource supports applying configuration.",
+        "The resource supports the `_exist` property directly.",
+        "The resource supports simulating configuration directly for `set`",
+        "The resource supports validating configuration.",
+        "The resource supports deleting configuration.",
+        "The resource supports simulating configuration directly for `delete`",
+        "The resource supports exporting configuration.",
+        "The resource supports resolving imported configuration."
+      ]
+    },
+    "ImplementedAs": {
+      "anyOf": [
+        {
+          "description": "A command line executable",
+          "type": "null"
+        },
+        {
+          "description": "A custom resource",
+          "type": "string"
+        }
+      ]
+    },
+    "ResourceManifest": {
+      "type": "object",
+      "properties": {
+        "$schema": {
+          "title": "Resource manifest schema URI",
+          "description": "The version of the resource manifest schema.",
+          "type": "string",
+          "format": "uri",
+          "enum": [
+            "https://aka.ms/dsc/schemas/vNext/bundled/resource/manifest.json",
+            "https://aka.ms/dsc/schemas/v3/bundled/resource/manifest.json",
+            "https://aka.ms/dsc/schemas/v3.2/bundled/resource/manifest.json",
+            "https://aka.ms/dsc/schemas/v3.2.3/bundled/resource/manifest.json",
+            "https://aka.ms/dsc/schemas/v3.2.2/bundled/resource/manifest.json",
+            "https://aka.ms/dsc/schemas/v3.2.1/bundled/resource/manifest.json",
+            "https://aka.ms/dsc/schemas/v3.2.0/bundled/resource/manifest.json",
+            "https://aka.ms/dsc/schemas/v3.1/bundled/resource/manifest.json",
+            "https://aka.ms/dsc/schemas/v3.1.3/bundled/resource/manifest.json",
+            "https://aka.ms/dsc/schemas/v3.1.2/bundled/resource/manifest.json",
+            "https://aka.ms/dsc/schemas/v3.1.1/bundled/resource/manifest.json",
+            "https://aka.ms/dsc/schemas/v3.1.0/bundled/resource/manifest.json",
+            "https://aka.ms/dsc/schemas/v3.0/bundled/resource/manifest.json",
+            "https://aka.ms/dsc/schemas/v3.0.2/bundled/resource/manifest.json",
+            "https://aka.ms/dsc/schemas/v3.0.1/bundled/resource/manifest.json",
+            "https://aka.ms/dsc/schemas/v3.0.0/bundled/resource/manifest.json",
+            "https://aka.ms/dsc/schemas/vNext/bundled/resource/manifest.vscode.json",
+            "https://aka.ms/dsc/schemas/v3/bundled/resource/manifest.vscode.json",
+            "https://aka.ms/dsc/schemas/v3.2/bundled/resource/manifest.vscode.json",
+            "https://aka.ms/dsc/schemas/v3.2.3/bundled/resource/manifest.vscode.json",
+            "https://aka.ms/dsc/schemas/v3.2.2/bundled/resource/manifest.vscode.json",
+            "https://aka.ms/dsc/schemas/v3.2.1/bundled/resource/manifest.vscode.json",
+            "https://aka.ms/dsc/schemas/v3.2.0/bundled/resource/manifest.vscode.json",
+            "https://aka.ms/dsc/schemas/v3.1/bundled/resource/manifest.vscode.json",
+            "https://aka.ms/dsc/schemas/v3.1.3/bundled/resource/manifest.vscode.json",
+            "https://aka.ms/dsc/schemas/v3.1.2/bundled/resource/manifest.vscode.json",
+            "https://aka.ms/dsc/schemas/v3.1.1/bundled/resource/manifest.vscode.json",
+            "https://aka.ms/dsc/schemas/v3.1.0/bundled/resource/manifest.vscode.json",
+            "https://aka.ms/dsc/schemas/v3.0/bundled/resource/manifest.vscode.json",
+            "https://aka.ms/dsc/schemas/v3.0.2/bundled/resource/manifest.vscode.json",
+            "https://aka.ms/dsc/schemas/v3.0.1/bundled/resource/manifest.vscode.json",
+            "https://aka.ms/dsc/schemas/v3.0.0/bundled/resource/manifest.vscode.json",
+            "https://aka.ms/dsc/schemas/vNext/resource/manifest.json",
+            "https://aka.ms/dsc/schemas/v3/resource/manifest.json",
+            "https://aka.ms/dsc/schemas/v3.2/resource/manifest.json",
+            "https://aka.ms/dsc/schemas/v3.2.3/resource/manifest.json",
+            "https://aka.ms/dsc/schemas/v3.2.2/resource/manifest.json",
+            "https://aka.ms/dsc/schemas/v3.2.1/resource/manifest.json",
+            "https://aka.ms/dsc/schemas/v3.2.0/resource/manifest.json",
+            "https://aka.ms/dsc/schemas/v3.1/resource/manifest.json",
+            "https://aka.ms/dsc/schemas/v3.1.3/resource/manifest.json",
+            "https://aka.ms/dsc/schemas/v3.1.2/resource/manifest.json",
+            "https://aka.ms/dsc/schemas/v3.1.1/resource/manifest.json",
+            "https://aka.ms/dsc/schemas/v3.1.0/resource/manifest.json",
+            "https://aka.ms/dsc/schemas/v3.0/resource/manifest.json",
+            "https://aka.ms/dsc/schemas/v3.0.2/resource/manifest.json",
+            "https://aka.ms/dsc/schemas/v3.0.1/resource/manifest.json",
+            "https://aka.ms/dsc/schemas/v3.0.0/resource/manifest.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/vNext/bundled/resource/manifest.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3/bundled/resource/manifest.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.2/bundled/resource/manifest.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.2.3/bundled/resource/manifest.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.2.2/bundled/resource/manifest.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.2.1/bundled/resource/manifest.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.2.0/bundled/resource/manifest.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.1/bundled/resource/manifest.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.1.3/bundled/resource/manifest.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.1.2/bundled/resource/manifest.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.1.1/bundled/resource/manifest.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.1.0/bundled/resource/manifest.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.0/bundled/resource/manifest.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.0.2/bundled/resource/manifest.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.0.1/bundled/resource/manifest.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.0.0/bundled/resource/manifest.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/vNext/bundled/resource/manifest.vscode.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3/bundled/resource/manifest.vscode.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.2/bundled/resource/manifest.vscode.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.2.3/bundled/resource/manifest.vscode.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.2.2/bundled/resource/manifest.vscode.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.2.1/bundled/resource/manifest.vscode.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.2.0/bundled/resource/manifest.vscode.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.1/bundled/resource/manifest.vscode.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.1.3/bundled/resource/manifest.vscode.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.1.2/bundled/resource/manifest.vscode.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.1.1/bundled/resource/manifest.vscode.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.1.0/bundled/resource/manifest.vscode.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.0/bundled/resource/manifest.vscode.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.0.2/bundled/resource/manifest.vscode.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.0.1/bundled/resource/manifest.vscode.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.0.0/bundled/resource/manifest.vscode.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/vNext/resource/manifest.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3/resource/manifest.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.2/resource/manifest.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.2.3/resource/manifest.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.2.2/resource/manifest.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.2.1/resource/manifest.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.2.0/resource/manifest.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.1/resource/manifest.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.1.3/resource/manifest.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.1.2/resource/manifest.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.1.1/resource/manifest.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.1.0/resource/manifest.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.0/resource/manifest.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.0.2/resource/manifest.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.0.1/resource/manifest.json",
+            "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.0.0/resource/manifest.json"
+          ]
+        },
+        "type": {
+          "description": "The namespaced name of the resource.",
+          "$ref": "#/$defs/FullyQualifiedTypeName"
+        },
+        "condition": {
+          "description": "An optional condition for the resource to be active.  If the condition evaluates to false, the resource is skipped.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "deprecationMessage": {
+          "description": "An optional message indicating the resource is deprecated.  If provided, the message will be shown when the resource is used.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "kind": {
+          "description": "The kind of resource.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Kind"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "version": {
+          "description": "The version of the resource using semantic versioning.",
+          "$ref": "#/$defs/ResourceVersion"
+        },
+        "description": {
+          "description": "The description of the resource.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "tags": {
+          "description": "Tags for the resource.",
+          "$ref": "#/$defs/TagList"
+        },
+        "get": {
+          "description": "Details how to call the Get method of the resource.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/GetMethod"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "set": {
+          "description": "Details how to call the Set method of the resource.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SetMethod"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "whatIf": {
+          "description": "Details how to call the `WhatIf` method of the resource.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SetMethod"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "test": {
+          "description": "Details how to call the Test method of the resource.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TestMethod"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "delete": {
+          "description": "Details how to call the Delete method of the resource.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DeleteMethod"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "export": {
+          "description": "Details how to call the Export method of the resource.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ExportMethod"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "resolve": {
+          "description": "Details how to call the Resolve method of the resource.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ResolveMethod"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "validate": {
+          "description": "Details how to call the Validate method of the resource.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ValidateMethod"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "adapter": {
+          "description": "Indicates the resource is a adapter of other resources.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Adapter"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "exitCodes": {
+          "description": "Mapping of exit codes to descriptions.  Zero is always success and non-zero is always failure.",
+          "$ref": "#/$defs/https:~1~1aka.ms~1dsc~1schemas~1v3~1definitions~1exitCodes.json"
+        },
+        "schema": {
+          "description": "Details how to get the schema of the resource.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SchemaKind"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "metadata": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "$schema",
+        "type",
+        "version"
+      ]
+    },
+    "TagList": {
+      "title": "Tag list",
+      "description": "Defines a set of short search terms for a DSC resource or extension.",
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "title": "Tag",
+        "description": "Defines a short search term for a DSC resource or extension.",
+        "type": "string",
+        "pattern": "^\\w+$",
+        "patternErrorMessage": "Invalid tag. Tags must be non-empty strings consisting of only unicode word characters.",
+        "markdownDescription": "Defines a short search term for a DSC resource or extension.\n\nTo help with discovery, DSC enables users to filter the list of available resources or\nextensions by tags. DSC treats tags case-insensitively.\n\nDefine each tag as a non-empty string consisting of only unicode word characters. The\nfollowing list contains the valid character sets for a tag:\n\n- `\\p{alpha}` - All alphabetic characters, regardless of casing, use of marks, or script.\n- `\\p{gc=Mark}` - Characters that modify other characters\n- `\\p{digit}` - Characters `[0-9]`\n- `\\p{gc=Connector_Punctuation}` - Underscore (`_`) and similar characters\n- `\\p{Join_Control}` - characters that function for cursive joining and ligatures\n\nA tag with any other characters, including spaces, is invalid.\n\nFor more information about unicode word characters, see\n[Annex C: Compatibility property][01] in [Unicode Technical Standard #18][02].\n\n[01]: https://www.unicode.org/reports/tr18/#Compatibility_Properties\n[02]: https://www.unicode.org/reports/tr18"
+      },
+      "markdownDescription": "Defines a set of short search terms for a DSC resource or extension.\n\nTo help with discovery, DSC enables users to filter the list of available resources or\nextensions by tags. DSC treats tags case-insensitively.\n\nEvery tag in the list must be unique within the list. Defining a list with a repeated tag\nis invalid. This schema will raise a validation error if you define an identical pair of\nstrings as list items, like `[\"macOS\", \"macOS\"]`. However, due to limitations in the\nexpressiveness of JSON Schema, a list that defines the same tag with different casing\nwill pass JSON Schema validation, like `[\"MACOS\", \"macos\", \"macOS\"]`. When DSC\ndeserializes that JSON array value, it only records the _first_ tag for any set of tags\nthat differ only by casing. Subsequent values are discarded.\n\nFor example, the following tag lists are functionally equivalent:\n\n```yaml\ntags: [apt, Linux]\n---\ntags: [apt, Linux, APT]\n```\n\nWhen DSC processes the second tag list, the uppercased `APT` is ignored.\n\nDon't define the same tag, regardless of casing, more than once in any tag list. While\nJSON Schema and DSC are _resilient_ for lists that repeat the same tag with different\ncasing, it is best practice to ensure that every tag in the list is unique regardless of\ncasing."
+    },
+    "GetMethod": {
+      "type": "object",
+      "properties": {
+        "executable": {
+          "description": "The command to run to get the state of the resource.",
+          "type": "string"
+        },
+        "args": {
+          "description": "The arguments to pass to the command to perform a Get.",
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "#/$defs/GetArgKind"
+          }
+        },
+        "input": {
+          "description": "How to pass optional input for a Get.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/InputKind"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "requireSecurityContext": {
+          "description": "The security context required to run the Get method.  Default if not specified is `current`.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SecurityContextKind"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "executable"
+      ]
+    },
+    "GetArgKind": {
+      "anyOf": [
+        {
+          "description": "The argument is a string.",
+          "type": "string"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "adaptedContentArg": {
+              "description": "The argument that accepts the JSON content from the manifest.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "adaptedContentArg"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonInputArg": {
+              "description": "The argument that accepts the JSON input object.",
+              "type": "string"
+            },
+            "mandatory": {
+              "description": "Indicates if argument is mandatory which will pass an empty string if no JSON input is provided.  Default is false.",
+              "type": [
+                "boolean",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "jsonInputArg"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "resourcePathArg": {
+              "description": "The argument that accepts the resource path.",
+              "type": "string"
+            },
+            "includeQuotes": {
+              "description": "Indicates if the argument should be wrapped in quotes.  Default is false.",
+              "type": "boolean",
+              "default": false
+            }
+          },
+          "required": [
+            "resourcePathArg"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "resourceTypeArg": {
+              "description": "The argument that accepts the resource type name.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "resourceTypeArg"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "resourceVersionArg": {
+              "description": "The argument that accepts the resource version.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "resourceVersionArg"
+          ]
+        }
+      ]
+    },
+    "InputKind": {
+      "type": "string",
+      "enum": [
+        "env",
+        "stdin"
+      ],
+      "enumDescriptions": [
+        "The input is accepted as environmental variables.",
+        "The input is accepted as a JSON object via STDIN."
+      ],
+      "enumMarkdownDescriptions": [
+        "The input is accepted as environmental variables.",
+        "The input is accepted as a JSON object via STDIN."
+      ]
+    },
+    "SecurityContextKind": {
+      "type": "string",
+      "enum": [
+        "current",
+        "elevated",
+        "restricted"
+      ]
+    },
+    "SetMethod": {
+      "type": "object",
+      "properties": {
+        "executable": {
+          "description": "The command to run to set the state of the resource.",
+          "type": "string"
+        },
+        "args": {
+          "description": "The arguments to pass to the command to perform a Set.",
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "#/$defs/SetDeleteArgKind"
+          }
+        },
+        "input": {
+          "description": "How to pass required input for a Set.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/InputKind"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "implementsPretest": {
+          "description": "Whether to run the Test method before the Set method.  True means the resource will perform its own test before running the Set method.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "handlesExist": {
+          "description": "Indicates that the resource directly handles `_exist` as a property.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "return": {
+          "description": "The type of return value expected from the Set method.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ReturnKind"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "requireSecurityContext": {
+          "description": "The security context required to run the Set method.  Default if not specified is `current`.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SecurityContextKind"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "whatIfReturns": {
+          "description": "The type of return value expected from the Set method when running in what-if mode. When specified, this overrides the `return` property during what-if execution.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ReturnKind"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "executable"
+      ]
+    },
+    "SetDeleteArgKind": {
+      "anyOf": [
+        {
+          "description": "The argument is a string.",
+          "type": "string"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "adaptedContentArg": {
+              "description": "The argument that accepts the JSON content from the manifest.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "adaptedContentArg"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonInputArg": {
+              "description": "The argument that accepts the JSON input object.",
+              "type": "string"
+            },
+            "mandatory": {
+              "description": "Indicates if argument is mandatory which will pass an empty string if no JSON input is provided.  Default is false.",
+              "type": [
+                "boolean",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "jsonInputArg"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "resourcePathArg": {
+              "description": "The argument that accepts the resource path.",
+              "type": "string"
+            },
+            "includeQuotes": {
+              "description": "Indicates if the resource path should be passed with quotes.  Default is false.",
+              "type": "boolean",
+              "default": false
+            }
+          },
+          "required": [
+            "resourcePathArg"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "resourceTypeArg": {
+              "description": "The argument that accepts the resource type name.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "resourceTypeArg"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "resourceVersionArg": {
+              "description": "The argument that accepts the resource version.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "resourceVersionArg"
+          ]
+        },
+        {
+          "description": "The argument is passed when the resource is invoked in what-if mode.",
+          "type": "object",
+          "properties": {
+            "whatIfArg": {
+              "description": "The argument to pass when in what-if mode.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "whatIfArg"
+          ]
+        }
+      ]
+    },
+    "ReturnKind": {
+      "type": "string",
+      "enum": [
+        "state",
+        "stateAndDiff"
+      ],
+      "enumDescriptions": [
+        "The return JSON is the state of the resource.",
+        "The return JSON is the state of the resource and the diff."
+      ],
+      "enumMarkdownDescriptions": [
+        "The return JSON is the state of the resource.",
+        "The return JSON is the state of the resource and the diff."
+      ]
+    },
+    "TestMethod": {
+      "type": "object",
+      "properties": {
+        "executable": {
+          "description": "The command to run to test the state of the resource.",
+          "type": "string"
+        },
+        "args": {
+          "description": "The arguments to pass to the command to perform a Test.",
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "#/$defs/GetArgKind"
+          }
+        },
+        "input": {
+          "description": "How to pass required input for a Test.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/InputKind"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "return": {
+          "description": "The type of return value expected from the Test method.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ReturnKind"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "requireSecurityContext": {
+          "description": "The security context required to run the Test method.  Default if not specified is `current`.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SecurityContextKind"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "executable"
+      ]
+    },
+    "DeleteMethod": {
+      "type": "object",
+      "properties": {
+        "executable": {
+          "description": "The command to run to delete the state of the resource.",
+          "type": "string"
+        },
+        "args": {
+          "description": "The arguments to pass to the command to perform a Delete.",
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "#/$defs/SetDeleteArgKind"
+          }
+        },
+        "input": {
+          "description": "How to pass required input for a Delete.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/InputKind"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "requireSecurityContext": {
+          "description": "The security context required to run the Delete method.  Default if not specified is `current`.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SecurityContextKind"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "executable"
+      ]
+    },
+    "ExportMethod": {
+      "type": "object",
+      "properties": {
+        "executable": {
+          "description": "The command to run to enumerate instances of the resource.",
+          "type": "string"
+        },
+        "args": {
+          "description": "The arguments to pass to the command to perform a Export.",
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "#/$defs/GetArgKind"
+          }
+        },
+        "input": {
+          "description": "How to pass input for a Export.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/InputKind"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "requireSecurityContext": {
+          "description": "The security context required to run the Export method.  Default if not specified is `current`.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SecurityContextKind"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "executable"
+      ],
+      "anyOf": [
+        {
+          "oneOf": [
+            {
+              "type": "object",
+              "properties": {
+                "schema": {
+                  "$ref": "#/$defs/ExportSchemaKind"
+                }
+              },
+              "required": [
+                "schema"
+              ]
+            },
+            {
+              "type": "object",
+              "properties": {
+                "supportsFiltering": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "supportsFiltering"
+              ]
+            }
+          ]
+        },
+        {}
+      ]
+    },
+    "ExportSchemaKind": {
+      "oneOf": [
+        {
+          "description": "The export schema is returned by running a command.",
+          "type": "object",
+          "properties": {
+            "command": {
+              "$ref": "#/$defs/SchemaCommand"
+            }
+          },
+          "required": [
+            "command"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "description": "The export schema is embedded in the manifest.",
+          "type": "object",
+          "properties": {
+            "embedded": true
+          },
+          "required": [
+            "embedded"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "SchemaCommand": {
+      "type": "object",
+      "properties": {
+        "executable": {
+          "description": "The command to run to get the schema.",
+          "type": "string"
+        },
+        "args": {
+          "description": "The arguments to pass to the command.",
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "#/$defs/SchemaArgKind"
+          }
+        }
+      },
+      "required": [
+        "executable"
+      ]
+    },
+    "SchemaArgKind": {
+      "anyOf": [
+        {
+          "description": "The argument is a string.",
+          "type": "string"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "resourceTypeArg": {
+              "description": "The argument that accepts the resource type name.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "resourceTypeArg"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "resourceVersionArg": {
+              "description": "The argument that accepts the resource version.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "resourceVersionArg"
+          ]
+        }
+      ]
+    },
+    "ResolveMethod": {
+      "type": "object",
+      "properties": {
+        "executable": {
+          "description": "The command to run to enumerate instances of the resource.",
+          "type": "string"
+        },
+        "args": {
+          "description": "The arguments to pass to the command to perform a Export.",
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "#/$defs/GetArgKind"
+          }
+        },
+        "input": {
+          "description": "How to pass input for a Export.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/InputKind"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "executable"
+      ]
+    },
+    "ValidateMethod": {
+      "type": "object",
+      "properties": {
+        "executable": {
+          "description": "The command to run to validate the state of the resource.",
+          "type": "string"
+        },
+        "args": {
+          "description": "The arguments to pass to the command to perform a Validate.",
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "#/$defs/GetArgKind"
+          }
+        },
+        "input": {
+          "description": "How to pass required input for a Validate.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/InputKind"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "executable"
+      ]
+    },
+    "Adapter": {
+      "type": "object",
+      "properties": {
+        "list": {
+          "description": "The way to list adapter supported resources.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ListMethod"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "inputKind": {
+          "description": "Defines how the adapter supports accepting configuration.",
+          "$ref": "#/$defs/AdapterInputKind"
+        }
+      },
+      "required": [
+        "inputKind"
+      ]
+    },
+    "ListMethod": {
+      "type": "object",
+      "properties": {
+        "executable": {
+          "description": "The command to run to list resources supported by a group resource.",
+          "type": "string"
+        },
+        "args": {
+          "description": "The arguments to pass to the command to perform a List.",
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "executable"
+      ]
+    },
+    "AdapterInputKind": {
+      "type": "string",
+      "enum": [
+        "full",
+        "sequence",
+        "single"
+      ],
+      "enumDescriptions": [
+        "The adapter accepts full unprocessed configuration.",
+        "The adapter accepts configuration as a sequence.",
+        "The adapter accepts a single resource input."
+      ],
+      "enumMarkdownDescriptions": [
+        "The adapter accepts full unprocessed configuration.",
+        "The adapter accepts configuration as a sequence.",
+        "The adapter accepts a single resource input."
+      ]
+    },
+    "https://aka.ms/dsc/schemas/v3/definitions/exitCodes.json": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "title": "Exit codes",
+      "description": "Defines a map of valid exit codes for operation commands.",
+      "type": "object",
+      "markdownDescription": "Defines a map of valid exit codes for operation commands. DSC always interprets exit code\n`0` as a successful operation and any other exit code as an error. Use this property to\nindicate human-readable semantic meanings for the DSC resource's exit codes.\n\nWhen this field isn't defined, DSC can only report \"Success\" (for exit code `0`) and\n\"Error\" (for all other exit codes).\n\nDefine the keys in this property as strings representing a valid 32-bit signed integer.\nYou can't use alternate formats for the exit code. For example, instead of the\nhexadecimal value `0x80070005` for \"Access denied\", specify the exit code as\n`-2147024891`.\n\nIf you're authoring your resource manifest in YAML, be sure to wrap the exit code in\nsingle quotes, like `'0': Success` instead of `0: Success` to ensure the YAML file can be\nparsed correctly.\n\nDefine the value for each key as a string explaining what the exit code indicates.",
+      "minProperties": 1,
+      "propertyNames": {
+        "pattern": "^-?[0-9]+$",
+        "patternErrorMessage": "Invalid exit code. Each exit code must be defined as a string representing a 32-bit signed integer, like `5` or `-2147024891`."
+      },
+      "patternProperties": {
+        "^-?[0-9]+$": {
+          "type": "string"
+        }
+      },
+      "unevaluatedProperties": false,
+      "default": {
+        "0": "Success",
+        "1": "Error"
+      },
+      "examples": [
+        {
+          "0": "Success",
+          "1": "Invalid parameter",
+          "2": "Invalid input",
+          "3": "Registry error",
+          "4": "JSON serialization failed"
+        }
+      ]
+    },
+    "SchemaKind": {
+      "oneOf": [
+        {
+          "description": "The schema is returned by running a command.",
+          "type": "object",
+          "properties": {
+            "command": {
+              "$ref": "#/$defs/SchemaCommand"
+            }
+          },
+          "required": [
+            "command"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "description": "The schema is embedded in the manifest.",
+          "type": "object",
+          "properties": {
+            "embedded": true
+          },
+          "required": [
+            "embedded"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  }
+}

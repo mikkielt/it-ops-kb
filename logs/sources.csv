@@ -1,0 +1,51 @@
+path_or_channel,kind,product,component,scenario,source_id
+Microsoft-Windows-DeviceManagement-Enterprise-Diagnostics-Provider/Admin,event_channel,Intune,Windows MDM client,MDM enrollment and policy processing; main MDM event channel; enabled by default,S617
+Microsoft-Windows-DeviceManagement-Enterprise-Diagnostics-Provider/Debug,event_channel,Intune,Windows MDM client,"Detailed MDM logging; disabled by default (Show Analytic and Debug logs, then Enable Log)",S617
+%windir%\System32\winevt\Logs\Microsoft-Windows-DeviceManagement-Enterprise-Diagnostics-Provider%4Admin.evtx,file,Intune,Windows MDM client,On-disk file of the MDM Admin channel (ESP / runtime provisioning troubleshooting),S618
+"mdmdiagnosticstool.exe -area ""DeviceEnrollment;DeviceProvisioning;Autopilot"" -zip ""c:\users\public\documents\MDMDiagReport.zip""",command,Intune,MDM diagnostics tool,"Collect MDM diagnostic zip (enrollment, provisioning, Autopilot)",S617
+C:\Users\Public\Documents\MDMDiagnostics,file,Intune,MDM diagnostics report,Output folder of Settings > Access work or school > Create report,S617
+C:\ProgramData\Microsoft\IntuneManagementExtension\Logs,file,Intune,Intune Management Extension,"IME logs: IntuneManagementExtension.log, AgentExecutor.log, HealthScripts.log, AppWorkload.log and others (see intune/ime-logs.md)",S611
+C:\ProgramData\Microsoft\IntuneManagementExtension\Logs\HealthScripts.log,file,Intune,Intune Management Extension,Remediations run on a schedule,S611
+C:\ProgramData\Microsoft\IntuneManagementExtension\Logs\AgentExecutor.log,file,Intune,Intune Management Extension,PowerShell script executions deployed by Intune,S611
+Applications and Services Logs > Microsoft > Intune > ODJConnectorService,event_channel,Intune,Intune Connector for Active Directory,Hybrid Autopilot offline domain join connector (server side); formerly 'ODJ Connector Service' log,S619
+Microsoft-Windows-ModernDeployment-Diagnostics-Provider/Autopilot,event_channel,Autopilot,Windows Autopilot client,"Autopilot profile download and OOBE settings (event IDs 100-172, 807-908); channel name derived from Event Viewer path",S619
+Microsoft-Windows-Provisioning-Diagnostics-Provider/Admin,event_channel,Autopilot,Windows provisioning,Runtime provisioning / ESP troubleshooting (evtx file ...Provisioning-Diagnostics-Provider%4Admin.evtx),S618
+mdmdiagnosticstool.exe -area Autopilot;TPM -cab <pathToOutputCabFile>,command,Autopilot,MDM diagnostics tool,Self-deploying / pre-provisioning with physical device,S618
+mdmdiagnosticstool.exe -area DeviceProvisioning -cab <pathToOutputCabFile>,command,Autopilot,MDM diagnostics tool,Runtime provisioning on Windows 10 1809 and later,S618
+HKLM\SOFTWARE\Microsoft\Provisioning\Diagnostics\Autopilot,file,Autopilot,Windows Autopilot client,"Registry key (not a file) holding received Autopilot profile settings (CloudAssignedTenantId, TenantMatched ...)",S619
+Microsoft-Windows-User Device Registration/Admin,event_channel,Entra ID,Device registration (dsreg),"Hybrid join / device registration failures (event IDs 201, 204, 304, 305)",S632;S649
+Microsoft-Windows-AAD/Operational,event_channel,Entra ID,CloudAP plug-in / AAD token broker,"PRT acquisition and Entra sign-in token errors (event IDs 1006, 1007, 1098)",S632;S618
+%windir%\System32\winevt\Logs\Microsoft-Windows-AAD%4Operational.evtx,file,Entra ID,CloudAP plug-in,On-disk file of AAD/Operational channel,S618
+dsregcmd /status,command,Entra ID,Device registration,Device join state; also captured by Intune Collect diagnostics,S616
+%windir%\CCM\Logs\*.log,file,ConfigMgr,ConfigMgr client,Client logs (also collected by Intune Collect diagnostics); full table in mecm/log-files.csv,S616
+%windir%\ccmsetup\Logs\*.log,file,ConfigMgr,ConfigMgr client setup,Client installation (ccmsetup.log),S616
+%windir%\CCM\Logs\ComanagementHandler.log,file,ConfigMgr,Co-management,Co-management enrollment; device-token auto-enrollment entries,S603
+<ConfigMgr install directory>\Logs\CMGatewaySyncUploadWorker.log,file,ConfigMgr,Tenant attach (service connection point),Device upload to Intune admin center,S608
+<ConfigMgr install directory>\Logs\CMGatewayNotificationWorker.log,file,ConfigMgr,Tenant attach (service connection point),Processing of actions started from the Intune admin center; 'Unauthorized' when RBAC is missing,S608
+<ConfigMgr install directory>\Logs\GenericUploadWorker.log,file,ConfigMgr,Tenant attach,AccountOnboardingInfo / DevicePost errors,S608
+BgbServer.log (management point),file,ConfigMgr,Client notification (management point),Tenant attach action relayed to client,S608
+%windir%\CCM\Logs\CcmNotificationAgent.log,file,ConfigMgr,Client notification (client),Client receives notification task and runs action,S608
+Microsoft-Windows-SENSE/Operational,event_channel,Defender for Endpoint,EDR sensor,Sensor onboarding and operation (collected by Intune Collect diagnostics),S616
+Microsoft-Windows-WMI-Activity/Operational,event_channel,Windows,WMI,WMI provider errors (collected by Intune Collect diagnostics),S616
+gpresult /h %Temp%\GPResult.htm,command,Windows,Group Policy,Resultant set of policy report (HTML),S633
+gpresult /r >%Temp%\GPResult.txt,command,Windows,Group Policy,Resultant set of policy summary (text),S633
+Microsoft-Windows-GroupPolicy/Operational,event_channel,Windows,Group Policy service,Group Policy processing; export with wevtutil export-log,S633
+%windir%\debug\usermode\gpsvc.log,file,Windows,Group Policy service,Verbose GPSvc log; needs HKLM\Software\Microsoft\Windows NT\CurrentVersion\Diagnostics GPSvcDebugLevel=0x30002 and existing usermode folder,S633
+Nltest /DBFlag:2080FFFF,command,Windows,Netlogon,Enable verbose Netlogon debug logging (disable with /DBFlag:0x0),S634
+%windir%\debug\netlogon.log,file,Windows,Netlogon,Netlogon debug log; default max 20 MB then renamed Netlogon.bak (MaximumLogFileSize),S634
+HKLM\SYSTEM\CurrentControlSet\Services\Netlogon\Parameters\DBFlag,file,Windows,Netlogon,Registry value (not a file) alternative to nltest for enabling debug logging,S634
+HKLM\SYSTEM\CurrentControlSet\Control\Lsa\Kerberos\Parameters\LogLevel,file,Windows,Kerberos client,Registry value (not a file); non-zero logs all Kerberos events to the System event log; may include false positives,S635
+System,event_channel,Windows,Kerberos client (with LogLevel set),Destination of Kerberos events when LogLevel is non-zero,S635
+Get-WindowsUpdateLog,command,Windows,Windows Update,Merges and converts Windows Update .etl files into WindowsUpdate.log (default: Desktop of current user),S638
+%windir%\Logs\WindowsUpdate\*.etl,file,Windows,Windows Update,Windows Update ETW traces (input of Get-WindowsUpdateLog; collected by Intune Collect diagnostics),S616;S638
+Microsoft-Windows-WindowsUpdateClient/Operational,event_channel,Windows,Windows Update client,Update installation events,S648
+C:\Windows\Logs\CBS\CBS.log,file,Windows,Component-based servicing,Servicing stack log (archives: CbsPersist_*.log / .cab),S637
+C:\Windows\Logs\DISM\dism.log,file,Windows,DISM,DISM-specific servicing operations,S637
+C:\$WINDOWS.~BT\Sources\Panther\setupact.log,file,Windows,Windows Setup,"Down-level phase setup actions (also setuperr.log, miglog.xml, PreGatherPnPList.log)",S636
+X:\$WINDOWS.~BT\Sources\Panther\setupact.log,file,Windows,Windows Setup,WinPE phase setup actions (also setuperr.log),S636
+C:\WINDOWS\PANTHER\setupact.log,file,Windows,Windows Setup,"Online configuration and Windows Welcome phases (also setuperr.log, miglog.xml)",S636
+C:\WINDOWS\INF\setupapi.dev.log,file,Windows,Plug and Play,Device and driver installation,S636
+C:\WINDOWS\INF\setupapi.app.log,file,Windows,Windows Setup,Application installation during setup,S636
+%windir%\Logs\SetupDiag\SetupDiagResults.xml,file,Windows,SetupDiag,Upgrade failure analysis (collected by Intune Collect diagnostics),S616
+%windir%\logs\Panther\unattendgc\setupact.log,file,Windows,Windows Setup,Unattend generalize/configure (collected by Intune Collect diagnostics),S616
+Setup,event_channel,Windows,Windows Setup / servicing,Setup event log (collected by Intune Collect diagnostics),S616

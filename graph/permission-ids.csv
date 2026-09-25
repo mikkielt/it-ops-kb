@@ -1,0 +1,11 @@
+permission,application_id,delegated_id,admin_consent_required,source
+Device.Read.All,7438b122-aefc-4978-80ed-43db9fcc7715,951183d1-1a61-466f-a6d1-1fde911bfd95,Yes/Yes,S524
+Device.ReadWrite.All,1138cb37-bd11-4084-a2b7-9f71582aeddb,-,Yes,S524
+Directory.AccessAsUser.All,-,0e263e50-5827-48a4-b97c-d940288653c7,Yes,S524
+DeviceManagementManagedDevices.Read.All,2f51be20-0bb4-4fed-bf7b-db946066c75e,314874da-47d6-4978-88dc-cf0d37f0bb82,Yes/Yes,S524
+DeviceManagementManagedDevices.ReadWrite.All,243333ab-4d21-40cb-a475-36241daa0842,44642bfe-8385-4adc-8fc6-fe3cb2c375c3,not captured,S524
+DeviceManagementManagedDevices.PrivilegedOperations.All,5b07b0dd-2377-4e44-a38d-703f09a0dc3c,3404d2bf-2b13-457e-a330-c24615765193,not captured,S524
+DeviceManagementServiceConfig.Read.All,06a5fe6d-c49d-46a7-b082-56b1b14103c7,8696daa5-bce5-4b2e-83f9-51b6defc4e1e,Yes/Yes,S524
+DeviceManagementServiceConfig.ReadWrite.All,5ac13192-7ace-4fcf-b828-1a26f28068ee,662ed50a-ac44-4eef-ad86-62eed9be2a29,not captured,S524
+BitlockerKey.ReadBasic.All,f690d423-6b29-4d04-98c6-694c42282419,5a107bfc-4f00-4e1a-b67e-66451267bc68,not captured,S524
+BitlockerKey.Read.All,57f1cf28-c0c4-4ec3-9a30-19a2eaaf2f6e,b27a61ec-b99c-4d6a-b126-c4375d08ae30,not captured,S524

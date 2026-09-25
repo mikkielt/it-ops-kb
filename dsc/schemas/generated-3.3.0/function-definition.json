@@ -1,0 +1,105 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "FunctionDefinition",
+  "type": "object",
+  "properties": {
+    "category": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/FunctionCategory"
+      }
+    },
+    "name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "syntax": {
+      "type": "string"
+    },
+    "constraints": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "minArgs": {
+      "type": "integer",
+      "format": "uint",
+      "minimum": 0
+    },
+    "maxArgs": {
+      "type": "integer",
+      "format": "uint",
+      "minimum": 0
+    },
+    "acceptedArgOrderedTypes": {
+      "type": "array",
+      "items": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/FunctionArgKind"
+        }
+      }
+    },
+    "remainingArgAcceptedTypes": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "$ref": "#/$defs/FunctionArgKind"
+      }
+    },
+    "returnTypes": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/FunctionArgKind"
+      }
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "category",
+    "name",
+    "description",
+    "syntax",
+    "minArgs",
+    "maxArgs",
+    "acceptedArgOrderedTypes",
+    "returnTypes"
+  ],
+  "$defs": {
+    "FunctionCategory": {
+      "type": "string",
+      "enum": [
+        "array",
+        "cidr",
+        "comparison",
+        "date",
+        "deployment",
+        "lambda",
+        "logical",
+        "numeric",
+        "object",
+        "resource",
+        "string",
+        "system"
+      ]
+    },
+    "FunctionArgKind": {
+      "description": "The kind of argument that a function accepts.",
+      "type": "string",
+      "enum": [
+        "array",
+        "boolean",
+        "lambda",
+        "null",
+        "number",
+        "object",
+        "string"
+      ]
+    }
+  }
+}

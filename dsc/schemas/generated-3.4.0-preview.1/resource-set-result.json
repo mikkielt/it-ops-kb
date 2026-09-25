@@ -1,0 +1,335 @@
+{
+  "$id": "https://aka.ms/dsc/schemas/v3/outputs/resource/set.full.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ResourceSetResult",
+  "type": "object",
+  "properties": {
+    "executionInformation": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ExecutionInformation"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "metadata": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Metadata"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "name": {
+      "type": "string"
+    },
+    "type": {
+      "$ref": "#/$defs/FullyQualifiedTypeName"
+    },
+    "result": {
+      "$ref": "#/$defs/SetResult"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "name",
+    "type",
+    "result"
+  ],
+  "$defs": {
+    "ExecutionInformation": {
+      "type": "object",
+      "properties": {
+        "duration": {
+          "description": "The duration of the configuration operation",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "endDatetime": {
+          "description": "The end time of the configuration operation",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "executionType": {
+          "description": "The type of execution",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ExecutionKind"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "operation": {
+          "description": "The operation being performed",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Operation"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "restartRequired": {
+          "description": "Indicates what needs to be restarted after the configuration operation",
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "#/$defs/RestartRequired"
+          }
+        },
+        "copyLoops": {
+          "description": "Copy loop context for resources expanded from copy loops",
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": true
+        },
+        "securityContext": {
+          "description": "The security context used for the configuration operation",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SecurityContextKind"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "startDatetime": {
+          "description": "The start time of the configuration operation",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "version": {
+          "description": "Version of DSC",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "whatIf": {
+          "description": "Information about what-if operations performed during this execution, if any"
+        }
+      }
+    },
+    "ExecutionKind": {
+      "type": "string",
+      "enum": [
+        "actual",
+        "whatIf"
+      ]
+    },
+    "Operation": {
+      "type": "string",
+      "enum": [
+        "get",
+        "set",
+        "test",
+        "export"
+      ]
+    },
+    "RestartRequired": {
+      "type": "object",
+      "properties": {
+        "system": {
+          "type": "string"
+        },
+        "service": {
+          "type": "string"
+        },
+        "process": {
+          "$ref": "#/$defs/Process"
+        }
+      },
+      "minProperties": 1,
+      "maxProperties": 1,
+      "additionalProperties": false
+    },
+    "Process": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "id": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "name",
+        "id"
+      ]
+    },
+    "SecurityContextKind": {
+      "type": "string",
+      "enum": [
+        "current",
+        "elevated",
+        "restricted"
+      ]
+    },
+    "Metadata": {
+      "type": "object",
+      "properties": {
+        "Microsoft.DSC": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/MicrosoftDscMetadata"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "additionalProperties": true
+    },
+    "MicrosoftDscMetadata": {
+      "type": "object",
+      "properties": {
+        "duration": {
+          "description": "The duration of the configuration operation",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "endDatetime": {
+          "description": "The end time of the configuration operation",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "executionType": {
+          "description": "The type of execution",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ExecutionKind"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "operation": {
+          "description": "The operation being performed",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Operation"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "restartRequired": {
+          "description": "Indicates what needs to be restarted after the configuration operation",
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "#/$defs/RestartRequired"
+          }
+        },
+        "copyLoops": {
+          "description": "Copy loop context for resources expanded from copy loops",
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": true
+        },
+        "securityContext": {
+          "description": "The security context of the configuration operation, can be specified to be required",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SecurityContextKind"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "startDatetime": {
+          "description": "The start time of the configuration operation",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "version": {
+          "description": "Version of DSC",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "FullyQualifiedTypeName": {
+      "title": "Fully qualified type name",
+      "description": "Uniquely identifies a DSC resource or extension.",
+      "type": "string",
+      "pattern": "^\\w+(\\.\\w+)*\\/\\w+$"
+    },
+    "SetResult": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ResourceSetResponse"
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#"
+          }
+        }
+      ]
+    },
+    "ResourceSetResponse": {
+      "type": "object",
+      "properties": {
+        "beforeState": {
+          "description": "The state of the resource as it was before the Set method was called."
+        },
+        "afterState": {
+          "description": "The state of the resource as it was after the Set method was called."
+        },
+        "changedProperties": {
+          "description": "The properties that were changed by the Set method from the before state.",
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "beforeState",
+        "afterState"
+      ]
+    }
+  }
+}

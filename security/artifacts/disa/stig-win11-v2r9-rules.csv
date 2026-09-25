@@ -1,0 +1,258 @@
+vid,stig_id,severity,title,hive,path,value_name,value_type,value
+V-253254,WN11-00-000005,medium,Domain-joined systems must use Windows 11 Enterprise Edition 64-bit version.,,,,,
+V-253255,WN11-00-000010,medium,Windows 11 systems must have a Trusted Platform Module (TPM) enabled.,,,,,
+V-253256,WN11-00-000015,medium,"Windows 11 systems must have Unified Extensible Firmware Interface (UEFI) firmware and be configured to run in UEFI mode, not Legacy BIOS.",,,,,
+V-253257,WN11-00-000020,medium,Secure Boot must be enabled on Windows 11 systems.,,,,,
+V-253259,WN11-00-000030,high,Windows 11 information systems must use BitLocker to encrypt all disks to protect the confidentiality and integrity of all information at rest.,,,,,
+V-253260,WN11-00-000031,high,Windows 11 systems must use a BitLocker PIN for pre-boot authentication.,HKEY_LOCAL_MACHINE,\SOFTWARE\Policies\Microsoft\FVE\,UseAdvancedStartup,REG_DWORD,0x00000001 (1)
+V-253261,WN11-00-000032,medium,Windows 11 systems must use a BitLocker PIN with a minimum length of six digits for pre-boot authentication.,HKEY_LOCAL_MACHINE,\SOFTWARE\Policies\Microsoft\FVE\,MinimumPIN,REG_DWORD,0x00000006 (6) or greater
+V-253262,WN11-00-000035,medium,"The operating system must employ a deny-all, permit-by-exception policy to allow the execution of authorized software programs.",,,,,
+V-253263,WN11-00-000040,high,Windows 11 systems must be maintained at a supported servicing level.,,,,,
+V-253264,WN11-00-000045,high,The Windows 11 system must use an antivirus program.,,,,,
+V-253265,WN11-00-000050,high,Local volumes must be formatted using NTFS.,,,,,
+V-253266,WN11-00-000055,medium,Alternate operating systems must not be permitted on the same system.,,,,,
+V-253267,WN11-00-000060,medium,Non-system-created file shares on a system must limit access to groups that require it.,,,,,
+V-253268,WN11-00-000065,low,Unused accounts must be disabled or removed from the system after 35 days of inactivity.,,,,,
+V-253269,WN11-00-000070,high,Only accounts responsible for the administration of a system must have Administrator rights on the system.,,,,,
+V-253270,WN11-00-000075,medium,Only accounts responsible for the backup operations must be members of the Backup Operators group.,,,,,
+V-253271,WN11-00-000080,medium,Only authorized user accounts must be allowed to create or run virtual machines on Windows 11 systems.,,,,,
+V-253272,WN11-00-000085,low,Standard local user accounts must not exist on a system in a domain.,,,,,
+V-253273,WN11-00-000090,medium,Accounts must be configured to require password expiration.,,,,,
+V-253274,WN11-00-000095,medium,Permissions for system files and directories must conform to minimum requirements.,,,,,
+V-253275,WN11-00-000100,high,Internet Information System (IIS) or its subcomponents must not be installed on a workstation.,,,,,
+V-253276,WN11-00-000105,medium,Simple Network Management Protocol (SNMP) must not be installed on the system.,,,,,
+V-253277,WN11-00-000110,medium,Simple TCP/IP Services must not be installed on the system.,,,,,
+V-253278,WN11-00-000115,medium,The Telnet Client must not be installed on the system.,,,,,
+V-253279,WN11-00-000120,medium,The TFTP Client must not be installed on the system.,,,,,
+V-253280,WN11-00-000130,medium,Software certificate installation files must be removed from Windows 11.,,,,,
+V-253281,WN11-00-000135,medium,A host-based firewall must be installed and enabled on the system.,,,,,
+V-253282,WN11-00-000140,medium,Inbound exceptions to the firewall on Windows 11 domain workstations must only allow authorized remote management hosts.,,,,,
+V-253284,WN11-00-000150,high,Structured Exception Handling Overwrite Protection (SEHOP) must be enabled.,HKEY_LOCAL_MACHINE,\SYSTEM\CurrentControlSet\Control\Session Manager\kernel\,DisableExceptionChainValidation,REG_DWORD,0x00000000 (0)
+V-253285,WN11-00-000155,medium,The Windows PowerShell 2.0 feature must be disabled on the system.,,,,,
+V-253286,WN11-00-000160,medium,The Server Message Block (SMB) v1 protocol must be disabled on the system.,,,,,
+V-253287,WN11-00-000165,medium,The Server Message Block (SMB) v1 protocol must be disabled on the SMB server.,HKEY_LOCAL_MACHINE,\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters\,SMB1,REG_DWORD,0x00000000 (0)
+V-253288,WN11-00-000170,medium,The Server Message Block (SMB) v1 protocol must be disabled on the SMB client.,HKEY_LOCAL_MACHINE,\SYSTEM\CurrentControlSet\Services\mrxsmb10\,Start,REG_DWORD,0x00000004 (4)
+V-253289,WN11-00-000175,medium,The Secondary Logon service must be disabled on Windows 11.,,,,,
+V-253290,WN11-00-000190,medium,Orphaned security identifiers (SIDs) must be removed from user rights on Windows 11.,,,,,
+V-253291,WN11-00-000210,medium,Bluetooth must be turned off unless approved by the organization.,HKEY_LOCAL_MACHINE,\SOFTWARE\Microsoft\PolicyManager\current\device\Connectivity\,AllowBluetooth,REG_DWORD,0x00000000 (0)
+V-253293,WN11-00-000230,medium,The system must notify the user when a Bluetooth device attempts to connect.,,,,,
+V-253294,WN11-00-000240,high,"Administrative accounts must not be used with applications that access the internet, such as web browsers, or with potential internet sources, such as email.",,,,,
+V-253296,WN11-00-000260,low,The Windows 11 time service must synchronize with an appropriate DoW time source.,,,,,
+V-253297,WN11-AC-000005,medium,Windows 11 account lockout duration must be configured to 15 minutes or greater.,,,,,
+V-253298,WN11-AC-000010,medium,The number of allowed bad logon attempts must be configured to three or less.,,,,,
+V-253299,WN11-AC-000015,medium,The period of time before the bad logon counter is reset must be configured to 15 minutes.,,,,,
+V-253300,WN11-AC-000020,medium,The password history must be configured to 24 passwords remembered.,,,,,
+V-253301,WN11-AC-000025,medium,The maximum password age must be configured to 60 days or less.,,,,,
+V-253302,WN11-AC-000030,medium,The minimum password age must be configured to at least 1 day.,,,,,
+V-253303,WN11-AC-000035,medium,"Passwords must, at a minimum, be 14 characters.",,,,,
+V-253304,WN11-AC-000040,medium,The built-in Microsoft password complexity filter must be enabled.,,,,,
+V-253305,WN11-AC-000045,high,Reversible password encryption must be disabled.,,,,,
+V-253306,WN11-AU-000005,medium,The system must be configured to audit Account Logon - Credential Validation failures.,,,,,
+V-253307,WN11-AU-000010,medium,The system must be configured to audit Account Logon - Credential Validation successes.,,,,,
+V-253308,WN11-AU-000030,medium,The system must be configured to audit Account Management - Security Group Management successes.,,,,,
+V-253309,WN11-AU-000035,medium,The system must be configured to audit Account Management - User Account Management failures.,,,,,
+V-253310,WN11-AU-000040,medium,The system must be configured to audit Account Management - User Account Management successes.,,,,,
+V-253311,WN11-AU-000045,medium,The system must be configured to audit Detailed Tracking - PNP Activity successes.,,,,,
+V-253312,WN11-AU-000050,medium,The system must be configured to audit Detailed Tracking - Process Creation successes.,,,,,
+V-253313,WN11-AU-000054,medium,The system must be configured to audit Logon/Logoff - Account Lockout failures.,,,,,
+V-253314,WN11-AU-000060,medium,The system must be configured to audit Logon/Logoff - Group Membership successes.,,,,,
+V-253315,WN11-AU-000065,medium,The system must be configured to audit Logon/Logoff - Logoff successes.,,,,,
+V-253316,WN11-AU-000070,medium,The system must be configured to audit Logon/Logoff - Logon failures.,,,,,
+V-253317,WN11-AU-000075,medium,The system must be configured to audit Logon/Logoff - Logon successes.,,,,,
+V-253318,WN11-AU-000080,medium,The system must be configured to audit Logon/Logoff - Special Logon successes.,,,,,
+V-253319,WN11-AU-000081,medium,Windows 11 must be configured to audit Object Access - File Share failures.,,,,,
+V-253320,WN11-AU-000082,medium,Windows 11 must be configured to audit Object Access - File Share successes.,,,,,
+V-253321,WN11-AU-000083,medium,Windows 11 must be configured to audit Object Access - Other Object Access Events successes.,,,,,
+V-253322,WN11-AU-000084,medium,Windows 11 must be configured to audit Object Access - Other Object Access Events failures.,,,,,
+V-253323,WN11-AU-000085,medium,The system must be configured to audit Object Access - Removable Storage failures.,,,,,
+V-253324,WN11-AU-000090,medium,The system must be configured to audit Object Access - Removable Storage successes.,,,,,
+V-253325,WN11-AU-000100,medium,The system must be configured to audit Policy Change - Audit Policy Change successes.,,,,,
+V-253326,WN11-AU-000105,medium,The system must be configured to audit Policy Change - Authentication Policy Change successes.,,,,,
+V-253327,WN11-AU-000107,medium,The system must be configured to audit Policy Change - Authorization Policy Change successes.,,,,,
+V-253328,WN11-AU-000110,medium,The system must be configured to audit Privilege Use - Sensitive Privilege Use failures.,,,,,
+V-253329,WN11-AU-000115,medium,The system must be configured to audit Privilege Use - Sensitive Privilege Use successes.,,,,,
+V-253330,WN11-AU-000120,medium,The system must be configured to audit System - IPsec Driver failures.,,,,,
+V-253331,WN11-AU-000130,medium,The system must be configured to audit System - Other System Events successes.,,,,,
+V-253332,WN11-AU-000135,medium,The system must be configured to audit System - Other System Events failures.,,,,,
+V-253333,WN11-AU-000140,medium,The system must be configured to audit System - Security State Change successes.,,,,,
+V-253334,WN11-AU-000150,medium,The system must be configured to audit System - Security System Extension successes.,,,,,
+V-253335,WN11-AU-000155,medium,The system must be configured to audit System - System Integrity failures.,,,,,
+V-253336,WN11-AU-000160,medium,The system must be configured to audit System - System Integrity successes.,,,,,
+V-253337,WN11-AU-000500,medium,The Application event log size must be configured to 32768 KB or greater.,HKEY_LOCAL_MACHINE,\SOFTWARE\Policies\Microsoft\Windows\EventLog\Application\,MaxSize,REG_DWORD,0x00008000 (32768) (or greater)
+V-253338,WN11-AU-000505,medium,The security event log size must be configured to a value that holds at least one week's worth of audit records.,HKEY_LOCAL_MACHINE,\SOFTWARE\Policies\Microsoft\Windows\EventLog\Security\,MaxSize,REG_DWORD,0x49960800 (5120000) (or greater)
+V-253339,WN11-AU-000510,medium,The System event log size must be configured to 32768 KB or greater.,HKEY_LOCAL_MACHINE,\SOFTWARE\Policies\Microsoft\Windows\EventLog\System\,MaxSize,REG_DWORD,0x00008000 (32768) (or greater)
+V-253340,WN11-AU-000515,medium,Windows 11 permissions for the Application event log must prevent access by non-privileged accounts.,,,,,
+V-253341,WN11-AU-000520,medium,Windows 11 permissions for the Security event log must prevent access by non-privileged accounts.,,,,,
+V-253342,WN11-AU-000525,medium,Windows 11 permissions for the System event log must prevent access by non-privileged accounts.,,,,,
+V-253344,WN11-AU-000555,medium,Windows 11 must be configured to audit Other Policy Change Events Failures.,,,,,
+V-253345,WN11-AU-000560,medium,Windows 11 must be configured to audit other Logon/Logoff Events Successes.,,,,,
+V-253346,WN11-AU-000565,medium,Windows 11 must be configured to audit other Logon/Logoff Events Failures.,,,,,
+V-253347,WN11-AU-000570,medium,Windows 11 must be configured to audit Detailed File Share Failures.,,,,,
+V-253348,WN11-AU-000575,medium,Windows 11 must be configured to audit MPSSVC Rule-Level Policy Change Successes.,,,,,
+V-253349,WN11-AU-000580,medium,Windows 11 must be configured to audit MPSSVC Rule-Level Policy Change Failures.,,,,,
+V-253350,WN11-CC-000005,medium,Camera access from the lock screen must be disabled.,HKEY_LOCAL_MACHINE,\SOFTWARE\Policies\Microsoft\Windows\Personalization\,NoLockScreenCamera,REG_DWORD,1
+V-253351,WN11-CC-000007,medium,Windows 11 must cover or disable the built-in or attached camera when not in use.,HKEY_LOCAL_MACHINE,,Value                                                                             Value Data: Deny,,
+V-253352,WN11-CC-000010,medium,The display of slide shows on the lock screen must be disabled.,HKEY_LOCAL_MACHINE,\SOFTWARE\Policies\Microsoft\Windows\Personalization\,NoLockScreenSlideshow,REG_DWORD,1
+V-253353,WN11-CC-000020,medium,IPv6 source routing must be configured to highest protection.,HKEY_LOCAL_MACHINE,\SYSTEM\CurrentControlSet\Services\Tcpip6\Parameters\,DisableIpSourceRouting,REG_DWORD,2
+V-253354,WN11-CC-000025,medium,The system must be configured to prevent IP source routing.,HKEY_LOCAL_MACHINE,\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\,DisableIPSourceRouting,REG_DWORD,2
+V-253355,WN11-CC-000030,low,The system must be configured to prevent Internet Control Message Protocol (ICMP) redirects from overriding Open Shortest Path First (OSPF) generated routes.,HKEY_LOCAL_MACHINE,\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\,EnableICMPRedirect,REG_DWORD,0
+V-253356,WN11-CC-000035,low,The system must be configured to ignore NetBIOS name release requests except from WINS servers.,HKEY_LOCAL_MACHINE,\SYSTEM\CurrentControlSet\Services\Netbt\Parameters\,NoNameReleaseOnDemand,REG_DWORD,1
+V-253357,WN11-CC-000037,medium,Local administrator accounts must have their privileged token filtered to prevent elevated privileges from being used over the network on domain systems.,HKEY_LOCAL_MACHINE,SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\,LocalAccountTokenFilterPolicy,REG_DWORD,0x00000000 (0)
+V-253358,WN11-CC-000038,medium,WDigest Authentication must be disabled.,HKEY_LOCAL_MACHINE,\SYSTEM\CurrentControlSet\Control\SecurityProviders\Wdigest\,UseLogonCredential,REG_DWORD,0x00000000 (0)
+V-253359,WN11-CC-000039,medium,Run as different user must be removed from context menus.,HKEY_LOCAL_MACHINE,,SuppressionPolicy,REG_DWORD,0x00001000 (4096)
+V-253360,WN11-CC-000040,medium,Insecure logons to an SMB server must be disabled.,HKEY_LOCAL_MACHINE,\SOFTWARE\Policies\Microsoft\Windows\LanmanWorkstation\,AllowInsecureGuestAuth,REG_DWORD,0x00000000 (0)
+V-253361,WN11-CC-000044,medium,Internet connection sharing must be disabled.,HKEY_LOCAL_MACHINE,\SOFTWARE\Policies\Microsoft\Windows\Network Connections\,NC_ShowSharedAccessUI,REG_DWORD,0x00000000 (0)
+V-253362,WN11-CC-000050,medium,Hardened UNC Paths must be defined to require mutual authentication and integrity for at least the \\*\SYSVOL and \\*\NETLOGON shares.,HKEY_LOCAL_MACHINE,\SOFTWARE\Policies\Microsoft\Windows\NetworkProvider\HardenedPaths\,\\*\NETLOGON,REG_SZ,"RequireMutualAuthentication=1, RequireIntegrity=1"
+V-253363,WN11-CC-000052,medium,Windows 11 must be configured to prioritize ECC Curves with longer key lengths first.,HKEY_LOCAL_MACHINE,\SOFTWARE\Policies\Microsoft\Cryptography\Configuration\SSL\00010002\,EccCurves,REG_MULTI_SZ,NistP384 NistP256
+V-253364,WN11-CC-000055,medium,Simultaneous connections to the internet or a Windows domain must be limited.,HKEY_LOCAL_MACHINE,\SOFTWARE\Policies\Microsoft\Windows\WcmSvc\GroupPolicy\,fMinimizeConnections,REG_DWORD,3 (or if the Value Name does not exist)
+V-253365,WN11-CC-000060,medium,Connections to non-domain networks when connected to a domain authenticated network must be blocked.,HKEY_LOCAL_MACHINE,\SOFTWARE\Policies\Microsoft\Windows\WcmSvc\GroupPolicy\,fBlockNonDomain,REG_DWORD,1
+V-253367,WN11-CC-000066,medium,Command line data must be included in process creation events.,HKEY_LOCAL_MACHINE,\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\Audit\,ProcessCreationIncludeCmdLine_Enabled,REG_DWORD,1
+V-253368,WN11-CC-000068,medium,Windows 11 must be configured to enable Remote host allows delegation of non-exportable credentials.,HKEY_LOCAL_MACHINE,\SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation\,AllowProtectedCreds,REG_DWORD,0x00000001 (1)
+V-253369,WN11-CC-000070,medium,Virtualization-Based Security (VBS) must be enabled on Windows 11 with the platform security level configured to Secure Boot or Secure Boot with DMA Protection.,HKEY_LOCAL_MACHINE,\SOFTWARE\Policies\Microsoft\Windows\DeviceGuard\,EnableVirtualizationBasedSecurity,REG_DWORD,1
+V-253370,WN11-CC-000075,high,Credential Guard must be running on Windows 11 systems.,HKEY_LOCAL_MACHINE,\SOFTWARE\Policies\Microsoft\Windows\DeviceGuard\,LsaCfgFlags,REG_DWORD,0x00000001 (1) (Enabled with UEFI lock)
+V-253371,WN11-CC-000080,medium,Virtualization-based protection of code integrity must be enabled.,HKEY_LOCAL_MACHINE,\SOFTWARE\Policies\Microsoft\Windows\DeviceGuard\,HypervisorEnforcedCodeIntegrity,REG_DWORD,"0x00000001 (1) (Enabled with UEFI lock), or 0x00000002 (2) (Enabled without lock)"
+V-253372,WN11-CC-000085,medium,"Early Launch Antimalware, Boot-Start Driver Initialization Policy must prevent boot drivers.",HKEY_LOCAL_MACHINE,\SYSTEM\CurrentControlSet\Policies\EarlyLaunch\,DriverLoadPolicy,REG_DWORD,"1, 3, or 8"
+V-253373,WN11-CC-000090,medium,Group Policy objects must be reprocessed even if they have not changed.,HKEY_LOCAL_MACHINE,\SOFTWARE\Policies\Microsoft\Windows\Group Policy\{35378EAC-683F-11D2-A89A-00C04FBBCFA2},NoGPOListChanges,REG_DWORD,0
+V-253374,WN11-CC-000100,medium,Downloading print driver packages over HTTP must be prevented.,HKEY_LOCAL_MACHINE,\SOFTWARE\Policies\Microsoft\Windows NT\Printers\,DisableWebPnPDownload,REG_DWORD,1
+V-253375,WN11-CC-000105,medium,Web publishing and online ordering wizards must be prevented from downloading a list of providers.,HKEY_LOCAL_MACHINE,\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer\,NoWebServices,REG_DWORD,1
+V-253376,WN11-CC-000110,medium,Printing over HTTP must be prevented.,HKEY_LOCAL_MACHINE,\SOFTWARE\Policies\Microsoft\Windows NT\Printers\,DisableHTTPPrinting,REG_DWORD,1
+V-253377,WN11-CC-000115,medium,Systems must at least attempt device authentication using certificates.,HKEY_LOCAL_MACHINE,\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\Kerberos\Parameters\,DevicePKInitEnabled,REG_DWORD,1 (or if the Value Name does not exist)
+V-253378,WN11-CC-000120,medium,The network selection user interface (UI) must not be displayed on the logon screen.,HKEY_LOCAL_MACHINE,\SOFTWARE\Policies\Microsoft\Windows\System\,DontDisplayNetworkSelectionUI,REG_DWORD,1
+V-253379,WN11-CC-000130,medium,Local users on domain-joined computers must not be enumerated.,HKEY_LOCAL_MACHINE,\SOFTWARE\Policies\Microsoft\Windows\System\,EnumerateLocalUsers,REG_DWORD,0
+V-253380,WN11-CC-000145,medium,Users must be prompted for a password on resume from sleep (on battery).,HKEY_LOCAL_MACHINE,\SOFTWARE\Policies\Microsoft\Power\PowerSettings\0e796bdb-100d-47d6-a2d5-f7d2daa51f51\,DCSettingIndex,REG_DWORD,1
+V-253381,WN11-CC-000150,medium,The user must be prompted for a password on resume from sleep (plugged in).,HKEY_LOCAL_MACHINE,\SOFTWARE\Policies\Microsoft\Power\PowerSettings\0e796bdb-100d-47d6-a2d5-f7d2daa51f51\,ACSettingIndex,REG_DWORD,1
+V-253382,WN11-CC-000155,high,Solicited Remote Assistance must not be allowed.,HKEY_LOCAL_MACHINE,\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services\,fAllowToGetHelp,REG_DWORD,0
+V-253383,WN11-CC-000165,medium,Unauthenticated RPC clients must be restricted from connecting to the RPC server.,HKEY_LOCAL_MACHINE,\SOFTWARE\Policies\Microsoft\Windows NT\Rpc\,RestrictRemoteClients,REG_DWORD,1
+V-253384,WN11-CC-000170,low,The setting to allow Microsoft accounts to be optional for modern style apps must be enabled.,HKEY_LOCAL_MACHINE,\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\,MSAOptional,REG_DWORD,0x00000001 (1)
+V-253385,WN11-CC-000175,low,The Application Compatibility Program Inventory must be prevented from collecting data and sending the information to Microsoft.,HKEY_LOCAL_MACHINE,\SOFTWARE\Policies\Microsoft\Windows\AppCompat\,DisableInventory,REG_DWORD,1
+V-253386,WN11-CC-000180,high,Autoplay must be turned off for non-volume devices.,HKEY_LOCAL_MACHINE,\SOFTWARE\Policies\Microsoft\Windows\Explorer\,NoAutoplayfornonVolume,REG_DWORD,1
+V-253387,WN11-CC-000185,high,The default autorun behavior must be configured to prevent autorun commands.,HKEY_LOCAL_MACHINE,\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer\,NoAutorun,REG_DWORD,1
+V-253388,WN11-CC-000190,high,Autoplay must be disabled for all drives.,HKEY_LOCAL_MACHINE,\SOFTWARE\Microsoft\Windows\CurrentVersion\policies\Explorer\,NoDriveTypeAutoRun,REG_DWORD,0x000000ff (255)
+V-253389,WN11-CC-000195,medium,Enhanced anti-spoofing for facial recognition must be enabled on Windows 11.,HKEY_LOCAL_MACHINE,\SOFTWARE\Policies\Microsoft\Biometrics\FacialFeatures\   (For GPO-managed systems),EnhancedAntiSpoofing,REG_DWORD,0x00000001 (1)
+V-253391,WN11-CC-000200,medium,Administrator accounts must not be enumerated during elevation.,HKEY_LOCAL_MACHINE,\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\CredUI\,EnumerateAdministrators,REG_DWORD,0
+V-253392,WN11-CC-000204,medium,Enhanced diagnostic data must be limited to the minimum required to support Windows Analytics.,HKEY_LOCAL_MACHINE,\SOFTWARE\Policies\Microsoft\Windows\DataCollection\,LimitEnhancedDiagnosticDataWindowsAnalytics,REG_DWORD,0x00000001 (1)
+V-253393,WN11-CC-000205,medium,Windows Telemetry must not be configured to Full.,HKEY_LOCAL_MACHINE,\SOFTWARE\Policies\Microsoft\Windows\DataCollection\,AllowTelemetry,REG_DWORD,0x00000000 (0) (Security)
+V-253394,WN11-CC-000206,low,Windows Update must not obtain updates from other PCs on the internet.,HKEY_LOCAL_MACHINE,\SOFTWARE\Policies\Microsoft\Windows\DeliveryOptimization\,DODownloadMode,REG_DWORD,0x00000000 (0) - No peering (HTTP Only)
+V-253395,WN11-CC-000210,medium,The Microsoft Defender SmartScreen for Explorer must be enabled.,HKEY_LOCAL_MACHINE,\SOFTWARE\Policies\Microsoft\Windows\System\,EnableSmartScreen,REG_DWORD,0x00000001 (1)
+V-253396,WN11-CC-000215,medium,Explorer Data Execution Prevention must be enabled.,HKEY_LOCAL_MACHINE,\SOFTWARE\Policies\Microsoft\Windows\Explorer\,NoDataExecutionPrevention,REG_DWORD,0 (or if the Value Name does not exist)
+V-253397,WN11-CC-000220,low,File Explorer heap termination on corruption must be disabled.,HKEY_LOCAL_MACHINE,\SOFTWARE\Policies\Microsoft\Windows\Explorer\,NoHeapTerminationOnCorruption,REG_DWORD,0x00000000 (0) (or if the Value Name does not exist)
+V-253398,WN11-CC-000225,medium,File Explorer shell protocol must run in protected mode.,HKEY_LOCAL_MACHINE,\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer\,PreXPSP2ShellProtocolBehavior,REG_DWORD,0 (or if the Value Name does not exist)
+V-253399,WN11-CC-000252,medium,Windows 11 must be configured to disable Windows Game Recording and Broadcasting.,HKEY_LOCAL_MACHINE,\SOFTWARE\Microsoft\PolicyManager\current\device\ApplicationManagement,AllowGameDVR,REG_DWORD,0x00000000 (0)
+V-253400,WN11-CC-000255,medium,The use of a hardware security device with Windows Hello for Business must be enabled.,HKEY_LOCAL_MACHINE,\SOFTWARE\Policies\Microsoft\PassportForWork\,RequireSecurityDevice,REG_DWORD,1
+V-253401,WN11-CC-000260,medium,Windows 11 must be configured to require a minimum PIN length of six characters or greater.,HKEY_LOCAL_MACHINE,\SOFTWARE\Policies\Microsoft\PassportForWork\PINComplexity\  (For GPO-managed systems),MinimumPINLength,REG_DWORD,6 (or greater)
+V-253402,WN11-CC-000270,medium,Passwords must not be saved in the Remote Desktop Client.,HKEY_LOCAL_MACHINE,\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services\,DisablePasswordSaving,REG_DWORD,1
+V-253403,WN11-CC-000275,medium,Local drives must be prevented from sharing with Remote Desktop Session Hosts.,HKEY_LOCAL_MACHINE,\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services\,fDisableCdm,REG_DWORD,1
+V-253404,WN11-CC-000280,medium,Remote Desktop Services must always prompt a client for passwords upon connection.,HKEY_LOCAL_MACHINE,\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services\,fPromptForPassword,REG_DWORD,1
+V-253405,WN11-CC-000285,medium,The Remote Desktop Session Host must require secure RPC communications.,HKEY_LOCAL_MACHINE,\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services\,fEncryptRPCTraffic,REG_DWORD,1
+V-253406,WN11-CC-000290,medium,Remote Desktop Services must be configured with the client connection encryption set to the required level.,HKEY_LOCAL_MACHINE,\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services\,MinEncryptionLevel,REG_DWORD,3
+V-253407,WN11-CC-000295,medium,Attachments must be prevented from being downloaded from RSS feeds.,HKEY_LOCAL_MACHINE,\SOFTWARE\Policies\Microsoft\Internet Explorer\Feeds\,DisableEnclosureDownload,REG_DWORD,1
+V-253408,WN11-CC-000300,medium,Basic authentication for RSS feeds over HTTP must not be used.,HKEY_LOCAL_MACHINE,\SOFTWARE\Policies\Microsoft\Internet Explorer\Feeds\,AllowBasicAuthInClear,REG_DWORD,0 (or if the Value Name does not exist)
+V-253409,WN11-CC-000305,medium,Indexing of encrypted files must be turned off.,HKEY_LOCAL_MACHINE,\SOFTWARE\Policies\Microsoft\Windows\Windows Search\  (For GPO-managed systems),AllowIndexingEncryptedStoresOrItems,REG_DWORD,0
+V-253410,WN11-CC-000310,medium,Users must be prevented from changing installation options.,HKEY_LOCAL_MACHINE,\SOFTWARE\Policies\Microsoft\Windows\Installer\,EnableUserControl,REG_DWORD,0
+V-253411,WN11-CC-000315,high,"The Windows Installer feature ""Always install with elevated privileges"" must be disabled.",HKEY_LOCAL_MACHINE,\SOFTWARE\Policies\Microsoft\Windows\Installer\,AlwaysInstallElevated,REG_DWORD,0
+V-253412,WN11-CC-000320,medium,Users must be notified if a web-based program attempts to install software.,HKEY_LOCAL_MACHINE,\SOFTWARE\Policies\Microsoft\Windows\Installer\,SafeForScripting,REG_DWORD,0 (or if the Value Name does not exist)
+V-253413,WN11-CC-000325,medium,Automatically signing in the last interactive user after a system-initiated restart must be disabled.,HKEY_LOCAL_MACHINE,\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\,DisableAutomaticRestartSignOn,REG_DWORD,1
+V-253414,WN11-CC-000326,medium,PowerShell script block logging must be enabled on Windows 11.,HKEY_LOCAL_MACHINE,\SOFTWARE\Policies\Microsoft\Windows\PowerShell\ScriptBlockLogging\,EnableScriptBlockLogging,REG_DWORD,1
+V-253415,WN11-CC-000327,medium,PowerShell Transcription must be enabled on Windows 11.,HKEY_LOCAL_MACHINE,\SOFTWARE\Policies\Microsoft\Windows\PowerShell\Transcription\,EnableTranscripting,REG_DWORD,1
+V-253416,WN11-CC-000330,high,The Windows Remote Management (WinRM) client must not use Basic authentication.,HKEY_LOCAL_MACHINE,\SOFTWARE\Policies\Microsoft\Windows\WinRM\Client\,AllowBasic,REG_DWORD,0
+V-253417,WN11-CC-000335,medium,The Windows Remote Management (WinRM) client must not allow unencrypted traffic.,HKEY_LOCAL_MACHINE,\SOFTWARE\Policies\Microsoft\Windows\WinRM\Client\,AllowUnencryptedTraffic,REG_DWORD,0
+V-253418,WN11-CC-000345,high,The Windows Remote Management (WinRM) service must not use Basic authentication.,HKEY_LOCAL_MACHINE,\SOFTWARE\Policies\Microsoft\Windows\WinRM\Service\,AllowBasic,REG_DWORD,0
+V-253419,WN11-CC-000350,medium,The Windows Remote Management (WinRM) service must not allow unencrypted traffic.,HKEY_LOCAL_MACHINE,\SOFTWARE\Policies\Microsoft\Windows\WinRM\Service\,AllowUnencryptedTraffic,REG_DWORD,0
+V-253420,WN11-CC-000355,medium,The Windows Remote Management (WinRM) service must not store RunAs credentials.,HKEY_LOCAL_MACHINE,\SOFTWARE\Policies\Microsoft\Windows\WinRM\Service\,DisableRunAs,REG_DWORD,1
+V-253421,WN11-CC-000360,medium,The Windows Remote Management (WinRM) client must not use Digest authentication.,HKEY_LOCAL_MACHINE,\SOFTWARE\Policies\Microsoft\Windows\WinRM\Client\,AllowDigest,REG_DWORD,0
+V-253422,WN11-CC-000365,medium,Windows 11 must be configured to prevent Windows apps from being activated by voice while the system is locked.,HKEY_LOCAL_MACHINE,\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy\,LetAppsActivateWithVoice,REG_DWORD,0x00000002 (2)
+V-253423,WN11-CC-000370,medium,The convenience PIN for Windows 11 must be disabled.,HKEY_LOCAL_MACHINE,\Software\Policies\Microsoft\Windows\System,AllowDomainPINLogon,REG_DWORD,
+V-253424,WN11-CC-000385,medium,Windows Ink Workspace must be configured to disallow access above the lock.,HKEY_LOCAL_MACHINE,\SOFTWARE\Policies\Microsoft\WindowsInkWorkspace  (For GPO-managed systems),AllowWindowsInkWorkspace,REG_DWORD,
+V-253425,WN11-CC-000390,low,Windows 11 must be configured to prevent users from receiving suggestions for third-party or additional applications.,HKEY_CURRENT_USER,\SOFTWARE\Policies\Microsoft\Windows\CloudContent\,DisableThirdPartySuggestions,REG_DWORD,0x00000001 (1)
+V-253426,WN11-EP-000310,medium,Windows 11 Kernel (Direct Memory Access) DMA Protection must be enabled.,HKEY_LOCAL_MACHINE,\Software\Policies\Microsoft\Windows\Kernel DMA Protection,DeviceEnumerationPolicy,REG_DWORD,0
+V-253427,WN11-PK-000005,medium,The DoW Root CA certificates must be installed in the Trusted Root Store.,,,,,
+V-253428,WN11-PK-000010,medium,The External Root CA certificates must be installed in the Trusted Root Store on unclassified systems.,,,,,
+V-253429,WN11-PK-000015,medium,The DoW Interoperability Root CA cross-certificates must be installed in the Untrusted Certificates Store on unclassified systems.,,,,,
+V-253430,WN11-PK-000020,medium,The US DoW CCEB Interoperability Root CA cross-certificates must be installed in the Untrusted Certificates Store on unclassified systems.,,,,,
+V-253431,WN11-RG-000005,medium,Default permissions for the HKEY_LOCAL_MACHINE registry hive must be maintained.,,,,,
+V-253433,WN11-SO-000010,medium,The built-in guest account must be disabled.,,,,,
+V-253434,WN11-SO-000015,medium,Local accounts with blank passwords must be restricted to prevent access from the network.,HKEY_LOCAL_MACHINE,\SYSTEM\CurrentControlSet\Control\Lsa\,LimitBlankPasswordUse,REG_DWORD,1
+V-253435,WN11-SO-000020,medium,The built-in administrator account must be renamed.,,,,,
+V-253436,WN11-SO-000025,medium,The built-in guest account must be renamed.,,,,,
+V-253437,WN11-SO-000030,medium,Audit policy using subcategories must be enabled.,HKEY_LOCAL_MACHINE,\SYSTEM\CurrentControlSet\Control\Lsa\,SCENoApplyLegacyAuditPolicy,REG_DWORD,1
+V-253438,WN11-SO-000035,medium,Outgoing secure channel traffic must be encrypted or signed.,HKEY_LOCAL_MACHINE,\SYSTEM\CurrentControlSet\Services\Netlogon\Parameters\,RequireSignOrSeal,REG_DWORD,1
+V-253439,WN11-SO-000040,medium,Outgoing secure channel traffic must be encrypted.,HKEY_LOCAL_MACHINE,\SYSTEM\CurrentControlSet\Services\Netlogon\Parameters\,SealSecureChannel,REG_DWORD,1
+V-253440,WN11-SO-000045,medium,Outgoing secure channel traffic must be signed.,HKEY_LOCAL_MACHINE,\SYSTEM\CurrentControlSet\Services\Netlogon\Parameters\,SignSecureChannel,REG_DWORD,1
+V-253441,WN11-SO-000050,low,The computer account password must not be prevented from being reset.,HKEY_LOCAL_MACHINE,\SYSTEM\CurrentControlSet\Services\Netlogon\Parameters\,DisablePasswordChange,REG_DWORD,0
+V-253442,WN11-SO-000055,low,The maximum age for machine account passwords must be configured to 30 days or less.,HKEY_LOCAL_MACHINE,\SYSTEM\CurrentControlSet\Services\Netlogon\Parameters\,MaximumPasswordAge,REG_DWORD,"0x0000001e (30) (or less, excluding 0)"
+V-253443,WN11-SO-000060,medium,The system must be configured to require a strong session key.,HKEY_LOCAL_MACHINE,\SYSTEM\CurrentControlSet\Services\Netlogon\Parameters\,RequireStrongKey,REG_DWORD,1
+V-253444,WN11-SO-000070,medium,"The machine inactivity limit must be set to 15 minutes, locking the system with the screensaver.",HKEY_LOCAL_MACHINE,\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\,InactivityTimeoutSecs,REG_DWORD,"0x00000384 (900) (or less, excluding ""0"" which is effectively disabled)"
+V-253445,WN11-SO-000075,medium,The required legal notice must be configured to display before console logon.,HKEY_LOCAL_MACHINE,\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\,LegalNoticeText,REG_SZ,You are accessing a U.S. Government (USG) Information System (IS) that is provided for USG-authorized use only.
+V-253446,WN11-SO-000080,low,The Windows message title for the legal notice must be configured.,HKEY_LOCAL_MACHINE,\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\,LegalNoticeCaption,REG_SZ,See message title above
+V-253447,WN11-SO-000085,low,Caching of logon credentials must be limited.,HKEY_LOCAL_MACHINE,\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon\,CachedLogonsCount,REG_SZ,10 (or less)
+V-253448,WN11-SO-000095,medium,The Smart Card removal option must be configured to Force Logoff or Lock Workstation.,HKEY_LOCAL_MACHINE,\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon\,SCRemoveOption,REG_SZ,1 (Lock Workstation) or 2 (Force Logoff)
+V-253449,WN11-SO-000100,medium,The Windows SMB client must be configured to always perform SMB packet signing.,HKEY_LOCAL_MACHINE,\SYSTEM\CurrentControlSet\Services\LanmanWorkstation\Parameters\,RequireSecuritySignature,REG_DWORD,1
+V-253450,WN11-SO-000110,medium,Unencrypted passwords must not be sent to third-party SMB Servers.,HKEY_LOCAL_MACHINE,\SYSTEM\CurrentControlSet\Services\LanmanWorkstation\Parameters\,EnablePlainTextPassword,REG_DWORD,0
+V-253451,WN11-SO-000120,medium,The Windows SMB server must be configured to always perform SMB packet signing.,HKEY_LOCAL_MACHINE,\SYSTEM\CurrentControlSet\Services\LanManServer\Parameters\,RequireSecuritySignature,REG_DWORD,1
+V-253452,WN11-SO-000140,high,Anonymous SID/Name translation must not be allowed.,,,,,
+V-253453,WN11-SO-000145,high,Anonymous enumeration of SAM accounts must not be allowed.,HKEY_LOCAL_MACHINE,\SYSTEM\CurrentControlSet\Control\Lsa\,RestrictAnonymousSAM,REG_DWORD,1
+V-253454,WN11-SO-000150,high,Anonymous enumeration of shares must be restricted.,HKEY_LOCAL_MACHINE,\SYSTEM\CurrentControlSet\Control\Lsa\,RestrictAnonymous,REG_DWORD,1
+V-253455,WN11-SO-000160,medium,The system must be configured to prevent anonymous users from having the same rights as the Everyone group.,HKEY_LOCAL_MACHINE,\SYSTEM\CurrentControlSet\Control\Lsa\,EveryoneIncludesAnonymous,REG_DWORD,0
+V-253456,WN11-SO-000165,high,Anonymous access to Named Pipes and Shares must be restricted.,HKEY_LOCAL_MACHINE,\SYSTEM\CurrentControlSet\Services\LanManServer\Parameters\,RestrictNullSessAccess,REG_DWORD,1
+V-253457,WN11-SO-000167,medium,Remote calls to the Security Account Manager (SAM) must be restricted to Administrators.,HKEY_LOCAL_MACHINE,\SYSTEM\CurrentControlSet\Control\Lsa\,RestrictRemoteSAM,REG_SZ,O:BAG:BAD:(A;;RC;;;BA)
+V-253458,WN11-SO-000180,medium,NTLM must be prevented from falling back to a Null session.,HKEY_LOCAL_MACHINE,\SYSTEM\CurrentControlSet\Control\LSA\MSV1_0\,allownullsessionfallback,REG_DWORD,0
+V-253459,WN11-SO-000185,medium,PKU2U authentication using online identities must be prevented.,HKEY_LOCAL_MACHINE,\SYSTEM\CurrentControlSet\Control\LSA\pku2u\,AllowOnlineID,REG_DWORD,0
+V-253460,WN11-SO-000190,medium,Kerberos encryption types must be configured to prevent the use of DES and RC4 encryption suites.,HKEY_LOCAL_MACHINE,\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\Kerberos\Parameters\,SupportedEncryptionTypes,REG_DWORD,0x7ffffff8 (2147483640)
+V-253461,WN11-SO-000195,high,The system must be configured to prevent the storage of the LAN Manager hash of passwords.,HKEY_LOCAL_MACHINE,\SYSTEM\CurrentControlSet\Control\Lsa\,NoLMHash,REG_DWORD,1
+V-253462,WN11-SO-000205,high,"The LanMan authentication level must be set to send NTLMv2 response only, and to refuse LM and NTLM.",HKEY_LOCAL_MACHINE,\SYSTEM\CurrentControlSet\Control\Lsa\,LmCompatibilityLevel,REG_DWORD,5
+V-253463,WN11-SO-000210,medium,The system must be configured to the required LDAP client signing level.,HKEY_LOCAL_MACHINE,\SYSTEM\CurrentControlSet\Services\LDAP\,LDAPClientIntegrity,REG_DWORD,1
+V-253464,WN11-SO-000215,medium,The system must be configured to meet the minimum session security requirement for NTLM SSP based clients.,HKEY_LOCAL_MACHINE,\SYSTEM\CurrentControlSet\Control\Lsa\MSV1_0\,NTLMMinClientSec,REG_DWORD,0x20080000 (537395200)
+V-253465,WN11-SO-000220,medium,The system must be configured to meet the minimum session security requirement for NTLM SSP based servers.,HKEY_LOCAL_MACHINE,\SYSTEM\CurrentControlSet\Control\Lsa\MSV1_0\,NTLMMinServerSec,REG_DWORD,0x20080000 (537395200)
+V-253466,WN11-SO-000230,medium,"The system must be configured to use FIPS-compliant algorithms for encryption, hashing, and signing.",HKEY_LOCAL_MACHINE,\SYSTEM\CurrentControlSet\Control\Lsa\FIPSAlgorithmPolicy\  (For GPO-managed systems),Enabled,REG_DWORD,1
+V-253467,WN11-SO-000240,low,The default permissions of global system objects must be increased.,HKEY_LOCAL_MACHINE,\SYSTEM\CurrentControlSet\Control\Session Manager\,ProtectionMode,REG_DWORD,1
+V-253468,WN11-SO-000245,medium,User Account Control approval mode for the built-in Administrator must be enabled.,HKEY_LOCAL_MACHINE,\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\,FilterAdministratorToken,REG_DWORD,1
+V-253469,WN11-SO-000250,medium,User Account Control must prompt administrators for consent on the secure desktop.,HKEY_LOCAL_MACHINE,\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\,ConsentPromptBehaviorAdmin,REG_DWORD,2 (Prompt for consent on the secure desktop)
+V-253470,WN11-SO-000251,medium,Windows 11 must use multifactor authentication for local and network access to privileged and nonprivileged accounts.,,,,,
+V-253471,WN11-SO-000255,medium,User Account Control must automatically deny elevation requests for standard users.,HKEY_LOCAL_MACHINE,\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\,ConsentPromptBehaviorUser,REG_DWORD,0
+V-253472,WN11-SO-000260,medium,User Account Control must be configured to detect application installations and prompt for elevation.,HKEY_LOCAL_MACHINE,\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\,EnableInstallerDetection,REG_DWORD,1
+V-253473,WN11-SO-000265,medium,User Account Control must only elevate UIAccess applications that are installed in secure locations.,HKEY_LOCAL_MACHINE,\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\,EnableSecureUIAPaths,REG_DWORD,1
+V-253474,WN11-SO-000270,medium,"User Account Control must run all administrators in Admin Approval Mode, enabling UAC.",HKEY_LOCAL_MACHINE,\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\,EnableLUA,REG_DWORD,1
+V-253475,WN11-SO-000275,medium,User Account Control must virtualize file and registry write failures to per-user locations.,HKEY_LOCAL_MACHINE,\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\,EnableVirtualization,REG_DWORD,1
+V-253476,WN11-SO-000280,medium,Passwords for enabled local Administrator accounts must be changed at least every 60 days.,,,,,
+V-253477,WN11-UC-000015,low,Toast notifications to the lock screen must be turned off.,HKEY_CURRENT_USER,\SOFTWARE\Policies\Microsoft\Windows\CurrentVersion\PushNotifications\,NoToastApplicationNotificationOnLockScreen,REG_DWORD,1
+V-253478,WN11-UC-000020,medium,Zone information must be preserved when saving attachments.,HKEY_CURRENT_USER,\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Attachments\,SaveZoneInformation,REG_DWORD,0x00000002 (2) (or if the Value Name does not exist)
+V-253479,WN11-UR-000005,medium,"The ""Access Credential Manager as a trusted caller"" user right must not be assigned to any groups or accounts.",,,,,
+V-253480,WN11-UR-000010,medium,"The ""Access this computer from the network"" user right must only be assigned to the Administrators and Remote Desktop Users groups.",,,,,
+V-253481,WN11-UR-000015,high,"The ""Act as part of the operating system"" user right must not be assigned to any groups or accounts.",,,,,
+V-253482,WN11-UR-000025,medium,"The ""Allow log on locally"" user right must only be assigned to the Administrators and Users groups.",,,,,
+V-253483,WN11-UR-000030,medium,"The ""Back up files and directories"" user right must only be assigned to the Administrators group.",,,,,
+V-253484,WN11-UR-000035,medium,"The ""Change the system time"" user right must only be assigned to Administrators and Local Service.",,,,,
+V-253485,WN11-UR-000040,medium,"The ""Create a pagefile"" user right must only be assigned to the Administrators group.",,,,,
+V-253486,WN11-UR-000045,high,"The ""Create a token object"" user right must not be assigned to any groups or accounts.",,,,,
+V-253487,WN11-UR-000050,medium,"The ""Create global objects"" user right must only be assigned to Administrators, Service, Local Service, and Network Service.",,,,,
+V-253488,WN11-UR-000055,medium,"The ""Create permanent shared objects"" user right must not be assigned to any groups or accounts.",,,,,
+V-253489,WN11-UR-000060,medium,"The ""Create symbolic links"" user right must only be assigned to the Administrators group.",,,,,
+V-253490,WN11-UR-000065,high,"The ""Debug programs"" user right must only be assigned to the Administrators group.",,,,,
+V-253491,WN11-UR-000070,medium,"The ""Deny access to this computer from the network"" user right on workstations must be configured to prevent access from highly privileged domain accounts and local accounts on domain systems and unauthenticated access on all systems.",,,,,
+V-253492,WN11-UR-000075,medium,"The ""Deny log on as a batch job"" user right on domain-joined workstations must be configured to prevent access from highly privileged domain accounts.",,,,,
+V-253493,WN11-UR-000080,medium,"The ""Deny log on as a service"" user right on Windows 11 domain-joined workstations must be configured to prevent access from highly privileged domain accounts.",,,,,
+V-253494,WN11-UR-000085,medium,"The ""Deny log on locally"" user right on workstations must be configured to prevent access from highly privileged domain accounts on domain systems and unauthenticated access on all systems.",,,,,
+V-253495,WN11-UR-000090,medium,"The ""Deny log on through Remote Desktop Services"" user right on Windows 11 workstations must be configured to prevent access from highly privileged domain accounts and local accounts on domain systems and unauthenticated access on all systems.",,,,,
+V-253496,WN11-UR-000095,medium,"The ""Enable computer and user accounts to be trusted for delegation"" user right must not be assigned to any groups or accounts.",,,,,
+V-253497,WN11-UR-000100,medium,"The ""Force shutdown from a remote system"" user right must only be assigned to the Administrators group.",,,,,
+V-253498,WN11-UR-000110,medium,"The ""Impersonate a client after authentication"" user right must only be assigned to Administrators, Service, Local Service, and Network Service.",,,,,
+V-253499,WN11-UR-000120,medium,"The ""Load and unload device drivers"" user right must only be assigned to the Administrators group.",,,,,
+V-253500,WN11-UR-000125,medium,"The ""Lock pages in memory"" user right must not be assigned to any groups or accounts.",,,,,
+V-253501,WN11-UR-000130,medium,"The ""Manage auditing and security log"" user right must only be assigned to the Administrators group.",,,,,
+V-253502,WN11-UR-000140,medium,"The ""Modify firmware environment values"" user right must only be assigned to the Administrators group.",,,,,
+V-253503,WN11-UR-000145,medium,"The ""Perform volume maintenance tasks"" user right must only be assigned to the Administrators group.",,,,,
+V-253504,WN11-UR-000150,medium,"The ""Profile single process"" user right must only be assigned to the Administrators group.",,,,,
+V-253505,WN11-UR-000160,medium,"The ""Restore files and directories"" user right must only be assigned to the Administrators group.",,,,,
+V-253506,WN11-UR-000165,medium,"The ""Take ownership of files or other objects"" user right must only be assigned to the Administrators group.",,,,,
+V-256893,WN11-CC-000391,medium,Internet Explorer must be disabled for Windows 11.,,,,,
+V-257592,WN11-00-000395,medium,Windows 11 must not have portproxy enabled or in use.,,,,,
+V-257770,WN11-AU-000585,medium,Windows 11 must have command line process auditing events enabled for failures.,,,,,
+V-268317,WN11-00-000125,medium,Copilot must be disabled for Windows 11.,,,,,
+V-268318,WN11-CC-000063,medium,Windows 11 systems must use either Group Policy or an approved Mobile Device Management (MDM) product to enforce STIG compliance.,,,,,
+V-278928,WN11-AU-000583,medium,Windows 11 must be configured to audit handle manipulation failures.,,,,,
+V-278930,WN11-AU-000589,medium,Windows 11 must be configured to audit registry failures.,,,,,
+V-278931,WN11-AU-000586,medium,Windows 11 must be configured to audit registry successes.,,,,,
+V-278932,WN11-AU-000587,medium,Windows 11 must be configured to audit sensitive privilege use successes.,,,,,
+V-278933,WN11-AU-000588,medium,Windows 11 must be configured to audit sensitive privilege use failures.,,,,,
+V-279688,WN11-00-000126,medium,Windows 11 systems must block consumer account user authentication.,HKEY_LOCAL_MACHINE,\SOFTWARE\Policies\Microsoft\MicrosoftAccount,DisableUserAuth,REG_DWORD,0x00000001 (1)
+V-288475,WN11-00-000400,medium,All Wi-Fi Direct adapters must be disabled on the system.,,,,,

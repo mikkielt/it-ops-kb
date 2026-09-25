@@ -1,0 +1,30 @@
+{
+  "$id": "https://aka.ms/dsc/schemas/v3/extension/stdout/discover.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "DiscoverResult",
+  "type": "object",
+  "oneOf": [
+    {
+      "description": "The path to the resource manifest, must be absolute.",
+      "type": "object",
+      "properties": {
+        "manifestPath": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "manifestPath"
+      ]
+    },
+    {
+      "description": "The content of the resource manifest.",
+      "type": "object",
+      "properties": {
+        "manifestContent": true
+      },
+      "required": [
+        "manifestContent"
+      ]
+    }
+  ]
+}
