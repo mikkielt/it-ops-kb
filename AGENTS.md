@@ -38,6 +38,7 @@ Run `/kb-setup` (Claude Code), or do the same by hand:
 |---|---|
 | `python3 _tools/rag.py search "<query>" -k 8 [-d DOMAIN] [-u] [--index]` | BM25 search; `-u` adds source urls; root index files only with `--index` |
 | `python3 _tools/rag.py show PATH:LINE -n 30` / `src S123` / `topics [DOMAIN]` | read lines / resolve a source id (`S123` or `S-k3f7q2zd`) / list articles |
+| `python3 _tools/kb_mcp.py [--status]` | the read-only `kb` MCP server over stdio (`kb_search`, `kb_show`, `kb_source`, `kb_status`); the plugin starts it; `--status` prints kb_status once |
 | `python3 _tools/kbid.py url <URL>` / `answer "<question>"` / `check` | id for a new source / `QK-<slug>` for a new answer / hash-id consistency |
 | `python3 _tools/build_index.py [--check]` | regenerate `_coverage.csv`, the README coverage table and `used_in` from the articles (`--check`: report only, exit 1 if stale) |
 | `python3 _tools/kbgit.py fix [--check] [--base REV] [--upstream REV]` | after any merge or pull: dedupe/merge the union-merged ledgers (older column layouts too), renumber colliding legacy ids (the `--upstream` side, already pushed, keeps its ids), rename `QK<n>` and colliding answer ids to `QK-<slug>`, rebuild the index (exit 1 `--check` stale, 2 needs a human); `fmt` only canonicalises the CSV ledgers |
@@ -58,7 +59,12 @@ Run `/kb-setup` (Claude Code), or do the same by hand:
 ## Skills (`.claude/skills/`)
 
 - `/kb-setup`: the setup above, with a pass/fail report.
-- `/kb-lookup`: answer from the kb with citations; Claude may invoke it on its own.
+- `/kb-lookup`: answer from the kb with citations; Claude may invoke it on its own. It uses the `kb` MCP tools when present, else `rag.py`.
+
+## Plugin (`.claude-plugin/`)
+
+- The repo root is a Claude Code marketplace and its one plugin `it-ops-kb`: the `kb` server, `/kb-lookup`, the `.mcp.json` docs servers and a PreToolUse hook blocking `submit_feedback`. Install and runbook: README, "Use from another project".
+- Keep it read-only: `plugin.json` loads only `.claude/skills/kb-lookup` and sets `"agents": []` (the kb's `agents/` domain is articles). Never add a root `skills/`, `commands/`, `hooks/`, `bin/` or similar directory: the plugin would load it. No `version` field: users get each commit. `python3 _tools/test_kb_mcp.py` checks these and runs `claude plugin validate` when the CLI is installed.
 - `/kb-research <question>`: research a question in the context of the topics the kb already has, then extend them.
 - `/kb-refresh <topic|dir|file|S-id>`: diff sources and update the facts.
 - `/kb-add-topic <domain>/<slug>`: research and write a new topic.

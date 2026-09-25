@@ -1,0 +1,17 @@
+{
+  "name": "it-ops-kb",
+  "description": "it-ops-kb: an offline knowledge base of official-source facts on Windows endpoint management and the AI agents that operate it, served read-only to Claude Code",
+  "owner": {
+    "name": "mikkielt",
+    "url": "https://gitlab.com/mikkielt"
+  },
+  "plugins": [
+    {
+      "name": "it-ops-kb",
+      "source": ".",
+      "description": "Read-only kb lookups: the kb MCP server (kb_search, kb_show, kb_source, kb_status), the /it-ops-kb:kb-lookup skill and the Microsoft Learn, Claude Code and MCP docs servers",
+      "category": "knowledge",
+      "tags": ["windows", "intune", "configmgr", "entra", "dsc", "mcp", "knowledge-base"]
+    }
+  ]
+}

@@ -14,6 +14,8 @@ Ids: kbid.py hash source ids are deterministic and normalization-stable; bad ids
 Merges (test_merge.py): union-merged ledgers plus kbgit.py fix give a clean kb; the git scenario is skipped without git.
 History (test_history.py): KB-* trailers, the commit-msg hook, check-trailers, log, blame, asof, tag-census; git parts skip without git.
 Sync (test_sync.py): kbgit.py sync against a throwaway bare remote and two clones; skipped without git.
+kb MCP server and plugin (test_kb_mcp.py): the stdio server's handshake, tools and errors; the plugin manifests stay
+read-only and consistent with .mcp.json; `claude plugin validate` when the CLI is installed.
 Research merge (test_research_merge.py): two pre-regime research branches with colliding ids merged the documented way
 (rebase, /kb-git-sync resolution, fix, sync), checked in a fresh clone; skipped without git or the fork commit.
 Leaks (tracked files): secrets in any file; in authored files also home-directory paths, private IPv4 addresses,
@@ -33,6 +35,7 @@ import kbid  # noqa: E402
 from test_merge import MergeRules  # noqa: E402,F401  (run here too)
 from test_history import TrailerRules  # noqa: E402,F401
 from test_sync import SyncRules  # noqa: E402,F401
+from test_kb_mcp import KbServer, PluginManifest  # noqa: E402,F401
 if os.environ.get("KB_TESTS_FAST") != "1":  # the git scenarios (each skips without git); kbgit.py sync's gate leaves them out
     from test_merge import MergeInGit  # noqa: E402,F401
     from test_history import HistoryInGit  # noqa: E402,F401

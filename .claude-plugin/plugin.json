@@ -1,0 +1,34 @@
+{
+  "name": "it-ops-kb",
+  "displayName": "it-ops-kb",
+  "description": "Read-only access to it-ops-kb: cited facts from official sources on Windows endpoint management (DSC v3, ConfigMgr, Intune, Autopilot, Entra ID, AD, Graph, GPO, Defender, SQL Server, Power BI, GitLab CI, Ansible, baselines, identity, Presidio) and on MCP, Claude Code and AI agents",
+  "author": {
+    "name": "mikkielt",
+    "url": "https://gitlab.com/mikkielt"
+  },
+  "homepage": "https://gitlab.com/mikkielt/it-ops-kb",
+  "repository": "git@gitlab.com:mikkielt/it-ops-kb.git",
+  "keywords": ["windows", "endpoint-management", "intune", "configmgr", "entra-id", "dsc", "mcp", "claude-code", "knowledge-base"],
+  "skills": ["./.claude/skills/kb-lookup"],
+  "agents": [],
+  "mcpServers": {
+    "kb": {
+      "command": "python3",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/_tools/kb_mcp.py"]
+    }
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "mcp__plugin_it-ops-kb_(microsoft-learn|claude-code-docs|mcp-docs)__submit_feedback",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3",
+            "args": ["${CLAUDE_PLUGIN_ROOT}/_tools/kb_mcp.py", "--deny-submit-feedback"]
+          }
+        ]
+      }
+    ]
+  }
+}
