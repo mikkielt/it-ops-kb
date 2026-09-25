@@ -82,8 +82,10 @@ _sources.csv   conflict markers (a merge made without our .gitattributes) are dr
                  (it is already pushed: published ids are never renumbered); every other url gets its own id (the
                  existing id of that url if it has a row, else its hash id `kbid.py url`). Citations are rewritten
                  line by line: a line citing the id that only one side's version of the file has (and the base's
-                 has not) belongs to that side. A line on both sides or on none, or an old citation of an id the
-                 base did not have, is ambiguous: reported, exit 2, nothing written.
+                 has not) belongs to that side; a line no side has (a resolved conflict) belongs to the one side
+                 whose version of the file cites the id at all. A line on both sides, a new line in a file both
+                 sides cite the id in, or an old citation of an id the base did not have, is ambiguous: reported,
+                 exit 2, nothing written.
                Canonical form: legacy ids numerically, then hash ids sorted; csv module quoting; `\\n`; no BOM.
 _fetch_state.csv  one row per id: checked_utc/error from the row with the latest check, the fetch columns
                (fetched_utc, sha256, text_sha256, bytes) from the row with the latest fetch, changed_utc the max.
@@ -406,7 +408,9 @@ def source_plan(renames, rows):
 def rewrite_ids(plan, base_rev, side_revs, texts, pinned, problems, report):
     """Apply id renames to texts {path: text} (loaded on demand), line by line. A merge (union or not) keeps each
     side's lines verbatim, so a line naming an id that only one side's version of the file has belongs to that side
-    and gets that side's new id; a line both sides have, or that neither has, is ambiguous and goes to problems.
+    and gets that side's new id. A line no side has (written while resolving a conflict) belongs to the one side
+    whose version of the file names the id at all. A line both sides have, or still no side, is ambiguous and goes
+    to problems.
     A plan entry with a `default` (a single new id; the old one names nothing any more) renames it on every line the
     base did not have, except lines a side outside its `owners` has (e.g. the pushed side's own text). Lines are
     attributed on their text before any rename, so one line may carry several ids.
@@ -420,7 +424,8 @@ def rewrite_ids(plan, base_rev, side_revs, texts, pinned, problems, report):
         if not cur or not any(r.search(cur) for r in rx.values()):
             continue
         base_lines = set((show(base_rev, f) or "").splitlines()) if base_rev else set()
-        side_lines = {s: set((show(rev, f) or "").splitlines()) for s, rev in side_revs.items()}
+        side_text = {s: show(rev, f) or "" for s, rev in side_revs.items()}
+        side_lines = {s: set(st.splitlines()) for s, st in side_text.items()}
         lines, n, bad = cur.split("\n"), {}, False
         for k, ln in enumerate(lines):
             if MARKER_LINE.match(ln):
@@ -440,6 +445,8 @@ def rewrite_ids(plan, base_rev, side_revs, texts, pinned, problems, report):
                         continue  # a line of a side without the renamed answer: it means something else
                     want = [p["default"]]
                 else:
+                    if not on:  # a line no side has (a resolved conflict): the side whose file cites the id at all
+                        on = [s for s, st in side_text.items() if cite_count(st, old)]
                     want = sorted({p["by_side"].get(s, old) for s in on})
                 if len(want) != 1:
                     problems.append(f"{f}:{k + 1}: cannot tell which {p['what']} {old} means here "

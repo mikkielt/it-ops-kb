@@ -21,26 +21,29 @@ Never `git push --force`, never `--no-verify`, never `git rebase --skip` a commi
    - 2: refused. Go to 4.
    - 3: needs judgment. Go to 2.
 
-A branch from before the sync tooling (no `_tools/kbgit.py` in the checkout): sync cannot run there, and untracked copies of the tools block the checkout. Run `git fetch origin`, then `git rebase origin/main`, and treat a stop as exit 3 with `base` = `git merge-base origin/main ORIG_HEAD`, `upstream` = `origin/main`, `orig_head` = the branch's old tip (`git rev-parse ORIG_HEAD`). Its `_sources.csv` rows lack `superseded_by`, its `QK<n>` answer ids and hand-edited `_coverage.csv`/README rows are pre-regime: `fix` pads, renames and rebuilds them; do not patch them by hand.
+A branch from before the sync tooling (no `_tools/kbgit.py` in the checkout): sync cannot run there, and untracked copies of the tools block the checkout. Run `git fetch origin`, then `git -c merge.conflictStyle=diff3 rebase origin/main`. A clean rebase: `python3 _tools/kbgit.py install-hooks`, then sync as in step 1 (it renames the `QK<n>` ids and rebuilds the index in a fix commit). A stop: treat it as exit 3 with `base` = `git merge-base origin/main ORIG_HEAD`, `upstream` = `origin/main`, `orig_head` = `git rev-parse ORIG_HEAD` (the branch's old tip), and run `python3 _tools/kbgit.py install-hooks` once the tools are on disk. Its `_sources.csv` rows lack `superseded_by`, its `QK<n>` answer ids and hand-edited `_coverage.csv`/README rows are pre-regime: `fix` pads, renames and rebuilds them; do not patch them by hand.
+
+Always rebase with `-c merge.conflictStyle=diff3` (sync does). Without it git merges the ledgers "zealously": two answers added at one place that both end in `_Agent: kb-research_` interleave, the second spliced into the first above its footer, and the rebased commit then edits the other side's answer (its `KB-Answers` trailer names it). `fix` repairs such a splice when it knows the sides, but only in the working tree, not in the commit that made it.
 
 ## 2. Exit 3: resolve the conflict
 Sync printed `needs-human: PATH` lines, `mechanical: PATH` lines, a `sync-state: base=… upstream=… orig_head=…` line and a `fix --base … --upstream … --side …` command. The rebase is in progress, stopped at one local commit (`git log -1 REBASE_HEAD`). Leave `mechanical:` paths to `fix`.
 
-For each `needs-human` path, read the three versions: `git show :1:PATH` (base), `git show :2:PATH` (upstream, already pushed), `git show :3:PATH` (the local commit being replayed; in a rebase "theirs" is yours). Then edit the working file so no conflict markers remain.
+For each `needs-human` path, read the three versions: `git show :1:PATH` (base), `git show :2:PATH` (upstream, already pushed), `git show :3:PATH` (the local commit being replayed; in a rebase "theirs" is yours). Then edit the working file so no conflict markers remain; with diff3 each region also has a `||||||| base` part: remove it too.
 
 **Articles** (`<domain>/<topic>.md`): resolve by meaning, never by taking one side for the whole article.
 - Different facts added on both sides: keep both. Drop exact duplicates, keep the Facts section's structure (headings, order: upstream's first, then the local ones), one tag per fact.
 - The same fact changed on both sides: if both versions say the same thing, keep one wording (upstream's) and the union of their tags' ids. Otherwise keep the version backed by newer confirmed evidence. Compare the cited sources' rows in `_sources.csv`: later `retrieved_utc` wins; a source with `superseded_by` loses to its successor; a DOC source beats COMMUNITY. If neither clearly wins, keep upstream's wording in the article, append a bullet under the topic's `## <domain>/<topic>` heading in `_conflicts.md` quoting both versions with their tags (`[DOC S1 vs S2, unresolved]`), and list it for the user.
 - Front matter: `sources:` = the union of the ids the resolved text actually cites; `retrieved_utc` = the later date; `status: partial` if any `[UNK]` remains, else the stricter of the two; `files:` = the union; other keys: upstream's unless the local commit's change is the point of that commit.
+- Ids: write both sides' ids exactly as each side has them, even a legacy id both sides took (`S2205`): `fix` renumbers the local side's afterwards. It attributes a line to the side that has it verbatim, and a new line you wrote (a merged `sources:` line) to the one side whose version of the file cites that id at all. If both sides' versions of this file cite the colliding id, keep each side's lines verbatim instead of merging them into one line.
 - Deleted on one side, edited on the other (`git status` shows `DU`/`UD`): ask the user.
 
 **Tools, docs, skills, config** (`_tools/*`, `*.md` outside the domain directories, `.claude/*`, `.gitattributes`, `.gitlab-ci.yml`): merge conservatively so both sides' intents survive (both new flags, both fixes). If the two changes contradict each other, or you cannot tell what one side meant, ask.
 
 Then, one command at a time:
-1. The printed `python3 _tools/kbgit.py fix --base … --upstream … --side …` command. It merges the ledgers, renumbers local ids that collide with pushed ones (citations follow), renames `QK<n>` and colliding answer ids to `QK-<slug>` and rebuilds the index. Exit 2 lists what it cannot decide (e.g. `cannot tell which url S2205 means here`: the line exists on both sides or on neither; edit that line so it is clearly one side's, or ask), nothing written; fix and rerun.
+1. The printed `python3 _tools/kbgit.py fix --base … --upstream … --side …` command. It merges the ledgers, renumbers local ids that collide with pushed ones (citations follow; the pushed side keeps its ids, legacy ones included), renames `QK<n>` and colliding answer ids to `QK-<slug>` and rebuilds the index. Exit 2 lists what it cannot decide (e.g. `cannot tell which url S2205 means here`: the line is on both sides, or it is new in a file both sides cite the id in; edit that line so it is clearly one side's, or ask), nothing written; fix and rerun.
 2. `git add` the resolved paths and what fix wrote (`git status` lists them).
-3. `git rebase --continue` (`GIT_EDITOR=true` keeps the message). A later local commit may stop again: repeat this section for it.
-4. When the rebase has ended: `python3 _tools/kbgit.py sync` again, to reach a green gate.
+3. `GIT_EDITOR=true git -c merge.conflictStyle=diff3 rebase --continue` (keeps the message; diff3 for the commits still to replay). A later local commit may stop again: repeat this section for it. `rebase --continue` does not run the commit-msg hook, so the replayed commit may lack its KB-* trailers or carry stale ones: sync rewrites them in step 4; never type them by hand.
+4. When the rebase has ended: `python3 _tools/kbgit.py sync` again (with `--push` only as allowed above), to reach a green gate.
 
 Exit 3 with "the rebase is complete" means `fix` itself needs a decision (e.g. one answer heading twice with different bodies): make it, commit it (`fix(kb): …`), rerun sync.
 
@@ -56,6 +59,6 @@ Explain the reason sync printed and stop. Uncommitted changes: ask whether to co
 ## 5. Report
 - Commits rebased and the final `git log --oneline origin/main..HEAD`.
 - Per conflicted file: how it was resolved (facts kept from each side, which changed fact won and why).
-- Ids renumbered and answer ids renamed (`old -> new`, from sync's `ids renumbered:` line and fix's output).
+- Ids renumbered and answer ids renamed (`old -> new`, from sync's `ids renumbered:` line and fix's output), and one `python3 _tools/kbgit.py log <new id>` showing the commit that carries it.
 - Entries added to `_conflicts.md`, and every decision left to the user.
 - Gate result per check; pushed or not (and why not).

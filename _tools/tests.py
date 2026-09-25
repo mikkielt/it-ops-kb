@@ -4,7 +4,8 @@
   tests.py               run everything
   tests.py -k Leak       run tests whose name matches (unittest -k)
   tests.py --write-lint-baseline   record today's lint errors as known debt in _tools/lint_baseline.txt
-  KB_TESTS_FAST=1 tests.py         leave out the git scenarios (MergeInGit, HistoryInGit, SyncInGit): kbgit.py sync's gate
+  KB_TESTS_FAST=1 tests.py         leave out the git scenarios (MergeInGit, HistoryInGit, SyncInGit, ResearchMergeInGit):
+                                   kbgit.py sync's gate
 
 Cohesion: check.py and fetch.py --offline pass; no lint errors beyond the recorded baseline; the generated index
 files (_coverage.csv, README coverage table, used_in) are up to date (build_index.py --check); links, backtick paths and used_in paths resolve; every CLI flag the docs mention exists
@@ -13,6 +14,8 @@ Ids: kbid.py hash source ids are deterministic and normalization-stable; bad ids
 Merges (test_merge.py): union-merged ledgers plus kbgit.py fix give a clean kb; the git scenario is skipped without git.
 History (test_history.py): KB-* trailers, the commit-msg hook, check-trailers, log, blame, asof, tag-census; git parts skip without git.
 Sync (test_sync.py): kbgit.py sync against a throwaway bare remote and two clones; skipped without git.
+Research merge (test_research_merge.py): two pre-regime research branches with colliding ids merged the documented way
+(rebase, /kb-git-sync resolution, fix, sync), checked in a fresh clone; skipped without git or the fork commit.
 Leaks (tracked files): secrets in any file; in authored files also home-directory paths, private IPv4 addresses,
 non-placeholder e-mail addresses and GUIDs outside the reviewed allowlist (_tools/tests_allowlist.txt); files that
 must never be committed; oversized files.
@@ -34,6 +37,7 @@ if os.environ.get("KB_TESTS_FAST") != "1":  # the git scenarios (each skips with
     from test_merge import MergeInGit  # noqa: E402,F401
     from test_history import HistoryInGit  # noqa: E402,F401
     from test_sync import SyncInGit  # noqa: E402,F401
+    from test_research_merge import ResearchMergeInGit  # noqa: E402,F401
 
 
 def run(*args):
