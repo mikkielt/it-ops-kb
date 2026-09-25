@@ -9,12 +9,12 @@ status: complete
 
 # RBAC for agents and MCP tools
 
-Extends, does not repeat, `kb/mcp/authorization.md` (MCP OAuth 2.1, RFC 9728/8707, CIMD, `S707`) and
-`kb/auth/role-source-options.md`, `kb/auth/group-claims.md`, `kb/auth/entra-intune-rbac.md` (checkMemberGroups,
+Extends, does not repeat, `mcp/authorization.md` (MCP OAuth 2.1, RFC 9728/8707, CIMD, `S707`) and
+`auth/role-source-options.md`, `auth/group-claims.md`, `auth/entra-intune-rbac.md` (checkMemberGroups,
 group claims/overage, PIM-for-Groups sync latency).
 
 ## Summary
-- MCP's draft revision (later than the pinned 2026-07-28 spec `kb/mcp/authorization.md` documents) adds a
+- MCP's draft revision (later than the pinned 2026-07-28 spec `mcp/authorization.md` documents) adds a
   named least-privilege mechanism: servers advertise the minimal required scope in a 401's
   `WWW-Authenticate` header, and clients must union rather than replace scopes on step-up. [DOC S2045]
 - Claude Code layers two independent tool-level RBAC mechanisms on top of MCP's own auth: a local
@@ -28,7 +28,7 @@ group claims/overage, PIM-for-Groups sync latency).
 ## Facts
 
 ### MCP-level: scope minimization and per-tool authorization
-- Not yet in `kb/mcp/authorization.md` (pinned to 2026-07-28): the fetched draft revision requires servers
+- Not yet in `mcp/authorization.md` (pinned to 2026-07-28): the fetched draft revision requires servers
   to **SHOULD** include a `scope` parameter on their `WWW-Authenticate: Bearer` 401 challenge, "following
   the principle of least privilege and preventing clients from requesting excessive permissions"; clients
   follow a strict priority order — challenge `scope` first, else `scopes_supported` from Protected
@@ -40,7 +40,7 @@ group claims/overage, PIM-for-Groups sync latency).
   **MUST** account for scope hierarchies (a broader scope implying narrower ones). [DOC S2045]
 - This scope-elevation mechanism is the OAuth-native analogue of a tiered confirmation gate (a system
   that always confirms tier-≥2 actions), but it only applies to HTTP-transport MCP servers; stdio servers
-  SHOULD NOT follow the authorization spec at all — unchanged from `kb/mcp/authorization.md`. [DER S2045, S707]
+  SHOULD NOT follow the authorization spec at all — unchanged from `mcp/authorization.md`. [DER S2045, S707]
 
 ### Claude Code: local and organization tool-level RBAC
 - Local rule: `permissions.mcp_tools` is a list of `{pattern, allowed}` entries matching
@@ -86,7 +86,7 @@ group claims/overage, PIM-for-Groups sync latency).
   dynamic-membership group; capped at **500 role-assignable groups per tenant**. [DOC S2050]
 - PIM for Groups' own activation page states the active-assignment write itself completes "within
   seconds" in both directions (activate and deactivate), separately from how soon a client's *cached*
-  token reflects it (covered in `kb/auth/entra-intune-rbac.md`). [DOC S1282]
+  token reflects it (covered in `auth/entra-intune-rbac.md`). [DOC S1282]
 - PIM will not remove the **last active owner** of a group: if the sole active owner leaves while another
   member holds only an *eligible* (PIM-activatable) ownership, PIM retries deactivating that eligible
   owner's activated ownership for up to **30 days**, then gives up and leaves them permanently active if
@@ -113,7 +113,7 @@ group claims/overage, PIM-for-Groups sync latency).
   Microsoft Entra ID doesn't add the `roles` claim to tokens it issues." A service principal (the identity
   shape of a scheduled/service workload, or of an Entra Agent ID agent identity acting autonomously) needs
   its **own direct app-role assignment** for the claim to appear — the group-claims convenience
-  `kb/auth/group-claims.md` documents for human users does not carry over. [DOC S2053]
+  `auth/group-claims.md` documents for human users does not carry over. [DOC S2053]
 - App roles are defined per application registration, can target `Users/Groups`, `Applications`, or both,
   and — when assigned to an application — become **application permissions** requiring admin consent, the
   documented shape for "daemon apps or back-end services that... authenticate and make authorized API
@@ -142,7 +142,7 @@ group claims/overage, PIM-for-Groups sync latency).
   for a specific application" — a sixth-or-later activation in the same 10-second window instead falls
   back to the **ordinary 40-minute sync cycle** (an explicit, numbered rate limit: "five requests per 10
   seconds," scoped "per enterprise application") (S2052, new); (3) a **client's own cached token** not
-  reflecting a membership change until its next acquisition — the case `kb/auth/entra-intune-rbac.md`
+  reflecting a membership change until its next acquisition — the case `auth/entra-intune-rbac.md`
   already documents and this part does not repeat. [DOC S2052, S1282; DER: three regimes, not one]
 - Microsoft's own documented advice **against** using PIM for Groups where speed matters: "to avoid
   activation delays, use PIM for Microsoft Entra roles instead of PIM for Groups to provide just-in-time

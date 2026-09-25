@@ -9,7 +9,7 @@ Merged from `_parts/<agent>/conflicts.md`.
 
 ## agents-authz
 
-- **MCP authorization spec: scope-selection strategy is new since the pinned 2026-07-28 revision.** `kb/mcp/authorization.md` (S707) reflects the 2026-07-28 revision (DCR deprecation, `iss` validation, CIMD) and does not mention a `WWW-Authenticate: scope=` challenge, `scopes_supported` least-privilege guidance, or the step-up authorization flow. The draft revision fetched for this part (S2045) adds all three. Not a contradiction — S2045 is a **later draft** than S707's pinned revision — but a reader of `kb/mcp/authorization.md` alone would not know per-scope/per-tool authorization exists at all in the spec lineage. Recorded here rather than edited into `kb/mcp/authorization.md` (not this agent's file to edit). [DOC S707, S2045]
+- **MCP authorization spec: scope-selection strategy is new since the pinned 2026-07-28 revision.** `mcp/authorization.md` (S707) reflects the 2026-07-28 revision (DCR deprecation, `iss` validation, CIMD) and does not mention a `WWW-Authenticate: scope=` challenge, `scopes_supported` least-privilege guidance, or the step-up authorization flow. The draft revision fetched for this part (S2045) adds all three. Not a contradiction — S2045 is a **later draft** than S707's pinned revision — but a reader of `mcp/authorization.md` alone would not know per-scope/per-tool authorization exists at all in the spec lineage. Recorded here rather than edited into `mcp/authorization.md` (not this agent's file to edit). [DOC S707, S2045]
 - **PIM-for-Groups latency: two different numbers for two different things, easily conflated.** S1282 (prior pass) states the PIM active-assignment write itself is "within seconds." S2052 (this pass, same Microsoft product surface) states downstream SCIM provisioning of that membership into an application takes "2-10 minutes" for the first five activations per 10 seconds, else 40 minutes. Not a contradiction — they measure different steps of the same activation — but a reader citing only one page would get an incomplete and potentially wrong latency estimate for "how long until PIM activation takes effect," since the answer depends on which consumer (Entra role engine vs a SCIM-provisioned app vs a token-caching client) is asked. [DOC S1282, S2052]
 - **GitLab PAT maximum lifetime**: this part's WebFetch summary of S2046 states the 400-day maximum "extended... in GitLab 17.6 (feature flag controlled)"; a separate, unrelated data-retention policy can independently specify keeping temporal history for "400 days". No actual disagreement between sources — noted only because the same number (400) can appear in two unrelated contexts and a future reader should not conflate them.
 
@@ -88,9 +88,9 @@ Apache-2.0 claim is not repeated as a `DOC` fact about the *code*.
 - `opentelemetry.io/docs/specs/semconv/gen-ai/` and its `gen-ai-agent-spans`/`gen-ai-spans` sub-pages now display a
   "moved" notice pointing at a new, separate repository `open-telemetry/semantic-conventions-genai`
   (retrieved 2026-09-25), superseding the GenAI section that previously lived inside
-  `open-telemetry/semantic-conventions` (used by `kb/claude/otel-monitoring.md` and `kb/logs/` for the general
+  `open-telemetry/semantic-conventions` (used by `claude/otel-monitoring.md` and `logs/` for the general
   logs/code conventions, which have not moved). Cite the new repo (S2001-S2004) for GenAI-specific spans/metrics;
-  the old repo commits already in `kb/_sources.csv` (S639-S646) remain correct for logs/code conventions only.
+  the old repo commits already in `_sources.csv` (S639-S646) remain correct for logs/code conventions only.
 - CaMeL's own paper title on arXiv is "Defeating Prompt Injections by Design" (S2006); the PROMPT-agents brief
   refers to it by the informal name "CaMeL" only. No factual conflict, just a naming note.
 
@@ -107,12 +107,12 @@ Apache-2.0 claim is not repeated as a `DOC` fact about the *code*.
 
 - **Presidio's registry rename.** Search results and the docs site still show older material under
   `microsoft/presidio` (e.g. `microsoft/presidio-analyzer` on Docker Hub, `github.com/microsoft/presidio`
-  samples), while `kb/privacy/presidio.md` (part `privacy`, already in the kb) establishes the canonical
+  samples), while `privacy/presidio.md` (part `privacy`, already in the kb) establishes the canonical
   current repository as `data-privacy-stack/presidio` with legacy `mcr.microsoft.com/presidio-*` images
   "no longer updated." This file follows the existing kb precedent and cites `data-privacy-stack/*` URLs
   where possible (S2085, S2086, S2090), but two Docker Hub / GitHub samples fetched via search (S2087,
   S2088) still resolve under the `microsoft/*` namespace — recorded as the same fork/rename lag already
-  noted in `kb/privacy/presidio.md`'s own sources, not a new conflict.
+  noted in `privacy/presidio.md`'s own sources, not a new conflict.
 - **Azure Text PII character-limit figures.** The on-premises **container** doc (S2091, directly fetched)
   states a synchronous limit of 5,120 characters per document, up to 10 documents per call. A search-index
   summary of the cloud (non-container) service (cited as S2093) reports a different limit — the first
@@ -274,8 +274,8 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
 
 - **Presidio org rename.** The brief's clone list and this agent's initial fetch used
   `microsoft/presidio`; the GitHub API now resolves that path to `data-privacy-stack/presidio` (the
-  project moved out of the `microsoft` org). Both `kb/prior-art/pseudonymization-tokenization.md` and
-  `kb/_parts/priorart/sources.csv` (S1005) record the current org (`data-privacy-stack`) while noting
+  project moved out of the `microsoft` org). Both `prior-art/pseudonymization-tokenization.md` and
+  `_sources.csv` (S1005) record the current org (`data-privacy-stack`) while noting
   the fetch was made via the `microsoft/presidio` URL, which GitHub transparently redirects. No
   factual disagreement, just a naming/ownership change worth flagging to other agents citing Presidio
   under the `microsoft` org.
@@ -299,7 +299,7 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
 ## reuse
 
 - **Licence "NOASSERTION" (GitHub API) vs. actual repository LICENSE file.** The prior-art agent
-  (`kb/prior-art/*.md`, S1002/S1009/S1014/S1018) recorded HashiCorp Vault, Chef InSpec, Fleet and
+  (`prior-art/*.md`, S1002/S1009/S1014/S1018) recorded HashiCorp Vault, Chef InSpec, Fleet and
   Ansible AWX as licence `UNK` because the GitHub API reported `NOASSERTION`. Direct fetch of each
   repository's `LICENSE`/`LICENSE.md` this session resolves all four: Vault is BUSL-1.1 (not OSI
   open source — GitHub's NOASSERTION was effectively correct that it isn't a recognised OSS licence);

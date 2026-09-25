@@ -10,7 +10,7 @@ status: partial
 # Script and code signing (extends windows/execution-policy-signing, mecm/run-scripts)
 
 ## Summary
-This extends `kb/windows/execution-policy-signing.md` and `kb/mecm/run-scripts.md`, which already cover the
+This extends `windows/execution-policy-signing.md` and `mecm/run-scripts.md`, which already cover the
 ConfigMgr *PowerShell execution policy* client setting, `Set-AuthenticodeSignature`, and the CMPivot
 signing certificate. New here: what a certificate must be to work at all under `AllSigned`, why
 timestamping matters, whether DSC v3 has its own manifest-signing mechanism (it does not, as far as
@@ -55,7 +55,7 @@ official docs show), and how WDAC/App Control for Business treats PowerShell and
 ## Reference
 | Control | Governs | Trust anchor | Relevance |
 |---|---|---|---|
-| ConfigMgr *PowerShell execution policy* = AllSigned | whether a `.ps1`/`.psm1`/etc. runs at all | Trusted Publishers store (per `kb/windows/execution-policy-signing.md`) | CI scripts, Run Scripts payloads |
+| ConfigMgr *PowerShell execution policy* = AllSigned | whether a `.ps1`/`.psm1`/etc. runs at all | Trusted Publishers store (per `windows/execution-policy-signing.md`) | CI scripts, Run Scripts payloads |
 | Authenticode timestamping (`-TimestampServer`) | signature validity after cert expiry | RFC 3161 timestamp authority | signing certificate renewal planning |
 | WDAC / App Control CLM | what a running script may call (.NET, COM, etc.) | WDAC policy's publisher/hash rules | any wrapper script invoking `dsc.exe` on a WDAC-enforced device |
 | DSC v3 manifest/config integrity | none found | n/a | no native signing to rely on — integrity must come from a configuration repository's MR + CI pipeline chain, not DSC itself |

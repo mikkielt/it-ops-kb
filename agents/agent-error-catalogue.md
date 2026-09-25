@@ -1,16 +1,16 @@
 ---
 topic: agents/agent-error-catalogue
 priority: P1
-applies_to: "Claude API/Claude Code as documented 2026-09-25; extends kb/claude/tool-output-limits.md"
+applies_to: "Claude API/Claude Code as documented 2026-09-25; extends claude/tool-output-limits.md"
 retrieved_utc: 2026-09-25
 sources: [S1847, S1857, S1858, S1855, S1861, S1862, S1864, S1842, S1843, S1865, S1868]
 status: partial
 ---
 
-# Agent and MCP-server error catalogue (extends `kb/claude/tool-output-limits.md`)
+# Agent and MCP-server error catalogue (extends `claude/tool-output-limits.md`)
 
 ## Summary
-This file adds errors not already covered by `kb/claude/tool-output-limits.md` (which owns MCP output-size and
+This file adds errors not already covered by `claude/tool-output-limits.md` (which owns MCP output-size and
 timeout settings). It covers HTTP/API-level errors, `tool_use`/`tool_result` pairing failures, and a checklist for
 keeping a project's `CLAUDE.md`, skills and MCP tool definitions inside documented limits.
 
@@ -45,7 +45,7 @@ keeping a project's `CLAUDE.md`, skills and MCP tool definitions inside document
   distinctive, defer tool definition loading (tool search / `defer_loading`) once a toolset is large, and offload
   bulky observations to the filesystem or to sub-agents that return only a summary rather than raw output. [DOC
   S1855]
-- `kb/claude/tool-output-limits.md` already documents, and this file does not repeat: the 10,000-token MCP output
+- `claude/tool-output-limits.md` already documents, and this file does not repeat: the 10,000-token MCP output
   warning threshold, `MAX_MCP_OUTPUT_TOKENS` (default 25,000), `anthropic/maxResultSizeChars` (ceiling 500,000
   chars), `MCP_TOOL_TIMEOUT`, `CLAUDE_CODE_MCP_TOOL_IDLE_TIMEOUT`, `MCP_TIMEOUT`, `MCP_SERVER_CONNECTION_BATCH_SIZE`,
   and auto-backgrounding of long calls. [DER: cross-reference, no new source]

@@ -9,7 +9,7 @@ status: complete
 
 ## Summary
 
-`a2a.proto` is the normative definition of the Agent2Agent (A2A) protocol; JSON artifacts are generated, non-normative build outputs [DOC S2120]. The file is pinned here at commit `43e0c874d3baba68ed84b98678d7f2268438e69f` of `github.com/a2aproject/A2A`, path `specification/a2a.proto`, 812 lines, sha256 `945df6e34001b2bfd0fd62d9484b63094dfad9d78705e41e2873441c419ae2d1` [DOC S2121,S2122]. Saved locally as `kb/agents/a2a/a2a.proto`.
+`a2a.proto` is the normative definition of the Agent2Agent (A2A) protocol; JSON artifacts are generated, non-normative build outputs [DOC S2120]. The file is pinned here at commit `43e0c874d3baba68ed84b98678d7f2268438e69f` of `github.com/a2aproject/A2A`, path `specification/a2a.proto`, 812 lines, sha256 `945df6e34001b2bfd0fd62d9484b63094dfad9d78705e41e2873441c419ae2d1` [DOC S2121,S2122]. Saved locally as `agents/a2a/a2a.proto`.
 
 ## Facts
 

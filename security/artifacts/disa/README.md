@@ -21,4 +21,4 @@
   - `-RG-` registry permissions;
   - Server 2025 adds `-DC-` (domain controller), `-MS-` (member server) and `-SH-`.
 - Parser: registry fields come from the check text lines `Registry Hive:`, `Registry Path:`, `Value Name:`, `Value Type:`, `Value:`. Rules with several paths keep only the first.
-- Re-verify: `python kb/_tools/fetch.py --verify` re-downloads the zips and compares the member bytes.
+- Re-verify: `python _tools/fetch.py --verify` re-downloads the zips and compares the member bytes.

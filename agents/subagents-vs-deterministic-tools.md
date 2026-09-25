@@ -91,10 +91,10 @@ because no observed failure yet justifies scripting them.
   an agentic step to a deterministic tool — left to the operator's own baseline. [DOC S1935 for method;
   UNK for a numeric trigger — see gaps.md]
 - **Measuring from OTel/transcripts**: Claude Code's `claude_code.tool_result` / `claude_code.tool_decision`
-  events (documented in `kb/claude/otel-monitoring.md`, part `arch`) carry `duration_ms`, `success`,
+  events (documented in `claude/otel-monitoring.md`, part `arch`) carry `duration_ms`, `success`,
   `tool_input_size_bytes`/`tool_result_size_bytes`, and — with `OTEL_LOG_TOOL_DETAILS=1` — the MCP
   server/tool name and arguments: the concrete fields for per-call latency, error rate and payload size
-  behind every signal above. [DOC S744, S745 — reused, see `kb/_parts/arch/sources.csv`]
+  behind every signal above. [DOC S744, S745 — reused, see `_sources.csv`]
 
 ### QG15 — migration patterns
 - **To an MCP tool**: consolidate the subagent's fixed call sequence into one tool with a combined

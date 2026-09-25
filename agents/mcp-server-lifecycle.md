@@ -21,7 +21,7 @@ the spec's own SHOULD-level validation guidance.
 - A server declares `"capabilities": {"tools": {"listChanged": true}}` to promise change notifications; on a
   change it sends `notifications/tools/list_changed` to clients that opened a `subscriptions/listen` stream with
   `toolsListChanged: true`; clients then re-issue `tools/list`. [DOC S2135 (modelcontextprotocol.io/specification/
-  2026-07-28/server/tools; identical URL already recorded under id S2135 in `kb/_parts/agents-a2a-cache/sources.csv`
+  2026-07-28/server/tools; identical URL already recorded under id S2135 in `_sources.csv`
   — reused per the id-reuse rule)]
 - Servers SHOULD return tools in a deterministic order across calls when the set is unchanged, specifically to let
   clients cache the list and to keep LLM prompt caches warm when tool definitions sit in the cached system context.

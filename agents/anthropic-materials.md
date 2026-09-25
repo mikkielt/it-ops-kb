@@ -11,7 +11,7 @@ status: partial
 
 ## Summary
 
-The full row-per-item index with dates and one-line reasons is `kb/agents/anthropic-materials.csv`. This file only records how the index was built and its coverage limits. The engineering blog index page (fetched 2026-09-25) listed 25 posts from 2024-09-19 to 2026-04-23; all 25 are rows in the CSV, plus the cookbook and courses repositories and three docs sections, for 30 rows total [DOC S2137]. No copying of prose beyond the title occurred; each CSV row states its own one-line reason in this session's words.
+The full row-per-item index with dates and one-line reasons is `agents/anthropic-materials.csv`. This file only records how the index was built and its coverage limits. The engineering blog index page (fetched 2026-09-25) listed 25 posts from 2024-09-19 to 2026-04-23; all 25 are rows in the CSV, plus the cookbook and courses repositories and three docs sections, for 30 rows total [DOC S2137]. No copying of prose beyond the title occurred; each CSV row states its own one-line reason in this session's words.
 
 ## Facts
 
@@ -23,7 +23,7 @@ The full row-per-item index with dates and one-line reasons is `kb/agents/anthro
 
 ## Reference
 
-See `kb/agents/anthropic-materials.csv` for the full table (title, url, kind, date, topics, why it matters).
+See `agents/anthropic-materials.csv` for the full table (title, url, kind, date, topics, why it matters).
 
 ## Examples
 

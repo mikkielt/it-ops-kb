@@ -1,7 +1,7 @@
 ---
 topic: auth/gmsa-dmsa
 priority: P0
-applies_to: "Windows Server 2025 (dMSA), extends kb/windows/gmsa.md"
+applies_to: "Windows Server 2025 (dMSA), extends windows/gmsa.md"
 retrieved_utc: 2026-09-24
 sources: [S1204]
 status: partial

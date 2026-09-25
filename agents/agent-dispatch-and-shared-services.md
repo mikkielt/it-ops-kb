@@ -13,7 +13,7 @@ status: partial
 Vendors converge on the same criteria for splitting work across agents: a stable domain boundary
 (specialization), reuse across more than one caller, independent ownership, and isolation of verbose
 or sensitive intermediate output. None of the fetched vendor pages frame this as a data-boundary or
-blast-radius decision the way `kb/agents/subagents-vs-deterministic-tools.md` (topic 4) already covers
+blast-radius decision the way `agents/subagents-vs-deterministic-tools.md` (topic 4) already covers
 for the child-agent-vs-tool question; this file only adds the agent-to-agent / remote-service dispatch
 angle topic 4 does not. The A2A protocol itself (governance, transport, auth) is out of scope here —
 topic 9 (`agents-a2a-cache`) covers it; A2A is named below only as one transport option among several.
@@ -66,7 +66,7 @@ topic 9 (`agents-a2a-cache`) covers it; A2A is named below only as one transport
   connecting controls whether one agent *calls* another during a conversation. [DOC S2109]
 - Topic 4's own criteria (stable tool-call sequence, eval pass rate, token/latency cost, error
   compounding, auditability, need for confirmation) are the child-agent-vs-deterministic-tool axis; they
-  are not repeated here — see `kb/agents/subagents-vs-deterministic-tools.md`. [DOC S1920, S1928 — cited
+  are not repeated here — see `agents/subagents-vs-deterministic-tools.md`. [DOC S1920, S1928 — cited
   by reference, not re-derived]
 
 ## Reference

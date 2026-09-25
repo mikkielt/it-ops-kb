@@ -16,6 +16,7 @@ Domains: Microsoft DSC v3, ConfigMgr (MECM), Intune, Autopilot, Entra ID, Active
 - `_gaps.md` records what could not be confirmed, and where it was looked for.
 - `_conflicts.md` records where sources disagree, with both sides linked.
 - `_coverage.csv` is the coverage index, also rendered below.
+- `_fetch_state.csv` records, per source, when `fetch.py --diff` last checked and fetched it, when it last changed, and the hashes compared. Text snapshots of the last fetch sit in `_cache/snapshots/` (not committed).
 - `_tools/` holds stdlib-only Python tools.
 
 ## Fact tags
@@ -40,15 +41,22 @@ Examples use placeholder names only:
 ```
 python _tools/rag.py topics [DOMAIN]                   # domains -> articles (title, priority, status), subdirectories, data files
 python _tools/rag.py search "pim activation latency" -k 8 [-d auth]   # BM25 over heading-aware chunks of .md and .csv rows
+python _tools/rag.py search "pim activation latency" -u      # same, plus each cited source id's origin url
 python _tools/rag.py src S1824 S2130                   # resolve source ids
 python _tools/rag.py show agents/agent-rbac.md:139 -n 30
 python _tools/check.py                                 # unique source ids, known citations, artifacts present, front matter valid
 python _tools/fetch.py --offline                       # check local artifacts against their sha256
 python _tools/fetch.py --verify                        # re-download pinned sources and compare sha256
 python _tools/fetch.py --refresh                       # rewrite local copies of pinned sources
+python _tools/fetch.py --diff --topic auth/kerberos     # re-fetch a topic's sources; summary of what changed since the last fetch
+python _tools/fetch.py --diff --dir dsc --full --json   # same for a directory, with unified text diffs, as JSON
+python _tools/fetch.py --diff --older-than 30           # only sources not fetched in 30 days (also --file PATH, --source S123)
+python _tools/fetch.py --status --file auth/kerberos.md # offline: last fetch and change dates
+python _tools/stress_test.py                           # robustness tests of the tools on throwaway kb copies (~10 s; --scale N, -k NAME)
 ```
 
-- `rag.py` builds no index file; a query takes about 0.1 s. `--json` gives machine output, and each hit carries `path`, `line`, `heading`, `text` and the source ids it cites.
+- `rag.py` builds no index file; a query takes about 0.1 s. `search` skips the root-level index files (`README.md`, `_answers.md`, `_gaps.md`, `_conflicts.md`, `_coverage.csv`, ...); `--index` includes them. `--json` gives machine output, and each hit carries `path`, `line`, `heading`, `text` and the source ids it cites. With `-u`/`--urls`, each hit also carries `urls`, mapping those source ids to their origin url in `_sources.csv`.
+- `fetch.py --diff` exits 0 when nothing changed, 1 when a source changed and 2 when a fetch or the selection failed, as `diff` does. `--max-lines N` caps each diff, `--no-save` compares without moving the baseline, `--delay` sets the per-host pause (default 1.1 s). HTML is reduced to its main text first, so page chrome does not count as a change.
 - Only pinned URLs carry `artifact_sha256`: raw files at a commit or tag, and release downloads. For live pages, the hash taken at retrieval sits in `version_or_date`.
 
 ## Contributing
@@ -208,14 +216,14 @@ Each source's licence is recorded in `_sources.csv`.
 | `powerbi/on-prem-gateway-sql` | P2 | complete | `powerbi/on-prem-gateway-sql.md` | 8 |
 | `powerbi/row-level-security` | P2 | complete | `powerbi/row-level-security.md` | 2 |
 | `powerbi/scheduled-refresh` | P2 | complete | `powerbi/scheduled-refresh.md` | 4 |
-| `prior-art/device-identity-correlation` | P2 | partial | `kb/prior-art/device-identity-correlation.md` | 4 |
-| `prior-art/drift-detection` | P2 | partial | `kb/prior-art/drift-detection.md` | 3 |
-| `prior-art/layered-settings-resolution` | P2 | complete | `kb/prior-art/layered-settings-resolution.md` | 2 |
-| `prior-art/log-collection-normalization` | P2 | partial | `kb/prior-art/log-collection-normalization.md` | 2 |
-| `prior-art/mcp-microsoft-endpoint-mgmt` | P2 | partial | `kb/prior-art/mcp-microsoft-endpoint-mgmt.md` | 1 |
-| `prior-art/pseudonymization-tokenization` | P2 | complete | `kb/prior-art/pseudonymization-tokenization.md` | 3 |
-| `prior-art/secret-vault-encryption` | P2 | complete | `kb/prior-art/secret-vault-encryption.md` | 5 |
-| `prior-art/tiered-approval-ops` | P2 | partial | `kb/prior-art/tiered-approval-ops.md` | 4 |
+| `prior-art/device-identity-correlation` | P2 | partial | `prior-art/device-identity-correlation.md` | 4 |
+| `prior-art/drift-detection` | P2 | partial | `prior-art/drift-detection.md` | 3 |
+| `prior-art/layered-settings-resolution` | P2 | complete | `prior-art/layered-settings-resolution.md` | 2 |
+| `prior-art/log-collection-normalization` | P2 | partial | `prior-art/log-collection-normalization.md` | 2 |
+| `prior-art/mcp-microsoft-endpoint-mgmt` | P2 | partial | `prior-art/mcp-microsoft-endpoint-mgmt.md` | 1 |
+| `prior-art/pseudonymization-tokenization` | P2 | complete | `prior-art/pseudonymization-tokenization.md` | 3 |
+| `prior-art/secret-vault-encryption` | P2 | complete | `prior-art/secret-vault-encryption.md` | 5 |
+| `prior-art/tiered-approval-ops` | P2 | partial | `prior-art/tiered-approval-ops.md` | 4 |
 | `privacy/gdpr-pseudonymisation` | P0 | partial | `privacy/gdpr-pseudonymisation.md` | 6 |
 | `privacy/gliner-models` | P0 | partial | `privacy/gliner-models.md`, `privacy/gliner-models.csv` | 6 |
 | `privacy/nist-sp800-38g` | P0 | complete | `privacy/nist-sp800-38g.md` | 5 |
@@ -225,14 +233,14 @@ Each source's licence is recorded in `_sources.csv`.
 | `privacy/presidio-operators-deanonymize` | P0 | complete | `privacy/presidio-operators-deanonymize.md` | 13 |
 | `privacy/presidio-recognizer-yaml` | P0 | complete | `privacy/presidio-recognizer-yaml.md`, `privacy/presidio-recognizer-registry.schema.json`, `privacy/presidio-example_recognizers.yaml` | 7 |
 | `privacy/spacy-model-licence` | P0 | complete | `privacy/spacy-model-licence.md` | 4 |
-| `reuse/device-identity-correlation` | P2 | complete | `kb/reuse/device-identity-correlation.md` | 6 |
-| `reuse/drift-detection` | P2 | complete | `kb/reuse/drift-detection.md` | 5 |
-| `reuse/layered-settings-resolution` | P2 | complete | `kb/reuse/layered-settings-resolution.md` | 3 |
-| `reuse/log-collection-normalization` | P2 | complete | `kb/reuse/log-collection-normalization.md` | 3 |
-| `reuse/mcp-microsoft-endpoint-mgmt` | P2 | complete | `kb/reuse/mcp-microsoft-endpoint-mgmt.md` | 1 |
-| `reuse/pseudonymization-tokenization` | P2 | complete | `kb/reuse/pseudonymization-tokenization.md` | 4 |
-| `reuse/secret-vault-encryption` | P2 | complete | `kb/reuse/secret-vault-encryption.md` | 11 |
-| `reuse/tiered-approval-ops` | P2 | complete | `kb/reuse/tiered-approval-ops.md` | 6 |
+| `reuse/device-identity-correlation` | P2 | complete | `reuse/device-identity-correlation.md` | 6 |
+| `reuse/drift-detection` | P2 | complete | `reuse/drift-detection.md` | 5 |
+| `reuse/layered-settings-resolution` | P2 | complete | `reuse/layered-settings-resolution.md` | 3 |
+| `reuse/log-collection-normalization` | P2 | complete | `reuse/log-collection-normalization.md` | 3 |
+| `reuse/mcp-microsoft-endpoint-mgmt` | P2 | complete | `reuse/mcp-microsoft-endpoint-mgmt.md` | 1 |
+| `reuse/pseudonymization-tokenization` | P2 | complete | `reuse/pseudonymization-tokenization.md` | 4 |
+| `reuse/secret-vault-encryption` | P2 | complete | `reuse/secret-vault-encryption.md` | 11 |
+| `reuse/tiered-approval-ops` | P2 | complete | `reuse/tiered-approval-ops.md` | 6 |
 | `security/baselines-catalog` | P0 | partial | `security/baselines-catalog.csv`, `security/baselines-catalog.md` | 20 |
 | `security/dsc-coverage` | P0 | complete | `security/dsc-coverage.md` | 12 |
 | `security/first-baseline-candidates` | P0 | partial | `security/first-baseline-candidates.md` | 11 |
@@ -251,7 +259,6 @@ Each source's licence is recorded in `_sources.csv`.
 | `sqlserver/sp-getapplock` | P0 | complete | `sqlserver/sp-getapplock.md` | 1 |
 | `sqlserver/temporal-tables` | P0 | complete | `sqlserver/temporal-tables.md` | 7 |
 | `standards/owasp` | P2 | partial | `standards/owasp.md`, `standards/owasp.csv` | 6 |
-| `standards/owasp-2026-update` | P2 | partial | `standards/owasp.md`, `standards/owasp.csv` | 1 |
 | `windows/execution-policy-signing` | P0 | complete | `windows/execution-policy-signing.md` | 9 |
 | `windows/gitlab-runner-windows` | P0 | partial | `windows/gitlab-runner-windows.md` | 11 |
 | `windows/gmsa` | P0 | partial | `windows/gmsa.md` | 6 |

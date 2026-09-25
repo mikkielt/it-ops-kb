@@ -28,7 +28,7 @@ NIST SSDF (SP 800-218 v1.1, plus the 800-218A generative-AI companion profile) a
 - GitLab describes its own default DevSecOps pipeline behaviour as reaching SLSA Level 1-2 out of the box, with Level 3 requiring the explicit attestation feature above. [DOC S1524]
 - GitLab's dependency-scanning-by-SBOM feature consumes CycloneDX-format SBOM reports produced by build tooling. [DOC S1511]
 - GitLab documents pinning CI/CD job images by digest (`image: <name>@sha256:<digest>`) rather than by a mutable tag, because a tag can be overwritten by anyone with registry push access, letting a compromised or rogue image run inside a privileged CI job; pinning tag+digest together lets a bot still update the digest when the referenced image content changes. [DOC S1512]
-- DSC v3's resource manifest format has no supply-chain integrity field of its own (see `kb/security/script-and-code-signing.md`); any provenance for a DSC resource distributed with a package has to come from the package/CI supply chain above, not from DSC itself. [DER S1517: manifest schema has no signing/checksum field, so package-level provenance is the only lever]
+- DSC v3's resource manifest format has no supply-chain integrity field of its own (see `security/script-and-code-signing.md`); any provenance for a DSC resource distributed with a package has to come from the package/CI supply chain above, not from DSC itself. [DER S1517: manifest schema has no signing/checksum field, so package-level provenance is the only lever]
 
 ## Reference
 | Mechanism | Relevance | Source |

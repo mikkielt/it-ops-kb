@@ -13,10 +13,10 @@ status: complete
 Method references (STRIDE, LINDDUN, Microsoft Threat Modeling Tool) and seven ATT&CK techniques relevant to
 a device-management tool's management-plane and identity surface, each with the component it touches, its official mitigation
 ids (`M####`) and detection-strategy ids (`DET####`, with their analytic ids and log sources). Detailed threats
-for the identity/auth surface already live in `kb/auth/threats.md`; this file does not duplicate the narrative,
+for the identity/auth surface already live in `auth/threats.md`; this file does not duplicate the narrative,
 only adds the ATT&CK ids not already covered there and the modeling-method metadata. ATT&CK version at retrieval:
 v19.2, released 2026-08-06 [DOC S1564]. Full mitigation/detection rows are in
-`kb/security/artifacts/mitre/attack-subset.csv`, extracted from the pinned STIX bundle (tag `v19.2`) rather than
+`security/artifacts/mitre/attack-subset.csv`, extracted from the pinned STIX bundle (tag `v19.2`) rather than
 retyped by hand [DOC S1576]. T1562 "Impair Defenses" is revoked in the v19.2 data model and replaced by T1685
 "Disable or Modify Tools" — see Facts.
 
@@ -36,14 +36,14 @@ retyped by hand [DOC S1576]. T1562 "Impair Defenses" is revoked in the v19.2 dat
   to bypass security controls, covering both on-prem GPO and cloud IdP policy objects. Component touched:
   policy-precedence surface (GPO vs DSC vs MDM, see `security/policy-precedence.md`, part A). [DOC S1566]
 - T1098 Account Manipulation: adversaries may add credentials, permissions or group memberships to maintain
-  access. Component touched: the identity/RBAC surface covered in `kb/auth/threats.md` — not duplicated here.
+  access. Component touched: the identity/RBAC surface covered in `auth/threats.md` — not duplicated here.
   [DOC S1567]
 - T1558 Steal or Forge Kerberos Tickets: covers Kerberoasting, forged tickets (golden/silver), and related abuse
   of Kerberos authentication. Component touched: the interactive identity used for AdminService/Graph calls;
-  already covered in `kb/auth/threats.md` and `kb/auth/kerberos.md` — not duplicated here. [DOC S1568]
+  already covered in `auth/threats.md` and `auth/kerberos.md` — not duplicated here. [DOC S1568]
 - T1078 Valid Accounts: use of legitimate credentials (default, local, domain or cloud) to gain and maintain
   access, evading detections aimed at malware. Component touched: the engineer's delegated identity and any
-  scheduled-job read-only identity; already covered in `kb/auth/threats.md`. [DOC S1569]
+  scheduled-job read-only identity; already covered in `auth/threats.md`. [DOC S1569]
 - T1219 Remote Access Software: legitimate remote-access/remote-monitoring tools used for persistence or lateral
   movement. Component touched: not a direct function of a device-management tool, but relevant to the admin-workstation hardening
   covered in `management-plane-hardening.md` (part B). [DOC S1570]
@@ -62,9 +62,9 @@ retyped by hand [DOC S1576]. T1562 "Impair Defenses" is revoked in the v19.2 dat
 |---|---|---|---|---|---|
 | T1072 | Software Deployment Tools | ConfigMgr baselines / Run Scripts | M1029,M1033,M1017,M1030,M1027,M1018,M1026,M1032,M1015,M1051 (9) | DET0223 (5 analytics) | S1565,S1576 |
 | T1484 | Domain or Tenant Policy Modification | GPO/DSC/MDM policy precedence (see policy-precedence.md, part A) | M1018,M1026,M1047 (3) | DET0270 (2 analytics) | S1566,S1576 |
-| T1098 | Account Manipulation | identity/RBAC (see kb/auth/threats.md) | M1028,M1030,M1018,M1022,M1026,M1032,M1042 (7) | DET0096 (6 analytics) | S1567,S1576 |
-| T1558 | Steal or Forge Kerberos Tickets | interactive identity (see kb/auth/threats.md, kb/auth/kerberos.md) | M1015,M1043,M1041,M1027,M1047,M1026 (6) | DET0522 (3 analytics) | S1568,S1576 |
-| T1078 | Valid Accounts | engineer + scheduled-job identities (see kb/auth/threats.md) | M1013,M1017,M1027,M1018,M1026,M1032,M1015,M1036 (8) | DET0560 (5 analytics) | S1569,S1576 |
+| T1098 | Account Manipulation | identity/RBAC (see auth/threats.md) | M1028,M1030,M1018,M1022,M1026,M1032,M1042 (7) | DET0096 (6 analytics) | S1567,S1576 |
+| T1558 | Steal or Forge Kerberos Tickets | interactive identity (see auth/threats.md, auth/kerberos.md) | M1015,M1043,M1041,M1027,M1047,M1026 (6) | DET0522 (3 analytics) | S1568,S1576 |
+| T1078 | Valid Accounts | engineer + scheduled-job identities (see auth/threats.md) | M1013,M1017,M1027,M1018,M1026,M1032,M1015,M1036 (8) | DET0560 (5 analytics) | S1569,S1576 |
 | T1219 | Remote Access Tools (renamed from "Remote Access Software") | admin workstation (see management-plane-hardening.md, part B) | M1031,M1037,M1034,M1038,M1042 (5) | DET0496 (3 analytics) | S1570,S1576 |
 | T1562 → T1685 (revoked/replaced) | Impair Defenses → Disable or Modify Tools | Defender read-only visibility; the tool does not disable defenses (tier <=3) | M1038,M1018,M1022,M1024,M1054,M1047,M1042 (7) | DET0497 (7 analytics) | S1571,S1576 |
 

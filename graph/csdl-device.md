@@ -31,7 +31,7 @@ status: complete
 
 ## Reference
 - `csdl-device.properties.csv` (85 rows). "filterable = not stated" means neither the CSDL nor the resource page mentions `$filter` for that property; it does not mean filtering fails.
-- Excerpt hashes: see `kb/_parts/ident/artifacts.csv`.
+- Excerpt hashes: see `_artifacts.csv`.
 
 ## Examples
 - `GET /v1.0/devices?$filter=deviceId eq '00000000-0000-0000-0000-000000000000'&$select=id,deviceId,displayName,trustType`

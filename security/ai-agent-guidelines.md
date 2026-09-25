@@ -10,10 +10,10 @@ status: partial
 # AI-agent and MCP security guidelines, mapped to representative controls
 
 ## Summary
-Identifiers for the OWASP Agentic/LLM/MCP lists are already captured in `kb/standards/owasp.md`; this file adds
+Identifiers for the OWASP Agentic/LLM/MCP lists are already captured in `standards/owasp.md`; this file adds
 NIST AI RMF/600-1, MITRE ATLAS, ISO/IEC 42001 metadata, Microsoft/Anthropic agent-security guidance, and maps
 each item to a concrete control example for a tool-using agent (tags `DER`). The OWASP MCP Top 10 is still beta
-(`MCP01:2025`-`MCP10:2025`, phase 3, next release planned October 2026) [DOC S1540] — matches `kb/standards/owasp.md`.
+(`MCP01:2025`-`MCP10:2025`, phase 3, next release planned October 2026) [DOC S1540] — matches `standards/owasp.md`.
 Control examples referenced: a risk-tier scheme, always-confirm at the higher tiers, per-role device limits, a
 model boundary (a pseudonymization vault with a short TTL and strict restore), an audit table, and an MCP-server
 allowlist.
@@ -28,7 +28,7 @@ allowlist.
 - Claude Code's MCP documentation describes `managed-mcp.json` as the mechanism to allowlist which MCP servers and tools a session may use, distinct from ad hoc user-approved servers. [DOC S1546]
 - Claude Code's security documentation describes permission modes and confirmation prompts for tool calls, which is the same class of control a tiered confirm gate provides for higher-risk actions. [DOC S1547]
 - Anthropic introduced MCP (2024-11-25) as an open protocol so that AI applications can connect to external tools and data through a single interface; the design separates the tool-calling client from the tools themselves, which is the boundary a workstation CLI/MCP role sits on. [DOC S1548]
-- Microsoft's ConfigMgr security best-practices documentation recommends restricting AdminService, CMPivot and Run Scripts to least-privilege roles and enabling audit logging for administrative actions — the same source referenced in `kb/security/management-plane-hardening.md` (part B). [DOC S1575]
+- Microsoft's ConfigMgr security best-practices documentation recommends restricting AdminService, CMPivot and Run Scripts to least-privilege roles and enabling audit logging for administrative actions — the same source referenced in `security/management-plane-hardening.md` (part B). [DOC S1575]
 
 ### Mapping to representative controls
 - OWASP LLM06:2025 Excessive Agency / ASI02 Tool Misuse → a risk-tier table that restricts what an MCP call may do without confirmation, with the higher tiers always confirmed regardless of caller. [DER S763,S762: OWASP items describe unchecked agent action; a tier/confirm gate is the corresponding control]
@@ -39,7 +39,7 @@ allowlist.
 - NIST AI 600-1 "restrict tool access, log outcomes, require human review" → a tier ≥2 confirm gate plus an audit table. [DER S1542]
 
 ## Reference
-See `owasp.csv` (existing, `kb/standards/`) for OWASP list ids/titles; not duplicated here.
+See `owasp.csv` (existing, `standards/`) for OWASP list ids/titles; not duplicated here.
 
 | Framework | Item(s) | Control example | Tag |
 |---|---|---|---|

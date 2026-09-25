@@ -9,9 +9,9 @@ status: complete
 
 # Issuing and storing API tokens and secrets for agents
 
-Extends, does not repeat, `kb/auth/workload-identity.md` (Entra FIC, Azure Arc managed identity),
-`kb/auth/msal-public-client.md` (MSAL Python WAM/CAE), `kb/auth/key-management-options.md` (SQL Always
-Encrypted, DPAPI-NG, age/sops) and `kb/mcp/authorization.md` (MCP OAuth 2.1, DCR deprecation, CIMD).
+Extends, does not repeat, `auth/workload-identity.md` (Entra FIC, Azure Arc managed identity),
+`auth/msal-public-client.md` (MSAL Python WAM/CAE), `auth/key-management-options.md` (SQL Always
+Encrypted, DPAPI-NG, age/sops) and `mcp/authorization.md` (MCP OAuth 2.1, DCR deprecation, CIMD).
 
 ## Summary
 - For issuing: OBO and GitLab PATs/project tokens are the two mechanisms this part adds; both vendors'
@@ -42,10 +42,10 @@ Encrypted, DPAPI-NG, age/sops) and `kb/mcp/authorization.md` (MCP OAuth 2.1, DCR
   specifically because a PAT is a long-lived, human-owned, broadly-scoped credential unsuited to
   unattended automation. Project/group access tokens attach to the project/group rather than a user
   account, as the documented service-account alternative to a personal PAT. [DOC S2046]
-- **General implication**: combined with `kb/auth/workload-identity.md`'s Entra FIC federation (no stored
+- **General implication**: combined with `auth/workload-identity.md`'s Entra FIC federation (no stored
   secret at all) and a policy that a merge request is the change record and MR code never runs with a
   domain identity, GitLab's own stated preference for job tokens over PATs for automation reinforces that a
-  PAT should not be a CI/scheduled-job credential of choice. [DER S2046, kb/auth/workload-identity.md]
+  PAT should not be a CI/scheduled-job credential of choice. [DER S2046, auth/workload-identity.md]
 
 ### Storing: OS keychains via Python `keyring`
 - `keyring` (25.7.0, 2025-11-16, MIT) wraps macOS Keychain, Linux Freedesktop Secret Service (GNOME) /
@@ -96,7 +96,7 @@ Encrypted, DPAPI-NG, age/sops) and `kb/mcp/authorization.md` (MCP OAuth 2.1, DCR
   Microsoft states "Key Vault is designed so that Microsoft doesn't see or extract your data." [DOC S2047]
   Threat covered: a single machine-local secret (e.g. a CMK certificate) needing replication to every
   workstation that decrypts it — Key Vault centralizes that instead, matching the gap already flagged in
-  `kb/auth/key-management-options.md`. [DER S2047, kb/auth/key-management-options.md]
+  `auth/key-management-options.md`. [DER S2047, auth/key-management-options.md]
 - **HashiCorp Vault**: "centralized, well-audited privileged access and secret management" for
   credentials, encryption keys, authentication certificates, across on-prem/cloud/hybrid. [DOC S2048]
 - **Vault AppRole** auth method: two-part credential — `RoleID` (stable, low-sensitivity role selector)
@@ -143,7 +143,7 @@ Encrypted, DPAPI-NG, age/sops) and `kb/mcp/authorization.md` (MCP OAuth 2.1, DCR
 - **`docs.gitlab.com/ci/secrets/`** documents GitLab's own external-secrets integration, supporting four
   providers natively: **HashiCorp Vault, Google Cloud Secret Manager, Azure Key Vault, AWS Secrets
   Manager** — authenticated via GitLab's own **`id_tokens`** (OIDC JWTs), the same mechanism
-  `kb/auth/workload-identity.md` documents for Entra FIC federation; a job can also authenticate manually
+  `auth/workload-identity.md` documents for Entra FIC federation; a job can also authenticate manually
   to any other OIDC-compliant provider. [DOC S2055]
 - The documented operational difference from an ordinary CI/CD variable: "secrets must be explicitly
   requested by a job," fetched at run time, versus a CI/CD variable which is "always available in jobs"
@@ -186,7 +186,7 @@ Encrypted, DPAPI-NG, age/sops) and `kb/mcp/authorization.md` (MCP OAuth 2.1, DCR
 | Claude Code `apiKeyHelper` | a static API key on the CLI's own credential path | the script's own storage of what it fetches (delegates back to one of the above) | S2041 |
 
 ## Examples
-- A CI role in GitLab: authenticates via Entra FIC (no stored secret, `kb/auth/workload-identity.md`)
+- A CI role in GitLab: authenticates via Entra FIC (no stored secret, `auth/workload-identity.md`)
   rather than a project access token; any short-lived value the pipeline still needs (e.g. a versioned
   content artifact's signing material) would be pulled through a masked, protected CI variable only as a
   last resort, per the GitLab guidance above, with an external secrets provider preferred.

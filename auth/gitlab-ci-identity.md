@@ -9,7 +9,7 @@ status: partial
 
 # GitLab CI/CD identity: ID tokens for OIDC federation
 
-See also `kb/gitlab/variables.md`, `kb/gitlab/protected-branches-tags.md` (read but not duplicated here).
+See also `gitlab/variables.md`, `gitlab/protected-branches-tags.md` (read but not duplicated here).
 
 ## Summary
 - GitLab CI/CD jobs can carry one or more `id_tokens`, JWTs signed by GitLab, usable as OIDC federation credentials with no stored secret. [DOC S1276]

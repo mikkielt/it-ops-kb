@@ -1,12 +1,12 @@
 framework,control_id,title,control_example,sources
-ISO/IEC 27001:2022 Annex A,5.15,Access control,role-based access control + the engineer's own Kerberos/delegated identity; a tier table gating actions by risk [DER],S1560,S1561
-ISO/IEC 27001:2022 Annex A,5.18,Access rights,audit rows recording principal and decision per call [DER],S1560,S1561
-ISO/IEC 27001:2022 Annex A,8.2,Privileged access rights,tier >=2 always-confirmed; agent-driven callers given narrower device limits than human ones [DER],S1560,S1561
-ISO/IEC 27001:2022 Annex A,8.8,Management of technical vulnerabilities,dependency scanning tier noted in supply-chain.md (part B) [DER],S1560,S1561
-ISO/IEC 27001:2022 Annex A,8.9,Configuration management,configuration documents in git, versioned via tags, merge-request change record [DER],S1560,S1561
-ISO/IEC 27001:2022 Annex A,8.15,Logging,an audit table with a long retention period [DER],S1560,S1561
-ISO/IEC 27001:2022 Annex A,8.16,Monitoring activities,an observe loop + an activity-by-tier reporting view [DER],S1560,S1561
-ISO/IEC 27001:2022 Annex A,8.32,Change management,merge request is the change record; the author cannot self-approve [DER],S1560,S1561
+ISO/IEC 27001:2022 Annex A,5.15,Access control,"S1560,S1561",S1560
+ISO/IEC 27001:2022 Annex A,5.18,Access rights,"S1560,S1561",S1560
+ISO/IEC 27001:2022 Annex A,8.2,Privileged access rights,"S1560,S1561",S1560
+ISO/IEC 27001:2022 Annex A,8.8,Management of technical vulnerabilities,"S1560,S1561",S1560
+ISO/IEC 27001:2022 Annex A,8.9,Configuration management,"S1560,S1561",S1560
+ISO/IEC 27001:2022 Annex A,8.15,Logging,"S1560,S1561",S1560
+ISO/IEC 27001:2022 Annex A,8.16,Monitoring activities,"S1560,S1561",S1560
+ISO/IEC 27001:2022 Annex A,8.32,Change management,"S1560,S1561",S1560
 NIST CSF 2.0,GV.OC-01,Organizational mission informs cybersecurity risk management,a written scope statement for the tool [DER],S1562
 NIST CSF 2.0,PR.AA-05,Access permissions incorporate least privilege,role-based access control + a tier table [DER],S1562
 NIST CSF 2.0,PR.PS-01,Configuration management practices established,configuration-as-code documents + merge-request review [DER],S1562

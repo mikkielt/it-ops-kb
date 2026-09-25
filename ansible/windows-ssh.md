@@ -28,7 +28,7 @@ Auth: key (no delegation), GSSAPI/Kerberos (delegation possible), password (dele
 - Password auth needs `sshpass` on the control node and performs unconstrained delegation (like CredSSP). [DOC S933]
 
 ## Reference
-See `kb/windows/` for the OpenSSH Server capability name and service (windows agent).
+See `windows/` for the OpenSSH Server capability name and service (windows agent).
 
 ## Examples
 ```ini

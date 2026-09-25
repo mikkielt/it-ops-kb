@@ -14,7 +14,7 @@ status: partial
 - The other five candidates (long paths, `wuauserv` start type, RDP denied, Remote Registry, DSC version) and the marker (C8) are in **neither** baseline. They are operational settings, not security guidance.
 - C5 is now nearly empty: PowerShell 2.0 was removed from Windows 11 24H2 in the August 2025 update, so "absent" holds on any patched 24H2 or 25H2 device.
 - **84 settings** are set by both the Microsoft 24H2 baseline and the Windows 11 STIG and have a native DSC v3 path. 38 of them are also in the Intune 24H2 baseline by name. They are listed in `settings-crosswalk.csv`, filter `ms_and_stig=yes` and `dsc_v3_path` starting `native`.
-- Every Microsoft-baseline row is, by construction, a setting that Microsoft ships as a GPO. Whether the estate's GPOs set it is known only from the GPO export (`kb/gpo/gpo-export.md`).
+- Every Microsoft-baseline row is, by construction, a setting that Microsoft ships as a GPO. Whether the estate's GPOs set it is known only from the GPO export (`gpo/gpo-export.md`).
 
 ## Facts
 - The Microsoft 24H2 baseline sets `LanmanServer\Parameters\SMB1=0` ("Configure SMB v1 server") and `MrxSmb10\Start=4` ("Configure SMB v1 client driver"). STIG rules `WN11-00-000165` and `WN11-00-000170` require the same values, and `WN11-00-000160` requires the SMBv1 protocol disabled. [DOC S1472,S1470]

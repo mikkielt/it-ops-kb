@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 """Check kb consistency (stdlib only). Exit 1 on any error.
 
+- _sources.csv and _artifacts.csv exist and have their required columns;
+- every .csv has the same number of columns in every row;
 - source ids in _sources.csv are unique;
 - every _artifacts.csv row names a known source and an existing file;
+- every Markdown file is readable UTF-8;
 - every [DOC|DER|COMMUNITY S...] tag in a Markdown file cites a known source id;
 - every topic file's front matter has topic, priority, retrieved_utc, sources and status in {complete, partial, unknown}.
 """
@@ -10,19 +13,53 @@ import csv, glob, os, re, sys
 
 KB = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 errors = []
-with open(os.path.join(KB, "_sources.csv"), encoding="utf-8") as f:
-    ids = [r["id"] for r in csv.DictReader(f)]
+
+
+def read_csv(name, required):
+    """Rows of a kb index CSV, or [] with an error if it is missing or lacks a required column."""
+    try:
+        with open(os.path.join(KB, name), encoding="utf-8-sig", newline="") as f:
+            r = csv.DictReader(f)
+            rows = list(r)
+            missing = [c for c in required if c not in (r.fieldnames or [])]
+    except (OSError, UnicodeDecodeError, csv.Error) as e:
+        errors.append(f"cannot read {name}: {e}")
+        return []
+    if missing:
+        errors.append(f"{name} lacks column(s) {', '.join(missing)}")
+        return []
+    return rows
+
+
+ids = [r["id"] for r in read_csv("_sources.csv", ("id", "url"))]
 known = set(ids)
 errors += [f"duplicate source id {i}" for i in sorted({i for i in ids if ids.count(i) > 1})]
-with open(os.path.join(KB, "_artifacts.csv"), encoding="utf-8") as f:
-    for r in csv.DictReader(f):
-        if r["source_id"] not in known:
-            errors.append(f"artifact {r['path']} names unknown source {r['source_id']}")
-        if not os.path.exists(os.path.join(KB, r["path"])):
-            errors.append(f"artifact {r['path']} is missing")
+for r in read_csv("_artifacts.csv", ("path", "source_id", "sha256")):
+    if r["source_id"] not in known:
+        errors.append(f"artifact {r['path']} names unknown source {r['source_id']}")
+    if not os.path.isfile(os.path.join(KB, r["path"])):
+        errors.append(f"artifact {r['path']} is missing")
+for p in glob.glob(os.path.join(KB, "**", "*.csv"), recursive=True):
+    rel = os.path.relpath(p, KB)
+    try:
+        with open(p, encoding="utf-8-sig", newline="") as f:
+            rows = list(csv.reader(f))
+    except (OSError, UnicodeDecodeError, csv.Error) as e:
+        errors.append(f"{rel} is unreadable: {e}")
+        continue
+    bad = [n for n, r in enumerate(rows, start=1) if r and len(r) != len(rows[0])]
+    if bad:
+        errors.append(f"{rel} has {len(bad)} row(s) whose column count differs from the header "
+                      f"(unquoted comma?), first at line {bad[0]}")
 cited = 0
 for p in glob.glob(os.path.join(KB, "**", "*.md"), recursive=True):
-    rel, text = os.path.relpath(p, KB), open(p, encoding="utf-8").read()
+    rel = os.path.relpath(p, KB)
+    try:
+        with open(p, encoding="utf-8") as f:
+            text = f.read()
+    except (OSError, UnicodeDecodeError) as e:
+        errors.append(f"{rel} is unreadable: {e}")
+        continue
     for tag in re.findall(r"\[(?:DOC|DER|COMMUNITY) ([^\]]+)\]", text):
         for sid in re.findall(r"S\d+", tag):
             cited += 1

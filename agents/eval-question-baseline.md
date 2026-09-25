@@ -34,7 +34,7 @@ kinds carry declared roles. It is a task input, not a decision. Every row uses e
   names) rather than through the user turn, per QG11's "prompt injection in tool results" stress dimension;
   no vendor source in this part measures this kind of server specifically, so these rows are DER from the
   operations list and the general OWASP MCP/LLM injection categories already recorded in
-  `kb/standards/owasp.md` (reused, not re-fetched here).
+  `standards/owasp.md` (reused, not re-fetched here).
 - **DER**: `BQ41-BQ45`, `BQ54` are built from an example model-boundary token-kind table (HOST, USER,
   PERSON, DNS, IPV4_NET, SID_DOMAIN, GUID, SERIAL, MAC) and the policy that pseudonymization is for the
   model only; humans see real data under RBAC.

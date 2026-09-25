@@ -38,7 +38,7 @@ The reference pages carry ms.date 12/20/2016 in all docsets (2016/2019/2022/2025
 | Backup-GPO | `-Path` (+ `-Guid`/`-Name`/`-All`) | one or all GPOs | backup dir + GpoBackup object |
 | Get-GPResultantSetOfPolicy | `-ReportType`, `-Path` | computer and/or user | RSoP XML/HTML file |
 
-DSC v3 Group Policy (ADMX) adapter: see `gpo/dsc-group-policy-adapter.md` (pointer to kb/dsc/).
+DSC v3 Group Policy (ADMX) adapter: see `gpo/dsc-group-policy-adapter.md` (pointer to dsc/).
 
 ## Examples
 ```powershell

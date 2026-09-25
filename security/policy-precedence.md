@@ -51,7 +51,7 @@ status: partial
   - `Microsoft.Windows/Registry` `test` compares the live value with the document;
   - if GPO holds the same value, `test` reports in desired state;
   - if GPO holds a different value, `test` reports drift at every evaluation, and a `set` would last only until the next GPO reapplication;
-  - there is no "managed by" field in the resource output. [DER S1592, `kb/dsc/manifests-diff.md`]
+  - there is no "managed by" field in the resource output. [DER S1592, `dsc/manifests-diff.md`]
 - ConfigMgr compliance *remediation* can be kept off deliberately (visibility-first design). With remediation on, a baseline and a GPO that disagree would each rewrite the value on their own schedule. Microsoft states no precedence rule between them. [UNK]
 
 ## Reference

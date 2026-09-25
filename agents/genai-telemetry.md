@@ -12,8 +12,8 @@ status: complete
 ## Summary
 GenAI semantic conventions moved from `open-telemetry/semantic-conventions` into a dedicated repository,
 `open-telemetry/semantic-conventions-genai` (Apache-2.0); this does not affect the general logs/code conventions
-already cited in `kb/logs/`. All agent, tool and MCP conventions here are status "Development" (pre-stable). This
-file extends, and does not repeat, `kb/claude/otel-monitoring.md`, which documents Claude Code's own proprietary
+already cited in `logs/`. All agent, tool and MCP conventions here are status "Development" (pre-stable). This
+file extends, and does not repeat, `claude/otel-monitoring.md`, which documents Claude Code's own proprietary
 `claude_code.*` events rather than these vendor-neutral `gen_ai.*`/`mcp.*` attributes.
 
 ## Facts
@@ -55,7 +55,7 @@ A Python stdio MCP server handling `tools/call` for a `device.recheck`-style ope
 `PL-LT-00123` could open an `mcp.server` span named `"tools/call device.recheck"` with `mcp.method.name=tools/call`,
 `mcp.protocol.version=2025-06-18`, and nest an `execute_tool` INTERNAL span with `gen_ai.tool.name=device.recheck`,
 `gen_ai.tool.type=function`, distinct from whatever `claude_code.tool_result` event the calling Claude Code session
-emits on its own side (`kb/claude/otel-monitoring.md`) — the two telemetry vocabularies are complementary, not
+emits on its own side (`claude/otel-monitoring.md`) — the two telemetry vocabularies are complementary, not
 overlapping [DER S2003, S2004].
 
 ### Sensitive-data-declaration tension

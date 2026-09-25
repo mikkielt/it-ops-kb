@@ -135,7 +135,7 @@ Remaining gaps:
   ceiling to conserve budget for the other three topics.
 - QG23: "how clients react to a changed tool description (cache, permissions)" is answered only from the MCP spec's
   `listChanged` mechanics (S2135 (reused id, already recorded elsewhere in this kb)) and Claude Code's own cache-invalidation notes already
-  in `kb/claude/otel-monitoring.md`/other parts' `agent-caching.md` (topic 9); no vendor doc found stating whether a
+  in `claude/otel-monitoring.md`/other parts' `agent-caching.md` (topic 9); no vendor doc found stating whether a
   changed tool description silently re-triggers a user permission prompt in Claude Code specifically. Recorded as
   `UNK` in `mcp-server-lifecycle.md`.
 - QG21: could not fetch the full PDF text of arXiv 2506.08837 with attribution-quality precision beyond WebFetch's
@@ -173,11 +173,11 @@ Remaining gaps:
   (3 attempts each). [UNK — `agents/shared-ner-service.md` QG30]
 - No GDPR controller/processor analysis specific to an internal shared NER/PII-detection endpoint (as
   opposed to pseudonymisation and identifiability generally, already covered in
-  `kb/privacy/gdpr-pseudonymisation.md`) was found in any EDPB or Microsoft/AWS/Google compliance page
-  fetched this session. [UNK — `kb/_parts/agents-ner/answers.md` QG31]
+  `privacy/gdpr-pseudonymisation.md`) was found in any EDPB or Microsoft/AWS/Google compliance page
+  fetched this session. [UNK — `_answers.md` QG31]
 - No published numeric trigger (consumer count, detection-gap percentage, or maintenance-hour figure) for
   when to centralize a shared NER service was found from any vendor or community source. [UNK —
-  `kb/_parts/agents-ner/answers.md` QG32]
+  `_answers.md` QG32]
 - Presidio's own caller-authentication story for a shared analyzer/anonymizer deployment (e.g. built-in
   API-key support) was not found in the fetched docker/k8s/app-service samples; only Azure's container
   documents an API-key requirement. [UNK — `agents/shared-ner-service.md` QG31]
@@ -232,7 +232,7 @@ Remaining gaps:
 ## arch
 
 - **No Microsoft-documented way for Linux (Python gssapi/pyspnego/requests-gssapi, adutil, mssql-conf) to retrieve a gMSA's `msDS-ManagedPassword` and turn it into a keytab.** Tried: `adutil keytab createauto` (requires explicit `--password`, built for conventional AD accounts per S1606), Microsoft Learn search for "gMSA Linux", MIT Kerberos docs. Only AWS's `credentials-fetcher` (S1607/S1608, COMMUNITY, Apache-2.0, AWS open source) claims to fetch gMSA credentials over LDAP for Linux. Verification: could be checked by running `credentials-fetcher` against a lab AD gMSA and a lab Linux host, watching whether it produces a usable keytab/ticket — out of scope for this research pass.
-- **No stated Windows-Server-version floor specific to Kubernetes gMSA** beyond the general Windows-container gMSA fix history (2019 fixes for hostname/race-condition issues); kubernetes.io doesn't restate a minimum OS build. Tried: kubernetes.io gmsa page (S1600) — silent on this; would need a targeted Microsoft Learn "Windows container OS compatibility" cross-reference. [UNK, recorded in kb/arch/k8s-gmsa-windows.md]
+- **No stated Windows-Server-version floor specific to Kubernetes gMSA** beyond the general Windows-container gMSA fix history (2019 fixes for hostname/race-condition issues); kubernetes.io doesn't restate a minimum OS build. Tried: kubernetes.io gmsa page (S1600) — silent on this; would need a targeted Microsoft Learn "Windows container OS compatibility" cross-reference. [UNK, recorded in arch/k8s-gmsa-windows.md]
 - **No GA date for Azure Arc-enabled Kubernetes workload identity federation** — page (S1609) still labelled preview at retrieval (updated 2025-11-18). No separate GA announcement found via search. Verification: not checkable without a live Azure subscription; recheck by re-reading S1609 periodically for a status change.
 - **`Authentication=ActiveDirectoryDefault` behavior for msodbcsql18 against on-prem/Arc-enabled SQL Server specifically** was not confirmed by a fetched page (search summary only, centered on Azure SQL DB/MI). Tried: WebSearch only, did not fetch the full ODBC Entra ID page content beyond the search summary. Could be closed with one more WebFetch of S1610 if this specific mode becomes load-bearing.
 
@@ -365,9 +365,9 @@ Still open:
 
 - Power BI docs source repo: `MicrosoftDocs/powerbi-docs` and `MicrosoftDocs/data-integration` are not public (clone: "Repository not found"); learn pages point to private `powerbi-docs-pr`. Used throttled learn.microsoft.com HTML instead; no pinned raw URL possible for S900-S910 (only ms.date recorded).
 - GPO backup on-disk layout (folder contents such as Backup.xml / gpreport.xml): not in the GroupPolicy cmdlet reference (S921); grep of MicrosoftDocs_windowsserverdocs, SupportArticles-docs, win32 clones for "bkupInfo.xml" / "gpreport.xml" found nothing. [UNK]
-- DSC v3 GroupPolicyTemplate adapter: which released version first ships it is left to kb/dsc/ (only the main-branch manifest was checked, S924). [UNK]
+- DSC v3 GroupPolicyTemplate adapter: which released version first ships it is left to dsc/ (only the main-branch manifest was checked, S924). [UNK]
 - `ansible.windows.win_dsc` check-mode support: the docs page as fetched shows no attributes table; not confirmed. [UNK]
-- powerbi/configmgr-views.md depends on kb/mecm/sql-views-compliance.md (other agent); that file did not exist at time of writing.
+- powerbi/configmgr-views.md depends on mecm/sql-views-compliance.md (other agent); that file did not exist at time of writing.
 
 ## mcp
 
@@ -505,8 +505,8 @@ Still open:
 - **Windows 11 25H2 and Server 2025 v2602 Microsoft baseline packages.**
   - The Download Center page (id 55319) is a script-driven file picker that answers `curl`/WebFetch with a bot page. The Chrome extension was not connected.
   - Guessed file names under `download.microsoft.com/download/8/5/C/85C25433-…/` returned 404 for 25H2 and Server 2025. The 24H2 zip, LGPO.zip and PolicyAnalyzer.zip resolved (3 attempts).
-  - Verification: download "Windows 11 version 25H2 Security Baseline.zip" and "Windows Server 2025 Security Baseline" (v2602) from https://www.microsoft.com/download/details.aspx?id=55319 into `kb/_private/sct/` (not published). A follow-up pass can then rerun the crosswalk builder.
-- **CIS ids in `settings-crosswalk.csv`:** empty. Verification: download CIS Microsoft Windows 11 Enterprise Benchmark (current version, see `baselines-catalog.md`) into `kb/_private/cis/` (not published) and map ids offline.
+  - Verification: download "Windows 11 version 25H2 Security Baseline.zip" and "Windows Server 2025 Security Baseline" (v2602) from https://www.microsoft.com/download/details.aspx?id=55319 into `_private/sct/` (not published). A follow-up pass can then rerun the crosswalk builder.
+- **CIS ids in `settings-crosswalk.csv`:** empty. Verification: download CIS Microsoft Windows 11 Enterprise Benchmark (current version, see `baselines-catalog.md`) into `_private/cis/` (not published) and map ids offline.
 - **Tattooing of `Policies` keys and security-settings-extension periodic reapply:** not found in the Group Policy processing page (S1592). No other official page was fetched this pass.
 - **Windows 11 defaults for `wuauserv`, `RemoteRegistry` start type and `fDenyTSConnections`:** not confirmed from an official page.
   Verification: on a fresh Windows 11 25H2 VM, run `dsc resource get` for `Microsoft.Windows/Service` (`wuauserv`, `RemoteRegistry`) and `Microsoft.Windows/Registry` (`Terminal Server!fDenyTSConnections`). This proves the defaults a drift report compares against.
@@ -524,7 +524,7 @@ Still open:
   and is populating `settings-crosswalk.csv`, `dsc-coverage.md` and QS2 directly; Part A does not
   duplicate that work.
 - **Verification: download the Windows Server 2025 baseline zips (versions 2506 and 2602) from the SCT
-  download page (id 55319) into `kb/_private/sct/` (not published), or locate their direct
+  download page (id 55319) into `_private/sct/` (not published), or locate their direct
   download.microsoft.com URLs the same way the coordinator did for the Windows 11 24H2 zip.** Not
   attempted by Part A this pass.
 - **Verification: open the `microsoft/osconfig` GitHub repository (or the OSConfig Learn docs' schema
@@ -560,7 +560,7 @@ Still open:
 - QS9: exact **current** CIS Microsoft SQL Server benchmark version/date and CIS GitLab Benchmark version/date were seen only via secondary blog posts and a third-party scanner project, not a direct fetch of the cisecurity.org benchmark listing page's version field. `Verification: confirm current CIS Microsoft SQL Server 2022/2025 Benchmark version and CIS GitLab Benchmark version directly on cisecurity.org/benchmark/microsoft_sql_server and the CIS Software Supply Chain Security Benchmarks page (no registration needed for the listing, only for the PDF).`
 - QS8: no page was found that explicitly classifies ConfigMgr/MECM as "Tier 0" in Microsoft's own enterprise access model docs. Only the general control-plane/management-plane/data-workload-plane tiering principle (Microsoft cloud security benchmark, privileged access) was confirmed; applying it to ConfigMgr is a derivation (`security/management-plane-hardening.md`), not a documented Microsoft statement.
 - QS17: exact GitLab **subscription tier** (Free/Premium/Ultimate) gating for Dependency Scanning vs. SLSA attestation vs. artifact signing was not confirmed against `docs.gitlab.com/subscriptions/features/` in this pass — only the existence and mechanics of the features (`security/supply-chain.md`) were confirmed, not their tier gate. `Verification: cross-check docs.gitlab.com/subscriptions/features/ for the tier of Dependency Scanning, SLSA provenance attestation, and container/artifact signing before using this for a purchasing or gate decision.`
-- QS18 (Run Scripts + AllSigned): confirmed Run Scripts has no signing gate of its own and the client-side AllSigned policy is the enforcement point, but did not find an official page describing whether ConfigMgr's CI (compliance) script deployment path differs from Run Scripts on this point — assumed identical based on both using the same client-side PowerShell execution policy setting (already documented in `kb/windows/execution-policy-signing.md`).
+- QS18 (Run Scripts + AllSigned): confirmed Run Scripts has no signing gate of its own and the client-side AllSigned policy is the enforcement point, but did not find an official page describing whether ConfigMgr's CI (compliance) script deployment path differs from Run Scripts on this point — assumed identical based on both using the same client-side PowerShell execution policy setting (already documented in `windows/execution-policy-signing.md`).
 - No official Microsoft page was found specifically discussing `dsc.exe` (or DSC v3 resource executables) under WDAC/App Control; general PowerShell WDAC script-enforcement mechanics were confirmed but not a DSC-specific statement. Community source only (S1519), not used as sole evidence for any `DOC` fact.
 - PyPI Trusted Publishing's self-managed-GitLab support status is unresolved: the official `docs.pypi.org` page (S1509) does not list self-managed GitLab as supported, while a third-party (Socket) report (S1510, COMMUNITY) claims PyPI expanded support to self-managed GitLab. Recorded as a conflict-worthy discrepancy in `security/supply-chain.md` rather than asserted either way as `DOC`.
 - NIST AI RMF "Agentic Profile" (if any, beyond the Generative AI Profile SP 800-218A/AI 600-1) was not found on nist.gov directly; a third-party (Cloud Security Alliance) reference to such a profile was not treated as authoritative and is not cited.
@@ -575,7 +575,7 @@ Still open:
   technique enumeration was not exhausted, but time was allocated to higher-priority QS10-QS14 items first.
 - (Resolved 2026-09-24) MITRE ATT&CK mitigation (M-id) and detection-strategy (DET-id) values for
   T1072/T1484/T1098/T1558/T1078/T1219/T1562 are now extracted from the pinned v19.2 STIX bundle into
-  `kb/security/artifacts/mitre/attack-subset.csv` and summarized in `threat-model-inputs.md` and QS15.
+  `security/artifacts/mitre/attack-subset.csv` and summarized in `threat-model-inputs.md` and QS15.
 - UODO's DPIA list (S1551) is in Polish; only the fact that such a list exists and its URL were captured, not a
   translated enumeration of its entries.
 - Whether a given device-log/AI-processing system's specific processing meets two or more EDPB DPIA criteria, and

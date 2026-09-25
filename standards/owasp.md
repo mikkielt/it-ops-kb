@@ -39,5 +39,5 @@ Not applicable (reference list).
 ## Update 2026-09-24 (part security C)
 - Re-checked OWASP MCP Top 10 status: still "Phase 3 – Beta Release and Pilot Testing", ids unchanged
   (`MCP01:2025`-`MCP10:2025`), next release planned October 2026 — consistent with the facts above. [DOC S1540]
-- See `kb/security/ai-agent-guidelines.md` for a mapping of these lists to concrete controls (tiers, confirmation,
+- See `security/ai-agent-guidelines.md` for a mapping of these lists to concrete controls (tiers, confirmation,
   agent device limits, a model boundary, an audit table, an MCP allowlist), tagged `DER`.

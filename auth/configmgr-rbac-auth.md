@@ -1,7 +1,7 @@
 ---
 topic: auth/configmgr-rbac-auth
 priority: P0
-applies_to: "ConfigMgr 2603, extends kb/mecm/rbac.md and kb/mecm/adminservice.md"
+applies_to: "ConfigMgr 2603, extends mecm/rbac.md and mecm/adminservice.md"
 retrieved_utc: 2026-09-24
 sources: [S307, S311, S1212, S1213, S1210, S1218]
 status: partial

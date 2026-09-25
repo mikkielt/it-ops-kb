@@ -2,3 +2,5 @@
 __pycache__/
 *.pyc
 _private/
+_cache/
+_fetch_state.csv.tmp

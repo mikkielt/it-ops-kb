@@ -9,10 +9,10 @@ status: partial
 
 # Delegation, KCD/RBCD and OBO (A.1, later)
 
-Read `kb/mcp/authorization.md` first (done); this file adds only what it does not already cover:
+Read `mcp/authorization.md` first (done); this file adds only what it does not already cover:
 ID-JAG / Enterprise-Managed Authorization status. It does not re-state the base MCP authorization
 facts (audience validation, `resource` parameter, `iss` validation, DCR deprecation), already in
-`kb/mcp/authorization.md`.
+`mcp/authorization.md`.
 
 ## Summary
 - Entra OBO exchanges a delegated user token at a confidential middle-tier for a new delegated token

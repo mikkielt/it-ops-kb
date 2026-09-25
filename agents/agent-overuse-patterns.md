@@ -18,7 +18,7 @@ solved by a grammar, schema or algorithm. None of the four vendors publishes a s
 cost/latency/error number; the concrete figures available (token multipliers, per-model latency spread,
 a $/day formula) come from Anthropic's own agent architecture post and from independent (COMMUNITY)
 cost-modelling writeups, not from a cross-vendor benchmark. Topic 4's catalogue
-(`kb/agents/subagents-vs-deterministic-tools.md`) already covers *child-agent-vs-tool* signals; this
+(`agents/subagents-vs-deterministic-tools.md`) already covers *child-agent-vs-tool* signals; this
 file's `agent-overuse-patterns.csv` is the wider list of task shapes a team hands to an LLM whole,
 alongside the deterministic tool that already exists for them.
 
@@ -65,7 +65,7 @@ alongside the deterministic tool that already exists for them.
   Agents Run the Workflow," whose body could not be retrieved this session (see `gaps.md`). [UNK]
 
 ### QG38 — catalogue of over-routed tasks and their deterministic replacements
-- See `kb/agents/agent-overuse-patterns.csv` (26 rows, columns `task_shape,routed_to_agent,
+- See `agents/agent-overuse-patterns.csv` (26 rows, columns `task_shape,routed_to_agent,
   deterministic_tool,signal_agent_not_needed,sources`), covering: JSON/CSV/log parsing (`jq`), regex/
   pattern entity extraction (Presidio `PatternRecognizer`), schema-keyed masking, date/timezone
   arithmetic, JSON Schema validation, lint/format, code navigation (LSP), dependency updates (Renovate/
@@ -96,14 +96,14 @@ alongside the deterministic tool that already exists for them.
   per editor-language pair and without a model reasoning over source text. [DOC S2171]
 - `dsc config test` and ConfigMgr baseline compliance evaluation are deterministic drift-detection
   tools for Windows endpoint management: DSC's `test` operation has a published output schema
-  (`schemas/v3/bundled/outputs/{config,resource}/test.json`) [DOC S150, S154 — reused from `kb/dsc/`,
+  (`schemas/v3/bundled/outputs/{config,resource}/test.json`) [DOC S150, S154 — reused from `dsc/`,
   part `dsc`], and ConfigMgr's CMPivot query surface (entities, `CcmLog()`, `WinEvent()`) is the
   documented structured-query path for live device state. [DOC S315, S316, S317 — reused from
-  `kb/mecm/cmpivot.md`, part `mecm`]
+  `mecm/cmpivot.md`, part `mecm`]
 - Presidio's `PatternRecognizer` (2.2.364) matches entities by regex plus context words and deny/allow
   lists — the documented deterministic alternative to a free-text NER call for any entity with a fixed
   lexical shape (the same class of fact used for structured-field tokenization design). [DOC S825 —
-  reused from `kb/privacy/`, part `privacy`]
+  reused from `privacy/`, part `privacy`]
 - Power BI scheduled refresh (documented elsewhere in the kb, part `arch`/`powerbi`) is the deterministic
   path for recurring report generation over a fixed view/measure set, rather than an agent re-summarizing
   the same numbers on each request. [DOC S900 — reused, cited by reference not re-derived]
@@ -130,7 +130,7 @@ alongside the deterministic tool that already exists for them.
   (`claude_code.tool_result.duration_ms`, `tool_input_size_bytes`/`tool_result_size_bytes`,
   `claude_code.tool_decision`) that would surface a stable, repeated, low-variance tool-call sequence — the
   same fields, read as "this sequence never changes across N runs," are the concrete signal for "this
-  whole task could have skipped the agent." [DER from `kb/agents/subagents-vs-deterministic-tools.md`
+  whole task could have skipped the agent." [DER from `agents/subagents-vs-deterministic-tools.md`
   (reused S744/S745 there), not re-fetched here]
 
 ## Reference

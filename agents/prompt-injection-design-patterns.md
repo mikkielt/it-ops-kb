@@ -10,7 +10,7 @@ status: complete
 # Design patterns for limiting prompt injection through tool results
 
 ## Summary
-Beyond OWASP's item lists (`kb/standards/owasp.md`), the literature names concrete architectural patterns:
+Beyond OWASP's item lists (`standards/owasp.md`), the literature names concrete architectural patterns:
 Action-Selector, Plan-Then-Execute, LLM Map-Reduce, Dual LLM, Code-Then-Execute and Context-Minimization, each
 trading agent flexibility for structural resistance to injected instructions in tool output. CaMeL (Google
 Research) is a working Dual-LLM/Plan-Then-Execute hybrid with a measured utility cost (77% vs. 84% task success).
