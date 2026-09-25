@@ -3,7 +3,7 @@ topic: arch/gitlab-ci-components
 priority: P1
 applies_to: [gitlab-ci]
 retrieved_utc: 2026-09-24
-sources: [S1700, S1701, S1702, S1512, S1704, S444, S445, S446, S447, S448]
+sources: [S1700, S1701, S1702, S1512, S1704, S446]
 status: complete
 ---
 
@@ -24,9 +24,11 @@ a release tag pattern (e.g. `cfg-*`) fits the "release on protected tag" model c
   `spec: inputs: stage: default: test`), referenced in job bodies as `$[[ inputs.stage ]]`. [DOC S1700]
 - `include: - component: <fqdn>/<path>@<version>` pins by commit SHA, tag, branch name, or `~latest`
   (latest published Catalog release matching the given pattern). [DOC S1700]
-- Versions released to the CI/CD Catalog must use semantic versioning (e.g. `1.0.0`, `1.0.0-alpha`);
-  GitLab has an open backend issue to enforce this server-side, implying it is a convention checked
-  partly by tooling, partly still by policy. [DOC S1700][DOC S1701]
+- Versions released to the CI/CD Catalog must use semantic versioning (e.g. `1.0.0`, `1.0.0-alpha`).
+  [DOC S1700]
+- GitLab's backend issue to enforce semantic versioning for catalog resources (#427286) was closed on
+  2024-02-19 (milestone 16.10, label `workflow::complete`); its related merged merge requests include
+  one adding semantic-version validation to catalog resource versions (merged 2024-02-15). [DOC S1701]
 - Publishing to the Catalog is done with the `release` keyword in a CI job, not the Releases API
   directly. [DOC S1700]
 - The CI/CD Catalog became generally available in GitLab 17.0 (2024-05-16), for GitLab.com,
@@ -41,7 +43,7 @@ a release tag pattern (e.g. `cfg-*`) fits the "release on protected tag" model c
   own job definitions carry `tags:` exactly like any other job, so a component can target a Windows
   runner the same way any other job in the consuming pipeline would. [DOC S1512]
 - A repository can protect a release tag pattern (e.g. `cfg-*`, Maintainers only) and gate pipelines on
-  a `$CI_COMMIT_TAG` regex match. [DOC S446][DOC S446]
+  a `$CI_COMMIT_TAG` regex match. [DOC S446]
 
 ## Reference
 - `include: - component: $CI_SERVER_FQDN/<group>/ci-components/checks@1.0.0` (per S1700 pattern).

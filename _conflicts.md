@@ -350,3 +350,16 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
   since EUR-Lex had not yet published a consolidated version reflecting Regulation (EU) 2026/1744 at retrieval
   time — flagged as `COMMUNITY`, not `DOC`, for that reason, not because sources disagree.
 
+## prior-art/drift-detection
+
+- Puppet latest_release: `prior-art/projects.csv` says 7.34.0 (2024-10-22) [S1008], but puppetlabs/puppet also has tag 8.10.0 (2024-10-18) and RubyGems published 7.34.0 and 8.10.0 on the same day, 2024-10-22. The recorded value is presumably GitHub's latest-release marker, which could not be re-read on 2026-09-25 (api.github.com blocked). Decide whether the column means GitHub's marker or the highest released version. (census 2026-09-25)
+- Chef InSpec latest_release: `prior-art/projects.csv` says v5.24.24 (2026-06-25) [S1009], while the repo has tags v7.2.2, v7.3.0 and v7.3.1 (2026-09-22 to 2026-09-24). RubyGems' newest 7.x is 7.2.1 (2026-09-02) under LicenseRef-Chef-EULA, while 5.x gems are Apache-2.0. GitHub's latest-release marker could not be re-read (api.github.com blocked). (census 2026-09-25)
+- The Ansible check-mode fact in `prior-art/drift-detection.md` is tagged [DOC S1009], but S1009 is the inspec/inspec repository metadata, which says nothing about Ansible. The fact needs an Ansible documentation source, or should become [UNK]. (census 2026-09-25)
+
+## prior-art/tiered-approval-ops
+
+- Teleport latest_release: `prior-art/projects.csv` says v18.10.0 (2026-07-09) [S1017], but gravitational/teleport has tags v18.10.7, v18.11.0 and v18.11.1 (2026-09-16), all older than the kb's 2026-09-24 retrieval. The value is presumably GitHub's latest-release marker, which could not be re-read on 2026-09-25 (api.github.com blocked). (census 2026-09-25)
+
+## prior-art/mcp-microsoft-endpoint-mgmt
+
+- The fact that the modelcontextprotocol/modelcontextprotocol and python-sdk repositories do not list Microsoft endpoint-management servers is tagged [DOC S1019], but S1019 is microsoft/mcp's metadata and servers/ listing, which cannot support it. It needs its own source, or should become [UNK]. (census 2026-09-25)

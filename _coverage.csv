@@ -27,7 +27,7 @@ agents/prompt-injection-design-patterns,P2,complete,agents/prompt-injection-desi
 ansible/dsc3-module,P3,complete,ansible/dsc3-module.md,5
 ansible/windows-ssh,P3,complete,ansible/windows-ssh.md,1
 arch/docs-home-options,P1,complete,arch/docs-home-options.md,4
-arch/gitlab-ci-components,P1,complete,arch/gitlab-ci-components.md,10
+arch/gitlab-ci-components,P1,complete,arch/gitlab-ci-components.md,6
 arch/k8s-gmsa-windows,P1,complete,arch/k8s-gmsa-windows.md,4
 arch/kerberos-linux-containers,P1,complete,arch/kerberos-linux-containers.md,4
 arch/python-single-package-extras,P1,complete,arch/python-single-package-extras.md,5
@@ -76,7 +76,7 @@ dsc/functions,P0,complete,dsc/functions.md;dsc/functions-3.3.0.csv,7
 dsc/manifests-diff,P0,complete,dsc/manifests-diff.md;dsc/manifests-diff.csv;dsc/manifests/;dsc/zip-extras/,7
 dsc/mcp-server,P0,complete,dsc/mcp-server.md,10
 dsc/open-bugs-windows,P0,complete,dsc/open-bugs-windows.md;dsc/open-bugs.csv,1
-dsc/releases-feature-matrix,P0,complete,dsc/releases-feature-matrix.md,24
+dsc/releases-feature-matrix,P0,complete,dsc/releases-feature-matrix.md,22
 dsc/schemas,P0,complete,dsc/schemas.md;dsc/schemas/,14
 dsc/secrets,P0,complete,dsc/secrets.md,9
 dsc/settings-and-paths,P0,complete,dsc/settings-and-paths.md,7

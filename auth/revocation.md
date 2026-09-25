@@ -121,7 +121,7 @@ ticket requests, so the real picture has three windows:
   new SMB session can be refused well before the disabled account's TGT itself expires. [DER S1380, S1378]
 
 ### GitLab
-- Revoking a personal access token "immediately invalidates it and prevents further use" -- this is an
+- Revoking a personal access token is done "to immediately invalidate it and prevent further use" -- this is an
   explicit, synchronous action, not something that happens automatically on user block/disable by default.
   [DOC S1377] For an **Enterprise user** (GitLab's term for a managed user under a verified domain,
   Premium/Ultimate), GitLab documents that deleting or blocking that user's account **automatically**
