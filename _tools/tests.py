@@ -9,6 +9,7 @@ Cohesion: check.py and fetch.py --offline pass; no lint errors beyond the record
 files (_coverage.csv, README coverage table, used_in) are up to date (build_index.py --check); links, backtick paths and used_in paths resolve; every CLI flag the docs mention exists
 in that tool; .mcp.json, .claude/settings.json and AGENTS.md agree; skills are well-formed.
 Ids: kbid.py hash source ids are deterministic and normalization-stable; bad ids and answer-id clashes are caught.
+Merges (test_merge.py): union-merged ledgers plus kbgit.py fix give a clean kb; the git scenario is skipped without git.
 Leaks (tracked files): secrets in any file; in authored files also home-directory paths, private IPv4 addresses,
 non-placeholder e-mail addresses and GUIDs outside the reviewed allowlist (_tools/tests_allowlist.txt); files that
 must never be committed; oversized files.
@@ -23,6 +24,7 @@ ALLOWLIST = os.path.join(TOOLS, "tests_allowlist.txt")
 MAX_BYTES = 10 * 1024 * 1024
 sys.path.insert(0, TOOLS)
 import kbid  # noqa: E402
+from test_merge import MergeRules, MergeInGit  # noqa: E402,F401  (run here too; MergeInGit skips without git)
 
 
 def run(*args):

@@ -224,6 +224,9 @@ def main():
         # 5c. generated index files: build_index.py
         index_cases(tmp)
 
+        # 5d. post-merge cleanup: kbgit.py fix / fmt (git merges themselves: test_merge.py)
+        kbgit_cases(tmp)
+
         # 6. fetch.py --diff / --status against a local web server (no internet needed)
         if not FILTER or "diff" in FILTER or "status" in FILTER:
             fetch_diff_cases(tmp)
@@ -373,6 +376,45 @@ def index_cases(tmp):
     hand_edit("files: names a missing path (warned, lint errors)", lambda d: write(d, t0 + ".md", read(d, t0 + ".md").replace(
         "\nstatus: ", "\nfiles: [ad/nope.csv]\nstatus: ", 1)), 1, "files: lists missing ad/nope.csv")
     hand_edit("_sources.csv deleted", lambda d: os.remove(os.path.join(d, "_sources.csv")), 2, "cannot read _sources.csv", fixes=False)
+
+
+def kbgit_cases(tmp):
+    """kbgit.py: the pristine kb is clean; a union-style merge result (repeated header, duplicate and split rows,
+    markers) is fixed in one run and the next run changes nothing; what needs a human exits 2 and writes nothing."""
+    if FILTER and FILTER not in "kbgit fix fmt merge":
+        return
+    G = "kbgit.py"
+    d = copy_kb(tmp, "kbgit")
+    case("kbgit: pristine kb needs no fix", d, G, ["fix", "--check"], 0, "changed=0")
+    case("kbgit: pristine kb is formatted", d, G, ["fmt", "--check"], 0, "changed=0")
+    src = read(d, "_sources.csv")
+    head, body = src.split("\n", 1)
+    lines = body.splitlines()
+    newer = lines[0].replace(",2026-", ",2027-", 1)
+    write(d, "_sources.csv", head + "\n" + "\n".join(lines[::-1]) + "\n" + "<<<<<<< ours\n" + lines[1] + "\n=======\n"
+          + head + "\n" + newer + "\n>>>>>>> theirs\n")
+    write(d, "_answers.md", read(d, "_answers.md") + read(d, "_answers.md").split("\n## ", 2)[1].join(["\n## ", ""]))
+    case("kbgit: fmt refuses conflict markers", d, G, ["fmt"], 2, "conflict markers")
+    case("kbgit: merged ledgers :: --check", d, G, ["fix", "--check"], 1, "WOULD CHANGE _sources.csv")
+    case("kbgit: merged ledgers :: fix", d, G, ["fix"], 0, "removed 1 repeated header")
+    case("kbgit: merged ledgers :: second fix changes nothing", d, G, ["fix", "--check"], 0, "changed=0")
+    ok = read(d, "_sources.csv") == src.replace(lines[0], newer) and read(d, "_answers.md") == read(KB, "_answers.md")
+    results.append((ok, "kbgit: rows back in canonical order, newer duplicate merged, repeated answer dropped", "ok" if ok else "differs"))
+    case("kbgit: check.py after fix", d, "check.py", [], 0)
+    shutil.rmtree(d)
+
+    d = copy_kb(tmp, "kbgit")
+    add_sources(d, [{"id": "S100", "url": "https://collision.example.com/other"}])
+    case("kbgit: legacy id collision without --base", d, G, ["fix"], 2, "rerun with --base")
+    case("kbgit: --base outside a git clone", d, G, ["fix", "--base", "HEAD~1"], 2, "not a commit")
+    shutil.rmtree(d)
+    d = copy_kb(tmp, "kbgit")
+    write(d, "_answers.md", read(d, "_answers.md") + "\n## QK-dup. a\n\none\n\n## QK-dup. a\n\ntwo\n")
+    write(d, "_gaps.md", read(d, "_gaps.md") * 2)
+    before = read(d, "_gaps.md")
+    case("kbgit: answer id clash is reported", d, G, ["fix"], 2, "QK-dup appears 2 times")
+    results.append((read(d, "_gaps.md") == before, "kbgit: nothing written when a human is needed", "ok"))
+    shutil.rmtree(d)
 
 
 def fetch_diff_cases(tmp):

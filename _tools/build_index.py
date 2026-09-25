@@ -49,8 +49,8 @@ def read(rel):
         return None
 
 
-def read_csv(rel, required):
-    text = read(rel)
+def read_csv(rel, required, text=None):
+    text = read(rel) if text is None else text
     if text is None:
         raise BuildError(f"cannot read {rel}")
     try:
@@ -167,17 +167,20 @@ def readme_table(rows):
     return "\n".join(lines + [END])
 
 
-def build():
-    """{path: (old text or None, new text)} for every generated file, and a list of warnings."""
+def build(override=None):
+    """{path: (old text or None, new text)} for every generated file, and a list of warnings.
+    `override` {path: text} replaces files on disk as input (kbgit.py fix builds from ledgers it has not written yet)."""
+    override = override or {}
+    get = lambda rel: override[rel] if rel in override else read(rel)  # noqa: E731
     warnings = []
-    fields, sources = read_csv("_sources.csv", ("id", "used_in"))
+    fields, sources = read_csv("_sources.csv", ("id", "used_in"), get("_sources.csv"))
     known = {r["id"] for r in sources}
     files = content_files()
-    texts = {f: read(f) or "" for f in files}
+    texts = {f: get(f) or "" for f in files}
     rows = coverage_rows(files, texts, known, warnings)
     out = {"_coverage.csv": csv_text(COVERAGE_FIELDS, rows)}
 
-    readme = read("README.md")
+    readme = get("README.md")
     if readme is None:
         raise BuildError("cannot read README.md")
     i, j = readme.find(START), readme.find(END)

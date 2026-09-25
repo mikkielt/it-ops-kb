@@ -1,0 +1,201 @@
+# Merge and line-ending rules for it-ops-kb. Built-in git drivers only: nothing to configure per clone.
+# After any merge or pull: python3 _tools/kbgit.py fix, then python3 _tools/tests.py.
+
+# Text is stored and checked out with LF everywhere (Windows clones too).
+* text=auto eol=lf
+*.csv text eol=lf
+*.md text eol=lf
+*.py text eol=lf
+
+# Append-only ledgers: union merge. When both branches add lines at the same place, git keeps both sides'
+# lines (ours first) instead of writing conflict markers. Caveats, all handled by `kbgit.py fix`:
+# - a row or line that BOTH sides edited is kept twice (old and new version): fix merges rows by id;
+# - the same new line added on both sides can appear twice: fix drops exact duplicates;
+# - the CSV header is shared context and is not duplicated; a header changed on one side needs a human;
+# - union works on lines: CSV records must stay on one line (no newline inside a quoted field), and every
+#   file must end with a newline (the tools write both that way);
+# - two answers added under the same QK id end up under one heading: review; ids from different questions differ;
+# - union never fails, so it cannot tell a real disagreement from an addition: read the merged diff.
+_sources.csv merge=union
+_fetch_state.csv merge=union
+_answers.md merge=union
+_gaps.md merge=union
+_conflicts.md merge=union
+
+# Generated files: union so a merge never stops on them, then `kbgit.py fix` regenerates them
+# (build_index.py for _coverage.csv; lint_baseline.txt = current lint errors that either side had accepted).
+# README.md is NOT here: it is mostly hand-written and merges normally; if its generated coverage table
+# conflicts, `kbgit.py fix` rewrites the table (markers inside it included); `git add README.md` afterwards.
+_coverage.csv merge=union
+_tools/lint_baseline.txt merge=union
+
+# Pinned artifacts (_artifacts.csv) are byte-exact copies checked by sha256; some are CRLF on purpose.
+# -text: git never converts their line endings. `kbgit.py fix` regenerates this block from _artifacts.csv.
+# pinned:start
+ad/computer-attributes.csv -text
+agents/a2a/a2a.proto -text
+dsc/cli/help-3.3.0.txt -text
+dsc/cli/help-3.4.0-preview.1.txt -text
+dsc/functions-3.3.0.csv -text
+dsc/manifests/3.3.0/PowerShell_adapter.dsc.resource.json -text
+dsc/manifests/3.3.0/RunCommandOnSet.dsc.resource.json -text
+dsc/manifests/3.3.0/WindowsPowerShell_adapter.dsc.resource.json -text
+dsc/manifests/3.3.0/appx.dsc.extension.json -text
+dsc/manifests/3.3.0/assertion.dsc.resource.json -text
+dsc/manifests/3.3.0/echo.dsc.resource.json -text
+dsc/manifests/3.3.0/featureondemand.dsc.resource.json -text
+dsc/manifests/3.3.0/group.dsc.resource.json -text
+dsc/manifests/3.3.0/include.dsc.resource.json -text
+dsc/manifests/3.3.0/optionalfeature.dsc.resource.json -text
+dsc/manifests/3.3.0/osinfo.dsc.resource.json -text
+dsc/manifests/3.3.0/powershell.dsc.extension.json -text
+dsc/manifests/3.3.0/powershell.dsc.resource.json -text
+dsc/manifests/3.3.0/psscript.dsc.resource.json -text
+dsc/manifests/3.3.0/reboot_pending.dsc.resource.json -text
+dsc/manifests/3.3.0/registry.dsc.manifests.json -text
+dsc/manifests/3.3.0/sshd-subsystem.dsc.resource.json -text
+dsc/manifests/3.3.0/sshd-subsystemList.dsc.resource.json -text
+dsc/manifests/3.3.0/sshd-windows.dsc.resource.json -text
+dsc/manifests/3.3.0/sshd_config.dsc.resource.json -text
+dsc/manifests/3.3.0/windows_feature.dsc.resource.json -text
+dsc/manifests/3.3.0/windows_firewall.dsc.resource.json -text
+dsc/manifests/3.3.0/windows_service.dsc.resource.json -text
+dsc/manifests/3.3.0/windowspowershell.dsc.resource.json -text
+dsc/manifests/3.3.0/windowsupdate.dsc.resource.json -text
+dsc/manifests/3.3.0/winpsscript.dsc.resource.json -text
+dsc/manifests/3.3.0/wmi.dsc.resource.json -text
+dsc/manifests/3.4.0-preview.1/PowerShell_adapter.dsc.resource.json -text
+dsc/manifests/3.4.0-preview.1/RunCommandOnSet.dsc.resource.json -text
+dsc/manifests/3.4.0-preview.1/WindowsPowerShell_adapter.dsc.resource.json -text
+dsc/manifests/3.4.0-preview.1/appx.dsc.extension.json -text
+dsc/manifests/3.4.0-preview.1/assertion.dsc.resource.json -text
+dsc/manifests/3.4.0-preview.1/echo.dsc.resource.json -text
+dsc/manifests/3.4.0-preview.1/environment_variable.dsc.manifests.json -text
+dsc/manifests/3.4.0-preview.1/featureondemand.dsc.resource.json -text
+dsc/manifests/3.4.0-preview.1/filecontent.dsc.resource.json -text
+dsc/manifests/3.4.0-preview.1/group.dsc.resource.json -text
+dsc/manifests/3.4.0-preview.1/include.dsc.resource.json -text
+dsc/manifests/3.4.0-preview.1/optionalfeature.dsc.resource.json -text
+dsc/manifests/3.4.0-preview.1/osinfo.dsc.resource.json -text
+dsc/manifests/3.4.0-preview.1/powershell.dsc.extension.json -text
+dsc/manifests/3.4.0-preview.1/powershell.dsc.resource.json -text
+dsc/manifests/3.4.0-preview.1/psscript.dsc.resource.json -text
+dsc/manifests/3.4.0-preview.1/reboot_pending.dsc.resource.json -text
+dsc/manifests/3.4.0-preview.1/registry.dsc.manifests.json -text
+dsc/manifests/3.4.0-preview.1/sshd-subsystem.dsc.resource.json -text
+dsc/manifests/3.4.0-preview.1/sshd-subsystemList.dsc.resource.json -text
+dsc/manifests/3.4.0-preview.1/sshd-windows.dsc.resource.json -text
+dsc/manifests/3.4.0-preview.1/sshd_config.dsc.resource.json -text
+dsc/manifests/3.4.0-preview.1/windows_feature.dsc.resource.json -text
+dsc/manifests/3.4.0-preview.1/windows_firewall.dsc.resource.json -text
+dsc/manifests/3.4.0-preview.1/windows_service.dsc.resource.json -text
+dsc/manifests/3.4.0-preview.1/windowspowershell.dsc.resource.json -text
+dsc/manifests/3.4.0-preview.1/windowsupdate.dsc.resource.json -text
+dsc/manifests/3.4.0-preview.1/winpsscript.dsc.resource.json -text
+dsc/manifests/3.4.0-preview.1/wmi.dsc.resource.json -text
+dsc/schemas/generated-3.3.0/adapted-dsc-resource-manifest.json -text
+dsc/schemas/generated-3.3.0/configuration-export-result.json -text
+dsc/schemas/generated-3.3.0/configuration-get-result.json -text
+dsc/schemas/generated-3.3.0/configuration-set-result.json -text
+dsc/schemas/generated-3.3.0/configuration-test-result.json -text
+dsc/schemas/generated-3.3.0/configuration.json -text
+dsc/schemas/generated-3.3.0/dsc-resource.json -text
+dsc/schemas/generated-3.3.0/extension-discover-result.json -text
+dsc/schemas/generated-3.3.0/extension-manifest.json -text
+dsc/schemas/generated-3.3.0/function-definition.json -text
+dsc/schemas/generated-3.3.0/get-result.json -text
+dsc/schemas/generated-3.3.0/include.json -text
+dsc/schemas/generated-3.3.0/manifest-list.json -text
+dsc/schemas/generated-3.3.0/resolve-result.json -text
+dsc/schemas/generated-3.3.0/resource-get-result.json -text
+dsc/schemas/generated-3.3.0/resource-manifest.json -text
+dsc/schemas/generated-3.3.0/resource-set-result.json -text
+dsc/schemas/generated-3.3.0/resource-test-result.json -text
+dsc/schemas/generated-3.3.0/resource.json -text
+dsc/schemas/generated-3.3.0/restart-required.json -text
+dsc/schemas/generated-3.3.0/set-result.json -text
+dsc/schemas/generated-3.3.0/test-result.json -text
+dsc/schemas/generated-3.4.0-preview.1/adapted-dsc-resource-manifest.json -text
+dsc/schemas/generated-3.4.0-preview.1/configuration-export-result.json -text
+dsc/schemas/generated-3.4.0-preview.1/configuration-get-result.json -text
+dsc/schemas/generated-3.4.0-preview.1/configuration-set-result.json -text
+dsc/schemas/generated-3.4.0-preview.1/configuration-test-result.json -text
+dsc/schemas/generated-3.4.0-preview.1/configuration.json -text
+dsc/schemas/generated-3.4.0-preview.1/dsc-resource.json -text
+dsc/schemas/generated-3.4.0-preview.1/extension-discover-result.json -text
+dsc/schemas/generated-3.4.0-preview.1/extension-manifest.json -text
+dsc/schemas/generated-3.4.0-preview.1/function-definition.json -text
+dsc/schemas/generated-3.4.0-preview.1/get-result.json -text
+dsc/schemas/generated-3.4.0-preview.1/include.json -text
+dsc/schemas/generated-3.4.0-preview.1/manifest-list.json -text
+dsc/schemas/generated-3.4.0-preview.1/resolve-result.json -text
+dsc/schemas/generated-3.4.0-preview.1/resource-get-result.json -text
+dsc/schemas/generated-3.4.0-preview.1/resource-manifest.json -text
+dsc/schemas/generated-3.4.0-preview.1/resource-set-result.json -text
+dsc/schemas/generated-3.4.0-preview.1/resource-test-result.json -text
+dsc/schemas/generated-3.4.0-preview.1/resource.json -text
+dsc/schemas/generated-3.4.0-preview.1/restart-required.json -text
+dsc/schemas/generated-3.4.0-preview.1/set-result.json -text
+dsc/schemas/generated-3.4.0-preview.1/test-result.json -text
+dsc/schemas/repo-release-v3.3/bundled/config/document.json -text
+dsc/schemas/repo-release-v3.3/bundled/extension/manifest.json -text
+dsc/schemas/repo-release-v3.3/bundled/outputs/config/get.json -text
+dsc/schemas/repo-release-v3.3/bundled/outputs/config/set.json -text
+dsc/schemas/repo-release-v3.3/bundled/outputs/config/test.json -text
+dsc/schemas/repo-release-v3.3/bundled/outputs/resource/get.json -text
+dsc/schemas/repo-release-v3.3/bundled/outputs/resource/list.json -text
+dsc/schemas/repo-release-v3.3/bundled/outputs/resource/set.json -text
+dsc/schemas/repo-release-v3.3/bundled/outputs/resource/test.json -text
+dsc/schemas/repo-release-v3.3/bundled/resource/manifest.json -text
+dsc/zip-extras/3.3.0/dsc.settings.json -text
+dsc/zip-extras/3.3.0/dsc_default.settings.json -text
+dsc/zip-extras/3.3.0/windows_baseline.dsc.yaml -text
+dsc/zip-extras/3.3.0/windows_inventory.dsc.yaml -text
+dsc/zip-extras/3.4.0-preview.1/dsc.settings.json -text
+dsc/zip-extras/3.4.0-preview.1/dsc_default.settings.json -text
+dsc/zip-extras/3.4.0-preview.1/windows_baseline.dsc.yaml -text
+dsc/zip-extras/3.4.0-preview.1/windows_inventory.dsc.yaml -text
+entra/dsregcmd-fields.csv -text
+graph/csdl-device.properties.csv -text
+graph/csdl-managedDevice.properties.csv -text
+graph/csdl-windowsAutopilotDeviceIdentity.properties.csv -text
+graph/csdl/device.beta.xml -text
+graph/csdl/device.v1.0.xml -text
+graph/csdl/managedDevice.beta.xml -text
+graph/csdl/managedDevice.v1.0.xml -text
+graph/csdl/windowsAutopilotDeviceIdentity.beta.xml -text
+graph/csdl/windowsAutopilotDeviceIdentity.v1.0.xml -text
+graph/permission-ids.csv -text
+graph/permissions.csv -text
+graph/tcm-csdl-beta.xml -text
+graph/tcm-csdl-v1.0.xml -text
+logs/ecs-log.yml -text
+logs/otel-filelogreceiver.config.csv -text
+logs/otel-filelogreceiver.metadata.yaml -text
+logs/otel-semconv-code-registry.yaml -text
+logs/otel-semconv-log-registry.yaml -text
+logs/otel-windowseventlogreceiver.config.csv -text
+logs/otel-windowseventlogreceiver.metadata.yaml -text
+mcp/schema/2026-07-28/schema.json -text
+mcp/schema/2026-07-28/schema.ts -text
+mecm/adminservice-routes.csv -text
+mecm/client-operation-types.csv -text
+mecm/cmpivot-entities.csv -text
+mecm/log-files.csv -text
+mecm/rbac-permissions.csv -text
+mecm/sql-views-compliance.csv -text
+privacy/gliner-models.csv -text
+privacy/presidio-entities.csv -text
+privacy/presidio-example_recognizers.yaml -text
+privacy/presidio-recognizer-registry.schema.json -text
+security/artifacts/disa/U_MS_Windows_11_STIG_V2R9_Manual-xccdf.xml -text
+security/artifacts/disa/U_MS_Windows_Server_2025_STIG_V1R3_Manual-xccdf.xml -text
+security/artifacts/disa/stig-win11-v2r9-rules.csv -text
+security/artifacts/disa/stig-ws2025-v1r3-rules.csv -text
+security/artifacts/microsoft/intune-baseline-overview.md -text
+security/artifacts/microsoft/intune-baseline-ref-windows-mdm-settings.md -text
+security/artifacts/microsoft/win11-24h2-baseline-policyrules.csv -text
+security/artifacts/mitre/attack-subset.csv -text
+security/artifacts/osconfig/SecurityBaseline_WindowsServer_2025-2606.csv -text
+sqlserver/mssql-server-tags.json -text
+# pinned:end

@@ -39,6 +39,7 @@ Run `/kb-setup` (Claude Code), or do the same by hand:
 | `python3 _tools/rag.py show PATH:LINE -n 30` / `src S123` / `topics [DOMAIN]` | read lines / resolve a source id (`S123` or `S-k3f7q2zd`) / list articles |
 | `python3 _tools/kbid.py url <URL>` / `answer "<question>"` / `check` | id for a new source / `QK-<slug>` for a new answer / hash-id consistency |
 | `python3 _tools/build_index.py [--check]` | regenerate `_coverage.csv`, the README coverage table and `used_in` from the articles (`--check`: report only, exit 1 if stale) |
+| `python3 _tools/kbgit.py fix [--check] [--base REV]` | after any merge or pull: dedupe/merge the union-merged ledgers, renumber colliding legacy ids, rebuild the index (exit 1 `--check` stale, 2 needs a human); `fmt` only canonicalises the CSV ledgers |
 | `python3 _tools/check.py` | source ids, superseded_by, answer ids, citations, artifacts, front matter, CSV shape |
 | `python3 _tools/fetch.py --offline` | pinned artifacts vs their sha256 |
 | `python3 _tools/fetch.py --status --topic T` | offline: when a topic's sources were last fetched or changed |
@@ -67,6 +68,13 @@ Run `/kb-setup` (Claude Code), or do the same by hand:
 - Licensing: our own words, quotes of 25 words or fewer; verbatim only under permissive licences (MIT, Apache-2.0, CC BY 4.0) with attribution; never copy CIS or ISO text. Microsoft Learn content fetched through MCP is paraphrased.
 - Placeholders only in examples: `PL-LT-00123`, `PL-SRV-0042`, `corp.example.com`, tenant `00000000-0000-0000-0000-000000000000`, `jan.kowalski`. Never real hostnames, tenants, people or secrets.
 - `UNK` and `COMMUNITY` facts are leads to verify, not a basis to build on.
+
+## Merging
+
+- `.gitattributes` merges the append-only ledgers (`_sources.csv`, `_fetch_state.csv`, `_answers.md`, `_gaps.md`, `_conflicts.md`) and the generated `_coverage.csv` and `_tools/lint_baseline.txt` with git's built-in union driver: parallel additions merge without conflict markers, but git keeps both sides' lines, so a row both sides touched may appear twice. Nothing to configure per clone.
+- Writers: append rows and blocks, keep each CSV record on one line, never reorder or rewrap existing lines.
+- After any merge or pull: `python3 _tools/kbgit.py fix`, then `python3 _tools/tests.py`. If two branches took the same legacy id, fix asks for `--base $(git merge-base A B)` and renumbers the new rows to hash ids. Exit 2 means a human decision (listed); nothing was written.
+- `README.md` merges normally; a conflict inside its coverage table is rebuilt by fix (then `git add README.md`).
 
 ## Agent conduct
 
