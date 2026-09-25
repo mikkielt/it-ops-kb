@@ -23,7 +23,7 @@ Parameter-level matching for MCP tools is only possible via `--disallowedTools` 
 - A bare-name deny removes the tool from Claude's context entirely. [DOC S742]
 - Settings files skip any `mcp__` rule with parentheses; MCP parameter matching requires a deny rule via `--disallowedTools`. [DOC S742]
 - `allowManagedPermissionRulesOnly` makes managed settings the only source of permission rules. [DOC S742]
-- `_meta["anthropic/requiresUserInteraction"]: true` on a tool in `tools/list` forces its permission prompt on every call, even in acceptEdits/auto/bypassPermissions, with no "don't ask again"; allow rules and hook `"allow"` do not skip it; `dontAsk` mode denies it. Requires v2.1.199+. [DOC S740]
+- `_meta["anthropic/requiresUserInteraction"]: true` (the JSON boolean only) on a tool in `tools/list` forces its permission prompt on every call, even in acceptEdits/auto/bypassPermissions, with no "don't ask again"; matching allow rules do not skip it; `dontAsk` mode denies it; with `--permission-prompt-tool` an `allow` result is converted to a deny, while the Agent SDK `canUseTool` callback can approve it. Requires v2.1.199+. [DOC S740]
 - Plugin-bundled server tools are named `mcp__plugin_<plugin>_<server>__<tool>`. [DOC S743]
 - Claude Code displays tool annotations and titles in the `/mcp` view (since 1.0.44). [DOC S746]
 - Whether Claude Code uses `readOnlyHint`/`destructiveHint` in permission decisions: not documented in permissions or MCP pages. [UNK]

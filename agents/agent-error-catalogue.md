@@ -3,7 +3,7 @@ topic: agents/agent-error-catalogue
 priority: P1
 applies_to: "Claude API/Claude Code as documented 2026-09-25; extends claude/tool-output-limits.md"
 retrieved_utc: 2026-09-25
-sources: [S1847, S1857, S1858, S1855, S1861, S1862, S1864, S1842, S1843, S1865, S1868]
+sources: [S1847, S1857, S1858, S1855, S1861, S1862, S1864, S1842, S1843, S1865, S1867, S1869, S1860, S1850, S-qso6o6wu]
 status: partial
 ---
 
@@ -71,22 +71,25 @@ keeping a project's `CLAUDE.md`, skills and MCP tool definitions inside document
   `--allowedTools` scope, rather than silently hanging or failing opaquely. [DOC/DER S1864 — changelog entry, not an
   exhaustive permission-denial reference page]
 - **Compaction effects, confirmed via changelog:** compaction can itself fail if the summarization request is
-  refused (fixed 2.1.281 by retrying on a fallback model); a hook-driven session (for example an active `/goal`)
+  refused (fixed 2.1.282 by retrying on a fallback model); a hook-driven session (for example an active `/goal`)
   previously ended with "Prompt is too long" instead of compacting when context overflowed a second time (fixed
   2.1.274); a restored memory file's relative "age" note re-rendering per request invalidated the prompt cache after
   every compaction/resume (fixed 2.1.275). [DOC S1864]
 - **Claude Code's "Prompt is too long" error, confirmed as a real, named, recoverable condition** (not just an
-  inference from context-window math): 2.1.281 "Improved 'Prompt is too long' recovery in sessions dominated by one
-  very large first prompt: that prompt is now summarized on its own instead of being left out." [DOC S1864]
+  inference from context-window math): 2.1.281 improved "Prompt is too long" recovery in sessions dominated by one
+  very large first prompt, which is now summarized on its own "instead of being left out of the summary."
+  [DOC S1864]
 - **`stop_reason` values beyond the ones this file already covered** (`end_turn`, `stop_sequence`, `max_tokens`,
-  `tool_use`): `pause_turn` (a long-running server-side operation paused rather than ended the turn; the caller
-  resends the paused response unmodified to resume it), `refusal` (the model declined to continue generating, a
-  terminal outcome that should not be retried unmodified), and `model_context_window_exceeded` (the context window
-  was exceeded mid-generation, distinct from the request-time `413 request_too_large`, which fires before generation
-  starts). [DER S1868 — derived from the Claude tool-use/messages documentation set; the exact wording of each value
-  was not independently re-verified against a single canonical stop-reason reference page in this pass, see
-  gaps.md] Separately, a proxy bug where a trailing usage-only frame dropped the true `stop_reason` was fixed in
-  Claude Code 2.1.281. [DOC S1864]
+  `tool_use`), per Anthropic's "Stop reasons and fallback" reference: `pause_turn` (the server-side sampling loop
+  hit its iteration limit, 10 per request by default, while running server tools such as web search; the caller
+  sends the response back as-is to let Claude finish; a response waiting on a client `tool_use` is `tool_use`,
+  never `pause_turn`), `refusal` (Claude declined to respond; safety classifiers return it as a normal HTTP 200,
+  not an error; `stop_details` names the policy category, and the documented handling is to retry on a fallback
+  model rather than resend the same request to the same model), and `model_context_window_exceeded` (the response
+  filled the model's context window and should be treated as truncated; distinct from the request-time
+  `413 request_too_large`, which fires before generation starts; returned without a beta header on Sonnet 4.5 and
+  newer). [DOC S-qso6o6wu] Separately, a proxy bug where a trailing usage-only frame dropped the true
+  `stop_reason` was fixed in Claude Code 2.1.281. [DOC S1864]
 - **Unsupported JSON Schema keywords / strict-mode restrictions, per vendor:**
   - *OpenAI* (function calling, strict mode): every object in the schema must set `additionalProperties: false` and
     list every property — including optional ones (typed `["string","null"]` etc.) — in `required`; a schema that

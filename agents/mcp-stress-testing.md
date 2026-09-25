@@ -3,7 +3,7 @@ topic: agents/mcp-stress-testing
 priority: P1
 applies_to: "a self-hosted stdio MCP server for device management (example design: operation/tier/limit table, instance kinds)"
 retrieved_utc: 2026-09-25
-sources: [S1883, S1884, S1890, S1891, S1892, S1901, S1902, S1903, S1904, S1905]
+sources: [S1883, S1884, S1890, S1891, S1892, S1901, S1902, S1903, S1904, S1905, S1935]
 status: partial
 ---
 
@@ -24,7 +24,7 @@ kind exists to enforce.
 - **DER — tool-count scaling**: an example design lists 13 named operations (`device.show` … `change.draft`);
   a stress run should confirm agent behaviour (routing, confirmation) is unchanged as the tool list grows
   toward this ceiling, since Anthropic's tool-authoring guidance calls out namespacing and clear boundaries
-  as what keeps a growing tool set usable for an agent. [DER S1882]
+  as what keeps a growing tool set usable for an agent. [DER S1935]
 - **DER — ambiguous/adversarial questions**: if targets are restricted to "device, collection, or directory
   group" only, a stress set should include requests naming an undeclared target type (a team name, "the
   usual devices") and check for a refusal or disambiguation, not a best-effort guess (see `BQ12-BQ15`,
@@ -68,7 +68,7 @@ kind exists to enforce.
 ## Reference
 | Stress dimension (QG11) | Design anchor | Closest tool/mechanism found | Tag |
 |---|---|---|---|
-| tool-count scaling | operation table (13 ops) | Anthropic tool-writing guidance (S1882) | DER |
+| tool-count scaling | operation table (13 ops) | Anthropic tool-writing guidance (S1935) | DER |
 | ambiguous/adversarial questions | target scheme | promptfoo assertions / model grader | DER |
 | injection in tool results | logs, generic query operation | promptfoo "mcp"/jailbreak plugins (S1884); PyRIT XPIAOrchestrator (S1892) | DER |
 | oversized output | pagination, 2000-char truncation | custom assertion; no vendor MCP tool measures this directly | DER |

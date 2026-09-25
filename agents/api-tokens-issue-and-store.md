@@ -85,10 +85,13 @@ Encrypted, DPAPI-NG, age/sops) and `mcp/authorization.md` (MCP OAuth 2.1, DCR de
   credentials, such as short-lived tokens fetched from a vault," a directly reusable integration point for
   wiring a Vault- or Key-Vault-backed secret into the CLI process without an argv or static-env-var
   credential. [DOC S2041]
-- MCP server OAuth tokens (distinct from Claude Code's own login) are stored "securely" in the system
-  credential store (macOS Keychain) or a credentials file on other platforms, never in `.mcp.json` /
-  `~/.claude.json`, and scoped per MCP server endpoint — authenticating one server does not authenticate
-  another. [DOC S740]
+- MCP server OAuth tokens (distinct from Claude Code's own login) are "stored securely and refreshed
+  automatically"; Claude Code stores OAuth sign-ins per endpoint, so signing in to one server definition
+  does not sign in a different endpoint; "Clear authentication" in `/mcp` or `claude mcp logout <name>`
+  clears them, and `claude mcp remove` also deletes the server's stored OAuth tokens and client
+  registration. A pre-configured OAuth client secret (`--client-secret`) is kept in the system keychain
+  (macOS) or a credentials file, not in the config; the page does not name the storage location of the
+  OAuth tokens themselves. [DOC S740]
 
 ### External secret stores: Azure Key Vault and HashiCorp Vault
 - **Azure Key Vault**: authentication via Microsoft Entra ID; authorization via **Azure RBAC** (covers

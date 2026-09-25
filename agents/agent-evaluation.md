@@ -3,7 +3,7 @@ topic: agents/agent-evaluation
 priority: P1
 applies_to: "MCP Inspector v2, Inspect 0.x (AISI), DeepEval, promptfoo, PyRIT 0.11.0, garak, OpenAI evals (deprecating), tau-bench/tau2-bench v1.0.1, Anthropic eval guidance 2026-01"
 retrieved_utc: 2026-09-25
-sources: [S1880, S1881, S1882, S1886, S1887, S1888, S1889, S1892, S1893, S1894, S1895, S1896, S1897, S1898, S1899, S1900]
+sources: [S1880, S1881, S1883, S1884, S1885, S1886, S1887, S1888, S1889, S1890, S1891, S1892, S1893, S1894, S1895, S1896, S1898, S1899, S1900, S1901, S1902, S1903, S1904, S1905, S1935]
 status: partial
 ---
 
@@ -30,7 +30,7 @@ regression suites continuously once a task earns a place there.
 - **Anthropic's "Writing effective tools for agents"** (2025-09-11) is guidance for authoring tools, not a
   test harness, but its principles (clear namespacing, meaningful context in responses, token-efficient
   output, pagination/filtering/truncation with sensible defaults) are the properties a stress-test should
-  check for. [DOC S1882]
+  check for. [DOC S1935]
 - **promptfoo**'s MCP provider calls MCP tools directly against a `command`/`args` (stdio) or `path`
   target, and asserts on the tool's response (contains, valid-JSON, which tool was routed to); it does not
   compute a benchmark-style pass rate on its own — assertions are configured per test case. [DOC S1883]
@@ -86,7 +86,7 @@ regression suites continuously once a task earns a place there.
 - Anthropic's platform docs on defining success criteria recommend detailed rubrics with hard pass/fail
   language (e.g. a required phrase, otherwise automatically "incorrect"), and for LLM-based grading, asking
   the grading model to reason first and then discarding the reasoning before emitting the score, which the
-  docs state increases grading accuracy on complex judgment tasks. [DOC S1897, S1898]
+  docs state increases grading accuracy on complex judgment tasks. [DOC S1898]
 - OpenAI's evaluation best-practices guidance: combine metrics with human judgment, adopt "eval-driven
   development" (evaluate early and often, write scoped tests at every stage), grade with a different (and
   ideally stronger) model than the one being graded, and validate model-graded results against human

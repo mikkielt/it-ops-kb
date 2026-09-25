@@ -3,7 +3,7 @@ topic: agents/agent-cost-governance
 priority: P2
 applies_to: "Claude Code docs (code.claude.com, retrieved 2026-09-25); Anthropic Usage & Cost Admin API (platform.claude.com, retrieved 2026-09-25)"
 retrieved_utc: 2026-09-25
-sources: [S2013]
+sources: [S2013, S2132]
 status: complete
 ---
 
@@ -21,14 +21,14 @@ for any team running a multi-operation MCP tool set that wants per-operation cos
 
 ## Facts
 - Published baseline: ~$13/developer/active-day, $150-250/developer/month; <$30/active-day for 90% of users.
-  [DOC S2013]
+  [DOC S2132]
 - `modelPricing` (managed-settings-only key, Claude Code v2.1.242+) rewrites the price basis used by `/usage`, the
   status line, and OTel cost figures to an org's contracted rates (`multiplier` and/or per-model `overrides`); a
   markup (`multiplier`>1) requires v2.1.271+; the setting changes reporting only, not Anthropic's actual charge.
-  [DOC S2013]
+  [DOC S2132]
 - TPM/RPM per-user recommendations fall as team size grows (fewer users are concurrently active in larger teams):
   200-300k TPM / 5-7 RPM per user at 1-5 users, down to 10-15k TPM / 0.25-0.35 RPM per user at 500+ users. [DOC
-  S2013]
+  S2132]
 - Three purchase paths differ in visibility/caps: (a) Claude for Teams/Enterprise — per-seat allowance on a rolling
   5-hour + weekly window, daily spend-report CSV, adoption dashboard, and for Enterprise the Enterprise Analytics
   API (`read:analytics` scope) for per-user usage/cost; (b) Claude Console (API) — workspace spend limits, workspace
@@ -37,7 +37,7 @@ for any team running a multi-operation MCP tool set that wants per-operation cos
   account with no Anthropic-side dashboard; per-user attribution there requires OpenTelemetry export, a self-hosted
   "Claude apps gateway," or a third-party LLM gateway (e.g. LiteLLM, unaffiliated with Anthropic, not security-
   audited). OpenTelemetry export is stated to be "the only option" giving per-user token/cost metrics in near real
-  time on every setup. [DOC S2013]
+  time on every setup. [DOC S2132]
 - Admin Usage & Cost API (`platform.claude.com`, Admin API key or `org:admin` OAuth scope; workspace-scoped keys
   do not work): `/v1/organizations/usage_report/messages` returns token counts groupable by model, workspace, API
   key, service tier, context window, data residency (`inference_geo`), or speed; bucket widths `1m` (up to 1,440
@@ -52,10 +52,10 @@ for any team running a multi-operation MCP tool set that wants per-operation cos
 - Model-choice cost guidance: default to Sonnet for coding, reserve Opus for complex architecture/reasoning;
   subagents can be pinned to a cheaper model independently (e.g. `model: haiku`); multi-instance "agent teams" use
   roughly 7x more tokens than a standard session when teammates run in plan mode, because each teammate holds its
-  own context window; agent teams are opt-in (`CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`). [DOC S2013]
+  own context window; agent teams are opt-in (`CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`). [DOC S2132]
 - `/usage`'s attribution breakdown covers skills, subagents, plugins, and MCP servers — but attribution is per MCP
   *server*, not per individual tool inside a server (a server's share counts requests that consumed any one of its
-  tool results). [DOC S2013; gap: no per-tool attribution documented, see `gaps.md`]
+  tool results). [DOC S2132; gap: no per-tool attribution documented, see `gaps.md`]
 
 ## Reference
 | Purchase path | See spend | Cap spend | Per-user reporting |
@@ -69,7 +69,7 @@ A team of 20-30 engineers running Claude Code as their CLI front end would sit i
 "5-20 users" TPM/RPM band (100-150k TPM, 2.5-3.5 RPM per user) per Anthropic's published sizing table. For a
 system whose policy runs each instance on the engineer's own workstation rather than through a shared gateway,
 per-engineer cost attribution has to come from each engineer's own Claude Console/Enterprise account reporting,
-not from a central mechanism [DER S2013].
+not from a central mechanism [DER S2132].
 
 ### General implication
 A "no always-on service, no container, no broker" policy rules out a central LLM gateway as the cost-attribution

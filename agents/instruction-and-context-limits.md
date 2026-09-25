@@ -3,7 +3,7 @@ topic: agents/instruction-and-context-limits
 priority: P1
 applies_to: "Copilot Studio, M365 Copilot declarative agent manifest 1.4/1.8, GitHub Copilot, OpenAI Assistants/custom GPTs, Gemini API, Claude Code/Projects/Skills, as published 2026-09-25"
 retrieved_utc: 2026-09-25
-sources: [S1840, S1841, S1842, S1843, S1844, S1845, S1846, S1848, S1849, S1850, S1851, S1852, S1853, S1854, S1855, S1856, S1859, S1860, S1863, S1864, S1865, S1866, S1867, S1869, S1870]
+sources: [S1840, S1841, S1842, S1843, S1844, S1845, S1846, S1847, S1848, S1849, S1850, S1851, S1852, S1853, S1854, S1855, S1856, S1857, S1859, S1860, S1863, S1864, S1865, S1866, S1867, S1869, S1870]
 status: partial
 ---
 
@@ -126,8 +126,8 @@ a generic 400 on the underlying model call, worded around "exceeds the maximum" 
   `required`, `enum`, `description` without stating the full supported/unsupported OpenAPI-subset keyword list. [DOC
   S1866 — narrower confirmation than a full "supported subset" enumeration; still leaves the community-reported
   ~85-90K-token boundary (S1846) as the best available number]
-- **Claude Code CHANGELOG (`github.com/anthropics/claude-code`, entries through v2.1.281, fetched 2026-09-25)**
-  confirms CLAUDE.md-size tooling is active and evolving, not static: "2.1.275: Improved the large CLAUDE.md startup
+- **Claude Code CHANGELOG (`github.com/anthropics/claude-code`, entries through v2.1.282, fetched 2026-09-25)**
+  confirms CLAUDE.md-size tooling is active and evolving, not static: 2.1.281 "Improved the large CLAUDE.md startup
   notice to also count instruction files together, so many mid-sized files and @-imports are caught" — i.e. Claude
   Code already warns about *combined* instruction-file size (CLAUDE.md + imports + rules), a mechanism closer to
   Copilot Studio's combined-instructions threshold (`OpenAIAdditionalInstructionsLengthExceededLimit`) than to any

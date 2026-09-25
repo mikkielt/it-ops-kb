@@ -116,11 +116,16 @@ group claims/overage, PIM-for-Groups sync latency).
   `auth/group-claims.md` documents for human users does not carry over. [DOC S2053]
 - App roles are defined per application registration, can target `Users/Groups`, `Applications`, or both,
   and — when assigned to an application — become **application permissions** requiring admin consent, the
-  documented shape for "daemon apps or back-end services that... authenticate and make authorized API
-  calls as themselves, without user interaction." [DOC S2053] Microsoft's own stated reason to prefer app
+  documented shape for daemon apps or back-end services that authenticate and call APIs as themselves,
+  with no user involved. [DOC S2053] Microsoft's own stated reason to prefer app
   roles over group claims: an app role's value is fixed by the API's own registration, so "an app using
   groups for authorization will break in the next tenant as both the group ID and name could be
   different" — a portability property groups do not have. [DOC S2053]
+- App roles and exposed delegated permission scopes share a default limit of 700 permission definitions per
+  application or service principal (disabled definitions still count; a service principal's count includes
+  definitions inherited from its application), separate from the 1,200-entry manifest limit; Microsoft advises
+  roles for stable categories (e.g. Reader/Writer/Administrator) rather than one role per resource or action,
+  with finer-grained permissions kept in the application's own authorization data. [DOC S2053]
 
 ### OWASP Non-Human Identities Top 10, mapped to this part's own findings (deepening QG25)
 - OWASP's ten NHI risks (2025): NHI1 Improper Offboarding, NHI2 Secret Leakage, NHI3 Vulnerable

@@ -84,9 +84,13 @@ choice (Presidio + spaCy `en_core_web_lg`, in-process) is not itself re-argued h
   request — i.e. even a very short document is billed as at least 300 characters. [DOC S2099]
 - **Google Sensitive Data Protection** (the current name for Cloud DLP; API name unchanged) ships over
   200 built-in infoType detectors. [DOC S2100, S2108]
-- Google's published rate schedule is by bytes processed and by mode: **discovery** ≈ $1.00/GB,
-  **storage inspection** ≈ $1.50/GB, **streaming** ≈ $0.05/GB (per a fetched pricing summary; not
-  independently reproduced from the raw pricing page tables). [DOC S2101 — see `gaps.md`]
+- Google's published rate schedule (USD, per GiB per month per account, first GiB free in each
+  schedule) is by bytes and by mode: **content methods** (`content.inspect`/`deidentify`/`reidentify`,
+  `image.redact`) US$3.00 inspected and US$2.00
+  transformed up to 1 TiB, then US$2.00 / US$1.00, with a 1 KB minimum per request; **hybrid jobs**
+  (data from any source) US$3.00 then US$2.00 above 1 TiB; **storage inspection/transformation jobs**
+  US$1.00 up to 50 TiB, US$0.75 to 500 TiB, US$0.60 above; **discovery** (data profiling) US$0.03 per GB
+  profiled in consumption mode, or US$2,500 per subscription unit. [DOC S2101]
 - No on-premises container or disconnected deployment for Google Sensitive Data Protection was found in
   the sources checked; it is presented in vendor docs as a Google Cloud-hosted API only. [UNK — 3 search
   attempts made, no container doc found]

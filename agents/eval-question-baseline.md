@@ -3,7 +3,7 @@ topic: agents/eval-question-baseline
 priority: P1
 applies_to: "tiered-confirmation MCP device-management server (example design), operation/tier table"
 retrieved_utc: 2026-09-25
-sources: [S1896, S1897, S1898, S1899]
+sources: [S1896, S1898, S1899]
 status: partial
 ---
 
@@ -20,7 +20,7 @@ kinds carry declared roles. It is a task input, not a decision. Every row uses e
 - Anthropic recommends starting an agent eval set small: "20-50 simple tasks drawn from real failures is a
   great start," with deterministic graders preferred where possible and LLM graders "where necessary." [DOC S1896]
 - Anthropic's platform docs recommend rubric-based, specific success criteria and, for LLM-based grading,
-  asking the grader to reason before scoring, then discarding the reasoning. [DOC S1897, S1898]
+  asking the grader to reason before scoring, then discarding the reasoning. [DOC S1898]
 - τ-bench's `pass^k` (all of k trials succeed) and `pass@k` (at least one of k succeeds) are defined by
   Sierra's own benchmark and paper. [DOC S1899]
 - **DER**: `BQ08`, `BQ21-BQ26`, `BQ47`, `BQ50` exercise the policy that tiers ≥ 2 are always confirmed,

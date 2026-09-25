@@ -88,7 +88,8 @@ Remaining gaps:
   additions are tagged `DER` rather than `DOC` for that reason, derived from the tool-use documentation set rather
   than quoted from one authoritative stop-reason table. A follow-up should fetch a page specifically titled around
   "handling stop reasons" (linked from `platform.claude.com/docs/en/agents-and-tools/tool-use/overview` as
-  `handling-stop-reasons`) and requote each value's exact definition as `DOC`.
+  `handling-stop-reasons`) and requote each value's exact definition as `DOC`. Resolved in the census of
+  2026-09-25: the page was fetched and the three values are now `DOC` facts citing S-qso6o6wu.
 - **The full "supported JSON Schema subset" reference pages** linked from both Anthropic's strict-tool-use page
   (`build-with-claude/structured-outputs#json-schema-limitations`) and OpenAI's structured-outputs guide were not
   independently fetched in this pass; both parent pages state restrictions exist without enumerating every excluded
