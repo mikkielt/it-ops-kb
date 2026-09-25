@@ -197,3 +197,4 @@ The only pattern still reading whole articles was a multi-part question (T4 in s
 - 233 ledger entries have no explicit topic link. 125 of them (118 in `_gaps.md`, 7 in `_conflicts.md`) are not even linked through their sources, because they name no source id and no path. `rag.py audit` cannot attribute them until someone adds a marker; `rag.py audit --unlinked [DOMAIN]` lists them. This is a one-time triage.
 - The 13 DOC/COMMUNITY tags without a source id need their sources found or their tag changed.
 - Grow `lookup_eval.csv` from real questions that miss: every failed `kb:` lookup is a candidate row.
+- Further optimizations (a lean lookup agent, batch packs, plugin split, aliases, a workspace review skill) and their effect when the kb runs as a plugin in another project are planned in `plan-token-optimization.md`.

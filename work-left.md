@@ -66,6 +66,8 @@ Not done here:
   3. Bring them in with `kbgit.py sync` and `/kb-git-sync`. The procedure is tested on synthetic copies in `_tools/test_research_merge.py`.
 
 ## 4. Token usage: make lookups deterministic
+**Next: `plan-token-optimization.md`** (decided 2026-09-25, not started): tasks T1-T14, in order, including plugin/host-project constraints and the host-project measurement.
+
 Done; see `token-usage-report.md`, "Re-measurement after the changes":
 - The six measured questions in fresh sessions: -74% input tokens, -72% output tokens, 351 -> 118 s.
 - A `kb:` prompt the kb covers costs no model tokens.
