@@ -83,6 +83,8 @@ class SyncInGit(unittest.TestCase):
         cls.article(cls.a, "a", [kbid.source_id(cls.URL_A1)], ["The first fact from clone a."])
         cls.commit(cls.a, "docs(kb): sync test a1")
         cls.push_a1 = cls.kbgit(cls.a, "sync", "--push")
+        # A's push is 1 commit, or 2 when fix had to sort its row into place (its hash id sorts before a later one)
+        cls.a1_pushed = int(cls.git(cls.remote, "rev-list", "--count", f"{cls.base}..main").strip())
         hb = kbid.source_id(cls.URL_B1)
         cls.add_source(cls.b, "S-", cls.URL_B1, "b1")
         cls.append(cls.b, "_answers.md", f"\n## {kbid.answer_id(cls.Q_B)}. {cls.Q_B}\n\nYes, it does. [DOC {hb}]\n")
@@ -208,7 +210,7 @@ class SyncInGit(unittest.TestCase):
     def test_dry_run_changes_nothing(self):
         r = self.dry
         self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
-        self.assertIn("local 1 ahead, 1 behind", r.stdout)
+        self.assertIn(f"local 1 ahead, {self.a1_pushed} behind", r.stdout)
         self.assertIn("would rebase 1 local commit(s)", r.stdout)
         self.assertIn("mechanical (fix): _sources.csv", r.stdout)
         self.assertEqual(self.b_after_dry, (self.b_head_before, "", self.b_sources_before))
