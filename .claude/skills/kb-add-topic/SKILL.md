@@ -13,13 +13,14 @@ Run each command on its own (no `;`, `&&`, pipes into other tools or loops): the
 
 ## 1. Avoid duplicates
 - `python3 _tools/rag.py search "<key terms>" -k 10` and `python3 _tools/rag.py topics <domain>`.
-- If an existing topic covers it, propose extending that topic instead, and stop until the user decides.
-- Use an existing domain directory when one fits. Slug: lowercase, hyphenated.
+- If an existing topic covers it, propose extending that topic instead, and stop until the user decides. The rules for extending versus a new topic, and for where a new one goes, are in `/kb-research` step 2.
+- Use an existing domain directory when one fits: the domain of the article that will link to the new topic. Never create a new top-level directory without the user's decision. Slug: lowercase, hyphenated.
 
 ## 2. Research official sources
 - Microsoft: `microsoft_docs_search` then `microsoft_docs_fetch`. Claude Code: `search_claude_code_docs`. MCP: `search_model_context_protocol`. Otherwise vendor docs, release notes, source repos. See `agents/doc-lookup-sources.md` for what is stable.
 - Never call `submit_feedback`.
 - Prefer a url pinned at a commit or version when one exists.
+- Read the full page before citing it (`microsoft_docs_fetch` for Learn; for other sites, fetch the page and keep the key sentence verbatim, at most 25 words, for the report). Cite the page the sentence is on; a fact whose sentence you cannot find is `[UNK]`, logged in `_gaps.md`.
 - Official sources give `DOC` facts. A non-official source is `COMMUNITY` and is never the only evidence for a DOC fact. Unconfirmed items are `UNK`.
 
 ## 3. Add sources first

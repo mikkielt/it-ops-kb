@@ -23,12 +23,22 @@ Run each command on its own (no `;`, `&&`, pipes into other tools or loops): the
 ## 2. Plan
 - List at most 8 sub-questions, each tied to an anchor topic (or to a proposed new topic when none fits) and each answering something the map shows is missing, `UNK`, stale or contested.
 - Leave out what the kb already answers with `DOC` facts unless you suspect it is outdated; then re-verify it rather than re-research it.
+- Decide per sub-question where its facts will live, with these rules:
+  - **Extend** the anchor topic when the facts are about the product or feature the article is about (its title and `applies_to`), close one of its `UNK` items or gaps, or number fewer than about five. Most research extends.
+  - **New topic** only for a distinct product, feature or protocol with its own official documentation, when no article's scope covers it, you expect at least five `DOC` facts, and folding it in would make an article cover two subjects. Link it from the anchor's Reference section, and the anchor from it.
+  - **Where a new topic goes**: in the domain directory of the anchor that will link to it (a Dataverse sync topic reached from the Power BI gateway articles goes in `powerbi/`). If no existing domain fits, do not create a new top-level directory: a new domain changes the README's domain list and the index. Propose one to the user and stop for that sub-question (record it under "Open" in the answer).
+  - Never create a topic that only restates facts the kb already has elsewhere; cite those facts from the answer instead.
 
 ## 3. Research
 - Official sources first, most specific first:
   - Microsoft: `microsoft_docs_search` then `microsoft_docs_fetch`. Claude Code: `search_claude_code_docs`. MCP spec: `search_model_context_protocol`.
   - Other vendors and open-source projects: WebSearch to find the vendor's own docs, release notes, API reference or repository, then WebFetch the page. Prefer a url pinned to a version, tag or commit.
   - `agents/doc-lookup-sources.md` lists the stable lookup sources.
+- **Read the full page before you cite it.** A search result is a pointer, not evidence: its snippet may come from another page, an older version or a neighbouring section.
+  - Microsoft Learn: `microsoft_docs_fetch` on the url you will cite, and find the sentence in the fetched text.
+  - Claude Code and MCP docs: read the page (`query_docs_filesystem_*` with `cat <page>.mdx`), not just the search hit.
+  - Any other site: WebFetch (or curl) the page and copy the key sentence verbatim, at most 25 words, into your notes with its url; the report lists each new fact with that quote.
+  - The source row is the page where the sentence is, not the page that linked to it. If you cannot find the sentence on any page you can cite, the fact is not `DOC`: drop it, or keep it as `[UNK]` and log where you looked in `_gaps.md`. Numbers (limits, sizes, latencies, dates) need the exact sentence every time.
 - Record each product's or feature's status as the vendor states it (GA, preview, beta, deprecated, end of support) in the fact itself. A preview feature can be recorded, but say "preview" in the fact and never present it as the recommended path.
 - Blogs, forums, vendor marketing and AI-generated wikis are `COMMUNITY`: a lead, never the only evidence for a `DOC` fact. Integrations that a third party claims but the vendor does not document are `COMMUNITY` or `UNK`.
 - Compare what you find with the existing facts. A disagreement goes to `_conflicts.md` with both sources. Do not overwrite an older fact without recording why.
@@ -37,7 +47,7 @@ Run each command on its own (no `;`, `&&`, pipes into other tools or loops): the
 ## 4. Write
 Follow the contract in README.md and `.claude/skills/kb-add-topic/SKILL.md` (source rows first, written with Python's `csv` module; one tag per fact; licence strings; placeholders only).
 - Extending an anchor topic: add bullets to its Facts section, add the new ids to its `sources:` header, update `retrieved_utc` and, if it changed, `status`. Do not edit `_coverage.csv`, the README table or `used_in`: step 5 regenerates them.
-- New subject with no anchor: create the topic as `/kb-add-topic` describes (priority `P3` unless the user gives one), and link it from the anchor's Reference section.
+- New topic, only where step 2 decided one: create it as `/kb-add-topic` describes (priority `P3` unless the user gives one) in the domain step 2 chose, and link it from the anchor's Reference section and back.
 - "How it fits": implications for this kb's frame (e.g. how an agent should call it, where secrets live, what tier an operation needs) are `DER` facts. State the derivation and the facts it rests on. Do not present a design choice as a vendor fact.
 - Add one answer to `_answers.md`, after the last `QK` entry (or at the end, before the `R` sections if there are none):
   ```
@@ -62,7 +72,8 @@ Follow the contract in README.md and `.claude/skills/kb-add-topic/SKILL.md` (sou
 
 ## 6. Report
 - The context map in brief: anchor topics and what the kb already knew.
-- What is new: facts added per topic, with a count by tag, new source ids, the `QK-<slug>` answer id.
+- What is new: facts added per topic, with a count by tag, new source ids, the `QK-<slug>` answer id, and for each new `DOC` fact from a non-Microsoft page the verbatim quote it rests on.
+- Where each fact went (extended topic or new topic) and why, per step 2's rules.
 - The answer to the question in a few lines, with the vendor status (GA/preview) of every product or feature it relies on.
 - Open items (`UNK`), conflicts found, and anything the user must decide.
 - Do not commit unless asked.
