@@ -42,6 +42,7 @@ Run `/kb-setup` (Claude Code), or do the same by hand:
 | `python3 _tools/fetch.py --status --topic T` | offline: when a topic's sources were last fetched or changed |
 | `python3 _tools/fetch.py --diff --topic T [--full] [--json]` | re-fetch a topic's sources and diff against the last fetch (exit 0 same, 1 changed, 2 error) |
 | `python3 _tools/stress_test.py` | robustness tests on throwaway copies of the kb |
+| `python3 _tools/tests.py` | what CI (`.gitlab-ci.yml`) runs: docs cohesion and leak scan; `--write-lint-baseline` accepts current lint errors as known debt |
 | `python3 .claude/skills/kb-verify/lint.py [PREFIX...]` | contract checks beyond check.py (report only) |
 
 ## Skills (`.claude/skills/`)
@@ -66,6 +67,6 @@ Run `/kb-setup` (Claude Code), or do the same by hand:
 
 - Never call a docs server's `submit_feedback` tool (denied in settings): it posts text outside the repo.
 - Do not edit files listed in `_artifacts.csv` by hand; they are pinned by sha256 (`fetch.py --refresh` rewrites them).
-- `_cache/` and `_private/` are local only; never commit them.
-- Before proposing a commit: `check.py` clean, `stress_test.py` passes if `_tools/` changed, and `/kb-verify` shows no new errors in the files you touched.
+- `_cache/` and `_private/` are local only; never commit them. Never add tenant ids, object ids, real hostnames, addresses or tokens; the CI leak scan fails on them. Add a value to `_tools/tests_allowlist.txt` only when it is public or a placeholder, with the reason.
+- Before proposing a commit: `python3 _tools/tests.py` passes (CI runs it), `stress_test.py` passes if `_tools/` changed, and `/kb-verify` shows no new errors in the files you touched.
 - Commit messages: conventional prefix (`docs(kb):`, `fix(kb):`, `feat(kb):`, `chore:`), imperative, body explaining why. Commit only when asked.

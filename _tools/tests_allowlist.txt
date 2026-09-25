@@ -1,0 +1,18 @@
+# Reviewed exceptions for _tools/tests.py: values that look like leaks but are not, and deliberate absent paths. Format: <kind> <value>  # reason
+# kinds: guid, ip, email, secret, path. Matching ignores case. Add an entry only after checking the value is public
+# or a documented placeholder; tenant ids, object ids and real addresses never belong here.
+
+ip    10.20.30.40    # example address in a pseudonymization test question (agents/eval-question-baseline.csv)
+ip    10.0.0.5       # example input for Presidio's IP_ADDRESS recognizer (privacy/presidio-entities.md)
+
+guid  ccc2a336-d7f3-4818-a213-272b7924213e  # public constant quoted from AKS gMSA docs (arch/k8s-gmsa-windows.md)
+guid  03b07b79-c5bc-4b5e-9bfa-13acf4a99998  # Microsoft first-party appId of the TCM service principal (graph/tcm-apis.md)
+guid  6b91db1b-f05b-405a-a0b2-e3f60b28d645  # Microsoft first-party appId quoted from Graph TCM docs (graph/tcm-apis.md)
+guid  01234567-89ab-cdef-0123-456789abcdef  # obviously sequential placeholder in a sample log line (mecm/baselines.md)
+guid  7dc6b6f1-e7f6-43c1-96e0-e1d16bc25c14  # public CMPivot script GUID from ConfigMgr docs (mecm/cmpivot.md)
+guid  3f2b8c1e-5d4a-4b7c-9e1f-2a3b4c5d6e7f  # made-up sample id in a Presidio example (privacy/presidio.md)
+guid  3d333250-30e4-4a82-9edc-756c68afc529  # public MITRE ATT&CK STIX id of T1562 (security/artifacts/mitre/attack-subset.md)
+
+# kind path: backtick paths that are deliberately absent from the repo
+path  .claude/settings.local.json   # per-user, untracked settings file named in the kb-setup skill
+path  dsc/docs-conceptual/dsc-3.0/reference/schemas/config/document.md   # path inside the upstream PowerShell-Docs-DSC repo (_gaps.md)

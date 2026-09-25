@@ -1,0 +1,31 @@
+# Minimal CI for it-ops-kb: documentation cohesion and leak detection. Stdlib Python only, nothing to install.
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS
+      when: never
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_COMMIT_TAG
+
+default:
+  image: python:3.12-slim
+  interruptible: true
+
+variables:
+  PYTHONDONTWRITEBYTECODE: "1"
+
+stages: [test]
+
+kb-tests:
+  stage: test
+  script:
+    - python3 _tools/tests.py
+
+tool-stress:
+  stage: test
+  script:
+    - python3 _tools/stress_test.py
+  rules:
+    - changes:
+        - _tools/**/*
+        - .claude/skills/**/*.py

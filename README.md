@@ -54,6 +54,7 @@ python _tools/fetch.py --diff --dir dsc --full --json   # same for a directory, 
 python _tools/fetch.py --diff --older-than 30           # only sources not fetched in 30 days (also --file PATH, --source S123)
 python _tools/fetch.py --status --file auth/kerberos.md # offline: last fetch and change dates
 python _tools/stress_test.py                           # robustness tests of the tools on throwaway kb copies (~10 s; --scale N, -k NAME)
+python _tools/tests.py                                 # CI: docs cohesion + leak scan (reviewed exceptions in _tools/tests_allowlist.txt)
 ```
 
 - `rag.py` builds no index file; a query takes about 0.1 s. `search` skips the root-level index files (`README.md`, `_answers.md`, `_gaps.md`, `_conflicts.md`, `_coverage.csv`, ...); `--index` includes them. `--json` gives machine output, and each hit carries `path`, `line`, `heading`, `text` and the source ids it cites. With `-u`/`--urls`, each hit also carries `urls`, mapping those source ids to their origin url in `_sources.csv`.
