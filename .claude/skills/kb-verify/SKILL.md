@@ -1,6 +1,6 @@
 ---
 name: kb-verify
-description: Quality gate for it-ops-kb before a commit or merge request. Runs the repository checks, the stress tests and extra contract checks (coverage vs front matter, untagged facts, topic ids), and reports findings without changing anything.
+description: Quality gate for it-ops-kb before a commit or a push. Runs the repository checks, the stress tests and extra contract checks (coverage vs front matter, untagged facts, topic ids), and reports findings without changing anything.
 disable-model-invocation: true
 argument-hint: "[path prefixes to limit the contract checks, e.g. auth dsc/what-if]"
 ---

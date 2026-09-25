@@ -41,6 +41,7 @@ Run `/kb-setup` (Claude Code), or do the same by hand:
 | `python3 _tools/kbid.py url <URL>` / `answer "<question>"` / `check` | id for a new source / `QK-<slug>` for a new answer / hash-id consistency |
 | `python3 _tools/build_index.py [--check]` | regenerate `_coverage.csv`, the README coverage table and `used_in` from the articles (`--check`: report only, exit 1 if stale) |
 | `python3 _tools/kbgit.py fix [--check] [--base REV]` | after any merge or pull: dedupe/merge the union-merged ledgers, renumber colliding legacy ids, rebuild the index (exit 1 `--check` stale, 2 needs a human); `fmt` only canonicalises the CSV ledgers |
+| `python3 _tools/kbgit.py sync [--push] [--dry-run] [--remote R] [--branch B]` | the way to push: fetch, rebase onto `origin/main`, fix, gate, push (exit 0 done, 1 gate red or push rejected, 2 refused, 3 conflict needs `/kb-git-sync` or a human) |
 | `python3 _tools/kbgit.py install-hooks [--uninstall]` | once per clone: `core.hooksPath=.githooks`, so commits get their KB-* trailers |
 | `python3 _tools/kbgit.py trailers [--staged] [REV] [--verified YYYY-MM-DD]` | print the KB-* trailers of the staged change or of a commit; `--amend` rewrites HEAD's message with them |
 | `python3 _tools/kbgit.py check-trailers [A..B]` | exit 1 listing kb commits whose trailers are missing or wrong (default: CI's push range, else `@{upstream}..HEAD`) |
@@ -61,7 +62,7 @@ Run `/kb-setup` (Claude Code), or do the same by hand:
 - `/kb-research <question>`: research a question in the context of the topics the kb already has, then extend them.
 - `/kb-refresh <topic|dir|file|S-id>`: diff sources and update the facts.
 - `/kb-add-topic <domain>/<slug>`: research and write a new topic.
-- `/kb-verify [prefixes]`: quality gate before a commit or merge request.
+- `/kb-verify [prefixes]`: quality gate before a commit or a push.
 
 ## Content rules (summary; `README.md` is authoritative)
 
@@ -75,11 +76,20 @@ Run `/kb-setup` (Claude Code), or do the same by hand:
 - Placeholders only in examples: `PL-LT-00123`, `PL-SRV-0042`, `corp.example.com`, tenant `00000000-0000-0000-0000-000000000000`, `jan.kowalski`. Never real hostnames, tenants, people or secrets.
 - `UNK` and `COMMUNITY` facts are leads to verify, not a basis to build on.
 
-## Merging
+## Git workflow
+
+- Small team, direct push: work on `main` or a short local branch and push straight to `main`. There are no merge requests and no protected-branch process; CI (`.gitlab-ci.yml`) runs on every push and tag as a safety net.
+- One logical change per commit. Run `python3 _tools/kbgit.py install-hooks` once per clone (KB-* trailers).
+- Before pushing: `python3 _tools/kbgit.py sync --push`. It refuses a dirty tree (commit or stash first), fetches, rebases your commits onto `origin/main`, resolves the ledgers and generated files mechanically (`kbgit.py fix`, committed as `chore(kb): kbgit fix after sync`), refreshes stale trailers, runs the gate (`build_index.py --check`, `check.py`, fast `tests.py`, `check-trailers`) and pushes only when it is green. `--dry-run` shows what would happen.
+- Never `git push --force`, never push with a red gate, never rewrite pushed history.
+- Exit 3 means a conflict in an article, tool or doc: the rebase is left in progress with the paths listed. Resolve it with `/kb-git-sync` (or by hand, keeping both sides' facts), or back out with `git rebase --abort`.
+- Census tags: `python3 _tools/kbgit.py tag-census YYYY-MM-DD`, then `git push origin census-YYYY-MM-DD`.
+
+## Merging (what sync automates)
 
 - `.gitattributes` merges the append-only ledgers (`_sources.csv`, `_fetch_state.csv`, `_answers.md`, `_gaps.md`, `_conflicts.md`) and the generated `_coverage.csv` and `_tools/lint_baseline.txt` with git's built-in union driver: parallel additions merge without conflict markers, but git keeps both sides' lines, so a row both sides touched may appear twice. Nothing to configure per clone.
 - Writers: append rows and blocks, keep each CSV record on one line, never reorder or rewrap existing lines.
-- After any merge or pull: `python3 _tools/kbgit.py fix`, then `python3 _tools/tests.py`. If two branches took the same legacy id, fix asks for `--base $(git merge-base A B)` and renumbers the new rows to hash ids. Exit 2 means a human decision (listed); nothing was written.
+- `sync` runs fix for you. After a merge or pull made by hand: `python3 _tools/kbgit.py fix`, then `python3 _tools/tests.py`. If two branches took the same legacy id, fix asks for `--base $(git merge-base A B)` and renumbers the new rows to hash ids. Exit 2 means a human decision (listed); nothing was written.
 - `README.md` merges normally; a conflict inside its coverage table is rebuilt by fix (then `git add README.md`).
 
 ## Commits and history
@@ -88,7 +98,7 @@ Run `/kb-setup` (Claude Code), or do the same by hand:
 - A source row goes in the same commit as the facts that cite it; a `superseded_by` goes in the same commit as the re-pointed citations.
 - Run `python3 _tools/kbgit.py install-hooks` once per clone. The commit-msg hook appends trailers computed from the staged diff: `KB-Topics` (topics whose article or data files changed), `KB-Sources-Added`/`-Changed`/`-Superseded` (`_sources.csv` rows), `KB-Answers` (`_answers.md` ids). More than 40 values become `N ids (see diff)`. Never type them by hand; the hook replaces them on `--amend` and never blocks a commit. Merge commits get none.
 - `KB-Verified: YYYY-MM-DD` only when the commit confirms its sources are current (e.g. a `/kb-refresh` that re-read them): `KB_VERIFIED=2026-09-25 git commit ...` or `git commit --trailer "KB-Verified: 2026-09-25"`.
-- `git commit --no-verify` skips the hook; the CI job `kb-trailers` then fails for the push. Before pushing, `python3 _tools/kbgit.py check-trailers`; repair unpushed commits with `python3 _tools/kbgit.py trailers --amend` (HEAD) or `git rebase --exec "python3 _tools/kbgit.py trailers --amend" @{upstream}`. Pushed history is never rewritten; commits up to `e5dadde` (before trailers existed) are exempt.
+- `git commit --no-verify` skips the hook; the CI job `kb-trailers` then fails for the push. `sync` checks them before it pushes (`python3 _tools/kbgit.py check-trailers` by hand) and rewrites stale ones on the unpushed commits; repair unpushed commits yourself with `python3 _tools/kbgit.py trailers --amend` (HEAD) or `git rebase --exec "python3 _tools/kbgit.py trailers --amend" @{upstream}`. Pushed history is never rewritten; commits up to `e5dadde` (before trailers existed) are exempt.
 - Lookups: `kbgit.py log S-k3f7q2zd` / `log auth/kerberos` / `log QK-...`, `kbgit.py blame auth/kerberos.md:42`, `kbgit.py asof 2026-06-30 auth/kerberos.md`. `kbgit.py tag-census YYYY-MM-DD` tags HEAD `census-YYYY-MM-DD` ("the kb was confirmed current as of this date") after a full verification; push the tag explicitly (`git push origin census-YYYY-MM-DD`).
 
 ## Agent conduct

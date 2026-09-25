@@ -4,6 +4,7 @@
   tests.py               run everything
   tests.py -k Leak       run tests whose name matches (unittest -k)
   tests.py --write-lint-baseline   record today's lint errors as known debt in _tools/lint_baseline.txt
+  KB_TESTS_FAST=1 tests.py         leave out the git scenarios (MergeInGit, HistoryInGit, SyncInGit): kbgit.py sync's gate
 
 Cohesion: check.py and fetch.py --offline pass; no lint errors beyond the recorded baseline; the generated index
 files (_coverage.csv, README coverage table, used_in) are up to date (build_index.py --check); links, backtick paths and used_in paths resolve; every CLI flag the docs mention exists
@@ -11,6 +12,7 @@ in that tool; .mcp.json, .claude/settings.json and AGENTS.md agree; skills are w
 Ids: kbid.py hash source ids are deterministic and normalization-stable; bad ids and answer-id clashes are caught.
 Merges (test_merge.py): union-merged ledgers plus kbgit.py fix give a clean kb; the git scenario is skipped without git.
 History (test_history.py): KB-* trailers, the commit-msg hook, check-trailers, log, blame, asof, tag-census; git parts skip without git.
+Sync (test_sync.py): kbgit.py sync against a throwaway bare remote and two clones; skipped without git.
 Leaks (tracked files): secrets in any file; in authored files also home-directory paths, private IPv4 addresses,
 non-placeholder e-mail addresses and GUIDs outside the reviewed allowlist (_tools/tests_allowlist.txt); files that
 must never be committed; oversized files.
@@ -25,8 +27,13 @@ ALLOWLIST = os.path.join(TOOLS, "tests_allowlist.txt")
 MAX_BYTES = 10 * 1024 * 1024
 sys.path.insert(0, TOOLS)
 import kbid  # noqa: E402
-from test_merge import MergeRules, MergeInGit  # noqa: E402,F401  (run here too; MergeInGit skips without git)
-from test_history import TrailerRules, HistoryInGit  # noqa: E402,F401  (HistoryInGit skips without git)
+from test_merge import MergeRules  # noqa: E402,F401  (run here too)
+from test_history import TrailerRules  # noqa: E402,F401
+from test_sync import SyncRules  # noqa: E402,F401
+if os.environ.get("KB_TESTS_FAST") != "1":  # the git scenarios (each skips without git); kbgit.py sync's gate leaves them out
+    from test_merge import MergeInGit  # noqa: E402,F401
+    from test_history import HistoryInGit  # noqa: E402,F401
+    from test_sync import SyncInGit  # noqa: E402,F401
 
 
 def run(*args):

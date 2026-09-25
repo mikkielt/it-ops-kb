@@ -1,10 +1,9 @@
 # Minimal CI for it-ops-kb: documentation cohesion, leak detection and KB-* commit trailers. Stdlib Python only.
+# Direct-push model: people push to main (after `kbgit.py sync --push`, which runs the same gate locally); there are
+# no merge requests. CI is the safety net: a pipeline on every branch push and on every tag.
 workflow:
   rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS
-      when: never
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_COMMIT_BRANCH
     - if: $CI_COMMIT_TAG
 
 default:

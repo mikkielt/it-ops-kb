@@ -10,6 +10,7 @@
   kbgit.py blame <path:line>                               the commit that wrote that line, and the sources it cites
   kbgit.py asof <YYYY-MM-DD | tag | rev> <path>            the file as of the last commit on or before that date (or at the tag)
   kbgit.py tag-census YYYY-MM-DD                           annotated tag census-YYYY-MM-DD on HEAD: "kb confirmed current" (no push)
+  kbgit.py sync [--push] [--dry-run] [--remote origin] [--branch main]   fetch, rebase, fix, gate, push: the way to push
 
 History (trailers). Every commit that changes kb content ends with git trailers, so `git log` can answer "which commits
 changed topic X / source S / answer QK-..." without reading diffs:
@@ -39,6 +40,28 @@ check-trailers without a range: in GitLab CI, CI_COMMIT_BEFORE_SHA..CI_COMMIT_SH
 before sha is all zeros or unknown); elsewhere @{upstream}..HEAD, or HEAD alone without an upstream.
 Census tags: an annotated tag `census-YYYY-MM-DD` marks "the kb was confirmed current as of that date"; its message
 counts the sources and the _fetch_state.csv checks. `asof census-2026-09-25 PATH` reads a file as of a census.
+
+Sync (the only way to push; people push straight to main, CI is a safety net):
+  a. refuses (exit 2) with uncommitted tracked changes (lists staged/unstaged: commit or stash them), or while a
+     rebase/merge/cherry-pick/revert is in progress; untracked files do not count.
+  b. git fetch REMOTE BRANCH; prints how far HEAD is ahead of / behind REMOTE/BRANCH.
+  c. git rebase REMOTE/BRANCH (merge commits are linearised: they would carry no trailers). A step that conflicts only
+     in MECHANICAL paths (the union ledgers, _coverage.csv, _tools/lint_baseline.txt, the README coverage table) is
+     resolved with `fix --base <merge-base> --side REMOTE/BRANCH --side <old HEAD>`, `git add -u`, `git rebase
+     --continue`. Any other conflicted path (an article, a tool, docs, README outside the table) stops with exit 3
+     and the rebase left in progress: `needs-human: PATH` lines, a `sync-state: base=.. upstream=.. orig_head=..` line
+     and the commands to finish (or `git rebase --abort`). Article text is never resolved automatically.
+  d. fix (with --base/--side when both sides had commits); what it changed is committed on its own as
+     "chore(kb): kbgit fix after sync" with KB-* trailers. Unpushed commits whose trailers no longer match their diff
+     (conflict resolution, renumbered ids) get them rewritten (`git rebase --exec "kbgit.py trailers --amend"`).
+     Gate: build_index.py --check, check.py, tests.py with KB_TESTS_FAST=1 (no git scenarios; KB_SYNC_NO_TESTS=1
+     skips it, for the tool's own tests), check-trailers REMOTE/BRANCH..HEAD. A red gate: exit 1, nothing pushed.
+  e. --push: git push REMOTE HEAD:BRANCH, never --force. Rejected because the remote moved: fetch and rebase once more,
+     then give up (exit 1).
+  f. a report: commits rebased, conflicts resolved, fix, ids renumbered, trailers refreshed, gate, pushed or not.
+  --dry-run fetches and reports ahead/behind, the incoming commits and the files both sides changed; nothing else.
+Exit (sync): 0 done, 1 gate failed or push rejected/failed, 2 refused (dirty tree, operation in progress, bad
+arguments, fetch failed), 3 a conflict or a fix problem needs a human or /kb-git-sync.
 
 Why: `.gitattributes` merges the append-only ledgers with git's built-in union driver, so two branches that
 each add rows or answers merge without conflict markers. Union keeps every line of both sides, so a row both
@@ -76,7 +99,7 @@ Exit (fix, fmt): 0 clean (or fixed), 1 --check and something would change, 2 a p
 Exit (history): 0 ok; 1 check-trailers found bad commits, log found nothing, asof/blame found no such file or line;
 2 bad arguments, not a git clone, or a git error. Hooks always exit 0.
 """
-import argparse, csv, datetime, io, os, re, stat, subprocess, sys
+import argparse, csv, datetime, io, os, re, shlex, stat, subprocess, sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import kbid  # noqa: E402
@@ -303,6 +326,9 @@ def resolve_sources(text, base_rows, sides, report):
 
 # ---------------------------------------------------------------- citations of renumbered ids
 
+MARKER_LINE = re.compile(r"(<<<<<<<|>>>>>>>|\|\|\|\|\|\|\|)( |$)")
+
+
 def cite_count(text, sid):
     return len(re.findall(rf"(?<![\w-]){re.escape(sid)}(?![\w-])", text or ""))
 
@@ -328,8 +354,8 @@ def rewrite_citations(renames, base_rev, base_ids, side_revs, texts, pinned, pro
             side_lines = {s: set((show(rev, f) or "").splitlines()) for s, rev in side_revs.items()}
             lines, n, bad = cur.split("\n"), 0, False
             for k, ln in enumerate(lines):
-                if not cite_count(ln, sid):
-                    continue
+                if not cite_count(ln, sid) or MARKER_LINE.match(ln):
+                    continue  # a conflict marker line carries a commit subject, not a citation
                 if ln in base_lines:
                     if not kept:
                         problems.append(f"{f}:{k + 1} cited {sid} before the merge, when it named no source")
@@ -1035,19 +1061,19 @@ def default_range():
     return "@{upstream}..HEAD" if rev_parse("@{upstream}") else "HEAD"
 
 
-def cmd_check_trailers(a):
-    rng = a.range or default_range()
+def trailer_audit(rng, quiet=False):
+    """(commits checked, kb commits, [(sha, lines describing what is wrong)]) for a range A..B or one commit;
+    None when the range is not valid here."""
     spec = [rng] if ".." in rng else [rng + "^!"]
     since = rev_parse(TRAILERS_SINCE)
     if since:
         spec.append("^" + since)
-    else:
+    elif not quiet:
         print(f"note: exemption cutoff {TRAILERS_SINCE[:12]} is not in this clone; every commit in the range is checked")
     recs = log_records("--no-merges", *spec)
     if recs is None:
-        print(f"{rng}: not a valid revision range here")
-        return 2
-    bad = kb = 0
+        return None
+    bad, kb = [], 0
     for sha, short, date, subject, trailers in recs:
         want = compute(first_parent(sha), sha)
         have = parse_trailers(trailers)
@@ -1057,12 +1083,25 @@ def cmd_check_trailers(a):
             wrong.append(VERIFIED)
         kb += bool(want)
         if wrong:
-            bad += 1
-            print(f"BAD {short} {date} {subject[:70]}")
+            lines = [f"BAD {short} {date} {subject[:70]}"]
             for k in wrong:
                 exp = next((ln for ln in trailer_lines(want) if ln.startswith(k + ":")), f"(no {k})" if k != VERIFIED else "YYYY-MM-DD, once")
-                print(f"    {k}: has {', '.join(have.get(k, [])) or '(none)'}; expected {exp}")
-    print(f"check-trailers {rng}: commits={len(recs)} kb_commits={kb} bad={bad}")
+                lines.append(f"    {k}: has {', '.join(have.get(k, [])) or '(none)'}; expected {exp}")
+            bad.append((sha, lines))
+    return len(recs), kb, bad
+
+
+def cmd_check_trailers(a):
+    rng = a.range or default_range()
+    audit = trailer_audit(rng)
+    if audit is None:
+        print(f"{rng}: not a valid revision range here")
+        return 2
+    n, kb, bad_list = audit
+    for _, lines in bad_list:
+        print("\n".join(lines))
+    bad = len(bad_list)
+    print(f"check-trailers {rng}: commits={n} kb_commits={kb} bad={bad}")
     if bad:
         print("fix unpushed commits: python3 _tools/kbgit.py trailers --amend (HEAD), or "
               "git rebase --exec \"python3 _tools/kbgit.py trailers --amend\" <base>; "
@@ -1243,6 +1282,333 @@ def cmd_tag_census(a):
     return 0
 
 
+# ---------------------------------------------------------------- sync: fetch, rebase, fix, gate, push
+
+# Paths whose rebase conflicts are resolved mechanically: the union ledgers and the generated files. `fix` rebuilds
+# them (README.md only when its markers are inside the coverage table; otherwise fix reports it and sync stops).
+MECHANICAL = frozenset((SOURCES, STATE, *MD_LEDGERS, "_coverage.csv", BASELINE, "README.md"))
+IN_PROGRESS = (("rebase-merge", "a rebase", "git rebase --continue, or git rebase --abort"),
+               ("rebase-apply", "a rebase", "git rebase --continue, or git rebase --abort"),
+               ("MERGE_HEAD", "a merge", "git merge --continue, or git merge --abort"),
+               ("CHERRY_PICK_HEAD", "a cherry-pick", "git cherry-pick --continue, or git cherry-pick --abort"),
+               ("REVERT_HEAD", "a revert", "git revert --continue, or git revert --abort"))
+NO_EDITOR = {"GIT_EDITOR": "true", "GIT_SEQUENCE_EDITOR": "true"}
+FIX_COMMIT = "chore(kb): kbgit fix after sync"
+REJECTED = re.compile(r"\[rejected\]|non-fast-forward|fetch first|stale info", re.I)
+
+
+def gitx(*args, env=None):
+    """(exit code, stdout + stderr text) of a git command in the kb; (127, message) when git cannot be started."""
+    try:
+        p = subprocess.run(["git", *args], cwd=KB, capture_output=True, text=True, errors="replace",
+                           env={**os.environ, **(env or {})})
+    except OSError as e:
+        return 127, str(e)
+    return p.returncode, p.stdout + p.stderr
+
+
+def tool(name, *args, env=None):
+    """(exit code, output) of a kb tool in this checkout (the files on disk, which a rebase may have updated)."""
+    p = subprocess.run([sys.executable, os.path.join(KB, "_tools", name), *args], cwd=KB, capture_output=True,
+                       text=True, errors="replace", env={**os.environ, **(env or {})})
+    return p.returncode, p.stdout + p.stderr
+
+
+def in_progress():
+    for name, what, how in IN_PROGRESS:
+        p = git_path(name)
+        if p and os.path.exists(p):
+            return what, how
+    return None
+
+
+def rebasing():
+    return any(os.path.isdir(git_path(n) or "") for n in ("rebase-merge", "rebase-apply"))
+
+
+def dirty_paths():
+    """(staged, unstaged) tracked paths that differ from HEAD / the index (untracked files do not count)."""
+    return names("diff", "--cached", "--name-only"), names("diff", "--name-only")
+
+
+def names(*args):
+    return sorted(p for p in (git(*args, "-z") or "").split("\0") if p)
+
+
+def short(rev):
+    return (rev or "")[:9]
+
+
+def fix_args(base, sides):
+    return ["fix"] + (["--base", base] + [x for s in sides for x in ("--side", s)] if base else [])
+
+
+def renumbered(output):
+    return [ln.strip() for ln in output.splitlines() if " collision: " in ln]
+
+
+def conflict_help(r, up, base, orig, manual, mech, step):
+    fix_cmd = "python3 _tools/kbgit.py " + " ".join(fix_args(base, [up, orig]))
+    print(f"CONFLICT rebasing onto {r['target']}, at local commit {step}")
+    for p in manual:
+        print(f"needs-human: {p}")
+    for p in mech:
+        print(f"mechanical: {p}  (kbgit.py fix rebuilds it)")
+    print(f"sync-state: base={base} upstream={up} orig_head={orig}")
+    print("The rebase is still in progress; nothing was pushed. Never resolve article text by taking one side blindly.")
+    print("Resolve (or run /kb-git-sync), one command at a time:")
+    print("  edit the needs-human files: keep both sides' facts, no conflict markers left")
+    print(f"  {fix_cmd}")
+    print("  git add <the resolved paths>")
+    print("  git rebase --continue          (later local commits may stop again)")
+    print("  python3 _tools/kbgit.py sync --push")
+    print(f"Or give up: git rebase --abort  (back to {short(orig)}, nothing lost)")
+
+
+def do_rebase(r, up, base, orig):
+    """Rebase HEAD onto up, resolving conflicts in MECHANICAL paths with fix. 0 done, 2 git refused, 3 manual."""
+    code, out = gitx("rebase", up, env=NO_EDITOR)
+    for _ in range(1000):
+        if not rebasing():
+            if code:
+                print("git rebase failed:\n" + out.rstrip())
+                return 2
+            return 0
+        conflicted = names("diff", "--name-only", "--diff-filter=U")
+        stopped = git("log", "-1", "--format=%h %s", "REBASE_HEAD") or ""
+        step = stopped.strip() or "(unknown)"
+        if not conflicted:
+            if git_run("diff", "--cached", "--quiet", "HEAD").returncode == 0 and \
+                    git_run("diff", "--quiet").returncode == 0:
+                code, out = gitx("rebase", "--skip", env=NO_EDITOR)
+                r["notes"].append(f"dropped {step}: empty after the rebase")
+            else:
+                code, out = gitx("rebase", "--continue", env=NO_EDITOR)
+                if code and rebasing() and not names("diff", "--name-only", "--diff-filter=U"):
+                    print(out.rstrip())
+                    conflict_help(r, up, base, orig, ["(rebase stopped without a conflict; see git's message above)"], [], step)
+                    return 3
+            continue
+        manual = [p for p in conflicted if p not in MECHANICAL]
+        mech = [p for p in conflicted if p in MECHANICAL]
+        if manual:
+            conflict_help(r, up, base, orig, manual, mech, step)
+            return 3
+        fcode, fout = tool("kbgit.py", *fix_args(base, [up, orig]))
+        if fcode:
+            print(fout.rstrip())
+            probs = [ln[len("PROBLEM "):] for ln in fout.splitlines() if ln.startswith("PROBLEM ")]
+            conflict_help(r, up, base, orig, [p for p in mech if any(p in x for x in probs)] or mech, [], step)
+            return 3
+        left = [p for p in conflicted if has_markers(read(p))]
+        if left:
+            conflict_help(r, up, base, orig, left, [], step)
+            return 3
+        r["renumbered"] += renumbered(fout)
+        r["auto"].append(f"{step}: {', '.join(mech)}")
+        gitx("add", "-u")
+        code, out = gitx("rebase", "--continue", env=NO_EDITOR)
+    print("git rebase did not finish after 1000 steps; inspect with git status")
+    return 3
+
+
+def commit_fix(r):
+    """Commit what fix changed as its own small commit, with KB-* trailers computed here (hook or not)."""
+    gitx("add", "-u")
+    body = f"{FIX_COMMIT}\n\nkbgit.py fix after rebasing onto {r['target']}: " + \
+           ("renumbered colliding ids and their citations; " if r["renumbered"] else "") + \
+           "merged the union-merged ledger rows and rebuilt the generated index.\n"
+    msg = apply_trailers(body, compute(rev_parse("HEAD") or "", INDEX))
+    p = subprocess.run(["git", "commit", "-q", "--no-verify", "--cleanup=whitespace", "-F", "-"], cwd=KB,
+                       input=msg, capture_output=True, text=True, errors="replace")
+    if p.returncode:
+        print("git commit of the fix failed:\n" + (p.stdout + p.stderr).rstrip())
+        return False
+    r["fix_commit"] = rev_parse("HEAD")
+    return True
+
+
+def refresh_trailers(r, up):
+    """Rewrite the KB-* trailers of the unpushed commits whose trailers no longer match their diff
+    (a rebase that resolved conflicts or renumbered ids changes the diffs). Only up..HEAD is touched."""
+    audit = trailer_audit(f"{up}..HEAD", quiet=True)
+    if not audit or not audit[2]:
+        return True
+    exe = " ".join(shlex.quote(x) for x in (sys.executable, os.path.join(KB, "_tools", "kbgit.py"), "trailers", "--amend"))
+    code, out = gitx("rebase", "--exec", exe, up, env=NO_EDITOR)
+    if code or rebasing():
+        print("refreshing trailers failed:\n" + out.rstrip())
+        if rebasing():
+            gitx("rebase", "--abort")
+        return False
+    r["refreshed"] = len(audit[2])
+    return True
+
+
+def gate(r, up):
+    """build_index --check, check.py, tests.py (KB_TESTS_FAST=1: no git scenarios) and check-trailers on up..HEAD."""
+    results = []
+    for label, name, args, env in (("build_index.py --check", "build_index.py", ["--check"], None),
+                                   ("check.py", "check.py", [], None),
+                                   ("tests.py (fast)", "tests.py", [], {"KB_TESTS_FAST": "1"})):
+        if name == "tests.py" and os.environ.get("KB_SYNC_NO_TESTS") == "1":
+            results.append((label, "skipped (KB_SYNC_NO_TESTS=1)", True))
+            continue
+        code, out = tool(name, *args, env=env)
+        tail = [ln for ln in out.strip().splitlines() if ln.strip()][-1:] or [""]
+        results.append((label, ("ok" if code == 0 else f"FAILED (exit {code})") + f": {tail[0][:100]}", code == 0))
+        if code:
+            print(f"--- {label} output (last lines)\n" + "\n".join(out.strip().splitlines()[-25:]))
+    rng = f"{up}..HEAD" if up else "HEAD"
+    audit = trailer_audit(rng, quiet=True)
+    if audit is None:
+        results.append((f"check-trailers {rng}", "FAILED: not a valid range", False))
+    else:
+        for _, lines in audit[2]:
+            print("\n".join(lines))
+        results.append((f"check-trailers {r['target']}..HEAD", f"{'ok' if not audit[2] else 'FAILED'}: commits={audit[0]} bad={len(audit[2])}",
+                        not audit[2]))
+    r["gate"] = results
+    return all(ok for _, _, ok in results)
+
+
+def sync_once(a, r):
+    """One fetch -> rebase -> fix -> gate -> push round. Returns an exit code, or "retry" when the push was rejected."""
+    target = f"{a.remote}/{a.branch}"
+    r["target"] = target
+    code, out = gitx("fetch", "--quiet", a.remote, f"+refs/heads/{a.branch}:refs/remotes/{target}")
+    missing = code and re.search(r"couldn't find remote ref", out, re.I)
+    if code and not missing:
+        print(f"git fetch {a.remote} failed:\n" + out.rstrip())
+        return 2
+    up = None if missing else rev_parse(f"refs/remotes/{target}")
+    orig = rev_parse("HEAD")
+    if up:
+        base = (git("merge-base", up, orig) or "").strip()
+        if not base:
+            print(f"refused: HEAD and {target} share no history")
+            return 2
+        behind, ahead = (int(x) for x in (git("rev-list", "--left-right", "--count", f"{up}...{orig}") or "0 0").split())
+    else:
+        base, behind = None, 0
+        ahead = int((git("rev-list", "--count", orig) or "0").strip())
+    r.update(ahead=ahead, behind=behind)
+    print(f"{target}: local {ahead} ahead, {behind} behind" + ("" if up else f" ({a.branch} does not exist on {a.remote} yet)"))
+
+    if a.dry_run:
+        if behind:
+            incoming, local = names("diff", "--name-only", base, up), names("diff", "--name-only", base, orig)
+            both = sorted(set(incoming) & set(local))
+            print(f"incoming commits ({behind}):")
+            print("  " + "\n  ".join((git("log", "--format=%h %s", "-n", "20", f"{orig}..{up}") or "").splitlines()))
+            if ahead:
+                print(f"would rebase {ahead} local commit(s) onto {target}; files changed on both sides: {len(both)}")
+                for p in both:
+                    print(f"  {'mechanical (fix)' if p in MECHANICAL else 'needs a human if it conflicts'}: {p}")
+            else:
+                print(f"would fast-forward to {target}")
+        else:
+            print("nothing incoming" + (f"; would push {ahead} commit(s) after the gate" if ahead else "; nothing to push"))
+        print("dry run: nothing rebased, fixed, committed or pushed")
+        return 0
+
+    if up and behind:
+        code = do_rebase(r, up, base, orig)
+        if code:
+            return code
+        r["rebased"] += ahead
+    both_sides = bool(up and behind and ahead)
+    code, out = tool("kbgit.py", *fix_args(base if both_sides else None, [up, orig]))
+    if code:
+        print(out.rstrip())
+        print("kbgit.py fix needs a human (listed above); the rebase is complete and nothing was written or pushed. "
+              "Resolve, commit, then rerun python3 _tools/kbgit.py sync --push (or use /kb-git-sync)")
+        return 3
+    r["renumbered"] += renumbered(out)
+    fixed = [ln[len("wrote "):] for ln in out.splitlines() if ln.startswith("wrote ")]
+    if fixed:
+        r["fixed"] += fixed
+        if not commit_fix(r):
+            return 1
+    if up and not refresh_trailers(r, up):
+        return 1
+    if not gate(r, up):
+        print("gate failed: nothing pushed")
+        return 1
+    if not a.push:
+        r["pushed"] = "no (without --push)"
+        return 0
+    now_ahead = int((git("rev-list", "--count", f"{up}..HEAD" if up else "HEAD") or "0").strip())
+    if not now_ahead:
+        r["pushed"] = "nothing to push"
+        return 0
+    code, out = gitx("push", a.remote, f"HEAD:refs/heads/{a.branch}")
+    if code:
+        if REJECTED.search(out):
+            print(f"push rejected ({target} moved):\n" + out.rstrip())
+            return "retry"
+        print("git push failed:\n" + out.rstrip())
+        r["pushed"] = "no (push failed)"
+        return 1
+    r["pushed"] = f"yes: {now_ahead} commit(s) to {target} ({short(rev_parse('HEAD'))})"
+    return 0
+
+
+def cmd_sync(a):
+    if git("rev-parse", "--is-inside-work-tree") is None or not rev_parse("HEAD"):
+        print("refused: not a git clone with commits (or git is missing)")
+        return 2
+    if git("check-ref-format", "--branch", a.branch) is None or git("remote", "get-url", a.remote) is None:
+        print(f"refused: no remote {a.remote!r}, or {a.branch!r} is not a valid branch name")
+        return 2
+    busy = in_progress()
+    if busy:
+        print(f"refused: {busy[0]} is in progress; finish it first ({busy[1]})")
+        return 2
+    staged, unstaged = dirty_paths()
+    refuse = None
+    if staged or unstaged:
+        lines = ["refused: uncommitted changes; commit them (git commit) or stash them (git stash) first"]
+        lines += [f"  staged:   {p}" for p in staged] + [f"  unstaged: {p}" for p in unstaged]
+        refuse = "\n".join(lines)
+        if not a.dry_run:
+            print(refuse)
+            return 2
+    if (git("config", "--get", "core.hooksPath") or "").strip().rstrip("/") != HOOKS_DIR:
+        print("note: commit hooks not installed (python3 _tools/kbgit.py install-hooks); sync repairs trailers of what it rebases")
+    r = {"ahead": 0, "behind": 0, "rebased": 0, "auto": [], "fixed": [], "renumbered": [], "refreshed": 0,
+         "fix_commit": None, "gate": [], "pushed": "no", "notes": []}
+    code = sync_once(a, r)
+    if code == "retry":
+        print("fetching again and rebasing once more")
+        code = sync_once(a, r)
+        if code == "retry":
+            print(f"push rejected twice ({a.remote}/{a.branch} keeps moving); giving up, nothing lost locally")
+            r["pushed"] = "no (rejected twice)"
+            code = 1
+    if a.dry_run:
+        if refuse:
+            print(refuse)
+            return 2
+        return code
+    print("--- sync report")
+    print(f"target: {r.get('target')}; was {r['ahead']} ahead, {r['behind']} behind; commits rebased: {r['rebased']}")
+    if r["auto"]:
+        print("conflicts resolved mechanically: " + "; ".join(r["auto"]))
+    print("fix: " + (f"{len(r['fixed'])} file(s) ({', '.join(r['fixed'])}), committed as {short(r['fix_commit'])} {FIX_COMMIT!r}"
+                     if r["fixed"] else "nothing to change"))
+    print("ids renumbered: " + ("; ".join(r["renumbered"]) if r["renumbered"] else "none"))
+    if r["refreshed"]:
+        print(f"trailers refreshed on {r['refreshed']} commit(s)")
+    for n in r["notes"]:
+        print("note: " + n)
+    for label, result, _ in r["gate"]:
+        print(f"gate {label}: {result}")
+    print(f"pushed: {r['pushed']}")
+    print(f"sync: exit {code}")
+    return code
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -1269,6 +1635,11 @@ def main():
     s = sub.add_parser("asof", help="a file as of a date (last commit on or before it) or a tag")
     s.add_argument("when", metavar="YYYY-MM-DD|TAG")
     s.add_argument("path")
+    y = sub.add_parser("sync", help="fetch, rebase onto REMOTE/BRANCH, fix, run the gate, push with --push")
+    y.add_argument("--push", action="store_true", help="push HEAD to REMOTE/BRANCH after a green gate (plain push, never --force)")
+    y.add_argument("--dry-run", action="store_true", help="fetch and report what would happen; rebase, commit and push nothing")
+    y.add_argument("--remote", default="origin", help="the remote (default origin)")
+    y.add_argument("--branch", default="main", help="the remote branch to rebase onto and push to (default main)")
     g = sub.add_parser("tag-census", help="annotated tag census-YYYY-MM-DD on HEAD (not pushed)")
     g.add_argument("date", metavar="YYYY-MM-DD")
     h = sub.add_parser("hook", help="internal: run by the .githooks scripts")
@@ -1276,7 +1647,8 @@ def main():
     h.add_argument("args", nargs="*")
     a = ap.parse_args()
     cmds = {"trailers": cmd_trailers, "install-hooks": cmd_install_hooks, "check-trailers": cmd_check_trailers,
-            "log": cmd_log, "blame": cmd_blame, "asof": cmd_asof, "tag-census": cmd_tag_census, "hook": cmd_hook}
+            "log": cmd_log, "blame": cmd_blame, "asof": cmd_asof, "tag-census": cmd_tag_census, "hook": cmd_hook,
+            "sync": cmd_sync}
     if a.cmd in cmds:
         try:
             sys.exit(cmds[a.cmd](a))

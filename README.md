@@ -56,6 +56,7 @@ python _tools/kbid.py check                            # hash ids: collisions, i
 python _tools/rag.py show agents/agent-rbac.md:139 -n 30
 python _tools/build_index.py                           # regenerate _coverage.csv, the README coverage table and used_in (--check: only report)
 python _tools/kbgit.py fix                             # after any merge or pull: clean the union-merged ledgers, rebuild the index (--check, --base REV)
+python _tools/kbgit.py sync --push                     # the way to push to main: fetch, rebase, fix, gate, push (--dry-run; exit 3: conflict for /kb-git-sync)
 python _tools/kbgit.py install-hooks                   # once per clone: core.hooksPath=.githooks, commits get KB-* trailers (--uninstall)
 python _tools/kbgit.py trailers                        # KB-* trailers of the staged change (or of a commit: REV; --verified YYYY-MM-DD; --amend fixes HEAD)
 python _tools/kbgit.py check-trailers origin/main..HEAD   # exit 1 listing kb commits with missing or wrong trailers (CI: the pushed range)
@@ -90,7 +91,8 @@ python _tools/tests.py                                 # CI: docs cohesion + lea
 - Never hand-edit the generated index: `_coverage.csv`, the README coverage table, `n_sources` and `used_in` are rebuilt by `build_index.py` after any content change (CI runs `build_index.py --check`). A topic's row comes from its front matter (`topic`, `priority`, `status`, `sources`); its files are the `.md` plus sibling files sharing its stem (`auth/flows.csv`), plus any extras listed in `files: [dsc/cli/, graph/csdl/device.v1.0.xml]` (kb-root paths, directories end in `/`). An article named in another article's `files:` (an artifact digest) is part of that topic. A topic with no `.md` (a CSV-only table) is a row of `_tools/index_extra.csv` (`topic,priority,status,files`). Rows are ordered by domain, priority, topic id.
 - Save structured data as a pinned artifact, with a row in `_artifacts.csv` and a digest.
 - Record disagreements in `_conflicts.md` and failed lookups in `_gaps.md`.
-- The ledgers (`_sources.csv`, `_fetch_state.csv`, `_answers.md`, `_gaps.md`, `_conflicts.md`) merge with git's union driver (`.gitattributes`): parallel additions never conflict, but both sides' lines are kept. Only append, one CSV record per line. After any merge or pull run `python3 _tools/kbgit.py fix`, then `python3 _tools/tests.py`; exit 2 lists what needs a decision (for two branches that took the same legacy id: `--base $(git merge-base A B)`).
+- Git: work on `main` (or a short local branch), one logical change per commit, and push straight to `main` with `python3 _tools/kbgit.py sync --push`: it rebases onto `origin/main`, fixes the ledgers, runs the gate and pushes only when it is green. No merge requests; never `git push --force`. Exit 3 is a conflict in an article or tool, left for `/kb-git-sync` or a human (`git rebase --abort` backs out).
+- The ledgers (`_sources.csv`, `_fetch_state.csv`, `_answers.md`, `_gaps.md`, `_conflicts.md`) merge with git's union driver (`.gitattributes`): parallel additions never conflict, but both sides' lines are kept. Only append, one CSV record per line. `sync` cleans them up; after a merge or pull made by hand run `python3 _tools/kbgit.py fix`, then `python3 _tools/tests.py`; exit 2 lists what needs a decision (for two branches that took the same legacy id: `--base $(git merge-base A B)`).
 
 ## Licensing
 
