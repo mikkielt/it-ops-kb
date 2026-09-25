@@ -365,47 +365,119 @@ def terms(text):
     return out
 
 
+ALIASES = os.path.join(TOOLS, "aliases.csv")
+ALIAS_WEIGHT = 0.5  # an alias the question did not use counts half as much as a word it did
+TITLE_WEIGHT = 2    # the article title counts twice in each of its units
+SUMMARY_WEIGHT = 0.1  # the article's Summary text is indexed into each of its units at this weight
+
+
+def aliases():
+    """{canonical: [alias word tuples]} from _tools/aliases.csv (`term,canonical`, one row per alias)."""
+    return cached("aliases", _aliases)
+
+
+def _aliases():
+    out = defaultdict(list)
+    try:
+        with open(ALIASES, encoding="utf-8", newline="") as f:
+            for r in csv.DictReader(f):
+                words = tuple(WORD.findall((r.get("term") or "").lower()))
+                if words and (r.get("canonical") or "").strip():
+                    out[r["canonical"].strip().lower()].append(words)
+    except OSError:
+        pass
+    return dict(out)
+
+
+def expand(question):
+    """Product aliases in a question: ({stem: weight} to add to the ranking, {key stem: [variant stem tuples]}).
+    A key word that belongs to an alias found in the question also counts as present where any other alias of that
+    product is (all words of a multi-word alias). Expansions never become key words of their own, so they cannot
+    raise the coverage verdict on words the question did not use."""
+    toks = WORD.findall(question.lower())
+    extra, variants = {}, defaultdict(set)
+    for canon, forms in aliases().items():
+        found = [(i, len(f)) for f in forms for i in range(len(toks) - len(f) + 1) if tuple(toks[i:i + len(f)]) == f]
+        if not found:
+            continue
+        stems = [tuple(stem(w) for w in f if w not in STOP) for f in forms]
+        stems = [s for s in stems if s]
+        for i, n in found:
+            for w in toks[i:i + n]:
+                if w not in STOP and len(w) > 1:
+                    variants[stem(w)].update(stems)
+        for s in stems:
+            for t in s:
+                extra[t] = ALIAS_WEIGHT / len(s)
+    q = set(terms(question))
+    return {t: w for t, w in extra.items() if t not in q}, {k: sorted(v) for k, v in variants.items()}
+
+
 def corpus(domain=None):
     """Fact units plus each article's title and Summary bullets as searchable units (cached for TTL seconds)."""
     return cached(("corpus", domain or ""), lambda: _corpus(domain))
 
 
+def summary_text(rel):
+    """The text of an article's `## Summary` section, or ''."""
+    m = re.search(r"(?ms)^## Summary[^\n]*\n(.*?)(?=^#{1,2} |\Z)", read(rel) or "")
+    return m.group(1) if m else ""
+
+
 def _corpus(domain):
     metas = articles()
     us = [u for u in units(domain) if u["tags"] or u["path"].endswith(".md")]
+    summaries = {}
     for u in us:
-        meta = metas.get(u["path"]) or metas.get(u["path"][:-4] + ".md") or {}
+        art = u["path"] if u["path"] in metas else u["path"][:-4] + ".md"
+        meta = metas.get(art) or {}
         u["title"] = meta.get("title", "")
-        u["tf"] = Counter(terms(f"{u['path']} {u['title']} {u['section']} {u['text']}"))
-        u["len"] = sum(u["tf"].values())
+        tf = Counter(terms(f"{u['path']} {u['title']} {u['section']} {u['text']}"))
+        u["len"], u["own"] = sum(tf.values()), frozenset(tf)  # own: words the unit itself has (verdict, df)
+        for t in terms(u["title"]):
+            tf[t] += TITLE_WEIGHT - 1
+        if meta and not u["section"].startswith("Summary"):
+            if art not in summaries:
+                summaries[art] = Counter(terms(summary_text(art)))
+            for t, c in summaries[art].items():
+                tf[t] += SUMMARY_WEIGHT * c
+        u["tf"] = tf
     return us
 
 
-def pack(question, budget=1200, domain=None, max_articles=4):
+def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", footer=True):
     """Rank fact units for a question and return {verdict, missing, weak_words, groups, sources, text}.
 
     verdict (counted on whole query words, not hyphen parts): `none` when a third or more of the named words
     (with a capital or a digit: products, ids) or half or more of the informative words occur nowhere in the kb, or
     the best article matches under a third of the known ones; `weak` under 60% (or any named word missing); else
-    `good`. `budget` is in tokens (about 3.5
-    characters each) and bounds the text."""
+    `good`. A word that is a product alias (_tools/aliases.csv) counts as present where any alias of the product is;
+    the other aliases rank at a lower weight but never count as key words. `budget` is in tokens (about 3.5
+    characters each) and bounds the text. fmt `concise` drops the article flags and the source url footer;
+    footer=False leaves the footer out of the text (pack_many prints one shared footer)."""
     us = corpus(domain)
     q = sorted(set(terms(question)))
-    df = Counter(t for u in us for t in q if t in u["tf"])
+    extra, variants = expand(question)
+    weight = {**extra, **{t: 1.0 for t in q}}
+    df = Counter(t for u in us for t in u["own"] if t in weight)
     n = max(len(us), 1)
     avg = sum(u["len"] for u in us) / n
     keys = sorted(set(key_terms(question)))
-    kdf = {t: df[t] if t in df else sum(1 for u in us if t in u["tf"]) for t in keys}
+
+    def has(u, t):
+        return t in u["own"] or any(all(x in u["own"] for x in v) for v in variants.get(t, ()))
+
+    kdf = {t: sum(1 for u in us if has(u, t)) if t in variants or t not in df else df[t] for t in keys}
     informative = [t for t in keys if kdf[t] < 0.2 * n]
     missing = [t for t in informative if not kdf[t]]
     scored = []
     for u in us:
         s = 0.0
-        for t in q:
+        for t, w in weight.items():
             tf = u["tf"].get(t)
-            if tf:
+            if tf and df[t]:
                 idf = math.log(1 + (n - df[t] + 0.5) / (df[t] + 0.5))
-                s += idf * tf * 2.2 / (tf + 1.2 * (0.25 + 0.75 * u["len"] / avg))
+                s += w * idf * tf * 2.2 / (tf + 1.2 * (0.25 + 0.75 * u["len"] / avg))
         if s:
             if u["section"].startswith("Summary"):
                 s *= 1.15
@@ -419,7 +491,7 @@ def pack(question, budget=1200, domain=None, max_articles=4):
     named_missing = sorted(t for t in named if not kdf[t])
     known = [t for t in informative if kdf[t]]
     best_art = scored[0][1]["path"] if scored else None
-    hit = {t for s_, u in scored[:40] if u["path"] == best_art for t in known if t in u["tf"]}
+    hit = {t for s_, u in scored[:40] if u["path"] == best_art for t in known if has(u, t)}
     share = len(hit) / len(known) if known else 0.0
     if not scored or (named and len(named_missing) * 3 >= len(named)) or (informative and len(missing) * 2 >= len(informative)):
         verdict = "none"
@@ -438,6 +510,8 @@ def pack(question, budget=1200, domain=None, max_articles=4):
         by_art[art].append((s, u))
     best = scored[0][0] if scored else 0
     order = [a for a in order if by_art[a][0][0] >= (0.5 if a.endswith(".md") else 0.65) * best][:max_articles]
+    concise = fmt == "concise"
+    url_cost = 0 if concise else 110  # a source footer line is about 110 characters
     limit, used, groups, cited, paths = int(budget * 3.5), 0, [], [], []
     for art in order:
         items, picked = [], sorted(sorted((x for x in by_art[art] if x[0] >= 0.4 * best), key=lambda x: -x[0])[:6],
@@ -446,7 +520,7 @@ def pack(question, budget=1200, domain=None, max_articles=4):
             text = u["text"] if len(u["text"]) <= 420 else u["text"][:420].rsplit(" ", 1)[0] + " ..."
             line = f"- {u['path']}:{u['line']} {text}"
             new_ids = [i for p in u["tags"] for i in p["ids"]] + ID.findall(text)
-            cost = len(line) + 110 * len(set(new_ids) - set(cited))  # a source footer line is about 110 characters
+            cost = len(line) + url_cost * len(set(new_ids) - set(cited))
             if used + cost > limit and (items or groups):
                 used = limit
                 break
@@ -457,7 +531,7 @@ def pack(question, budget=1200, domain=None, max_articles=4):
             meta = articles().get(art, {})
             head = f"## {art}" + (f"  {meta.get('title', '')}" if meta else "")
             flags = ", ".join(filter(None, (meta.get("status"), f"retrieved {meta['retrieved_utc']}" if meta.get("retrieved_utc") else "")))
-            groups.append((head + (f"  [{flags}]" if flags else ""), items))
+            groups.append((head + (f"  [{flags}]" if flags and not concise else ""), items))
             paths.append(art)
             used += len(head) + 40
         if used >= limit:
@@ -479,11 +553,42 @@ def pack(question, budget=1200, domain=None, max_articles=4):
         out.append("The kb does not cover this. Do not answer from the hits below; say so, or research it with /kb-research.")
     for h, items in groups if verdict != "none" else [(g[0], g[1][:2]) for g in groups[:1]]:
         out += ["", h] + items
-    if srcs and verdict != "none":
-        out += ["", "sources:"] + [f"  -> {i}  {u}" + (f"  (superseded by {s})" if s else "") for i, u, s in srcs]
+    if verdict == "none":
+        srcs = []
+    if srcs and footer and not concise:
+        out += ["", "sources:"] + format_sources(srcs)
     return {"verdict": verdict, "missing": missing, "matched": sorted(hit), "informative": informative, "known": known,
-            "paths": paths, "sources": [s[0] for s in srcs],
+            "paths": paths, "sources": [s[0] for s in srcs], "source_rows": srcs,
             "text": "\n".join(out)}
+
+
+def format_sources(srcs):
+    return [f"  -> {i}  {u}" + (f"  (superseded by {s})" if s else "") for i, u, s in srcs]
+
+
+MAX_QUESTIONS = 6
+
+
+def pack_many(questions, budget=1200, domain=None, fmt="detailed"):
+    """One pack per question (1-6), each with its own coverage verdict, and one shared source footer:
+    {verdict (the worst), results, text}. A single question gives exactly pack()'s text."""
+    qs = [q.strip() for q in questions if q and q.strip()][:MAX_QUESTIONS]
+    if len(qs) == 1:
+        res = pack(qs[0], budget, domain, fmt=fmt)
+        return {"verdict": res["verdict"], "results": [res], "text": res["text"]}
+    results = [pack(q, budget, domain, fmt=fmt, footer=False) for q in qs]
+    out, seen, srcs = [], set(), []
+    for i, (q, res) in enumerate(zip(qs, results), start=1):
+        out += [f"# Q{i}: {q}", res["text"], ""]
+        for row in res["source_rows"]:
+            if row[0] not in seen:
+                seen.add(row[0])
+                srcs.append(row)
+    if srcs and fmt != "concise":
+        out += ["sources:"] + format_sources(srcs)
+    order = ("none", "weak", "good")
+    return {"verdict": min((r["verdict"] for r in results), key=order.index), "results": results,
+            "text": "\n".join(out).rstrip()}
 
 
 def cited_lines(ids):
@@ -499,3 +604,101 @@ def cited_lines(ids):
             for i in set(ID.findall(ln)) & want:
                 out[i].append((rel, n))
     return out
+
+
+# ---------------------------------------------------------------- topics for code (host workspace signals)
+
+SIGNALS = os.path.join(TOOLS, "signals.csv")
+SKIP_CODE_DIRS = {".git", "node_modules", "dist", "build", "out", "coverage", "target", "vendor", "__pycache__", ".venv",
+                  "venv", ".next", ".turbo", ".cache"}
+MAX_FILES, MAX_FILE_BYTES = 500, 1_000_000
+
+
+def signals():
+    """[(signal, topic, regex)] from _tools/signals.csv (`signal,topic`): code words that point at a kb topic,
+    matched case-insensitively as whole words (a signal that starts or ends with punctuation matches there as is)."""
+    return cached("signals", _signals)
+
+
+def _signals():
+    out = []
+    try:
+        with open(SIGNALS, encoding="utf-8", newline="") as f:
+            for r in csv.DictReader(f):
+                sig, topic = (r.get("signal") or "").strip(), (r.get("topic") or "").strip()
+                if sig and topic:
+                    rx = (r"(?<!\w)" if sig[0].isalnum() else "") + re.escape(sig) + (r"(?!\w)" if sig[-1].isalnum() else "")
+                    out.append((sig, topic, re.compile(rx, re.I)))
+    except OSError:
+        pass
+    return out
+
+
+def code_files(paths, base=None):
+    """Text files under the given paths (files or directories, relative to `base`), skipping dependency and build
+    directories: ([(shown path, full path)], [skipped notes])."""
+    base = base or os.getcwd()
+    files, skipped = [], []
+    for p in paths:
+        full = os.path.normpath(os.path.join(base, os.path.expanduser(p)))
+        if os.path.isfile(full):
+            files.append((p, full))
+        elif os.path.isdir(full):
+            for root, dirs, names in os.walk(full):
+                dirs[:] = sorted(d for d in dirs if d not in SKIP_CODE_DIRS and not d.startswith("."))
+                for n in sorted(names):
+                    files.append((os.path.relpath(os.path.join(root, n), base), os.path.join(root, n)))
+        else:
+            skipped.append(f"{p}: no such file or directory")
+    if len(files) > MAX_FILES:
+        skipped.append(f"{len(files) - MAX_FILES} files over the {MAX_FILES}-file limit")
+        files = files[:MAX_FILES]
+    return files, skipped
+
+
+def topics_for(paths=(), text="", base=None):
+    """Rank kb topics for code: every signal found in the files (or in `text`) adds to its topic. Returns
+    {"topics": [{topic, signals: {signal: count}, where: {signal: "path:line"}}], "files": n, "text": bool,
+    "skipped": [...]}."""
+    sources, skipped = [], []
+    if text:
+        sources.append(("text", text))
+    files, skipped = code_files(paths, base) if paths else ([], [])
+    for shown, full in files:
+        try:
+            if os.path.getsize(full) > MAX_FILE_BYTES:
+                skipped.append(f"{shown}: over {MAX_FILE_BYTES // 1000} KB")
+                continue
+            with open(full, "rb") as f:
+                raw = f.read()
+        except OSError as e:
+            skipped.append(f"{shown}: {e.strerror}")
+            continue
+        if b"\0" in raw[:4096]:
+            continue  # binary
+        sources.append((shown, raw.decode("utf-8", errors="replace")))
+    hits = defaultdict(lambda: {"signals": Counter(), "where": {}})
+    for shown, body in sources:
+        for sig, topic, rx in signals():
+            ms = list(rx.finditer(body))
+            if ms:
+                h = hits[topic]
+                h["signals"][sig] += len(ms)
+                h["where"].setdefault(sig, f"{shown}:{body.count(chr(10), 0, ms[0].start()) + 1}")
+    ranked = sorted(hits.items(), key=lambda kv: (-len(kv[1]["signals"]), -sum(kv[1]["signals"].values()), kv[0]))
+    return {"topics": [{"topic": t, "signals": dict(h["signals"].most_common()), "where": h["where"]} for t, h in ranked],
+            "files": len(sources) - (1 if text else 0), "text": bool(text), "skipped": skipped}
+
+
+def format_topics_for(res, limit=15):
+    out = [f"kb topics for {res['files']} file(s)" + (" and the given text" if res.get("text") else "") + ":"]
+    for x in res["topics"][:limit]:
+        sigs = ", ".join(f"{s} ({n}, {x['where'][s]})" for s, n in x["signals"].items())
+        out.append(f"- {x['topic']}  {sigs}")
+    if not res["topics"]:
+        out.append("no kb signal found: the code touches none of the curated topics (_tools/signals.csv)")
+    elif len(res["topics"]) > limit:
+        out.append(f"... +{len(res['topics']) - limit} more topics")
+    out += [f"skipped: {s}" for s in res["skipped"][:10]]
+    out.append("next: kb_facts or kb_pack per topic (response_format detailed) for the facts to check the code against")
+    return "\n".join(out)

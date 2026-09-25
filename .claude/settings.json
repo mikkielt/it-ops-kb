@@ -1,9 +1,4 @@
 {
-  "enabledMcpjsonServers": [
-    "microsoft-learn",
-    "claude-code-docs",
-    "mcp-docs"
-  ],
   "permissions": {
     "allow": [
       "mcp__microsoft-learn__microsoft_docs_search",
@@ -13,6 +8,7 @@
       "mcp__claude-code-docs__query_docs_filesystem_claude_code_docs",
       "mcp__mcp-docs__search_model_context_protocol",
       "mcp__mcp-docs__query_docs_filesystem_model_context_protocol",
+      "mcp__kb",
       "Bash(python3 _tools/rag.py *)",
       "Bash(python3 _tools/kb_hook.py *)",
       "Bash(python3 _tools/check.py)",

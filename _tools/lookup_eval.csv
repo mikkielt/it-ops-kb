@@ -22,3 +22,7 @@ E20,"What is the licence of the spaCy en_core_web_lg model?",privacy/spacy-model
 E21,Intel Wi-Fi roaming aggressiveness,,none,
 E22,wifi roaming aggressiveness intel,,none,
 E23,BlockNTLMv1SSO default,auth/ntlm-deprecation.md;auth/kerberos.md,good,
+E24,SCCM AdminService Kerberos,mecm/adminservice.md;auth/kerberos.md,good,
+E25,Azure AD PIM groups writeback,auth/entra-intune-rbac.md,good,
+E26,MEMCM CMPivot query timeout,mecm/cmpivot.md,good,
+E27,AAD device delete BitLocker keys,entra/bitlocker-key-deletion.md,good,

@@ -1,12 +1,12 @@
 ---
 name: kb-setup
-description: First-time setup and health check of the it-ops-kb repository. Checks Python, runs the kb checks and stress tests, installs the local commit hook (KB-* trailers), makes sure the shared documentation MCP servers are approved and answering, and ends with a pass/fail report. Use when someone has just cloned the repo or asks to set it up.
+description: First-time setup and health check of the it-ops-kb repository. Checks Python, runs the kb checks and stress tests, installs the local commit hook (KB-* trailers), registers the kb and documentation MCP servers at local scope and checks they answer, and ends with a pass/fail report. Use when someone has just cloned the repo or asks to set it up.
 disable-model-invocation: true
 ---
 
 # Set up it-ops-kb
 
-Work from the repository root. Change no kb content (the one change is the local git setting in step 3). Do every step even if an earlier one fails, then report.
+Work from the repository root. Change no kb content (the only changes are the local git setting in step 3 and the local-scope MCP servers in step 4). Do every step even if an earlier one fails, then report.
 
 Read `MAINTAINING.md` first: the content rules, tools, git workflow and commit rules this skill relies on (`AGENTS.md` covers lookups only).
 
@@ -32,12 +32,12 @@ A failure here is a finding. Do not "fix" kb files to make a check pass.
 - Not a git clone (e.g. an unpacked archive): SKIPPED.
 
 ## 4. MCP servers
-The repo shares three no-auth documentation servers in `.mcp.json`: `microsoft-learn`, `claude-code-docs`, `mcp-docs`.
-- Run `claude mcp list` and note each server's state.
+A clone uses four servers at local scope (this machine and this clone only): `kb` (`_tools/kb_mcp.py`) and the three no-auth documentation servers of `.claude-plugin/it-ops-kb-docs/.mcp.json`: `microsoft-learn`, `claude-code-docs`, `mcp-docs`. There is no root `.mcp.json` (it would load into the `it-ops-kb` plugin).
+- Run `python3 _tools/kb_mcp.py --register-local`. It registers the missing ones with `claude mcp add-json --scope local` and reports `already registered` for the rest. This is the one change besides step 3; it is local to this user and clone and can be undone with `claude mcp remove <name>`.
+- Run `claude mcp list` and note each server's state. Servers registered in this session load only after a restart: tell the user to restart and run `/kb-setup` again for the calls below.
 - The deciding test is the read-only call below: a server that answers is a PASS, whatever `claude mcp list` says.
-- `Pending approval` next to a working server is normal before the folder is trusted, and in headless runs (`claude -p`), which load project servers without asking. For interactive use, tell the user to accept the trust prompt and restart, or approve the three servers in `/mcp`; `.claude/settings.json` pre-approves them once the folder is trusted. Do not write `.claude/settings.local.json` unless the user asks.
-- `Pending approval` and the tools are unavailable in this session: FAIL, with the same advice.
 - `Failed`: note the error. Test reachability with `curl -sI https://learn.microsoft.com/api/mcp` (any HTTP status means the host is reachable; proxies and firewalls are the usual cause).
+- `kb`: call `kb_status` and confirm it names this clone's commit.
 - For each connected server make one read-only call and confirm it returns content:
   - `microsoft_docs_search` with query `DSC v3 resource manifest`
   - `search_claude_code_docs` with query `hooks`

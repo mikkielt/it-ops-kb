@@ -6,19 +6,28 @@
                                            -u adds each hit's source origin urls
   rag.py src S1824 [S-k3f7q2zd ...]        source id -> title, url, version (and "superseded by" when set)
   rag.py show PATH[:LINE] [-n 40]          print lines of a kb file
-  rag.py pack QUESTION [--budget 1200] [-d DOMAIN]
+  rag.py pack QUESTION [--budget 1200] [-d DOMAIN] [--format concise]
                                            the evidence pack for a question: a `coverage: good|weak|none` verdict,
                                            the best fact lines grouped by article (path:line, tag) and one footer of
                                            the cited sources' urls, within about BUDGET tokens. Start every lookup here.
-  rag.py facts PREFIX [--tag UNK,COMMUNITY]   fact lines under a path prefix (a domain, topic or file), by tag kind
-  rag.py audit [PREFIX] [--status partial] [--entries] [--unlinked]
+  rag.py pack -q PART -q PART ...          one batch for a question with several parts (1-6): a section with its
+                                           own verdict per part and one shared source footer
+  rag.py facts PREFIX [--tag UNK,COMMUNITY] [--format detailed]
+                                           fact lines under a path prefix (a domain, topic or file), by tag kind
+  rag.py audit [PREFIX] [--status partial] [--entries] [--unlinked] [--format detailed]
                                            per article: status, retrieved_utc, fact counts by tag kind and the
                                            _gaps.md/_conflicts.md entries linked to it (named, or via its sources);
                                            --unlinked lists the entries no topic marker, path or section links
   rag.py src S1824 --cited                 also every file line that names the id
   rag.py eval [--file _tools/lookup_eval.csv]   pack against the lookup eval set: expected article found, verdict
+  rag.py topics-for PATH... | --keywords TEXT   kb topics that code touches, from the curated code signals in
+                                           _tools/signals.csv (e.g. PublicClientApplication -> auth/msal-public-client)
 
-Add --json to any command for machine output. artifacts/ directories are not indexed. search skips the
+--format concise|detailed: pack defaults to detailed (answers need the urls); facts, audit and search to concise
+(facts grouped by file with a short tag and text, no url footer). Words that are product aliases
+(_tools/aliases.csv: sccm, memcm, configmgr, ...) also match the product's other names.
+
+Add --json (before the command) for machine output. artifacts/ directories are not indexed. search skips the
 root-level index files (README.md, _answers.md, _gaps.md, _conflicts.md, _coverage.csv, ...) unless --index.
 """
 import argparse, csv, io, json, math, os, re, sys
@@ -210,7 +219,70 @@ def format_cited(pairs):
     return "\n".join(f"  cited at {p}:{','.join(map(str, ns))}" for p, ns in by.items()) or "  cited nowhere"
 
 
-def format_audit(rows, entries=False):
+FORMATS = ("concise", "detailed")
+
+
+def short_tag(parts):
+    """`[DOC S1, S2; DOC S3; UNK]` parsed -> `DOC S1,S2,S3; UNK` (one entry per kind, ids deduplicated)."""
+    by = {}
+    for p in parts:
+        ids = by.setdefault(p["kind"], [])
+        ids += [i for i in p["ids"] if i not in ids]
+    return "; ".join(k + (" " + ",".join(v) if v else "") for k, v in by.items())
+
+
+def format_facts(us, fmt="concise", limit=400):
+    """Fact lines. detailed: `path:line  [KINDS]  text` (300 characters). concise: grouped by file, `  LINE [tag] text`
+    with the tags moved to the front and the text cut at 160 characters."""
+    out, last = [], None
+    for u in us[:limit]:
+        if fmt == "detailed":
+            text = u["text"] if len(u["text"]) <= 300 else u["text"][:300] + " ..."
+            out.append(f"{u['path']}:{u['line']}  [{'/'.join(kbfacts.kinds_of(u['tags']))}]  {text}")
+            continue
+        if u["path"] != last:
+            out.append(u["path"])
+            last = u["path"]
+        text = " ".join(kbfacts.TAG.sub("", u["text"]).split())
+        text = text if len(text) <= 160 else text[:160].rsplit(" ", 1)[0] + " ..."
+        out.append(f"  {u['line']} [{short_tag(u['tags'])}] {text}")
+    return "\n".join(out + [f"facts={len(us)}" + (f" (first {limit} shown)" if len(us) > limit else "")])
+
+
+def format_hits(hits, fmt="concise"):
+    """Search hits. detailed: 600 characters of text each and a footer of the cited sources' urls (when resolved).
+    concise: 300 characters, the cited ids only."""
+    out = []
+    for x in hits:
+        n = 600 if fmt == "detailed" else 300
+        text = x["text"] if len(x["text"]) <= n else x["text"][:n] + " ..."
+        out.append(f"\n[{x['score']}] {x['path']}:{x['line']}  § {x['heading']}\n  " + text.replace("\n", "\n  "))
+    urls = {i: u for x in hits for i, u in x.get("urls", {}).items()}
+    if urls and fmt == "detailed":
+        out.append("\nsources:")
+        out += [f"  -> {i}  {u or 'UNKNOWN id'}" for i, u in urls.items()]
+    elif fmt == "concise":
+        ids = sorted({i for x in hits for i in x["sources"]}, key=kbid.sort_key)
+        if ids:
+            out.append("\ncited ids (urls: kb_source, or response_format detailed): " + ", ".join(ids))
+    return "\n".join(out).strip()
+
+
+def format_audit(rows, entries=False, fmt="detailed"):
+    if fmt == "concise":
+        out = ["| path | status | facts | DOC | DER | COMMUNITY | UNK | gaps | conflicts |", "|---|---|---|---|---|---|---|---|---|"]
+        for r in rows:
+            gv, cv = len(r["gaps_via_sources"]), len(r["conflicts_via_sources"])
+            out.append(f"| {r['path']} | {r['status']} | {r['facts']} | {r['DOC']} | {r['DER']} | {r['COMMUNITY']} | "
+                       f"{r['UNK']} | {len(r['gaps'])}" + (f"+{gv}" if gv else "") + f" | {len(r['conflicts'])}"
+                       + (f"+{cv}" if cv else "") + " |")
+        if entries:
+            for r in rows:
+                for key in ("gaps", "gaps_via_sources", "conflicts", "conflicts_via_sources"):
+                    for e in r[key]:
+                        out.append(f"{r['topic']}  {key}: {e['file']}:{e['line']}  {e['text'][:100]}")
+        out.append(f"articles={len(rows)}; gaps/conflicts N+M: N name the topic, M cite a source it uses")
+        return "\n".join(out)
     out = ["| path | status | retrieved | facts | DOC | DER | COMMUNITY | UNK | gaps | conflicts |", "|---|---|---|---|---|---|---|---|---|---|"]
     for r in rows:
         g, c = len(r["gaps"]), len(r["conflicts"])
@@ -256,14 +328,20 @@ def main():
     s = sub.add_parser("search"); s.add_argument("query", nargs="+"); s.add_argument("-k", type=positive_int, default=8); s.add_argument("-d", "--domain")
     s.add_argument("-u", "--urls", action="store_true", help="resolve each hit's cited source ids to their origin url")
     s.add_argument("--index", action="store_true", help="also search the root-level index files (README.md, _answers.md, ...)")
+    s.add_argument("--format", choices=FORMATS, default="concise", help="detailed: 600 characters per hit (-u implies it)")
     r = sub.add_parser("src"); r.add_argument("ids", nargs="+")
     r.add_argument("--cited", action="store_true", help="also list every file line that names each id")
-    pk = sub.add_parser("pack"); pk.add_argument("question", nargs="+"); pk.add_argument("--budget", type=positive_int, default=1200)
-    pk.add_argument("-d", "--domain")
+    pk = sub.add_parser("pack"); pk.add_argument("question", nargs="*"); pk.add_argument("--budget", type=positive_int, default=1200)
+    pk.add_argument("-q", dest="parts", action="append", default=[], help="one part of a multi-part question (repeat, up to 6)")
+    pk.add_argument("-d", "--domain"); pk.add_argument("--format", choices=FORMATS, default="detailed")
     fa = sub.add_parser("facts"); fa.add_argument("prefix"); fa.add_argument("--tag", help="comma-separated kinds, e.g. UNK,COMMUNITY")
+    fa.add_argument("--format", choices=FORMATS, default="concise")
     au = sub.add_parser("audit"); au.add_argument("prefix", nargs="?"); au.add_argument("--status")
     au.add_argument("--entries", action="store_true", help="list the linked _gaps.md/_conflicts.md entries")
     au.add_argument("--unlinked", action="store_true", help="list _gaps.md/_conflicts.md entries no marker, path or section links to a topic")
+    au.add_argument("--format", choices=FORMATS, default="concise")
+    tf = sub.add_parser("topics-for"); tf.add_argument("paths", nargs="*", help="files or directories of the code to map")
+    tf.add_argument("--keywords", help="text to map instead of (or as well as) files")
     ev = sub.add_parser("eval"); ev.add_argument("--file", default=os.path.join("_tools", "lookup_eval.csv"))
     w = sub.add_parser("show"); w.add_argument("target"); w.add_argument("-n", type=positive_int, default=40)
     a = ap.parse_args()
@@ -292,14 +370,8 @@ def main():
             add_urls(res)
         if a.json:
             return print(json.dumps(res, indent=1))
-        for x in res:
-            print(f"\n[{x['score']}] {x['path']}:{x['line']}  § {x['heading']}")
-            print("  " + x["text"][:600].replace("\n", "\n  "))
-        urls = {i: u for x in res for i, u in x.get("urls", {}).items()}
-        if urls:
-            print("\nsources:")
-            for i, u in urls.items():
-                print(f"  -> {i}  {u or 'UNKNOWN id'}")
+        if res:
+            print(format_hits(res, "detailed" if a.urls else a.format))
         if not res:
             sys.exit("no match")
     elif a.cmd == "src":
@@ -317,7 +389,12 @@ def main():
             if a.cited:
                 print(format_cited(cited.get(x["id"], [])))
     elif a.cmd == "pack":
-        res = kbfacts.pack(" ".join(a.question), a.budget, a.domain)
+        parts = a.parts + ([" ".join(a.question)] if a.question else [])
+        if not parts:
+            sys.exit("pack: give a question, or -q PART for each part")
+        if len(parts) > kbfacts.MAX_QUESTIONS:
+            sys.exit(f"pack: at most {kbfacts.MAX_QUESTIONS} parts")
+        res = kbfacts.pack_many(parts, a.budget, a.domain, a.format)
         if a.json:
             return print(json.dumps(res, indent=1))
         print(res["text"])
@@ -329,10 +406,7 @@ def main():
         res = [u for u in kbfacts.units(a.prefix) if u["tags"] and (not kinds or kinds & set(kbfacts.kinds_of(u["tags"])))]
         if a.json:
             return print(json.dumps([{k: u[k] for k in ("path", "line", "section", "text", "tags")} for u in res], indent=1))
-        for u in res:
-            text = u["text"] if len(u["text"]) <= 300 else u["text"][:300] + " ..."
-            print(f"{u['path']}:{u['line']}  [{'/'.join(kbfacts.kinds_of(u['tags']))}]  {text}")
-        print(f"facts={len(res)}")
+        print(format_facts(res, a.format, limit=len(res)))
     elif a.cmd == "audit" and a.unlinked:
         tf, srcs, n = kbfacts.topic_files(), kbfacts.source_rows(), 0
         for name in ("_gaps.md", "_conflicts.md"):
@@ -346,7 +420,14 @@ def main():
         rows = kbfacts.audit(a.prefix, a.status)
         if a.json:
             return print(json.dumps(rows, indent=1))
-        print(format_audit(rows, a.entries))
+        print(format_audit(rows, a.entries, a.format))
+    elif a.cmd == "topics-for":
+        if not a.paths and not a.keywords:
+            sys.exit("topics-for: give files or directories, or --keywords TEXT")
+        res = kbfacts.topics_for(a.paths, a.keywords or "")
+        if a.json:
+            return print(json.dumps(res, indent=1))
+        print(kbfacts.format_topics_for(res))
     elif a.cmd == "eval":
         res = run_eval(a.file)
         if a.json:

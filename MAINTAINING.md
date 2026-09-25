@@ -11,13 +11,11 @@ Run `/kb-setup` (Claude Code), or do the same by hand. In Claude Code on the web
    - `python3 _tools/check.py` -> `errors=0`
    - `python3 _tools/fetch.py --offline` -> `mismatch=0 unknown=0`
    - `python3 _tools/stress_test.py` -> `0 failed`
-3. **Documentation MCP servers are in place.** `.mcp.json` shares three remote servers that need no authentication:
+3. **MCP servers are in place.** `python3 _tools/kb_mcp.py --register-local` registers, at local scope (this machine and this clone only), the `kb` server and the three documentation servers of `.claude-plugin/it-ops-kb-docs/.mcp.json` (listed in `AGENTS.md`). The root has no `.mcp.json` on purpose: the `it-ops-kb` plugin is sourced from the root, and a plugin loads its root `.mcp.json` whatever `plugin.json` says, so the docs servers live in their own plugin.
 
-   The three servers are listed in `AGENTS.md`.
-
-   - `claude mcp list` must show all three `Connected`.
-   - `Pending approval`: `.claude/settings.json` pre-approves them, but Claude Code honours that only once the folder is trusted. Accept the trust prompt and restart, or approve them in `/mcp`.
+   - `claude mcp list` must show `kb` and the three docs servers `Connected`. Their tools keep the names `.claude/settings.json` allows (`mcp__kb`, `mcp__microsoft-learn__...`).
    - `Failed`: check network or proxy access to the url; the servers need no credentials.
+   - Do not load the plugin in a clone (`--plugin-dir .`): the project skills and agents and the local servers would load a second time under plugin names.
    - Other agents (not Claude Code): register the same three urls as streamable-HTTP MCP servers in your client.
    - Optional, per user: GitHub's read-only repository server needs a personal token. Add it at user scope, never in a repo file:
      `claude mcp add --scope user --transport http github-repos-ro https://api.githubcopilot.com/mcp/x/repos/readonly --header "Authorization: Bearer $GITHUB_PAT"`
@@ -28,13 +26,14 @@ Run `/kb-setup` (Claude Code), or do the same by hand. In Claude Code on the web
 
 | command | does |
 |---|---|
-| `python3 _tools/rag.py pack "<question>" [--budget 1200] [-d DOMAIN]` | the evidence pack: `coverage: good/weak/none`, the best fact lines by article, one source footer (start lookups here) |
-| `python3 _tools/rag.py facts PREFIX [--tag UNK,COMMUNITY]` / `audit [PREFIX] [--status partial] [--entries] [--unlinked]` | fact lines by tag kind / per-article status, tag counts and linked gap and conflict entries (`--unlinked`: entries no topic links yet) |
+| `python3 _tools/rag.py pack "<question>" [--budget 1200] [-d DOMAIN] [--format concise]` | the evidence pack: `coverage: good/weak/none`, the best fact lines by article, one source footer (start lookups here); `-q PART -q PART` batches up to 6 parts, a verdict each and one footer. Product aliases (`_tools/aliases.csv`: sccm, memcm, configmgr, ...) match each other but never count as key words |
+| `python3 _tools/rag.py facts PREFIX [--tag UNK,COMMUNITY] [--format detailed]` / `audit [PREFIX] [--status partial] [--entries] [--unlinked]` | fact lines by tag kind / per-article status, tag counts and linked gap and conflict entries (`--unlinked`: entries no topic links yet); both concise unless `--format detailed` |
+| `python3 _tools/rag.py topics-for PATH... [--keywords TEXT]` | kb topics that code touches, from the curated signals in `_tools/signals.csv` (`signal,topic`; a test checks every topic exists) |
 | `python3 _tools/rag.py src S123 [--cited]` / `eval` | resolve a source id, with every line that cites it / run the lookup eval set `_tools/lookup_eval.csv` |
 | `python3 _tools/rag.py search "<query>" -k 8 [-d DOMAIN] [-u] [--index]` | BM25 search over chunks; `-u` adds a footer of source urls; root index files only with `--index` |
 | `python3 _tools/rag.py show PATH:LINE -n 30` / `src S123` / `topics [DOMAIN]` | read lines / resolve a source id (`S123` or `S-k3f7q2zd`) / list articles |
 | `python3 _tools/census.py check` / `record LOG` / `confirm LOG` / `sample LOG` / `summary LOG` | the census (`/kb-census`): a mechanical verdict per source in `_census/<date>.csv`, phase-2 outcomes, dates only for confirmed sources, the phase-4 sample |
-| `python3 _tools/kb_mcp.py [--status]` | the read-only `kb` MCP server over stdio (`kb_pack`, `kb_facts`, `kb_audit`, `kb_search`, `kb_show`, `kb_source`, `kb_status`); the plugin starts it; `--status` prints kb_status once |
+| `python3 _tools/kb_mcp.py [--status] [--register-local]` | the read-only `kb` MCP server over stdio (`kb_pack`, `kb_facts`, `kb_audit`, `kb_search`, `kb_show`, `kb_source`, `kb_status`, `kb_topics_for`); the plugin starts it; `--status` prints kb_status once; `--register-local` sets up a clone's local-scope servers |
 | `python3 _tools/kb_hook.py --test "kb: <question>"` | the UserPromptSubmit hook behind `kb:` prompts (settings.json and the plugin): prints what it would answer |
 | `python3 _tools/kbid.py url <URL>` / `answer "<question>"` / `check` | id for a new source / `QK-<slug>` for a new answer / hash-id consistency |
 | `python3 _tools/build_index.py [--check]` | regenerate `_coverage.csv`, the README coverage table and `used_in` from the articles (`--check`: report only, exit 1 if stale) |
@@ -55,8 +54,11 @@ Run `/kb-setup` (Claude Code), or do the same by hand. In Claude Code on the web
 
 ## Plugin (`.claude-plugin/`)
 
-- The repo root is a Claude Code marketplace and its one plugin `it-ops-kb`: the `kb` server, `/kb-lookup`, the `.mcp.json` docs servers and a PreToolUse hook blocking `submit_feedback`. Install and runbook: README, "Use from another project".
-- Keep it read-only: `plugin.json` loads only `.claude/skills/kb-lookup` and sets `"agents": []` (the kb's `agents/` domain is articles). Never add a root `skills/`, `commands/`, `hooks/`, `bin/` or similar directory: the plugin would load it. No `version` field: users get each commit. `python3 _tools/test_kb_mcp.py` checks these and runs `claude plugin validate` when the CLI is installed.
+- The repo root is a Claude Code marketplace with two plugins. `it-ops-kb` (the root): the `kb` server, `/kb-lookup`, `/kb-review-workspace`, the `kb-lookup` and `kb-reviewer` agents (`.claude/agents/`) and the `kb:` hook. `it-ops-kb-docs` (`.claude-plugin/it-ops-kb-docs/`): the three docs servers and a PreToolUse hook blocking `submit_feedback`. Install and runbook: README, "Use from another project".
+- What reaches a host project: only the `kb` server's instructions and tool descriptions, the skill and agent names and descriptions, and their bodies when used. `AGENTS.md` and `MAINTAINING.md` never load there, and `rag.py` is not on its path: a rule a host must follow goes into those texts, and they name `rag.py` only as the clone form (tested).
+- Keep it read-only: `plugin.json` lists the two skills and the two agent files by path (the kb's `agents/` domain is articles, so never the default `agents/` scan). No `Write`, `Edit`, `Bash` or git in a plugin skill's `allowed-tools` or an agent's `tools`. Never add a root `skills/`, `commands/`, `hooks/`, `bin/` or similar directory, or a root `.mcp.json`: the plugin would load it. No `version` field: users get each commit. `python3 _tools/test_kb_mcp.py` checks these and runs `claude plugin validate` on both plugins when the CLI is installed.
+- Plugin agents honour `model`, `effort`, `maxTurns`, `tools`, `skills`, `omitClaudeMd` and a few more, and ignore `permissionMode`, `hooks` and `mcpServers`. `effort` goes in an agent, never in a skill: a skill's effort overrides the host session's while it runs. The agents list the kb tools under both names, `mcp__plugin_it-ops-kb_kb__*` (a host) and `mcp__kb__*` (a clone's local server).
+- `/kb-lookup` is the only skill Claude may invoke on its own; every other skill sets `disable-model-invocation: true`, which keeps its description out of every session (tested).
 - `/kb-research <question>`: research a question in the context of the topics the kb already has, then extend them.
 - `/kb-refresh <topic|dir|file|S-id>`: diff sources and update the facts.
 - `/kb-add-topic <domain>/<slug>`: research and write a new topic.

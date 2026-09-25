@@ -9,7 +9,8 @@
 
 Cohesion: check.py and fetch.py --offline pass; no lint errors beyond the recorded baseline; the generated index
 files (_coverage.csv, README coverage table, used_in) are up to date (build_index.py --check); links, backtick paths and used_in paths resolve; every CLI flag the docs mention exists
-in that tool; .mcp.json, .claude/settings.json and AGENTS.md agree; skills are well-formed; AGENTS.md stays under 4 KB
+in that tool; the docs servers' .mcp.json (.claude-plugin/it-ops-kb-docs/), .claude/settings.json and AGENTS.md agree;
+skills are well-formed and only /kb-lookup is model-invocable; AGENTS.md stays under 4 KB
 (every session and subagent loads it; maintainer rules live in MAINTAINING.md).
 Lookup (deterministic retrieval): kbfacts.py parses tag variants and ledger topic markers one way; `rag.py eval` passes
 every question of _tools/lookup_eval.csv (expected article in the pack, right coverage verdict); the kb: hook blocks
@@ -21,7 +22,7 @@ Sync (test_sync.py): kbgit.py sync against a throwaway bare remote and two clone
 Census (test_census.py): census.py's classification, release series, git checks on a local repo, and
 record/confirm/sample on a throwaway kb copy (no network).
 kb MCP server and plugin (test_kb_mcp.py): the stdio server's handshake, tools and errors; the plugin manifests stay
-read-only and consistent with .mcp.json; `claude plugin validate` when the CLI is installed.
+read-only (a kb plugin and a docs plugin); `claude plugin validate` when the CLI is installed.
 Research merge (test_research_merge.py): two pre-regime research branches with colliding ids merged the documented way
 (rebase, /kb-git-sync resolution, fix, sync), checked in a fresh clone; skipped without git or the fork commit.
 Leaks (tracked files): secrets in any file; in authored files also home-directory paths, private IPv4 addresses,
@@ -206,16 +207,18 @@ class Cohesion(unittest.TestCase):
         self.assertFalse(bad, "documented flags missing from the tool:\n" + fmt(bad))
 
     def test_mcp_config_consistent(self):
-        servers = json.loads(text(".mcp.json"))["mcpServers"]
+        servers = json.loads(text(".claude-plugin/it-ops-kb-docs/.mcp.json"))["mcpServers"]
         settings = json.loads(text(".claude/settings.json"))
-        self.assertEqual(set(settings.get("enabledMcpjsonServers", [])), set(servers), "enabledMcpjsonServers != .mcp.json servers")
+        self.assertNotIn("enabledMcpjsonServers", settings, "no root .mcp.json: a clone registers the servers at local scope")
         table = dict(re.findall(r"^\s*\| `([\w-]+)` \| `(https://[^`]+)` \|", text("AGENTS.md"), re.M))
-        self.assertEqual(table, {k: v["url"] for k, v in servers.items()}, "AGENTS.md server table != .mcp.json")
+        self.assertEqual(table, {k: v["url"] for k, v in servers.items()}, "AGENTS.md server table != the docs .mcp.json")
+        known = set(servers) | {"kb"}  # kb: the clone's local-scope kb server (kb_mcp.py --register-local)
         perms = settings.get("permissions", {})
         for rule in perms.get("allow", []):
-            m = re.match(r"mcp__([\w-]+?)__", rule)
+            m = re.match(r"mcp__([\w-]+?)(?:__|$)", rule)
             if m:
-                self.assertIn(m.group(1), servers, f"allow rule {rule} names an unknown server")
+                self.assertIn(m.group(1), known, f"allow rule {rule} names an unknown server")
+                self.assertTrue("__" in rule[5:] or m.group(1) == "kb", f"{rule}: only the read-only kb server is allowed whole")
             self.assertNotIn("submit_feedback", rule, "submit_feedback must never be allowed")
             self.assertFalse(rule.startswith("mcp__") and rule.endswith("__*") and rule[5:-3] in ("claude-code-docs", "mcp-docs"),
                              f"{rule} would allow submit_feedback")
@@ -237,6 +240,8 @@ class Cohesion(unittest.TestCase):
             self.assertTrue(name and name.group(1) == os.path.basename(os.path.dirname(p)), f"{p}: name must equal its directory")
             self.assertRegex(fm, r"(?m)^description:\s*\S.{20,}", f"{p}: description missing or too short")
             self.assertIn(os.path.basename(os.path.dirname(p)), text("AGENTS.md"), f"{p}: skill not listed in AGENTS.md")
+            if os.path.basename(os.path.dirname(p)) != "kb-lookup":  # its description would load into every session
+                self.assertRegex(fm, r"(?m)^disable-model-invocation: true$", f"{p}: only /kb-lookup is model-invocable")
 
     def test_claude_md_imports_agents_md(self):
         self.assertIn("@AGENTS.md", text("CLAUDE.md") or "")
@@ -247,7 +252,7 @@ class Cohesion(unittest.TestCase):
         self.assertLessEqual(size, 4096, f"AGENTS.md is {size} bytes: it loads into every session and subagent; "
                                          "move maintainer detail to MAINTAINING.md")
         for s in glob.glob(os.path.join(KB, ".claude", "skills", "*", "SKILL.md")):
-            if os.path.basename(os.path.dirname(s)) != "kb-lookup":
+            if os.path.basename(os.path.dirname(s)) not in ("kb-lookup", "kb-review-workspace"):  # read-only skills
                 self.assertIn("MAINTAINING.md", text(os.path.relpath(s, KB)), f"{s}: a skill that changes the kb must point to MAINTAINING.md")
 
 
@@ -273,6 +278,27 @@ class Lookup(unittest.TestCase):
         rows = {r["topic"]: r for r in kbfacts.audit("agents/shared-ner-service")}
         self.assertTrue(rows["agents/shared-ner-service"]["gaps"], "shared-ner-service's named gap entries are not linked")
 
+    def test_alias_and_signal_tables(self):
+        import kbfacts
+        for name, cols in (("aliases.csv", ["term", "canonical"]), ("signals.csv", ["signal", "topic"])):
+            with open(os.path.join(TOOLS, name), encoding="utf-8", newline="") as f:
+                rows = list(csv.reader(f))
+            self.assertEqual(rows[0], cols, name)
+            keys = [r[0].lower() for r in rows[1:]]
+            self.assertEqual(len(keys), len(set(keys)), f"{name}: duplicate {cols[0]}")
+            for r in rows[1:]:
+                self.assertEqual(len(r), 2, f"{name}: {r}")
+                self.assertTrue(r[0].strip() and r[1].strip(), f"{name}: {r}")
+        topics = set(kbfacts.topic_files())
+        bad = [r["signal"] for r in csv.DictReader(open(os.path.join(TOOLS, "signals.csv"), encoding="utf-8")) if r["topic"] not in topics]
+        self.assertFalse(bad, f"signals.csv names topics that do not exist: {bad}")
+        for r in csv.DictReader(open(os.path.join(TOOLS, "aliases.csv"), encoding="utf-8")):
+            self.assertEqual(r["term"], r["term"].lower().strip(), "aliases.csv terms are lowercase")
+        extra, variants = kbfacts.expand("SCCM AdminService")
+        self.assertIn("configmgr", extra)
+        self.assertNotIn("configmgr", kbfacts.key_terms("SCCM AdminService"), "an expansion is never a key word")
+        self.assertIn(("mecm",), variants["sccm"])
+
     def test_lookup_eval_passes(self):
         code, out = run(os.path.join(TOOLS, "rag.py"), "eval")
         self.assertEqual(code, 0, out[-3000:])
@@ -290,7 +316,12 @@ class Lookup(unittest.TestCase):
         self.assertTrue(covered["reason"].startswith("coverage: good"))
         missing = hook("kb: What is the Intel Wi-Fi Roaming Aggressiveness setting?")
         self.assertNotIn("decision", missing)
-        self.assertIn("coverage: none", missing["hookSpecificOutput"]["additionalContext"])
+        line = missing["hookSpecificOutput"]["additionalContext"]
+        self.assertTrue(line.startswith("it-ops-kb has no coverage for: ") and "Roaming" in line, line)
+        self.assertNotIn("\n", line, "coverage none: one line, not the pack")
+        p = subprocess.run([sys.executable, "-c", "import sys, kb_hook; kb_hook.answer('fix the build'); "
+                            "sys.exit('kbfacts' in sys.modules)"], cwd=TOOLS, capture_output=True, text=True, timeout=60)
+        self.assertEqual(p.returncode, 0, "a prompt without kb: must return before kbfacts is loaded")
         forward = hook("kb+: Does deleting an Entra device also delete its BitLocker recovery keys?")
         self.assertEqual(forward["hookSpecificOutput"]["hookEventName"], "UserPromptSubmit")
 

@@ -1,0 +1,27 @@
+term,canonical
+sccm,configmgr
+memcm,configmgr
+mecm,configmgr
+configmgr,configmgr
+configuration manager,configmgr
+azure ad,entra
+aad,entra
+entra id,entra
+entra,entra
+endpoint manager,intune
+mem,intune
+intune,intune
+group policy,gpo
+gpo,gpo
+administration service,adminservice
+adminservice,adminservice
+windows laps,laps
+laps,laps
+defender for endpoint,defender
+mde,defender
+defender,defender
+dsc v3,dsc
+dsc,dsc
+active directory,ad
+ad ds,ad
+ad,ad

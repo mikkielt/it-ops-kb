@@ -4,12 +4,12 @@ An offline knowledge base of facts from official sources on Windows endpoint man
 
 ## Look things up: deterministic tools first
 
-- Answer lookups in the session that asked. Do not start a subagent for a lookup; its startup context costs about 50k tokens, far more than the lookup itself.
-- One call first: `kb_pack` (MCP) or `python3 _tools/rag.py pack "<question>"`. It prints `coverage: good|weak|none`, the best fact lines by article with `path:line` and tag, and one footer of source urls.
+- Answer lookups in the session that asked. Never start a general-purpose subagent for a lookup (about 50k tokens of startup context); multi-part research may use the lean `kb-lookup` agent.
+- One call first: `kb_pack` (MCP) or `python3 _tools/rag.py pack "<question>"`; several parts in one call: `questions` / `pack -q PART -q PART`. It prints `coverage: good|weak|none`, the best fact lines by article with `path:line` and tag, and one footer of source urls.
   - `good`: answer from the pack.
   - `weak`: one reworded pack, or one `show` of the article.
   - `none`: say the kb does not cover it. Add nothing from memory.
-- Counts, lists and joins are tools, not reading: `rag.py audit [PREFIX] [--status partial] [--entries]` (per article: tag counts, linked gaps and conflicts), `rag.py facts PREFIX --tag UNK,COMMUNITY`, `rag.py src S123 --cited` (the row plus every line that cites it). MCP: `kb_audit`, `kb_facts`, `kb_source` with `cited`.
+- Counts, lists and joins are tools, not reading: `rag.py audit [PREFIX] [--status partial] [--entries]` (per article: tag counts, linked gaps and conflicts), `rag.py facts PREFIX --tag UNK,COMMUNITY`, `rag.py src S123 --cited` (the row plus every line that cites it). MCP: `kb_audit`, `kb_facts`, `kb_source` with `cited`. These print concise output; `--format detailed` / `response_format` for full text and urls.
 - Also: `rag.py show PATH:LINE -n 30`, `rag.py search "<keywords>" [-d DOMAIN] [--index]` (`--index` adds `_answers.md`, `_gaps.md`, `_conflicts.md`), `rag.py topics [DOMAIN]`.
 - A person can type `kb: <question>`: a hook answers from the pack without the model when coverage is good, and otherwise passes the pack to you as context (`kb+:` always passes it).
 - The `/kb-lookup` skill is the same procedure.
@@ -20,7 +20,7 @@ Every fact ends in a tag with ids from `_sources.csv`: `DOC` (official), `DER` (
 
 ## Live documentation (only when the kb lacks it)
 
-`.mcp.json` shares three remote servers that need no authentication. Label what they give "live docs, not in the kb", with the url and date.
+Three remote servers that need no authentication, in `.claude-plugin/it-ops-kb-docs/.mcp.json`: the `it-ops-kb-docs` plugin for other projects, `python3 _tools/kb_mcp.py --register-local` in a clone. Label what they give "live docs, not in the kb", with the url and date.
 
 | name | url | use for |
 |---|---|---|
@@ -30,7 +30,7 @@ Every fact ends in a tag with ids from `_sources.csv`: `DOC` (official), `DER` (
 
 ## Skills
 
-`/kb-lookup` (read-only). The following change the kb and follow `MAINTAINING.md`: `/kb-setup`, `/kb-research`, `/kb-refresh`, `/kb-add-topic`, `/kb-census`, `/kb-verify`, `/kb-git-sync`.
+`/kb-lookup` and `/kb-review-workspace` (read-only; the review checks another project's code against the kb). The following change the kb and follow `MAINTAINING.md`: `/kb-setup`, `/kb-research`, `/kb-refresh`, `/kb-add-topic`, `/kb-census`, `/kb-verify`, `/kb-git-sync`.
 
 ## Agent conduct
 

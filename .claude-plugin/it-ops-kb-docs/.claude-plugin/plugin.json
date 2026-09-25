@@ -1,0 +1,26 @@
+{
+  "name": "it-ops-kb-docs",
+  "displayName": "it-ops-kb docs servers",
+  "description": "The live documentation MCP servers it-ops-kb is built from: Microsoft Learn, Claude Code docs and the MCP specification, with every submit_feedback call blocked",
+  "author": {
+    "name": "mikkielt",
+    "url": "https://gitlab.com/mikkielt"
+  },
+  "homepage": "https://gitlab.com/mikkielt/it-ops-kb",
+  "repository": "git@gitlab.com:mikkielt/it-ops-kb.git",
+  "keywords": ["microsoft-learn", "claude-code", "mcp", "documentation"],
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "mcp__plugin_it-ops-kb-docs_(microsoft-learn|claude-code-docs|mcp-docs)__submit_feedback",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3",
+            "args": ["${CLAUDE_PLUGIN_ROOT}/deny_submit_feedback.py"]
+          }
+        ]
+      }
+    ]
+  }
+}
