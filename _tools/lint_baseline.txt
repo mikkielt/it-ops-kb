@@ -1,10 +1,7 @@
 ERROR agents/agent-cost-governance.md: source count: header '1', _coverage.csv '4'
 ERROR agents/agent-overuse-patterns.md: source count: header '28', _coverage.csv '29'
-ERROR agents/agent-overuse-patterns.md: topic is 'agents-overuse/agent-overuse-patterns', path says 'agents/agent-overuse-patterns'
 ERROR agents/agent-rbac.md: source count: header '12', _coverage.csv '10'
-ERROR agents/agent-rbac.md: topic is 'agents-authz/agent-rbac', path says 'agents/agent-rbac'
 ERROR agents/api-tokens-issue-and-store.md: source count: header '14', _coverage.csv '9'
-ERROR agents/api-tokens-issue-and-store.md: topic is 'agents-authz/api-tokens-issue-and-store', path says 'agents/api-tokens-issue-and-store'
 ERROR agents/copilot-studio-inventory.md: source count: header '20', _coverage.csv '26'
 ERROR agents/docs-maintenance-agents.md: priority: header 'P2', _coverage.csv 'P1'
 ERROR agents/docs-maintenance-agents.md: source count: header '17', _coverage.csv '16'
@@ -29,7 +26,6 @@ ERROR agents/mcp-stress-testing.md: untagged fact: 'A "test providers against re
 ERROR agents/own-chatbot-architecture.md: source count: header '14', _coverage.csv '10'
 ERROR agents/own-chatbot-architecture.md: untagged fact: "Copilot Studio's MCP onboarding wizard (S1964) and Foundry Agent Service's rem"
 ERROR agents/subagents-vs-deterministic-tools.md: source count: header '26', _coverage.csv '25'
-ERROR agents/subagents-vs-deterministic-tools.md: topic is 'agents-mcp/subagents-vs-deterministic-tools', path says 'agents/subagents-vs-deterministic-tools'
 ERROR arch/kerberos-linux-containers.md: source count: header '4', _coverage.csv '5'
 ERROR auth/group-claims.md: [DOC] tag without a source id
 ERROR auth/group-claims.md: source count: header '3', _coverage.csv '2'
