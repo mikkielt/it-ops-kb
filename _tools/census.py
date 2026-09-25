@@ -31,7 +31,8 @@ RESULTS.json: [{"id": "S123", "outcome": "confirmed", "note": "..."}, ...].
 confirm (phase 3) treats as confirmed: bucket OK with no outcome, and outcome confirmed or updated. For each it sets
 _sources.csv retrieved_utc to D and ends version_or_date with `confirmed D: <proof>` (replacing an earlier such suffix),
 and sets checked_utc in _fetch_state.csv (fetch columns untouched: the census compared, it did not snapshot). Then
-every article (front matter with sources:) whose cited sources all have retrieved_utc D gets retrieved_utc D.
+every article (front matter with sources:) whose listed sources were all confirmed, or added by the census (rows not
+in LOG with retrieved_utc D), gets retrieved_utc D.
 Superseded, gone, unconfirmed and unread sources keep their dates: a date is only moved by real confirmation.
 
 sample (phase 4) prints a CSV of ids for the independent re-check: a fraction of the sources whose facts phase 2
@@ -595,7 +596,9 @@ def cmd_confirm(a):
         r["version_or_date"] = (vod + "; " if vod else "") + f"confirmed {date}: {proof}"
         r["retrieved_utc"] = date
         n_src += 1
-    fresh = {r["id"] for r in rows if r["retrieved_utc"][:10] == date}
+    # confirmed by this census, or a row it added (phase 2 read those in full); a row merely retrieved on the same
+    # day by other work, or left unconfirmed, does not count
+    fresh = {sid for sid, lr in log.items() if confirmed(lr)} | {r["id"] for r in rows if r["id"] not in log and r["retrieved_utc"][:10] == date}
     articles = []
     for rel in build_index.content_files():
         if not rel.endswith(".md"):
@@ -619,7 +622,7 @@ def cmd_confirm(a):
     for sid, lr in log.items():
         if confirmed(lr):
             state[sid] = {**state.get(sid, {"id": sid}), "id": sid, "url": urls[sid], "checked_utc": stamp, "error": ""}
-    print(f"confirm {date}: {n_src} source(s) confirmed, {len(fresh)} source(s) dated {date}, {len(articles)} article(s) re-dated")
+    print(f"confirm {date}: {n_src} source(s) confirmed, {len(fresh) - n_src} row(s) added by the census, {len(articles)} article(s) re-dated")
     if a.dry_run:
         print("dry run: nothing written")
         return 0

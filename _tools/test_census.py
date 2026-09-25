@@ -155,6 +155,8 @@ class CensusLedger(unittest.TestCase):
             st = {r["id"]: r for r in csv.DictReader(f)}
         self.assertEqual((st[self.ids[0]]["checked_utc"], st[self.ids[0]]["fetched_utc"]), ("2031-01-02T00:00:00Z", ""))
         self.assertNotIn(self.ids[1], st)
+        # a source merely dated today by other work does not make its article confirmed
+        self.assertNotIn(self.ids[1], [r["id"] for r in census.read_log(self.log) if census.confirmed(r)])
 
     def test_2_record_then_confirm_redates_the_article(self):
         res = os.path.join(self.tmp, "res.json")
