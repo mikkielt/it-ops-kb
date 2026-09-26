@@ -63,35 +63,26 @@ class MergeRules(unittest.TestCase):
         self.assertEqual(sorted(r["id"] for r in out), sorted([kbid.source_id("https://a.example.com/x"), kbid.source_id("https://b.example.com/y")]))
         self.assertEqual(sorted(o for _, _, owners in renames["S9999"] for o in owners), ["a", "b"])
 
-    def test_older_layout_is_padded(self):
-        """A branch from before superseded_by existed, union-merged: two headers, 9- and 10-field rows (CRLF too)."""
-        old_h = HEADER.replace(",superseded_by", "")
+    def test_repeated_header_and_short_row(self):
+        """A union merge repeats the header line (dropped); a row short by a column is an error, not padded."""
         u = "https://learn.microsoft.com/en-us/a"
-        new_row, old_row = f"S100,{u},T,Microsoft,,2026-01-01,v1,,x.md,\n", f"S100,{u},T,Microsoft,,2026-01-01,v1,,x.md\r\n"
-        extra = "S101,https://b.example.com/,t,p,l,2026-01-02,v,,,\r\n".replace(",,,\r", ",,\r")
-        for text in (HEADER + new_row + old_h.replace("\n", "\r\n") + old_row + extra, old_h + old_row + extra + HEADER + new_row):
-            report = []
-            header, out, _ = kbgit.resolve_sources(text, None, {}, report)
-            self.assertEqual(header[-1], "superseded_by")
-            self.assertEqual([(r["id"], r["superseded_by"]) for r in out], [("S100", ""), ("S101", "")])
-            self.assertTrue(any("older layout" in x for x in report), report)
-        with self.assertRaises(kbgit.Problem):  # a row short by a column that is not a later one stays an error
+        report = []
+        _, out, _ = kbgit.resolve_sources(HEADER + f"S100,{u},T,Microsoft,,2026-01-01,v1,,x.md,\n" + HEADER, None, {}, report)
+        self.assertEqual([r["id"] for r in out], ["S100"])
+        self.assertTrue(any("repeated header" in x for x in report), report)
+        with self.assertRaises(kbgit.Problem):
             kbgit.resolve_sources(HEADER + "S102,https://c.example.com/,t,p,l,d,v,,\n".replace(",,\n", ",\n"), None, {}, [])
 
-    def test_older_layout_copy_yields_on_a_tie(self):
-        """A pre-column branch's union merge doubles every row; its stale copy loses a same-date field conflict."""
-        old_h = HEADER.replace(",superseded_by", "")
+    def test_latest_row_wins_a_field_conflict(self):
         u = "https://github.com/o/r"
         current = f"S100,{u},T,P,Apache-2.0,2026-09-25,v; confirmed 2026-09-25: x,,a.md,\n"
-        stale = f"S100,{u},T,P,GPL-3.0,2026-09-25,v,,a.md\n"
-        for text in (HEADER + current + old_h + stale, old_h + stale + HEADER + current):
+        newer = f"S100,{u},T,P,MIT,2026-09-26,v2,,a.md,\n"
+        for text in (HEADER + current + newer, HEADER + newer + current):
             report = []
             _, out, _ = kbgit.resolve_sources(text, None, {}, report)
-            self.assertEqual((out[0]["licence"], out[0]["version_or_date"]), ("Apache-2.0", "v; confirmed 2026-09-25: x"))
-        newer = f"S100,{u},T,P,MIT,2026-09-26,v2,,a.md\n"  # a later date still wins, whatever its layout
-        _, out, _ = kbgit.resolve_sources(HEADER + current + old_h + newer, None, {}, [])
-        self.assertEqual(out[0]["licence"], "MIT")
-        with self.assertRaises(kbgit.Problem):  # two current-layout rows, same date, different licence: a human decides
+            self.assertEqual((out[0]["licence"], out[0]["version_or_date"]), ("MIT", "v2"))
+            self.assertTrue(any(x.startswith("WARN") and "licence" in x for x in report), report)
+        with self.assertRaises(kbgit.Problem):  # same date, different licence: a human decides
             kbgit.resolve_sources(HEADER + current + current.replace("Apache-2.0", "MIT"), None, {}, [])
 
     def test_pushed_side_keeps_a_colliding_id(self):
@@ -103,32 +94,28 @@ class MergeRules(unittest.TestCase):
         self.assertEqual(renames, {"S9999": [(b, kbid.source_id(b), ["mine"])]})
         self.assertEqual(kbgit.source_plan(renames, out)["S9999"]["strict_base"], False)  # S9999 still names a's url
 
-    def test_answer_ids_invalid_or_colliding_are_renamed(self):
+    def test_colliding_answer_ids_are_renamed(self):
         up = "# A\n\n## QK-shared. What does clone a ask?\n\nA. [DOC S1]\n"
-        mine = "# A\n\n## QK-shared. What does clone b ask about sync?\n\nB.\n\n## QK1. Old style question from clone b\n\nC.\n"
-        merged = up + "\n## QK-shared. What does clone b ask about sync?\n\nB.\n\n## QK1. Old style question from clone b\n\nC.\n"
+        mine = "# A\n\n## QK-shared. What does clone b ask about sync?\n\nB.\n"
+        merged = up + "\n## QK-shared. What does clone b ask about sync?\n\nB.\n"
         report, problems = [], []
         plan = kbgit.answer_plan(merged, "# A\n", up, {"up": up, "mine": mine}, report, problems)
         self.assertEqual(problems, [])
-        self.assertEqual(plan["QK1"]["default"], kbid.answer_id("Old style question from clone b"))
         self.assertEqual(plan["QK-shared"]["by_side"], {"mine": kbid.answer_id("What does clone b ask about sync?")})
         self.assertEqual(kbgit.renumbered("\n".join("  " + x for x in report)), report)
-        # no base, no pushed side: the first heading keeps the id; a valid, unique id is never touched
-        plan = kbgit.answer_plan(merged.replace("## QK1.", "## QK-old."), None, None, {"up": up, "mine": mine}, [], [])
+        # no base, no pushed side: the first heading keeps the id; a unique id is never touched
+        plan = kbgit.answer_plan(merged, None, None, {"up": up, "mine": mine}, [], [])
         self.assertEqual(list(plan), ["QK-shared"])
         self.assertEqual(kbgit.answer_plan(up, None, None, {}, [], []), {})
-        # an invalid id already published is left alone
-        report = []
-        self.assertEqual(kbgit.answer_plan("## QK7. q\n", "## QK7. q\n", None, {}, report, []), {})
-        self.assertTrue(report and report[0].startswith("WARN"))
+        self.assertEqual(kbgit.answer_plan("## QK7. q\n", "## QK7. q\n", None, {}, [], []), {})  # check.py's business
 
     def test_answer_mentions_follow_only_the_owning_side(self):
-        """A renamed QK1 is rewritten on the owner's lines; the pushed side's own mention of QK1 and docs stay."""
+        """A renamed colliding id is rewritten on the owner's lines; the pushed side's own mention and docs stay."""
         self.assertFalse({"README.md", "AGENTS.md", "CLAUDE.md"} & set(kbgit.id_files()))
-        up = {"x/a.md": "# A\n- The other kb calls it QK1.\n", "_answers.md": "# A\n"}
-        mine = {"x/a.md": "# A\n- Answer: `_answers.md` QK1.\n", "_answers.md": "# A\n\n## QK1. Old style question\n"}
-        merged = {"x/a.md": "# A\n- The other kb calls it QK1.\n- Answer: `_answers.md` QK1.\n",
-                  "_answers.md": "# A\n\n## QK1. Old style question\n"}
+        up = {"x/a.md": "# A\n- The other kb calls it QK-dup.\n", "_answers.md": "# A\n\n## QK-dup. Pushed question\n"}
+        mine = {"x/a.md": "# A\n- Answer: `_answers.md` QK-dup.\n", "_answers.md": "# A\n\n## QK-dup. Local question\n"}
+        merged = {"x/a.md": "# A\n- The other kb calls it QK-dup.\n- Answer: `_answers.md` QK-dup.\n",
+                  "_answers.md": "# A\n\n## QK-dup. Pushed question\n\n## QK-dup. Local question\n"}
         revs = {"base": {"x/a.md": "# A\n", "_answers.md": "# A\n"}, "up": up, "mine": mine}
         saved = kbgit.id_files, kbgit.read, kbgit.show
         try:
@@ -140,10 +127,10 @@ class MergeRules(unittest.TestCase):
             kbgit.rewrite_ids(plan, "base", {"up": "up", "mine": "mine"}, texts, set(), problems, [])
         finally:
             kbgit.id_files, kbgit.read, kbgit.show = saved
-        new = kbid.answer_id("Old style question")
+        new = kbid.answer_id("Local question")
         self.assertEqual(problems, [])
-        self.assertEqual(texts["x/a.md"], f"# A\n- The other kb calls it QK1.\n- Answer: `_answers.md` {new}.\n")
-        self.assertEqual(texts["_answers.md"], f"# A\n\n## {new}. Old style question\n")
+        self.assertEqual(texts["x/a.md"], f"# A\n- The other kb calls it QK-dup.\n- Answer: `_answers.md` {new}.\n")
+        self.assertEqual(texts["_answers.md"], f"# A\n\n## QK-dup. Pushed question\n\n## {new}. Local question\n")
 
     def test_fetch_state_one_row_per_id(self):
         h = "id,url,checked_utc,fetched_utc,changed_utc,sha256,text_sha256,bytes,error\n"
@@ -173,7 +160,7 @@ class MergeRules(unittest.TestCase):
     def test_zealous_splice_is_repaired(self):
         """git keeps a footer both added blocks end with only once: the first answer loses it to the second."""
         a = "# A\n\n## QK-a. qa\n- a1 [DOC S1]\n\n_Agent: kb-research_\n\n## R1. r\n"
-        b = "# A\n\n## QK1. qb\n- b1 [DOC S2205]\n\n_Agent: kb-research_\n\n## R1. r\n"
+        b = "# A\n\n## QK-a. qb\n- b1 [DOC S2205]\n\n_Agent: kb-research_\n\n## R1. r\n"
         spliced = "# A\n\n## QK-a. qa\n- a1 [DOC S1]\n## QK-b. qb\n- b1 [DOC S-aaaaaaaa]\n\n_Agent: kb-research_\n\n## R1. r\n"
         whole = "# A\n\n## QK-a. qa\n- a1 [DOC S1]\n\n_Agent: kb-research_\n\n## QK-b. qb\n- b1 [DOC S-aaaaaaaa]\n\n_Agent: kb-research_\n\n## R1. r\n"
         report = []

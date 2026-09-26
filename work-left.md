@@ -6,8 +6,6 @@
 Implemented 2026-09-26 on `claude/relaxed-keller-e8qyl3`: persisted pack index (cold `pack` and the `kb:` hook
 about 0.06 s, `eval` 0.7 s), shared helpers, batched trailer audit, CI git scenarios, `pyproject.toml` (dev: pytest,
 ruff). Still open:
-- **R5 (blocked):** retire kbgit's old `_sources.csv` layouts and the `QK<n>` renames once `scratch/research-a`/`-b`
-  are merged or known gone (Task D below).
 - **R3 (needs a decision):** switching `search` to the pack index changes its output. The search regression test must
   keep passing, and the index must first hold prose paragraphs and the root ledgers.
 
@@ -80,10 +78,6 @@ Not done here:
 ## 3. Known debt
 - 25 lint errors are recorded in `_tools/lint_baseline.txt` (untagged facts, tags with no source id). Several articles also list header ids their body never cites (lint warnings), left alone because removing them could empty a source's `used_in`.
 - `_gaps.md` still refers to the old ids QS1, QS5 and QS7, whose second copies were renamed QS1a, QS5a and QS7a.
-- **Task D, not done:** the Sonnet research branches (`scratch/research-a`, `scratch/research-b`) were not on the remote, so they were not merged. If they turn up:
-  1. Re-verify research-a's three unsupported facts against the pages that actually state them: the gateway 2 MB/8 MB caps (S2219), Fabric's 15-45 min latency (S2214) and the Export to Data Lake end date 2026-11-30 (S2213).
-  2. Spot-check five facts per branch.
-  3. Bring them in with `kbgit.py sync` and `/kb-git-sync`. The procedure is tested on synthetic copies in `_tools/test_research_merge.py`.
 
 ## 4. Token usage: make lookups deterministic
 **`plan-token-optimization.md` T1-T14: done** (see `token-usage-report.md`, "Measurement in a host project").

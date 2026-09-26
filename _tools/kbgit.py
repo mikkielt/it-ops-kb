@@ -69,12 +69,9 @@ each add rows or answers merge without conflict markers. Union keeps every line 
 sides touched can appear twice. `fix` turns that into one clean, canonical state:
 
 _sources.csv   conflict markers (a merge made without our .gitattributes) are dropped with union semantics; repeated
-               header lines and exact duplicate rows are removed. A branch from before a column was appended
-               (LATER_COLUMNS: superseded_by) writes the older layout: its header line counts as a repeated header
-               and its rows get the new column(s) empty. Rows sharing an id:
+               header lines and exact duplicate rows are removed. Rows sharing an id:
                - same normalized url: merged field-wise. With --base, a row identical to the base's row is the stale
-                 copy and yields to the edited one; on a retrieved_utc tie a row in the older layout yields to one in
-                 the current layout (a pre-column branch's union merge doubles every row). retrieved_utc/version_or_date come from the row with the latest
+                 copy and yields to the edited one. retrieved_utc/version_or_date come from the row with the latest
                  retrieved_utc; a non-empty value beats an empty one; superseded_by is kept if either row has it.
                  Two different non-empty title/publisher/licence/artifact_sha256 values: the latest row wins and
                  the conflict is reported (a tie on retrieved_utc, or two different superseded_by, needs a human).
@@ -95,8 +92,7 @@ _answers.md, _gaps.md, _conflicts.md  conflict markers dropped (union semantics)
                With the merge's sides known, a `##` section that a merge cut short is made whole: git keeps lines that
                two blocks added at one place both end with (an `_Agent: kb-research_` footer) only once, at the end
                of the second block (repair_splices; sync avoids it with diff3, see MERGE_CFG).
-               Answer ids: a `QK<n>` id (from before QK-<slug> ids) becomes kbid.answer_id(question), made unique
-               with -2...; its mentions on lines the base did not have follow. One id heading two different
+               Answer ids: one id heading two different
                questions: the heading at base or on --upstream keeps it (else the first), the others get their
                QK-<slug>, and lines naming the id follow their side (as citations do). The same heading twice
                with different bodies: reported, exit 2.
@@ -211,55 +207,24 @@ def lf(text):
 csv_text = kbcommon.csv_text
 
 
-# Columns appended to a ledger after it was first written. A branch from before the change still writes the older,
-# shorter layout; a union merge with it mixes both layouts (and both header lines) in one file.
-LATER_COLUMNS = {"_sources.csv": ("superseded_by",)}
-
-
-def layouts(header, later):
-    """The header and its older forms: the header without a trailing run of `later` columns (longest first)."""
-    out, h = [list(header)], list(header)
-    while h and h[-1] in later:
-        h = h[:-1]
-        out.append(list(h))
-    return out
-
-
-def parse_csv(text, name, required=("id",), padded=None, older=None):
-    """(header, rows as dicts, repeated header lines dropped) of a ledger; Problem on a malformed row.
-    A ledger with LATER_COLUMNS also accepts its older layout (a branch from before the column existed): the widest
-    header line wins, older header lines count as repeated headers, and short rows get the later columns empty
-    (their number is added to padded[0] when a list is given; with a set `older`, the id() of each padded row too)."""
+def parse_csv(text, name, required=("id",)):
+    """(header, rows as dicts, repeated header lines dropped) of a ledger; Problem on a malformed row."""
     rows = list(csv.reader(io.StringIO(text)))
     rows = [r for r in rows if r]
     if not rows:
         raise Problem(f"{name}: empty")
-    later = LATER_COLUMNS.get(name.rpartition(":")[2], ())
     header = rows[0]
-    for r in rows[1:]:  # an older header first and the current one later in the file: the current one wins
-        if len(r) > len(header) and r[:len(header)] == header and all(c in later for c in r[len(header):]):
-            header = r
-    olds = layouts(header, later)
-    out, dropped, pad = [], 0, 0
+    out, dropped = [], 0
     missing = [c for c in required if c not in header]
     if missing:
         raise Problem(f"{name}: lacks column(s) {', '.join(missing)}")
-    for n, r in enumerate(rows, 1):
-        if r in olds:
-            dropped += n > 1 or r != header
+    for n, r in enumerate(rows[1:], 2):
+        if r == header:
+            dropped += 1
             continue
         if len(r) != len(header):
-            if not any(len(r) == len(o) for o in olds[1:]):
-                raise Problem(f"{name}: record {n} has {len(r)} fields, the header {len(header)} ({r[0][:20]!r}...)")
-            r = r + [""] * (len(header) - len(r))
-            pad += 1
-            out.append(dict(zip(header, r)))
-            if older is not None:
-                older.add(id(out[-1]))
-            continue
+            raise Problem(f"{name}: record {n} has {len(r)} fields, the header {len(header)} ({r[0][:20]!r}...)")
         out.append(dict(zip(header, r)))
-    if padded is not None:
-        padded.append(pad)
     return header, out, dropped
 
 
@@ -272,11 +237,9 @@ def id_key(sid):
 MERGE_CONFLICT = ("title", "publisher", "licence", "artifact_sha256")
 
 
-def merge_rows(sid, rows, report, older=frozenset()):
-    """One row from rows that share an id and a normalized url. On a retrieved_utc tie a row in the current layout beats
-    one in the older layout (`older`: id() of padded rows): a branch from before the column existed carries the stale
-    copy (a union merge of such a branch keeps every row of both sides, since every row differs by the new column)."""
-    rows = sorted(rows, key=lambda r: (r.get("retrieved_utc", ""), id(r) not in older), reverse=True)  # stable otherwise
+def merge_rows(sid, rows, report):
+    """One row from rows that share an id and a normalized url."""
+    rows = sorted(rows, key=lambda r: r.get("retrieved_utc", ""), reverse=True)  # stable otherwise
     latest = rows[0]
     out = dict(latest)
     for col in latest:
@@ -294,8 +257,6 @@ def merge_rows(sid, rows, report, older=frozenset()):
         winner = next(r for r in rows if r.get(col))
         if len(vals) > 1 and col in MERGE_CONFLICT:
             tied = [r for r in rows if r.get(col) and r.get("retrieved_utc", "") == winner.get("retrieved_utc", "")]
-            if len({r[col] for r in tied}) > 1 and id(winner) not in older:
-                tied = [r for r in tied if id(r) not in older]  # the older layout's copy is stale
             if len({r[col] for r in tied}) > 1:
                 raise Problem(f"{SOURCES}: {sid} {col} differs between rows with the same retrieved_utc "
                               f"{winner.get('retrieved_utc')!r}: {' vs '.join(vals)}")
@@ -311,13 +272,9 @@ def resolve_sources(text, base_rows, sides, report, upstream=None):
     text, n = strip_markers(lf(text), SOURCES)
     if n:
         report.append(f"{SOURCES}: dropped markers of {n} conflict region(s) (union)")
-    padded, older = [], set()
-    header, rows, dropped = parse_csv(text, SOURCES, ("id", "url"), padded, older)
+    header, rows, dropped = parse_csv(text, SOURCES, ("id", "url"))
     if dropped:
         report.append(f"{SOURCES}: removed {dropped} repeated header line(s)")
-    if padded[0]:
-        report.append(f"{SOURCES}: {padded[0]} row(s) in the older layout (before "
-                      f"{', '.join(c for c in LATER_COLUMNS[SOURCES] if c in header)}) got the new column(s) empty")
     groups, order = {}, []
     for r in rows:
         if r["id"] not in groups:
@@ -346,7 +303,7 @@ def resolve_sources(text, base_rows, sides, report, upstream=None):
         if len(urls) == 1:
             if len(g) > 1:
                 merged.append(sid)
-            out.append(merge_rows(sid, g, report, older))
+            out.append(merge_rows(sid, g, report))
             continue
         # a real collision: one id, several urls
         if kbid.is_hash_id(sid):
@@ -359,7 +316,7 @@ def resolve_sources(text, base_rows, sides, report, upstream=None):
             keep = kbid.normalize_url(sides[upstream][sid]["url"])  # already pushed: never renumbered
             report.append(f"{SOURCES}: {sid}: the pushed side ({upstream}) keeps the id")
         for u, rs in urls.items():
-            row = merge_rows(sid, rs, report, older)
+            row = merge_rows(sid, rs, report)
             if u == keep:
                 out.append(row)
                 continue
@@ -479,15 +436,11 @@ def answer_heads(text):
 
 
 def answer_plan(text, base_text, upstream_text, side_texts, report, problems):
-    """rewrite_ids plan for _answers.md ids a merge left invalid or doubled.
-    - A `QK<...>` id that is not QK-<slug> (a branch from before QK-<slug> ids: QK1, QK2...) gets
-      kbid.answer_id(question), made unique with -2, -3...; its mentions (the heading, `_answers.md QK1` in an
-      article) are renamed on every line the base did not have.
-    - One id heading several different questions (two branches took the same id): the heading the base or the pushed
-      side (`upstream_text`) already has keeps the id, else the first one; the others get new ids, and each line naming
-      the id gets the id of the question on its side (`side_texts` {side: _answers.md text}).
-    An id whose headings are identical is left to resolve_md (verbatim duplicates dropped, different bodies: a human).
-    Ids the base or the pushed side already has in an invalid form are left alone (WARN): they are published."""
+    """rewrite_ids plan for _answers.md ids a merge left doubled: one id heading several different questions (two
+    branches took the same id). The heading the base or the pushed side (`upstream_text`) already has keeps the id,
+    else the first one; the others get new ids (kbid.answer_id(question), made unique with -2, -3...), and each line
+    naming the id gets the id of the question on its side (`side_texts` {side: _answers.md text}).
+    An id whose headings are identical is left to resolve_md (verbatim duplicates dropped, different bodies: a human)."""
     heads = answer_heads(strip_markers(lf(text or ""), "_answers.md")[0])
     protected = {ln for _, ln, _ in answer_heads(base_text) + answer_heads(upstream_text)}
     taken = {i for i, _, _ in heads}
@@ -505,24 +458,14 @@ def answer_plan(text, base_text, upstream_text, side_texts, report, problems):
         return new
 
     for aid, hl in lines_of.items():
-        invalid = aid.startswith("QK") and not kbid.QK_ID.fullmatch(aid)
-        if len(hl) == 1 and not invalid:
+        if len(hl) == 1:
             continue
         prot = [ln for ln in hl if ln in protected]
-        if invalid and prot:
-            report.append(f"WARN _answers.md: {aid} is not QK-<slug> but is already published; left as it is")
-            continue
         if len(prot) > 1:
             problems.append(f"_answers.md: {aid} heads {len(prot)} different published questions; resolve by hand")
             continue
-        keep = None if invalid else (prot[0] if prot else next(iter(hl)))
+        keep = prot[0] if prot else next(iter(hl))
         renamed = {ln: fresh(q) for ln, q in hl.items() if ln != keep}
-        if keep is None and len(renamed) == 1:
-            new = next(iter(renamed.values()))
-            owners = {s for s, t in side_texts.items() if next(iter(renamed)) in (t or "").split("\n")}
-            plan[aid] = {"by_side": {}, "default": new, "owners": owners, "strict_base": False, "what": "answer"}
-            report.append(f"_answers.md: {aid} -> {new} (answer ids are QK-<slug>)")
-            continue
         by_side = {}
         for ln, new in renamed.items():
             owners = [s for s, t in side_texts.items() if ln in (t or "").split("\n")]
@@ -1647,7 +1590,7 @@ def fix_args(base, up, orig):
 
 def renumbered(output):
     """fix's report lines about renumbered source ids and renamed answer ids."""
-    return [ln.strip() for ln in output.splitlines() if " collision: " in ln or re.match(r"\s*_answers\.md: \S+ -> ", ln)]
+    return [ln.strip() for ln in output.splitlines() if " collision: " in ln]
 
 
 def conflict_help(r, up, base, orig, manual, mech, step):

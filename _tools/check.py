@@ -9,7 +9,7 @@
 - every _artifacts.csv row names a known source and an existing file;
 - every Markdown file is readable UTF-8;
 - every [DOC|DER|COMMUNITY S...] tag in a Markdown file cites a known source id (S123 or S-k3f7q2zd);
-- no answer id (`## <ID>. ` heading) appears twice in _answers.md; new QK answers use QK-<slug>;
+- no answer id (`## <ID>. ` heading) appears twice in _answers.md; QK answers use QK-<slug>;
 - every topic file's front matter has topic, priority, retrieved_utc, sources and status in {complete, partial, unknown};
 - every `topic: <domain>/<slug>` marker in _gaps.md and _conflicts.md names an existing topic (kbfacts.py).
 """
@@ -56,7 +56,7 @@ except (OSError, UnicodeDecodeError) as e:
     errors.append(f"_answers.md is unreadable: {e}")
     aids = []
 errors += [f"duplicate answer id {i} in _answers.md" for i, n in sorted(Counter(aids).items()) if n > 1]
-errors += [f"answer id {i} in _answers.md: new QK ids are QK-<slug> (lowercase, hyphenated)"
+errors += [f"answer id {i} in _answers.md: QK ids are QK-<slug> (lowercase, hyphenated)"
            for i in aids if i.startswith("QK") and not kbid.QK_ID.fullmatch(i)]
 for r in read_csv("_artifacts.csv", ("path", "source_id", "sha256")):
     if r["source_id"] not in known:

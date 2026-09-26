@@ -1,22 +1,23 @@
 #!/usr/bin/env python3
-"""Two parallel research branches from before the sync tooling, merged the documented way (stdlib only). tests.py runs it.
+"""Two parallel research branches with colliding ids, merged the documented way (stdlib only). tests.py runs it.
 
   test_research_merge.py   run it on its own
 
-ResearchMergeInGit replays task 6b in a temp dir, never against the real origin:
-  - the kb as it is now (history plus the working tree) is pushed as `main` to a throwaway bare remote;
-  - research-a and research-b fork from FORK (6bc0981: no kbgit.py, no hooks, _sources.csv without superseded_by)
-    and both take the next legacy ids (S2205.. today) for different urls and the answer id QK1, with the same `_Agent: kb-research_`
-    footer, hand-edited coverage rows, and (B) a front-matter edit next to one upstream made since;
-  - person A: `git -c merge.conflictStyle=diff3 rebase origin/main`, install-hooks, `sync --push`;
-  - person B: the same rebase stops on the article (and the README table); it is resolved as /kb-git-sync says
+ResearchMergeInGit replays a two-researcher merge in a temp dir, never against the real origin:
+  - the kb as it is now (history plus the working tree) is committed; a fork commit before it narrows one article's
+    `files:` line, and the working tree on top of it (the upstream edit made since the fork) is pushed as `main`
+    to a throwaway bare remote;
+  - research-a and research-b fork from that fork commit (today's _sources.csv layout and tools) and both take the
+    next legacy ids (S2205.. today) for different urls and the same answer id, with the same `_Agent: kb-research_`
+    footer, hand-edited coverage rows, and (B) a front-matter edit next to the upstream one;
+  - person A: install-hooks, `sync --push` (a clean rebase);
+  - person B: install-hooks, `sync --push` stops with exit 3 on the article; it is resolved as /kb-git-sync says
     (sources = ids cited, status partial while an [UNK] remains, files = the union), then the printed
     `fix --base --upstream --side`, `git add`, `rebase --continue`, `sync --push`;
   - a fresh clone: check.py, build_index.py --check, kbgit.py fix --check and check-trailers pass; A keeps its ids,
     B's colliding rows got hash ids with their citations; both answers are distinct QK-<slug> ids and whole;
     B's research commit's trailers name only B's ids; `kbgit.py log <new hash id>` finds it.
-Skipped without git, or when FORK is not in this clone (a shallow CI checkout). The gate skips tests.py
-(KB_SYNC_NO_TESTS=1). About 10 s.
+Skipped without git. The gate skips tests.py (KB_SYNC_NO_TESTS=1). About 10 s.
 """
 import csv, io, os, re, shutil, subprocess, sys, tempfile, unittest
 
@@ -26,7 +27,6 @@ sys.path.insert(0, TOOLS)
 import kbid  # noqa: E402
 
 GIT = shutil.which("git")
-FORK = "6bc0981ec03eab2c2c53c5562778b3967fbb5a9f"
 A_URLS = [f"https://learn.microsoft.com/en-us/power-apps/maker/data-platform/research-merge-a{i}" for i in range(1, 6)]
 B_URLS = [f"https://docs.keeper.io/en/research-merge/b{i}" for i in range(1, 4)]
 Q_A = "Research-merge test: how does Dataverse reach an on-prem SQL Server?"
@@ -38,7 +38,7 @@ FOOTER = "_Agent: kb-research_"
 
 
 def next_legacy():
-    """The number both branches take: the next legacy id after the kb's own (6bc0981 era writers took S2205)."""
+    """The number both branches take: the next legacy id after the kb's own."""
     with open(os.path.join(KB, "_sources.csv"), encoding="utf-8", newline="") as f:
         nums = [int(r["id"][1:]) for r in csv.DictReader(f) if re.fullmatch(r"S\d+", r["id"] or "")]
     return max(nums + [2204]) + 1
@@ -48,26 +48,25 @@ FIRST = next_legacy()
 LEG = [f"S{FIRST + i}" for i in range(5)]
 
 
-def has_fork():
-    if not GIT:
-        return False
-    return subprocess.run(["git", "cat-file", "-e", FORK + "^{commit}"], cwd=KB, capture_output=True).returncode == 0
+FILES_NOW = "files: [agents/api-tokens.csv, agents/secret-storage-options.csv]\n"
+FILES_FORK = "files: [agents/api-tokens.csv]\n"
+QID = kbid.answer_id(Q_A)  # both branches head their answer with it (B's copy is the collision)
 
 
-def rows9(first, urls, publisher, licence):
+def rows(first, urls, publisher, licence):
     buf = io.StringIO()
     w = csv.writer(buf, lineterminator="\n")
     for i, u in enumerate(urls):
         w.writerow([f"S{first + i}", u, f"Research merge page {i + 1}, {publisher}", publisher, licence, "2026-09-25",
-                    "retrieved 2026-09-25", "", ""])
+                    "retrieved 2026-09-25", "", "", ""])
     return buf.getvalue()
 
 
 def answer(q, bullets, see):
-    return f"## QK1. {q}\n" + "".join(f"- {b}\n" for b in bullets) + f"- See {see}.\n\n{FOOTER}\n"
+    return f"## {QID}. {q}\n" + "".join(f"- {b}\n" for b in bullets) + f"- See {see}.\n\n{FOOTER}\n"
 
 
-@unittest.skipUnless(has_fork(), "git is not installed, or the fork point is not in this clone (shallow checkout)")
+@unittest.skipUnless(GIT, "git is not installed")
 class ResearchMergeInGit(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -92,11 +91,18 @@ class ResearchMergeInGit(unittest.TestCase):
         cls.git(src, "add", "-A")
         if cls.git(src, "status", "--porcelain").strip():
             cls.git(src, "commit", "-q", "--no-verify", "-m", "the working tree under test")
+        now = cls.read(src, ARTICLE_B)
+        assert FILES_NOW in now, f"{ARTICLE_B} no longer lists {FILES_NOW.strip()}: update the test"
+        cls.write(src, ARTICLE_B, now.replace(FILES_NOW, FILES_FORK, 1))
+        cls.git(src, "commit", "-q", "--no-verify", "-am", "the fork point")
+        fork = cls.git(src, "rev-parse", "HEAD").strip()
+        cls.write(src, ARTICLE_B, now)
+        cls.git(src, "commit", "-q", "--no-verify", "-am", "docs(kb): the upstream edit made since the fork")
         cls.git(cls.tmp, "init", "-q", "--bare", "-b", "main", cls.remote)
         cls.git(src, "push", "-q", cls.remote, "HEAD:refs/heads/main")
         cls.main0 = cls.git(src, "rev-parse", "HEAD").strip()
         for name, build in (("research-a", cls.research_a), ("research-b", cls.research_b)):
-            cls.git(src, "checkout", "-q", "-B", name, FORK)
+            cls.git(src, "checkout", "-q", "-B", name, fork)
             build(src)
             cls.git(src, "add", "-A")
             cls.git(src, "commit", "-q", "--no-verify", "-m", f"docs(kb): {name}")
@@ -106,20 +112,18 @@ class ResearchMergeInGit(unittest.TestCase):
             cls.git(cls.tmp, "clone", "-q", "-b", f"scratch/{name}", cls.remote, d)
             cls.git(d, "checkout", "-q", "-b", name)
 
-        # person A: the pre-regime path of /kb-git-sync, then sync
-        cls.rebase_a = cls.run_git(cls.a, "-c", "merge.conflictStyle=diff3", "rebase", "origin/main")
+        # person A: sync (a clean rebase)
         cls.kbgit(cls.a, "install-hooks")
         cls.sync_a = cls.kbgit(cls.a, "sync", "--push")
 
-        # person B: the rebase stops; resolve as the skill says
-        cls.git(cls.b, "fetch", "-q", "origin")
-        cls.rebase_b = cls.run_git(cls.b, "-c", "merge.conflictStyle=diff3", "rebase", "origin/main")
+        # person B: sync stops with exit 3; resolve as the skill says
+        cls.kbgit(cls.b, "install-hooks")
+        cls.stop_b = cls.kbgit(cls.b, "sync", "--push")
         cls.conflicted_b = sorted(cls.git(cls.b, "diff", "--name-only", "--diff-filter=U").split())
         cls.resolve_article(cls.b)
-        base = cls.git(cls.b, "merge-base", "origin/main", "ORIG_HEAD").strip()
-        orig = cls.git(cls.b, "rev-parse", "ORIG_HEAD").strip()
-        cls.kbgit(cls.b, "install-hooks")
-        cls.fix_b = cls.kbgit(cls.b, "fix", "--base", base, "--upstream", "origin/main", "--side", orig)
+        state = re.search(r"^sync-state: base=(\S+) upstream=(\S+) orig_head=(\S+)$", cls.stop_b.stdout, re.M)
+        assert state, cls.stop_b.stdout + cls.stop_b.stderr
+        cls.fix_b = cls.kbgit(cls.b, "fix", "--base", state[1], "--upstream", state[2], "--side", state[3])
         cls.git(cls.b, "add", "-A")
         cls.cont_b = cls.run_git(cls.b, "-c", "merge.conflictStyle=diff3", "rebase", "--continue")
         cls.sync_b = cls.kbgit(cls.b, "sync", "--push")
@@ -135,17 +139,17 @@ class ResearchMergeInGit(unittest.TestCase):
     def tearDownClass(cls):
         shutil.rmtree(cls.tmp, ignore_errors=True)
 
-    # ---------------------------------------------------------------- the two research branches (pre-regime writers)
+    # ---------------------------------------------------------------- the two research branches
 
     @classmethod
     def research_a(cls, d):
-        cls.append(d, "_sources.csv", rows9(FIRST, A_URLS, "Microsoft", "Microsoft Learn terms of use (paraphrased; quote <=25 words)"))
+        cls.append(d, "_sources.csv", rows(FIRST, A_URLS, "Microsoft", "Microsoft Learn terms of use (paraphrased; quote <=25 words)"))
         facts = [f"Dataverse reaches an on-prem SQL Server only through the on-premises data gateway. [DOC {LEG[0]}]",
                  f"Virtual tables expose external rows without copying them. [DOC {LEG[1]}]",
                  f"Azure Synapse Link replaces the retired Export to Data Lake service. [DOC {LEG[2]}]",
                  f"Dataflows can load SQL Server tables into Dataverse on a schedule. [DOC {LEG[3]}]",
                  f"Fabric shortcuts read Dataverse tables without an export job. [DOC {LEG[4]}]",
-                 f"The research answer is `_answers.md` QK1. [DER {LEG[0]}, {LEG[1]}]",
+                 f"The research answer is `_answers.md` {QID}. [DER {LEG[0]}, {LEG[1]}]",
                  "The exact refresh latency is not documented. [UNK]"]
         cls.write(d, ARTICLE_A,
                   f"---\ntopic: {ARTICLE_A[:-3]}\npriority: P3\napplies_to: \"Dataverse\"\nretrieved_utc: 2026-09-25\n"
@@ -161,14 +165,14 @@ class ResearchMergeInGit(unittest.TestCase):
 
     @classmethod
     def research_b(cls, d):
-        cls.append(d, "_sources.csv", rows9(FIRST, B_URLS, "Keeper Security", "not verified (summarized only)"))
+        cls.append(d, "_sources.csv", rows(FIRST, B_URLS, "Keeper Security", "not verified (summarized only)"))
         t = cls.read(d, ARTICLE_B)
         t = t.replace("S2056, S2057]\nstatus: complete\n", f"S2056, S2057, {', '.join(LEG[:3])}]\nstatus: partial\n", 1)
         t = t.replace("\n## Reference: each option's threat", f"\n{KEEPER}\n\n"
                       f"- Keeper Secrets Manager serves secrets through a zero-knowledge client device. [COMMUNITY {LEG[0]}]\n"
                       f"- Its Python SDK binds with a one-time access token. [COMMUNITY {LEG[1]}]\n"
                       "- Rotation of the client device's config is not described. [UNK]\n"
-                      f"- The research answer is `_answers.md` QK1. [COMMUNITY {LEG[2]}]\n"
+                      f"- The research answer is `_answers.md` {QID}. [COMMUNITY {LEG[2]}]\n"
                       "\n## Reference: each option's threat", 1)
         cls.write(d, ARTICLE_B, t)
         cls.before_r1(d, answer(Q_B, [f"Yes, through its SDK and a client device per host. [COMMUNITY {LEG[0]}, {LEG[1]}]",
@@ -243,14 +247,15 @@ class ResearchMergeInGit(unittest.TestCase):
     # ---------------------------------------------------------------- tests
 
     def test_a_rebases_cleanly_and_pushes(self):
-        self.assertEqual(self.rebase_a.returncode, 0, self.rebase_a.stdout + self.rebase_a.stderr)
         self.assertEqual(self.sync_a.returncode, 0, self.sync_a.stdout + self.sync_a.stderr)
-        self.assertIn("QK1 -> " + kbid.answer_id(Q_A), self.sync_a.stdout)
+        self.assertIn("pushed: yes", self.sync_a.stdout)
 
     def test_b_stops_on_the_article_then_finishes(self):
-        self.assertNotEqual(self.rebase_b.returncode, 0)
+        self.assertEqual(self.stop_b.returncode, 3, self.stop_b.stdout + self.stop_b.stderr)
+        self.assertIn(f"needs-human: {ARTICLE_B}", self.stop_b.stdout)
         self.assertIn(ARTICLE_B, self.conflicted_b)
         self.assertEqual(self.fix_b.returncode, 0, self.fix_b.stdout)
+        self.assertIn(f"{QID} collision", self.fix_b.stdout)
         self.assertEqual(self.cont_b.returncode, 0, self.cont_b.stdout + self.cont_b.stderr)
         self.assertEqual(self.sync_b.returncode, 0, self.sync_b.stdout + self.sync_b.stderr)
         self.assertIn("pushed: yes", self.sync_b.stdout)
@@ -273,15 +278,15 @@ class ResearchMergeInGit(unittest.TestCase):
         for h in hb:
             self.assertIn(h, keeper)
             self.assertIn(h, art.split("---")[1], "front matter sources: must list the renumbered ids")
-        self.assertIn("files: [agents/api-tokens.csv, agents/secret-storage-options.csv]", art)
+        self.assertIn(FILES_NOW, art)
         self.assertIn("status: partial", art)
         self.assertIn(f"[DOC {LEG[0]}]", self.read(self.v, ARTICLE_A))
 
     def test_answers_distinct_and_whole(self):
         ans = self.read(self.v, "_answers.md")
-        qa, qb = kbid.answer_id(Q_A), kbid.answer_id(Q_B)
+        qa, qb = QID, kbid.answer_id(Q_B)
         self.assertNotEqual(qa, qb)
-        self.assertNotIn("## QK1.", ans)
+        self.assertEqual(ans.count(f"## {qa}. "), 1)
         for q in (qa, qb):
             sec = ans[ans.index(f"## {q}. "):]
             sec = sec[:sec.index("\n## ", 1)].rstrip()

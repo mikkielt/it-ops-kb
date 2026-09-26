@@ -301,7 +301,7 @@ def id_cases(mutated):
     mutated("duplicate QK answer id", lambda d: write(d, "_answers.md", read(d, "_answers.md") + dup), [
         ("check.py", [], 1, "duplicate answer id QK-dup-answer"), ("kbid.py", ["answer", "dup answer"], 0, "already used")])
     mutated("numbered QK answer id", lambda d: write(d, "_answers.md", read(d, "_answers.md") + "\n## QK7. q\n- x [UNK]\n"), [
-        ("check.py", [], 1, "new QK ids are QK-<slug>")])
+        ("check.py", [], 1, "QK ids are QK-<slug>")])
     mutated("slug QK answer id", lambda d: write(d, "_answers.md", read(d, "_answers.md") + "\n## QK-dataverse-onprem-sync. q\n- x [UNK]\n"), [
         ("check.py", [], 0)])
 

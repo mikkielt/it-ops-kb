@@ -24,8 +24,8 @@ Census (test_census.py): census.py's classification, release series, git checks 
 record/confirm/sample on a throwaway kb copy (no network).
 kb MCP server and plugin (test_kb_mcp.py): the stdio server's handshake, tools and errors; the plugin manifests stay
 read-only (a kb plugin and a docs plugin); `claude plugin validate` when the CLI is installed.
-Research merge (test_research_merge.py): two pre-regime research branches with colliding ids merged the documented way
-(rebase, /kb-git-sync resolution, fix, sync), checked in a fresh clone; skipped without git or the fork commit.
+Research merge (test_research_merge.py): two research branches with colliding ids merged the documented way
+(sync exit 3, /kb-git-sync resolution, fix, sync), checked in a fresh clone; skipped without git.
 Leaks (tracked files): secrets in any file; in authored files also home-directory paths, private IPv4 addresses,
 non-placeholder e-mail addresses and GUIDs outside the reviewed allowlist (_tools/tests_allowlist.txt); files that
 must never be committed; oversized files.

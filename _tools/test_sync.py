@@ -9,9 +9,8 @@
                               another source row and an answer: `sync --dry-run` changes nothing, a dirty tree is
                               refused (exit 2), then `sync --push` rebases, fixes, passes the gate and pushes;
                            2. A and B both take the legacy id S9999 for different urls, both head an answer
-                              QK-sync-shared (different questions) and both add a pre-QK-<slug> answer QK1: A's pushed
-                              S9999 and QK-sync-shared stay, B's sync renumbers its own (citations and mentions follow),
-                              both QK1 become QK-<slug>, trailers are refreshed and check.py passes;
+                              QK-sync-shared (different questions): A's pushed S9999 and QK-sync-shared stay, B's sync
+                              renumbers its own (citations and mentions follow), trailers are refreshed and check.py passes;
                            3. A and B edit the same article line: B's sync stops with exit 3, the rebase in progress.
                            The gate skips tests.py here (KB_SYNC_NO_TESTS=1: no recursive test run). Skipped without git.
 """
@@ -55,7 +54,6 @@ class SyncInGit(unittest.TestCase):
     URL_A2, URL_B2 = "https://learn.microsoft.com/en-us/sync-test/a2", "https://learn.microsoft.com/en-us/sync-test/b2"
     Q_B = "Does the sync test answer survive a rebase?"
     Q_SHARED_A, Q_SHARED_B = "What does clone a ask?", "What does clone b ask about sync?"
-    Q_OLD_A, Q_OLD_B = "Old style question from clone a", "Old style question from clone b"
     Q_FOOT_A, Q_FOOT_B = "Which footer does clone a write?", "Which footer does clone b write?"
 
     @classmethod
@@ -108,14 +106,12 @@ class SyncInGit(unittest.TestCase):
         # 2. both clones take the legacy id S9999 for different urls
         cls.add_source(cls.a, "S9999", cls.URL_A2, "a2")
         cls.article(cls.a, "a2", ["S9999"], ["Clone a cites its S9999."])
-        cls.append(cls.a, "_answers.md", f"\n## QK-sync-shared. {cls.Q_SHARED_A}\n\nClone a answers. [DOC S9999]\n"
-                                         f"\n## QK1. {cls.Q_OLD_A}\n\nOld style a.\n")
+        cls.append(cls.a, "_answers.md", f"\n## QK-sync-shared. {cls.Q_SHARED_A}\n\nClone a answers. [DOC S9999]\n")
         cls.commit(cls.a, "docs(kb): sync test a2 with S9999")
         cls.push_a2 = cls.kbgit(cls.a, "sync", "--push")
         cls.add_source(cls.b, "S9999", cls.URL_B2, "b2")
-        cls.article(cls.b, "b2", ["S9999"], ["Clone b cites its S9999.", "Answer: `_answers.md` QK-sync-shared and QK1."])
-        cls.append(cls.b, "_answers.md", f"\n## QK-sync-shared. {cls.Q_SHARED_B}\n\nClone b answers. [DOC S9999]\n"
-                                         f"\n## QK1. {cls.Q_OLD_B}\n\nOld style b.\n")
+        cls.article(cls.b, "b2", ["S9999"], ["Clone b cites its S9999.", "Answer: `_answers.md` QK-sync-shared."])
+        cls.append(cls.b, "_answers.md", f"\n## QK-sync-shared. {cls.Q_SHARED_B}\n\nClone b answers. [DOC S9999]\n")
         cls.commit(cls.b, "docs(kb): sync test b2 with S9999")
         cls.push_b2 = cls.kbgit(cls.b, "sync", "--push")
         cls.b2_checks = {t: cls.tool(cls.b, t, *args) for t, args in
@@ -268,15 +264,13 @@ class SyncInGit(unittest.TestCase):
         self.assertEqual((src["S9999"]["url"], src[hb]["url"]), (self.URL_A2, self.URL_B2))  # pushed ids are never renumbered
         self.assertIn("[DOC S9999]", self.remote_file("windows/sync-test-a2.md"))
         b2 = self.remote_file("windows/sync-test-b2.md")
-        qb, qa_old, qb_old = (kbid.answer_id(q) for q in (self.Q_SHARED_B, self.Q_OLD_A, self.Q_OLD_B))
+        qb = kbid.answer_id(self.Q_SHARED_B)
         self.assertIn(f"[DOC {hb}]", b2)
-        self.assertIn(f"`_answers.md` {qb} and {qb_old}.", b2)
+        self.assertIn(f"`_answers.md` {qb}.", b2)
         ans = self.remote_file("_answers.md")
         for want in (f"## QK-sync-shared. {self.Q_SHARED_A}\n\nClone a answers. [DOC S9999]",
-                     f"## {qb}. {self.Q_SHARED_B}\n\nClone b answers. [DOC {hb}]",
-                     f"## {qa_old}. {self.Q_OLD_A}", f"## {qb_old}. {self.Q_OLD_B}"):
+                     f"## {qb}. {self.Q_SHARED_B}\n\nClone b answers. [DOC {hb}]"):
             self.assertIn(want, ans)
-        self.assertNotIn("## QK1.", ans)
         for t, p in self.b2_checks.items():
             self.assertEqual(p.returncode, 0, f"{t}: " + (p.stdout + p.stderr)[-2000:])
         self.assertEqual(self.b2_trailers.returncode, 0, self.b2_trailers.stdout)
