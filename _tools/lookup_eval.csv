@@ -81,3 +81,4 @@ EV-size-timeout-limits-apply-intune-platform,"What size and timeout limits apply
 EV-azure-openai-deployment-types-exist-their,"What Azure OpenAI deployment types exist and what are their data processing location, billing, and SLA/latency differences?",agents/azure-openai-deployments.md,good,
 EV-github-copilot-admin-policies-content-exclusion,"What GitHub Copilot admin policies, content exclusion rules, audit log category, and usage metrics API exist for organizations and enterprises?",agents/github-copilot-admin.md,good,
 EV-configure-windows-kiosk-assigned-access,How do I configure a Windows kiosk with Assigned Access?,windows/kiosk-assigned-access.md,good,
+EV-windows-wi-fi-vpn-profile-intune,"Windows Wi-Fi VPN profile Intune VPNv2 CSP",intune/network-profiles.md,good,

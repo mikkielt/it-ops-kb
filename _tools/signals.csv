@@ -298,3 +298,5 @@ AssignedAccess,windows/kiosk-assigned-access
 ShellLauncher,windows/kiosk-assigned-access
 Set-AssignedAccess,windows/kiosk-assigned-access
 MDM_AssignedAccess,windows/kiosk-assigned-access
+VPNv2,intune/network-profiles
+WiredNetwork,intune/network-profiles
