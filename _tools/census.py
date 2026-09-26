@@ -47,7 +47,7 @@ from urllib.parse import unquote, urlparse
 
 KB = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import build_index  # noqa: E402
+import build_index, kbcommon, kbid  # noqa: E402
 
 REPOS = os.path.join(KB, "_cache", "census", "repos")
 COLS = ["id", "url", "kind", "repo", "pin", "path", "retrieved_utc", "http_status", "bucket", "evidence", "proof", "note",
@@ -490,9 +490,7 @@ def check_one(r, c):
     return check_live(r["url"], since, r.get("version_or_date", ""))
 
 
-def read_sources():
-    with open(os.path.join(KB, "_sources.csv"), encoding="utf-8-sig", newline="") as f:
-        return list(csv.DictReader(f))
+read_sources = kbcommon.read_sources
 
 
 def cmd_check(a):
@@ -545,10 +543,7 @@ def read_log(path):
 
 
 def write_log(path, rows):
-    with open(path, "w", encoding="utf-8", newline="") as f:
-        w = csv.DictWriter(f, COLS, lineterminator="\n", extrasaction="ignore")
-        w.writeheader()
-        w.writerows(rows)
+    kbcommon.write_csv(path, COLS, rows, atomic=True)
 
 
 def cmd_record(a):
@@ -608,7 +603,7 @@ def cmd_confirm(a):
         fm = build_index.front_matter(text)
         if not fm or not fm.get("sources") or "retrieved_utc" not in fm:
             continue
-        ids = re.findall(r"S-[a-z2-7]{8}|S\d+", str(fm["sources"]))
+        ids = kbid.SOURCE_ID.findall(str(fm["sources"]))
         if ids and all(i in fresh for i in ids) and str(fm["retrieved_utc"])[:10] != date:
             new = re.sub(r"(?m)^retrieved_utc:.*$", f"retrieved_utc: {date}", text, count=1)
             articles.append((path, new))
@@ -626,18 +621,11 @@ def cmd_confirm(a):
     if a.dry_run:
         print("dry run: nothing written")
         return 0
-    buf = io.StringIO()
-    w = csv.DictWriter(buf, header, lineterminator="\n")
-    w.writeheader()
-    w.writerows(rows)
-    open(os.path.join(KB, "_sources.csv"), "w", encoding="utf-8", newline="").write(buf.getvalue())
+    kbcommon.write_csv(os.path.join(KB, "_sources.csv"), header, rows, atomic=True)
     for path, new in articles:
-        open(path, "w", encoding="utf-8", newline="").write(new)
-    import kbid
-    with open(state_path, "w", encoding="utf-8", newline="") as f:
-        w = csv.DictWriter(f, state_cols, lineterminator="\n", extrasaction="ignore")
-        w.writeheader()
-        w.writerows(sorted(state.values(), key=lambda r: kbid.sort_key(r["id"])))
+        with open(path, "w", encoding="utf-8", newline="") as f:
+            f.write(new)
+    kbcommon.write_csv(state_path, state_cols, sorted(state.values(), key=lambda r: kbid.sort_key(r["id"])), atomic=True)
     return 0
 
 

@@ -39,7 +39,7 @@ KB = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SKIP_DIRS = {"_tools", "_private", "_cache", "_census", "artifacts"}  # _census: dated verdict logs, not facts
 TOKEN = re.compile(r"\w+(?:[.\-]\w+)*")  # Unicode words; `gmsa-dmsa`, `dsc.exe` stay whole
 MAX_CHUNK = 900
-CITED = re.compile(r"\bS\d{3,4}\b|\bS-[a-z2-7]{8}\b")  # legacy ids (not prose like S1/S3 sleep states) and hash ids
+CITED = kbid.SOURCE_ID  # legacy ids (not prose like S1/S3 sleep states) and hash ids
 csv.field_size_limit(2**31 - 1)  # a very wide cell must not abort the whole search
 
 

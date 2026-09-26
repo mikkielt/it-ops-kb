@@ -35,12 +35,12 @@ from collections import Counter, defaultdict
 TOOLS = os.path.dirname(os.path.abspath(__file__))
 KB = os.path.dirname(TOOLS)
 sys.path.insert(0, TOOLS)
-import kbid  # noqa: E402
+import kbcommon, kbid  # noqa: E402
 
 KINDS = ("DOC", "DER", "COMMUNITY", "UNK")
 SKIP_DIRS = {"_tools", "_private", "_cache", "_census", "artifacts"}
 TAG = re.compile(r"\[(?:DOC|DER|COMMUNITY|UNK)\b[^\]]*\]")
-ID = re.compile(r"\bS-[a-z2-7]{8}\b|\bS\d{3,4}\b")
+ID = kbid.SOURCE_ID
 _PART_SPLIT = re.compile(r"\s*[;,]\s*(?=(?:DOC|DER|COMMUNITY|UNK)\b)")
 _PART = re.compile(r"(DOC|DER|COMMUNITY|UNK)(?:/(DOC|DER|COMMUNITY|UNK))?\b\s*(?:from\s+)?"
                    r"((?:S-[a-z2-7]{8}|S\d{3,4})(?:[\s,]+(?:S-[a-z2-7]{8}|S\d{3,4})\b)*)?(.*)", re.S)
@@ -76,12 +76,7 @@ def kinds_of(parts):
 
 # ---------------------------------------------------------------- files
 
-def read(rel):
-    try:
-        with open(os.path.join(KB, rel), encoding="utf-8", errors="replace") as f:
-            return f.read()
-    except OSError:
-        return None
+read = kbcommon.read
 
 
 def front_matter(text):
@@ -339,8 +334,7 @@ def source_rows():
 
 
 def _source_rows():
-    with open(os.path.join(KB, "_sources.csv"), encoding="utf-8-sig", newline="") as f:
-        return {r["id"]: r for r in csv.DictReader(f)}
+    return kbcommon.source_rows()
 
 
 # ---------------------------------------------------------------- audit

@@ -116,9 +116,10 @@ Exit (history): 0 ok; 1 check-trailers found bad commits, log found nothing, aso
 2 bad arguments, not a git clone, or a git error. Hooks always exit 0.
 """
 import argparse, csv, datetime, io, os, re, shlex, stat, subprocess, sys
+from collections import Counter
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import kbid  # noqa: E402
+import kbcommon, kbid  # noqa: E402
 import build_index  # noqa: E402
 
 KB = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -138,11 +139,7 @@ class Problem(Exception):
 # ---------------------------------------------------------------- io and git
 
 def read(rel):
-    try:
-        with open(os.path.join(KB, rel), encoding="utf-8", newline="") as f:
-            return f.read()
-    except FileNotFoundError:
-        return None
+    return kbcommon.read(rel, newline="", strict=True)
 
 
 def write(rel, text):
@@ -211,12 +208,7 @@ def lf(text):
     return text if text.endswith("\n") or not text else text + "\n"
 
 
-def csv_text(header, rows):
-    buf = io.StringIO()
-    w = csv.writer(buf, lineterminator="\n")
-    w.writerow(header)
-    w.writerows([[r.get(c, "") for c in header] for r in rows])
-    return buf.getvalue()
+csv_text = kbcommon.csv_text
 
 
 # Columns appended to a ledger after it was first written. A branch from before the change still writes the older,
@@ -734,8 +726,10 @@ def resolve_md(text, name, report, problems, side_texts=()):
     out = "\n".join(ln for ln, _ in kept)
     if name == "_answers.md":
         ids = kbid.answer_ids(out)
-        for d in sorted({i for i in ids if ids.count(i) > 1}):
-            problems.append(f"{name}: answer id {d} appears {ids.count(d)} times with different text; "
+        for d, n in sorted(Counter(ids).items()):
+            if n < 2:
+                continue
+            problems.append(f"{name}: answer id {d} appears {n} times with different text; "
                             f"keep one (or give the other a new id: kbid.py answer)")
     return out
 
@@ -789,9 +783,7 @@ def canon_csv(text, sort):
     if not rows:
         return text
     body = sorted(rows[1:], key=lambda r: id_key(r[0])) if sort else rows[1:]
-    buf = io.StringIO()
-    csv.writer(buf, lineterminator="\n").writerows([rows[0]] + body)
-    return buf.getvalue()
+    return kbcommon.rows_text([rows[0]] + body)
 
 
 def fmt_texts(report):

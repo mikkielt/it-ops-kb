@@ -14,7 +14,8 @@
 - every `topic: <domain>/<slug>` marker in _gaps.md and _conflicts.md names an existing topic (kbfacts.py).
 """
 import csv, glob, os, re, sys
-import kbid, kbfacts
+from collections import Counter
+import kbcommon, kbid, kbfacts
 
 KB = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 errors = []
@@ -23,23 +24,16 @@ errors = []
 def read_csv(name, required):
     """Rows of a kb index CSV, or [] with an error if it is missing or lacks a required column."""
     try:
-        with open(os.path.join(KB, name), encoding="utf-8-sig", newline="") as f:
-            r = csv.DictReader(f)
-            rows = list(r)
-            missing = [c for c in required if c not in (r.fieldnames or [])]
-    except (OSError, UnicodeDecodeError, csv.Error) as e:
-        errors.append(f"cannot read {name}: {e}")
+        return kbcommon.load_csv(name, required)[1]
+    except kbcommon.CsvError as e:
+        errors.append(str(e))
         return []
-    if missing:
-        errors.append(f"{name} lacks column(s) {', '.join(missing)}")
-        return []
-    return rows
 
 
 sources = read_csv("_sources.csv", ("id", "url", "superseded_by"))
 ids = [r["id"] for r in sources]
 known = set(ids)
-errors += [f"duplicate source id {i}" for i in sorted({i for i in ids if ids.count(i) > 1})]
+errors += [f"duplicate source id {i}" for i, n in sorted(Counter(ids).items()) if n > 1]
 errors += [f"malformed source id {i!r} (want S<digits> or S-<8 base32>)" for i in ids if not kbid.is_source_id(i)]
 errors += kbid.check_sources(sources)
 succ = {r["id"]: r["superseded_by"].strip() for r in sources if (r.get("superseded_by") or "").strip()}
@@ -61,7 +55,7 @@ except FileNotFoundError:
 except (OSError, UnicodeDecodeError) as e:
     errors.append(f"_answers.md is unreadable: {e}")
     aids = []
-errors += [f"duplicate answer id {i} in _answers.md" for i in sorted({i for i in aids if aids.count(i) > 1})]
+errors += [f"duplicate answer id {i} in _answers.md" for i, n in sorted(Counter(aids).items()) if n > 1]
 errors += [f"answer id {i} in _answers.md: new QK ids are QK-<slug> (lowercase, hyphenated)"
            for i in aids if i.startswith("QK") and not kbid.QK_ID.fullmatch(i)]
 for r in read_csv("_artifacts.csv", ("path", "source_id", "sha256")):

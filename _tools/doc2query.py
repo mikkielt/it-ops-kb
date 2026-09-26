@@ -34,6 +34,7 @@ DIR = os.path.join(TOOLS, "doc2query")
 ARMS = os.path.join(DIR, "arms.json")
 EXPANSIONS = os.path.join(DIR, "expansions.csv")
 sys.path.insert(0, TOOLS)
+import kbcommon  # noqa: E402
 
 
 def key_of(text):
@@ -194,7 +195,7 @@ def prune():
         rows = list(csv.reader(f))
     keep = [rows[0]] + [r for r in rows[1:] if r and r[0] not in gone]
     with open(EXPANSIONS, "w", encoding="utf-8", newline="") as f:
-        csv.writer(f, lineterminator="\n").writerows(keep)
+        f.write(kbcommon.rows_text(keep))
     print(f"pruned {len(rows) - len(keep)} rows of {len(gone)} stale keys")
     return 0
 

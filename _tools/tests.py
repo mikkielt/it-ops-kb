@@ -29,7 +29,7 @@ Leaks (tracked files): secrets in any file; in authored files also home-director
 non-placeholder e-mail addresses and GUIDs outside the reviewed allowlist (_tools/tests_allowlist.txt); files that
 must never be committed; oversized files.
 """
-import csv, glob, importlib.util, json, os, re, subprocess, sys, unittest
+import csv, glob, json, os, re, subprocess, sys, unittest
 
 KB = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TOOLS = os.path.join(KB, "_tools")
@@ -423,12 +423,8 @@ class Ids(unittest.TestCase):
 
     def test_id_regexes_accept_both_forms(self):
         text = "fact [DOC S1289, S-k3f7q2zd] and S3 sleep, HTTPS-only"
-        self.assertEqual(kbid.SOURCE_ID.findall(text), ["S1289", "S-k3f7q2zd", "S3"])
+        self.assertEqual(kbid.SOURCE_ID.findall(text), ["S1289", "S-k3f7q2zd"], "a cited id; prose like S3 is not one")
         self.assertEqual(kbid.ANY_ID.findall("S1480,S1483: HTTPS-only, S-BAD"), ["S1480", "S1483", "S-BAD"])
-        spec = importlib.util.spec_from_file_location("lint", LINT)
-        lint = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(lint)
-        self.assertEqual(lint.SID.findall("[S100, S-k3f7q2zd]"), ["S100", "S-k3f7q2zd"])
         self.assertEqual(sorted(["S-bbbbbbbb", "S1000", "S-aaaaaaaa", "S999"], key=kbid.sort_key),
                          ["S999", "S1000", "S-aaaaaaaa", "S-bbbbbbbb"])
         self.assertEqual([kbid.canonical_id(x) for x in ("s0100", "s-K3F7Q2ZD")], ["S0100", "S-k3f7q2zd"])

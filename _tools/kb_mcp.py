@@ -39,7 +39,7 @@ import contextlib, csv, io, json, os, re, subprocess, sys, threading
 TOOLS = os.path.dirname(os.path.abspath(__file__))
 KB = os.path.dirname(TOOLS)
 sys.path.insert(0, TOOLS)
-import rag, kbfacts  # noqa: E402
+import rag, kbcommon, kbfacts  # noqa: E402
 
 NAME, VERSION = "kb", "1.2.0"
 MODERN = "2026-07-28"
@@ -300,8 +300,7 @@ def status():
     logs = sorted(f[:-4] for f in os.listdir(census_dir) if re.fullmatch(r"\d{4}-\d{2}-\d{2}\.csv", f)) if os.path.isdir(census_dir) else []
     info["census_log"] = f"_census/{logs[-1]}.csv" if logs else "none"
     try:
-        with open(os.path.join(KB, "_sources.csv"), encoding="utf-8-sig", newline="") as f:
-            rows = list(csv.DictReader(f))
+        rows = kbcommon.read_sources()
         dates = sorted(r.get("retrieved_utc", "")[:10] for r in rows if r.get("retrieved_utc"))
         info["sources"] = f"{len(rows)} ({sum(1 for r in rows if (r.get('superseded_by') or '').strip())} superseded)"
         info["newest_retrieved_utc"] = dates[-1] if dates else "none"

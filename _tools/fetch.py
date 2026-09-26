@@ -37,8 +37,8 @@ HTML is reduced to the text of <main> (or the whole body) before hashing, so pag
 
 A failed download is reported as `unknown`, never as a match.
 """
-import argparse, csv, datetime, difflib, hashlib, html.parser, io, json, os, re, sys, time, urllib.parse, urllib.request, zipfile
-import kbid
+import argparse, datetime, difflib, hashlib, html.parser, io, json, os, re, sys, time, urllib.parse, urllib.request, zipfile
+import kbcommon, kbid
 
 KB = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 STATE = "_fetch_state.csv"
@@ -73,15 +73,9 @@ def sha(b):
 def read_csv(name, required):
     """Rows of a kb index CSV; exit 1 if it is missing or lacks a required column (never a silent pass)."""
     try:
-        with open(os.path.join(KB, name), newline="", encoding="utf-8-sig") as f:
-            r = csv.DictReader(f)
-            rows = list(r)
-    except (OSError, UnicodeDecodeError, csv.Error) as e:
-        sys.exit(f"cannot read {name}: {e}")
-    missing = [c for c in required if c not in (r.fieldnames or [])]
-    if missing:
-        sys.exit(f"{name} lacks column(s) {', '.join(missing)}")
-    return rows
+        return kbcommon.load_csv(name, required)[1]
+    except kbcommon.CsvError as e:
+        sys.exit(str(e))
 
 
 class _PageText(html.parser.HTMLParser):
@@ -180,12 +174,8 @@ def read_state():
 
 
 def write_state(state):
-    p = os.path.join(KB, STATE)
-    with open(p + ".tmp", "w", newline="", encoding="utf-8") as f:
-        w = csv.DictWriter(f, STATE_COLS, lineterminator="\n", extrasaction="ignore")
-        w.writeheader()
-        w.writerows(sorted(state.values(), key=lambda r: kbid.sort_key(r["id"]) if kbid.is_source_id(r["id"]) else (2, 0, r["id"])))
-    os.replace(p + ".tmp", p)
+    kbcommon.write_csv(os.path.join(KB, STATE), STATE_COLS, sorted(
+        state.values(), key=lambda r: kbid.sort_key(r["id"]) if kbid.is_source_id(r["id"]) else (2, 0, r["id"])), atomic=True)
 
 
 def snapshot(sid, text=None):

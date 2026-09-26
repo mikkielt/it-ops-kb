@@ -25,16 +25,16 @@ _sources.csv used_in: the sorted `;`-joined content files whose text cites the i
 Output is deterministic: `\\n` line endings, no BOM, stable order. Running it twice changes nothing.
 Exit 0 up to date (or written), 1 out of date (--check), 2 cannot build (unreadable ledger, missing README markers).
 """
-import argparse, csv, io, os, re, sys
+import argparse, csv, io, os, sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import kbid  # noqa: E402
+import kbcommon, kbid  # noqa: E402
 
 KB = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 EXTRA = os.path.join("_tools", "index_extra.csv")
 COVERAGE_FIELDS = ["topic", "priority", "status", "files", "n_sources"]
 START, END = "<!-- coverage:start -->", "<!-- coverage:end -->"
-CITE = re.compile(rf"\b{kbid.HASH_ID}\b|\b{kbid.LEGACY_ID}\b")
+CITE = kbid.SOURCE_ID
 
 
 class BuildError(Exception):
@@ -42,11 +42,7 @@ class BuildError(Exception):
 
 
 def read(rel):
-    try:
-        with open(os.path.join(KB, rel), encoding="utf-8", errors="replace", newline="") as f:
-            return f.read()
-    except OSError:
-        return None
+    return kbcommon.read(rel, newline="")
 
 
 def read_csv(rel, required, text=None):
@@ -54,14 +50,9 @@ def read_csv(rel, required, text=None):
     if text is None:
         raise BuildError(f"cannot read {rel}")
     try:
-        r = csv.DictReader(io.StringIO(text.lstrip("﻿").replace("\0", "")))
-        rows = list(r)
-    except csv.Error as e:
-        raise BuildError(f"cannot read {rel}: {e}")
-    missing = [c for c in required if c not in (r.fieldnames or [])]
-    if missing:
-        raise BuildError(f"{rel} lacks column(s) {', '.join(missing)}")
-    return r.fieldnames, rows
+        return kbcommon.parse_csv(rel, text, required, nul=True)
+    except kbcommon.CsvError as e:
+        raise BuildError(str(e))
 
 
 def content_files():
@@ -151,12 +142,7 @@ def coverage_rows(files, texts, known, warnings):
     return sorted(rows, key=sort_key)
 
 
-def csv_text(fields, rows):
-    buf = io.StringIO()
-    w = csv.DictWriter(buf, fields, lineterminator="\n", extrasaction="ignore")
-    w.writeheader()
-    w.writerows(rows)
-    return buf.getvalue()
+csv_text = kbcommon.csv_text
 
 
 def readme_table(rows):

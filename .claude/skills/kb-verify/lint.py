@@ -18,7 +18,8 @@ KB = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
 sys.path.insert(0, os.path.join(KB, "_tools"))
 import build_index  # noqa: E402
 import kbfacts  # noqa: E402
-SID = re.compile(r"\bS-[a-z2-7]{8}\b|S\d+")  # hash source ids (S-k3f7q2zd) and legacy ones (S123)
+import kbid  # noqa: E402
+SID = kbid.SOURCE_ID  # hash source ids (S-k3f7q2zd) and legacy ones (S123)
 
 
 def main():

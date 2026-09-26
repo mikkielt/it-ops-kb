@@ -22,11 +22,12 @@ Answer ids. New research answers in _answers.md are headed `## QK-<slug>. <quest
 joined by hyphens. Existing Q/QA/QS/QR/QG/R headings stay.
 """
 import argparse, base64, csv, functools, hashlib, os, re, sys, urllib.parse
+from kbcommon import read_sources  # noqa: F401  (kbgit and the tests call kbid.read_sources)
 
 KB = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 LEGACY_ID = r"S\d+"
 HASH_ID = r"S-[a-z2-7]{8}"
-SOURCE_ID = re.compile(rf"\b(?:{HASH_ID}|{LEGACY_ID})\b")   # a well-formed id inside text
+SOURCE_ID = re.compile(rf"\b{HASH_ID}\b|\bS\d{{3,4}}\b")  # an id cited in text: legacy ids are S100-S2204, so prose like S3 never matches
 ANY_ID = re.compile(r"\bS-[A-Za-z0-9]+|S\d+")               # anything that claims to be an id (in fact tags)
 ANSWER_HEAD = re.compile(r"^## ([A-Za-z][A-Za-z0-9-]*)\. ", re.M)
 QK_ID = re.compile(r"QK-[a-z0-9]+(?:-[a-z0-9]+)*")
@@ -117,11 +118,6 @@ def check_sources(rows):
         if len(urls) > 1:
             errors.append(f"hash id collision {h}: {' | '.join(sorted(urls))}")
     return errors
-
-
-def read_sources():
-    with open(os.path.join(KB, "_sources.csv"), encoding="utf-8-sig", newline="") as f:
-        return list(csv.DictReader(f))
 
 
 def main():
