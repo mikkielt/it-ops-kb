@@ -899,6 +899,16 @@ DATE = re.compile(r"\d{4}-\d{2}-\d{2}")
 INDEX = None  # compute() target: the index (staged changes)
 HOOKS_DIR = ".githooks"
 HOOKS = ("prepare-commit-msg", "commit-msg")
+
+
+def hooks_path_is_ours(cur):
+    """core.hooksPath names this clone's .githooks, relative or absolute (a clone set up by hand may use either)."""
+    cur = (cur or "").strip()
+    if not cur:
+        return False
+    if cur.rstrip("/") == HOOKS_DIR:
+        return True
+    return os.path.realpath(os.path.join(KB, os.path.expanduser(cur))) == os.path.realpath(os.path.join(KB, HOOKS_DIR))
 AMEND_MARK = "kb-trailers-base"
 
 
@@ -1182,7 +1192,7 @@ def cmd_install_hooks(a):
         return 2
     cur = (git("config", "--get", "core.hooksPath") or "").strip()
     if a.uninstall:
-        if cur.rstrip("/") == HOOKS_DIR:
+        if hooks_path_is_ours(cur):
             git("config", "--unset", "core.hooksPath")
             print(f"uninstalled: core.hooksPath unset ({HOOKS_DIR}/ stays in the repo)")
         else:
@@ -1196,7 +1206,7 @@ def cmd_install_hooks(a):
         mode = os.stat(p).st_mode
         if not mode & stat.S_IXUSR:
             os.chmod(p, mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
-    if cur and cur.rstrip("/") != HOOKS_DIR:
+    if cur and not hooks_path_is_ours(cur):
         print(f"core.hooksPath is already {cur!r}; not changed. Chain {HOOKS_DIR}/commit-msg and "
               f"{HOOKS_DIR}/prepare-commit-msg from there, or `git config --unset core.hooksPath` and rerun")
         return 2
@@ -1820,7 +1830,7 @@ def cmd_sync(a):
         if not a.dry_run:
             print(refuse)
             return 2
-    if (git("config", "--get", "core.hooksPath") or "").strip().rstrip("/") != HOOKS_DIR:
+    if not hooks_path_is_ours(git("config", "--get", "core.hooksPath")):
         print("note: commit hooks not installed (python3 _tools/kbgit.py install-hooks); sync repairs trailers of what it rebases")
     r = {"push": a.push, "ahead": 0, "behind": 0, "rebased": 0, "auto": [], "fixed": [], "renumbered": [], "refreshed": 0,
          "fix_commit": None, "gate": [], "pushed": "no", "notes": []}

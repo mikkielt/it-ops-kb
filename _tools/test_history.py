@@ -221,3 +221,10 @@ class TestHistoryInGit:
         assert run("install-hooks", "--uninstall").returncode == 0
         cfg = subprocess.run(["git", "config", "--get", "core.hooksPath"], cwd=clone, env=self.env, capture_output=True, text=True)
         assert cfg.stdout.strip() == ""
+        # an absolute core.hooksPath to the same .githooks counts as installed, and uninstalls
+        subprocess.run(["git", "config", "core.hooksPath", os.path.join(clone, ".githooks")], cwd=clone, env=self.env, check=True)
+        r = run("install-hooks")
+        assert r.returncode == 0 and "already installed" in r.stdout, r.stdout
+        assert run("install-hooks", "--uninstall").returncode == 0
+        cfg = subprocess.run(["git", "config", "--get", "core.hooksPath"], cwd=clone, env=self.env, capture_output=True, text=True)
+        assert cfg.stdout.strip() == ""
