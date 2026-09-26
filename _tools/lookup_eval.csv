@@ -86,3 +86,4 @@ EV-langgraph-checkpointer-options-exist-interrupt-human,What LangGraph checkpoin
 EV-roles-enable-domain-capture-compliance-api,"What roles can enable domain capture and the Compliance API in a Claude Enterprise organization?",claude/enterprise-admin.md,good,
 EV-times-krbtgt-password-reset-wait-between,How many times should the KRBTGT password be reset and how long to wait between resets?,ad/krbtgt-password-reset.md,good,
 EV-group-policy-central-store-admx-update,Group Policy Central Store ADMX update for Windows 11 24H2,gpo/admx-central-store.md,good,
+EV-please-answer-citations-default-windows-laps,Please answer with citations: what is the default Windows LAPS password length?,windows/laps.md,good,

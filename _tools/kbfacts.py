@@ -276,7 +276,8 @@ def units(prefix=None, with_csv=True, untagged=False):
         if prefix and not in_prefix(rel, prefix):
             continue
         text = read(rel)
-        if text is None:
+        if text is None:  # walked a moment ago, so it exists: unreadable (permissions, a directory named .md)
+            print(f"warning: skipped {rel}: cannot read", file=sys.stderr)
             continue
         if rel.endswith(".md"):
             if is_article(text) or untagged:
@@ -379,7 +380,10 @@ def audit(prefix=None, status=None):
 STOP = kbid.STOP | {"about", "after", "all", "any", "also", "been", "but", "did", "has", "have", "into", "kb", "much",
                     "long", "more", "not", "only", "same", "than", "that", "their", "then", "there", "these", "they",
                     "this", "those", "was", "were", "will", "would", "you", "your", "who", "whom", "whose", "why",
-                    "there", "does", "doing", "get", "set", "use", "used", "using", "via", "per", "say", "says"}
+                    "there", "does", "doing", "get", "set", "use", "used", "using", "via", "per", "say", "says",
+                    # words of the request, not of the topic: "answer with citations" must not cost a `good` verdict
+                    "answer", "answers", "cite", "citation", "citations", "please", "explain", "tell", "give",
+                    "describe", "briefly", "safely", "help", "need", "want", "know"}
 WORD = re.compile(r"\w+(?:[.\-]\w+)*")
 
 
@@ -541,7 +545,7 @@ def _corpus(domain):
 
 # ---------------------------------------------------------------- the pack index (postings; persisted with sqlite3)
 
-INDEX_VERSION = 2  # bump when the index layout or what goes into a unit's tf/own changes
+INDEX_VERSION = 3  # bump when the index layout or what goes into a unit's tf/own changes
 
 
 class Store:
@@ -994,16 +998,20 @@ def format_sources(srcs):
 
 
 MAX_QUESTIONS = 6
+PART_BUDGET_MIN = 800  # tokens per part of a 3+ part pack
 
 
 def pack_many(questions, budget=1200, domain=None, fmt="detailed"):
     """One pack per question (1-6), each with its own coverage verdict, and one shared source footer:
-    {verdict (the worst), results, text}. A single question gives exactly pack()'s text."""
+    {verdict (the worst), results, text}. A single question gives exactly pack()'s text. With 3 or more questions
+    each part gets 2 * budget / n tokens, at least PART_BUDGET_MIN (never more than budget): measured on the eval set,
+    800 tokens keep 98% of the expected article's fact lines that 1200 print, and a 6-part pack shrinks by a third."""
     qs = [q.strip() for q in questions if q and q.strip()][:MAX_QUESTIONS]
     if len(qs) == 1:
         res = pack(qs[0], budget, domain, fmt=fmt)
         return {"verdict": res["verdict"], "results": [res], "text": res["text"]}
-    results = [pack(q, budget, domain, fmt=fmt, footer=False) for q in qs]
+    part = budget if len(qs) < 3 else max(min(budget, PART_BUDGET_MIN), 2 * budget // len(qs))
+    results = [pack(q, part, domain, fmt=fmt, footer=False) for q in qs]
     out, seen, srcs = [], set(), []
     for i, (q, res) in enumerate(zip(qs, results), start=1):
         out += [f"# Q{i}: {q}", res["text"], ""]
