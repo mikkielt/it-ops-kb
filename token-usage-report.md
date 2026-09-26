@@ -1,5 +1,7 @@
 # Token usage of kb lookups: measurements and recommendations (2026-09-25)
 
+Eval ids: on 2026-09-26 the `lookup_eval.csv` ids changed from `E01`-`E37` to `EV-<slug>` (`kbid.py eval`), so parallel writers no longer collide. The E numbers below are the old ids, in file order; `git log -p _tools/lookup_eval.csv` maps them.
+
 Why: the kb exists to make lookups cheaper and faster than web search. This report measures what a lookup actually costs an agent today, where the tokens go, and what to change so the work is mostly deterministic, with the agent acting as a limited manager.
 
 ## Method

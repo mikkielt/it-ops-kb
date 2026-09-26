@@ -437,8 +437,9 @@ def main():
         res = run_eval(a.file)
         if a.json:
             return print(json.dumps(res, indent=1))
+        width = max((len(r["id"]) for r in res["rows"]), default=6)
         for r in res["rows"]:
-            print(f"{'ok  ' if r['ok'] else 'FAIL'} {r['id']:<6} verdict={r['verdict']:<5} (want {r['want_verdict']:<5}) "
+            print(f"{'ok  ' if r['ok'] else 'FAIL'} {r['id']:<{width}} verdict={r['verdict']:<5} (want {r['want_verdict']:<5}) "
                   f"found={','.join(r['found']) or '-'} chars={r['chars']}")
         print(f"questions={res['n']} passed={res['passed']} verdict_ok={res['verdict_ok']} found_ok={res['found_ok']} "
               f"mean_chars={res['mean_chars']}")

@@ -1,38 +1,38 @@
 id,question,expect_paths,expect_verdict,allow_weak
-E01,"When does NTLMv1 become disabled by default on Windows, and what setting's default flips?",auth/ntlm-deprecation.md;auth/kerberos.md,good,
-E02,"An engineer activates PIM for Groups membership in a cloud group meant to grant rights in on-prem Active Directory. How long until it is visible to a new token and in on-prem AD, and what sync is required?",auth/entra-intune-rbac.md,good,
-E03,"Kerberos SPN and Negotiate requirements for a Python CLI calling the ConfigMgr AdminService and SQL Server",auth/kerberos.md;auth/flows.md,good,
-E04,"What is the recommended Intel Wi-Fi adapter Roaming Aggressiveness setting for corporate laptops managed by Intune?",,none,
-E05,"Does deleting an Entra device also delete its BitLocker recovery keys?",entra/bitlocker-key-deletion.md,good,
-E06,"How does DSC v3 what-if mode work and which flags enable it?",dsc/what-if.md,good,
-E07,"What are the Graph throttling limits for device and Intune requests?",graph/throttling.md,good,yes
-E08,"Which least-privileged Graph permission is needed to read managed devices?",graph/permissions.md,good,yes
-E09,"What does sp_getapplock do in SQL Server and what lock modes does it take?",sqlserver/sp-getapplock.md,good,
-E10,"How long do Intune Remediations scripts keep running and what are their limits?",intune/remediations.md,good,yes
-E11,"Where are the Intune Management Extension logs on a Windows device?",intune/ime-logs.md,good,
-E12,"How are CI/CD variables masked and protected in GitLab?",gitlab/variables.md,good,
-E13,"What does Presidio's DeanonymizeEngine do and which operators can be reversed?",privacy/presidio-operators-deanonymize.md,good,
-E14,"How do I export a GPO as XML with Get-GPOReport or Backup-GPO?",gpo/gpo-export.md,good,
-E15,"What changed in the MCP 2026-07-28 stdio transport?",mcp/transports-stdio.md,good,yes
-E16,"How big can an MCP tool output be in Claude Code before it is saved to a file?",claude/tool-output-limits.md,good,
-E17,"Which OpenSSH Server settings matter on Windows for Ansible over SSH?",windows/openssh-server.md;ansible/windows-ssh.md,good,yes
-E18,"What happens to the Autopilot device record when the motherboard is replaced?",autopilot/lifecycle.md,good,yes
-E19,"How do I configure a Kubernetes cluster autoscaler on AWS EKS spot instances?",,none,
-E20,"What is the licence of the spaCy en_core_web_lg model?",privacy/spacy-model-licence.md,good,
-E21,Intel Wi-Fi roaming aggressiveness,,none,
-E22,wifi roaming aggressiveness intel,,none,
-E23,BlockNTLMv1SSO default,auth/ntlm-deprecation.md;auth/kerberos.md,good,
-E24,SCCM AdminService Kerberos,mecm/adminservice.md;auth/kerberos.md,good,
-E25,Azure AD PIM groups writeback,auth/entra-intune-rbac.md,good,
-E26,MEMCM CMPivot query timeout,mecm/cmpivot.md,good,
-E27,AAD device delete BitLocker keys,entra/bitlocker-key-deletion.md,good,
-E28,Graph beta device property isManagementRestricted type,graph/csdl-device.properties.csv,good,yes
-E29,is the US NPI recognizer in Presidio enabled by default,privacy/presidio-entities.md;privacy/presidio-entities.csv,good,yes
-E30,registry setting to hide Defender AV exclusions from local users,security/settings-crosswalk.csv,good,yes
-E31,BitLocker policy to block new DMA devices while the PC is locked,security/settings-crosswalk.csv,good,yes
-E32,dsregcmd what does Credential Type mean in the SSO state section,entra/dsregcmd-fields.csv,good,yes
-E33,How does Okta SCIM provisioning map groups to application roles?,,weak,
-E34,Which Terraform azurerm resource creates a Log Analytics workspace?,,weak,
-E35,can you filter or sort Entra devices by last sign-in date,graph/csdl-device.md,good,yes
-E36,is there a Microsoft security baseline setting for PowerShell script block invocation logging?,security/settings-crosswalk.csv,good,yes
-E37,AWX license and latest release info,prior-art/projects.csv,good,yes
+EV-ntlmv1-become-disabled-default-windows-setting,"When does NTLMv1 become disabled by default on Windows, and what setting's default flips?",auth/ntlm-deprecation.md;auth/kerberos.md,good,
+EV-engineer-activates-pim-groups-membership-cloud,"An engineer activates PIM for Groups membership in a cloud group meant to grant rights in on-prem Active Directory. How long until it is visible to a new token and in on-prem AD, and what sync is required?",auth/entra-intune-rbac.md,good,
+EV-kerberos-spn-negotiate-requirements-python-cli,Kerberos SPN and Negotiate requirements for a Python CLI calling the ConfigMgr AdminService and SQL Server,auth/kerberos.md;auth/flows.md,good,
+EV-recommended-intel-wi-fi-adapter-roaming,What is the recommended Intel Wi-Fi adapter Roaming Aggressiveness setting for corporate laptops managed by Intune?,,none,
+EV-deleting-entra-device-also-delete-bitlocker,Does deleting an Entra device also delete its BitLocker recovery keys?,entra/bitlocker-key-deletion.md,good,
+EV-dsc-v3-if-mode-work-flags,How does DSC v3 what-if mode work and which flags enable it?,dsc/what-if.md,good,
+EV-graph-throttling-limits-device-intune-requests,What are the Graph throttling limits for device and Intune requests?,graph/throttling.md,good,yes
+EV-least-privileged-graph-permission-needed-read,Which least-privileged Graph permission is needed to read managed devices?,graph/permissions.md,good,yes
+EV-sp-getapplock-sql-server-lock-modes,What does sp_getapplock do in SQL Server and what lock modes does it take?,sqlserver/sp-getapplock.md,good,
+EV-intune-remediations-scripts-keep-running-their,How long do Intune Remediations scripts keep running and what are their limits?,intune/remediations.md,good,yes
+EV-intune-management-extension-logs-windows-device,Where are the Intune Management Extension logs on a Windows device?,intune/ime-logs.md,good,
+EV-ci-cd-variables-masked-protected-gitlab,How are CI/CD variables masked and protected in GitLab?,gitlab/variables.md,good,
+EV-presidio-deanonymizeengine-operators-reversed,What does Presidio's DeanonymizeEngine do and which operators can be reversed?,privacy/presidio-operators-deanonymize.md,good,
+EV-export-gpo-xml-get-gporeport-backup,How do I export a GPO as XML with Get-GPOReport or Backup-GPO?,gpo/gpo-export.md,good,
+EV-changed-mcp-2026-07-28-stdio,What changed in the MCP 2026-07-28 stdio transport?,mcp/transports-stdio.md,good,yes
+EV-mcp-tool-output-claude-code-before,How big can an MCP tool output be in Claude Code before it is saved to a file?,claude/tool-output-limits.md,good,
+EV-openssh-server-settings-matter-windows-ansible,Which OpenSSH Server settings matter on Windows for Ansible over SSH?,windows/openssh-server.md;ansible/windows-ssh.md,good,yes
+EV-autopilot-device-record-motherboard-replaced,What happens to the Autopilot device record when the motherboard is replaced?,autopilot/lifecycle.md,good,yes
+EV-configure-kubernetes-cluster-autoscaler-aws-eks,How do I configure a Kubernetes cluster autoscaler on AWS EKS spot instances?,,none,
+EV-licence-spacy-en-core-web-lg,What is the licence of the spaCy en_core_web_lg model?,privacy/spacy-model-licence.md,good,
+EV-intel-wi-fi-roaming-aggressiveness,Intel Wi-Fi roaming aggressiveness,,none,
+EV-wifi-roaming-aggressiveness-intel,wifi roaming aggressiveness intel,,none,
+EV-blockntlmv1sso-default,BlockNTLMv1SSO default,auth/ntlm-deprecation.md;auth/kerberos.md,good,
+EV-sccm-adminservice-kerberos,SCCM AdminService Kerberos,mecm/adminservice.md;auth/kerberos.md,good,
+EV-azure-ad-pim-groups-writeback,Azure AD PIM groups writeback,auth/entra-intune-rbac.md,good,
+EV-memcm-cmpivot-query-timeout,MEMCM CMPivot query timeout,mecm/cmpivot.md,good,
+EV-aad-device-delete-bitlocker-keys,AAD device delete BitLocker keys,entra/bitlocker-key-deletion.md,good,
+EV-graph-beta-device-property-ismanagementrestricted-type,Graph beta device property isManagementRestricted type,graph/csdl-device.properties.csv,good,yes
+EV-us-npi-recognizer-presidio-enabled-default,is the US NPI recognizer in Presidio enabled by default,privacy/presidio-entities.md;privacy/presidio-entities.csv,good,yes
+EV-registry-setting-hide-defender-av-exclusions,registry setting to hide Defender AV exclusions from local users,security/settings-crosswalk.csv,good,yes
+EV-bitlocker-policy-block-new-dma-devices,BitLocker policy to block new DMA devices while the PC is locked,security/settings-crosswalk.csv,good,yes
+EV-dsregcmd-credential-type-mean-sso-state,dsregcmd what does Credential Type mean in the SSO state section,entra/dsregcmd-fields.csv,good,yes
+EV-okta-scim-provisioning-map-groups-application,How does Okta SCIM provisioning map groups to application roles?,,weak,
+EV-terraform-azurerm-resource-creates-log-analytics,Which Terraform azurerm resource creates a Log Analytics workspace?,,weak,
+EV-filter-sort-entra-devices-last-sign,can you filter or sort Entra devices by last sign-in date,graph/csdl-device.md,good,yes
+EV-microsoft-security-baseline-setting-powershell-script,is there a Microsoft security baseline setting for PowerShell script block invocation logging?,security/settings-crosswalk.csv,good,yes
+EV-awx-license-latest-release-info,AWX license and latest release info,prior-art/projects.csv,good,yes

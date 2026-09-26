@@ -323,11 +323,17 @@ class Lookup(unittest.TestCase):
         self.assertEqual(subprocess.run([sys.executable, "-c", code], capture_output=True).returncode, 0)
 
     def test_lookup_eval_ids_unique(self):
-        """lookup_eval.csv merges with union: two branches can add the same next id; give one the next free E number."""
+        """Eval ids are EV-<slug> of the question (kbid.eval_id), so parallel writers converge instead of colliding.
+        Two different questions with one slug: lengthen the newer id by hand (EV-<slug>-2)."""
         with open(os.path.join(TOOLS, "lookup_eval.csv"), encoding="utf-8", newline="") as f:
-            ids = [r["id"] for r in csv.DictReader(f)]
+            rows = list(csv.DictReader(f))
+        ids = [r["id"] for r in rows]
         dup = sorted({i for i in ids if ids.count(i) > 1})
         self.assertFalse(dup, f"duplicate lookup_eval.csv ids: {dup}")
+        for r in rows:
+            self.assertRegex(r["id"], kbid.EV_ID.pattern + r"$")
+            self.assertTrue(r["id"] == kbid.eval_id(r["question"]) or re.fullmatch(re.escape(kbid.eval_id(r["question"])) + r"-\d+", r["id"]),
+                            f"{r['id']}: not the slug of its question ({kbid.eval_id(r['question'])})")
 
     def test_doc2query_no_stale_keys(self):
         code, out = run(os.path.join(TOOLS, "doc2query.py"), "stale")

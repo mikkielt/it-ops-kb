@@ -3,6 +3,7 @@
 
   kbid.py url URL [URL ...]      print the source id of each url (and the id already in _sources.csv, if any)
   kbid.py answer "QUESTION"      suggest a QK-<slug> answer id for _answers.md (and say if it is taken)
+  kbid.py eval "QUESTION"        the EV-<slug> id for a _tools/lookup_eval.csv row (and say if it is taken)
   kbid.py check                  hash ids in _sources.csv: collisions and ids that do not match their url
 
 Source ids. Legacy ids `S<digits>` (S100 ... S2204) stay valid forever and are never renumbered. Every new
@@ -29,6 +30,8 @@ SOURCE_ID = re.compile(rf"\b(?:{HASH_ID}|{LEGACY_ID})\b")   # a well-formed id i
 ANY_ID = re.compile(r"\bS-[A-Za-z0-9]+|S\d+")               # anything that claims to be an id (in fact tags)
 ANSWER_HEAD = re.compile(r"^## ([A-Za-z][A-Za-z0-9-]*)\. ", re.M)
 QK_ID = re.compile(r"QK-[a-z0-9]+(?:-[a-z0-9]+)*")
+EV_ID = re.compile(r"EV-[a-z0-9]+(?:-[a-z0-9]+)*")
+EVAL_FILLER = {"i", "you", "me", "my", "there", "s", "much", "many", "happens", "happen", "long", "big"}
 DEFAULT_PORTS = {"http": 80, "https": 443}
 STOP = {"a", "an", "the", "and", "or", "of", "for", "to", "in", "on", "with", "is", "are", "be", "can", "how", "what",
         "which", "when", "where", "why", "does", "do", "it", "its", "by", "from", "as", "at", "we", "our", "should"}
@@ -86,6 +89,13 @@ def answer_id(question):
     return "QK-" + "-".join(words[:6])
 
 
+def eval_id(question):
+    """An EV-<slug> id for a lookup_eval.csv row, the same rule as answer_id: two writers adding the same question
+    get the same id (union merge then keeps one line), and different questions rarely collide (tests.py checks)."""
+    words = [w for w in re.findall(r"[a-z0-9]+", question.lower()) if w not in STOP | EVAL_FILLER] or ["question"]
+    return "EV-" + "-".join(words[:6])
+
+
 def answer_ids(text):
     return ANSWER_HEAD.findall(text)
 
@@ -118,6 +128,7 @@ def main():
     sub = ap.add_subparsers(dest="cmd", required=True)
     u = sub.add_parser("url", help="print the source id of each url"); u.add_argument("urls", nargs="+")
     q = sub.add_parser("answer", help="suggest a QK-<slug> answer id"); q.add_argument("question", nargs="+")
+    e = sub.add_parser("eval", help="the EV-<slug> id for a lookup_eval.csv row"); e.add_argument("question", nargs="+")
     sub.add_parser("check", help="hash-id collisions and ids that do not match their url")
     a = ap.parse_args()
     try:
@@ -142,6 +153,17 @@ def main():
         except OSError:
             taken = False
         print(aid + ("\talready used in _answers.md: pick a more specific slug" if taken else ""))
+    elif a.cmd == "eval":
+        question = " ".join(a.question)
+        eid = eval_id(question)
+        try:
+            with open(os.path.join(KB, "_tools", "lookup_eval.csv"), encoding="utf-8", newline="") as f:
+                have = {r["id"]: r["question"] for r in csv.DictReader(f)}
+        except OSError:
+            have = {}
+        same = have.get(eid, "").strip().lower() == question.strip().lower()
+        print(eid + ("\tthis question is already in lookup_eval.csv" if same else
+                     "\ttaken by another question: use " + eid + "-2" if eid in have else ""))
     else:
         errors = check_sources(rows)
         print(f"sources={len(rows)} hash_ids={sum(1 for r in rows if is_hash_id(r.get('id') or ''))} errors={len(errors)}")
