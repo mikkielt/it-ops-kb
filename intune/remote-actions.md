@@ -127,6 +127,8 @@ permission, least to most privileged.
   actions) is not stated on the actions' own Graph or admin-center pages. [UNK]
 
 ## Reference
+- `auth/audit-log-apis.md` — remote actions issued against a device are recorded as Intune audit events,
+  retrievable via `GET /deviceManagement/auditEvents` (`getAuditActivityTypes()`/`getAuditCategories()`).
 - `intune/remote-actions.csv`: one row per action (action, HTTP endpoint, v1.0/beta, least permission,
   platforms, parameters, notes, source).
 - `intune/collect-diagnostics.md`: full detail on the Collect diagnostics action (not callable via Graph).

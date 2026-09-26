@@ -199,6 +199,9 @@ tables are in `defender/advanced-hunting.md`.
   destination `name`). [DOC S-ofreafga]
 
 ## Reference
+- `auth/audit-log-apis.md` — the diagnostic-settings export path (`AuditLogs`/`SigninLogs` categories) that
+  feeds the `SigninLogs`/`AuditLogs` Sentinel tables, and the Office 365 Management Activity API as an
+  alternative ingestion source for Exchange/SharePoint/Entra audit content.
 - `logs/azure-monitor-agent.md` — DCR/DCRA/DCE structure, Windows Event/Syslog data source config, XPath syntax and
   AMA installation that back the Windows Security Events via AMA and Syslog/CEF via AMA connectors cited above; see
   its Reference section for the back-link to this article.

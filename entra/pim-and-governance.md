@@ -46,6 +46,9 @@ status: partial
 - A tenant lockout risk is explicitly called out: if every Privileged Role Administrator/Global Administrator only has an *eligible* (not active) assignment, activation for that role requires approval, and no specific approvers are configured, no one can approve the first activation — mitigated by configuring emergency access (break-glass) accounts and always naming specific approvers. [DOC S-5hprvqbx]
 
 ## Reference
+- `auth/audit-log-apis.md` — retrieving PIM's role-activation/approval trail programmatically: it lands in
+  Entra `directoryAudits`, retrievable via the Graph Purview Audit Search API or exported via diagnostic settings.
+
 | Resource / setting | Value | Tag |
 |---|---|---|
 | Default/max activation duration | 8 hours default, configurable 1-24h | DOC S-xnr7ugsj, S-5hprvqbx |

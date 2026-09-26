@@ -54,6 +54,9 @@ for it; it belongs to the base kb's `graph/` topic.
 
 ## Reference
 See `audit-events.csv`.
+- `auth/audit-log-apis.md` — how to retrieve/export these events programmatically: Office 365 Management
+  Activity API subscriptions, Purview `Search-UnifiedAuditLog`/Graph Audit Search, Intune `auditEvents`, and
+  Entra `directoryAudits`/`signIns` retention and diagnostic-settings export.
 
 ## Examples
 No fixture-specific configuration; mechanism-only facts.
