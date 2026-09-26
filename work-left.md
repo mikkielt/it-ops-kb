@@ -7,7 +7,7 @@
 ## P. Plugin for other codebases: distribution and updates (planned 2026-09-26)
 Goal: another team installs `it-ops-kb` into their own repository, reads current facts, and can report what the kb
 lacks; only maintainers write. Do in this order:
-1. **One canonical remote.** GitLab `origin/main` is 89 commits behind GitHub `claude/main` (2026-09-26), and the
+1. **Done 2026-09-26: GitLab `origin/main` pushed level with GitHub (96 commits, `kbgit.py sync --push --remote origin`); GitLab stays the install url.** Keep both in step with `sync --push` then `sync --push --remote claude`. Was: **One canonical remote.** GitLab `origin/main` is 89 commits behind GitHub `claude/main` (2026-09-26), and the
    README install steps and `extraKnownMarketplaces` example point at GitLab, so an install today gets a stale kb.
    Decide: push GitLab (`python3 _tools/kbgit.py sync --push`, remote `origin`) and keep both in step, or move the
    README, the marketplace example and `plugin.json` `homepage`/`repository` to GitHub.
@@ -18,7 +18,7 @@ lacks; only maintainers write. Do in this order:
 3. **Triage loop: written down in README "Contribute back" (2026-09-26); the optional scheduled agent is not set up.** Maintainers turn reports into `_gaps.md` entries and `lookup_eval.csv` rows, then
    `/kb-research` or `/kb-add-topic` in a clone, then `kbgit.py sync --push`. Optional later: a scheduled cloud agent
    (`/schedule`) that runs `/kb-research` on open reports and pushes verified topics.
-4. **Release channel.** Today every commit on `main` is a plugin version (no `version` field). Add a stable channel
+4. **Done 2026-09-26: the census tags are the stable channel** (README "Pin a confirmed copy"; release-channel facts in `claude/plugins.md`). No `version` field; teams pin `#census-YYYY-MM-DD` or `"ref"` in `extraKnownMarketplaces`. Was: **Release channel.** Today every commit on `main` is a plugin version (no `version` field). Add a stable channel
    for cautious teams: tag releases (for example `kb-YYYY.MM.DD`, or with each census tag) and document pinning a
    marketplace to a tag; or add `version` to `plugin.json` and bump it on purpose. Decide which.
 5. **Done 2026-09-26** (README "What it costs and what to watch"; cold index build measured 3-5 s, not 1.4 s). **Consumer runbook additions (README, "Use from another project").**

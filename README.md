@@ -135,6 +135,8 @@ Check it: `/mcp` lists `plugin:it-ops-kb:kb` as connected. Then ask Claude to "c
 
 Update: the plugin sets no `version`, so every new commit on `main` is a new version. Run `/plugin marketplace update it-ops-kb` in a session (or `claude plugin update it-ops-kb@it-ops-kb` from a shell), then `/reload-plugins` or start a new session. Or turn on background updates once: `/plugin`, then **Marketplaces**, `it-ops-kb`, **Enable auto-update**.
 
+Pin a confirmed copy instead (for teams that should not follow every commit): the releases are the census tags, `census-YYYY-MM-DD`, each one a commit whose sources were all confirmed current on that date (`git ls-remote --tags git@gitlab.com:mikkielt/it-ops-kb.git 'census-*'` lists them). Add the marketplace with the tag, `/plugin marketplace add git@gitlab.com:mikkielt/it-ops-kb.git#census-YYYY-MM-DD`, or put `"ref": "census-YYYY-MM-DD"` in the `source` object below. Claude Code has no release channels of its own: a marketplace serves one version of each plugin, and with no `version` field the version is the commit, so a pinned copy stays put until you change the ref (then `/plugin marketplace update it-ops-kb`). To move to another tag, edit the `ref` in the settings entry (`marketplace add` writes one to your user settings); a second `add` with a different ref is refused while settings still declare the first (`Cannot add marketplace "it-ops-kb": its network source differs ...`).
+
 To set it up for everyone who opens a project, commit this to the project's `.claude/settings.json`:
 ```json
 {
