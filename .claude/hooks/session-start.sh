@@ -1,7 +1,8 @@
 #!/bin/bash
 # SessionStart (Claude Code on the web): make a fresh container ready for kb work and orient the new session.
-# The kb tools are stdlib-only Python, so there is nothing to install; what a new container lacks is the local git
-# config (commit hooks), the local-scope MCP servers (kb and the docs servers) and the context of earlier sessions.
+# The kb tools are stdlib-only Python; only the tests need pytest (uv installs pyproject.toml's dev group from
+# uv.lock). What a new container lacks is the local git config (commit hooks), the local-scope MCP servers (kb and the
+# docs servers), the test environment and the context of earlier sessions.
 # Idempotent, non-interactive, a few seconds.
 set -uo pipefail
 
@@ -20,6 +21,11 @@ fi
 hooks=$(python3 _tools/kbgit.py install-hooks 2>&1 | tail -1)
 servers=$(python3 _tools/kb_mcp.py --register-local 2>&1 | tr '\n' ';' | sed 's/;$//')
 check=$(python3 _tools/check.py 2>&1 | tail -1)
+if command -v uv >/dev/null 2>&1; then
+  deps=$(timeout 90 uv sync --frozen --quiet >/dev/null 2>&1 && echo "ready (uv sync: pytest, pytest-xdist, ruff)" || echo "uv sync failed; tests.py retries it")
+else
+  deps="uv is not installed: tests.py needs it (or pip install pytest pytest-xdist)"
+fi
 branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
 head=$(git log -1 --format='%h %s' 2>/dev/null)
 git fetch -q origin main 2>/dev/null
@@ -29,12 +35,13 @@ say "it-ops-kb session setup:"
 say "- commit hooks: ${hooks}"
 say "- MCP servers (local scope; new ones load after a restart): ${servers}"
 say "- check.py: ${check}"
+say "- test tools: ${deps}"
 say "- branch ${branch} at ${head} (${sync:-origin/main not fetched})"
 say "- Read work-left.md first: it lists the open work (census 2026-09-25: blocked and unconfirmed sources, resume with"
 say "  /kb-census 2026-09-25 --resume; census tag not created; plugin install from gitlab.com; known debt; failed real"
 say "  lookups to add to _tools/lookup_eval.csv)."
 say "- The full gate before a commit takes about 60 s: check.py, build_index.py --check, kbgit.py fix --check, tests.py"
-say "  (~40 s, includes rag.py eval), stress_test.py (~20 s), fetch.py --offline; after reworded facts also"
+say "  (pytest in parallel, ~20 s, includes rag.py eval), stress_test.py (~35 s), fetch.py --offline; after reworded facts also"
 say "  doc2query.py stale. Push with python3 _tools/kbgit.py sync --push."
 say "- This environment's network policy may deny learn.microsoft.com, github.com pages and api.github.com; raw GitHub"
 say "  files, git over https, code.claude.com and the claude-code-docs MCP server work."

@@ -43,7 +43,7 @@ Follow the README licensing rules: Microsoft Learn text is paraphrased (quotes o
 
 ## 4. Check and report
 - `python3 _tools/check.py` must end `errors=0`. Run `python3 .claude/skills/kb-verify/lint.py <paths you edited>`.
-- When facts changed: `python3 _tools/doc2query.py stale` prints `stale=0`, `python3 _tools/rag.py eval` passes every question, and `python3 _tools/tests.py` ends `OK`.
+- When facts changed: `python3 _tools/doc2query.py stale` prints `stale=0`, `python3 _tools/rag.py eval` passes every question, and `python3 _tools/tests.py` passes.
 - A targeted `--diff` writes `_fetch_state.csv` for the sources it checked. Commit that file with the refresh it explains, even when no fact changed: it records when those sources were last verified. (Only a whole-kb baseline is left to the maintainer.)
 - When the user asks you to commit: one commit per refreshed selection, with the source rows, the facts citing them and `_fetch_state.csv` together. If the refresh re-read the sources and confirmed the facts current (changed or not), mark it: `KB_VERIFIED=<today, YYYY-MM-DD> git commit ...` (or `git commit --trailer "KB-Verified: <today>"`); the hook (`python3 _tools/kbgit.py install-hooks`) adds the other KB-* trailers. Check them with `git log -1 --format=%B`. A whole-kb verification is `/kb-census`, which ends with the census tag.
 - To see when a fact or source last changed: `python3 _tools/kbgit.py log S1234` and `python3 _tools/kbgit.py blame <path:line>`.

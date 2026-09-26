@@ -1,6 +1,7 @@
 # it-ops-kb tooling. The runtime is the Python standard library only: the plugin, the kb: hook and the git hooks run
 # `python3 _tools/<tool>.py` with whatever Python 3.9+ the machine has, so nothing here is installed for them.
-# The dev group is for maintainers (uv installs it by default: `uv sync`, then `uv run ruff check`, `uv run pytest`).
+# The dev group runs the tests: `python3 _tools/tests.py` and `python3 _tools/stress_test.py` call
+# `uv run --frozen python -m pytest` (uv installs the group from uv.lock); `uv run ruff check` lints.
 [project]
 name = "it-ops-kb"
 version = "0"
@@ -9,7 +10,7 @@ requires-python = ">=3.9"
 dependencies = []
 
 [dependency-groups]
-dev = ["pytest>=8", "ruff>=0.6"]
+dev = ["pytest>=8", "pytest-xdist>=3", "ruff>=0.6"]
 
 [tool.ruff]
 line-length = 200
@@ -22,6 +23,6 @@ select = ["F"]
 ignore = ["E731"]
 
 [tool.pytest.ini_options]
-# the same suite as `python3 _tools/tests.py` (it imports every test class); stress_test.py has its own runner
+# `uv run pytest` runs everything, the stress suite included; tests.py adds -m "not stress" and runs in parallel
 testpaths = ["_tools"]
-python_files = ["tests.py"]
+python_files = ["test_*.py"]

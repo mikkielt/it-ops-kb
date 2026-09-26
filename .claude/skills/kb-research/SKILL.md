@@ -73,7 +73,7 @@ Follow the contract in README.md and `.claude/skills/kb-add-topic/SKILL.md` (sou
 - `python3 .claude/skills/kb-verify/lint.py <each topic you edited or created>` must add no errors.
 - `python3 _tools/doc2query.py stale` must print `stale=0`: if you reworded facts that had expansions, `python3 _tools/doc2query.py prune` removes their rows.
 - `python3 _tools/rag.py eval`: every question passes (`passed` = `questions`).
-- `python3 _tools/tests.py` must end `OK`. It includes the leak scan: no real tenant ids, hostnames, addresses or tokens.
+- `python3 _tools/tests.py` must pass. It includes the leak scan: no real tenant ids, hostnames, addresses or tokens.
 
 ## 6. Report
 - The context map in brief: anchor topics and what the kb already knew.

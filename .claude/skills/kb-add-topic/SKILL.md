@@ -74,5 +74,5 @@ files: [<path>, <dir>/]    # optional: only files beyond <slug>.md and <slug>.* 
 ## 6. Check and report
 - `python3 _tools/check.py` must end `errors=0`. Then `python3 .claude/skills/kb-verify/lint.py <domain>/<slug>` must report `errors=0`.
 - `python3 _tools/rag.py pack "<a question the topic answers>"` finds the new article, and `python3 _tools/rag.py eval` still passes every question (a new article can outrank the expected one).
-- `python3 _tools/tests.py` must end `OK` (leak scan, signals and aliases tables).
+- `python3 _tools/tests.py` must pass (leak scan, signals and aliases tables).
 - Report the files created, the fact count by tag, the signal and alias rows added, and the open `UNK` items. Do not commit unless asked.

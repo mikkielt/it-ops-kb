@@ -3,9 +3,9 @@
 `main` on GitHub (remote `claude`) now holds everything below plus the 2026-09-26 expansion (section 0); the session branch `claude/relaxed-keller-e8qyl3` was merged and deleted. GitLab `origin/main` has not received these commits. Done and committed: task 6 (sync fixes, the 6b replay as a test), task 7 (plugin, `kb` MCP server, runbook), the research-skill fixes, and the census tooling (`/kb-census`, `_tools/census.py`); see `git log`. Still open:
 
 ## T. `_tools` efficiency plan (`plan-tooling-efficiency.md`)
-Implemented 2026-09-26 on `claude/relaxed-keller-e8qyl3`: persisted pack index (cold `pack` and the `kb:` hook
-about 0.06 s, `eval` 0.7 s), shared helpers, batched trailer audit, CI git scenarios, `pyproject.toml` (dev: pytest,
-ruff). Still open:
+Done 2026-09-26: persisted pack index (cold `pack` and the `kb:` hook about 0.06 s, `eval` 0.7 s), one engine
+(`search` on the same index, 0.05 s), shared helpers, batched trailer audit, legacy merge paths retired, pytest suite
+run by uv in parallel (`tests.py` 16 s). Nothing open; the census `http_status` GET stays by decision.
 
 ## 0. Expansion 2026-09-26: 69 new articles
 One manager session mapped gaps with `rag.py pack` (many answers were a false `good` from an unrelated article), then ran one Sonnet writer per topic following `/kb-add-topic` / `/kb-research`, and pushed each verified topic to GitHub `main`.

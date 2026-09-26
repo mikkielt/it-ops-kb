@@ -10,7 +10,7 @@ Run `/kb-setup` (Claude Code), or do the same by hand. In Claude Code on the web
 2. **Checks pass on a clean tree:**
    - `python3 _tools/check.py` -> `errors=0`
    - `python3 _tools/fetch.py --offline` -> `mismatch=0 unknown=0`
-   - `python3 _tools/stress_test.py` -> `0 failed`
+   - `python3 _tools/stress_test.py` -> no failures
 3. **MCP servers are in place.** `python3 _tools/kb_mcp.py --register-local` registers, at local scope (this machine and this clone only), the `kb` server and the three documentation servers of `.claude-plugin/it-ops-kb-docs/.mcp.json` (listed in `AGENTS.md`). The root has no `.mcp.json` on purpose: the `it-ops-kb` plugin is sourced from the root, and a plugin loads its root `.mcp.json` whatever `plugin.json` says, so the docs servers live in their own plugin.
 
    - `claude mcp list` must show `kb` and the three docs servers `Connected`. Their tools keep the names `.claude/settings.json` allows (`mcp__kb`, `mcp__microsoft-learn__...`).
@@ -49,9 +49,9 @@ Run `/kb-setup` (Claude Code), or do the same by hand. In Claude Code on the web
 | `python3 _tools/fetch.py --offline` | pinned artifacts vs their sha256 |
 | `python3 _tools/fetch.py --status --topic T` | offline: when a topic's sources were last fetched or changed |
 | `python3 _tools/fetch.py --diff --topic T [--full] [--json]` | re-fetch a topic's sources and diff against the last fetch (exit 0 same, 1 changed, 2 error) |
-| `python3 _tools/stress_test.py` | robustness tests on throwaway copies of the kb |
-| `python3 _tools/tests.py` | what CI (`.gitlab-ci.yml`) runs: docs cohesion and leak scan; `--write-lint-baseline` accepts current lint errors as known debt |
-| `pyproject.toml` (dev group: `uv run ruff check`, `uv run pytest`) | optional maintainer tools; the runtime stays stdlib-only. `ruff check` (pyflakes rules) must stay clean: `tests.py` runs it when ruff is installed; `pytest` runs the same suite as `tests.py` |
+| `python3 _tools/stress_test.py [--scale N] [-k NAME]` | robustness tests on throwaway copies of the kb (`test_stress.py`, parametrized cases, in parallel) |
+| `python3 _tools/tests.py [-k NAME]` | what CI (`.gitlab-ci.yml`) runs: every `_tools/test_*.py` but the stress suite, with pytest and pytest-xdist through `uv run --frozen` (`KB_TESTS_FAST=1`: without the `git` scenarios, the sync gate); `--write-lint-baseline` accepts current lint errors as known debt |
+| `pyproject.toml`, `uv.lock` (dev group: pytest, pytest-xdist, ruff) | the test environment, installed by uv (`uv sync`, or on the first `tests.py`); the tools stay stdlib-only. Shared fixtures and helpers live in `_tools/conftest.py` (`Repo`, `git_env`, `copy_kb`, markers `git` and `stress`). `ruff check` (pyflakes rules) must stay clean: `tests.py` runs it. `uv run pytest` runs everything, stress included. After changing the dev group: `uv lock` |
 | `python3 .claude/skills/kb-verify/lint.py [PREFIX...]` | contract checks beyond check.py (report only) |
 
 ## Plugin (`.claude-plugin/`)

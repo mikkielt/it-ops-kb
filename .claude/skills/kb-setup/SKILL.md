@@ -14,14 +14,14 @@ Run each command on its own (no `;`, `&&`, pipes into other tools or loops): the
 
 ## 1. Python
 - Run `python3 --version`. Needs 3.9 or newer (the tools use `str.removesuffix` and `random.randbytes`).
-- The tools are stdlib-only: install nothing. If `python3` is missing, stop and tell the user how to install it for their OS.
+- The tools are stdlib-only: install nothing for them. If `python3` is missing, stop and tell the user how to install it for their OS. The tests need uv (`uv --version`); without it, tell the user to install uv (https://docs.astral.sh/uv/) and mark the two test steps SKIPPED.
 
 ## 2. Repository checks
 Run each and record exit code and last line:
 - `python3 _tools/check.py` (expect `errors=0`)
 - `python3 _tools/fetch.py --offline` (expect `mismatch=0 unknown=0`)
-- `python3 _tools/stress_test.py` (expect `0 failed`; takes about 20 s)
-- `python3 _tools/tests.py` (expect `OK`; this is what CI runs, about 40 s)
+- `python3 _tools/stress_test.py` (expect no failures; about 35 s)
+- `python3 _tools/tests.py` (expect no failures; this is what CI runs, about 20 s; it needs uv, which installs pytest from `uv.lock` on first use)
 - `python3 _tools/rag.py eval` (expect `passed` equal to `questions` on the last line: the lookup eval set)
 - `python3 _tools/rag.py pack "kerberos delegation"` (expect a `coverage:` line, fact lines with `path:line` and a `sources:` footer)
 

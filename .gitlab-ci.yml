@@ -1,4 +1,5 @@
-# Minimal CI for it-ops-kb: documentation cohesion, leak detection and KB-* commit trailers. Stdlib Python only.
+# Minimal CI for it-ops-kb: documentation cohesion, leak detection and KB-* commit trailers. The tools are stdlib
+# Python; the tests run with pytest and pytest-xdist, which uv installs from uv.lock (pyproject.toml's dev group).
 # Direct-push model: people push to main (after `kbgit.py sync --push`, which runs the same gate locally); there are
 # no merge requests. CI is the safety net: a pipeline on every branch push and on every tag.
 workflow:
@@ -12,6 +13,12 @@ default:
 
 variables:
   PYTHONDONTWRITEBYTECODE: "1"
+  UV_CACHE_DIR: "$CI_PROJECT_DIR/.uv-cache"
+
+cache:
+  key:
+    files: [uv.lock]
+  paths: [.uv-cache/]
 
 stages: [test]
 
@@ -24,11 +31,13 @@ kb-tests:
     GIT_DEPTH: "0"
   script:
     - git config --global --add safe.directory "$CI_PROJECT_DIR"
+    - pip install --quiet uv
     - python3 _tools/tests.py
 
 tool-stress:
   stage: test
   script:
+    - pip install --quiet uv
     - python3 _tools/stress_test.py
   rules:
     - changes:

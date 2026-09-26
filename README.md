@@ -85,8 +85,8 @@ python _tools/fetch.py --diff --topic auth/kerberos     # re-fetch a topic's sou
 python _tools/fetch.py --diff --dir dsc --full --json   # same for a directory, with unified text diffs, as JSON
 python _tools/fetch.py --diff --older-than 30           # only sources not fetched in 30 days (also --file PATH, --source S123)
 python _tools/fetch.py --status --file auth/kerberos.md # offline: last fetch and change dates
-python _tools/stress_test.py                           # robustness tests of the tools on throwaway kb copies (about 45 s; --scale N, -k NAME)
-python _tools/tests.py                                 # CI: docs cohesion + leak scan (reviewed exceptions in _tools/tests_allowlist.txt)
+python _tools/stress_test.py                           # robustness tests of the tools on throwaway kb copies (about 35 s; --scale N, -k NAME)
+python _tools/tests.py                                 # CI: every test module with pytest via uv, in parallel (leak scan exceptions: _tools/tests_allowlist.txt)
 ```
 
 - `pack`, `facts`, `audit` and `src --cited` read the kb through `_tools/kbfacts.py`, which parses fact units (bullets, table rows, data rows), tags (grammar in its docstring) and ledger entries one way for every tool. `pack` ranks fact lines (BM25 with light stemming; `search` uses the same index and ranking over every line) and prints `coverage: none` when the question's named terms are not in the kb or most key words are missing, `weak` when the best article matches under 60% of the key words, else `good`; untagged lines (printed `(no tag)`) can lift `none` to `weak`, never to `good`. `rag.py eval` checks it against `_tools/lookup_eval.csv`; tests.py runs it.
