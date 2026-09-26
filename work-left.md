@@ -97,7 +97,9 @@ Log: `_census/2026-09-25.csv` (`python3 _tools/census.py summary _census/2026-09
 ## 2. Plugin: install from the real GitLab remote
 The plugin was installed and tested end to end from a local bare repo reached through the SSH url (`git@gitlab.com:mikkielt/it-ops-kb.git`, rewritten by git's `insteadOf`). `claude mcp list` showed `plugin:it-ops-kb:kb` connected, and `claude -p` answered from the kb tools with `path:line` citations and urls.
 
-Not done here:
+Done 2026-09-26: `claude plugin marketplace add git@gitlab.com:mikkielt/it-ops-kb.git` and `plugin install it-ops-kb@it-ops-kb` in a fresh `CLAUDE_CONFIG_DIR` installed version `015468544e24` (the pushed HEAD); `claude mcp list` showed `plugin:it-ops-kb:kb` connected and `kb_mcp.py --status` ran from the cached copy.
+
+Was not done:
 - an install from gitlab.com itself (no SSH key for it in this session);
 - pushing to the GitLab remote (this session pushes to GitHub `mikkielt/it-ops-kb`).
 
@@ -119,7 +121,8 @@ Not done here:
 - https://code.claude.com/docs/en/plugins/org and https://code.claude.com/docs/en/plugins/cli-reference: `extraKnownMarketplaces` + `enabledPlugins`, `--scope project`.
 
 ## 3. Known debt
-- 25 lint errors are recorded in `_tools/lint_baseline.txt` (untagged facts, tags with no source id). Several articles also list header ids their body never cites (lint warnings), left alone because removing them could empty a source's `used_in`.
+- Stress suite disk use (fixed 2026-09-26, `0154685`): `test_stress.py` copied the whole `_cache/` (census clones, 2.6 GB) into each of 14 workers' kb copies, and pytest kept every run: 74 GB filled the disk. Copies now take only the `kbindex-*` files and pytest keeps failed tests' temp dirs only; a full run leaves 37 MB. Old runs may still sit in `$TMPDIR/pytest-of-<user>/` (pytest keeps the last three).
+- Done 2026-09-26: the lint baseline is empty (34 errors fixed in `f9caf47`). Was: 25 lint errors are recorded in `_tools/lint_baseline.txt` (untagged facts, tags with no source id). Several articles also list header ids their body never cites (lint warnings), left alone because removing them could empty a source's `used_in`.
 - Done 2026-09-26: the `_gaps.md` entries naming QS1, QS5 and QS7 now say what QS1a, QS5a and QS7a resolved.
 
 ## 4. Token usage: make lookups deterministic
@@ -129,7 +132,7 @@ Not done here:
 - **Subagent startup:** `kb-lookup` starts at 3.9k tokens.
 - **Review:** `/kb-review-workspace` found all five planted problems in the test host, each with the host line and the kb citation.
 - **Fixed on the way:** the kb server lacked `resultType` (MCP 2026-07-28), so no kb tool loaded from the plugin.
-- **Not done:** an install from gitlab.com itself (see section 2) and a push to GitLab `main`.
+- **Done 2026-09-26:** an install from gitlab.com itself (see section 2) and a push to GitLab `main`.
 - **Retrieval audit done** (`token-usage-report.md`, "Retrieval quality audit"): untagged content and code blocks are searchable now, there is no false `none` on the blind questions, and line recall is 94%.
 - **doc2query pilot done** (`token-usage-report.md`, "doc2query pilot"): pilot line recall 90% -> 97.5%, control unchanged.
   - **Confirmation round (seed 29, fresh arms):** no gain, 95% both ways. The baseline is already 95-98%.
@@ -141,5 +144,5 @@ Earlier; see `token-usage-report.md`, "Re-measurement after the changes":
 
 Still open:
 - Done 2026-09-26: 217 of the 233 unlinked ledger entries carry a `(topic: ...)` marker. The other 16 are headers, "no conflicts found" notes, budget notes and multi-project licence notes, left unlinked on purpose (`python3 _tools/rag.py audit --unlinked`).
-- 13 DOC/COMMUNITY tags without a source id (kb-verify lint, in `_tools/lint_baseline.txt`).
+- Done 2026-09-26: no DOC/COMMUNITY tag without a source id is left (lint baseline empty).
 - Add failed real-world lookups to `_tools/lookup_eval.csv`.

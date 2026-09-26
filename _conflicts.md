@@ -424,6 +424,7 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
   remediation-timeline authority; that is now historical, not current. Both the historical BOD 22-01 timelines
   (2 weeks / 6 months) and the current pointer to BOD 26-04 are recorded in the article; BOD 26-04's own
   remediation timelines were not separately researched. (topic: security/vulnerability-prioritization)
+  - Resolved 2026-09-26: BOD 26-04 Table 1 read from the directive (S-c22robk5) and added to the article; its tiers are 3 days plus forensic triage, 7, 14, 30 and 90 days, and fix on system upgrade (the article's "6-day" tier was wrong and is corrected). The BOD 22-01 timelines stay as history. (topic: security/vulnerability-prioritization)
 
 ## intune/linux-management
 
