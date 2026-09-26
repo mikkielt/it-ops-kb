@@ -241,7 +241,9 @@ quotas/limits, and a runnable MCP-tool example.
 - Related: `agents/own-chatbot-architecture.md` (three agent types overview, A2A/publishing protocols --
   see its own Foundry section for what is not repeated here), `agents/microsoft-agent-framework.md`
   (`FoundryChatClient`/`FoundryToolbox` for hosted agents), `entra/agent-id.md` (the Entra Agent ID
-  platform that provisions Foundry's per-project and per-published-agent identities and blueprints).
+  platform that provisions Foundry's per-project and per-published-agent identities and blueprints),
+  `agents/azure-openai-deployments.md` (the underlying model-deployment layer: deployment types, quota/
+  rate limits, provisioned throughput, API versions, auth/networking -- not repeated here).
 
 ## Examples
 - Create a prompt agent with an MCP tool (`require_approval: "always"`) using the Azure AI Projects

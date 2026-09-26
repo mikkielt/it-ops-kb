@@ -35,3 +35,4 @@ email microsoft-noreply@microsoft.com       # Intune's public noncompliance e-ma
 email nvd-noreply@nist.gov                  # NVD's public API-key sender address (security/vulnerability-prioritization.md)
 email sponsors@odata.bind                   # OData bind annotation in a Graph JSON body, not an address (entra/agent-id.md)
 guid  b27d9cfc-84ad-0af8-9df1-23ee05e8c05d  # public ConfigMgr ServiceCertificate policy id from the Endpoint analytics troubleshooting doc (intune/device-inventory-analytics.md)
+guid  5e0bd9bd-7b93-4f28-af87-19fc36ad61bd  # public Azure built-in role id Cognitive Services OpenAI User (agents/azure-openai-deployments.md)

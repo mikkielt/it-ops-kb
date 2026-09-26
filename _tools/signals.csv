@@ -291,3 +291,6 @@ AI Red Teaming Agent,agents/agent-evaluation
 ToolCallAccuracyEvaluator,agents/agent-evaluation
 userExperienceAnalytics,intune/device-inventory-analytics
 deviceManagementScript,intune/platform-scripts
+DataZoneStandard,agents/azure-openai-deployments
+GlobalProvisionedManaged,agents/azure-openai-deployments
+x-ratelimit-remaining-tokens,agents/azure-openai-deployments

@@ -1,0 +1,10 @@
+type,sku_code,data_processing_location,billing,sla_latency_notes,source
+Global Standard,GlobalStandard,any Azure region,pay-per-token,"highest default quota; broadest region/model coverage; latency variance increases above usage tier",S-psa4dspu
+Global Provisioned,GlobalProvisionedManaged,any Azure region,reserved PTU,"lower and more consistent latency than Global Standard; guaranteed capacity",S-psa4dspu
+Global Batch,GlobalBatch,any Azure region,"50% less than Global Standard, separate enqueued-token quota","24-hour target turnaround; no real-time SLA",S-psa4dspu
+Data Zone Standard,DataZoneStandard,"within Microsoft-defined data zone (US, EU, or APAC)",pay-per-token,"higher default quota than geography-based types; latency variance increases above usage tier",S-psa4dspu
+Data Zone Provisioned,DataZoneProvisionedManaged,"within Microsoft-defined data zone (US, EU, or APAC)",reserved PTU,"data zone compliance plus high, predictable throughput",S-psa4dspu
+Data Zone Batch,DataZoneBatch,"within Microsoft-defined data zone (US, EU, or APAC)","50% less than Global Standard, separate enqueued-token quota","same as Global Batch, scoped to the data zone",S-psa4dspu
+Standard,Standard,within the resource's Azure geography,pay-per-token,"low-to-medium volume, high burstiness; best-effort, no latency SLA",S-psa4dspu
+Regional Provisioned,ProvisionedManaged,within the resource's Azure geography,reserved PTU,"geography compliance plus reserved throughput; higher PTU minimums than global/data zone provisioned",S-psa4dspu
+Developer,DeveloperTier,any Azure region (no residency guarantee),pay-per-token,"fine-tuned model evaluation only; fixed 24-hour lifetime, auto-deleted after; no SLA",S-psa4dspu
