@@ -85,3 +85,4 @@ EV-windows-wi-fi-vpn-profile-intune,"Windows Wi-Fi VPN profile Intune VPNv2 CSP"
 EV-langgraph-checkpointer-options-exist-interrupt-human,What LangGraph checkpointer options exist and how does interrupt/human-in-the-loop resume work?,agents/langgraph.md,good,
 EV-roles-enable-domain-capture-compliance-api,"What roles can enable domain capture and the Compliance API in a Claude Enterprise organization?",claude/enterprise-admin.md,good,
 EV-times-krbtgt-password-reset-wait-between,How many times should the KRBTGT password be reset and how long to wait between resets?,ad/krbtgt-password-reset.md,good,
+EV-group-policy-central-store-admx-update,Group Policy Central Store ADMX update for Windows 11 24H2,gpo/admx-central-store.md,good,

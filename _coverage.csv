@@ -121,6 +121,7 @@ gitlab/mr-approvals,P0,complete,gitlab/mr-approvals.md,7
 gitlab/pipelines-rules,P0,complete,gitlab/pipelines-rules.md,5
 gitlab/protected-branches-tags,P0,complete,gitlab/protected-branches-tags.md,3
 gitlab/variables,P0,complete,gitlab/variables.md,2
+gpo/admx-central-store,P1,partial,gpo/admx-central-store.md,4
 gpo/dsc-group-policy-adapter,P2,partial,gpo/dsc-group-policy-adapter.md,1
 gpo/gpo-export,P2,complete,gpo/gpo-export.md,4
 graph/batching-and-query,P1,complete,graph/batching-and-query.md;graph/change-notification-lifetimes.csv,9
