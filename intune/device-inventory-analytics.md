@@ -4,7 +4,7 @@ priority: P2
 applies_to: "Intune Endpoint analytics, Intune Advanced Analytics (Intune Suite), docs retrieved 2026-09-26"
 retrieved_utc: 2026-09-26
 sources: [S-7dabdnod, S-emqg5tvg, S-rjiy4cip, S-6jy3vnik, S-mldzfsv6, S-sbldpqec, S-mhtox7ch, S-v26wvp2b, S-uiolk6la, S-ylp2o7ml, S-tiumn4r3, S-nwf5cf5q, S-pnhn6vx2]
-status: partial
+status: complete
 ---
 
 # Endpoint analytics and Advanced Analytics (device inventory, scores, anomalies)
@@ -106,7 +106,7 @@ The full property list, KQL device-query entities/limits, and single-/multi-devi
 - Endpoint/Advanced Analytics data is exposed under `deviceManagement/userExperienceAnalytics*` beta Graph resources, e.g. `userExperienceAnalyticsAnomaly`, `userExperienceAnalyticsDeviceTimelineEvents`, `userExperienceAnalyticsRegressionSummary`, `userExperienceAnalyticsResourcePerformance`, `userExperienceAnalyticsImpactingProcess`, `userExperienceAnalyticsAppHealthAppPerformanceByAppVersion`, `userExperienceAnalyticsRemoteConnection`, `userExperienceAnalyticsNotAutopilotReadyDevice` — all `/beta` only (no v1.0 equivalent seen). [DOC S-nwf5cf5q, DOC S-pnhn6vx2]
 - Permissions for these endpoints (delegated or application): `DeviceManagementConfiguration.Read.All` / `.ReadWrite.All`, or `DeviceManagementManagedDevices.Read.All` / `.ReadWrite.All` (exact set varies per resource; resource performance needs only the ManagedDevices scopes). [DOC S-nwf5cf5q, DOC S-pnhn6vx2]
 - `userExperienceAnalyticsAnomaly` and several sibling resources are available in Global, US Gov L4, US Gov L5 (DOD), and China (21Vianet) national clouds. [DOC S-nwf5cf5q]
-- [UNK: whether a v1.0 `userExperienceAnalytics*` surface exists — pages fetched only showed `view=graph-rest-beta`]
+- Re-confirmed 2026-09-26: no v1.0 `userExperienceAnalytics*` resource or method page exists on Microsoft Learn — every `userExperienceAnalyticsAnomaly`/`...AnomalyDevice`/`...AnomalySeverityOverview`/etc. page found resolves only to `view=graph-rest-beta`. [DOC S-nwf5cf5q]
 
 ## Reference
 | Report | Belongs to | Score range | Refresh | Extra licence |

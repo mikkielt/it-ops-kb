@@ -3,8 +3,8 @@ topic: entra/conditional-access-devices
 priority: P1
 applies_to: "Microsoft Entra Conditional Access, device-based grant controls and Filter for devices condition, Microsoft Graph v1.0 conditionalAccessPolicy (docs retrieved 2026-09-26)"
 retrieved_utc: 2026-09-26
-sources: [S-2gcjipq5, S-tkmjbvgn, S-bpayn5ic, S-isovad24, S-frxelebk, S-r7wru3uo, S-evafm3dr, S-hk7ngup4, S-ovycuo7g, S-lsnr7k3y, S504]
-status: partial
+sources: [S-2gcjipq5, S-tkmjbvgn, S-bpayn5ic, S-isovad24, S-frxelebk, S-r7wru3uo, S-evafm3dr, S-hk7ngup4, S-ovycuo7g, S-lsnr7k3y, S504, S-ac6jmj3f, S-qu7z6wlo, S-nuh4ep7w]
+status: complete
 files: [entra/ca-device-filter-properties.csv]
 ---
 
@@ -102,6 +102,7 @@ Content-Type: application/json
 - A Filter for devices exclusion could be added under `conditions.devices` with a rule such as `device.extensionAttribute1 -eq "SAW"` to exempt privileged-access workstations, per the create-policy walkthrough. [DOC S-2gcjipq5]
 - Flip to enforced once report-only results (sign-in log **Report-only** tab, or the Insights workbook) look correct: `PATCH .../policies/{id}` with `"state": "enabled"`. [DOC S-evafm3dr, S-isovad24]
 
-## Open items
-- `builtInControls` enum values (`compliantDevice`, `domainJoinedDevice`, etc.) and the `conditions.devices.deviceFilter` sub-object's exact JSON shape are not directly quoted from a fetched page in this pass (drawn from the create/update method pages plus the concept pages); treat the example's field names as DER from those pages, not verbatim-cited JSON. [UNK: exact conditionalAccessPolicy JSON schema for deviceFilter and the full builtInControls enum, not fetched in full]
+## Additional facts
+- `conditions.devices` is a `conditionalAccessDevices` object with one property, `deviceFilter` (type `conditionalAccessFilter`): `{"deviceFilter": {"@odata.type": "microsoft.graph.conditionalAccessFilter"}}`. `conditionalAccessFilter` has `mode` (`include`/`exclude`) and `rule` (a dynamic-group-membership-rule-style string, e.g. `device.deviceOwnership -eq "Company"`): `{"mode": "String", "rule": "String"}`. [DOC S-ac6jmj3f, S-qu7z6wlo]
+- Full `builtInControls` enum (on `conditionalAccessGrantControls`): `block`, `mfa`, `compliantDevice`, `domainJoinedDevice`, `approvedApplication`, `compliantApplication`, `passwordChange`, `riskRemediation` (added January 2026, requires the `Prefer: include-unknown-enum-members` header), `unknownFutureValue`; `operator` is `AND`/`OR`; `passwordChange` must pair with `mfa` via `AND`, and `riskRemediation` must pair with `authenticationStrength` via `AND` and target `all` applications with only `users`/`applications`/`userRiskLevels` conditions. [DOC S-nuh4ep7w]
 - Token Protection's device-binding mechanics are intentionally not repeated here; see `auth/msal-public-client.md`. [DOC S-tkmjbvgn]

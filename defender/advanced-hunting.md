@@ -3,8 +3,8 @@ topic: defender/advanced-hunting
 priority: P2
 applies_to: "Microsoft Defender XDR advanced hunting (Defender portal, Graph security API, legacy MDE advancedqueries API), docs ms.date through 2026-09"
 retrieved_utc: 2026-09-26
-sources: [S-a7zqfimk, S-oq2hykox, S-gstozrro, S-5nnb4rik, S-l5g4lirw, S-zaka5sgl, S-fnmkxefn, S627, S621, S-bw46kqrh, S-v5mr4bu5, S-osk3cbyu, S-vjtqqsri, S-x7sbbxju, S-4w7mhn5x, S-ktfxaivl, S-bvp2lhfv, S-yjjcwawd, S-r7vkbj73, S-cctucraa, S-3itm74ex, S-jh7vdeyt, S-tnlgchd2]
-status: partial
+sources: [S-a7zqfimk, S-oq2hykox, S-gstozrro, S-5nnb4rik, S-l5g4lirw, S-zaka5sgl, S-fnmkxefn, S627, S621, S-bw46kqrh, S-v5mr4bu5, S-osk3cbyu, S-vjtqqsri, S-x7sbbxju, S-4w7mhn5x, S-ktfxaivl, S-bvp2lhfv, S-yjjcwawd, S-r7vkbj73, S-cctucraa, S-3itm74ex, S-jh7vdeyt, S-tnlgchd2, S-elscbjku]
+status: complete
 files: [defender/advanced-hunting-tables.csv]
 ---
 
@@ -87,7 +87,7 @@ Table reference: `advanced-hunting-tables.csv`.
 - `defender/permissions-limits.md` — MDE API base URI, regional hosts, `WindowsDefenderATP` resource, and the machine-API rate limit (100/min, 1,500/h) that the legacy `advancedqueries` limits (45/min, 1,500/h) sit alongside; see its Reference section for the back-link to this article.
 - Table reference: `advanced-hunting-tables.csv` (table, kind, what it records, key columns, source).
 - `defender/asr-and-antivirus.md` — ASR rule GUIDs/modes/exclusions and the `AsrX...Audited`/`Blocked` advanced-hunting `ActionType` values this article's `DeviceEvents` query pattern matches; see its Reference section for the back-link to this article.
-- Whether `DeviceTvmSoftwareVulnerabilitiesKB` and other KB-suffixed tables carry a distinct retention or refresh cycle from their non-KB counterpart is not documented on the pages read for this topic. [UNK]
+- Re-confirmed 2026-09-26: no distinct retention or refresh cycle is documented anywhere for `DeviceTvmSoftwareVulnerabilitiesKB` (or the other KB-suffixed tables) versus its non-KB counterpart — the table's own reference page states only that it is "populated by records from Microsoft Defender for Endpoint" and, like `DeviceTvmSoftwareVulnerabilities`, is **not ingested into Microsoft Sentinel** (exposed there for schema visibility/autocomplete only, so Sentinel queries against it return no results); both tables otherwise follow the standard advanced-hunting 30-day raw-data retention. [DOC S-elscbjku]
 - `windows/event-forwarding-sysmon.md` — WEF/WEC subscription setup and Sysmon event IDs/channel for devices whose events land in advanced hunting's `DeviceEvents`/`DeviceProcessEvents`-style tables via a SIEM or Sentinel pipeline; see its Reference section for the back-link to this article.
 - `security/vulnerability-prioritization.md` — CVSS/EPSS/KEV/SSVC and the CVE data APIs (NVD, MSRC CVRF) that complement the `DeviceTvm*` exposure/severity data in this article; see its Reference section for the back-link to this article.
 - `logs/microsoft-sentinel.md` — Sentinel analytics rules (Scheduled/NRT), data tiers/retention and ASIM normalization that sit alongside this article's Defender XDR advanced-hunting surface and the XDR default tier's 30-day retention; see its Reference section for the back-link to this article.

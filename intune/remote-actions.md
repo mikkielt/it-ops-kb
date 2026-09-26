@@ -3,8 +3,8 @@ topic: intune/remote-actions
 priority: P1
 applies_to: "Microsoft Intune managedDevice remote actions, Graph v1.0 and beta, docs retrieved 2026-09-26"
 retrieved_utc: 2026-09-26
-sources: [S-mrrxrahv, S-s7srrfx2, S-hzezniod, S-x23bve2k, S-yl6lujud, S-f5w33mek, S-4krmuswc, S-lorbg35k, S-f6okqmo4, S-5jodj5ne, S-qe4vs4v7, S-iyxigs24, S-rsgl4z3v, S-v32a7r4i, S-ed2sjtub, S-oo6cpieu, S-zne522mq, S-cprqxpsz, S-sthrw3uz, S-cjehjzoc, S-3s4pyls4, S-n7sr56za, S-yuwg4jgb, S-2laa2ngs, S616, S609]
-status: partial
+sources: [S-mrrxrahv, S-s7srrfx2, S-hzezniod, S-x23bve2k, S-yl6lujud, S-f5w33mek, S-4krmuswc, S-lorbg35k, S-f6okqmo4, S-5jodj5ne, S-qe4vs4v7, S-iyxigs24, S-rsgl4z3v, S-v32a7r4i, S-ed2sjtub, S-oo6cpieu, S-zne522mq, S-cprqxpsz, S-sthrw3uz, S-cjehjzoc, S-3s4pyls4, S-n7sr56za, S-yuwg4jgb, S-2laa2ngs, S616, S609, S-cunjuxe3]
+status: complete
 files: [intune/remote-actions.csv]
 ---
 
@@ -123,8 +123,7 @@ permission, least to most privileged.
   Desk Operator / School Administrator role grants); others (locateDevice, rotateBitLockerKeys) use the more
   general `DeviceManagementManagedDevices.ReadWrite.All` least-privileged Graph permission without a named
   RBAC permission documented on the API page. [DOC S-f6okqmo4, S-iyxigs24, S-yuwg4jgb]
-- Whether Multi Admin Approval covers actions beyond wipe (e.g. retire, delete individually, or the beta
-  actions) is not stated on the actions' own Graph or admin-center pages. [UNK]
+- Multi Admin Approval (MAA) access policies confirmed to cover, per Intune's own resource list: **Apps** (app deployments, not app protection policies), **Compliance policies**, **Configuration policies** (settings catalog), **Device actions** (wipe, retire, and delete specifically — no other device action, such as locate, restart, or Autopilot reset, is a protectable MAA resource), **Role-based access control** changes, **Scripts** (Windows PowerShell script deployment), **Access Policies** themselves, and **Tenant Configuration** (device categories). MAA enforcement applies to both interactive/delegated admin actions and application-authenticated Graph API calls. [DOC S-cunjuxe3]
 
 ## Reference
 - `auth/audit-log-apis.md` — remote actions issued against a device are recorded as Intune audit events,

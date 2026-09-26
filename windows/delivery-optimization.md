@@ -4,7 +4,7 @@ priority: P2
 applies_to: "Windows 10/11 Delivery Optimization (DeliveryOptimization CSP/GPO); Microsoft Connected Cache for Enterprise and Education (GA)"
 retrieved_utc: 2026-09-26
 sources: [S-7olkz3h6, S-3dmxye5u, S-op3zxbbu, S-yrwncj3y, S-4h5a6snd, S-k64d62id, S-wlvfiru4, S-kyd2lkfv, S-6t23b25h, S-3ul4mkos, S-vil7lhvw, S-ufysm5nk]
-status: partial
+status: complete
 files: [windows/delivery-optimization.csv]
 ---
 
@@ -64,8 +64,8 @@ files: [windows/delivery-optimization.csv]
 - `windows/windows-update-management.md` documents the Update CSP/Autopatch/hotpatch/WUfB-reports surface that rides on top of Delivery Optimization for Windows Update content; this article covers the underlying DO/MCC transport and caching layer shared by updates, Win32 apps, and Microsoft 365 apps. Back-linked from there.
 - `mecm/software-updates.md:67-68` documents ConfigMgr's own Delivery Optimization client setting (boundary-group DO Group IDs, the version-2203 Delta Download interaction); this article is the underlying DO/MCC CSP-and-cache reference for that ConfigMgr integration, and for "Microsoft Connected Cache in Configuration Manager" (the ConfigMgr-hosted MCC variant, out of scope here — see Microsoft's ConfigMgr MCC docs).
 - `windows/winget.md:35` documents WinGet's `network.downloader: do` setting, which routes WinGet package downloads through the same Delivery Optimization client and policy surface documented here.
-- Microsoft Connected Cache for Internet Service Providers (a separate, unrelated public-preview product for ISPs, not for enterprise networks) is out of scope. [UNK: not researched]
-- The DHCP Option 235/234 server-side configuration steps (custom DHCP option definitions) and the full GPO ADMX string table beyond the MDM/CSP names in the CSV were not independently fetched from the DHCP-side documentation. [UNK]
+- Microsoft Connected Cache for Internet Service Providers is a separate, unrelated product for ISPs, not for enterprise networks, and remains out of scope here.
+- DHCP-based Connected Cache discovery: `DOCacheHostSource` (MDM/CSP `./Device/Vendor/MSFT/Policy/Config/DeliveryOptimization/DOCacheHostSource`, GPO "Cache Server Hostname Source") takes `1` = query **DHCP Option 235** for the cache server hostname/IP (comma-separated FQDNs or IPs), or `2` = **DHCP Option 235 Force**, which overrides a statically configured `DOCacheHost`. Separately, `DOGroupIDSource` (peer-selection grouping, not cache-server discovery) supports a value `3` = query **DHCP Option 234** for a GUID used as the Group ID. Precedence when both `DOCacheHost` and `DOCacheHostSource` are set: `DOCacheHostSource=1` lets the static `DOCacheHost` list win; `DOCacheHostSource=2` (Force) makes DHCP Option 235 override it. A misformatted DHCP option value falls back to the `DOCacheHost` policy value if configured. The `LocalPolicyMerge` Windows Firewall setting (often disabled by security baselines, notably in Autopilot) can block the DHCP client from retrieving Option 235 — use static `DOCacheHost` instead in that case. Server-side DHCP scope configuration of custom option 234/235 (as text-type options) is standard DHCP server administration, not a Delivery Optimization-specific procedure, and isn't documented on Delivery Optimization's own pages. [DOC S-7olkz3h6]
 
 ## Examples
 - Configure a pilot device group to use Group download mode with a Connected Cache node, via Intune Graph (Settings Catalog / custom OMA-URI policy, placeholders only):

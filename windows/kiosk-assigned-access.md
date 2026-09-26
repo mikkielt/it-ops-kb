@@ -4,7 +4,7 @@ priority: P2
 applies_to: "Windows 10/11 client (single-app kiosk since 1803, ShellLauncher since 1803/v2, multi-app via provisioning/CSP), Intune kiosk profile template and settings catalog, Microsoft Edge kiosk mode 87+"
 retrieved_utc: 2026-09-26
 sources: [S-c6tea7ux, S-ocgh5a3g, S-snqf6qj3, S-hkbq4xlj, S-grpxcouj, S-mti33mjr, S-pjgeqktu, S-jnbupokh, S-qd4qftlt]
-status: partial
+status: complete
 ---
 
 # Windows kiosk: Assigned Access, AssignedAccess CSP, Shell Launcher, and Intune kiosk profiles
@@ -73,7 +73,7 @@ allowed-apps list is enforced with generated AppLocker rules under the hood.
 ## Reference
 - `intune/configuration-policies.md` — settings catalog and custom OMA-URI delivery mechanics (check-in/refresh cadence, `deviceManagementConfigurationPolicy`, role requirements) that any custom `AssignedAccess` OMA-URI profile or Edge settings-catalog policy in a kiosk deployment relies on. Back-link added there under Reference.
 - `windows/app-control.md` — AppLocker rules generated for a multi-app kiosk's allowed-apps list run under the same rule-collection mechanics documented there (Executable/Packaged apps collections).
-- Whether Intune's Windows 11 multi-app kiosk equivalent (`lock-down-windows-11-to-specific-apps`) and its own settings/limits are the same as the Windows 10 template path was not researched this pass; flagged as a gap. [UNK]
+- Confirmed 2026-09-26: Intune's built-in kiosk template (`Devices > Configuration > Templates > Kiosk`, **Multi app kiosk** mode) is explicitly documented as **Windows 10-only** — every Intune kiosk-template page states "Currently, you can use Intune to configure a multi-app kiosk on Windows 10 devices" and points to the separate, non-Intune-template `lock-down-windows-11-to-specific-apps` procedure for Windows 11. Windows 11 multi-app kiosk is therefore **not** the same settings/limits path as the Windows 10 Intune template — it is a distinct, non-template mechanism (provisioning package / WMI Bridge / MDM policy driven directly by the `AssignedAccess` CSP's Windows 11 multi-app XML schema, not the Intune UI wizard). [DOC S-pjgeqktu]
 
 ## Examples
 Single-app kiosk, AssignedAccess CSP custom OMA-URI (auto-logon local account running Microsoft Edge full-screen against an intranet site):

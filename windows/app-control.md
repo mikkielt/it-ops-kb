@@ -3,8 +3,8 @@ topic: windows/app-control
 priority: P2
 applies_to: "Windows 10/11 clients, Windows Server 2016+ (feature availability varies by version; CiTool.exe requires Windows 11 22H2+ or Windows Server 2025)"
 retrieved_utc: 2026-09-26
-sources: [S-whvei7wr, S-k6lcrjix, S-bdcygezh, S-fq54pkea, S-wk4roik4, S-vawypjoe, S-ickvylma, S-frmf22fa, S-salso3t6, S2202]
-status: partial
+sources: [S-whvei7wr, S-k6lcrjix, S-bdcygezh, S-fq54pkea, S-wk4roik4, S-vawypjoe, S-ickvylma, S-frmf22fa, S-salso3t6, S2202, S-oartdvpr]
+status: complete
 ---
 
 # App Control for Business (WDAC) policy rules and AppLocker comparison
@@ -71,7 +71,7 @@ status: partial
 - To remove an OMA-URI-deployed policy on 1903+, first replace it with an "Allow All"-style policy (e.g. the `AllowAll.xml` example) so nothing is blocked, then delete it from Intune; the change fully takes effect after the next reboot. [DOC S2202]
 - The Microsoft vulnerable driver blocklist has been enabled by default since the Windows 11 2022 update; it is also enforced (independent of its own on/off switch) whenever HVCI, Smart App Control, or S mode is active, except on Windows Server 2016. It updates quarterly, plus via monthly Windows updates. [DOC S-salso3t6]
 - To force the latest blocklist immediately: download the App Control policy refresh tool and the blocklist binaries, rename the chosen (audit or enforced) file to `SiPolicy.p7b`, copy it to `%windir%\system32\CodeIntegrity`, then run the refresh tool; verify via a 3099 event in CodeIntegrity/Operational whose PolicyNameBuffer/PolicyIdBuffer match the blocklist policy's Name/ID. Already-running vulnerable drivers are only blocked after a reboot. [DOC S-salso3t6]
-- Whether the AppLocker CSP forcing OOBE reboot also applies to non-OOBE first deployments, and the exact GA date/name of the "improved Intune App Control experience", are not stated on the pages read. [UNK]
+- Re-confirmed 2026-09-26: the AppLocker CSP's forced reboot is not limited to OOBE/first deployment — Microsoft Learn's own MDM deployment guidance states "Deploying policies via the AppLocker CSP will force a reboot during OOBE" for initial deployment *and* separately that "the AppLocker CSP will schedule a reboot when a policy is applied **or when a deletion occurs**" using the `CodeIntegrity/Policy` URI generally, and the ApplicationControl CSP overview confirms the (newer) ApplicationControl CSP "correctly detects the presence of the no-reboot option" — implying AppLocker CSP, unlike ApplicationControl CSP, always reboots regardless of OOBE. The "improved Intune App Control experience" (`intune/protect/endpoint-security-app-control-policy`) remains **public preview** with no GA date published on the fetched pages. [DOC S-oartdvpr]
 
 ## Reference
 Related: `windows/smart-app-control.md` (Smart App Control is built on App Control for Business and reuses the same CiTool, ISG, and CodeIntegrity/Operational 3076/3077 events documented here).

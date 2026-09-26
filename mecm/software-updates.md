@@ -3,8 +3,8 @@ topic: mecm/software-updates
 priority: P1
 applies_to: "ConfigMgr current branch (sum/* docs, checked 2026-09-26)"
 retrieved_utc: 2026-09-26
-sources: [S-3srrd54u, S-52r2vxes, S-qhg622vy, S-o6zrfc26, S-db7ytzl6, S-kwxqaq5a, S-clekmxkf, S-zmtevvp6, S-z37n7cfj, S-n25n5lgu, S-ydpvgyqk, S-f62oqjxw, S-7opbzkmt, S-2w3gpaiz]
-status: partial
+sources: [S-3srrd54u, S-52r2vxes, S-qhg622vy, S-o6zrfc26, S-db7ytzl6, S-kwxqaq5a, S-clekmxkf, S-zmtevvp6, S-z37n7cfj, S-n25n5lgu, S-ydpvgyqk, S-f62oqjxw, S-7opbzkmt, S-2w3gpaiz, S-fq4xtwh3, S-ix237xay]
+status: complete
 ---
 
 # ConfigMgr software updates: SUP, sync, ADRs, maintenance windows, WSUS maintenance
@@ -97,8 +97,8 @@ and site-server log files for every stage below are already in `mecm/log-files.c
 - `intune/co-management.md` lists the Windows Update policies workload that moves control between the two surfaces documented in this article and `windows/windows-update-management.md`.
 - `windows/delivery-optimization.md` documents the Delivery Optimization CSP settings and Microsoft Connected Cache for Enterprise referenced by the boundary-group DO Group ID client setting above (Facts, "Delivery Optimization integration").
 - `mecm/log-files.csv` has the full log reference for every component named above (WUAHandler.log, UpdatesDeployment.log, UpdatesHandler.log, UpdatesStore.log, WCM.log, wsyncmgr.log, ruleengine.log, ScanAgent.log, ServiceWindowManager.log, PatchDownloader.log, SUPSetup.log, WSUSCtrl.log, SMS_ISVUPDATES_SYNCAGENT.log, DeltaDownload.log, StateMessage.log) -- cited by row above rather than duplicated here.
-- Exact per-version history of every ADR wizard page option and the full `SMS_AutoDeployment`/`SMS_SUPComponent` WMI class property lists were not reviewed in this pass. [UNK: not yet reviewed in depth]
-- Orchestration group WMI/Graph automation surface (beyond the PowerShell cmdlets implied by the console wizard) was not confirmed against a fetched reference page. [UNK]
+- `SMS_AutoDeployment` (the ADR WMI class) key properties: `AutoDeploymentID` (key, SInt32), `Name`, `Description`, `AutoDeploymentEnabled` (Boolean, default `true`), `AutoDeploymentProperties`/`ContentTemplate`/`DeploymentTemplate`/`UpdateRuleXML` (XML strings), `IsServicingPlan` (Boolean, default `true`), `Schedule`, `LastRunTime`, `LastErrorCode`/`LastErrorTime` (default error code `0`); its two methods are `EvaluateAutoDeployment` and `EvaluateAllAutoDeployment`. The related `SMS_ADRDeploymentSettings` class carries per-deployment ADR settings: `RuleID`, `AssociatedDeploymentID`, `CollectionID`/`CollectionName`, `DeploymentNumber`, `DeploymentTemplate`, `Enabled`. Per-version history of every ADR wizard page option, and a distinct `SMS_SUPComponent` class, were not found on the fetched WMI reference pages (not exhaustively reviewed). [DOC S-fq4xtwh3]
+- Orchestration groups are configured via `Set-CMOrchestrationGroup` (module `ConfigurationManager`; parameters `-Name`/`-Id`, `-NewName`, `-Description`, `-OrchestrationType` [`Number`/`Percentage`/`Sequence`], `-OrchestrationValue`, `-OrchestrationTimeOutMin`, `-MaxLockTimeOutMin`, `-PreScript`/`-PreScriptTimeoutSec`, `-PostScript`/`-PostScriptTimeoutSec`, `-MemberResourceIds`) alongside `Get-`/`New-`/`Remove-CMOrchestrationGroup`; the cmdlet returns an `SMS_MachineOrchestrationGroup` WMI object. No separate Graph automation surface for orchestration groups was found — they are PowerShell/WMI/console-only. [DOC S-ix237xay]
 
 ## Examples
 - Create a scheduled Patch Tuesday-style ADR that adds Critical/Security updates for Windows Server to an existing deployment package, on a weekly schedule (fixture names, collection `PL-SRV-0042`'s collection):

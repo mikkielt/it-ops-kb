@@ -3,8 +3,8 @@ topic: windows/laps
 priority: P2
 applies_to: "Windows LAPS (Windows 10 22H2+/11 21H2+/Server 2019+ with April 2023 update; automatic account management and passphrases need Windows 11 24H2/Server 2025); Microsoft Entra ID; Intune"
 retrieved_utc: 2026-09-26
-sources: [S1226, S-twjwzzdw, S-djs7xprf, S-d67v4ujp, S-pqlq3zuw, S-krw7psw7, S-rsgl4z3v, S-pfq3p4yz, S-b2kbbt73, S-kqvek5fm, S-m6dgyqa2, S-jmzxsdjr, S-lnzspig4]
-status: partial
+sources: [S1226, S-twjwzzdw, S-djs7xprf, S-d67v4ujp, S-pqlq3zuw, S-krw7psw7, S-rsgl4z3v, S-pfq3p4yz, S-b2kbbt73, S-kqvek5fm, S-m6dgyqa2, S-jmzxsdjr, S-lnzspig4, S-tn4hpddq, S-4as52t5e]
+status: complete
 files: [windows/laps.csv]
 ---
 
@@ -65,7 +65,7 @@ files: [windows/laps.csv]
 - `auth/enterprise-access-model.md:19,30` treats Windows LAPS as a universal control alongside PAWs for the enterprise access model's control and management planes; this article is the detailed LAPS reference for that claim.
 - `entra/bitlocker-key-deletion.md:22,25` documents that soft-deleting an Entra device (30-day preview window) keeps its LAPS password recoverable, while a hard delete or immediate delete of a non-preview device type loses it permanently — consistent with the Entra-deletion fact above.
 - `intune/endpoint-privilege-management.md` documents Endpoint Privilege Management (EPM), a complementary least-privilege control (temporary application elevation instead of a rotated local admin account) organizations typically deploy alongside Windows LAPS when removing standing local admin rights.
-- Legacy Microsoft LAPS emulation mode, migration steps, and troubleshooting guidance (error-code-to-cause tables) are out of scope here; see `laps-scenarios-legacy` and the Windows LAPS troubleshooting guidance page for a future refresh. [UNK: full troubleshooting error-code table not yet reviewed]
+- Fetched 2026-09-26: Microsoft's official Windows LAPS troubleshooting guide documents specific event-ID-to-cause/resolution pairs, including **10012** (AD schema not extended for LAPS/legacy-LAPS attributes — resolve with `Update-LapsADSchema` or, in legacy emulation, `Update-AdmPwdADSchema`), **10013** (managed local admin account not found — configure "Name of administrator account to manage" or verify the account exists pre-24H2), **10017** (password not written to AD — a status event; check earlier events 10003-10005), **10019** (local password update failed — check for resource exhaustion or a third-party password filter), **10025**/**10026** (Entra/Azure discovery or auth failure — check `dsregcmd /status`, PRT, proxy), **10049** (post-authentication reboot action failed), **10056** (no writable domain controller found — `nltest /dsgetdc`), **10057** (LDAP bind failure — `nltest /sc_query`, rejoin domain), **10065** (`LDAP_INSUFFICIENT_RIGHTS` writing the legacy password attribute — run `Set-LapsADComputerSelfPermission`). Legacy-to-Windows-LAPS migration removes the legacy client via `msiexec.exe /q /uninstall {97E2CA7B-B657-4FF7-A6DB-30ECC73E1E28}` (MSI install) or by unregistering/deleting `AdmPwd.dll` (manual CSE install) and cleaning the `Winlogon\GPExtensions\{D76B9641-3288-4f75-942D-087DE603E3EA}` registry key. [DOC S-tn4hpddq, S-4as52t5e]
 - `intune/remote-actions.md` documents the Graph `rotateLocalAdminPassword` (beta) remote action that manually triggers an out-of-band rotation of the password this article's policy governs.
 
 ## Examples

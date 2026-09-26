@@ -36,3 +36,6 @@ email nvd-noreply@nist.gov                  # NVD's public API-key sender addres
 email sponsors@odata.bind                   # OData bind annotation in a Graph JSON body, not an address (entra/agent-id.md)
 guid  b27d9cfc-84ad-0af8-9df1-23ee05e8c05d  # public ConfigMgr ServiceCertificate policy id from the Endpoint analytics troubleshooting doc (intune/device-inventory-analytics.md)
 guid  5e0bd9bd-7b93-4f28-af87-19fc36ad61bd  # public Azure built-in role id Cognitive Services OpenAI User (agents/azure-openai-deployments.md)
+guid  f9dfba6f-7430-4214-a666-342b3d3d0d62  # public Azure Policy definition id "Configure Azure Arc-enabled Servers to enable automatic upgrades" (windows/azure-arc-servers.md)
+guid  97e2ca7b-b657-4ff7-a6db-30ecc73e1e28  # public legacy Microsoft LAPS MSI product code from Microsoft's own migration docs (windows/laps.md)
+guid  d76b9641-3288-4f75-942d-087de603e3ea  # public legacy Microsoft LAPS GPExtensions CSE class id from Microsoft's own migration/troubleshooting docs (windows/laps.md)

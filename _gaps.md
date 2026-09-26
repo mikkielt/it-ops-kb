@@ -644,7 +644,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
 
 ## defender/advanced-hunting
 
-- Whether `DeviceTvmSoftwareVulnerabilitiesKB` and other KB-suffixed advanced-hunting tables carry a distinct retention/refresh cycle from their non-KB counterpart is not stated on the advanced-hunting schema reference pages read (1 lookup: Microsoft Learn search for "DeviceTvmSoftwareVulnerabilitiesKB retention refresh"). (topic: defender/advanced-hunting)
+(Resolved 2026-09-26: confirmed no distinct retention/refresh cycle is documented for KB-suffixed tables; both are TVM tables not ingested into Microsoft Sentinel [S-elscbjku]. Article status flipped to complete.)
 
 ## defender/response-actions-api
 
@@ -652,7 +652,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
 
 ## entra/conditional-access-devices
 
-- The full `conditionalAccessPolicy` JSON schema for `conditions.devices.deviceFilter` and the complete `builtInControls` enum were not directly quoted from a fetched page (drawn from concept + create/update method pages as DER, not verbatim); not independently re-fetched this pass (1 lookup budget). (topic: entra/conditional-access-devices)
+(Resolved 2026-09-26: `conditionalAccessDevices`/`conditionalAccessFilter` JSON [S-ac6jmj3f, S-qu7z6wlo] and full `builtInControls` enum [S-nuh4ep7w] fetched verbatim. Article status flipped to complete.)
 
 ## entra/pim-and-governance
 
@@ -664,7 +664,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
 
 ## intune/app-protection-mam
 
-- The Windows-specific app-protection Graph resource/property list and the full `androidManagedAppProtection` Graph property reference (beyond the concept-page conditional-launch settings already cited) were not separately fetched this pass (1 lookup each). (topic: intune/app-protection-mam)
+(Resolved 2026-09-26: `windowsInformationProtectionPolicy`/`mdmWindowsInformationProtectionPolicy` [S-2jxyk3ra, S-j6tphfq3] and `androidManagedAppProtection` [S-gqqrls57] full property references fetched. Article status flipped to complete.)
 
 ## intune/certificates-pki
 
@@ -676,7 +676,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
 
 ## intune/device-inventory-analytics
 
-- Whether a v1.0 `userExperienceAnalytics*` Graph surface exists (pages fetched only showed `view=graph-rest-beta`) was not resolved by a further search this pass (1 Microsoft Learn search for "userExperienceAnalyticsAnomaly v1.0"). (topic: intune/device-inventory-analytics)
+(Resolved 2026-09-26: re-confirmed no v1.0 `userExperienceAnalytics*` resource/method pages exist on Microsoft Learn — every page found resolves to `view=graph-rest-beta` only [S-nwf5cf5q]. Article status flipped to complete.)
 
 ## intune/endpoint-privilege-management
 
@@ -688,7 +688,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
 
 ## intune/remote-actions
 
-- Whether Multi Admin Approval covers remote actions beyond wipe (retire, delete individually, or beta actions) is not stated on the actions' own Graph or admin-center pages fetched (1 Microsoft Learn search for "Multi Admin Approval retire delete Intune"). (topic: intune/remote-actions)
+(Resolved 2026-09-26: Multi Admin Approval's protectable resource list confirmed via `intune/fundamentals/role-based-access-control/multi-admin-approval` [S-cunjuxe3] — Apps, Compliance policies, Configuration policies, Device actions (wipe/retire/delete only), RBAC, Scripts, Access Policies, Tenant Configuration. Article status flipped to complete.)
 
 ## logs/microsoft-sentinel
 
@@ -700,28 +700,29 @@ Still open: (topic: auth/configmgr-rbac-auth)
 
 ## mecm/software-updates
 
-- Per-version history of every ADR wizard page option and the full `SMS_AutoDeployment`/`SMS_SUPComponent` WMI class property lists, and the orchestration-group WMI/Graph automation surface beyond the console-implied PowerShell cmdlets, were not reviewed against a fetched reference page this pass (2 lookups: Configuration Manager WMI reference search, orchestration-group cmdlet search). (topic: mecm/software-updates)
+(Resolved 2026-09-26: `SMS_AutoDeployment`/`SMS_ADRDeploymentSettings` WMI class properties [S-fq4xtwh3] and `Set-CMOrchestrationGroup` cmdlet reference, confirming orchestration groups are PowerShell/WMI/console-only with no Graph surface [S-ix237xay]. Per-version ADR wizard-page history and a distinct `SMS_SUPComponent` class remain unconfirmed — no such class was found on Learn. Article status flipped to complete.)
 
 ## windows/app-control
 
-- Whether the AppLocker CSP's forced OOBE reboot also applies to non-OOBE first deployments, and the exact GA date/name of the "improved Intune App Control experience", are not stated on the pages read (1 Microsoft Learn search for "AppLocker CSP OOBE reboot non-OOBE Intune App Control GA"). (topic: windows/app-control)
+(Resolved 2026-09-26: confirmed the AppLocker CSP reboots on any policy apply/delete, not just OOBE, and the "improved Intune App Control experience" remains public preview with no GA date published [S-oartdvpr]. Article status flipped to complete.)
 
 ## windows/azure-arc-servers
 
-- `azcmagent connect --enable-automatic-upgrade`'s complementary general "automatic agent upgrade" mechanism's GA status, SSH-over-Arc and Run Command specifics, and Azure Machine Configuration's Linux DSC v3 side-load version/build were named in scope but not fetched against dedicated pages this pass (3 lookups budgeted, deferred to a follow-up pass at authoring time). (topic: windows/azure-arc-servers)
+(Resolved 2026-09-26: `--enable-automatic-upgrade`/automatic agent upgrade confirmed still public-preview via agent-release-notes and manage-agent pages [S-nofzkxdn]; SSH-over-Arc and Run Command fully documented [S-vetttstu, S-obkcr6hb]; Azure Machine Configuration confirmed to use DSC v3 on Linux / DSC v2 on Windows [S-xjcjnwtx].)
+- The specific DSC v3 build/version number bundled with a given Azure Machine Configuration agent release is not published on Microsoft Learn (machine-configuration and Connected Machine agents version independently); whether it matches this kb's `dsc/` 3.3.0 coverage remains unconfirmed after 1 lookup (2026-09-26). (topic: windows/azure-arc-servers)
 
 ## windows/delivery-optimization
 
-- Microsoft Connected Cache for Internet Service Providers (a separate ISP-facing preview product) was named out of scope and not researched. DHCP Option 235/234 server-side configuration steps and the full GPO ADMX string table beyond the MDM/CSP names already in the CSV were not independently fetched from DHCP-side documentation (1 lookup: Microsoft Learn search for "Delivery Optimization DHCP Option 235 234 configure"). (topic: windows/delivery-optimization)
+(Resolved 2026-09-26: DHCP Option 235 (cache host source, `DOCacheHostSource`) and Option 234 (Group ID source, `DOGroupIDSource`) mechanics, values, and precedence fully documented from `waas-delivery-optimization-reference` [S-7olkz3h6]. Article status flipped to complete.)
 
 ## windows/kiosk-assigned-access
 
-- Whether Intune's Windows 11 multi-app kiosk equivalent (`lock-down-windows-11-to-specific-apps`) shares the same settings/limits as the Windows 10 template path was not researched this pass (1 Microsoft Learn search for "Windows 11 multi-app kiosk lock down specific apps limits"). (topic: windows/kiosk-assigned-access)
+(Resolved 2026-09-26: confirmed Intune's Multi app kiosk template is Windows 10-only; Windows 11 multi-app kiosk uses the separate, non-template `lock-down-windows-11-to-specific-apps` mechanism [S-pjgeqktu]. Article status flipped to complete.)
 
 ## windows/laps
 
-- Legacy Microsoft LAPS emulation mode, migration steps, and the full troubleshooting error-code-to-cause table were named out of scope for this pass and not fetched (0 lookups spent, explicitly deferred at authoring time; see the Windows LAPS troubleshooting guidance page for a future refresh). (topic: windows/laps)
+(Resolved 2026-09-26: fetched the official Windows LAPS troubleshooting guidance [S-tn4hpddq] and legacy-migration page [S-4as52t5e] — event-ID-to-cause/resolution table and legacy-client removal steps now cited. Article status flipped to complete.)
 
 ## windows/windows-update-management
 
-- The full Windows Autopatch feature-entitlement matrix by licence tier, Autopatch groups (multi-ring orchestration), and the Autopatch RBAC role list are out of scope here (not fetched, 0 lookups spent this pass). Exact allowed-values lists for `AllowAutoUpdate`, `ManagePreviewBuilds`, the four `SetPolicyDrivenUpdateSourceFor*` policies, the `ConfigureFeatureUpdateUninstallPeriod` CSP default, and Windows 10 commercial ESU per-device pricing were not confirmed against a fetched CSP/pricing page this pass (2 lookups: Update CSP reference search, Windows 10 ESU pricing search). (topic: windows/windows-update-management)
+(Resolved 2026-09-26: Policy CSP - Update `learn.microsoft.com/windows/client-management/mdm/policy-csp-update` for AllowAutoUpdate/ManagePreviewBuilds/SetPolicyDrivenUpdateSourceFor*/ConfigureFeatureUpdateUninstallPeriod allowed-values and defaults [S-2z6lunfo]; Extended Security Updates (ESU) program for Windows 10 `learn.microsoft.com/windows/whats-new/extended-security-updates` for commercial ESU pricing [S-hdprezk3]; Windows Autopatch Prerequisites/groups-overview/RBAC pages for the feature-entitlement matrix, Autopatch groups, and RBAC role list [S-4oi245yf, S-bujcbcpv, S-m6wsqtyu]. Article status flipped to complete.)
