@@ -31,7 +31,7 @@ EV-us-npi-recognizer-presidio-enabled-default,is the US NPI recognizer in Presid
 EV-registry-setting-hide-defender-av-exclusions,registry setting to hide Defender AV exclusions from local users,security/settings-crosswalk.csv,good,yes
 EV-bitlocker-policy-block-new-dma-devices,BitLocker policy to block new DMA devices while the PC is locked,security/settings-crosswalk.csv,good,yes
 EV-dsregcmd-credential-type-mean-sso-state,dsregcmd what does Credential Type mean in the SSO state section,entra/dsregcmd-fields.csv,good,yes
-EV-okta-scim-provisioning-map-groups-application,How does Okta SCIM provisioning map groups to application roles?,,weak,
+EV-okta-scim-provisioning-map-groups-application,How does Okta SCIM provisioning map groups to application roles?,claude/enterprise-admin.md,good,
 EV-terraform-azurerm-resource-creates-log-analytics,Which Terraform azurerm resource creates a Log Analytics workspace?,logs/microsoft-sentinel.md,good,
 EV-filter-sort-entra-devices-last-sign,can you filter or sort Entra devices by last sign-in date,graph/csdl-device.md,good,yes
 EV-microsoft-security-baseline-setting-powershell-script,is there a Microsoft security baseline setting for PowerShell script block invocation logging?,security/settings-crosswalk.csv,good,yes
@@ -83,3 +83,4 @@ EV-github-copilot-admin-policies-content-exclusion,"What GitHub Copilot admin po
 EV-configure-windows-kiosk-assigned-access,How do I configure a Windows kiosk with Assigned Access?,windows/kiosk-assigned-access.md,good,
 EV-windows-wi-fi-vpn-profile-intune,"Windows Wi-Fi VPN profile Intune VPNv2 CSP",intune/network-profiles.md,good,
 EV-langgraph-checkpointer-options-exist-interrupt-human,What LangGraph checkpointer options exist and how does interrupt/human-in-the-loop resume work?,agents/langgraph.md,good,
+EV-roles-enable-domain-capture-compliance-api,"What roles can enable domain capture and the Compliance API in a Claude Enterprise organization?",claude/enterprise-admin.md,good,

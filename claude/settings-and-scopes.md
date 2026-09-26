@@ -97,6 +97,9 @@ precedence system those rules live in). `claude/hooks.md` — hook event types a
 `allowManagedHooksOnly`/`disableAllHooks` and the security-approval dialog for managed hook delivery).
 
 Back-links added to `claude/managed-mcp.md` and `claude/permissions-mcp.md` Reference sections.
+`claude/enterprise-admin.md` — console-level org administration (SSO, SCIM, roles, domain capture, Compliance API,
+usage analytics) at the claude.ai admin-console layer, a separate control plane from this article's file/MDM-based
+managed-settings delivery.
 `claude/agent-sdk.md` — `ClaudeAgentOptions.setting_sources`/`Options.settingSources` controls which of these
 filesystem settings sources (user/project/local) an embedded Agent SDK session loads; endpoint-managed policy and
 server-managed settings load regardless of that option, same as for the CLI.
