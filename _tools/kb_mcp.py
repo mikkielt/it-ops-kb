@@ -37,9 +37,10 @@ requires. Only JSON-RPC messages go to stdout; the server exits on EOF.
 import contextlib, csv, io, json, os, re, subprocess, sys, threading
 
 TOOLS = os.path.dirname(os.path.abspath(__file__))
-KB = os.path.dirname(TOOLS)
 sys.path.insert(0, TOOLS)
 import rag, kbcommon, kbfacts  # noqa: E402
+
+KB = kbcommon.KB  # KB_ROOT (a second kb with the same layout, e.g. a team's own facts), else this repository
 
 NAME, VERSION = "kb", "1.2.0"
 MODERN = "2026-07-28"
@@ -58,7 +59,12 @@ INSTRUCTIONS = (
     "and the url from the pack's sources footer. Single facts: call kb_pack yourself; several parts: one kb_pack with "
     "questions=[...]. Use the kb-lookup agent only for long research whose output would fill your context. Never start a general-purpose agent for a "
     "kb lookup. These tools hold documentation facts, not live device or directory data.")
+if KB != kbcommon.HOME:  # a second kb served with KB_ROOT: its own name; the verdict and tag rules are the same
+    INSTRUCTIONS = (f"A kb with it-ops-kb's layout at {KB} (KB_ROOT), served by the it-ops-kb tools: a team's own facts, "
+                    "separate from it-ops-kb. " + INSTRUCTIONS.split("AI agents). ", 1)[1])
 DOCS = "Documentation facts from it-ops-kb (not live device or directory data). "
+if KB != kbcommon.HOME:
+    DOCS = f"Documentation facts from the kb at {KB} (KB_ROOT; not live device or directory data). "
 FORMAT = {"type": "string", "enum": ["concise", "detailed"],
           "description": "concise: fact lines with path:line and tag, no url footer; detailed: full text and urls"}
 
@@ -349,7 +355,7 @@ def error(msg_id, code, message, data=None):
 
 
 def server_info():
-    return {"name": NAME, "title": "it-ops-kb", "version": VERSION}
+    return {"name": NAME, "title": "it-ops-kb" if KB == kbcommon.HOME else f"kb at {KB} (KB_ROOT)", "version": VERSION}
 
 
 def handle(msg):
@@ -419,7 +425,7 @@ def serve(stdin=None, stdout=None):
             stdout.flush()
 
 
-DOCS_MCP = os.path.join(KB, ".claude-plugin", "it-ops-kb-docs", ".mcp.json")
+DOCS_MCP = os.path.join(kbcommon.HOME, ".claude-plugin", "it-ops-kb-docs", ".mcp.json")
 
 
 def register_local():
@@ -431,14 +437,14 @@ def register_local():
     code = 0
     for name, cfg in servers.items():
         try:
-            have = subprocess.run(["claude", "mcp", "get", name], cwd=KB, capture_output=True, text=True, timeout=60)
+            have = subprocess.run(["claude", "mcp", "get", name], cwd=kbcommon.HOME, capture_output=True, text=True, timeout=60)
         except OSError:
             print("the claude CLI is not installed: nothing registered", file=sys.stderr)
             return 1
         if have.returncode == 0:
             print(f"{name}: already registered")
             continue
-        p = subprocess.run(["claude", "mcp", "add-json", "--scope", "local", name, json.dumps(cfg)], cwd=KB,
+        p = subprocess.run(["claude", "mcp", "add-json", "--scope", "local", name, json.dumps(cfg)], cwd=kbcommon.HOME,
                            capture_output=True, text=True, timeout=60)
         print(f"{name}: " + ("registered (local scope)" if p.returncode == 0 else f"failed: {(p.stderr or p.stdout).strip()}"))
         code = code or p.returncode

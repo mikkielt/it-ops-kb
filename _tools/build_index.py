@@ -30,7 +30,7 @@ import argparse, csv, io, os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import kbcommon, kbid  # noqa: E402
 
-KB = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+KB = kbcommon.KB  # KB_ROOT, else this repository
 EXTRA = os.path.join("_tools", "index_extra.csv")
 COVERAGE_FIELDS = ["topic", "priority", "status", "files", "n_sources"]
 START, END = "<!-- coverage:start -->", "<!-- coverage:end -->"

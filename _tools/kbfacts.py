@@ -35,9 +35,10 @@ import array, bisect, csv, functools, hashlib, io, json, math, os, re, sqlite3, 
 from collections import Counter, defaultdict
 
 TOOLS = os.path.dirname(os.path.abspath(__file__))
-KB = os.path.dirname(TOOLS)
 sys.path.insert(0, TOOLS)
 import kbcommon, kbid  # noqa: E402
+
+KB = kbcommon.KB  # KB_ROOT, else this repository (kbcommon)
 
 KINDS = ("DOC", "DER", "COMMUNITY", "UNK")
 SKIP_DIRS = {"_tools", "_private", "_cache", "_census", "artifacts"}
@@ -125,8 +126,8 @@ def fingerprint():
     if _FP[1] is not None and now - _FP[0] < FP_MEMO:
         return _FP[1]
     h = hashlib.sha1(f"{INDEX_VERSION}|{os.environ.get('KB_DOC2QUERY', '')}".encode())
-    extra = ["_sources.csv", *INDEX_FILES, "_tools/aliases.csv", "_tools/signals.csv",
-             "_tools/doc2query/expansions.csv", "_tools/kbfacts.py", "_tools/kbid.py"]
+    extra = ["_sources.csv", *INDEX_FILES, ALIASES, SIGNALS, kbcommon.data_path("doc2query/expansions.csv"),
+             os.path.join(TOOLS, "kbfacts.py"), os.path.join(TOOLS, "kbid.py")]  # absolute: join(KB, abs) is abs
     for rel in list(kb_files()) + extra:
         try:
             st = os.stat(os.path.join(KB, rel))
@@ -425,7 +426,7 @@ def terms(text, camel=True):
     return out
 
 
-ALIASES = os.path.join(TOOLS, "aliases.csv")
+ALIASES = kbcommon.data_path("aliases.csv", shared=True)
 ALIAS_WEIGHT = 0.5  # an alias the question did not use counts half as much as a word it did
 TITLE_WEIGHT = 2    # the article title counts twice in each of its units
 SUMMARY_WEIGHT = 0.1  # the article's Summary text is indexed into each of its units at this weight
@@ -489,7 +490,7 @@ def summary_text(rel):
 
 def expansions():
     """{fact key: [generated questions]} from _tools/doc2query/expansions.csv; {} when absent or KB_DOC2QUERY=0."""
-    path = os.path.join(TOOLS, "doc2query", "expansions.csv")
+    path = kbcommon.data_path("doc2query/expansions.csv")
     if os.environ.get("KB_DOC2QUERY") == "0" or not os.path.exists(path):
         return {}
     out = defaultdict(list)
@@ -736,7 +737,9 @@ class Prefix(Store):
 def index_path(fp):
     """Where the index for fingerprint `fp` lives, or None when KB_INDEX=0: KB_INDEX (a directory), else the
     plugin's data directory (CLAUDE_PLUGIN_DATA, survives plugin updates), else _cache/ in the kb, else a temp
-    directory. One file per fingerprint and doc2query mode, so a new index never replaces a file a server has open."""
+    directory. One file per fingerprint and doc2query mode, so a new index never replaces a file a server has open.
+    A kb given by KB_ROOT names its files `kbindex-r<root hash>-...`, so two roots can share CLAUDE_PLUGIN_DATA
+    without pruning each other's index (store())."""
     where = os.environ.get("KB_INDEX", "")
     if where == "0":
         return None
@@ -744,7 +747,18 @@ def index_path(fp):
         where = os.environ.get("CLAUDE_PLUGIN_DATA") or os.path.join(KB, "_cache")
         if not _writable(where):
             where = os.path.join(tempfile.gettempdir(), "it-ops-kb-" + hashlib.sha1(KB.encode()).hexdigest()[:8])
-    return os.path.join(where, f"kbindex-{fp[:16]}.sqlite")
+    return os.path.join(where, f"kbindex-{_root_key()}{fp[:16]}.sqlite")
+
+
+def _root_key():
+    """'' for this repository, else `r<8 hex>-` for the KB_ROOT kb (the fingerprint is hex, so never starts with r)."""
+    return "" if KB == kbcommon.HOME else "r" + hashlib.sha1(KB.encode()).hexdigest()[:8] + "-"
+
+
+def _same_root(name):
+    """Whether an index file name belongs to the current root (store() prunes only those)."""
+    key = _root_key()
+    return name.startswith("kbindex-" + key) and (key or not name.startswith("kbindex-r"))
 
 
 def _writable(d):
@@ -778,7 +792,7 @@ def store(domain=None, index=False):
                     try:
                         st.save(path)
                         for f in os.listdir(os.path.dirname(path)):
-                            if f.startswith("kbindex-") and f.endswith(".sqlite") and f != os.path.basename(path):
+                            if _same_root(f) and f.endswith(".sqlite") and f != os.path.basename(path):
                                 try:
                                     os.remove(os.path.join(os.path.dirname(path), f))
                                 except OSError:
@@ -1057,7 +1071,7 @@ def cited_lines(ids):
 
 # ---------------------------------------------------------------- topics for code (host workspace signals)
 
-SIGNALS = os.path.join(TOOLS, "signals.csv")
+SIGNALS = kbcommon.data_path("signals.csv")
 SKIP_CODE_DIRS = {".git", "node_modules", "dist", "build", "out", "coverage", "target", "vendor", "__pycache__", ".venv",
                   "venv", ".next", ".turbo", ".cache"}
 MAX_FILES, MAX_FILE_BYTES = 500, 1_000_000

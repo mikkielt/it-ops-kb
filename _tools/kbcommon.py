@@ -10,11 +10,18 @@ source ledger. One copy, so every tool reads and writes these files the same way
   write_csv(path, header, rows, atomic=False)
   read_sources()              the rows of _sources.csv, in file order
   source_rows()               {id: row} of _sources.csv
+  data_path(rel, shared)      a file of the kb's own retrieval data under <kb>/_tools/
+
+KB_ROOT=DIR serves another kb with the same layout (articles, _sources.csv, ledgers, and its own retrieval data in
+DIR/_tools/) with these tools: for a team's own facts, which never go into this repository. The read tools (rag.py,
+kbfacts, kb_mcp.py, the kb: hook) and the checks (check.py, build_index.py, kbid.py) honour it; git, census and fetch
+tooling always works on this repository.
 """
 import csv, io, os
 
 TOOLS = os.path.dirname(os.path.abspath(__file__))
-KB = os.path.dirname(TOOLS)
+HOME = os.path.dirname(TOOLS)  # this repository: the tools' code, the shared product aliases
+KB = os.path.abspath(os.path.expanduser(os.environ["KB_ROOT"])) if os.environ.get("KB_ROOT") else HOME
 csv.field_size_limit(2**31 - 1)  # a very wide cell must not abort a whole read
 
 
@@ -86,6 +93,14 @@ def write_csv(path, header, rows, atomic=False):
         f.write(csv_text(header, rows))
     if atomic:
         os.replace(target, path)
+
+
+def data_path(rel, shared=False):
+    """A file of the kb's own retrieval data, `rel` under <kb>/_tools/ (signals.csv, lookup_eval.csv,
+    doc2query/expansions.csv, index_extra.csv). `shared` (aliases.csv: product names, not kb content) falls back to
+    this repository's copy when a kb given by KB_ROOT has none."""
+    path = os.path.join(KB, "_tools", rel)
+    return path if not shared or os.path.exists(path) else os.path.join(TOOLS, rel)
 
 
 def read_sources():

@@ -17,6 +17,7 @@ import pytest
 
 TOOLS = os.path.dirname(os.path.abspath(__file__))
 KB = os.path.dirname(TOOLS)
+os.environ.pop("KB_ROOT", None)  # the suite tests this repository; test_kb_root.py sets it per call
 if TOOLS not in sys.path:
     sys.path.insert(0, TOOLS)
 

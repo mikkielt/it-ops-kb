@@ -36,7 +36,7 @@ import argparse, csv, json, os, sys
 from collections import Counter, defaultdict
 import kbcommon, kbid, kbfacts
 
-KB = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+KB = kbcommon.KB  # KB_ROOT, else this repository
 CITED = kbid.SOURCE_ID  # legacy ids (not prose like S1/S3 sleep states) and hash ids
 csv.field_size_limit(2**31 - 1)  # a very wide cell must not abort a read
 

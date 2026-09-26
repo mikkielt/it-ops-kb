@@ -17,7 +17,7 @@ import csv, glob, os, re, sys
 from collections import Counter
 import kbcommon, kbid, kbfacts
 
-KB = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+KB = kbcommon.KB  # KB_ROOT, else this repository
 errors = []
 
 

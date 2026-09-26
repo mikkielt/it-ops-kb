@@ -22,9 +22,10 @@ Answer ids. New research answers in _answers.md are headed `## QK-<slug>. <quest
 joined by hyphens. Existing Q/QA/QS/QR/QG/R headings stay.
 """
 import argparse, base64, csv, functools, hashlib, os, re, sys, urllib.parse
+import kbcommon
 from kbcommon import read_sources  # noqa: F401  (kbgit and the tests call kbid.read_sources)
 
-KB = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+KB = kbcommon.KB  # KB_ROOT, else this repository
 LEGACY_ID = r"S\d+"
 HASH_ID = r"S-[a-z2-7]{8}"
 SOURCE_ID = re.compile(rf"\b{HASH_ID}\b|\bS\d{{3,4}}\b")  # an id cited in text: legacy ids are S100-S2204, so prose like S3 never matches
