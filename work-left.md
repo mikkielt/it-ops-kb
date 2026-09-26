@@ -1,5 +1,7 @@
 # Work left (as of 2026-09-26)
 
+**2026-09-26, later session (branch `claude/relaxed-keller-e8qyl3`):** GitHub had no open issues or merge requests; this list was the work queue. Done there: P.2 (`/kb-gap`), P.5 (consumer runbook), P.6 (`KB_ROOT`), P.7 / B (the `check:` line for a possible false `good`; the `kb:` hook forwards such packs), the QS ids in `_gaps.md`, five fresh negative controls, and topic markers on 217 of the 233 unlinked ledger entries. Still open: P.1, P.3 (optional scheduled agent), P.4, sections 1-3 and the rest of 4 below.
+
 `main` on GitHub (remote `claude`) now holds everything below plus the 2026-09-26 expansion (section 0); the session branch `claude/relaxed-keller-e8qyl3` was merged and deleted. GitLab `origin/main` has not received these commits. Done and committed: task 6 (sync fixes, the 6b replay as a test), task 7 (plugin, `kb` MCP server, runbook), the research-skill fixes, and the census tooling (`/kb-census`, `_tools/census.py`); see `git log`. Still open:
 
 ## P. Plugin for other codebases: distribution and updates (planned 2026-09-26)
@@ -9,17 +11,17 @@ lacks; only maintainers write. Do in this order:
    README install steps and `extraKnownMarketplaces` example point at GitLab, so an install today gets a stale kb.
    Decide: push GitLab (`python3 _tools/kbgit.py sync --push`, remote `origin`) and keep both in step, or move the
    README, the marketplace example and `plugin.json` `homepage`/`repository` to GitHub.
-2. **Gap reports from consumers.** A read-only skill `/it-ops-kb:kb-gap` (plugin-shipped, no Write/Bash): it runs
+2. **Done 2026-09-26.** `/it-ops-kb:kb-gap` (`.claude/skills/kb-gap/`, in `plugin.json`, README, plugin tests). Was: **Gap reports from consumers.** A read-only skill `/it-ops-kb:kb-gap` (plugin-shipped, no Write/Bash): it runs
    `kb_pack`, then drafts an issue text for the user to paste (question, verdict, the nearest articles with
    `path:line`, what was missing). Nothing is written or sent by the skill. Add it to `plugin.json` `skills`, the
    README runbook and the plugin tests (read-only tools only).
-3. **Triage loop for gap reports.** Maintainers turn reports into `_gaps.md` entries and `lookup_eval.csv` rows, then
+3. **Triage loop: written down in README "Contribute back" (2026-09-26); the optional scheduled agent is not set up.** Maintainers turn reports into `_gaps.md` entries and `lookup_eval.csv` rows, then
    `/kb-research` or `/kb-add-topic` in a clone, then `kbgit.py sync --push`. Optional later: a scheduled cloud agent
    (`/schedule`) that runs `/kb-research` on open reports and pushes verified topics.
 4. **Release channel.** Today every commit on `main` is a plugin version (no `version` field). Add a stable channel
    for cautious teams: tag releases (for example `kb-YYYY.MM.DD`, or with each census tag) and document pinning a
    marketplace to a tag; or add `version` to `plugin.json` and bump it on purpose. Decide which.
-5. **Consumer runbook additions (README, "Use from another project").**
+5. **Done 2026-09-26** (README "What it costs and what to watch"; cold index build measured 3-5 s, not 1.4 s). **Consumer runbook additions (README, "Use from another project").**
    - Start with "call kb_status": commit, date, latest census (none completed yet: section 1).
    - Team setup through the project's `.claude/settings.json` (`extraKnownMarketplaces` + `enabledPlugins`); add
      `it-ops-kb-docs` only for docs servers the team does not already have.
@@ -29,11 +31,11 @@ lacks; only maintainers write. Do in this order:
      answers the question.
    - `kb_ask.py` stays a clone/CI tool (needs the `claude` CLI); in a consumer session the path is `kb_pack` or
      `/it-ops-kb:kb-lookup`.
-6. **Organisation-specific knowledge stays out of this kb** (placeholders-only rule). For a team's own facts, design a
+6. **Done 2026-09-26:** `KB_ROOT` in `kbcommon` (read tools and checks; not git/census/fetch), per-root index names in a shared `CLAUDE_PLUGIN_DATA`, labelled server texts, `test_kb_root.py`, README "A team's own facts". A kb of one or two articles cannot reach `good` (key words need df under 20%). **Organisation-specific knowledge stays out of this kb** (placeholders-only rule). For a team's own facts, design a
    second private kb with the same layout: make the tools take the kb root from an environment variable (for example
    `KB_ROOT`, default the repository) so `kb_mcp.py` can serve a second root as its own server; check that ids,
    index cache paths (`_cache/`, `CLAUDE_PLUGIN_DATA`) and `kb_status` stay per root.
-7. **Fix the false `good` for plugin users first** (section B, open item): consumers see `kb_pack` and the `kb:` hook,
+7. **Done 2026-09-26** (see B). **Fix the false `good` for plugin users first** (section B, open item): consumers see `kb_pack` and the `kb:` hook,
    not `kb_ask.py`.
 
 ## B. Agent benchmark and routing (2026-09-26)
@@ -41,7 +43,7 @@ Done: 76 headless runs across 7 scenarios and 6 configs (`token-usage-report.md`
 `_tools/kb_ask.py` routes by the pack verdict (good: Haiku, weak/none: Sonnet), request words are stop words,
 3+ part packs share the budget, two new articles (`ad/krbtgt-password-reset`, `gpo/admx-central-store`).
 Status:
-- Open: false `good` verdicts reach MCP (`kb_pack`) and `kb:` hook users unchecked. Only `kb_ask.py` catches them (its Haiku reader answers `INSUFFICIENT` and escalates; tested on the Purview DLP case). The verdict counts key words anywhere in the best article, not meaning, and a lexical phrase rule failed (report). Options: a note in the pack header when the best article matches its key words only across separate lines; the `kb:` hook forwarding a `good` pack to the model (like `kb+:`) instead of answering alone; or `lookup_eval.csv` rows for known false goods first.
+- Done 2026-09-26, partly: when a name the question uses (capital or digit, 3+ letters) is nowhere in the lead article (its lines, title or `applies_to`), the pack prints a `check:` line under the verdict; the verdict is unchanged, because each verdict rule tried (named words in the best article; tie-breaks by named words) demoted true `good` eval rows (NTLMv1, sp_getapplock, Kerberos). The `kb:` hook forwards such a pack to the model; AGENTS.md, `/kb-lookup`, the server instructions say how to read it. On the eval set the line shows once in 88 (Python in the Kerberos article). Still open: a false `good` whose question names no product (only common words) gets no `check:` line; off-domain questions often come out `weak` rather than `none` (Horizon, SAP GUI, ServiceNow), though the `check:` line fires on them. Was: false `good` verdicts reach MCP (`kb_pack`) and `kb:` hook users unchecked. Only `kb_ask.py` catches them (its Haiku reader answers `INSUFFICIENT` and escalates; tested on the Purview DLP case). The verdict counts key words anywhere in the best article, not meaning, and a lexical phrase rule failed (report). Options: a note in the pack header when the best article matches its key words only across separate lines; the `kb:` hook forwarding a `good` pack to the model (like `kb+:`) instead of answering alone; or `lookup_eval.csv` rows for known false goods first.
 - Done 2026-09-26 (second pass): count/cite questions by the tools, part splitting, tool-less Haiku reader with `INSUFFICIENT` escalation, lean `claude -p`, Sonnet at low effort. The plugin has no `kb_ask` path (it needs the `claude` CLI: a clone/shell tool). The kb does not call the Anthropic API (decided 2026-09-26).
 - Closed 2026-09-26: the 4 `UNK` items of the two new articles (both `complete` now).
 
@@ -57,7 +59,7 @@ One manager session mapped gaps with `rag.py pack` (many answers were a false `g
 - **Open:**
   - After two fix passes: 20 of the new articles are still `partial`, with 28 `[UNK]` facts and 6 unconfirmed CSV values (mostly vendor pricing/licence pages, JS-rendered NVD/EPSS pages, undocumented log paths); each is logged in `_gaps.md`. List: `python3 _tools/rag.py audit --status partial`.
   - 9 new `_conflicts.md` entries, all rechecked 2026-09-26; 8 still real disagreements (e.g. Win32 supersedence 10 vs 11 nodes, Copilot Studio Agent ID cutover date, Recall default, BOD 22-01 superseded by BOD 26-04, PowerShell lifecycle dates).
-  - Two negative-control eval rows (Terraform Log Analytics, Okta SCIM) now expect articles that answer them; add fresh negative controls for topics the kb still lacks.
+  - Done 2026-09-26: five fresh negative controls (Meraki, Kafka, Proxmox/Ceph, FortiGate, YubiKey Bio in Okta Verify), all `none`; eval 93 of 93.
   - `tests.py` leak/cohesion checks scan tracked files only: stage new articles (`git add`) before running them, or they pass unchecked. Public ids found this round are in `_tools/tests_allowlist.txt` with reasons.
   - Not yet pushed to GitLab `origin/main` (`python3 _tools/kbgit.py sync --push` when GitLab should get it).
 
@@ -118,7 +120,7 @@ Not done here:
 
 ## 3. Known debt
 - 25 lint errors are recorded in `_tools/lint_baseline.txt` (untagged facts, tags with no source id). Several articles also list header ids their body never cites (lint warnings), left alone because removing them could empty a source's `used_in`.
-- `_gaps.md` still refers to the old ids QS1, QS5 and QS7, whose second copies were renamed QS1a, QS5a and QS7a.
+- Done 2026-09-26: the `_gaps.md` entries naming QS1, QS5 and QS7 now say what QS1a, QS5a and QS7a resolved.
 
 ## 4. Token usage: make lookups deterministic
 **`plan-token-optimization.md` T1-T14: done** (see `token-usage-report.md`, "Measurement in a host project").
@@ -138,6 +140,6 @@ Earlier; see `token-usage-report.md`, "Re-measurement after the changes":
 - A `kb:` prompt the kb covers costs no model tokens.
 
 Still open:
-- 233 ledger entries have no explicit topic link and need a `(topic: <domain>/<slug>)` marker. 125 of them are not even linked through their sources. List them with `python3 _tools/rag.py audit --unlinked [DOMAIN]`.
+- Done 2026-09-26: 217 of the 233 unlinked ledger entries carry a `(topic: ...)` marker. The other 16 are headers, "no conflicts found" notes, budget notes and multi-project licence notes, left unlinked on purpose (`python3 _tools/rag.py audit --unlinked`).
 - 13 DOC/COMMUNITY tags without a source id (kb-verify lint, in `_tools/lint_baseline.txt`).
 - Add failed real-world lookups to `_tools/lookup_eval.csv`.
