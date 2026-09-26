@@ -24,10 +24,12 @@ non-commercial) [DOC S1563], so safeguard IDs and titles are cited but not modif
 - CIS Controls v8.1 (March 2025) has 18 Controls and 153 Safeguards across three Implementation Groups; licensed
   CC BY-NC-ND 4.0 (no derivatives). The csv therefore cites safeguard IDs only, with a short own-words paraphrase
   in place of the official safeguard title, rather than reproducing CIS wording. [DOC S1563]
+
+## Reference
+### Notes (design notes and cross-references, no external source)
 - NIS2 Art. 21(2) letters (a)-(j) are quoted in `privacy-compliance.md`; the crosswalk here selects the letters
   that map to a device-configuration tool's own controls (configuration management, supply chain, access control, MFA).
 
-## Reference
 See `framework-control-map.csv`. Row count: 22 (8 ISO, 5 NIST CSF, 5 CIS, 4 NIS2).
 
 ## Examples

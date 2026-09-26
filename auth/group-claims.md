@@ -32,4 +32,4 @@ status: partial
 - `SG-Engineer` assigned as an app role on a client app: role name `engineer` appears in `roles`, independent of how deep the group nesting is — but this depth-independence itself is [UNK], not confirmed.
 
 ## Open items
-- QA7 (overage thresholds, recommended pattern, do nested groups count for app-role assignments): thresholds and recommended pattern (app roles) are answered [DOC]; nested groups in app-role assignment: answered no [DOC S1310].
+- QA7 (overage thresholds, recommended pattern, do nested groups count for app-role assignments): thresholds and recommended pattern (app roles) are answered [DOC S1284, S1285]; nested groups in app-role assignment: answered no [DOC S1310].

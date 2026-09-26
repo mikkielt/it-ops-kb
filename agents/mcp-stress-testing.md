@@ -17,18 +17,10 @@ tests must run against fixtures/recordings, not a live ConfigMgr/Graph tenant, w
 kind exists to enforce.
 
 ## Facts
-- A "test providers against recorded exchanges" policy — "Providers are tested against recorded
-  AdminService/Graph exchanges. No test reads a real ConfigMgr site, tenant or the machine's own
-  configuration." — implies an `isolated` instance kind as the only kind allowed to reach any endpoint that
-  is not `fixture://` or a local container, and it is the kind such a server's own test suite would run as.
 - **DER — tool-count scaling**: an example design lists 13 named operations (`device.show` … `change.draft`);
   a stress run should confirm agent behaviour (routing, confirmation) is unchanged as the tool list grows
   toward this ceiling, since Anthropic's tool-authoring guidance calls out namespacing and clear boundaries
   as what keeps a growing tool set usable for an agent. [DER S1935]
-- **DER — ambiguous/adversarial questions**: if targets are restricted to "device, collection, or directory
-  group" only, a stress set should include requests naming an undeclared target type (a team name, "the
-  usual devices") and check for a refusal or disambiguation, not a best-effort guess (see `BQ12-BQ15`,
-  `BQ48` in `eval-question-baseline.csv`).
 - **DER — prompt injection in tool results**: none of promptfoo, garak or PyRIT ship a product-specific
   probe, but promptfoo's red-team "Tool Poisoning Attacks" category and PyRIT's `XPIAOrchestrator`
   (cross/indirect prompt injection via a data source the model later reads) are the closest general
@@ -36,6 +28,22 @@ kind exists to enforce.
   than the user's own turn. [DOC S1884, S1892] A design that never states logs or query output are
   sanitized before reaching the model, and only tokenizes structured PII fields at the model boundary,
   leaves free-text log content as the likely injection surface.
+- **DER — pseudonymization leakage**: an example token-kind scheme (HOST, USER, PERSON, DNS, IPV4_NET,
+  SID_DOMAIN, GUID, SERIAL, MAC) and a stated acceptance bar ("0 leaks on a seeded set of 200 realistic
+  documents... before exit") define both the stress corpus size and the pass bar; this is the same class of
+  test DeepEval's and promptfoo's `pii` plugin/assertions are built for, applied against the MCP tool output
+  rather than a chat completion. [DOC S1884]
+
+## Reference
+### Notes (design notes and cross-references, no external source)
+- A "test providers against recorded exchanges" policy — "Providers are tested against recorded
+  AdminService/Graph exchanges. No test reads a real ConfigMgr site, tenant or the machine's own
+  configuration." — implies an `isolated` instance kind as the only kind allowed to reach any endpoint that
+  is not `fixture://` or a local container, and it is the kind such a server's own test suite would run as.
+- **DER — ambiguous/adversarial questions**: if targets are restricted to "device, collection, or directory
+  group" only, a stress set should include requests naming an undeclared target type (a team name, "the
+  usual devices") and check for a refusal or disambiguation, not a best-effort guess (see `BQ12-BQ15`,
+  `BQ48` in `eval-question-baseline.csv`).
 - **DER — oversized output**: an example design's 20k-token/200-row pagination target for MCP tool
   results and 2,000-char truncation for log line bodies gives a concrete stress case: submit a query
   whose natural result exceeds these and check that truncation/pagination, not a hard failure or silent
@@ -55,17 +63,11 @@ kind exists to enforce.
   the prompt, gives a stress test that asks for the human-sized limit through the MCP door and checks the
   agent-sized limit was applied — a direct code-level assertion, best run as a `code` grader rather than a
   model grader.
-- **DER — pseudonymization leakage**: an example token-kind scheme (HOST, USER, PERSON, DNS, IPV4_NET,
-  SID_DOMAIN, GUID, SERIAL, MAC) and a stated acceptance bar ("0 leaks on a seeded set of 200 realistic
-  documents... before exit") define both the stress corpus size and the pass bar; this is the same class of
-  test DeepEval's and promptfoo's `pii` plugin/assertions are built for, applied against the MCP tool output
-  rather than a chat completion. [DOC S1884]
 - **DER — concurrency**: a single-writer rule (an application-lock-style mutex around the sync writer) and
   a cap on concurrent observe loops per engineer are both concurrency limits with no vendor MCP-stress-tool
   coverage found; they are best exercised with a scripted concurrent-caller harness (e.g. promptfoo's MCP
   provider invoked from multiple parallel test cases) rather than a load-testing product.
 
-## Reference
 | Stress dimension (QG11) | Design anchor | Closest tool/mechanism found | Tag |
 |---|---|---|---|
 | tool-count scaling | operation table (13 ops) | Anthropic tool-writing guidance (S1935) | DER |

@@ -150,7 +150,7 @@ guidance [DOC S1860].
 Checklist, each line cited:
 1. Keep `CLAUDE.md` well under the community-reported ~40 KB caution line; if it grows, split into `.claude/rules/`
    and `@import` rather than inlining more into the root file (community pattern, not an Anthropic-documented
-   mechanism) — [COMMUNITY, see instruction-and-context-limits.md gap on the exact 40 KB source].
+   mechanism) — [UNK: see the instruction-and-context-limits.md gap on the exact 40 KB source].
 2. Keep every `SKILL.md`'s `description` + `when_to_use` combined text under 1,536 characters, front-loading the
    trigger words, since Claude Code truncates silently past that point in the skill listing — [DOC S1860].
 3. If a skill must stay portable to non-Claude-Code tools, keep its `description` under 1,024 characters, the

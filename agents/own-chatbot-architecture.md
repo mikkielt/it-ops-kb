@@ -106,7 +106,7 @@ status: complete
   Entra/OBO, for Foundry) authentication. In principle the same MCP tool definitions written for a
   stdio CLI agent could be exposed a second time to a Teams-facing agent this way, **without**
   changing the tool implementations — only the transport (stdio vs. network) and auth layer would
-  differ.
+  differ. [DER S1964, S1970: both accept any Streamable HTTP MCP server]
 - **Tension with a "no always-on service" rule**: a stdio-only MCP server, launched as a subprocess of
   the engineer's own agent session, with "no always-on service, no public endpoint and no gateway,"
   cannot be reached from Copilot Studio or Foundry (a cloud-hosted caller) without exactly the

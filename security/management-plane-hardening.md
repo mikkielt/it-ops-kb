@@ -21,7 +21,6 @@ ConfigMgr, its SQL Server site database, GitLab (a configuration repository) and
 - **NTLM fallback / client push** (constrains a site's push-install config, and is a documented attack surface against the site's own machine account): when automatic client push installation is enabled without a PKI client-auth certificate, NTLM authentication from the management point can be coerced to an attacker-controlled name. From ConfigMgr current branch 1806, the site can require Kerberos mutual authentication and refuse NTLM fallback. From version 2207 (hotfix KB15498768), "Allow connection fallback to NTLM" is **disabled by default on new site installations**, and Microsoft recommends disabling it on existing hierarchies. [DOC S1484]
 - No CIS benchmark for Configuration Manager itself was found on the public CIS benchmark list. [UNK]
 - Microsoft's cloud security benchmark privileged-access guidance treats control-plane, management-plane and data-workload-plane administrative accounts as separate tiers to limit blast radius, and calls for regular review of the access granted for each plane. [DOC S1491] No page was found that names ConfigMgr explicitly as "Tier 0"; Microsoft's general enterprise access model (linked, not duplicated here — see [[enterprise-access-model]]) treats systems that can control identity or execute code across the estate, which a ConfigMgr site fits by function, as control-plane assets. [DER S1491: general control-plane tiering principle applied to a site that can push code to devices; UNK for an explicit "ConfigMgr = Tier 0" statement]
-- AdminService exposure, CMPivot and Run Scripts approval permissions are covered in the existing [[../mecm/run-scripts]] and `mecm/rbac` topics (not duplicated here); this file adds only the hardening framing above.
 
 ### SQL Server (constrains the database)
 - Prefer Windows/Entra authentication over SQL authentication; if SQL logins are unavoidable, require strong unique passwords. [DOC S1488]
@@ -33,15 +32,16 @@ ConfigMgr, its SQL Server site database, GitLab (a configuration repository) and
 ### GitLab self-managed (constrains a no-domain-identity CI runner and the configuration repository)
 - A **CIS GitLab Benchmark** exists (first published by GitLab with CIS, announced 2024-04-17), with 125+ recommended configuration checks. An open-source scanner (`gitlabcis`) implements it against the benchmark's checks. [DOC S1487]
 - The GitLab-authored scanner project is a live reference for the benchmark's check IDs even where the benchmark PDF itself needs a CIS account. [DOC S1489]
-- GitLab publishes CC BY-SA 4.0-licensed hardening-relevant docs (merge request approval rules, protected branches, runner security) under `docs.gitlab.com`; those specific to CI approvals and branch protection are already covered by other kb parts — this file adds only the CIS-benchmark existence fact.
 
 ### Windows GitLab Runner host (constrains the CI runner's host)
 - Runner installation and shell/service-account guidance for Windows is in the runner docs; already partly captured in [[../windows/gitlab-runner-windows]] (not duplicated). [DOC S1490]
 
-### Admin workstations / PAW
+## Reference
+### Notes (design notes and cross-references, no external source)
+- AdminService exposure, CMPivot and Run Scripts approval permissions are covered in the existing [[../mecm/run-scripts]] and `mecm/rbac` topics (not duplicated here); this file adds only the hardening framing above.
+- GitLab publishes CC BY-SA 4.0-licensed hardening-relevant docs (merge request approval rules, protected branches, runner security) under `docs.gitlab.com`; those specific to CI approvals and branch protection are already covered by other kb parts — this file adds only the CIS-benchmark existence fact.
 - See [[../auth/enterprise-access-model]] for the privileged-access-workstation and tiering model; this file does not duplicate it. An engineer workstation running a CLI/MCP client should be evaluated against that model's device-trust tier for whatever it authenticates to (AdminService, Graph).
 
-## Reference
 | Guidance area | Component constrained | Source |
 |---|---|---|
 | MFA for SMS Provider | interactive client role, any AdminService/SDK caller | S1482 |

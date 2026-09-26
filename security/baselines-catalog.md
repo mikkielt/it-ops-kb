@@ -3,7 +3,7 @@ topic: security/baselines-catalog
 priority: P0
 applies_to: "Windows 11 Enterprise 24H2/25H2, Windows Server 2025"
 retrieved_utc: 2026-09-24
-sources: [S1470, S1471, S1472, S1598, S1400, S1401, S1402, S1403, S1404, S1405, S1406, S1407, S1408, S1409, S1410, S1411, S1418, S1419, S1420, S1421, S1422, S1423, S1424, S1425, S1426]
+sources: [S1470, S1471, S1472, S1598, S1400, S1401, S1402, S1403, S1404, S1405, S1406, S1407, S1408, S1409, S1410, S1411, S1418, S1419, S1420, S1421, S1422, S1423, S1424, S1425, S1426, S-3vkajr2c, S-ycjlut3h]
 status: partial
 ---
 
@@ -34,8 +34,9 @@ attribution. NCSC (UK)/BSI/ANSSI rows remain UNK.
   bugfix v5.0.1) [DOC S1405, S1406, S1407, S1408]; the front matter of v5.0.x tests against release
   23H2, so applicability to 24H2/25H2 devices should be confirmed against the v5.1.0 front matter
   before use — not independently opened this pass [UNK].
-- A CIS Microsoft Intune for Windows 11 benchmark exists (v4.0.0 per a third-party mirror of CIS
-  release notes); the CIS site itself was not independently opened for this row [COMMUNITY].
+- A CIS Microsoft Intune for Windows 11 benchmark exists; the CIS Intune benchmark page lists it at v5.0.0 on
+  2026-09-26 (a third-party mirror of CIS release notes had given v4.0.0), beside Intune benchmarks for Windows 10,
+  Edge, Office and Microsoft Defender Antivirus [DOC S-3vkajr2c].
 - DISA publishes STIG and SCAP content for Microsoft Windows without any sign-in requirement, at
   `public.cyber.mil` and `cyber.mil` [DOC S1409, S1411].
 - The current Microsoft Windows 11 STIG is **V2R9**, XCCDF dated 2026-08-06, zip
@@ -69,11 +70,10 @@ attribution. NCSC (UK)/BSI/ANSSI rows remain UNK.
   mode. [DOC S1424; DER: a general implication for any drift-visibility-first design: expect this
   contrast with any remediating baseline mechanism it is compared against]
 - CIS Benchmark PDFs for non-members are distributed under **CC BY-NC-SA 4.0** (free, attribution
-  required, non-commercial, share-alike); CIS-SecureSuite members are separately barred from
-  redistributing or creating derivative "images" incorporating benchmark content [DOC:
-  cisecurity.org terms-of-use pages, summarized via search digest — the terms page itself returned
-  404 on direct fetch, so this is tagged `COMMUNITY` pending a direct re-read of
-  cisecurity.org/terms-of-use-for-non-member-cis-products]. Under CC BY-NC-SA 4.0, an ID plus a
+  required, non-commercial, share-alike), per the non-member terms page read 2026-09-26 [DOC S-ycjlut3h];
+  that CIS-SecureSuite members are separately barred from redistributing or creating derivative "images"
+  incorporating benchmark content comes from a search digest of the member terms, not re-read
+  [UNK: member terms page not fetched]. Under CC BY-NC-SA 4.0, an ID plus a
   short paraphrase of the recommendation title is allowed with attribution, for non-commercial
   internal use; a crosswalk CSV may therefore carry CIS IDs and short paraphrases,
   attributed, once a direct citation is confirmed — recorded as a residual gap.

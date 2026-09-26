@@ -80,8 +80,8 @@ a generic 400 on the underlying model call, worded around "exceeds the maximum" 
   - CLAUDE.md: community measurement and tooling exist around a documented practical threshold; multiple sources
     describe Claude Code warning once a `CLAUDE.md` file reaches roughly 40KB, framed as a performance-degradation
     signal rather than a hard rejection. No official Anthropic docs page was fetched in this pass stating this 40KB
-    number directly — treat as COMMUNITY pending a direct fetch. [COMMUNITY, derived from search-result digest only;
-    no source id assigned because the originating page was not fetched — see gaps.md]
+    number directly — a 2026-09-26 search of the Claude Code docs found a "large CLAUDE.md startup notice" in the changelog but no stated
+    threshold. [UNK: search-result digest only, originating page not fetched; see gaps.md]
   - Claude Projects: project knowledge shares the active model's context window (up to 200K tokens on many plans, up
     to 1M on some); Anthropic's own support article is the canonical source for project mechanics, but no character
     limit is published for the project custom-instructions field itself — the product UI shows a live character
@@ -149,7 +149,7 @@ a generic 400 on the underlying model call, worded around "exceeds the maximum" 
   *length* degradation, independent of instruction count) are two distinct, non-vendor-confirmed axes of the same
   underlying claim in Anthropic's own vendor guidance (S1855) that every added token depletes a finite "attention
   budget" — none of the three sources contradicts another; they measure different independent variables (instruction
-  count vs. raw context length) with consistent directional findings (more of either degrades reliability).
+  count vs. raw context length) with consistent directional findings (more of either degrades reliability). [DER S1854, S1870, S1855: the three measure different variables]
 
 ## Reference
 See `agents/instruction-and-context-limits.csv` for the normalized product/limit/value/error-text table (40 rows

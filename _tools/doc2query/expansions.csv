@@ -613,9 +613,6 @@ a336982fdce3,User Id parameter: workload identity client ID in ODBC connection
 6663e0924e29,ActiveDirectoryDefault ODBC Linux
 6663e0924e29,Is there documentation for ActiveDirectoryDefault on the Linux ODBC driver?
 6663e0924e29,msodbcsql18 ActiveDirectoryDefault on-premises SQL Server behavior
-5a3f67a51e2b,Entra OAuth token exchange support
-5a3f67a51e2b,Does Entra support OAuth 2.0 Token Exchange?
-5a3f67a51e2b,"RFC 8693: Entra grant types, On-Behalf-Of, client-credentials"
 f4c703f8bcbe,Windows Server 2025 TLS cipher suite
 f4c703f8bcbe,What is the TLS cipher suite list for Windows Server 2025?
 f4c703f8bcbe,"Schannel: TLS 1.3 support, Server 2025 vs. Server 2022"
@@ -634,9 +631,6 @@ f5986a17b8c8,SMB client outbound signing encryption settings
 500418700482,DPoP RFC 9449 GA status Entra ID
 500418700482,Is DPoP generally available for Entra ID access tokens outside specific scenarios?
 500418700482,What is the general availability status of RFC 9449 proof-of-possession?
-7f8b8faee87b,RFC 8693 Entra ID token exchange
-7f8b8faee87b,Does Azure Entra support RFC 8693 OAuth 2.0 Token Exchange?
-7f8b8faee87b,What alternatives to RFC 8693 does Entra provide?
 e73588d155da,SMB 3.1.1 cipher AES-GCM specifics
 e73588d155da,What encryption algorithms can be negotiated in SMB 3.1.1?
 e73588d155da,How does SMB 3.1.1 select between AES cipher variants?
