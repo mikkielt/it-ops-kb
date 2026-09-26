@@ -294,3 +294,7 @@ deviceManagementScript,intune/platform-scripts
 DataZoneStandard,agents/azure-openai-deployments
 GlobalProvisionedManaged,agents/azure-openai-deployments
 x-ratelimit-remaining-tokens,agents/azure-openai-deployments
+AssignedAccess,windows/kiosk-assigned-access
+ShellLauncher,windows/kiosk-assigned-access
+Set-AssignedAccess,windows/kiosk-assigned-access
+MDM_AssignedAccess,windows/kiosk-assigned-access

@@ -246,6 +246,7 @@ windows/azure-update-manager,P2,partial,windows/azure-update-manager.md,23
 windows/bitlocker,P2,partial,windows/bitlocker.md;windows/bitlocker.csv,16
 windows/delivery-optimization,P2,complete,windows/delivery-optimization.md;windows/delivery-optimization.csv,12
 windows/event-forwarding-sysmon,P2,partial,windows/event-forwarding-sysmon.md;windows/sysmon-events.csv,8
+windows/kiosk-assigned-access,P2,partial,windows/kiosk-assigned-access.md,9
 windows/laps,P2,partial,windows/laps.md;windows/laps.csv,13
 windows/powershell-7,P2,complete,windows/powershell-7.md;windows/powershell-lifecycle.csv,15
 windows/powershell-remoting-jea,P2,complete,windows/powershell-remoting-jea.md;windows/jea-config-fields.csv,12
