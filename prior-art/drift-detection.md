@@ -3,7 +3,7 @@ topic: prior-art/drift-detection
 priority: P2
 applies_to: "detecting configuration drift without applying fixes (DSC test mode, no remediation)"
 retrieved_utc: 2026-09-24
-sources: [S1008, S1009, S1010]
+sources: [S1008, S1009, S1010, S-e4iemhin]
 status: partial
 ---
 
@@ -27,11 +27,11 @@ facts sourced from Microsoft Learn).
   compliance-as-code / testing framework that evaluates a target against declared `describe` controls
   and reports pass/fail per control, without itself applying any remediation — it is read-only by
   design, unlike Puppet noop which evaluates a full enforcement catalog in dry-run. [DOC S1009]
-- Ansible's check mode (`--check`, or `ansible-playbook --check`) runs each module's check-mode logic
-  (when the module supports it) to report which tasks would report `changed` without making the
-  change; modules that do not implement check-mode support are skipped or run for real depending on
-  `check_mode` module metadata — Ansible's own docs call out that not every module supports check mode
-  correctly. [DOC S1009]
+- Ansible's check mode (`ansible-playbook --check`) runs a playbook without changing the remote systems:
+  modules that support check mode report the changes they would make, and modules that do not support it
+  report nothing and do nothing; not every module supports it, and tasks conditioned on registered
+  variables from earlier tasks produce no output in check mode. `--diff` adds before/after detail for
+  modules that support diff mode. [DOC S-e4iemhin]
 - Microsoft365DSC packages PowerShell DSC resources for Microsoft 365 workloads (Exchange Online,
   SharePoint Online, Teams, Entra ID, Intune, etc.); like core PowerShell DSC, each resource exposes
   `Get`/`Test`/`Set`, so a `Test-DSCConfiguration` (or `Start-DSCConfiguration -WhatIf`) run reports
@@ -39,6 +39,8 @@ facts sourced from Microsoft Learn).
   language PowerShell. [DOC S1010]
 
 ## Reference
+`prior-art/projects.csv` `latest_release` and `release_date` are GitHub's latest-release marker (`releases/latest`) at retrieval, not the newest tag: a project can carry newer tags on other release lines (Puppet 8.x, InSpec 7.x).
+
 | project | drift-only mode | enforcement mode exists | licence | language |
 |---|---|---|---|---|
 | Puppet | `--noop` | yes (normal agent run) | Apache-2.0 | Ruby |

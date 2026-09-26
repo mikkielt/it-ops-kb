@@ -25,7 +25,7 @@ ConfigMgr/Intune/Graph/Entra device management was independently verified this s
 - The `modelcontextprotocol/modelcontextprotocol` and `modelcontextprotocol/python-sdk` repositories
   (already cloned locally for other kb agents, per BRIEF.md) define the MCP protocol and Python SDK
   themselves but do not list or endorse specific server implementations for Microsoft endpoint
-  management. [DOC S1019]
+  management. [UNK: no source row reads those two repositories; S1019 is microsoft/mcp]
 - No community MCP server for ConfigMgr/Intune/Graph/Entra device management meeting the brief's bar
   (established, actively maintained) was located within this session's fetch budget; absence is
   recorded as a gap, not as a confirmed negative for the whole ecosystem. [UNK]
