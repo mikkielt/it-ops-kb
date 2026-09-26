@@ -85,10 +85,10 @@ Content-Type: application/json
   "conditions": {
     "users": {
       "includeUsers": ["All"],
-      "excludeUsers": ["11112222-3333-4444-5555-666677778888"]
+      "excludeUsers": ["00000000-0000-0000-0000-000000000011"]
     },
     "applications": {
-      "includeApplications": ["99998888-7777-6666-5555-444433332222"]
+      "includeApplications": ["00000000-0000-0000-0000-000000000012"]
     },
     "clientAppTypes": ["all"]
   },
@@ -98,7 +98,7 @@ Content-Type: application/json
   }
 }
 ```
-- `11112222-3333-4444-5555-666677778888` is a placeholder object id for a break-glass/emergency-access account; `99998888-7777-6666-5555-444433332222` is a placeholder app registration id for the target line-of-business app.
+- `00000000-0000-0000-0000-000000000011` is a placeholder object id for a break-glass/emergency-access account; `00000000-0000-0000-0000-000000000012` is a placeholder app registration id for the target line-of-business app.
 - A Filter for devices exclusion could be added under `conditions.devices` with a rule such as `device.extensionAttribute1 -eq "SAW"` to exempt privileged-access workstations, per the create-policy walkthrough. [DOC S-2gcjipq5]
 - Flip to enforced once report-only results (sign-in log **Report-only** tab, or the Insights workbook) look correct: `PATCH .../policies/{id}` with `"state": "enabled"`. [DOC S-evafm3dr, S-isovad24]
 

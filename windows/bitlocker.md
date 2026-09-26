@@ -101,7 +101,7 @@ files: [windows/bitlocker.csv]
   Connect-MgGraph -Scopes "BitlockerKey.ReadBasic.All"
   $headers = @{ "ocp-client-name" = "kb-example-client"; "ocp-client-version" = "1.0" }
   # First, find the key id for the device:
-  Invoke-MgGraphRequest -Method GET -Uri "https://graph.microsoft.com/v1.0/informationProtection/bitlocker/recoveryKeys?`$filter=deviceId eq '1ab40ab2-32a8-4b00-b6b5-ba724e407de9'" -Headers $headers
+  Invoke-MgGraphRequest -Method GET -Uri "https://graph.microsoft.com/v1.0/informationProtection/bitlocker/recoveryKeys?`$filter=deviceId eq '00000000-0000-0000-0000-000000000001'" -Headers $headers
   # Then, with BitlockerKey.Read.All consented, fetch the key value (generates a KeyManagement audit entry):
   Invoke-MgGraphRequest -Method GET -Uri "https://graph.microsoft.com/v1.0/informationProtection/bitlocker/recoveryKeys/{keyId}?`$select=key" -Headers $headers
   ```

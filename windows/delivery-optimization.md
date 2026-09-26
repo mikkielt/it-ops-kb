@@ -90,7 +90,7 @@ files: [windows/delivery-optimization.csv]
   ```
 - Test peer-to-peer reachability between two devices on port 7680 and confirm they share a public IP for LAN mode:
   ```powershell
-  Test-NetConnection -ComputerName 192.168.9.17 -Port 7680
+  Test-NetConnection -ComputerName 192.0.2.17 -Port 7680
   ```
 - Flush and analyze DO logs after a stalled rollout:
   ```powershell

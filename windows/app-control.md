@@ -121,7 +121,7 @@ Set-CIPolicyIdInfo -FilePath ".\base.xml" -PolicyName "corp-base" -ResetPolicyID
 New-CIPolicy -MultiplePolicyFormat -ScanPath "C:\LineOfBusinessApps" -UserPEs -FilePath ".\supplemental.xml" `
     -Level Publisher -Fallback Hash
 Set-CIPolicyIdInfo -FilePath ".\supplemental.xml" -BasePolicyToSupplementPath ".\base.xml" `
-    -PolicyId "b2c9a6b0-1111-4a2b-9c3d-000000000001" -PolicyName "corp-lob-supplemental"
+    -PolicyId "00000000-0000-0000-0000-000000000003" -PolicyName "corp-lob-supplemental"
 ```
 
 Enable the managed installer option and turn Configuration Manager into a managed installer, then deploy the resulting binary to PL-LT-00123 with `CiTool`:

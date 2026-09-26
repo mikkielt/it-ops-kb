@@ -85,7 +85,7 @@ Win32 apps are packaged with the Microsoft Win32 Content Prep Tool (`IntuneWinAp
 ## Reference
 - Log files for Win32 app activity are in the IME log folder: `AppActionProcessor.log` (detection/applicability checks) and `AppWorkload.log` (Win32 app deployment activity) — see `intune/ime-logs.md` for the full log list and folder path. [DOC S-wc6e3fba]
 - Return code fundamentals overlap with `mecm/application-model.md` (ConfigMgr deployment types use the same Windows Installer return code semantics and a 5-level supersedence-chain guideline; Intune Win32 apps use a 10-node supersedence and 100-app dependency graph limit instead — different limits, do not conflate).
-- `intune/create-win32-package.md`-equivalent content (packaging) is folded into this article; no separate topic exists for the Content Prep Tool.
+- Content equivalent to the Learn page "Prepare Win32 app content for upload" (packaging) is folded into this article; no separate topic exists for the Content Prep Tool.
 - WinGet-based deployment (the **Microsoft Store app (new)** app type, `winget show [PackageId]` for finding a Store Win32 app's Installer Url, WinGet Configuration, and the `Microsoft.WinGet.Client` PowerShell module) is a separate, Store-sourced pipeline from the `.intunewin`/IME flow documented here: see `windows/winget.md`.
 - `windows/delivery-optimization.md` documents the Delivery Optimization CSP/GPO settings and Microsoft Connected Cache for Enterprise that Win32 app content download uses (by default, or from a Connected Cache node when `DOCacheHost`/`DOCacheHostSource` is configured).
 

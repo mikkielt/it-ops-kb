@@ -101,7 +101,7 @@ Group Policy static proxy for the EDR sensor (registry values a GPO applies):
 ```
 HKLM\Software\Policies\Microsoft\Windows\DataCollection
   DisableEnterpriseAuthProxy = 1 (REG_DWORD)
-  TelemetryProxyServer       = "10.0.0.6:8080" (REG_SZ)
+  TelemetryProxyServer       = "192.0.2.6:8080" (REG_SZ)
 ```
 
 Manual device tag via registry (Windows, local or GPO Preferences):
@@ -111,5 +111,5 @@ reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows Advanced Threat Protection\Dev
 
 Client Analyzer pre-onboarding connectivity test using a downloaded (not-yet-run) onboarding script, from an elevated prompt on `PL-LT-00123`:
 ```
-MDEClientAnalyzer.cmd -o C:\Users\jan.kowalski\Desktop\WindowsDefenderATPOnboardingScript.cmd
+MDEClientAnalyzer.cmd -o %USERPROFILE%\Desktop\WindowsDefenderATPOnboardingScript.cmd
 ```

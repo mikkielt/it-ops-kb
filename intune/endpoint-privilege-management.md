@@ -96,7 +96,7 @@ status: partial
   ```
 - List recent elevation events for a device via Graph (beta), filtering to managed elevations only, needing `DeviceManagementConfiguration.ReadWrite.All` or the managed-devices equivalent read permission plus `EpmPolicy.ViewReports` for report data:
   ```
-  GET https://graph.microsoft.com/beta/deviceManagement/privilegeManagementElevations?$filter=deviceId eq '92ce5047-9553-4731-817f-9b401a999a1b'
+  GET https://graph.microsoft.com/beta/deviceManagement/privilegeManagementElevations?$filter=deviceId eq '00000000-0000-0000-0000-000000000001'
   Authorization: Bearer <token>
   ```
 - Typical safe rollout: set the elevation settings policy's default elevation response to *Require support approval*, assign it to a pilot group, review the Elevation report for a week, then convert frequently support-approved files into scoped elevation rules with an explicit file path and file hash (never rely on default *Require user confirmation*, which allows any unmatched file to elevate):

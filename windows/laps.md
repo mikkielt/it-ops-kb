@@ -71,7 +71,7 @@ files: [windows/laps.csv]
 ## Examples
 - Read a device's LAPS password from Entra ID with least privilege first, then escalate only if needed:
   ```powershell
-  Connect-MgGraph -Environment Global -TenantId 00000000-0000-0000-0000-000000000000 -ClientId 00001111-aaaa-2222-bbbb-3333cccc4444
+  Connect-MgGraph -Environment Global -TenantId 00000000-0000-0000-0000-000000000000 -ClientId 00000000-0000-0000-0000-000000000002
   Get-LapsAADPassword -DeviceIds PL-LT-00123                              # metadata only, DeviceLocalCredential.ReadBasic.All
   Get-LapsAADPassword -DeviceIds PL-LT-00123 -IncludePasswords -AsPlainText  # needs DeviceLocalCredential.Read.All
   ```

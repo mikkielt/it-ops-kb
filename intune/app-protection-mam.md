@@ -120,13 +120,13 @@ Content-Type: application/json
     {
       "target": {
         "@odata.type": "#microsoft.graph.groupAssignmentTarget",
-        "groupId": "11112222-3333-4444-5555-666677778888"
+        "groupId": "00000000-0000-0000-0000-000000000011"
       }
     }
   ]
 }
 ```
-- `11112222-3333-4444-5555-666677778888` is a placeholder Entra group object id. `PT30M` / `P90D` are ISO 8601 durations for the 30-minute online recheck and 90-day wipe grace period. [DER S-t4g3ekea, S-jgesqj52: framework values expressed as the Graph `Duration` properties documented in S-27fiskhq]
+- `00000000-0000-0000-0000-000000000011` is a placeholder Entra group object id. `PT30M` / `P90D` are ISO 8601 durations for the 30-minute online recheck and 90-day wipe grace period. [DER S-t4g3ekea, S-jgesqj52: framework values expressed as the Graph `Duration` properties documented in S-27fiskhq]
 - Create a targeted app configuration policy pushing a single custom key to Outlook on device `PL-LT-00123`'s user, tenant `00000000-0000-0000-0000-000000000000`:
 ```http
 POST https://graph.microsoft.com/v1.0/deviceAppManagement/targetedManagedAppConfigurations
