@@ -2,6 +2,15 @@
 
 `main` on GitHub (remote `claude`) now holds everything below plus the 2026-09-26 expansion (section 0); the session branch `claude/relaxed-keller-e8qyl3` was merged and deleted. GitLab `origin/main` has not received these commits. Done and committed: task 6 (sync fixes, the 6b replay as a test), task 7 (plugin, `kb` MCP server, runbook), the research-skill fixes, and the census tooling (`/kb-census`, `_tools/census.py`); see `git log`. Still open:
 
+## T. `_tools` efficiency plan (`plan-tooling-efficiency.md`)
+Implemented 2026-09-26 on `claude/relaxed-keller-e8qyl3`: persisted pack index (cold `pack` and the `kb:` hook
+about 0.06 s, `eval` 0.7 s), shared helpers, batched trailer audit, CI git scenarios, `pyproject.toml` (dev: pytest,
+ruff). Still open:
+- **R5 (blocked):** retire kbgit's old `_sources.csv` layouts and the `QK<n>` renames once `scratch/research-a`/`-b`
+  are merged or known gone (Task D below).
+- **R3 (needs a decision):** switching `search` to the pack index changes its output. The search regression test must
+  keep passing, and the index must first hold prose paragraphs and the root ledgers.
+
 ## 0. Expansion 2026-09-26: 69 new articles
 One manager session mapped gaps with `rag.py pack` (many answers were a false `good` from an unrelated article), then ran one Sonnet writer per topic following `/kb-add-topic` / `/kb-research`, and pushed each verified topic to GitHub `main`.
 - **Added:** 69 articles, 43 data CSVs, 785 source rows (almost all Microsoft Learn, Claude Code, MCP spec, vendor docs), `lookup_eval.csv` 37 -> 85 rows, new signals/aliases.

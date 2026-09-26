@@ -33,7 +33,7 @@ root-level index files (README.md, _answers.md, _gaps.md, _conflicts.md, _covera
 """
 import argparse, csv, io, json, math, os, re, sys
 from collections import Counter, defaultdict
-import kbid, kbfacts
+import kbcommon, kbid, kbfacts
 
 KB = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SKIP_DIRS = {"_tools", "_private", "_cache", "_census", "artifacts"}  # _census: dated verdict logs, not facts
@@ -191,8 +191,7 @@ def topics(domain):
 
 def source_rows():
     try:
-        with open(os.path.join(KB, "_sources.csv"), encoding="utf-8-sig", newline="") as f:
-            rows = list(csv.DictReader(f))
+        rows = kbcommon.read_sources()
     except OSError as e:
         sys.exit(f"cannot read _sources.csv: {e.strerror}")
     if rows and not {"id", "url"} <= rows[0].keys():

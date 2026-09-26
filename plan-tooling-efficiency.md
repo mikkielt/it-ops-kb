@@ -1,8 +1,8 @@
 # Plan: smaller and faster `_tools/` with every capability kept (researched 2026-09-26)
 
-**Status: research only, nothing implemented.** Measured on `main` at `9f60edc` (Python 3.11, this container). The
-prototypes are not in the repo. The tables below record what they measured, and each recommendation says how to prove
-it keeps behaviour.
+**Status (2026-09-26): implemented except R5 (blocked) and R3's engine switch (needs acceptance).** Researched on
+`main` at `9f60edc` (Python 3.11, this container); implemented on top of `7483cfc`. What was done, measured and left
+is under "Implementation status" at the end; the research below is unchanged.
 
 The question was: shrink the code without losing any capability, find improvements, and decide whether moving from
 stdlib-only to a proper Python project with dependencies (FastAPI? tokenizers?) would make it more efficient.
@@ -245,3 +245,39 @@ The only runtime dependency seriously considered is `mcp`. Leave it out, or put 
 5. R6, kbgit and census batching.
 6. R5 retirements, when no pre-`369beef` branch remains.
 7. R3, one engine, after search eval cases exist.
+
+## Implementation status (2026-09-26)
+
+Method: golden output of every tool surface was recorded before the first change and diffed byte for byte after
+each step. The golden set covered:
+- 255 in-process packs: the 85 eval questions plus 5 probes, each in three formats;
+- domain and batch packs;
+- `search`, `facts`, `audit`, `src --cited`, `topics-for` and `show`;
+- the `kb:` hook, an MCP session over all tools;
+- `check.py`, `build_index.py --check`, `kbgit.py fix --check`, lint, `fetch.py`, `trailers`, `check-trailers`, `log`,
+  `blame` and `asof`.
+
+All stayed identical, except `rag.py topics` listing the new root file `pyproject.toml`.
+
+| step | status | result |
+|---|---|---|
+| R1 persisted index | done | a Store of postings lists, in memory or in a sqlite3 file named after the fingerprint (`_cache/`, `CLAUDE_PLUGIN_DATA`, temp dir; `KB_INDEX`) |
+| R2 in-memory speedups | done | `lru_cache` on `stem`/`normalize_url`; the fingerprint replaces the 30 s TTL; the MCP server warms the index at start |
+| R4 shared helpers | done, narrower | `_tools/kbcommon.py` (read, CSV read/write, `_sources.csv`); one citation regex (`kbid.SOURCE_ID`). Front-matter parsers, content walkers and census's HTTP client stay separate (their rules differ; not testable offline) |
+| R6 kbgit/census speedups | done, one item left | batched trailer audit (74/74 commits identical), `fix` reads each file once, census git calls, per-host sitemap locks, closed files, `Counter` duplicate checks. Left: dropping the GET that fills `http_status` (would change the census log) |
+| R7 tests and CI | done, pytest move not done | CI's kb-tests job has git (33 git scenarios run); `pyproject.toml` with a dev group (pytest, ruff); ruff clean and checked by tests.py; one-pass leak scan; stale text fixed. The conftest/parametrize rewrite was not done: tests.py stays the runner the sync gate calls, and pytest runs the same suite |
+| R5 legacy retirements | **blocked** | `scratch/research-a`/`-b` (fork `6bc0981`, before `superseded_by`) may still turn up (work-left.md); merging them needs the old-layout and `QK<n>` paths |
+| R3 one engine | **prerequisite done; switch needs acceptance** | `Lookup.test_search_finds_the_expected_article` pins today's search quality (8 queries, including `--index`). The switch changes search output, and search also covers prose paragraphs and the root ledgers, which the pack index does not hold. `rag.source_rows` now uses the shared reader |
+
+Measured (cold processes, same container):
+
+| path | before | after |
+|---|---|---|
+| `rag.py pack` (CLI) | 3.93 s | 0.06 s |
+| `kb:` hook | 2.05-2.15 s | 0.05-0.09 s |
+| `rag.py eval` (85 questions) | 8.63 s | 0.71 s |
+| MCP session (12 calls incl. search, audit) | 4.04 s | 1.63 s |
+| `kbgit.py check-trailers` (30 commits) | 0.77-0.95 s | 0.41 s |
+| `tests.py` (full) | 55.5 s | 43 s |
+| index build (once per kb change) | - | about 3 s, 24 MB |
+

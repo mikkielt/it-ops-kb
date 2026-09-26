@@ -272,6 +272,23 @@ class Cohesion(unittest.TestCase):
 
 
 class Lookup(unittest.TestCase):
+    def test_search_finds_the_expected_article(self):
+        """rag.py search (kb_search): the article that answers each query is in its top 5. The baseline any change to
+        the search engine must keep (plan-tooling-efficiency.md R3), including prose and, with --index, the root
+        ledgers that the pack index does not hold."""
+        import rag
+        cases = [("pim activation latency", None, False, "entra/pim-and-governance.md"),
+                 ("kerberos constrained delegation", None, False, "auth/delegation-kcd-obo.md"),
+                 ("adminservice routes", "mecm", False, "mecm/adminservice-routes.csv"),
+                 ("bitlocker recovery keys entra device", None, False, "entra/bitlocker-key-deletion.md"),
+                 ("dsc what-if dry-run", None, False, "dsc/what-if.md"),
+                 ("presidio deanonymize operator", None, False, "privacy/presidio-operators-deanonymize.md"),
+                 ("rc4 aes-only DefaultDomainSupportedEncTypes", None, False, "auth/kerberos.md"),
+                 ("gap unconfirmed instruction limit", None, True, "_answers.md")]
+        for query, domain, index, want in cases:
+            paths = [h["path"].replace(os.sep, "/") for h in rag.search(query, 5, domain, index, [])]
+            self.assertIn(want, paths, f"search {query!r}: {paths}")
+
     def test_persisted_index_gives_identical_packs(self):
         """The sqlite index, the in-memory postings and a domain subset give the same pack, byte for byte; a new
         fingerprint names a new index file."""
