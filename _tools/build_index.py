@@ -106,6 +106,10 @@ def coverage_rows(files, texts, known, warnings):
             if fm is not None:
                 articles[p] = fm
     parts = {f for fm in articles.values() for f in inline_list(fm.get("files"))}
+    by_dir = {}  # dir -> [(path, file name)] in path order: a topic's same-stem files are found in its own directory
+    for f in files:
+        d, _, name = f.rpartition("/")
+        by_dir.setdefault(d, []).append((f, name))
     rows = []
     for p, fm in articles.items():
         if p in parts:
@@ -113,8 +117,8 @@ def coverage_rows(files, texts, known, warnings):
         topic = fm.get("topic") or p[:-3]
         if topic != p[:-3]:
             warnings.append(f"{p}: front matter topic {topic!r} differs from the path")
-        d, stem = p.rsplit("/", 1)[0], p.rsplit("/", 1)[1][:-3]
-        listed = [p] + [f for f in files if f.rsplit("/", 1)[0] == d and f.rsplit("/", 1)[1].startswith(stem + ".") and f != p]
+        d, _, name = p.rpartition("/")
+        listed = [p] + [f for f, n in by_dir.get(d, ()) if n.startswith(name[:-3] + ".") and f != p]
         for f in inline_list(fm.get("files")):
             if not os.path.exists(os.path.join(KB, f)):
                 warnings.append(f"{p}: files: lists missing {f}")
@@ -153,9 +157,10 @@ def readme_table(rows):
     return "\n".join(lines + [END])
 
 
-def build(override=None):
+def build(override=None, texts_out=None):
     """{path: (old text or None, new text)} for every generated file, and a list of warnings.
-    `override` {path: text} replaces files on disk as input (kbgit.py fix builds from ledgers it has not written yet)."""
+    `override` {path: text} replaces files on disk as input (kbgit.py fix builds from ledgers it has not written yet);
+    `texts_out`, a dict, receives the text of every content file read (kbgit.py fix checks them for conflict markers)."""
     override = override or {}
     get = lambda rel: override[rel] if rel in override else read(rel)  # noqa: E731
     warnings = []
@@ -163,6 +168,8 @@ def build(override=None):
     known = {r["id"] for r in sources}
     files = content_files()
     texts = {f: get(f) or "" for f in files}
+    if texts_out is not None:
+        texts_out.update(texts)
     rows = coverage_rows(files, texts, known, warnings)
     out = {"_coverage.csv": csv_text(COVERAGE_FIELDS, rows)}
 

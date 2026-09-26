@@ -900,8 +900,9 @@ def run(a):
     try:
         out = fmt_texts(report) if a.cmd == "fmt" else fix_texts(a, report, problems)
         if a.cmd == "fix" and not problems:
+            texts = {}
             try:
-                result, _, warnings = build_index.build(out)
+                result, _, warnings = build_index.build(out, texts_out=texts)
             except build_index.BuildError as e:
                 raise Problem(f"build_index: {e}")
             for p, (_, new) in result.items():
@@ -911,7 +912,7 @@ def run(a):
             for f in build_index.content_files():
                 t = out.get(f)
                 if t is None and f.endswith((".md", ".csv", ".yaml", ".yml", ".json")):
-                    t = build_index.read(f)
+                    t = texts.get(f)  # read once, by build()
                 if has_markers(t):
                     problems.append(f"{f} has conflict markers; resolve them by hand")
     except Problem as e:
@@ -1295,6 +1296,51 @@ def default_range():
     return "@{upstream}..HEAD" if rev_parse("@{upstream}") else "HEAD"
 
 
+def commit_changes(spec):
+    """{sha: (first parent or "", [changed paths])} for the non-merge commits of `git log SPEC`, from one git call:
+    the paths diff-tree gives against the first parent (no rename detection; a root commit lists every file)."""
+    out = git("-c", "log.showRoot=true", "log", "--no-merges", "--no-renames", "--name-only", "-z",
+              "--format=%x1e%H%x1f%P", *spec)
+    if out is None:
+        return None
+    res = {}
+    for rec in out.split("\x1e")[1:]:
+        head, _, rest = rec.partition("\0")
+        sha, _, parents = head.partition("\x1f")
+        res[sha] = ((parents.split() or [""])[0], sorted(p for p in rest.lstrip("\n").split("\0") if p))
+    return res
+
+
+class BlobReader:
+    """File texts at commits through one `git cat-file --batch` process (blob() starts a git process per file)."""
+
+    def __init__(self):
+        try:
+            self.p = subprocess.Popen(["git", "cat-file", "--batch"], cwd=KB, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+        except OSError:
+            self.p = None
+
+    def __call__(self, rev, rel):
+        if rev == "" or self.p is None:
+            return blob(rev, rel)
+        self.p.stdin.write(f"{rev}:./{rel}\n".encode())
+        self.p.stdin.flush()
+        head = self.p.stdout.readline().split()
+        if len(head) != 3:  # "<name> missing" (or ambiguous): not in that commit
+            return None
+        data = self.p.stdout.read(int(head[2]))
+        self.p.stdout.read(1)
+        return data.decode("utf-8", "replace") if head[1] == b"blob" else None
+
+    def close(self):
+        if self.p is not None:
+            self.p.stdin.close()
+            self.p.wait()
+
+
+_WANT = {}  # sha -> computed trailers: sync audits the same commits twice
+
+
 def trailer_audit(rng, quiet=False):
     """(commits checked, kb commits, [(sha, lines describing what is wrong)]) for a range A..B or one commit;
     None when the range is not valid here."""
@@ -1307,9 +1353,22 @@ def trailer_audit(rng, quiet=False):
     recs = log_records("--no-merges", *spec)
     if recs is None:
         return None
+    changes = commit_changes(spec) or {}
+    blobs = BlobReader()
     bad, kb = [], 0
+    try:
+        for sha, *_ in recs:
+            if sha in _WANT:
+                continue
+            if sha in changes:
+                base, paths = changes[sha]
+                _WANT[sha] = trailers_from(paths, lambda rel: blobs(base, rel), lambda rel: blobs(sha, rel))
+            else:
+                _WANT[sha] = compute(first_parent(sha), sha)
+    finally:
+        blobs.close()
     for sha, short, date, subject, trailers in recs:
-        want = compute(first_parent(sha), sha)
+        want = _WANT[sha]
         have = parse_trailers(trailers)
         wrong = [k for k in KEYS if not values_match(have.get(k), want.get(k, []))]
         v = have.get(VERIFIED)

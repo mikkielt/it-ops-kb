@@ -40,7 +40,7 @@ changed (updated/superseded/gone) and of the confirmed ones (bucket OK or outcom
 
 Exit: 0 ok; 1 check could not write, or confirm/record found an unknown id; 2 bad arguments.
 """
-import argparse, concurrent.futures as cf, csv, datetime, io, json, os, random, re, ssl, subprocess, sys, threading
+import argparse, concurrent.futures as cf, csv, datetime, functools, io, json, os, random, re, ssl, subprocess, sys, threading
 import urllib.error, urllib.request
 from collections import Counter, defaultdict
 from urllib.parse import unquote, urlparse
@@ -250,7 +250,9 @@ def newer_tags(tag, tags, when):
     return [t for _, t in sorted(out)]
 
 
+@functools.lru_cache(maxsize=None)
 def repo_tags(d):
+    """([tag], {tag: creator date}) of a repository clone; read once per run (the clones do not change during one)."""
     out = g(d, "for-each-ref", "--format=%(refname:short) %(creatordate:iso-strict)", "refs/tags")[1]
     when = dict(ln.split(" ", 1) for ln in out.splitlines() if " " in ln)
     return list(when), when
@@ -322,8 +324,10 @@ def check_api_release(d, kind, rec, since):
 
 
 def check_learn(d, path, since):
-    for cand in (path + ".md", path + "/index.md", path + ".yml", path + "/index.yml"):
-        if g(d, "cat-file", "-e", f"HEAD:{cand}")[0] == 0:
+    cands = (path + ".md", path + "/index.md", path + ".yml", path + "/index.yml")
+    have = set(g(d, "ls-tree", "-z", "--name-only", "HEAD", "--", *cands)[1].split("\0"))  # one call for the four probes
+    for cand in cands:
+        if cand in have:
             out = g(d, "log", "--format=%H %cs", f"--since={since}T00:00:00Z", "HEAD", "--", cand)[1]
             commits = [ln.split() for ln in out.splitlines() if ln.strip()]
             h = head(d)
@@ -549,7 +553,11 @@ def write_log(path, rows):
 def cmd_record(a):
     rows = read_log(a.log)
     by_id = {r["id"]: r for r in rows}
-    items = json.load(open(a.from_json, encoding="utf-8")) if a.from_json else [{"id": a.id, "outcome": a.outcome, "note": a.note or ""}]
+    if a.from_json:
+        with open(a.from_json, encoding="utf-8") as f:
+            items = json.load(f)
+    else:
+        items = [{"id": a.id, "outcome": a.outcome, "note": a.note or ""}]
     bad = 0
     for it in items:
         if it.get("id") not in by_id or it.get("outcome") not in OUTCOMES:
@@ -573,7 +581,7 @@ SUFFIX = re.compile(r"(?:;\s*)?confirmed \d{4}-\d{2}-\d{2}: [^;]*$")
 def cmd_confirm(a):
     date = a.date or today()
     log = {r["id"]: r for r in read_log(a.log)}
-    srcs_text = open(os.path.join(KB, "_sources.csv"), encoding="utf-8", newline="").read()
+    srcs_text = kbcommon.read("_sources.csv", newline="", strict=True)
     reader = csv.DictReader(io.StringIO(srcs_text))
     header, rows = reader.fieldnames, list(reader)
     known = {r["id"] for r in rows}
@@ -599,7 +607,7 @@ def cmd_confirm(a):
         if not rel.endswith(".md"):
             continue
         path = os.path.join(KB, rel)
-        text = open(path, encoding="utf-8", newline="").read()
+        text = kbcommon.read(path, newline="", strict=True)
         fm = build_index.front_matter(text)
         if not fm or not fm.get("sources") or "retrieved_utc" not in fm:
             continue
@@ -611,7 +619,8 @@ def cmd_confirm(a):
     state_cols = ["id", "url", "checked_utc", "fetched_utc", "changed_utc", "sha256", "text_sha256", "bytes", "error"]
     state = {}
     if os.path.exists(state_path):
-        state = {r["id"]: r for r in csv.DictReader(open(state_path, encoding="utf-8", newline=""))}
+        with open(state_path, encoding="utf-8", newline="") as f:
+            state = {r["id"]: r for r in csv.DictReader(f)}
     stamp = f"{date}T00:00:00Z"
     urls = {r["id"]: r["url"] for r in rows}
     for sid, lr in log.items():
