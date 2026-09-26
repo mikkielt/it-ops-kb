@@ -892,7 +892,9 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
     the kb (unless it is one name among 75%+ matched words, like AV or PC), when half or more of the informative
     words occur nowhere, or when that article matches under a third of the known ones; `good` when a tagged-fact
     article matches 60% or more (80% if some word is unknown), no named word is missing, and every informative name
-    appears in a top-ranked tagged fact; else `weak`. Untagged content alone never makes a question `good`. A word that is a product alias (_tools/aliases.csv) counts as present where any alias of the product is;
+    appears in a top-ranked tagged fact; else `weak`. Untagged content alone never makes a question `good`. A `good` pack gets a
+    `check:` note (verdict unchanged) when a name the question uses is nowhere in the lead article, or when no tagged
+    fact among the top hits holds half of 4+ key words. A word that is a product alias (_tools/aliases.csv) counts as present where any alias of the product is;
     the other aliases rank at a lower weight but never count as key words. `budget` is in tokens (about 3.5
     characters each) and bounds the text. fmt `concise` drops the article flags and the source url footer;
     footer=False leaves the footer out of the text (pack_many prints one shared footer)."""
@@ -989,6 +991,14 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
         own = set(key_terms(f"{meta.get('title', '')} {meta.get('applies_to', '')}"))
         unmatched = sorted(t for t in named & set(known) if len(t) > 2 and t not in own
                            and not any(st.paths[i] == lead for i in holders[t]))
+    # a `good` whose key words are spread over separate facts, none holding half of them (mailboxes between tenants
+    # matched by a tenant fact and a mailbox fact): with no name to flag, the other sign of a false `good`. No true
+    # `good` in the eval set falls under half; a note only, for the same reason as above.
+    spread = None
+    if verdict == "good" and len(known) >= 4:
+        top = max((sum(1 for t in known if has(u, t)) for _, u in scored if u["tags"]), default=0)
+        if top * 2 < len(known):
+            spread = (top, len(known))
     head = f"coverage: {verdict}"
     if known:
         head += f" (best article matches {len(hit)} of {len(known)} key words: {', '.join(sorted(hit)) or '-'})"
@@ -999,6 +1009,9 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
         names = {stem(w.lower()): w for w in WORD.findall(question)}
         out.append(f"check: {paths[0]} never mentions {', '.join(names.get(t, t) for t in unmatched)}; the facts may be "
                    "about something related. Answer only if a cited line answers the question itself.")
+    if spread:
+        out.append(f"check: no single fact holds half the key words (at most {spread[0]} of {spread[1]}); the facts may "
+                   "be about something related. Answer only if a cited line answers the question itself.")
     if verdict == "none":
         out.append("The kb does not cover this. Do not answer from the hits below; say so, or research it with /kb-research.")
     for h, items in groups if verdict != "none" else [(g[0], g[1][:2]) for g in groups[:1]]:
@@ -1008,7 +1021,7 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
     if srcs and footer and not concise:
         out += ["", "sources:"] + format_sources(srcs)
     return {"verdict": verdict, "missing": missing, "matched": sorted(hit), "informative": informative, "known": known,
-            "unmatched": unmatched, "paths": paths, "sources": [s[0] for s in srcs], "source_rows": srcs,
+            "unmatched": unmatched, "spread": spread, "paths": paths, "sources": [s[0] for s in srcs], "source_rows": srcs,
             "text": "\n".join(out)}
 
 

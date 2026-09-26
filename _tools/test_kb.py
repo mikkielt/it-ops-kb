@@ -18,7 +18,7 @@ import csv, functools, glob, json, os, re, subprocess, sys
 
 import pytest
 
-import kbfacts, kbid
+import kb_hook, kbfacts, kbid
 from conftest import KB, TOOLS
 
 LINT = os.path.join(KB, ".claude", "skills", "kb-verify", "lint.py")
@@ -27,6 +27,7 @@ ALLOWLIST = os.path.join(TOOLS, "tests_allowlist.txt")
 MAX_BYTES = 10 * 1024 * 1024
 # the benchmark's false good (agent_bench s8): the pack matched Copilot Studio's "data-loss-prevention (DLP)" words
 FALSE_GOOD = "Microsoft Purview Data Loss Prevention endpoint DLP onboarding requirements"
+SPREAD_GOOD = "How do I migrate user mailboxes between tenants?"
 
 
 def run(*args):
@@ -441,6 +442,18 @@ class TestLookup:
         assert "decision" not in flagged, "a good pack with a check: line must not be answered without the model"
         ctx = flagged["hookSpecificOutput"]["additionalContext"]
         assert "coverage: good" in ctx and "\ncheck: " in ctx and "Purview" in ctx, ctx[:400]
+
+    def test_spread_key_words_get_a_check_line(self):
+        # no product named: a tenant fact and a mailbox fact make a `good`, but no fact holds half the key words
+        res = kbfacts.pack(SPREAD_GOOD)
+        assert res["verdict"] == "good" and res["spread"] and not res["unmatched"], (res["verdict"], res["spread"])
+        assert res["text"].splitlines()[1].startswith("check: no single fact holds half the key words"), res["text"][:300]
+        flagged = kb_hook.answer("kb: " + SPREAD_GOOD)
+        assert "decision" not in flagged and "\ncheck: " in flagged["hookSpecificOutput"]["additionalContext"]
+        # no true `good` of the eval set gets it
+        for row in csv.DictReader(open(os.path.join(TOOLS, "lookup_eval.csv"), encoding="utf-8")):
+            if row["expect_verdict"] == "good":
+                assert not kbfacts.pack(row["question"])["spread"], row["id"]
 
     def test_false_good_gets_a_check_line(self):
         res = kbfacts.pack(FALSE_GOOD)
