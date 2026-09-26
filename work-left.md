@@ -6,11 +6,11 @@
 Done: 76 headless runs across 7 scenarios and 6 configs (`token-usage-report.md`, "Agent benchmark and routing");
 `_tools/kb_ask.py` routes by the pack verdict (good: Haiku, weak/none: Sonnet), request words are stop words,
 3+ part packs share the budget, two new articles (`ad/krbtgt-password-reset`, `gpo/admx-central-store`).
-Open:
-- False `good` verdicts (words matched anywhere in an unrelated article): no lexical fix found; see the report.
-- `kb_ask.py`: split multi-part sentences and send count questions to `rag.py audit` before routing, so they stay on
-  Haiku; the plugin has no `kb_ask` path yet (it needs the `claude` CLI, so it is a clone/shell tool).
-- The 4 new `UNK` items in `_gaps.md` (New-KrbtgtKeys status, a reset cadence, GPMC store choice, DFSR vs FRS).
+Status:
+- Open: the Messages API backend of `kb_ask.py` is tested against a local mock only; this machine has no API key. Run `ANTHROPIC_API_KEY=... python3 _tools/kb_ask.py -v "<question>"` once to confirm usage (about 1.5k input tokens) and cost.
+- False `good` verdicts: handled by the reader's `INSUFFICIENT` reply in `kb_ask.py` (tested live on the Purview DLP case); the verdict itself still counts words, so MCP and hook users see the pack as before.
+- Done 2026-09-26 (second pass): count/cite questions by the tools, part splitting, tool-less Haiku reader with `INSUFFICIENT` escalation, lean `claude -p`, Messages API backend, Sonnet at low effort. The plugin has no `kb_ask` path (it needs the `claude` CLI or an API key: a clone/shell tool).
+- Closed 2026-09-26: the 4 `UNK` items of the two new articles (both `complete` now).
 
 ## T. `_tools` efficiency plan (`plan-tooling-efficiency.md`)
 Done 2026-09-26: persisted pack index (cold `pack` and the `kb:` hook about 0.06 s, `eval` 0.7 s), one engine

@@ -491,3 +491,34 @@ times on a repeat, at equal or lower wall time, with every check passing.
   eval questions, so it was dropped. Opus catches these; Haiku mostly does not.
 - Multi-part questions written as one sentence and count questions come out `weak` and go to Sonnet. Splitting parts
   and sending counts to `rag.py audit` before routing would keep them on Haiku.
+
+## Router second pass (2026-09-26): web research applied
+
+Recommendations from Claude Code's cost, caching and headless docs and from the routing and RAG-sufficiency
+literature (FrugalGPT/RouteLLM cascades; "Sufficient Context", ICLR 2025), each implemented and measured:
+
+| change | measured |
+|---|---|
+| `claude -p` without user plugins and MCP servers (`--setting-sources project,local --strict-mcp-config`) | context 29.9k -> 24.8k; first run $0.027 -> $0.018 |
+| the good-route reader gets no tools (`--tools ""`) | context 24.8k -> 9.8k; repeat $0.0054 -> $0.0027 |
+| Messages API reader when `ANTHROPIC_API_KEY`/`ANTHROPIC_AUTH_TOKEN` is set | about 1.5k input tokens; tested against a local mock only (no key on this machine) |
+| sufficiency check: the Haiku reader answers `INSUFFICIENT: ...` when the facts are only related, and the question escalates | the Purview endpoint DLP false `good` escalated to Sonnet and was answered from live docs, labelled; $0.115-0.121 in total |
+| counts and "who cites S123" answered by `audit` / `cited_lines` | $0, 0.5 s (was $0.098 first run on Sonnet) |
+| parts split (numbered items or several questions ending in `?`; instruction sentences are not parts) | the three-part question stays on Haiku: $0.013 (was $0.121) |
+| weak/none route: Sonnet at `--effort low` with only the kb and docs servers | off-domain $0.044-0.046 (was $0.084); escalated research $0.115-0.121 (Sonnet alone, s6 before: $0.199-0.247) |
+
+Router totals, 8 scenarios x 2 runs (first run / repeat): single fact $0.0095 / $0.0039, data row $0.0085 / $0.0056,
+three parts $0.0135 / $0.0130, count $0 / $0, off-domain $0.044 / $0.046, Central Store $0.014 / $0.015, KRBTGT
+$0.013 / $0.014, false good escalated $0.121 / $0.115. Opus alone on the same first runs: $0.18-0.29. Every check
+passed.
+
+Checked and left as they are:
+- Prompt cache lifetime: a subscription already gets one hour on the main conversation; on an API key the default is
+  five minutes and one-hour writes cost more, so set `promptCacheTtl: 1h` only when lookups repeat more than five
+  minutes apart.
+- The kb server's tools are `anthropic/alwaysLoad` (tested): no tool-search round trip for the first lookup.
+- Plugin always-on cost (`claude plugin details it-ops-kb`): about 312 tokens (skills 190 + 130); not worth trimming,
+  since the kb-lookup description is also what triggers it. The command lists `Agents (0)` for path-listed agents,
+  but both agents load (`it-ops-kb:kb-lookup`, `it-ops-kb:kb-reviewer`).
+- Rerankers and dense retrieval: not added; the misses are about meaning, which the reader's check handles more
+  cheaply.
