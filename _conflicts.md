@@ -49,7 +49,7 @@ figure. See `agents/instruction-and-context-limits.csv` (superseded row retained
 
 ### Copilot Studio instructions limit: documented 8,000-character field cap vs. observed lower effective ceiling
 Microsoft's own product surfaces present agent/generative-answer-node instructions as capped at 8,000 characters per
-field [COMMUNITY S1841, S1843 — these are Microsoft Community Hub / community-digest sources, not a directly fetched
+field [COMMUNITY S1841, S1843 — S1841 is an unanswered user question (2025-11-07) reporting 8,000 characters under an M365 Copilot licence, and S1843 a community digest, not a directly fetched
 learn.microsoft.com instructions-limit page, so this is not yet a confirmed DOC-vs-DOC conflict]. A community report
 (S1843) describes agents failing at combined lengths well under any single field's 8,000-character cap, via
 `OpenAIAdditionalInstructionsLengthExceededLimit`, because the limit that actually fires is on the *combined* prompt
@@ -457,3 +457,7 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
   pages; the article uses the Support Lifecycle page's plain dates in its Reference table and CSV, and records
   both along with the PT explanation. (rechecked 2026-09-26, kept — explained as a TZ/rounding artifact, not
   resolved to a single date) (topic: windows/powershell-7)
+
+## auth/ntlm-deprecation
+
+- S1200's _sources.csv row says 'published 2025-09-24'; the fetched page's postTime is 2026-01-29 (read 2026-09-27). Row date should be corrected by the census owner. (topic: auth/ntlm-deprecation)

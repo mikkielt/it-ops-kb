@@ -33,10 +33,12 @@ for it; it belongs to the base kb's `graph/` topic.
   and `Audit Directory Service Access` (event 4662) records per-object/per-property access; both need a
   SACL configured on the object, so security-sensitive groups need an explicit SACL to get 5136/4662
   coverage of membership changes beyond the simpler 4728/4729/4732/4733/4756/4757 events. [DOC S1369, S1370]
-- Windows 11 24H2 / Server 2025's NTLM auditing writes to the dedicated
-  `Applications and Services Logs > Microsoft > Windows > NTLM > Operational` channel (events 8001-8004:
-  outgoing-NTLM-would-be-blocked audit, incoming-NTLM-would-be-blocked audit on a member server, and the
-  domain-controller equivalent), separate from the main Security log. [DOC S1371]
+- With the three `Network security: Restrict NTLM` audit policies enabled, NTLM use is logged to the
+  dedicated `Applications and Services Logs > Microsoft > Windows > NTLM > Operational` channel, separate
+  from the Security log: events 8001-8006 (8001 outgoing on the client; 8002 incoming without DC validation;
+  8003 member server with a domain account; 8004-8006 on domain controllers), replaced by 4001-4006 once
+  blocking is enforced. Windows 11 24H2 / Server 2025 add richer events (4020, 4022, 4030, 4032 for use;
+  4021, 4023, 4031, 4033 for blocks) that also record why NTLM was chosen. [DOC S1371]
 - Microsoft Entra ID's Sign-in events page has four distinct log categories -- interactive user,
   non-interactive user, service principal, and managed identity sign-ins -- surfaced separately because a
   `client` engineer's interactive Kerberos/MSAL sign-in, a `site` instance's app-only certificate sign-in,

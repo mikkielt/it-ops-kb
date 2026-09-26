@@ -1,5 +1,5 @@
 product,limit_name,value,unit,error_text,source
-Microsoft Copilot Studio,agent instructions (per-field),8000,characters,"none documented as a runtime error; UI field cap",S1841
+Microsoft 365 Copilot agent builder (user report),agent instructions (per-field),8000,characters,user report in an unanswered Community Hub question; whether a Copilot Studio licence differs is not answered,S1841
 Microsoft Copilot Studio,combined prompt instructions (agent + node + system),unspecified internal threshold,characters,"OpenAIAdditionalInstructionsLengthExceededLimit",S1843
 Microsoft Copilot Studio,generative-answers node custom instructions,8000,characters,"node field cap, not a hard success guarantee",S1843
 Microsoft 365 Copilot declarative agent (manifest 1.4),instructions,8000,characters,"schema validation: must ... be 8,000 characters or less",S1840

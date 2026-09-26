@@ -305,7 +305,7 @@ _Agent: auth_
 _Agent: auth_
 
 ## QA16. NTLM deprecation timeline; RC4-in-Kerberos deprecation dates
-- NTLM: audit (Sep/Nov 2025) → NTLMv1 disabled by default (Oct 2026, `BlockNTLMv1SSO` flips to Enforce) → fallback-reduction features (H2 2026, IAKerb + Local KDC) → network NTLM off by default (future, undated). [DOC S1200]
+- NTLM: NTLMv1-derived SSO credentials audited from the Sep 2025 updates (event 4024) and blocked later via `BlockNTLMv1SSO` (event 4025) [DOC S-q5hl3fyg]; the NTLM programme itself: auditing now, IAKerb + Local KDC in H2 2026, network NTLM off by default in the next major Windows Server release. [DOC S1200]
 - RC4-in-Kerberos, now dated: a KDC-side change for service-account ticket issuance tied to CVE-2026-20833 ships in updates on/after 2026-01-13, KB5073381 (phased via `RC4DefaultDisablementPhase`); `DefaultDomainSupportedEncTypes` defaults to AES-only (0x18) on updates released on/after 2026-04-14; the audit-mode registry key is retired in the 2026-07 update, making AES-only unconditional. [DOC S1215,S1216,S1217]
 
 _Agent: auth_

@@ -26,10 +26,13 @@ attribution. NCSC (UK)/BSI/ANSSI rows remain UNK.
   23H2, 24H2 and 25H2 baselines (alongside Windows Server 2025, Edge, Microsoft 365 Apps, LGPO and
   Policy Analyzer); the page's HTML embeds a direct `download.microsoft.com` URL for each file, so a
   plain HTTP fetch of the page yields the file list without the interactive selection flow [DOC S1400].
-- Microsoft published a Windows 11 version 24H2 security baseline blog post announcing the release,
-  covering changed protections to LAN Manager, Kerberos, UAC and Defender Antivirus [DOC S1401].
-- Microsoft published a Windows 11 version 25H2 security baseline blog post [DOC S1402]; exact
-  publication date not extracted this pass [UNK].
+- Microsoft announced the Windows 11 version 24H2 security baseline on 2024-10-01 (techcommunity post),
+  covering changed protections to LAN Manager, Kerberos, UAC and Defender Antivirus; a later update to the
+  post says the two Administrator protection (UAC) settings are visible but not yet functional [DOC S1401].
+- Microsoft announced the Windows 11 version 25H2 security baseline on 2025-09-30 (techcommunity post);
+  changes since 24H2 include disabling NetBIOS name resolution on all adapters, adding the PSExec/WMI
+  process-creation ASR rule in Audit (2), enabling command line in process creation events, and removing
+  WDigest and Scan packed executables [DOC S1402].
 - CIS Microsoft Windows 11 Enterprise Benchmark current version is v5.1.0 (previous: v5.0.0, then
   bugfix v5.0.1) [DOC S1405, S1406, S1407, S1408]; the front matter of v5.0.x tests against release
   23H2, so applicability to 24H2/25H2 devices should be confirmed against the v5.1.0 front matter
@@ -54,9 +57,10 @@ attribution. NCSC (UK)/BSI/ANSSI rows remain UNK.
   that unclassified STIGs require no sign-in* is `DOC` per S1409/S1411].
 - Windows Server 2025 has its own SCT baseline line, separate from Windows 11's: version 2506
   released 2025-06-25, and version 2602 released 2026-02-23, both via techcommunity announcement
-  posts [DOC S1418, S1419]; the 2602 post's own delta-list content (settings changed vs 2506) was
-  not independently re-extracted by fetch in this pass, only via search-engine digest, so specific
-  setting counts from that delta are tagged `COMMUNITY` rather than `DOC` until confirmed.
+  posts [DOC S1418, S1419]. The 2602 delta vs 2506 (read from the post on 2026-09-27) adds the three
+  Restrict NTLM audit settings, blocks ROCA-vulnerable WHfB keys on DCs, disables sudo and IE11 COM
+  launch, applies Mark of the Web, sets the print RPC listener to Kerberos on member servers and adds
+  `RESTRICTED SERVICES\PrintSpoolerService` to Impersonate a client after authentication [DOC S1419].
 - Intune ships three separate baseline products: a Windows security baseline, a
   Defender for Endpoint baseline (explicitly *not recommended* for virtual machines or VDI
   endpoints per Microsoft Learn), and an Edge baseline (settings format changed May 2023) [DOC

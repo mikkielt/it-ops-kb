@@ -25,9 +25,10 @@ a generic 400 on the underlying model call, worded around "exceeds the maximum" 
   and to the point. Instructions that are too long can lead to latency, timeouts, or issues handling the prompt."
   [COMMUNITY S1843, attributed to Microsoft docs but sourced via a community digest, not fetched directly — treat as
   UNK for exact wording until the primary Microsoft prompt-engineering page is fetched]
-- A Microsoft Community Hub thread titled "AI Agent instructions character limit in Studio license" discusses the
-  character ceiling tied to licensing tier; exact number and whether it differs from 8,000 was not confirmed by direct
-  fetch in this pass. [UNK, see gaps.md]
+- A Microsoft Community Hub question (posted 2025-11-07, read 2026-09-27) reports an 8,000-character limit on agent
+  instructions when building an agent with a Microsoft 365 Copilot licence and asks whether a Copilot Studio licence
+  has a different limit; the thread has no reply, so whether Copilot Studio differs stays open.
+  [UNK: user report in an unanswered thread (S1841), no Microsoft answer]
 - `learn.microsoft.com/.../troubleshoot/power-platform/copilot-studio/authoring/error-codes` is Microsoft's official
   error-code reference for Copilot Studio authoring; it is long (word_count 6089) and was not fully searched for an
   instructions-length-specific code in this pass beyond the community-reported
