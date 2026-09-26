@@ -2,6 +2,40 @@
 
 `main` on GitHub (remote `claude`) now holds everything below plus the 2026-09-26 expansion (section 0); the session branch `claude/relaxed-keller-e8qyl3` was merged and deleted. GitLab `origin/main` has not received these commits. Done and committed: task 6 (sync fixes, the 6b replay as a test), task 7 (plugin, `kb` MCP server, runbook), the research-skill fixes, and the census tooling (`/kb-census`, `_tools/census.py`); see `git log`. Still open:
 
+## P. Plugin for other codebases: distribution and updates (planned 2026-09-26)
+Goal: another team installs `it-ops-kb` into their own repository, reads current facts, and can report what the kb
+lacks; only maintainers write. Do in this order:
+1. **One canonical remote.** GitLab `origin/main` is 89 commits behind GitHub `claude/main` (2026-09-26), and the
+   README install steps and `extraKnownMarketplaces` example point at GitLab, so an install today gets a stale kb.
+   Decide: push GitLab (`python3 _tools/kbgit.py sync --push`, remote `origin`) and keep both in step, or move the
+   README, the marketplace example and `plugin.json` `homepage`/`repository` to GitHub.
+2. **Gap reports from consumers.** A read-only skill `/it-ops-kb:kb-gap` (plugin-shipped, no Write/Bash): it runs
+   `kb_pack`, then drafts an issue text for the user to paste (question, verdict, the nearest articles with
+   `path:line`, what was missing). Nothing is written or sent by the skill. Add it to `plugin.json` `skills`, the
+   README runbook and the plugin tests (read-only tools only).
+3. **Triage loop for gap reports.** Maintainers turn reports into `_gaps.md` entries and `lookup_eval.csv` rows, then
+   `/kb-research` or `/kb-add-topic` in a clone, then `kbgit.py sync --push`. Optional later: a scheduled cloud agent
+   (`/schedule`) that runs `/kb-research` on open reports and pushes verified topics.
+4. **Release channel.** Today every commit on `main` is a plugin version (no `version` field). Add a stable channel
+   for cautious teams: tag releases (for example `kb-YYYY.MM.DD`, or with each census tag) and document pinning a
+   marketplace to a tag; or add `version` to `plugin.json` and bump it on purpose. Decide which.
+5. **Consumer runbook additions (README, "Use from another project").**
+   - Start with "call kb_status": commit, date, latest census (none completed yet: section 1).
+   - Team setup through the project's `.claude/settings.json` (`extraKnownMarketplaces` + `enabledPlugins`); add
+     `it-ops-kb-docs` only for docs servers the team does not already have.
+   - Cost: about 312 always-on tokens per session (`claude plugin details it-ops-kb`), about 10 MB clone, Python 3.9+
+     stdlib, index build about 1.4 s after each update.
+   - Known limit: a `good` pack can be about something related (section B, false `good`); check that the cited fact
+     answers the question.
+   - `kb_ask.py` stays a clone/CI tool (needs the `claude` CLI); in a consumer session the path is `kb_pack` or
+     `/it-ops-kb:kb-lookup`.
+6. **Organisation-specific knowledge stays out of this kb** (placeholders-only rule). For a team's own facts, design a
+   second private kb with the same layout: make the tools take the kb root from an environment variable (for example
+   `KB_ROOT`, default the repository) so `kb_mcp.py` can serve a second root as its own server; check that ids,
+   index cache paths (`_cache/`, `CLAUDE_PLUGIN_DATA`) and `kb_status` stay per root.
+7. **Fix the false `good` for plugin users first** (section B, open item): consumers see `kb_pack` and the `kb:` hook,
+   not `kb_ask.py`.
+
 ## B. Agent benchmark and routing (2026-09-26)
 Done: 76 headless runs across 7 scenarios and 6 configs (`token-usage-report.md`, "Agent benchmark and routing");
 `_tools/kb_ask.py` routes by the pack verdict (good: Haiku, weak/none: Sonnet), request words are stop words,
