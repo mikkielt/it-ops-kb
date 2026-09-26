@@ -1,0 +1,5 @@
+model_id,context_window,max_output,notes,source
+claude-fable-5-1,1M tokens,128K tokens,"Adaptive thinking always on; default effort high; reliable knowledge cutoff Jun 2026; retirement not sooner than 2027-09-01; cache read price 0.025x base input",S-eu3n3hyf
+claude-opus-5-5,1M tokens,128K tokens,"Adaptive thinking always on; default effort medium; reliable knowledge cutoff Jun 2026; retirement not sooner than 2027-09-22; cache read price 0.05x base input; supports output-300k-2026-03-24 beta (300K max output on Batches API)",S-eu3n3hyf
+claude-sonnet-5,1M tokens,128K tokens,"Adaptive thinking; default effort high; reliable knowledge cutoff Jan 2026; retirement not sooner than 2027-06-30; cache read price 0.1x base input; supports output-300k-2026-03-24 beta",S-eu3n3hyf
+claude-haiku-4-5-20251001,200K tokens,64K tokens,"Extended (manual) thinking only, not adaptive; effort not supported; reliable knowledge cutoff Feb 2025; retirement not sooner than 2026-10-15; cache read price 0.1x base input; alias claude-haiku-4-5",S-eu3n3hyf

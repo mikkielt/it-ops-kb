@@ -1,0 +1,18 @@
+resource,max_expiration_minutes,max_expiration_note,evidence
+"user, group, other directory resources",41760,under 29 days,S-z2jpontw
+"Outlook message, event, contact",10080,under seven days; 1440 (under one day) when includeResourceData is true,S-z2jpontw
+"driveItem (OneDrive)",42300,under 30 days,S-z2jpontw
+"list (SharePoint)",42300,under 30 days,S-z2jpontw
+"group conversation",4230,under three days,S-z2jpontw
+"onlineMeeting",4230,under three days,S-z2jpontw
+"printer, printTaskDefinition",4230,under three days,S-z2jpontw
+"todoTask",4230,under three days,S-z2jpontw
+"presence",60,1 hour,S-z2jpontw
+"aiInteraction (Copilot)",4320,three days,S-z2jpontw
+"Security alert",43200,under 30 days,S-z2jpontw
+"Microsoft Entra Health Monitoring alert",42300,under 30 days,S-z2jpontw
+"Teams approvals",43200,under 30 days,S-z2jpontw
+"Teams callRecord",4230,under three days,S-z2jpontw
+"Teams callRecording, callTranscript",4320,three days,S-z2jpontw
+"Teams channel, chat, chatMessage, conversationMember, team, teamsAppInstallation",4320,three days,S-z2jpontw
+"Teams Shifts (offerShiftRequest, openShiftChangeRequest, shift, swapShiftsChangeRequest, timeOffRequest)",360,6 hours,S-z2jpontw

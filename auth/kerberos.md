@@ -30,6 +30,8 @@ status: partial
 - Microsoft's own explainer of the RC4-in-Kerberos change (rationale: RC4 is the basis of Kerberoasting) confirms the same phased approach without adding new dates beyond S1216. [DOC S1217]
 
 ## Reference
+- `auth/windows-hello-for-business.md` — WHfB deployment models and trust types (cloud Kerberos, key, certificate) that use Kerberos to reach on-premises AD; the Protected Users and RC4/NTLM deprecation facts above also apply to accounts signing in with WHfB.
+
 | Protected Users effect | Detail | Breaks a Kerberos-only client? |
 |---|---|---|
 | No NTLM | Kerberos/Negotiate only | No — client design already assumes Kerberos-only |

@@ -39,6 +39,8 @@ uninstall); keep chains at most five deep. Required deployments install at the d
 - Deployment requirement re-evaluation: default every 7 days. [DOC S204]
 
 ## Reference
+- `mecm/osd-task-sequences.md` documents the Install Application task sequence step that runs deployment types installed here as part of an OS deployment, and the `TSDTHandler.log`/`AppEnforce.log`/`smsts.log` combination used to troubleshoot it.
+
 | Script detection: exit code | STDOUT | STDERR | State |
 |---|---|---|---|
 | 0 | empty | empty | Not installed |

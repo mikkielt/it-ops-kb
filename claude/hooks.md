@@ -43,6 +43,12 @@ under their `mcp__<server>__<tool>` names. PreToolUse returns `hookSpecificOutpu
 | Elicitation | auto-answer elicitation | `action`, `content` |
 | ElicitationResult | override user answer | `action`, `content` |
 
+Related: `claude/plugins.md` — a plugin's `hooks/hooks.json` and manifest `hooks` key use this same event/matcher
+shape and are merged together at load. `claude/settings-and-scopes.md` — `allowManagedHooksOnly`, `disableAllHooks`,
+`allowedHttpHookUrls`, and the security-approval dialog required for a server-managed or MDM-delivered hook.
+`claude/agent-sdk.md` — the Agent SDK runs this same hook engine (`options.hooks` callbacks plus settings-file
+shell-command hooks) inside an embedded session; see its permission-callback (`can_use_tool`/`canUseTool`) example.
+
 ## Examples
 ```json
 { "hooks": { "PostToolUse": [ { "matcher": "mcp__inventory__.*", "hooks": [ { "type": "command", "command": "inventory hook redact" } ] } ] } }

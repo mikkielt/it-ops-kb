@@ -32,6 +32,8 @@ joined)" — Microsoft does not say whether it is filled for **hybrid-joined** d
 
 ## Reference
 See `machine-properties.csv` (property, type, description_summary, filterable_get_machines, source_id).
+See `defender/advanced-hunting.md` for the `DeviceInfo` advanced hunting table (join key for `AadDeviceId`/`JoinType`) and its quotas.
+See `defender/mde-onboarding.md` for onboarding/offboarding methods, streamlined vs. standard connectivity, device tagging, and security settings management that produce this resource's `onboardingStatus` and tag fields.
 
 ## Examples
 `GET https://api.security.microsoft.com/api/machines?$filter=computerDnsName eq 'pl-lt-00123.corp.example.com'`

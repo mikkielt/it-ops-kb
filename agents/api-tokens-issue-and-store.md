@@ -187,6 +187,10 @@ Encrypted, DPAPI-NG, age/sops) and `mcp/authorization.md` (MCP OAuth 2.1, DCR de
 | GitLab CI/CD protected + masked variables | exposure on unprotected branches; casual log display | not a guarantee against a malicious job's own printing of the value | S449 |
 | GitLab job tokens (vs PAT) | a long-lived, human-scoped credential used by automation | scope/lifetime details for the fine-grained job-token model itself | S2046 |
 | HashiCorp Vault AppRole | a static, unbounded machine credential | dynamic secrets specifics for a project's own backends — [UNK] | S2049 |
+
+- See also `entra/agent-id.md`: the credentials this article covers (FIC, certificates, client secrets)
+  are exactly what a Microsoft Entra Agent ID **agent identity blueprint** holds and issues on behalf of a
+  credential-less agent identity.
 | Claude Code `apiKeyHelper` | a static API key on the CLI's own credential path | the script's own storage of what it fetches (delegates back to one of the above) | S2041 |
 
 ## Examples

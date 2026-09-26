@@ -1,0 +1,18 @@
+file,field,purpose,example,source
+.psrc,VisibleCmdlets,"cmdlets/functions exposed in the session, optionally restricted by parameter and allowed value","@{ Name='Restart-Service'; Parameters=@{ Name='Name'; ValidateSet=@('Spooler') } }",S-p5lwby5b
+.psrc,VisibleFunctions,"functions (built-in or custom, via FunctionDefinitions) exposed in the session","VisibleFunctions = 'Get-TopProcess'",S-p5lwby5b
+.psrc,VisibleExternalCommands,executables/.ps1 scripts exposed by full path only,"'C:\Windows\System32\whoami.exe'",S-p5lwby5b
+.psrc,VisibleProviders,PowerShell providers exposed (none by default); never expose FileSystem or Certificate,"VisibleProviders = 'Registry'",S-p5lwby5b
+.psrc,VisibleAliases,aliases exposed in the session,"VisibleAliases = 'gsv'",S-p5lwby5b
+.psrc,FunctionDefinitions,script blocks defining custom functions named in VisibleFunctions; run in full language mode not JEA-constrained,"@{ Name='Get-TopProcess'; ScriptBlock={...} }",S-p5lwby5b
+.psrc,ModulesToImport,modules made available to the role,"ModulesToImport = 'DnsServer'",S-p5lwby5b
+.pssc,SessionType,must be RestrictedRemoteServer for a JEA endpoint (NoLanguage mode; only Clear-Host/Exit-PSSession/Get-Command/Get-FormatData/Get-Help/Measure-Object/Out-Default/Select-Object visible by default),"SessionType = 'RestrictedRemoteServer'",S-xe3uwlpq
+.pssc,RoleDefinitions,maps users/groups to one or more .psrc role capabilities by base filename (no .psrc extension); every listed principal gets WinRM ACL access,"RoleDefinitions = @{ 'CONTOSO\JEA_DNS_ADMINS' = @{ RoleCapabilities = 'DnsAdmin' } }",S-xe3uwlpq
+.pssc,RunAsVirtualAccount,run connected users as a one-time virtual account destroyed when the session ends; default membership is local Administrators (Domain Admins on a DC),"RunAsVirtualAccount = $true",S-xe3uwlpq
+.pssc,RunAsVirtualAccountGroups,"restrict the virtual account to named local (or, on a DC, domain) security groups instead of Administrators/Domain Admins","RunAsVirtualAccountGroups = 'NetworkOperator','NetworkAuditor'",S-xe3uwlpq
+.pssc,GroupManagedServiceAccount,"run the session as a domain gMSA instead of a virtual account, needed when the session must reach network resources (the second hop); all users share one identity in logs","GroupManagedServiceAccount = 'Domain\MyJEAGMSA'",S-xe3uwlpq
+.pssc,TranscriptDirectory,"folder where PowerShell writes a transcript of every JEA session, written by Local System; standard users should have no access","TranscriptDirectory = 'C:\ProgramData\JEAConfiguration\Transcripts'",S-xe3uwlpq
+.pssc,MountUserDrive,mount a per-user PSDrive (default cap 50MB) so users can move files without FileSystem provider access,"MountUserDrive = $true",S-xe3uwlpq
+.pssc,UserDriveMaximumSize,byte cap for MountUserDrive (default 50MB = 52428800 if unset),"UserDriveMaximumSize = 524288000",S-xe3uwlpq
+.pssc,RequiredGroups,conditional-access rule (And/Or hashtable) requiring connecting users to also belong to named groups (e.g. a JIT-elevation or MFA/smartcard-logon group) beyond RoleDefinitions membership,"RequiredGroups = @{ Or = '2FA-logon','smartcard-logon' }",S-xe3uwlpq
+.pssc,VisibleCmdlets/VisibleFunctions/VisibleProviders,"session configuration files accept the same fields as a .psrc, applying to every connecting user regardless of role","VisibleCmdlets = 'Get-Date'",S-xe3uwlpq

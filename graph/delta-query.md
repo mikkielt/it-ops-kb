@@ -33,3 +33,6 @@ status: complete
 
 ## Examples
 - `GET https://graph.microsoft.com/v1.0/devices/delta?$select=deviceId,displayName,trustType,approximateLastSignInDateTime`
+
+## Related
+- `graph/batching-and-query.md`: change-notification subscriptions have the same undocumented-support gap for `device`, `managedDevice` and `windowsAutopilotDeviceIdentity`.

@@ -1,0 +1,94 @@
+---
+topic: windows/laps
+priority: P2
+applies_to: "Windows LAPS (Windows 10 22H2+/11 21H2+/Server 2019+ with April 2023 update; automatic account management and passphrases need Windows 11 24H2/Server 2025); Microsoft Entra ID; Intune"
+retrieved_utc: 2026-09-26
+sources: [S1226, S-twjwzzdw, S-djs7xprf, S-d67v4ujp, S-pqlq3zuw, S-krw7psw7, S-rsgl4z3v, S-pfq3p4yz, S-b2kbbt73, S-kqvek5fm, S-m6dgyqa2, S-jmzxsdjr, S-lnzspig4]
+status: partial
+files: [windows/laps.csv]
+---
+
+# Windows LAPS: policy, retrieval, events, and Entra/AD schema
+
+## Summary
+- Windows LAPS rotates and backs up a managed local administrator (or DSRM) password to Microsoft Entra ID or Windows Server Active Directory; a device can back up to only one directory, never both. [DOC S1226, S-djs7xprf]
+- Policy comes from four roots, evaluated in order with the first populated root winning entirely (no merging across roots): CSP (`HKLM\Software\Microsoft\Policies\LAPS`) > GPO (`HKLM\Software\Microsoft\Windows\CurrentVersion\Policies\LAPS`) > local config (`...\CurrentVersion\LAPS\Config`) > legacy emulation (`HKLM\Software\Policies\Microsoft Services\AdmPwd`). [DOC S-twjwzzdw]
+- Full setting table (name, GPO registry value, CSP node, allowed values, default, Entra/AD applicability, minimum OS) is in `windows/laps.csv`.
+
+## Facts
+- Windows LAPS runs an hourly background policy-processing cycle; it is not a Scheduled Task and the interval isn't configurable. [DOC S-djs7xprf]
+- Devices joined only to Entra ID can back up only to Entra ID; devices joined only to AD can back up only to AD; hybrid-joined devices can choose either; workplace-joined (WPJ) devices aren't supported. [DOC S1226, S-b2kbbt73]
+- CSP-based policy (e.g. from Intune) takes precedence over GPO and legacy sources: once any LAPS setting is configured via CSP, GPO-configured settings are ignored entirely. [DOC S-jmzxsdjr, S-twjwzzdw]
+- `BackupDirectory=0` disables backup, `1` backs up to Entra ID, `2` backs up to AD; default is `0`. [DOC S-jmzxsdjr]
+- `PasswordAgeDays` range 1-365, default 30 (minimum enforced value is 7 when backing up to Entra ID); changing the value doesn't itself force an immediate rotation. [DOC S-twjwzzdw, S-jmzxsdjr]
+- `PasswordLength` range 8-64, default 14; applies only when `PasswordComplexity` is 1-5. [DOC S-jmzxsdjr]
+- `PassphraseLength` range 3-10 words, default 6; applies only when `PasswordComplexity` is 6-8; requires Windows 11 24H2/Server 2025. [DOC S-jmzxsdjr]
+- `PasswordComplexity` values: 1=uppercase, 2=+lowercase, 3=+numbers, 4=+special characters (default), 5=4 with improved readability (avoids visually similar characters), 6=passphrase (long words), 7=passphrase (short words), 8=passphrase (short words, unique prefixes); values 5-8 require Windows 11 24H2/Server 2025, and an unsupported value falls back to the default of 4 — split policies by OS version if mixing 24H2 and older clients. [DOC S-jmzxsdjr, S-twjwzzdw]
+- `PostAuthenticationResetDelay` range 0-24 hours, default 24; `0` disables all post-authentication actions. [DOC S-jmzxsdjr]
+- `PostAuthenticationActions` values: 1=reset password, 3=reset+logoff managed sessions (default), 5=reset+reboot device, 11=reset+logoff+terminate remaining processes; value 11 requires Windows 11 24H2/Server 2025. [DOC S-jmzxsdjr]
+- `ADPasswordEncryptionEnabled` (default true) is honored only when the AD domain is at Windows Server 2016 Domain Functional Level or higher and `BackupDirectory=2`; otherwise the password is stored clear-text in AD. [DOC S-jmzxsdjr]
+- `ADPasswordEncryptionPrincipal` sets the SID or fully qualified name of the single security principal that can decrypt the password (default Domain Admins of the device's domain); the Domain Admins default applies only when the setting is not configured: an invalid user or group name causes a policy processing failure and the password is not backed up; and the principal can't be changed after a password is already encrypted against it. [DOC S-jmzxsdjr, S-djs7xprf]
+- Windows LAPS password encryption uses CNG DPAPI with AES-256, and supports only a single decrypting security principal per password (use a wrapper group to grant multiple principals). [DOC S-djs7xprf]
+- `ADEncryptedPasswordHistorySize` range 0-12, default 0 (disabled); ignored unless `ADPasswordEncryptionEnabled=true`. [DOC S-jmzxsdjr]
+- `ADBackupDSRMPassword` backs up the DSRM account password on domain controllers to AD; not exposed via the CSP (GPO/local-config only), and DSRM backup requires encryption. [DOC S-twjwzzdw, S-djs7xprf]
+- Automatic Account Management (Windows 11 24H2/Server 2025 only) can create and manage a custom local admin account: `AutomaticAccountManagementTarget=0` manages the built-in Administrator, `=1` (default) manages a new custom account; `AutomaticAccountManagementNameOrPrefix` defaults to `WLapsAdmin` (max 20 characters); `AutomaticAccountManagementRandomizeName=true` appends a random 6-digit numeric suffix on each rotation; `AutomaticAccountManagementEnableAccount` enables/disables the target account (default false = disabled). [DOC S-jmzxsdjr]
+- The CSP adds two action nodes not present in GPO: `Actions/ResetPassword` (exec, immediately rotates the password ignoring `PasswordAgeDays`) and `Actions/ResetPasswordStatus` (returns an HRESULT: `0x0` succeeded, `0x8000000` pending, other = error). [DOC S-jmzxsdjr]
+- The LAPS GPO ADMX/ADML files aren't automatically copied into the GPO Central Store; an admin must copy them manually to see the policy there. [DOC S-twjwzzdw, S-kqvek5fm]
+- Rotating a password early: `Reset-LapsPassword` (local cmdlet), the CSP `Actions/ResetPassword` node, editing the AD expiration attribute, or letting post-authentication actions trigger it; in Entra ID mode there is no supported way to force expiration by editing a stored timestamp, and excessive `Reset-LapsPassword` calls may be throttled. [DOC S-djs7xprf, S-m6dgyqa2]
+- Windows LAPS blocks any external attempt (other than Windows LAPS itself) to change the password of its managed account, to prevent a "torn state" where the directory-stored and locally-stored passwords diverge; a blocked attempt is logged as event 10031 with `STATUS_POLICY_CONTROLLED_ACCOUNT` (0xC000A08B). [DOC S-djs7xprf]
+- Windows LAPS is disabled in Safe Mode, and its managed account is exempt from `SCForceOption` (smart-card-required sign-in enforcement). [DOC S-djs7xprf]
+- OS image rollback detection (Windows 11 24H2/Server 2025, AD backup only): a random GUID is written to `msLAPS-CurrentPasswordVersion` each time a password is persisted and compared to a local copy each processing cycle; a mismatch triggers immediate rotation. This attribute requires the Windows Server 2025 forest schema (added automatically when the first Server 2025 DC is promoted) — it is not added by `Update-LapsADSchema`. [DOC S-djs7xprf, S-jmzxsdjr]
+- Default read roles for LAPS passwords stored in Entra ID: Global Administrator, Cloud Device Administrator, and Intune Administrator; Security Reader (plus Cloud Device Administrator, Intune Administrator, Helpdesk Administrator, Security Administrator) can read LAPS metadata without passwords. [DOC S-djs7xprf, S-b2kbbt73]
+- Enabling Entra-ID-joined LAPS requires an admin to turn on the tenant-level device setting (Identity > Devices > Device settings > "Enable Local Administrator Password Solution (LAPS)"), or `PATCH` the beta `deviceRegistrationPolicy` via Graph; Entra-hybrid-joined devices don't require this tenant setting. [DOC S-m6dgyqa2, S-b2kbbt73]
+- In Entra mode, only a subset of settings applies: `BackupDirectory`, `PasswordAgeDays`, `PasswordLength`, `PasswordComplexity`, `AdministratorAccountName`, `PostAuthenticationResetDelay`, `PostAuthenticationActions`; AD-only settings (`PasswordExpirationProtectionEnabled`, `ADPasswordEncryptionEnabled`, `ADPasswordEncryptionPrincipal`, `ADEncryptedPasswordHistorySize`) don't apply. [DOC S-m6dgyqa2, S-jmzxsdjr]
+- `Get-LapsAADPassword` wraps the Microsoft Graph PowerShell module (must be installed and signed in via `Connect-MgGraph`); requires `Device.Read.All` to resolve a device name to id, and `DeviceLocalCredential.ReadBasic.All` (metadata only) or `DeviceLocalCredential.Read.All` (includes clear-text password) depending on parameters; `-DeviceIds`, `-IncludePasswords`, `-IncludeHistory`, `-AsPlainText` are supported parameters; duplicate device names cause a lookup failure. [DOC S-krw7psw7, S-djs7xprf]
+- Microsoft Graph `GET /directory/deviceLocalCredentials/{deviceId}` retrieves the stored credential; `$select=credentials` needs `DeviceLocalCredential.Read.All`, while basic metadata needs only `DeviceLocalCredential.ReadBasic.All`; the response's `passwordBase64` field holds the encoded password. [DOC S-pqlq3zuw]
+- Intune Graph beta action `POST /deviceManagement/managedDevices/{managedDeviceId}/rotateLocalAdminPassword` triggers an out-of-cycle rotation and requires `DeviceManagementManagedDevices.PrivilegedOperations.All`; returns HTTP 204 on success. [DOC S-rsgl4z3v]
+- Intune RBAC for LAPS: creating/viewing LAPS policy needs the *Security baselines* RBAC category (included in the built-in **Endpoint Security Manager** role); rotating a password from the Intune admin center needs a custom role with Managed devices: Read, Organization: Read, and Remote tasks: Rotate Local Admin Password (this action isn't in any built-in Intune role, including Intune Administrator); viewing the stored password needs the Entra permission `microsoft.directory/deviceLocalCredentials/password/read` (or `.../standard/read` for metadata only); viewing related audit logs needs Intune's built-in **Read Only Operator** role. [DOC S-b2kbbt73]
+- Intune LAPS requires Intune Plan 1 (or a free trial) and Microsoft Entra ID Free; it is supported in GCC High; workplace-joined (WPJ) devices aren't supported by Intune for LAPS. [DOC S-b2kbbt73]
+- Minimum OS builds for the LAPS CSP (Windows LAPS with Intune): Windows 11 22H2 KB5025239, Windows 11 21H2 KB5025224, Windows 10 22H2/21H2/20H2 KB5025221, Windows 10 Enterprise LTSC 2019+. [DOC S-b2kbbt73]
+- Deleting a device in Entra ID permanently loses its LAPS credential; there is no built-in Entra recovery path for a deleted device's password, and LAPS won't rotate or back up a password for a device that is administratively disabled in Entra. [DOC S-b2kbbt73]
+- Legacy Microsoft LAPS is deprecated as of Windows 11 23H2+ (newer OS blocks its MSI installer); Windows LAPS is a separate native implementation and doesn't require legacy LAPS to be installed. [DOC S1226]
+- Legacy Microsoft LAPS emulation mode lets native Windows LAPS honor existing legacy LAPS GPO settings during migration; it requires the legacy LAPS client-side extension to NOT be installed on the device (its presence disables emulation), native Windows LAPS settings always take precedence over emulated legacy settings when both are configured, and emulation mode can only store clear-text passwords in AD (no encryption or password history). [DOC S1226]
+- Event log channel: **Applications and Services > Microsoft > Windows > LAPS > Operational**. On a domain controller this channel logs only DSRM-account management events, never domain-joined-client backup events. [DOC S-pfq3p4yz]
+- Key event IDs: 10003 (policy processing cycle started), 10004 (cycle succeeded), 10005 (cycle failed, includes an error code), 10018 (AD password update succeeded), 10020 (local managed account password updated), 10021 (policy configuration snapshot when backing up to AD), 10022 (policy configuration snapshot when backing up to Entra ID), 10023 (policy configuration snapshot, legacy LAPS emulation source), 10029 (Entra ID password update succeeded), 10031 (blocked external password modification attempt, tamper protection), 10041 (successful authentication detected, post-auth rotation scheduled), 10042 (post-auth grace period expired, actions executing), 10043 (post-auth password reset failed, will retry), 10044 (post-auth reset and actions succeeded), 20000 (CSP rejected an MDM directive because the device doesn't appear joined — benign during Autopilot pre-provisioning technician phase, self-resolves once the device rejoins Entra ID in the user phase). [DOC S-pfq3p4yz, S-kqvek5fm]
+- `Update-LapsADSchema` extends the AD forest schema once per forest with the LAPS attributes; it can be run from any Windows LAPS-capable OS as long as the caller has schema-modification rights, and doesn't require a Windows Server 2019/2022 DC. [DOC S-kqvek5fm, S-d67v4ujp]
+- Windows LAPS AD schema attributes (added by `Update-LapsADSchema`): `msLAPS-Password` (clear-text, JSON string with keys `n`=account name, `t`=UTC update time as 64-bit hex, `p`=clear-text password), `msLAPS-PasswordExpirationTime` (64-bit UTC integer), `msLAPS-EncryptedPassword`, `msLAPS-EncryptedPasswordHistory` (multi-valued), `msLAPS-EncryptedDSRMPassword`, `msLAPS-EncryptedDSRMPasswordHistory` (multi-valued), `msLAPS-CurrentPasswordVersion` (binary GUID, Server 2025 forest schema only). [DOC S-lnzspig4]
+- Legacy-to-Windows-LAPS schema mapping: `ms-Mcs-AdmPwdExpirationTime` -> `msLAPS-PasswordExpirationTime`; `ms-Mcs-AdmPwd` -> `msLAPS-Password`; the encrypted/DSRM attributes have no legacy equivalent. [DOC S-lnzspig4]
+- The extended right `ms-LAPS-Encrypted-Password-Attributes` (rights GUID `f3531ec6-6330-4f8e-8d39-7a671fbac605`, valid accesses 48 = RIGHT_DS_READ_PROPERTY | RIGHT_DS_WRITE_PROPERTY) grants a managed computer SELF permission to read/write its own encrypted-password attributes. [DOC S-lnzspig4]
+- Windows LAPS management cmdlets for AD: `Set-LapsADComputerSelfPermission` (grants computers SELF permission to manage their own attributes), `Set-LapsADReadPasswordPermission`, `Set-LapsADResetPasswordPermission`, `Find-LapsADExtendedRights` (audits who holds the extended right), `Set-LapsADPasswordExpirationTime`, `Get-LapsADPassword -AsPlainText` (returns fields including `Source`, `EncryptedPassword`), `Invoke-LapsPolicyProcessing` (forces an immediate policy-processing cycle instead of waiting for the hourly run). [DOC S-d67v4ujp]
+- `Get-LapsADPassword` supports `-Port` and `-RecoveryMode` against a mounted AD backup exposed via `dsamain`, for disaster-recovery password retrieval. [DOC S-d67v4ujp]
+- Windows LAPS licensing: the feature itself is free on all supported Windows platforms and free to back up to AD; backing up to Entra ID requires Entra ID Free or higher; other Entra/Intune features layered on top (e.g. Intune management) can carry their own licensing. [DOC S1226]
+
+## Reference
+- `security/settings-crosswalk.csv:162-164` lists the MSFT Windows 11 24H2 baseline's `BackupDirectory=2`, `ADPasswordEncryptionEnabled`, and `ADBackupDSRMPassword` GPO rows under `System\LAPS`; this article gives the full setting/CSP/value/default reference those rows draw from. See also (back-link added there).
+- `auth/enterprise-access-model.md:19,30` treats Windows LAPS as a universal control alongside PAWs for the enterprise access model's control and management planes; this article is the detailed LAPS reference for that claim.
+- `entra/bitlocker-key-deletion.md:22,25` documents that soft-deleting an Entra device (30-day preview window) keeps its LAPS password recoverable, while a hard delete or immediate delete of a non-preview device type loses it permanently — consistent with the Entra-deletion fact above.
+- `intune/endpoint-privilege-management.md` documents Endpoint Privilege Management (EPM), a complementary least-privilege control (temporary application elevation instead of a rotated local admin account) organizations typically deploy alongside Windows LAPS when removing standing local admin rights.
+- Legacy Microsoft LAPS emulation mode, migration steps, and troubleshooting guidance (error-code-to-cause tables) are out of scope here; see `laps-scenarios-legacy` and the Windows LAPS troubleshooting guidance page for a future refresh. [UNK: full troubleshooting error-code table not yet reviewed]
+- `intune/remote-actions.md` documents the Graph `rotateLocalAdminPassword` (beta) remote action that manually triggers an out-of-band rotation of the password this article's policy governs.
+
+## Examples
+- Read a device's LAPS password from Entra ID with least privilege first, then escalate only if needed:
+  ```powershell
+  Connect-MgGraph -Environment Global -TenantId 00000000-0000-0000-0000-000000000000 -ClientId 00001111-aaaa-2222-bbbb-3333cccc4444
+  Get-LapsAADPassword -DeviceIds PL-LT-00123                              # metadata only, DeviceLocalCredential.ReadBasic.All
+  Get-LapsAADPassword -DeviceIds PL-LT-00123 -IncludePasswords -AsPlainText  # needs DeviceLocalCredential.Read.All
+  ```
+- Force an immediate AD-side rotation and confirm it in the event log (event 10018) without waiting for the hourly cycle:
+  ```powershell
+  Invoke-LapsPolicyProcessing
+  Get-WinEvent -LogName "Microsoft-Windows-LAPS/Operational" -MaxEvents 20 |
+    Where-Object Id -in 10003,10004,10005,10018
+  ```
+- Rotate a device's password remotely via Graph (beta), for a device managed by Intune:
+  ```
+  POST https://graph.microsoft.com/beta/deviceManagement/managedDevices/{managedDeviceId}/rotateLocalAdminPassword
+  Authorization: Bearer <token with DeviceManagementManagedDevices.PrivilegedOperations.All>
+  ```
+  Expect `204 No Content` on success; check event 10041/10044 on the device, or the Entra portal, to confirm.
+- Extend the forest schema once, then delegate AD read permission to a helpdesk group (never member of Domain Admins) instead of relying on Domain Admins-only decryption:
+  ```powershell
+  Update-LapsADSchema -Verbose
+  Set-LapsADReadPasswordPermission -Identity "corp.example.com/Computers" -AllowedPrincipals "corp.example\jan.kowalski"
+  ```

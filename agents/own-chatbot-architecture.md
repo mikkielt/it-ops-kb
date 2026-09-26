@@ -123,6 +123,17 @@ status: complete
 - Quota/billing/DLP/ALM facts underlying the "leaving Copilot Studio" cost comparison:
   `agents/copilot-studio-inventory.md`.
 - Full QG17-QG20 answers with citations: `_parts/agents-copilot/answers.md`.
+- `entra/agent-id.md`: depth on the Entra agent identities and blueprints Foundry Agent Service (per
+  project and per published agent) and Copilot Studio (per agent, shared tenant blueprint) create
+  automatically for the products this article covers.
+- `agents/microsoft-agent-framework.md`: depth on the **Agent Framework** named above as one of the
+  bring-your-own-container options for Foundry hosted agents — its `ChatAgent`/`Agent` abstraction,
+  MCP tool client types (`MCPStdioTool`, `MCPStreamableHTTPTool`, `MCPWebsocketTool`), graph-based
+  Workflows with checkpointing/human-in-the-loop, and migration paths from Semantic Kernel and
+  AutoGen.
+- `agents/foundry-agent-service.md`: depth on Foundry Agent Service itself — the full tool/toolbox
+  catalogue (MCP `require_approval` enforcement, tool search, Skills), Basic/Standard/BYO-VNet setup
+  tiers, the 2026 RBAC role rename, and fixed quotas/limits.
 
 ## Examples
 - A hypothetical Teams front for a device-management CLI: an engineer's Teams message ("check

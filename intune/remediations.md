@@ -35,6 +35,10 @@ scripts is not documented (the 200 KB limit is documented only for platform Powe
 - Maximum remediation script file size and remediation script timeout: not stated in S609. [UNK]
 
 ## Reference
+See also `intune/remote-actions.md`: the Graph action behind the on-demand "Run remediation" button is
+`initiateOnDemandProactiveRemediation` (beta), `POST /deviceManagement/managedDevices/{id}/initiateOnDemandProactiveRemediation`
+with a `scriptPolicyId` parameter.
+
 | Limit | Value | Source |
 |---|---|---|
 | Script packages per tenant | 200 | S609 |

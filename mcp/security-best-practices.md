@@ -37,3 +37,6 @@ localhost redirect URI impersonation, CIMD trust policies, scope minimization. L
 
 ## Examples
 A stdio server launched by Claude Code on PL-LT-00123 is reachable only by its parent process; no localhost port is opened. [DER S716: stdio limits access to the MCP client]
+
+See mcp/transports-streamable-http.md for the Streamable HTTP transport these SSRF/local-server/Origin-validation
+rules apply to, and mcp/transports-stdio.md for the stdio transport that avoids most of them by construction.

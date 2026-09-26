@@ -601,3 +601,15 @@ Still open: (topic: auth/configmgr-rbac-auth)
 - No documented Intune setting, ADMX/Group Policy setting or CSP node for Smart App Control's own mode (Off/On/Evaluation) was found. Tried (2026-09-25, Microsoft Learn MCP search): "Smart App Control policy CSP VerifiedAndReputablePolicyState ApplicationControl Intune configure"; "Smart App Control App Control for Business policy Intune Group Policy manage"; fetched the SAC overview, the test-your-app page and the App Control for Windows page. Only the `VerifiedAndReputablePolicyState` registry value (turn off) and App Control for Business policies surfaced.
 - "Enterprise managed" (48-hour evaluation rule) is not defined on the pages read. Tried: same searches plus "enterprise managed devices turned off evaluation 48 hours domain joined Intune enrolled".
 - The consumer FAQ at support.microsoft.com (linked from S2200) was not read: the Learn MCP server does not serve it. It may state the re-enable path and region list.
+
+## security/vulnerability-prioritization
+
+- NVD API 2.0 exact base endpoint path (e.g. `/rest/json/cves/2.0`), the `lastModStartDate`/`lastModEndDate`
+  120-day maximum window, and `resultsPerPage` maximum: the NVD "Start Here"/API reference pages are
+  JS-rendered and returned only rate-limit and API-key text through the available fetch tools (2026-09-26).
+  (topic: security/vulnerability-prioritization)
+- EPSS API documented rate limit (if any) beyond the default page size: not found on `first.org/epss/api` (the
+  page returned 404) or the API's own JSON response (2026-09-26). (topic: security/vulnerability-prioritization)
+- MSRC CVRF API authentication: the Swagger definition lists no `api-key` header, but whether the interactive
+  portal or a production integration still requires a subscription key was not confirmed (2026-09-26).
+  (topic: security/vulnerability-prioritization)

@@ -163,6 +163,10 @@ files: [agents/copilot-studio-feature-map.csv]
   notes, sources).
 - Migration paths (export formats, SDKs, retirement dates) are in
   `agents/own-chatbot-architecture.md`, QG18/QG19 material.
+- Declarative-agent manifest schema (capabilities, actions/plugins, MCP-server actions and MCP apps),
+  Copilot connectors, custom engine agents, admin agent registry, and Copilot extensibility licensing
+  tiers: `agents/m365-copilot-extensibility.md` (this article does not repeat that manifest schema or
+  those licensing tiers).
 
 ## Examples
 - An example scenario: an agent for engineers asking about an example device's compliance state,

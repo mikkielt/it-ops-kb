@@ -64,6 +64,10 @@ for any team running a multi-operation MCP tool set that wants per-operation cos
 | Claude Console (API) | Console usage/cost pages | workspace spend + rate limits | Claude Code Analytics API |
 | Cloud provider (Bedrock/Vertex/Foundry) | cloud billing console | cloud budget controls | OpenTelemetry export / apps gateway / LLM gateway |
 
+Each teammate or subagent is a separate Claude Code request stream billed the same way as the main session; see
+`claude/skills-and-subagents.md` for how subagents and agent teams are configured and spawned (frontmatter fields,
+model-selection order, agent-teams token cost being "significantly more" than a single session).
+
 ## Examples
 A team of 20-30 engineers running Claude Code as their CLI front end would sit in the
 "5-20 users" TPM/RPM band (100-150k TPM, 2.5-3.5 RPM per user) per Anthropic's published sizing table. For a

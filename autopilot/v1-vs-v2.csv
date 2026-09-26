@@ -1,0 +1,29 @@
+requirement,device_preparation_v2,windows_autopilot_v1,source_id
+Government Community Cloud High (GCCH) and DoD environments,yes,no,S-7cxticpd
+User-driven scenario,yes,yes,S-7cxticpd
+Pre-provisioned scenario,no,yes,S-7cxticpd
+Self-deploying scenario,no,yes,S-7cxticpd
+Existing devices scenario,no,yes,S-7cxticpd
+Automatic deployment scenario (Windows 365),yes,no,S-7cxticpd
+Windows Autopilot Reset support,no,yes,S-7cxticpd
+Microsoft Entra join,yes,yes,S-7cxticpd
+Microsoft Entra hybrid join,no,yes,S-7cxticpd
+Windows 11 support,yes,yes,S-7cxticpd
+Windows 10 support,no,yes,S-7cxticpd
+Deploy Win32 and LOB apps in same deployment,yes,no,S-7cxticpd
+Simpler deployment configuration and experience,yes,no,S-7cxticpd
+Extensive customization of deployment and OOBE experience,no,yes,S-7cxticpd
+No requirement to pre-stage devices,yes,no,S-7cxticpd
+Install more than 10 applications during OOBE,no,yes,S-7cxticpd
+Run more than 10 PowerShell scripts during OOBE,no,yes,S-7cxticpd
+Near real-time monitoring,yes,no,S-7cxticpd
+Block user from desktop until user-based configurations applied,no,yes,S-7cxticpd
+HoloLens support,no,yes,S-7cxticpd
+Teams Meeting Room support,no,yes,S-7cxticpd
+Device Firmware Configuration Interface (DFCI) management support,no,yes,S-7cxticpd
+Windows Autopilot into co-management,no,yes,S-7cxticpd
+Device registration required,no,yes,S-7cxticpd
+Bind devices to tenant before enrollment,yes (device association),yes (device registration),S-7cxticpd
+Admin configuration surface,device preparation policy + device security group owned by Intune Provisioning Client,Autopilot deployment profile + Enrollment Status Page (ESP),S-7cxticpd
+Apps deliverable during provisioning,up to 25 (LOB/Win32/Store/M365),up to 100 (via ESP block-access-until-installed list),S-7cxticpd
+Reporting,Autopilot device preparation deployment report (all deployments; more data; near real-time),Autopilot deployment report (registered devices only; not real-time),S-7cxticpd

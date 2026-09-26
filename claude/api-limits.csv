@@ -1,0 +1,28 @@
+area,tier_or_scope,limit,notes,source
+spend cap,Start,$500 USD/month,"organization monthly spend cap; 429 rate_limit_error with error_code enforced_spend_limit_reached, no retry-after when reached",S-5uxkh3j5
+spend cap,Build,"$1,000 USD/month",same enforcement as Start,S-5uxkh3j5
+spend cap,Scale,"$200,000 USD/month",same enforcement as Start,S-5uxkh3j5
+spend cap,Custom,none,arranged with account team,S-5uxkh3j5
+messages rate limit,Start tier - Opus 5.5/Opus 5/Opus 4.x/Sonnet 5/Sonnet 4.x/Haiku 4.5,"1,000 RPM / 2,000,000 ITPM / 400,000 OTPM",per-model-class limit; Fable 5.x separate,S-5uxkh3j5
+messages rate limit,Start tier - Fable 5.x,"1,000 RPM / 500,000 ITPM / 100,000 OTPM",combined across Fable 5.1 and Fable 5 (Mythos 5.1/5 share a separate combined limit),S-5uxkh3j5
+messages rate limit,Build tier - Opus 5.5/Opus 5/Opus 4.x/Sonnet 5/Sonnet 4.x/Haiku 4.5,"5,000 RPM / 5,000,000 ITPM / 1,000,000 OTPM",,S-5uxkh3j5
+messages rate limit,Build tier - Fable 5.x,"2,000 RPM / 1,500,000 ITPM / 300,000 OTPM",,S-5uxkh3j5
+messages rate limit,Scale tier - Opus 5.5/Opus 5/Opus 4.x/Sonnet 5/Sonnet 4.x/Haiku 4.5,"10,000 RPM / 10,000,000 ITPM / 2,000,000 OTPM",,S-5uxkh3j5
+messages rate limit,Scale tier - Fable 5.x,"4,000 RPM / 4,000,000 ITPM / 800,000 OTPM",,S-5uxkh3j5
+batches rate limit,Start tier,"1,000 RPM / 200,000 queued batch requests / 100,000 requests per batch",shared across all models,S-5uxkh3j5
+batches rate limit,Build tier,"2,000 RPM / 300,000 queued batch requests / 100,000 requests per batch",,S-5uxkh3j5
+batches rate limit,Scale tier,"4,000 RPM / 500,000 queued batch requests / 100,000 requests per batch",,S-5uxkh3j5
+batch size,all tiers,"100,000 requests or 256 MB per batch, whichever first",batched request needs max_tokens>=1; max_tokens:0 cache pre-warming unsupported in a batch,S-3pftmimx
+batch processing window,all tiers,"most finish <1h; results after all done or 24h; expires if not done in 24h",,S-3pftmimx
+batch results retention,all tiers,29 days after creation,metadata viewable after that; results not downloadable,S-3pftmimx
+batch discount,all tiers,50% off standard Messages price,stacks with prompt-cache discount; batch cache hit rate 30-98% best-effort,S-3pftmimx
+batch max_tokens beta,output-300k-2026-03-24,"300,000 max_tokens (vs 128K standard)","Opus 5.5/5/4.8/4.7/4.6 and Sonnet 5/4.6 only",S-3pftmimx
+files storage,per file,500 MB max size,,S-b4bqwu2v
+files storage,per organization,1 TB total,,S-b4bqwu2v
+files storage,per organization,up to 100 workspaces,contact account team for more,S-b4bqwu2v
+files expiration,per file,3600-7776000 seconds (1h-90 days),set via expires_in_seconds at upload; not changeable after,S-b4bqwu2v
+files list page size,per request,"1-1,000 (default 20)",or up to 100 ids[] in one call (mutually exclusive with page/limit),S-b4bqwu2v
+files rate limit,per organization,~500 requests/min,shared across upload/list/retrieve/download/delete; contact sales for higher,S-b4bqwu2v
+messages/count_tokens request size,per request,32 MB,already in agents/agent-error-catalogue.md (413 request_too_large),S1847
+managed agents create endpoints,per organization,300 requests/min,,S-5uxkh3j5
+managed agents read endpoints,per organization,"1,200 requests/min",,S-5uxkh3j5

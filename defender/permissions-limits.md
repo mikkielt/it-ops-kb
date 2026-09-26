@@ -34,5 +34,8 @@ regional hosts available. Some APIs still need tokens for the legacy resource `h
 | GET /api/machines | Machine.Read.All, Machine.ReadWrite.All | Machine.Read, Machine.ReadWrite | 100/min, 1,500/h [S621] |
 | GET /api/machines/{id} | Machine.ReadWrite.All | Machine.ReadWrite | 100/min, 1,500/h [S622] |
 
+See `defender/advanced-hunting.md` for the legacy `advancedqueries` hunting API's own rate limit (45/min, 1,500/h — lower per-minute than the machine API above) and the current Graph `runHuntingQuery` endpoint.
+See `defender/response-actions-api.md` for the machine response action APIs (isolate, restrictCodeExecution, runAntiVirusScan, collectInvestigationPackage, offboard, StopAndQuarantineFile, live response) that reuse this article's base rate limit and error codes.
+
 ## Examples
 Engineer `jan.kowalski` (delegated token, permission Machine.Read) calls `GET https://eu.api.security.microsoft.com/api/machines?$filter=computerDnsName eq 'pl-lt-00123.corp.example.com'`; on 429 wait `Retry-After` seconds.

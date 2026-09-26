@@ -51,6 +51,14 @@ Anthropic prompt caching stores the KV state for an unchanged prefix, keyed by u
 
 ## Reference
 
+See `claude/messages-api.md` for the Messages API request/response shape (usage fields, tool-use loop,
+stop_reason values) that carries the `cache_creation_input_tokens`/`cache_read_input_tokens` fields this article
+covers; not repeated here.
+
+See `agents/hybrid-retrieval.md` for prompt caching applied to Anthropic's Contextual Retrieval technique (the
+one-time ~$1.02/million-document-token cost of prepending an LLM-generated context string to each chunk relies on
+this article's cache-write/cache-read pricing).
+
 | provider | min cacheable prefix | TTL | write price multiplier | read price multiplier |
 |---|---|---|---|---|
 | Anthropic (Sonnet 5/4.6/4.5, Opus 4.8) | 1,024 tokens | 5 min (default) or 1 h | 1.25x (5m) / 2x (1h) | 0.1x |

@@ -38,10 +38,12 @@ applying to a co-managed device whose *Device configuration* workload is in Intu
 - The per-workload bitmask (`CoManagementFlags`) values are not documented in memdocs or SupportArticles clones. [UNK]
 
 ## Reference
+- `intune/compliance-policies.md` covers the Intune-side "Require device compliance from Configuration Manager" Windows compliance setting (co-managed devices only; Intune-only devices return not available) and the tenant-wide compliance policy settings — the counterpart to the Compliance policies workload below.
+
 | Workload | Moves with it | Note |
 |---|---|---|
 | Compliance policies | – | baseline can feed compliance [S600] |
-| Windows Update policies | – | ConfigMgr client settings must be adjusted manually [S600] |
+| Windows Update policies | – | ConfigMgr client settings must be adjusted manually [S600]; see `windows/windows-update-management.md` for the Update CSP settings, Autopatch, hotpatch, and WUfB reports this workload moves control to |
 | Resource access | removed 2403 | – |
 | Endpoint Protection | – | ConfigMgr policies stay until Intune overwrites [S600] |
 | Device configuration | Resource access + Endpoint Protection | baselines need "Always apply..." [S600] |

@@ -1,0 +1,12 @@
+api_or_feature,status,input_limits,rate_limit_f0,rate_limit_s0,source
+Prompt Shields (text:shieldPrompt),GA,"userPrompt max 10K chars; up to 5 documents, 10K chars total",5 RPS,1000 RP10S,S-547mfaj7
+Analyze text,GA,default max 10K chars,5 RPS,1000 RP10S,S-547mfaj7
+Analyze image,GA,"max 4 MB; 50x50-7200x7200 px; JPEG/PNG/GIF/BMP/TIFF/WEBP",5 RPS,1000 RP10S,S-547mfaj7
+Analyze multimodal (preview),preview,"text max 1K chars; image max 4 MB; 50x50-7200x7200 px",5 RPS,10 RPS,S-547mfaj7
+Groundedness detection (preview),preview,"grounding sources max 55,000 chars/call; text and query max 7,500 chars; query min 3 words",N/A,50 RPS,S-547mfaj7
+Protected material text detection,GA,default max 10K chars; default min 110 chars,5 RPS,1000 RP10S,S-547mfaj7
+Protected material code detection (preview),preview,"same text limits; GitHub index current only through 2023-04-06",5 RPS,1000 RP10S,S-547mfaj7
+Custom categories (standard) (preview),"preview; retiring 2026-09-01","inference input max 1K chars; category def max 1000 chars; category name max 128 chars; 3 categories/user; 3 versions/category; samples: 50 min/5K max positive, 10K total, no duplicates, 128000 bytes/file, 125K chars/text sample",5 RPS,5 RPS,S-plv2ekwg
+Custom categories (rapid) (preview),preview,"incident name max 100 chars; max 1,000 samples/incident; text sample max 500 chars; image sample max 4 MB; max 100 incidents/resource",5 RPS,1000 RP10S,S-plv2ekwg
+Task adherence (preview),preview,input max 100K chars,N/A,N/A,S-547mfaj7
+Blocklists (text),GA,"max 10,000 terms total across all lists; max 100 blocklistItems per request; blocklistItem text max 128 chars",n/a (part of Analyze text call),n/a,S-56tu3aqk

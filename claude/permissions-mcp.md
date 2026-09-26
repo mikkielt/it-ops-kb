@@ -36,6 +36,9 @@ Parameter-level matching for MCP tools is only possible via `--disallowedTools` 
 | `mcp__inventory__device_get` | one tool |
 | `mcp__*` (deny/ask only) | all MCP tools |
 
+Related: `claude/settings-and-scopes.md` — settings-file precedence, scopes, and `allowManagedPermissionRulesOnly`
+delivery (managed settings, MDM, `managed-settings.json`) that this article's rule set is layered on top of.
+
 ## Examples
 ```json
 { "permissions": { "allow": ["mcp__inventory__device_get"], "ask": ["mcp__inventory__client_refresh_policy"], "deny": ["mcp__dsc__*"] } }

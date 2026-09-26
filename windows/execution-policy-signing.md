@@ -45,6 +45,9 @@ status: complete
 | Restricted | follows local PowerShell policy | 1 |
 | All Signed (default) | trusted-publisher signature required | not documented |
 
+- See also `windows/powershell-7.md`: PowerShell 7.x lifecycle (LTS/STS), side-by-side install with
+  Windows PowerShell 5.1, and `-ExecutionPolicy` at install/session start. [DER: cross-link, no new fact]
+
 ## Examples
 ```powershell
 Get-ExecutionPolicy -List

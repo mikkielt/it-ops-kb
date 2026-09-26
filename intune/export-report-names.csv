@@ -1,0 +1,34 @@
+reportName,contains,associated_admin_center_report,notes,source
+Devices,"All-devices list: device name, management agent, ownership, compliance state, OS, OS version, last contact, UPN, device id",All devices list,"Does not honor localizationType (legacy compatibility exception); default columns not guaranteed stable, always pass select explicitly",S-7cnzcrhl
+DevicesWithInventory,All-devices list with extended hardware/software inventory columns,Devices > All Devices > Export,Same localizationType exception as Devices,S-7cnzcrhl
+DeviceCompliance,"Device Compliance Org: per-device compliance state, one row per device",Device Compliance Org,,S-7cnzcrhl
+DeviceNonCompliance,Noncompliant devices,Reports > Device management > Device Compliance > Reports,,S-7cnzcrhl
+DevicesWithoutCompliancePolicy,Devices with no compliance policy assigned (cross-link intune/compliance-policies.md tenant-wide setting),Reports > Device management > Device Compliance > Reports,V3 variant DevicesWithoutCompliancePolicyV3 exists,S-7cnzcrhl
+DeviceConfigurationPolicyStatuses,Per-policy device configuration status,Reports > Device management > Device Compliance > Reports,V3 and WithPF/WithPFV3 variants (PF = per-setting),S-7cnzcrhl
+PolicyNonComplianceAgg,Aggregate noncompliance by policy,Reports > Device management > Device compliance,V3 variant PolicyNonComplianceAggVer3,S-7cnzcrhl
+DeviceStatusByCompliacePolicyReport,Device status by compliance policy (Learn's own spelling of the reportName string),Reports > Device management > Device Compliance > Reports,V3 variant DeviceStatusByCompliacePolicyReportV3,S-7cnzcrhl
+AppInvRawData,Raw per-device-per-app discovered-apps inventory rows,Apps > Monitor > Discovered apps > Export,Feeds AppInvAggregate/AppInvByDevice/DevicesByAppInv,S-7cnzcrhl
+AppInvAggregate,Discovered apps aggregated by app,Apps > Monitor > Discovered apps > Export,,S-7cnzcrhl
+AppInvByDevice,Discovered apps for one device,Devices > All Devices > Device > Discovered Apps,,S-7cnzcrhl
+DeviceInstallStatusByApp,Per-app device install status,Apps > All Apps > (individual app),,S-7cnzcrhl
+AppInstallStatusAggregate,App install status aggregate across all apps,Apps > Monitor > App install status,,S-7cnzcrhl
+AllAppsList,All Apps list,Apps > All Apps,,S-7cnzcrhl
+FeatureUpdateDeviceState,Per-device state for Windows feature update policies (cross-link windows/windows-update-management.md),Reports > Windows Updates > Reports > Windows Feature Update Report,,S-7cnzcrhl
+FeatureUpdatePolicyStatusSummary,Feature update policy status summary,Devices > Manage updates > Windows updates > Feature updates,,S-7cnzcrhl
+FeatureUpdatePolicyFailuresAggregate,Feature update failures aggregated by error,Devices > Monitor > Failure for feature updates,,S-7cnzcrhl
+DeviceFailuresByFeatureUpdatePolicy,Devices failing a specific feature update policy after drilling into an error,Devices > Monitor > Failure for feature updates > (error),,S-7cnzcrhl
+QualityUpdateDeviceStatusByPolicy,Per-device status for Windows expedited quality update policies,Reports > Windows updates > Reports > Windows Expedited Update Report,,S-7cnzcrhl
+QualityUpdatePolicyStatusSummary,Quality update policy status summary,Reports > Device management > Windows updates,,S-7cnzcrhl
+QualityUpdateDeviceErrorsByPolicy,Devices with expedited update failures for a specific profile,Devices > Monitor > Windows Expedited update failures > (profile),,S-7cnzcrhl
+DriverUpdatePolicyStatusSummary,Driver update policy status summary,Devices > Manage updates > Windows updates > Driver updates,,S-7cnzcrhl
+ActiveMalware,Win10 detected malware,Endpoint Security > Antivirus > Win10 detected malware,,S-7cnzcrhl
+DefenderAgents,Microsoft Defender agent status,Reports > MicrosoftDefender > Reports > Agent Status,,S-7cnzcrhl
+AutopilotV1DeploymentStatus,Windows Autopilot v1 deployment status,Devices > Windows > Enrollment > Windows Autopilot,,S-7cnzcrhl
+AutopilotV2DeploymentStatus,Windows Autopilot v2 (device preparation) deployment status,Devices > Windows > Enrollment > Windows Autopilot,AutopilotV2DeploymentStatusDetailedAppInfo/DetailedScriptInfo drill-down variants also exist,S-7cnzcrhl
+ComanagedDeviceWorkloads,Co-management workload split per device (cross-link intune/co-management.md),Reports > Cloud attached devices > Reports > Co-Managed Workloads,,S-7cnzcrhl
+ComanagementEligibilityTenantAttachedDevices,Tenant-attached ConfigMgr devices eligible for co-management,Reports > Cloud attached devices > Reports > Co-Management Eligibility,,S-7cnzcrhl
+AllDeviceCertificates,All device certificates,Devices > Monitor > Certificates,,S-7cnzcrhl
+CertificatesByRAPolicy,Certificates issued by a specific PKCS/SCEP (RA) policy,Devices > Monitor > Certificates,,S-7cnzcrhl
+DeviceEnrollmentFailures,Enrollment failures,Devices > Device onboarding > Enrollment > Monitor,,S-7cnzcrhl
+DeviceRunStatesByScript,Per-device run state for a script,Devices > Manage devices > Scripts and remediations > (script) > Device status,,S-7cnzcrhl
+DeviceRunStatesByProactiveRemediation,Per-device run state for a proactive remediation,Reports > Endpoint Analytics > Proactive remediations > (remediation) > Device status,,S-7cnzcrhl

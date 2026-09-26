@@ -42,5 +42,7 @@ JSON SHOULD also appear as a TextContent block. `tools/call` may answer with `In
 | idempotentHint | false | readOnlyHint = false |
 | openWorldHint | true | always |
 
+See mcp/resources-prompts.md for the sibling `resources`/`prompts` capabilities, `completion/complete`, `server/discover`, and the shared pagination/caching/subscriptions utilities `tools/list` also uses.
+
 ## Examples
 A tier-0 read tool `device.get` for `PL-LT-00123` would declare `readOnlyHint: true, openWorldHint: false`; per the table, `destructiveHint`/`idempotentHint` carry no meaning when `readOnlyHint` is true. [DER S711: defaults table above]

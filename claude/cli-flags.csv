@@ -1,0 +1,23 @@
+flag,value,effect,headless_relevant,source
+--output-format,"text|json|stream-json","text (default) plain text; json returns structured JSON with result/session id/metadata incl. total_cost_usd and per-model cost breakdown; stream-json newline-delimited JSON events, last line is the result message",y,S1800;S1824
+--input-format,"text|stream-json","controls how -p reads input; stream-json pairs with --output-format stream-json for bidirectional streaming",y,S1824
+--json-schema,"<JSON Schema string>","print mode only; validates structured output against the schema after the run, delivered in the structured_output field; exits with an error on an invalid schema; format keyword accepted as annotation only, not enforced",y,S1800;S1824
+--max-turns,<int>,"print mode only; caps agentic turns; exits with an error when reached; no limit by default; with --input-format stream-json a message still queued when the limit ends a turn starts a new turn with its own limit",y,S1824
+--max-budget-usd,<dollar amount>,"print mode only; hard dollar cap on API spend; subagent spend counts toward it; once reached, spawning another subagent fails with Budget limit reached and running background subagents are stopped; enforcement requires v2.1.217+",y,S1824
+--permission-mode,"default|acceptEdits|plan|auto|dontAsk|bypassPermissions|manual","sets the starting permission mode; manual is an alias for default (v2.1.200+); overrides defaultMode from settings; -p defaults to default (Manual) when unset",y,S1824
+--permission-prompts,"host|none","print mode only; host (default) sends prompts to the Agent SDK host or --permission-prompt-tool; none denies anything that would need a human answer instead of blocking, for unattended/scheduled jobs; requires v2.1.259+",y,S1800;S1824
+--permission-prompt-tool,<MCP tool name>,"non-interactive mode: names an MCP tool to answer permission prompts; Claude Code waits for that server to connect up to the MCP_TIMEOUT startup timeout (30s default); cannot approve a tool marked as requiring user interaction (converted to deny, v2.1.199+)",y,S1824
+--allowedTools / --allowed-tools,"<permission-rule list>","tools that execute without prompting; does not restrict which tools are available (use --tools for that)",y,S1824
+--disallowedTools / --disallowed-tools,"<permission-rule list>","deny rules; a bare tool name removes the tool from context, a scoped rule like Bash(rm *) denies only matching calls",y,S1824
+--bare,(flag),"skips auto-discovery of hooks, skills, custom commands, subagents, installed plugins, MCP servers, auto memory and CLAUDE.md; never reads OAuth/keychain credentials, needs ANTHROPIC_API_KEY or provider creds set explicitly; recommended mode for scripted/SDK calls, will become the -p default in a future release",y,S1800;S1824
+--mcp-config,<JSON file or string>,"loads MCP servers; with -p, Claude Code waits for still-pending servers up to the MCP_TIMEOUT startup timeout (30s default) before the first turn; a server with a cached tool list skips the wait (v2.1.221+)",y,S1824
+--strict-mcp-config,(flag),"use only the MCP servers passed via --mcp-config for this session, ignoring project/user-configured MCP servers",y,S1824
+--continue / -c,(flag),"loads the most recent conversation in the current directory; skips sessions created with claude -p or the Agent SDK unless combined with -p itself, in which case those are included",n,S1824
+--resume / -r,"<session id or name> [query]",resumes a session by id or name to continue it non-interactively with a new query,n,S1824
+--append-system-prompt,<text>,appends custom text to the end of the default system prompt (works in -p too),n,S1824
+--settings,<file or JSON>,"loads a settings JSON for this session only, e.g. to set apiKeyHelper or sandbox config without touching a settings file on disk",y,S1800
+--agents,<JSON or file path>,"defines custom subagents dynamically; with --print the value can be a path to a JSON file (v2.1.281+)",n,S1824
+--add-dir,<path>,"adds a working directory Claude can read/edit; in --bare mode, skills under its .claude/skills/ still load, but .claude/commands/ and .claude/agents/ do not",y,S1800;S1824
+--no-session-persistence,(flag),"print mode only; disables saving the session to disk so it cannot be resumed",n,S1824
+--effort,"low|medium|high|xhigh|max|ultracode",sets the effort level for the current session; does not persist,n,S1824
+--model,<alias or full name>,overrides the model setting and ANTHROPIC_MODEL for the session,n,S1824

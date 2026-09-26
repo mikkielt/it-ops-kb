@@ -31,5 +31,7 @@ status: complete
 | Entra joined | AzureAd | AzureAdJoined YES, DomainJoined NO | org | S504, S542, S544 |
 | Entra hybrid joined | ServerAd | AzureAdJoined YES, DomainJoined YES | org | S504, S543, S544 |
 
+- `entra/conditional-access-devices.md`: the Filter for devices `trustType`/`profileType` properties and the "Require Microsoft Entra hybrid joined device" grant control key off the join types and `trustType` values documented here.
+
 ## Examples
 - `GET /v1.0/devices?$filter=trustType eq 'ServerAd'&$count=true` with header `ConsistencyLevel: eventual`.

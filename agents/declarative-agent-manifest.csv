@@ -1,0 +1,23 @@
+field,type,limit,required,schema_version,source
+version,string,"must equal ""v<schema>"" (e.g. v1.8)",required,1.0-1.8,S-gum2njhe
+name,string,100 characters,required (>=1 nonwhitespace char),1.0-1.8,S1840
+description,string,1000 characters,required (>=1 nonwhitespace char),1.0-1.8,S1840
+instructions,string,8000 characters,required (>=1 nonwhitespace char),1.0-1.8,S1840
+capabilities,array of Capabilities object,no more than 1 of each derived capability type,optional,1.0-1.8,S1840
+conversation_starters,array of Conversation starter object,12 objects max,optional,1.0-1.8,S1840
+actions,array of Action object (id + file pointing to a plugin manifest),none documented,optional,1.0-1.8,S1840
+behavior_overrides,object,,optional,1.4-1.8,S1840
+disclaimer,object (text shown at start of conversation),disclaimer.text 500 characters,optional,1.4-1.8,S1840
+other string properties (default cap),string,4000 characters unless a property states otherwise,n/a,1.4-1.8,S1840
+Dataverse capability,capability object; knowledge_sources array of Dataverse instances,none documented here (see agents/copilot-studio-inventory.md for Dataverse source-count limits),optional,1.3-1.8,S-nztel442
+Teams messages capability,capability object; urls array of Teams channel/team/meeting-chat URLs,none documented,optional,1.3-1.8,S-nztel442
+Email capability,capability object; shared mailbox + folder IDs array,none documented,optional,1.3-1.8,S-nztel442
+People capability,capability object (unscoped org people search),n/a,optional,1.3-1.8,S-nztel442
+Meetings capability,capability object (search org meetings),none documented,optional,1.5-1.8,S-4rvc364j
+Connection object scoping (Copilot connector content),added properties on existing Connection object,none documented,optional,1.4-1.8,S-gum2njhe
+scenario models capability,capability object (task-specific models),n/a,optional,1.4-1.8,S-gum2njhe
+editorial_answers,object (predefined Q&A pairs matched by semantic similarity),none documented,optional,1.7-1.8,S-atzopgi7
+default_response_mode,property of behavior_overrides object,none documented,optional,1.7-1.8,S-atzopgi7
+depends_on (conversation starter),property naming required capability,n/a,optional,1.7-1.8,S-atzopgi7
+EmailActions capability,"capability object (triage, supervised send, delete, inbox rules, auto-reply, folder mgmt)",none documented,optional,1.8,S-gum2njhe
+MeetingActions capability,"capability object (scheduling, time-finding polls, time insights)",none documented,optional,1.8,S-gum2njhe

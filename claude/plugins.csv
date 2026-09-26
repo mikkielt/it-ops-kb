@@ -1,0 +1,87 @@
+file,field,type,required,default,notes,tag,source
+plugin.json,name,string,yes,,"kebab-case; no spaces/@/:/path separators/control/bidi chars; namespaces every component",DOC,S-3xyywfcr
+plugin.json,displayName,string,no,name,"shown in UI in place of name; marketplace entry displayName takes precedence when installed from one",DOC,S-3xyywfcr
+plugin.json,version,string,no,(tracks commits),"not semver-checked; pins plugin until changed; not used for command-source or claude.ai-hosted-marketplace plugins",DOC,S-3xyywfcr
+plugin.json,description,string,no,,shown in /plugin listings,DOC,S-3xyywfcr
+plugin.json,author,object,no,,"{name (required), email, url}",DOC,S-3xyywfcr
+plugin.json,homepage,string,no,,must parse as a URL or plugin fails to load,DOC,S-3xyywfcr
+plugin.json,repository,string,no,,not validated,DOC,S-3xyywfcr
+plugin.json,license,string,no,,SPDX identifier e.g. MIT,DOC,S-3xyywfcr
+plugin.json,keywords,array of strings,no,,discovery tags,DOC,S-3xyywfcr
+plugin.json,metadata,object,no,,free-form; Claude Code does not read it; requires v2.1.222+,DOC,S-3xyywfcr
+plugin.json,defaultEnabled,boolean,no,true,"whether plugin starts enabled when user has not set enabledPlugins; marketplace entry value overrides",DOC,S-3xyywfcr
+plugin.json,dependencies,array of strings or objects,no,,"name / name@marketplace / {name,marketplace,version}; bare names resolve against this plugin's own marketplace",DOC,S-3xyywfcr
+plugin.json,settings,object,no,,"only agent and subagentStatusLine take effect; a settings.json at plugin root takes precedence over this key",DOC,S-3xyywfcr
+plugin.json,userConfig,object,no,,values Claude Code prompts the user for; strict object (unknown key = error),DOC,S-3xyywfcr
+plugin.json,channels,array of objects,no,,message channels bound to one of the plugin's MCP servers; strict objects,DOC,S-3xyywfcr
+plugin.json,skills,path or array of paths,no,,"directories of <name>/SKILL.md; ""."" = plugin root; ADDS to default skills/ scan",DOC,S-3xyywfcr
+plugin.json,commands,path/array/object map,no,,"flat .md files or dir; object map: key=command name, value sets exactly one of source or content plus optional description/argumentHint/model/allowedTools; REPLACES default commands/ scan",DOC,S-3xyywfcr
+plugin.json,agents,path or array of paths,no,,.md files only (no directories); REPLACES default agents/ scan,DOC,S-3xyywfcr
+plugin.json,hooks,path/object/array of either,no,,".json file(s) or inline hooks object in settings.json hooks shape; merges with hooks/hooks.json",DOC,S-3xyywfcr
+plugin.json,mcpServers,path/object/array of either,no,,".json file, .mcpb/.dxt bundle path or URL, or inline map; merges with .mcp.json; later name replaces earlier",DOC,S-3xyywfcr
+plugin.json,lspServers,path/object/array of either,no,,".json file or inline map keyed by server name; merges with .lsp.json",DOC,S-3xyywfcr
+plugin.json,outputStyles,path or array of paths,no,,REPLACES default output-styles/ scan,DOC,S-3xyywfcr
+plugin.json,workflows,path or array of paths,no,,.js files/dirs; REPLACES default workflows/ scan,DOC,S-3xyywfcr
+plugin.json,experimental.themes,path or array of paths,no,,REPLACES default themes/ scan; top-level themes key still loads with a validate warning,DOC,S-3xyywfcr
+plugin.json,experimental.monitors,path or inline array,no,monitors/monitors.json,"entries: name/command/description required, when: always|on-skill-invoke:<skill>; not on Bedrock/Google Cloud Agent Platform/Microsoft Foundry",DOC,S-3xyywfcr
+plugin.json,experimental.evals,path or array of paths,no,evals/,eval case directory when not the default; claude plugin eval --eval-dir overrides,DOC,S-lkcsn2fs
+lspServers entry,command,string,yes,,language server binary; no spaces unless value starts with /,DOC,S-3xyywfcr
+lspServers entry,extensionToLanguage,object,yes,,"map of .ext to LSP language id, at least one entry",DOC,S-3xyywfcr
+lspServers entry,args,array of strings,no,,arguments passed to server,DOC,S-3xyywfcr
+lspServers entry,transport,string,no,stdio,stdio or socket; every server actually runs over stdio,DOC,S-3xyywfcr
+lspServers entry,startupTimeout,integer ms,no,,positive integer,DOC,S-3xyywfcr
+lspServers entry,shutdownTimeout,integer ms,no,(none),Claude Code terminates process when elapsed,DOC,S-3xyywfcr
+lspServers entry,restartOnCrash,boolean,no,true,set false to leave a crashed server stopped,DOC,S-3xyywfcr
+lspServers entry,maxRestarts,integer,no,,restart attempts before giving up,DOC,S-3xyywfcr
+lspServers entry,diagnostics,boolean,no,true,whether to push diagnostics into context after edits,DOC,S-3xyywfcr
+marketplace.json,name,string,yes,,"no spaces/control/bidi chars, no / or \, no .., not ""."" ; see reserved-names list in plugins.md",DOC,S-4m2kbuls
+marketplace.json,owner,object,yes,,"{name (required), email, url}",DOC,S-4m2kbuls
+marketplace.json,plugins,array,yes,,plugin entries; each validated independently,DOC,S-4m2kbuls
+marketplace.json,description,string,no,,shown to users; validate warns when missing,DOC,S-4m2kbuls
+marketplace.json,version,string,no,,marketplace manifest version,DOC,S-4m2kbuls
+marketplace.json,metadata.pluginRoot,string,no,,"directory bare plugin source names resolve under; requires v2.1.239+",DOC,S-4m2kbuls
+marketplace.json,forceRemoveDeletedPlugins,boolean,no,false,true = uninstall a plugin removed from plugins[] on users' machines,DOC,S-4m2kbuls
+marketplace.json,allowCrossMarketplaceDependenciesOn,array of strings,no,,marketplace names whose plugins may be installed as this marketplace's dependencies,DOC,S-4m2kbuls
+marketplace.json,renames,object,no,,"former plugin name -> current name or null (removed); requires v2.1.193+; append-only, chain must resolve to null or a live name",DOC,S-4m2kbuls
+plugin entry,name,string,yes,,"install id before @; kebab-case-like, no spaces/control/bidi",DOC,S-4m2kbuls
+plugin entry,source,string or object,yes,,relative path or source object (github/url/git-subdir/npm/archive/command),DOC,S-4m2kbuls
+plugin entry,description,string,no,,shown in /plugin listings/details,DOC,S-4m2kbuls
+plugin entry,version,string,no,,plugin.json's own version wins if both set (validate warns of mismatch),DOC,S-4m2kbuls
+plugin entry,category,string,no,,free-form catalog grouping,DOC,S-4m2kbuls
+plugin entry,tags,array of strings,no,,free-form search tags,DOC,S-4m2kbuls
+plugin entry,strict,boolean,no,true,"see Strict mode note in plugins.md",DOC,S-4m2kbuls
+plugin entry,relevance,object,no,,signals for suggesting the plugin,DOC,S-4m2kbuls
+plugin entry,dependencies,array,no,,"""name"", ""name@marketplace"", or object",DOC,S-4m2kbuls
+plugin entry,defaultEnabled,boolean,no,true,entry value takes precedence over plugin.json,DOC,S-4m2kbuls
+plugin entry,displayName,string,no,,shown when neither entry nor plugin.json otherwise wins over the other,DOC,S-4m2kbuls
+plugin entry,metadata,object,no,,free-form; requires v2.1.222+,DOC,S-4m2kbuls
+plugin entry,headers,object,no,,HTTP headers sent when downloading this entry's archive; requires v2.1.238+,DOC,S-4m2kbuls
+plugin entry,headersHelper,string,no,,"command printing archive-download headers as JSON; requires strict:false; requires v2.1.238+",DOC,S-4m2kbuls
+source github,repo,string,yes,,owner/repo,DOC,S-4m2kbuls
+source github,ref,string,no,default branch,branch or tag,DOC,S-4m2kbuls
+source github,sha,string,no,,full 40-char lowercase commit SHA,DOC,S-4m2kbuls
+source url,url,string,yes,,full git URL (https/http/file/git@); no owner/repo shorthand,DOC,S-4m2kbuls
+source git-subdir,url,string,yes,,git URL or owner/repo shorthand,DOC,S-4m2kbuls
+source git-subdir,path,string,yes,,subdirectory holding the plugin; sparse partial clone,DOC,S-4m2kbuls
+source npm,package,string,yes,,plain or @scoped name,DOC,S-4m2kbuls
+source npm,version,string,no,,version or range,DOC,S-4m2kbuls
+source npm,registry,string,no,default npm registry,for a package not on the default registry,DOC,S-4m2kbuls
+source archive,url,string,yes,,https only; not loopback/link-local/cloud-metadata host,DOC,S-4m2kbuls
+source archive,sha256,string,no,,64 hex chars; Claude Code refuses a mismatched download,DOC,S-4m2kbuls
+source command,command,string,yes,,"prints plugin dir absolute path, one line, exit 0; ascii, <=500 chars, no run of 4+ spaces",DOC,S-4m2kbuls
+source command,timeout,integer seconds,no,60,1-600,DOC,S-4m2kbuls
+source command,mode,string,no,copy,copy or link,DOC,S-4m2kbuls
+managed setting,extraKnownMarketplaces,object,no,,"keyed by marketplace name; {source, autoUpdate}; alias additionalMarketplaces (v2.1.232+)",DOC,S-rp4dtt4w
+managed setting,enabledPlugins,object,no,,"plugin-name@marketplace-name: true/false; true force-enables, false blocks at every scope",DOC,S-rp4dtt4w
+managed setting,strictKnownMarketplaces,array,no,,"allowlist of marketplace source objects; [] blocks every source; alias allowedMarketplaces",DOC,S-rp4dtt4w
+managed setting,blockedMarketplaces,array,no,,denylist of marketplace source objects; checked before the allowlist,DOC,S-rp4dtt4w
+managed setting,syncClaudeAiPlugins,boolean,no,true,false stops downloading/loading claude.ai-synced plugins; requires v2.1.273+,DOC,S-rp4dtt4w
+managed setting,disableSideloadFlags,boolean,no,false,"rejects --plugin-dir, --plugin-url, --agents, SDK plugins option, non-SDK --mcp-config, CLAUDE_CODE_PLUGIN_DIRS folders",DOC,S-rp4dtt4w
+managed setting,disableCommandPluginSources,boolean,no,(value of allowManagedHooksOnly),blocks command-source plugins from installing/updating/loading,DOC,S-rp4dtt4w
+managed setting,strictPluginOnlyCustomization,boolean or array,no,false,"true or array of skills/agents/hooks/mcp; requires plugin/managed/built-in origin only",DOC,S-rp4dtt4w
+CLI flag,claude plugin install --scope,enum,no,user,user|project|local,DOC,S-gxuoqjzy
+CLI flag,claude plugin update --scope,enum,no,(install scope),user|project|local|managed,DOC,S-gxuoqjzy
+CLI flag,claude plugin eval --ablation,enum,no,with-without (when plugin resolves) else none,none runs with-arm only; with-without adds no-plugin baseline,DOC,S-lkcsn2fs
+CLI flag,claude plugin eval --runs,integer,no,3 (or case's own runs),runs per case per arm,DOC,S-lkcsn2fs
+CLI flag,claude plugin eval --judge-model,string,no,small fast model,model used for llm/baseline graders,DOC,S-lkcsn2fs
+CLI flag,claude plugin eval -j/--concurrency,integer,no,1,1-8 concurrent agent runs,DOC,S-lkcsn2fs

@@ -1,0 +1,64 @@
+key,type,scope,default,effect
+permissions.allow,array,Any file,[],pre-approve tool/command rules without prompting
+permissions.deny,array,Any file,[],block matching tools/commands in every mode incl. bypassPermissions
+permissions.defaultMode,string,Any file,built-in default,starting permission mode (default/acceptEdits/plan/auto/dontAsk/bypassPermissions); auto/bypassPermissions from project/local files do not take effect
+permissions.disableBypassPermissionsMode,string,Managed,unset,"""disable"""" turns off bypassPermissions mode; a security-sensitive exception a lower level cannot override"""
+permissions.disableAutoMode,string,Any file,unset,"""disable"""" removes auto mode from the mode cycle; only enterprise-relevant value is disable"""
+permissions.blockReadsOutsideWorkingDirectories,boolean,Any file,false,reads outside working directories prompt even in auto/bypassPermissions mode
+allowManagedPermissionRulesOnly,boolean,Managed,false,makes managed settings the only source of permission rules; ignores user/project/local rules and --allowedTools
+allowManagedHooksOnly,boolean,Managed,false,run only hooks deployed by the organization
+allowManagedMcpServersOnly,boolean,Managed,false,locks the MCP allowlist to the managed allowedMcpServers list (see claude/managed-mcp.md)
+allowedMcpServers,array,Any file (enforce via managed),unset (all allowed),allowlist of MCP servers by serverUrl/serverCommand/serverName
+deniedMcpServers,array,Any file,[],"denylist of MCP servers; always wins, merges from every admin source"
+allowAllClaudeAiMcps,boolean,Managed,false,load claude.ai connectors alongside a deployed managed-mcp.json
+disableClaudeAiConnectors,boolean,Managed,false,turn off claude.ai MCP connectors; read from every admin source
+env,object,Any file,{},"""environment variables injected into every session; merges per-variable across admin sources (v2.1.223+); project/local cannot set some keys (CLAUDE_CONFIG_DIR, OTEL exporter vars)"""
+model,string,Any file,built-in default,default model for the session; ANTHROPIC_MODEL env var takes precedence when set
+apiKeyHelper,string,Any file,unset,shell command that generates the API credential; requires security approval when delivered via managed settings
+otelHeadersHelper,string,Managed (credential-paired),unset,shell command generating OTLP exporter auth headers; requires security approval
+statusLine,object,Any file,unset,command that renders the status line; requires security approval when delivered via managed settings
+outputStyle,string,Any file,default,select a custom output style from output-styles/
+hooks,object,Any file,{},"event-triggered command hooks (PreToolUse, PostToolUse, etc.); any hook definition requires security approval when server-delivered"
+disableAllHooks,boolean,Any file,false,turn off every hook for the session
+allowedHttpHookUrls,array,Any file,unset,limit which URLs HTTP hooks can target
+cleanupPeriodDays,number,Any file,unconfirmed,days of local session data retention before cleanup; invalid values keep the cached copy and are never applied
+desktopSessionCleanupPeriodDays,number,Any file,unset,retention period for desktop-hosted sessions; invalid values keep the cached copy and are never applied
+forceLoginMethod,string,Any file (gateway value: highest-ranked admin source only),unset,"""restrict login method; """"gateway"""" value is never read from server-managed settings"""
+forceLoginOrgUUID,string,Any file,unset,restrict sign-in to one organization UUID
+forceLoginGatewayUrl,string,Managed (admin source, never server-managed),"unset,URL of the Claude apps gateway users must sign in through"
+gatewayInternalNetworks,array,Managed (admin source, never server-managed),"unset,CIDR ranges treated as internal for the gateway login flow"
+companyAnnouncements,array,Managed/server-managed,unset,announcement banner text shown on session start when policy is fetched in time
+sandbox.enabled,boolean,Any file,false,turn the Bash sandbox on
+sandbox.network.allowedDomains,array,Any file,[],network allowlist for the sandbox; unions across admin sources while a lock is on
+sandbox.network.allowManagedDomainsOnly,boolean,Managed,false,lock: only the managed network allowlist applies; true in any admin source turns the lock on
+sandbox.filesystem.allowManagedReadPathsOnly,boolean,Managed,false,lock: only the managed filesystem read allowlist applies
+sandbox.filesystem.disabled,boolean,cross-source (read from every admin source),false,turn off filesystem sandboxing
+sandbox.credentials,object,Any file,unset,"inject credentials into the sandboxed proxy; deny-only blocks need no security approval, others do"
+sandbox.bwrapPath,string,cross-source,unset,path to the bwrap sandbox binary (Linux); requires security approval
+sandbox.socatPath,string,cross-source,unset,path to the socat binary used by the sandbox; requires security approval
+sandbox.ripgrep,string,cross-source,unset,path to the ripgrep binary the sandbox uses; requires security approval
+claudeMd,string,Managed/server-managed only,unset,managed CLAUDE.md content delivered inline in managed-settings.json; no security approval needed
+claudeMdExcludes,array,Any file (merges across layers),[],glob patterns of CLAUDE.md/rules files to skip loading; cannot exclude the managed policy file
+managedSourcesBehavior,string,highest-ranked admin source only,first-wins,"""first-wins"" uses one managed source and ignores the rest; ""merge"" combines every admin source by key kind (v2.1.242+)"""
+forceRemoteSettingsRefresh,boolean,cross-source,false,fail-closed: block startup until server-managed settings are freshly fetched; exits if the fetch fails
+requiredMinimumVersion,string,Managed/server-managed,unset,blocks an outdated client binary from starting; does not end an already-running session
+policyHelper,string,MDM or file-based managed settings only (not server-managed),unset,"external command whose output supplies managed settings, replacing that source"
+wslInheritsWindowsSettings,boolean,MDM/HKLM or file-based managed settings only,false,let the WSL HKCU registry inherit policy from the Windows HKLM/file source
+maxEffortLevel,string,cross-source (lowest cap wins),unset,caps the highest --effort/model reasoning-effort level a session may select
+enableArtifact,boolean,cross-source,true,turn the Artifact tool on/off; a false from any admin or user/project/local source cannot be turned back on
+useAutoModeDuringPlan,boolean,cross-source,true,let auto mode's classifier approve commands in plan mode; false from any admin source disables it
+syncClaudeAiSkills,boolean,cross-source,true,sync claude.ai account skills into terminal sessions; false from any admin source disables it
+syncClaudeAiPlugins,boolean,cross-source,true,sync claude.ai account plugins into terminal sessions; false from any admin source disables it
+attribution,object,Any file,unset,customize commit/PR attribution trailers; opt-out is read from every admin source
+attribution.commit,string/boolean,Any file,default trailer,change or hide the git commit trailer
+attribution.pr,string/boolean,Any file,default line,change or hide the pull request attribution line
+attribution.sessionUrl,boolean,Any file,true,omit the claude.ai session link from cloud/Remote Control commits
+processWrapper,string,Any file,unset,prefix background-agent supervisor/worker process launches with a corporate launcher command
+extraKnownMarketplaces,array,Managed,[],additional plugin marketplaces trusted by the organization; later entry with same name replaces earlier whole
+strictKnownMarketplaces,object/boolean,Managed,false,restrict plugin installs to the known-marketplace allowlist
+blockedMarketplaces,array,Managed,[],marketplaces the admin console blocks even from a git-repository add
+allowedChannelPlugins,array,Managed,default allowlist,replace the default allowlist of channel plugins permitted to push messages
+agent,object,Any file,unset,"start every session as a named subagent with its own prompt, tools, and model"
+askUserQuestionTimeout,number,User or managed,unset,idle seconds before an unanswered AskUserQuestion auto-continues
+autoCompactEnabled,boolean,Any file,true,turn automatic context compaction on/off
+autoCompactWindow,number,Any file,unconfirmed,context-fullness threshold that triggers compaction

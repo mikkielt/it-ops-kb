@@ -30,3 +30,6 @@ status: complete
 
 ## Examples
 Variable `APP_SQL_CONN` (fixture): Protected + Masked, used only by the tag pipeline for `release-*`.
+
+See also: `claude/ci-and-headless.md` — a Claude Code GitLab CI job that reads `ANTHROPIC_API_KEY` as a masked
+CI/CD variable of the kind documented here.

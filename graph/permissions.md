@@ -30,6 +30,9 @@ files: [graph/permission-ids.csv]
 
 ## Reference
 - `permissions.csv`, `permission-ids.csv` (this directory).
+- BitLocker CSP silent-encryption policy and recovery-key rotation: `windows/bitlocker.md`.
+- `intune/remote-actions.md`: least-privileged permissions for the `managedDevice` remote-action *methods*
+  (wipe, retire, sync, etc.), as opposed to the list/get/delete calls on the resources themselves covered here.
 
 ## Examples
 - Delegated token for engineer `jan.kowalski@corp.example.com` with scopes `Device.Read.All DeviceManagementManagedDevices.Read.All DeviceManagementServiceConfig.Read.All`.

@@ -45,6 +45,11 @@ allowlist authoritative with `allowManagedMcpServersOnly: true` in a managed sou
 | allowManagedMcpServersOnly | managed only | lock allowlist to managed |
 | allowAllClaudeAiMcps | managed only | claude.ai connectors alongside managed-mcp.json |
 
+Related: `claude/plugins.md` — a plugin's `.mcp.json`/`mcpServers` servers are named `mcp__plugin_<plugin>_<server>__<tool>`
+and are subject to the same `allowedMcpServers`/`deniedMcpServers` and `managed-mcp.json` exclusivity rules above.
+`claude/settings-and-scopes.md` — how `allowManagedMcpServersOnly`, `allowedMcpServers`/`deniedMcpServers`, and
+`allowAllClaudeAiMcps` fit into managed-settings precedence and the cross-source keys read from every admin source.
+
 ## Examples
 ```json
 {

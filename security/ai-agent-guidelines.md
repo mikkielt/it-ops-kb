@@ -41,6 +41,9 @@ allowlist.
 ## Reference
 See `owasp.csv` (existing, `standards/`) for OWASP list ids/titles; not duplicated here.
 
+`agents/windows-agentic-platform.md` — Windows-specific implementation of agent containment (Copilot Actions
+agent accounts, agent workspace isolation, MCP-server containment via the on-device agent registry).
+
 | Framework | Item(s) | Control example | Tag |
 |---|---|---|---|
 | NIST AI 600-1 | tool-access restriction, human review | tier ≥2 confirm gate | DER |

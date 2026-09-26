@@ -1,0 +1,39 @@
+option_python,option_typescript,type_python,default_python,effect,source
+tools,tools,"list[str] | ToolsPreset | None",None,"Tool configuration; `{""type"":""preset"",""preset"":""claude_code""}` selects Claude Code's default tool set",S-fksbud2r
+allowed_tools,allowedTools,list[str],[],"Tools to auto-approve without prompting; does not restrict Claude to only these tools; naming a task-tracking tool here opts the session into it",S-fksbud2r
+disallowed_tools,disallowedTools,list[str],[],"Tools to deny; a bare name (e.g. `Bash`) removes the tool definition entirely, a scoped rule (e.g. `Bash(rm *)`) leaves the tool available and denies matching calls in every mode incl. bypassPermissions",S-fksbud2r
+system_prompt,systemPrompt,"str | SystemPromptPreset | SystemPromptCustom | SystemPromptFile | None",None,"System prompt; string for custom, `{type:preset,preset:claude_code}` for Claude Code's prompt (optional append), `{type:custom,prompt:...}`, or `{type:file,path:...}` to load from disk. Since Agent SDK v0.1.0 the SDK no longer uses Claude Code's system prompt by default (minimal prompt instead)",S-fksbud2r;S-llf2m5cf
+mcp_servers,mcpServers,"dict[str, McpServerConfig] | str | Path",{},MCP server configurations (stdio/HTTP/SSE/in-process SDK server) or a path to a config file,S-fksbud2r
+strict_mcp_config,strictMcpConfig,bool,False,"When True, use only the servers passed in mcp_servers and ignore project .mcp.json, user settings, plugin-provided servers, and claude.ai connectors; maps to CLI `--strict-mcp-config`",S-fksbud2r
+permission_mode,permissionMode,"PermissionMode | None",None,"Permission mode for the session: default, dontAsk, acceptEdits, bypassPermissions, plan, or auto",S-fksbud2r;S-rjw74jiz
+continue_conversation,continueConversation,bool,False,Continue the most recent conversation,S-fksbud2r
+resume,resume,"str | None",None,Session ID to resume,S-fksbud2r
+session_id,sessionId,"str | None",None,"Use a specific session ID (must be a valid UUID); can't combine with continue_conversation or resume unless fork_session is also set",S-fksbud2r
+max_turns,maxTurns,"int | None",None,Maximum agentic turns (tool-use round trips) before the query exits with an error,S-fksbud2r
+max_budget_usd,maxBudgetUsd,"float | None",None,"Stop the query when the client-side cost estimate reaches this USD value; counts only the call's own spend, not totals restored from a resumed session; a `/clear` restarts the budget",S-fksbud2r;S-isqfh6pr
+model,model,"str | None",None,Claude model alias or full model name,S-fksbud2r
+fallback_model,fallbackModel,"str | None",None,Fallback model to use if the primary model fails; accepts a comma-separated list,S-fksbud2r
+permission_prompt_tool_name,-,"str | None",None,MCP tool name to use for permission prompts,S-fksbud2r
+cwd,cwd,"str | Path | None",None,"Working directory for the spawned CLI subprocess; each session's subprocess gets its own working directory, session files and process tree",S-fksbud2r;S-gztpah4d
+cli_path,pathToClaudeCodeExecutable,"str | Path | None",None,Custom path to the Claude Code CLI executable; required if the bundled native binary for the platform is missing,S-fksbud2r;S-fmj24q2u
+settings,settings,"str | None",None,Path to a settings file or an inline JSON string,S-fksbud2r
+add_dirs,additionalDirectories,"list[str | Path]",[],"Additional directories Claude can access, passed to the CLI as `--add-dir`; with the project setting source, also loads that directory's skills/commands/subagents",S-fksbud2r
+env,env,"dict[str, str]",{},"Environment variables merged on top of the inherited process environment; set CLAUDE_AGENT_SDK_CLIENT_APP to identify the app in the User-Agent header",S-fksbud2r
+extra_args,-,"dict[str, str | None]",{},Additional CLI arguments passed directly to the CLI,S-fksbud2r
+max_buffer_size,-,"int | None",None,Maximum bytes when buffering CLI stdout,S-fksbud2r
+can_use_tool,canUseTool,"CanUseTool | None",None,"Tool permission callback, invoked only when the permission flow falls through to a prompt; never invoked for calls auto-approved by allowed_tools, allow rules, or permission_mode",S-fksbud2r;S-rjw74jiz;S-pbd7pui3
+hooks,hooks,"dict[HookEvent, list[HookMatcher]] | None",None,"Hook callback configurations; combine with shell-command hooks from settings files when the matching setting source is enabled (default for query())",S-fksbud2r;S-av5665nf
+user,-,"str | None",None,"On POSIX platforms, the OS user account the Claude Code subprocess runs as",S-fksbud2r
+include_partial_messages,includePartialMessages,bool,False,"Include partial message streaming events (StreamEvent / SDKPartialAssistantMessage)",S-fksbud2r
+forward_subagent_text,-,bool,False,Forward subagent text and thinking blocks in the message stream (else only tool_use/tool_result blocks are emitted for subagents); requires Python SDK 0.2.140+,S-fksbud2r
+fork_session,forkSession,bool,False,"When resuming with resume, fork to a new session ID instead of continuing the original session",S-fksbud2r
+agents,agents,"dict[str, AgentDefinition] | None",None,Programmatically defined subagents,S-fksbud2r
+plugins,plugins,"list[SdkPluginConfig]",[],Load custom plugins from local paths,S-fksbud2r
+sandbox,sandbox,"SandboxSettings | None",None,Configure OS-level sandbox behavior programmatically,S-fksbud2r
+setting_sources,settingSources,"list[SettingSource] | None","None (CLI defaults: all sources)","Which filesystem settings sources to load (user/project/local); pass [] to disable all three; endpoint-managed policy and server-managed settings load regardless",S-fksbud2r
+skills,skills,"list[str] | Literal[""all""] | None",None,"Skills available to the session; ""all"" enables every discovered skill; setting this adds the Skill tool to allowed_tools automatically",S-fksbud2r
+thinking,thinking,"ThinkingConfig | None",None,Controls extended thinking behavior; takes precedence over deprecated max_thinking_tokens,S-fksbud2r
+enable_file_checkpointing,-,bool,False,Enable file change tracking so rewind_files()/rewindFiles() can restore files to an earlier user-message state,S-fksbud2r
+betas,-,list[SdkBeta],[],Beta features to enable for the session,S-fksbud2r
+output_format,-,"dict[str, Any] | None",None,"Output format for structured responses, e.g. {""type"":""json_schema"",""schema"":{...}}",S-fksbud2r
+-,startup()/prewarm(),-,-,"TypeScript-only: startup() pre-spawns and initializes the CLI subprocess ahead of a prompt (default initializeTimeoutMs 60000); prewarm() (alpha, SDK v0.3.282+) starts an unbound spare process, later bound via claim(); a spare holds roughly 230-260 MB while it waits",S-fmj24q2u

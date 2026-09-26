@@ -41,3 +41,6 @@ status: partial
 
 ## Examples
 - `GET /devices?$select=id,deviceId` is not in the cost table, so base cost 1; `$select` would lower it but the floor is 1, so 1 RU per page. (Derived from S526.)
+
+## Related
+- `graph/batching-and-query.md`: per-request throttling inside a `$batch` call, paging and advanced-query limits.

@@ -1,0 +1,23 @@
+number,name,valid_in_supplemental,meaning,notes,source
+0,Enabled:UMCI,No,Restricts both kernel-mode and user-mode binaries (default: kernel-mode only); enabling validates user-mode executables and scripts.,,S-whvei7wr
+1,Enabled:Boot Menu Protection,No,Not currently supported.,,S-whvei7wr
+2,Required:WHQL,No,Requires every kernel driver to be WHQL-signed and removes legacy driver support (default allows non-WHQL-signed drivers to run).,Drivers built for Windows 10 should be WHQL certified.,S-whvei7wr
+3,Enabled:Audit Mode,No,Default option. Logs what would be blocked without enforcing; delete this option to enforce the policy.,Recommended to test policies before enforcement.,S-whvei7wr
+4,Disabled:Flight Signing,No,If enabled binaries from Windows Insider builds are not trusted.,For organizations that only want released Windows builds.,S-whvei7wr
+5,Enabled:Inherit Default Policy,Yes,Reserved for future use; currently has no effect.,,S-whvei7wr
+6,Enabled:Unsigned System Integrity Policy,Yes,Default option. Allows the policy to remain unsigned; removing it requires the policy (and any supplemental policies) to be signed.,Trusted update signers go in UpdatePolicySigners; trusted supplemental signers go in SupplementalPolicySigners.,S-whvei7wr
+7,Allowed:Debug Policy Augmented,Yes,Not currently supported.,,S-whvei7wr
+8,Required:EV Signers,No,Not currently supported.,,S-whvei7wr
+9,Enabled:Advanced Boot Options Menu,No,Allows the F8 preboot menu to appear to a physically present user (disabled by default for all App Control policies).,,S-whvei7wr
+10,Enabled:Boot Audit on Failure,No,When enforced and a boot-critical driver fails to start the policy is placed into audit mode so Windows can load.,Admins validate the failure in the CodeIntegrity event log.,S-whvei7wr
+11,Disabled:Script Enforcement,No,Disables script enforcement for PowerShell wscript.exe cscript.exe mshta.exe and MSXML.,Not supported on Windows Server 2016 or Windows 10 1607 LTSB.,S-whvei7wr
+12,Required:Enforce Store Applications,No,When enabled the App Control policy also applies to Universal Windows (Store) apps.,,S-whvei7wr
+13,Enabled:Managed Installer,Yes,Automatically allows applications installed by a designated managed installer.,See windows/app-control.md Managed Installer facts.,S-whvei7wr
+14,Enabled:Intelligent Security Graph Authorization,Yes,Automatically allows applications with known-good reputation per the Intelligent Security Graph (ISG).,See windows/app-control.md ISG facts.,S-whvei7wr
+15,Enabled:Invalidate EAs on Reboot,No,With ISG (option 14) enabled periodically revalidates reputation for files the ISG previously authorized.,,S-whvei7wr
+16,Enabled:Update Policy No Reboot,No,Allows future App Control policy updates to apply without a reboot.,Windows 10 1709+ or Windows Server 2019+ only.,S-whvei7wr
+17,Enabled:Allow Supplemental Policies,No,Set on a base policy to allow supplemental policies to expand it.,Windows 10 1903+ or Windows Server 2022+ only.,S-whvei7wr
+18,Disabled:Runtime FilePath Rule Protection,Yes,Disables the default runtime check that only allows FilePath rules for paths writable only by admins.,Windows 10 1903+ or Windows Server 2022+ only.,S-whvei7wr
+19,Enabled:Dynamic Code Security,No,Enables policy enforcement for .NET applications and dynamically loaded libraries.,Windows 10 1803+ or Windows Server 2019+ only; enforced system-wide if any UMCI policy enables it; no audit mode.,S-whvei7wr
+20,Enabled:Revoked Expired As Unsigned,No,Treats binaries signed with revoked certificates -- or expired certificates carrying the Lifetime Signing EKU -- as unsigned for user-mode process/component enterprise-signing scenarios.,,S-whvei7wr
+n/a,Enabled:Developer Mode Dynamic Code Trust,No,Trusts UWP apps debugged in Visual Studio or deployed through Device Portal while Developer Mode is enabled.,No numeric id given on the page.,S-whvei7wr

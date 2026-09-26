@@ -1,0 +1,17 @@
+property,platforms,operators,example,source
+cpuArchitecture,"Windows, macOS (managed devices)","-eq, -ne, -in, -notIn","(device.cpuArchitecture -eq ""arm64"")",S-hddmxunx
+deviceCategory,"Android DA/Enterprise/AOSP, iOS/iPadOS, macOS, Windows (managed devices)","-eq, -ne, -in, -notIn, -startsWith, -contains, -notContains","(device.deviceCategory -contains ""Engineering"")",S-hddmxunx
+deviceManagementType (device),"Android Enterprise, Android (AOSP) (managed devices)","-eq, -ne","(app.deviceManagementType -eq ""Corporate-owned fully managed"")",S-hddmxunx
+deviceName,"Android DA/Enterprise/AOSP, iOS/iPadOS, macOS, Windows (managed devices)","-eq, -ne, -in, -notIn, -startsWith, -contains, -notContains","(device.deviceName -startsWith ""S"")",S-hddmxunx
+deviceOwnership,"Android DA/Enterprise/AOSP, iOS/iPadOS, macOS, Windows (managed devices)","-eq, -ne","(device.deviceOwnership -eq ""Personal"")",S-hddmxunx
+deviceTrustType,"Windows only (managed devices)","-eq, -ne, -in, -notIn","(device.deviceTrustType -in [""Hybrid Azure AD joined"",""Azure AD joined""])",S-hddmxunx
+enrollmentProfileName,"Android Enterprise, Android (AOSP), iOS/iPadOS, Windows (managed devices)","-eq, -ne, -in, -notIn, -startsWith, -contains, -notContains","(device.enrollmentProfileName -startsWith ""Autopilot Profile"")",S-hddmxunx
+isRooted,"Android DA, Android Enterprise (work profile only), Android (AOSP), iOS/iPadOS (managed devices)","-eq, -ne","(device.isRooted -eq ""True"")",S-hddmxunx
+manufacturer,"Android DA/Enterprise/AOSP, iOS/iPadOS, macOS, Windows (managed devices)","-eq, -ne, -in, -notIn, -startsWith, -contains, -notContains","(device.manufacturer -eq ""Microsoft"")",S-hddmxunx
+model,"Android DA/Enterprise/AOSP, iOS/iPadOS, macOS, Windows (managed devices)","-eq, -ne, -in, -notIn, -startsWith, -contains, -notContains","(device.model -startsWith ""Surface Book"")",S-hddmxunx
+operatingSystemVersion,"Android DA/Enterprise/AOSP, iOS/iPadOS, macOS, Windows (managed devices and managed apps)","-eq, -ne, -gt, -ge, -lt, -le","(device.operatingSystemVersion -ge 10.0.22631.3235)",S-hddmxunx
+osVersion (deprecated; superseded by operatingSystemVersion),"Android DA/Enterprise/AOSP, iOS/iPadOS, macOS, Windows (managed devices and managed apps)","-eq, -ne, -in, -notIn, -startsWith, -contains, -notContains","(device.osVersion -startsWith ""10.0.18362"")",S-hddmxunx
+operatingSystemSKU,"Windows only (managed devices)","-eq, -ne, -in, -notIn, -startsWith, -contains, -notContains","(device.operatingSystemSKU -in [""Enterprise"",""EnterpriseN""])",S-hddmxunx
+appVersion,"Android, iOS/iPadOS, Windows (managed apps)","-eq, -ne, -in, -notIn, -startsWith, -contains, -notContains","(app.appVersion -startsWith ""10.0"")",S-hddmxunx
+deviceManufacturer (app),"Android, iOS/iPadOS, Windows (managed apps)","-eq, -ne, -in, -notIn, -startsWith, -contains, -notContains","(app.deviceManufacturer -eq ""Microsoft"")",S-hddmxunx
+deviceModel (app),"Android, iOS/iPadOS/visionOS, Windows (managed apps)","-eq, -ne, -in, -notIn, -startsWith, -contains, -notContains","(app.deviceModel -startsWith ""Surface Duo"")",S-hddmxunx

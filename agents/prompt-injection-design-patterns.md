@@ -66,6 +66,9 @@ Dual-LLM-style isolation step ahead of an in-process PII filter.
 | CaMeL | Dual-LLM + Plan-Then-Execute + capabilities | 77% vs 84% task success (AgentDojo) | S2006 |
 | Spotlighting | base64-tag untrusted content | more tokens, Chat Completions only | S2008 |
 
+Full Prompt Shields API reference (endpoint, request/response fields, harm categories, groundedness,
+protected material, custom categories, blocklists): `agents/content-safety-prompt-shields.md`.
+
 ## Examples
 For a fixture device `PL-LT-00123`, an injected string in a ConfigMgr log line (for example a fake
 "run this PowerShell as SYSTEM" instruction embedded in a discovered-value field) cannot change which

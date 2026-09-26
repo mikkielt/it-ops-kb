@@ -33,5 +33,8 @@ client logs travel through this path too.
 See `collect-diagnostics.csv` (columns kind, item, notes, source_id). Two paths are reproduced with the spelling
 published by Microsoft (`%Program Files%\...`, `%ProgramData Microsoft Update Health Tools\...`).
 
+See also `intune/remote-actions.md`: the full table of Graph `managedDevice` remote actions, of which
+Collect diagnostics is the one action that cannot be called directly through Graph (admin-center only).
+
 ## Examples
 Engineer downloads the zip for `PL-LT-00123` from Devices > Monitor > Device diagnostics; the ConfigMgr logs are in the `%windir%\ccm\logs` folder of the zip.

@@ -1,0 +1,31 @@
+event_id,name,records,source_id
+1,ProcessCreate,Process creation: full command line (current and parent); ProcessGuid; hash of the image (HashType algorithms),S-xbogq5nf
+2,FileCreateTime,A process explicitly changed a file's creation time (anti-forensics indicator),S-xbogq5nf
+3,NetworkConnect,TCP/UDP connection: source process (ProcessId/ProcessGuid); source/destination IP; port; hostname; disabled by default,S-xbogq5nf
+4,n/a (service state change),Sysmon service started or stopped; cannot be filtered,S-xbogq5nf
+5,ProcessTerminate,Process terminated: UtcTime; ProcessGuid; ProcessId,S-xbogq5nf
+6,DriverLoad,Driver loaded: configured hashes and signature information (signature created asynchronously),S-xbogq5nf
+7,ImageLoad,Module (DLL) loaded in a process: hashes and signature; disabled by default (needs -l),S-xbogq5nf
+8,CreateRemoteThread,Process created a thread in another process: source/target process; StartAddress/StartModule/StartFunction,S-xbogq5nf
+9,RawAccessRead,Process performed raw (\\.\ ) read access on a drive: source process and target device,S-xbogq5nf
+10,ProcessAccess,A process opened another process (e.g. LSASS credential theft detection),S-xbogq5nf
+11,FileCreate,File created or overwritten (useful for autostart/temp/download locations),S-xbogq5nf
+12,RegistryEvent (Object create and delete),Registry key/value create or delete,S-xbogq5nf
+13,RegistryEvent (Value Set),Registry value set; records the value for DWORD/QWORD types,S-xbogq5nf
+14,RegistryEvent (Key and Value Rename),Registry key or value renamed: records the new name,S-xbogq5nf
+15,FileCreateStreamHash,Named file stream created; hash of the unnamed stream and the named stream contents (e.g. Zone.Identifier mark-of-the-web),S-xbogq5nf
+16,ServiceConfigurationChange,Sysmon's own configuration changed (e.g. filtering rules updated); cannot be filtered,S-xbogq5nf
+17,PipeEvent (Pipe Created),Named pipe created,S-xbogq5nf
+18,PipeEvent (Pipe Connected),Named pipe client/server connection made,S-xbogq5nf
+19,WmiEvent (WmiEventFilter activity detected),WMI event filter registered: namespace; filter name; filter expression,S-xbogq5nf
+20,WmiEvent (WmiEventConsumer activity detected),WMI event consumer registered: consumer name; log; destination,S-xbogq5nf
+21,WmiEvent (WmiEventConsumerToFilter activity detected),WMI consumer bound to a filter: consumer name and filter path,S-xbogq5nf
+22,DNSEvent (DNS query),Process executed a DNS query (success or fail; cached or not); requires Windows 8.1+,S-xbogq5nf
+23,FileDelete (File Delete archived),File deleted; the deleted file is also archived to ArchiveDirectory (default C:\Sysmon),S-xbogq5nf
+24,ClipboardChange (New content in the clipboard),System clipboard contents changed,S-xbogq5nf
+25,ProcessTampering (Process image change),Process image tampering detected (e.g. process hollowing/herpaderping),S-xbogq5nf
+26,FileDeleteDetected (File Delete logged),File deleted (logged only; not archived; compare event 23),S-xbogq5nf
+27,FileBlockExecutable,Sysmon detected and blocked creation of an executable (PE) file,S-xbogq5nf
+28,FileBlockShredding,Sysmon detected and blocked file shredding (e.g. by SDelete-like tools),S-xbogq5nf
+29,FileExecutableDetected,Sysmon detected creation of a new executable (PE) file,S-xbogq5nf
+255,Error,An internal Sysmon error occurred (heavy system load; bug; or unmet security/integrity condition),S-xbogq5nf

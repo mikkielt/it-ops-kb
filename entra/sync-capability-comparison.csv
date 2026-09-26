@@ -1,0 +1,24 @@
+capability,connect_sync,cloud_sync,notes
+Users/Groups/Contacts sync,yes,yes,full parity for basic directory object sync
+Disconnected forest support,no,yes,Cloud Sync enables M&A scenarios without forest consolidation
+Device synchronization (hybrid join),yes,no,not currently supported in Cloud Sync
+Multiple active sync instances,no,yes,Cloud Sync agents give automatic failover and load distribution
+Scale limit per domain,unlimited,150000 objects,Cloud Sync currently supports up to 150000 objects per domain
+Large group support,250000 members,50000 members,Connect supports larger groups
+Password Hash Synchronization,yes,yes,full parity
+Password writeback,yes,yes,SSPR writeback supported in both
+Pass-Through Authentication,yes,no (configured separately),PTA config managed outside sync tool in Cloud Sync; PTA/SSO remain functional after migration
+ADFS integration setup,yes,no,federation configured with separate tools in Cloud Sync
+Device writeback,yes,no,discontinued in favor of Cloud Kerberos Trust
+Group Writeback V1,yes,yes,legacy group writeback supported in both
+Group provisioning to AD,no,yes,cloud-to-AD group provisioning only in Cloud Sync
+User provisioning to AD,no,no,not currently supported in either
+Cross-forest references,yes,no,Connect supports forest-to-forest object relationships
+Merge attributes from multiple domains,yes,no,Connect can merge attributes from different AD sources
+Reconciliation (out-of-band correction),yes,no,not currently supported in Cloud Sync
+On-demand provisioning,no,yes,Cloud Sync provides immediate sync testing (Provision on Demand)
+Cloud configuration management,no,yes,Cloud Sync managed entirely through the Microsoft Entra admin center
+Seamless SSO,yes,yes,both platforms support it
+Advanced/custom sync rules,yes,no,Cloud Sync uses expression builder instead
+Attribute-based filtering,yes,limited,Connect provides full attribute filtering; Cloud Sync has basic capability
+OU-based filtering,yes,yes,both support organizational unit scoping

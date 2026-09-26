@@ -153,7 +153,8 @@ a generic 400 on the underlying model call, worded around "exceeds the maximum" 
 
 ## Reference
 See `agents/instruction-and-context-limits.csv` for the normalized product/limit/value/error-text table (40 rows
-after this deepening pass).
+after this deepening pass). For the Claude Code data point in this survey (SKILL.md `description`+`when_to_use`
+truncated at 1,536 characters), see `claude/skills-and-subagents.md`.
 
 ## Examples
 None of the products above expose a fixture-estate-relevant example; this topic concerns a project's own instruction

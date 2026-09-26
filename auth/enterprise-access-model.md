@@ -29,6 +29,7 @@ status: partial
 | KB5014754 Compatibility mode option removed | 2025-09-10 update | DOC |
 | Windows LAPS scope | Entra-joined and AD domain-joined devices, incl. servers | DOC |
 | ConfigMgr named as Tier 0 by Microsoft | Not found | UNK |
+| Windows LAPS policy settings, CSP nodes, events, schema | see `windows/laps.md` | DOC |
 
 ## Examples
 - `PL-SRV-0042` (the SMS Provider host in the fixture estate) should carry a strongly-mapped certificate if certificate-based authentication is used anywhere in its chain, given KB5014754 Full Enforcement is already in effect as of this research date (2026-09-24).

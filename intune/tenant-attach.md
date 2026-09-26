@@ -33,6 +33,13 @@ and users that are synced hybrid identities with ConfigMgr and Intune permission
 - Action path: admin center → service connection point (CMGatewayNotificationWorker.log) → SMS_NOTIFICATION_SERVER → management point (BgbServer.log) → client (CcmNotificationAgent.log); missing ConfigMgr permissions show `Unauthorized` in CMGatewayNotificationWorker.log. [DOC S608]
 
 ## Reference
+See also `intune/assignment-filters-and-rbac.md`: general Intune RBAC (built-in roles, scope tags, Multi
+Admin Approval) that tenant-attached devices' default-scope-tag restriction above extends.
+
+`intune/remote-actions.md` covers the Graph `managedDevice` remote actions (wipe, retire, sync, etc.); tenant-attached
+(ConfigMgr) devices are outside that Graph resource and instead only expose Sync Machine Policy, Sync User Policy
+and App Evaluation Cycle from the admin center, per the "Device actions from the admin center" fact above.
+
 | Log | Where | Purpose [S608] |
 |---|---|---|
 | CMGatewaySyncUploadWorker.log | site server Logs | device upload |

@@ -28,12 +28,19 @@ In 2026-07-28 the server MUST NOT write JSON-RPC requests to stdout: server-to-c
 - Python SDK low-level `Server.run` uses `serve_dual_era_loop`, i.e. the stdio server answers both `initialize` (legacy) and modern requests. [DOC S735]
 
 ## Reference
+See mcp/transports-streamable-http.md for the other standard binding (single POST endpoint, header mirroring,
+SSE-stream-close cancellation, no protocol-level sessions) and mcp/spec-overview.md for the shared per-request
+`_meta` model both transports carry.
+
 | Message kind on stdout (server) | Allowed in 2026-07-28 |
 |---|---|
 | Responses (by id) | yes |
 | Request-scoped notifications (`notifications/progress`, `notifications/message`) | yes |
 | Notifications for an active `subscriptions/listen` (with subscriptionId) | yes |
 | JSON-RPC requests | no |
+
+`agents/windows-agentic-platform.md` — the Windows on-device agent registry (ODR) runs a registered MCP
+server via `odr mcp run`, a local child-process server that this article's stdio framing rules apply to.
 
 ## Examples
 Claude Code on PL-LT-00123 starts an MCP server as a child process; the server logs to stderr only.

@@ -34,5 +34,7 @@ log files are documented. Service name `IntuneManagementExtension`.
 | Sensor.log | Endpoint analytics collector |
 | Win32AppInventory.log | app inventory collector |
 
+Win32 app rules, return codes and dependency/supersedence limits: `intune/win32-apps.md` (cross-links `AppActionProcessor.log` and `AppWorkload.log` above).
+
 ## Examples
 Remediation drift check on `PL-LT-00123`: look in `HealthScripts.log`.

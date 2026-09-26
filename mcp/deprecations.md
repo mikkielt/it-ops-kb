@@ -34,5 +34,7 @@ Removed (not deprecated) in 2026-07-28 [DOC S701]: initialize/initialized handsh
 (replaced by `subscriptions/listen`); SSE `Last-Event-ID` resumability; `notifications/elicitation/complete` and URL `elicitationId`;
 core `tasks/*` (moved to extension).
 
+See mcp/resources-prompts.md for the current logging RPC shape (still specified, deprecated) and for `subscriptions/listen`, the replacement for the removed `resources/subscribe`/`unsubscribe` and HTTP GET endpoint.
+
 ## Examples
 A stdio server following the Logging migration path writes diagnostics to stderr instead of `notifications/message`. [DER S702: Logging row migration = stderr for stdio]

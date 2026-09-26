@@ -1,0 +1,13 @@
+action,endpoint,app_permission,delegated_permission,body_params,rate_limit,source_id
+Isolate,POST /api/machines/{id}/isolate,Machine.Isolate,Machine.Isolate,"Comment (required), IsolationType (required: Full/Selective/UnManagedDevice)",100/min 1500/h,S-ipjyevd4
+Unisolate,POST /api/machines/{id}/unisolate,Machine.Isolate,Machine.Isolate,Comment (required),100/min 1500/h,S-7zqska24
+RestrictCodeExecution,POST /api/machines/{id}/restrictCodeExecution,Machine.RestrictExecution,Machine.RestrictExecution,Comment (required),100/min 1500/h,S-irvlwznc
+UnrestrictCodeExecution,POST /api/machines/{id}/unrestrictCodeExecution,Machine.RestrictExecution,Machine.RestrictExecution,Comment (required),100/min 1500/h,S-drrejdmz
+RunAntiVirusScan,POST /api/machines/{id}/runAntiVirusScan,Machine.Scan,Machine.Scan,"Comment (required), ScanType (required: Quick/Full)",100/min 1500/h,S-uv2mdacd
+CollectInvestigationPackage,POST /api/machines/{id}/collectInvestigationPackage,Machine.CollectForensics,Machine.CollectForensics,Comment (required),100/min 1500/h,S-o76pzpoe
+Offboard,POST /api/machines/{id}/offboard,Machine.Offboard,Machine.Offboard,Comment (required),100/min 1500/h,S-x3it6rkh
+StopAndQuarantineFile,POST /api/machines/{id}/StopAndQuarantineFile,"Machine.StopAndQuarantine, Machine.ReadWrite.All",Machine.StopAndQuarantine,"Comment (required), Sha1 (required)",100/min 1500/h,S-4ccloker
+LiveResponse (run),POST /api/machines/{id}/runliveresponse,Machine.LiveResponse,Machine.LiveResponse,"Comment, Commands (array of PutFile/RunScript/GetFile, order fixed)",10/min; 50 concurrent sessions,S-ad63a4vv
+CancelMachineAction,POST /api/machineactions/{id}/cancel,"Machine.CollectForensics, Machine.Isolate, Machine.RestrictExecution, Machine.Scan, Machine.Offboard, Machine.StopAndQuarantine, Machine.LiveResponse","Machine.CollectForensics, Machine.Isolate, Machine.RestrictExecution, Machine.Scan, Machine.Offboard, Machine.StopAndQuarantine, Machine.LiveResponse",Comment (optional),100/min 1500/h,S-4qod6hyu
+ListMachineActions,GET /api/machineactions,Machine.ReadWrite.All,Machine.ReadWrite,none (query params $filter/$top/$skip),100/min 1500/h,S-kw755ajt
+GetMachineAction,GET /api/machineactions/{id},Machine.ReadWrite.All,Machine.ReadWrite,none,100/min 1500/h,S-yksr3dnu

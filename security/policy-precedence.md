@@ -65,5 +65,9 @@ status: partial
 | ConfigMgr baseline remediation | on baseline evaluation schedule | no documented precedence against GPO | UNK |
 | DSC `set` | when run | none; last writer wins until the next reapply by another writer | DER |
 
+See `intune/configuration-policies.md` for how settings-catalog, custom OMA-URI and ADMX (built-in, imported or
+runtime-ingested) configuration policies are built and refreshed; this article covers only their precedence against
+GPO, compliance policy and co-management.
+
 ## Examples
 - `PL-LT-00123` is co-managed with Device configuration switched to Intune. A ConfigMgr baseline that lacks *Always apply this baseline even for co-managed clients* is not evaluated on that device. Treated as `unknown`, not compliant. [DER S1593]

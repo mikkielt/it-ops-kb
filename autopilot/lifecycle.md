@@ -35,5 +35,7 @@ status: complete
 | 2 Delete Autopilot identity | Intune Autopilot devices / Graph | S581, S523 |
 | 3 Hybrid only: delete AD computer | on-premises AD | S581 |
 
+To run Windows Autopilot device preparation (v2) on a device that's already registered with classic Autopilot without deregistering it, associate the device instead: device association takes precedence over the classic Autopilot profile. To force device preparation without associating, deregister the device using the steps above first. See `autopilot/device-preparation.md`.
+
 ## Examples
 - Retiring `PL-LT-00123`: note serial number in Intune, delete the managed device, then delete the Autopilot identity with that serial.

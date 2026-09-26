@@ -67,3 +67,15 @@ protected branch without a review step.
 
 ## Examples
 A routine or GitHub Action scoped to an example repository on `corp.example.com` would clone it, read its docs directory, and open a `claude/`- or feature-branch PR against a fixture host like `PL-LT-00123`'s documentation section for a human reviewer — never write straight to `main`, per every runtime's own branch-protection behaviour above.
+
+See also: `claude/agent-sdk.md` — for a language other than Python/TypeScript, run `claude -p` as a subprocess with
+`--output-format json` to drive the same agent loop the Agent SDK embeds; the SDK's `permission_mode`/`max_budget_usd`
+mirror this row's `--permission-prompts none`/`--max-budget-usd` unattended-run controls.
+
+See also: `claude/ci-and-headless.md` — CLI-flag mechanics (`--bare`, `--max-turns`, `--max-budget-usd`, `--json-schema`,
+`--mcp-config`, SIGTERM/SIGINT behaviour), the GitHub Action's cloud-provider OIDC setup, GitLab CI job examples, the
+Bash sandbox's filesystem/network/credential isolation for a CI runner, and LLM gateways as a CI credential layer.
+
+See also: `agents/coding-agents-mcp.md` — how GitHub Copilot coding agent, VS Code, the OpenAI Agents SDK, the
+OpenAI Responses API's hosted MCP tool, and Codex CLI each configure and approve MCP servers, for a runtime-by-runtime
+comparison against this article's Claude Code / GitHub Actions / GitLab CI/CD / gh-aw unattended-run picture.

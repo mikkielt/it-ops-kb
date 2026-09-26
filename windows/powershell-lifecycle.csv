@@ -1,0 +1,9 @@
+version,type,release_date,end_of_support,dotnet_base,source
+7.7,preview,,,.NET 11.0,S-cfculwad
+7.6,LTS,2026-03-18,2028-11-14,.NET 10.0,S-cfculwad
+7.5,STS,2025-01-23,2026-11-10,.NET 9.0,S-cfculwad
+7.4,LTS,2023-11-16,2026-11-10,.NET 8.0,S-cfculwad
+7.3,STS,2022-11-09,2024-05-08,.NET 7.0,S-cfculwad
+7.2,LTS,2021-11-08,2024-11-08,.NET 6.0,S-cfculwad
+7.1,STS,2020-11-11,2022-05-08,.NET 5.0,S-cfculwad
+7.0,LTS,2020-03-04,2022-12-03,.NET Core 3.1,S-cfculwad

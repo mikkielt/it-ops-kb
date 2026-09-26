@@ -1,0 +1,50 @@
+kind,item,notes,source_id
+return_code_type,Success,return value indicating the app installed successfully,S-wc6e3fba
+return_code_type,Failed,return value indicating an app installation failure,S-wc6e3fba
+return_code_type,Hard reboot,blocks the next Win32 app install on the client until a reboot,S-wc6e3fba
+return_code_type,Soft reboot,allows the next Win32 app install without a client reboot; reboot still needed to finish current app,S-wc6e3fba
+return_code_type,Retry,agent retries the install 3 times waiting 5 minutes between attempts,S-wc6e3fba
+msi_return_code,0,ERROR_SUCCESS,S-oljccwue
+msi_return_code,1602,ERROR_INSTALL_USEREXIT (user canceled installation),S-oljccwue
+msi_return_code,1603,ERROR_INSTALL_FAILURE (fatal error during installation),S-oljccwue
+msi_return_code,1618,ERROR_INSTALL_ALREADY_RUNNING (another installation already in progress),S-oljccwue
+msi_return_code,1641,ERROR_SUCCESS_REBOOT_INITIATED (installer itself started the restart; indicates success),S-oljccwue
+msi_return_code,3010,ERROR_SUCCESS_REBOOT_REQUIRED (install succeeded; reboot required to complete),S-oljccwue
+device_restart_behavior,Determine behavior based on return codes,hard reboot code restarts immediately; soft reboot code only notifies user,S-wc6e3fba
+device_restart_behavior,No specific action,suppresses device restarts during install of MSI-based apps,S-wc6e3fba
+device_restart_behavior,App install may force a device restart,hard reboot code notifies user of restart in 120 minutes; soft reboot code only notifies,S-wc6e3fba
+device_restart_behavior,Intune will force a mandatory device restart,always restarts device after successful install,S-wc6e3fba
+requirement_rule_type,File,detect file/folder by date/version/size; 32-bit-on-64-bit path context toggle,S-wc6e3fba
+requirement_rule_type,Registry,detect value/string/integer/version by key path; 32-bit-on-64-bit hive toggle,S-wc6e3fba
+requirement_rule_type,Script,"PowerShell; exit 0 plus STDOUT detail; 32-bit/64-bit, logged-on credentials, signature check options",S-wc6e3fba
+detection_rule_type,MSI,verify via MSI product code plus optional product version check; addable only once,S-wc6e3fba
+detection_rule_type,File,verify file/folder existence date version or size,S-wc6e3fba
+detection_rule_type,Registry,verify registry value string integer or version,S-wc6e3fba
+detection_rule_type,Custom script,detected only when script exits 0 AND writes to STDOUT; any STDERR output = not installed,S-wc6e3fba
+graph_win32lobapp_rule_subtype,Win32LobAppFileSystemRule,file system detection/requirement rule,S-6lyy6mvq
+graph_win32lobapp_rule_subtype,Win32LobAppPowerShellScriptRule,PowerShell script detection/requirement rule,S-6lyy6mvq
+graph_win32lobapp_rule_subtype,Win32LobAppProductCodeRule,MSI product code detection rule,S-6lyy6mvq
+graph_win32lobapp_rule_subtype,Win32LobAppRegistryRule,registry detection/requirement rule,S-6lyy6mvq
+graph_win32lobapp_property,installCommandLine,command line to install the app; example msiexec /i "Orca.Msi" /qn,S-6lyy6mvq
+graph_win32lobapp_property,uninstallCommandLine,command line to uninstall the app; example msiexec /x "{GUID}" /qn,S-6lyy6mvq
+graph_win32lobapp_property,applicableArchitectures,none|x86|x64|arm|neutral; forced to none when allowedArchitectures is non-null,S-6lyy6mvq
+graph_win32lobapp_property,allowedArchitectures,null|x86|x64|arm64,S-6lyy6mvq
+graph_win32lobapp_property,minimumFreeDiskSpaceInMB,allowed range 0 to driver's maximum available free space,S-6lyy6mvq
+graph_win32lobapp_property,minimumMemoryInMB,allowed range 0 to total physical memory from WMI helper,S-6lyy6mvq
+graph_win32lobapp_property,minimumNumberOfProcessors,minimum value 0,S-6lyy6mvq
+graph_win32lobapp_property,minimumCpuSpeedInMHz,allowed range 0 to clock speed from WMI helper,S-6lyy6mvq
+graph_win32lobapp_property,setupFilePath,relative path of the setup file in the encrypted Win32LobApp package,S-6lyy6mvq
+graph_win32lobapp_property,minimumSupportedWindowsRelease,example value Windows11_23H2,S-6lyy6mvq
+graph_permission,DeviceManagementConfiguration.ReadWrite.All,least privileged listed permission for win32LobApp create and content file commit,S-6lyy6mvq
+graph_permission,DeviceManagementApps.ReadWrite.All,most privileged listed permission for win32LobApp create and content file commit,S-6lyy6mvq
+limit,Win32 app package size,30 GB per app,S-fipq4ix4
+limit,PowerShell script installer size,50 KB,S-wc6e3fba
+limit,Installation time required default,60 minutes,S-wc6e3fba
+limit,Installation time required maximum,1440 minutes (1 day),S-wc6e3fba
+limit,Dependency graph maximum size,100 apps including the parent app,S-wc6e3fba
+limit,Supersedence graph maximum nodes,10 nodes,S-wc6e3fba
+limit,Retry attempts,3 attempts 5 minutes apart,S-wc6e3fba
+limit,Enterprise App Catalog detection rules maximum,25 rules,S-tnes5beq
+limit,Restart grace period default,1440 minutes (24 hours) maximum 2 weeks,S-ec3hg7rx
+limit,Restart countdown dialog default,15 minutes before restart,S-ec3hg7rx
+limit,Restart snooze duration default,240 minutes (4 hours) capped at grace period,S-ec3hg7rx

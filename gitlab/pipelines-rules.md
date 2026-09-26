@@ -54,3 +54,6 @@ release:
     tag_name: $CI_COMMIT_TAG
     description: "release content $CI_COMMIT_TAG"
 ```
+
+See also: `claude/ci-and-headless.md` — a Claude Code job gated with `rules: - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'`,
+the pattern documented here.

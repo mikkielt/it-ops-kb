@@ -43,6 +43,9 @@ status: partial
 - Whether a domain or Intune policy prevents a user from switching SAC from Evaluation to On or Off in Settings is not stated. [UNK]
 
 ## Reference
+Related: `windows/app-control.md` (full App Control for Business policy rule options table, file rule levels, multiple/supplemental policies, CiTool, managed installer, ISG, events, and the AppLocker comparison).
+Related: `defender/asr-and-antivirus.md` (Attack Surface Reduction rules and Defender Antivirus core settings; a separate Defender AV control layer that runs alongside Smart App Control).
+
 | Mode | Settings label | Registry value | `citool -lp` Friendly Name | Event ID |
 |---|---|---|---|---|
 | Evaluation | Evaluation | 2 | VerifiedAndReputableDesktopEvaluation | 3076 |

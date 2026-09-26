@@ -49,6 +49,10 @@ the spec's own SHOULD-level validation guidance.
 | `server.json` (MCP Registry) | server-level version/packages/remotes | registry consumers resolve install source |
 | `outputSchema` + client-side validation | structured result contract | client SHOULD validate before use |
 
+The full `server.json` schema (namespaces/verification, package types, remote servers, versioning rules,
+`mcp-publisher`/GitHub Actions publishing, aggregators, moderation), plus the separate MCP extensions
+framework (MCP Apps, Skills over MCP, auth extensions), is documented in `mcp/registry-and-extensions.md`.
+
 ## Examples
 If a stdio MCP server renamed a tool such as `client.refresh_policy` to `device.refresh`, a long-lived client
 session with a stale cached tool list would keep offering the old name until it re-lists; sending

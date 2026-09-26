@@ -34,3 +34,6 @@ favour of Client ID Metadata Documents.
 
 ## Examples
 an MCP server over stdio on PL-LT-00123 runs as jan.kowalski and uses that user's environment/credentials; no MCP OAuth flow applies.
+
+See mcp/transports-streamable-http.md for the HTTP transport this authorization spec applies to (Origin validation,
+localhost binding, header mirroring) and mcp/transports-stdio.md for the stdio transport it does not.

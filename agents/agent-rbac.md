@@ -174,6 +174,15 @@ group claims/overage, PIM-for-Groups sync latency).
 | Role-assignable group + PIM for Groups | per Entra role, per group; 2-10 min app provisioning, "within seconds" write | Entra ID P1/P2 tenants | S2050, S2052, S1282 |
 | OBO flow | per downstream API call, user-scoped only | confidential-client middle tiers | S1297 |
 
+- See also `entra/agent-id.md`: agent identity/blueprint internals in depth (Graph `agentIdentityBlueprint`
+  resource and permissions, access packages for agent governance, Conditional Access and ID Protection for
+  agents, licensing, and which Microsoft products create agent identities automatically).
+- See also `intune/assignment-filters-and-rbac.md`: Intune's own RBAC model (built-in roles, scope
+  tags/tagged-object visibility, Multi Admin Approval) — a device-management-specific instance of the
+  app-role-on-service-principal pattern above applies when an agent/automation identity calls the Intune
+  RBAC or assignment-filter Graph endpoints (MAA enforces app-auth Graph calls too, not just interactive
+  admins).
+
 ## Examples
 - Engineer `jan.kowalski` on `PL-LT-00123` runs a stdio MCP server: no MCP OAuth scope challenge
   applies (S707); Claude Code's local `permissions.mcp_tools` rule could still deny a specific

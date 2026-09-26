@@ -37,6 +37,8 @@ channels; the full ConfigMgr log table is `mecm/log-files.csv` (another agent).
 
 ## Reference
 `sources.csv`: path_or_channel, kind, product, component, scenario, source_id.
+- WEF/WEC subscription setup and Sysmon (install, event IDs, built-in optional feature status): `windows/event-forwarding-sysmon.md`.
+- Centralized cloud collection of these same event channels via Azure Monitor Agent, DCR `windowsEventLogs`/XPath filters, and the Logs Ingestion API: `logs/azure-monitor-agent.md`.
 
 ## Examples
 On `PL-LT-00123`: `wevtutil qe "Microsoft-Windows-User Device Registration/Admin" /c:20 /f:text`;

@@ -1,0 +1,39 @@
+file_type,field,type_or_values,default,effect,source
+SKILL.md,name,string,directory name,Command name shown in the / menu; interacts with clashing names (see Reference),S2158
+SKILL.md,description,string,first non-empty body line if omitted,What Claude reads to decide when to auto-invoke; combined with when_to_use truncated at 1536 chars in the skill listing,S2158
+SKILL.md,when_to_use,string,(none),Extra trigger phrases/examples appended to description; counts toward the 1536-char cap,S2158
+SKILL.md,argument-hint,string,(none),Autocomplete hint for expected arguments e.g. [issue-number],S2158
+SKILL.md,arguments,space-separated string or YAML list,(none),Named positional arguments for $name substitution in the body,S2158
+SKILL.md,disable-model-invocation,boolean,false,Claude cannot auto-load the skill; also blocks preload into subagents and firing from a scheduled task,S2158
+SKILL.md,user-invocable,boolean,true,false hides it from the / menu and blocks /name; for Claude-only background knowledge,S2158
+SKILL.md,allowed-tools,space/comma-separated string or YAML list,(none),Tools pre-approved without asking for the turn that invokes the skill; clears on next message,S2158
+SKILL.md,disallowed-tools,space/comma-separated string or YAML list,(none),Tools removed from the pool while the skill is active; clears on next message; cannot remove EndConversation while another tool remains,S2158
+SKILL.md,model,model id or inherit,session model,Overrides model for the rest of the turn (not saved); with context: fork sets the forked subagent's model instead,S2158
+SKILL.md,effort,low|medium|high|xhigh|max,inherits session,Effort level while the skill is active,S2158
+SKILL.md,context,fork,(none),Runs the skill in its own forked subagent context instead of inline,S2158
+SKILL.md,agent,subagent type name,(none),Which subagent type to use when context: fork is set,S2158
+SKILL.md,background,boolean,true,"Only with context: fork; false waits for the forked subagent's result in the invoking turn instead of running it in the background (requires v2.1.218+)",S2158
+SKILL.md,hooks,hook config (see hooks doc),(none),Hooks Claude Code registers when the skill is invoked; stay registered for the rest of the session,S2158
+SKILL.md,paths,comma-separated string or YAML list of globs,(none),"Limits auto-activation to when Claude is working with matching files, same format as memory path-specific rules",S2158
+SKILL.md,shell,bash|powershell,bash,Shell used for !`command` and ```! blocks in this skill,S2158
+SKILL.md,metadata,YAML map,(none),Free-form key-value data for your own tooling; Claude Code does not act on it and drops non-map values,S2158
+SKILL.md,license,string,(none),"License covering the skill (Agent Skills spec field); Claude Code accepts but does not act on it",S2158
+SKILL.md,compatibility,string up to 500 chars,(none),"Environment requirements (Agent Skills spec field); Claude Code accepts but does not act on it",S2158
+agent .md,name,string (no colon),(required),"Unique identifier; hooks receive it as agent_type; filename need not match; a name containing : fails to load (logged to debug log; before v2.1.218 it was accepted)",S2157
+agent .md,description,string,(required),When Claude should delegate to this subagent; combined subagent descriptions over 15000 tokens trigger a startup warning,S2157
+agent .md,tools,comma-separated string or YAML list,every tool available to subagents,"Tools the subagent can use; an unresolvable entry usually fails the subagent to launch with zero tools; list skills via the skills field, not Skill here",S2157
+agent .md,disallowedTools,comma-separated string or YAML list,(none),"Tools denied, removed from the inherited/specified list; an entry with a specifier like Bash(git push *) still removes the whole tool",S2157
+agent .md,model,sonnet|opus|haiku|fable|full model id|inherit,subagent model order (see Reference),Model the subagent runs on,S2157
+agent .md,permissionMode,default|acceptEdits|auto|dontAsk|bypassPermissions|plan|manual,(none; falls back to session),"manual is an alias for default (v2.1.200+); ignored for plugin subagents; bypassPermissions only actually applies if the main conversation is already in that mode",S2157
+agent .md,maxTurns,integer,(unlimited),"Subagent stops and returns partial output at the limit (partial marking requires v2.1.246+); Claude can resume it",S2157
+agent .md,skills,list of skill names,(none),"Skills preloaded (full content, not just description) into the subagent's context at startup; subagent can still invoke unlisted skills via the Skill tool",S2157
+agent .md,mcpServers,map of server name to config or reference,(none),"MCP servers available to this subagent; ignored for plugin subagents",S2157
+agent .md,hooks,hook config,(none),Lifecycle hooks scoped to this subagent; ignored for plugin subagents,S2157
+agent .md,memory,user|project|local,(none),"Enables persistent cross-session memory at ~/.claude/agent-memory/<name>, .claude/agent-memory/<name>, or .claude/agent-memory-local/<name>",S2157
+agent .md,background,boolean,false,true keeps the subagent in the background even when Claude asks to run it in the foreground,S2157
+agent .md,omitClaudeMd,boolean,false,"true launches without user/project/local CLAUDE.md (managed policy files still load, except for managed subagents); ignored when run as the main session agent; requires v2.1.271+",S2157
+agent .md,effort,low|medium|high|xhigh|max,inherits session,Effort level while this subagent is active,S2157
+agent .md,isolation,worktree,(none),"Runs the subagent in a temporary git worktree branched from the default branch rather than the parent session's HEAD; auto-cleaned if no changes made",S2157
+agent .md,color,red|blue|green|yellow|purple|orange|pink|cyan,(none),Display color in the task list and transcript,S2157
+agent .md,initialPrompt,string,(none),"Auto-submitted as first user turn when this agent runs as the main session agent (via --agent or the agent setting); commands/skills processed; prepended to any user prompt; ignored for plugin subagents",S2157
+agent .md,experimental,map (cacheTtl: 5m|1h),(none),"cacheTtl sets prompt-cache lifetime for this subagent's requests; 1h ignored while the subscription uses usage credits; read only from subagent files; requires v2.1.248+",S2157

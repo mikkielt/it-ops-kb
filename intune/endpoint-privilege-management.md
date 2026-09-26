@@ -1,0 +1,106 @@
+---
+topic: intune/endpoint-privilege-management
+priority: P1
+applies_to: "Microsoft Intune Endpoint Privilege Management (EPM), Windows client only; Intune Suite or standalone EPM add-on (docs current 2026-09-26)"
+retrieved_utc: 2026-09-26
+sources: [S-eba3mlij, S-r5sb2fwp, S-apvm4dlk, S-3wkz47cw, S-6bhjc6zo, S-a5yicrda, S-qehphrta, S-2ht6rnrq, S-jjclu3pw, S-pfomdecu, S-7ljvlp5e, S-kv5b4jlr]
+status: partial
+---
+
+# Intune Endpoint Privilege Management (EPM)
+
+## Summary
+- EPM lets standard (non-admin) Windows users complete tasks that normally need admin rights (app installs, driver updates, some diagnostics) by elevating only specific, IT-approved files/scripts, instead of granting local admin. [DOC S-eba3mlij]
+- Two policy types configure it: a *Windows elevation settings policy* (enables/disables EPM on a device, sets the default response for unmatched requests, and reporting) and a *Windows elevation rules policy* (per-file rules with an elevation type). [DOC S-r5sb2fwp]
+- Requires a paid add-on license beyond Intune Plan 1/2 (Intune Suite or standalone EPM); available in public cloud and US GCC High/DoD. [DOC S-r5sb2fwp]
+
+## Facts
+
+### Licensing and requirements
+- EPM requires a subscription in addition to Microsoft Intune Plan 1 or Plan 2 — either the standalone EPM add-on or the Microsoft Intune Suite; it is not included in base Intune Plan 1/2. [DOC S-r5sb2fwp, S-2ht6rnrq]
+- Supported cloud environments: public cloud, and sovereign clouds US Government GCC High and DoD. [DOC S-r5sb2fwp]
+- Supported OS builds: Windows 11 24H2; Windows 11 23H2 (22631.2506+, KB5031455); Windows 11 22H2 (22621.2215+, KB5029351); Windows 11 21H2 (22000.2713+, KB5034121); Windows 10 22H2 (19045.3393+, KB5030211); Windows 10 21H2 (19044.3393+, KB5030211). Only 64-bit architectures are supported, including Arm64. Windows 10 reached end of support (2025-10-14) but remains an allowed, unguaranteed version. [DOC S-r5sb2fwp]
+- Supported virtual platforms: Azure Virtual Desktop single-session VMs (added January 2026) and Windows 365 (added September 2023). [DOC S-r5sb2fwp, S-2ht6rnrq]
+- Device requirements: Microsoft Entra joined or Entra hybrid joined, and enrolled in Intune or Configuration Manager co-managed (no specific workload requirement); devices need clear line of sight (no SSL inspection/"break and inspect") to the EPM Intune endpoints. [DOC S-r5sb2fwp]
+- An elevation settings policy shows "not applicable" on a device that doesn't meet the supported OS version; the most common causes of an elevation settings policy error/not-applicable state are missing the required Windows updates above, or failure to reach the required Intune EPM endpoints (commonly caused by SSL inspection). [DOC S-r5sb2fwp, S-2ht6rnrq, S-qehphrta]
+
+### Elevation settings policy
+- When EPM is enabled, Intune provisions the client: the `C:\Program Files\Microsoft EPM Agent` folder is created and the **Microsoft EPM Agent Service** service is installed to process EPM policy. [DOC S-apvm4dlk, S-eba3mlij]
+- Disabling EPM (or unassigning the policy) deactivates client components on the next policy sync; there is a seven-day delay before EPM components are actually removed, to allow quick recovery from an accidental disable. [DOC S-apvm4dlk]
+- **Default elevation response** governs files that match no elevation rule: *Not Configured* behaves as *Deny all requests*; *Deny all requests* blocks elevation and shows the user a denial pop-up (doesn't stop an admin user from using native "Run as administrator"); *Require support approval* prompts the user to submit a support-approved request; *Require user confirmation* prompts the user to confirm intent, optionally with *Business justification* and/or *Windows authentication* validation. If nothing is configured, the EPM client's built-in fallback default is *deny all requests*. Microsoft recommends *Require support approval* or *Deny all requests* as the default response, not *Require user confirmation* (which effectively allows all unmatched files to elevate). [DOC S-apvm4dlk, S-r5sb2fwp]
+- **Send elevation data for reporting** (Yes/No) controls whether diagnostic/usage data is sent to Microsoft; **Reporting scope** controls how much: *Diagnostic data and managed elevations only*, *Diagnostic data and all endpoint elevations* (default), or *Diagnostic data only*. [DOC S-apvm4dlk]
+- Policy conflict handling: if two elevation settings policies conflict, the client reverts to its default behavior until resolved; if "Enable EPM" itself is the conflicting value, the client's default behavior is to enable EPM. [DOC S-r5sb2fwp]
+
+### Elevation rules policy and elevation types
+- Up to 100 elevation rules can be added to a single elevation rules policy from the Intune admin center. [DOC S-3wkz47cw]
+- Elevation types (rule or default-response level): **Automatic** (silent, no prompt — used sparingly, only for trusted/business-critical files, since it elevates at every launch); **User confirmed** (right-click "Run with elevated access", with optional *Business justification* and/or *Windows authentication* validation); **Elevate as current user** (runs elevated under the signed-in user's own account/profile instead of a virtual account — requires Windows authentication, preserves profile paths and audit identity, but widens the attack surface since the elevated process inherits full user context; use only when virtual-account elevation breaks compatibility); **Support approved** (user submits a request, an Intune admin approves/denies it); **Deny** (blocks the file from elevated execution; EPM doesn't currently support auto-configuring a deny rule from the evaluation report). [DOC S-eba3mlij, S-3wkz47cw]
+- Except for *Elevate as current user*, EPM elevates using an isolated **virtual account** (not added to local Administrators) rather than the signed-in user's account, to reduce exposure of user-specific data. [DOC S-eba3mlij, S-r5sb2fwp]
+- Rule matching/conflict logic when multiple rules target the same application: (1) any rule with elevation type *Deny* always wins and the elevation is denied; (2) a rule deployed to the user beats one deployed to the device; (3) a rule with a file hash defined is always treated as most specific; (4) otherwise the rule with the most defined attributes wins; (5) if still tied, elevation-type precedence is *User confirmed* > *Elevate as current user* > *Support approved* > *Automatic*. If no rule exists and elevation was requested via "Run with elevated access", the Default Elevation Response from the elevation settings policy applies. [DOC S-r5sb2fwp]
+- Rule content: identifies a file by name/extension, can require a file hash and/or a publisher certificate (a reusable certificate settings group can be shared across rules/policies), can restrict allowed command-line arguments (a request with an undefined argument is denied), and can require a specific file path. A **File path** restriction is optional but recommended, especially for automatic/wildcard rules, to stop tampered or substituted binaries in writable locations from qualifying; files on network shares/mapped drives are not supported in rule definitions and rules for network files fail to elevate. [DOC S-3wkz47cw, S-r5sb2fwp, S-qehphrta]
+- Certificate-based rules only elevate while the certificate is valid; EPM checks certificate expiry and denies elevation once the certificate has expired. [DOC S-qehphrta]
+- Rules can be created automatically from the Elevation report or from a support-approved request record (added to a new or existing elevation rules policy), or configured manually. [DOC S-3wkz47cw]
+- Child process behavior per rule: *Require rule to elevate* (each child process is evaluated against its own rule, including deny rules), *Deny all* (all child processes launch without elevated context), or *Allow child processes to run elevated* (child processes auto-elevate and skip rule evaluation entirely, including any deny rule for that child — avoid broad rules on shells/script engines that spawn children). [DOC S-3wkz47cw]
+- Supported file types for elevation: `.exe`, `.msi`, and PowerShell `.ps1`; Control Panel items, Settings app functions, and UWP apps (including a UWP app that launches an underlying `.exe`) are not supported for elevation. [DOC S-eba3mlij, S-qehphrta]
+- EPM devices get a new right-click context menu item **Run with elevated access**; on Start-menu/taskbar items with a curated context menu this option can't be added; only one file can be elevated at a time via the menu (each must be right-clicked individually). [DOC S-r5sb2fwp, S-2ht6rnrq]
+- On Windows versions earlier than 24H2 with the April 2025 update, the "Run with elevated access" menu item may not be added automatically after EPM Agent install; workaround is to manually run `EpmShellExtension.msix` from `C:\Program Files\Microsoft EPM Agent\EPMShellExtension`. [DOC S-qehphrta]
+- EPM does not manage elevation requests from users who already have administrative privileges — if an admin launches a file matching a rule, it runs normally for the admin and is reported as an **unmanaged elevation**. [DOC S-2ht6rnrq]
+
+### Support-approved flow
+- Support-approved elevation lets any user of a device (not limited to the primary user) submit an elevation request when running a file managed by a support-approved elevation rule (or the support-approved default response); the user can enter a business reason, and the request carries user name, device, and file name to the Intune admin center. [DOC S-6bhjc6zo]
+- Reviewing/approving requests needs an Intune admin account with the **Endpoint Privilege Management Elevation Requests** permission (*view* and *manage* rights); admins see only requests within their configured scope, and Intune does not push a notification for new requests — admins must check the **Elevation requests** tab regularly. [DOC S-6bhjc6zo, S-r5sb2fwp]
+- The **Elevation requests** tab (Endpoint security > Endpoint Privilege Management) shows pending requests and requests from the last 30 days, with file, publisher (links to the certificate chain), device, Intune compliance state, status (Pending/Approved/Denied), approving/denying admin, last-modified time, user's justification, approval expiration, and admin's reason. [DOC S-6bhjc6zo]
+- On approval, Intune notifies the user via toast and the user retries via "Run with elevated access"; on denial, no reply is sent to the device and the user isn't notified. Admins can optionally provide a justification/reason on either decision (optional, becomes part of the audit record). [DOC S-6bhjc6zo]
+- When the tenant is licensed for Microsoft Security Copilot, an **Analyze with Copilot** option on the elevation request lets an admin have Copilot work with Microsoft Defender for Endpoint to evaluate the file before approving/denying. [DOC S-6bhjc6zo]
+- An approved elevation request itself contains everything needed to create a full elevation rule, including the complete certificate chain. [DOC S-6bhjc6zo]
+
+### Client, agent, and PowerShell (EpmTools)
+- The client component is the **Microsoft EPM Agent Service**, installed under `C:\Program Files\Microsoft EPM Agent`; Intune provisions it only once a device receives an elevation settings policy that expresses intent to enable EPM. [DOC S-apvm4dlk, S-r5sb2fwp]
+- The agent ships the **EpmTools** PowerShell module, imported per-device with `Import-Module 'C:\Program Files\Microsoft EPM Agent\EpmTools\EpmCmdlets.dll'` (Arm64 devices must use Windows PowerShell x64). Cmdlets: `Get-Policies` (all policies received for a `PolicyType` of `ElevationRules` or `ClientSettings`), `Get-DeclaredConfiguration` (WinDC documents identifying policies targeted to the device), `Get-DeclaredConfigurationAnalysis` (WinDC documents of type MSFTPolicies with a Processed column showing whether the EPM Agent already has the policy), `Get-ElevationRules` (queries the agent's rule lookup by `FileName` or `CertificatePayload`), `Get-ClientSettings` (effective client settings from all elevation settings policies), `Get-FileAttributes` (extracts an `.exe`'s Publisher/CA certificate chain to a target location, to populate rule properties). Full parameter docs are in the on-device `readme.md` in the EpmTools folder. [DOC S-r5sb2fwp]
+- EPM and Windows UAC are separate, independent features; EPM doesn't interfere with UAC actions run by an administrator. Admins may still choose to change the default UAC elevation-prompt behavior for standard users to reduce confusion once users are moved off local admin. [DOC S-r5sb2fwp]
+- EPM and Windows Defender Application Control (WDAC) are complementary, not overlapping: EPM controls whether an already-allowed app can elevate, while WDAC controls whether an app (elevated or not) is allowed to run at all. EPM differs from Windows "Administrator protection", which secures admin *accounts* from token theft rather than granting standard users temporary elevation. [DOC S-2ht6rnrq]
+
+### RBAC
+- Delegated access uses the **Endpoint Privilege Management Policy Authoring** permission (rights: View Reports, Read, Create, Update, Delete, Assign) for policies/rules/reports, and the **Endpoint Privilege Management Elevation Requests** permission (rights: view elevation requests, modify elevation requests) for the support-approved queue; both can be added to custom RBAC roles. [DOC S-r5sb2fwp]
+- Built-in roles: **Endpoint Privilege Manager** (all rights on both EPM permissions), **Endpoint Privilege Reader** (View Reports, Read, view elevation requests only); **Endpoint Security Manager** and **Read Only Operator** also carry EPM rights (Endpoint Security Manager: all rights on both permissions; Read Only Operator: View Reports, Read, view elevation requests). [DOC S-r5sb2fwp, S-kv5b4jlr]
+- Known limitation: the built-in **Endpoint Privilege Manager** role and the custom **Endpoint Privilege Management Policy Authoring** permission do not support scope tags; to scope an admin's EPM visibility, grant them Read on **Device configurations** instead. [DOC S-qehphrta]
+- Viewing EPM reports (admin center or Graph) specifically requires the **View Reports** right under Endpoint Privilege Management Policy Authoring — the Graph name is `EpmPolicy.ViewReports`; a caller without it gets HTTP 403 from the `privilegeManagementElevations` endpoint. Previously, "Device configurations > Read" was sufficient for report data; that access path no longer works and the explicit View Reports right is now required. [DOC S-a5yicrda]
+
+### Reports
+- EPM reports require a subscription in addition to Intune Plan 1/2 (the EPM add-on/Suite), same as the feature itself; report data is retained for 30 days and processed once every 24 hours (so there can be a delay before new data appears). [DOC S-a5yicrda]
+- The **Overview** tab is a readiness dashboard (last 48 hours) with tiles: users with only unmanaged elevations, users with both managed and unmanaged elevations, users with only managed elevations (candidates to remove local admin), frequently unmanaged elevations, frequently support-approved elevations, frequently denied elevations, plus elevation trends. [DOC S-a5yicrda]
+- The **Reports** tab has: Elevation report (all elevations, columns include file name, user, device, result, date/time), Managed elevations report (same shape, rule-managed only), Elevation report by application, by publisher, and by user (each aggregated with internal file name/version, publisher, elevation type, elevation count as applicable). [DOC S-a5yicrda]
+- Terminology: **managed elevation** = any elevation EPM facilitated (via a rule or the default response); **unmanaged elevation** = any elevation that happened without EPM, e.g. an admin's native "Run as administrator". [DOC S-eba3mlij]
+
+### Microsoft Graph (beta)
+- `GET/POST /deviceManagement/privilegeManagementElevations` and `GET/PATCH/DELETE .../privilegeManagementElevations/{id}` (beta) expose the `privilegeManagementElevation` resource — one elevation-event record per client action; `POST` requires `DeviceManagementConfiguration.ReadWrite.All` or `DeviceManagementManagedDevices.ReadWrite.All` (delegated or application). [DOC S-jjclu3pw, S-7ljvlp5e]
+- Key `privilegeManagementElevation` properties: `id` (GUID derived from deviceId+eventDateTime), `deviceId`, `deviceName`, `eventDateTime`, `elevationType` (`undetermined`, `unmanagedElevation`, `zeroTouchElevation`, `userConfirmedElevation`, `supportApprovedElevation`, `unknownFutureValue`), `filePath`, `upn`, `userType` (`undetermined`, `azureAd`, `hybrid`, `local`), `productName`, `companyName`, `fileVersion`, `justification` (user input, capped 256 chars client-side, populated only for `userConfirmedElevation`/support-approved), `hash` (SHA-256), `internalName`, `fileDescription`, `certificatePayload`, `result` (Int32; `0`=success, nonzero=exit code; always `0` for unmanaged elevations), `processType` (`undefined`, `parent`, `child`), `ruleId`, `policyId`, `policyName`, `parentProcessName`, `systemInitiatedElevation` (bool). [DOC S-jjclu3pw]
+- The `privilegeManagementElevationRequest` beta resource models a pending support-approved request: `applicationDetail` (file path/hash/publisher etc.), `status` (`none`, `pending`, `approved`, `denied`, `expired`, `revoked`, `completed`, `unknownFutureValue`), `requestedByUserId`/`requestedByUserPrincipalName`, `requestedOnDeviceId`, `reviewCompletedByUserId`/`...UserPrincipalName`, `reviewCompletedDateTime`, `requestExpiryDateTime`, `reviewerJustification`; it exposes `deny` and `revoke` actions. [DOC S-pfomdecu]
+- No explicit `approve` action for `privilegeManagementElevationRequest` was found in the fetched Graph reference pages (only `deny` and `revoke` are documented there). [UNK: approve-action endpoint not located]
+
+## Reference
+- `intune/rbac-built-in-roles.csv` lists the **Endpoint Privilege Manager** and **Endpoint Privilege Reader** built-in roles referenced above (purpose and key permissions columns); this article gives the full EPM-specific RBAC permission/rights detail those rows summarize.
+- `intune/assignment-filters-and-rbac.md:79` lists Intune's built-in roles including Endpoint Privilege Manager/Reader as part of the fixed role set; this article covers what those two roles specifically grant for EPM.
+- `windows/app-control.md` documents Windows Defender Application Control (WDAC), which governs whether an app may run at all; this article's FAQ fact above contrasts EPM (controls elevation of an already-allowed app) with WDAC (controls whether the app runs).
+- `intune/remote-help.md`: a separate Intune Suite add-on where a live helper answers UAC elevation prompts during a remote session (the Remote Help app's Elevation RBAC permission) — contrast with EPM's unattended, rule-based elevation of specific files with no helper present.
+- `windows/laps.md` documents Windows LAPS, a different least-privilege control (rotates a managed local admin account's password) that organizations typically deploy alongside EPM when removing standing local admin rights; see also (back-link added there).
+- EPM's exact log file names/paths and Windows Event Log channel weren't found in the fetched pages (searched troubleshooting and known-issues docs); the client folder and service are documented above. [UNK: EPM Agent log file names/event channel not found]
+- The `privilegeManagementElevationRequest` approve action (mirroring `deny`/`revoke`) wasn't found in the fetched Graph reference pages. [UNK: approve-action endpoint not located]
+
+## Examples
+- Import EpmTools on a device that already has an EPM elevation settings policy, and inspect what the agent currently enforces:
+  ```powershell
+  Import-Module 'C:\Program Files\Microsoft EPM Agent\EpmTools\EpmCmdlets.dll'
+  Get-Policies -PolicyType ElevationRules
+  Get-ClientSettings
+  Get-FileAttributes -FilePath 'C:\Program Files\Contoso\tool.exe' -OutputPath 'C:\CertsForTool'
+  ```
+- List recent elevation events for a device via Graph (beta), filtering to managed elevations only, needing `DeviceManagementConfiguration.ReadWrite.All` or the managed-devices equivalent read permission plus `EpmPolicy.ViewReports` for report data:
+  ```
+  GET https://graph.microsoft.com/beta/deviceManagement/privilegeManagementElevations?$filter=deviceId eq '92ce5047-9553-4731-817f-9b401a999a1b'
+  Authorization: Bearer <token>
+  ```
+- Typical safe rollout: set the elevation settings policy's default elevation response to *Require support approval*, assign it to a pilot group, review the Elevation report for a week, then convert frequently support-approved files into scoped elevation rules with an explicit file path and file hash (never rely on default *Require user confirmation*, which allows any unmatched file to elevate):
+  ```
+  Elevation settings policy:  Default elevation response = Require support approval
+  Elevation rules policy:     Rule "PL-LT-00123 install tool" -> File path required, hash required, Type = User confirmed (Business justification)
+  ```

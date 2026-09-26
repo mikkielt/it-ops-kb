@@ -44,6 +44,8 @@ handshake, no protocol sessions, per-request `_meta` carries version and capabil
 | io.modelcontextprotocol/serverInfo | result `_meta` (SHOULD) | server name/version |
 | progressToken | no | opt in to progress |
 
+See mcp/resources-prompts.md for the `resources`, `prompts`, `completion` and `server/discover` RPCs that run on top of this per-request `_meta` model, and their pagination/caching/logging utilities. See mcp/transports-stdio.md and mcp/transports-streamable-http.md for how `_meta` and the removed sessions/`Mcp-Session-Id` (see line 27 above) map onto each binding.
+
 ## Examples
 A 2026-07-28 `tools/call` from a client on PL-LT-00123 carries in `params._meta`:
 `{"io.modelcontextprotocol/protocolVersion":"2026-07-28","io.modelcontextprotocol/clientCapabilities":{"elicitation":{"form":{}}}}`.

@@ -32,6 +32,8 @@ status: complete
 | Disabled | yes (object kept) | S545 |
 | Soft deleted (preview, <= 30 days) | yes | S547 |
 | Hard deleted | no | S546, S547 |
+| LAPS policy/settings/retrieval reference | see `windows/laps.md` | DOC |
+| BitLocker CSP, silent encryption policy, encryption events | see `windows/bitlocker.md` | DOC |
 
 ## Examples
 - Before any delete of `PL-LT-00123`, list keys: `GET /v1.0/informationProtection/bitlocker/recoveryKeys?$filter=deviceId eq '{deviceId}'` (least privileged BitlockerKey.ReadBasic.All; filter by deviceId is documented in S531).

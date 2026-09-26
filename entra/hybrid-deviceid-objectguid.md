@@ -35,5 +35,7 @@ status: partial
 | How device registration works | DRS "creates a device ID" | S548 |
 | Graph device resource | deviceId set by DRS at registration | S504 |
 
+- `entra/connect-and-cloud-sync.md`: Connect Sync/Cloud Sync scheduler, staging mode, filtering, source-anchor and gMSA facts for the sync engines that produce this objectGUID/deviceId mapping.
+
 ## Examples
 - For `PL-LT-00123` in `corp.example.com`: compare `Get-ADComputer PL-LT-00123 -Properties objectGUID` with `GET /v1.0/devices?$filter=deviceId eq '{objectGUID}'`; a match is expected only from the sync mapping above, not from an explicit equality statement.

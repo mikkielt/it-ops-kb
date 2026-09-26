@@ -133,6 +133,13 @@ status: partial
 | Arc core control plane incl. managed identity | any Arc-onboarded server | free | S1307 |
 | App-role assignment to a managed identity | any managed identity | PowerShell/Graph only, no portal UI | S1308, S1309 |
 
+- See also `entra/agent-id.md`: an agent identity blueprint's federated identity credentials follow the
+  same Entra FIC mechanics documented here, applied to the `agentIdentityBlueprint` application resource
+  instead of an ordinary app registration.
+- See also `windows/azure-arc-servers.md`: the azcmagent CLI/config, agent networking and logs, extension
+  and Machine Configuration governance, and ESU/Hotpatch-via-Arc facts around the same Arc-enabled server
+  whose managed identity is documented here.
+
 ## Open items (additions)
 - Certificate credentials + non-exportable CNG/TPM key: MSAL Python's documented certificate options
   need a readable private key (PEM/PFX); no documented option accepts a CNG/TPM key handle directly.

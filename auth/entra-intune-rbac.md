@@ -34,6 +34,15 @@ status: partial
 ## Examples
 - Engineer `jan.kowalski` activates PIM membership in `SG-ENGINEER` (cloud group, writeback-enabled): visible to a fresh Graph token immediately; visible in AD only after the next ~20-minute writeback cycle; a workstation client process holding a cached Kerberos ticket for AdminService/SQL will not see it until that ticket is renewed (see `auth/kerberos.md`).
 
+See also `intune/assignment-filters-and-rbac.md`: the Intune-RBAC side of PIM elevation this article's
+timing covers — Entra PIM on the Intune Administrator role applies in ~10 seconds, PIM for Groups backing
+an Intune RBAC role assignment in ~15 minutes.
+
+See also `entra/pim-and-governance.md`: per-role PIM activation policy (max duration, MFA/Conditional Access/approval
+requirements), the Graph `unifiedRoleEligibilityScheduleRequest`/`unifiedRoleAssignmentScheduleRequest` APIs, PIM
+security alerts, and Entitlement Management/access reviews licensing — this article's sync-interval and PIM-for-Groups
+latency facts are the mechanics that article assumes rather than repeats.
+
 ## Open items
 - QA9 (PIM for Groups activation latency in tokens/`checkMemberGroups`, reach to on-prem AD): answered above — token-side is next-acquisition, not real-time push; AD-side needs writeback and its own ~20 min cycle.
 - QA8 (Entra Connect Sync/Cloud Sync intervals, group writeback status in 2026): answered above.

@@ -1,0 +1,16 @@
+property,system_or_admin,operators,example_values,source_id
+deviceId,Yes,"Equals, NotEquals, In, NotIn","a valid deviceId GUID; (device.deviceid -eq ""aaaaaaaa-0000-1111-2222-bbbbbbbbbbbb"")",S-2gcjipq5
+displayName,No,"Equals, NotEquals, StartsWith, NotStartsWith, EndsWith, NotEndsWith, Contains, NotContains, In, NotIn","any string; (device.displayName -contains ""ABC"")",S-2gcjipq5
+deviceOwnership,Yes,"Equals, NotEquals","Personal (BYOD) or Company (corporate owned); (device.deviceOwnership -eq ""Company"")",S-2gcjipq5
+trustType,Yes,"Equals, NotEquals","AzureAD (Entra joined), ServerAD (Entra hybrid joined), Workplace (Entra registered); (device.trustType -eq ""ServerAD"")",S-2gcjipq5
+isCompliant,Yes,"Equals, NotEquals","True or False; (device.isCompliant -eq ""True"")",S-2gcjipq5
+manufacturer,No,"Equals, NotEquals, StartsWith, NotStartsWith, EndsWith, NotEndsWith, Contains, NotContains, In, NotIn","any string; (device.manufacturer -startsWith ""Microsoft"")",S-2gcjipq5
+model,No,"Equals, NotEquals, StartsWith, NotStartsWith, EndsWith, NotEndsWith, Contains, NotContains, In, NotIn","any string; (device.model -notContains ""Surface"")",S-2gcjipq5
+operatingSystem,Yes,"Equals, NotEquals, StartsWith, NotStartsWith, EndsWith, NotEndsWith, Contains, NotContains, In, NotIn","a valid OS name (Windows, iOS, Android); (device.operatingSystem -eq ""Windows"")",S-2gcjipq5
+operatingSystemVersion,Yes,"Equals, NotEquals, StartsWith, NotStartsWith, EndsWith, NotEndsWith, Contains, NotContains, In, NotIn","a valid OS version (6.1 Win7, 6.2 Win8, 10.0 Win10/11); (device.operatingSystemVersion -in [""10.0.19041"",""10.0.22000""])",S-2gcjipq5
+physicalIds,Yes,"Contains, NotContains","e.g. Windows Autopilot ZTDId stored in physicalIds; (device.physicalIds -contains ""[ZTDId]:value"")",S-2gcjipq5
+profileType,Yes,"Equals, NotEquals","RegisteredDevice (default), SecureVM, Printer, Shared, IoT; (device.profileType -eq ""Printer"")",S-2gcjipq5
+systemLabels,Yes,"Contains, NotContains","labels applied by the system, e.g. AzureResource, M365Managed, MultiUser; (device.systemLabels -contains ""M365Managed"")",S-2gcjipq5
+enrollmentProfileName,Yes,"Equals, NotEquals, StartsWith, NotStartsWith, EndsWith, NotEndsWith, Contains, NotContains, In, NotIn","set by Intune from the Autopilot/ADE/Google enrollment profile; (device.enrollmentProfileName -startsWith ""AutoPilot Profile"")",S-2gcjipq5
+mdmAppId,Yes,"Equals, NotEquals, In, NotIn","a valid MDM application ID GUID; (device.mdmAppId -in [""00001111-aaaa-2222-bbbb-3333cccc4444""])",S-2gcjipq5
+extensionAttribute1-15,Yes,"Equals, NotEquals, StartsWith, NotStartsWith, EndsWith, NotEndsWith, Contains, NotContains, In, NotIn","any string set via Graph device-update; (device.extensionAttribute1 -eq ""SAW"")",S-2gcjipq5

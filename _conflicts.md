@@ -366,3 +366,58 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
 ## prior-art/mcp-microsoft-endpoint-mgmt
 
 - The fact that the modelcontextprotocol/modelcontextprotocol and python-sdk repositories do not list Microsoft endpoint-management servers is tagged [DOC S1019], but S1019 is microsoft/mcp's metadata and servers/ listing, which cannot support it. It needs its own source, or should become [UNK]. (census 2026-09-25)
+
+## intune/win32-apps
+
+- Win32 supersedence graph limit: `add-win32` (ms.date 2026-04-14) says a maximum of 10 nodes / 10 updated or replaced apps [DOC S-wc6e3fba], while `configure-win32-supersedence` says a maximum of 11 nodes in a single supersedence graph [DOC S-vywsads7]. The dependency limit on `add-win32` is also internally inconsistent: "maximum of 100 dependencies ... as well as the app itself" versus the example "100 dependencies ... total size of 101". Treat 10 and 100 (including the parent) as the safe limits until Microsoft reconciles the pages. (topic: intune/win32-apps)
+
+## intune/compliance-policies
+
+- `windows10CompliancePolicy` Graph resource shape: the v1.0 resource page lists only 19 settable properties (password rules, `bitLockerEnabled`, `secureBootEnabled`, `codeIntegrityEnabled`, `earlyLaunchAntiMalwareDriverEnabled`, OS version bounds, `storageRequireEncryption`) [DOC S-taatt73w], while the beta resource page for the same type name adds `tpmRequired`, `activeFirewallRequired`, `defenderEnabled`, `defenderVersion`, `signatureOutOfDate`, `rtpEnabled`, `antivirusRequired`, `antiSpywareRequired`, `deviceThreatProtectionEnabled`, `deviceThreatProtectionRequiredSecurityLevel`, `configurationManagerComplianceRequired`, `validOperatingSystemBuildRanges`, `memoryIntegrityEnabled`, `kernelDmaProtectionEnabled`, `virtualizationBasedSecurityEnabled`, `firmwareProtectionEnabled`, `deviceCompliancePolicyScript`, `wslDistributions` and `roleScopeTagIds` [DOC S-2hhj3k5f]. Every one of these beta-only properties corresponds to a setting the admin center UI exposes today (`compliance-policy-create-windows`, S-qjd54t3z), so v1.0 cannot express most Windows System Security / Defender / Configuration Manager compliance settings via Graph; automation needs the beta endpoint (or the UI) for those settings until Microsoft ships them to v1.0. (topic: intune/compliance-policies)
+
+## entra/agent-id
+
+- Copilot Studio automatic-Agent-ID cutover date: "Recreate Copilot Studio agents in Microsoft Entra Agent
+  ID" states agents created before **2026-03-18** use legacy app registrations, while "Microsoft Entra
+  Agent IDs for Copilot Studio agents" states the cutover was **"May 2026"**. Both are current Microsoft
+  Learn pages; which date is authoritative is unresolved. (topic: entra/agent-id)
+
+## agents/windows-agentic-platform
+
+- Recall availability default: Policy CSP `WindowsAI\AllowRecallEnablement` documents its own **default
+  value as 1 (Recall available)**, but the same Microsoft Learn domain's "Manage Recall" admin guide states
+  "By default, Recall is disabled for managed commercial devices... individual users can't enable Recall on
+  their own." The CSP's declared default and the operational behavior on managed devices disagree; treat
+  Recall as off-by-default on any Intune/GPO-managed device regardless of the CSP table's stated default.
+  (topic: agents/windows-agentic-platform)
+- `DisableClickToDo` applicability: the Policy CSP page lists this policy as **Windows Insider Preview only**
+  (no stable OS/KB build given), while the companion "Manage Click to Do" admin article documents it and its
+  Settings UI toggle without a preview caveat, alongside the Copilot+ PC hardware requirements that are
+  themselves GA. Until the CSP page adds a stable-build requirement, treat `DisableClickToDo` itself as
+  preview even though Click to Do the feature is GA on Copilot+ PCs. (topic: agents/windows-agentic-platform)
+
+## security/vulnerability-prioritization
+
+- BOD 22-01 status: CISA's KEV catalog page (fetched 2026-09-26) states the catalog now implements
+  **BOD 26-04**, and the BOD 22-01 directive page itself states BOD 22-01 "has been revoked as of June 10, 2026,
+  and is superseded by BOD 26-04." The research brief that requested this topic named BOD 22-01 as the
+  remediation-timeline authority; that is now historical, not current. Both the historical BOD 22-01 timelines
+  (2 weeks / 6 months) and the current pointer to BOD 26-04 are recorded in the article; BOD 26-04's own
+  remediation timelines were not separately researched. (topic: security/vulnerability-prioritization)
+
+## intune/linux-management
+
+- Linux platform-support version lists disagree across current Microsoft Learn pages (all fetched 2026-09-26):
+  the custom Bash script article ("Use custom Bash scripts to configure Linux devices in Microsoft Intune")
+  lists prerequisites as Ubuntu Desktop, RHEL 8, or RHEL 9; the enrollment, compliance-settings, and
+  custom-compliance-settings articles all list Ubuntu Desktop 24.04 LTS/26.04 LTS, RHEL 9, and RHEL 10 (with
+  RHEL 8 support ending July 2026 per the What's new page). The Bash-script article appears stale. Both
+  version lists are recorded in the article's Facts. (topic: intune/linux-management)
+
+## windows/powershell-7
+
+- PowerShell end-of-support dates: the Microsoft Lifecycle "Products" page for PowerShell gives retirement
+  timestamps one calendar day later than the PowerShell Support Lifecycle page for the same releases (PT
+  vs a plain date, e.g. 7.4/7.5 "11/11/2026 6:59:59 AM" vs "10-Nov-2026"; 7.2 "11/9/2024" vs "08-Nov-2024";
+  7.0 "12/4/2022" vs "03-Dec-2022"). Both are current Microsoft pages; the article uses the Support
+  Lifecycle page's plain dates in its Reference table and CSV, and records both. (topic: windows/powershell-7)

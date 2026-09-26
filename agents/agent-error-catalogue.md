@@ -133,7 +133,10 @@ keeping a project's `CLAUDE.md`, skills and MCP tool definitions inside document
 
 ## Reference
 See `agents/agent-error-catalogue.csv` for the normalized tool/error/cause/avoidance table (48 rows after this
-deepening pass).
+deepening pass). See `claude/messages-api.md` for the Messages API request/response shape (tool_use/tool_result
+pairing, stop_reason values including pause_turn/refusal/model_context_window_exceeded), and Batches/Files API and
+rate-limit numbers (`claude/api-limits.csv`), which this article's HTTP-error/limits facts extend rather than
+duplicate.
 
 ### Checklist: keeping a project inside documented limits
 

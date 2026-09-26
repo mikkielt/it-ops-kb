@@ -44,6 +44,9 @@ snapshots max 20,000 resources/month, 12 visible jobs, 7-day retention. It cover
 - TCM covers Microsoft 365 tenant configuration, not Windows device-local settings; nothing in these pages mentions ConfigMgr or on-device DSC. [DER S940,S942] (workload list is cloud services only)
 
 ## Reference
+PowerShell-based, resource-level tenant configuration export/drift monitoring (a different mechanism than these Graph
+APIs): `graph/microsoft365dsc.md`.
+
 Endpoints (v1.0 and beta; base `https://graph.microsoft.com/{v1.0|beta}`) [S942, S953, S954]:
 
 | Method | Path |

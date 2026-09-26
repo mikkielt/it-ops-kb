@@ -51,6 +51,7 @@ reading the current page.
 - `.claude/settings.json`: pre-approves those servers and denies their `submit_feedback` tools.
 - `_tools/fetch.py --diff`: re-fetches the recorded sources of a topic and shows what changed.
 - Rejected: GitLab MCP server (Beta), Microsoft MCP Server for Enterprise (preview), GitHub MCP Insiders mode (early access), undocumented `platform.claude.com/docs/mcp`.
+- `agents/hybrid-retrieval.md`: its Azure AI Search, Anthropic, pgvector and Elasticsearch facts were found and read through the Microsoft Learn MCP server and WebFetch listed here.
 
 ## Examples
 ```bash

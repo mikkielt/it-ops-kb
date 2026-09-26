@@ -59,3 +59,9 @@ dsc resource get -r Microsoft.Windows/Service -i '{"name":"Spooler"}'
 dsc resource list 'Microsoft.Windows/*' -o table-no-truncate
 dsc schema -t configuration -o pretty-json
 ```
+
+## Related
+- `windows/azure-arc-servers.md` (Azure Machine Configuration relation to DSC): Azure Machine Configuration
+  (formerly Guest Configuration) validates/remediates using its own side-loaded PowerShell DSC engine
+  (DSC v2 on Windows, DSC v3 on Linux) — a different DSC version/build than this `dsc` 3.3.0 binary and
+  its `dsc config`/`dsc resource` model documented above.

@@ -1,0 +1,22 @@
+tool,status,auth/connection,limits,source
+Model Context Protocol (MCP) server,GA,"key-based, Entra (agent or project managed identity), OAuth on-behalf-of (OBO) passthrough, or unauthenticated; via a project connection (project_connection_id)",require_approval default is always; allowed_tools restricts exposed tools; toolbox endpoint never blocks tools/call even when require_approval=always - the calling runtime must enforce it,S-5ygcb6vm
+Toolbox (MCP-compatible endpoint bundling tools),GA (tool search and Skills sub-features preview),Entra ID / OAuth identity passthrough at the toolbox endpoint (DefaultAzureCredential); centralizes credential injection and token refresh for every bundled tool,up to 1000 versions per agent; toolbox enumerates all tool sources together at startup - one failing source can block readiness,S-yutqeaay; S-3axje6py
+Web search,GA,platform-managed,region/model dependent (see tool-support-by-region-and-model),S-yutqeaay
+Azure AI Search,GA,project connection to an Azure AI Search resource,not available in Italy North and Brazil South for some models,S-yutqeaay
+Code interpreter,GA,platform-managed,billed per session; default session active for 1 hour,S-hkoalitj
+File search,GA,platform-managed or BYO Azure AI Search (standard setup),max file size for vector store attachment 2000000 tokens,S-f5p5qi4d
+OpenAPI (custom tool from spec),GA,per-spec auth (key/OAuth/Entra) configured on the tool,counts toward the 128 tools-per-agent cap,S-yutqeaay
+Agent-to-agent (A2A),GA (v1.0); v0.3 preview,Entra identity of the calling agent; target needs Foundry Agent Consumer role or higher,text modality only; no streaming responses (v1.0 JSON-RPC),S-all62inb; S-yutqeaay
+Browser automation,GA,platform-managed,model/region dependent,S-yutqeaay
+Fabric IQ,GA,project connection to Fabric,model/region dependent,S-yutqeaay
+Work IQ,preview,project connection,model/region dependent,S-yutqeaay
+Tool search (toolbox meta-tools tool_search/call_tool),preview,inherits toolbox auth,toolbox-only; not available for direct tool integration,S-yutqeaay
+Skills (reusable multi-step workflows),preview,inherits toolbox auth,versioned and immutable; toolbox-only,S-yutqeaay
+Reminder tool,preview,inherits toolbox auth,toolbox-only,S-yutqeaay
+Function calling (custom functions),GA,client-side execution - no service-side credential,direct tool integration only; not toolbox-bundled,S-yutqeaay
+Grounding with Bing / Bing Custom Search,GA,platform-managed connection,direct tool integration only,S-yutqeaay
+Computer use,GA,platform-managed,direct tool integration only,S-yutqeaay
+Image generation,GA,platform-managed,direct tool integration only,S-yutqeaay
+SharePoint,GA,project connection (Entra),direct tool integration only,S-yutqeaay
+Fabric data agent,GA,project connection,direct tool integration only,S-yutqeaay
+Azure Functions (custom MCP server host),GA,project connection; server hosted via the Functions MCP webhook endpoint /runtime/webhooks/mcp,direct tool integration only,S-hkoalitj

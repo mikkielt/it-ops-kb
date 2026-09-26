@@ -29,3 +29,89 @@ license,licence
 licence,licence
 ie,internet explorer
 internet explorer,internet explorer
+wufb,windows update
+windows update for business,windows update
+autopatch,windows update
+windows autopatch,windows update
+hotpatch,windows update
+wdac,app control
+app control for business,app control
+device guard,app control
+configurable code integrity,app control
+graph connectors,copilot connectors
+declarative agents,declarative agent
+assignment filter,intune assignment filters
+maa,multi admin approval
+mggraph,graph powershell sdk
+graph powershell,graph powershell sdk
+agent sdk,claude agent sdk
+claude code sdk,claude agent sdk
+claude-code-sdk,claude agent sdk
+claude agent sdk,claude agent sdk
+agent framework,microsoft agent framework
+msaf,microsoft agent framework
+microsoft agent framework,microsoft agent framework
+scu,security compute unit
+security compute unit,security compute unit
+prompt shields,prompt shields
+jailbreak risk detection,prompt shields
+windows package manager,winget
+desktopappinstaller,winget
+winget,winget
+wef,windows event forwarding
+windows event forwarding,windows event forwarding
+wec,windows event collector
+windows event collector,windows event collector
+odr,on-device agent registry
+on-device agent registry,on-device agent registry
+guest configuration,machine configuration
+azure policy guest configuration,machine configuration
+machine configuration,machine configuration
+azcmagent,connected machine agent
+connected machine agent,connected machine agent
+ama,azure monitor agent
+azure monitor agent,azure monitor agent
+mma,log analytics agent
+log analytics agent,log analytics agent
+dcr,data collection rule
+data collection rule,data collection rule
+azure update manager,azure update manager
+aum,azure update manager
+update manager,azure update manager
+epss,epss
+kev,kev
+cvss,cvss
+ssvc,ssvc
+known exploited vulnerabilities,kev
+exploit prediction scoring system,epss
+common vulnerability scoring system,cvss
+stakeholder-specific vulnerability categorization,ssvc
+pwsh,powershell
+powershell 7,powershell
+powershell,powershell
+windows hello for business,windows hello for business
+whfb,windows hello for business
+passport for work,windows hello for business
+cloud kerberos trust,windows hello for business
+cloud pc,windows 365
+windows 365,windows 365
+m365dsc,microsoft365dsc
+microsoft 365 dsc,microsoft365dsc
+microsoft365dsc,microsoft365dsc
+do,delivery optimization
+delivery optimization,delivery optimization
+mcc,microsoft connected cache
+microsoft connected cache,microsoft connected cache
+connected cache,microsoft connected cache
+app protection policy,app protection
+app protection,app protection
+mam,app protection
+mobile application management,app protection
+app protection policies,app protection
+pim,privileged identity management
+privileged identity management,privileged identity management
+sentinel,microsoft sentinel
+microsoft sentinel,microsoft sentinel
+azure sentinel,microsoft sentinel
+asim,advanced security information model
+advanced security information model,advanced security information model
