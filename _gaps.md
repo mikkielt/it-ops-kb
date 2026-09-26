@@ -726,3 +726,8 @@ Still open: (topic: auth/configmgr-rbac-auth)
 ## windows/windows-update-management
 
 (Resolved 2026-09-26: Policy CSP - Update `learn.microsoft.com/windows/client-management/mdm/policy-csp-update` for AllowAutoUpdate/ManagePreviewBuilds/SetPolicyDrivenUpdateSourceFor*/ConfigureFeatureUpdateUninstallPeriod allowed-values and defaults [S-2z6lunfo]; Extended Security Updates (ESU) program for Windows 10 `learn.microsoft.com/windows/whats-new/extended-security-updates` for commercial ESU pricing [S-hdprezk3]; Windows Autopatch Prerequisites/groups-overview/RBAC pages for the feature-entitlement matrix, Autopatch groups, and RBAC role list [S-4oi245yf, S-bujcbcpv, S-m6wsqtyu]. Article status flipped to complete.)
+
+## ad/krbtgt-password-reset
+
+- **Whether `New-KrbtgtKeys.ps1` is still actively maintained/recommended as of 2026, and its current exact parameters/behavior.** Microsoft's ransomware incident-response playbook (S-4cv3kd2v) links to `github.com/microsoft/New-KrbtgtKeys.ps1` as a recommended scripted process but the kb has not fetched the script repository itself (1 attempt: only the linking Learn page was fetched via MCP). [UNK] (topic: ad/krbtgt-password-reset)
+- **A documented, Microsoft-stated minimum recommended KRBTGT reset cadence outside of a compromise response.** The fetched pages give the 180-day posture-assessment threshold (S-6mj4jpce) and the twice/10-hour compromise procedure (S-4ikiakpi), but no general "reset every N days as routine hygiene" policy statement was found in the pages searched. [UNK] (topic: ad/krbtgt-password-reset)

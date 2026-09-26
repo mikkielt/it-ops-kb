@@ -1,5 +1,6 @@
 topic,priority,status,files,n_sources
 ad/computer-attributes,P1,complete,ad/computer-attributes.md;ad/computer-attributes.csv,9
+ad/krbtgt-password-reset,P1,partial,ad/krbtgt-password-reset.md,5
 ad/ldap-paging-filters,P1,complete,ad/ldap-paging-filters.md,5
 agents/agent-caching,P1,complete,agents/agent-caching.md,8
 agents/agent-dispatch-and-shared-services,P1,partial,agents/agent-dispatch-and-shared-services.md,9
