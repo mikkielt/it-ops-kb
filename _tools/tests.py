@@ -257,6 +257,29 @@ class Cohesion(unittest.TestCase):
 
 
 class Lookup(unittest.TestCase):
+    def test_persisted_index_gives_identical_packs(self):
+        """The sqlite index, the in-memory postings and a domain subset give the same pack, byte for byte; a new
+        fingerprint names a new index file."""
+        import tempfile, kbfacts
+        qs = ["When does NTLMv1 become disabled by default?", "SCCM AdminService Kerberos",
+              "what-if US_NPI approximateLastSignInDateTime", "zanzibarquux flibbertigibbet"]
+        mem = kbfacts.MemStore(kbfacts.fingerprint(), kbfacts.corpus())
+        with tempfile.TemporaryDirectory() as d:
+            path = os.path.join(d, "kbindex-test.sqlite")
+            mem.save(path)
+            sql = kbfacts.SqlStore(path)
+            saved = kbfacts._STORE[0]
+            try:
+                out = {}
+                for name, st in (("mem", mem), ("sql", sql)):
+                    kbfacts._STORE[0] = st
+                    out[name] = [kbfacts.pack(q)["text"] for q in qs] + [kbfacts.pack("kerberos spn", domain="auth")["text"]]
+            finally:
+                kbfacts._STORE[0] = saved
+                sql.con.close()
+        self.assertEqual(out["mem"], out["sql"])
+        self.assertNotEqual(kbfacts.index_path("a" * 40), kbfacts.index_path("b" * 40))
+
     def test_tag_grammar_variants_parse_one_way(self):
         import kbfacts
         cases = {

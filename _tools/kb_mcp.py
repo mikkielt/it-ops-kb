@@ -34,7 +34,7 @@ client's `server/discover` gets supportedVersions, and each modern request's `_m
 (-32022 UnsupportedProtocolVersionError otherwise). Every result carries `resultType: "complete"`, which 2026-07-28
 requires. Only JSON-RPC messages go to stdout; the server exits on EOF.
 """
-import contextlib, csv, io, json, os, re, subprocess, sys
+import contextlib, csv, io, json, os, re, subprocess, sys, threading
 
 TOOLS = os.path.dirname(os.path.abspath(__file__))
 KB = os.path.dirname(TOOLS)
@@ -452,7 +452,16 @@ def main():
     if "--status" in sys.argv[1:]:
         print(kb_status({}))
         return
+    threading.Thread(target=warm, daemon=True).start()
     serve()
+
+
+def warm():
+    """Load (or build) the pack index while the client is still connecting, so the first kb_pack does not wait."""
+    try:
+        kbfacts.store()  # prints nothing: stdout carries only JSON-RPC (no redirect here, it would be process-wide)
+    except Exception as e:  # noqa: BLE001 - a failed warm-up only means the first call builds it
+        print(f"kb_mcp: index warm-up failed: {type(e).__name__}: {e}", file=sys.stderr)
 
 
 if __name__ == "__main__":

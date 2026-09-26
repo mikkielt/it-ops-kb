@@ -22,8 +22,14 @@ continuation lines, or a `### ` block. An entry is linked to a topic explicitly 
 a path of an existing topic file in its text, or a `## <domain>/<slug>` section heading) or through its sources
 (a source id in the entry whose `used_in` names the topic's files). New entries carry an explicit
 `topic: <domain>/<slug>` marker.
+
+The pack index. `store()` holds the pack corpus as postings lists (per term: the units that hold it). A process
+that finds an index file for the current fingerprint (sha1 over path, mtime and size of every file the tools read)
+reads only the postings of the question's words from it (stdlib sqlite3); otherwise it builds the corpus, answers
+from memory and saves the index for the next process. Output is identical either way: scores are summed in the same
+term order per unit and ties keep corpus order. Where the file goes: `index_path()`.
 """
-import csv, hashlib, io, math, os, re, sys
+import array, csv, functools, hashlib, io, json, math, os, re, sqlite3, sys, tempfile, threading, time
 from collections import Counter, defaultdict
 
 TOOLS = os.path.dirname(os.path.abspath(__file__))
@@ -107,16 +113,38 @@ def kb_files(exts=(".md", ".csv")):
 
 
 _CACHE = {}
-TTL = 30  # seconds: a long-running kb MCP server re-reads the kb at most this often
+FP_MEMO = 2.0  # seconds: one command computes the fingerprint once; a long-running server sees an edit on its next call
+_FP = [0.0, None]
+
+
+def fingerprint():
+    """sha1 over (path, mtime_ns, size) of every file the tools read (domain .md/.csv, _sources.csv, the ledgers,
+    aliases.csv, signals.csv, doc2query/expansions.csv, this module and kbid.py) and KB_DOC2QUERY: any edit gives a
+    new value. Replaces a time-to-live cache: nothing is rebuilt while no file changed, however long a server idles."""
+    now = time.monotonic()
+    if _FP[1] is not None and now - _FP[0] < FP_MEMO:
+        return _FP[1]
+    h = hashlib.sha1(f"{INDEX_VERSION}|{os.environ.get('KB_DOC2QUERY', '')}".encode())
+    extra = ["_sources.csv", "_gaps.md", "_conflicts.md", "_answers.md", "_tools/aliases.csv", "_tools/signals.csv",
+             "_tools/doc2query/expansions.csv", "_tools/kbfacts.py", "_tools/kbid.py"]
+    for rel in list(kb_files()) + extra:
+        try:
+            st = os.stat(os.path.join(KB, rel))
+            h.update(f"{rel}\0{st.st_mtime_ns}\0{st.st_size}\n".encode())
+        except OSError:
+            h.update(f"{rel}\0-\n".encode())
+    _FP[:] = [now, h.hexdigest()]
+    return _FP[1]
 
 
 def cached(key, build):
-    import time
+    """build(), kept until any kb file changes (fingerprint)."""
+    fp = fingerprint()
     hit = _CACHE.get(key)
-    if hit and time.monotonic() - hit[0] < TTL:
+    if hit and hit[0] == fp:
         return hit[1]
     val = build()
-    _CACHE[key] = (time.monotonic(), val)
+    _CACHE[key] = (fp, val)
     return val
 
 
@@ -352,6 +380,7 @@ STOP = kbid.STOP | {"about", "after", "all", "any", "also", "been", "but", "did"
 WORD = re.compile(r"\w+(?:[.\-]\w+)*")
 
 
+@functools.lru_cache(maxsize=None)
 def stem(w):
     """A light suffix stripper, the same for query and kb: disable/disabled/disabling -> disabl, settings -> set."""
     for _ in range(2):  # settings -> setting -> sett
@@ -441,7 +470,7 @@ def expand(question):
 
 
 def corpus(domain=None):
-    """Fact units plus each article's title and Summary bullets as searchable units (cached for TTL seconds)."""
+    """Fact units plus each article's title and Summary bullets as searchable units (cached until a kb file changes)."""
     return cached(("corpus", domain or ""), lambda: _corpus(domain))
 
 
@@ -493,6 +522,219 @@ def _corpus(domain):
     return us
 
 
+# ---------------------------------------------------------------- the pack index (postings; persisted with sqlite3)
+
+INDEX_VERSION = 1  # bump when the index layout or what goes into a unit's tf/own changes
+
+
+class Store:
+    """The pack corpus as postings lists. A unit's id is its position in corpus order, so ties in the ranking keep
+    the order a full scan would give. `own(t)`: ids of the units whose own words hold t (verdict, df); `tf(t)`:
+    [(id, weighted tf)] in id order (ranking). Per unit: `lens`, `summ` (a Summary unit), `tagged` and `paths`.
+    Units, article metadata and source urls are read only for what a pack prints."""
+
+    def __init__(self, fp, lens, summ, tagged, paths, arts, srcs):
+        self.fp, self.lens, self.summ, self.tagged, self.paths = fp, lens, summ, tagged, paths
+        self.arts, self.srcs = arts, srcs
+        self.n, self.lensum = len(lens), sum(lens)
+        self._own, self._tf = {}, {}
+
+    def own(self, t):
+        if t not in self._own:
+            self._own[t] = self._load_own(t)
+        return self._own[t]
+
+    def tf(self, t):
+        if t not in self._tf:
+            self._tf[t] = self._load_tf(t)
+        return self._tf[t]
+
+    def view(self, domain):
+        return self if not domain else Subset(self, domain)
+
+
+class MemStore(Store):
+    """Postings built in memory from corpus()."""
+
+    def __init__(self, fp, us):
+        own, tfp = defaultdict(list), defaultdict(list)
+        for i, u in enumerate(us):
+            for t in u["own"]:
+                own[t].append(i)
+            for t, v in u["tf"].items():
+                tfp[t].append((i, v))
+        self.own_lists, self.tf_lists, self.us = own, tfp, us
+        metas, rows = articles(), source_rows()
+        srcs = {k: [r.get("url") or "", (r.get("superseded_by") or "").strip()] for k, r in rows.items()}
+        super().__init__(fp, [u["len"] for u in us], [u["section"].startswith("Summary") for u in us],
+                         [bool(u["tags"]) for u in us], [u["path"] for u in us],
+                         {k: dict(v) for k, v in metas.items()}, srcs)
+
+    def _load_own(self, t):
+        return set(self.own_lists.get(t, ()))
+
+    def _load_tf(self, t):
+        return self.tf_lists.get(t, [])
+
+    def unit(self, i):
+        u = self.us[i]
+        return {"id": i, "path": u["path"], "line": u["line"], "section": u["section"], "text": u["text"], "tags": u["tags"]}
+
+    def save(self, path):
+        """Write the index to `path` (via a temporary file in the same directory, renamed into place)."""
+        d = os.path.dirname(path)
+        os.makedirs(d, exist_ok=True)
+        fd, tmp = tempfile.mkstemp(prefix=".kbindex-", suffix=".tmp", dir=d)
+        os.close(fd)
+        try:
+            con = sqlite3.connect(tmp)
+            con.executescript("PRAGMA journal_mode=OFF; PRAGMA synchronous=OFF;"
+                              "CREATE TABLE meta(k TEXT PRIMARY KEY, v BLOB) WITHOUT ROWID;"
+                              "CREATE TABLE post(term TEXT PRIMARY KEY, own BLOB, tfid BLOB, tfv BLOB) WITHOUT ROWID;"
+                              "CREATE TABLE unit(id INTEGER PRIMARY KEY, path TEXT, line INTEGER, section TEXT, text TEXT, tags TEXT);")
+            pathlist = sorted(set(self.paths))
+            pix = {p: i for i, p in enumerate(pathlist)}
+            meta = {"version": str(INDEX_VERSION), "fp": self.fp, "lens": array.array("I", self.lens).tobytes(),
+                    "flags": bytes(1 * s + 2 * t for s, t in zip(self.summ, self.tagged)),
+                    "pathix": array.array("I", (pix[p] for p in self.paths)).tobytes(),
+                    "paths": json.dumps(pathlist), "arts": json.dumps(self.arts), "srcs": json.dumps(self.srcs)}
+            con.executemany("INSERT INTO meta VALUES (?, ?)", meta.items())
+            terms_ = set(self.own_lists) | set(self.tf_lists)
+            con.executemany("INSERT INTO post VALUES (?, ?, ?, ?)", (
+                (t, array.array("I", self.own_lists.get(t, ())).tobytes(),
+                 array.array("I", (i for i, _ in self.tf_lists.get(t, ()))).tobytes(),
+                 array.array("d", (v for _, v in self.tf_lists.get(t, ()))).tobytes()) for t in terms_))
+            con.executemany("INSERT INTO unit VALUES (?, ?, ?, ?, ?, ?)", (
+                (i, u["path"], u["line"], u["section"], u["text"], json.dumps(u["tags"])) for i, u in enumerate(self.us)))
+            con.commit()
+            con.close()
+            os.replace(tmp, path)
+        finally:
+            if os.path.exists(tmp):
+                os.remove(tmp)
+
+
+class SqlStore(Store):
+    """Postings read on demand from an index file that MemStore.save wrote."""
+
+    def __init__(self, path):
+        self.con = sqlite3.connect(f"file:{path}?mode=ro", uri=True, check_same_thread=False)
+        m = dict(self.con.execute("SELECT k, v FROM meta"))
+        if m.get("version") != str(INDEX_VERSION):
+            raise ValueError("index version")
+        lens = array.array("I")
+        lens.frombytes(m["lens"])
+        pix = array.array("I")
+        pix.frombytes(m["pathix"])
+        pathlist = json.loads(m["paths"])
+        flags = m["flags"]
+        super().__init__(m["fp"], lens.tolist(), [bool(f & 1) for f in flags], [bool(f & 2) for f in flags],
+                         [pathlist[i] for i in pix], json.loads(m["arts"]), json.loads(m["srcs"]))
+        self.lock = threading.Lock()
+
+    def _row(self, t):
+        with self.lock:
+            return self.con.execute("SELECT own, tfid, tfv FROM post WHERE term = ?", (t,)).fetchone()
+
+    def _load_own(self, t):
+        r = self._row(t)
+        a = array.array("I")
+        if r:
+            a.frombytes(r[0])
+        return set(a)
+
+    def _load_tf(self, t):
+        r = self._row(t)
+        if not r:
+            return []
+        ids, vals = array.array("I"), array.array("d")
+        ids.frombytes(r[1])
+        vals.frombytes(r[2])
+        return list(zip(ids, vals))
+
+    def unit(self, i):
+        with self.lock:
+            path, line, section, text, tags = self.con.execute(
+                "SELECT path, line, section, text, tags FROM unit WHERE id = ?", (i,)).fetchone()
+        return {"id": i, "path": path, "line": line, "section": section, "text": text, "tags": json.loads(tags)}
+
+
+class Subset(Store):
+    """The units of one domain (a path prefix) of a full store: df, n and the average length over those units only,
+    as a pack over corpus(domain) computes them."""
+
+    def __init__(self, base, domain):
+        self.base, self.keep = base, {i for i, p in enumerate(base.paths) if in_prefix(p, domain)}
+        ids = sorted(self.keep)
+        super().__init__(base.fp, base.lens, base.summ, base.tagged, base.paths, base.arts, base.srcs)
+        self.n, self.lensum = len(ids), sum(base.lens[i] for i in ids)
+
+    def _load_own(self, t):
+        return self.base.own(t) & self.keep
+
+    def _load_tf(self, t):
+        return [(i, v) for i, v in self.base.tf(t) if i in self.keep]
+
+    def unit(self, i):
+        return self.base.unit(i)
+
+
+def index_path(fp):
+    """Where the index for fingerprint `fp` lives, or None when KB_INDEX=0: KB_INDEX (a directory), else the
+    plugin's data directory (CLAUDE_PLUGIN_DATA, survives plugin updates), else _cache/ in the kb, else a temp
+    directory. One file per fingerprint and doc2query mode, so a new index never replaces a file a server has open."""
+    where = os.environ.get("KB_INDEX", "")
+    if where == "0":
+        return None
+    if not where:
+        where = os.environ.get("CLAUDE_PLUGIN_DATA") or os.path.join(KB, "_cache")
+        if not _writable(where):
+            where = os.path.join(tempfile.gettempdir(), "it-ops-kb-" + hashlib.sha1(KB.encode()).hexdigest()[:8])
+    return os.path.join(where, f"kbindex-{fp[:16]}.sqlite")
+
+
+def _writable(d):
+    if os.path.isdir(d):
+        return os.access(d, os.W_OK)
+    return os.access(os.path.dirname(d) or ".", os.W_OK)
+
+
+_STORE = [None]
+_STORE_LOCK = threading.Lock()
+
+
+def store(domain=None):
+    """The pack index for the current kb: the one this process holds, else the index file for the current
+    fingerprint, else built from corpus() now and saved for the next process (a process that cannot write keeps
+    it in memory). Rebuilt only when a kb file changed."""
+    fp = fingerprint()
+    with _STORE_LOCK:
+        st = _STORE[0]
+        if st is None or st.fp != fp:
+            st = None
+            path = index_path(fp)
+            if path and os.path.exists(path):
+                try:
+                    st = SqlStore(path)
+                except (sqlite3.Error, ValueError, KeyError):
+                    st = None
+            if st is None:
+                st = MemStore(fp, corpus())
+                if path:
+                    try:
+                        st.save(path)
+                        for f in os.listdir(os.path.dirname(path)):
+                            if f.startswith("kbindex-") and f.endswith(".sqlite") and f != os.path.basename(path):
+                                try:
+                                    os.remove(os.path.join(os.path.dirname(path), f))
+                                except OSError:
+                                    pass
+                    except (OSError, sqlite3.Error):
+                        pass
+            _STORE[0] = st
+    return st.view(domain)
+
+
 def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", footer=True):
     """Rank fact units for a question and return {verdict, missing, weak_words, groups, sources, text}.
 
@@ -509,37 +751,47 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
     the other aliases rank at a lower weight but never count as key words. `budget` is in tokens (about 3.5
     characters each) and bounds the text. fmt `concise` drops the article flags and the source url footer;
     footer=False leaves the footer out of the text (pack_many prints one shared footer)."""
-    us = corpus(domain)
+    st = store(domain)
     q = sorted(set(terms(question)))
     extra, variants = expand(question)
     whole = set(terms(question, camel=False))
     weight = {**extra, **{t: 1.0 if t in whole else PART_WEIGHT for t in q}}
-    df = Counter(t for u in us for t in u["own"] if t in weight)
-    n = max(len(us), 1)
-    avg = sum(u["len"] for u in us) / n
+    df = {t: len(st.own(t)) for t in weight}
+    n = max(st.n, 1)
+    avg = st.lensum / n
     keys = sorted(set(key_terms(question)))
 
-    def has(u, t):
-        return t in u["own"] or any(all(x in u["own"] for x in v) for v in variants.get(t, ()))
+    def has_ids(t):  # the units that hold key word t: itself, or every word of one of its alias variants
+        ids = set(st.own(t))
+        for v in variants.get(t, ()):
+            ids |= set.intersection(*(st.own(x) for x in v))
+        return ids
 
-    kdf = {t: sum(1 for u in us if has(u, t)) if t in variants or t not in df else df[t] for t in keys}
+    holders = {t: has_ids(t) for t in keys}
+    kdf = {t: len(holders[t]) if t in variants or not df.get(t) else df[t] for t in keys}
     informative = [t for t in keys if kdf[t] < 0.2 * n]
     missing = [t for t in informative if not kdf[t]]
-    scored = []
-    for u in us:
-        s = 0.0
-        for t, w in weight.items():
-            tf = u["tf"].get(t)
-            if tf and df[t]:
-                idf = math.log(1 + (n - df[t] + 0.5) / (df[t] + 0.5))
-                s += w * idf * tf * 2.2 / (tf + 1.2 * (0.25 + 0.75 * u["len"] / avg))
-        if s:
-            if u["section"].startswith("Summary"):
-                s *= 1.15
-            if not u["tags"]:
-                s *= UNTAGGED_WEIGHT
-            scored.append((s, u))
-    scored.sort(key=lambda x: -x[0])
+    acc = {}
+    for t, w in weight.items():  # the same arithmetic, in the same order per unit, as a scan over every unit
+        if not df[t]:
+            continue
+        idf = math.log(1 + (n - df[t] + 0.5) / (df[t] + 0.5))
+        for i, tf in st.tf(t):
+            acc[i] = acc.get(i, 0.0) + w * idf * tf * 2.2 / (tf + 1.2 * (0.25 + 0.75 * st.lens[i] / avg))
+    ranked = []
+    for i in sorted(acc):
+        s = acc[i]
+        if st.summ[i]:
+            s *= 1.15
+        if not st.tagged[i]:
+            s *= UNTAGGED_WEIGHT
+        ranked.append((s, i))
+    ranked.sort(key=lambda x: -x[0])
+    scored = [(s, st.unit(i)) for s, i in ranked[:40]]
+
+    def has(u, t):
+        return u["id"] in holders[t]
+
     # verdict: named words (product names, ids: a capital or a digit, not the question's first word) that the kb
     # never mentions mean it does not cover the question; else the share of the kb-known key words that the best
     # article's units match
@@ -596,10 +848,10 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
             used += cost
             cited += new_ids
         if items:
-            more = sum(1 for x in scored if x[1]["path"] == art and x[0] >= 0.4 * best) - len(items)
+            more = sum(1 for x in ranked if st.paths[x[1]] == art and x[0] >= 0.4 * best) - len(items)
             if more > 0:  # e.g. hundreds of similar rows in a data file: the answer may be one of these
                 items.append(f"  (+{more} more matching lines in {art}: kb_search with more words, or kb_show)")
-            meta = articles().get(art, {})
+            meta = st.arts.get(art, {})
             head = f"## {art}" + (f"  {meta.get('title', '')}" if meta else "")
             flags = ", ".join(filter(None, (meta.get("status"), f"retrieved {meta['retrieved_utc']}" if meta.get("retrieved_utc") else "")))
             groups.append((head + (f"  [{flags}]" if flags and not concise else ""), items))
@@ -607,13 +859,12 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
             used += len(head) + 40
         if used >= limit:
             break
-    rows = source_rows()
     seen, srcs = set(), []
     for i in cited:
         if i not in seen:
             seen.add(i)
-            r = rows.get(i, {})
-            srcs.append((i, r.get("url") or "UNKNOWN id", (r.get("superseded_by") or "").strip()))
+            url, sup = st.srcs.get(i, ("", ""))
+            srcs.append((i, url or "UNKNOWN id", sup))
     head = f"coverage: {verdict}"
     if known:
         head += f" (best article matches {len(hit)} of {len(known)} key words: {', '.join(sorted(hit)) or '-'})"

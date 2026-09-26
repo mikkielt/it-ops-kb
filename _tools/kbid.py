@@ -21,7 +21,7 @@ URL normalization (conservative; nothing that could point at a different resourc
 Answer ids. New research answers in _answers.md are headed `## QK-<slug>. <question>`: lowercase words
 joined by hyphens. Existing Q/QA/QS/QR/QG/R headings stay.
 """
-import argparse, base64, csv, hashlib, os, re, sys, urllib.parse
+import argparse, base64, csv, functools, hashlib, os, re, sys, urllib.parse
 
 KB = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 LEGACY_ID = r"S\d+"
@@ -37,6 +37,7 @@ STOP = {"a", "an", "the", "and", "or", "of", "for", "to", "in", "on", "with", "i
         "which", "when", "where", "why", "does", "do", "it", "its", "by", "from", "as", "at", "we", "our", "should"}
 
 
+@functools.lru_cache(maxsize=None)
 def normalize_url(url):
     """The url in the canonical form that source ids are hashed from (rules in the module docstring)."""
     p = urllib.parse.urlsplit(url.strip())
