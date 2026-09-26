@@ -34,6 +34,7 @@ agents/microsoft-agent-framework,P2,complete,agents/microsoft-agent-framework.md
 agents/prompt-injection-design-patterns,P2,complete,agents/prompt-injection-design-patterns.md,6
 agents/security-copilot-endpoint,P2,partial,agents/security-copilot-endpoint.md,22
 agents/windows-agentic-platform,P2,partial,agents/windows-agentic-platform.md;agents/windows-ai-policies.csv,16
+agents/langgraph,P3,partial,agents/langgraph.md,8
 ansible/dsc3-module,P3,complete,ansible/dsc3-module.md,5
 ansible/windows-ssh,P3,complete,ansible/windows-ssh.md,1
 arch/docs-home-options,P1,complete,arch/docs-home-options.md,4

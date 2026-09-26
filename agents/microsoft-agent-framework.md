@@ -193,6 +193,10 @@ status: complete
 - `agents/foundry-agent-service.md`: the Foundry-hosting side of the split above — Foundry's own tool
   catalogue and Toolbox, `require_approval` enforcement for the MCP tool, RBAC, and quotas/limits for
   hosted agents built with this framework (`FoundryChatClient`/`FoundryToolbox`).
+- `agents/langgraph.md`: LangChain's LangGraph is the closest cross-vendor analogue to this
+  framework's typed `Workflow` graph — compare its `StateGraph`/`interrupt()`/`Command(resume=...)`
+  human-in-the-loop pattern and checkpointers against this article's `ctx.request_info()`/
+  `RequestInfoEvent` and workflow checkpointing.
 - `_conflicts.md`: none recorded for this topic; the two migration guides (AutoGen, Semantic Kernel)
   and the overview page were consistent on GA status, package names, and MIT licensing wherever they
   overlapped.

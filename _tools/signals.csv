@@ -300,3 +300,7 @@ Set-AssignedAccess,windows/kiosk-assigned-access
 MDM_AssignedAccess,windows/kiosk-assigned-access
 VPNv2,intune/network-profiles
 WiredNetwork,intune/network-profiles
+StateGraph,agents/langgraph
+langgraph-checkpoint,agents/langgraph
+PostgresSaver,agents/langgraph
+langchain-mcp-adapters,agents/langgraph
