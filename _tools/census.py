@@ -15,7 +15,7 @@ bucket:
   OK            nothing changed since retrieval: the pinned file is byte-identical at the branch tip (content compared,
                 so a shallow clone's boundary commit is no change); a recorded release is still the newest of its own
                 series (same tag shape, created later); a Learn page's source file in its public MicrosoftDocs repo
-                (LEARN_MAP) has no commit since retrieval; a live page's sitemap lastmod or page date is not after it
+                (LEARN_MAP) has no commit since retrieval, or, without one, the page's `updated_at` meta is not after it; a live page's sitemap lastmod or page date is not after it
   CHANGED       the file or page changed since retrieval (evidence: commits or date)
   GONE          404/410, the file was deleted, the commit or tag vanished
   NEWER-VERSION a newer release of the pinned one exists and the cited file differs there
@@ -421,6 +421,30 @@ def check_pypi(url, rec):
     return st, verdict("NEWER-VERSION", f"PyPI latest {ver}; recorded: {rec[:60]}", "", f"newer={ver}")
 
 
+LEARN_UPDATED = re.compile(r'<meta name="updated_at" content="([^"]+)"')
+LEARN_COMMIT = re.compile(r'<meta name="git_commit_id" content="([0-9a-f]{12})')
+
+
+def check_learn_page(url, since):
+    """A Learn page without a readable source repo: its `updated_at` meta (the build's last content update, not
+    `ms.date`, the author's review date, which lags) against retrieval."""
+    st, body, final = fetch(url)
+    if st == BLOCKED:
+        return st, verdict("NEEDS-READING", "host denied by this environment's network policy", "", "blocked")
+    if st in (404, 410):
+        return st, verdict("GONE", f"HTTP {st}")
+    m = LEARN_UPDATED.search(body) if st == 200 else None
+    date = norm_date(m.group(1)) if m else None
+    if not date:
+        return st, verdict("NEEDS-READING", f"HTTP {st}, no updated_at; read it (microsoft_docs_fetch)", "", "learn")
+    c = LEARN_COMMIT.search(body)
+    proof = f"updated_at {date}" + (f", git_commit_id {c.group(1)}" if c else "")
+    moved = f"; redirected to {final}" if final.rstrip("/") != url.rstrip("/") else ""
+    if date > since:
+        return st, verdict("CHANGED", f"Learn updated_at {date} is after retrieval {since}{moved}", proof)
+    return st, verdict("OK", f"Learn updated_at {date}, not after retrieval {since}{moved}", proof)
+
+
 def check_live(url, since, rec):
     if url.startswith(("https://pypi.org/pypi/", "https://pypi.org/project/")):
         st, res = check_pypi(url, rec)
@@ -459,7 +483,7 @@ def check_one(r, c):
         d, err = repo_dir(c["repo"])
         if not d:
             if kind == "learn":
-                return "", verdict("NEEDS-READING", f"source repo not readable ({err}); read the Learn page", "", "learn")
+                return check_learn_page(r["url"], since)
             return "", verdict("NEEDS-READING", err)
         if kind in ("raw-pin", "gh-pin"):
             res = check_pin(d, c["pin"], c["path"])
@@ -483,14 +507,14 @@ def check_one(r, c):
             res = check_ref(d, c["pin"] or "HEAD", c["path"], since)
         elif kind == "api-commits":
             res = check_ref(d, "HEAD", c["path"], since)
-        else:  # learn with a mapped source repo
-            res = check_learn(d, c["path"], since) or verdict("NEEDS-READING", f"no source file for the page in {c['repo']}", "", "learn")
+        else:  # learn with a mapped source repo; a page whose file moved falls back to the page's updated_at
+            res = check_learn(d, c["path"], since)
+            if not res:
+                return check_learn_page(r["url"], since)
         st = fetch(r["url"])[0] if kind in ("raw-pin", "raw-ref") else ""
         return st, res
     if kind == "learn":
-        st, _, _ = fetch(r["url"])
-        note = "blocked" if st == BLOCKED else "learn"
-        return st, verdict("NEEDS-READING", "a Learn page without a public source repo; read it (microsoft_docs_fetch)", "", note)
+        return check_learn_page(r["url"], since)
     return check_live(r["url"], since, r.get("version_or_date", ""))
 
 

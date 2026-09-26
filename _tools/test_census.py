@@ -35,6 +35,24 @@ class TestCensusRules:
             assert (c["kind"], c["repo"], c["pin"], c["path"]) == want, url
         assert census.classify("https://github.com/PowerShell/DSC/tree/release/v3.3")["refparts"] == ["release", "v3.3"]
 
+    def test_learn_page_updated_at(self, monkeypatch):
+        # updated_at decides, never ms.date (the author's review date, earlier in the head and lagging)
+        head = ('<meta name="ms.date" content="2026-02-06T00:00:00Z" />'
+                '<meta name="updated_at" content="{}T22:34:00Z" />'
+                '<meta name="git_commit_id" content="a60f43f6f562ded6195ddd8d888335f2d8e11e73" />')
+        pages = {"https://learn.microsoft.com/en-us/intune/a": (200, head.format("2026-07-01"), "https://learn.microsoft.com/en-us/intune/b"),
+                 "https://learn.microsoft.com/en-us/intune/c": (200, head.format("2026-09-20"), "https://learn.microsoft.com/en-us/intune/c"),
+                 "https://learn.microsoft.com/en-us/intune/d": (200, "<html></html>", "https://learn.microsoft.com/en-us/intune/d"),
+                 "https://learn.microsoft.com/en-us/intune/e": (404, "", "https://learn.microsoft.com/en-us/intune/e")}
+        monkeypatch.setattr(census, "fetch", lambda url, **k: pages[url])
+        st, res = census.check_learn_page("https://learn.microsoft.com/en-us/intune/a", "2026-09-10")
+        assert res["bucket"] == "OK" and "updated_at 2026-07-01, git_commit_id a60f43f6f562" == res["proof"], res
+        assert "redirected to https://learn.microsoft.com/en-us/intune/b" in res["evidence"]
+        assert census.check_learn_page("https://learn.microsoft.com/en-us/intune/c", "2026-09-10")[1]["bucket"] == "CHANGED"
+        res = census.check_learn_page("https://learn.microsoft.com/en-us/intune/d", "2026-09-10")[1]
+        assert res["bucket"] == "NEEDS-READING" and res["note"] == "learn"
+        assert census.check_learn_page("https://learn.microsoft.com/en-us/intune/e", "2026-09-10")[1]["bucket"] == "GONE"
+
     def test_release_series(self):
         tags = ["v1.2.0", "v1.3.0", "v1.3.1-rc.1", "v1.3.0-fork.2", "v2.0.0-preview.1", "sdk/v9.0.0", "20220215", "v1.4.0.1", "v0.9.0"]
         when = {t: f"2026-0{i % 9 + 1}-01" for i, t in enumerate(tags)}
