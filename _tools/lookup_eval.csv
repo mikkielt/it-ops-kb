@@ -87,3 +87,8 @@ EV-roles-enable-domain-capture-compliance-api,"What roles can enable domain capt
 EV-times-krbtgt-password-reset-wait-between,How many times should the KRBTGT password be reset and how long to wait between resets?,ad/krbtgt-password-reset.md,good,
 EV-group-policy-central-store-admx-update,Group Policy Central Store ADMX update for Windows 11 24H2,gpo/admx-central-store.md,good,
 EV-please-answer-citations-default-windows-laps,Please answer with citations: what is the default Windows LAPS password length?,windows/laps.md,good,
+EV-cisco-meraki-mx-firmware-supports-sd,Which Cisco Meraki MX firmware supports SD-WAN over IPv6?,,none,
+EV-kafka-consumer-group-rebalance-protocol-confluent,What Kafka consumer group rebalance protocol does Confluent recommend?,,none,
+EV-configure-proxmox-ve-ceph-storage-replication,How do I configure Proxmox VE Ceph storage replication?,,none,
+EV-fortinet-fortigate-firmware-adds-ztna-tags,Which Fortinet FortiGate firmware adds ZTNA tags for EMS?,,none,
+EV-enroll-yubikey-bio-okta-verify,How do I enroll a YubiKey Bio in Okta Verify?,,none,

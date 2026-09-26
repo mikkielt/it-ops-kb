@@ -529,10 +529,11 @@ Still open: (topic: auth/configmgr-rbac-auth)
   download page (id 55319) into `_private/sct/` (not published), or locate their direct
   download.microsoft.com URLs the same way the coordinator did for the Windows 11 24H2 zip.** Not
   attempted by Part A this pass.
-- **Verification: open the `microsoft/osconfig` GitHub repository (or the OSConfig Learn docs' schema
+- ~~**Verification: open the `microsoft/osconfig` GitHub repository (or the OSConfig Learn docs' schema
   reference, if any) to confirm whether Server 2025 baseline definitions are published as
   structured data (JSON/YAML) versus only exposed through the PowerShell module's cmdlets** (QS7,
-  needed for a real `dsc_v3_path` mapping of OSConfig-covered settings).
+  needed for a real `dsc_v3_path` mapping of OSConfig-covered settings).~~ — **resolved** in QS7a:
+  the repo publishes one CSV per baseline version (S1598).
 - ~~Verification: download the current Windows 11 and Server 2025 STIG zips~~ — **resolved**: the
   coordinator obtained both (Windows 11 V2R9, Server 2025 V1R3, registered as S1470/S1471). Residual
   item: extract the XCCDF from each zip and parse rule ids/registry paths/values into
@@ -540,10 +541,14 @@ Still open: (topic: auth/configmgr-rbac-auth)
   coordinator as of this message (QS6/QS20).
 - CIS terms-of-use text for reuse of recommendation IDs/titles was not opened directly (search
   returned explainer articles, not the terms page itself). `settings-crosswalk.csv` therefore
-  carries no CIS IDs or paraphrases this pass (QS1).
-- OSConfig Server 2025 baseline machine-readability was not researched (QS7).
+  carries no CIS IDs or paraphrases this pass (QS1). Partly addressed in QS1a: CIS rule ids reach
+  `settings-crosswalk.csv` through Microsoft's MIT-licensed OSConfig CSV (S1598); the terms page itself
+  is still unread.
+- ~~OSConfig Server 2025 baseline machine-readability was not researched (QS7).~~ — **resolved** in QS7a.
 - Microsoft baseline vs. Intune baseline setting-level comparison was not performed; needs both
-  machine-readable sources above plus an Intune baseline JSON export (QS5).
+  machine-readable sources above plus an Intune baseline JSON export (QS5). Partly addressed in QS5a:
+  164 of 335 GPO-baseline registry settings match the Intune 24H2 pivot by name (S1472, S1475);
+  a setting-level comparison through CSP names is still open.
 - ACSC Essential Eight/Windows guidance, NCSC (UK) device guidance, BSI IT-Grundschutz/SiSyPHuS, and
   ANSSI English-language recommendations were not researched beyond placeholder rows in
   `baselines-catalog.csv`.
