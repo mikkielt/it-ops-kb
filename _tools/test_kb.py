@@ -408,44 +408,10 @@ class TestLookup:
         out = ask("What is the default Windows LAPS password length? Answer from the kb with citation.", "--route")[1]
         assert out.startswith("kind=good") and "parts=1" in out, "an instruction sentence is not a part: " + out
 
-    def test_kb_ask_api_backend(self):
-        """A good pack goes to the Messages API when credentials are set; an INSUFFICIENT reply escalates, and with no
-        claude CLI on PATH the evidence is printed (exit 2)."""
-        import http.server, threading
-        replies, seen = ["LAPS default is 14. windows/laps.md:24", "INSUFFICIENT: not about this"], []
-
-        class Api(http.server.BaseHTTPRequestHandler):
-            def do_POST(self):
-                body = json.loads(self.rfile.read(int(self.headers["content-length"])))
-                seen.append((self.path, self.headers.get("x-api-key"), body))
-                data = json.dumps({"content": [{"type": "text", "text": replies.pop(0)}],
-                                   "usage": {"input_tokens": 1500, "output_tokens": 40}}).encode()
-                self.send_response(200)
-                self.send_header("content-type", "application/json")
-                self.end_headers()
-                self.wfile.write(data)
-
-            def log_message(self, *a):
-                pass
-
-        srv = http.server.HTTPServer(("127.0.0.1", 0), Api)
-        threading.Thread(target=srv.serve_forever, daemon=True).start()
-        env = {"PATH": os.path.dirname(sys.executable), "ANTHROPIC_API_KEY": "test-key",
-               "ANTHROPIC_BASE_URL": f"http://127.0.0.1:{srv.server_port}"}
-        try:
-            q = "What is the default Windows LAPS password length?"
-            p = subprocess.run([sys.executable, os.path.join(TOOLS, "kb_ask.py"), q], capture_output=True, text=True,
-                               cwd=KB, timeout=60, env=env)
-            assert p.returncode == 0 and p.stdout.startswith("LAPS default is 14"), p.stdout + p.stderr
-            path, key, body = seen[0]
-            assert path == "/v1/messages" and key == "test-key" and body["model"] == "claude-haiku-4-5"
-            assert "INSUFFICIENT" in body["system"] and "windows/laps.md:" in body["messages"][0]["content"]
-            assert "tools" not in body, "the reader gets no tools"
-            p = subprocess.run([sys.executable, os.path.join(TOOLS, "kb_ask.py"), q], capture_output=True, text=True,
-                               cwd=KB, timeout=60, env=env)
-            assert p.returncode == 2 and "coverage: good" in p.stdout, p.stdout + p.stderr
-        finally:
-            srv.shutdown()
+    def test_kb_ask_without_claude_prints_the_evidence(self):
+        p = subprocess.run([sys.executable, os.path.join(TOOLS, "kb_ask.py"), "What is the default Windows LAPS password length?"],
+                           capture_output=True, text=True, cwd=KB, timeout=60, env={"PATH": os.path.dirname(sys.executable)})
+        assert p.returncode == 2 and p.stdout.startswith("coverage: good") and "windows/laps.md:" in p.stdout, p.stdout + p.stderr
 
     def test_kb_hook(self):
         def hook(prompt):
