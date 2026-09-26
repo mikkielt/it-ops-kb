@@ -286,3 +286,6 @@ unifiedRoleAssignmentScheduleRequest,entra/pim-and-governance
 roleManagementPolicies,entra/pim-and-governance
 ASimAuthenticationEventLogs,logs/microsoft-sentinel
 imAuthentication,logs/microsoft-sentinel
+azure-ai-evaluation,agents/agent-evaluation
+AI Red Teaming Agent,agents/agent-evaluation
+ToolCallAccuracyEvaluator,agents/agent-evaluation
