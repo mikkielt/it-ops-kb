@@ -42,7 +42,8 @@ def git_env(**extra):
 
 
 def copy_kb(dst, skip=()):
-    shutil.copytree(KB, dst, ignore=shutil.ignore_patterns(".git", "_cache", "_private", "__pycache__", *skip))
+    shutil.copytree(KB, dst, ignore=shutil.ignore_patterns(".git", "_cache", "_private", "__pycache__", ".venv", ".pytest_cache",
+                                                        ".ruff_cache", *skip))
     return dst
 
 

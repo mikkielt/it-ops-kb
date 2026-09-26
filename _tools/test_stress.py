@@ -23,10 +23,21 @@ SCALE = int(os.environ.get("KB_STRESS_SCALE") or 5)
 random.seed(7)
 
 
+SKIP = shutil.ignore_patterns(".git", "__pycache__", ".venv", ".pytest_cache", ".ruff_cache", "_private")
+
+
+def skip(src, names):
+    """Everything in _cache but the pack index (census clones there reach gigabytes: 14 workers' copies filled a
+    disk on 2026-09-26)."""
+    if os.path.abspath(src) == os.path.join(KB, "_cache"):
+        return {n for n in names if not n.startswith("kbindex-")}
+    return SKIP(src, names)
+
+
 def copy_kb(tmp, name):
-    """A copy with the kb's _cache (so a copy reuses the pack index until a mutation changes a file)."""
+    """A copy with the kb's pack index from _cache (so a copy reuses it until a mutation changes a file)."""
     d = os.path.join(str(tmp), name)
-    shutil.copytree(KB, d, ignore=shutil.ignore_patterns(".git", "__pycache__"), symlinks=True)
+    shutil.copytree(KB, d, ignore=skip, symlinks=True)
     return d
 
 
