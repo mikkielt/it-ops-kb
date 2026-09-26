@@ -31,5 +31,7 @@ status: partial
 | ConfigMgr named as Tier 0 by Microsoft | Not found | UNK |
 | Windows LAPS policy settings, CSP nodes, events, schema | see `windows/laps.md` | DOC |
 
+- `intune/certificates-pki.md` — how Intune SCEP/PKCS certificate profiles implement KB5014754 strong mapping (`OnPremisesSecurityIdentifier` SAN variable / connector registry flag), the certificate connector, and Microsoft Cloud PKI.
+
 ## Examples
 - `PL-SRV-0042` (the SMS Provider host in the fixture estate) should carry a strongly-mapped certificate if certificate-based authentication is used anywhere in its chain, given KB5014754 Full Enforcement is already in effect as of this research date (2026-09-24).

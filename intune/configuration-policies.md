@@ -80,6 +80,7 @@ and `security/baselines-catalog.md` for the security-baseline flavor of settings
 - `intune/mdmdiagnosticstool.md` — on-device diagnostics tool and its `-area` values; use it (or Settings > Accounts > Access work or school > Info > **Create report**) to capture the on-device state of applied configuration policies (`MDMDiagHtmlReport.html`, registry dump) referenced below.
 - `windows/smart-app-control.md:40` — another custom OMA-URI example (`ApplicationControl` CSP, Base64 policy, 350,000-byte limit).
 - `intune/macos-management.md` — the settings-catalog-delivered Platform SSO and FileVault policies for macOS reuse this article's settings-catalog mechanics (Not configured semantics, per-setting status, applicability rules).
+- `intune/certificates-pki.md` — SCEP/PKCS certificate profiles that the Wi-Fi/VPN/802.1X profiles built here reference for client authentication; delivered on the same policy check-in/refresh cadence described above.
 
 ### On-device diagnostics
 - Applied Policy CSP values land under `HKLM\SOFTWARE\Microsoft\PolicyManager\current\device\<Area>` (device scope) or the user-scope equivalent, and metadata/providers under `HKLM\SOFTWARE\Microsoft\PolicyManager\providers\<enrollment GUID>`. [DER S-4krq7dui: Policy CSP documents the `./Device/Vendor/MSFT/Policy/Config/<Area>/<Policy>` node path that PolicyManager mirrors into the registry under `current\device\<Area>`]

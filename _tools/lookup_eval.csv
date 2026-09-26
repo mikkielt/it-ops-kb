@@ -76,3 +76,4 @@ EV-data-tiers-microsoft-sentinel-offer-default,What data tiers does Microsoft Se
 EV-evaluators-azure-ai-evaluation-sdk-provide,What evaluators does the Azure AI Evaluation SDK provide for agent tool-call accuracy?,agents/agent-evaluation.md,good,
 EV-intune-endpoint-analytics-startup-score-calculated,How is the Intune endpoint analytics startup score calculated?,intune/device-inventory-analytics.md,good,
 EV-retrieve-office-365-audit-log-content,How do I retrieve Office 365 audit log content programmatically and what are the retention limits for Purview audit search?,auth/audit-log-apis.md,good,
+EV-intune-deploy-scep-pkcs-certificates-cloud,How does Intune deploy SCEP and PKCS certificates and what does the Cloud PKI service replace?,intune/certificates-pki.md,good,

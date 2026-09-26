@@ -72,6 +72,7 @@ files: [auth/passportforwork-csp.csv]
 - `auth/kerberos.md` — on-premises Kerberos hardening (Protected Users, RC4/AES deprecation, NTLM deprecation) that interacts with any AD authentication a WHfB trust type ultimately performs; back-link added there.
 - `auth/passportforwork-csp.csv` — full `PassportForWork` CSP node table (this directory).
 - Deployment guides not fully expanded in this pass: hybrid key trust, hybrid/on-premises certificate trust (`S-do5bf4ea`), cloud-only — same policy/enrollment shape as summarized above, differing mainly in PKI/AD FS steps.
+- `intune/certificates-pki.md` — SCEP/PKCS certificate profile mechanics (subject/SAN variables, KB5014754 strong mapping, the certificate connector, Cloud PKI) for the authentication certificate that certificate trust issues via its CRA.
 
 ## Examples
 - Custom Intune OMA-URI profile enabling cloud Kerberos trust for tenant `00000000-0000-0000-0000-000000000000`:
