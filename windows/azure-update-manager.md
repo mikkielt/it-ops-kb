@@ -4,7 +4,7 @@ priority: P2
 applies_to: "Azure Update Manager for Azure VMs and Azure Arc-enabled servers (Windows/Linux); docs current 2026-09-26"
 retrieved_utc: 2026-09-26
 sources: [S-e6petnio, S-icfvnq2h, S-fync3qzc, S-kemkbiwb, S-5sy3a7ev, S-4gkojj4d, S-ci26bqyc, S-bbya5ebc, S-qpjly7jd, S-wvznmns5, S-horf4w6m, S-h3kjbi2l, S-deu5qnsc, S-q3ieo6m5, S-nd4cmnsq, S-umxt7njc, S-b5urflpf, S-vgw6qot7, S-5g472jm4, S-hvijyhte, S-nyw5rvsw, S-oo4lrs7s, S-5c4oo5gx]
-status: partial
+status: complete
 ---
 
 # Azure Update Manager: periodic assessment, maintenance configurations, orchestration, and hotpatch

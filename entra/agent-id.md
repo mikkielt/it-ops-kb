@@ -203,10 +203,12 @@ products create them automatically.
   [DOC S-5yopk2hr]
 
 ### Open item
-- The exact automatic-Agent-ID cutover date for Copilot Studio is given as **2026-03-18** in one Microsoft
-  page ("Recreate Copilot Studio agents...") and as **"May 2026"** in another ("Microsoft Entra Agent IDs
-  for Copilot Studio agents"); both are official Microsoft Learn pages and the discrepancy is unresolved
-  at retrieval — see `_conflicts.md`. [UNK: which date is authoritative]
+- The exact automatic-Agent-ID cutover date for Copilot Studio conflicts across three current Microsoft
+  Learn pages: **2026-03-18** ("Recreate Copilot Studio agents..."), **"May 2026"** (re-confirmed
+  2026-09-26 on `admin-use-entra-agent-identities` and `govern-migrate-api-entra-agent-identity`), and
+  **"July 2026"** (`whats-new`, "you can no longer opt out at the environment level"). Re-checking this
+  session added the third date rather than resolving the discrepancy — see `_conflicts.md`. [UNK: which
+  date is authoritative, or whether these are staged rollout milestones rather than one cutover]
 
 ## Reference
 | Construct | Credentials? | Created by | Scope | Source |

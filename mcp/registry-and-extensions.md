@@ -4,7 +4,7 @@ priority: P2
 applies_to: "MCP Registry (preview, registry.modelcontextprotocol.io, server.json schema 2025-12-11); MCP extensions framework (spec 2026-07-28 and draft)"
 retrieved_utc: 2026-09-26
 sources: [S-gg2bczek, S-3j6fi7yk, S-bgodqwyo, S-w5egb2fu, S-rl4z6q5b, S-xmxnlqbx, S-uussqmqn, S-vl6444k5, S-vouhh5ur, S-wvioh66u, S-rji5dyla, S-blfb3mqc, S-4zkeipor, S-2hsm4de7, S-ovo7i7xn, S-rxtqmq47, S-3zrbebvf]
-status: partial
+status: complete
 ---
 
 # MCP Registry (server.json, publishing) and the extensions framework

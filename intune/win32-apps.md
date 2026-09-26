@@ -4,7 +4,7 @@ priority: P2
 applies_to: "Microsoft Intune Win32 app management (Windows app (Win32) and Enterprise App Catalog app types), docs retrieved 2026-09-26"
 retrieved_utc: 2026-09-26
 sources: [S-wc6e3fba, S-ec3hg7rx, S-fipq4ix4, S-tnes5beq, S-6lyy6mvq, S-lficatwr, S-oljccwue, S-vywsads7]
-status: partial
+status: complete
 ---
 
 # Intune Win32 apps

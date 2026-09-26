@@ -4,7 +4,7 @@ priority: P2
 applies_to: "Microsoft Intune reporting infrastructure, Microsoft Graph v1.0 and beta deviceManagementExportJob, docs retrieved 2026-09-26"
 retrieved_utc: 2026-09-26
 sources: [S-ls7jnt2q, S-7cnzcrhl, S-zh4stzuw, S-35rheh4q, S-vlctroci, S-scwd7dap, S-lqfdn2f7]
-status: partial
+status: complete
 files: [intune/export-report-names.csv]
 ---
 

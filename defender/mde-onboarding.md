@@ -4,7 +4,7 @@ priority: P1
 applies_to: "Microsoft Defender for Endpoint device onboarding/offboarding (Windows client and server), docs retrieved 2026-09-26"
 retrieved_utc: 2026-09-26
 sources: [S-tkwapxy3, S-5ic2ryhm, S-ka3u6g4r, S-3wd7aoot, S-7aahdyrw, S-kgoe3xkx, S-jzszwiht, S-ptvxamvq, S-v7jhlfyz, S-gmhqowfa, S-bw54wpjr, S-qulvb6va, S-xzhocopu, S-qt5r5zbp, S-wqwf7kt5, S-mrquhzdn, S-6yngu4zf]
-status: partial
+status: complete
 ---
 
 # Microsoft Defender for Endpoint: onboarding, offboarding and connectivity

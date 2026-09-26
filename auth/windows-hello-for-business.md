@@ -4,7 +4,7 @@ priority: P1
 applies_to: "Windows 10/11, Windows Server 2016+ domain controllers (cloud Kerberos trust: Server 2016 KB4534307+, 2019 KB4534321+, 2022, 2025); Microsoft Entra ID"
 retrieved_utc: 2026-09-26
 sources: [S-pnjd7ogq, S-ui2zukwr, S-do5bf4ea, S-qi55sa4p, S-vymmambu, S-htlj43pv, S-kdtltdvz, S-u2hfxeqe]
-status: partial
+status: complete
 files: [auth/passportforwork-csp.csv]
 ---
 

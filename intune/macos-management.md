@@ -4,7 +4,7 @@ priority: P2
 applies_to: "Microsoft Intune service, macOS 13 and later, docs retrieved 2026-09-26"
 retrieved_utc: 2026-09-26
 sources: [S-arxx6gr5, S-rdfxhqsp, S-euxtbsnm, S-3t6iud2k, S-wqz6uke5, S-rsfjlxrr, S-4vuqeywj, S-u2qh2hnr, S-hubiwt4q, S-iw63dqdc, S-vtmdq4xp, S-643xsvbr, S-23euutj5, S-wl7oot25]
-status: partial
+status: complete
 ---
 
 # Intune macOS management

@@ -4,7 +4,7 @@ priority: P2
 applies_to: "Claude Code v2.1.x (code.claude.com docs, retrieved 2026-09-26)"
 retrieved_utc: 2026-09-26
 sources: [S1800, S1801, S1802, S-32ilsmsf, S-l6l42j6e, S-pilcrlei, S1824]
-status: partial
+status: complete
 ---
 
 # `claude -p` CLI details, GitHub Actions/GitLab CI parameters, sandboxing and gateways for CI

@@ -379,8 +379,15 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
 
 - Copilot Studio automatic-Agent-ID cutover date: "Recreate Copilot Studio agents in Microsoft Entra Agent
   ID" states agents created before **2026-03-18** use legacy app registrations, while "Microsoft Entra
-  Agent IDs for Copilot Studio agents" states the cutover was **"May 2026"**. Both are current Microsoft
-  Learn pages; which date is authoritative is unresolved. (topic: entra/agent-id)
+  Agent IDs for Copilot Studio agents" (`admin-use-entra-agent-identities`) and "Migrate Copilot Studio
+  agents to Microsoft Entra Agent ID" (`govern-migrate-api-entra-agent-identity`) both state the cutover
+  for automatic creation (opt-out removed) was **"May 2026"** — re-confirmed 2026-09-26 on both pages. A
+  third page, "What's new in Copilot Studio" (`whats-new`), separately states "Starting in July 2026,
+  Copilot Studio automatically creates a Microsoft Entra Agent ID for every new agent, and you can no
+  longer opt out at the environment level" — a third distinct date for what reads as the same "opt-out
+  removed" milestone. All three are current Microsoft Learn pages; which date is authoritative (or
+  whether they describe staged/ring-based rollout rather than one cutover) is unresolved. (topic:
+  entra/agent-id)
 
 ## agents/windows-agentic-platform
 

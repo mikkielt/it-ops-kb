@@ -4,7 +4,7 @@ priority: P1
 applies_to: "Microsoft Defender for Endpoint API v1.0 (api.security.microsoft.com), docs retrieved 2026-09-26"
 retrieved_utc: 2026-09-26
 sources: [S-ipjyevd4, S-7zqska24, S-irvlwznc, S-drrejdmz, S-uv2mdacd, S-o76pzpoe, S-x3it6rkh, S-4ccloker, S-hvfrvt73, S-kw755ajt, S-yksr3dnu, S-4qod6hyu, S-ad63a4vv, S-mcsdxl4e]
-status: complete
+status: partial
 files: [defender/machine-actions.csv]
 ---
 # Defender for Endpoint API: machine response actions (isolate, scan, live response)

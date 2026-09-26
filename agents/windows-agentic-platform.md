@@ -4,7 +4,7 @@ priority: P2
 applies_to: "Windows on-device AI/agentic platform: MCP on Windows (ODR, preview), Copilot Actions agent workspace (preview), Foundry Local (preview CLI, GA SDK), Windows ML, Copilot+ PC requirements, Policy CSP WindowsAI"
 retrieved_utc: 2026-09-26
 sources: [S-w7egu7gh, S-hwvrdtxc, S-22dvomdp, S-qz6chi2l, S-jvu722ab, S-2ypn2ron, S-msz6m5qt, S-onenhsl2, S-x5pz6ywz, S-77pv663g, S-73vw637c, S-6kxfh4ff, S-yilkexx7, S-ewh6l73v, S-kpbxpz3h, S-7bcl2ob5]
-status: partial
+status: complete
 files: [agents/windows-ai-policies.csv]
 ---
 

@@ -4,7 +4,7 @@ priority: P2
 applies_to: "Intune Devices > Scripts and remediations > Platform scripts (Windows 10 and later), docs ms.date/retrieved 2026-09-26"
 retrieved_utc: 2026-09-26
 sources: [S-p4fis3e4, S-s27f6na4, S-4elqlqiz, S-ta4g5get]
-status: partial
+status: complete
 ---
 
 # Intune platform scripts (Windows PowerShell scripts)
@@ -63,7 +63,7 @@ schedule on remediation scripts). Size limit 200 KB (ASCII); timeout 30 minutes;
 - Assign: `POST /deviceManagement/deviceManagementScripts/{deviceManagementScriptId}/assign` with body `deviceManagementScriptGroupAssignments` and/or `deviceManagementScriptAssignments`; returns `204 No Content`. [DOC S-4elqlqiz]
 - Permissions for `assign` (delegated or application): `DeviceManagementScripts.ReadWrite.All`, or the more privileged `DeviceManagementConfiguration.ReadWrite.All`. [DOC S-4elqlqiz]
 - Available in Global service, US Gov L4, US Gov L5 (DOD), and China (21Vianet) national clouds. [DOC S-4elqlqiz]
-- Whether `deviceManagementScript` has a v1.0 counterpart, and its create/update/list request/response schemas beyond `assign`: not fetched here. [UNK]
+- `deviceManagementScript` and its full CRUD/assign surface (List/Get/Create/Update/Delete/`assign`/`hasPayloadLinks`, `deviceManagementScriptRunSummary`, `deviceManagementScriptDeviceState`, `deviceManagementScriptUserState`) are documented only under `graph-rest-beta`; no v1.0 `deviceManagementScript` resource or method page exists on Microsoft Learn (confirmed via a Microsoft Learn documentation search covering the resource and each CRUD method — all results resolve to `view=graph-rest-beta` pages only). [DOC S-s27f6na4, S-4elqlqiz]
 
 ## Reference
 - Detection+remediation script pairs, their own scheduling (Once/Hourly/Daily), 200-package limit, 2,048-char output cap, and `HealthScripts.log`: `intune/remediations.md` (that article now cross-links back to this one for platform scripts). [DOC S-p4fis3e4]

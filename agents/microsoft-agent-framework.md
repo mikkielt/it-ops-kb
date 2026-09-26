@@ -4,7 +4,7 @@ priority: P2
 applies_to: "Microsoft Agent Framework (Python `agent-framework`, .NET `Microsoft.Agents.AI`, Go public preview); GA, docs and GitHub retrieved 2026-09-26"
 retrieved_utc: 2026-09-26
 sources: [S-kzoop7qs, S-7ziha7pr, S-esun5f2n, S-lkto4w7b, S-sjqmzszi, S-j2yxzynm, S-cjxn455h, S-mhvboogr, S-do52zses, S1939, S-gs56zhuk]
-status: complete
+status: partial
 ---
 
 # Microsoft Agent Framework

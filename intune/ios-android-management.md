@@ -4,7 +4,7 @@ priority: P2
 applies_to: "Microsoft Intune service, iOS/iPadOS and Android device enrollment/management, docs retrieved 2026-09-26"
 retrieved_utc: 2026-09-26
 sources: [S-wdoafrjc, S-yiwjr2wo, S-w2fd3dgm, S-3v22wodo, S-zdoohqe4, S-jq73dzml, S-pcr6rjdl, S-7synnxi2, S-fdtw5sil, S-27rerlcs, S-4hhozw7m]
-status: partial
+status: complete
 ---
 
 # Intune iOS/iPadOS and Android device management

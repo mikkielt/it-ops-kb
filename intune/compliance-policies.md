@@ -4,7 +4,7 @@ priority: P2
 applies_to: "Microsoft Intune device compliance policies, Windows 10 and later platform, docs retrieved 2026-09-26"
 retrieved_utc: 2026-09-26
 sources: [S-vpvd3h5f, S-u3qwumeu, S-qjd54t3z, S-3p4dmsu3, S-hvnok5ut, S-xsohydmw, S-kim3tg2v, S-bnkmmdtp, S-taatt73w, S-2hhj3k5f, S-o3fvldqn, S-sc3fvmp6]
-status: partial
+status: complete
 ---
 
 # Intune compliance policies

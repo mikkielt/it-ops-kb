@@ -4,7 +4,7 @@ priority: P2
 applies_to: "Windows Event Forwarding/Collector (Vista+, Server 2008 R2+), Sysmon (Sysinternals v15.22, and built-in Windows 11/Server 2025 optional feature), docs ms.date through 2026-09"
 retrieved_utc: 2026-09-26
 sources: [S-xbogq5nf, S-5pkzlomo, S-uzewrile, S-odr3mgme, S-zcba3zc7, S-iuugqauq, S-benv5fbb, S-k5vpsayn]
-status: partial
+status: complete
 files: [windows/sysmon-events.csv]
 ---
 

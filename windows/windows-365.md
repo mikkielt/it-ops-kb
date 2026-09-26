@@ -4,7 +4,7 @@ priority: P2
 applies_to: "Windows 365 Cloud PC (Enterprise, Frontline/Flex, Business, Government, Link, Boot), Graph v1.0, docs retrieved 2026-09-26"
 retrieved_utc: 2026-09-26
 sources: [S-3vcy7oqc, S-7haqmv5t, S-6bbkebpi, S-n5j76cvh, S-cklvv7d5, S-egljiuze, S-5alhdr35, S-lvqy67bp, S-vavpj2l2, S-pixm6i65, S-77ejmtcy, S-s4d4qbht, S-j3m43d2a, S-i3gqas6g, S-n3hgvxzn]
-status: partial
+status: complete
 ---
 
 # Windows 365 (Cloud PC): editions, provisioning policies, remote actions, Graph API

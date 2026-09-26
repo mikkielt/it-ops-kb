@@ -3,7 +3,7 @@ topic: intune/endpoint-privilege-management
 priority: P1
 applies_to: "Microsoft Intune Endpoint Privilege Management (EPM), Windows client only; Intune Suite or standalone EPM add-on (docs current 2026-09-26)"
 retrieved_utc: 2026-09-26
-sources: [S-eba3mlij, S-r5sb2fwp, S-apvm4dlk, S-3wkz47cw, S-6bhjc6zo, S-a5yicrda, S-qehphrta, S-2ht6rnrq, S-jjclu3pw, S-pfomdecu, S-7ljvlp5e, S-kv5b4jlr]
+sources: [S-eba3mlij, S-r5sb2fwp, S-apvm4dlk, S-3wkz47cw, S-6bhjc6zo, S-a5yicrda, S-qehphrta, S-2ht6rnrq, S-jjclu3pw, S-pfomdecu, S-7ljvlp5e, S-kv5b4jlr, S-7giv7rol]
 status: partial
 ---
 
@@ -75,7 +75,7 @@ status: partial
 - `GET/POST /deviceManagement/privilegeManagementElevations` and `GET/PATCH/DELETE .../privilegeManagementElevations/{id}` (beta) expose the `privilegeManagementElevation` resource — one elevation-event record per client action; `POST` requires `DeviceManagementConfiguration.ReadWrite.All` or `DeviceManagementManagedDevices.ReadWrite.All` (delegated or application). [DOC S-jjclu3pw, S-7ljvlp5e]
 - Key `privilegeManagementElevation` properties: `id` (GUID derived from deviceId+eventDateTime), `deviceId`, `deviceName`, `eventDateTime`, `elevationType` (`undetermined`, `unmanagedElevation`, `zeroTouchElevation`, `userConfirmedElevation`, `supportApprovedElevation`, `unknownFutureValue`), `filePath`, `upn`, `userType` (`undetermined`, `azureAd`, `hybrid`, `local`), `productName`, `companyName`, `fileVersion`, `justification` (user input, capped 256 chars client-side, populated only for `userConfirmedElevation`/support-approved), `hash` (SHA-256), `internalName`, `fileDescription`, `certificatePayload`, `result` (Int32; `0`=success, nonzero=exit code; always `0` for unmanaged elevations), `processType` (`undefined`, `parent`, `child`), `ruleId`, `policyId`, `policyName`, `parentProcessName`, `systemInitiatedElevation` (bool). [DOC S-jjclu3pw]
 - The `privilegeManagementElevationRequest` beta resource models a pending support-approved request: `applicationDetail` (file path/hash/publisher etc.), `status` (`none`, `pending`, `approved`, `denied`, `expired`, `revoked`, `completed`, `unknownFutureValue`), `requestedByUserId`/`requestedByUserPrincipalName`, `requestedOnDeviceId`, `reviewCompletedByUserId`/`...UserPrincipalName`, `reviewCompletedDateTime`, `requestExpiryDateTime`, `reviewerJustification`; it exposes `deny` and `revoke` actions. [DOC S-pfomdecu]
-- No explicit `approve` action for `privilegeManagementElevationRequest` was found in the fetched Graph reference pages (only `deny` and `revoke` are documented there). [UNK: approve-action endpoint not located]
+- `privilegeManagementElevationRequest` also exposes an `approve` action: `POST /deviceManagement/elevationRequests/{privilegeManagementElevationRequestId}/approve` with an optional `reviewerJustification` string body property, requiring `DeviceManagementConfiguration.ReadWrite.All` (delegated or application); it returns `200 OK` with the updated `privilegeManagementElevationRequest`. The PowerShell equivalent is `Approve-MgBetaDeviceManagementElevationRequest` (`Microsoft.Graph.Beta.DeviceManagement.Actions`). [DOC S-7giv7rol]
 
 ## Reference
 - `intune/rbac-built-in-roles.csv` lists the **Endpoint Privilege Manager** and **Endpoint Privilege Reader** built-in roles referenced above (purpose and key permissions columns); this article gives the full EPM-specific RBAC permission/rights detail those rows summarize.
@@ -84,7 +84,6 @@ status: partial
 - `intune/remote-help.md`: a separate Intune Suite add-on where a live helper answers UAC elevation prompts during a remote session (the Remote Help app's Elevation RBAC permission) — contrast with EPM's unattended, rule-based elevation of specific files with no helper present.
 - `windows/laps.md` documents Windows LAPS, a different least-privilege control (rotates a managed local admin account's password) that organizations typically deploy alongside EPM when removing standing local admin rights; see also (back-link added there).
 - EPM's exact log file names/paths and Windows Event Log channel weren't found in the fetched pages (searched troubleshooting and known-issues docs); the client folder and service are documented above. [UNK: EPM Agent log file names/event channel not found]
-- The `privilegeManagementElevationRequest` approve action (mirroring `deny`/`revoke`) wasn't found in the fetched Graph reference pages. [UNK: approve-action endpoint not located]
 
 ## Examples
 - Import EpmTools on a device that already has an EPM elevation settings policy, and inspect what the agent currently enforces:

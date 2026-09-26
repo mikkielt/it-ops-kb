@@ -4,7 +4,7 @@ priority: P2
 applies_to: "Azure Monitor Agent (AMA), Data Collection Rules API 2024-03-11, docs ms.date through 2026-09"
 retrieved_utc: 2026-09-26
 sources: [S-luprngvc, S-me4bxp52, S-kguhudz7, S-6xjyyd4l, S-mix3xqam, S-m4gimryf, S-de5xdfvw, S-in4qr3cp, S-prybc22p, S-qvsjnnqo, S-r33zxv3s, S-5d3e2yck, S-3dcvyq2z]
-status: partial
+status: complete
 ---
 
 # Azure Monitor Agent (AMA) and Data Collection Rules

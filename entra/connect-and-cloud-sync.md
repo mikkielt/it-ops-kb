@@ -4,7 +4,7 @@ priority: P1
 applies_to: "Microsoft Entra Connect Sync 2.x, Microsoft Entra Cloud Sync (provisioning agent), Microsoft Graph synchronization API"
 retrieved_utc: 2026-09-26
 sources: [S-6q5tyxki, S-2vza23mx, S-lcd7y7ff, S-de2kio2b, S-bl4r6qrk, S-qwmc4yvw, S-i2npg2z3, S-t2wo7s3a, S-ze3aud2j, S-6clhfher, S-vra6j7cx, S-rb7ssjjy, S-plhfh6ev]
-status: partial
+status: complete
 ---
 
 # Microsoft Entra Connect Sync and Cloud Sync

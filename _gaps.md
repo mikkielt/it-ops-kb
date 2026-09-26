@@ -613,3 +613,115 @@ Still open: (topic: auth/configmgr-rbac-auth)
 - MSRC CVRF API authentication: the Swagger definition lists no `api-key` header, but whether the interactive
   portal or a production integration still requires a subscription key was not confirmed (2026-09-26).
   (topic: security/vulnerability-prioritization)
+
+## agents/agent-evaluation
+
+- Whether Amazon Bedrock AgentCore Evaluation (`inspect_ai`) has native stdio-MCP-target support, and whether Azure AI Foundry's evaluation SDK has explicit stdio-MCP-target support beyond a UI "MCP Registry" reference, were not confirmed on the fetched pages (2 lookups: product overview + evaluation-harness pages). (topic: agents/agent-evaluation)
+
+## agents/coding-agents-mcp
+
+- OpenAI Codex CLI's exact approval-mode policy key names (beyond the described `auto`/`prompt`/`writes`/`approve` values) were not found on a primary Codex config-reference page in this pass (1 WebFetch of the Codex CLI docs config page, no dedicated key-name table found). (topic: agents/coding-agents-mcp)
+
+## agents/content-safety-prompt-shields
+
+- Azure AI Content Safety's current supported-region list for Prompt Shields was not captured; it lives on a separate, frequently-updated Azure regions page not fetched in this pass (1 lookup: Microsoft Learn search for "Azure AI Content Safety region availability"). (topic: agents/content-safety-prompt-shields)
+
+## agents/github-copilot-admin
+
+- Exact field-level schema of GitHub Copilot's downloaded usage-metrics report files, the premium-request monthly allowance per plan/per-model multipliers and overage billing rate, and IDE proxy/TLS-interception certificate + data-retention settings were not found on docs.github.com pages fetched (billing-overview and org-request-allowance pages 404'd or lacked the figures; 2 lookups attempted). (topic: agents/github-copilot-admin)
+
+## agents/langgraph
+
+- LangSmith Deployment current pricing tiers and self-hosted licensing terms are not documented on the fetched LangGraph platform overview page; `docs.langchain.com/langsmith/deployments` was not independently fetched this pass (1 lookup). The exact `langchain-mcp-adapters` → `langchain[mcp]` step-by-step migration guide referenced by the docs was likewise not located on a fetched page (1 lookup). (topic: agents/langgraph)
+
+## agents/microsoft-agent-framework
+
+- Exact licence terms for the Microsoft Agent Framework .NET/Go SDK packages (as distinct from the GitHub repository root MIT licence) were not confirmed on a package-registry (NuGet/pkg.go.dev) page in this pass (1 lookup: Microsoft Learn search for "Microsoft Agent Framework license NuGet"). (topic: agents/microsoft-agent-framework)
+
+## agents/security-copilot-endpoint
+
+- Whether the Security Copilot Device Offboarding Agent has its own dedicated Learn article (licensing/role/identity detail beyond the overview page's one-paragraph description) was not found (1 Microsoft Learn search for "Device Offboarding Agent Security Copilot"). (topic: agents/security-copilot-endpoint)
+
+## defender/advanced-hunting
+
+- Whether `DeviceTvmSoftwareVulnerabilitiesKB` and other KB-suffixed advanced-hunting tables carry a distinct retention/refresh cycle from their non-KB counterpart is not stated on the advanced-hunting schema reference pages read (1 lookup: Microsoft Learn search for "DeviceTvmSoftwareVulnerabilitiesKB retention refresh"). (topic: defender/advanced-hunting)
+
+## defender/response-actions-api
+
+- No Microsoft Graph security API equivalent for MDE machine response actions (isolate/unisolate/restrict/scan/quarantine/live response) was found this session either: `security.deviceEvidence` remains read-only, and the only Graph action found for a similarly-named operation, `windowsDefenderScan` (`POST /deviceManagement/managedDevices/{id}/windowsDefenderScan`, v1.0), is an **Intune-managed-device** action, not an MDE machine action, and does not cover isolate/restrict/scan-via-MDE or live response. Confirmed distinct scope via Microsoft Learn search (2026-09-26); MDE's own `api.securitycenter.microsoft.com`/Graph `security` machineAction surface remains the only documented path for these specific actions. (topic: defender/response-actions-api)
+
+## entra/conditional-access-devices
+
+- The full `conditionalAccessPolicy` JSON schema for `conditions.devices.deviceFilter` and the complete `builtInControls` enum were not directly quoted from a fetched page (drawn from concept + create/update method pages as DER, not verbatim); not independently re-fetched this pass (1 lookup budget). (topic: entra/conditional-access-devices)
+
+## entra/pim-and-governance
+
+- Exact end-to-end timing (seconds) for an Entra-role (not Azure-resource-role) PIM activation to be reflected in a fresh Graph token was not independently confirmed on a fetched page this pass (1 Microsoft Learn search for "PIM Entra role activation token propagation seconds"); the Azure-resource-role figure is treated as consistent but not verbatim-confirmed for Entra roles. (topic: entra/pim-and-governance)
+
+## graph/microsoft365dsc
+
+- `New-M365DSCDeltaReport`/`Test-M365DSCAgent` parameter-level syntax (dedicated cmdlet page 404s) and the individual `Intune*`-prefixed resource names were not confirmed on a working page this pass (1 lookup: Microsoft Learn/GitHub search for "Microsoft365DSC New-M365DSCDeltaReport cmdlet reference"). (topic: graph/microsoft365dsc)
+
+## intune/app-protection-mam
+
+- The Windows-specific app-protection Graph resource/property list and the full `androidManagedAppProtection` Graph property reference (beyond the concept-page conditional-launch settings already cited) were not separately fetched this pass (1 lookup each). (topic: intune/app-protection-mam)
+
+## intune/certificates-pki
+
+- Imported-PFX certificate profile field-by-field configuration, DigiCert/third-party SCEP partner-specific SAN mapping tables, and the Graph `deviceManagementConfigurationPolicy`/certificate-profile REST bodies were named out of scope for this pass and not fetched (0 lookups spent, explicitly deferred at authoring time). (topic: intune/certificates-pki)
+
+## intune/configuration-policies
+
+- Whether the settings-catalog policy create/update body must set `technologies`/`platforms` explicitly, with a full worked JSON example, and whether there is a dedicated event-log ID range for configuration-policy (Policy CSP) apply failures distinct from the general DeviceManagement-Enterprise-Diagnostics-Provider channel, were not found on the fetched Graph reference and diagnostics pages (2 lookups: Graph settings-catalog create page, DM diagnostics-provider event ID list). (topic: intune/configuration-policies)
+
+## intune/device-inventory-analytics
+
+- Whether a v1.0 `userExperienceAnalytics*` Graph surface exists (pages fetched only showed `view=graph-rest-beta`) was not resolved by a further search this pass (1 Microsoft Learn search for "userExperienceAnalyticsAnomaly v1.0"). (topic: intune/device-inventory-analytics)
+
+## intune/endpoint-privilege-management
+
+- EPM Agent's own log file names/paths and Windows Event Log channel were not found on the EPM troubleshooting/known-issues/deployment-planning pages fetched this session (2 lookups, 2026-09-26); only the client install folder (`C:\Program Files\Microsoft EPM Agent`) and service name are documented on those pages. (topic: intune/endpoint-privilege-management)
+
+## intune/network-profiles
+
+- Full Entra Private Access/Global Secure Access configuration (Quick Access setup steps, per-app segmentation, private DNS, Private Network Connector) was named out of scope for this pass and not fetched (0 lookups spent, explicitly deferred at authoring time; a dedicated `auth/` topic would need its own research pass). (topic: intune/network-profiles)
+
+## intune/remote-actions
+
+- Whether Multi Admin Approval covers remote actions beyond wipe (retire, delete individually, or beta actions) is not stated on the actions' own Graph or admin-center pages fetched (1 Microsoft Learn search for "Multi Admin Approval retire delete Intune"). (topic: intune/remote-actions)
+
+## logs/microsoft-sentinel
+
+- Whether the Defender-portal Table insights view (ingestion volume/cost estimates) is billing-grade vs advisory, and its exact refresh cadence, was not covered on the pages read for this topic (1 Microsoft Learn search for "Defender portal table insights billing cost refresh"). (topic: logs/microsoft-sentinel)
+
+## mecm/osd-task-sequences
+
+- The full per-step-type property list (success codes, continue-on-error, per-step settings) and complete `Get/New/Remove/Set-CMTSStep*` cmdlet set were reviewed only for the step types already named in the article, not exhaustively (budget-limited at authoring time). Windows 11 in-place-upgrade task sequence specifics (`SetupCompletePause` timing variable, `_SMSTSOSUpgradeActionReturnCode`) were found in the variable reference but not cross-checked against a dedicated in-place-upgrade walkthrough page (1 lookup). (topic: mecm/osd-task-sequences)
+
+## mecm/software-updates
+
+- Per-version history of every ADR wizard page option and the full `SMS_AutoDeployment`/`SMS_SUPComponent` WMI class property lists, and the orchestration-group WMI/Graph automation surface beyond the console-implied PowerShell cmdlets, were not reviewed against a fetched reference page this pass (2 lookups: Configuration Manager WMI reference search, orchestration-group cmdlet search). (topic: mecm/software-updates)
+
+## windows/app-control
+
+- Whether the AppLocker CSP's forced OOBE reboot also applies to non-OOBE first deployments, and the exact GA date/name of the "improved Intune App Control experience", are not stated on the pages read (1 Microsoft Learn search for "AppLocker CSP OOBE reboot non-OOBE Intune App Control GA"). (topic: windows/app-control)
+
+## windows/azure-arc-servers
+
+- `azcmagent connect --enable-automatic-upgrade`'s complementary general "automatic agent upgrade" mechanism's GA status, SSH-over-Arc and Run Command specifics, and Azure Machine Configuration's Linux DSC v3 side-load version/build were named in scope but not fetched against dedicated pages this pass (3 lookups budgeted, deferred to a follow-up pass at authoring time). (topic: windows/azure-arc-servers)
+
+## windows/delivery-optimization
+
+- Microsoft Connected Cache for Internet Service Providers (a separate ISP-facing preview product) was named out of scope and not researched. DHCP Option 235/234 server-side configuration steps and the full GPO ADMX string table beyond the MDM/CSP names already in the CSV were not independently fetched from DHCP-side documentation (1 lookup: Microsoft Learn search for "Delivery Optimization DHCP Option 235 234 configure"). (topic: windows/delivery-optimization)
+
+## windows/kiosk-assigned-access
+
+- Whether Intune's Windows 11 multi-app kiosk equivalent (`lock-down-windows-11-to-specific-apps`) shares the same settings/limits as the Windows 10 template path was not researched this pass (1 Microsoft Learn search for "Windows 11 multi-app kiosk lock down specific apps limits"). (topic: windows/kiosk-assigned-access)
+
+## windows/laps
+
+- Legacy Microsoft LAPS emulation mode, migration steps, and the full troubleshooting error-code-to-cause table were named out of scope for this pass and not fetched (0 lookups spent, explicitly deferred at authoring time; see the Windows LAPS troubleshooting guidance page for a future refresh). (topic: windows/laps)
+
+## windows/windows-update-management
+
+- The full Windows Autopatch feature-entitlement matrix by licence tier, Autopatch groups (multi-ring orchestration), and the Autopatch RBAC role list are out of scope here (not fetched, 0 lookups spent this pass). Exact allowed-values lists for `AllowAutoUpdate`, `ManagePreviewBuilds`, the four `SetPolicyDrivenUpdateSourceFor*` policies, the `ConfigureFeatureUpdateUninstallPeriod` CSP default, and Windows 10 commercial ESU per-device pricing were not confirmed against a fetched CSP/pricing page this pass (2 lookups: Update CSP reference search, Windows 10 ESU pricing search). (topic: windows/windows-update-management)
