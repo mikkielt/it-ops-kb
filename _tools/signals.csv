@@ -289,3 +289,4 @@ imAuthentication,logs/microsoft-sentinel
 azure-ai-evaluation,agents/agent-evaluation
 AI Red Teaming Agent,agents/agent-evaluation
 ToolCallAccuracyEvaluator,agents/agent-evaluation
+userExperienceAnalytics,intune/device-inventory-analytics

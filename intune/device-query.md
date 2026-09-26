@@ -37,6 +37,8 @@ max 3 joins. Both are Advanced Analytics features needing an add-on licence on t
 | Joins | – | max 3 |
 | Data | live via WNS | collected inventory |
 
+See also `intune/device-inventory-analytics.md` for Endpoint analytics/Advanced Analytics scores, anomalies, device timeline and battery health, which build on this properties catalog and device query data.
+
 ## Examples
 Single device (`PL-LT-00123`): `WindowsService | take 5` (column names: see Intune Data Platform Schema, not captured here)
 Multi-device: `Cpu | where Device.DeviceName == "PL-LT-00123"`

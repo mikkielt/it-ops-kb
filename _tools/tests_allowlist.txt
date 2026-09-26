@@ -34,3 +34,4 @@ guid  12345a67-89b0-1234-5678-000001000000  # Microsoft's own sequential sample 
 email microsoft-noreply@microsoft.com       # Intune's public noncompliance e-mail sender address (intune/compliance-policies.md)
 email nvd-noreply@nist.gov                  # NVD's public API-key sender address (security/vulnerability-prioritization.md)
 email sponsors@odata.bind                   # OData bind annotation in a Graph JSON body, not an address (entra/agent-id.md)
+guid  b27d9cfc-84ad-0af8-9df1-23ee05e8c05d  # public ConfigMgr ServiceCertificate policy id from the Endpoint analytics troubleshooting doc (intune/device-inventory-analytics.md)

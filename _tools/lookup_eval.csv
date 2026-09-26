@@ -74,3 +74,4 @@ EV-intune-manage-linux-device-compliance,How does Intune manage Linux device com
 EV-onboard-windows-devices-defender-endpoint-deployment,How do I onboard Windows devices to Defender for Endpoint and what deployment methods are available?,defender/mde-onboarding.md,good,
 EV-data-tiers-microsoft-sentinel-offer-default,What data tiers does Microsoft Sentinel offer and what is the default retention for each?,logs/microsoft-sentinel.md,good,
 EV-evaluators-azure-ai-evaluation-sdk-provide,What evaluators does the Azure AI Evaluation SDK provide for agent tool-call accuracy?,agents/agent-evaluation.md,good,
+EV-intune-endpoint-analytics-startup-score-calculated,How is the Intune endpoint analytics startup score calculated?,intune/device-inventory-analytics.md,good,

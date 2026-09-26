@@ -140,6 +140,7 @@ intune/tenant-attach,P1,complete,intune/tenant-attach.md,5
 intune/app-protection-mam,P2,partial,intune/app-protection-mam.md,15
 intune/compliance-policies,P2,partial,intune/compliance-policies.md;intune/compliance-policies.csv,12
 intune/configuration-policies,P2,partial,intune/configuration-policies.md,11
+intune/device-inventory-analytics,P2,partial,intune/device-inventory-analytics.md,13
 intune/ios-android-management,P2,partial,intune/ios-android-management.md,11
 intune/macos-management,P2,partial,intune/macos-management.md,14
 intune/remote-help,P2,complete,intune/remote-help.md;intune/remote-help.csv,5
