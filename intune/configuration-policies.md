@@ -3,7 +3,7 @@ topic: intune/configuration-policies
 priority: P2
 applies_to: "Microsoft Intune service 2026-09, Windows 10/11 client, Graph beta deviceManagementConfigurationPolicy"
 retrieved_utc: 2026-09-26
-sources: [S-lz7th2mw, S-ld2qiclx, S-hw4p6ks6, S-v3kf7d4m, S-vmpbvsv4, S-ytjbd4n5, S-4krq7dui, S-wz4ujka5, S-4gg3zmhr, S-v5cttaej, S1593]
+sources: [S-lz7th2mw, S-ld2qiclx, S-hw4p6ks6, S-v3kf7d4m, S-vmpbvsv4, S-ytjbd4n5, S-4krq7dui, S-wz4ujka5, S-4gg3zmhr, S-v5cttaej, S1593, S-l5tq6fyo]
 status: partial
 ---
 
@@ -34,7 +34,7 @@ and `security/baselines-catalog.md` for the security-baseline flavor of settings
 - A settings-catalog policy, whatever its contents, is governed entirely by the co-management **Device Configuration** slider (see `intune/co-management.md:23`). [DOC S1593]
 
 ### Custom OMA-URI (Templates > Custom)
-- Create path: **Devices > Manage devices > Configuration > Create > New policy**, platform **Windows 10 and later**, profile type **Templates > Custom**; add one row per setting on **Configuration settings > OMA-URI Settings**. [DOC S-v3kf7d4m]
+- Create path: **Devices > Manage devices > Configuration > Create > New policy**, platform **Windows 10 and later**, profile type **Custom** or **Templates > Custom**; then add one OMA-URI row per setting under **Configuration settings**. [DOC S-l5tq6fyo, S-v3kf7d4m]
 - Each OMA-URI row has: **Name**, **Description**, **OMA-URI** (case sensitive), **Data type**, **Value**. Data type options: Base64 (file), Boolean, String (XML file), Date and time, String, Floating point, Integer. [DOC S-v3kf7d4m]
 - To be usable from Intune, the target CSP node must support **Add, Replace and Get**; if the value Intune reads back with Get does not match what Add/Replace set, Intune reports a **compliance error**. [DOC S-v3kf7d4m]
 - Values stored as string, base64 or XML data types are **obscured** in the console; only a role with **Device configurations > Create/Read/Update** (e.g. Policy and Profile Manager) or the Intune Administrator Entra role can see them. [DOC S-v3kf7d4m]

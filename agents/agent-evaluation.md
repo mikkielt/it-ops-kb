@@ -52,10 +52,12 @@ capability/safety-eval ground for an agent that happens to be hosted in Azure AI
   launches a local server from a command and args, alongside `mcp_server_http()`, `mcp_server_sandbox()`
   (a server running inside an Inspect sandbox) and a deprecated `mcp_server_sse()`; the server object is
   passed wherever a `tools` list is accepted, for example `react(tools=[server])`. [DOC S-wwrpen3s, S1887]
-- **DeepEval** (Apache-2.0) ships three MCP-specific metrics — `MCPTaskCompletion` (did the agent finish
-  the task), `MCPUseMetric`/"MCP Use" (how well the agent used the servers available to it), and
-  `MultiTurnMCPUseMetric` for multi-turn MCP use — plus a `ToolCorrectnessMetric` that also matches on
-  whether a call was an MCP tool call vs. a plain function call. [DOC S1888, S1889] Its `MCPServer` config
+- **DeepEval** (Apache-2.0) lists three MCP metrics in its README: MCP Task Completion (how well an MCP-based
+  agent accomplishes a task), MCP Use (how well it uses its available MCP servers) and Multi-Turn MCP Use
+  (MCP use across conversation turns). [DOC S1889]
+- DeepEval's MCP page imports `MCPUseMetric` for single-turn `LLMTestCase`s and `MultiTurnMCPMetric` for
+  multi-turn `ConversationalTestCase`s; its `ToolCorrectnessMetric` matches a call's type as well as its name,
+  so an MCP tool call does not pass against an expected plain function call of the same name. [DOC S1888] Its `MCPServer` config
   object accepts `transport="stdio"` for connecting to a local stdio server, though the transport value
   itself "does not affect the evaluation." [DOC S1888]
 - **OpenAI evals**: the `openai/evals` repository (MIT) is the open-source registry/framework; OpenAI's own
@@ -167,7 +169,7 @@ capability/safety-eval ground for an agent that happens to be hosted in Azure AI
 | MCP Inspector | Apache-2.0 (new)/MIT (legacy)/CC-BY-4.0 (docs) | native (launches/attaches over stdio) | protocol-level tool/resource/prompt listing and manual invocation | S1880, S1881 |
 | promptfoo (MCP provider + red team) | MIT | native (`command`/`args`/`path`) | assertion pass/fail per call; red-team plugin findings (MCP, jailbreak, bfla/bola, pii, sql-injection) | S1883, S1884, S1885 |
 | Inspect (`inspect_ai`) | MIT | yes, as agent tools (`mcp_server_stdio()`; also http/sandbox) | scored evals via built-in/ReAct agents and model-graded scorers | S1886, S1887, S-wwrpen3s |
-| DeepEval | Apache-2.0 | yes (`MCPServer(transport="stdio")`) | MCPTaskCompletion, MCPUse, MultiTurnMCPUse, ToolCorrectness | S1888, S1889 |
+| DeepEval | Apache-2.0 | yes (`MCPServer(transport="stdio")`) | MCP Task Completion, MCP Use (`MCPUseMetric`), Multi-Turn MCP Use (`MultiTurnMCPMetric`), ToolCorrectness | S1888, S1889 |
 | OpenAI evals / Evals API | MIT (repo) | via custom completion functions, not MCP-native | correctness/regression across a dataset; hosted platform deprecating Oct-Nov 2026 | S1893, S1894, S1895 |
 | garak | Apache-2.0 | no native MCP client; third-party wrapper only | hallucination, leakage, injection, jailbreak, toxicity probes against a generator | S1890, S1891, S1903 |
 | PyRIT | MIT | no MCP target class in v1.1.0 (MCPToolProvider on unreleased main); custom-target interface + XPIAWorkflow for indirect injection | red-team attack orchestration and scoring against a configured target | S1892 |

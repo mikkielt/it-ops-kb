@@ -3,7 +3,7 @@ topic: intune/platform-scripts
 priority: P2
 applies_to: "Intune Devices > Scripts and remediations > Platform scripts (Windows 10 and later), docs ms.date/retrieved 2026-09-26"
 retrieved_utc: 2026-09-26
-sources: [S-p4fis3e4, S-s27f6na4, S-4elqlqiz, S-ta4g5get]
+sources: [S-p4fis3e4, S-s27f6na4, S-4elqlqiz, S-ta4g5get, S-q7b6fqko, S-ssg5k6nr]
 status: complete
 ---
 
@@ -57,9 +57,10 @@ schedule on remediation scripts). Size limit 200 KB (ASCII); timeout 30 minutes;
 ### Graph API (`deviceManagementScript`, beta only — no v1.0 equivalent documented)
 - Resource: `deviceManagementScript` under `/deviceManagement/deviceManagementScripts` (beta); Microsoft recommends v1.0 where available, but this resource is beta-only. [DOC S-s27f6na4]
 - Key properties: `id`, `displayName`, `description`, `scriptContent` (Binary), `createdDateTime`, `lastModifiedDateTime` (read-only), `runAsAccount` (`system` or `user`), `enforceSignatureCheck` (Boolean), `fileName`, `roleScopeTagIds`, `runAs32Bit` (Boolean). [DOC S-s27f6na4]
-- Relationships: `groupAssignments` (`deviceManagementScriptGroupAssignment`), `assignments` (`deviceManagementScriptAssignment`), `runSummary` (`deviceManagementScriptRunSummary`: `successDeviceCount`, `errorDeviceCount`, `successUserCount`, `errorUserCount`), `deviceRunStates` (`deviceManagementScriptDeviceState` collection), `userRunStates` (`deviceManagementScriptUserState` collection). [DOC S-s27f6na4]
+- Relationships: `groupAssignments` (`deviceManagementScriptGroupAssignment`), `assignments` (`deviceManagementScriptAssignment`), `runSummary` (`deviceManagementScriptRunSummary`), `deviceRunStates` (`deviceManagementScriptDeviceState` collection), `userRunStates` (`deviceManagementScriptUserState` collection). [DOC S-s27f6na4]
+- `deviceManagementScriptRunSummary` carries a read-only `id` plus four Int32 counters: `successDeviceCount`, `errorDeviceCount`, `successUserCount`, `errorUserCount`; methods are Get and Update. [DOC S-q7b6fqko]
 - CRUD methods: List/Get/Create/Delete/Update `deviceManagementScript`, plus actions `assign` and `hasPayloadLinks`. [DOC S-s27f6na4]
-- `deviceManagementScriptDeviceState.runState` values: `unknown`, `success`, `fail`, `scriptError`, `pending`, `notApplicable`; also carries `resultMessage`, `lastStateUpdateDateTime`, `errorCode`, `errorDescription`. [DOC S-s27f6na4]
+- `deviceManagementScriptDeviceState.runState` values: `unknown`, `success`, `fail`, `scriptError`, `pending`, `notApplicable`; also carries `resultMessage`, `lastStateUpdateDateTime`, `errorCode`, `errorDescription`, and a `managedDevice` relationship. [DOC S-ssg5k6nr]
 - Assign: `POST /deviceManagement/deviceManagementScripts/{deviceManagementScriptId}/assign` with body `deviceManagementScriptGroupAssignments` and/or `deviceManagementScriptAssignments`; returns `204 No Content`. [DOC S-4elqlqiz]
 - Permissions for `assign` (delegated or application): `DeviceManagementScripts.ReadWrite.All`, or the more privileged `DeviceManagementConfiguration.ReadWrite.All`. [DOC S-4elqlqiz]
 - Available in Global service, US Gov L4, US Gov L5 (DOD), and China (21Vianet) national clouds. [DOC S-4elqlqiz]

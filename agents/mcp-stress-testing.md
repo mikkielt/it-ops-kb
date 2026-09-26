@@ -31,7 +31,7 @@ kind exists to enforce.
 - **DER — pseudonymization leakage**: an example token-kind scheme (HOST, USER, PERSON, DNS, IPV4_NET,
   SID_DOMAIN, GUID, SERIAL, MAC) and a stated acceptance bar ("0 leaks on a seeded set of 200 realistic
   documents... before exit") define both the stress corpus size and the pass bar; this is the same class of
-  test DeepEval's and promptfoo's `pii` plugin/assertions are built for, applied against the MCP tool output
+  test promptfoo's `pii` red-team plugin is built for, applied against the MCP tool output
   rather than a chat completion. [DOC S1884]
 
 ## Reference
@@ -77,7 +77,7 @@ kind exists to enforce.
 | timeouts / `unknown` | unknown-is-never-absent policy | fault-injected recorded exchanges | DOC+DER |
 | confirmation bypass ≥ tier 2 | tier-confirm policy | custom harness; no fetched tool encodes this tier table | DER |
 | per-agent device limits | operation/limit table | small dedicated limits module, unit test (code grader) | DER |
-| pseudonymization leakage | token kinds, 0-leak bar | DeepEval/promptfoo `pii`-style assertions (S1888, S1884) | DER |
+| pseudonymization leakage | token kinds, 0-leak bar | promptfoo `pii` red-team plugin (S1884) | DER |
 | concurrency | single-writer rule, observe-loop cap | scripted concurrent MCP calls (promptfoo provider) | DER |
 
 ## Examples

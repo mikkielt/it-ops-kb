@@ -26,11 +26,12 @@ ConfigMgr, its SQL Server site database, GitLab (a configuration repository) and
 - Prefer Windows/Entra authentication over SQL authentication; if SQL logins are unavoidable, require strong unique passwords. [DOC S1488]
 - SQL Server 2022+: use **Force Strict Encryption** (TDS 8.0) rather than the older Force Encryption. [DOC S1488]
 - Transparent Data Encryption (TDE) protects database, backup and tempdb files at rest. [DOC S1488]
-- Run SQL Server services under the lowest-privilege account feasible; restrict physical/host access. [DOC S1488]
+- Use group managed service accounts (gMSA) for SQL Server services: Windows manages and rotates their passwords without service restarts. Minimize the DBA account's rights, separating duties such as access to the VM, OS sign-in, log changes and software installs. [DOC S1488]
 - A CIS benchmark exists for Microsoft SQL Server: separate benchmarks per major version, including **CIS Microsoft SQL Server 2022 Benchmark** (versions seen up to v1.3.0) and **CIS Microsoft SQL Server 2025 Benchmark v1.0.0**. Exact current version/date needs the CIS benchmark list page (no registration required to see the list; PDF is free for non-commercial use). [DOC S1486]
 
 ### GitLab self-managed (constrains a no-domain-identity CI runner and the configuration repository)
-- A **CIS GitLab Benchmark** exists (first published by GitLab with CIS, announced 2024-04-17), with 125+ recommended configuration checks. An open-source scanner (`gitlabcis`) implements it against the benchmark's checks. [DOC S1487]
+- A **CIS GitLab Benchmark** exists (first published by GitLab with CIS, announced 2024-04-17), with 125+ recommended configuration checks. [DOC S1487]
+- `gitlabcis`, an open-source Python package from GitLab's security OSS group, audits a GitLab project against the CIS GitLab Benchmark, with its recommendations kept as YAML. [DOC S1489]
 - The GitLab-authored scanner project is a live reference for the benchmark's check IDs even where the benchmark PDF itself needs a CIS account. [DOC S1489]
 
 ### Windows GitLab Runner host (constrains the CI runner's host)

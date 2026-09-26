@@ -3,7 +3,7 @@ topic: logs/microsoft-sentinel
 priority: P2
 applies_to: "Microsoft Sentinel (Defender portal unified SecOps and Azure portal), docs ms.date through 2026-09"
 retrieved_utc: 2026-09-26
-sources: [S-qmi72hvd, S-56eqdqa6, S-btmphtyp, S-6c6jslfs, S-cmyl6p5v, S-guca45p3, S-etccrdda, S-hya3uz6p, S-34uiuy35, S-tf6fezvb, S-vjefvouf, S-ur2l6cs3, S-luprngvc, S-me4bxp52, S-ycrujjsf, S-5kjwbj3c, S-ofreafga]
+sources: [S-qmi72hvd, S-56eqdqa6, S-btmphtyp, S-6c6jslfs, S-cmyl6p5v, S-guca45p3, S-etccrdda, S-hya3uz6p, S-34uiuy35, S-tf6fezvb, S-vjefvouf, S-ur2l6cs3, S-luprngvc, S-me4bxp52, S-ycrujjsf, S-5kjwbj3c, S-ofreafga, S-w47nempm]
 status: partial
 ---
 
@@ -98,7 +98,7 @@ tables are in `defender/advanced-hunting.md`.
   also enables "graph" capabilities. [DOC S-hya3uz6p]
 - Deleting the billing subscription or resource group that hosts the data lake suspends data-lake experiences and
   stops ingestion after **3 days**; restoring requires re-running data lake setup (previously ingested data is
-  restored). [DOC S-56eqdqa6]
+  restored). [DOC S-w47nempm]
 
 ### Analytics rules (Scheduled)
 - Two rule types cover most content: **Scheduled** rules (KQL query run on an interval against a lookback window;

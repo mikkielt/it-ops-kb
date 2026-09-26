@@ -40,7 +40,7 @@ custom_compliance_error,65008,custom compliance discovery script evaluation,n/a,
 custom_compliance_error,65009,custom compliance discovery script evaluation,n/a,Invalid JSON for the discovered setting; can also be caused by output truncated past 2048 characters,S-4t5e7ocm
 custom_compliance_error,65010,custom compliance discovery script evaluation,n/a,Invalid datatype for the discovered setting,S-4t5e7ocm
 limit,Custom compliance discovery script size,n/a,n/a,1 MB max,S-wjex623z
-limit,Custom compliance discovery script output size,n/a,n/a,1 MB max (2048 characters per the refresh-cycle doc before truncation risk),S-wjex623z
+limit,Custom compliance discovery script output size,n/a,n/a,1 MB max (the separate 2048-character truncation risk is on the 65009 row),S-wjex623z
 limit,Custom compliance discovery script run time (Windows),n/a,n/a,10 minutes max,S-wjex623z
 limit,Custom compliance discovery script run time (Linux),n/a,n/a,5 minutes max,S-wjex623z
 limit,Custom compliance discovery script run time (macOS),n/a,n/a,10 minutes max,S-wjex623z

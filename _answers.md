@@ -337,7 +337,7 @@ _Agent: auth_
 _Agent: auth_
 
 ## QA20. On-prem runner Graph app-only tokens with no stored secret
-- Yes, via Azure Arc-enabled server system-assigned managed identity: local endpoint `http://localhost:40342/metadata/identity/oauth2/token`, protected by a challenge-response step so an unprivileged local process cannot mint tokens for the identity. [DOC S1289][S1290]
+- Yes, via Azure Arc-enabled server system-assigned managed identity: local endpoint `http://localhost:40342/metadata/identity/oauth2/token`, protected by a challenge-response step so an unprivileged local process cannot mint tokens for the identity. [DOC S1290]
 - Also yes for the `ci` kind via GitLab OIDC → Entra workload identity federation: each job's `id_tokens` JWT is exchanged, no secret stored. Condition: Entra fetches the issuer's OIDC keys, so the GitLab instance's discovery and JWKS endpoints must be reachable by Entra ID; an internal-only GitLab cannot be the issuer. [DOC S1278,S1276,S1302]
 - Trade-off: CAE for workload identities (fast revocation on SP disable/delete) covers single-tenant service principals, not managed identities, so the Arc path gives up CAE. [DOC S1306]
 - Cost/requirement: Arc enrollment brings an Azure control-plane object, the Connected Machine agent as an additional always-on process on the host, and outbound HTTPS to Arc endpoints — a real cost for any design that intends no gateway/extra always-on service. [DER S1289]
@@ -631,7 +631,7 @@ _Agent: security_
 ## QG1. Which runtimes run an agent unattended on a schedule, and with what permissions, limits and costs?
 - Six runtimes were surveyed: `claude -p` headless CLI, the Claude Code GitHub Action, Claude Code GitLab CI/CD, Claude Code "routines" (Anthropic-hosted cloud cron/API/GitHub-event agent, research preview since April 2026), GitHub Copilot coding agent, and GitLab Duo Agent Platform's external/managed agents. [DOC S1800,S1801,S1802,S1803,S1804,S1805,S1806,S1807]
 - Auth for unattended use is uniformly either a stored secret/token (`ANTHROPIC_API_KEY`, `CLAUDE_CODE_OAUTH_TOKEN`, a GitLab CI/CD masked variable, `AI_FLOW_*` tokens) or OIDC/workload-identity federation to a cloud provider (Bedrock, Vertex, Foundry, AWS/GCP via GitLab OIDC) — no runtime surveyed defaults to a human's interactive login for its scheduled path. [DOC S1800,S1801,S1802,S1806]
-- All six return output as a reviewable artifact rather than a direct commit to a protected branch: a PR/MR, an inline/summary comment, or (for `claude -p` and routines with no posting tool granted) a log/session transcript a human must act on. Every branch-writing path is either a fresh branch (`claude/…`, `copilot/…`) or explicitly blocked from protected branches. [DOC S1801,S1803,S1804,S1805,S1806]
+- All six return output as a reviewable artifact rather than a direct commit to a protected branch: a PR/MR, an inline/summary comment, or (for `claude -p` and routines with no posting tool granted) a log/session transcript a human must act on. Every branch-writing path is either a fresh branch (`claude/…`, `copilot/…`) or explicitly blocked from protected branches. [DOC S1801,S1803,S1804,S1805,S1806,S-szgomxsz]
 - Cost/limits differ by shape: GitHub Actions and GitLab CI/CD bill runner minutes plus API tokens and are capped only by job `timeout:`/`--max-turns`/concurrency settings the repository owner sets; routines carry a **platform-enforced daily run cap** per account plus normal subscription usage, and a **minimum one-hour schedule interval**; Copilot coding agent and GitLab Duo agents are billed under their own product's seat/credit model (not itemized in the sources fetched). [DOC S1800,S1801,S1802,S1803]
 - Tension for a team that keeps "all logic... in-repo" and caps job definitions at 30 lines: the routines and Duo Agent Platform models keep the trigger/schedule config server-side (on claude.ai or on GitLab's Duo platform config), outside the pipeline file such a review would inspect — a real gap between "one job per runner and trigger, defined in-repo" and a vendor cron that lives in a web UI. The Claude Code GitHub Action's own `schedule:` trigger is the one shape that *does* stay inside a normal, reviewable `.gitlab-ci.yml`/workflow file. [DER S1801,S1803,S1806: a policy that "all logic stays in-repo" is not met by a routine's or a Duo agent's server-side trigger config, only by an in-repo `schedule:`/`rules:` block]
 
@@ -813,7 +813,7 @@ _Agent: agents-errors_
 - **inspect_ai** (UK AISI, MIT): scores agents via built-in/ReAct/bridged agents and model-graded scorers,
   200+ pre-built evals; native stdio-MCP-target support was not confirmed in fetched pages. [DOC S1886,
   S1887; UNK on MCP-target specifics]
-- **DeepEval** (Apache-2.0): purpose-built MCP metrics — `MCPTaskCompletion`, `MCPUse`, `MultiTurnMCPUse`,
+- **DeepEval** (Apache-2.0): purpose-built MCP metrics — `MCPTaskCompletion` (README), `MCPUse`, `MultiTurnMCPMetric`,
   plus MCP-aware `ToolCorrectness`; connects via `MCPServer(transport="stdio")`. [DOC S1888, S1889]
 - **OpenAI evals**: `openai/evals` (MIT) is the open framework/registry; the hosted Evals **platform** is
   being deprecated (read-only 2026-10-31, shut down 2026-11-30) — a live-fact caveat for anyone building on
@@ -870,7 +870,7 @@ A general checklist for stress-testing an MCP server that exposes device/config-
 - **Per-agent device limits**: an agent-specific operation limit (e.g. a fraction of the human limit),
   enforced as a code-level assertion, is a common mitigation. [DER]
 - **Pseudonymization leakage**: a token-kind list and a 0-leak bar on a seeded document set is the same class
-  of test DeepEval/promptfoo `pii` assertions perform, applied to MCP tool output. [DOC S1884, S1888]
+  of test promptfoo's `pii` assertions perform, applied to MCP tool output. [DOC S1884]
 - **Concurrency**: a single-writer lock and a concurrent-observe-loop cap have no vendor MCP-stress-tool
   coverage found; exercise with a scripted concurrent-caller harness. [DER]
 
@@ -1508,8 +1508,8 @@ _Agent: agents-authz_
 - Topic 4 (`agents/subagents-vs-deterministic-tools.md`) already covers child-agent-vs-deterministic-tool
   signals (stable call sequence, eval pass rate, token/latency cost, error compounding, auditability,
   confirmation need); this topic does not repeat them. [DOC S1920, S1928 — cited by reference]
-- A2A is named only as one transport for peer agent-to-agent handoff, complementary to MCP per the MCP
-  roadmap; its protocol detail (spec version, governance, transports, auth) is topic 9's scope. [DOC S2110]
+- A2A is named only as one transport for peer agent-to-agent handoff, complementary to MCP per the A2A
+  project's own A2A-and-MCP page; its protocol detail (spec version, governance, transports, auth) is topic 9's scope. [DOC S-vqothyeg]
 - Applied to an in-process NER step under a "no always-on service" policy:
   keeping detection in-process makes sense specifically when there is one caller
   and the data never needs to leave the workstation before pseudonymization — it fails Copilot Studio's
@@ -1762,9 +1762,9 @@ _Agent: agents-overuse_
 ## R1. Reuse candidates
 
 - **Highest leverage: `pydantic-settings` as a `dependency` for a project's config-file/env-var/flags
-  resolution.** It already implements a typical layered-precedence order and gives unknown-key refusal via
-  `extra="forbid"`; if `pydantic` is already a pinned dependency, this is close to a drop-in that
-  shrinks part of a settings-resolution custom code path. [S1022]
+  resolution.** It already implements a layered-precedence order; its default `extra="forbid"` refuses unmatched
+  `.env` entries, but an environment variable matching no field is ignored; if `pydantic` is already a pinned
+  dependency, this is close to a drop-in that shrinks part of a settings-resolution custom code path. [DOC S-ovuvyg6h]
 - **`cryptography`'s `Fernet.decrypt(token, ttl=seconds)` as a `dependency` for a short-TTL
   pseudonymization vault's reveal check.** Confirmed dual Apache-2.0/BSD-3-Clause by direct LICENSE
   fetch; implements a TTL-based reveal-refusal behaviour with no custom scheduler. [S1003,S1103]

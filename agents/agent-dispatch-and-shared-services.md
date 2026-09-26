@@ -3,7 +3,7 @@ topic: agents/agent-dispatch-and-shared-services
 priority: P1
 applies_to: "Copilot Studio connected agents (2026-06-23 docs), Microsoft Agent Framework (BUILD 2026), Claude Code subagents (2026-09 docs), MCP spec 2026-07-28"
 retrieved_utc: 2026-09-26
-sources: [S2080, S2081, S2082, S2083, S2084, S2109, S2110, S1920, S1928]
+sources: [S2080, S2081, S2082, S2083, S2084, S2109, S2110, S1920, S1928, S-vqothyeg]
 status: partial
 ---
 
@@ -59,9 +59,12 @@ topic 9 (`agents-a2a-cache`) covers it; A2A is named below only as one transport
   HTTP workload" (stateless core, no session/handshake, `server/discover` for capability discovery) —
   the concrete mechanism by which "dispatch to another service" and "dispatch to another agent" converge
   on the same protocol shape once the target is out-of-process. [DOC S2084]
-- The MCP roadmap post situates A2A as a complementary, not competing, protocol for peer agent-to-agent
-  handoff, while MCP stays the model-to-tool/resource protocol; the roadmap does not commit Anthropic
-  products to speaking A2A. [DOC S2110] Full A2A treatment is topic 9's scope, not repeated here.
+- The A2A project's own documentation calls A2A and MCP complementary: MCP connects an agent to tools
+  and resources, A2A connects agents to each other across team or organization boundaries. [DOC S-vqothyeg]
+- The current MCP roadmap post (written after the 2026-07-28 spec) does not mention A2A; its five priority
+  areas are agentic messaging primitives, HTTP transport unification and hardening, agent identity and
+  enterprise security, improved primitives, and SDK developer experience. [DOC S2110] Full A2A treatment
+  is topic 9's scope, not repeated here.
 - Copilot Studio's agent-sharing feature (share an agent with other users/environments) is a related but
   distinct decision from connecting agents at runtime: sharing controls who can *use or edit* an agent;
   connecting controls whether one agent *calls* another during a conversation. [DOC S2109]

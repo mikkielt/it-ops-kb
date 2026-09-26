@@ -3,7 +3,7 @@ topic: arch/workload-identity-onprem-k8s
 priority: P1
 applies_to: "Microsoft Entra Workload ID, Azure Arc-enabled Kubernetes (preview), SQL Server 2022/2025 Arc (docs current 2026-09-24)"
 retrieved_utc: 2026-09-26
-sources: [S1609, S1206, S1207]
+sources: [S1609, S1206, S1207, S-snz3myo2]
 status: complete
 ---
 
@@ -12,7 +12,8 @@ status: complete
 ## Summary
 - Workload identity federation needs the cluster to act as an OIDC token issuer: Entra must be able to reach `{IssuerURL}/.well-known/openid-configuration` and `{IssuerURL}/openid/v1/jwks` to validate the projected service-account token before exchanging it for an Entra token — i.e. the issuer discovery + JWKS endpoints must be publicly (Entra-)reachable. [DOC S1609]
 - Self-managed/on-prem clusters get this through **Azure Arc-enabled Kubernetes workload identity federation**, explicitly labelled **preview**, requiring Arc agent version ≥1.21, Azure CLI ≥2.64, `az connectedk8s` ≥1.10.0. [DOC S1609]
-- The federated credential subject is the Kubernetes-standard `system:serviceaccount:<namespace>:<service-account-name>`, supporting one-to-one, many-to-one and one-to-many (via changing the client-ID annotation) service-account-to-Entra-object mappings. [DOC S1609]
+- The federated credential subject is `system:serviceaccount:<namespace>:<service-account-name>` (the Arc deploy guide passes it to `az identity federated-credential create --subject`). [DOC S-snz3myo2]
+- Service accounts map to Entra objects one-to-one, many-to-one or one-to-many (via changing the client-ID annotation). [DOC S1609]
 - Workload identity replaces app-only Graph auth (no stored secret), but it is Entra-token-only: it does **not** give Kerberos to AdminService/LDAP/SMB, and only reaches SQL Server on-prem if that SQL Server instance is itself Arc-enabled and configured for Entra authentication (extends `auth/sql-authz.md`). [DER from S1206, S1207, S1609]
 
 ## Facts
@@ -30,7 +31,7 @@ status: complete
 |---|---|---|
 | Does Entra Workload ID for self-managed/on-prem K8s exist and is it GA? | Exists, documented for Azure Arc-enabled Kubernetes, explicitly **preview** | DOC S1609 |
 | What must be publicly reachable? | `{issuer}/.well-known/openid-configuration` and `{issuer}/openid/v1/jwks` | DOC S1609 |
-| FIC subject format | `system:serviceaccount:<ns>:<sa>` | DOC S1609 |
+| FIC subject format | `system:serviceaccount:<ns>:<sa>` | DOC S-snz3myo2 |
 | Does workload identity replace Kerberos for AdminService/LDAP/SMB? | No — those are not Entra-protected resources | DER |
 | Does workload identity reach on-prem SQL Server directly? | Only if that SQL Server is itself Arc-enabled + Entra-auth-configured (separate requirement) | DER S1206,S1207,S1609 |
 

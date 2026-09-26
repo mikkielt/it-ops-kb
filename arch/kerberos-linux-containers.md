@@ -10,7 +10,8 @@ status: complete
 # Kerberos from Linux containers (keytabs, kinit, adutil)
 
 ## Summary
-- Linux/Python Kerberos never touches a gMSA's managed password directly: it authenticates as an ordinary AD account (human or service) using a keytab, obtained with a **password an administrator already knows**, not via `msDS-ManagedPassword` retrieval. [DOC S1607]
+- The Microsoft-documented Linux paths (ODBC driver `kinit`, `adutil`) authenticate as an ordinary AD account using a password or a keytab made from a **password an administrator already knows**; none of them retrieves a gMSA's `msDS-ManagedPassword`. [DOC S1605, S1606]
+- AWS's `credentials-fetcher` on Amazon Linux 2023 does use a gMSA from Linux: the Linux hosts are put in a group named in the gMSA's `PrincipalsAllowedToRetrieveManagedPassword`, a CredentialSpec is created, and an `AddKerberosLease` call makes the daemon produce Kerberos tickets for the gMSA, which containers mount. [DOC S1607]
 - The Microsoft-supported pattern for Linux/containers is keytab + `kinit`/PAM + periodic renewal via cron; no ODBC/driver-level automatic renewal exists. [DOC S1605]
 - `adutil` (Microsoft, SQL-Server-scoped) automates AD account/SPN/keytab creation but requires the account's own password as input (`adutil keytab createauto ... --password '<password>'`) — it is built for regular AD service accounts, not gMSA. [DOC S1606]
 - Python HTTP Negotiate/SPNEGO libraries (`requests-gssapi`, a drop-in replacement for `requests-kerberos`) work against a TGT already in the system Kerberos credential cache; obtaining and keeping valid credentials is the caller's job, and they do not fetch or manage gMSA passwords themselves. [DOC S1604]

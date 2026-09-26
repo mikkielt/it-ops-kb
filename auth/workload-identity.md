@@ -12,7 +12,7 @@ status: partial
 ## Summary
 - Entra federated identity credentials let a `ci` (GitLab-hosted) or `site` (Arc-enrolled on-prem host) instance get app-only Graph tokens with no stored client secret or certificate. [DOC S1278, S1289]
 - Flexible/wildcard federated identity credential subjects exist as a distinct, separately-documented feature from the classic exact-subject-match FIC. [DOC S1278]
-- Azure Arc-enabled servers expose a localhost IMDS-like endpoint with a challenge-response step, so a local, unprivileged process cannot silently mint a token for the host's managed identity. [DOC S1289][DOC S1290]
+- Azure Arc-enabled servers expose a localhost IMDS-like endpoint with a challenge-response step, so a local, unprivileged process cannot silently mint a token for the host's managed identity. [DOC S1290]
 
 ## Facts
 - A federated identity credential (FIC) on an app registration binds `issuer` + `subject` (+ `audience`) to that app; Entra validates the incoming GitLab-issued JWT against those fields and, if it matches, issues a normal app-only access token — no client secret or certificate is exchanged or stored. [DOC S1278, DER from S1276's `sub` values]
@@ -24,9 +24,9 @@ status: partial
 - Flexible FICs can only be created/managed via Microsoft Graph or the Azure portal (not, e.g., the classic add-federated-credential blade for exact-match FICs). [DOC S1294]
 - The FIC `issuer` must be an OIDC-Discovery-compliant URL, and Entra ID uses it to fetch the keys that validate the external token. [DOC S1302]
 - So a self-managed GitLab used as issuer must serve `/.well-known/openid-configuration` and its JWKS where Entra ID can fetch them (the public internet); a GitLab reachable only inside the corporate network cannot be a federation issuer. [DER S1302,S1276: Entra fetches keys from the issuer URL]
-- For an on-prem host (the `site` kind), Azure Arc-enabled servers provide a system-assigned managed identity; the connected-machine agent exposes a local endpoint (`http://localhost:40342/metadata/identity/oauth2/token`) that issues Entra tokens for that identity. [DOC S1289][DOC S1290]
-- Unlike an Azure VM's IMDS, the Arc agent's endpoint uses a challenge-response step: the caller must first read a challenge, then prove it can read a file only a privileged local account can read, before the token is issued — this stops an unprivileged local process on the same host from minting tokens for the managed identity. [DOC S1289]
-- This gives the `site` instance a way to get Graph app-only tokens (and Key Vault, Storage, etc.) "without the need to manage a client secret or a certificate" — directly answering QA20 for the on-prem, Arc-enrolled case. [DOC S1289][DOC S1290]
+- For an on-prem host (the `site` kind), Azure Arc-enabled servers provide a system-assigned managed identity; the connected-machine agent exposes a local endpoint (`http://localhost:40342/metadata/identity/oauth2/token`) that issues Entra tokens for that identity. [DOC S1289, S1290]
+- The Arc agent's endpoint answers any local process, but a request that would return a token must carry a secret: the first call's `WWW-Authenticate` header names a file, and the caller sends that file's content back as a Basic authorization value. Only higher-privileged users can read the file (the docs require local Administrators or Hybrid Agent Extension Applications on Windows, `himds` on Linux), which stops an unprivileged local process from minting tokens. [DOC S1290]
+- This gives the `site` instance a way to get Graph app-only tokens (and tokens for Azure services such as Key Vault or Storage) without storing credentials on the host — directly answering QA20 for the on-prem, Arc-enrolled case. [DOC S1289, S1290]
 - Arc-enabled servers require the Azure Connected Machine agent installed and the server "Arc-onboarded" to a subscription/resource group (an Azure control-plane object even though the box itself never leaves on-prem); this brings a per-server Azure cost/entitlement and an additional network egress requirement (outbound HTTPS to Arc endpoints), which a design with no gateway/service beyond the CLI and MCP server does not currently budget for. [DER S1289 — Arc introduces an additional always-on agent on the `site` host]
 
 ## Reference

@@ -3,7 +3,7 @@ topic: intune/reports-export-api
 priority: P2
 applies_to: "Microsoft Intune reporting infrastructure, Microsoft Graph v1.0 and beta deviceManagementExportJob, docs retrieved 2026-09-26"
 retrieved_utc: 2026-09-26
-sources: [S-ls7jnt2q, S-7cnzcrhl, S-zh4stzuw, S-35rheh4q, S-vlctroci, S-scwd7dap, S-lqfdn2f7]
+sources: [S-ls7jnt2q, S-7cnzcrhl, S-zh4stzuw, S-35rheh4q, S-vlctroci, S-scwd7dap, S-lqfdn2f7, S-6pobzvll, S-dk3pjswi, S-dghnu36r]
 status: complete
 files: [intune/export-report-names.csv]
 ---
@@ -41,7 +41,7 @@ Intune reports migrated to its newer reporting infrastructure are exported throu
 ### Permissions (create deviceManagementExportJob)
 - Delegated (work or school account) and Application: one of `DeviceManagementConfiguration.ReadWrite.All`, `DeviceManagementApps.ReadWrite.All`, `DeviceManagementManagedDevices.ReadWrite.All`. [DOC S-zh4stzuw]
 - Delegated (personal Microsoft account): not supported. [DOC S-zh4stzuw]
-- Reading/polling an export job (`Get`/`List deviceManagementExportJob`) additionally accepts the matching `.Read.All` scopes (`DeviceManagementConfiguration.Read.All`, `DeviceManagementManagedDevices.Read.All`, `DeviceManagementApps.Read.All`) alongside the ReadWrite scopes, per the equivalent `Get-MgDeviceManagementReportExportJob` cmdlet's documented permission table. [DOC S-vlctroci]
+- Polling an export job (`GET /deviceManagement/reports/exportJobs/{id}`, Get deviceManagementExportJob) also accepts the matching `.Read.All` scopes (`DeviceManagementConfiguration.Read.All`, `DeviceManagementApps.Read.All`, `DeviceManagementManagedDevices.Read.All`) alongside the three ReadWrite scopes, delegated (work or school) and application; personal accounts are not supported. [DOC S-dk3pjswi]
 - Requires an active Intune license on the tenant, same as other Intune Graph APIs. [DOC S-zh4stzuw]
 - Available in Global service, US Government L4, US Government L5 (DOD), and China operated by 21Vianet national cloud deployments. [DOC S-zh4stzuw]
 
@@ -51,9 +51,10 @@ Intune reports migrated to its newer reporting infrastructure are exported throu
 - Example: exporting the `Devices` report accepts columns such as `DeviceName`, `managementAgent`, `ownerType`, `complianceState`, `OS`, `OSVersion`, `LastContact`, `UPN`, `DeviceId` via `select`. [DOC S-ls7jnt2q]
 
 ### getCachedReport and other deviceManagementReports actions (no job/poll pattern)
-- `deviceManagementReports` (the `deviceManagement/reports` singleton) exposes actions that stream a report directly without the create/poll/download pattern: `getCachedReport`, `getCompliancePolicyNonComplianceSummaryReport`, `getCompliancePolicyNonComplianceReport`, `getComplianceSettingNonComplianceReport`, `getHistoricalReport`, plus the `exportJobs` relationship documented above. [DOC S-vlctroci]
+- `deviceManagementReports` (the `deviceManagement/reports` singleton) exposes Stream-returning actions (no create/poll/download pattern) such as `getCachedReport`, `getHistoricalReport`, `getCompliancePolicyNonComplianceSummaryReport`, `getCompliancePolicyNonComplianceReport`, `getComplianceSettingNonComplianceReport`, `getDeviceNonComplianceReport`, `getReportFilters` and the configuration-policy/intent non-compliance reports, plus the `exportJobs` relationship documented above. [DOC S-6pobzvll]
 - `getCachedReport`: `POST /deviceManagement/reports/getCachedReport` with body properties `id`, `select`, `groupBy`, `orderBy`, `search`, `skip`, `top`; returns `200 OK` with a Stream. Same permission set as export job creation, plus the matching `.Read.All` scopes. [DOC S-vlctroci]
-- These actions suit smaller, interactive, already-cached report queries; the `exportJobs` pattern is preferred for full/bulk dataset export because it is not limited by pagination and delivers the whole dataset as one file. [DOC S-vlctroci]
+- For bulk export of STIG audit data, Microsoft points to `exportJobs` instead of the per-setting cached-report pattern: no skip/top pagination (the full dataset in one downloadable file), one job for all settings instead of three calls per setting, and delivery through a temporary blob URL that avoids timeouts on large datasets. [DOC S-dghnu36r]
+- Applying that guidance to other reports (cached actions for small interactive queries, `exportJobs` for full datasets) is our generalisation; Microsoft states it only for the STIG audit reports. [UNK: not in S-vlctroci as re-read 2026-09-26]
 
 ### Throttling
 - The `exportJobs` API supports up to 100 requests per tenant per minute across all users and apps in the tenant. [DOC S-ls7jnt2q]

@@ -3,7 +3,7 @@ topic: ad/computer-attributes
 priority: P1
 applies_to: "Active Directory schema (Windows 2000 Server - Windows Server 2012+ pages, ms.date 05/31/2018)"
 retrieved_utc: 2026-09-26
-sources: [S560, S561, S562, S563, S564, S565, S566, S549, S552]
+sources: [S560, S561, S562, S563, S564, S565, S566, S549, S552, S548]
 status: complete
 ---
 
@@ -23,7 +23,8 @@ status: complete
 - `lastLogonTimestamp` lists class User; the computer class is a subclass of User. [DOC S562,S566]
 - `dNSHostName`: computer name as registered in DNS; each label up to 63 chars, whole name up to 255; in GC; not indexed. [DOC S564]
 - `userCertificate`: multi-valued DER-encoded X.509v3 certificates; in GC. [DOC S565]
-- Hybrid join writes a self-signed certificate to the computer's `userCertificate` over LDAP; Entra Connect syncs only computers carrying a hybrid-join certificate (`CN={ObjectGUID}`). [DOC S552]
+- In a managed (non-federated) environment, the hybrid-join task writes a self-signed certificate to the computer's `userCertificate` over LDAP. [DOC S548]
+- Entra Connect 1.4.xx.x syncs only Windows 10 computers carrying a hybrid-join `userCertificate`, recognised by a subject of `CN={ObjectGUID}`. [DOC S552]
 - Entra Connect syncs computer `objectGUID` (as deviceID), `objectSID` (as onPremisesSecurityIdentifier), `operatingSystem`, `operatingSystemVersion`, `userCertificate`, `displayName`, `accountEnabled`. [DOC S549]
 - The default value of `msDS-LogonTimeSyncInterval` when unset is not stated on the schema page. [UNK]
 

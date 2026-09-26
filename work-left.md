@@ -63,6 +63,17 @@ One manager session mapped gaps with `rag.py pack` (many answers were a false `g
   - `tests.py` leak/cohesion checks scan tracked files only: stage new articles (`git add`) before running them, or they pass unchecked. Public ids found this round are in `_tools/tests_allowlist.txt` with reasons.
   - Not yet pushed to GitLab `origin/main` (`python3 _tools/kbgit.py sync --push` when GitLab should get it).
 
+## 1a. Census 2026-09-26 (supersedes the 2026-09-25 remainder below)
+Log: `_census/2026-09-26.csv`. Network allowed learn.microsoft.com, github.com and api.github.com this time.
+- **Phase 1:** OK=1438 (Learn pages without a public repo are now dated by their `updated_at` meta, `8c07300`), CHANGED=42, GONE=14, NEWER-VERSION=13, NEEDS-READING=400.
+- **memdocs:** 102 of 114 archived pins re-sourced mechanically to their live Learn pages (content provably identical); the other 12 read in phase 2.
+- **Phase 2:** nine readers plus one retry reader; outcomes 254 confirmed, 68 updated, 136 superseded, 11 unconfirmed. Readers' edits to other groups' files applied (`ece4bf7`).
+- **Phase 3:** 1760 sources and 181 articles dated 2026-09-26 (`fef64c9`).
+- **Phase 4:** see below.
+- **Still unconfirmed (11), so no census tag:** iso.org answers 403 (S1544, S1560, S1561); JavaScript-only pages (S1409 public.cyber.mil, S1543 MITRE ATLAS, S-forvn2ly NVD, S2161 Kaggle, S1929 x.com); S1411 now redirects to a DoD sign-in; S1426 (cyber.gov.au PDF) times out; S1933 Medium 403. S1929 and S1933 are cited by no fact. Reading them needs a real browser (the Chrome extension did not respond this session), then `census.py record` and `confirm`, then `kbgit.py tag-census 2026-09-26`.
+- **Network note:** techcommunity.microsoft.com is NXDOMAIN on this machine's resolver; `dig @1.1.1.1` + `curl --resolve` reads it.
+- **Lesson:** a WebFetch summary invented BOD 26-04 Table 1 rows (`cd847fa`); the census reader caught it. Read numbers from the page text or the image.
+
 ## 1. Census 2026-09-25: finish what this environment could not reach
 Log: `_census/2026-09-25.csv` (`python3 _tools/census.py summary _census/2026-09-25.csv`).
 - **Phase 1 (mechanical):** OK=450, CHANGED=20, GONE=1, NEWER-VERSION=12, NEEDS-READING=601.

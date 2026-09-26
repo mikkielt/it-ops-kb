@@ -1,7 +1,7 @@
 ---
 topic: agents/agent-overuse-patterns
 priority: P1
-applies_to: "Anthropic/OpenAI/Google/Microsoft agent guidance (2025-2026 docs), Thoughtworks Technology Radar Vol 34 (2026-04), jq 1.8, Renovate (docs 44.115.10), conventional-commits v1.0.0, semantic-release, LSP 3.18, DSC 3.3.0, Presidio 2.2.364"
+applies_to: "Anthropic/OpenAI/Google/Microsoft agent guidance (2025-2026 docs), Thoughtworks Technology Radar Vol 34 (2026-04), jq 1.8, Renovate (docs 44.115.10), conventional-commits v1.0.0, semantic-release, LSP 3.18, DSC 3.3.0, Presidio (pattern_recognizer.py at commit e9895a51)"
 retrieved_utc: 2026-09-25
 sources: [S2160, S2161, S2162, S2163, S2164, S2165, S2166, S2167, S2168, S2169, S2170, S2171, S2172, S2173, S2174, S2175, S150, S154, S825, S-2z2zfj3l, S-sxtmngif, S317, S-t5dhva6p, S900, S1920, S1924, S1925, S1935, S1936]
 status: partial
@@ -101,8 +101,8 @@ alongside the deterministic tool that already exists for them.
   part `dsc`], and ConfigMgr's CMPivot query surface (entities, `CcmLog()`, `WinEvent()`) is the
   documented structured-query path for live device state. [DOC S-2z2zfj3l, S-sxtmngif, S-t5dhva6p — reused from
   `mecm/cmpivot.md`, part `mecm`]
-- Presidio's `PatternRecognizer` (2.2.364) matches entities by regex plus context words and deny/allow
-  lists — the documented deterministic alternative to a free-text NER call for any entity with a fixed
+- Presidio's `PatternRecognizer` (source at pinned commit `e9895a51`) matches entities by regex patterns and an
+  optional deny list (turned into one more regex), with optional context words — the documented deterministic alternative to a free-text NER call for any entity with a fixed
   lexical shape (the same class of fact used for structured-field tokenization design). [DOC S825 —
   reused from `privacy/`, part `privacy`]
 - Power BI scheduled refresh (documented elsewhere in the kb, part `arch`/`powerbi`) is the deterministic

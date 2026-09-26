@@ -3,7 +3,7 @@ topic: entra/agent-id
 priority: P1
 applies_to: "Microsoft Entra Agent ID (public preview, docs current 2026-09-26), Microsoft Agent 365, Microsoft Graph v1.0 agentIdentityBlueprint/agentIdentity resources, Microsoft Copilot Studio (agent identity integration since 2026-03-18), Microsoft Foundry"
 retrieved_utc: 2026-09-26
-sources: [S2040, S-fdnhk2tn, S-lekwizgd, S-nzxr4eg2, S-midck7u4, S-735ghpq5, S-5yopk2hr, S-q6lirjr2, S-uva2ob4g, S-l4557zht]
+sources: [S2040, S-fdnhk2tn, S-lekwizgd, S-nzxr4eg2, S-midck7u4, S-735ghpq5, S-5yopk2hr, S-q6lirjr2, S-uva2ob4g, S-l4557zht, S-3puxctla]
 status: partial
 ---
 
@@ -131,9 +131,12 @@ products create them automatically.
 - Tenant-wide CA policies can scope to **All agent identities** or **All agent users** with a **Block**
   grant control against **All resources**, and can condition on **agent risk** (high/medium/low) fed by
   ID Protection; policies support report-only mode before enforcement. [DOC S-midck7u4]
-- Named built-in CA templates exist for agent scenarios: a block-high-risk-agent-identities template, an
-  autonomous-agent-access-policy template, and an on-behalf-of-agent-access-policy template (the last
-  targets **users and groups**, not agent identities, since OBO's subject is the user). [DOC S-735ghpq5]
+- The Conditional Access template list has an **AI Agents** category with three templates: Block high-risk
+  agent identities, Configure policy for autonomous agent access, and Configure policy for on-behalf-of agent
+  access. [DOC S-3puxctla]
+- For on-behalf-of (delegated) agent access, the Conditional Access for agents page says policies target
+  **users and groups**, since the user is the token subject; autonomous (client-credentials) flows are
+  targeted at the agent identity. [DOC S-735ghpq5]
 - Best-practice guidance explicitly warns against reusing user-targeted policies (e.g. "all users must use
   MFA") for agents, because agents cannot satisfy interactive controls like MFA; dedicated agent policies
   should instead use identity filters, risk signals, custom security attributes, and named locations as

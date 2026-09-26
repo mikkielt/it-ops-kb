@@ -1,9 +1,9 @@
 topic,priority,status,files,n_sources
-ad/computer-attributes,P1,complete,ad/computer-attributes.md;ad/computer-attributes.csv,9
+ad/computer-attributes,P1,complete,ad/computer-attributes.md;ad/computer-attributes.csv,10
 ad/krbtgt-password-reset,P1,complete,ad/krbtgt-password-reset.md,6
 ad/ldap-paging-filters,P1,complete,ad/ldap-paging-filters.md,5
 agents/agent-caching,P1,complete,agents/agent-caching.md,8
-agents/agent-dispatch-and-shared-services,P1,partial,agents/agent-dispatch-and-shared-services.md,9
+agents/agent-dispatch-and-shared-services,P1,partial,agents/agent-dispatch-and-shared-services.md,10
 agents/agent-error-catalogue,P1,partial,agents/agent-error-catalogue.md;agents/agent-error-catalogue.csv,15
 agents/agent-evaluation,P1,complete,agents/agent-evaluation.md,30
 agents/agent-overuse-patterns,P1,partial,agents/agent-overuse-patterns.md;agents/agent-overuse-patterns.csv,29
@@ -28,7 +28,7 @@ agents/doc-lookup-sources,P2,partial,agents/doc-lookup-sources.md;agents/doc-loo
 agents/docs-maintenance-agents,P2,partial,agents/docs-maintenance-agents.md,17
 agents/genai-telemetry,P2,complete,agents/genai-telemetry.md,5
 agents/github-copilot-admin,P2,partial,agents/github-copilot-admin.md,6
-agents/headless-agent-runtimes,P2,partial,agents/headless-agent-runtimes.md,11
+agents/headless-agent-runtimes,P2,partial,agents/headless-agent-runtimes.md,12
 agents/hybrid-retrieval,P2,complete,agents/hybrid-retrieval.md,12
 agents/mcp-server-lifecycle,P2,partial,agents/mcp-server-lifecycle.md,2
 agents/microsoft-agent-framework,P2,partial,agents/microsoft-agent-framework.md,11
@@ -46,7 +46,7 @@ arch/python-single-package-extras,P1,complete,arch/python-single-package-extras.
 arch/sql-auth-containers,P1,complete,arch/sql-auth-containers.md,4
 arch/texts-catalogue-formats,P1,complete,arch/texts-catalogue-formats.md,9
 arch/twelve-factor-readiness,P1,complete,arch/twelve-factor-readiness.md,12
-arch/workload-identity-onprem-k8s,P1,complete,arch/workload-identity-onprem-k8s.md,3
+arch/workload-identity-onprem-k8s,P1,complete,arch/workload-identity-onprem-k8s.md,4
 auth/configmgr-rbac-auth,P0,partial,auth/configmgr-rbac-auth.md,6
 auth/flows,P0,partial,auth/flows.md;auth/flows.csv,27
 auth/gitlab-ci-identity,P0,partial,auth/gitlab-ci-identity.md,2
@@ -107,7 +107,7 @@ dsc/schemas,P0,complete,dsc/schemas.md;dsc/schemas/,14
 dsc/secrets,P0,complete,dsc/secrets.md,9
 dsc/settings-and-paths,P0,complete,dsc/settings-and-paths.md,7
 dsc/what-if,P0,complete,dsc/what-if.md,11
-entra/agent-id,P1,partial,entra/agent-id.md,10
+entra/agent-id,P1,partial,entra/agent-id.md,11
 entra/bitlocker-key-deletion,P1,complete,entra/bitlocker-key-deletion.md,4
 entra/conditional-access-devices,P1,complete,entra/conditional-access-devices.md;entra/ca-device-filter-properties.csv,14
 entra/connect-and-cloud-sync,P1,complete,entra/connect-and-cloud-sync.md,13
@@ -115,7 +115,7 @@ entra/device-identity,P1,complete,entra/device-identity.md,6
 entra/dsregcmd,P1,partial,entra/dsregcmd.md;entra/dsregcmd-fields.csv,2
 entra/hybrid-deviceid-objectguid,P1,partial,entra/hybrid-deviceid-objectguid.md,7
 entra/stale-devices,P1,complete,entra/stale-devices.md,3
-entra/pim-and-governance,P2,partial,entra/pim-and-governance.md,13
+entra/pim-and-governance,P2,partial,entra/pim-and-governance.md,14
 gitlab/codeowners,P0,complete,gitlab/codeowners.md,3
 gitlab/mr-approvals,P0,complete,gitlab/mr-approvals.md,7
 gitlab/pipelines-rules,P0,complete,gitlab/pipelines-rules.md,5
@@ -147,14 +147,14 @@ intune/tenant-attach,P1,complete,intune/tenant-attach.md,5
 intune/app-protection-mam,P2,complete,intune/app-protection-mam.md,18
 intune/certificates-pki,P2,partial,intune/certificates-pki.md;intune/certificate-variables.csv,11
 intune/compliance-policies,P2,complete,intune/compliance-policies.md;intune/compliance-policies.csv,12
-intune/configuration-policies,P2,partial,intune/configuration-policies.md,11
+intune/configuration-policies,P2,partial,intune/configuration-policies.md,12
 intune/device-inventory-analytics,P2,complete,intune/device-inventory-analytics.md,13
 intune/ios-android-management,P2,complete,intune/ios-android-management.md,11
 intune/macos-management,P2,complete,intune/macos-management.md,14
 intune/network-profiles,P2,partial,intune/network-profiles.md,12
-intune/platform-scripts,P2,complete,intune/platform-scripts.md,4
+intune/platform-scripts,P2,complete,intune/platform-scripts.md,6
 intune/remote-help,P2,complete,intune/remote-help.md;intune/remote-help.csv,5
-intune/reports-export-api,P2,complete,intune/reports-export-api.md;intune/export-report-names.csv,7
+intune/reports-export-api,P2,complete,intune/reports-export-api.md;intune/export-report-names.csv,10
 intune/win32-apps,P2,complete,intune/win32-apps.md;intune/win32-apps.csv,8
 intune/linux-management,P3,complete,intune/linux-management.md,9
 logs/ecs-log-fields,P1,complete,logs/ecs-log-fields.md;logs/ecs-log.yml,2
@@ -162,7 +162,7 @@ logs/otel-log-data-model,P1,complete,logs/otel-log-data-model.md,1
 logs/otel-log-semconv,P1,complete,logs/otel-log-semconv.md;logs/otel-semconv-log-registry.yaml;logs/otel-semconv-code-registry.yaml,5
 logs/sources,P1,partial,logs/sources.md;logs/sources.csv,16
 logs/azure-monitor-agent,P2,complete,logs/azure-monitor-agent.md,13
-logs/microsoft-sentinel,P2,partial,logs/microsoft-sentinel.md,17
+logs/microsoft-sentinel,P2,partial,logs/microsoft-sentinel.md,18
 logs/otel-collector-receivers,P3,complete,logs/otel-collector-receivers.md;logs/otel-filelogreceiver.config.csv;logs/otel-windowseventlogreceiver.config.csv;logs/otel-filelogreceiver.metadata.yaml;logs/otel-windowseventlogreceiver.metadata.yaml,5
 mcp/authorization,P1,complete,mcp/authorization.md,3
 mcp/deprecations,P1,complete,mcp/deprecations.md,3
@@ -186,7 +186,7 @@ mecm/compliance-script-ci,P0,partial,mecm/compliance-script-ci.md,7
 mecm/log-files,P0,complete,mecm/log-files.md;mecm/log-files.csv,2
 mecm/logging,P0,partial,mecm/logging.md,5
 mecm/rbac,P0,partial,mecm/rbac.md;mecm/rbac-permissions.csv,15
-mecm/run-scripts,P0,partial,mecm/run-scripts.md,13
+mecm/run-scripts,P0,partial,mecm/run-scripts.md,14
 mecm/sql-views-compliance,P0,partial,mecm/sql-views-compliance.md;mecm/sql-views-compliance.csv,9
 mecm/versions-lifecycle,P0,complete,mecm/versions-lifecycle.md,5
 mecm/osd-task-sequences,P1,partial,mecm/osd-task-sequences.md;mecm/task-sequence-variables.csv,11
@@ -198,7 +198,7 @@ powerbi/row-level-security,P2,complete,powerbi/row-level-security.md,2
 powerbi/scheduled-refresh,P2,complete,powerbi/scheduled-refresh.md,4
 prior-art/device-identity-correlation,P2,partial,prior-art/device-identity-correlation.md,4
 prior-art/drift-detection,P2,partial,prior-art/drift-detection.md,4
-prior-art/layered-settings-resolution,P2,complete,prior-art/layered-settings-resolution.md,2
+prior-art/layered-settings-resolution,P2,complete,prior-art/layered-settings-resolution.md,3
 prior-art/log-collection-normalization,P2,partial,prior-art/log-collection-normalization.md,2
 prior-art/mcp-microsoft-endpoint-mgmt,P2,partial,prior-art/mcp-microsoft-endpoint-mgmt.md,1
 prior-art/pseudonymization-tokenization,P2,complete,prior-art/pseudonymization-tokenization.md,3
@@ -215,7 +215,7 @@ privacy/presidio-recognizer-yaml,P0,complete,privacy/presidio-recognizer-yaml.md
 privacy/spacy-model-licence,P0,complete,privacy/spacy-model-licence.md,4
 reuse/device-identity-correlation,P2,complete,reuse/device-identity-correlation.md,5
 reuse/drift-detection,P2,complete,reuse/drift-detection.md,4
-reuse/layered-settings-resolution,P2,complete,reuse/layered-settings-resolution.md,2
+reuse/layered-settings-resolution,P2,complete,reuse/layered-settings-resolution.md,3
 reuse/log-collection-normalization,P2,complete,reuse/log-collection-normalization.md,2
 reuse/mcp-microsoft-endpoint-mgmt,P2,complete,reuse/mcp-microsoft-endpoint-mgmt.md,1
 reuse/pseudonymization-tokenization,P2,complete,reuse/pseudonymization-tokenization.md,3

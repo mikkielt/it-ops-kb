@@ -3,7 +3,7 @@ topic: agents/headless-agent-runtimes
 priority: P2
 applies_to: "Claude Code v2.1.x (code.claude.com docs, retrieved 2026-09-25); GitHub Copilot coding agent; GitLab Duo Agent Platform (GA 2026-01-15)"
 retrieved_utc: 2026-09-26
-sources: [S1800, S1801, S1802, S1803, S1804, S1805, S1806, S1807, S1818, S1824, S-qso27noq]
+sources: [S1800, S1801, S1802, S1803, S1804, S1805, S1806, S1807, S1818, S1824, S-qso27noq, S-szgomxsz]
 status: partial
 ---
 
@@ -39,7 +39,7 @@ protected branch without a review step.
 - If a routine's GitHub connection lapses, it skips runs for up to 72 hours before auto-disabling. [DOC S1803]
 - GitHub's Copilot cloud agent (earlier called the coding agent) works from assigned issues in its own ephemeral development environment, with a firewall on by default that blocks outbound connections to unauthorized hosts to prevent exfiltration; it responds only to users with repository write access, and Actions workflows triggered by its pull requests need approval from a write-access user before they run. [DOC S1804]
 - The responsible-use page (S1804, re-read 2026-09-26) no longer states that the sandbox is GitHub Actions-powered or that a blocked request is recorded as a warning on the PR; the firewall how-to (S1805) is the likely home of those details. [UNK: not re-confirmed 2026-09-26]
-- The coding agent can push only to the existing PR branch (when triggered via `@copilot`) or to a new `copilot/`-prefixed branch it creates — "Copilot cannot push directly to your default branch." [DOC S1805]
+- The cloud agent can push to a single branch only: the pull request's branch when triggered by mentioning `@copilot` on an existing PR, otherwise a new `copilot/` branch created for it; it is also subject to the repository's branch protections and required checks, and can perform only simple push operations. [DOC S-szgomxsz]
 - GitLab Duo Agent Platform reached GA on 2026-01-15 for Premium and Ultimate customers on GitLab.com and GitLab Self-Managed, with GitLab Dedicated planned during the GitLab 18.8 release cycle; usage is paid in GitLab Credits, with $12 (Premium) and $24 (Ultimate) of included credits per user. [DOC S1807]
 - GitLab-managed external agents include a Claude Code agent, a Codex (OpenAI) agent, an Amazon Q Developer agent, and a "Develop with Gemini" agent; self-managed instances can add custom external agents via the AI Catalog. [DOC S1806]
 - GitLab agent triggers include MR creation/approval, "MR ready" status, MR conflicts, and work-item creation/status changes; agents authenticate via GitLab-injected `AI_FLOW_AI_GATEWAY_TOKEN`/`AI_FLOW_AI_GATEWAY_HEADERS`, a `AI_FLOW_GITLAB_TOKEN` scoped to `ai_workflows` endpoints, OIDC ID tokens, or project CI/CD variables for third-party providers; results return as "a ready-to-merge change or an inline comment." [DOC S1806]
@@ -61,7 +61,7 @@ protected branch without a review step.
 | Claude Code GitHub Action | `@claude` mention, or any GitHub event incl. `schedule:` | repo/org secret (`ANTHROPIC_API_KEY`/`CLAUDE_CODE_OAUTH_TOKEN`) or OIDC federation | PR comment, workflow log, or a PR/commit when granted write | GitHub Actions minutes + API tokens [DOC S1801] |
 | Claude Code GitLab CI/CD | manual, MR event, or webhook-fed pipeline trigger | masked `ANTHROPIC_API_KEY` var, or OIDC to Bedrock/Vertex | MR, or job log | Runner minutes + API tokens [DOC S1802] |
 | Claude Code routines | schedule (≥1 h), API POST, GitHub event | user's claude.ai account + linked GitHub/connector identities | new cloud session per fire, reviewed and turned into a PR by a human | subscription usage + daily run cap [DOC S1803] |
-| GitHub Copilot cloud (coding) agent | issue assignment | ephemeral environment, firewalled by default | `copilot/`-prefixed branch → PR | Copilot billing (not itemized here) [DOC S1804,S1805] |
+| GitHub Copilot cloud (coding) agent | issue assignment | ephemeral environment, firewalled by default | `copilot/`-prefixed branch → PR | Copilot billing (not itemized here) [DOC S1804,S1805,S-szgomxsz] |
 | GitLab Duo Agent Platform (external agents) | MR/work-item events | `AI_FLOW_*` tokens / OIDC / CI/CD vars | MR or inline comment | Premium/Ultimate seat plus GitLab Credits ($12/$24 included per user) [DOC S1806,S1807] |
 | GitHub Agentic Workflows (`gh-aw`) | `schedule:`/GitHub-event frontmatter, compiled to Actions YAML | GitHub Actions job token + the agent's own API key/OAuth secret (same as the underlying CLI it wraps) | validated "safe-outputs" (PR, comment, issue) applied by a separate scoped-permission job | GitHub Actions minutes + the wrapped agent's own API/subscription cost (not itemized) [DOC S1818, S-qso27noq] |
 
