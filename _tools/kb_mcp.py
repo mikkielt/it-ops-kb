@@ -56,7 +56,7 @@ INSTRUCTIONS = (
     "(derived), COMMUNITY (non-official) or UNK (not confirmed); UNK and COMMUNITY are leads, not answers. Counts, "
     "lists and 'which files cite X' are kb_audit, kb_facts and kb_source with cited=true, not searches. Cite path:line "
     "and the url from the pack's sources footer. Single facts: call kb_pack yourself; several parts: one kb_pack with "
-    "questions=[...]. Use the kb-lookup agent only for multi-part research. Never start a general-purpose agent for a "
+    "questions=[...]. Use the kb-lookup agent only for long research whose output would fill your context. Never start a general-purpose agent for a "
     "kb lookup. These tools hold documentation facts, not live device or directory data.")
 DOCS = "Documentation facts from it-ops-kb (not live device or directory data). "
 FORMAT = {"type": "string", "enum": ["concise", "detailed"],
@@ -73,7 +73,7 @@ TOOL_LIST = [
          "question": {"type": "string", "description": "the question as asked, or 3-10 keywords"},
          "questions": {"type": "array", "items": {"type": "string"}, "minItems": 1, "maxItems": 6,
                        "description": "the parts of a multi-part question, one pack each (instead of question)"},
-         "budget": {"type": "integer", "minimum": 200, "maximum": 6000, "default": 1200, "description": "about this many tokens per question"},
+         "budget": {"type": "integer", "minimum": 200, "maximum": 6000, "default": 1200, "description": "about this many tokens per question; 3+ questions share 2x this (at least 800 each)"},
          "domain": {"type": "string", "description": "limit to one domain directory, e.g. 'auth'"},
          "response_format": {**FORMAT, "default": "detailed"}},
          "additionalProperties": False},

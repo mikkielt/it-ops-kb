@@ -109,7 +109,7 @@ The kb is also a Claude Code plugin marketplace (`.claude-plugin/marketplace.jso
   - `kb_topics_for`: the kb topics that code touches (MSAL classes, AdminService routes, Negotiate/SPN, LDAP libraries, Graph scopes, ...), from the curated signals in `_tools/signals.csv`.
   - `response_format`: `kb_facts`, `kb_audit` and `kb_search` answer `concise` by default (no url footer), `kb_pack` `detailed`.
 - **`/it-ops-kb:kb-lookup`**, which Claude may also invoke on its own. A single fact is one `kb_pack` call in the session that asked.
-- **the `it-ops-kb:kb-lookup` agent**, for multi-part research: kb tools only, Haiku, low effort, no `CLAUDE.md`, the lookup procedure preloaded (about 4k tokens of startup context, measured, against about 13k for a general-purpose agent).
+- **the `it-ops-kb:kb-lookup` agent**, for long research whose output would fill the caller's context: kb tools only, Haiku, low effort, no `CLAUDE.md`, the lookup procedure preloaded (about 4k tokens of startup context, measured, against about 13k for a general-purpose agent).
 - **`/it-ops-kb:kb-review-workspace [paths or focus]`**, which you start yourself. It runs in the `it-ops-kb:kb-reviewer` agent (Sonnet, `Read`, `Grep`, `Glob` and the kb tools, the project's `CLAUDE.md` loaded). The agent maps the project's code to kb topics with `kb_topics_for`, reads the facts, and reports findings in chat: each with the project's `path:line` and the kb's `path:line`, tag and source url. It writes nothing.
 - **the `kb:` prompt hook** (UserPromptSubmit, `_tools/kb_hook.py`): `kb: <question>` is answered from the kb without the model when the kb covers it; when the kb does not cover it, Claude gets one line saying so.
 

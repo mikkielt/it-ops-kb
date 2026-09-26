@@ -382,6 +382,20 @@ class TestLookup:
         code, out = run(os.path.join(TOOLS, "rag.py"), "eval")
         assert code == 0, out[-3000:]
 
+    def test_kb_ask_routes_by_verdict(self):
+        def route(q, *flags):
+            p = subprocess.run([sys.executable, os.path.join(TOOLS, "kb_ask.py"), *flags, q], capture_output=True,
+                               text=True, cwd=KB, timeout=60)
+            assert p.returncode == 0, p.stderr
+            return p.stdout
+        good = route("Does deleting an Entra device also delete its BitLocker recovery keys?", "--route")
+        assert good.startswith("coverage: good") and "--model haiku" in good and "WebSearch" not in good, good
+        none = route("What is the Intel Wi-Fi Roaming Aggressiveness setting?", "--route")
+        assert none.startswith("coverage: none") and "--model sonnet" in none and "WebSearch" in none, none
+        assert "--model opus" in route("Intel Wi-Fi roaming", "--route", "--model", "opus")
+        printed = route("Does deleting an Entra device also delete its BitLocker recovery keys?", "--no-model")
+        assert "entra/bitlocker-key-deletion.md:" in printed, "a good pack is printed without a model"
+
     def test_kb_hook(self):
         def hook(prompt):
             p = subprocess.run([sys.executable, os.path.join(TOOLS, "kb_hook.py")], input=json.dumps({"prompt": prompt}),

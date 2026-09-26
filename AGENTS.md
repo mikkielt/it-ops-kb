@@ -4,7 +4,8 @@ An offline knowledge base of facts from official sources on Windows endpoint man
 
 ## Look things up: deterministic tools first
 
-- Answer lookups in the session that asked. Never start a general-purpose subagent for a lookup (about 50k tokens of startup context); multi-part research may use the lean `kb-lookup` agent.
+- Answer lookups in the session that asked. Never start a general-purpose subagent for a lookup (about 50k tokens of startup context); several parts go in one `pack` call too (measured 2026-09-26: handing them to the Haiku `kb-lookup` agent cost the same and took twice as long). That agent only pays off for long research whose tool output would fill the main context.
+- From a shell or a script: `python3 _tools/kb_ask.py "<question>"` routes by the pack's verdict (good: Haiku with the pack inline, one turn, no tool call; weak/none: Sonnet with the live docs). `--route` shows the choice, `--no-model` prints a good pack.
 - One call first: `kb_pack` (MCP) or `python3 _tools/rag.py pack "<question>"`; several parts in one call: `questions` / `pack -q PART -q PART`. It prints `coverage: good|weak|none`, the best fact lines by article with `path:line` and tag, and one footer of source urls.
   - `good`: answer from the pack.
   - `weak`: one reworded pack, or one `show` of the article.

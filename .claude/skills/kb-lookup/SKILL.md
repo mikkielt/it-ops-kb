@@ -7,7 +7,7 @@ disallowed-tools: mcp__claude-code-docs__submit_feedback mcp__mcp-docs__submit_f
 
 # Look up facts in it-ops-kb
 
-Read-only. The `kb` tools hold documentation facts, not live device or directory data. Do a single fact here, with no subagent; the kb-lookup agent is for multi-part research only. In a clone without the `kb` MCP tools, use the `rag.py` command in brackets, one command per call.
+Read-only. The `kb` tools hold documentation facts, not live device or directory data. Do single facts and multi-part questions here, with no subagent (one `kb_pack` with `questions`); the kb-lookup agent is only for long research whose output would fill the context. In a clone without the `kb` MCP tools, use the `rag.py` command in brackets, one command per call.
 
 1. **One pack.** Call `kb_pack` with the question as asked (in a clone: `python3 _tools/rag.py pack "<question>"`). A question with several parts: one call with `questions` = [part, part, ...] (up to 6; in a clone: `rag.py pack -q PART -q PART`). Read each `coverage:` line:
    - `good`: answer from the pack. Stop searching.
