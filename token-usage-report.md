@@ -495,13 +495,13 @@ times on a repeat, at equal or lower wall time, with every check passing.
 ## Router second pass (2026-09-26): web research applied
 
 Recommendations from Claude Code's cost, caching and headless docs and from the routing and RAG-sufficiency
-literature (FrugalGPT/RouteLLM cascades; "Sufficient Context", ICLR 2025), each implemented and measured:
+literature (FrugalGPT/RouteLLM cascades; "Sufficient Context", ICLR 2025), each implemented and measured. A direct
+Messages API reader was built and then removed (decided 2026-09-26: the kb does not call the Anthropic API).
 
 | change | measured |
 |---|---|
 | `claude -p` without user plugins and MCP servers (`--setting-sources project,local --strict-mcp-config`) | context 29.9k -> 24.8k; first run $0.027 -> $0.018 |
 | the good-route reader gets no tools (`--tools ""`) | context 24.8k -> 9.8k; repeat $0.0054 -> $0.0027 |
-| Messages API reader when `ANTHROPIC_API_KEY`/`ANTHROPIC_AUTH_TOKEN` is set | about 1.5k input tokens; tested against a local mock only (no key on this machine) |
 | sufficiency check: the Haiku reader answers `INSUFFICIENT: ...` when the facts are only related, and the question escalates | the Purview endpoint DLP false `good` escalated to Sonnet and was answered from live docs, labelled; $0.115-0.121 in total |
 | counts and "who cites S123" answered by `audit` / `cited_lines` | $0, 0.5 s (was $0.098 first run on Sonnet) |
 | parts split (numbered items or several questions ending in `?`; instruction sentences are not parts) | the three-part question stays on Haiku: $0.013 (was $0.121) |
@@ -522,3 +522,28 @@ Checked and left as they are:
   but both agents load (`it-ops-kb:kb-lookup`, `it-ops-kb:kb-reviewer`).
 - Rerankers and dense retrieval: not added; the misses are about meaning, which the reader's check handles more
   cheaply.
+
+## kb router versus a typical web-search session (2026-09-26)
+
+Same questions, 2 runs each. Web search: `agent_bench.py web-<model>`, a `claude -p` in an empty directory with no kb,
+plugins, skills or MCP servers, only `WebSearch` and `WebFetch` (a first attempt was void: the installed it-ops-kb
+plugin's `kb-lookup` skill leaked in, and Haiku then answered "32 characters" for the LAPS length). Router:
+`kb_ask.py`. Input tokens are cache writes + cache reads + uncached input per question.
+
+| per question (mean) | cost | wall time | input tokens | correct |
+|---|---|---|---|---|
+| kb router, 5 questions the kb covers | $0.011 | 8.9 s | 10.4k | 10/10 |
+| web search, Sonnet, same 5 | $0.128 | 26.9 s | 98k | 10/10 |
+| web search, Opus, same 5 | $0.228 | 26.7 s | 103k | 10/10 |
+| web search, Haiku, same 5 | $0.025 | 11.9 s | 43k | 8/10 |
+| kb router, not covered (false good, escalated) | $0.118 | 23.2 s | 89k | 2/2 |
+| web search, Sonnet, same question | $0.153 | 29.3 s | 82k | 2/2 |
+
+- For what the kb covers: about 12x cheaper and 3x faster than Sonnet web search, 20x cheaper and 3x faster than
+  Opus, with a tenth of the input tokens. The three-part question shows it most: $0.013 and 9 s against $0.29-0.39,
+  35-42 s and 195-241k tokens (7-8 page fetches).
+- Haiku web search is as cheap but not a search: in 5 of 12 runs it made no tool call and answered from memory, and it
+  failed 3 of 12 checks. The kb router's Haiku reads cited facts instead, 12/12 correct.
+- For what the kb lacks, the router costs a web search plus the reader's check (about $0.01 and a few seconds), and
+  labels the result as live docs.
+- Answers from the kb carry `path:line`, a tag and the source url; web answers carry urls only.

@@ -9,7 +9,8 @@ tokens, output tokens, cost per model, tool calls of the main session and of sub
 expected answer element. CONFIG: `haiku`, `sonnet`, `opus` (that model answers alone); `opus+delegate` (asked to hand
 the lookup to the Haiku kb-lookup agent); `haiku+escalate` (Haiku told to hand live-docs work to a Sonnet agent
 defined with --agents); `+strict` also denies the docs tools (note: the deny reaches subagents too); `router`
-(kb_ask.py's routing by verdict). Results of 2026-09-26: token-usage-report.md, "Agent benchmark".
+(kb_ask.py's routing); `web-haiku`, `web-sonnet`, `web-opus` (a typical
+web-search session: no kb, no MCP servers, no project files, only WebSearch and WebFetch). Results of 2026-09-26: token-usage-report.md, "Agent benchmark".
 """
 import json, os, re, subprocess, sys, time
 from collections import Counter
@@ -50,10 +51,10 @@ DELEGATE = (" Delegate the kb lookup to the kb-lookup subagent (Haiku) and only 
             "yourself only if it reports the kb lacks the answer.")
 
 
-def execute(cmd, prompt):
+def execute(cmd, prompt, cwd=KB):
     """Run one headless claude and parse its stream: the result fields (or {"error": ...})."""
     t = time.time()
-    p = subprocess.run(cmd, cwd=KB, input=prompt, capture_output=True, text=True, timeout=900)
+    p = subprocess.run(cmd, cwd=cwd, input=prompt, capture_output=True, text=True, timeout=900)
     wall = time.time() - t
     tools, res, subs = Counter(), None, Counter()
     for line in p.stdout.splitlines():
@@ -114,10 +115,36 @@ def route(q):
     return add(first, second) if first and "error" not in second else second
 
 
+WEB_Q = {  # the same questions without the kb: what a session without it would be asked
+    "s1_fact": "What is the default Windows LAPS password length? Cite the source urls.",
+    "s2_fact_csv": "Which TCP port does Delivery Optimization use for peer-to-peer traffic? Cite the source urls.",
+    "s3_multi": ("Cite the source url for each: (1) default Windows LAPS password length; (2) the Delivery "
+                 "Optimization peer-to-peer port; (3) which Claude Code version added the Elicitation hook."),
+    "s6_falsegood": ("How do I create and update the Group Policy Central Store with the Windows 11 24H2 ADMX templates? "
+                     "Cite the source urls."),
+    "s7_web": ("How should the KRBTGT account password be reset safely in an AD domain (how many times, how long between "
+               "resets)? Cite the source urls."),
+    "s8_falsegood2": "Microsoft Purview Data Loss Prevention endpoint DLP onboarding requirements. Cite the source urls.",
+}
+
+
+def web(model, q):
+    """A typical web-search session: no kb, no plugins or MCP servers, no project files (an empty directory), only
+    WebSearch and WebFetch."""
+    empty = os.path.join(KB, "_cache", "bench-web")
+    os.makedirs(empty, exist_ok=True)
+    cmd = ["claude", "-p", "--output-format", "stream-json", "--verbose", "--no-session-persistence", "--model", model,
+           "--strict-mcp-config", "--setting-sources", "project,local", "--allowedTools", "WebSearch", "WebFetch",
+           "--disallowedTools", "Bash", "Read", "Grep", "Glob", "Edit", "Write", "Agent", "Skill"]
+    return execute(cmd, q, cwd=empty)
+
+
 def run(cfg, scen):
     q, checks = S[scen]
     if cfg == "router":
         r = route(q)
+    elif cfg.startswith("web-"):
+        r = web(MODEL[cfg[4:]], WEB_Q[scen])
     else:
         model = cfg.split("+")[0]
         prompt = q + (DELEGATE if "+delegate" in cfg else "")

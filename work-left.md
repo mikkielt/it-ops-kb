@@ -7,9 +7,8 @@ Done: 76 headless runs across 7 scenarios and 6 configs (`token-usage-report.md`
 `_tools/kb_ask.py` routes by the pack verdict (good: Haiku, weak/none: Sonnet), request words are stop words,
 3+ part packs share the budget, two new articles (`ad/krbtgt-password-reset`, `gpo/admx-central-store`).
 Status:
-- Open: the Messages API backend of `kb_ask.py` is tested against a local mock only; this machine has no API key. Run `ANTHROPIC_API_KEY=... python3 _tools/kb_ask.py -v "<question>"` once to confirm usage (about 1.5k input tokens) and cost.
-- False `good` verdicts: handled by the reader's `INSUFFICIENT` reply in `kb_ask.py` (tested live on the Purview DLP case); the verdict itself still counts words, so MCP and hook users see the pack as before.
-- Done 2026-09-26 (second pass): count/cite questions by the tools, part splitting, tool-less Haiku reader with `INSUFFICIENT` escalation, lean `claude -p`, Messages API backend, Sonnet at low effort. The plugin has no `kb_ask` path (it needs the `claude` CLI or an API key: a clone/shell tool).
+- Open: false `good` verdicts reach MCP (`kb_pack`) and `kb:` hook users unchecked. Only `kb_ask.py` catches them (its Haiku reader answers `INSUFFICIENT` and escalates; tested on the Purview DLP case). The verdict counts key words anywhere in the best article, not meaning, and a lexical phrase rule failed (report). Options: a note in the pack header when the best article matches its key words only across separate lines; the `kb:` hook forwarding a `good` pack to the model (like `kb+:`) instead of answering alone; or `lookup_eval.csv` rows for known false goods first.
+- Done 2026-09-26 (second pass): count/cite questions by the tools, part splitting, tool-less Haiku reader with `INSUFFICIENT` escalation, lean `claude -p`, Sonnet at low effort. The plugin has no `kb_ask` path (it needs the `claude` CLI: a clone/shell tool). The kb does not call the Anthropic API (decided 2026-09-26).
 - Closed 2026-09-26: the 4 `UNK` items of the two new articles (both `complete` now).
 
 ## T. `_tools` efficiency plan (`plan-tooling-efficiency.md`)
