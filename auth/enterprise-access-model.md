@@ -2,7 +2,7 @@
 topic: auth/enterprise-access-model
 priority: P2
 applies_to: "Microsoft Enterprise Access Model (current guidance)"
-retrieved_utc: 2026-09-24
+retrieved_utc: 2026-09-26
 sources: [S1210, S1212, S1224, S1225, S1226]
 status: partial
 ---

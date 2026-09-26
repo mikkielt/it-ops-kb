@@ -2,7 +2,7 @@
 topic: privacy/presidio-operators-deanonymize
 priority: P0
 applies_to: "presidio-anonymizer main @ e9895a5 (2.2.364 for released behaviour)"
-retrieved_utc: 2026-09-25
+retrieved_utc: 2026-09-26
 sources: [S827, S828, S829, S830, S831, S832, S833, S834, S835, S836, S841, S845, S800]
 status: complete
 ---

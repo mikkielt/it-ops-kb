@@ -2,7 +2,7 @@
 topic: mcp/deprecations
 priority: P1
 applies_to: "MCP specification 2026-07-28; MCP Python SDK 2.2.0"
-retrieved_utc: 2026-09-25
+retrieved_utc: 2026-09-26
 sources: [S701, S702, S727]
 status: complete
 ---

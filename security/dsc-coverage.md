@@ -2,7 +2,7 @@
 topic: security/dsc-coverage
 priority: P0
 applies_to: "DSC 3.3.0 / 3.4.0-preview.1; Microsoft Windows 11 24H2 baseline; DISA STIG Windows 11 V2R9, Windows Server 2025 V1R3"
-retrieved_utc: 2026-09-24
+retrieved_utc: 2026-09-26
 sources: [S1598, S1599, S1470, S1471, S1472, S1473, S1474, S1413, S1414, S1415, S1416, S1594, S1595, S1596]
 status: complete
 ---

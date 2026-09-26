@@ -2,7 +2,7 @@
 topic: claude/data-retention
 priority: P1
 applies_to: "Claude Code docs and Claude API retention page (retrieved 2026-09-23)"
-retrieved_utc: 2026-09-25
+retrieved_utc: 2026-09-26
 sources: [S747, S748, S749]
 status: partial
 ---

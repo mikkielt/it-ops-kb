@@ -2,7 +2,7 @@
 topic: ad/computer-attributes
 priority: P1
 applies_to: "Active Directory schema (Windows 2000 Server - Windows Server 2012+ pages, ms.date 05/31/2018)"
-retrieved_utc: 2026-09-25
+retrieved_utc: 2026-09-26
 sources: [S560, S561, S562, S563, S564, S565, S566, S549, S552]
 status: complete
 ---

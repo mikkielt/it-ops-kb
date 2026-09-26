@@ -2,7 +2,7 @@
 topic: claude/tool-output-limits
 priority: P1
 applies_to: "Claude Code 2.1.281 docs (retrieved 2026-09-23)"
-retrieved_utc: 2026-09-25
+retrieved_utc: 2026-09-26
 sources: [S740, S745, S746]
 status: complete
 ---

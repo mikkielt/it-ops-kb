@@ -2,7 +2,7 @@
 topic: powerbi/scheduled-refresh
 priority: P2
 applies_to: "Power BI service, docs retrieved 2026-09-23"
-retrieved_utc: 2026-09-23
+retrieved_utc: 2026-09-26
 sources: [S900, S901, S902, S911]
 status: complete
 ---

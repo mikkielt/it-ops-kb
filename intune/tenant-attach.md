@@ -2,7 +2,7 @@
 topic: intune/tenant-attach
 priority: P1
 applies_to: "ConfigMgr current branch (2002+ feature), Intune admin center 2026-09"
-retrieved_utc: 2026-09-24
+retrieved_utc: 2026-09-26
 sources: [S-2kbcc36i, S-ounncxk4, S-e7ymdl3x, S-aaryifxi, S-6q3ioupn]
 status: complete
 ---

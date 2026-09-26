@@ -2,7 +2,7 @@
 topic: auth/audit-events
 priority: P1
 applies_to: "AD DS, Entra ID, Microsoft Graph, ConfigMgr, SQL Server, GitLab"
-retrieved_utc: 2026-09-24
+retrieved_utc: 2026-09-26
 sources: [S1357, S1358, S1359, S1360, S1361, S1362, S1363, S1364, S1365, S1366, S1367, S1368, S1369, S1370, S1371, S1372, S1373, S1374, S1347]
 status: complete
 ---

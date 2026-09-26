@@ -2,7 +2,7 @@
 topic: agents/genai-telemetry
 priority: P2
 applies_to: "open-telemetry/semantic-conventions-genai @ e57c543b4889619eb2a05702471937db5119165d (2026-09-24)"
-retrieved_utc: 2026-09-25
+retrieved_utc: 2026-09-26
 sources: [S2000, S2001, S2002, S2003, S2004]
 status: complete
 ---

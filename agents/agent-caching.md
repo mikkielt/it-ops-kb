@@ -2,7 +2,7 @@
 topic: agents/agent-caching
 priority: P1
 applies_to: "Anthropic prompt caching (Claude Developer Platform, retrieved 2026-09-25); Claude Code >=2.1.251; OpenAI Responses/Completions API; Azure OpenAI/Foundry Models; MCP spec 2026-07-28"
-retrieved_utc: 2026-09-25
+retrieved_utc: 2026-09-26
 sources: [S2130, S2131, S2132, S2133, S2134, S2135, S2136, S2159]
 status: complete
 ---

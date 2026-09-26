@@ -2,7 +2,7 @@
 topic: powerbi/configmgr-views
 priority: P2
 applies_to: "ConfigMgr current branch reporting views"
-retrieved_utc: 2026-09-23
+retrieved_utc: 2026-09-26
 sources: [S902, S907]
 status: partial
 ---

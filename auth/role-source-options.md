@@ -2,7 +2,7 @@
 topic: auth/role-source-options
 priority: P1
 applies_to: "Microsoft Graph v1.0 checkMemberGroups/getMemberGroups (docs current 2026-09-24)"
-retrieved_utc: 2026-09-25
+retrieved_utc: 2026-09-26
 sources: [S1310, S1286, S1287, S524]
 status: partial
 ---

@@ -2,7 +2,7 @@
 topic: agents/anthropic-materials
 priority: P2
 applies_to: "Anthropic engineering blog, docs and reference repositories, retrieved 2026-09-25"
-retrieved_utc: 2026-09-25
+retrieved_utc: 2026-09-26
 sources: [S2137, S2138, S2139, S2140, S2141, S2142, S2143, S2144, S2145, S2146, S2147, S2148, S2149, S2150, S2151, S2152, S2153, S2154, S2156, S2157, S2158, S2159, S-d5e5aem4]
 status: complete
 ---

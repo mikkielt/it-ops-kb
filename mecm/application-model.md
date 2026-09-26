@@ -2,7 +2,7 @@
 topic: mecm/application-model
 priority: P0
 applies_to: "ConfigMgr current branch 2603 (memdocs 4b5429df)"
-retrieved_utc: 2026-09-23
+retrieved_utc: 2026-09-26
 sources: [S-j2tke6bb, S-irr2him7, S-le4dru57, S-pm6pjuef]
 status: complete
 ---

@@ -2,7 +2,7 @@
 topic: privacy/presidio-evaluator
 priority: P0
 applies_to: "presidio-evaluator 0.3.2 / data-privacy-stack/presidio-research"
-retrieved_utc: 2026-09-23
+retrieved_utc: 2026-09-26
 sources: [S837, S838, S839, S840]
 status: complete
 ---

@@ -2,7 +2,7 @@
 topic: arch/gitlab-ci-components
 priority: P1
 applies_to: [gitlab-ci]
-retrieved_utc: 2026-09-24
+retrieved_utc: 2026-09-26
 sources: [S1700, S1701, S1702, S1512, S1704, S446]
 status: complete
 ---

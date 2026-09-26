@@ -2,7 +2,7 @@
 topic: auth/ldap-smb-signing
 priority: P0
 applies_to: "Windows Server 2025, Windows 11 24H2, ldap3 2.10.x"
-retrieved_utc: 2026-09-24
+retrieved_utc: 2026-09-26
 sources: [S1228, S1201, S1202, S1203, S1208, S1209, S1220, S1221, S-7u4b7p5q]
 status: partial
 ---

@@ -2,7 +2,7 @@
 topic: privacy/gdpr-pseudonymisation
 priority: P0
 applies_to: "Regulation (EU) 2016/679; EDPB Guidelines 01/2025; CJEU C-413/23 P"
-retrieved_utc: 2026-09-23
+retrieved_utc: 2026-09-26
 sources: [S870, S871, S872, S873, S874, S875]
 status: partial
 ---

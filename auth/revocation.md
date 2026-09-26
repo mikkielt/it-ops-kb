@@ -2,7 +2,7 @@
 topic: auth/revocation
 priority: P1
 applies_to: "AD DS, Entra ID, ConfigMgr AdminService, Microsoft Graph, SQL Server, SMB, GitLab"
-retrieved_utc: 2026-09-24
+retrieved_utc: 2026-09-26
 sources: [S1380, S1378, S1344, S1345, S1347, S1348, S1354, S1355, S1306, S1375, S1376, S1377]
 status: partial
 ---

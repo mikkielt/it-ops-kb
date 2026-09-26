@@ -2,7 +2,7 @@
 topic: arch/texts-catalogue-formats
 priority: P1
 applies_to: [fluent, gettext, powershell, power-bi]
-retrieved_utc: 2026-09-24
+retrieved_utc: 2026-09-26
 sources: [S1709, S1710, S1711, S1712, S1713, S1714, S1715, S1716, S1717]
 status: complete
 ---

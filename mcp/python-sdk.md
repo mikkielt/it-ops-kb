@@ -2,7 +2,7 @@
 topic: mcp/python-sdk
 priority: P1
 applies_to: "MCP Python SDK (PyPI `mcp`) 2.2.0 (tag v2.2.0, 2026-09-07)"
-retrieved_utc: 2026-09-25
+retrieved_utc: 2026-09-26
 sources: [S720, S721, S722, S723, S724, S725, S726, S727, S728, S729, S730, S731, S732, S733, S734, S735, S736, S740]
 status: complete
 ---

@@ -2,7 +2,7 @@
 topic: privacy/nist-sp800-38g
 priority: P0
 applies_to: "NIST SP 800-38G (2016, updated 2016-08-04) and SP 800-38G Rev. 1 drafts"
-retrieved_utc: 2026-09-23
+retrieved_utc: 2026-09-26
 sources: [S865, S866, S867, S868, S869]
 status: complete
 ---

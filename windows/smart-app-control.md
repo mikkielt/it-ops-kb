@@ -2,7 +2,7 @@
 topic: windows/smart-app-control
 priority: P1
 applies_to: "Windows 11 (build 22572 or later; docs cite 22H2 onward), Intune-managed and unmanaged devices"
-retrieved_utc: 2026-09-25
+retrieved_utc: 2026-09-26
 sources: [S2198, S2199, S2200, S2201, S2202, S2203, S2204]
 status: partial
 ---

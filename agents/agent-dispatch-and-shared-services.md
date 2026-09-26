@@ -2,7 +2,7 @@
 topic: agents/agent-dispatch-and-shared-services
 priority: P1
 applies_to: "Copilot Studio connected agents (2026-06-23 docs), Microsoft Agent Framework (BUILD 2026), Claude Code subagents (2026-09 docs), MCP spec 2026-07-28"
-retrieved_utc: 2026-09-25
+retrieved_utc: 2026-09-26
 sources: [S2080, S2081, S2082, S2083, S2084, S2109, S2110, S1920, S1928]
 status: partial
 ---

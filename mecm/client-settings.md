@@ -2,7 +2,7 @@
 topic: mecm/client-settings
 priority: P0
 applies_to: "ConfigMgr current branch 2603 (about-client-settings.md ms.date 2025-12-08)"
-retrieved_utc: 2026-09-23
+retrieved_utc: 2026-09-26
 sources: [S-pm6pjuef, S-le4dru57]
 status: partial
 ---

@@ -2,7 +2,7 @@
 topic: graph/permissions
 priority: P1
 applies_to: "Microsoft Graph v1.0 and beta, docs-contrib commit 4ad99fd37a9e"
-retrieved_utc: 2026-09-25
+retrieved_utc: 2026-09-26
 sources: [S512, S513, S514, S515, S516, S517, S518, S519, S520, S521, S522, S523, S524, S531]
 status: complete
 files: [graph/permission-ids.csv]

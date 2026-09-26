@@ -2,7 +2,7 @@
 topic: intune/collect-diagnostics
 priority: P1
 applies_to: "Intune device action Collect diagnostics, doc ms.date 2025-10-27"
-retrieved_utc: 2026-09-24
+retrieved_utc: 2026-09-26
 sources: [S-6epv7qzl]
 status: complete
 ---

@@ -2,7 +2,7 @@
 topic: powerbi/on-prem-gateway-sql
 priority: P2
 applies_to: "Power BI service + on-premises data gateway (standard mode), docs retrieved 2026-09-23"
-retrieved_utc: 2026-09-23
+retrieved_utc: 2026-09-26
 sources: [S902, S903, S904, S905, S906, S907, S908, S909]
 status: complete
 ---

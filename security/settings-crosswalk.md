@@ -2,7 +2,7 @@
 topic: security/settings-crosswalk
 priority: P0
 applies_to: "Windows 11 Enterprise 24H2 (Microsoft baseline package 24H2), DISA STIG Windows 11 V2R9 and Windows Server 2025 V1R3 (2026-08-10), Intune Windows baseline 24H2 pivot, DSC 3.3.0"
-retrieved_utc: 2026-09-24
+retrieved_utc: 2026-09-26
 sources: [S1470, S1471, S1472, S1598, S1473, S-oeh7ui3h, S1477, S1478, S1479, S1590, S1591, S1413, S1414, S1415, S1416, S1594, S1595, S1596]
 status: partial
 files: [security/artifacts/disa/, security/artifacts/microsoft/, security/artifacts/osconfig/]

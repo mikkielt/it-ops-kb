@@ -2,7 +2,7 @@
 topic: mecm/rbac
 priority: P0
 applies_to: "ConfigMgr current branch 2603"
-retrieved_utc: 2026-09-23
+retrieved_utc: 2026-09-26
 sources: [S-wkltnypi, S-2z2zfj3l, S-sxtmngif, S-bprslswi, S1520, S-aaryifxi, S-hmjlvsck, S-qa267hnk, S1218, S-lef2ok5a, S-5v5lco6w, S-bjflxpet, S-z2hvjsvn, S-pl6uxpad, S-p2yatbfh]
 status: partial
 files: [mecm/rbac-permissions.csv]

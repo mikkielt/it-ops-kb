@@ -2,7 +2,7 @@
 topic: auth/transport-crypto
 priority: P2
 applies_to: "Windows Server 2025 / Windows 11 24H2, Microsoft Entra ID"
-retrieved_utc: 2026-09-24
+retrieved_utc: 2026-09-26
 sources: [S1201, S1202, S1203, S1216, S1222, S1223, S1227, S-ipmyihvs]
 status: partial
 ---

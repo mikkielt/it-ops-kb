@@ -2,7 +2,7 @@
 topic: agents/docs-maintenance-agents
 priority: P2
 applies_to: "DeepWiki (Cognition AI, 2025-04-25 launch); Mintlify llms.txt/AI-native docs (retrieved 2026-09-25); llms.txt spec v2 (2026-08-10); Swimm Auto-sync/Verify; GitHub Copilot Spaces (GA 2025-09-24)"
-retrieved_utc: 2026-09-25
+retrieved_utc: 2026-09-26
 sources: [S1808, S1809, S1810, S1811, S1812, S1813, S1814, S1815, S1816, S1817, S1818, S1820, S1821, S1822, S1823, S1825, S-qso27noq]
 status: partial
 ---

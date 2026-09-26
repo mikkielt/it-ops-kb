@@ -2,7 +2,7 @@
 topic: agents/prompt-injection-design-patterns
 priority: P2
 applies_to: "arXiv preprints 2506.08837/2503.18813 (2025); Azure AI Content Safety Prompt Shields (ms.date 2026-08-28); Anthropic prompt-injection-defenses post (2025-11-24); Claude Code security docs (retrieved 2026-09-25)"
-retrieved_utc: 2026-09-25
+retrieved_utc: 2026-09-26
 sources: [S2005, S2006, S2007, S2008, S2009, S2010]
 status: complete
 ---

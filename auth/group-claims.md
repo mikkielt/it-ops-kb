@@ -2,7 +2,7 @@
 topic: auth/group-claims
 priority: P1
 applies_to: "Microsoft Entra ID token claims (docs current 2026-09-24)"
-retrieved_utc: 2026-09-24
+retrieved_utc: 2026-09-26
 sources: [S1310, S1284, S1285]
 status: partial
 ---

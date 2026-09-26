@@ -2,7 +2,7 @@
 topic: defender/permissions-limits
 priority: P1
 applies_to: "Microsoft Defender for Endpoint API v1.0, docs 2020-12-18 .. 2026-06-28"
-retrieved_utc: 2026-09-24
+retrieved_utc: 2026-09-26
 sources: [S621, S622, S623, S624, S625, S626]
 status: complete
 ---

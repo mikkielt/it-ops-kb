@@ -2,7 +2,7 @@
 topic: arch/docs-home-options
 priority: P1
 applies_to: [gitlab-pages, mkdocs]
-retrieved_utc: 2026-09-24
+retrieved_utc: 2026-09-26
 sources: [S1730, S1731, S1732, S1733]
 status: complete
 ---

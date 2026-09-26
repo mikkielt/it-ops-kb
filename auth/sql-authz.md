@@ -2,7 +2,7 @@
 topic: auth/sql-authz
 priority: P0
 applies_to: "SQL Server 2022/2025, extends sqlserver/"
-retrieved_utc: 2026-09-25
+retrieved_utc: 2026-09-26
 sources: [S1206, S1207]
 status: partial
 ---

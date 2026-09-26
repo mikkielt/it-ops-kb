@@ -2,7 +2,7 @@
 topic: mecm/compliance-script-ci
 priority: P0
 applies_to: "ConfigMgr current branch 2603 (docs at MicrosoftDocs/memdocs 4b5429df)"
-retrieved_utc: 2026-09-23
+retrieved_utc: 2026-09-26
 sources: [S-mmydokhp, S-pm6pjuef, S-nejxr76b, S-5lqbi3py, S-j2tke6bb, S-7s2aa2cm, S1520]
 status: partial
 ---

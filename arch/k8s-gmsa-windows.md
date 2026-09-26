@@ -2,7 +2,7 @@
 topic: arch/k8s-gmsa-windows
 priority: P1
 applies_to: "Kubernetes (kubernetes.io, stable since v1.18), Windows containers (Windows Server 2019+), AKS/AKS Arc (docs current 2026-09-24)"
-retrieved_utc: 2026-09-24
+retrieved_utc: 2026-09-26
 sources: [S1600, S1601, S1602, S1603]
 status: complete
 ---

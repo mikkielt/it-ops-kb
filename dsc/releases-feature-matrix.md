@@ -2,7 +2,7 @@
 topic: dsc/releases-feature-matrix
 priority: P0
 applies_to: "Microsoft DSC 3.0.0 to 3.4.0-preview.1"
-retrieved_utc: 2026-09-25
+retrieved_utc: 2026-09-26
 sources: [S110, S111, S112, S113, S114, S115, S116, S117, S118, S119, S120, S121, S122, S129, S130, S131, S132, S133, S134, S143, S144, S-mmshotst]
 status: complete
 ---

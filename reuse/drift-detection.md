@@ -2,7 +2,7 @@
 topic: reuse/drift-detection
 priority: P2
 applies_to: "detecting configuration drift with DSC v3 in test (report-only) mode via ConfigMgr baselines, with remediation left off"
-retrieved_utc: 2026-09-24
+retrieved_utc: 2026-09-26
 sources: [S1008, S1009, S1010, S1104]
 status: complete
 ---

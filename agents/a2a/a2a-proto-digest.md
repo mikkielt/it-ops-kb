@@ -2,7 +2,7 @@
 topic: agents/a2a/a2a-proto-digest
 priority: P2
 applies_to: "A2A protocol spec v1.0.0 (proto, commit 43e0c874d3baba68ed84b98678d7f2268438e69f)"
-retrieved_utc: 2026-09-25
+retrieved_utc: 2026-09-26
 sources: [S2120, S2121, S2122]
 status: complete
 ---

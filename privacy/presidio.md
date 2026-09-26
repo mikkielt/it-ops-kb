@@ -2,7 +2,7 @@
 topic: privacy/presidio
 priority: P0
 applies_to: "Presidio 2.2.364 (latest release) and main @ e9895a5 (2026-09-23)"
-retrieved_utc: 2026-09-25
+retrieved_utc: 2026-09-26
 sources: [S800, S801, S802, S803, S804, S805, S806, S807, S808, S809, S834, S842]
 status: complete
 ---

@@ -2,7 +2,7 @@
 topic: intune/co-management
 priority: P1
 applies_to: "ConfigMgr current branch (docs in memdocs intune/configmgr/comanage), Intune service 2026-09"
-retrieved_utc: 2026-09-24
+retrieved_utc: 2026-09-26
 sources: [S1593, S-evoxmu7g, S-4u7zysla, S-ygo5rdrm, S-plmd2yke]
 status: complete
 ---

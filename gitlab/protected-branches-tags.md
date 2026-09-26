@@ -2,7 +2,7 @@
 topic: gitlab/protected-branches-tags
 priority: P0
 applies_to: "GitLab 19.5 docs (master @56c82a97)"
-retrieved_utc: 2026-09-25
+retrieved_utc: 2026-09-26
 sources: [S444, S445, S446]
 status: complete
 ---

@@ -2,7 +2,7 @@
 topic: dsc/settings-and-paths
 priority: P0
 applies_to: "Microsoft DSC 3.3.0 (release/v3.3 @ ea572fa)"
-retrieved_utc: 2026-09-23
+retrieved_utc: 2026-09-26
 sources: [S101, S106, S107, S114, S126, S127, S128]
 status: complete
 ---

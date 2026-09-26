@@ -2,7 +2,7 @@
 topic: agents/agent-rbac
 priority: P1
 applies_to: "MCP specification draft (post 2026-07-28), Claude Code 2.1.x, Microsoft Entra Agent ID (public preview, 2026-03 docs), Microsoft Entra role-assignable groups / PIM for Groups"
-retrieved_utc: 2026-09-25
+retrieved_utc: 2026-09-26
 sources: [S707, S1282, S1297, S2040, S2041, S2042, S2045, S2050, S2051, S2052, S2053, S2058]
 status: complete
 ---

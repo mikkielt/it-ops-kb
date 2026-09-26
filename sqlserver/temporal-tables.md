@@ -2,7 +2,7 @@
 topic: sqlserver/temporal-tables
 priority: P0
 applies_to: "SQL Server 2016-2025 (Windows and Linux), Azure SQL Database, Azure SQL Managed Instance"
-retrieved_utc: 2026-09-25
+retrieved_utc: 2026-09-26
 sources: [S460, S461, S462, S463, S464, S465, S466]
 status: complete
 ---

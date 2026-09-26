@@ -2,7 +2,7 @@
 topic: security/privacy-compliance
 priority: P2
 applies_to: "GDPR; EDPB WP248 rev.01; UODO; NIS2 (Directive + Polish KSC amendment); DORA; EU AI Act, as of 2026-09-24"
-retrieved_utc: 2026-09-24
+retrieved_utc: 2026-09-26
 sources: [S870, S1542, S-xvc5ligo, S1550, S-5jbvhlmx, S1552, S1553, S1554, S1555, S1556, S1557, S1558, S1559, S-qzdkyvqx]
 status: partial
 ---

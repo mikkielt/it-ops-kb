@@ -2,7 +2,7 @@
 topic: arch/sql-auth-containers
 priority: P1
 applies_to: "SQL Server 2022/2025, ODBC Driver 18 for SQL Server, Azure Arc-enabled SQL Server (docs current 2026-09-24)"
-retrieved_utc: 2026-09-25
+retrieved_utc: 2026-09-26
 sources: [S1605, S1206, S1207, S1610]
 status: complete
 ---

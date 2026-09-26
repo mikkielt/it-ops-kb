@@ -2,7 +2,7 @@
 topic: intune/device-query
 priority: P1
 applies_to: "Intune Advanced Analytics, docs ms.date 2026-09-01"
-retrieved_utc: 2026-09-24
+retrieved_utc: 2026-09-26
 sources: [S-oaxxx7xc, S-x35diqus, S-dlqk4ney, S-fol5b2wh]
 status: complete
 ---

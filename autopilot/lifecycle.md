@@ -2,7 +2,7 @@
 topic: autopilot/lifecycle
 priority: P1
 applies_to: "Windows Autopilot (Learn registration-overview, Deregister a device; updated_at 2026-06-22)"
-retrieved_utc: 2026-09-24
+retrieved_utc: 2026-09-26
 sources: [S-jjyryhyn, S-eh54w6el, S-wdnd3vuz, S545, S523]
 status: complete
 ---

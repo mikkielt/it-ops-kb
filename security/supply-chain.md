@@ -2,7 +2,7 @@
 topic: security/supply-chain
 priority: P1
 applies_to: "a Python 3.13 package built with uv; GitLab self-managed CI/CD"
-retrieved_utc: 2026-09-24
+retrieved_utc: 2026-09-26
 sources: [S1501, S1502, S-paztzzud, S1504, S1505, S1506, S1507, S1508, S1509, S1510, S1511, S1512, S1517, S1522, S1523, S1524, S1525, S1597, S-sxp3exzp]
 status: partial
 ---

@@ -2,7 +2,7 @@
 topic: mecm/sql-views-compliance
 priority: P0
 applies_to: "ConfigMgr current branch 2603 (SQL views docs ms.date 2019-04-30, memdocs 4b5429df)"
-retrieved_utc: 2026-09-23
+retrieved_utc: 2026-09-26
 sources: [S-mmydokhp, S-tnbxhz6o, S-7hxddhnw, S-6qn22dge, S-qqxrnbd5, S-ava6e5jq, S-rljokguo, S-6war5y2t, S234]
 status: partial
 ---

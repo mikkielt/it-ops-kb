@@ -2,7 +2,7 @@
 topic: dsc/open-bugs-windows
 priority: P0
 applies_to: "PowerShell/DSC GitHub issues, state=open, label Issue-Bug, snapshot 2026-09-23, re-checked 2026-09-26"
-retrieved_utc: 2026-09-23
+retrieved_utc: 2026-09-26
 sources: [S126]
 status: complete
 files: [dsc/open-bugs.csv]

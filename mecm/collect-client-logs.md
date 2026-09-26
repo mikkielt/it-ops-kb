@@ -2,7 +2,7 @@
 topic: mecm/collect-client-logs
 priority: P2
 applies_to: "ConfigMgr current branch 2603 (memdocs 4b5429df)"
-retrieved_utc: 2026-09-23
+retrieved_utc: 2026-09-26
 sources: [S-hmjlvsck, S-a2vstihu, S-lsjjopsz, S-pzvndq5z, S-mt7k74n7, S-iqjy5rwm]
 status: partial
 ---

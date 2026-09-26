@@ -2,7 +2,7 @@
 topic: ansible/windows-ssh
 priority: P3
 applies_to: "Ansible docs 'latest' (ansible-core 2.18+), retrieved 2026-09-23"
-retrieved_utc: 2026-09-23
+retrieved_utc: 2026-09-26
 sources: [S933]
 status: complete
 ---

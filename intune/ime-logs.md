@@ -2,7 +2,7 @@
 topic: intune/ime-logs
 priority: P1
 applies_to: "Intune Management Extension 1.58.103.0+, doc ms.date 2026-09-24"
-retrieved_utc: 2026-09-24
+retrieved_utc: 2026-09-26
 sources: [S-ta4g5get]
 status: complete
 ---

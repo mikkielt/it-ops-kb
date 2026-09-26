@@ -2,7 +2,7 @@
 topic: ansible/dsc3-module
 priority: P3
 applies_to: "ansible.windows collection 3.8.0 (dsc3 added in 3.4.0)"
-retrieved_utc: 2026-09-23
+retrieved_utc: 2026-09-26
 sources: [S930, S931, S932, S934, S935]
 status: complete
 ---

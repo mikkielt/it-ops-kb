@@ -2,7 +2,7 @@
 topic: mecm/versions-lifecycle
 priority: P0
 applies_to: "ConfigMgr current branch 2603 (latest as of memdocs 4b5429df, 2026-09-02)"
-retrieved_utc: 2026-09-23
+retrieved_utc: 2026-09-26
 sources: [S-334svlym, S-qfo4gvbb, S-qhlzdpie, S-ebuvm65r, S-actyzzlw]
 status: complete
 ---

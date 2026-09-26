@@ -2,7 +2,7 @@
 topic: agents/agent-error-catalogue
 priority: P1
 applies_to: "Claude API/Claude Code as documented 2026-09-25; extends claude/tool-output-limits.md"
-retrieved_utc: 2026-09-25
+retrieved_utc: 2026-09-26
 sources: [S1847, S1857, S1858, S1855, S1861, S1862, S1864, S1842, S1843, S1865, S1867, S1869, S1860, S1850, S-qso6o6wu]
 status: partial
 ---

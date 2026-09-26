@@ -2,7 +2,7 @@
 topic: intune/remediations
 priority: P1
 applies_to: "Intune service, docs ms.date 2025-09-08 / 2025-10-02 / 2026-04-07"
-retrieved_utc: 2026-09-24
+retrieved_utc: 2026-09-26
 sources: [S-dhhu3szl, S-a3au6nfp, S-ta4g5get]
 status: partial
 ---

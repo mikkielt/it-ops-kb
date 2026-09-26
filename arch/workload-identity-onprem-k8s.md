@@ -2,7 +2,7 @@
 topic: arch/workload-identity-onprem-k8s
 priority: P1
 applies_to: "Microsoft Entra Workload ID, Azure Arc-enabled Kubernetes (preview), SQL Server 2022/2025 Arc (docs current 2026-09-24)"
-retrieved_utc: 2026-09-24
+retrieved_utc: 2026-09-26
 sources: [S1609, S1206, S1207]
 status: complete
 ---

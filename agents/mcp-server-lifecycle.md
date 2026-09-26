@@ -2,7 +2,7 @@
 topic: agents/mcp-server-lifecycle
 priority: P2
 applies_to: "MCP specification 2026-07-28; modelcontextprotocol/registry (preview, API freeze v0.1 since 2025-10-24)"
-retrieved_utc: 2026-09-25
+retrieved_utc: 2026-09-26
 sources: [S2135, S2012]
 status: partial
 ---

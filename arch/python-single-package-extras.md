@@ -2,7 +2,7 @@
 topic: arch/python-single-package-extras
 priority: P1
 applies_to: [python, uv]
-retrieved_utc: 2026-09-24
+retrieved_utc: 2026-09-26
 sources: [S1705, S1706, S1707, S1708, S1522]
 status: complete
 ---

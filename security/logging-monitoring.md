@@ -2,7 +2,7 @@
 topic: security/logging-monitoring
 priority: P1
 applies_to: "an audit table (SQL Server, temporal); normalized device logs via ConfigMgr; Claude Code OTel"
-retrieved_utc: 2026-09-24
+retrieved_utc: 2026-09-26
 sources: [S1492, S1493, S1494, S1495, S1496, S1497, S1498, S1499, S743, S1526, S1527, S1528, S1529]
 status: partial
 ---

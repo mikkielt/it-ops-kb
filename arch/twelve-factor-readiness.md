@@ -2,7 +2,7 @@
 topic: arch/twelve-factor-readiness
 priority: P1
 applies_to: [twelve-factor, kubernetes, python]
-retrieved_utc: 2026-09-24
+retrieved_utc: 2026-09-26
 sources: [S1718, S1719, S1720, S1721, S1722, S1723, S1724, S1725, S1726, S1727, S1728, S1729]
 status: complete
 ---

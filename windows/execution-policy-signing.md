@@ -2,7 +2,7 @@
 topic: windows/execution-policy-signing
 priority: P0
 applies_to: "Windows PowerShell 5.1, PowerShell 7.5; ConfigMgr current branch client settings"
-retrieved_utc: 2026-09-24
+retrieved_utc: 2026-09-26
 sources: [S420, S421, S422, S-pm6pjuef, S1483, S-f26o3j3w, S-2z2zfj3l, S-mmydokhp, S407]
 status: complete
 ---

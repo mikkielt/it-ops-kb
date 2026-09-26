@@ -2,7 +2,7 @@
 topic: reuse/pseudonymization-tokenization
 priority: P2
 applies_to: "a model-boundary pseudonymization layer: schema-aware tokenizing, strict restore, token kinds"
-retrieved_utc: 2026-09-25
+retrieved_utc: 2026-09-26
 sources: [S1005, S1006, S1007]
 status: complete
 ---

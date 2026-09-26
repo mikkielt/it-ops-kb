@@ -2,7 +2,7 @@
 topic: gitlab/pipelines-rules
 priority: P0
 applies_to: "GitLab 19.5 docs (master @56c82a97)"
-retrieved_utc: 2026-09-25
+retrieved_utc: 2026-09-26
 sources: [S446, S447, S448, S451, S453]
 status: complete
 ---

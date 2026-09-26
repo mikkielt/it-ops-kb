@@ -2,7 +2,7 @@
 topic: prior-art/tiered-approval-ops
 priority: P2
 applies_to: "a small numbered tier scheme, tiers >=2 always confirmed"
-retrieved_utc: 2026-09-24
+retrieved_utc: 2026-09-26
 sources: [S1015, S1016, S1017, S1018]
 status: partial
 ---

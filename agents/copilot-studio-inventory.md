@@ -2,7 +2,7 @@
 topic: agents/copilot-studio-inventory
 priority: P1
 applies_to: "Microsoft Copilot Studio (standard harness, GitHub Copilot harness, Copilot chat harness), docs current 2026-09-25"
-retrieved_utc: 2026-09-25
+retrieved_utc: 2026-09-26
 sources: [S1960, S1961, S1962, S1963, S1964, S1965, S1966, S1967, S1972, S1973, S1974, S1975, S1977, S1978, S1979, S1980, S1981, S1982, S1983, S1984]
 status: complete
 files: [agents/copilot-studio-feature-map.csv]

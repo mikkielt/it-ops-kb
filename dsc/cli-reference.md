@@ -2,7 +2,7 @@
 topic: dsc/cli-reference
 priority: P0
 applies_to: "Microsoft DSC 3.3.0 (binary --help output; source release/v3.3 @ ea572fa)"
-retrieved_utc: 2026-09-25
+retrieved_utc: 2026-09-26
 sources: [S100, S101, S116, S117, S118, S128, S135, S136, S141, S-mmshotst]
 status: complete
 files: [dsc/cli/]

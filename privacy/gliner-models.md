@@ -2,7 +2,7 @@
 topic: privacy/gliner-models
 priority: P0
 applies_to: "HF model repos at the pinned shas in gliner-models.csv"
-retrieved_utc: 2026-09-23
+retrieved_utc: 2026-09-26
 sources: [S855, S856, S857, S858, S859, S860]
 status: partial
 ---

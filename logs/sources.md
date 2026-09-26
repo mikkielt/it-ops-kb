@@ -2,7 +2,7 @@
 topic: logs/sources
 priority: P1
 applies_to: "Windows 10/11, ConfigMgr current branch, Intune, Autopilot, Entra ID (docs 2021-2026)"
-retrieved_utc: 2026-09-24
+retrieved_utc: 2026-09-26
 sources: [S-ygo5rdrm, S-6q3ioupn, S-ta4g5get, S-6epv7qzl, S617, S618, S-fzoar2ya, S632, S633, S634, S635, S636, S637, S638, S648, S-d3ml3kug]
 status: partial
 ---

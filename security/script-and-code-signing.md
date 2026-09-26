@@ -2,7 +2,7 @@
 topic: security/script-and-code-signing
 priority: P1
 applies_to: "PowerShell 5.1/7.5 under ConfigMgr AllSigned; DSC v3.3.0/3.4.0-preview.1; WDAC/App Control"
-retrieved_utc: 2026-09-24
+retrieved_utc: 2026-09-26
 sources: [S1513, S1514, S1515, S-utrhfg57, S1517, S1518, S1519]
 status: partial
 ---

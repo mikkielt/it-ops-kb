@@ -2,7 +2,7 @@
 topic: auth/delegation-kcd-obo
 priority: P2
 applies_to: "Entra OBO, Kerberos constrained/resource-based delegation, Entra Application Proxy + KCD, MCP authorization 2026-07-28, Teams bot SSO (docs current 2026-09-24)"
-retrieved_utc: 2026-09-24
+retrieved_utc: 2026-09-26
 sources: [S1297, S1298, S1299, S1300, S1301]
 status: partial
 ---

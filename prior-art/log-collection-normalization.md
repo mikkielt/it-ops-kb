@@ -2,7 +2,7 @@
 topic: prior-art/log-collection-normalization
 priority: P2
 applies_to: "reading CMTrace/CCM logs and Windows event logs via ConfigMgr"
-retrieved_utc: 2026-09-25
+retrieved_utc: 2026-09-26
 sources: [S1020, S1021]
 status: partial
 ---

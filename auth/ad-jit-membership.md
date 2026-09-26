@@ -2,7 +2,7 @@
 topic: auth/ad-jit-membership
 priority: P1
 applies_to: "AD DS PAM optional feature (Windows Server 2016 forest functional level+)"
-retrieved_utc: 2026-09-24
+retrieved_utc: 2026-09-26
 sources: [S1211, S1219]
 status: complete
 ---

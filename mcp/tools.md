@@ -2,7 +2,7 @@
 topic: mcp/tools
 priority: P1
 applies_to: "MCP specification 2026-07-28; MCP Python SDK 2.2.0"
-retrieved_utc: 2026-09-25
+retrieved_utc: 2026-09-26
 sources: [S708, S711, S701, S710, S725, S726, S736]
 status: complete
 ---

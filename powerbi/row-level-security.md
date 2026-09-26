@@ -2,7 +2,7 @@
 topic: powerbi/row-level-security
 priority: P2
 applies_to: "Power BI service / Desktop, docs retrieved 2026-09-23"
-retrieved_utc: 2026-09-23
+retrieved_utc: 2026-09-26
 sources: [S910, S908]
 status: complete
 ---
