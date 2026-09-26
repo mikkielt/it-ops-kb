@@ -395,3 +395,99 @@ The two pilot misses are not expansion failures:
 - **Do not expand the whole kb now.** The confirmed gain is too small for about 13k generated questions and their upkeep.
 - **Keep the two pilot rounds' expansions.** They cost nothing at query time and made packs slightly smaller.
 - **Revisit with real misses.** Add failed real-world lookups to `_tools/lookup_eval.csv`. If paraphrase misses show up there, expand only the affected articles (`doc2query.py batch`, then `ingest`).
+
+## Agent benchmark and routing (2026-09-26)
+
+Question: which model and which hand-off pattern answers kb lookups cheapest and fastest, from a single fact to a
+multi-stage lookup that needs the live docs, and can a cheap model (Haiku) act as the router or manager?
+
+### Method
+
+- `_tools/agent_bench.py` runs one headless `claude -p` (Claude Code 2.1.283, this clone, the user's plugins loaded)
+  per scenario and config and records the result event: cost, wall time, turns, cache-write and cache-read input
+  tokens, tool calls of the main session and of subagents, and a regex check per expected answer element.
+- 7 scenarios: s1 one fact (LAPS password length), s2 one fact from a data row (Delivery Optimization port), s3 three
+  parts, s4 a count (partial intune articles), s5 off-domain (EKS autoscaler: must say not covered), s6 a false `good`
+  (GPO Central Store: the pack matched `windows/winget.md` word by word), s7 not in the kb (KRBTGT reset: live docs).
+- 76 runs in total. Costs are list prices from the result event. Cache state matters: the first run of a prompt
+  writes the cache (about 11k-34k tokens), a repeat reads it.
+
+### Deterministic layer (no model)
+
+| path | measured |
+|---|---|
+| `pack`, in process, warm | 3 ms median, 4.5 ms p95 (eval set) |
+| `rag.py pack` / `kb:` hook, cold process | 0.03-0.04 s |
+| index rebuild after an edit | 1.4 s, once |
+| MCP server: start / `tools/list` / `kb_pack` | 32 ms / <1 ms / 1-12 ms |
+| 1,000 random packs / 16 concurrent cold CLI packs / a 2,000-word question | 3.3 s / 0.13 s / 52 ms |
+| stress suite / full tests | 83 cases in 15 s / 121 tests in 17 s |
+
+The tools are not the bottleneck: a lookup's time and cost are the model's.
+
+### Models answering alone (first run of each prompt)
+
+| scenario | Haiku | Sonnet | Opus | Opus + Haiku kb-lookup agent |
+|---|---|---|---|---|
+| s1 one fact | $0.031, 9 s | $0.143, 7 s | $0.286, 12 s | $0.204, 25 s |
+| s2 data row | $0.030, 14 s | $0.094, 12 s | $0.184, 10 s | - |
+| s3 three parts | $0.036, 10 s | $0.112, 12 s | $0.231, 16 s | $0.219, 33 s |
+| s4 count | $0.030, 14 s | $0.087, 7 s | $0.183, 12 s | $0.213, 31 s |
+| s5 off-domain | $0.024-0.029, 9-12 s | $0.087, 8 s | $0.184, 15 s | - |
+| s6 false good + live docs | $0.034-0.051, 21-24 s | $0.199-0.247, 19-21 s | $0.290, 31 s | $0.365, 80 s |
+| s7 live docs | $0.047-0.053, 16-17 s | $0.139-0.153, 16-20 s | $0.272, 23 s | $0.313, 48 s |
+
+- Every run passed its checks. Quality differed where the model had to judge or synthesize: only Opus said that s6's
+  `good` was a false match (it re-packed within `gpo`); Haiku once answered s5 without calling the kb at all, and its
+  s7 synthesis added a wrong reason for the double reset.
+- Handing the lookup to the Haiku `kb-lookup` agent never saved money (the Opus session still pays its own start)
+  and took 2-3 times as long. The guidance now says: several parts go in one `kb_pack` with `questions`; the agent
+  only for long research whose output would fill the caller's context.
+
+### Haiku as the manager
+
+- `haiku+escalate` (Haiku main session, told to hand live-docs work to a Sonnet agent): it handed off in 1 of 4 hard
+  runs and researched itself in the others. The one hand-off cost $0.119 against Sonnet alone at $0.199-0.247.
+- `+strict` (the docs tools denied so Haiku must hand off): the deny also reaches the subagent, so Haiku fell back to a
+  general-purpose agent: $0.24-0.26 and 139-175 s for s7.
+- Conclusion: a model told to route does not route reliably, and a tool deny cannot be scoped to the main session.
+
+### Routing by verdict: `_tools/kb_ask.py`
+
+The router is the pack's verdict (0 tokens, milliseconds). `good`: Haiku with the pack in the prompt, so it answers in
+one turn without a tool call; `weak` or `none`: Sonnet with the pack and the live-docs tools. Both keep the docs tools,
+so a false `good` can still be researched.
+
+| scenario | first run | repeat (cache warm) |
+|---|---|---|
+| s1 one fact | $0.028, 7 s (Haiku) | $0.005, 7 s |
+| s2 data row | $0.027, 9 s (Haiku) | $0.004, 6 s |
+| s3 three parts in one sentence | $0.121, 12 s (Sonnet: `weak`) | $0.039, 12 s |
+| s4 count | $0.098, 10 s (Sonnet: `weak`) | $0.020, 8 s |
+| s5 off-domain | $0.084, 7 s (Sonnet) | $0.008, 7 s |
+| s6 Central Store (article added in this run) | $0.027, 9 s (Haiku) | $0.008, 12 s |
+| s7 KRBTGT (article added in this run) | $0.094, 9 s (Sonnet: `weak`) | $0.016, 10 s |
+
+Against Opus alone on the same scenarios ($0.18-0.29 first run): 3-10 times cheaper on the first run and up to 50
+times on a repeat, at equal or lower wall time, with every check passing.
+
+### Changes made from these measurements
+
+- `kb_ask.py` (new) and its test; `agent_bench.py` (new) to repeat the measurement.
+- Request words (`answer`, `citation`, `please`, `explain`, `safely`, ...) are pack stop words: "What is the default
+  LAPS password length? Answer from the kb with citation." was `weak` (2 of 6 key words "missing") and routed to
+  Sonnet; it is `good` now (eval row `EV-please-answer-citations-default-windows-laps`). Index version 3.
+- `pack_many` with 3-6 parts gives each part 2 x budget / n tokens, at least 800: 800 keep 98% of the expected
+  article's fact lines that 1200 print, and a 6-part pack drops from 21.4k to 16.4k characters.
+- New articles for the two gaps the benchmark hit: `ad/krbtgt-password-reset`, `gpo/admx-central-store` (Sonnet
+  writers, Microsoft Learn sources, 2 `UNK` each in `_gaps.md`), with eval rows.
+- A regression found by the stress suite on macOS: `rag.py search` no longer warned about an unreadable file after
+  the one-engine change (CI runs as root, where the case is skipped). `kbfacts.units` warns again.
+
+### Not solved
+
+- A false `good` (the verdict counts key words anywhere in the best article, not meaning). A phrase rule (a question
+  bigram the kb knows elsewhere but the best article lacks) missed the Central Store case and demoted 4 true `good`
+  eval questions, so it was dropped. Opus catches these; Haiku mostly does not.
+- Multi-part questions written as one sentence and count questions come out `weak` and go to Sonnet. Splitting parts
+  and sending counts to `rag.py audit` before routing would keep them on Haiku.

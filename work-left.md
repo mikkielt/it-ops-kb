@@ -2,6 +2,16 @@
 
 `main` on GitHub (remote `claude`) now holds everything below plus the 2026-09-26 expansion (section 0); the session branch `claude/relaxed-keller-e8qyl3` was merged and deleted. GitLab `origin/main` has not received these commits. Done and committed: task 6 (sync fixes, the 6b replay as a test), task 7 (plugin, `kb` MCP server, runbook), the research-skill fixes, and the census tooling (`/kb-census`, `_tools/census.py`); see `git log`. Still open:
 
+## B. Agent benchmark and routing (2026-09-26)
+Done: 76 headless runs across 7 scenarios and 6 configs (`token-usage-report.md`, "Agent benchmark and routing");
+`_tools/kb_ask.py` routes by the pack verdict (good: Haiku, weak/none: Sonnet), request words are stop words,
+3+ part packs share the budget, two new articles (`ad/krbtgt-password-reset`, `gpo/admx-central-store`).
+Open:
+- False `good` verdicts (words matched anywhere in an unrelated article): no lexical fix found; see the report.
+- `kb_ask.py`: split multi-part sentences and send count questions to `rag.py audit` before routing, so they stay on
+  Haiku; the plugin has no `kb_ask` path yet (it needs the `claude` CLI, so it is a clone/shell tool).
+- The 4 new `UNK` items in `_gaps.md` (New-KrbtgtKeys status, a reset cadence, GPMC store choice, DFSR vs FRS).
+
 ## T. `_tools` efficiency plan (`plan-tooling-efficiency.md`)
 Done 2026-09-26: persisted pack index (cold `pack` and the `kb:` hook about 0.06 s, `eval` 0.7 s), one engine
 (`search` on the same index, 0.05 s), shared helpers, batched trailer audit, legacy merge paths retired, pytest suite
