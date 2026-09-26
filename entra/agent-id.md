@@ -3,7 +3,7 @@ topic: entra/agent-id
 priority: P1
 applies_to: "Microsoft Entra Agent ID (public preview, docs current 2026-09-26), Microsoft Agent 365, Microsoft Graph v1.0 agentIdentityBlueprint/agentIdentity resources, Microsoft Copilot Studio (agent identity integration since 2026-03-18), Microsoft Foundry"
 retrieved_utc: 2026-09-26
-sources: [S2040, S-fdnhk2tn, S-lekwizgd, S-nzxr4eg2, S-midck7u4, S-735ghpq5, S-5yopk2hr, S-q6lirjr2, S-uva2ob4g]
+sources: [S2040, S-fdnhk2tn, S-lekwizgd, S-nzxr4eg2, S-midck7u4, S-735ghpq5, S-5yopk2hr, S-q6lirjr2, S-uva2ob4g, S-l4557zht]
 status: partial
 ---
 
@@ -186,6 +186,16 @@ products create them automatically.
   recreate-and-deprecate (build a new Agent-ID-backed agent, then decommission the legacy one). [DOC
   S-q6lirjr2]
 - Deleting a Copilot Studio agent also deletes its associated Entra Agent ID. [DOC S-q6lirjr2]
+- Each Copilot Studio Entra Agent ID is provisioned as a directory object at agent-**creation** time and
+  counts against the tenant's Microsoft Entra directory-object quota: **50,000** objects by default, or
+  **300,000** if the tenant has a verified domain (a tenant created through self-service sign-up stays at
+  50,000 even after verifying a domain); agent identities plus all other Entra resources can use no more
+  than **95%** of this quota. If the tenant is at quota when an agent is created, Copilot Studio can't
+  provision the Agent ID and agent creation fails. [DOC S-l4557zht]
+- Agent IDs are Entra service principals with an "Agent" subtype using the same OAuth-based authentication
+  flow as a standard app registration; when an existing app-registration agent is migrated, its GUID is
+  preserved (no breaking change) and migration is zero-downtime with no manual action required. [DOC
+  S-l4557zht]
 - **Microsoft Teams**: developers create and manage agent identity blueprints via the Teams Developer
   Portal. [DOC S-midck7u4]
 - **Microsoft Agent 365** itself gives every AI agent its own Entra Agent ID for identity, lifecycle, and
