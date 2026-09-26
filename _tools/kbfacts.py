@@ -28,8 +28,10 @@ that finds an index file for the current fingerprint (sha1 over path, mtime and 
 reads only the postings of the question's words from it (stdlib sqlite3); otherwise it builds the corpus, answers
 from memory and saves the index for the next process. Output is identical either way: scores are summed in the same
 term order per unit and ties keep corpus order. Where the file goes: `index_path()`.
+The same index serves `search()` (rag.py search, kb_search): the corpus also holds untagged prose paragraphs, and at
+its end the root index files (INDEX_FILES), which only a search with `index` sees.
 """
-import array, csv, functools, hashlib, io, json, math, os, re, sqlite3, sys, tempfile, threading, time
+import array, bisect, csv, functools, hashlib, io, json, math, os, re, sqlite3, sys, tempfile, threading, time
 from collections import Counter, defaultdict
 
 TOOLS = os.path.dirname(os.path.abspath(__file__))
@@ -96,6 +98,9 @@ def is_article(text):
     return text.startswith("---\n") and "\ntopic:" in text.split("\n---", 2)[0]
 
 
+INDEX_FILES = ("README.md", "_answers.md", "_gaps.md", "_conflicts.md", "_coverage.csv")  # searched with --index only
+
+
 def kb_files(exts=(".md", ".csv")):
     """Domain files (not the root index files), sorted."""
     for root, dirs, files in os.walk(KB):
@@ -120,7 +125,7 @@ def fingerprint():
     if _FP[1] is not None and now - _FP[0] < FP_MEMO:
         return _FP[1]
     h = hashlib.sha1(f"{INDEX_VERSION}|{os.environ.get('KB_DOC2QUERY', '')}".encode())
-    extra = ["_sources.csv", "_gaps.md", "_conflicts.md", "_answers.md", "_tools/aliases.csv", "_tools/signals.csv",
+    extra = ["_sources.csv", *INDEX_FILES, "_tools/aliases.csv", "_tools/signals.csv",
              "_tools/doc2query/expansions.csv", "_tools/kbfacts.py", "_tools/kbid.py"]
     for rel in list(kb_files()) + extra:
         try:
@@ -173,9 +178,9 @@ def topic_files():
 
 def md_units(rel, text, untagged=False):
     """Fact units of one article: bullets (with continuation lines), table rows and tagged paragraph lines. With
-    `untagged`, also the bullets and table rows that carry no tag (Summary, Reference and Examples content; table
-    header and separator rows excluded) and each fenced code block as one unit (line = its first line), with
-    tags=[]: pack searches them, fact counts never include them."""
+    `untagged`, also the bullets, table rows and prose paragraphs that carry no tag (Summary, Reference and Examples
+    content; table header and separator rows excluded) and each fenced code block as one unit (line = its first
+    line), with tags=[]: pack and search rank them, fact counts never include them."""
     lines = text.splitlines()
     body = lines.index("---", 1) + 1 if lines[:1] == ["---"] and "---" in lines[1:] else 0
     section, cur, fenced, block = "", None, False, None
@@ -190,6 +195,9 @@ def md_units(rel, text, untagged=False):
             if not (cur["text"].startswith("|") and re.fullmatch(r"\s*\|[\s:|-]+\|?\s*", nxt)):  # a header row
                 cur["tags"] = []
                 units.append(cur)
+        elif cur and untagged and not cur.get("list"):  # a prose paragraph
+            cur["tags"] = []
+            units.append(cur)
 
     for n, ln in enumerate(lines, start=1):
         if n <= body:
@@ -260,7 +268,8 @@ def in_prefix(rel, prefix):
 
 def units(prefix=None, with_csv=True, untagged=False):
     """Every fact unit under a path prefix (`auth`, `auth/kerberos`, `auth/kerberos.md`); `untagged` adds the
-    untagged bullets and table rows of articles (csv rows are always all included, tagged or not)."""
+    untagged bullets, table rows and paragraphs of articles, and of the other .md files in the domain directories
+    (csv rows are always all included, tagged or not)."""
     out = []
     exts = (".md", ".csv") if with_csv else (".md",)
     for rel in kb_files(exts):
@@ -270,7 +279,7 @@ def units(prefix=None, with_csv=True, untagged=False):
         if text is None:
             continue
         if rel.endswith(".md"):
-            if is_article(text):
+            if is_article(text) or untagged:
                 out += md_units(rel, text, untagged)
         elif with_csv:
             out += csv_units(rel, text)
@@ -491,10 +500,24 @@ def fact_key(text):
     return hashlib.sha256(" ".join(text.split()).encode()).hexdigest()[:12]
 
 
+def index_units():
+    """Units of the root index files (INDEX_FILES): every bullet, table row, paragraph and data row, tagged or not."""
+    out = []
+    for rel in INDEX_FILES:
+        text = read(rel)
+        if text is not None:
+            out += md_units(rel, text, untagged=True) if rel.endswith(".md") else csv_units(rel, text)
+    for u in out:
+        u["root"] = True
+    return out
+
+
 def _corpus(domain):
     metas = articles()
     exps = expansions()
     us = units(domain, untagged=True)  # untagged rows and lines too: a word the kb has is never "not in the kb"
+    if not domain:
+        us += index_units()  # last, so the pack's view is a prefix of the corpus
     summaries = {}
     for u in us:
         art = u["path"] if u["path"] in metas else u["path"][:-4] + ".md"
@@ -509,7 +532,7 @@ def _corpus(domain):
                 summaries[art] = Counter(terms(summary_text(art)))
             for t, c in summaries[art].items():
                 tf[t] += SUMMARY_WEIGHT * c
-        for q in exps.get(fact_key(u["text"]), ()) if exps and u["tags"] else ():
+        for q in exps.get(fact_key(u["text"]), ()) if exps and u["tags"] and not u.get("root") else ():
             for t in terms(q):
                 tf[t] += EXPANSION_WEIGHT  # ranks the fact for other wordings; never a verdict word (not in own)
         u["tf"] = tf
@@ -518,20 +541,23 @@ def _corpus(domain):
 
 # ---------------------------------------------------------------- the pack index (postings; persisted with sqlite3)
 
-INDEX_VERSION = 1  # bump when the index layout or what goes into a unit's tf/own changes
+INDEX_VERSION = 2  # bump when the index layout or what goes into a unit's tf/own changes
 
 
 class Store:
     """The pack corpus as postings lists. A unit's id is its position in corpus order, so ties in the ranking keep
     the order a full scan would give. `own(t)`: ids of the units whose own words hold t (verdict, df); `tf(t)`:
-    [(id, weighted tf)] in id order (ranking). Per unit: `lens`, `summ` (a Summary unit), `tagged` and `paths`.
-    Units, article metadata and source urls are read only for what a pack prints."""
+    [(id, weighted tf)] in id order (ranking). Per unit: `lens`, `summ` (a Summary unit), `tagged`, `root` (a unit of
+    a root index file; they come last) and `paths`. Units, article metadata and source urls are read only for what a
+    pack or search prints."""
 
-    def __init__(self, fp, lens, summ, tagged, paths, arts, srcs):
+    def __init__(self, fp, lens, summ, tagged, paths, arts, srcs, root=None):
         self.fp, self.lens, self.summ, self.tagged, self.paths = fp, lens, summ, tagged, paths
         self.arts, self.srcs = arts, srcs
+        self.root = root if root is not None else [False] * len(lens)
         self.n, self.lensum = len(lens), sum(lens)
-        self._own, self._tf = {}, {}
+        self.n_main = next((i for i, r in enumerate(self.root) if r), len(lens))
+        self._own, self._tf, self._main = {}, {}, None
 
     def own(self, t):
         if t not in self._own:
@@ -543,8 +569,16 @@ class Store:
             self._tf[t] = self._load_tf(t)
         return self._tf[t]
 
-    def view(self, domain):
-        return self if not domain else Subset(self, domain)
+    def view(self, domain, index=False):
+        """The units a pack (or a search) over `domain` sees: a domain's units; else every unit but the root index
+        files'; with `index`, every unit."""
+        if domain:
+            return Subset(self, domain)
+        if index or self.n_main == self.n:
+            return self
+        if self._main is None:
+            self._main = Prefix(self, self.n_main)
+        return self._main
 
 
 class MemStore(Store):
@@ -558,11 +592,15 @@ class MemStore(Store):
             for t, v in u["tf"].items():
                 tfp[t].append((i, v))
         self.own_lists, self.tf_lists, self.us = own, tfp, us
-        metas, rows = articles(), source_rows()
+        metas = articles()
+        try:
+            rows = source_rows()
+        except OSError:  # no _sources.csv: packs print its ids as UNKNOWN, search still works (check.py reports it)
+            rows = {}
         srcs = {k: [r.get("url") or "", (r.get("superseded_by") or "").strip()] for k, r in rows.items()}
         super().__init__(fp, [u["len"] for u in us], [u["section"].startswith("Summary") for u in us],
                          [bool(u["tags"]) for u in us], [u["path"] for u in us],
-                         {k: dict(v) for k, v in metas.items()}, srcs)
+                         {k: dict(v) for k, v in metas.items()}, srcs, [bool(u.get("root")) for u in us])
 
     def _load_own(self, t):
         return set(self.own_lists.get(t, ()))
@@ -589,7 +627,7 @@ class MemStore(Store):
             pathlist = sorted(set(self.paths))
             pix = {p: i for i, p in enumerate(pathlist)}
             meta = {"version": str(INDEX_VERSION), "fp": self.fp, "lens": array.array("I", self.lens).tobytes(),
-                    "flags": bytes(1 * s + 2 * t for s, t in zip(self.summ, self.tagged)),
+                    "flags": bytes(1 * s + 2 * t + 4 * r for s, t, r in zip(self.summ, self.tagged, self.root)),
                     "pathix": array.array("I", (pix[p] for p in self.paths)).tobytes(),
                     "paths": json.dumps(pathlist), "arts": json.dumps(self.arts), "srcs": json.dumps(self.srcs)}
             con.executemany("INSERT INTO meta VALUES (?, ?)", meta.items())
@@ -623,7 +661,7 @@ class SqlStore(Store):
         pathlist = json.loads(m["paths"])
         flags = m["flags"]
         super().__init__(m["fp"], lens.tolist(), [bool(f & 1) for f in flags], [bool(f & 2) for f in flags],
-                         [pathlist[i] for i in pix], json.loads(m["arts"]), json.loads(m["srcs"]))
+                         [pathlist[i] for i in pix], json.loads(m["arts"]), json.loads(m["srcs"]), [bool(f & 4) for f in flags])
         self.lock = threading.Lock()
 
     def _row(self, t):
@@ -660,7 +698,7 @@ class Subset(Store):
     def __init__(self, base, domain):
         self.base, self.keep = base, {i for i, p in enumerate(base.paths) if in_prefix(p, domain)}
         ids = sorted(self.keep)
-        super().__init__(base.fp, base.lens, base.summ, base.tagged, base.paths, base.arts, base.srcs)
+        super().__init__(base.fp, base.lens, base.summ, base.tagged, base.paths, base.arts, base.srcs, base.root)
         self.n, self.lensum = len(ids), sum(base.lens[i] for i in ids)
 
     def _load_own(self, t):
@@ -668,6 +706,24 @@ class Subset(Store):
 
     def _load_tf(self, t):
         return [(i, v) for i, v in self.base.tf(t) if i in self.keep]
+
+    def unit(self, i):
+        return self.base.unit(i)
+
+
+class Prefix(Store):
+    """The first `n` units of a full store (every unit but the root index files'), as a pack over them computes."""
+
+    def __init__(self, base, n):
+        super().__init__(base.fp, base.lens, base.summ, base.tagged, base.paths, base.arts, base.srcs, base.root)
+        self.base, self.n, self.lensum = base, n, sum(base.lens[:n])
+
+    def _load_own(self, t):
+        return {i for i in self.base.own(t) if i < self.n}
+
+    def _load_tf(self, t):
+        lst = self.base.tf(t)
+        return lst[:bisect.bisect_left(lst, (self.n, float("-inf")))]
 
     def unit(self, i):
         return self.base.unit(i)
@@ -697,10 +753,10 @@ _STORE = [None]
 _STORE_LOCK = threading.Lock()
 
 
-def store(domain=None):
+def store(domain=None, index=False):
     """The pack index for the current kb: the one this process holds, else the index file for the current
     fingerprint, else built from corpus() now and saved for the next process (a process that cannot write keeps
-    it in memory). Rebuilt only when a kb file changed."""
+    it in memory). Rebuilt only when a kb file changed. The view: Store.view(domain, index)."""
     fp = fingerprint()
     with _STORE_LOCK:
         st = _STORE[0]
@@ -726,7 +782,84 @@ def store(domain=None):
                     except (OSError, sqlite3.Error):
                         pass
             _STORE[0] = st
-    return st.view(domain)
+    return st.view(domain, index)
+
+
+def rank(st, question):
+    """BM25 over the units of store view `st` for a question: (ranked [(score, unit id)] best first, the question's
+    key words, {key word: ids of the units holding it (alias variants included)}, {key word: that count}).
+    A Summary unit scores 1.15 times, an untagged one UNTAGGED_WEIGHT times; ties keep corpus order."""
+    q = sorted(set(terms(question)))
+    extra, variants = expand(question)
+    whole = set(terms(question, camel=False))
+    weight = {**extra, **{t: 1.0 if t in whole else PART_WEIGHT for t in q}}
+    df = {t: len(st.own(t)) for t in weight}
+    n = max(st.n, 1)
+    avg = st.lensum / n
+    keys = sorted(set(key_terms(question)))
+
+    def has_ids(t):  # the units that hold key word t: itself, or every word of one of its alias variants
+        ids = set(st.own(t))
+        for v in variants.get(t, ()):
+            ids |= set.intersection(*(st.own(x) for x in v))
+        return ids
+
+    holders = {t: has_ids(t) for t in keys}
+    kdf = {t: len(holders[t]) if t in variants or not df.get(t) else df[t] for t in keys}
+    acc = {}
+    for t, w in weight.items():  # the same arithmetic, in the same order per unit, as a scan over every unit
+        if not df[t]:
+            continue
+        idf = math.log(1 + (n - df[t] + 0.5) / (df[t] + 0.5))
+        for i, tf in st.tf(t):
+            acc[i] = acc.get(i, 0.0) + w * idf * tf * 2.2 / (tf + 1.2 * (0.25 + 0.75 * st.lens[i] / avg))
+    ranked = []
+    for i in sorted(acc):
+        s = acc[i]
+        if st.summ[i]:
+            s *= 1.15
+        if not st.tagged[i]:
+            s *= UNTAGGED_WEIGHT
+        ranked.append((s, i))
+    ranked.sort(key=lambda x: -x[0])
+    return ranked, keys, holders, kdf
+
+
+SEARCH_PER_FILE = 2  # hits are lines, not sections: at most this many per file, so k hits span several files
+
+
+def search(query, k=8, domain=None, index=False, notes=None):
+    """The top-k units for a query (rag.py search, kb_search): the pack's ranking over every unit, prose and code
+    blocks included, and with `index` the root index files too; at most SEARCH_PER_FILE hits per file. `notes`, if a list, receives warnings: key words
+    found nowhere in the searched units, or a top hit that holds under half of the informative ones (in fewer than
+    25% of the units)."""
+    st = store(domain, index)
+    ranked, keys, holders, kdf = rank(st, query)
+    hits, per_file = [], Counter()
+    for s, i in ranked:
+        if len(hits) >= k:
+            break
+        if per_file[st.paths[i]] >= SEARCH_PER_FILE:
+            continue
+        per_file[st.paths[i]] += 1
+        u = st.unit(i)
+        matched = sorted(t for t in keys if i in holders[t])
+        heading = u["section"] or (st.arts.get(u["path"]) or {}).get("title") or os.path.basename(u["path"])
+        hits.append({"score": round(s, 2), "path": u["path"], "line": u["line"], "heading": heading, "text": u["text"],
+                     "matched": matched, "sources": sorted(set(ID.findall(u["text"])), key=kbid.sort_key)})
+    if notes is not None:
+        word = {}  # stem -> the query's own word, for the notes
+        for w in WORD.findall(query.lower()):
+            word.setdefault(stem(w), w)
+        missing = [word.get(t, t) for t in keys if not kdf[t]]
+        if missing:
+            notes.append(f"not found anywhere in the searched files: {', '.join(missing)}")
+        informative = {t for t in keys if kdf[t] < 0.25 * max(st.n, 1)}
+        top = set(hits[0]["matched"]) if hits else set()
+        if hits and informative and len(informative & top) * 2 < len(informative):
+            notes.append(f"weak match: the top hit contains {len(informative & top)} of {len(informative)} informative "
+                         f"query words ({', '.join(sorted(word.get(t, t) for t in informative))})")
+    return hits
 
 
 def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", footer=True):
@@ -746,41 +879,10 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
     characters each) and bounds the text. fmt `concise` drops the article flags and the source url footer;
     footer=False leaves the footer out of the text (pack_many prints one shared footer)."""
     st = store(domain)
-    q = sorted(set(terms(question)))
-    extra, variants = expand(question)
-    whole = set(terms(question, camel=False))
-    weight = {**extra, **{t: 1.0 if t in whole else PART_WEIGHT for t in q}}
-    df = {t: len(st.own(t)) for t in weight}
+    ranked, keys, holders, kdf = rank(st, question)
     n = max(st.n, 1)
-    avg = st.lensum / n
-    keys = sorted(set(key_terms(question)))
-
-    def has_ids(t):  # the units that hold key word t: itself, or every word of one of its alias variants
-        ids = set(st.own(t))
-        for v in variants.get(t, ()):
-            ids |= set.intersection(*(st.own(x) for x in v))
-        return ids
-
-    holders = {t: has_ids(t) for t in keys}
-    kdf = {t: len(holders[t]) if t in variants or not df.get(t) else df[t] for t in keys}
     informative = [t for t in keys if kdf[t] < 0.2 * n]
     missing = [t for t in informative if not kdf[t]]
-    acc = {}
-    for t, w in weight.items():  # the same arithmetic, in the same order per unit, as a scan over every unit
-        if not df[t]:
-            continue
-        idf = math.log(1 + (n - df[t] + 0.5) / (df[t] + 0.5))
-        for i, tf in st.tf(t):
-            acc[i] = acc.get(i, 0.0) + w * idf * tf * 2.2 / (tf + 1.2 * (0.25 + 0.75 * st.lens[i] / avg))
-    ranked = []
-    for i in sorted(acc):
-        s = acc[i]
-        if st.summ[i]:
-            s *= 1.15
-        if not st.tagged[i]:
-            s *= UNTAGGED_WEIGHT
-        ranked.append((s, i))
-    ranked.sort(key=lambda x: -x[0])
     scored = [(s, st.unit(i)) for s, i in ranked[:40]]
 
     def has(u, t):

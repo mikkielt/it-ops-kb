@@ -12,7 +12,7 @@ Tools (all read-only; they wrap rag.py and kbfacts.py and read the kb files, nev
              lines grouped by article with path:line and tag, and one footer of the cited sources' urls. Call it first.
              `questions` (1-6) batches the parts of a multi-part question: a section per part, one shared footer.
              Always loaded (`anthropic/alwaysLoad`): the first lookup needs no tool-search round trip.
-  kb_search  BM25 search, like `rag.py search -u`: hits with path:line, heading and text, one footer of the cited
+  kb_search  line search on the pack index, like `rag.py search -u`: hits with path:line, heading and text, one footer of the cited
              source ids and their urls, and rag.py's notes ("not found anywhere", "weak match")
   kb_facts   fact lines under a path prefix, optionally only some tag kinds, like `rag.py facts`
   kb_audit   per article: status, retrieved_utc, fact counts by tag kind, linked gap/conflict entries, like `rag.py audit`
@@ -99,15 +99,15 @@ TOOL_LIST = [
          "additionalProperties": False},
      "annotations": {"title": "Audit articles", **READ_ONLY}},
     {"name": "kb_search", "title": "Search the kb",
-     "description": DOCS + "BM25 search over the kb's articles and data rows. Returns the best chunks with path:line, "
-                    "heading, text and cited source ids (urls with detailed), and notes when the match is weak or words "
+     "description": DOCS + "Search over every line of the kb's articles and data rows (the pack's ranking, at most 2 "
+                    "hits per file). Returns the best lines with path:line, heading, text and cited source ids (urls with detailed), and notes when the match is weak or words "
                     "are found nowhere. Prefer kb_pack.",
      "inputSchema": {"type": "object", "properties": {
          "query": {"type": "string", "description": "3-8 keywords, e.g. 'pim activation latency'"},
          "k": {"type": "integer", "minimum": 1, "maximum": 20, "default": 8, "description": "number of hits"},
          "domain": {"type": "string", "description": "limit to one domain directory, e.g. 'auth' or 'dsc'"},
          "index": {"type": "boolean", "default": False,
-                   "description": "also search the root files: _answers.md, _gaps.md, _conflicts.md, README.md"},
+                   "description": "also search the root files: _answers.md, _gaps.md, _conflicts.md, README.md, _coverage.csv"},
          "response_format": {**FORMAT, "default": "concise"}},
          "required": ["query"], "additionalProperties": False},
      "annotations": {"title": "Search the kb", **READ_ONLY}},

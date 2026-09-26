@@ -290,12 +290,17 @@ class Lookup(unittest.TestCase):
             self.assertIn(want, paths, f"search {query!r}: {paths}")
 
     def test_persisted_index_gives_identical_packs(self):
-        """The sqlite index, the in-memory postings and a domain subset give the same pack, byte for byte; a new
-        fingerprint names a new index file."""
+        """The sqlite index, the in-memory postings and a domain subset give the same pack and search, byte for byte;
+        the root index files never change a pack (the pack's view equals a store without them); a new fingerprint
+        names a new index file."""
         import tempfile, kbfacts
         qs = ["When does NTLMv1 become disabled by default?", "SCCM AdminService Kerberos",
               "what-if US_NPI approximateLastSignInDateTime", "zanzibarquux flibbertigibbet"]
-        mem = kbfacts.MemStore(kbfacts.fingerprint(), kbfacts.corpus())
+        us = kbfacts.corpus()
+        self.assertTrue(any(u.get("root") for u in us) and not any(u.get("root") for u in us[:kbfacts.MemStore(
+            "x", us).n_main]), "root index units come last")
+        mem = kbfacts.MemStore(kbfacts.fingerprint(), us)
+        bare = kbfacts.MemStore(kbfacts.fingerprint(), [u for u in us if not u.get("root")])
         with tempfile.TemporaryDirectory() as d:
             path = os.path.join(d, "kbindex-test.sqlite")
             mem.save(path)
@@ -303,13 +308,17 @@ class Lookup(unittest.TestCase):
             saved = kbfacts._STORE[0]
             try:
                 out = {}
-                for name, st in (("mem", mem), ("sql", sql)):
+                for name, st in (("mem", mem), ("sql", sql), ("bare", bare)):
                     kbfacts._STORE[0] = st
                     out[name] = [kbfacts.pack(q)["text"] for q in qs] + [kbfacts.pack("kerberos spn", domain="auth")["text"]]
+                    if name != "bare":
+                        out[name + "-search"] = [kbfacts.search(q, 8, None, ix) for q in qs for ix in (False, True)]
             finally:
                 kbfacts._STORE[0] = saved
                 sql.con.close()
         self.assertEqual(out["mem"], out["sql"])
+        self.assertEqual(out["mem"], out["bare"])
+        self.assertEqual(out["mem-search"], out["sql-search"])
         self.assertNotEqual(kbfacts.index_path("a" * 40), kbfacts.index_path("b" * 40))
 
     def test_tag_grammar_variants_parse_one_way(self):

@@ -6,8 +6,6 @@
 Implemented 2026-09-26 on `claude/relaxed-keller-e8qyl3`: persisted pack index (cold `pack` and the `kb:` hook
 about 0.06 s, `eval` 0.7 s), shared helpers, batched trailer audit, CI git scenarios, `pyproject.toml` (dev: pytest,
 ruff). Still open:
-- **R3 (needs a decision):** switching `search` to the pack index changes its output. The search regression test must
-  keep passing, and the index must first hold prose paragraphs and the root ledgers.
 
 ## 0. Expansion 2026-09-26: 69 new articles
 One manager session mapped gaps with `rag.py pack` (many answers were a false `good` from an unrelated article), then ran one Sonnet writer per topic following `/kb-add-topic` / `/kb-research`, and pushed each verified topic to GitHub `main`.

@@ -2,8 +2,9 @@
 """Retrieve from the kb for RAG (stdlib only).
 
   rag.py topics [DOMAIN]                   domains -> articles, subdirectories, data files
-  rag.py search QUERY [-k 8] [-d DOMAIN] [-u]   BM25 over heading-aware chunks of .md and .csv;
-                                           -u adds each hit's source origin urls
+  rag.py search QUERY [-k 8] [-d DOMAIN] [-u]   the pack's ranking over every line of the kb (facts, prose, code
+                                           blocks, data rows), at most 2 hits per file; -u adds each hit's
+                                           source origin urls
   rag.py src S1824 [S-k3f7q2zd ...]        source id -> title, url, version (and "superseded by" when set)
   rag.py show PATH[:LINE] [-n 40]          print lines of a kb file
   rag.py pack QUESTION [--budget 1200] [-d DOMAIN] [--format concise]
@@ -29,18 +30,15 @@
 Summary, Reference and Examples lines and untagged data rows, printed with `(no tag)`; they never make it `good`.
 
 Add --json (before the command) for machine output. artifacts/ directories are not indexed. search skips the
-root-level index files (README.md, _answers.md, _gaps.md, _conflicts.md, _coverage.csv, ...) unless --index.
+root-level index files (README.md, _answers.md, _gaps.md, _conflicts.md, _coverage.csv) unless --index.
 """
-import argparse, csv, io, json, math, os, re, sys
+import argparse, csv, json, os, sys
 from collections import Counter, defaultdict
 import kbcommon, kbid, kbfacts
 
 KB = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-SKIP_DIRS = {"_tools", "_private", "_cache", "_census", "artifacts"}  # _census: dated verdict logs, not facts
-TOKEN = re.compile(r"\w+(?:[.\-]\w+)*")  # Unicode words; `gmsa-dmsa`, `dsc.exe` stay whole
-MAX_CHUNK = 900
 CITED = kbid.SOURCE_ID  # legacy ids (not prose like S1/S3 sleep states) and hash ids
-csv.field_size_limit(2**31 - 1)  # a very wide cell must not abort the whole search
+csv.field_size_limit(2**31 - 1)  # a very wide cell must not abort a read
 
 
 def read_text(rel):
@@ -60,109 +58,10 @@ def positive_int(v):
     return n
 
 
-def kb_files(exts):
-    for root, dirs, files in os.walk(KB):
-        dirs[:] = sorted(d for d in dirs if d not in SKIP_DIRS and not d.startswith("."))
-        for f in sorted(files):
-            if f.endswith(exts) and f != "_sources.csv":
-                yield os.path.relpath(os.path.join(root, f), KB)
-
-
-def front_matter(lines):
-    meta = {}
-    if lines and lines[0].strip() == "---":
-        for ln in lines[1:]:
-            if ln.strip() == "---":
-                break
-            k, _, v = ln.partition(":")
-            meta[k.strip()] = v.strip().strip('"')
-    meta["title"] = next((ln[2:].strip() for ln in lines if ln.startswith("# ")), meta.get("topic", ""))
-    return meta
-
-
-def chunks():
-    """Yield (path, line, heading, text): markdown split at headings, then at blank lines/bullets up to MAX_CHUNK."""
-    for rel in kb_files((".md", ".csv")):
-        raw = read_text(rel)
-        if raw is None:
-            continue
-        if rel.endswith(".csv"):
-            try:
-                for i, row in enumerate(csv.DictReader(io.StringIO(raw.lstrip("\ufeff").replace("\0", ""), newline="")), start=2):
-                    text = "; ".join(f"{k}={v}" for k, v in row.items() if v and k)
-                    yield rel, i, os.path.basename(rel), text[:MAX_CHUNK * 2]
-            except csv.Error as e:
-                print(f"warning: skipped rest of {rel}: {e}", file=sys.stderr)
-            continue
-        lines = raw.splitlines()
-        heading, buf, start, fenced = front_matter(lines)["title"], [], 1, False
-        body = lines.index("---", 1) + 1 if lines[:1] == ["---"] and "---" in lines[1:] else 0
-        for n, ln in enumerate(lines, start=1):
-            if n <= body:
-                start = n + 1
-                continue
-            if len(ln) > MAX_CHUNK * 2:  # one huge line: flush, then index it in MAX_CHUNK slices
-                if "".join(buf).strip():
-                    yield rel, start, heading, "\n".join(buf).strip()
-                buf, start = [], n + 1
-                for i in range(0, len(ln), MAX_CHUNK):
-                    yield rel, n, heading, ln[i:i + MAX_CHUNK]
-                continue
-            if ln.lstrip().startswith(("```", "~~~")):
-                fenced = not fenced
-            is_head = ln.startswith("#") and not fenced
-            if buf and (is_head or (len("\n".join(buf)) > MAX_CHUNK and (not ln.strip() or ln.lstrip().startswith(("- ", "| "))))):
-                yield rel, start, heading, "\n".join(buf).strip()
-                buf, start = [], n
-            if is_head:
-                heading = ln.lstrip("#").strip()
-                start = n + 1
-            elif ln.strip() or buf:
-                buf.append(ln)
-        if "".join(buf).strip():
-            yield rel, start, heading, "\n".join(buf).strip()
-
-
-def tokens(text):
-    """Lowercase word tokens; a hyphen/dot compound also yields its parts (`what-if` -> what-if, what, if)."""
-    out = []
-    for t in TOKEN.findall(text.lower()):
-        out.append(t)
-        if "-" in t or "." in t:
-            out += [p for p in re.split(r"[.\-]", t) if p]
-    return out
-
-
 def search(query, k, domain, index=False, notes=None):
-    """BM25 top-k chunks. Root-level files (the kb's own index and logs) are left out unless `index`.
-    `notes`, if a list, receives warnings about a weak match: query words found nowhere in the searched files,
-    or a top hit matching under half of the query's informative words (those in fewer than 25% of chunks)."""
-    docs = [c for c in chunks() if (index or os.sep in c[0]) and (not domain or c[0].startswith(domain.rstrip("/") + "/"))]
-    toks = [Counter(tokens(f"{c[0]} {c[2]} {c[3]}")) for c in docs]
-    q = set(tokens(query))
-    df = Counter(t for tf in toks for t in q & tf.keys())
-    avg = sum(sum(tf.values()) for tf in toks) / max(len(toks), 1)
-    scored = []
-    for c, tf in zip(docs, toks):
-        dl, s = sum(tf.values()), 0.0
-        for t in q & tf.keys():
-            idf = math.log(1 + (len(docs) - df[t] + 0.5) / (df[t] + 0.5))
-            s += idf * tf[t] * 2.2 / (tf[t] + 1.2 * (0.25 + 0.75 * dl / avg))
-        if s:
-            scored.append((round(s, 2), c, sorted(q & tf.keys())))
-    scored.sort(key=lambda x: -x[0])
-    if notes is not None:
-        words = {t for t in q if len(t) > 2}
-        missing = sorted(t for t in words if not df[t])
-        if missing:
-            notes.append(f"not found anywhere in the searched files: {', '.join(missing)}")
-        informative = {t for t in words if df[t] < 0.25 * len(docs)}
-        if scored and informative and len(informative & set(scored[0][2])) * 2 < len(informative):
-            notes.append(f"weak match: the top hit contains {len(informative & set(scored[0][2]))} of "
-                         f"{len(informative)} informative query words ({', '.join(sorted(informative))})")
-    return [{"score": s, "path": p, "line": ln, "heading": h, "text": t, "matched": m,
-             "sources": sorted(set(CITED.findall(t)), key=kbid.sort_key)}
-            for s, (p, ln, h, t), m in scored[:k]]
+    """The top-k hits for a query: kbfacts.search (the pack index; prose, code blocks and data rows included, the
+    root index files only with `index`)."""
+    return kbfacts.search(query, k, domain, index, notes)
 
 
 def topics(domain):
@@ -181,7 +80,7 @@ def topics(domain):
                 text = read_text(rel)
                 if text is None:
                     continue
-                m = front_matter(text.splitlines())
+                m = kbfacts.front_matter(text)
                 out[dom]["articles"].append({"path": rel, "topic": m.get("topic", ""), "title": m["title"],
                                              "priority": m.get("priority", ""), "status": m.get("status", "")})
             else:

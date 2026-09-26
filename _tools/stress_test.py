@@ -215,8 +215,8 @@ def main():
             ("rag.py", ["search", "kerberos"], 0), ("rag.py", ["topics", "bulk"], 0), ("check.py", [], 0)])
         mutated("citation to unknown source", lambda d: write(d, "ad/cite.md", "x [DOC S999999] y\n"), [
             ("check.py", [], 1, "cites unknown source S999999")])
-        mutated("100k citations in one file", lambda d: write(d, "ad/many.md", "".join(f"- f [DOC S{100 + i % 900}]\n" for i in range(100000))), [
-            ("check.py", [], (0, 1)), ("rag.py", ["search", "f", "-u"], 0)])
+        mutated("100k citations in one file", lambda d: write(d, "ad/many.md", "".join(f"- flood [DOC S{100 + i % 900}]\n" for i in range(100000))), [
+            ("check.py", [], (0, 1)), ("rag.py", ["search", "flood", "-u"], 0)])
 
         # 5b. collision-free ids: hash source ids, superseded_by, answer ids
         id_cases(mutated)
