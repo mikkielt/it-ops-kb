@@ -229,7 +229,7 @@ security/settings-crosswalk,P0,partial,security/settings-crosswalk.md;security/s
 security/logging-monitoring,P1,partial,security/logging-monitoring.md,13
 security/management-plane-hardening,P1,partial,security/management-plane-hardening.md,12
 security/script-and-code-signing,P1,partial,security/script-and-code-signing.md,7
-security/supply-chain,P1,partial,security/supply-chain.md,18
+security/supply-chain,P1,partial,security/supply-chain.md,19
 security/ai-agent-guidelines,P2,partial,security/ai-agent-guidelines.md,18
 security/framework-control-map,P2,partial,security/framework-control-map.md;security/framework-control-map.csv,5
 security/privacy-compliance,P2,partial,security/privacy-compliance.md,14

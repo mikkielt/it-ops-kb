@@ -35,8 +35,8 @@ status: complete
   "turn" concept (one unit of conversational work) with state/storage management, so state
   persistence doesn't have to be hand-rolled. [DOC S1971]
 - Supported languages per the official overview: C# (.NET 8.0), JavaScript (Node.js 18+), Python
-  (3.9-3.11). The Python repo's own README instead states "Python 3.10+ required, 3.11+
-  recommended" — a minor discrepancy between the two Microsoft-authored pages on the exact Python
+  (3.9-3.11). The Python repo's own README instead says the packages target Python 3.10 or
+  greater, recommends 3.11+, and lists support for 3.10-3.14 — a minor discrepancy between the two Microsoft-authored pages on the exact Python
   floor. [DOC S1968, S1969] — flagged also in `_parts/agents-copilot/conflicts.md` scope note.
 - The Python package (`microsoft/Agents-for-python`, MIT licence) additionally ships: aiohttp/
   FastAPI hosting, Azure Blob and CosmosDB storage, MSAL-based and Entra-ID-sidecar authentication,

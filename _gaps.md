@@ -8,6 +8,7 @@ Merged from `_parts/<agent>/gaps.md`.
 - **Whether any Anthropic product speaks A2A natively.** Checked: A2A GitHub repo listing (no Anthropic in supporting orgs list, S2121), WebSearch for "Claude Agent SDK A2A support" (found only community wrapper projects and one Anthropic+Google Cloud joint webinar demonstrating Claude *inside* an A2A system via Vertex AI, not first-party support, S2129). Did not find an Anthropic docs page stating support or non-support either way. 2 search/fetch attempts; stopping per budget. [UNK] (topic: agents/a2a-protocol)
 - **A2A SDK language list beyond Python.** The claim that Go/JavaScript/Java/.NET/Rust SDKs exist under `a2aproject` came from one WebFetch summary of the main A2A repo page (S2121) and was not verified by listing each sub-repository individually. [DER, low confidence — treat as needing reconfirmation before citing precisely] (topic: agents/a2a-protocol)
 - **`anthropics/courses` repository contents.** Found only via WebSearch snippet, not independently WebFetched in this session (1 attempt, then treated as sufficient given the more pressing budget spent on caching detail). Row is present in `anthropic-materials.csv` marked accordingly. [COMMUNITY-tier evidence for an official repo] (topic: agents/anthropic-materials)
+  - Resolved 2026-09-26: repository read directly (S2156): five courses, archived by the owner 2026-09-15 (read-only) (topic: agents/anthropic-materials)
 - **Exact cache-read price multiplier for the newest Anthropic model tier.** The fetched prompt-caching page (S2130) states 0.025x-0.05x for "Opus 5.5, Fable 5.1, Mythos 5.1" versus 0.1x for "other models," which conflicts in precision with the separately fetched pricing page's worked example implying 0.05x for Opus 5.5 specifically (S2131). Recorded as a conflict below rather than resolved. [DOC, conflicting] (topic: agents/agent-caching)
 - **JSON Schema (non-proto) artifact for A2A.** Searched the pinned commit's tree for a `.json` schema alongside `a2a.proto` and found none at `specification/`; the spec itself says JSON artifacts are generated, non-normative build outputs, so only the proto was saved as the pinned artifact. Not a gap in effort, but noting no separate JSON schema file exists to pin. [DOC S2120] (topic: agents/a2a-protocol)
 
@@ -583,7 +584,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
 - (Resolved 2026-09-24) MITRE ATT&CK mitigation (M-id) and detection-strategy (DET-id) values for
   T1072/T1484/T1098/T1558/T1078/T1219/T1562 are now extracted from the pinned v19.2 STIX bundle into
   `security/artifacts/mitre/attack-subset.csv` and summarized in `threat-model-inputs.md` and QS15. (topic: security/threat-model-inputs)
-- UODO's DPIA list (S1551) is in Polish; only the fact that such a list exists and its URL were captured, not a
+- UODO's DPIA list (S-5jbvhlmx; M.P. 2019 poz. 666, communication of 2019-06-17) is in Polish; only the fact that such a list exists and its URL were captured, not a
   translated enumeration of its entries. (topic: security/privacy-compliance)
 - Whether a given device-log/AI-processing system's specific processing meets two or more EDPB DPIA criteria, and
   whether its use case falls under EU AI Act Annex III, are open questions this research pass deliberately left as

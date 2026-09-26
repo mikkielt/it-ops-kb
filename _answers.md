@@ -13,7 +13,7 @@ Each answer bullet carries one tag and source ids. `QA` sections answer auth que
 _Agent: mecm2_
 
 ## Q2. CMPivot `datetime()` / `ago()` syntax, and the `CcmLog()` result columns.
-- `ago(<timespan>)` subtracts the timespan from the current UTC time, e.g. `ago(1d)`, `ago(2h)`, `ago(7d)`. `now()` returns the current UTC time. [DOC S316,S321]
+- `ago(<timespan>)` subtracts the timespan from the current UTC time, e.g. `ago(1d)`, `ago(2h)`, `ago(7d)`. `now()` returns the current UTC time. [DOC S316, S-v5d6zvne]
 - Datetime literals: `datetime(2015-12-31 23:59:59.9)`, ISO 8601 `yyyy-mm-dd HH:MM:ss`, always UTC, 1-second units. [DOC S316]
 - Arithmetic: `now() + 1d`, `now() - 1h`. Also available: `datetime_diff('day', now(), X)`, `datetime_add()`, `bin(X, 1d)`. [DOC S317,S316]
 - `CcmLog('<log name>'[, <timespan>])` defaults to the last 24 hours. Example: `CcmLog('Scripts',1h)`. Each client returns at most 128 KB, and `CcmLog('ciagent',120d)` is cited as likely to exceed it. [DOC S316]
@@ -503,7 +503,7 @@ _Agent: security_
   monitoring), 4 (sensitive/highly personal data via employee-linked device logs) and 6 (matching/combining
   datasets, if pseudonymized data sent to an LLM is combined with other stores) are the ones most plausibly met
   by a device-log/AI-processing system of this general kind.
-  [DOC S1549][DER S1549: derived by matching a typical device-log/AI-processing system's data flows to the nine criteria]
+  [DOC S-xvc5ligo][DER S-xvc5ligo: derived by matching a typical device-log/AI-processing system's data flows to the nine criteria]
 - Whether two or more criteria are actually met, and therefore whether a DPIA is required, is not decided here.
 
 _Agent: security_
@@ -520,15 +520,15 @@ _Agent: security_
 _Agent: security_
 
 ## QS13. OWASP MCP Top 10 status and identifiers
-- Still "Phase 3 – Beta Release and Pilot Testing" as of 2026-09-24; ids `MCP01:2025`-`MCP10:2025` unchanged; next
-  release planned October 2026. Matches the existing `standards/owasp.md` entry; no changes needed there beyond
+- Still "Phase 3 – Beta Release and Pilot Testing" as of 2026-09-24; ids `MCP01:2025`-`MCP10:2025` unchanged; the
+  project page states no release date (re-read 2026-09-26). Matches the existing `standards/owasp.md` entry; no changes needed there beyond
   the confirmation appended. [DOC S1540]
 
 _Agent: security_
 
 ## QS14. NIST AI 600-1 suggested actions for tool-using agents on production systems
 - Restrict/monitor tool access granted to the model, log agent actions and outcomes, apply least-privilege to any
-  credentials reachable by the agent, require human review before consequential actions. [DOC S1542]
+  credentials reachable by the agent, require human review before consequential actions. [DER S1542: restated from GOVERN 3.2 oversight roles, GAI incident-response actions and additional human review; not a verbatim list]
 - Implication for a tiered-confirmation design: a confirm gate on consequential actions, an append-only operation audit table, and narrower agent device limits all satisfy this guidance. [DER S1542]
 
 _Agent: security_
@@ -566,7 +566,7 @@ _Agent: security_
 _Agent: security_
 
 ## QS18. Certificate requirements for signing PowerShell scripts under AllSigned, and whether timestamping matters
-- The certificate must carry the code-signing Enhanced Key Usage OID `1.3.6.1.5.5.7.3.3` and chain to a CA trusted on the target machine; the signing certificate (or its issuer) must additionally be present in the **Trusted Publishers** store, not just Trusted Root, for AllSigned to accept the script. [DOC S1513,S1516]
+- The certificate must carry the code-signing Enhanced Key Usage OID `1.3.6.1.5.5.7.3.3` and chain to a CA trusted on the target machine; the signing certificate (or its issuer) must additionally be present in the **Trusted Publishers** store, not just Trusted Root, for AllSigned to accept the script. [DOC S1513, S-utrhfg57]
 - Microsoft's Trusted Root Program requires code-signing CAs to keep code-signing, server-auth, S/MIME and timestamping as separate EKU hierarchies (no combined-purpose issuing CA), and requires an RFC 3161-compliant Time Stamp Authority for any CA issuing code-signing certificates. [DOC S1513]
 - **Timestamping matters**: `Set-AuthenticodeSignature -TimestampServer` embeds an RFC 3161 timestamp, which keeps the signature (and therefore the script's ability to run under AllSigned) valid after the signing certificate itself expires; an untimestamped signature stops being valid the moment its certificate expires. [DOC S1515]
 - ConfigMgr Run Scripts and CI script deployment do not add a separate console-side signing gate — the client-side AllSigned execution policy setting (documented in `windows/execution-policy-signing.md`) is the only enforcement point. [DOC S1520]
@@ -639,7 +639,7 @@ _Agent: agents-wiki_
 
 ## QG1 (deepening pass, 2026-09-25)
 - Correction (coordinator, 2026-09-25): Claude Code `-p` does expose a hard cost cap, `--max-budget-usd` (print mode only; subagent spend counts; `Budget limit reached` on further subagent spawn; v2.1.217+), next to `--max-turns`. CI runtimes add job `timeout`. [DOC S1824]
-- GitHub Agentic Workflows (`gh-aw`, MIT, GitHub Next + Microsoft Research) adds a sixth runtime shape: Markdown workflows with YAML frontmatter compiled to ordinary GitHub Actions, with a `schedule:` trigger and a named "safe-outputs" guardrail (writes buffered, validated, and applied by a separate scoped-permission job; a scanning job blocks suspicious changes). Its trigger config lives inside the repository's own compiled workflow file — the one shape among all six surveyed whose trigger config a team requiring "all pipeline logic stays in a reviewable file" could fully audit, while still being a repository-defined recurring job with no human present at fire time (a general tension for any team whose policy is that a session never schedules its own future). [DOC S1818,S1819; DER]
+- GitHub Agentic Workflows (`gh-aw`, MIT, GitHub Next + Microsoft Research) adds a sixth runtime shape: Markdown workflows with YAML frontmatter compiled to ordinary GitHub Actions, with a `schedule:` trigger and a named "safe-outputs" guardrail (writes buffered, validated, and applied by a separate scoped-permission job; a scanning job blocks suspicious changes). Its trigger config lives inside the repository's own compiled workflow file — the one shape among all six surveyed whose trigger config a team requiring "all pipeline logic stays in a reviewable file" could fully audit, while still being a repository-defined recurring job with no human present at fire time (a general tension for any team whose policy is that a session never schedules its own future). [DOC S1818, S-qso27noq; DER]
 - No vendor here publishes a fixed cost-per-unattended-run figure; every cost basis found is a unit rate (compute minutes, API tokens, seats/credits) rather than a total. [DOC S1800,S1801,S1802,S1804,S1806,S1818]
 
 _Agent: agents-wiki_
@@ -657,7 +657,7 @@ _Agent: agents-wiki_
 ## QG2 (deepening pass, 2026-09-25)
 - DeepWiki's steering file, `.devin/wiki.json`, is the one explicit, repo-committed trigger found for controlling what DeepWiki generates (page list, `repo_notes` prioritizing folders); regenerating after a config change is documented as "commit the file and regenerate your wiki" — a human-initiated action, not an automatic cadence. An automatic/scheduled refresh mechanism remains undocumented in the pages fetched (two attempts). [DOC S1809; UNK for auto-refresh cadence]
 - Google Code Wiki (announced 2025-11-13) regenerates repository docs after each code change; public preview for open-source repositories; private-repo Gemini CLI extension waitlisted; no review gate described. It is the one surveyed generator whose trigger is every change, with no human in the loop. [DOC S1825]
-- GitHub Agentic Workflows' gallery includes a "Documentation Maintenance" sample workflow, GitHub's own scheduled/event-triggered answer to "detect drift between code and documentation and propose reviewable updates" — the most direct GitHub-native counterpart to Swimm's Verify/Auto-sync and to a Claude Code routine's "Docs drift" example. [DOC S1818,S1819]
+- GitHub Agentic Workflows' gallery includes a "Documentation Maintenance" sample workflow, GitHub's own scheduled/event-triggered answer to "detect drift between code and documentation and propose reviewable updates" — the most direct GitHub-native counterpart to Swimm's Verify/Auto-sync and to a Claude Code routine's "Docs drift" example. [DOC S1818, S-qso27noq]
 - The AGENTS.md standard (Linux Foundation, agents.md) and GitHub Copilot's recognition of `**/AGENTS.md`, `/CLAUDE.md`, and `/GEMINI.md` as native instruction-file formats are grounding conventions an agent *reads*, not a self-updating mechanism — they answer "what the agent reads," not "what triggers an update." Notably, Copilot's own docs state it reads `/CLAUDE.md` directly with no conversion, which is relevant for any project whose own rulebook file is `CLAUDE.md` and might be read by a Copilot coding-agent task run against that repository. [DOC S1820,S1821]
 
 _Agent: agents-wiki_
@@ -671,7 +671,7 @@ _Agent: agents-wiki_
 
 ## QG3 (deepening pass, 2026-09-25)
 - Two vendor-documented deterministic guardrails were added to the survey: Vale (MIT, prose style linter, `.vale.ini` + YAML rules, CI/pre-commit) and markdownlint (MIT, 60+ Markdown structure rules, CI/pre-commit/editor) — both are a "strict build" mechanism a docs home can adopt, applied to style/structure rather than content currency; neither detects doc-vs-code drift on its own. [DOC S1822,S1823]
-- gh-aw's "safe-outputs" is the most explicit vendor-named guardrail pattern found this session for keeping an unattended docs agent from writing directly: the agent job is read-only/sandboxed by default, proposed writes are buffered, a separate job with scoped permissions applies them, and a dedicated scanning job blocks suspicious changes before they land — functionally the same "propose, don't commit" shape as Swimm's Verify-fail gate, but implemented as a pipeline mechanism rather than a product feature check. [DOC S1818,S1819]
+- gh-aw's "safe-outputs" is the most explicit vendor-named guardrail pattern found this session for keeping an unattended docs agent from writing directly: the agent job is read-only/sandboxed by default, proposed writes are buffered, a separate job with scoped permissions applies them, and a dedicated scanning job blocks suspicious changes before they land — functionally the same "propose, don't commit" shape as Swimm's Verify-fail gate, but implemented as a pipeline mechanism rather than a product feature check. [DOC S1818, S-qso27noq]
 - `lychee` (link checker, named in the brief) could not be verified this session (`lychee.cc` did not resolve to the tool's actual site); `doc-detective` was not fetched at all (out of this session's URL list). Both remain open community tool candidates, not confirmed guardrails. [UNK: lychee, doc-detective]
 
 _Agent: agents-wiki_
@@ -684,7 +684,7 @@ _Agent: agents-wiki_
 
 ## QG4 (deepening pass, 2026-09-25)
 - Vale and markdownlint (both MIT) are two concrete, off-the-shelf mechanisms that satisfy a "strict build" requirement for a docs home (style/structure) without adding a new job class beyond an existing single-checks-job shape — a rule/style-set choice, not a new mechanism, per the general principle that every mechanism should be paid for by an observed failure. [DER S1822,S1823]
-- gh-aw's "Documentation Maintenance" sample and its "safe-outputs" gate confirm, from a second independent vendor (GitHub, alongside Anthropic's routines and Cognition's DeepWiki), that every scheduled/self-operating docs-agent pattern found across both research passes proposes a reviewable change rather than committing directly — reinforcing that a code-owner-approval gate on a docs directory already matches every vendor's own guardrail, and no new review mechanism is implied by adopting any of them. [DER S1818,S1819]
+- gh-aw's "Documentation Maintenance" sample and its "safe-outputs" gate confirm, from a second independent vendor (GitHub, alongside Anthropic's routines and Cognition's DeepWiki), that every scheduled/self-operating docs-agent pattern found across both research passes proposes a reviewable change rather than committing directly — reinforcing that a code-owner-approval gate on a docs directory already matches every vendor's own guardrail, and no new review mechanism is implied by adopting any of them. [DER S1818, S-qso27noq]
 - GitHub Copilot's native reading of `/CLAUDE.md` (alongside `AGENTS.md`/`GEMINI.md`) means a project whose own rulebook is already a `CLAUDE.md` file needs no duplication or format conversion if a Copilot coding-agent task is ever pointed at that repository — a fact for future flexibility, not a current requirement, for any project that names Claude Code as its own work-runner. [DER S1821]
 
 ## QG5. Which products emit an "instruction(s) limit exceeded" (or similarly worded) error, with exact text and limits?
@@ -744,7 +744,7 @@ instructions this extends rather than repeats `claude/tool-output-limits.md`.
   changelog entries (through v2.1.281) rather than general inference. [DOC S1864]
 - **`stop_reason` values** `pause_turn`, `refusal`, and `model_context_window_exceeded` are recorded with their
   documented meaning, tagged DER since a single canonical stop-reason reference page was not independently
-  re-fetched. [DER S1868]
+  re-fetched. [DER S-qso6o6wu]
 - **Unsupported JSON Schema keywords / strict-tool-use restrictions per vendor**: OpenAI's `additionalProperties:
   false` + all-properties-`required` strict-mode rule [DOC S1865], Anthropic's strict-tool-use grammar-compilation
   model and its two toolset exclusions and PHI caching caveat [DOC S1869]; Gemini's page enumerates no such keyword
@@ -805,7 +805,7 @@ _Agent: agents-errors_
   correctness (tool/resource/prompt listing and invocation), not task success. [DOC S1880, S1881]
 - **Anthropic's "Writing effective tools for agents"** is design guidance, not a harness; its principles
   (namespacing, response context, token efficiency, pagination/truncation defaults) define what a stress
-  test should check for in tool output. [DOC S1882]
+  test should check for in tool output. [DOC S1935]
 - **promptfoo**: MIT-licensed; its MCP provider drives a stdio server via `command`/`args`/`path` and
   asserts per response; its red-team mode adds an MCP-specific plugin, jailbreak/multi-turn strategies,
   `bfla`/`bola` authorization probes, `pii` and `sql-injection` plugins, with "Tool Poisoning Attacks" named
@@ -835,7 +835,7 @@ _Agent: agents-eval_
 - **Grading**: three kinds — code-based (fast, objective, reproducible), model-based (rubric/NL assertions,
   flexible), human (SME/crowd/spot-check, gold standard); prefer deterministic where possible, LLM where
   necessary. [DOC S1896] Anthropic's platform docs add: write hard pass/fail rubrics, and for LLM grading,
-  have the grader reason first then discard the reasoning before scoring. [DOC S1897, S1898]
+  have the grader reason first then discard the reasoning before scoring. [DOC S1898]
 - **Metrics**: `pass@k` (≥1 success in k) and `pass^k` (all k succeed, from τ-bench/Sierra), plus token
   usage, latency, cost and error rate. [DOC S1896, S1899]
 - **Regression cadence**: graduated tasks join an ongoing regression suite that should run continuously and
@@ -856,7 +856,7 @@ _Agent: agents-eval_
 A general checklist for stress-testing an MCP server that exposes device/config-management operations
 (such as ConfigMgr): see `agents/mcp-stress-testing.md` for the full table; summary:
 - **Tool-count scaling**: check a growing operation count against Anthropic's tool-design guidance for a
-  growing tool set. [DER S1882]
+  growing tool set. [DER S1935]
 - **Ambiguous/adversarial questions**: probe target types outside the server's declared target scope
   (e.g. device/collection/group). [DER]
 - **Injection via tool results** (device names, log lines): closest general mechanisms are promptfoo's
@@ -1070,7 +1070,7 @@ _Agent: agents-copilot_
 - **Microsoft 365 Agents SDK**: the vendor-recommended target for agents built outside Copilot
   Studio's low-code surface. It is a channel- and AI-agnostic message-plumbing framework (not an
   orchestration engine, not a model) supporting C# (.NET 8), JavaScript (Node 18+), and Python
-  (3.9-3.11 per the overview page; the Python repo's own README says 3.10+, 3.11+ recommended — a
+  (3.9-3.11 per the overview page; the Python repo's own README says 3.10+, 3.11+ recommended, 3.10-3.14 supported — a
   minor version-floor discrepancy between the two Microsoft pages). [DOC S1968, S1971, S1969]
 - **Bot Framework SDK support status**: per the GitHub README, the Bot Framework SDK's final
   long-term support ends **2025-12-31**; after that it receives no updates, no new features, and no
@@ -1523,11 +1523,11 @@ _Agent: agents-ner_
 - Presidio ships its own analyzer/anonymizer REST container images (now at
   `ghcr.io/data-privacy-stack/presidio-*`, MIT), deployable via Docker Compose, Kubernetes/AKS or Azure
   App Service, plus a separate documented batch path (Spark/Azure Data Factory over Blob Storage) for
-  large datasets — REST and batch are two different documented shapes, not one endpoint. [DOC S2085,
-  S2086, S2088, S2089, S2090]
+  large datasets — REST and batch are two different documented shapes, not one endpoint. [DOC S-tks3v5p5,
+  S2086, S2088, S-g33kybfp, S2090]
 - No throughput number (req/s, docs/min, or p95 latency) for any of the five options was found in the
-  sources fetched; Presidio's own scaling guidance is qualitative ("set resource limits and horizontal
-  pod autoscaling"). [UNK — see `gaps.md`]
+  sources fetched; Presidio's own k8s page only advises planning the cluster from pod CPU/memory
+  requirements. [UNK — see `gaps.md`]
 - Azure's on-prem PII container is the only option with a published hardware sizing table (1 core/2 GB
   minimum, 4 cores/8 GB recommended, AVX-512 recommended) and a published per-call payload limit (5,120
   chars/doc, 10 docs/call). [DOC S2091]
@@ -1541,13 +1541,13 @@ _Agent: agents-ner_
   summary); no on-prem container was found. [DOC S2100, S2101; UNK for on-prem — 3 attempts, none found]
 - GLiNER has no first-party server/container image; consumers assemble serving themselves from a
   Hugging Face ONNX export plus a generic runtime — a fused export is community-reported at ~30% lower
-  GPU latency than the unfused version. [COMMUNITY S2102, S2103]
+  GPU latency than the unfused version. [COMMUNITY S2102, S-hocpkynn]
 - Version pinning is a real, documented risk: Azure's Text PII 2026-04-15-preview API version added new
   entity types (Password, PIN, Zip code, Airport code) that an older-pinned caller would not receive —
   the concrete mechanism behind "recognizer drift between copies" in QG32. [DOC S2096]
 - Presidio's own `presidio-evaluator`/`presidio-research` (MIT) computes precision/recall for a
   recognizer or model version and is the documented tool for measuring such drift, though only as a
-  point-in-time comparison, not a continuous cross-consumer monitor. [DOC S2104, S2105, S2111]
+  point-in-time comparison, not a continuous cross-consumer monitor. [DOC S-gpnrqpjt, S2105, S2111]
 
 _Agent: agents-ner_
 
@@ -1587,7 +1587,7 @@ _Agent: agents-ner_
   all (S2091); Presidio's own images ship no built-in caller authentication in the fetched docs — an
   operator adding auth in front of a shared Presidio deployment would need to do so themselves (e.g. at
   the ingress/gateway layer), which is outside what was fetched. [DOC S2091 for Azure; UNK for
-  Presidio's own auth — not found in S2085/S2086/S2089]
+  Presidio's own auth — not found in S-tks3v5p5/S2086/S-g33kybfp]
 - Failure mode on endpoint-down: Azure's container **fails closed for billing** (stops serving after
   connectivity loss) but this is a metering safeguard, not a security fail-closed by design; a house
   rule that "unknown is never absent... a failed, forbidden or timed-out read is unknown" is a
@@ -1624,9 +1624,9 @@ _Agent: agents-ner_
   recommendation): number of consumer teams/agents that would call the shared endpoint (not measured by
   any source found — a project-internal count, not a vendor fact); recognizer/version drift between
   independent Presidio (or other) deployments, measurable today with `presidio-evaluator`'s published
-  precision/recall method [DOC S2104, S2105, S2111]; detection-quality gaps against a fixed test set,
+  precision/recall method [DOC S-gpnrqpjt, S2105, S2111]; detection-quality gaps against a fixed test set,
   the same tool's stated purpose ("evaluate Presidio as a system, a NER model, or a specific PII
-  recognizer for precision, recall, and error analysis") [DOC S2104]; and duplicated maintenance hours
+  recognizer for precision, recall, and error analysis") [DOC S-gpnrqpjt]; and duplicated maintenance hours
   across teams each running their own Presidio/spaCy stack, which is an organizational measurement no
   vendor source addresses. [UNK for a published duplicated-maintenance-hours metric — not found]
 - No source fetched in this session proposes a numeric trigger (e.g. "N consumers" or "X% detection gap")
@@ -1660,7 +1660,7 @@ _Agent: agents-a2a-cache_
 
 ## QG36. Index of Anthropic's published materials useful to a device-management CLI + MCP tool
 
-30 rows in `agents/anthropic-materials.csv`: 25 engineering-blog posts (2024-09-19 through 2026-04-23) spanning agents, tools, context engineering, evals, multi-agent, code execution with MCP, Claude Code best practices/safety, and skills [DOC S2137-S2154]; the MIT-licensed cookbook repo (`anthropic-cookbook`) with directories for the Agent SDK, tool use/evaluation, prompt caching, cost optimization and skills [DOC S2155]; the `courses` repository (found via WebSearch only, not independently fetched — see gaps) [COMMUNITY]; and three Claude Code / platform docs sections (subagents, skills, prompt caching) [DOC S2157,S2158,S2159]. Detail and one-line reasons per row are in the CSV; `agents/anthropic-materials.md` records how the index was built.
+30 rows in `agents/anthropic-materials.csv`: 25 engineering-blog posts (2024-09-19 through 2026-04-23) spanning agents, tools, context engineering, evals, multi-agent, code execution with MCP, Claude Code best practices/safety, and skills [DOC S2137-S2154]; the MIT-licensed cookbook repo (`anthropic-cookbook`) with directories for the Agent SDK, tool use/evaluation, prompt caching, cost optimization and skills [DOC S-d5e5aem4]; the `courses` repository (found via WebSearch only, not independently fetched — see gaps) [COMMUNITY]; and three Claude Code / platform docs sections (subagents, skills, prompt caching) [DOC S2157,S2158,S2159]. Detail and one-line reasons per row are in the CSV; `agents/anthropic-materials.md` records how the index was built.
 
 _Agent: agents-a2a-cache_
 

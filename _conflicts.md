@@ -113,7 +113,7 @@ was wrong and the kb now says Apache-2.0. [DOC S1891] (topic: agents/agent-evalu
   samples), while `privacy/presidio.md` (part `privacy`, already in the kb) establishes the canonical
   current repository as `data-privacy-stack/presidio` with legacy `mcr.microsoft.com/presidio-*` images
   "no longer updated." This file follows the existing kb precedent and cites `data-privacy-stack/*` URLs
-  where possible (S2085, S2086, S2090), but two Docker Hub / GitHub samples fetched via search (S2087,
+  where possible (S-tks3v5p5, S2086, S2090; S-tks3v5p5, which supersedes S2085, no longer mentions registries, so the ghcr/MCR evidence is now S2087, the Docker Hub description read via the v2 API, and S-g33kybfp, whose Helm sample defaults to `ghcr.io/data-privacy-stack`), but two Docker Hub / GitHub samples fetched via search (S2087,
   S2088) still resolve under the `microsoft/*` namespace — recorded as the same fork/rename lag already
   noted in `privacy/presidio.md`'s own sources, not a new conflict.
 - **Azure Text PII character-limit figures.** The on-premises **container** doc (S2091, directly fetched)
@@ -158,7 +158,7 @@ The same page states that before Claude Code v2.1.213, a routine's saved prompt 
 The deepening-pass brief asked to cover a `--max-budget-usd` flag "if exists" for Claude Code headless mode. The current `headless.md`, `github-actions.md`, and `gitlab-ci-cd.md` pages (retrieved 2026-09-25) name no such flag; the only cost controls are `--max-turns`, job/workflow timeouts, concurrency limits, and post-hoc `total_cost_usd` reporting via `--output-format json`. This is not a disagreement between sources but a documented absence — recorded here so a future session doesn't assume the flag exists from the brief's phrasing. [DOC S1800,S1801,S1802] (topic: agents/headless-agent-runtimes)
 
 ### GitHub's own doc-drift pattern lives outside Copilot coding agent
-GitHub's official Copilot coding-agent best-practices page names no scheduled/issue-triggered documentation-update feature, while GitHub Next's separate `gh-aw` project ships a "Documentation Maintenance" sample workflow doing exactly that. A session reading only the Copilot coding-agent docs would conclude GitHub has no such capability; it exists, but under a different GitHub-affiliated project with its own trigger/guardrail model (`schedule:` frontmatter + safe-outputs, not Copilot's issue-assignment model). [DOC S1818,S1819,S1821] (topic: agents/docs-maintenance-agents)
+GitHub's official Copilot coding-agent best-practices page names no scheduled/issue-triggered documentation-update feature, while GitHub Next's separate `gh-aw` project ships a "Documentation Maintenance" sample workflow doing exactly that. A session reading only the Copilot coding-agent docs would conclude GitHub has no such capability; it exists, but under a different GitHub-affiliated project with its own trigger/guardrail model (`schedule:` frontmatter + safe-outputs, not Copilot's issue-assignment model). [DOC S1818, S-qso27noq, S1821] (topic: agents/docs-maintenance-agents)
 
 ## arch
 
@@ -247,7 +247,7 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
 ## mecm1
 
 - Client log level values: registry doc says LogLevel 0 Verbose / 1 Default / 2 Warnings and errors / 3 Errors only (S214 about-log-files.md); SDK SetGlobalLoggingConfiguration says 0 Verbose / 1 Normal / 2 No logging (S225). (topic: mecm/log-files)
-- Collect client logs permission holders: current doc names Full Administrator and Infrastructure Administrator (S221); 1912 preview note names Full Administrator and Operations Administrator (S224). (topic: mecm/collect-client-logs)
+- Collect client logs permission holders: current doc names Full Administrator and Infrastructure Administrator (S221); 1912 preview note names Full Administrator and Operations Administrator (S-pzvndq5z). (topic: mecm/collect-client-logs)
 - Collected file versions: Delete Aged Collected Files / software inventory doc keep "five most-recent copies" in sinv.box\FileCol (S223, S204); client diagnostics section says "no defined limit to the number of versions" for collected client logs (S221). (topic: mecm/collect-client-logs)
 - Enforcement grace period range: client settings says 0-120 hours (S204); deploy applications says 1-120 hours (S229). (topic: mecm/client-settings)
 - SMS_DCMDeploymentCompliantDetailsPerAsset (a "compliant details" class) describes DiscoveredValue/InstanceData as reported "when the rule is non-compliant" (S209); internal inconsistency within one page. (topic: mecm/sql-views-compliance)

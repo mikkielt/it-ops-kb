@@ -3,7 +3,7 @@ topic: security/supply-chain
 priority: P1
 applies_to: "a Python 3.13 package built with uv; GitLab self-managed CI/CD"
 retrieved_utc: 2026-09-24
-sources: [S1501, S1502, S-paztzzud, S1504, S1505, S1506, S1507, S1508, S1509, S1510, S1511, S1512, S1517, S1522, S1523, S1524, S1525, S1597]
+sources: [S1501, S1502, S-paztzzud, S1504, S1505, S1506, S1507, S1508, S1509, S1510, S1511, S1512, S1517, S1522, S1523, S1524, S1525, S1597, S-sxp3exzp]
 status: partial
 ---
 
@@ -27,7 +27,7 @@ NIST SSDF (SP 800-218 v1.1, plus the 800-218A generative-AI companion profile) a
 - GitLab's SLSA Build Level 3 provenance/attestation feature (behind the `slsa_provenance_statement` flag and the `ATTEST_BUILD_ARTIFACTS` CI/CD variable) requires the **project to be public**, and the attested artifact must be 100 MB or smaller. [DOC S1523]
 - GitLab describes its own default DevSecOps pipeline behaviour as reaching SLSA Level 1-2 out of the box, with Level 3 requiring the explicit attestation feature above. [DOC S1524]
 - GitLab's dependency scanning using SBOM (Ultimate; GitLab.com, Self-Managed and Dedicated; generally available in GitLab 19.0) has its analyzer emit a CycloneDX SBOM (spec 1.4-1.6) for each directory with a supported lockfile, manifest or dependency graph, and scans it for known vulnerabilities; third-party CycloneDX SBOMs supplied as CI/CD artifacts are technically possible but documented as subject to change. [DOC S1511]
-- GitLab documents pinning CI/CD job images by digest (`image: <name>@sha256:<digest>`) rather than by a mutable tag, because a tag can be overwritten by anyone with registry push access, letting a compromised or rogue image run inside a privileged CI job; pinning tag+digest together lets a bot still update the digest when the referenced image content changes. [DOC S1512]
+- GitLab's pipeline security guidance says to always use SHA digests for job images (`image: <name>@sha256:<digest>`) instead of tags like `:latest`, for client-side integrity verification, and to prefer registries with protected repositories and protected tags; the `image` keyword accepts `<image-name>@<digest>`. [DOC S-sxp3exzp, S1512]
 - DSC v3's resource manifest format has no supply-chain integrity field of its own (see `security/script-and-code-signing.md`); any provenance for a DSC resource distributed with a package has to come from the package/CI supply chain above, not from DSC itself. [DER S1517: manifest schema has no signing/checksum field, so package-level provenance is the only lever]
 
 ## Reference
@@ -38,7 +38,7 @@ NIST SSDF (SP 800-218 v1.1, plus the 800-218A generative-AI companion profile) a
 | PyPI Trusted Publishing | not available for self-managed GitLab; relevant only if the package is published to public PyPI | S1508,S1597 |
 | GitLab SLSA attestation | needs a **public** GitLab project; internal repos cannot use it as documented | S1523 |
 | uv/pip hash pinning | available today, no GitLab-tier dependency | S1522,S1507 |
-| GitLab image digest pinning | available today (CI/CD YAML syntax), no GitLab-tier dependency | S1512 |
+| GitLab image digest pinning | available today (CI/CD YAML syntax), no GitLab-tier dependency | S-sxp3exzp, S1512 |
 
 ## Examples
 No fixture-specific configuration; these are packaging/CI-pipeline facts independent of device or tenant fixtures.

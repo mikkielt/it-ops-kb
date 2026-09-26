@@ -37,10 +37,11 @@ shared task list and direct inter-agent messaging on top of ordinary subagent de
   Bash, on by default with Git Bash for claude.ai/Console accounts, and needs
   `CLAUDE_CODE_USE_POWERSHELL_TOOL=1` on Bedrock, Google Cloud Agent Platform, Microsoft Foundry, macOS, Linux and
   WSL. [DOC S2158]
-- Skill locations, highest precedence first: Enterprise (`.claude/skills/` in the managed-settings directory) >
-  Personal (`~/.claude/skills/`) > Project (`.claude/skills/`) > Nested (`<subdir>/.claude/skills/`, loads for
-  sessions started at/below `<subdir>`) > Additional directory (`--add-dir`) > Plugin (`<plugin>/skills/`) >
-  claude.ai account sync. [DOC S2158]
+- Skill locations: Enterprise (`.claude/skills/` in the managed-settings directory), Personal (`~/.claude/skills/`),
+  Project (`.claude/skills/`), Nested (`<subdir>/.claude/skills/`), Plugin (`<plugin>/skills/`) and claude.ai
+  account sync. When names clash, enterprise beats personal and personal beats project; a project-root skill and a
+  nested skill both load; plugin skills load alongside, namespaced as `/plugin-name:skill-name`; a claude.ai-synced
+  skill yields its short name to any other skill or command and then runs only under its full name. [DOC S2158]
 - A skill and a bundled skill/built-in command sharing a name: the local skill wins but the bundled command's
   *alias* still runs the bundled one (a project `code-review` skill replaces `/code-review`, but `/review` still
   runs the bundled skill). [DOC S2158]
