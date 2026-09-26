@@ -10,7 +10,7 @@ disallowed-tools: mcp__claude-code-docs__submit_feedback mcp__mcp-docs__submit_f
 Read-only. The `kb` tools hold documentation facts, not live device or directory data. Do single facts and multi-part questions here, with no subagent (one `kb_pack` with `questions`); the kb-lookup agent is only for long research whose output would fill the context. In a clone without the `kb` MCP tools, use the `rag.py` command in brackets, one command per call.
 
 1. **One pack.** Call `kb_pack` with the question as asked (in a clone: `python3 _tools/rag.py pack "<question>"`). A question with several parts: one call with `questions` = [part, part, ...] (up to 6; in a clone: `rag.py pack -q PART -q PART`). Read each `coverage:` line:
-   - `good`: answer from the pack. Stop searching.
+   - `good`: answer from the pack. Stop searching. A `check:` line under it names a word of the question the lead article never mentions (a possible false `good`): answer only if a cited line answers the question itself, else treat it as `none`.
    - `weak`: one more call, either `kb_pack` with the product's own terms or `kb_show` on the best `path:line` with `n` = 30 (`rag.py show PATH:LINE -n 30`). Then answer with what you have.
    - `none`: the kb does not cover it. Say so. Do not fill the gap from memory.
    - Open and closed gaps for the area: `kb_audit` with `entries` = true.

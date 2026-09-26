@@ -2,7 +2,9 @@
 """UserPromptSubmit hook: answer `kb:` prompts from the kb without the model (stdlib only).
 
   kb: <question>    run the evidence pack (kbfacts.pack). coverage: good -> block the prompt and show the pack to the
-                    user as the block reason: the model is never called and no tokens are spent. weak -> let the
+                    user as the block reason: the model is never called and no tokens are spent; but a good pack
+                    whose lead article never mentions a name the question uses (its `check:` line, a possible false
+                    good) goes to the model as context, like weak, so the model decides. weak -> let the
                     prompt through with the pack attached as context, so the model starts from the evidence and does
                     not search again. none -> let it through with one line of context: the kb has no coverage for the
                     missing words; say so and add nothing from memory.
@@ -30,7 +32,7 @@ def answer(prompt):
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
     import kbfacts
     res = kbfacts.pack(question)
-    if res["verdict"] == "good" and not forward:
+    if res["verdict"] == "good" and not forward and not res.get("unmatched"):
         return {"decision": "block", "reason": res["text"] + NOTE}
     if res["verdict"] == "none":
         words = [w for w in kbfacts.WORD.findall(question) if kbfacts.stem(w.lower()) in res["missing"]]
@@ -39,7 +41,9 @@ def answer(prompt):
                 f"it-ops-kb has no coverage for: {what}; say so and add nothing from memory"}}
     context = (f"The kb: hook ran the kb evidence pack for this question (coverage: {res['verdict']}). Answer from "
                "it with path:line and source urls. Search the kb again only if the pack misses what was asked."
-               "\n\n" + res["text"])
+               + (" Its check: line names words the lead article never mentions: if no cited line answers the "
+                  "question itself, say the kb does not cover it." if res.get("unmatched") else "")
+               + "\n\n" + res["text"])
     return {"hookSpecificOutput": {"hookEventName": "UserPromptSubmit", "additionalContext": context}}
 
 

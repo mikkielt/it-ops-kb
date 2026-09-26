@@ -18,13 +18,15 @@ import csv, functools, glob, json, os, re, subprocess, sys
 
 import pytest
 
-import kbid
+import kbfacts, kbid
 from conftest import KB, TOOLS
 
 LINT = os.path.join(KB, ".claude", "skills", "kb-verify", "lint.py")
 BASELINE = os.path.join(TOOLS, "lint_baseline.txt")
 ALLOWLIST = os.path.join(TOOLS, "tests_allowlist.txt")
 MAX_BYTES = 10 * 1024 * 1024
+# the benchmark's false good (agent_bench s8): the pack matched Copilot Studio's "data-loss-prevention (DLP)" words
+FALSE_GOOD = "Microsoft Purview Data Loss Prevention endpoint DLP onboarding requirements"
 
 
 def run(*args):
@@ -434,6 +436,22 @@ class TestLookup:
         assert p.returncode == 0, "a prompt without kb: must return before kbfacts is loaded"
         forward = hook("kb+: Does deleting an Entra device also delete its BitLocker recovery keys?")
         assert forward["hookSpecificOutput"]["hookEventName"] == "UserPromptSubmit"
+        # a good pack whose lead article never names the product asked about (a false good) goes to the model
+        flagged = hook("kb: " + FALSE_GOOD)
+        assert "decision" not in flagged, "a good pack with a check: line must not be answered without the model"
+        ctx = flagged["hookSpecificOutput"]["additionalContext"]
+        assert "coverage: good" in ctx and "\ncheck: " in ctx and "Purview" in ctx, ctx[:400]
+
+    def test_false_good_gets_a_check_line(self):
+        res = kbfacts.pack(FALSE_GOOD)
+        assert res["verdict"] == "good" and res["unmatched"] == ["purview"], (res["verdict"], res["unmatched"])
+        assert res["text"].splitlines()[1].startswith("check: ") and "never mentions Purview" in res["text"]
+        # the names an article holds only in its title or applies_to (SQL Server for sp_getapplock) count as held,
+        # and two-letter names (AV, PC) are never flagged
+        for q in ("What does sp_getapplock do in SQL Server and what lock modes does it take?",
+                  "Does deleting an Entra device also delete its BitLocker recovery keys?"):
+            res = kbfacts.pack(q)
+            assert res["verdict"] == "good" and not res["unmatched"] and "\ncheck: " not in res["text"], (q, res["unmatched"])
 
 
 class TestIds:

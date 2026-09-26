@@ -965,12 +965,26 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
             seen.add(i)
             url, sup = st.srcs.get(i, ("", ""))
             srcs.append((i, url or "UNKNOWN id", sup))
+    # a name the question uses (Purview) that the lead article never mentions, not even in its title or applies_to:
+    # the verdict counts words, not meaning, so such a pack may be about something related (a false `good`). Only a
+    # note, never a verdict change: every lexical rule tried as a verdict demoted true `good` eval questions. Names of
+    # two letters (AV, PC) are left out, as lone_name does.
+    unmatched = []
+    if verdict != "none" and paths:
+        lead, meta = paths[0], st.arts.get(paths[0], {})
+        own = set(key_terms(f"{meta.get('title', '')} {meta.get('applies_to', '')}"))
+        unmatched = sorted(t for t in named & set(known) if len(t) > 2 and t not in own
+                           and not any(st.paths[i] == lead for i in holders[t]))
     head = f"coverage: {verdict}"
     if known:
         head += f" (best article matches {len(hit)} of {len(known)} key words: {', '.join(sorted(hit)) or '-'})"
     if missing:
         head += f"; not in the kb: {', '.join(missing)}"
     out = [head]
+    if unmatched:
+        names = {stem(w.lower()): w for w in WORD.findall(question)}
+        out.append(f"check: {paths[0]} never mentions {', '.join(names.get(t, t) for t in unmatched)}; the facts may be "
+                   "about something related. Answer only if a cited line answers the question itself.")
     if verdict == "none":
         out.append("The kb does not cover this. Do not answer from the hits below; say so, or research it with /kb-research.")
     for h, items in groups if verdict != "none" else [(g[0], g[1][:2]) for g in groups[:1]]:
@@ -980,7 +994,7 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
     if srcs and footer and not concise:
         out += ["", "sources:"] + format_sources(srcs)
     return {"verdict": verdict, "missing": missing, "matched": sorted(hit), "informative": informative, "known": known,
-            "paths": paths, "sources": [s[0] for s in srcs], "source_rows": srcs,
+            "unmatched": unmatched, "paths": paths, "sources": [s[0] for s in srcs], "source_rows": srcs,
             "text": "\n".join(out)}
 
 

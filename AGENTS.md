@@ -7,7 +7,7 @@ An offline knowledge base of facts from official sources on Windows endpoint man
 - Answer lookups in the session that asked. Never start a general-purpose subagent for a lookup (about 50k tokens of startup context); several parts go in one `pack` call too; the `kb-lookup` agent only for long research whose output would fill the context (measured: no cheaper, twice as slow).
 - From a shell or a script: `python3 _tools/kb_ask.py "<question>"` answers at the lowest cost that works (routing in `MAINTAINING.md`); `--route` shows the plan.
 - One call first: `kb_pack` (MCP) or `python3 _tools/rag.py pack "<question>"`; several parts in one call: `questions` / `pack -q PART -q PART`. It prints `coverage: good|weak|none`, the best fact lines by article with `path:line` and tag, and one footer of source urls.
-  - `good`: answer from the pack.
+  - `good`: answer from the pack. A `check:` line under it names a word of the question the lead article never mentions: answer only if a cited line answers the question itself, else treat it as `none`.
   - `weak`: one reworded pack, or one `show` of the article.
   - `none`: say the kb does not cover it. Add nothing from memory.
 - Counts, lists and joins are tools, not reading: `rag.py audit [PREFIX] [--status partial] [--entries]` (per article: tag counts, linked gaps and conflicts), `rag.py facts PREFIX --tag UNK,COMMUNITY`, `rag.py src S123 --cited` (the row plus every line that cites it). MCP: `kb_audit`, `kb_facts`, `kb_source` with `cited`. These print concise output; `--format detailed` / `response_format` for full text and urls.
