@@ -27,6 +27,8 @@ S = {
     "s6_falsegood": ("Using the kb, how do I create and update the Group Policy Central Store with the Windows 11 24H2 ADMX "
                      "templates? If the kb does not really answer it, use live Microsoft docs and label them.",
                      [r"(?i)SYSVOL", r"(?i)PolicyDefinitions"]),
+    "s8_falsegood2": ("Microsoft Purview Data Loss Prevention endpoint DLP onboarding requirements",
+                      [r"(?i)1809|Windows 11", r"(?i)live docs|not in the kb|does not cover"]),
     "s7_web": ("How should the KRBTGT account password be reset safely in an AD domain (how many times, how long between "
                "resets)? Check the kb first; if it lacks this, use live docs or web search and label the source.",
                [r"(?i)twice|two times|2 times", r"(?i)\b10\b ?hours|replicat"]),
@@ -43,30 +45,13 @@ ROUTER = ("Routing for it-ops questions: call kb_pack first. If the pack's facts
           "them yourself with path:line and urls. If coverage is weak or none, or the facts are only about something "
           "related, do not research it yourself: send the question and what the kb had to the kb-live-docs agent, then "
           "relay its answer labelled 'live docs, not in the kb'.")
-MODEL = {"router": "haiku", "opus": "opus", "sonnet": "sonnet", "haiku": "haiku"}
+MODEL = {"opus": "opus", "sonnet": "sonnet", "haiku": "haiku"}
 DELEGATE = (" Delegate the kb lookup to the kb-lookup subagent (Haiku) and only relay its answer; do the live-docs step "
             "yourself only if it reports the kb lacks the answer.")
 
 
-def run(cfg, scen):
-    q, checks = S[scen]
-    model = cfg.split("+")[0]
-    prompt = q + (DELEGATE if "+delegate" in cfg else "")
-    extra = []
-    if "+escalate" in cfg:
-        extra = ["--agents", json.dumps(AGENTS), "--append-system-prompt", ROUTER]
-    if "+strict" in cfg:
-        extra += ["--disallowedTools", "mcp__microsoft-learn__microsoft_docs_search", "mcp__microsoft-learn__microsoft_docs_fetch",
-                  "mcp__microsoft-learn__microsoft_code_sample_search", "WebSearch", "WebFetch"]
-    cmd = ["claude", "-p", "--output-format", "stream-json", "--verbose", "--no-session-persistence",
-           "--model", MODEL[model], "--allowedTools", "WebSearch", "WebFetch", "mcp__kb", "Agent",
-           "mcp__microsoft-learn__microsoft_docs_search", "mcp__microsoft-learn__microsoft_docs_fetch"] + extra
-    if cfg == "router":
-        sys.path.insert(0, os.path.join(KB, "_tools"))
-        import kb_ask
-        verdict, text, argv = kb_ask.route(q)
-        cmd = argv[:2] + ["--output-format", "stream-json", "--verbose"] + argv[2:]
-        prompt = kb_ask.prompt(q, text)
+def execute(cmd, prompt):
+    """Run one headless claude and parse its stream: the result fields (or {"error": ...})."""
     t = time.time()
     p = subprocess.run(cmd, cwd=KB, input=prompt, capture_output=True, text=True, timeout=900)
     wall = time.time() - t
@@ -84,16 +69,73 @@ def run(cfg, scen):
         if ev.get("type") == "result":
             res = ev
     if not res:
-        return {"cfg": cfg, "scen": scen, "error": p.stderr[-500:]}
+        return {"error": p.stderr[-500:]}
     u = res["usage"]
-    text = res.get("result") or ""
-    return {"cfg": cfg, "scen": scen, "wall_s": round(wall, 1), "api_s": round(res["duration_api_ms"] / 1000, 1),
+    return {"wall_s": round(wall, 1), "api_s": round(res["duration_api_ms"] / 1000, 1),
             "cost": round(res["total_cost_usd"], 4), "turns": res["num_turns"],
             "in_uncached": u["input_tokens"], "cache_write": u["cache_creation_input_tokens"],
             "cache_read": u["cache_read_input_tokens"], "out": u["output_tokens"],
             "models": {m: round(v["costUSD"], 4) for m, v in res.get("modelUsage", {}).items()},
-            "tools": dict(tools), "sub_tools": dict(subs),
-            "checks": [bool(re.search(c, text)) for c in checks], "answer": text}
+            "tools": dict(tools), "sub_tools": dict(subs), "answer": res.get("result") or ""}
+
+
+def add(a, b):
+    """Two runs of one question (reader, then escalation) as one row."""
+    out = dict(b)
+    for k in ("wall_s", "api_s", "cost", "turns", "in_uncached", "cache_write", "cache_read", "out"):
+        out[k] = round(a[k] + b[k], 4)
+    out["models"] = {m: round(a["models"].get(m, 0) + b["models"].get(m, 0), 4) for m in {*a["models"], *b["models"]}}
+    return out
+
+
+def route(q):
+    """kb_ask.py's routing as a benchmark run: tool answers cost nothing; a good pack goes to the tool-less reader,
+    whose INSUFFICIENT reply escalates to the researcher (costs summed)."""
+    sys.path.insert(0, os.path.join(KB, "_tools"))
+    import kb_ask
+    t = time.time()
+    tool = kb_ask.tool_answer(q)
+    if tool is not None:
+        return {"wall_s": round(time.time() - t, 1), "api_s": 0, "cost": 0, "turns": 0, "in_uncached": 0,
+                "cache_write": 0, "cache_read": 0, "out": 0, "models": {}, "tools": {"kb_ask:tool": 1},
+                "sub_tools": {}, "answer": tool}
+    p = kb_ask.plan(q)
+    stream = ["--output-format", "stream-json", "--verbose"]
+    user = kb_ask.prompt(q, p["text"])
+    first = None
+    if p["kind"] == "good":
+        first = execute(kb_ask.claude_argv(p["model"], False)[:2] + stream + kb_ask.claude_argv(p["model"], False)[2:]
+                        + ["--append-system-prompt", kb_ask.READER], user)
+        if "error" in first or not first["answer"].lstrip().startswith(kb_ask.SENTINEL):
+            return first
+        user += f"\n\nA first reader of this evidence said: {first['answer'].strip().splitlines()[0]}"
+    argv = kb_ask.claude_argv("sonnet", True)
+    second = execute(argv[:2] + stream + argv[2:] + ["--append-system-prompt", kb_ask.RESEARCHER], user)
+    return add(first, second) if first and "error" not in second else second
+
+
+def run(cfg, scen):
+    q, checks = S[scen]
+    if cfg == "router":
+        r = route(q)
+    else:
+        model = cfg.split("+")[0]
+        prompt = q + (DELEGATE if "+delegate" in cfg else "")
+        extra = []
+        if "+escalate" in cfg:
+            extra = ["--agents", json.dumps(AGENTS), "--append-system-prompt", ROUTER]
+        if "+strict" in cfg:
+            extra += ["--disallowedTools", "mcp__microsoft-learn__microsoft_docs_search",
+                      "mcp__microsoft-learn__microsoft_docs_fetch", "mcp__microsoft-learn__microsoft_code_sample_search",
+                      "WebSearch", "WebFetch"]
+        cmd = ["claude", "-p", "--output-format", "stream-json", "--verbose", "--no-session-persistence",
+               "--model", MODEL[model], "--allowedTools", "WebSearch", "WebFetch", "mcp__kb", "Agent",
+               "mcp__microsoft-learn__microsoft_docs_search", "mcp__microsoft-learn__microsoft_docs_fetch"] + extra
+        r = execute(cmd, prompt)
+    r = {"cfg": cfg, "scen": scen, **r}
+    if "error" not in r:
+        r["checks"] = [bool(re.search(c, r["answer"])) for c in checks]
+    return r
 
 
 def summary(paths):
