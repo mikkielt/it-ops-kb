@@ -1,6 +1,17 @@
-# Work left (as of 2026-09-25)
+# Work left (as of 2026-09-26)
 
-Branch `claude/relaxed-keller-e8qyl3` on GitHub, not yet merged into GitLab `main`. Done and committed: task 6 (sync fixes, the 6b replay as a test), task 7 (plugin, `kb` MCP server, runbook), the research-skill fixes, and the census tooling (`/kb-census`, `_tools/census.py`); see `git log`. Still open:
+`main` on GitHub (remote `claude`) now holds everything below plus the 2026-09-26 expansion (section 0); the session branch `claude/relaxed-keller-e8qyl3` was merged and deleted. GitLab `origin/main` has not received these commits. Done and committed: task 6 (sync fixes, the 6b replay as a test), task 7 (plugin, `kb` MCP server, runbook), the research-skill fixes, and the census tooling (`/kb-census`, `_tools/census.py`); see `git log`. Still open:
+
+## 0. Expansion 2026-09-26: 69 new articles
+One manager session mapped gaps with `rag.py pack` (many answers were a false `good` from an unrelated article), then ran one Sonnet writer per topic following `/kb-add-topic` / `/kb-research`, and pushed each verified topic to GitHub `main`.
+- **Added:** 69 articles, 43 data CSVs, 785 source rows (almost all Microsoft Learn, Claude Code, MCP spec, vendor docs), `lookup_eval.csv` 37 -> 85 rows, new signals/aliases.
+- **Domains:** Windows (LAPS, BitLocker, App Control, Windows Update/Autopatch/hotpatch, Delivery Optimization, WinGet, WEF/Sysmon, kiosk, PowerShell 7, remoting/JEA, Windows 365, Arc, Update Manager); Intune (Win32 apps, compliance, configuration policies, filters/RBAC, EPM, remote actions, Remote Help, platform scripts, reports export, certificates/Cloud PKI, network profiles, MAM, macOS, iOS/Android, Linux, Endpoint analytics); Autopilot v2; MECM software updates and OSD; Defender hunting, ASR/AV, response API, onboarding; Entra CA for devices, Connect/Cloud Sync, PIM, Agent ID; WHfB; audit log APIs; Graph batching and PowerShell SDK; Microsoft365DSC; Claude Code skills/subagents, plugins, settings, Agent SDK, CI/headless, Messages API, enterprise admin; MCP resources/prompts, streamable HTTP, registry/extensions; Microsoft Agent Framework, Foundry Agent Service, Azure OpenAI deployments, Security Copilot, Prompt Shields, M365 Copilot extensibility, Windows agentic platform, coding-agent MCP configs, GitHub Copilot admin, LangGraph, hybrid retrieval, Azure AI evaluation (in `agents/agent-evaluation.md`); AMA/DCRs, Sentinel; vulnerability prioritization.
+- **Open:**
+  - `UNK` items and `partial` status in the new articles: `python3 _tools/rag.py audit --status partial`.
+  - 8 new `_conflicts.md` entries (e.g. Win32 supersedence 10 vs 11 nodes, Copilot Studio Agent ID cutover date, Recall default, BOD 22-01 superseded by BOD 26-04, PowerShell lifecycle dates).
+  - Two negative-control eval rows (Terraform Log Analytics, Okta SCIM) now expect articles that answer them; add fresh negative controls for topics the kb still lacks.
+  - `tests.py` leak/cohesion checks scan tracked files only: stage new articles (`git add`) before running them, or they pass unchecked. Public ids found this round are in `_tools/tests_allowlist.txt` with reasons.
+  - Not yet pushed to GitLab `origin/main` (`python3 _tools/kbgit.py sync --push` when GitLab should get it).
 
 ## 1. Census 2026-09-25: finish what this environment could not reach
 Log: `_census/2026-09-25.csv` (`python3 _tools/census.py summary _census/2026-09-25.csv`).
