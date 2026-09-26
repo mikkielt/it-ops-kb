@@ -1,7 +1,7 @@
 {
   "name": "it-ops-kb",
   "displayName": "it-ops-kb",
-  "description": "Read-only access to it-ops-kb: cited facts from official sources on Windows endpoint management (DSC v3, ConfigMgr, Intune, Autopilot, Entra ID, AD, Graph, GPO, Defender, SQL Server, Power BI, GitLab CI, Ansible, baselines, identity, Presidio) and on MCP, Claude Code and AI agents: the kb MCP server, /kb-lookup, /kb-review-workspace, the kb-lookup and kb-reviewer agents and the kb: prompt hook",
+  "description": "Read-only access to it-ops-kb: cited facts from official sources on Windows endpoint management (DSC v3, ConfigMgr, Intune, Autopilot, Entra ID, AD, Graph, GPO, Defender, SQL Server, Power BI, GitLab CI, Ansible, baselines, identity, Presidio) and on MCP, Claude Code and AI agents: the kb MCP server, /kb-lookup, /kb-review-workspace, /kb-gap (drafts a gap report to paste), the kb-lookup and kb-reviewer agents and the kb: prompt hook",
   "author": {
     "name": "mikkielt",
     "url": "https://gitlab.com/mikkielt"
@@ -9,7 +9,7 @@
   "homepage": "https://gitlab.com/mikkielt/it-ops-kb",
   "repository": "git@gitlab.com:mikkielt/it-ops-kb.git",
   "keywords": ["windows", "endpoint-management", "intune", "configmgr", "entra-id", "dsc", "mcp", "claude-code", "knowledge-base"],
-  "skills": ["./.claude/skills/kb-lookup", "./.claude/skills/kb-review-workspace"],
+  "skills": ["./.claude/skills/kb-lookup", "./.claude/skills/kb-review-workspace", "./.claude/skills/kb-gap"],
   "agents": ["./.claude/agents/kb-lookup.md", "./.claude/agents/kb-reviewer.md"],
   "mcpServers": {
     "kb": {

@@ -9,7 +9,7 @@ TestKbServer    _tools/kb_mcp.py as a subprocess over stdio: the legacy handshak
                 questions with a verdict each and one footer), kb_audit, kb_facts (concise at least 30% smaller than
                 detailed), kb_source with cited, kb_topics_for.
 TestPluginManifest  .claude-plugin/marketplace.json and the two plugins: it-ops-kb (from the root: the kb server, the
-                read-only kb-lookup and kb-review-workspace skills, the kb-lookup and kb-reviewer agents listed by path
+                read-only kb-lookup, kb-review-workspace and kb-gap skills, the kb-lookup and kb-reviewer agents listed by path
                 so the kb's agents/ articles never load, the kb: hook) and it-ops-kb-docs (the three documentation
                 servers and a PreToolUse hook blocking submit_feedback); no root .mcp.json (it would load into
                 it-ops-kb); no pinned version (users track commits); rag.py named only as the clone form; the GitLab
@@ -244,7 +244,8 @@ class TestPluginManifest:
         assert "mcpServers" not in self.docs
 
     def test_only_read_only_skills(self):
-        assert self.plugin["skills"] == ["./.claude/skills/kb-lookup", "./.claude/skills/kb-review-workspace"]
+        assert self.plugin["skills"] == ["./.claude/skills/kb-lookup", "./.claude/skills/kb-review-workspace",
+                                         "./.claude/skills/kb-gap"]
         assert not os.path.isdir(os.path.join(KB, "skills")), "a root skills/ directory would be loaded too"
         for rel in self.plugin["skills"] + self.plugin["agents"]:
             path = os.path.join(KB, rel, "SKILL.md") if not rel.endswith(".md") else os.path.join(KB, rel)
@@ -260,6 +261,14 @@ class TestPluginManifest:
             fm = f.read().split("\n---", 1)[0]
         for line in ("disable-model-invocation: true", "context: fork", "agent: it-ops-kb:kb-reviewer"):
             assert line in fm
+        # the gap report is drafted for the user to paste: kb tools only, nothing written, sent or posted
+        with open(os.path.join(KB, ".claude/skills/kb-gap/SKILL.md"), encoding="utf-8") as f:
+            fm, body = f.read().split("\n---", 1)
+        assert "disable-model-invocation: true" in fm
+        tools = re.search(r"(?m)^allowed-tools:(.*)$", fm).group(1).split()
+        assert tools and all(re.fullmatch(r"mcp__(plugin_it-ops-kb_kb|kb)__kb_\w+", t) for t in tools), tools
+        assert "submit_feedback" in re.search(r"(?m)^disallowed-tools:(.*)$", fm).group(1)
+        assert "corp.example.com" in body, "the draft replaces organisation data with the kb's placeholders"
 
     def test_agents(self):
         """The lookup agent is lean (kb tools only, small model, no CLAUDE.md); the reviewer reads code."""
@@ -292,7 +301,8 @@ class TestPluginManifest:
         import kb_mcp
         for text in [kb_mcp.INSTRUCTIONS] + [t["description"] for t in kb_mcp.TOOL_LIST]:
             assert "rag.py" not in text
-        for rel in (".claude/agents/kb-lookup.md", ".claude/agents/kb-reviewer.md", ".claude/skills/kb-review-workspace/SKILL.md"):
+        for rel in (".claude/agents/kb-lookup.md", ".claude/agents/kb-reviewer.md", ".claude/skills/kb-review-workspace/SKILL.md",
+                    ".claude/skills/kb-gap/SKILL.md"):
             with open(os.path.join(KB, rel), encoding="utf-8") as f:
                 assert "rag.py" not in f.read(), rel
         with open(os.path.join(KB, ".claude/skills/kb-lookup/SKILL.md"), encoding="utf-8") as f:

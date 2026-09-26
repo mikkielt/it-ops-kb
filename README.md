@@ -20,7 +20,7 @@ Domains: Microsoft DSC v3, ConfigMgr (MECM), Intune, Autopilot, Entra ID, Active
 - `_fetch_state.csv` records, per source, when `fetch.py --diff` last checked and fetched it, when it last changed, and the hashes compared. Text snapshots of the last fetch sit in `_cache/snapshots/` (not committed).
 - `_tools/` holds stdlib-only Python tools.
 - `.claude-plugin/` makes the repository a Claude Code plugin marketplace with two read-only plugins, `it-ops-kb` and `it-ops-kb-docs` (see Use from another project).
-- `AGENTS.md` holds the short instructions every AI agent session loads (lookups, tags, the documentation MCP servers, conduct); `MAINTAINING.md` holds the rules for changing the kb (setup, tools, content rules, git, commits), read by the skills that change it; `.claude/skills/` holds the shared Claude Code skills `/kb-setup`, `/kb-lookup`, `/kb-review-workspace`, `/kb-research`, `/kb-refresh`, `/kb-add-topic`, `/kb-census`, `/kb-verify` and `/kb-git-sync`; `.claude/agents/` holds the `kb-lookup` and `kb-reviewer` subagents.
+- `AGENTS.md` holds the short instructions every AI agent session loads (lookups, tags, the documentation MCP servers, conduct); `MAINTAINING.md` holds the rules for changing the kb (setup, tools, content rules, git, commits), read by the skills that change it; `.claude/skills/` holds the shared Claude Code skills `/kb-setup`, `/kb-lookup`, `/kb-review-workspace`, `/kb-gap`, `/kb-research`, `/kb-refresh`, `/kb-add-topic`, `/kb-census`, `/kb-verify` and `/kb-git-sync`; `.claude/agents/` holds the `kb-lookup` and `kb-reviewer` subagents.
 
 ## Fact tags
 
@@ -111,7 +111,8 @@ The kb is also a Claude Code plugin marketplace (`.claude-plugin/marketplace.jso
 - **`/it-ops-kb:kb-lookup`**, which Claude may also invoke on its own. A single fact is one `kb_pack` call in the session that asked.
 - **the `it-ops-kb:kb-lookup` agent**, for long research whose output would fill the caller's context: kb tools only, Haiku, low effort, no `CLAUDE.md`, the lookup procedure preloaded (about 4k tokens of startup context, measured, against about 13k for a general-purpose agent).
 - **`/it-ops-kb:kb-review-workspace [paths or focus]`**, which you start yourself. It runs in the `it-ops-kb:kb-reviewer` agent (Sonnet, `Read`, `Grep`, `Glob` and the kb tools, the project's `CLAUDE.md` loaded). The agent maps the project's code to kb topics with `kb_topics_for`, reads the facts, and reports findings in chat: each with the project's `path:line` and the kb's `path:line`, tag and source url. It writes nothing.
-- **the `kb:` prompt hook** (UserPromptSubmit, `_tools/kb_hook.py`): `kb: <question>` is answered from the kb without the model when the kb covers it; when the kb does not cover it, Claude gets one line saying so.
+- **`/it-ops-kb:kb-gap <question>`**, which you start yourself when the kb did not answer (coverage `none` or `weak`, or facts that missed the point). It runs `kb_status`, `kb_pack` and `kb_audit` and prints an issue text to paste into the kb's issue tracker: the question, the kb version, the verdict, the nearest articles with `path:line`, what was missing and whether a gap is already logged. It replaces your organisation's names and ids with the kb's placeholders, and it writes, sends and posts nothing (kb tools only).
+- **the `kb:` prompt hook** (UserPromptSubmit, `_tools/kb_hook.py`): `kb: <question>` is answered from the kb without the model when the kb covers it; when the kb does not cover it, Claude gets one line saying so. A `good` pack with a `check:` line (below) goes to Claude with the pack instead of being answered alone.
 
 **`it-ops-kb-docs`** (`.claude-plugin/it-ops-kb-docs/`): the three documentation servers (Microsoft Learn, Claude Code docs, MCP spec), with every `submit_feedback` call blocked by the plugin's PreToolUse hook (a plugin cannot ship permission rules). Install it only for the servers you do not have already: each adds its name and instructions to every session.
 
@@ -130,7 +131,7 @@ The second install is optional (the documentation servers). From a shell, the sa
 
 To try a working tree without installing: `claude --plugin-dir <path to the clone>` (and `--plugin-dir <clone>/.claude-plugin/it-ops-kb-docs`). Scripts in bare mode (`claude -p --bare`) skip installed plugins, so they must pass `--plugin-dir` too.
 
-Check it: `/mcp` lists `plugin:it-ops-kb:kb` as connected. Then ask Claude to "call kb_status": it answers with the kb commit, its date and the census tag, which shows how current your copy is. Then ask a question in the kb's domains (for example "what does the kb say about Kerberos constrained delegation versus on-behalf-of?"). The answer should cite `path:line`, the fact's tag and the source url.
+Check it: `/mcp` lists `plugin:it-ops-kb:kb` as connected. Then ask Claude to "call kb_status" (start there whenever freshness matters): it answers with the kb commit, its date and the latest census tag, which shows how current your copy is. No census has been completed yet, so `kb_status` reports none; each article's `retrieved_utc` and the `confirmed <date>` notes on sources are the dates to go by. Then ask a question in the kb's domains (for example "what does the kb say about Kerberos constrained delegation versus on-behalf-of?"). The answer should cite `path:line`, the fact's tag and the source url.
 
 Update: the plugin sets no `version`, so every new commit on `main` is a new version. Run `/plugin marketplace update it-ops-kb` in a session (or `claude plugin update it-ops-kb@it-ops-kb` from a shell), then `/reload-plugins` or start a new session. Or turn on background updates once: `/plugin`, then **Marketplaces**, `it-ops-kb`, **Enable auto-update**.
 
@@ -143,6 +144,13 @@ To set it up for everyone who opens a project, commit this to the project's `.cl
   "enabledPlugins": { "it-ops-kb@it-ops-kb": true, "it-ops-kb-docs@it-ops-kb": true }
 }
 ```
+Leave `it-ops-kb-docs` out of `enabledPlugins` when the team already has the Microsoft Learn, Claude Code docs or MCP docs servers: the same server twice costs its instructions twice.
+
+### What it costs and what to watch
+- **Context:** about 312 tokens in every session (`claude plugin details it-ops-kb`: the `kb-lookup` skill description and the server's instructions); `/kb-review-workspace` and `/kb-gap` are never listed, so they cost nothing until you run them. The docs plugin adds each server's instructions.
+- **Disk and time:** about 13 MB of files plus about 7 MB of git history per installed copy; Python 3.9+ standard library only. After each update the first lookup builds the index in a few seconds (3-5 s measured), then a cold lookup takes about 0.1 s.
+- **Known limit, a false `good`:** the verdict counts the question's key words in the best article, not meaning, so a `good` pack can be about something related. When a name the question uses (a product, an id) appears nowhere in the lead article, the pack prints a `check:` line under the verdict, and the kb tools' instructions say to answer only if a cited line answers the question itself. Without that line the risk is lower, not gone: check that the cited fact answers what was asked, and report a miss with `/it-ops-kb:kb-gap`.
+- **Headless answers:** `_tools/kb_ask.py` (routes by the pack verdict to Haiku or Sonnet) needs a clone and the `claude` CLI; in a session with the plugin the path is `kb_pack` or `/it-ops-kb:kb-lookup`.
 
 ### Without plugins: a prompt for the operator
 Paste this into Claude Code in the project that should use the kb (it assumes the same SSH access):
@@ -186,6 +194,8 @@ Research, refresh and fixes happen in a clone, never in the plugin copy:
 5. On exit 3 (a conflict in an article, tool or doc) run `/kb-git-sync --push`. It resolves by meaning, or tells you what it needs decided. Exit 1 means the gate is red: fix the cause, never the baseline.
 
 Plugin users receive the push at their next update.
+
+Reports from `/it-ops-kb:kb-gap` are triaged in a clone: each becomes a `_gaps.md` entry (ending in `(topic: <domain>/<slug>)`) and, when the kb has the article but the pack missed it, a `_tools/lookup_eval.csv` row (`python3 _tools/kbid.py eval "<question>"`); then `/kb-research` or `/kb-add-topic`, and `kbgit.py sync --push`.
 
 ## Contributing
 

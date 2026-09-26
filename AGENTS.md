@@ -31,7 +31,7 @@ Three remote servers that need no authentication, in `.claude-plugin/it-ops-kb-d
 
 ## Skills
 
-`/kb-lookup` and `/kb-review-workspace` (read-only; the review checks another project's code against the kb). The following change the kb and follow `MAINTAINING.md`: `/kb-setup`, `/kb-research`, `/kb-refresh`, `/kb-add-topic`, `/kb-census`, `/kb-verify`, `/kb-git-sync`.
+`/kb-lookup`, `/kb-review-workspace` and `/kb-gap` (read-only; the review checks another project's code against the kb, the gap skill drafts a report of what the kb lacks). The following change the kb and follow `MAINTAINING.md`: `/kb-setup`, `/kb-research`, `/kb-refresh`, `/kb-add-topic`, `/kb-census`, `/kb-verify`, `/kb-git-sync`.
 
 ## Agent conduct
 

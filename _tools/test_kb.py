@@ -244,7 +244,7 @@ class TestCohesion:
         assert size <= 4096, f"AGENTS.md is {size} bytes: it loads into every session and subagent; " \
                                          "move maintainer detail to MAINTAINING.md"
         for s in glob.glob(os.path.join(KB, ".claude", "skills", "*", "SKILL.md")):
-            if os.path.basename(os.path.dirname(s)) not in ("kb-lookup", "kb-review-workspace"):  # read-only skills
+            if os.path.basename(os.path.dirname(s)) not in ("kb-lookup", "kb-review-workspace", "kb-gap"):  # read-only skills
                 assert "MAINTAINING.md" in text(os.path.relpath(s, KB)), f"{s}: a skill that changes the kb must point to MAINTAINING.md"
 
 
