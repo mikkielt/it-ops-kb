@@ -123,6 +123,10 @@ See `agents/mcp-client-config-formats.csv` for a side-by-side table (product, co
 top-level key, transport support, auth options, approval/allowlist controls, status, source) using the same
 placeholder MCP server (`https://mcp.corp.example.com/mcp`) configured for every product below.
 
+For the org/enterprise-level **"MCP servers in Copilot"** policy that gates whether Copilot coding agent's
+MCP configuration field is usable at all, plus the coding agent's firewall/allowlist, audit log category, and
+usage-metrics API, see `agents/github-copilot-admin.md`.
+
 ## Examples
 The same placeholder remote MCP server, `https://mcp.corp.example.com/mcp`, configured in each product:
 
