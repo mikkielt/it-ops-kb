@@ -3,8 +3,8 @@ topic: gpo/admx-central-store
 priority: P1
 applies_to: "Group Policy Central Store, Windows Server domain controllers, Windows 10/11 clients (incl. 24H2/25H2)"
 retrieved_utc: 2026-09-26
-sources: [S-iymw4lcl, S-z4lluk64, S-xtwd545o, S-2lf5j2iv]
-status: partial
+sources: [S-iymw4lcl, S-z4lluk64, S-xtwd545o, S-2lf5j2iv, S-6glsfens, S-gvgapsup]
+status: complete
 ---
 
 # Group Policy Central Store for Administrative Templates (ADMX/ADML)
@@ -35,8 +35,8 @@ status: partial
 - Third-party/vendor ADMX merge pattern (general, matches the Central Store layout): copy the vendor's `.admx` to the `PolicyDefinitions` folder and its `.adml` to the matching language subfolder (e.g. `en-US`); shown for Microsoft Edge (`msedge.admx`/`msedge.adml`, plus `msedgeupdate.admx` for update policy) copied into `%systemroot%\sysvol\domain\policies\PolicyDefinitions` and its `en-US` subfolder, after which new ADMX files replicate to other DCs at the next domain replication interval. [DOC S-2lf5j2iv]
 - Microsoft Edge Group Policy settings appear immediately in the Group Policy Editor once the ADMX/ADML files are placed in the checked `PolicyDefinitions` location (Central Store on a domain controller/RSAT workstation, or the local folder for a standalone computer). [DOC S-2lf5j2iv]
 - Office and LAPS/WinGet-style app ADMX merges follow the same shape as the Edge example above: copy the app's `.admx` into `PolicyDefinitions` and its `.adml` into the matching language subfolder, without deleting or renaming files that other vendors' ADMX still reference; for LAPS's and WinGet's own file names and exact steps, see `windows/laps.md` and `windows/winget.md` (not duplicated here). [DER S-iymw4lcl, S-2lf5j2iv: same copy-to-PolicyDefinitions-plus-language-subfolder pattern documented for Edge and generalized in the Central Store article for "operating system extensions ... and also third-party applications"]
-- Whether GPMC/the Group Policy Editor picks the Central Store over the local `C:\Windows\PolicyDefinitions` store by comparing versions, or simply prefers the Central Store outright whenever it's present (subject only to `EnableLocalStoreOverride`), is not stated on the fetched pages. [UNK: no fetched Microsoft Learn page describes a version-comparison step; only the present/absent + EnableLocalStoreOverride precedence is documented]
-- Whether SYSVOL/Central Store replication specifically uses DFSR (versus legacy FRS on domains not yet migrated) is not stated on the fetched pages for this topic. [UNK: not confirmed on a fetched page; see DER line above for the inference]
+- The Group Policy Editor makes no version comparison: `EnableLocalStoreOverride` (REG_DWORD under `HKLM\SOFTWARE\Policies\Microsoft\Windows\Group Policy`) = `0`, the default, uses the SYSVOL `PolicyDefinitions` folder whenever it is present; `1` always uses the local `C:\Windows\PolicyDefinitions`. [DOC S-xtwd545o]
+- AD DS replicates SYSVOL (and so the Central Store) with DFS Replication in domains at the Windows Server 2008 domain functional level or later; FRS is deprecated since Windows Server 2008 R2, and from Windows Server 2019 a new domain controller cannot be promoted into a domain that still replicates SYSVOL with FRS (migrate with `dfsrmig`). [DOC S-6glsfens, S-gvgapsup]
 
 ## Reference
 | Item | Location | Source |

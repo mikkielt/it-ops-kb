@@ -3,8 +3,8 @@ topic: ad/krbtgt-password-reset
 priority: P1
 applies_to: "Active Directory Domain Services (all supported Windows Server versions); Microsoft Defender for Identity"
 retrieved_utc: 2026-09-26
-sources: [S-4ikiakpi, S-nl7th7fi, S-6mj4jpce, S-4cv3kd2v, S-6ca4b7bg]
-status: partial
+sources: [S-4ikiakpi, S-nl7th7fi, S-6mj4jpce, S-4cv3kd2v, S-6ca4b7bg, S-vhwb6zo5]
+status: complete
 ---
 
 # KRBTGT account password reset
@@ -34,8 +34,8 @@ status: partial
 - Defender for Identity's Golden Ticket description: an attacker with domain admin rights who compromises the KRBTGT account can forge a TGT that authorizes access to any resource with an arbitrary expiration ("Golden Ticket"), so closely monitoring and regularly changing the krbtgt password is presented as essential to mitigating this risk. [DOC S-6mj4jpce]
 - Defender for Identity's classic alert list documents multiple Golden Ticket detections keyed off KRBTGT abuse: "Suspected Golden Ticket usage (ticket anomaly)" (external ID 2022 family), "(ticket anomaly using RBCD)" (ID 2040), "(nonexistent account)" (ID 2027), and "(encryption downgrade)" — all mapped to MITRE T1558.001 (Golden Ticket) under Persistence/Privilege Escalation/Lateral Movement. [DOC S-6ca4b7bg]
 - The "(time anomaly)" Golden Ticket alert (formerly "Kerberos golden ticket") fires when a TGT is used for longer than the domain's Maximum lifetime for user ticket policy allows. [DOC S-6ca4b7bg]
-- [UNK: whether `New-KrbtgtKeys.ps1` is still actively maintained/recommended as of 2026, and its exact current parameters/behavior] — Microsoft's ransomware playbook links to the script as a recommendation but the kb has not fetched the script repository itself.
-- [UNK: a documented, Microsoft-stated minimum recommended reset cadence for KRBTGT outside of a compromise response] — the fetched pages describe the 180-day posture-assessment threshold and the twice/10-hour compromise procedure, but not a general "reset every N days" policy statement.
+- The `microsoft/New-KrbtgtKeys.ps1` GitHub repository (MIT) was archived on 2024-03-08 and is read-only: its maintainers state that development has ended and point to community forks; the archived version errors on offline domain controllers still registered in AD (remove them with ntdsutil first). The ransomware playbook still links it, so treat it as an unmaintained aid, not a supported tool. [DOC S-vhwb6zo5, S-4cv3kd2v]
+- Microsoft gives no fixed routine interval: KRBTGT and trust account passwords should be changed "on a regular schedule, as you would with any privileged service account"; the only number is Defender for Identity's posture check, which flags a krbtgt password older than 180 days. [DOC S-nl7th7fi, S-6mj4jpce]
 
 ## Reference
 | Step / control | Value | Source |
