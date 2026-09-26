@@ -531,7 +531,7 @@ def cmd_check(a):
                         "retrieved_utc": r["retrieved_utc"], "http_status": st, **res, "used_in": r.get("used_in", ""),
                         "outcome": "", "outcome_note": ""})
     counts = Counter(res["bucket"] for _, _, _, res in results)
-    print(f"phase 1: " + ", ".join(f"{b}={counts[b]}" for b in BUCKETS) + f"; wrote {os.path.relpath(out, KB)}")
+    print("phase 1: " + ", ".join(f"{b}={counts[b]}" for b in BUCKETS) + f"; wrote {os.path.relpath(out, KB)}")
     return 0
 
 

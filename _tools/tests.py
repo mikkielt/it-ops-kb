@@ -11,7 +11,8 @@ Cohesion: check.py and fetch.py --offline pass; no lint errors beyond the record
 files (_coverage.csv, README coverage table, used_in) are up to date (build_index.py --check); links, backtick paths and used_in paths resolve; every CLI flag the docs mention exists
 in that tool; the docs servers' .mcp.json (.claude-plugin/it-ops-kb-docs/), .claude/settings.json and AGENTS.md agree;
 skills are well-formed and only /kb-lookup is model-invocable; AGENTS.md stays under 4 KB
-(every session and subagent loads it; maintainer rules live in MAINTAINING.md).
+(every session and subagent loads it; maintainer rules live in MAINTAINING.md); `ruff check` is clean when ruff is
+installed (pyproject.toml).
 Lookup (deterministic retrieval): kbfacts.py parses tag variants and ledger topic markers one way; `rag.py eval` passes
 every question of _tools/lookup_eval.csv (expected article in the pack, right coverage verdict); the kb: hook blocks
 a covered question, forwards an uncovered one with the pack, and leaves other prompts alone.
@@ -29,7 +30,7 @@ Leaks (tracked files): secrets in any file; in authored files also home-director
 non-placeholder e-mail addresses and GUIDs outside the reviewed allowlist (_tools/tests_allowlist.txt); files that
 must never be committed; oversized files.
 """
-import csv, glob, json, os, re, subprocess, sys, unittest
+import csv, functools, glob, json, os, re, subprocess, sys, unittest
 
 KB = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TOOLS = os.path.join(KB, "_tools")
@@ -56,19 +57,21 @@ def run(*args):
     return p.returncode, p.stdout + p.stderr
 
 
+@functools.lru_cache(maxsize=None)
 def tracked():
-    """Tracked files (git ls-files), or every file outside ignored dirs when git is unavailable."""
+    """Tracked files (git ls-files), or every file outside ignored dirs when git is unavailable (read once per run)."""
     try:
         out = subprocess.run(["git", "ls-files", "-z"], cwd=KB, capture_output=True, check=True).stdout
-        return sorted(f for f in out.decode().split("\0") if f)
+        return tuple(sorted(f for f in out.decode().split("\0") if f))
     except (OSError, subprocess.CalledProcessError):
         out = []
         for root, dirs, files in os.walk(KB):
             dirs[:] = [d for d in dirs if d not in {".git", "_cache", "_private", "__pycache__"}]
             out += [os.path.relpath(os.path.join(root, f), KB) for f in files]
-        return sorted(out)
+        return tuple(sorted(out))
 
 
+@functools.lru_cache(maxsize=None)
 def text(rel):
     try:
         with open(os.path.join(KB, rel), encoding="utf-8") as f:
@@ -82,10 +85,11 @@ def pinned():
         return {r["path"] for r in csv.DictReader(f)}
 
 
+@functools.lru_cache(maxsize=None)
 def authored():
     """Tracked text files we wrote ourselves: not pinned artifacts and not vendor exports under */artifacts/."""
     p = pinned()
-    return [f for f in tracked() if f not in p and "/artifacts/" not in f and text(f) is not None]
+    return tuple(f for f in tracked() if f not in p and "/artifacts/" not in f and text(f) is not None)
 
 
 def allowlist():
@@ -242,6 +246,17 @@ class Cohesion(unittest.TestCase):
             self.assertIn(os.path.basename(os.path.dirname(p)), text("AGENTS.md"), f"{p}: skill not listed in AGENTS.md")
             if os.path.basename(os.path.dirname(p)) != "kb-lookup":  # its description would load into every session
                 self.assertRegex(fm, r"(?m)^disable-model-invocation: true$", f"{p}: only /kb-lookup is model-invocable")
+
+    def test_python_passes_ruff_when_installed(self):
+        """pyflakes rules (pyproject.toml [tool.ruff]): no unused or undefined names; skipped without ruff."""
+        try:
+            p = subprocess.run([sys.executable, "-m", "ruff", "check", "--output-format", "concise", "."], cwd=KB,
+                               capture_output=True, text=True, timeout=120)
+        except (OSError, subprocess.SubprocessError):
+            self.skipTest("ruff not runnable")
+        if "No module named ruff" in p.stderr:
+            self.skipTest("ruff is not installed (dev group in pyproject.toml)")
+        self.assertEqual(p.returncode, 0, p.stdout[-3000:] + p.stderr[-1000:])
 
     def test_claude_md_imports_agents_md(self):
         self.assertIn("@AGENTS.md", text("CLAUDE.md") or "")
@@ -454,7 +469,8 @@ class Leaks(unittest.TestCase):
     def test_no_secrets(self):
         allow = allowlist().get("secret", set())
         files = [f for f in tracked() if text(f) is not None]
-        found = [h for rx in self.SECRETS for h in hits(rx, files) if h[2].lower() not in allow]
+        rx = "|".join(f"(?i:{p[4:]})" if p.startswith("(?i)") else f"(?:{p})" for p in self.SECRETS)  # one pass per file
+        found = [h for h in hits(rx, files) if h[2].lower() not in allow]
         self.assertFalse(found, "possible secrets:\n" + fmt(found))
 
     def test_no_home_paths(self):
@@ -490,7 +506,7 @@ class Leaks(unittest.TestCase):
         found = [h for h in hits(r"\b[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\b", md, strip_urls=True)
                  if not re.fullmatch(r"0{8}-0{4}-0{4}-0{4}-0{8}[0-9a-f]{4}", h[2].lower()) and h[2].lower() not in allow]
         self.assertFalse(found, "GUIDs in prose that are neither placeholders nor reviewed public ids "
-                                "(tenant/object ids leak; add public ones to _tools/leak_allowlist.txt with a reason):\n" + fmt(found))
+                                "(tenant/object ids leak; add public ones to _tools/tests_allowlist.txt with a reason):\n" + fmt(found))
 
     def test_no_forbidden_files_tracked(self):
         rx = re.compile(r"(^|/)(_cache|_private|__pycache__)/|(^|/)\.env(\.|$)|\.(pem|key|pfx|p12|kdbx|tmp)$|(^|/)id_(rsa|ed25519)|(^|/)\.DS_Store$")

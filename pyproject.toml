@@ -1,0 +1,27 @@
+# it-ops-kb tooling. The runtime is the Python standard library only: the plugin, the kb: hook and the git hooks run
+# `python3 _tools/<tool>.py` with whatever Python 3.9+ the machine has, so nothing here is installed for them.
+# The dev group is for maintainers (uv installs it by default: `uv sync`, then `uv run ruff check`, `uv run pytest`).
+[project]
+name = "it-ops-kb"
+version = "0"
+description = "Offline knowledge base of official-source facts on Windows endpoint management and the AI agents that operate it"
+requires-python = ">=3.9"
+dependencies = []
+
+[dependency-groups]
+dev = ["pytest>=8", "ruff>=0.6"]
+
+[tool.ruff]
+line-length = 200
+target-version = "py39"
+extend-exclude = ["_cache", "_private"]
+
+[tool.ruff.lint]
+# pyflakes only (unused and undefined names, redefinitions): the code keeps its own layout
+select = ["F"]
+ignore = ["E731"]
+
+[tool.pytest.ini_options]
+# the same suite as `python3 _tools/tests.py` (it imports every test class); stress_test.py has its own runner
+testpaths = ["_tools"]
+python_files = ["tests.py"]

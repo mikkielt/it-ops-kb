@@ -7,7 +7,7 @@
                            commits with -m, the editor, --amend, KB_VERIFIED, a non-kb change and a --no-verify commit;
                            check-trailers, log, blame, asof, tag-census and `trailers --amend`. Skipped without git.
 """
-import os, re, shutil, subprocess, sys, tempfile, unittest
+import os, shutil, subprocess, sys, tempfile, unittest
 
 TOOLS = os.path.dirname(os.path.abspath(__file__))
 KB = os.path.dirname(TOOLS)

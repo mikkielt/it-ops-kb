@@ -15,9 +15,15 @@ variables:
 
 stages: [test]
 
+# The full image has git, so the git scenarios (merge, history, sync, research merge, census) run instead of skipping;
+# a full clone keeps the commits the research-merge scenario replays.
 kb-tests:
   stage: test
+  image: python:3.12
+  variables:
+    GIT_DEPTH: "0"
   script:
+    - git config --global --add safe.directory "$CI_PROJECT_DIR"
     - python3 _tools/tests.py
 
 tool-stress:

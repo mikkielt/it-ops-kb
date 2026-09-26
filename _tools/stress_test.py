@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Stress and robustness tests for the kb tools (stdlib only). Exit 1 on any failure.
 
-  stress_test.py                 run every case (about 20 s)
+  stress_test.py                 run every case (about 45 s)
   stress_test.py --scale 20      also search a corpus copied 20 times (default 5)
   stress_test.py -k search       run only cases whose name contains "search"
 
@@ -469,7 +469,7 @@ def fetch_diff_cases(tmp):
         case("diff: selection flag without mode", d, "fetch.py", ["--file", "README.md"], 2, "need --diff or --status")
         n = lambda o: len(json.loads(o))  # noqa: E731
         f_ = case("status: --file selection", d, "fetch.py", ["--status", "--json", "--file", "dsc/what-if.md"], 0, check=lambda o: n(o) > 0)
-        t_ = case("status: --topic selection", d, "fetch.py", ["--status", "--json", "--topic", "dsc/what-if"], 0, check=lambda o: n(o) > 0)
+        case("status: --topic selection", d, "fetch.py", ["--status", "--json", "--topic", "dsc/what-if"], 0, check=lambda o: n(o) > 0)
         case("status: --dir is a superset of --file", d, "fetch.py", ["--status", "--json", "--dir", "dsc"], 0,
              check=lambda o: f_ is not None and {x["id"] for x in json.loads(f_)} <= {x["id"] for x in json.loads(o)})
         case("status: no selection = every source", d, "fetch.py", ["--status", "--json"], 0, check=lambda o: n(o) == len(rows))

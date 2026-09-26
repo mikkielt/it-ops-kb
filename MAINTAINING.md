@@ -51,6 +51,7 @@ Run `/kb-setup` (Claude Code), or do the same by hand. In Claude Code on the web
 | `python3 _tools/fetch.py --diff --topic T [--full] [--json]` | re-fetch a topic's sources and diff against the last fetch (exit 0 same, 1 changed, 2 error) |
 | `python3 _tools/stress_test.py` | robustness tests on throwaway copies of the kb |
 | `python3 _tools/tests.py` | what CI (`.gitlab-ci.yml`) runs: docs cohesion and leak scan; `--write-lint-baseline` accepts current lint errors as known debt |
+| `pyproject.toml` (dev group: `uv run ruff check`, `uv run pytest`) | optional maintainer tools; the runtime stays stdlib-only. `ruff check` (pyflakes rules) must stay clean: `tests.py` runs it when ruff is installed; `pytest` runs the same suite as `tests.py` |
 | `python3 .claude/skills/kb-verify/lint.py [PREFIX...]` | contract checks beyond check.py (report only) |
 
 ## Plugin (`.claude-plugin/`)
