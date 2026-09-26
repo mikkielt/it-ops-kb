@@ -3,7 +3,7 @@ topic: logs/azure-monitor-agent
 priority: P2
 applies_to: "Azure Monitor Agent (AMA), Data Collection Rules API 2024-03-11, docs ms.date through 2026-09"
 retrieved_utc: 2026-09-26
-sources: [S-luprngvc, S-me4bxp52, S-kguhudz7, S-6xjyyd4l, S-mix3xqam, S-m4gimryf, S-de5xdfvw, S-in4qr3cp, S-prybc22p, S-qvsjnnqo, S-r33zxv3s, S-5d3e2yck, S-3dcvyq2z]
+sources: [S-luprngvc, S-me4bxp52, S-kguhudz7, S-6xjyyd4l, S-mix3xqam, S-m4gimryf, S-de5xdfvw, S-in4qr3cp, S-prybc22p, S-qvsjnnqo, S-r33zxv3s, S-5d3e2yck, S-3dcvyq2z, S-dhhpzwg3]
 status: complete
 ---
 
@@ -46,7 +46,7 @@ receiver is `logs/otel-collector-receivers.md`.
   a fully custom XPath list. [DOC S-3dcvyq2z]
 - Recommended baseline event levels: collect at least Critical/Error/Warning for Windows System and Application logs
   for alerting; add Information for trend analysis; Verbose is rarely useful. Equivalent guidance for Syslog:
-  LOG_WARNING+ for alerting, Information for trends, LOG_DEBUG rarely useful. [DOC S-luprngvc]
+  LOG_WARNING+ for alerting, Information for trends, LOG_DEBUG rarely useful. [DOC S-dhhpzwg3]
 - Use XPath filtering at the agent (not a downstream transformation) as the primary filter for efficiency and to
   avoid ingestion charges; a `dataFlows` transformation can still add calculated columns or further filtering.
   [DOC S-kguhudz7]
@@ -94,11 +94,11 @@ receiver is `logs/otel-collector-receivers.md`.
 - On Linux, AMA creates dedicated non-interactive system accounts: `azuremonitoragent` (runs `mdsd`, the core
   collection service), `azureotelcollector` (OpenTelemetry data collection), `azuremetricsext` (Metrics Extension);
   none should be deleted or modified. [DOC S-mix3xqam]
-- AMA is free; charges apply for Log Analytics data ingestion and retention only. [DOC S-6xjyyd4l]
-- On Windows, AMA supports Event Logs, Performance, file-based logs and IIS logs, delivered to Azure Monitor Logs;
-  it is required (not the legacy agent) for VM insights, Change tracking, SQL Best Practices Assessment, Azure
-  Local, and (Sentinel scope-dependent) Microsoft Sentinel; Microsoft Defender for Cloud and Azure Update Manager no
-  longer use either agent. [DOC S-6xjyyd4l]
+- The agent itself costs nothing to use; charges may apply for data ingestion and storage. [DOC S-6xjyyd4l]
+- On Windows, AMA and the legacy agent both collect Event Logs, Performance, file-based logs and IIS logs into
+  Azure Monitor Logs, and both are ticked for Microsoft Sentinel (AMA with a scope note), VM insights and Change
+  tracking; only AMA is ticked for Azure Local, SQL Best Practices Assessment and Windows client OS; Microsoft
+  Defender for Cloud (uses only the Defender for Endpoint agent) and Azure Update Manager use neither agent. [DOC S-6xjyyd4l]
 
 ### Windows client installer (Windows 10/11 desktops)
 - The client installer and the VM extension install the same underlying AMA binary; the client installer uses

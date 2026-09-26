@@ -65,8 +65,9 @@ ConfigMgr status messages, SQL Server Audit, GitLab).
   runs before the corresponding entry appears in results. [DOC S-vkmx3p22]
 - Search-UnifiedAuditLog requires the **View-Only Audit Logs** or **Audit Logs** role (part of the Compliance
   Management / Organization Management role groups). [DOC S-p7uijoop]
-- The Microsoft recommends **not** scripting bulk programmatic downloads with `Search-UnifiedAuditLog`; for that use
-  case, use the Office 365 Management Activity API or the newer Purview Audit Search Graph API instead. [DOC S-pzhjwitg]
+- For programmatic downloads from the Microsoft 365 audit log, Microsoft recommends the Microsoft 365 Management
+  Activity API (a REST web service) instead of `Search-UnifiedAuditLog` in a PowerShell script; the cmdlet page does
+  not mention the Graph Purview Audit Search API (covered below from its own sources). [DOC S-pzhjwitg]
 - `Set-AdminAuditLogConfig -UnifiedAuditLogIngestionEnabled $false`/`$true` (Exchange Online PowerShell) turns
   unified audit log search off/on for the tenant. [DOC S-vkmx3p22]
 - E5/Purview-Suite/eDiscovery-and-Audit-add-on licensed tenants get **1-year** default retention for Entra ID,

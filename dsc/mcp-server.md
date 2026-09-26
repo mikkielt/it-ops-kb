@@ -3,7 +3,7 @@ topic: dsc/mcp-server
 priority: P0
 applies_to: "Microsoft DSC 3.2.0, 3.3.0 (release/v3.3 @ ea572fa), 3.4.0-preview.1"
 retrieved_utc: 2026-09-26
-sources: [S100, S108, S109, S113, S116, S117, S118, S134, S136, S141]
+sources: [S100, S108, S109, S113, S116, S117, S118, S134, S136, S141, S-catcwj3d, S-liojjbc4, S-awsbvym2, S-ezl54xgl, S-eu4akijw, S-pr75qw5k, S-vnizihrz, S-5xcgjq4m, S-kb73mn6y, S-wwzbgp6q, S-mc3u4cy5, S-4vi7fb6a, S-tgdrpywm, S-nchhrpes]
 status: complete
 ---
 
@@ -20,12 +20,12 @@ status: complete
 - 3.3.0 defines `#[clap(name = "server", alias = "mcp")]`, help text "Use DSC as a server over JSON-RPC (useful as MCP server)". Tools are in `dsc/src/server/`. [DOC S100,S116]
 - The server runs `server.serve(stdio())` and returns the instruction string "This server provides tools that work with DSC (DesiredStateConfiguration) which enables users to manage and configure their systems declaratively." [DOC S141]
 - 3.3.0 `InvokeDscConfigRequest` fields: `operation` (get|set|test|export), `configuration` (YAML string), `parameters` (optional YAML string). There is no `what_if`. Set runs as `configurator.invoke_set(false)`. [DOC S108]
-- 3.3.0 `InvokeDscResourceRequest` fields: `operation` (get|set|test|export|delete), `resource_type`, `properties_json`. There is no `what_if`. [DOC S108]
-- The request structs have no `deny_unknown_fields`, so an unknown `what_if` key is dropped during deserialization and the operation runs normally. [DER S108: serde default ignores unknown fields]
+- 3.3.0 `InvokeDscResourceRequest` fields: `operation` (get|set|test|export|delete), `resource_type`, `properties_json`. There is no `what_if`. [DOC S-catcwj3d]
+- The request structs have no `deny_unknown_fields`, so an unknown `what_if` key is dropped during deserialization and the operation runs normally. [DER S108, S-catcwj3d: neither request struct sets deny_unknown_fields, and serde ignores unknown fields by default]
 - 3.4.0-preview.1 `invoke_dsc_config` adds `what_if: Option<bool>` ("Only valid with the 'set' operation"; otherwise `invalid_params` "whatIfOnlySet"). It sets `execution_type = WhatIf`, so results carry `metadata.Microsoft.DSC.executionType = whatIf`. [DOC S109]
-- 3.4.0-preview.1 `invoke_dsc_resource` adds `what_if` for set/delete: "Resources without native what-if support return a synthetic result derived from 'test'". [DOC S109]
+- 3.4.0-preview.1 `invoke_dsc_resource` adds `what_if` for set/delete: "Resources without native what-if support return a synthetic result derived from 'test'". [DOC S-liojjbc4]
 - The strings `whatIfOnlySet` and "simulate the change" appear in the 3.4.0-preview.1 dsc.exe and not in the 3.3.0 dsc.exe (Windows x64 zips). [DER S114,S115: `strings` count 0 vs 1/2]
-- Tool annotations are the same in 3.3.0 and 3.4.0-preview.1: invoke_dsc_config and invoke_dsc_resource have readOnly=false, destructive=true, idempotent=true, openWorld=true. invoke_dsc_expression and invoke_dsc_function have readOnly=false, destructive=false. list_dsc_functions, list_dsc_resources, show_dsc_resource and show_dsc_schema have readOnly=true. [DOC S108,S109]
+- Tool annotations are the same in 3.3.0 and 3.4.0-preview.1: invoke_dsc_config and invoke_dsc_resource have readOnly=false, destructive=true, idempotent=true, openWorld=true. invoke_dsc_expression and invoke_dsc_function have readOnly=false, destructive=false. list_dsc_functions, list_dsc_resources, show_dsc_resource and show_dsc_schema have readOnly=true. [DOC S108, S109, S-catcwj3d, S-liojjbc4, S-awsbvym2, S-ezl54xgl, S-eu4akijw, S-pr75qw5k, S-vnizihrz, S-5xcgjq4m, S-kb73mn6y, S-wwzbgp6q, S-mc3u4cy5, S-4vi7fb6a, S-tgdrpywm, S-nchhrpes]
 - The repo doc page for this command is still titled `dsc mcp` (ms.date 06/17/2026) and documents only `-h`. [DOC S136]
 
 ## Reference

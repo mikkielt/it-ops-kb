@@ -3,7 +3,7 @@ topic: mecm/software-updates
 priority: P1
 applies_to: "ConfigMgr current branch (sum/* docs, checked 2026-09-26)"
 retrieved_utc: 2026-09-26
-sources: [S-3srrd54u, S-52r2vxes, S-qhg622vy, S-o6zrfc26, S-db7ytzl6, S-kwxqaq5a, S-clekmxkf, S-zmtevvp6, S-z37n7cfj, S-n25n5lgu, S-ydpvgyqk, S-f62oqjxw, S-7opbzkmt, S-2w3gpaiz, S-fq4xtwh3, S-ix237xay]
+sources: [S-3srrd54u, S-52r2vxes, S-qhg622vy, S-o6zrfc26, S-db7ytzl6, S-kwxqaq5a, S-clekmxkf, S-zmtevvp6, S-z37n7cfj, S-n25n5lgu, S-ydpvgyqk, S-f62oqjxw, S-7opbzkmt, S-2w3gpaiz, S-fq4xtwh3, S-ix237xay, S-doi7gc6l]
 status: complete
 ---
 
@@ -24,7 +24,7 @@ and site-server log files for every stage below are already in `mecm/log-files.c
 - The top-level site's SUP retrieves metadata from Microsoft Update, an upstream WSUS server, or (disconnected) an export/import method; classifications and products are configured only at the top-level site and replicate to child sites via database replication. [DOC S-qhg622vy, S-o6zrfc26]
 - Two sync types: full sync (matches the whole WSUS catalog against the current subscription) and delta sync (only adds/removals since the last successful sync); a sync escalates to full when the default SUP, subscription, or supersedence mode/window changes, and periodically every 7 days (configurable "Full Sync Interval (days)" in the site control file). [DOC S-o6zrfc26]
 - Update classifications available for sync: Critical Updates, Definition Updates, Feature Packs, Security Updates, Service Packs, Tools, Update Rollups, Updates, Upgrade (feature updates for Windows 10+; requires WSUS on a currently supported Windows Server version). [DOC S-qhg622vy]
-- Best practice: clear all classifications and products before the very first sync at the top-level site, then select the desired ones and re-sync; selecting unnecessary products enlarges the WSUS metadata catalog and slows client scans. [DOC S-qhg622vy]
+- Best practice: clear all classifications and products before the very first sync at the top-level site, then select the desired ones and re-sync; selecting unnecessary products enlarges the WSUS metadata catalog and slows client scans. [DOC S-2w3gpaiz, S-doi7gc6l]
 - Windows 10, version 1903 and later is its own Microsoft Update product (separate from "Windows 10"); enabling it also requires updating any ADRs and servicing plans that reference "Windows 10" to include the new product (automatic starting in ConfigMgr 1906 if "Windows 10" was already selected). [DOC S-qhg622vy]
 - Sync schedule is configured only at the top-level site's SUP (simple or custom schedule); a common pattern is scheduling shortly after Patch Tuesday, or daily if Endpoint Protection/Defender definitions are delivered via software updates. [DOC S-2w3gpaiz, S-o6zrfc26]
 - Manual sync: **Software Library > All Software Updates / Software Update Groups > Synchronize Software Updates** on the top-level site console. [DOC S-o6zrfc26]

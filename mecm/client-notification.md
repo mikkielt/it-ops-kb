@@ -12,7 +12,7 @@ files: [mecm/client-operation-types.csv]
 
 ## Summary
 Client notification actions (the "Client notification" menu) need **Notify Resource** on the collection. They run over the fast channel and are tracked as client operations (`SMS_ClientOperation`, `SMS_ClientOperationStatus`; Monitoring > Client Operations).
-The SDK documents `InitiateClientOperation(Type, TargetCollectionID, RandomizationWindow, TargetResourceIDs[]) -> OperationID` but gives **no Type value table**. The only numeric Types in official docs are 135 (Run Script) and 145 (CMPivot), both from log samples. `InitiateClientOperationEx` is not in current Microsoft docs.
+The SDK documents `InitiateClientOperation(Type, TargetCollectionID, RandomizationWindow, TargetResourceIDs[]) -> OperationID` but gives **no Type value table**. The only numeric Types in official docs are 135 (CMPivot run as a script in 1902 and earlier; probably Run Script generally, not stated) and 145 (CMPivot, 1906+), both from log samples. `InitiateClientOperationEx` is not in current Microsoft docs.
 `Invoke-CMClientAction -ActionType` lists 26 enum names without numeric values. Tables: `mecm/client-operation-types.csv`.
 
 ## Facts
@@ -33,7 +33,8 @@ The SDK documents `InitiateClientOperation(Type, TargetCollectionID, Randomizati
 - `TargetType`: 0 current members of a collection, 1 specific clients in a collection, 2 members of a collection, 3 members matching criteria. [DOC S-6rr2wgl6]
 - `State`: 0 Inactive, 1 Active, 2 Decommission. [DOC S-6rr2wgl6]
 - `SMS_ClientOperationStatus` adds the counters CompletedClients, FailedClients, OfflineClients, UnknownClients, TotalClients, plus IsExpired and LastSummaryTime. Its `State` values are 0 Unknown, 1 Not Applicable, 2 Failed, 3 Succeeded. [DOC S-wquiagrh]
-- Official docs show client operation Type 135 for Run Script (and CMPivot in 1902 and earlier) and Type 145 for CMPivot (1906+), in smsprov.log samples. [DOC S-e5qqwdcj]
+- Official docs show client operation Type 135 for CMPivot in 1902 and earlier (logged with 'ran script <CMPivot script GUID>') and Type 145 for CMPivot (1906+), in smsprov.log samples. [DOC S-e5qqwdcj]
+- Type 135 is probably the generic Run Script operation, since 1902 CMPivot ran as a script under it; no official page names 135 as Run Script. [DER S-e5qqwdcj: inferred from the 'ran script' audit line logged with Type 135]
 - The Type values for machine policy, hardware inventory, application evaluation and software update evaluation are not officially documented. A 2015 community post wraps `InitiateClientOperation` in a script that starts operations by name (`RequestComputerPolicy`, `RequestUserPolicy`, `EvaluateSoftwareUpdates`, `FullScan`, `QuickScan`, `DownloadDefinition`); the numeric type ids live in that script, not on the page, and were not verified here. [COMMUNITY S352]
 - `Invoke-CMClientAction` targets `-Collection`, `-CollectionId`, `-CollectionName`, `-Device`, `-DeviceId` or `-DeviceName`. `-ActionType <ClientActionType>` accepts 26 names. `-NotificationType <ClientNotificationType>` accepts RequestMachinePolicyNow and RequestUsersPolicyNow. The alias is `Invoke-CMClientNotification`. [DOC S334]
 - ClientActionType names include RequestScriptExecution and RequestCMPivotExecution. Their numeric values are not documented. [DOC S334]

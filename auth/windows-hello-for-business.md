@@ -3,7 +3,7 @@ topic: auth/windows-hello-for-business
 priority: P1
 applies_to: "Windows 10/11, Windows Server 2016+ domain controllers (cloud Kerberos trust: Server 2016 KB4534307+, 2019 KB4534321+, 2022, 2025); Microsoft Entra ID"
 retrieved_utc: 2026-09-26
-sources: [S-pnjd7ogq, S-ui2zukwr, S-do5bf4ea, S-qi55sa4p, S-vymmambu, S-htlj43pv, S-kdtltdvz, S-u2hfxeqe]
+sources: [S-pnjd7ogq, S-ui2zukwr, S-do5bf4ea, S-qi55sa4p, S-vymmambu, S-htlj43pv, S-kdtltdvz, S-u2hfxeqe, S-4n7iso27]
 status: complete
 files: [auth/passportforwork-csp.csv]
 ---
@@ -57,7 +57,8 @@ files: [auth/passportforwork-csp.csv]
 ### Enrollment / provisioning flow and MFA
 - Provisioning begins right after sign-in once prerequisite checks pass (for cloud Kerberos trust, that includes the partial-TGT check on hybrid joined devices). [DOC S-ui2zukwr]
 - User flow: optional biometric gesture setup (skippable) -> confirm using Windows Hello with the org account -> MFA challenge (provisioning blocks until MFA succeeds, fails, or times out; failure/timeout prompts a retry) -> PIN creation and validation against the configured PIN-complexity policy -> asymmetric key-pair generation (preferably in the TPM, or mandatory if `RequireSecurityDevice` is set) and public-key registration with the identity provider. [DOC S-ui2zukwr]
-- Certificate trust adds a step after key registration: Windows requests a certificate using the same key pair from the AD FS registration authority, which verifies the key matches the registered one, signs the request with its enrollment-agent certificate, and forwards it to the CA. [DOC S-do5bf4ea]
+- Certificate trust adds a step after key registration: AD FS acts as the certificate registration authority, through which users get their sign-in certificate. [DOC S-do5bf4ea]
+- In that step Windows builds a PKCS#10 request with the same key that was just provisioned and sends it (in hybrid, with the key receipt) to the registration authority on the AD FS farm; the RA checks the public key against the user's registered keys in `msDS-KeyCredentialLink` (hybrid: or validates the key receipt), signs the request with its enrollment-agent certificate and forwards it to the enterprise issuing CA, and the issued certificate is installed in the user's Personal store. [DOC S-4n7iso27]
 - Known deployment issue: AD FS on **Windows Server 2019** fails certificate-trust device authentication due to an invalid incoming-scope check, blocking WHfB provisioning; identified by event ID 362 ("User has successfully authenticated to the enterprise STS: No") under `Microsoft-Windows-User Device Registration`, and by AD FS/Admin event ID 1021 (client forbidden for scope `ugs`). Fixed in Windows Server 1903+; on 2019, remediate by adding the `ugs` scope manually in the AD FS management console (Services > Scope Descriptions). [DOC S-kdtltdvz]
 - Event ID 300 (`Microsoft-Windows-User Device Registration/Admin` log, source "Microsoft Azure Device Registration Service") is logged when the NGC (WHfB) key is successfully created and registered with Microsoft Entra ID; message includes the Key ID, UPN, attestation level (e.g. `ATT_SOFT`), and server request ID — a normal condition needing no action. [DOC S-kdtltdvz]
 

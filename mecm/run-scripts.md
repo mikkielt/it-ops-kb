@@ -32,7 +32,7 @@ By default an author cannot approve their own script.
 - Microsoft warns that parameters open a PowerShell injection surface. [DOC S1520]
 - Security software should exclude `%windir%\CCM\ScriptStore`. [DOC S1520]
 - Script status data is removed by the "Delete Aged Client Operations" maintenance task or when the script is deleted. [DOC S1520]
-- smsprov.log records Run Script client operations as Type 135. [DOC S-e5qqwdcj]
+- Client operation Type 135 is probably the Run Script operation: the CMPivot troubleshooting page shows smsprov.log logging 'Type parameter is 135' next to 'ran script <CMPivot script GUID>' (1902), and 'initiated client operation 135' for CMPivot in 1810 and earlier; no official page names 135 as Run Script. [DER S-e5qqwdcj: 135 appears only alongside a CMPivot run-as-script audit line]
 - Logs: client Scripts.log and CcmMessaging.log, MP MP_RelayMsgMgr.log, site server SMS_Message_Processing_Engine.log. [DOC S1520]
 - `Invoke-CMScript` targets a script with `-ScriptGuid` or `-InputObject`, and a device or collection with `-Collection*` or `-Device`. `-ScriptParameter <Hashtable>` applies to 2010 and later. `-ScheduleTime <DateTime>` sets a UTC schedule. [DOC S335]
 - `New-CMScript` takes `-ScriptName` with `-ScriptText` or `-ScriptFile` (.ps1). `Approve-CMScript` takes `-InputObject` and `-Comment`. [DOC S336,S337]

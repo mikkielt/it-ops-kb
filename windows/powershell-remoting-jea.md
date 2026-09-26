@@ -3,7 +3,7 @@ topic: windows/powershell-remoting-jea
 priority: P2
 applies_to: "WinRM-based PowerShell Remoting (WMF 5.1+/PowerShell 7); Just Enough Administration (JEA); PowerShell remoting over SSH (Windows/Linux/macOS)"
 retrieved_utc: 2026-09-26
-sources: [S-twfugriu, S-p5lwby5b, S-xe3uwlpq, S-jwo36v2t, S-azyqynh4, S-tabagcvn, S-c7yxdr7e, S-fmtt7m5j, S-o3cdlg27, S-zopt2et4, S-hcszfxta, S1298]
+sources: [S-twfugriu, S-p5lwby5b, S-xe3uwlpq, S-jwo36v2t, S-azyqynh4, S-tabagcvn, S-c7yxdr7e, S-fmtt7m5j, S-o3cdlg27, S-zopt2et4, S-hcszfxta, S1298, S-sgyc73tt, S-utydlnf7]
 status: complete
 files: [windows/jea-config-fields.csv]
 ---
@@ -89,7 +89,7 @@ fits alongside those mechanisms.
 - CredSSP must be enabled on **both** the client (`Enable-WSManCredSSP -Role Client`, or the
   Administrative Templates "Allow CredSSP authentication" policy under WinRM Client) and the target
   server (`-Role Server`, or the same policy under WinRM Service); it also requires an HTTP or HTTPS
-  listener on the server. [DOC S-o3cdlg27]
+  listener on the server. [DOC S-sgyc73tt, S-utydlnf7]
 - RBCD sets the **`msDS-AllowedToActOnBehalfOfOtherIdentity`** attribute on the resource (ServerC),
   configured with `Set-ADComputer -PrincipalsAllowedToDelegateToAccount` (accepts an array, for multiple
   front-end servers) — see `auth/delegation-kcd-obo.md` for the full attribute/ownership model shared

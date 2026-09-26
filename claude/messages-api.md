@@ -105,8 +105,10 @@ repeat prompt caching (`agents/agent-caching.md`) or the HTTP/tool-pairing error
 - `POST /v1/files` (multipart form, field `file`; optional `expires_in_seconds` 3,600-7,776,000) returns
   `FileMetadata` (`id`, `filename`, `mime_type`, `size_bytes`, `downloadable`, `expires_at`); `GET /v1/files`
   (paginated, `limit` 1-1,000, default 20, or up to 100 `ids[]` in one call, mutually exclusive with `page`/`limit`);
-  `GET /v1/files/{id}`; `GET /v1/files/{id}/content` (download, only for files with `downloadable: true`, i.e.
-  created by skills or code execution, not uploads); `DELETE /v1/files/{id}` [DOC S-wbsmegvl].
+  `GET /v1/files/{id}`; `GET /v1/files/{id}/content` (download; `downloadable` defaults to false);
+  `DELETE /v1/files/{id}` [DOC S-wbsmegvl].
+- `downloadable` is false for files you upload: only files created by skills or the code execution tool can be
+  downloaded. [DOC S-b4bqwu2v]
 - Limits: 500 MB max file size, 1 TB total storage per organization, up to 100 workspaces per organization
   (contact account team for more); filename 1-255 characters, forbidden characters `< > : " | ? * \ /` and Unicode
   0-31 [DOC S-b4bqwu2v].

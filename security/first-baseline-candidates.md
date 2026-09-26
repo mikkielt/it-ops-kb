@@ -23,7 +23,7 @@ status: partial
 - PowerShell 2.0 removal:
   - removed from Windows 11 24H2 starting with the August 2025 update, and from Windows Server 2025 starting September 2025 (KB5065506, published 2025-08-11);
   - scripts that ask for `-Version 2` start the default PowerShell 5.1 instead. [DOC S1479]
-- STIG `WN11-00-000155` requires the PowerShell 2.0 feature disabled. The Microsoft 24H2 baseline has no such setting. [DOC S1470,S1472]
+- STIG `WN11-00-000155` requires the PowerShell 2.0 feature disabled, but its check text marks it Not Applicable for Windows 11 24H2 and newer, so it is not a live requirement in the 24H2 comparison. The Microsoft 24H2 baseline has no such setting. [DOC S1470,S1472]
 - Long paths:
   - `LongPathsEnabled=1` under `HKLM\SYSTEM\CurrentControlSet\Control\FileSystem` only affects applications that declare `longPathAware`;
   - each process caches the value, so all apps see it only after a reboot;
@@ -50,7 +50,7 @@ status: partial
 | C2 | `wuauserv` start type | UNK | no | no | UNK | service | native `Microsoft.Windows/Service` | UNK | UNK | no |
 | C3 | SMB1 absent | UNK | yes (registry: server `SMB1=0`, client `MrxSmb10 Start=4`) | yes `WN11-00-000160/165/170` | yes | optional feature + registry | native `OptionalFeatureList` / `Registry` | SMB1-only devices stop working [S1590] | yes [S1590] | yes |
 | C4 | RDP denied on workstations | UNK | no | no (only RDS hardening rules `WN11-CC-000270…290`) | UNK | registry | native `Microsoft.Windows/Registry` | UNK | UNK | no |
-| C5 | PowerShell 2.0 absent | UNK | no | yes `WN11-00-000155`; Server 2025 `WN25-00-000410` | UNK | optional feature | native `OptionalFeatureList` | already removed on patched 24H2 [S1479] | feature changes usually restart; UNK for an already-removed feature | no |
+| C5 | PowerShell 2.0 absent | UNK | no | yes `WN11-00-000155` (N/A on 24H2 and newer); Server 2025 `WN25-00-000410` | UNK | optional feature | native `OptionalFeatureList` | already removed on patched 24H2 [S1479] | feature changes usually restart; UNK for an already-removed feature | no |
 | C6 | Remote Registry disabled | UNK | no | no | UNK | service | native `Microsoft.Windows/Service` | UNK | UNK | no |
 | C7 | DSC engine version present | n/a | n/a | n/a | n/a | other | none native in 3.3.0 | — | — | — |
 | C8 | Marker `HKLM\SOFTWARE\<tool>\baseline` | n/a | n/a | n/a | n/a | registry | native `Microsoft.Windows/Registry` | — | no | no |

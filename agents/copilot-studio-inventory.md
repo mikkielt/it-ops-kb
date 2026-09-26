@@ -118,8 +118,10 @@ files: [agents/copilot-studio-feature-map.csv]
   conversation** node); the full conversation history plus named context variables (`va_Scope`,
   `va_LastTopic`, `va_LastPhrases`, `va_AgentMessage`, `va_ConversationId`, `va_BotId`,
   `va_Language`, and user-defined topic variables) are sent to the connected engagement hub (for
-  example Dynamics 365 Omnichannel); escalated sessions are tagged in analytics. Omnichannel's ACS
-  channel enforces a 28 KB message-size limit on the handoff payload. [DOC S1972]
+  example Dynamics 365 Omnichannel); escalated sessions are tagged in analytics. [DOC S1972]
+- Copilot Studio in Omnichannel uses the ACS channel and its 28 KB channel-data message-size limit: if the
+  variables passed as context at transfer exceed it, the channel fails with `MessageSizeExceeded` and the
+  transfer completes without them. [DOC S1960]
 - **Analytics** ("Monitor" page) separates conversational-session metrics (daily/monthly active
   users, resolved/escalated/abandoned outcomes, per-topic charts, satisfaction score) from
   event-triggered ("autonomous agent") session metrics; data is retained up to 360 days,

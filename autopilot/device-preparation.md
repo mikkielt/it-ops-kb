@@ -22,7 +22,7 @@ files: [autopilot/v1-vs-v2.csv]
 ### What device preparation is and requirements
 - Device preparation supports user-driven and automatic (Windows 365 Frontline shared mode, preview) deployment flows, and only Microsoft Entra join (no hybrid join). [DOC S-6htyzc3j]
 - Supported Windows versions: Windows 11 version 24H2 or later; 23H2 with KB5035942 or later; 22H2 with KB5035942 or later. [DOC S-6htyzc3j, S-xp44rfad]
-- Windows 365 Cloud PC support additionally needs 24H2 with KB5052093 or later (or the image-gallery equivalents). [DOC S-xp44rfad]
+- Windows 365 Cloud PCs: Windows 11 24H2 with KB5052093 or later, 23H2 with KB5035942 or later, or 22H2 with KB5035942 or later; the Windows 365 image-gallery images already include these updates, and custom images need installation media dated March 2025 or later. [DOC S-xp44rfad]
 - Supported editions: Windows 11 Pro, Pro Education, Pro for Workstations, Enterprise, Education, Enterprise LTSC. [DOC S-xp44rfad]
 - Licensing: needs Microsoft Entra ID + Intune (or equivalent MDM) via M365 Business Premium, F1/F3, academic A1/A3/A5, E3/E5, EMS E3/E5, Intune for Education, or Entra ID P1/P2 + Intune. [DOC S-xp44rfad]
 - Networking: DNS + HTTP(80)/HTTPS(443)/NTP(123 UDP) to all hosts at minimum; diagnostics upload needs `lgmsapeweu.blob.core.windows.net` reachable; diagnostics are retained 28 days. [DOC S-xp44rfad]

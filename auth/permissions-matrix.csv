@@ -11,7 +11,7 @@ client.observe,client,ConfigMgr,Run CMPivot + Read,Collection,DOC,S-2z2zfj3l;S-s
 logs.collect,client,ConfigMgr,Notify Resource,Collection,DOC,S-hmjlvsck;S-hmjlvsck,
 client.refresh_policy,client,ConfigMgr,Notify Resource,Collection,DOC,S-hmjlvsck,
 client.evaluate,client,ConfigMgr,Notify Resource,Collection,DOC,S-hmjlvsck,
-script.run,client,ConfigMgr,Run Script + Site Read + SMS Scripts Read,Collection; Site; SMS Scripts,DOC,S1520;S-hmjlvsck,Run Script is a superset of Run CMPivot
+script.run,client,ConfigMgr,Run Script + Site Read + SMS Scripts Read,Collection; Site; SMS Scripts,DOC,S1520;S-hmjlvsck;S-sxtmngif,Run Script is a superset of Run CMPivot (S-sxtmngif)
 change.draft,client,GitLab,Developer (push a branch and open an MR),example-project,DER,S444,change.draft only prepares; no ConfigMgr write
 "any client op (audit row)",client,SQL,INSERT on dbo.operation; DENY UPDATE and DELETE,dbo.operation,DOC,S468;S469,DENY does not bind object owners or sysadmin members
 device.show (live Entra/Intune lookup),client,Graph,delegated Device.Read.All; DeviceManagementManagedDevices.Read.All,tenant,DOC,S512;S518,delegated device reads also need the signed-in user to hold a supported Entra role (S512)

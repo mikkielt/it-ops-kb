@@ -3,7 +3,7 @@ topic: agents/foundry-agent-service
 priority: P1
 applies_to: "Microsoft Foundry Agent Service (GA runtime; Toolbox tool search/Skills, voice-based prompt agents, Work IQ, Agent Optimizer preview), Azure AI Projects SDK, docs current 2026-09-26"
 retrieved_utc: 2026-09-26
-sources: [S-hkoalitj, S-yutqeaay, S-3axje6py, S-wy457poi, S-5ygcb6vm, S-f5p5qi4d, S-k3l2irzl, S-gessjq23, S-kub3e5bx, S-5tsg2rir, S-23bcmfv4, S-all62inb, S-jgc6ne22, S-6ysoloif]
+sources: [S-hkoalitj, S-yutqeaay, S-3axje6py, S-wy457poi, S-5ygcb6vm, S-f5p5qi4d, S-k3l2irzl, S-gessjq23, S-kub3e5bx, S-5tsg2rir, S-23bcmfv4, S-all62inb, S-jgc6ne22, S-wffcy42c]
 status: complete
 files: [agents/foundry-agent-tools.csv]
 ---
@@ -142,9 +142,13 @@ quotas/limits, and a runnable MCP-tool example.
   auto-assigns **Foundry User** to the shared project agent identity of unpublished agents; it does not
   configure Container Registry, Application Insights, or custom-resource permissions, and published
   agents (which get their own distinct identity) require manual role assignment. [DOC S-jgc6ne22]
-- Microsoft Agent Framework's `FoundryChatClient`/`FoundryToolbox` (package `agent-framework-foundry`) is
-  the documented way to attach a Foundry Toolbox's MCP endpoint to a Framework-based hosted agent; see
-  `agents/microsoft-agent-framework.md` for the Framework itself. [DOC S-6ysoloif]
+- Microsoft Agent Framework (Python) consumes a Foundry Toolbox in a hosted agent through `FoundryToolbox`,
+  imported from `agent_framework.foundry` but supplied by the beta `agent-framework-foundry-hosting` package
+  (installed alongside `agent-framework-foundry`, which provides `FoundryChatClient`); it resolves the
+  endpoint from `TOOLBOX_ENDPOINT` or `FOUNDRY_PROJECT_ENDPOINT` + `TOOLBOX_NAME` and authenticates each MCP
+  request with an Azure credential. Without the wrapper, `MCPStreamableHTTPTool` with an Entra bearer token
+  works; toolbox versions are created in the portal or `azure-ai-projects`, not the Framework. See
+  `agents/microsoft-agent-framework.md` for the Framework itself. [DOC S-wffcy42c]
 
 ### BYO resources / deployment tiers
 - **Basic setup**: compatible with the OpenAI Assistants API surface; agent state (files, threads, vector

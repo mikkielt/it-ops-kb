@@ -42,6 +42,7 @@ Anthropic prompt caching stores the KV state for an unchanged prefix, keyed by u
 - OpenAI pricing and breakpoints by generation: GPT-5.6 and later charge 1.25x the uncached input rate for a cache write and 0.1x for a read, and support explicit breakpoints (`prompt_cache_options.mode: explicit`, `prompt_cache_breakpoint` on a content block, up to four cache writes per request) besides the default implicit breakpoint at the latest eligible message; earlier models are implicit-only, with a model-dependent cached-input rate and no cache-write charge [DOC S2133].
 - TTL: GPT-5.6+ uses `prompt_cache_options.ttl`, only `30m` supported (also the default); earlier models use `prompt_cache_retention` with `in_memory` (typically 5-10 minutes of inactivity, up to an hour) or `24h` (GPT-5.5 and GPT-5.5 Pro: `24h` only); where both exist the default is `24h` unless the organization has Zero Data Retention, then `in_memory` [DOC S2133].
 - Azure OpenAI (Microsoft Foundry Models): same 1,024-token minimum-prefix rule (first 1,024 tokens must be identical); discount applies to Standard deployments' input pricing, with up to 100% discount on Provisioned deployment types; supported on GPT-4o and newer [DOC S2134].
+- Azure OpenAI cache lifetime matches OpenAI's: on GPT-5.6 and later `prompt_cache_options.ttl` sets a minimum lifetime whose only (and default) value is `30m` (the service may keep the prefix longer); earlier models use `prompt_cache_retention` with in-memory retention (all GPT-4o+ models) or extended retention of up to 24 hours on listed models. [DOC S2134]
 
 ### MCP-side caching and `listChanged`
 
@@ -69,7 +70,7 @@ this article's cache-write/cache-read pricing).
 | Anthropic (Opus 5, Fable 5, Mythos 5) | 512 tokens | 5 min or 1 h | 1.25x / 2x | 0.1x |
 | OpenAI GPT-5.6+ | 1,024 visible tokens | 30 min (only option) | n/a (automatic) | ~0.1x |
 | OpenAI earlier models | varies | 5-10 min or 24h | n/a (automatic) | ~0.1x |
-| Azure OpenAI (GPT-4o+) | 1,024 tokens | provider-managed | n/a (automatic) | discount, up to 100% on Provisioned |
+| Azure OpenAI (GPT-4o+) | 1,024 tokens | GPT-5.6+: 30 min minimum (`ttl` 30m only); earlier: in-memory or extended (up to 24 h) | n/a (automatic) | discount, up to 100% on Provisioned |
 
 Invalidation hierarchy (Anthropic): `tools` (top) → `system` → `messages` (bottom); changing something at a level invalidates that level and everything below it [DOC S2130].
 

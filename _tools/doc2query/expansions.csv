@@ -616,9 +616,6 @@ f4c703f8bcbe,"Schannel: TLS 1.3 support, Server 2025 vs. Server 2022"
 f5986a17b8c8,LDAP channel binding SMB signing
 f5986a17b8c8,What are the LDAP and SMB signing defaults for Server 2025 and Windows 11 24H2?
 f5986a17b8c8,SMB client outbound signing encryption settings
-0d873efc7574,Kerberos AES encryption default date
-0d873efc7574,When do Kerberos AES enctypes become the domain default?
-0d873efc7574,"RC4 fallback removal, msDS-SupportedEncryptionTypes timeline"
 604809dc5cc6,"Entra token protection, device binding"
 604809dc5cc6,What is Microsoft Entra Token Protection and how does it work?
 604809dc5cc6,"Primary Refresh Token (PRT): device-bound key, sender-constrained"

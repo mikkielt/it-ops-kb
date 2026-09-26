@@ -52,9 +52,13 @@ conditional note; and the EU AI Act classification/timeline including the 2026 D
 - Poland transposes NIS2 through an amendment to the Act on the National Cybersecurity System (ustawa o krajowym
   systemie cyberbezpieczenstwa, UKSC/KSC). The Sejm adopted the amendment 2026-01-23, it was published as
   Dz.U. 2026 poz. 252, and it entered into force 2026-04-03. [DOC S1553]
-- Following the KSC amendment's entry into force, the tracked timeline gives a registration deadline of
-  2026-10-03 (6 months) and an implementation deadline for security-management systems of 2027-04-03 (12 months).
-  [COMMUNITY S1554]
+- KSC amendment transition: entities that already qualify as key or important on entry into force must meet the
+  act's Chapter 3 obligations (security-management system) within 12 months (Art. 33(1)), key entities run their
+  first audit within 24 months (Art. 33(2)), and they file for entry in the register of key and important entities
+  on a schedule the digital-affairs minister announces in an official communication (Art. 33(3), 34(3)); an entity
+  that qualifies later applies within 6 months of meeting the criteria (new Art. 7c). [DOC S1553]
+- The implementation deadline is therefore 2027-04-03; the act sets no fixed calendar date for registration
+  of entities that already qualify. [DER S1553: in force 2026-04-03 + 12 months (Art. 33(1)); registration dates come from the minister's schedule (Art. 34(3))]
 - Poland missed the original NIS2 transposition deadline (2024-10-17); the European Commission opened an
   infringement procedure with a reasoned opinion dated 2025-05-07. [COMMUNITY S1554]
 - NIS2 essential/important entity status depends on sector (Annexes I/II of the Directive) and size thresholds
@@ -90,7 +94,7 @@ conditional note; and the EU AI Act classification/timeline including the 2026 D
 | GDPR | in force since 2018-05-25 | in force | S870 |
 | WP29 WP248 rev.01 (EDPB-endorsed) | adopted 2017-04-04, revised 2017-10-04, endorsed 2018-05-25 | current guidance | S-xvc5ligo |
 | NIS2 Directive | OJ 2022-12-27 | in force; national transposition ongoing | S1552 |
-| Poland KSC amendment | Dz.U. 2026 poz. 252 | in force 2026-04-03; registration due 2026-10-03 | S1553, S1554 |
+| Poland KSC amendment | Dz.U. 2026 poz. 252 | in force 2026-04-03; registration per ministerial schedule; Chapter 3 obligations by 2027-04-03 | S1553 |
 | DORA | OJ 2022-12-27 | in force 2025-01-17 (financial entities only) | S1555 |
 | EU AI Act | OJ 2024-07-12 | staggered application; high-risk deferred to 2027-12-02 / 2028-08-02 by Reg. (EU) 2026/1744 | S1556, S-qzdkyvqx |
 

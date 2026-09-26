@@ -5,7 +5,7 @@ Each answer bullet carries one tag and source ids. `QA` sections answer auth que
 ## Q1. Officially documented `SMS_ClientOperation` Type values for machine policy, hardware inventory, app evaluation and software-update evaluation.
 - The SDK method `InitiateClientOperation(Type, TargetCollectionID, RandomizationWindow, TargetResourceIDs[])` documents `Type` only as "Type", with no value table. [DOC S329]
 - No official source gives Type numbers for machine policy, hardware inventory, application evaluation or software update evaluation. [UNK]
-- The only numeric Types in official docs are 135 (Run Script, and CMPivot in 1902 and earlier) and 145 (CMPivot, 1906+), both from smsprov.log samples. [DOC S318]
+- The only numeric Types in official docs are 135 (shown for CMPivot in 1902 and earlier, as "ran script" with the CMPivot script GUID) and 145 (CMPivot, 1906+), both from smsprov.log samples; 135 as the Run Script type is an inference. [DER S318: log samples only]
 - `SMS_ClientOperation.PrimaryActionType` value 4 "Evaluate Software Update" and value 8 "RequestPolicyNow" are documented, but as primary-action codes, not as Type values. [DER S328,S329: different property; Type has no table]
 - `Invoke-CMClientAction -ActionType` documents the names ClientNotificationRequestMachinePolicyNow, ClientNotificationRequestHWInvNow, ClientNotificationAppDeplEvalNow and ClientNotificationSUMDeplEvalNow, without numeric values. [DOC S334]
 - Community blogs publish numeric Type tables. These were not verified and are not official. [COMMUNITY S352]
@@ -110,7 +110,7 @@ _Agent: ops_
 _Agent: mecm2_
 
 ## Q13. The feature matrix, DSC 3.3.0 vs 3.4.0-preview.1: MCP `what_if`, the Group Policy adapter, environment variables, `Personalization`.
-- MCP `what_if`: **absent in 3.3.0** (no field on `invoke_dsc_config`/`invoke_dsc_resource`; an unknown key is ignored, so a set runs for real). **Present in 3.4.0-preview.1**. [DOC S108,S109; DER S114,S115]
+- MCP `what_if`: **absent in 3.3.0** (no field on `invoke_dsc_config`/`invoke_dsc_resource`; an unknown key is ignored, so a set runs for real). **Present in 3.4.0-preview.1**. [DOC S108,S109,S-catcwj3d,S-liojjbc4; DER S114,S115]
 - Group Policy template adapter (`Microsoft.Adapter/GroupPolicyTemplate`): **not in 3.3.0** (not on release/v3.3). In 3.4.0-preview.1 it is in source but **not packaged** (absent from `data.build.json` and the Windows x64 zip). [DOC S120,S121; DER S114,S115]
 - Environment variables: the `Microsoft.Windows/EnvironmentVariable` and `EnvironmentVariableList` resources (0.1.0) ship **only in 3.4.0-preview.1**. The `envvar()` function has existed since 3.0.0. [DOC S114,S115,S129]
 - `Microsoft.Windows/Personalization`: an adapted-resource YAML (Registry adapter, HKCU theme values) in source on both release/v3.3 and v3.4.0-preview.1, **shipped in neither zip**. [DOC S122; DER S114,S115]
@@ -487,8 +487,8 @@ _Agent: security_
 
 ## QS10. Polish NIS2 transposition status, entity criteria, Art. 21 measures
 - The KSC amendment transposing NIS2 was adopted 2026-01-23, published as Dz.U. 2026 poz. 252, in force
-  2026-04-03, with a registration deadline of 2026-10-03 and security-management-system deadline 2027-04-03.
-  [DOC S1553][COMMUNITY S1554]
+  2026-04-03; it sets no fixed registration date (existing entities register on a schedule the minister
+  announces) and gives 12 months for the obligations, so 2027-04-03. [DOC S1553]
 - Poland missed the original 2024-10-17 deadline; the Commission opened infringement proceedings (reasoned
   opinion 2025-05-07). [COMMUNITY S1554]
 - Entity criteria come from NIS2 Annexes I/II (sector) plus size thresholds; the Directive itself, not the kb,
@@ -596,7 +596,7 @@ _Agent: security_
   - Microsoft 24H2 sets it (server `SMB1=0`, client `MrxSmb10 Start=4`); STIG `WN11-00-000160/165/170` requires it; Intune 24H2 has it;
   - SMB1 is not installed by default on Windows 11;
   - removal needs a restart, and SMB1-only devices stop working. [DOC S1472,S1470,S1475,S1590]
-- C5 PowerShell 2.0 absent: STIG only (`WN11-00-000155`; Server 2025 `WN25-00-000410`). The feature was removed from Windows 11 24H2 in the August 2025 update, and `-Version 2` calls start 5.1. [DOC S1470,S1471,S1479]
+- C5 PowerShell 2.0 absent: STIG only (`WN11-00-000155`, whose check text marks it Not Applicable on Windows 11 24H2 and newer; Server 2025 `WN25-00-000410`). The feature was removed from Windows 11 24H2 in the August 2025 update, and `-Version 2` calls start 5.1. [DOC S1470,S1471,S1479]
 - C1 long paths: in neither baseline. It only affects longPathAware apps, all processes see it only after a reboot, and GP *Enable Win32 long paths* controls the same value. [DOC S1591,S1472,S1470]
 - C2 `wuauserv` start type, C4 RDP denied, C6 Remote Registry disabled: in neither the Microsoft 24H2 baseline nor STIG V2R9. No compatibility or reboot statement was found. [DER S1472,S1470: absent from both machine-readable sets] [UNK for impact and reboot]
 - C7 DSC version, C8 marker: no guideline applies. C7 has no native resource in 3.3.0. [DER S114]
@@ -1542,8 +1542,8 @@ _Agent: agents-ner_
 - GLiNER has no first-party server/container image; consumers assemble serving themselves from a
   Hugging Face ONNX export plus a generic runtime — a fused export is community-reported at ~30% lower
   GPU latency than the unfused version. [COMMUNITY S2102, S-hocpkynn]
-- Version pinning is a real, documented risk: Azure's Text PII 2026-04-15-preview API version added new
-  entity types (Password, PIN, Zip code, Airport code) that an older-pinned caller would not receive —
+- Version pinning is a real, documented risk: Azure's Text PII lists stable 2026-05-01 and 2026-05-15-preview
+  and marks entity types such as Password, ZipCode and Airport as preview, which an older-pinned caller would not receive —
   the concrete mechanism behind "recognizer drift between copies" in QG32. [DOC S2096]
 - Presidio's own `presidio-evaluator`/`presidio-research` (MIT) computes precision/recall for a
   recognizer or model version and is the documented tool for measuring such drift, though only as a
@@ -1643,7 +1643,7 @@ _Agent: agents-a2a-cache_
 
 ## QG34. Caching in agent systems
 
-Anthropic prompt caching: up to 4 breakpoints, TTL 5 min (default) or 1 h; minimum cacheable prefix is 512-4,096 tokens depending on model tier; cache writes cost 1.25x (5m) or 2x (1h) base input, cache reads cost ~0.1x (as low as 0.025x-0.05x for the newest tier per the fetched page, flagged for re-check) [DOC S2130,S2131]. Invalidation hierarchy is strictly **tools → system → messages**: a tool-definition change invalidates everything; an image or tool_choice change invalidates system+messages but leaves the tools-level cache; usage fields `cache_creation_input_tokens`/`cache_read_input_tokens` report exactly what was written/read [DOC S2130]. Claude Code (>=2.1.251) surfaces this via `/usage`'s `Prompt cache (main)` line, naming likely causes for misses (e.g. "tool definitions changed") from v2.1.260, and treats its own `/compact` and tool-result clearing as *expected* rebuilds rather than misses; effective cache lifetime drops from 1 h to 5 min once usage credits (rather than subscription/API-key baseline) are being drawn on [DOC S2132]. OpenAI and Azure OpenAI both use a 1,024-token minimum-prefix rule, automatic caching, and a roughly 90% discount on hits, but differ on TTL model (OpenAI: fixed 30 min for GPT-5.6+, or 5-10 min/24h for earlier; Azure: provider-managed, up to 100% discount on Provisioned deployments) [DOC S2133,S2134]. MCP's `tools/list` result already carries `ttlMs`/`cacheScope` (the `CacheableResult` mechanism `mcp/tools.md` cites) and the spec explicitly recommends deterministic tool ordering to raise LLM prompt-cache hit rates [DOC S2135,S2136]. Full detail in `agents/agent-caching.md`.
+Anthropic prompt caching: up to 4 breakpoints, TTL 5 min (default) or 1 h; minimum cacheable prefix is 512-4,096 tokens depending on model tier; cache writes cost 1.25x (5m) or 2x (1h) base input, cache reads cost ~0.1x (as low as 0.025x-0.05x for the newest tier per the fetched page, flagged for re-check) [DOC S2130,S2131]. Invalidation hierarchy is strictly **tools → system → messages**: a tool-definition change invalidates everything; an image or tool_choice change invalidates system+messages but leaves the tools-level cache; usage fields `cache_creation_input_tokens`/`cache_read_input_tokens` report exactly what was written/read [DOC S2130]. Claude Code (>=2.1.251) surfaces this via `/usage`'s `Prompt cache (main)` line, naming likely causes for misses (e.g. "tool definitions changed") from v2.1.260, and treats its own `/compact` and tool-result clearing as *expected* rebuilds rather than misses; effective cache lifetime drops from 1 h to 5 min once usage credits (rather than subscription/API-key baseline) are being drawn on [DOC S2132]. OpenAI and Azure OpenAI both use a 1,024-token minimum-prefix rule, automatic caching, and a roughly 90% discount on hits, and give the same 30 min cache lifetime for GPT-5.6+ (earlier OpenAI models 5-10 min/24h); Azure adds up to 100% discount on Provisioned deployments [DOC S2133,S2134]. MCP's `tools/list` result already carries `ttlMs`/`cacheScope` (the `CacheableResult` mechanism `mcp/tools.md` cites) and the spec explicitly recommends deterministic tool ordering to raise LLM prompt-cache hit rates [DOC S2135,S2136]. Full detail in `agents/agent-caching.md`.
 
 _Agent: agents-a2a-cache_
 

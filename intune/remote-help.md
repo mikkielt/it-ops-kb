@@ -76,15 +76,15 @@ Sessions are logged for reporting/audit (30 days) but never recorded.
 
 ### Sessions: attended vs. unattended
 - Attended: the sharer must accept a view or full-control request; the helper can additionally request
-  **Elevation** to answer UAC prompts on the sharer's device — enabling elevation also grants view/control
-  once accepted. A compliance warning banner appears if the sharer's device fails its assigned compliance
+  **Elevation** to answer UAC prompts on the sharer's device (attended sessions support view-only, full
+  control and optional UAC elevation). A compliance warning banner appears if the sharer's device fails its assigned compliance
   policy, but compliance doesn't block the session. [DOC S-f6g2wc4u]
 - The Windows policy `EnableSecureCredentialPrompting` (Policy CSP AdmxCredUI) blocks the elevation UAC flow
   during Remote Help sessions when enabled; disable it to allow helper elevation. [DOC S-f6g2wc4u]
 - Unattended (Windows): initiated from the admin center (**Devices > All devices > select device > New
-  remote assistance session > Remote Help > Initiate unattended control**); creates a **separate,
-  authenticated Windows session** (not the active user's desktop) governed by sign-in, RBAC and auditing;
-  the helper signs in inside the session using a local account (`ComputerName\UserName`), AD domain account
+  remote assistance session > Remote Help > Initiate unattended control**); connects to a **separate
+  Windows session** (not the active user's desktop), and a helper without unattended-control permission is
+  notified; the helper signs in inside the session using a local account (`ComputerName\UserName`), AD domain account
   (`Domain\UserName`), UPN, or Entra UPN — least-privilege applies (a standard account signing in doesn't
   gain admin rights). Only one helper/one unattended session can be active on a device at a time. [DOC S-f6g2wc4u]
 - If a user is signed in when unattended control starts, they're notified and can allow/deny; with no

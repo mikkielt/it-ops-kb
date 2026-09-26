@@ -69,9 +69,9 @@ choice (Presidio + spaCy `en_core_web_lg`, in-process) is not itself re-argued h
   *(see `conflicts.md` for the 50,000-char figure's provenance)*
 - Explicit non-customization note: "Analysis is performed as-is, with no customization to the model used
   on your data" for the cloud PII feature family (text, conversation, document). [DOC S2092]
-- Text PII added preview entity types (Password, PIN code, Zip code, Airport code) in the
-  **2026-04-15-preview** API version — a concrete example of model/version drift a shared consumer must
-  pin against, since a caller built on an older API version would not see these categories. [DOC S2096]
+- Text PII lists two supported API versions, stable **2026-05-01** (GA) and **2026-05-15-preview**, and marks
+  some entity types as preview (among them Password, ZipCode, Airport, DateOfBirth, PassportNumber, CVV and
+  VIN) — a concrete example of model/version drift a shared consumer must pin against. [DOC S2096]
 - Pricing model: **text records** (1,000 characters = 1 record), 5,000 records/month free across
   several Language features including PII, then per-1,000-record tiered pricing that steps down at
   0.5M-2.5M / 2.5M-10M / 10M+ volumes; the container/commitment path prices annual disconnected licences

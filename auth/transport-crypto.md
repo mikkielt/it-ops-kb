@@ -3,7 +3,7 @@ topic: auth/transport-crypto
 priority: P2
 applies_to: "Windows Server 2025 / Windows 11 24H2, Microsoft Entra ID"
 retrieved_utc: 2026-09-26
-sources: [S1201, S1202, S1203, S1216, S1222, S1223, S1227, S-ipmyihvs]
+sources: [S1201, S1202, S1203, S1215, S1222, S1223, S1227, S-ipmyihvs]
 status: partial
 ---
 
@@ -18,7 +18,7 @@ status: partial
 ## Facts
 - Windows Server 2025 and later ships its own prioritized, enabled-by-default TLS cipher-suite list in Schannel, documented separately from the Windows Server 2022 list; TLS 1.3 is supported (introduced for Windows starting with Windows 11/Server 2022, carried into Server 2025). [DOC S1222]
 - LDAP channel binding and signing, and SMB client outbound signing/encryption defaults for Server 2025 / Windows 11 24H2, are as recorded in `auth/ldap-smb-signing.md`. [DOC S1201,S1202,S1203]
-- Kerberos AES enctypes become the domain default (`DefaultDomainSupportedEncTypes` = 0x18, AES128-SHA1 + AES256-SHA1) for updates released on/after 2026-04-14, with RC4 fallback removed for accounts lacking an explicit `msDS-SupportedEncryptionTypes`; full detail and dates are in `auth/kerberos.md`. [DOC S1216]
+- Kerberos AES enctypes become the domain default (`DefaultDomainSupportedEncTypes` = 0x18, AES128-SHA1 + AES256-SHA1) for updates released on/after 2026-04-14, with RC4 fallback removed for accounts lacking an explicit `msDS-SupportedEncryptionTypes`; full detail and dates are in `auth/kerberos.md`. [DOC S1215]
 - Microsoft Entra Token Protection (also called token binding / sender-constrained tokens) cryptographically ties a sign-in session token (Primary Refresh Token) to the Windows device it was issued to, using a device-bound key; it requires Microsoft Entra ID P1 and currently targets Windows sign-in session tokens (PRT-based), not a general DPoP-for-every-access-token mechanism. [DOC S1227]
 - MSAL (the client library covered in `msal-public-client.md`) documents Proof-of-Possession (PoP) token support conforming to RFC 9449 (DPoP) for public client applications, explicitly named as the intended replacement for the older Signed HTTP Request (SHR) PoP mechanism. [DOC S1223]
 - Whether DPoP/RFC 9449 is GA (vs. preview) for general Entra ID access tokens issued to a confidential/public client outside the specific MSAL PoP and Windows Token Protection scenarios documented above: [UNK] — not confirmed from an official Microsoft source this session.

@@ -3,7 +3,7 @@ topic: dsc/what-if
 priority: P0
 applies_to: "Microsoft DSC 3.3.0 (release/v3.3 @ ea572fa) and 3.4.0-preview.1"
 retrieved_utc: 2026-09-26
-sources: [S100, S102, S105, S106, S108, S109, S114, S115, S138, S139, S140]
+sources: [S100, S102, S103, S105, S106, S108, S109, S114, S115, S138, S139, S140]
 status: complete
 ---
 
@@ -25,7 +25,7 @@ status: complete
 - In what-if mode, the output shape follows `set.whatIfReturns`, falling back to `set.return`. [DOC S105]
 - For `resource delete --what-if`, or a config instance with `_exist: false` on a resource that implements delete: without a delete `whatIfArg`, dsc runs `test` and returns it as a synthetic what-if. [DOC S102,S105]
 - In a configuration set, instances with `_exist: false` go to `delete` only when the resource lacks `setHandlesExist`. [DOC S102]
-- The what-if result's `executionInformation.executionType` / `metadata.Microsoft.DSC.executionType` is `whatIf`. [DOC S108,S109]
+- The what-if result's `executionInformation.executionType` / `metadata.Microsoft.DSC.executionType` is `whatIf`. [DOC S102, S103, S109]
 - `Microsoft.Windows/Service` 0.1.1 (3.3.0 zip): `set.args` = `["set", {jsonInputArg: --input, mandatory}, {whatIfArg: "--what-if"}]`, `implementsPretest: false`, `whatIfReturns: state`, `requireSecurityContext: elevated`. [DOC S114]
 - `windows_service.exe` reads `--what-if`/`-w` from its args. In what-if, `_exist: false` is routed to a delete simulation (`what_if_delete_service`); otherwise it calls `set_service(input, what_if)`. [DOC S138]
 - `Microsoft.Windows/FirewallRuleList` 0.3.0 (3.3.0 zip): `set.args` includes `{whatIfArg: "--what-if"}`, `implementsPretest: true`, `handlesExist: true`, `whatIfReturns: state`, `requireSecurityContext: elevated`. [DOC S114]

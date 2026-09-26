@@ -50,12 +50,12 @@ Intune manages Linux desktops (Ubuntu Desktop and RHEL) as user-associated, corp
 - Linux discovery scripts can call any interpreter installed and configured on the target device (not limited to shell): specify it with a shebang line, e.g. `#!/bin/bash` for Bash or `#!/usr/bin/python3` / `#!/usr/bin/env python3` for Python. [DOC S-iw63dqdc]
 - Recommended practice: Linux discovery scripts should catch termination signals (`SIGINT`, `SIGTERM`) and perform graceful cleanup (closing files, releasing locks, removing temp resources) on interrupt/cancellation. [DOC S-iw63dqdc]
 - Discovery script limits (all platforms): script no larger than **1 MB**; script output no larger than **1 MB**; run-time limit **5 minutes on Linux**, 10 minutes on Windows/macOS. [DOC S-iw63dqdc]
-- Discovery scripts assigned to a compliance policy can't be deleted until unassigned from that policy; each script maps to exactly one policy. [DOC S-37nh7xwg]
+- Discovery scripts assigned to a compliance policy can't be deleted until unassigned from that policy; each discovery script can be used with only one compliance policy. [DOC S-iw63dqdc]
 - Custom compliance error codes (shared across platforms, reported in device compliance reports): `65007` script returned failure, `65008` setting missing in the script result, `65009` invalid JSON for the discovered setting, `65010` invalid datatype for the discovered setting. [DOC S-37nh7xwg]
 - It can take up to **8 hours** after a device fixes a custom-compliance issue before a subsequent sync shows the device as compliant again. [DOC S-37nh7xwg]
 - On Linux, a user manually triggers a re-check via the Microsoft Intune app's **Refresh** control on the device-details page or the compliance-issues page, starting a new check-in with Intune (equivalent to the Company Portal website sync on Windows or **Check Status** in Company Portal on macOS). [DOC S-37nh7xwg]
 - Custom compliance settings feed into Conditional Access decisions the same way built-in compliance settings do, forming one compound rule set with them. [DOC S-37nh7xwg]
-- Prerequisite device states for custom compliance: Microsoft Entra joined (including Entra hybrid joined) or Microsoft Entra registered/Workplace joined (WPJ) devices. [DOC S-37nh7xwg]
+- Prerequisite device states for custom compliance: Microsoft Entra joined (including Entra hybrid joined) or Microsoft Entra registered/Workplace joined (WPJ) devices. [UNK: not in S-37nh7xwg as re-read 2026-09-26; an older version of the page listed these prerequisites]
 
 ### Custom device configuration (Bash scripts)
 - Linux has no settings-catalog device-configuration profile type; custom device settings are delivered only by importing an existing **Bash script** as a platform script, at **Devices > Manage devices > Scripts and remediations > Platform scripts > Add > Linux**. [DOC S-vbmaayv5]
