@@ -3,7 +3,7 @@ topic: security/policy-precedence
 priority: P0
 applies_to: "Windows 11 Enterprise 24H2/25H2, AD DS Group Policy, Intune MDM, ConfigMgr current branch co-management, DSC 3.3.0"
 retrieved_utc: 2026-09-24
-sources: [S1412, S1592, S1593, S1591, S1477, S1475]
+sources: [S1412, S1592, S1593, S1591, S1477, S-oeh7ui3h]
 status: partial
 ---
 
@@ -46,7 +46,7 @@ status: partial
   - switching Device configuration also moves Resource access and Endpoint Protection. [DOC S1593]
 - When the Endpoint Protection workload is switched, ConfigMgr policies stay on the device until Intune policies overwrite them. [DOC S1593]
 - Removing tattooed Endpoint Protection settings also needs the Device configuration workload switched. [DOC S1593]
-- The Intune Windows security baseline is derived from the same Security Compliance Toolkit baseline. So a device that gets both the GPO baseline and the Intune baseline receives two writers for many of the same values. [DOC S1475]
+- The Intune Windows security baseline is derived from the same Security Compliance Toolkit baseline. So a device that gets both the GPO baseline and the Intune baseline receives two writers for many of the same values. [DOC S-oeh7ui3h]
 - How DSC `test` behaves when GPO also manages a value:
   - `Microsoft.Windows/Registry` `test` compares the live value with the document;
   - if GPO holds the same value, `test` reports in desired state;

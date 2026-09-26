@@ -3,7 +3,7 @@ topic: windows/execution-policy-signing
 priority: P0
 applies_to: "Windows PowerShell 5.1, PowerShell 7.5; ConfigMgr current branch client settings"
 retrieved_utc: 2026-09-24
-sources: [S420, S421, S422, S423, S424, S425, S426, S427, S407]
+sources: [S420, S421, S422, S-pm6pjuef, S1483, S-f26o3j3w, S-2z2zfj3l, S-mmydokhp, S407]
 status: complete
 ---
 
@@ -31,15 +31,15 @@ status: complete
 - `Set-AuthenticodeSignature` appends a signature block that starts and ends with `# SIG #`. [DOC S422]
 - Before PowerShell 7.2, signed scripts had to be ASCII or UTF8NoBOM. 7.2 and later accept any encoding. [DOC S422]
 - A signature stays valid until the certificate expires, or longer if a timestamp server confirms it was signed while the certificate was valid. [DOC S422]
-- ConfigMgr **PowerShell execution policy** client setting: Bypass (unsigned scripts run), Restricted (uses the client's own PowerShell configuration), All Signed (only scripts signed by a trusted publisher, whatever the local configuration). The default is All Signed. It needs Windows PowerShell 2.0 or later. It applies to "detection in configuration items for compliance settings" and to scripts sent in a deployment. [DOC S423]
-- Failure signals: Monitoring error `0x87D00327` "Script is not signed"; reports show "Discovery Error", with `0x87D00327` or `0x87D00320` "The script host has not been installed yet"; `DcmWmiProvider.log` shows "Script is not signed (Error: 87D00327; Source: CCM)". [DOC S423]
-- Security guidance: don't set Bypass broadly. If Bypass is needed, use a custom client setting scoped to the computers that need unsigned scripts. [DOC S424]
-- WMI `SMS_ConfigMgrClientAgentConfig.PowerShellExecutionPolicy` (UInt32) documents only 0 = Bypass and 1 = Restricted. There is no value for All Signed (see conflicts). [DOC S425]
-- CMPivot (and the Edge installer) are signed with "Microsoft Code Signing PCA 2011". Under AllSigned, import that code-signing certificate into the machine **Trusted Publishers** store. [DOC S426]
-- For a signed PowerShell CI script, load it with **Open**. Copy and paste into the CI editor breaks the signature. [DOC S427]
+- ConfigMgr **PowerShell execution policy** client setting: Bypass (unsigned scripts run), Restricted (uses the client's own PowerShell configuration), All Signed (only scripts signed by a trusted publisher, whatever the local configuration). The default is All Signed. It needs Windows PowerShell 2.0 or later. It applies to "detection in configuration items for compliance settings" and to scripts sent in a deployment. [DOC S-pm6pjuef]
+- Failure signals: Monitoring error `0x87D00327` "Script is not signed"; reports show "Discovery Error", with `0x87D00327` or `0x87D00320` "The script host has not been installed yet"; `DcmWmiProvider.log` shows "Script is not signed (Error: 87D00327; Source: CCM)". [DOC S-pm6pjuef]
+- Security guidance: don't set Bypass broadly. If Bypass is needed, use a custom client setting scoped to the computers that need unsigned scripts. [DOC S1483]
+- WMI `SMS_ConfigMgrClientAgentConfig.PowerShellExecutionPolicy` (UInt32) documents only 0 = Bypass and 1 = Restricted. There is no value for All Signed (see conflicts). [DOC S-f26o3j3w]
+- CMPivot (and the Edge installer) are signed with "Microsoft Code Signing PCA 2011". Under AllSigned, import that code-signing certificate into the machine **Trusted Publishers** store. [DOC S-2z2zfj3l]
+- For a signed PowerShell CI script, load it with **Open**. Copy and paste into the CI editor breaks the signature. [DOC S-mmydokhp]
 
 ## Reference
-| ConfigMgr setting value | Effect | WMI value (S425) |
+| ConfigMgr setting value | Effect | WMI value (S-f26o3j3w) |
 |---|---|---|
 | Bypass | unsigned runs | 0 |
 | Restricted | follows local PowerShell policy | 1 |

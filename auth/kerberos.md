@@ -3,21 +3,21 @@ topic: auth/kerberos
 priority: P0
 applies_to: "Windows Server 2025 / Windows 11 24H2, ConfigMgr 2603, SQL Server 2022/2025"
 retrieved_utc: 2026-09-24
-sources: [S307, S311, S1200, S1205, S1213, S1215, S1216, S1217]
+sources: [S-7jumyiid, S311, S1200, S1205, S1213, S1215, S1216, S1217]
 status: partial
 ---
 
 # Kerberos for workstation-CLI flows (AdminService, SQL)
 
 ## Summary
-- `client` reaches AdminService and SQL as the engineer's own Kerberos identity (Negotiate); ConfigMgr 2603 (base 2509+) rejects NTLM on the AdminService, so a working SPN and Kerberos path is required, not optional. [DOC S307]
+- `client` reaches AdminService and SQL as the engineer's own Kerberos identity (Negotiate); ConfigMgr 2603 (base 2509+) rejects NTLM on the AdminService, so a working SPN and Kerberos path is required, not optional. [DOC S-7jumyiid]
 - RC4 in Kerberos has a firm, dated retirement: domain controllers change their `DefaultDomainSupportedEncTypes` default to AES-only (bitmask 0x18) starting with updates released on/after 2026-04-14, and the RC4 audit/compatibility path (`RC4DefaultDisablementPhase`) is retired in 2026-07. [DOC S1216]
 - SQL Kerberos uses `MSSQLSvc/<fqdn>[:port]` SPNs registered on the service account; AdminService uses HTTP SPNs on the SMS Provider's computer/service account, resolved by IIS/HTTP.sys via Negotiate.
 - **Protected Users** membership forces AES-only tickets, no NTLM, no delegation, and caps the TGT at 4 hours (240 min) with no renewal — compatible with the `client` design (Kerberos-only, no delegation) but breaks anything relying on ticket renewal beyond 4h or on NTLM fallback. [DOC S1205]
 - The general Windows NTLM deprecation programme (audit → block) reinforces that Kerberos must be the primary path for such flows going forward. [DOC S1200]
 
 ## Facts
-- Since ConfigMgr 2509, the AdminService rejects NTLM authentication outright; `AdminService.log` logs "Rejecting NTLM authentication" on an NTLM attempt. This is already recorded in `mecm/adminservice.md`. [DOC S307]
+- Since ConfigMgr 2509, the AdminService rejects NTLM authentication outright; `AdminService.log` logs "Rejecting NTLM authentication" on an NTLM attempt. This is already recorded in `mecm/adminservice.md`. [DOC S-7jumyiid]
 - A community forum thread reports that after the 2509 change, clients that previously fell back to NTLM (e.g. because of a missing/duplicate SPN, or access by IP/short name instead of FQDN) start failing outright instead of degrading; the fix is to ensure the FQDN is used and the SPN is registered, not a workaround for NTLM. [COMMUNITY S1213]
 - The SMS Provider authentication level setting (Windows / certificate / Windows Hello for Business) applies to the AdminService too, as already recorded in `mecm/adminservice.md`. [DOC S311]
 - Protected Users group: members cannot authenticate with NTLM; Kerberos preauthentication cannot use DES or RC4, only AES; members cannot be delegated via unconstrained or constrained delegation; TGT lifetime is fixed at 4 hours with no renewal, and this cannot be overridden by domain policy. [DOC S1205]

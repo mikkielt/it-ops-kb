@@ -3,7 +3,7 @@ topic: auth/configmgr-rbac-auth
 priority: P0
 applies_to: "ConfigMgr 2603, extends mecm/rbac.md and mecm/adminservice.md"
 retrieved_utc: 2026-09-24
-sources: [S307, S311, S1212, S1213, S1210, S1218]
+sources: [S-7jumyiid, S311, S1212, S1213, S1210, S1218]
 status: partial
 ---
 
@@ -17,7 +17,7 @@ status: partial
 ## Facts
 - A ConfigMgr administrative user's effective permission is a Windows/AD security principal (user or, indirectly, a group) mapped to security roles/scopes/collections; this is documented in `mecm/rbac.md` (unchanged here). [DOC S1218]
 - Since ConfigMgr version 1702, MFA can be enabled for SMS Provider calls; this uses the `AuthenticationLevel`-style policy referenced by the troubleshooting doc for enabling MFA for SMS Provider calls. [DOC S1212]
-- Since 2509, the AdminService rejects NTLM (already in `mecm/adminservice.md`, sources S307). A community report describes clients that relied on NTLM fallback (e.g., accessed by non-FQDN name or with a missing SPN) failing after the upgrade instead of degrading; the documented fix is to use the FQDN and ensure Kerberos SPNs are correct, not to re-enable NTLM. [COMMUNITY S1213]
+- Since 2509, the AdminService rejects NTLM (already in `mecm/adminservice.md`, sources S-7jumyiid). A community report describes clients that relied on NTLM fallback (e.g., accessed by non-FQDN name or with a missing SPN) failing after the upgrade instead of degrading; the documented fix is to use the FQDN and ensure Kerberos SPNs are correct, not to re-enable NTLM. [COMMUNITY S1213]
 - Because Kerberos group membership (SIDs) is embedded in the ticket-granting ticket's PAC at ticket-issue time, a newly added AD group generally does not take effect for a signed-in session until a new TGT is obtained — normally a new logon, or (for machine accounts / long sessions) the next TGT renewal — this is a general Kerberos mechanism, not confirmed in ConfigMgr-specific SMS Provider documentation. [DER general Kerberos PAC behaviour; UNK for a ConfigMgr-specific provider cache layer on top of this]
 - Role-based administration fundamentals describes role-based admin as combining security roles, security scopes and assigned collections into a per-administrative-user scope, computed by the SMS Provider from the caller's Windows/AD identity (via the `SMS_Admin` object created for each administrative user or group) at call time; the page does not state whether the SMS Provider re-reads AD group membership on every call, caches it, or only refreshes it on a new logon/ticket. [DOC S1218]
 - Searched: Role-based administration fundamentals (S1218), Configure role-based administration, Plan for the SMS Provider, and the `SMS_Admin` WMI class reference — none of the three official pages found states a provider-side cache refresh interval or ties the refresh explicitly to Kerberos ticket renewal. Treated as confirmed UNK after 3 distinct official-source attempts, per rule 4 of PROMPT-auth.md. [UNK]

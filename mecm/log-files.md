@@ -3,7 +3,7 @@ topic: mecm/log-files
 priority: P0
 applies_to: "ConfigMgr current branch 2603 (log-files.md ms.date 2025-08-11, memdocs 4b5429df)"
 retrieved_utc: 2026-09-23
-sources: [S212, S213, S214]
+sources: [S-5lqbi3py, S213, S-jtvk6o4y]
 status: complete
 ---
 
@@ -14,14 +14,14 @@ and client-installation rows have location "Client". The same log can appear in 
 Prose is CC BY 4.0 (MicrosoftDocs/memdocs); the table was normalized (markdown, links and footnote markers removed).
 
 ## Facts
-- The doc lists client logs (client operations, client installation, Mac), server logs (site server, site install, data warehouse, FSP, MP, SCP, SUP) and logs by functionality. [DOC S212]
-- Compliance settings logs (client): CIAgent.log, CITaskManager.log, DCMAgent.log, DCMReporting.log, DcmWmiProvider.log. [DOC S212]
-- Client-side related: CIStateStore.log, CIStore.log (CI state/info), Diagnostics.log (client diagnostic actions), Scripts.log (Run Scripts), StateMessageProvider.log, PolicyAgent.log. [DOC S212]
-- adminservice.log records SMS Provider administration service REST API actions, on the SMS Provider computer. [DOC S212]
+- The doc lists client logs (client operations, client installation, Mac), server logs (site server, site install, data warehouse, FSP, MP, SCP, SUP) and logs by functionality. [DOC S-5lqbi3py]
+- Compliance settings logs (client): CIAgent.log, CITaskManager.log, DCMAgent.log, DCMReporting.log, DcmWmiProvider.log. [DOC S-5lqbi3py]
+- Client-side related: CIStateStore.log, CIStore.log (CI state/info), Diagnostics.log (client diagnostic actions), Scripts.log (Run Scripts), StateMessageProvider.log, PolicyAgent.log. [DOC S-5lqbi3py]
+- adminservice.log records SMS Provider administration service REST API actions, on the SMS Provider computer. [DOC S-5lqbi3py]
 - CMG logs CMGSetup/CMGService/CMGContentService are synced from Azure storage every five minutes (max delay 10 minutes). [DOC S213]
-- WSUS server logs are in `%ProgramFiles%\Update Services\LogFiles`. [DOC S212]
-- Default log folders: client `C:\Windows\CCM\logs`; server `C:\Program Files\Microsoft Configuration Manager\Logs`; MP `C:\SMS_CCM\Logs`; console `...\AdminConsole\AdminUILog`. [DOC S214]
-- CmRcService.log has no location column in the doc; its description says "in the Client logs folder". [DOC S212]
+- WSUS server logs are in `%ProgramFiles%\Update Services\LogFiles`. [DOC S-5lqbi3py]
+- Default log folders: client `C:\Windows\CCM\logs`; server `C:\Program Files\Microsoft Configuration Manager\Logs`; MP `C:\SMS_CCM\Logs`; console `...\AdminConsole\AdminUILog`. [DOC S-jtvk6o4y]
+- CmRcService.log has no location column in the doc; its description says "in the Client logs folder". [DOC S-5lqbi3py]
 
 ## Reference
 | Section | Rows |

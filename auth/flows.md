@@ -3,7 +3,7 @@ topic: auth/flows
 priority: P0
 applies_to: "ConfigMgr 2509+, Windows 11 24H2 / Windows Server 2025, Entra ID, SQL Server 2022/2025, GitLab"
 retrieved_utc: 2026-09-24
-sources: [S300, S301, S307, S311, S468, S469, S512, S518, S521, S621, S1201, S1202, S1205, S1208, S1215, S1228, S1270, S1276, S1286, S1289, S1293, S1297, S1298, S1302, S1345, S1347]
+sources: [S-o6f7ibqo, S-sldz4d6b, S-7jumyiid, S311, S468, S469, S512, S518, S521, S621, S1201, S1202, S1205, S1208, S1215, S1228, S1270, S1276, S1286, S1289, S1293, S1297, S1298, S1302, S1345, S1347]
 status: partial
 ---
 
@@ -15,9 +15,9 @@ status: partial
 - Per-protocol detail lives in the topic files: [kerberos](kerberos.md), [ntlm-deprecation](ntlm-deprecation.md), [ldap-smb-signing](ldap-smb-signing.md), [gmsa-dmsa](gmsa-dmsa.md), [msal-public-client](msal-public-client.md), [workload-identity](workload-identity.md), [configmgr-rbac-auth](configmgr-rbac-auth.md), [sql-authz](sql-authz.md), [gitlab-ci-identity](gitlab-ci-identity.md). Revocation timing: [revocation](revocation.md).
 
 ## Facts
-- The AdminService rejects NTLM from ConfigMgr 2509, so F01 and F07 work only when Kerberos works (FQDN, `HTTP/<fqdn>` SPN). [DOC S307]
-- The AdminService applies ConfigMgr RBAC and the SMS Provider authentication level; the caller must be a ConfigMgr administrative user. [DOC S300,S311]
-- The AdminService uses a self-signed site certificate on 443 unless a PKI certificate is bound, so a Python client must either trust that certificate or the site must bind a PKI one. [DER S301]
+- The AdminService rejects NTLM from ConfigMgr 2509, so F01 and F07 work only when Kerberos works (FQDN, `HTTP/<fqdn>` SPN). [DOC S-7jumyiid]
+- The AdminService applies ConfigMgr RBAC and the SMS Provider authentication level; the caller must be a ConfigMgr administrative user. [DOC S-o6f7ibqo,S311]
+- The AdminService uses a self-signed site certificate on 443 unless a PKI certificate is bound, so a Python client must either trust that certificate or the site must bind a PKI one. [DER S-sldz4d6b]
 - Windows 11 24H2 Enterprise/Pro/Education require SMB signing (outbound and inbound) and Windows Server 2025 requires outbound signing; encryption is optional. F09 needs a share that signs. [DOC S1202,S1228]
 - `ldap3` cannot provide LDAP-layer signing or sealing, so with a DC that requires signing, F06 from `ldap3` needs LDAPS. [DER S1201,S1208]
 - A signed-in engineer's role check against a small set of role groups fits one `/me/checkMemberGroups` call under delegated `User.Read` (at most 20 group ids). [DOC S1286]

@@ -3,7 +3,7 @@ topic: intune/mdmdiagnosticstool
 priority: P1
 applies_to: "Windows 10 1809+ / Windows 11, doc ms.date 2025-08-04"
 retrieved_utc: 2026-09-24
-sources: [S617, S618, S616]
+sources: [S617, S618, S-6epv7qzl]
 status: partial
 ---
 # MdmDiagnosticsTool.exe
@@ -19,7 +19,7 @@ No official page lists every accepted area.
 - Settings > Accounts > Access work or school > Info > Create report writes to `C:\Users\Public\Documents\MDMDiagnostics`. [DOC S617]
 - `-area Autopilot;TPM -cab <path>` for self-deploying / pre-provisioning on physical devices; `-area DeviceProvisioning -cab <path>` for runtime provisioning on 1809+. [DOC S618]
 - DiagnosticLog CSP can enable/export channels remotely, e.g. `./Vendor/MSFT/DiagnosticLog/EtwLog/Channels/Microsoft-Windows-DeviceManagement-Enterprise-Diagnostics-Provider%2FDebug/State`. [DOC S617]
-- Intune Collect diagnostics runs `mdmdiagnosticstool.exe` and collects `%temp%\MDMDiagnostics\mdmlogs-<Date/Time>.cab`. [DOC S616]
+- Intune Collect diagnostics runs `mdmdiagnosticstool.exe` and collects `%temp%\MDMDiagnostics\mdmlogs-<Date/Time>.cab`. [DOC S-6epv7qzl]
 - Complete list of valid `-area` values: not documented. [UNK]
 
 ## Reference

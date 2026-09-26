@@ -3,7 +3,7 @@ topic: mecm/run-scripts
 priority: P0
 applies_to: "ConfigMgr current branch 2603"
 retrieved_utc: 2026-09-23
-sources: [S302, S316, S318, S323, S324, S325, S326, S335, S336, S337, S341, S350, S351]
+sources: [S-igpzfey7, S-sxtmngif, S-e5qqwdcj, S1520, S-kln2au6a, S-aaryifxi, S-hmjlvsck, S335, S336, S337, S-5v5lco6w, S350, S-p2yatbfh]
 status: partial
 ---
 
@@ -16,31 +16,31 @@ By default an author cannot approve their own script.
 `Invoke-CMScript -ScriptParameter` (2010+) is the documented way to pass parameters. No AdminService `v1.0` route for running a script is documented. Script size limits and a script-signing requirement are not documented.
 
 ## Facts
-- Only PowerShell is supported. Parameter types are integer, string and list. [DOC S323]
-- A script can have up to 10 parameters. Each parameter can have validation: minimum length, maximum length, a .NET regex and a custom error. [DOC S323]
-- Parameter values cannot contain a single quote (known issue). Default values in the script are shown in the UI, but ConfigMgr does not apply them at run time. [DOC S323]
-- Clients need PowerShell 3.0 or later and client version 1706 or later. [DOC S323]
-- Scripts must be approved before they run. Editing or copying a script resets its approval. [DOC S323]
-- By default users cannot approve scripts they authored. The hierarchy setting "Script authors require additional script approver" can be cleared, and Microsoft recommends doing so only in a lab. [DOC S323]
-- Execution is "launched quickly through a high priority system that times out in one hour". Offline targets must be re-run. [DOC S323]
-- Scheduled runs (2309+) are in UTC, and at most 25 scheduled scripts are processed every 5 minutes. [DOC S323]
-- Scripts run as the SYSTEM/computer account, which has limited network access. [DOC S323]
-- Output is returned as JSON via `ConvertTo-Json` where possible and is truncated to 4 KB. [DOC S323]
-- Client output under 80 KB uses the fast channel, and larger output uses state messages. This is stated for script and query output from 1810 clients. [DOC S316]
+- Only PowerShell is supported. Parameter types are integer, string and list. [DOC S1520]
+- A script can have up to 10 parameters. Each parameter can have validation: minimum length, maximum length, a .NET regex and a custom error. [DOC S1520]
+- Parameter values cannot contain a single quote (known issue). Default values in the script are shown in the UI, but ConfigMgr does not apply them at run time. [DOC S1520]
+- Clients need PowerShell 3.0 or later and client version 1706 or later. [DOC S1520]
+- Scripts must be approved before they run. Editing or copying a script resets its approval. [DOC S1520]
+- By default users cannot approve scripts they authored. The hierarchy setting "Script authors require additional script approver" can be cleared, and Microsoft recommends doing so only in a lab. [DOC S1520]
+- Execution is "launched quickly through a high priority system that times out in one hour". Offline targets must be re-run. [DOC S1520]
+- Scheduled runs (2309+) are in UTC, and at most 25 scheduled scripts are processed every 5 minutes. [DOC S1520]
+- Scripts run as the SYSTEM/computer account, which has limited network access. [DOC S1520]
+- Output is returned as JSON via `ConvertTo-Json` where possible and is truncated to 4 KB. [DOC S1520]
+- Client output under 80 KB uses the fast channel, and larger output uses state messages. This is stated for script and query output from 1810 clients. [DOC S-sxtmngif]
 - A size limit on the script body is not documented. [UNK]
-- ConfigMgr documents no signing requirement for Run Scripts. The security guidance recommends "Sign your scripts" after vetting, not storing secrets, validating parameters with regex, and using predefined parameters. [DOC S324]
-- Microsoft warns that parameters open a PowerShell injection surface. [DOC S323]
-- Security software should exclude `%windir%\CCM\ScriptStore`. [DOC S323]
-- Script status data is removed by the "Delete Aged Client Operations" maintenance task or when the script is deleted. [DOC S323]
-- smsprov.log records Run Script client operations as Type 135. [DOC S318]
-- Logs: client Scripts.log and CcmMessaging.log, MP MP_RelayMsgMgr.log, site server SMS_Message_Processing_Engine.log. [DOC S323]
+- ConfigMgr documents no signing requirement for Run Scripts. The security guidance recommends "Sign your scripts" after vetting, not storing secrets, validating parameters with regex, and using predefined parameters. [DOC S-kln2au6a]
+- Microsoft warns that parameters open a PowerShell injection surface. [DOC S1520]
+- Security software should exclude `%windir%\CCM\ScriptStore`. [DOC S1520]
+- Script status data is removed by the "Delete Aged Client Operations" maintenance task or when the script is deleted. [DOC S1520]
+- smsprov.log records Run Script client operations as Type 135. [DOC S-e5qqwdcj]
+- Logs: client Scripts.log and CcmMessaging.log, MP MP_RelayMsgMgr.log, site server SMS_Message_Processing_Engine.log. [DOC S1520]
 - `Invoke-CMScript` targets a script with `-ScriptGuid` or `-InputObject`, and a device or collection with `-Collection*` or `-Device`. `-ScriptParameter <Hashtable>` applies to 2010 and later. `-ScheduleTime <DateTime>` sets a UTC schedule. [DOC S335]
 - `New-CMScript` takes `-ScriptName` with `-ScriptText` or `-ScriptFile` (.ps1). `Approve-CMScript` takes `-InputObject` and `-Comment`. [DOC S336,S337]
-- Scripts that have parameters are not shown in the Intune admin center and cannot be run from there. [DOC S325]
-- Run Script over the AdminService: the docs mention using the AdminService from Run Scripts (as a caller) but document no route to start one. [DOC S302]
+- Scripts that have parameters are not shown in the Intune admin center and cannot be run from there. [DOC S-aaryifxi]
+- Run Script over the AdminService: the docs mention using the AdminService from Run Scripts (as a caller) but document no route to start one. [DOC S-igpzfey7]
 - No official source documents a `v1.0` Run Script action or its parameter format. [UNK]
 - A community sample posts `ScriptGuid` (and parameters) to `v1.0/Device(<id>)/AdminService.RunScript`. It was not verified. [COMMUNITY S350]
-- Folders for scripts exist from 2403, and the Full Administrator and Operations Administrator roles can manage them. [DOC S351]
+- Folders for scripts exist from 2403, and the Full Administrator and Operations Administrator roles can manage them. [DOC S-p2yatbfh]
 
 ## Reference
 | Role (custom, not built in) | Collection: Run Script | Site: Read | SMS Scripts |
@@ -48,7 +48,7 @@ By default an author cannot approve their own script.
 | Script Runners | Yes | Yes | Read |
 | Script Authors | No | Yes | Create, Read, Delete, Modify |
 | Script Approvers | No | Yes | Read, Approve, Modify |
-Source: S323. Built-in roles with Run Script: Full, Infrastructure and Operations Administrator (S326).
+Source: S1520. Built-in roles with Run Script: Full, Infrastructure and Operations Administrator (S-hmjlvsck).
 
 ## Examples
 ```powershell

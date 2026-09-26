@@ -3,7 +3,7 @@ topic: defender/asr-and-antivirus
 priority: P2
 applies_to: "Microsoft Defender Antivirus and Attack Surface Reduction (ASR) rules on Windows 10/11 and Windows Server, managed via Intune, Configuration Manager, Group Policy, MDM CSP or local PowerShell; docs retrieved 2026-09-26"
 retrieved_utc: 2026-09-26
-sources: [S-oc7bghb6, S-jlx5q3eb, S-tn7i36es, S-4adqmykc, S-bmoruabr, S-mxlwzhw5, S-3odg3w3u, S-tateky4b, S-kp35fytq, S-sfs6hoqq, S-f4gw3rhj, S-3ed4q5kx, S1472, S1475]
+sources: [S-oc7bghb6, S-jlx5q3eb, S-tn7i36es, S-4adqmykc, S-bmoruabr, S-mxlwzhw5, S-3odg3w3u, S-tateky4b, S-kp35fytq, S-sfs6hoqq, S-f4gw3rhj, S-3ed4q5kx, S1472, S-oeh7ui3h]
 status: complete
 files: [defender/asr-rules.csv]
 ---
@@ -66,8 +66,8 @@ enables 15 of the 19 documented ASR rules in Block mode; the baseline's exact ro
 - Two ASR rules (Adobe Reader child process, executable content from email/webmail) and one scripted-download rule generate EDR alerts only when the cloud protection level is High plus or Zero tolerance, and generate user-notification pop-ups only at High, High plus, or Zero tolerance. [DOC S-oc7bghb6]
 
 ### Windows 11 24H2 baseline coverage (cross-reference, not duplicated)
-- The MSFT Windows 11 24H2 security baseline enables `ExploitGuard_ASR_Rules` (`HKLM\Software\Policies\Microsoft\Windows Defender\Windows Defender Exploit Guard\ASR!ExploitGuard_ASR_Rules = 1`) plus 15 individual rule GUIDs at value `1` (Block) under `...\Windows Defender Exploit Guard\ASR\Rules`; the full setting rows (registry path, value name/type, baseline value, per-GUID) are in `security/settings-crosswalk.csv` lines 321-335, cited `[DOC S1472, S1475]` there — not reproduced in `asr-rules.csv` to avoid duplication. [DOC S1472, S1475]
-- The same baseline package also sets core Defender AV registry values referenced by this article's rules (PUA protection, exclusion visibility, real-time protection sub-features, cloud block level `MpCloudBlockLevel = 2`/High, Spynet reporting, block-at-first-sight, network protection, sample submission consent) — see `security/settings-crosswalk.csv` lines 297-320 and 336, `[DOC S1472, S1475]`. [DOC S1472, S1475]
+- The MSFT Windows 11 24H2 security baseline enables `ExploitGuard_ASR_Rules` (`HKLM\Software\Policies\Microsoft\Windows Defender\Windows Defender Exploit Guard\ASR!ExploitGuard_ASR_Rules = 1`) plus 15 individual rule GUIDs at value `1` (Block) under `...\Windows Defender Exploit Guard\ASR\Rules`; the full setting rows (registry path, value name/type, baseline value, per-GUID) are in `security/settings-crosswalk.csv` lines 321-335, cited `[DOC S1472, S-oeh7ui3h]` there — not reproduced in `asr-rules.csv` to avoid duplication. [DOC S1472, S-oeh7ui3h]
+- The same baseline package also sets core Defender AV registry values referenced by this article's rules (PUA protection, exclusion visibility, real-time protection sub-features, cloud block level `MpCloudBlockLevel = 2`/High, Spynet reporting, block-at-first-sight, network protection, sample submission consent) — see `security/settings-crosswalk.csv` lines 297-320 and 336, `[DOC S1472, S-oeh7ui3h]`. [DOC S1472, S-oeh7ui3h]
 
 ### Device state, events, tamper protection
 - `Get-MpComputerStatus | Select AMRunningMode` reports the Defender AV operating mode: `Normal` (Active — Defender AV is the primary AV and remediates in real time), `Passive`/`Passive Mode` (not primary AV, no real-time remediation; requires the device be onboarded to Defender for Endpoint), `EDR Block Mode` (Defender AV passive + EDR in block mode enabled for post-breach protection), or `SxS Passive Mode` (running alongside another AV product using limited periodic scanning). [DOC S-mxlwzhw5, S-3odg3w3u, S-tateky4b]

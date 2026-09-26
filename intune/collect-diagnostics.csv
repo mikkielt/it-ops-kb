@@ -1,75 +1,75 @@
 kind,item,notes,source_id
-registry_key,HKLM\SOFTWARE\Microsoft\CloudManagedUpdate,,S616
-registry_key,HKLM\SOFTWARE\Microsoft\EPMAgent,,S616
-registry_key,HKLM\SOFTWARE\Microsoft\PolicyManager\current\device\DeviceHealthMonitoring,,S616
-registry_key,HKLM\SOFTWARE\Microsoft\IntuneManagementExtension,,S616
-registry_key,HKLM\SOFTWARE\Microsoft\SystemCertificates\AuthRoot,,S616
-registry_key,HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Authentication\LogonUI,,S616
-registry_key,HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Internet Settings,,S616
-registry_key,HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall,,S616
-registry_key,HKLM\SOFTWARE\Microsoft\DeviceInventory,,S616
-registry_key,HKLM\SOFTWARE\Policies\Microsoft\Cryptography\Configuration\SSL,,S616
-registry_key,HKLM\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall,,S616
-registry_key,HKLM\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL,,S616
-registry_key,HKLM\SYSTEM\CurrentControlSet\Services\SharedAccess\Parameters\FirewallPolicy\Mdm,,S616
-registry_key,HKLM\SYSTEM\Setup\SetupDiag\Results,,S616
-command,%programfiles%\windows defender\mpcmdrun.exe -GetFiles,,S616
-command,%windir%\system32\certutil.exe -store,,S616
-command,%windir%\system32\certutil.exe -store -user my,,S616
-command,%windir%\system32\Dsregcmd.exe /status,,S616
-command,%windir%\system32\ipconfig.exe /all,,S616
-command,%windir%\system32\mdmdiagnosticstool.exe,no -area argument listed in the table,S616
-command,%windir%\system32\msinfo32.exe /report %temp%\MDMDiagnostics\msinfo32.log,,S616
-command,%windir%\system32\netsh.exe advfirewall show allprofiles,,S616
-command,%windir%\system32\netsh.exe advfirewall show global,,S616
-command,%windir%\system32\netsh.exe lan show profiles,,S616
-command,%windir%\system32\netsh.exe winhttp show proxy,,S616
-command,%windir%\system32\netsh.exe wlan show profiles,,S616
-command,%windir%\system32\netsh.exe wlan show wlanreport,,S616
-command,%windir%\system32\ping.exe -n 50 localhost,,S616
-command,%windir%\system32\pnputil.exe /enum-drivers,,S616
-command,%windir%\system32\powercfg.exe /batteryreport /output %temp%\MDMDiagnostics\battery-report.html,,S616
-command,%windir%\system32\powercfg.exe /energy /output %temp%\MDMDiagnostics\energy-report.html,,S616
-event_log,Application,,S616
-event_log,Microsoft-Windows-AppLocker/EXE and DLL,,S616
-event_log,Microsoft-Windows-AppLocker/MSI and Script,,S616
-event_log,Microsoft-Windows-AppLocker/Packaged app-Deployment,,S616
-event_log,Microsoft-Windows-AppLocker/Packaged app-Execution,,S616
-event_log,Microsoft-Windows-AppxPackaging/Operational,,S616
-event_log,Microsoft-Windows-Bitlocker/Bitlocker Management,,S616
-event_log,Microsoft-Windows-HelloForBusiness/Operational,,S616
-event_log,Microsoft-Windows-SENSE/Operational,,S616
-event_log,Microsoft-Windows-SenseIR/Operational,,S616
-event_log,Microsoft-Windows-Windows Firewall With Advanced Security/Firewall,,S616
-event_log,Microsoft-Windows-WinRM/Operational,,S616
-event_log,Microsoft-Windows-WMI-Activity/Operational,,S616
-event_log,Microsoft-Windows-AppXDeployment/Operational,,S616
-event_log,Microsoft-Windows-AppXDeploymentServer/Operational,,S616
-event_log,Setup,,S616
-event_log,System,,S616
-file,%ProgramData%\Microsoft\DiagnosticLogCSP\Collectors\*.etl,,S616
-file,%ProgramFiles%\Microsoft EPM Agent\Logs\*.*,,S616
-file,%Program Files%\Microsoft Device Inventory Agent\Logs,spelling as published (space inside %Program Files%),S616
-file,%ProgramData%\Microsoft\IntuneManagementExtension\Logs\*.*,,S616
-file,%ProgramData%\Microsoft\Windows Defender\Support\MpSupportFiles.cab,,S616
-file,%ProgramData%\Microsoft\Windows\WlanReport\wlan-report-latest.html,,S616
-file,%ProgramData%\USOShared\logs\system\*.etl,,S616
-file,%ProgramData Microsoft Update Health Tools\Logs\*.etl,spelling as published (missing % and backslash),S616
-file,%temp%\CloudDesktop\*.log,,S616
-file,%temp%\MDMDiagnostics\battery-report.html,,S616
-file,%temp%\MDMDiagnostics\energy-report.html,,S616
-file,%temp%\MDMDiagnostics\mdmlogs-<Date/Time>.cab,,S616
-file,%temp%\MDMDiagnostics\msinfo32.log,,S616
-file,%windir%\ccm\logs\*.log,ConfigMgr client logs,S616
-file,%windir%\ccmsetup\logs\*.log,ConfigMgr client setup logs,S616
-file,%windir%\logs\CBS\cbs.log,,S616
-file,%windir%\logs\measuredboot\*.*,,S616
-file,%windir%\logs\Panther\unattendgc\setupact.log,,S616
-file,%windir%\logs\SoftwareDistribution\ReportingEvent\measuredboot\*.log,,S616
-file,%windir%\Logs\SetupDiag\SetupDiagResults.xml,,S616
-file,%windir%\logs\WindowsUpdate\*.etl,,S616
-file,%windir%\SensorFramework\*.etl,,S616
-file,%windir%\system32\config\systemprofile\AppData\Local\mdm\*.log,,S616
-file,%windir%\temp\%computername%*.log,,S616
-file,%windir%\temp\officeclicktorun*.log,,S616
-file,%TEMP%\winget\defaultstate*.log,,S616
+registry_key,HKLM\SOFTWARE\Microsoft\CloudManagedUpdate,,S-6epv7qzl
+registry_key,HKLM\SOFTWARE\Microsoft\EPMAgent,,S-6epv7qzl
+registry_key,HKLM\SOFTWARE\Microsoft\PolicyManager\current\device\DeviceHealthMonitoring,,S-6epv7qzl
+registry_key,HKLM\SOFTWARE\Microsoft\IntuneManagementExtension,,S-6epv7qzl
+registry_key,HKLM\SOFTWARE\Microsoft\SystemCertificates\AuthRoot,,S-6epv7qzl
+registry_key,HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Authentication\LogonUI,,S-6epv7qzl
+registry_key,HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Internet Settings,,S-6epv7qzl
+registry_key,HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall,,S-6epv7qzl
+registry_key,HKLM\SOFTWARE\Microsoft\DeviceInventory,,S-6epv7qzl
+registry_key,HKLM\SOFTWARE\Policies\Microsoft\Cryptography\Configuration\SSL,,S-6epv7qzl
+registry_key,HKLM\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall,,S-6epv7qzl
+registry_key,HKLM\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL,,S-6epv7qzl
+registry_key,HKLM\SYSTEM\CurrentControlSet\Services\SharedAccess\Parameters\FirewallPolicy\Mdm,,S-6epv7qzl
+registry_key,HKLM\SYSTEM\Setup\SetupDiag\Results,,S-6epv7qzl
+command,%programfiles%\windows defender\mpcmdrun.exe -GetFiles,,S-6epv7qzl
+command,%windir%\system32\certutil.exe -store,,S-6epv7qzl
+command,%windir%\system32\certutil.exe -store -user my,,S-6epv7qzl
+command,%windir%\system32\Dsregcmd.exe /status,,S-6epv7qzl
+command,%windir%\system32\ipconfig.exe /all,,S-6epv7qzl
+command,%windir%\system32\mdmdiagnosticstool.exe,no -area argument listed in the table,S-6epv7qzl
+command,%windir%\system32\msinfo32.exe /report %temp%\MDMDiagnostics\msinfo32.log,,S-6epv7qzl
+command,%windir%\system32\netsh.exe advfirewall show allprofiles,,S-6epv7qzl
+command,%windir%\system32\netsh.exe advfirewall show global,,S-6epv7qzl
+command,%windir%\system32\netsh.exe lan show profiles,,S-6epv7qzl
+command,%windir%\system32\netsh.exe winhttp show proxy,,S-6epv7qzl
+command,%windir%\system32\netsh.exe wlan show profiles,,S-6epv7qzl
+command,%windir%\system32\netsh.exe wlan show wlanreport,,S-6epv7qzl
+command,%windir%\system32\ping.exe -n 50 localhost,,S-6epv7qzl
+command,%windir%\system32\pnputil.exe /enum-drivers,,S-6epv7qzl
+command,%windir%\system32\powercfg.exe /batteryreport /output %temp%\MDMDiagnostics\battery-report.html,,S-6epv7qzl
+command,%windir%\system32\powercfg.exe /energy /output %temp%\MDMDiagnostics\energy-report.html,,S-6epv7qzl
+event_log,Application,,S-6epv7qzl
+event_log,Microsoft-Windows-AppLocker/EXE and DLL,,S-6epv7qzl
+event_log,Microsoft-Windows-AppLocker/MSI and Script,,S-6epv7qzl
+event_log,Microsoft-Windows-AppLocker/Packaged app-Deployment,,S-6epv7qzl
+event_log,Microsoft-Windows-AppLocker/Packaged app-Execution,,S-6epv7qzl
+event_log,Microsoft-Windows-AppxPackaging/Operational,,S-6epv7qzl
+event_log,Microsoft-Windows-Bitlocker/Bitlocker Management,,S-6epv7qzl
+event_log,Microsoft-Windows-HelloForBusiness/Operational,,S-6epv7qzl
+event_log,Microsoft-Windows-SENSE/Operational,,S-6epv7qzl
+event_log,Microsoft-Windows-SenseIR/Operational,,S-6epv7qzl
+event_log,Microsoft-Windows-Windows Firewall With Advanced Security/Firewall,,S-6epv7qzl
+event_log,Microsoft-Windows-WinRM/Operational,,S-6epv7qzl
+event_log,Microsoft-Windows-WMI-Activity/Operational,,S-6epv7qzl
+event_log,Microsoft-Windows-AppXDeployment/Operational,,S-6epv7qzl
+event_log,Microsoft-Windows-AppXDeploymentServer/Operational,,S-6epv7qzl
+event_log,Setup,,S-6epv7qzl
+event_log,System,,S-6epv7qzl
+file,%ProgramData%\Microsoft\DiagnosticLogCSP\Collectors\*.etl,,S-6epv7qzl
+file,%ProgramFiles%\Microsoft EPM Agent\Logs\*.*,,S-6epv7qzl
+file,%Program Files%\Microsoft Device Inventory Agent\Logs,spelling as published (space inside %Program Files%),S-6epv7qzl
+file,%ProgramData%\Microsoft\IntuneManagementExtension\Logs\*.*,,S-6epv7qzl
+file,%ProgramData%\Microsoft\Windows Defender\Support\MpSupportFiles.cab,,S-6epv7qzl
+file,%ProgramData%\Microsoft\Windows\WlanReport\wlan-report-latest.html,,S-6epv7qzl
+file,%ProgramData%\USOShared\logs\system\*.etl,,S-6epv7qzl
+file,%ProgramData Microsoft Update Health Tools\Logs\*.etl,spelling as published (missing % and backslash),S-6epv7qzl
+file,%temp%\CloudDesktop\*.log,,S-6epv7qzl
+file,%temp%\MDMDiagnostics\battery-report.html,,S-6epv7qzl
+file,%temp%\MDMDiagnostics\energy-report.html,,S-6epv7qzl
+file,%temp%\MDMDiagnostics\mdmlogs-<Date/Time>.cab,,S-6epv7qzl
+file,%temp%\MDMDiagnostics\msinfo32.log,,S-6epv7qzl
+file,%windir%\ccm\logs\*.log,ConfigMgr client logs,S-6epv7qzl
+file,%windir%\ccmsetup\logs\*.log,ConfigMgr client setup logs,S-6epv7qzl
+file,%windir%\logs\CBS\cbs.log,,S-6epv7qzl
+file,%windir%\logs\measuredboot\*.*,,S-6epv7qzl
+file,%windir%\logs\Panther\unattendgc\setupact.log,,S-6epv7qzl
+file,%windir%\logs\SoftwareDistribution\ReportingEvent\measuredboot\*.log,,S-6epv7qzl
+file,%windir%\Logs\SetupDiag\SetupDiagResults.xml,,S-6epv7qzl
+file,%windir%\logs\WindowsUpdate\*.etl,,S-6epv7qzl
+file,%windir%\SensorFramework\*.etl,,S-6epv7qzl
+file,%windir%\system32\config\systemprofile\AppData\Local\mdm\*.log,,S-6epv7qzl
+file,%windir%\temp\%computername%*.log,,S-6epv7qzl
+file,%windir%\temp\officeclicktorun*.log,,S-6epv7qzl
+file,%TEMP%\winget\defaultstate*.log,,S-6epv7qzl

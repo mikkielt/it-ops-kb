@@ -3,7 +3,7 @@ topic: autopilot/device-identity
 priority: P1
 applies_to: "Windows Autopilot (memdocs), Graph v1.0/beta windowsAutopilotDeviceIdentity"
 retrieved_utc: 2026-09-24
-sources: [S504, S508, S509, S545, S553, S554, S555, S580, S584, S585, S586]
+sources: [S504, S508, S509, S545, S553, S554, S555, S-jjyryhyn, S-q7ach7kp, S-frph46kv, S586]
 status: partial
 ---
 
@@ -15,16 +15,16 @@ status: partial
 - The Graph `windowsAutopilotDeviceIdentity.id` is documented only as "The GUID for the object"; no doc says it is the ZTDID. [UNK]
 
 ## Facts
-- Registration associates the device's hardware hash with the Autopilot service; registering automatically creates a Microsoft Entra object used to identify the device before user sign-in. [DOC S580]
-- If that Entra object is deleted, the device can fail to enroll through Autopilot. [DOC S580]
-- The hardware hash includes manufacturer, model, device serial number, hard drive serial number and generation time; it changes each time it is generated. [DOC S580]
+- Registration associates the device's hardware hash with the Autopilot service; registering automatically creates a Microsoft Entra object used to identify the device before user sign-in. [DOC S-jjyryhyn]
+- If that Entra object is deleted, the device can fail to enroll through Autopilot. [DOC S-jjyryhyn]
+- The hardware hash includes manufacturer, model, device serial number, hard drive serial number and generation time; it changes each time it is generated. [DOC S-jjyryhyn]
 - All Windows Autopilot devices store ZTDId, "a unique value assigned to all imported Windows Autopilot devices", in the device `physicalIds` property. [DOC S553]
-- Dynamic group rule for all Autopilot devices: `(device.devicePhysicalIDs -any (_ -startsWith "[ZTDid]"))`. [DOC S585]
-- Intune's group tag maps to the `OrderID` attribute on Entra devices: `[OrderID]:<tag>` in `devicePhysicalIds`. [DOC S585,S554]
+- Dynamic group rule for all Autopilot devices: `(device.devicePhysicalIDs -any (_ -startsWith "[ZTDid]"))`. [DOC S-frph46kv]
+- Intune's group tag maps to the `OrderID` attribute on Entra devices: `[OrderID]:<tag>` in `devicePhysicalIds`. [DOC S-frph46kv,S554]
 - `devicePhysicalIds` values used by Autopilot include `[ZTDId]`, `[OrderID]`, `[PurchaseOrderId]`. [DOC S554]
 - Graph query for Autopilot devices: `devices?$filter=physicalIds/any(p: startswith(p, '[ZTDID]'))`. [DOC S586]
 - Graph `device.physicalIds` is documented as "For internal use only". [DOC S504]
-- Import CSV header: `Device Serial Number,Windows Product ID,Hardware Hash,Group Tag,Assigned User`; serial number and hardware hash required; up to 500 rows per file. [DOC S584]
+- Import CSV header: `Device Serial Number,Windows Product ID,Hardware Hash,Group Tag,Assigned User`; serial number and hardware hash required; up to 500 rows per file. [DOC S-q7ach7kp]
 - `windowsAutopilotDeviceIdentity.id` is described as "The GUID for the object". [DOC S508]
 - The Autopilot identity carries `azureActiveDirectoryDeviceId` ("to be deprecated") and `managedDeviceId`; beta adds `azureAdDeviceId`. [DOC S508,S509]
 - Deleting an Entra device associated with an Autopilot object: user-driven redeploys create a new Entra device without ZTDID; self-deploying and pre-provisioning fail with a ZTDID mismatch. [DOC S545]
@@ -35,7 +35,7 @@ status: partial
 | physicalIds prefix | Meaning | Source |
 |---|---|---|
 | `[ZTDId]` | Autopilot zero-touch device id | S553, S554 |
-| `[OrderID]` | Intune group tag | S585, S554 |
+| `[OrderID]` | Intune group tag | S-frph46kv, S554 |
 | `[PurchaseOrderId]` | purchase order | S554 |
 
 ## Examples

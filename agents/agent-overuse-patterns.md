@@ -3,7 +3,7 @@ topic: agents/agent-overuse-patterns
 priority: P1
 applies_to: "Anthropic/OpenAI/Google/Microsoft agent guidance (2025-2026 docs), Thoughtworks Technology Radar Vol 34 (2026-04), jq 1.8, Renovate (docs 44.115.4), conventional-commits v1.0.0, semantic-release, LSP 3.18, DSC 3.3.0, Presidio 2.2.364"
 retrieved_utc: 2026-09-25
-sources: [S2160, S2161, S2162, S2163, S2164, S2165, S2166, S2167, S2168, S2169, S2170, S2171, S2172, S2173, S2174, S2175, S150, S154, S825, S315, S316, S317, S900, S1920, S1924, S1925, S1935, S1936]
+sources: [S2160, S2161, S2162, S2163, S2164, S2165, S2166, S2167, S2168, S2169, S2170, S2171, S2172, S2173, S2174, S2175, S150, S154, S825, S-2z2zfj3l, S-sxtmngif, S317, S900, S1920, S1924, S1925, S1935, S1936]
 status: partial
 ---
 
@@ -98,7 +98,7 @@ alongside the deterministic tool that already exists for them.
   tools for Windows endpoint management: DSC's `test` operation has a published output schema
   (`schemas/v3/bundled/outputs/{config,resource}/test.json`) [DOC S150, S154 — reused from `dsc/`,
   part `dsc`], and ConfigMgr's CMPivot query surface (entities, `CcmLog()`, `WinEvent()`) is the
-  documented structured-query path for live device state. [DOC S315, S316, S317 — reused from
+  documented structured-query path for live device state. [DOC S-2z2zfj3l, S-sxtmngif, S317 — reused from
   `mecm/cmpivot.md`, part `mecm`]
 - Presidio's `PatternRecognizer` (2.2.364) matches entities by regex plus context words and deny/allow
   lists — the documented deterministic alternative to a free-text NER call for any entity with a fixed

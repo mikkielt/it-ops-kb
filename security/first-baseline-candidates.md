@@ -3,7 +3,7 @@ topic: security/first-baseline-candidates
 priority: P0
 applies_to: "Windows 11 Enterprise 24H2/25H2; Microsoft baseline 24H2 package; DISA STIG Windows 11 V2R9 (2026-08-10); DSC 3.3.0"
 retrieved_utc: 2026-09-24
-sources: [S1470, S1471, S1472, S1475, S1477, S1478, S1479, S1590, S1591, S1592, S1593]
+sources: [S1470, S1471, S1472, S-oeh7ui3h, S1477, S1478, S1479, S1590, S1591, S1592, S1593]
 status: partial
 ---
 

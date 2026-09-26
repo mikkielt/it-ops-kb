@@ -3,7 +3,7 @@ topic: intune/configuration-policies
 priority: P2
 applies_to: "Microsoft Intune service 2026-09, Windows 10/11 client, Graph beta deviceManagementConfigurationPolicy"
 retrieved_utc: 2026-09-26
-sources: [S-lz7th2mw, S-ld2qiclx, S-hw4p6ks6, S-v3kf7d4m, S-vmpbvsv4, S-ytjbd4n5, S-4krq7dui, S-wz4ujka5, S-4gg3zmhr, S-v5cttaej, S600]
+sources: [S-lz7th2mw, S-ld2qiclx, S-hw4p6ks6, S-v3kf7d4m, S-vmpbvsv4, S-ytjbd4n5, S-4krq7dui, S-wz4ujka5, S-4gg3zmhr, S-v5cttaej, S1593]
 status: partial
 ---
 
@@ -31,7 +31,7 @@ and `security/baselines-catalog.md` for the security-baseline flavor of settings
 - Conflicts: a settings-catalog (configuration) policy setting that conflicts with another configuration-policy setting is only reported, not auto-resolved — "manually resolve these conflicts." Compliance-policy settings always take precedence over configuration-policy settings on the same setting (cf. `intune/compliance-policies.md:24`). [DOC S-v5cttaej]
 - A device-configuration profile (including settings catalog) can be scoped further with **applicability rules** (OS edition include/exclude; OS version min/max, e.g. `10.0.16299.0`–`10.0.17134.0`). [DOC S-v5cttaej]
 - Starting with the **December 2412** service release, the **Templates > Administrative Templates** profile type is deprecated and **read-only** in the admin center; the equivalent built-in ADMX settings live in the settings catalog's Administrative Templates category instead. Custom ADMX templates can still be imported (see below). [DOC S-hw4p6ks6]
-- A settings-catalog policy, whatever its contents, is governed entirely by the co-management **Device Configuration** slider (see `intune/co-management.md:23`). [DOC S600]
+- A settings-catalog policy, whatever its contents, is governed entirely by the co-management **Device Configuration** slider (see `intune/co-management.md:23`). [DOC S1593]
 
 ### Custom OMA-URI (Templates > Custom)
 - Create path: **Devices > Manage devices > Configuration > Create > New policy**, platform **Windows 10 and later**, profile type **Templates > Custom**; add one row per setting on **Configuration settings > OMA-URI Settings**. [DOC S-v3kf7d4m]

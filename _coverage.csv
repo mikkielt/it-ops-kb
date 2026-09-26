@@ -55,7 +55,7 @@ auth/kerberos,P0,partial,auth/kerberos.md,8
 auth/ldap-smb-signing,P0,partial,auth/ldap-smb-signing.md,8
 auth/msal-public-client,P0,partial,auth/msal-public-client.md,7
 auth/ntlm-deprecation,P0,complete,auth/ntlm-deprecation.md,5
-auth/permissions-matrix,P0,partial,auth/permissions-matrix.csv,20
+auth/permissions-matrix,P0,partial,auth/permissions-matrix.csv,19
 auth/sql-authz,P0,partial,auth/sql-authz.md,2
 auth/workload-identity,P0,partial,auth/workload-identity.md,12
 auth/ad-jit-membership,P1,complete,auth/ad-jit-membership.md,2

@@ -3,7 +3,7 @@ topic: mecm/osd-task-sequences
 priority: P1
 applies_to: "ConfigMgr current branch (osd/* docs, checked 2026-09-26)"
 retrieved_utc: 2026-09-26
-sources: [S-lydse5ww, S-nmfqbv57, S-dz6j2643, S-kwn2lclu, S-ruy2unms, S-6pxhq347, S-jjjidz73, S-bf2nomrq, S-xigzahvp, S-qethz2s6, S212]
+sources: [S-lydse5ww, S-nmfqbv57, S-dz6j2643, S-kwn2lclu, S-ruy2unms, S-6pxhq347, S-jjjidz73, S-bf2nomrq, S-xigzahvp, S-qethz2s6, S-5lqbi3py]
 status: partial
 files: [mecm/task-sequence-variables.csv]
 ---
@@ -59,7 +59,7 @@ the row cited by every phase below.
 - Full built-in/read-only, action and custom variable reference (45+ entries relevant to OSD, including `_SMSTSLogPath`, `_SMSTSInWinPE`, `_SMSTSLaunchMode`, `OSDDiskIndex`, `SMSTSPersistContent` vs `SMSTSPreserveContent`, USMT capture/restore variables) is in `mecm/task-sequence-variables.csv`, one row per variable with read-only/settable, type, default and source. [DOC S-lydse5ww]
 
 ### smsts.log locations and logging
-- `Smsts.log` (client, OS deployment) "Records task sequence activities"; use it with `TSDTHandler.log` and `AppEnforce.log` when troubleshooting the Install Application task sequence step. [DOC S212 mecm/log-files.csv:393, mecm/log-files.csv:260]
+- `Smsts.log` (client, OS deployment) "Records task sequence activities"; use it with `TSDTHandler.log` and `AppEnforce.log` when troubleshooting the Install Application task sequence step. [DOC S-5lqbi3py mecm/log-files.csv:393, mecm/log-files.csv:260]
 - smsts.log's location depends on the task sequence phase: (1) in Windows PE before Format and Partition Disk: `X:\Windows\temp\smstslog\smsts.log` (X = the WinPE RAM drive); (2) in WinPE after Format and Partition Disk: `X:\smstslog\smsts.log`, copied to `C:\_SMSTaskSequence\Logs\smstslog\smsts.log` once the drive is ready; (3) in the new Windows OS before the ConfigMgr client installs: `C:\_SMSTaskSequence\Logs\smstslog\smsts.log`; (4) in Windows after the client installs: `C:\Windows\CCM\Logs\smstslog\smsts.log`; (5) after the task sequence completes: `C:\Windows\CCM\Logs\smsts.log`. [DOC S-kwn2lclu]
 - The read-only variable `_SMSTSLogPath` always contains the current smsts.log directory, so a script can locate it without hardcoding the phase-dependent path. [DOC S-kwn2lclu, S-lydse5ww]
 - Default client, server, management point, console and IIS log root locations (for cross-reference while triaging OSD failures): client `C:\Windows\CCM\logs`, server `C:\Program Files\Microsoft Configuration Manager\Logs`, management point `C:\SMS_CCM\Logs`, console `C:\Program Files (x86)\Microsoft Endpoint Manager\AdminConsole\AdminUILog`, IIS `C:\inetpub\logs\logfiles\w3svc1`. [DOC S-kwn2lclu]

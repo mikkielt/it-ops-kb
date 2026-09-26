@@ -3,7 +3,7 @@ topic: autopilot/lifecycle
 priority: P1
 applies_to: "Windows Autopilot (memdocs, deregister include ms.date 02/27/2026)"
 retrieved_utc: 2026-09-24
-sources: [S580, S581, S582, S583, S545, S523]
+sources: [S-jjyryhyn, S581, S-eh54w6el, S-wdnd3vuz, S545, S523]
 status: complete
 ---
 
@@ -15,12 +15,12 @@ status: complete
 - Deregister order: delete from Intune, then delete from Autopilot; don't delete the Entra object by hand.
 
 ## Facts
-- An Entra device object is pre-created when a device is registered in Autopilot; a hybrid Entra deployment creates another device object by design, resulting in duplicate entries. [DOC S583]
-- Autopilot hybrid join naming supports only prefixes, not variables such as `%SERIAL%`. [DOC S583]
-- The Intune Connector for Active Directory (ODJ connector) needs Windows Server 2016+ and .NET Framework 4.7.2+. [DOC S583]
-- Large hardware changes such as a motherboard replacement don't match the registered hash; a new hash must be generated and uploaded. [DOC S580]
-- Motherboard replacement procedure: deregister, replace, reimage with BIOS info and DPK reinjected, capture new 4K HH, reregister, reset. [DOC S582]
-- BIOS fields Autopilot looks for include DiskSerialNumber, SmbiosSystemSerialNumber, SmbiosSystemManufacturer, SmbiosSystemProductName, SmbiosUuid, TPM EKPub, MacAddress, ProductKeyID. [DOC S582]
+- An Entra device object is pre-created when a device is registered in Autopilot; a hybrid Entra deployment creates another device object by design, resulting in duplicate entries. [DOC S-wdnd3vuz]
+- Autopilot hybrid join naming supports only prefixes, not variables such as `%SERIAL%`. [DOC S-wdnd3vuz]
+- The Intune Connector for Active Directory (ODJ connector) needs Windows Server 2016+ and .NET Framework 4.7.2+. [DOC S-wdnd3vuz]
+- Large hardware changes such as a motherboard replacement don't match the registered hash; a new hash must be generated and uploaded. [DOC S-jjyryhyn]
+- Motherboard replacement procedure: deregister, replace, reimage with BIOS info and DPK reinjected, capture new 4K HH, reregister, reset. [DOC S-eh54w6el]
+- BIOS fields Autopilot looks for include DiskSerialNumber, SmbiosSystemSerialNumber, SmbiosSystemManufacturer, SmbiosSystemProductName, SmbiosUuid, TPM EKPub, MacAddress, ProductKeyID. [DOC S-eh54w6el]
 - A device should be deregistered whenever it permanently leaves the organization (repair or end of life). [DOC S581]
 - Before deregistering from Autopilot, delete the device from Intune; then delete it in the Autopilot devices list (unassign user first if available). [DOC S581]
 - Entra joined devices: no further steps after deregistration; avoid manually deleting the Entra device. Hybrid joined: delete the AD computer object to stop resync; avoid manually deleting the Entra device. [DOC S581]

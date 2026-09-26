@@ -3,7 +3,7 @@ topic: intune/collect-diagnostics
 priority: P1
 applies_to: "Intune device action Collect diagnostics, doc ms.date 2025-10-27"
 retrieved_utc: 2026-09-24
-sources: [S616]
+sources: [S-6epv7qzl]
 status: complete
 ---
 # Collect diagnostics (Windows)
@@ -15,18 +15,18 @@ corporate Windows device and uploads a zip. Full contents list: `intune/collect-
 client logs travel through this path too.
 
 ## Facts
-- Platforms: Windows (corporate-owned), Windows Holographic, plus Android/iOS via app protection. [DOC S616]
-- RBAC: Help Desk Operator, School Administrator, or a custom role with **Remote tasks/Collect diagnostics** plus device read permissions. [DOC S616]
-- Diagnostics can't be collected or downloaded by calling Microsoft Graph directly; use the admin center. [DOC S616]
-- Bulk action: up to 25 Windows devices at a time. [DOC S616]
-- Stored 28 days then deleted; up to 10 collections per device. [DOC S616]
-- Autopilot failure auto-capture: one set of logs per device per day; enabled by default; can be disabled under Tenant administration > Device diagnostics. [DOC S616]
-- The action is enabled by default for Windows 10 1909+ / Windows 11 corporate devices and can be disabled tenant-wide. [DOC S616]
-- Device must receive the action within a 24-hour window; offline devices fail. [DOC S616]
-- Upload targets are regional `*lmsas.blob.core.windows.net` hosts (Europe: amsub0101 … amsub0901) that must not be blocked. [DOC S616]
-- Microsoft personnel might access device diagnostics; diagnostics may include user or device names. [DOC S616]
-- App-protection diagnostics above 50 diagnostics or 4 MB can't be downloaded from the portal (mobile app diagnostics zone). [DOC S616]
-- With KB5011543 (Win10) / KB5011563 (Win11) the zip is flattened, files named after the data collected. [DOC S616]
+- Platforms: Windows (corporate-owned), Windows Holographic, plus Android/iOS via app protection. [DOC S-6epv7qzl]
+- RBAC: Help Desk Operator, School Administrator, or a custom role with **Remote tasks/Collect diagnostics** plus device read permissions. [DOC S-6epv7qzl]
+- Diagnostics can't be collected or downloaded by calling Microsoft Graph directly; use the admin center. [DOC S-6epv7qzl]
+- Bulk action: up to 25 Windows devices at a time. [DOC S-6epv7qzl]
+- Stored 28 days then deleted; up to 10 collections per device. [DOC S-6epv7qzl]
+- Autopilot failure auto-capture: one set of logs per device per day; enabled by default; can be disabled under Tenant administration > Device diagnostics. [DOC S-6epv7qzl]
+- The action is enabled by default for Windows 10 1909+ / Windows 11 corporate devices and can be disabled tenant-wide. [DOC S-6epv7qzl]
+- Device must receive the action within a 24-hour window; offline devices fail. [DOC S-6epv7qzl]
+- Upload targets are regional `*lmsas.blob.core.windows.net` hosts (Europe: amsub0101 … amsub0901) that must not be blocked. [DOC S-6epv7qzl]
+- Microsoft personnel might access device diagnostics; diagnostics may include user or device names. [DOC S-6epv7qzl]
+- App-protection diagnostics above 50 diagnostics or 4 MB can't be downloaded from the portal (mobile app diagnostics zone). [DOC S-6epv7qzl]
+- With KB5011543 (Win10) / KB5011563 (Win11) the zip is flattened, files named after the data collected. [DOC S-6epv7qzl]
 - `mdmdiagnosticstool.exe` appears in the command list without `-area` arguments; which areas the action requests is not stated. [UNK]
 
 ## Reference

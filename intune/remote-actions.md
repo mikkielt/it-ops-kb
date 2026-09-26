@@ -3,7 +3,7 @@ topic: intune/remote-actions
 priority: P1
 applies_to: "Microsoft Intune managedDevice remote actions, Graph v1.0 and beta, docs retrieved 2026-09-26"
 retrieved_utc: 2026-09-26
-sources: [S-mrrxrahv, S-s7srrfx2, S-hzezniod, S-x23bve2k, S-yl6lujud, S-f5w33mek, S-4krmuswc, S-lorbg35k, S-f6okqmo4, S-5jodj5ne, S-qe4vs4v7, S-iyxigs24, S-rsgl4z3v, S-v32a7r4i, S-ed2sjtub, S-oo6cpieu, S-zne522mq, S-cprqxpsz, S-sthrw3uz, S-cjehjzoc, S-3s4pyls4, S-n7sr56za, S-yuwg4jgb, S-2laa2ngs, S616, S609, S-cunjuxe3]
+sources: [S-mrrxrahv, S-s7srrfx2, S-hzezniod, S-x23bve2k, S-yl6lujud, S-f5w33mek, S-4krmuswc, S-lorbg35k, S-f6okqmo4, S-5jodj5ne, S-qe4vs4v7, S-iyxigs24, S-rsgl4z3v, S-v32a7r4i, S-ed2sjtub, S-oo6cpieu, S-zne522mq, S-cprqxpsz, S-sthrw3uz, S-cjehjzoc, S-3s4pyls4, S-n7sr56za, S-yuwg4jgb, S-2laa2ngs, S-6epv7qzl, S-dhhu3szl, S-cunjuxe3]
 status: complete
 files: [intune/remote-actions.csv]
 ---
@@ -84,9 +84,9 @@ permission, least to most privileged.
   parameter `scriptPolicyId` (String), least-privileged permission
   `DeviceManagementManagedDevices.PrivilegedOperations.All`; this is the Graph action behind the admin-center
   "Run remediation" (preview) action documented in `intune/remediations.md` (RBAC **Remote tasks > Run
-  remediation**, single device, device must be online with WNS reachable, only one run at a time per device). [DOC S-ed2sjtub, S609]
+  remediation**, single device, device must be online with WNS reachable, only one run at a time per device). [DOC S-ed2sjtub, S-dhhu3szl]
 - collectDiagnostics is **not callable directly through Microsoft Graph**; it must be run from the admin center.
-  Full contents and RBAC are documented in `intune/collect-diagnostics.md`. [DOC S616]
+  Full contents and RBAC are documented in `intune/collect-diagnostics.md`. [DOC S-6epv7qzl]
 - Autopilot reset (admin-center action): documentation reference-links it to the **wipe** Graph action, not to
   a distinct Graph method; RBAC requires Help Desk Operator, School Administrator, or a custom role with
   **Remote tasks/Wipe** plus device-read visibility. [DOC S-cjehjzoc]
