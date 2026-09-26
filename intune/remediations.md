@@ -35,6 +35,10 @@ scripts is not documented (the 200 KB limit is documented only for platform Powe
 - Maximum remediation script file size and remediation script timeout: not stated in S609. [UNK]
 
 ## Reference
+Standalone Windows PowerShell platform scripts (Devices > Scripts and remediations > Platform scripts), which have no
+built-in detection/remediation pairing or recurring schedule and share the same 200 KB script size and IME/AgentExecutor
+mechanics: `intune/platform-scripts.md`.
+
 See also `intune/remote-actions.md`: the Graph action behind the on-demand "Run remediation" button is
 `initiateOnDemandProactiveRemediation` (beta), `POST /deviceManagement/managedDevices/{id}/initiateOnDemandProactiveRemediation`
 with a `scriptPolicyId` parameter.
