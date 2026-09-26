@@ -23,10 +23,11 @@ retyped by hand [DOC S1576]. T1562 "Impair Defenses" is revoked in the v19.2 dat
 
 ## Facts
 - STRIDE (Spoofing, Tampering, Repudiation, Information disclosure, Denial of service, Elevation of privilege) is
-  Microsoft's threat-categorization mnemonic, also documented by OWASP's threat-modeling process page. [DOC S1572]
-- LINDDUN (Linkability, Identifiability, Non-repudiation, Detectability, Disclosure of information, Unawareness,
-  Non-compliance) is a privacy-focused threat-modeling method with its own catalog and tooling, maintained by
-  KU Leuven's DistriNet group. [DOC S1573]
+  a threat-categorization mnemonic; OWASP's threat-modeling process page lists the six categories with a description
+  and a security control for each. [DOC S1572] The Microsoft Threat Modeling Tool below applies it per element. [DOC S1574]
+- LINDDUN (Linking, Identifying, Non-repudiation, Detecting, Data Disclosure, Unawareness, Non-compliance) is a privacy-focused
+  threat-modeling method with a catalog of privacy threat types, threat trees, mitigation strategies and tool
+  support, developed and maintained by KU Leuven's DistriNet research unit. [DOC S1573]
 - The Microsoft Threat Modeling Tool is a free tool that uses a STRIDE-per-element methodology and produces a
   data-flow-diagram-based report; current version is documented on Microsoft Learn. [DOC S1574]
 - T1072 Software Deployment Tools: adversaries may abuse third-party software/configuration-management tools to

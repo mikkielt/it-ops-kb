@@ -1,7 +1,7 @@
 ---
 topic: dsc/open-bugs-windows
 priority: P0
-applies_to: "PowerShell/DSC GitHub issues, state=open, label Issue-Bug, snapshot 2026-09-23"
+applies_to: "PowerShell/DSC GitHub issues, state=open, label Issue-Bug, snapshot 2026-09-23, re-checked 2026-09-26"
 retrieved_utc: 2026-09-23
 sources: [S126]
 status: complete
@@ -11,14 +11,14 @@ files: [dsc/open-bugs.csv]
 # Open DSC bugs affecting Windows resources
 
 ## Summary
-- 55 open issues carry the label `Issue-Bug` (snapshot 2026-09-23). All 55 are in `open-bugs.csv` with number, title, labels, created date, affected area (keyword-classified), platform and URL.
-- 19 of them touch Windows-side components. Nearly all are in the PowerShell / Windows PowerShell adapters (class-based resources, CIM serialization, WinPS module scope). One (#1727) is on the new `Microsoft.Filesystem.File/Content` (3.4.0-preview.1 only).
+- 54 open issues carry the label `Issue-Bug` (re-checked 2026-09-26; 55 on 2026-09-23, #1727 has since closed). `open-bugs.csv` lists the 2026-09-23 snapshot with number, title, labels, created date, affected area (keyword-classified), platform and URL.
+- 18 of them touch Windows-side components, all in the PowerShell / Windows PowerShell adapters (class-based resources, CIM serialization, WinPS module scope) or packaging. #1727 on the new `Microsoft.Filesystem.File/Content` (3.4.0-preview.1 only) was in the 2026-09-23 snapshot and is closed as of 2026-09-26.
 - No open `Issue-Bug` issue names `Microsoft.Windows/Registry`, `Service`, `FirewallRuleList`, `WindowsFeatureList`, `OptionalFeatureList` or `UpdateList` in its title.
 - The `directives.version` lib-version defect and the trace-level secret leak found for this kb (`directives.md`, `secrets.md`) have no matching open bug title in this snapshot.
 
 ## Facts
 - The repo's bug label is `Issue-Bug`. Other labels include `Resolution-*`, `Needs Triage`, `Backport-Needed`. [DOC S126]
-- Open Issue-Bug count on 2026-09-23: 55 (pull requests excluded). [DOC S126]
+- Open Issue-Bug count on 2026-09-26: 54 (pull requests excluded; 55 on 2026-09-23). The one that left the list is #1727, now closed. [DOC S126]
 - Engine issues that also affect Windows use: #1245 "Exit codes not reliable", #817 "DSC doesnt propagate exit code correctly", #962 "DSC does not validate Test method returns _inDesiredState", #963 "DSC Set does not error when return is not defined and resource returns stdout", #1209 "Parameter `secureString` transforms input incorrectly on adapter", #677 "Tracing is not being flushed before `dsc` exits", #883 "DSC config does discovery on every resource instance". [DOC S126]
 - The affected-area column in the CSV comes from keywords in each title, not from the issue body. [DER S126: keyword match on title]
 
@@ -27,7 +27,6 @@ Windows-side open bugs (from `open-bugs.csv`):
 
 | # | Title | Affected area | Opened |
 |---|---|---|---|
-| 1727 | Microsoft.Filesystem.File/Content - Export don't work / SET strange behaviour | Microsoft.Filesystem.File/Content | 2026-09-20 |
 | 1355 | Command: Resource 'powershell' [exit code 1] manifest description: Error | PowerShell adapter | 2026-01-16 |
 | 1296 | DSC seems to inject "Verbose" key into resource properties... | PowerShell adapter | 2025-11-28 |
 | 1292 | Explicitly defining PowerShell resources doesn't allow for delete | PowerShell adapter | 2025-11-26 |

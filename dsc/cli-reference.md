@@ -3,7 +3,7 @@ topic: dsc/cli-reference
 priority: P0
 applies_to: "Microsoft DSC 3.3.0 (binary --help output; source release/v3.3 @ ea572fa)"
 retrieved_utc: 2026-09-25
-sources: [S100, S101, S116, S117, S118, S128, S135, S136, S141]
+sources: [S100, S101, S116, S117, S118, S128, S135, S136, S141, S-mmshotst]
 status: complete
 files: [dsc/cli/]
 ---
@@ -50,7 +50,7 @@ files: [dsc/cli/]
 | 9 | EXIT_SERVER_FAILED |
 | 10 | EXIT_BICEP_FAILED |
 
-Subcommand history (from `args.rs` at each tag): 3.0.0 has completer, config, resource, schema. 3.1.0 adds `extension`. 3.2.0 adds `function` and `mcp`. 3.3.0 renames `mcp` to `server` (alias `mcp`) and adds `--ignore-settings-file`. [DER S132,S133,S134,S100]
+Subcommand history (from `args.rs` at each tag): 3.0.0 has completer, config, resource, schema. 3.1.0 adds `extension`. 3.2.0 adds `function` and `mcp`. 3.3.0 renames `mcp` to `server` (alias `mcp`) and adds `--ignore-settings-file`. The 3.2 line got the flag later as a backport: tag v3.2.3 defines it as `-i, --ignore-settings-file` and still names the subcommand `mcp`. [DER S132,S133,S134,S100,S-mmshotst]
 
 ## Examples
 ```powershell

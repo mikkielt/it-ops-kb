@@ -19,7 +19,7 @@ Encrypted, DPAPI-NG, age/sops) and `mcp/authorization.md` (MCP OAuth 2.1, DCR de
   own guidance steers *automation* away from long-lived, human-shaped credentials (PATs, static secrets)
   toward workload identity or scoped machine credentials (GitLab CI job tokens; Vault AppRole).
 - For storing: every OS-keychain wrapper this part checked (`keyring`, `msal-extensions`) documents its
-  own gap — macOS Keychain's per-executable ACL, or a silent unencrypted fallback on Linux — so "stored in
+  own gap — macOS Keychain's per-executable ACL, or an opt-in unencrypted fallback on Linux — so "stored in
   the OS keychain" is not, by itself, a verified security property without checking which backend actually
   engaged.
 - Azure Key Vault and HashiCorp Vault both give the alternative these gaps argue for: an external,
@@ -36,13 +36,14 @@ Encrypted, DPAPI-NG, age/sops) and `mcp/authorization.md` (MCP OAuth 2.1, DCR de
   is explicitly warned against (interception risk; breaks Conditional Access step-up and device-based
   policy enforcement on the downstream call). [DOC S1297]
 - **GitLab personal access tokens (PATs)**: default expiry 365 days; a feature-flagged **400-day maximum**
-  shipped in **GitLab 17.6**; admins can set a lower tenant/instance maximum; expire at midnight UTC on
-  the expiry date. **Rotation** creates a new token with the same scope and immediately deactivates the
-  original; **revocation** immediately invalidates a token; both are irreversible. GitLab's own guidance
-  recommends **CI/CD job tokens with fine-grained permissions** over a PAT for pipeline authentication,
-  specifically because a PAT is a long-lived, human-owned, broadly-scoped credential unsuited to
-  unattended automation. Project/group access tokens attach to the project/group rather than a user
-  account, as the documented service-account alternative to a personal PAT. [DOC S2046]
+  shipped in **GitLab 17.6**; on GitLab Ultimate administrators can configure a maximum allowable lifetime;
+  tokens expire at midnight UTC on the expiry date (a service account's PAT can be allowed to never
+  expire). **Rotation** creates a new token with the same scope and immediately deactivates the original;
+  **revocation** immediately invalidates a token; both are irreversible and GitLab keeps the old token for
+  audit. For CI/CD pipelines the PAT page recommends **CI/CD job tokens** instead, and lists as alternatives
+  for CI/CD authentication "CI/CD job tokens with fine-grained permissions" and project access tokens with
+  minimal permissions for project-specific automation; project/group access tokens attach to the
+  project/group rather than a user account. [DOC S2046]
 - **General implication**: combined with `auth/workload-identity.md`'s Entra FIC federation (no stored
   secret at all) and a policy that a merge request is the change record and MR code never runs with a
   domain identity, GitLab's own stated preference for job tokens over PATs for automation reinforces that a
@@ -64,14 +65,16 @@ Encrypted, DPAPI-NG, age/sops) and `mcp/authorization.md` (MCP OAuth 2.1, DCR de
   [DOC S2043]
 
 ### Storing: MSAL token cache persistence via `msal-extensions`
-- Backs onto Windows **DPAPI**, macOS **Keychain**, and Linux **libsecret** encryption with an **explicit
-  plaintext fallback**; MIT licence. [DOC S2044]
-- **Documented failure mode**: on Linux, when libsecret encryption is unavailable, the library logs
-  "Encryption unavailable. Opting in to plain text" and silently stores the token cache **unencrypted**
-  rather than failing closed. Threat covered: none, by default, in this fallback state — the caller must
-  detect which backend actually engaged. [DOC S2044] The general "unknown is never treated as absent/safe"
-  rule applies by analogy: a component reading this cache should treat "plaintext fallback silently
-  engaged" as a condition to detect and refuse, not a transparent degrade. [DER S2044]
+- Backs onto Windows **DPAPI**, macOS **Keychain**, and Linux **libsecret** encryption; a plaintext
+  `FilePersistence` is available as an **opt-in fallback**; MIT licence. [DOC S2044]
+- **Documented failure mode**: the README's `build_persistence()` sample tries encrypted persistence first
+  and, when encryption is unavailable (e.g. Linux without libsecret), re-raises the error by default
+  (`fallback_to_plaintext=False`); only a caller that opts in gets the warning "Encryption unavailable.
+  Opting in to plain text." and an **unencrypted** token cache. The persistence object exposes
+  `is_encrypted`, so the caller can check which backend actually engaged. [DOC S2044] The general
+  "unknown is never treated as absent/safe" rule applies by analogy: a component reading this cache should
+  keep the fallback off and check `is_encrypted`, treating a plaintext cache as a condition to refuse, not
+  a transparent degrade. [DER S2044]
 - Documented scope of intended use: "public client applications such as desktop apps only," explicitly
   cautioned against for web applications ("potential scale and performance issues") — matches a CLI-only
   client case, where a web-facing deployment is out of scope regardless. [DOC S2044]
@@ -182,7 +185,7 @@ Encrypted, DPAPI-NG, age/sops) and `mcp/authorization.md` (MCP OAuth 2.1, DCR de
 | Python `keyring` (macOS backend) | secret not in a plaintext file | any process under the *same Python interpreter* reading it without a prompt | S2043 |
 | Python `keyring` (Linux/Windows backends) | OS-native storage used | no vendor-asserted threat model published for these backends | S2043 |
 | `msal-extensions` (Windows/macOS) | DPAPI/Keychain-encrypted cache | n/a (documented, working case) | S2044 |
-| `msal-extensions` (Linux, libsecret unavailable) | nothing — silent plaintext fallback | detecting the fallback is the caller's job | S2044 |
+| `msal-extensions` (Linux, libsecret unavailable) | nothing if the caller opted into the plaintext fallback (the sample's default re-raises instead) | keep the fallback off; check `is_encrypted` | S2044 |
 | Azure Key Vault | one centralized, RBAC-scoped, HSM-backed store instead of per-machine secrets | still needs a workload identity (FIC/managed identity) to authenticate to it | S2047 |
 | GitLab CI/CD protected + masked variables | exposure on unprotected branches; casual log display | not a guarantee against a malicious job's own printing of the value | S449 |
 | GitLab job tokens (vs PAT) | a long-lived, human-scoped credential used by automation | scope/lifetime details for the fine-grained job-token model itself | S2046 |

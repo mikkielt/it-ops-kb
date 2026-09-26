@@ -9,14 +9,14 @@ Microsoft 365 Copilot declarative agent (manifest 1.4),disclaimer.text,500,chara
 Microsoft 365 Copilot declarative agent (manifest 1.4),other string properties (default),4000,characters,"limit all string properties to 4,000 characters unless stated otherwise",S1840
 GitHub Copilot,copilot-instructions.md / *.instructions.md (code review),removed (was 4000),characters,"no error; silently stopped reading past the old cap, now unlimited",S1851;S1852
 GitHub Copilot,custom instructions file (best practice),~1000,lines,"no enforced error; quality guidance only",S1851
-OpenAI custom GPT builder (ChatGPT UI),instructions,8000,characters,"UI silently refuses to save past this length",S1844
+OpenAI custom GPT builder (ChatGPT UI),instructions,8000,characters,"community thread states the 8000-character cap on the GUI builder; it does not describe what happens past it (error, blocked save or truncation)",S1844
 OpenAI Assistants API,instructions,"unconfirmed (community cites larger, e.g. up to 256000 for related message content)",characters,not confirmed by direct fetch of platform.openai.com in this pass,S1845
 Google Gemini API,systemInstruction (observed working boundary in one report),~300000 chars / ~84000 tokens,mixed,"400 INVALID_ARGUMENT: Request contains an invalid argument (generic, no length-specific wording)",S1846
 Google Gemini API,input token count (model/backend-dependent),varies (e.g. 32768 reported in one case),tokens,"The input token count (N) exceeds the maximum number of tokens allowed (32768).",S1846
 Claude API (Anthropic),Messages API request size,32,MB,"413 request_too_large",S1847
 Claude API (Anthropic),Batch API request size,256,MB,"413 request_too_large",S1847
 Claude API (Anthropic),Files API request size,500,MB,"413 request_too_large",S1847
-Claude API (Anthropic),tool name,128,characters,"reported API rejection reproduced via Claude Code bug report; exact server error text not quoted in source",S1857
+Claude API (Anthropic),tool name,128,characters,"400 invalid_request_error from the API, quoted in a Claude Code bug report: tools.N.custom.name: String should have at most 128 characters",S1857
 Claude Code skills,description + when_to_use (listing),1536,characters,"truncated at 1,536 characters in the skill listing to reduce context usage (silent truncation)",S1860
 Claude Code skills,compatibility field,500,characters,"accepts a string of up to 500 characters",S1860
 Claude Code skills,"SKILL.md size (recommendation, not enforced)",500,lines,tip: keep SKILL.md under 500 lines,S1860

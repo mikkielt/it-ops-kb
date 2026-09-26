@@ -3,7 +3,7 @@ topic: auth/threats
 priority: P2
 applies_to: "Windows 11 24H2, Server 2025, Entra ID"
 retrieved_utc: 2026-09-24
-sources: [S1352, S1353, S1347]
+sources: [S1352, S1353, S1347, S-7o47ht7q]
 status: partial
 ---
 
@@ -15,8 +15,12 @@ agents in this run own (workload-identity, gmsa-dmsa, ldap-smb-signing) and this
 that research.
 
 ## Facts
-- Windows 11 24H2 and Windows Server 2025 remove NTLMv1 and deprecate NTLMv2, and ship new NTLM auditing
-  to show administrators which principals and services still negotiate NTLM. [DOC S1352]
+- NTLM (LANMAN, NTLMv1, NTLMv2) is deprecated (announced June 2024), and NTLMv1 is removed starting in
+  Windows 11 24H2 and Windows Server 2025. [DOC S-7o47ht7q]
+- Windows 11 24H2 and Windows Server 2025 add enhanced NTLM auditing in `Microsoft-Windows-NTLM/Operational`
+  (who, why, where; client events 4020/4021, server 4022/4023, DC 4030-4033) that flags NTLMv1, unsupported EPA
+  or a missing MIC at Warning level, in preparation for NTLM deprecation; rollout is gradual, 24H2 first, then
+  Server 2025. [DOC S1352]
 - Microsoft has rolled out Extended Protection for Authentication (channel binding for TLS-backed
   protocols, SPN-based service binding otherwise) as a default mitigation against NTLM relay across
   Exchange, AD CS and LDAP, with a stated direction of enabling EPA by default more broadly. [DOC S1353]

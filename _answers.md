@@ -306,7 +306,7 @@ _Agent: auth_
 
 ## QA16. NTLM deprecation timeline; RC4-in-Kerberos deprecation dates
 - NTLM: audit (Sep/Nov 2025) → NTLMv1 disabled by default (Oct 2026, `BlockNTLMv1SSO` flips to Enforce) → fallback-reduction features (H2 2026, IAKerb + Local KDC) → network NTLM off by default (future, undated). [DOC S1200]
-- RC4-in-Kerberos, now dated: a KDC-side change for service-account ticket issuance tied to CVE-2026-20833 ships in the Nov 2025 update (phased via `RC4DefaultDisablementPhase`); `DefaultDomainSupportedEncTypes` defaults to AES-only (0x18) on updates released on/after 2026-04-14; the audit-mode registry key is retired in the 2026-07 update, making AES-only unconditional. [DOC S1215,S1216,S1217]
+- RC4-in-Kerberos, now dated: a KDC-side change for service-account ticket issuance tied to CVE-2026-20833 ships in updates on/after 2026-01-13, KB5073381 (phased via `RC4DefaultDisablementPhase`); `DefaultDomainSupportedEncTypes` defaults to AES-only (0x18) on updates released on/after 2026-04-14; the audit-mode registry key is retired in the 2026-07 update, making AES-only unconditional. [DOC S1215,S1216,S1217]
 
 _Agent: auth_
 
@@ -513,7 +513,7 @@ _Agent: security_
   GPAI-model obligations from 2025-08-02; most remaining obligations (including Annex III high-risk) originally
   from 2026-08-02. [DOC S1556][DOC S1557]
 - The Digital Omnibus on AI (Regulation (EU) 2026/1744, in force 2026-07-27) defers high-risk Annex III
-  obligations to 2027-12-02, and Annex I embedded-product obligations to 2028-08-02. [COMMUNITY S1558][COMMUNITY S1559]
+  obligations to 2027-12-02, and Annex I embedded-product obligations to 2028-08-02. [DOC S-qzdkyvqx]
 - Whether a given model-boundary component falls under Annex III (e.g. employment-context use cases) depends on
   the specific use case and was not checked here. [UNK]
 
@@ -552,7 +552,7 @@ _Agent: security_
 - CIS Controls v8.1 Safeguard 8.10 recommends a **90-day minimum** for audit-log retention. [DOC S1492]
 - NIST SP 800-92 (2006, still current/final; Rev.1 is only a 2023 draft) does not itself set a numeric retention figure found in this pass. [DOC S1493,S1494]
 - Microsoft's Windows audit-policy guidance recommends *what* to audit, and sizes the Security event log (~192 MB minimum) rather than specifying retention in days. [DOC S1528,S1529]
-- No AI-interaction-specific numeric retention figure was found from OWASP, NIST AI 600-1 or Microsoft/Anthropic; the guidance found (OWASP Agentic 2026, NIST AI 600-1, Claude Code's OTel events) is about *what* to log (tool calls, inputs/outputs, decision paths, tamper-evidently) rather than *how long* to keep it. [DOC S1526,S1527,S1498,S1500]
+- No AI-interaction-specific numeric retention figure was found from OWASP, NIST AI 600-1 or Microsoft/Anthropic; OWASP Agentic 2026 and Claude Code's OTel events cover *what* to log per tool call (inputs/outputs, tamper-evidently), NIST AI 600-1 covers provenance records, auditing and incident documentation; none says *how long* to keep it. [DOC S1526,S1527,S1498,S1500]
 - A worked example (audit 400 days, device logs 30 days) is compared against the 90-day CIS minimum in `security/logging-monitoring.md`; a 30-day device-log figure falls short of it — see Conflicts.
 
 _Agent: security_
@@ -560,7 +560,7 @@ _Agent: security_
 ## QS17. GitLab features for build provenance/attestation of a Python package, and tier needed
 - GitLab's SLSA **Build Level 3** provenance/attestation feature (the `slsa_provenance_statement` flag plus the `ATTEST_BUILD_ARTIFACTS` CI/CD variable) requires the **project to be public** and the attested artifact to be ≤100 MB — a requirement independent of subscription tier as documented, but effectively unusable for an internal package unless the repo is made public. [DOC S1523]
 - GitLab's default DevSecOps pipeline reaches SLSA Level 1-2 without the explicit attestation feature. [DOC S1524]
-- Dependency scanning can consume a CycloneDX SBOM. [DOC S1511]
+- GitLab dependency scanning using SBOM (GA in 19.0, Ultimate) generates CycloneDX SBOMs itself and scans them; consuming a third-party CycloneDX SBOM works but is documented as subject to change. [DOC S1511]
 - The exact GitLab **subscription tier** required for Dependency Scanning, SLSA attestation, and artifact/container signing was **not confirmed** against the official tier-comparison page in this pass — see `gaps.md`. [UNK]
 
 _Agent: security_

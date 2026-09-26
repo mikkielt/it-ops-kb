@@ -1,10 +1,10 @@
 ---
 topic: agents/agent-evaluation
 priority: P1
-applies_to: "MCP Inspector v2, Inspect 0.x (AISI), DeepEval, promptfoo, PyRIT 0.11.0, garak, OpenAI evals (deprecating), tau-bench/tau2-bench v1.0.1, Anthropic eval guidance 2026-01, azure-ai-evaluation SDK + AI Red Teaming Agent (preview)"
+applies_to: "MCP Inspector v2, Inspect 0.x (AISI), DeepEval, promptfoo, PyRIT 1.1.0, garak, OpenAI evals (deprecating), tau-bench/tau2-bench v1.0.1, Anthropic eval guidance 2026-01, azure-ai-evaluation SDK + AI Red Teaming Agent (preview)"
 retrieved_utc: 2026-09-25
-sources: [S1880, S1881, S1883, S1884, S1885, S1886, S1887, S1888, S1889, S1890, S1891, S1892, S1893, S1894, S1895, S1896, S1898, S1899, S1900, S1901, S1902, S1903, S1904, S1905, S1935, S-zfg6jhgr, S-onkwuwst, S-p7dq3fku, S-6jcocxnl]
-status: partial
+sources: [S1880, S1881, S1883, S1884, S1885, S1886, S1887, S1888, S1889, S1890, S1891, S1892, S1893, S1894, S1895, S1896, S1898, S1899, S1900, S1901, S1902, S1903, S1904, S1905, S1935, S-zfg6jhgr, S-onkwuwst, S-p7dq3fku, S-6jcocxnl, S-wwrpen3s]
+status: complete
 ---
 
 # Evaluating and stress-testing an agent against a self-hosted MCP server
@@ -47,8 +47,11 @@ capability/safety-eval ground for an agent that happens to be hosted in Azure AI
 - **Inspect (`inspect_ai`)**, from the UK AI Security Institute, is MIT-licensed and built for "prompt
   engineering, tool usage, multi-turn dialog, and model graded evaluations," including a built-in ReAct
   agent and bridges to run externally-built agents (e.g. LangChain) inside its eval harness; it ships 200+
-  pre-built evaluations. [DOC S1886, S1887] Explicit stdio-MCP-target support was not confirmed in the
-  fetched pages beyond a UI reference to an "MCP Registry." [UNK]
+  pre-built evaluations. [DOC S1886, S1887]
+- Inspect consumes MCP servers as tool sources for the agent under evaluation: `mcp_server_stdio()`
+  launches a local server from a command and args, alongside `mcp_server_http()`, `mcp_server_sandbox()`
+  (a server running inside an Inspect sandbox) and a deprecated `mcp_server_sse()`; the server object is
+  passed wherever a `tools` list is accepted, for example `react(tools=[server])`. [DOC S-wwrpen3s, S1887]
 - **DeepEval** (Apache-2.0) ships three MCP-specific metrics — `MCPTaskCompletion` (did the agent finish
   the task), `MCPUseMetric`/"MCP Use" (how well the agent used the servers available to it), and
   `MultiTurnMCPUseMetric` for multi-turn MCP use — plus a `ToolCorrectnessMetric` that also matches on
@@ -62,14 +65,17 @@ capability/safety-eval ground for an agent that happens to be hosted in Azure AI
 - **garak** (NVIDIA) is an Apache-2.0 LLM vulnerability scanner (its LICENSE file) that probes
   for hallucination, data leakage, prompt injection, misinformation, toxicity and jailbreaks against a
   configured generator/target; MCP-specific target support exists only through third-party wrappers
-  (e.g. a community "Garak-MCP" MCP server exposing garak, and an open NVIDIA/garak issue tracking native
-  MCP/OWASP-MCP-Top-10 scanning) rather than a garak-shipped MCP client. [DOC S1890, S1891; COMMUNITY S1903]
-- **PyRIT** (Microsoft, MIT, v0.11.0/2026-02) is a red-teaming orchestration framework whose built-in
-  targets are OpenAI/Azure/Anthropic/Google/HuggingFace, custom HTTP/WebSocket endpoints, and Playwright
-  web-app targets, plus a documented "build your own" target interface; it ships `XPIAOrchestrator` for
-  cross-domain/indirect prompt-injection attacks (injecting instructions via a data source the model later
-  reads), which is the relevant mechanism for testing injection via MCP tool results even without a
-  built-in MCP target class. [DOC S1892]
+  (e.g. a community "Garak-MCP" MCP server exposing garak) rather than a garak-shipped MCP client; a
+  community NVIDIA/garak issue proposing native MCP/OWASP-MCP-Top-10 scanning was closed by its author on
+  2026-05-12 without an MCP probe or generator shipping in garak. [DOC S1890, S1891; COMMUNITY S1903]
+- **PyRIT** (Microsoft, MIT, v1.1.0/2026-09-04) is a red-teaming framework whose built-in targets are
+  OpenAI-family and Azure ML chat targets, a LiteLLM chat target (for other providers), Hugging Face,
+  custom HTTP/WebSocket endpoints and Playwright web-app targets, plus a "build your own" `PromptTarget`
+  interface. The 1.x line removed the `pyrit.orchestrator` module: cross-domain/indirect prompt injection
+  (instructions planted in a data source the model later reads) is now `XPIAWorkflow` in
+  `pyrit.executor.workflow`, the relevant mechanism for testing injection via MCP tool results. The
+  v1.1.0 release has no MCP target class; the unreleased main branch (1.2.0.dev0) adds an
+  `MCPToolProvider` that gives a target the tools of one stdio or streamable-HTTP MCP server. [DOC S1892]
 - **MCP fuzzers/load tools** exist only as community projects at this date: `mcp-fuzz` (launches a command
   as a stdio MCP server, lists its tools, and fires schema-derived inputs at each), `mcp-server-fuzzer`
   (stdio/HTTP/SSE/streamable-HTTP), `mcp-guard` and `mcpsec` (adversarial/runtime-probe fuzzers covering
@@ -147,9 +153,9 @@ capability/safety-eval ground for an agent that happens to be hosted in Azure AI
   the grading model to reason first and then discarding the reasoning before emitting the score, which the
   docs state increases grading accuracy on complex judgment tasks. [DOC S1898]
 - OpenAI's evaluation best-practices guidance: combine metrics with human judgment, adopt "eval-driven
-  development" (evaluate early and often, write scoped tests at every stage), grade with a different (and
-  ideally stronger) model than the one being graded, and validate model-graded results against human
-  evaluation before scaling up, since model grading carries its own error rate. [DOC S1894]
+  development" (evaluate early and often, write scoped tests at every stage), grade with the most capable
+  model available, prefer pairwise or pass/fail judgments and control for length bias, and validate the
+  judge's agreement with human labels before scaling up, since model grading carries its own error rate. [DOC S1894]
 - τ-bench (Sierra) is the origin of the `pass^k` metric applied to tool-agent-user interaction tasks and
   reported a reliability gap (e.g. GPT-4o at 61% pass@1 but 25% pass@8 on retail tasks in the original
   2024 paper); τ2-bench/τ3-bench (MIT-licensed repository, v1.0.1, 2026-07) continue the line and define
@@ -160,11 +166,11 @@ capability/safety-eval ground for an agent that happens to be hosted in Azure AI
 |---|---|---|---|---|
 | MCP Inspector | Apache-2.0 (new)/MIT (legacy)/CC-BY-4.0 (docs) | native (launches/attaches over stdio) | protocol-level tool/resource/prompt listing and manual invocation | S1880, S1881 |
 | promptfoo (MCP provider + red team) | MIT | native (`command`/`args`/`path`) | assertion pass/fail per call; red-team plugin findings (MCP, jailbreak, bfla/bola, pii, sql-injection) | S1883, S1884, S1885 |
-| Inspect (`inspect_ai`) | MIT | not confirmed for MCP specifically [UNK] | scored evals via built-in/ReAct agents and model-graded scorers | S1886, S1887 |
+| Inspect (`inspect_ai`) | MIT | yes, as agent tools (`mcp_server_stdio()`; also http/sandbox) | scored evals via built-in/ReAct agents and model-graded scorers | S1886, S1887, S-wwrpen3s |
 | DeepEval | Apache-2.0 | yes (`MCPServer(transport="stdio")`) | MCPTaskCompletion, MCPUse, MultiTurnMCPUse, ToolCorrectness | S1888, S1889 |
 | OpenAI evals / Evals API | MIT (repo) | via custom completion functions, not MCP-native | correctness/regression across a dataset; hosted platform deprecating Oct-Nov 2026 | S1893, S1894, S1895 |
 | garak | Apache-2.0 | no native MCP client; third-party wrapper only | hallucination, leakage, injection, jailbreak, toxicity probes against a generator | S1890, S1891, S1903 |
-| PyRIT | MIT | no native MCP target class; custom-target interface + XPIAOrchestrator for indirect injection | red-team attack orchestration and scoring against a configured target | S1892 |
+| PyRIT | MIT | no MCP target class in v1.1.0 (MCPToolProvider on unreleased main); custom-target interface + XPIAWorkflow for indirect injection | red-team attack orchestration and scoring against a configured target | S1892 |
 | mcp-fuzz / mcp-server-fuzzer / mcp-guard / mcpsec | unverified (community) | yes (stdio launch) | schema-derived fuzz calls, protocol/security fault-finding | S1901, S1902, S1904, S1905 |
 | Azure AI Evaluation SDK (`azure-ai-evaluation`) | Microsoft (vendor-hosted judge/backend) | not MCP-specific; agent inputs via query/response or OpenAI-style messages | IntentResolution, ToolCallAccuracy, TaskAdherence, Relevance, Groundedness (+ quality/RAG/safety/NLP evaluators); `evaluate()` batch runner | S-zfg6jhgr, S-6jcocxnl |
 | AI Red Teaming Agent (`azure-ai-evaluation[redteam]`, preview) | Microsoft (PyRIT-based, Foundry classic/Hub only) | no MCP target; scans a model config, callback, or PyRIT `PromptChatTarget` | Attack Success Rate per risk category (violence/sexual/self-harm/hate-unfairness/+) and attack-complexity tier | S-onkwuwst, S-p7dq3fku |

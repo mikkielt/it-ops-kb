@@ -3,7 +3,7 @@ topic: mecm/cmpivot
 priority: P0
 applies_to: "ConfigMgr current branch 2603"
 retrieved_utc: 2026-09-23
-sources: [S-igpzfey7, S-ebuvm65r, S-2z2zfj3l, S-sxtmngif, S317, S-e5qqwdcj, S-dyvqhf4u, S-bprslswi, S321, S322, S-5v5lco6w, S-6l4nubjq]
+sources: [S-igpzfey7, S-ebuvm65r, S-2z2zfj3l, S-sxtmngif, S-t5dhva6p, S-e5qqwdcj, S-dyvqhf4u, S-bprslswi, S321, S-v5d6zvne, S-5v5lco6w, S-6l4nubjq]
 status: partial
 files: [mecm/cmpivot-entities.csv]
 ---
@@ -17,17 +17,17 @@ Per-entity column lists are **not** officially documented. That includes `CcmLog
 Limits: 128 KB per client per query, 100,000 cells in the results, a 1-hour timeout (10 minutes from the Intune admin center), at most 5 joins and 64 columns.
 
 ## Facts
-- CMPivot uses a subset of KQL: `entity | operator1 | operator2 ...`. [DOC S317]
-- Table operators: count, distinct, join, order by, project, take, top, where, plus summarize for aggregations. `render` works only from ConfigMgr, not from the Intune admin center. [DOC S317]
-- Scalar operators: `== != < > <= >= + - * / %`, `like`, `!like`, `contains`, `!contains`, `startswith`, `!startswith`, `endswith`, `!endswith`, `and`, `or`. [DOC S317]
-- Aggregation functions: avg, count, countif, dcount, max, maxif (2107+), min, minif (2107+), percentile, sum, sumif. [DOC S317]
-- Scalar functions: ago, bin, case, datetime_add, datetime_diff, iif, indexof, isnotnull, isnull, now, strcat, strlen, substring, tostring. [DOC S317]
+- CMPivot uses a subset of KQL: `entity | operator1 | operator2 ...`. [DOC S-t5dhva6p]
+- Table operators: count, distinct, join, order by, project, take, top, where, plus summarize for aggregations. `render` works only from ConfigMgr, not from the Intune admin center. [DOC S-t5dhva6p]
+- Scalar operators: `== != < > <= >= + - * / %`, `like`, `!like`, `contains`, `!contains`, `startswith`, `!startswith`, `endswith`, `!endswith`, `and`, `or`. [DOC S-t5dhva6p]
+- Aggregation functions: avg, count, countif, dcount, max, maxif (2107+), min, minif (2107+), percentile, sum, sumif. [DOC S-t5dhva6p]
+- Scalar functions: ago, bin, case, datetime_add, datetime_diff, iif, indexof, isnotnull, isnull, now, strcat, strlen, substring, tostring. [DOC S-t5dhva6p]
 - `ago()` subtracts a timespan from the current UTC time, for example `ago(1d)` or `ago(7d)`. `now()` returns the current UTC time. [DOC S-sxtmngif]
 - Datetime values are UTC and measured in 1-second units. Literals are written in ISO 8601, e.g. `datetime(2015-12-31 23:59:59.9)`. [DOC S-sxtmngif]
-- Datetime arithmetic works with timespans: `now() + 1d`, `now() - 1h`. [DOC S317]
+- Datetime arithmetic works with timespans: `now() + 1d`, `now() - 1h`. [DOC S-t5dhva6p]
 - `datetime_diff('day', now(), QuickScanEndTime)` is used in an official example. [DOC S-sxtmngif]
-- Timespan suffixes used in official examples: `h` (1h, 2h), `d` (1d, 7d, 120d). No other suffixes are listed. [DER S-sxtmngif,S321: set of suffixes seen in examples only]
-- `CcmLog('<log name>'[, <timespan>])` returns lines from a Ccm log file, from the last 24 hours by default. Example: `CcmLog('Scripts',1h)`. [DOC S-sxtmngif,S317]
+- Timespan suffixes used in official examples: `h` (1h, 2h), `d` (1d, 7d, 120d). No other suffixes are listed. [DER S-sxtmngif,S-v5d6zvne: set of suffixes seen in examples only]
+- `CcmLog('<log name>'[, <timespan>])` returns lines from a Ccm log file, from the last 24 hours by default. Example: `CcmLog('Scripts',1h)`. [DOC S-sxtmngif,S-t5dhva6p]
 - `CcmLog()` result columns are not documented in any official source found. [UNK]
 - `WinEvent(<logname>,[<timespan>])` reads Windows event logs and ETW log files, from the last 24 hours by default. Example: `WinEvent('Microsoft-Windows-HelloForBusiness/Operational', 1d)`. [DOC S-sxtmngif]
 - The only `WinEvent()` column named in official docs is `LevelDisplayName`. Other columns are not documented. [DOC S-sxtmngif]
@@ -51,10 +51,10 @@ Limits: 128 KB per client per query, 100,000 cells in the results, a 1-hour time
 - AdminService routes: POST `v1.0/Device(<id>)/AdminService.RunCMPivot` with body `{"InputQuery":"..."}`, then GET `.../AdminService.CMPivotResult(OperationId=<id>)`. [DOC S-igpzfey7]
 - The response schemas of `RunCMPivot` and `CMPivotResult` are not documented. [UNK]
 - 2603 fixed CMPivot-over-AdminService "400 Bad Request" parse failures. Before the fix, CMPivot fell back to the SMS Provider path, which needs Script Read. [DOC S-ebuvm65r]
-- Entities not supported from the Intune admin center: AccountSID, FileContent(), NAPClient, NAPSystemHealthAgent, RegistryKey(). [DOC S317]
+- Entities not supported from the Intune admin center: AccountSID, FileContent(), NAPClient, NAPSystemHealthAgent, RegistryKey(). [DOC S-t5dhva6p]
 - Logs: server-side SmsProv.log, BgbServer.log, StateSys.log. Client-side CcmNotificationAgent.log, Scripts.log, StateMessage.log. [DOC S-2z2zfj3l]
 - The monitoring view `vSMS_CMPivotStatus` is queried by TaskID in troubleshooting. [DOC S-e5qqwdcj]
-- CMPivot standalone ships at `<site install path>\tools\CMPivot\CMPivot.msi` and is English only. It cannot open Community hub queries. [DOC S322,S-2z2zfj3l]
+- CMPivot standalone ships at `<site install path>\tools\CMPivot\CMPivot.msi` and is English only. It cannot open Community hub queries. [DOC S-2z2zfj3l]
 - Security software may block scripts in `%windir%\CCM\ScriptStore`. Microsoft recommends excluding that folder. [DOC S-2z2zfj3l]
 
 ## Reference

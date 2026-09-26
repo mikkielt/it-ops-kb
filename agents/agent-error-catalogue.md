@@ -33,10 +33,11 @@ keeping a project's `CLAUDE.md`, skills and MCP tool definitions inside document
 - `504 timeout_error`: "The request timed out while processing"; documented mitigation is the streaming Messages API
   for long-running requests, and the SDKs validate that non-streaming requests are not expected to exceed a 10-minute
   timeout. [DOC S1847]
-- `tool_use` without a matching `tool_result` (and the inverse: an orphaned `tool_result` with an unrecognized
-  `tool_use_id`) is a real, recurring 400 `invalid_request_error` in Claude Code sessions, most often produced when
-  automatic context compaction drops one half of a tool_use/tool_result pair in long (50+ turn) sessions. [COMMUNITY
-  S1858 — a bug-report digest, not an Anthropic-authored error-message quote]
+- An orphaned `tool_result` (its `tool_use_id` has no matching `tool_use` block in the previous message) is rejected
+  with a 400 `invalid_request_error` ("unexpected `tool_use_id` found in `tool_result` blocks"). The Claude Code
+  report of it came from a session whose history was rebuilt after an interruption and resume; the issue was closed
+  as a duplicate, not planned, with no maintainer diagnosis. [COMMUNITY S1858 — a bug report quoting the API error,
+  not an Anthropic-authored explanation of the cause]
 - A tool name over 128 characters is rejected by the API; this was reproduced and reported as a Claude Code bug
   against a long MCP tool name (`mcp__<server>__<tool>` naming can approach this with a long server or tool name).
   [COMMUNITY S1857]
@@ -93,9 +94,12 @@ keeping a project's `CLAUDE.md`, skills and MCP tool definitions inside document
 - **Unsupported JSON Schema keywords / strict-mode restrictions, per vendor:**
   - *OpenAI* (function calling, strict mode): every object in the schema must set `additionalProperties: false` and
     list every property — including optional ones (typed `["string","null"]` etc.) — in `required`; a schema that
-    doesn't is rejected. OpenAI also states plainly that "some features of JSON schema are not supported" under
-    structured outputs generally, without enumerating the excluded keyword list on the fetched guide page. [DOC
-    S1865, S1867]
+    doesn't is rejected. [DOC S1865, S1867] The structured-outputs guide's "Supported schemas" section lists
+    what strict mode rejects: the composition keywords `allOf`, `not`, `dependentRequired`, `dependentSchemas`,
+    `if`/`then`/`else`; for fine-tuned models also string `minLength`/`maxLength`/`pattern`/`format`, number
+    `minimum`/`maximum`/`multipleOf`, object `patternProperties` and array `minItems`/`maxItems`; and size caps of
+    5,000 object properties, 10 nesting levels, 120,000 characters of names/enum/const strings and 1,000 enum
+    values. A strict request with an unsupported schema returns an error. [DOC S1867]
   - *Anthropic* (Claude, strict tool use): `strict: true` compiles `input_schema` into a constrained-sampling grammar
     (the same pipeline as structured outputs), guaranteeing the returned `input` matches the schema and the tool
     `name` is always one of the provided tools; the two built-in toolset entries `computer_toolset_20260801` and
@@ -162,9 +166,9 @@ Checklist, each line cited:
    a handful of tools; Anthropic's own guidance favors deferred loading over trimming correctness — [DOC S1855].
 7. Treat a 429 from the Claude Code workspace spend cap as non-retryable (no `retry-after`), distinct from an
    ordinary rate-limit 429 — relevant if a project's own CI job ever calls the API directly — [DOC S1847].
-8. In multi-turn sessions (long agentic runs), watch for `tool_use`/`tool_result` pairing errors after
-   compaction; this is a known Claude Code failure mode, not specific to any one project, and is mitigated by not
-   editing assistant/tool history manually — [COMMUNITY S1858].
+8. In multi-turn sessions (long agentic runs), watch for `tool_use`/`tool_result` pairing errors when history is
+   rebuilt, for example after an interrupted session is resumed; do not edit assistant/tool history manually, and
+   start a fresh session if a resumed one keeps failing — [COMMUNITY S1858].
 
 ## Examples
 Not applicable to this topic (it concerns a project's own tooling files, not device data).

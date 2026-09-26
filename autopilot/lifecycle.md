@@ -1,9 +1,9 @@
 ---
 topic: autopilot/lifecycle
 priority: P1
-applies_to: "Windows Autopilot (memdocs, deregister include ms.date 02/27/2026)"
+applies_to: "Windows Autopilot (Learn registration-overview, Deregister a device; updated_at 2026-06-22)"
 retrieved_utc: 2026-09-24
-sources: [S-jjyryhyn, S581, S-eh54w6el, S-wdnd3vuz, S545, S523]
+sources: [S-jjyryhyn, S-eh54w6el, S-wdnd3vuz, S545, S523]
 status: complete
 ---
 
@@ -21,19 +21,19 @@ status: complete
 - Large hardware changes such as a motherboard replacement don't match the registered hash; a new hash must be generated and uploaded. [DOC S-jjyryhyn]
 - Motherboard replacement procedure: deregister, replace, reimage with BIOS info and DPK reinjected, capture new 4K HH, reregister, reset. [DOC S-eh54w6el]
 - BIOS fields Autopilot looks for include DiskSerialNumber, SmbiosSystemSerialNumber, SmbiosSystemManufacturer, SmbiosSystemProductName, SmbiosUuid, TPM EKPub, MacAddress, ProductKeyID. [DOC S-eh54w6el]
-- A device should be deregistered whenever it permanently leaves the organization (repair or end of life). [DOC S581]
-- Before deregistering from Autopilot, delete the device from Intune; then delete it in the Autopilot devices list (unassign user first if available). [DOC S581]
-- Entra joined devices: no further steps after deregistration; avoid manually deleting the Entra device. Hybrid joined: delete the AD computer object to stop resync; avoid manually deleting the Entra device. [DOC S581]
-- After deregistration, the Entra device object may be removed for devices not enrolled in MDM, but remains for devices that are or were MDM enrolled. [DOC S581]
+- A device should be deregistered whenever it permanently leaves the organization (repair or end of life). [DOC S-jjyryhyn]
+- Before deregistering from Autopilot, delete the device from Intune; then delete it in the Autopilot devices list (unassign user first if available). [DOC S-jjyryhyn]
+- Entra joined devices: no further steps after deregistration; avoid manually deleting the Entra device. Hybrid joined: delete the AD computer object to stop resync; avoid manually deleting the Entra device. [DOC S-jjyryhyn]
+- After deregistration, the Entra device object may be removed for devices not enrolled in MDM, but remains for devices that are or were MDM enrolled. [DOC S-jjyryhyn]
 - Graph deregistration call: `DELETE /deviceManagement/windowsAutopilotDeviceIdentities/{id}` with `DeviceManagementServiceConfig.ReadWrite.All`. [DOC S523]
 - System-managed devices such as Autopilot shouldn't be deleted in Entra; once deleted they can't be reprovisioned. [DOC S545]
 
 ## Reference
 | Step | Where | Source |
 |---|---|---|
-| 1 Delete managed device | Intune | S581 |
-| 2 Delete Autopilot identity | Intune Autopilot devices / Graph | S581, S523 |
-| 3 Hybrid only: delete AD computer | on-premises AD | S581 |
+| 1 Delete managed device | Intune | S-jjyryhyn |
+| 2 Delete Autopilot identity | Intune Autopilot devices / Graph | S-jjyryhyn, S523 |
+| 3 Hybrid only: delete AD computer | on-premises AD | S-jjyryhyn |
 
 To run Windows Autopilot device preparation (v2) on a device that's already registered with classic Autopilot without deregistering it, associate the device instead: device association takes precedence over the classic Autopilot profile. To force device preparation without associating, deregister the device using the steps above first. See `autopilot/device-preparation.md`.
 

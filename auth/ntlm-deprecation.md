@@ -19,7 +19,7 @@ status: complete
 - In October 2026, Microsoft changes the default of the `BlockNTLMv1SSO` registry value from 0 (Audit) to 1 (Enforce), which disables NTLMv1 authentication by default. [DOC S1200]
 - Phase three disables network NTLM by default in a future release (undated); NTLM remains present in the OS and can be re-enabled by policy. [DOC S1200]
 - `removed-deprecated-features-windows-server-2025` is the per-release tracking page for exact NTLM-adjacent removals/changes; it should be re-checked against the current Windows Server 2025 build before the sprint that hardens `site`/`ci` hosts. [DOC S1214]
-- RC4-in-Kerberos deprecation is dated, in three steps (see `auth/kerberos.md` for the full detail and reference table): a KDC-side change for service-account ticket issuance tied to CVE-2026-20833 (Nov 2025 update, phased via `RC4DefaultDisablementPhase`); `DefaultDomainSupportedEncTypes` defaults to AES-only (0x18) on updates released on/after 2026-04-14; the audit-mode registry key is removed in the 2026-07 update, making AES-only unconditional. [DOC S1215,S1216,S1217]
+- RC4-in-Kerberos deprecation is dated, in three steps (see `auth/kerberos.md` for the full detail and reference table): a KDC-side change for service-account ticket issuance tied to CVE-2026-20833 (updates on/after 2026-01-13, KB5073381, phased via `RC4DefaultDisablementPhase`; key no longer honoured from the July 2026 updates); `DefaultDomainSupportedEncTypes` defaults to AES-only (0x18) on updates released on/after 2026-04-14; the audit-mode registry key is removed in the 2026-07 update, making AES-only unconditional. [DOC S1215,S1216,S1217]
 
 ## Reference
 | Phase | Date/build | Effect |

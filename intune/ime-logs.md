@@ -1,9 +1,9 @@
 ---
 topic: intune/ime-logs
 priority: P1
-applies_to: "Intune Management Extension 1.58.103.0+, doc ms.date 2026-04-07"
+applies_to: "Intune Management Extension 1.58.103.0+, doc ms.date 2026-09-24"
 retrieved_utc: 2026-09-24
-sources: [S611]
+sources: [S-ta4g5get]
 status: complete
 ---
 # Intune Management Extension (IME) logs
@@ -13,14 +13,14 @@ IME logs are in `C:\ProgramData\Microsoft\IntuneManagementExtension\Logs` (CMTra
 log files are documented. Service name `IntuneManagementExtension`.
 
 ## Facts
-- Log folder: `C:\ProgramData\Microsoft\IntuneManagementExtension\Logs`; view with CMTrace.exe. [DOC S611]
-- The IME appears as service **IntuneManagementExtension**; restarting it triggers a check-in. [DOC S611]
-- Config file: `C:\Program Files (x86)\Microsoft Intune Management Extension\Microsoft.Management.Services.IntuneWindowsAgent.exe.config`. [DOC S611]
-- IME is removed when no scripts are assigned, the device is no longer managed, or it is irrecoverable for over 24 h device-awake time. [DOC S611]
-- Log file list is in the table below. [DOC S611]
+- Log folder: `C:\ProgramData\Microsoft\IntuneManagementExtension\Logs`; view with CMTrace.exe. [DOC S-ta4g5get]
+- The IME appears as service **IntuneManagementExtension**; restarting it triggers a check-in. [DOC S-ta4g5get]
+- Config file: `C:\Program Files (x86)\Microsoft Intune Management Extension\Microsoft.Management.Services.IntuneWindowsAgent.exe.config`. [DOC S-ta4g5get]
+- IME is removed when no scripts are assigned, the device is no longer managed, or it is irrecoverable for over 24 h device-awake time. [DOC S-ta4g5get]
+- Log file list is in the table below. [DOC S-ta4g5get]
 
 ## Reference
-| Log file | Description (summarised) [S611] |
+| Log file | Description (summarised) [S-ta4g5get] |
 |---|---|
 | IntuneManagementExtension.log | main log: check-ins, policy requests, processing, reporting |
 | AgentExecutor.log | PowerShell script executions |

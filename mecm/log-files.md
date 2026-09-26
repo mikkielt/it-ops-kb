@@ -3,7 +3,7 @@ topic: mecm/log-files
 priority: P0
 applies_to: "ConfigMgr current branch 2603 (log-files.md ms.date 2025-08-11, memdocs 4b5429df)"
 retrieved_utc: 2026-09-23
-sources: [S-5lqbi3py, S213, S-jtvk6o4y]
+sources: [S-5lqbi3py, S-jtvk6o4y]
 status: complete
 ---
 
@@ -18,7 +18,7 @@ Prose is CC BY 4.0 (MicrosoftDocs/memdocs); the table was normalized (markdown, 
 - Compliance settings logs (client): CIAgent.log, CITaskManager.log, DCMAgent.log, DCMReporting.log, DcmWmiProvider.log. [DOC S-5lqbi3py]
 - Client-side related: CIStateStore.log, CIStore.log (CI state/info), Diagnostics.log (client diagnostic actions), Scripts.log (Run Scripts), StateMessageProvider.log, PolicyAgent.log. [DOC S-5lqbi3py]
 - adminservice.log records SMS Provider administration service REST API actions, on the SMS Provider computer. [DOC S-5lqbi3py]
-- CMG logs CMGSetup/CMGService/CMGContentService are synced from Azure storage every five minutes (max delay 10 minutes). [DOC S213]
+- CMG logs CMGSetup/CMGService/CMGContentService are synced from Azure storage every five minutes (max delay 10 minutes). [DOC S-5lqbi3py]
 - WSUS server logs are in `%ProgramFiles%\Update Services\LogFiles`. [DOC S-5lqbi3py]
 - Default log folders: client `C:\Windows\CCM\logs`; server `C:\Program Files\Microsoft Configuration Manager\Logs`; MP `C:\SMS_CCM\Logs`; console `...\AdminConsole\AdminUILog`. [DOC S-jtvk6o4y]
 - CmRcService.log has no location column in the doc; its description says "in the Client logs folder". [DOC S-5lqbi3py]

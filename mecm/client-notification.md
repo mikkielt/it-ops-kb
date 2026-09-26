@@ -34,7 +34,7 @@ The SDK documents `InitiateClientOperation(Type, TargetCollectionID, Randomizati
 - `State`: 0 Inactive, 1 Active, 2 Decommission. [DOC S-6rr2wgl6]
 - `SMS_ClientOperationStatus` adds the counters CompletedClients, FailedClients, OfflineClients, UnknownClients, TotalClients, plus IsExpired and LastSummaryTime. Its `State` values are 0 Unknown, 1 Not Applicable, 2 Failed, 3 Succeeded. [DOC S-wquiagrh]
 - Official docs show client operation Type 135 for Run Script (and CMPivot in 1902 and earlier) and Type 145 for CMPivot (1906+), in smsprov.log samples. [DOC S-e5qqwdcj]
-- The Type values for machine policy, hardware inventory, application evaluation and software update evaluation are not officially documented. Community blogs publish values, but they were not verified here and are not repeated. [COMMUNITY S352]
+- The Type values for machine policy, hardware inventory, application evaluation and software update evaluation are not officially documented. A 2015 community post wraps `InitiateClientOperation` in a script that starts operations by name (`RequestComputerPolicy`, `RequestUserPolicy`, `EvaluateSoftwareUpdates`, `FullScan`, `QuickScan`, `DownloadDefinition`); the numeric type ids live in that script, not on the page, and were not verified here. [COMMUNITY S352]
 - `Invoke-CMClientAction` targets `-Collection`, `-CollectionId`, `-CollectionName`, `-Device`, `-DeviceId` or `-DeviceName`. `-ActionType <ClientActionType>` accepts 26 names. `-NotificationType <ClientNotificationType>` accepts RequestMachinePolicyNow and RequestUsersPolicyNow. The alias is `Invoke-CMClientNotification`. [DOC S334]
 - ClientActionType names include RequestScriptExecution and RequestCMPivotExecution. Their numeric values are not documented. [DOC S334]
 

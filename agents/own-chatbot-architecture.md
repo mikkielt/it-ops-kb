@@ -44,16 +44,17 @@ status: complete
   connectors (Facebook Messenger, Slack, Twilio), and a **Copilot Studio Client** for direct engine
   interaction with agents built in Copilot Studio (i.e. it can call *into* an existing Copilot
   Studio agent, not just replace one). [DOC S1969]
-- Samples for .NET, JavaScript, and Python live in `github.com/microsoft/Agents` (the SDK's
-  multi-language monorepo); language-specific reference docs are published per-language under
+- Samples for .NET, JavaScript, and Python live in `github.com/microsoft/Agents`, which the README calls
+  a jumping-off point: most client-library source lives in the per-language repos (`Agents-for-net`,
+  `Agents-for-js`, `Agents-for-python`); language-specific reference docs are published per-language under
   `learn.microsoft.com` (`.NET`, `JavaScript`, `Python` API references). [DOC S1968, S1985]
 
 ### Bot Framework SDK retirement
 - The GitHub README for `microsoft/botframework-sdk` states: final long-term support ends
   **2025-12-31**; after that date the project receives no updates or maintenance, no product/feature
   updates, and Azure-portal service tickets are no longer serviced — but bots already built with the
-  SDK "will continue to function." The repository is planned for archiving no later than the end of
-  December 2025. [DOC S1976]
+  SDK "will continue to function." The README planned archiving no later than the end of December 2025;
+  GitHub shows the repository archived (read-only) on 2026-01-05. [DOC S1976]
 - Microsoft's stated migration path from an existing Bot Framework SDK bot is to "update your bot to
   the Agents SDK." [DER from S1976, S1971 — no fetched page gives a step-by-step migration guide
   within this pass's budget]

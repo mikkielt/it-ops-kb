@@ -18,7 +18,7 @@ Source pages are Microsoft Learn HTML (the repo `powerbi-docs-pr` is not public)
 
 ## Facts
 - A Power BI semantic model that imports from an on-premises SQL Server needs a data gateway in the Power BI service; Desktop connects directly. [DOC S902]
-- Gateway types: on-premises data gateway (standard: many users, many sources, all supported services), personal mode (one user, Power BI only, not shareable), and the VNet data gateway (Microsoft-managed, no install). [DOC S903]
+- Gateway types: on-premises data gateway in standard mode (centrally managed connections that many users share; the choice for shared sources, DirectQuery, live connections and high-availability clusters), personal mode (one Power BI user, not shareable; refreshes that user's own import semantic models), and the VNet data gateway (a Microsoft-managed service for sources inside a virtual network, no local install). [DOC S903]
 - The gateway needs no inbound ports; it opens outbound connections and receives cloud requests as responses to polling over them. [DOC S904]
 - Outbound ports: TCP 80, 443, 433, 5671, 5672 and 9350-9354; relay endpoints are `*.servicebus.windows.net` (5671-5672 AMQP; 443 and 9350-9354 relay). Full FQDN table in Reference. [DOC S905]
 - Microsoft supports only the last six gateway releases; a new release ships monthly. [DOC S904]

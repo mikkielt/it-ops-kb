@@ -46,8 +46,9 @@ a generic 400 on the underlying model call, worded around "exceeds the maximum" 
   raised — content past the old limit was silently truncated/ignored, not rejected. [DOC S1851, S1852]
   - Best practice from GitHub's own docs after the limit's removal: keep any single instruction file to roughly 1,000
     lines, since response quality can degrade past that size — a guidance line, not an enforced limit. [DOC S1851]
-- OpenAI: the ChatGPT custom-GPT builder UI silently refuses to save instructions past 8,000 characters (no visible
-  numeric error banner reported; the save action is blocked). [COMMUNITY S1844]
+- OpenAI: a community forum thread states that the ChatGPT custom-GPT builder UI caps instructions at 8,000
+  characters (against a much larger Assistants API figure); the thread does not say what happens past the cap
+  (error, blocked save or truncation). [COMMUNITY S1844]
 - OpenAI Assistants API: the `instructions` field accepts a much larger limit than the GPT builder UI; community
   reports cite figures up to 256,000 characters for related fields (message content), but no official OpenAI
   platform-docs page was fetched in this pass to confirm the exact `instructions` field limit or its error text.

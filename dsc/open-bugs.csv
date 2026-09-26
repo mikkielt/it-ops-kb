@@ -1,5 +1,5 @@
 number,title,labels,state,created,affected_area,platform,url
-1727,Microsoft.Filesystem.File/Content - Export don't work / SET strange behaviour,Issue-Bug|Need-Review,open,2026-09-20,Microsoft.Filesystem.File/Content,windows+cross,https://github.com/PowerShell/DSC/issues/1727
+1727,Microsoft.Filesystem.File/Content - Export don't work / SET strange behaviour,Issue-Bug|Need-Review,closed,2026-09-20,Microsoft.Filesystem.File/Content,windows+cross,https://github.com/PowerShell/DSC/issues/1727
 1355,Command: Resource 'powershell' [exit code 1] manifest description: Error,Issue-Bug|Need-Review,open,2026-01-16,Microsoft.Adapter/PowerShell (PS adapter),windows+cross,https://github.com/PowerShell/DSC/issues/1355
 1296,"DSC seems to inject ""Verbose"" key into resource properties, causing an error when ""Verbose"" is not a property in the DSC resource schema file",Issue-Bug|WG-Reviewed,open,2025-11-28,Microsoft.Adapter/PowerShell (PS adapter),windows+cross,https://github.com/PowerShell/DSC/issues/1296
 1293,parameters are not pass to: Microsoft.DSC/Group,Issue-Bug|Need-Review,open,2025-11-26,Microsoft.DSC/Group,cross,https://github.com/PowerShell/DSC/issues/1293

@@ -72,6 +72,7 @@ separate from content exclusion, configured per organization or repository.
   Metrics" permission, with a token scoped `read:org`. [DOC S-ftbeo3o7]
 
 ### Coding agent firewall (network allowlist)
+- GitHub's current docs call the coding agent "Copilot cloud agent"; the firewall pages use that name. [DOC S1805]
 - The coding agent's outbound-traffic firewall is enabled by default with a recommended allowlist covering:
   OS package repositories (Debian, Ubuntu, Red Hat), container registries (Docker Hub, Azure Container
   Registry, AWS ECR), language package registries (npm/PyPI/Maven/RubyGems/crates.io/Go proxy-class

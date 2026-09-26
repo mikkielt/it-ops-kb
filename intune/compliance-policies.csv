@@ -35,19 +35,20 @@ compliance_status,conflict,managedDevice.complianceState,n/a,-,S-sc3fvmp6
 compliance_status,error,managedDevice.complianceState,n/a,Held for up to 7 days before recalculating to noncompliant/in-grace-period,S-sc3fvmp6
 compliance_status,inGracePeriod,managedDevice.complianceState,n/a,-,S-sc3fvmp6
 compliance_status,configManager,managedDevice.complianceState,n/a,-,S-sc3fvmp6
-custom_compliance_error,65007,custom compliance discovery script evaluation,n/a,Script returned failure,S-hvnok5ut
-custom_compliance_error,65008,custom compliance discovery script evaluation,n/a,Setting missing in the script result,S-hvnok5ut
-custom_compliance_error,65009,custom compliance discovery script evaluation,n/a,Invalid JSON for the discovered setting; can also be caused by output truncated past 2048 characters,S-hvnok5ut
-custom_compliance_error,65010,custom compliance discovery script evaluation,n/a,Invalid datatype for the discovered setting,S-hvnok5ut
-limit,Custom compliance discovery script size,n/a,n/a,1 MB max,S-kim3tg2v
-limit,Custom compliance discovery script output size,n/a,n/a,1 MB max (2048 characters per the refresh-cycle doc before truncation risk),S-kim3tg2v
-limit,Custom compliance discovery script run time (Windows),n/a,n/a,10 minutes max,S-kim3tg2v
-limit,Custom compliance discovery script run time (Linux),n/a,n/a,5 minutes max,S-kim3tg2v
-limit,Custom compliance JSON policy size,n/a,n/a,100 KB max,S-xsohydmw
-limit,Custom compliance JSON rules per policy,n/a,n/a,100 rules max,S-xsohydmw
-limit,IME custom compliance script/discovery check interval,n/a,n/a,every 8 hours,S-hvnok5ut
-limit,Time for a fixed custom-compliance issue to show compliant,n/a,n/a,up to 8 hours,S-hvnok5ut
+custom_compliance_error,65007,custom compliance discovery script evaluation,n/a,Script returned failure,S-4t5e7ocm
+custom_compliance_error,65008,custom compliance discovery script evaluation,n/a,Setting missing in the script result,S-4t5e7ocm
+custom_compliance_error,65009,custom compliance discovery script evaluation,n/a,Invalid JSON for the discovered setting; can also be caused by output truncated past 2048 characters,S-4t5e7ocm
+custom_compliance_error,65010,custom compliance discovery script evaluation,n/a,Invalid datatype for the discovered setting,S-4t5e7ocm
+limit,Custom compliance discovery script size,n/a,n/a,1 MB max,S-wjex623z
+limit,Custom compliance discovery script output size,n/a,n/a,1 MB max (2048 characters per the refresh-cycle doc before truncation risk),S-wjex623z
+limit,Custom compliance discovery script run time (Windows),n/a,n/a,10 minutes max,S-wjex623z
+limit,Custom compliance discovery script run time (Linux),n/a,n/a,5 minutes max,S-wjex623z
+limit,Custom compliance discovery script run time (macOS),n/a,n/a,10 minutes max,S-wjex623z
+limit,Custom compliance JSON policy size,n/a,n/a,100 KB max,S-ogsl4hbo
+limit,Custom compliance JSON rules per policy,n/a,n/a,100 rules max,S-ogsl4hbo
+limit,IME custom compliance script/discovery check interval,n/a,n/a,every 8 hours,S-4t5e7ocm
+limit,Time for a fixed custom-compliance issue to show compliant,n/a,n/a,up to 8 hours,S-4t5e7ocm
 limit,Actions for noncompliance schedule range,n/a,n/a,0 to 365 days,S-u3qwumeu
 limit,Compliance status validity period range,n/a,n/a,1 to 120 days (default 30),S-vpvd3h5f
 limit,Password expiration days range,passwordExpirationDays,n/a,1 to 730,S-qjd54t3z
-limit,Error-state grace before forced recalculation,n/a,n/a,7 days,S-bnkmmdtp
+limit,Error-state grace before forced recalculation,n/a,n/a,7 days,S-ej25skuk

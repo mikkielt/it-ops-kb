@@ -22,7 +22,7 @@ kind exists to enforce.
   toward this ceiling, since Anthropic's tool-authoring guidance calls out namespacing and clear boundaries
   as what keeps a growing tool set usable for an agent. [DER S1935]
 - **DER — prompt injection in tool results**: none of promptfoo, garak or PyRIT ship a product-specific
-  probe, but promptfoo's red-team "Tool Poisoning Attacks" category and PyRIT's `XPIAOrchestrator`
+  probe, but promptfoo's red-team "Tool Poisoning Attacks" category and PyRIT's `XPIAWorkflow`
   (cross/indirect prompt injection via a data source the model later reads) are the closest general
   mechanisms for the case of injected text arriving inside a CMPivot/CcmLog line or a device name rather
   than the user's own turn. [DOC S1884, S1892] A design that never states logs or query output are
@@ -72,7 +72,7 @@ kind exists to enforce.
 |---|---|---|---|
 | tool-count scaling | operation table (13 ops) | Anthropic tool-writing guidance (S1935) | DER |
 | ambiguous/adversarial questions | target scheme | promptfoo assertions / model grader | DER |
-| injection in tool results | logs, generic query operation | promptfoo "mcp"/jailbreak plugins (S1884); PyRIT XPIAOrchestrator (S1892) | DER |
+| injection in tool results | logs, generic query operation | promptfoo "mcp"/jailbreak plugins (S1884); PyRIT XPIAWorkflow (S1892) | DER |
 | oversized output | pagination, 2000-char truncation | custom assertion; no vendor MCP tool measures this directly | DER |
 | timeouts / `unknown` | unknown-is-never-absent policy | fault-injected recorded exchanges | DOC+DER |
 | confirmation bypass ≥ tier 2 | tier-confirm policy | custom harness; no fetched tool encodes this tier table | DER |

@@ -3,7 +3,7 @@ topic: security/script-and-code-signing
 priority: P1
 applies_to: "PowerShell 5.1/7.5 under ConfigMgr AllSigned; DSC v3.3.0/3.4.0-preview.1; WDAC/App Control"
 retrieved_utc: 2026-09-24
-sources: [S1513, S1514, S1515, S1516, S1517, S1518, S1519]
+sources: [S1513, S1514, S1515, S-utrhfg57, S1517, S1518, S1519]
 status: partial
 ---
 
@@ -26,10 +26,11 @@ official docs show), and how WDAC/App Control for Business treats PowerShell and
   Implication for any team signing its own PowerShell content (CI scripts, Run Scripts payloads): the
   signing certificate needs a timestamp to survive its own renewal cycle without re-signing every script.
   [DER S1513: renewal-cycle implication]
-- `about_Signing` documents the general Windows PowerShell signing model: self-signed certificates must be
-  installed in the local computer's Trusted Root store to be honored, and public/enterprise CA-issued
-  code-signing certificates are the normal path for production use because they chain to a root already
-  trusted enterprise-wide. [DOC S1516]
+- `about_Signing` documents the general Windows PowerShell signing model: the signing certificate must be
+  issued by a CA the computer trusts, self-signed certificates must be installed in the computer's Trusted
+  Root Certificates store, and self-signed certificates are for testing only; CA-issued code-signing
+  certificates are the path for scripts shared with other computers, because those computers already trust
+  the CA. [DOC S-utrhfg57]
 - No official DSC v3 documentation was found describing a manifest-signing, checksum-pinning or other
   supply-chain-integrity mechanism for `*.dsc.resource.json`/`*.dsc.manifests.json` files or for bundled
   configuration documents; the manifest schema reference documents structure and validation rules only,
@@ -44,8 +45,10 @@ official docs show), and how WDAC/App Control for Business treats PowerShell and
   and other capabilities scripts need for anything beyond basic automation, so an unsigned `dsc.exe`-invoking
   wrapper script that relies on those APIs breaks under WDAC even if `AllSigned`/ConfigMgr's own execution
   policy is satisfied. [DOC S1513 (PowerShell security features, WDAC/CLM interaction); COMMUNITY S1519
-  for worked policy-authoring detail: a WDAC supplemental policy scoped to specific script hashes is the
-  documented workaround for vendor scripts that cannot be signed, keeping CLM enforced everywhere else]
+  for worked policy-authoring detail: the base policy needs `0 Enabled:UMCI` and must not carry
+  `11 Disabled:Script Enforcement`; every `.psm1`/`.psd1` of a module meant to run must be signed, the
+  signing certificate trusted, and its root added as a User-mode Signer rule, preferably in a supplemental
+  policy; no hash-rule workaround is described]
 - Applying WDAC CLM to a `dsc.exe`-based pipeline is a **separate control from ConfigMgr's PowerShell
   execution-policy setting**: `AllSigned` governs whether a `.ps1` runs at all; WDAC/CLM governs what a
   running (even signed) script is allowed to *do*. Both would need to independently trust the same

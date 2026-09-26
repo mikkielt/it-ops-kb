@@ -3,7 +3,7 @@ topic: logs/sources
 priority: P1
 applies_to: "Windows 10/11, ConfigMgr current branch, Intune, Autopilot, Entra ID (docs 2021-2026)"
 retrieved_utc: 2026-09-24
-sources: [S-ygo5rdrm, S-6q3ioupn, S611, S-6epv7qzl, S617, S618, S-fzoar2ya, S632, S633, S634, S635, S636, S637, S638, S648, S649]
+sources: [S-ygo5rdrm, S-6q3ioupn, S-ta4g5get, S-6epv7qzl, S617, S618, S-fzoar2ya, S632, S633, S634, S635, S636, S637, S638, S648, S-d3ml3kug]
 status: partial
 ---
 # Device log sources (files, event channels, commands)
@@ -19,7 +19,7 @@ channels; the full ConfigMgr log table is `mecm/log-files.csv` (another agent).
 - Autopilot logs to Event Viewer > Application and Services Logs > Microsoft > Windows > ModernDeployment-Diagnostics-Provider > Autopilot. [DOC S-fzoar2ya]
 - Channel name `Microsoft-Windows-ModernDeployment-Diagnostics-Provider/Autopilot`: derived from that Event Viewer path using the naming shown for other channels (e.g. `Microsoft-Windows-AAD/Operational` ↔ Microsoft > Windows > AAD). [DER S-fzoar2ya,S632]
 - Hybrid join failures: `User Device Registration` log under Microsoft > Windows (event IDs 201, 204, 304, 305). [DOC S632]
-- Exact channel name `Microsoft-Windows-User Device Registration/Admin`. [DOC S649]
+- Exact channel name `Microsoft-Windows-User Device Registration/Admin`. [DOC S-d3ml3kug]
 - PRT/CloudAP events: Microsoft > Windows > AAD. Event 1006 (start) and 1007 (end, with the final error code) of PRT acquisition are in the Analytic log; the CloudAP plug-in writes errors to Operational and info events to Analytic, and both logs are needed. [DOC S632]
 - ESP/runtime provisioning evtx files: DeviceManagement-Enterprise-Diagnostics-Provider%4Admin, Provisioning-Diagnostics-Provider%4Admin, AAD%4Operational under `%windir%\System32\winevt\Logs`. [DOC S618]
 - Intune Connector for AD logs moved to Applications and Services Logs > Microsoft > Intune > ODJConnectorService. [DOC S-fzoar2ya]
@@ -31,7 +31,7 @@ channels; the full ConfigMgr log table is `mecm/log-files.csv` (another agent).
 - `Get-WindowsUpdateLog` merges Windows Update `.etl` files into `WindowsUpdate.log` (default on the current user's Desktop, `-LogPath` to change); Windows Update no longer writes WindowsUpdate.log directly; pre-1709 logs need a symbol server. [DOC S638]
 - CBS: `C:\Windows\Logs\CBS\CBS.log`, archives `CbsPersist_*.log/.cab`; DISM: `C:\Windows\Logs\DISM\dism.log`. [DOC S637]
 - Setup (Panther): down-level `C:\$WINDOWS.~BT\Sources\Panther\setupact.log`/`setuperr.log`; WinPE `X:\$WINDOWS.~BT\...`; online configuration and Welcome `C:\WINDOWS\PANTHER\setupact.log`; drivers `C:\WINDOWS\INF\setupapi.dev.log`. [DOC S636]
-- IME logs: `C:\ProgramData\Microsoft\IntuneManagementExtension\Logs`. [DOC S611]
+- IME logs: `C:\ProgramData\Microsoft\IntuneManagementExtension\Logs`. [DOC S-ta4g5get]
 - Tenant attach logs: CMGatewaySyncUploadWorker.log, CMGatewayNotificationWorker.log, GenericUploadWorker.log (site server), BgbServer.log (MP), CcmNotificationAgent.log (client). [DOC S-6q3ioupn]
 - A `DeviceManagement-Enterprise-Diagnostics-Provider/Operational` channel is not documented in the cloned sources. [UNK]
 

@@ -27,11 +27,10 @@ facts (audience validation, `resource` parameter, `iss` validation, DCR deprecat
   domain-joined (same domain or trusted domains), the connector service running as local system
   (not a custom identity), and the connector granted permission to impersonate users in AD to
   negotiate Kerberos on the user's behalf. [DOC S1299]
-- MCP's Enterprise-Managed Authorization extension (which defines the ID-JAG grant, RFC 8693 token
-  exchange from an enterprise IdP to an MCP authorization server) went **stable in June 2026**; Entra
-  ID does not yet natively issue ID-JAG (not GA as of this retrieval) — Microsoft has shown Entra ID +
-  App Service as an authorization boundary for MCP servers, but Okta is the IdP shipping support at
-  EMA's launch, not Entra. [COMMUNITY S1300]
+- MCP's Enterprise-Managed Authorization extension (which defines the ID-JAG grant, built on RFC 8693
+  token exchange and RFC 7523 JWT bearer grants, from an enterprise IdP to an MCP authorization server)
+  went **stable on 2026-06-18**; Okta is the only IdP shipping support at launch, so an organization on
+  Entra ID (Azure AD) cannot turn the flow on yet. [COMMUNITY S1300]
 - Teams bot SSO requires an Azure-managed Bot Service resource (the OAuth connection lives in Azure
   Bot Service, not in a self-hosted bot), specific app-manifest entries (`webApplicationInfo`,
   `token.botframework.com` in `validDomains`), and an OAuth dialog flow that fetches the token from
@@ -66,21 +65,23 @@ facts (audience validation, `resource` parameter, `iss` validation, DCR deprecat
   Kerberos on the signed-in user's behalf; a connector is configured for either SPNEGO or a standard
   Kerberos token, not both, and all connectors in a connector group must agree on that choice.
   [DOC S1299]
-- MCP Enterprise-Managed Authorization (ID-JAG): stable as of June 2026 (per community/vendor
+- MCP Enterprise-Managed Authorization (ID-JAG): stable as of 2026-06-18 (per community/vendor
   reporting, not yet cross-checked against a modelcontextprotocol.io spec revision date in this pass
   — see `gaps.md`); it lets an enterprise IdP issue a short-lived, scoped Identity Assertion JWT
   Authorization Grant (RFC 8693 token-exchange semantics) so an MCP client/agent can reach an MCP
   server's authorization server without a per-app user consent screen. [COMMUNITY S1300 for
   the "stable June 2026" date and Okta-first-mover claim — this is vendor/community reporting, not an
   official modelcontextprotocol.io or Microsoft page; treat the date as provisional]
-- Entra ID's own native issuance of ID-JAG is **not GA** as of this retrieval; Microsoft's public
-  demonstrations use Entra ID plus Azure App Service as the authorization boundary in front of an MCP
-  server, rather than Entra directly minting ID-JAG tokens. [COMMUNITY S1300]
+- Entra ID's own native issuance of ID-JAG is **not available** as of this retrieval (the post names Okta as
+  the only IdP shipping it at launch). [COMMUNITY S1300]
+- Whether Microsoft documents an Entra ID + Azure App Service authorization boundary in front of an MCP
+  server as the interim pattern: not in S1300, which does not mention it. [UNK: claim previously attributed
+  to S1300; needs a Microsoft source]
 - This means a future broker component wanting MCP OAuth via Entra-issued ID-JAG cannot do
-  so with a stable, Microsoft-native mechanism today; the closest supported pattern is Entra as the
-  Conditional-Access/consent layer in front of an App Service-hosted authorization server, which is
-  an additional service component that a design with no gateway/service beyond the CLI and MCP server
-  would need to explicitly re-scope for. [DER S1300]
+  so with a stable, Microsoft-native mechanism today; any interim pattern (such as Entra as the
+  Conditional-Access/consent layer in front of a separately hosted authorization server) is an additional
+  service component that a design with no gateway/service beyond the CLI and MCP server would need to
+  explicitly re-scope for. [DER S1300: Okta-only at launch, so Entra needs an extra component]
 - Teams bot SSO needs an Azure-managed Bot Service resource specifically — a self-hosted-only Bot
   Framework deployment cannot host the OAuth connection SSO depends on. [DOC S1301]
 - The manifest must list the bot's resource URL under `webApplicationInfo` and add

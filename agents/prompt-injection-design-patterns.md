@@ -23,12 +23,17 @@ Dual-LLM-style isolation step ahead of an in-process PII filter.
 
 ## Facts
 - "Design Patterns for Securing LLM Agents against Prompt Injections" (arXiv 2506.08837, v1 2025-06-10, v3
-  2025-06-27) names: Action-Selector (fixed action allowlist; loses novel-task handling), Plan-Then-Execute (plan
-  fixed before reading untrusted data; adds latency), LLM Map-Reduce (isolated sub-calls over untrusted chunks,
-  then aggregated; raises cost), Dual LLM (privileged tool-caller never sees raw untrusted text; doubles inference
-  cost), Code-Then-Execute (agent emits a constrained program instead of free-form calls; limits expressiveness),
-  Context-Minimization (shrinks untrusted content shown to the model; degrades task performance), and a Firewall-
-  style post-hoc output filter (false positives). [COMMUNITY S2005]
+  2025-06-27) names six patterns, each isolating untrusted data from the agent's control flow: Action-Selector (the
+  LLM only maps a request to predefined actions and never sees their output; work moves into designing those
+  actions, and requests nobody anticipated get blocked), Plan-Then-Execute (the tool-call plan is fixed before
+  untrusted data is read; injected data can still change tool arguments, and tasks whose next step depends on
+  earlier results are hard to plan), LLM Map-Reduce (one isolated, tool-less LLM per untrusted item with
+  constrained output, then a reduce step), Dual LLM (a privileged tool-using LLM handles only symbolic references;
+  a quarantined tool-less LLM reads the untrusted text), Code-Then-Execute (the agent writes a program that calls
+  tools and unprivileged LLMs; injected data can still alter values passed between tools) and Context-Minimization
+  (the user's prompt is removed from context after it has chosen the action, against user-prompt injection).
+  Guardrail classifiers are treated as a separate best practice, with false positives and extra compute as their
+  cost. [COMMUNITY S2005]
 - CaMeL ("Defeating Prompt Injections by Design", arXiv 2503.18813, Google Research, v1 2025-03-24/v2 2025-06-24)
   extracts control/data flow from the *trusted* query only, so untrusted tool output can never change which tools
   run next, and applies capability-based restrictions to data flow to block unintended exfiltration; it solved 77%
@@ -49,20 +54,20 @@ Dual-LLM-style isolation step ahead of an in-process PII filter.
   window" for hidden/encoded/deceptive instructions, (3) ongoing red-teaming and external benchmark participation.
   Anthropic states a 1% attack success rate is still "meaningful risk" and "no browser agent is immune." [DOC S2009]
 - Claude Code's documented tool-result-relevant defenses: isolated context window for web-fetch results; "context-
-  aware analysis" of the full request; network-request approval required by default for tools reaching the web;
-  MCP servers configured only from source-controlled settings (see `managed-mcp.md`); "Validate tool results before
+  aware analysis" of the full request; in Manual mode, approval required by default for most tools that make
+  network requests; MCP servers configured only from source-controlled settings (see `managed-mcp.md`); "Validate tool results before
   passing to LLM" and "show tool inputs to the user before calling the server" are MCP-spec-level client SHOULDs,
   not Claude-Code-specific inventions. [DOC S2010]
 
 ## Reference
 | Pattern | Core idea | Main trade-off | Source |
 |---|---|---|---|
-| Action-Selector | fixed allowlist of actions | loses novel-task handling | S2005 |
-| Plan-Then-Execute | plan fixed before untrusted data read | latency | S2005 |
-| LLM Map-Reduce | isolated sub-calls, then aggregate | cost, coordination complexity | S2005 |
-| Dual LLM | privileged LLM never sees raw untrusted text | 2x inference cost | S2005, S2007 |
-| Code-Then-Execute | agent emits constrained program | limits expressiveness | S2005 |
-| Context-Minimization | shrink untrusted content shown | degraded task performance | S2005 |
+| Action-Selector | LLM picks from predefined actions, sees no output | unanticipated requests blocked; effort moves into action design | S2005 |
+| Plan-Then-Execute | plan fixed before untrusted data read | injected data can still change tool arguments | S2005 |
+| LLM Map-Reduce | isolated tool-less sub-calls, constrained output, then reduce | only fits tasks that decompose per item | S2005 |
+| Dual LLM | privileged LLM handles only symbolic variables | implementation complexity, degraded UX, social engineering of the user | S2005, S2007 |
+| Code-Then-Execute | agent writes a program that calls tools and quarantined LLMs | injected data can still alter values passed on | S2005 |
+| Context-Minimization | user prompt removed from context after action choice | targets user-prompt injection only | S2005 |
 | CaMeL | Dual-LLM + Plan-Then-Execute + capabilities | 77% vs 84% task success (AgentDojo) | S2006 |
 | Spotlighting | base64-tag untrusted content | more tokens, Chat Completions only | S2008 |
 

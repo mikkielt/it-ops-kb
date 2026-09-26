@@ -22,13 +22,14 @@ Responses API instead expose `require_approval` as an explicit opt-in control pe
 
 ## Facts
 ### Config file / location and top-level key
-- GitHub Copilot coding agent: no repo file — a repository admin pastes JSON into **Settings > Copilot > MCP
-  servers > MCP configuration**; the top-level key is `mcpServers`, keyed by server name. [DOC S-udcaydkb]
+- GitHub Copilot coding agent (GitHub's docs now call it Copilot cloud agent): no repo file — a repository
+  admin pastes JSON into **Settings > Copilot > MCP servers > MCP configuration**; the top-level key is
+  `mcpServers`, keyed by server name. [DOC S-udcaydkb]
 - VS Code: workspace file `.vscode/mcp.json` (top-level `servers`), or the portable `.mcp.json` at the
   project root (top-level `mcpServers`, the same key Claude Code's own `.mcp.json` uses — see
   `claude/settings-and-scopes.md`); user-profile scope uses a `mcp.json` opened via **MCP: Open User
-  Configuration**. [DOC S-caxeb7wx] Configured servers' tools then surface in the Chat view's agent mode
-  tool picker, the same place VS Code lists other extension-contributed tools. [DOC S-y4l4chtg]
+  Configuration**. [DOC S-caxeb7wx] VS Code discovers a configured server's tools and makes them available
+  in chat; the **Configure Tools** button in the chat input lists them with the other available tools. [DOC S-y4l4chtg]
 - OpenAI Agents SDK (Python): no config file — servers are instantiated in code as
   `MCPServerStdio(params={...})` / `MCPServerStreamableHttp(params={...})` / the deprecated
   `MCPServerSse(params={...})` and passed to an `Agent`'s `mcp_servers` list. [DOC S-shpwh3m7]

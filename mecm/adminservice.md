@@ -3,7 +3,7 @@ topic: mecm/adminservice
 priority: P0
 applies_to: "ConfigMgr current branch 2603"
 retrieved_utc: 2026-09-23
-sources: [S-o6f7ibqo, S-sldz4d6b, S-igpzfey7, S-wkltnypi, S-tjt262ke, S-uispggqe, S-2fob2ctx, S-7jumyiid, S-nejxr76b, S-dfkr7mdn, S-l2gdpfl2, S311, S-ebuvm65r, S313, S-mckld2pr, S-qhlzdpie, S-6l4nubjq, S346, S-ounncxk4, S-2mbquiz2, S350]
+sources: [S-o6f7ibqo, S-sldz4d6b, S-igpzfey7, S-wkltnypi, S-tjt262ke, S-uispggqe, S-2fob2ctx, S-7jumyiid, S-nejxr76b, S-dfkr7mdn, S-l2gdpfl2, S-6m7klb4f, S-ebuvm65r, S313, S-mckld2pr, S-qhlzdpie, S-6l4nubjq, S-actyzzlw, S-ounncxk4, S-2mbquiz2, S350]
 status: partial
 files: [mecm/adminservice-routes.csv]
 ---
@@ -28,7 +28,7 @@ Route table: `mecm/adminservice-routes.csv`.
 - SMS Provider prerequisites: .NET 4.6.2 (4.8 recommended) from 2107. [DOC S-o6f7ibqo]
 - Verification: installation is logged in `RESTPROVIDERSetup.log`, health in `SMS_REST_PROVIDER.log`, and requests in `adminservice.log` on the SMS Provider (default `C:\Program Files\Microsoft Configuration Manager\logs`). Test with `GET /adminservice/v1.0/$metadata`. [DOC S-sldz4d6b]
 - Starting in 2509, the AdminService rejects NTLM authentication and `AdminService.log` records "Rejecting NTLM authentication." [DOC S-7jumyiid]
-- The SMS Provider authentication level (Windows, certificate, or Windows Hello for Business) also applies to the AdminService. With the Windows Hello for Business level, the token must carry a WHfB MFA claim. [DOC S311]
+- The SMS Provider authentication level (Windows, certificate, or Windows Hello for Business) also applies to the AdminService. With the Windows Hello for Business level, the token must carry a WHfB MFA claim. [DOC S-6m7klb4f]
 - Scale: up to 5,000 requests per second per SMS Provider instance, and 200 requests per client IP address. [DOC S-l2gdpfl2]
 - Internet access: in the SMS Provider role properties, enable "Allow Configuration Manager cloud management gateway traffic for administration service". Then replace the provider FQDN with the CMG endpoint, e.g. `https://<cmg>/CCM_Proxy_MutualAuth/<id>/AdminService`. [DOC S-sldz4d6b]
 - Internet-based client management (IBCM) cannot expose the AdminService. A CMG is required. [DOC S-uispggqe]
@@ -44,7 +44,7 @@ Route table: `mecm/adminservice-routes.csv`.
 - A console on a machine behind a proxy fails to connect to the AdminService unless the proxy is disabled or bypassed in `Microsoft.ConfigurationManagement.exe.config`. [DOC S-o6f7ibqo]
 - 2303+: unauthorized AdminService requests are aggregated for 24 hours and shown as status message ID 11618. [DOC S-tjt262ke]
 - 2603 fixes CMPivot-through-AdminService 400 errors (KustoParser) and updates `System.Linq.Dynamic.Core` to 1.7.1 (CVE-2023-32571). [DOC S-ebuvm65r]
-- Security updates: KB35360093 (elevation of privilege, AdminService and CMPivot, 2403/2409). KB38982839 (SMS Provider and AdminService; 2603, and 2509/2503 with rollup). [DOC S-6l4nubjq,S346]
+- Security updates: KB35360093 (elevation of privilege, AdminService and CMPivot, 2403/2409). KB38982839 (SMS Provider and AdminService; 2603, and 2509/2503 with rollup). [DOC S-6l4nubjq,S-actyzzlw]
 - Any device that calls the AdminService uses HTTPS port 443. [DOC S-2mbquiz2]
 
 ## Reference

@@ -3,7 +3,7 @@ topic: intune/compliance-policies
 priority: P2
 applies_to: "Microsoft Intune device compliance policies, Windows 10 and later platform, docs retrieved 2026-09-26"
 retrieved_utc: 2026-09-26
-sources: [S-vpvd3h5f, S-u3qwumeu, S-qjd54t3z, S-3p4dmsu3, S-hvnok5ut, S-xsohydmw, S-kim3tg2v, S-bnkmmdtp, S-taatt73w, S-2hhj3k5f, S-o3fvldqn, S-sc3fvmp6]
+sources: [S-vpvd3h5f, S-u3qwumeu, S-qjd54t3z, S-yoeqntwt, S-4t5e7ocm, S-ogsl4hbo, S-wjex623z, S-ej25skuk, S-taatt73w, S-2hhj3k5f, S-o3fvldqn, S-sc3fvmp6]
 status: complete
 ---
 
@@ -21,14 +21,14 @@ Intune compliance is split into tenant-wide **compliance policy settings** (a bu
 
 ### Device compliance policies and evaluation
 - A device compliance policy is a discrete set of platform-specific rules deployed to user or device groups; different platforms require separate policies. [DOC S-vpvd3h5f]
-- Compliance policy settings can override device configuration policy settings on conflict; compliance policy settings always win, even if the configuration policy setting is more secure. [DOC S-vpvd3h5f, S-bnkmmdtp]
-- If you deploy multiple compliance policies to a device, Intune uses the most secure combination of the policies' settings. [DOC S-bnkmmdtp]
+- Compliance policy settings can override device configuration policy settings on conflict; compliance policy settings always win, even if the configuration policy setting is more secure. [DOC S-vpvd3h5f, S-ej25skuk]
+- If you deploy multiple compliance policies to a device, Intune uses the most secure of those policies. [DOC S-ej25skuk]
 - For Windows devices, Intune also supports client-driven compliance evaluation (preview): supported devices can proactively request a re-evaluation when local state changes are detected. [DOC S-vpvd3h5f]
 - Compliance evaluations depend on when the device checks in and on policy/profile refresh cycles. [DOC S-vpvd3h5f]
-- Device compliance dashboard statuses: **Compliant** (met one or more policy settings), **In-grace period** (targeted but not yet compliant to all settings; still counted noncompliant), **Not evaluated** (initial state for new enrollments; also devices with no assigned policy and no trigger to check, devices not checked in since the policy last changed, devices without a specific user e.g. Apple DEP without affinity or Android Enterprise dedicated, or devices enrolled via a device enrollment manager account), **Not compliant** (failed one or more settings, or the user hasn't complied). [DOC S-bnkmmdtp]
+- Device compliance dashboard statuses: **Compliant** (met one or more policy settings), **In-grace period** (targeted but not yet compliant to all settings; still counted noncompliant), **Not evaluated** (initial state for new enrollments; also devices with no assigned policy and no trigger to check, devices not checked in since the policy last changed, devices without a specific user e.g. Apple DEP without affinity or Android Enterprise dedicated, or devices enrolled via a device enrollment manager account), **Not compliant** (failed one or more settings, or the user hasn't complied). [DOC S-ej25skuk]
 - `managedDevice.complianceState` (Graph) possible values: `unknown`, `compliant`, `noncompliant`, `conflict`, `error`, `inGracePeriod`, `configManager`; default `unknown`. [DOC S-sc3fvmp6]
-- When a compliance setting reports **Error**, the device's existing compliance state is held unchanged for up to **seven days** to allow re-evaluation; if the setting is still Error after 7 days, the device becomes Not compliant (or In grace period if a grace period is configured). [DOC S-bnkmmdtp]
-- Checking a policy's Device status chart can take up to **24 hours** after the device is online before it appears, because the device must check in, process, and report back. [DOC S-bnkmmdtp]
+- When a compliance setting reports **Error**, the device's existing compliance state is held unchanged for up to **seven days** to allow re-evaluation; if the setting is still Error after 7 days, the device becomes Not compliant (or In grace period if a grace period is configured). [DOC S-ej25skuk]
+- Checking a policy's Device status chart can take up to **24 hours** after the device is online before it appears, because the device must check in, process, and report back. [DOC S-ej25skuk]
 - Company Portal enters an enrollment remediation flow when a user signs in and the device hasn't checked in for **30 days or more** (or is noncompliant due to Lost contact); Intune retries a check-in once, and if that fails, issues a retire command for manual re-enrollment. [DOC S-vpvd3h5f]
 
 ### Actions for noncompliance
@@ -73,18 +73,18 @@ Intune compliance is split into tenant-wide **compliance policy settings** (a bu
 - Intune throttles compliance-triggered reevaluations; if multiple changes occur in a short period, some updates may be processed in a later evaluation cycle. [DOC S-qjd54t3z]
 
 ### Custom compliance settings
-- Custom compliance requires a discovery script (Windows: PowerShell; Linux: any language with an installed interpreter; macOS: Bash) plus a JSON rules file, both attached to the policy at creation. Each policy supports exactly one discovery script, and each script can discover multiple settings. [DOC S-hvnok5ut]
-- Windows custom compliance platform requirement: Windows, excluding Windows Home. [DOC S-hvnok5ut]
-- A discovery script assigned to a policy can't be deleted until it is unassigned from that policy. [DOC S-hvnok5ut]
-- When a Windows device receives a compliance policy with custom settings, it checks for the Intune Management Extension and installs it via MSI if missing; the IME then checks for new/updated PowerShell scripts every **8 hours**, runs discovery scripts every **8 hours**, and also runs them when a user selects Check Compliance — but a manual Check Compliance does not check for new/updated scripts. Push notifications can't trigger custom compliance on demand. [DOC S-hvnok5ut]
-- JSON rule fields: `SettingName` (case-sensitive), `Operator` (`IsEquals`, `NotEquals`, `GreaterThan`, `GreaterEquals`, `LessThan`, `LessEquals`), `DataType` (`Boolean`, `Int64`, `Double`, `String`, `DateTime`, `Version`), `Operand`, `MoreInfoURL`, `RemediationStrings` (at least one string for locale `en_US`; other locales optional). A policy can be up to **100 KB** and include up to **100 rules**. [DOC S-xsohydmw]
-- Windows PowerShell discovery scripts must end with `return $hash | ConvertTo-Json -Compress` as the last line so results are returned as a single-line compressed JSON object. [DOC S-kim3tg2v]
-- Discovery script limits: no larger than **1 MB** each; script output no larger than **1 MB**; run time limit **10 minutes** on Windows, **5 minutes** on Linux. [DOC S-kim3tg2v]
-- Discovery script output is also limited to **2048 characters** in the refresh-cycle documentation; output beyond this may be truncated into invalid JSON and raise error 65009. [DOC S-3p4dmsu3]
-- Custom compliance error codes: `65007` script returned failure, `65008` setting missing in the script result, `65009` invalid JSON for the discovered setting, `65010` invalid datatype for the discovered setting. [DOC S-hvnok5ut]
-- After a device fixes a custom-compliance issue, it can take up to **8 hours** for a subsequent sync to reflect the device as compliant again. [DOC S-hvnok5ut]
-- Users can manually trigger a re-check: Windows via the Company Portal website sync; Linux via Refresh in the Microsoft Intune app; macOS via Company Portal > Devices > Check Status. [DOC S-hvnok5ut]
-- Custom compliance settings can be used for Conditional Access decisions the same way as built-in settings, forming a compound rule set together. [DOC S-hvnok5ut]
+- Custom compliance requires a discovery script (Windows: PowerShell; Linux: any language with an installed interpreter; macOS: Bash) plus a JSON rules file, both attached to the policy at creation. Each policy supports exactly one discovery script, and each script can discover multiple settings. [DOC S-4t5e7ocm, S-wjex623z]
+- Windows custom compliance platform requirement: Windows, excluding Windows Home. [DOC S-4t5e7ocm]
+- A discovery script assigned to a policy can't be deleted until it is unassigned from that policy; each discovery script can be used with only one compliance policy. [DOC S-wjex623z]
+- When a Windows device receives a compliance policy with custom settings, it checks for the Intune Management Extension and installs it via MSI if missing; the IME then checks for new/updated PowerShell scripts every **8 hours**, runs discovery scripts every **8 hours**, and also runs them when a user selects Check Compliance — but a manual Check Compliance does not check for new/updated scripts. Push notifications can't trigger custom compliance on demand. [DOC S-4t5e7ocm]
+- JSON rule fields: `SettingName` (case-sensitive), `Operator` (`IsEquals`, `NotEquals`, `GreaterThan`, `GreaterEquals`, `LessThan`, `LessEquals`), `DataType` (`Boolean`, `Int64`, `Double`, `String`, `DateTime`, `Version`), `Operand`, `MoreInfoURL`, `RemediationStrings` (at least one string for locale `en_US`; other locales optional). A policy can be up to **100 KB** and include up to **100 rules**. [DOC S-ogsl4hbo]
+- Windows PowerShell discovery scripts must end with `return $hash | ConvertTo-Json -Compress` as the last line so results are returned as a single-line compressed JSON object. [DOC S-wjex623z]
+- Discovery script limits: no larger than **1 MB** each; script output no larger than **1 MB**; run time limit **10 minutes** on Windows and macOS, **5 minutes** on Linux. [DOC S-wjex623z]
+- Discovery script output is also limited to **2048 characters** per the create-policy article; output beyond this may be truncated into invalid JSON and raise error 65009. [DOC S-yoeqntwt]
+- Custom compliance error codes: `65007` script returned failure, `65008` setting missing in the script result, `65009` invalid JSON for the discovered setting, `65010` invalid datatype for the discovered setting. [DOC S-4t5e7ocm]
+- After a device fixes a custom-compliance issue, it can take up to **8 hours** for a subsequent sync to reflect the device as compliant again. [DOC S-4t5e7ocm]
+- Users can manually trigger a re-check: Windows via the Company Portal website sync; Linux via Refresh in the Microsoft Intune app; macOS via Company Portal > Devices > Check Status. [DOC S-4t5e7ocm]
+- Custom compliance settings can be used for Conditional Access decisions the same way as built-in settings, forming a compound rule set together. [DOC S-4t5e7ocm]
 
 ### Graph API
 - `windows10CompliancePolicy` (v1.0) inherits from `deviceCompliancePolicy`; create with `POST /deviceManagement/deviceCompliancePolicies` and `@odata.type: "#microsoft.graph.windows10CompliancePolicy"`; permission (delegated work/school or application) `DeviceManagementConfiguration.ReadWrite.All`; not supported for personal Microsoft accounts. A successful create returns `201 Created`. [DOC S-o3fvldqn]

@@ -352,6 +352,7 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
   come from law-firm/community summaries (S1558, S1559) rather than the consolidated regulation text itself,
   since EUR-Lex had not yet published a consolidated version reflecting Regulation (EU) 2026/1744 at retrieval
   time — flagged as `COMMUNITY`, not `DOC`, for that reason, not because sources disagree. (topic: security/privacy-compliance)
+  - Resolved 2026-09-26: EUR-Lex now publishes Regulation (EU) 2026/1744 (S-qzdkyvqx) and a consolidated AI Act dated 2026-07-27; the deferral dates are cited as DOC S-qzdkyvqx. (topic: security/privacy-compliance)
 
 ## prior-art/drift-detection
 
@@ -424,7 +425,7 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
   remediation-timeline authority; that is now historical, not current. Both the historical BOD 22-01 timelines
   (2 weeks / 6 months) and the current pointer to BOD 26-04 are recorded in the article; BOD 26-04's own
   remediation timelines were not separately researched. (topic: security/vulnerability-prioritization)
-  - Resolved 2026-09-26: BOD 26-04 Table 1 read from the directive (S-c22robk5) and added to the article; its tiers are 3 days plus forensic triage, 7, 14, 30 and 90 days, and fix on system upgrade (the article's "6-day" tier was wrong and is corrected). The BOD 22-01 timelines stay as history. (topic: security/vulnerability-prioritization)
+  - Resolved 2026-09-26: BOD 26-04 Table 1 read from the directive (S-c22robk5) and added to the article; its tiers are 3 days plus forensic triage, 3, 14 and 60 calendar days, and fix on system upgrade (read from the Table 1 image by the census; a first attempt that day through a page summarizer gave invented 7/30/90-day rows, committed in cd847fa and replaced). The BOD 22-01 timelines stay as history. (topic: security/vulnerability-prioritization)
 
 ## intune/linux-management
 

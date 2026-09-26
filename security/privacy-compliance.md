@@ -3,7 +3,7 @@ topic: security/privacy-compliance
 priority: P2
 applies_to: "GDPR; EDPB WP248 rev.01; UODO; NIS2 (Directive + Polish KSC amendment); DORA; EU AI Act, as of 2026-09-24"
 retrieved_utc: 2026-09-24
-sources: [S870, S1542, S1549, S1550, S1551, S1552, S1553, S1554, S1555, S1556, S1557, S1558, S1559]
+sources: [S870, S1542, S-xvc5ligo, S1550, S-5jbvhlmx, S1552, S1553, S1554, S1555, S1556, S1557, S1558, S1559, S-qzdkyvqx]
 status: partial
 ---
 
@@ -25,22 +25,23 @@ conditional note; and the EU AI Act classification/timeline including the 2026 D
 - GDPR Art. 35 requires a DPIA where processing is "likely to result in a high risk to the rights and freedoms of
   natural persons," and lists automated/profiling processing and large-scale processing of special-category data
   as examples that trigger it. [DOC S870]
-- The EDPB (WP29) Guidelines on DPIA (WP248 rev.01, adopted 2017-04-04, last revised 2018-02-06) set nine criteria;
+- The WP29 Guidelines on DPIA (WP248 rev.01, adopted 2017-04-04, last revised 2017-10-04, endorsed by the EDPB 2018-05-25) set nine criteria;
   meeting two or more usually means a DPIA is required: (1) evaluation or scoring, (2) automated decision-making
   with legal or similarly significant effect, (3) systematic monitoring, (4) sensitive data or data of a highly
   personal nature, (5) data processed on a large scale, (6) matching or combining datasets, (7) data concerning
   vulnerable data subjects, (8) innovative use or application of new technological/organisational solutions,
   (9) processing that in itself "prevents data subjects from exercising a right or using a service or a contract."
-  [DOC S1549]
+  WP248 names employees among vulnerable data subjects (criterion 7). [DOC S-xvc5ligo]
 - Applied to a device-management tool that ingests workstation logs (facts only, no verdict): device logs carry
   employee-linked identifiers (criterion 4, sensitive/highly personal in an employment-monitoring context)
-  [DER S1549: device+user linkage is personal data about an identifiable employee]; pseudonymized data sent to
+  [DER S-xvc5ligo: device+user linkage is personal data about an identifiable employee]; pseudonymized data sent to
   an AI provider involves a processor outside the originating system (criterion 6 if combined with other datasets
-  at the SQL layer) [DER S1549,S870]; systematic monitoring of workstation state across an estate over time can
-  meet criterion 3 [DER S1549]. Whether two or more criteria are met in any actual deployment is a per-deployment
+  at the SQL layer) [DER S-xvc5ligo,S870]; systematic monitoring of workstation state across an estate over time can
+  meet criterion 3 [DER S-xvc5ligo]. Whether two or more criteria are met in any actual deployment is a per-deployment
   question, not decided here.
 - UODO (Urzad Ochrony Danych Osobowych) is Poland's supervisory authority under GDPR; it publishes a list of
-  processing operations subject to mandatory DPIA under Art. 35(4), in Polish. [DOC S1550][DOC S1551]
+  processing operations subject to mandatory DPIA under Art. 35(4), in Polish: an annex to the UODO President's
+  communication of 2019-06-17, published in Monitor Polski on 2019-07-08 (M.P. 2019 poz. 666). [DOC S1550, S-5jbvhlmx]
 - NIS2 (Directive (EU) 2022/2555) Art. 21(2) lists risk-management measures (a) policies on risk analysis and
   information-system security, (b) incident handling, (c) business continuity/crisis management, (d) supply-chain
   security including supplier relationships, (e) security in acquisition/development/maintenance including
@@ -67,12 +68,15 @@ conditional note; and the EU AI Act classification/timeline including the 2026 D
   general-purpose AI models from 2025-08-02; and (originally) most other obligations, including Annex III
   high-risk systems, from 2026-08-02. [DOC S1556][DOC S1557]
 - The Commission tabled a "Digital Omnibus on AI" proposal on 2025-11-19 to adjust several AI Act deadlines;
-  Council/Parliament/Commission negotiators reached a provisional agreement on 2026-05-07. [COMMUNITY S1558]
-- Under that agreement, application of the high-risk obligations for stand-alone Annex III systems is deferred to
-  2027-12-02, and for AI embedded in regulated products under Annex I to 2028-08-02. [COMMUNITY S1558][COMMUNITY S1559]
-- The Digital Omnibus on AI, Regulation (EU) 2026/1744, was published in the Official Journal 2026-07-24 and
-  entered into force 2026-07-27, six days before the original 2026-08-02 high-risk deadline it amends.
-  [COMMUNITY S1558]
+  Council/Parliament/Commission negotiators reached a provisional agreement on 2026-05-06, confirmed by Member
+  State representatives in the Council on 2026-05-13. [COMMUNITY S1558]
+- As adopted, application of the high-risk obligations (Chapter III, Sections 1-3) for systems classified under
+  Art. 6(2) and Annex III is deferred to 2027-12-02, and for systems under Art. 6(1) and Annex I (AI in regulated
+  products) to 2028-08-02. [DOC S-qzdkyvqx]
+- The Digital Omnibus on AI, Regulation (EU) 2026/1744 of 2026-07-08, was published in the Official Journal
+  2026-07-24 and entered into force on the third day after publication (2026-07-27), six days before the original
+  2026-08-02 high-risk deadline it amends; EUR-Lex lists a consolidated AI Act version dated 2026-07-27.
+  [DOC S-qzdkyvqx]
 - An internal IT-operations assistant built as MCP/CLI tooling is not itself a component the AI Act treats
   as "AI" for tier-≥2 confirmed actions it takes, when those are deterministic code with a tier enforcement
   layer; the pseudonymization/model-boundary component that interprets device data and proposes actions is the
@@ -84,11 +88,11 @@ conditional note; and the EU AI Act classification/timeline including the 2026 D
 | Instrument | Date | Status as of 2026-09-24 | Source |
 |---|---|---|---|
 | GDPR | in force since 2018-05-25 | in force | S870 |
-| EDPB WP248 rev.01 | adopted 2017-04-04, revised 2018-02-06 | current guidance | S1549 |
+| WP29 WP248 rev.01 (EDPB-endorsed) | adopted 2017-04-04, revised 2017-10-04, endorsed 2018-05-25 | current guidance | S-xvc5ligo |
 | NIS2 Directive | OJ 2022-12-27 | in force; national transposition ongoing | S1552 |
 | Poland KSC amendment | Dz.U. 2026 poz. 252 | in force 2026-04-03; registration due 2026-10-03 | S1553, S1554 |
 | DORA | OJ 2022-12-27 | in force 2025-01-17 (financial entities only) | S1555 |
-| EU AI Act | OJ 2024-07-12 | staggered application; high-risk deferred to 2027-12-02 / 2028-08-02 | S1556, S1558 |
+| EU AI Act | OJ 2024-07-12 | staggered application; high-risk deferred to 2027-12-02 / 2028-08-02 by Reg. (EU) 2026/1744 | S1556, S-qzdkyvqx |
 
 ## Examples
 Device logs for `PL-LT-00123`, linked to `jan.kowalski`, illustrate the employee-identifier criterion; no real

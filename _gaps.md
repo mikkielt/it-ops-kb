@@ -618,6 +618,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
 - MSRC CVRF API authentication: the Swagger definition lists no `api-key` header, but whether the interactive
   portal or a production integration still requires a subscription key was not confirmed (2026-09-26).
   (topic: security/vulnerability-prioritization)
+- Whether Azure Linux / Azure Container Linux advisories are published as VEX and also surfaced through the MSRC CVRF API: the MSRC Security Updates API repository (S-n7obrzja) does not say so (re-read 2026-09-26); needs an MSRC or Azure Linux source. (topic: security/vulnerability-prioritization)
 
 ## agents/agent-evaluation
 
@@ -743,3 +744,11 @@ Still open: (topic: auth/configmgr-rbac-auth)
 - Whether GPMC/the Group Policy Editor chooses the Central Store over the local `C:\Windows\PolicyDefinitions` store by comparing file versions, or simply prefers the Central Store whenever present (subject only to `EnableLocalStoreOverride`), is not stated on `create-and-manage-central-store` or `group-policy-settings-show-as-extra-registry-settings`. Searched Microsoft Learn for "GPMC central store versus local store precedence"; no page found describing a version-comparison step. (topic: gpo/admx-central-store)
 - Whether SYSVOL/Central Store replication specifically uses DFSR (versus legacy FRS on domains not yet migrated) is not stated on any fetched page for this topic; the DFSR mechanism is inferred, not confirmed, for this article. Searched Microsoft Learn for "Central Store DFSR replication SYSVOL"; no page directly names the replication engine in the Central Store context. (topic: gpo/admx-central-store)
 - **Closed 2026-09-26:** no version comparison; `EnableLocalStoreOverride` 0 (default) uses the SYSVOL store when present, 1 the local one (S-xtwd545o); SYSVOL replicates with DFSR at the 2008+ domain functional level, FRS deprecated and blocked for new DCs from Windows Server 2019 (S-6glsfens, S-gvgapsup). (topic: gpo/admx-central-store)
+
+## arch/kerberos-linux-containers
+
+- **Whether `requests-gssapi` (or python-gssapi underneath) acquires credentials from a client keytab on its own (MIT `KRB5_CLIENT_KTNAME` / `KRB5_KTNAME`) without a prior `kinit`.** The kb earlier said it does and quoted 'having a keytab is sufficient'. The requests-gssapi README and repo (HEAD 2025-10-16, S1604) contain no keytab text and require a TGT already in the ccache. Verify against the python-gssapi / MIT Kerberos client-keytab docs or in a lab; until then, run `kinit -kt` first. (topic: arch/kerberos-linux-containers)
+
+## auth/delegation-kcd-obo
+
+- **Interim Entra ID pattern for MCP Enterprise-Managed Authorization (ID-JAG)**: the kb said Microsoft shows Entra ID + Azure App Service as the authorization boundary in front of MCP servers, but S1300 (the only source) does not say this; the claim is now [UNK]. Needs a Microsoft Learn or modelcontextprotocol.io source on Entra support for ID-JAG, or on the recommended interim pattern. (topic: auth/delegation-kcd-obo)

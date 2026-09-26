@@ -16,18 +16,18 @@ a2100d430a20,Intune Connector for AD dependencies
 daf3232708dc,Autopilot BIOS fields captured
 daf3232708dc,What BIOS information does Autopilot record?
 daf3232708dc,Autopilot hardware hash composition
-54a9142d191f,when to deregister Autopilot devices
-54a9142d191f,Should devices be deregistered when they're repaired or end of life?
-54a9142d191f,device deregistration policy Autopilot
-a59397477901,Autopilot device deregistration order
-a59397477901,Do you delete from Intune or Autopilot first?
-a59397477901,proper device removal from Autopilot steps
-7702b51edff7,Entra joined deregistration cleanup
-7702b51edff7,Should the AD computer object be deleted after deregistering a hybrid-joined device?
-7702b51edff7,post-deregistration device object removal hybrid join
-078df9305980,Entra device object removal after deregistration
-078df9305980,When does the Entra device get removed after Autopilot deregistration?
-078df9305980,MDM enrollment and device object cleanup
+53cd7ea15c7c,when to deregister Autopilot devices
+53cd7ea15c7c,Should devices be deregistered when they're repaired or end of life?
+53cd7ea15c7c,device deregistration policy Autopilot
+4790fbe9e996,Autopilot device deregistration order
+4790fbe9e996,Do you delete from Intune or Autopilot first?
+4790fbe9e996,proper device removal from Autopilot steps
+92f079f44719,Entra joined deregistration cleanup
+92f079f44719,Should the AD computer object be deleted after deregistering a hybrid-joined device?
+92f079f44719,post-deregistration device object removal hybrid join
+f010b0dd5a3a,Entra device object removal after deregistration
+f010b0dd5a3a,When does the Entra device get removed after Autopilot deregistration?
+f010b0dd5a3a,MDM enrollment and device object cleanup
 3acbd2e2f91d,Graph API Autopilot deregister endpoint
 3acbd2e2f91d,How do you deregister a device through Microsoft Graph?
 3acbd2e2f91d,windowsAutopilotDeviceIdentities DELETE endpoint
@@ -179,9 +179,9 @@ e98c0797b1b3,does Intune enrollment count towards co-management policy deploymen
 6786b3191568,autopilot wevtutil channel
 828f45b635b4,hybrid join failure event ids
 828f45b635b4,Where are hybrid join error logs located in Event Viewer?
-6729ebdf98b0,User Device Registration event log channel
-6729ebdf98b0,What is the full event log channel name for hybrid join?
-6729ebdf98b0,device registration diagnostic events wevtutil
+6b63f3ec477b,User Device Registration event log channel
+6b63f3ec477b,What is the full event log channel name for hybrid join?
+6b63f3ec477b,device registration diagnostic events wevtutil
 82c0d62ece42,PRT acquisition event ids 1006 1007
 82c0d62ece42,where are CloudAP diagnostic logs stored
 0918b703ccb6,ESP provisioning event log file paths
@@ -209,8 +209,8 @@ f26340f9f752,kerberos events system log
 c4a57dbcdc7e,CBS DISM log file paths
 c4a57dbcdc7e,system update service logs windows
 3db908a5b771,windows setup logs panther
-1a7965ab695f,IntuneManagementExtension log location
-1a7965ab695f,Where are the Intune Management Extension logs?
+7c936563010c,IntuneManagementExtension log location
+7c936563010c,Where are the Intune Management Extension logs?
 5a40ec5a1f4e,tenant attach logs configmgr
 5e1f7ab5865a,DeviceManagement-Enterprise-Diagnostics-Provider Operational channel
 5e1f7ab5865a,Is there an Operational channel for Device Management diagnostics?
@@ -288,8 +288,8 @@ ae893edc1e2f,compressed diagnostics file size maximum
 6899b02a250d,collect client logs permission configmgr
 6899b02a250d,Which RBAC role can collect ConfigMgr diagnostic logs?
 6899b02a250d,Notify resource permission
-36e07a5b1435,ConfigMgr 1912 technical preview permissions
-36e07a5b1435,Full Administrator Operations Administrator
+5259613c98b0,ConfigMgr 1912 technical preview permissions
+5259613c98b0,Full Administrator Operations Administrator
 9c4168f8e946,diagnostic files cleanup configmgr
 9c4168f8e946,How long are collected diagnostic files retained in ConfigMgr?
 9c4168f8e946,delete aged files site maintenance task
@@ -505,9 +505,9 @@ d30c42262cf4,"LDAP filter special characters: asterisk, parenthesis, backslash, 
 03c5e50a4eb0,LDAP filter objectGUID
 03c5e50a4eb0,How do you filter by GUID in LDAP search?
 03c5e50a4eb0,objectGUID binary data representation in filter expressions
-489a1fd829cb,Anthropic prompt caching architecture
-489a1fd829cb,How does Anthropic's prompt caching store and invalidate cached content?
-489a1fd829cb,"Claude prompt cache: cache_control breakpoints, TTL, pricing structure"
+a3d2c1fb8904,Anthropic prompt caching architecture
+a3d2c1fb8904,How does Anthropic's prompt caching store and invalidate cached content?
+a3d2c1fb8904,"Claude prompt cache: cache_control breakpoints, TTL, pricing structure"
 33da81b5cafd,cache_control breakpoints limit
 33da81b5cafd,How many cache breakpoints can be used in a single request?
 33da81b5cafd,prompt cache: maximum number of explicit cache boundaries
@@ -553,12 +553,12 @@ f4476da2f97e,prompt cache impact when MCP servers added or reconfigured
 e90af99d0253,cache metrics and diagnostics
 e90af99d0253,What built-in tools show cache hit rate and diagnostics?
 e90af99d0253,"Claude Code /usage, OTel export for cache monitoring"
-775919aea31d,OpenAI GPT prompt caching
-775919aea31d,How is prompt caching different on OpenAI models?
-775919aea31d,"GPT-5.6 cache: minimum tokens, discount, cross-organization isolation"
-b69485a497ea,OpenAI prompt cache TTL
-b69485a497ea,What cache retention options does OpenAI support?
-b69485a497ea,GPT-5.6+ prompt_cache_options.ttl and prompt_cache_retention
+a8f3dcbdb85e,OpenAI GPT prompt caching
+a8f3dcbdb85e,How is prompt caching different on OpenAI models?
+a8f3dcbdb85e,"GPT-5.6 cache: minimum tokens, discount, cross-organization isolation"
+763859936dd3,OpenAI prompt cache TTL
+763859936dd3,What cache retention options does OpenAI support?
+763859936dd3,GPT-5.6+ prompt_cache_options.ttl and prompt_cache_retention
 86411328ff25,Azure OpenAI prompt cache
 86411328ff25,How does prompt caching work on Azure OpenAI?
 86411328ff25,Microsoft Foundry Models: prompt cache on Standard and Provisioned
@@ -757,8 +757,8 @@ e45aa7fd809f,What reserved keys support distributed tracing?
 26c17b6e8adc,ConfigMgr adminservice.log SMS Provider REST
 26c17b6e8adc,Where are REST API calls logged?
 26c17b6e8adc,What log tracks administration service?
-beff1d314546,ConfigMgr CMG logs Azure storage sync delay
-beff1d314546,How often are CMG logs synchronized?
+324ecda5b9ec,ConfigMgr CMG logs Azure storage sync delay
+324ecda5b9ec,How often are CMG logs synchronized?
 f544812c9455,WSUS log location
 f544812c9455,Where are WSUS server logs stored?
 f544812c9455,What is the path to Windows Update Services log files?
@@ -832,9 +832,9 @@ a752ffc9b9d0,What was the comment deadline for pseudonymisation guidance?
 13a076753a3d,EDPB pseudonymisation work status
 13a076753a3d,Has EDPB published final pseudonymisation guidelines?
 13a076753a3d,What pseudonymisation resources does EDPB offer?
-af95a22e1438,EDPB Guidelines 01/2025 final version
-af95a22e1438,Is a final version of EDPB Guidelines 01/2025 available?
-af95a22e1438,Did EDPB release pseudonymisation guidance after consultation?
+88548822bd23,EDPB Guidelines 01/2025 final version
+88548822bd23,Is a final version of EDPB Guidelines 01/2025 available?
+88548822bd23,Did EDPB release pseudonymisation guidance after consultation?
 0ff3c43a5ee4,Court of Justice pseudonymisation case
 0ff3c43a5ee4,What did the Court of Justice decide about pseudonymisation?
 0ff3c43a5ee4,What was the outcome of case C-413/23 P?

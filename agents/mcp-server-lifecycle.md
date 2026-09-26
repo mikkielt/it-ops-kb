@@ -34,7 +34,9 @@ the spec's own SHOULD-level validation guidance.
   sanitize outputs; clients SHOULD prompt for confirmation on sensitive operations, show tool inputs to the user
   before calling, validate results against `outputSchema`, implement call timeouts, and log tool usage for audit.
   [DOC S2135]
-- The MCP Registry (`github.com/modelcontextprotocol/registry`, MIT, community Registry Working Group) is a
+- The MCP Registry (`github.com/modelcontextprotocol/registry`, community Registry Working Group; licence in
+  transition from MIT to Apache-2.0: new code Apache-2.0, documentation CC-BY-4.0, contributions without
+  relicensing consent stay MIT) is a
   directory of MCP servers analogous to a package registry; a `server.json` manifest (fields at least `name`,
   `version`, `packages`, `remotes`) is the unit of registration. It launched in preview 2025-09-08 and entered a
   v0.1 API freeze (no breaking changes) on 2025-10-24; it is not yet GA. The exact `server.json` schema (required

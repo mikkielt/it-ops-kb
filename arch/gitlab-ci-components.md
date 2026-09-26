@@ -33,9 +33,13 @@ a release tag pattern (e.g. `cfg-*`) fits the "release on protected tag" model c
   directly. [DOC S1700]
 - The CI/CD Catalog became generally available in GitLab 17.0 (2024-05-16), for GitLab.com,
   GitLab Dedicated and GitLab Self-Managed alike — no separate self-managed lag. [DOC S1702][DOC S1700]
-- Only public or internal projects are discoverable in the CI/CD Catalog; a private source project's
-  component is visible only to users with at least Guest role on that project (usable, but not
-  Catalog-discoverable). [COMMUNITY S1704]
+- Catalog visibility follows the source project's visibility: public components are visible to
+  anyone with access to the instance, internal ones to signed-in users, and private ones only to
+  users with at least the Guest role on the source project; *using* a component additionally
+  requires at least the Reporter role. [DOC S1700]
+- A community forum thread reports the same split in practice: a Guest on a private component
+  project sees the component in the Catalog but gets a permission error when a pipeline includes
+  it, while Developer works. [COMMUNITY S1704]
 - `include: - project: '<group/project>' file: '/path/to/file.yml'` imports a plain CI/CD config file
   from another project's repository; this is a distinct mechanism from `include: component:` — it has
   no `spec:inputs`, no semantic-version pin, and no Catalog listing. [DOC S1512]

@@ -24,19 +24,19 @@ OAuth.
   in a signed cookie. [DOC S1731]
 - GitLab Pages can be built and published from any project via `.gitlab-ci.yml`, including one where
   the docs source lives in a subdirectory (e.g. `docs/`) of a repository that also holds application
-  code — the Pages job's `artifacts.paths` just needs to point at the built `public/` directory,
-  wherever in the repo the source came from. [DOC S1730][DOC S1733]
+  code. The job is marked with `pages: true` (publishes the `public` directory) or `pages.publish:
+  <dir>`; since GitLab 17.10 that directory is appended to `artifacts:paths` automatically, and
+  naming the job `pages` to mark it is deprecated. [DOC S1730][DOC S1733]
 - A dedicated docs repository is equally supported; GitLab Pages has no requirement that the
   publishing project be docs-only. [DOC S1730]
 
 ## Reference
 ```yaml
-pages:
+docs-pages:
   stage: docs
   script:
     - mkdocs build --strict --site-dir public
-  artifacts:
-    paths: [public]
+  pages: true  # publishes public/; GitLab 17.10+ adds it to artifacts:paths
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
 ```

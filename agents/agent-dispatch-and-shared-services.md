@@ -45,15 +45,16 @@ topic 9 (`agents-a2a-cache`) covers it; A2A is named below only as one transport
   conversation with search results, logs, or file contents you won't reference again." [DOC S2083]
 - The same docs give the converse — keep it in-process/main-context — when: the task needs frequent
   back-and-forth or multiple feedback rounds; several phases share significant context (e.g.
-  plan→implement→test); the change is small and targeted; or latency matters, because "a non-fork
-  subagent starts fresh and may need time to gather context." [DOC S2083]
+  plan→implement→test); the change is small and targeted; or latency matters, because "a subagent that isn't a
+  fork starts fresh and may need time to gather context." [DOC S2083]
 - A **fork** (Claude Code) is the one dispatch form that keeps the full parent context/history instead of
   starting isolated — the opposite tradeoff from a normal subagent or a connected agent, which both start
   with a declared, narrower context. [DOC S2083]
 - Tool-permission restriction is the concrete mechanism Claude Code gives for bounding a dispatched
   subagent's blast radius: per-subagent `tools:`/`disallowedTools:`/`permissionMode:` frontmatter, and a
-  smaller default tool set for background subagents (MCP tools and interactive-only tools such as
-  `AskUserQuestion` are removed by default). [DOC S2083]
+  tool filter that removes a short list (including `AskUserQuestion`, `EnterPlanMode` and `Workflow`) from
+  every non-fork subagent, and a smaller built-in tool set for background subagents (the default), which
+  still keep every MCP tool; forks receive the main conversation's exact tool pool. [DOC S2083]
 - MCP's 2026-07-28 specification revision makes a **remote** MCP server "no different from any other
   HTTP workload" (stateless core, no session/handshake, `server/discover` for capability discovery) —
   the concrete mechanism by which "dispatch to another service" and "dispatch to another agent" converge

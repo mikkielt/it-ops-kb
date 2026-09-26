@@ -3,7 +3,7 @@ topic: mecm/collect-client-logs
 priority: P2
 applies_to: "ConfigMgr current branch 2603 (memdocs 4b5429df)"
 retrieved_utc: 2026-09-23
-sources: [S-hmjlvsck, S-a2vstihu, S-lsjjopsz, S224, S-mt7k74n7, S-iqjy5rwm]
+sources: [S-hmjlvsck, S-a2vstihu, S-lsjjopsz, S-pzvndq5z, S-mt7k74n7, S-iqjy5rwm]
 status: partial
 ---
 
@@ -22,7 +22,7 @@ Cleanup: "Delete Aged Collected Diagnostic Files" (default 14 days, 2010+).
 - Storage: site server `Inboxes\sinv.box\FileCol`; stored per software inventory file collection settings; "no defined limit to the number of versions". [DOC S-hmjlvsck,S-lsjjopsz]
 - Retrieval: console Devices > device > Start > Resource Explorer > Diagnostic Files; name format `Support_<guid>.zip`; actions Open Support Center, Copy, View file, Save, Export, Refresh, Properties (2002+). [DOC S-a2vstihu]
 - Permission: **Notify resource**; built-in Full Administrator and Infrastructure Administrator have it. [DOC S-hmjlvsck]
-- The 1912 technical preview note named Full Administrator and Operations Administrator instead. [DOC S224]
+- The 1912 technical preview note named Full Administrator and Operations Administrator instead. [DOC S-pzvndq5z]
 - Maintenance task **Delete Aged Collected Diagnostic Files** (2010+, enabled on primary site, default 14 days) deletes them; 2006 and earlier used Delete Aged Collected Files. [DOC S-lsjjopsz]
 - Collected files in general: SMS Provider class `SMS_G_System_CollectedFile` (CollectionDate, FileData, FileName, FilePath, FileSize, LocalFilePath, ResourceID, RevisionID) and SQL view `v_GS_CollectedFile`. [DOC S-mt7k74n7,S-iqjy5rwm]
 - Whether diagnostic `Support_*.zip` files appear in `SMS_G_System_CollectedFile` / `v_GS_CollectedFile` or in AdminService is not documented. [UNK]

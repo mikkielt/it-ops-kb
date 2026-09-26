@@ -3,7 +3,7 @@ topic: agents/shared-ner-service
 priority: P1
 applies_to: "Presidio 2.2.364 (main, data-privacy-stack), Azure AI Language PII detection (Foundry Tools, 2026-08 docs), Amazon Comprehend, Google Sensitive Data Protection, GLiNER ONNX exports"
 retrieved_utc: 2026-09-25
-sources: [S2085, S2086, S2087, S2088, S2089, S2090, S2091, S2092, S2093, S2094, S2095, S2096, S2097, S2098, S2099, S2100, S2101, S2102, S2103, S2104, S2105, S2106, S2107, S2108, S2111, S2112]
+sources: [S2086, S2087, S2088, S2090, S2091, S2092, S2093, S2094, S2095, S2096, S2097, S2098, S2099, S2100, S2101, S2102, S2105, S2106, S2107, S2108, S2111, S2112, S-tks3v5p5, S-g33kybfp, S-gpnrqpjt, S-hocpkynn]
 status: partial
 ---
 
@@ -25,20 +25,27 @@ choice (Presidio + spaCy `en_core_web_lg`, in-process) is not itself re-argued h
 - **Presidio own service images.** New Presidio container releases publish to
   `ghcr.io/data-privacy-stack/presidio-analyzer` / `presidio-anonymizer`; the legacy
   `mcr.microsoft.com/presidio-*` images are no longer updated, so a consumer pinning the old registry
-  path is pinning a frozen image. [DOC S2085, S2086, S2087]
+  path is pinning a frozen image. The Presidio project is moving from Microsoft to the community-governed
+  Data Privacy Stack organization (`github.com/data-privacy-stack/presidio`); the Kubernetes Helm sample
+  pulls the default images from `ghcr.io/data-privacy-stack`. [DOC S2086, S2087, S-g33kybfp] The sample and
+  evaluation pages cited here now live under `presidio.dataprivacystack.org`; their old
+  `microsoft.github.io/presidio/...` paths returned 404 on 2026-09-26. [DER S-tks3v5p5, S-g33kybfp, S-gpnrqpjt: direct fetch of old and new urls]
+- Presidio's Docker sample exposes each service as a Flask REST endpoint: the analyzer on port 5002
+  (`POST /analyze`) and the anonymizer on port 5001 (`POST /anonymize`). [DOC S-tks3v5p5]
 - Presidio's documented deployment targets for the analyzer/anonymizer REST services are Docker Compose,
   Kubernetes/AKS, and Azure App Service; the App Service sample is also what the Presidio team uses for
-  its own demo site and dev environment. [DOC S2086, S2088, S2089]
-- Presidio's Kubernetes sample can be installed locally with KIND or as a service on AKS; the fetched
-  guidance for high-throughput workloads is qualitative only — "set resource limits and horizontal pod
-  autoscaling" — with no published requests/sec or p95 latency figure. [DOC S2089 — no numeric throughput
+  its own demo site and dev environment. [DOC S2086, S2088, S-g33kybfp]
+- Presidio's Kubernetes sample installs locally with KIND or as a Helm-deployed service on Kubernetes 1.18+
+  with RBAC (AKS enables RBAC by default), with an NGINX ingress by default; its only sizing guidance is a
+  note to check the pods' CPU and memory requirements and plan the cluster accordingly — no autoscaling
+  guidance and no published requests/sec or p95 latency figure. [DOC S-g33kybfp — no numeric throughput
   found, see `gaps.md`]
 - Presidio documents a batch path distinct from its REST service: a Spark/Azure Data Factory sample that
   anonymizes files at rest in Azure Blob Storage for large-dataset (Databricks-scale) jobs, i.e. batch
   and the interactive REST endpoint are two separate documented deployment shapes, not one endpoint doing
   both. [DOC S2090]
 - Presidio and its images are MIT-licensed (`Presidio Contributors`), so a shared internal deployment
-  carries no per-call licence fee; the operating cost is host/cluster compute only. [DOC S2085, S2086]
+  carries no per-call licence fee; the operating cost is host/cluster compute only. [DOC S2086]
 - **Azure AI Language PII containers.** The on-premises container image is
   `mcr.microsoft.com/azure-cognitive-services/textanalytics/pii`; minimum host spec is 1 core/2 GB, the
   recommended spec is 4 cores/8 GB, and Microsoft recommends AVX-512 for best performance and accuracy —
@@ -95,25 +102,27 @@ choice (Presidio + spaCy `en_core_web_lg`, in-process) is not itself re-argued h
   the sources checked; it is presented in vendor docs as a Google Cloud-hosted API only. [UNK — 3 search
   attempts made, no container doc found]
 - **GLiNER serving.** Community ONNX exports of GLiNER (e.g. `onnx-community/gliner_multi-v2.1`,
-  `SemplificaAI/gliner2-multi-v1-onnx`) exist on Hugging Face; a fused ("v2") export variant reportedly
+  `jugaadsrl/gliner2-multi-v1-onnx`, formerly `SemplificaAI/gliner2-multi-v1-onnx`, a fragmented export for the
+  `gliner2-rs` Rust engine) exist on Hugging Face; a fused ("v2") export variant reportedly
   cuts inference latency by roughly 30% on discrete GPUs by keeping tensors resident in device memory via
-  ONNX Runtime IO binding — a community-reported, not vendor-benchmarked, figure. [COMMUNITY S2102, S2103]
+  ONNX Runtime IO binding — a community-reported, not vendor-benchmarked, figure. [COMMUNITY S2102, S-hocpkynn]
 - No first-party GLiNER "service" or REST deployment image (analogous to Presidio's analyzer/anonymizer
   containers) was found; GLiNER serving is assembled by the deployer from a model export plus a generic
   inference runtime (ONNX Runtime, Rust engine, etc.), unlike Presidio or Azure's pre-built containers.
-  [DER from S2102, S2103: only model artifacts found, no first-party server image]
+  [DER from S2102, S-hocpkynn: only model artifacts found, no first-party server image]
 - **Model/version pinning across consumers.** Presidio's own evaluation tooling
   (`presidio-evaluator`/`presidio-research`, MIT) computes precision/recall/F-β for a recognizer or NER
   model and is the documented method for comparing detection quality between versions or between
   deployments, but the fetched docs describe single-run evaluation, not a continuous drift-monitoring
-  pipeline between multiple independent consumers of one shared endpoint. [DOC S2104, S2105, S2111]
+  pipeline between multiple independent consumers of one shared endpoint; the evaluation page recommends
+  F-beta with β=2 because recall usually matters more than precision in PII detection. [DOC S-gpnrqpjt, S2105, S2111]
 
 ## Reference
 | Option | On-prem/offline container | Fail mode on connectivity loss | Per-call payload limit | Licence |
 |---|---|---|---|---|
 | Presidio (own images) | yes, no metering call | n/a (self-hosted, no phone-home) | not published | MIT |
 | Azure AI Language PII container | yes, needs billing endpoint (or approved disconnected licence) | stops serving after ~10 failed 10-15 min retries | 5,120 chars/doc, 10 docs/call | commercial, metered |
-| Amazon Comprehend | no (API only) | n/a (cloud API) | not found (min 300-char billing unit) | commercial, metered |
+| Amazon Comprehend | no (API only) | n/a (cloud API) | 100 KB of UTF-8 text per real-time call (min 300-char billing unit) [DOC S2097, S2098, S2099] | commercial, metered |
 | Google Sensitive Data Protection | not found | n/a (cloud API) | not found | commercial, metered (per GB) |
 | GLiNER (ONNX export) | yes, self-hosted, any runtime | n/a (self-hosted) | not published (deployer-defined) | model-card dependent |
 

@@ -46,9 +46,11 @@ Windows.
   membership loss / group deletion; those remain [UNK] pending a page that documents MS-GKDI's server
   requirements explicitly. [UNK]
 - **Python access to DPAPI-NG (QA11):** no first-party (Microsoft) Python binding was found. A
-  community package, `dpapi-ng` (jborean93), implements the MS-GKDI client protocol in pure Python and
-  is explicitly built to decrypt DPAPI-NG blobs **from non-Windows platforms** by talking GKDI over RPC to
-  a DC; it is unofficial and not audited by Microsoft. [COMMUNITY S1349] Using it from a `client` instance
+  community package, `dpapi-ng` (jborean93, MIT), implements the MS-GKDI protocol in Python and is built
+  to encrypt and decrypt DPAPI-NG blobs **on non-Windows hosts** (replicating `NCryptProtectSecret` /
+  `NCryptUnprotectSecret`), either with an offline copy of the domain root key or with the supplied user's
+  credentials over RPC to a DC; only the `SID` protection descriptor is supported. It is unofficial and not
+  audited by Microsoft. [COMMUNITY S1349] Using it from a `client` instance
   (which does run on Windows) would still need to call into CNG (`NCryptProtectSecret`/
   `NCryptUnprotectSecret`) for the encrypt/decrypt calls themselves, which needs either `ctypes`/`cffi`
   bindings (not pure Python) or the community RPC-based library. [DER S1342,S1349]

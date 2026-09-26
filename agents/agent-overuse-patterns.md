@@ -1,9 +1,9 @@
 ---
 topic: agents/agent-overuse-patterns
 priority: P1
-applies_to: "Anthropic/OpenAI/Google/Microsoft agent guidance (2025-2026 docs), Thoughtworks Technology Radar Vol 34 (2026-04), jq 1.8, Renovate (docs 44.115.4), conventional-commits v1.0.0, semantic-release, LSP 3.18, DSC 3.3.0, Presidio 2.2.364"
+applies_to: "Anthropic/OpenAI/Google/Microsoft agent guidance (2025-2026 docs), Thoughtworks Technology Radar Vol 34 (2026-04), jq 1.8, Renovate (docs 44.115.10), conventional-commits v1.0.0, semantic-release, LSP 3.18, DSC 3.3.0, Presidio 2.2.364"
 retrieved_utc: 2026-09-25
-sources: [S2160, S2161, S2162, S2163, S2164, S2165, S2166, S2167, S2168, S2169, S2170, S2171, S2172, S2173, S2174, S2175, S150, S154, S825, S-2z2zfj3l, S-sxtmngif, S317, S900, S1920, S1924, S1925, S1935, S1936]
+sources: [S2160, S2161, S2162, S2163, S2164, S2165, S2166, S2167, S2168, S2169, S2170, S2171, S2172, S2173, S2174, S2175, S150, S154, S825, S-2z2zfj3l, S-sxtmngif, S317, S-t5dhva6p, S900, S1920, S1924, S1925, S1935, S1936]
 status: partial
 ---
 
@@ -45,11 +45,12 @@ alongside the deterministic tool that already exists for them.
   over flexibility, as reasons to avoid an agent. [DOC S2160, S2161 — note: content not independently
   re-verified by direct WebFetch; see `gaps.md`]
 - Thoughtworks Technology Radar Volume 34 (April 2026) places "Agent Skills" in **Trial** ("worth
-  pursuing") as a way to modularize context, while separately warning that "permission-hungry agents"
-  seeking maximum access to private data/systems make zero-trust, sandboxed execution and defense-in-depth
-  "non-negotiable table stakes," and that teams are finding agent workflows fail in production when agent
-  durability is ignored — an implicit argument for keeping agent scope narrow rather than routing whole
-  workflows through one. [DOC S2164, S2165]
+  pursuing") as a way to modularize context. Its "permission-hungry agents" theme says zero trust, least
+  privilege, model improvements and defense in depth "are now table stakes" and expects safe agent systems to
+  be "pipelines of more constrained agents" rather than monolithic agents; sandboxed execution for coding
+  agents is a separate Trial blip, and "ignoring durability in agent workflows" is a Caution blip (systems
+  that work in development but fail in production) — an implicit argument for keeping agent scope narrow
+  rather than routing whole workflows through one. [DOC S2164, S2165]
 - Independent cost/latency figures (none vendor-published as a general benchmark): a high-volume pipeline
   run 50,000×/day at 3,000 tokens/run costs roughly $1.50/day at current frontier prices, rising to $15/day
   at 30,000 tokens/run — a 10x token increase producing a 10x cost increase, i.e. cost scales linearly with
@@ -79,8 +80,8 @@ alongside the deterministic tool that already exists for them.
 - jq (current: 1.8) is "a lightweight and flexible command-line JSON processor" whose programs are
   composable filters over JSON — the deterministic tool for exactly the extraction/reshaping tasks teams
   otherwise hand an LLM prompt. [DOC S2166]
-- Renovate (docs banner version 44.115.4) automates "pull requests to update your dependencies and lock
-  files" from declared configuration/presets, with no LLM/AI step named anywhere in its own docs. [DOC
+- Renovate (docs banner version 44.115.10 on 2026-09-26) automates "pull requests to update your
+  dependencies and lock files" from declared configuration/presets, with no LLM/AI step named anywhere in its own docs. [DOC
   S2167]
 - GitHub Dependabot version updates are "automated pull requests that keep your dependencies updated,"
   driven by a `dependabot.yml` schedule and semantic-versioning rules, with a default 3-day cooldown for
@@ -98,7 +99,7 @@ alongside the deterministic tool that already exists for them.
   tools for Windows endpoint management: DSC's `test` operation has a published output schema
   (`schemas/v3/bundled/outputs/{config,resource}/test.json`) [DOC S150, S154 — reused from `dsc/`,
   part `dsc`], and ConfigMgr's CMPivot query surface (entities, `CcmLog()`, `WinEvent()`) is the
-  documented structured-query path for live device state. [DOC S-2z2zfj3l, S-sxtmngif, S317 — reused from
+  documented structured-query path for live device state. [DOC S-2z2zfj3l, S-sxtmngif, S-t5dhva6p — reused from
   `mecm/cmpivot.md`, part `mecm`]
 - Presidio's `PatternRecognizer` (2.2.364) matches entities by regex plus context words and deny/allow
   lists — the documented deterministic alternative to a free-text NER call for any entity with a fixed
@@ -141,7 +142,7 @@ alongside the deterministic tool that already exists for them.
 | OpenAI | agent only for complex judgement, unmaintainable rulesets, unstructured input | S1924 |
 | Microsoft (Azure Architecture Center) | "does it need NL understanding or dynamic generation? If no, stop — deterministic system" | S1925 |
 | Google (Cloud Architecture Center / Agents Companion) | summarization/translation/classification often don't need an agent; deterministic-and-stable logic doesn't either | S2160, S2161 |
-| Thoughtworks (Radar Vol 34) | narrow agent scope (Agent Skills, Trial); zero-trust/sandboxing as table stakes against "permission-hungry agents" | S2164, S2165 |
+| Thoughtworks (Radar Vol 34) | narrow agent scope (Agent Skills, Trial); zero trust, least privilege and defense in depth as table stakes for "permission-hungry agents"; sandboxed execution a separate Trial blip | S2164, S2165 |
 
 | Published number | Value | Source | Tag |
 |---|---|---|---|

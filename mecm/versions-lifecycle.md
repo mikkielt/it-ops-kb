@@ -3,7 +3,7 @@ topic: mecm/versions-lifecycle
 priority: P0
 applies_to: "ConfigMgr current branch 2603 (latest as of memdocs 4b5429df, 2026-09-02)"
 retrieved_utc: 2026-09-23
-sources: [S-334svlym, S-qfo4gvbb, S-qhlzdpie, S-ebuvm65r, S220]
+sources: [S-334svlym, S-qfo4gvbb, S-qhlzdpie, S-ebuvm65r, S-actyzzlw]
 status: complete
 ---
 
@@ -29,7 +29,7 @@ validation (MISE) where Entra auth is used.
 - 2603: MP uses MISE for Entra token validation, requires internet access (login.microsoftonline.com, sts.windows.net) in system context when Entra-joined devices/users are supported (typically CMG); pure on-prem AD environments unaffected. [DOC S-qhlzdpie]
 - 2603 deprecations: an internal service for device compliance checks deprecated October 2026 (co-managed with Compliance workload in Intune); Asset Intelligence sync point removed from UI; Software Update Health Troubleshooting Dashboard hidden. [DOC S-qhlzdpie]
 - 2603 fixes include: CMPivot via AdminService no longer fails with 400 Bad Request (KustoParser); Run Script Boolean default True checkbox now matches value passed. [DOC S-ebuvm65r]
-- KB38982839 (2026-08): security update for SMS Provider and AdminService for 2603 (and 2509/2503 with rollups); requires site reset. [DOC S220]
+- KB38982839 (2026-08): security update for SMS Provider and AdminService for 2603 (and 2509/2503 with rollups); requires site reset; since August 2026 marked superseded by KB39398030. [DOC S-actyzzlw]
 
 ## Reference
 | Version | Build | Available | Support end | Baseline |

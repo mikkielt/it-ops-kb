@@ -4,16 +4,16 @@ Microsoft-Windows-DeviceManagement-Enterprise-Diagnostics-Provider/Debug,event_c
 %windir%\System32\winevt\Logs\Microsoft-Windows-DeviceManagement-Enterprise-Diagnostics-Provider%4Admin.evtx,file,Intune,Windows MDM client,On-disk file of the MDM Admin channel (ESP / runtime provisioning troubleshooting),S618
 "mdmdiagnosticstool.exe -area ""DeviceEnrollment;DeviceProvisioning;Autopilot"" -zip ""c:\users\public\documents\MDMDiagReport.zip""",command,Intune,MDM diagnostics tool,"Collect MDM diagnostic zip (enrollment, provisioning, Autopilot)",S617
 C:\Users\Public\Documents\MDMDiagnostics,file,Intune,MDM diagnostics report,Output folder of Settings > Access work or school > Create report,S617
-C:\ProgramData\Microsoft\IntuneManagementExtension\Logs,file,Intune,Intune Management Extension,"IME logs: IntuneManagementExtension.log, AgentExecutor.log, HealthScripts.log, AppWorkload.log and others (see intune/ime-logs.md)",S611
-C:\ProgramData\Microsoft\IntuneManagementExtension\Logs\HealthScripts.log,file,Intune,Intune Management Extension,Remediations run on a schedule,S611
-C:\ProgramData\Microsoft\IntuneManagementExtension\Logs\AgentExecutor.log,file,Intune,Intune Management Extension,PowerShell script executions deployed by Intune,S611
+C:\ProgramData\Microsoft\IntuneManagementExtension\Logs,file,Intune,Intune Management Extension,"IME logs: IntuneManagementExtension.log, AgentExecutor.log, HealthScripts.log, AppWorkload.log and others (see intune/ime-logs.md)",S-ta4g5get
+C:\ProgramData\Microsoft\IntuneManagementExtension\Logs\HealthScripts.log,file,Intune,Intune Management Extension,Remediations run on a schedule,S-ta4g5get
+C:\ProgramData\Microsoft\IntuneManagementExtension\Logs\AgentExecutor.log,file,Intune,Intune Management Extension,PowerShell script executions deployed by Intune,S-ta4g5get
 Applications and Services Logs > Microsoft > Intune > ODJConnectorService,event_channel,Intune,Intune Connector for Active Directory,Hybrid Autopilot offline domain join connector (server side); formerly 'ODJ Connector Service' log,S-fzoar2ya
 Microsoft-Windows-ModernDeployment-Diagnostics-Provider/Autopilot,event_channel,Autopilot,Windows Autopilot client,"Autopilot profile download and OOBE settings (event IDs 100-172, 807-908); channel name derived from Event Viewer path",S-fzoar2ya
 Microsoft-Windows-Provisioning-Diagnostics-Provider/Admin,event_channel,Autopilot,Windows provisioning,Runtime provisioning / ESP troubleshooting (evtx file ...Provisioning-Diagnostics-Provider%4Admin.evtx),S618
 mdmdiagnosticstool.exe -area Autopilot;TPM -cab <pathToOutputCabFile>,command,Autopilot,MDM diagnostics tool,Self-deploying / pre-provisioning with physical device,S618
 mdmdiagnosticstool.exe -area DeviceProvisioning -cab <pathToOutputCabFile>,command,Autopilot,MDM diagnostics tool,Runtime provisioning on Windows 10 1809 and later,S618
 HKLM\SOFTWARE\Microsoft\Provisioning\Diagnostics\Autopilot,file,Autopilot,Windows Autopilot client,"Registry key (not a file) holding received Autopilot profile settings (CloudAssignedTenantId, TenantMatched ...)",S-fzoar2ya
-Microsoft-Windows-User Device Registration/Admin,event_channel,Entra ID,Device registration (dsreg),"Hybrid join / device registration failures (event IDs 201, 204, 304, 305)",S632;S649
+Microsoft-Windows-User Device Registration/Admin,event_channel,Entra ID,Device registration (dsreg),"Hybrid join / device registration failures (event IDs 201, 204, 304, 305)",S632;S-d3ml3kug
 Microsoft-Windows-AAD/Operational,event_channel,Entra ID,CloudAP plug-in / AAD token broker,"Entra sign-in token errors (event 1098) and CloudAP error events; PRT acquisition start/end events 1006/1007 are in the AAD Analytic log",S632;S618
 %windir%\System32\winevt\Logs\Microsoft-Windows-AAD%4Operational.evtx,file,Entra ID,CloudAP plug-in,On-disk file of AAD/Operational channel,S618
 dsregcmd /status,command,Entra ID,Device registration,Device join state; also captured by Intune Collect diagnostics,S-6epv7qzl

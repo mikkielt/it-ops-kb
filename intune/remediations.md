@@ -3,7 +3,7 @@ topic: intune/remediations
 priority: P1
 applies_to: "Intune service, docs ms.date 2025-09-08 / 2025-10-02 / 2026-04-07"
 retrieved_utc: 2026-09-24
-sources: [S-dhhu3szl, S-a3au6nfp, S611]
+sources: [S-dhhu3szl, S-a3au6nfp, S-ta4g5get]
 status: partial
 ---
 # Remediations (formerly Proactive Remediations)
@@ -28,9 +28,9 @@ scripts is not documented (the 200 KB limit is documented only for platform Powe
 - On-demand **Run remediation** (preview): single Windows device, needs **Remote tasks > Run remediation** (plus Organization: Read during preview), device online with WNS reachable; only one at a time per device, rapid repeats can overwrite each other. [DOC S-dhhu3szl]
 - Policy retrieval: after device or IME restart, after user sign-in, and every 8 hours (fixed from IME service start). [DOC S-dhhu3szl]
 - Reporting: run-once scripts report after running; recurring scripts report within days 1-6 only on change, and every 7 days regardless. [DOC S-dhhu3szl]
-- IME check-in for new/updated installations every 8 hours, independent of MDM check-in; admin-center Sync triggers MDM and IME check-in. [DOC S611]
-- IME requires version 1.58.103.0 or later for remediations and other IME payloads. [DOC S611]
-- Remediation schedule health is logged in `HealthScripts.log`. [DOC S611]
+- IME check-in for new/updated installations every 8 hours, independent of MDM check-in; admin-center Sync triggers MDM and IME check-in. [DOC S-ta4g5get]
+- IME requires version 1.58.103.0 or later for remediations and other IME payloads. [DOC S-ta4g5get]
+- Remediation schedule health is logged in `HealthScripts.log`. [DOC S-ta4g5get]
 - Platform (non-remediation) PowerShell scripts: must be less than 200 KB (ASCII) and time out after 30 minutes. [DOC S-a3au6nfp]
 - Maximum remediation script file size and remediation script timeout: not stated in S-dhhu3szl. [UNK]
 
