@@ -4,8 +4,6 @@ The open work, and only that: a finished item leaves this file (its commit recor
 
 ## Remotes and CI
 
-- **GitLab `main` is behind GitHub `main`.** GitHub (remote `claude`) receives every push; GitLab (`origin`) is the plugin's install url, so a team installing from it gets an older kb. When GitLab should catch up: `python3 _tools/kbgit.py sync --push --remote origin`.
-- **Merged branches still on GitHub:** `claude/relaxed-keller-e8qyl3` and `chore/kb-tools-hardening` are both in `main`; delete them with `git push claude --delete <branch>` from a clone with push rights.
 - **GitHub Actions results are unchecked.** `.github/workflows/kb.yml` runs on every push, but no session here could read its runs (the repository is private and `gh` is not installed): look at the Actions tab.
 - **Branch protection for GitHub `main`:** undecided. Pushes go straight to `main` by design (`_self/git.md`); required status checks would still block a push that fails CI. Read GitHub's live docs on required status checks before deciding.
 
