@@ -1,17 +1,17 @@
 # AGENTS.md
 
-An offline knowledge base of facts from official sources on Windows endpoint management and the AI agents that operate it: Markdown articles and CSV data, searched and checked by stdlib-only Python tools in `_tools/`. This file covers lookups. **Before any change** (edit, research, refresh, census, commit, push), read `MAINTAINING.md`. Overview for people: `README.md`.
+An offline knowledge base of facts from official sources on Windows endpoint management and the AI agents that operate it: Markdown articles and CSV data, searched and checked by the stdlib Python tools in `_tools/`. This file covers lookups. **Before any change** (edit, research, refresh, census, commit, push), read `_self/maintaining.md`. Overview for people: `README.md`.
 
 ## Look things up: deterministic tools first
 
-- Answer lookups in the session that asked. Never start a general-purpose subagent for a lookup (about 50k tokens of startup context); several parts go in one `pack` call too; the `kb-lookup` agent only for long research whose output would fill the context (measured: no cheaper, twice as slow).
-- From a shell or a script: `python3 _tools/kb_ask.py "<question>"` answers at the lowest cost that works (routing in `MAINTAINING.md`); `--route` shows the plan.
+- Answer lookups in the session that asked. Never start a general-purpose subagent for a lookup (it pays its whole startup context first); several parts go in one `pack` call too; the `kb-lookup` agent only for long research whose output would fill the context (no cheaper, twice as slow).
+- From a shell or a script: `python3 _tools/kb_ask.py "<question>"` answers at the lowest cost that works (routing in `_self/tools.md`); `--route` shows the plan.
 - One call first: `kb_pack` (MCP) or `python3 _tools/rag.py pack "<question>"`; several parts in one call: `questions` / `pack -q PART -q PART`. It prints `coverage: good|weak|none`, the best fact lines by article with `path:line` and tag, and one footer of source urls.
   - `good`: answer from the pack. A `check:` line under it flags a possible false `good`: answer only if a cited line answers the question itself, else treat it as `none`.
   - `weak`: one reworded pack, or one `show` of the article.
   - `none`: say the kb does not cover it. Add nothing from memory.
-- Counts, lists and joins are tools, not reading: `rag.py audit [PREFIX] [--status partial] [--entries]` (per article: tag counts, linked gaps and conflicts), `rag.py facts PREFIX --tag UNK,COMMUNITY`, `rag.py src S123 --cited` (the row plus every line that cites it). MCP: `kb_audit`, `kb_facts`, `kb_source` with `cited`. These print concise output; `--format detailed` / `response_format` for full text and urls.
-- Also: `rag.py show PATH:LINE -n 30`, `rag.py search "<keywords>" [-d DOMAIN] [--index]` (`--index` adds `_answers.md`, `_gaps.md`, `_conflicts.md`), `rag.py topics [DOMAIN]`.
+- Counts, lists and joins are tools, not reading: `rag.py audit [PREFIX] [--status partial] [--entries]` (per article: tag counts, linked gaps and conflicts), `rag.py facts PREFIX --tag UNK,COMMUNITY`, `rag.py src S123 --cited` (the row plus every line that cites it). MCP: `kb_audit`, `kb_facts`, `kb_source` with `cited`. Concise by default; `--format detailed` / `response_format` for full text and urls.
+- Also: `rag.py show PATH:LINE -n 30`, `rag.py search "<keywords>" [-d DOMAIN] [--index]` (`--index` adds `_answers.md`, `_gaps.md`, `_conflicts.md` and the `_self/` docs), `rag.py topics [DOMAIN]`.
 - A person can type `kb: <question>`: a hook answers from the pack without the model when coverage is good, and otherwise passes the pack to you as context (`kb+:` always passes it).
 - The `/kb-lookup` skill is the same procedure.
 
@@ -31,10 +31,10 @@ Three remote servers that need no authentication, in `.claude-plugin/it-ops-kb-d
 
 ## Skills
 
-`/kb-lookup`, `/kb-review-workspace` and `/kb-gap` (read-only; the review checks another project's code against the kb, the gap skill drafts a report of what the kb lacks). The following change the kb and follow `MAINTAINING.md`: `/kb-setup`, `/kb-research`, `/kb-refresh`, `/kb-add-topic`, `/kb-census`, `/kb-verify`, `/kb-git-sync`.
+`/kb-lookup`, `/kb-review-workspace` and `/kb-gap` (read-only: review another project's code against the kb; draft a report of what the kb lacks). The following change the kb and follow `_self/maintaining.md`: `/kb-setup`, `/kb-research`, `/kb-refresh`, `/kb-add-topic`, `/kb-census`, `/kb-verify`, `/kb-git-sync`, `/kb-self` (keeps `_self/` in line with the code).
 
 ## Agent conduct
 
 - Never call a docs server's `submit_feedback` tool (denied in settings): it posts text outside the repo.
 - Placeholders only in examples: `PL-LT-00123`, `PL-SRV-0042`, `corp.example.com`, tenant `00000000-0000-0000-0000-000000000000`, `jan.kowalski`. Never add real hostnames, tenant or object ids, addresses, people or tokens; `_cache/` and `_private/` are never committed.
-- Run shell commands one at a time: the shared permission rules match single commands, so `a; b`, `a && b` and loops need approval.
+- Run shell commands one at a time: permission rules match single commands, so `a; b`, `a && b` and loops need approval.

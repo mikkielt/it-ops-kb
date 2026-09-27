@@ -9,7 +9,7 @@ argument-hint: "<question or subject, optionally with the angle, e.g. 'X and how
 
 Question: $ARGUMENTS. If it is empty or too broad to answer in one pass, ask for the angle before starting.
 
-Read `MAINTAINING.md` first: the content rules, tools, git workflow and commit rules this skill relies on (`AGENTS.md` covers lookups only).
+Read `_self/maintaining.md` first, then the `_self/` files this skill relies on: `_self/content-rules.md` (what to write), `_self/tools.md` (the commands) and `_self/git.md` (commits and pushes). `AGENTS.md` covers lookups only.
 
 Run each command on its own (no `;`, `&&`, pipes into other tools or loops): the shared permission rules match single commands, so a chained command asks for approval or is refused in a headless run.
 
@@ -28,7 +28,7 @@ Run each command on its own (no `;`, `&&`, pipes into other tools or loops): the
 - Decide per sub-question where its facts will live, with these rules:
   - **Extend** the anchor topic when the facts are about the product or feature the article is about (its title and `applies_to`), close one of its `UNK` items or gaps, or number fewer than about five. Most research extends.
   - **New topic** only for a distinct product, feature or protocol with its own official documentation, when no article's scope covers it, you expect at least five `DOC` facts, and folding it in would make an article cover two subjects. Link it from the anchor's Reference section, and the anchor from it.
-  - **Where a new topic goes**: in the domain directory of the anchor that will link to it (a Dataverse sync topic reached from the Power BI gateway articles goes in `powerbi/`). If no existing domain fits, do not create a new top-level directory: a new domain changes the README's domain list and the index. Propose one to the user and stop for that sub-question (record it under "Open" in the answer).
+  - **Where a new topic goes**: in the domain directory of the anchor that will link to it (a Dataverse sync topic reached from the Power BI gateway articles goes in `powerbi/`). If no existing domain fits, do not create a new top-level directory: a new domain changes the README's domain list, `AGENTS.md` and the index. Propose one to the user and stop for that sub-question (record it under "Open" in the answer).
   - Never create a topic that only restates facts the kb already has elsewhere; cite those facts from the answer instead.
 
 ## 3. Research
@@ -47,8 +47,8 @@ Run each command on its own (no `;`, `&&`, pipes into other tools or loops): the
 - Never call `submit_feedback`, sign up for anything, install software, or run a vendor CLI that changes state. Reading public docs only.
 
 ## 4. Write
-Follow the contract in README.md and `.claude/skills/kb-add-topic/SKILL.md` (source rows first, written with Python's `csv` module; one tag per fact; licence strings; placeholders only).
-- Extending an anchor topic: add bullets to its Facts section, add the new ids to its `sources:` header, update `retrieved_utc` and, if it changed, `status`. Do not edit `_coverage.csv`, the README table or `used_in`: step 5 regenerates them.
+Follow the contract in `_self/content-rules.md` and `.claude/skills/kb-add-topic/SKILL.md` (source rows first, written with Python's `csv` module; one tag per fact; licence strings; placeholders only).
+- Extending an anchor topic: add bullets to its Facts section, add the new ids to its `sources:` header, update `retrieved_utc` and, if it changed, `status`. Do not edit `_coverage.csv`, the `_self/coverage.md` table or `used_in`: step 5 regenerates them.
 - New topic, only where step 2 decided one: create it as `/kb-add-topic` describes (priority `P3` unless the user gives one) in the domain step 2 chose, and link it from the anchor's Reference section and back.
 - "How it fits": implications for this kb's frame (e.g. how an agent should call it, where secrets live, what tier an operation needs) are `DER` facts. State the derivation and the facts it rests on. Do not present a design choice as a vendor fact.
 - Add one answer to `_answers.md`, after the last `QK` entry (or at the end, before the `R` sections if there are none):
@@ -65,10 +65,10 @@ Follow the contract in README.md and `.claude/skills/kb-add-topic/SKILL.md` (sou
   `QK-<slug>`: a short lowercase hyphenated slug of the question (e.g. `QK-dataverse-onprem-sync`); `python3 _tools/kbid.py answer "<question>"` suggests one and says if it is taken. Never number answers: parallel writers would pick the same number. `check.py` rejects a duplicate answer id.
 - New source rows take their id from `python3 _tools/kbid.py url <URL>`; never invent one.
 - Failed lookups go to `_gaps.md` under the anchor topic's heading: what you looked for and where, ending `(topic: <domain>/<slug>)`.
-- Retrieval data (`MAINTAINING.md`, Content rules): `_tools/signals.csv` rows for a new topic's code names, `_tools/aliases.csv` rows for a product's other names, and a `_tools/lookup_eval.csv` row for each step-1 pack that missed an article the kb already had (`none` or `weak` although an article answered it).
+- Retrieval data (`_self/content-rules.md`): `_tools/signals.csv` rows for a new topic's code names, `_tools/aliases.csv` rows for a product's other names, and a `_tools/lookup_eval.csv` row for each step-1 pack that missed an article the kb already had (`none` or `weak` although an article answered it).
 
 ## 5. Check
-- `python3 _tools/build_index.py` regenerates `_coverage.csv`, the README coverage table and `used_in` from what you wrote.
+- `python3 _tools/build_index.py` regenerates `_coverage.csv`, the `_self/coverage.md` table and `used_in` from what you wrote.
 - `python3 _tools/check.py` must end `errors=0`.
 - `python3 .claude/skills/kb-verify/lint.py <each topic you edited or created>` must add no errors.
 - `python3 _tools/doc2query.py stale` must print `stale=0`: if you reworded facts that had expansions, `python3 _tools/doc2query.py prune` removes their rows.

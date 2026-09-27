@@ -1,4 +1,8 @@
-# Work left (as of 2026-09-26)
+# Work left (as of 2026-09-27)
+
+**2026-09-27: the kb's own docs moved to `_self/`.** Agents read `_self/` (see `_self/README.md`); people read the short root `README.md`; `AGENTS.md` stays the lookup rules. `MAINTAINING.md` became `_self/maintaining.md` plus `_self/content-rules.md`, `_self/tools.md`, `_self/git.md` and `_self/plugin.md`; the coverage table moved from the README to `_self/coverage.md`; the plans and the token report are dated records in `_self/reports/`; `_self/design.md` holds the current conclusions on when the kb is token-efficient. `_self/` is out of `pack` and the default search (`rag.py search --index` finds it). `_tools/selfdoc.py` lists docs behind the files they describe (`_self/map.csv`); `/kb-self` updates them, and `/kb-verify` reports them. Open:
+- The remote branch `claude/relaxed-keller-e8qyl3` on GitHub is merged but not deleted (this session's git proxy refused the delete): `git push origin --delete claude/relaxed-keller-e8qyl3` from a clone with push rights.
+- `_self/reports/` still carries the old section names and some superseded numbers by design (dated records); `_self/design.md` is where current numbers go (`/kb-self --report`).
 
 **2026-09-26, later session (branch `claude/relaxed-keller-e8qyl3`):** GitHub had no open issues or merge requests; this list was the work queue. Done there: P.2 (`/kb-gap`), P.5 (consumer runbook), P.6 (`KB_ROOT`), P.7 / B (the `check:` line for a possible false `good`; the `kb:` hook forwards such packs), the QS ids in `_gaps.md`, five fresh negative controls, and topic markers on 217 of the 233 unlinked ledger entries. Still open: P.1, P.3 (optional scheduled agent), P.4, sections 1-3 and the rest of 4 below.
 
@@ -39,7 +43,7 @@ lacks; only maintainers write. Do in this order:
    not `kb_ask.py`.
 
 ## B. Agent benchmark and routing (2026-09-26)
-Done: 76 headless runs across 7 scenarios and 6 configs (`token-usage-report.md`, "Agent benchmark and routing");
+Done: 76 headless runs across 7 scenarios and 6 configs (`_self/reports/token-usage.md`, "Agent benchmark and routing");
 `_tools/kb_ask.py` routes by the pack verdict (good: Haiku, weak/none: Sonnet), request words are stop words,
 3+ part packs share the budget, two new articles (`ad/krbtgt-password-reset`, `gpo/admx-central-store`).
 Status:
@@ -47,7 +51,7 @@ Status:
 - Done 2026-09-26 (second pass): count/cite questions by the tools, part splitting, tool-less Haiku reader with `INSUFFICIENT` escalation, lean `claude -p`, Sonnet at low effort. The plugin has no `kb_ask` path (it needs the `claude` CLI: a clone/shell tool). The kb does not call the Anthropic API (decided 2026-09-26).
 - Closed 2026-09-26: the 4 `UNK` items of the two new articles (both `complete` now).
 
-## T. `_tools` efficiency plan (`plan-tooling-efficiency.md`)
+## T. `_tools` efficiency plan (`_self/reports/plan-tooling-efficiency.md`)
 Done 2026-09-26: persisted pack index (cold `pack` and the `kb:` hook about 0.06 s, `eval` 0.7 s), one engine
 (`search` on the same index, 0.05 s), shared helpers, batched trailer audit, legacy merge paths retired, pytest suite
 run by uv in parallel (`tests.py` 16 s). Nothing open; the census `http_status` GET stays by decision.
@@ -140,19 +144,19 @@ Was not done:
 - Done 2026-09-26: the `_gaps.md` entries naming QS1, QS5 and QS7 now say what QS1a, QS5a and QS7a resolved.
 
 ## 4. Token usage: make lookups deterministic
-**`plan-token-optimization.md` T1-T14: done** (see `token-usage-report.md`, "Measurement in a host project").
+**`_self/reports/plan-token-optimization.md` T1-T14: done** (see `_self/reports/token-usage.md`, "Measurement in a host project").
 - **Plugin split:** two plugins, `it-ops-kb` and `it-ops-kb-docs`. There is no root `.mcp.json`: a clone runs `python3 _tools/kb_mcp.py --register-local` once (`/kb-setup` and the web SessionStart hook do it).
 - **Six questions, fresh Sonnet sessions:** 13 turns and 312k input in a clone, 14 turns and 306k in a host project. On 2026-09-25 it was 19 turns and 691k.
 - **Subagent startup:** `kb-lookup` starts at 3.9k tokens.
 - **Review:** `/kb-review-workspace` found all five planted problems in the test host, each with the host line and the kb citation.
 - **Fixed on the way:** the kb server lacked `resultType` (MCP 2026-07-28), so no kb tool loaded from the plugin.
 - **Done 2026-09-26:** an install from gitlab.com itself (see section 2) and a push to GitLab `main`.
-- **Retrieval audit done** (`token-usage-report.md`, "Retrieval quality audit"): untagged content and code blocks are searchable now, there is no false `none` on the blind questions, and line recall is 94%.
-- **doc2query pilot done** (`token-usage-report.md`, "doc2query pilot"): pilot line recall 90% -> 97.5%, control unchanged.
+- **Retrieval audit done** (`_self/reports/token-usage.md`, "Retrieval quality audit"): untagged content and code blocks are searchable now, there is no false `none` on the blind questions, and line recall is 94%.
+- **doc2query pilot done** (`_self/reports/token-usage.md`, "doc2query pilot"): pilot line recall 90% -> 97.5%, control unchanged.
   - **Confirmation round (seed 29, fresh arms):** no gain, 95% both ways. The baseline is already 95-98%.
-  - **Whole-kb expansion: not done.** Decision in `token-usage-report.md`: expand only articles where real lookups miss.
+  - **Whole-kb expansion: not done.** Decision in `_self/reports/token-usage.md`: expand only articles where real lookups miss.
 
-Earlier; see `token-usage-report.md`, "Re-measurement after the changes":
+Earlier; see `_self/reports/token-usage.md`, "Re-measurement after the changes":
 - The six measured questions in fresh sessions: -74% input tokens, -72% output tokens, 351 -> 118 s.
 - A `kb:` prompt the kb covers costs no model tokens.
 

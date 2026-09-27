@@ -92,7 +92,7 @@ Until `pack` exists, cheaper defaults for `search`:
 ### F. Split `AGENTS.md` by audience (about 5k tokens off every session and every subagent)
 - Keep in `AGENTS.md` about 1.5-2 KB: what the repo is, the lookup commands, the tag meanings, read-only conduct, placeholders, and one line saying where maintainer rules live.
 - Move Setup, Plugin, Git workflow, Merging, and Commits and history to `docs/maintaining.md`. The skills that need them (`/kb-setup`, `/kb-git-sync`, `/kb-verify`, `/kb-refresh`, `/kb-add-topic`, `/kb-census`) read it when they run, so it loads only in maintenance sessions.
-- Keep the SessionStart hook output short and move the census status line to `work-left.md`. It is already small; keep it that way.
+- Keep the SessionStart hook output short and move the census status line to `_self/work-left.md`. It is already small; keep it that way.
 
 ### G. Measure retrieval deterministically
 - Add `_tools/lookup_eval.csv` (question, expected `path` or `path:line`, expected verdict) and `rag.py eval`, which reports recall@k, the verdict accuracy, and the output bytes per question. Run it in `tests.py`, so ranking or output changes are caught without an agent.
@@ -114,7 +114,7 @@ Recommendations A-G are implemented. The pieces:
 - `_tools/kbfacts.py`, and in `rag.py` and `kb_mcp.py`: `pack`, `facts`, `audit`, `src --cited` and `eval`;
 - the `kb:` prompt hook `_tools/kb_hook.py`;
 - 55 ledger topic markers;
-- `AGENTS.md` cut to 3.2 KB, with `MAINTAINING.md` for the rest;
+- `AGENTS.md` cut to 3.2 KB, with `_self/maintaining.md` for the rest;
 - a rewritten `/kb-lookup`;
 - `_tools/lookup_eval.csv`, 23 questions, all passing.
 
@@ -191,7 +191,7 @@ The only pattern still reading whole articles was a multi-part question (T4 in s
 | C. joinable ledgers | explicit links via a `(topic: <domain>/<slug>)` marker, a path in the text, or a section heading. 55 markers were added where an entry's sources point at exactly one topic of its section's domain. Links via sources are reported separately. Skills require the marker on new entries; `check.py` validates markers. One shared tag parser replaces a rewrite of the 128 tag variants in articles, most of which carry meaning in their notes; lint reports DOC/COMMUNITY tags without an id (13 recorded as known debt). |
 | D. evidence pack | `rag.py pack`, `kb_pack` |
 | E. `/kb-lookup` stop rule | done, 3.0 KB |
-| F. `AGENTS.md` split | 15.9 KB -> 3.2 KB, capped at 4 KB by `tests.py`; `MAINTAINING.md` is read by the skills that change the kb |
+| F. `AGENTS.md` split | 15.9 KB -> 3.2 KB, capped at 4 KB by `tests.py`; `_self/maintaining.md` is read by the skills that change the kb |
 | G. deterministic retrieval eval | `_tools/lookup_eval.csv` (23 questions), `rag.py eval`, gated in `tests.py` |
 
 ### What is left
@@ -199,11 +199,11 @@ The only pattern still reading whole articles was a multi-part question (T4 in s
 - 233 ledger entries have no explicit topic link. 125 of them (118 in `_gaps.md`, 7 in `_conflicts.md`) are not even linked through their sources, because they name no source id and no path. `rag.py audit` cannot attribute them until someone adds a marker; `rag.py audit --unlinked [DOMAIN]` lists them. This is a one-time triage.
 - The 13 DOC/COMMUNITY tags without a source id need their sources found or their tag changed.
 - Grow `lookup_eval.csv` from real questions that miss: every failed `kb:` lookup is a candidate row.
-- Further optimizations (a lean lookup agent, batch packs, plugin split, aliases, a workspace review skill) and their effect when the kb runs as a plugin in another project were planned in `plan-token-optimization.md`; they are done, and measured in the next section.
+- Further optimizations (a lean lookup agent, batch packs, plugin split, aliases, a workspace review skill) and their effect when the kb runs as a plugin in another project were planned in `_self/reports/plan-token-optimization.md`; they are done, and measured in the next section.
 
 ## Measurement in a host project (plan T1-T14, 2026-09-25)
 
-`plan-token-optimization.md` T1-T13 are implemented (commit "feat(kb): token plan T1-T13"). This section is T14: the kb used as a plugin from another project, compared with the same questions in a clone.
+`_self/reports/plan-token-optimization.md` T1-T13 are implemented (commit "feat(kb): token plan T1-T13"). This section is T14: the kb used as a plugin from another project, compared with the same questions in a clone.
 
 ### Setup
 - **Host:** a throwaway git repo outside the kb, "a TypeScript MCP server for MECM and AD". It has a short `CLAUDE.md` and four `.ts` files: AdminService calls with Negotiate and an NTLM fallback, `ldapjs` with a simple bind over `ldap://`, MSAL `PublicClientApplication` with broad Graph scopes, and an MCP stdio server that logs to stdout.
@@ -346,7 +346,7 @@ Checked how well `pack` finds what the kb actually holds, beyond the eval set:
 
 ## doc2query pilot (2026-09-25)
 
-Protocol and tool: `_tools/doc2query/README.md`, `python3 _tools/doc2query.py`.
+Protocol and tool: `_self/doc2query.md`, `python3 _tools/doc2query.py`.
 
 - **Arms:** 12 pilot articles (169 facts) and 12 control articles (185 facts), stratified by domain (`arms.json`, seed 7).
 - **Generation:** Haiku wrote 3 questions per pilot fact, 507 in all. The Doc2Query-- filter (keep a question only if `pack` without expansion reaches its fact's article) kept 473 and dropped 34.

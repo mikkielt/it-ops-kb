@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Helpers the kb tools share (stdlib only): reading kb files, reading and writing CSV the canonical way, and the
-source ledger. One copy, so every tool reads and writes these files the same way (plan-tooling-efficiency.md R4).
+source ledger. One copy, so every tool reads and writes these files the same way (_self/reports/plan-tooling-efficiency.md R4).
 
   read(rel)                   a kb file's text, or None when it cannot be read
   load_csv(name, required)    (fieldnames, rows) of a kb CSV; CsvError names the file and the problem

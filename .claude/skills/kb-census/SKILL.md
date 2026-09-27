@@ -9,7 +9,7 @@ argument-hint: "[YYYY-MM-DD, default today] [--resume]"
 
 Census date: the argument, else today (`YYYY-MM-DD`). `--resume`: continue from the existing `_census/<date>.csv` (skip phases done: its `outcome` column shows what phase 2 already read).
 
-Read `MAINTAINING.md` first: the content rules, tools, git workflow and commit rules this skill relies on (`AGENTS.md` covers lookups only).
+Read `_self/maintaining.md` first, then the `_self/` files this skill relies on: `_self/content-rules.md` (what to write), `_self/tools.md` (the commands) and `_self/git.md` (commits and pushes). `AGENTS.md` covers lookups only.
 
 Run each command on its own (no `;`, `&&`, pipes into other tools or loops): the shared permission rules match single commands.
 
@@ -51,7 +51,7 @@ Scope: every row whose bucket is not OK and whose note is not `blocked`.
 2. Give the sample to a fresh subagent that did not do phase 2: for each row it reads the source and the citing facts and answers agree/disagree with a reason. It changes nothing.
 3. Every disagreement is a finding: fix it (and look for the same mistake in its group), then rerun this phase's sample with another seed.
 4. Report the counts: checked, agreed, disagreed, fixed.
-5. The tag means "the kb was confirmed current as of <date>". Create it only when no source that a fact cites is left unconfirmed (summary: no `blocked`, no `unconfirmed`, no unread NEEDS-READING, except rows `python3 _tools/rag.py src <id> --cited` shows cited by no article or data line, only in front matter or ledger notes; list those in `work-left.md`): `python3 _tools/kbgit.py tag-census <date>`, then `git push origin census-<date>` if the user asked to push. Otherwise do not tag: report what is left and why, and put it in `work-left.md`.
+5. The tag means "the kb was confirmed current as of <date>". Create it only when no source that a fact cites is left unconfirmed (summary: no `blocked`, no `unconfirmed`, no unread NEEDS-READING, except rows `python3 _tools/rag.py src <id> --cited` shows cited by no article or data line, only in front matter or ledger notes; list those in `_self/work-left.md`): `python3 _tools/kbgit.py tag-census <date>`, then `git push origin census-<date>` if the user asked to push. Otherwise do not tag: report what is left and why, and put it in `_self/work-left.md`.
 
 ## Report
 The bucket counts, the phase 2 outcomes per group (confirmed, updated, superseded with old -> new ids, gone, unconfirmed), the sample result, the hosts that were blocked, the commits, and whether the tag was created.

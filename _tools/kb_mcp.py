@@ -113,7 +113,7 @@ TOOL_LIST = [
          "k": {"type": "integer", "minimum": 1, "maximum": 20, "default": 8, "description": "number of hits"},
          "domain": {"type": "string", "description": "limit to one domain directory, e.g. 'auth' or 'dsc'"},
          "index": {"type": "boolean", "default": False,
-                   "description": "also search the root files: _answers.md, _gaps.md, _conflicts.md, README.md, _coverage.csv"},
+                   "description": "also search the root files (_answers.md, _gaps.md, _conflicts.md, README.md, _coverage.csv) and the kb's own docs (_self/)"},
          "response_format": {**FORMAT, "default": "concise"}},
          "required": ["query"], "additionalProperties": False},
      "annotations": {"title": "Search the kb", **READ_ONLY}},

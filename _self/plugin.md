@@ -1,0 +1,120 @@
+# Plugin: layout rules, installing it elsewhere, a team's own kb
+
+The repository root is a Claude Code plugin marketplace (`.claude-plugin/marketplace.json`) with two read-only plugins. Sections 1-2 are the rules for changing them; sections 3-7 are the runbook an agent follows to set the kb up in another project (a person only asks for it).
+
+## 1. What each plugin ships
+
+**`it-ops-kb`** (the repository root, `.claude-plugin/plugin.json`):
+- **the `kb` MCP server** (`_tools/kb_mcp.py`, stdlib Python over stdio). Every tool description starts "Documentation facts from it-ops-kb (not live device or directory data)", so a project that also has live MECM/AD tools keeps them apart. Tools:
+  - `kb_pack`: the evidence pack (coverage verdict, fact lines with `path:line`, source urls); `questions` batches up to 6 parts in one call. It is always loaded (`anthropic/alwaysLoad`), so the first lookup needs no tool-search round trip.
+  - `kb_facts`, `kb_audit`, `kb_search`, `kb_show`, `kb_source`, `kb_status` (the copy's commit and date, and the latest census).
+  - `kb_topics_for`: the kb topics that code touches (MSAL classes, AdminService routes, Negotiate/SPN, LDAP libraries, Graph scopes, ...), from `_tools/signals.csv`.
+  - `response_format`: `kb_facts`, `kb_audit` and `kb_search` answer `concise` by default (no url footer), `kb_pack` `detailed`.
+- **`/it-ops-kb:kb-lookup`**, which Claude may also invoke on its own. A single fact is one `kb_pack` call in the session that asked.
+- **the `it-ops-kb:kb-lookup` agent**, for long research whose output would fill the caller's context: kb tools only, Haiku, low effort, no `CLAUDE.md`, the lookup procedure preloaded (3.9k tokens of startup context, measured).
+- **`/it-ops-kb:kb-review-workspace [paths or focus]`**, started by hand. It runs in the `it-ops-kb:kb-reviewer` agent (Sonnet, `Read`, `Grep`, `Glob` and the kb tools, the project's `CLAUDE.md` loaded), maps the project's code to kb topics with `kb_topics_for`, and reports findings in chat, each with the project's `path:line` and the kb's `path:line`, tag and source url. It writes nothing.
+- **`/it-ops-kb:kb-gap <question>`**, started by hand when the kb did not answer (`none`, `weak`, or facts that missed the point). It runs `kb_status`, `kb_pack` and `kb_audit` and prints an issue text to paste into the kb's tracker: the question, the kb version, the verdict, the nearest articles with `path:line`, what was missing and whether a gap is already logged. It replaces the organisation's names and ids with the kb's placeholders, and writes, sends and posts nothing.
+- **the `kb:` prompt hook** (UserPromptSubmit, `_tools/kb_hook.py`): `kb: <question>` is answered without the model when the kb covers it; when it does not, Claude gets one line saying so; a `good` pack with a `check:` line goes to Claude with the pack.
+
+**`it-ops-kb-docs`** (`.claude-plugin/it-ops-kb-docs/`): the three documentation servers (Microsoft Learn, Claude Code docs, MCP spec), with every `submit_feedback` call blocked by the plugin's PreToolUse hook (a plugin cannot ship permission rules). Install it only for servers the project does not have already: each adds its name and instructions to every session.
+
+The writing skills (`/kb-research`, `/kb-refresh`, `/kb-add-topic`, `/kb-census`, `/kb-git-sync`, `/kb-self`) and the gate stay in a clone of this repository: the plugin copy is replaced on every update.
+
+## 2. Rules for changing the plugin
+
+- **What reaches a host project:** only the `kb` server's instructions and tool descriptions, the skill and agent names and descriptions, and their bodies when used. `AGENTS.md` and `_self/` never load there, and `rag.py` is not on the host's path: a rule a host must follow goes into those texts, and they name `rag.py` only as the clone form (tested).
+- **Read-only:** `plugin.json` lists the three read-only skills and the two agent files by path (the kb's `agents/` domain is articles, so never the default `agents/` scan). No `Write`, `Edit`, `Bash` or git in a plugin skill's `allowed-tools` or an agent's `tools`.
+- **No root plugin directories:** never add a root `skills/`, `commands/`, `hooks/`, `bin/` or similar directory, or a root `.mcp.json`: the plugin would load it. The root plugin loads a root `.mcp.json` whatever `plugin.json` says, so the docs servers live in their own plugin, and a clone registers its servers at local scope (`kb_mcp.py --register-local`).
+- **No `version` field:** users get each commit; census tags are the stable channel (section 4).
+- **Agent frontmatter:** plugin agents honour `model`, `effort`, `maxTurns`, `tools`, `skills`, `omitClaudeMd` and a few more, and ignore `permissionMode`, `hooks` and `mcpServers`. `effort` goes in an agent, never in a skill (a skill's effort overrides the host session's while it runs). The agents list the kb tools under both names, `mcp__plugin_it-ops-kb_kb__*` (a host) and `mcp__kb__*` (a clone's local server).
+- `/kb-lookup` is the only skill Claude may invoke on its own; every other skill sets `disable-model-invocation: true`, which keeps its description out of every session (tested).
+- `python3 _tools/test_kb_mcp.py` checks these and runs `claude plugin validate` on both plugins when the CLI is installed.
+
+## 3. Install and update
+
+Needs: `python3` 3.9+ on `PATH`, and an SSH key with read access to `gitlab.com/mikkielt/it-ops-kb`. Claude Code clones without prompting, so the key must be loaded in `ssh-agent` (no passphrase prompt) and `gitlab.com` must already be in `~/.ssh/known_hosts` (`ssh -T git@gitlab.com` once adds it).
+
+In a session:
+```
+/plugin marketplace add git@gitlab.com:mikkielt/it-ops-kb.git
+/plugin install it-ops-kb@it-ops-kb
+/plugin install it-ops-kb-docs@it-ops-kb
+```
+The second install is optional (the documentation servers). From a shell: `claude plugin marketplace add git@gitlab.com:mikkielt/it-ops-kb.git`, then `claude plugin install it-ops-kb@it-ops-kb` (add `--scope project` to record it in the project's `.claude/settings.json` for the whole team).
+
+To try a working tree without installing: `claude --plugin-dir <path to the clone>` (and `--plugin-dir <clone>/.claude-plugin/it-ops-kb-docs`). Scripts in bare mode (`claude -p --bare`) skip installed plugins, so they must pass `--plugin-dir` too.
+
+Check it: `/mcp` lists `plugin:it-ops-kb:kb` as connected. Then call `kb_status` (start there whenever freshness matters): it answers with the kb commit, its date and the latest census tag. Then ask a question in the kb's domains (for example "what does the kb say about Kerberos constrained delegation versus on-behalf-of?"); the answer should cite `path:line`, the fact's tag and the source url.
+
+Update: the plugin sets no `version`, so every new commit on `main` is a new version. `/plugin marketplace update it-ops-kb` in a session (or `claude plugin update it-ops-kb@it-ops-kb` from a shell), then `/reload-plugins` or a new session. Or turn on background updates once: `/plugin`, then **Marketplaces**, `it-ops-kb`, **Enable auto-update**.
+
+## 4. Pin a confirmed copy
+
+For teams that should not follow every commit: the releases are the census tags, `census-YYYY-MM-DD`, each a commit whose sources were all confirmed current on that date (`git ls-remote --tags git@gitlab.com:mikkielt/it-ops-kb.git 'census-*'` lists them). Add the marketplace with the tag, `/plugin marketplace add git@gitlab.com:mikkielt/it-ops-kb.git#census-YYYY-MM-DD`, or put `"ref": "census-YYYY-MM-DD"` in the `source` object below. Claude Code has no release channels of its own: a marketplace serves one version of each plugin, and with no `version` field the version is the commit, so a pinned copy stays put until the ref changes (then `/plugin marketplace update it-ops-kb`). To move to another tag, edit the `ref` in the settings entry (`marketplace add` writes one to user settings); a second `add` with a different ref is refused while settings still declare the first (`Cannot add marketplace "it-ops-kb": its network source differs ...`).
+
+For everyone who opens a project, commit this to the project's `.claude/settings.json`:
+```json
+{
+  "extraKnownMarketplaces": {
+    "it-ops-kb": { "source": { "source": "git", "url": "git@gitlab.com:mikkielt/it-ops-kb.git" } }
+  },
+  "enabledPlugins": { "it-ops-kb@it-ops-kb": true, "it-ops-kb-docs@it-ops-kb": true }
+}
+```
+Leave `it-ops-kb-docs` out of `enabledPlugins` when the team already has the Microsoft Learn, Claude Code docs or MCP docs servers: the same server twice costs its instructions twice.
+
+## 5. What it costs and what to watch
+
+- **Context:** about 312 tokens in every session (`claude plugin details it-ops-kb`: the `kb-lookup` skill description and the server's instructions); `/kb-review-workspace` and `/kb-gap` are never listed, so they cost nothing until run. The docs plugin adds each server's instructions.
+- **Disk and time:** about 13 MB of files plus about 7 MB of git history per installed copy; Python 3.9+ standard library only. After each update the first lookup builds the index (3-5 s measured), then a cold lookup takes about 0.1 s.
+- **Known limit, a false `good`:** the verdict counts the question's key words in the best article, not meaning, so a `good` pack can be about something related. The pack prints a `check:` line when a name the question uses appears nowhere in the lead article, or when no single fact holds half the key words; the kb tools' instructions say to answer only if a cited line answers the question itself. Without that line the risk is lower, not gone: check that the cited fact answers what was asked, and report a miss with `/it-ops-kb:kb-gap`.
+- **Headless answers:** `_tools/kb_ask.py` needs a clone and the `claude` CLI; in a session with the plugin the path is `kb_pack` or `/it-ops-kb:kb-lookup`.
+
+## 6. A team's own facts: a second kb with `KB_ROOT`
+
+Organisation-specific knowledge (hostnames, tenants, runbooks) never goes into this repository: it holds placeholders only. Keep it in a private repository with the same layout, and serve it with these tools:
+- **Layout:** domain directories of articles (front matter, Summary, Facts, Reference, Examples, one tag per fact), `_sources.csv`, `_artifacts.csv`, `_answers.md`, `_gaps.md`, `_conflicts.md`, and a coverage page holding the two HTML comment markers `coverage:start` and `coverage:end` between which `build_index.py` writes the table: `_self/coverage.md` when the kb has that file, else its `README.md`. Its own retrieval data, all optional, goes in its `_tools/`: `signals.csv`, `lookup_eval.csv`, `doc2query/expansions.csv`, `index_extra.csv`; `aliases.csv` falls back to this repository's product aliases.
+- **Checks, from a clone of it-ops-kb:** `KB_ROOT=~/src/team-kb python3 _tools/build_index.py`, then `check.py` and `rag.py pack "<question>"` the same way. The read tools (`rag.py`, `kb_mcp.py`, the `kb:` hook) and the checks (`check.py`, `build_index.py`, `kbid.py`) honour `KB_ROOT`; the git, census and fetch tools work on this repository only.
+- **Serve it as a second server:** `claude mcp add --scope user kb-team -e KB_ROOT=$HOME/src/team-kb -- python3 ~/src/it-ops-kb/_tools/kb_mcp.py`. Its instructions, tool descriptions and `kb_status` name its root, so answers from the two kbs stay apart. Set `KB_ROOT` only on that server (`-e`), never in a shell profile: every kb tool started from that shell, the plugin's `kb` server and the `kb:` hook included, would serve the team kb instead. Its index file (`kbindex-r<root hash>-...`) sits beside it-ops-kb's in `_cache/` or the plugin data directory without either pruning the other.
+- **Size:** a word counts as a key word only when under a fifth of the kb's lines hold it, so a kb of one or two articles gives `weak` or `none` even for questions it answers; a few articles on different subjects are enough.
+
+## 7. Without plugins, and contributing back
+
+Without plugins, paste this into Claude Code in the project that should use the kb (same SSH access):
+
+```text
+Set up the it-ops-kb knowledge base for this project, read-only:
+1. If ~/src/it-ops-kb does not exist, run: git clone git@gitlab.com:mikkielt/it-ops-kb.git ~/src/it-ops-kb
+   Otherwise update it: git -C ~/src/it-ops-kb pull --ff-only
+2. Add "~/src/it-ops-kb" to permissions.additionalDirectories in this project's .claude/settings.local.json
+   (create the file if needed; keep what is already there).
+3. Register the kb MCP server and the three documentation servers for this project only:
+   claude mcp add --scope local kb -- python3 ~/src/it-ops-kb/_tools/kb_mcp.py
+   claude mcp add --scope local --transport http microsoft-learn https://learn.microsoft.com/api/mcp
+   claude mcp add --scope local --transport http claude-code-docs https://code.claude.com/docs/mcp
+   claude mcp add --scope local --transport http mcp-docs https://modelcontextprotocol.io/mcp
+4. In .claude/settings.local.json add permissions.deny entries "mcp__claude-code-docs__submit_feedback" and
+   "mcp__mcp-docs__submit_feedback", and permissions.allow entries "mcp__kb__kb_pack", "mcp__kb__kb_facts",
+   "mcp__kb__kb_audit", "mcp__kb__kb_search", "mcp__kb__kb_show", "mcp__kb__kb_source", "mcp__kb__kb_status" and
+   "mcp__kb__kb_topics_for".
+5. Append this note to the project's CLAUDE.md:
+   ## it-ops-kb
+   For Windows endpoint management, identity, MCP, Claude Code and AI-agent questions, look in it-ops-kb first:
+   one kb_pack call with the question (MCP server `kb`; several parts: questions=[...]), or without it
+   `python3 ~/src/it-ops-kb/_tools/rag.py pack "<question>"`; no subagent for a lookup. These are documentation
+   facts, not live device or directory data. coverage: good -> answer
+   from the pack (with a check: line, only if a cited line answers the question itself); weak -> one more pack or kb_show; none -> say the kb does not cover it, add nothing from memory.
+   Counts and lists: kb_audit, kb_facts, kb_source with cited=true. Every fact ends in one tag: DOC, DER,
+   COMMUNITY or UNK; UNK and COMMUNITY are leads, not answers. Cite path:line and the source url. Never call
+   submit_feedback. The kb is read-only here; contribute through a clone of the repo (its _self/maintaining.md).
+6. Run python3 ~/src/it-ops-kb/_tools/kb_mcp.py --status and show me the output. Tell me to restart Claude Code
+   so the servers load, then to ask for kb_status.
+Change nothing else.
+```
+
+Contributing back happens in a clone, never in the plugin copy:
+1. `git clone git@gitlab.com:mikkielt/it-ops-kb.git`, open it in Claude Code, run `/kb-setup` (checks, stress tests, `python3 _tools/kb_mcp.py --register-local`). Do not also load the plugin from the clone.
+2. Work with `/kb-research`, `/kb-add-topic` or `/kb-refresh`; `/kb-verify` before committing; one logical change per commit.
+3. `python3 _tools/kbgit.py sync --push` (`_self/git.md`); on exit 3, `/kb-git-sync --push`.
+
+Plugin users receive the push at their next update. Reports from `/it-ops-kb:kb-gap` are triaged in a clone: each becomes a `_gaps.md` entry (ending in `(topic: <domain>/<slug>)`) and, when the kb has the article but the pack missed it, a `_tools/lookup_eval.csv` row (`python3 _tools/kbid.py eval "<question>"`); then `/kb-research` or `/kb-add-topic`, and `kbgit.py sync --push`.

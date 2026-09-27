@@ -1,6 +1,6 @@
 # Plan: further token optimization (decided 2026-09-25, done 2026-09-25)
 
-**Status: T1-T14 done.** Results are in `token-usage-report.md`, "Measurement in a host project".
+**Status: T1-T14 done.** Results are in `_self/reports/token-usage.md`, "Measurement in a host project".
 
 How the open decisions went:
 - **T1 (clone tool names):** no `--plugin-dir .` in a clone. It loads the project skills and agents twice. Instead, a clone registers `kb` and the docs servers at local scope (`kb_mcp.py --register-local`), and the agents list both tool names.
@@ -9,13 +9,13 @@ How the open decisions went:
 - **Found on the way:** the kb server lacked `resultType` (MCP 2026-07-28), so Claude Code 2.1.282 loaded no kb tools from the plugin. Fixed.
 
 
-Decided: implement everything below. It builds on `token-usage-report.md` (measurements, and changes A-G already done) and on web and Claude Code docs research from 2026-09-25 (sources at the end).
+Decided: implement everything below. It builds on `_self/reports/token-usage.md` (measurements, and changes A-G already done) and on web and Claude Code docs research from 2026-09-25 (sources at the end).
 
 Principle: deterministic tools answer; the agent picks a tool, checks the verdict and writes the reply.
 
 The numbers that matter are measured in a **host project that uses the kb as a plugin**, not only in this repo. The reference scenario is a developer whose TypeScript MCP server talks to MECM and AD. They install `it-ops-kb` as a plugin, look up facts while coding, and later run a review skill (T13).
 
-Read `MAINTAINING.md` before changing anything. Every task ends with the full gate:
+Read `_self/maintaining.md` before changing anything. Every task ends with the full gate:
 - `check.py`, `build_index.py --check`, `kbgit.py fix --check`;
 - `tests.py`, and `stress_test.py` if `_tools/` changed;
 - `fetch.py --offline`;
@@ -25,7 +25,7 @@ Read `MAINTAINING.md` before changing anything. Every task ends with the full ga
 
 - **Where guidance reaches.**
   - In a clone of this repo, `CLAUDE.md` imports `AGENTS.md`.
-  - In a host project that uses the plugin, `AGENTS.md` and `MAINTAINING.md` never load; only the host's own `CLAUDE.md` does.
+  - In a host project that uses the plugin, `AGENTS.md` and `_self/maintaining.md` never load; only the host's own `CLAUDE.md` does.
   - The plugin reaches a host session only through: the `kb` server's instructions (always loaded), skill and agent names and descriptions (always loaded), and skill and agent bodies (loaded when used).
   - Any rule a host must follow goes there.
 - **No `rag.py` in a host.** The plugin copy lives under `~/.claude/plugins/cache/...`, so `python3 _tools/rag.py` does not resolve from the host's directory. In a host, the kb MCP tools are the only lookup interface. Nothing reached from the plugin may depend on a `rag.py` path.
@@ -50,7 +50,7 @@ Ship it from the plugin with `"agents": ["./.claude/agents/kb-lookup.md"]` in `.
 
 To decide while implementing: in a clone the `kb` MCP server is not configured (only the plugin declares it), so the agent's MCP tool names would not resolve there. Recommended: run clone sessions with the plugin loaded from the working tree (`claude --plugin-dir .`, or a local marketplace add and install), so the same tool names exist in both places. Verify this, and check that no tool is loaded twice.
 
-Acceptance: record the agent's startup context in a fresh session (the transcript's first request). The hypothesis is under 10k tokens, against 50k for the general-purpose agent. Record the real number in `token-usage-report.md`.
+Acceptance: record the agent's startup context in a fresh session (the transcript's first request). The hypothesis is under 10k tokens, against 50k for the general-purpose agent. Record the real number in `_self/reports/token-usage.md`.
 
 `experimental.cacheTtl`: leave unset. Set `1h` only if measurement shows the agent is spawned repeatedly with gaps over 5 minutes, because 1-hour cache writes cost more.
 
@@ -199,10 +199,10 @@ Build a throwaway host directory outside the repo:
 Load the plugin with `--plugin-dir <this repo>` and record:
 - `claude plugin details it-ops-kb` (the always-on cost);
 - `/context` in an interactive session (MCP tools, agents, skills lines);
-- the six questions from `token-usage-report.md`, each with `claude -p "<question>" --model sonnet --output-format json`: turns, input tokens, output tokens, time;
+- the six questions from `_self/reports/token-usage.md`, each with `claude -p "<question>" --model sonnet --output-format json`: turns, input tokens, output tokens, time;
 - one `/kb-review-workspace` run: turns, tokens, and whether the findings cite both the host line and the kb.
 
-Compare the same questions in this repo. Put the results in `token-usage-report.md` under a new section.
+Compare the same questions in this repo. Put the results in `_self/reports/token-usage.md` under a new section.
 
 Method notes from the 2026-09-25 runs:
 - Allow the Skill tool, or the old procedure wastes a turn on a denied call.

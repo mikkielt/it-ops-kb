@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Regenerate the kb's index files from the articles and data (stdlib only). Never edit these by hand.
 
-  build_index.py            rewrite what is out of date: _coverage.csv, the README coverage table, used_in in _sources.csv
+  build_index.py            rewrite what is out of date: _coverage.csv, the coverage table, used_in in _sources.csv
   build_index.py --check    write nothing; exit 1 and list what differs when a generated file is out of date
 
 Content files are the files under the domain directories: every path with a `/` whose top directory does not
@@ -17,13 +17,13 @@ _coverage.csv (topic,priority,status,files,n_sources), one row per topic:
   - a topic with no article (e.g. a CSV-only table) is a row of _tools/index_extra.csv (topic,priority,status,files;
     files `;`-separated). Its n_sources is the number of distinct known source ids cited in those files.
   - rows are ordered by domain, then priority, then topic id.
-README.md: the table between `<!-- coverage:start -->` and `<!-- coverage:end -->` is the same rows; nothing else
-  in README.md is touched.
+_self/coverage.md: the table between `<!-- coverage:start -->` and `<!-- coverage:end -->` is the same rows; nothing
+  else in the file is touched. A kb without that file (a team kb served with KB_ROOT) keeps the table in its README.md.
 _sources.csv used_in: the sorted `;`-joined content files whose text cites the id (legacy `\\bS\\d+\\b`, hash
   `\\bS-[a-z2-7]{8}\\b`, anywhere in the file). Root files (_answers.md, ...) never count; a pinned
   artifact that does not cite its source is linked to it by _artifacts.csv, not by used_in. Every other column and the row order are kept.
 Output is deterministic: `\\n` line endings, no BOM, stable order. Running it twice changes nothing.
-Exit 0 up to date (or written), 1 out of date (--check), 2 cannot build (unreadable ledger, missing README markers).
+Exit 0 up to date (or written), 1 out of date (--check), 2 cannot build (unreadable ledger, missing table markers).
 """
 import argparse, csv, io, os, sys
 
@@ -34,6 +34,7 @@ KB = kbcommon.KB  # KB_ROOT, else this repository
 EXTRA = os.path.join("_tools", "index_extra.csv")
 COVERAGE_FIELDS = ["topic", "priority", "status", "files", "n_sources"]
 START, END = "<!-- coverage:start -->", "<!-- coverage:end -->"
+COVERAGE_MD = "_self/coverage.md"
 CITE = kbid.SOURCE_ID
 
 
@@ -149,6 +150,13 @@ def coverage_rows(files, texts, known, warnings):
 csv_text = kbcommon.csv_text
 
 
+def coverage_page(override=None):
+    """The file that holds the coverage table: _self/coverage.md, or README.md in a kb without it (KB_ROOT)."""
+    if COVERAGE_MD in (override or {}) or os.path.exists(os.path.join(KB, COVERAGE_MD)):
+        return COVERAGE_MD
+    return "README.md"
+
+
 def readme_table(rows):
     lines = [START, "| Topic | Priority | Status | Files | Sources |", "|---|---|---|---|---|"]
     for r in rows:
@@ -173,13 +181,14 @@ def build(override=None, texts_out=None):
     rows = coverage_rows(files, texts, known, warnings)
     out = {"_coverage.csv": csv_text(COVERAGE_FIELDS, rows)}
 
-    readme = get("README.md")
-    if readme is None:
-        raise BuildError("cannot read README.md")
-    i, j = readme.find(START), readme.find(END)
+    page = coverage_page(override)
+    doc = get(page)
+    if doc is None:
+        raise BuildError(f"cannot read {page}")
+    i, j = doc.find(START), doc.find(END)
     if i < 0 or j < i:
-        raise BuildError(f"README.md lacks the {START} ... {END} markers around the coverage table")
-    out["README.md"] = readme[:i] + readme_table(rows) + readme[j + len(END):]
+        raise BuildError(f"{page} lacks the {START} ... {END} markers around the coverage table")
+    out[page] = doc[:i] + readme_table(rows) + doc[j + len(END):]
 
     used = {}
     for f in files:

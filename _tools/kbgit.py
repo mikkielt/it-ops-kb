@@ -47,9 +47,9 @@ Sync (the only way to push; people push straight to main, CI is a safety net):
   b. git fetch REMOTE BRANCH; prints how far HEAD is ahead of / behind REMOTE/BRANCH.
   c. git -c merge.conflictStyle=diff3 rebase REMOTE/BRANCH (diff3: see MERGE_CFG; merge commits are linearised: they
      would carry no trailers). A step that conflicts only
-     in MECHANICAL paths (the union ledgers, _coverage.csv, _tools/lint_baseline.txt, the README coverage table) is
+     in MECHANICAL paths (the union ledgers, _coverage.csv, _tools/lint_baseline.txt, the coverage table page) is
      resolved with `fix --base <merge-base> --upstream REMOTE/BRANCH --side <old HEAD>`, `git add -u`, `git rebase
-     --continue`. Any other conflicted path (an article, a tool, docs, README outside the table) stops with exit 3
+     --continue`. Any other conflicted path (an article, a tool, docs, the coverage page outside the table) stops with exit 3
      and the rebase left in progress: `needs-human: PATH` lines, a `sync-state: base=.. upstream=.. orig_head=..` line
      and the commands to finish (or `git rebase --abort`). Article text is never resolved automatically.
   d. fix (with --base/--side when both sides had commits); what it changed is committed on its own as
@@ -99,8 +99,8 @@ _answers.md, _gaps.md, _conflicts.md  conflict markers dropped (union semantics)
 _tools/lint_baseline.txt  if a merge touched it (markers, unsorted or duplicate lines), it becomes the current lint
                errors that either side had accepted, sorted: a merge never accepts new lint debt by itself.
 .gitattributes  the block between `# pinned:start` and `# pinned:end` lists every _artifacts.csv path as `-text`.
-Then build_index.py regenerates _coverage.csv, the README coverage table (conflict markers inside the table go
-with it) and used_in. Conflict markers left anywhere else in a ledger, README or an article: exit 2.
+Then build_index.py regenerates _coverage.csv, the coverage table in _self/coverage.md (conflict markers inside the
+table go with it) and used_in. Conflict markers left anywhere else in a ledger, that page or an article: exit 2.
 
 Sides of the merge (for collisions): --side REV (repeatable), else MERGE_HEAD during a merge (HEAD + MERGE_HEAD),
 else the parents of HEAD when HEAD is a merge commit. Base: --base REV (e.g. `git merge-base A B`). --upstream REV is
@@ -850,8 +850,9 @@ def run(a):
                 raise Problem(f"build_index: {e}")
             for p, (_, new) in result.items():
                 out[p] = new
-            if has_markers(out["README.md"]):
-                problems.append("README.md has conflict markers outside the coverage table; resolve them by hand")
+            page = build_index.coverage_page(out)
+            if has_markers(out[page]):
+                problems.append(f"{page} has conflict markers outside the coverage table; resolve them by hand")
             for f in build_index.content_files():
                 t = out.get(f)
                 if t is None and f.endswith((".md", ".csv", ".yaml", ".yml", ".json")):
@@ -1531,8 +1532,8 @@ def cmd_tag_census(a):
 # ---------------------------------------------------------------- sync: fetch, rebase, fix, gate, push
 
 # Paths whose rebase conflicts are resolved mechanically: the union ledgers and the generated files. `fix` rebuilds
-# them (README.md only when its markers are inside the coverage table; otherwise fix reports it and sync stops).
-MECHANICAL = frozenset((SOURCES, STATE, *MD_LEDGERS, "_coverage.csv", BASELINE, "README.md"))
+# them (the coverage page only when its markers are inside the table; otherwise fix reports it and sync stops).
+MECHANICAL = frozenset((SOURCES, STATE, *MD_LEDGERS, "_coverage.csv", BASELINE, build_index.COVERAGE_MD))
 IN_PROGRESS = (("rebase-merge", "a rebase", "git rebase --continue, or git rebase --abort"),
                ("rebase-apply", "a rebase", "git rebase --continue, or git rebase --abort"),
                ("MERGE_HEAD", "a merge", "git merge --continue, or git merge --abort"),

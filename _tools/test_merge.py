@@ -248,11 +248,11 @@ class TestMergeInGit:
 
     def test_union_ledgers_have_no_markers(self):
         conflicted = set(self.repo.git("diff", "--name-only", "--diff-filter=U").split()) if self.merge.returncode else set()
-        assert conflicted <= {"README.md"}, self.merge.stdout  # only the generated README table may conflict
+        assert conflicted <= {"_self/coverage.md"}, self.merge.stdout  # only the generated coverage table may conflict
 
     def test_fix_resolves_everything(self):
         assert self.fix.returncode == 0, self.fix.stdout + self.fix.stderr
-        for rel in ("_sources.csv", "_fetch_state.csv", "_answers.md", "_gaps.md", "_coverage.csv", "README.md",
+        for rel in ("_sources.csv", "_fetch_state.csv", "_answers.md", "_gaps.md", "_coverage.csv", "_self/coverage.md",
                     "windows/merge-test-a.md", "windows/merge-test-b.md"):
             assert not kbgit.has_markers(self.repo.read(rel)), rel
 

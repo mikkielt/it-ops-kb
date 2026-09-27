@@ -331,8 +331,8 @@ def coverage(d):
 
 
 def test_index_extras_flow(tmp_path):
-    """build_index.py: files: extras, topics without an article, ordering, the README row, used_in, idempotency."""
-    B, GEN = "build_index.py", ("_coverage.csv", "README.md", "_sources.csv")
+    """build_index.py: files: extras, topics without an article, ordering, the coverage page row, used_in, idempotency."""
+    B, GEN = "build_index.py", ("_coverage.csv", "_self/coverage.md", "_sources.csv")
     d = copy_kb(tmp_path, "index")
     call(d, B, ["--check"], 0, "out_of_date=0")
     art = lambda topic, extra="": (f"---\ntopic: {topic}\npriority: P3\nretrieved_utc: 2026-09-25\nsources: [S100, S101]\n"  # noqa: E731
@@ -353,7 +353,7 @@ def test_index_extras_flow(tmp_path):
     topics = list(cov)
     assert topics == sorted(topics, key=lambda t: (t.split("/")[0], cov[t]["priority"], t)), "rows not ordered by domain, priority, topic"
     assert "| `ad/extras` | P3 | partial | `ad/extras.md`, `ad/extras.csv`, `ad/extras-data/`, `ad/extras-data/digest.md` | 2 |" \
-        in read(d, "README.md"), "README row missing between the markers"
+        in read(d, "_self/coverage.md"), "coverage page row missing between the markers"
     src = {r["id"]: r for r in csv.DictReader(io.StringIO(read(d, "_sources.csv")))}
     assert "ad/extras.csv" in src["S102"]["used_in"].split(";") and "ad/table-only.csv" in src["S101"]["used_in"].split(";") \
         and not any(u.startswith(("_", ".")) or "/" not in u for r in src.values() for u in r["used_in"].split(";") if u), \
@@ -377,13 +377,13 @@ HAND_EDITS = [  # (name, mutate(copy), --check exit, expect, a build repairs it)
     ("rows swapped", lambda d: write(d, "_coverage.csv", (lambda ls: "\n".join([ls[0], ls[2], ls[1]] + ls[3:]))(
         read(d, "_coverage.csv").split("\n"))), 1, "row order", True),
     ("CRLF _coverage.csv", lambda d: write(d, "_coverage.csv", read(d, "_coverage.csv").replace("\n", "\r\n")), 1, "_coverage.csv", True),
-    ("hand-edited README row", lambda d: write(d, "README.md", read(d, "README.md").replace(f"| `{T0}` |", f"| `{T0}` | P9 |", 1)),
-     1, "README.md: coverage table differs", True),
+    ("hand-edited coverage page row", lambda d: write(d, "_self/coverage.md", read(d, "_self/coverage.md").replace(
+        f"| `{T0}` |", f"| `{T0}` | P9 |", 1)), 1, "_self/coverage.md: coverage table differs", True),
     ("hand-edited used_in", lambda d: add_sources(d, patch={"S100": {"used_in": "dsc/nothing.md"}}), 1, "S100 used_in", True),
     ("front matter changed, index not rebuilt", lambda d: write(d, T0 + ".md", read(d, T0 + ".md").replace(
         "\nstatus: ", "\nstatus: unknown\nold_status: ", 1)), 1, f"_coverage.csv: {T0}: status", True),
-    ("README without markers", lambda d: write(d, "README.md", read(d, "README.md").replace("<!-- coverage:start -->", "")),
-     2, "lacks the", False),
+    ("coverage page without markers", lambda d: write(d, "_self/coverage.md", read(d, "_self/coverage.md").replace(
+        "<!-- coverage:start -->", "")), 2, "_self/coverage.md lacks the", False),
     ("files: names a missing path (warned, lint errors)", lambda d: write(d, T0 + ".md", read(d, T0 + ".md").replace(
         "\nstatus: ", "\nfiles: [ad/nope.csv]\nstatus: ", 1)), 1, "files: lists missing ad/nope.csv", True),
     ("_sources.csv deleted", lambda d: os.remove(os.path.join(d, "_sources.csv")), 2, "cannot read _sources.csv", False),

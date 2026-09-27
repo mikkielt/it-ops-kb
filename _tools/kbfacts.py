@@ -29,7 +29,7 @@ reads only the postings of the question's words from it (stdlib sqlite3); otherw
 from memory and saves the index for the next process. Output is identical either way: scores are summed in the same
 term order per unit and ties keep corpus order. Where the file goes: `index_path()`.
 The same index serves `search()` (rag.py search, kb_search): the corpus also holds untagged prose paragraphs, and at
-its end the root index files (INDEX_FILES), which only a search with `index` sees.
+its end the root index files (INDEX_FILES) and the kb's own docs (_self/), which only a search with `index` sees.
 """
 import array, bisect, csv, functools, hashlib, io, json, math, os, re, sqlite3, sys, tempfile, threading, time
 from collections import Counter, defaultdict
@@ -41,7 +41,7 @@ import kbcommon, kbid  # noqa: E402
 KB = kbcommon.KB  # KB_ROOT, else this repository (kbcommon)
 
 KINDS = ("DOC", "DER", "COMMUNITY", "UNK")
-SKIP_DIRS = {"_tools", "_private", "_cache", "_census", "artifacts"}
+SKIP_DIRS = {"_tools", "_private", "_cache", "_census", "_self", "artifacts"}
 TAG = re.compile(r"\[(?:DOC|DER|COMMUNITY|UNK)\b[^\]]*\]")
 ID = kbid.SOURCE_ID
 _PART_SPLIT = re.compile(r"\s*[;,]\s*(?=(?:DOC|DER|COMMUNITY|UNK)\b)")
@@ -100,6 +100,16 @@ def is_article(text):
 
 
 INDEX_FILES = ("README.md", "_answers.md", "_gaps.md", "_conflicts.md", "_coverage.csv")  # searched with --index only
+SELF_DIR = "_self"  # the kb's own docs (rules, tool reference, design): searched with --index only, never packed
+
+
+def index_files():
+    """The files only a search with `index` sees: the root index files, then every .md under _self/, sorted."""
+    out = list(INDEX_FILES)
+    for root, dirs, files in os.walk(os.path.join(KB, SELF_DIR)):
+        dirs.sort()
+        out += sorted(os.path.relpath(os.path.join(root, f), KB).replace(os.sep, "/") for f in files if f.endswith(".md"))
+    return out
 
 
 def kb_files(exts=(".md", ".csv")):
@@ -126,7 +136,7 @@ def fingerprint():
     if _FP[1] is not None and now - _FP[0] < FP_MEMO:
         return _FP[1]
     h = hashlib.sha1(f"{INDEX_VERSION}|{os.environ.get('KB_DOC2QUERY', '')}".encode())
-    extra = ["_sources.csv", *INDEX_FILES, ALIASES, SIGNALS, kbcommon.data_path("doc2query/expansions.csv"),
+    extra = ["_sources.csv", *index_files(), ALIASES, SIGNALS, kbcommon.data_path("doc2query/expansions.csv"),
              os.path.join(TOOLS, "kbfacts.py"), os.path.join(TOOLS, "kbid.py")]  # absolute: join(KB, abs) is abs
     for rel in list(kb_files()) + extra:
         try:
@@ -506,9 +516,9 @@ def fact_key(text):
 
 
 def index_units():
-    """Units of the root index files (INDEX_FILES): every bullet, table row, paragraph and data row, tagged or not."""
+    """Units of the index files (index_files()): every bullet, table row, paragraph and data row, tagged or not."""
     out = []
-    for rel in INDEX_FILES:
+    for rel in index_files():
         text = read(rel)
         if text is not None:
             out += md_units(rel, text, untagged=True) if rel.endswith(".md") else csv_units(rel, text)

@@ -172,7 +172,7 @@ class TestResearchMergeInGit:
                                       "Open: config rotation. [UNK]"], ARTICLE_B))
         d.write("_coverage.csv", d.read("_coverage.csv").replace(
             "agents/api-tokens-issue-and-store,P1,complete,", "agents/api-tokens-issue-and-store,P1,partial,"))
-        d.write("README.md", d.read("README.md").replace(
+        d.write("_self/coverage.md", d.read("_self/coverage.md").replace(
             "| `agents/api-tokens-issue-and-store` | P1 | complete |", "| `agents/api-tokens-issue-and-store` | P1 | partial |"))
 
     @classmethod

@@ -2,10 +2,12 @@
 runs them with every other test module).
 
 TestToolChecks, TestCohesion: check.py and fetch.py --offline pass; no lint errors beyond the recorded baseline; the
-generated index files (_coverage.csv, README coverage table, used_in) are up to date (build_index.py --check); links,
+generated index files (_coverage.csv, the _self/coverage.md table, used_in) are up to date (build_index.py --check); links,
 backtick paths and used_in paths resolve; every CLI flag the docs mention exists in that tool; the docs servers' .mcp.json (.claude-plugin/it-ops-kb-docs/), .claude/settings.json and AGENTS.md agree;
-skills are well-formed and only /kb-lookup is model-invocable; AGENTS.md stays under 4 KB
-(every session and subagent loads it; maintainer rules live in MAINTAINING.md); `ruff check` is clean (pyproject.toml).
+skills are well-formed and only /kb-lookup is model-invocable; AGENTS.md stays under 4 KB (every session and subagent
+loads it; maintainer rules live in _self/maintaining.md) and README.md under 8 KB (people read it); _self/map.csv names
+every _self doc and matches files (selfdoc.py check); `ruff check` is clean (pyproject.toml).
+TestSelfDocs: _self/ stays out of the pack and the default search, and a search with index finds it.
 TestLookup (deterministic retrieval): kbfacts.py parses tag variants and ledger topic markers one way; `rag.py eval` passes
 every question of _tools/lookup_eval.csv (expected article in the pack, right coverage verdict); the kb: hook blocks
 a covered question, forwards an uncovered one with the pack, and leaves other prompts alone.
@@ -111,7 +113,9 @@ def fmt(found, limit=20):
     return "\n".join(f"  {f}:{n}: {v}" for f, n, v in found[:limit]) + (f"\n  ... +{len(found) - limit}" if len(found) > limit else "")
 
 
-DOCS = ["README.md", "AGENTS.md", "MAINTAINING.md"] + sorted(os.path.relpath(p, KB) for p in glob.glob(os.path.join(KB, ".claude", "skills", "*", "SKILL.md")))
+# the docs held to the code: the root docs, the current _self/ docs (not _self/reports/, dated records) and the skills
+DOCS = ["README.md", "AGENTS.md"] + sorted(os.path.relpath(p, KB) for p in glob.glob(os.path.join(KB, "_self", "*.md"))) \
+    + sorted(os.path.relpath(p, KB) for p in glob.glob(os.path.join(KB, ".claude", "skills", "*", "SKILL.md")))
 
 
 class TestToolChecks:
@@ -253,15 +257,39 @@ class TestCohesion:
 
     def test_claude_md_imports_agents_md(self):
         assert "@AGENTS.md" in (text("CLAUDE.md") or "")
-        assert "MAINTAINING.md" not in (text("CLAUDE.md") or ""), "MAINTAINING.md is read on demand, never imported"
+        assert "_self/" not in (text("CLAUDE.md") or ""), "_self/ docs are read on demand, never imported"
 
     def test_agents_md_stays_small(self):
         size = len((text("AGENTS.md") or "").encode())
         assert size <= 4096, f"AGENTS.md is {size} bytes: it loads into every session and subagent; " \
-                                         "move maintainer detail to MAINTAINING.md"
+                                         "move maintainer detail to _self/"
         for s in glob.glob(os.path.join(KB, ".claude", "skills", "*", "SKILL.md")):
             if os.path.basename(os.path.dirname(s)) not in ("kb-lookup", "kb-review-workspace", "kb-gap"):  # read-only skills
-                assert "MAINTAINING.md" in text(os.path.relpath(s, KB)), f"{s}: a skill that changes the kb must point to MAINTAINING.md"
+                assert "_self/" in text(os.path.relpath(s, KB)), f"{s}: a skill that changes the kb must name the _self/ docs it follows"
+
+    def test_readme_stays_short(self):
+        size = len((text("README.md") or "").encode())
+        assert size <= 8192, f"README.md is {size} bytes: it is the short overview for people; move agent detail to _self/"
+        assert "coverage:start" not in (text("README.md") or ""), "the coverage table lives in _self/coverage.md"
+
+    def test_self_map_is_complete(self):
+        code, out = run(os.path.join(TOOLS, "selfdoc.py"), "check")
+        assert code == 0, out[-3000:]
+
+
+class TestSelfDocs:
+    def test_self_docs_stay_out_of_the_pack(self):
+        """_self/ words (hook, skill, plugin, pack) must never compete with the domain articles in a pack."""
+        main = [u for u in kbfacts.corpus() if not u.get("root")]
+        assert main and not [u["path"] for u in main if u["path"].startswith("_self/")]
+        assert not [f for f in kbfacts.kb_files() if f.startswith("_self/")]
+        assert "_self" not in __import__("rag").topics(None)
+
+    def test_search_with_index_finds_self_docs(self):
+        import rag
+        paths = lambda index: [h["path"].replace(os.sep, "/") for h in rag.search("selfdoc stale map.csv docs", 5, None, index, [])]  # noqa: E731
+        assert not [p for p in paths(False) if p.startswith("_self/")]
+        assert any(p.startswith("_self/") for p in paths(True)), paths(True)
 
 
 class TestLookup:

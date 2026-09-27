@@ -32,8 +32,8 @@ _tools/lookup_eval.csv merge=union
 
 # Generated files: union so a merge never stops on them, then `kbgit.py fix` regenerates them
 # (build_index.py for _coverage.csv; lint_baseline.txt = current lint errors that either side had accepted).
-# README.md is NOT here: it is mostly hand-written and merges normally; if its generated coverage table
-# conflicts, `kbgit.py fix` rewrites the table (markers inside it included); `git add README.md` afterwards.
+# _self/coverage.md is NOT here: its header is hand-written and it merges normally; if its generated coverage table
+# conflicts, `kbgit.py fix` rewrites the table (markers inside it included); `git add _self/coverage.md` afterwards.
 _coverage.csv merge=union
 _tools/lint_baseline.txt merge=union
 

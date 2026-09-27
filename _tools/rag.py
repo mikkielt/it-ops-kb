@@ -30,7 +30,8 @@
 Summary, Reference and Examples lines and untagged data rows, printed with `(no tag)`; they never make it `good`.
 
 Add --json (before the command) for machine output. artifacts/ directories are not indexed. search skips the
-root-level index files (README.md, _answers.md, _gaps.md, _conflicts.md, _coverage.csv) unless --index.
+root-level index files (README.md, _answers.md, _gaps.md, _conflicts.md, _coverage.csv) and the kb's own docs
+(_self/) unless --index; pack never sees them.
 """
 import argparse, csv, json, os, sys
 from collections import Counter, defaultdict
@@ -67,7 +68,7 @@ def search(query, k, domain, index=False, notes=None):
 def topics(domain):
     out = defaultdict(lambda: {"articles": [], "dirs": Counter(), "data": []})
     for root, dirs, files in os.walk(KB):
-        dirs[:] = sorted(d for d in dirs if d not in {"_tools", "_private", "_cache", "_census"} and not d.startswith("."))
+        dirs[:] = sorted(d for d in dirs if d not in {"_tools", "_private", "_cache", "_census", "_self"} and not d.startswith("."))
         for f in sorted(files):
             rel = os.path.relpath(os.path.join(root, f), KB)
             parts = rel.split(os.sep)
@@ -230,7 +231,7 @@ def main():
     t = sub.add_parser("topics"); t.add_argument("domain", nargs="?")
     s = sub.add_parser("search"); s.add_argument("query", nargs="+"); s.add_argument("-k", type=positive_int, default=8); s.add_argument("-d", "--domain")
     s.add_argument("-u", "--urls", action="store_true", help="resolve each hit's cited source ids to their origin url")
-    s.add_argument("--index", action="store_true", help="also search the root-level index files (README.md, _answers.md, ...)")
+    s.add_argument("--index", action="store_true", help="also search the root-level index files (README.md, _answers.md, ...) and the _self/ docs")
     s.add_argument("--format", choices=FORMATS, default="concise", help="detailed: 600 characters per hit (-u implies it)")
     r = sub.add_parser("src"); r.add_argument("ids", nargs="+")
     r.add_argument("--cited", action="store_true", help="also list every file line that names each id")

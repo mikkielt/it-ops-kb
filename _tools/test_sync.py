@@ -27,9 +27,9 @@ def rows(text):
 class TestSyncRules:
     def test_mechanical_paths(self):
         for p in ("_sources.csv", "_fetch_state.csv", "_answers.md", "_gaps.md", "_conflicts.md", "_coverage.csv",
-                  "_tools/lint_baseline.txt", "README.md"):
+                  "_tools/lint_baseline.txt", "_self/coverage.md"):
             assert p in kbgit.MECHANICAL
-        for p in ("auth/kerberos.md", "_tools/kbgit.py", "AGENTS.md", ".gitattributes", "_artifacts.csv"):
+        for p in ("auth/kerberos.md", "_tools/kbgit.py", "AGENTS.md", "README.md", ".gitattributes", "_artifacts.csv"):
             assert p not in kbgit.MECHANICAL
 
     def test_fix_args_and_renumber_lines(self):

@@ -233,7 +233,7 @@ The only runtime dependency seriously considered is `mcp`. Leave it out, or put 
   - `kbgit fix --check`, `check.py`, `build_index.py --check`.
 - After the refactor, diff byte for byte.
 - R1, R2, R4, R5 and R6 must be identical. R3 is the one intended change and needs acceptance.
-- The gate in `MAINTAINING.md` still applies to every commit: `check.py`, `build_index.py --check`,
+- The gate in `_self/maintaining.md` still applies to every commit: `check.py`, `build_index.py --check`,
   `kbgit.py fix --check`, `tests.py`, `stress_test.py`, `fetch.py --offline`, `rag.py eval` at 100%.
 
 ## Suggested order
