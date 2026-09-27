@@ -3,8 +3,8 @@ topic: auth/revocation
 priority: P1
 applies_to: "AD DS, Entra ID, ConfigMgr AdminService, Microsoft Graph, SQL Server, SMB, GitLab"
 retrieved_utc: 2026-09-27
-sources: [S1380, S1378, S1344, S1345, S1347, S1348, S1354, S1355, S1306, S1375, S1376, S1377]
-status: partial
+sources: [S1380, S1378, S1344, S1345, S1347, S1348, S1354, S1355, S1306, S1375, S1376, S1377, S-iqal4gqk, S-dhnetmt7, S-sjlqevgj, S-m45iz65n, S-yg2usmqp]
+status: complete
 ---
 
 ## Summary
@@ -53,9 +53,10 @@ ticket requests, so the real picture has three windows:
   more than ~20 minutes later, but a session that was already open keeps working for up to the remaining
   service-ticket lifetime -- worst case ~10 hours under the default policy -- until it is explicitly
   killed or drops for another reason. [DER S1380, S1378, S1376]
-- `[UNK]`: whether ConfigMgr's AdminService/SMS Provider performs any additional per-call AD state check
-  beyond trusting the Kerberos ticket (which would shorten the "already-open connection" window further)
-  is not confirmed by this agent; see `configmgr-rbac-auth.md` (another agent) and `gaps.md`.
+- No ConfigMgr page read (Configure role-based administration, Plan for the SMS Provider, role-based
+  administration fundamentals, the AdminService pages) documents a per-call AD account-state check by the
+  AdminService/SMS Provider beyond the Kerberos ticket, so the ticket windows above are the documented
+  bound; a lab check can still show a shorter one. [DER S-iqal4gqk, S1380: absence in the ConfigMgr pages]
 
 ### (b) Entra user disabled + `revokeSignInSessions`
 - `revokeSignInSessions` (Graph `POST /users/{id}/revokeSignInSessions`) invalidates all of a user's
@@ -128,17 +129,24 @@ ticket requests, so the real picture has three windows:
   explicit, synchronous action, not something that happens automatically on user block/disable by default.
   [DOC S1377] For an **Enterprise user** (GitLab's term for a managed user under a verified domain,
   Premium/Ultimate), GitLab documents that deleting or blocking that user's account **automatically**
-  revokes their personal access tokens. [DOC S1377] `[UNK]`: whether a plain (non-Enterprise-user) GitLab.com
-  or self-managed account block also auto-revokes PATs, and the effect of a block on already-registered
-  CI/CD job tokens, runner authentication tokens (`glrt-`), and active web sessions, were not confirmed by
-  this agent in the pages fetched; left to `gitlab-ci-identity.md` and `gaps.md`.
+  revokes their personal access tokens. [DOC S1377]
+- A blocked user cannot sign in or access any repositories, and a deactivated user cannot access
+  repositories or the API. [DOC S-dhnetmt7] So a plain account's PATs stop working once the account is
+  blocked or deactivated, even though they are not revoked (they work again if it is unblocked); revoke
+  them explicitly when the block is meant to be permanent. [DER S-dhnetmt7, S1377] The effect of a block
+  on CI/CD job tokens, runner authentication tokens (`glrt-`) and open web sessions is not stated in these
+  pages (see `_gaps.md`).
+- A membership removal is not evaluated live per request: project access, with group membership
+  already applied, is stored in the `project_authorizations` table [DOC S-sjlqevgj], and creating or
+  destroying a membership queues an asynchronous `AuthorizedProjectsWorker` refresh (Sidekiq, high
+  priority). [CODE S-m45iz65n: app/models/member.rb#refresh_member_authorized_projects; CODE S-yg2usmqp: app/services/user_project_access_changed_service.rb#execute]
 
 ## Reference
 | Step | AdminService | Graph | SQL Server | SMB | GitLab |
 |---|---|---|---|---|---|
-| AD account disabled | new session refused after ~20 min (TGS-REQ recheck); existing session up to ~10h (service-ticket lifetime); [UNK] extra AdminService check | n/a (AD-only) | existing connection unaffected until `KILL`; new connections refused after ~20 min (TGS-REQ recheck), not next AS-REQ | existing SMB session unaffected; new session refused after ~20 min (TGS-REQ recheck) | n/a (AD-only unless SSO-linked) |
-| Entra disable + revokeSignInSessions | n/a unless AdminService trusts Entra tokens (via CMG, see configmgr-rbac-auth.md) | near-real-time **only if the client declared `cp1`**; otherwise up to 1h (default access-token lifetime) | [UNK: only relevant if Entra auth for SQL is used -- see sql-authz.md] | n/a | Enterprise-user block/delete auto-revokes PATs; plain-account behaviour [UNK] |
-| Removal from a role group | see propagation-latency.csv (ConfigMgr RBAC row) | not a CAE critical event -- waits for next token issuance carrying the groups/roles claim | [UNK] | n/a | [UNK] |
+| AD account disabled | new session refused after ~20 min (TGS-REQ recheck); existing session up to ~10h (service-ticket lifetime); no extra AdminService check documented | n/a (AD-only) | existing connection unaffected until `KILL`; new connections refused after ~20 min (TGS-REQ recheck), not next AS-REQ | existing SMB session unaffected; new session refused after ~20 min (TGS-REQ recheck) | n/a (AD-only unless SSO-linked) |
+| Entra disable + revokeSignInSessions | n/a unless AdminService trusts Entra tokens (via CMG, see configmgr-rbac-auth.md) | near-real-time **only if the client declared `cp1`**; otherwise up to 1h (default access-token lifetime) | Entra auth only: open connection keeps its identity until `KILL`; new connections need a new token (bounded by access-token lifetime; SQL Server is not a CAE resource) | n/a | Enterprise-user block/delete auto-revokes PATs; a plain block stops API use without revoking PATs |
+| Removal from a role group | only with a new TGT (lock, sign-out or TGT expiry, typically 10 h); see propagation-latency.csv | not a CAE critical event -- waits for next token issuance carrying the groups/roles claim | next connection (sign out and in, or `KILL`) | n/a | asynchronous `project_authorizations` refresh (background job) |
 | PAT/token explicit revoke | n/a | n/a | n/a | n/a | immediate, synchronous |
 
 ## Examples

@@ -315,7 +315,8 @@ _Agent: auth_
 _Agent: auth_
 
 ## QA17. Does Microsoft classify ConfigMgr as Tier 0 / control-plane? Official admin-security guidance?
-- No explicit "ConfigMgr = Tier 0" statement found in the enterprise access model, PAW or Windows LAPS docs reviewed this session (S1210, S1212, S1225, S1226). [UNK]
+- No Microsoft page names ConfigMgr as Tier 0 (enterprise access model, PAW, Windows LAPS and AD DS tier model pages read). The AD DS tier model (2026) puts systems that patch, back up, monitor or run agents on Tier 0 identity systems in Tier 0, and IT infrastructure management of Tier 1 servers in Tier 1. [DOC S-7nbamxyc]
+- So ConfigMgr is Tier 0 when it patches or has agents on domain controllers or other Tier 0 systems, and Tier 1 otherwise (updated 2026-09-27). [DER S-7nbamxyc]
 - The enterprise access model generically defines a control plane whose compromise grants full environment control, and recommends PAWs + Windows LAPS + MFA universally; MFA for SMS Provider calls has been available since CB 1702 as the concrete lever. [DOC S1210,S1212,S1225,S1226]
 - KB5014754 (certificate strong-mapping) reached Full Enforcement on 2025-02-11 — directly relevant admin-security guidance for any certificate-based auth touching the SMS Provider/domain controllers. [DOC S1224]
 - The enterprise access model puts "enterprise-wide IT management functions" in the management plane and bases the control plane on centralized identity systems, so on its wording ConfigMgr reads as management plane; treating it as control-plane (Tier 0) equivalent is a local judgement, not a Microsoft classification (see `_conflicts.md`). [DER S1210: plane definitions compared with ConfigMgr's role]
@@ -327,7 +328,7 @@ _Agent: auth_
 - `getMemberGroups`: user target `User.ReadBasic.All` + `GroupMember.Read.All`; any object `Directory.Read.All`. [DOC S1287]
 - So a client-side role check against a small fixed set of role groups fits one `/me/checkMemberGroups` call under `User.Read`. [DER S1286]
 - `getMemberGroups` returns at most 11,000 group ids; beyond that it fails with 400 `Directory_ResultSizeLimitExceeded` (use transitive memberOf instead). [DOC S1287]
-- Other call-specific throttling limits, caching guidance and CAE interplay for these two methods: [UNK] — not stated on the API reference pages fetched.
+- Throttling (updated 2026-09-27): `me/checkMemberGroups` costs 4 resource units and `me/getMemberGroups` 2 in the identity-and-access token bucket, same for `users/{id}/...` [DOC S526]; CAE follows Graph's `cp1` rule [DER S1355]; no caching guidance is published for these calls (S1286, S1287, S526 checked). [DER S1286, S1287, S526: absence]
 
 _Agent: auth_
 
@@ -336,8 +337,8 @@ _Agent: auth_
 - (b) Entra disable + `revokeSignInSessions`: propagates in a few minutes for new sign-ins/refresh-token use. **Correction from this agent's first pass:** Microsoft Graph *is* a CAE resource and *does* enforce the documented critical events (account disable/delete, password change, admin token revocation, high risk) via a claims-challenge -- but only for a calling client that declares the `cp1` MSAL client capability. An MSAL client that declares `cp1` gets near-real-time revocation on Graph for these events; one that doesn't declare `cp1` gets ordinary tokens and keeps working until the default 1-hour access-token expiry. This is a concrete, low-cost design lever for any first-party MSAL client: declare `cp1`. [DOC S1345, S1347, S1354, S1355]
 - (c) Removal from a role group: no effect on an already-issued Kerberos ticket's PAC, and *not* on the CAE critical-event list either (only account disable/delete, password change, explicit token revocation, and high risk are) -- so even a `cp1`-aware client does not get fast revocation for a bare group removal; it waits for the next token/ticket issuance that carries the group, per [[propagation-latency]].
 - SQL Server: `ALTER LOGIN ... DISABLE` explicitly "doesn't affect the behavior of logins that are already connected," and disabled logins "retain their permissions and can still be impersonated" until an explicit `KILL` of the session. [DOC S1375]
-- GitLab: an explicit personal-access-token revoke is immediate and synchronous; for an **Enterprise user** specifically, GitLab documents that blocking or deleting the account auto-revokes PATs. Plain-account block behaviour and the effect on CI job tokens / runner tokens / web sessions are `[UNK]`. [DOC S1377]
-- Full per-system table is in `revocation.md`'s Reference table; several cells remain `[UNK]` where the fact belongs to another owned topic (`configmgr-rbac-auth.md`, `sql-authz.md` for Entra-auth-to-SQL, `gitlab-ci-identity.md`) and this pass did not duplicate that research.
+- GitLab: an explicit personal-access-token revoke is immediate and synchronous; for an **Enterprise user** specifically, GitLab documents that blocking or deleting the account auto-revokes PATs. [DOC S1377] A plain block stops sign-in and repository access and a deactivation stops API use, without revoking PATs (updated 2026-09-27) [DOC S-dhnetmt7]; the effect on CI job tokens, runner tokens and web sessions is not documented (see `_gaps.md`).
+- Full per-system table is in `revocation.md`'s Reference table (all cells filled 2026-09-27; the AdminService provider cache stays a lab check).
 
 _Agent: auth_
 

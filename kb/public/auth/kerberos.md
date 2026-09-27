@@ -2,9 +2,9 @@
 topic: auth/kerberos
 priority: P0
 applies_to: "Windows Server 2025 / Windows 11 24H2, ConfigMgr 2603, SQL Server 2022/2025"
-retrieved_utc: 2026-09-24
-sources: [S-7jumyiid, S1604, S-6m7klb4f, S1200, S-q5hl3fyg, S1205, S1213, S1214, S1215, S1216, S1217]
-status: partial
+retrieved_utc: 2026-09-27
+sources: [S-7jumyiid, S1604, S-6m7klb4f, S1200, S-q5hl3fyg, S1205, S1213, S1214, S1215, S1216, S1217, S-5yckwasl, S-7bouxzdg, S-7bjorbzz, S-ffangyfp, S-6ca4b7bg]
+status: complete
 ---
 
 # Kerberos for workstation-CLI flows (AdminService, SQL)
@@ -20,7 +20,10 @@ status: partial
 ## Facts
 - Since ConfigMgr 2509, the AdminService rejects NTLM authentication outright; `AdminService.log` logs "Rejecting NTLM authentication" on an NTLM attempt. This is already recorded in `mecm/adminservice.md`. [DOC S-7jumyiid]
 - A community forum post (2026-01-19) restates the 2509 change: the AdminService rejects NTLM and `AdminService.log` records "Rejecting NTLM authentication". [COMMUNITY S1213]
-- Callers that used to fall back to NTLM (missing or duplicate SPN, access by IP or short name instead of FQDN) fail outright instead of degrading, and the fix is FQDN plus a registered SPN. [UNK: not in S1213 as re-read 2026-09-27]
+- By default Windows does not attempt Kerberos for a host named by an IP address and falls back to other enabled protocols such as NTLM; Kerberos for IP addresses needs the client `TryIPSPN` setting plus an SPN registered for the IP. [DOC S-5yckwasl]
+- A missing or duplicate SPN makes the KDC return KDC_ERR_S_PRINCIPAL_UNKNOWN or KDC_ERR_PRINCIPAL_NOT_UNIQUE; an SPN specific to a service must be unique in the forest, while common service classes (such as the web service) map to the computer account's automatic HOST SPN. [DOC S-7bouxzdg]
+- So callers that used to reach the AdminService by IP address, or with a missing or duplicate SPN, now fail instead of degrading to NTLM; the fix is the FQDN with one correct SPN, not re-enabling NTLM. Short-name access was not checked against a source. [DER S-7jumyiid, S-5yckwasl, S-7bouxzdg: 2509 NTLM rejection plus the documented fallback and SPN errors]
+- Kerberoasting detection: event 4769 records the ticket encryption type (0x11 and 0x12 AES, 0x17 RC4-HMAC), and Microsoft advises monitoring for types other than 0x11 and 0x12. [DOC S-7bjorbzz] Microsoft also advises checking for one user requesting many service tickets for Kerberoasting-prone accounts in a short time, and Defender raises external ID 2410 for suspected Kerberos SPN exposure. [DOC S-ffangyfp, S-6ca4b7bg]
 - The SMS Provider authentication level setting (Windows / certificate / Windows Hello for Business) applies to the AdminService too, as already recorded in `mecm/adminservice.md`. [DOC S-6m7klb4f]
 - Protected Users group: members cannot authenticate with NTLM; Kerberos preauthentication cannot use DES or RC4, only AES; members cannot be delegated via unconstrained or constrained delegation; TGT lifetime is fixed at 4 hours with no renewal, and this cannot be overridden by domain policy. [DOC S1205]
 - Protected Users also stops Kerberos caching the user's plaintext credentials or long-term keys after the initial TGT, and no cached verifier is created (no offline sign-in). [DOC S1205]
@@ -51,5 +54,5 @@ status: partial
 | `RC4DefaultDisablementPhase` audit key removed | 2026-07 update | AES-only becomes unconditional |
 
 ## Examples
-- SPN check on the SMS Provider host: `setspn -L PL-SRV-0042$` should show `HTTP/PL-SRV-0042.corp.example.com`.
+- SPN check on the SMS Provider host: `setspn -L PL-SRV-0042$` shows the automatic `HOST/PL-SRV-0042.corp.example.com`, which covers HTTP when the site runs as the computer account; an explicit `HTTP/` SPN is needed only on a custom service account, and must then be unique in the forest.
 - SQL SPN check: `setspn -L svc-sql-app` should show `MSSQLSvc/PL-SRV-0042.corp.example.com:1433`.

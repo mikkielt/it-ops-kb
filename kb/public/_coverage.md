@@ -54,32 +54,32 @@ Every topic of this root with its priority (the research order, not importance),
 | `arch/texts-catalogue-formats` | P1 | complete | `arch/texts-catalogue-formats.md` | 9 |
 | `arch/twelve-factor-readiness` | P1 | complete | `arch/twelve-factor-readiness.md` | 12 |
 | `arch/workload-identity-onprem-k8s` | P1 | complete | `arch/workload-identity-onprem-k8s.md` | 5 |
-| `auth/configmgr-rbac-auth` | P0 | partial | `auth/configmgr-rbac-auth.md` | 6 |
-| `auth/flows` | P0 | partial | `auth/flows.md`, `auth/flows.csv` | 28 |
-| `auth/gitlab-ci-identity` | P0 | partial | `auth/gitlab-ci-identity.md` | 2 |
-| `auth/gmsa-dmsa` | P0 | partial | `auth/gmsa-dmsa.md` | 3 |
-| `auth/kerberos` | P0 | partial | `auth/kerberos.md` | 11 |
-| `auth/ldap-smb-signing` | P0 | partial | `auth/ldap-smb-signing.md` | 10 |
-| `auth/msal-public-client` | P0 | partial | `auth/msal-public-client.md` | 9 |
+| `auth/configmgr-rbac-auth` | P0 | complete | `auth/configmgr-rbac-auth.md` | 11 |
+| `auth/flows` | P0 | complete | `auth/flows.md`, `auth/flows.csv` | 28 |
+| `auth/gitlab-ci-identity` | P0 | complete | `auth/gitlab-ci-identity.md` | 4 |
+| `auth/gmsa-dmsa` | P0 | complete | `auth/gmsa-dmsa.md` | 5 |
+| `auth/kerberos` | P0 | complete | `auth/kerberos.md` | 16 |
+| `auth/ldap-smb-signing` | P0 | complete | `auth/ldap-smb-signing.md` | 16 |
+| `auth/msal-public-client` | P0 | complete | `auth/msal-public-client.md` | 10 |
 | `auth/ntlm-deprecation` | P0 | complete | `auth/ntlm-deprecation.md` | 6 |
 | `auth/permissions-matrix` | P0 | partial | `auth/permissions-matrix.csv` | 21 |
-| `auth/sql-authz` | P0 | partial | `auth/sql-authz.md` | 3 |
-| `auth/workload-identity` | P0 | partial | `auth/workload-identity.md` | 17 |
+| `auth/sql-authz` | P0 | complete | `auth/sql-authz.md` | 5 |
+| `auth/workload-identity` | P0 | complete | `auth/workload-identity.md` | 23 |
 | `auth/ad-jit-membership` | P1 | complete | `auth/ad-jit-membership.md` | 4 |
 | `auth/audit-events` | P1 | complete | `auth/audit-events.md`, `auth/audit-events.csv` | 26 |
-| `auth/entra-intune-rbac` | P1 | partial | `auth/entra-intune-rbac.md` | 7 |
-| `auth/group-claims` | P1 | partial | `auth/group-claims.md` | 3 |
-| `auth/key-management-options` | P1 | partial | `auth/key-management-options.md` | 9 |
-| `auth/propagation-latency` | P1 | partial | `auth/propagation-latency.md`, `auth/propagation-latency.csv` | 9 |
-| `auth/revocation` | P1 | partial | `auth/revocation.md` | 12 |
-| `auth/role-source-options` | P1 | partial | `auth/role-source-options.md` | 4 |
-| `auth/token-lifetimes-cae` | P1 | partial | `auth/token-lifetimes-cae.md` | 4 |
+| `auth/entra-intune-rbac` | P1 | complete | `auth/entra-intune-rbac.md` | 7 |
+| `auth/group-claims` | P1 | complete | `auth/group-claims.md` | 4 |
+| `auth/key-management-options` | P1 | complete | `auth/key-management-options.md` | 19 |
+| `auth/propagation-latency` | P1 | complete | `auth/propagation-latency.md`, `auth/propagation-latency.csv` | 27 |
+| `auth/revocation` | P1 | complete | `auth/revocation.md` | 17 |
+| `auth/role-source-options` | P1 | complete | `auth/role-source-options.md` | 7 |
+| `auth/token-lifetimes-cae` | P1 | complete | `auth/token-lifetimes-cae.md` | 8 |
 | `auth/windows-hello-for-business` | P1 | complete | `auth/windows-hello-for-business.md`, `auth/passportforwork-csp.csv` | 10 |
 | `auth/audit-log-apis` | P2 | complete | `auth/audit-log-apis.md` | 19 |
-| `auth/delegation-kcd-obo` | P2 | partial | `auth/delegation-kcd-obo.md` | 10 |
-| `auth/enterprise-access-model` | P2 | partial | `auth/enterprise-access-model.md` | 5 |
-| `auth/threats` | P2 | partial | `auth/threats.md`, `auth/threats.csv` | 4 |
-| `auth/transport-crypto` | P2 | partial | `auth/transport-crypto.md` | 9 |
+| `auth/delegation-kcd-obo` | P2 | complete | `auth/delegation-kcd-obo.md` | 16 |
+| `auth/enterprise-access-model` | P2 | complete | `auth/enterprise-access-model.md` | 7 |
+| `auth/threats` | P2 | complete | `auth/threats.md`, `auth/threats.csv` | 11 |
+| `auth/transport-crypto` | P2 | complete | `auth/transport-crypto.md` | 14 |
 | `autopilot/device-identity` | P1 | partial | `autopilot/device-identity.md` | 11 |
 | `autopilot/device-preparation` | P1 | complete | `autopilot/device-preparation.md`, `autopilot/v1-vs-v2.csv` | 21 |
 | `autopilot/lifecycle` | P1 | complete | `autopilot/lifecycle.md` | 5 |

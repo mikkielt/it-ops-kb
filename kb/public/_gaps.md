@@ -296,17 +296,23 @@ Closed this pass (see kerberos.md, ntlm-deprecation.md, ad-jit-membership.md, co
 - RC4-in-Kerberos deprecation dates — found and dated (S1215, S1216, S1217). (topic: auth/kerberos)
 - AD PAM TTL vs Kerberos ticket lifetime — found (S1219): TTL propagates directly into TGT lifetime. (topic: auth/ad-jit-membership)
 - ConfigMgr RBAC mechanics (QA2) — read 3 official pages (S1218 + 2 more); no provider-cache statement exists, confirmed UNK, LAB line recorded.
+  - Partly resolved 2026-09-27: the Kerberos part is now DOC (S-ffrzumip: a group change does not affect the current TGT or its service tickets); no ConfigMgr page documents a provider cache (Configure role-based administration S-iqal4gqk read in full), recorded as a DER absence. (topic: auth/configmgr-rbac-auth)
 
 Still open: (topic: auth/configmgr-rbac-auth)
 - ConfigMgr-specific provider/role cache behaviour on top of Kerberos PAC group SIDs (QA2): confirmed UNK after 3 official-source attempts (role-based administration fundamentals, configure role-based administration, plan for the SMS Provider, `SMS_Admin` WMI class reference).
   Verification: on an isolated ConfigMgr lab site, add a test admin to a role-granting AD group, call AdminService with an existing ticket, then again after `klist purge`+re-logon → proves whether the SMS Provider adds delay beyond the Kerberos PAC refresh. (topic: auth/configmgr-rbac-auth)
+  - Tried 2026-09-27: Learn searches for SMS Provider membership refresh and token cache, Configure role-based administration (S-iqal4gqk), Plan for the SMS Provider, Accounts, AdminService pages, web search: no provider cache documented. The article records the TGT rule (DOC) and the absence (DER); the lab check stays open. (topic: auth/configmgr-rbac-auth)
 - Mid-ticket TTL group removal (QA10 edge case): does an already-issued, TTL-capped TGT survive an admin's early removal of the membership, or is it invalidated immediately? Not stated in S1219.
   Verification: in an isolated PAM-enabled forest, add then early-remove a TTL group membership and observe whether the already-issued TGT is honoured until its original (TTL-capped) expiry. (topic: auth/ad-jit-membership)
 - `python-ldap` on Windows: does it negotiate SASL sign/seal against a signing-enforced DC over plain `ldap://`? API is documented (S1220) but its Windows sign/seal behaviour is not stated by the docs.
   Verification: attempt `ldap3` vs `python-ldap` vs pywin32/ADSI (`ADS_USE_SIGNING|ADS_USE_SEALING`) GSSAPI binds over plain `ldap://` against a Server 2025 DC with LDAP signing enforced → settles QA15 fully. (topic: auth/ldap-smb-signing)
+  - Partly resolved 2026-09-27: python-ldap 3.4.8 builds on OpenLDAP + Cyrus SASL and ships no wheels; Windows builds are unofficial (S-mc5jjnfr); the SSF options are documented (S-qscera6a); pywin32 b312 wraps ADsOpenObject with the flags DWORD (CODE S-eu32xfgv, S-lzhs4uhl); ldap3 2.9.1 raises on a required security layer (CODE S-63f6rimh). Windows sign/seal behaviour against an enforcing DC still needs the lab. (topic: auth/ldap-smb-signing)
 - DPoP (RFC 9449) GA status for general Entra ID access tokens (beyond MSAL PoP and Windows Token Protection/PRT binding specifically): not confirmed as GA vs preview from an official source. (topic: auth/transport-crypto)
+  - Tried 2026-09-27: Learn search for DPoP / RFC 9449 GA (none); MSAL.NET PoP page (S1223, 'aims to support'); Microsoft Identity Web token binding: mTLS PoP in private preview (S-furaoufn); Entra discovery document advertises mTLS-bound tokens and no DPoP algorithms (S-btl752nc). Recorded as a DER absence; still no GA statement. (topic: auth/transport-crypto)
 - RFC 8693 Token Exchange support in Entra ID: no official Microsoft statement found either confirming or denying; only community sources describe it as unsupported (OBO/client-credentials offered instead). Tried: Microsoft Learn identity-platform search, RFC 8693 + Entra web search. (topic: auth/delegation-kcd-obo)
+  - Tried 2026-09-27: Entra Agent ID protocols page lists client_credentials, jwt-bearer and refresh_token only, for agent apps (S-ygq2kmmq); discovery document has no grant_types_supported (S-btl752nc). No product page confirms or denies RFC 8693; recorded as a DER absence, the Q&A denial stays COMMUNITY. (topic: auth/delegation-kcd-obo)
 - SMB 3.1.1 cipher negotiation specifics (AES-128-GCM vs AES-256-GCM) beyond the signing/encryption defaults: not researched. (topic: auth/ldap-smb-signing)
+  - Resolved 2026-09-27: AES-128-GCM default for SMB 3.1.1, AES-256-CCM/GCM from Server 2022 and Windows 11, strongest common cipher negotiated, mandatable by Group Policy (S-77zvblfr). (topic: auth/ldap-smb-signing)
 - MIM PAM product support status in 2026: not researched. (topic: auth/ad-jit-membership)
 
 ### Entra / Graph / MSAL / GitLab
@@ -315,30 +321,36 @@ Still open: (topic: auth/configmgr-rbac-auth)
   spent hunting the exact limits page; tried general searches, found the mutable-subjects feature page
   but not the limits page directly. Verification: not applicable (this is a docs lookup, not a lab check) —
   needs one more targeted fetch of an Entra app-registration/FIC "limits" or "known issues" page. (topic: auth/workload-identity)
+  - Resolved 2026-09-27: at most 20 federated identity credentials per application or user-assigned managed identity (S1293, live page re-read); already in the article and now in gitlab-ci-identity.md. (topic: auth/workload-identity)
 - Headless/jump-host-specific WAM caveats beyond "Windows 10+/Server 2019+ supported" (QA5): not found
   in the two WAM pages fetched. Verification: run `msal[broker]` interactive acquisition on a Windows Server
   2025 jump host with no interactive console session (e.g. RDP disconnected) -> proves whether WAM's
   window-handle requirement fails outside an active session. (topic: auth/msal-public-client)
+  - Tried 2026-09-27: S1270 re-read (no session caveat); MSAL 1.39.0 falls back to the console, then the desktop window, when no handle is given (CODE S-2tlwkw6u). Recorded as a DER absence; the lab check stays. (topic: auth/msal-public-client)
 - Whether Token Protection covers a bespoke MSAL Python public client's Graph calls, not just
   EXO/SPO desktop apps (QA6): deployment guide scopes examples to Microsoft first-party apps only.
   Verification: enable a Token Protection Conditional Access policy scoped to Microsoft Graph in a test tenant,
   target a test MSAL Python public client, and check whether the refresh token issued is
   proof-of-possession bound and whether Graph rejects it without a matching device. (topic: auth/msal-public-client)
+  - Resolved 2026-09-27 (negative): S1227 re-read lists Exchange Online, SharePoint Online, Teams, AVD and Windows 365 as native-app resources; Graph is not one, so Token Protection does not bind Graph calls (DER S1227). (topic: auth/msal-public-client)
 - Whether nested-group membership counts toward an app-role assignment made to a group (QA7,
   `roles` claim path specifically, as opposed to the `groups`-assigned-to-application claim which is
   documented as excluding nesting): not stated in the two group-claims pages fetched.
   Verification: nest a child group inside a parent group, assign the app role to the parent only,
   sign in as a user who is only a member of the child group, inspect the `roles` claim. (topic: auth/group-claims)
+  - Resolved 2026-09-27: S1310 says the assignment doesn't cascade to nested groups; only direct members get the role. (topic: auth/group-claims)
 - Call-specific throttling and caching guidance for `checkMemberGroups`/`getMemberGroups`, and whether
   they honour CAE (QA18): the two API reference pages carry no throttling/CAE note specific to these
   calls. Verification: none — needs a documentation-only follow-up fetch of the Graph throttling guidance page
   cross-referenced against these two methods. (topic: auth/role-source-options)
+  - Resolved 2026-09-27: me/checkMemberGroups costs 4 resource units and me/getMemberGroups 2, same for users/{id} (S526); CAE follows Graph's cp1 rule (DER S1355). No caching guidance exists on S1286, S1287 or S526. (topic: auth/role-source-options)
 - `delegation-kcd-obo.md` now researched (round 2). Remaining gap: the MCP Enterprise-Managed
   Authorization / ID-JAG "stable June 2026" date and "Entra native ID-JAG not GA" claim come from a
   vendor/community blog (S1300), not modelcontextprotocol.io itself or a Microsoft Learn "what's new"
   page. Verification: none (docs lookup) — needs a direct fetch of
   `modelcontextprotocol.io/extensions/auth/enterprise-managed-authorization` and an Entra Identity
   Platform "what's new" page to upgrade this from COMMUNITY to DOC. (topic: auth/delegation-kcd-obo)
+  - Resolved 2026-09-27: the ext-auth repository marks Enterprise-Managed Authorization Stable, promoted by PR #29 merged 2026-06-18 (S-hrri7kcy); Entra ID-JAG issuance is undocumented (DER S-uw3gpx3u); "Okta only at launch" stays COMMUNITY S1300. (topic: auth/delegation-kcd-obo)
 - Whether MSAL Python's `client_assertion` callable parameter (supplying a pre-built JWT) is the
   supported way to back a confidential-client credential with a non-exportable CNG/TPM key (i.e. a
   custom signer calls CNG/TPM and MSAL just transports the resulting assertion): documented
@@ -347,29 +359,41 @@ Still open: (topic: auth/configmgr-rbac-auth)
   CNG/TPM example in this pass. Verification: build a minimal custom assertion signer using
   `ncrypt`/`cryptography` against a non-exportable CNG-backed cert, pass its output via MSAL's
   `client_assertion`, and confirm Entra accepts it -> proves the escape hatch works end-to-end. (topic: auth/key-management-options)
+  - Mostly resolved 2026-09-27: pre-signed client_assertion documented since 1.13.0 (S-ftk5lzj7), callable in 1.39.0 (CODE S-wk6ahp72), Entra assertion format any JWT library can build (S-zb4abl74). End-to-end acceptance with a non-exportable CNG/TPM key is still a lab check. (topic: auth/key-management-options)
 - Token Protection: no source names MSAL Python or a CLI/console app by name as in- or out-of-scope;
   the "native client" framing is the closest documented anchor. Verification: in a test tenant, apply a Token
   Protection Conditional Access policy scoped to Microsoft Graph + "Mobile apps and desktop clients",
   authenticate a test MSAL Python public client (WAM broker) against a test resource, and check
   whether the token is proof-of-possession bound / whether Graph enforces it -> proves whether Token
   Protection reaches a Python CLI in practice. (topic: auth/msal-public-client)
+  - Tried 2026-09-27: S1274 re-read (updated 2026-09-24) still names no MSAL Python or CLI app; Graph is outside Token Protection's resource list (S1227), so only EXO/SPO/Teams calls could be bound. Lab check stays. (topic: auth/msal-public-client)
 
 ### keys, propagation, revocation, audit, threats
 
 - DPAPI-NG `SID=` descriptor: no Microsoft page found stating (a) the KDS root key propagation delay before a newly created descriptor's key is retrievable domain-wide, (b) the minimum DC functional level/version required, (c) behaviour when the user leaves the group without a new logon, (d) recovery path if the group is deleted. Tried: `learn.microsoft.com/windows/win32/seccng/protection-descriptors`, `cng-dpapi-constants`, general web search. 3 attempts, stopped per budget rule.
   Verification: On a lab DC + lab client, create a DPAPI-NG blob with `SID=<test group>`, remove the encrypting user from the group without logging off, then attempt `NCryptUnprotectSecret` from a cached logon session vs. a fresh logon -> proves whether group removal is enforced at unprotect time or only at next logon. (topic: auth/key-management-options)
+  - Partly resolved 2026-09-27: (b) GKDI servers are DCs at DS_BEHAVIOR_WIN2012 or higher and the access check is on the DC (MS-GKDI, S-53ajdzoj); (a) KDS root key 10-hour wait from S402 (gMSA page, DER for DPAPI-NG); (c) clients SHOULD cache group keys, so a removed user may decrypt with a cached key (DER). Still open: Windows cache lifetime and (d) group deletion. (topic: auth/key-management-options)
 - PIM for Groups activation latency into tokens and `checkMemberGroups`, and whether it reaches on-prem AD groups (QA9): not researched by this agent (overlaps role-source-options.md territory); left `[UNK]` in propagation-latency.csv.
   Verification: Activate a PIM-for-Groups membership in a lab tenant, immediately request a token and call `checkMemberGroups`, time the delay. (topic: auth/propagation-latency)
+  - Resolved 2026-09-27: membership within seconds with app-side caching (S1282), Intune roles via PIM for Groups up to 15 minutes (S-ljhugmcx), on-prem only through Cloud Sync group writeback (S1281); now in propagation-latency.csv. (topic: auth/propagation-latency)
 - ConfigMgr AdminService's exact trigger for honouring an AD security-role group change (new logon vs SMS Provider cache) (QA2): left `[UNK]`, owned by `configmgr-rbac-auth.md`.
   Verification: in a disposable lab collection, add a test admin account to a ConfigMgr-RBAC-holding AD group, call AdminService immediately, then after a new Kerberos ticket, then after an SMS Provider service restart -> isolates the cache boundary. (topic: auth/configmgr-rbac-auth)
+  - Partly resolved 2026-09-27: the Kerberos trigger is DOC (new TGT at lock, sign-out or expiry; S-ffrzumip); the SMS Provider cache is undocumented (DER absence); lab check stays. (topic: auth/configmgr-rbac-auth)
 - Cloud Sync's exact documented sync-interval ceiling (this agent found only secondary/community figures of ~2 minutes / 10-20 minutes; no primary Learn citation was fetched due to a wrong guessed file path in MicrosoftDocs/entra-docs for the Cloud Sync FAQ page). Tried: direct raw-GitHub path guess (failed), GitHub tree search for "cloud-sync"+"faq" (no match), general web search (secondary sources only). 3 attempts, stopped per budget rule. (topic: entra/connect-and-cloud-sync)
+  - Resolved 2026-09-27 (noted from the auth wave): the Cloud Sync FAQ (S1280) says users and groups approximately every 10 to 20 minutes, while What is Cloud Sync (S-2vza23mx) says every two minutes; Restart sync forces a run (S-h6idpd4a). Recorded in _conflicts.md under auth/propagation-latency. (topic: entra/connect-and-cloud-sync)
 - Kerberoasting detection detail (event 4769 ticket-encryption-type field values 0x12/0x17) is stated only from secondary sources in this agent's research; no primary Microsoft Learn/Support page was fetched and cited for it (see threats.csv note). Left without a DOC-tagged source rather than mis-cited. (topic: auth/kerberos)
+  - Resolved 2026-09-27: event 4769 page (S-7bjorbzz: 0x11/0x12 AES, 0x17 RC4-HMAC; monitor types other than 0x11 and 0x12) and Microsoft's Kerberoasting guidance (S-ffangyfp) with Defender alert 2410 (S-6ca4b7bg). (topic: auth/kerberos)
 
 ### Added at merge
 
 - Verification: add a test account to an AD group, then `klist tgt` renew (not purge) and `whoami /groups` + an AdminService call → proves whether a TGT renewal refreshes PAC group SIDs (bounds AD group-change latency: renewal interval vs. new logon). (topic: auth/propagation-latency)
+  - Resolved 2026-09-27 from documentation: the TGS copies the TGT's PAC into service tickets (MS-KILE, S-ltkr37vz) and renewal leaves ticket fields other than the times and session key unchanged (RFC 4120, S-r6vi3iik), so renewal does not refresh global/universal group SIDs; domain-local groups are added per service ticket (S-v5wjmc3h). (topic: auth/propagation-latency)
 - Verification: from a Windows 11 24H2 client, call the AdminService by FQDN and by short name / IP, with `klist` before and after → proves Kerberos-only behaviour since 2509 and what error a non-FQDN call returns. (topic: auth/kerberos)
+  - Partly resolved 2026-09-27: Windows does not try Kerberos for an IP host name and falls back to NTLM (S-5yckwasl); short-name behaviour still needs the lab. (topic: auth/kerberos)
 - Verification: put a lab engineer account in Protected Users; run the `client` flows (AdminService, SQL, Graph via WAM) for >4 h → proves the 4-hour non-renewable TGT effect and any NTLM-dependent leg. (topic: auth/kerberos)
+  - Partly resolved 2026-09-27: a Protected Users admin can run the ConfigMgr console for only 4 hours at a time (S-iqal4gqk); the AdminService, SQL and WAM legs still need the lab. (topic: auth/kerberos)
+- **GitLab account block and non-PAT credentials.** The moderate-users doc (S-dhnetmt7) says a blocked user cannot sign in or access repositories and a deactivated user cannot use the API, and S1377 covers PAT auto-revocation only for Enterprise users; neither states what a block does to CI/CD job tokens, runner authentication tokens (`glrt-`) or open web sessions. Tried 2026-09-27: moderate_users.md and personal_access_tokens.md at pinned commits. (topic: auth/revocation)
+- **Windows cache lifetime of DPAPI-NG group keys.** MS-GKDI (S-53ajdzoj) says clients SHOULD cache group keys per domain and security descriptor but gives no lifetime, and no page covers a deleted group. Verification: remove a user from the SID= group, then call NCryptUnprotectSecret on the same machine without and after a reboot. (topic: auth/key-management-options)
 
 ## dsc
 
@@ -420,6 +444,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
 - OWASP MCP Top 10 index.md fetched from `main` (not sha-pinned); commit sha not recorded. (topic: standards/owasp)
 - privacy.claude.com / support.claude.com commercial-terms pages not fetched (time budget); retention facts come from code.claude.com data-usage/ZDR and platform.claude.com API retention pages. (topic: claude/data-retention)
 - MCP spec repo is a shallow clone: git history for 2026-07-28 release date not available; release date inferred only from the version string and SDK v2.0.0 release date (2026-07-28). (topic: mcp/spec-overview)
+- Enterprise-Managed Authorization's stable date is not in `mcp/registry-and-extensions.md`: the ext-auth file at commit fb374c7d (S-hrri7kcy, added in the auth wave 2026-09-27) marks it Stable, promoted by PR #29 merged 2026-06-18. For the mcp wave to write up. (topic: mcp/registry-and-extensions)
 
 ## mecm1
 
@@ -803,6 +828,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
 ## auth/delegation-kcd-obo
 
 - **Interim Entra ID pattern for MCP Enterprise-Managed Authorization (ID-JAG)**: the kb said Microsoft shows Entra ID + Azure App Service as the authorization boundary in front of MCP servers, but S1300 (the only source) does not say this; the claim is now [UNK]. Needs a Microsoft Learn or modelcontextprotocol.io source on Entra support for ID-JAG, or on the recommended interim pattern. (topic: auth/delegation-kcd-obo)
+  - Resolved 2026-09-27: Microsoft documents Entra ID as the plain OAuth authorization server for MCP servers, with App Service Easy Auth as an option (S-uw3gpx3u); it is not presented as an ID-JAG interim, and no Entra ID-JAG issuance is documented. (topic: auth/delegation-kcd-obo)
 
 ## agents/doc-change-detection
 

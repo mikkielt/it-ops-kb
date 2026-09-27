@@ -2,9 +2,9 @@
 topic: auth/msal-public-client
 priority: P0
 applies_to: "MSAL Python (msal[broker] 1.33.x), Windows 10/11, Windows Server 2019+"
-retrieved_utc: 2026-09-26
-sources: [S1270, S1271, S1272, S1273, S1274, S1227, S1296, S-o4jltpni, S-muxg36ky]
-status: partial
+retrieved_utc: 2026-09-27
+sources: [S1270, S1271, S1272, S1273, S1274, S1227, S1296, S-o4jltpni, S-muxg36ky, S-2tlwkw6u]
+status: complete
 ---
 
 # MSAL Python on Windows: WAM broker, device code, Token Protection
@@ -30,6 +30,8 @@ status: partial
 - Platform coverage per the concept page: native apps are generally available on Windows, iOS/iPadOS and macOS (its device-requirements heading still reads "Apple (Preview)"); browser-based support is in preview only for selected web apps that access Azure Resource Manager, on Windows and macOS. [DOC S1227]
 - Nothing in the fetched pages names MSAL Python specifically. The documented boundary is by client *type* (native vs. browser), not by MSAL language binding, so a Windows MSAL Python public client CLI falls on the "native application" side; but the Windows guide enumerates its supported applications (all Microsoft apps), and its unbound status code 1008 (client not integrated with the platform broker, WAM) indicates binding depends on WAM integration, so such a client is at most a candidate, not a documented supported app. [DER S1274]
 - CAE readiness (`cp1`) is a separate mechanism from Token Protection: `PublicClientApplication(client_id, client_capabilities=["cp1"])` tells Entra the client can handle claims challenges, and the app then receives CAE tokens for resource APIs that implement CAE; it must handle the claims challenge (401 with `WWW-Authenticate` carrying `error="insufficient_claims"` and a `claims` value) by re-acquiring a token with `claims_challenge=<that value>` in MSAL Python. [DOC S1296]
+- When no window handle is passed, MSAL Python 1.39.0 hands WAM the console window, else the desktop window, as the parent of the sign-in prompt. [CODE S-2tlwkw6u: msal/broker.py#_signin_interactively] No Microsoft page describes WAM on a jump host without an active interactive session (disconnected RDP, service context); that stays a lab check. [DER S1270, S-2tlwkw6u: absence of a documented caveat]
+- Token Protection's supported resources for native apps are Exchange Online, SharePoint Online and Teams (plus Azure Virtual Desktop and Windows 365 on Windows); Microsoft Graph is not among them, so a Token Protection policy does not bind an MSAL Python client's Graph calls. [DER S1227: Graph absent from the resource list]
 - `cp1` and Token Protection are independent: declaring `cp1` makes the client CAE-aware; it does not itself bind tokens to the device (that is Token Protection's job, enforced by Conditional Access, not by the `client_capabilities` flag). [DER S1296,S1274]
 
 ## Reference
@@ -44,5 +46,5 @@ status: partial
 - A workstation CLI on engineer workstation `PL-LT-00123`, tenant `00000000-0000-0000-0000-000000000000`: `PublicClientApplication(..., enable_broker_on_windows=True)` with `parent_window_handle=msal.CONSOLE_WINDOW_HANDLE`.
 
 ## Open items
-- QA5 (MSAL Python + WAM requirements, redirect URI, headless/jump-host behaviour, CA blocking device code) — answered above; jump-host/headless WAM behaviour on Windows Server itself beyond "supported OS" is [UNK] (no explicit statement of headless-session caveats found in three searches).
+- QA5 (MSAL Python + WAM requirements, redirect URI, headless/jump-host behaviour, CA blocking device code) — answered above; jump-host/headless WAM behaviour on Windows Server itself beyond "supported OS" is undocumented; MSAL falls back to the console, then the desktop window, as the prompt's parent (CODE above); the behaviour without an active session is a lab check (`_gaps.md`).
 - QA6 (Token Protection applying to MSAL Python public clients / Graph calls; cp1 in MSAL Python) — answered: Token Protection scopes to native clients on Windows, macOS and iOS/iPadOS (GA per the concept page), P1-licensed, and is client-type-based not language-binding-based, so a Windows MSAL Python CLI qualifies as a candidate client even though no page names MSAL Python specifically [DER S1274, S1227]; `cp1`/CAE-readiness is a separate, directly-supported MSAL Python constructor argument [DOC S1296].

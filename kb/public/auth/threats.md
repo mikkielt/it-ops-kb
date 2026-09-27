@@ -2,17 +2,16 @@
 topic: auth/threats
 priority: P2
 applies_to: "Windows 11 24H2, Server 2025, Entra ID"
-retrieved_utc: 2026-09-26
-sources: [S1352, S1353, S1347, S-7o47ht7q]
-status: partial
+retrieved_utc: 2026-09-27
+sources: [S1352, S1353, S1347, S-7o47ht7q, S1227, S-mifutdb3, S-ffangyfp, S-7bjorbzz, S-6ca4b7bg, S-ft7nubbn, S-p6zdxvtp]
+status: complete
 ---
 
 ## Summary
 Defensive-only digest: attack class, the identity flow it touches,
 the official Microsoft mitigation, and how to detect it. No exploitation steps or tooling are recorded.
-See `threats.csv` for the full table; several rows are left `[UNK]` because they belong to topics other
-agents in this run own (workload-identity, gmsa-dmsa, ldap-smb-signing) and this agent did not duplicate
-that research.
+See `threats.csv` for the full table (Kerberoasting, NTLM relay, token theft, consent phishing, SMB
+coercion); every row cites its Microsoft sources.
 
 ## Facts
 - NTLM (LANMAN, NTLMv1, NTLMv2) is deprecated (announced June 2024), and NTLMv1 is removed starting in
@@ -27,6 +26,17 @@ that research.
 - CAE's claim-challenge mechanism (a resource provider's 401 response telling a client its cached-but-
   not-yet-expired token was rejected) is the documented Microsoft pattern for revoking a token that has
   already been issued, relevant to detecting/limiting token replay for CAE-covered resources. [DOC S1347]
+- gMSA passwords are 240-byte random values that Windows changes every 30 days; Microsoft's Kerberoasting
+  guidance gives them as 120 characters. [DOC S-mifutdb3, S-ffangyfp]
+- Event 4769 records the ticket encryption type; Microsoft advises monitoring for types other than 0x11 and
+  0x12 (AES), and Defender for Identity raises external ID 2410 for suspected Kerberos SPN exposure.
+  [DOC S-7bjorbzz, S-ffangyfp, S-6ca4b7bg]
+- Consent phishing tricks users into granting permissions to malicious cloud apps; Microsoft's mitigations
+  are restricting user consent to verified publishers and low-risk permissions, publisher verification,
+  the admin consent workflow and app governance policies. [DOC S-ft7nubbn]
+- Domain controllers and AD admin systems should run with the Print Spooler service disabled, because any
+  authenticated user can make a DC's spooler authenticate to another system; Defender for Identity raises
+  external ID 2426 for a suspected DFSCoerce attack. [DOC S-p6zdxvtp, S-6ca4b7bg]
 
 ## Reference
 See `threats.csv`.

@@ -564,12 +564,6 @@ ba5c3b4ea313,"ODBC Driver 18: NTLM fallback disabled, no retry"
 f5986a17b8c8,LDAP channel binding SMB signing
 f5986a17b8c8,What are the LDAP and SMB signing defaults for Server 2025 and Windows 11 24H2?
 f5986a17b8c8,SMB client outbound signing encryption settings
-500418700482,DPoP RFC 9449 GA status Entra ID
-500418700482,Is DPoP generally available for Entra ID access tokens outside specific scenarios?
-500418700482,What is the general availability status of RFC 9449 proof-of-possession?
-e73588d155da,SMB 3.1.1 cipher AES-GCM specifics
-e73588d155da,What encryption algorithms can be negotiated in SMB 3.1.1?
-e73588d155da,How does SMB 3.1.1 select between AES cipher variants?
 1f8a019a9c9c,BitLocker key storage location Windows 10
 1f8a019a9c9c,Where are BitLocker keys stored for modern Windows devices?
 1f8a019a9c9c,What happens to encryption keys on the device when it's removed?

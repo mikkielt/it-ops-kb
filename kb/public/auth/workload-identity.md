@@ -2,9 +2,9 @@
 topic: auth/workload-identity
 priority: P0
 applies_to: "Microsoft Entra workload identity federation, Azure Arc-enabled servers (docs current 2026-09-24)"
-retrieved_utc: 2026-09-26
-sources: [S1302, S1278, S1276, S1289, S1290, S1293, S1294, S1296, S1303, S1304, S1305, S1306, S1308, S1309, S-w6ryunvm, S-e2hdn5as, S-uoxtujn6]
-status: partial
+retrieved_utc: 2026-09-27
+sources: [S1302, S1278, S1276, S1289, S1290, S1293, S1294, S1296, S1303, S1304, S1305, S1306, S1308, S1309, S-w6ryunvm, S-e2hdn5as, S-uoxtujn6, S-rye46ky7, S-zb4abl74, S-ftk5lzj7, S-wk6ahp72, S-5qxktcen, S-gyp6fxzq]
+status: complete
 ---
 
 # Workload identity: GitLab OIDC federation and Azure Arc managed identity
@@ -70,8 +70,9 @@ status: partial
 - Microsoft recommends limiting application certificate lifetime to 180 days (rotate at least every
   180 days, shorter for highly sensitive apps) and automating rotation with Azure Key Vault; an
   application management policy can enforce the limit on `keyCredentials`. [DOC S-e2hdn5as]
-- Rotating without downtime by holding the old and new certificate in `keyCredentials` at the same
-  time and cutting over. [UNK: not in S1304 as re-read 2026-09-27]
+- Rotation without downtime: register the new certificate alongside the existing one, since Entra ID
+  accepts tokens signed by any registered certificate, then switch the app and remove the old one;
+  `keyCredentials` is multi-valued, so several certificates can be registered at once. [DOC S-rye46ky7, S-zb4abl74]
 - App instance property lock: for a multitenant app, this locks sensitive properties (credentials of
   usage type `Sign` or `Verify`, and `tokenEncryptionKeyId`) from being modified after the app is
   provisioned in another tenant; the lock can cover all properties at once and is on by default for apps
@@ -79,13 +80,12 @@ status: partial
   registrations (`sync-app`, `client-app`, etc.) are not the scenario it protects. [DOC S1304]
 
 ### Design implication
-- Because MSAL Python's documented certificate credential paths need a PEM/PFX private key MSAL can
-  read directly, a "non-exportable CNG/TPM key" idea for key-management options is
-  **not directly satisfiable through MSAL Python's own certificate `client_credential` API** as
-  documented; achieving hardware-backed non-exportability for a confidential-client credential would
-  need a custom client-assertion signer that calls into CNG/TPM itself and hands MSAL only the
-  resulting JWT (MSAL supports supplying a pre-built `client_assertion` callable), not something
-  confirmed by a source in this pass — flagged [UNK].
+- MSAL Python's certificate `client_credential` options need a private key MSAL can read (PEM or PFX),
+  so a non-exportable CNG/TPM key cannot go through them; MSAL does accept a completely pre-signed
+  `client_assertion` (since 1.13.0) or a callable that returns one, so a custom signer that calls CNG/TPM
+  can build the JWT and MSAL only carries it. [DOC S-ftk5lzj7; CODE S-wk6ahp72: msal/application.py#ClientApplication.__init__]
+  That Entra accepts such an assertion from a non-exportable key end to end is a lab check (see
+  `auth/key-management-options.md`). [DER S-ftk5lzj7, S-zb4abl74]
 
 ## Conditional Access and CAE for workload identities
 
@@ -123,14 +123,18 @@ status: partial
 - The Azure Arc-enabled servers control plane (management groups and tags, Azure Resource Graph
   search and indexing, Azure RBAC, templates and extensions) comes at no extra cost; any Azure service
   used on the server (e.g. Defender for Cloud, Azure Monitor) is billed at that service's pricing. [DOC S-uoxtujn6]
-- Specific Defender for Servers or guest configuration prices, and a statement that the Arc managed
-  identity itself is unbilled. [UNK: not in S1307 as re-read 2026-09-27]
+- Defender for Servers list prices (Azure Retail Prices API, westeurope, USD, read 2026-09-27): Plan 1
+  $0.00672 per node per hour, Plan 2 $0.02 per node per hour. [DOC S-5qxktcen] No page states the Arc
+  managed identity's own price; it belongs to the control plane billed at no extra cost. [DER S-uoxtujn6]
+  Guest configuration prices were not looked up.
 - Assigning an app role (application permission, e.g. for Microsoft Graph) to a managed identity's
   service principal is documented with PowerShell (`New-MgServicePrincipalAppRoleAssignment`) or Azure
   CLI, needing the managed identity's service-principal object id, the resource API's service-principal
   object id, and the app role id; role changes can take significant time to apply because tokens are
   cached. [DOC S1308, S1309]
-- A portal UI for this assignment. [UNK: not in S1308 as re-read 2026-09-27]
+- No portal step is documented for this assignment: the PowerShell page uses Microsoft Graph cmdlets,
+  and the Azure CLI page says the functionality isn't directly exposed in the CLI and uses a REST call to
+  Graph instead. [DER S1308, S-gyp6fxzq: only PowerShell and REST paths documented]
 
 ## Reference (additions)
 | Control | Applies to | Licence | Source |

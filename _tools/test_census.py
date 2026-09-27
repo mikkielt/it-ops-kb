@@ -6,7 +6,7 @@ TestCensusInGit    check_pin / check_ref / check_release against a local reposit
 TestCensusLedger   record, confirm (dates and evidence only for confirmed sources; an article re-dated only when all its
                    sources are), sample and summary on a throwaway copy of the kb.
 """
-import csv, io, json, os, re, shutil
+import csv, glob, io, json, os, re, shutil
 
 import pytest
 
@@ -130,12 +130,16 @@ class TestCensusLedger:
         cls.repo = Repo(cls.kb, dict(os.environ))
         with open(os.path.join(cls.kb, P("_sources.csv")), encoding="utf-8", newline="") as f:
             cls.rows = {r["id"]: r for r in csv.DictReader(f)}
-        # an article with exactly two sources: confirm one, then both
-        cls.article = P("auth/gitlab-ci-identity.md")
-        text = open(os.path.join(cls.kb, cls.article), encoding="utf-8").read()
-        fm = census.build_index.front_matter(text)
-        cls.ids = re.findall(r"S-[a-z2-7]{8}|S\d+", fm["sources"])
-        assert len(cls.ids) == 2, cls.ids
+        # an article with exactly two sources: confirm one, then both (the first such article, so edits to any
+        # one article's source list do not break the scenario)
+        cls.article, cls.ids = None, []
+        for rel in sorted(glob.glob(os.path.join(cls.kb, P("*/*.md")))):
+            fm = census.build_index.front_matter(open(rel, encoding="utf-8").read())
+            ids = re.findall(r"S-[a-z2-7]{8}|S\d+", fm.get("sources", "") or "")
+            if len(ids) == 2 and "S100" not in ids and all(i in cls.rows for i in ids):
+                cls.article, cls.ids = os.path.relpath(rel, cls.kb), ids
+                break
+        assert cls.article, "no article with exactly two sources"
         cls.log = os.path.join(cls.tmp, "log.csv")
         rows = []
         for sid, bucket in ((cls.ids[0], "OK"), (cls.ids[1], "CHANGED"), ("S100", "NEEDS-READING")):

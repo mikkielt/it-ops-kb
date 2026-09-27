@@ -4,7 +4,7 @@ priority: P0
 applies_to: "ConfigMgr 2509+, Windows 11 24H2 / Windows Server 2025, Entra ID, SQL Server 2022/2025, GitLab"
 retrieved_utc: 2026-09-27
 sources: [S-o6f7ibqo, S-sldz4d6b, S-7jumyiid, S-6m7klb4f, S468, S469, S512, S518, S521, S621, S1201, S1202, S1205, S1208, S1215, S1228, S1270, S1276, S1286, S1289, S1293, S1297, S1298, S1302, S1345, S1347, S-7u4b7p5q, S-c7yxdr7e]
-status: partial
+status: complete
 ---
 
 # Identity flows

@@ -195,6 +195,7 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
 ### keys, propagation, revocation, audit, threats
 
 - CAE scope wording: the CAE concept page (S1347) says the initial implementation covers Exchange Online, Teams and SharePoint Online, while the CAE developer guidance and claims-challenge pages (S1354, S1355) say Microsoft Graph sends claims challenges and honours critical events for clients that declare `cp1`. Reading both: automatic critical-event enforcement is documented for the three services; Graph enforcement is opt-in per client. [DER S1347,S1354,S1355] (topic: auth/token-lifetimes-cae)
+  - Resolved 2026-09-27: the same pinned page (still the live commit) also says Exchange Online, SharePoint Online, Teams and MS Graph evaluate key Conditional Access policies themselves, and the Zero Trust CAE page (S-yc5geeul) describes Graph checking Entra's token events; "initial implementation" is history, not a limit, so the pages agree. (topic: auth/token-lifetimes-cae)
 - No source-vs-source factual conflicts were found in this agent's own research (key management, propagation latency, revocation, audit events, threats).
 
 ## dsc
@@ -489,6 +490,7 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
 ## auth/sql-authz
 
 - auth/sql-authz.md:14 says on-prem SQL Server Entra authentication 'requires the instance to be Arc-enabled'; S1207 (Microsoft Entra authentication for SQL Server overview, re-read 2026-09-27) has a section 'Setting up Microsoft Entra authentication without Azure Arc' for SQL Server on Windows (manual certificates, registry, app registration). Arc remains required for SQL Server 2025's primary managed identity (S1206). arch/sql-auth-containers.md and arch/workload-identity-onprem-k8s.md were corrected; auth/sql-authz.md was outside this unit. (topic: auth/sql-authz)
+  - Closed 2026-09-27: auth/sql-authz.md now says Arc is not required on Windows (manual setup exists) and is required for the SQL Server 2025 primary managed identity. (topic: auth/sql-authz)
 
 ## agents/instruction-and-context-limits
 
@@ -511,14 +513,23 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
 ## auth/configmgr-rbac-auth
 
 - The kb derived that Microsoft's enterprise access model treats ConfigMgr-like estate-wide device/config control as control-plane (Tier 0) equivalent; re-read 2026-09-27, S1210 defines the control plane as access control based on centralized enterprise identity systems and the management plane as enterprise-wide IT management functions, which on its wording places ConfigMgr in the management plane. The articles now call control-plane treatment a local judgement; _answers.md QA17 still carries the old derivation. (topic: auth/configmgr-rbac-auth)
+  - Resolved 2026-09-27: the AD DS tier model (S-7nbamxyc) puts systems that patch or run agents on Tier 0 identity systems in Tier 0 and IT management of Tier 1 servers in Tier 1; the articles and QA17 now apply that test (DER). (topic: auth/configmgr-rbac-auth)
 
 ## auth/ldap-smb-signing
 
 - SMB signing default on Windows Server 2025: S1202 (Control SMB signing behavior) says Windows Server 2025 requires outbound signing only; S1228 (SMB security hardening, HEAD 2026-09) says starting with Windows 11 24H2 and Windows Server 2025 all outbound and inbound SMB connections must be signed by default. Kb keeps S1202's outbound-only for Server 2025. (topic: auth/ldap-smb-signing)
+  - Re-read 2026-09-27, still open: S1203 (Microsoft blog) and S-77zvblfr (SMB features, updated 2025-11-27) also say outbound only for Server 2025; S1228 alone says outbound and inbound. The kb keeps outbound-only. (topic: auth/ldap-smb-signing)
+- SMB encryption default on Windows Server 2025 / Windows 11 24H2: the SMB features page (S-77zvblfr, updated 2025-11-27) has a table row saying encryption is required by default for all outbound client connections, while S1228 says encryption isn't mandatory by default and S1203 says it is not required by default. The kb keeps not-mandatory. Found 2026-09-27. (topic: auth/ldap-smb-signing)
+
+## auth/propagation-latency
+
+- Cloud Sync interval: the Cloud Sync FAQ (S1280) says user and group provisioning is scheduled approximately every 10 to 20 minutes, while What is Cloud Sync (S-2vza23mx) says the provisioning service synchronizes every two minutes. Both read 2026-09-27; the kb table states both. (topic: auth/propagation-latency)
+- TGT renewal window: the VPN group-membership support article (S-ffrzumip) says a TGT can be renewed for 10 days, while the Kerberos policy page (S-fn2rot77) gives 7 days as the default for Maximum lifetime for user ticket renewal. Both read 2026-09-27; the kb keeps 7 days as the policy default. (topic: auth/propagation-latency)
 
 ## auth/group-claims
 
 - Implicit-flow group limit: S1284 (Configure group claims) says five groups and hasgroups only above five; S1285 (Zero Trust: group claims and app roles) says six groups for the implicit flow. (topic: auth/group-claims)
+  - Re-read 2026-09-27, still open: a third Microsoft page, Customize tokens (S-azppyixp), says six for implicit grant in a hybrid flow; S1284 still says five. (topic: auth/group-claims)
 
 ## entra/connect-and-cloud-sync
 
@@ -531,6 +542,7 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
 ## auth/workload-identity
 
 - GitLab flexible federated identity credential claims: the flexible FIC page (S1294) lists only `sub` (eq, matches) and `project_id` (eq) as supported and requires sub plus project_id for mutable subjects; the mutable-subjects page (S1278) says a GitLab flexible FIC must match sub and one or more of project_id, namespace_id, user_id, and shows examples using namespace_id and user_id. Both re-read 2026-09-27. (topic: auth/workload-identity)
+  - Re-read 2026-09-27: unchanged on both live pages (S1294 updated 2026-09-23; S1278 updated 2026-07-30). (topic: auth/workload-identity)
 
 ## intune/platform-scripts
 

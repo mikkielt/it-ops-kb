@@ -2,9 +2,9 @@
 topic: auth/group-claims
 priority: P1
 applies_to: "Microsoft Entra ID token claims (docs current 2026-09-24)"
-retrieved_utc: 2026-09-26
-sources: [S1310, S1284, S1285]
-status: partial
+retrieved_utc: 2026-09-27
+sources: [S1310, S1284, S1285, S-azppyixp]
+status: complete
 ---
 
 # Group claims, overage, and app roles
@@ -20,16 +20,17 @@ status: partial
 - On overage the token has no `groups` claim; the app checks for a `hasgroups` claim (implicit flow) or a `_claim_names` claim with a `groups` member, and if either is present gets the membership from Microsoft Graph (transitive memberOf) instead; it should rely on the overage claim's presence, not its value. [DOC S1285]
 - Group claims include nested groups except with the "groups assigned to the application" restriction, which emits only groups the user is a direct member of — an app relying on nested-group membership must not use the assigned-groups restriction. [DOC S1284,S1285]
 - App roles instead of groups: Microsoft's stated rationale is (a) less information in the token, (b) more secure, (c) separates user assignment from the app's own configuration. [DOC S1284]
+- For the implicit flow, Microsoft pages disagree on the group limit before `hasgroups` replaces the list: the group-claims configuration page says five, while the Zero Trust group-claims page and the token-customization architecture page say six (see `_conflicts.md`). [DOC S1284, S1285, S-azppyixp]
 
 ## Reference
 | Claim configuration | Includes nested groups | Overage-prone | Source |
 |---|---|---|---|
 | `groups`: all security groups | yes | yes (200/150 cap) | S1284 |
 | `groups`: groups assigned to the application | no | no (bounded by assignment) | S1285 |
-| App roles assigned to groups (`roles` claim) | not confirmed either way | no | S1285 |
+| App roles assigned to groups (`roles` claim) | no (direct members only) | no | S1310 |
 
 ## Examples
-- `SG-Engineer` assigned as an app role on a client app: role name `engineer` appears in `roles`, independent of how deep the group nesting is — but this depth-independence itself is [UNK], not confirmed.
+- `SG-Engineer` assigned to the `engineer` app role on a client app: direct members of `SG-Engineer` get `engineer` in `roles`; members of a group nested inside `SG-Engineer` do not, because group assignment does not cascade to nested groups. [DOC S1310]
 
 ## Open items
 - QA7 (overage thresholds, recommended pattern, do nested groups count for app-role assignments): thresholds and recommended pattern (app roles) are answered [DOC S1284, S1285]; nested groups in app-role assignment: answered no [DOC S1310].
