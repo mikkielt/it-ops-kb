@@ -304,3 +304,26 @@ StateGraph,agents/langgraph
 langgraph-checkpoint,agents/langgraph
 PostgresSaver,agents/langgraph
 langchain-mcp-adapters,agents/langgraph
+uv.lock,python/uv-projects
+uv sync --frozen,python/uv-projects
+uv sync --locked,python/uv-projects
+UV_FROZEN,python/uv-projects
+.python-version,python/uv-projects
+[tool.pytest.ini_options],python/pytest
+[tool.pytest],python/pytest
+tmp_path_retention_policy,python/pytest
+conftest.py,python/pytest
+strict-markers,python/pytest
+pytest-xdist,python/pytest-xdist
+--dist loadscope,python/pytest-xdist
+xdist_group,python/pytest-xdist
+PYTEST_XDIST_WORKER,python/pytest-xdist
+[tool.ruff],python/ruff
+[tool.ruff.lint],python/ruff
+ruff check,python/ruff
+# noqa,python/ruff
+import sqlite3,python/stdlib-sqlite3-csv
+csv.DictWriter,python/stdlib-sqlite3-csv
+csv.DictReader,python/stdlib-sqlite3-csv
+field_size_limit,python/stdlib-sqlite3-csv
+check_same_thread,python/stdlib-sqlite3-csv

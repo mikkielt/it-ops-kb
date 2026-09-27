@@ -50,7 +50,7 @@ PV_KEY = "io.modelcontextprotocol/protocolVersion"
 MAX_LINES = 400
 INSTRUCTIONS = (
     "it-ops-kb: facts from official sources on Windows endpoint management (DSC v3, ConfigMgr, Intune, Autopilot, "
-    "Entra ID, AD, Graph, GPO, Defender, SQL Server, Power BI, GitLab CI, Ansible, security baselines, identity, "
+    "Entra ID, AD, Graph, GPO, Defender, SQL Server, Power BI, GitLab CI, Ansible, Python tooling, security baselines, identity, "
     "Presidio, MCP, Claude Code, AI agents). Call kb_pack with the question first: one call returns a coverage verdict "
     "and the cited fact lines. coverage: good -> answer from the pack (with a check: line, only if a cited line answers the question itself); weak -> one reworded kb_pack or one kb_show; "
     "none -> say the kb does not cover it and add nothing from memory. Every fact ends in one tag: DOC (official), DER "

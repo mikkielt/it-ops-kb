@@ -40,6 +40,8 @@ needed by only one role).
   [DOC S1522]
 
 ## Reference
+- `python/uv-projects.md` covers the rest of the uv project workflow this repo relies on: `uv.lock`,
+  `--frozen` vs `--locked`, default dependency groups, `uv python pin`, the cache, and `uvx`.
 ```toml
 [project]
 name = "example-tool"

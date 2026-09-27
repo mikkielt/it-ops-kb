@@ -219,6 +219,12 @@ Every topic with its priority (the research order, not importance), status, file
 | `privacy/presidio-operators-deanonymize` | P0 | complete | `privacy/presidio-operators-deanonymize.md` | 13 |
 | `privacy/presidio-recognizer-yaml` | P0 | complete | `privacy/presidio-recognizer-yaml.md`, `privacy/presidio-recognizer-registry.schema.json`, `privacy/presidio-example_recognizers.yaml` | 9 |
 | `privacy/spacy-model-licence` | P0 | complete | `privacy/spacy-model-licence.md` | 4 |
+| `python/pytest` | P2 | complete | `python/pytest.md` | 6 |
+| `python/pytest-xdist` | P2 | complete | `python/pytest-xdist.md` | 3 |
+| `python/ruff` | P2 | complete | `python/ruff.md` | 8 |
+| `python/stdlib-sqlite3-csv` | P2 | complete | `python/stdlib-sqlite3-csv.md` | 3 |
+| `python/uv-projects` | P2 | complete | `python/uv-projects.md` | 11 |
+| `python/version-lifecycle` | P2 | complete | `python/version-lifecycle.md`, `python/version-lifecycle.csv` | 8 |
 | `reuse/device-identity-correlation` | P2 | complete | `reuse/device-identity-correlation.md` | 6 |
 | `reuse/drift-detection` | P2 | complete | `reuse/drift-detection.md` | 5 |
 | `reuse/layered-settings-resolution` | P2 | complete | `reuse/layered-settings-resolution.md` | 3 |

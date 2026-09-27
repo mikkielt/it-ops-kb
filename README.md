@@ -1,6 +1,6 @@
 # it-ops-kb
 
-A knowledge base of facts from official sources on Windows endpoint management and the AI agents that operate it: DSC v3, ConfigMgr (MECM), Intune, Autopilot, Entra ID, Active Directory, Microsoft Graph, Group Policy, Defender, logs, SQL Server, Power BI, GitLab CI, Ansible, security baselines, identity and authorization, privacy (Presidio), the Model Context Protocol, Claude Code and AI agents.
+A knowledge base of facts from official sources on Windows endpoint management and the AI agents that operate it: DSC v3, ConfigMgr (MECM), Intune, Autopilot, Entra ID, Active Directory, Microsoft Graph, Group Policy, Defender, logs, SQL Server, Power BI, GitLab CI, Ansible, the Python toolchain (uv, pytest, ruff), security baselines, identity and authorization, privacy (Presidio), the Model Context Protocol, Claude Code and AI agents.
 
 AI agents read it, write it and keep it current. People decide what it should cover and review what the agents did; nothing here is meant to be run by hand. This page says what the kb is, how it works and when it pays off. Everything the agents follow is in `_self/`.
 

@@ -119,3 +119,4 @@ ptu,provisioned throughput
 provisioned throughput,provisioned throughput
 provisioned throughput units,provisioned throughput
 langgraph,langgraph
+xdist,pytest-xdist

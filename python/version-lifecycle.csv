@@ -1,0 +1,7 @@
+version,first_release,status_as_of_2026-09-27,end_of_life,source
+3.9,2020-10-05,end-of-life,2025-10-31,S-gcphwjqj
+3.10,2021-10-04,security (source-only fixes; regular bugfix releases with installers ended 2023-04-05),~2026-10 (5 years after 2021-10-04 final; exact day not yet published),S-6wn73ixe
+3.11,2022-10-24,security (source-only fixes; regular bugfix releases with installers ended 2024-04-02),~2027-10 (security fixes "as-needed" until October 2027),S-sgovapjd
+3.12,2023-10-02,security (source-only fixes; regular bugfix releases with installers ended 2025-04-08),~2028-10 (security fixes "as-needed" until October 2028),S-lob25y46
+3.13,2024-10-07,bugfix (regular bugfix releases with installers expected to end 2026-10-06),~2029-10 (security fixes "as-needed" until October 2029),S-tqvuutrg
+3.14,2025-10-07,bugfix (regular bugfix releases with installers expected to end ~2027-10-05),~2030-10 (security fixes "as-needed" until October 2030),S-mpeiuyoe
