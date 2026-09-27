@@ -49,7 +49,8 @@ def tracked():
     except (OSError, subprocess.CalledProcessError):
         out = []
         for root, dirs, files in os.walk(KB):
-            dirs[:] = [d for d in dirs if d not in {".git", "_cache", "_private", "__pycache__"}]
+            dirs[:] = [d for d in dirs if d not in {".git", "_cache", "_private", "__pycache__", ".venv", ".pytest_cache",
+                                                    ".ruff_cache", ".uv-cache", "node_modules"}]  # never scan installed packages
             out += [os.path.relpath(os.path.join(root, f), KB) for f in files]
         return tuple(sorted(out))
 

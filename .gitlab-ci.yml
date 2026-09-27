@@ -43,6 +43,7 @@ kb-tests-floor:
     UV_PYTHON: "3.11"
     KB_TESTS_FAST: "1"
   script:
+    - git config --global --add safe.directory "$CI_PROJECT_DIR"
     - pip install --quiet uv
     - python3 _tools/tests.py
 
