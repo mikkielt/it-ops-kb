@@ -570,6 +570,10 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
 
 - reuse/secret-vault-encryption.md:22 (outside this unit) still states age has no expiry/revocation/audit log as confirmed by its own README; S1001 README re-read 2026-09-27 does not state it (now UNK in prior-art/secret-vault-encryption.md). (topic: prior-art/secret-vault-encryption)
 
+## security/policy-precedence
+
+- Policies-key cleanup: the FSLogix Group Policy page (S-z4y7mew3) says settings under `HKLM\SOFTWARE\Policies\FSLogix\ODFC` reset themselves when the GPO is removed or set to *Not Configured*; the `Remove-GPRegistryValue` page (S-is2wluoa) says removing a registry-based policy setting (example under `...\Policies\...`) from a GPO does not delete the value on clients, and the setting must be disabled to delete it. Both read 2026-09-27; the pages describe different actions (GPO removed vs one setting removed from a GPO that still applies) but no page states the general rule. (topic: security/policy-precedence)
+
 ## security/privacy-compliance
 
 - AI Omnibus political agreement date: privacy-compliance.md:74-76 (COMMUNITY S1558) says provisional agreement 2026-05-06; the Commission page S1557 re-read 2026-09-27 says a political agreement was reached on 7 May 2026 (and entry into force 27 July 2026). (topic: security/privacy-compliance)

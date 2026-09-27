@@ -3,7 +3,7 @@ topic: security/dsc-coverage
 priority: P0
 applies_to: "DSC 3.3.0 / 3.4.0-preview.1; Microsoft Windows 11 24H2 baseline; DISA STIG Windows 11 V2R9, Windows Server 2025 V1R3"
 retrieved_utc: 2026-09-27
-sources: [S1598, S1599, S1470, S1471, S1472, S1473, S1474, S1413, S1414, S1415, S1416, S1594, S1595, S1596, S-nkhgboup, S-ly6m2llb, S114, S115, S121]
+sources: [S1598, S1599, S1470, S1471, S1472, S1473, S1474, S1413, S1414, S1415, S1416, S1594, S1595, S1596, S-nkhgboup, S-ly6m2llb, S114, S115, S121, S-ylqrt4md, S118]
 status: complete
 ---
 
@@ -31,7 +31,8 @@ status: complete
 - The `AuditPolicyDsc` repository (MIT, not archived, last pushed 2019-02-13) keeps its resources as MOF folders under `DSCResources`: `MSFT_AuditPolicyCsv`, `MSFT_AuditPolicyGUID`, `MSFT_AuditPolicyOption`, `MSFT_AuditPolicySubcategory`. [DOC S1416]
 - The gallery page lists 1.4.0.0 (2019-01-10) as the current version, minimum PowerShell version 4.0. [DOC S1415]
 - So security policy, user rights and audit policy need a Windows PowerShell adapter plus a module whose last stable release is 5 to 7 years old. [DER S1473,S1594,S1595]
-- No official page states that either module was tested with DSC v3. [UNK]
+- No Microsoft or DSC Community page states that either module was tested with DSC v3 (repositories, gallery pages and DSC release notes read 2026-09-27). [DER S1413, S1416, S118: no such statement on the pages read]
+- A user report in the DSC repository (#1545, 2026-05-23) ran `SecurityPolicyDsc` 2.10.0.0 and `AuditPolicyDsc` 1.4.0.0 through the DSC 3.2.1 Windows PowerShell adapter on Windows Server 2022 and hit an adapter cache-refresh crash caused by other server-role modules, not by these two. [COMMUNITY S-ylqrt4md]
 - The adapter declares `implementsPretest` and has no what-if, so `dsc config set --what-if` returns an error for those resources, not a dry run. [DOC S114, via `dsc/manifests-diff.md`]
 - Neither the 3.3.0 nor the 3.4.0-preview.1 zip ships a native resource for secedit, user rights or audit policy. [DER S114,S115: absent from the manifest list in `dsc/manifests-diff.csv`]
 - The GroupPolicyTemplate adapter (ADMX only) is in the 3.4 source tree but in neither release zip. ADMX registry policies already have a native Registry path, so it would not add coverage for the 55 non-registry settings. [DER S121,S115]
@@ -40,7 +41,8 @@ status: complete
 - The OSConfig resource docs list four Windows resources: AccountPolicy, AuditPolicy, Registry and UserRightsAssignment. [DOC S1599]
 - Their pages name the types `Microsoft.Windows/AccountPolicy`, `Microsoft.Windows/AuditPolicy`, `Microsoft.Windows/UserRightsAssignment` and `Microsoft.Windows/Registry`, and each documents `get` and `set` operations. [DOC S-nkhgboup]
 - OSConfig releases are pre-releases; the latest is 1.3.12-preview5 (2026-05-20). [DOC S-ly6m2llb]
-- These cover exactly the three mechanisms DSC 3.3.0 lacks natively. But they are OSConfig CLI resources: the repository has no `*.dsc.resource.json` manifest, and nothing states that `dsc.exe` can invoke them. [DER S1599,S114: no DSC manifest in the tree; type names only resemble DSC's] [UNK whether a DSC v3 manifest is planned]
+- These cover exactly the three mechanisms DSC 3.3.0 lacks natively. But they are OSConfig CLI resources: the repository has no `*.dsc.resource.json` manifest, and nothing states that `dsc.exe` can invoke them. [DER S1599,S114: no DSC manifest in the tree; type names only resemble DSC's]
+- No DSC v3 manifest is announced either: `microsoft/osconfig` at its current head (`82a54b9e`, 2026-08-26) has no `*.dsc.resource.json` file and no issue mentions DSC (searched 2026-09-27). [DER S1598, S1599: code and issue search at that commit]
 
 ## Reference
 

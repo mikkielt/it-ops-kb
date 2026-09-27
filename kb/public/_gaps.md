@@ -584,12 +584,16 @@ Still open: (topic: auth/configmgr-rbac-auth)
   - Verification: download "Windows 11 version 25H2 Security Baseline.zip" and "Windows Server 2025 Security Baseline" (v2602) from https://www.microsoft.com/download/details.aspx?id=55319 into `_private/sct/` (not published). A follow-up pass can then rerun the crosswalk builder. (topic: security/baselines-catalog)
 - **CIS ids in `settings-crosswalk.csv`:** empty. Verification: download CIS Microsoft Windows 11 Enterprise Benchmark (current version, see `baselines-catalog.md`) into `_private/cis/` (not published) and map ids offline. (topic: security/settings-crosswalk)
 - **Tattooing of `Policies` keys and security-settings-extension periodic reapply:** not found in the Group Policy processing page (S1592). No other official page was fetched this pass. (topic: security/policy-precedence)
+  - Mostly resolved 2026-09-27: the process-even-if-unchanged option (S-d24ri6px, S-vzmmy23x), preference removal (S-37hjm3ml), FSLogix Policies vs non-Policies keys (S-z4y7mew3) and `Remove-GPRegistryValue` (S-is2wluoa) are now DOC; no page gives a security-CSE periodic interval (recorded as DER absence) or a general Policies-key cleanup rule (in _conflicts.md). Verification: link a GPO setting a `Policies` value, unlink it, `gpupdate /force`, check the value; repeat with the setting removed from a still-linked GPO. (topic: security/policy-precedence)
 - **Windows 11 defaults for `wuauserv`, `RemoteRegistry` start type and `fDenyTSConnections`:** not confirmed from an official page.
   Verification: on a fresh Windows 11 25H2 VM, run `dsc resource get` for `Microsoft.Windows/Service` (`wuauserv`, `RemoteRegistry`) and `Microsoft.Windows/Registry` (`Terminal Server!fDenyTSConnections`). This proves the defaults a drift report compares against. (topic: security/first-baseline-candidates)
+  - Partly resolved 2026-09-27: `fDenyTSConnections` defaults to denied (unattend S-ww7anzs7; Policy CSP S-dwvazjaq). For `wuauserv` and `RemoteRegistry` the only Microsoft table is the Windows 11 IoT Enterprise service guide (S-6iulw4eo: Manual, Automatic); the Enterprise defaults still need the VM reading. (topic: security/first-baseline-candidates)
 - **`OptionalFeatureList` behaviour for a feature name removed from the OS (PowerShell 2.0 on patched 24H2):** not documented.
   Verification: `dsc resource get -r Microsoft.Windows/OptionalFeatureList` with `MicrosoftWindowsPowerShellV2Root` on a patched 24H2 VM shows whether the result is absent, not found or an error. (topic: security/dsc-coverage)
+  - Resolved 2026-09-27: the 3.3.0 manifest schema (S-xol3qgin) documents `_exist: false` for a feature name DISM does not recognise, and `dism.rs` returns it on `DISMAPI_E_UNKNOWN_FEATURE` (CODE S-cxyrrhvv); recorded in `first-baseline-candidates.md`. (topic: security/dsc-coverage)
 - **SecurityPolicyDsc / AuditPolicyDsc under DSC 3.3.0 `Microsoft.Adapter/WindowsPowerShell`:** no official statement.
   Verification: run `dsc config test` with one `UserRightsAssignment` and one `AuditPolicySubcategory` on a lab VM as SYSTEM. This proves whether the non-registry 13% of the Microsoft baseline is testable at all. (topic: security/dsc-coverage)
+  - Tried 2026-09-27, still open: no Microsoft or DSC Community statement; one user report (DSC issue #1545, S-ylqrt4md, COMMUNITY) ran both modules under the DSC 3.2.1 adapter on Server 2022, its crash caused by other modules. The lab run stays. (topic: security/dsc-coverage)
 - **Intune column:** matching is by setting name, so `no_name_match` is not proof of absence. It could be closed by parsing the CSP links in the pinned page. (topic: security/settings-crosswalk)
 
 ### A: device settings catalog
@@ -629,12 +633,14 @@ Still open: (topic: auth/configmgr-rbac-auth)
 - QS19 (LSA protection / Credential Guard defaults) rests on a search-engine digest of vendor blogs
   rather than a directly re-opened Microsoft Learn page (S1417 is recorded but its content was not
   independently re-extracted); tagged `COMMUNITY` pending confirmation. (topic: security/first-baseline-candidates)
+  - Resolved 2026-09-27: re-read on the Configure added LSA protection page (S1477): automatic enablement on new 22H2+ installs that are enterprise joined and HVCI-capable, no UEFI variable, audit mode on by default; the article's LSA and Credential Guard lines cite S1477/S1478 as DOC, none rests on the digest. (topic: security/first-baseline-candidates)
 - Exact registry paths/value names for "long paths enabled" and "RDP disabled" in
   `settings-crosswalk.csv` are widely known but were not verified against an official machine-
   readable source this pass; tagged `UNK` rather than `DOC`. (topic: security/settings-crosswalk)
 - GP refresh interval, registry-CSE reapplication default, and Policies-key tattooing behaviour in
   `policy-precedence.md` were not re-fetched from an official Microsoft Learn page this pass, despite
   being long-standing documented behaviour; tagged `UNK` for this pass's evidence standard. (topic: security/policy-precedence)
+  - Resolved 2026-09-27: the refresh interval and change-driven reapply are DOC S1592; see the entry above for reapply options and tattooing. (topic: security/policy-precedence)
 
 ### B: management plane
 

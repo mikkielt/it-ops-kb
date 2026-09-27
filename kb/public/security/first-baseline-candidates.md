@@ -3,8 +3,8 @@ topic: security/first-baseline-candidates
 priority: P0
 applies_to: "Windows 11 Enterprise 24H2/25H2; Microsoft baseline 24H2 package; DISA STIG Windows 11 V2R9 (2026-08-10); DSC 3.3.0"
 retrieved_utc: 2026-09-27
-sources: [S1470, S1471, S1472, S-oeh7ui3h, S1477, S1478, S1479, S1590, S1591, S1592, S1593, S-ycuzbjvk]
-status: partial
+sources: [S1470, S1471, S1472, S-oeh7ui3h, S1477, S1478, S1479, S1590, S1591, S1592, S1593, S-ycuzbjvk, S-xol3qgin, S-cxyrrhvv, S-ww7anzs7, S-dwvazjaq, S-6iulw4eo]
+status: complete
 ---
 
 # Evidence for the first baseline
@@ -42,18 +42,20 @@ status: partial
 - A UEFI-locked setting cannot be changed back by registry or policy. [DOC S1477]
 - On a co-managed device with Device configuration moved to Intune, a ConfigMgr baseline applies only with *Always apply this baseline even for co-managed clients*. [DOC S1593]
 - By default a Group Policy refresh reapplies an extension's settings only when its GPOs or GPO list changed; `gpupdate /force` reapplies all settings. See `policy-precedence.md`. [DOC S1592,S-ycuzbjvk]
-- For C2 (`wuauserv`), C4 (`fDenyTSConnections`) and C6 (`RemoteRegistry`), the Windows 11 default values were not confirmed from an official page this pass. [UNK]
+- C4: on Windows 11, Remote Desktop is not enabled by default (connections are denied): the unattend setting `fDenyTSConnections` defaults to `true` (denied), and the RemoteDesktopServices Policy CSP says remote connections aren't allowed by default when its policy is not configured. [DOC S-ww7anzs7, S-dwvazjaq]
+- C2 and C6: Microsoft's service guidance for Windows 11 IoT Enterprise lists `wuauserv` (Windows Update) as Manual and `RemoteRegistry` as Automatic by default, and advises not to disable Remote Registry; no page gives the Windows 11 Enterprise defaults. [DOC S-6iulw4eo]
+- So a drift report should not assume `RemoteRegistry` starts disabled: the only published default is Automatic, for IoT Enterprise, and the Enterprise value needs a reading from a reference device. [DER S-6iulw4eo: IoT Enterprise table, not scoped to Enterprise]
 
 ## Reference
 
 | # | Candidate | CIS L1 | MS baseline 24H2 | STIG W11 V2R9 | Intune 24H2 | Mechanism | DSC v3 path | Documented impact | Reboot | In a Microsoft GPO baseline |
 |---|---|---|---|---|---|---|---|---|---|---|
 | C1 | Long paths enabled | UNK | no | no | UNK | registry | native `Microsoft.Windows/Registry` | only longPathAware apps [S1591] | may be needed for all processes [S1591] | no (GP setting exists) |
-| C2 | `wuauserv` start type | UNK | no | no | UNK | service | native `Microsoft.Windows/Service` | UNK | UNK | no |
+| C2 | `wuauserv` start type | UNK | no | no | UNK | service | native `Microsoft.Windows/Service` | default Manual (IoT Enterprise table) [S-6iulw4eo] | UNK | no |
 | C3 | SMB1 absent | UNK | yes (registry: server `SMB1=0`, client `MrxSmb10 Start=4`) | yes `WN11-00-000160/165/170` | yes | optional feature + registry | native `OptionalFeatureList` / `Registry` | SMB1-only devices stop working [S1590] | yes [S1590] | yes |
-| C4 | RDP denied on workstations | UNK | no | no (only RDS hardening rules `WN11-CC-000270…290`) | UNK | registry | native `Microsoft.Windows/Registry` | UNK | UNK | no |
-| C5 | PowerShell 2.0 absent | UNK | no | yes `WN11-00-000155` (N/A on 24H2 and newer); Server 2025 `WN25-00-000410` | UNK | optional feature | native `OptionalFeatureList` | already removed on patched 24H2 [S1479] | feature changes usually restart; UNK for an already-removed feature | no |
-| C6 | Remote Registry disabled | UNK | no | no | UNK | service | native `Microsoft.Windows/Service` | UNK | UNK | no |
+| C4 | RDP denied on workstations | UNK | no | no (only RDS hardening rules `WN11-CC-000270…290`) | UNK | registry | native `Microsoft.Windows/Registry` | already the default (`fDenyTSConnections` true) [S-ww7anzs7] | UNK | no |
+| C5 | PowerShell 2.0 absent | UNK | no | yes `WN11-00-000155` (N/A on 24H2 and newer); Server 2025 `WN25-00-000410` | UNK | optional feature | native `OptionalFeatureList` (`_exist: false` when removed) | already removed on patched 24H2 [S1479] | feature changes usually restart; nothing to change when already removed | no |
+| C6 | Remote Registry disabled | UNK | no | no | UNK | service | native `Microsoft.Windows/Service` | default Automatic, "don't disable" (IoT Enterprise table) [S-6iulw4eo] | UNK | no |
 | C7 | DSC engine version present | n/a | n/a | n/a | n/a | other | none native in 3.3.0 | — | — | — |
 | C8 | Marker `HKLM\SOFTWARE\<tool>\baseline` | n/a | n/a | n/a | n/a | registry | native `Microsoft.Windows/Registry` | — | no | no |
 
@@ -73,4 +75,4 @@ Examples of the 84 settings in both baselines with a native path (full list in t
 | WN11-AU-000505 | Security event log maximum size (KB) | 196608 |
 
 ## Examples
-- The ring 0 device `PL-LT-00123` runs a patched 24H2. `test` for C5 would find `MicrosoftWindowsPowerShellV2Root` absent or not found. How `OptionalFeatureList` reports a feature name that no longer exists is not documented. [UNK]
+- The ring 0 device `PL-LT-00123` runs a patched 24H2, where PowerShell 2.0 is removed. `OptionalFeatureList` 0.1.1 (DSC 3.3.0) documents `_exist` as false "when the requested feature name is not recognized by DISM"; its `get` returns `_exist: false` with no `state` when DISM answers `DISMAPI_E_UNKNOWN_FEATURE`. So C5 on that device should test `_exist: false` for `MicrosoftWindowsPowerShellV2Root`, not a `state`. [DOC S-xol3qgin] [CODE S-cxyrrhvv: resources/dism_dsc/src/dism.rs#get_feature_info]

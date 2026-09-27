@@ -2,9 +2,9 @@
 topic: security/policy-precedence
 priority: P0
 applies_to: "Windows 11 Enterprise 24H2/25H2, AD DS Group Policy, Intune MDM, ConfigMgr current branch co-management, DSC 3.3.0"
-retrieved_utc: 2026-09-26
-sources: [S1412, S1592, S1593, S1591, S1477, S-oeh7ui3h, S-ycuzbjvk]
-status: partial
+retrieved_utc: 2026-09-27
+sources: [S1412, S1592, S1593, S1591, S1477, S-oeh7ui3h, S-ycuzbjvk, S-d24ri6px, S-vzmmy23x, S-37hjm3ml, S-z4y7mew3, S-is2wluoa, S-jtwizv2p]
+status: complete
 ---
 
 # What wins: local policy, domain GPO, MDM, co-management, ConfigMgr, DSC
@@ -27,10 +27,15 @@ status: partial
 - By default, during a policy refresh a client-side extension reapplies its settings only when it detects a change to one of its GPOs or to its GPO list, for performance reasons. [DOC S1592]
 - `gpupdate /force` reapplies all policy settings; by default only settings that changed are applied. [DOC S-ycuzbjvk]
 - So a local change to a GPO-managed registry value can stay until the GPO or the GPO list changes, or a forced refresh runs. [DER S1592,S-ycuzbjvk: the refresh rule plus the /force parameter]
-- An extension can also be set to process even when its GPOs have not changed. [UNK: not in S1592 as re-read 2026-09-27]
-- The page does not say whether the security-settings extension has a separate periodic reapply. [UNK]
+- An extension can be set to reapply even when its GPOs have not changed: each extension's processing policy (for example *Configure registry policy processing*, or `ADMX_GroupPolicy/CSE_Security` for security settings) has a **Process even if the Group Policy objects haven't changed** option, for reapplying a setting a user has changed, and a **Do not apply during periodic background processing** option. [DOC S-d24ri6px]
+- For registry policy that option is off by default, and Microsoft's firewall guidance advises leaving it off, because with it every background refresh rewrites the firewall policy and restarts WFP filtering, once per GPO. [DOC S-vzmmy23x]
+- No current Microsoft page gives the security-settings extension its own periodic reapply interval: the Group Policy processing page states only the change-driven default, and the `CSE_Security` policy offers the process-even-if-unchanged option; the "every 16 hours" figure often quoted is not on these pages (read 2026-09-27). [DER S1592, S-d24ri6px: absence on both pages]
 - All Group Policy processing must finish within 60 minutes. This timeout cannot be changed. [DOC S1592]
-- Tattooing: none of the pages fetched this pass states whether registry values under `...\Policies\...` are removed when a GPO stops applying, or whether values outside `Policies` persist. [UNK, see `gaps.md`]
+- Tattooing, as Microsoft's pages state it:
+  - Group Policy **preferences** do not remove their settings when a GPO no longer applies unless the item has **Remove this item when it is no longer applied** (which forces the Replace action); preference items reapply at every refresh unless set to apply once. [DOC S-37hjm3ml]
+  - FSLogix's ADMX writes its app, logging and profile settings under `HKLM\SOFTWARE\FSLogix`, which Microsoft calls preferences, not policies: they remain when the GPO is removed or the setting is set to *Not Configured*, while its settings under `HKLM\SOFTWARE\Policies\FSLogix\ODFC` "correctly reset themselves". [DOC S-z4y7mew3]
+  - But `Remove-GPRegistryValue` says removing a registry-based policy setting from a GPO does not delete the value on clients; to delete it the setting must be set to disabled (example key under `...\Policies\...`). [DOC S-is2wluoa]
+- So values written outside a `Policies` key persist after the GPO goes. For values under `Policies`, only the FSLogix page says they reset, and `Remove-GPRegistryValue` says removing a setting from a GPO leaves the value, so setting it to *Disabled* is the one documented way to clear it (see `_conflicts.md`). [DER S-37hjm3ml, S-z4y7mew3, S-is2wluoa: the three statements read together]
 - The only official statement found is the LSA protection page: setting the policy to *Not Configured* after it was enabled does not clean up the earlier setting, which "continues to be enforced". [DOC S1477]
 - The GP setting *Enable Win32 long paths* controls the same value (`HKLM\SYSTEM\CurrentControlSet\Control\FileSystem\LongPathsEnabled`) that a DSC `Microsoft.Windows/Registry` resource would write. That value is not under a `Policies` key. [DOC S1591]
 - `MDMWinsOverGP` (Policy CSP `ControlPolicyConflict`):
@@ -50,7 +55,8 @@ status: partial
   - if GPO holds the same value, `test` reports in desired state;
   - if GPO holds a different value, `test` reports drift at every evaluation, and a `set` would last only until the next GPO reapplication;
   - there is no "managed by" field in the resource output. [DER S1592, `dsc/manifests-diff.md`]
-- ConfigMgr compliance *remediation* can be kept off deliberately (visibility-first design). With remediation on, a baseline and a GPO that disagree would each rewrite the value on their own schedule. Microsoft states no precedence rule between them. [UNK]
+- A ConfigMgr registry configuration item with **Remediate noncompliant rules when supported** sets the value (or creates it) when it is noncompliant; remediation needs the rule operator **Equals**. [DOC S-jtwizv2p]
+- ConfigMgr compliance *remediation* can be kept off deliberately (visibility-first design). With remediation on, a baseline and a GPO that disagree each rewrite the value on their own schedule: Microsoft's compliance pages give no precedence between a configuration item and Group Policy (only ASR rules, which ConfigMgr applies through the Policy CSP, have a documented order). [DER S-jtwizv2p, S1592: remediation rule plus GP reapply, no precedence stated]
 
 ## Reference
 

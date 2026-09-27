@@ -122,3 +122,4 @@ EV-microsoft-ad-tier-model-put-configmgr,Does Microsoft's AD tier model put Conf
 EV-gmsa-password,How long is a gMSA password?,auth/gmsa-dmsa.md;auth/threats.md;auth/threats.csv,good,
 EV-sql-server-pick-up-windows-group,Does SQL Server pick up Windows group membership changes on an open connection?,auth/sql-authz.md;auth/revocation.md,good,
 EV-pseudonymised-data-always-personal-data-after,Is pseudonymised data always personal data after the CJEU SRB judgment?,privacy/gdpr-pseudonymisation.md,good,
+EV-remote-desktop-enabled-default-windows-11,Is Remote Desktop enabled by default on Windows 11?,security/first-baseline-candidates.md,good,
