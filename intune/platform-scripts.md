@@ -78,7 +78,7 @@ Upload a platform script for `PL-LT-00123`'s device group, run as system, no sig
 2. Script settings: browse to a `.ps1` under 200 KB; **Run this script using the logged on credentials** = No; **Enforce script signature check** = No; **Run script in 64-bit PowerShell host** = Yes.
 3. Assign to the Entra device group containing `PL-LT-00123`.
 
-Assign an existing `deviceManagementScript` to a group via Graph (beta):
+- SNIPPET: assign an existing `deviceManagementScript` to a group via Graph (beta); context: Graph beta `deviceManagementScripts/{id}/assign`; checked: no [DOC S-4elqlqiz, S-s27f6na4]
 ```http
 POST https://graph.microsoft.com/beta/deviceManagement/deviceManagementScripts/00000000-0000-0000-0000-000000000001/assign
 Content-Type: application/json
@@ -94,7 +94,7 @@ Content-Type: application/json
 }
 ```
 
-Force-fail test script (per Microsoft's troubleshooting guidance) to verify `AgentExecutor.log` reporting on `PL-LT-00123`:
+- SNIPPET: force-fail test script (per Microsoft's troubleshooting guidance) to verify `AgentExecutor.log` reporting on `PL-LT-00123`; context: Windows platform script, run as system; checked: no [DOC S-p4fis3e4]
 ```powershell
 Write-Error -Message "Forced Fail" -Category OperationStopped
 mkdir "C:\temp"

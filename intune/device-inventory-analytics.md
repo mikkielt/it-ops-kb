@@ -129,19 +129,19 @@ The full property list, KQL device-query entities/limits, and single-/multi-devi
 Cross-links: `intune/device-query.md` (properties catalog fields, KQL entities, device query RBAC/limits — read that article for inventory collection detail), `intune/collect-diagnostics.md` (Device Inventory Agent log collection), `intune/co-management.md` and `intune/tenant-attach.md` (ConfigMgr data paths into endpoint analytics).
 
 ## Examples
-List anomalies for a tenant (Graph beta, delegated `DeviceManagementManagedDevices.Read.All`):
+- SNIPPET: list anomalies for a tenant; context: Graph beta `deviceManagement/userExperienceAnalyticsAnomaly`, delegated `DeviceManagementManagedDevices.Read.All`; checked: no [DOC S-boionyor]
 ```
 GET https://graph.microsoft.com/beta/deviceManagement/userExperienceAnalyticsAnomaly
 Authorization: Bearer <token>
 ```
 
-Get one device's timeline events:
+- SNIPPET: get one device's timeline events; context: Graph beta `deviceManagement/userExperienceAnalyticsDeviceTimelineEvents/{id}`; checked: no [DOC S-pnhn6vx2]
 ```
 GET https://graph.microsoft.com/beta/deviceManagement/userExperienceAnalyticsDeviceTimelineEvents/{userExperienceAnalyticsDeviceTimelineEventsId}
 Authorization: Bearer <token>
 ```
 
-WMI check for the ConfigMgr ServiceCertificate policy issue (Application reliability, device `PL-LT-00123`), run locally on the device with an elevated PowerShell prompt:
+- SNIPPET: WMI check for the ConfigMgr ServiceCertificate policy issue (Application reliability, device `PL-LT-00123`), run locally on the device with an elevated PowerShell prompt; context: ConfigMgr tenant-attach client, `root\ccm\policyagent` namespace; checked: no [DOC S-6jy3vnik]
 ```powershell
 $query = "SELECT * FROM CCM_PendingPolicyState WHERE PolicyID=""B27D9CFC-84AD-0AF8-9DF1-23EE05E8C05D"""
 Get-WmiObject -Query $query -Namespace "root\ccm\policyagent"

@@ -147,13 +147,12 @@ permission, least to most privileged.
   Graph API — not one of the `managedDevice` methods documented here.
 
 ## Examples
-Engineer `jan.kowalski` retires `PL-LT-00123` after a role change:
+- SNIPPET: engineer `jan.kowalski` retires `PL-LT-00123` after a role change; context: Graph v1.0 `managedDevices/{id}/retire`, needs `DeviceManagementManagedDevices.PrivilegedOperations.All`; checked: no [DOC S-hzezniod, S-zne522mq]
 ```http
 POST https://graph.microsoft.com/v1.0/deviceManagement/managedDevices/{managedDeviceId}/retire
 Authorization: Bearer {token}
 ```
-Wiping a lost device `PL-LT-00123` while keeping enrollment data (device stays Autopilot-registered for
-re-provisioning):
+- SNIPPET: wiping a lost device `PL-LT-00123` while keeping enrollment data (device stays Autopilot-registered for re-provisioning); context: Graph v1.0 `managedDevices/{id}/wipe`, needs `DeviceManagementManagedDevices.PrivilegedOperations.All`; checked: no [DOC S-s7srrfx2]
 ```http
 POST https://graph.microsoft.com/v1.0/deviceManagement/managedDevices/{managedDeviceId}/wipe
 Content-Type: application/json

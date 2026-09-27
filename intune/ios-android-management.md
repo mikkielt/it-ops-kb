@@ -63,12 +63,12 @@ iOS/iPadOS enrollment splits into supervised **Automated Device Enrollment (ADE)
 - `intune/mobile-enrollment-types.csv`: platform x ownership x method matrix summarizing every enrollment type in this article.
 
 ## Examples
-Account-driven Apple User Enrollment service-discovery file, published at `https://corp.example.com/.well-known/com.apple.remotemanagement` (no file extension, `Content-Type: application/json`) for tenant `00000000-0000-0000-0000-000000000000`:
+- SNIPPET: Account-driven Apple User Enrollment service-discovery file, published at `https://corp.example.com/.well-known/com.apple.remotemanagement` (no file extension, `Content-Type: application/json`) for tenant `00000000-0000-0000-0000-000000000000`; context: iOS/iPadOS 15+ account-driven user enrollment, global cloud endpoint; checked: syntax [DOC S-fdtw5sil]
 ```json
 {"Servers":[{"Version":"mdm-byod","BaseURL":"https://manage.microsoft.com/EnrollmentServer/PostReportDeviceInfoForUEV2?aadTenantId=00000000-0000-0000-0000-000000000000"}]}
 ```
 
-Android Enterprise fully managed provisioning: at the Google sign-in screen during out-of-box setup, enter the Microsoft Intune DPC identifier instead of a Gmail account:
+- SNIPPET: Android Enterprise fully managed provisioning: at the Google sign-in screen during out-of-box setup, enter the Microsoft Intune DPC identifier instead of a Gmail account; context: Android Enterprise fully managed (COBO) out-of-box setup, not COPE on Android 11; checked: no [DOC S-zdoohqe4]
 ```
 afw#setup
 ```

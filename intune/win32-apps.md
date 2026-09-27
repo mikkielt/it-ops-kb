@@ -90,12 +90,12 @@ Win32 apps are packaged with the Microsoft Win32 Content Prep Tool (`IntuneWinAp
 - `windows/delivery-optimization.md` documents the Delivery Optimization CSP/GPO settings and Microsoft Connected Cache for Enterprise that Win32 app content download uses (by default, or from a Connected Cache node when `DOCacheHost`/`DOCacheHostSource` is configured).
 
 ## Examples
-Package and reference an app on `PL-LT-00123`'s build share:
+- SNIPPET: package and reference an app on `PL-LT-00123`'s build share; context: Win32 Content Prep Tool `IntuneWinAppUtil.exe`; checked: no [DOC S-fipq4ix4]
 ```
 IntuneWinAppUtil.exe -c C:\Source\MyApp\1.0 -s C:\Source\MyApp\1.0\setup.exe -o C:\Source\MyAppOutput -q
 ```
 
-Create a Win32 app via Graph (placeholders only):
+- SNIPPET: create a Win32 app via Graph (placeholders only); context: Graph v1.0 `deviceAppManagement/mobileApps`, `win32LobApp`, needs `DeviceManagementConfiguration.ReadWrite.All`; checked: no [DOC S-6lyy6mvq]
 ```http
 POST https://graph.microsoft.com/v1.0/deviceAppManagement/mobileApps
 Content-Type: application/json
@@ -120,7 +120,7 @@ Content-Type: application/json
 }
 ```
 
-Detection check for `jan.kowalski`'s device via a custom script (exit 0 + STDOUT required, no STDERR):
+- SNIPPET: detection check for `jan.kowalski`'s device via a custom script (exit 0 + STDOUT required, no STDERR); context: Win32 app custom detection script rule; checked: no [DOC S-wc6e3fba]
 ```powershell
 if (Test-Path "C:\Program Files\Contoso\Plugin\plugin.dll") {
     Write-Output "Detected"

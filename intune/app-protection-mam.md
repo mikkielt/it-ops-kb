@@ -3,7 +3,7 @@ topic: intune/app-protection-mam
 priority: P2
 applies_to: "Microsoft Intune app protection policies (APP/MAM) for iOS/iPadOS, Android and Windows; Microsoft Graph v1.0 managedAppPolicies (docs retrieved 2026-09-26)"
 retrieved_utc: 2026-09-26
-sources: [S-ngcvmu22, S-msbbtbup, S-qing6dzr, S-qjixnw4g, S-t4g3ekea, S-5cbvuypc, S-jgesqj52, S-eaeb5jdz, S-lu7ablj2, S-36mghzxu, S-27fiskhq, S-5fxhm5mr, S-qj62oq2o, S-xsnx4hlp, S-b3l5wbk6, S-p3vtkyrq, S-ssexz2ef, S-ehjdk3sn, S-gqqrls57, S-2jxyk3ra, S-j6tphfq3]
+sources: [S-ngcvmu22, S-msbbtbup, S-qing6dzr, S-qjixnw4g, S-t4g3ekea, S-5cbvuypc, S-jgesqj52, S-eaeb5jdz, S-lu7ablj2, S-36mghzxu, S-27fiskhq, S-5fxhm5mr, S-qj62oq2o, S-xsnx4hlp, S-b3l5wbk6, S-p3vtkyrq, S-ssexz2ef, S-ehjdk3sn, S-gqqrls57, S-2jxyk3ra, S-j6tphfq3, S-x44btgzh]
 status: complete
 ---
 
@@ -97,7 +97,7 @@ status: complete
 - `intune/ios-android-management.md`: the iOS/iPadOS and Android enrollment/ownership models (Apple User Enrollment, Android Enterprise personally owned work profile, etc.) that app protection policies commonly pair with for BYOD/MAM-without-enrollment scenarios; see that article's Reference for the back-link.
 
 ## Examples
-Create an iOS app protection policy (Level 2 "Enterprise enhanced" baseline settings) via Graph, then assign it to a placeholder group:
+- SNIPPET: create an iOS app protection policy (Level 2 "Enterprise enhanced" baseline settings) via Graph; context: Graph v1.0 `iosManagedAppProtections`, needs `DeviceManagementApps.ReadWrite.All`; checked: no [DER S-27fiskhq, S-t4g3ekea, S-jgesqj52: properties from the `targetedManagedAppProtection` resource page, values from the data protection framework and Android conditional-launch defaults]
 ```http
 POST https://graph.microsoft.com/v1.0/deviceAppManagement/iosManagedAppProtections
 Content-Type: application/json
@@ -114,8 +114,9 @@ Content-Type: application/json
   "managedBrowser": "microsoftEdge"
 }
 ```
+- SNIPPET: assign that policy to a placeholder group via the generic managed-app-policy assign action; context: Graph v1.0 `managedAppPolicies/{id}/assign`, needs `DeviceManagementApps.ReadWrite.All`; checked: no [DOC S-x44btgzh]
 ```http
-POST https://graph.microsoft.com/v1.0/deviceAppManagement/iosManagedAppProtections/{policyId}/assign
+POST https://graph.microsoft.com/v1.0/deviceAppManagement/managedAppPolicies/{managedAppPolicyId}/assign
 Content-Type: application/json
 
 {
@@ -129,8 +130,8 @@ Content-Type: application/json
   ]
 }
 ```
-- `00000000-0000-0000-0000-000000000011` is a placeholder Entra group object id. `PT30M` / `P90D` are ISO 8601 durations for the 30-minute recheck after inactivity (`periodOnlineBeforeAccessCheck`) and the 90-day offline wipe grace period (`periodOfflineBeforeWipeIsEnforced`). [DER S-t4g3ekea, S-jgesqj52: framework values expressed as the Graph `Duration` properties documented in S-27fiskhq]
-- Create a targeted app configuration policy pushing a single custom key to Outlook on device `PL-LT-00123`'s user, tenant `00000000-0000-0000-0000-000000000000`:
+- `00000000-0000-0000-0000-000000000011` is a placeholder Entra group object id. `PT30M` / `P90D` are ISO 8601 durations for the 30-minute recheck after inactivity (`periodOnlineBeforeAccessCheck`) and the 90-day offline wipe grace period (`periodOfflineBeforeWipeIsEnforced`). The assign body uses the documented `assignments`/`target` shape; the assign action itself is on `managedAppPolicies/{id}`, not on the type-specific collection. [DER S-t4g3ekea, S-jgesqj52: framework values expressed as the Graph `Duration` properties documented in S-27fiskhq]
+- SNIPPET: create a targeted app configuration policy pushing a single custom key to Outlook; context: Graph v1.0 `targetedManagedAppConfigurations`, needs `DeviceManagementApps.ReadWrite.All`; checked: no [DOC S-ngcvmu22]
 ```http
 POST https://graph.microsoft.com/v1.0/deviceAppManagement/targetedManagedAppConfigurations
 Content-Type: application/json
@@ -142,6 +143,7 @@ Content-Type: application/json
   ]
 }
 ```
+- `00000000-0000-0000-0000-000000000000` is a placeholder tenant id used as the pushed setting value.
 
 ## Open items
 - Windows app protection is `windowsInformationProtectionPolicy` (v1.0, "WIP without MDM enrollment") or `mdmWindowsInformationProtectionPolicy` (the MDM-enrolled counterpart, sharing most inherited properties). Key properties inherited from the base `windowsInformationProtection` type: `enforcementLevel` (`noProtection`/`encryptAndAuditOnly`/`encryptAuditAndPrompt`/`encryptAuditAndBlock`), `enterpriseDomain`, `enterpriseProtectedDomainNames`/`enterpriseNetworkDomainNames`/`enterpriseIPRanges`/`enterpriseProxiedDomains` (protected-boundary definitions), `protectedApps`/`exemptApps` (and their AppLocker-XML relationship equivalents), `revokeOnUnenrollDisabled`, and `rightsManagementServicesTemplateId`/`azureRightsManagementServicesAllowed`. [DOC S-2jxyk3ra, S-j6tphfq3]

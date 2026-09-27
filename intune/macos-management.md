@@ -75,18 +75,18 @@ macOS devices enroll in Intune via **Automated Device Enrollment (ADE)** (former
 - `intune/ios-android-management.md`: iOS/iPadOS and Android enrollment types and ownership models (ADE without-user-affinity, Apple User Enrollment, Android Enterprise work profile/COBO/COSU/COPE, AOSP, deprecated Android DA); reuses this article's ABM/ASM token, Apple MDM push certificate, and ACME-vs-SCEP facts rather than repeating them.
 
 ## Examples
-Shell script that echoes a custom attribute (macOS build number) for a policy scoped to devices in tenant `00000000-0000-0000-0000-000000000000`:
+- SNIPPET: shell script that echoes a custom attribute (macOS build number) for a policy scoped to devices in tenant `00000000-0000-0000-0000-000000000000`; context: macOS custom attribute profile, data type String, result ≤20 KB; checked: no [DOC S-hubiwt4q]
 ```bash
 #!/bin/sh
 sw_vers -buildVersion
 ```
 
-Custom attribute error troubleshooting: collecting the Intune management agent's own log plus a custom attribute script's log from a device `PL-LT-00123`, in one Collect logs request:
+- SNIPPET: custom attribute error troubleshooting: collecting the Intune management agent's own log plus a custom attribute script's log from device `PL-LT-00123`, in one Collect logs request (paths separated only by semicolons, no spaces); context: macOS Collect logs, max 60 MB compressed or 25 files, allowed extensions `.log .zip .gz .tar .txt .xml .crash .rtf`; checked: no [DOC S-hubiwt4q]
 ```
 /Library/Logs/Microsoft/Intune/IntuneMDMAgent.log;/var/log/mycompany/attribute-script.log
 ```
 
-Terminal commands to hand FileVault management to Intune on a previously self-encrypted Mac (Method 2, generate a new key):
+- SNIPPET: Terminal commands to hand FileVault management to Intune on a previously self-encrypted Mac (Method 2, generate a new key); context: macOS Terminal, followed by a device check-in; checked: no [DOC S-4vuqeywj]
 ```bash
 cd /Applications/Utilities
 sudo fdesetup changerecovery -personal

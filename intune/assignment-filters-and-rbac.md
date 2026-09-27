@@ -197,13 +197,12 @@ calling the `deviceAndAppManagementAssignmentFilter` or Intune RBAC Graph endpoi
 Elevation, Android/Windows unattended control — layered on top of the RBAC roles/scopes documented here).
 
 ## Examples
-Rule syntax combining two managed-device properties, saved on a filter named `Win-Corp-Enterprise`, then
-used in **Include filtered devices** mode on a compliance policy assignment:
+- SNIPPET: rule syntax combining two managed-device properties, saved on a filter named `Win-Corp-Enterprise`, then used in **Include filtered devices** mode on a compliance policy assignment; context: Intune assignment filter rule syntax editor; checked: no [DOC S-hddmxunx]
 ```
 (device.deviceOwnership -eq "Corporate") and (device.operatingSystemSKU -in ["Enterprise","EnterpriseN"])
 ```
 
-Graph: create the filter (delegated or app permission `DeviceManagementConfiguration.ReadWrite.All`):
+- SNIPPET: create the filter via Graph; context: Graph beta `deviceManagement/assignmentFilters`, needs `DeviceManagementConfiguration.ReadWrite.All`; checked: no [DOC S-guis2g6u]
 ```http
 POST https://graph.microsoft.com/beta/deviceManagement/assignmentFilters
 Content-Type: application/json

@@ -91,6 +91,7 @@ authority.
 - Not covered in this pass (`UNK`): imported PFX certificate profile field-by-field configuration (see `imported-pfx-profiles` on Microsoft Learn), DigiCert/other third-party public CA SCEP partner-specific SAN mapping tables beyond the general OID allow-list, and Graph `deviceManagementConfigurationPolicy`/certificate-profile REST bodies.
 
 ## Examples
+- SNIPPET: SCEP profile device certificate SAN with the KB5014754 strong-mapping URI attribute; context: SCEP certificate profile, Windows/iOS/macOS, hybrid-joined device synced from on-prem AD; checked: no [DOC S-h44fxget]
 ```
 # SCEP profile: device certificate SAN with KB5014754 strong mapping (URI attribute)
 Subject name format (Device): CN={{DeviceName}}
@@ -100,6 +101,7 @@ Subject alternative name:
 # Intune appends: tag:microsoft.com,2022-09-14:sid:<resolved SID>
 ```
 
+- SNIPPET: SCEP profile NDES server URLs for load-balanced issuance; context: SCEP certificate profile Server URLs field, NDES bound to IIS Default Web Site port 443; checked: no [DOC S-weleekge]
 ```
 # SCEP profile: NDES server URLs for load-balanced issuance
 SCEP Server URLs:
@@ -107,6 +109,7 @@ SCEP Server URLs:
   https://ndes2.corp.example.com/certsrv/mscep/mscep.dll
 ```
 
+- SNIPPET: PKCS connector strong-mapping registry change, run on the connector server, then restart services; context: Certificate Connector for Microsoft Intune 6.2406.0.1001+; checked: no [DOC S-qe32ky2d]
 ```
 # PKCS connector strong-mapping registry change (run on the connector server, then restart services)
 reg add "HKLM\Software\Microsoft\MicrosoftIntune\PFXCertificateConnector" /v EnableSidSecurityExtension /t REG_DWORD /d 1 /f

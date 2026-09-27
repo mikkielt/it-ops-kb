@@ -3,7 +3,7 @@ topic: intune/linux-management
 priority: P3
 applies_to: "Microsoft Intune Linux device management (Ubuntu Desktop, RedHat Enterprise Linux), docs retrieved 2026-09-26"
 retrieved_utc: 2026-09-26
-sources: [S-nvad3j6y, S-dvnl6gdu, S-5vopvhhm, S-vbmaayv5, S-37nh7xwg, S-iw63dqdc, S-qnpsgfc5, S-sdxlqqs5, S-mrquhzdn]
+sources: [S-nvad3j6y, S-dvnl6gdu, S-5vopvhhm, S-vbmaayv5, S-37nh7xwg, S-iw63dqdc, S-qnpsgfc5, S-sdxlqqs5, S-mrquhzdn, S-ogsl4hbo]
 status: complete
 ---
 
@@ -79,13 +79,13 @@ Intune manages Linux desktops (Ubuntu Desktop and RHEL) as user-associated, corp
 - `intune/co-management.md`: co-management and the ConfigMgr client are Windows-only concepts; they don't apply to Linux, which is Intune-MDM-only.
 
 ## Examples
-Uninstall the Microsoft Intune app and its local registration data on an Ubuntu Desktop device (placeholders only):
+- SNIPPET: uninstall the Microsoft Intune app and its local registration data on an Ubuntu Desktop device (placeholders only); context: Ubuntu Desktop, `apt`; checked: no [DOC S-qnpsgfc5]
 ```bash
 sudo apt remove intune-portal
 sudo apt purge intune-portal
 ```
 
-Linux custom compliance discovery script skeleton for device `PL-LT-00123`, using Python via a shebang, checking whether a required package is installed and emitting single-line JSON for the matching JSON rule:
+- SNIPPET: Linux custom compliance discovery script skeleton for device `PL-LT-00123`, using Python via a shebang, checking whether a required package is installed and emitting single-line JSON for the matching JSON rule; context: Linux custom compliance discovery script, any interpreter via shebang; checked: no [DOC S-iw63dqdc]
 ```bash
 #!/usr/bin/env python3
 import json
@@ -97,18 +97,20 @@ result = {
 print(json.dumps(result))
 ```
 
-Matching custom compliance JSON rule (`en_US` remediation string required):
+- SNIPPET: matching custom compliance JSON rules file (`en_US` remediation string required); context: custom compliance JSON, shared Windows/macOS/Linux shape; checked: syntax [DOC S-ogsl4hbo]
 ```json
-[
-  {
-    "SettingName": "RequiredPackageInstalled",
-    "Operator": "IsEquals",
-    "DataType": "Boolean",
-    "Operand": true,
-    "MoreInfoUrl": "https://corp.example.com/help/cryptsetup",
-    "RemediationStrings": [
-      { "Language": "en_US", "Title": "cryptsetup is not installed", "Description": "Install cryptsetup and re-run compliance check." }
-    ]
-  }
-]
+{
+  "Rules": [
+    {
+      "SettingName": "RequiredPackageInstalled",
+      "Operator": "IsEquals",
+      "DataType": "Boolean",
+      "Operand": true,
+      "MoreInfoUrl": "https://corp.example.com/help/cryptsetup",
+      "RemediationStrings": [
+        { "Language": "en_US", "Title": "cryptsetup is not installed", "Description": "Install cryptsetup and re-run compliance check." }
+      ]
+    }
+  ]
+}
 ```

@@ -82,16 +82,23 @@ platforms, using per-app or "Quick Access" broad-segment tunneling instead of a 
 - Not covered in this pass (`UNK`): macOS/iOS/Android Wi-Fi, wired, and VPN profile field references (separate per-platform Learn articles); Microsoft Tunnel install/upgrade/troubleshooting procedure detail beyond the prerequisites summarized here; full Global Secure Access/Entra Private Access configuration (connectors, Quick Access, per-app segmentation, Conditional Access integration).
 
 ## Examples
+- SNIPPET: Windows VPN profile per-app VPN app list import (CSV), package family name and full path forms; context: VPN device configuration profile, Restrict VPN connection to these apps = Enable; checked: no [DOC S-t6z76jtq]
 ```
 # Windows VPN profile: per-app VPN app list import (CSV), package family name and full path forms
 %windir%\system32\notepad.exe,desktop
 Microsoft.Office.OneNote_8wekyb3d8bbwe,universal
+```
 
+- SNIPPET: custom OMA-URI profile to deliver a native VPN ProfileXML blob (Windows 10 and later); context: custom OMA-URI device configuration profile, VPNv2 CSP; checked: no [DOC S-t6z76jtq, S-y3enttcg]
+```
 # Custom OMA-URI profile to deliver a native VPN ProfileXML blob (Windows 10 and later)
 OMA-URI: ./user/vendor/MSFT/VPNv2/ContosoVPN/ProfileXML
 Data type: String (XML file)
 Value: <path to exported ProfileXML file>
+```
 
+- SNIPPET: wired 802.1X profile with EAP-TLS and a SCEP device certificate (`PL-LT-00123` test device), left in Do not enforce for validation; context: WiredNetwork CSP, wired 802.1X device configuration profile; checked: no [DOC S-pp7wx433, S-j3m2icav]
+```
 # Wired 802.1X profile: EAP-TLS with a SCEP device certificate (PL-LT-00123 test device)
 Authentication mode: Machine
 EAP type: EAP-TLS

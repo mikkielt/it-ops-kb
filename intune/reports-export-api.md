@@ -3,7 +3,7 @@ topic: intune/reports-export-api
 priority: P2
 applies_to: "Microsoft Intune reporting infrastructure, Microsoft Graph v1.0 and beta deviceManagementExportJob, docs retrieved 2026-09-26"
 retrieved_utc: 2026-09-26
-sources: [S-ls7jnt2q, S-7cnzcrhl, S-zh4stzuw, S-35rheh4q, S-vlctroci, S-scwd7dap, S-lqfdn2f7, S-6pobzvll, S-dk3pjswi, S-dghnu36r, S-haj5sdml]
+sources: [S-ls7jnt2q, S-7cnzcrhl, S-zh4stzuw, S-35rheh4q, S-vlctroci, S-scwd7dap, S-lqfdn2f7, S-6pobzvll, S-dk3pjswi, S-dghnu36r, S-haj5sdml, S-pswa3wmd]
 status: complete
 files: [intune/export-report-names.csv]
 ---
@@ -76,7 +76,7 @@ Intune reports migrated to its newer reporting infrastructure are exported throu
 - `intune/co-management.md`: `ComanagedDeviceWorkloads` and `ComanagementEligibilityTenantAttachedDevices` export the co-management workload and eligibility state that article documents from the ConfigMgr/Intune split-management side.
 
 ## Examples
-Create an export job for the Devices report (Python, `requests`, delegated token in `token`; tenant `00000000-0000-0000-0000-000000000000`, placeholders only):
+- SNIPPET: create an export job for the Devices report and poll/download it (Python, `requests`, delegated token in `token`; tenant `00000000-0000-0000-0000-000000000000`, placeholders only); context: Graph beta `deviceManagement/reports/exportJobs` create-poll-download pattern; checked: no [DER S-ls7jnt2q, S-zh4stzuw: endpoint, request body fields and `status`/`url` shape from the exportJobs docs, composed into a script]
 ```python
 import time
 import requests
@@ -120,16 +120,17 @@ with open(f"/tmp/{job_id}.zip", "wb") as fh:
     fh.write(download.content)
 ```
 
-Same flow with the Microsoft Graph PowerShell SDK (placeholders only):
+- SNIPPET: same flow with the Microsoft Graph PowerShell SDK (placeholders only); context: `Microsoft.Graph.Reports`/`Microsoft.Graph.Authentication` modules, `Connect-MgGraph`; checked: no [DOC S-pswa3wmd; DER S-ls7jnt2q, S-zh4stzuw: exportJobs request/response fields, `Get-MgDeviceManagementReportExportJob` cmdlet]
+  `Microsoft.Graph.Reports` has no `New-` cmdlet for export jobs (only `Get-MgDeviceManagementReportExportJob` and `...Count`), so the job is created with `Invoke-MgGraphRequest`; creating needs one of the `.ReadWrite.All` scopes above, not `.Read.All`.
 ```powershell
-Connect-MgGraph -Scopes "DeviceManagementConfiguration.Read.All"
+Connect-MgGraph -Scopes "DeviceManagementConfiguration.ReadWrite.All"
 
 $body = @{
     reportName = "FeatureUpdateDeviceState"
     format     = "csv"
     select     = @("DeviceName", "UPN", "FeatureUpdateVersion", "LastUpdatedAlertStatusDateTimeUTC")
 }
-$job = New-MgDeviceManagementReportExportJob -BodyParameter $body
+$job = Invoke-MgGraphRequest -Method POST -Uri "https://graph.microsoft.com/beta/deviceManagement/reports/exportJobs" -Body $body
 
 do {
     Start-Sleep -Seconds 5

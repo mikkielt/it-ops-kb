@@ -3,7 +3,7 @@ topic: intune/compliance-policies
 priority: P2
 applies_to: "Microsoft Intune device compliance policies, Windows 10 and later platform, docs retrieved 2026-09-26"
 retrieved_utc: 2026-09-26
-sources: [S-vpvd3h5f, S-u3qwumeu, S-qjd54t3z, S-yoeqntwt, S-4t5e7ocm, S-ogsl4hbo, S-wjex623z, S-ej25skuk, S-taatt73w, S-2hhj3k5f, S-o3fvldqn, S-sc3fvmp6]
+sources: [S-vpvd3h5f, S-u3qwumeu, S-qjd54t3z, S-yoeqntwt, S-4t5e7ocm, S-ogsl4hbo, S-wjex623z, S-ej25skuk, S-taatt73w, S-2hhj3k5f, S-o3fvldqn, S-sc3fvmp6, S-p7pe6fl3, S-5szcu5hb]
 status: complete
 ---
 
@@ -103,7 +103,7 @@ Intune compliance is split into tenant-wide **compliance policy settings** (a bu
 - `intune/linux-management.md`: the Linux counterpart to this article's compliance mechanism — Linux compliance policies are built from the settings catalog (Allowed Distributions, Device Encryption via dm-crypt/LUKS, Password Policy) rather than a predetermined template, and Linux custom compliance uses a POSIX-compliant/any-interpreter discovery script (5-minute run limit, runs in user context) instead of PowerShell, sharing the same `65007`-`65010` custom compliance error codes documented above.
 
 ## Examples
-Create a Windows compliance policy via Graph requiring BitLocker, Secure Boot and a minimum OS version, for tenant `00000000-0000-0000-0000-000000000000` (placeholders only):
+- SNIPPET: create a Windows compliance policy via Graph requiring BitLocker, Secure Boot and a minimum OS version, for tenant `00000000-0000-0000-0000-000000000000` (placeholders only); context: Graph v1.0 `deviceCompliancePolicies`, `windows10CompliancePolicy`; checked: no [DOC S-taatt73w; DER S-p7pe6fl3, S-5szcu5hb: `scheduledActionsForRule`/`scheduledActionConfigurations` shape and `actionType`/`gracePeriodHours`/`notificationTemplateId` fields from the `deviceComplianceScheduledActionForRule` and `deviceComplianceActionItem` resource pages]
 ```http
 POST https://graph.microsoft.com/v1.0/deviceManagement/deviceCompliancePolicies
 Content-Type: application/json
@@ -128,25 +128,27 @@ Content-Type: application/json
 }
 ```
 
-Windows discovery script fragment (device `PL-LT-00123`) returning a compressed JSON hash for a custom compliance JSON rule on `TPMChipPresent`:
+- SNIPPET: Windows discovery script fragment (device `PL-LT-00123`) returning a compressed JSON hash for a custom compliance JSON rule on `TPMChipPresent`; context: Windows custom compliance discovery script, must end with `return $hash | ConvertTo-Json -Compress`; checked: no [DOC S-wjex623z]
 ```powershell
 $TPM = Get-Tpm
 $hash = @{ TPMChipPresent = $TPM.TpmPresent }
 return $hash | ConvertTo-Json -Compress
 ```
 
-Matching custom compliance JSON rule (`en_US` remediation string required):
+- SNIPPET: matching custom compliance JSON rules file (`en_US` remediation string required); context: custom compliance JSON, up to 100 KB / 100 rules; checked: syntax [DOC S-ogsl4hbo]
 ```json
-[
-  {
-    "SettingName": "TPMChipPresent",
-    "Operator": "IsEquals",
-    "DataType": "Boolean",
-    "Operand": true,
-    "MoreInfoUrl": "https://corp.example.com/help/tpm",
-    "RemediationStrings": [
-      { "Language": "en_US", "Title": "TPM chip is missing or disabled", "Description": "Enable the TPM chip in firmware, then re-run compliance check." }
-    ]
-  }
-]
+{
+  "Rules": [
+    {
+      "SettingName": "TPMChipPresent",
+      "Operator": "IsEquals",
+      "DataType": "Boolean",
+      "Operand": true,
+      "MoreInfoUrl": "https://corp.example.com/help/tpm",
+      "RemediationStrings": [
+        { "Language": "en_US", "Title": "TPM chip is missing or disabled", "Description": "Enable the TPM chip in firmware, then re-run compliance check." }
+      ]
+    }
+  ]
+}
 ```
