@@ -8,7 +8,8 @@ routing deterministic instead of relying on the model to match a skill descripti
   a prompt with a change verb (add, update, fix, refresh, research, commit, push, ...)
                   -> additional context naming the likely skill(s) from the prompt's words, then the one-line routing
                      for any change; the model decides (a question that only uses such a word can ignore it)
-  kb: / kb+: prompts, slash commands, a single question, prompts without a change verb
+  kb: / kb+: prompts, slash commands, a single question, prompts without a change verb, and messages from the
+  harness (a subagent's report, a task notification: they start with `<`, `[` or "Another Claude session")
                   -> no output: the prompt goes to the model unchanged
 
 `--test "<prompt>"` prints what the hook would add, for a check from a shell.
@@ -20,6 +21,8 @@ CHANGE = re.compile(r"\b(?:add|create|write|update|edit|change|modify|fix|correc
                     r"investigate|census|verify|bump|upgrade|set ?up|install)\b", re.I)
 QUESTION = re.compile(r"(?:how|what|why|when|where|which|who|does|do|did|is|are|was|can|could|should|would)\b[^\n]*\?\s*$",
                       re.I | re.S)  # a single question ("how do I fix error X?") is a lookup, not a change request
+HARNESS = re.compile(r"[<\[]|Another Claude session sent a message")  # a subagent's report or a task notification,
+# delivered as a prompt: not a person's request
 ROUTES = (  # (skill, when, pattern): the first three that match are named, in this order
     ("kb-census", "confirm every source", r"\bcensus\b|\ball (?:the |kb )?sources\b|\bevery source\b"),
     ("kb-refresh", "facts of an existing topic, file or source id", r"\brefresh|\bre-?verify|\bre-?check|\boutdated\b|"
@@ -40,7 +43,8 @@ ALWAYS = ("Any change: /kb-verify before committing, then `python3 _tools/kbgit.
 def answer(prompt):
     """The hook's JSON answer for a prompt, or None to let it through unchanged."""
     p = (prompt or "").strip()
-    if not p or p.startswith("/") or re.match(r"kb\+?\s*:", p, re.I) or not CHANGE.search(p) or QUESTION.match(p):
+    if not p or p.startswith("/") or re.match(r"kb\+?\s*:", p, re.I) or HARNESS.match(p) or not CHANGE.search(p) \
+            or QUESTION.match(p):
         return None
     hits = [(s, w) for s, w, rx in ROUTES if re.search(rx, p, re.I)][:3]
     likely = "; ".join(f"/{s} ({w})" for s, w in hits) or "none named by the wording; pick from the list in _self/maintaining.md"

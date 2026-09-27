@@ -21,7 +21,7 @@ Everything an agent needs to run, change and ship this kb, except the lookup rul
 
 ## Keeping it current
 
-- **Code is the source of truth.** A doc here describes files named in `_self/map.csv` (`doc,pattern`). `python3 _tools/selfdoc.py stale` lists each doc whose described files changed after the doc's last commit; `/kb-self` is the runbook that brings them back in line, for one doc, a commit range or everything.
+- **Code is the source of truth.** A doc here describes files named in `_self/map.csv` (`doc,pattern`). `python3 _tools/selfdoc.py stale` lists each doc whose described files changed after the doc's last commit; `/kb-self` is the runbook that brings them back in line, for one doc, a commit range or everything. A doc checked against a change that needed no edit goes in the commit's `Self-Reviewed: <doc>, <doc>` trailer, which clears it.
 - **Tests hold the docs to the code.** Every `--flag` written next to a tool must exist in that tool, every backtick path must resolve, `AGENTS.md` stays under 4 KB and the root `README.md` under 8 KB, and every doc listed above is in `_self/map.csv` (`python3 _tools/tests.py`).
 - **One fact in one place.** A rule lives in one file; the others point to it. The tool table lives in `tools.md` only; the tools' own docstrings (`python3 _tools/<tool> --help`) are the full reference.
 - **Generated parts are never hand-edited** (`coverage.md`, `_coverage.csv`, `used_in`). **Reports are dated records:** add a new section or file, never rewrite an old measurement. `design.md` and `work-left.md` carry the current conclusions.

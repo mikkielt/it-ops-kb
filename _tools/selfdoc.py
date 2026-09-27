@@ -13,13 +13,16 @@
 _self/map.csv (doc,pattern) says what each doc describes: one row per doc and glob, kb-root paths; `*` stays within a
 directory, `**` crosses directories. A pattern of `-` marks a doc that describes no file (a state file such as
 work-left.md): it is never stale. Reports under _self/reports/ are dated records and need no row. /kb-self is the
-runbook that updates what `stale` lists. A repository tool like kbgit.py: it reads this clone, never KB_ROOT.
+runbook that updates what `stale` lists. A doc that was checked against a change and needed no edit is recorded
+with a commit trailer, `Self-Reviewed: _self/plugin.md, AGENTS.md`: from that commit on, `stale` counts it as up to
+date for everything before. A repository tool like kbgit.py: it reads this clone, never KB_ROOT.
 Exit 0 nothing to do, 1 stale docs or map problems, 2 bad arguments, no git, or an unreadable map.
 """
 import argparse, csv, functools, os, re, subprocess, sys
 
 KB = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MAP = "_self/map.csv"
+REVIEWED = "Self-Reviewed"  # commit trailer: docs checked against the change that needed no edit
 
 
 class SelfdocError(Exception):
@@ -93,24 +96,43 @@ def worktree_changes(root, rev="HEAD"):
     return set(lines(git(root, "diff", "--name-only", rev))) | set(lines(git(root, "ls-files", "--others", "--exclude-standard")))
 
 
+def reviews(root, rev_range=None):
+    """[(short hash, {docs})] newest first: the commits (all of HEAD's history, or REV_RANGE) whose message carries
+    a `Self-Reviewed: <doc>, <doc>` trailer (the docs were checked against the change and needed no edit)."""
+    fmt = f"%h%x1f%(trailers:key={REVIEWED},valueonly,separator=%x2C)%x1e"
+    out = []
+    for rec in git(root, "log", f"--format={fmt}", *([rev_range] if rev_range else [])).split("\x1e"):
+        h, _, docs = rec.strip().partition("\x1f")
+        names = {d.strip() for d in docs.replace("\n", ",").split(",") if d.strip()}
+        if h and names:
+            out.append((h, names))
+    return out
+
+
 def stale(root=KB, since=None):
-    """[(doc, reference, [changed described paths])]: the docs that are behind what they describe."""
+    """[(doc, reference, [changed described paths])]: the docs that are behind what they describe. A doc edited in
+    the change, or named in a `Self-Reviewed:` trailer of a commit since, counts as up to date."""
     docs = load_map(root)
     out = []
     if since:
         git(root, "rev-parse", "--verify", "--quiet", since + "^{commit}")
         changed = worktree_changes(root, since)
+        updated = changed | {d for _, names in reviews(root, f"{since}..HEAD") for d in names}  # a review is no change
         for doc, hit in describing(docs, sorted(changed)).items():
-            if doc not in changed:
+            if doc not in updated:
                 out.append((doc, since, hit))
         return out
     local = worktree_changes(root)
+    reviewed = reviews(root)
     for doc in docs:
         if doc in local:
             continue  # being edited now: the edit is the update
         last = git(root, "log", "-1", "--format=%h", "--", doc).strip()
         if not last:
             continue  # never committed: new, so not behind anything yet
+        seen = next((h for h, names in reviewed if doc in names), None)
+        if seen and subprocess.run(["git", "merge-base", "--is-ancestor", last, seen], cwd=root).returncode == 0:
+            last = seen  # reviewed after its last edit: the review is the reference
         later = set(lines(git(root, "diff", "--name-only", last, "HEAD"))) | local
         hit = describing({doc: docs[doc]}, sorted(later)).get(doc)
         if hit:

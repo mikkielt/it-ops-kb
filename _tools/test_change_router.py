@@ -42,6 +42,9 @@ def test_change_requests_are_routed(prompt, skill):
     "kb+: add a device to a group",
     "/kb-refresh auth/kerberos",
     "explain the verdict rules",
+    "Another Claude session sent a message:\n<agent-message>Added a new topic, census of sources S-wmmyfoun</agent-message>",
+    "[SYSTEM NOTIFICATION - NOT USER INPUT]\n<task-notification>add topics finished</task-notification>",
+    "<task-notification>update the skills</task-notification>",
     "",
 ])
 def test_questions_and_commands_pass_unchanged(prompt):

@@ -31,7 +31,7 @@ Run each command on its own (no `;`, `&&`, pipes into other tools or loops): the
 
 ## 2. Update each doc
 
-Change only what the code change made wrong or missing; keep each doc's scope.
+Change only what the code change made wrong or missing; keep each doc's scope. A listed doc that is still correct needs no edit: name it in the commit's `Self-Reviewed:` trailer (step 4), which clears it.
 
 | doc | holds | never |
 |---|---|---|
@@ -56,7 +56,7 @@ Rules for every doc:
 
 ## 3. Verify
 
-1. `python3 _tools/selfdoc.py stale --since <REV>`: `stale=0` (an edited doc counts as updated).
+1. `python3 _tools/selfdoc.py stale --since <REV>`: `stale=0` (an edited doc counts as updated; a doc you only reviewed stays listed until the commit carries its `Self-Reviewed:` trailer).
 2. `python3 _tools/selfdoc.py check`: `problems=0`.
 3. `python3 _tools/tests.py -k "Cohesion or SelfDocs"`: flags, backtick paths, links, size caps, the map, skills listed.
 4. `python3 _tools/build_index.py --check` when `coverage.md` or an article's front matter was touched.
@@ -64,5 +64,5 @@ Rules for every doc:
 
 ## 4. Commit and report
 
-- The docs go in the same commit as the code change they describe (`_self/git.md`); a docs-only catch-up is `docs(kb): bring _self in line with <what changed>`. Commit only when asked; push with `python3 _tools/kbgit.py sync --push`.
+- The docs go in the same commit as the code change they describe (`_self/git.md`), with a `Self-Reviewed: <doc>, <doc>` trailer (`git commit --trailer "Self-Reviewed: _self/plugin.md, AGENTS.md"`) for each listed doc you checked and left unchanged; a docs-only catch-up is `docs(kb): bring _self in line with <what changed>`. Commit only when asked; push with `python3 _tools/kbgit.py sync --push`.
 - Report: each doc updated with one line on what changed and which file made it stale; docs still stale and why (e.g. a behaviour you could not confirm by running the tool).

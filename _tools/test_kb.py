@@ -275,6 +275,15 @@ class TestCohesion:
             if os.path.basename(os.path.dirname(s)) not in ("kb-lookup", "kb-review-workspace", "kb-gap"):  # read-only skills
                 assert "_self/" in text(os.path.relpath(s, KB)), f"{s}: a skill that changes the kb must name the _self/ docs it follows"
 
+    def test_appended_files_have_lf_endings(self):
+        """Python's csv writer ends rows with \\r\\n unless told otherwise; the union-merged ledgers, the tool data and
+        _self/ must stay \\n-only, or merges and the duplicate checks compare rows that differ only in \\r."""
+        paths = glob.glob(os.path.join(KB, "_*.csv")) + glob.glob(os.path.join(KB, "_*.md")) \
+            + glob.glob(os.path.join(TOOLS, "*.csv")) + glob.glob(os.path.join(TOOLS, "doc2query", "*.csv")) \
+            + glob.glob(os.path.join(KB, "_self", "**", "*.*"), recursive=True)
+        bad = [os.path.relpath(p, KB) for p in sorted(paths) if b"\r" in open(p, "rb").read()]
+        assert not bad, "CR line endings (write with csv.writer(f, lineterminator='\\n'), or kbcommon.csv_text): " + ", ".join(bad)
+
     def test_readme_stays_short(self):
         size = len((text("README.md") or "").encode())
         assert size <= 8192, f"README.md is {size} bytes: it is the short overview for people; move agent detail to _self/"

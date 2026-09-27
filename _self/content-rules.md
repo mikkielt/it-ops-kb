@@ -23,7 +23,7 @@ What a fact, an article, a source row and a ledger entry look like, and how to a
 - **Sources.** Add the source row before the fact. A new source's id is `S-` + 8 characters from `python3 _tools/kbid.py url <URL>` (a hash of the url, so parallel writers converge); never invent one or take "the next number". Legacy `S<number>` ids (`S100` ... `S2204`) stay valid and are never renumbered; reuse the existing id when the url already has a row. `check.py` rejects a hash id that does not match its url.
 - **Replaced sources.** When a source is replaced (e.g. a pinned commit url whose upstream changed), add a new row, set the old row's `superseded_by` to the new id, and re-point the citations of the facts you re-verified. Ids are never deleted or reused.
 - **Answers.** New `_answers.md` entries are headed `## QK-<slug>. <question>` (`python3 _tools/kbid.py answer "<question>"`); an id never appears twice.
-- Write CSVs with a real CSV writer (Python's `csv` module), one record per line: an unquoted comma breaks the row.
+- Write CSVs with a real CSV writer (Python's `csv` module, `lineterminator="\n"`: its default ends rows with `\r\n`), one record per line: an unquoted comma breaks the row. The ledgers, the `_tools/` data and `_self/` must stay `\n`-only (tested).
 
 ## Ledgers and retrieval data
 

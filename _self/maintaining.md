@@ -25,7 +25,7 @@ Run `/kb-setup` (Claude Code), or do the same by hand. In Claude Code on the web
 
 **A request to change the kb goes through one of these skills, never freehand edits.** Claude invokes them on its own: they are model-invocable, with descriptions that start with their trigger ("Use when ..."), and they stay out of the plugin, so their descriptions cost nothing in host projects. A person can still type them. Each names the `_self/` files it relies on.
 
-The routing is also deterministic: `.claude/hooks/kb_change_router.py`, a UserPromptSubmit hook in `.claude/settings.json` (never in the plugin), adds one line of context to a prompt that asks for a change (add, update, fix, refresh, research, commit, push, ...), naming the likely skill from its words plus the rule below the table. Questions, `kb:` prompts and slash commands pass unchanged. `python3 .claude/hooks/kb_change_router.py --test "<prompt>"` shows what it adds. A new change skill needs a route there (`_tools/test_change_router.py` fails otherwise).
+The routing is also deterministic: `.claude/hooks/kb_change_router.py`, a UserPromptSubmit hook in `.claude/settings.json` (never in the plugin), adds one line of context to a prompt that asks for a change (add, update, fix, refresh, research, commit, push, ...), naming the likely skill from its words plus the rule below the table. Questions, `kb:` prompts, slash commands and harness messages (a subagent's report, a task notification) pass unchanged. `python3 .claude/hooks/kb_change_router.py --test "<prompt>"` shows what it adds. A new change skill needs a route there (`_tools/test_change_router.py` fails otherwise).
 
 | skill | does | reads |
 |---|---|---|

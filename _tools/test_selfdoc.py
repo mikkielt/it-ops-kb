@@ -79,6 +79,23 @@ class TestSelfdocInGit:
         with pytest.raises(selfdoc.SelfdocError):
             selfdoc.stale(root, since="no-such-rev")
 
+    def test_self_reviewed_trailer_clears_a_doc(self, repo):
+        repo.append("_self/map.csv", "_self/design.md,_self/tools.md\n")  # a doc that describes a reviewed doc
+        repo.write("_self/design.md", "design\n")
+        repo.git("add", "-A")
+        repo.git("commit", "-q", "-m", "design doc")
+        root, base = repo.path, repo.rev("HEAD")
+        repo.write("src/tool.py", "print(4)\n")
+        repo.git("commit", "-qam", "change the tool")
+        assert [d for d, _, _ in selfdoc.stale(root)] == ["_self/tools.md"]
+        repo.git("commit", "-q", "--allow-empty", "-m", "review\n\nSelf-Reviewed: _self/tools.md, _self/state.md")
+        assert selfdoc.stale(root) == [], "a review after the change is the doc's new reference"
+        assert selfdoc.stale(root, since=base) == [], "--since counts docs reviewed in REV..HEAD as updated, and a " \
+            "reviewed doc is not a changed file (design.md describes tools.md)"
+        repo.write("src/tool.py", "print(5)\n")
+        repo.git("commit", "-qam", "change it again")
+        assert [d for d, _, _ in selfdoc.stale(root)] == ["_self/tools.md"], "a later change needs a new review"
+
     def test_check(self, repo):
         root = repo.path
         assert selfdoc.check(root) == []
