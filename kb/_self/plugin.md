@@ -66,7 +66,7 @@ Leave `it-ops-kb-docs` out of `enabledPlugins` when the team already has the Mic
 ## 5. What it costs and what to watch
 
 - **Context:** about 1.24k tokens in every session once the `kb` server connects (`kb/_self/reports/token-usage.md`, "Always-on cost"): the `kb_pack` schema, the server's instructions, the `kb-lookup` skill and both agent descriptions, the deferred tool names. `claude plugin details it-ops-kb` shows less: it misses path-listed agents and the inline server; `/kb-review-workspace` and `/kb-gap` are never listed, so they cost nothing until run. The docs plugin adds each server's instructions.
-- **Disk and time:** about 13 MB of files plus about 7 MB of git history per installed copy; Python 3.11+ standard library only. After each update the first lookup builds the index (3-5 s measured), then a cold lookup takes about 0.1 s.
+- **Disk and time:** one clone of the repository per installed copy; Python 3.11+ standard library only. After each update the first lookup builds the index (3-5 s measured), then a cold lookup takes about 0.1 s.
 - **Known limit, a false `good`:** the verdict counts the question's key words in the best article, not meaning, so a `good` pack can be about something related. The pack prints a `check:` line when a name the question uses appears nowhere in the lead article, or when no single fact holds half the key words; the kb tools' instructions say to answer only if a cited line answers the question itself. Without that line the risk is lower, not gone: check that the cited fact answers what was asked, and report a miss with `/it-ops-kb:kb-gap`.
 - **Headless answers:** `_tools/kb_ask.py` needs a clone and the `claude` CLI; in a session with the plugin the path is `kb_pack` or `/it-ops-kb:kb-lookup`.
 

@@ -77,14 +77,14 @@ What it shows:
 
 ### Always-on cost
 
-**Setup:** Claude Code 2.1.283; 265 topics in one root (`kb/public`); the trimmed texts: server instructions 1,004 characters, `kb_pack` tool JSON 1,173 (with the `root` parameter), `kb-lookup` skill description 358, agent descriptions 161 and 162. Fresh `claude -p "Reply with the single word ok." --model haiku --output-format json --no-session-persistence --setting-sources project,local` in an empty directory, 4 runs without the plugin and 5 with `--plugin-dir` at this repository.
+**Setup:** Claude Code 2.1.283; 265 topics in one root (`kb/public`); the trimmed server instructions, `kb_pack` schema (with the `root` parameter), `kb-lookup` skill and agent descriptions. Fresh `claude -p "Reply with the single word ok." --model haiku --output-format json --no-session-persistence --setting-sources project,local` in an empty directory, 4 runs without the plugin and 5 with `--plugin-dir` at this repository.
 
 | arm | input tokens per run |
 |---|---|
 | no plugin | 22,038 (all 4) |
 | `--plugin-dir` | 23,282 (all 5) |
 
-- The plugin adds about **1.24k tokens** per session once its `kb` server has connected; the untrimmed texts added 1,447 (instructions 1,370 characters, `kb_pack` 1,493 without `root`, skill 447, agents 242 + 255). A run whose first request comes before the server connects lacks the instructions and the `kb_pack` schema; none of these runs did.
+- The plugin adds about **1.24k tokens** per session once its `kb` server has connected; the untrimmed texts added 1,447. A run whose first request comes before the server connects lacks the instructions and the `kb_pack` schema; none of these runs did.
 - What is left: the `kb_pack` schema, the server instructions, the skill and agent descriptions, the 7 deferred tool names, and Claude Code's own framing of each.
 - A host lookup with the trimmed texts (Haiku, `--allowedTools mcp__plugin_it-ops-kb_kb`, "How many apps can an Intune Win32 app supersede?"): `kb_pack`, a `kb_show` called with its schema unloaded (`root` passed for `path`; refused), a second `kb_pack`, and a correct cited answer (the 10-node supersedence graph, `S-wc6e3fba`), 4 turns, $0.020.
 - `claude plugin details it-ops-kb` shows far less (it counts skills and instructions, misses path-listed agents and the inline server, and needs an installed plugin); measure this way instead.

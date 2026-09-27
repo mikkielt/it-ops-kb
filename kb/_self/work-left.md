@@ -15,8 +15,8 @@ The open work, and only that: a finished item leaves this file (its commit recor
 
 ## Token cost
 
-- **`AGENTS.md` is 4,088 of its 4,096 bytes** (the cap is tested and stays): any addition needs a cut elsewhere.
-- **Re-measure the `kb-lookup` agent's start context.** 3.9k was measured when the skill it preloads was 3.0 KB; the skill is 4.2 KB now.
+- **`AGENTS.md` is within a few bytes of its 4 KB cap** (tested; `wc -c AGENTS.md`): any addition needs a cut elsewhere.
+- **Re-measure the `kb-lookup` agent's start context.** The 3.9k in `kb/_self/reports/token-usage.md` predates the growth of the skill it preloads.
 - **Watch `claude -p` defaults.** If `--bare` becomes the default for `claude -p`, `_tools/agent_bench.py` configs that rely on the clone's plugins and settings must load them explicitly; `_tools/kb_ask.py` already passes its servers.
 - **Watch native citations.** The Messages API's `search_result` blocks give citations from tool results, but MCP does not carry them and the Agent SDK drops them from MCP tool results; revisit when MCP or Claude Code supports them.
 
