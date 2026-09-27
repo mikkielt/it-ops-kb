@@ -16,14 +16,14 @@ status: complete
 - Resource discovery: `DSC_RESTRICTED_PATH` (search only there, and dsc also replaces `PATH` with it) takes precedence over `DSC_RESOURCE_PATH`. Both apply only when `resourcePath.allowEnvOverride` is true. Otherwise dsc searches `resourcePath.directories`, then `PATH` if `appendEnvPath`, then dsc.exe's own folder.
 
 ## Facts
-- File names and order: `dsc_default.settings.json` (value read under root key `"1"`), then `dsc.settings.json`; both are looked up in the folder of the dsc executable (symlinks are resolved). [DOC S107]
-- Policy path on Windows: `$env:ProgramData\dsc\dsc.settings.json`. On other OSes: `/etc/dsc/dsc.settings.json`. [DOC S107]
-- If the policy folder exists but `verify_windows_acl` fails (write access must be only SYSTEM and Administrators), dsc warns "Policy folder '<path>' is not secure, settings file will not be used" and ignores it. [DOC S107, S140]
+- File names and order: `dsc_default.settings.json` (value read under root key `"1"`), then `dsc.settings.json`; both are looked up in the folder of the dsc executable (symlinks are resolved). [CODE S107: lib/dsc-lib/src/util.rs#get_setting]
+- Policy path on Windows: `$env:ProgramData\dsc\dsc.settings.json`. On other OSes: `/etc/dsc/dsc.settings.json`. [CODE S107: lib/dsc-lib/src/util.rs#get_settings_policy_file_path]
+- If the policy folder exists but `verify_windows_acl` fails (write access must be only SYSTEM and Administrators), dsc warns "Policy folder '<path>' is not secure, settings file will not be used" and ignores it. [CODE S107: lib/dsc-lib/src/util.rs#verify_windows_acl; CODE S140: lib/dsc-lib/locales/en-us.toml#policyFolderNotSecure]
 - `DSC_IGNORE_SETTINGS_FILE` (set to `1` by `--ignore-settings-file`) makes `get_setting` return empty before any file, including the policy file, is read. [DER S107,S128: early return precedes the policy lookup]
-- Shipped defaults (both zips): `resourcePath: {allowEnvOverride: true, appendEnvPath: true, directories: []}`, `tracing: {level: WARN, format: Default, allowOverride: true}`. [DOC S127,S114]
-- Resource path resolution: a policy `resourcePath` replaces the settings one. Then, if `allowEnvOverride` and `DSC_RESTRICTED_PATH` is set, dsc searches only those paths and sets process `PATH` to them. Else, if `allowEnvOverride` and `DSC_RESOURCE_PATH` is set, dsc searches those paths and adds its own folder to `PATH`. Else it searches `directories`, plus `PATH` when `appendEnvPath`, plus its own folder. [DOC S106]
-- Tracing level precedence: settings/policy `tracing`, then `DSC_TRACE_LEVEL` env var if `allowOverride`, then command-line `-l`/`-t`. The command line does not override a policy. [DOC S107,S101]
-- `DSC_CONFIG_ROOT` is set by dsc to the folder of the configuration file, so that child processes of resources can use it (dsc warns if it is already set). [DOC S101]
+- Shipped defaults (both zips): `resourcePath: {allowEnvOverride: true, appendEnvPath: true, directories: []}`, `tracing: {level: WARN, format: Default, allowOverride: true}`. [CODE S127: dsc/dsc.settings.json#resourcePath; CODE S114: dsc_default.settings.json#resourcePath]
+- Resource path resolution: a policy `resourcePath` replaces the settings one. Then, if `allowEnvOverride` and `DSC_RESTRICTED_PATH` is set, dsc searches only those paths and sets process `PATH` to them. Else, if `allowEnvOverride` and `DSC_RESOURCE_PATH` is set, dsc searches those paths and adds its own folder to `PATH`. Else it searches `directories`, plus `PATH` when `appendEnvPath`, plus its own folder. [CODE S106: lib/dsc-lib/src/discovery/command_discovery.rs#get_resource_paths]
+- Tracing level precedence: settings/policy `tracing`, then `DSC_TRACE_LEVEL` env var if `allowOverride`, then command-line `-l`/`-t`. The command line does not override a policy. [CODE S107: lib/dsc-lib/src/util.rs#get_setting; CODE S101: dsc/src/util.rs#enable_tracing]
+- `DSC_CONFIG_ROOT` is set by dsc to the folder of the configuration file, so that child processes of resources can use it (dsc warns if it is already set). [CODE S101: dsc/src/util.rs#set_dscconfigroot]
 - Open issue #1053 "Doc: DSC_RESOURCE_PATH" (Issue-Bug label). [DOC S126]
 
 ## Reference

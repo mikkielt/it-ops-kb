@@ -16,14 +16,14 @@ status: complete
 - Secure values reach command resources as plain JSON on the command line (`--input <json>`) or on stdin, depending on the manifest.
 
 ## Facts
-- `SECURE_VALUE_REDACTED = "<secureValue>"`. Parameter types `secureString` and `secureObject` are serialized as objects keyed `secureString` / `secureObject`. [DOC S125]
-- `redact()` replaces any secure-value object with `<secureValue>`, recursively through maps and arrays. It is applied, for example, to `before_state` in set results. [DOC S142,S105]
-- `secret()`: category deployment, 1 to 2 string args (name, optional vault). It queries all extensions whose capabilities include `secret`. Zero such extensions → error `functions.secret.noExtensions`. Two extensions returning different values → error `multipleSecrets`. An extension error is logged as a warning and skipped. The returned value is parsed as a SecureString object (error `invalidSecretFormat` if it is not one); no value from any extension → error `secretNotFound`. [DOC S124]
-- The extension capability `secret` is set when an extension manifest defines a `secret` operation. [DOC S106]
+- `SECURE_VALUE_REDACTED = "<secureValue>"`. Parameter types `secureString` and `secureObject` are serialized as objects keyed `secureString` / `secureObject`. [CODE S125: lib/dsc-lib/src/configure/parameters.rs#SECURE_VALUE_REDACTED]
+- `redact()` replaces any secure-value object with `<secureValue>`, recursively through maps and arrays. It is applied, for example, to `before_state` in set results. [CODE S142: lib/dsc-lib/src/dscresources/dscresource.rs#redact; CODE S105: lib/dsc-lib/src/dscresources/command_resource.rs#L187-L201]
+- `secret()`: category deployment, 1 to 2 string args (name, optional vault). It queries all extensions whose capabilities include `secret`. Zero such extensions → error `functions.secret.noExtensions`. Two extensions returning different values → error `multipleSecrets`. An extension error is logged as a warning and skipped. The returned value is parsed as a SecureString object (error `invalidSecretFormat` if it is not one); no value from any extension → error `secretNotFound`. [CODE S124: lib/dsc-lib/src/functions/secret.rs#invoke]
+- The extension capability `secret` is set when an extension manifest defines a `secret` operation. [CODE S106: lib/dsc-lib/src/discovery/command_discovery.rs#L984-L992]
 - Extensions in the 3.3.0 and 3.4.0-preview.1 Windows zips: `Microsoft.Windows.Appx/Discover` and `Microsoft.PowerShell/Discover`, both discover-only. [DOC S114,S115]
 - Test on the 3.3.0 binary, 2026-09-23: document with a `secureString` parameter passed to `Microsoft.DSC.Debug/Echo`, value `Canary-7731`. Stdout of `config get`/`set` contained 0 occurrences. Stderr at `-l trace` contained 2 (get) / 6 (set). At `-l debug` and `-l info`: 0. The same counts on 3.4.0-preview.1. [DER S116,S117: grep of captured output]
 - The leaking trace lines come from `dsc_lib::configure` ("Desired state: {...secureString: <plaintext>}") and `dsc_lib::dscresources::command_resource` ("Verify JSON for ..." and "Invoking command 'dscecho' with args [--input, {...}]"). [DER S116: captured trace lines]
-- The trace level can be raised without a CLI flag through the `DSC_TRACE_LEVEL` env var or the `tracing` section of `dsc.settings.json` (`allowOverride`). See `settings-and-paths.md`. [DOC S101,S107]
+- The trace level can be raised without a CLI flag through the `DSC_TRACE_LEVEL` env var or the `tracing` section of `dsc.settings.json` (`allowOverride`). See `settings-and-paths.md`. [CODE S101: dsc/src/util.rs#L370; CODE S107: lib/dsc-lib/src/util.rs#SETTINGS_FILE_NAME]
 - Open issue #1209 "Parameter `secureString` transforms input incorrectly on adapter" (Issue-Bug). [DOC S126]
 
 ## Reference

@@ -14,7 +14,7 @@ Pointer only. Which DSC release ships the adapter, its manifest diff and behavio
 (release notes / feature matrix, resource manifests). One identifying fact is recorded here.
 
 ## Facts
-- On PowerShell/DSC `main` (commit 30ced1f5, 2026-09-22) the adapter manifest `adapters/group_policy_template/group_policy_template.dsc.resource.json` declares type `Microsoft.Adapter/GroupPolicyTemplate`, version `0.1.0`, kind `adapter`, description "Adapts Windows Group Policy ADMX templates into DSC resources". [DOC S924]
+- On PowerShell/DSC `main` (commit 30ced1f5, 2026-09-22) the adapter manifest `adapters/group_policy_template/group_policy_template.dsc.resource.json` declares type `Microsoft.Adapter/GroupPolicyTemplate`, version `0.1.0`, kind `adapter`, description "Adapts Windows Group Policy ADMX templates into DSC resources". [CODE S924: adapters/group_policy_template/group_policy_template.dsc.resource.json#type]
 - Which released DSC version first ships this adapter: see `dsc/` feature matrix; not verified here. [UNK]
 
 ## Reference

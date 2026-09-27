@@ -17,17 +17,17 @@ status: complete
 
 ## Facts
 - GitHub release v3.3.0: created 2026-09-16T21:00:15Z, published 2026-09-17T14:53:40Z, `target_commitish: main`, not a prerelease. v3.4.0-preview.1: created 2026-09-09, published 2026-09-10, `target_commitish: main`, prerelease. v3.3.0-rc.1 and rc.2: `target_commitish: release/v3.3`. [DOC S113]
-- The tag v3.3.0 resolves to commit 4b492407 ("(GH-538) Set URI and docs keywords for `DscRepoSchema` types (#1699)"), where `dsc/Cargo.toml` has `version = "3.4.0-preview.1"`. [DOC S110]
-- Branch release/v3.3 head ea572fa (2026-09-01) has `dsc/Cargo.toml` `version = "3.3.0"` and no `adapters/group_policy_template`, `resources/environment_variable` or `resources/filecontent`. [DOC S111,S144]
+- The tag v3.3.0 resolves to commit 4b492407 ("(GH-538) Set URI and docs keywords for `DscRepoSchema` types (#1699)"), where `dsc/Cargo.toml` has `version = "3.4.0-preview.1"`. [CODE S110: dsc/Cargo.toml#version]
+- Branch release/v3.3 head ea572fa (2026-09-01) has `dsc/Cargo.toml` `version = "3.3.0"` and no `adapters/group_policy_template`, `resources/environment_variable` or `resources/filecontent`. [CODE S111: dsc/Cargo.toml#version; DOC S144]
 - `dsc --version` on the 3.3.0 release binary prints `dsc 3.3.0`. The 3.3.0 dsc.exe contains `3.3.0` and not `3.4.0-preview.1`. [DOC S116,S114]
 - The 3.3.0 release notes open "These release notes describe updates to DSC since the `v3.3.0-rc.2` release". They list under Added: rename `--version` to `--required-version` (#1610), UpdateList `--what-if` (#1616), Group Policy template adapter (#1686), Windows environment variable resource (#1675), File/Content (#1676), MCP `--what-if` (#1697). [DOC S118]
 - The 3.4.0-preview.1 release notes list the same six items. [DOC S119]
 - The 3.3.0 binary still uses `-v, --version` for resource commands. 3.4.0-preview.1 uses `-v, --required-version`. [DOC S116,S117]
-- `--ignore-settings-file` was backported to the 3.2 line: `args.rs` at tag v3.2.3 (2026-07-16) defines it as a global flag with the short form `-i`. The matrix's 3.2.0 column describes the v3.2.0 tag only. [DOC S-mmshotst, S113]
-- The dsc-lib crate version is `3.2.0` in both 3.3.0 and 3.4.0-preview.1. This breaks `directives.version` (see `directives.md`). [DOC S112, S-g4krsgp2]
-- `data.build.json` in 3.4.0-preview.1 packages `environment_variable.exe`, `environment_variable.dsc.manifests.json`, `filecontent.exe`, `filecontent.dsc.resource.json` and has no `group_policy_template` entry. [DOC S120]
-- `Microsoft.Adapter/GroupPolicyTemplate` 0.1.0 ("Adapts Windows Group Policy ADMX templates into DSC resources") exists as a source manifest at v3.4.0-preview.1. [DOC S121]
-- `Microsoft.Windows/Personalization` is an adapted-resource YAML (needs `Microsoft.Windows.Adapter/Registry`) present in source on release/v3.3 and v3.4.0-preview.1, and absent from both zips. [DOC S122,S-6hlzzfeg,S114,S115]
+- `--ignore-settings-file` was backported to the 3.2 line: `args.rs` at tag v3.2.3 (2026-07-16) defines it as a global flag with the short form `-i`. The matrix's 3.2.0 column describes the v3.2.0 tag only. [CODE S-mmshotst: dsc/src/args.rs#ignore_settings_file; DOC S113]
+- The dsc-lib crate version is `3.2.0` in both 3.3.0 and 3.4.0-preview.1. This breaks `directives.version` (see `directives.md`). [CODE S112: lib/dsc-lib/Cargo.toml#version; CODE S-g4krsgp2: lib/dsc-lib/Cargo.toml#version]
+- `data.build.json` in 3.4.0-preview.1 packages `environment_variable.exe`, `environment_variable.dsc.manifests.json`, `filecontent.exe`, `filecontent.dsc.resource.json` and has no `group_policy_template` entry. [CODE S120: data.build.json#PackageFiles]
+- `Microsoft.Adapter/GroupPolicyTemplate` 0.1.0 ("Adapts Windows Group Policy ADMX templates into DSC resources") exists as a source manifest at v3.4.0-preview.1. [CODE S121: adapters/group_policy_template/group_policy_template.dsc.resource.json#description]
+- `Microsoft.Windows/Personalization` is an adapted-resource YAML (needs `Microsoft.Windows.Adapter/Registry`) present in source on release/v3.3 and v3.4.0-preview.1, and absent from both zips. [CODE S122: resources/windows_personalization/windows_personalization.dsc.adaptedResource.yaml#requireAdapter; CODE S-6hlzzfeg: resources/windows_personalization/windows_personalization.dsc.adaptedResource.yaml#requireAdapter; DER S114, S115: neither release zip lists a personalization file]
 
 ## Reference
 Feature matrix (verified against code at each tag or branch and against the release zips/binaries):
