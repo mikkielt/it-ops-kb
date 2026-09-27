@@ -2,9 +2,9 @@
 topic: agents/github-copilot-admin
 priority: P2
 applies_to: "GitHub Copilot Business and Enterprise, organization/enterprise admin surfaces (2026-09)"
-retrieved_utc: 2026-09-26
-sources: [S-ovxxqqbw, S-tn4wwzyx, S-ftbeo3o7, S1805, S-unwwieso, S-udcaydkb]
-status: partial
+retrieved_utc: 2026-09-27
+sources: [S-ovxxqqbw, S-tn4wwzyx, S-ftbeo3o7, S1805, S-unwwieso, S-udcaydkb, S-5mca3vxo, S-kvkn5bq2, S-7vu7gftp, S-z7qwhjoa, S-hjnsjtb6, S-5yxttqw4]
+status: complete
 ---
 
 # GitHub Copilot Business/Enterprise administration
@@ -93,6 +93,29 @@ separate from content exclusion, configured per organization or repository.
   `copilot/`-prefixed branch it creates — see `agents/headless-agent-runtimes.md` for the full runtime
   comparison. [DER agents/headless-agent-runtimes.md]
 
+### Billing, report fields, network and retention
+- Plans and billing: Copilot Business is $19 per user per month with 1,900 AI credits per user, Copilot
+  Enterprise $39 with 3,900; credits pool per enterprise, usage beyond the pool costs $0.01 per AI credit, and
+  code completions and next edit suggestions are not billed in credits. [DOC S-5mca3vxo]
+- Included AI credits do not carry over: the pool resets to the full monthly amount at 00:00 UTC on the first
+  day of each calendar month. [DOC S-kvkn5bq2]
+- Premium requests are now a legacy model that applies only to Copilot Pro and Pro+ subscribers on an existing
+  annual plan who stayed on request-based billing after 2026-06-01. [DOC S-7vu7gftp]
+- Usage-metrics report files are NDJSON; per-user reports (`*-users-1-day`, `*-users-28-day`) carry
+  `user_id`, `user_login`, `ai_credits_used` (per-user total, not broken down), the `used_*` indicators and
+  `totals_by_*` arrays, while aggregated reports (`enterprise-1-day`, `organization-1-day`) carry active-user
+  counts and `pull_requests` but no user fields. The same fields appear in the usage metrics APIs.
+  [DOC S-z7qwhjoa]
+- Network: Copilot supports HTTP proxies set through `HTTPS_PROXY`/`HTTP_PROXY`, with basic or Kerberos proxy
+  authentication (SPN override via `AGENT_KERBEROS_SERVICE_PRINCIPAL` for VS Code and JetBrains); a proxy URL
+  starting `https://` is not supported. Certificates come from the OS trust store plus `NODE_EXTRA_CA_CERTS`,
+  which covers TLS-inspecting setups such as transparent proxies or Zscaler. [DOC S-hjnsjtb6]
+- Model-provider retention: GitHub states zero data retention agreements with OpenAI, Anthropic and xAI for
+  the models they host; Claude Fable 5 and 5.1 need a time-bound ZDR exemption requested through the end of
+  2026. [DOC S-5yxttqw4] GitHub's own retention periods for prompts are not stated on a docs.github.com page
+  read on 2026-09-27 (the Trust Center FAQ is JavaScript-rendered); see `_gaps.md`. [DER S-5yxttqw4: absence
+  on the pages read]
+
 ## Reference
 - `agents/coding-agents-mcp.md` — Copilot coding agent's own MCP configuration JSON (`mcpServers` block,
   `COPILOT_MCP_`-prefixed secrets, no per-call approval). Cross-linked here for the MCP policy toggle.
@@ -101,13 +124,3 @@ separate from content exclusion, configured per organization or repository.
 
 ## Examples
 None — this topic is settings/API reference, not runnable code.
-
-### Open UNKs
-- Exact byte size / field-level schema of the downloaded usage-metrics report files (per-editor, per-model,
-  per-language breakdown, premium-request counts) was not confirmed on the pages fetched — the API reference
-  page describes only the wrapper (`download_links`, `report_day`/`report_start_day`/`report_end_day`). [UNK]
-- Premium-request monthly allowance per plan, per-model request multipliers, and overage billing rate could
-  not be confirmed: the billing overview and org-request-allowance pages fetched either 404'd or did not state
-  the figures. [UNK]
-- IDE proxy/certificate configuration for Copilot (corporate TLS-interception certs) and Copilot data-retention
-  settings were not found on a docs.github.com page during this pass. [UNK]

@@ -657,14 +657,17 @@ Still open: (topic: auth/configmgr-rbac-auth)
 ## agents/coding-agents-mcp
 
 - OpenAI Codex CLI's exact approval-mode policy key names (beyond the described `auto`/`prompt`/`writes`/`approve` values) were not found on a primary Codex config-reference page in this pass (1 WebFetch of the Codex CLI docs config page, no dedicated key-name table found). (topic: agents/coding-agents-mcp)
+  - Resolved 2026-09-27: Codex configuration reference (S-4fmcb5i2): `approval_policy` = `on-request` | `never` | `granular` table ("untrusted" retired); per-server `default_tools_approval_mode` and per-tool `approval_mode` take `auto`/`prompt`/`writes`/`approve`; commands from S-zqlgscwv. (topic: agents/coding-agents-mcp)
 
 ## agents/content-safety-prompt-shields
 
 - Azure AI Content Safety's current supported-region list for Prompt Shields was not captured; it lives on a separate, frequently-updated Azure regions page not fetched in this pass (1 lookup: Microsoft Learn search for "Azure AI Content Safety region availability"). (topic: agents/content-safety-prompt-shields)
+  - Resolved 2026-09-27: region availability page (S-47nwz53u, updated 2026-09-18) read; the Prompt Shields region list and its 10K-character input limits are now in the article. (topic: agents/content-safety-prompt-shields)
 
 ## agents/github-copilot-admin
 
 - Exact field-level schema of GitHub Copilot's downloaded usage-metrics report files, the premium-request monthly allowance per plan/per-model multipliers and overage billing rate, and IDE proxy/TLS-interception certificate + data-retention settings were not found on docs.github.com pages fetched (billing-overview and org-request-allowance pages 404'd or lacked the figures; 2 lookups attempted). (topic: agents/github-copilot-admin)
+  - Mostly resolved 2026-09-27: report fields (S-z7qwhjoa), AI-credit billing that replaced premium requests for Business/Enterprise (S-5mca3vxo, S-kvkn5bq2, S-7vu7gftp) and proxy/certificate settings (S-hjnsjtb6) are in the article. Still open: GitHub's own prompt-retention periods; the Trust Center FAQ is JavaScript-rendered, Claude in Chrome was unavailable, and docs.github.com states only provider ZDR agreements (S-5yxttqw4). (topic: agents/github-copilot-admin)
 
 ## agents/langgraph
 
@@ -673,10 +676,12 @@ Still open: (topic: auth/configmgr-rbac-auth)
 ## agents/microsoft-agent-framework
 
 - Exact licence terms for the Microsoft Agent Framework .NET/Go SDK packages (as distinct from the GitHub repository root MIT licence) were not confirmed on a package-registry (NuGet/pkg.go.dev) page in this pass (1 lookup: Microsoft Learn search for "Microsoft Agent Framework license NuGet"). (topic: agents/microsoft-agent-framework)
+  - Resolved 2026-09-27: NuGet `Microsoft.Agents.AI` declares MIT for 1.0.0-1.22.0 (S-y76ymaxp); `microsoft/agent-framework-go` is MIT (S-a3n34lxa). (topic: agents/microsoft-agent-framework)
 
 ## agents/security-copilot-endpoint
 
 - Whether the Security Copilot Device Offboarding Agent has its own dedicated Learn article (licensing/role/identity detail beyond the overview page's one-paragraph description) was not found (1 Microsoft Learn search for "Device Offboarding Agent Security Copilot"). (topic: agents/security-copilot-endpoint)
+  - Resolved 2026-09-27: it has (S-nizafwvn); the agent could not be set up after 2026-04-30 and was removed on 2026-06-01. Requirements, identity and limits now in the article. (topic: agents/security-copilot-endpoint)
 
 ## defender/advanced-hunting
 

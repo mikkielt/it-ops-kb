@@ -2,9 +2,9 @@
 topic: agents/content-safety-prompt-shields
 priority: P2
 applies_to: "Azure AI Content Safety Prompt Shields API (GA, api-version 2024-09-01), Microsoft Foundry guardrails Prompt Shields/Spotlighting, groundedness/protected-material/custom-categories/blocklist APIs, docs retrieved 2026-09-26"
-retrieved_utc: 2026-09-26
-sources: [S-547mfaj7, S-zlqf57iu, S-c66bl3xp, S-b4vld673, S-qhrwmfgo, S-unoiabov, S-56tu3aqk, S-plv2ekwg, S-lqvaqwxx, S-3svp3sap, S-lmtdz3eq]
-status: partial
+retrieved_utc: 2026-09-27
+sources: [S-547mfaj7, S-zlqf57iu, S-c66bl3xp, S-b4vld673, S-qhrwmfgo, S-unoiabov, S-56tu3aqk, S-plv2ekwg, S-lqvaqwxx, S-3svp3sap, S-lmtdz3eq, S-47nwz53u, S-jbhevlal]
+status: complete
 files: [agents/content-safety-limits.csv]
 ---
 
@@ -133,7 +133,10 @@ preview code), custom categories (preview, standard variant retiring 2026-09-01)
 - Blocklists add custom terms or phrases to screen text alongside the AI classifiers; an Analyze text
   call names them in `blocklistNames` and can set `haltOnBlocklistHit`. [DOC S-56tu3aqk]
 - Blocklists allow only exact text matching and no image matching. [DOC S-plv2ekwg]
-- Text blocklists are GA. [UNK: not in S-56tu3aqk as re-read 2026-09-27]
+- Text blocklists are part of the GA API: the GA migration guide renames the preview blocklist operations
+  (`addBlockItems` to `addOrUpdateBlocklistItems`, `blockItems` to `blocklistItems`) under GA
+  `api-version=2023-10-01` or later, and the region page lists Blocklists in every Content Safety region.
+  [DER S-jbhevlal, S-47nwz53u: GA operation names and region table, no preview label]
 - Limits: max 10,000 terms total across all of a resource's blocklists; max 100 `blocklistItems` added per
   API call; a `blocklistItem` `text` value is max 128 characters. [DOC S-56tu3aqk]
 - Endpoint pattern: `POST {endpoint}/contentsafety/text/blocklists/{listName}:addOrUpdateBlocklistItems?api-version=2024-09-01`
@@ -147,8 +150,14 @@ preview code), custom categories (preview, standard variant retiring 2026-09-01)
 - Managed Identity is enabled automatically on a new Content Safety resource; Microsoft Entra ID
   authentication is also supported for API/SDK calls, granted via the **Cognitive Services User** and
   **Reader** roles. [DOC S-547mfaj7]
-- Resource must be created in a supported region; the current region list is a separate page and was not
-  captured in this article. [UNK]
+- Resource must be created in a supported region. Prompt Shields on a direct Content Safety resource is
+  available in: brazilsouth, canadacentral, canadaeast, centralus, eastus, eastus2, northcentralus,
+  southcentralus, westus, westus2, westus3; francecentral, germanywestcentral, italynorth, polandcentral,
+  spaincentral, swedencentral, switzerlandnorth, switzerlandwest, uksouth, westeurope; australiaeast,
+  japaneast, koreacentral, southeastasia, southindia; southafricanorth, uaenorth (page updated 2026-09-18).
+  Groundedness is in fewer regions, and Task Adherence is not processed in-region: it uses global routing. [DOC S-47nwz53u]
+- Prompt Shields input limits: a user prompt of at most 10K characters, and up to five documents totalling
+  10K characters. [DOC S-47nwz53u]
 
 ## Reference
 | Feature | Status | Notes | Source |

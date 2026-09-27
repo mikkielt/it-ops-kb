@@ -111,3 +111,5 @@ EV-dsc-look-policy-settings-file-windows,Where does dsc look for its policy sett
 EV-presidio-recognizers-loaded-default,Which Presidio recognizers are loaded by default?,privacy/presidio-entities.md;privacy/presidio.md;privacy/presidio-recognizer-yaml.md,good,
 EV-account-password-gitlab-runner-install-use,Which account and password does gitlab-runner install use for the Windows service?,windows/gitlab-runner-windows.md,good,
 EV-claude-code-warn-claude-md-too,"Does Claude Code warn when CLAUDE.md is too large, and at what size?",agents/instruction-and-context-limits.md,good,
+EV-intune-device-offboarding-agent-still-available,Is the Intune Device Offboarding Agent still available?,agents/security-copilot-endpoint.md,good,
+EV-github-copilot-business-usage-billed-ai,How is GitHub Copilot Business usage billed: AI credits and overage rate?,agents/github-copilot-admin.md,good,

@@ -27,19 +27,19 @@ Every topic of this root with its priority (the research order, not importance),
 | `agents/a2a-protocol` | P2 | complete | `agents/a2a-protocol.md`, `agents/a2a/a2a-proto-digest.md`, `agents/a2a/a2a.proto` | 15 |
 | `agents/agent-cost-governance` | P2 | complete | `agents/agent-cost-governance.md` | 2 |
 | `agents/anthropic-materials` | P2 | complete | `agents/anthropic-materials.md`, `agents/anthropic-materials.csv` | 23 |
-| `agents/azure-openai-deployments` | P2 | partial | `agents/azure-openai-deployments.md`, `agents/azure-openai-deployment-types.csv` | 12 |
-| `agents/coding-agents-mcp` | P2 | partial | `agents/coding-agents-mcp.md` | 7 |
-| `agents/content-safety-prompt-shields` | P2 | partial | `agents/content-safety-prompt-shields.md`, `agents/content-safety-limits.csv` | 11 |
+| `agents/azure-openai-deployments` | P2 | complete | `agents/azure-openai-deployments.md`, `agents/azure-openai-deployment-types.csv` | 16 |
+| `agents/coding-agents-mcp` | P2 | complete | `agents/coding-agents-mcp.md` | 9 |
+| `agents/content-safety-prompt-shields` | P2 | complete | `agents/content-safety-prompt-shields.md`, `agents/content-safety-limits.csv` | 13 |
 | `agents/doc-lookup-sources` | P2 | partial | `agents/doc-lookup-sources.md`, `agents/doc-lookup-sources.csv` | 34 |
 | `agents/docs-maintenance-agents` | P2 | partial | `agents/docs-maintenance-agents.md` | 18 |
 | `agents/genai-telemetry` | P2 | complete | `agents/genai-telemetry.md` | 5 |
-| `agents/github-copilot-admin` | P2 | partial | `agents/github-copilot-admin.md` | 6 |
+| `agents/github-copilot-admin` | P2 | complete | `agents/github-copilot-admin.md` | 12 |
 | `agents/headless-agent-runtimes` | P2 | partial | `agents/headless-agent-runtimes.md` | 13 |
 | `agents/hybrid-retrieval` | P2 | complete | `agents/hybrid-retrieval.md` | 15 |
 | `agents/mcp-server-lifecycle` | P2 | complete | `agents/mcp-server-lifecycle.md` | 5 |
-| `agents/microsoft-agent-framework` | P2 | partial | `agents/microsoft-agent-framework.md` | 16 |
+| `agents/microsoft-agent-framework` | P2 | complete | `agents/microsoft-agent-framework.md` | 21 |
 | `agents/prompt-injection-design-patterns` | P2 | complete | `agents/prompt-injection-design-patterns.md` | 6 |
-| `agents/security-copilot-endpoint` | P2 | partial | `agents/security-copilot-endpoint.md` | 23 |
+| `agents/security-copilot-endpoint` | P2 | complete | `agents/security-copilot-endpoint.md` | 24 |
 | `agents/windows-agentic-platform` | P2 | complete | `agents/windows-agentic-platform.md`, `agents/windows-ai-policies.csv` | 16 |
 | `agents/doc-change-detection` | P3 | partial | `agents/doc-change-detection.md` | 19 |
 | `agents/langgraph` | P3 | partial | `agents/langgraph.md` | 8 |

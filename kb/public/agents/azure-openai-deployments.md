@@ -2,9 +2,9 @@
 topic: agents/azure-openai-deployments
 priority: P2
 applies_to: "Azure OpenAI in Microsoft Foundry Models: deployment types, quota/rate limits, provisioned throughput (PTU), API versions, auth and networking; docs current 2026-09-26"
-retrieved_utc: 2026-09-26
-sources: [S-psa4dspu, S-u75x3q42, S-wxhjirsk, S-pntdruql, S-joexcals, S-mw5epkyz, S-4mutzurm, S-uk5qyhwi, S-dymizpwc, S-vfwdpj2p, S-gueirwxw, S-jbwkdq4e]
-status: partial
+retrieved_utc: 2026-09-27
+sources: [S-psa4dspu, S-u75x3q42, S-wxhjirsk, S-pntdruql, S-joexcals, S-mw5epkyz, S-4mutzurm, S-uk5qyhwi, S-dymizpwc, S-vfwdpj2p, S-gueirwxw, S-jbwkdq4e, S-2l76try5, S-lpohskwn, S-c7yqvidh, S-f7arhttw]
+status: complete
 files: [agents/azure-openai-deployment-types.csv]
 ---
 
@@ -46,8 +46,8 @@ inference data plane. Full deployment-type comparison table: `agents/azure-opena
 - The v1 GA data-plane API (opt-in since August 2025) removes the need to adopt a new dated `api-version`
   each month and lets the stock OpenAI client library work against Azure with minimal code change. [DOC
   S-4mutzurm]
-- The last-generation versioned GA API version is `2024-10-21`. [UNK: not in S-4mutzurm as re-read
-  2026-09-27]
+- The last-generation versioned GA data-plane inference specification is `2024-10-21`; the REST reference
+  now lists `v1` as the latest GA data-plane surface. [DOC S-2l76try5]
 
 ## Facts
 
@@ -58,8 +58,9 @@ inference data plane. Full deployment-type comparison table: `agents/azure-opena
 - SKU names used in code/ARM/Bicep: `GlobalStandard`, `GlobalProvisionedManaged`, `GlobalBatch`,
   `DataZoneStandard`, `DataZoneProvisionedManaged`, `DataZoneBatch`, `Standard`, `ProvisionedManaged`
   (Regional Provisioned), `DeveloperTier`. [DOC S-psa4dspu]
-- All deployment types live in the same Azure OpenAI / Foundry resource; there is no need to create a
-  separate resource per deployment type. [UNK: not in S-psa4dspu as re-read 2026-09-27]
+- Data Zone Standard and Data Zone Provisioned deployments are available in the same Foundry resource as all
+  other Foundry deployment types (as the deployment-types page stated at its 2025-12-02 revision); the 2026
+  rewrite dropped that sentence and nothing contradicts it. [DOC S-c7yqvidh]
 - EU Data Zone follows the Azure EU Data Boundary and can include EFTA countries (e.g. Norway,
   Switzerland) in addition to EU member states; Microsoft can add regions to a data zone without prior
   notice. [DOC S-psa4dspu]
@@ -150,13 +151,16 @@ inference data plane. Full deployment-type comparison table: `agents/azure-opena
 ### API versions and content filtering
 - Before v1, Azure OpenAI shipped new dated API versions monthly, so new features meant updating code and
   environment variables. [DOC S-4mutzurm]
-- Last-generation (versioned) GA data-plane API: `2024-10-21`, replacing the earlier `2024-06-01`. [UNK:
-  not in S-4mutzurm as re-read 2026-09-27]
+- Last-generation (versioned) GA data-plane API: `2024-10-21`, which the lifecycle page (2025-11-11 revision)
+  called the replacement for the earlier `2024-06-01` GA release; the current page no longer carries that
+  section. [DOC S-2l76try5, S-lpohskwn]
 - The next-generation **v1 API** (opt-in from August 2025) makes `api-version` no longer required for GA
   calls; individual preview features gate on feature-specific request headers (e.g. historically
   `aoai-evals: preview`) or on an `alpha` path segment instead. [DOC S-4mutzurm]
-- Under v1, omitting `api-version` routes to `latest` GA and `api-version=preview` selects the
-  always-current preview surface. [UNK: not in S-4mutzurm as re-read 2026-09-27]
+- An earlier note that under v1 an omitted `api-version` routes to `latest` and `api-version=preview`
+  selects a preview surface came from pre-GA wording; the current lifecycle page (updated 2026-06-05) says only
+  that `api-version` is no longer required for v1 GA calls, so those values are not a current documented
+  behaviour. [DER S-4mutzurm: current page read 2026-09-27]
 - v1 lets the stock `openai` client library (`OpenAI()` instead of `AzureOpenAI()`) call Azure OpenAI by
   setting `base_url` to `https://<resource>.openai.azure.com/openai/v1`, including with Microsoft Entra
   ID token auth and automatic token refresh, with minimal code differences from calling OpenAI directly.
@@ -173,8 +177,10 @@ inference data plane. Full deployment-type comparison table: `agents/azure-opena
   separately for prompts vs. completions); "no filters" and "annotate only" are configurable for prompts,
   but for completions of Azure OpenAI models require Limited Access approval via the Modified Content
   Filters review form. [DOC S-uk5qyhwi]
-- `gpt-image-1` does not support content-filter configuration at all -- only the fixed default applies.
-  [UNK: not in S-uk5qyhwi as re-read 2026-09-27]
+- The content-filters how-to stated at its 2025-11-11 revision that the GPT-image-1 series does not support
+  content-filter configuration and uses only the default filter [DOC S-f7arhttw]; the sentence was removed by
+  2025-12-04 and the current pages do not state the restriction, so treat it as historical [DER S-f7arhttw,
+  S-uk5qyhwi: pinned revision compared with the current page].
 - Content filter configurations are created at the resource level and then associated with one or more
   deployments. [DOC S-uk5qyhwi]
 
@@ -253,7 +259,7 @@ Full comparison and per-model PTU sizing columns: `agents/azure-openai-deploymen
       remaining_tokens = resp.headers.get("x-ratelimit-remaining-tokens")
   ```
 
-Open UNKs: exact current TPM/RPM default values are model- and region-specific and change frequently
-(see the live `quotas-limits` page rather than a pinned number here); the full PTU minimum/increment table
-per model-version is large and volatile -- only representative examples are captured above, not a
-complete `[UNK]` list. `status: partial` reflects that volatility, not a missing fact.
+- Scope note: exact current TPM/RPM defaults are model- and region-specific and change often, so this article
+  points to the live quota pages instead of pinning numbers; the full PTU minimum/increment table per
+  model-version is likewise left to the live page, with representative examples above. [DER S-u75x3q42,
+  S-wxhjirsk: volatile per-model tables deliberately not copied]

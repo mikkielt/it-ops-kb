@@ -2,9 +2,9 @@
 topic: agents/microsoft-agent-framework
 priority: P2
 applies_to: "Microsoft Agent Framework (Python `agent-framework`, .NET `Microsoft.Agents.AI`, Go public preview); docs and GitHub retrieved 2026-09-26"
-retrieved_utc: 2026-09-26
-sources: [S-kzoop7qs, S-7ziha7pr, S-esun5f2n, S-lkto4w7b, S-sjqmzszi, S-j2yxzynm, S-cjxn455h, S-mhvboogr, S-do52zses, S1939, S-gs56zhuk, S-4yhrlzez, S-ayrhsrlp, S-nghojxuy, S-iblntf2w, S-fkamc745]
-status: partial
+retrieved_utc: 2026-09-27
+sources: [S-kzoop7qs, S-7ziha7pr, S-esun5f2n, S-lkto4w7b, S-sjqmzszi, S-j2yxzynm, S-cjxn455h, S-mhvboogr, S-do52zses, S1939, S-gs56zhuk, S-4yhrlzez, S-ayrhsrlp, S-nghojxuy, S-iblntf2w, S-fkamc745, S-y76ymaxp, S-bayhkj2j, S-x7eqxwa3, S-a3n34lxa, S-p6darnca]
+status: complete
 ---
 
 # Microsoft Agent Framework
@@ -15,8 +15,12 @@ status: partial
   AutoGen's simple single-/multi-agent abstractions with Semantic Kernel's enterprise features
   (session state, type safety, middleware, telemetry) and adding graph-based **Workflows** for
   explicit multi-agent orchestration. [DOC S-kzoop7qs]
-- A general-availability (GA) status for the framework as a whole. [UNK: not in S-kzoop7qs as
-  re-read 2026-09-27; the page states only that the Go SDK is in public preview]
+- Release status: no page uses the word "GA", but stable 1.x releases exist. Python `agent-framework` and
+  .NET `Microsoft.Agents.AI` 1.0.0 were both published on 2026-04-02 (PyPI 1.19.0 and NuGet 1.22.0 current
+  in September 2026) [DOC S-bayhkj2j, S-y76ymaxp]. The repository's package-status file marks
+  `agent-framework`, `-core`, `-foundry`, `-declarative`, `-ag-ui` and `-github-copilot` as `released`
+  (stable, no breaking changes between versions) while most integrations, e.g. `-anthropic`, `-claude`,
+  `-a2a` and `-devui`, are `beta` or `alpha` [DOC S-x7eqxwa3]. Go stays in public preview [DOC S-kzoop7qs].
 - Ships for **Python** (`pip install agent-framework`, package `agent-framework`, MIT licence),
   **.NET** (`Microsoft.Agents.AI`, `Microsoft.Agents.AI.Foundry`), and **Go** (`agent-framework-go`,
   public preview: declarative agents, RAG, CodeAct and functional workflows not yet available).
@@ -28,8 +32,9 @@ status: partial
   middleware, context providers for memory, and MCP clients for tool integration. [DOC S-kzoop7qs]
 - Model providers documented: **Microsoft Foundry, Anthropic, Azure OpenAI, OpenAI, Ollama**, and
   others via the integrations catalogue. [DOC S-kzoop7qs]
-- Not evidence of this article: exact licence terms for the .NET/Go packages beyond MIT (repo-wide);
-  only the GitHub repository root licence was confirmed. [UNK]
+- Licences: the NuGet `Microsoft.Agents.AI` package declares licence expression MIT for every version from
+  1.0.0 to 1.22.0, and the separate `microsoft/agent-framework-go` repository is MIT. [DOC S-y76ymaxp,
+  S-a3n34lxa]
 
 ## Facts
 
@@ -123,8 +128,9 @@ status: partial
   inter-executor message queues, and execution position; resume with
   `workflow.run(checkpoint_id=..., checkpoint_storage=..., stream=True)`, and send human responses back
   with `workflow.run(responses=..., stream=True)`. [DOC S-lkto4w7b]
-- Older separate `run_stream_from_checkpoint`/`run_from_checkpoint` methods being superseded.
-  [UNK: not in S-lkto4w7b as re-read 2026-09-27]
+- The Python upgrade guide replaces the separate checkpoint methods `run_stream_from_checkpoint()` and
+  `run_from_checkpoint()` with the unified `run(...)` / `run(..., stream=True)` taking a checkpoint id.
+  [DOC S-p6darnca]
 - **Human-in-the-loop (HITL)**: a workflow pauses execution via a typed request/response channel —
   Python `ctx.request_info()` plus an `@response_handler`-decorated method; .NET `RequestPort`
   (`RequestPort.Create<TRequest,TResponse>`) emitting `RequestInfoEvent`; Go uses the same
