@@ -247,7 +247,7 @@ sqlserver/sp-getapplock,P0,complete,sqlserver/sp-getapplock.md,1
 sqlserver/temporal-tables,P0,complete,sqlserver/temporal-tables.md,7
 standards/owasp,P2,partial,standards/owasp.md;standards/owasp.csv,6
 windows/execution-policy-signing,P0,complete,windows/execution-policy-signing.md,9
-windows/gitlab-runner-windows,P0,partial,windows/gitlab-runner-windows.md,11
+windows/gitlab-runner-windows,P0,partial,windows/gitlab-runner-windows.md,12
 windows/gmsa,P0,partial,windows/gmsa.md,6
 windows/openssh-server,P0,complete,windows/openssh-server.md,3
 windows/smart-app-control,P1,partial,windows/smart-app-control.md,7

@@ -29,7 +29,7 @@ opens remediation.
   [DOC S1010]
 - At release 1.26.909.1 its resources (e.g. `MSFT_AADUser`) implement classic PowerShell DSC
   `Get-TargetResource`/`Set-TargetResource`/`Test-TargetResource` functions rather than DSC v3
-  resource manifests. [DOC S-3aphi7n2]
+  resource manifests. [CODE S-3aphi7n2: Modules/Microsoft365DSC/DscResources/MSFT_AADUser/MSFT_AADUser.psm1#Get-TargetResource]
 - Its PowerShell resource code is out of scope for a Python-core tool and only becomes relevant if
   that tool ever ships its own DSC resources. [DER S1010, S-3aphi7n2: the resources are PowerShell modules]
 

@@ -113,9 +113,9 @@ alongside the deterministic tool that already exists for them.
   documented structured-query path for live device state. [DOC S-2z2zfj3l, S-sxtmngif, S-t5dhva6p — reused from
   `mecm/cmpivot.md`, part `mecm`]
 - Presidio's `PatternRecognizer` (source at pinned commit `e9895a51`) matches entities by regex patterns and an
-  optional deny list (turned into one more regex), with optional context words — the documented deterministic alternative to a free-text NER call for any entity with a fixed
-  lexical shape (the same class of fact used for structured-field tokenization design). [DOC S825 —
-  reused from `privacy/`, part `privacy`]
+  optional deny list (turned into one more regex), with optional context words — a deterministic alternative to a free-text NER call for any entity with a fixed
+  lexical shape (the same class of fact used for structured-field tokenization design). [CODE S825:
+  presidio-analyzer/presidio_analyzer/pattern_recognizer.py#PatternRecognizer]
 - Power BI scheduled refresh imports data into a semantic model on a configured schedule (up to 8 daily
   slots on shared capacity, 48 on Premium, PPU or Fabric capacity), so a recurring report over a fixed
   model is a scheduled job rather than an agent re-summarizing the same numbers on each request.

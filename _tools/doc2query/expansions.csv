@@ -322,15 +322,6 @@ caebc1ca66f8,Is Vault considered open source software?
 418a85bf9dd7,Python Fernet symmetric encryption
 418a85bf9dd7,How does Python's cryptography Fernet class implement encryption?
 418a85bf9dd7,Can Fernet tokens have an expiration time without external scheduling?
-30ddeba18ce6,RecognizerRegistryConfig top level fields
-30ddeba18ce6,What fields are defined in the top-level RecognizerRegistryConfig?
-30ddeba18ce6,How do you specify supported languages in the recognizer registry?
-41ae11fc9c9b,Recognizer configuration fields
-41ae11fc9c9b,What are the available fields for defining a recognizer?
-41ae11fc9c9b,How do you specify which languages a recognizer supports?
-55b132e9347c,custom recognizers patterns deny_list
-55b132e9347c,How do you define a custom recognizer with regex patterns?
-55b132e9347c,What is required to create a custom recognizer?
 b619823e5d71,recognizer type field default value
 b619823e5d71,How do you distinguish a predefined recognizer from a custom one?
 2c6e7635dff5,deny_list_score default value
@@ -342,13 +333,6 @@ d5bc6ba8175c,What languages must be consistent between recognizer registry and a
 9b3ab6172c9a,score_thresholds recognizer entity confidence
 9b3ab6172c9a,How do you set custom confidence thresholds for recognizers?
 9b3ab6172c9a,Can different entity types have different score thresholds?
-6bf2eb01d1c9,supported_countries restrict recognizers
-6bf2eb01d1c9,How does supported_countries control which recognizers load?
-84d24fda0c05,PatternRecognizer regex compile timeout
-84d24fda0c05,How does PatternRecognizer compile and match regex patterns?
-84d24fda0c05,What is the timeout for pattern matching operations?
-5f4d49447699,REGEX_TIMEOUT_SECONDS environment variable
-5f4d49447699,What is the default regex timeout and how do you change it?
 9f4ae9cecd28,RecognizerRegistry global_regex_flags defaults
 9f4ae9cecd28,What are the default regex compilation flags?
 9f4ae9cecd28,Are patterns case-insensitive by default in the recognizer registry?
