@@ -3,7 +3,7 @@ topic: agents/m365-copilot-extensibility
 priority: P1
 applies_to: "Microsoft 365 Copilot extensibility: declarative agents, custom engine agents, API/MCP plugins, Copilot connectors; docs current 2026-09-26"
 retrieved_utc: 2026-09-26
-sources: [S1840, S-gum2njhe, S-46ndqgay, S-3r3y76di, S-nztel442, S-4rvc364j, S-atzopgi7, S-j46dza7u, S-ipjygran, S-dfgcii3c, S-u2bv3zsu, S-7gjdhgh5, S-qgctvfuf, S-rymoydzk, S-nmxo2lu7, S-3wxcangs, S-5kn2m73o, S-aag4xzbw, S-xasz2mbx, S-bjnw7imn]
+sources: [S1840, S-gum2njhe, S-46ndqgay, S-3r3y76di, S-nztel442, S-4rvc364j, S-atzopgi7, S-j46dza7u, S-ipjygran, S-dfgcii3c, S-u2bv3zsu, S-7gjdhgh5, S-qgctvfuf, S-rymoydzk, S-nmxo2lu7, S-3wxcangs, S-5kn2m73o, S-aag4xzbw, S-xasz2mbx, S-bjnw7imn, S-rqk5odum]
 status: complete
 files: [agents/declarative-agent-manifest.csv]
 ---
@@ -208,6 +208,10 @@ files: [agents/declarative-agent-manifest.csv]
 ### Minimal declarative agent manifest (schema 1.8) with an MCP-server action
 Placeholders only; the MCP server URL is a placeholder, not a real deployment.
 
+- SNIPPET: a minimal declarative agent manifest with a web-search capability and one action
+  referencing an external plugin manifest file; context: declarative agent schema v1.8; checked: no
+  [DOC S-gum2njhe: `version`, `capabilities` array with a `WebSearch` object, `actions` array with
+  `{id, file}`]
 ```json
 {
   "version": "v1.8",
@@ -226,9 +230,16 @@ Placeholders only; the MCP server URL is a placeholder, not a real deployment.
 }
 ```
 
-The referenced `ai-plugin.json` (plugin manifest schema 2.4) wraps the MCP server as a runtime with
-dynamic tool discovery and Entra SSO authentication:
+The referenced `ai-plugin.json` (plugin manifest schema 2.4) wraps the MCP server as a `RemoteMCPServer`
+runtime with dynamic tool discovery, authenticated through an Entra SSO auth config (which the manifest
+references as an `OAuthPluginVault` runtime-auth entry, not a literal `EntraSso` type):
 
+- SNIPPET: a plugin manifest wrapping an MCP server as a `RemoteMCPServer` runtime, authenticated via an
+  Entra SSO auth config referenced as `OAuthPluginVault`; context: plugin manifest schema v2.4, an
+  Entra SSO auth config already created (Agents Toolkit, the declarative-agent-developer skill, or the
+  Teams developer portal); checked: no [DOC S-u2bv3zsu: runtime `type: RemoteMCPServer`, MCP server
+  spec object's `url`; DOC S-rqk5odum: Entra SSO auth config resolves to `auth.type: OAuthPluginVault`
+  with a `reference_id`]
 ```json
 {
   "schema_version": "v2.4",
@@ -236,12 +247,13 @@ dynamic tool discovery and Entra SSO authentication:
   "description_for_human": "Look up and summarize corp IT tickets.",
   "runtimes": [
     {
-      "type": "MCP",
+      "type": "RemoteMCPServer",
       "spec": {
         "url": "https://mcp.corp.example.com/mcp"
       },
       "auth": {
-        "type": "EntraSso"
+        "type": "OAuthPluginVault",
+        "reference_id": "00000000-0000-0000-0000-000000000000"
       }
     }
   ]

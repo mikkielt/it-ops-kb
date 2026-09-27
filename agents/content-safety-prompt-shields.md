@@ -175,6 +175,9 @@ practice).
 Prompt Shields REST call against a fixture Content Safety resource, checking a benign support ticket body
 (`documents`) alongside the live user prompt for a hidden indirect-injection instruction:
 
+- SNIPPET: Prompt Shields `shieldPrompt` REST call, checking a user prompt and a document for injected
+  instructions; context: Azure AI Content Safety, api-version 2024-09-01, `Ocp-Apim-Subscription-Key` header;
+  checked: no [DOC S-c66bl3xp]
 ```bash
 curl --location --request POST \
   'https://cs-corp.example.com/contentsafety/text:shieldPrompt?api-version=2024-09-01' \

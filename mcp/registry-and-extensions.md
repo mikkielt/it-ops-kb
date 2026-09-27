@@ -192,6 +192,10 @@ the `server.json` schema this pass fills in).
 Minimal `server.json` for a placeholder Windows-endpoint-management server published under a personal
 GitHub namespace, exposing a single stdio npm package with no remote fallback:
 
+- SNIPPET: a `server.json` naming an npm stdio package under a GitHub-authenticated namespace, with a
+  required environment variable; context: MCP Registry (preview), `server.schema.json` 2025-12-11;
+  checked: no [DOC S-3j6fi7yk: `$schema`, `name`, `version`, `packages[].registryType/identifier/
+  version/transport/environmentVariables` shape from the `mcp-publisher init` template]
 ```json
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",

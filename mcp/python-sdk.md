@@ -45,6 +45,9 @@ Elicitation: `Resolve(...)`+`Elicit` is era-portable; `ctx.elicit()` works only 
 | return `InputRequiredResult` | `-32603` "Handler returned an invalid result" | supported |
 
 ## Examples
+- SNIPPET: a tool whose `Resolve(...)` parameter elicits confirmation before running, using
+  `ElicitationResult`/`AcceptedElicitation` pattern matching; context: MCP Python SDK 2.2.0;
+  checked: no [CODE S733: docs_src/elicitation/tutorial004.py#confirm_delete, adapted]
 ```python
 from typing import Annotated
 from pydantic import BaseModel

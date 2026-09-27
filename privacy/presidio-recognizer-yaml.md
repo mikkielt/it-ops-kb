@@ -43,6 +43,10 @@ files: [privacy/presidio-recognizer-registry.schema.json, privacy/presidio-examp
 | recognizers[].score_thresholds | rec | from 2.2.364 |
 
 ## Examples
+- SNIPPET: a recognizer registry YAML with one custom pattern recognizer (regex + score, context
+  words); context: Presidio `RecognizerRegistry` config, main @ e9895a5; checked: no [CODE S821:
+  presidio-analyzer/presidio_analyzer/input_validation/yaml_recognizer_models.py#CustomRecognizerConfig; CODE S822:
+  presidio-analyzer/presidio_analyzer/conf/example_recognizers.yaml#recognizers]
 ```yaml
 supported_languages: [en]
 global_regex_flags: 26

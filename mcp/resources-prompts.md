@@ -103,12 +103,19 @@ See mcp/spec-overview.md for the `_meta`/discover-era model this article's RPCs 
 
 ## Examples
 A client on PL-LT-00123 lists a server's file resources page by page:
+
+- SNIPPET: a paginated `resources/list` JSON-RPC request; context: MCP specification 2026-07-28;
+  checked: no [DOC S-uq2hafxi: `resources/list` params support `cursor`/`nextCursor` pagination]
 ```json
 {"jsonrpc":"2.0","id":1,"method":"resources/list","params":{"cursor":null}}
 ```
 then follows `nextCursor` until the field is absent, per the pagination rule above [DER S-7uw4d77y: missing nextCursor = end of results].
 
 To watch `corp.example.com`'s config resource for changes without polling, the client opens one stream instead of subscribing per-resource:
+
+- SNIPPET: a `subscriptions/listen` JSON-RPC request opening one notification stream for a resource
+  URI; context: MCP specification 2026-07-28; checked: no [DOC S-uq2hafxi: `subscriptions/listen` with
+  `notifications.resourceSubscriptions`]
 ```json
 {"jsonrpc":"2.0","id":7,"method":"subscriptions/listen","params":{"notifications":{"resourceSubscriptions":["file:///project/config.json"]}}}
 ```

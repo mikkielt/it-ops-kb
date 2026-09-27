@@ -137,6 +137,12 @@ status: partial
 Graph with a **human-approval interrupt before a device-wipe tool call**, using a Postgres
 checkpointer:
 
+- SNIPPET: a `StateGraph` that pauses with `interrupt()` for reviewer approval before a device-wipe
+  node, persisted with `PostgresSaver` and resumed with `Command(resume=...)`; context: LangGraph,
+  `langgraph-checkpoint-postgres`; checked: no [DER S-bivxzhtv, S-thsymqx6, S-pxkxmmn5, S-j54mtzby:
+  StateGraph/compile, checkpointer persistence, interrupt()/Command(resume=...), and
+  PostgresSaver.from_conn_string()/.setup() each documented separately, composed here into one
+  example]
 ```python
 import operator
 from typing import Annotated, TypedDict

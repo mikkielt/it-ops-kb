@@ -131,7 +131,9 @@ usage-metrics API, see `agents/github-copilot-admin.md`.
 ## Examples
 The same placeholder remote MCP server, `https://mcp.corp.example.com/mcp`, configured in each product:
 
-GitHub Copilot coding agent (pasted into the repo's MCP configuration field):
+- SNIPPET: GitHub Copilot coding agent's remote MCP server entry, pasted into the repo's MCP configuration
+  field; context: `type` accepts `"http"`, `headers` values may be `$COPILOT_MCP_*`/`${COPILOT_MCP_*}`
+  substitutions, `tools` allowlists specific tools or `"*"`; checked: no [DOC S-udcaydkb]
 ```json
 {
   "mcpServers": {
@@ -145,11 +147,13 @@ GitHub Copilot coding agent (pasted into the repo's MCP configuration field):
 }
 ```
 
-VS Code (`.vscode/mcp.json`):
+- SNIPPET: VS Code `.vscode/mcp.json` with an `inputs` prompt substituted into a remote server's headers;
+  context: VS Code 2026-09, `promptString` input requires a `description` field alongside `id`/`type`;
+  checked: no [DOC S-caxeb7wx]
 ```json
 {
   "inputs": [
-    { "id": "corp-token", "type": "promptString", "password": true }
+    { "id": "corp-token", "type": "promptString", "description": "Corp MCP token", "password": true }
   ],
   "servers": {
     "corp-tools": {
@@ -161,7 +165,8 @@ VS Code (`.vscode/mcp.json`):
 }
 ```
 
-OpenAI Agents SDK (Python):
+- SNIPPET: OpenAI Agents SDK, a Streamable HTTP MCP server with cached tool list and approval required for
+  every call; context: `mcp>=1.19.0,<3`, `MCPServerStreamableHttp` constructor; checked: no [DOC S-shpwh3m7]
 ```python
 from agents.mcp import MCPServerStreamableHttp
 
@@ -172,7 +177,8 @@ corp_tools = MCPServerStreamableHttp(
 )
 ```
 
-OpenAI Responses API (`tools` array entry):
+- SNIPPET: OpenAI Responses API, a remote MCP tool entry restricted to one allowed tool with approval
+  required for every call; context: `tools` array entry, `type: "mcp"`; checked: no [DOC S-r4egujgz]
 ```json
 {
   "type": "mcp",
@@ -183,7 +189,9 @@ OpenAI Responses API (`tools` array entry):
 }
 ```
 
-Codex CLI (`~/.codex/config.toml`):
+- SNIPPET: Codex CLI `~/.codex/config.toml` entry for a remote MCP server with a bearer-token env var,
+  startup/tool timeouts and an enabled-tools allowlist; context: Codex CLI 2026-09; checked: no
+  [DOC S-b5ptbcql]
 ```toml
 [mcp_servers.corp-tools]
 enabled = true

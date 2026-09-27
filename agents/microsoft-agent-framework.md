@@ -3,7 +3,7 @@ topic: agents/microsoft-agent-framework
 priority: P2
 applies_to: "Microsoft Agent Framework (Python `agent-framework`, .NET `Microsoft.Agents.AI`, Go public preview); docs and GitHub retrieved 2026-09-26"
 retrieved_utc: 2026-09-26
-sources: [S-kzoop7qs, S-7ziha7pr, S-esun5f2n, S-lkto4w7b, S-sjqmzszi, S-j2yxzynm, S-cjxn455h, S-mhvboogr, S-do52zses, S1939, S-gs56zhuk, S-4yhrlzez, S-ayrhsrlp, S-nghojxuy, S-iblntf2w]
+sources: [S-kzoop7qs, S-7ziha7pr, S-esun5f2n, S-lkto4w7b, S-sjqmzszi, S-j2yxzynm, S-cjxn455h, S-mhvboogr, S-do52zses, S1939, S-gs56zhuk, S-4yhrlzez, S-ayrhsrlp, S-nghojxuy, S-iblntf2w, S-fkamc745]
 status: partial
 ---
 
@@ -136,7 +136,7 @@ status: partial
   emits a `RequestInfoEvent` whose payload is a `ToolApprovalRequestContent` (C#, Go) or a `Content`
   with `type == "function_approval_request"` (Python). [DOC S-j2yxzynm]
 - The `@tool(approval_mode="always_require")` syntax and use with `SequentialBuilder` without extra
-  builder configuration. [UNK: not in S-j2yxzynm as re-read 2026-09-27]
+  builder configuration. [DOC S-fkamc745]
 - A complete workflow can be converted into a single `Agent`-like object with `.as_agent()`: the
   workflow's start executor must accept message input (true by default for `Agent`/agent-based
   executors); external input requests from `RequestInfoExecutor` surface as function calls to the
@@ -213,6 +213,11 @@ status: partial
 - Minimal `ChatAgent` calling a remote MCP server over streamable HTTP (placeholder endpoint; API-key
   auth via `header_provider` so the secret never appears in tool arguments):
 
+- SNIPPET: an `Agent` using an `OpenAIChatClient`, connected to a remote MCP server via
+  `MCPStreamableHTTPTool` with `header_provider`-based bearer-token auth and a bounded Host-facing
+  payload size; context: Microsoft Agent Framework (Python `agent-framework`), `pip install mcp --pre`;
+  checked: no [DOC S-7ziha7pr: `Agent`/`MCPStreamableHTTPTool` construction, `header_provider`,
+  `max_host_payload_size_bytes`, `tools=` on `agent.run()`]
 ```python
 import asyncio
 import os
@@ -257,6 +262,11 @@ if __name__ == "__main__":
 - Marking a destructive tool for mandatory human approval inside a `SequentialBuilder` workflow
   (tenant placeholder `00000000-0000-0000-0000-000000000000`):
 
+- SNIPPET: a function tool marked `@tool(approval_mode="always_require")`, used unmodified in a
+  `SequentialBuilder` workflow, which pauses and emits a `request_info` event before the tool runs;
+  context: Microsoft Agent Framework workflows (Python); checked: no [DOC S-fkamc745: `@tool(approval_mode=
+  "always_require")`, `SequentialBuilder(participants=...).build()`, tool approval works with
+  `SequentialBuilder` without extra builder configuration]
 ```python
 from agent_framework import tool
 from agent_framework.workflows import SequentialBuilder

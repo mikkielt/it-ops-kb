@@ -91,6 +91,10 @@ to any HTTP-based MCP server.
 ## Examples
 A client on PL-LT-00123 calls a tool on `https://mcp.corp.example.com/mcp`:
 
+- SNIPPET: a `tools/call` POST over Streamable HTTP with the `_meta` fields mirrored into headers
+  (`MCP-Protocol-Version`, `Mcp-Method`, `Mcp-Name`); context: MCP specification 2026-07-28; checked: no
+  [DOC S-l4qgsnr4: header-mirroring rules and required headers; DOC S703: `_meta` protocol-version
+  field]
 ```http
 POST /mcp HTTP/1.1
 Host: mcp.corp.example.com

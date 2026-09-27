@@ -91,6 +91,11 @@ Microsoft Security Copilot reaches Intune two ways: **Copilot in Intune** (GA, e
 
 Example MCP plugin manifest fragment for a custom Security Copilot skill (placeholders only):
 
+- SNIPPET: an MCP plugin manifest (`Descriptor` + one `MCP`-format `SkillGroups` entry) connecting a
+  Streamable HTTP MCP server with OAuth2/AADDelegated auth and an explicit tool allow-list; context:
+  Security Copilot MCP plugins (preview); checked: no [DOC S-meh6fmlt: `Descriptor`/`SupportedAuthTypes`
+  fields and every MCP skill-group `Settings` key (`Endpoint`, `UseStreamableHttp`, `UsePluginAuth`,
+  `TokenScope`, `TimeoutInSeconds`, `AllowedTools`)]
 ```yaml
 Descriptor:
   Name: PL-SRV-0042-InventoryMcp

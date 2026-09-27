@@ -83,6 +83,10 @@ Hybrid retrieval combines a lexical ranker (BM25 or Elasticsearch's equivalent) 
 
 ## Examples
 
+- SNIPPET: Azure AI Search hybrid query combining full-text `search` and a `vectorQueries` entry, fused by
+  RRF and semantic-reranked; context: `api-version=2026-04-01`, index with a searchable text field and a
+  vector field; checked: no [DOC S-pgtfj4fh: request shape, keys and api-version from the hybrid-query
+  example]
 ```http
 # Azure AI Search hybrid query: BM25 + vector, fused by RRF, then semantic-reranked
 POST https://{{searchServiceName}}.search.windows.net/indexes/kb-docs/docs/search?api-version=2026-04-01
@@ -100,6 +104,10 @@ Content-Type: application/json
 }
 ```
 
+- SNIPPET: pgvector HNSW index build (cosine distance, tuned `m`/`ef_construction`), a query-time
+  `hnsw.ef_search` and a nearest-neighbor query; context: pgvector, PostgreSQL; checked: no
+  [DOC S-524t5qtl: `CREATE INDEX ... USING hnsw`, `WITH (m=, ef_construction=)`, `SET hnsw.ef_search`,
+  `<=>` operator]
 ```sql
 -- pgvector: HNSW index (cosine distance) and a tuned query
 CREATE INDEX ON kb_chunks USING hnsw (embedding vector_cosine_ops)
@@ -113,6 +121,10 @@ ORDER BY embedding <=> '[0.01, -0.02, ...]'::vector
 LIMIT 10;
 ```
 
+- SNIPPET: Elasticsearch RRF retriever fusing a `standard` (BM25) child retriever and a `knn` child
+  retriever in one search request; context: Elasticsearch, top-level `retriever` search parameter;
+  checked: no [DOC S-fn6fxrr5: `retriever.rrf`, `retrievers` array, `standard`/`knn` shapes,
+  `rank_constant`]
 ```json
 // Elasticsearch: RRF retriever fusing BM25 and kNN, PL-LT-00123-style placeholder index
 {

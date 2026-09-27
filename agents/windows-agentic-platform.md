@@ -213,6 +213,10 @@ sourced from it.
 
 ## Examples
 List and inspect MCP servers registered with the Windows on-device agent registry on PL-LT-00123:
+
+- SNIPPET: list, register and configure MCP servers with the Windows on-device agent registry CLI;
+  context: `odr.exe`, Windows on-device MCP registry (preview); checked: no [DOC S-22dvomdp: `odr mcp
+  list`, `odr mcp add <manifest file path>`, `odr mcp configure <server id>`]
 ```cmd
 odr mcp list
 odr mcp add C:\ProgramData\corp.example.com\mcp\file-tools\manifest.json
@@ -221,6 +225,10 @@ odr mcp configure file-tools
 
 Restrict which MCP server/host connections an agent may use via Intune custom OMA-URI (tenant
 `00000000-0000-0000-0000-000000000000`), targeting the device-scope CSP node:
+
+- SNIPPET: an Intune custom OMA-URI restricting agent MCP server/host connections to an allow-listed
+  connector; context: Policy CSP `WindowsAI\AgentConnectorAccessPolicy`, device-only, Windows Insider
+  Preview; checked: no [DOC S-w7egu7gh: CSP node path and its JSON allow-list value]
 ```
 OMA-URI: ./Device/Vendor/MSFT/Policy/Config/WindowsAI/AgentConnectorAccessPolicy
 Data type: String (XML)
@@ -228,6 +236,10 @@ Value: {"allow":["io.github.contoso/file-tools"]}
 ```
 
 Run a local model interactively with the Foundry Local CLI, then check the local endpoint:
+
+- SNIPPET: install the Foundry Local CLI, chat with a local model interactively, and show the local
+  endpoint URL; context: Foundry Local CLI (preview), Windows; checked: no [DOC S-msz6m5qt: `winget
+  install Microsoft.FoundryLocal`; DOC S-onenhsl2: `foundry chat <alias>`, `foundry server status`]
 ```powershell
 winget install Microsoft.FoundryLocal
 foundry chat phi-4-mini
@@ -235,6 +247,9 @@ foundry server status   # shows the local endpoint URL
 ```
 
 Block Recall on managed devices and cap snapshot retention, via Intune custom OMA-URI:
+
+- SNIPPET: an Intune custom OMA-URI disabling Recall snapshot capture; context: Policy CSP
+  `WindowsAI\AllowRecallEnablement`; checked: no [DOC S-2ypn2ron: CSP node path and integer value type]
 ```
 OMA-URI: ./Device/Vendor/MSFT/Policy/Config/WindowsAI/AllowRecallEnablement
 Data type: Integer
