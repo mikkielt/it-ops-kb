@@ -1807,6 +1807,20 @@ _Agent: kb-research_
 
 _Agent: kb-research_
 
+## QK-self-improving-lookup-pipeline-query-logging. What does a self-improving kb lookup pipeline need: query logging with context, using logs to improve retrieval, cheap semantic signals, sufficiency checks, and automation that commits the log store
+- Capture: a `UserPromptSubmit` hook gets the prompt with `session_id` and `prompt_id`, and a `Stop` hook gets `last_assistant_message`; `prompt_id` equals the OpenTelemetry `prompt.id`, which also links the `user_prompt` event (prompt text redacted unless `OTEL_LOG_USER_PROMPTS=1`) and the prompt's `tool_result` events. [DOC S743, S744]
+- A hook that blocks and answers in `reason` spends no model tokens; a logging-only hook can run `async: true`, but async hooks cannot block or add a decision. [DOC S743]
+- What to log: only user-initiated queries, each with a correlation id, the query text and its result count, so zero-result queries and clickthrough can be measured (Azure AI Search's traffic analytics pattern). [DOC S-enf2tnxi]
+- Improving retrieval from logs: document expansion predicts the queries a document answers (doc2query), and filtering the generated queries with a relevance model gave up to 16% better effectiveness and a 33% smaller index (Doc2Query--). [DOC S-jnq56sj3, S-sqbfbcyk] Eval sets start from 20-50 tasks drawn from real failures. [DOC S1896]
+- Cheap semantic signal: Model2Vec static embeddings are up to 50 times smaller and 500 times faster than their sentence transformer, need only `numpy`, and can be fused with BM25 by RRF. [DOC S-aqnin65g, S-btrwp2yj]
+- Sufficiency: large models often answer instead of abstaining when retrieved context is insufficient; guided abstention raised correct answers among responses by 2-10%, and Anthropic advises allowing "I don't know" and retracting unsupported claims. [DOC S-yi5xka25, S-fovhkyzc]
+- Committing the store: git's `union` merge driver merges parallel appends without conflict markers but in random order, to be verified; `GITHUB_TOKEN` pushes and GitLab `[skip ci]` commits do not re-trigger pipelines. [DOC S-vmz33l7n, S-ivq5edtq, S-wane77q5]
+- Conclusion: the capture points, the log schema, the retrieval-improvement techniques and the commit mechanics are all documented; the kb already has the pieces it would feed (the eval set, doc2query expansions, aliases, the `kbgit.py fix` dedupe pass). What stays a design choice is privacy: prompts can hold names, hosts and secrets, so a committed store needs redaction or an `internal` root. [DER S743, S-enf2tnxi, S-vmz33l7n: sources above; `kb/_self/content-rules.md`, "Licensing and privacy"]
+- Open: Model2Vec's pooling at inference and whether its vectors can be evaluated without `numpy` were not confirmed from its documentation. [UNK]
+- See claude/hooks.md, claude/otel-monitoring.md, agents/hybrid-retrieval.md, agents/docs-maintenance-agents.md, agents/eval-question-baseline.md.
+
+_Agent: kb-research_
+
 ## R1. Reuse candidates
 
 - **Highest leverage: `pydantic-settings` as a `dependency` for a project's config-file/env-var/flags

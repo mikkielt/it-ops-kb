@@ -2,7 +2,7 @@
 topic: claude/otel-monitoring
 priority: P1
 applies_to: "Claude Code 2.1.281 docs (retrieved 2026-09-23)"
-retrieved_utc: 2026-09-26
+retrieved_utc: 2026-09-27
 sources: [S744, S745, S741, S743]
 status: complete
 ---
@@ -21,6 +21,8 @@ Enable with `CLAUDE_CODE_ENABLE_TELEMETRY=1` plus OTLP exporter variables. MCP a
 - Without `OTEL_LOG_TOOL_DETAILS`, user-configured MCP tools are redacted to `tool_name = "mcp_tool"` and argument content is omitted. [DOC S744]
 - `OTEL_LOG_TOOL_CONTENT=1` includes tool content in the `tool.output` span event (tracing beta). [DOC S745]
 - `OTEL_LOG_USER_PROMPTS=1` includes prompt text (redacted by default). [DOC S745]
+- `claude_code.user_prompt` is logged when a user submits a prompt, with `prompt_length`, `prompt` (redacted unless `OTEL_LOG_USER_PROMPTS=1`) and `message.uuid` (the transcript entry; v2.1.214+). [DOC S744]
+- `prompt.id` (UUID v4) links every event produced while processing one user prompt: filtering on it returns the `user_prompt` event, its `api_request` events and its `tool_result` events. The same id reaches hooks as the `prompt_id` input field (`claude/hooks.md`). [DOC S744, S743]
 - Admin monitoring guidance: set `OTEL_LOG_TOOL_DETAILS=1` to see which MCP servers and tools users invoke. [DOC S741]
 - PostToolUse `updatedToolOutput` does not affect telemetry, which captures the original output. [DOC S743]
 

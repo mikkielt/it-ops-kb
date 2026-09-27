@@ -31,11 +31,11 @@ Every topic of this root with its priority (the research order, not importance),
 | `agents/coding-agents-mcp` | P2 | complete | `agents/coding-agents-mcp.md` | 9 |
 | `agents/content-safety-prompt-shields` | P2 | complete | `agents/content-safety-prompt-shields.md`, `agents/content-safety-limits.csv` | 13 |
 | `agents/doc-lookup-sources` | P2 | complete | `agents/doc-lookup-sources.md`, `agents/doc-lookup-sources.csv` | 40 |
-| `agents/docs-maintenance-agents` | P2 | complete | `agents/docs-maintenance-agents.md` | 26 |
+| `agents/docs-maintenance-agents` | P2 | complete | `agents/docs-maintenance-agents.md` | 29 |
 | `agents/genai-telemetry` | P2 | complete | `agents/genai-telemetry.md` | 5 |
 | `agents/github-copilot-admin` | P2 | complete | `agents/github-copilot-admin.md` | 12 |
 | `agents/headless-agent-runtimes` | P2 | complete | `agents/headless-agent-runtimes.md` | 15 |
-| `agents/hybrid-retrieval` | P2 | complete | `agents/hybrid-retrieval.md` | 15 |
+| `agents/hybrid-retrieval` | P2 | complete | `agents/hybrid-retrieval.md` | 21 |
 | `agents/mcp-server-lifecycle` | P2 | complete | `agents/mcp-server-lifecycle.md` | 5 |
 | `agents/microsoft-agent-framework` | P2 | complete | `agents/microsoft-agent-framework.md` | 21 |
 | `agents/prompt-injection-design-patterns` | P2 | complete | `agents/prompt-injection-design-patterns.md` | 6 |

@@ -841,6 +841,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
 
 - **Does any MCP client turn MCP tool results into Claude `search_result` blocks?** The MCP 2026-07-28 tool result has no citation content type; the Claude Code docs mention `search_result` only for web search errors. Looked in code.claude.com docs (rg `search_result`, `citations`) 2026-09-27. Needs Claude Code or Agent SDK release notes. (topic: agents/hybrid-retrieval)
   - Tried 2026-09-27: platform.claude.com search-results page (S-4c46o537: blocks come only from the caller's own `tool_result`, no MCP mention), the MCP connector page (S-qpqoaaqj: `mcp_tool_result` example is text only), claude-code-docs rg `search_result`. No conversion documented; recorded in the article as a DER absence. (topic: agents/hybrid-retrieval)
+- **How Model2Vec pools token vectors at inference, and whether a shipped vector table can be evaluated without `numpy`.** The v0.9.0 README (S-aqnin65g) describes distillation into per-token static embeddings but not the pooling step or the model file format. Looked in the README 2026-09-27. Needs minish.ai inference docs or `model2vec/model.py` at v0.9.0 (a CODE source). (topic: agents/hybrid-retrieval)
 
 ## agents/instruction-and-context-limits
 
