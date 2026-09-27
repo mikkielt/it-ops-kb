@@ -90,6 +90,7 @@ directory, and local session transcripts.
 ## Examples
 
 ### In-process SDK MCP tool (Python)
+- SNIPPET: an in-process (SDK) MCP tool that runs inside the Python application, wired to `allowed_tools` and called from `query()`; context: `claude-agent-sdk` (Python); checked: syntax [DOC S-fksbud2r: `@tool`, `create_sdk_mcp_server`, `ClaudeAgentOptions.mcp_servers`/`allowed_tools`]
 ```python
 import asyncio
 from claude_agent_sdk import (
@@ -133,6 +134,7 @@ asyncio.run(main())
 ```
 
 ### Permission callback (Python) gating a headless run
+- SNIPPET: a `can_use_tool` callback that auto-approves read-only tools and denies everything else in an unattended run, with a dollar cost cap; context: `claude-agent-sdk` (Python); checked: syntax [DOC S-pbd7pui3: callback signature, `PermissionResultAllow`/`PermissionResultDeny`; DOC S-fksbud2r,S-isqfh6pr: `max_budget_usd`]
 ```python
 import asyncio
 from claude_agent_sdk import ClaudeAgentOptions, ResultMessage, query

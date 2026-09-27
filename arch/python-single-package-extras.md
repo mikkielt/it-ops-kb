@@ -42,6 +42,7 @@ needed by only one role).
 ## Reference
 - `python/uv-projects.md` covers the rest of the uv project workflow this repo relies on: `uv.lock`,
   `--frozen` vs `--locked`, default dependency groups, `uv python pin`, the cache, and `uvx`.
+- SNIPPET: one pyproject.toml with role-based extras (published) and a `dev` dependency group (local-only); context: PEP 621 `[project.optional-dependencies]`, PEP 735 `[dependency-groups]`, uv; checked: syntax [DOC S1705,S1706,S1707,S1708: optional-dependencies and dependency-groups table grammar]
 ```toml
 [project]
 name = "example-tool"

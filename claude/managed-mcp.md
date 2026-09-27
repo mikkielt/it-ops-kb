@@ -51,6 +51,7 @@ and are subject to the same `allowedMcpServers`/`deniedMcpServers` and `managed-
 `allowAllClaudeAiMcps` fit into managed-settings precedence and the cross-source keys read from every admin source.
 
 ## Examples
+- SNIPPET: a `managed-mcp.json`/`.mcp.json`-style stdio server entry; context: Claude Code 2.1.281, `mcpServers` map format; checked: syntax [DOC S741: same format as project `.mcp.json` (stdio entry with `type`, `command`, `args`, `env`)]
 ```json
 {
   "mcpServers": {

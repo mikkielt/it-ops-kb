@@ -105,7 +105,7 @@ filesystem settings sources (user/project/local) an embedded Agent SDK session l
 server-managed settings load regardless of that option, same as for the CLI.
 
 ## Examples
-Minimal organization `managed-settings.json` enforcing a deny list and locking permission rules to managed settings:
+- SNIPPET: Minimal organization `managed-settings.json` enforcing a deny list and locking permission rules to managed settings; context: Claude Code, file-based managed settings; checked: syntax [DOC S2057: `permissions.deny` glob form in a settings file; DER claude/permissions-mcp.md: `allowManagedPermissionRulesOnly` makes managed settings the only source of permission rules]
 ```json
 {
   "permissions": {
@@ -116,7 +116,7 @@ Minimal organization `managed-settings.json` enforcing a deny list and locking p
 }
 ```
 
-Team `.claude/settings.json` sharing permissions and a default model, committed to git:
+- SNIPPET: Team `.claude/settings.json` sharing permissions and a default model, committed to git; context: Claude Code, `.claude/settings.json` (shared project scope); checked: syntax [DOC S2057: `.claude/settings.json` holds `permissions`/`model`/`env` and list settings like `permissions.allow` combine across files]
 ```json
 {
   "permissions": { "allow": ["Bash(npm test *)", "Bash(npm run *)"] },
@@ -125,7 +125,7 @@ Team `.claude/settings.json` sharing permissions and a default model, committed 
 }
 ```
 
-Personal override in `.claude/settings.local.json` (gitignored) for one project, e.g. tenant `00000000-0000-0000-0000-000000000000`:
+- SNIPPET: Personal override in `.claude/settings.local.json` (gitignored) for one project, e.g. tenant `00000000-0000-0000-0000-000000000000`; context: Claude Code, `.claude/settings.local.json` (project local scope); checked: syntax [DOC S2057: `.claude/settings.local.json` project-local scope and precedence]
 ```json
 {
   "model": "claude-opus-5-5",
@@ -133,7 +133,7 @@ Personal override in `.claude/settings.local.json` (gitignored) for one project,
 }
 ```
 
-Route through Amazon Bedrock with a corporate proxy and custom CA, set in `~/.claude/settings.json`:
+- SNIPPET: Route through Amazon Bedrock with a corporate proxy and custom CA, set in `~/.claude/settings.json`; context: Claude Code, `~/.claude/settings.json` (user scope); checked: syntax [DOC S2057: `env` values set in a settings file; DER claude/ci-and-headless.md: `CLAUDE_CODE_USE_BEDROCK`/`HTTPS_PROXY`/`NODE_EXTRA_CA_CERTS` are the documented provider-routing/proxy/CA env vars]
 ```json
 {
   "env": {
@@ -144,7 +144,7 @@ Route through Amazon Bedrock with a corporate proxy and custom CA, set in `~/.cl
 }
 ```
 
-Lock a workstation to Manual mode and CI to a strict allowlist:
+- SNIPPET: Lock a workstation to Manual mode and CI to a strict allowlist; context: Claude Code, `~/.claude/settings.json` plus the `claude -p` CLI; checked: no [DOC S-zcuxapgb: `permissions.defaultMode` starting-mode precedence; `--permission-mode dontAsk --allowedTools "Bash(npm test)" "Read"` documented CI pattern]
 ```bash
 # Interactive workstation default (in ~/.claude/settings.json): {"permissions":{"defaultMode":"default"}}
 claude -p "run the test suite" --permission-mode dontAsk --allowedTools "Bash(npm test)" "Read"

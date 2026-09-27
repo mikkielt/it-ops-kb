@@ -60,6 +60,7 @@ comment "a class's scenario is built once, on one worker") use in this repositor
 # this repo's pyproject.toml dev group provides pytest-xdist; _tools/tests.py invokes it as:
 # uv run --frozen python -m pytest -n auto --dist loadscope -m "not stress" _tools
 ```
+- SNIPPET: pin two tests to the same xdist worker with `xdist_group`, regardless of module/class grouping; context: pytest-xdist, `--dist loadgroup` (or any dist mode, since grouped tests always share a worker); checked: syntax [DOC S-t7c2nvll: `--dist loadgroup` groups by the `xdist_group` marker name]
 ```python
 import pytest
 

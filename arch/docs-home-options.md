@@ -31,6 +31,7 @@ OAuth.
   publishing project be docs-only. [DOC S1730]
 
 ## Reference
+- SNIPPET: GitLab CI job that builds a strict MkDocs site and publishes it as GitLab Pages on `main`; context: GitLab CI, `pages: true` publish shorthand (17.10+ auto-adds the dir to `artifacts:paths`), `mkdocs build --strict`; checked: no [DER S1730,S1732,S1733: `mkdocs build --strict` flag and `pages: true`/`artifacts:paths` behaviour combined into one job]
 ```yaml
 docs-pages:
   stage: docs

@@ -73,6 +73,7 @@ since it sets `select = ["F"]` explicitly.
   directories (`.venv`, `.git`, `.mypy_cache`, `dist`, `build`, etc.) by default. [DOC S-7fmtkrv5]
 
 ## Reference
+- SNIPPET: this repository's ruff config (Pyflakes-only linting, 200-column lines, tooling dirs excluded); context: ruff 0.16.9, pyproject.toml; checked: syntax [DER S-y3zhzpmv: `select = ["F"]` selects only Pyflakes rules per the prefix rule; DOC S-7fmtkrv5: default `line-length`/`indent-width` and excluded tooling directories]
 ```toml
 [tool.ruff]
 line-length = 200
@@ -83,6 +84,7 @@ extend-exclude = ["_cache", "_private"]
 select = ["F"]
 ignore = ["E731"]
 ```
+- SNIPPET: the `ruff check`/`ruff format` invocations this repo's CI and docs rely on; context: ruff 0.16.9 CLI; checked: no [DOC S-y3zhzpmv,S-qgwumz4k: `ruff check`/`--fix`; DOC S-7fmtkrv5: `--output-format=concise`; DOC S-y3zhzpmv,S-qgwumz4k: `ruff format --check`]
 ```console
 $ ruff check                              # lint the current directory
 $ ruff check --fix                        # lint and apply safe fixes

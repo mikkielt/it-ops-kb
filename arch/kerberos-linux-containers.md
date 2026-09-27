@@ -40,6 +40,7 @@ status: complete
 | Does the ODBC driver on Linux renew Kerberos credentials itself? | No — operator must run a cron/script (kinit + keytab) before TGT expiry | DOC S1605 |
 
 ## Examples
+- SNIPPET: unattended Kerberos login from a keytab (plain AD service account, not a gMSA) before a Python client makes an SPNEGO call; context: MIT Kerberos `kinit`, keytab already mounted from a Secret; checked: no [DER S1605,S1604: `kinit <principal> -t <keytab>` pattern and the requests-gssapi default-ccache pickup]
 ```bash
 # Fixture: a scheduled sync job on a Linux container, using a plain AD service account
 # (not a gMSA) with a keytab mounted from a Secret

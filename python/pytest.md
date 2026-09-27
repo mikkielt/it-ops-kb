@@ -67,12 +67,14 @@ the built-in fixtures (`capsys`, `monkeypatch`, `tmp_path`, `tmp_path_factory`) 
   `--max-warnings` limit was exceeded. These are the `pytest.ExitCode` enum values. [DOC S-f5tpmzia]
 
 ## Reference
+- SNIPPET: this repository's INI-style pytest config (`[tool.pytest.ini_options]`); context: pytest 6.0+, pyproject.toml; checked: syntax [DOC S-kobs45hd,S-mgv7bfqe: `[tool.pytest.ini_options]` table, `testpaths`, `python_files` default, and `tmp_path_retention_policy` values]
 ```toml
 [tool.pytest.ini_options]
 testpaths = ["_tools"]
 python_files = ["test_*.py"]
 tmp_path_retention_policy = "failed"
 ```
+- SNIPPET: the newer native-TOML pytest config (`[tool.pytest]`), shown for contrast; context: pytest 9.0+; not used by this repo; checked: no [DOC S-kobs45hd: `[tool.pytest]` native TOML table added in pytest 9.0]
 ```ini
 # pytest.toml (native TOML config, pytest 9.0+) — not used by this repo, shown for contrast
 [pytest]

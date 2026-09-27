@@ -50,6 +50,7 @@ shape and are merged together at load. `claude/settings-and-scopes.md` — `allo
 shell-command hooks) inside an embedded session; see its permission-callback (`can_use_tool`/`canUseTool`) example.
 
 ## Examples
+- SNIPPET: a PostToolUse hook that runs a redaction command for every tool of one MCP server; context: Claude Code 2.1.281, settings.json `hooks` key; checked: syntax [DOC S743: matcher form `mcp__<server>__.*` matches all tools of a server, `hooks.PostToolUse[].hooks[].type: "command"`]
 ```json
 { "hooks": { "PostToolUse": [ { "matcher": "mcp__inventory__.*", "hooks": [ { "type": "command", "command": "inventory hook redact" } ] } ] } }
 ```

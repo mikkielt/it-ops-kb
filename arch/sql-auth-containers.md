@@ -35,6 +35,7 @@ status: complete
 | SQL login | Username + password | No | DER |
 
 ## Examples
+- SNIPPET: two connection strings for the same on-prem SQL Server, one per supported auth path; context: ODBC Driver 18 for SQL Server (Kerberos, client already `kinit`'d), Microsoft.Data.SqlClient 5.2+ (Entra workload identity); checked: no [DER S1605,S-z74feu7u: `Trusted_Connection=yes` keyword and the Active Directory Workload Identity mode's connection keywords]
 ```
 # Kerberos (Linux container, keytab already kinit'd)
 Driver={ODBC Driver 18 for SQL Server};Server=PL-SRV-0042.corp.example.com;Encrypt=yes;Trusted_Connection=yes

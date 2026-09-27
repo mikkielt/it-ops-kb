@@ -102,6 +102,7 @@ this article does not repeat.
   its own `dependencies`) is instead run fully isolated from the project's environment. [DOC S-f2okeu6a]
 
 ## Reference
+- SNIPPET: a project with a `requires-python` lower bound and a `dev` dependency group; context: PEP 735 `[dependency-groups]`, uv; checked: syntax [DOC S-qo6uqong,S-pwf7njbf: `requires-python` bounds; DOC S-ixzgi6xe: the `dev` group is special-cased]
 ```toml
 [project]
 name = "example-tool"
@@ -110,6 +111,7 @@ requires-python = ">=3.9"
 [dependency-groups]
 dev = ["pytest>=8", "pytest-xdist>=3", "ruff>=0.6"]
 ```
+- SNIPPET: the uv lock/sync/run/pin/uvx invocations this article's facts cover; context: uv; checked: no [DOC S-wmmyfoun: `uv sync`/`--frozen`/`--locked`; DOC S-sqwzg5ex: `uv python pin`; DOC S-7xvirecf: `uvx`]
 ```console
 $ uv lock                       # create/update uv.lock explicitly
 $ uv sync                       # install the resolved deps + dev group into .venv

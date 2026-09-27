@@ -97,7 +97,7 @@ allow/deny controls, and `claude/hooks.md` for hook event/field semantics that a
 | `strictKnownMarketplaces` / `blockedMarketplaces` | managed only | allowlist / denylist of marketplace sources |
 
 ## Examples
-Minimal manifest and marketplace entry:
+- SNIPPET: Minimal manifest and marketplace entry; context: Claude Code 2.1.281; checked: syntax [DOC S-3xyywfcr: `name`/`version`/`description`/`author` fields, `author.name` required and `author.email` optional]
 ```json
 {
   "name": "it-ops-helper",
@@ -106,6 +106,7 @@ Minimal manifest and marketplace entry:
   "author": { "name": "IT Ops", "email": "itops@corp.example.com" }
 }
 ```
+- SNIPPET: a minimal `.claude-plugin/marketplace.json` catalog with one relative-path plugin entry; context: Claude Code 2.1.281; checked: syntax [DOC S-4m2kbuls: `name`/`owner.name`/`plugins` required fields, relative-path plugin `source`]
 ```json
 {
   "name": "it-ops-marketplace",
@@ -115,7 +116,7 @@ Minimal manifest and marketplace entry:
   ]
 }
 ```
-Force-install for a fleet (managed settings):
+- SNIPPET: Force-install for a fleet (managed settings); context: Claude Code 2.1.281, managed settings (MDM/GPO); checked: syntax [DOC S-rp4dtt4w: `extraKnownMarketplaces` (`source`, `autoUpdate`) and `enabledPlugins` (`plugin-name@marketplace-name: true`) force-install keys]
 ```json
 {
   "extraKnownMarketplaces": {

@@ -39,6 +39,7 @@ status: complete
 | `schedule` | scheduled pipeline | S453 |
 
 ## Examples
+- SNIPPET: a pipeline gated to MR pipelines and tag pushes, with a tag-triggered `release` job using `glab`; context: GitLab CI, `release-cli` image v0.24.0 (glab v1.58.0+); checked: no [DER S446,S447,S451: `merge_request_event` workflow rule, the `if: $CI_COMMIT_TAG` release rule, and the `release:` keyword's `tag_name` field combined into one pipeline]
 ```yaml
 workflow:
   rules:

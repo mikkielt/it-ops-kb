@@ -40,6 +40,7 @@ Related: `claude/settings-and-scopes.md` — settings-file precedence, scopes, a
 delivery (managed settings, MDM, `managed-settings.json`) that this article's rule set is layered on top of.
 
 ## Examples
+- SNIPPET: a permissions block naming one MCP tool per allow/ask/deny rule, plus a server-wide deny glob; context: Claude Code 2.1.281, settings.json `permissions` key; checked: syntax [DOC S742: `mcp__server__tool` one-tool form and `mcp__server__*` server-wide glob accepted for deny rules]
 ```json
 { "permissions": { "allow": ["mcp__inventory__device_get"], "ask": ["mcp__inventory__client_refresh_policy"], "deny": ["mcp__dsc__*"] } }
 ```

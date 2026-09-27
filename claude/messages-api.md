@@ -156,6 +156,7 @@ Batches/Files/rate-limit numbers.
 Python tool-use loop with one tool (a device lookup), and a `count_tokens` call, using placeholders only
 (`PL-LT-00123`):
 
+- SNIPPET: a full tool-use loop (one tool call answered with a `tool_result`) plus a `count_tokens` size check; context: Claude API, Messages API, Python `anthropic` SDK; checked: syntax [DOC S-osulh6sh: `tools`/`tool_choice` request shape, `tool_use`/`tool_result` block pairing, `stop_reason`; DOC S-jrsntqfg: `count_tokens` request/response shape]
 ```python
 import anthropic
 

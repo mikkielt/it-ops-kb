@@ -161,6 +161,7 @@ Related kb articles:
   fields.
 
 ## Examples
+- SNIPPET: a `SKILL.md` frontmatter that forks the skill body into a subagent and never auto-invokes from a model match; context: Claude Code, `.claude/skills/<name>/SKILL.md`; checked: no [DOC S2158: `context: fork` and `disable-model-invocation: true` frontmatter fields]
 ```yaml
 # .claude/skills/deploy/SKILL.md (frontmatter delimiters omitted here to keep this fact block parseable)
 name: deploy
@@ -174,6 +175,7 @@ disable-model-invocation: true
 # 3. Push to the deployment target
 ```
 
+- SNIPPET: a subagent definition restricted to read-only tools with a fixed model; context: Claude Code, `.claude/agents/<name>.md`; checked: no [DOC S2157: subagent frontmatter fields `name`/`description`/`tools`/`model`, camelCase schema]
 ```markdown
 <!-- .claude/agents/code-reviewer.md (frontmatter delimiters omitted here to keep this fact block parseable) -->
 name: code-reviewer
@@ -185,6 +187,7 @@ model: sonnet
 # specific, actionable feedback on quality, security, and best practices.
 ```
 
+- SNIPPET: a session-only subagent defined inline on the CLI, restricted to read/grep/glob/bash tools with a fixed model; context: Claude Code, `claude --agents` flag; checked: no [DOC S2157: `--agents` CLI JSON top-level keys are agent names, each taking `description`/`prompt`/`tools`/`model`]
 ```bash
 # CLI-defined subagent for one session, for example PL-LT-00123's local automation
 claude --agents '{

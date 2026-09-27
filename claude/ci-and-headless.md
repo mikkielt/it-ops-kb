@@ -84,6 +84,7 @@ this article does not repeat (lines 22, 58, 66 of that article).
 
 GitLab CI job running `claude -p` on an MR event with a masked API key (fixture project `corp.example.com/PL-SRV-0042`):
 
+- SNIPPET: a GitLab CI job that installs the Claude Code CLI and runs `claude -p` on MR events, capped at 15 turns; context: GitLab CI, `node:24-alpine3.21` image, Claude Code v2.1.x install script; checked: no [DOC S1802: install script, `rules:` gating, `--permission-mode acceptEdits --allowedTools ...` invocation; DOC S1824: `--max-turns`]
 ```yaml
 stages:
   - ai
@@ -115,6 +116,7 @@ variable semantics and `gitlab/pipelines-rules.md` for `rules:`/`$CI_PIPELINE_SO
 GitHub Actions workflow running `anthropics/claude-code-action@v1` on a schedule, capped with `--max-turns` and scoped
 permissions, against fixture repo `corp.example.com/PL-LT-00123`:
 
+- SNIPPET: a scheduled GitHub Actions workflow running `anthropics/claude-code-action@v1` in automation mode, scoped permissions and turn-capped; context: GitHub Actions, `claude-code-action@v1`; checked: no [DOC S1801: `prompt` input triggers automation mode on any event including `schedule:`, `claude_args` for CLI flags, `anthropic_api_key` input]
 ```yaml
 name: Daily Report
 on:

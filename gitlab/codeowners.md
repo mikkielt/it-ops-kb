@@ -3,7 +3,7 @@ topic: gitlab/codeowners
 priority: P0
 applies_to: "GitLab 19.5 docs (master @56c82a97)"
 retrieved_utc: 2026-09-26
-sources: [S450, S444, S440]
+sources: [S450, S444, S440, S-lml4jqiv]
 status: complete
 ---
 
@@ -25,6 +25,7 @@ status: complete
 Syntax (sections, patterns, owners) is in `doc/user/project/codeowners/reference.md` at the same commit. It was not summarized here.
 
 ## Examples
+- SNIPPET: a `.gitlab/CODEOWNERS` file with one section owning a path; context: GitLab 19.5 CODEOWNERS syntax (Premium/Ultimate); checked: no [DOC S450, S-lml4jqiv: `[Section name]` header followed by `path @owner` rows (the syntax reference, S-lml4jqiv)]
 ```
 # .gitlab/CODEOWNERS (fixture)
 [baselines]

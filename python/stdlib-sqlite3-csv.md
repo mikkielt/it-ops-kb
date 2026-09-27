@@ -63,6 +63,7 @@ defaults changed in 3.12 (opt-in) with a documented future default change.
   Python release. [DOC S-rle6nqpc]
 
 ## Reference
+- SNIPPET: write a CSV with `newline=''` (correct on every platform) and open a shared sqlite3 cache from multiple threads; context: Python 3.11+ stdlib `csv`/`sqlite3`; checked: syntax [DOC S-utoe3wfw: `newline=''` and `QUOTE_MINIMAL` default; DOC S-rle6nqpc: `check_same_thread=False` and `sqlite3.sqlite_version`]
 ```python
 import csv
 
