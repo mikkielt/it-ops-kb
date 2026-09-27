@@ -2,7 +2,7 @@
 topic: dsc/what-if
 priority: P0
 applies_to: "Microsoft DSC 3.3.0 (release/v3.3 @ ea572fa) and 3.4.0-preview.1"
-retrieved_utc: 2026-09-26
+retrieved_utc: 2026-09-27
 sources: [S100, S102, S103, S105, S106, S108, S109, S114, S115, S138, S139, S140]
 status: complete
 ---
@@ -26,6 +26,8 @@ status: complete
 - For `resource delete --what-if`, or a config instance with `_exist: false` on a resource that implements delete: without a delete `whatIfArg`, dsc runs `test` and returns it as a synthetic what-if. [CODE S102: lib/dsc-lib/src/configure/mod.rs#invoke_set; CODE S105: lib/dsc-lib/src/dscresources/command_resource.rs#invoke_delete]
 - In a configuration set, instances with `_exist: false` go to `delete` only when the resource lacks `setHandlesExist`. [CODE S102: lib/dsc-lib/src/configure/mod.rs#invoke_set]
 - The what-if result's `executionInformation.executionType` / `metadata.Microsoft.DSC.executionType` is `whatIf`. [CODE S102: lib/dsc-lib/src/configure/mod.rs#invoke_set; CODE S103: lib/dsc-lib/src/configure/config_doc.rs#ExecutionKind; CODE S109: dsc/src/server/invoke_dsc_config.rs#InvokeDscConfigRequest.what_if]
+- Discovery records what-if support as resource capabilities: `setWhatIf` when `set.args` contains a `whatIfArg` or the manifest has a top-level `whatIf` operation, `deleteWhatIf` when `delete.args` contains one. [CODE S106: lib/dsc-lib/src/discovery/command_discovery.rs#load_resource_manifest]
+- The 3.3.0 MCP `invoke_dsc_config` request has only `operation`, `configuration` and `parameters`, and its set path calls `configurator.invoke_set(false)`, so no MCP call runs in what-if mode. [CODE S108: dsc/src/server/invoke_dsc_config.rs#InvokeDscConfigRequest]
 - `Microsoft.Windows/Service` 0.1.1 (3.3.0 zip): `set.args` = `["set", {jsonInputArg: --input, mandatory}, {whatIfArg: "--what-if"}]`, `implementsPretest: false`, `whatIfReturns: state`, `requireSecurityContext: elevated`. [DOC S114]
 - `windows_service.exe` reads `--what-if`/`-w` from its args. In what-if, `_exist: false` is routed to a delete simulation (`what_if_delete_service`); otherwise it calls `set_service(input, what_if)`. [CODE S138: resources/windows_service/src/main.rs#parse_what_if_flag]
 - `Microsoft.Windows/FirewallRuleList` 0.3.0 (3.3.0 zip): `set.args` includes `{whatIfArg: "--what-if"}`, `implementsPretest: true`, `handlesExist: true`, `whatIfReturns: state`, `requireSecurityContext: elevated`. [DOC S114]

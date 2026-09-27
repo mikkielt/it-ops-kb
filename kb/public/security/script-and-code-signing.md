@@ -2,7 +2,7 @@
 topic: security/script-and-code-signing
 priority: P1
 applies_to: "PowerShell 5.1/7.5 under ConfigMgr AllSigned; DSC v3.3.0/3.4.0-preview.1; WDAC/App Control"
-retrieved_utc: 2026-09-26
+retrieved_utc: 2026-09-27
 sources: [S1513, S1514, S1515, S-utrhfg57, S1517, S1518, S1519]
 status: partial
 ---
@@ -40,6 +40,7 @@ official docs show), and how WDAC/App Control for Business treats PowerShell and
 - The DSC v3 command-based resource manifest schema defines each operation (get, set, test, export and so on)
   as an `executable` command that DSC calls, and has no signing requirement or signature field for those
   executables. [DOC S1517]
+- The DSC 3.0.0 general-availability announcement describes resources that can be written in any language, each with a manifest that defines its properties as a JSON schema and how DSC invokes it, and says DSC can use existing PowerShell 7 and Windows PowerShell DSC resources; it mentions no signing of resources or manifests. [DOC S1518]
 - When a system-wide App Control for Business (WDAC) or AppLocker policy is enforced, PowerShell enters
   System Lockdown mode and the policy determines each runspace's language mode; **ConstrainedLanguage mode**
   limits the cmdlets and .NET types a session may use. [DOC S1513]

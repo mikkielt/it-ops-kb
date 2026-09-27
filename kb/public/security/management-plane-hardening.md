@@ -2,7 +2,7 @@
 topic: security/management-plane-hardening
 priority: P1
 applies_to: "ConfigMgr current branch 2603; SQL Server 2022/2025; GitLab self-managed; Windows GitLab Runner"
-retrieved_utc: 2026-09-26
+retrieved_utc: 2026-09-27
 sources: [S1480, S1481, S1482, S1483, S1484, S1485, S1486, S1487, S1488, S1489, S1490, S1491, S-thjpegto, S-psoai6ce]
 status: partial
 ---
@@ -17,13 +17,14 @@ ConfigMgr, its SQL Server site database, GitLab (a configuration repository) and
 - Microsoft's site-administration security guidance recommends IPsec between site systems, and keeping site system roles off the site server rather than co-locating them, as security/operational-resilience best practices. [DOC S1480]
 - Client security guidance: deploy the ConfigMgr client only to trusted devices; site property lets you require HTTPS-only for site systems. [DOC S1483]
 - **MFA for SMS Provider calls** (constrains any interactive identity that reaches the SMS Provider): available since ConfigMgr current branch 1702 (SMS here is Systems Management Server, not text messages). It is set with the `SMS_Site` method `SetAuthenticationLevel`: `AuthenticationLevel` 0 (default) adds no second layer, 10 allows provider calls only from users signed in with a PIN or smart card, 20 only from users signed in with a PIN; SIDs in `ExceptionList` (such as service accounts) bypass it. It is a global setting used on all primary sites; only a Full Administrator with the All scope can set it, signed in with the same method being enabled. [DOC S1482]
-- Whether the AdminService REST API enforces the same SMS Provider authentication level. [UNK: not in S1482 as re-read 2026-09-27]
+- The SMS Provider authentication level (Windows authentication by default, certificate authentication, or Windows Hello for Business) applies to every component that reaches the SMS Provider, console, SDK methods and PowerShell cmdlets; under Windows Hello for Business both the SMS Provider and the administration service reject a user whose token lacks an MFA claim from Windows Hello for Business. [DOC S1481]
+- Clients that cannot get the site's trusted root key from Active Directory (schema extended, site published) or from client push trust the first management point they reach, so a rogue management point could send them policy for a short window; pre-provisioning the trusted root key closes it. [DOC S1481]
 - **Enhanced HTTP vs PKI HTTPS** (constrains a site's client communication config): sites allowing plain HTTP client communication are deprecated from ConfigMgr 2103 onward; configure the site for HTTPS or Enhanced HTTP. [DOC S1480,S1483]
 - Microsoft recommends HTTPS for all ConfigMgr communication paths and calls PKI-based HTTPS the more secure configuration; where HTTPS is not possible, it recommends Enhanced HTTP, which uses site-issued self-signed certificates. PKI stays the option for all-HTTPS client communication and advanced control of the signing infrastructure. [DOC S-thjpegto]
 - **NTLM fallback / client push** (constrains a site's push-install config): from ConfigMgr current branch 1806, the site can require Kerberos mutual authentication for client push by not allowing fallback to NTLM; from version 2207, "Allow connection fallback to NTLM" is **disabled by default on new site installations**, and Microsoft recommends disabling it in existing environments. [DOC S-psoai6ce]
 - Hotfix KB15498768 (versions 2103-2207, resolves CVE-2022-37972) fixes a case where disabling the fallback was not honored: after Kerberos failures the push account, or the site server computer account, still tried NTLM. Without an upgrade, disabling automatic and manual client push removes the exposure. [DOC S1484]
 - That NTLM authentication from client push can be coerced to an attacker-controlled name when no PKI client-auth certificate is used. [UNK: not in S1484 as re-read 2026-09-27]
-- No CIS benchmark for Configuration Manager itself was found on the public CIS benchmark list. [UNK]
+- No CIS benchmark for Configuration Manager itself was found on the public CIS benchmark list. [DER S1485: no Configuration Manager entry on the CIS Benchmarks list, read 2026-09-27]
 - Microsoft's cloud security benchmark privileged-access guidance (PA-1) says to limit the number of privileged accounts in the control, management and data/workload planes, and to restrict privileged accounts in system management tools with agents installed on business-critical systems, because attackers who compromise such tools can weaponize them; PA-4 calls for regular review that granted access is valid for each plane. [DOC S1491]
 - A ConfigMgr site is such a system management tool (its client agent runs on managed devices), so its administrative accounts fall under PA-1's restriction. [DER S1491: PA-1's "system management tools with agents" applied to ConfigMgr]
 - No page was found that names ConfigMgr explicitly as "Tier 0"; see [[enterprise-access-model]] for the general tiering model. [UNK]
@@ -34,6 +35,8 @@ ConfigMgr, its SQL Server site database, GitLab (a configuration repository) and
 - Transparent Data Encryption (TDE) protects database, backup and tempdb files at rest. [DOC S1488]
 - Use group managed service accounts (gMSA) for SQL Server services: Windows manages and rotates their passwords without service restarts. Minimize the DBA account's rights, separating duties such as access to the VM, OS sign-in, log changes and software installs. [DOC S1488]
 - A CIS benchmark exists for Microsoft SQL Server: separate benchmarks per major version, including **CIS Microsoft SQL Server 2022 Benchmark** (versions seen up to v1.3.0) and **CIS Microsoft SQL Server 2025 Benchmark v1.0.0**. Exact current version/date needs the CIS benchmark list page (no registration required to see the list; PDF is free for non-commercial use). [DOC S1486]
+
+- The CIS Benchmarks list (read 2026-09-27) shows Microsoft SQL Server 2022 at v1.3.0 and SQL Server 2025 at v1.0.0, besides older SQL Server versions and STIG-based SQL Server 2022 Instance and Database benchmarks (1.0.0); GitLab appears at v1.0.1 under Software Supply Chain Security. [DOC S1485]
 
 ### GitLab self-managed (constrains a no-domain-identity CI runner and the configuration repository)
 - A **CIS GitLab Benchmark** exists (first published by GitLab with CIS, announced 2024-04-17), with 125+ recommended configuration checks. [DOC S1487]

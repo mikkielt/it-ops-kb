@@ -2,7 +2,7 @@
 topic: security/framework-control-map
 priority: P2
 applies_to: "ISO/IEC 27001:2022 Annex A; NIST CSF 2.0; CIS Controls v8.1; NIS2 Art. 21(2), as of 2026-09-24"
-retrieved_utc: 2026-09-24
+retrieved_utc: 2026-09-27
 sources: [S1552, S-fr4o3437, S1562, S1563, S-n3ela3o4, S-riwffp3c]
 status: partial
 ---
@@ -20,12 +20,15 @@ non-commercial) [DOC S1563], so safeguard IDs and titles are cited but not modif
   A.5.15 etc.) as reference elements in NIST's SP 800-53 Rev. 5 to ISO/IEC 27001:2022 crosswalk (OLIR, file dated
   2023-10-12). It maps, for example, A.5.18 from AC-02, A.8.8 from RA-03/RA-05/SI-02/SI-05, A.8.15 from AU-02/AU-03/
   AU-06/AU-12 and A.8.32 from CM-03/CM-05/SA-10/SI-02. [DOC S-n3ela3o4]
+- ISO's open-data catalogue record for ISO/IEC 27001:2022 (edition 3, published 2022-10-25, ISO/IEC JTC 1/SC 27, 19 pages in English) says it specifies requirements for an information security management system, including information security risk assessment and treatment, and that an organization claiming conformity may not exclude any requirement of Clauses 4 to 10; the record carries metadata and scope only, no Annex A control list. [DOC S-fr4o3437]
 - The csv titles (Access control, Access rights, Privileged access rights, ...) and the grouping of Annex A into four
   themes (organizational, people, physical, technological; 93 controls) are not confirmed: the NIST crosswalk lists
   ids without titles, and iso.org is not readable here. [UNK: titles and themes not in S-n3ela3o4; iso.org unreadable]
 - NIST CSF 2.0 (CSWP 29, published 2024-02-26) organizes its Core into six Functions: Govern, Identify, Protect,
   Detect, Respond and Recover; the csv's CSF subcategory ids and short titles come from it. [DOC S-riwffp3c]
+- NIST's Cybersecurity Framework page is the CSF 2.0 resource center: it keeps CSF 1.1 as an archive and publishes Quick Start Guides, Profiles and Informative References (mappings between NIST resources and other documents). [DOC S1562]
 - That Govern is the one Function added to the five of CSF 1.1. [UNK: not in S1562 as re-read 2026-09-27]
+- NIS2 (Directive (EU) 2022/2555) Art. 21(2) lists the minimum risk-management measures (a) to (j); the csv maps four of them to a device-configuration tool: (a) risk analysis and information system security policies, (d) supply chain security, (i) human resources security, access control and asset management, and (j) MFA or continuous authentication. The full list is in `privacy-compliance.md`. [DOC S1552]
 - CIS Controls v8.1 (March 2025) has 18 Controls and 153 Safeguards across three Implementation Groups; licensed
   CC BY-NC-ND 4.0 (no derivatives). The csv therefore cites safeguard IDs only, with a short own-words paraphrase
   in place of the official safeguard title, rather than reproducing CIS wording. [DOC S1563]

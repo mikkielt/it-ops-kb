@@ -2,7 +2,7 @@
 topic: security/supply-chain
 priority: P1
 applies_to: "a Python 3.13 package built with uv; GitLab self-managed CI/CD"
-retrieved_utc: 2026-09-26
+retrieved_utc: 2026-09-27
 sources: [S1501, S1502, S-paztzzud, S1504, S1505, S1506, S1507, S1508, S1509, S1510, S1511, S1512, S1517, S1522, S1523, S1524, S1525, S1597, S-sxp3exzp, S-dlc2x6gf]
 status: partial
 ---
@@ -22,6 +22,7 @@ NIST SSDF (SP 800-218 v1.1, plus the 800-218A generative-AI companion profile) a
 - `uv pip compile` locks dependencies to exact versions in a `requirements.txt` or PEP 751 `pylock.toml` output file, and `--generate-hashes` adds distribution hashes to that file. [DOC S1522, S-dlc2x6gf]
 - `pip install`/`pip download --require-hashes` puts pip into hash-checking mode: installation fails unless every requirement, including transitive dependencies, carries a matching hash. [DOC S1507]
 - PyPI Trusted Publishing lets a CI job obtain a short-lived PyPI API token via OIDC instead of storing a long-lived token as a secret; the minted token is project-scoped and valid for 15 minutes. Supported OIDC issuers are GitHub Actions, GitLab CI/CD, Google Cloud and ActiveState. [DOC S1508,S1597]
+- PyPI added GitLab CI/CD, Google Cloud and ActiveState as Trusted Publishing providers on 2024-04-17, beside GitHub Actions; the announcement describes the exchange of short-lived OIDC identity tokens for short-lived, tightly scoped PyPI API tokens that never need to be stored. [DOC S1509]
 - PyPI's *Adding a Trusted Publisher* page states, for GitLab: "Currently, only projects hosted on https://gitlab.com are supported. Self-managed instances are not supported." [DOC S1597]
 - A Socket post (2025-11-14) reports that PyPI extended Trusted Publishing to GitLab Self-Managed as a beta, with PyPI staff onboarding each instance by hand; the PyPI page above does not reflect this. [COMMUNITY S1510]
 - Registering a GitLab Trusted Publisher on PyPI requires the repository's namespace, the repository's name and the file path of the top-level GitLab CI/CD pipeline definition (e.g. `.gitlab-ci.yml`) authorized to upload; a GitLab environment name is optional but strongly recommended. [DOC S1597]

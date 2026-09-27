@@ -2,8 +2,8 @@
 topic: security/baselines-catalog
 priority: P0
 applies_to: "Windows 11 Enterprise 24H2/25H2, Windows Server 2025"
-retrieved_utc: 2026-09-24
-sources: [S1470, S1471, S1472, S1598, S1400, S1401, S1402, S1403, S1404, S1405, S1406, S1407, S1408, S1410, S1418, S1419, S1420, S1421, S1422, S1423, S1424, S1425, S-uzuvf3vo, S-nwnif62g, S-3vkajr2c, S-ycjlut3h]
+retrieved_utc: 2026-09-27
+sources: [S1470, S1471, S1472, S1598, S1400, S1401, S1402, S1403, S1404, S1405, S1406, S1407, S1408, S1418, S1419, S1421, S1422, S1423, S1424, S1425, S-uzuvf3vo, S-nwnif62g, S-3vkajr2c, S-ycjlut3h]
 status: partial
 ---
 
@@ -26,6 +26,8 @@ attribution. NCSC (UK)/BSI/ANSSI rows remain UNK.
   23H2, 24H2 and 25H2 baselines (alongside Windows Server 2025, Edge, Microsoft 365 Apps, LGPO and
   Policy Analyzer); the page's HTML embeds a direct `download.microsoft.com` URL for each file, so a
   plain HTTP fetch of the page yields the file list without the interactive selection flow [DOC S1400].
+- The Learn guide to the Security Compliance Toolkit lists Windows 11 baselines only up to version 24H2 (plus Windows 10, Windows Server 2016 to 2025, Microsoft 365 Apps for Enterprise 2412 and Edge 128) and four tools: Policy Analyzer, LGPO, Set Object Security and GPO to Policy Rules (which converts GPO backups to `.PolicyRules` files), so the download page above is newer than the guide. [DOC S1403]
+- Microsoft's security baselines guide says the baselines assume standard users without administrative rights, enforce a setting only if it mitigates a contemporary threat without causing worse operational issues, and can be applied with Group Policy, Configuration Manager or Intune; Windows Pro, Enterprise and Education editions support them. [DOC S1404]
 - Microsoft announced the Windows 11 version 24H2 security baseline on 2024-10-01 (techcommunity post),
   covering changed protections to LAN Manager, Kerberos, UAC and Defender Antivirus; a later update to the
   post says the two Administrator protection (UAC) settings are visible but not yet functional [DOC S1401].

@@ -2,7 +2,7 @@
 topic: security/privacy-compliance
 priority: P2
 applies_to: "GDPR; EDPB WP248 rev.01; UODO; NIS2 (Directive + Polish KSC amendment); DORA; EU AI Act, as of 2026-09-24"
-retrieved_utc: 2026-09-26
+retrieved_utc: 2026-09-27
 sources: [S870, S1542, S-xvc5ligo, S1550, S-5jbvhlmx, S1552, S1553, S1554, S1555, S1556, S1557, S1558, S1559, S-qzdkyvqx]
 status: partial
 ---
@@ -67,6 +67,7 @@ conditional note; and the EU AI Act classification/timeline including the 2026 D
 - DORA (Regulation (EU) 2022/2554) applies to financial entities and their critical ICT third-party providers; it
   is noted here only as a conditional check — it applies only if the operating organisation is itself a financial
   entity in DORA's scope. [DOC S1555]
+- NIST AI 600-1 (the Generative AI profile) lists Data Privacy among the risks unique to or made worse by generative AI: leakage and unauthorized use, disclosure or de-anonymization of PII or other sensitive data. It notes that models may leak, generate or correctly infer sensitive information about individuals, including PII that was neither in the training data nor disclosed by the user, by combining information from separate sources. [DOC S1542]
 - The EU AI Act (Regulation (EU) 2024/1689) entered into force 2024-08-01, with staggered application dates:
   prohibited practices and AI-literacy obligations from 2025-02-02; governance rules and obligations for
   general-purpose AI models from 2025-08-02; and (originally) most other obligations, including Annex III
@@ -81,6 +82,7 @@ conditional note; and the EU AI Act classification/timeline including the 2026 D
   2026-07-24 and entered into force on the third day after publication (2026-07-27), six days before the original
   2026-08-02 high-risk deadline it amends; EUR-Lex lists a consolidated AI Act version dated 2026-07-27.
   [DOC S-qzdkyvqx]
+- A Cloud Security Alliance research note reads the enacted omnibus the same way (Annex III to 2027-12-02, Annex I to 2028-08-02) and adds that Article 50 transparency duties stayed on the 2026-08-02 schedule, and that the final text differs from the May 2026 provisional agreement: narrower high-risk scope for machinery-embedded AI, a softer AI-literacy mandate, wider EU AI Office supervision and simpler registration for self-assessed systems. [COMMUNITY S1559]
 - An internal IT-operations assistant built as MCP/CLI tooling is not itself a component the AI Act treats
   as "AI" for tier-≥2 confirmed actions it takes, when those are deterministic code with a tier enforcement
   layer; the pseudonymization/model-boundary component that interprets device data and proposes actions is the

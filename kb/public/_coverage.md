@@ -234,7 +234,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `reuse/pseudonymization-tokenization` | P2 | complete | `reuse/pseudonymization-tokenization.md` | 5 |
 | `reuse/secret-vault-encryption` | P2 | complete | `reuse/secret-vault-encryption.md` | 10 |
 | `reuse/tiered-approval-ops` | P2 | complete | `reuse/tiered-approval-ops.md` | 5 |
-| `security/baselines-catalog` | P0 | partial | `security/baselines-catalog.md`, `security/baselines-catalog.csv` | 26 |
+| `security/baselines-catalog` | P0 | partial | `security/baselines-catalog.md`, `security/baselines-catalog.csv` | 24 |
 | `security/dsc-coverage` | P0 | complete | `security/dsc-coverage.md` | 19 |
 | `security/first-baseline-candidates` | P0 | partial | `security/first-baseline-candidates.md` | 12 |
 | `security/policy-precedence` | P0 | partial | `security/policy-precedence.md` | 7 |
@@ -243,7 +243,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `security/management-plane-hardening` | P1 | partial | `security/management-plane-hardening.md` | 14 |
 | `security/script-and-code-signing` | P1 | partial | `security/script-and-code-signing.md` | 7 |
 | `security/supply-chain` | P1 | partial | `security/supply-chain.md` | 20 |
-| `security/ai-agent-guidelines` | P2 | partial | `security/ai-agent-guidelines.md` | 19 |
+| `security/ai-agent-guidelines` | P2 | partial | `security/ai-agent-guidelines.md` | 17 |
 | `security/framework-control-map` | P2 | partial | `security/framework-control-map.md`, `security/framework-control-map.csv` | 6 |
 | `security/privacy-compliance` | P2 | partial | `security/privacy-compliance.md` | 14 |
 | `security/threat-model-inputs` | P2 | complete | `security/threat-model-inputs.md`, `security/artifacts/mitre/attack-subset.csv`, `security/artifacts/mitre/attack-subset.md` | 12 |

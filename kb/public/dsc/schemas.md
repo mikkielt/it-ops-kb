@@ -2,7 +2,7 @@
 topic: dsc/schemas
 priority: P0
 applies_to: "Microsoft DSC 3.3.0 (binary-generated) and the repo schema files on release/v3.3 @ ea572fa"
-retrieved_utc: 2026-09-26
+retrieved_utc: 2026-09-27
 sources: [S116, S117, S137, S146, S147, S148, S149, S150, S151, S152, S153, S154, S155, S145]
 status: complete
 files: [dsc/schemas/]
@@ -25,6 +25,11 @@ files: [dsc/schemas/]
 - 21 of the 22 generated schema types differ in bytes between 3.3.0 and 3.4.0-preview.1; only `include` is identical. [DER S116,S117: `dsc schema -t <type> -o pretty-json` output of both binaries compared, re-run 2026-09-27]
 - The repo `schemas/schemas.config.yaml` on release/v3.3 has `version: v3.1.0` and `prefix: PowerShell/DSC/main/schemas`. [CODE S137: schemas/schemas.config.yaml#version]
 - The repo bundled `config/document.json` has `$id` `https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3/config/document.json` and top-level properties `$schema`, `parameters`, `variables`, `resources`, `metadata` only (no `directives`). [DOC S146]
+- The other pinned repo bundles (extension manifest, config get/set/test outputs, resource get/list/set/test outputs, resource manifest) also carry `$id` values under `https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3/`. [DOC S147, S148, S149, S150, S151, S152, S153, S154, S155]
+- The bundled config get/set/test output schemas define only `metadata`, `results`, `messages` and `hadErrors` (all required); the 3.3.0 binary's configuration get/set/test result schemas add `executionInformation` and `outputs`. [DOC S148, S149, S150, S116]
+- The bundled resource manifest schema lacks `condition`, `deprecationMessage` and `metadata`, which the 3.3.0 binary's `resource-manifest` schema has; both require `$schema`, `type` and `version`. [DOC S155, S116]
+- The bundled resource list output schema describes each resource with `type`, `kind`, `version`, `capabilities`, `description`, `path`, `directory`, `implementedAs`, `author`, `properties`, `requireAdapter` and `manifest`. [DOC S152]
+- The bundled extension manifest schema requires `$schema`, `type` and `version` and defines `description`, `discover`, `exitCodes` and `tags`. [DOC S147]
 - The Learn configuration document schema reference in the `dsc-3.0` docs set gives SchemaID `.../schemas/v3.1.0/config/document.json` and documents only `$schema`, `metadata`, `parameters`, `variables` and `resources` (no `directives`). [DOC S145]
 
 ## Reference

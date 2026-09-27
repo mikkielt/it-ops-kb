@@ -2,8 +2,8 @@
 topic: security/ai-agent-guidelines
 priority: P2
 applies_to: "OWASP GenAI 2025-2026 lists; NIST AI RMF 1.0 / AI 600-1; MITRE ATLAS; ISO/IEC 42001:2023; Claude Code / MCP current; a tool-using agent with a tiered confirm gate, a model boundary and an audit table"
-retrieved_utc: 2026-09-24
-sources: [S760, S761, S762, S763, S764, S765, S1540, S1541, S1542, S-vtejnyyv, S-fr4o3437, S1545, S1862, S1547, S1548, S1575, S-rfm4qs32, S1480, S-uvrn2v43]
+retrieved_utc: 2026-09-27
+sources: [S760, S761, S762, S763, S764, S765, S1540, S1541, S1542, S-vtejnyyv, S-fr4o3437, S1862, S1547, S1548, S-rfm4qs32, S1480, S-uvrn2v43]
 status: partial
 ---
 
@@ -19,6 +19,8 @@ model boundary (a pseudonymization vault with a short TTL and strict restore), a
 allowlist.
 
 ## Facts
+- List versions behind the mapping below: the ASI ids come from the OWASP Top 10 for Agentic Applications for 2026 (resource page dated 2025-12-09); the MCP ids are `MCP01:2025`-`MCP10:2025` in the project index, which is in phase 3 (beta) and licensed CC BY-NC-SA 4.0. [DOC S761, S762, S760]
+- OWASP announced a 2026 Top 10 for LLM Applications on 2026-09-01 (resource page dated 2026-08-03); the mapping below still uses the 2025 LLM ids. [DOC S765, S764]
 - NIST released the AI RMF (1.0) on 2023-01-26, for voluntary use; NIST also publishes a companion Playbook, Roadmap and Crosswalk. [DOC S1541]
 - The AI RMF Core has four functions: GOVERN, MAP, MEASURE and MANAGE, each broken into categories and subcategories. [DOC S-uvrn2v43]
 - AI RMF 1.0 is public domain as a US government work. [UNK: not in S1541 as re-read 2026-09-27]

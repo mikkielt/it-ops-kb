@@ -2,7 +2,7 @@
 topic: security/dsc-coverage
 priority: P0
 applies_to: "DSC 3.3.0 / 3.4.0-preview.1; Microsoft Windows 11 24H2 baseline; DISA STIG Windows 11 V2R9, Windows Server 2025 V1R3"
-retrieved_utc: 2026-09-26
+retrieved_utc: 2026-09-27
 sources: [S1598, S1599, S1470, S1471, S1472, S1473, S1474, S1413, S1414, S1415, S1416, S1594, S1595, S1596, S-nkhgboup, S-ly6m2llb, S114, S115, S121]
 status: complete
 ---
@@ -25,9 +25,11 @@ status: complete
 - `SecurityPolicyDsc` releases:
   - last stable: 2.10.0.0 (2019-09-19);
   - last prerelease: 3.0.0-preview0006 (2021-05-21). [DOC S1594]
-- The `SecurityPolicyDsc` repository is not archived and was last pushed on 2024-07-07. [UNK: not in S1596 as re-read 2026-09-27]
+- The `SecurityPolicyDsc` repository (MIT) is not archived and was last pushed on 2024-07-07. [DOC S1413]
+- The gallery page marks 3.0.0-preview0006 as a prerelease (installed with `-AllowPrerelease`), with minimum PowerShell version 5.1; the version before the 3.0.0 previews is 2.10.0.0 (2019-09-19). [DOC S1414]
 - `AuditPolicyDsc` 1.4.0.0 (2019-01-10), its last release, declares the DSC resources `AuditPolicySubcategory`, `AuditPolicyGUID`, `AuditPolicyOption` and `AuditPolicyCsv` in its PowerShell Gallery tags. [DOC S1595]
-- That these are MOF (`MSFT_*`) resources and that the `AuditPolicyDsc` repository was last pushed on 2019-02-13. [UNK: not in S1596 as re-read 2026-09-27]
+- The `AuditPolicyDsc` repository (MIT, not archived, last pushed 2019-02-13) keeps its resources as MOF folders under `DSCResources`: `MSFT_AuditPolicyCsv`, `MSFT_AuditPolicyGUID`, `MSFT_AuditPolicyOption`, `MSFT_AuditPolicySubcategory`. [DOC S1416]
+- The gallery page lists 1.4.0.0 (2019-01-10) as the current version, minimum PowerShell version 4.0. [DOC S1415]
 - So security policy, user rights and audit policy need a Windows PowerShell adapter plus a module whose last stable release is 5 to 7 years old. [DER S1473,S1594,S1595]
 - No official page states that either module was tested with DSC v3. [UNK]
 - The adapter declares `implementsPretest` and has no what-if, so `dsc config set --what-if` returns an error for those resources, not a dry run. [DOC S114, via `dsc/manifests-diff.md`]

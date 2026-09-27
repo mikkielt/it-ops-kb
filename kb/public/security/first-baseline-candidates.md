@@ -2,7 +2,7 @@
 topic: security/first-baseline-candidates
 priority: P0
 applies_to: "Windows 11 Enterprise 24H2/25H2; Microsoft baseline 24H2 package; DISA STIG Windows 11 V2R9 (2026-08-10); DSC 3.3.0"
-retrieved_utc: 2026-09-26
+retrieved_utc: 2026-09-27
 sources: [S1470, S1471, S1472, S-oeh7ui3h, S1477, S1478, S1479, S1590, S1591, S1592, S1593, S-ycuzbjvk]
 status: partial
 ---
@@ -24,6 +24,8 @@ status: partial
   - removed from Windows 11 24H2 starting with the August 2025 update, and from Windows Server 2025 starting September 2025 (KB5065506, published 2025-08-11);
   - scripts that ask for `-Version 2` start the default PowerShell 5.1 instead. [DOC S1479]
 - STIG `WN11-00-000155` requires the PowerShell 2.0 feature disabled, but its check text marks it Not Applicable for Windows 11 24H2 and newer, so it is not a live requirement in the 24H2 comparison. The Microsoft 24H2 baseline has no such setting. [DOC S1470,S1472]
+- The Windows Server 2025 STIG V1R3 has `WN25-00-000410` (medium), "Windows Server 2025 must not have Windows PowerShell 2.0 installed". [DOC S1471]
+- Of the 84 settings in both the Microsoft baseline and the Windows 11 STIG with a native DSC v3 path, 38 appear by setting name in the Intune Windows 24H2 baseline reference; a missing name does not prove absence, because CSP names can differ from GPO names. [DER S-oeh7ui3h, S1472: setting names of the Intune 24H2 reference matched against the workbook names in `settings-crosswalk.csv`]
 - Long paths:
   - `LongPathsEnabled=1` under `HKLM\SYSTEM\CurrentControlSet\Control\FileSystem` only affects applications that declare `longPathAware`;
   - each process caches the value, so a reboot might be needed before all apps see it;

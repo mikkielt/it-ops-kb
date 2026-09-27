@@ -2,7 +2,7 @@
 topic: dsc/cli-reference
 priority: P0
 applies_to: "Microsoft DSC 3.3.0 (binary --help output; source release/v3.3 @ ea572fa)"
-retrieved_utc: 2026-09-26
+retrieved_utc: 2026-09-27
 sources: [S100, S101, S116, S117, S118, S128, S132, S133, S134, S135, S136, S141, S-mmshotst]
 status: complete
 files: [dsc/cli/]
@@ -27,7 +27,10 @@ files: [dsc/cli/]
 - `resource set|delete` take `-r`, `-v`, `-i`, `-f`, `-o`, `-w/--what-if`. `resource test|export` take `-r`, `-v`, `-i`, `-f`, `-o`. `resource schema` takes `-r`, `-v`, `-o`. [DOC S116]
 - `resource list [RESOURCE_NAME]` takes `-a/--adapter`, `-d/--description`, `-t/--tags`, `-o <json|pretty-json|yaml|table-no-truncate>`. `extension list [NAME]` takes `-o`. `function list [NAME]` takes `-c/--category` (repeatable, AND), `-d/--description`, `-o`. [DOC S100,S116]
 - In the 3.3.0 binary the resource version option is `-v, --version <VERSION>` ("The version of the resource to invoke in semver format"). In 3.4.0-preview.1 it is `-v, --required-version <REQUIRED_VERSION>` with hidden alias `--version`. [DOC S116,S117]
+- The 3.3.0 release notes list "(GH-1393) Rename `--version` to `--required-version` for resource commands" (PR #1610), yet the 3.3.0 binary still takes `--version`: the notes include main-only work (see `dsc/releases-feature-matrix.md` and `_conflicts.md`). [DOC S118]
 - `dsc schema -t/--type <type> [-o]`. Types: adapted-dsc-resource-manifest, configuration, configuration-export-result, configuration-get-result, configuration-set-result, configuration-test-result, dsc-resource, extension-discover-result, extension-manifest, function-definition, get-result, include, manifest-list, resolve-result, resource, resource-get-result, resource-set-result, resource-test-result, resource-manifest, restart-required, set-result, test-result. [DOC S116]
+- The help strings come from `dsc/locales/en-us.toml`: `serverAbout` is "Use DSC as a server over JSON-RPC (useful as MCP server)" and `ignoreSettingsFile` is "Ignore the settings file when running the command". [CODE S141: dsc/locales/en-us.toml#serverAbout]
+- The repository's command reference page for this subcommand (`docs/reference/cli/server/index.md`, ms.date 2026-06-17) is still titled `dsc mcp`: it says the command starts DSC as a long-running MCP server and documents only `-h/--help`. [DOC S136]
 - `dsc completer <bash|elvish|fish|powershell|zsh>` writes a completion script to stdout. [DOC S116]
 - Exit codes (constants): 0 success, 1 invalid args, 2 DSC error, 3 JSON error, 4 invalid input, 5 validation failed, 6 Ctrl+C, 7 resource not found, 8 assertion failed, 9 server failed, 10 Bicep failed. [CODE S101: dsc/src/util.rs#L68-L78]
 - The Learn page (ms.date 2025-03-25) documents only exit codes 0 to 6. [DOC S135]
