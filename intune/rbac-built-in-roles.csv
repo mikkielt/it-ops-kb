@@ -2,11 +2,11 @@ role,purpose,key permissions,source
 Application Manager,Manages mobile and managed applications; can read device information and view device configuration profiles,Mobile apps and managed apps read/write; devices read-only,S-kv5b4jlr
 Endpoint Privilege Manager,Manages Endpoint Privilege Management policies in the Intune console,EPM policy create/read/update/delete,S-kv5b4jlr
 Endpoint Privilege Reader,Views Endpoint Privilege Management policies; no changes,EPM policy read-only,S-kv5b4jlr
-Endpoint Security Manager,Manages security and compliance features,"Security baselines, device compliance, Conditional Access, Microsoft Defender for Endpoint connector",S-kv5b4jlr
+Endpoint Security Manager,Manages security and compliance features,"Security baselines, device compliance, Conditional Access, Microsoft Defender ATP",S-kv5b4jlr
 Help Desk Operator,Performs remote tasks on users and devices; assigns apps or policies,"Remote tasks (wipe, retire, reboot, lock, sync, locate, Initiate Configuration Manager action, etc.), managed apps assign/wipe, managed devices read/update, Filters read",S-kv5b4jlr
-Intune Role Administrator,Manages custom Intune roles and adds assignments for built-in Intune roles,"Roles create/read/update/delete/assign; the only Intune role that can assign permissions to administrators",S-kv5b4jlr
-Policy and Profile Manager,"Manages compliance policy, configuration profiles, Apple enrollment, corporate device identifiers, security baselines",Device configuration and compliance policy read/write,S-kv5b4jlr
+Intune Role Administrator,Manages custom Intune roles and adds assignments for built-in Intune roles,Roles create/read/update/delete/assign; the only Intune role that can assign permissions to administrators,S-kv5b4jlr
+Policy and Profile Manager,"Manages compliance policy, configuration profiles, Apple enrollment, Android Enterprise enrollment profiles and corporate device identifiers",Device configuration and compliance policy read/write,S-kv5b4jlr
 Read Only Operator,Views user/device/enrollment/configuration/application information; cannot change Intune,Read-only across categories,S-kv5b4jlr
-School Administrator,Manages apps/settings/devices for groups in Intune for Education; can take remote actions incl. lock/restart/retire,"Remote tasks (lock, restart, retire), apps and device management for education groups",S-kv5b4jlr
-Cloud PC Administrator,"Read and write access to all Cloud PC features (requires Windows 365 subscription; not available by default)",Cloud PC read/write,S-kv5b4jlr
-Cloud PC Reader,"Read access to all Cloud PC features (requires Windows 365 subscription; not available by default)",Cloud PC read-only,S-kv5b4jlr
+School Administrator,Manages apps and settings for their groups; can take remote actions incl. lock/restart/retire,"Remote tasks (lock, restart, retire), apps and device configuration for their groups",S-kv5b4jlr
+Cloud PC Administrator,"Manages all aspects of Cloud PCs such as OS images, Azure network connections and provisioning (shown only when the tenant has a Windows 365 subscription; not available by default)",Cloud PC read/write,S-kv5b4jlr;S-azc2jgah
+Cloud PC Reader,Views Cloud PC data in the Windows 365 node of Intune but cannot make changes (shown only when the tenant has a Windows 365 subscription; not available by default),Cloud PC read-only,S-kv5b4jlr;S-azc2jgah

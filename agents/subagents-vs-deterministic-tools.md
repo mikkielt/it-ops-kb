@@ -3,7 +3,7 @@ topic: agents/subagents-vs-deterministic-tools
 priority: P1
 applies_to: "Claude Code / Agent Skills (2026-09 docs), MCP spec 2025-06-18, Microsoft Agent Framework 1.0 (GA 2026-04-03)"
 retrieved_utc: 2026-09-25
-sources: [S1920, S1921, S1922, S1923, S1924, S1925, S1926, S1927, S1928, S1929, S1930, S1931, S1932, S1933, S1934, S1935, S1936, S1937, S1938, S1939, S1940, S1941, S1942, S1943, S1944, S1945]
+sources: [S1920, S1921, S1922, S1923, S1924, S1925, S1926, S1927, S1928, S1930, S1931, S1932, S1934, S1935, S1936, S1937, S1938, S1939, S1940, S1941, S1942, S1943, S1944, S1945, S-teeldzof]
 status: complete
 ---
 
@@ -13,10 +13,10 @@ status: complete
 
 Anthropic's own guidance is: prefer a workflow (predefined code paths) over an agent unless the outcome
 space is genuinely open-ended, because agents are 4x the token cost of chat and multi-agent designs are
-15x — with a documented 90.2% quality gain and a measured 80% of that gain explained by token volume
-alone. Its "code execution with MCP" pattern cut one task from 150,000 to 2,000 tokens (98.7%) by keeping
-tool outputs out of the model's context entirely, which is the same intermediate-result-isolation job a
-subagent used to do. MCP's `outputSchema`/`structuredContent`/annotations give a deterministic tool the
+15x — with a documented 90.2% quality gain on its research eval, and token usage alone explaining 80% of
+performance variance on BrowseComp. Its "code execution with MCP" pattern cut one task from 150,000 to
+2,000 tokens (98.7%) by letting the agent load only the tool definitions it needs; the same pattern also
+filters intermediate results in code before they reach the model, the isolation job a subagent used to do. MCP's `outputSchema`/`structuredContent`/annotations give a deterministic tool the
 typed, auditable interface a subagent's free-text output cannot. A task-management skill built on a
 stdlib script that resolves eligibility from fixed headers, never guessing on an unparseable one, is a
 worked example of this kind of deterministic tool; the parts of such a skill that stay model-driven do so
@@ -41,22 +41,26 @@ because no observed failure yet justifies scripting them.
 - Anthropic's own named multi-agent failure modes: excessive subagent spawning on simple queries,
   duplicated work from vague task descriptions, agents preferring SEO content over authoritative sources,
   and needless slowness from non-parallel execution. [DOC S1921]
-- Code execution with MCP: presenting MCP tools as on-disk/importable code and letting the agent write code
-  to call and filter results cut one Drive→Salesforce task from 150,000 to 2,000 tokens (98.7%). [DOC S1922]
-- Independent (non-Anthropic) replications: 78.5% input-token cut (165K→771K reduction ratio, GPT-4.1);
-  43,588→27,297 tokens (37%) on a complex research task; 58% savings at 96 tools scaling to 92.8% at 508
-  tools in a separate report. [COMMUNITY S1931, S1932, S1934]
+- Code execution with MCP: presenting MCP servers as code APIs on a filesystem, so the agent reads only the
+  tool definitions it needs for the task, cut one Drive→Salesforce task from 150,000 to 2,000 tokens
+  (98.7%). [DOC S1922]
+- Independent (non-Anthropic) tests: AIMultiple measured 78.5% fewer input tokens (165K vs 771K, GPT-4.1);
+  Bifrost's savings grew from 58% at 96 tools to 92.8% at 508 tools. [COMMUNITY S1931, S1932]
+- The same secondary write-up reports Anthropic's Programmatic Tool Calling at 43,588→27,297 average
+  tokens (37%) on complex research tasks. [COMMUNITY S1932]
 - OpenAI's practical guide: maximize a single agent with tools first; split into multiple agents only on
   complex conditional logic or overlapping tool responsibilities; names the **manager** pattern (one
   central agent calls specialists as tools) and the **decentralized** pattern (peers hand off outright).
   [DOC S1924, S1941]
 - Microsoft Azure Architecture Center: complexity spectrum "direct model call → single agent with tools →
   multi-agent orchestration," rule "use the lowest level of complexity that reliably meets your
-  requirements"; lists sequential, concurrent, group-chat/maker-checker, handoff and magentic patterns, and
-  ranks orchestrator-worker (matching Anthropic's own architecture) first for production. [DOC S1925]
-- Microsoft Agent Framework (GA 2026-04-03, MIT, Python/.NET) ships stable Sequential, Group Chat and
-  Magentic-One orchestration with OpenTelemetry observability and middleware for content-safety/logging
-  injection without touching prompts. [DOC S1938, S1939; COMMUNITY S1940]
+  requirements"; lists sequential, concurrent, group-chat/maker-checker, handoff and magentic patterns. [DOC S1925]
+- Microsoft Agent Framework (MIT, Python/.NET) combines agents, workflows with explicit multi-agent
+  execution paths, middleware for intercepting agent actions, and OpenTelemetry observability.
+  [DOC S1938, S1939]
+- Agent Framework 1.0 reached GA on 2026-04-03 with stable Sequential, Group Chat and Magentic-One
+  orchestration patterns and a middleware pipeline that injects logic (e.g. content safety) into the
+  agent loop without touching prompts. [COMMUNITY S1940]
 - Cognition, "Don't Build Multi-Agents" (2025-06-12): subagents fail because they act on incomplete shared
   context — "actions carry implicit decisions, and conflicting decisions carry bad results" — recommends
   single-threaded linear agents by default, with LLM-based history compression only past one context
@@ -73,19 +77,22 @@ because no observed failure yet justifies scripting them.
   cost of doing one step by subagent instead of by a single deterministic tool call. [DER from S1921:
   derivation — whole-task multipliers bound the per-step cost of choosing agent-driven execution over a
   fixed call]
-- **Error compounding / runaway cost**: Anthropic names a subagent recursively spawning more subagents as
-  an observed failure mode of its own architecture and states the published design has no circuit breaker
-  or per-run cap; a secondary source estimates such a runaway or an oversized tool result can multiply cost
-  by "another 10x or more" on top of the 15x baseline. [DOC S1921 for the failure mode; COMMUNITY S1930 for
-  the 10x figure]
-- **Auditability**: "an LLM-based filter deciding something looks fine... doesn't generate a record that
-  holds up in a SOC 2 audit"; recommendation is to compose deterministic flows in code and wrap multi-step
-  orchestration into single composite tools rather than have the model sequence calls, removing
-  sequential-dependency errors and producing a verifiable record. [COMMUNITY S1945, S1944]
+- **Error compounding / runaway cost**: Anthropic reports its early agents spawning 50 subagents for
+  simple queries, an observed failure mode of its own architecture. [DOC S1921]
+- A secondary write-up says a subagent that recursively spawns more subagents, or a tool that returns
+  oversized results, can multiply a query's cost by "another 10x or more" on top of the 15x baseline, and
+  that the published architecture has no circuit breakers or per-run caps. [COMMUNITY S1934]
+- **Auditability**: when an LLM decides "this looks fine," it "doesn't generate a record that holds up in
+  a SOC 2 audit"; the vendor recommends deterministic rules enforced at the tool-call layer, each decision
+  logged with the tool call, arguments and rule that fired. [COMMUNITY S1945]
+- Composing deterministic flows in code and wrapping multi-step orchestration into single composite tools,
+  rather than having the model sequence calls, removes sequential-dependency errors and yields a
+  verifiable record. [COMMUNITY S1944]
 - **Need for confirmation**: MCP puts human-in-the-loop at protocol level regardless of agent-vs-tool
-  framing — servers "SHOULD" always keep a human able to deny invocations; clients "SHOULD" prompt for
-  confirmation on sensitive operations. A deterministic tool's fixed schema is easier to gate this way than
-  a subagent's not-yet-known call sequence. [DOC S1928]
+  framing — there "SHOULD" always be a human in the loop able to deny tool invocations, and applications
+  "SHOULD" present confirmation prompts for operations. [DOC S1928]
+- A deterministic tool's fixed schema is easier to gate this way than a subagent's not-yet-known call
+  sequence. [DER S1928: confirmation prompts attach to known, declared tools]
 - **Eval pass rate**: Anthropic's method tracks task success alongside runtime, tool-call count, token
   consumption and error rate, but publishes no numeric pass-rate threshold that should trigger converting
   an agentic step to a deterministic tool — left to the operator's own baseline. [DOC S1935 for method;
@@ -99,27 +106,32 @@ because no observed failure yet justifies scripting them.
 ### QG15 — migration patterns
 - **To an MCP tool**: consolidate the subagent's fixed call sequence into one tool with a combined
   `inputSchema`; `outputSchema` lets the server's `structuredContent` be schema-validated instead of
-  free text the model must re-parse each run. [DOC S1928]
-- **Tool annotations replace some subagent judgment**: `readOnlyHint`/`destructiveHint`/`idempotentHint`/
-  `openWorldHint` let a host auto-approve safe reads and force confirmation on destructive calls
-  deterministically — though the spec requires annotations be treated as untrusted unless the server
-  itself is trusted. [DOC S1928]
+  free text the model must re-parse each run. [DOC S1928, S1935]
+- **Tool annotations replace some subagent judgment**: `readOnlyHint` (does not modify its environment),
+  `destructiveHint`, `idempotentHint` and `openWorldHint` describe tool behaviour to clients — but they are
+  hints only, clients MUST treat them as untrusted unless they come from trusted servers, and should never
+  base tool-use decisions on annotations from untrusted servers. [DOC S1928, S-teeldzof]
+- A host can use such hints from a trusted server to auto-approve reads and force confirmation on
+  destructive calls deterministically. [DER S-teeldzof: readOnlyHint/destructiveHint semantics applied to an
+  approval policy]
 - **To a skill with scripts**: Anthropic draws the line explicitly — "sorting a list via token generation
   is far more expensive than simply running a sorting algorithm"; many applications "require the
   deterministic reliability that only code can provide." A skill script's *output*, not its source, enters
   context (example given: ~20 tokens instead of ~2,000). [DOC S1936, S1937]
 - **Progressive disclosure vs a subagent for isolation**: three tiers — always-loaded frontmatter, SKILL.md
-  body loaded once relevant, referenced resource files loaded only as needed — give "effectively unbounded"
-  skill complexity without a subagent's fresh-context startup cost or lost conversation history. [DOC S1936]
-- **To code execution over MCP**: exposing tools as files/modules the agent explores and calls from written
-  code removes the round-trip of every intermediate result through the model — the same isolation job a
-  subagent used to do — behind the 150,000→2,000 token (98.7%) reduction figure. [DOC S1922]
+  body loaded once relevant, referenced resource files loaded only as needed — make the context bundled
+  into a skill "effectively unbounded", since the agent reads files only as needed. [DOC S1936]
+- **To code execution over MCP**: exposing tools as code the agent explores and calls from written code
+  lets it load tool definitions on demand (the 150,000→2,000 token, 98.7% figure) and filter or transform
+  intermediate results in the execution environment before they reach the model — the same isolation job
+  a subagent used to do. [DOC S1922]
 - **Keeping behaviour equal — record/replay/compare**: no fetched vendor page names this workflow for an
   agent→tool migration specifically; third-party eval tooling documents the general technique: Promptfoo's
-  coding-agent guide runs a fixed task set against a build and asserts on outcomes in CI; a community tool
-  (AgentInspect) diffs "the full agent trajectory — tool calls, parameters, sequence, output, cost — against
-  a golden baseline," the applicable pattern for proving a new deterministic tool reproduces a removed
-  subagent's behaviour. [COMMUNITY S1942, S1943]
+  coding-agent guide runs a fixed task set against a build and asserts on outcomes in CI; a community
+  write-up of AgentInspect checks an agent's trajectory (the tool-call sequence) and recorded error spans
+  alongside the final answer, showing two runs with the same answer but different execution paths — the
+  applicable pattern for proving a new deterministic tool reproduces a removed subagent's behaviour.
+  [COMMUNITY S1942, S1943]
 - **Claude Code's own decision rule**: use a subagent "when a side task would flood your main conversation
   with search results, logs, or file contents you won't reference again"; "consider Skills instead when you
   want reusable prompts or workflows that run in the main conversation context" — the vendor's rule is
@@ -163,7 +175,7 @@ because no observed failure yet justifies scripting them.
 |---|---|---|
 | Single agent w/ tools | ~4x | S1921 |
 | Multi-agent (orchestrator + subagents) | ~15x | S1921 |
-| Multi-agent + runaway/oversized result | ~15x × "another 10x or more" (uncapped in published design) | S1921 (failure mode), S1930 (multiplier, COMMUNITY) |
+| Multi-agent + runaway/oversized result | ~15x × "another 10x or more" (secondary estimate) | S1934 (COMMUNITY) |
 | Code execution over MCP (one measured task) | 150,000 → 2,000 tokens (98.7% reduction) | S1922 |
 
 ## Examples

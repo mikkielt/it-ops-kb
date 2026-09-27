@@ -1,5 +1,5 @@
 action,endpoint,app_permission,delegated_permission,body_params,rate_limit,source_id
-Isolate,POST /api/machines/{id}/isolate,Machine.Isolate,Machine.Isolate,"Comment (required), IsolationType (required: Full/Selective/UnManagedDevice)",100/min 1500/h,S-ipjyevd4
+Isolate,POST /api/machines/{id}/isolate,Machine.Isolate,Machine.Isolate,"Comment (required), IsolationType (Full/Selective/UnManagedDevice)",100/min 1500/h,S-ipjyevd4
 Unisolate,POST /api/machines/{id}/unisolate,Machine.Isolate,Machine.Isolate,Comment (required),100/min 1500/h,S-7zqska24
 RestrictCodeExecution,POST /api/machines/{id}/restrictCodeExecution,Machine.RestrictExecution,Machine.RestrictExecution,Comment (required),100/min 1500/h,S-irvlwznc
 UnrestrictCodeExecution,POST /api/machines/{id}/unrestrictCodeExecution,Machine.RestrictExecution,Machine.RestrictExecution,Comment (required),100/min 1500/h,S-drrejdmz

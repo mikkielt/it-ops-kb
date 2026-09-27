@@ -3,7 +3,7 @@ topic: graph/tcm-apis
 priority: P3
 applies_to: "Microsoft Graph v1.0 and beta, Tenant Configuration Management (docs-contrib @ 4ad99fd3, metadata @ b8cbef92)"
 retrieved_utc: 2026-09-26
-sources: [S940, S941, S942, S943, S944, S945, S946, S947, S948, S949, S950, S951, S952, S953, S954, S955, S956, S957]
+sources: [S940, S941, S942, S943, S944, S945, S946, S947, S948, S949, S950, S951, S952, S953, S954, S955, S956, S957, S-b254clmj, S-kkjfoqcq, S-iqgnl5eu, S-wt4gwfbs, S-bpw5jqqu, S-jyf5znt2, S-uvavmxwe, S-nmejqpqf, S-vbygwljt, S-jmkuh33h, S-loe5y6ph, S-764hwjk5, S-qdep2dpy, S-hm5x2mzz]
 status: complete
 files: [graph/tcm-csdl-v1.0.xml, graph/tcm-csdl-beta.xml]
 ---
@@ -18,13 +18,13 @@ snapshots max 20,000 resources/month, 12 visible jobs, 7-day retention. It cover
 
 ## Facts
 - Supported workloads: Microsoft Defender, Microsoft Entra, Exchange Online, Intune, Purview, Teams. [DOC S940]
-- Resources exist in v1.0 (`Namespace: microsoft.graph`) as well as beta; the v1.0 and beta API overview pages differ only in the beta disclaimer. [DOC S942, S943]
+- Resources exist in v1.0 (`Namespace: microsoft.graph`) as well as beta; the beta API overview page has the same text as v1.0, with the beta disclaimer in place of the `Namespace` line. [DOC S942, S943]
 - The v1.0 and beta CSDL both define `configurationMonitor`, `configurationMonitoringResult`, `configurationDrift`, `configurationSnapshotJob`, `configurationBaseline`, `driftedProperty`. [DOC S956, S957]
-- Admins must first add the TCM service principal (appId `03b07b79-c5bc-4b5e-9bfa-13acf4a99998`) to the tenant and grant it permissions; the `M365 Admin Services` SP (`6b91db1b-f05b-405a-a0b2-e3f60b28d645`) must also exist. [DOC S941]
+- Admins must first add the TCM service principal (appId `03b07b79-c5bc-4b5e-9bfa-13acf4a99998`) to the tenant and grant it permissions; customers should also make sure the `M365 Admin Services` SP (`6b91db1b-f05b-405a-a0b2-e3f60b28d645`) is provisioned in the tenant. [DOC S941]
 - The setup page says this service principal step applies "during public preview". [DOC S941]
 - Graph permissions: monitor management — delegated any privileged role, or application `ConfigurationMonitoring.Read.All` / `ConfigurationMonitoring.ReadWrite.All`; snapshots — `ConfigurationMonitoring.ReadWrite.All`. [DOC S941]
 - List drifts: least-privileged `ConfigurationMonitoring.Read.All` (delegated work/school and application); personal accounts not supported. [DOC S951]
-- Create monitor and create snapshot: `ConfigurationMonitoring.ReadWrite.All` only. [DOC S952, S954]
+- Create monitor and create snapshot: `ConfigurationMonitoring.ReadWrite.All` only. [DOC S952, S-b254clmj]
 - Up to 30 `configurationMonitor` objects per tenant. [DOC S942]
 - Each monitor runs at a fixed six-hour interval; frequency cannot be changed. [DOC S942]
 - Monitors are picked up at 06:00, 12:00, 18:00 and 00:00 GMT; a new or updated monitor runs at the next slot. [DOC S944]
@@ -47,7 +47,7 @@ snapshots max 20,000 resources/month, 12 visible jobs, 7-day retention. It cover
 PowerShell-based, resource-level tenant configuration export/drift monitoring (a different mechanism than these Graph
 APIs): `graph/microsoft365dsc.md`.
 
-Endpoints (v1.0 and beta; base `https://graph.microsoft.com/{v1.0|beta}`) [S942, S953, S954]:
+Endpoints (v1.0 and beta; base `https://graph.microsoft.com/{v1.0|beta}`; the same method pages exist under beta) [S953, S954, S-kkjfoqcq, S-iqgnl5eu, S-wt4gwfbs, S-bpw5jqqu, S-jyf5znt2, S-uvavmxwe, S-nmejqpqf, S-vbygwljt, S-jmkuh33h, S-loe5y6ph, S-764hwjk5, S-qdep2dpy, S-hm5x2mzz]:
 
 | Method | Path |
 |---|---|

@@ -29,7 +29,7 @@ status: complete
 - `Microsoft.Windows/Service` 0.1.1 (3.3.0 zip): `set.args` = `["set", {jsonInputArg: --input, mandatory}, {whatIfArg: "--what-if"}]`, `implementsPretest: false`, `whatIfReturns: state`, `requireSecurityContext: elevated`. [DOC S114]
 - `windows_service.exe` reads `--what-if`/`-w` from its args. In what-if, `_exist: false` is routed to a delete simulation (`what_if_delete_service`); otherwise it calls `set_service(input, what_if)`. [DOC S138]
 - `Microsoft.Windows/FirewallRuleList` 0.3.0 (3.3.0 zip): `set.args` includes `{whatIfArg: "--what-if"}`, `implementsPretest: true`, `handlesExist: true`, `whatIfReturns: state`, `requireSecurityContext: elevated`. [DOC S114]
-- `windows_firewall.exe` `set_rules(input, what_if)` returns projected rules with `_metadata.whatIf` messages (create, remove, remove unspecified rule) and does not apply them. [DOC S139]
+- `windows_firewall.exe` `set_rules(input, what_if)` in what-if returns projected rules instead of changing the store; create, remove, remove-unspecified and disable-unspecified cases carry a what-if message in the rule's metadata. [DOC S139]
 - `Microsoft.Windows/UpdateList` has no what-if in 3.3.0 (0.1.0; synthetic path). Native what-if arrives in 3.4.0-preview.1 (0.1.1). [DOC S114,S115]
 
 ## Reference
@@ -42,7 +42,7 @@ What-if mode per type, from the saved 3.3.0 manifests (full table in `manifests-
 | error (pretest, no what-if) | Microsoft.Adapter/PowerShell, Microsoft.Adapter/WindowsPowerShell, Microsoft.DSC/PowerShell, Microsoft.DSC.Transitional/PowerShellScript, /WindowsPowerShellScript, /RunCommandOnSet, Microsoft.DSC/Group, /Assertion, /Include |
 | n/a (no set) | Microsoft.Windows/RebootPending, Microsoft/OSInfo |
 
-Adapter and group rows follow from their own manifests. Resources run *through* an adapter take the adapter's set path. [DER S105,S114: `invoke_set_with_adapter` dispatch plus the adapter manifest flags]
+Adapter and group rows follow from their own manifests. Resources run *through* an adapter take the adapter's set path. [DER S105,S114: `invoke_set` takes the what-if path from the adapter's own manifest (`resource.manifest`), with the adapted resource passed as `target_resource`, plus the adapter manifest flags]
 
 ## Examples
 ```powershell

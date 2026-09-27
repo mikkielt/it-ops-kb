@@ -3,7 +3,7 @@ topic: auth/audit-events
 priority: P1
 applies_to: "AD DS, Entra ID, Microsoft Graph, ConfigMgr, SQL Server, GitLab"
 retrieved_utc: 2026-09-26
-sources: [S1357, S1358, S1359, S1360, S1361, S1362, S1363, S1364, S1365, S1366, S1367, S1368, S1369, S1370, S1371, S1372, S1373, S1374, S1347]
+sources: [S1357, S1358, S1359, S1360, S1361, S1362, S1363, S1364, S1365, S1366, S1367, S1368, S1369, S1370, S1371, S1372, S1373, S1374, S1347, S-2lkr2v7m, S-vudqagwn, S-2gxpfnjz, S-rm7qmev7, S-srnmxykl, S-h2gj3bko, S-fzswb76a, S-mubyxer3]
 status: complete
 ---
 
@@ -19,20 +19,24 @@ for it; it belongs to the base kb's `graph/` topic.
 - Windows's `Audit Security Group Management` subcategory covers the create/change/delete/member-add/
   member-remove events for local (4731-4735), global (4727-4730, 4737) and universal (4754-4758) security
   groups; 4728/4729 are the global-group member add/remove events, 4732/4733 the local-group ones, and
-  4756/4757 the universal-group ones -- all four SID-scope variants share the same event schema, differing
-  only by group type. [DOC S1363]
-- `Audit User Account Management` covers account create/enable/disable/delete/change/lock/unlock (4720,
-  4722, 4725, 4726, 4738, 4740, 4767) and password/SID-history/ACL events (4723, 4724, 4765, 4766, 4780,
-  4781, 4794); some of these (4722, 4724, 4725, 4781) are also generated for computer accounts, not just
-  user accounts. [DOC S1364]
+  4756/4757 the universal-group ones -- the global and universal variants have the same fields, XML and
+  recommendations as the local-group events, differing only by group type, and are generated only for
+  domain groups. [DOC S1363]
+- `Audit User Account Management` covers account create/enable/disable/delete/change/lock-out/unlock (4720,
+  4722, 4725, 4726, 4738, 4740, 4767), rename (4781), password change/reset attempts (4723, 4724), SID
+  History (4765, 4766), the ACL set on members of administrators groups (4780) and the DSRM administrator
+  password (4794); some of these (4722, 4724, 4725, 4781) are also generated for computer accounts, not
+  just user accounts. [DOC S1364]
 - `Audit Kerberos Authentication Service` covers 4768 (TGT requested) and 4771 (Kerberos pre-authentication
   failed); `Audit Kerberos Service Ticket Operations` covers 4769 (service ticket requested) -- these are
   the DC-side events a workstation client's Kerberos authentication to AdminService/SQL would generate.
   [DOC S1365, S1366]
-- `Audit Directory Service Changes` (event 5136) records the old and new values of a modified AD attribute,
-  and `Audit Directory Service Access` (event 4662) records per-object/per-property access; both need a
-  SACL configured on the object, so security-sensitive groups need an explicit SACL to get 5136/4662
-  coverage of membership changes beyond the simpler 4728/4729/4732/4733/4756/4757 events. [DOC S1369, S1370]
+- `Audit Directory Service Changes` (event 5136) can record the old and new properties of a modified AD
+  object and generates events only for objects with a configured SACL, on domain controllers only;
+  `Audit Directory Service Access` (event 4662, "an operation was performed on an object") is generated
+  only when a matching SACL is set on the AD object, and its Properties field lists the classes or
+  property sets operated on; so security-sensitive groups need an explicit SACL to get 5136/4662 coverage
+  beyond the simpler 4728/4729/4732/4733/4756/4757 events. [DOC S1369, S1370, S-2lkr2v7m]
 - With the three `Network security: Restrict NTLM` audit policies enabled, NTLM use is logged to the
   dedicated `Applications and Services Logs > Microsoft > Windows > NTLM > Operational` channel, separate
   from the Security log: events 8001-8006 (8001 outgoing on the client; 8002 incoming without DC validation;
@@ -44,9 +48,12 @@ for it; it belongs to the base kb's `graph/` topic.
   `client` engineer's interactive Kerberos/MSAL sign-in, a `site` instance's app-only certificate sign-in,
   and any managed-identity-based sign-in (Appendix A / Arc, if ever adopted) land in different log
   categories that must each be watched. [DOC S1360, S1361, S1362]
-- ConfigMgr's audit status messages are generated automatically by the SMS Provider whenever an
-  administrative user's action adds, modifies or deletes an object; they are queryable as
-  `SMS_StatusMessage` WMI instances or through the console's Status Message queries. [DOC S1372] The
+- ConfigMgr's audit status messages (`SMS_StatusMessage.MessageType` 768) are a trail of actions taken
+  by the ConfigMgr administrator, including operations that add, modify or delete objects, and the SMS
+  Provider generates them automatically. [DOC S-2gxpfnjz]
+- Status messages are read by querying the SMS Provider for `SMS_StatusMessage` instances [DOC S1372];
+  the console's Status Message Queries show when an object was modified and the account used (for
+  example the built-in "Collections Created, Modified, or Deleted" query). [DOC S-rm7qmev7] The
   specific numeric id ranges most audit actions fall into (commonly cited as beginning around 30000) come
   from Microsoft-authored TechCommunity guidance rather than a single enumerated Learn reference table, so
   that detail is tagged `COMMUNITY` here pending a primary source. [COMMUNITY S1373]

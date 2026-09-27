@@ -3,7 +3,7 @@ topic: dsc/settings-and-paths
 priority: P0
 applies_to: "Microsoft DSC 3.3.0 (release/v3.3 @ ea572fa)"
 retrieved_utc: 2026-09-26
-sources: [S101, S106, S107, S114, S126, S127, S128]
+sources: [S101, S106, S107, S114, S126, S127, S128, S140]
 status: complete
 ---
 
@@ -18,12 +18,12 @@ status: complete
 ## Facts
 - File names and order: `dsc_default.settings.json` (value read under root key `"1"`), then `dsc.settings.json`; both are looked up in the folder of the dsc executable (symlinks are resolved). [DOC S107]
 - Policy path on Windows: `$env:ProgramData\dsc\dsc.settings.json`. On other OSes: `/etc/dsc/dsc.settings.json`. [DOC S107]
-- If the policy folder exists but `verify_windows_acl` fails (write access must be only SYSTEM and Administrators), dsc warns "Policy folder '<path>' is not secure, settings file will not be used" and ignores it. [DOC S107]
+- If the policy folder exists but `verify_windows_acl` fails (write access must be only SYSTEM and Administrators), dsc warns "Policy folder '<path>' is not secure, settings file will not be used" and ignores it. [DOC S107, S140]
 - `DSC_IGNORE_SETTINGS_FILE` (set to `1` by `--ignore-settings-file`) makes `get_setting` return empty before any file, including the policy file, is read. [DER S107,S128: early return precedes the policy lookup]
 - Shipped defaults (both zips): `resourcePath: {allowEnvOverride: true, appendEnvPath: true, directories: []}`, `tracing: {level: WARN, format: Default, allowOverride: true}`. [DOC S127,S114]
 - Resource path resolution: a policy `resourcePath` replaces the settings one. Then, if `allowEnvOverride` and `DSC_RESTRICTED_PATH` is set, dsc searches only those paths and sets process `PATH` to them. Else, if `allowEnvOverride` and `DSC_RESOURCE_PATH` is set, dsc searches those paths and adds its own folder to `PATH`. Else it searches `directories`, plus `PATH` when `appendEnvPath`, plus its own folder. [DOC S106]
 - Tracing level precedence: settings/policy `tracing`, then `DSC_TRACE_LEVEL` env var if `allowOverride`, then command-line `-l`/`-t`. The command line does not override a policy. [DOC S107,S101]
-- `DSC_CONFIG_ROOT` is set by dsc to the folder of the configuration file (used by path functions). [DOC S101]
+- `DSC_CONFIG_ROOT` is set by dsc to the folder of the configuration file, so that child processes of resources can use it (dsc warns if it is already set). [DOC S101]
 - Open issue #1053 "Doc: DSC_RESOURCE_PATH" (Issue-Bug label). [DOC S126]
 
 ## Reference

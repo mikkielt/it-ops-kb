@@ -3,7 +3,7 @@ topic: logs/microsoft-sentinel
 priority: P2
 applies_to: "Microsoft Sentinel (Defender portal unified SecOps and Azure portal), docs ms.date through 2026-09"
 retrieved_utc: 2026-09-26
-sources: [S-qmi72hvd, S-56eqdqa6, S-btmphtyp, S-6c6jslfs, S-cmyl6p5v, S-guca45p3, S-etccrdda, S-hya3uz6p, S-34uiuy35, S-tf6fezvb, S-vjefvouf, S-ur2l6cs3, S-luprngvc, S-me4bxp52, S-ycrujjsf, S-5kjwbj3c, S-ofreafga, S-w47nempm]
+sources: [S-qmi72hvd, S-56eqdqa6, S-btmphtyp, S-6c6jslfs, S-cmyl6p5v, S-guca45p3, S-etccrdda, S-hya3uz6p, S-34uiuy35, S-tf6fezvb, S-vjefvouf, S-ur2l6cs3, S-luprngvc, S-me4bxp52, S-ycrujjsf, S-5kjwbj3c, S-ofreafga, S-w47nempm, S-3dcvyq2z, S-r4klpeuf, S-apxtyshr, S-hvr4bpb2, S-qkyfycn6, S-vicgida6]
 status: partial
 ---
 
@@ -44,7 +44,7 @@ tables are in `defender/advanced-hunting.md`.
 - Onboarding a Log Analytics workspace to Sentinel (Azure portal): search **Microsoft Sentinel**, **Create**, pick
   the workspace, **Add**; Defender for Cloud's own default workspaces cannot host Sentinel, and once deployed on a
   workspace, Sentinel does not support moving that workspace to another resource group or subscription. [DOC
-  S-qmi72hvd]
+  S-r4klpeuf]
 - Integrating Defender XDR with Sentinel (Azure-portal-only customers) streams all Defender XDR incidents and
   advanced hunting events into Sentinel and keeps incidents bi-directionally synced between the Azure and Defender
   portals. [DOC S-tf6fezvb]
@@ -56,10 +56,10 @@ tables are in `defender/advanced-hunting.md`.
 - Two AMA/DCR-based connectors feed Sentinel-specific tables: **Windows Security Events via AMA** (populates
   `SecurityEvent`, offers prebuilt Common/Minimal event sets or custom XPath) and **Syslog/CEF via AMA**
   (`Microsoft-Syslog` / `Microsoft-CommonSecurityLog` streams); see `logs/azure-monitor-agent.md` for DCR structure,
-  XPath syntax and installation. [DOC S-luprngvc, S-me4bxp52]
+  XPath syntax and installation. [DOC S-luprngvc, S-me4bxp52, S-3dcvyq2z]
 - Installing the Azure Activity solution's connector is the quickstart's example flow: **Content hub** page, find
   and select the solution, **Install**, then configure the data connector from the Defender or Azure portal. [DOC
-  S-qmi72hvd]
+  S-r4klpeuf]
 - Data normalization (see ASIM below) runs at both query time and ingestion time to translate varied connector
   sources into a uniform, normalized view. [DOC S-56eqdqa6]
 
@@ -92,19 +92,19 @@ tables are in `defender/advanced-hunting.md`.
 - Once a tenant onboards the Sentinel data lake, auxiliary log tables disappear from Defender XDR Advanced Hunting
   and from the Azure portal's Sentinel UI; their data remains queryable only via data lake exploration KQL/Jupyter
   notebooks in the Defender portal. [DOC S-34uiuy35]
-- The Sentinel data lake stores data as open-format Parquet files, a single copy shared across Microsoft Sentinel
-  and other Microsoft Security products, with storage/compute separated and multiple analytics engines (KQL, Spark
-  notebooks) supported; onboarding provisions the lake in the same region as the primary Sentinel workspace and
-  also enables "graph" capabilities. [DOC S-hya3uz6p]
+- The Sentinel data lake stores data as open-format Parquet files in a single copy, with storage and compute
+  separated and multiple analytics engines (KQL queries, Jupyter notebooks) supported. [DOC S-hya3uz6p]
+- A tenant has one data lake usable with multiple Microsoft Security products; onboarding provisions it in the same
+  region as the primary Sentinel workspace and also enables graph capabilities. [DOC S-w47nempm, S-apxtyshr]
 - Deleting the billing subscription or resource group that hosts the data lake suspends data-lake experiences and
   stops ingestion after **3 days**; restoring requires re-running data lake setup (previously ingested data is
   restored). [DOC S-w47nempm]
 
 ### Analytics rules (Scheduled)
-- Two rule types cover most content: **Scheduled** rules (KQL query run on an interval against a lookback window;
-  alert fires if result count passes a threshold) and **Near-real-time (NRT)** rules; also Anomaly rules and
-  Microsoft security rules, plus specialized single-instance templates (Threat intelligence, Fusion multistage
-  attack detection, ML behavior analytics). [DOC S-ur2l6cs3]
+- Analytics rule types: **Scheduled** rules (by far the most common; KQL query run on an interval against a
+  lookback window, alert fires if result count passes a threshold), **Near-real-time (NRT)** rules, Anomaly rules
+  and Microsoft security rules, plus specialized templates that each create one rule instance (Threat intelligence,
+  Fusion multistage attack detection, ML behavior analytics). [DOC S-ur2l6cs3]
 - Scheduled rule query scheduling: **Run query every** (interval) and **Lookup data from the last** (lookback), both
   ranging **5 minutes to 14 days**; the interval must be ≤ the lookback (rule validation blocks a longer interval,
   which would leave coverage gaps). [DOC S-6c6jslfs]
@@ -132,17 +132,17 @@ tables are in `defender/advanced-hunting.md`.
 
 ### NRT (near-real-time) rules
 - NRT rules are hard-coded to run **once per minute** with a fixed **one-minute lookback**; query scheduling and
-  alert threshold are not configurable (an alert is always generated on a match). [DOC S-cmyl6p5v]
+  alert threshold are not configurable (an alert is always generated on a match). [DOC S-cmyl6p5v, S-guca45p3]
 - NRT rules run on a **2-minute delay** (vs the 5-minute delay for scheduled rules) by querying on ingestion time
   rather than the source `TimeGenerated`, avoiding the scheduled-rule ingestion-delay tradeoff. [DOC S-cmyl6p5v]
 - NRT event grouping caps at **30 events** per run when "alert per event" is chosen: the first 29 events each get
   an alert, and a 30th alert summarizes the remaining events in the result set; NRT alerts should use `project` to
   include only necessary fields since alert size is limited. [DOC S-guca45p3]
-- Custom-detection vs. analytics-rule NRT comparison: Sentinel analytics-rule NRT tests events **after ingestion**
-  (not true streaming) and is **not sensitive to Defender XDR data** (Sentinel-analytics-tier data only), whereas
-  Defender custom detections' NRT (continuous) mode streams Defender XDR data directly; conversely, only analytics
-  rules support "determine rule's first run," native Sentinel automation-rule triggers, and up to 150-alert
-  grouping controls. [DOC S-6c6jslfs]
+- Custom-detection vs. analytics-rule comparison: Sentinel analytics-rule NRT tests events **after ingestion**
+  and analytics rules do **not** support Defender XDR data (Sentinel analytics tier only), whereas Defender custom
+  detections support NRT streaming (events tested as they stream, not sensitive to ingestion delays) and Defender
+  XDR data; conversely, only analytics rules support "determine rule's first run," Sentinel automation rules with
+  incident and alert triggers, and customizable alert-grouping logic. [DOC S-hvr4bpb2]
 
 ### ASIM (Advanced Security Information Model)
 - ASIM normalizes source-specific tables into standard schemas at **query time** (KQL user-defined-function
@@ -152,25 +152,24 @@ tables are in `defender/advanced-hunting.md`.
   `ASimUserManagementActivityLogs`, `ASimWebSessionLogs`). [DOC S-etccrdda]
 - Twelve ASIM normalized schemas: Agent Event, Alert Event, Audit Event, Authentication Event, DHCP Activity, DNS
   Activity, File Activity, Network Session, Process Event, Registry Event, User Management, Web Session; plus a
-  separate Asset Entity schema for asset inventories/change feeds (non-Microsoft data sources). [DOC S-etccrdda]
+  separate Asset Entity schema for normalizing asset inventories and change feeds. [DOC S-etccrdda]
 - Query-time parsers avoid modifying source data (parser fixes apply retroactively to existing data) but can slow
   queries on large datasets; this is why ASIM complements them with ingest-time normalization for the schemas
   listed above. [DOC S-etccrdda]
-- Built-in parsers ship in every workspace; source-specific/parameterized custom parsers follow the naming
-  convention `vim<Schema><Vendor><Product>` (filtering/parameterized) or `ASim<Schema><Vendor><Product>`
-  (parameter-less), and are added to the schema's unifying parser (e.g. `_Im_AlertEvent`, `imAuthentication`).
-  [DOC S-etccrdda]
+- Built-in parsers ship in every workspace, with the unifying parser named `_Im_<schema>`; custom parsers are
+  named `vim<Schema><Vendor><Product>` (filtering) or `ASim<Schema><Vendor><Product>` (parameter-less) and are
+  added to the schema's unifying parser (the Authentication schema's are `imAuthentication` and
+  `ASimAuthentication`). [DOC S-qkyfycn6, S-vicgida6]
 - Analytics rule query best practice: prefer an ASIM unifying parser over a native table name so the rule
   automatically extends to any current or future data source for that schema, without rule changes. [DOC S-6c6jslfs]
 
 ### Pricing concept
-- Analytics tier billing: **pay-as-you-go** (default; billed per GB of ingested data volume, 10^9 bytes, plus
-  optional retention beyond 90 days) or **commitment tiers** (formerly Capacity Reservations), starting at
-  **100 GB/day**; usage above the committed level bills at that tier's discounted effective per-GB rate. [DOC
+- Analytics tier billing: **pay-as-you-go** (default; based on the data volume stored, measured in GB of 10^9
+  bytes, plus optional retention beyond 90 days) or **commitment tiers** (formerly Capacity Reservations), starting
+  at **100 GB/day**; usage above the committed level bills at that tier's discounted effective per-GB rate. [DOC
   S-vjefvouf]
-- Commitment tier changes: increasing restarts a **31-day** commitment period immediately; decreasing back to
-  pay-as-you-go or a lower tier must wait until that 31-day commitment period ends; billing is daily. [DOC
-  S-vjefvouf]
+- Commitment tier changes: the tier can be increased at any time, but lowering it is allowed only every **31 days**;
+  ingestion and analysis are billed daily. [DOC S-vjefvouf]
 - Free trial: the first **10 GB/day** ingested via the Analytics logs plan is free for **31 days** on a Log
   Analytics workspace with Sentinel enabled (waives both Log Analytics ingestion and Sentinel analysis charges up
   to that limit); capped at **20 workspaces per Azure tenant**. [DOC S-vjefvouf]

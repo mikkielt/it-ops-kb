@@ -3,7 +3,7 @@ topic: agents/shared-ner-service
 priority: P1
 applies_to: "Presidio 2.2.364 (main, data-privacy-stack), Azure AI Language PII detection (Foundry Tools, 2026-08 docs), Amazon Comprehend, Google Sensitive Data Protection, GLiNER ONNX exports"
 retrieved_utc: 2026-09-26
-sources: [S2086, S2087, S2088, S2090, S2091, S2092, S2093, S2094, S2095, S2096, S2097, S2098, S2099, S2100, S2101, S2102, S2105, S2106, S2107, S2108, S2111, S2112, S-tks3v5p5, S-g33kybfp, S-gpnrqpjt, S-hocpkynn]
+sources: [S2086, S2087, S2088, S2090, S2091, S2092, S2093, S2094, S2095, S2096, S2097, S2098, S2099, S2100, S2101, S2102, S2105, S2106, S2107, S2108, S2111, S2112, S-tks3v5p5, S-g33kybfp, S-gpnrqpjt, S-hocpkynn, S-azdam24d, S-blcom642, S-clgh6hxa]
 status: partial
 ---
 
@@ -25,34 +25,35 @@ choice (Presidio + spaCy `en_core_web_lg`, in-process) is not itself re-argued h
 - **Presidio own service images.** New Presidio container releases publish to
   `ghcr.io/data-privacy-stack/presidio-analyzer` / `presidio-anonymizer`; the legacy
   `mcr.microsoft.com/presidio-*` images are no longer updated, so a consumer pinning the old registry
-  path is pinning a frozen image. The Presidio project is moving from Microsoft to the community-governed
-  Data Privacy Stack organization (`github.com/data-privacy-stack/presidio`); the Kubernetes Helm sample
-  pulls the default images from `ghcr.io/data-privacy-stack`. [DOC S2086, S2087, S-g33kybfp] The sample and
+  path is pinning a frozen image; for production the installation guide prefers pinning an explicit
+  release tag. Presidio is transitioning to a community-owned project under the Data Privacy Stack
+  organization (`github.com/data-privacy-stack/presidio`); the Kubernetes Helm sample
+  pulls the default images from `ghcr.io/data-privacy-stack`. [DOC S-azdam24d, S-clgh6hxa, S2087, S-g33kybfp] The sample and
   evaluation pages cited here now live under `presidio.dataprivacystack.org`; their old
   `microsoft.github.io/presidio/...` paths returned 404 on 2026-09-26. [DER S-tks3v5p5, S-g33kybfp, S-gpnrqpjt: direct fetch of old and new urls]
 - Presidio's Docker sample exposes each service as a Flask REST endpoint: the analyzer on port 5002
-  (`POST /analyze`) and the anonymizer on port 5001 (`POST /anonymize`). [DOC S-tks3v5p5]
+  (`POST /analyze`) and the anonymizer on port 5001 (`POST /anonymize`). [DOC S-tks3v5p5, S2086]
 - Presidio's documented deployment targets for the analyzer/anonymizer REST services are Docker Compose,
   Kubernetes/AKS, and Azure App Service; the App Service sample is also what the Presidio team uses for
-  its own demo site and dev environment. [DOC S2086, S2088, S-g33kybfp]
+  its own demo site and dev environment. [DOC S-azdam24d, S2088, S-g33kybfp]
 - Presidio's Kubernetes sample installs locally with KIND or as a Helm-deployed service on Kubernetes 1.18+
   with RBAC (AKS enables RBAC by default), with an NGINX ingress by default; its only sizing guidance is a
   note to check the pods' CPU and memory requirements and plan the cluster accordingly — no autoscaling
   guidance and no published requests/sec or p95 latency figure. [DOC S-g33kybfp — no numeric throughput
   found, see `gaps.md`]
-- Presidio documents a batch path distinct from its REST service: a Spark/Azure Data Factory sample that
-  anonymizes files at rest in Azure Blob Storage for large-dataset (Databricks-scale) jobs, i.e. batch
-  and the interactive REST endpoint are two separate documented deployment shapes, not one endpoint doing
-  both. [DOC S2090]
-- Presidio and its images are MIT-licensed (`Presidio Contributors`), so a shared internal deployment
-  carries no per-call licence fee; the operating cost is host/cluster compute only. [DOC S2086]
+- Presidio's Azure Data Factory sample documents two batch shapes: the pipeline calls Presidio's analyzer
+  and anonymizer REST endpoints (hosted on App Service, or another target such as Kubernetes) for each
+  document, or a Databricks Spark job runs Presidio as a Python package over files in Azure Blob Storage
+  when the dataset needs Databricks scale. [DOC S2090]
+- Presidio is MIT-licensed (copyright `Presidio Contributors`). [DOC S-blcom642]
+- So a shared internal Presidio deployment carries no per-call licence fee; the operating cost is
+  host/cluster compute only. [DER S-blcom642: the MIT licence grants use free of charge]
 - **Azure AI Language PII containers.** The on-premises container image is
   `mcr.microsoft.com/azure-cognitive-services/textanalytics/pii`; minimum host spec is 1 core/2 GB, the
   recommended spec is 4 cores/8 GB, and Microsoft recommends AVX-512 for best performance and accuracy —
   the only vendor-published hardware sizing figure found across the four cloud/managed options. [DOC S2091]
-- The container exposes REST endpoints on port 5000 (`/`, `/ready`, `/status`, `/swagger`) usable as
-  Kubernetes liveness/readiness probes, so it is designed to be run as a shared internal service, not
-  just a demo. [DOC S2091]
+- The container exposes REST endpoints on port 5000: a home page (`/`), `/ready` and `/status` (both
+  usable as Kubernetes liveness/readiness probes) and `/swagger` documentation. [DOC S2091]
 - The container is **not** offline-capable by default: it must reach Azure's billing endpoint, reports
   usage every 10-15 minutes, retries up to 10 times at that interval, and **stops serving requests** if it
   cannot reach the billing endpoint within that window — a documented fail-closed behaviour on connectivity
@@ -62,11 +63,15 @@ choice (Presidio + spaCy `en_core_web_lg`, in-process) is not itself re-argued h
   the licence has an expiration date after which the container stops validating. [DOC S2091]
 - Per-call data limit for the synchronous Text PII container API: **5,120 characters per document, up to
   10 documents per call**. [DOC S2091]
-- The cloud (non-container) Text PII API analyzes only the first 50,000 characters of an over-length
-  input and issues a warning rather than failing; conversational PII caps at 1,000 characters per
-  conversation *item* (not per whole conversation); document file-size limit is up to 10 MB. [DOC S2093
-  — figures as summarized via search index, not independently re-verified against the live page]
-  *(see `conflicts.md` for the 50,000-char figure's provenance)*
+- The cloud (non-container) service limits for PII: synchronous requests take up to 5,120 characters per
+  document and 5 documents per request (1 MB per request); an over-length document gets an invalid-document
+  error while the rest of the request is processed. Asynchronous requests take up to 125,000 characters
+  across at most 25 documents, and one over-length document rejects the whole request with HTTP 400.
+  Conversation PII caps at 1,000 characters per conversation *item* (not per whole conversation) and is
+  asynchronous only. [DOC S2093]
+- A cloud Text PII behaviour of analyzing only the first 50,000 characters with a warning, and a 10 MB
+  document file-size limit, were recorded earlier from a search summary. [UNK: not in S2093 as re-read
+  2026-09-27; see `conflicts.md`]
 - Explicit non-customization note: "Analysis is performed as-is, with no customization to the model used
   on your data" for the cloud PII feature family (text, conversation, document). [DOC S2092]
 - Text PII lists two supported API versions, stable **2026-05-01** (GA) and **2026-05-15-preview**, and marks
@@ -84,9 +89,11 @@ choice (Presidio + spaCy `en_core_web_lg`, in-process) is not itself re-argued h
 - **Amazon Comprehend** offers two relevant calls: `ContainsPiiEntities` (boolean/coarse) and
   `DetectPiiEntities` (per-entity offsets) over a single document; there is no Comprehend on-premises
   container in the sources found — it is API-only. [DOC S2097, S2098]
-- Comprehend PII coverage: 22 universal entity types (name, age, email, IP/MAC address, AWS access key,
-  etc.) plus 14 country-specific types (e.g. US SSN, UK taxpayer reference), added in a 2022-05
-  announcement extending coverage to the US, UK, Canada and India. [DOC S2097, S2107]
+- Comprehend PII coverage: 36 entity types, the 22 it had before 2022-05 (financial, personal,
+  technical-security and national categories, e.g. credit card number, name, email, password, SSN,
+  passport number) plus 14 added on 2022-05-23 with localized types for the US, UK, Canada and India
+  (e.g. US ITIN, UK Unique Taxpayer Reference, Canada SIN, India Aadhaar) and others such as VIN, SWIFT
+  code and IBAN. [DOC S2097, S2107]
 - Comprehend pricing unit is 100 characters (1 unit), with a 3-unit (300-character) minimum charge per
   request — i.e. even a very short document is billed as at least 300 characters. [DOC S2099]
 - **Google Sensitive Data Protection** (the current name for Cloud DLP; API name unchanged) ships over

@@ -80,9 +80,10 @@ Encrypted, DPAPI-NG, age/sops) and `mcp/authorization.md` (MCP OAuth 2.1, DCR de
   client case, where a web-facing deployment is out of scope regardless. [DOC S2044]
 
 ### Storing: Claude Code's own credential handling (a fourth workstation option)
-- Claude Code's own login/API credentials: macOS Keychain, or `~/.claude/.credentials.json` (mode `0600`)
-  on Linux/Windows (Windows inherits the user-profile ACL) as the fallback when the Keychain write fails
-  (e.g. locked in an SSH session). [DOC S2041]
+- Claude Code's own login credentials: the encrypted macOS Keychain on macOS, falling back to
+  `~/.claude/.credentials.json` (mode `0600`) when the Keychain rejects the write (e.g. locked in an SSH
+  session); `~/.claude/.credentials.json` (mode `0600`) on Linux; `%USERPROFILE%\.claude\.credentials.json`
+  on Windows, protected by the user-profile directory's inherited access controls. [DOC S2041]
 - `apiKeyHelper`: a configurable shell script returning an API key, re-run on a 5-minute default TTL
   (`CLAUDE_CODE_API_KEY_HELPER_TTL_MS` to change it) — documented explicitly for "dynamic or rotating
   credentials, such as short-lived tokens fetched from a vault," a directly reusable integration point for
@@ -135,9 +136,9 @@ Encrypted, DPAPI-NG, age/sops) and `mcp/authorization.md` (MCP OAuth 2.1, DCR de
   TTL** (adjustable per role). Vault's stated reasoning: "every service is accessing the database with
   unique credentials, it makes auditing much easier when questionable data access is discovered."
   Credentials are revoked automatically at lease expiry by Vault's own internal revocation system, or
-  renewed before expiry. Supports 20+ database engines (PostgreSQL, MySQL/MariaDB, MSSQL, Oracle,
-  MongoDB, Cassandra, Redis, Snowflake, etc.); root-credential rotation is available for all supported
-  plugins except MongoDB Atlas. Static roles instead offer a 1-to-1 mapping with scheduled, cron-style
+  renewed before expiry. The page's support table lists 15 built-in database plugins (among them
+  PostgreSQL, MySQL/MariaDB, MSSQL, Oracle, MongoDB, Cassandra, Redis, Snowflake) plus custom plugins;
+  the text says root-credential rotation is available for all plugins except MongoDB Atlas. Static roles instead offer a 1-to-1 mapping with scheduled, cron-style
   password rotation and a configurable password policy (default: 20 characters, mixed case, numbers,
   special characters). [DOC S2054]
 - **General implication**: for a design that makes SQL Server the identity/assignment store with long
@@ -176,7 +177,7 @@ Encrypted, DPAPI-NG, age/sops) and `mcp/authorization.md` (MCP OAuth 2.1, DCR de
   CLI process on the helper's own TTL (`CLAUDE_CODE_API_KEY_HELPER_TTL_MS`, default 5 minutes)
   without needing the operator to restart the CLI — closing the gap between "external store rotates a
   credential" and "the running process picks it up," with no static value stored at any point in between.
-  [DOC S2057] `managed-settings.json` (S2042, `agent-rbac.md`) sits above project/user settings in
+  [DOC S2057, S2041] `managed-settings.json` (S2042, `agent-rbac.md`) sits above project/user settings in
   precedence and can pin or forbid a project's own `apiKeyHelper` value organization-wide.
 
 ## Reference: each option's threat and what it does not cover

@@ -3,7 +3,7 @@ topic: graph/powershell-sdk
 priority: P1
 applies_to: "Microsoft Graph PowerShell SDK (Microsoft.Graph / Microsoft.Graph.Beta modules)"
 retrieved_utc: 2026-09-26
-sources: [S-5q4kuvo5, S-d7byvsls, S-qqaa5jqp, S-h7l5c7uo, S-v5rdr5la, S-6jt4shfp]
+sources: [S-5q4kuvo5, S-d7byvsls, S-qqaa5jqp, S-h7l5c7uo, S-v5rdr5la, S-6jt4shfp, S-ldeuc3e7, S-deabo43u]
 status: complete
 ---
 
@@ -34,19 +34,19 @@ status: complete
 ### Invoke-MgGraphRequest
 - `Invoke-MgGraphRequest` issues a REST request to any Graph API endpoint given a URI, method and optional body; it is the way to call an API for which no dedicated cmdlet yet exists. [DOC S-qqaa5jqp]
 - Parameters include `-Method`, `-Uri` (required), `-Body`, `-Headers`, `-OutputFilePath`/`-InputFilePath`, `-ContentType`, `-SessionVariable`, `-ResponseHeadersVariable`, `-StatusCodeVariable`, `-OutputType`, `-InferOutputFileName`, `-PassThru`, `-SkipHeaderValidation`, `-SkipHttpErrorCheck`. [DOC S-qqaa5jqp]
-- Example usage for an operation with no cmdlet coverage (`forceTakeover` on domain verification): `Invoke-MgGraphRequest -Method POST -Uri "https://graph.microsoft.com/v1.0/domains/<domain>/verify" -Body $body -ContentType "application/json"`. [DOC S-qqaa5jqp]
+- Example usage for an operation with no cmdlet coverage: `Confirm-MgDomain` does not expose `forceTakeover`, so the Entra admin-takeover guide calls `Invoke-MgGraphRequest -Method POST -Uri "https://graph.microsoft.com/v1.0/domains/<domain>/verify" -Body $body -ContentType "application/json"` with `forceTakeover = $true` in the body. [DOC S-ldeuc3e7]
 
 ### Discovery: Find-MgGraphCommand / Find-MgGraphPermission
 - `Find-MgGraphCommand -command Get-MgUser | Select -First 1 -ExpandProperty Permissions` lists the permissions (with `IsAdmin`, `Description`) usable to call a given cmdlet. [DOC S-5q4kuvo5]
 - `Find-MgGraphCommand` also resolves the underlying Graph API path a cmdlet calls, for cross-checking against Graph Explorer or the REST reference. [DOC S-h7l5c7uo]
-- `Find-MgGraphPermission` helps identify permissions required for a scenario, complementing `Find-MgGraphCommand`. [DOC S-h7l5c7uo]
+- The migration guide pairs `Find-MgGraphPermission` with `Find-MgGraphCommand` to understand the permissions the cmdlets require. [DOC S-h7l5c7uo]
 
 ### Query parameters as cmdlet parameters
-- `-Property` returns a non-default property set (maps to `$select`); directory-object-derived resources (`User`, `Group`) return only a default subset without it. [DOC S-v5rdr5la]
-- `-Top` sets page size; minimum 1, maximum depends on the API (matches the REST `$top` limit for that resource). [DOC S-v5rdr5la]
-- `-Expand` includes a relationship (navigation property) in the result, e.g. `Get-MgGroup -GroupId <id> -Expand members`; a resource's properties and one relationship can be queried together, but not two relationships at once; not all relationships/resources support `-Expand`, and not all support `-Select` on the expanded items. [DOC S-v5rdr5la]
+- `-Property` returns a property set different from the default (the SDK's name for `$select`); directory-object-derived resources (`User`, `Group`) return only a default subset without it. [DOC S-deabo43u]
+- `-Top` sets page size; minimum 1, maximum depends on the corresponding API. [DOC S-deabo43u]
+- `-Expand` includes the resource or collection behind a single relationship (navigation property), e.g. `Get-MgGroup -GroupId <id> -Expand members`; the page says one command queries either a resource's properties or one of its relationships, not both; not all relationships/resources support `-Expand`, and not all support `-Select` on the expanded items. [DOC S-deabo43u]
 - `-ExpandProperty "children($select=id,name)"` nests a `$select` inside an `$expand` via the PowerShell parameter string. [DOC S-v5rdr5la]
-- Advanced queries via PowerShell: `Get-MgUser -ConsistencyLevel eventual -Count userCount -Filter "startsWith(DisplayName, 'a')" -Top 1` — the `-ConsistencyLevel`/count-variable parameters map to the REST `ConsistencyLevel: eventual` header and `$count`. [DOC S-h7l5c7uo]
+- Advanced queries via PowerShell: `Get-MgUser -ConsistencyLevel eventual -Count userCount -Filter "startsWith(DisplayName, 'a')" -Top 1` — the guide says `-ConsistencyLevel` enables `Count`, `Filter` and `Search` (advanced queries, including `$count`). [DOC S-h7l5c7uo]
 - Paging one page at a time uses `-Top`; `Import-Module Microsoft.Graph.Users; Get-MgUser -Top 5` returns the first 5 users (server-side paging still applies beyond that page via `@odata.nextLink`). [DOC S-6jt4shfp]
 
 ## Reference
@@ -59,7 +59,7 @@ status: complete
 | `Find-MgGraphCommand -Command <cmdlet>` | permissions/API path for a cmdlet | S-5q4kuvo5, S-h7l5c7uo |
 | `Find-MgGraphPermission` | permissions for a scenario | S-h7l5c7uo |
 | `Disconnect-MgGraph` | end session, revoke token | S-5q4kuvo5 |
-| `-Property` / `-Expand` / `-Top` / `-Filter` / `-ConsistencyLevel` | `$select`/`$expand`/`$top`/`$filter`/advanced query equivalents | S-v5rdr5la |
+| `-Property` / `-Expand` / `-Top` / `-Filter` / `-ConsistencyLevel` | `$select`/`$expand`/`$top`/`$filter`/advanced query equivalents | S-deabo43u, S-v5rdr5la |
 
 Related: `graph/batching-and-query.md` (the REST-level `$batch`, paging, `$select`/`$expand` and advanced-query facts these cmdlets wrap); `graph/permissions.md` (least-privileged Graph permissions per device call, cross-checked with `Find-MgGraphPermission`).
 

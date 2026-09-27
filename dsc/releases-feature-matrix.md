@@ -3,7 +3,7 @@ topic: dsc/releases-feature-matrix
 priority: P0
 applies_to: "Microsoft DSC 3.0.0 to 3.4.0-preview.1"
 retrieved_utc: 2026-09-26
-sources: [S110, S111, S112, S113, S114, S115, S116, S117, S118, S119, S120, S121, S122, S129, S130, S131, S132, S133, S134, S143, S144, S-mmshotst]
+sources: [S110, S111, S112, S113, S114, S115, S116, S117, S118, S119, S120, S121, S122, S129, S130, S131, S132, S133, S134, S143, S144, S-mmshotst, S-g4krsgp2, S-6hlzzfeg]
 status: complete
 ---
 
@@ -23,11 +23,11 @@ status: complete
 - The 3.3.0 release notes open "These release notes describe updates to DSC since the `v3.3.0-rc.2` release". They list under Added: rename `--version` to `--required-version` (#1610), UpdateList `--what-if` (#1616), Group Policy template adapter (#1686), Windows environment variable resource (#1675), File/Content (#1676), MCP `--what-if` (#1697). [DOC S118]
 - The 3.4.0-preview.1 release notes list the same six items. [DOC S119]
 - The 3.3.0 binary still uses `-v, --version` for resource commands. 3.4.0-preview.1 uses `-v, --required-version`. [DOC S116,S117]
-- `--ignore-settings-file` was backported to the 3.2 line: `args.rs` at tag v3.2.3 (2026-07-16) defines it as a global flag with the short form `-i`. The matrix's 3.2.0 column describes the v3.2.0 tag only. [DOC S-mmshotst]
-- The dsc-lib crate version is `3.2.0` in both 3.3.0 and 3.4.0-preview.1. This breaks `directives.version` (see `directives.md`). [DOC S112]
+- `--ignore-settings-file` was backported to the 3.2 line: `args.rs` at tag v3.2.3 (2026-07-16) defines it as a global flag with the short form `-i`. The matrix's 3.2.0 column describes the v3.2.0 tag only. [DOC S-mmshotst, S113]
+- The dsc-lib crate version is `3.2.0` in both 3.3.0 and 3.4.0-preview.1. This breaks `directives.version` (see `directives.md`). [DOC S112, S-g4krsgp2]
 - `data.build.json` in 3.4.0-preview.1 packages `environment_variable.exe`, `environment_variable.dsc.manifests.json`, `filecontent.exe`, `filecontent.dsc.resource.json` and has no `group_policy_template` entry. [DOC S120]
 - `Microsoft.Adapter/GroupPolicyTemplate` 0.1.0 ("Adapts Windows Group Policy ADMX templates into DSC resources") exists as a source manifest at v3.4.0-preview.1. [DOC S121]
-- `Microsoft.Windows/Personalization` is an adapted-resource YAML (needs `Microsoft.Windows.Adapter/Registry`) present in source on release/v3.3 and v3.4.0-preview.1, and absent from both zips. [DOC S122,S114,S115]
+- `Microsoft.Windows/Personalization` is an adapted-resource YAML (needs `Microsoft.Windows.Adapter/Registry`) present in source on release/v3.3 and v3.4.0-preview.1, and absent from both zips. [DOC S122,S-6hlzzfeg,S114,S115]
 
 ## Reference
 Feature matrix (verified against code at each tag or branch and against the release zips/binaries):

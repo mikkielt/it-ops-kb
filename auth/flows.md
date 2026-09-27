@@ -3,7 +3,7 @@ topic: auth/flows
 priority: P0
 applies_to: "ConfigMgr 2509+, Windows 11 24H2 / Windows Server 2025, Entra ID, SQL Server 2022/2025, GitLab"
 retrieved_utc: 2026-09-26
-sources: [S-o6f7ibqo, S-sldz4d6b, S-7jumyiid, S-6m7klb4f, S468, S469, S512, S518, S521, S621, S1201, S1202, S1205, S1208, S1215, S1228, S1270, S1276, S1286, S1289, S1293, S1297, S1298, S1302, S1345, S1347, S-7u4b7p5q]
+sources: [S-o6f7ibqo, S-sldz4d6b, S-7jumyiid, S-6m7klb4f, S468, S469, S512, S518, S521, S621, S1201, S1202, S1205, S1208, S1215, S1228, S1270, S1276, S1286, S1289, S1293, S1297, S1298, S1302, S1345, S1347, S-7u4b7p5q, S-c7yxdr7e]
 status: partial
 ---
 
@@ -21,11 +21,12 @@ status: partial
 - Windows 11 24H2 Enterprise/Pro/Education require SMB signing (outbound and inbound) and Windows Server 2025 requires outbound signing; encryption is optional. F09 needs a share that signs. [DOC S1202,S1228]
 - The stable `ldap3` release (2.9.1) cannot provide LDAP-layer signing or sealing, so with a DC that requires signing F06 from `ldap3` needs LDAPS; the 2.10.2 pre-release adds Kerberos sealing with `session_security=ENCRYPT`. [DER S1201,S1208,S-7u4b7p5q: DC signing requirement + ldap3 docs + PyPI release status]
 - A signed-in engineer's role check against a small set of role groups fits one `/me/checkMemberGroups` call under delegated `User.Read` (at most 20 group ids). [DOC S1286]
-- Workload identity federation (F10) allows at most 20 federated credentials per app, and Entra fetches the issuer's OIDC keys, so a GitLab issuer must be reachable by Entra. [DOC S1293; DER S1302]
+- Workload identity federation (F10) allows at most 20 federated credentials per app. [DOC S1293]
+- Entra uses the credential's issuer URL to fetch the keys that validate the external token, so a GitLab issuer must be reachable by Entra. [DER S1302: issuer URL used to fetch validation keys]
 - An on-prem host can get app-only tokens without a stored secret through an Azure Arc managed identity, at the price of the Arc agent and an Azure resource per host. [DOC S1289]
-- Accounts marked "sensitive and cannot be delegated", or in Protected Users, cannot be delegated by a broker (F12 via KCD). [DOC S1298,S1205]
+- Accounts marked "sensitive and cannot be delegated", or in Protected Users, cannot be delegated by a broker (F12 via KCD). [DOC S-c7yxdr7e,S1205]
 - On-behalf-of works only for delegated tokens whose audience is the broker itself. [DOC S1297]
-- `revokeSignInSessions` stops refresh tokens within minutes; an issued access token keeps working until it expires unless the resource enforces CAE. [DOC S1345,S1347]
+- Revoking a user's sign-in sessions (`Revoke-MgUserSignInSession`) revokes all their refresh tokens; an access token already issued keeps working until it expires (1 hour by default) unless the resource enforces CAE, where the revocation event reaches the resource with up to 15 minutes of propagation latency. [DOC S1345,S1347]
 
 ## Reference
 See [flows.csv](flows.csv): `flow_id, status (current|option|later), kind, target, protocol, identity, credential_and_storage, transport_and_key_exchange, minimal_permission, revocation_and_delay, sources`.

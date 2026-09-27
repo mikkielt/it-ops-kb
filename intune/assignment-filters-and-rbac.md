@@ -38,11 +38,12 @@ Administrator/"Intune Service Administrator") carry Intune permissions independe
   grouping). [DOC S-4ls6gbe6]
 - A filter is applied to an assignment in one of two modes: **Include filtered devices** (only matching
   devices/apps receive the app/policy) or **Exclude filtered devices** (matching devices/apps are
-  excluded); the default is **Do not apply a filter**. [DOC S-4ls6gbe6]
+  excluded); the third choice is **Do not apply a filter** (all targeted users/devices receive it). [DOC S-4ls6gbe6]
 - Rule syntax form: `([entity].[property] [operator] [value])`, e.g.
   `(device.osVersion -eq "10.0.18362") and (device.manufacturer -eq "Microsoft")`; properties, operators
-  and values are case-insensitive; parentheses and nested parentheses are supported in the **rule syntax
-  editor** only — using nested parentheses or other advanced syntax disables the basic **rule builder**.
+  and values are case-insensitive; parentheses and nested parentheses are supported, but some advanced
+  syntax such as nested parentheses is available only in the **rule syntax editor**, and using it there
+  disables the basic **rule builder**.
   [DOC S-hddmxunx]
 - Supported operators (all value types unless noted): `-or`/`or`, `-and`/`and`, `-eq`/`eq`, `-ne`/`ne`,
   `-startsWith`/`startsWith` (string), `-in`/`in` (array), `-notIn`/`notIn` (array), `-contains`/`contains`
@@ -73,8 +74,7 @@ Administrator/"Intune Service Administrator") carry Intune permissions independe
 
 ### Intune RBAC: roles, assignments, scope
 - An Intune role = a set of permissions, each permission a management category (e.g. *Device
-  configuration*, *Audit data*) plus actions (*Read*, *Write*/*Create*, *Update*, *Delete*, and
-  role-specific actions like *Wipe* or *Assign*). Built-in roles are identical across all tenants and
+  configuration*, *Audit data*) plus sets of actions (e.g. *Read*, *Write*, *Update*, *Delete*). Built-in roles are identical across all tenants and
   can't have their description, type, or permissions edited. [DOC S-ljhugmcx]
 - Built-in roles (fixed set, plus Cloud PC roles when Windows 365 is licensed):
   Application Manager, Endpoint Privilege Manager, Endpoint Privilege Reader, Endpoint Security Manager,
@@ -84,7 +84,7 @@ Administrator/"Intune Service Administrator") carry Intune permissions independe
 - **Intune Role Administrator** is the only Intune built-in role that can assign permissions to
   administrators (i.e. manage other role assignments); it's also the least-privileged built-in role
   sufficient to manage RBAC roles/assignments (`assign-role.md` states this explicitly, as an alternative
-  to a custom role with Roles Assign/Create/Delete/Read/Update + Organization Read). [DOC S-lsavpnha]
+  to a custom role with Roles Assign/Create/Delete/Read/Update + Organization Read). [DOC S-lsavpnha, S-ljhugmcx]
 - Custom roles can combine any Intune RBAC permission for finer-grained least privilege; see
   `create-custom-role` (out of scope here) for the full permission/action catalog. [DOC S-ljhugmcx]
 - A role **assignment** = Members (admin groups whose users get the role's permissions) + Scope
@@ -95,7 +95,7 @@ Administrator/"Intune Service Administrator") carry Intune permissions independe
   admins can see) and to individual objects (policies, apps, devices); a scope tag on the role itself
   (not the assignment) controls visibility of the role. A **default scope tag** is auto-applied to every
   untagged object that supports scope tags. Maximum **100 scope tags per role assignment** and **100
-  scope tags per object**. [DOC S-bh6rnbtj]
+  scope tags per object**. [DOC S-bh6rnbtj, S-ljhugmcx]
 - If a role assignment carries no scope tag, that admin can see all objects their permissions otherwise
   allow — "admins that have no scope tags essentially have all scope tags." An admin can only apply a
   scope tag that's present in their own role assignment, and can only target groups already in their
@@ -147,7 +147,7 @@ Administrator/"Intune Service Administrator") carry Intune permissions independe
   Global Administrator or Intune Administrator's own request. [DOC S-cunjuxe3]
 - Protected resource (profile) types: Apps (deployments only, not app protection policies), Compliance
   policies, Configuration policies (settings catalog), Device actions (wipe, retire, delete), Role-based
-  access control (role permission/admin-group/member-group changes), Scripts (Windows PowerShell scripts),
+  access control (role permission/admin-group/member-group changes), Scripts (deploying scripts to Windows devices),
   Access Policies (MAA policies themselves — always protected, not selectable), Tenant Configuration
   (device categories). [DOC S-cunjuxe3]
 - MAA enforcement covers both interactive (delegated) admin actions and **application-authenticated

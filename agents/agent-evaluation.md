@@ -24,10 +24,11 @@ capability/safety-eval ground for an agent that happens to be hosted in Azure AI
 
 ## Facts
 ### QG9: tools and methods
-- **MCP Inspector** is the protocol team's own visual and CLI tool: a Vite/React web UI plus a Node proxy
-  that connects to a server over stdio, SSE or streamable HTTP; the CLI mode (`--cli`) is "a scriptable
-  command-line client for automation, CI, and fast agent feedback loops" and supports `--format json` for
-  scripting. [DOC S1880, S1881]
+- **MCP Inspector** is the protocol's reference tool for testing and debugging MCP servers: one package,
+  `@modelcontextprotocol/inspector` (Node 22.19.0 or newer), with three clients on a shared core — a web UI
+  (default), `--cli` (a scriptable, machine-readable client for CI, shell pipelines and coding agents, with
+  `--format json`) and `--tui` (terminal UI); it launches a local stdio server from a command or connects to
+  a remote server over HTTP. [DOC S1880, S1881]
 - MCP Inspector's licence is mixed: new code is Apache-2.0, documentation (excluding the spec) is
   CC-BY-4.0, and code contributed under the original MIT terms without relicensing consent stays MIT. [DOC S1881]
 - MCP Inspector measures **protocol-level correctness**: it lists a server's tools/resources/prompts and
@@ -100,7 +101,7 @@ capability/safety-eval ground for an agent that happens to be hosted in Azure AI
   risk-and-safety evaluators and `GroundednessProEvaluator`, which instead take `azure_ai_project` and call a Foundry backend service;
   reasoning-model judges (e.g. Azure OpenAI/OpenAI o-series) are supported for the agentic/quality evaluators by passing
   `is_reasoning_model=True`. Token budget for evaluator generation is `max_token=800` for most AI-assisted evaluators, 1600 for
-  `RetrievalEvaluator`, and 3000 for `ToolCallAccuracyEvaluator` (to fit longer tool-call inputs). [DOC S-zfg6jhgr]
+  `RetrievalEvaluator`, and 3000 for `ToolCallAccuracyEvaluator` (to fit longer tool-call inputs). [DOC S-zfg6jhgr, S-6jcocxnl]
 - `ToolCallAccuracyEvaluator` in Foundry Agent Service evaluation supports scoring these tool types: File Search, Azure AI Search, Bing
   Grounding, Bing Custom Search, SharePoint Grounding, Code Interpreter, Fabric Data Agent, OpenAPI, and user-defined Function Tools; an
   unsupported tool type in the run is scored `pass` with a reason noting the tool isn't evaluated, so wrapping it as a Function Tool is the
@@ -131,12 +132,12 @@ capability/safety-eval ground for an agent that happens to be hosted in Azure AI
   `attack_success`, `attack_technique`, `attack_complexity` and per-category `risk_assessment` (severity label + reason, e.g. "Refusal
   message detected"). [DOC S-onkwuwst]
 - The AI Red Teaming Agent is region-restricted (only some Foundry-project regions support it) and its "local" mode (installed via the
-  `redteam` extra and run outside the Foundry portal) is explicitly **not compatible with the new Foundry portal and SDK** — only with a
-  Foundry (classic) / Hub-based project. [DOC S-onkwuwst]
-- Microsoft's own framing places all of this inside three GenAIOps evaluation stages: (1) bring-your-own evaluation data with the
-  Evaluation SDK's built-in/custom evaluators, (2) simulators (adversarial or context-appropriate) to generate queries when no eval dataset
-  exists yet, and (3) the AI Red Teaming Agent for automated adversarial scanning recommended for use alongside, not instead of,
-  human-in-the-loop red teaming. [DOC S-p7dq3fku]
+  `redteam` extra and run outside the Foundry portal) is explicitly **not compatible with the new Foundry portal and SDK**; the page's
+  setup takes either a Foundry Hub project (subscription/resource group/project dictionary) or a Foundry project endpoint. [DOC S-onkwuwst]
+- Microsoft's AI Red Teaming Agent concept page frames the tool within NIST's Map/Measure/Manage functions, recommends automated scans
+  at design, development, pre-deployment and (as scheduled runs) post-deployment, and states that the most effective risk assessment
+  combines automated tools with expert human analysis; agent-specific risk categories (prohibited actions, sensitive data leakage, task
+  adherence) run only in cloud red teaming. [DOC S-p7dq3fku]
 
 ### QG10: building a question baseline (golden set)
 - Anthropic: start small — "20-50 simple tasks drawn from real failures is a great start" — because
@@ -175,7 +176,7 @@ capability/safety-eval ground for an agent that happens to be hosted in Azure AI
 | PyRIT | MIT | no MCP target class in v1.1.0 (MCPToolProvider on unreleased main); custom-target interface + XPIAWorkflow for indirect injection | red-team attack orchestration and scoring against a configured target | S1892 |
 | mcp-fuzz / mcp-server-fuzzer / mcp-guard / mcpsec | unverified (community) | yes (stdio launch) | schema-derived fuzz calls, protocol/security fault-finding | S1901, S1902, S1904, S1905 |
 | Azure AI Evaluation SDK (`azure-ai-evaluation`) | Microsoft (vendor-hosted judge/backend) | not MCP-specific; agent inputs via query/response or OpenAI-style messages | IntentResolution, ToolCallAccuracy, TaskAdherence, Relevance, Groundedness (+ quality/RAG/safety/NLP evaluators); `evaluate()` batch runner | S-zfg6jhgr, S-6jcocxnl |
-| AI Red Teaming Agent (`azure-ai-evaluation[redteam]`, preview) | Microsoft (PyRIT-based, Foundry classic/Hub only) | no MCP target; scans a model config, callback, or PyRIT `PromptChatTarget` | Attack Success Rate per risk category (violence/sexual/self-harm/hate-unfairness/+) and attack-complexity tier | S-onkwuwst, S-p7dq3fku |
+| AI Red Teaming Agent (`azure-ai-evaluation[redteam]`, preview) | Microsoft (PyRIT-based; local mode not compatible with the new Foundry portal/SDK) | no MCP target; scans a model config, callback, or PyRIT `PromptChatTarget` | Attack Success Rate per risk category (violence/sexual/self-harm/hate-unfairness/+) and attack-complexity tier | S-onkwuwst, S-p7dq3fku |
 
 ## Examples
 A DeepEval-style test case for a device-management MCP server would launch the server's stdio target, call

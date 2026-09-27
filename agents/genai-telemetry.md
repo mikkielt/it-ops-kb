@@ -21,13 +21,13 @@ file extends, and does not repeat, `claude/otel-monitoring.md`, which documents 
   `open-telemetry/semantic-conventions-genai`; the old repo's GenAI pages carry a "moved" notice. [DOC S2000, S2001]
 - Agent spans (span kind CLIENT unless noted): `create_agent` — name `"create_agent {gen_ai.agent.name}"`; required
   `gen_ai.operation.name=create_agent`, `gen_ai.provider.name`; conditionally required `gen_ai.agent.name`,
-  `.id`, `.description`, `.version`, `error.type`; recommended `server.address`, `server.port`. `invoke_agent` —
+  `.id`, `.description`, `.version`, `error.type`, and `server.port` when `server.address` is set; recommended `server.address`. `invoke_agent` —
   name `"invoke_agent {gen_ai.agent.name}"` (or bare `"invoke_agent"`); CLIENT variant requires `gen_ai.provider.name`
   and adds `gen_ai.conversation.id`, token-usage counts, `gen_ai.response.finish_reasons`; an INTERNAL-span variant
   exists for a purely in-process invocation and drops the provider-name requirement. [DOC S2002]
-- Tool-call span: `execute_tool`, span kind INTERNAL, name `"{gen_ai.operation.name} {gen_ai.tool.name}"`; required
-  `gen_ai.operation.name=execute_tool`, `gen_ai.tool.name`, `gen_ai.tool.type`; conditionally required
-  `gen_ai.tool.call.id` (when available), `error.type` (on failure); recommended `gen_ai.tool.description`. [DOC
+- Tool-call span: `execute_tool`, span kind INTERNAL, name `"execute_tool {gen_ai.tool.name}"`; required
+  `gen_ai.operation.name=execute_tool` and `gen_ai.tool.name`; conditionally required `error.type` (on failure);
+  recommended when available `gen_ai.tool.call.id`, `gen_ai.tool.description` and `gen_ai.tool.type`. [DOC
   S2004]
 - MCP conventions: `mcp.method.name` (required; e.g. `tools/call`, `initialize`, `prompts/list`),
   `mcp.protocol.version` (recommended; e.g. `2025-06-18`), `mcp.session.id` (recommended), `mcp.resource.uri`

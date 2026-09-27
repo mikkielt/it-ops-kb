@@ -24,7 +24,7 @@ plugin.json,outputStyles,path or array of paths,no,,REPLACES default output-styl
 plugin.json,workflows,path or array of paths,no,,.js files/dirs; REPLACES default workflows/ scan,DOC,S-3xyywfcr
 plugin.json,experimental.themes,path or array of paths,no,,REPLACES default themes/ scan; top-level themes key still loads with a validate warning,DOC,S-3xyywfcr
 plugin.json,experimental.monitors,path or inline array,no,monitors/monitors.json,"entries: name/command/description required, when: always|on-skill-invoke:<skill>; not on Bedrock/Google Cloud Agent Platform/Microsoft Foundry",DOC,S-3xyywfcr
-plugin.json,experimental.evals,path or array of paths,no,evals/,eval case directory when not the default; claude plugin eval --eval-dir overrides,DOC,S-lkcsn2fs
+plugin.json,experimental.evals,path or array of paths,no,evals/,eval case directory when not the default; claude plugin eval --eval-dir overrides,DOC,S-lkcsn2fs;S-3xyywfcr
 lspServers entry,command,string,yes,,language server binary; no spaces unless value starts with /,DOC,S-3xyywfcr
 lspServers entry,extensionToLanguage,object,yes,,"map of .ext to LSP language id, at least one entry",DOC,S-3xyywfcr
 lspServers entry,args,array of strings,no,,arguments passed to server,DOC,S-3xyywfcr
@@ -42,8 +42,8 @@ marketplace.json,version,string,no,,marketplace manifest version,DOC,S-4m2kbuls
 marketplace.json,metadata.pluginRoot,string,no,,"directory bare plugin source names resolve under; requires v2.1.239+",DOC,S-4m2kbuls
 marketplace.json,forceRemoveDeletedPlugins,boolean,no,false,true = uninstall a plugin removed from plugins[] on users' machines,DOC,S-4m2kbuls
 marketplace.json,allowCrossMarketplaceDependenciesOn,array of strings,no,,marketplace names whose plugins may be installed as this marketplace's dependencies,DOC,S-4m2kbuls
-marketplace.json,renames,object,no,,"former plugin name -> current name or null (removed); requires v2.1.193+; append-only, chain must resolve to null or a live name",DOC,S-4m2kbuls
-plugin entry,name,string,yes,,"install id before @; kebab-case-like, no spaces/control/bidi",DOC,S-4m2kbuls
+marketplace.json,renames,object,no,,"former plugin name -> current name or null (removed); requires v2.1.193+; append-only, chain must resolve to null or a live name",DOC,S-4m2kbuls;S-pelzabjq
+plugin entry,name,string,yes,,install id before @; no spaces/control/bidi chars; used even when plugin.json sets a different name,DOC,S-4m2kbuls
 plugin entry,source,string or object,yes,,relative path or source object (github/url/git-subdir/npm/archive/command),DOC,S-4m2kbuls
 plugin entry,description,string,no,,shown in /plugin listings/details,DOC,S-4m2kbuls
 plugin entry,version,string,no,,plugin.json's own version wins if both set (validate warns of mismatch),DOC,S-4m2kbuls
@@ -53,7 +53,7 @@ plugin entry,strict,boolean,no,true,"see Strict mode note in plugins.md",DOC,S-4
 plugin entry,relevance,object,no,,signals for suggesting the plugin,DOC,S-4m2kbuls
 plugin entry,dependencies,array,no,,"""name"", ""name@marketplace"", or object",DOC,S-4m2kbuls
 plugin entry,defaultEnabled,boolean,no,true,entry value takes precedence over plugin.json,DOC,S-4m2kbuls
-plugin entry,displayName,string,no,,shown when neither entry nor plugin.json otherwise wins over the other,DOC,S-4m2kbuls
+plugin entry,displayName,string,no,,"human-readable name shown in the UI; when neither the entry nor plugin.json sets one, users see the plugin's name",DOC,S-4m2kbuls
 plugin entry,metadata,object,no,,free-form; requires v2.1.222+,DOC,S-4m2kbuls
 plugin entry,headers,object,no,,HTTP headers sent when downloading this entry's archive; requires v2.1.238+,DOC,S-4m2kbuls
 plugin entry,headersHelper,string,no,,"command printing archive-download headers as JSON; requires strict:false; requires v2.1.238+",DOC,S-4m2kbuls
@@ -75,7 +75,7 @@ managed setting,extraKnownMarketplaces,object,no,,"keyed by marketplace name; {s
 managed setting,enabledPlugins,object,no,,"plugin-name@marketplace-name: true/false; true force-enables, false blocks at every scope",DOC,S-rp4dtt4w
 managed setting,strictKnownMarketplaces,array,no,,"allowlist of marketplace source objects; [] blocks every source; alias allowedMarketplaces",DOC,S-rp4dtt4w
 managed setting,blockedMarketplaces,array,no,,denylist of marketplace source objects; checked before the allowlist,DOC,S-rp4dtt4w
-managed setting,syncClaudeAiPlugins,boolean,no,true,false stops downloading/loading claude.ai-synced plugins; requires v2.1.273+,DOC,S-rp4dtt4w
+managed setting,syncClaudeAiPlugins,boolean,no,true,false stops downloading/loading claude.ai-synced plugins; not managed-only (users can also set it in user/local settings); requires v2.1.273+,DOC,S-rp4dtt4w
 managed setting,disableSideloadFlags,boolean,no,false,"rejects --plugin-dir, --plugin-url, --agents, SDK plugins option, non-SDK --mcp-config, CLAUDE_CODE_PLUGIN_DIRS folders",DOC,S-rp4dtt4w
 managed setting,disableCommandPluginSources,boolean,no,(value of allowManagedHooksOnly),blocks command-source plugins from installing/updating/loading,DOC,S-rp4dtt4w
 managed setting,strictPluginOnlyCustomization,boolean or array,no,false,"true or array of skills/agents/hooks/mcp; requires plugin/managed/built-in origin only",DOC,S-rp4dtt4w

@@ -436,7 +436,7 @@ _Agent: security_
   obtained by coordinator; exact XCCDF date not independently confirmed by Part A) [DOC S1471].
 - Licence: unclassified DISA STIG content is publicly distributable without restriction —
   Distribution Statement A ("approved for public release, distribution unlimited") — posted at
-  public.cyber.mil / dl.dod.cyber.mil with no sign-in required [DOC S1409, S1411 for the no-sign-in
+  public.cyber.mil / dl.dod.cyber.mil with no sign-in required [DOC S1470 for the no-sign-in
   fact; the Distribution Statement A wording itself is `COMMUNITY` pending a direct read of a STIG
   zip's own Readme or DoDI 5230.24].
 
@@ -1682,7 +1682,7 @@ solution before reaching for an agent, phrased slightly differently:
 - Google (Cloud Architecture Center / "Agents Companion" whitepaper, content via search summary — see
   `gaps.md`): summarization, translation and classification "often" don't need an agentic workflow; a
   deterministic-and-stable task, or one where speed/reliability outweighs flexibility, is named as a
-  non-fit. [DOC S2160, S2161]
+  non-fit. [DOC S2160]
 - Thoughtworks Technology Radar Vol 34 (2026-04): places "Agent Skills" in Trial as a way to modularize
   context narrowly, and separately treats "permission-hungry agents" as a security concern requiring
   zero-trust/sandboxing as non-negotiable, and names ignoring "agent durability" as an antipattern that

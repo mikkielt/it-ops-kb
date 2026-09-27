@@ -18,7 +18,7 @@ Files are unmodified so that their sha256 matches the source URL; this README ca
   `destructiveHint?` (default true, meaningful only when readOnlyHint false), `idempotentHint?`
   (default false, meaningful only when readOnlyHint false), `openWorldHint?` (default true). All are hints;
   clients should never make tool-use decisions based on annotations from untrusted servers.
-- Result discriminator `resultType`: `"complete"` | `"input_required"` (core); `"task"` is added by the Tasks extension.
+- Result discriminator `resultType`: `"complete"` | `"input_required"` (core); `"task"` is added by the Tasks extension (S718, not schema.ts).
 - MRTR types: `InputRequests`, `InputResponses`, `InputRequiredResult` (`inputRequests?`, `requestState?`).
 - Error codes reserved by spec: `-32020` HeaderMismatch, `-32021` MissingRequiredClientCapability, `-32022` UnsupportedProtocolVersion.
 - Examples directory (`schema/2026-07-28/examples/`) was not copied.

@@ -41,17 +41,17 @@ status: partial
 - Edges: `add_edge()` for a fixed transition, `add_conditional_edges()` with a routing function for
   dynamic branching. `START` and `END` are virtual nodes marking entry and termination. [DOC S-bivxzhtv]
 - **`Command`**: a node return value that combines a state `update` with routing (`goto`) in one
-  object. **`Send`**: dispatches multiple copies of state to the same node for map-reduce-style
-  fan-out. [DOC S-bivxzhtv]
+  object. **`Send`**: returned from a conditional edge to invoke a node once per item, each call with
+  its own input state, for map-reduce-style fan-out. [DOC S-bivxzhtv]
 - The graph **must** be compiled with `.compile()` before invocation; compilation validates the
   graph structure and wires in runtime settings such as the checkpointer. [DOC S-bivxzhtv]
 
 ### Checkpointers and threads
 - `InMemorySaver` (`from langgraph.checkpoint.memory import InMemorySaver`, ships with the
   `langgraph-checkpoint` dependency) stores checkpoints in RAM only — lost on process restart; for
-  experimentation, not production. [DOC S-j54mtzby]
+  experimentation, not production. [DOC S-j54mtzby, S-thsymqx6]
 - `SqliteSaver` / `AsyncSqliteSaver` live in the separate **`langgraph-checkpoint-sqlite`** package;
-  local file-based storage, intended for development. [DOC S-j54mtzby]
+  local file-based storage, intended for development. [DOC S-j54mtzby, S-thsymqx6]
 - `PostgresSaver` / `AsyncPostgresSaver` live in the separate **`langgraph-checkpoint-postgres`**
   package; production-grade, used in LangSmith itself. Construct with
   `PostgresSaver.from_conn_string("postgresql://...")` and call `.setup()` once to create the
@@ -86,10 +86,11 @@ status: partial
   conditional edges for repeated pauses instead. [DOC S-pxkxmmn5]
 
 ### Durable execution and streaming
-- Durability is controlled per-run/per-graph with three modes: `"exit"` (persists only when the
-  graph run completes — best performance, no mid-run recovery), `"async"` (persists changes
-  asynchronously while the next step executes — balanced), and `"sync"` (persists changes
-  synchronously before the next step starts — strongest durability, highest latency cost). [DOC S-j54mtzby]
+- Durability is set per graph execution call (`durability=`) with three modes: `"exit"` (persists
+  only when execution exits: success, error, or a human-in-the-loop interrupt — best performance, no
+  recovery from a mid-run crash), `"async"` (persists asynchronously while the next step executes —
+  small risk of lost checkpoints on a crash), and `"sync"` (persists synchronously before the next
+  step starts — highest durability, some performance overhead). [DOC S-j54mtzby]
 - `.stream()` / `.astream()` accept a `stream_mode`, either a single string or a list of modes:
   `values` (full state after each step), `updates` (per-node state updates after each step; multiple
   updates in one super-step stream separately), `messages` (LLM token, metadata tuples),

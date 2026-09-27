@@ -3,7 +3,7 @@ topic: security/framework-control-map
 priority: P2
 applies_to: "ISO/IEC 27001:2022 Annex A; NIST CSF 2.0; CIS Controls v8.1; NIS2 Art. 21(2), as of 2026-09-24"
 retrieved_utc: 2026-09-24
-sources: [S1552, S1560, S1561, S1562, S1563]
+sources: [S1552, S1560, S1562, S1563, S-n3ela3o4]
 status: partial
 ---
 
@@ -11,14 +11,18 @@ status: partial
 
 ## Summary
 Full table is `framework-control-map.csv` (framework, control_id, title, control_example, sources). This file gives
-the shape and licence notes only. ISO/IEC 27001:2022 Annex A has 93 controls in 4 themes; full clause text is paid,
-so only numbers and public titles are used here. CIS Controls v8.1 is CC BY-NC-ND 4.0 (attribution, no derivatives,
+the shape and licence notes only. ISO/IEC 27001:2022 clause text is paid, so the csv gives Annex A control ids
+(confirmed against NIST's crosswalk) with short own-words names. CIS Controls v8.1 is CC BY-NC-ND 4.0 (attribution, no derivatives,
 non-commercial) [DOC S1563], so safeguard IDs and titles are cited but not modified or excerpted at length.
 
 ## Facts
-- ISO/IEC 27001:2022 Annex A groups controls under four themes: organizational, people, physical, technological.
-  5.15, 5.18, 8.2, 8.8, 8.9, 8.15, 8.16, 8.32 are covered in the csv (all technological/organizational controls
-  relevant to a tool that manages device configuration). [DOC S1560][DOC S1561]
+- The csv's ISO/IEC 27001:2022 Annex A ids 5.15, 5.18, 8.2, 8.8, 8.9, 8.15, 8.16 and 8.32 each appear (written
+  A.5.15 etc.) as reference elements in NIST's SP 800-53 Rev. 5 to ISO/IEC 27001:2022 crosswalk (OLIR, file dated
+  2023-10-12). It maps, for example, A.5.18 from AC-02, A.8.8 from RA-03/RA-05/SI-02/SI-05, A.8.15 from AU-02/AU-03/
+  AU-06/AU-12 and A.8.32 from CM-03/CM-05/SA-10/SI-02. [DOC S-n3ela3o4]
+- The csv titles (Access control, Access rights, Privileged access rights, ...) and the grouping of Annex A into four
+  themes (organizational, people, physical, technological; 93 controls) are not confirmed: the NIST crosswalk lists
+  ids without titles, and iso.org (S1560) is not readable here. [UNK: titles and themes not in S-n3ela3o4; S1560 unreadable]
 - NIST CSF 2.0 (published 2024-02-26) added the "Govern" function to the five prior functions (Identify, Protect,
   Detect, Respond, Recover). [DOC S1562]
 - CIS Controls v8.1 (March 2025) has 18 Controls and 153 Safeguards across three Implementation Groups; licensed

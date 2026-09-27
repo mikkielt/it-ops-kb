@@ -17,7 +17,7 @@ channels; the full ConfigMgr log table is `mecm/log-files.csv` (another agent).
 ## Facts
 - MDM channels: `Microsoft-Windows-DeviceManagement-Enterprise-Diagnostics-Provider/Admin` (on by default) and `/Debug` (enable via Show Analytic and Debug logs). [DOC S617]
 - Autopilot logs to Event Viewer > Application and Services Logs > Microsoft > Windows > ModernDeployment-Diagnostics-Provider > Autopilot. [DOC S-fzoar2ya]
-- Channel name `Microsoft-Windows-ModernDeployment-Diagnostics-Provider/Autopilot`: derived from that Event Viewer path using the naming shown for other channels (e.g. `Microsoft-Windows-AAD/Operational` ↔ Microsoft > Windows > AAD). [DER S-fzoar2ya,S632]
+- Channel name `Microsoft-Windows-ModernDeployment-Diagnostics-Provider/Autopilot`: derived from that Event Viewer path using the naming shown for other channels (e.g. file `Microsoft-Windows-AAD%4Operational.evtx` in S618 ↔ Event Viewer path Microsoft > Windows > AAD in S632). [DER S-fzoar2ya,S632,S618]
 - Hybrid join failures: `User Device Registration` log under Microsoft > Windows (event IDs 201, 204, 304, 305). [DOC S632]
 - Exact channel name `Microsoft-Windows-User Device Registration/Admin`. [DOC S-d3ml3kug]
 - PRT/CloudAP events: Microsoft > Windows > AAD. Event 1006 (start) and 1007 (end, with the final error code) of PRT acquisition are in the Analytic log; the CloudAP plug-in writes errors to Operational and info events to Analytic, and both logs are needed. [DOC S632]

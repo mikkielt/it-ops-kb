@@ -3,7 +3,7 @@ topic: logs/azure-monitor-agent
 priority: P2
 applies_to: "Azure Monitor Agent (AMA), Data Collection Rules API 2024-03-11, docs ms.date through 2026-09"
 retrieved_utc: 2026-09-26
-sources: [S-luprngvc, S-me4bxp52, S-kguhudz7, S-6xjyyd4l, S-mix3xqam, S-m4gimryf, S-de5xdfvw, S-in4qr3cp, S-prybc22p, S-qvsjnnqo, S-r33zxv3s, S-5d3e2yck, S-3dcvyq2z, S-dhhpzwg3]
+sources: [S-luprngvc, S-me4bxp52, S-kguhudz7, S-6xjyyd4l, S-mix3xqam, S-m4gimryf, S-de5xdfvw, S-in4qr3cp, S-prybc22p, S-qvsjnnqo, S-r33zxv3s, S-5d3e2yck, S-3dcvyq2z, S-dhhpzwg3, S-fcu25tcw, S-mf3y7wxv]
 status: complete
 ---
 
@@ -31,7 +31,7 @@ receiver is `logs/otel-collector-receivers.md`.
   `Microsoft-InsightsMetrics`, params `samplingFrequencyInSeconds`, `counterSpecifiers`), `syslog` (stream
   `Microsoft-Syslog` or `Microsoft-CommonSecurityLog` for CEF, params `facilityNames`, `logLevels`),
   `prometheusForwarder`, `eventHub`, and `extension` (extension-based, e.g. the AMA Sentinel connector). [DOC S-luprngvc]
-- XPath entries are written `LogName!XPathQuery`, e.g. `Security!*[System[(EventID=4624 or EventID=4625)]]` or
+- XPath entries are written `LogName!XPathQuery`, e.g. `System!*[System[EventID=4648]]` or
   `Application!*[System[EventID=1035]]`. [DOC S-me4bxp52]
 - AMA subscribes via the Windows `EvtSubscribe` API, so it cannot collect from Analytic/Debug channels (export to a
   workspace isn't possible for those). [DOC S-me4bxp52]
@@ -55,13 +55,14 @@ receiver is `logs/otel-collector-receivers.md`.
 - A DCR transformation is a KQL query (`transformKql` on a `dataFlows` entry) that runs against each incoming record
   to filter, reshape, redact or enrich data before it reaches its destination; multi-stage transformations (preview)
   chain a client-side transformation on the data source with an ingestion-time transformation on the data flow.
-  [DOC S-m4gimryf]
+  [DOC S-m4gimryf, S-kguhudz7]
 - Built-in processors include `parse.JsonPath` (columnName, `all` extraction list of `path`/`nameAs`/`typeAs`) and
   `parse.XmlPath` (same shape, `path` is XPath syntax, e.g. `/Event/System/EventID` or
   `/Event/EventData/Data[@Name='SubjectUserName']`) and `parse.CEFAttribute`. [DOC S-luprngvc]
-- A **workspace transformation DCR** applies a transformation directly to a Log Analytics workspace/table for data
-  collected outside a DCR-based method (e.g. legacy connectors); it is a different `dataFlows` mechanism than the
-  DCR used by AMA or the Logs Ingestion API. [DOC S-m4gimryf]
+- A **workspace transformation DCR** applies transformations directly to a Log Analytics workspace for data
+  collection that doesn't use a DCR (the sample's `Event` transformation applies only to data from the deprecated Log
+  Analytics agent, not AMA); it has `"kind": "WorkspaceTransforms"`, an empty `dataSources` section and one
+  `dataFlows` entry per transformed table. [DOC S-m4gimryf, S-kguhudz7]
 
 ### Associations, DCE and destinations
 - A DCR association (DCRA) links a DCR to a target resource; the relationship is many-to-many — one DCR can have
@@ -117,8 +118,8 @@ receiver is `logs/otel-collector-receivers.md`.
 - Limitations: no private link support for client devices, no Azure Monitor Metrics destination, and the agent
   isn't optimized for battery/network use on laptops. Settings can't be changed post-install without
   uninstall/reinstall. [DOC S-de5xdfvw]
-- Setting up the tenant-wide association requires: (1) assign **Monitored Objects Contributor** at root scope
-  (requires elevating to Azure tenant admin) to the operator, (2) `PUT
+- Setting up the tenant-wide association requires: (1) assign **Monitored Objects Contributor** to the operator
+  (the admin doing this needs Owner at root scope, obtained by elevating to Azure tenant admin), (2) `PUT
   .../providers/Microsoft.Insights/monitoredObjects/<tenantId>` with the DCR's region, (3) create a DCRA under that
   monitored object pointing at the DCR's resource id. [DOC S-de5xdfvw]
 - Runtime data/logs default to `C:\Resources\Azure Monitor Agent\`, or the path in registry value
@@ -132,8 +133,9 @@ receiver is `logs/otel-collector-receivers.md`.
   [DOC S-5d3e2yck]
 - MMA/OMS is replaced by AMA for both Windows and Linux, in Azure, other clouds and on-premises; AMA uses DCRs
   instead of the legacy agent's per-workspace configuration. [DOC S-5d3e2yck]
-- MMA is not required for Microsoft Defender for Endpoint (on supported OS); AMA cannot substitute for Defender for
-  Endpoint. Windows 8.1 Defender for Endpoint devices remain MMA-dependent. [COMMUNITY S-5d3e2yck]
+- For Defender for Endpoint, Windows 7 SP1, Windows Server 2008 R2 SP1, 2012 R2 and 2016 devices upgrade to the newer
+  Defender for Endpoint agent instead of MMA; Windows 8.1 devices remain dependent on MMA; AMA cannot substitute for
+  Defender for Endpoint. [DOC S-fcu25tcw]
 
 ### Logs Ingestion API
 - The Logs Ingestion API sends data to a Log Analytics workspace via a REST call that names a DCR by its
@@ -147,9 +149,10 @@ receiver is `logs/otel-collector-receivers.md`.
 - Logs Ingestion API limits: max API call size 1 MB (compressed or uncompressed); max field value size 64 KB (longer
   values truncated); max data per DCR 2 GB/minute; max requests per DCR 12,000/minute — both retriable per the
   response's `Retry-After` header. [DOC S-r33zxv3s]
-- Setting up the API from scratch needs: a Microsoft Entra app registration + service principal + secret, a Data
-  Collection Endpoint, and DCRs, with Contributor on the workspace/DCE/DCR resource groups plus Monitoring Metrics
-  Publisher on the DCR resource group. [DOC S-prybc22p]
+- Microsoft's setup script for the Logs Ingestion API creates a Microsoft Entra app registration, service principal
+  and secret, a Data Collection Endpoint, and resource groups for the DCE and the DCRs; it assigns Contributor on the
+  workspace, the DCR resource group and the DCE resource group, plus Monitoring Metrics Publisher on the DCR resource
+  group. [DOC S-mf3y7wxv]
 
 ## Reference
 - `logs/sources.md`: verified Windows event channel names and log file paths to target with `windowsEventLogs`

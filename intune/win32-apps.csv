@@ -35,8 +35,8 @@ graph_win32lobapp_property,minimumNumberOfProcessors,minimum value 0,S-6lyy6mvq
 graph_win32lobapp_property,minimumCpuSpeedInMHz,allowed range 0 to clock speed from WMI helper,S-6lyy6mvq
 graph_win32lobapp_property,setupFilePath,relative path of the setup file in the encrypted Win32LobApp package,S-6lyy6mvq
 graph_win32lobapp_property,minimumSupportedWindowsRelease,example value Windows11_23H2,S-6lyy6mvq
-graph_permission,DeviceManagementConfiguration.ReadWrite.All,least privileged listed permission for win32LobApp create and content file commit,S-6lyy6mvq
-graph_permission,DeviceManagementApps.ReadWrite.All,most privileged listed permission for win32LobApp create and content file commit,S-6lyy6mvq
+graph_permission,DeviceManagementConfiguration.ReadWrite.All,least privileged listed permission for win32LobApp create and content file commit,S-6lyy6mvq;S-lficatwr
+graph_permission,DeviceManagementApps.ReadWrite.All,most privileged listed permission for win32LobApp create and content file commit,S-6lyy6mvq;S-lficatwr
 limit,Win32 app package size,30 GB per app,S-fipq4ix4
 limit,PowerShell script installer size,50 KB,S-wc6e3fba
 limit,Installation time required default,60 minutes,S-wc6e3fba

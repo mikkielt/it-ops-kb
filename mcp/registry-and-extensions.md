@@ -30,16 +30,16 @@ the Skills extension (serving Agent Skills over `resources/read`) and two author
   **not** support private servers (internal hostnames or private package registries) — self-host a
   private registry for those. [DOC S-gg2bczek]
 - `server.json` conforms to `$schema: https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json`.
-  Minimum required top-level fields shown in every example: `name`, `description`, `version`, plus at
-  least one of `packages` (local/installable) or `remotes` (hosted); `title` and `repository` are common
-  optional fields. [DOC S-3j6fi7yk, S-w5egb2fu]
+  Every example `server.json` in these pages carries `name`, `description` and `version` plus
+  `packages` (local/installable), `remotes` (hosted) or both; `title` appears in the remote-server examples
+  and `repository` in the quickstart one. [DOC S-3j6fi7yk, S-w5egb2fu]
 - Namespace verification ties the server `name` to an authenticated identity: GitHub auth requires
   `io.github.<username-or-orgname>/*`; domain (DNS/HTTP) auth requires `<reverse-dns-of-domain>/*`
   (e.g. `io.modelcontextprotocol/everything` for domain `modelcontextprotocol.io`). [DOC S-xmxnlqbx]
 - `mcp-publisher` CLI commands: `init` (generate a `server.json` template), `login` (`github`,
   `github-oidc`, `dns [google-kms|azure-key-vault]`, `http [...]`), `logout`, `publish`. Install via a
   prebuilt binary tarball, Homebrew (`brew install mcp-publisher`), or the equivalent PowerShell
-  download on Windows. [DOC S-3j6fi7yk]
+  download on Windows. [DOC S-3j6fi7yk, S-xmxnlqbx, S-uussqmqn]
 - DNS authentication: generate an Ed25519 or ECDSA P-384 key pair (locally, via Google Cloud KMS, or
   Azure Key Vault), publish a TXT record `"v=MCPv1; k=ed25519; p=<base64-pubkey>"` (or `k=ecdsap384`) at
   the apex of the domain, wait for propagation, then `mcp-publisher login dns --domain <d> --private-key <k>`.
@@ -107,7 +107,7 @@ the Skills extension (serving Agent Skills over `resources/read`) and two author
   bugs, security vulnerabilities, duplicated functionality and adult content are explicitly **not**
   removed. A removed server's `status` is set to `"deleted"` but its metadata stays queryable via the API
   (metadata may be overwritten only in extreme, e.g. unlawful-content, cases). Report spam/malware to the
-  underlying package registry and open a GitHub issue titled `Abuse report: `. [DOC S-vouhh5ur]
+  underlying package registry and open a GitHub issue titled `Abuse report: `. [DOC S-vouhh5ur, S-wvioh66u]
 - FAQ: servers currently **cannot** be deleted/unpublished (open GitHub discussion at time of writing);
   updating metadata means publishing a new `server.json` with a new, unique version string; custom
   metadata under `_meta.io.modelcontextprotocol.registry/publisher-provided` is preserved on publish, up
@@ -145,8 +145,8 @@ the Skills extension (serving Agent Skills over `resources/read`) and two author
   the host fetches and renders that HTML resource inside a sandboxed iframe (no access to parent DOM,
   cookies, or localStorage); the resource's `_meta.ui` object can set `permissions` (e.g. microphone,
   camera) and `csp` (allowed external origins). App↔host communication is a `postMessage`-based JSON-RPC
-  dialect reusing some core methods (e.g. `tools/call`) plus new `ui/`-prefixed methods (e.g.
-  `ui/initialize`); the `@modelcontextprotocol/ext-apps` `App` class is a convenience wrapper, not
+  dialect: some methods are shared with core MCP (e.g. `tools/call`), some are similar (e.g.
+  `ui/initialize`) and most are new, with a `ui/` prefix; the `@modelcontextprotocol/ext-apps` `App` class is a convenience wrapper, not
   required — the postMessage protocol can be implemented directly. [DOC S-4zkeipor]
 - Skills over MCP (`io.modelcontextprotocol/skills`, SEP-2640, status Final): a server supporting it
   **MUST** declare both the `resources` capability and the `io.modelcontextprotocol/skills` extension

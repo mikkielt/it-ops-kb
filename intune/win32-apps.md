@@ -3,7 +3,7 @@ topic: intune/win32-apps
 priority: P2
 applies_to: "Microsoft Intune Win32 app management (Windows app (Win32) and Enterprise App Catalog app types), docs retrieved 2026-09-26"
 retrieved_utc: 2026-09-26
-sources: [S-wc6e3fba, S-ec3hg7rx, S-fipq4ix4, S-tnes5beq, S-6lyy6mvq, S-lficatwr, S-oljccwue, S-vywsads7]
+sources: [S-wc6e3fba, S-ec3hg7rx, S-fipq4ix4, S-tnes5beq, S-6lyy6mvq, S-lficatwr, S-oljccwue, S-vywsads7, S-ta4g5get]
 status: complete
 ---
 
@@ -63,8 +63,8 @@ Win32 apps are packaged with the Microsoft Win32 Content Prep Tool (`IntuneWinAp
 
 ### Supersedence
 - Supersedence lets one app version update or replace another: disable "Uninstall previous version" to update in place, enable it to uninstall the old app and install the new one. [DOC S-wc6e3fba]
-- Maximum 10 nodes in a supersedence relationship graph, including references to other apps that are themselves superseded (a supersedence chain graph, same counting principle as dependencies). [DOC S-wc6e3fba]
-- The dedicated supersedence page instead states a maximum of 11 nodes in a single supersedence graph (superseding app, superseded apps and all related apps); the two Learn pages disagree, so plan for 10 (see `_conflicts.md`). [DOC S-vywsads7]
+- Maximum 10 nodes in a supersedence relationship graph, including references to other apps that are themselves superseded; all apps in that graph count toward the maximum. [DOC S-wc6e3fba]
+- The dedicated supersedence page gives 10 nodes in its step note and for supersedence chains, but its limitations section states a maximum of 11 nodes in a single supersedence graph (superseding app, superseded apps and all related apps); the pages are inconsistent, so plan for 10 (see `_conflicts.md`). [DOC S-vywsads7]
 
 ### App relationship viewer and assignments
 - The app relationship viewer shows an app's directly connected dependency and supersedence child apps, and is available for the Windows app (Win32) and Windows catalog app (Win32) types. [DOC S-ec3hg7rx]
@@ -72,8 +72,8 @@ Win32 apps are packaged with the Microsoft Win32 Content Prep Tool (`IntuneWinAp
 - If a Win32 app is assigned to users and needs admin rights the signed-in standard user lacks, the install fails. [DOC S-wc6e3fba, S-tnes5beq]
 - Win32 apps installed by Intune are not automatically uninstalled from a device when the device is unenrolled. [DOC S-ec3hg7rx]
 - Apps assigned as "Available for enrolled devices" are not automatically reinstalled by Intune if a user uninstalls them. [DOC S-ec3hg7rx]
-- Enterprise App Catalog apps use fixed default install/uninstall commands set by Microsoft, but can be overridden with an uploaded PowerShell script; Enterprise App Management (EAM) only supports managed Windows devices running 64-bit Windows. [DOC S-tnes5beq]
-- The Enterprise App Catalog is part of Enterprise App Management (EAM), available through the Intune Suite (trial or purchase); it is a separate licensed capability, not included by default. [DOC S-tnes5beq]
+- Enterprise App Catalog apps come with install/uninstall commands prepopulated with Microsoft-recommended values, which can be overridden with an uploaded PowerShell script; Enterprise App Management (EAM) only supports managed Windows devices running 64-bit Windows. [DOC S-tnes5beq]
+- The Enterprise App Catalog is part of Enterprise App Management (EAM), part of Microsoft Intune Suite and available for trial and purchase. [DOC S-tnes5beq]
 
 ### Graph API
 - Create a Win32 app: `POST /deviceAppManagement/mobileApps` with `@odata.type: "#microsoft.graph.win32LobApp"`; least-privileged permission listed is `DeviceManagementConfiguration.ReadWrite.All`, more privileged is `DeviceManagementApps.ReadWrite.All` (delegated or application). [DOC S-6lyy6mvq]
@@ -83,7 +83,7 @@ Win32 apps are packaged with the Microsoft Win32 Content Prep Tool (`IntuneWinAp
 - A PowerShell sample of the full upload flow using the `ProfileVersion1` encryption scheme is published at `https://aka.ms/fileencryptioninfo`. [DOC S-lficatwr]
 
 ## Reference
-- Log files for Win32 app activity are in the IME log folder: `AppActionProcessor.log` (detection/applicability checks) and `AppWorkload.log` (Win32 app deployment activity) — see `intune/ime-logs.md` for the full log list and folder path. [DOC S-wc6e3fba]
+- Log files for Win32 app activity are in the IME log folder: `AppActionProcessor.log` (detection/applicability checks) and `AppWorkload.log` (Win32 app deployment activity) — see `intune/ime-logs.md` for the full log list and folder path. [DOC S-ta4g5get]
 - Return code fundamentals overlap with `mecm/application-model.md` (ConfigMgr deployment types use the same Windows Installer return code semantics and a 5-level supersedence-chain guideline; Intune Win32 apps use a 10-node supersedence and 100-app dependency graph limit instead — different limits, do not conflate).
 - Content equivalent to the Learn page "Prepare Win32 app content for upload" (packaging) is folded into this article; no separate topic exists for the Content Prep Tool.
 - WinGet-based deployment (the **Microsoft Store app (new)** app type, `winget show [PackageId]` for finding a Store Win32 app's Installer Url, WinGet Configuration, and the `Microsoft.WinGet.Client` PowerShell module) is a separate, Store-sourced pipeline from the `.intunewin`/IME flow documented here: see `windows/winget.md`.

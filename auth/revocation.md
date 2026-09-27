@@ -56,22 +56,22 @@ ticket requests, so the real picture has three windows:
 
 ### (b) Entra user disabled + `revokeSignInSessions`
 - `revokeSignInSessions` (Graph `POST /users/{id}/revokeSignInSessions`) invalidates all of a user's
-  refresh tokens and session cookies by resetting `signInSessionsValidFromDateTime`; Microsoft states this
-  takes a few minutes to propagate, and that a currently active **access token remains valid until it
-  expires**. [DOC S1345]
+  refresh tokens and session cookies by resetting `signInSessionsValidFromDateTime`; Microsoft notes a
+  possible delay of a few minutes before tokens are revoked, and that after disable/revoke a user of an
+  app that uses access tokens loses access only **when the access token expires**. [DOC S1348, S1345]
 - **Corrected finding on Graph and CAE:** Microsoft Graph does implement CAE -- it returns a 401 with a
   `WWW-Authenticate: ... error="insufficient_claims"` claims challenge when a previously issued, not-yet-
   expired access token has been invalidated by a critical event, but **only for a calling client that has
-  declared the `cp1` client capability** (`.WithClientCapabilities(new[] {"cp1"})` in MSAL); "some popular
-  services like Microsoft Graph send claims challenges only if the calling client app declares its client
-  capabilities." [DOC S1354, S1355] A `cp1`-declaring client also receives long-lived (up to ~24-28 hour)
+  declared the `cp1` client capability** (`.WithClientCapabilities(new[] {"cp1"})` in MSAL); Microsoft
+  names Graph as a service that sends claims challenges only to client apps that declare, through client
+  capabilities, that they can handle them. [DOC S1354, S1355] A `cp1`-declaring client also receives long-lived (up to ~24-28 hour)
   CAE access tokens instead of the default 1-hour ones, because revocation is expected to come from the
   critical-event channel rather than expiry. [DOC S1354, S1306]
 - Practical consequence: an MSAL client (`client` engineer delegated calls, `site` app-only
   calls) that declares `cp1` and correctly handles the 401 claims challenge gets near-real-time
   revocation from Entra disable/`revokeSignInSessions`/password-reset events on its Graph calls -- the
   same critical-event list documented for Exchange/SharePoint/Teams (account deleted/disabled, password
-  changed/reset, MFA enabled, admin revokes refresh tokens, high user risk). [DOC S1347, S1354] A client
+  changed/reset, MFA enabled, admin revokes refresh tokens, high user risk). [DER S1347, S1354: CAE revokes tokens on the critical events S1347 lists; S1347 names Exchange/SharePoint/Teams, not Graph, as subscribers] A client
   that does **not** declare `cp1` gets ordinary tokens, and Graph does not send it a challenge, so it can
   keep using an already-issued access token until its normal expiry (default 1 hour) even after a critical
   event. This makes `cp1` support in a workstation client's MSAL configuration a real, low-cost revocation-latency
@@ -104,12 +104,12 @@ ticket requests, so the real picture has three windows:
 ### SQL Server
 - `ALTER LOGIN ... DISABLE` "doesn't affect the behavior of logins that are already connected. (Use the
   `KILL` statement to terminate an existing connection.) Disabled logins retain their permissions and can
-  still be impersonated." [DOC S1375] So disabling (or, for a dropped/removed AD-group-based login,
-  removing) a login stops new connection attempts immediately but an open session a `client` or
-  `site` instance already holds keeps working, with its cached group-membership snapshot, until the
-  connection is explicitly killed (`KILL <session_id>`) or drops for an unrelated reason (network,
-  service restart, pool recycle). [DOC S1375] For a Windows-authentication login, the login's cached "membership in Windows groups" also does not get re-evaluated on that
-  connection until it is killed and reconnects. [DOC S1375]
+  still be impersonated." [DOC S1375]
+- An authenticated connection caches the login's identity (for a Windows-authentication login, including
+  its Windows group membership) for as long as the connection lasts; changes such as a password reset or
+  a Windows group membership change take effect only after the login signs out and in again, and a
+  sysadmin member or a login with `ALTER ANY CONNECTION` can `KILL` the connection to force that. `ALTER
+  LOGIN ... DISABLE` cannot be used to deny access to a Windows group login. [DOC S1375]
 
 ### SMB
 - Same underlying Kerberos mechanism as (a): an SMB session established with a service ticket keeps

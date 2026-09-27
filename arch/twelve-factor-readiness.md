@@ -43,9 +43,10 @@ gap: `zoneinfo` needs the `tzdata` PyPI package there.
   schedule; if exceeded, that occurrence is skipped and counted failed; unset means no deadline. [DOC S1726]
 - `activeDeadlineSeconds` is a Job-level (not CronJob-level) field bounding how long a running Job may
   execute before being terminated. [DOC S1727]
-- Kubernetes docs do not discuss liveness/readiness probes for batch Jobs/CronJobs — these probes are
-  for long-running services, not finite workloads, which instead rely on Job success/failure status.
-  [DOC S1726]
+- The CronJob page does not mention liveness/readiness probes. [DER S1726: absent from the page as re-read
+  2026-09-27]
+- Probes being meant for long-running services, with finite Jobs relying on Job success/failure status
+  instead. [UNK: not in S1726 as re-read 2026-09-27]
 - `zoneinfo` looks first in directories on `TZPATH` (POSIX has well-known default locations, e.g.
   `/usr/share/zoneinfo`; Windows has none by default), then falls back to the `tzdata` PyPI package;
   if neither has the key, it raises `ZoneInfoNotFoundError`. Python docs explicitly recommend

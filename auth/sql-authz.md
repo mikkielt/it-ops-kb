@@ -3,7 +3,7 @@ topic: auth/sql-authz
 priority: P0
 applies_to: "SQL Server 2022/2025, extends sqlserver/"
 retrieved_utc: 2026-09-26
-sources: [S1206, S1207]
+sources: [S1206, S1207, S-jyoprgy5]
 status: partial
 ---
 
@@ -11,20 +11,20 @@ status: partial
 
 ## Summary
 - AD group logins map to database users the same way regardless of ConfigMgr; membership changes take effect the next time the principal connects (a new login token), not mid-session, because SQL Server evaluates Windows group membership from the access token at connection time.
-- SQL Server 2025 supports Microsoft Entra authentication on-premises, but **requires the instance to be Arc-enabled** and (for the newer "primary managed identity" model) a recent Azure Extension for SQL Server; group support exists through the same Entra security groups used elsewhere.
+- SQL Server 2022 and later support Microsoft Entra authentication on-premises, usually through Azure Arc; on Windows it can also be set up **without Arc** (manual certificate, registry and app-registration configuration). SQL Server 2025's "primary managed identity" model does require Arc and a recent Azure Extension for SQL Server. Entra groups can be created as SQL Server logins.
 
 ## Facts
-- Microsoft Entra authentication for on-premises SQL Server needs the instance registered with Azure Arc; SQL Server 2025 (17.x) adds a "primary managed identity" concept enabling credential-free inbound and outbound authentication once Arc-enabled, configured via the latest Azure Extension for SQL Server (not via the same Azure portal steps used for the general Arc Entra-auth setup, which explicitly do not apply to 17.x). [DOC S1206]
-- The general Entra-authentication-for-SQL-Server overview describes the feature working with Entra security groups for authorization the same way Windows AD groups do for classic Windows Authentication logins — a group is created as a login/user in SQL Server and members inherit its permissions. [DOC S1207]
-- Requirement for the connecting Entra identity to reach Azure Arc-enablement: membership in the "Azure Connected Machine Onboarding" group, or Contributor / Azure Connected Machine Resource Administrator role on the target resource group (this is about onboarding the SQL Server host to Arc, not the ongoing DB permission model). [DOC S1206]
-- QA13 answer: **yes**, Azure Arc is required for Entra authentication on an on-premises SQL Server 2022/2025 instance, and Entra groups are supported for authorization. [DOC S1206,S1207]
+- Managed identity with Entra authentication for SQL Server enabled by Azure Arc applies to SQL Server 2025 (17.x) and later on Windows; prerequisites are an Arc-connected SQL Server and the latest Azure Extension for SQL Server. The primary managed identity is enabled in the portal (Microsoft Entra ID and Purview page) or manually via registry, and needs the Graph application permissions `User.Read.All`, `GroupMember.Read.All` and `Application.Read.All`. [DOC S1206]
+- A Microsoft Entra group can be created as a SQL Server login (`CREATE LOGIN [group] FROM EXTERNAL PROVIDER`) and as a database user (`FROM LOGIN` or as a contained user `FROM EXTERNAL PROVIDER`). [DOC S-jyoprgy5]
+- To connect SQL Server to Azure Arc, the Microsoft Entra account needs membership in the Azure Connected Machine Onboarding group or the Contributor role, plus the Azure Connected Machine Resource Administrator and Reader roles, in the resource group (onboarding the host, not the database permission model). [DOC S1207]
+- QA13 answer (corrected 2026-09-27): **no**, Azure Arc is not strictly required: the Entra-auth overview describes setup with Arc and also on Windows without Arc (manual certificates, registry, app registration); Arc is required for the SQL Server 2025 primary-managed-identity setup. Entra groups can be SQL Server logins. [DOC S1207, S1206, S-jyoprgy5]
 - Windows-Authentication AD group login membership changes: SQL Server reads the Windows access token's group SIDs at connection/login time; a group change is honoured on the *next* connection (new login), not for an already-open session — this matches general Windows/Kerberos token behaviour and is consistent with, but not independently re-derived beyond, general SQL Server Windows Authentication documentation already implied by `sqlserver/` topic files. [DER from Windows Authentication token model]
 
 ## Reference
 | Question | Answer | Source |
 |---|---|---|
-| QA13: Arc required for on-prem Entra auth? | Yes | S1206 |
-| QA13: groups supported? | Yes, same model as AD groups | S1206,S1207 |
+| QA13: Arc required for on-prem Entra auth? | No on Windows (manual setup without Arc exists); yes for the SQL Server 2025 managed-identity setup | S1207, S1206 |
+| QA13: groups supported? | Yes, Entra group as login/user | S-jyoprgy5 |
 | When do AD/Entra group changes apply to a SQL login? | Next connection (new access token), not mid-session | DER |
 
 ## Examples

@@ -3,7 +3,7 @@ topic: agents/agent-overuse-patterns
 priority: P1
 applies_to: "Anthropic/OpenAI/Google/Microsoft agent guidance (2025-2026 docs), Thoughtworks Technology Radar Vol 34 (2026-04), jq 1.8, Renovate (docs 44.115.10), conventional-commits v1.0.0, semantic-release, LSP 3.18, DSC 3.3.0, Presidio (pattern_recognizer.py at commit e9895a51)"
 retrieved_utc: 2026-09-25
-sources: [S2160, S2161, S2162, S2163, S2164, S2165, S2166, S2167, S2168, S2169, S2170, S2171, S2172, S2173, S2174, S2175, S150, S154, S825, S-2z2zfj3l, S-sxtmngif, S317, S-t5dhva6p, S900, S1920, S1924, S1925, S1935, S1936]
+sources: [S2160, S2162, S2163, S2164, S2165, S2166, S2167, S2168, S2169, S2170, S2171, S2172, S2173, S2174, S2175, S150, S154, S825, S-2z2zfj3l, S-sxtmngif, S317, S-t5dhva6p, S900, S1920, S1924, S1925, S1935, S1936]
 status: partial
 ---
 
@@ -15,8 +15,8 @@ Anthropic, OpenAI, Google and Microsoft all publish the same core rule, in their
 simplest solution first, and only reach for an agent when the task needs open-ended judgement, an
 unstable ruleset, or unstructured input — never for tasks that are deterministic, stable and already
 solved by a grammar, schema or algorithm. None of the four vendors publishes a single universal
-cost/latency/error number; the concrete figures available (token multipliers, per-model latency spread,
-a $/day formula) come from Anthropic's own agent architecture post and from independent (COMMUNITY)
+cost/latency/error number; the concrete figures available (token multipliers, per-call latency figures,
+a $/day example) come from Anthropic's own agent architecture post and from independent (COMMUNITY)
 cost-modelling writeups, not from a cross-vendor benchmark. Topic 4's catalogue
 (`agents/subagents-vs-deterministic-tools.md`) already covers *child-agent-vs-tool* signals; this
 file's `agent-overuse-patterns.csv` is the wider list of task shapes a team hands to an LLM whole,
@@ -25,24 +25,29 @@ alongside the deterministic tool that already exists for them.
 ## Facts
 
 ### QG37 — vendor and practitioner guidance on when not to use an LLM or agent
-- Anthropic: "When building applications with LLMs, we recommend finding the simplest solution possible,
-  and only increasing complexity when needed... this might mean not building agentic systems at all,"
+- Anthropic: "we recommend finding the simplest solution possible, and only increasing complexity when
+  needed... this might mean not building agentic systems at all,"
   and "agentic systems often trade latency and cost for better task performance... [and] higher costs,
   and the potential for compounding errors." [DOC S1920 — reused from topic 4]
 - OpenAI's practical guide names three qualifying signals for building an agent — complex judgement-based
   decisions, rulesets that have grown unmaintainable, and heavy reliance on unstructured data — and states
   that if none apply, a deterministic solution may suffice; it explicitly excludes single-turn LLM calls,
   simple chatbots and sentiment classifiers from being "agents" at all. [DOC S1924 — reused from topic 4]
-- Microsoft's Azure Architecture Center frames the first decision point as: "does the problem need natural
-  language understanding or dynamic generation? If no, it's a deterministic system and you should stop,"
-  and recommends starting with deterministic orchestration, escalating to agent-based reasoning only when
-  predetermined logic is insufficient; it ranks a versioned, diffable, testable workflow-as-spine design
-  (agents as bounded leaf workers) above letting an agent decide the workflow itself. [DOC S1925 — reused
-  from topic 4, this fact newly extracted for QG37]
+- Microsoft's Azure Architecture Center says to use the lowest level of complexity that reliably meets the
+  requirements: a direct model call (no agent logic, no tools) covers single-step classification,
+  summarization and translation, and "if prompt engineering can solve the problem, you don't need an
+  agent"; it also lists deterministic, rule-based task routing as a case against an orchestrating agent.
+  [DOC S1925]
+- A Microsoft Foundry Blog post by a Microsoft practitioner gives the first tier decision as: does the
+  problem need natural language understanding or dynamic generation? If not, it is a deterministic system
+  and you stop there. [COMMUNITY S2162]
+- A second Microsoft Foundry Blog post ("Deterministic Spine, Agentic Leaves") keeps workflow control in a
+  deterministic, versioned workflow definition you can diff, review, test and roll back, with agents only
+  as bounded workers inside controlled steps. [COMMUNITY S2163]
 - Google's Cloud Architecture Center and "Agents Companion" whitepaper (content retrieved via search
   summary; direct fetch returned HTTP 403) state that summarization, translation and classification "often"
   do not need an agentic workflow, and name deterministic-and-stable logic, and a need for speed/reliability
-  over flexibility, as reasons to avoid an agent. [DOC S2160, S2161 — note: content not independently
+  over flexibility, as reasons to avoid an agent. [DOC S2160 — note: content not independently
   re-verified by direct WebFetch; see `gaps.md`]
 - Thoughtworks Technology Radar Volume 34 (April 2026) places "Agent Skills" in **Trial** ("worth
   pursuing") as a way to modularize context. Its "permission-hungry agents" theme says zero trust, least
@@ -51,19 +56,25 @@ alongside the deterministic tool that already exists for them.
   agents is a separate Trial blip, and "ignoring durability in agent workflows" is a Caution blip (systems
   that work in development but fail in production) — an implicit argument for keeping agent scope narrow
   rather than routing whole workflows through one. [DOC S2164, S2165]
-- Independent cost/latency figures (none vendor-published as a general benchmark): a high-volume pipeline
-  run 50,000×/day at 3,000 tokens/run costs roughly $1.50/day at current frontier prices, rising to $15/day
-  at 30,000 tokens/run — a 10x token increase producing a 10x cost increase, i.e. cost scales linearly with
-  token volume, not with task difficulty. [COMMUNITY S2173]
-- Independent measurement: per-model latency for the same agentic task varies about 21x across model
-  choices in one comparison (12,874 ms vs 613 ms per trial). [COMMUNITY S2174]
+- Independent cost figures (none vendor-published as a general benchmark): a pipeline run 50,000 times a
+  day at 3,000 tokens per run costs roughly $1.50/day at current frontier prices, and $15/day at 30,000
+  tokens per run; a later passage of the same post calls the 30,000-token case "roughly 15x more" than the
+  3,000-token one. [COMMUNITY S2174]
+- Independent latency figures: deterministic steps can run in under 10 ms, while model-driven pipelines add
+  at least 300-600 ms per LLM call and ReAct-style agents commonly issue 8-15 calls per task
+  [COMMUNITY S2174]; a single LLM call might take 800 ms against 10-30 seconds for an orchestrator-worker
+  flow with a reflection loop. [COMMUNITY S2173]
 - Independent framing: agentic systems introduce "probabilistic uncertainty into previously deterministic
-  software stacks," an "Unreliability Tax" — the same request can succeed 95% of the time and silently
-  produce a wrong answer the other 5%, which a deterministic script cannot do by construction (its wrong
-  answers are only encoded bugs, not run-to-run variance). [COMMUNITY S2174, S2172]
-- No fetched vendor page gives a single named "post-mortem" of an agent deployed where a deterministic
-  tool would have sufficed; the closest official material is Microsoft's own blog title "Stop Letting
-  Agents Run the Workflow," whose body could not be retrieved this session (see `gaps.md`). [UNK]
+  software stacks," an "Unreliability Tax" (the extra compute, latency and engineering spent mitigating
+  failure); a demo that works 80% of the time impresses, a production system failing 20% of the time is
+  useless. [COMMUNITY S2173]
+- The same decision-matrix post notes the failure modes mirror each other: deterministic pipelines break
+  silently on out-of-distribution input, model-driven ones break noisily and expensively when the model
+  misplans. [COMMUNITY S2174]
+- "Stop Letting Agents Run the Workflow" (readable 2026-09-27) opens with an illustrative, unnamed
+  five-agent access-request failure (a 30-day admin grant instead of 8 hours), not a documented incident;
+  no fetched vendor page gives a named post-mortem of an agent deployed where a deterministic tool would
+  have sufficed. [COMMUNITY S2163]
 
 ### QG38 — catalogue of over-routed tasks and their deterministic replacements
 - See `agents/agent-overuse-patterns.csv` (26 rows, columns `task_shape,routed_to_agent,
@@ -105,27 +116,30 @@ alongside the deterministic tool that already exists for them.
   optional deny list (turned into one more regex), with optional context words — the documented deterministic alternative to a free-text NER call for any entity with a fixed
   lexical shape (the same class of fact used for structured-field tokenization design). [DOC S825 —
   reused from `privacy/`, part `privacy`]
-- Power BI scheduled refresh (documented elsewhere in the kb, part `arch`/`powerbi`) is the deterministic
-  path for recurring report generation over a fixed view/measure set, rather than an agent re-summarizing
-  the same numbers on each request. [DOC S900 — reused, cited by reference not re-derived]
+- Power BI scheduled refresh imports data into a semantic model on a configured schedule (up to 8 daily
+  slots on shared capacity, 48 on Premium, PPU or Fabric capacity), so a recurring report over a fixed
+  model is a scheduled job rather than an agent re-summarizing the same numbers on each request.
+  [DER S900: the schedule and slot limits are documented; the agent comparison is our inference]
 
 ### QG39 — signals and measures that a task is over-routed
 - **Output fully determined by input**: OpenAI's own exclusion list (single-turn LLM call, sentiment
   classifier) matches this signal directly — no workflow control is being exercised, so there is nothing
   "agentic" to justify. [DOC S1924]
-- **Same answer recurs across runs**: Anthropic's own consolidation signal for tools (see topic 4, QG14) —
-  a fixed multi-step call sequence that never varies across runs is the same signal applied one level up,
-  to whether the whole task needed an agent at all. [DOC S1935 — reused from topic 4]
-- **A spec or grammar already exists**: JSON, CSV, DSC configuration documents, conventional-commit
-  messages and Presidio's regex patterns are all named, published grammars; wherever one exists the tool
-  reading it does not need to "understand" language, only parse a format. [DER from S2166, S2169, S150]
+- **Same answer recurs across runs**: Anthropic recommends tools that consolidate frequently chained,
+  multi-step tasks into one call (see topic 4, QG14); a fixed call sequence that never varies across runs
+  is that signal applied one level up, to whether the whole task needed an agent at all. [DER S1935: the
+  consolidation advice is the post's; applying it to the whole task is our inference]
+- **A spec or grammar already exists**: JSON, CSV, DSC's published `test` output schema, conventional-commit
+  messages and Presidio's regex patterns are all defined formats; wherever one exists the tool
+  reading it does not need to "understand" language, only parse a format. [DER from S2166, S2169, S150, S825]
 - **Errors are unacceptable / audit needs exact reproduction**: the same input to a deterministic tool
-  always produces the same output; a model can succeed 95% of the time and silently err the other 5%
-  ("Unreliability Tax") — unacceptable where the record itself is the audit trail. [COMMUNITY S2174; DER
-  general implication for any system that inserts audit rows for its own actions]
-- **Volume is high / latency matters**: cost scales linearly with token volume in the one published
-  formula found (10x tokens → 10x cost), and per-model latency spread (21x in one comparison) makes an
-  LLM call a poor fit once a sub-second or high-throughput budget is required. [COMMUNITY S2173, S2174]
+  always produces the same output, while an agentic system carries an "Unreliability Tax" (a demo that
+  works 80% of the time, a production system failing 20%) — unacceptable where the record itself is the
+  audit trail. [DER S2173: the failure framing is the post's; the audit implication is ours]
+- **Volume is high / latency matters**: one post's example goes from $1.50/day to $15/day when tokens per
+  run rise from 3,000 to 30,000 at 50,000 runs a day, and puts each LLM call at 300-600 ms against under
+  10 ms for a deterministic step, which makes an LLM call a poor fit once a sub-second or high-throughput
+  budget is required. [COMMUNITY S2174]
 - **How to find candidates in transcripts/OTel data**: no vendor page fetched in this topic names a
   specific query; topic 4 already documents the concrete Claude Code OTel fields
   (`claude_code.tool_result.duration_ms`, `tool_input_size_bytes`/`tool_result_size_bytes`,
@@ -140,15 +154,16 @@ alongside the deterministic tool that already exists for them.
 |---|---|---|
 | Anthropic | simplest solution first; agents trade latency/cost for task performance | S1920 |
 | OpenAI | agent only for complex judgement, unmaintainable rulesets, unstructured input | S1924 |
-| Microsoft (Azure Architecture Center) | "does it need NL understanding or dynamic generation? If no, stop — deterministic system" | S1925 |
-| Google (Cloud Architecture Center / Agents Companion) | summarization/translation/classification often don't need an agent; deterministic-and-stable logic doesn't either | S2160, S2161 |
+| Microsoft (Azure Architecture Center) | lowest complexity that works; if prompt engineering solves it, no agent | S1925 |
+| Microsoft Foundry Blog (practitioner posts) | "NL understanding or dynamic generation? If no, stop"; deterministic spine, agentic leaves | S2162, S2163 |
+| Google (Cloud Architecture Center / Agents Companion) | summarization/translation/classification often don't need an agent; deterministic-and-stable logic doesn't either | S2160 |
 | Thoughtworks (Radar Vol 34) | narrow agent scope (Agent Skills, Trial); zero trust, least privilege and defense in depth as table stakes for "permission-hungry agents"; sandboxed execution a separate Trial blip | S2164, S2165 |
 
 | Published number | Value | Source | Tag |
 |---|---|---|---|
-| Cost scaling with token volume | 10x tokens/run → 10x $/day (linear) | S2173 | COMMUNITY |
-| Per-model latency spread on one agentic task | ~21x (613 ms – 12,874 ms) | S2174 | COMMUNITY |
-| Non-deterministic success rate framing | "95% success, 5% silent wrong answer" as an illustrative split | S2174 | COMMUNITY |
+| Cost vs token volume | 3,000 → 30,000 tokens/run at 50,000 runs/day: ~$1.50 → ~$15/day | S2174 | COMMUNITY |
+| Per-call latency | deterministic step < 10 ms; LLM call 300-600 ms; ReAct agents 8-15 calls/task | S2174 | COMMUNITY |
+| Non-deterministic success rate framing | "Unreliability Tax": 80% demo success vs 20% production failure | S2173 | COMMUNITY |
 | Agent vs. multi-agent token multiplier vs. chat | ~4x / ~15x | reused from topic 4 (S1921) | DOC |
 
 ## Examples

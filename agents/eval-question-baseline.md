@@ -24,8 +24,9 @@ kinds carry declared roles. It is a task input, not a decision. Every row uses e
 - τ-bench's `pass^k` (all of k trials succeed) and `pass@k` (at least one of k succeeds) are defined by
   Sierra's own benchmark and paper. [DOC S1899]
 - Grading column values used: `code` (deterministic — exact tool name, tier, limit or exit-code check) and
-  `model` (LLM- or human-graded rubric, for open-ended refusal/ambiguity judgments), matching the two
-  grader kinds Anthropic's guidance names as most reliable for agent evals. [DER S1896]
+  `model` (LLM- or human-graded rubric, for open-ended refusal/ambiguity judgments), following the order
+  Anthropic's guidance recommends among its three grader types (code-based, model-based, human): deterministic
+  graders where possible, LLM graders where necessary, human graders sparingly for validation. [DER S1896]
 
 ## Reference
 ### Notes (design notes and cross-references, no external source)

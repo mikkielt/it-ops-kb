@@ -3,7 +3,7 @@ topic: intune/reports-export-api
 priority: P2
 applies_to: "Microsoft Intune reporting infrastructure, Microsoft Graph v1.0 and beta deviceManagementExportJob, docs retrieved 2026-09-26"
 retrieved_utc: 2026-09-26
-sources: [S-ls7jnt2q, S-7cnzcrhl, S-zh4stzuw, S-35rheh4q, S-vlctroci, S-scwd7dap, S-lqfdn2f7, S-6pobzvll, S-dk3pjswi, S-dghnu36r]
+sources: [S-ls7jnt2q, S-7cnzcrhl, S-zh4stzuw, S-35rheh4q, S-vlctroci, S-scwd7dap, S-lqfdn2f7, S-6pobzvll, S-dk3pjswi, S-dghnu36r, S-haj5sdml]
 status: complete
 files: [intune/export-report-names.csv]
 ---
@@ -20,18 +20,18 @@ Intune reports migrated to its newer reporting infrastructure are exported throu
 - Create: `POST /deviceManagement/reports/exportJobs` with a JSON body naming `reportName`; the response is a `deviceManagementExportJob` with `status: notStarted` and `url: null`. [DOC S-ls7jnt2q, S-zh4stzuw]
 - A successful create returns `201 Created`. [DOC S-zh4stzuw]
 - Poll: `GET /deviceManagement/reports/exportJobs('{exportJobId}')` (or `/exportJobs/{exportJobId}`) repeatedly until the response's `status` becomes `completed`; possible `deviceManagementReportStatus` values are `unknown`, `notStarted`, `inProgress`, `completed`, `failed`. [DOC S-ls7jnt2q, S-zh4stzuw]
-- On completion the job's `url` field is a temporary, presigned Azure Blob Storage URL (observed as `https://<account>.blob.core.windows.net/<container>/<jobId>.zip?sv=...&sig=...`); download it directly to get a compressed CSV (or JSON if `format: "json"` was requested). [DOC S-ls7jnt2q]
-- `expirationDateTime` on the completed job gives the deadline for downloading the `url` before it expires; an uncompleted job shows `expirationDateTime: 0001-01-01T00:00:00Z`. [DOC S-ls7jnt2q]
+- On completion the job's `url` field (documented as the temporary location of the exported report) is an Azure Blob Storage URL with a signature (observed as `https://<account>.blob.core.windows.net/<container>/<jobId>.zip?sv=...&sig=...`); download it directly to get a compressed CSV (or JSON if `format: "json"` was requested). [DOC S-ls7jnt2q, S-zh4stzuw]
+- `expirationDateTime` is the time the exported report expires; an uncompleted job shows `expirationDateTime: 0001-01-01T00:00:00Z`. [DOC S-ls7jnt2q, S-zh4stzuw]
 - The `deviceManagementExportJob` resource supports the full CRUD method set: List, Get, Create, Update and Delete `deviceManagementExportJob`; in practice only Create (to start a job) and Get (to poll it) are needed for the export flow. [DOC S-35rheh4q]
 
 ### Request body parameters (deviceManagementExportJob create)
 - `reportName` (String, required): the report to export; max length 2000 characters. [DOC S-zh4stzuw]
 - `filter` (String, optional for most reports): OData-style filter string, e.g. `"(OwnerType eq '1')"`; max length 2000 characters. [DOC S-zh4stzuw, S-ls7jnt2q]
 - `select` (String collection, optional): columns to include; max 256 column names, each up to 1000 characters; only column names valid for the given `reportName` are accepted. Microsoft's own guidance: always pass `select` explicitly rather than relying on default columns, because default columns of any report export are not a stable contract. [DOC S-zh4stzuw, S-ls7jnt2q]
-- `format` (`deviceManagementReportFileFormat`, optional): `csv` (default) or `json`; the v1.0 enum additionally lists `pdf` and `unknownFutureValue` as possible values though the export flow itself only documents csv/json. [DOC S-zh4stzuw]
+- `format` (`deviceManagementReportFileFormat`, optional): `csv` (default) or `json`; the v1.0 enum additionally lists `pdf` and `unknownFutureValue` as possible values though the export flow itself only documents csv/json. [DOC S-zh4stzuw, S-ls7jnt2q]
 - `localizationType` (`deviceManagementExportJobLocalizationType`, optional): `localizedValuesAsAdditionalColumn` (default) or `replaceLocalizableValues`. [DOC S-zh4stzuw, S-ls7jnt2q]
 - `snapshotId` (String, optional): identifies a subset of the dataset (a `sessionId` or a `CachedReportConfiguration` id); when a `sessionId` is given, `filter`/`select`/`orderBy` apply to that session's data; `filter`/`select`/`orderBy` cannot be combined with a `CachedReportConfiguration` id; max length 128 characters. [DOC S-zh4stzuw]
-- Read-only response properties: `id`, `status`, `url`, `requestDateTime`, `expirationDateTime`. [DOC S-zh4stzuw]
+- Besides the request fields, the job object carries `id`, `status`, `url` (temporary location of the report), `requestDateTime` and `expirationDateTime`. [DOC S-zh4stzuw]
 
 ### Localization behavior
 - `localizedValuesAsAdditionalColumn` (default): each localizable column is duplicated as `<Column>` (a stable enum/number, locale-independent) and `<Column>_loc` (a human-readable, locale-dependent string) - e.g. `OS=1` alongside `OS_loc=Windows`. [DOC S-ls7jnt2q]
@@ -47,7 +47,7 @@ Intune reports migrated to its newer reporting infrastructure are exported throu
 
 ### Report catalogue (reportName values)
 - The full `reportName` -> admin center report mapping is a large reference table on Microsoft Learn; a curated subset covering compliance, devices, apps, Windows Update, Autopilot, co-management, certificates, enrollment, and remediation scripts is in `intune/export-report-names.csv` (columns: `reportName`, `contains`, `associated_admin_center_report`, `notes`, `source`). [DOC S-7cnzcrhl]
-- Report names commonly appear with `V3`, `WithPF` (per-setting/policy-filter), and `WithPFV3` suffix variants for the same underlying report family (e.g. `DeviceConfigurationPolicyStatuses` / `...V3` / `...WithPF` / `...WithPFV3`); the CSV notes column flags known variants but does not enumerate every suffix combination. [DOC S-7cnzcrhl]
+- Report names commonly appear with `V3`, `WithPF`, and `WithPFV3` suffix variants for the same underlying report family (e.g. `DeviceConfigurationPolicyStatuses` / `...V3` / `...WithPF` / `...WithPFV3`); the CSV notes column flags known variants but does not enumerate every suffix combination. [DOC S-7cnzcrhl]
 - Example: exporting the `Devices` report accepts columns such as `DeviceName`, `managementAgent`, `ownerType`, `complianceState`, `OS`, `OSVersion`, `LastContact`, `UPN`, `DeviceId` via `select`. [DOC S-ls7jnt2q]
 
 ### getCachedReport and other deviceManagementReports actions (no job/poll pattern)
@@ -62,10 +62,11 @@ Intune reports migrated to its newer reporting infrastructure are exported throu
 - Per app (application permissions): up to 48 requests per minute; additional requests by the same app in that minute are throttled. [DOC S-ls7jnt2q]
 
 ### Intune Data Warehouse / Power BI (legacy, being retired)
-- The Intune Data Warehouse is a separate, older OData-based reporting surface (daily-refreshed historical data), reachable via a per-tenant reporting service feed URL (`https://fef.{tenant}.manage.microsoft.com/ReportingService/DataWarehouseFEService/...?api-version=v1.0` or `=beta`), independent from the `exportJobs` Graph API. [DOC S-scwd7dap]
-- The Intune Data Warehouse (beta) connector v1 in Power BI is being retired; the transition began in late April 2026 and runs gradually over two weeks. Power BI reports created after November 2025 already use connector v2 and are unaffected; older reports must migrate to connector v2 or the OData Feed connector before the transition completes, or lose data access through the beta connector. [DOC S-scwd7dap]
+- The Intune Data Warehouse is a separate OData-based reporting surface (historical Intune data, refreshed daily), read with GET from a per-tenant URL of the form `https://fef.{location}.manage.microsoft.com/ReportingService/DataWarehouseFEService/{entity-collection}?api-version={api-version}` (`v1.0` or `beta`), not through the `exportJobs` Graph API. [DOC S-scwd7dap, S-haj5sdml]
+- The Intune Data Warehouse (beta) connector v1 in Power BI is being retired: reports that use it must migrate to the Intune connector v2 or the OData Feed connector; Power BI reports created after November 2025 already use connector v2 and are unaffected. [DOC S-scwd7dap, S-lqfdn2f7]
+- The connector v1 transition began in late April 2026, runs over two weeks, and unmigrated reports then lose data access. [UNK: not in S-scwd7dap as re-read 2026-09-27]
 - Migration from connector v1: in Power BI Desktop, Transform Data > (each Intune query) > Advanced Editor; a data source of the form `Intune.Contents(x)` indicates connector v1 and must be replaced with `OData.Feed("<reporting_service_endpoint>", null, [Implementation="2.0", Query=[#"api-version"="v1.0"]])`; an optional `?maxHistoryDays=<n>` query parameter on the endpoint limits historical data pulled. [DOC S-lqfdn2f7]
-- ConfigMgr-only co-managed data is not in the Intune Data Warehouse; ConfigMgr-side reporting needs the ConfigMgr AdminService / SQL views instead (cross-link `powerbi/configmgr-views.md`). [DOC S-scwd7dap]
+- The Intune Data Warehouse contains only Intune data: with co-management, retrieve Configuration Manager data from Configuration Manager (the page points to a Configuration Manager Power BI dashboard; cross-link `powerbi/configmgr-views.md`). [DOC S-scwd7dap]
 
 ## Reference
 - `intune/compliance-policies.md`: the compliance policy settings, evaluation states and `windows10CompliancePolicy` Graph resource that the `DeviceCompliance`, `DeviceNonCompliance`, `DevicesWithoutCompliancePolicy` and `PolicyNonComplianceAgg` report families in `intune/export-report-names.csv` surface in bulk-exportable form; see that article's Reference for the back-link to this one.

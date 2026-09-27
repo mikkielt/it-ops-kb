@@ -3,7 +3,7 @@ topic: auth/kerberos
 priority: P0
 applies_to: "Windows Server 2025 / Windows 11 24H2, ConfigMgr 2603, SQL Server 2022/2025"
 retrieved_utc: 2026-09-24
-sources: [S-7jumyiid, S1604, S-6m7klb4f, S1200, S-q5hl3fyg, S1205, S1213, S1215, S1216, S1217]
+sources: [S-7jumyiid, S1604, S-6m7klb4f, S1200, S-q5hl3fyg, S1205, S1213, S1214, S1215, S1216, S1217]
 status: partial
 ---
 
@@ -19,13 +19,15 @@ status: partial
 
 ## Facts
 - Since ConfigMgr 2509, the AdminService rejects NTLM authentication outright; `AdminService.log` logs "Rejecting NTLM authentication" on an NTLM attempt. This is already recorded in `mecm/adminservice.md`. [DOC S-7jumyiid]
-- A community forum thread reports that after the 2509 change, clients that previously fell back to NTLM (e.g. because of a missing/duplicate SPN, or access by IP/short name instead of FQDN) start failing outright instead of degrading; the fix is to ensure the FQDN is used and the SPN is registered, not a workaround for NTLM. [COMMUNITY S1213]
+- A community forum post (2026-01-19) restates the 2509 change: the AdminService rejects NTLM and `AdminService.log` records "Rejecting NTLM authentication". [COMMUNITY S1213]
+- Callers that used to fall back to NTLM (missing or duplicate SPN, access by IP or short name instead of FQDN) fail outright instead of degrading, and the fix is FQDN plus a registered SPN. [UNK: not in S1213 as re-read 2026-09-27]
 - The SMS Provider authentication level setting (Windows / certificate / Windows Hello for Business) applies to the AdminService too, as already recorded in `mecm/adminservice.md`. [DOC S-6m7klb4f]
 - Protected Users group: members cannot authenticate with NTLM; Kerberos preauthentication cannot use DES or RC4, only AES; members cannot be delegated via unconstrained or constrained delegation; TGT lifetime is fixed at 4 hours with no renewal, and this cannot be overridden by domain policy. [DOC S1205]
-- Protected Users also disables credential caching (no long-term keys cached after the initial TGT), so a 4-hour-old session that needs a fresh service ticket still works (service tickets are requested against the TGT while it is valid), but any flow expecting an 8+ hour unattended session without re-authentication will fail once the TGT expires. [DOC S1205]
+- Protected Users also stops Kerberos caching the user's plaintext credentials or long-term keys after the initial TGT, and no cached verifier is created (no offline sign-in). [DOC S1205]
+- So once the 4-hour TGT expires the session cannot silently get a new one: a flow expecting an unattended session longer than 4 hours without re-authentication fails. [DER S1205: no cached long-term keys + 240-minute non-renewable TGT]
 - Microsoft's Windows NTLM deprecation programme: enhanced NTLM auditing is available now on Windows 11 24H2 and later and Windows Server 2025; in the second half of 2026 IAKerb and a local KDC (pre-release) remove common causes of NTLM fallback; network NTLM is disabled by default in the next major Windows Server release (undated), still re-enablable by policy. [DOC S1200]
 - Separately, NTLMv1-derived SSO credentials are audited (Event ID 4024) from the September 2025 updates on Windows 11 24H2 clients and November 2025 on Windows Server 2025, and `BlockNtlmv1SSO` defaults to Enforce (1) from October 2026 where the value is not deployed. [DOC S-q5hl3fyg]
-- `removed-deprecated-features-windows-server-2025` tracks NTLM-adjacent removals per release; check per current Windows Server 2025 build before relying on any specific NTLM behaviour. [DOC S1214]
+- Windows Server 2025 removes NTLMv1 and deprecates LANMAN and NTLMv2 (NTLMv2 still works but is to be removed in a future release; use Negotiate); it also deprecates RC4 in Kerberos and removes DES. [DOC S1214]
 - RC4-in-Kerberos deprecation, dated: a KDC-side change tied to CVE-2026-20833 (KB5073381, original publish date 2026-01-13) alters how the KDC uses RC4 for **service-account** ticket issuance. Updates released on/after 2026-01-13 add KDCSVC audit events 201-209 in the System log and the temporary `RC4DefaultDisablementPhase` value (0 = no audit, no change; 1 = warning events, the phase 1 default; 2 = assume RC4 not enabled by default, the phase 2 default; restart required). Updates on/after 2026-04-14 start enforcement with manual rollback; updates released in or after July 2026 stop honouring the key. [DOC S1215]
 - The domain-wide default (`DefaultDomainSupportedEncTypes`, DDSET) changes on updates released on/after 2026-04-14: for accounts with no explicit `msDS-SupportedEncryptionTypes`, the default becomes AES128-SHA1 + AES256-SHA1 only (bitmask 0x18), removing the RC4 fallback that domain controllers previously used. [DOC S1215]
 - The audit-mode registry key (`RC4DefaultDisablementPhase`) loses support in updates released in or after July 2026, when enforcement is enabled on all domain controllers and the AES-only default becomes unconditional. [DOC S1215]

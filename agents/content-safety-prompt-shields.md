@@ -3,7 +3,7 @@ topic: agents/content-safety-prompt-shields
 priority: P2
 applies_to: "Azure AI Content Safety Prompt Shields API (GA, api-version 2024-09-01), Microsoft Foundry guardrails Prompt Shields/Spotlighting, groundedness/protected-material/custom-categories/blocklist APIs, docs retrieved 2026-09-26"
 retrieved_utc: 2026-09-26
-sources: [S-547mfaj7, S-zlqf57iu, S-c66bl3xp, S-b4vld673, S-qhrwmfgo, S-unoiabov, S-56tu3aqk, S-plv2ekwg, S-lqvaqwxx]
+sources: [S-547mfaj7, S-zlqf57iu, S-c66bl3xp, S-b4vld673, S-qhrwmfgo, S-unoiabov, S-56tu3aqk, S-plv2ekwg, S-lqvaqwxx, S-3svp3sap, S-lmtdz3eq]
 status: partial
 files: [agents/content-safety-limits.csv]
 ---
@@ -76,8 +76,8 @@ preview code), custom categories (preview, standard variant retiring 2026-09-01)
 
 ### Harm categories and severity (Analyze text/image, also gates Prompt Shields deployments)
 - Four harm categories: Hate and Fairness, Sexual, Violence, Self-Harm; plus a separate **Task Adherence**
-  category (detects misaligned/premature/unintended tool use by agents relative to user intent). [DOC
-  S-b4vld673]
+  category (flags misaligned agent tool invocations, improper tool input or output relative to user
+  intent, and responses inconsistent with customer input). [DOC S-b4vld673]
 - Text and image-with-text models support the full 0-7 severity scale, optionally trimmed to 0/2/4/6
   (`[0,1]->0, [2,3]->2, [4,5]->4, [6,7]->6`); the image-only model always returns the trimmed 0/2/4/6
   scale. [DOC S-b4vld673]
@@ -91,19 +91,25 @@ preview code), custom categories (preview, standard variant retiring 2026-09-01)
 - Detects whether LLM output text is grounded in supplied `groundingSources`; English content only. [DOC
   S-unoiabov]
 - Request fields: `domain` (`MEDICAL`|`GENERIC`, default `GENERIC`), `task` (`QnA`|`Summarization`, default
-  `Summarization`), `text` (required, LLM output, max 7,500 chars), `groundingSources` (required array,
-  max 55,000 chars/call), optional `qna.query` (max 7,500 chars, min 3 words). [DOC S-unoiabov]
+  `Summarization`), `text` (required, LLM output, max 7,500 chars), `groundingSources` (required array),
+  optional `qna.query` (max 7,500 chars). [DOC S-3svp3sap]
+- Groundedness input limits: grounding sources max 55,000 characters per call; text and query max 7,500
+  characters; query min 3 words. [DOC S-547mfaj7]
 - Optional **correction/mitigating** feature (`"mitigating": true`) returns a `correctionText` field with
   ungrounded spans rewritten to match the grounding sources; requires an Azure OpenAI GPT-4o (versions
-  0513, 0806) resource via managed identity, increases latency and cost, and is documented under both the
-  names "correction" and "mitigating" across pages. [DOC S-unoiabov]
+  0513, 0806) resource reached via managed identity, and increases processing time and fees. [DOC
+  S-3svp3sap]
+- The concept page calls the same feature "correction" (preview) and names its output field `corrected
+  Text`. [DOC S-unoiabov]
 - Optional **reasoning** mode (`"reasoning": true`) returns a `reasoning` field explaining detected
-  ungrounded segments; also requires an Azure OpenAI GPT-4o (0513/0806) resource. [DOC S-unoiabov]
+  ungrounded segments; also requires an Azure OpenAI GPT-4o (0513/0806) resource. [DOC S-3svp3sap]
 - Rate limit: S0 tier 50 RPS; not offered on F0 (`N/A`). [DOC S-547mfaj7]
 
 ### Protected material detection
-- Protected material **code** detection is preview and its GitHub index is current only through
-  2023-04-06 -- code added after that date is not detected. [DOC S-lqvaqwxx]
+- Protected material **code** detection's GitHub index is current only through 2023-04-06 -- code added
+  after that date is not detected. [DOC S-lqvaqwxx]
+- Protected material detection for code shipped as a preview in September 2024; Prompt Shields and
+  protected material for text became GA in August 2024. [DOC S-lmtdz3eq]
 - English only. Four text sub-categories with size thresholds for "considered harmful": Recipes (creative
   content >=40 chars beyond the bare ingredient/steps), Web Content (webmd.com domain only; >200 chars
   verbatim/substantially-similar), News (>200 chars verbatim/substantially similar), Lyrics (>11 words of
@@ -124,14 +130,17 @@ preview code), custom categories (preview, standard variant retiring 2026-09-01)
   [DOC S-plv2ekwg]
 
 ### Blocklists
-- Text blocklists are GA, exact-match or regex, and only cover text (no image blocklist). [DOC S-56tu3aqk]
+- Blocklists add custom terms or phrases to screen text alongside the AI classifiers; an Analyze text
+  call names them in `blocklistNames` and can set `haltOnBlocklistHit`. [DOC S-56tu3aqk]
+- Blocklists allow only exact text matching and no image matching. [DOC S-plv2ekwg]
+- Text blocklists are GA. [UNK: not in S-56tu3aqk as re-read 2026-09-27]
 - Limits: max 10,000 terms total across all of a resource's blocklists; max 100 `blocklistItems` added per
   API call; a `blocklistItem` `text` value is max 128 characters. [DOC S-56tu3aqk]
 - Endpoint pattern: `POST {endpoint}/contentsafety/text/blocklists/{listName}:addOrUpdateBlocklistItems?api-version=2024-09-01`
   with body `{"blocklistItems": [{"description": "...", "text": "..."}]}`; list create/update is
   `PATCH {endpoint}/contentsafety/text/blocklists/{listName}?api-version=2024-09-01`. [DOC S-56tu3aqk]
-- Blocklist edits can take a few minutes (Foundry portal path: up to 5 minutes) to propagate before Analyze
-  text calls reflect them. [DOC S-56tu3aqk]
+- Adding, editing or deleting a blocklist item takes effect on text analysis after a delay, usually not
+  more than five minutes. [DOC S-56tu3aqk]
 
 ### Pricing, auth, region
 - Two pricing tiers: F0 and S0. [DOC S-547mfaj7]
@@ -147,13 +156,13 @@ preview code), custom categories (preview, standard variant retiring 2026-09-01)
 | Prompt Shields | GA (no preview label on overview page, unlike groundedness) | `text:shieldPrompt`, userPrompt+documents | S-547mfaj7, S-c66bl3xp |
 | Spotlighting | preview | Chat Completions only; off by default | S-qhrwmfgo |
 | Analyze text/image | GA | 4 harm categories, 0-7 severity | S-b4vld673 |
-| Task Adherence | preview | agent tool-use misalignment | S-b4vld673 |
-| Groundedness detection | preview | correction + reasoning need GPT-4o | S-unoiabov |
-| Protected material (text) | not stated as GA/preview on fetched pages | 4 sub-categories | S-lqvaqwxx |
-| Protected material (code) | preview | GitHub index frozen 2023-04-06 | S-lqvaqwxx |
+| Task Adherence | preview | agent tool-use misalignment | S-547mfaj7, S-b4vld673 |
+| Groundedness detection | preview | correction + reasoning need GPT-4o | S-unoiabov, S-3svp3sap |
+| Protected material (text) | GA (August 2024) | 4 sub-categories | S-lqvaqwxx, S-lmtdz3eq |
+| Protected material (code) | preview | GitHub index frozen 2023-04-06 | S-lqvaqwxx, S-lmtdz3eq |
 | Custom categories (standard) | preview, retiring 2026-09-01 | migrate to Custom text API | S-plv2ekwg |
 | Custom categories (rapid) | preview | no training step | S-plv2ekwg |
-| Blocklists | GA | text only, 10K terms/resource | S-56tu3aqk |
+| Blocklists | not stated on the how-to page | exact text match only, 10K terms/resource | S-56tu3aqk, S-plv2ekwg |
 
 Full input-limit and rate-limit table: `agents/content-safety-limits.csv`.
 

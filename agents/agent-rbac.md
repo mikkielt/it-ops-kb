@@ -3,7 +3,7 @@ topic: agents/agent-rbac
 priority: P1
 applies_to: "MCP specification draft (post 2026-07-28), Claude Code 2.1.x, Microsoft Entra Agent ID (public preview, 2026-03 docs), Microsoft Entra role-assignable groups / PIM for Groups"
 retrieved_utc: 2026-09-26
-sources: [S707, S1282, S1297, S2040, S2041, S2042, S2045, S2050, S2051, S2052, S2053, S2058]
+sources: [S707, S740, S742, S1282, S1297, S2040, S2041, S2042, S2045, S2050, S2051, S2052, S2053, S2058]
 status: complete
 ---
 
@@ -14,43 +14,50 @@ Extends, does not repeat, `mcp/authorization.md` (MCP OAuth 2.1, RFC 9728/8707, 
 group claims/overage, PIM-for-Groups sync latency).
 
 ## Summary
-- MCP's draft revision (later than the pinned 2026-07-28 spec `mcp/authorization.md` documents) adds a
-  named least-privilege mechanism: servers advertise the minimal required scope in a 401's
-  `WWW-Authenticate` header, and clients must union rather than replace scopes on step-up. [DOC S2045]
-- Claude Code layers two independent tool-level RBAC mechanisms on top of MCP's own auth: a local
-  `permissions.mcp_tools` allow/deny list by tool-name pattern, and, for organization-managed connectors,
-  a per-tool `ask`/`blocked` setting enforced regardless of the session's permission mode. [DOC S2041]
+- MCP authorization (both the pinned 2026-07-28 revision and the current draft) has a named
+  least-privilege mechanism: servers SHOULD advertise the required scope in a 401's `WWW-Authenticate`
+  header, and on step-up clients SHOULD re-authorize with the union of previously requested and newly
+  challenged scopes rather than replacing them. [DOC S2045, S707]
+- Claude Code layers two independent tool-level controls on top of MCP's own auth: local permission rules
+  (allow/ask/deny) that name MCP tools as `mcp__<server>__<tool>` or a server-anchored glob, and, for
+  claude.ai connectors, an organization per-tool `ask`/`blocked` setting that prompts even in
+  `bypassPermissions` mode. [DOC S742, S740]
 - Microsoft Entra Agent ID makes "agent identity vs the user's delegated identity" a first-class,
   named platform construct: an agent identity is a credential-less service principal that a shared
   **blueprint** acquires tokens for, in three modes (app token as itself, user token acting on behalf of
-  a user, or as a token's audience). Public preview since early 2026. [DOC S2040, S2051]
+  a user, or as a token's audience). [DOC S2040]
+- Entra Agent ID's public preview was announced on 2025-05-19 at Microsoft Build. [DOC S2051]
 
 ## Facts
 
 ### MCP-level: scope minimization and per-tool authorization
-- Not yet in `mcp/authorization.md` (pinned to 2026-07-28): the fetched draft revision requires servers
-  to **SHOULD** include a `scope` parameter on their `WWW-Authenticate: Bearer` 401 challenge, "following
-  the principle of least privilege and preventing clients from requesting excessive permissions"; clients
-  follow a strict priority order — challenge `scope` first, else `scopes_supported` from Protected
-  Resource Metadata, which itself is defined as "the minimal set of scopes necessary for basic
-  functionality." [DOC S2045]
+- Present in both the pinned 2026-07-28 revision and the current draft: servers **SHOULD** include a
+  `scope` parameter on their `WWW-Authenticate: Bearer` 401 challenge, "following the principle of least
+  privilege and preventing clients from requesting excessive permissions"; clients **SHOULD** follow a
+  priority order — challenge `scope` first, else `scopes_supported` from Protected Resource Metadata,
+  which is meant to be "the minimal set of scopes necessary for basic functionality." [DOC S2045, S707]
 - Runtime step-up: a tool call with insufficient scope gets `403` + `WWW-Authenticate: Bearer
-  error="insufficient_scope", scope="files:write", resource_metadata=...`; the client **MUST** union the
-  challenge's scopes with previously granted ones (not replace them) before re-authorizing, and servers
-  **MUST** account for scope hierarchies (a broader scope implying narrower ones). [DOC S2045]
+  error="insufficient_scope", scope="files:write", resource_metadata=...`; clients **SHOULD** respond with
+  a step-up flow whose re-authorization uses the union of the previously requested scopes and the
+  challenge's scopes (not a replacement), and servers **MUST** account for scope hierarchies (a broader
+  scope implying narrower ones). [DOC S2045, S707]
 - This scope-elevation mechanism is the OAuth-native analogue of a tiered confirmation gate (a system
   that always confirms tier-≥2 actions), but it only applies to HTTP-transport MCP servers; stdio servers
   SHOULD NOT follow the authorization spec at all — unchanged from `mcp/authorization.md`. [DER S2045, S707]
 
 ### Claude Code: local and organization tool-level RBAC
-- Local rule: `permissions.mcp_tools` is a list of `{pattern, allowed}` entries matching
-  `mcp__<server>__<tool>` (or `mcp__plugin_<plugin>_<server>__<tool>` for a plugin-bundled server),
-  letting an operator allow/deny individual MCP tools independent of the server's own authentication.
-  [DOC S2041]
-- Organization-managed connector tools carry a separate, non-overridable per-tool setting: `ask` (always
-  prompts, even in `acceptEdits`/`auto`/`bypassPermissions`; denied outright in `dontAsk` mode) or
-  `blocked` (filtered out of the tool list before the model ever sees it, in both the desktop app and
-  claude.ai chat). `/mcp` shows which setting applies to which tool. [DOC S2041]
+- Local rules: ordinary `permissions` allow/ask/deny rules name MCP tools as `mcp__<server>` (every tool
+  of that server), `mcp__<server>__*` or `mcp__<server>__<tool>`; deny and ask rules also take tool-name
+  globs such as `mcp__*`, while an allow glob must start with a literal `mcp__<server>__` prefix. This
+  lets an operator allow or deny individual MCP tools independent of the server's own authentication.
+  [DOC S742]
+- A plugin-bundled server's tools are callable as `mcp__plugin_<plugin>_<server>__<tool>`. [DOC S740]
+- Organization per-tool settings on claude.ai connectors: `ask` (prompts on every call, even in
+  `acceptEdits`/`auto`/`bypassPermissions`, and allow rules do not skip it; denied outright in `dontAsk`
+  mode) or `blocked` (filtered out before Claude sees the tool; the desktop app and claude.ai chat apply
+  it too). In the desktop app's local and SSH sessions `ask` does not reach Claude Code, which applies
+  its ordinary permission rules there instead. `/mcp` shows which setting applies to which tool where
+  Claude Code fetches the connectors itself. [DOC S740]
 - `managed-settings.json` policy applies "above every other level," with a short, documented list of
   security-sensitive exceptions where a *stricter* lower-level value still counts; it carries
   `allowedMcpServers`/`deniedMcpServers` (by server name or URL pattern), `managedMcpServers`
@@ -72,10 +79,12 @@ group claims/overage, PIM-for-Groups sync latency).
 - The blueprint's stated purpose is fleet-wide policy: because every agent identity of one "kind" shares
   a blueprint, an admin can apply one Conditional Access policy, disable all agents of that kind, or
   revoke a permission grant, in a single action across the whole fleet. [DOC S2040]
-- Status: public preview via "Microsoft Agent 365, available through Frontier" since early 2026, with a
-  stated six-month roadmap for more access-management, security and governance capabilities, and future
-  support for Security Copilot, M365 Copilot and third-party agents. [DOC S2051 — reached via WebSearch
-  synthesis, not independently WebFetched; see gaps.md]
+- Status: public preview announced 2025-05-19 at Microsoft Build, starting with a unified directory of
+  agent identities created in Copilot Studio and Azure AI Foundry, with a stated six-month roadmap for
+  more access-management, security and governance capabilities and for agents from Security Copilot,
+  Microsoft 365 Copilot and third-party solutions. [DOC S2051]
+- Access to Agent ID through "Microsoft Agent 365, available through Frontier" since early 2026.
+  [UNK: not in S2051 as re-read 2026-09-27]
 - Not confirmed whether an agent identity can itself be an eligible PIM member/owner of a role-assignable
   group. [UNK, see gaps.md]
 
@@ -167,8 +176,8 @@ group claims/overage, PIM-for-Groups sync latency).
 |---|---|---|---|
 | MCP `WWW-Authenticate: scope=` least-privilege challenge | per resource/operation | HTTP-transport MCP servers only | S2045 |
 | MCP step-up (`insufficient_scope`) | per operation, additive | HTTP-transport MCP servers only | S2045 |
-| Claude Code `permissions.mcp_tools` | per tool, local policy | any MCP server the client connects to | S2041 |
-| Claude Code connector `ask`/`blocked` | per tool, org policy | organization-managed connectors only | S2041 |
+| Claude Code permission rules on `mcp__<server>__<tool>` | per tool, local policy | any MCP server the client connects to | S742 |
+| Claude Code connector `ask`/`blocked` | per tool, org policy | claude.ai connectors only | S740 |
 | Entra Agent ID agent identity | per agent instance | any product adopting Agent 365 / Agent ID | S2040, S2051 |
 | App role on a service principal (direct) | per app registration | agents/service principals; no group claim path | S2053 |
 | Role-assignable group + PIM for Groups | per Entra role, per group; 2-10 min app provisioning, "within seconds" write | Entra ID P1/P2 tenants | S2050, S2052, S1282 |
@@ -185,7 +194,7 @@ group claims/overage, PIM-for-Groups sync latency).
 
 ## Examples
 - Engineer `jan.kowalski` on `PL-LT-00123` runs a stdio MCP server: no MCP OAuth scope challenge
-  applies (S707); Claude Code's local `permissions.mcp_tools` rule could still deny a specific
+  applies (S707); a Claude Code deny rule on `mcp__<server>__<tool>` (S742) could still deny a specific
   device-action tool by pattern even though the server itself has no auth boundary.
 - If a stdio-only MCP server is ever extended with a remote-MCP path, a tier-≥2 tool could be
   scoped as `device:act` in `scopes_supported`, minimally granted, with any additional scope obtained only

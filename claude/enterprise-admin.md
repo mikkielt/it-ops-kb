@@ -3,7 +3,7 @@ topic: claude/enterprise-admin
 priority: P2
 applies_to: "Claude Code docs and Anthropic help center (retrieved 2026-09-26)"
 retrieved_utc: 2026-09-26
-sources: [S-gxtvjkv7, S-hoagpet2, S-xsggrooz, S-fqe5wkdo, S-2ym4fr2c, S-dkaaodgp]
+sources: [S-gxtvjkv7, S-hoagpet2, S-xsggrooz, S-fqe5wkdo, S-2ym4fr2c, S-dkaaodgp, S-i3esfwsh]
 status: complete
 ---
 
@@ -23,7 +23,7 @@ scope are covered in `claude/data-retention.md` (not repeated here).
 ## Facts
 ### SSO and domain verification
 - SSO is available for Team plans, Enterprise plans, and Console organizations; the setup guide documents SAML only (no OIDC), with named IdP guides for Okta, Entra ID (formerly Azure AD), Google, OneLogin, JumpCloud, and Duo. [DOC S-hoagpet2]
-- Domain verification (a prerequisite for SSO) is done by adding the domain in organization settings and creating a DNS TXT record whose value begins `anthropic-domain-verification-`; verification typically completes within about 10 minutes of DNS propagation. [DOC S-hoagpet2]
+- Domain verification (a prerequisite for SSO) is done by adding the domain in organization settings and creating a DNS TXT record whose value begins `anthropic-domain-verification-`; the guide says to wait 10 minutes for the DNS change to propagate (global propagation can take 24-48 hours), then refresh until the domain shows Verified. [DOC S-hoagpet2]
 - All domains inside one organization must use a single IdP; IdP-initiated login is unsupported for a Console org sharing SSO with a Team/Enterprise plan. [DOC S-hoagpet2]
 - Setup order: review prerequisites, verify domain(s), configure SSO with the IdP, toggle "Require SSO" to enforce it, then choose a provisioning approach (invite-only, JIT, or SCIM). [DOC S-hoagpet2]
 - SCIM directory sync is supported for automatic provisioning and deprovisioning, as an alternative to JIT; provisioning rules can auto-assign roles or seat tiers from IdP group membership. [DOC S-hoagpet2]
@@ -33,10 +33,11 @@ scope are covered in `claude/data-retention.md` (not repeated here).
 - Team and Enterprise organizations have four built-in roles: Primary Owner, Owner, Admin, and User (Member). [DOC S-2ym4fr2c]
 - Primary Owner: exactly one per organization, uses one plan license, can be a service account, and has full access to billing, chat controls, features, membership management, security controls, and analytics. [DOC S-2ym4fr2c]
 - Owner: can invite/remove members, admins, and other owners; can modify member roles; has billing, chat, features, and membership access; on Enterprise also gets prioritized support and security controls. [DOC S-2ym4fr2c]
-- Admin: can invite and remove members and pending invitations, manage integrations/capabilities, and access billing, chat, and features (plus security/analytics on Enterprise); cannot modify roles or invite other Admins/Owners. [DOC S-2ym4fr2c]
-- User/Member: most restricted role; can create/modify chats and use projects; on Enterprise can request data exports; no access to billing, membership management, or admin functions. [DOC S-2ym4fr2c]
-- Enterprise plans support custom roles that override the built-in defaults entirely: a member assigned only a custom role has none of the built-in role's permissions, and custom roles can grant scoped admin access (e.g. billing, identity, or privacy) without making the member a full Owner. [DOC S-2ym4fr2c]
-- Only Owners and Primary Owners can access Organization settings > Billing; Admins can manage members under Organization settings > Members but not billing. [DOC S-2ym4fr2c]
+- Admin: can invite and remove members and cancel invitations, create/modify chats and use projects, and view usage analytics on Enterprise; cannot invite/remove Admins or Owners, modify roles, touch billing, enable integrations/capabilities, or manage Enterprise security and data controls. [DOC S-2ym4fr2c]
+- User/Member: most restricted role; can create/modify chats and use projects; no access to billing, membership management, integrations, security controls, or analytics (data exports are Primary Owner only). [DOC S-2ym4fr2c]
+- Enterprise plans support custom roles that control feature access at the group level: members whose role is set to "Custom" have no default permissions, and their access comes entirely from the custom roles assigned to their groups. [DOC S-2ym4fr2c]
+- Custom roles granting scoped admin access (e.g. billing, identity, or privacy) without full Owner rights. [UNK: not in S-2ym4fr2c as re-read 2026-09-27]
+- Only Owners and Primary Owners can view/pay invoices and add or modify billing methods, and only the Primary Owner can provision new seats; Admins can manage membership but have no billing permissions. [DOC S-2ym4fr2c]
 
 ### Claude Code seats on Team/Enterprise
 - Claude Code is included with every seat on Team plans and on new/self-serve Enterprise plans; Premium seats add more usage for heavier workloads. [DOC S-xsggrooz]
@@ -57,14 +58,15 @@ scope are covered in `claude/data-retention.md` (not repeated here).
 - Team/Enterprise analytics dashboard (`claude.ai/analytics/claude-code`, viewable by Admins and Owners) shows usage metrics (lines of code accepted, suggestion accept rate, daily active users/sessions), GitHub-integrated contribution metrics (PRs/lines shipped with Claude Code, requires connecting a GitHub org, public beta), a top-10 leaderboard, and CSV export. [DOC S-gxtvjkv7]
 - Contribution metrics are unavailable for organizations with Zero Data Retention enabled (dashboard then shows usage metrics only) and cover only users inside the claude.ai organization, not Console API or third-party-integration usage. [DOC S-gxtvjkv7]
 - Contribution attribution matches PR diff lines against Claude Code session output for sessions active from 21 days before to 2 days after the PR's merge date; lines rewritten by a developer by more than 20% are not attributed; lock files, generated/minified code, build directories, and test fixtures are excluded; matched PRs get the GitHub label `claude-code-assisted`. [DOC S-gxtvjkv7]
-- On Enterprise, the Claude Enterprise Analytics API (`platform.claude.com/docs/en/api/admin/analytics`) returns per-user engagement/usage/cost across Claude surfaces including Claude Code; a Primary Owner creates the key with the `read:analytics` scope at `claude.ai/analytics/api-keys`; not available on the Teams plan (Teams instead exports the spend-report CSV). [DOC S-gxtvjkv7]
+- On Enterprise, the Claude Enterprise Analytics API (`platform.claude.com/docs/en/api/admin/analytics`) returns per-user engagement/usage/cost across Claude surfaces including Claude Code; a Primary Owner creates the key with the `read:analytics` scope at `claude.ai/analytics/api-keys`; not available on the Teams plan; per-user token and estimated spend figures come from the spend report export or OpenTelemetry. [DOC S-gxtvjkv7]
 - API/Console customers get a separate dashboard at `platform.claude.com/claude-code` (requires the UsageView permission, granted to Developer/Billing/Admin/Owner/Primary Owner roles) and the Claude Code Analytics API for daily per-user metrics; contribution/GitHub metrics are not available on this path. [DOC S-gxtvjkv7]
 
 ### Compliance API (org-wide audit, distinct from data retention/ZDR)
 - The Compliance API is available to Enterprise plan organizations (excluding Public Sector) and to Claude Platform customers, covering Claude chats, Cowork (Claude, Desktop, Mobile), Claude Code (CLI and Desktop), and beta coverage of Claude for Microsoft 365 add-ins (Excel, Word, PowerPoint, Outlook) and Claude Science. [DOC S-fqe5wkdo]
-- It explicitly excludes Claude Code cloud sessions, Claude Code via the Claude Platform, other Microsoft 365 apps, and Amazon Bedrock/Google Cloud Agent Platform sessions. [DOC S-fqe5wkdo]
+- It explicitly excludes Claude Code cloud sessions, Claude Code via the Claude Platform, other Microsoft 365 apps, and sessions run on Amazon Bedrock or Google Vertex AI. [DOC S-fqe5wkdo]
 - Only the organization's Primary Owner can enable the Compliance API, from Organization settings > API; once enabled, Primary Owners can create keys covering all linked organizations while Owners can create keys limited to their own organization, and Admins cannot access that settings page at all. [DOC S-fqe5wkdo]
-- The API returns activity feed events, chat data, and file content across Claude deployments, plus audit log events covering login/logout, account setting updates, workspace changes, and other organizational events; it does not log inference activity (user prompts/model responses/model activity). [DOC S-fqe5wkdo]
+- The API returns activity feed events, chat data, and file content across Claude deployments, and now includes audit log events. [DOC S-fqe5wkdo]
+- Audit logs (Enterprise only; Owners/Primary Owners export the last 180 days) record events such as sign-in/sign-out, invites, and conversation/project/document creation and deletion; chat and project titles and content are not in audit logs, only their identifiers. [DOC S-i3esfwsh]
 - This audit surface is separate from ZDR/data-retention scope: `claude/data-retention.md` covers what's stored/retained per surface; the Compliance API is about pulling organizational activity events out, not about what Anthropic retains from inference. [DER S-fqe5wkdo, claude/data-retention.md]
 
 ## Reference

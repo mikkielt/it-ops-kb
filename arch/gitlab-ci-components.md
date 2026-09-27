@@ -3,7 +3,7 @@ topic: arch/gitlab-ci-components
 priority: P1
 applies_to: [gitlab-ci]
 retrieved_utc: 2026-09-26
-sources: [S1700, S1701, S1702, S1512, S1704, S446]
+sources: [S1700, S1701, S1702, S1512, S1704, S445, S447]
 status: complete
 ---
 
@@ -46,8 +46,12 @@ a release tag pattern (e.g. `cfg-*`) fits the "release on protected tag" model c
 - `tags:` on a job is the ordinary runner-selection keyword (e.g. `tags: [windows]`); a component's
   own job definitions carry `tags:` exactly like any other job, so a component can target a Windows
   runner the same way any other job in the consuming pipeline would. [DOC S1512]
-- A repository can protect a release tag pattern (e.g. `cfg-*`, Maintainers only) and gate pipelines on
-  a `$CI_COMMIT_TAG` regex match. [DOC S446]
+- A project can protect a release tag pattern with a wildcard rule (e.g. `cfg-*`) and limit **Allowed to
+  create** to chosen roles (e.g. Maintainers); the permission to create a protected tag also decides who can
+  run pipelines for it. [DOC S445]
+- Jobs can be gated on a tag name pattern with `rules: - if: $CI_COMMIT_TAG =~ /<regex>/`. [DER S447:
+  `rules:if` accepts `=~` regex comparisons of CI/CD variables and the reference uses `if: $CI_COMMIT_TAG`
+  for tag pipelines]
 
 ## Reference
 - `include: - component: $CI_SERVER_FQDN/<group>/ci-components/checks@1.0.0` (per S1700 pattern).

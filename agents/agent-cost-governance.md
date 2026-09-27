@@ -70,7 +70,7 @@ model-selection order, agent-teams token cost being "significantly more" than a 
 
 ## Examples
 A team of 20-30 engineers running Claude Code as their CLI front end would sit in the
-"5-20 users" TPM/RPM band (100-150k TPM, 2.5-3.5 RPM per user) per Anthropic's published sizing table. For a
+"20-50 users" TPM/RPM band (50k-75k TPM, 1.25-1.75 RPM per user) per Anthropic's published sizing table. For a
 system whose policy runs each instance on the engineer's own workstation rather than through a shared gateway,
 per-engineer cost attribution has to come from each engineer's own Claude Console/Enterprise account reporting,
 not from a central mechanism [DER S2132].

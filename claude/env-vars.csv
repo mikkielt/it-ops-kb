@@ -1,8 +1,8 @@
 variable,effect,source
 CLAUDE_CODE_USE_BEDROCK,route requests through Amazon Bedrock instead of the direct Anthropic API; set to 1,S-inpjf36q
-CLAUDE_CODE_USE_VERTEX,route requests through Google Cloud Vertex AI instead of the direct Anthropic API,S-a2zimsvk
-CLAUDE_CODE_USE_FOUNDRY,route requests through Microsoft Foundry instead of the direct Anthropic API,S-a2zimsvk
-CLAUDE_CODE_USE_ANTHROPIC_AWS,route requests through Claude Platform on AWS instead of the direct Anthropic API,S-a2zimsvk
+CLAUDE_CODE_USE_VERTEX,use Google Cloud's Agent Platform (Vertex AI) as the API provider instead of the direct Anthropic API; set to 1,S-vilbjgtf;S-a2zimsvk
+CLAUDE_CODE_USE_FOUNDRY,use Microsoft Foundry as the API provider instead of the direct Anthropic API; set to 1,S-vilbjgtf;S-a2zimsvk
+CLAUDE_CODE_USE_ANTHROPIC_AWS,use Claude Platform on AWS as the API provider instead of the direct Anthropic API; set to 1,S-vilbjgtf;S-a2zimsvk
 ANTHROPIC_BASE_URL,override the API endpoint to route through a proxy or gateway; disables MCP tool search by default on non-first-party hosts; disables Remote Control when it points off api.anthropic.com,S-vilbjgtf
 ANTHROPIC_BEDROCK_BASE_URL,override the Amazon Bedrock endpoint URL for custom regions or an LLM gateway,S-vilbjgtf
 ANTHROPIC_MODEL,name of the model to use; read before the model settings key,S-vilbjgtf
@@ -14,27 +14,27 @@ ANTHROPIC_FOUNDRY_AUTH_TOKEN,bearer token for Microsoft Foundry (e.g. Entra acce
 ANTHROPIC_FEDERATION_RULE_ID,federation rule ID for Workload Identity Federation; used with ANTHROPIC_ORGANIZATION_ID,S-vilbjgtf
 ANTHROPIC_ORGANIZATION_ID,organization ID for Workload Identity Federation,S-vilbjgtf
 ANTHROPIC_PROFILE,name of the Anthropic profile to authenticate with,S-vilbjgtf
-CLAUDE_CODE_OAUTH_TOKEN,long-lived OAuth token credential; ignored in cloud sessions when server-managed env withholds it,S-22qwtmf7
+CLAUDE_CODE_OAUTH_TOKEN,OAuth access token for claude.ai authentication (alternative to /login for SDK and automated runs; claude setup-token generates a long-lived one); a value in the cached server-managed env block is withheld until the settings fetch confirms the payload,S-vilbjgtf;S-22qwtmf7
 HTTPS_PROXY,HTTPS proxy for API traffic; lowercase variants also read; first set of https_proxy/HTTPS_PROXY/http_proxy/HTTP_PROXY wins,S-lreom5ko
 HTTP_PROXY,HTTP proxy used only if HTTPS_PROXY is unset,S-lreom5ko
-NO_PROXY,bypass the proxy for listed hosts (space- or comma-separated," or * for all); loopback addresses never need an entry,S-lreom5ko"
+NO_PROXY,"bypass the proxy for listed hosts (space- or comma-separated, or * for all); WebSocket connections to localhost/::1/127.0.0.0/8 never go through the proxy, so they need no entry",S-lreom5ko
 NODE_EXTRA_CA_CERTS,path to a PEM file of additional trusted CA certificates,S-lreom5ko
-CLAUDE_CODE_CERT_STORE,comma-separated CA sources to trust: bundled and/or system; default bundled,"system,S-lreom5ko"
+CLAUDE_CODE_CERT_STORE,"comma-separated CA sources to trust: bundled and/or system; default bundled,system",S-lreom5ko
 CLAUDE_CODE_CLIENT_CERT,path to the mTLS client certificate; re-read on connection errors and settings re-apply,S-lreom5ko
 CLAUDE_CODE_CLIENT_KEY,path to the mTLS client private key,S-lreom5ko
 CLAUDE_CODE_CLIENT_KEY_PASSPHRASE,passphrase for an encrypted mTLS client key,S-lreom5ko
 CLAUDE_CODE_DISABLE_MTLS_RELOAD_ON_STALE_CONNECTION,set 1 to stop the connection-error mTLS re-read; rotated files then load only at next settings apply or startup,S-lreom5ko
-DISABLE_TELEMETRY,set (any value incl. 0) to disable usage-metrics telemetry; also disables feature-flag fetching that Remote Control depends on,S-a2zimsvk
-DISABLE_ERROR_REPORTING,set (any value) to disable error-report telemetry; does not disable feature-flag fetching,S-a2zimsvk
-CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC,set (any value) to disable all non-essential network traffic at once," including feature-flag fetching and telemetry,S-a2zimsvk"
-DO_NOT_TRACK,when set," disables feature-flag fetching alongside DISABLE_TELEMETRY/CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC,S-vilbjgtf"
-DISABLE_GROWTHBOOK,when set," disables feature-flag fetching (skips growthbook-backed features),S-vilbjgtf"
+DISABLE_TELEMETRY,set to any non-empty value (0 or false still opt out; unset to re-enable) to disable usage-metrics telemetry; also disables the feature-flag fetching that Remote Control depends on,S-vilbjgtf;S-a2zimsvk
+DISABLE_ERROR_REPORTING,set to any non-empty value (0 or false still opt out) to disable error reporting; unlike DISABLE_TELEMETRY it does not disable feature-flag fetching,S-vilbjgtf;S-a2zimsvk
+CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC,"set to any non-empty value (0 or false still count) to disable non-essential network traffic at once, including telemetry, error reporting, surveys and feature-flag fetching",S-vilbjgtf;S-a2zimsvk
+DO_NOT_TRACK,"set to 1 to opt out of telemetry with the same effect as DISABLE_TELEMETRY, including feature-flag fetching; 0 leaves telemetry on",S-vilbjgtf
+DISABLE_GROWTHBOOK,set to 1 or true to disable GrowthBook feature-flag fetching and use code defaults (Remote Control and other flag-dependent features unavailable); 0 or false leaves fetching on,S-vilbjgtf
 CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY,set 1 to disable in-product feedback surveys,S-a2zimsvk
 CLAUDE_CODE_ENABLE_FEEDBACK_SURVEY_FOR_OTEL,set 1 to keep survey ratings flowing to an org's own OTel collector while nonessential traffic is otherwise blocked,S-a2zimsvk
-CLAUDE_CODE_PROVIDER_MANAGED_BY_HOST,set by an embedding host to keep feature-flag fetching and default-on metrics on a third-party provider,S-a2zimsvk
+CLAUDE_CODE_PROVIDER_MANAGED_BY_HOST,"set by a host platform that embeds Claude Code; metrics then default to on for Bedrock/Agent Platform/Foundry/Claude Platform on AWS with the standard DISABLE_TELEMETRY opt-out, while error reports and /feedback stay off",S-a2zimsvk
 API_TIMEOUT_MS,override the API request timeout in milliseconds,S-vilbjgtf
 BASH_DEFAULT_TIMEOUT_MS,default timeout in milliseconds for Bash tool commands,S-vilbjgtf
-CLAUDE_CONFIG_DIR,relocate the ~/.claude config directory; withheld from cached server-managed env until fetch confirms it; cannot be set from project/local settings,S-vilbjgtf
-CLAUDE_CODE_PROCESS_WRAPPER,prefix Claude Code and background-agent processes with a corporate launcher command; takes precedence over the processWrapper setting; deliver via managed settings or ~/.claude/settings.json," not a shell export,S-lreom5ko"
+CLAUDE_CONFIG_DIR,relocate the ~/.claude config directory; withheld from the cached server-managed env until a fetch confirms it; ignored in project/local settings,S-vilbjgtf;S-22qwtmf7
+CLAUDE_CODE_PROCESS_WRAPPER,"prefix the background-agent supervisor, its workers and other background processes with a corporate launcher command; takes precedence over the processWrapper setting; deliver via managed settings or ~/.claude/settings.json, not a shell export",S-lreom5ko
 ANTHROPIC_BETAS,comma-separated additional anthropic-beta header values to opt into an API beta early,S-vilbjgtf
 ANTHROPIC_CUSTOM_HEADERS,add custom Name: Value request headers; a header that sets credentials/routing counts as a setting needing approval when server-managed settings deliver it,S-vilbjgtf

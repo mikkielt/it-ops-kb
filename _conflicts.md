@@ -398,6 +398,7 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
   no longer opt out of automatic agent identity creation" — the same page therefore repeats "May 2026" for
   the opt-out-removed milestone while `whats-new` still says "July 2026"; no reconciling What's new/release
   note for either date was found. (rechecked 2026-09-26, kept unresolved) (topic: entra/agent-id)
+- Microsoft Learn search index (2026-09-27) still returns the overview page with the PREVIEW banner, while the live page and What's new (S-ifhonpv7) say Entra Agent ID is generally available; the Entra what's-new lists 'General Availability - Microsoft Entra Agent ID platform' in April 2026. (topic: entra/agent-id)
 
 ## agents/windows-agentic-platform
 
@@ -461,3 +462,80 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
 ## auth/ntlm-deprecation
 
 - S1200's _sources.csv row says 'published 2025-09-24'; the fetched page's postTime is 2026-01-29 (read 2026-09-27). Row date should be corrected by the census owner. (topic: auth/ntlm-deprecation)
+
+## agents/agent-overuse-patterns
+
+- S2174 (dev.to decision matrix) disagrees with itself: it puts the pipeline at 50,000 runs/day at ~$1.50/day for 3,000 tokens/run and ~$15/day for 30,000 tokens/run (10x), but later calls the 30,000-token case 'roughly 15x more'. Re-read 2026-09-27. (topic: agents/agent-overuse-patterns)
+
+## agents/azure-openai-deployments
+
+- S-pntdruql (azure/ai-foundry/openai/concepts/provisioned-throughput, fetched 2026-09-27) no longer contains the utilization / leaky-bucket section that Learn search still indexes under azure/foundry/.../provisioned-throughput#monitor-utilization-and-performance; the same content is now on how-to/provisioned-get-started (S-gueirwxw). Facts re-cited there. (topic: agents/azure-openai-deployments)
+
+## agents/content-safety-prompt-shields
+
+- Blocklist matching: the kb said exact-match or regex; the custom-categories page (S-plv2ekwg) says blocklists allow only exact text matching and no image matching. Corrected to exact-match only. (topic: agents/content-safety-prompt-shields)
+
+## agents/shared-ner-service
+
+- Resolves the 'Azure Text PII character-limit figures' entry: S2093 (concepts/data-limits) re-read 2026-09-27 states no 50,000-character analyze-with-warning behaviour and no 10 MB document limit. It gives 5,120 characters per document for synchronous requests (over-length documents get an invalid-document error, others still processed), 5 PII documents and 1 MB per request, and 125,000 characters across up to 25 documents asynchronously (one over-length document fails the whole request with 400). The 50,000 figure is now an UNK line in the article. (topic: agents/shared-ner-service)
+
+## auth/sql-authz
+
+- auth/sql-authz.md:14 says on-prem SQL Server Entra authentication 'requires the instance to be Arc-enabled'; S1207 (Microsoft Entra authentication for SQL Server overview, re-read 2026-09-27) has a section 'Setting up Microsoft Entra authentication without Azure Arc' for SQL Server on Windows (manual certificates, registry, app registration). Arc remains required for SQL Server 2025's primary managed identity (S1206). arch/sql-auth-containers.md and arch/workload-identity-onprem-k8s.md were corrected; auth/sql-authz.md was outside this unit. (topic: auth/sql-authz)
+
+## agents/instruction-and-context-limits
+
+- Copilot Studio instructions limit: Microsoft documents 8,000 characters (S1960, S-jexpr3gv); a community article (S1843) says some configurations enforce 2,000 characters after deployment, citing a Microsoft Q&A thread. (topic: agents/instruction-and-context-limits)
+
+## agents/a2a-protocol
+
+- A2A Agent Card well-known path: the A2A spec (S2120) registers `/.well-known/agent-card.json`, while Microsoft Copilot Studio's A2A connector docs (S2126, re-read 2026-09-27) tell makers to find the card at the endpoint plus `/.well-known/agent.json`. (topic: agents/a2a-protocol)
+
+## agents/docs-maintenance-agents
+
+- S1808 (cognition.com/blog/deepwiki) now shows the date 05.05.25 and only a short launch note; the article's applies_to and the _sources.csv row say a 2025-04-25 launch post. The detailed claims once cited to it (LLM + code analysis, graph representation, PR/git history/team discussions, 'cycle of implementing code from documentation') are no longer on the page and are now UNK leads. (topic: agents/docs-maintenance-agents)
+
+## agents/foundry-agent-service
+
+- The Foundry capability reference (S-eh6okx77) marks Browser automation, Computer use, Image generation, SharePoint and Fabric connectors, Fabric IQ and Work IQ as preview; the kb table had them as GA. The capability reference says preview status can vary by feature, region and API version, so per-tool pages remain the authority. (topic: agents/foundry-agent-service)
+
+## auth/configmgr-rbac-auth
+
+- The kb derived that Microsoft's enterprise access model treats ConfigMgr-like estate-wide device/config control as control-plane (Tier 0) equivalent; re-read 2026-09-27, S1210 defines the control plane as access control based on centralized enterprise identity systems and the management plane as enterprise-wide IT management functions, which on its wording places ConfigMgr in the management plane. The articles now call control-plane treatment a local judgement; _answers.md QA17 still carries the old derivation. (topic: auth/configmgr-rbac-auth)
+
+## auth/ldap-smb-signing
+
+- SMB signing default on Windows Server 2025: S1202 (Control SMB signing behavior) says Windows Server 2025 requires outbound signing only; S1228 (SMB security hardening, HEAD 2026-09) says starting with Windows 11 24H2 and Windows Server 2025 all outbound and inbound SMB connections must be signed by default. Kb keeps S1202's outbound-only for Server 2025. (topic: auth/ldap-smb-signing)
+
+## auth/group-claims
+
+- Implicit-flow group limit: S1284 (Configure group claims) says five groups and hasgroups only above five; S1285 (Zero Trust: group claims and app roles) says six groups for the implicit flow. (topic: auth/group-claims)
+
+## entra/connect-and-cloud-sync
+
+- Cloud Sync device synchronization: the decision guide (S-6q5tyxki, updated 2026-06-15) marks device synchronization / hybrid join as not currently supported in Cloud Sync, while device-sync.md (S550, ms.date 2026-07-21) documents Cloud Sync device sync in preview (AD2AADDeviceSync job, disabled by default, devices can become hybrid joined). Likely the guide predates the preview; lines 14/24 (S-6q5tyxki) and 37 (S550) now state each source as written. (topic: entra/connect-and-cloud-sync)
+
+## gitlab/protected-branches-tags
+
+- S444 (protected.md @56c82a97) is internally inconsistent on an unconfigured 'Allowed to push and merge': the Push and merge permissions table says 'No one can push' (and the Developer table shows no direct push), but a note on the same page says an unconfigured setting 'does not restrict push access' and must be set to 'No one' explicitly. protected-branches-tags.md line 22 follows the table. (topic: gitlab/protected-branches-tags)
+
+## auth/workload-identity
+
+- GitLab flexible federated identity credential claims: the flexible FIC page (S1294) lists only `sub` (eq, matches) and `project_id` (eq) as supported and requires sub plus project_id for mutable subjects; the mutable-subjects page (S1278) says a GitLab flexible FIC must match sub and one or more of project_id, namespace_id, user_id, and shows examples using namespace_id and user_id. Both re-read 2026-09-27. (topic: auth/workload-identity)
+
+## intune/platform-scripts
+
+- S-p4fis3e4 (run-powershell-scripts-windows) says devices only registered with Microsoft Entra ID don't receive scripts, while S-ta4g5get (management-extension-windows) lists Microsoft Entra registered/workplace-joined devices among IME prerequisites; both re-read 2026-09-27. (topic: intune/platform-scripts)
+
+## graph/permissions
+
+- Permissions reference (S524) says application Device.ReadWrite.All does not allow device deletion, but the Delete device permissions include (S515) lists Device.ReadWrite.All as the application permission for DELETE /devices/{id}. Recorded in graph/permissions.md:24. (topic: graph/permissions)
+
+## graph/microsoft365dsc
+
+- Microsoft365DSC release 1.26.909.1 ships MOF-based function resources (S-3aphi7n2), while the Dev branch at 2026-09-26 has converted resources to class-based [DscResource()] classes without .schema.mof (S-omyb2en3); facts about resource shape depend on version. (topic: graph/microsoft365dsc)
+
+## intune/ios-android-management
+
+- Minimum iOS version for account driven user enrollment: the Apple enrollment guide (S-wdoafrjc) says "Starting with iOS 13 and newer", while the Apple User Enrollment overview (S-7synnxi2) and the account-driven setup page (S-fdtw5sil) say iOS/iPadOS 15 or later (14.9 and earlier fall back to user enrollment with Company Portal). Kb follows 15+. (topic: intune/ios-android-management)
+- End of Intune support for Android device administrator on GMS devices: the Android enrollment guide (S-3v22wodo) says August 2024; the device administrator page (S-pcr6rjdl) says end of 2024. Both re-read 2026-09-27. (topic: intune/ios-android-management)

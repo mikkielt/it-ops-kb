@@ -17,7 +17,7 @@ files: [graph/csdl/managedDevice.v1.0.xml, graph/csdl/managedDevice.beta.xml]
 - The Intune `$filter` notes live mostly in *out-of-line* `Annotations` of the CSDL, not in the inline property descriptions or the resource page.
 
 ## Facts
-- The entity set description says: limited `$filter` support; only properties whose descriptions mention `$filter` may be used, and combinations "must use 'and', not 'or'". [DOC S500]
+- The out-of-line description of the `managedDevice` entity type says: limited `$filter` support; only properties whose descriptions mention `$filter` may be used, and combinations "must use 'and', not 'or'". [DOC S500]
 - `azureADDeviceId` (Entra device id): out-of-line CSDL annotation says "Supports $filter operator 'eq', not combine with count"; the inline description and the v1.0 resource page do not mention `$filter`. [DOC S500,S506]
 - `serialNumber`, `manufacturer`, `operatingSystem`, `imei`, `complianceState`, `managementAgent`: `$filter` `'eq' and 'or'`. [DOC S500]
 - `deviceName`, `model`: `'eq' and 'contains'`; `userPrincipalName`: `'eq' and 'ne'`; `enrolledDateTime`, `lastSyncDateTime`: `'lt' and 'gt'`. [DOC S500]

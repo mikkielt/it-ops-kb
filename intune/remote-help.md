@@ -14,14 +14,14 @@ Remote Help is an Intune Suite (or standalone) add-on that lets a helper view or
 sharer's screen, entirely through Microsoft Entra ID sign-in and Intune RBAC — no third-party remote-control
 tool. Attended sessions need the sharer to accept; unattended sessions (Windows, physical corporate-owned
 devices only, and Android dedicated devices) skip that step and are gated by dedicated RBAC permissions.
-Conditional Access can gate the helper's and sharer's sign-in (Windows/macOS only, attended sessions only).
+Conditional Access can gate Remote Help sign-in (Windows/macOS only).
 Sessions are logged for reporting/audit (30 days) but never recorded.
 
 ## Facts
 
 ### Licensing and platforms
-- Requires a Remote Help license for every targeted helper and sharer, in addition to Intune Plan 1 or
-  Plan 2 (part of Intune Suite, or a standalone EPM-style add-on). [DOC S-f7i5faki]
+- Requires a Remote Help license for every targeted helper and sharer (dedicated-mode Samsung/Zebra Android
+  sharers need none, only the helper), as a subscription in addition to Intune Plan 1 or Plan 2. [DOC S-f7i5faki]
 - Supported for attended control: Windows x86/x64/ARM64, Windows 365, Azure Virtual Desktop (desktop and
   RemoteApp); macOS 13 (Ventura), 14 (Sonoma), 15 (Sequoia), and 26.0 (Remote Help client 1.0.2509231+);
   Android Enterprise dedicated-mode Samsung Knox and Zebra (MX 8.3+) devices; a web app for sharers on
@@ -43,8 +43,8 @@ Sessions are logged for reporting/audit (30 days) but never recorded.
 - **Tenant administration > Remote Help > Settings**: **Enable Remote Help** (disabled by default),
   **Allow Remote Help to unenrolled devices** (disabled by default — Entra-registered-only devices),
   **Disable chat** (default No, chat enabled). [DOC S-5h4qjmdq]
-- After enabling Remote Help or assigning new/trial licenses, activation can take 30 minutes up to several
-  hours; sessions may still report "Remote Help isn't enabled" during that window. [DOC S-5h4qjmdq]
+- New or trial licenses can take 30 minutes to 8 hours to become active; new sessions may keep reporting
+  that Remote Help isn't enabled for the tenant even after it is enabled. [DOC S-5h4qjmdq]
 - Unenrolled-device support applies only to sharers (Entra-registered devices), never to helpers or to
   unattended control, which requires Intune enrollment. [DOC S-f6g2wc4u, S-f7i5faki]
 
@@ -66,13 +66,14 @@ Sessions are logged for reporting/audit (30 days) but never recorded.
 - If a sharer or their device falls outside a helper's RBAC scope group, that helper can't assist; the
   built-in **All Devices** scope group excludes unenrolled devices, so use a user-based scope group to
   cover unenrolled/BYOD sharers. [DOC S-f7i5faki]
-- Recommended pattern: split view-only (tier 1) from full-control/elevation (tier 2), and scope a
+- Recommended pattern: give level-1 support view-only rights and tier 2 full control, and scope a
   dedicated custom role for unattended control (Windows remote sign-in + Android unattended) to a narrow
   tier-3/senior-admin group and device scope. [DOC S-f7i5faki]
 
 ### Conditional Access
-- Conditional Access (MFA, compliant device, location) can be applied to helper and sharer sign-in, but
-  only for **attended** sessions on **Windows and macOS**; it doesn't apply to unattended access. [DOC S-f7i5faki]
+- Requiring MFA or a compliant device for helper accounts through Conditional Access is highly recommended;
+  Conditional Access policies for Remote Help are supported only on **Windows and macOS**. [DOC S-f7i5faki]
+- Conditional Access applies only to attended sessions and not to unattended access. [UNK: not in S-f7i5faki as re-read 2026-09-27]
 
 ### Sessions: attended vs. unattended
 - Attended: the sharer must accept a view or full-control request; the helper can additionally request
@@ -91,7 +92,8 @@ Sessions are logged for reporting/audit (30 days) but never recorded.
   response the session proceeds automatically after a **30-second** timeout, locking the user's session
   (work preserved) and connecting to a separate Windows session; the user can reclaim control any time by
   signing back in, which notifies the helper. [DOC S-f6g2wc4u]
-- Unattended (Android): starts immediately without sharer acceptance on dedicated-mode devices; supported
+- Unattended (Android): the helper connects without the sharer accepting each time, on devices enrolled as
+  dedicated devices; supported
   helper-app combos and the full attended/unattended support matrix by helper/sharer platform are in
   `intune/remote-help.csv`. [DOC S-f7i5faki]
 - Only one helper can hold an unattended connection to a device at a time, and only one unattended session
@@ -141,7 +143,7 @@ Sessions are logged for reporting/audit (30 days) but never recorded.
 - Android requires Managed Google Play set up, the Intune app newer than 5.0.5541.0, CAMERA permission
   (auto-grantable via app configuration policy), and no device policy blocking screen capture; dedicated
   Zebra/Samsung devices need OEM-specific overlay/OEMConfig permission grants (see the deploy page for the
-  per-OEM package names and signing certificates). [DOC S-5h4qjmdq]
+  per-OEM package names and signing certificates). [DOC S-5h4qjmdq, S-f7i5faki]
 
 ### Monitoring, logs and reporting
 - **Tenant admin > Remote Help > Monitor** shows active session counts and history; the **Remote Help
@@ -154,7 +156,7 @@ Sessions are logged for reporting/audit (30 days) but never recorded.
   accessible to Microsoft. [DOC S-f7i5faki, S-co4oj66f]
 - Windows install logs: `C:\Users\<username>\AppData\Local\Temp\Remote_help_*_QuickAssist_Win10_x64.msi.log`
   and `Remote_help_*.log`. Operational/session logs: **Event Viewer > Applications and Services Logs >
-  Microsoft > Windows > RemoteHelp** (on both helper and sharer devices). [DOC S-co4oj66f]
+  Microsoft > Windows > RemoteHelp** (on both helper and sharer devices). [DOC S-co4oj66f, S-f7i5faki]
 - Known issues: remote-launch notifications fail if the **Microsoft Intune Management Service** isn't
   running on the sharer's device; a short delay after reboot before that service restarts; newly enrolled
   Windows/Android devices can take up to **1 hour** (Windows) or **15 minutes** (Android) before receiving

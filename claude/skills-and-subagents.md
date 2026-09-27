@@ -111,7 +111,8 @@ shared task list and direct inter-agent messaging on top of ordinary subagent de
   subagent. [DOC S-qdxfqzln]
 - Teammates message each other directly and self-coordinate via a shared task list (pending/in-progress/completed,
   with dependencies) using file locking to avoid claim races; agents without the Task tools coordinate via messages
-  only. Subagents, by contrast, only return a result to the caller. [DOC S-qdxfqzln]
+  only. Subagents, by contrast, return a result to the caller (subagents Claude named at spawn can also message
+  each other), and the main agent manages all work. [DOC S-qdxfqzln]
 - Team storage is session-derived, named `session-<first 8 chars of session id>`: team config at
   `~/.claude/teams/{team-name}/config.json` (removed when the session ends) and task list at
   `~/.claude/tasks/{team-name}/` (persists locally, never uploaded, survives resume; retention follows
@@ -120,9 +121,10 @@ shared task list and direct inter-agent messaging on top of ordinary subagent de
 - A subagent definition (project/user/managed scope) can be reused as a teammate role: Claude Code applies its
   `tools` (adding `SendMessage` for in-process teammates, plus `TaskCreate/Get/List/Update` in sessions with Task
   tools), its `model` (if the spawn prompt names none), and its body (appended as extra instructions for in-process
-  teammates, or used in place of the default prompt for split-pane teammates); `skills` and `mcpServers` from the
-  definition are NOT applied to in-process teammates, which instead load skills/MCP servers from project/user
-  settings. [DOC S-qdxfqzln]
+  teammates, or used in place of the default prompt for split-pane teammates). The definition's `skills` are NOT
+  applied in either display mode (teammates load skills from project/user settings); its `mcpServers` apply only to
+  split-pane teammates, while in-process teammates ignore them and load MCP servers from project/user settings.
+  [DOC S-qdxfqzln]
 - Teammates start in the lead's permission mode except `dontAsk`, which they never inherit; if the lead runs
   `--dangerously-skip-permissions`, all teammates do too. Teammate permission prompts surface in the lead session.
   [DOC S-qdxfqzln]

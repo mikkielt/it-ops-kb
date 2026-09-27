@@ -51,7 +51,7 @@ Dual-LLM-style isolation step ahead of an in-process PII filter.
   tool-response intervention points; annotations report `detected`/`filtered` booleans. [DOC S2008]
 - Anthropic (2025-11-24, re: Claude for Chrome): defenses are (1) RL training exposing the model to injected content
   and rewarding correct refusal, (2) a classifier scanning "all untrusted content that enters the model's context
-  window" for hidden/encoded/deceptive instructions, (3) ongoing red-teaming and external benchmark participation.
+  window" for adversarial commands in hidden text, manipulated images or deceptive UI elements, (3) ongoing red-teaming and external benchmark participation.
   Anthropic states a 1% attack success rate is still "meaningful risk" and "no browser agent is immune." [DOC S2009]
 - Claude Code's documented tool-result-relevant defenses: isolated context window for web-fetch results; "context-
   aware analysis" of the full request; in Manual mode, approval required by default for most tools that make

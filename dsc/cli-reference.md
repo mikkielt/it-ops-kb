@@ -3,7 +3,7 @@ topic: dsc/cli-reference
 priority: P0
 applies_to: "Microsoft DSC 3.3.0 (binary --help output; source release/v3.3 @ ea572fa)"
 retrieved_utc: 2026-09-26
-sources: [S100, S101, S116, S117, S118, S128, S135, S136, S141, S-mmshotst]
+sources: [S100, S101, S116, S117, S118, S128, S132, S133, S134, S135, S136, S141, S-mmshotst]
 status: complete
 files: [dsc/cli/]
 ---
@@ -29,7 +29,7 @@ files: [dsc/cli/]
 - In the 3.3.0 binary the resource version option is `-v, --version <VERSION>` ("The version of the resource to invoke in semver format"). In 3.4.0-preview.1 it is `-v, --required-version <REQUIRED_VERSION>` with hidden alias `--version`. [DOC S116,S117]
 - `dsc schema -t/--type <type> [-o]`. Types: adapted-dsc-resource-manifest, configuration, configuration-export-result, configuration-get-result, configuration-set-result, configuration-test-result, dsc-resource, extension-discover-result, extension-manifest, function-definition, get-result, include, manifest-list, resolve-result, resource, resource-get-result, resource-set-result, resource-test-result, resource-manifest, restart-required, set-result, test-result. [DOC S116]
 - `dsc completer <bash|elvish|fish|powershell|zsh>` writes a completion script to stdout. [DOC S116]
-- Exit codes (constants): 0 success, 1 invalid args, 2 DSC error (resource/engine error, including directive validation and security context), 3 JSON error, 4 invalid input, 5 validation failed, 6 Ctrl+C, 7 resource not found, 8 assertion failed, 9 server failed, 10 Bicep failed. [DOC S101]
+- Exit codes (constants): 0 success, 1 invalid args, 2 DSC error, 3 JSON error, 4 invalid input, 5 validation failed, 6 Ctrl+C, 7 resource not found, 8 assertion failed, 9 server failed, 10 Bicep failed. [DOC S101]
 - The Learn page (ms.date 2025-03-25) documents only exit codes 0 to 6. [DOC S135]
 - On Windows, if dsc.exe's parent process is `sihost.exe` or `explorer.exe` (for example, launched from the Store or by double-click), it prints a message, waits for a keypress and exits with code 1. [DOC S128]
 - On Ctrl+C, dsc kills its child process tree and exits with 6. [DOC S128]

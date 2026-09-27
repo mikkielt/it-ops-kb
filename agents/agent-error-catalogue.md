@@ -41,11 +41,13 @@ keeping a project's `CLAUDE.md`, skills and MCP tool definitions inside document
 - A tool name over 128 characters is rejected by the API; this was reproduced and reported as a Claude Code bug
   against a long MCP tool name (`mcp__<server>__<tool>` naming can approach this with a long server or tool name).
   [COMMUNITY S1857]
-- Anthropic's own context-engineering guidance frames "oversized tool output" and "too many tools loaded up front" as
-  the two biggest practical context-budget failures for agents, and recommends: keep tool descriptions minimal and
-  distinctive, defer tool definition loading (tool search / `defer_loading`) once a toolset is large, and offload
-  bulky observations to the filesystem or to sub-agents that return only a summary rather than raw output. [DOC
+- Anthropic's context-engineering guidance names bloated tool sets (too much functionality, ambiguous choice between
+  tools) as one of the most common failure modes, and recommends a minimal viable tool set with minimal overlap,
+  "just in time" loading of data through lightweight references such as file paths, clearing old tool results, and
+  sub-agents that explore in their own context and return a condensed summary (often 1,000-2,000 tokens). [DOC
   S1855]
+- Claude Code defers MCP tool definitions by default (tool search): only tool names and server instructions load at
+  session start, so adding servers has little effect on the context window. [DOC S1862]
 - `claude/tool-output-limits.md` already documents, and this file does not repeat: the 10,000-token MCP output
   warning threshold, `MAX_MCP_OUTPUT_TOKENS` (default 25,000), `anthropic/maxResultSizeChars` (ceiling 500,000
   chars), `MCP_TOOL_TIMEOUT`, `CLAUDE_CODE_MCP_TOOL_IDLE_TIMEOUT`, `MCP_TIMEOUT`, `MCP_SERVER_CONNECTION_BATCH_SIZE`,
@@ -55,14 +57,14 @@ keeping a project's `CLAUDE.md`, skills and MCP tool definitions inside document
 
 - **Stdout pollution in stdio MCP servers.** The MCP spec (2026-07-28 revision) is explicit and normative: "The
   server **MAY** write UTF-8 strings to `stderr` for any logging purposes"; "The server **MUST NOT** write anything
-  to its `stdout` that is not a valid MCP message"; and "The client **MUST NOT** assume `stderr` output indicates
+  to its `stdout` that is not a valid MCP message"; and "The client **SHOULD NOT** assume `stderr` output indicates
   error conditions." A server that lets a dependency's default logger, a `print()`, or a startup banner reach stdout
   corrupts the newline-delimited JSON-RPC framing the client is parsing, which surfaces to the client as unparseable
   responses or a hung connection, not as a clean protocol error. [DOC S1861]
 - **MCP timeouts, confirmed with current defaults (Claude Code, 2026-09-25):** `MCP_TIMEOUT` bounds MCP server
   *startup*; `MCP_TOOL_TIMEOUT` bounds a *tool call*, and is effectively unbounded (~28 hours) when unset; a
   per-server `timeout` in `.mcp.json` is a hard wall-clock floor of at least 1000 ms and also floors the idle
-  timeout (stdio servers need Claude Code v2.1.203+ for this to apply to them); `CLAUDE_CODE_MCP_TOOL_IDLE_TIMEOUT`
+  timeout (requires Claude Code v2.1.203+, before which stdio servers were exempt from the idle timeout); `CLAUDE_CODE_MCP_TOOL_IDLE_TIMEOUT`
   aborts a call with no response/progress notification within 5 minutes (HTTP/SSE/WebSocket/connector servers) or
   30 minutes (stdio servers) by default, `0` disables it; `CLAUDE_CODE_MCP_STARTUP_WAIT_MS` (added 2.1.274) bounds
   how long a headless (`-p`) run's first turn waits for MCP servers to finish connecting. [DOC S1862, S1864]
@@ -114,29 +116,36 @@ keeping a project's `CLAUDE.md`, skills and MCP tool definitions inside document
     are the closest analogues, both shape restrictions rather than keyword restrictions.
 - **Tool-count guidance (soft, not a hard vendor limit):** OpenAI's function-calling guide recommends "fewer than 20
   functions available at the start of a turn" as a soft suggestion, not an enforced ceiling, and directs larger
-  toolsets to dynamic/deferred loading — the same shape of guidance Anthropic gives for Claude Code's `tool_search`.
-  [DOC S1865, S1855]
+  toolsets to dynamic/deferred loading — the same shape as Claude Code's default MCP tool search (deferred tool definitions).
+  [DOC S1865, S1862]
 - **Copilot Studio's full error-codes page, now parsed** (`learn.microsoft.com/.../authoring/error-codes`, S1842):
-  the page enumerates roughly 50 named error codes plus a numbered channel-error table (2007, 2018, 2021, 2022,
-  2100). The instructions-length code (`OpenAIAdditionalInstructionsLengthExceededLimit`) does **not** appear as a
-  named row on this official page at all — it remains sourced only from the community digest (S1843); the official
+  the page's web-app tab documents 66 named error codes, and its Classic/Teams tab a numbered table (2000-2030,
+  2100-2102, 3000-3003). The instructions-length code (`OpenAIAdditionalInstructionsLengthExceededLimit`) does **not** appear as a
+  named row on this official page at all; the official
   page's closest neighbors are `ConnectedAgentGptComponentNotFound` (a connected agent missing instructions/
-  description) and `TooMuchDataToHandle`/error 2007 ("The bot contains too much content to be able to work.",
-  reduce message lengths or topic count). Throttling and timeout codes are extensive: `HTTP429TooManyRequests`,
+  description), `TooMuchDataToHandle` (the request sent to OpenAI, i.e. user input, earlier action outputs, tools
+  and conversation history, exceeds the maximum request size; scope tool outputs down) and Classic/Teams error
+  2007 ("The bot contains too much content to be able to work.", reduce message lengths or topic count). Throttling and timeout codes are extensive: `HTTP429TooManyRequests`,
   `HTTP408RequestTimeout`, `HTTP504GatewayTimeout`, `ExecutionTimeout`, `OperationTimeout`,
   `GenAISearchandSummarizeRateLimitReached`, `GenAIToolPlannerRateLimitReached`, `OpenAIRateLimitReached`,
   `QuotaExceeded`, `EnforcementMessageC2`, `DataverseStructured429`, `DataverseFileAttachment429`, `SharePoint429`.
   See `agents/agent-error-catalogue.csv` for the full row-by-row breakdown with resolutions as documented. [DOC
   S1842]
-- **Power Platform / Power Automate throttling for agent flows.** The error-codes page's connector-throttling family
-  (`HTTP429TooManyRequests`, `DataverseStructured429`, `DataverseFileAttachment429`, `SharePoint429`) is the same
-  throttling surface an agent flow's connector actions hit; Microsoft's documented mitigation is retry-with-backoff,
-  concurrency limits on batch operations, and monitoring throttling in Power Platform analytics — no
-  agent-flow-specific throttling error code beyond the shared connector-level codes was found on the fetched page.
-  [DOC S1842]
+- The error code `OpenAIAdditionalInstructionsLengthExceededLimit` and its cause (combined agent + node + system
+  instructions over an internal threshold below the 8,000-character field cap) have no source in the kb. [UNK: not
+  in S1843 as re-read 2026-09-27]
+- A community post reports that Copilot Studio allows 8,000 characters of agent instructions at creation but
+  enforces a 2,000-character limit after deployment in some configurations (citing a Microsoft Q&A thread), and
+  recommends keeping instructions to 1,000-2,000 characters. [COMMUNITY S1843]
+- **Power Platform / Power Automate throttling for agent flows.** The error-codes page has no agent-flow-specific
+  throttling code; its throttling family (`HTTP429TooManyRequests` for tool calls, `DataverseStructured429`,
+  `DataverseFileAttachment429`, `SharePoint429` for knowledge search) documents waiting and retrying with
+  (exponential) backoff, limiting concurrency for batch operations, and monitoring usage and throttling in
+  analytics. The flow-specific code it does document is `FlowActionTimedOut`: a cloud flow that takes more than
+  100 seconds to return to the agent. [DOC S1842]
 
 ## Reference
-See `agents/agent-error-catalogue.csv` for the normalized tool/error/cause/avoidance table (48 rows after this
+See `agents/agent-error-catalogue.csv` for the normalized tool/error/cause/avoidance table (49 rows after this
 deepening pass). See `claude/messages-api.md` for the Messages API request/response shape (tool_use/tool_result
 pairing, stop_reason values including pause_turn/refusal/model_context_window_exceeded), and Batches/Files API and
 rate-limit numbers (`claude/api-limits.csv`), which this article's HTTP-error/limits facts extend rather than
@@ -163,7 +172,7 @@ Checklist, each line cited:
 5. Keep MCP tool names (the `mcp__<server>__<tool>` spelling) under 128 characters — a long server
    name plus a long tool name can combine to breach this — [COMMUNITY S1857].
 6. Do not assume every tool's full JSON Schema/description needs to load up front once an MCP surface grows past
-   a handful of tools; Anthropic's own guidance favors deferred loading over trimming correctness — [DOC S1855].
+   a handful of tools; Claude Code defers MCP tool definitions by default (tool search) — [DOC S1862].
 7. Treat a 429 from the Claude Code workspace spend cap as non-retryable (no `retry-after`), distinct from an
    ordinary rate-limit 429 — relevant if a project's own CI job ever calls the API directly — [DOC S1847].
 8. In multi-turn sessions (long agentic runs), watch for `tool_use`/`tool_result` pairing errors when history is

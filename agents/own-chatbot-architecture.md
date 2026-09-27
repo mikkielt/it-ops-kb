@@ -3,17 +3,16 @@ topic: agents/own-chatbot-architecture
 priority: P1
 applies_to: "Microsoft 365 Agents SDK (GA), Bot Framework SDK (retiring), Azure AI Foundry Agent Service, docs current 2026-09-25"
 retrieved_utc: 2026-09-26
-sources: [S1961, S1964, S1965, S1966, S1968, S1969, S1970, S1971, S1972, S1974, S1975, S1976, S1977, S1985]
+sources: [S1961, S1964, S1965, S1966, S1967, S1968, S1969, S1970, S1971, S1972, S1974, S1975, S1976, S1977, S1985]
 status: complete
 ---
 
 # Migrating off Copilot Studio: own-chatbot architecture
 
 ## Summary
-- Microsoft's own recommended replacement framework for hand-written conversational agents is the
-  **Microsoft 365 Agents SDK** (GA; C#, JavaScript, Python), which is deliberately *only* a
-  channel-abstraction and turn/state-management layer — it is explicitly **not** an AI model, an
-  orchestration engine, or a no-code builder. [DOC S1971]
+- The **Microsoft 365 Agents SDK** (C#, JavaScript, Python) is a framework for conversational agents
+  that is deliberately *only* a channel-abstraction and turn/state-management layer — it is
+  explicitly **not** an AI model, an orchestration engine, or a no-code builder. [DOC S1971]
 - The **Bot Framework SDK** it replaces is retiring: final long-term support ends 2025-12-31, after
   which it gets no updates/features and no Azure-portal service tickets, though already-built bots
   keep running; Microsoft states the Agents SDK as the migration target. [DOC S1976]
@@ -37,7 +36,7 @@ status: complete
 - Supported languages per the official overview: C# (.NET 8.0), JavaScript (Node.js 18+), Python
   (3.9-3.11). The Python repo's own README instead says the packages target Python 3.10 or
   greater, recommends 3.11+, and lists support for 3.10-3.14 — a minor discrepancy between the two Microsoft-authored pages on the exact Python
-  floor. [DOC S1968, S1969] — flagged also in `_parts/agents-copilot/conflicts.md` scope note.
+  floor. [DOC S1971, S1969] — flagged also in `_parts/agents-copilot/conflicts.md` scope note.
 - The Python package (`microsoft/Agents-for-python`, MIT licence) additionally ships: aiohttp/
   FastAPI hosting, Azure Blob and CosmosDB storage, MSAL-based and Entra-ID-sidecar authentication,
   Waterfall dialogs/prompts for multi-turn flows, Activity-protocol types/validators, third-party

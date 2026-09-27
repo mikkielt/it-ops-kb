@@ -3,7 +3,7 @@ topic: dsc/directives
 priority: P0
 applies_to: "Microsoft DSC 3.3.0 (release/v3.3 @ ea572fa); behaviour re-checked on the 3.4.0-preview.1 binary"
 retrieved_utc: 2026-09-26
-sources: [S102, S103, S104, S105, S111, S112, S116, S117, S123, S140]
+sources: [S102, S103, S104, S105, S111, S112, S116, S117, S123, S140, S-v4tlkpo3]
 status: complete
 ---
 
@@ -27,7 +27,7 @@ status: complete
 - The type docs say DSC forbids a comparator without an operator, forbids build metadata, and forbids `x`/`X` wildcards. The 3.3.0 binary accepts all three when they appear in `directives.version`: `'3.3'` is echoed as `'^3.3'`, `'1.x'` as `'1.*'`, `'3.3.0+abc'` as `'^3.3.0'`, and `'*'` passes. [DER S104,S116: observed binary output differs from the type docs]
 - Security context check order: document `directives.securityContext` (and the deprecated `metadata.Microsoft.DSC.securityContext`, with a warning) is checked in `validate_config`. If both are set and differ, the error is `conflictingSecurityContext`. `elevated` requires an Administrator token and `restricted` requires a non-admin token. [DOC S102]
 - Resource-level `directives.securityContext` is checked per resource in get/set/test/export, the same way. [DOC S102]
-- Separately, a manifest's `requireSecurityContext` on an operation (for example `Microsoft.Windows/Service` set = `elevated`) fails that operation with `securityContextRequired` when the process lacks that context. [DOC S105]
+- Separately, a manifest's `requireSecurityContext` on an operation (for example `Microsoft.Windows/Service` set = `elevated`) fails that operation with `securityContextRequired` when the process lacks that context. [DOC S105, S-v4tlkpo3]
 - Observed: `directives.securityContext: elevated`, run non-elevated on 3.3.0 → exit 2, "Security context: Elevated security context required". [DER S116: local run 2026-09-23]
 - Document-level `resourceDiscovery: duringDeployment` skips the up-front discovery pass and refreshes the discovery cache during the run. The default is `preDeployment`. [DOC S102]
 

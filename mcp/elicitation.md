@@ -26,7 +26,7 @@ In legacy revisions (2025-11-25 and earlier) the server sent `elicitation/create
 - Servers MUST NOT use form mode for passwords, API keys, tokens or payment credentials; MUST use URL mode for them. [DOC S709]
 - Clients MUST show which server is asking, provide decline and cancel, and let users review/modify form responses before sending. [DOC S709]
 - Response actions: `accept` (with `content` for form), `decline`, `cancel`. [DOC S709]
-- URL mode `accept` means consent to open the URL, not completion; `notifications/elicitation/complete` and `elicitationId` (added 2025-11-25) were removed in 2026-07-28. [DOC S701]
+- URL mode `accept` means consent to open the URL, not completion; `notifications/elicitation/complete` and `elicitationId` (added 2025-11-25) were removed in 2026-07-28. [DOC S709, S701]
 - Clients MUST NOT pre-fetch or open a URL without consent, MUST show the full URL. [DOC S709]
 - Python SDK: `ctx.elicit()` / `ctx.elicit_url()` are server-to-client requests that exist only on legacy connections (2025-11-25 or earlier); on a 2026-07-28 connection they fail. [DOC S720]
 - Python SDK: a parameter `Annotated[T, Resolve(fn)]` whose resolver returns `Elicit(...)` works on every connection: live `elicitation/create` on legacy, `InputRequiredResult` on 2026-07-28. [DOC S720]

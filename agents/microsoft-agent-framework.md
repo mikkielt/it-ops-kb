@@ -1,28 +1,30 @@
 ---
 topic: agents/microsoft-agent-framework
 priority: P2
-applies_to: "Microsoft Agent Framework (Python `agent-framework`, .NET `Microsoft.Agents.AI`, Go public preview); GA, docs and GitHub retrieved 2026-09-26"
+applies_to: "Microsoft Agent Framework (Python `agent-framework`, .NET `Microsoft.Agents.AI`, Go public preview); docs and GitHub retrieved 2026-09-26"
 retrieved_utc: 2026-09-26
-sources: [S-kzoop7qs, S-7ziha7pr, S-esun5f2n, S-lkto4w7b, S-sjqmzszi, S-j2yxzynm, S-cjxn455h, S-mhvboogr, S-do52zses, S1939, S-gs56zhuk]
+sources: [S-kzoop7qs, S-7ziha7pr, S-esun5f2n, S-lkto4w7b, S-sjqmzszi, S-j2yxzynm, S-cjxn455h, S-mhvboogr, S-do52zses, S1939, S-gs56zhuk, S-4yhrlzez, S-ayrhsrlp, S-nghojxuy, S-iblntf2w]
 status: partial
 ---
 
 # Microsoft Agent Framework
 
 ## Summary
-- **Microsoft Agent Framework** is Microsoft's unified, general-availability (GA) agent-building
-  framework: the stated successor to both **Semantic Kernel** and **AutoGen**, created by the same
-  teams, combining AutoGen's simple single-/multi-agent abstractions with Semantic Kernel's
-  enterprise features (session state, type safety, middleware, telemetry) and adding a typed,
-  graph-based **Workflow** model for explicit multi-agent orchestration. [DOC S-kzoop7qs]
+- **Microsoft Agent Framework** is Microsoft's agent-building framework: the stated direct
+  successor to both **Semantic Kernel** and **AutoGen**, created by the same teams, combining
+  AutoGen's simple single-/multi-agent abstractions with Semantic Kernel's enterprise features
+  (session state, type safety, middleware, telemetry) and adding graph-based **Workflows** for
+  explicit multi-agent orchestration. [DOC S-kzoop7qs]
+- A general-availability (GA) status for the framework as a whole. [UNK: not in S-kzoop7qs as
+  re-read 2026-09-27; the page states only that the Go SDK is in public preview]
 - Ships for **Python** (`pip install agent-framework`, package `agent-framework`, MIT licence),
   **.NET** (`Microsoft.Agents.AI`, `Microsoft.Agents.AI.Foundry`), and **Go** (`agent-framework-go`,
   public preview: declarative agents, RAG, CodeAct and functional workflows not yet available).
   [DOC S-kzoop7qs, S1939]
-- Core building blocks: `Agent`/`ChatAgent` (Python) or `AIAgent`/`ChatClientAgent` (.NET), a
+- Core building blocks: agents (`Agent` in Python, `AIAgent` in .NET), a
   **Harness Agent** (opinionated, batteries-included agent for long multi-step tasks: planning/todo
   tracking, context compaction, file access/memory, don't-ask-again tool approval, observability),
-  **Workflows** (graph-based, checkpointing, human-in-the-loop), sessions/threads for state,
+  **Workflows** (functional and graph-based), an agent session for state management,
   middleware, context providers for memory, and MCP clients for tool integration. [DOC S-kzoop7qs]
 - Model providers documented: **Microsoft Foundry, Anthropic, Azure OpenAI, OpenAI, Ollama**, and
   others via the integrations catalogue. [DOC S-kzoop7qs]
@@ -33,9 +35,10 @@ status: partial
 
 ### Packages, licence, release cadence
 - The `microsoft/agent-framework` GitHub repository is **MIT**-licensed. [DOC S1939]
-- Python: `pip install agent-framework` (core package `agent-framework`); an experimental-features
-  package `agent-framework-lab` and a DevUI package `agent-framework-devui` (install with `--pre`)
-  are separate. [DOC S-kzoop7qs, S-cjxn455h]
+- Python: `pip install agent-framework`; the experimental
+  `agent-framework-lab` package is no longer installed by `agent-framework` and each Lab module is
+  installed explicitly, and DevUI is the separate `agent-framework-devui` package (install with
+  `--pre`). [DOC S-kzoop7qs, S-iblntf2w, S-cjxn455h]
 - .NET: `dotnet add package Microsoft.Agents.AI.Foundry --prerelease` for the Foundry integration;
   `Microsoft.Agents.AI` is the core namespace package. [DOC S-kzoop7qs, S-sjqmzszi]
 - Go: `go get github.com/microsoft/agent-framework-go` — marked **public preview**, with declarative
@@ -51,14 +54,14 @@ status: partial
 ### Agents: ChatAgent, custom agents, sessions
 - Minimal Python agent: `Agent(client=<ChatClient>, name=..., instructions=...)`, then
   `await agent.run("prompt")` for a non-streaming `AgentResponse`, or `agent.run(..., stream=True)`
-  for `AgentResponseUpdate` chunks. [DOC S-kzoop7qs]
+  for `AgentResponseUpdate` chunks. [DOC S-kzoop7qs, S-4yhrlzez]
 - .NET agents come from a chat client via `.AsAIAgent(model:, instructions:)`, returning an `AIAgent`
   (base abstraction, analogous to Semantic Kernel's `Agent`); the concrete unifying agent type across
   underlying `IChatClient`-based services is `ChatClientAgent` (replacing SK's per-service
   `ChatCompletionAgent`/`OpenAIAssistantAgent`/`AzureAIAgent`). [DOC S-sjqmzszi]
 - Custom agents: Python subclasses `BaseAgent` (`pip install agent-framework-core`); .NET implements
   the `AIAgent` contract directly. A custom agent with no underlying chat client has no tools to
-  invoke unless it wraps an `IChatClient`/`ChatClient` that already supports tools. [DOC S-kzoop7qs]
+  invoke unless it wraps an `IChatClient`/`ChatClient` that already supports tools. [DOC S-4yhrlzez]
 - State/threads: `AgentThread` (Python) holds either a service-managed thread (`service_thread_id`)
   or a local `message_store` (`ChatMessageStoreProtocol`), never both; create one via
   `agent.get_new_thread()`, never the constructor directly; thread state round-trips through
@@ -117,22 +120,27 @@ status: partial
   with checkpointing and streaming. [DOC S1939, S-lkto4w7b]
 - **Checkpointing**: `WorkflowBuilder(checkpoint_storage=...)` with `FileCheckpointStorage` captures
   executor-local state (`ctx.set_executor_state()`), cross-executor state (`ctx.set_state()`), pending
-  inter-executor message queues, and execution position; `workflow.run(checkpoint_id=..., responses=...)`
-  is the unified API to resume (older separate `run_stream_from_checkpoint`/`run_from_checkpoint`
-  methods, and a `responses` kwarg on them, are superseded/no longer supported). [DOC S-lkto4w7b]
+  inter-executor message queues, and execution position; resume with
+  `workflow.run(checkpoint_id=..., checkpoint_storage=..., stream=True)`, and send human responses back
+  with `workflow.run(responses=..., stream=True)`. [DOC S-lkto4w7b]
+- Older separate `run_stream_from_checkpoint`/`run_from_checkpoint` methods being superseded.
+  [UNK: not in S-lkto4w7b as re-read 2026-09-27]
 - **Human-in-the-loop (HITL)**: a workflow pauses execution via a typed request/response channel —
   Python `ctx.request_info()` plus an `@response_handler`-decorated method; .NET `RequestPort`
   (`RequestPort.Create<TRequest,TResponse>`) emitting `RequestInfoEvent`; Go uses the same
   `RequestInfoEvent`/response pattern. A checkpoint taken while a request is pending re-emits that
   `RequestInfoEvent` on restore, so a workflow can be paused, persisted, and resumed with the human
   response supplied later. [DOC S-j2yxzynm]
-- Sequential orchestrations additionally support **tool approval**: `@tool(approval_mode="always_require")`
-  marks a tool call that must pause the workflow (emitting a `request_info` event) for approval before
-  execution — usable with `SequentialBuilder` with no extra builder configuration. [DOC S-j2yxzynm]
+- Agent orchestrations (sequential, concurrent, group chat) get **tool approval** through the same
+  request/response mechanism: when an agent calls an approval-required tool, the workflow pauses and
+  emits a `RequestInfoEvent` whose payload is a `ToolApprovalRequestContent` (C#, Go) or a `Content`
+  with `type == "function_approval_request"` (Python). [DOC S-j2yxzynm]
+- The `@tool(approval_mode="always_require")` syntax and use with `SequentialBuilder` without extra
+  builder configuration. [UNK: not in S-j2yxzynm as re-read 2026-09-27]
 - A complete workflow can be converted into a single `Agent`-like object with `.as_agent()`: the
   workflow's start executor must accept message input (true by default for `Agent`/agent-based
   executors); external input requests from `RequestInfoExecutor` surface as function calls to the
-  wrapping agent's caller. [DOC S-kzoop7qs — see workflows/as-agents]
+  wrapping agent's caller. [DOC S-ayrhsrlp]
 - Roadmap items named explicitly as not yet built: a Swarm (handoff-based) pattern and a
   `SelectorGroupChat`-equivalent (LLM-driven speaker selection); distributed workflow execution is
   "planned" (current execution model is single-process composition). [DOC S-lkto4w7b]
@@ -162,10 +170,10 @@ status: partial
   the caller's own responsibility via the provider SDK. [DOC S-sjqmzszi]
 
 ### Observability and DevUI
-- Agent Framework instruments agents, workflows, and tool execution with **OpenTelemetry**, emitting
-  traces/logs/metrics per the **OpenTelemetry GenAI semantic conventions**; zero-code setup is
-  available via environment variables, plus a programmatic `configure_otel_providers()`. [DOC
-  S-mhvboogr]
+- Agent Framework integrates with **OpenTelemetry**, emitting traces/logs/metrics per the
+  **OpenTelemetry GenAI semantic conventions**; setup options include `configure_otel_providers()`
+  reading the standard `OTEL_EXPORTER_OTLP_*` environment variables and zero-code auto-instrumentation
+  with the `opentelemetry-instrument` CLI. [DOC S-mhvboogr]
 - `create_harness_agent`'s telemetry provider name defaults to `microsoft.agent_framework.harness`
   (override with `otel_provider_name=`); instrumentation is enabled by default and sensitive-data
   capture (raw messages/tool args/results) is disabled by default — enable with `ENABLE_SENSITIVE_DATA`;
@@ -178,7 +186,7 @@ status: partial
   (span hierarchy, LLM calls, tool calls) in a debug panel — DevUI displays spans the framework emits,
   it does not create its own. Traces can also be exported to an OTLP collector by setting
   `OTLP_ENDPOINT` (e.g. Jaeger, Zipkin, Azure Monitor, Datadog), independent of DevUI. [DOC
-  S-cjxn455h]
+  S-cjxn455h, S-nghojxuy]
 
 ## Reference
 - `agents/own-chatbot-architecture.md`: names Agent Framework as one of the frameworks Azure AI

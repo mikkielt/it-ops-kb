@@ -1,6 +1,6 @@
 sharer_platform,helper_platform,view_only,full_control,elevation,unattended,notes,source
 Windows native,Windows native,yes,yes,yes,no,Attended only; elevation requires helper Elevation permission,S-f7i5faki
-Windows native,Windows web,yes,no,no,yes,Unattended remote sign-in session; physical corporate-owned Windows only,S-f7i5faki
+Windows native,Windows web,no,no,no,yes,Unattended remote sign-in session; physical corporate-owned Windows only,S-f7i5faki
 macOS native,Windows web,yes,yes,no,no,Attended only,S-f7i5faki
 macOS native,macOS web,yes,yes,no,no,Attended only,S-f7i5faki
 Android native,Windows web,yes,yes,no,yes,Dedicated-mode Samsung Knox/Zebra devices for unattended,S-f7i5faki

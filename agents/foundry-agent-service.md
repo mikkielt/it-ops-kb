@@ -3,7 +3,7 @@ topic: agents/foundry-agent-service
 priority: P1
 applies_to: "Microsoft Foundry Agent Service (GA runtime; Toolbox tool search/Skills, voice-based prompt agents, Work IQ, Agent Optimizer preview), Azure AI Projects SDK, docs current 2026-09-26"
 retrieved_utc: 2026-09-26
-sources: [S-hkoalitj, S-yutqeaay, S-3axje6py, S-wy457poi, S-5ygcb6vm, S-f5p5qi4d, S-k3l2irzl, S-gessjq23, S-kub3e5bx, S-5tsg2rir, S-23bcmfv4, S-all62inb, S-jgc6ne22, S-wffcy42c]
+sources: [S-hkoalitj, S-yutqeaay, S-3axje6py, S-wy457poi, S-5ygcb6vm, S-f5p5qi4d, S-k3l2irzl, S-gessjq23, S-kub3e5bx, S-5tsg2rir, S-23bcmfv4, S-all62inb, S-jgc6ne22, S-wffcy42c, S-eh6okx77, S-zlfl25p7]
 status: complete
 files: [agents/foundry-agent-tools.csv]
 ---
@@ -32,14 +32,14 @@ quotas/limits, and a runnable MCP-tool example.
 - Three deployment tiers trade managed convenience for data control: **Basic** (Microsoft-managed
   storage), **Standard** (BYO Azure Storage + Azure AI Search + Azure Cosmos DB, all in the customer's
   tenant), **Standard with BYO VNet** (adds full network isolation). [DOC S-5tsg2rir]
-- Foundry RBAC roles were renamed in 2026 (old name -> new name, same role IDs): **Azure AI User ->
+- Foundry RBAC roles were recently renamed (old name -> new name, same role IDs): **Azure AI User ->
   Foundry User**, **Azure AI Owner -> Foundry Owner**, **Azure AI Account Owner -> Foundry Account
   Owner**, **Azure AI Project Manager -> Foundry Project Manager**; a fifth role, **Foundry Agent
-  Consumer**, is new and is the least-privileged role for principals that only call agent endpoints. [DOC
+  Consumer**, is the least-privileged role for principals that only call agent endpoints. [DOC
   S-k3l2irzl]
 - Fixed, non-increasable Agent Service limits: 128 tools per agent, 1,000 versions per agent, 100,000
-  messages per thread, 10,000 files per agent/thread, 512 MB per file, 300 GB total uploaded files per
-  account, 2,000,000 tokens per file for vector-store attachment, 1,500,000 characters per message. [DOC
+  messages per thread, 10,000 files per agent/thread, 512 MB per file, 300 GB for all uploaded files
+  for agents, 2,000,000 tokens per file for vector-store attachment, 1,500,000 characters per message. [DOC
   S-f5p5qi4d]
 
 ## Facts
@@ -65,9 +65,10 @@ quotas/limits, and a runnable MCP-tool example.
   (instructions, tools, model) in the caller's own process per call -- nothing is created/updated/deleted
   as a Foundry resource -- while still getting catalog models, platform tools, project-scoped data, OBO
   auth, and project-level observability/governance through the Foundry project endpoint. [DOC S-hkoalitj]
-- Compare-table highlights: only hosted agents get an *automatic, per-agent-dedicated* Entra identity;
-  prompt and voice agents get project-level Entra identity; only hosted agents bill for container
-  compute in addition to inference + tool usage. [DOC S-hkoalitj]
+- Compare-table highlights: only hosted agents are listed with an *automatic, per-agent-dedicated* Entra
+  identity; prompt and voice agents are listed simply as having an agent identity (unpublished agents in a
+  project share one agent identity, and publishing creates a distinct one); only hosted agents bill for
+  container compute in addition to inference + tool usage. [DOC S-hkoalitj, S-jgc6ne22]
 
 ### Toolboxes
 - A toolbox is a Foundry-managed, versioned, curated set of tools exposed behind **one MCP-compatible
@@ -105,7 +106,7 @@ quotas/limits, and a runnable MCP-tool example.
 - The toolbox/MCP endpoint **never blocks `tools/call`** based on `require_approval`; enforcement --
   pausing the call, presenting name+arguments to a human, resuming or rejecting -- is entirely the calling
   agent runtime's responsibility. A system-prompt instruction alone does not enforce approval. [DOC
-  S-5ygcb6vm, S-3axje6py]
+  S-5ygcb6vm, S-3axje6py, S-wy457poi]
 - When approval is required, the model's attempt to call the tool surfaces as an `mcp_approval_request`
   output item (Responses API) carrying the server label, tool name, and arguments; the caller reviews it
   and replies with an `mcp_approval_response` (`approve: true/false`) referencing that request's id via
@@ -128,14 +129,16 @@ quotas/limits, and a runnable MCP-tool example.
   data handling and compliance of what it puts in the toolbox. [DOC S-5ygcb6vm]
 
 ### Multi-agent, hosted agents, and A2A
-- A2A: Foundry Agent Service supports the generally-available **A2A protocol v1.0** (JSON-RPC) and a
-  preview **v0.3**; text modality only, no streaming responses on v1.0. Exposing a Foundry agent as an
+- A2A: Foundry Agent Service supports the generally-available **A2A protocol v1.0** (JSON-RPC only) and a
+  preview **v0.3**; text modality only, no streaming responses. Exposing a Foundry agent as an
   inbound A2A endpoint requires the **Responses protocol** (prompt agents support it by default) and
-  publishes an agent card; the calling identity needs the **Foundry Agent Consumer** role or higher on
-  the target project. Creating the A2A project connection itself needs **Foundry Project Manager**. [DOC
-  S-all62inb]
-- Hosted agents get an **automatic, dedicated** Entra identity per agent (vs. prompt/voice agents, whose
-  identity is scoped to the project); that identity can authenticate to external MCP servers, including
+  publishes an agent card; enabling it needs **Foundry User** or higher on the project, and the calling
+  identity needs **Foundry Agent Consumer** or another Foundry role with endpoint access on the target
+  project or agent. Creating a project connection (such as the caller's A2A connection) needs Foundry
+  Project Manager, Foundry Account Owner, Foundry Owner, or Azure Owner/Contributor; Foundry User cannot.
+  [DOC S-all62inb, S-gessjq23]
+- Hosted agents get an **automatic, dedicated** Entra identity per agent (other agents use the shared
+  project identity until they are published, when they get a distinct one); agent identities can authenticate to external MCP servers, including
   ones on Azure Functions, and supports OAuth OBO passthrough when configured. [DOC S-jgc6ne22,
   S-hkoalitj]
 - azd (Azure Developer CLI) automates only a slice of hosted-agent identity setup: for development it
@@ -161,10 +164,10 @@ quotas/limits, and a runnable MCP-tool example.
   outbound); inbound secured communication (private endpoint, disabled public access) can be layered onto
   any tier. [DOC S-5tsg2rir]
 - Cosmos DB for a Standard setup needs **>= 3,000 RU/s** total throughput (Provisioned or Serverless);
-  the current ("New") Agent Service runtime provisions two containers at 1,000 RU/s each
-  (`agent-definitions-v1`, `run-state-v1`); the deprecated Classic runtime used three different containers
-  (`thread-message-store`, `system-thread-message-store`, `agent-entity-store`) -- the two runtimes use
-  **different** Cosmos containers and are not interchangeable. [DOC S-kub3e5bx]
+  Standard setup provisions five containers at 1,000 RU/s each: the current ("New") Agent Service
+  runtime uses two (`agent-definitions-v1`, `run-state-v1`), and the three others (`thread-message-store`,
+  `system-thread-message-store`, `agent-entity-store`) belong to the Classic runtime -- the two runtimes use
+  **different** Cosmos containers. [DOC S-kub3e5bx]
 - Standard setup enforces project-level data isolation by default: two blob containers (files;
   intermediate chunks/embeddings) and three Cosmos containers (user threads, system messages, agent
   config) are auto-provisioned per project. [DOC S-kub3e5bx]
@@ -179,10 +182,10 @@ quotas/limits, and a runnable MCP-tool example.
   (the **Role Based Access Control Administrator** built-in role, or subscription **Owner**) to assign
   roles to Cosmos DB, Azure AI Search, and Blob Storage. [DOC S-5tsg2rir]
 
-### RBAC (renamed 2026)
+### RBAC (recently renamed roles)
 - Role rename (IDs and permissions unchanged): **Azure AI User -> Foundry User**, **Azure AI Owner ->
   Foundry Owner**, **Azure AI Account Owner -> Foundry Account Owner**, **Azure AI Project Manager ->
-  Foundry Project Manager**. A new least-privilege role, **Foundry Agent Consumer**, grants only
+  Foundry Project Manager**. The least-privilege role **Foundry Agent Consumer** grants only
   "interact with agent endpoints" (no create/manage). [DOC S-k3l2irzl]
 - Role definition GUIDs (stable across the rename): Foundry User `53ca6127-db72-4b80-b1b0-d745d6d5456d`;
   Foundry Owner `c883944f-8b7b-4483-af10-35834be79c4a`; Foundry Account Owner
@@ -190,12 +193,13 @@ quotas/limits, and a runnable MCP-tool example.
   `eadc314b-1a2d-4efa-be10-5d325db5065e`; Foundry Agent Consumer
   `eed3b665-ab3a-47b6-8f48-c9382fb1dad6`. Use the GUID, not the name, in code while the rename rolls out.
   [DOC S-k3l2irzl]
-- Permission matrix highlights: only **Foundry Project Manager**+ can publish agents; only **Foundry
-  Account Owner**/**Foundry Owner** can create Foundry accounts; **Foundry Agent Consumer** can only
+- Permission matrix highlights: among Foundry roles, only **Foundry Project Manager** and **Foundry
+  Owner** can publish agents (Foundry Account Owner cannot; Azure Owner can); among Foundry roles, only
+  **Foundry Account Owner**/**Foundry Owner** can create Foundry accounts (Azure Owner/Contributor can too); **Foundry Agent Consumer** can only
   interact with agent endpoints (no data-plane build/develop access); Azure **Owner**/**Contributor** can
   create projects/accounts and manage models but **cannot** interact with agent endpoints or do
   data-plane "build and develop" actions -- those need a Foundry-specific role. [DOC S-k3l2irzl]
-- **Scopes**: Foundry resource, Foundry project, and (new) **individual agent**. An agent-scope role
+- **Scopes**: Foundry resource, Foundry project, and **individual agent**. An agent-scope role
   assignment is currently evaluated **only for agent endpoint access** -- it grants no broader
   control-plane permission -- letting an admin grant `Foundry Agent Consumer` on one agent without
   exposing every agent in the project. The Azure portal only supports assigning Foundry Agent Consumer at
@@ -213,7 +217,7 @@ quotas/limits, and a runnable MCP-tool example.
 
 ### Quotas and limits (fixed, not increasable except where noted)
 - Per-agent/thread: **128** tools registered per agent; **1,000** versions per agent; **10,000** files per
-  agent/thread; **512 MB** max single file size; **300 GB** max total uploaded files per account;
+  agent/thread; **512 MB** max single file size (prompt agents); **300 GB** max for all uploaded files;
   **2,000,000 tokens** max file size for vector-store attachment; **100,000** messages per thread;
   **1,500,000 characters** max `text` content per message. [DOC S-f5p5qi4d]
 - These Agent Service limits (files, messages, tools) are **fixed and cannot be increased** -- the
@@ -228,17 +232,17 @@ quotas/limits, and a runnable MCP-tool example.
 - Model call rate limits are enforced at the **model deployment** level (Azure OpenAI / Foundry Models
   quotas), not by Agent Service itself. [DOC S-f5p5qi4d]
 - Tool availability varies by model and region (e.g. file search is unavailable in Italy North and Brazil
-  South for some models); check the tool-support-by-region-and-model table before deploying. [DOC
+  South); check the tool-support-by-region-and-model table before deploying. [DOC
   S-f5p5qi4d]
 
 ## Reference
 | Concept | GA / preview | Key constraint | Source |
 |---|---|---|---|
-| Prompt agent | GA | no code/infra; project-scoped Entra identity | S-hkoalitj |
+| Prompt agent | GA | no code/infra; shared project agent identity until published | S-hkoalitj, S-jgc6ne22 |
 | Voice-based prompt agent | preview | 60 min/session, 60-day audio retention | S-hkoalitj, S-f5p5qi4d |
 | Hosted agent | GA | dedicated per-agent Entra identity; container compute billed | S-hkoalitj |
-| Toolbox | GA (tool search, Skills: preview) | 1,000 versions/agent cap applies | S-yutqeaay |
-| MCP tool `require_approval` | GA | enforced by caller, not the endpoint | S-5ygcb6vm |
+| Toolbox | GA (tool search, Skills: preview) | some tools are direct-only (function calling, Bing, SharePoint, ...) | S-yutqeaay |
+| MCP tool `require_approval` | GA | enforced by caller, not the endpoint | S-5ygcb6vm, S-3axje6py |
 | A2A | v1.0 GA, v0.3 preview | text-only, no streaming | S-all62inb |
 | Standard setup (BYO storage/search/Cosmos) | GA | Cosmos >= 3000 RU/s | S-kub3e5bx |
 

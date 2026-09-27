@@ -35,10 +35,12 @@ topic 9 (`agents-a2a-cache`) covers it; A2A is named below only as one transport
 - Connected-agent invocation is usage-metered: "usage-based billing applies to using, building, testing,
   and evaluating agents," consuming Copilot Credits — a per-call cost that a purely in-process function
   call does not carry. [DOC S2080]
-- Microsoft Agent Framework (announced at BUILD 2026) adds an "Agent Harness," hosted agents and a
-  CodeAct pattern; the framework post frames these as ways to run agent logic in a separate managed
-  runtime rather than inline in the caller's process, but the fetched summary gives no numeric
-  latency/cost comparison against an in-process call. [DOC S2082]
+- Microsoft Agent Framework's BUILD 2026 post adds an Agent Harness (built-in context compaction, file
+  memory, background child agents for fan-out), Foundry Hosted Agents (the agent's own code as a container
+  on Foundry-managed infrastructure, scale to zero, a VM-isolated sandbox per session) and CodeAct (the
+  model writes one short Python program that calls the tools and runs once in a Hyperlight micro-VM); on
+  the post's sample workload CodeAct cut time from 27.81 s to 13.23 s and tokens from 6,890 to 2,489
+  against traditional tool calling. The post gives no hosted-vs-in-process comparison. [DOC S2082]
 - Anthropic's Claude Code subagent docs give four "use a subagent" signals: the task produces verbose
   output not needed in the main context; you want to enforce a narrower tool/permission set for that
   task; the work is self-contained and returns a summary; a side task "would flood your main
@@ -55,8 +57,10 @@ topic 9 (`agents-a2a-cache`) covers it; A2A is named below only as one transport
   tool filter that removes a short list (including `AskUserQuestion`, `EnterPlanMode` and `Workflow`) from
   every non-fork subagent, and a smaller built-in tool set for background subagents (the default), which
   still keep every MCP tool; forks receive the main conversation's exact tool pool. [DOC S2083]
-- MCP's 2026-07-28 specification revision makes a **remote** MCP server "no different from any other
-  HTTP workload" (stateless core, no session/handshake, `server/discover` for capability discovery) —
+- MCP's 2026-07-28 specification revision makes a **remote** MCP server a plain HTTP request/response
+  service (stateless core, no session/handshake, optional `server/discover` for capabilities, any request
+  can land on any instance behind a round-robin load balancer; a partner quote in the post calls it "a
+  first-class HTTP workload") —
   the concrete mechanism by which "dispatch to another service" and "dispatch to another agent" converge
   on the same protocol shape once the target is out-of-process. [DOC S2084]
 - The A2A project's own documentation calls A2A and MCP complementary: MCP connects an agent to tools
@@ -65,13 +69,15 @@ topic 9 (`agents-a2a-cache`) covers it; A2A is named below only as one transport
   areas are agentic messaging primitives, HTTP transport unification and hardening, agent identity and
   enterprise security, improved primitives, and SDK developer experience. [DOC S2110] Full A2A treatment
   is topic 9's scope, not repeated here.
-- Copilot Studio's agent-sharing feature (share an agent with other users/environments) is a related but
-  distinct decision from connecting agents at runtime: sharing controls who can *use or edit* an agent;
-  connecting controls whether one agent *calls* another during a conversation. [DOC S2109]
+- Copilot Studio's agent-sharing feature (grant individual users, security groups or the whole
+  organization permission to chat with an agent, or invite individual users to co-author it) is a related
+  but distinct decision from connecting agents at runtime: sharing controls who can *use or edit* an
+  agent; connecting controls whether one agent *calls* another during a conversation. [DOC S2109, S2080]
 - Topic 4's own criteria (stable tool-call sequence, eval pass rate, token/latency cost, error
   compounding, auditability, need for confirmation) are the child-agent-vs-deterministic-tool axis; they
-  are not repeated here — see `agents/subagents-vs-deterministic-tools.md`. [DOC S1920, S1928 — cited
-  by reference, not re-derived]
+  are not repeated here — see `agents/subagents-vs-deterministic-tools.md`. [DER S1920, S1928: S1920
+  gives the latency/cost tradeoff, compounding errors and workflow predictability, S1928 human
+  confirmation and audit logging of tool use; eval pass rate is topic 4's own criterion]
 
 ## Reference
 | Dispatch target | Declared boundary | Reuse across callers | Metered per call | Source |

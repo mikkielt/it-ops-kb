@@ -3,7 +3,7 @@ topic: graph/microsoft365dsc
 priority: P3
 applies_to: "Microsoft365DSC PowerShell module 1.26.909.1 (2026-09-11)"
 retrieved_utc: 2026-09-26
-sources: [S1010, S-jya6izpo, S-l6j5dpwj, S-44mrima5, S-ahgkqifj, S-2fvvbt5t, S-zmngjhe5, S-prjyny3b]
+sources: [S1010, S-jya6izpo, S-l6j5dpwj, S-44mrima5, S-ahgkqifj, S-2fvvbt5t, S-zmngjhe5, S-prjyny3b, S-3aphi7n2, S-omyb2en3]
 status: partial
 ---
 
@@ -20,8 +20,8 @@ and the PowerShell Gallery package page: **1.26.909.1**, published 2026-09-11 (a
 and `prior-art/projects.csv`, source `S1010`). Docs below (microsoft365dsc.com) are the project's own site, not Microsoft Learn.
 
 ## Facts
-- Install with `Install-Module Microsoft365DSC -Force`, run from an elevated **Windows PowerShell 5.1** window — a non-elevated
-  window causes the install to not work correctly. [COMMUNITY S-zmngjhe5]
+- Install with `Install-Module Microsoft365DSC -Force`, run from an elevated **Windows PowerShell 5.1** window; from a
+  non-elevated window the module lands in the Current User scope, which the docs say will not work. [COMMUNITY S-zmngjhe5]
 - After installing the module, run `Update-M365DSCDependencies` to download prerequisite modules (MSCloudLoginAssistant,
   Microsoft Graph PowerShell modules); current versions of Microsoft365DSC no longer bundle all prerequisites by default. [COMMUNITY S-zmngjhe5]
 - `Update-M365DSCModule` upgrades both the main module and its dependencies; `Get-Module Microsoft365DSC -ListAvailable | select ModuleBase, Version` verifies the installed version. [COMMUNITY S-zmngjhe5]
@@ -35,8 +35,8 @@ and `prior-art/projects.csv`, source `S1010`). Docs below (microsoft365dsc.com) 
   `M365TenantConfig.ps1` if `-FileName` is omitted). [COMMUNITY S-ahgkqifj]
 - `-Components` selects specific resource components to capture; omitting it defaults to capturing all components in the
   default component list. [COMMUNITY S-ahgkqifj]
-- `-Workloads` selects service areas by acronym (e.g. AAD, EXO, SPO, Teams, Intune); specifying a workload without
-  `-Components` still only exports the default component list for that workload. [COMMUNITY S-ahgkqifj]
+- `-Workloads` selects service areas by acronym (e.g. AAD, EXO, SPO, Teams, Intune); a workload on its own exports only
+  that workload's default component list, and `-Mode Full` must be added to capture every component of it. [COMMUNITY S-ahgkqifj]
 - `-Mode` controls export scope: `Default` captures configuration objects only; `Full` also captures data objects. [COMMUNITY S-ahgkqifj]
 - `-Path` sets the output directory; if omitted, the export prompts for a destination path at the end of the capture. [COMMUNITY S-ahgkqifj]
 - Service-principal authentication for export uses `-ApplicationId` and `-TenantId` paired with either an application
@@ -45,21 +45,24 @@ and `prior-art/projects.csv`, source `S1010`). Docs below (microsoft365dsc.com) 
   filtering), `-GenerateInfo` (adds explanatory comments), `-Parallel`/`-ThrottleLimit` (concurrent export, 8GB+ RAM
   recommended), `-WithStatistics` (prints an export summary), `-IncludeDependencies` (exports dependent resources
   automatically). [COMMUNITY S-ahgkqifj]
-- Microsoft365DSC supports four authentication approaches: user credentials, service principal with certificate
-  thumbprint, service principal with application secret, and managed identity. [COMMUNITY S-44mrima5]
+- The docs name two ways to authenticate, user credentials or a service principal (application ID and tenant ID with a
+  secret or certificate); the per-workload table also has columns for certificate thumbprint, certificate path,
+  application secret, managed identity and access tokens, and support differs by workload. [COMMUNITY S-44mrima5]
 - The docs state service principals "offer the most granular levels of security and do not introduce the risk of having
   to send high privileged credentials across the wire." [COMMUNITY S-44mrima5]
 - `Get-M365DSCCompiledPermissionList -ResourceNameList @('AADUser','AADApplication')` returns the permissions a given
   resource set needs, split into `ReadPermissions` (export/snapshot) and `UpdatePermissions` (deployment). [COMMUNITY S-44mrima5]
-- `Update-M365DSCAllowedGraphScopes` grants delegated-permission consent for the required scopes without manual Azure
-  portal configuration. [COMMUNITY S-44mrima5]
+- `Update-M365DSCAllowedGraphScopes` consents the permissions needed by the listed components (or all resources with
+  `-All`) to the delegated "Microsoft Graph PowerShell" application in the tenant; you choose Read or Update permissions. [COMMUNITY S-44mrima5]
 - `Update-M365DSCAzureAdApplication` automates custom service-principal setup (app registration, permission assignment,
-  admin consent, credential generation as secret or certificate); example: `Update-M365DSCAzureAdApplication
-  -ApplicationName 'Microsoft365DSC' -AdminConsent -Type Certificate -CreateSelfSignedCertificate`. [COMMUNITY S-44mrima5]
-- Certificate-based authentication requires the certificate's private key (`.pfx`) to be registered in the current
-  user's certificate store. [COMMUNITY S-44mrima5]
+  admin consent, credential generation as secret or certificate); the docs' example combines `-ApplicationName`,
+  `-Permissions`, `-AdminConsent`, `-Type Certificate -CreateSelfSignedCertificate -CertificatePath` and `-Credential`;
+  `-Type ManagedIdentity` instead assigns the permissions to an existing managed identity. [COMMUNITY S-44mrima5]
+- For the Power Apps workload, certificate-thumbprint authentication requires the certificate's private key (`.pfx`) in
+  the current user's store (`Cert:\CurrentUser\My\`), because the underlying Power Apps module needs it. [COMMUNITY S-44mrima5]
 - Workload-specific auth modules: Microsoft.Graph.Authentication (Entra ID/Graph-backed workloads), ExchangeOnlineManagement
-  (Exchange Online), PnP.PowerShell (SharePoint/OneDrive), MicrosoftTeams (Teams, limited service-principal support). [COMMUNITY S-44mrima5]
+  (Exchange Online), PnP.PowerShell (SharePoint/OneDrive), MicrosoftTeams (Teams: of the service-principal options only
+  certificate thumbprint is marked supported, not certificate path or application secret). [COMMUNITY S-44mrima5]
 - Drift monitoring performs regular checks comparing the remote tenant's configuration against the declared desired
   state, by default every 15 minutes; detected drifts are logged to the Windows Event Viewer under an **M365DSC**
   journal/log. [COMMUNITY S-2fvvbt5t]
@@ -68,10 +71,13 @@ and `prior-art/projects.csv`, source `S1010`). Docs below (microsoft365dsc.com) 
 - `New-M365DSCDeltaReport` and `Test-M365DSCAgent` are cmdlets for drift/compliance reporting, listed in the project's
   navigation and cmdlet index, but their parameter-level syntax was not found on a working page during this research
   pass (the dedicated `/cmdlets/New-M365DSCDeltaReport/` page returned HTTP 404). [UNK]
-- Each Microsoft365DSC resource follows classic PowerShell DSC's `Get-TargetResource`/`Test-TargetResource`/
+- In release 1.26.909.1 each Microsoft365DSC resource follows classic PowerShell DSC's `Get-TargetResource`/`Test-TargetResource`/
   `Set-TargetResource` (MOF-based) pattern rather than DSC v3's resource-manifest model, so `Test-DscConfiguration`
   (or `Start-DscConfiguration -WhatIf`) reports drift without applying `Set`, matching the report-only mode covered in
-  `prior-art/drift-detection.md`. [DER S1010, dsc/cli-reference.md]
+  `prior-art/drift-detection.md`. [DER S-3aphi7n2: MSFT_AADUser at the release tag has a `.schema.mof` and Get/Set/Test-TargetResource functions; drift behaviour from dsc/cli-reference.md]
+- On the `Dev` branch (commit of 2026-09-26) resources are being converted to class-based `[DscResource()]` classes
+  deriving from a shared `M365DSCResourceBase`, and `MSFT_AADUser` no longer has a `.schema.mof`; releases after
+  1.26.909.1 may therefore not be MOF-based. [COMMUNITY S-omyb2en3]
 - Individual Intune resource names (e.g. resource types beginning `Intune*`) were not independently confirmed on a
   working documentation page this session; the repository overview confirms Intune as a supported workload but lists
   no resource names. [UNK]

@@ -1,13 +1,13 @@
 reportName,contains,associated_admin_center_report,notes,source
-Devices,"All-devices list: device name, management agent, ownership, compliance state, OS, OS version, last contact, UPN, device id",All devices list,"Does not honor localizationType (legacy compatibility exception); default columns not guaranteed stable, always pass select explicitly",S-7cnzcrhl
-DevicesWithInventory,All-devices list with extended hardware/software inventory columns,Devices > All Devices > Export,Same localizationType exception as Devices,S-7cnzcrhl
+Devices,"All-devices list: device name, management agent, ownership, compliance state, OS, OS version, last contact, UPN, device id",All devices list,"Does not honor localizationType (legacy compatibility exception); default columns not guaranteed stable, always pass select explicitly",S-7cnzcrhl;S-ls7jnt2q
+DevicesWithInventory,All-devices list with extended hardware/software inventory columns,Devices > All Devices > Export,Same localizationType exception as Devices,S-7cnzcrhl;S-ls7jnt2q
 DeviceCompliance,"Device Compliance Org: per-device compliance state, one row per device",Device Compliance Org,,S-7cnzcrhl
 DeviceNonCompliance,Noncompliant devices,Reports > Device management > Device Compliance > Reports,,S-7cnzcrhl
 DevicesWithoutCompliancePolicy,Devices with no compliance policy assigned (cross-link intune/compliance-policies.md tenant-wide setting),Reports > Device management > Device Compliance > Reports,V3 variant DevicesWithoutCompliancePolicyV3 exists,S-7cnzcrhl
-DeviceConfigurationPolicyStatuses,Per-policy device configuration status,Reports > Device management > Device Compliance > Reports,V3 and WithPF/WithPFV3 variants (PF = per-setting),S-7cnzcrhl
+DeviceConfigurationPolicyStatuses,Per-policy device configuration status,Reports > Device management > Device Compliance > Reports,V3 and WithPF/WithPFV3 variants (same output columns; Learn does not expand PF),S-7cnzcrhl
 PolicyNonComplianceAgg,Aggregate noncompliance by policy,Reports > Device management > Device compliance,V3 variant PolicyNonComplianceAggVer3,S-7cnzcrhl
 DeviceStatusByCompliacePolicyReport,Device status by compliance policy (Learn's own spelling of the reportName string),Reports > Device management > Device Compliance > Reports,V3 variant DeviceStatusByCompliacePolicyReportV3,S-7cnzcrhl
-AppInvRawData,Raw per-device-per-app discovered-apps inventory rows,Apps > Monitor > Discovered apps > Export,Feeds AppInvAggregate/AppInvByDevice/DevicesByAppInv,S-7cnzcrhl
+AppInvRawData,Raw per-device-per-app discovered-apps inventory rows,Apps > Monitor > Discovered apps > Export,Filterable with eq on app name/publisher/version and device/user/OS properties,S-7cnzcrhl
 AppInvAggregate,Discovered apps aggregated by app,Apps > Monitor > Discovered apps > Export,,S-7cnzcrhl
 AppInvByDevice,Discovered apps for one device,Devices > All Devices > Device > Discovered Apps,,S-7cnzcrhl
 DeviceInstallStatusByApp,Per-app device install status,Apps > All Apps > (individual app),,S-7cnzcrhl

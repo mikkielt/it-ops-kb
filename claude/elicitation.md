@@ -17,7 +17,8 @@ as a legacy `elicitation/create` request unless `MCP_PROTOCOL_NEGOTIATION=auto` 
 ## Facts
 - "Added MCP elicitation support": servers can request structured input mid-task via a dialog (form fields or browser URL) — 2.1.76, 2026-03-14. [DOC S746]
 - Elicitation dialogs appear automatically when a server requests them; no user configuration is required. [DOC S740]
-- Form mode: dialog with server-defined fields; URL mode: Claude Code opens a browser URL, the user completes the flow and confirms in the CLI. [DOC S740]
+- Form mode: dialog with server-defined fields; URL mode: Claude Code asks whether to open a link in the browser and opens it on accept, for flows that finish outside the terminal such as sign-in. [DOC S740]
+- On 2026-07-28 protocol connections Claude Code declares `elicitation: {form: {}, url: {}}` in its client capabilities, so a server can request either mode through the standard elicitation request. [DOC S740]
 - URL mode passes the URL as an argument to the system URL handler, with a length cap (~8,000 characters unescaped, ~4,000 if heavily percent-escaped); over the cap the user can only decline. [DOC S740]
 - A call waiting on an open elicitation dialog is not moved to the background. [DOC S740]
 - To auto-respond without a dialog, use the `Elicitation` hook. [DOC S740]

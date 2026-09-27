@@ -25,10 +25,10 @@ files: [agents/declarative-agent-manifest.csv]
   plugin manifest, schema v2.4 current) or an **MCP server** wrapped as a plugin (dynamic tool
   discovery by default, or a pinned/curated tool list) — both configured the same way in Agents
   Toolkit's "Add an Action" flow. [DOC S-ipjygran, S-u2bv3zsu]
-- **Copilot connectors** (renamed from Microsoft Graph connectors) bring external data into the
-  Microsoft Graph search/semantic index for grounding; distinct from actions, which call live
-  external systems. Over 100 prebuilt connectors exist; custom ones use the connectors SDK or REST
-  API. [DOC S-xasz2mbx]
+- **Copilot connectors** bring external line-of-business data into Microsoft 365 Copilot: synced
+  connectors ingest and index content into Microsoft Graph, federated connectors fetch it in real time
+  through MCP without indexing. More than 100 connectors are listed in the gallery; custom synced
+  ones are built with Agents Toolkit, the connector SDK or the Copilot connector APIs. [DOC S-xasz2mbx]
 - Admin governance runs through the Microsoft 365 admin center's **agent inventory/registry**
   (Agents > All Agents), which lists every agent tenant-wide by publisher type and channel and
   exposes a preview Graph API (`copilotPackages`) for bulk inventory/reporting. [DOC S-bjnw7imn]
@@ -56,19 +56,20 @@ files: [agents/declarative-agent-manifest.csv]
   custom engine agent needs no Microsoft 365 Copilot license at all but pays for its own hosting
   (Azure App Service, Azure Bot Service for multi-channel publishing) and, for unlicensed users
   touching shared tenant data, Copilot Credits usage-based billing. [DOC S-nmxo2lu7]
-- Declarative agents grounded only in public web search, with limited capabilities, can be built
-  without any Microsoft 365 Copilot license; capabilities beyond that (Copilot connectors, plugins,
-  organizational grounding) require either the building org or the running user to hold a Microsoft
-  365 Copilot license, or Copilot Studio pay-as-you-go metering to be enabled in the tenant. [DOC
-  S-3wxcangs, S-rymoydzk]
+- Declarative agents grounded on web search, with limited capabilities, can be built without a
+  Microsoft 365 Copilot license. Per the capability table, Copilot Chat users without usage-based
+  billing still get custom actions, custom instructions, code interpreter, image generator, MCP Apps
+  and web search; grounding on organizational data (Copilot connectors, SharePoint, embedded files,
+  Dataverse) needs pay-as-you-go billing in the tenant or a Microsoft 365 Copilot license, and Email,
+  People, Teams messages and Teams meetings knowledge need the license. [DOC S-3wxcangs, S-rymoydzk]
 ### Declarative agent manifest schema
 - The manifest is a JSON document; Microsoft 365 app manifest packages (`app package`) reference it.
   Each schema version publishes its own JSON Schema file
   (`https://developer.microsoft.com/json-schemas/copilot/declarative-agent/v<version>/schema.json`).
   [DOC S-gum2njhe]
 - Version history relevant to capabilities (full field table in
-  `agents/declarative-agent-manifest.csv`): v1.2 added nothing beyond the v1.0 baseline properties
-  documented; v1.3 added the Dataverse, Microsoft Teams messages, Email, and People capabilities;
+  `agents/declarative-agent-manifest.csv`): v1.2 added the web search `sites` property and the graphic
+  art and code interpreter capabilities over v1.0; v1.3 added the Dataverse, Microsoft Teams messages, Email, and People capabilities;
   v1.4 added `behavior_overrides` and `disclaimer`, SharePoint-IDs `part_type`/`part_id`, Copilot
   connector content-scoping properties on the Connection object, and the scenario-models capability;
   v1.5 added the meetings (search) capability; v1.7 added `editorial_answers`,
@@ -78,20 +79,21 @@ files: [agents/declarative-agent-manifest.csv]
   S-46ndqgay, S-3r3y76di, S-nztel442, S-4rvc364j, S-atzopgi7, S-gum2njhe]
 - `capabilities` cannot contain more than one object of the same derived capability type per agent
   (e.g. only one Dataverse capability object). [DOC S1840]
-- `actions` is an array of `{id, file}` objects, each `file` pointing at a plugin manifest (API
-  plugin or MCP-server plugin) bundled in the same app package. [DOC S1840]
+- `actions` is an array of `{id, file}` objects, each `file` being a path to the plugin manifest for
+  that action; schema 1.8 also accepts an inlined plugin manifest in place of a reference and allows 1-10
+  action objects. [DOC S1840, S-gum2njhe]
 
 ### Actions: API plugins and MCP-server plugins
 - Plugin manifest schema is versioned separately from the declarative-agent manifest; v2.4 is
   current (v2.3 added Office Add-in `LocalPlugin` runtime support and the local-endpoint spec
   object). An API plugin's runtime object is `type: OpenApi` with an OpenAPI spec fetched from a
   `url` or embedded as `api_description`; each `function` binds to an OpenAPI `operationId` and
-  declares `data_handling` values (`GetPublicData`, `GetPrivateData`, `DataTransform`, `DataExport`,
-  `ResourceStateUpdate`) that flag relative invocation risk and drive confirmation-dialog behavior.
-  [DOC S-7gjdhgh5]
-- Runtime authentication for an API/MCP plugin's `auth.type` is `None`, `OAuthPluginVault`, or
-  `ApiKeyPluginVault` (the latter two carry a `reference_id` so no secret is stored in the manifest
-  itself). [DOC S-7gjdhgh5]
+  declares `security_info.data_handling` values (`GetPublicData`, `GetPrivateData`, `DataTransform`,
+  `DataExport`, `ResourceStateUpdate`) used to determine the relative risk of invoking the function; a
+  separate `confirmation` object describes the dialog shown before a call. [DOC S-7gjdhgh5]
+- Runtime authentication `auth.type` is `None`, `OAuthPluginVault`, or `ApiKeyPluginVault` (the latter
+  two carry a `reference_id` so no secret is stored in the manifest itself); schema 2.4 keeps these
+  values and adds the `RemoteMCPServer` runtime type for MCP plugins. [DOC S-u2bv3zsu]
 - Separately from the plugin-manifest `auth` object, Microsoft 365 Copilot documents five supported
   authentication schemes for MCP and API plugins: Microsoft Entra SSO (both plugin types), OAuth 2.0
   authorization code flow (both), dynamic client registration/DCR (MCP plugins only), API key (API
@@ -106,7 +108,7 @@ files: [agents/declarative-agent-manifest.csv]
   defaults to **dynamic tool discovery** (tools resolved at runtime, none added manually) unless a
   fixed/pinned tool list is configured. The redirect/callback URL for OAuth is fixed:
   `https://teams.microsoft.com/api/platform/v1.0/oAuthRedirect`. [DOC S-ipjygran]
-- **MCP apps** (preview) let an MCP-server plugin's tools return interactive UI widgets rendered
+- **MCP apps** let an MCP-server plugin's tools return interactive UI widgets rendered
   inline or full-screen inside Microsoft 365 Copilot chat, via either the MCP Apps extension
   (`modelcontextprotocol.github.io/ext-apps`) or the OpenAI Apps SDK; at least one pinned tool must
   return a widget if dynamic discovery is disabled. Requires Microsoft 365 Agents Toolkit >= 6.12.0.
@@ -123,7 +125,7 @@ files: [agents/declarative-agent-manifest.csv]
 - Custom engine agents can be built with Copilot Studio (low-code) or pro-code tooling (Visual
   Studio, Visual Studio Code + Microsoft 365 Agents Toolkit) in .NET, Python, or JavaScript, using
   frameworks such as Semantic Kernel or LangChain; a Microsoft 365 Copilot license is not required to
-  build one via Teams SDK/Agents Toolkit — cost instead follows Azure consumption. [DOC S-j46dza7u,
+  build one with Teams SDK — cost instead depends on the Azure services consumed. [DOC S-j46dza7u,
   S-3wxcangs]
 - Sideloading any custom app (declarative agent or custom engine agent project built via Agents
   Toolkit) requires a tenant admin to enable **Upload custom apps** in Teams admin center > Teams
@@ -131,20 +133,20 @@ files: [agents/declarative-agent-manifest.csv]
   managed per-user from Teams > Apps > Manage your apps. [DOC S-rymoydzk]
 
 ### Copilot connectors
-- Copilot connectors (formerly Microsoft Graph connectors) ingest external content plus metadata and
-  an access-control list (ACL) into the Microsoft Graph search/semantic index via the
-  `externalConnection`/`schema`/`externalItem` Graph API resources; ACL enforcement means search and
-  Copilot only ever surface items to users who already have source-system access. [DOC S-xasz2mbx]
-- **Synced** connectors index content into Graph (full-text + semantic search, periodic sync,
-  admin-configurable frequency and full-crawl trigger); **federated** connectors instead surface
-  real-time content straight from an external service (e.g. an MCP server) with no indexing or
-  storage in Graph, so they never benefit from semantic indexing. [DOC S-xasz2mbx]
-- Building a custom synced connector: three routes — Microsoft 365 Agents Toolkit, the connectors
-  SDK (Visual Studio, gRPC contracts, a required Microsoft Graph connector agent component for
-  on-premises data), or the Copilot connectors REST API directly. Ingested items consume a tenant
-  **item quota** billed under Microsoft Search/Copilot connector licensing. Over 100 prebuilt
-  connectors (Salesforce, ServiceNow, Confluence, Box, Azure services, etc.) are listed in the
-  Copilot connectors gallery. [DOC S-xasz2mbx]
+- Synced Copilot connectors ingest external items, defined with the `externalItem` schema, into
+  Microsoft Graph, where they are semantically indexed (title and content); deployed connectors are
+  tenant-wide unless external item security is restricted. Building one needs an AI administrator to
+  register an app and grant admin consent for Microsoft Graph permissions. [DOC S-xasz2mbx]
+- **Synced** connectors: content synced into Graph, Entra ID app registration, indexed search.
+  **Federated** connectors (MCP-based): no data movement, query-time fetch from the MCP server, auth by
+  MCP-supported methods, and no semantic indexing. [DOC S-xasz2mbx]
+- Building a custom synced connector: three routes — Microsoft 365 Agents Toolkit, the connector SDK,
+  or the Copilot connector APIs. More than 100 connectors (Azure services, Box, Confluence, Google
+  services, MediaWiki, Salesforce, ServiceNow and more) are listed in the Copilot connectors gallery.
+  [DOC S-xasz2mbx]
+- Connector details not on the overview page: the "formerly Microsoft Graph connectors" name, ACL
+  enforcement wording, sync frequency/full-crawl controls, gRPC contracts, the on-premises connector
+  agent, and item-quota billing. [UNK: not in S-xasz2mbx as re-read 2026-09-27]
 
 ### Admin controls and governance
 - The Microsoft 365 admin center's **agent registry** (Agents > All Agents > Registry) lists every
@@ -153,18 +155,21 @@ files: [agents/declarative-agent-manifest.csv]
   also reports **Total agents**, **Agents without owners**, and **Unmanaged agents** (created/managed
   outside Agent 365, without its risk protection and observability) tenant-wide counts. [DOC
   S-bjnw7imn]
-- Viewing the full agent inventory needs only the **AI Reader** role (least-privilege; **AI
-  Administrator**/Global Administrator also work) and no specific license; applying governance
-  controls on top (Conditional Access, identity-governance access packages) needs Microsoft Entra
-  Agent ID licensing, covered in `entra/agent-id.md`. [DOC S-bjnw7imn]
+- Viewing risk signals in the registry needs an E7 or Agent 365 licence on the tenant; pinning agents
+  needs the AI Administrator role. [DOC S-bjnw7imn]
+- Viewing the inventory with only the **AI Reader** role and no specific licence, and Entra Agent ID
+  licensing for governance controls on top (see `entra/agent-id.md`). [UNK: not in S-bjnw7imn as
+  re-read 2026-09-27]
 - A preview Microsoft Graph API surface (`copilotPackages` — list and get-details operations) lets
   admins pull the tenant's full agent inventory and per-agent metadata programmatically, gated on the
   AI Admin role, for bulk management/compliance reporting instead of the admin-center UI. [DOC
   S-bjnw7imn]
-- Per-agent admin actions from the inventory: review the agent's Capabilities/Knowledge/Actions and
-  Security & compliance tabs, then set **Available to** (who can find/install it) and **Deployed to**
-  (who has it pushed) independently, per user or group, and optionally pin it into the Agents list
-  inside Microsoft Copilot for visibility. [DOC S-bjnw7imn]
+- Uploading a custom agent (.zip) in the registry: under **Publish** choose the users or groups who can
+  install it and under **Deploy** (optional) those who get it preinstalled, then apply a security
+  policy template. Admins can pin up to three deployed agents into the Agents list in Microsoft
+  Copilot, for all users or specific users or groups. [DOC S-bjnw7imn]
+- Per-agent Capabilities/Knowledge/Actions and Security & compliance tabs with separate **Available
+  to** / **Deployed to** settings. [UNK: not in S-bjnw7imn as re-read 2026-09-27]
 
 ### Licensing
 - Three licensing tiers for extensibility: **Microsoft 365 Copilot** (paid add-on; frequent users;

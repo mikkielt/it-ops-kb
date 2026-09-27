@@ -3,38 +3,41 @@ topic: agents/instruction-and-context-limits
 priority: P1
 applies_to: "Copilot Studio, M365 Copilot declarative agent manifest 1.4/1.8, GitHub Copilot, OpenAI Assistants/custom GPTs, Gemini API, Claude Code/Projects/Skills, as published 2026-09-25"
 retrieved_utc: 2026-09-26
-sources: [S1840, S1841, S1842, S1843, S1844, S1845, S1846, S1847, S1848, S1849, S1850, S1851, S1852, S1853, S1854, S1855, S1856, S1857, S1859, S1860, S1863, S1864, S1865, S1866, S1867, S1869, S1870]
+sources: [S1840, S1841, S1842, S1843, S1844, S1845, S1846, S1847, S1848, S1849, S1850, S1851, S1852, S1853, S1854, S1855, S1856, S1857, S1859, S1860, S1863, S1864, S1865, S1866, S1867, S1869, S1870, S1960, S-jexpr3gv, S-gwco6fl2, S-etprakdx]
 status: partial
 ---
 
 # "Instruction limit exceeded" and instruction/context limits across products
 
 ## Summary
-No product publishes the literal phrase "instruction limit exceeded" as a stable API error string. The closest
-documented match is Copilot Studio's `OpenAIAdditionalInstructionsLengthExceededLimit` error, which fires when
-combined prompt instructions cross an internal (undocumented) threshold, distinct from the documented 8,000-character
-per-field cap. Every other product enforces instruction/description length as a silent UI cap, a save-time refusal, or
+No product publishes the literal phrase "instruction limit exceeded" as a stable API error string. A Copilot Studio
+error `OpenAIAdditionalInstructionsLengthExceededLimit` for combined instructions has been attributed to the
+community, but neither the cited article nor Microsoft's error-code page (re-read 2026-09-27) states it; Copilot
+Studio documents an 8,000-character instructions limit. Every other product enforces instruction/description length as a silent UI cap, a save-time refusal, or
 a generic 400 on the underlying model call, worded around "exceeds the maximum" or similar, not "instruction limit".
 
 ## Facts
-- Copilot Studio: agent instructions field is documented at up to 8,000 characters, but this is a per-field cap, not a
-  guarantee — combined main-agent instructions + node custom instructions + system text can still cross an internal
-  threshold and return `OpenAIAdditionalInstructionsLengthExceededLimit`, even when each field is individually under
-  8,000 characters. [COMMUNITY S1843]
-- Microsoft's own Copilot Studio prompt-engineering guidance: "Keep it brief: Custom instructions should be concise
-  and to the point. Instructions that are too long can lead to latency, timeouts, or issues handling the prompt."
-  [COMMUNITY S1843, attributed to Microsoft docs but sourced via a community digest, not fetched directly — treat as
-  UNK for exact wording until the primary Microsoft prompt-engineering page is fetched]
+- Copilot Studio's quotas page lists 8,000 characters as the limit on instructions for a Copilot agent, and the
+  generative-answers prompt-modification page limits prompt (custom) instructions to 8,000 characters.
+  [DOC S1960, S-jexpr3gv]
+- A community article says Copilot Studio accepts 8,000 characters of agent instructions at creation but some
+  configurations enforce 2,000 characters after deployment (citing a Microsoft Q&A thread), and argues that agent
+  reliability degrades well before the documented limit. [COMMUNITY S1843]
+- An error `OpenAIAdditionalInstructionsLengthExceededLimit`, returned when combined agent + node + system
+  instructions cross an internal threshold even though each field is under 8,000 characters.
+  [UNK: not in S1843 as re-read 2026-09-27, and not listed on Microsoft's error-code page S1842]
+- Microsoft's Copilot Studio prompt-node best practices include "Keep it brief": make custom instructions concise,
+  because instructions that are too long can lead to latency, timeouts, or issues handling the prompt.
+  [DOC S-gwco6fl2]
 - A Microsoft Community Hub question (posted 2025-11-07, read 2026-09-27) reports an 8,000-character limit on agent
   instructions when building an agent with a Microsoft 365 Copilot licence and asks whether a Copilot Studio licence
   has a different limit; the thread has no reply, so whether Copilot Studio differs stays open.
   [UNK: user report in an unanswered thread (S1841), no Microsoft answer]
-- `learn.microsoft.com/.../troubleshoot/power-platform/copilot-studio/authoring/error-codes` is Microsoft's official
-  error-code reference for Copilot Studio authoring; it is long (word_count 6089) and was not fully searched for an
-  instructions-length-specific code in this pass beyond the community-reported
-  `OpenAIAdditionalInstructionsLengthExceededLimit` string. [UNK, see gaps.md — S1842 fetched but not exhaustively
-  parsed for this exact string]
-- M365 Copilot declarative agent manifest (schema 1.4, current stable at retrieval; 1.8 is latest): the `instructions`
+- Microsoft's Copilot Studio authoring error-code reference (re-read in full 2026-09-27) lists no
+  `OpenAIAdditionalInstructionsLengthExceededLimit` code and no instructions-length code; the nearest size errors are
+  `TooMuchDataToHandle` (the request sent to OpenAI exceeds the maximum request size: user input, prior action
+  output, tools called and conversation history) and `ConversationStateTooLarge`. [DOC S1842]
+- M365 Copilot declarative agent manifest (schema 1.4; the page names 1.8 as the latest version): the `instructions`
   field "must contain at least one nonwhitespace character and be 8,000 characters or less." Unless stated otherwise,
   every other string property in the manifest is capped at 4,000 characters (`name` 100, `description` 1,000,
   `disclaimer.text` 500 are stated overrides). [DOC S1840]
@@ -50,18 +53,18 @@ a generic 400 on the underlying model call, worded around "exceeds the maximum" 
 - OpenAI: a community forum thread states that the ChatGPT custom-GPT builder UI caps instructions at 8,000
   characters (against a much larger Assistants API figure); the thread does not say what happens past the cap
   (error, blocked save or truncation). [COMMUNITY S1844]
-- OpenAI Assistants API: the `instructions` field accepts a much larger limit than the GPT builder UI; community
-  reports cite figures up to 256,000 characters for related fields (message content), but no official OpenAI
-  platform-docs page was fetched in this pass to confirm the exact `instructions` field limit or its error text.
-  [UNK, see gaps.md]
+- OpenAI Assistants API: a 2023 community forum thread reports a 32,768-character limit on a single message's content
+  (validation error "ensure this value has at most 32768 characters"); it says nothing about the `instructions`
+  field. [COMMUNITY S1845]
+- The exact `instructions` field limit of the OpenAI Assistants API and its error text: no official OpenAI
+  platform-docs page was fetched to confirm them. [UNK, see gaps.md]
 - Gemini API: no published fixed `systemInstruction` character/token limit as a single documented number; behavior is
   reported as model- and backend-dependent. A community-reported case: `systemInstruction` around 300k characters
   (~84k tokens) succeeded, ~320k characters (~90k tokens) returned a 400 `INVALID_ARGUMENT` with the generic message
   "Request contains an invalid argument" (no length-specific wording). [COMMUNITY S1846]
-- Gemini API generic input-length error, seen elsewhere against a model's stated context window: "The input token
-  count (N) exceeds the maximum number of tokens allowed (32768)." — this wording ("exceeds the maximum number of
-  tokens allowed") is the closest published Gemini-side match to the user's "exceeds the maximum length" phrasing, but
-  it addresses total input tokens, not an "instructions" field specifically. [COMMUNITY S1846, forum-reported text]
+- Gemini API generic input-length error "The input token count (N) exceeds the maximum number of tokens allowed
+  (32768).", about total input tokens rather than an "instructions" field.
+  [UNK: not in S1846 as re-read 2026-09-27; source of this wording not identified]
 - Claude (Anthropic):
   - No API error type named for "instructions" specifically. The Claude API's documented error taxonomy is generic:
     `400 invalid_request_error`, `413 request_too_large` (request exceeds a per-endpoint byte maximum — 32 MB for the
@@ -84,11 +87,13 @@ a generic 400 on the underlying model call, worded around "exceeds the maximum" 
     signal rather than a hard rejection. No official Anthropic docs page was fetched in this pass stating this 40KB
     number directly — a 2026-09-26 search of the Claude Code docs found a "large CLAUDE.md startup notice" in the changelog but no stated
     threshold. [UNK: search-result digest only, originating page not fetched; see gaps.md]
-  - Claude Projects: project knowledge shares the active model's context window (up to 200K tokens on many plans, up
-    to 1M on some); Anthropic's own support article is the canonical source for project mechanics, but no character
-    limit is published for the project custom-instructions field itself — the product UI shows a live character
-    counter with no publicly documented number. [DOC S1859 for project mechanics generally; UNK for the instructions
-    field's exact cap, see gaps.md]
+  - Claude Projects: content added to project knowledge is used as context in the project's chats, and on paid plans
+    Claude automatically enables RAG mode when project knowledge approaches the context window limit. The support
+    article publishes no character limit for the project instructions field. [DOC S1859]
+  - Context window on paid Claude plans depends on the model: 200K tokens by default, 500K or 1M tokens for the newer
+    models listed (for chat, for example 1M for Claude Opus 5.5 and 500K for Claude Opus 4.8). [DOC S-etprakdx]
+  - A live character counter on the project instructions field with no published number. [UNK: not in S1859 as
+    re-read 2026-09-27; see gaps.md]
   - Tool-count/tool-name limits: a tool name has a documented 128-character limit (reported via a Claude Code bug
     report reproducing the API's rejection), and the raw Messages API is reported to support very large tool catalogs
     (order 10,000) once `defer_loading`/tool search is used, versus client UIs (for example VS Code's tool picker)
@@ -99,9 +104,9 @@ a generic 400 on the underlying model call, worded around "exceeds the maximum" 
   critical density, then a sharp drop; reasoning models), linear decay (for example Claude Sonnet 4-era models, GPT-4.1),
   and exponential decay (weaker/non-reasoning models). This is a non-vendor academic benchmark. [COMMUNITY S1854]
 - Anthropic's own engineering guidance ("Effective context engineering for AI agents") describes context as a finite
-  resource with an "attention budget": every added token depletes it, and recommends curating what enters context
-  rather than assuming a hard wall will catch overflow. It names compaction, structured note-taking, and sub-agent
-  architectures as the three complementary long-horizon strategies. [DOC S1855]
+  resource with an "attention budget": every added token depletes it, and recommends finding the smallest set of
+  high-signal tokens for the task. For long-horizon tasks it names compaction, structured note-taking, and multi-agent
+  (sub-agent) architectures. [DOC S1855]
 - A separate, real regression (not a documented limit) illustrates the practical stakes of instruction/system-prompt
   volume in Claude Code: the fixed system-prompt token overhead grew by roughly 70K tokens between two neighboring
   Claude Code versions (2.1.89 -> 2.1.96), reported by users as making sessions "effectively unusable" without manual
@@ -137,16 +142,16 @@ a generic 400 on the underlying model call, worded around "exceeds the maximum" 
 - **QG7 — Chroma "Context Rot" (research.trychroma.com / trychroma.com/research/context-rot, published 2025-07-14,
   vendor-authored by an AI infrastructure company benchmarking 18 models it does not sell — tagged COMMUNITY per
   rule 1 since Chroma is not the vendor of the models tested):** tested 18 models across Anthropic (Opus 4, Sonnet
-  4/3.7/3.5, Haiku 3.5), OpenAI (GPT-4.1, GPT-4.1-mini/nano, GPT-4o, GPT-4-Turbo, o3), Google (Gemini 2.5 Pro/Flash,
-  2.0 Flash) and Alibaba (Qwen3 8B/32B/235B) families. Findings: performance degrades with increasing input length
+  4/3.7/3.5, Haiku 3.5), OpenAI (o3, GPT-4.1, GPT-4.1 mini/nano, GPT-4o, GPT-4 Turbo, GPT-3.5 Turbo), Google (Gemini
+  2.5 Pro/Flash, 2.0 Flash) and Alibaba (Qwen3 8B/32B/235B) families. Findings: performance degrades with increasing input length
   even on "needle in a haystack" tasks with a single needle and no distractors — degradation is not explained by
   retrieval difficulty alone; a single distractor already reduces accuracy versus the no-distractor baseline, and
   additional distractors compound the effect non-uniformly; on LongMemEval (conversational QA), the gap between a
   focused ~300-token prompt and the full ~113K-token prompt was large, with Claude models showing the most
   pronounced gap; a "repeated words" structural task shows consistent degradation up to 10,000-word sequences purely
-  from length, independent of semantic difficulty; task-refusal rate itself rises with context length for some
-  models (Claude Opus 4 2.89%, GPT-4.1 2.55%, Qwen3-8B 4.21%, as measured by an LLM judge with >0.99 agreement with
-  human labels in the study's validation). [COMMUNITY S1870]
+  from length, independent of semantic difficulty; on that task some models declined to attempt it (Claude Opus 4
+  2.89% of attempts, GPT-4.1 2.55%, Qwen3-8B 4.21%); outputs were scored by a GPT-4.1 judge whose prompt was iterated
+  until its alignment with human judgements exceeded 0.99. [COMMUNITY S1870]
 - **QG7 tie-together**: IFScale (S1854, instruction *count* degradation) and Chroma's Context Rot (S1870, input
   *length* degradation, independent of instruction count) are two distinct, non-vendor-confirmed axes of the same
   underlying claim in Anthropic's own vendor guidance (S1855) that every added token depletes a finite "attention

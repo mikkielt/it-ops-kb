@@ -28,7 +28,8 @@ only examples are published.
 - SDK method `SMS_Client.SetGlobalLoggingConfiguration(LogLevel, LogMaxSize, LogMaxHistory, DebugLogging)` documents LogLevel 0 Verbose, 1 Normal, 2 No logging (conflicts with registry doc, see conflicts). [DOC S-m6tydsnh]
 - CMTrace reads CCM-format logs and plain ASCII/Unicode text; in CCM format each entry has an explicit type value marking error or warning; for other formats it matches "error"/"warn" text. [DOC S-hvtmunqo]
 - CMTrace installed at `C:\Windows\CCM\CMTrace.exe` (client), `C:\SMS_CCM\CMTrace.exe` (MP), `cd.latest\SMSSETUP\Tools`, boot images `X:\sms\bin\x64`. [DOC S-hvtmunqo]
-- CCM line shape from published examples: `<![LOG[text]LOG]!><time="HH:MM:SS.mmm+bias" date="MM-DD-YYYY" component="..." context="" type="1" thread="N" file="src.cpp:line">`. [DOC S234]
+- CCM line shape from published examples: `<![LOG[text]LOG]!><time="..." date="..." component="..." context="" type="1" thread="N" file="src.cpp:line">` (the published examples replace the time and date values with placeholders). [DOC S234]
+- The time value format `HH:MM:SS.mmm+bias` and date format `MM-DD-YYYY` inside a CCM line. [UNK: not in S234 as re-read 2026-09-27]
 - The numeric meaning of `type` (1/2/3) and the sign/unit of the time bias are not officially specified. [UNK]
 
 ## Reference

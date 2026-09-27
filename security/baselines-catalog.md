@@ -3,7 +3,7 @@ topic: security/baselines-catalog
 priority: P0
 applies_to: "Windows 11 Enterprise 24H2/25H2, Windows Server 2025"
 retrieved_utc: 2026-09-24
-sources: [S1470, S1471, S1472, S1598, S1400, S1401, S1402, S1403, S1404, S1405, S1406, S1407, S1408, S1409, S1410, S1411, S1418, S1419, S1420, S1421, S1422, S1423, S1424, S1425, S1426, S-3vkajr2c, S-ycjlut3h]
+sources: [S1470, S1471, S1472, S1598, S1400, S1401, S1402, S1403, S1404, S1405, S1406, S1407, S1408, S1410, S1418, S1419, S1420, S1421, S1422, S1423, S1424, S1425, S-uzuvf3vo, S-nwnif62g, S-3vkajr2c, S-ycjlut3h]
 status: partial
 ---
 
@@ -40,8 +40,9 @@ attribution. NCSC (UK)/BSI/ANSSI rows remain UNK.
 - A CIS Microsoft Intune for Windows 11 benchmark exists; the CIS Intune benchmark page lists it at v5.0.0 on
   2026-09-26 (a third-party mirror of CIS release notes had given v4.0.0), beside Intune benchmarks for Windows 10,
   Edge, Office and Microsoft Defender Antivirus [DOC S-3vkajr2c].
-- DISA publishes STIG and SCAP content for Microsoft Windows without any sign-in requirement, at
-  `public.cyber.mil` and `cyber.mil` [DOC S1409, S1411].
+- DISA's STIG packages say parties with a DoW common access card (CAC) obtain STIGs from the DoW Cyber
+  Exchange at `cyber.mil`, and those without one from `public.cyber.mil` (Windows 11 V2R9 Overview,
+  section 1.4) [DOC S1470].
 - The current Microsoft Windows 11 STIG is **V2R9**, XCCDF dated 2026-08-06, zip
   `U_MS_Windows_11_V2R9_STIG.zip` at `dl.dod.cyber.mil` (pinned artifact obtained by the
   coordinator) [DOC S1470].
@@ -51,10 +52,11 @@ attribution. NCSC (UK)/BSI/ANSSI rows remain UNK.
 - Unclassified STIGs posted on public.cyber.mil / dl.dod.cyber.mil carry Distribution Statement A
   ("approved for public release, distribution unlimited") per DoDI 5230.24 and the DoD Cyber
   Exchange's unclassified-STIG posting policy; no sign-in or licence acceptance click-through is
-  required to download them [DOC S1409, S1411, and the DoDI 5230.24 / public.cyber.mil README
-  digest found this pass — the README PDF itself was not directly opened, so the *licence statement
-  wording* is tagged `COMMUNITY` pending a direct read of a STIG zip's own Readme, while the *fact
-  that unclassified STIGs require no sign-in* is `DOC` per S1409/S1411].
+  required to download them [DOC S1470, and the DoDI 5230.24 / public.cyber.mil README
+  digest found this pass — the Windows 11 V2R9 zip's own `U_Readme_SRG_and_STIG.pdf` (V3R6) and
+  Overview carry no distribution statement, so the *licence statement wording* stays `COMMUNITY`,
+  while the *fact that STIGs are offered to people without a CAC at public.cyber.mil* is `DOC` per
+  the S1470 Overview, section 1.4].
 - Windows Server 2025 has its own SCT baseline line, separate from Windows 11's: version 2506
   released 2025-06-25, and version 2602 released 2026-02-23, both via techcommunity announcement
   posts [DOC S1418, S1419]. The 2602 delta vs 2506 (read from the post on 2026-09-27) adds the three
@@ -83,12 +85,13 @@ attribution. NCSC (UK)/BSI/ANSSI rows remain UNK.
   attributed, once a direct citation is confirmed — recorded as a residual gap.
 - ACSC's Essential Eight maturity model was first published June 2017, with a maturity-model
   revision seen dated November 2023 and an FAQ revision dated April 2024; a more recent 2026
-  revision was not confirmed this pass [DOC S1425, partial]. ACSC's Windows 11 hardening guide
-  ("Hardening Microsoft Windows 11 workstations") has a filename-dated September 2025 edition, with
-  a January 2026 change-log also found, suggesting at least one further 2026 revision exists beyond
-  what was opened this pass [DOC S1426, partial]. ACSC materials are Australian Commonwealth
-  content, generally reusable with attribution [DER: standard ACSC copyright notice pattern, not
-  independently re-confirmed this pass].
+  revision was not confirmed this pass [DOC S1425, partial].
+- ACSC's "Hardening Microsoft Windows 11 workstations" (first published May 2017) was last updated
+  January 2026; that edition takes its settings from Windows 11 version 25H2, and ACSC's January 2026
+  change log records the move from the September 2025 (24H2) edition, adding measures for auditing,
+  printers, widgets, app installations and SMB sessions [DOC S-uzuvf3vo, S-nwnif62g].
+- Apart from the Coat of Arms, the ACSC Windows 11 hardening guide is © Commonwealth of Australia
+  under CC BY 4.0, so it is reusable with attribution [DOC S-uzuvf3vo].
 - NCSC (UK) device guidance, BSI IT-Grundschutz/SiSyPHuS and ANSSI recommendations remain UNK; rows
   are placeholders in the CSV [UNK].
 

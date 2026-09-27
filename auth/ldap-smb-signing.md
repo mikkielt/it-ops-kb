@@ -3,7 +3,7 @@ topic: auth/ldap-smb-signing
 priority: P0
 applies_to: "Windows Server 2025, Windows 11 24H2, ldap3 2.10.x"
 retrieved_utc: 2026-09-26
-sources: [S1228, S1201, S1202, S1203, S1208, S1209, S1220, S1221, S-7u4b7p5q]
+sources: [S1228, S1201, S1202, S1203, S1208, S1209, S1220, S1221, S-7u4b7p5q, S-tcoyec5r]
 status: partial
 ---
 
@@ -16,15 +16,17 @@ status: partial
 
 ## Facts
 - Windows Server 2025 new AD forests/domains enable "Domain controller: LDAP server signing requirements" enforcement by default; existing upgraded domains keep prior settings unless changed. [DOC S1201]
-- LDAP channel binding on Server 2025 defaults to "When supported" (accept CBT when the client offers it) with auditing of unsigned/uncorrelated binds enabled by default. [DOC S1201]
+- LDAP channel binding on Server 2025 defaults to "When supported" (accept CBT when the client offers it), channel binding auditing is enabled by default, and LDAP client encryption is "preferred" by default. [DOC S1201]
 - SMB signing: Windows 11 24H2 Enterprise, Pro and Education require outbound and inbound SMB signing by default; Windows Server 2025 requires outbound signing only; 24H2 Home requires neither. [DOC S1202]
 - SMB encryption: SMB encryption is not mandatory by default. Windows 11 24H2 / Server 2025 add a client option to mandate encryption for all outbound connections; once enabled, the client connects only to SMB 3.0+ servers that support encryption. [DOC S1228]
 - `ldap3`'s Kerberos SASL mechanism needs the `gssapi` package (docs page 2.10.2). In the stable 2.9.1 line it authenticates only: a server that requires a sign or seal layer makes the bind fail (the 2019 issue: "ldap3 does not support any security layers"). The 2.10.2 docs say ldap3 now supports SASL data security layers for encryption; a server that requires a strong SSF needs `session_security=ENCRYPT` on the `Connection`. On PyPI, 2.9.1 (2021-07-18) is still the latest stable release and 2.10.2 exists only as release candidates (rc4, 2026-04-18). [DOC S1208, S-7u4b7p5q; COMMUNITY S1209]
 - For a `site`-kind instance on the stable `ldap3` 2.9.1, the only transport protection available against a DC that requires signing is LDAPS (TLS), with Kerberos/GSSAPI used for the bind; LDAP-layer sealing over plain `ldap://` needs the 2.10.2 pre-release with `session_security=ENCRYPT`, which is not yet a stable release. [DER S1201,S1208,S-7u4b7p5q: DC signing requirement + ldap3 docs + PyPI release status]
 - `python-ldap`'s `ldap.sasl` reference (3.3.0 docs) lists a `gssapi` class for SASL GSSAPI (Kerberos V) binds and points to the convenience method `sasl_gssapi_bind_s()`; the page documents the Python-level API only and says nothing about SASL security layers (signing/sealing) or about how Windows builds negotiate them. [DOC S1220]
 - `python-ldap` is a wrapper over the platform's native LDAP/SASL client libraries, so whether a GSSAPI bind on plain `ldap://` negotiates sign/seal depends on that underlying library, not on the Python API. [UNK: not stated on S1220; lab check below]
-- Microsoft's ADSI documentation for the Windows-native option (usable from Python via `pywin32`'s COM bindings to `ADsOpenObject`/`IADsOpenDSObject::OpenDSObject`) is explicit: `ADS_USE_SIGNING` (0x40) requires `ADS_SECURE_AUTHENTICATION` and verifies data integrity; `ADS_USE_SEALING` (0x80) also requires `ADS_SECURE_AUTHENTICATION`, encrypts data, and automatically implies signing; both require Kerberos authentication, which in turn requires the calling machine to be logged on to a Windows domain (or one trusted by it). [DOC S1221]
-- This makes the pywin32/ADSI route the one **Microsoft-documented** Python-reachable path (via COM) with confirmed sign+seal support on Windows, at the cost of being Windows-only and COM-based rather than pure Python — acceptable only if the calling instance is Windows-only by design. [DER S1221]
+- ADSI Kerberos encryption: binding with `ADsOpenObject` or `IADsOpenDSObject::OpenDSObject` and the `ADS_USE_SEALING` flag encrypts LDAP traffic and automatically sets `ADS_USE_SIGNING`; both flags need Kerberos, which works only when the client computer is logged on to the domain (or a trusted one) and the call passes null credentials (no alternate credentials). [DOC S1221]
+- In `ADS_AUTHENTICATION_ENUM`, `ADS_USE_SIGNING` is 0x40 (verifies data integrity) and `ADS_USE_SEALING` is 0x80 (encrypts with Kerberos); each requires `ADS_SECURE_AUTHENTICATION` (0x1) as well. [DOC S-tcoyec5r]
+- So on Windows the ADSI route (secure authentication + signing + sealing, running as the service's own identity) is a Microsoft-documented way to get a Kerberos-signed and sealed LDAP bind, at the cost of being Windows-only and COM-based rather than pure Python. [DER S1221,S-tcoyec5r: sealing implies signing + flag requirements]
+- Reaching `ADsOpenObject` from Python through `pywin32`'s COM bindings is not described in these Microsoft pages. [UNK: not in S1221 as re-read 2026-09-27]
 - `python-ldap` on Windows and its sign/seal behaviour against a signing-enforced DC over plain LDAP: still not independently confirmed; recorded as a lab check. [UNK]
 
 ## Reference

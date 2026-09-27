@@ -35,7 +35,7 @@ sourced from it.
   security (servers contained in a separate environment by default), user/admin control via Windows Settings
   and Intune, logging/auditability, and built-in Windows connectors (e.g. a File Explorer MCP server). [DOC S-w7egu7gh] preview
 - The command-line tool `odr.exe` manages on-device agents/MCP servers: `odr mcp run` (run an MCP server),
-  `odr mcp list` (list registered servers, JSON output), `odr mcp add <manifest file path>` (register),
+  `odr mcp list` (list registered servers), `odr mcp add <manifest file path>` (register),
   `odr mcp remove <server id>` (unregister), `odr mcp configure <server id>` (configure); global options
   `-?`/`-h`/`--help`, `--version`, `--verbose`. [DOC S-22dvomdp] preview
 - Registering an MCP server with Windows depends on packaging: apps with **package identity** (MSIX, or
@@ -94,27 +94,33 @@ sourced from it.
   debug-or-higher. [DOC S-2ypn2ron] preview
 
 ### Foundry Local
-- **Foundry Local** runs open models on-device with no cloud dependency or Azure subscription, via an
-  OpenAI-compatible local server; install the optional CLI with `winget install Microsoft.FoundryLocal`
-  (macOS: `brew tap microsoft/foundrylocal && brew install foundrylocal`), then `foundry --version` to verify;
-  the SDK quickstart itself does not require the CLI. [DOC S-msz6m5qt] preview (CLI) / not GA-labeled for SDK
+- **Foundry Local** runs LLMs locally on the Windows device, needs no special permissions or unlock tokens,
+  and its native SDK runs inside the app process without the Foundry Local CLI or a separate local REST server;
+  the CLI is optional (`winget install Microsoft.FoundryLocal`, then `foundry --version` to verify). [DOC S-msz6m5qt]
+  preview (CLI) / not GA-labeled for SDK
+- On macOS (Apple Silicon) the Foundry Local CLI installs with `brew tap microsoft/foundrylocal` then
+  `brew install foundrylocal`. [DOC S-onenhsl2] preview
+- The "Choose your Windows AI solution" page describes Foundry Local as open-source LLMs and speech models
+  behind an OpenAI-compatible API, on any Windows hardware. [DOC S-ewh6l73v] preview
 - Foundry Local prerequisites (Windows quickstart): Windows 11 version 24H2 (build 26100) or later, .NET 9.0
   SDK or later, an x64 or Arm64 device with enough memory/disk for the chosen model; a dedicated GPU, NPU or
   Copilot+ PC is **not** required when the model has a compatible CPU variant. [DOC S-msz6m5qt] preview
 - Install exactly one of the conflicting Python packages: `foundry-local-sdk-winml` (Windows, includes
   hardware acceleration, recommended on Windows) or `foundry-local-sdk` (macOS/Linux, or Windows without
-  hardware acceleration) — both pin different `onnxruntime-core` versions and cannot coexist; same
-  winml/cross-platform split exists for the npm (`foundry-local-sdk-winml` / `foundry-local-sdk`) and .NET
-  (`Microsoft.AI.Foundry.Local.WinML` / `Microsoft.AI.Foundry.Local`) packages. [DOC S-msz6m5qt] preview
-- CLI model-run pattern: `foundry model run <alias>` (implied by the SDK's `aliasOrModelId` docs) selects the
-  "best model for the available hardware" for an alias (e.g. CUDA GPU present -> CUDA variant, supported NPU
-  present -> NPU variant); the Windows quickstart's example alias is `phi-4-mini` (Phi-4 Mini) via
-  `GetModelAsync`/`get_model`/`FoundryLocalManager`. [DOC S-msz6m5qt] preview
+  hardware acceleration) — both pin different `onnxruntime-core` versions and cannot coexist; the .NET
+  packages split the same way (`Microsoft.AI.Foundry.Local.WinML` for Windows with Windows ML integration,
+  `Microsoft.AI.Foundry.Local` for non-Windows targets). [DOC S-msz6m5qt] preview
+- Passing a model **alias** (not a full model ID) to `GetModelAsync`/`get_model` lets Foundry Local pick a
+  compatible hardware variant (e.g. a QNN NPU variant on Snapdragon, a CUDA variant on NVIDIA, or a CPU
+  variant); the Windows quickstart's example alias is `phi-4-mini` (Phi-4 Mini). [DOC S-msz6m5qt] preview
+- CLI: `foundry chat <alias>` runs a model interactively (downloading it on first run), `foundry model list`
+  shows the catalog, and `foundry server status` shows the local endpoint URL; an alias lets Foundry Local
+  choose the best variant for the hardware. [DOC S-onenhsl2] preview
 - The **Foundry Local CLI is explicitly "available in preview"**: "Public preview releases provide early
   access to features that are in active deployment... Features, approaches, and processes can change or have
   limited capabilities, before General Availability (GA)." [DOC S-onenhsl2] preview
 - Recommended resilience pattern for a Windows AI feature: try **Windows AI APIs** first (fastest, most
-  optimized, needs Copilot+ hardware) -> fall back to **Foundry Local** (open model, runs on any Windows
+  optimized, on supported hardware) -> fall back to **Foundry Local** (open model, runs on any Windows
   hardware) -> fall back to **Azure AI** in the cloud. [DOC S-ewh6l73v] preview (pattern spans preview/GA components)
 - Phi Silica (the Windows AI API on-device SLM) remains a **Limited Access Feature requiring an unlock token**
   and is separate from Foundry Local's Phi-4 Mini; Phi Silica is scheduled to be replaced by "Aion Instruct,"
@@ -161,8 +167,9 @@ sourced from it.
 - **Click to Do** minimum requirements: a Copilot+ PC (or eligible Cloud PC), 40 TOPS NPU, 16 GB RAM, 8 logical
   processors, 256 GB storage; Snipping Tool 11.2411.20.0+ needed to show the Click to Do entry point from
   Snipping Tool. Screenshot analysis for Click to Do "is always performed locally on the device." [DOC S-6kxfh4ff] GA
-- Recall reached General Availability on Copilot+ PCs on **2025-04-25**; it was first previewed with Click to
-  Do to Windows Insiders in the Dev Channel on 2024-11-22. [DOC S-7bcl2ob5] GA
+- Recall reached General Availability on Copilot+ PCs on **2025-04-25**; it was previewed with Click to
+  Do to Windows Insiders in the Dev Channel on 2024-11-22 (the same update list has an earlier Recall preview
+  post of 2024-06-07). [DOC S-7bcl2ob5] GA
 
 ### IT controls: Policy CSP `WindowsAI` (Recall, Click to Do, agentic features)
 - All Recall, Click to Do and agent-connector/agent-consent settings live under one CSP area,
@@ -183,8 +190,7 @@ sourced from it.
   Microsoft 365 Copilot and Microsoft Copilot are both installed, the app was not user-installed, and it has
   not been launched in the last 28 days; Enterprise, Pro and Education SKUs only. [DOC S-2ypn2ron] GA
 - `TurnOffWindowsCopilot` is marked **deprecated** in the CSP ("may be removed in a future release") and
-  explicitly does not apply to the newer Copilot experience rolling out to Windows 11/10 — use the
-  agent-connector and Copilot-app-removal policies above for current control instead. [DOC S-2ypn2ron] deprecated
+  explicitly does not apply to the newer Copilot experience rolling out to Windows 11/10. [DOC S-2ypn2ron] deprecated
 
 ## Reference
 - `agents/foundry-agent-service.md` — the cloud-hosted Foundry Agent Service and Windows 365 for Agents
@@ -221,11 +227,11 @@ Data type: String (XML)
 Value: {"allow":["io.github.contoso/file-tools"]}
 ```
 
-Run a local model with the Foundry Local CLI, then call it through the OpenAI-compatible endpoint:
+Run a local model interactively with the Foundry Local CLI, then check the local endpoint:
 ```powershell
 winget install Microsoft.FoundryLocal
-foundry model run phi-4-mini
-# In another shell / app, point an OpenAI-compatible client at the local Foundry Local server.
+foundry chat phi-4-mini
+foundry server status   # shows the local endpoint URL
 ```
 
 Block Recall on managed devices and cap snapshot retention, via Intune custom OMA-URI:

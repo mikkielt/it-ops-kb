@@ -3,7 +3,7 @@ topic: arch/python-single-package-extras
 priority: P1
 applies_to: [python, uv]
 retrieved_utc: 2026-09-26
-sources: [S1705, S1706, S1707, S1708, S1522]
+sources: [S1705, S1706, S1707, S1708, S1522, S-tbvkh4vy]
 status: complete
 ---
 
@@ -20,23 +20,24 @@ needed by only one role).
 
 ## Facts
 - An extra is an optional part of a distribution; installing `package[extra1,extra2]` unions the
-  extras' dependencies with the base dependencies. Grammar: `extras = '[' extras_list ']'`. [DOC S1705]
+  extras' dependencies with the base dependencies. Grammar: `extras = '[' wsp* extras_list? wsp* ']'`. [DOC S1705]
 - Extras are declared in `[project.optional-dependencies]` as a TOML table mapping extra name to a
   list of dependency specifiers (PEP 621 metadata). [DOC S1705][DOC S1708]
-- `uv add httpx --optional network` adds a dependency to a named extra; `uv sync --extra <name>`
-  installs a package with that extra's dependencies. [DOC S1706]
-- Extras are published as part of the wheel/sdist metadata and are what an external consumer
-  installs, e.g. `uv tool install 'package[sync]'`. [DOC S1706]
+- `uv add httpx --optional network` adds a dependency to a named extra. [DOC S1706]
+- `uv sync` does not sync extras by default; `uv sync --extra <name>` includes one and `--all-extras`
+  includes all. [DOC S-tbvkh4vy]
+- `project.optional-dependencies` are published optional dependencies, unlike dependency groups, which
+  stay local. [DOC S1706]
 - PEP 735 dependency groups (`[dependency-groups]`) are for local, non-published dependencies such as
   test/lint tooling; a `dev` group is included by default in uv and toggled with `--dev`/`--no-dev`;
   groups can nest via `{include-group = "name"}`. [DOC S1706][DOC S1707]
 - Dependency groups are explicitly *not* included in the project's published requirements when built
   for PyPI or another index — the opposite of extras. [DOC S1706]
-- For genuinely separate distributions sharing one repository, uv recommends workspaces
-  (`[tool.uv.workspace]` with `members = [...]`), where each member is its own package with its own
-  `pyproject.toml`, installed editable by default. [DOC S1706]
-- `uv pip compile --generate-hashes` locks a resolved set including whichever extras/groups are
-  requested (existing kb fact, reused). [DOC S1522]
+- For multiple packages in the same repository, uv says workspaces may be a better fit
+  (`[tool.uv.workspace]` with `members = [...]`); workspace members are always editable. [DOC S1706]
+- `uv pip compile` locks a resolved set including the requested extras (`--extra <name>`, `--all-extras`)
+  or dependency groups (`--group <name>`); extras are not supported with the `requirements.in` format.
+  [DOC S1522]
 
 ## Reference
 ```toml

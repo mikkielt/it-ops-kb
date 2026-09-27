@@ -29,21 +29,25 @@ is the closest thing to a format with tooling on more than one of the four consu
   search; Fluent's maintained runtimes are Python (`fluent.runtime`) and Rust (`fluent-rs`). [UNK]
 - PowerShell's built-in internationalization mechanism is `Import-LocalizedData`, which reads a
   `.psd1` data file — produced from `ConvertFrom-StringData` or written directly as a hashtable —
-  stored in a language-named subdirectory next to the script (e.g. `en-US/strings.psd1`); it falls
-  back to `en-US` when the current `$PSUICulture` file is missing. [DOC S1712][DOC S1713]
-- `.psd1` files are plain PowerShell data-language key/value hashtables; they are not Fluent, gettext,
-  YAML or JSON, and PowerShell has no built-in FTL or .po/.mo reader. [DOC S1712]
+  stored in a culture-named subdirectory next to the script (e.g. `de-DE/<script-name>.psd1`); when no file
+  matches `$PSUICulture` it tries the language-only subdirectory (e.g. `de`), and failing that the variable
+  keeps the script's default (Data-section) strings. [DOC S1712][DOC S1713]
+- The translated `.psd1` files hold key/value strings that `ConvertFrom-StringData` turns into hash tables.
+  [DOC S1712]
+- PowerShell's documented localization path reads only these `.psd1` files; no built-in FTL or .po/.mo reader
+  is documented. [DER S1712, S1713: the internationalization docs describe `.psd1` + `Import-LocalizedData` only]
 - Python's standard library `gettext` module consumes compiled `.mo` files (compiled from `.po`),
   giving Python first-class gettext support without a third-party package. [DOC S1717]
 - gettext's canonical `.po`/`.mo` format and tooling (`msgfmt`, `msgmerge`, plural-forms) is documented
   in the GNU gettext manual; PowerShell has no native `.po`/`.mo` reader in official docs. [DOC S1716]
-- Power BI / Analysis Services tabular models support "translations" as object-metadata-only strings
-  (table/column/measure names and descriptions) attached per culture, consumed by client tools
-  (Power BI Desktop, Excel) based on the connection's requested culture — not a general string
-  catalogue for arbitrary report text or DAX-computed labels. [DOC S1714]
-- In TMDL view, per-language translation files live under a model's `cultures/` folder and can be
-  edited directly, where previously Translation Builder or Tabular Editor (a third-party/community
-  tool) was required. [DOC S1715]
+- Analysis Services / Power BI Premium tabular models support "translations" as object-metadata-only strings
+  (names and descriptions of tables and columns: `translatedCaption`, `translatedDescription`) per culture,
+  shown by a client tool such as Excel when the connection specifies the culture; the feature is not meant
+  for translated data values. [DOC S1714]
+- TMDL view lets you create or edit semantic-model metadata that has no graphical interface in Power BI
+  Desktop, translations among them, as TMDL scripts. [DOC S1715]
+- Per-language translation files under a model's `cultures/` folder, and Translation Builder or Tabular
+  Editor being needed before TMDL view. [UNK: not in S1715 as re-read 2026-09-27]
 
 ## Reference
 - Python: `fluent.runtime.FluentLocalization(["en-US"], ["catalogue.ftl"], loader)`.

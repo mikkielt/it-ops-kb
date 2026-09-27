@@ -39,7 +39,7 @@ By default an author cannot approve their own script.
 - Scripts that have parameters are not shown in the Intune admin center and cannot be run from there. [DOC S-aaryifxi]
 - Run Script over the AdminService: the AdminService overview lists console-run PowerShell scripts (Run Scripts) as a custom caller of the AdminService; neither it nor the usage page documents a route to start one. [DOC S-o6f7ibqo, S-igpzfey7]
 - No official source documents a `v1.0` Run Script action or its parameter format. [UNK]
-- A community sample posts `ScriptGuid` (and parameters) to `v1.0/Device(<id>)/AdminService.RunScript`. It was not verified. [COMMUNITY S350]
+- A community sample posts a body with only `ScriptGuid` to `v1.0/Device(<id>)/AdminService.RunScript`, then polls `AdminService.ScriptResult(OperationId=...)` on the same device. It was not verified. [COMMUNITY S350]
 - Folders for scripts exist from 2403, and the Full Administrator and Operations Administrator roles can manage them. [DOC S-p2yatbfh]
 
 ## Reference

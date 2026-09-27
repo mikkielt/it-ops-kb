@@ -38,7 +38,7 @@ PowerShell DSC (v1/v2, PS 5.x) single-resource module; it does not run on PowerS
 | Unit | one resource per task | whole configuration document |
 | Check mode | (not stated on page) | `dsc config test` |
 | PowerShell 7 | not supported | n/a (calls dsc.exe) |
-| Added | legacy | ansible.windows 3.4.0 |
+| Added | (not stated on page) | ansible.windows 3.4.0 |
 
 ## Examples
 ```yaml

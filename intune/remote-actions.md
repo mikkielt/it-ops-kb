@@ -25,15 +25,15 @@ permission, least to most privileged.
   syncDevice, windowsDefenderScan, windowsDefenderUpdateSignatures, updateWindowsDeviceAccount. [DOC S-mrrxrahv]
 - Wipe: `POST /deviceManagement/managedDevices/{id}/wipe`; delegated and application permission (least to most
   privileged) is `DeviceManagementManagedDevices.PrivilegedOperations.All`; personal Microsoft accounts aren't
-  supported; parameters `keepEnrollmentData`, `keepUserData`, `macOsUnlockCode` (6-digit macOS MDM unlock PIN),
+  supported; parameters `keepEnrollmentData`, `keepUserData`, `macOsUnlockCode` (six-digit recovery PIN for an MDM wipe of a Mac),
   `obliterationBehavior` (fallback wipe method on modern Macs), `persistEsimDataPlan`. [DOC S-s7srrfx2]
 - Wipe daily tenant limit: 500 per day, cumulative across single-device actions, bulk actions and Graph API
   requests. [DOC S-cprqxpsz]
 - Wipe on Windows uses the `doWipe` node of the RemoteWipe CSP, and can roll back to the previous state if
   interrupted (or require a full Windows reinstall if rollback fails). [DOC S-cprqxpsz]
-- Wipe (and other actions) may be governed by an Intune access policy requiring Multiple Administrative Approval
-  (MAA): a second administrator must approve before the wipe proceeds; see `intune/assignment-filters-and-rbac.md`
-  for MAA's protected resource types (Device actions — wipe, retire, delete — is one of them). [DOC S-cprqxpsz]
+- Wipe may be governed by an Intune access policy requiring Multiple Administrative Approval (MAA): a second
+  administrator must approve before the wipe proceeds; MAA's Device actions resource type covers wipe, retire
+  and delete (see `intune/assignment-filters-and-rbac.md`). [DOC S-cprqxpsz, S-cunjuxe3]
 - Retire: `POST /deviceManagement/managedDevices/{id}/retire`, no request body, least-privileged permission
   `DeviceManagementManagedDevices.PrivilegedOperations.All`; removes company data/settings and leaves personal
   data intact; daily tenant limit 1,000. [DOC S-hzezniod, S-zne522mq]
@@ -62,13 +62,14 @@ permission, least to most privileged.
   is `DeviceManagementManagedDevices.ReadWrite.All` — lower-tier than the PrivilegedOperations.All most other
   actions need. [DOC S-f6okqmo4]
 - windowsDefenderScan: `POST /deviceManagement/managedDevices/{id}/windowsDefenderScan`, parameter `quickScan`
-  (Boolean: true = Quick Scan, false/omitted = Full Scan), least-privileged permission
-  `DeviceManagementManagedDevices.PrivilegedOperations.All`. [DOC S-5jodj5ne]
+  (Boolean; the admin center offers separate Quick Scan and Full Scan actions), least-privileged permission
+  `DeviceManagementManagedDevices.PrivilegedOperations.All`. [DOC S-5jodj5ne, S-zne522mq]
 - windowsDefenderUpdateSignatures: `POST /deviceManagement/managedDevices/{id}/windowsDefenderUpdateSignatures`,
   no body, same least-privileged permission. [DOC S-qe4vs4v7]
 - rotateBitLockerKeys (beta): `POST /deviceManagement/managedDevices/{id}/rotateBitLockerKeys` (also under
   `comanagedDevices` and under `deviceHealthScripts`/`deviceManagementScripts` run-state paths), no body,
-  least-privileged permission `DeviceManagementManagedDevices.ReadWrite.All`, Windows only. [DOC S-iyxigs24]
+  least-privileged permission `DeviceManagementManagedDevices.ReadWrite.All`; BitLocker key rotation is listed
+  among the Windows device actions. [DOC S-iyxigs24, S-zne522mq]
 - rotateLocalAdminPassword (beta): `POST /deviceManagement/managedDevices/{id}/rotateLocalAdminPassword`, no
   body, least-privileged permission `DeviceManagementManagedDevices.PrivilegedOperations.All`; supported
   platforms are Windows (corporate-owned) and macOS enrolled via Automated Device Enrollment (ADE); manually
@@ -78,8 +79,9 @@ permission, least to most privileged.
   read visibility into managed devices (e.g. Organization/Read, Managed devices/Read). [DOC S-yuwg4jgb]
 - pauseConfigurationRefresh (beta): `POST /deviceManagement/managedDevices/{id}/pauseConfigurationRefresh`,
   parameter `pauseTimePeriodInMinutes` (Int32), least-privileged permission
-  `DeviceManagementManagedDevices.PrivilegedOperations.All`; pauses ConfigMgr co-management ConfigRefresh
-  reconciliation on the device for troubleshooting, maintenance, or making changes. [DOC S-v32a7r4i]
+  `DeviceManagementManagedDevices.PrivilegedOperations.All`; initiates a command to pause config refresh for the
+  device (the admin-center **Pause Config Refresh** action pauses ConfigRefresh so a device can be remediated,
+  maintained or changed). [DOC S-v32a7r4i, S-zne522mq]
 - initiateOnDemandProactiveRemediation (beta): `POST /deviceManagement/managedDevices/{id}/initiateOnDemandProactiveRemediation`,
   parameter `scriptPolicyId` (String), least-privileged permission
   `DeviceManagementManagedDevices.PrivilegedOperations.All`; this is the Graph action behind the admin-center
@@ -117,13 +119,13 @@ permission, least to most privileged.
   available for Jamf-managed devices, and hiding a device in Intune does not remove it from Entra ID. [DOC S-2laa2ngs]
 - Executing a single device action from the admin center follows the same general steps regardless of action:
   Devices > All devices > select device > select the action icon (or the "..." overflow) > confirm. [DOC S-zne522mq]
-- RBAC preconditions for device actions are not uniform: some actions (e.g. wipe, retire, delete, rotate local
-  admin password, run remediation, Autopilot reset) map to a named **Remote tasks** permission in a custom
-  role (see `intune/assignment-filters-and-rbac.md` and `intune/rbac-built-in-roles.csv` for the built-in Help
+- RBAC preconditions for device actions are not uniform: some actions map to a named permission in a custom
+  role (wipe and Autopilot reset to **Remote tasks/Wipe**, rotate local admin password to **Remote tasks/Rotate
+  Local Admin Password**, delete to **Managed devices/Delete**) (see `intune/assignment-filters-and-rbac.md` and `intune/rbac-built-in-roles.csv` for the built-in Help
   Desk Operator / School Administrator role grants); others (locateDevice, rotateBitLockerKeys) use the more
   general `DeviceManagementManagedDevices.ReadWrite.All` least-privileged Graph permission without a named
-  RBAC permission documented on the API page. [DOC S-f6okqmo4, S-iyxigs24, S-yuwg4jgb]
-- Multi Admin Approval (MAA) access policies confirmed to cover, per Intune's own resource list: **Apps** (app deployments, not app protection policies), **Compliance policies**, **Configuration policies** (settings catalog), **Device actions** (wipe, retire, and delete specifically — no other device action, such as locate, restart, or Autopilot reset, is a protectable MAA resource), **Role-based access control** changes, **Scripts** (Windows PowerShell script deployment), **Access Policies** themselves, and **Tenant Configuration** (device categories). MAA enforcement applies to both interactive/delegated admin actions and application-authenticated Graph API calls. [DOC S-cunjuxe3]
+  RBAC permission documented on the API page. [DOC S-f6okqmo4, S-iyxigs24, S-yuwg4jgb, S-cprqxpsz, S-cjehjzoc, S-sthrw3uz]
+- Multi Admin Approval (MAA) access policies confirmed to cover, per Intune's own resource list: **Apps** (app deployments, not app protection policies), **Compliance policies**, **Configuration policies** (settings catalog), **Device actions** (wipe, retire and delete only), **Role-based access control** changes, **Scripts** (deploying scripts to Windows devices), **Access Policies** themselves, and **Tenant Configuration** (device categories). MAA enforcement applies to both interactive/delegated admin actions and application-authenticated Graph API calls. [DOC S-cunjuxe3]
 
 ## Reference
 - `auth/audit-log-apis.md` — remote actions issued against a device are recorded as Intune audit events,

@@ -3,7 +3,7 @@ topic: autopilot/device-preparation
 priority: P1
 applies_to: "Windows Autopilot device preparation (v2), memdocs, docs retrieved 2026-09-26"
 retrieved_utc: 2026-09-26
-sources: [S-6htyzc3j, S-xp44rfad, S-7cxticpd, S-ogiphajf, S-3w5igyu3, S-kcoqv2wr, S-pvo4qjfp, S-ubpss7bf, S-oyfbtzrp, S-2dqskpmr, S-ww4g7luc, S-otgnfdud, S-lfd7criv, S-s3auwm6y, S-iqksiiaq, S-b6krqeqe, S-mgri56wc, S-nxjyvkmx, S-ec3hg7rx, S-pfq3p4yz]
+sources: [S-6htyzc3j, S-xp44rfad, S-7cxticpd, S-ogiphajf, S-3w5igyu3, S-kcoqv2wr, S-pvo4qjfp, S-ubpss7bf, S-oyfbtzrp, S-2dqskpmr, S-ww4g7luc, S-otgnfdud, S-lfd7criv, S-s3auwm6y, S-iqksiiaq, S-b6krqeqe, S-mgri56wc, S-nxjyvkmx, S-ec3hg7rx, S-kqvek5fm, S-6p7kyiau]
 status: complete
 files: [autopilot/v1-vs-v2.csv]
 ---
@@ -12,15 +12,15 @@ files: [autopilot/v1-vs-v2.csv]
 
 ## Summary
 - Windows Autopilot device preparation ("v2") is a re-architecture of Windows Autopilot: same OOBE experience to admins and users, different underlying architecture, no requirement to register devices. [DOC S-ogiphajf]
-- It does not use the Enrollment Status Page (ESP); a `Setting up for work or school` screen with a percentage progress indicator shows instead. If ESP appears, device preparation is not running. [DOC S-ogiphajf]
+- It does not use the Enrollment Status Page (ESP); a `Setting up for work or school` screen with a percentage progress indicator shows instead. If ESP appears, device preparation is not running. [DOC S-ogiphajf, S-6htyzc3j]
 - Admins configure a single device preparation policy (deployment/OOBE settings, apps, scripts) plus an assigned device security group owned by the **Intune Provisioning Client** service principal (AppId `f1346770-5b25-470b-88bd-d5744ab7952c`). [DOC S-6htyzc3j, S-kcoqv2wr]
 - Pre-provisioning and self-deploying mode are not supported in device preparation; they remain Windows Autopilot (classic, "v1") scenarios. [DOC S-ogiphajf]
-- LAPS event 20000 (CSP rejected because the device isn't joined yet) is expected and benign during the technician phase of classic Autopilot pre-provisioning. [DOC S-pfq3p4yz] (see `windows/laps.md`)
+- LAPS event 20000 (CSP rejected because the device isn't joined yet) is expected during the technician phase of classic Autopilot pre-provisioning (Autopilot unjoins the device from Entra) and should be ignored; it clears in the user flow. [DOC S-kqvek5fm] (see `windows/laps.md`)
 
 ## Facts
 
 ### What device preparation is and requirements
-- Device preparation supports user-driven and automatic (Windows 365 Frontline shared mode, preview) deployment flows, and only Microsoft Entra join (no hybrid join). [DOC S-6htyzc3j]
+- Device preparation supports user-driven and automatic (Windows 365 Frontline shared mode, preview) deployment flows, and only Microsoft Entra join (no hybrid join). [DOC S-6htyzc3j, S-ogiphajf]
 - Supported Windows versions: Windows 11 version 24H2 or later; 23H2 with KB5035942 or later; 22H2 with KB5035942 or later. [DOC S-6htyzc3j, S-xp44rfad]
 - Windows 365 Cloud PCs: Windows 11 24H2 with KB5052093 or later, 23H2 with KB5035942 or later, or 22H2 with KB5035942 or later; the Windows 365 image-gallery images already include these updates, and custom images need installation media dated March 2025 or later. [DOC S-xp44rfad]
 - Supported editions: Windows 11 Pro, Pro Education, Pro for Workstations, Enterprise, Education, Enterprise LTSC. [DOC S-xp44rfad]
@@ -34,7 +34,7 @@ files: [autopilot/v1-vs-v2.csv]
 - Device preparation uses an **assigned** (static) device security group, never a dynamic group; devices are added to it automatically during deployment ("Enrollment Time Grouping"), not by hand. [DOC S-2dqskpmr]
 - The device group's **Microsoft Entra roles can be assigned to the group** setting must be **No**. [DOC S-2dqskpmr]
 - The group's owner must be the **Intune Provisioning Client** service principal (AppId `f1346770-5b25-470b-88bd-d5744ab7952c`); in some tenants it displays as **Intune Autopilot ConfidentialClient** — the AppId, not the name, identifies it. [DOC S-kcoqv2wr]
-- If that AppId is missing from the tenant, it must be added via PowerShell (`Install-Module Microsoft.Graph.Authentication` then a Graph call to create the service principal). [DOC S-kcoqv2wr]
+- If that AppId is missing from the tenant, it must be added via PowerShell (install `Microsoft.Graph.Authentication` and `Microsoft.Graph.Applications`, `Connect-MgGraph -Scopes "Application.ReadWrite.All"`, then `New-MgServicePrincipal -AppID f1346770-5b25-470b-88bd-d5744ab7952c`). [DOC S-kcoqv2wr, S-2dqskpmr]
 - Missing/incorrect owner symptoms: policy shows **0 groups assigned**, or save errors `There was a problem with the device security group for <policy_name>...` / `Failed to update security group device preparation setting...`. [DOC S-kcoqv2wr]
 - Only apps/scripts explicitly selected in the device preparation policy are delivered during OOBE; other apps/scripts/policies assigned to the same device group sync but are applied (and only tracked) after OOBE completes. [DOC S-6htyzc3j]
 
@@ -48,7 +48,7 @@ files: [autopilot/v1-vs-v2.csv]
 - Scripts: up to 10 PowerShell scripts. Apps and scripts should target the device security group and run in the **System** context (for scripts: **Run this script using the logged on credentials** = No), since OOBE has no signed-in user. [DOC S-oyfbtzrp]
 - Automatic mode (Windows 365) policy: up to 10 apps and up to 10 scripts (not 25/10 as in user-driven). [DOC S-ww4g7luc]
 - Policy priority: when multiple policies target a user, the one with the smallest **Priority** number wins; drag to reorder. A device-based assignment always takes precedence over a user-based one. Priority is grayed out / not honored for automatic-mode policies, which are assigned directly in the Cloud PC provisioning policy. [DOC S-oyfbtzrp, S-kcoqv2wr]
-- Onboarding trusted devices: use **either** corporate identifiers (pre-uploaded serial/manufacturer/model, only needed if enrollment restrictions block personal devices) **or** device association — not both; device association also unlocks the OOBE-customization settings above. [DOC S-oyfbtzrp, S-6htyzc3j]
+- Onboarding trusted devices: choose **one** of corporate identifiers (pre-uploaded serial/manufacturer/model, only needed if enrollment restrictions block personal devices) or device association — both aren't needed, as associated devices count as corporate-owned; device association also unlocks the OOBE-customization settings above. [DOC S-oyfbtzrp, S-6htyzc3j]
 - Automatic mode for Windows 365: the device preparation policy is referenced from the Cloud PC provisioning policy's **Autopilot Device preparation policy** field; **Minutes allowed before device preparation fails** accepts 10–360 minutes (recommended minimum 30). [DOC S-otgnfdud]
 
 ### Comparison: device preparation vs. classic Windows Autopilot
@@ -64,13 +64,13 @@ files: [autopilot/v1-vs-v2.csv]
 - Full capability comparison table: `autopilot/v1-vs-v2.csv`. [DOC S-7cxticpd]
 
 ### Classic Autopilot ESP (v1) — for comparison
-- The Enrollment Status Page (ESP) has a Device ESP phase (OOBE, device policies/apps) followed by a User ESP phase (user sign-in, user policies/apps); it does not exist in device preparation. [DOC S-lfd7criv]
+- The Enrollment Status Page (ESP) has a Device ESP phase (OOBE, device policies/apps) followed by a User ESP phase (user sign-in, user policies/apps); it does not exist in device preparation. [DOC S-lfd7criv, S-ogiphajf]
 - Default ESP is assigned to all devices with **Show app and profile configuration progress** off by default; Microsoft recommends a custom ESP with it turned on. [DOC S-lfd7criv]
 - ESP timeout ("Show an error when installation takes longer than specified number of minutes") defaults to **60 minutes**. [DOC S-lfd7criv]
 - Default ESP failure message: `Setup could not be completed. Please try again or contact your support person for help.` (customizable). [DOC S-lfd7criv]
 - **Block device use until required apps are installed**: All (every assigned app must install first) or Selected (only chosen apps block usage); enabling blocking unlocks **Allow users to reset device on install error** and **Allow users to use device on install error**. [DOC S-lfd7criv]
 - **Turn on log collection and diagnostics page for end users**: shows a Collect logs button on failure and (Windows 11 only) the Windows Autopilot diagnostics page. [DOC S-lfd7criv]
-- Hybrid Microsoft Entra join deployments with ESP can take roughly 40 minutes longer than the configured timeout, to give the on-prem AD connector time to create the device record in Entra ID. [DOC S-b6krqeqe]
+- Hybrid Microsoft Entra join Autopilot deployments with ESP take 40 minutes longer than the ESP profile's timeout, to give the on-prem AD connector time to create the device record in Entra ID. [DOC S-6p7kyiau]
 - `EnrollmentStatusTracking` CSP (Windows 10 1903+) writes ESP tracking state under `HKLM\SOFTWARE\Microsoft\Windows\Autopilot\EnrollmentStatusTracking`, including IME install status and Win32/LOB/Store app install status per phase. [DOC S-b6krqeqe]
 
 ### Pre-provisioning (white glove) — classic Autopilot only
@@ -90,16 +90,16 @@ files: [autopilot/v1-vs-v2.csv]
 - Classic Autopilot diagnostics page (Windows 11, user-driven mode, work/school sign-in only — not personal Microsoft accounts): enable via the ESP profile (**Show app and profile configuration progress** = Yes and **Turn on log collection and diagnostics page for end users** = Yes); open with **View Diagnostics** or Ctrl+Shift+D. [DOC S-mgri56wc]
 - Autopilot event log: Event Viewer → Applications and Services Logs → Microsoft → Windows → **ModernDeployment-Diagnostics-Provider** → **Autopilot**. [DOC S-mgri56wc]
 - Manual log collection command (Windows 10 1809+, user-driven): `mdmdiagnosticstool.exe -area Autopilot -cab <pathToOutputCabFile>`; for self-deploying/white glove/other physical-device scenarios: `mdmdiagnosticstool.exe -area Autopilot;TPM -cab <pathToOutputCabFile>`. [DOC S-b6krqeqe]
-- `Get-AutopilotDiagnostics` (PowerShell Gallery script, `Install-Script -Name Get-AutopilotDiagnostics -Force`) parses the generated CAB to summarize Autopilot/ESP failures: `Get-AutopilotDiagnostics -CABFile <pathToOutputCabFile>`. [COMMUNITY S-b6krqeqe]
+- `Get-AutopilotDiagnostics` (PowerShell Gallery script, `Install-Script -Name Get-AutopilotDiagnostics -Force`) reviews the log files captured by the MDM Diagnostics Tool: `Get-AutopilotDiagnostics -CABFile <pathToOutputCabFile>`. [DOC S-b6krqeqe]
 - Intune's **Collect diagnostics** device action captures device logs; it cannot be run via Graph directly (portal/bulk action only, up to 25 devices at once), is retained 28 days, and up to 10 collections are stored per device; it can auto-trigger (one set per day) on an Autopilot deployment failure if automatic capture is enabled. [DOC S-nxjyvkmx]
 - Automatic diagnostics upload from the client requires `lgmsapeweu.blob.core.windows.net` to be reachable; diagnostics are retained 28 days before removal. [DOC S-xp44rfad]
 
 ### Known issues (device preparation)
 - Managed Installer policy during OOBE is not supported (can cause incorrect reporting); custom compliance and the device health script are not supported during device preparation deployments (initial release). [DOC S-3w5igyu3]
-- A tenant-level Managed Installer policy causes Win32, Microsoft Store, and Enterprise App Catalog apps to be skipped during device preparation. [DOC S-3w5igyu3]
+- When a tenant's Managed installer policy is active, Win32, Microsoft Store and Enterprise App Catalog apps are skipped during OOBE (reported as **Skipped**) and install after the desktop is reached; listed as resolved in April 2026. [DOC S-3w5igyu3]
 - Devices not in the UTC time zone could fail deployment (resolved July 2024); the documented workaround was `Set-TimeZone -Id "UTC"` in OOBE PowerShell. [DOC S-3w5igyu3]
 - BitLocker could default to 128-bit even when 256-bit was configured, due to a race condition; resolved by KB5124012 and later updates. [DOC S-3w5igyu3]
-- Conflict between Entra ID **Local administrator settings** and the policy's **User account type**: when User account type = Standard user and the Entra setting is Selected/None, provisioning is skipped and the user can reach the desktop without the intended apps. Documented safe combinations pair Entra "All" with policy "Administrator", or Entra "Selected" (admins chosen) with policy "Administrator", for an admin outcome; and Entra "None" with policy "Administrator", or Entra "Selected" (non-admins chosen) with policy "Standard user", or Entra "All" with policy "Standard user", for a standard-user outcome. [DOC S-3w5igyu3]
+- Conflict between Entra ID **Local administrator settings** and the policy's **User account type**: when User account type = Standard user and the Entra setting is Selected/None, provisioning is skipped and the user can reach the desktop without the intended apps. Documented safe combinations pair Entra "All" with policy "Administrator", or Entra "Selected" (admins chosen) with policy "Administrator", for an admin outcome; and Entra "None" with policy "Administrator", or Entra "Selected" (standard users not selected) with policy "Administrator", or Entra "All" with policy "Standard user", for a standard-user outcome. [DOC S-3w5igyu3]
 - A device can get stuck at 100% during OOBE; the documented workaround is a manual restart (fix in progress as of the known-issues page). [DOC S-3w5igyu3]
 
 ## Reference

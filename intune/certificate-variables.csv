@@ -1,21 +1,21 @@
 variable,certificate_type,profile_types,usable_in,requires,source_id
-{{UserName}},User,SCEP;PKCS,Subject;SAN,none,S-h44fxget
-{{UserPrincipalName}},User,SCEP;PKCS,Subject;SAN,none,S-h44fxget
-{{EmailAddress}},User,SCEP;PKCS,Subject (E=);SAN,none,S-h44fxget
-{{OnPrem_Distinguished_Name}},User,SCEP;PKCS,Subject,onpremisesdistinguishedname synced via Microsoft Entra Connect; quote CN if value has a comma,S-h44fxget
-{{OnPremisesSamAccountName}},User,SCEP;PKCS,Subject,onPremisesSamAccountName synced via Microsoft Entra Connect,S-h44fxget
-{{OnPremisesSecurityIdentifier}},User or Device (hybrid-joined Windows only for Device),SCEP;PKCS(connector 6.2406.0.1001+ via registry flag),SAN URI attribute only,users/devices synced from on-prem AD to Entra ID (KB5014754 strong mapping),S-h44fxget
-{{AAD_Device_ID}},Device,SCEP;PKCS,Subject;SAN,none,S-h44fxget
-{{AzureADDeviceId}},Device,SCEP;PKCS,Subject;SAN,alias of AAD_Device_ID,S-h44fxget
-{{DeviceId}},Device,SCEP;PKCS,Subject;SAN,avoid on Windows subject (can break Intune sync),S-h44fxget
-{{Device_Serial}},Device,SCEP;PKCS,Subject;SAN,device must report a serial number,S-h44fxget
-{{SerialNumber}},Device,SCEP;PKCS,Subject;SAN,not usable on personally-owned Android 12+ work-profile devices enrolled post-upgrade,S-h44fxget
-{{Device_IMEI}},Device,SCEP;PKCS,Subject;SAN,device must have an IMEI,S-h44fxget
-{{IMEI}},Device,SCEP;PKCS,Subject;SAN,not usable on personally-owned Android 12+ work-profile devices enrolled post-upgrade,S-h44fxget
-{{IMEINumber}},Device,SCEP;PKCS,Subject;SAN,not usable on personally-owned Android 12+ work-profile devices enrolled post-upgrade,S-h44fxget
-{{MEID}},Device,SCEP;PKCS,Subject;SAN,not usable on personally-owned Android 12+ work-profile devices enrolled post-upgrade,S-h44fxget
-{{WiFiMacAddress}},Device,SCEP;PKCS,Subject;SAN,device must report a Wi-Fi MAC address,S-h44fxget
-{{DeviceName}},Device,SCEP;PKCS,Subject;SAN,none,S-h44fxget
-{{FullyQualifiedDomainName}},Device,SCEP;PKCS,Subject;SAN,Windows and domain-joined devices only,S-h44fxget
+{{UserName}},User,SCEP;PKCS,Subject;SAN,none,S-h44fxget;S-qe32ky2d
+{{UserPrincipalName}},User,SCEP;PKCS,Subject;SAN,none,S-h44fxget;S-qe32ky2d
+{{EmailAddress}},User,SCEP;PKCS,Subject (E=);SAN,none,S-h44fxget;S-qe32ky2d
+{{OnPrem_Distinguished_Name}},User,SCEP;PKCS,Subject,onpremisesdistinguishedname synced via Microsoft Entra Connect; quote CN if value has a comma,S-h44fxget;S-qe32ky2d
+{{OnPremisesSamAccountName}},User,SCEP;PKCS,Subject,onPremisesSamAccountName synced via Microsoft Entra Connect,S-h44fxget;S-qe32ky2d
+{{OnPremisesSecurityIdentifier}},User or Device (hybrid-joined Windows only for Device),SCEP;PKCS(connector 6.2406.0.1001+ via registry flag),SAN URI attribute only,users/devices synced from on-prem AD to Entra ID (KB5014754 strong mapping),S-h44fxget;S-qe32ky2d
+{{AAD_Device_ID}},Device,SCEP;PKCS,Subject;SAN,none,S-h44fxget;S-qe32ky2d
+{{AzureADDeviceId}},Device,SCEP;PKCS,Subject;SAN,alias of AAD_Device_ID,S-h44fxget;S-qe32ky2d
+{{DeviceId}},Device,SCEP;PKCS,Subject;SAN,avoid on Windows subject (can break Intune sync),S-h44fxget;S-qe32ky2d
+{{Device_Serial}},Device,SCEP;PKCS,Subject;SAN,device must report a serial number,S-h44fxget;S-qe32ky2d
+{{SerialNumber}},Device,SCEP;PKCS,Subject;SAN,not usable on personally-owned Android 12+ work-profile devices enrolled post-upgrade,S-h44fxget;S-qe32ky2d
+{{Device_IMEI}},Device,SCEP;PKCS,Subject;SAN,device must have an IMEI,S-h44fxget;S-qe32ky2d
+{{IMEI}},Device,SCEP;PKCS,Subject;SAN,not usable on personally-owned Android 12+ work-profile devices enrolled post-upgrade,S-h44fxget;S-qe32ky2d
+{{IMEINumber}},Device,SCEP;PKCS,Subject;SAN,not usable on personally-owned Android 12+ work-profile devices enrolled post-upgrade,S-h44fxget;S-qe32ky2d
+{{MEID}},Device,SCEP;PKCS,Subject;SAN,not usable on personally-owned Android 12+ work-profile devices enrolled post-upgrade,S-h44fxget;S-qe32ky2d
+{{WiFiMacAddress}},Device,SCEP;PKCS,Subject;SAN,device must report a Wi-Fi MAC address,S-h44fxget;S-qe32ky2d
+{{DeviceName}},Device,SCEP;PKCS,Subject;SAN,none,S-h44fxget;S-qe32ky2d
+{{FullyQualifiedDomainName}},Device,SCEP;PKCS,Subject;SAN,Windows and domain-joined devices only,S-h44fxget;S-qe32ky2d
 {{GivenName}},User (S/MIME),SCEP,Subject (G=),required by CA/Browser Forum S/MIME baseline (2025-07-16+) for third-party public CA S/MIME certs,S-h44fxget
 {{SurName}},User (S/MIME),SCEP,Subject (SN=),required by CA/Browser Forum S/MIME baseline (2025-07-16+) for third-party public CA S/MIME certs,S-h44fxget

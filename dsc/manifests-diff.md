@@ -3,7 +3,7 @@ topic: dsc/manifests-diff
 priority: P0
 applies_to: "Microsoft DSC 3.3.0 and 3.4.0-preview.1, Windows x64 release zips"
 retrieved_utc: 2026-09-26
-sources: [S105, S106, S114, S115, S120, S121, S122]
+sources: [S105, S106, S114, S115, S120, S121, S122, S-6hlzzfeg]
 status: complete
 files: [dsc/manifests/, dsc/zip-extras/]
 ---
@@ -22,7 +22,7 @@ files: [dsc/manifests/, dsc/zip-extras/]
 - Only three manifest files differ in bytes between the zips: `environment_variable.dsc.manifests.json` (new), `filecontent.dsc.resource.json` (new), `windowsupdate.dsc.resource.json` (changed). [DER S114,S115: byte comparison of the extracted files]
 - In 3.3.0, `Microsoft.Windows/UpdateList` 0.1.0 has `set.args: ["set"]` and a `preTest: true` key (not `implementsPretest`), and no `requireSecurityContext`; in 3.4.0-preview.1 (0.1.1) `set` adds `{"whatIfArg": "--what-if"}`, `implementsPretest: true`, `requireSecurityContext: elevated`, `whatIfReturns: state`. [DOC S114,S115]
 - The Group Policy template adapter (`Microsoft.Adapter/GroupPolicyTemplate` 0.1.0, source `adapters/group_policy_template`) exists in the 3.4.0-preview.1 source tree but is not in `data.build.json` package lists and not in the 3.4.0-preview.1 zip. [DER S120,S121,S115: absent from package list and zip listing]
-- `Microsoft.Windows/Personalization` 1.0.0 is an adapted resource YAML (`*.dsc.adaptedResource.yaml`, `requireAdapter: Microsoft.Windows.Adapter/Registry`, capabilities get/set, HKCU values) present in source for 3.3.0 and 3.4.0-preview.1 but not packaged in either zip. [DER S122,S114,S115: file in source, absent in zips]
+- `Microsoft.Windows/Personalization` 1.0.0 is an adapted resource YAML (`*.dsc.adaptedResource.yaml`, `requireAdapter: Microsoft.Windows.Adapter/Registry`, capabilities get/set, HKCU values) present in source for 3.3.0 and 3.4.0-preview.1 but not packaged in either zip. [DER S122,S-6hlzzfeg,S114,S115: file in source, absent in zips]
 - `Microsoft.DSC/PowerShell` and `Microsoft.Windows/WindowsPowerShell` carry a `deprecationMessage` pointing to the `Microsoft.Adapter/PowerShell` and `Microsoft.Adapter/WindowsPowerShell` adapters. [DOC S114]
 - dsc derives capabilities from the manifest: `set` present → set; `set.handlesExist: true` → setHandlesExist; a `whatIfArg` in `set.args` or a legacy top-level `whatIf` operation → whatIf (SetWhatIf); `delete` with `whatIfArg` → deleteWhatIf; `test`, `export`, `resolve` present → those capabilities. [DOC S106]
 - Resources whose manifest declares `requireSecurityContext: elevated` on an operation fail that operation unless dsc runs elevated (Administrator). [DOC S105]

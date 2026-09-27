@@ -3,7 +3,7 @@ topic: mcp/transports-streamable-http
 priority: P2
 applies_to: "MCP specification 2026-07-28"
 retrieved_utc: 2026-09-26
-sources: [S-l4qgsnr4, S706, S703, S-ssijfmsu, S-gm6b6ci6, S704, S716]
+sources: [S-l4qgsnr4, S706, S703, S-ssijfmsu, S-gm6b6ci6, S704, S716, S707]
 status: complete
 ---
 # Streamable HTTP transport (2026-07-28)
@@ -22,12 +22,12 @@ patterns.
 - The client MUST use POST, MUST include an `Accept` header listing both `application/json` and `text/event-stream`, and MUST NOT send JSON-RPC responses. [DOC S-l4qgsnr4]
 - A notification POST the server accepts gets `202 Accepted` with no body; one it cannot accept gets an HTTP error status (e.g. `400`). [DOC S-l4qgsnr4]
 - A request POST gets back `Content-Type: application/json` (single object) or `text/event-stream` (SSE); the client MUST support both. [DOC S-l4qgsnr4]
-- Removed in 2026-07-28: the GET stream endpoint and protocol-level sessions; a server receiving GET or DELETE on the MCP endpoint SHOULD respond `405 Method Not Allowed`, and MUST ignore any `Mcp-Session-Id` header rather than mint or echo one. [DOC S-l4qgsnr4]
+- Removed in 2026-07-28: the GET stream endpoint and protocol-level sessions; a server receiving GET or DELETE on the MCP endpoint SHOULD respond `405 Method Not Allowed`, and SHOULD ignore any `Mcp-Session-Id` header rather than mint or echo one. [DOC S-l4qgsnr4]
 - Resumable SSE streams via `Last-Event-ID` are not supported in this revision; a server SHOULD ignore a `Last-Event-ID` header. [DOC S-l4qgsnr4]
 - On the response SSE stream the server MAY send request-scoped notifications (`notifications/progress`, `notifications/message`) before the final response, but MUST NOT send independent JSON-RPC requests; server-to-client interactions (sampling, elicitation, roots) travel as `InputRequiredResult` per MRTR instead. [DOC S-l4qgsnr4]
 - Long-lived change notifications (list-changed, resource updates) are obtained by a `subscriptions/listen` request; its own SSE response stream stays open and carries only the notification types the client opted into. [DOC S-l4qgsnr4]
 - Servers SHOULD send `X-Accel-Buffering: no` when opening an SSE stream so reverse proxies (e.g. nginx) do not buffer events. [DOC S-l4qgsnr4]
-- For long-lived streams, especially `subscriptions/listen`, servers are encouraged to periodically emit an SSE comment line (`:\r\n`) as a keep-alive; clients MUST ignore such lines. [DOC S-l4qgsnr4]
+- For long-lived streams, especially `subscriptions/listen`, servers are encouraged to periodically emit an SSE comment line (`:\r\n`) as a keep-alive; clients must ignore such lines (a non-normative note citing the SSE specification). [DOC S-l4qgsnr4]
 - Servers MUST validate the `Origin` header on every connection to prevent DNS rebinding; an invalid `Origin` MUST get `403 Forbidden`. [DOC S-l4qgsnr4]
 - When running locally, servers SHOULD bind only to `127.0.0.1`, not `0.0.0.0`; servers SHOULD implement proper authentication for all connections. [DOC S-l4qgsnr4]
 - Every POST to the MCP endpoint MUST include an `MCP-Protocol-Version` header, whose value MUST match `_meta.io.modelcontextprotocol/protocolVersion` in the body; a mismatch is `400 Bad Request` with a `HeaderMismatch` JSON-RPC error. [DOC S-l4qgsnr4]
@@ -53,7 +53,7 @@ patterns.
 - Protocol version negotiation has no handshake: every request's `_meta` states the version; on HTTP it is also the `MCP-Protocol-Version` header; `UnsupportedProtocolVersionError` is `-32022` with `data.supported` and `data.requested`. [DOC S703]
 - Terminology: "modern" = per-request metadata (2026-07-28+), "legacy" = `initialize`-handshake revisions (2025-11-25 and earlier), "dual-era" = supports both; era is a property of the server, cached by the client for the process (stdio) or origin (HTTP) lifetime. [DOC S703]
 - Compatibility matrix highlight: Legacy client vs Modern server fails (HTTP: request missing required headers, rejected `400`); Dual-era client vs Legacy server works by falling back to `initialize` after a `4xx` with no recognized modern error body. [DOC S703]
-- Authorization for Streamable HTTP SHOULD conform to the MCP authorization spec (OAuth 2.1 subset); see mcp/authorization.md. [DOC S704]
+- Authorization for Streamable HTTP SHOULD conform to the MCP authorization spec (OAuth 2.1 subset); see mcp/authorization.md. [DOC S704, S707]
 - Streamable HTTP security controls (Origin validation, localhost binding) sit alongside the broader guidance in mcp/security-best-practices.md (SSRF blocking of private IP ranges, state-handle binding, local-server consent). [DOC S716]
 
 ## Reference

@@ -174,9 +174,9 @@ e98c0797b1b3,does Intune enrollment count towards co-management policy deploymen
 9933a7af88c8,windows autopilot event viewer location
 9933a7af88c8,Where can I find Autopilot diagnostic logs?
 9933a7af88c8,how to check autopilot deployment logs
-6786b3191568,Modern Deployment Diagnostics Provider Autopilot channel name
-6786b3191568,What is the full event log channel name for Autopilot diagnostics?
-6786b3191568,autopilot wevtutil channel
+5e817a65ce65,Modern Deployment Diagnostics Provider Autopilot channel name
+5e817a65ce65,What is the full event log channel name for Autopilot diagnostics?
+5e817a65ce65,autopilot wevtutil channel
 828f45b635b4,hybrid join failure event ids
 828f45b635b4,Where are hybrid join error logs located in Event Viewer?
 6b63f3ec477b,User Device Registration event log channel
@@ -248,9 +248,9 @@ ec7670d64179,elicitation url mode credentials
 2626100bd291,MCP elicitation response actions
 2626100bd291,What actions can a user take when an MCP server requests input?
 2626100bd291,accept decline cancel elicitation
-6b45748adaf7,MCP URL mode accept behavior
-6b45748adaf7,What does accepting a URL elicitation request mean?
-6b45748adaf7,elicitationId notifications completion deprecation
+a80d10a27ad6,MCP URL mode accept behavior
+a80d10a27ad6,What does accepting a URL elicitation request mean?
+a80d10a27ad6,elicitationId notifications completion deprecation
 fb89d744cc24,MCP URL security pre-fetch
 fb89d744cc24,Should I automatically open URLs from elicitation requests?
 fb89d744cc24,url elicitation user consent
@@ -502,9 +502,9 @@ d30c42262cf4,"LDAP filter special characters: asterisk, parenthesis, backslash, 
 03c5e50a4eb0,LDAP filter objectGUID
 03c5e50a4eb0,How do you filter by GUID in LDAP search?
 03c5e50a4eb0,objectGUID binary data representation in filter expressions
-a3d2c1fb8904,Anthropic prompt caching architecture
-a3d2c1fb8904,How does Anthropic's prompt caching store and invalidate cached content?
-a3d2c1fb8904,"Claude prompt cache: cache_control breakpoints, TTL, pricing structure"
+960566f82e6f,Anthropic prompt caching architecture
+960566f82e6f,How does Anthropic's prompt caching store and invalidate cached content?
+960566f82e6f,"Claude prompt cache: cache_control breakpoints, TTL, pricing structure"
 33da81b5cafd,cache_control breakpoints limit
 33da81b5cafd,How many cache breakpoints can be used in a single request?
 33da81b5cafd,prompt cache: maximum number of explicit cache boundaries
@@ -535,15 +535,12 @@ b5e0c3c4f709,/usage command output: Prompt cache (main) information
 7a8f46aa0cb1,prompt cache miss counting
 7a8f46aa0cb1,When does a cache miss get counted?
 7a8f46aa0cb1,"Claude cache: 5% threshold and 2,000 token minimum for miss"
-510be511d39e,Claude Code cache invalidation triggers
-510be511d39e,What actions cause the prompt cache to rebuild?
-510be511d39e,"session cache: tool definitions, MCP servers, settings, model switch impact"
 c3eaaab60663,prompt cache TTL by account
 c3eaaab60663,How long does the prompt cache persist on different Claude subscriptions?
 c3eaaab60663,"cache lifetime: subscription credits, API key, cloud deployment differences"
-f4476da2f97e,deferred MCP tool definitions
-f4476da2f97e,How does Claude Code handle MCP tool definitions for caching?
-f4476da2f97e,prompt cache impact when MCP servers added or reconfigured
+6e9e030080e9,deferred MCP tool definitions
+6e9e030080e9,How does Claude Code handle MCP tool definitions for caching?
+6e9e030080e9,prompt cache impact when MCP servers added or reconfigured
 4ec590410e48,/clear /compact cache impact
 4ec590410e48,How do the /clear and /compact commands affect the session cache?
 4ec590410e48,"Claude Code: session reset, conversation summarization, cache behavior"
@@ -565,9 +562,9 @@ a8f3dcbdb85e,"GPT-5.6 cache: minimum tokens, discount, cross-organization isolat
 eb275435b2f6,MCP tools capability notifications
 eb275435b2f6,How do MCP servers notify clients about tool list changes?
 eb275435b2f6,"toolsListChanged subscription, notifications/tools/list_changed event"
-231c5dcf3e89,MCP deterministic tool ordering
-231c5dcf3e89,Why does the MCP spec recommend deterministic tool ordering?
-231c5dcf3e89,tool list order impact on prompt cache hit rates in LLM context
+c04b8036c05d,MCP deterministic tool ordering
+c04b8036c05d,Why does the MCP spec recommend deterministic tool ordering?
+c04b8036c05d,tool list order impact on prompt cache hit rates in LLM context
 b5392ef99125,MCP tools/list by authorization
 b5392ef99125,Can an MCP server return different tool lists based on authorization?
 b5392ef99125,MCP tiered access: tool set variation by scopes and caller credentials
@@ -577,12 +574,12 @@ b5392ef99125,MCP tiered access: tool set variation by scopes and caller credenti
 11c42d9b8243,MCP server cache best practices
 11c42d9b8243,How should an MCP server be designed for prompt caching?
 11c42d9b8243,"stdio MCP: alphabetical tool ordering, timestamp handling"
-8bdf89782c59,container SQL Server authentication
-8bdf89782c59,How do you authenticate a container to an on-premises SQL Server?
-8bdf89782c59,Kerberos vs. Entra: on-prem SQL Server from Linux container
-9c067be79f8b,msodbcsql18 Entra authentication
-9c067be79f8b,What authentication methods does ODBC Driver 18 support for Entra?
-9c067be79f8b,"ActiveDirectoryMsi, workload identity: SQL Server auth on Linux"
+d95ccede3bd3,container SQL Server authentication
+d95ccede3bd3,How do you authenticate a container to an on-premises SQL Server?
+d95ccede3bd3,Kerberos vs. Entra: on-prem SQL Server from Linux container
+8a5d8b836e44,msodbcsql18 Entra authentication
+8a5d8b836e44,What authentication methods does ODBC Driver 18 support for Entra?
+8a5d8b836e44,"ActiveDirectoryMsi, workload identity: SQL Server auth on Linux"
 63154df8fc47,SQL login fallback authentication
 63154df8fc47,When is SQL login (username/password) used for authentication?
 63154df8fc47,SQL Server fallback: basic auth outside AD/Entra authorization
@@ -592,36 +589,12 @@ b5392ef99125,MCP tiered access: tool set variation by scopes and caller credenti
 ba5c3b4ea313,ODBC Kerberos failure behavior
 ba5c3b4ea313,What happens when Kerberos fails on the Linux ODBC driver?
 ba5c3b4ea313,"ODBC Driver 18: NTLM fallback disabled, no retry"
-126ad36e32a0,on-premises SQL Server Entra auth
-126ad36e32a0,What is required to use Entra authentication on an on-premises SQL Server?
-126ad36e32a0,Azure Arc SQL Server 2025: primary managed identity configuration
-d615be194629,Entra groups SQL authorization
-d615be194629,How do Entra groups work for SQL Server authorization?
-d615be194629,"group membership changes, permission inheritance on next connection"
-1069353ecdd1,msodbcsql18 managed identity types
-1069353ecdd1,What managed identity types does ActiveDirectoryMsi support?
-1069353ecdd1,system-assigned vs. user-assigned: ODBC Entra authentication
-a336982fdce3,workload identity authentication mode
-a336982fdce3,What is the difference between ActiveDirectoryMsi and workload identity?
-a336982fdce3,User Id parameter: workload identity client ID in ODBC connection
-2c52500508b2,managed identity on-prem SQL Server
-2c52500508b2,Why don't Entra auth modes work on non-Arc on-premises SQL Server?
-2c52500508b2,ActiveDirectoryMsi workload identity Arc-enabled requirement
 6663e0924e29,ActiveDirectoryDefault ODBC Linux
 6663e0924e29,Is there documentation for ActiveDirectoryDefault on the Linux ODBC driver?
 6663e0924e29,msodbcsql18 ActiveDirectoryDefault on-premises SQL Server behavior
-f4c703f8bcbe,Windows Server 2025 TLS cipher suite
-f4c703f8bcbe,What is the TLS cipher suite list for Windows Server 2025?
-f4c703f8bcbe,"Schannel: TLS 1.3 support, Server 2025 vs. Server 2022"
 f5986a17b8c8,LDAP channel binding SMB signing
 f5986a17b8c8,What are the LDAP and SMB signing defaults for Server 2025 and Windows 11 24H2?
 f5986a17b8c8,SMB client outbound signing encryption settings
-604809dc5cc6,"Entra token protection, device binding"
-604809dc5cc6,What is Microsoft Entra Token Protection and how does it work?
-604809dc5cc6,"Primary Refresh Token (PRT): device-bound key, sender-constrained"
-6e1923b83bee,MSAL PoP token support DPoP replacement
-6e1923b83bee,What proof-of-possession token standard does MSAL use for public clients?
-6e1923b83bee,Which mechanism replaced Signed HTTP Request in MSAL?
 500418700482,DPoP RFC 9449 GA status Entra ID
 500418700482,Is DPoP generally available for Entra ID access tokens outside specific scenarios?
 500418700482,What is the general availability status of RFC 9449 proof-of-possession?
@@ -709,14 +682,14 @@ a924b3427d19,How should EventName be structured?
 01d48d1a348b,MCP specification directories latest version
 01d48d1a348b,What versions of the MCP spec exist?
 01d48d1a348b,Where are the protocol specification files?
-16cb18f4c0a1,MCP LATEST_PROTOCOL_VERSION schema
-16cb18f4c0a1,What is the current MCP protocol version?
-16cb18f4c0a1,Where are the authoritative protocol requirements?
+d2807d26d120,MCP LATEST_PROTOCOL_VERSION schema
+d2807d26d120,What is the current MCP protocol version?
+d2807d26d120,Where are the authoritative protocol requirements?
 dc3fb74a567f,MCP code spec license Apache CC-BY
 dc3fb74a567f,Can MCP specification be used commercially?
-7727b6d3ec2d,MCP initialize handshake _meta protocolVersion
-7727b6d3ec2d,How do clients initialize MCP connections?
-7727b6d3ec2d,What replaced the initialize sequence?
+e94807ba7310,MCP initialize handshake _meta protocolVersion
+e94807ba7310,How do clients initialize MCP connections?
+e94807ba7310,What replaced the initialize sequence?
 13b72899d096,MCP missing _meta malformed -32602 400
 13b72899d096,What error means _meta is missing?
 13b72899d096,How should servers reject malformed requests?
@@ -739,8 +712,8 @@ e45aa7fd809f,What reserved keys support distributed tracing?
 7684d03a616b,MCP error code allocation -32000 -32099
 07fa2e232a5d,MCP eras legacy modern dual-era versions
 07fa2e232a5d,What are the protocol eras?
-23b4f60f7eb5,MCP extensions vendor prefix official naming
-23b4f60f7eb5,What naming do official extensions use?
+d4675e54b34f,MCP extensions vendor prefix official naming
+d4675e54b34f,What naming do official extensions use?
 781721685528,MCP tool user consent security untrusted
 781721685528,What are MCP security principles?
 781721685528,When should tool annotations be trusted?

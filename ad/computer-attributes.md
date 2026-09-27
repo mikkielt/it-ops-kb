@@ -17,7 +17,7 @@ status: complete
 ## Facts
 - `objectGUID`: unique identifier for an object; 16 bytes; set by the system when the object is created and cannot be changed; system-only; indexed; in global catalog. [DOC S560]
 - `objectSid`: binary SID of the security principal; set by the system when the account is created; indexed; in GC; range 0-28. [DOC S561]
-- `lastLogonTimestamp`: large integer, 100-ns intervals since 1601-01-01 UTC; updated at logon only if older than `current_time - msDS-LogonTimeSyncInterval`; not indexed and not in GC. [DOC S562]
+- `lastLogonTimestamp`: large integer, 100-ns intervals since 1601-01-01 UTC; updated at logon only if older than `current_time - msDS-LogonTimeSyncInterval`; indexed and in GC from Windows Server 2008 on (neither in Windows Server 2003 / 2003 R2). [DOC S562]
 - The first update after raising the domain functional level is 14 days minus a random percentage of 5 days. [DOC S562]
 - `msDS-LogonTimeSyncInterval` sets, in days, how finely the last logon time in `lastLogonTimestamp` is replicated to all DCs in a domain; it is a domain-wide policy value. [DOC S563]
 - `lastLogonTimestamp` lists class User; the computer class is a subclass of User. [DOC S562,S566]

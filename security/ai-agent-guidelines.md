@@ -3,7 +3,7 @@ topic: security/ai-agent-guidelines
 priority: P2
 applies_to: "OWASP GenAI 2025-2026 lists; NIST AI RMF 1.0 / AI 600-1; MITRE ATLAS; ISO/IEC 42001:2023; Claude Code / MCP current; a tool-using agent with a tiered confirm gate, a model boundary and an audit table"
 retrieved_utc: 2026-09-24
-sources: [S760, S761, S762, S763, S764, S765, S1540, S1541, S1542, S1543, S1544, S1545, S1862, S1547, S1548, S1575, S-rfm4qs32, S1480]
+sources: [S760, S761, S762, S763, S764, S765, S1540, S1541, S1542, S-vtejnyyv, S-fr4o3437, S1545, S1862, S1547, S1548, S1575, S-rfm4qs32, S1480]
 status: partial
 ---
 
@@ -22,8 +22,9 @@ allowlist.
 - NIST AI RMF 1.0 was published 2023-01-26; it defines four functions (Govern, Map, Measure, Manage) and is public domain as a US government work. [DOC S1541]
 - NIST AI 600-1 (Generative AI Profile) was published July 2024 and lists suggested actions under the RMF functions, each with an Action ID such as `GV-1.1-001`. They include policies that define roles for human-AI configurations and oversight of AI systems (GOVERN 3.2), and procedures for GAI incident response and recovery (e.g. `GV-2.1-002`, `MG-2.3-001`). The profile also notes that GAI use may warrant additional human review, tracking and documentation. [DOC S1542]
 - NIST AI 600-1 actions relevant to a tool-using agent operating on production systems: restrict and monitor tool/plugin access granted to the model, log agent actions and their outcomes, apply least-privilege to any credentials the agent can reach, and require human review before consequential actions. [DER S1542: read against a generic tier/confirm design]
-- MITRE ATLAS catalogs adversarial-ML and AI-system tactics/techniques (its own matrix, separate from enterprise ATT&CK); it is maintained by MITRE with attribution required for reuse. [DOC S1543]
-- ISO/IEC 42001:2023 is a management-system standard ("Information technology — Artificial intelligence — Management system") that an organization can certify against; full text is paid, only scope/title are public. [DOC S1544]
+- MITRE ATLAS catalogs adversarial-ML and AI-system tactics/techniques (its own matrix, `ATLAS-matrix`, separate from enterprise ATT&CK, which its tooling only merges into an optional combined STIX bundle); MITRE publishes the data monthly (content version `YYYY.MM`, `2026.09` on 2026-09-27) under Apache-2.0, so reuse must keep MITRE's notices. [DOC S-vtejnyyv]
+- ISO/IEC 42001:2023 ("Information technology — Artificial intelligence — Management system", published 2023-12-18, 51 pages, ISO/IEC JTC 1/SC 42) specifies requirements and guidance for an AI management system in any organization that provides or uses AI systems; ISO's public catalogue record carries only metadata and this scope, not the text. [DOC S-fr4o3437]
+- Because ISO/IEC 42001:2023 is a requirements standard for a management system, an organization can be certified against it. [DER S-fr4o3437: "specifies the requirements" in the catalogue scope]
 - Microsoft's Zero Trust guidance for securely adopting AI says AI agents and applications should use managed, secure identities with least-privilege access and comprehensive logging. It also says to classify and label sensitive data so AI models do not ingest or expose it, to extend DLP to AI applications and agents, and to extend security monitoring to AI workloads and agents. [DOC S-rfm4qs32]
 - Claude Code's MCP documentation points organizations needing central control to managed MCP configuration: a fixed, exclusive server set via `managed-mcp.json`, servers provided to every user via `managedMcpServers`, and `allowedMcpServers`/`deniedMcpServers` filtering, distinct from servers users add at local, project or user scope. [DOC S1862]
 - Claude Code's security documentation describes permission modes and confirmation prompts for tool calls, which is the same class of control a tiered confirm gate provides for higher-risk actions. [DOC S1547]

@@ -12,14 +12,14 @@ status: partial
 ## Summary
 - Entra tokens cap group membership lists at 200 (JWT) / 150 (SAML); above that, Entra emits an overage indicator instead of a partial list and the app must call Graph. [DOC S1284]
 - Restricting the group claim to "groups assigned to the application" avoids overage but **excludes nested group members** from that claim. [DOC S1285]
-- App roles assigned to groups are Microsoft's recommended pattern over raw `groups` claims for authorization, precisely because they keep the token small and separate assignment from app config. [DOC S1285]
+- Microsoft recommends basing in-app authorization on app roles rather than groups for a new (or reconfigurable) app when nested groups aren't needed, because app roles limit what goes into the token, are more secure, and separate user assignment from app configuration. [DOC S1284]
 
 ## Facts
 - Group-based assignment to an application (and so app roles assigned to a group) reaches only direct members: it does not cascade to nested groups, and it requires Entra ID P1 or P2. [DOC S1310]
 - The group-count limits (200 JWT / 150 SAML) count nested group memberships, i.e. transitive membership is what is being counted against the cap. [DOC S1284]
-- On overage, the token carries an overage claim (`_claim_names`/`hasgroups`-style indirection) telling the app to call Graph (`getMemberGroups`/`memberOf`) instead of reading `groups` from the token. [DOC S1284]
-- Group claims configured as "all groups" include nested groups; group claims configured as "groups assigned to the application" do **not** include nested groups — an app relying on nested-group membership must not use the assigned-groups restriction. [DOC S1285]
-- App roles assigned to groups: Microsoft's stated rationale is (a) smaller token, (b) more secure, (c) separates the user/group assignment decision from the app's own configuration. [DOC S1285]
+- On overage the token has no `groups` claim; the app checks for a `hasgroups` claim (implicit flow) or a `_claim_names` claim with a `groups` member, and if either is present gets the membership from Microsoft Graph (transitive memberOf) instead; it should rely on the overage claim's presence, not its value. [DOC S1285]
+- Group claims include nested groups except with the "groups assigned to the application" restriction, which emits only groups the user is a direct member of — an app relying on nested-group membership must not use the assigned-groups restriction. [DOC S1284,S1285]
+- App roles instead of groups: Microsoft's stated rationale is (a) less information in the token, (b) more secure, (c) separates user assignment from the app's own configuration. [DOC S1284]
 
 ## Reference
 | Claim configuration | Includes nested groups | Overage-prone | Source |

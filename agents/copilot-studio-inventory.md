@@ -15,10 +15,10 @@ files: [agents/copilot-studio-feature-map.csv]
   (reasoning-heavy multi-step), **standard harness** (rule-based topics, most features below), and
   **Copilot chat harness** (extends Microsoft 365 Copilot Chat with tenant knowledge). Harness
   choice changes billing and available features. [DOC S1962]
-- Every agent is billed in **Copilot Credits** (renamed from "messages" 2025-09-01), sold as
-  pay-as-you-go, a one-year prepurchase plan, or prepaid packs; unused credits don't roll over, and
-  exceeding capacity triggers a hard stop after admin-configured notification thresholds. [DOC
-  S1960, S1961]
+- Standard-harness agents are billed in **Copilot Credits** (renamed from "messages" 2025-09-01), sold
+  as pay-as-you-go, a one-year prepurchase plan, or prepaid packs; unused credits don't roll over, and
+  usage beyond purchased capacity triggers technical enforcement that can result in service denial.
+  [DOC S1961]
 - Feature limits (topics, knowledge sources, tools, connector payloads) are all documented as fixed
   numbers on one Microsoft Learn quotas page, not scattered guesses. [DOC S1960]
 - MCP is a first-class tool type: Copilot Studio's onboarding wizard connects to any MCP server over
@@ -32,14 +32,15 @@ files: [agents/copilot-studio-feature-map.csv]
 
 ### Topics, orchestration, instructions
 - Topics are authored on a visual canvas or in a **YAML code editor** (`kind: AdaptiveDialog`,
-  nodes, conditions, redirects); YAML can be copy-pasted between topics/agents, but Microsoft warns
+  nodes, conditions, redirects); YAML nodes can be copy-pasted between topics, but Microsoft warns
   that syntax errors can break the conversation and its own support "can't help remediate code
   editor errors." [DOC S1963]
 - **Generative orchestration** adds an LLM planning layer that selects the best combination of
   topics/tools/knowledge per turn, can auto-fill topic inputs from conversation context, and
   generates clarifying questions; it caps SharePoint knowledge sources at 25 site URLs/agent when
-  active. [DOC S1960, S1962]
-- Agent-level **instructions** are capped at 8,000 characters. [DOC S1960]
+  active. [DOC S1960, S1983]
+- **Instructions** for a Copilot agent (the quotas page links this to agents for Microsoft 365 Copilot)
+  are capped at 8,000 characters. [DOC S1960]
 - Up to 1,000 topics/agent in Dataverse environments (250/agent in Dataverse for Teams before
   upgrade); 200 trigger phrases/topic. [DOC S1960]
 
@@ -54,7 +55,7 @@ files: [agents/copilot-studio-feature-map.csv]
   never answer). [DOC S1960]
 - Dataverse: max 2 sources/agent, 15 tables/source, requires maker READ permission on every table.
   [DOC S1960]
-- Salesforce, Confluence, ServiceNow, Zendesk: no documented article-count or size limit; 4-6 hour
+- Salesforce, Confluence, ServiceNow, Zendesk: no limit on article count or article size; 4-6 hour
   sync. All unstructured sources require per-user, at-runtime authentication — "single credential
   sign-in isn't supported." [DOC S1960]
 
@@ -74,9 +75,9 @@ files: [agents/copilot-studio-feature-map.csv]
   endpoint. [DOC S1964]
 - Only the **Streamable HTTP** transport is supported; SSE for MCP was dropped after August 2025
   because the MCP spec itself deprecated SSE. [DOC S1964]
-- Creating a new MCP server for Copilot Studio to consume uses any language's MCP SDK from
-  `github.com/modelcontextprotocol`; authentication is again API key or OAuth 2.0, registered with
-  an identity provider. [DOC S1965]
+- Creating a new MCP server for Copilot Studio to consume uses an MCP SDK in one of the supported
+  languages from `github.com/modelcontextprotocol`; authentication is optional and, if used, is API key
+  or OAuth 2.0 with credentials from an identity-provider app registration. [DOC S1965]
 - MCP servers are certified through the same Microsoft connector-certification program as other
   third-party connectors before being made available tenant-wide (preview at time of retrieval).
   [DOC S1981]
@@ -92,8 +93,9 @@ files: [agents/copilot-studio-feature-map.csv]
   SharePoint, WhatsApp, Mobile App, Facebook, and Azure Bot Service channels (Cortana, Slack,
   Telegram, Twilio, Line, Kik, GroupMe, Direct Line Speech, Email). Admins can block individual
   channels via **Agent access channels** in the Power Platform admin center or via DLP. [DOC S1977]
-- Attachments/uploads from the user are never processed by the agent conversation itself, on any
-  channel, even where the channel technically supports attachments. [DOC S1977]
+- Users can't send or upload attachments to the agent chat on any channel, even where the channel
+  supports attachments; the exception is a message sent to a Bot Framework skill that processes
+  attachments. [DOC S1977]
 
 ### Authentication and SSO
 - Agents default to **Authenticate with Microsoft** — automatic Entra ID SSO for Teams, Power Apps,
@@ -105,7 +107,9 @@ files: [agents/copilot-studio-feature-map.csv]
   a token-exchange URL configured in Copilot Studio's Security > Authentication settings, and MSAL
   wiring in the canvas's client-side code. [DOC S1966]
 - SSO is **not** supported on Azure Bot Service channels, the Demo Website, Facebook, Mobile App, or
-  Power Apps portals; Teams SSO is Entra-ID-only (no third-party IdP). [DOC S1966]
+  Power Apps portals; Teams needs its own SSO configuration or authentication always fails there. [DOC
+  S1966]
+- Teams SSO is Entra-ID-only (no third-party IdP). [UNK: not in S1966 as re-read 2026-09-27]
 
 ### Variables, state, handoff, analytics
 - Variables are topic-scoped by default (with explicit "receive from"/"return to" flags for passing
@@ -135,8 +139,8 @@ files: [agents/copilot-studio-feature-map.csv]
 - Power Platform **data policies** (DLP) gate connectors — certified, custom, "virtual" (Copilot-
   Studio-specific on/off switches), and MCP — at both design time (blocks saving in the maker
   experience) and runtime (suspends/quarantines running apps, flows, chatbots; disables blocked
-  connections). Propagation of a policy change takes "in most cases within an hour," up to 24 hours
-  in extreme cases. Copilot Studio virtual connectors are migrating to their own dedicated
+  connections). Propagation of a policy change takes up to 24 hours in the most extreme cases and
+  usually under an hour. Copilot Studio virtual connectors are migrating to their own dedicated
   governance rules, separate from classic DLP and from Advanced Connector Policies. [DOC S1974]
 - Message-throughput **quotas** scale with prepaid-pack tier: 50 RPM/1,000 RPH at 1-10 packs, up to
   100 RPM/2,000 RPH at 51-150 packs, +1 RPM/+20 RPH per extra 10 packs above 150; trial/developer
@@ -156,8 +160,8 @@ files: [agents/copilot-studio-feature-map.csv]
   auto-deployed when published). [DOC S1975]
 - Publishing an agent for Microsoft 365 Copilot provisions a bot resource in the tenant's Entra ID
   environment; availability options are a shareable deep link, sharing to named users/security
-  groups, submission to the org catalog, or **download as a .zip** for manual admin upload/review —
-  the .zip is the closest thing to a portable export artifact for this agent type. [DOC S1975]
+  groups, submission to the org catalog, or **download as a .zip** for manual upload to Teams/Microsoft
+  365 Copilot or to the org catalog. [DOC S1975]
 
 ## Reference
 - Full row-by-row feature/limit/replacement table: `agents/copilot-studio-feature-map.csv` (31 rows,

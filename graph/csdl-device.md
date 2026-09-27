@@ -19,7 +19,7 @@ files: [graph/csdl/device.v1.0.xml, graph/csdl/device.beta.xml]
 ## Facts
 - `device` derives from `directoryObject` and is an open type (`OpenType="true"`). [DOC S500]
 - `deviceId` is "set by Azure Device Registration Service at the time of registration", is an alternate key, and supports `$filter` (`eq`, `ne`, `not`, `startsWith`). [DOC S500]
-- `id` is the directory object key; the resource page lists `$filter` (`eq`, `ne`, `not`, `in`) for it (not stated in the CSDL description). [DOC S504]
+- `id` is the directory object key; the resource page lists `$filter` (`eq`, `ne`, `not`, `in`) for it (not stated in the CSDL description, which only calls it the read-only entity identifier). [DOC S504, S500]
 - `trustType` values: `Workplace` (personal/registered), `AzureAd` (cloud-only joined), `ServerAd` (on-premises domain joined devices joined to Entra ID); supports `$filter` (`eq`, `ne`, `not`, `in`). [DOC S504]
 - `approximateLastSignInDateTime` is read-only and supports `$filter` (`eq`, `ne`, `not`, `ge`, `le`, `eq` on null) and `$orderby`. [DOC S504]
 - `onPremisesSecurityIdentifier` "Requires `$select` to retrieve" and supports `$filter` (`eq`). [DOC S504]
@@ -27,7 +27,7 @@ files: [graph/csdl/device.v1.0.xml, graph/csdl/device.beta.xml]
 - `onPremisesSyncEnabled`: `true` when synced from on-premises, `false` when no longer synced, `null` when never synced. [DOC S504]
 - Specific `$filter` and `$search` usages need `ConsistencyLevel: eventual` plus `$count` (advanced query capabilities). [DOC S504,S530]
 - The CSDL marks `microsoft.graph.device` with `Org.OData.Capabilities.V1.ChangeTracking Supported=true` (delta). [DOC S500]
-- The v1.0 resource page lists `extensionAttributes` (onPremisesExtensionAttributes), but the v1.0 CSDL `device` EntityType does not declare it; beta CSDL does. [DER S500,S504: property absent from v1.0 EntityType, present in docs table; see conflicts]
+- The v1.0 resource page lists `extensionAttributes` (onPremisesExtensionAttributes), but the v1.0 CSDL `device` EntityType does not declare it; beta CSDL does. [DER S500,S504,S501: property absent from v1.0 EntityType, present in docs table and in the beta EntityType; see conflicts]
 - Beta adds, among others, `alternativeNames`, `domainName`, `hostnames`, `kind`, `name`, `platform`, `status`, navigation `usageRights`, `commands`, `deviceTemplate`. [DOC S501]
 
 ## Reference

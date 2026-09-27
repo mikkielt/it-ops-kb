@@ -1,38 +1,38 @@
 setting,graph_property,mechanism,default,notes,source_id
 Compliance status validity period (days),n/a (tenant-wide compliance policy setting),device check-in report,30 days (range 1-120),Devices failing to report within the period are treated as noncompliant,S-vpvd3h5f
 Mark devices with no compliance policy assigned as,n/a (tenant-wide compliance policy setting),n/a,Compliant,Change to Not compliant to force Conditional Access to require an explicit policy,S-vpvd3h5f
-Require BitLocker,bitLockerEnabled,Device Health Attestation (DHA); Health Attestation CSP BitLockerStatus,Not configured,State measured only at boot; a reboot is needed after encrypting to show compliant,S-qjd54t3z
-Require Secure Boot to be enabled on the device,secureBootEnabled,Device Health Attestation (DHA),Not configured,Needs TPM 1.2/2.0 support; unsupported devices show Not Compliant,S-qjd54t3z
-Require code integrity,codeIntegrityEnabled,Device Health Attestation (DHA),Not configured,Detects unsigned driver/system file load or malicious/admin file change,S-qjd54t3z
-Require devices to be reported as healthy (early launch antimalware driver),earlyLaunchAntiMalwareDriverEnabled,Device Health Attestation (DHA),Not configured,Part of the DHA healthy-report bundle,S-qjd54t3z
-Minimum OS version,osMinimumVersion,MDM client report (build number string),none,Format major.minor.build.revision from `ver`,S-qjd54t3z
-Maximum OS version,osMaximumVersion,MDM client report (build number string),none,Blocks resource access above this version,S-qjd54t3z
-Minimum OS required for mobile devices,mobileOsMinimumVersion,MDM client report,none,Format major.minor.build,S-qjd54t3z
-Maximum OS required for mobile devices,mobileOsMaximumVersion,MDM client report,none,Format major.minor.build,S-qjd54t3z
-Valid operating system builds,validOperatingSystemBuildRanges (beta only),MDM client report,none,"Max field value 65535 per component; Company Portal shows only the first range in messaging",S-qjd54t3z
-Require device compliance from Configuration Manager,configurationManagerComplianceRequired (beta only),ConfigMgr client compliance state (co-managed only),Not configured,Intune-only devices return not available,S-qjd54t3z
-Require a password to unlock mobile devices,passwordRequired,MDM policy report,Not configured,-,S-qjd54t3z
-Simple passwords,passwordBlockSimple,MDM policy report,Allow simple passwords,-,S-qjd54t3z
-Password type,passwordRequiredType,MDM policy report,Device default,deviceDefault / alphanumeric / numeric,S-qjd54t3z
-Minimum password length,passwordMinimumLength,MDM policy report,none,-,S-qjd54t3z
-Maximum minutes of inactivity before password is required,passwordMinutesOfInactivityBeforeLock,MDM policy report,none,-,S-qjd54t3z
-Password expiration (days),passwordExpirationDays,MDM policy report,none,Allowed range 1-730,S-qjd54t3z
-Number of previous passwords to prevent reuse,passwordPreviousPasswordBlockCount,MDM policy report,none,-,S-qjd54t3z
-Encryption of data storage on a device,storageRequireEncryption,DeviceStatus CSP DeviceStatus/Compliance/EncryptionCompliance,Not configured,Generic OS-drive encryption presence check via BitLocker only,S-qjd54t3z
-Firewall,activeFirewallRequired (beta only),Firewall CSP,Not configured,Conflicting GPO that disables firewall overrides Intune and forces Not compliant,S-qjd54t3z
-Trusted Platform Module (TPM),tpmRequired (beta only),DeviceStatus CSP DeviceStatus/TPM/SpecificationVersion,Not configured,Compliant if TPM chip version greater than 0,S-qjd54t3z
-Antivirus,antivirusRequired (beta only),DeviceStatus CSP DeviceStatus/Antivirus/Status,Not configured,Checks solutions registered with Windows Security Center,S-qjd54t3z
-Antispyware,antiSpywareRequired (beta only),DeviceStatus CSP DeviceStatus/Antispyware/Status,Not configured,Checks solutions registered with Windows Security Center,S-qjd54t3z
-Microsoft Defender Antimalware,defenderEnabled (beta only),Windows Security Center / Defender status report,Not configured,-,S-qjd54t3z
-Microsoft Defender Antimalware minimum version,defenderVersion (beta only),Windows Security Center / Defender status report,none (any version),Example value 4.11.0.0,S-qjd54t3z
-Microsoft Defender Antimalware security intelligence up-to-date,signatureOutOfDate (beta only),Defender CSP Defender/Health/SignatureOutOfDate,Not configured,-,S-qjd54t3z
-Real-time protection,rtpEnabled (beta only),Policy CSP Defender/AllowRealtimeMonitoring,Not configured,-,S-qjd54t3z
-Require the device to be at or under the machine risk score,deviceThreatProtectionRequiredSecurityLevel (beta only),Microsoft Defender for Endpoint risk assessment,Not configured,unavailable / secured / low / medium / high / notSet,S-qjd54t3z
+Require BitLocker,bitLockerEnabled,Device Health Attestation (DHA); Health Attestation CSP BitLockerStatus,Not configured,State measured only at boot; a reboot is needed after encrypting to show compliant,S-qjd54t3z;S-taatt73w
+Require Secure Boot to be enabled on the device,secureBootEnabled,Device Health Attestation (DHA),Not configured,Needs TPM 1.2/2.0 support; unsupported devices show Not Compliant,S-qjd54t3z;S-taatt73w
+Require code integrity,codeIntegrityEnabled,Device Health Attestation (DHA),Not configured,Detects unsigned driver/system file load or malicious/admin file change,S-qjd54t3z;S-taatt73w
+Require devices to be reported as healthy (early launch antimalware driver),earlyLaunchAntiMalwareDriverEnabled,Device Health Attestation (DHA),n/a,Graph v1.0 property (DHA early launch antimalware driver); not listed on the Windows compliance settings page as re-read 2026-09-27,S-taatt73w
+Minimum OS version,osMinimumVersion,MDM client report (build number string),none,Format major.minor.build.revision from `ver`,S-qjd54t3z;S-taatt73w
+Maximum OS version,osMaximumVersion,MDM client report (build number string),none,Blocks resource access above this version,S-qjd54t3z;S-taatt73w
+Minimum OS required for mobile devices,mobileOsMinimumVersion,MDM client report,none,Format major.minor.build,S-qjd54t3z;S-taatt73w
+Maximum OS required for mobile devices,mobileOsMaximumVersion,MDM client report,none,Format major.minor.build,S-qjd54t3z;S-taatt73w
+Valid operating system builds,validOperatingSystemBuildRanges (beta only),MDM client report,none,Max field value 65535 per component; Company Portal shows only the first range in messaging,S-qjd54t3z;S-2hhj3k5f
+Require device compliance from Configuration Manager,configurationManagerComplianceRequired (beta only),ConfigMgr client compliance state (co-managed only),Not configured,Intune-only devices return not available,S-qjd54t3z;S-2hhj3k5f
+Require a password to unlock mobile devices,passwordRequired,MDM policy report,Not configured,-,S-qjd54t3z;S-taatt73w
+Simple passwords,passwordBlockSimple,MDM policy report,Allow simple passwords,-,S-qjd54t3z;S-taatt73w
+Password type,passwordRequiredType,MDM policy report,Device default,deviceDefault / alphanumeric / numeric,S-qjd54t3z;S-taatt73w
+Minimum password length,passwordMinimumLength,MDM policy report,none,-,S-qjd54t3z;S-taatt73w
+Maximum minutes of inactivity before password is required,passwordMinutesOfInactivityBeforeLock,MDM policy report,none,-,S-qjd54t3z;S-taatt73w
+Password expiration (days),passwordExpirationDays,MDM policy report,none,Allowed range 1-730,S-qjd54t3z;S-taatt73w
+Number of previous passwords to prevent reuse,passwordPreviousPasswordBlockCount,MDM policy report,none,-,S-qjd54t3z;S-taatt73w
+Encryption of data storage on a device,storageRequireEncryption,DeviceStatus CSP DeviceStatus/Compliance/EncryptionCompliance,Not configured,Generic OS-drive encryption presence check via BitLocker only,S-qjd54t3z;S-taatt73w
+Firewall,activeFirewallRequired (beta only),Firewall CSP,Not configured,Conflicting GPO that disables firewall overrides Intune and forces Not compliant,S-qjd54t3z;S-2hhj3k5f
+Trusted Platform Module (TPM),tpmRequired (beta only),DeviceStatus CSP DeviceStatus/TPM/SpecificationVersion,Not configured,Compliant if TPM chip version greater than 0,S-qjd54t3z;S-2hhj3k5f
+Antivirus,antivirusRequired (beta only),DeviceStatus CSP DeviceStatus/Antivirus/Status,Not configured,Checks solutions registered with Windows Security Center,S-qjd54t3z;S-2hhj3k5f
+Antispyware,antiSpywareRequired (beta only),DeviceStatus CSP DeviceStatus/Antispyware/Status,Not configured,Checks solutions registered with Windows Security Center,S-qjd54t3z;S-2hhj3k5f
+Microsoft Defender Antimalware,defenderEnabled (beta only),Microsoft Defender anti-malware service,Not configured,-,S-qjd54t3z;S-2hhj3k5f
+Microsoft Defender Antimalware minimum version,defenderVersion (beta only),Microsoft Defender anti-malware service,none (any version),Example value 4.11.0.0,S-qjd54t3z;S-2hhj3k5f
+Microsoft Defender Antimalware security intelligence up-to-date,signatureOutOfDate (beta only),Defender CSP Defender/Health/SignatureOutOfDate,Not configured,-,S-qjd54t3z;S-2hhj3k5f
+Real-time protection,rtpEnabled (beta only),Policy CSP Defender/AllowRealtimeMonitoring,Not configured,-,S-qjd54t3z;S-2hhj3k5f
+Require the device to be at or under the machine risk score,deviceThreatProtectionRequiredSecurityLevel (beta only),Microsoft Defender for Endpoint risk assessment,Not configured,unavailable / secured / low / medium / high / notSet,S-qjd54t3z;S-2hhj3k5f
 compliance_status,unknown,managedDevice.complianceState,n/a,Default state before evaluation,S-sc3fvmp6
 compliance_status,compliant,managedDevice.complianceState,n/a,-,S-sc3fvmp6
 compliance_status,noncompliant,managedDevice.complianceState,n/a,-,S-sc3fvmp6
 compliance_status,conflict,managedDevice.complianceState,n/a,-,S-sc3fvmp6
-compliance_status,error,managedDevice.complianceState,n/a,Held for up to 7 days before recalculating to noncompliant/in-grace-period,S-sc3fvmp6
+compliance_status,error,managedDevice.complianceState,n/a,A setting in Error leaves the device compliance state unchanged for up to 7 days; then Not compliant (or In grace period if one is set),S-sc3fvmp6;S-ej25skuk
 compliance_status,inGracePeriod,managedDevice.complianceState,n/a,-,S-sc3fvmp6
 compliance_status,configManager,managedDevice.complianceState,n/a,-,S-sc3fvmp6
 custom_compliance_error,65007,custom compliance discovery script evaluation,n/a,Script returned failure,S-4t5e7ocm

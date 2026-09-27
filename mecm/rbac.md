@@ -28,7 +28,7 @@ The documented `GrantedOperations` bit table does not list Notify Resource, Run 
 - Tenant-attach features need Read (plus Read Resource and Notify Resource for timeline, and Run CMPivot or Run Script for those features) on the Collection, plus an Intune role. [DOC S-bprslswi,S-aaryifxi,S-pl6uxpad]
 - With Intune RBAC (2207+), the Intune permissions "Cloud attached devices\Run CMPivot query" and "\Run script" control cloud-console actions. [DOC S-5v5lco6w]
 - Built-in role descriptions: Operations Administrator has all permissions except managing security. Read-only Analyst can view all objects. Full Administrator has all permissions. [DOC S1218]
-- Built-in roles cannot be modified. You copy one to create a custom role. [DOC S1218]
+- Built-in roles cannot be modified, other than adding administrative users to them. You copy one to create a custom role. [DOC S1218]
 - `SMS_ARoleOperation.GrantedOperations` is a bit mask with 30 documented positions (0–29). The documented labels do not include Notify Resource, Run Script or Run CMPivot. [DOC S-z2hvjsvn]
 - The bit positions for Notify Resource, Run Script and Run CMPivot are not documented. [UNK]
 - The SQL security views v_SecuredObject, v_Roles, v_Admins, V_CategoryPermissions and v_SecuredScopePermissions expose permissions as decimal bit fields. In the 28-bit table in S-bjflxpet, Collection object key = 1. [DOC S-bjflxpet]
