@@ -38,7 +38,7 @@ For every changed source, find the facts citing it: `python3 _tools/rag.py src S
 - Page gone (404) or content withdrawn: mark the fact `[UNK]`, and log what was tried in `_gaps.md`, ending `(topic: <domain>/<slug>)`.
 - Update the article's `retrieved_utc`, and its `status` if it changed. Then run `python3 _tools/build_index.py`: it regenerates `_coverage.csv`, the `_coverage.md` row and `used_in` (never edit those by hand).
 - Rewording a fact changes its doc2query key: `python3 _tools/doc2query.py stale` lists the orphaned keys; `python3 _tools/doc2query.py prune` removes their rows (regenerate only where real lookups miss, `kb/_self/doc2query.md`).
-Follow the licensing rules in `kb/_self/content-rules.md`: Microsoft Learn text is paraphrased (quotes of 25 words or fewer); verbatim copies only for permissive licences.
+Follow the licensing rules in `kb/_self/content-rules.md`: each source row's `reuse` class says what its text allows (quotes of 25 words or fewer from `quote`, verbatim copies only from `copy`); a new row carries `licence` and `reuse` as `/kb-add-topic` step 3 describes.
 
 ## 4. Check and report
 - `python3 _tools/check.py` must end `errors=0`. Run `python3 .claude/skills/kb-verify/lint.py <paths you edited>`.

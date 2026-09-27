@@ -26,16 +26,17 @@ Run each command on its own (no `;`, `&&`, pipes into other tools or loops): the
 - A code example is a `SNIPPET:` bullet right above its fenced block: `- SNIPPET: <what it does>; context: <versions, prerequisites>; checked: no|syntax|run [DER S1: parameters from ...]`. It needs an evidence tag (not `UNK`), placeholders only, and `checked: syntax` only when you parsed it (json, toml and python blocks are parsed by the lint).
 
 ## 3. Add sources first
-Append rows to `_sources.csv`: `id,url,title,publisher,licence,retrieved_utc,version_or_date,artifact_sha256,used_in,superseded_by`.
+Append rows to `_sources.csv`: `id,url,title,publisher,licence,reuse,retrieved_utc,version_or_date,artifact_sha256,used_in,superseded_by`.
 - Id: run `python3 _tools/kbid.py url <URL>` (several urls at once are fine) and use the `S-xxxxxxxx` it prints. Never invent an id or take "the next number": the id is a hash of the url, so parallel writers do not collide. If it says the url is already in `_sources.csv`, reuse that id (legacy `S<number>` ids stay valid).
 - `superseded_by` is empty for a new row.
 - `retrieved_utc` is today (`YYYY-MM-DD`). Leave `used_in` empty: `build_index.py` fills it (step 5).
-- `licence`, by source type (reuse an existing row's wording for the same publisher when there is one):
-  - Microsoft Learn page (incl. fetched through the MCP server): `Microsoft Learn terms of use (paraphrased; quote <=25 words)`
-  - MicrosoftDocs GitHub file at a commit: the repo's licence, usually `CC BY 4.0 (MicrosoftDocs prose)`
-  - Anthropic docs: `Anthropic docs (summarize; quote <=25 words)`
-  - Open-source repo or spec: its SPDX id (`MIT`, `Apache-2.0`, ...)
-  - Anything else: `not verified (summarized only)`
+- `licence` and `reuse` are required (`check.py` rejects an empty licence or a `reuse` outside `copy`, `quote`, `paraphrase`, `unknown`; meanings in `kb/_self/content-rules.md`). Copy an existing row's pair for the same host or repository (`python3 _tools/rag.py src <id>`); else read the licence where it is stated (the repository's LICENSE, the page footer, the site's terms page), not a fetch tool's summary of it:
+  - Microsoft Learn page (incl. fetched through the MCP server): the page's `github_feedback_content_git_url` meta tag names its public mirror. A live mirror with a LICENSE: `CC BY 4.0 (public mirror MicrosoftDocs/<repo>)` (or its licence), `copy`. None, private or archived: `Microsoft Learn terms of use (...why...)`, `quote`.
+  - MicrosoftDocs GitHub file at a commit: `CC BY 4.0 (MicrosoftDocs/<repo> LICENSE; code MIT)` (entra-docs: `MIT`), `copy`.
+  - Anthropic docs and site: `Anthropic terms (no open licence)`, `quote`.
+  - Open-source repository or spec: its SPDX id (`MIT`, `Apache-2.0`, ...), `copy`; NC, ND or source-available licences (BUSL-1.1): `quote`.
+  - Vendor pages, blogs, forums, registries with no open licence: the terms' name, `quote`. CIS and ISO: `paraphrase`.
+  - Terms you could not read (blocked, JS-only, no statement found and no default applies): say so in `licence`, `unknown`.
 - `version_or_date`: the page's own version or date when shown (`ms.date`, release tag), else `retrieved <date>`.
 - Write the CSV with Python's `csv` module (or quote every field that contains a comma). An unquoted comma breaks the row and `check.py` rejects it.
 
@@ -60,7 +61,7 @@ files: [<path>, <dir>/]    # optional: only files beyond <slug>.md and <slug>.* 
 ```
 - `topic` equals the path without `.md`. `sources` lists exactly the ids the body cites.
 - Each Facts bullet ends in exactly one tag: `[DOC S-k3f7q2zd]`, `[CODE S-k3f7q2zd: path#symbol]`, `[DER S1, S-k3f7q2zd]` (show the derivation), `[COMMUNITY S9]` or `[UNK]`.
-- Our own words. Quotes of 25 words or fewer unless the licence permits copying (MIT, Apache-2.0, CC BY 4.0), with attribution. Never copy CIS or ISO text.
+- Our own words. Quotes of 25 words or fewer; a longer verbatim copy only from a `copy` source, with attribution. No quotes from a `paraphrase` or `unknown` source (CIS, ISO).
 - Placeholders only: `PL-LT-00123`, `PL-SRV-0042`, `corp.example.com`, tenant `00000000-0000-0000-0000-000000000000`, `jan.kowalski`.
 - Large tables go in `<domain>/<slug>.csv` beside the article (listed automatically). Data under another name or in a subdirectory goes in `files:` (kb-root paths; a directory ends in `/`).
 - `status: partial` when anything is `UNK`.

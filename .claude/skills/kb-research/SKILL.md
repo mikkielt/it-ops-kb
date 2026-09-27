@@ -46,7 +46,7 @@ Run each command on its own (no `;`, `&&`, pipes into other tools or loops): the
 - Never call `submit_feedback`, sign up for anything, install software, or run a vendor CLI that changes state. Reading public docs only.
 
 ## 4. Write
-Follow the contract in `kb/_self/content-rules.md` and `.claude/skills/kb-add-topic/SKILL.md` (source rows first, written with Python's `csv` module; one tag per fact; licence strings; placeholders only).
+Follow the contract in `kb/_self/content-rules.md` and `.claude/skills/kb-add-topic/SKILL.md` (source rows first, written with Python's `csv` module; one tag per fact; `licence` and `reuse` on every source row; placeholders only).
 - Extending an anchor topic: add bullets to its Facts section, add the new ids to its `sources:` header, update `retrieved_utc` and, if it changed, `status`. Do not edit `_coverage.csv`, the root's `_coverage.md` table or `used_in`: step 5 regenerates them.
 - New topic, only where step 2 decided one: create it as `/kb-add-topic` describes (priority `P3` unless the user gives one) in the domain step 2 chose, and link it from the anchor's Reference section and back.
 - "How it fits": implications for this kb's frame (e.g. how an agent should call it, where secrets live, what tier an operation needs) are `DER` facts. State the derivation and the facts it rests on. Do not present a design choice as a vendor fact.

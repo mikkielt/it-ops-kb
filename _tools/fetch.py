@@ -2,7 +2,7 @@
 """Re-download and verify every kb artifact (stdlib only).
 
 Inputs (paths relative to the root, see Roots):
-  _sources.csv    id,url,title,publisher,licence,retrieved_utc,version_or_date,artifact_sha256,used_in,superseded_by
+  _sources.csv    id,url,title,publisher,licence,reuse,retrieved_utc,version_or_date,artifact_sha256,used_in,superseded_by
                   A row with artifact_sha256 is an artifact source: the bytes at `url` must hash to it.
   _artifacts.csv  path,source_id,sha256,zip_member
                   A local file in the repository, where it came from, and its own sha256. With zip_member, the file

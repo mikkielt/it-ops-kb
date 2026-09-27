@@ -106,6 +106,15 @@ def add_sources(d, new=(), patch=None):
     write(d, P("_sources.csv"), buf.getvalue())
 
 
+def without_column(d, col):
+    """Drop one column from a copy's _sources.csv."""
+    rows = list(csv.reader(io.StringIO(read(d, P("_sources.csv")))))
+    i = rows[0].index(col)
+    buf = io.StringIO()
+    csv.writer(buf, lineterminator="\n").writerows(r[:i] + r[i + 1:] for r in rows)
+    write(d, P("_sources.csv"), buf.getvalue())
+
+
 def ids(cases):
     return [c[0] for c in cases]
 
@@ -261,7 +270,7 @@ MUTATIONS = [  # (name, mutate(copy), [(tool, args, rc[, expect[, check]]), ...]
 URL = "https://learn.microsoft.com/en-us/windows/example-hash-id-page"
 HID = kbid.source_id(URL)
 ROW = {"id": HID, "url": URL, "title": "hash id test page", "publisher": "Microsoft", "licence": "test",
-       "retrieved_utc": "2026-09-25", "version_or_date": "test", "used_in": "ad/hashid.md"}
+       "reuse": "quote", "retrieved_utc": "2026-09-25", "version_or_date": "test", "used_in": "ad/hashid.md"}
 N_HASH = sum(1 for r in kbid.read_sources() if kbid.is_hash_id(r.get("id") or ""))  # the kb's own, before the row
 COLL_A, COLL_B = "https://example.com/c/266794", "https://example.com/c/514424"  # a real 40-bit collision
 DUP = "\n## QK-dup-answer. first\n- x [UNK]\n\n## QK-dup-answer. second\n- y [UNK]\n"
@@ -292,6 +301,16 @@ MUTATIONS += [
         ("check.py", [], 1, "forms a cycle")]),
     ("superseded_by itself", lambda d: add_sources(d, patch={"S100": {"superseded_by": "S100"}}), [
         ("check.py", [], 1, "forms a cycle")]),
+    ("reuse class not in the list", lambda d: add_sources(d, patch={"S100": {"reuse": "free"}}), [
+        ("check.py", [], 1, "S100 reuse 'free' is not one of copy, quote, paraphrase, unknown")]),
+    ("reuse class missing", lambda d: add_sources(d, patch={"S100": {"reuse": ""}}), [
+        ("check.py", [], 1, "S100 has no reuse class")]),
+    ("licence missing", lambda d: add_sources(d, patch={"S100": {"licence": " "}}), [
+        ("check.py", [], 1, "S100 has no licence")]),
+    ("new source row without a reuse class", lambda d: add_sources(d, [{**ROW, "reuse": ""}]), [
+        ("check.py", [], 1, f"{HID} has no reuse class")]),
+    ("_sources.csv without reuse column", lambda d: without_column(d, "reuse"), [
+        ("check.py", [], 1, "lacks column(s) reuse")]),
     ("hand-typed hash id", lambda d: add_sources(d, [{**ROW, "id": "S-abcdefgh"}]), [
         ("check.py", [], 1, "S-abcdefgh does not match its url"), ("kbid.py", ["check"], 1, "does not match")]),
     ("hash id collision", lambda d: add_sources(d, [{**ROW, "id": kbid.source_id(COLL_A), "url": COLL_A},

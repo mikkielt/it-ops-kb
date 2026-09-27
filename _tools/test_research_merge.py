@@ -55,7 +55,7 @@ def rows(first, urls, publisher, licence):
     buf = io.StringIO()
     w = csv.writer(buf, lineterminator="\n")
     for i, u in enumerate(urls):
-        w.writerow([f"S{first + i}", u, f"Research merge page {i + 1}, {publisher}", publisher, licence, "2026-09-25",
+        w.writerow([f"S{first + i}", u, f"Research merge page {i + 1}, {publisher}", publisher, licence, "copy", "2026-09-25",
                     "retrieved 2026-09-25", "", "", ""])
     return buf.getvalue()
 

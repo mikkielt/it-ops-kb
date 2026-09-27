@@ -125,7 +125,7 @@ TOOL_LIST = [
          "required": ["path"], "additionalProperties": False},
      "annotations": {"title": "Show kb lines", **READ_ONLY}},
     {"name": "kb_source", "title": "Resolve source ids",
-     "description": DOCS + "Rows of _sources.csv by id (legacy S123 or hash S-xxxxxxxx): url, title, publisher, licence, "
+     "description": DOCS + "Rows of _sources.csv by id (legacy S123 or hash S-xxxxxxxx): url, title, publisher, licence, reuse, "
                     "retrieved_utc, version_or_date, superseded_by and the files that cite it.",
      "inputSchema": {"type": "object", "properties": {
          "ids": {"type": "array", "items": {"type": "string"}, "minItems": 1, "maxItems": 50},
@@ -284,7 +284,7 @@ def kb_source(args):
             out.append(f"{r['id']}  UNKNOWN id (not in _sources.csv)")
             continue
         out.append(f"{r['id']}  {r.get('title', '')}\n  url: {r['url']}\n  publisher: {r.get('publisher', '')}; "
-                   f"licence: {r.get('licence', '')}\n  retrieved_utc: {r.get('retrieved_utc', '')}; "
+                   f"licence: {r.get('licence', '')}; reuse: {r.get('reuse', '')}\n  retrieved_utc: {r.get('retrieved_utc', '')}; "
                    f"version_or_date: {r.get('version_or_date', '')}"
                    + (f"\n  superseded by: {r['superseded_by']}" if (r.get("superseded_by") or "").strip() else "")
                    + (f"\n  used in: {r['used_in'].replace(';', ', ')}" if r.get("used_in") else "")

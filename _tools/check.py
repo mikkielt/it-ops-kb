@@ -8,6 +8,7 @@
 - every .csv has the same number of columns in every row;
 - source ids in a root's _sources.csv are unique and well-formed: the root's `<prefix>-<8 base32>` equal to the
   hash of the row's url (public also keeps legacy S<digits>), with no two different urls sharing a hash id (kbid.py);
+- every source has a licence and a reuse class from kbcommon.REUSE (copy, quote, paraphrase, unknown);
 - a non-empty superseded_by names another source id of the same root and forms no cycle;
 - every _artifacts.csv row names a known source of its root and an existing file;
 - every Markdown file is readable UTF-8;
@@ -51,11 +52,18 @@ def walk(base, exts, skip_roots=()):
 def check_root_ledgers(root, owner):
     """The ledger checks of one root; returns its known source ids."""
     q = lambda p: kbcommon.qualify(root, p)  # noqa: E731
-    sources = read_csv(root, kbcommon.SOURCES, ("id", "url", "superseded_by"))
+    sources = read_csv(root, kbcommon.SOURCES, ("id", "url", "licence", "reuse", "superseded_by"))
     ids = [r["id"] for r in sources]
     known = set(ids)
     errors.extend(f"{q(kbcommon.SOURCES)}: duplicate source id {i}" for i, n in sorted(Counter(ids).items()) if n > 1)
     errors.extend(f"{q(kbcommon.SOURCES)}: {e}" for e in kbid.check_sources(sources, root.id_prefix, root.name))
+    for r in sources:
+        if not (r.get("licence") or "").strip():
+            errors.append(f"{q(kbcommon.SOURCES)}: source {r['id']} has no licence")
+        reuse = (r.get("reuse") or "").strip()
+        if reuse not in kbcommon.REUSE:
+            errors.append(f"{q(kbcommon.SOURCES)}: source {r['id']} reuse {reuse!r} is not one of "
+                          f"{', '.join(kbcommon.REUSE)}" if reuse else f"{q(kbcommon.SOURCES)}: source {r['id']} has no reuse class")
     succ = {r["id"]: r["superseded_by"].strip() for r in sources if (r.get("superseded_by") or "").strip()}
     for sid, nxt in sorted(succ.items()):
         if nxt not in known:

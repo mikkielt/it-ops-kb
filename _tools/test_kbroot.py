@@ -43,7 +43,7 @@ def kb(tmp_path_factory):
     code, out = run(d, "kbroot.py", "add", "team", "--prefix", "T", "--description", "the team's runbooks")
     assert code == 0, out
     with open(os.path.join(d, "kb", "team", "_sources.csv"), "a", encoding="utf-8", newline="") as f:
-        f.write(f"{SID},{URL},Patching runbook,Example team,internal,2026-09-27,,,,\n")
+        f.write(f"{SID},{URL},Patching runbook,Example team,internal,quote,2026-09-27,,,,\n")
     write(d, "kb/team/ops/patching.md", article(SID))
     code, out = run(d, "build_index.py")
     assert code == 0 and "wrote team/_coverage.csv" in out, out

@@ -40,10 +40,10 @@ class TestMergeRules:
 
     def test_sources_duplicates_and_field_merge(self):
         u = "https://learn.microsoft.com/en-us/a"
-        old = f"S100,{u},Old title,Microsoft,,2026-01-01,v1,,,\n"
-        new = f"S100,{u}/,New title,Microsoft,CC BY 4.0,2026-02-01,v2,,x.md,\n"
+        old = f"S100,{u},Old title,Microsoft,,copy,2026-01-01,v1,,,\n"
+        new = f"S100,{u}/,New title,Microsoft,CC BY 4.0,copy,2026-02-01,v2,,x.md,\n"
         report = []
-        header, out, renames = kbgit.resolve_sources(HEADER + old + HEADER + new + old + "S2,https://e.example.com/,t,p,l,d,v,,,S100\n",
+        header, out, renames = kbgit.resolve_sources(HEADER + old + HEADER + new + old + "S2,https://e.example.com/,t,p,l,copy,d,v,,,S100\n",
                                                      None, {}, report)
         assert [r["id"] for r in out] == ["S2", "S100"]
         r = out[1]
@@ -55,14 +55,14 @@ class TestMergeRules:
 
     def test_sources_base_copy_yields_to_edit(self):
         u = "https://learn.microsoft.com/en-us/a"
-        base = f"S100,{u},Title,Microsoft,,2026-01-01,v1,,,\n"
+        base = f"S100,{u},Title,Microsoft,,copy,2026-01-01,v1,,,\n"
         edit = base.replace("Title", "Better title")
         base_rows = {r["id"]: r for r in rows(HEADER + base)}
         _, out, _ = kbgit.resolve_sources(HEADER + base + edit, base_rows, {}, [])
         assert [r["title"] for r in out] == ["Better title"]
 
     def test_collision_needs_base(self):
-        t = HEADER + "S9999,https://a.example.com/x,a,p,l,2026-01-01,v,,,\nS9999,https://b.example.com/y,b,p,l,2026-01-01,v,,,\n"
+        t = HEADER + "S9999,https://a.example.com/x,a,p,l,copy,2026-01-01,v,,,\nS9999,https://b.example.com/y,b,p,l,copy,2026-01-01,v,,,\n"
         with pytest.raises(kbgit.Problem) as e:
             kbgit.resolve_sources(t, None, {}, [])
         assert "--base" in str(e.value)
@@ -75,16 +75,16 @@ class TestMergeRules:
         """A union merge repeats the header line (dropped); a row short by a column is an error, not padded."""
         u = "https://learn.microsoft.com/en-us/a"
         report = []
-        _, out, _ = kbgit.resolve_sources(HEADER + f"S100,{u},T,Microsoft,,2026-01-01,v1,,x.md,\n" + HEADER, None, {}, report)
+        _, out, _ = kbgit.resolve_sources(HEADER + f"S100,{u},T,Microsoft,,copy,2026-01-01,v1,,x.md,\n" + HEADER, None, {}, report)
         assert [r["id"] for r in out] == ["S100"]
         assert any("repeated header" in x for x in report), report
         with pytest.raises(kbgit.Problem):
-            kbgit.resolve_sources(HEADER + "S102,https://c.example.com/,t,p,l,d,v,,\n".replace(",,\n", ",\n"), None, {}, [])
+            kbgit.resolve_sources(HEADER + "S102,https://c.example.com/,t,p,l,copy,d,v,,\n".replace(",,\n", ",\n"), None, {}, [])
 
     def test_latest_row_wins_a_field_conflict(self):
         u = "https://github.com/o/r"
-        current = f"S100,{u},T,P,Apache-2.0,2026-09-25,v; confirmed 2026-09-25: x,,a.md,\n"
-        newer = f"S100,{u},T,P,MIT,2026-09-26,v2,,a.md,\n"
+        current = f"S100,{u},T,P,Apache-2.0,copy,2026-09-25,v; confirmed 2026-09-25: x,,a.md,\n"
+        newer = f"S100,{u},T,P,MIT,copy,2026-09-26,v2,,a.md,\n"
         for text in (HEADER + current + newer, HEADER + newer + current):
             report = []
             _, out, _ = kbgit.resolve_sources(text, None, {}, report)
@@ -95,7 +95,7 @@ class TestMergeRules:
 
     def test_pushed_side_keeps_a_colliding_id(self):
         a, b = "https://a.example.com/x", "https://b.example.com/y"
-        t = HEADER + f"S9999,{a},a,p,l,2026-01-01,v,,,\nS9999,{b},b,p,l,2026-01-01,v,,,\n"
+        t = HEADER + f"S9999,{a},a,p,l,copy,2026-01-01,v,,,\nS9999,{b},b,p,l,copy,2026-01-01,v,,,\n"
         side = {"up": {"S9999": {"url": a}}, "mine": {"S9999": {"url": b}}}
         _, out, renames = kbgit.resolve_sources(t, {}, side, [], upstream="up")
         assert {r["id"]: r["url"] for r in out} == {"S9999": a, kbid.source_id(b): b}
@@ -215,7 +215,7 @@ class TestMergeInGit:
                   "2026-01-01T00:00:00Z,s0,t0,1,\nS101,https://y.example.com/,2026-01-01T00:00:00Z,,,,,,\n")
         # a second root beside public: its own ledgers, id prefix T
         cls.repo.write(team("_root.md"), "---\nroot: team\nid_prefix: T\nvisibility: internal\ndescription: merge test\n---\n")
-        cls.repo.write(team("_sources.csv"), HEADER + f"{tid('https://t.example.com/base')},https://t.example.com/base,Base,T,-,2026-01-01,v,,,\n")
+        cls.repo.write(team("_sources.csv"), HEADER + f"{tid('https://t.example.com/base')},https://t.example.com/base,Base,T,-,copy,2026-01-01,v,,,\n")
         for f in ("_answers.md", "_gaps.md", "_conflicts.md"):
             cls.repo.write(team(f), f"# {f[1:-3].title()}\n")
         cls.repo.write(team("_artifacts.csv"), "path,source_id,sha256,zip_member\n")
@@ -241,8 +241,8 @@ class TestMergeInGit:
         cls.repo.git("checkout", "-q", "-b", name)
         extra = f"https://learn.microsoft.com/en-us/merge-test/extra-{name}"
         hid = kbid.source_id(extra)
-        cls.repo.write(P("_sources.csv"), f"S9999,{url},Merge test {name},Microsoft,MIT,2026-09-25,v,,,\n"
-                                  f"{hid},{extra},Extra {name},Microsoft,MIT,2026-09-25,v,,,\n", "a")
+        cls.repo.write(P("_sources.csv"), f"S9999,{url},Merge test {name},Microsoft,MIT,copy,2026-09-25,v,,,\n"
+                                  f"{hid},{extra},Extra {name},Microsoft,MIT,copy,2026-09-25,v,,,\n", "a")
         cls.repo.write(P(f"windows/merge-test-{name}.md"),
                   f"---\ntopic: windows/merge-test-{name}\npriority: P3\napplies_to: [test]\nretrieved_utc: 2026-09-25\n"
                   f"sources: [S9999, {hid}]\nstatus: partial\n---\n# Merge test {name}\n\n## Summary\n\nTest.\n\n## Facts\n\n"
@@ -251,8 +251,8 @@ class TestMergeInGit:
                                  f"\n{cls.FOOTER}\n", "a")  # the same last line on both branches: a plain merge splices
         cls.repo.write(P("_gaps.md"), f"\n- **Merge test gap from branch {name}.** Tried nothing, cites S9999. [UNK]\n", "a")
         turl = f"https://t.example.com/{name}"  # the second root: its own source, plus one row both branches add
-        cls.repo.write(team("_sources.csv"), f"{tid(turl)},{turl},Team {name},T,-,2026-09-25,v,,,\n"
-                                             f"{tid(cls.T_BOTH)},{cls.T_BOTH},Both,T,-,2026-09-25,v,,,\n", "a")
+        cls.repo.write(team("_sources.csv"), f"{tid(turl)},{turl},Team {name},T,-,copy,2026-09-25,v,,,\n"
+                                             f"{tid(cls.T_BOTH)},{cls.T_BOTH},Both,T,-,copy,2026-09-25,v,,,\n", "a")
         if name == "a":
             cls.repo.write(team("mdm/enrol.md"),
                            f"---\ntopic: mdm/enrol\npriority: P3\napplies_to: [test]\nretrieved_utc: 2026-09-25\n"

@@ -84,7 +84,7 @@ _sources.csv   conflict markers (a merge made without our .gitattributes) are dr
                - same normalized url: merged field-wise. With --base, a row identical to the base's row is the stale
                  copy and yields to the edited one. retrieved_utc/version_or_date come from the row with the latest
                  retrieved_utc; a non-empty value beats an empty one; superseded_by is kept if either row has it.
-                 Two different non-empty title/publisher/licence/artifact_sha256 values: the latest row wins and
+                 Two different non-empty title/publisher/licence/reuse/artifact_sha256 values: the latest row wins and
                  the conflict is reported (a tie on retrieved_utc, or two different superseded_by, needs a human).
                - different urls: a real collision (two branches both took the next legacy number, e.g. S2205).
                  Needs --base: an id present at base keeps its base url, else the --upstream side's url keeps it
@@ -321,7 +321,7 @@ def id_key(sid):
 
 # ---------------------------------------------------------------- _sources.csv
 
-MERGE_CONFLICT = ("title", "publisher", "licence", "artifact_sha256")
+MERGE_CONFLICT = ("title", "publisher", "licence", "reuse", "artifact_sha256")
 
 
 def merge_rows(sid, rows, report):

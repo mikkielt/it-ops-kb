@@ -42,7 +42,7 @@ class TestTrailerRules:
                team("mdm/enrol.md"): "a", team("_answers.md"): "# Answers\n", team("_sources.csv"): HEADER,
                P("windows/loose.md"): "---\ntopic: windows/loose\n---\n"}
         new = {**old, team("mdm/enrol.md"): "b", team("_answers.md"): "# Answers\n\n## QK-team-q. q?\n\ny\n",
-               team("_sources.csv"): HEADER + f"{tid},https://e.example.com/t,T,p,l,2026-01-01,v,,,\n",
+               team("_sources.csv"): HEADER + f"{tid},https://e.example.com/t,T,p,l,copy,2026-01-01,v,,,\n",
                P("windows/loose.md"): "---\ntopic: windows/loose\n---\nx\n"}
         assert self.compute(old, new) == {"KB-Topics": [Q("windows/loose"), "team/mdm/enrol"],
                                           "KB-Sources-Added": [tid], "KB-Answers": ["team:QK-team-q"]}
@@ -54,11 +54,11 @@ class TestTrailerRules:
     def test_sources_added_changed_superseded(self):
         u = "https://learn.microsoft.com/en-us/x"
         hid = kbid.source_id(u)
-        old = {P("_sources.csv"): HEADER.replace(",superseded_by", "") + "S100,https://e.example.com/a,A,p,l,2026-01-01,v,,a.md\n"
-                                "S101,https://e.example.com/b,B,p,l,2026-01-01,v,,\nS102,https://e.example.com/c,C,p,l,2026-01-01,v,,\n"}
-        new = {P("_sources.csv"): HEADER + "S100,https://e.example.com/a,A,p,l,2026-01-01,v,,b.md,\n"  # used_in + new empty column: no edit
-                                "S101,https://e.example.com/b,B2,p,l,2026-02-01,v,,,\nS102,https://e.example.com/c,C,p,l,2026-01-01,v,,,"
-                                f"{hid}\n{hid},{u},X,p,l,2026-02-01,v,,,\n"}
+        old = {P("_sources.csv"): HEADER.replace(",superseded_by", "") + "S100,https://e.example.com/a,A,p,l,copy,2026-01-01,v,,a.md\n"
+                                "S101,https://e.example.com/b,B,p,l,copy,2026-01-01,v,,\nS102,https://e.example.com/c,C,p,l,copy,2026-01-01,v,,\n"}
+        new = {P("_sources.csv"): HEADER + "S100,https://e.example.com/a,A,p,l,copy,2026-01-01,v,,b.md,\n"  # used_in + new empty column: no edit
+                                "S101,https://e.example.com/b,B2,p,l,copy,2026-02-01,v,,,\nS102,https://e.example.com/c,C,p,l,copy,2026-01-01,v,,,"
+                                f"{hid}\n{hid},{u},X,p,l,copy,2026-02-01,v,,,\n"}
         assert self.compute(old, new) == {"KB-Sources-Added": [hid], "KB-Sources-Changed": ["S101"],
                                                   "KB-Sources-Superseded": ["S102"]}
 
@@ -98,7 +98,7 @@ class TestHistoryInGit:
         cls.repo = Repo(cls.kb, cls.env)
         cls.hid = kbid.source_id(cls.URL)
         cls.repo.write(P("_root.md"), ROOT_MD)
-        cls.repo.write(P("_sources.csv"), HEADER + "S100,https://learn.microsoft.com/en-us/history-test/old,Old,Microsoft,MIT,2026-01-01,v,,,\n")
+        cls.repo.write(P("_sources.csv"), HEADER + "S100,https://learn.microsoft.com/en-us/history-test/old,Old,Microsoft,MIT,copy,2026-01-01,v,,,\n")
         cls.repo.write(P("_answers.md"), "# Answers\n\n## Q1. Is this old?\n\nYes. [DOC S100]\n")
         cls.repo.write(P("_coverage.csv"), COVERAGE.splitlines(keepends=True)[0] + COVERAGE.splitlines(keepends=True)[1])
         cls.article = ("---\ntopic: windows/demo\npriority: P1\napplies_to: [test]\nretrieved_utc: 2026-01-01\nsources: [S100]\n"
@@ -115,7 +115,7 @@ class TestHistoryInGit:
         cls.fact = f"- A new fact. [DOC {cls.hid}]"
         cls.repo.write(P("windows/demo.md"), cls.article + cls.fact + "\n")
         cls.repo.write(P("windows/demo.csv"), "a,b\n1,3\n")
-        cls.repo.write(P("_sources.csv"), f"{cls.hid},{cls.URL},New,Microsoft,MIT,2026-03-01,v,,,\n", "a")
+        cls.repo.write(P("_sources.csv"), f"{cls.hid},{cls.URL},New,Microsoft,MIT,copy,2026-03-01,v,,,\n", "a")
         cls.repo.write(P("_answers.md"), "\n## QK-history-test-question. Does it work?\n\nYes. [DOC S-aaaaaaaa]\n", "a")
         cls.repo.git("add", "-A")
         cls.commit("2026-03-01", "-m", "docs(kb): add a fact\n\nWhy: testing.\n\nCo-Authored-By: T <noreply@example.com>")

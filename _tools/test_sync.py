@@ -145,7 +145,8 @@ class TestSyncInGit:
     def add_source(cls, d, sid, url, tag):
         sid = kbid.source_id(url) if sid == "S-" else sid
         buf = io.StringIO()
-        csv.writer(buf, lineterminator="\n").writerow([sid, url, f"Sync test {tag}", "Microsoft", "MIT", "2026-09-25", "v", "", "", ""])
+        csv.writer(buf, lineterminator="\n").writerow([sid, url, f"Sync test {tag}", "Microsoft", "MIT", "copy", "2026-09-25", "v", "", "",
+                                                         ""])
         d.append(P("_sources.csv"), buf.getvalue())
 
     @classmethod

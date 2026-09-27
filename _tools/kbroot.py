@@ -19,7 +19,7 @@ import argparse, os, re, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import build_index, kbcommon  # noqa: E402
 
-SOURCES_HEADER = "id,url,title,publisher,licence,retrieved_utc,version_or_date,artifact_sha256,used_in,superseded_by\n"
+SOURCES_HEADER = "id,url,title,publisher,licence,reuse,retrieved_utc,version_or_date,artifact_sha256,used_in,superseded_by\n"
 FILES = {
     kbcommon.SOURCES: SOURCES_HEADER,
     kbcommon.ARTIFACTS: "path,source_id,sha256,zip_member\n",

@@ -9,6 +9,7 @@ source ledger. One copy, so every tool reads and writes these files the same way
   rows_text(rows)             the same for list rows (the header is the first row)
   write_csv(path, header, rows, atomic=False)
   read_sources()              the rows of _sources.csv, in file order
+  REUSE                       the classes of the `reuse` column of _sources.csv and what each allows
   source_rows()               {id: row} of _sources.csv
   data_path(rel, shared)      a file of the kb's own retrieval data under <kb>/DATA_DIR/
   repo_rel(rel)               a path relative to the kb root as a path relative to this repository (git pathspecs)
@@ -53,6 +54,13 @@ SOURCES, STATE, ARTIFACTS = "_sources.csv", "_fetch_state.csv", "_artifacts.csv"
 ANSWERS, GAPS, CONFLICTS = "_answers.md", "_gaps.md", "_conflicts.md"
 COVERAGE_CSV, COVERAGE_MD = "_coverage.csv", "_coverage.md"
 CENSUS_DIR = "_census"
+# What a source's licence allows with its text: the `reuse` column of _sources.csv (check.py rejects anything else).
+REUSE = {
+    "copy": "an open licence allows a verbatim copy and redistribution, with attribution (and its other conditions)",
+    "quote": "no reuse licence (terms of use, all rights reserved): paraphrase, quotes of 25 words or fewer",
+    "paraphrase": "the terms forbid copying the text (CIS, ISO): paraphrase and cite ids only, no quotes",
+    "unknown": "the terms could not be read or determined: treated as paraphrase",
+}
 PREFIX = re.compile(r"[A-Z]{1,4}")  # a root's source id prefix: its ids are <prefix>-<8 base32 chars>
 RESERVED_PREFIXES = {"DOC", "CODE", "DER", "UNK", "QK", "EV", "PL"}  # tag kinds, answer and eval ids, placeholders
 csv.field_size_limit(2**31 - 1)  # a very wide cell must not abort a whole read

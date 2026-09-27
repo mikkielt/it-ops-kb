@@ -65,9 +65,9 @@ def make_root(path, prefix="T"):
             f.write(text)
     with open(os.path.join(path, "_sources.csv"), "w", encoding="utf-8", newline="") as f:
         w = csv.writer(f, lineterminator="\n")
-        w.writerow(["id", "url", "title", "publisher", "licence", "retrieved_utc", "version_or_date", "artifact_sha256",
-                    "used_in", "superseded_by"])
-        w.writerow([SID, URL, "Print queue retention", "corp.example.com", "internal", "2026-09-26", "", "",
+        w.writerow(["id", "url", "title", "publisher", "licence", "reuse", "retrieved_utc", "version_or_date",
+                    "artifact_sha256", "used_in", "superseded_by"])
+        w.writerow([SID, URL, "Print queue retention", "corp.example.com", "internal", "quote", "2026-09-26", "", "",
                     "print/queues.md", ""])
 
 

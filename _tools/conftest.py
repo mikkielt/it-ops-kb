@@ -44,7 +44,7 @@ SELF_REL = kbcommon.repo_rel(kbcommon.SELF)
 
 GIT = shutil.which("git")
 requires_git = pytest.mark.skipif(not GIT, reason="git is not installed")
-SOURCES_HEADER = "id,url,title,publisher,licence,retrieved_utc,version_or_date,artifact_sha256,used_in,superseded_by\n"
+SOURCES_HEADER = "id,url,title,publisher,licence,reuse,retrieved_utc,version_or_date,artifact_sha256,used_in,superseded_by\n"
 LEAKY = ("KB_VERIFIED", "KB_TESTS_FAST", "CI_COMMIT_SHA", "CI_COMMIT_BEFORE_SHA", "GIT_DIR", "GIT_INDEX_FILE", "GIT_WORK_TREE")
 
 
