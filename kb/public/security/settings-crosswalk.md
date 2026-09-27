@@ -3,7 +3,7 @@ topic: security/settings-crosswalk
 priority: P0
 applies_to: "Windows 11 Enterprise 24H2 (Microsoft baseline package 24H2), DISA STIG Windows 11 V2R9 and Windows Server 2025 V1R3 (2026-08-10), Intune Windows baseline 24H2 pivot, DSC 3.3.0"
 retrieved_utc: 2026-09-27
-sources: [S1470, S1471, S1472, S1598, S1473, S-oeh7ui3h, S1477, S1478, S1479, S1590, S1591, S1413, S1414, S1415, S1416, S1594, S1595, S1596, S114, S-lzzhbeao]
+sources: [S1470, S1471, S1472, S1598, S1473, S-oeh7ui3h, S1477, S1478, S1479, S1590, S1591, S1413, S1414, S1415, S1416, S1594, S1595, S1596, S114, S-lzzhbeao, S-3yywfx4r, S-ww7anzs7, S1400]
 status: partial
 files: [security/artifacts/disa/, security/artifacts/microsoft/, security/artifacts/osconfig/]
 ---
@@ -15,7 +15,7 @@ files: [security/artifacts/disa/, security/artifacts/microsoft/, security/artifa
 - Rows come from machine-readable files: the baseline's `MSFT-Win11-v24H2.PolicyRules` and settings workbook, and the STIG XCCDF. Joins match registry path plus value name, audit subcategory, or user-right name. The Server 2025 STIG id is added where the same registry value appears there.
 - 138 Microsoft baseline rows have a matching Windows 11 STIG rule. 84 of those use a native DSC v3 path.
 - CIS columns are empty. The CIS benchmark text needs registration, so no CIS id was mapped (see `gaps.md`).
-- The newest Microsoft package retrieved is 24H2. The 25H2 package file could not be found on the download host, so 25H2 deltas are in `baselines-catalog.md` only.
+- The newest Microsoft package parsed is 24H2. The Download Center lists "Windows 11 v25H2 Security Baseline.zip" and "Windows Server 2025 Security Baseline - 2602.zip" (read 2026-09-27), but they are not parsed yet, so 25H2 deltas are in `baselines-catalog.md` only.
 
 ## Facts
 - The Microsoft Windows 11 24H2 baseline package contains `Documentation/MSFT-Win11-v24H2.PolicyRules`. This XML lists every setting: 330 computer and 5 user registry values, 68 security-template lines and 23 advanced-audit subcategories. [DOC S1472]

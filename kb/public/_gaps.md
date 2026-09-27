@@ -582,6 +582,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
   - The Download Center page (id 55319) is a script-driven file picker that answers `curl`/WebFetch with a bot page. The Chrome extension was not connected.
   - Guessed file names under `download.microsoft.com/download/8/5/C/85C25433-…/` returned 404 for 25H2 and Server 2025. The 24H2 zip, LGPO.zip and PolicyAnalyzer.zip resolved (3 attempts).
   - Verification: download "Windows 11 version 25H2 Security Baseline.zip" and "Windows Server 2025 Security Baseline" (v2602) from https://www.microsoft.com/download/details.aspx?id=55319 into `_private/sct/` (not published). A follow-up pass can then rerun the crosswalk builder. (topic: security/baselines-catalog)
+  - Tried 2026-09-27: the Download Center page (S1400) now answers a browser user agent with direct download.microsoft.com links, among them "Windows 11 v25H2 Security Baseline.zip" and "Windows Server 2025 Security Baseline - 2602.zip" (plus Edge v151 and Microsoft 365 Apps 2512). The zips were not downloaded or parsed this pass; the crosswalk rerun stays open. (topic: security/baselines-catalog)
 - **CIS ids in `settings-crosswalk.csv`:** empty. Verification: download CIS Microsoft Windows 11 Enterprise Benchmark (current version, see `baselines-catalog.md`) into `_private/cis/` (not published) and map ids offline. (topic: security/settings-crosswalk)
 - **Tattooing of `Policies` keys and security-settings-extension periodic reapply:** not found in the Group Policy processing page (S1592). No other official page was fetched this pass. (topic: security/policy-precedence)
   - Mostly resolved 2026-09-27: the process-even-if-unchanged option (S-d24ri6px, S-vzmmy23x), preference removal (S-37hjm3ml), FSLogix Policies vs non-Policies keys (S-z4y7mew3) and `Remove-GPRegistryValue` (S-is2wluoa) are now DOC; no page gives a security-CSE periodic interval (recorded as DER absence) or a general Policies-key cleanup rule (in _conflicts.md). Verification: link a GPO setting a `Policies` value, unlink it, `gpupdate /force`, check the value; repeat with the setting removed from a still-linked GPO. (topic: security/policy-precedence)
@@ -622,6 +623,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
   carries no CIS IDs or paraphrases this pass (QS1). Partly addressed in QS1a: CIS rule ids reach
   `settings-crosswalk.csv` through Microsoft's MIT-licensed OSConfig CSV (S1598); the terms page itself
   is still unread. (topic: security/settings-crosswalk)
+  - Resolved 2026-09-27: the non-member terms (S-ycjlut3h, CC BY-NC-SA 4.0) and the end-user member agreement (S-li2s6pgb: no redistribution or derivative images, internal Customized Benchmarks only) are both read; see `baselines-catalog.md`. Loading CIS ids still needs the registered PDF. (topic: security/settings-crosswalk)
 - ~~OSConfig Server 2025 baseline machine-readability was not researched (QS7).~~ — **resolved** in QS7a. (topic: security/baselines-catalog)
 - Microsoft baseline vs. Intune baseline setting-level comparison was not performed; needs both
   machine-readable sources above plus an Intune baseline JSON export (QS5). Partly addressed in QS5a:
@@ -630,6 +632,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
 - ACSC Essential Eight/Windows guidance, NCSC (UK) device guidance, BSI IT-Grundschutz/SiSyPHuS, and
   ANSSI English-language recommendations were not researched beyond placeholder rows in
   `baselines-catalog.csv`. (topic: security/baselines-catalog)
+  - Resolved 2026-09-27: NCSC Windows guide v2.1 and its Intune packs (S-aljzuasy, S-cwnwnkri), BSI SiSyPHuS Win10 GPOs v1.1 (S-vxnukaep) and ANSSI's Windows server Essentials (S-cvu2vf7c) are now in `baselines-catalog.md` and its CSV. (topic: security/baselines-catalog)
 - QS19 (LSA protection / Credential Guard defaults) rests on a search-engine digest of vendor blogs
   rather than a directly re-opened Microsoft Learn page (S1417 is recorded but its content was not
   independently re-extracted); tagged `COMMUNITY` pending confirmation. (topic: security/first-baseline-candidates)
@@ -637,6 +640,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
 - Exact registry paths/value names for "long paths enabled" and "RDP disabled" in
   `settings-crosswalk.csv` are widely known but were not verified against an official machine-
   readable source this pass; tagged `UNK` rather than `DOC`. (topic: security/settings-crosswalk)
+  - Resolved 2026-09-27: `LongPathsEnabled` under `HKLM\SYSTEM\CurrentControlSet\Control\FileSystem` (S1591) and `fDenyTSConnections` under `HKLM\SYSTEM\CurrentControlSet\Control\Terminal Server` (S-3yywfx4r, default denied S-ww7anzs7) are now DOC in the csv rows. (topic: security/settings-crosswalk)
 - GP refresh interval, registry-CSE reapplication default, and Policies-key tattooing behaviour in
   `policy-precedence.md` were not re-fetched from an official Microsoft Learn page this pass, despite
   being long-standing documented behaviour; tagged `UNK` for this pass's evidence standard. (topic: security/policy-precedence)
@@ -645,6 +649,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
 ### B: management plane
 
 - QS9: exact **current** CIS Microsoft SQL Server benchmark version/date and CIS GitLab Benchmark version/date were seen only via secondary blog posts and a third-party scanner project, not a direct fetch of the cisecurity.org benchmark listing page's version field. `Verification: confirm current CIS Microsoft SQL Server 2022/2025 Benchmark version and CIS GitLab Benchmark version directly on cisecurity.org/benchmark/microsoft_sql_server and the CIS Software Supply Chain Security Benchmarks page (no registration needed for the listing, only for the PDF).` (topic: security/baselines-catalog)
+  - Resolved 2026-09-27: the CIS listing pages give SQL Server 2025 1.0.0, 2022 1.3.0, 2019 1.6.0, and GitLab 1.0.1 beside GitHub 1.2.0 under Software Supply Chain Security; `management-plane-hardening.md` already cites the list (S1485). (topic: security/baselines-catalog)
 - QS8: no page was found that explicitly classifies ConfigMgr/MECM as "Tier 0" in Microsoft's own enterprise access model docs. Only the general control-plane/management-plane/data-workload-plane tiering principle (Microsoft cloud security benchmark, privileged access) was confirmed; applying it to ConfigMgr is a derivation (`security/management-plane-hardening.md`), not a documented Microsoft statement.
   - Resolved 2026-09-27 (as in the auth wave): the AD DS tier model (S-7nbamxyc) puts systems that patch or run agents on Tier 0 identity systems in Tier 0; the article applies it (DER). Still no page names ConfigMgr itself. (topic: security/management-plane-hardening)
 - Client push NTLM coercion to an attacker-chosen host (the old UNK line in `management-plane-hardening.md`, dropped 2026-09-27): Microsoft's pages (KB15498768 S1484, KB15599094 S-uixd54ua, CVE-2022-37972 in the SUG API S-56n7jfkc) describe the push account's NTLM use and link NTLM relay mitigations but never describe coercion; the technique is only in community research. Tried: Learn search, both KBs, the MSRC SUG API. (topic: security/management-plane-hardening)

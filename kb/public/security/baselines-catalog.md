@@ -3,8 +3,8 @@ topic: security/baselines-catalog
 priority: P0
 applies_to: "Windows 11 Enterprise 24H2/25H2, Windows Server 2025"
 retrieved_utc: 2026-09-27
-sources: [S1470, S1471, S1472, S1598, S1400, S1401, S1402, S1403, S1404, S1405, S1406, S1407, S1408, S1418, S1419, S1421, S1422, S1423, S1424, S1425, S-uzuvf3vo, S-nwnif62g, S-3vkajr2c, S-ycjlut3h]
-status: partial
+sources: [S1470, S1471, S1472, S1598, S1400, S1401, S1402, S1403, S1404, S1405, S1406, S1407, S1408, S1418, S1419, S1421, S1422, S1423, S1424, S1425, S-uzuvf3vo, S-nwnif62g, S-3vkajr2c, S-ycjlut3h, S-m3qbkeev, S-li2s6pgb, S-aljzuasy, S-cwnwnkri, S-vxnukaep, S-cvu2vf7c]
+status: complete
 ---
 
 ## Summary
@@ -36,9 +36,13 @@ attribution. NCSC (UK)/BSI/ANSSI rows remain UNK.
   process-creation ASR rule in Audit (2), enabling command line in process creation events, and removing
   WDigest and Scan packed executables [DOC S1402].
 - CIS Microsoft Windows 11 Enterprise Benchmark current version is v5.1.0 (previous: v5.0.0, then
-  bugfix v5.0.1) [DOC S1405, S1406, S1407, S1408]; the front matter of v5.0.x tests against release
-  23H2, so applicability to 24H2/25H2 devices should be confirmed against the v5.1.0 front matter
-  before use — not independently opened this pass [UNK].
+  bugfix v5.0.1) [DOC S1405, S1406, S1407, S1408].
+- CIS's September 2026 update summarises the Windows 11 Enterprise Benchmark 5.1.0 changes as 3 recommendations updated, all Microsoft Defender Antivirus
+  recommendations removed (Defender now has its own benchmark), 1 recommendation removed and 18 control mappings
+  updated; the full changelog is only in the DOCX/PDF. [DOC S-m3qbkeev]
+- The front matter of v5.0.x tests against release 23H2, and no public CIS page states which release v5.1.0 was
+  tested against (the PDF is behind registration), so confirm 24H2/25H2 applicability in the v5.1.0 PDF before
+  use. [DER S-m3qbkeev, S1405: the public pages carry no tested-release statement]
 - A CIS Microsoft Intune for Windows 11 benchmark exists; the CIS Intune benchmark page lists it at v5.0.0 on
   2026-09-26 (a third-party mirror of CIS release notes had given v4.0.0), beside Intune benchmarks for Windows 10,
   Edge, Office and Microsoft Defender Antivirus [DOC S-3vkajr2c].
@@ -81,9 +85,10 @@ attribution. NCSC (UK)/BSI/ANSSI rows remain UNK.
   contrast with any remediating baseline mechanism it is compared against]
 - CIS Benchmark PDFs for non-members are distributed under **CC BY-NC-SA 4.0** (free, attribution
   required, non-commercial, share-alike), per the non-member terms page read 2026-09-26 [DOC S-ycjlut3h];
-  that CIS-SecureSuite members are separately barred from redistributing or creating derivative "images"
-  incorporating benchmark content comes from a search digest of the member terms, not re-read
-  [UNK: member terms page not fetched]. Under CC BY-NC-SA 4.0, an ID plus a
+  CIS SecureSuite end-user members may not distribute any SecureSuite product, including creating an image that
+  incorporates a CIS Benchmark or derivative (including remediation) content and offering it to third parties; they
+  may edit benchmarks for internal use only as a "Customized Benchmark" that must not be labelled a CIS Benchmark,
+  and all use is limited to securing their own systems [DOC S-li2s6pgb]. Under CC BY-NC-SA 4.0, an ID plus a
   short paraphrase of the recommendation title is allowed with attribution, for non-commercial
   internal use; a crosswalk CSV may therefore carry CIS IDs and short paraphrases,
   attributed, once a direct citation is confirmed — recorded as a residual gap.
@@ -97,8 +102,17 @@ attribution. NCSC (UK)/BSI/ANSSI rows remain UNK.
   printers, widgets, app installations and SMB sessions [DOC S-uzuvf3vo, S-nwnif62g].
 - Apart from the Coat of Arms, the ACSC Windows 11 hardening guide is © Commonwealth of Australia
   under CC BY 4.0, so it is reusable with attribution [DOC S-uzuvf3vo].
-- NCSC (UK) device guidance, BSI IT-Grundschutz/SiSyPHuS and ANSSI recommendations remain UNK; rows
-  are placeholders in the CSV [UNK].
+- NCSC (UK): the Windows platform guide (version 2.1, reviewed 2025-05-13) points to NCSC's recommended settings as
+  Intune `.json` configuration packs on GitHub (Apache-2.0 repository), last tested against Windows 10 22H2 in
+  December 2024 and Windows 11 in April 2025. [DOC S-aljzuasy, S-cwnwnkri]
+- BSI: the SiSyPHuS Win10 project publishes importable Group Policy objects (version 1.1) for Windows 10 only, split
+  into hardening and logging, with three scenarios (standalone normal protection, domain member normal, domain
+  member high). [DOC S-vxnukaep]
+- ANSSI: the Essentials collection has "Mise en œuvre sécurisée d'un serveur Windows" (published 2025-10-03, three
+  v1.0 PDFs for member server, standalone server and domain controller), in French. [DOC S-cvu2vf7c]
+- None of the three publishes a Windows 11 Enterprise baseline in a machine-readable form a crosswalk could ingest
+  beyond NCSC's Intune packs; their licences are not stated on the pages read except the NCSC repository's.
+  [DER S-aljzuasy, S-vxnukaep, S-cvu2vf7c: formats and scopes compared]
 
 - Coordinator addendum: the OSConfig Server 2025 baseline version 2606 is published as a machine-readable CSV in `microsoft/osconfig`, with 361 settings carrying registry or CSP paths, per-role expected values, CIS RuleIDs and STIG ids. [DOC S1598]
 - The same `security/` folder at commit `82a54b9e` also holds versions 2409, 2411, 2504 and 2510, and the repository is MIT-licensed. [DER S1598: file names beside the pinned file and the repository licence at the same commit]

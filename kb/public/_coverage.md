@@ -234,11 +234,11 @@ Every topic of this root with its priority (the research order, not importance),
 | `reuse/pseudonymization-tokenization` | P2 | complete | `reuse/pseudonymization-tokenization.md` | 5 |
 | `reuse/secret-vault-encryption` | P2 | complete | `reuse/secret-vault-encryption.md` | 10 |
 | `reuse/tiered-approval-ops` | P2 | complete | `reuse/tiered-approval-ops.md` | 5 |
-| `security/baselines-catalog` | P0 | partial | `security/baselines-catalog.md`, `security/baselines-catalog.csv` | 24 |
+| `security/baselines-catalog` | P0 | complete | `security/baselines-catalog.md`, `security/baselines-catalog.csv` | 30 |
 | `security/dsc-coverage` | P0 | complete | `security/dsc-coverage.md` | 21 |
 | `security/first-baseline-candidates` | P0 | complete | `security/first-baseline-candidates.md` | 17 |
 | `security/policy-precedence` | P0 | complete | `security/policy-precedence.md` | 13 |
-| `security/settings-crosswalk` | P0 | partial | `security/settings-crosswalk.md`, `security/settings-crosswalk.csv`, `security/artifacts/disa/`, `security/artifacts/microsoft/`, `security/artifacts/osconfig/` | 20 |
+| `security/settings-crosswalk` | P0 | partial | `security/settings-crosswalk.md`, `security/settings-crosswalk.csv`, `security/artifacts/disa/`, `security/artifacts/microsoft/`, `security/artifacts/osconfig/` | 23 |
 | `security/logging-monitoring` | P1 | complete | `security/logging-monitoring.md` | 15 |
 | `security/management-plane-hardening` | P1 | complete | `security/management-plane-hardening.md` | 17 |
 | `security/script-and-code-signing` | P1 | complete | `security/script-and-code-signing.md` | 13 |

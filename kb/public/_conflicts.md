@@ -343,6 +343,7 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
   24H2/25H2. Whether v5.1.0's front matter updates the tested release was not confirmed this pass
   (the CIS PDF itself is behind registration). Flag before citing CIS L1 items as validated for
   24H2/25H2 without checking v5.1.0's own applicability statement. (topic: security/baselines-catalog)
+  - Re-read 2026-09-27, still open: CIS's September 2026 update (S-m3qbkeev) lists v5.1.0's changes (Defender AV recommendations moved to their own benchmark, 3 updated, 1 removed) but no tested release; the PDF is behind registration. (topic: security/baselines-catalog)
 - No other cross-source disagreement was established this pass (most rows are UNK rather than
   conflicting DOC facts, since the machine-readable sources needed for a real crosswalk were not
   downloaded — see `gaps.A.md`).
