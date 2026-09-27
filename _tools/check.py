@@ -63,6 +63,7 @@ for r in read_csv("_artifacts.csv", ("path", "source_id", "sha256")):
         errors.append(f"artifact {r['path']} names unknown source {r['source_id']}")
     if not os.path.isfile(os.path.join(KB, r["path"])):
         errors.append(f"artifact {r['path']} is missing")
+cited = 0
 for p in glob.glob(os.path.join(KB, "**", "*.csv"), recursive=True):
     rel = os.path.relpath(p, KB)
     try:
@@ -75,7 +76,16 @@ for p in glob.glob(os.path.join(KB, "**", "*.csv"), recursive=True):
     if bad:
         errors.append(f"{rel} has {len(bad)} row(s) whose column count differs from the header "
                       f"(unquoted comma?), first at line {bad[0]}")
-cited = 0
+    # a data file's source columns (source, sources, source_id, evidence_source_ids) must name known ids;
+    # the root ledgers are checked above
+    if rows and not os.path.basename(rel).startswith("_"):
+        cols = [i for i, h in enumerate(rows[0]) if h.strip().lower().endswith(("source", "sources", "source_id", "source_ids"))]
+        for n, r in enumerate(rows[1:], start=2):
+            for i in cols:
+                for sid in kbid.ANY_ID.findall(r[i] if i < len(r) else ""):
+                    cited += 1
+                    if sid not in known:
+                        errors.append(f"{rel}:{n} cites unknown source {sid}")
 for p in glob.glob(os.path.join(KB, "**", "*.md"), recursive=True):
     rel = os.path.relpath(p, KB)
     try:

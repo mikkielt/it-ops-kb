@@ -363,7 +363,8 @@ def test_index_extras_flow(tmp_path):
     assert all(read(d, f) == before[f] for f in GEN), "files changed on rebuild"
     assert all("\r" not in before[f] for f in GEN), "\\r in a generated file"
     call(d, B, ["--check"], 0, "out_of_date=0")
-    call(d, "check.py", [], 0)
+    # build_index counts known ids only; check.py reports the unknown one in the data file's sources column
+    call(d, "check.py", [], 1, "ad/table-only.csv:3 cites unknown source S999999")
 
 
 T0 = next(iter(csv.DictReader(io.StringIO(read(KB, "_coverage.csv")))))["topic"]

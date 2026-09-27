@@ -127,6 +127,13 @@ class TestToolChecks:
         p = subprocess.run([sys.executable, os.path.join(d, "_tools", "check.py")], capture_output=True, text=True, timeout=120)
         assert "auth/kerberos.md cites unknown source S-zzzzzzzz" in p.stdout, p.stdout[-2000:]
 
+    def test_check_py_reads_source_columns_of_data_csvs(self, tmp_path):
+        d = copy_kb(str(tmp_path / "kb"))
+        with open(os.path.join(d, "auth", "threats.csv"), "a", encoding="utf-8") as f:
+            f.write("X,y,z,S3 bucket and S-1-5-18 are not ids here,S-zzzzzzzz\n")
+        p = subprocess.run([sys.executable, os.path.join(d, "_tools", "check.py")], capture_output=True, text=True, timeout=120)
+        assert "cites unknown source S-zzzzzzzz" in p.stdout and "S3" not in p.stdout.split("cites unknown source")[-1], p.stdout[-2000:]
+
     def test_pinned_artifacts_match(self):
         code, out = run(os.path.join(TOOLS, "fetch.py"), "--offline")
         assert code == 0, out[-3000:]
