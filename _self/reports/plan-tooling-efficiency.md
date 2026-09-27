@@ -218,10 +218,10 @@ The only runtime dependency seriously considered is `mcp`. Leave it out, or put 
 ## Proposed project shape
 
 - `pyproject.toml` at the root with no runtime dependencies:
-  - `requires-python = ">=3.9"`;
+  - `requires-python = ">=3.9"` (raised to `>=3.11` on 2026-09-27: `_self/work-left.md`);
   - a `dev` dependency group (PEP 735: pytest, ruff; uv includes it by default, `arch/python-single-package-extras.md:30`);
   - `[tool.ruff]` in place of part of the kb-verify lint baseline for the Python files.
-- Keep the scripts in `_tools/` and the `python3 _tools/x.py` entry points. They are part of the docs, the skills,
+- Keep the scripts in `_tools/` and the `python3 _tools/<tool>.py` entry points. They are part of the docs, the skills,
   the plugin manifest and the hooks. Moving to a `src/` package would touch all of them for no runtime gain.
 - `.gitignore` already covers `_cache/`, where the index goes.
 

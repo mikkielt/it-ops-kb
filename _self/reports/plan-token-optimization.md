@@ -5,6 +5,7 @@
 How the open decisions went:
 - **T1 (clone tool names):** no `--plugin-dir .` in a clone. It loads the project skills and agents twice. Instead, a clone registers `kb` and the docs servers at local scope (`kb_mcp.py --register-local`), and the agents list both tool names.
 - **T7:** the root `.mcp.json` does load into a root-sourced plugin, so the docs servers moved to `.claude-plugin/it-ops-kb-docs/`.
+- **T6, reversed 2026-09-27 (`56763bd`):** the change skills are model-invocable again, so a change request reaches them; `.claude/hooks/kb_change_router.py` names the skill, and they never ship in the plugin, so hosts still pay nothing for them (`_self/maintaining.md`).
 - **T12:** the signals live in `_tools/signals.csv`, checked by a test, not in front matter.
 - **Found on the way:** the kb server lacked `resultType` (MCP 2026-07-28), so Claude Code 2.1.282 loaded no kb tools from the plugin. Fixed.
 

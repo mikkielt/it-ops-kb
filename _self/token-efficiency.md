@@ -35,7 +35,7 @@ The cost model all of them follow: a lookup costs the agent's fixed start contex
 ## 4. Smaller always-loaded context
 
 - **`AGENTS.md` holds only the lookup rules**, at most 4 KB (tested). It loads in every session and subagent; the split took it from 15.9 KB to 3.2 KB (recommendation F). Maintainer rules sit in `_self/`, one file per job, read by the skills that need them (`_self/README.md`).
-- **The plugin ships little.** In a host only the `kb` server's instructions and tool descriptions and the skill and agent names reach every session: about 312 tokens (`_self/plugin.md`; "Always-on cost in a host").
+- **The plugin ships little.** In a host only the `kb` server's instructions and tool descriptions and the skill and agent names reach every session: about 1.45k tokens, most of it the `kb_pack` schema and the server instructions (`_self/plugin.md`; "Always-on cost re-measured, and corrections").
 - **Descriptions stay out of listings.** `/kb-review-workspace` and `/kb-gap` set `disable-model-invocation: true`, so they cost nothing until run; the clone-only change skills are never in `plugin.json` (`_self/plugin.md`).
 - **The plugin is split.** The documentation servers are a second plugin (`.claude-plugin/it-ops-kb-docs/.mcp.json`), so a host that needs only the kb does not carry three more servers' instructions (plan T7).
 - **The hooks cost nothing when not used.** The `kb:` hook returns before loading the kb for a prompt without the prefix; the change router adds nothing to questions and harness messages; `.claude/hooks/session-start.sh` runs only in Claude Code on the web and prints a short status.

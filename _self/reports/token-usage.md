@@ -572,3 +572,23 @@ Each cell is one run, so the cost difference is within run-to-run noise (the bef
 - The router: $0.018, 9 s, 14k input tokens per covered question; 12 of 14 fully right (the Haiku reader dropped the TGT step of `x1_synth` twice).
 - Not covered: the kb arms cost the same or slightly more; Sonnet stopped at `none` on the Purview question; Opus was right in all 4 runs.
 - 69 runs of the first pass returned "You've hit your session limit" at $0 and passed as answers; `agent_bench.py` now records them as errors.
+
+## Always-on cost re-measured, and corrections (2026-09-27)
+
+### Method
+Fresh headless sessions in an empty scratch directory, `claude -p "Reply with the single word ok." --model haiku --output-format json --no-session-persistence --setting-sources project,local`, 3 runs without the plugin and 3 with `--plugin-dir` pointing at this repository (no install). Input = uncached + cache writes + cache reads of the one request. `claude plugin details` needs an installed plugin, and undercounts anyway (it misses path-listed agents and inline MCP servers: "Always-on cost in a host").
+
+### Result
+| arm | input tokens per run |
+|---|---|
+| no plugin | 22,038 (all 3) |
+| `--plugin-dir` | 23,485, 23,485, 22,552 |
+
+The plugin adds about **1.45k tokens** to every session once its `kb` server has connected. The low run (+514) and one of four later runs (22,784) started before the server connected, so its instructions and the `kb_pack` schema were missing from the first request. By size, the 1.45k is the `kb_pack` schema (1,493 characters), the server instructions (1,370; 1,191 on 2026-09-26: the CODE and SNIPPET rules, the Python domain and the `check:` line), the `kb-lookup` skill description (447; was 412), the two agent descriptions (242 + 255) and the 7 deferred tool names.
+
+The "about 312 tokens" in `_self/design.md`, `_self/plugin.md` and `_self/work-left.md` came from `claude plugin details` on 2026-09-26 (skills and instructions only) and never matched this report's own `/context` table (about 800 without the instructions); 1.45k replaces it.
+
+### Corrections to earlier sections
+- "Router second pass" says the kb server's tools are `anthropic/alwaysLoad`. Only `kb_pack` is, since plan T3 (2026-09-25); `_tools/test_kb_mcp.py` asserts it.
+- "What is left" (2026-09-25): the 233 unlinked ledger entries are down to 16, left unlinked on purpose, and no DOC/COMMUNITY tag without a source id remains (`_self/work-left.md`, 2026-09-26).
+- "Status of the recommendations": the `/kb-lookup` skill is 4.3 KB now (3.0 KB then), `AGENTS.md` 4,091 bytes against its 4,096-byte cap (3.2 KB then). The `kb-lookup` agent preloads the skill, so its 3.9k start context has likely grown by about 300 tokens; not re-measured.

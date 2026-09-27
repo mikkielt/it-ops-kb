@@ -7,6 +7,10 @@ Done: W1 CODE (ef8f1d8, b0d0ed9, 8e786fa), W2 SNIPPET (9f6ecd9 to 9f7e578), W3 e
 - GitHub branch protection for `main`: undecided; read GitHub's live docs on required status checks first.
 
 **Other open items from 2026-09-27 (independent of W):**
+- Done 2026-09-27: `_self/token-efficiency.md` catalogues every token-saving technique; the reports were audited against the code, and corrections plus a re-measured always-on cost went into `_self/reports/token-usage.md` ("Always-on cost re-measured, and corrections"). Open from it:
+  - The plugin costs about 1.45k tokens per host session, not 312; the `kb_pack` schema (1.5k characters) and the server instructions (1.4k, up 15% since 2026-09-26) are most of it. Decide whether to trim them, and check `rag.py eval` and a host lookup after any cut.
+  - `AGENTS.md` is 4,091 of its 4,096 bytes: the next addition needs a cut elsewhere.
+  - Re-measure the `kb-lookup` agent's start context (3.9k on 2026-09-26; the skill it preloads grew from 3.0 to 4.3 KB).
 - Done 2026-09-27: Python 3.9 was end-of-life; `requires-python` is now `>=3.11` (the oldest release with security fixes after October 2026), development and CI run on 3.14 (`.python-version`), and CI runs the tests on 3.11 too.
 
 **2026-09-27: the kb's own docs moved to `_self/`.** Agents read `_self/` (see `_self/README.md`); people read the short root `README.md`; `AGENTS.md` stays the lookup rules. `MAINTAINING.md` became `_self/maintaining.md` plus `_self/content-rules.md`, `_self/tools.md`, `_self/git.md` and `_self/plugin.md`; the coverage table moved from the README to `_self/coverage.md`; the plans and the token report are dated records in `_self/reports/`; `_self/design.md` holds the current conclusions on when the kb is token-efficient. `_self/` is out of `pack` and the default search (`rag.py search --index` finds it). `_tools/selfdoc.py` lists docs behind the files they describe (`_self/map.csv`); `/kb-self` updates them, and `/kb-verify` reports them. Open:
