@@ -35,6 +35,58 @@ The open work, and only that: a finished item leaves this file (its commit recor
 - **Licence census of every source.** Classify each source by what its licence allows with its content: read and paraphrase only, quote briefly, or copy and redistribute (keep a verbatim copy, with attribution). Record it in a checkable form, since the `licence` column of `_sources.csv` is free text today, with variant spellings of one licence and "not verified" rows; `check.py` can then test it. Where a source's terms are unclear, read its terms page or LICENSE file. This comes before a later task: decide which source documents may be kept locally and diffed in git, instead of only being hashed in `_fetch_state.csv`.
 - **Header sources no fact cites:** the kb-verify lint warns about them (`python3 .claude/skills/kb-verify/lint.py`). Per article with `/kb-refresh`: cite the source in a fact it supports, else drop it from the front matter (removing one can empty its `used_in`).
 
+## Fact diff: resolving source changes into fact updates (draft design)
+
+**Before building: interview the user in depth.** This draft comes from one research pass and a short interview. Build it only after the other open items here are done, and re-interview first on every open question below. The goal is to turn "a source changed" into "these facts still hold, these changed, these are gone" deterministically: from a single edited page to a documentation overhaul that splits, merges, moves or retires pages, including links that go dead or turn into zombies (200 OK with unrelated content). **Token efficiency comes first**, as for the whole kb: detection, matching and most re-confirmation cost no model tokens, and a model reads only the few facts whose backing passage actually changed, each with its old and new passage, never whole pages.
+
+- **Provider registry and a probe skill.** A data file of knowledge providers (per host or site: Microsoft Learn, raw GitHub files at a commit, github.com, code.claude.com, modelcontextprotocol.io, GitLab docs, a generic fallback for the long tail). It records each provider's properties, with the date they were probed:
+  - version signals: page metadata, a git commit per page, ETag or Last-Modified, and whether each is usable;
+  - stable ids that survive moves;
+  - a raw or markdown endpoint;
+  - sitemap and `lastmod`;
+  - redirect records;
+  - a public source repository and its history API;
+  - a search API;
+  - how its MCP server reports freshness;
+  - rate limits and licence class.
+
+  A skill probes a provider (live requests, deterministic checks) and updates its row. The fetch tools read the row to pick the cheapest reliable signal per source. Teams add rows for their internal providers (wikis, repositories).
+- **Detection, cheapest signal first, no model.**
+  - A per-source version id from the provider: on Learn, `git_commit_id`, `updated_at` and `document_id` from the page's `<head>`, read by streaming only the first few KB. Learn sends no usable ETag, and its MCP server returns bare markdown with no date or version. For pinned raw files: a newer commit on the branch.
+  - Then HTTP validators where they work, then the text hash `fetch.py` keeps today.
+  - Site-level changes: diff the provider's sitemap (added, removed, `lastmod`) and redirect records (Learn's `.openpublishing.redirection*.json` files map old paths to new ones, sometimes to an anchor on a merged page). 301 chains are followed and recorded.
+  - Zombies and soft 404s: a sibling-URL test (fetch a bogus path on the same site and compare), and a similarity fingerprint of the page (MinHash or simhash, stdlib). A 200 page whose fingerprint collapses toward the site's landing or error page is dead.
+- **Fact anchors.** Each fact records where its evidence sits, without copying licence-restricted text. The draft stores the section heading path, the fact's key terms and a hash of the normalized backing sentence. The heading is only a hint for ranking candidates, never a constraint. Matching searches the whole new page. If the page has no match, it searches the pages the provider links it to: the redirect target, pages added in the same sitemap diff, and the provider's search. So a passage that moved to another section or another page is still found. Open: whether to also keep a short quote where the licence census allows copying.
+- **Resolution per fact after a source changes.**
+  - Anchor found verbatim: re-date the fact with no model (decided).
+  - Found with changed numbers, versions or names: flag the fact with the old and new passage.
+  - Not found: search across pages.
+  - Still nothing: the fact goes to a model check (supported, contradicted, or not enough information, as in FEVER and AIS), or becomes `[UNK]` with a `_gaps.md` entry.
+  - Every outcome is logged like a census verdict, and the commit carries `KB-Verified`.
+- **Old versions come from upstream, not the kb** (decided). The kb commits hashes, version ids and anchors, never licence-restricted text. When a diff needs the old text, it comes from the provider's history: the public docs repository at the stored commit, or a Wayback or Memento snapshot at the fact's date. Local `_cache/snapshots/` is a bonus. The licence census (Content, above) decides whether any text may be committed.
+- **Learn first, then the other providers** (decided): Learn exposes the richest signals and has the most sources.
+- **Research leads (not in the kb yet):**
+  - Learn's page meta tags, `?accept=text/markdown` endpoint, per-product sitemaps (`learn.microsoft.com/_sitemaps/sitemapindex.xml`) and undocumented search API with `lastUpdatedDate`.
+  - The public `MicrosoftDocs` repositories and their redirection files. `memdocs` is archived, while pages name a private `memdocs-pr` commit.
+  - Memento (RFC 7089) and the Wayback availability and CDX APIs.
+  - Soft-404 detection (Bar-Yossef et al., WWW 2004).
+  - Reference rot and content drift (Klein, Jones, Van de Sompel et al.).
+  - changedetection.io and urlwatch as filter-chain designs.
+  - trafilatura and htmldate as extraction and date rules to port.
+  - AIS and FEVER for claim checks.
+  - None of the docs MCP servers probed offers resource subscriptions or a change feed.
+
+  Record the confirmed ones as kb facts (`/kb-research`) when the work starts.
+- **Open questions for the interview:**
+  - Anchor contents, and quotes where licences allow.
+  - Where the provider registry lives: per root, or shared.
+  - Thresholds for "changed" and "dead".
+  - How a split page's facts are reassigned to the new pages.
+  - How often detection runs: on demand, before a census, or scheduled.
+  - How results reach the user: a report, or direct commits.
+  - Interplay with the census and `fetch.py --diff`, whether to replace or extend them.
+  - What happens when a source is gone and no successor exists.
+
 ## Distribution
 
 - **Triage of gap reports is manual.** Maintainers turn `/it-ops-kb:kb-gap` reports into `_gaps.md` entries and eval rows, then `/kb-research` or `/kb-add-topic` (`kb/_self/plugin.md`, the triage paragraph). It stays manual: no scheduled agent pushes unreviewed research to `main`.
