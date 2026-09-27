@@ -55,6 +55,17 @@ _self/plugin.md,.claude/hooks/kb_change_router.py
 _self/design.md,_self/reports/*.md
 _self/design.md,_tools/kb_ask.py
 _self/design.md,AGENTS.md
+_self/token-efficiency.md,_tools/kbfacts.py
+_self/token-efficiency.md,_tools/kb_mcp.py
+_self/token-efficiency.md,_tools/kb_hook.py
+_self/token-efficiency.md,_tools/kb_ask.py
+_self/token-efficiency.md,_tools/rag.py
+_self/token-efficiency.md,.claude/agents/*.md
+_self/token-efficiency.md,.claude/skills/kb-lookup/SKILL.md
+_self/token-efficiency.md,.claude/hooks/*
+_self/token-efficiency.md,.claude-plugin/**
+_self/token-efficiency.md,AGENTS.md
+_self/token-efficiency.md,_self/reports/*.md
 _self/doc2query.md,_tools/doc2query.py
 _self/doc2query.md,_tools/doc2query/*
 _self/coverage.md,_tools/build_index.py

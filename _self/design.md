@@ -1,6 +1,6 @@
 # Design: how the kb works, and when it is token-efficient
 
-The reasoning behind the kb's shape, with the measurements it rests on. Numbers are dated: they come from `_self/reports/token-usage.md` (section names in quotes) and change with Claude Code versions and models. Re-measure with `_tools/agent_bench.py` before relying on an old number, and add the result to the report as a new dated section.
+The reasoning behind the kb's shape, with the measurements it rests on. Numbers are dated: they come from `_self/reports/token-usage.md` (section names in quotes) and change with Claude Code versions and models. Re-measure with `_tools/agent_bench.py` before relying on an old number, and add the result to the report as a new dated section. Each technique, with the file that implements it, is listed in `_self/token-efficiency.md`.
 
 ## The idea
 

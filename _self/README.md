@@ -13,6 +13,7 @@ Everything an agent needs to run, change and ship this kb, except the lookup rul
 | `_self/git.md` | committing, syncing, merging, reading the history | rules |
 | `_self/plugin.md` | changing the plugin, installing it in another project, a team's own kb (`KB_ROOT`) | rules and runbook |
 | `_self/design.md` | how the kb works and why; when it is token-efficient and when it is not | explanation |
+| `_self/token-efficiency.md` | changing anything a lookup touches (pack, the hooks, the MCP server, the router, agents, plugin, `AGENTS.md`): every token-saving technique, its file and its measurement | catalogue |
 | `_self/doc2query.md` | document expansion for pack: protocol and results | protocol |
 | `_self/coverage.md` | every topic's status, files and source count | generated (`build_index.py`) |
 | `_self/work-left.md` | at the start of a maintenance session: the open work | state |
