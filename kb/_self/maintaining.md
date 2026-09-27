@@ -32,6 +32,7 @@ The routing is also deterministic: `.claude/hooks/kb_change_router.py`, a UserPr
 | `/kb-setup` | the setup above, with a pass/fail report | this file |
 | `/kb-research <question>` | research a question in the context of the topics the kb has, then extend them | content rules, tools, git |
 | `/kb-add-topic <domain>/<slug>` | research and write a new topic | content rules, tools, git |
+| `/kb-add-root <name>` | a new knowledge root beside `kb/public` (name, id prefix, visibility), created with `kbroot.py` and checked | content rules, git |
 | `/kb-refresh <topic\|dir\|file\|S-id>` | diff sources and update the facts | content rules, tools, git |
 | `/kb-census [date]` | confirm every source is current: mechanical checks, reading the undecided ones, dates only for what was confirmed, a sample check, the census tag | content rules, tools, git |
 | `/kb-verify [prefixes]` | quality gate before a commit or a push | content rules, tools |

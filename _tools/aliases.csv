@@ -120,3 +120,5 @@ provisioned throughput,provisioned throughput
 provisioned throughput units,provisioned throughput
 langgraph,langgraph
 xdist,pytest-xdist
+ctx7,context7
+devin wiki,deepwiki

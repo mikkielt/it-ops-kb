@@ -20,9 +20,12 @@ Tools (all read-only; they wrap rag.py and kbfacts.py and read the kb files, nev
   kb_source  source rows by id (legacy S123 or hash S-xxxxxxxx), with superseded_by, like `rag.py src`; `cited`
              adds every file line that names each id
   kb_status  how current this copy is: its commit and date, the latest census-* tag (or _census/ log), source and
-             topic counts, the newest retrieved_utc
-  kb_topics_for  kb topics that code touches, like `rag.py topics-for`: the curated signals of kb/public/_retrieval/signals.csv
+             topic counts, the newest retrieved_utc, and the roots it serves
+  kb_topics_for  kb topics that code touches, like `rag.py topics-for`: the curated signals of each root's signals.csv
              found in the files or text given (paths relative to the host project, CLAUDE_PROJECT_DIR or the cwd)
+
+One server serves every root (kb/public, a team's kb/<name>/, the KB_ROOTS directories): paths and topics print
+qualified (`public/intune/x.md:12`), and kb_pack, kb_search, kb_facts and kb_audit take an optional `root`.
 
 response_format: `concise` or `detailed` on kb_pack (default detailed: answers need the urls), kb_facts, kb_audit
 and kb_search (default concise). Every tool description starts with "Documentation facts from it-ops-kb", so a
@@ -39,8 +42,6 @@ import contextlib, csv, io, json, os, re, subprocess, sys, threading
 TOOLS = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, TOOLS)
 import rag, kbcommon, kbfacts  # noqa: E402
-
-KB = kbcommon.KB  # KB_ROOT (a second kb with the same layout, e.g. a team's own facts), else this repository
 
 NAME, VERSION = "kb", "1.2.0"
 MODERN = "2026-07-28"
@@ -61,12 +62,8 @@ INSTRUCTIONS = (
     "and the url from the pack's sources footer. Single facts: call kb_pack yourself; several parts: one kb_pack with "
     "questions=[...]. Use the kb-lookup agent only for long research whose output would fill your context. Never start a general-purpose agent for a "
     "kb lookup. These tools hold documentation facts, not live device or directory data.")
-if KB != kbcommon.PUBLIC:  # a second kb served with KB_ROOT: its own name; the verdict and tag rules are the same
-    INSTRUCTIONS = (f"A kb with it-ops-kb's layout at {KB} (KB_ROOT), served by the it-ops-kb tools: a team's own facts, "
-                    "separate from it-ops-kb. " + INSTRUCTIONS.split("AI agents). ", 1)[1])
 DOCS = "Documentation facts from it-ops-kb (not live device or directory data). "
-if KB != kbcommon.PUBLIC:
-    DOCS = f"Documentation facts from the kb at {KB} (KB_ROOT; not live device or directory data). "
+ROOT = {"type": "string", "description": "one root only, e.g. 'public'"}
 FORMAT = {"type": "string", "enum": ["concise", "detailed"],
           "description": "concise: fact lines with path:line and tag, no url footer; detailed: full text and urls"}
 
@@ -83,6 +80,7 @@ TOOL_LIST = [
                        "description": "the parts of a multi-part question, one pack each (instead of question)"},
          "budget": {"type": "integer", "minimum": 200, "maximum": 6000, "default": 1200, "description": "about this many tokens per question; 3+ questions share 2x this (at least 800 each)"},
          "domain": {"type": "string", "description": "limit to one domain directory, e.g. 'auth'"},
+         "root": ROOT,
          "response_format": {**FORMAT, "default": "detailed"}},
          "additionalProperties": False},
      "annotations": {"title": "Evidence pack for a question", **READ_ONLY},
@@ -93,6 +91,7 @@ TOOL_LIST = [
      "inputSchema": {"type": "object", "properties": {
          "prefix": {"type": "string"},
          "tags": {"type": "array", "items": {"type": "string", "enum": ["DOC", "CODE", "DER", "COMMUNITY", "UNK"]}},
+         "root": ROOT,
          "response_format": {**FORMAT, "default": "concise"}},
          "required": ["prefix"], "additionalProperties": False},
      "annotations": {"title": "Fact lines by prefix and tag", **READ_ONLY}},
@@ -103,6 +102,7 @@ TOOL_LIST = [
          "prefix": {"type": "string", "description": "a domain or topic path; omit for the whole kb"},
          "status": {"type": "string", "enum": ["complete", "partial", "unknown"]},
          "entries": {"type": "boolean", "default": False, "description": "also list the linked ledger entries"},
+         "root": ROOT,
          "response_format": {**FORMAT, "default": "concise"}},
          "additionalProperties": False},
      "annotations": {"title": "Audit articles", **READ_ONLY}},
@@ -114,15 +114,16 @@ TOOL_LIST = [
          "query": {"type": "string", "description": "3-8 keywords, e.g. 'pim activation latency'"},
          "k": {"type": "integer", "minimum": 1, "maximum": 20, "default": 8, "description": "number of hits"},
          "domain": {"type": "string", "description": "limit to one domain directory, e.g. 'auth' or 'dsc'"},
+         "root": ROOT,
          "index": {"type": "boolean", "default": False,
-                   "description": "also search the root files (_answers.md, _gaps.md, _conflicts.md, README.md, _coverage.csv) and the kb's own docs (kb/_self/)"},
+                   "description": "also search each root's ledgers (_answers.md, _gaps.md, _conflicts.md, _coverage.csv), README.md and the kb's own docs (kb/_self/)"},
          "response_format": {**FORMAT, "default": "concise"}},
          "required": ["query"], "additionalProperties": False},
      "annotations": {"title": "Search the kb", **READ_ONLY}},
     {"name": "kb_show", "title": "Show kb lines",
      "description": DOCS + "Lines of a kb file, numbered: read around a pack or search hit.",
      "inputSchema": {"type": "object", "properties": {
-         "path": {"type": "string", "description": "kb-relative path, optionally with :LINE (e.g. 'auth/kerberos.md:42')"},
+         "path": {"type": "string", "description": "a path as the tools print it, optionally with :LINE (e.g. 'public/auth/kerberos.md:42')"},
          "line": {"type": "integer", "minimum": 1, "description": "first line (overrides :LINE)"},
          "n": {"type": "integer", "minimum": 1, "maximum": MAX_LINES, "default": 40, "description": "number of lines"}},
          "required": ["path"], "additionalProperties": False},
@@ -137,7 +138,7 @@ TOOL_LIST = [
      "annotations": {"title": "Resolve source ids", **READ_ONLY}},
     {"name": "kb_status", "title": "kb freshness",
      "description": DOCS + "How current this copy of the kb is: commit and date, latest census (the date the kb was "
-                    "confirmed current), number of sources and topics, newest retrieved_utc.",
+                    "confirmed current), number of sources and topics, newest retrieved_utc, the roots it serves.",
      "inputSchema": {"type": "object", "properties": {}, "additionalProperties": False},
      "annotations": {"title": "kb freshness", **READ_ONLY}},
     {"name": "kb_topics_for", "title": "kb topics for code",
@@ -165,6 +166,8 @@ def guarded():
             yield
     except SystemExit as e:
         raise ToolError(str(e.code) if e.code not in (None, 0) else "failed")
+    except kbcommon.RootError as e:  # a malformed ROOT_FILE, or two roots sharing a name or an id prefix
+        raise ToolError(str(e))
 
 
 # ---------------------------------------------------------------- tools
@@ -177,7 +180,7 @@ def kb_search(args):
     notes = []
     fmt = fmt_of(args, "concise")
     with guarded():
-        hits = rag.search(query, k, args.get("domain") or None, bool(args.get("index")), notes)
+        hits = rag.search(query, k, args.get("domain") or None, bool(args.get("index")), notes, root_of(args))
         if fmt == "detailed":
             rag.add_urls(hits)
     out = [f"note: {n}" for n in notes]
@@ -186,6 +189,14 @@ def kb_search(args):
                    + ": the kb does not cover this (try other words, or index=true for _answers.md and _gaps.md)")
     out.append(rag.format_hits(hits, fmt))
     return "\n".join(out).strip()
+
+
+def root_of(args):
+    """The `root` argument, checked against the roots this server serves (None when absent)."""
+    name = str(args.get("root") or "").strip()
+    if name and name not in {r.name for r in kbcommon.roots()}:
+        raise ToolError(f"no root {name!r}; roots: {', '.join(r.name for r in kbcommon.roots())}")
+    return name or None
 
 
 def fmt_of(args, default):
@@ -205,7 +216,7 @@ def kb_pack(args):
         raise ToolError(f"at most {kbfacts.MAX_QUESTIONS} questions per call")
     budget = min(max(int(args.get("budget") or 1200), 200), 6000)
     with guarded():
-        return kbfacts.pack_many(questions, budget, args.get("domain") or None, fmt_of(args, "detailed"))["text"]
+        return kbfacts.pack_many(questions, budget, args.get("domain") or None, fmt_of(args, "detailed"), root_of(args))["text"]
 
 
 def kb_facts(args):
@@ -215,13 +226,14 @@ def kb_facts(args):
     kinds = {str(k).upper() for k in (args.get("tags") or [])}
     fmt = fmt_of(args, "concise")
     with guarded():
-        us = [u for u in kbfacts.units(prefix) if u["tags"] and (not kinds or kinds & set(kbfacts.kinds_of(u["tags"])))]
+        us = [u for u in kbfacts.units(kbfacts.scope(prefix, root_of(args)))
+              if u["tags"] and (not kinds or kinds & set(kbfacts.kinds_of(u["tags"])))]
     return rag.format_facts(us, fmt, limit=400)
 
 
 def kb_audit(args):
     with guarded():
-        rows = kbfacts.audit(args.get("prefix") or None, args.get("status") or None)
+        rows = kbfacts.audit(args.get("prefix") or None, args.get("status") or None, root_of(args))
     if not rows:
         raise ToolError("no article matches")
     return rag.format_audit(rows, bool(args.get("entries")), fmt_of(args, "concise"))
@@ -235,12 +247,11 @@ def kb_show(args):
     if line and not line.isdigit():
         raise ToolError(f"{line!r}: line must be a positive number")
     n = min(max(int(args.get("n") or 40), 1), MAX_LINES)
-    full = os.path.realpath(kbcommon.resolve(path))
+    full = kbfacts.locate(path) if path else ""
     if not path or not kbfacts.showable(full):
         raise ToolError(f"{path!r}: not a path inside the kb")
-    root = os.path.realpath(KB)
-    rel = os.path.relpath(full, root if os.path.commonpath([full, root]) == root else os.path.realpath(kbcommon.HOME))
-    if {".git", "_private", "_cache"} & set(rel.split(os.sep)) or not os.path.isfile(full):
+    rel = shown_path(full)
+    if {".git", "_private", "_cache"} & set(rel.split("/")) or not os.path.isfile(full):
         raise ToolError(f"{path}: no such kb file")
     with guarded():
         text = rag.read_text(full)
@@ -251,7 +262,17 @@ def kb_show(args):
     if start > len(lines):
         raise ToolError(f"{path} has {len(lines)} lines")
     body = [f"{i:>5}  {lines[i - 1]}" for i in range(start, min(start + n, len(lines) + 1))]
-    return f"# {rel.replace(os.sep, '/')} lines {start}-{start + len(body) - 1} of {len(lines)}\n" + "\n".join(body)
+    return f"# {rel} lines {start}-{start + len(body) - 1} of {len(lines)}\n" + "\n".join(body)
+
+
+def shown_path(full):
+    """How the tools name an absolute path: qualified inside a root (`public/auth/kerberos.md`), else relative to
+    this repository (kb/_self docs, README.md)."""
+    for r in kbcommon.roots():
+        base = os.path.realpath(r.path)
+        if os.path.commonpath([full, base]) == base:
+            return kbcommon.qualify(r, os.path.relpath(full, base))
+    return os.path.relpath(full, os.path.realpath(kbcommon.HOME)).replace(os.sep, "/")
 
 
 def kb_source(args):
@@ -275,7 +296,7 @@ def kb_source(args):
     return "\n".join(out)
 
 
-def git(*args, cwd=KB):
+def git(*args, cwd=kbcommon.HOME):
     try:
         p = subprocess.run(["git", *args], cwd=cwd, capture_output=True, text=True, timeout=10)
     except (OSError, subprocess.SubprocessError):
@@ -287,8 +308,8 @@ def status():
     """{key: value} describing this copy: a git clone reports its HEAD; an installed plugin copy (no .git, in
     plugins/cache/<marketplace>/<plugin>/<version>/) reports its version, and reads commit dates and tags from the
     marketplace clone Claude Code keeps beside the cache, when that clone has the commit."""
-    info = {"kb_root": KB}
-    home = kbcommon.HOME if KB == kbcommon.PUBLIC else KB  # the clone or plugin copy that holds the kb
+    info = {"kb_dir": kbcommon.KB_DIR}
+    home = kbcommon.HOME  # the clone or plugin copy that holds the kb
     commit = git("rev-parse", "HEAD", cwd=home) if os.path.exists(os.path.join(home, ".git")) else None
     repo = home if commit else None
     parts = os.path.normpath(home).split(os.sep)
@@ -305,23 +326,43 @@ def status():
         info["commit_date"] = git("show", "-s", "--format=%cI", commit, cwd=repo) or "unknown"
         info["census_tag"] = git("describe", "--tags", "--abbrev=0", "--match", "census-*", commit, cwd=repo) or "none"
     info.setdefault("commit", "unknown (not a git clone or an installed plugin copy)")
-    census_dir = os.path.join(KB, "_census")
+    pub = kbcommon.public()
+    census_dir = os.path.join(pub.path, kbcommon.CENSUS_DIR)
     logs = sorted(f[:-4] for f in os.listdir(census_dir) if re.fullmatch(r"\d{4}-\d{2}-\d{2}\.csv", f)) if os.path.isdir(census_dir) else []
-    info["census_log"] = f"_census/{logs[-1]}.csv" if logs else "none"
+    info["census_log"] = kbcommon.qualify(pub, f"{kbcommon.CENSUS_DIR}/{logs[-1]}.csv") if logs else "none"
     try:
-        rows = kbcommon.read_sources()
+        rows = list(kbfacts.source_rows().values())
         dates = sorted(r.get("retrieved_utc", "")[:10] for r in rows if r.get("retrieved_utc"))
         info["sources"] = f"{len(rows)} ({sum(1 for r in rows if (r.get('superseded_by') or '').strip())} superseded)"
         info["newest_retrieved_utc"] = dates[-1] if dates else "none"
         info["oldest_retrieved_utc"] = dates[0] if dates else "none"
     except OSError:
         info["sources"] = "unreadable"
-    try:
-        with open(os.path.join(KB, "_coverage.csv"), encoding="utf-8", newline="") as f:
-            info["topics"] = str(sum(1 for _ in csv.DictReader(f)))
-    except OSError:
-        pass
+    counts = root_counts()
+    if any(t is not None for t, _ in counts.values()):
+        info["topics"] = str(sum(t or 0 for t, _ in counts.values()))
+    info["roots"] = "; ".join(f"{r.name} (prefix {r.id_prefix}, {r.visibility}, {counts[r.name][0] or 0} topics, "
+                              f"{counts[r.name][1]} sources)" for r in kbcommon.roots())
     return info
+
+
+def root_counts():
+    """{root name: (topics in its _coverage.csv or None, rows in its _sources.csv)}."""
+    out = {}
+    for r in kbcommon.roots():
+        topics = srcs = None
+        for name in (kbcommon.COVERAGE_CSV, kbcommon.SOURCES):
+            try:
+                with open(os.path.join(r.path, name), encoding="utf-8-sig", newline="") as f:
+                    n = sum(1 for _ in csv.DictReader(f))
+            except OSError:
+                n = None
+            if name == kbcommon.COVERAGE_CSV:
+                topics = n
+            else:
+                srcs = n or 0
+        out[r.name] = (topics, srcs)
+    return out
 
 
 def kb_status(_args):
@@ -358,7 +399,7 @@ def error(msg_id, code, message, data=None):
 
 
 def server_info():
-    return {"name": NAME, "title": "it-ops-kb" if KB == kbcommon.PUBLIC else f"kb at {KB} (KB_ROOT)", "version": VERSION}
+    return {"name": NAME, "title": "it-ops-kb", "version": VERSION}
 
 
 def handle(msg):

@@ -1,4 +1,4 @@
-# Plugin: layout rules, installing it elsewhere, a team's own kb
+# Plugin: layout rules, installing it elsewhere, a team's own roots
 
 The repository root is a Claude Code plugin marketplace (`.claude-plugin/marketplace.json`) with two read-only plugins. Sections 1-2 are the rules for changing them; sections 3-7 are the runbook an agent follows to set the kb up in another project (a person only asks for it).
 
@@ -70,13 +70,13 @@ Leave `it-ops-kb-docs` out of `enabledPlugins` when the team already has the Mic
 - **Known limit, a false `good`:** the verdict counts the question's key words in the best article, not meaning, so a `good` pack can be about something related. The pack prints a `check:` line when a name the question uses appears nowhere in the lead article, or when no single fact holds half the key words; the kb tools' instructions say to answer only if a cited line answers the question itself. Without that line the risk is lower, not gone: check that the cited fact answers what was asked, and report a miss with `/it-ops-kb:kb-gap`.
 - **Headless answers:** `_tools/kb_ask.py` needs a clone and the `claude` CLI; in a session with the plugin the path is `kb_pack` or `/it-ops-kb:kb-lookup`.
 
-## 6. A team's own facts: a second kb with `KB_ROOT`
+## 6. A team's own knowledge: roots beside `kb/public`
 
-Organisation-specific knowledge (hostnames, tenants, runbooks) never goes into this repository: it holds placeholders only. Keep it in a private repository with the same layout, and serve it with these tools:
-- **Layout:** domain directories of articles (front matter, Summary, Facts, Reference, Examples, one tag per fact), `_sources.csv`, `_artifacts.csv`, `_answers.md`, `_gaps.md`, `_conflicts.md`, and a coverage page holding the two HTML comment markers `coverage:start` and `coverage:end` between which `build_index.py` writes the table: its `_self/coverage.md` when it has that file, else its `README.md`. Its own retrieval data, all optional, goes in its `_retrieval/`: `signals.csv`, `lookup_eval.csv`, `doc2query/expansions.csv`, `index_extra.csv`; `aliases.csv` falls back to this repository's product aliases.
-- **Checks, from a clone of it-ops-kb:** `KB_ROOT=~/src/team-kb python3 _tools/build_index.py`, then `check.py` and `rag.py pack "<question>"` the same way. The read tools (`rag.py`, `kb_mcp.py`, the `kb:` hook) and the checks (`check.py`, `build_index.py`, `kbid.py`) honour `KB_ROOT`; the git, census and fetch tools work on this repository's `kb/public/` only.
-- **Serve it as a second server:** `claude mcp add --scope user kb-team -e KB_ROOT=$HOME/src/team-kb -- python3 ~/src/it-ops-kb/_tools/kb_mcp.py`. Its instructions, tool descriptions and `kb_status` name its root, so answers from the two kbs stay apart. Set `KB_ROOT` only on that server (`-e`), never in a shell profile: every kb tool started from that shell, the plugin's `kb` server and the `kb:` hook included, would serve the team kb instead. Its index file (`kbindex-r<root hash>-...`) sits beside it-ops-kb's in `_cache/` or the plugin data directory without either pruning the other.
-- **Size:** a word counts as a key word only when under a fifth of the kb's lines hold it, so a kb of one or two articles gives `weak` or `none` even for questions it answers; a few articles on different subjects are enough.
+A team keeps its own knowledge (its systems, repositories, runbooks; real hostnames and tenants allowed) in roots beside `kb/public`, and one `kb` server answers across all of them: a question that spans a vendor product and the team's own service gets both roots' facts in one pack, each line under its qualified path (`public/intune/...`, `mdm/enrol/...`).
+- **Where:** in the team's own fork or clone of it-ops-kb, as `kb/<name>/` created with `/kb-add-root` (`python3 _tools/kbroot.py add`), with its own id prefix, `_sources.csv`, ledgers, coverage page and `_retrieval/` data (`kb/_self/content-rules.md`, "Roots"). The fork pulls tools and `kb/public` from upstream without conflicts inside its own roots, and serves as the team's plugin marketplace (section 3 with the fork's url), so an installed plugin carries every root. Internal roots never go to the upstream remotes.
+- **Outside the repository:** `KB_ROOTS=DIR[:DIR]` adds roots kept elsewhere (each with its own `_root.md`) to the read tools and checks, e.g. `claude mcp add --scope user kb -e KB_ROOTS=$HOME/src/team-kb -- python3 ~/src/it-ops-kb/_tools/kb_mcp.py`. Set it on the server only (`-e`); git, census and fetch work on the repository's roots only. The index file then gets its own name (`kbindex-r<hash>-...`) beside the default one.
+- **Filter:** `root` on `kb_pack`, `kb_search`, `kb_facts` and `kb_audit` (`--root NAME` on the command line) keeps one root; `kb_status` lists every root with its prefix, visibility and counts.
+- **Size:** a word counts as a key word only when under a fifth of the lines of all roots together hold it, so a small team root reaches `good` for words the public root rarely uses.
 
 ## 7. Without plugins, and contributing back
 

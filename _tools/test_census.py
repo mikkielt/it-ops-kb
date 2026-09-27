@@ -15,6 +15,17 @@ from conftest import P, Repo, copy_kb, git_env, requires_git
 
 
 class TestCensusRules:
+    def test_root_option(self):
+        """census.py and fetch.py work on one of this repository's roots: an unknown one is a usage error."""
+        import subprocess, sys
+        from conftest import TOOLS
+        for args in (["census.py", "--root", "no-such-root", "summary", "x.csv"], ["fetch.py", "--offline", "--root", "no-such-root"]):
+            p = subprocess.run([sys.executable, os.path.join(TOOLS, args[0]), *args[1:]], capture_output=True, text=True)
+            assert p.returncode == 2 and "no such root" in p.stderr, p.stderr
+        p = subprocess.run([sys.executable, os.path.join(TOOLS, "fetch.py"), "--offline", "--root", "public"],
+                           capture_output=True, text=True)
+        assert p.returncode == 0 and p.stdout.startswith("ok="), p.stdout + p.stderr
+
     def test_classify(self):
         sha = "a" * 40
         cases = {

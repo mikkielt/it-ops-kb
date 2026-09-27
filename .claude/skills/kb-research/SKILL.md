@@ -47,7 +47,7 @@ Run each command on its own (no `;`, `&&`, pipes into other tools or loops): the
 
 ## 4. Write
 Follow the contract in `kb/_self/content-rules.md` and `.claude/skills/kb-add-topic/SKILL.md` (source rows first, written with Python's `csv` module; one tag per fact; licence strings; placeholders only).
-- Extending an anchor topic: add bullets to its Facts section, add the new ids to its `sources:` header, update `retrieved_utc` and, if it changed, `status`. Do not edit `_coverage.csv`, the `kb/_self/coverage.md` table or `used_in`: step 5 regenerates them.
+- Extending an anchor topic: add bullets to its Facts section, add the new ids to its `sources:` header, update `retrieved_utc` and, if it changed, `status`. Do not edit `_coverage.csv`, the root's `_coverage.md` table or `used_in`: step 5 regenerates them.
 - New topic, only where step 2 decided one: create it as `/kb-add-topic` describes (priority `P3` unless the user gives one) in the domain step 2 chose, and link it from the anchor's Reference section and back.
 - "How it fits": implications for this kb's frame (e.g. how an agent should call it, where secrets live, what tier an operation needs) are `DER` facts. State the derivation and the facts it rests on. Do not present a design choice as a vendor fact.
 - Add one answer to `_answers.md`, after the last `QK` entry (or at the end, before the `R` sections if there are none):
@@ -67,7 +67,7 @@ Follow the contract in `kb/_self/content-rules.md` and `.claude/skills/kb-add-to
 - Retrieval data (`kb/_self/content-rules.md`): `kb/public/_retrieval/signals.csv` rows for a new topic's code names, `_tools/aliases.csv` rows for a product's other names, and a `kb/public/_retrieval/lookup_eval.csv` row for each step-1 pack that missed an article the kb already had (`none` or `weak` although an article answered it).
 
 ## 5. Check
-- `python3 _tools/build_index.py` regenerates `_coverage.csv`, the `kb/_self/coverage.md` table and `used_in` from what you wrote.
+- `python3 _tools/build_index.py` regenerates `_coverage.csv`, the root's `_coverage.md` table and `used_in` from what you wrote.
 - `python3 _tools/check.py` must end `errors=0`.
 - `python3 .claude/skills/kb-verify/lint.py <each topic you edited or created>` must add no errors.
 - `python3 _tools/doc2query.py stale` must print `stale=0`: if you reworded facts that had expansions, `python3 _tools/doc2query.py prune` removes their rows.

@@ -6,7 +6,7 @@
                                            blocks, data rows), at most 2 hits per file; -u adds each hit's
                                            source origin urls
   rag.py src S1824 [S-k3f7q2zd ...]        source id -> title, url, version (and "superseded by" when set)
-  rag.py show PATH[:LINE] [-n 40]          print lines of a kb file
+  rag.py show PATH[:LINE] [-n 40]          print lines of a kb file (a path as the tools print it)
   rag.py pack QUESTION [--budget 1200] [-d DOMAIN] [--format concise]
                                            the evidence pack for a question: a `coverage: good|weak|none` verdict,
                                            the best fact lines grouped by article (path:line, tag) and one footer of
@@ -20,9 +20,14 @@
                                            _gaps.md/_conflicts.md entries linked to it (named, or via its sources);
                                            --unlinked lists the entries no topic marker, path or section links
   rag.py src S1824 --cited                 also every file line that names the id
-  rag.py eval [--file kb/public/_retrieval/lookup_eval.csv]   pack against the lookup eval set: expected article found, verdict
-  rag.py topics-for PATH... | --keywords TEXT   kb topics that code touches, from the curated code signals in
-                                           kb/public/_retrieval/signals.csv (e.g. PublicClientApplication -> auth/msal-public-client)
+  rag.py eval [--file FILE]                pack against the lookup eval sets (every root's lookup_eval.csv, or FILE):
+                                           expected article found, verdict
+  rag.py topics-for PATH... | --keywords TEXT   kb topics that code touches, from the curated code signals in each
+                                           root's signals.csv (e.g. PublicClientApplication -> public/auth/msal-public-client)
+
+Roots: every command spans all roots (kb/public, a team's kb/<name>/, KB_ROOTS) and prints qualified paths and
+topics (`public/intune/x.md:12`); --root NAME (topics, search, pack, facts, audit) keeps one root. A DOMAIN or PREFIX
+is qualified (`public/intune`) or bare (`intune`: that domain in every root).
 
 --format concise|detailed: pack defaults to detailed (answers need the urls); facts, audit and search to concise
 (facts grouped by file with a short tag and text, no url footer). Words that are product aliases
@@ -30,22 +35,22 @@
 Summary, Reference and Examples lines and untagged data rows, printed with `(no tag)`; they never make it `good`.
 
 Add --json (before the command) for machine output. artifacts/ directories are not indexed. search skips the
-root-level index files (README.md, _answers.md, _gaps.md, _conflicts.md, _coverage.csv) and the kb's own docs
+index files (README.md, each root's _answers.md, _gaps.md, _conflicts.md, _coverage.csv) and the kb's own docs
 (kb/_self/) unless --index; pack never sees them.
 """
 import argparse, csv, json, os, sys
 from collections import Counter, defaultdict
 import kbcommon, kbid, kbfacts
 
-KB = kbcommon.KB  # KB_ROOT, else this repository
 CITED = kbid.SOURCE_ID  # legacy ids (not prose like S1/S3 sleep states) and hash ids
 csv.field_size_limit(2**31 - 1)  # a very wide cell must not abort a read
 
 
 def read_text(rel):
-    """Return a kb file's text, or None (with a warning on stderr) if it cannot be read."""
+    """Return a kb file's text (a qualified or repository path, or absolute), or None (with a warning on stderr) if
+    it cannot be read."""
     try:
-        with open(kbcommon.resolve(rel), encoding="utf-8", errors="replace") as f:
+        with open(kbcommon.path_of(rel), encoding="utf-8", errors="replace") as f:
             return f.read()
     except OSError as e:
         print(f"warning: skipped {rel}: {e.strerror}", file=sys.stderr)
@@ -59,44 +64,49 @@ def positive_int(v):
     return n
 
 
-def search(query, k, domain, index=False, notes=None):
+def search(query, k, domain, index=False, notes=None, root=None):
     """The top-k hits for a query: kbfacts.search (the pack index; prose, code blocks and data rows included, the
-    root index files only with `index`)."""
-    return kbfacts.search(query, k, domain, index, notes)
+    index files only with `index`)."""
+    return kbfacts.search(query, k, domain, index, notes, root)
 
 
-def topics(domain):
+def topics(domain, root=None):
+    """{qualified domain (`public/intune`, or `public/(index)` for a root's own files): articles, subdirectories,
+    data files}, in every root or one; `domain` bare or qualified."""
+    want = kbfacts.scope(domain, root)
     out = defaultdict(lambda: {"articles": [], "dirs": Counter(), "data": []})
-    for root, dirs, files in os.walk(KB):
-        dirs[:] = sorted(d for d in dirs if d not in kbfacts.SKIP_DIRS - {"artifacts"} and not d.startswith("."))
-        for f in sorted(files):
-            rel = os.path.relpath(os.path.join(root, f), KB)
-            parts = rel.split(os.sep)
-            dom = parts[0] if len(parts) > 1 else "(index)"
-            if domain and dom != domain:
-                continue
-            if len(parts) > 2:  # nested directory: summarise by its first level
-                out[dom]["dirs"]["/".join(parts[:2]) + "/"] += 1
-            elif f.endswith(".md"):
-                text = read_text(rel)
-                if text is None:
+    for r in kbcommon.roots():
+        for base, dirs, files in os.walk(r.path):
+            dirs[:] = sorted(d for d in dirs if d not in kbfacts.SKIP_DIRS - {"artifacts"} and not d.startswith("."))
+            for f in sorted(files):
+                rel = kbcommon.qualify(r, os.path.relpath(os.path.join(base, f), r.path))
+                parts = rel.split("/")
+                dom = "/".join(parts[:2]) if len(parts) > 2 else f"{r.name}/(index)"
+                if want and not (kbfacts.in_prefix(dom, want) and len(parts) > 2):
                     continue
-                m = kbfacts.front_matter(text)
-                out[dom]["articles"].append({"path": rel, "topic": m.get("topic", ""), "title": m["title"],
-                                             "priority": m.get("priority", ""), "status": m.get("status", "")})
-            else:
-                out[dom]["data"].append(rel)
+                if len(parts) > 3:  # nested directory: summarise by its first level
+                    out[dom]["dirs"]["/".join(parts[:3]) + "/"] += 1
+                elif f.endswith(".md"):
+                    text = read_text(rel)
+                    if text is None:
+                        continue
+                    m = kbfacts.front_matter(text)
+                    out[dom]["articles"].append({"path": rel, "topic": kbcommon.qualify(r, m["topic"]) if m.get("topic") else "",
+                                                 "title": m["title"], "priority": m.get("priority", ""), "status": m.get("status", "")})
+                else:
+                    out[dom]["data"].append(rel)
     return {d: {**v, "dirs": dict(v["dirs"])} for d, v in sorted(out.items())}
 
 
 def source_rows():
+    """{id: row} of every root's _sources.csv (kbfacts.source_rows); exits when a ledger cannot be read."""
     try:
-        rows = kbcommon.read_sources()
+        rows = kbfacts.source_rows()
     except OSError as e:
         sys.exit(f"cannot read _sources.csv: {e.strerror}")
-    if rows and not {"id", "url"} <= rows[0].keys():
+    if rows and not {"id", "url"} <= next(iter(rows.values())).keys():
         sys.exit("_sources.csv lacks an 'id' or 'url' column")
-    return {r["id"]: r for r in rows}
+    return rows
 
 
 def sources(ids):
@@ -204,15 +214,31 @@ def format_audit(rows, entries=False, fmt="detailed"):
     return "\n".join(out)
 
 
-def run_eval(path):
-    """Run pack on every question of the eval set: an expected path must be among the pack's articles, and the
-    verdict must equal the expected one (`none` rows expect no path)."""
-    with open(os.path.join(KB, path), encoding="utf-8", newline="") as f:
-        cases = list(csv.DictReader(f))
+def eval_cases(path=None):
+    """[(root name, case)] of every root's lookup_eval.csv (under DATA_DIR), or of one file: `path` as given (else
+    as a qualified or repository path), its cases belonging to the root that holds it (else the public root)."""
+    if path is None:
+        files = [(r.name, os.path.join(r.path, kbcommon.DATA_DIR, "lookup_eval.csv")) for r in kbcommon.roots()]
+        files = [(n, p) for n, p in files if os.path.exists(p)]
+    else:
+        full = os.path.abspath(path) if os.path.exists(path) else kbcommon.path_of(path)
+        owner = next((r.name for r in kbcommon.roots()
+                      if os.path.commonpath([full, r.path]) == r.path), kbcommon.public().name)
+        files = [(owner, full)]
+    out = []
+    for name, p in files:
+        with open(p, encoding="utf-8", newline="") as f:
+            out += [(name, c) for c in csv.DictReader(f)]
+    return out
+
+
+def run_eval(path=None):
+    """Run pack on every question of the eval sets (eval_cases): an expected path (relative to the case's root)
+    must be among the pack's articles, and the verdict must equal the expected one (`none` rows expect no path)."""
     rows = []
-    for c in cases:
+    for root, c in eval_cases(path):
         res = kbfacts.pack(c["question"])
-        want = [p.strip() for p in c["expect_paths"].split(";") if p.strip()]
+        want = [kbcommon.qualify(root, p.strip()) for p in c["expect_paths"].split(";") if p.strip()]
         found = [p for p in want if p in res["paths"]]
         vok = res["verdict"] == c["expect_verdict"] or (c["expect_verdict"] == "good" and res["verdict"] == "weak" and c.get("allow_weak") == "yes")
         fok = bool(found) if want else True
@@ -228,30 +254,35 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--json", action="store_true")
     sub = ap.add_subparsers(dest="cmd", required=True)
-    t = sub.add_parser("topics"); t.add_argument("domain", nargs="?")
+    t = sub.add_parser("topics"); t.add_argument("domain", nargs="?"); t.add_argument("--root", help="one root only")
     s = sub.add_parser("search"); s.add_argument("query", nargs="+"); s.add_argument("-k", type=positive_int, default=8); s.add_argument("-d", "--domain")
+    s.add_argument("--root", help="one root only (e.g. public)")
     s.add_argument("-u", "--urls", action="store_true", help="resolve each hit's cited source ids to their origin url")
-    s.add_argument("--index", action="store_true", help="also search the root-level index files (README.md, _answers.md, ...) and the kb/_self/ docs")
+    s.add_argument("--index", action="store_true", help="also search the index files (README.md, each root's _answers.md, ...) and the kb/_self/ docs")
     s.add_argument("--format", choices=FORMATS, default="concise", help="detailed: 600 characters per hit (-u implies it)")
     r = sub.add_parser("src"); r.add_argument("ids", nargs="+")
     r.add_argument("--cited", action="store_true", help="also list every file line that names each id")
     pk = sub.add_parser("pack"); pk.add_argument("question", nargs="*"); pk.add_argument("--budget", type=positive_int, default=1200)
     pk.add_argument("-q", dest="parts", action="append", default=[], help="one part of a multi-part question (repeat, up to 6)")
     pk.add_argument("-d", "--domain"); pk.add_argument("--format", choices=FORMATS, default="detailed")
+    pk.add_argument("--root", help="one root only")
     fa = sub.add_parser("facts"); fa.add_argument("prefix"); fa.add_argument("--tag", help="comma-separated kinds, e.g. UNK,COMMUNITY")
-    fa.add_argument("--format", choices=FORMATS, default="concise")
+    fa.add_argument("--format", choices=FORMATS, default="concise"); fa.add_argument("--root", help="one root only")
     au = sub.add_parser("audit"); au.add_argument("prefix", nargs="?"); au.add_argument("--status")
+    au.add_argument("--root", help="one root only")
     au.add_argument("--entries", action="store_true", help="list the linked _gaps.md/_conflicts.md entries")
     au.add_argument("--unlinked", action="store_true", help="list _gaps.md/_conflicts.md entries no marker, path or section links to a topic")
     au.add_argument("--format", choices=FORMATS, default="concise")
     tf = sub.add_parser("topics-for"); tf.add_argument("paths", nargs="*", help="files or directories of the code to map")
     tf.add_argument("--keywords", help="text to map instead of (or as well as) files")
-    ev = sub.add_parser("eval"); ev.add_argument("--file", default=kbcommon.data_rel("lookup_eval.csv"))
+    ev = sub.add_parser("eval"); ev.add_argument("--file", help="one eval file (default: every root's lookup_eval.csv)")
     w = sub.add_parser("show"); w.add_argument("target"); w.add_argument("-n", type=positive_int, default=40)
     a = ap.parse_args()
 
     if a.cmd == "topics":
-        res = topics(a.domain)
+        if a.root and a.root not in {r.name for r in kbcommon.roots()}:
+            sys.exit(f"no root {a.root!r}")
+        res = topics(a.domain, a.root)
         if not res:
             sys.exit(f"no domain {a.domain!r}")
         if a.json:
@@ -267,7 +298,7 @@ def main():
                 print("  data: " + ", ".join(os.path.basename(p) for p in v["data"]))
     elif a.cmd == "search":
         notes = []
-        res = search(" ".join(a.query), a.k, a.domain, a.index, notes)
+        res = search(" ".join(a.query), a.k, a.domain, a.index, notes, a.root)
         for n in notes:
             print(f"note: {n}", file=sys.stderr)
         if a.urls:
@@ -298,7 +329,7 @@ def main():
             sys.exit("pack: give a question, or -q PART for each part")
         if len(parts) > kbfacts.MAX_QUESTIONS:
             sys.exit(f"pack: at most {kbfacts.MAX_QUESTIONS} parts")
-        res = kbfacts.pack_many(parts, a.budget, a.domain, a.format)
+        res = kbfacts.pack_many(parts, a.budget, a.domain, a.format, a.root)
         if a.json:
             return print(json.dumps(res, indent=1))
         print(res["text"])
@@ -307,21 +338,26 @@ def main():
         bad = kinds - set(kbfacts.KINDS)
         if bad:
             sys.exit(f"unknown tag kind(s): {', '.join(sorted(bad))} (use {', '.join(kbfacts.KINDS)})")
-        res = [u for u in kbfacts.units(a.prefix) if u["tags"] and (not kinds or kinds & set(kbfacts.kinds_of(u["tags"])))]
+        res = [u for u in kbfacts.units(kbfacts.scope(a.prefix, a.root))
+               if u["tags"] and (not kinds or kinds & set(kbfacts.kinds_of(u["tags"])))]
         if a.json:
             return print(json.dumps([{k: u[k] for k in ("path", "line", "section", "text", "tags")} for u in res], indent=1))
         print(format_facts(res, a.format, limit=len(res)))
     elif a.cmd == "audit" and a.unlinked:
         tf, srcs, n = kbfacts.topic_files(), kbfacts.source_rows(), 0
-        for name in ("_gaps.md", "_conflicts.md"):
+        want = kbfacts.scope(a.prefix, a.root)
+        for name in (kbcommon.GAPS, kbcommon.CONFLICTS):
             for e in kbfacts.link_entries(kbfacts.ledger_entries(name), tf, srcs):
-                if not e["explicit"] and (not a.prefix or any(kbfacts.in_prefix(t, a.prefix) for t in e["via_sources"]) or e["section"].startswith(a.prefix.split("/")[0])):
+                if a.root and kbfacts.root_name(e["file"]) != a.root:
+                    continue
+                if not e["explicit"] and (not a.prefix or any(kbfacts.in_prefix(t, want) for t in e["via_sources"])
+                                          or e["section"].startswith(kbfacts.bare(a.prefix).split("/")[0])):
                     n += 1
                     hint = f"  [via sources: {', '.join(e['via_sources'][:4])}]" if e["via_sources"] else ""
-                    print(f"{name}:{e['line']}  ({e['section']})  {e['text'][:110]}{hint}")
+                    print(f"{e['file']}:{e['line']}  ({e['section']})  {e['text'][:110]}{hint}")
         print(f"unlinked={n}: add `(topic: <domain>/<slug>)` at the end of each entry")
     elif a.cmd == "audit":
-        rows = kbfacts.audit(a.prefix, a.status)
+        rows = kbfacts.audit(a.prefix, a.status, a.root)
         if a.json:
             return print(json.dumps(rows, indent=1))
         print(format_audit(rows, a.entries, a.format))
@@ -346,7 +382,7 @@ def main():
             sys.exit(1)
     else:
         path, _, line = a.target.partition(":")
-        full = os.path.realpath(kbcommon.resolve(path))
+        full = kbfacts.locate(path)
         if not kbfacts.showable(full):
             sys.exit(f"{path}: outside the kb")
         if not os.path.isfile(full):
@@ -363,4 +399,7 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except kbcommon.RootError as e:  # a malformed ROOT_FILE, or two roots sharing a name or an id prefix
+        sys.exit(f"error: {e}")

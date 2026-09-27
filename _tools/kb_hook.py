@@ -30,8 +30,12 @@ def answer(prompt):
         return None
     forward, question = bool(m.group(1)), m.group(2).strip()
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-    import kbfacts
-    res = kbfacts.pack(question)
+    import kbcommon, kbfacts
+    try:
+        res = kbfacts.pack(question)
+    except kbcommon.RootError as e:  # a malformed ROOT_FILE or a clash between roots: never block the prompt on it
+        return {"hookSpecificOutput": {"hookEventName": "UserPromptSubmit",
+                                       "additionalContext": f"it-ops-kb could not read its roots: {e}"}}
     if res["verdict"] == "good" and not forward and not res.get("unmatched") and not res.get("spread"):
         return {"decision": "block", "reason": res["text"] + NOTE}
     if res["verdict"] == "none":

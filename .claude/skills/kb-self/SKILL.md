@@ -45,7 +45,7 @@ Change only what the code change made wrong or missing; keep each doc's scope. A
 | `kb/_self/design.md` | the current conclusions and each number's report section | a number with no measured source |
 | `kb/_self/README.md` | the file table and the keeping-current rules | |
 | `kb/_self/work-left.md` | the open work only: add new items, delete finished ones (the commit records them) | done items, history |
-| `kb/_self/coverage.md` | nothing by hand: `python3 _tools/build_index.py` | edits |
+| each root's `_coverage.md` | nothing by hand: `python3 _tools/build_index.py` | edits |
 | `kb/_self/reports/*` | measurements, each section with its setup: add or replace a section | plans, dates as labels, superseded numbers kept beside current ones |
 
 Rules for every doc:

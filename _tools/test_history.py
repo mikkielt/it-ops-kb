@@ -10,10 +10,16 @@ import os, re, shutil, subprocess, sys
 import pytest
 
 import kbgit, kbid
-from conftest import KB, TOOLS, SOURCES_HEADER as HEADER, P, Repo, git_env, requires_git
+from conftest import KB, TOOLS, SOURCES_HEADER as HEADER, P, Q, Repo, git_env, requires_git
 COVERAGE = ("topic,priority,status,files,n_sources\n"
             "windows/demo,P1,partial,windows/demo.md;windows/demo.csv,1\n"
             "dsc/manifests,P2,complete,dsc/manifests.md;dsc/raw/,1\n")
+ROOT_MD = "---\nroot: public\nid_prefix: S\nvisibility: public\ndescription: test\n---\n"  # a scenario's public root
+
+
+def team(rel):
+    """A repository path in a second root `team` (kb/team/), beside the public root."""
+    return f"{kbgit.KB_DIR_REL}/team/{rel}"
 
 
 class TestTrailerRules:
@@ -26,7 +32,24 @@ class TestTrailerRules:
                P("windows/loose.md"): "---\ntopic: windows/loose\n---\n", P("windows/notes.txt"): "x", P("_gaps.md"): "g"}
         new = {**old, P("windows/demo.csv"): "a\n2\n", P("dsc/raw/x.json"): "{ }", P("windows/loose.md"): "---\ntopic: windows/loose\n---\nx\n",
                P("windows/notes.txt"): "y", P("_gaps.md"): "h", "README.md": "r"}
-        assert self.compute(old, new) == {"KB-Topics": ["dsc/manifests", "windows/demo", "windows/loose"]}
+        assert self.compute(old, new) == {"KB-Topics": [Q("dsc/manifests"), Q("windows/demo"), Q("windows/loose")]}
+
+    def test_every_root_counts(self):
+        """Topics are qualified by their root, answers outside the public root by `<root>:`, source ids stay bare
+        (unique by the root's prefix); a flat tree from before the kb moved is the public root's."""
+        tid = "T-" + kbid.source_id("https://e.example.com/t")[2:]
+        old = {team("_coverage.csv"): "topic,priority,status,files,n_sources\nmdm/enrol,P1,partial,mdm/enrol.md,1\n",
+               team("mdm/enrol.md"): "a", team("_answers.md"): "# Answers\n", team("_sources.csv"): HEADER,
+               P("windows/loose.md"): "---\ntopic: windows/loose\n---\n"}
+        new = {**old, team("mdm/enrol.md"): "b", team("_answers.md"): "# Answers\n\n## QK-team-q. q?\n\ny\n",
+               team("_sources.csv"): HEADER + f"{tid},https://e.example.com/t,T,p,l,2026-01-01,v,,,\n",
+               P("windows/loose.md"): "---\ntopic: windows/loose\n---\nx\n"}
+        assert self.compute(old, new) == {"KB-Topics": [Q("windows/loose"), "team/mdm/enrol"],
+                                          "KB-Sources-Added": [tid], "KB-Answers": ["team:QK-team-q"]}
+        flat_old = {"_sources.csv": HEADER, "windows/loose.md": "---\ntopic: windows/loose\n---\n"}
+        flat_new = {**flat_old, "windows/loose.md": "---\ntopic: windows/loose\n---\nx\n"}
+        assert self.compute(flat_old, flat_new) == {"KB-Topics": [Q("windows/loose")]}
+        assert kbgit.values_match(["windows/loose"], [Q("windows/loose")])  # trailers written before topics were qualified
 
     def test_sources_added_changed_superseded(self):
         u = "https://learn.microsoft.com/en-us/x"
@@ -74,6 +97,7 @@ class TestHistoryInGit:
         cls.env = git_env(GIT_EDITOR="true")
         cls.repo = Repo(cls.kb, cls.env)
         cls.hid = kbid.source_id(cls.URL)
+        cls.repo.write(P("_root.md"), ROOT_MD)
         cls.repo.write(P("_sources.csv"), HEADER + "S100,https://learn.microsoft.com/en-us/history-test/old,Old,Microsoft,MIT,2026-01-01,v,,,\n")
         cls.repo.write(P("_answers.md"), "# Answers\n\n## Q1. Is this old?\n\nYes. [DOC S100]\n")
         cls.repo.write(P("_coverage.csv"), COVERAGE.splitlines(keepends=True)[0] + COVERAGE.splitlines(keepends=True)[1])
@@ -146,15 +170,15 @@ class TestHistoryInGit:
 
     def test_hook_writes_trailers(self):
         t = self.trailers(self.c1)
-        assert t == {"KB-Topics": ["windows/demo"], "KB-Sources-Added": [self.hid], "KB-Answers": ["QK-history-test-question"]}
+        assert t == {"KB-Topics": [Q("windows/demo")], "KB-Sources-Added": [self.hid], "KB-Answers": ["QK-history-test-question"]}
         co = self.repo.git("log", "-1", "--format=%(trailers:key=Co-Authored-By,valueonly)", self.c1).strip()
         assert co == "T <noreply@example.com>", "Co-Authored-By must stay a trailer"
 
     def test_editor_and_amend_do_not_duplicate(self):
-        assert "KB-Topics: windows/demo" in self.msg_editor
+        assert f"KB-Topics: {Q('windows/demo')}" in self.msg_editor
         assert "#" not in self.msg_editor
         msg = self.message(self.c2)
-        assert self.trailers(self.c2) == {"KB-Topics": ["windows/demo"], "KB-Answers": ["Q1"]}
+        assert self.trailers(self.c2) == {"KB-Topics": [Q("windows/demo")], "KB-Answers": ["Q1"]}
         assert msg.count("KB-Topics:") == 1, msg
 
     def test_non_kb_commit_and_verified(self):
@@ -166,13 +190,13 @@ class TestHistoryInGit:
         bad = [ln for ln in self.check_bad.stdout.splitlines() if ln.startswith("BAD ")]
         assert len(bad) == 1, self.check_bad.stdout
         assert self.c5[:7] in bad[0]
-        assert "expected KB-Topics: windows/demo" in self.check_bad.stdout
+        assert f"expected KB-Topics: {Q('windows/demo')}" in self.check_bad.stdout
         assert self.check_before.returncode == 0, self.check_before.stdout
 
     def test_trailers_amend_repairs_head(self):
         assert self.amend.returncode == 0, self.amend.stdout
         assert self.check_after.returncode == 0, self.check_after.stdout
-        assert self.tool("trailers", "HEAD").stdout.strip() == "KB-Topics: windows/demo"
+        assert self.tool("trailers", "HEAD").stdout.strip() == f"KB-Topics: {Q('windows/demo')}"
 
     def test_log_finds_by_id_topic_answer_and_path(self):
         c1 = self.c1[:7]

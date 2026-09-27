@@ -15,24 +15,46 @@ source ledger. One copy, so every tool reads and writes these files the same way
   kb_rel(path)                the inverse: a repository path (or absolute path) relative to the kb root, or None
   resolve(rel)                the absolute path of a file named relative to the kb root, else to this repository
 
-Layout. The paths below are the only place that says where knowledge sits in this repository: the tools' code in
-_tools/, the kb's own docs in SELF, and the public root PUBLIC (its articles, _sources.csv, ledgers and retrieval
-data). Every path inside a root is relative to that root, so moving a root moves no line inside it.
+Roots. Knowledge lives in roots: kb/public (the upstream facts) and any kb/<name>/ a team adds, each a directory
+with a ROOT_FILE (`_root.md`: front matter `root`, `id_prefix`, `visibility`, `description`) and the same layout:
+domain directories of articles, the ledgers (SOURCES, ANSWERS, GAPS, CONFLICTS, COVERAGE_CSV, COVERAGE_MD, STATE,
+ARTIFACTS), `_census/` and DATA_DIR. Every path inside a root is relative to that root, so moving a root moves no
+line inside it. Tools that span roots name a file by its qualified path `<root>/<path in root>` (`public/intune/x.md`)
+and a topic by `<root>/<topic>`.
 
-KB_ROOT=DIR serves another kb with the same layout (articles, _sources.csv, ledgers, and its own retrieval data in
-DIR/DATA_DIR/) with these tools: for a team's own facts, which never go into this repository. The read tools (rag.py,
-kbfacts, kb_mcp.py, the kb: hook) and the checks (check.py, build_index.py, kbid.py) honour it; git, census and fetch
-tooling always works on this repository's public root.
+  roots()                     [Root] in order: public first, then kb/<name>/ by name, then the KB_ROOTS dirs
+  root(name)                  the Root of that name (KeyError when there is none)
+  public()                    the public Root
+  qualify(root, rel)          `<root name>/<rel>`
+  split(qpath)                (Root, rel) of a qualified path; (None, qpath) when its first part names no root
+  path_of(qpath)              the absolute path of a qualified path (a root's file), else of a repository path
+  root_of_prefix(prefix)      the Root whose id_prefix it is, or None
+
+KB_ROOTS=DIR[:DIR...] adds roots kept outside this repository (a team's private repository with the same root
+layout and its own ROOT_FILE): the read tools and the checks serve them with kb/'s roots; git, census and fetch work
+on this repository's roots only.
+
+Layout. The paths below are the only place that says where knowledge sits in this repository: the tools' code in
+_tools/, the roots in KB_DIR, the kb's own docs in SELF. KB is the public root, the default of the tools that work on
+one root.
 """
-import csv, io, os
+import csv, io, os, re
+from typing import NamedTuple
 
 TOOLS = os.path.dirname(os.path.abspath(__file__))
 HOME = os.path.dirname(TOOLS)  # this repository: the tools' code, the shared product aliases
-KB_DIR = os.path.join(HOME, "kb")  # all knowledge: the public root, team roots and SELF
+KB_DIR = os.path.join(HOME, "kb")  # all knowledge: the roots and SELF
 PUBLIC = os.path.normpath(os.path.join(KB_DIR, "public"))  # the public root: articles, ledgers, retrieval data
 SELF = os.path.join(KB_DIR, "_self")  # the kb's own docs: rules, tool reference, design (searched with --index only)
 DATA_DIR = "_retrieval"  # a root's retrieval data (signals, eval set, doc2query, index extras), relative to the root
-KB = os.path.abspath(os.path.expanduser(os.environ["KB_ROOT"])) if os.environ.get("KB_ROOT") else PUBLIC
+KB = PUBLIC
+ROOT_FILE = "_root.md"
+SOURCES, STATE, ARTIFACTS = "_sources.csv", "_fetch_state.csv", "_artifacts.csv"
+ANSWERS, GAPS, CONFLICTS = "_answers.md", "_gaps.md", "_conflicts.md"
+COVERAGE_CSV, COVERAGE_MD = "_coverage.csv", "_coverage.md"
+CENSUS_DIR = "_census"
+PREFIX = re.compile(r"[A-Z]{1,4}")  # a root's source id prefix: its ids are <prefix>-<8 base32 chars>
+RESERVED_PREFIXES = {"DOC", "CODE", "DER", "UNK", "QK", "EV", "PL"}  # tag kinds, answer and eval ids, placeholders
 csv.field_size_limit(2**31 - 1)  # a very wide cell must not abort a whole read
 
 
@@ -143,6 +165,115 @@ def resolve(rel):
     root's, so the caller reports it missing. An absolute `rel` is returned as is."""
     path, repo = os.path.join(KB, rel), os.path.join(HOME, rel)
     return repo if not os.path.exists(path) and os.path.exists(repo) else path
+
+
+class Root(NamedTuple):
+    name: str
+    path: str  # absolute
+    id_prefix: str
+    visibility: str  # public | internal
+    description: str
+
+
+class RootError(Exception):
+    """A root whose ROOT_FILE is missing, malformed or clashes with another root; the message names it."""
+
+
+def _meta(text):
+    """`key: value` pairs of a ROOT_FILE's front matter."""
+    lines = (text or "").lstrip("\ufeff").split("\n")
+    if lines[:1] != ["---"] or "---" not in lines[1:]:
+        return {}
+    out = {}
+    for ln in lines[1:lines.index("---", 1)]:
+        k, sep, v = ln.partition(":")
+        if sep and k.strip():
+            out[k.strip()] = v.strip().strip('"')
+    return out
+
+
+def load_root(path):
+    """The Root of a directory with a ROOT_FILE (RootError when it has none or it is malformed)."""
+    path = os.path.abspath(os.path.expanduser(path))
+    try:
+        with open(os.path.join(path, ROOT_FILE), encoding="utf-8") as f:
+            meta = _meta(f.read())
+    except OSError as e:
+        raise RootError(f"{path}: no readable {ROOT_FILE} ({e.strerror})")
+    name, prefix = meta.get("root", ""), meta.get("id_prefix", "")
+    if not re.fullmatch(r"[a-z0-9][a-z0-9-]*", name) or name == "kb":
+        raise RootError(f"{path}/{ROOT_FILE}: `root` must be a lowercase name (a-z, 0-9, -), got {name!r}")
+    if not PREFIX.fullmatch(prefix) or prefix in RESERVED_PREFIXES:
+        raise RootError(f"{path}/{ROOT_FILE}: `id_prefix` must be 1-4 capital letters, not one of "
+                        f"{', '.join(sorted(RESERVED_PREFIXES))}; got {prefix!r}")
+    vis = meta.get("visibility", "internal")
+    if vis not in ("public", "internal"):
+        raise RootError(f"{path}/{ROOT_FILE}: `visibility` must be public or internal, got {vis!r}")
+    return Root(name, path, prefix, vis, meta.get("description", ""))
+
+
+_ROOTS = []
+
+
+def roots():
+    """Every root, in order: public first, then kb/<name>/ by name, then the KB_ROOTS directories. RootError when a
+    ROOT_FILE is malformed, or two roots share a name or an id prefix."""
+    if _ROOTS:
+        return list(_ROOTS)
+    dirs = [PUBLIC] + sorted(os.path.join(KB_DIR, d) for d in os.listdir(KB_DIR) if not d.startswith((".", "_"))
+                             and os.path.join(KB_DIR, d) != PUBLIC and os.path.isfile(os.path.join(KB_DIR, d, ROOT_FILE)))
+    dirs += [d for d in os.environ.get("KB_ROOTS", "").split(os.pathsep) if d.strip()]
+    out, names, prefixes = [], {}, {}
+    for d in dirs:
+        r = load_root(d)
+        for seen, key, what in ((names, r.name, "name"), (prefixes, r.id_prefix, "id_prefix")):
+            if key in seen:
+                raise RootError(f"roots {seen[key]} and {r.path} share the {what} {key!r}")
+            seen[key] = r.path
+        out.append(r)
+    _ROOTS[:] = out
+    return list(out)
+
+
+def root(name):
+    for r in roots():
+        if r.name == name:
+            return r
+    raise KeyError(name)
+
+
+def public():
+    return roots()[0]
+
+
+def qualify(r, rel):
+    """`<root name>/<rel>` (rel relative to the root r, a Root or a root name)."""
+    return f"{getattr(r, 'name', r)}/{_slash(rel)}"
+
+
+def split(qpath):
+    """(Root, path in the root) of a qualified path `<root>/<rel>`; (None, qpath) when its first part names no root."""
+    head, _, rest = _slash(qpath).partition("/")
+    for r in roots():
+        if r.name == head:
+            return r, rest
+    return None, qpath
+
+
+def path_of(qpath):
+    """The absolute path of a qualified path; a path whose first part names no root is taken relative to this
+    repository (the SELF docs, README.md). An absolute path is returned as is."""
+    if os.path.isabs(qpath):
+        return qpath
+    r, rel = split(qpath)
+    return os.path.join(r.path, rel) if r else os.path.join(HOME, qpath)
+
+
+def root_of_prefix(prefix):
+    for r in roots():
+        if r.id_prefix == prefix:
+            return r
+    return None
 
 
 def read_sources():

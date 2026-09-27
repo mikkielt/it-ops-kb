@@ -7,3 +7,4 @@ _fetch_state.csv.tmp
 .venv/
 .pytest_cache/
 .uv-cache/
+.claude/worktrees/

@@ -21,7 +21,7 @@ import csv, io, os, re, shutil
 import pytest
 
 import kbgit, kbid
-from conftest import KB, P, Repo, git_env, requires_git
+from conftest import KB, P, Q, Repo, git_env, requires_git
 
 A_URLS = [f"https://learn.microsoft.com/en-us/power-apps/maker/data-platform/research-merge-a{i}" for i in range(1, 6)]
 B_URLS = [f"https://docs.keeper.io/en/research-merge/b{i}" for i in range(1, 4)]
@@ -261,7 +261,7 @@ class TestResearchMergeInGit:
         recs = dict(r.strip("\n").split("\x1f") for r in out.split("\x1e") if "\x1f" in r)
         tb = recs["docs(kb): research-b"]
         assert f"KB-Answers: {kbid.answer_id(Q_B)}\n" in tb + "\n"
-        assert "KB-Topics: agents/api-tokens-issue-and-store" in tb
+        assert f"KB-Topics: {Q('agents/api-tokens-issue-and-store')}" in tb
         assert LEG[0] not in tb
         log = self.v.kbgit("log", hb)
         assert log.returncode == 0, log.stdout

@@ -10,8 +10,20 @@ import csv, io, os, re, shutil
 import pytest
 
 import kbgit, kbid
+import kbcommon
 from conftest import KB, SOURCES_HEADER as HEADER, P, Repo, copy_kb, requires_git
-COVERAGE_PAGE = kbgit.FB(kbgit.build_index.COVERAGE_MD)  # the generated coverage table's page, a repository path
+# the generated coverage table's page, a repository path: one per root, or the one page an older build_index keeps
+COVERAGE_PAGE = P(kbcommon.COVERAGE_MD)
+
+
+def team(rel):
+    """A repository path in the scenario's second root `team` (kb/team/)."""
+    return f"{kbgit.KB_DIR_REL}/team/{rel}"
+
+
+def tid(url):
+    """The team root's id of a url: its prefix T and the url's hash."""
+    return "T-" + kbid.source_id(url)[2:]
 
 
 def rows(text):
@@ -192,6 +204,7 @@ class TestMergeInGit:
     URL_A, URL_B = "https://learn.microsoft.com/en-us/merge-test/branch-a", "https://learn.microsoft.com/en-us/merge-test/branch-b"
     STATE_H = "id,url,checked_utc,fetched_utc,changed_utc,sha256,text_sha256,bytes,error\n"
     FOOTER = "_Agent: merge-test_"
+    T_BOTH = "https://t.example.com/both"
 
     @pytest.fixture(scope="class", autouse=True)
     @classmethod
@@ -200,6 +213,13 @@ class TestMergeInGit:
         cls.repo = Repo(copy_kb(cls.tmp / "kb", skip=("_fetch_state.csv",)))
         cls.repo.write(P("_fetch_state.csv"), cls.STATE_H + "S100,https://x.example.com/,2026-01-01T00:00:00Z,2026-01-01T00:00:00Z,"
                   "2026-01-01T00:00:00Z,s0,t0,1,\nS101,https://y.example.com/,2026-01-01T00:00:00Z,,,,,,\n")
+        # a second root beside public: its own ledgers, id prefix T
+        cls.repo.write(team("_root.md"), "---\nroot: team\nid_prefix: T\nvisibility: internal\ndescription: merge test\n---\n")
+        cls.repo.write(team("_sources.csv"), HEADER + f"{tid('https://t.example.com/base')},https://t.example.com/base,Base,T,-,2026-01-01,v,,,\n")
+        for f in ("_answers.md", "_gaps.md", "_conflicts.md"):
+            cls.repo.write(team(f), f"# {f[1:-3].title()}\n")
+        cls.repo.write(team("_artifacts.csv"), "path,source_id,sha256,zip_member\n")
+        cls.repo.tool("build_index.py")  # the team root's _coverage.csv and _coverage.md, as kbroot.py add leaves them
         cls.repo.git("init", "-q", "-b", "main")
         cls.repo.git("add", "-A")
         cls.repo.git("commit", "-q", "-m", "base")
@@ -230,6 +250,14 @@ class TestMergeInGit:
         cls.repo.write(P("_answers.md"), f"\n## QK-merge-test-{name}. Does branch {name} merge?\n\nYes, says branch {name} [DOC S9999].\n"
                                  f"\n{cls.FOOTER}\n", "a")  # the same last line on both branches: a plain merge splices
         cls.repo.write(P("_gaps.md"), f"\n- **Merge test gap from branch {name}.** Tried nothing, cites S9999. [UNK]\n", "a")
+        turl = f"https://t.example.com/{name}"  # the second root: its own source, plus one row both branches add
+        cls.repo.write(team("_sources.csv"), f"{tid(turl)},{turl},Team {name},T,-,2026-09-25,v,,,\n"
+                                             f"{tid(cls.T_BOTH)},{cls.T_BOTH},Both,T,-,2026-09-25,v,,,\n", "a")
+        if name == "a":
+            cls.repo.write(team("mdm/enrol.md"),
+                           f"---\ntopic: mdm/enrol\npriority: P3\napplies_to: [test]\nretrieved_utc: 2026-09-25\n"
+                           f"sources: [{tid(turl)}]\nstatus: partial\n---\n# Enrol\n\n## Summary\n\nTest.\n\n## Facts\n\n"
+                           f"- Team fact. [DOC {tid(turl)}]\n\n## Reference\n\n## Examples\n")
         state = cls.repo.read(P("_fetch_state.csv")).replace(
             "S100,https://x.example.com/,2026-01-01T00:00:00Z,2026-01-01T00:00:00Z,",
             f"S100,https://x.example.com/,{checked},{checked},")
@@ -249,7 +277,8 @@ class TestMergeInGit:
 
     def test_union_ledgers_have_no_markers(self):
         conflicted = set(self.repo.git("diff", "--name-only", "--diff-filter=U").split()) if self.merge.returncode else set()
-        assert conflicted <= {COVERAGE_PAGE}, self.merge.stdout  # only the generated coverage table may conflict
+        # only the generated coverage tables may conflict
+        assert conflicted <= {COVERAGE_PAGE, team(kbcommon.COVERAGE_MD)}, self.merge.stdout
 
     def test_fix_resolves_everything(self):
         assert self.fix.returncode == 0, self.fix.stdout + self.fix.stderr
@@ -275,6 +304,22 @@ class TestMergeInGit:
         assert "S9999" not in ans + self.repo.read(P("_gaps.md")), "root ledgers were changed on both sides: their citations too"
         ids = [r["id"] for r in rows(self.repo.read(P("_sources.csv")))]
         assert ids == sorted(ids, key=kbid.sort_key)
+
+    def test_second_root_ledgers_fixed(self):
+        """The team root's union-merged _sources.csv: both branches' rows kept, the row both added once, sorted."""
+        text = self.repo.read(team("_sources.csv"))
+        assert not kbgit.has_markers(text)
+        ids = [r["id"] for r in rows(text)]
+        want = {tid(u) for u in ("https://t.example.com/base", "https://t.example.com/a", "https://t.example.com/b", self.T_BOTH)}
+        assert set(ids) == want and len(ids) == len(want), ids
+        assert ids == sorted(ids, key=kbgit.id_key)
+        assert f"wrote {team('_sources.csv')}" in self.fix.stdout, self.fix.stdout  # fix, not the union, deduped it
+
+    def test_second_root_topic_is_qualified(self):
+        r = self.repo.kbgit("trailers", "a")
+        assert r.returncode == 0, r.stdout + r.stderr
+        assert "team/mdm/enrol" in r.stdout, r.stdout
+        assert tid("https://t.example.com/a") in r.stdout, r.stdout
 
     def test_answers_keep_their_shared_footer(self):
         ans = self.repo.read(P("_answers.md"))

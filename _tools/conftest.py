@@ -13,6 +13,7 @@ from pyproject.toml's dev group) or `uv run pytest`.
   P(rel)                a path relative to the public root as a path relative to the repository (kbcommon.repo_rel):
                         what a scenario passes to Repo.write/read or git for a ledger, article or retrieval data file
   D(rel)                P() of a retrieval data file (signals.csv, lookup_eval.csv, doc2query/expansions.csv, ...)
+  Q(rel)                the qualified path of a public-root file (`public/<rel>`): what the read tools print
   SELF_REL              the kb's own docs directory relative to the repository (`_self`)
 """
 import os, shutil, subprocess, sys
@@ -21,7 +22,7 @@ import pytest
 
 TOOLS = os.path.dirname(os.path.abspath(__file__))
 KB = os.path.dirname(TOOLS)
-os.environ.pop("KB_ROOT", None)  # the suite tests this repository; test_kb_root.py sets it per call
+os.environ.pop("KB_ROOTS", None)  # the suite tests this repository; test_kb_root.py sets it per call
 if TOOLS not in sys.path:
     sys.path.insert(0, TOOLS)
 import kbcommon  # noqa: E402
@@ -29,6 +30,10 @@ import kbcommon  # noqa: E402
 
 def P(rel):
     return kbcommon.repo_rel(rel, kbcommon.PUBLIC)
+
+
+def Q(rel):
+    return kbcommon.qualify(kbcommon.public(), rel)
 
 
 def D(rel):

@@ -67,7 +67,7 @@ files: [<path>, <dir>/]    # optional: only files beyond <slug>.md and <slug>.* 
 - `priority`: the research order, not importance (`kb/_self/content-rules.md`). A new topic gets the priority the user gives, else `P3`.
 
 ## 5. Register and log
-- Run `python3 _tools/build_index.py`. It adds the topic's row to `_coverage.csv` and the `kb/_self/coverage.md` table (ordered by domain, priority, topic id; `n_sources` = ids in the `sources:` header) and fills `used_in` in `_sources.csv`. Never edit those by hand.
+- Run `python3 _tools/build_index.py`. It adds the topic's row to `_coverage.csv` and the root's `_coverage.md` table (ordered by domain, priority, topic id; `n_sources` = ids in the `sources:` header) and fills `used_in` in `_sources.csv`. Never edit those by hand.
 - Failed lookups go to `_gaps.md` (what, where you looked). Disagreements go to `_conflicts.md` with both sources. End each new entry with `(topic: <domain>/<slug>)`.
 - Retrieval data (`kb/_self/content-rules.md`): if code that uses the product has distinctive names (class names, API routes, library or package names, permission scopes), add `signal,<domain>/<slug>` rows to `kb/public/_retrieval/signals.csv`, so `topics-for` maps code to the topic; if the product has other names or abbreviations, add `term,canonical` rows to `_tools/aliases.csv` (term lowercase; reuse an existing canonical). Check with `python3 _tools/rag.py topics-for --keywords "<a signal>"`.
 

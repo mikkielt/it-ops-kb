@@ -7,6 +7,10 @@
   census.py sample LOG [--changed 0.10] [--ok 0.05] [--seed N]   phase 4: the sources an independent check re-reads
   census.py summary LOG                            counts per bucket and outcome
 
+census.py --root NAME <command> works on that root of this repository's kb/ (default public): its _sources.csv,
+_fetch_state.csv, articles and _census/ log. The clone cache (_cache/census/repos) is shared: a repository at a
+commit is the same for every root, and source ids never collide across roots (each root has its own prefix).
+
 check (no judgment, network read-only) writes the verdict log LOG, by default _census/<D>.csv, one row per source:
   id,url,kind,repo,pin,path,retrieved_utc,http_status,bucket,evidence,proof,note,used_in,outcome,outcome_note
 kind: raw-pin / raw-ref (a raw file at a commit / at a branch or tag), gh-pin / gh-ref (github.com blob or tree), release,
@@ -48,7 +52,7 @@ from urllib.parse import unquote, urlparse
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import build_index, kbcommon, kbid  # noqa: E402
 
-KB = kbcommon.PUBLIC  # the public root: ledgers and articles (the cache stays in the repository)
+KB = kbcommon.PUBLIC  # the root under census (--root; public by default); the cache stays in the repository
 
 REPOS = os.path.join(kbcommon.HOME, "_cache", "census", "repos")
 COLS = ["id", "url", "kind", "repo", "pin", "path", "retrieved_utc", "http_status", "bucket", "evidence", "proof", "note",
@@ -519,7 +523,20 @@ def check_one(r, c):
     return check_live(r["url"], since, r.get("version_or_date", ""))
 
 
-read_sources = kbcommon.read_sources
+def read_sources():
+    """The rows of the root's _sources.csv, in file order."""
+    with open(os.path.join(KB, "_sources.csv"), encoding="utf-8-sig", newline="") as f:
+        return list(csv.DictReader(f))
+
+
+def article_files():
+    """The root's domain .md files (directories not named `_*` or `.*`), relative to the root, sorted."""
+    out = []
+    for d, dirs, files in os.walk(KB):
+        dirs[:] = sorted(x for x in dirs if not x.startswith(("_", ".")) and x != "__pycache__")
+        if d != KB:
+            out += [os.path.relpath(os.path.join(d, f), KB).replace(os.sep, "/") for f in files if f.endswith(".md")]
+    return sorted(out)
 
 
 def cmd_check(a):
@@ -606,7 +623,7 @@ SUFFIX = re.compile(r"(?:;\s*)?confirmed \d{4}-\d{2}-\d{2}: [^;]*$")
 def cmd_confirm(a):
     date = a.date or today()
     log = {r["id"]: r for r in read_log(a.log)}
-    srcs_text = kbcommon.read("_sources.csv", newline="", strict=True)
+    srcs_text = kbcommon.read(os.path.join(KB, "_sources.csv"), newline="", strict=True)
     reader = csv.DictReader(io.StringIO(srcs_text))
     header, rows = reader.fieldnames, list(reader)
     known = {r["id"] for r in rows}
@@ -628,9 +645,7 @@ def cmd_confirm(a):
     # day by other work, or left unconfirmed, does not count
     fresh = {sid for sid, lr in log.items() if confirmed(lr)} | {r["id"] for r in rows if r["id"] not in log and r["retrieved_utc"][:10] == date}
     articles = []
-    for rel in build_index.content_files():
-        if not rel.endswith(".md"):
-            continue
+    for rel in article_files():
         path = os.path.join(KB, rel)
         text = kbcommon.read(path, newline="", strict=True)
         fm = build_index.front_matter(text)
@@ -690,7 +705,9 @@ def cmd_summary(a):
 
 
 def main():
+    global KB
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("--root", metavar="NAME", default="public", help="the root under census (default public)")
     sub = ap.add_subparsers(dest="cmd", required=True)
     c = sub.add_parser("check", help="phases 0-1: a mechanical verdict per source, written to the census log")
     c.add_argument("--date", help="census date (default today)")
@@ -715,6 +732,14 @@ def main():
     m = sub.add_parser("summary", help="counts per bucket and outcome")
     m.add_argument("log")
     a = ap.parse_args()
+    kbd = os.path.realpath(kbcommon.KB_DIR)
+    try:
+        here = [r for r in kbcommon.roots() if os.path.dirname(os.path.realpath(r.path)) == kbd and r.name == a.root]
+    except kbcommon.RootError as e:
+        sys.exit(str(e))
+    if not here:
+        ap.error(f"--root {a.root}: no such root in {kbcommon.repo_rel(kbcommon.KB_DIR)}/")
+    KB = here[0].path
     if a.cmd == "record" and not a.from_json and not (a.id and a.outcome):
         ap.error("record needs --from FILE, or --id and --outcome")
     sys.exit({"check": cmd_check, "record": cmd_record, "confirm": cmd_confirm, "sample": cmd_sample, "summary": cmd_summary}[a.cmd](a))

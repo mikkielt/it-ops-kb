@@ -25,6 +25,7 @@ def likely(prompt):
     ("update the Kerberos facts, S1216 changed", "kb-refresh"),
     ("refresh auth/kerberos", "kb-refresh"),
     ("add a new topic on Intune scope tags", "kb-add-topic"),
+    ("create a new root for our MDM team's knowledge", "kb-add-root"),
     ("research how uv handles lockfiles and extend the kb", "kb-research"),
     ("run a census of all sources", "kb-census"),
     ("commit and push this", "kb-git-sync"),

@@ -12,14 +12,21 @@
   kbgit.py tag-census YYYY-MM-DD                           annotated tag census-YYYY-MM-DD on HEAD: "kb confirmed current" (no push)
   kbgit.py sync [--push] [--dry-run] [--remote origin] [--branch main]   fetch, rebase, fix, gate, push: the way to push
 
+Roots. Every root in this repository's kb/ (kb/public and any kb/<name>/ with a _root.md; KB_ROOTS roots belong to
+other repositories) has its own ledgers: fix and fmt work on each root in turn, sync treats every root's ledgers and
+coverage files as mechanical, and the pinned block of .gitattributes covers every root's artifacts. A root cites only
+its own sources, so renumbering rewrites citations within that root. History arguments take a qualified name
+(`public/auth/kerberos.md:42`, `team/mdm/enrol`, `team:QK-...`) or a bare one, which is the public root's.
+
 History (trailers). Every commit that changes kb content ends with git trailers, so `git log` can answer "which commits
 changed topic X / source S / answer QK-..." without reading diffs:
-  KB-Topics:              topic ids whose article or data files changed (the topic -> files mapping of _coverage.csv at
-                          both ends of the diff; an article not in it counts under its own path)
+  KB-Topics:              qualified topic ids (`public/intune/win32-apps`) whose article or data files changed (the
+                          topic -> files mapping of each root's _coverage.csv at both ends of the diff; an article not
+                          in it counts under its own path)
   KB-Sources-Added:       _sources.csv ids of new rows
   KB-Sources-Changed:     ids of rows edited (used_in, which is generated, is ignored) or removed
   KB-Sources-Superseded:  ids whose superseded_by became non-empty (not also listed as changed)
-  KB-Answers:             _answers.md answer ids whose section was added, edited or removed
+  KB-Answers:             _answers.md answer ids (`<root>:<id>` outside public) whose section was added, edited or removed
   KB-Verified: YYYY-MM-DD only on request (`trailers --verified`, or KB_VERIFIED=YYYY-MM-DD in the hook's environment, or
                           `git commit --trailer "KB-Verified: 2026-09-25"`): the commit confirms its sources are current.
 One line per key, values sorted and joined by ", ". A key with more than MAX_IDS (40) values is written as a count,
@@ -123,40 +130,84 @@ import kbcommon, kbid  # noqa: E402
 import build_index  # noqa: E402
 
 KB = kbcommon.HOME  # the repository: git runs here, and every path kbgit names is relative to it
-ROOT = kbcommon.PUBLIC  # the public root: ledgers, articles and data, named relative to it in the kb's own files
+ROOT = kbcommon.PUBLIC  # the root fix and the history commands work on now (use_root); the public root by default
+CUR = None  # its kbcommon.Root; None: the public root, before roots() was read
+KB_DIR_REL = kbcommon.repo_rel(kbcommon.KB_DIR)  # `kb`: the roots are the directories kb/<name>/
 
 
 def R(rel):
-    """A path relative to the public root as a repository path (what git takes and prints)."""
+    """A path relative to the current root (ROOT) as a repository path (what git takes and prints)."""
     return kbcommon.repo_rel(rel, ROOT)
 
 
+def repo_roots():
+    """The roots inside this repository's kb/ (KB_ROOTS roots live in other repositories): what fix, sync and the
+    trailers work on, public first."""
+    kbd = os.path.realpath(kbcommon.KB_DIR)
+    return [r for r in kbcommon.roots() if os.path.dirname(os.path.realpath(r.path)) == kbd]
+
+
+def cur_root():
+    return CUR or kbcommon.public()
+
+
+def use_root(r):
+    """Point ROOT and the ledger paths (SOURCES, STATE, ARTIFACTS, ANSWERS, COVERAGE, MD_LEDGERS) at root r."""
+    global ROOT, CUR, SOURCES, STATE, ARTIFACTS, ANSWERS, COVERAGE, MD_LEDGERS
+    ROOT, CUR = r.path, r
+    SOURCES, STATE, ARTIFACTS = R(kbcommon.SOURCES), R(kbcommon.STATE), R(kbcommon.ARTIFACTS)
+    ANSWERS, COVERAGE = R(kbcommon.ANSWERS), R(kbcommon.COVERAGE_CSV)
+    MD_LEDGERS = (ANSWERS, R(kbcommon.GAPS), R(kbcommon.CONFLICTS))
+
+
+def root_of_path(path):
+    """(root name, path in the root) of a repository path under kb/<name>/, else (None, None)."""
+    parts = path.split("/")
+    if len(parts) >= 3 and parts[0] == KB_DIR_REL and not parts[1].startswith(("_", ".")):
+        return parts[1], "/".join(parts[2:])
+    return None, None
+
+
+def bi_root():
+    """The root build_index works on for the current root."""
+    return ROOT
+
+
+def bi(fn, *args, **kw):
+    """build_index's fn for the current root."""
+    return fn(*args, root=cur_root(), **kw)
+
+
 def FB(path):
-    """A path build_index names (relative to the kb root it reads) as a repository path."""
-    return kbcommon.repo_rel(path)
+    """A path build_index names (relative to the root it reads) as a repository path."""
+    return kbcommon.repo_rel(path, bi_root())
 
 
 def B(path):
-    """A repository path as build_index names it: relative to the kb root it reads (may climb out with `..`)."""
-    return os.path.relpath(os.path.join(KB, path), kbcommon.KB).replace(os.sep, "/")
+    """A repository path as build_index names it: relative to the root it reads (may climb out with `..`)."""
+    return os.path.relpath(os.path.join(KB, path), bi_root()).replace(os.sep, "/")
 
 
 def user_path(arg):
-    """A path given on the command line, root-relative (`auth/kerberos.md`) or repository-relative, as a repository
-    path: root-relative when it names a file under the public root, else as given."""
+    """A path given on the command line as a repository path: qualified (`public/auth/kerberos.md`), bare
+    root-relative (`auth/kerberos.md`: the public root) or repository-relative; as given when it names nothing."""
     arg = arg[2:] if arg.startswith("./") else arg
-    return R(arg) if os.path.exists(os.path.join(ROOT, arg)) else arg
+    head, _, rest = arg.partition("/")
+    for r in repo_roots():
+        if head == r.name and rest and os.path.exists(os.path.join(r.path, rest)):
+            return kbcommon.repo_rel(rest, r.path)
+    return kbcommon.repo_rel(arg, kbcommon.PUBLIC) if os.path.exists(os.path.join(kbcommon.PUBLIC, arg)) else arg
 
 
 def with_legacy(path):
     """[path] plus, for a file under the public root, its path before the kb moved (root-relative), for history."""
-    rel = kbcommon.kb_rel(path, ROOT)
+    rel = kbcommon.kb_rel(path, kbcommon.PUBLIC)
     return [path] + ([rel] if rel and rel != path else [])
 
 
-SOURCES, STATE, ARTIFACTS = R("_sources.csv"), R("_fetch_state.csv"), R("_artifacts.csv")
-ANSWERS, COVERAGE = R("_answers.md"), R("_coverage.csv")
-MD_LEDGERS = (ANSWERS, R("_gaps.md"), R("_conflicts.md"))
+SOURCES, STATE, ARTIFACTS = R(kbcommon.SOURCES), R(kbcommon.STATE), R(kbcommon.ARTIFACTS)
+ANSWERS, COVERAGE = R(kbcommon.ANSWERS), R(kbcommon.COVERAGE_CSV)
+MD_LEDGERS = (ANSWERS, R(kbcommon.GAPS), R(kbcommon.CONFLICTS))
 BASELINE = "_tools/lint_baseline.txt"
 ATTRS = ".gitattributes"
 LINT = os.path.join(".claude", "skills", "kb-verify", "lint.py")
@@ -342,7 +393,7 @@ def resolve_sources(text, base_rows, sides, report, upstream=None):
             out.append(merge_rows(sid, g, report))
             continue
         # a real collision: one id, several urls
-        if kbid.is_hash_id(sid):
+        if kbid.is_hash_id(sid) or not re.fullmatch(kbid.LEGACY_ID, sid):  # only S has legacy ids to renumber
             raise Problem(f"{SOURCES}: hash id {sid} names {len(urls)} urls: {' | '.join(sorted(urls))}")
         if base_rows is None:
             raise Problem(f"{SOURCES}: {sid} names {len(urls)} different urls (two branches took the same id); "
@@ -383,12 +434,13 @@ def cite_count(text, sid):
 
 
 def id_files():
-    """Text files that may cite a source id or name an answer id: content files and the root ledgers (`_*.md`,
-    `_*.csv`). README.md, AGENTS.md and the tools mention ids only as examples and are never rewritten."""
-    out = [FB(f) for f in build_index.content_files()]
+    """Text files of the current root that may cite a source id or name an answer id: its content files and ledgers
+    (`_*.md`, `_*.csv`); a root cites only its own sources. README.md, AGENTS.md and the tools mention ids only as
+    examples and are never rewritten."""
+    out = [FB(f) for f in bi(build_index.content_files) or []]
     out += sorted(R(f) for f in os.listdir(ROOT) if f.startswith("_") and f.endswith((".md", ".csv"))
                   and R(f) not in (SOURCES, STATE, COVERAGE))
-    out += [FB(build_index.EXTRA)]
+    out += [R(kbcommon.data_rel("index_extra.csv"))]
     return [f for f in out if os.path.isfile(os.path.join(KB, f))]
 
 
@@ -766,23 +818,59 @@ def canon_csv(text, sort):
     return kbcommon.rows_text([rows[0]] + body)
 
 
+def each_root():
+    """Each root of this repository in turn, made current with use_root; the previous root is current again after."""
+    prev = cur_root()
+    try:
+        for r in repo_roots():
+            use_root(r)
+            yield r
+    finally:
+        use_root(prev)
+
+
 def fmt_texts(report):
-    """Canonical CSV ledgers without changing the set of rows: {path: new text}."""
-    out = {}
-    for name, sort in ((SOURCES, True), (STATE, True), (ARTIFACTS, False)):
-        text = read(name)
-        if text is None:
-            continue
-        if has_markers(text):
-            raise Problem(f"{name} has conflict markers; run kbgit.py fix")
-        out[name] = canon_csv(text, sort)
-    attrs = resolve_attrs(read(ATTRS), pinned_paths(read(ARTIFACTS)))
+    """Canonical CSV ledgers of every root without changing the set of rows: {path: new text}."""
+    out, pinned = {}, []
+    for _ in each_root():
+        for name, sort in ((SOURCES, True), (STATE, True), (ARTIFACTS, False)):
+            text = read(name)
+            if text is None:
+                continue
+            if has_markers(text):
+                raise Problem(f"{name} has conflict markers; run kbgit.py fix")
+            out[name] = canon_csv(text, sort)
+        pinned += pinned_paths(read(ARTIFACTS))
+    attrs = resolve_attrs(read(ATTRS), pinned)
     if attrs is not None:
         out[ATTRS] = attrs
     return out
 
 
 def fix_texts(a, report, problems):
+    """fix of every root's ledgers, then the lint baseline and the pinned block of .gitattributes: {path: text}."""
+    out, pinned = {}, []
+    for _ in each_root():
+        root_out, arts = fix_root_texts(a, report, problems)
+        out.update(root_out)
+        pinned += pinned_paths(arts)
+    bl = read(BASELINE)
+    if bl is not None:
+        new = resolve_baseline(bl, report)
+        if new is not None:
+            out[BASELINE] = new
+    if not any(f"{ARTIFACTS_NAME} has conflict markers" in p for p in problems):
+        attrs = resolve_attrs(read(ATTRS), pinned)
+        if attrs is not None:
+            out[ATTRS] = attrs
+    return out
+
+
+ARTIFACTS_NAME = kbcommon.ARTIFACTS
+
+
+def fix_root_texts(a, report, problems):
+    """fix of the current root's ledgers: ({path: text}, its _artifacts.csv text or None)."""
     out = {}
     base = None
     base_rows = None
@@ -858,21 +946,37 @@ def fix_texts(a, report, problems):
         if t is not None and has_markers(t):
             out[name] = strip_markers(t, name)[0]  # rebuilt below anyway
             report.append(f"{name}: conflict markers dropped; regenerated")
-    bl = read(BASELINE)
-    if bl is not None:
-        new = resolve_baseline(bl, report)
-        if new is not None:
-            out[BASELINE] = new
     arts = read(ARTIFACTS)
     if arts is not None:
         if has_markers(arts):
             problems.append(f"{ARTIFACTS} has conflict markers; resolve them by hand (pinned sha256 values)")
+            arts = None
         else:
             out[ARTIFACTS] = canon_csv(arts, sort=False)
-            attrs = resolve_attrs(read(ATTRS), pinned_paths(arts))
-            if attrs is not None:
-                out[ATTRS] = attrs
-    return out
+    return out, arts
+
+
+def rebuild_root(out, problems):
+    """build_index for the current root over the fixed texts `out` (updated in place with its generated files)."""
+    texts = {}
+    try:
+        res = bi(build_index.build, {B(p): t for p, t in out.items()}, texts_out=texts)
+    except build_index.BuildError as e:
+        raise Problem(f"build_index ({cur_root().name}): {e}")
+    if res is None:  # an older build_index serves the public root only
+        return
+    for p, (_, new) in res[0].items():
+        out[FB(p)] = new
+    pg = bi(build_index.coverage_page, {B(p): t for p, t in out.items()})
+    page = FB(pg) if pg else None
+    if page in out and has_markers(out[page]):
+        problems.append(f"{page} has conflict markers outside the coverage table; resolve them by hand")
+    for f in bi(build_index.content_files) or []:
+        t = out.get(FB(f))
+        if t is None and f.endswith((".md", ".csv", ".yaml", ".yml", ".json")):
+            t = texts.get(f)  # read once, by build()
+        if has_markers(t):
+            problems.append(f"{FB(f)} has conflict markers; resolve them by hand")
 
 
 def run(a):
@@ -880,22 +984,8 @@ def run(a):
     try:
         out = fmt_texts(report) if a.cmd == "fmt" else fix_texts(a, report, problems)
         if a.cmd == "fix" and not problems:
-            texts = {}
-            try:
-                result, _, warnings = build_index.build({B(p): t for p, t in out.items()}, texts_out=texts)
-            except build_index.BuildError as e:
-                raise Problem(f"build_index: {e}")
-            for p, (_, new) in result.items():
-                out[FB(p)] = new
-            page = FB(build_index.coverage_page({B(p): t for p, t in out.items()}))
-            if has_markers(out[page]):
-                problems.append(f"{page} has conflict markers outside the coverage table; resolve them by hand")
-            for f in build_index.content_files():
-                t = out.get(FB(f))
-                if t is None and f.endswith((".md", ".csv", ".yaml", ".yml", ".json")):
-                    t = texts.get(f)  # read once, by build()
-                if has_markers(t):
-                    problems.append(f"{FB(f)} has conflict markers; resolve them by hand")
+            for _ in each_root():
+                rebuild_root(out, problems)
     except Problem as e:
         problems.append(str(e))
     if problems:
@@ -991,10 +1081,25 @@ def changed_paths(base, target):
     return sorted(p for p in out.split("\0") if p)
 
 
+def content_rel(path):
+    """(root name, path in the root) of a repository path of a domain file (under kb/<root>/, in a directory not
+    named `_*` or `.*`), else (None, None)."""
+    name, rel = root_of_path(path)
+    if rel and "/" in rel and not rel.split("/", 1)[0].startswith(("_", ".")):
+        return name, rel
+    return None, None
+
+
 def is_content(path):
-    """A repository path of a domain file: under the public root, in a directory not named `_*` or `.*`."""
-    rel = kbcommon.kb_rel(path, ROOT)
-    return bool(rel) and "/" in rel and not rel.split("/", 1)[0].startswith(("_", "."))
+    """A repository path of a domain file of a root."""
+    return content_rel(path)[0] is not None
+
+
+def legacy_content_rel(path):
+    """The path of a domain file in the flat layout before the kb moved (`intune/x.md` at the repository root), or
+    None: history before the move is the public root's."""
+    top = path.split("/", 1)[0]
+    return path if "/" in path and not top.startswith(("_", ".")) and top != KB_DIR_REL else None
 
 
 def topic_map(coverage_texts):
@@ -1042,31 +1147,61 @@ def answer_sections(text):
 
 
 def trailers_from(paths, old, new):
-    """{key: sorted values} for a change of `paths`; old(rel)/new(rel) give a file's text before/after (None: absent)."""
+    """{key: sorted values} for a change of `paths` (repository paths); old(rel)/new(rel) give a file's text
+    before/after (None: absent). Every root under kb/ counts; topics are qualified (`public/intune/win32-apps`),
+    source ids are bare (unique by their root's prefix), answer ids are `<root>:<id>` outside the public root. A
+    commit from before the kb moved (a flat tree with `_sources.csv` at the top) is the public root's."""
+    groups = {}  # root name -> (repository prefix of the root, [content paths in the root])
+    for p in paths:
+        name, rel = content_rel(p)
+        if name:
+            groups.setdefault(name, (f"{KB_DIR_REL}/{name}/", []))[1].append(rel)
+    flat = new(kbcommon.SOURCES) is not None or old(kbcommon.SOURCES) is not None
+    if flat:
+        legacy = [r for r in map(legacy_content_rel, paths) if r]
+        if legacy:
+            groups.setdefault("public", ("", []))[1].extend(legacy)
+    roots_touched = {n: pre for n, (pre, _) in groups.items()}
+    for p in paths:
+        name, rel = root_of_path(p)
+        if name and rel in (kbcommon.SOURCES, kbcommon.ANSWERS):
+            roots_touched.setdefault(name, f"{KB_DIR_REL}/{name}/")
+        elif flat and p in (kbcommon.SOURCES, kbcommon.ANSWERS):
+            roots_touched.setdefault("public", "")
     out = {}
-    content = [p for p in paths if is_content(p)]
-    if content:
-        files, dirs = topic_map([new(COVERAGE), old(COVERAGE)])
-        topics = set()
-        for p in content:
-            rel = kbcommon.kb_rel(p, ROOT)  # _coverage.csv names files relative to the root
+    topics = set()
+    for name, (pre, rels) in groups.items():
+        files, dirs = topic_map([new(pre + kbcommon.COVERAGE_CSV), old(pre + kbcommon.COVERAGE_CSV)])
+        for rel in rels:  # _coverage.csv names files relative to its root
             t = set(files.get(rel, ())) | {topic for d, topic in dirs if rel.startswith(d)}
             if not t and rel.endswith(".md"):
-                fm = build_index.front_matter(lf(new(p) or old(p) or ""))
+                fm = build_index.front_matter(lf(new(pre + rel) or old(pre + rel) or ""))
                 if fm is not None:
                     t.add(rel[:-3])
-            topics |= t
-        out["KB-Topics"] = sorted(t for t in topics if t)
-    if SOURCES in paths:
-        a, b = source_rows_of(old(SOURCES)), source_rows_of(new(SOURCES))
-        strip = lambda r: {k: v for k, v in r.items() if k != "used_in" and v}  # noqa: E731  (a new empty column is no edit)
-        sup = {i for i in b if (b[i].get("superseded_by") or "").strip() and not (a.get(i, {}).get("superseded_by") or "").strip() and i in a}
-        out["KB-Sources-Added"] = sorted(set(b) - set(a), key=id_key)
-        out["KB-Sources-Superseded"] = sorted(sup, key=id_key)
-        out["KB-Sources-Changed"] = sorted(({i for i in a if i in b and strip(a[i]) != strip(b[i])} - sup) | (set(a) - set(b)), key=id_key)
-    if ANSWERS in paths:
-        a, b = answer_sections(old(ANSWERS)), answer_sections(new(ANSWERS))
-        out["KB-Answers"] = sorted(i for i in set(a) | set(b) if a.get(i) != b.get(i))
+            topics |= {f"{name}/{x}" for x in t if x}
+    if topics:
+        out["KB-Topics"] = sorted(topics)
+    strip = lambda r: {k: v for k, v in r.items() if k != "used_in" and v}  # noqa: E731  (a new empty column is no edit)
+    for name, pre in sorted(roots_touched.items()):
+        src = pre + kbcommon.SOURCES
+        if src in paths:
+            a, b = source_rows_of(old(src)), source_rows_of(new(src))
+            sup = {i for i in b if (b[i].get("superseded_by") or "").strip()
+                   and not (a.get(i, {}).get("superseded_by") or "").strip() and i in a}
+            out.setdefault("KB-Sources-Added", []).extend(set(b) - set(a))
+            out.setdefault("KB-Sources-Superseded", []).extend(sup)
+            out.setdefault("KB-Sources-Changed", []).extend(
+                ({i for i in a if i in b and strip(a[i]) != strip(b[i])} - sup) | (set(a) - set(b)))
+        ans = pre + kbcommon.ANSWERS
+        if ans in paths:
+            a, b = answer_sections(old(ans)), answer_sections(new(ans))
+            q = "" if name == "public" else f"{name}:"
+            out.setdefault("KB-Answers", []).extend(q + i for i in set(a) | set(b) if a.get(i) != b.get(i))
+    for k in ("KB-Sources-Added", "KB-Sources-Superseded", "KB-Sources-Changed"):
+        if k in out:
+            out[k] = sorted(set(out[k]), key=id_key)
+    if "KB-Answers" in out:
+        out["KB-Answers"] = sorted(set(out["KB-Answers"]))
     return {k: out[k] for k in KEYS if out.get(k)}
 
 
@@ -1104,7 +1239,8 @@ def parse_trailers(text):
 
 
 def values_match(actual, want):
-    """Does a trailer value (list of occurrences) state exactly the ids `want`?"""
+    """Does a trailer value (list of occurrences) state exactly the ids `want`? A public topic matches with or
+    without its root (`public/intune/x` or `intune/x`, as trailers wrote it before topics were qualified)."""
     if not actual:
         return not want
     if len(actual) > 1:
@@ -1112,7 +1248,8 @@ def values_match(actual, want):
     m = SUMMARY.match(actual[0])
     if m:
         return len(want) > MAX_IDS and int(m.group(1)) == len(want)
-    return sorted(x.strip() for x in actual[0].split(",") if x.strip()) == sorted(want)
+    bare = lambda v: v[len("public/"):] if v.startswith("public/") else v  # noqa: E731
+    return sorted(bare(x.strip()) for x in actual[0].split(",") if x.strip()) == sorted(map(bare, want))
 
 
 def comment_char():
@@ -1444,40 +1581,70 @@ def id_regex(sid):
     return rf"(^|[^A-Za-z0-9_-]){re.escape(sid)}([^A-Za-z0-9_-]|$)"
 
 
+def split_arg(arg):
+    """(Root, rest) of a history argument: `<root>/<rest>` or `<root>:<answer id>` names that root; anything else is
+    the public root's."""
+    for sep in ("/", ":"):
+        head, s, rest = arg.partition(sep)
+        if s and rest:
+            for r in repo_roots():
+                if r.name == head:
+                    return r, rest
+    return kbcommon.public(), arg
+
+
 def classify(arg):
+    """(kind, what, root): a source id, an answer id, a topic (qualified or bare = public) or a path."""
     if kbid.is_source_id(kbid.canonical_id(arg)) and not os.path.exists(os.path.join(KB, user_path(arg))):
-        return "source", kbid.canonical_id(arg)
-    if kbid.QK_ID.fullmatch(arg) or arg in kbid.answer_ids(read(ANSWERS) or ""):
-        return "answer", arg
-    topics = {r["topic"]: r for r in csv.DictReader(io.StringIO(lf(read(COVERAGE) or "")))}
-    if arg in topics or (os.path.isfile(os.path.join(ROOT, arg + ".md")) and is_content(R(arg + ".md"))):
-        return "topic", arg
-    return "path", user_path(arg)
+        sid = kbid.canonical_id(arg)
+        return "source", sid, kbcommon.root_of_prefix(sid.split("-", 1)[0] if "-" in sid else "S") or kbcommon.public()
+    r, rest = split_arg(arg)
+    ans = kbcommon.read(os.path.join(r.path, kbcommon.ANSWERS)) or ""
+    if (kbid.QK_ID.fullmatch(rest) and ":" in arg) or kbid.QK_ID.fullmatch(arg) or rest in kbid.answer_ids(ans):
+        return "answer", rest, r
+    topics = {x["topic"] for x in csv.DictReader(io.StringIO(lf(kbcommon.read(os.path.join(r.path, kbcommon.COVERAGE_CSV)) or "")))}
+    if rest in topics or (os.path.isfile(os.path.join(r.path, rest + ".md"))
+                          and is_content(kbcommon.repo_rel(rest + ".md", r.path))):
+        return "topic", rest, r
+    return "path", user_path(arg), None
 
 
 def cmd_log(a):
     if rev_parse("HEAD") is None:
         print("not a git clone, or no commits")
         return 2
-    kind, what = classify(a.target)
+    kind, what, r = classify(a.target)
     keys = {"source": ("KB-Sources-Added", "KB-Sources-Changed", "KB-Sources-Superseded"),
             "topic": ("KB-Topics",), "answer": ("KB-Answers",), "path": ()}[kind]
+    # trailer values: topics qualified (bare in commits from before roots), answers `<root>:<id>` outside public
+    if kind == "topic":
+        want = {f"{r.name}/{what}"} | ({what} if r.name == "public" else set())
+    elif kind == "answer":
+        want = {what} if r.name == "public" else {f"{r.name}:{what}"}
+    else:
+        want = {what}
     recs = log_records("HEAD") or []
     how = {}
     for sha, _, _, _, trailers in recs:
         t = parse_trailers(trailers)
-        if any(what in [x.strip() for v in t.get(k, []) for x in v.split(",")] for k in keys):
+        if any(want & {x.strip() for v in t.get(k, []) for x in v.split(",")} for k in keys):
             how[sha] = "trailer"
     fallback = []
     if kind == "source":
         fallback = [("diff", ["-G", id_regex(what)])]
     elif kind == "answer":
-        fallback = [("diff", ["-G", rf"^## {re.escape(what)}\. ", "--", *with_legacy(ANSWERS)])]
+        fallback = [("diff", ["-G", rf"^## {re.escape(what)}\. ", "--",
+                              *with_legacy(kbcommon.repo_rel(kbcommon.ANSWERS, r.path))])]
     elif kind == "topic":
-        row = {r["topic"]: r for r in csv.DictReader(io.StringIO(lf(read(COVERAGE) or "")))}.get(what)
+        cov = lf(kbcommon.read(os.path.join(r.path, kbcommon.COVERAGE_CSV)) or "")
+        row = {x["topic"]: x for x in csv.DictReader(io.StringIO(cov))}.get(what)
         files = [f for f in (row["files"].split(";") if row else [what + ".md"]) if f]
-        fallback = [("path", ["--"] + [p for f in files for p in with_legacy(R(f))])]
-    else:
+        fallback = [("path", ["--"] + [p for f in files for p in with_legacy(kbcommon.repo_rel(f, r.path))])]
+    if kind == "topic":
+        what = f"{r.name}/{what}"
+    elif kind == "answer" and r.name != "public":
+        what = f"{r.name}:{what}"
+    if kind == "path":
         fallback = [("path", ["--follow", "--", what])]
     for label, args in fallback:
         for sha in (git("log", "--format=%H", "HEAD", *args) or "").split():
@@ -1535,10 +1702,14 @@ def cmd_blame(a):
         else:
             print("  touched since: no" + (f" (the file changed in {later} later commit(s))" if later else ""))
     ids = sorted(set(build_index.CITE.findall(b.get("text", ""))), key=id_key)
-    rows = {r.get("id"): r for r in kbid.read_sources()} if ids else {}
+    rows, ledgers = {}, []
+    for root in (repo_roots() if ids else []):
+        led = kbcommon.repo_rel(kbcommon.SOURCES, root.path)
+        ledgers += with_legacy(led)
+        rows.update((x.get("id"), x) for x in source_rows_of(read(led)).values())
     for sid in ids:
         r = rows.get(sid)
-        added = (git("log", "--reverse", "--format=%h %cs", "-G", rf"^{re.escape(sid)},", "HEAD", "--", *with_legacy(SOURCES)) or "").split("\n")[0]
+        added = (git("log", "--reverse", "--format=%h %cs", "-G", rf"^{re.escape(sid)},", "HEAD", "--", *ledgers) or "").split("\n")[0]
         sup = (r or {}).get("superseded_by", "").strip()
         print(f"  {sid}  {(r or {}).get('url') or 'UNKNOWN id'}" + (f"  superseded by {sup}" if sup else "")
               + (f"  (row added in {added})" if added else ""))
@@ -1620,7 +1791,22 @@ def cmd_tag_census(a):
 
 # Paths whose rebase conflicts are resolved mechanically: the union ledgers and the generated files. `fix` rebuilds
 # them (the coverage page only when its markers are inside the table; otherwise fix reports it and sync stops).
-MECHANICAL = frozenset((SOURCES, STATE, *MD_LEDGERS, COVERAGE, BASELINE, FB(build_index.COVERAGE_MD)))
+def mechanical():
+    """Every root's union ledgers, _coverage.csv and coverage page, and the lint baseline (repository paths)."""
+    out = {BASELINE}
+    try:
+        rs = repo_roots()
+    except kbcommon.RootError:
+        rs = []  # a malformed root: sync still resolves the public root's ledgers; check.py names the root
+    for r in rs or [None]:
+        path = r.path if r else kbcommon.PUBLIC
+        L = lambda n: kbcommon.repo_rel(n, path)  # noqa: E731
+        out |= {L(kbcommon.SOURCES), L(kbcommon.STATE), L(kbcommon.ANSWERS), L(kbcommon.GAPS), L(kbcommon.CONFLICTS),
+                L(kbcommon.COVERAGE_CSV), L(kbcommon.COVERAGE_MD)}
+    return frozenset(out)
+
+
+MECHANICAL = mechanical()
 IN_PROGRESS = (("rebase-merge", "a rebase", "git rebase --continue, or git rebase --abort"),
                ("rebase-apply", "a rebase", "git rebase --continue, or git rebase --abort"),
                ("MERGE_HEAD", "a merge", "git merge --continue, or git merge --abort"),

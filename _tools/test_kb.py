@@ -2,7 +2,7 @@
 runs them with every other test module).
 
 TestToolChecks, TestCohesion: check.py and fetch.py --offline pass; no lint errors beyond the recorded baseline; the
-generated index files (_coverage.csv, the kb/_self/coverage.md table, used_in) are up to date (build_index.py --check); links,
+generated index files (every root's _coverage.csv, _coverage.md table and used_in) are up to date (build_index.py --check); links,
 backtick paths and used_in paths resolve; every CLI flag the docs mention exists in that tool; the docs servers' .mcp.json (.claude-plugin/it-ops-kb-docs/), .claude/settings.json and AGENTS.md agree;
 skills are well-formed; of the plugin skills only /kb-lookup is model-invocable, and the clone-only change skills all are
 (a change request must reach them); the change router hook routes change prompts; AGENTS.md stays under 4 KB (every session and subagent
@@ -13,7 +13,7 @@ TestLookup (deterministic retrieval): kbfacts.py parses tag variants and ledger 
 every question of kb/public/_retrieval/lookup_eval.csv (expected article in the pack, right coverage verdict); the kb: hook blocks
 a covered question, forwards an uncovered one with the pack, and leaves other prompts alone.
 TestIds: kbid.py hash source ids are deterministic and normalization-stable; bad ids and answer-id clashes are caught.
-TestLeaks (tracked files): secrets in any file; in authored files also home-directory paths, private IPv4 addresses,
+TestLeaks (tracked files): secrets in any file; in authored files (not those of `visibility: internal` roots) also home-directory paths, private IPv4 addresses,
 non-placeholder e-mail addresses and GUIDs outside the reviewed allowlist (_tools/tests_allowlist.txt); files that
 must never be committed; oversized files.
 """
@@ -68,15 +68,26 @@ def text(rel):
 
 
 def pinned():
-    with open(os.path.join(PUBLIC, "_artifacts.csv"), encoding="utf-8-sig", newline="") as f:
-        return {P(r["path"]) for r in csv.DictReader(f)}
+    """Repository paths of every root's pinned artifacts."""
+    out = set()
+    for r in kbcommon.roots():
+        with open(os.path.join(r.path, kbcommon.ARTIFACTS), encoding="utf-8-sig", newline="") as f:
+            out |= {kbcommon.repo_rel(x["path"], r.path) for x in csv.DictReader(f)}
+    return out
+
+
+def internal_prefixes():
+    """Repository path prefixes of the roots marked `visibility: internal`: they may hold real names and addresses."""
+    return tuple(kbcommon.repo_rel(".", r.path) + "/" for r in kbcommon.roots() if r.visibility != "public")
 
 
 @functools.lru_cache(maxsize=None)
 def authored():
-    """Tracked text files we wrote ourselves: not pinned artifacts and not vendor exports under */artifacts/."""
-    p = pinned()
-    return tuple(f for f in tracked() if f not in p and "/artifacts/" not in f and text(f) is not None)
+    """Tracked text files we wrote ourselves that the placeholders-only rule covers: not pinned artifacts, not vendor
+    exports under */artifacts/, not files of internal roots (secrets are checked everywhere: test_no_secrets)."""
+    p, internal = pinned(), internal_prefixes()
+    return tuple(f for f in tracked() if f not in p and "/artifacts/" not in f and not f.startswith(internal)
+                 and text(f) is not None)
 
 
 def allowlist():
@@ -165,7 +176,7 @@ class TestToolChecks:
 
 class TestCohesion:
     def test_generated_indexes_up_to_date(self):
-        """_coverage.csv, the README coverage table and used_in are generated; a hand edit or a missed rebuild fails."""
+        """_coverage.csv, the _coverage.md table and used_in are generated; a hand edit or a missed rebuild fails."""
         code, out = run(os.path.join(TOOLS, "build_index.py"), "--check")
         assert code == 0, "generated index files are out of date; run python3 _tools/build_index.py\n" + out[-3000:]
 
@@ -296,7 +307,7 @@ class TestCohesion:
     def test_readme_stays_short(self):
         size = len((text("README.md") or "").encode())
         assert size <= 8192, f"README.md is {size} bytes: it is the short overview for people; move agent detail to kb/_self/"
-        assert "coverage:start" not in (text("README.md") or ""), "the coverage table lives in kb/_self/coverage.md"
+        assert "coverage:start" not in (text("README.md") or ""), "the coverage table lives in each root's _coverage.md"
 
     def test_self_map_is_complete(self):
         code, out = run(os.path.join(TOOLS, "selfdoc.py"), "check")
@@ -344,6 +355,7 @@ class TestLookup:
         the search engine must keep, including prose and, with --index, the root
         ledgers that the pack index does not hold."""
         import rag
+        from conftest import Q
         cases = [("pim activation latency", None, False, "entra/pim-and-governance.md"),
                  ("kerberos constrained delegation", None, False, "auth/delegation-kcd-obo.md"),
                  ("adminservice routes", "mecm", False, "mecm/adminservice-routes.csv"),
@@ -354,7 +366,7 @@ class TestLookup:
                  ("gap unconfirmed instruction limit", None, True, "_answers.md")]
         for query, domain, index, want in cases:
             paths = [h["path"].replace(os.sep, "/") for h in rag.search(query, 5, domain, index, [])]
-            assert want in paths, f"search {query!r}: {paths}"
+            assert Q(want) in paths, f"search {query!r}: {paths}"
 
     def test_persisted_index_gives_identical_packs(self):
         """The sqlite index, the in-memory postings and a domain subset give the same pack and search, byte for byte;
@@ -469,10 +481,11 @@ class TestLookup:
 
     def test_ledger_topic_markers_link_entries(self):
         import kbfacts
-        e = kbfacts.link_entries([{"file": "_gaps.md", "line": 1, "end": 1, "section": "x", "text": "a gap (topic: auth/kerberos)"}])[0]
-        assert e["explicit"] == ["auth/kerberos"]
+        from conftest import Q
+        e = kbfacts.link_entries([{"file": Q("_gaps.md"), "line": 1, "end": 1, "section": "x", "text": "a gap (topic: auth/kerberos)"}])[0]
+        assert e["explicit"] == [Q("auth/kerberos")], "a ledger's topic marker names a topic of its own root"
         rows = {r["topic"]: r for r in kbfacts.audit("agents/shared-ner-service")}
-        assert rows["agents/shared-ner-service"]["gaps"], "shared-ner-service's named gap entries are not linked"
+        assert rows[Q("agents/shared-ner-service")]["gaps"], "shared-ner-service's named gap entries are not linked"
 
     def test_alias_and_signal_tables(self):
         import kbfacts
@@ -486,8 +499,8 @@ class TestLookup:
                 assert len(r) == 2, f"{name}: {r}"
                 assert r[0].strip() and r[1].strip(), f"{name}: {r}"
         topics = set(kbfacts.topic_files())
-        bad = [r["signal"] for r in csv.DictReader(open(kbcommon.data_path("signals.csv"), encoding="utf-8")) if r["topic"] not in topics]
-        assert not bad, f"signals.csv names topics that do not exist: {bad}"
+        bad = [r["signal"] for root, r in kbfacts.data_rows("signals.csv") if kbcommon.qualify(root, r["topic"]) not in topics]
+        assert not bad, f"signals.csv names topics that do not exist in its root: {bad}"
         for r in csv.DictReader(open(kbcommon.data_path("aliases.csv", shared=True), encoding="utf-8")):
             assert r["term"] == r["term"].lower().strip(), "aliases.csv terms are lowercase"
         assert {"last", "sign", "npi"} <= set(kbfacts.terms("approximateLastSignInDateTime US_NPI")), \
@@ -659,7 +672,17 @@ class TestIds:
         assert kbid.ANY_ID.findall("S1480,S1483: HTTPS-only, S-BAD") == ["S1480", "S1483", "S-BAD"]
         assert sorted(["S-bbbbbbbb", "S1000", "S-aaaaaaaa", "S999"], key=kbid.sort_key) == \
                          ["S999", "S1000", "S-aaaaaaaa", "S-bbbbbbbb"]
-        assert [kbid.canonical_id(x) for x in ("s0100", "s-K3F7Q2ZD")] == ["S0100", "S-k3f7q2zd"]
+        assert [kbid.canonical_id(x) for x in ("s0100", "s-K3F7Q2ZD", "t-ABCDEFGH")] == ["S0100", "S-k3f7q2zd", "T-abcdefgh"]
+        assert "TGT-issuance" not in kbid.ANY_ID.findall("[DOC S1480] TGT-issuance SDK-embedded")
+
+    def test_root_prefixes(self):
+        """Each root's ids carry its prefix: a hash id is <prefix>-<hash of the url>; legacy ids are public's."""
+        tid = kbid.source_id(self.URL, "T")
+        assert tid == "T-" + kbid.source_id(self.URL)[2:] and kbid.id_prefix(tid) == "T" and kbid.id_prefix("S100") == "S"
+        assert kbid.check_sources([{"id": tid, "url": self.URL}], "T", "team") == []
+        assert "not an id of root team" in kbid.check_sources([{"id": kbid.source_id(self.URL), "url": self.URL}], "T", "team")[0]
+        assert "not an id of root team" in kbid.check_sources([{"id": "S100", "url": self.URL}], "T", "team")[0]
+        assert "not an id of root public" in kbid.check_sources([{"id": tid, "url": self.URL}])[0]
 
     def test_answer_ids(self):
         assert kbid.answer_id("How does Dataverse sync with an on-prem SQL Server?") == "QK-dataverse-sync-prem-sql-server"

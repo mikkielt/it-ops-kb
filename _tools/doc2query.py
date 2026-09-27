@@ -19,9 +19,13 @@ index.
                                               kb/public/_retrieval/doc2query/expansions.csv (key,question); prints kept/dropped
   doc2query.py evaluate QUESTIONS.json        blind test questions [{key, question}] per arm: fact line in pack with
                                               expansion off and on, verdicts, plus the eval set and the off-kb set
-  doc2query.py stale                          expansion keys whose fact no longer exists (text changed or removed);
-                                              exit 1 when there are any
-  doc2query.py prune                          delete the stale keys' rows from expansions.csv
+  doc2query.py stale                          expansion keys whose fact no longer exists (text changed or removed),
+                                              in every root; exit 1 when there are any
+  doc2query.py prune                          delete the stale keys' rows from each root's expansions.csv
+
+--root NAME (before the command): the root whose facts and doc2query data (DATA_DIR/doc2query/) a command works on;
+default: the public root for split, batch, ingest and evaluate, every root for stale and prune. arms.json names
+articles by their path inside the root.
 
 A key is the first 12 hex digits of sha256 over the fact text with whitespace collapsed: stable when lines move,
 new when the text changes. kbfacts.pack reads expansions.csv when it exists and KB_DOC2QUERY is not "0".
@@ -33,9 +37,21 @@ sys.path.insert(0, TOOLS)
 import kbcommon  # noqa: E402
 
 HOME = kbcommon.HOME  # this repository: arms files of earlier rounds are recorded relative to it
-DIR = kbcommon.data_path("doc2query")  # the kb's retrieval data: arms, expansions, off-kb questions
-ARMS = os.path.join(DIR, "arms.json")
-EXPANSIONS = os.path.join(DIR, "expansions.csv")
+ROOT = DIR = ARMS = EXPANSIONS = None
+
+
+def use_root(name=None):
+    """Work on root `name` (default public): its facts and its doc2query data (arms, expansions, off-kb questions)."""
+    global ROOT, DIR, ARMS, EXPANSIONS
+    ROOT = kbcommon.root(name) if name else kbcommon.public()
+    DIR = os.path.join(ROOT.path, kbcommon.DATA_DIR, "doc2query")
+    ARMS = os.path.join(DIR, "arms.json")
+    EXPANSIONS = os.path.join(DIR, "expansions.csv")
+
+
+def bare(qpath):
+    import kbfacts
+    return kbfacts.bare(qpath)
 
 
 def key_of(text):
@@ -44,8 +60,10 @@ def key_of(text):
 
 
 def facts(paths=None):
+    """The tagged article facts of ROOT (paths qualified); `paths` narrows them to these paths inside the root."""
     import kbfacts
-    return [u for u in kbfacts.units() if u["tags"] and u["path"].endswith(".md") and (paths is None or u["path"] in paths)]
+    return [u for u in kbfacts.units(ROOT.name) if u["tags"] and u["path"].endswith(".md")
+            and (paths is None or bare(u["path"]) in paths)]
 
 
 def split(seed, n, exclude=()):
@@ -57,9 +75,10 @@ def split(seed, n, exclude=()):
             prev = json.load(f)
         used |= set(prev.get("pilot", [])) | set(prev.get("control", []))
     by = collections.defaultdict(list)
-    counts = collections.Counter(u["path"] for u in facts())
-    for rel in sorted(kbfacts.articles()):
-        if counts[rel] >= 8 and rel not in used:  # enough facts to test, not in an earlier round
+    counts = collections.Counter(bare(u["path"]) for u in facts())
+    for q in sorted(kbfacts.articles()):
+        rel = bare(q)
+        if kbfacts.root_name(q) == ROOT.name and counts[rel] >= 8 and rel not in used:  # enough facts, not used before
             by[rel.split("/")[0]].append(rel)
     rng = random.Random(seed)
     doms = sorted(by)
@@ -156,14 +175,15 @@ def evaluate(path):
             u = units.get(q["key"])
             if not u:
                 continue
-            arm = "pilot" if u["path"] in arms["pilot"] else "control" if u["path"] in arms["control"] else "other"
+            rel = bare(u["path"])
+            arm = "pilot" if rel in arms["pilot"] else "control" if rel in arms["control"] else "other"
             p = kbfacts.pack(q["question"])
             c = res[arm]
             c["n"] += 1
             c["line"] += f"{u['path']}:{u['line']} " in p["text"]
             c["article"] += u["path"] in p["paths"]
             c[p["verdict"]] += 1
-        ev = rag.run_eval(kbcommon.data_rel("lookup_eval.csv"))
+        ev = rag.run_eval(os.path.join(ROOT.path, kbcommon.DATA_DIR, "lookup_eval.csv"))
         negv = collections.Counter(kbfacts.pack(q)["verdict"] for q in open(neg, encoding="utf-8").read().splitlines() if q.strip()) \
             if os.path.exists(neg) else collections.Counter()
         results[mode] = (res, ev, negv)
@@ -177,32 +197,45 @@ def evaluate(path):
 
 
 def stale_keys():
+    """ROOT's expansion keys whose fact no longer exists in ROOT."""
     live = {key_of(u["text"]) for u in facts()}
     return sorted(set(load_expansions()) - live)
 
 
-def stale():
-    gone = stale_keys()
+def each_root(name):
+    """The roots stale and prune cover: `name`, else every root."""
+    return [name] if name else [r.name for r in kbcommon.roots()]
+
+
+def stale(name=None):
+    gone, many = [], len(each_root(name)) > 1
+    for n in each_root(name):
+        use_root(n)
+        gone += [f"{n}: {k}" if many else k for k in stale_keys()]
     print("\n".join(gone) + (f"\nstale={len(gone)}: python3 _tools/doc2query.py prune removes them" if gone else "stale=0"))
     return 1 if gone else 0
 
 
-def prune():
-    gone = set(stale_keys())
-    if not gone:
-        print("stale=0: nothing to prune")
-        return 0
-    with open(EXPANSIONS, encoding="utf-8", newline="") as f:
-        rows = list(csv.reader(f))
-    keep = [rows[0]] + [r for r in rows[1:] if r and r[0] not in gone]
-    with open(EXPANSIONS, "w", encoding="utf-8", newline="") as f:
-        f.write(kbcommon.rows_text(keep))
-    print(f"pruned {len(rows) - len(keep)} rows of {len(gone)} stale keys")
+def prune(name=None):
+    total = pruned = 0
+    for n in each_root(name):
+        use_root(n)
+        gone = set(stale_keys())
+        if not gone:
+            continue
+        with open(EXPANSIONS, encoding="utf-8", newline="") as f:
+            rows = list(csv.reader(f))
+        keep = [rows[0]] + [r for r in rows[1:] if r and r[0] not in gone]
+        with open(EXPANSIONS, "w", encoding="utf-8", newline="") as f:
+            f.write(kbcommon.rows_text(keep))
+        total, pruned = total + len(gone), pruned + len(rows) - len(keep)
+    print(f"pruned {pruned} rows of {total} stale keys" if total else "stale=0: nothing to prune")
     return 0
 
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("--root", help="the root to work on (default: public; stale and prune: every root)")
     sub = ap.add_subparsers(dest="cmd", required=True)
     s = sub.add_parser("split"); s.add_argument("--seed", type=int, default=7); s.add_argument("--n", type=int, default=12)
     s.add_argument("--exclude", nargs="*", default=[], help="arms files of earlier rounds whose articles are left out")
@@ -213,6 +246,9 @@ def main():
     sub.add_parser("stale")
     sub.add_parser("prune")
     a = ap.parse_args()
+    if a.root and a.root not in {r.name for r in kbcommon.roots()}:
+        sys.exit(f"no root {a.root!r}")
+    use_root(a.root)
     if a.cmd == "split":
         split(a.seed, a.n, a.exclude)
     elif a.cmd == "batch":
@@ -230,9 +266,9 @@ def main():
     elif a.cmd == "evaluate":
         evaluate(a.file)
     elif a.cmd == "prune":
-        sys.exit(prune())
+        sys.exit(prune(a.root))
     else:
-        sys.exit(stale())
+        sys.exit(stale(a.root))
 
 
 if __name__ == "__main__":

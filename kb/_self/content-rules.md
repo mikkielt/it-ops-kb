@@ -2,15 +2,21 @@
 
 What a fact, an article, a source row and a ledger entry look like, and how to add them. This file is authoritative; `check.py`, `build_index.py`, the kb-verify lint and `tests.py` enforce most of it.
 
+## Roots
+
+- Knowledge lives in roots under `kb/`: `kb/public/` (the upstream facts) and any root a team adds beside it with `/kb-add-root` (its systems, repositories and runbooks). A root is a directory with a `_root.md` (front matter `root`, `id_prefix`, `visibility`, `description`) and the layout below; every path inside it is relative to the root. `check.py` rejects a malformed `_root.md` and two roots sharing a name or prefix.
+- **Ids.** A root's sources get ids with its prefix: public keeps `S` (legacy `S123` and hash `S-k3f7q2zd`), another root `<P>-<8 characters>` from `python3 _tools/kbid.py url <URL> --root <name>`. A root cites only its own sources (`check.py` errors on a citation of another root's id): when a team's fact rests on a public source, add the url to the team root under its own prefix.
+- **Visibility.** `public` roots follow the placeholders rule below and the leak tests scan them; `internal` roots may name real hosts, tenants and people, and stay out of the upstream remotes.
+
 ## Layout
 
 - `<domain>/<topic>.md` is one topic. Its front matter has `topic` (equal to the path without `.md`), `priority` (P0-P3: the research order it was gathered in, not importance), `applies_to`, `retrieved_utc`, `sources` and `status`, and optionally `files`. Its body has four sections: Summary, Facts, Reference and Examples. Large tables sit beside it as `.csv` or `.yaml`.
-- A topic's files are the `.md` plus sibling files sharing its stem (`auth/flows.csv`), plus any extras in `files: [dsc/cli/, graph/csdl/device.v1.0.xml]` (kb-root paths, directories end in `/`). An article named in another article's `files:` (an artifact digest) is part of that topic. A topic with no `.md` (a CSV-only table) is a row of `kb/public/_retrieval/index_extra.csv` (`topic,priority,status,files`).
+- A topic's files are the `.md` plus sibling files sharing its stem (`auth/flows.csv`), plus any extras in `files: [dsc/cli/, graph/csdl/device.v1.0.xml]` (root-relative paths, directories end in `/`). An article named in another article's `files:` (an artifact digest) is part of that topic. A topic with no `.md` (a CSV-only table) is a row of `kb/public/_retrieval/index_extra.csv` (`topic,priority,status,files`).
 - `_sources.csv`: every source, `id,url,title,publisher,licence,retrieved_utc,version_or_date,artifact_sha256,used_in,superseded_by`. `used_in` is generated (the domain files that cite the id). `superseded_by` is empty unless a newer row replaced this one; it then names that row's id.
 - `_artifacts.csv`: every pinned structured artifact (JSON schemas, DSC manifests, Graph CSDL, the MCP `schema.ts`, the A2A `.proto`, baseline exports, semantic-convention registries), with its sha256 and a Markdown digest beside it.
 - `_answers.md` (research answers with evidence), `_gaps.md` (what could not be confirmed and where it was looked for), `_conflicts.md` (where sources disagree, both sides linked).
-- Generated, never edited by hand: `_coverage.csv`, the table in `kb/_self/coverage.md`, `n_sources` and `used_in`. After any content change run `python3 _tools/build_index.py` (CI runs `--check`). Rows are ordered by domain, priority, topic id.
-- `kb/public/_census/<date>.csv`: a census verdict log, one row per source with its mechanical bucket (OK, CHANGED, GONE, NEWER-VERSION, NEEDS-READING), the evidence and what reading decided. `_fetch_state.csv`: per source, when `fetch.py --diff` last checked and fetched it, when it last changed, and the hashes compared; snapshots of the last fetch sit in `_cache/snapshots/` (never committed). Search skips both.
+- Generated, never edited by hand: `_coverage.csv`, the table in each root's `_coverage.md`, `n_sources` and `used_in`. After any content change run `python3 _tools/build_index.py` (CI runs `--check`). Rows are ordered by domain, priority, topic id.
+- `_census/<date>.csv`: a census verdict log, one row per source with its mechanical bucket (OK, CHANGED, GONE, NEWER-VERSION, NEEDS-READING), the evidence and what reading decided. `_fetch_state.csv`: per source, when `fetch.py --diff` last checked and fetched it, when it last changed, and the hashes compared; snapshots of the last fetch sit in `_cache/snapshots/` (never committed). Search skips both.
 
 ## Facts and tags
 
@@ -56,4 +62,4 @@ What a fact, an article, a source row and a ledger entry look like, and how to a
 ## Licensing and privacy
 
 - Each source's licence is recorded in `_sources.csv`. Facts are in our own words; quotes of 25 words or fewer. Verbatim copies only under permissive licences (MIT, Apache-2.0, CC BY 4.0, which covers most Microsoft Learn prose), with attribution. Never copy CIS Benchmark or ISO text; reference their ids only. Microsoft Learn content fetched through MCP is paraphrased.
-- Placeholders only in examples: hosts `PL-LT-00123` and `PL-SRV-0042`, domain `corp.example.com`, tenant `00000000-0000-0000-0000-000000000000`, user `jan.kowalski`. Never real hostnames, tenants, people or secrets. Organisation-specific knowledge belongs in a team's own kb (`kb/_self/plugin.md`, "A team's own facts").
+- Placeholders only in examples: hosts `PL-LT-00123` and `PL-SRV-0042`, domain `corp.example.com`, tenant `00000000-0000-0000-0000-000000000000`, user `jan.kowalski`. Never real hostnames, tenants, people or secrets in a `public` root, the tools or the docs. Organisation-specific knowledge belongs in an `internal` root (Roots, above).

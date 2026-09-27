@@ -2,18 +2,10 @@
 
 The open work, and only that: a finished item leaves this file (its commit records it). GitHub has no issues or merge requests for this repository; this list is the queue. Counts that move (partial articles, `UNK` facts, ledger entries) are commands here, not numbers.
 
-## Layout: all knowledge under `kb/`
+## Roots
 
-Code at the root (`_tools/`, `.claude/`, `.claude-plugin/`, CI), knowledge under `kb/`: `kb/_self/` (these docs, searched only with `--index`), `kb/public/` (the domains and ledgers) and any roots a team adds beside it (e.g. `kb/mdm-intune/`), so one kb answers questions across a team's systems. The target:
-
-- **A root** is a `kb/<dir>/` with a `_root.md` (name, `id_prefix`, `visibility: public|internal`, description) and the full layout: its domains, `_sources.csv`, `_answers.md`, `_gaps.md`, `_conflicts.md`, `_coverage.csv`, `_coverage.md`, `_fetch_state.csv`, `_artifacts.csv`, `_census/`, and `_retrieval/` (`signals.csv`, `lookup_eval.csv`, `index_extra.csv`, `doc2query/`, moved from `_tools/`; `_tools/aliases.csv` stays shared). `public/`, not `_public/`: a leading `_` marks what pack skips.
-- **Paths inside a root are relative to the root** (`used_in`, artifact paths, doc2query keys, links); `_tools/kbcommon.py` is the one place that says where the roots sit.
-- **Own ledger, own id prefix per root:** `public` keeps `S` (legacy `S123` and hash `S-...`); a team root declares another (e.g. `I-k3f7q2zd`); `kbid` builds its patterns from the declared prefixes and refuses a taken one.
-- **One federated server:** `kb_pack`, search, audit and facts search every root, with an optional `root` filter; key-word frequency counts across roots; output paths are relative to `kb/` (`public/intune/x.md:12`). `KB_ROOTS` (extra root paths) replaces `KB_ROOT`, and `kb/_self/plugin.md` §6 is rewritten around roots inside `kb/`.
-- **Placeholders-only** applies to `visibility: public` roots; a team keeps its internal roots in its fork, which pulls tools and `public/` from upstream and serves as its plugin marketplace.
-- **Fetch and census** take a root; census tags cover `public`.
-- **Left, each commit through the full gate:** federation (a `_root.md` per root, multi-root pack, `root` filter, `KB_ROOTS`, per-root `kbid`/`check`/`fetch`/census, a coverage page per root instead of `kb/_self/coverage.md`, a `/kb-add-root` skill, tests with a temporary second root); the docs (`/kb-self`: README, maintaining, design, tools, content rules, `kb/_self/plugin.md` §6 around roots inside `kb/`); `/kb-verify`, stress, `rag.py eval` with no verdict change, one host-plugin lookup.
-- Later: a skill that ingests knowledge from a team's other repositories into its roots.
+- **Check a host-plugin lookup across roots.** The tests cover a second root through `KB_ROOTS` and a copy of the repository; no installed plugin has served a team root yet. With a fork that has one: install it as a plugin in a host project, ask a question spanning both roots, and check the pack carries both roots' lines.
+- **Ingest from a team's other repositories.** A skill that turns a team's repositories and service docs into articles of its roots (sources as repository files at a pinned commit, `CODE` tags), so the kb answers questions across the team's services.
 
 ## Lookup quality
 

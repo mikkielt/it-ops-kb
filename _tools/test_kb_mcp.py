@@ -19,7 +19,7 @@ import json, os, re, shutil, subprocess, sys
 
 import pytest
 
-from conftest import KB, P, TOOLS
+from conftest import KB, P, Q, TOOLS
 
 SERVER = os.path.join(TOOLS, "kb_mcp.py")
 REMOTE = "git@gitlab.com:mikkielt/it-ops-kb.git"
@@ -77,6 +77,13 @@ class TestKbServer:
              "params": {"name": "kb_pack", "arguments": {"question": "x", "response_format": "verbose"}}},
             {"jsonrpc": "2.0", "id": 22, "method": "tools/call",
              "params": {"name": "kb_topics_for", "arguments": {"paths": [TOOLS + "/kb_mcp.py", "no/such/dir"]}}},
+            {"jsonrpc": "2.0", "id": 23, "method": "tools/call",
+             "params": {"name": "kb_pack", "arguments": {"question": "Does deleting an Entra device delete its BitLocker keys?",
+                                                         "root": "public"}}},
+            {"jsonrpc": "2.0", "id": 24, "method": "tools/call",
+             "params": {"name": "kb_pack", "arguments": {"question": "bitlocker keys", "root": "no-such-root"}}},
+            {"jsonrpc": "2.0", "id": 25, "method": "tools/call",
+             "params": {"name": "kb_show", "arguments": {"path": Q("auth/kerberos.md") + ":1", "n": 1}}},
         ]
         stdin = "".join(json.dumps(m) + "\n" for m in msgs) + "this is not json\n"
         cls.proc = subprocess.run([sys.executable, SERVER], input=stdin, capture_output=True, text=True, timeout=60, cwd=os.sep)
@@ -90,7 +97,7 @@ class TestKbServer:
 
     def test_exits_on_eof_and_stdout_is_only_jsonrpc(self):
         assert self.proc.returncode == 0, self.proc.stderr
-        assert len(self.lines) == 23, "one reply per request, none for the notification"  # 22 requests + parse error
+        assert len(self.lines) == 26, "one reply per request, none for the notification"  # 25 requests + parse error
         for r in self.replies:
             assert r["jsonrpc"] == "2.0"
 
@@ -115,6 +122,7 @@ class TestKbServer:
         assert always == ["kb_pack"], "only kb_pack skips tool search; the rest stay deferred"
         for n in ("kb_pack", "kb_facts", "kb_audit", "kb_search"):
             assert tools[n]["inputSchema"]["properties"]["response_format"]["enum"] == ["concise", "detailed"]
+            assert tools[n]["inputSchema"]["properties"]["root"]["type"] == "string", f"{n} takes a root filter"
         assert tools["kb_pack"]["inputSchema"]["properties"]["response_format"]["default"] == "detailed"
         assert tools["kb_facts"]["inputSchema"]["properties"]["response_format"]["default"] == "concise"
 
@@ -128,11 +136,11 @@ class TestKbServer:
         err, text = self.text(13)
         assert not err
         assert text.startswith("coverage: good"), text[:200]
-        assert re.search(r"(?m)^- entra/bitlocker-key-deletion\.md:\d+ ", text)
+        assert re.search(rf"(?m)^- {re.escape(Q('entra/bitlocker-key-deletion.md'))}:\d+ ", text), "paths print qualified"
         assert re.search(r"(?m)^  -> S[-\w]+  https://", text)
         err, text = self.text(14)
         assert not err
-        assert "| ad/computer-attributes.md | complete |" in text
+        assert f"| {Q('ad/computer-attributes.md')} | complete |" in text
         err, text = self.text(15)
         assert not err
         assert re.search(r"facts=\d+", text)
@@ -159,8 +167,8 @@ class TestKbServer:
     def test_kb_topics_for(self):
         err, text = self.text(20)
         assert not err
-        assert re.search(r"(?m)^- mecm/adminservice  .*AdminService", text)
-        assert re.search(r"(?m)^- auth/msal-public-client  PublicClientApplication \(1, text:1\)", text)
+        assert re.search(rf"(?m)^- {Q('mecm/adminservice')}  .*AdminService", text), "topics print qualified"
+        assert re.search(rf"(?m)^- {Q('auth/msal-public-client')}  PublicClientApplication \(1, text:1\)", text)
         err, text = self.text(22)
         assert not err
         assert "skipped: no/such/dir: no such file or directory" in text
@@ -179,6 +187,17 @@ class TestKbServer:
         err, text = self.text(8)
         assert err
         assert "not a path inside the kb" in text
+        err, text = self.text(25)
+        assert not err
+        assert text.startswith(f"# {Q('auth/kerberos.md')} lines 1-1 of"), text[:80]
+
+    def test_root_filter(self):
+        err, text = self.text(23)
+        assert not err
+        assert text == self.text(13)[1], "the public root alone gives the same pack when it is the only root"
+        err, text = self.text(24)
+        assert err
+        assert "no root 'no-such-root'" in text and "roots: public" in text
 
     def test_kb_source(self):
         err, text = self.text(6)
@@ -189,7 +208,7 @@ class TestKbServer:
     def test_kb_status(self):
         err, text = self.text(7)
         assert not err
-        for key in ("kb_root:", "commit:", "census_log:", "sources:", "newest_retrieved_utc:", "topics:"):
+        for key in ("kb_dir:", "commit:", "census_log:", "sources:", "newest_retrieved_utc:", "topics:", "roots: public (prefix S"):
             assert key in text
 
     def test_errors(self):

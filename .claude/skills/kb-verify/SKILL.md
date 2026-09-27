@@ -18,7 +18,7 @@ Run each command on its own (no `;`, `&&`, pipes into other tools or loops): the
 2. `python3 _tools/fetch.py --offline`: pinned artifacts match their sha256.
 3. `python3 _tools/stress_test.py`: tool robustness, about 35 s.
 4. `python3 .claude/skills/kb-verify/lint.py <path prefixes>` (the prefixes from the arguments; the base option is for step 6 only): contract checks that `check.py` does not make:
-   - ERROR: topic id vs path; the topic's `_coverage.csv` or `kb/_self/coverage.md` row missing or stale (generated: the fix is `python3 _tools/build_index.py`); coverage lists a missing file (fix `files:`); missing section; tag without a source id; untagged Facts bullet.
+   - ERROR: topic id vs path; the topic's `_coverage.csv` or `_coverage.md` row missing or stale (generated: the fix is `python3 _tools/build_index.py`); coverage lists a missing file (fix `files:`); missing section; tag without a source id; untagged Facts bullet.
    - WARN: no `#` title; a bullet mixing tag kinds; header sources never cited, or cited ids missing from the header.
 5. `python3 _tools/tests.py`: what CI runs, about 20 s. Lint errors listed in `_tools/lint_baseline.txt` are known debt; only new ones fail. It also checks the `signals.csv` and `aliases.csv` tables (every signal names an existing topic, no duplicate keys), `expansions.csv`, the lookup eval, and both plugins (`claude plugin validate` when the CLI is installed).
    - `python3 _tools/rag.py eval`: the lookup eval set on its own; a failing question names the expected article and the verdict it got.

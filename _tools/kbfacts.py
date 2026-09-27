@@ -4,6 +4,12 @@
 rag.py (pack, facts, audit, src --cited, eval), kb_mcp.py, check.py and the kb-verify lint all read the kb through
 this module, so a count or a join gives the same answer whichever tool asks.
 
+Roots. The module spans every root (kbcommon.roots(): kb/public, a team's kb/<name>/, the KB_ROOTS directories) and
+names a file by its qualified path `<root>/<path in root>` (`public/intune/x.md`) and a topic by `<root>/<topic>`;
+what is stored inside a root (front matter, used_in, ledger topic markers, retrieval data) stays root-relative and is
+qualified here as it is read. A prefix (`units`, `audit`, a pack's domain) is qualified (`public/intune`) or bare
+(`intune`: that domain in every root): in_prefix(), scope().
+
 Tag grammar. A tag is `[PART; PART ...]`; a PART is `KIND[/KIND] [from] [IDS] [NOTE]`:
   KIND  DOC | CODE | DER | COMMUNITY | UNK
   IDS   source ids (S123, S-k3f7q2zd) separated by commas or spaces
@@ -36,7 +42,8 @@ reads only the postings of the question's words from it (stdlib sqlite3); otherw
 from memory and saves the index for the next process. Output is identical either way: scores are summed in the same
 term order per unit and ties keep corpus order. Where the file goes: `index_path()`.
 The same index serves `search()` (rag.py search, kb_search): the corpus also holds untagged prose paragraphs, and at
-its end the root index files (INDEX_FILES) and the kb's own docs (kb/_self/), which only a search with `index` sees.
+its end the index files (README.md, each root's ledgers, the kb's own docs in kb/_self/), which only a search with
+`index` sees.
 """
 import array, bisect, csv, functools, hashlib, io, json, math, os, re, sqlite3, sys, tempfile, threading, time
 from collections import Counter, defaultdict
@@ -45,7 +52,7 @@ TOOLS = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, TOOLS)
 import kbcommon, kbid  # noqa: E402
 
-KB = kbcommon.KB  # KB_ROOT, else this repository (kbcommon)
+ROOT_LEDGERS = (kbcommon.ANSWERS, kbcommon.GAPS, kbcommon.CONFLICTS)
 
 KINDS = ("DOC", "CODE", "DER", "COMMUNITY", "UNK")
 _K = "|".join(KINDS)
@@ -54,7 +61,7 @@ TAG = re.compile(rf"\[(?:{_K})\b[^\]]*\]")
 ID = kbid.SOURCE_ID
 _PART_SPLIT = re.compile(rf"\s*[;,]\s*(?=(?:{_K})\b)")
 _PART = re.compile(rf"({_K})(?:/({_K}))?\b\s*(?:from\s+)?"
-                   r"((?:S-[a-z2-7]{8}|S\d{3,4})(?:[\s,]+(?:S-[a-z2-7]{8}|S\d{3,4})\b)*)?(.*)", re.S)
+                   rf"((?:{kbid.ID_PATTERN})(?:[\s,]+(?:{kbid.ID_PATTERN})\b)*)?(.*)", re.S)  # every root's id prefix
 TOPIC_MARK = re.compile(r"\btopic:\s*`?([a-z0-9-]+/[a-z0-9./-]+?)`?(?=[\s,;.)\]]|$)")
 csv.field_size_limit(2**31 - 1)
 
@@ -137,7 +144,35 @@ def pinned_source(row):
 
 # ---------------------------------------------------------------- files
 
-read = kbcommon.read
+def read(qpath):
+    """The text of a kb file by its qualified path (`public/intune/x.md`), or of a repository file (the kb/_self docs,
+    README.md), or None when it cannot be read."""
+    return kbcommon.read(kbcommon.path_of(qpath))
+
+
+def bare(qpath):
+    """The path inside its root of a qualified path; a repository path as is."""
+    r, rel = kbcommon.split(qpath)
+    return rel if r else qpath
+
+
+def root_name(qpath):
+    """The root name of a qualified path, or None for a repository path."""
+    r = kbcommon.split(qpath)[0]
+    return r.name if r else None
+
+
+def scope(domain=None, root=None):
+    """The path prefix a pack, search or audit covers: a domain (bare `intune`: in every root; qualified
+    `public/intune`) narrowed to one root. A domain of another root than `root` covers nothing."""
+    if not root:
+        return domain or None
+    if not domain:
+        return root
+    r, _ = kbcommon.split(domain.strip("/"))
+    if r:
+        return domain if r.name == root else "\0"
+    return f"{root}/{domain.strip('/')}"
 
 
 def front_matter(text):
@@ -157,42 +192,59 @@ def is_article(text):
     return text.startswith("---\n") and "\ntopic:" in text.split("\n---", 2)[0]
 
 
-INDEX_FILES = ("README.md", "_answers.md", "_gaps.md", "_conflicts.md", "_coverage.csv")  # searched with --index only
-# the kb's own docs (rules, tool reference, design): searched with --index only, never packed. This repository's
-# (kbcommon.SELF, listed by repository path); a kb given by KB_ROOT may have its own kb/_self/ (listed by kb path)
-SELF_DIR = kbcommon.SELF if KB == kbcommon.PUBLIC else os.path.join(KB, "_self")
+# searched with --index only: this repository's README.md, each root's ledgers (qualified), the kb's own docs
+INDEX_FILES = ("README.md",)
+ROOT_INDEX_FILES = (kbcommon.ANSWERS, kbcommon.GAPS, kbcommon.CONFLICTS, kbcommon.COVERAGE_CSV)
+# the kb's own docs (rules, tool reference, design): searched with --index only, never packed; listed by repository path
+SELF_DIR = kbcommon.SELF
+
+
+def root_files(names):
+    """The qualified paths of the named root-level files (ledgers) that exist, root by root."""
+    return [kbcommon.qualify(r, n) for r in kbcommon.roots() for n in names if os.path.exists(os.path.join(r.path, n))]
 
 
 def index_files():
-    """The files only a search with `index` sees: the root index files (README.md is this repository's when the
-    root has none: kbcommon.resolve), then every .md under the kb's own docs (SELF_DIR), sorted."""
-    out = list(INDEX_FILES)
-    base = kbcommon.HOME if SELF_DIR == kbcommon.SELF else KB
+    """The files only a search with `index` sees: this repository's README.md, each root's ledgers, then every .md
+    under the kb's own docs (SELF_DIR, by repository path), sorted."""
+    out = list(INDEX_FILES) + root_files(ROOT_INDEX_FILES)
     for root, dirs, files in os.walk(SELF_DIR):
         dirs.sort()
-        out += sorted(os.path.relpath(os.path.join(root, f), base).replace(os.sep, "/") for f in files if f.endswith(".md"))
+        out += sorted(kbcommon.repo_rel(os.path.join(root, f)) for f in files if f.endswith(".md"))
     return out
 
 
+def locate(path):
+    """The absolute real path a tool shows for `path`: a qualified path (`public/intune/x.md`), a repository path
+    (kb/_self docs, README.md), or a bare path inside the public root (`intune/x.md`) when no root and no repository
+    file has that name; a path found nowhere is taken as the public root's, so the caller reports it missing. The
+    caller checks showable() and that the file exists."""
+    full = kbcommon.path_of(path)
+    if not os.path.exists(full) and kbcommon.split(path)[0] is None and not os.path.isabs(path):
+        full = os.path.join(kbcommon.public().path, path)
+    return os.path.realpath(full)
+
+
 def showable(full):
-    """Whether an absolute (real) path may be shown: a file of the kb, of its own docs (SELF_DIR) or the README.md an
-    index search lists."""
-    for base in (KB, SELF_DIR):
+    """Whether an absolute (real) path may be shown: a file of a root, of the kb's own docs (SELF_DIR) or the
+    README.md an index search lists."""
+    for base in [r.path for r in kbcommon.roots()] + [SELF_DIR]:
         base = os.path.realpath(base)
         if os.path.commonpath([full, base]) == base:
             return True
-    return full == os.path.realpath(kbcommon.resolve("README.md"))
+    return full == os.path.realpath(os.path.join(kbcommon.HOME, "README.md"))
 
 
 def kb_files(exts=(".md", ".csv")):
-    """Domain files (not the root index files), sorted."""
-    for root, dirs, files in os.walk(KB):
-        dirs[:] = sorted(d for d in dirs if d not in SKIP_DIRS and not d.startswith("."))
-        if root == KB:
-            continue
-        for f in sorted(files):
-            if f.endswith(exts):
-                yield os.path.relpath(os.path.join(root, f), KB).replace(os.sep, "/")
+    """Domain files of every root (not the root-level ledgers), by qualified path, root by root, sorted."""
+    for r in kbcommon.roots():
+        for root, dirs, files in os.walk(r.path):
+            dirs[:] = sorted(d for d in dirs if d not in SKIP_DIRS and not d.startswith("."))
+            if root == r.path:
+                continue
+            for f in sorted(files):
+                if f.endswith(exts):
+                    yield kbcommon.qualify(r, os.path.relpath(os.path.join(root, f), r.path))
 
 
 _CACHE = {}
@@ -208,11 +260,12 @@ def fingerprint():
     if _FP[1] is not None and now - _FP[0] < FP_MEMO:
         return _FP[1]
     h = hashlib.sha1(f"{INDEX_VERSION}|{os.environ.get('KB_DOC2QUERY', '')}".encode())
-    extra = ["_sources.csv", *index_files(), ALIASES, SIGNALS, kbcommon.data_path("doc2query/expansions.csv"),
-             os.path.join(TOOLS, "kbfacts.py"), os.path.join(TOOLS, "kbid.py")]  # absolute: join(KB, abs) is abs
+    extra = [*root_files((kbcommon.SOURCES,)), *index_files(), *alias_files(), *data_files("signals.csv"),
+             *data_files("doc2query/expansions.csv"), os.path.join(TOOLS, "kbfacts.py"), os.path.join(TOOLS, "kbid.py"),
+             os.pathsep.join(r.path for r in kbcommon.roots())]  # the set of roots: a root added or removed
     for rel in list(kb_files()) + extra:
         try:
-            st = os.stat(kbcommon.resolve(rel))
+            st = os.stat(kbcommon.path_of(rel))
             h.update(f"{rel}\0{st.st_mtime_ns}\0{st.st_size}\n".encode())
         except OSError:
             h.update(f"{rel}\0-\n".encode())
@@ -237,23 +290,25 @@ def articles():
 
 
 def _articles():
+    """{qualified path: front matter}; `topic` qualified by the root (`public/intune/win32-apps`)."""
     out = {}
-    for rel in kb_files((".md",)):
-        text = read(rel)
+    for q in kb_files((".md",)):
+        text = read(q)
         if text and is_article(text):
-            out[rel] = front_matter(text)
+            meta = front_matter(text)
+            meta["topic"] = kbcommon.qualify(root_name(q), meta.get("topic") or bare(q)[:-3])
+            out[q] = meta
     return out
 
 
 def topic_files():
-    """{topic: [files]}: an article's own .md, its `files:` list, and same-stem data files beside it."""
+    """{qualified topic: [qualified files]}: an article's own .md, its `files:` list, and same-stem data files."""
     out = {}
-    for rel, meta in articles().items():
-        topic = meta.get("topic") or rel[:-3]
-        files = [rel] + [f.strip() for f in meta.get("files", "").strip("[]").split(",") if f.strip()]
-        stem = rel[:-3]
-        files += [f for f in (stem + ".csv",) if os.path.exists(os.path.join(KB, f))]
-        out[topic] = sorted(set(files))
+    for q, meta in articles().items():
+        r = root_name(q)
+        files = [q] + [kbcommon.qualify(r, f.strip()) for f in meta.get("files", "").strip("[]").split(",") if f.strip()]
+        files += [f for f in (q[:-3] + ".csv",) if os.path.exists(kbcommon.path_of(f))]
+        out[meta["topic"]] = sorted(set(files))
     return out
 
 
@@ -344,13 +399,18 @@ def csv_units(rel, text):
 
 
 def in_prefix(rel, prefix):
-    """`auth` matches auth/..., `auth/kerberos` matches auth/kerberos.md and auth/kerberos.csv, never authz/..."""
+    """Whether qualified path `rel` is under `prefix`: `public` matches public/..., `public/auth/kerberos` matches
+    public/auth/kerberos.md and .csv, never public/authz/...; a bare `auth` (its first part names no root) matches
+    auth/ in every root."""
     p = prefix.strip("/")
+    if kbcommon.split(p)[0] is None:
+        rel = bare(rel)
     return rel == p or rel.startswith(p + "/") or ("/" in p and rel.startswith(p))
 
 
 def units(prefix=None, with_csv=True, untagged=False):
-    """Every fact unit under a path prefix (`auth`, `auth/kerberos`, `auth/kerberos.md`); `untagged` adds the
+    """Every fact unit under a path prefix (in_prefix: `public`, `auth`, `public/auth/kerberos`), paths qualified;
+    `untagged` adds the
     untagged bullets, table rows and paragraphs of articles, and of the other .md files in the domain directories
     (csv rows are always all included, tagged or not)."""
     out = []
@@ -373,8 +433,11 @@ def units(prefix=None, with_csv=True, untagged=False):
 # ---------------------------------------------------------------- ledgers
 
 def ledger_entries(name):
-    """Entries of `_gaps.md` or `_conflicts.md`: {file, line, end, section, text}. A `### ` line followed directly
+    """Entries of `_gaps.md` or `_conflicts.md`: {file, line, end, section, text}, `file` qualified. A bare ledger
+    name reads it in every root; a qualified one (`public/_gaps.md`) in that root. A `### ` line followed directly
     by bullets is a sub-heading, not an entry."""
+    if kbcommon.split(name)[0] is None:
+        return [e for q in root_files((name,)) for e in ledger_entries(q)]
     text = read(name) or ""
     out, section, cur = [], "", None
 
@@ -403,21 +466,25 @@ def link_entries(entries, tfiles=None, sources=None):
     tfiles = tfiles if tfiles is not None else topic_files()
     sources = sources if sources is not None else source_rows()
     file_topic = {f: t for t, fs in tfiles.items() for f in fs}
-    for e in entries:
+    for e in entries:  # an entry names its own root's topics root-relative: `topic: intune/x`, `## intune/x`
+        r = root_name(e["file"]) or kbcommon.public().name  # a bare ledger name is the public root's
+        own = {bare(t): t for t in tfiles if root_name(t) == r}
         named = set()
         for m in TOPIC_MARK.finditer(e["text"]):
-            named.add(m.group(1).removesuffix(".md").removesuffix(".csv"))
-        for t in tfiles:
+            named.add(kbcommon.qualify(r, m.group(1).removesuffix(".md").removesuffix(".csv")))
+        for t, q in own.items():
             if re.search(rf"(?<![\w/-]){re.escape(t)}(?:\.md|\.csv)?(?![\w-])", e["text"]):
-                named.add(t)
-        if e["section"] in tfiles:
-            named.add(e["section"])
+                named.add(q)
+        if e["section"] in own:
+            named.add(own[e["section"]])
         e["ids"] = sorted(set(ID.findall(e["text"])), key=kbid.sort_key)
         via = set()
         for sid in e["ids"]:
-            for f in filter(None, (sources.get(sid, {}).get("used_in") or "").split(";")):
-                if f.strip() in file_topic:
-                    via.add(file_topic[f.strip()])
+            row = sources.get(sid, {})
+            for f in filter(None, (row.get("used_in") or "").split(";")):
+                f = kbcommon.qualify(row.get("root") or r, f.strip())
+                if f in file_topic:
+                    via.add(file_topic[f])
         e["explicit"], e["via_sources"] = sorted(named), sorted(via - named)
     return entries
 
@@ -427,31 +494,44 @@ def source_rows():
 
 
 def _source_rows():
-    return kbcommon.source_rows()
+    """{id: row} of every root's _sources.csv (ids are unique by their root's prefix); each row gains `root`, the
+    name of the root whose ledger holds it (its `used_in` paths are relative to that root). OSError when the public
+    root's ledger cannot be read; another root may have none yet."""
+    out = {}
+    for r in kbcommon.roots():
+        path = os.path.join(r.path, kbcommon.SOURCES)
+        if r.name != kbcommon.public().name and not os.path.exists(path):
+            continue
+        with open(path, encoding="utf-8-sig", newline="") as f:
+            for row in csv.DictReader(f):
+                row["root"] = r.name
+                out.setdefault(row["id"], row)
+    return out
 
 
 # ---------------------------------------------------------------- audit
 
-def audit(prefix=None, status=None):
-    """One row per article under a prefix: status, dates, fact counts by kind (a fact counts once per kind it
-    carries) and the gap/conflict entries linked to it."""
+def audit(prefix=None, status=None, root=None):
+    """One row per article under a prefix (bare or qualified: in_prefix), in one root or all: status, dates, fact
+    counts by kind (a fact counts once per kind it carries) and the gap/conflict entries linked to it."""
+    prefix = scope(prefix, root)
     tfiles = topic_files()
     srcs = source_rows()
-    ledgers = {n: link_entries(ledger_entries(n), tfiles, srcs) for n in ("_gaps.md", "_conflicts.md")}
+    ledgers = {n: link_entries(ledger_entries(n), tfiles, srcs) for n in (kbcommon.GAPS, kbcommon.CONFLICTS)}
     rows = []
     for rel, meta in sorted(articles().items()):
         if prefix and not in_prefix(rel, prefix):
             continue
         if status and meta.get("status") != status:
             continue
-        topic = meta.get("topic") or rel[:-3]
+        topic = meta["topic"]
         us = [u for f in tfiles.get(topic, [rel]) for u in
               (md_units(f, read(f) or "") if f.endswith(".md") else csv_units(f, read(f) or ""))]
         counts = Counter(k for u in us for k in kinds_of(u["tags"]))
         row = {"path": rel, "topic": topic, "status": meta.get("status", ""), "priority": meta.get("priority", ""),
                "retrieved_utc": meta.get("retrieved_utc", ""), "facts": sum(1 for u in us if u["tags"]),
                **{k: counts.get(k, 0) for k in KINDS}}
-        for n, key in (("_gaps.md", "gaps"), ("_conflicts.md", "conflicts")):
+        for n, key in ((kbcommon.GAPS, "gaps"), (kbcommon.CONFLICTS, "conflicts")):
             row[key] = [e for e in ledgers[n] if topic in e["explicit"]]
             row[key + "_via_sources"] = [e for e in ledgers[n] if topic in e["via_sources"]]
         rows.append(row)
@@ -508,7 +588,29 @@ def terms(text, camel=True):
     return out
 
 
-ALIASES = kbcommon.data_path("aliases.csv", shared=True)
+ALIASES = os.path.join(TOOLS, "aliases.csv")  # product names, shared by every root
+
+
+def data_files(rel):
+    """The absolute paths of retrieval data file `rel` (under DATA_DIR) in each root that has it, root by root."""
+    return [p for p in (os.path.join(r.path, kbcommon.DATA_DIR, rel) for r in kbcommon.roots()) if os.path.exists(p)]
+
+
+def data_rows(rel):
+    """[(Root, row)] of retrieval data CSV `rel` in every root that has it, root by root."""
+    out = []
+    for r in kbcommon.roots():
+        try:
+            with open(os.path.join(r.path, kbcommon.DATA_DIR, rel), encoding="utf-8", newline="") as f:
+                out += [(r, row) for row in csv.DictReader(f)]
+        except OSError:
+            pass
+    return out
+
+
+def alias_files():
+    """The shared product aliases (_tools/aliases.csv), then each root's own aliases.csv (under DATA_DIR)."""
+    return [ALIASES] + data_files("aliases.csv")
 ALIAS_WEIGHT = 0.5  # an alias the question did not use counts half as much as a word it did
 TITLE_WEIGHT = 2    # the article title counts twice in each of its units
 SUMMARY_WEIGHT = 0.1  # the article's Summary text is indexed into each of its units at this weight
@@ -518,20 +620,22 @@ UNTAGGED_WEIGHT = 0.8  # an untagged row or line (reference data, Summary, Examp
 
 
 def aliases():
-    """{canonical: [alias word tuples]} from _tools/aliases.csv (`term,canonical`, one row per alias)."""
+    """{canonical: [alias word tuples]} from alias_files() (`term,canonical`, one row per alias)."""
     return cached("aliases", _aliases)
 
 
 def _aliases():
     out = defaultdict(list)
-    try:
-        with open(ALIASES, encoding="utf-8", newline="") as f:
-            for r in csv.DictReader(f):
-                words = tuple(WORD.findall((r.get("term") or "").lower()))
-                if words and (r.get("canonical") or "").strip():
-                    out[r["canonical"].strip().lower()].append(words)
-    except OSError:
-        pass
+    for path in alias_files():
+        try:
+            with open(path, encoding="utf-8", newline="") as f:
+                for r in csv.DictReader(f):
+                    words = tuple(WORD.findall((r.get("term") or "").lower()))
+                    canon = (r.get("canonical") or "").strip().lower()
+                    if words and canon and words not in out[canon]:
+                        out[canon].append(words)
+        except OSError:
+            pass
     return dict(out)
 
 
@@ -571,14 +675,13 @@ def summary_text(rel):
 
 
 def expansions():
-    """{fact key: [generated questions]} from kb/public/_retrieval/doc2query/expansions.csv; {} when absent or KB_DOC2QUERY=0."""
-    path = kbcommon.data_path("doc2query/expansions.csv")
-    if os.environ.get("KB_DOC2QUERY") == "0" or not os.path.exists(path):
+    """{fact key: [generated questions]} from each root's doc2query/expansions.csv (under DATA_DIR); {} when none
+    exists or KB_DOC2QUERY=0."""
+    if os.environ.get("KB_DOC2QUERY") == "0":
         return {}
     out = defaultdict(list)
-    with open(path, encoding="utf-8", newline="") as f:
-        for r in csv.DictReader(f):
-            out[r["key"]].append(r["question"])
+    for _, r in data_rows("doc2query/expansions.csv"):
+        out[r["key"]].append(r["question"])
     return out
 
 
@@ -591,7 +694,7 @@ def index_units():
     """Units of the index files (index_files()): every bullet, table row, paragraph and data row, tagged or not."""
     out = []
     for rel in index_files():
-        text = read(kbcommon.resolve(rel))
+        text = read(rel)
         if text is not None:
             out += md_units(rel, text, untagged=True) if rel.endswith(".md") else csv_units(rel, text)
     for u in out:
@@ -610,7 +713,7 @@ def _corpus(domain):
         art = u["path"] if u["path"] in metas else u["path"][:-4] + ".md"
         meta = metas.get(art) or {}
         u["title"] = meta.get("title", "")
-        tf = Counter(terms(f"{u['path']} {u['title']} {u['section']} {u['text']}"))
+        tf = Counter(terms(f"{bare(u['path'])} {u['title']} {u['section']} {u['text']}"))  # a root name is no word
         u["len"], u["own"] = sum(tf.values()), frozenset(tf)  # own: words the unit itself has (verdict, df)
         for t in terms(u["title"]):
             tf[t] += TITLE_WEIGHT - 1
@@ -657,10 +760,10 @@ class Store:
         return self._tf[t]
 
     def view(self, domain, index=False):
-        """The units a pack (or a search) over `domain` sees: a domain's units; else every unit but the root index
-        files'; with `index`, every unit."""
+        """The units a pack (or a search) over `domain` (a path prefix: in_prefix) sees: its units, with `index` its
+        roots' ledgers too; else every unit but the index files'; with `index`, every unit."""
         if domain:
-            return Subset(self, domain)
+            return Subset(self, domain, index)
         if index or self.n_main == self.n:
             return self
         if self._main is None:
@@ -782,8 +885,9 @@ class Subset(Store):
     """The units of one domain (a path prefix) of a full store: df, n and the average length over those units only,
     as a pack over corpus(domain) computes them."""
 
-    def __init__(self, base, domain):
-        self.base, self.keep = base, {i for i, p in enumerate(base.paths) if in_prefix(p, domain)}
+    def __init__(self, base, domain, index=False):
+        self.base = base
+        self.keep = {i for i, p in enumerate(base.paths) if in_prefix(p, domain) and (index or not base.root[i])}
         ids = sorted(self.keep)
         super().__init__(base.fp, base.lens, base.summ, base.tagged, base.paths, base.arts, base.srcs, base.root)
         self.n, self.lensum = len(ids), sum(base.lens[i] for i in ids)
@@ -818,23 +922,25 @@ class Prefix(Store):
 
 def index_path(fp):
     """Where the index for fingerprint `fp` lives, or None when KB_INDEX=0: KB_INDEX (a directory), else the
-    plugin's data directory (CLAUDE_PLUGIN_DATA, survives plugin updates), else _cache/ in the kb, else a temp
-    directory. One file per fingerprint and doc2query mode, so a new index never replaces a file a server has open.
-    A kb given by KB_ROOT names its files `kbindex-r<root hash>-...`, so two roots can share CLAUDE_PLUGIN_DATA
-    without pruning each other's index (store())."""
+    plugin's data directory (CLAUDE_PLUGIN_DATA, survives plugin updates), else _cache/ in this repository, else a
+    temp directory. One file per fingerprint and doc2query mode, so a new index never replaces a file a server has
+    open. One index covers every root; with KB_ROOTS set the files are named `kbindex-r<hash of the root set>-...`,
+    so servers with different root sets can share CLAUDE_PLUGIN_DATA without pruning each other's index (store())."""
     where = os.environ.get("KB_INDEX", "")
     if where == "0":
         return None
     if not where:
-        where = os.environ.get("CLAUDE_PLUGIN_DATA") or os.path.join(kbcommon.HOME if KB == kbcommon.PUBLIC else KB, "_cache")
+        where = os.environ.get("CLAUDE_PLUGIN_DATA") or os.path.join(kbcommon.HOME, "_cache")
         if not _writable(where):
-            where = os.path.join(tempfile.gettempdir(), "it-ops-kb-" + hashlib.sha1(KB.encode()).hexdigest()[:8])
+            where = os.path.join(tempfile.gettempdir(), "it-ops-kb-" + hashlib.sha1(kbcommon.HOME.encode()).hexdigest()[:8])
     return os.path.join(where, f"kbindex-{_root_key()}{fp[:16]}.sqlite")
 
 
 def _root_key():
-    """'' for this repository, else `r<8 hex>-` for the KB_ROOT kb (the fingerprint is hex, so never starts with r)."""
-    return "" if KB == kbcommon.PUBLIC else "r" + hashlib.sha1(KB.encode()).hexdigest()[:8] + "-"
+    """'' for this repository's roots alone, else `r<8 hex>-` for the root set KB_ROOTS adds (the fingerprint is
+    hex, so never starts with r)."""
+    extra = [r.path for r in kbcommon.roots() if os.path.dirname(r.path) != kbcommon.KB_DIR]
+    return "r" + hashlib.sha1(os.pathsep.join(extra).encode()).hexdigest()[:8] + "-" if extra else ""
 
 
 def _same_root(name):
@@ -928,12 +1034,13 @@ def rank(st, question):
 SEARCH_PER_FILE = 2  # hits are lines, not sections: at most this many per file, so k hits span several files
 
 
-def search(query, k=8, domain=None, index=False, notes=None):
+def search(query, k=8, domain=None, index=False, notes=None, root=None):
     """The top-k units for a query (rag.py search, kb_search): the pack's ranking over every unit, prose and code
-    blocks included, and with `index` the root index files too; at most SEARCH_PER_FILE hits per file. `notes`, if a list, receives warnings: key words
-    found nowhere in the searched units, or a top hit that holds under half of the informative ones (in fewer than
-    25% of the units)."""
-    st = store(domain, index)
+    blocks included, and with `index` the index files too (each root's ledgers, the kb's own docs, README.md); at
+    most SEARCH_PER_FILE hits per file; `domain` and `root` narrow it (scope()). `notes`, if a list, receives
+    warnings: key words found nowhere in the searched units, or a top hit that holds under half of the informative
+    ones (in fewer than 25% of the units)."""
+    st = store(scope(domain, root), index)
     ranked, keys, holders, kdf = rank(st, query)
     hits, per_file = [], Counter()
     for s, i in ranked:
@@ -962,7 +1069,7 @@ def search(query, k=8, domain=None, index=False, notes=None):
     return hits
 
 
-def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", footer=True):
+def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", footer=True, root=None):
     """Rank fact units for a question and return {verdict, missing, weak_words, groups, sources, text}.
 
     The corpus is every fact unit plus the untagged bullets, table rows and data rows (Summary, Reference, Examples,
@@ -979,8 +1086,9 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
     fact among the top hits holds half of 4+ key words. A word that is a product alias (_tools/aliases.csv) counts as present where any alias of the product is;
     the other aliases rank at a lower weight but never count as key words. `budget` is in tokens (about 3.5
     characters each) and bounds the text. fmt `concise` drops the article flags and the source url footer;
-    footer=False leaves the footer out of the text (pack_many prints one shared footer)."""
-    st = store(domain)
+    footer=False leaves the footer out of the text (pack_many prints one shared footer). `domain` (bare `intune`
+    or qualified `public/intune`) and `root` narrow the units (scope()); paths print qualified (`public/intune/x.md`)."""
+    st = store(scope(domain, root))
     ranked, keys, holders, kdf = rank(st, question)
     n = max(st.n, 1)
     informative = [t for t in keys if kdf[t] < 0.2 * n]
@@ -1038,7 +1146,8 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
             text = clip(u["text"], 420)
             line = f"- {u['path']}:{u['line']} {text}" + ("" if u["tags"] else " (no tag)")
             new_ids = [i for p in u["tags"] for i in p["ids"]] + ID.findall(text)
-            cost = len(line) + url_cost * len(set(new_ids) - set(cited))
+            # the root prefix of the path (`public/`) is not counted: a pack chooses the same lines in any layout
+            cost = len(line) - (len(u["path"]) - len(bare(u["path"]))) + url_cost * len(set(new_ids) - set(cited))
             if used + cost > limit and (items or groups):
                 used = limit
                 break
@@ -1054,7 +1163,7 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
             flags = ", ".join(filter(None, (meta.get("status"), f"retrieved {meta['retrieved_utc']}" if meta.get("retrieved_utc") else "")))
             groups.append((head + (f"  [{flags}]" if flags and not concise else ""), items))
             paths.append(art)
-            used += len(head) + 40
+            used += len(head) - (len(art) - len(bare(art))) + 40
         if used >= limit:
             break
     seen, srcs = set(), []
@@ -1124,17 +1233,17 @@ MAX_QUESTIONS = 6
 PART_BUDGET_MIN = 800  # tokens per part of a 3+ part pack
 
 
-def pack_many(questions, budget=1200, domain=None, fmt="detailed"):
+def pack_many(questions, budget=1200, domain=None, fmt="detailed", root=None):
     """One pack per question (1-6), each with its own coverage verdict, and one shared source footer:
     {verdict (the worst), results, text}. A single question gives exactly pack()'s text. With 3 or more questions
     each part gets 2 * budget / n tokens, at least PART_BUDGET_MIN (never more than budget): measured on the eval set,
     800 tokens keep 98% of the expected article's fact lines that 1200 print, and a 6-part pack shrinks by a third."""
     qs = [q.strip() for q in questions if q and q.strip()][:MAX_QUESTIONS]
     if len(qs) == 1:
-        res = pack(qs[0], budget, domain, fmt=fmt)
+        res = pack(qs[0], budget, domain, fmt=fmt, root=root)
         return {"verdict": res["verdict"], "results": [res], "text": res["text"]}
     part = budget if len(qs) < 3 else max(min(budget, PART_BUDGET_MIN), 2 * budget // len(qs))
-    results = [pack(q, part, domain, fmt=fmt, footer=False) for q in qs]
+    results = [pack(q, part, domain, fmt=fmt, footer=False, root=root) for q in qs]
     out, seen, srcs = [], set(), []
     for i, (q, res) in enumerate(zip(qs, results), start=1):
         out += [f"# Q{i}: {q}", res["text"], ""]
@@ -1150,10 +1259,11 @@ def pack_many(questions, budget=1200, domain=None, fmt="detailed"):
 
 
 def cited_lines(ids):
-    """{id: [(path, line)]}: every kb file line (domain files and root ledgers, not _sources.csv) naming the id."""
+    """{id: [(qualified path, line)]}: every kb file line (every root's domain files and ledgers, not _sources.csv)
+    naming the id."""
     want = {kbid.canonical_id(i) for i in ids}
     out = defaultdict(list)
-    files = list(kb_files((".md", ".csv"))) + [f for f in ("_answers.md", "_gaps.md", "_conflicts.md") if os.path.exists(os.path.join(KB, f))]
+    files = list(kb_files((".md", ".csv"))) + root_files(ROOT_LEDGERS)
     for rel in files:
         text = read(rel)
         if not text or not any(i in text for i in want):
@@ -1166,29 +1276,25 @@ def cited_lines(ids):
 
 # ---------------------------------------------------------------- topics for code (host workspace signals)
 
-SIGNALS = kbcommon.data_path("signals.csv")
 SKIP_CODE_DIRS = {".git", "node_modules", "dist", "build", "out", "coverage", "target", "vendor", "__pycache__", ".venv",
                   "venv", ".next", ".turbo", ".cache"}
 MAX_FILES, MAX_FILE_BYTES = 500, 1_000_000
 
 
 def signals():
-    """[(signal, topic, regex)] from kb/public/_retrieval/signals.csv (`signal,topic`): code words that point at a kb topic,
-    matched case-insensitively as whole words (a signal that starts or ends with punctuation matches there as is)."""
+    """[(signal, qualified topic, regex)] from each root's signals.csv (`signal,topic`, under DATA_DIR; the topic is
+    the root's own): code words that point at a kb topic, matched case-insensitively as whole words (a signal that
+    starts or ends with punctuation matches there as is)."""
     return cached("signals", _signals)
 
 
 def _signals():
     out = []
-    try:
-        with open(SIGNALS, encoding="utf-8", newline="") as f:
-            for r in csv.DictReader(f):
-                sig, topic = (r.get("signal") or "").strip(), (r.get("topic") or "").strip()
-                if sig and topic:
-                    rx = (r"(?<!\w)" if sig[0].isalnum() else "") + re.escape(sig) + (r"(?!\w)" if sig[-1].isalnum() else "")
-                    out.append((sig, topic, re.compile(rx, re.I)))
-    except OSError:
-        pass
+    for root, r in data_rows("signals.csv"):
+        sig, topic = (r.get("signal") or "").strip(), (r.get("topic") or "").strip()
+        if sig and topic:
+            rx = (r"(?<!\w)" if sig[0].isalnum() else "") + re.escape(sig) + (r"(?!\w)" if sig[-1].isalnum() else "")
+            out.append((sig, kbcommon.qualify(root, topic), re.compile(rx, re.I)))
     return out
 
 
@@ -1254,7 +1360,7 @@ def format_topics_for(res, limit=15):
         sigs = ", ".join(f"{s} ({n}, {x['where'][s]})" for s, n in x["signals"].items())
         out.append(f"- {x['topic']}  {sigs}")
     if not res["topics"]:
-        out.append("no kb signal found: the code touches none of the curated topics (kb/public/_retrieval/signals.csv)")
+        out.append("no kb signal found: the code touches none of the curated topics (each root's signals.csv)")
     elif len(res["topics"]) > limit:
         out.append(f"... +{len(res['topics']) - limit} more topics")
     out += [f"skipped: {s}" for s in res["skipped"][:10]]

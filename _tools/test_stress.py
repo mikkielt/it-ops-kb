@@ -15,7 +15,7 @@ import concurrent.futures as cf, csv, functools, http.server, io, json, os, rand
 import pytest
 
 import kbid
-from conftest import D, KB, P, SELF_REL
+from conftest import D, KB, P, Q
 
 pytestmark = pytest.mark.stress
 TIMEOUT = 300
@@ -23,7 +23,7 @@ SCALE = int(os.environ.get("KB_STRESS_SCALE") or 5)
 random.seed(7)
 
 
-COV = f"{SELF_REL}/coverage.md"  # the coverage page (build_index.py prints it relative to the public root)
+COV = P("_coverage.md")  # the public root's coverage page (build_index.py prints it qualified: public/_coverage.md)
 SKIP = shutil.ignore_patterns(".git", "__pycache__", ".venv", ".pytest_cache", ".ruff_cache", "_private")
 
 
@@ -150,9 +150,9 @@ BASE_CASES = [  # (name, tool, args, rc, expect, check)
     ("show ../ traversal", "rag.py", ["show", "../" * 12 + "etc/hosts"], 1, "outside the kb", None),
     ("topics unknown domain", "rag.py", ["topics", "zzz"], 1, "no domain", None),
     # hyphen/dot compounds are searchable by their parts, and parts find the compound
-    ("search part of compound: gmsa", "rag.py", ["--json", "search", "gmsa", "-k", "5"], 0, "", top5("auth/gmsa-dmsa.md")),
-    ("search spaced form of compound: what if", "rag.py", ["--json", "search", "what", "if", "-k", "5"], 0, "", top5("dsc/what-if.md")),
-    ("search file-name token: openssh", "rag.py", ["--json", "search", "openssh", "-k", "5"], 0, "", top5("windows/openssh-server.md")),
+    ("search part of compound: gmsa", "rag.py", ["--json", "search", "gmsa", "-k", "5"], 0, "", top5(Q("auth/gmsa-dmsa.md"))),
+    ("search spaced form of compound: what if", "rag.py", ["--json", "search", "what", "if", "-k", "5"], 0, "", top5(Q("dsc/what-if.md"))),
+    ("search file-name token: openssh", "rag.py", ["--json", "search", "openssh", "-k", "5"], 0, "", top5(Q("windows/openssh-server.md"))),
 ]
 
 
@@ -242,7 +242,7 @@ MUTATIONS = [  # (name, mutate(copy), [(tool, args, rc[, expect[, check]]), ...]
     ("symlink to /etc", lambda d: os.symlink("/etc", os.path.join(d, P("ad"), "etc")), [
         ("rag.py", ["search", "kerberos"], 0), ("rag.py", ["show", "ad/etc/hosts"], 1, "outside the kb")]),
     pytest.param("unreadable .md", unreadable, [
-        ("rag.py", ["search", "kerberos"], 0, "skipped ad/secret.md"), ("rag.py", ["topics", "ad"], 0),
+        ("rag.py", ["search", "kerberos"], 0, "skipped " + Q("ad/secret.md")), ("rag.py", ["topics", "ad"], 0),
         ("check.py", [], 1, "unreadable")],
         marks=pytest.mark.skipif(os.name != "posix" or os.geteuid() == 0, reason="root can read a chmod 000 file"),
         id="unreadable .md"),
@@ -282,7 +282,7 @@ MUTATIONS += [
         ("fetch.py", ["--status", "--source", HID], 0, "selected=1"),
         ("fetch.py", ["--status", "--json", "--file", "ad/hashid.md"], 0, "",
          lambda o: {x["id"] for x in json.loads(o)} == {HID, "S100"}),
-        ("kbid.py", ["url", URL], 0, f"already in _sources.csv as {HID}")]),
+        ("kbid.py", ["url", URL], 0, f"already in public/_sources.csv as {HID}")]),
     ("superseded_by names a known id", lambda d: add_sources(d, [ROW], {"S100": {"superseded_by": HID}}), [
         ("check.py", [], 0), ("rag.py", ["src", "S100"], 0, f"superseded by {HID}")]),
     ("superseded_by names an unknown id", lambda d: add_sources(d, patch={"S100": {"superseded_by": "S-aaaaaaaa"}}), [
@@ -380,12 +380,12 @@ HAND_EDITS = [  # (name, mutate(copy), --check exit, expect, a build repairs it)
         read(d, P("_coverage.csv")).split("\n"))), 1, "row order", True),
     ("CRLF _coverage.csv", lambda d: write(d, P("_coverage.csv"), read(d, P("_coverage.csv")).replace("\n", "\r\n")), 1, "_coverage.csv", True),
     ("hand-edited coverage page row", lambda d: write(d, COV, read(d, COV).replace(
-        f"| `{T0}` |", f"| `{T0}` | P9 |", 1)), 1, "_self/coverage.md: coverage table differs", True),
+        f"| `{T0}` |", f"| `{T0}` | P9 |", 1)), 1, "public/_coverage.md: coverage table differs", True),
     ("hand-edited used_in", lambda d: add_sources(d, patch={"S100": {"used_in": "dsc/nothing.md"}}), 1, "S100 used_in", True),
     ("front matter changed, index not rebuilt", lambda d: write(d, P(T0 + ".md"), read(d, P(T0 + ".md")).replace(
         "\nstatus: ", "\nstatus: unknown\nold_status: ", 1)), 1, f"_coverage.csv: {T0}: status", True),
     ("coverage page without markers", lambda d: write(d, COV, read(d, COV).replace(
-        "<!-- coverage:start -->", "")), 2, "_self/coverage.md lacks the", False),
+        "<!-- coverage:start -->", "")), 2, "public/_coverage.md lacks the", False),
     ("files: names a missing path (warned, lint errors)", lambda d: write(d, P(T0 + ".md"), read(d, P(T0 + ".md")).replace(
         "\nstatus: ", "\nfiles: [ad/nope.csv]\nstatus: ", 1)), 1, "files: lists missing ad/nope.csv", True),
     ("_sources.csv deleted", lambda d: os.remove(os.path.join(d, P("_sources.csv"))), 2, "cannot read _sources.csv", False),

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Re-download and verify every kb artifact (stdlib only).
 
-Inputs (paths relative to the repository root):
+Inputs (paths relative to the root, see Roots):
   _sources.csv    id,url,title,publisher,licence,retrieved_utc,version_or_date,artifact_sha256,used_in,superseded_by
                   A row with artifact_sha256 is an artifact source: the bytes at `url` must hash to it.
   _artifacts.csv  path,source_id,sha256,zip_member
@@ -20,6 +20,10 @@ Modes:
               adds a unified diff of the page text, --max-lines N caps it per source. Exit 0 = no change,
               1 = something changed, 2 = a fetch failed (as diff(1)).
   --status    offline: when each selected source was last fetched, last changed, and its last error.
+
+Roots: every path above is relative to a root (kb/<root>/). --root NAME picks one of this repository's roots;
+without it --diff and --status work on the public root, and --verify, --refresh and --offline on every root with
+artifacts (their output names a non-public root's files `<root>/<path>`).
 
 Selection (for --diff and --status; repeatable, combined as a union; none = every source):
   --topic auth/kerberos     sources cited by the topic's files (per _coverage.csv) or listed in their used_in
@@ -40,7 +44,7 @@ A failed download is reported as `unknown`, never as a match.
 import argparse, datetime, difflib, hashlib, html.parser, io, json, os, re, sys, time, urllib.parse, urllib.request, zipfile
 import kbcommon, kbid
 
-KB = kbcommon.PUBLIC  # the public root: ledgers and articles (the cache stays in the repository)
+KB = kbcommon.PUBLIC  # the root being checked (--root; the public root by default); the cache stays in the repository
 STATE = "_fetch_state.csv"
 STATE_COLS = ["id", "url", "checked_utc", "fetched_utc", "changed_utc", "sha256", "text_sha256", "bytes", "error"]
 SNAPSHOTS = os.path.join(kbcommon.HOME, "_cache", "snapshots")
@@ -73,9 +77,15 @@ def sha(b):
 def read_csv(name, required):
     """Rows of a kb index CSV; exit 1 if it is missing or lacks a required column (never a silent pass)."""
     try:
-        return kbcommon.load_csv(name, required)[1]
+        return kbcommon.load_csv(os.path.join(KB, name), required)[1]
     except kbcommon.CsvError as e:
         sys.exit(str(e))
+
+
+def repo_roots():
+    """The roots in this repository's kb/ (KB_ROOTS roots are other repositories' to fetch)."""
+    kbd = os.path.realpath(kbcommon.KB_DIR)
+    return [r for r in kbcommon.roots() if os.path.dirname(os.path.realpath(r.path)) == kbd]
 
 
 class _PageText(html.parser.HTMLParser):
@@ -338,12 +348,23 @@ def main():
     out.add_argument("--json", action="store_true", help="machine output (--diff, --status)")
     ap.add_argument("--delay", type=float, default=DELAY, help="seconds between requests to one host (default 1.1)")
     ap.add_argument("--timeout", type=float, default=30, help="per-request timeout in seconds for --diff (default 30)")
+    ap.add_argument("--root", metavar="NAME", help="the root to work on (default: public for --diff/--status, every "
+                                                   "root with artifacts for --verify/--refresh/--offline)")
     a = ap.parse_args()
     DELAY = max(a.delay, 0)
     if (a.topic or a.dir or a.file or a.source or a.older_than is not None) and not (a.diff or a.status):
         ap.error("--topic/--dir/--file/--source/--older-than need --diff or --status")
+    try:
+        roots = repo_roots()
+    except kbcommon.RootError as e:
+        sys.exit(str(e))
+    if a.root:
+        roots = [r for r in roots if r.name == a.root]
+        if not roots:
+            ap.error(f"--root {a.root}: no such root in {kbcommon.repo_rel(kbcommon.KB_DIR)}/")
     if a.diff or a.status:
         TIMEOUT = a.timeout
+        use_root(roots[0])
         try:  # a usage or input error is exit 2 here, so it cannot be mistaken for exit 1 = "changed"
             sources = {r["id"]: r for r in read_csv("_sources.csv", ("id", "url"))}
             return diff_sources(a, sources) if a.diff else status(a, sources)
@@ -352,10 +373,30 @@ def main():
                 print(e.code, file=sys.stderr)
                 sys.exit(2)
             raise
+    total = [0, 0, 0, 0, 0]  # ok, fails, unknown, sources with sha, artifacts
+    for r in roots:
+        use_root(r)
+        if not a.root and r.name != "public" and not os.path.exists(os.path.join(KB, "_artifacts.csv")):
+            continue  # a team root without artifacts has nothing to verify; the public root must have its list
+        for i, n in enumerate(verify_root(a, "" if r.name == "public" else r.name + "/")):
+            total[i] += n
+    if not total[4]:
+        sys.exit("_artifacts.csv lists no artifacts; nothing to verify")
+    ok, fails, unknown, with_sha, n_arts = total
+    print(f"ok={ok} mismatch={fails} unknown={unknown} sources_with_sha={with_sha} artifacts={n_arts}")
+    sys.exit(1 if fails or unknown else 0)
+
+
+def use_root(r):
+    global KB
+    KB = r.path
+
+
+def verify_root(a, shown):
+    """--verify/--refresh/--offline of the current root: (ok, fails, unknown, sources with sha, artifacts). `shown`
+    prefixes the paths it prints (a non-public root's name)."""
     sources = {r["id"]: r for r in read_csv("_sources.csv", ("id", "url", "artifact_sha256"))}
     arts = read_csv("_artifacts.csv", ("path", "source_id", "sha256"))
-    if not arts:
-        sys.exit("_artifacts.csv lists no artifacts; nothing to verify")
     fails = unknown = ok = 0
     blobs = {}
 
@@ -380,11 +421,12 @@ def main():
 
     for r in arts:
         path = os.path.join(KB, r["path"])
+        name = shown + r["path"]
         want = r["sha256"].strip().lower()
         sid, member = r["source_id"], (r.get("zip_member") or "").strip()
         src = sources.get(sid)
         if src is None:
-            print(f"NOSOURCE {r['path']}: {sid} not in _sources.csv")
+            print(f"NOSOURCE {name}: {sid} not in _sources.csv")
             fails += 1
             continue
         fresh = None
@@ -394,13 +436,13 @@ def main():
                 try:
                     fresh = zipfile.ZipFile(io.BytesIO(b)).read(member)
                 except KeyError:
-                    print(f"MISMATCH {r['path']}: {member} not in zip {sid}")
+                    print(f"MISMATCH {name}: {member} not in zip {sid}")
                     fails += 1
                     continue
             elif sha(b) == want:
                 fresh = b
         if fresh is not None and sha(fresh) != want:
-            print(f"MISMATCH {r['path']}: upstream member differs from recorded sha256")
+            print(f"MISMATCH {name}: upstream member differs from recorded sha256")
             fails += 1
             continue
         if a.refresh and fresh is not None:
@@ -408,24 +450,22 @@ def main():
             with open(path, "wb") as f:
                 f.write(fresh)
         if not os.path.isfile(path):
-            print(f"MISSING {r['path']}" + (" (is a directory)" if os.path.isdir(path) else ""))
+            print(f"MISSING {name}" + (" (is a directory)" if os.path.isdir(path) else ""))
             fails += 1
             continue
         try:
             with open(path, "rb") as f:
                 got = sha(f.read())
         except OSError as e:
-            print(f"UNREADABLE {r['path']}: {e.strerror}")
+            print(f"UNREADABLE {name}: {e.strerror}")
             fails += 1
             continue
         if got != want:
-            print(f"MISMATCH {r['path']}: local file changed ({got[:12]} vs {want[:12]})")
+            print(f"MISMATCH {name}: local file changed ({got[:12]} vs {want[:12]})")
             fails += 1
         else:
             ok += 1
-
-    print(f"ok={ok} mismatch={fails} unknown={unknown} sources_with_sha={sum(1 for r in sources.values() if r.get('artifact_sha256'))} artifacts={len(arts)}")
-    sys.exit(1 if fails or unknown else 0)
+    return ok, fails, unknown, sum(1 for r in sources.values() if r.get("artifact_sha256")), len(arts)
 
 
 if __name__ == "__main__":

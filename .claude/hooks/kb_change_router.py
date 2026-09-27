@@ -29,6 +29,7 @@ ROUTES = (  # (skill, when, pattern): the first three that match are named, in t
     ("kb-census", "confirm every source", r"\bcensus\b|\ball (?:the |kb )?sources\b|\bevery source\b"),
     ("kb-refresh", "facts of an existing topic, file or source id", r"\brefresh|\bre-?verify|\bre-?check|\boutdated\b|"
      r"\bstale\b|\bout of date\b|\bsources? (?:has |have )?(?:changed|moved)\b|\bS-[a-z2-7]{8}\b|\bS\d{3,4}\b"),
+    ("kb-add-root", "a new knowledge root under kb/", r"\bnew (?:kb )?root\b|\b(?:add|create) (?:a |an )?(?:new )?(?:kb |knowledge )?root\b"),
     ("kb-add-topic", "a new topic, article or data table", r"\bnew (?:topic|article|domain|table)\b|"
      r"\b(?:add|write|create) (?:a |an )?(?:new )?(?:topic|article|domain|table)\b"),
     ("kb-research", "research a question and extend the topics", r"\bresearch|\binvestigat|\bfind out\b"),

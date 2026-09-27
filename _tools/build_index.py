@@ -1,11 +1,15 @@
 #!/usr/bin/env python3
 """Regenerate the kb's index files from the articles and data (stdlib only). Never edit these by hand.
 
-  build_index.py            rewrite what is out of date: _coverage.csv, the coverage table, used_in in _sources.csv
-  build_index.py --check    write nothing; exit 1 and list what differs when a generated file is out of date
+  build_index.py [--root NAME]            rewrite what is out of date in every root (or one): _coverage.csv,
+                                          the coverage table in _coverage.md, used_in in _sources.csv
+  build_index.py --check [--root NAME]    write nothing; exit 1 and list what differs when a generated file is out
+                                          of date
 
-Content files are the files under the domain directories: every path with a `/` whose top directory does not
-start with `_` or `.` (so not `_tools/`, `_cache/`, `.claude/`), skipping dot-files, `__pycache__` and `*.pyc`.
+Each root (kbcommon.roots(): kb/public, kb/<name>/, KB_ROOTS) is built on its own from its own files; every path
+below is relative to the root, and the messages name files by their qualified path `<root>/<path>`.
+Content files are the files under a root's domain directories: every path with a `/` whose top directory does not
+start with `_` or `.` (so not `_retrieval/`, `_census/`), skipping dot-files, `__pycache__` and `*.pyc`.
 
 _coverage.csv (topic,priority,status,files,n_sources), one row per topic:
   - an article is a content `.md` whose front matter has `topic:`. topic, priority and status come from its front
@@ -14,13 +18,13 @@ _coverage.csv (topic,priority,status,files,n_sources), one row per topic:
     `graph/csdl-device.properties.csv`), sorted, then the extras its optional front-matter key lists, in order:
     `files: [dsc/cli/, graph/csdl/device.v1.0.xml]` (kb-root-relative paths; a directory ends in `/`).
   - an article named in another article's `files:` (e.g. an artifact digest) is part of that topic, not a row.
-  - a topic with no article (e.g. a CSV-only table) is a row of kb/public/_retrieval/index_extra.csv (topic,priority,status,files;
+  - a topic with no article (e.g. a CSV-only table) is a row of the root's _retrieval/index_extra.csv (topic,priority,status,files;
     files `;`-separated). Its n_sources is the number of distinct known source ids cited in those files.
   - rows are ordered by domain, then priority, then topic id.
-kb/_self/coverage.md: the table between `<!-- coverage:start -->` and `<!-- coverage:end -->` is the same rows; nothing
-  else in the file is touched. A kb without that file (a team kb served with KB_ROOT) keeps the table in its README.md.
-_sources.csv used_in: the sorted `;`-joined content files whose text cites the id (legacy `\\bS\\d+\\b`, hash
-  `\\bS-[a-z2-7]{8}\\b`, anywhere in the file). Root files (_answers.md, ...) never count; a pinned
+_coverage.md: the table between `<!-- coverage:start -->` and `<!-- coverage:end -->` is the same rows; nothing
+  else in the file is touched. A root without the file gets one holding a title and the markers.
+_sources.csv used_in: the sorted `;`-joined content files of the root whose text cites the id (legacy `\\bS\\d+\\b`,
+  hash `\\b<prefix>-[a-z2-7]{8}\\b`, anywhere in the file). Root files (_answers.md, ...) never count; a pinned
   artifact that does not cite its source is linked to it by _artifacts.csv, not by used_in. Every other column and the row order are kept.
 Output is deterministic: `\\n` line endings, no BOM, stable order. Running it twice changes nothing.
 Exit 0 up to date (or written), 1 out of date (--check), 2 cannot build (unreadable ledger, missing table markers).
@@ -30,12 +34,10 @@ import argparse, csv, io, os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import kbcommon, kbid  # noqa: E402
 
-KB = kbcommon.KB  # KB_ROOT, else this repository
-EXTRA = kbcommon.data_rel("index_extra.csv")
+EXTRA = kbcommon.data_rel("index_extra.csv")  # every path here is relative to the root being built
 COVERAGE_FIELDS = ["topic", "priority", "status", "files", "n_sources"]
 START, END = "<!-- coverage:start -->", "<!-- coverage:end -->"
-# the coverage page in SELF, relative to the public root (a kb given by KB_ROOT keeps its own, coverage_page)
-COVERAGE_MD = os.path.relpath(os.path.join(kbcommon.SELF, "coverage.md"), kbcommon.PUBLIC).replace(os.sep, "/")
+COVERAGE_MD = kbcommon.COVERAGE_MD  # the coverage table's page in each root
 CITE = kbid.SOURCE_ID
 
 
@@ -43,12 +45,16 @@ class BuildError(Exception):
     pass
 
 
-def read(rel):
-    return kbcommon.read(rel, newline="")
+def _base(root):
+    return (root or kbcommon.public()).path
 
 
-def read_csv(rel, required, text=None):
-    text = read(rel) if text is None else text
+def read(rel, root=None):
+    return kbcommon.read(os.path.join(_base(root), rel), newline="")
+
+
+def read_csv(rel, required, text=None, root=None):
+    text = read(rel, root) if text is None else text
     if text is None:
         raise BuildError(f"cannot read {rel}")
     try:
@@ -57,9 +63,9 @@ def read_csv(rel, required, text=None):
         raise BuildError(str(e))
 
 
-def content_files():
-    """Sorted kb-relative paths of the files under the domain directories."""
-    out = []
+def content_files(root=None):
+    """Sorted root-relative paths of the files under a root's domain directories (default: the public root)."""
+    out, KB = [], _base(root)
     for root, dirs, files in os.walk(KB):
         rel_root = os.path.relpath(root, KB)
         dirs[:] = sorted(d for d in dirs if not d.startswith(".") and d != "__pycache__"
@@ -99,9 +105,9 @@ def sort_key(row):
     return (row["topic"].split("/", 1)[0], row["priority"], row["topic"])
 
 
-def coverage_rows(files, texts, known, warnings):
+def coverage_rows(files, texts, known, warnings, root=None):
     """The _coverage.csv rows, in order."""
-    articles = {}
+    KB, articles = _base(root), {}
     for p in files:
         if p.endswith(".md"):
             fm = front_matter(texts[p])
@@ -130,7 +136,7 @@ def coverage_rows(files, texts, known, warnings):
                      "files": ";".join(listed), "n_sources": str(len(set(CITE.findall(fm.get("sources", "")))))})
     have = {r["topic"] for r in rows}
     if os.path.exists(os.path.join(KB, EXTRA)):
-        for r in read_csv(EXTRA, ("topic", "priority", "status", "files"))[1]:
+        for r in read_csv(EXTRA, ("topic", "priority", "status", "files"), root=root)[1]:
             if r["topic"] in have:
                 warnings.append(f"{EXTRA}: {r['topic']} has an article; its row there is ignored")
                 continue
@@ -151,12 +157,14 @@ def coverage_rows(files, texts, known, warnings):
 csv_text = kbcommon.csv_text
 
 
-def coverage_page(override=None):
-    """The file that holds the coverage table: coverage.md in SELF, or README.md in a kb without it (KB_ROOT)."""
-    page = COVERAGE_MD if KB == kbcommon.PUBLIC else "_self/coverage.md"
-    if page in (override or {}) or os.path.exists(os.path.join(KB, page)):
-        return page
-    return "README.md"
+def coverage_page(override=None, root=None):
+    """The root-relative file that holds a root's coverage table."""
+    return COVERAGE_MD
+
+
+def new_page(root=None):
+    """The coverage page of a root that has none: a title and the markers."""
+    return f"# Coverage: {(root or kbcommon.public()).name}\n\n{START}\n{END}\n"
 
 
 def readme_table(rows):
@@ -167,26 +175,29 @@ def readme_table(rows):
     return "\n".join(lines + [END])
 
 
-def build(override=None, texts_out=None):
-    """{path: (old text or None, new text)} for every generated file, and a list of warnings.
+def build(override=None, texts_out=None, root=None):
+    """{path: (old text or None, new text)} for every generated file of one root (default: the public root), its
+    coverage rows, and a list of warnings; paths are relative to the root.
     `override` {path: text} replaces files on disk as input (kbgit.py fix builds from ledgers it has not written yet);
     `texts_out`, a dict, receives the text of every content file read (kbgit.py fix checks them for conflict markers)."""
     override = override or {}
-    get = lambda rel: override[rel] if rel in override else read(rel)  # noqa: E731
+    get = lambda rel: override[rel] if rel in override else read(rel, root)  # noqa: E731
     warnings = []
-    fields, sources = read_csv("_sources.csv", ("id", "used_in"), get("_sources.csv"))
+    fields, sources = read_csv(kbcommon.SOURCES, ("id", "used_in"), get(kbcommon.SOURCES), root)
     known = {r["id"] for r in sources}
-    files = content_files()
+    files = content_files(root)
     texts = {f: get(f) or "" for f in files}
     if texts_out is not None:
         texts_out.update(texts)
-    rows = coverage_rows(files, texts, known, warnings)
+    rows = coverage_rows(files, texts, known, warnings, root)
     out = {"_coverage.csv": csv_text(COVERAGE_FIELDS, rows)}
 
-    page = coverage_page(override)
+    page = coverage_page(override, root)
     doc = get(page)
     if doc is None:
-        raise BuildError(f"cannot read {page}")
+        if os.path.exists(os.path.join(_base(root), page)):
+            raise BuildError(f"cannot read {page}")
+        doc = new_page(root)
     i, j = doc.find(START), doc.find(END)
     if i < 0 or j < i:
         raise BuildError(f"{page} lacks the {START} ... {END} markers around the coverage table")
@@ -199,7 +210,7 @@ def build(override=None, texts_out=None):
     for r in sources:
         r["used_in"] = ";".join(sorted(used.get(r["id"], ())))
     out["_sources.csv"] = csv_text(fields, sources)
-    return {p: (read(p), new) for p, new in out.items()}, rows, warnings
+    return {p: (read(p, root), new) for p, new in out.items()}, rows, warnings
 
 
 def describe(path, old, new):
@@ -237,28 +248,45 @@ def describe(path, old, new):
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--check", action="store_true", help="write nothing; exit 1 when a generated file is out of date")
+    ap.add_argument("--root", help="build only this root (default: every root)")
     a = ap.parse_args()
     try:
-        result, rows, warnings = build()
-    except BuildError as e:
+        todo = [kbcommon.root(a.root)] if a.root else kbcommon.roots()
+    except KeyError:
+        sys.exit(print(f"ERROR no root {a.root!r}", file=sys.stderr) or 2)
+    except kbcommon.RootError as e:
         sys.exit(print(f"ERROR {e}", file=sys.stderr) or 2)
-    for w in warnings:
-        print("WARN", w)
-    stale = [p for p, (old, new) in result.items() if old != new]
-    if a.check:
+    n_topics, stale_all, failed = 0, [], False
+    for root in todo:
+        q = lambda p: kbcommon.qualify(root, p)  # noqa: E731
+        try:
+            result, rows, warnings = build(root=root)
+        except BuildError as e:
+            print(f"ERROR {q(str(e))}", file=sys.stderr)
+            failed = True
+            continue
+        n_topics += len(rows)
+        for w in warnings:
+            print("WARN", q(w))
+        stale = [p for p, (old, new) in result.items() if old != new]
+        stale_all += [q(p) for p in stale]
+        if a.check:
+            for p in stale:
+                lines = describe(p, *result[p])
+                for ln in lines[:30]:
+                    print("DIFF", q(ln))
+                if len(lines) > 30:
+                    print(f"DIFF {q(p)}: ... +{len(lines) - 30} more")
+            continue
         for p in stale:
-            lines = describe(p, *result[p])
-            for ln in lines[:30]:
-                print("DIFF", ln)
-            if len(lines) > 30:
-                print(f"DIFF {p}: ... +{len(lines) - 30} more")
-        print(f"topics={len(rows)} out_of_date={len(stale)}" + (" (run python3 _tools/build_index.py)" if stale else ""))
-        sys.exit(1 if stale else 0)
-    for p in stale:
-        with open(os.path.join(KB, p), "w", encoding="utf-8", newline="") as f:
-            f.write(result[p][1])
-        print(f"wrote {p}")
-    print(f"topics={len(rows)} written={len(stale)}")
+            with open(os.path.join(root.path, p), "w", encoding="utf-8", newline="") as f:
+                f.write(result[p][1])
+            print(f"wrote {q(p)}")
+    if a.check:
+        print(f"topics={n_topics} out_of_date={len(stale_all)}" + (" (run python3 _tools/build_index.py)" if stale_all else ""))
+        sys.exit(2 if failed else 1 if stale_all else 0)
+    print(f"topics={n_topics} written={len(stale_all)}")
+    sys.exit(2 if failed else 0)
 
 
 if __name__ == "__main__":

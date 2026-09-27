@@ -51,7 +51,8 @@ STATUS = re.compile(r"\b(partial|complete|unknown)\b", re.I)
 
 
 def domains():
-    return sorted({p.split("/", 1)[0] for p in kbfacts.articles()})
+    """The domain names of every root, bare (`intune`): a question names a domain, not a root."""
+    return sorted({kbfacts.bare(p).split("/", 1)[0] for p in kbfacts.articles()})
 
 
 def tool_answer(question):
