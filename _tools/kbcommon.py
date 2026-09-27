@@ -28,10 +28,10 @@ import csv, io, os
 
 TOOLS = os.path.dirname(os.path.abspath(__file__))
 HOME = os.path.dirname(TOOLS)  # this repository: the tools' code, the shared product aliases
-KB_DIR = HOME  # all knowledge: the public root, team roots and SELF
-PUBLIC = os.path.normpath(os.path.join(KB_DIR, "."))  # the public root: articles, ledgers, retrieval data
+KB_DIR = os.path.join(HOME, "kb")  # all knowledge: the public root, team roots and SELF
+PUBLIC = os.path.normpath(os.path.join(KB_DIR, "public"))  # the public root: articles, ledgers, retrieval data
 SELF = os.path.join(KB_DIR, "_self")  # the kb's own docs: rules, tool reference, design (searched with --index only)
-DATA_DIR = "_tools"  # a root's retrieval data (signals, eval set, doc2query, index extras), relative to the root
+DATA_DIR = "_retrieval"  # a root's retrieval data (signals, eval set, doc2query, index extras), relative to the root
 KB = os.path.abspath(os.path.expanduser(os.environ["KB_ROOT"])) if os.environ.get("KB_ROOT") else PUBLIC
 csv.field_size_limit(2**31 - 1)  # a very wide cell must not abort a whole read
 

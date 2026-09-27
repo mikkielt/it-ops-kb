@@ -6,9 +6,9 @@ argument-hint: "[YYYY-MM-DD, default today] [--resume]"
 
 # Census of it-ops-kb
 
-Census date: the argument, else today (`YYYY-MM-DD`). `--resume`: continue from the existing `_census/<date>.csv` (skip phases done: its `outcome` column shows what phase 2 already read).
+Census date: the argument, else today (`YYYY-MM-DD`). `--resume`: continue from the existing `kb/public/_census/<date>.csv` (skip phases done: its `outcome` column shows what phase 2 already read).
 
-Read `_self/maintaining.md` first, then the `_self/` files this skill relies on: `_self/content-rules.md` (what to write), `_self/tools.md` (the commands) and `_self/git.md` (commits and pushes). `AGENTS.md` covers lookups only.
+Read `kb/_self/maintaining.md` first, then the `kb/_self/` files this skill relies on: `kb/_self/content-rules.md` (what to write), `kb/_self/tools.md` (the commands) and `kb/_self/git.md` (commits and pushes). `AGENTS.md` covers lookups only.
 
 Run each command on its own (no `;`, `&&`, pipes into other tools or loops): the shared permission rules match single commands.
 
@@ -20,10 +20,10 @@ Rules that hold throughout:
 - Never call `submit_feedback`. Never `--force` or `--no-verify`. One commit per logical step, with `KB_VERIFIED=<date>` on commits that confirm sources.
 
 ## Phase 0-1: mechanical verdicts (no judgment)
-1. `python3 _tools/census.py check --date <date>` (about a minute with warm clones; clones go to `_cache/census/repos/`). It writes `_census/<date>.csv` with one bucket per source: OK, CHANGED, GONE, NEWER-VERSION, NEEDS-READING, and the evidence (commit ids, dates, versions). The method per kind is in `census.py`'s docstring.
-2. `python3 _tools/census.py summary _census/<date>.csv`. NEEDS-READING with note `blocked` means this environment's network policy denied the host: tell the user which hosts (the environment's network settings can allow them) and continue with the rest; those sources stay unconfirmed.
+1. `python3 _tools/census.py check --date <date>` (about a minute with warm clones; clones go to `_cache/census/repos/`). It writes `kb/public/_census/<date>.csv` with one bucket per source: OK, CHANGED, GONE, NEWER-VERSION, NEEDS-READING, and the evidence (commit ids, dates, versions). The method per kind is in `census.py`'s docstring.
+2. `python3 _tools/census.py summary kb/public/_census/<date>.csv`. NEEDS-READING with note `blocked` means this environment's network policy denied the host: tell the user which hosts (the environment's network settings can allow them) and continue with the rest; those sources stay unconfirmed.
 3. Look at the non-OK rows for mechanical false positives before any reading (a monorepo tag family, a moved url, a shallow clone). Fix `census.py` if the rule is wrong (with a test in `_tools/test_census.py`), never the log by hand, and rerun check.
-4. Commit the log: `python3 _tools/build_index.py`, the gate, then `git add _census/<date>.csv` and commit `docs(kb): census <date> phase 1 verdicts`.
+4. Commit the log: `python3 _tools/build_index.py`, the gate, then `git add kb/public/_census/<date>.csv` and commit `docs(kb): census <date> phase 1 verdicts`.
 
 ## Phase 2: read what the checks could not decide
 Scope: every row whose bucket is not OK and whose note is not `blocked`.
@@ -38,19 +38,19 @@ Scope: every row whose bucket is not OK and whose note is not `blocked`.
    > - Sources that now disagree with a kb fact you cannot settle: give a `_conflicts.md` bullet ending `(topic: <domain>/<slug>)`.
    > Update each edited article's `sources:` header and `status`. Do not touch `_sources.csv`, `_gaps.md`, `_conflicts.md`, the index or any file outside your list, and do not commit. Facts in foreign files that need an edit: describe them.
    > Return JSON only: {"outcomes": [{"id", "outcome", "note"}], "new_rows": [{all _sources.csv columns}], "superseded": {"old id": "new id"}, "gaps": [{"topic", "text"}], "conflicts": [{"topic", "text"}], "foreign_edits": [{"file", "line", "change"}]}.
-3. Apply the results yourself, one group at a time: append `new_rows` to `_sources.csv` with a CSV writer (`retrieved_utc` = the census date), set `superseded_by` on the old rows, add the gap and conflict bullets under the topic headings, make the foreign edits, then `python3 _tools/census.py record _census/<date>.csv --from <outcomes.json>`.
+3. Apply the results yourself, one group at a time: append `new_rows` to `_sources.csv` with a CSV writer (`retrieved_utc` = the census date), set `superseded_by` on the old rows, add the gap and conflict bullets under the topic headings, make the foreign edits, then `python3 _tools/census.py record kb/public/_census/<date>.csv --from <outcomes.json>`.
 4. Per group: `python3 _tools/build_index.py`, `python3 _tools/doc2query.py stale` (reworded facts orphan their expansion keys: `python3 _tools/doc2query.py prune` removes them), the gate (`check.py`, `build_index.py --check`, `kbgit.py fix --check`, `tests.py`, which runs `rag.py eval`), and a commit (`docs(kb): census <date>: <group>`, `KB_VERIFIED=<date>`). Sources with hash ids never collide across groups; `_sources.csv` is only ever written by you.
 
 ## Phase 3: dates, by script
-1. `python3 _tools/census.py confirm _census/<date>.csv --date <date> --dry-run`, then without `--dry-run`. It sets `retrieved_utc` and a `confirmed <date>: <proof>` suffix in `version_or_date` for confirmed sources (bucket OK, or outcome confirmed/updated), `checked_utc` in `_fetch_state.csv`, and `retrieved_utc` of every article whose sources all carry the date.
+1. `python3 _tools/census.py confirm kb/public/_census/<date>.csv --date <date> --dry-run`, then without `--dry-run`. It sets `retrieved_utc` and a `confirmed <date>: <proof>` suffix in `version_or_date` for confirmed sources (bucket OK, or outcome confirmed/updated), `checked_utc` in `_fetch_state.csv`, and `retrieved_utc` of every article whose sources all carry the date.
 2. `python3 _tools/build_index.py`, the gate, and commit `docs(kb): census <date>: confirmed dates` with `KB_VERIFIED=<date>`.
 
 ## Phase 4: independent check, then the tag
-1. `python3 _tools/census.py sample _census/<date>.csv --changed 0.10 --ok 0.05 --seed <any>`.
+1. `python3 _tools/census.py sample kb/public/_census/<date>.csv --changed 0.10 --ok 0.05 --seed <any>`.
 2. Give the sample to a fresh subagent that did not do phase 2: for each row it reads the source and the citing facts and answers agree/disagree with a reason. It changes nothing.
 3. Every disagreement is a finding: fix it (and look for the same mistake in its group), then rerun this phase's sample with another seed.
 4. Report the counts: checked, agreed, disagreed, fixed.
-5. The tag means "the kb was confirmed current as of <date>". Create it only when no source that a fact cites is left unconfirmed (summary: no `blocked`, no `unconfirmed`, no unread NEEDS-READING, except rows `python3 _tools/rag.py src <id> --cited` shows cited by no article or data line, only in front matter or ledger notes; list those in `_self/work-left.md`): `python3 _tools/kbgit.py tag-census <date>`, then `git push origin census-<date>` if the user asked to push. Otherwise do not tag: report what is left and why, and put it in `_self/work-left.md`.
+5. The tag means "the kb was confirmed current as of <date>". Create it only when no source that a fact cites is left unconfirmed (summary: no `blocked`, no `unconfirmed`, no unread NEEDS-READING, except rows `python3 _tools/rag.py src <id> --cited` shows cited by no article or data line, only in front matter or ledger notes; list those in `kb/_self/work-left.md`): `python3 _tools/kbgit.py tag-census <date>`, then `git push origin census-<date>` if the user asked to push. Otherwise do not tag: report what is left and why, and put it in `kb/_self/work-left.md`.
 
 ## Report
 The bucket counts, the phase 2 outcomes per group (confirmed, updated, superseded with old -> new ids, gone, unconfirmed), the sample result, the hosts that were blocked, the commits, and whether the tag was created.

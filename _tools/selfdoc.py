@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Which of the kb's own docs (_self/, AGENTS.md, README.md) are behind the files they describe (stdlib only).
+"""Which of the kb's own docs (kb/_self/, AGENTS.md, README.md) are behind the files they describe (stdlib only).
 
   selfdoc.py stale                 docs whose described files changed in a commit after the doc's last commit, or in
                                    the working tree while the doc did not; exit 1 when any
@@ -7,14 +7,14 @@
                                    included) while the doc does not: the check before a commit or a push
                                    (`--since @{upstream}`); exit 1 when any
   selfdoc.py map PATH [PATH ...]   the docs that describe these paths
-  selfdoc.py check                 map rows naming a missing doc or matching no file, and _self/*.md docs with no row;
+  selfdoc.py check                 map rows naming a missing doc or matching no file, and kb/_self/*.md docs with no row;
                                    exit 1 when any
 
-_self/map.csv (doc,pattern) says what each doc describes: one row per doc and glob, repository-relative paths; `*` stays within a
+kb/_self/map.csv (doc,pattern) says what each doc describes: one row per doc and glob, repository-relative paths; `*` stays within a
 directory, `**` crosses directories. A pattern of `-` marks a doc that describes no file (a state file such as
-work-left.md): it is never stale. Reports under _self/reports/ are measurements, each section stating its setup, and need no row. /kb-self is the
+work-left.md): it is never stale. Reports under kb/_self/reports/ are measurements, each section stating its setup, and need no row. /kb-self is the
 runbook that updates what `stale` lists. A doc that was checked against a change and needed no edit is recorded
-with a commit trailer, `Self-Reviewed: _self/plugin.md, AGENTS.md`: from that commit on, `stale` counts it as up to
+with a commit trailer, `Self-Reviewed: kb/_self/plugin.md, AGENTS.md`: from that commit on, `stale` counts it as up to
 date for everything before. A repository tool like kbgit.py: it reads this clone, never KB_ROOT.
 Exit 0 nothing to do, 1 stale docs or map problems, 2 bad arguments, no git, or an unreadable map.
 """

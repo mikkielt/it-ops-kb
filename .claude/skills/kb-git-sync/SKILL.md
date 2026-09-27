@@ -8,7 +8,7 @@ argument-hint: "[--push]"
 
 Arguments: $ARGUMENTS. Push only if they contain `--push` or the user asked to push; otherwise sync without pushing.
 
-Read `_self/maintaining.md` first, then the `_self/` files this skill relies on: `_self/content-rules.md` (what to write), `_self/tools.md` (the commands) and `_self/git.md` (commits and pushes). `AGENTS.md` covers lookups only.
+Read `kb/_self/maintaining.md` first, then the `kb/_self/` files this skill relies on: `kb/_self/content-rules.md` (what to write), `kb/_self/tools.md` (the commands) and `kb/_self/git.md` (commits and pushes). `AGENTS.md` covers lookups only.
 
 Run each command on its own (no `;`, `&&`, pipes into other tools or loops): the shared permission rules match single commands, so a chained command asks for approval or is refused in a headless run.
 
@@ -36,7 +36,7 @@ For each `needs-human` path, read the three versions: `git show :1:PATH` (base),
 - Ids: write both sides' ids exactly as each side has them, even a legacy id both sides took (`S2205`): `fix` renumbers the local side's afterwards. It attributes a line to the side that has it verbatim, and a new line you wrote (a merged `sources:` line) to the one side whose version of the file cites that id at all. If both sides' versions of this file cite the colliding id, keep each side's lines verbatim instead of merging them into one line.
 - Deleted on one side, edited on the other (`git status` shows `DU`/`UD`): ask the user.
 
-**Tool data** (`_tools/signals.csv`, `_tools/aliases.csv`, `_tools/lookup_eval.csv`, `_tools/doc2query/expansions.csv`): union-merged like the ledgers, so they rarely stop a rebase, but `fix` does not clean them. After the rebase (or on a conflict made without `.gitattributes`): keep both sides' rows and drop exact duplicates. A key both sides changed (a signal, an alias term, an eval id) keeps one row: upstream's, unless the local change is the point of its commit. Two different eval rows under one id (two questions with one slug): add `-2` to the local one's id. Then `python3 _tools/doc2query.py stale` (a fact reworded on either side orphans its expansion rows: remove the listed keys' rows) and `python3 _tools/rag.py eval` (every question must pass).
+**Tool data** (`kb/public/_retrieval/signals.csv`, `_tools/aliases.csv`, `kb/public/_retrieval/lookup_eval.csv`, `kb/public/_retrieval/doc2query/expansions.csv`): union-merged like the ledgers, so they rarely stop a rebase, but `fix` does not clean them. After the rebase (or on a conflict made without `.gitattributes`): keep both sides' rows and drop exact duplicates. A key both sides changed (a signal, an alias term, an eval id) keeps one row: upstream's, unless the local change is the point of its commit. Two different eval rows under one id (two questions with one slug): add `-2` to the local one's id. Then `python3 _tools/doc2query.py stale` (a fact reworded on either side orphans its expansion rows: remove the listed keys' rows) and `python3 _tools/rag.py eval` (every question must pass).
 
 **Tools, docs, skills, config** (`_tools/*`, `*.md` outside the domain directories, `.claude/*`, `.gitattributes`, `.gitlab-ci.yml`): merge conservatively so both sides' intents survive (both new flags, both fixes). If the two changes contradict each other, or you cannot tell what one side meant, ask.
 

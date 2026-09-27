@@ -12,8 +12,7 @@ fi
 cd "${CLAUDE_PROJECT_DIR:-$(dirname "$0")/../..}" || exit 0
 
 say() { printf '%s\n' "$*"; }
-self=_self  # the kb's own docs
-[ -d kb/_self ] && self=kb/_self
+self=kb/_self  # the kb's own docs
 
 if ! python3 -c 'import sys; sys.exit(sys.version_info < (3, 11))' 2>/dev/null; then
   say "it-ops-kb: python3 3.11+ is missing; the kb tools cannot run."

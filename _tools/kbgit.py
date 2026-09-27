@@ -103,7 +103,7 @@ _answers.md, _gaps.md, _conflicts.md  conflict markers dropped (union semantics)
 _tools/lint_baseline.txt  if a merge touched it (markers, unsorted or duplicate lines), it becomes the current lint
                errors that either side had accepted, sorted: a merge never accepts new lint debt by itself.
 .gitattributes  the block between `# pinned:start` and `# pinned:end` lists every _artifacts.csv path as `-text`.
-Then build_index.py regenerates _coverage.csv, the coverage table in _self/coverage.md (conflict markers inside the
+Then build_index.py regenerates _coverage.csv, the coverage table in kb/_self/coverage.md (conflict markers inside the
 table go with it) and used_in. Conflict markers left anywhere else in a ledger, that page or an article: exit 2.
 
 Sides of the merge (for collisions): --side REV (repeatable), else MERGE_HEAD during a merge (HEAD + MERGE_HEAD),

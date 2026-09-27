@@ -30,7 +30,7 @@ SKIP = shutil.ignore_patterns(".git", "__pycache__", ".venv", ".pytest_cache", "
 def skip(src, names):
     """Everything in _cache but the pack index (census clones there reach gigabytes: 14 workers' copies filled a
     disk on 2026-09-26)."""
-    if os.path.abspath(src) == os.path.join(KB, P("_cache")):
+    if os.path.abspath(src) == os.path.join(KB, "_cache"):  # the repository's cache, whatever the layout
         return {n for n in names if not n.startswith("kbindex-")}
     return SKIP(src, names)
 

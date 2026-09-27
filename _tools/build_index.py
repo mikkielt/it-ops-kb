@@ -14,10 +14,10 @@ _coverage.csv (topic,priority,status,files,n_sources), one row per topic:
     `graph/csdl-device.properties.csv`), sorted, then the extras its optional front-matter key lists, in order:
     `files: [dsc/cli/, graph/csdl/device.v1.0.xml]` (kb-root-relative paths; a directory ends in `/`).
   - an article named in another article's `files:` (e.g. an artifact digest) is part of that topic, not a row.
-  - a topic with no article (e.g. a CSV-only table) is a row of _tools/index_extra.csv (topic,priority,status,files;
+  - a topic with no article (e.g. a CSV-only table) is a row of kb/public/_retrieval/index_extra.csv (topic,priority,status,files;
     files `;`-separated). Its n_sources is the number of distinct known source ids cited in those files.
   - rows are ordered by domain, then priority, then topic id.
-_self/coverage.md: the table between `<!-- coverage:start -->` and `<!-- coverage:end -->` is the same rows; nothing
+kb/_self/coverage.md: the table between `<!-- coverage:start -->` and `<!-- coverage:end -->` is the same rows; nothing
   else in the file is touched. A kb without that file (a team kb served with KB_ROOT) keeps the table in its README.md.
 _sources.csv used_in: the sorted `;`-joined content files whose text cites the id (legacy `\\bS\\d+\\b`, hash
   `\\bS-[a-z2-7]{8}\\b`, anywhere in the file). Root files (_answers.md, ...) never count; a pinned

@@ -9,7 +9,7 @@ Tag grammar. A tag is `[PART; PART ...]`; a PART is `KIND[/KIND] [from] [IDS] [N
   IDS   source ids (S123, S-k3f7q2zd) separated by commas or spaces
   NOTE  free text after `:`, ` - `, ` — ` or `,` (a derivation, a pointer to _gaps.md, ...)
 CODE is the implementation read at a pinned commit, not a documented contract: `[CODE S-id: path#symbol]` (or
-`path#L10-L20`); code_pointer() returns the pointer. In _self/ a CODE part may point into this repository without an
+`path#L10-L20`); code_pointer() returns the pointer. In kb/_self/ a CODE part may point into this repository without an
 id (`[CODE _tools/kbfacts.py#pack]`; a test checks the file and the symbol exist).
 A `;` or `,` directly followed by a KIND starts the next part, so `[DOC S1208, COMMUNITY S1209]` has two parts and
 `[DER S328,S329: different property; Type has no table]` has one. Canonical form: `[DOC S1, S2]`, `[DER S1: how]`,
@@ -36,7 +36,7 @@ reads only the postings of the question's words from it (stdlib sqlite3); otherw
 from memory and saves the index for the next process. Output is identical either way: scores are summed in the same
 term order per unit and ties keep corpus order. Where the file goes: `index_path()`.
 The same index serves `search()` (rag.py search, kb_search): the corpus also holds untagged prose paragraphs, and at
-its end the root index files (INDEX_FILES) and the kb's own docs (_self/), which only a search with `index` sees.
+its end the root index files (INDEX_FILES) and the kb's own docs (kb/_self/), which only a search with `index` sees.
 """
 import array, bisect, csv, functools, hashlib, io, json, math, os, re, sqlite3, sys, tempfile, threading, time
 from collections import Counter, defaultdict
@@ -159,7 +159,7 @@ def is_article(text):
 
 INDEX_FILES = ("README.md", "_answers.md", "_gaps.md", "_conflicts.md", "_coverage.csv")  # searched with --index only
 # the kb's own docs (rules, tool reference, design): searched with --index only, never packed. This repository's
-# (kbcommon.SELF, listed by repository path); a kb given by KB_ROOT may have its own _self/ (listed by kb path)
+# (kbcommon.SELF, listed by repository path); a kb given by KB_ROOT may have its own kb/_self/ (listed by kb path)
 SELF_DIR = kbcommon.SELF if KB == kbcommon.PUBLIC else os.path.join(KB, "_self")
 
 
@@ -513,7 +513,7 @@ ALIAS_WEIGHT = 0.5  # an alias the question did not use counts half as much as a
 TITLE_WEIGHT = 2    # the article title counts twice in each of its units
 SUMMARY_WEIGHT = 0.1  # the article's Summary text is indexed into each of its units at this weight
 PART_WEIGHT = 0.2  # a part of a compound identifier the question used (US_NPI -> npi): helps, never dominates
-EXPANSION_WEIGHT = 1.0  # words of the generated questions a fact answers (doc2query, _tools/doc2query/)
+EXPANSION_WEIGHT = 1.0  # words of the generated questions a fact answers (doc2query, kb/public/_retrieval/doc2query/)
 UNTAGGED_WEIGHT = 0.8  # an untagged row or line (reference data, Summary, Examples) ranks below a tagged fact
 
 
@@ -571,7 +571,7 @@ def summary_text(rel):
 
 
 def expansions():
-    """{fact key: [generated questions]} from _tools/doc2query/expansions.csv; {} when absent or KB_DOC2QUERY=0."""
+    """{fact key: [generated questions]} from kb/public/_retrieval/doc2query/expansions.csv; {} when absent or KB_DOC2QUERY=0."""
     path = kbcommon.data_path("doc2query/expansions.csv")
     if os.environ.get("KB_DOC2QUERY") == "0" or not os.path.exists(path):
         return {}
@@ -1173,7 +1173,7 @@ MAX_FILES, MAX_FILE_BYTES = 500, 1_000_000
 
 
 def signals():
-    """[(signal, topic, regex)] from _tools/signals.csv (`signal,topic`): code words that point at a kb topic,
+    """[(signal, topic, regex)] from kb/public/_retrieval/signals.csv (`signal,topic`): code words that point at a kb topic,
     matched case-insensitively as whole words (a signal that starts or ends with punctuation matches there as is)."""
     return cached("signals", _signals)
 
@@ -1254,7 +1254,7 @@ def format_topics_for(res, limit=15):
         sigs = ", ".join(f"{s} ({n}, {x['where'][s]})" for s, n in x["signals"].items())
         out.append(f"- {x['topic']}  {sigs}")
     if not res["topics"]:
-        out.append("no kb signal found: the code touches none of the curated topics (_tools/signals.csv)")
+        out.append("no kb signal found: the code touches none of the curated topics (kb/public/_retrieval/signals.csv)")
     elif len(res["topics"]) > limit:
         out.append(f"... +{len(res['topics']) - limit} more topics")
     out += [f"skipped: {s}" for s in res["skipped"][:10]]

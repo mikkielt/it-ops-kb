@@ -1,6 +1,6 @@
 # Benchmark: bare agent vs agent with the kb
 
-Two measurements of the same comparison: subagents started from a running session (token counts from their transcripts, cost estimated), and fresh headless sessions (cost billed). **Setup:** Claude Code 2.1.282 (subagents) and 2.1.283 (headless); Haiku 4.5, Sonnet 5, Opus 5.5; the kb at 265 topics and 111 eval questions, with CODE facts, SNIPPET units, the persisted index and the verdict router. Re-run with `_tools/agent_bench.py` (`--summary` prints the rows), and replace this file when its setup no longer describes the kb. The README carries the summary; `_self/reports/token-usage.md` puts it next to the other measurements.
+Two measurements of the same comparison: subagents started from a running session (token counts from their transcripts, cost estimated), and fresh headless sessions (cost billed). **Setup:** Claude Code 2.1.282 (subagents) and 2.1.283 (headless); Haiku 4.5, Sonnet 5, Opus 5.5; the kb at 265 topics and 111 eval questions, with CODE facts, SNIPPET units, the persisted index and the verdict router. Re-run with `_tools/agent_bench.py` (`--summary` prints the rows), and replace this file when its setup no longer describes the kb. The README carries the summary; `kb/_self/reports/token-usage.md` puts it next to the other measurements.
 
 **Summary.** On questions the kb covers:
 - An agent that uses the kb pays 26-53% less than the same model searching the web, except Opus in a fresh headless session, which paid the same.

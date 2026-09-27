@@ -65,7 +65,7 @@ jobs:
         with:
           fetch-depth: 0
       - run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
-      - name: KB-* commit trailers and _self/ docs on the pushed commits
+      - name: KB-* commit trailers and kb/_self/ docs on the pushed commits
         env:
           BEFORE: ${{ github.event.before }}
           SHA: ${{ github.sha }}

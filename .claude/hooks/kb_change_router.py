@@ -14,10 +14,9 @@ routing deterministic instead of relying on the model to match a skill descripti
 
 `--test "<prompt>"` prints what the hook would add, for a check from a shell.
 """
-import json, os, re, sys
+import json, re, sys
 
-HOME = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-SELF = "kb/_self" if os.path.isdir(os.path.join(HOME, "kb", "_self")) else "_self"  # the kb's own docs
+SELF = "kb/_self"  # the kb's own docs
 
 CHANGE = re.compile(r"\b(?:add|create|write|update|edit|change|modify|fix|correct|remove|delete|rename|move|refactor|"
                     r"implement|improve|extend|replace|commit|push|sync|merge|rebase|refresh|re-?verify|research|"

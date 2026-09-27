@@ -2,15 +2,15 @@
 runs them with every other test module).
 
 TestToolChecks, TestCohesion: check.py and fetch.py --offline pass; no lint errors beyond the recorded baseline; the
-generated index files (_coverage.csv, the _self/coverage.md table, used_in) are up to date (build_index.py --check); links,
+generated index files (_coverage.csv, the kb/_self/coverage.md table, used_in) are up to date (build_index.py --check); links,
 backtick paths and used_in paths resolve; every CLI flag the docs mention exists in that tool; the docs servers' .mcp.json (.claude-plugin/it-ops-kb-docs/), .claude/settings.json and AGENTS.md agree;
 skills are well-formed; of the plugin skills only /kb-lookup is model-invocable, and the clone-only change skills all are
 (a change request must reach them); the change router hook routes change prompts; AGENTS.md stays under 4 KB (every session and subagent
-loads it; maintainer rules live in _self/maintaining.md) and README.md under 8 KB (people read it); _self/map.csv names
+loads it; maintainer rules live in kb/_self/maintaining.md) and README.md under 8 KB (people read it); kb/_self/map.csv names
 every _self doc and matches files (selfdoc.py check); `ruff check` is clean (pyproject.toml).
-TestSelfDocs: _self/ stays out of the pack and the default search, and a search with index finds it.
+TestSelfDocs: kb/_self/ stays out of the pack and the default search, and a search with index finds it.
 TestLookup (deterministic retrieval): kbfacts.py parses tag variants and ledger topic markers one way; `rag.py eval` passes
-every question of _tools/lookup_eval.csv (expected article in the pack, right coverage verdict); the kb: hook blocks
+every question of kb/public/_retrieval/lookup_eval.csv (expected article in the pack, right coverage verdict); the kb: hook blocks
 a covered question, forwards an uncovered one with the pack, and leaves other prompts alone.
 TestIds: kbid.py hash source ids are deterministic and normalization-stable; bad ids and answer-id clashes are caught.
 TestLeaks (tracked files): secrets in any file; in authored files also home-directory paths, private IPv4 addresses,
@@ -120,7 +120,7 @@ def fmt(found, limit=20):
     return "\n".join(f"  {f}:{n}: {v}" for f, n, v in found[:limit]) + (f"\n  ... +{len(found) - limit}" if len(found) > limit else "")
 
 
-# the docs held to the code: the root docs, the _self/ docs and the skills; flags in _self/reports/ are not checked, since a
+# the docs held to the code: the root docs, the kb/_self/ docs and the skills; flags in kb/_self/reports/ are not checked, since a
 # report shows the command lines a measurement ran
 DOCS = ["README.md", "AGENTS.md"] + sorted(os.path.relpath(p, KB) for p in glob.glob(os.path.join(SELF, "*.md"))) \
     + sorted(os.path.relpath(p, KB) for p in glob.glob(os.path.join(KB, ".claude", "skills", "*", "SKILL.md")))
@@ -220,8 +220,9 @@ class TestCohesion:
         servers = json.loads(text(".claude-plugin/it-ops-kb-docs/.mcp.json"))["mcpServers"]
         settings = json.loads(text(".claude/settings.json"))
         assert "enabledMcpjsonServers" not in settings, "no root .mcp.json: a clone registers the servers at local scope"
-        table = dict(re.findall(r"^\s*\| `([\w-]+)` \| `(https://[^`]+)` \|", text("AGENTS.md"), re.M))
-        assert table == {k: v["url"] for k, v in servers.items()}, "AGENTS.md server table != the docs .mcp.json"
+        live = text("AGENTS.md").split("## Live documentation", 1)[1].split("\n## ", 1)[0]
+        named = set(re.findall(r"`([\w-]+)` for ", live))
+        assert named == set(servers), "AGENTS.md docs servers != the docs .mcp.json"
         known = set(servers) | {"kb"}  # kb: the clone's local-scope kb server (kb_mcp.py --register-local)
         perms = settings.get("permissions", {})
         for rule in perms.get("allow", []):
@@ -271,19 +272,19 @@ class TestCohesion:
 
     def test_claude_md_imports_agents_md(self):
         assert "@AGENTS.md" in (text("CLAUDE.md") or "")
-        assert "_self/" not in (text("CLAUDE.md") or ""), "_self/ docs are read on demand, never imported"
+        assert "kb/_self/" not in (text("CLAUDE.md") or ""), "kb/_self/ docs are read on demand, never imported"
 
     def test_agents_md_stays_small(self):
         size = len((text("AGENTS.md") or "").encode())
         assert size <= 4096, f"AGENTS.md is {size} bytes: it loads into every session and subagent; " \
-                                         "move maintainer detail to _self/"
+                                         "move maintainer detail to kb/_self/"
         for s in glob.glob(os.path.join(KB, ".claude", "skills", "*", "SKILL.md")):
             if os.path.basename(os.path.dirname(s)) not in ("kb-lookup", "kb-review-workspace", "kb-gap"):  # read-only skills
-                assert "_self/" in text(os.path.relpath(s, KB)), f"{s}: a skill that changes the kb must name the _self/ docs it follows"
+                assert "kb/_self/" in text(os.path.relpath(s, KB)), f"{s}: a skill that changes the kb must name the kb/_self/ docs it follows"
 
     def test_appended_files_have_lf_endings(self):
         """Python's csv writer ends rows with \\r\\n unless told otherwise; the union-merged ledgers, the tool data and
-        _self/ must stay \\n-only, or merges and the duplicate checks compare rows that differ only in \\r."""
+        kb/_self/ must stay \\n-only, or merges and the duplicate checks compare rows that differ only in \\r."""
         data = os.path.join(PUBLIC, kbcommon.DATA_DIR)
         paths = glob.glob(os.path.join(PUBLIC, "_*.csv")) + glob.glob(os.path.join(PUBLIC, "_*.md")) \
             + glob.glob(os.path.join(TOOLS, "*.csv")) + glob.glob(os.path.join(data, "*.csv")) \
@@ -294,8 +295,8 @@ class TestCohesion:
 
     def test_readme_stays_short(self):
         size = len((text("README.md") or "").encode())
-        assert size <= 8192, f"README.md is {size} bytes: it is the short overview for people; move agent detail to _self/"
-        assert "coverage:start" not in (text("README.md") or ""), "the coverage table lives in _self/coverage.md"
+        assert size <= 8192, f"README.md is {size} bytes: it is the short overview for people; move agent detail to kb/_self/"
+        assert "coverage:start" not in (text("README.md") or ""), "the coverage table lives in kb/_self/coverage.md"
 
     def test_self_map_is_complete(self):
         code, out = run(os.path.join(TOOLS, "selfdoc.py"), "check")
@@ -304,15 +305,15 @@ class TestCohesion:
 
 class TestSelfDocs:
     def test_self_docs_stay_out_of_the_pack(self):
-        """_self/ words (hook, skill, plugin, pack) must never compete with the domain articles in a pack."""
+        """kb/_self/ words (hook, skill, plugin, pack) must never compete with the domain articles in a pack."""
         main = [u for u in kbfacts.corpus() if not u.get("root")]
-        is_self = lambda p: "_self/" in p.replace(os.sep, "/")  # noqa: E731
+        is_self = lambda p: "kb/_self/" in p.replace(os.sep, "/")  # noqa: E731
         assert main and not [u["path"] for u in main if is_self(u["path"])]
         assert not [f for f in kbfacts.kb_files() if is_self(f)]
         assert "_self" not in __import__("rag").topics(None) and SELF_REL not in __import__("rag").topics(None)
 
     def test_self_code_pointers_resolve(self):
-        """A CODE part without a source id (allowed in _self/ only) points into this repository: the file exists and
+        """A CODE part without a source id (allowed in kb/_self/ only) points into this repository: the file exists and
         the symbol is defined in it (or the line range is inside it)."""
         found, bad = 0, []
         for p in sorted(glob.glob(os.path.join(SELF, "*.md"))):
@@ -327,14 +328,14 @@ class TestSelfDocs:
                                           re.search(rf"^\s*(?:def|class)\s+{re.escape(ptr[1])}\b|^{re.escape(ptr[1])}\s*=", src, re.M))
                 if not ok:
                     bad.append((os.path.relpath(p, KB), 0, part["note"]))
-        assert found, "expected at least one repository CODE pointer in _self/ (tools.md)"
+        assert found, "expected at least one repository CODE pointer in kb/_self/ (tools.md)"
         assert not bad, "CODE pointers into this repository that do not resolve:\n" + fmt(bad)
 
     def test_search_with_index_finds_self_docs(self):
         import rag
         paths = lambda index: [h["path"].replace(os.sep, "/") for h in rag.search("selfdoc stale map.csv docs", 5, None, index, [])]  # noqa: E731
-        assert not [p for p in paths(False) if "_self/" in p]
-        assert any("_self/" in p for p in paths(True)), paths(True)
+        assert not [p for p in paths(False) if "kb/_self/" in p]
+        assert any("kb/_self/" in p for p in paths(True)), paths(True)
 
 
 class TestLookup:

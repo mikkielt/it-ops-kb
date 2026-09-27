@@ -8,7 +8,7 @@ argument-hint: "<domain>/<topic-slug> and what it should cover"
 
 Request: $ARGUMENTS. If the domain, slug or scope is unclear, ask before researching.
 
-Read `_self/maintaining.md` first, then the `_self/` files this skill relies on: `_self/content-rules.md` (what to write), `_self/tools.md` (the commands) and `_self/git.md` (commits and pushes). `AGENTS.md` covers lookups only.
+Read `kb/_self/maintaining.md` first, then the `kb/_self/` files this skill relies on: `kb/_self/content-rules.md` (what to write), `kb/_self/tools.md` (the commands) and `kb/_self/git.md` (commits and pushes). `AGENTS.md` covers lookups only.
 
 Run each command on its own (no `;`, `&&`, pipes into other tools or loops): the shared permission rules match single commands, so a chained command asks for approval or is refused in a headless run.
 
@@ -64,12 +64,12 @@ files: [<path>, <dir>/]    # optional: only files beyond <slug>.md and <slug>.* 
 - Placeholders only: `PL-LT-00123`, `PL-SRV-0042`, `corp.example.com`, tenant `00000000-0000-0000-0000-000000000000`, `jan.kowalski`.
 - Large tables go in `<domain>/<slug>.csv` beside the article (listed automatically). Data under another name or in a subdirectory goes in `files:` (kb-root paths; a directory ends in `/`).
 - `status: partial` when anything is `UNK`.
-- `priority`: the research order, not importance (`_self/content-rules.md`). A new topic gets the priority the user gives, else `P3`.
+- `priority`: the research order, not importance (`kb/_self/content-rules.md`). A new topic gets the priority the user gives, else `P3`.
 
 ## 5. Register and log
-- Run `python3 _tools/build_index.py`. It adds the topic's row to `_coverage.csv` and the `_self/coverage.md` table (ordered by domain, priority, topic id; `n_sources` = ids in the `sources:` header) and fills `used_in` in `_sources.csv`. Never edit those by hand.
+- Run `python3 _tools/build_index.py`. It adds the topic's row to `_coverage.csv` and the `kb/_self/coverage.md` table (ordered by domain, priority, topic id; `n_sources` = ids in the `sources:` header) and fills `used_in` in `_sources.csv`. Never edit those by hand.
 - Failed lookups go to `_gaps.md` (what, where you looked). Disagreements go to `_conflicts.md` with both sources. End each new entry with `(topic: <domain>/<slug>)`.
-- Retrieval data (`_self/content-rules.md`): if code that uses the product has distinctive names (class names, API routes, library or package names, permission scopes), add `signal,<domain>/<slug>` rows to `_tools/signals.csv`, so `topics-for` maps code to the topic; if the product has other names or abbreviations, add `term,canonical` rows to `_tools/aliases.csv` (term lowercase; reuse an existing canonical). Check with `python3 _tools/rag.py topics-for --keywords "<a signal>"`.
+- Retrieval data (`kb/_self/content-rules.md`): if code that uses the product has distinctive names (class names, API routes, library or package names, permission scopes), add `signal,<domain>/<slug>` rows to `kb/public/_retrieval/signals.csv`, so `topics-for` maps code to the topic; if the product has other names or abbreviations, add `term,canonical` rows to `_tools/aliases.csv` (term lowercase; reuse an existing canonical). Check with `python3 _tools/rag.py topics-for --keywords "<a signal>"`.
 
 ## 6. Check and report
 - `python3 _tools/check.py` must end `errors=0`. Then `python3 .claude/skills/kb-verify/lint.py <domain>/<slug>` must report `errors=0`.

@@ -2,7 +2,7 @@
 
 A knowledge base of facts from official sources on Windows endpoint management and the AI agents that operate it: DSC v3, ConfigMgr (MECM), Intune, Autopilot, Entra ID, Active Directory, Microsoft Graph, Group Policy, Defender, logs, SQL Server, Power BI, GitLab CI, Ansible, the Python toolchain (uv, pytest, ruff), security baselines, identity and authorization, privacy (Presidio), the Model Context Protocol, Claude Code and AI agents.
 
-AI agents read it, write it and keep it current. People decide what it should cover and review what the agents did; nothing here is meant to be run by hand. This page says what the kb is, how it works and when it pays off. Everything the agents follow is in `_self/`.
+AI agents read it, write it and keep it current. People decide what it should cover and review what the agents did; nothing here is meant to be run by hand. This page says what the kb is, how it works and when it pays off. Everything the agents follow is in `kb/_self/`.
 
 ## Why
 
@@ -28,7 +28,7 @@ An agent that looks a fact up on the web reads whole pages to find one line. Mea
 | a `good` verdict on the wrong article | the verdict counts words, not meaning; the pack prints a `check:` line, and the model must judge |
 | research, refresh and census | the expensive part, paid once per fact rather than once per question |
 
-Details, numbers and the reasoning: `_self/design.md`.
+Details, numbers and the reasoning: `kb/_self/design.md`.
 
 ## Benchmark: bare agent vs agent with the kb
 
@@ -41,20 +41,19 @@ Details, numbers and the reasoning: `_self/design.md`.
 
 On questions the kb lacks, the kb adds one pack call (1-2k tokens) to the same web research. The cheapest correct setup measured was Haiku reading the kb, not Opus reading the web.
 
-The cases, the models, token counts, costs and the route each run took: `_self/reports/benchmark-bare-vs-kb.md`.
+The cases, the models, token counts, costs and the route each run took: `kb/_self/reports/benchmark-bare-vs-kb.md`.
 
 ## Where things are
 
-- `<domain>/`: the articles and their data.
-- `_sources.csv`, `_answers.md`, `_gaps.md`, `_conflicts.md`: the source list, research answers, what could not be confirmed, and where sources disagree.
+- `kb/`: all the knowledge. `kb/public/` holds the articles and their data (`kb/public/<domain>/`) and its ledgers: `_sources.csv`, `_answers.md`, `_gaps.md`, `_conflicts.md` (the source list, research answers, what could not be confirmed, and where sources disagree), plus its retrieval data in `_retrieval/`.
 - `_tools/`: the Python tools (standard library only).
-- `_self/`: everything agents read to run, change and ship the kb: rules, tool reference, design notes, the coverage table, open work. Start at `_self/README.md`.
+- `kb/_self/`: everything agents read to run, change and ship the kb: rules, tool reference, design notes, the coverage table, open work. Start at `kb/_self/README.md`.
 - `AGENTS.md`: the short lookup rules every agent session loads.
 - `.claude/` and `.claude-plugin/`: the skills, subagents and hooks, and the plugin that other projects install.
 
 ## Using it
 
-- **From another project:** ask Claude Code to set up the `it-ops-kb` plugin by following `_self/plugin.md`, then ask your questions. Pin a census tag for a confirmed copy.
+- **From another project:** ask Claude Code to set up the `it-ops-kb` plugin by following `kb/_self/plugin.md`, then ask your questions. Pin a census tag for a confirmed copy.
 - **Changing the kb:** open a clone in Claude Code and ask for the change in plain words. Claude routes it to the skill that does it (`/kb-research`, `/kb-add-topic`, `/kb-refresh`, `/kb-census`, `/kb-verify`, `/kb-git-sync`, and `/kb-self` for the kb's own documentation), and a hook names the likely skill. You can also type a skill yourself.
 
 ## What to trust

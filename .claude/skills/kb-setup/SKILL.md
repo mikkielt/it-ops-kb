@@ -7,7 +7,7 @@ description: Use when the it-ops-kb clone is fresh, a check or MCP server fails 
 
 Work from the repository root. Change no kb content (the only changes are the local git setting in step 3 and the local-scope MCP servers in step 4). Do every step even if an earlier one fails, then report.
 
-Read `_self/maintaining.md` first, then the `_self/` files this skill relies on: `_self/content-rules.md` (what to write), `_self/tools.md` (the commands) and `_self/git.md` (commits and pushes). `AGENTS.md` covers lookups only.
+Read `kb/_self/maintaining.md` first, then the `kb/_self/` files this skill relies on: `kb/_self/content-rules.md` (what to write), `kb/_self/tools.md` (the commands) and `kb/_self/git.md` (commits and pushes). `AGENTS.md` covers lookups only.
 
 Run each command on its own (no `;`, `&&`, pipes into other tools or loops): the shared permission rules match single commands, so a chained command asks for approval or is refused in a headless run.
 

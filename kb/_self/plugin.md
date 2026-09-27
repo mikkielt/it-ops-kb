@@ -8,7 +8,7 @@ The repository root is a Claude Code plugin marketplace (`.claude-plugin/marketp
 - **the `kb` MCP server** (`_tools/kb_mcp.py`, stdlib Python over stdio). Every tool description starts "Documentation facts from it-ops-kb (not live device or directory data)", so a project that also has live MECM/AD tools keeps them apart. Tools:
   - `kb_pack`: the evidence pack (coverage verdict, fact lines with `path:line`, source urls); `questions` batches up to 6 parts in one call. It is always loaded (`anthropic/alwaysLoad`), so the first lookup needs no tool-search round trip.
   - `kb_facts`, `kb_audit`, `kb_search`, `kb_show`, `kb_source`, `kb_status` (the copy's commit and date, and the latest census).
-  - `kb_topics_for`: the kb topics that code touches (MSAL classes, AdminService routes, Negotiate/SPN, LDAP libraries, Graph scopes, ...), from `_tools/signals.csv`.
+  - `kb_topics_for`: the kb topics that code touches (MSAL classes, AdminService routes, Negotiate/SPN, LDAP libraries, Graph scopes, ...), from `kb/public/_retrieval/signals.csv`.
   - `response_format`: `kb_facts`, `kb_audit` and `kb_search` answer `concise` by default (no url footer), `kb_pack` `detailed`.
 - **`/it-ops-kb:kb-lookup`**, which Claude may also invoke on its own. A single fact is one `kb_pack` call in the session that asked.
 - **the `it-ops-kb:kb-lookup` agent**, for long research whose output would fill the caller's context: kb tools only, Haiku, low effort, no `CLAUDE.md`, the lookup procedure preloaded (3.9k tokens of startup context, measured).
@@ -22,7 +22,7 @@ The writing skills (`/kb-research`, `/kb-refresh`, `/kb-add-topic`, `/kb-census`
 
 ## 2. Rules for changing the plugin
 
-- **What reaches a host project:** only the `kb` server's instructions and tool descriptions, the skill and agent names and descriptions, and their bodies when used. `AGENTS.md` and `_self/` never load there, and `rag.py` is not on the host's path: a rule a host must follow goes into those texts, and they name `rag.py` only as the clone form (tested).
+- **What reaches a host project:** only the `kb` server's instructions and tool descriptions, the skill and agent names and descriptions, and their bodies when used. `AGENTS.md` and `kb/_self/` never load there, and `rag.py` is not on the host's path: a rule a host must follow goes into those texts, and they name `rag.py` only as the clone form (tested).
 - **Read-only:** `plugin.json` lists the three read-only skills and the two agent files by path (the kb's `agents/` domain is articles, so never the default `agents/` scan). No `Write`, `Edit`, `Bash` or git in a plugin skill's `allowed-tools` or an agent's `tools`.
 - **No root plugin directories:** never add a root `skills/`, `commands/`, `hooks/`, `bin/` or similar directory, or a root `.mcp.json`: the plugin would load it. The root plugin loads a root `.mcp.json` whatever `plugin.json` says, so the docs servers live in their own plugin, and a clone registers its servers at local scope (`kb_mcp.py --register-local`).
 - **No `version` field:** users get each commit; census tags are the stable channel (section 4).
@@ -65,7 +65,7 @@ Leave `it-ops-kb-docs` out of `enabledPlugins` when the team already has the Mic
 
 ## 5. What it costs and what to watch
 
-- **Context:** about 1.45k tokens in every session once the `kb` server connects (`_self/reports/token-usage.md`, "Always-on cost"): the `kb_pack` schema, the server's instructions, the `kb-lookup` skill and both agent descriptions, the deferred tool names. `claude plugin details it-ops-kb` shows less: it misses path-listed agents and the inline server; `/kb-review-workspace` and `/kb-gap` are never listed, so they cost nothing until run. The docs plugin adds each server's instructions.
+- **Context:** about 1.45k tokens in every session once the `kb` server connects (`kb/_self/reports/token-usage.md`, "Always-on cost"): the `kb_pack` schema, the server's instructions, the `kb-lookup` skill and both agent descriptions, the deferred tool names. `claude plugin details it-ops-kb` shows less: it misses path-listed agents and the inline server; `/kb-review-workspace` and `/kb-gap` are never listed, so they cost nothing until run. The docs plugin adds each server's instructions.
 - **Disk and time:** about 13 MB of files plus about 7 MB of git history per installed copy; Python 3.11+ standard library only. After each update the first lookup builds the index (3-5 s measured), then a cold lookup takes about 0.1 s.
 - **Known limit, a false `good`:** the verdict counts the question's key words in the best article, not meaning, so a `good` pack can be about something related. The pack prints a `check:` line when a name the question uses appears nowhere in the lead article, or when no single fact holds half the key words; the kb tools' instructions say to answer only if a cited line answers the question itself. Without that line the risk is lower, not gone: check that the cited fact answers what was asked, and report a miss with `/it-ops-kb:kb-gap`.
 - **Headless answers:** `_tools/kb_ask.py` needs a clone and the `claude` CLI; in a session with the plugin the path is `kb_pack` or `/it-ops-kb:kb-lookup`.
@@ -73,8 +73,8 @@ Leave `it-ops-kb-docs` out of `enabledPlugins` when the team already has the Mic
 ## 6. A team's own facts: a second kb with `KB_ROOT`
 
 Organisation-specific knowledge (hostnames, tenants, runbooks) never goes into this repository: it holds placeholders only. Keep it in a private repository with the same layout, and serve it with these tools:
-- **Layout:** domain directories of articles (front matter, Summary, Facts, Reference, Examples, one tag per fact), `_sources.csv`, `_artifacts.csv`, `_answers.md`, `_gaps.md`, `_conflicts.md`, and a coverage page holding the two HTML comment markers `coverage:start` and `coverage:end` between which `build_index.py` writes the table: `_self/coverage.md` when the kb has that file, else its `README.md`. Its own retrieval data, all optional, goes in its `_tools/`: `signals.csv`, `lookup_eval.csv`, `doc2query/expansions.csv`, `index_extra.csv`; `aliases.csv` falls back to this repository's product aliases.
-- **Checks, from a clone of it-ops-kb:** `KB_ROOT=~/src/team-kb python3 _tools/build_index.py`, then `check.py` and `rag.py pack "<question>"` the same way. The read tools (`rag.py`, `kb_mcp.py`, the `kb:` hook) and the checks (`check.py`, `build_index.py`, `kbid.py`) honour `KB_ROOT`; the git, census and fetch tools work on this repository only.
+- **Layout:** domain directories of articles (front matter, Summary, Facts, Reference, Examples, one tag per fact), `_sources.csv`, `_artifacts.csv`, `_answers.md`, `_gaps.md`, `_conflicts.md`, and a coverage page holding the two HTML comment markers `coverage:start` and `coverage:end` between which `build_index.py` writes the table: its `_self/coverage.md` when it has that file, else its `README.md`. Its own retrieval data, all optional, goes in its `_retrieval/`: `signals.csv`, `lookup_eval.csv`, `doc2query/expansions.csv`, `index_extra.csv`; `aliases.csv` falls back to this repository's product aliases.
+- **Checks, from a clone of it-ops-kb:** `KB_ROOT=~/src/team-kb python3 _tools/build_index.py`, then `check.py` and `rag.py pack "<question>"` the same way. The read tools (`rag.py`, `kb_mcp.py`, the `kb:` hook) and the checks (`check.py`, `build_index.py`, `kbid.py`) honour `KB_ROOT`; the git, census and fetch tools work on this repository's `kb/public/` only.
 - **Serve it as a second server:** `claude mcp add --scope user kb-team -e KB_ROOT=$HOME/src/team-kb -- python3 ~/src/it-ops-kb/_tools/kb_mcp.py`. Its instructions, tool descriptions and `kb_status` name its root, so answers from the two kbs stay apart. Set `KB_ROOT` only on that server (`-e`), never in a shell profile: every kb tool started from that shell, the plugin's `kb` server and the `kb:` hook included, would serve the team kb instead. Its index file (`kbindex-r<root hash>-...`) sits beside it-ops-kb's in `_cache/` or the plugin data directory without either pruning the other.
 - **Size:** a word counts as a key word only when under a fifth of the kb's lines hold it, so a kb of one or two articles gives `weak` or `none` even for questions it answers; a few articles on different subjects are enough.
 
@@ -106,7 +106,7 @@ Set up the it-ops-kb knowledge base for this project, read-only:
    from the pack (with a check: line, only if a cited line answers the question itself); weak -> one more pack or kb_show; none -> say the kb does not cover it, add nothing from memory.
    Counts and lists: kb_audit, kb_facts, kb_source with cited=true. Every fact ends in one tag: DOC, CODE,
    DER, COMMUNITY or UNK; UNK and COMMUNITY are leads, not answers; CODE is implementation, not a documented promise. Cite path:line and the source url. Never call
-   submit_feedback. The kb is read-only here; contribute through a clone of the repo (its _self/maintaining.md).
+   submit_feedback. The kb is read-only here; contribute through a clone of the repo (its kb/_self/maintaining.md).
 6. Run python3 ~/src/it-ops-kb/_tools/kb_mcp.py --status and show me the output. Tell me to restart Claude Code
    so the servers load, then to ask for kb_status.
 Change nothing else.
@@ -115,6 +115,6 @@ Change nothing else.
 Contributing back happens in a clone, never in the plugin copy:
 1. `git clone git@gitlab.com:mikkielt/it-ops-kb.git`, open it in Claude Code, run `/kb-setup` (checks, stress tests, `python3 _tools/kb_mcp.py --register-local`). Do not also load the plugin from the clone.
 2. Work with `/kb-research`, `/kb-add-topic` or `/kb-refresh`; `/kb-verify` before committing; one logical change per commit.
-3. `python3 _tools/kbgit.py sync --push` (`_self/git.md`); on exit 3, `/kb-git-sync --push`.
+3. `python3 _tools/kbgit.py sync --push` (`kb/_self/git.md`); on exit 3, `/kb-git-sync --push`.
 
-Plugin users receive the push at their next update. Reports from `/it-ops-kb:kb-gap` are triaged in a clone: each becomes a `_gaps.md` entry (ending in `(topic: <domain>/<slug>)`) and, when the kb has the article but the pack missed it, a `_tools/lookup_eval.csv` row (`python3 _tools/kbid.py eval "<question>"`); then `/kb-research` or `/kb-add-topic`, and `kbgit.py sync --push`.
+Plugin users receive the push at their next update. Reports from `/it-ops-kb:kb-gap` are triaged in a clone: each becomes a `_gaps.md` entry (ending in `(topic: <domain>/<slug>)`) and, when the kb has the article but the pack missed it, a `kb/public/_retrieval/lookup_eval.csv` row (`python3 _tools/kbid.py eval "<question>"`); then `/kb-research` or `/kb-add-topic`, and `kbgit.py sync --push`.

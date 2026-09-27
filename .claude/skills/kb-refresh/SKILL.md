@@ -8,7 +8,7 @@ argument-hint: "<topic | directory | file | S-id>"
 
 Target: $ARGUMENTS. If empty, ask which topic, directory or file. Never refresh the whole kb unasked: a full run is about 20 minutes of network traffic.
 
-Read `_self/maintaining.md` first, then the `_self/` files this skill relies on: `_self/content-rules.md` (what to write), `_self/tools.md` (the commands) and `_self/git.md` (commits and pushes). `AGENTS.md` covers lookups only.
+Read `kb/_self/maintaining.md` first, then the `kb/_self/` files this skill relies on: `kb/_self/content-rules.md` (what to write), `kb/_self/tools.md` (the commands) and `kb/_self/git.md` (commits and pushes). `AGENTS.md` covers lookups only.
 
 Run each command on its own (no `;`, `&&`, pipes into other tools or loops): the shared permission rules match single commands, so a chained command asks for approval or is refused in a headless run.
 
@@ -36,9 +36,9 @@ For every changed source, find the facts citing it: `python3 _tools/rag.py src S
 - Replaced source (new commit or moved page): new row as above, old row's `superseded_by` = the new id, citations re-pointed. `check.py` rejects an unknown `superseded_by` id or a cycle.
 - Sources now disagree: record both sides in `_conflicts.md`, ending `(topic: <domain>/<slug>)`.
 - Page gone (404) or content withdrawn: mark the fact `[UNK]`, and log what was tried in `_gaps.md`, ending `(topic: <domain>/<slug>)`.
-- Update the article's `retrieved_utc`, and its `status` if it changed. Then run `python3 _tools/build_index.py`: it regenerates `_coverage.csv`, the `_self/coverage.md` row and `used_in` (never edit those by hand).
-- Rewording a fact changes its doc2query key: `python3 _tools/doc2query.py stale` lists the orphaned keys; `python3 _tools/doc2query.py prune` removes their rows (regenerate only where real lookups miss, `_self/doc2query.md`).
-Follow the licensing rules in `_self/content-rules.md`: Microsoft Learn text is paraphrased (quotes of 25 words or fewer); verbatim copies only for permissive licences.
+- Update the article's `retrieved_utc`, and its `status` if it changed. Then run `python3 _tools/build_index.py`: it regenerates `_coverage.csv`, the `kb/_self/coverage.md` row and `used_in` (never edit those by hand).
+- Rewording a fact changes its doc2query key: `python3 _tools/doc2query.py stale` lists the orphaned keys; `python3 _tools/doc2query.py prune` removes their rows (regenerate only where real lookups miss, `kb/_self/doc2query.md`).
+Follow the licensing rules in `kb/_self/content-rules.md`: Microsoft Learn text is paraphrased (quotes of 25 words or fewer); verbatim copies only for permissive licences.
 
 ## 4. Check and report
 - `python3 _tools/check.py` must end `errors=0`. Run `python3 .claude/skills/kb-verify/lint.py <paths you edited>`.

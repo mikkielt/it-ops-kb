@@ -1,6 +1,6 @@
 # Token usage of kb lookups: measurements
 
-What a lookup costs an agent, where the tokens go, and what each of the kb's techniques saves. Every section starts with its **setup**: the Claude Code version, the models, the size of the kb and which tools existed, because the numbers move with all of them. `_self/design.md` draws the conclusions; `_self/token-efficiency.md` lists the techniques; `_self/reports/benchmark-bare-vs-kb.md` holds the per-run tables of the bare-vs-kb comparison. Re-measure with `_tools/agent_bench.py`, and replace a section when its setup no longer describes the kb.
+What a lookup costs an agent, where the tokens go, and what each of the kb's techniques saves. Every section starts with its **setup**: the Claude Code version, the models, the size of the kb and which tools existed, because the numbers move with all of them. `kb/_self/design.md` draws the conclusions; `kb/_self/token-efficiency.md` lists the techniques; `kb/_self/reports/benchmark-bare-vs-kb.md` holds the per-run tables of the bare-vs-kb comparison. Re-measure with `_tools/agent_bench.py`, and replace a section when its setup no longer describes the kb.
 
 Counting rules used throughout:
 - **Input** is uncached + cache-write + cache-read input tokens, read from the transcript's per-request `usage` or the result event, never from an agent's own report (agents miscount their tool calls).
@@ -114,7 +114,7 @@ Limits: adjacent unanswerable questions (Teams shared-channel size, SharePoint u
 
 ## doc2query
 
-**Setup:** 188 topics, the retrieval above, a 37-question eval set. Protocol and tool: `_self/doc2query.md`. Haiku wrote 3 questions per fact; the Doc2Query-- filter kept those `pack` already routes to the fact's article. A blind Sonnet wrote one paraphrased question per fact, never seeing the generated ones. Two rounds on disjoint arms of 12 pilot and 12 control articles each.
+**Setup:** 188 topics, the retrieval above, a 37-question eval set. Protocol and tool: `kb/_self/doc2query.md`. Haiku wrote 3 questions per fact; the Doc2Query-- filter kept those `pack` already routes to the fact's article. A blind Sonnet wrote one paraphrased question per fact, never seeing the generated ones. Two rounds on disjoint arms of 12 pilot and 12 control articles each.
 
 Round 1 (pilot 169 facts, 507 questions generated, 473 kept; 40 blind questions per arm), by expansion weight:
 
@@ -127,7 +127,7 @@ Round 1 (pilot 169 facts, 507 questions generated, 473 kept; 40 blind questions 
 
 Round 2 (fresh arms: pilot 155 facts, 465 generated, 442 kept; weight fixed at 1.0): pilot 38/40 (95%) with and without expansion, control 39/40, eval 37/37, off-kb `good` 2/20, mean pack 3345 -> 3273 characters. Its two pilot misses were a bad test item and a right article ranked below another line of it.
 
-What it shows: the three round-1 gains were pure paraphrase ("app-only vs delegated permission model"), and the weight was tuned on those test questions; on fresh arms the lexical baseline was already 95%, so expansion added nothing measurable. Expansion never changes a verdict (its words are not key words) and made packs slightly smaller. The two rounds' expansions stay in the index; the rest of the kb is not expanded (`_self/doc2query.md`).
+What it shows: the three round-1 gains were pure paraphrase ("app-only vs delegated permission model"), and the weight was tuned on those test questions; on fresh arms the lexical baseline was already 95%, so expansion added nothing measurable. Expansion never changes a verdict (its words are not key words) and made packs slightly smaller. The two rounds' expansions stay in the index; the rest of the kb is not expanded (`kb/_self/doc2query.md`).
 
 ## Models and hand-off patterns
 
@@ -197,7 +197,7 @@ One run per cell, so the cost difference is within noise; Haiku's h2 check is th
 
 ## Bare agent against agent with the kb
 
-**Setup:** Claude Code 2.1.282 (subagents) and 2.1.283 (headless); Haiku 4.5, Sonnet 5, Opus 5.5; 265 topics with CODE and SNIPPET. 24 subagents (4 scenarios x bare/kb x 3 models) and 134 headless runs (10 scenarios x 7 configs x 2 runs, billed, $17.08). Per-run tables: `_self/reports/benchmark-bare-vs-kb.md`.
+**Setup:** Claude Code 2.1.282 (subagents) and 2.1.283 (headless); Haiku 4.5, Sonnet 5, Opus 5.5; 265 topics with CODE and SNIPPET. 24 subagents (4 scenarios x bare/kb x 3 models) and 134 headless runs (10 scenarios x 7 configs x 2 runs, billed, $17.08). Per-run tables: `kb/_self/reports/benchmark-bare-vs-kb.md`.
 
 - Covered questions, same model: kb 38-39% cheaper on Haiku and Sonnet, the same on Opus (a session in this clone starts at 58-90k tokens, the bare empty directory at 17-56k), 41-69% faster, 1-2 tool calls instead of 5-6, never less correct.
 - The router: $0.018, 9 s and 14k input per covered question; 12 of 14 fully right (the Haiku reader dropped the TGT step of `x1_synth` twice).

@@ -1,6 +1,6 @@
 ---
 name: kb-verify
-description: Use before any it-ops-kb commit or push, or when the user asks to check, verify or gate a change: runs the checks, tests, stress tests, lookup eval, contract lint and the _self/ docs check, and reports findings without changing files.
+description: Use before any it-ops-kb commit or push, or when the user asks to check, verify or gate a change: runs the checks, tests, stress tests, lookup eval, contract lint and the kb/_self/ docs check, and reports findings without changing files.
 argument-hint: "[path prefixes to limit the contract checks, e.g. auth dsc/what-if] [--base REV]"
 ---
 
@@ -8,7 +8,7 @@ argument-hint: "[path prefixes to limit the contract checks, e.g. auth dsc/what-
 
 Report only: change no file, even to fix a finding.
 
-Read `_self/maintaining.md` first, then the `_self/` files this skill relies on: `_self/content-rules.md` (what to write), `_self/tools.md` (the commands) and `_self/git.md` (commits and pushes). `AGENTS.md` covers lookups only.
+Read `kb/_self/maintaining.md` first, then the `kb/_self/` files this skill relies on: `kb/_self/content-rules.md` (what to write), `kb/_self/tools.md` (the commands) and `kb/_self/git.md` (commits and pushes). `AGENTS.md` covers lookups only.
 
 Run each command on its own (no `;`, `&&`, pipes into other tools or loops): the shared permission rules match single commands, so a chained command asks for approval or is refused in a headless run.
 
@@ -18,7 +18,7 @@ Run each command on its own (no `;`, `&&`, pipes into other tools or loops): the
 2. `python3 _tools/fetch.py --offline`: pinned artifacts match their sha256.
 3. `python3 _tools/stress_test.py`: tool robustness, about 35 s.
 4. `python3 .claude/skills/kb-verify/lint.py <path prefixes>` (the prefixes from the arguments; the base option is for step 6 only): contract checks that `check.py` does not make:
-   - ERROR: topic id vs path; the topic's `_coverage.csv` or `_self/coverage.md` row missing or stale (generated: the fix is `python3 _tools/build_index.py`); coverage lists a missing file (fix `files:`); missing section; tag without a source id; untagged Facts bullet.
+   - ERROR: topic id vs path; the topic's `_coverage.csv` or `kb/_self/coverage.md` row missing or stale (generated: the fix is `python3 _tools/build_index.py`); coverage lists a missing file (fix `files:`); missing section; tag without a source id; untagged Facts bullet.
    - WARN: no `#` title; a bullet mixing tag kinds; header sources never cited, or cited ids missing from the header.
 5. `python3 _tools/tests.py`: what CI runs, about 20 s. Lint errors listed in `_tools/lint_baseline.txt` are known debt; only new ones fail. It also checks the `signals.csv` and `aliases.csv` tables (every signal names an existing topic, no duplicate keys), `expansions.csv`, the lookup eval, and both plugins (`claude plugin validate` when the CLI is installed).
    - `python3 _tools/rag.py eval`: the lookup eval set on its own; a failing question names the expected article and the verdict it got.
@@ -29,7 +29,7 @@ Run each command on its own (no `;`, `&&`, pipes into other tools or loops): the
    - changed: `git diff --name-only <base>` (committed and uncommitted together), plus untracked files from `git status --short`.
    - Run the lint on the changed topic paths too, and name the base and the files in the report.
 7. The kb's own docs against the same base:
-   - `python3 _tools/selfdoc.py check`: `problems=0`, else a `_self/map.csv` row is missing (a new tool, skill or `_self/` doc) or names a removed file.
+   - `python3 _tools/selfdoc.py check`: `problems=0`, else a `kb/_self/map.csv` row is missing (a new tool, skill or `kb/_self/` doc) or names a removed file.
    - `python3 _tools/selfdoc.py stale --since <base>`: `stale=0`, else each listed doc describes a file this work changed and was not updated with it; the fix is `/kb-self --since <base>`.
 
 ## 2. Report

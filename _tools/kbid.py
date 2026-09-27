@@ -3,7 +3,7 @@
 
   kbid.py url URL [URL ...]      print the source id of each url (and the id already in _sources.csv, if any)
   kbid.py answer "QUESTION"      suggest a QK-<slug> answer id for _answers.md (and say if it is taken)
-  kbid.py eval "QUESTION"        the EV-<slug> id for a _tools/lookup_eval.csv row (and say if it is taken)
+  kbid.py eval "QUESTION"        the EV-<slug> id for a kb/public/_retrieval/lookup_eval.csv row (and say if it is taken)
   kbid.py check                  hash ids in _sources.csv: collisions and ids that do not match their url
 
 Source ids. Legacy ids `S<digits>` (S100 ... S2204) stay valid forever and are never renumbered. Every new

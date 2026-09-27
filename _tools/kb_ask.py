@@ -16,7 +16,7 @@
   kb_ask.py --model M "<question>"   override the routed model of step 3 or 4
   kb_ask.py -v "<question>"          also print the route to stderr
 
-Why (_self/reports/token-usage.md, "Routing by verdict"): a Haiku session costs a fifth of a Sonnet one and an eighth of an
+Why (kb/_self/reports/token-usage.md, "Routing by verdict"): a Haiku session costs a fifth of a Sonnet one and an eighth of an
 Opus one with the same answers, but a Haiku manager told to hand work to Sonnet did so once in four runs. The kb's
 verdict and a one-line INSUFFICIENT reply cannot ignore the rule. A `claude -p` start carries about 30k tokens of
 Claude Code context; skipping user plugins and MCP servers takes it to 25k, and no tools to 10k.

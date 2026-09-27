@@ -1,7 +1,7 @@
 {
  "seed": 29,
  "excluded": [
-  "_tools/doc2query/arms-seed7.json"
+  "kb/public/_retrieval/doc2query/arms-seed7.json"
  ],
  "pilot": [
   "arch/sql-auth-containers.md",

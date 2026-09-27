@@ -7,9 +7,9 @@ Document expansion for `pack`: a model writes a few questions each fact answers,
 - **Expansion words:** they rank the fact at weight 1.0 (`EXPANSION_WEIGHT` in `kbfacts.py`, chosen in the pilot), but never count as key words for the coverage verdict.
 - **Switch:** `KB_DOC2QUERY=0` turns expansion off.
 
-Background: `_self/reports/token-usage.md`, "Retrieval quality", and Doc2Query-- (<https://arxiv.org/abs/2301.03266>): filtered expansion, up to 16% more effective, a third smaller index.
+Background: `kb/_self/reports/token-usage.md`, "Retrieval quality", and Doc2Query-- (<https://arxiv.org/abs/2301.03266>): filtered expansion, up to 16% more effective, a third smaller index.
 
-## Files (in `_tools/doc2query/`)
+## Files (in `kb/public/_retrieval/doc2query/`)
 - `arms.json`: the latest round's pilot and control articles (`doc2query.py split`: stratified by domain, articles with 8 or more facts). `arms-seed7.json` is round 1; round 2 used `--seed 29 --exclude arms-seed7.json`.
 - `expansions.csv`: `key,question`. The key is `kbfacts.fact_key(text)`, sha256 of the whitespace-collapsed fact text, so it survives line moves and changes with the text. `doc2query.py stale` lists orphaned keys (exit 1; `tests.py` fails on them), and `doc2query.py prune` removes them.
 - One article: `doc2query.py batch --path <domain>/<slug> --out facts.json`, then generation and `ingest`, as in the protocol below.
@@ -31,7 +31,7 @@ Background: `_self/reports/token-usage.md`, "Retrieval quality", and Doc2Query--
 - the mean pack size does not grow.
 
 ## Results
-See `_self/reports/token-usage.md`, "doc2query".
+See `kb/_self/reports/token-usage.md`, "doc2query".
 - **Round 1:** pilot 90% -> 97.5%, with the weight tuned on the test set.
 - **Round 2 (fresh arms):** no change, 95% both ways.
 

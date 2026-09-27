@@ -20,9 +20,9 @@
                                            _gaps.md/_conflicts.md entries linked to it (named, or via its sources);
                                            --unlinked lists the entries no topic marker, path or section links
   rag.py src S1824 --cited                 also every file line that names the id
-  rag.py eval [--file _tools/lookup_eval.csv]   pack against the lookup eval set: expected article found, verdict
+  rag.py eval [--file kb/public/_retrieval/lookup_eval.csv]   pack against the lookup eval set: expected article found, verdict
   rag.py topics-for PATH... | --keywords TEXT   kb topics that code touches, from the curated code signals in
-                                           _tools/signals.csv (e.g. PublicClientApplication -> auth/msal-public-client)
+                                           kb/public/_retrieval/signals.csv (e.g. PublicClientApplication -> auth/msal-public-client)
 
 --format concise|detailed: pack defaults to detailed (answers need the urls); facts, audit and search to concise
 (facts grouped by file with a short tag and text, no url footer). Words that are product aliases
@@ -31,7 +31,7 @@ Summary, Reference and Examples lines and untagged data rows, printed with `(no 
 
 Add --json (before the command) for machine output. artifacts/ directories are not indexed. search skips the
 root-level index files (README.md, _answers.md, _gaps.md, _conflicts.md, _coverage.csv) and the kb's own docs
-(_self/) unless --index; pack never sees them.
+(kb/_self/) unless --index; pack never sees them.
 """
 import argparse, csv, json, os, sys
 from collections import Counter, defaultdict
@@ -231,7 +231,7 @@ def main():
     t = sub.add_parser("topics"); t.add_argument("domain", nargs="?")
     s = sub.add_parser("search"); s.add_argument("query", nargs="+"); s.add_argument("-k", type=positive_int, default=8); s.add_argument("-d", "--domain")
     s.add_argument("-u", "--urls", action="store_true", help="resolve each hit's cited source ids to their origin url")
-    s.add_argument("--index", action="store_true", help="also search the root-level index files (README.md, _answers.md, ...) and the _self/ docs")
+    s.add_argument("--index", action="store_true", help="also search the root-level index files (README.md, _answers.md, ...) and the kb/_self/ docs")
     s.add_argument("--format", choices=FORMATS, default="concise", help="detailed: 600 characters per hit (-u implies it)")
     r = sub.add_parser("src"); r.add_argument("ids", nargs="+")
     r.add_argument("--cited", action="store_true", help="also list every file line that names each id")

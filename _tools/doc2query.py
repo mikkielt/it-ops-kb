@@ -9,14 +9,14 @@ index.
 
   doc2query.py split [--seed 7] [--n 12] [--exclude ARMS.json ...]
                                               choose the pilot and control articles (stratified by domain), write
-                                              _tools/doc2query/arms.json; --exclude leaves out the articles of earlier
+                                              kb/public/_retrieval/doc2query/arms.json; --exclude leaves out the articles of earlier
                                               rounds' arms files, so a confirmation round tests fresh articles
   doc2query.py batch ARM|--path PREFIX [--out FILE]
                                               the facts of an arm (pilot or control), or under a path prefix (an
                                               article to regenerate), as JSON [{key, path, line, text}]: the input for
                                               question generation or for blind test questions
   doc2query.py ingest GENERATED.json          filter generated [{key, questions: [...]}] and write the kept ones to
-                                              _tools/doc2query/expansions.csv (key,question); prints kept/dropped
+                                              kb/public/_retrieval/doc2query/expansions.csv (key,question); prints kept/dropped
   doc2query.py evaluate QUESTIONS.json        blind test questions [{key, question}] per arm: fact line in pack with
                                               expansion off and on, verdicts, plus the eval set and the off-kb set
   doc2query.py stale                          expansion keys whose fact no longer exists (text changed or removed);
