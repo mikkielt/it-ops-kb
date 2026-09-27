@@ -1,4 +1,4 @@
-# doc2query pilot
+# doc2query: document expansion for pack
 
 Document expansion for `pack`: a model writes a few questions each fact answers, and the questions' words are indexed with the fact. A question worded differently from the fact ("required keyword" vs "needs at least one") can then still find it.
 
@@ -7,7 +7,7 @@ Document expansion for `pack`: a model writes a few questions each fact answers,
 - **Expansion words:** they rank the fact at weight 1.0 (`EXPANSION_WEIGHT` in `kbfacts.py`, chosen in the pilot), but never count as key words for the coverage verdict.
 - **Switch:** `KB_DOC2QUERY=0` turns expansion off.
 
-Background: the retrieval audit in `_self/reports/token-usage.md`, and Doc2Query-- (<https://arxiv.org/abs/2301.03266>): filtered expansion, up to 16% more effective, a third smaller index.
+Background: `_self/reports/token-usage.md`, "Retrieval quality", and Doc2Query-- (<https://arxiv.org/abs/2301.03266>): filtered expansion, up to 16% more effective, a third smaller index.
 
 ## Files (in `_tools/doc2query/`)
 - `arms.json`: the latest round's pilot and control articles (`doc2query.py split`: stratified by domain, articles with 8 or more facts). `arms-seed7.json` is round 1; round 2 used `--seed 29 --exclude arms-seed7.json`.
@@ -31,7 +31,7 @@ Background: the retrieval audit in `_self/reports/token-usage.md`, and Doc2Query
 - the mean pack size does not grow.
 
 ## Results
-See `_self/reports/token-usage.md`, "doc2query pilot".
+See `_self/reports/token-usage.md`, "doc2query".
 - **Round 1:** pilot 90% -> 97.5%, with the weight tuned on the test set.
 - **Round 2 (fresh arms):** no change, 95% both ways.
 

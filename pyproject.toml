@@ -28,5 +28,5 @@ ignore = ["E731"]
 # `uv run pytest` runs everything, the stress suite included; tests.py adds -m "not stress" and runs in parallel
 testpaths = ["_tools"]
 python_files = ["test_*.py"]
-# each stress case copies the kb; keeping every passing run's copies filled a disk (74 GB over 4 runs, 2026-09-26)
+# each stress case copies the kb; keeping every passing run's copies fills a disk (tens of GB over a few runs)
 tmp_path_retention_policy = "failed"

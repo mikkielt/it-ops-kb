@@ -1,6 +1,6 @@
-# Benchmark: bare agent vs agent with the kb (2026-09-27)
+# Benchmark: bare agent vs agent with the kb
 
-Two measurements of the same comparison: subagents started from a running session (token counts from their transcripts, cost estimated), and fresh headless sessions (cost billed). Re-run with `_tools/agent_bench.py` (`--summary` prints the rows); the README carries the summary.
+Two measurements of the same comparison: subagents started from a running session (token counts from their transcripts, cost estimated), and fresh headless sessions (cost billed). **Setup:** Claude Code 2.1.282 (subagents) and 2.1.283 (headless); Haiku 4.5, Sonnet 5, Opus 5.5; the kb at 265 topics and 111 eval questions, with CODE facts, SNIPPET units, the persisted index and the verdict router. Re-run with `_tools/agent_bench.py` (`--summary` prints the rows), and replace this file when its setup no longer describes the kb. The README carries the summary; `_self/reports/token-usage.md` puts it next to the other measurements.
 
 **Summary.** On questions the kb covers:
 - An agent that uses the kb pays 26-53% less than the same model searching the web, except Opus in a fresh headless session, which paid the same.
@@ -67,7 +67,7 @@ Answer checks: bare 11 of 12 fully right (Haiku's synthesis named `requests-kerb
 
 ## Headless sessions, billed cost (134 runs)
 
-`_tools/agent_bench.py` ran each question as a fresh `claude -p` session (Claude Code 2.1.283), 2 runs per cell, and recorded the billed cost, tokens, time, the ordered tool calls and a regex check per expected answer element. **Bare** (`web-<model>`): an empty directory, no kb, plugins, skills or MCP servers, only WebSearch and WebFetch. **kb** (`<model>`): this clone with the user's plugins, the `kb` MCP server and live docs allowed. **kb router**: `kb_ask.py`, which routes on the pack's verdict: `good` to a tool-less Haiku reader with the pack in the prompt, `weak`/`none` to Sonnet at low effort with the kb and docs servers, counts to a tool with no model. Models reported by the runs: `claude-haiku-4-5-20251001`, `claude-sonnet-5`, `claude-opus-5-5`; bare Sonnet and Opus sessions also bill a little Haiku for WebFetch page summaries. Total spend $17.08. 69 runs of the first pass hit the session limit and returned "You've hit your session limit" at $0; they were discarded and re-run, and `agent_bench.py` now records such runs as errors instead of as free answers.
+`_tools/agent_bench.py` ran each question as a fresh `claude -p` session (Claude Code 2.1.283), 2 runs per cell, and recorded the billed cost, tokens, time, the ordered tool calls and a regex check per expected answer element. **Bare** (`web-<model>`): an empty directory, no kb, plugins, skills or MCP servers, only WebSearch and WebFetch. **kb** (`<model>`): this clone with the user's plugins, the `kb` MCP server and live docs allowed. **kb router**: `kb_ask.py`, which routes on the pack's verdict: `good` to a tool-less Haiku reader with the pack in the prompt, `weak`/`none` to Sonnet at low effort with the kb and docs servers, counts to a tool with no model. Models reported by the runs: `claude-haiku-4-5-20251001`, `claude-sonnet-5`, `claude-opus-5-5`; bare Sonnet and Opus sessions also bill a little Haiku for WebFetch page summaries. Total spend $17.08. 69 runs of the first pass hit the session limit and returned "You've hit your session limit" at $0; they were discarded and re-run; `agent_bench.py` records such runs as errors, not as free answers.
 
 Mean per question, 2 runs each:
 

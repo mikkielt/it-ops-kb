@@ -17,7 +17,7 @@ Run each command on its own (no `;`, `&&`, pipes into other tools or loops): the
 | none, or `--since REV` | the docs `python3 _tools/selfdoc.py stale --since REV` lists: what this work changed. Default REV: `@{upstream}` when the branch tracks one, else `origin/main`. Say which. |
 | a doc path (`_self/tools.md`, `AGENTS.md`, ...) | that doc only, checked against every file `_self/map.csv` gives it |
 | `all` | every doc in `_self/map.csv`: `python3 _tools/selfdoc.py stale` (each doc against its own last commit), then a read-through of each doc against its files, stale or not |
-| `--report "<title>"` | a measurement was just made (e.g. `_tools/agent_bench.py`, a timing, an eval): add it as a new dated section to `_self/reports/token-usage.md` (or a new file in `_self/reports/`), then update the conclusions and numbers in `_self/design.md` (and the README table if a headline number moved), each citing the new section |
+| `--report "<title>"` | a measurement was just made (e.g. `_tools/agent_bench.py`, a timing, an eval): add it to `_self/reports/token-usage.md` (or a file in `_self/reports/`) as a section that opens with its setup (Claude Code version, models, kb size, which tools existed; no date), replacing the section it supersedes; then update the conclusions and numbers in `_self/design.md` and `_self/token-efficiency.md` (and the README table if a headline number moved), each citing the section by name |
 | `--check` (with any of the above) | report only: what is stale, what would change and why; write nothing |
 
 ## 1. Find what is stale
@@ -42,13 +42,14 @@ Change only what the code change made wrong or missing; keep each doc's scope. A
 | `_self/git.md` | `kbgit.py` commands, sync and fix behaviour, the hooks, `.gitattributes`, CI | |
 | `_self/plugin.md` | what each plugin ships, the plugin rules, the install and team-kb runbook | |
 | `_self/maintaining.md` | setup, the table of skills that change the kb (a new or renamed skill), conduct and the gate | |
-| `_self/design.md` | the current conclusions and each number's report section | a number with no dated source |
+| `_self/design.md` | the current conclusions and each number's report section | a number with no measured source |
 | `_self/README.md` | the file table and the keeping-current rules | |
-| `_self/work-left.md` | the open work: mark items done with the date and commit, add new ones | |
+| `_self/work-left.md` | the open work only: add new items, delete finished ones (the commit records them) | done items, history |
 | `_self/coverage.md` | nothing by hand: `python3 _tools/build_index.py` | edits |
-| `_self/reports/*` | dated records: add a section or file | rewriting an old measurement |
+| `_self/reports/*` | measurements, each section with its setup: add or replace a section | plans, dates as labels, superseded numbers kept beside current ones |
 
 Rules for every doc:
+- Describe the present: no plans, plan item numbers, "decided" or "done" dates, or history (git keeps it). A date stays only where it is data or an identifier (a census tag, a protocol revision, a trailer format).
 - One fact in one place; elsewhere point to it (e.g. "`_self/git.md`").
 - Describe what the code does now, checked by running it (`--help`, a sample call), not what a plan intended.
 - Write flags exactly as the tool spells them next to the tool's path: the cohesion test fails on a flag the tool lacks. Every backtick path must exist.

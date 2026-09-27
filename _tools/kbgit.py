@@ -41,7 +41,7 @@ pushed ref that is not HEAD (with a note: the checks read the working tree). `gi
 check-trailers without a range: in GitLab CI, CI_COMMIT_BEFORE_SHA..CI_COMMIT_SHA (only CI_COMMIT_SHA when the
 before sha is all zeros or unknown); elsewhere @{upstream}..HEAD, or HEAD alone without an upstream.
 Census tags: an annotated tag `census-YYYY-MM-DD` marks "the kb was confirmed current as of that date"; its message
-counts the sources and the _fetch_state.csv checks. `asof census-2026-09-25 PATH` reads a file as of a census.
+counts the sources and the _fetch_state.csv checks. `asof census-2026-09-26 PATH` reads a file as of a census.
 
 Sync (the only way to push; people push straight to main, CI is a safety net):
   a. refuses (exit 2) with uncommitted tracked changes (lists staged/unstaged: commit or stash them), or while a

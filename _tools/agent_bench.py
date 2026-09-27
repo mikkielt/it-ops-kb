@@ -10,7 +10,8 @@ expected answer element. CONFIG: `haiku`, `sonnet`, `opus` (that model answers a
 the lookup to the Haiku kb-lookup agent); `haiku+escalate` (Haiku told to hand live-docs work to a Sonnet agent
 defined with --agents); `+strict` also denies the docs tools (note: the deny reaches subagents too); `router`
 (kb_ask.py's routing); `web-haiku`, `web-sonnet`, `web-opus` (a typical
-web-search session: no kb, no MCP servers, no project files, only WebSearch and WebFetch). Results of 2026-09-26: _self/reports/token-usage.md, "Agent benchmark".
+web-search session: no kb, no MCP servers, no project files, only WebSearch and WebFetch). Results:
+_self/reports/token-usage.md ("Models and hand-off patterns" and later sections) and _self/reports/benchmark-bare-vs-kb.md.
 """
 import json, os, re, subprocess, sys, time
 from collections import Counter

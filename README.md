@@ -6,7 +6,7 @@ AI agents read it, write it and keep it current. People decide what it should co
 
 ## Why
 
-An agent that looks a fact up on the web reads whole pages to find one line. Measured on 2026-09-26 with the same questions: a Sonnet web-search session spent about 98k input tokens, $0.13 and 27 s per question. The kb answered them with about 10k tokens, $0.011 and 9 s, and every answer cited the article line, a tag and the source url. The work that does not need judgement (finding the facts, counting, joining) is done by deterministic tools, and the model only picks the tool and writes the reply.
+An agent that looks a fact up on the web reads whole pages to find one line. Measured with the same questions (Claude Code 2.1.283, the kb at 259 topics): a Sonnet web-search session spent about 98k input tokens, $0.13 and 27 s per question. The kb answered them with about 10k tokens, $0.011 and 9 s, and every answer cited the article line, a tag and the source url. The work that does not need judgement (finding the facts, counting, joining) is done by deterministic tools, and the model only picks the tool and writes the reply.
 
 ## How it works
 
@@ -17,7 +17,7 @@ An agent that looks a fact up on the web reads whole pages to find one line. Mea
 
 ## When it pays off
 
-| situation | what it costs (measured 2026-09-25/26) |
+| situation | what it costs (measured) |
 |---|---|
 | `kb:` prompt the kb covers | no model call; the pack is shown in under half a second |
 | lookup in a running session (`kb_pack`) | one tool call returning 1-2k tokens |
@@ -30,9 +30,9 @@ An agent that looks a fact up on the web reads whole pages to find one line. Mea
 
 Details, numbers and the reasoning: `_self/design.md`.
 
-## Benchmark: bare agent vs agent with the kb (2026-09-27)
+## Benchmark: bare agent vs agent with the kb
 
-158 runs on Haiku 4.5, Sonnet 5 and Opus 5.5: 24 subagents and 134 headless sessions with billed cost; every question but one (a count over the kb itself) was asked both with and without the kb.
+158 runs on Haiku 4.5, Sonnet 5 and Opus 5.5 against the kb at 265 topics: 24 subagents and 134 headless sessions with billed cost; every question but one (a count over the kb itself) was asked both with and without the kb.
 
 **Summary.** On questions the kb covers:
 - An agent that uses the kb pays 26-53% less than the same model searching the web, except Opus in a fresh headless session, which paid the same.
@@ -41,7 +41,7 @@ Details, numbers and the reasoning: `_self/design.md`.
 
 On questions the kb lacks, the kb adds one pack call (1-2k tokens) to the same web research. The cheapest correct setup measured was Haiku reading the kb, not Opus reading the web.
 
-The cases, the models, token counts, costs and the route each run took: `_self/reports/benchmark-2026-09-27.md`.
+The cases, the models, token counts, costs and the route each run took: `_self/reports/benchmark-bare-vs-kb.md`.
 
 ## Where things are
 

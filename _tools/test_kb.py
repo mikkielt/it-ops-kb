@@ -117,7 +117,8 @@ def fmt(found, limit=20):
     return "\n".join(f"  {f}:{n}: {v}" for f, n, v in found[:limit]) + (f"\n  ... +{len(found) - limit}" if len(found) > limit else "")
 
 
-# the docs held to the code: the root docs, the current _self/ docs (not _self/reports/, dated records) and the skills
+# the docs held to the code: the root docs, the _self/ docs and the skills; flags in _self/reports/ are not checked, since a
+# report shows the command lines a measurement ran
 DOCS = ["README.md", "AGENTS.md"] + sorted(os.path.relpath(p, KB) for p in glob.glob(os.path.join(KB, "_self", "*.md"))) \
     + sorted(os.path.relpath(p, KB) for p in glob.glob(os.path.join(KB, ".claude", "skills", "*", "SKILL.md")))
 
@@ -332,7 +333,7 @@ class TestSelfDocs:
 class TestLookup:
     def test_search_finds_the_expected_article(self):
         """rag.py search (kb_search): the article that answers each query is in its top 5. The baseline any change to
-        the search engine must keep (plan-tooling-efficiency.md R3), including prose and, with --index, the root
+        the search engine must keep, including prose and, with --index, the root
         ledgers that the pack index does not hold."""
         import rag
         cases = [("pim activation latency", None, False, "entra/pim-and-governance.md"),

@@ -16,6 +16,7 @@ What a fact, an article, a source row and a ledger entry look like, and how to a
 
 - Every fact ends in exactly one tag with ids from `_sources.csv`: `DOC` (an official document states it), `CODE` (source code states it, read at a pinned commit), `DER` (derived from DOC or CODE facts, derivation shown), `COMMUNITY` (a non-official source; never the only evidence for a DOC fact), `UNK` (not confirmed).
 - Canonical forms: `[DOC <id>, <id>]`, `[CODE <id>: path#symbol]` (or `path#L10-L20`), `[DER <id>: how]`, `[COMMUNITY <id>]`, `[UNK]` or `[UNK: why]`. `_tools/kbfacts.py` parses them for every tool (grammar in its docstring); the kb-verify lint reports a DOC or COMMUNITY tag without an id.
+- Numbers, dates, versions and table rows come from the source's own text or image, never from a fetch tool's summary of it: a summary can invent rows that the page does not have.
 - `UNK` and `COMMUNITY` facts are leads to verify, not a basis to build on.
 
 ## CODE: what the implementation does
@@ -24,6 +25,7 @@ What a fact, an article, a source row and a ledger entry look like, and how to a
 - A published contract is `DOC`, not `CODE`: a machine-readable schema or API definition (JSON Schema, Graph CSDL metadata, MCP `schema.ts`, OpenAPI/swagger, `.proto`, ECS or OTel metadata, a STIX bundle) is the promise itself. Build files and example configs next to it (`schemas.config.yaml`, `example_recognizers.yaml`) are `CODE`. `kbfacts.contract_source` draws this line for `lint.py --candidates`.
 - The source row must be pinned: a repository file url at a release tag or commit (`raw.githubusercontent.com/<owner>/<repo>/<tag>/...`, `github.com/.../blob/<sha>/...`, `gitlab.com/.../-/raw/<tag>/...`) or a pinned artifact (`artifact_sha256`), never a branch. When upstream moves, add a new pinned row and set `superseded_by` (as for any replaced source).
 - The note is a pointer into that file: `path#symbol` (a function, class, constant or key) or `path#L10-L20`. The lint rejects a CODE part without an id, without a pointer, or citing an unpinned source.
+- Borderline evidence: a release binary's own `--help` output is `DOC` (the published interface); a doc comment in source (rustdoc, docstrings) is `CODE`; that something is absent from a release archive is `DER`, with the derivation.
 - In `_self/` only, a CODE part may point into this repository without a source row: `[CODE _tools/kbfacts.py#pack]`. A test checks that the file and the symbol exist; `_self/` never enters the pack.
 
 ## SNIPPET: a code example with evidence
@@ -32,6 +34,7 @@ What a fact, an article, a source row and a ledger entry look like, and how to a
 - The bullet carries an evidence tag other than `UNK`: a snippet nobody can back stays out. `checked:` says what was verified: `no`, `syntax` (parsed: the lint re-parses json, toml and python blocks), or `run` (executed in the stated context; say where in the note).
 - Placeholders only, as in every example. The pack shows the bullet with `path:line`; `rag.py show` prints the block.
 - A block without a `SNIPPET:` bullet is illustration only (Reference and Examples may keep them) and carries no evidence.
+- A reader checking a snippet reads each parameter's reference page before dropping it: an article's own sources not showing a parameter does not mean it does not exist.
 
 ## Ids
 
