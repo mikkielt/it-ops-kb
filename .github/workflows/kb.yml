@@ -24,7 +24,7 @@ jobs:
   # skipping; a full clone keeps the commits the research-merge scenario replays.
   kb-tests:
     runs-on: ubuntu-latest
-    container: python:3.12
+    container: python:3.14
     steps:
       - uses: actions/checkout@v4
         with:
@@ -33,9 +33,22 @@ jobs:
       - run: pip install --quiet uv
       - run: python3 _tools/tests.py
 
+  # The tools' floor (pyproject.toml requires-python >=3.11): the same tests on the image's Python 3.11 instead of the
+  # 3.14 pinned in .python-version (UV_PYTHON takes precedence over it), without the git scenarios.
+  kb-tests-floor:
+    runs-on: ubuntu-latest
+    container: python:3.11
+    env:
+      UV_PYTHON: "3.11"
+      KB_TESTS_FAST: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - run: pip install --quiet uv
+      - run: python3 _tools/tests.py
+
   tool-stress:
     runs-on: ubuntu-latest
-    container: python:3.12
+    container: python:3.14
     steps:
       - uses: actions/checkout@v4
       - run: pip install --quiet uv
@@ -45,7 +58,7 @@ jobs:
   kb-push-range:
     if: github.event_name == 'push' && github.ref_type == 'branch'
     runs-on: ubuntu-latest
-    container: python:3.12
+    container: python:3.14
     steps:
       - uses: actions/checkout@v4
         with:

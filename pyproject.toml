@@ -1,12 +1,14 @@
 # it-ops-kb tooling. The runtime is the Python standard library only: the plugin, the kb: hook and the git hooks run
-# `python3 _tools/<tool>.py` with whatever Python 3.9+ the machine has, so nothing here is installed for them.
+# `python3 _tools/<tool>.py` with whatever Python 3.11+ the machine has, so nothing here is installed for them.
+# Development and tests run on the newest stable CPython, pinned in .python-version (3.14); CI also runs the tests on
+# 3.11 (UV_PYTHON=3.11) so the floor stays true. 3.11 is the oldest release with security fixes after October 2026.
 # The dev group runs the tests: `python3 _tools/tests.py` and `python3 _tools/stress_test.py` call
 # `uv run --frozen python -m pytest` (uv installs the group from uv.lock); `uv run ruff check` lints.
 [project]
 name = "it-ops-kb"
 version = "0"
 description = "Offline knowledge base of official-source facts on Windows endpoint management and the AI agents that operate it"
-requires-python = ">=3.9"
+requires-python = ">=3.11"
 dependencies = []
 
 [dependency-groups]
@@ -14,7 +16,7 @@ dev = ["pytest>=8", "pytest-xdist>=3", "ruff>=0.6"]
 
 [tool.ruff]
 line-length = 200
-target-version = "py39"
+target-version = "py311"
 extend-exclude = ["_cache", "_private"]
 
 [tool.ruff.lint]

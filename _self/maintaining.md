@@ -6,7 +6,7 @@ Read this before any edit, research, refresh, census, commit or push. A lookup n
 
 Run `/kb-setup` (Claude Code), or do the same by hand. In Claude Code on the web, `.claude/hooks/session-start.sh` (a SessionStart hook in `.claude/settings.json`) already installs the commit hooks, registers the MCP servers, runs `check.py` and points the new session to `_self/work-left.md`, on every start, resume and `/clear`.
 
-1. **Python 3.9+** as `python3`. Nothing to install for the tools: they use the standard library only. The tests use pytest through uv (`pyproject.toml`, `uv.lock`); `tests.py` installs them on first run.
+1. **Python 3.11+** as `python3` (the floor in `pyproject.toml`). Nothing to install for the tools: they use the standard library only. The tests use pytest through uv (`pyproject.toml`, `uv.lock`) on the newest stable CPython, pinned in `.python-version` (3.14); `tests.py` installs both on first run. CI also runs them on 3.11 (`UV_PYTHON=3.11`). Moving the pin: edit `.python-version`, `uv lock`, the CI images, then the full gate.
 2. **Checks pass on a clean tree:**
    - `python3 _tools/check.py` -> `errors=0`
    - `python3 _tools/fetch.py --offline` -> `mismatch=0 unknown=0`

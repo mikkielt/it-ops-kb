@@ -31,7 +31,7 @@ Every tool is stdlib-only Python in `_tools/`, run as `python3 _tools/<tool>`. E
 | `python3 .claude/skills/kb-verify/lint.py [PREFIX...] [--candidates]` | contract checks beyond check.py, including the CODE and SNIPPET rules (report only); `--candidates` lists migration candidates instead: DOC facts citing only source-code files, and code blocks with no `SNIPPET:` bullet |
 | `KB_ROOT=DIR python3 _tools/<tool>` | serve or check a second kb with the same layout: `rag.py`, `kb_mcp.py`, the `kb:` hook, `check.py`, `build_index.py`, `kbid.py` read DIR and its `DIR/_tools/` retrieval data (`aliases.csv` falls back to this repository's); git, census and fetch tools ignore it (`_self/plugin.md`, "A team's own facts"; tested in `test_kb_root.py`) |
 
-The test environment: `pyproject.toml` and `uv.lock` (dev group: pytest, pytest-xdist, ruff), installed by uv (`uv sync`, or on the first `tests.py`); the tools stay stdlib-only. Shared fixtures live in `_tools/conftest.py` (`Repo`, `git_env`, `copy_kb`, markers `git` and `stress`). `ruff check` (pyflakes rules) must stay clean. `uv run pytest` runs everything, stress included. After changing the dev group: `uv lock`.
+The test environment: `pyproject.toml` and `uv.lock` (dev group: pytest, pytest-xdist, ruff) on the CPython pinned in `.python-version` (3.14), installed by uv (`uv sync`, or on the first `tests.py`); `UV_PYTHON=3.11` runs the same tests on the floor. The tools stay stdlib-only and run on `python3` 3.11+. Shared fixtures live in `_tools/conftest.py` (`Repo`, `git_env`, `copy_kb`, markers `git` and `stress`). `ruff check` (pyflakes rules) must stay clean. `uv run pytest` runs everything, stress included. After changing the dev group: `uv lock`.
 
 ## How the lookup tools decide
 

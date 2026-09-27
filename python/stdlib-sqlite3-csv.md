@@ -10,7 +10,7 @@ status: complete
 # stdlib csv and sqlite3 (what this kb's tools rely on)
 
 ## Summary
-`_tools/` is stdlib-only Python 3.9+: it reads and writes `_sources.csv` and friends with the `csv`
+`_tools/` is stdlib-only Python 3.11+: it reads and writes `_sources.csv` and friends with the `csv`
 module and persists the pack/search index with `sqlite3` (`_self/tools.md`: "postings lists in a
 stdlib `sqlite3` file"). Both modules have version-dependent behaviour a maintaining agent should
 know: `csv`'s quoting constants gained two new members in 3.12, and `sqlite3`'s transaction-control

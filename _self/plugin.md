@@ -32,7 +32,7 @@ The writing skills (`/kb-research`, `/kb-refresh`, `/kb-add-topic`, `/kb-census`
 
 ## 3. Install and update
 
-Needs: `python3` 3.9+ on `PATH`, and an SSH key with read access to `gitlab.com/mikkielt/it-ops-kb`. Claude Code clones without prompting, so the key must be loaded in `ssh-agent` (no passphrase prompt) and `gitlab.com` must already be in `~/.ssh/known_hosts` (`ssh -T git@gitlab.com` once adds it).
+Needs: `python3` 3.11+ on `PATH`, and an SSH key with read access to `gitlab.com/mikkielt/it-ops-kb`. Claude Code clones without prompting, so the key must be loaded in `ssh-agent` (no passphrase prompt) and `gitlab.com` must already be in `~/.ssh/known_hosts` (`ssh -T git@gitlab.com` once adds it).
 
 In a session:
 ```
@@ -66,7 +66,7 @@ Leave `it-ops-kb-docs` out of `enabledPlugins` when the team already has the Mic
 ## 5. What it costs and what to watch
 
 - **Context:** about 312 tokens in every session (`claude plugin details it-ops-kb`: the `kb-lookup` skill description and the server's instructions); `/kb-review-workspace` and `/kb-gap` are never listed, so they cost nothing until run. The docs plugin adds each server's instructions.
-- **Disk and time:** about 13 MB of files plus about 7 MB of git history per installed copy; Python 3.9+ standard library only. After each update the first lookup builds the index (3-5 s measured), then a cold lookup takes about 0.1 s.
+- **Disk and time:** about 13 MB of files plus about 7 MB of git history per installed copy; Python 3.11+ standard library only. After each update the first lookup builds the index (3-5 s measured), then a cold lookup takes about 0.1 s.
 - **Known limit, a false `good`:** the verdict counts the question's key words in the best article, not meaning, so a `good` pack can be about something related. The pack prints a `check:` line when a name the question uses appears nowhere in the lead article, or when no single fact holds half the key words; the kb tools' instructions say to answer only if a cited line answers the question itself. Without that line the risk is lower, not gone: check that the cited fact answers what was asked, and report a miss with `/it-ops-kb:kb-gap`.
 - **Headless answers:** `_tools/kb_ask.py` needs a clone and the `claude` CLI; in a session with the plugin the path is `kb_pack` or `/it-ops-kb:kb-lookup`.
 

@@ -13,8 +13,8 @@ cd "${CLAUDE_PROJECT_DIR:-$(dirname "$0")/../..}" || exit 0
 
 say() { printf '%s\n' "$*"; }
 
-if ! python3 -c 'import sys; sys.exit(sys.version_info < (3, 9))' 2>/dev/null; then
-  say "it-ops-kb: python3 3.9+ is missing; the kb tools cannot run."
+if ! python3 -c 'import sys; sys.exit(sys.version_info < (3, 11))' 2>/dev/null; then
+  say "it-ops-kb: python3 3.11+ is missing; the kb tools cannot run."
   exit 0
 fi
 

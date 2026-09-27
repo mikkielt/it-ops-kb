@@ -62,8 +62,8 @@ since it sets `select = ["F"]` explicitly.
   version-gated rules (defaults to `"py310"` if left unset and there is no `requires-python`). If a
   `pyproject.toml` sets `project.requires-python` (e.g. `">=3.9"`) and `target-version` is *not* set
   explicitly, ruff derives the equivalent `target-version` from the lower bound of `requires-python`
-  (`>=3.9` behaves like `target-version = "py39"`, matching this repository's explicit
-  `target-version = "py39"` and its `requires-python = ">=3.9"`). If both are set, the explicit
+  (`>=3.9` behaves like `target-version = "py39"`; this repository sets both explicitly:
+  `target-version = "py311"` and `requires-python = ">=3.11"`). If both are set, the explicit
   `target-version` wins. [DOC S-s3ytflwh, S-ntllah3f]
 - `per-file-ignores` (a table mapping glob file patterns to rule codes/prefixes to ignore for matching
   files) and `extend-per-file-ignores` (adds to it without replacing) let a project silence rules only
@@ -76,7 +76,7 @@ since it sets `select = ["F"]` explicitly.
 ```toml
 [tool.ruff]
 line-length = 200
-target-version = "py39"
+target-version = "py311"
 extend-exclude = ["_cache", "_private"]
 
 [tool.ruff.lint]

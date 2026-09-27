@@ -12,7 +12,7 @@ Read `_self/maintaining.md` first, then the `_self/` files this skill relies on:
 Run each command on its own (no `;`, `&&`, pipes into other tools or loops): the shared permission rules match single commands, so a chained command asks for approval or is refused in a headless run.
 
 ## 1. Python
-- Run `python3 --version`. Needs 3.9 or newer (the tools use `str.removesuffix` and `random.randbytes`).
+- Run `python3 --version`. Needs 3.11 or newer (the floor in `pyproject.toml`; CI tests it). Development and the tests use the newest stable CPython pinned in `.python-version` (3.14), which uv installs on the first `tests.py`.
 - The tools are stdlib-only: install nothing for them. If `python3` is missing, stop and tell the user how to install it for their OS. The tests need uv (`uv --version`); without it, tell the user to install uv (https://docs.astral.sh/uv/) and mark the two test steps SKIPPED.
 
 ## 2. Repository checks

@@ -14,9 +14,8 @@ files: [python/version-lifecycle.csv]
 CPython has released one new feature version per year, in October, since Python 3.9 (PEP 602). Each
 version then goes through bugfix releases (~every 2 months, for roughly the first 18-24 months) and
 then source-only security-fix releases on an as-needed basis, ending five years after that version's
-first release. Python 3.9 is the oldest version this kb's tools claim to support
-(`requires-python = ">=3.9"` in this repository's own `pyproject.toml`) and it has already reached
-end-of-life. The full table of first-release/status/end-of-life dates is `python/version-lifecycle.csv`.
+first release. Python 3.9 reached end-of-life on 2025-10-31; this repository's own `pyproject.toml`
+moved its floor to `requires-python = ">=3.11"` on 2026-09-27 and develops on 3.14 (`.python-version`). The full table of first-release/status/end-of-life dates is `python/version-lifecycle.csv`.
 
 ## Facts
 - Since Python 3.9 (PEP 602, "Annual Release Cycle for Python"), CPython ships one new feature version
@@ -59,7 +58,7 @@ Full table: `python/version-lifecycle.csv` (version, first_release, status_as_of
 end_of_life, source id).
 
 ## Examples
-- A tool declaring `requires-python = ">=3.9"` (as this repository's `pyproject.toml` does) targets a
+- A tool declaring `requires-python = ">=3.9"` (as this repository's `pyproject.toml` did until 2026-09-27) targets a
   floor that is already past end-of-life; the floor only affects which Python *syntax and stdlib
   features* the tool may assume are unavailable (e.g. `python/stdlib-sqlite3-csv.md` notes
   `csv.QUOTE_STRINGS` needs 3.12+), not whether that exact version still receives fixes upstream.

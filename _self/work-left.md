@@ -31,7 +31,7 @@ Start here once `main` on GitHub has the commit "feat(kb): enforce the gate on p
 - Then trim this section to one "done" line.
 
 **Other open items from 2026-09-27 (independent of W):**
-- `pyproject.toml` says `requires-python = ">=3.9"`, but Python 3.9 reached end of life on 2025-10-31 (`python/version-lifecycle.md`). Decide whether to raise the floor; the tools' stdlib-only rule is unaffected either way.
+- Done 2026-09-27: Python 3.9 was end-of-life; `requires-python` is now `>=3.11` (the oldest release with security fixes after October 2026), development and CI run on 3.14 (`.python-version`), and CI runs the tests on 3.11 too.
 
 **2026-09-27: the kb's own docs moved to `_self/`.** Agents read `_self/` (see `_self/README.md`); people read the short root `README.md`; `AGENTS.md` stays the lookup rules. `MAINTAINING.md` became `_self/maintaining.md` plus `_self/content-rules.md`, `_self/tools.md`, `_self/git.md` and `_self/plugin.md`; the coverage table moved from the README to `_self/coverage.md`; the plans and the token report are dated records in `_self/reports/`; `_self/design.md` holds the current conclusions on when the kb is token-efficient. `_self/` is out of `pack` and the default search (`rag.py search --index` finds it). `_tools/selfdoc.py` lists docs behind the files they describe (`_self/map.csv`); `/kb-self` updates them, and `/kb-verify` reports them. Open:
 - The remote branch `claude/relaxed-keller-e8qyl3` on GitHub is merged but not deleted (this session's git proxy refused the delete): `git push origin --delete claude/relaxed-keller-e8qyl3` from a clone with push rights.

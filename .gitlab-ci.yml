@@ -8,7 +8,7 @@ workflow:
     - if: $CI_COMMIT_TAG
 
 default:
-  image: python:3.12-slim
+  image: python:3.14-slim
   interruptible: true
 
 variables:
@@ -26,11 +26,23 @@ stages: [test]
 # a full clone keeps the commits the research-merge scenario replays.
 kb-tests:
   stage: test
-  image: python:3.12
+  image: python:3.14
   variables:
     GIT_DEPTH: "0"
   script:
     - git config --global --add safe.directory "$CI_PROJECT_DIR"
+    - pip install --quiet uv
+    - python3 _tools/tests.py
+
+# The tools' floor (pyproject.toml requires-python >=3.11): the same tests on the image's Python 3.11 instead of the
+# 3.14 pinned in .python-version (UV_PYTHON takes precedence over it), without the git scenarios.
+kb-tests-floor:
+  stage: test
+  image: python:3.11
+  variables:
+    UV_PYTHON: "3.11"
+    KB_TESTS_FAST: "1"
+  script:
     - pip install --quiet uv
     - python3 _tools/tests.py
 
@@ -45,11 +57,11 @@ tool-stress:
         - .claude/skills/**/*.py
 
 # KB-* commit trailers (kbgit.py check-trailers) on the pushed commits: CI_COMMIT_BEFORE_SHA..CI_COMMIT_SHA, or only
-# CI_COMMIT_SHA for a new branch (before sha all zeros). Needs git, which python:3.12-slim lacks: the full python:3.12
+# CI_COMMIT_SHA for a new branch (before sha all zeros). Needs git, which python:3.14-slim lacks: the full python:3.14
 # image has it. GIT_DEPTH 0 (full clone): a shallow clone may miss the before sha or the exemption cutoff commit.
 kb-trailers:
   stage: test
-  image: python:3.12
+  image: python:3.14
   variables:
     GIT_DEPTH: "0"
   script:
