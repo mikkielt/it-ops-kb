@@ -3,7 +3,7 @@ topic: agents/doc-lookup-sources
 priority: P2
 applies_to: "stable (GA) MCP servers and public APIs that return current official documentation for this kb's domains, as of 2026-09-25"
 retrieved_utc: 2026-09-27
-sources: [S2176, S2177, S2178, S2179, S2180, S2181, S2182, S2183, S2184, S2185, S2186, S2187, S2188, S2189, S2190, S2191, S2192, S2193, S2194, S2195, S2196, S2197, S1809, S-el34o4bb, S-eutmp4xp, S-j7xzzcxj]
+sources: [S2176, S2177, S2178, S2179, S2180, S2181, S2182, S2183, S2184, S2185, S2186, S2187, S2188, S2189, S2190, S2191, S2192, S2193, S2194, S2195, S2196, S2197, S1809, S-el34o4bb, S-eutmp4xp, S-j7xzzcxj, S-yuwxbqz3, S-b6tooge2, S-ybuoluc4, S-rgy4dvjf, S452, S717, S-fvspfpxd, S-pxvdwitn]
 status: partial
 ---
 
@@ -48,7 +48,16 @@ reading the current page.
 - Microsoft Learn's terms of use limit copying and reposting of its documents, so Learn text fetched through the MCP server is paraphrased in this kb, not stored verbatim. [DOC S2195]
 - The `MicrosoftDocs/memdocs` repository, source of many pinned ConfigMgr/Intune raw files in this kb, is archived (last push 2026-09-02); current ConfigMgr pages are read through Learn. [DOC S2196]
 - `api.github.com/repos/microsoft/presidio` redirects (HTTP 301) to the repository now named `data-privacy-stack/presidio`. [DOC S2197]
-- Anthropic docs terms for storing fetched text offline were not found. [UNK]
+- The Learn terms of use limit use of documents to informational, non-commercial or personal use and forbid copying or posting them on any network computer, but say certain documentation may carry explicit licence terms that control where they conflict. [DOC S2195]
+- MicrosoftDocs repositories carry those explicit terms per repository, and they differ: `memdocs` grants its documentation under CC BY 4.0 and its code under MIT (README and LICENSE files), while `entra-docs` has MIT in both `LICENSE` and `LICENSE-CODE`. [DOC S-yuwxbqz3, S-b6tooge2]
+- Learn pages name a private `-pr` repository as their source (`memdocs-pr`, `entra-docs-pr`), so whether a public repository's licence covers a given Learn page is inferred from the public mirror, not stated on the page. [DOC S-ybuoluc4]
+- For the licence census, a Learn fact's licence class follows the public mirror's LICENSE at a pinned commit when one exists (CC BY 4.0 or MIT: copy with attribution), else the Learn terms (paraphrase, short quotes). [DER S2195, S-yuwxbqz3, S-b6tooge2: the terms defer to explicit licences]
+- GitHub's documentation repository `github/docs` is dual-licensed: CC BY 4.0 for documentation and content in its `assets`, `content` and `data` folders, MIT for code. [DOC S-rgy4dvjf]
+- GitLab's repository licence puts `doc/` under CC BY-SA 4.0, a share-alike licence: verbatim copies would have to carry the same licence. [DOC S452]
+- The MCP repository licenses new specification contributions under Apache-2.0 (earlier unrelicensed ones stay MIT) and documentation other than the specification under CC BY 4.0. [DOC S717]
+- The Claude Code docs pages end "© Anthropic PBC. All rights reserved. Use is subject to applicable Anthropic Terms of Service." [DOC S-fvspfpxd]
+- Anthropic's Commercial Terms grant neither party rights to the other's content or intellectual property except as expressly stated. [DOC S-pxvdwitn]
+- No open licence was found for Anthropic's docs (code.claude.com, platform.claude.com), so fetched Anthropic text is summarized in this kb, with quotes of 25 words or fewer, not stored verbatim. [DER S-fvspfpxd, S-pxvdwitn]
 - A stable docs MCP server or API for Windows security baselines (Security Compliance Toolkit, DISA STIG, CIS) and for Ansible docs was not found. [UNK]
 
 ## Reference
@@ -56,6 +65,7 @@ reading the current page.
 - `.mcp.json` (repository root): the three no-auth servers, shared by every user of this repo.
 - `.claude/settings.json`: pre-approves those servers and denies their `submit_feedback` tools.
 - `_tools/fetch.py --diff`: re-fetches the recorded sources of a topic and shows what changed.
+- `agents/doc-change-detection.md`: version signals, redirects, sitemaps and archives for telling whether a cited page changed.
 - Rejected: GitLab MCP server (Beta), Microsoft MCP Server for Enterprise (preview), GitHub MCP Insiders mode (early access), undocumented `platform.claude.com/docs/mcp`.
 - `agents/hybrid-retrieval.md`: its Azure AI Search, Anthropic, pgvector and Elasticsearch facts were found and read through the Microsoft Learn MCP server and WebFetch listed here.
 

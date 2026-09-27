@@ -1793,6 +1793,19 @@ _Agent: agents-overuse_
 
 _Agent: kb-research_
 
+## QK-kb-need-know-before-licence-census. What does the kb need to know before the licence census and the fact-diff work: provider licences, Learn version signals, redirects, archives, soft 404s and Claude search_result citations
+- Licences: the Learn terms of use allow only informational, non-commercial use of documents and no reposting, but defer to explicit licences; MicrosoftDocs public mirrors carry them per repository (memdocs CC BY 4.0 prose and MIT code, entra-docs MIT). GitHub docs are CC BY 4.0, GitLab docs CC BY-SA 4.0, MCP docs CC BY 4.0 with an Apache-2.0 specification, and Anthropic docs "All rights reserved". [DOC S2195, S-yuwxbqz3, S-b6tooge2, S-rgy4dvjf, S452, S717, S-fvspfpxd]
+- Learn change signals: each page exposes `updated_at`, `git_commit_id` and a stable `document_id` in its `<head>` and in the front matter of its markdown form (`?accept=text/markdown`), and answers `If-None-Match` with `304`; `ms.date` is not updated for small fixes, and sitemap `lastmod` disagreed with `updated_at`. [DOC S-7jumyiid, S-ecrpwvoh, S-lldnrkhv]
+- Moves: `.openpublishing.redirection*.json` entries give old path, new URL (sometimes with an anchor) and `redirect_document_id` (true for a rename); Learn serves them as `301`, and chains exist. [DOC S-ecrpwvoh, S-v3vc7a3l, S-xv7jeuvk]
+- Old text: the page's `git_commit_id` resolves in the public mirror (entra-docs, the archived memdocs); web archives are reachable through Memento (RFC 7089) and the Wayback CDX API, whose Availability API can answer empty for archived pages. [DOC S-xpbhjzu7, S-rgpijsmb, S-2dckbgu5, S-s6xjctzu, S-oo5kmppv, S-znp63ln6]
+- Dead pages: the WWW 2004 soft-404 test compares a page with a random sibling URL; Learn itself returns hard `404`s. [DOC S-xc4ibwg4]
+- Citations: Claude API `search_result` blocks (GA, standard Messages API) give per-block citations from tool results; MCP defines no such content type. [DOC S-4c46o537, S2135]
+- Conclusion: the licence census can classify Learn facts by the public mirror's licence at a pinned commit, and the fact-diff design can start from ETag and `git_commit_id` rather than text hashes, take old text from the mirror at that commit, and use redirection files plus `redirect_document_id` to tell renames from merges. Two design-draft claims need rewording: Learn does send a usable ETag, and sitemap `lastmod` is not a per-page change signal. [DER S-7jumyiid, S-lldnrkhv, S-xpbhjzu7, S-yuwxbqz3, S2195]
+- Open: whether the `?accept=text/markdown` form is a supported interface; whether the ETag changes on template rebuilds; whether any MCP client converts results to `search_result` blocks. [UNK]
+- See agents/doc-change-detection.md, agents/doc-lookup-sources.md, agents/hybrid-retrieval.md.
+
+_Agent: kb-research_
+
 ## R1. Reuse candidates
 
 - **Highest leverage: `pydantic-settings` as a `dependency` for a project's config-file/env-var/flags

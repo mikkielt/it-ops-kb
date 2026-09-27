@@ -327,3 +327,10 @@ csv.DictWriter,python/stdlib-sqlite3-csv
 csv.DictReader,python/stdlib-sqlite3-csv
 field_size_limit,python/stdlib-sqlite3-csv
 check_same_thread,python/stdlib-sqlite3-csv
+git_commit_id,agents/doc-change-detection
+.openpublishing.redirection.json,agents/doc-change-detection
+redirect_document_id,agents/doc-change-detection
+web.archive.org/cdx,agents/doc-change-detection
+accept-datetime,agents/doc-change-detection
+search_result,agents/hybrid-retrieval
+search_result_location,agents/hybrid-retrieval

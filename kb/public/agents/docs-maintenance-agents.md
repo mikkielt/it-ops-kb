@@ -42,6 +42,7 @@ the vendor docs found this session state a fully-autonomous merge-with-no-review
 - A team that keeps "no session schedules its own future" as a rule: none of these products' default trigger is a self-scheduled recurrence in that sense — the Mintlify `llms.txt` export regenerates on every docs deploy, an event already outside the agent's control (DeepWiki's refresh trigger is not documented in the sources read), and Swimm's Auto-sync/Verify runs inside CI a human already triggers. Only a Mintlify-agent-API cron or a Claude Code routine (see `agents/headless-agent-runtimes.md`) introduces the kind of self-scheduled recurrence such a rule would flag. [DER S1811,S1812,S1814,S1815: compares each product's stated trigger against "a session never schedules its own future"]
 
 ## Reference
+- `agents/doc-change-detection.md`: detecting that a cited source page changed, moved or died (version signals, redirects, archives, soft 404s).
 
 | Product | Trigger | What it reads | Human review before publish? |
 |---|---|---|---|

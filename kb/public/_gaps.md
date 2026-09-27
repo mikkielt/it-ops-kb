@@ -756,3 +756,13 @@ Still open: (topic: auth/configmgr-rbac-auth)
 ## auth/delegation-kcd-obo
 
 - **Interim Entra ID pattern for MCP Enterprise-Managed Authorization (ID-JAG)**: the kb said Microsoft shows Entra ID + Azure App Service as the authorization boundary in front of MCP servers, but S1300 (the only source) does not say this; the claim is now [UNK]. Needs a Microsoft Learn or modelcontextprotocol.io source on Entra support for ID-JAG, or on the recommended interim pattern. (topic: auth/delegation-kcd-obo)
+
+## agents/doc-change-detection
+
+- **Is Learn's `?accept=text/markdown` form a supported interface?** It works (query parameter or `Accept` header) and returns front matter with `updated_at` and `git_commit_id`, but no Learn page found documents it (searched Learn 2026-09-27). Needs a Microsoft Learn platform page or release note. (topic: agents/doc-change-detection)
+- **Does a Learn page's ETag change on a site-template rebuild with no content change?** Stable across repeated requests on 2026-09-27; needs the same page observed before and after a Learn build (`x-buildversion` header) to know whether ETag alone can signal content changes. (topic: agents/doc-change-detection)
+
+## agents/hybrid-retrieval
+
+- **Does any MCP client turn MCP tool results into Claude `search_result` blocks?** The MCP 2026-07-28 tool result has no citation content type; the Claude Code docs mention `search_result` only for web search errors. Looked in code.claude.com docs (rg `search_result`, `citations`) 2026-09-27. Needs Claude Code or Agent SDK release notes. (topic: agents/hybrid-retrieval)
+
