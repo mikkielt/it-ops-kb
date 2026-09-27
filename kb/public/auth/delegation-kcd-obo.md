@@ -2,7 +2,7 @@
 topic: auth/delegation-kcd-obo
 priority: P2
 applies_to: "Entra OBO, Kerberos constrained/resource-based delegation, Entra Application Proxy + KCD, MCP authorization 2026-07-28, Teams bot SSO (docs current 2026-09-24)"
-retrieved_utc: 2026-09-26
+retrieved_utc: 2026-09-27
 sources: [S1297, S1298, S1299, S1300, S1301, S1205, S-lbitjans, S-q2j6mx4q, S-l74ozdea, S-6mj4jpce]
 status: partial
 ---
@@ -55,6 +55,9 @@ facts (audience validation, `resource` parameter, `iss` validation, DCR deprecat
 - Classic (front-end-configured) constrained delegation requires the front-end and back-end service
   accounts to be in the same domain; cross-domain/cross-forest scenarios require RBCD instead.
   [DOC S1298]
+- Classic constrained delegation is configured in `msDS-AllowedToDelegateTo` on the front-end service account
+  (computer or user object): a multi-valued Unicode string list of SPNs for which the service can obtain
+  service tickets for constrained delegation. [DOC S-l74ozdea]
 - The "Account is sensitive and cannot be delegated" setting is set on the account whose identity would be
   delegated (the user, e.g. an engineer's admin account), not on the service; it restricts only
   delegation scenarios such as constrained or unconstrained Kerberos delegation, not sign-in or the

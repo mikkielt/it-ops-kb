@@ -3,7 +3,7 @@ topic: dsc/mcp-server
 priority: P0
 applies_to: "Microsoft DSC 3.2.0, 3.3.0 (release/v3.3 @ ea572fa), 3.4.0-preview.1"
 retrieved_utc: 2026-09-26
-sources: [S100, S108, S109, S113, S116, S117, S118, S134, S136, S141, S-fs2ec5ax, S-mv4k22q6, S-catcwj3d, S-liojjbc4, S-awsbvym2, S-ezl54xgl, S-eu4akijw, S-pr75qw5k, S-vnizihrz, S-5xcgjq4m, S-kb73mn6y, S-wwzbgp6q, S-mc3u4cy5, S-4vi7fb6a, S-tgdrpywm, S-nchhrpes]
+sources: [S100, S108, S109, S113, S116, S117, S118, S134, S136, S141, S-fs2ec5ax, S-mv4k22q6, S-catcwj3d, S-liojjbc4, S-awsbvym2, S-ezl54xgl, S-eu4akijw, S-pr75qw5k, S-vnizihrz, S-5xcgjq4m, S-kb73mn6y, S-wwzbgp6q, S-mc3u4cy5, S-4vi7fb6a, S-tgdrpywm, S-nchhrpes, S114, S115, S132, S133]
 status: complete
 ---
 

@@ -2,7 +2,7 @@
 topic: auth/configmgr-rbac-auth
 priority: P0
 applies_to: "ConfigMgr 2603, extends mecm/rbac.md and mecm/adminservice.md"
-retrieved_utc: 2026-09-26
+retrieved_utc: 2026-09-27
 sources: [S-7jumyiid, S-6m7klb4f, S1212, S1213, S1210, S1218]
 status: partial
 ---
@@ -17,6 +17,7 @@ status: partial
 ## Facts
 - A ConfigMgr administrative user's *administrative scope* is the combination of the security roles, security scopes and collections assigned to it; it controls which objects the user sees in the console and the permissions on them (details in `mecm/rbac.md`). [DOC S1218]
 - Since ConfigMgr version 1702, MFA can be enabled for SMS Provider calls: a Full Administrator with the All scope runs `SetAuthenticationLevel` on `SMS_Site`, setting the global `AuthenticationLevel` (0 default, 10 PIN or smart card, 20 PIN) and an optional `ExceptionList` of user/group SIDs. [DOC S1212]
+- Plan for the SMS Provider: the provider enforces ConfigMgr security by returning only what the user is authorized to view, and a site-wide minimum authentication level applies to every component that reaches it (console, SDK methods, PowerShell cmdlets, administration service): Windows authentication (default), certificate authentication (Windows sign-in with a PKI certificate), or Windows Hello for Business, under which the user's token must carry an MFA claim from Windows Hello for Business or the site rejects the action. [DOC S-6m7klb4f]
 - Since 2509, the AdminService rejects NTLM authentication attempts, and `AdminService.log` records "Rejecting NTLM authentication." (also in `mecm/adminservice.md`). [DOC S-7jumyiid]
 - A community forum thread reports the same 2509 change and log message. [COMMUNITY S1213]
 - Clients that relied on NTLM fallback (e.g. a non-FQDN name or a missing SPN) failing after the upgrade, with the fix being the FQDN and correct Kerberos SPNs rather than re-enabling NTLM. [UNK: not in S1213 as re-read 2026-09-27]

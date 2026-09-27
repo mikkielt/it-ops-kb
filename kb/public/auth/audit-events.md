@@ -2,8 +2,8 @@
 topic: auth/audit-events
 priority: P1
 applies_to: "AD DS, Entra ID, Microsoft Graph, ConfigMgr, SQL Server, GitLab"
-retrieved_utc: 2026-09-26
-sources: [S1357, S1358, S1359, S1360, S1361, S1362, S1363, S1364, S1365, S1366, S1367, S1368, S1369, S1370, S1371, S1372, S1373, S1374, S1347, S-2lkr2v7m, S-vudqagwn, S-2gxpfnjz, S-rm7qmev7, S-srnmxykl, S-h2gj3bko, S-fzswb76a, S-mubyxer3]
+retrieved_utc: 2026-09-27
+sources: [S1357, S1358, S1359, S1360, S1361, S1362, S1363, S1364, S1365, S1366, S1367, S1368, S1369, S1370, S1371, S1372, S1373, S1374, S-2lkr2v7m, S-vudqagwn, S-2gxpfnjz, S-rm7qmev7, S-srnmxykl, S-h2gj3bko, S-fzswb76a, S-mubyxer3]
 status: complete
 ---
 
@@ -27,6 +27,10 @@ for it; it belongs to the base kb's `graph/` topic.
   History (4765, 4766), the ACL set on members of administrators groups (4780) and the DSRM administrator
   password (4794); some of these (4722, 4724, 4725, 4781) are also generated for computer accounts, not
   just user accounts. [DOC S1364]
+- `Audit Logon` records 4624 (an account logged on) and 4625 (logon failure). Credential validation, including
+  NTLM validation of domain accounts, is 4776 under `Audit Credential Validation`, logged by the authoritative
+  computer (the DC for domain accounts); `Audit Other Account Logon Events` contains no events and is reserved
+  for future use. [DOC S1367, S-vudqagwn, S1368]
 - `Audit Kerberos Authentication Service` covers 4768 (TGT requested) and 4771 (Kerberos pre-authentication
   failed); `Audit Kerberos Service Ticket Operations` covers 4769 (service ticket requested) -- these are
   the DC-side events a workstation client's Kerberos authentication to AdminService/SQL would generate.
@@ -48,6 +52,17 @@ for it; it belongs to the base kb's `graph/` topic.
   `client` engineer's interactive Kerberos/MSAL sign-in, a `site` instance's app-only certificate sign-in,
   and any managed-identity-based sign-in (Appendix A / Arc, if ever adopted) land in different log
   categories that must each be watched. [DOC S1360, S1361, S1362]
+- The sign-in logs preview has four log types (interactive user, non-interactive user, service principal,
+  managed identity); the legacy sign-in log experience shows only interactive user sign-ins. Managed identity
+  sign-ins are aggregated into one row per managed identity, status and resource, and sign-in log entries are
+  system generated and can't be changed or deleted. [DOC S-h2gj3bko, S-fzswb76a]
+- Each sign-in log entry shows whether continuous access evaluation (CAE) was applied; one authentication makes
+  several sign-in requests and CAE shows true on only one of them, on the interactive or the non-interactive tab.
+  The correlation ID groups the sign-ins of one session but comes from client parameters, so its accuracy is not
+  guaranteed; the request ID corresponds to an issued token. [DOC S1358]
+- Directory changes (group, role, application, service principal and user operations) land in the Entra
+  directory audit log, whose `activityDisplayName` values are listed in the audit activity reference; programs
+  read both logs through Microsoft Graph `auditLogs/directoryAudits` and `auditLogs/signIns`. [DOC S1359, S-mubyxer3]
 - ConfigMgr's audit status messages (`SMS_StatusMessage.MessageType` 768) are a trail of actions taken
   by the ConfigMgr administrator, including operations that add, modify or delete objects, and the SMS
   Provider generates them automatically. [DOC S-2gxpfnjz]
@@ -57,6 +72,10 @@ for it; it belongs to the base kb's `graph/` topic.
   specific numeric id ranges most audit actions fall into (commonly cited as beginning around 30000) come
   from Microsoft-authored TechCommunity guidance rather than a single enumerated Learn reference table, so
   that detail is tagged `COMMUNITY` here pending a primary source. [COMMUNITY S1373]
+- SQL Server Audit action groups `SUCCESSFUL_LOGIN_GROUP` / `FAILED_LOGIN_GROUP` record logins,
+  `SERVER_ROLE_MEMBER_CHANGE_GROUP` and `DATABASE_ROLE_MEMBER_CHANGE_GROUP` record role membership changes, and
+  `SCHEMA_OBJECT_ACCESS_GROUP` records the use of an object permission; an audit writes to a file, the Windows
+  Security log or the Windows Application log. [DOC S1357, S-srnmxykl]
 - GitLab's sign-in audit events are available on every tier; group- and project-level audit events (the
   kind that would show a security-relevant membership or protected-branch change) need GitLab Premium or
   Ultimate. [DOC S1374]

@@ -2,7 +2,7 @@
 topic: entra/stale-devices
 priority: P1
 applies_to: "Microsoft Entra ID (doc ms.date 06/27/2025)"
-retrieved_utc: 2026-09-26
+retrieved_utc: 2026-09-27
 sources: [S545, S547, S504]
 status: complete
 ---
@@ -16,6 +16,7 @@ status: complete
 
 ## Facts
 - Detection uses the property `ApproximateLastSignInDateTime` (activity timestamp). [DOC S545]
+- On the Graph `device` resource, `approximateLastSignInDateTime` is a read-only UTC timestamp that supports `$filter` (`eq`, `ne`, `not`, `ge`, `le`, `eq` on null) and `$orderby`, so stale candidates can be queried directly. [DOC S504]
 - The activity timestamp is evaluated on device authentication: Conditional Access requiring managed devices or approved apps, Windows 10+ joined/hybrid devices active on the network, Intune check-ins. [DOC S545]
 - The timestamp is replaced only if the delta from the stored value exceeds 14 days (+/-5 days variance). [DOC S545]
 - A timestamp younger than 21 days should not be taken as a stale indicator. [DOC S545]

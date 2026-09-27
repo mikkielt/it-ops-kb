@@ -2,7 +2,7 @@
 topic: graph/tcm-apis
 priority: P3
 applies_to: "Microsoft Graph v1.0 and beta, Tenant Configuration Management (docs-contrib @ 4ad99fd3, metadata @ b8cbef92)"
-retrieved_utc: 2026-09-26
+retrieved_utc: 2026-09-27
 sources: [S940, S941, S942, S943, S944, S945, S946, S947, S948, S949, S950, S951, S952, S953, S954, S955, S956, S957, S-b254clmj, S-kkjfoqcq, S-iqgnl5eu, S-wt4gwfbs, S-bpw5jqqu, S-jyf5znt2, S-uvavmxwe, S-nmejqpqf, S-vbygwljt, S-jmkuh33h, S-loe5y6ph, S-764hwjk5, S-qdep2dpy, S-hm5x2mzz]
 status: complete
 files: [graph/tcm-csdl-v1.0.xml, graph/tcm-csdl-beta.xml]
@@ -37,6 +37,7 @@ snapshots max 20,000 resources/month, 12 visible jobs, 7-day retention. It cover
 - `configurationDrift` fields: `baselineResourceDisplayName`, `driftedProperties` (`$select` only), `firstReportedDateTime`, `monitorId`, `resourceInstanceIdentifier` (`$select` only), `resourceType`, `status` (`active`, `fixed`), `tenantId`. [DOC S947]
 - `driftedProperty`: `propertyName`, `currentValue` (Json), `desiredValue` (Json). [DOC S950]
 - `configurationMonitoringResult`: `driftsCount`, `errorDetails`, `monitorId`, `runInitiationDateTime`, `runCompletionDateTime`, `runStatus` (`successful`, `partiallySuccessful`, `failed`). [DOC S948]
+- `configurationBaseline` (the baseline attached to a monitor, read with `GET .../configurationMonitors/{id}/baseline`): `displayName`, `description`, `parameters` (`baselineParameter` collection) and `resources` (`baselineResource` collection); at least one property of one resource must be present. [DOC S949]
 - `configurationSnapshotJob.status`: `notStarted`, `running`, `succeeded`, `failed`, `partiallySuccessful`; `resourceLocation` is the snapshot file URL (`$select` only). [DOC S946]
 - Create snapshot: `POST /admin/configurationManagement/configurationSnapshots/createSnapshot` with `displayName` (required), `description`, `resources` (required, resource type names); runs asynchronously. [DOC S953, S946]
 - Baseline resources use `resourceType` names such as `microsoft.exchange.accepteddomain` and a `properties` object. [DOC S954]
@@ -47,7 +48,7 @@ snapshots max 20,000 resources/month, 12 visible jobs, 7-day retention. It cover
 PowerShell-based, resource-level tenant configuration export/drift monitoring (a different mechanism than these Graph
 APIs): `graph/microsoft365dsc.md`.
 
-Endpoints (v1.0 and beta; base `https://graph.microsoft.com/{v1.0|beta}`; the same method pages exist under beta) [S953, S954, S-kkjfoqcq, S-iqgnl5eu, S-wt4gwfbs, S-bpw5jqqu, S-jyf5znt2, S-uvavmxwe, S-nmejqpqf, S-vbygwljt, S-jmkuh33h, S-loe5y6ph, S-764hwjk5, S-qdep2dpy, S-hm5x2mzz]:
+Endpoints (v1.0 and beta; base `https://graph.microsoft.com/{v1.0|beta}`; the same method pages exist under beta) [DOC S953, S954, S-kkjfoqcq, S-iqgnl5eu, S-wt4gwfbs, S-bpw5jqqu, S-jyf5znt2, S-uvavmxwe, S-nmejqpqf, S-vbygwljt, S-jmkuh33h, S-loe5y6ph, S-764hwjk5, S-qdep2dpy, S-hm5x2mzz]:
 
 | Method | Path |
 |---|---|

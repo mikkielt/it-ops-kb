@@ -2,7 +2,7 @@
 topic: prior-art/secret-vault-encryption
 priority: P2
 applies_to: "a placeholder vault (per-conversation, short TTL, encrypted values, audited reveal)"
-retrieved_utc: 2026-09-26
+retrieved_utc: 2026-09-27
 sources: [S1000, S1001, S1002, S1003, S1004, S-r3t6wvk5, S-rirjtdlh, S-nijzofsq, S-b43o3ma3, S-6osxhfhb, S-yr2b636y]
 status: complete
 ---
@@ -46,6 +46,9 @@ is application-level in every case.
   rejects tokens older than the given TTL, a library-level expiry check without any external scheduler.
   `AESGCM` in the same package exposes AEAD encrypt/decrypt for callers who manage their own nonce and
   associated data. [DOC S-6osxhfhb, S-yr2b636y]
+- Repository metadata: sops (`getsops/sops`) is MPL-2.0 and written in Go; Python `cryptography`
+  (`pyca/cryptography`) describes itself as exposing cryptographic primitives and recipes to Python
+  developers, and the GitHub API reports its licence as unrecognised ("NOASSERTION"). [DOC S1000, S1003]
 - git-crypt transparently encrypts files matching `.gitattributes` `filter=git-crypt` rules using
   AES-256 in CTR mode with a synthetic IV derived from the SHA-1 HMAC of the file; the encryption is
   deterministic (so git can tell whether a file changed) and leaks only whether two files are identical;

@@ -2,7 +2,7 @@
 topic: auth/ldap-smb-signing
 priority: P0
 applies_to: "Windows Server 2025, Windows 11 24H2, ldap3 2.10.x"
-retrieved_utc: 2026-09-26
+retrieved_utc: 2026-09-27
 sources: [S1228, S1201, S1202, S1203, S1208, S1209, S1220, S1221, S-7u4b7p5q, S-tcoyec5r]
 status: partial
 ---
@@ -18,6 +18,7 @@ status: partial
 - Windows Server 2025 new AD forests/domains enable "Domain controller: LDAP server signing requirements" enforcement by default; existing upgraded domains keep prior settings unless changed. [DOC S1201]
 - LDAP channel binding on Server 2025 defaults to "When supported" (accept CBT when the client offers it), channel binding auditing is enabled by default, and LDAP client encryption is "preferred" by default. [DOC S1201]
 - SMB signing: Windows 11 24H2 Enterprise, Pro and Education require outbound and inbound SMB signing by default; Windows Server 2025 requires outbound signing only; 24H2 Home requires neither. [DOC S1202]
+- Before Windows 11 24H2 / Server 2025, SMB signing was required by default only for connections to the SYSVOL and NETLOGON shares, and domain controllers required it of their clients. The same releases let the SMB client block NTLM for outbound connections (with per-server exceptions) and make the SMB server wait 2 seconds after each failed NTLM or local KDC Kerberos authentication by default. [DOC S1203]
 - SMB encryption: SMB encryption is not mandatory by default. Windows 11 24H2 / Server 2025 add a client option to mandate encryption for all outbound connections; once enabled, the client connects only to SMB 3.0+ servers that support encryption. [DOC S1228]
 - `ldap3`'s Kerberos SASL mechanism needs the `gssapi` package (docs page 2.10.2). In the stable 2.9.1 line it authenticates only: a server that requires a sign or seal layer makes the bind fail (the 2019 issue: "ldap3 does not support any security layers"). The 2.10.2 docs say ldap3 now supports SASL data security layers for encryption; a server that requires a strong SSF needs `session_security=ENCRYPT` on the `Connection`. On PyPI, 2.9.1 (2021-07-18) is still the latest stable release and 2.10.2 exists only as release candidates (rc4, 2026-04-18). [DOC S1208, S-7u4b7p5q; COMMUNITY S1209]
 - For a `site`-kind instance on the stable `ldap3` 2.9.1, the only transport protection available against a DC that requires signing is LDAPS (TLS), with Kerberos/GSSAPI used for the bind; LDAP-layer sealing over plain `ldap://` needs the 2.10.2 pre-release with `session_security=ENCRYPT`, which is not yet a stable release. [DER S1201,S1208,S-7u4b7p5q: DC signing requirement + ldap3 docs + PyPI release status]

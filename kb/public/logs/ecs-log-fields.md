@@ -3,7 +3,7 @@ topic: logs/ecs-log-fields
 priority: P1
 applies_to: "Elastic Common Schema main @9868ff5 (version file 9.6.0-dev)"
 retrieved_utc: 2026-09-26
-sources: [S644, S645]
+sources: [S644, S645, S639, S640, S641]
 status: complete
 files: [logs/ecs-log.yml]
 ---

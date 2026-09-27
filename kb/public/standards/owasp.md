@@ -3,7 +3,7 @@ topic: standards/owasp
 priority: P2
 applies_to: "OWASP Agentic Top 10 2026; OWASP MCP Top 10 (2025 beta); OWASP LLM Top 10 2025 (2026 edition exists, items not captured)"
 retrieved_utc: 2026-09-26
-sources: [S760, S761, S762, S763, S764, S765]
+sources: [S760, S761, S762, S763, S764, S765, S1540]
 status: partial
 ---
 # OWASP lists for agentic, MCP and LLM applications (identifiers and titles)

@@ -2,7 +2,7 @@
 topic: auth/token-lifetimes-cae
 priority: P1
 applies_to: "Microsoft Entra Continuous Access Evaluation, Token Protection (docs current 2026-09-24)"
-retrieved_utc: 2026-09-26
+retrieved_utc: 2026-09-27
 sources: [S1291, S1292, S1227, S1348]
 status: partial
 ---
@@ -17,6 +17,7 @@ status: partial
 - CAE critical events: user account deleted or disabled, password changed or reset, MFA enabled for the user, administrator revokes all refresh tokens (`revokeSignInSessions`), high user risk from ID Protection; the goal is near real time, with up to 15 minutes of event-propagation latency. Network-location changes are a separate scenario (Conditional Access policy evaluation), enforced instantly for IP-based location policies. [DOC S1292, S1291]
 - User termination or password change/reset triggers session revocation "in near real time" for CAE-aware resources; network-location changes are similarly enforced near-real-time against location-based Conditional Access. [DOC S1292]
 - `revokeSignInSessions` (Graph) invalidates the user's refresh tokens (possibly after a few minutes); a CAE-capable resource called by a CAE-capable client then rejects the still-valid access token with a 401 claim challenge; without CAE-capable clients the default access-token lifetime of 1 hour remains the bound. [DOC S1348, S1292, S1291]
+- Token Protection is a separate Conditional Access session control: against token replay rather than for faster revocation, it makes Entra accept only device-bound sign-in session tokens such as the PRT. For native apps it is enforceable on Exchange Online, SharePoint Online and Microsoft Teams (plus Azure Virtual Desktop and Windows 365 on Windows); Microsoft Graph is not among the listed resources. [DOC S1227]
 - Whether Microsoft Graph itself (as called by workstation client/site instances) and ConfigMgr AdminService are CAE-aware resources is not stated in the two CAE overview pages fetched; Graph is widely documented elsewhere as CAE-capable for many APIs, but AdminService (a non-Microsoft-hosted, on-prem API) is very unlikely to implement CAE and no source claims it does. [UNK for AdminService; DER for Graph general capability is plausible but not directly cited in this fetch]
 - This directly narrows QA19 (revocation.md, not owned by this agent): for a resource that is *not* CAE-aware, "disable + revokeSignInSessions" caps exposure at the remaining access-token lifetime, not "near real time" — the near-real-time claim only holds for CAE-aware resources. [DER S1291,S1292]
 

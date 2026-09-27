@@ -7,12 +7,12 @@ Every topic of this root with its priority (the research order, not importance),
 |---|---|---|---|---|
 | `ad/computer-attributes` | P1 | complete | `ad/computer-attributes.md`, `ad/computer-attributes.csv` | 10 |
 | `ad/krbtgt-password-reset` | P1 | complete | `ad/krbtgt-password-reset.md` | 7 |
-| `ad/ldap-paging-filters` | P1 | complete | `ad/ldap-paging-filters.md` | 5 |
+| `ad/ldap-paging-filters` | P1 | complete | `ad/ldap-paging-filters.md` | 6 |
 | `agents/agent-caching` | P1 | complete | `agents/agent-caching.md` | 8 |
 | `agents/agent-dispatch-and-shared-services` | P1 | partial | `agents/agent-dispatch-and-shared-services.md` | 10 |
 | `agents/agent-error-catalogue` | P1 | partial | `agents/agent-error-catalogue.md`, `agents/agent-error-catalogue.csv` | 15 |
 | `agents/agent-evaluation` | P1 | complete | `agents/agent-evaluation.md` | 30 |
-| `agents/agent-overuse-patterns` | P1 | partial | `agents/agent-overuse-patterns.md`, `agents/agent-overuse-patterns.csv` | 27 |
+| `agents/agent-overuse-patterns` | P1 | partial | `agents/agent-overuse-patterns.md`, `agents/agent-overuse-patterns.csv` | 29 |
 | `agents/agent-rbac` | P1 | complete | `agents/agent-rbac.md` | 14 |
 | `agents/api-tokens-issue-and-store` | P1 | complete | `agents/api-tokens-issue-and-store.md`, `agents/api-tokens.csv`, `agents/secret-storage-options.csv` | 14 |
 | `agents/copilot-studio-inventory` | P1 | complete | `agents/copilot-studio-inventory.md`, `agents/copilot-studio-feature-map.csv` | 20 |
@@ -23,7 +23,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `agents/mcp-stress-testing` | P1 | partial | `agents/mcp-stress-testing.md` | 11 |
 | `agents/own-chatbot-architecture` | P1 | complete | `agents/own-chatbot-architecture.md` | 15 |
 | `agents/shared-ner-service` | P1 | partial | `agents/shared-ner-service.md` | 29 |
-| `agents/subagents-vs-deterministic-tools` | P1 | complete | `agents/subagents-vs-deterministic-tools.md` | 25 |
+| `agents/subagents-vs-deterministic-tools` | P1 | complete | `agents/subagents-vs-deterministic-tools.md` | 27 |
 | `agents/a2a-protocol` | P2 | partial | `agents/a2a-protocol.md`, `agents/a2a/a2a-proto-digest.md`, `agents/a2a/a2a.proto` | 10 |
 | `agents/agent-cost-governance` | P2 | complete | `agents/agent-cost-governance.md` | 2 |
 | `agents/anthropic-materials` | P2 | complete | `agents/anthropic-materials.md`, `agents/anthropic-materials.csv` | 23 |
@@ -47,13 +47,13 @@ Every topic of this root with its priority (the research order, not importance),
 | `ansible/windows-ssh` | P3 | complete | `ansible/windows-ssh.md` | 1 |
 | `arch/docs-home-options` | P1 | complete | `arch/docs-home-options.md` | 4 |
 | `arch/gitlab-ci-components` | P1 | complete | `arch/gitlab-ci-components.md` | 7 |
-| `arch/k8s-gmsa-windows` | P1 | complete | `arch/k8s-gmsa-windows.md` | 4 |
-| `arch/kerberos-linux-containers` | P1 | complete | `arch/kerberos-linux-containers.md` | 4 |
+| `arch/k8s-gmsa-windows` | P1 | complete | `arch/k8s-gmsa-windows.md` | 5 |
+| `arch/kerberos-linux-containers` | P1 | complete | `arch/kerberos-linux-containers.md` | 5 |
 | `arch/python-single-package-extras` | P1 | complete | `arch/python-single-package-extras.md` | 6 |
 | `arch/sql-auth-containers` | P1 | complete | `arch/sql-auth-containers.md` | 6 |
 | `arch/texts-catalogue-formats` | P1 | complete | `arch/texts-catalogue-formats.md` | 9 |
 | `arch/twelve-factor-readiness` | P1 | complete | `arch/twelve-factor-readiness.md` | 12 |
-| `arch/workload-identity-onprem-k8s` | P1 | complete | `arch/workload-identity-onprem-k8s.md` | 4 |
+| `arch/workload-identity-onprem-k8s` | P1 | complete | `arch/workload-identity-onprem-k8s.md` | 5 |
 | `auth/configmgr-rbac-auth` | P0 | partial | `auth/configmgr-rbac-auth.md` | 6 |
 | `auth/flows` | P0 | partial | `auth/flows.md`, `auth/flows.csv` | 28 |
 | `auth/gitlab-ci-identity` | P0 | partial | `auth/gitlab-ci-identity.md` | 2 |
@@ -66,10 +66,10 @@ Every topic of this root with its priority (the research order, not importance),
 | `auth/sql-authz` | P0 | partial | `auth/sql-authz.md` | 3 |
 | `auth/workload-identity` | P0 | partial | `auth/workload-identity.md` | 17 |
 | `auth/ad-jit-membership` | P1 | complete | `auth/ad-jit-membership.md` | 4 |
-| `auth/audit-events` | P1 | complete | `auth/audit-events.md`, `auth/audit-events.csv` | 27 |
+| `auth/audit-events` | P1 | complete | `auth/audit-events.md`, `auth/audit-events.csv` | 26 |
 | `auth/entra-intune-rbac` | P1 | partial | `auth/entra-intune-rbac.md` | 7 |
 | `auth/group-claims` | P1 | partial | `auth/group-claims.md` | 3 |
-| `auth/key-management-options` | P1 | partial | `auth/key-management-options.md` | 11 |
+| `auth/key-management-options` | P1 | partial | `auth/key-management-options.md` | 9 |
 | `auth/propagation-latency` | P1 | partial | `auth/propagation-latency.md`, `auth/propagation-latency.csv` | 9 |
 | `auth/revocation` | P1 | partial | `auth/revocation.md` | 12 |
 | `auth/role-source-options` | P1 | partial | `auth/role-source-options.md` | 4 |
@@ -107,11 +107,11 @@ Every topic of this root with its priority (the research order, not importance),
 | `dsc/directives` | P0 | complete | `dsc/directives.md` | 11 |
 | `dsc/functions` | P0 | complete | `dsc/functions.md`, `dsc/functions-3.3.0.csv` | 7 |
 | `dsc/manifests-diff` | P0 | complete | `dsc/manifests-diff.md`, `dsc/manifests-diff.csv`, `dsc/manifests/`, `dsc/zip-extras/` | 8 |
-| `dsc/mcp-server` | P0 | complete | `dsc/mcp-server.md` | 26 |
+| `dsc/mcp-server` | P0 | complete | `dsc/mcp-server.md` | 30 |
 | `dsc/open-bugs-windows` | P0 | complete | `dsc/open-bugs-windows.md`, `dsc/open-bugs.csv` | 1 |
 | `dsc/releases-feature-matrix` | P0 | complete | `dsc/releases-feature-matrix.md` | 24 |
 | `dsc/schemas` | P0 | complete | `dsc/schemas.md`, `dsc/schemas/` | 14 |
-| `dsc/secrets` | P0 | complete | `dsc/secrets.md` | 9 |
+| `dsc/secrets` | P0 | complete | `dsc/secrets.md` | 12 |
 | `dsc/settings-and-paths` | P0 | complete | `dsc/settings-and-paths.md` | 8 |
 | `dsc/what-if` | P0 | complete | `dsc/what-if.md` | 12 |
 | `entra/agent-id` | P1 | partial | `entra/agent-id.md` | 18 |
@@ -133,8 +133,8 @@ Every topic of this root with its priority (the research order, not importance),
 | `gpo/gpo-export` | P2 | complete | `gpo/gpo-export.md` | 4 |
 | `graph/batching-and-query` | P1 | complete | `graph/batching-and-query.md`, `graph/change-notification-lifetimes.csv` | 13 |
 | `graph/csdl-device` | P1 | complete | `graph/csdl-device.md`, `graph/csdl-device.properties.csv`, `graph/csdl/device.v1.0.xml`, `graph/csdl/device.beta.xml` | 5 |
-| `graph/csdl-managedDevice` | P1 | complete | `graph/csdl-managedDevice.md`, `graph/csdl-managedDevice.properties.csv`, `graph/csdl/managedDevice.v1.0.xml`, `graph/csdl/managedDevice.beta.xml` | 4 |
-| `graph/csdl-windowsAutopilotDeviceIdentity` | P1 | complete | `graph/csdl-windowsAutopilotDeviceIdentity.md`, `graph/csdl-windowsAutopilotDeviceIdentity.properties.csv`, `graph/csdl/windowsAutopilotDeviceIdentity.v1.0.xml`, `graph/csdl/windowsAutopilotDeviceIdentity.beta.xml` | 4 |
+| `graph/csdl-managedDevice` | P1 | complete | `graph/csdl-managedDevice.md`, `graph/csdl-managedDevice.properties.csv`, `graph/csdl/managedDevice.v1.0.xml`, `graph/csdl/managedDevice.beta.xml` | 6 |
+| `graph/csdl-windowsAutopilotDeviceIdentity` | P1 | complete | `graph/csdl-windowsAutopilotDeviceIdentity.md`, `graph/csdl-windowsAutopilotDeviceIdentity.properties.csv`, `graph/csdl/windowsAutopilotDeviceIdentity.v1.0.xml`, `graph/csdl/windowsAutopilotDeviceIdentity.beta.xml` | 6 |
 | `graph/delta-query` | P1 | complete | `graph/delta-query.md` | 6 |
 | `graph/permissions` | P1 | complete | `graph/permissions.md`, `graph/permissions.csv`, `graph/permission-ids.csv` | 14 |
 | `graph/powershell-sdk` | P1 | complete | `graph/powershell-sdk.md` | 8 |
@@ -164,7 +164,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `intune/reports-export-api` | P2 | complete | `intune/reports-export-api.md`, `intune/export-report-names.csv` | 12 |
 | `intune/win32-apps` | P2 | complete | `intune/win32-apps.md`, `intune/win32-apps.csv` | 9 |
 | `intune/linux-management` | P3 | complete | `intune/linux-management.md` | 10 |
-| `logs/ecs-log-fields` | P1 | complete | `logs/ecs-log-fields.md`, `logs/ecs-log.yml` | 2 |
+| `logs/ecs-log-fields` | P1 | complete | `logs/ecs-log-fields.md`, `logs/ecs-log.yml` | 5 |
 | `logs/otel-log-data-model` | P1 | complete | `logs/otel-log-data-model.md` | 1 |
 | `logs/otel-log-semconv` | P1 | complete | `logs/otel-log-semconv.md`, `logs/otel-semconv-log-registry.yaml`, `logs/otel-semconv-code-registry.yaml` | 5 |
 | `logs/sources` | P1 | partial | `logs/sources.md`, `logs/sources.csv` | 16 |
@@ -235,7 +235,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `reuse/secret-vault-encryption` | P2 | complete | `reuse/secret-vault-encryption.md` | 10 |
 | `reuse/tiered-approval-ops` | P2 | complete | `reuse/tiered-approval-ops.md` | 5 |
 | `security/baselines-catalog` | P0 | partial | `security/baselines-catalog.md`, `security/baselines-catalog.csv` | 26 |
-| `security/dsc-coverage` | P0 | complete | `security/dsc-coverage.md` | 16 |
+| `security/dsc-coverage` | P0 | complete | `security/dsc-coverage.md` | 19 |
 | `security/first-baseline-candidates` | P0 | partial | `security/first-baseline-candidates.md` | 12 |
 | `security/policy-precedence` | P0 | partial | `security/policy-precedence.md` | 7 |
 | `security/settings-crosswalk` | P0 | partial | `security/settings-crosswalk.md`, `security/settings-crosswalk.csv`, `security/artifacts/disa/`, `security/artifacts/microsoft/`, `security/artifacts/osconfig/` | 20 |
@@ -252,7 +252,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `sqlserver/linux-container` | P0 | partial | `sqlserver/linux-container.md`, `sqlserver/mssql-server-tags.json` | 8 |
 | `sqlserver/sp-getapplock` | P0 | complete | `sqlserver/sp-getapplock.md` | 1 |
 | `sqlserver/temporal-tables` | P0 | complete | `sqlserver/temporal-tables.md` | 7 |
-| `standards/owasp` | P2 | partial | `standards/owasp.md`, `standards/owasp.csv` | 6 |
+| `standards/owasp` | P2 | partial | `standards/owasp.md`, `standards/owasp.csv` | 7 |
 | `windows/execution-policy-signing` | P0 | complete | `windows/execution-policy-signing.md` | 9 |
 | `windows/gitlab-runner-windows` | P0 | partial | `windows/gitlab-runner-windows.md` | 12 |
 | `windows/gmsa` | P0 | partial | `windows/gmsa.md` | 6 |

@@ -3,7 +3,7 @@ topic: ad/ldap-paging-filters
 priority: P1
 applies_to: "Active Directory LDAP (Windows Server 2008 R2 and later)"
 retrieved_utc: 2026-09-26
-sources: [S567, S568, S569, S570, S571]
+sources: [S567, S568, S569, S570, S571, S560]
 status: complete
 ---
 

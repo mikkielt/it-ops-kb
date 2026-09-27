@@ -2,7 +2,7 @@
 topic: graph/microsoft365dsc
 priority: P3
 applies_to: "Microsoft365DSC PowerShell module 1.26.909.1 (2026-09-11)"
-retrieved_utc: 2026-09-26
+retrieved_utc: 2026-09-27
 sources: [S1010, S-jya6izpo, S-l6j5dpwj, S-44mrima5, S-ahgkqifj, S-2fvvbt5t, S-zmngjhe5, S-prjyny3b, S-3aphi7n2, S-omyb2en3]
 status: partial
 ---
@@ -20,6 +20,9 @@ and the PowerShell Gallery package page: **1.26.909.1**, published 2026-09-11 (a
 and `prior-art/projects.csv`, source `S1010`). Docs below (microsoft365dsc.com) are the project's own site, not Microsoft Learn.
 
 ## Facts
+- The GitHub repository `microsoft/Microsoft365DSC` (now redirecting to `Microsoft365DSC/Microsoft365DSC`) is MIT-licensed,
+  written in PowerShell, and describes the module as managing, configuring, extracting and monitoring Microsoft 365
+  tenant configurations. [DOC S1010]
 - Install with `Install-Module Microsoft365DSC -Force`, run from an elevated **Windows PowerShell 5.1** window; from a
   non-elevated window the module lands in the Current User scope, which the docs say will not work. [COMMUNITY S-zmngjhe5]
 - After installing the module, run `Update-M365DSCDependencies` to download prerequisite modules (MSCloudLoginAssistant,

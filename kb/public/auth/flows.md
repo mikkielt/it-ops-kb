@@ -2,7 +2,7 @@
 topic: auth/flows
 priority: P0
 applies_to: "ConfigMgr 2509+, Windows 11 24H2 / Windows Server 2025, Entra ID, SQL Server 2022/2025, GitLab"
-retrieved_utc: 2026-09-26
+retrieved_utc: 2026-09-27
 sources: [S-o6f7ibqo, S-sldz4d6b, S-7jumyiid, S-6m7klb4f, S468, S469, S512, S518, S521, S621, S1201, S1202, S1205, S1208, S1215, S1228, S1270, S1276, S1286, S1289, S1293, S1297, S1298, S1302, S1345, S1347, S-7u4b7p5q, S-c7yxdr7e]
 status: partial
 ---
@@ -18,6 +18,13 @@ status: partial
 - The AdminService rejects NTLM from ConfigMgr 2509, so F01 and F07 work only when Kerberos works (FQDN, `HTTP/<fqdn>` SPN). [DOC S-7jumyiid]
 - The AdminService applies ConfigMgr RBAC and the SMS Provider authentication level; the caller must be a ConfigMgr administrative user. [DOC S-o6f7ibqo,S-6m7klb4f]
 - The AdminService uses a self-signed site certificate on 443 unless a PKI certificate is bound, so a Python client must either trust that certificate or the site must bind a PKI one. [DER S-sldz4d6b]
+- F01's Kerberos service tickets lose the RC4 fallback: from the domain controller updates released on or after 2026-04-14, accounts without explicit `msDS-SupportedEncryptionTypes` default to AES only (0x18), and the audit-mode key stops being honoured from July 2026. [DOC S1215]
+- F02 and F08 write an insert-only table by granting INSERT and denying UPDATE and DELETE: DENY takes precedence over permissions from group or role membership (not for object owners or `sysadmin`), but a table-level DENY does not override a column-level GRANT. [DOC S468, S469]
+- F03 uses the WAM broker through MSAL Python (`msal[broker]`, Windows 10+ / Server 2019+, redirect URI `ms-appx-web://microsoft.aad.brokerplugin/<client_id>`). [DOC S1270]
+- Least-privileged Graph reads for F03 (delegated) and F04 (application): `Device.Read.All` for Entra devices, `DeviceManagementManagedDevices.Read.All` for Intune devices, `DeviceManagementServiceConfig.Read.All` for Autopilot identities. [DOC S512, S518, S521]
+- F05 lists Defender devices with application `Machine.Read.All` (or `Machine.ReadWrite.All`); List machines is limited to 100 calls per minute and 1,500 per hour. [DOC S621]
+- F10's GitLab `id_tokens` are JWTs configured per job with an `aud` the Entra federated credential must match; the default `sub` for a tag pipeline is `project_path:<group>/<project>:ref_type:tag:ref:<tag_name>`. [DOC S1276]
+- F12 via classic Kerberos constrained delegation needs the broker (front-end) and target service accounts in the same domain; cross-domain needs resource-based constrained delegation. [DOC S1298]
 - Windows 11 24H2 Enterprise/Pro/Education require SMB signing (outbound and inbound) and Windows Server 2025 requires outbound signing; encryption is optional. F09 needs a share that signs. [DOC S1202,S1228]
 - The stable `ldap3` release (2.9.1) cannot provide LDAP-layer signing or sealing, so with a DC that requires signing F06 from `ldap3` needs LDAPS; the 2.10.2 pre-release adds Kerberos sealing with `session_security=ENCRYPT`. [DER S1201,S1208,S-7u4b7p5q: DC signing requirement + ldap3 docs + PyPI release status]
 - A signed-in engineer's role check against a small set of role groups fits one `/me/checkMemberGroups` call under delegated `User.Read` (at most 20 group ids). [DOC S1286]

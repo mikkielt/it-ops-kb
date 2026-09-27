@@ -2,7 +2,7 @@
 topic: entra/bitlocker-key-deletion
 priority: P1
 applies_to: "Microsoft Entra ID (manage-device-identities ms.date 06/17/2026; soft delete preview ms.date 04/05/2026)"
-retrieved_utc: 2026-09-26
+retrieved_utc: 2026-09-27
 sources: [S545, S546, S547, S531]
 status: complete
 ---
@@ -25,6 +25,7 @@ status: complete
 - Hard-deleted devices, BitLocker keys and LAPS passwords can't be recovered. [DOC S547]
 - Entra Connect can auto-restore a soft-deleted hybrid device on the next sync when it recreates a device with the same DeviceId. [DOC S547]
 - Viewing a key (Show Recovery Key) creates an audit entry in the `KeyManagement` category. [DOC S546]
+- A device's keys can be listed before a delete with `GET /informationProtection/bitlocker/recoveryKeys`, filtered by the `deviceId` of the device the key was most recently backed up to; the list omits the `key` value itself, which Get bitlockerRecoveryKey reads. [DOC S531]
 
 ## Reference
 | State | Keys recoverable | Source |

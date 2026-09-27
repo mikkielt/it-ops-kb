@@ -3,7 +3,7 @@ topic: dsc/secrets
 priority: P0
 applies_to: "Microsoft DSC 3.3.0 (release/v3.3 @ ea572fa); leakage re-checked on 3.4.0-preview.1"
 retrieved_utc: 2026-09-26
-sources: [S105, S106, S114, S116, S117, S124, S125, S126, S142]
+sources: [S105, S106, S114, S116, S117, S124, S125, S126, S142, S101, S107, S115]
 status: complete
 ---
 

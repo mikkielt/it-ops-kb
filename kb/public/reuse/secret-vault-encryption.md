@@ -2,7 +2,7 @@
 topic: reuse/secret-vault-encryption
 priority: P2
 applies_to: "a per-conversation, short-TTL, encrypted-at-rest, audited-reveal secret vault, and long-lived site secrets committed to a repository"
-retrieved_utc: 2026-09-26
+retrieved_utc: 2026-09-27
 sources: [S1000, S1001, S1002, S1003, S1004, S1102, S1103, S-3eg2zeqb, S-wqbnua3h, S-6osxhfhb]
 status: complete
 ---
@@ -40,7 +40,7 @@ fit for (1) as-is. `cryptography`'s
 - BUSL-1.1 is not an OSI-approved licence. [UNK: not in S1102 as re-read 2026-09-27]
 - Python `cryptography`'s repository `LICENSE` (fetched directly) makes the software available under
   either Apache-2.0 or BSD-3-Clause, with contributions made under both, resolving a prior "UNK (GitHub
-  reports NOASSERTION)" flag. [DOC S1103]
+  reports NOASSERTION)" flag: the GitHub API does report the repository licence as NOASSERTION. [DOC S1103, S1003]
 - `cryptography.fernet.Fernet.decrypt(token, ttl=seconds)` raises `InvalidToken` when the token is
   older than `ttl` seconds from its creation, so the age check happens at decrypt time -- the "reveal
   fails after N hours" behaviour a short-TTL pseudonymization vault needs, with no scheduler for that

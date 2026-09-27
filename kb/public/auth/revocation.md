@@ -2,7 +2,7 @@
 topic: auth/revocation
 priority: P1
 applies_to: "AD DS, Entra ID, ConfigMgr AdminService, Microsoft Graph, SQL Server, SMB, GitLab"
-retrieved_utc: 2026-09-26
+retrieved_utc: 2026-09-27
 sources: [S1380, S1378, S1344, S1345, S1347, S1348, S1354, S1355, S1306, S1375, S1376, S1377]
 status: partial
 ---
@@ -46,6 +46,9 @@ ticket requests, so the real picture has three windows:
   might be able to continue accessing network services by using valid service tickets that were issued
   before their account was disabled," with `Maximum lifetime for service ticket` defaulting to **600
   minutes (10 hours)** in the Default Domain Policy. [DOC S1376]
+- **The TGT itself** can be used for up to `Maximum lifetime for user ticket`: 10 hours in the Default Domain
+  Policy (0 means TGTs never expire); Microsoft recommends 4 to 10 hours and warns that a long value lets a
+  disabled account keep using tickets issued before the disable. [DOC S1344]
 - **Net effect:** after an AD disable, a `client` cannot start any new AdminService/SQL/SMB session
   more than ~20 minutes later, but a session that was already open keeps working for up to the remaining
   service-ticket lifetime -- worst case ~10 hours under the default policy -- until it is explicitly
