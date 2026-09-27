@@ -183,18 +183,22 @@ Remaining gaps:
   Protection. Presidio's own Kubernetes/App Service samples give only qualitative scaling advice
   ("set resource limits and autoscaling"). 3 search attempts made across the four vendors; none surfaced
   a published number. [UNK — `agents/shared-ner-service.md` QG30]
+  - Partly resolved 2026-09-27: Azure Language publishes rate quotas (S / multi-service 1,000 requests per second, S0/F0 100 per second; S2093), now in the article. No latency or throughput benchmark found for any of the four; Comprehend per-operation TPS sits in the AWS Service Quotas console (not read). (topic: agents/shared-ner-service)
 - Exact Azure AI Language PII pricing (dollar amounts per 1,000 text records at each volume tier, and for
   the disconnected-container annual licence) was not retrieved — the pricing calculator's per-tier rates
   are not rendered in the fetched page content and require the interactive calculator or a sales contact.
   [UNK — `agents/shared-ner-service.md` QG30]
+  - Partly resolved 2026-09-27: Azure Retail Prices API (S-g6nzyems): Standard Text Records $1.00 / $0.75 / $0.30 / $0.25 per 1,000 records at 0 / 500K / 2.5M / 10M; mapping PII to that meter is DER from S2095. Disconnected-container annual licence prices still not found. (topic: agents/shared-ner-service)
 - Google Sensitive Data Protection's per-GB rates ($1.00/$1.50/$0.05 for discovery/storage/streaming) come
   from a fetched third-party-style summary of the pricing page, not a direct table read from
   `cloud.google.com/sensitive-data-protection/pricing`; treat as approximate pending a direct re-check.
   [UNK/needs confirmation — `agents/shared-ner-service.md` QG30]
+  - Resolved 2026-09-27: the live pricing page (S2101, re-read) has the article's figures ($3.00 hybrid inspection, $0.03/GB consumption discovery, $2,500 per subscription unit); "$1.50" and "$0.05" appear nowhere on it, so the old summary was wrong. (topic: agents/shared-ner-service)
 - No on-premises or disconnected container deployment was found for either Amazon Comprehend or Google
   Sensitive Data Protection (both presented as cloud-hosted APIs only in every source checked); this is
   recorded as an absence, not a confirmed "does not exist," since only public vendor docs were searched
   (3 attempts each). [UNK — `agents/shared-ner-service.md` QG30]
+  - Partly resolved 2026-09-27: Google documents only hybrid jobs, which stream on-premises data into the cloud service and keep findings in Google Cloud (S-hfymbj4j); recorded as a DER absence. Comprehend not re-searched. (topic: agents/shared-ner-service)
 - No GDPR controller/processor analysis specific to an internal shared NER/PII-detection endpoint (as
   opposed to pseudonymisation and identifiability generally, already covered in
   `privacy/gdpr-pseudonymisation.md`) was found in any EDPB or Microsoft/AWS/Google compliance page
@@ -202,9 +206,11 @@ Remaining gaps:
 - No published numeric trigger (consumer count, detection-gap percentage, or maintenance-hour figure) for
   when to centralize a shared NER service was found from any vendor or community source. [UNK —
   `_answers.md` QG32] (topic: agents/shared-ner-service)
+  - Not re-researched 2026-09-27 (no candidate source identified); still open. (topic: agents/shared-ner-service)
 - Presidio's own caller-authentication story for a shared analyzer/anonymizer deployment (e.g. built-in
   API-key support) was not found in the fetched docker/k8s/app-service samples; only Azure's container
   documents an API-key requirement. [UNK — `agents/shared-ner-service.md` QG31]
+  - Resolved 2026-09-27 (CODE): the analyzer and anonymizer REST servers at commit e9895a51 (S-5gpkixnx, S830) are Flask apps with no authentication check; caller auth must be added in front. (topic: agents/shared-ner-service)
 
 ## agents-overuse
 
@@ -252,11 +258,17 @@ Remaining gaps:
 ## agents-wiki
 
 - **DeepWiki's automatic refresh cadence** (cron vs. webhook vs. purely on-demand) remains undocumented after a second attempt this session against `docs.devin.ai/work-with-devin/deepwiki`. The only confirmed trigger is the explicit, human-initiated one: commit `.devin/wiki.json` and ask Devin/DeepWiki to regenerate. Not pursued further under the 3-failed-attempt budget rule. [UNK] (topic: agents/docs-maintenance-agents)
+  - Partly resolved 2026-09-27: the deepwiki README (S-tpvi7ohn) says repositories with a DeepWiki badge are auto-refreshed, and Devin indexes each repository's default branch (S-k527bca2). No cadence is published (docs.devin.ai llms.txt and index-repo page read). (topic: agents/docs-maintenance-agents)
 - **`CognitionAI/deepwiki` GitHub repository's licence and actual contents** remain unverified (only its existence surfaced via search in the first pass; not re-attempted this session). [UNK] (topic: agents/docs-maintenance-agents)
+  - Resolved 2026-09-27: at its last commit 10f554ce (2025-05-22) the repository holds only a README (MCP tools and endpoints, badge auto-refresh) and no licence (S-tpvi7ohn). (topic: agents/docs-maintenance-agents)
 - **Mintlify's code-diff "agent API"** for auto-updating documentation from code changes (as opposed to the always-on `llms.txt` deploy-time export, which is confirmed `DOC`) is recorded only as a `COMMUNITY`-sourced search-engine synopsis; the specific how-to page describing its trigger, auth, and review-gate mechanics was not independently fetched in either pass. [UNK: exact mechanism, not the existence of the feature] (topic: agents/docs-maintenance-agents)
+  - Resolved 2026-09-27: Mintlify docs (S-jgplbv5j) list automation triggers (content update, code change, schedule, integration) and two modes (merge directly or open a PR for review); auto-merge needs the app on every ruleset's bypass list (S-f2vfcma6). (topic: agents/docs-maintenance-agents)
 - **`lychee` (link checker)**: the URL used this session (`lychee.cc`) did not resolve (`ENOTFOUND`); the tool's correct current site/repo and licence were not independently confirmed. Its role as a deterministic link-check guardrail is stated in the deepening-pass brief but not vendor-verified here. [UNK] (topic: agents/docs-maintenance-agents)
+  - Resolved 2026-09-27: README at tag lychee-v0.24.2 (S-xote3xa2): Rust async link checker, GitHub Action and pre-commit hook, Apache-2.0 or MIT; homepage lychee.cli.rs. (topic: agents/docs-maintenance-agents)
 - **`doc-detective`**: not fetched at all this session (outside the URL list given); remains an unresearched community tool candidate for doc-drift detection. [UNK] (topic: agents/docs-maintenance-agents)
+  - Resolved 2026-09-27: README at tag v4.38.1 (S-sit75nzz): AGPL-3.0 documentation-testing framework that runs doc-derived tests in a browser or against APIs and outputs PASS/FAIL JSON. (topic: agents/docs-maintenance-agents)
 - **GitHub Copilot coding agent's own scheduled/issue-triggered documentation-update workflow** (as distinct from Copilot Spaces, a context store, and from `.github/copilot-instructions.md`/`AGENTS.md` support, both now confirmed `DOC`) was not found as a named, distinct product feature in the one official page fetched (`best-practices-for-using-copilot-to-work-on-tasks`). GitHub's own equivalent scheduled-drift pattern instead appears to live in the separate `gh-aw` project (now confirmed `DOC`), not in Copilot coding agent itself. [UNK, narrowed from the first pass's broader "no docs-update feature found"] (topic: agents/docs-maintenance-agents)
+  - Resolved 2026-09-27: GitHub's Copilot docs now cover GitHub Agentic Workflows (public preview; S-h6jpev6e), which lists keeping documentation up to date with code changes as a use case, with writes only through `safe-outputs`. (topic: agents/docs-maintenance-agents)
 
 ## arch
 
@@ -621,15 +633,18 @@ Still open: (topic: auth/configmgr-rbac-auth)
 
 - Anthropic docs terms for storing fetched page text offline: not found on platform.claude.com or code.claude.com
   (2026-09-25). Until found, Anthropic docs stay summarized with quotes of at most 25 words.
+  - Tried 2026-09-27: WebSearch of anthropic.com/legal (Consumer and Commercial Terms) and the docs footers already cited; no docs-specific licence found. Still open. (topic: agents/doc-lookup-sources)
 - No stable (GA) docs MCP server or documented API was found for Windows security baselines (Security Compliance
   Toolkit and DISA STIG are zip downloads; CIS is licensed) or for Ansible (docs.ansible.com answered scripted
   requests with HTTP 429; the GitHub repos `ansible/ansible-documentation` and `ansible-collections/ansible.windows`
   remain readable through GitHub).
 - The Claude Code Docs and MCP docs MCP servers carry no explicit GA statement; they are kept because Anthropic's
   own quickstart documents the first and both report version 1.0.0 with no preview label.
+  - Tried 2026-09-27: `code.claude.com/docs/en/mcp-quickstart` and `/en/agent-sdk/mcp` use `https://code.claude.com/docs/mcp` as their first example server, but neither page carries a GA label. Still open. (topic: agents/doc-lookup-sources)
 - Context7's refresh cadence ("based on popularity"), its rate-limit numbers with and without an API key, and
   whether `query-docs` results carry source urls: not read (2026-09-27; only the pinned README and
   context7.com/docs/adding-libraries were read). (topic: agents/doc-lookup-sources)
+  - Resolved 2026-09-27: popularity thresholds 1/15/30/45 days (S-gupervu4); no published rate numbers, 429 with `Retry-After` (S-ke227men); Free 1,000 calls a month, Pro 2,000 per seat then $5 per 1,000 (S-fqi6xbbc); results carry source URLs (S-autbwi4y). (topic: agents/doc-lookup-sources)
 
 ## windows/smart-app-control
 
@@ -672,6 +687,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
 ## agents/langgraph
 
 - LangSmith Deployment current pricing tiers and self-hosted licensing terms are not documented on the fetched LangGraph platform overview page; `docs.langchain.com/langsmith/deployments` was not independently fetched this pass (1 lookup). The exact `langchain-mcp-adapters` → `langchain[mcp]` step-by-step migration guide referenced by the docs was likewise not located on a fetched page (1 lookup). (topic: agents/langgraph)
+  - Resolved 2026-09-27: LangChain pricing page (S-woho7bmc: Developer $0, Plus $39 per seat with Deployment access, Enterprise with self-hosted options), self-hosting needs an Enterprise plan and licence key (S-ujkfhzif), and the MCP adapters migration guide (S-bygurlbr). (topic: agents/langgraph)
 
 ## agents/microsoft-agent-framework
 
@@ -791,10 +807,15 @@ Still open: (topic: auth/configmgr-rbac-auth)
 ## agents/doc-change-detection
 
 - **Is Learn's `?accept=text/markdown` form a supported interface?** It works (query parameter or `Accept` header) and returns front matter with `updated_at` and `git_commit_id`, but no Learn page found documents it (searched Learn 2026-09-27). Needs a Microsoft Learn platform page or release note. (topic: agents/doc-change-detection)
+  - Partly resolved 2026-09-27: the documented Markdown routes are the Learn MCP fetch tool (S2176) and `mslearn fetch` (S-lylm4eqz); `learn.microsoft.com/en-us/llms.txt` returns 404 and no page documents the query or header form. Recorded as a DER in the article; a Microsoft statement on the form itself is still missing. (topic: agents/doc-change-detection)
 - **Does a Learn page's ETag change on a site-template rebuild with no content change?** Stable across repeated requests on 2026-09-27; needs the same page observed before and after a Learn build (`x-buildversion` header) to know whether ETag alone can signal content changes. (topic: agents/doc-change-detection)
+  - Resolved 2026-09-27: Wayback captures of the ConfigMgr introduction page (S-qvogwadn) share `Last-Modified` 2025-12-11 but carry different `x-buildversion` values and different ETags, so the ETag also changes on a rebuild without a content change. (topic: agents/doc-change-detection)
 
 ## agents/hybrid-retrieval
 
 - **Does any MCP client turn MCP tool results into Claude `search_result` blocks?** The MCP 2026-07-28 tool result has no citation content type; the Claude Code docs mention `search_result` only for web search errors. Looked in code.claude.com docs (rg `search_result`, `citations`) 2026-09-27. Needs Claude Code or Agent SDK release notes. (topic: agents/hybrid-retrieval)
   - Tried 2026-09-27: platform.claude.com search-results page (S-4c46o537: blocks come only from the caller's own `tool_result`, no MCP mention), the MCP connector page (S-qpqoaaqj: `mcp_tool_result` example is text only), claude-code-docs rg `search_result`. No conversion documented; recorded in the article as a DER absence. (topic: agents/hybrid-retrieval)
 
+## agents/instruction-and-context-limits
+
+- **Character limit of the Claude Projects instructions field.** The support article (S1859, re-read 2026-09-27) publishes no number; the field shows a live counter only inside the signed-in claude.ai UI. Tried 2026-09-27: S1859 re-read; Claude in Chrome was unavailable, and the counter is only visible in the signed-in UI, so reading it stays with a person. (topic: agents/instruction-and-context-limits)

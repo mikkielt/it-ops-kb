@@ -113,3 +113,4 @@ EV-account-password-gitlab-runner-install-use,Which account and password does gi
 EV-claude-code-warn-claude-md-too,"Does Claude Code warn when CLAUDE.md is too large, and at what size?",agents/instruction-and-context-limits.md,good,
 EV-intune-device-offboarding-agent-still-available,Is the Intune Device Offboarding Agent still available?,agents/security-copilot-endpoint.md,good,
 EV-github-copilot-business-usage-billed-ai,How is GitHub Copilot Business usage billed: AI credits and overage rate?,agents/github-copilot-admin.md,good,
+EV-presidio-analyzer-rest-api-require-authentication,Does the Presidio analyzer REST API require authentication?,agents/shared-ner-service.md,good,

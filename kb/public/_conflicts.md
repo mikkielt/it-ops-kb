@@ -126,12 +126,14 @@ was wrong and the kb now says Apache-2.0. [DOC S1891] (topic: agents/agent-evalu
   PII API), but S2093 was not independently re-fetched and verified against the live
   `concepts/data-limits` page in this session — flagged so a future session re-checks the exact figure
   before relying on it. (topic: agents/shared-ner-service)
+  - Explained 2026-09-27: the 50,000-character figure is the Azure AI Search PII skill (S-ulqlpnc5) and 10 MB the Document-based PII request limit (S-alyohfil); neither is cloud Text PII. (topic: agents/shared-ner-service)
 - **Google Sensitive Data Protection per-GB pricing.** One fetched search summary (S2101) gives three
   specific rates (~$1.00/$1.50/$0.05 per GB for discovery/storage inspection/streaming); a second summary
   reviewed while forming the same answer instead described pricing only as "$1-3 per GB depending on the
   number of InfoTypes scanned," a materially different structure (flat per-GB vs. InfoType-count-scaled).
   Both are search-engine paraphrases of the same underlying pricing page, not independently confirmed
   against the raw page tables — recorded as unresolved rather than picking one. (topic: agents/shared-ner-service)
+  - Resolved 2026-09-27: the live pricing page (S2101) was read; the article's figures stand and the "$1.50"/"$0.05" summary figures do not appear on it. (topic: agents/shared-ner-service)
 
 ## agents-overuse
 
@@ -161,6 +163,7 @@ The deepening-pass brief asked to cover a `--max-budget-usd` flag "if exists" fo
 
 ### GitHub's own doc-drift pattern lives outside Copilot coding agent
 GitHub's official Copilot coding-agent best-practices page names no scheduled/issue-triggered documentation-update feature, while GitHub Next's separate `gh-aw` project ships a "Documentation Maintenance" sample workflow doing exactly that. A session reading only the Copilot coding-agent docs would conclude GitHub has no such capability; it exists, but under a different GitHub-affiliated project with its own trigger/guardrail model (`schedule:` frontmatter + safe-outputs, not Copilot's issue-assignment model). [DOC S1818, S-qso27noq, S1821] (topic: agents/docs-maintenance-agents)
+  - Resolved 2026-09-27: GitHub's Copilot docs now include "About GitHub Agentic Workflows" (S-h6jpev6e, public preview), with documentation upkeep as a listed use case, so the pattern is now documented by GitHub itself. (topic: agents/docs-maintenance-agents)
 
 ## arch
 
@@ -499,6 +502,7 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
 ## agents/docs-maintenance-agents
 
 - S1808 (cognition.com/blog/deepwiki) now shows the date 05.05.25 and only a short launch note; the article's applies_to and the _sources.csv row say a 2025-04-25 launch post. The detailed claims once cited to it (LLM + code analysis, graph representation, PR/git history/team discussions, 'cycle of implementing code from documentation') are no longer on the page and are now UNK leads. (topic: agents/docs-maintenance-agents)
+  - Closed 2026-09-27: the unsupported claims were removed from the article; the graph and scoring description now rests on a COMMUNITY summary of a Cognition talk (S-rqjvl632), and the PR/team-discussion and code-docs cycle claims were dropped (no first-party source; the Cognition blog renders no body without JavaScript). (topic: agents/docs-maintenance-agents)
 
 ## agents/foundry-agent-service
 

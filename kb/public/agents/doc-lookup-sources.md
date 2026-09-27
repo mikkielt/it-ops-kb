@@ -3,8 +3,8 @@ topic: agents/doc-lookup-sources
 priority: P2
 applies_to: "stable (GA) MCP servers and public APIs that return current official documentation for this kb's domains, as of 2026-09-25"
 retrieved_utc: 2026-09-27
-sources: [S2176, S2177, S2178, S2179, S2180, S2181, S2182, S2183, S2184, S2185, S2186, S2187, S2188, S2189, S2190, S2191, S2192, S2193, S2194, S2195, S2196, S2197, S1809, S-el34o4bb, S-eutmp4xp, S-j7xzzcxj, S-yuwxbqz3, S-b6tooge2, S-ybuoluc4, S-rgy4dvjf, S452, S717, S-fvspfpxd, S-pxvdwitn]
-status: partial
+sources: [S2176, S2177, S2178, S2179, S2180, S2181, S2182, S2183, S2184, S2185, S2186, S2187, S2188, S2189, S2190, S2191, S2192, S2193, S2194, S2195, S2196, S2197, S1809, S-el34o4bb, S-eutmp4xp, S-j7xzzcxj, S-yuwxbqz3, S-b6tooge2, S-ybuoluc4, S-rgy4dvjf, S452, S717, S-fvspfpxd, S-pxvdwitn, S-gupervu4, S-ke227men, S-fqi6xbbc, S-autbwi4y, S-eluaxz73, S-ekcs6zhr]
+status: complete
 ---
 
 # Documentation lookup sources for agents: stable MCP servers and APIs
@@ -42,6 +42,9 @@ reading the current page.
 - Context7 (Upstash) serves library docs through a remote MCP server at `https://mcp.context7.com/mcp` with two tools, `resolve-library-id` (library name to a Context7 id such as `/vercel/next.js`) and `query-docs` (docs for that id and a query), or through the `ctx7` CLI; a free API key, sent as `Authorization: Bearer`, is recommended for higher rate limits. [DOC S-eutmp4xp]
 - Context7's repository (MIT) holds only the MCP server's source; its API backend, parsing engine and crawling engine are private. [DOC S-eutmp4xp]
 - Anyone can add a public GitHub library to Context7 without owning it; Context7 indexes its `.md`, `.mdx`, `.rst`, `.txt` and `.ipynb` files, falls back to generating examples from source code when a public repository has little documentation, and refreshes libraries automatically "based on popularity". Private sources need a Pro or Enterprise plan. [DOC S-j7xzzcxj]
+- Context7 refresh cadence: when a library is requested and its docs are older than a popularity-based threshold, a background refresh starts: top 100 libraries after 1 day, top 1,000 after 15 days, top 5,000 after 30 days, all others after 45 days (website libraries slightly longer). [DOC S-gupervu4]
+- Context7 limits: the API guide publishes no request-rate numbers ("low rate limits" without an API key) and answers an exceeded limit with `429` plus `Retry-After` and `RateLimit-*` headers [DOC S-ke227men]; the Free plan is blocked after 1,000 API calls a month (with 20 bonus calls a day while blocked), and Pro includes 2,000 calls per seat, then $5 per 1,000 [DOC S-fqi6xbbc].
+- Context7 results carry source URLs: the documentation-context API returns fields described as "URL to source location" and "URL to source page", and its text output has `Source: <url>` lines. [DOC S-autbwi4y]
 - DeepWiki's MCP server (`https://mcp.deepwiki.com/mcp`, Streamable HTTP; `/sse` is being deprecated) offers `read_wiki_structure`, `read_wiki_contents` and `ask_question` (an AI-generated answer about a GitHub repository) for public repositories only; private repositories need a Devin account and the Devin MCP server with an API key. [DOC S2193]
 - Context7 and DeepWiki answer a question from content generated or crawled at query time, with no per-statement evidence level; this kb answers from facts that each carry one tag (`DOC`, `CODE`, `DER`, `COMMUNITY`, `UNK`) and a source row, so an answer drawn from either service enters this kb only as a `COMMUNITY` lead until an official page confirms it. [DER S-eutmp4xp, S-j7xzzcxj, S2193, S1809: Context7 disclaims accuracy of community-contributed docs and generates examples from code; DeepWiki's wikis and `ask_question` answers are Devin-generated]
 - Scope differs: Context7 covers libraries whose docs sit in a public GitHub repository and DeepWiki covers GitHub repositories, while most of this kb's domains (ConfigMgr, Intune, Entra ID, GPO) are documented on Microsoft Learn rather than in a library repository, which the Learn MCP server already reaches as a first-party source. [DER S-j7xzzcxj, S2193, S2177]
@@ -58,7 +61,7 @@ reading the current page.
 - The Claude Code docs pages end "© Anthropic PBC. All rights reserved. Use is subject to applicable Anthropic Terms of Service." [DOC S-fvspfpxd]
 - Anthropic's Commercial Terms grant neither party rights to the other's content or intellectual property except as expressly stated. [DOC S-pxvdwitn]
 - No open licence was found for Anthropic's docs (code.claude.com, platform.claude.com), so fetched Anthropic text is summarized in this kb, with quotes of 25 words or fewer, not stored verbatim. [DER S-fvspfpxd, S-pxvdwitn]
-- A stable docs MCP server or API for Windows security baselines (Security Compliance Toolkit, DISA STIG, CIS) and for Ansible docs was not found. [UNK]
+- Microsoft publishes security baselines through the Microsoft Download Center as the Security Compliance Toolkit zip (GPO backups, reports, spreadsheets, scripts), not through an API. [DOC S-eluaxz73] Red Hat's Ansible development tools MCP server is a Technology Preview aimed at playbook development, not a documentation lookup service. [DOC S-ekcs6zhr] No stable (GA) docs MCP server or API for Windows security baselines (SCT, DISA STIG, CIS) or for Ansible docs was found on 2026-09-27. [DER S-eluaxz73, S-ekcs6zhr: distribution channels read; absence of a GA docs server]
 
 ## Reference
 - `doc-lookup-sources.csv`: ranked table with endpoint, auth, tools, covered domains and status evidence.

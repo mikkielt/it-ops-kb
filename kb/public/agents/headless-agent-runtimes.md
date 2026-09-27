@@ -2,9 +2,9 @@
 topic: agents/headless-agent-runtimes
 priority: P2
 applies_to: "Claude Code v2.1.x (code.claude.com docs, retrieved 2026-09-25); GitHub Copilot coding agent; GitLab Duo Agent Platform (GA 2026-01-15)"
-retrieved_utc: 2026-09-26
-sources: [S1800, S1801, S1802, S1803, S1804, S1805, S1806, S1807, S1818, S1824, S-qso27noq, S-szgomxsz, S-xpfrl54v]
-status: partial
+retrieved_utc: 2026-09-27
+sources: [S1800, S1801, S1802, S1803, S1804, S1805, S1806, S1807, S1818, S1824, S-qso27noq, S-szgomxsz, S-xpfrl54v, S-5paxdbvt, S-ulr4lcp4]
+status: complete
 ---
 
 # Runtimes that run an agent unattended, on a schedule
@@ -38,7 +38,7 @@ protected branch without a review step.
 - Routines draw on the normal subscription usage limit plus a **daily cap on routine runs per account**; one-off (single-fire) schedules don't count against that daily cap. If usage credits are off, extra runs are rejected once the cap is hit. [DOC S1803]
 - If a routine's GitHub connection lapses, it skips runs for up to 72 hours before auto-disabling. [DOC S1803]
 - GitHub's Copilot cloud agent (earlier called the coding agent) works from assigned issues in its own ephemeral development environment, with a firewall on by default that blocks outbound connections to unauthorized hosts to prevent exfiltration; it responds only to users with repository write access, and Actions workflows triggered by its pull requests need approval from a write-access user before they run. [DOC S1804]
-- The responsible-use page (S1804, re-read 2026-09-26) no longer states that the sandbox is GitHub Actions-powered or that a blocked request is recorded as a warning on the PR; the firewall how-to (S1805) is the likely home of those details. [UNK: not re-confirmed 2026-09-26]
+- The cloud agent's ephemeral development environment is powered by GitHub Actions, and a session consumes Actions minutes and AI credits. [DOC S-5paxdbvt] When the firewall blocks a request, a warning naming the blocked address and the command is added to the pull request body (new PRs) or a comment (existing PRs); the firewall operates only inside the GitHub Actions appliance environment. [DOC S-ulr4lcp4]
 - The cloud agent can push to a single branch only: the pull request's branch when triggered by mentioning `@copilot` on an existing PR, otherwise a new `copilot/` branch created for it; it is also subject to the repository's branch protections and required checks, and can perform only simple push operations. [DOC S-szgomxsz]
 - GitLab Duo Agent Platform reached GA on 2026-01-15 for Premium and Ultimate customers on GitLab.com and GitLab Self-Managed, with GitLab Dedicated planned during the GitLab 18.8 release cycle; usage is paid in GitLab Credits, with $12 (Premium) and $24 (Ultimate) of included credits per user. [DOC S1807]
 - GitLab-managed external agents include a Claude Code agent, a Codex (OpenAI) agent, an Amazon Q Developer agent, and a "Develop with Gemini" agent; self-managed instances can add custom external agents via the AI Catalog. [DOC S1806]

@@ -3,8 +3,8 @@ topic: agents/shared-ner-service
 priority: P1
 applies_to: "Presidio 2.2.364 (main, data-privacy-stack), Azure AI Language PII detection (Foundry Tools, 2026-08 docs), Amazon Comprehend, Google Sensitive Data Protection, GLiNER ONNX exports"
 retrieved_utc: 2026-09-27
-sources: [S2086, S2087, S2088, S2090, S2091, S2092, S2093, S2094, S2095, S2096, S2097, S2098, S2099, S2100, S2101, S2102, S2105, S2106, S2107, S2108, S2111, S2112, S-tks3v5p5, S-g33kybfp, S-gpnrqpjt, S-hocpkynn, S-azdam24d, S-blcom642, S-clgh6hxa]
-status: partial
+sources: [S2086, S2087, S2088, S2090, S2091, S2092, S2093, S2094, S2095, S2096, S2097, S2098, S2099, S2100, S2101, S2102, S2105, S2106, S2107, S2108, S2111, S2112, S-tks3v5p5, S-g33kybfp, S-gpnrqpjt, S-hocpkynn, S-azdam24d, S-blcom642, S-clgh6hxa, S-ulqlpnc5, S-alyohfil, S-hfymbj4j, S-5gpkixnx, S830, S-g6nzyems]
+status: complete
 ---
 
 # Shared NER / PII-detection as a service: options, throughput, cost and pinning
@@ -70,9 +70,17 @@ choice (Presidio + spaCy `en_core_web_lg`, in-process) is not itself re-argued h
   across at most 25 documents, and one over-length document rejects the whole request with HTTP 400.
   Conversation PII caps at 1,000 characters per conversation *item* (not per whole conversation) and is
   asynchronous only. [DOC S2093]
-- A cloud Text PII behaviour of analyzing only the first 50,000 characters with a warning, and a 10 MB
-  document file-size limit, were recorded earlier from a search summary. [UNK: not in S2093 as re-read
-  2026-09-27; see `conflicts.md`]
+- Two figures once attributed to cloud Text PII belong to other features: "only the first 50,000
+  characters are analyzed and a warning is issued" is the Azure AI Search PII Detection skill [DOC S-ulqlpnc5],
+  and 10 MB is the total content size per request (at most 40 documents) of Document-based PII
+  [DOC S-alyohfil].
+- Azure Language rate quotas (not throughput benchmarks): S / multi-service tier 1,000 requests per second and
+  1,000 per minute; S0 / F0 100 per second and 300 per minute; a text record for billing is 1,000
+  characters. [DOC S2093]
+- Azure Language "Standard Text Records" list price (Retail Prices API, westeurope, effective 2020-12-01):
+  $1.00 per 1,000 records up to 500K, $0.75 from 500K, $0.30 from 2.5M and $0.25 from 10M records a month;
+  "Free Text Records" are $0 [DOC S-g6nzyems]. That PII detection bills under this meter follows from the
+  pricing page grouping PII under standard text records [DER S2095, S-g6nzyems].
 - The cloud Language service may store data sent in synchronous or asynchronous calls for up to 48 hours (encrypted, reachable only by on-call engineers for catastrophic-failure debugging); the `LoggingOptOut` parameter prevents this and defaults to true for the PII and health endpoints; data stays in the resource's region. [DOC S2106]
 - Synchronous PII detection is stateless: nothing is stored in the account and results, including the input text with PII entities redacted, come back in the response; asynchronous results stay retrievable for 24 hours and are then purged. [DOC S2112]
 - Explicit non-customization note: "Analysis is performed as-is, with no customization to the model used
@@ -108,9 +116,16 @@ choice (Presidio + spaCy `en_core_web_lg`, in-process) is not itself re-argued h
   (data from any source) US$3.00 then US$2.00 above 1 TiB; **storage inspection/transformation jobs**
   US$1.00 up to 50 TiB, US$0.75 to 500 TiB, US$0.60 above; **discovery** (data profiling) US$0.03 per GB
   profiled in consumption mode, or US$2,500 per subscription unit. [DOC S2101]
-- No on-premises container or disconnected deployment for Google Sensitive Data Protection was found in
-  the sources checked; it is presented in vendor docs as a Google Cloud-hosted API only. [UNK — 3 search
-  attempts made, no container doc found]
+- Google Sensitive Data Protection documents only hybrid jobs for data outside Google Cloud: data from
+  on-premises databases, VMs or other clouds is streamed into the cloud service and findings are stored in
+  Google Cloud [DOC S-hfymbj4j]. No on-premises container or disconnected runtime is documented
+  [DER S-hfymbj4j: only the hybrid, cloud-processed route is described].
+- Presidio's analyzer and anonymizer REST servers are plain Flask apps exposing `/health`, `/analyze`,
+  `/recognizers`, `/supportedentities` (analyzer) and `/anonymize`, `/deanonymize`, `/anonymizers`,
+  `/deanonymizers` (anonymizer) with no authentication check, so caller authentication for a shared
+  deployment must sit in front of them (a gateway or reverse proxy). This is the implementation at the
+  pinned commit, not a documented promise. [CODE S-5gpkixnx: presidio-analyzer/app.py#Server; CODE S830:
+  presidio-anonymizer/app.py#Server]
 - **GLiNER serving.** Community ONNX exports of GLiNER (e.g. `onnx-community/gliner_multi-v2.1`,
   `jugaadsrl/gliner2-multi-v1-onnx`, formerly `SemplificaAI/gliner2-multi-v1-onnx`, a fragmented export for the
   `gliner2-rs` Rust engine) exist on Hugging Face; a fused ("v2") export variant reportedly

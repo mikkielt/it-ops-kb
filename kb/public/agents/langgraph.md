@@ -2,9 +2,9 @@
 topic: agents/langgraph
 priority: P3
 applies_to: "LangGraph (Python `langgraph` package, MIT licence); docs retrieved 2026-09-26"
-retrieved_utc: 2026-09-26
-sources: [S-bivxzhtv, S-thsymqx6, S-pxkxmmn5, S-5pmoh6xp, S-j54mtzby, S-dir5xyqr, S-6buofrld, S-43xr27dp]
-status: partial
+retrieved_utc: 2026-09-27
+sources: [S-bivxzhtv, S-thsymqx6, S-pxkxmmn5, S-5pmoh6xp, S-j54mtzby, S-dir5xyqr, S-6buofrld, S-43xr27dp, S-woho7bmc, S-ujkfhzif, S-bygurlbr]
+status: complete
 ---
 
 # LangGraph
@@ -25,8 +25,9 @@ status: partial
   (successor to the older separate `langchain-mcp-adapters` package as of v1.4.0). [DOC S-dir5xyqr]
 - **LangGraph Platform** was rebranded **LangSmith Deployment**: a managed service for running
   LangGraph agents in production (durable execution, state, streaming, a Studio IDE), separate from
-  the open-source `langgraph` framework itself; this article does not confirm current pricing or
-  self-hosted licensing terms. [DOC S-43xr27dp] [UNK: LangSmith Deployment pricing/self-host terms]
+  the open-source `langgraph` framework itself. [DOC S-43xr27dp] Deployment needs the paid Plus plan or
+  above, and self-hosting needs an Enterprise plan and its licence key (details under Facts).
+  [DOC S-woho7bmc, S-ujkfhzif]
 
 ## Facts
 
@@ -105,8 +106,10 @@ status: partial
 - LangChain/LangGraph agents call MCP tools via the `langchain[mcp]` extra
   (`pip install 'langchain[mcp]'` / `uv add 'langchain[mcp]'`); this is the current path as of
   LangChain v1.4.0, replacing the previously separate `langchain-mcp-adapters` package. [DOC S-dir5xyqr]
-- The exact step-by-step migration from `langchain-mcp-adapters` to `langchain[mcp]` is referenced
-  by the docs but not detailed on the fetched page. [UNK]
+- Migration from `langchain-mcp-adapters`: uninstall it and install `langchain[mcp]>=1.4.0`; the
+  `langchain.mcp` namespace is beta and raises `LangChainBetaWarning` on import. `MultiServerMCPClient`
+  becomes `MCPAdapter` (an async context manager with `list_tools()`), and helpers are renamed, e.g.
+  `convert_mcp_tool_to_langchain_tool` to `as_langchain_tool`. [DOC S-bygurlbr]
 - The MCP adapter infers transport automatically from the target passed to it: an HTTP/HTTPS URL
   is reached over **streamable HTTP**; a script path is launched as a **subprocess over stdio**;
   an in-process **FastMCP** server instance is connected in-memory (no subprocess or socket); or a
@@ -117,8 +120,12 @@ status: partial
   rebranded from "LangGraph Platform") is LangChain's managed service for running LangGraph agents
   in production, offering one-click deployment with durable execution, state and streaming, plus a
   **Studio** IDE for visual debugging. [DOC S-43xr27dp]
-- This article does not confirm current LangSmith Deployment pricing tiers or self-hosted licensing
-  terms — check `docs.langchain.com/langsmith/deployments` before quoting either. [UNK]
+- LangSmith pricing (read 2026-09-27): Developer $0 for one seat with up to 5k base traces a month;
+  Plus $39 per seat per month with up to 10k base traces, access to Deployment and one free small
+  serverless deployment; Enterprise custom-priced with self-hosted and hybrid deployment options.
+  [DOC S-woho7bmc]
+- Self-hosted LangSmith Deployment requires an Enterprise plan and the LangSmith licence key delivered
+  with it. [DOC S-ujkfhzif]
 
 ## Reference
 - Cross-link: `agents/microsoft-agent-framework.md` — Microsoft Agent Framework's own typed
