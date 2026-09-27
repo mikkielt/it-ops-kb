@@ -3,8 +3,8 @@ topic: defender/machine-resource
 priority: P1
 applies_to: "Microsoft Defender for Endpoint API v1.0 (api.security.microsoft.com), docs ms.date 2025-12-11 / 2026-06-28"
 retrieved_utc: 2026-09-27
-sources: [S620, S621, S622, S627, S628, S629, S630, S631]
-status: partial
+sources: [S620, S621, S622, S627, S628, S629, S630, S631, S-axmpfgwf]
+status: complete
 files: [defender/machine-properties.csv]
 ---
 # Defender for Endpoint Machine resource
@@ -12,12 +12,12 @@ files: [defender/machine-properties.csv]
 ## Summary
 The MDE `Machine` entity (`GET /api/machines`, `/api/machines/{id}`) has 21 documented properties; `id` is the MDE
 device id (40-hex string). `aadDeviceId` is documented only as "Microsoft Entra Device ID (when machine is Microsoft Entra
-joined)" — Microsoft does not say whether it is filled for **hybrid-joined** devices (Q11: UNK). Advanced hunting
+joined)" — Microsoft does not say whether it is filled for **hybrid-joined** devices (Q11: a documented absence). Advanced hunting
 `DeviceInfo` has `AadDeviceId` and `JoinType`. Property table: `machine-properties.csv`.
 
 ## Facts
 - `aadDeviceId`: Nullable Guid, "Microsoft Entra Device ID (when machine is Microsoft Entra joined)". [DOC S620]
-- No official page found stating whether `aadDeviceId` is populated for Microsoft Entra hybrid joined devices. [UNK: not in S629 as re-read 2026-09-27]
+- No Microsoft page states whether `aadDeviceId` is populated for Microsoft Entra hybrid joined devices: the Machine page qualifies it only with "when machine is Microsoft Entra joined", and neither the device inventory page nor the DeviceInfo table (`AadDeviceId`, `IsAzureADJoined`, `JoinType`) adds a hybrid case (all re-read 2026-09-27). Treat the value as possibly null for hybrid joined devices and join on `computerDnsName` as a fallback. [DER S620, S627, S629: absence across the three pages]
 - The device inventory, the API, the export and Advanced Hunting draw from one authoritative data source but are served by separate backends with different update frequencies, so short-term or recently reactivated devices can differ slightly between them; the CSV export ignores UI filters and holds every device; the inventory's **Managed by** filter distinguishes Intune, ConfigMgr, MDE and Unknown. [DOC S629]
 - Response examples include `isAadJoined` (boolean) which is not in the property table. [DOC S621,S622]
 - `lastSeen` is the time of the last full device report (typically every 24 h) and does not correspond to the portal's last seen. [DOC S620]
@@ -29,7 +29,7 @@ joined)" — Microsoft does not say whether it is filled for **hybrid-joined** d
 - Advanced hunting `DeviceInfo` columns include DeviceId, DeviceName, IsAzureADJoined, JoinType ("The device's Microsoft Entra ID join type"), AadDeviceId, OnboardingStatus, MergedDeviceIds, MergedToDeviceId, HardwareUuid. [DOC S627]
 - Graph `security.deviceEvidence` has `azureAdDeviceId` ("assigned ... when device is Microsoft Entra joined") and `mdeDeviceId`. [DOC S630]
 - Community report: an MDE API call returned `"isAadJoined": false, "aadDeviceId": null` while the portal showed values; Microsoft support attributed it to macOS not being a full Entra join type. [COMMUNITY S631]
-- The `JoinType` value set (e.g. whether "Hybrid Azure AD Join" is a value) is not documented on S627. [UNK]
+- The DeviceInfo page gives `JoinType` only as "The device's Microsoft Entra ID join type" with no value list (re-read 2026-09-27), so a query should match it loosely rather than on one exact string; Microsoft's own Sentinel hunting queries filter it with `has_any ("Hybrid", "Azure AD", "Entra")`, not an exact value. [DER S627, S-axmpfgwf: absence on S627; the query shows the loose match]
 
 ## Reference
 See `machine-properties.csv` (property, type, description_summary, filterable_get_machines, source_id).

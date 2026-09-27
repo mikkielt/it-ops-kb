@@ -2,9 +2,9 @@
 topic: privacy/gliner-models
 priority: P0
 applies_to: "HF model repos at the pinned shas in gliner-models.csv"
-retrieved_utc: 2026-09-26
-sources: [S855, S856, S857, S858, S859, S860]
-status: partial
+retrieved_utc: 2026-09-27
+sources: [S855, S856, S857, S858, S859, S860, S-zw4luelo, S-dcu4qhyp]
+status: complete
 ---
 # GLiNER PII model cards
 
@@ -21,8 +21,9 @@ status: partial
 - The knowledgator card's label list includes name, email address, phone number, ip address, url, username, password, account number, ssn and passport number. [DOC S858]
 - nvidia/gliner-PII: `license: other`, `license_name: nvidia-open-model-license`, language en, last modified 2025-12-07. It is based on `urchade/gliner_large-v2.1`, covers "55+ categories", and the card says it is ready for commercial and non-commercial use. [DOC S859, S860]
 - The nvidia card does not list all 55+ labels (its example uses `email`, `phone_number`, `user_name`). [DOC S860]
-- The full nvidia label list was not found in the card. [UNK]
-- The terms of the NVIDIA Open Model License Agreement text were not read (it is not on an allowed host). [UNK]
+- The full nvidia label list is not published: the model card says 55+ categories, and its training dataset card (`nvidia/Nemotron-PII`, CC BY 4.0, 100,000 synthetic English records per the card) says only "55+ PII/PHI categories" with examples (names, SSNs, MRNs, addresses, phones, emails, account numbers); the labels exist only inside the dataset's `spans` data. [DOC S860, S-dcu4qhyp]
+- NVIDIA Open Model License Agreement (last modified 2025-10-24): models are commercially usable, derivative models may be created and distributed, and NVIDIA claims no ownership of outputs. The licence is perpetual, worldwide, royalty-free but revocable: it ends if you sue claiming the model infringes copyright or patents, or if you bypass a guardrail without a substantially similar one. [DOC S-zw4luelo]
+- Redistribution requires a copy of the agreement and a Notice file reading "Licensed by NVIDIA Corporation under the NVIDIA Open Model License"; use must follow NVIDIA's Trustworthy AI terms; NVIDIA may update the agreement for legal or regulatory reasons, and you then comply or stop using the model. [DOC S-zw4luelo]
 - None of the three cards mentions hostnames, device names or GUIDs as labels. [DER S856,S858,S860: absent from the listed labels]
 
 ## Reference

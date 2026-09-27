@@ -2,9 +2,9 @@
 topic: defender/response-actions-api
 priority: P1
 applies_to: "Microsoft Defender for Endpoint API v1.0 (api.security.microsoft.com), docs retrieved 2026-09-26"
-retrieved_utc: 2026-09-26
-sources: [S-ipjyevd4, S-7zqska24, S-irvlwznc, S-drrejdmz, S-uv2mdacd, S-o76pzpoe, S-x3it6rkh, S-4ccloker, S-hvfrvt73, S-kw755ajt, S-yksr3dnu, S-4qod6hyu, S-ad63a4vv, S-mcsdxl4e, S623]
-status: partial
+retrieved_utc: 2026-09-27
+sources: [S-ipjyevd4, S-7zqska24, S-irvlwznc, S-drrejdmz, S-uv2mdacd, S-o76pzpoe, S-x3it6rkh, S-4ccloker, S-hvfrvt73, S-kw755ajt, S-yksr3dnu, S-4qod6hyu, S-ad63a4vv, S-mcsdxl4e, S623, S-x6wwggq6, S-mx6w5ffh, S-bxbx2kp5]
+status: complete
 files: [defender/machine-actions.csv]
 ---
 # Defender for Endpoint API: machine response actions (isolate, scan, live response)
@@ -44,7 +44,9 @@ which has its own 10 calls/minute cap and a 50-concurrent-session ceiling. Body 
 - Portal RBAC: response actions need role **Active remediation actions** for isolate/unisolate/restrict/unrestrict/scan/quarantine, and **Alerts Investigation** for collectInvestigationPackage; list/get machine actions need **View Data**; offboard needs an appropriate assigned role, least-privilege recommended over Global Administrator. [DOC S-ipjyevd4, S-7zqska24, S-irvlwznc, S-drrejdmz, S-uv2mdacd, S-4ccloker, S-o76pzpoe, S-kw755ajt, S-yksr3dnu, S-x3it6rkh]
 - The isolate, unisolate, restrict, unrestrict, scan, collect, offboard, stop-and-quarantine and get-action pages each state 100 calls/minute and 1,500 calls/hour; the live response page states 10 calls/minute instead. [DOC S-ipjyevd4, S-7zqska24, S-irvlwznc, S-drrejdmz, S-uv2mdacd, S-o76pzpoe, S-x3it6rkh, S-4ccloker, S-yksr3dnu, S-ad63a4vv]
 - Error codes any MDE API call may return: 429 TooManyRequests with `Retry-After` in seconds, 403 Forbidden/DisabledFeature/DisallowedOperation, 401 Unauthorized (see `defender/permissions-limits.md`). [DOC S623]
-- No Microsoft Graph security API equivalent for these MDE machine response actions is documented on these pages; Graph exposes `security.deviceEvidence` read-only data (`defender/machine-resource.md:29`) but not isolate/scan/live-response actions. [UNK]
+- Graph's current device response actions are in the **beta** custom detection rules API: a `detectionRule`'s `detectionAction.automatedActions` run against entities its hunting query returns, with `deviceAction`, `isolateDeviceAction` and `stopAndQuarantineFileAction` among the derived types (the device is named by a query-result column). Beta APIs are not supported for production use. [DOC S-bxbx2kp5, S-mx6w5ffh]
+- The older beta `incidentTaskResponseAction` family (isolate, unisolate, restrict/unrestrict app execution, antivirus scan, collect investigation package, stop and quarantine file) is deprecated and removed on 2026-10-01, replaced by `automatedAction` on `detectionAction`; the rule's `responseActions` property goes on the same date. [DOC S-x6wwggq6, S-bxbx2kp5]
+- So an agent that must isolate or scan one named device on demand calls the MDE API above: after 2026-10-01 the Graph beta types left act only on devices a detection rule's query matches, and none of the listed types covers live response. [DER S-bxbx2kp5, S-mx6w5ffh, S-x6wwggq6: derived from the listed action types and removal date]
 
 ## Reference
 See `machine-actions.csv` (action, endpoint, app_permission, delegated_permission, body_params, rate_limit, source_id).

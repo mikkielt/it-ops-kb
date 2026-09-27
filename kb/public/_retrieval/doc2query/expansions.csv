@@ -384,12 +384,6 @@ de0978c4ecd8,How do you see which application locks are active?
 0d3a704e928e,ASI01 ASI10 agentic vulnerability categories
 0d3a704e928e,What are the OWASP agentic application vulnerability categories?
 0d3a704e928e,How many items are in the OWASP agentic security list?
-0f0e717921e2,OWASP MCP Top 10 2025
-0f0e717921e2,What is the OWASP MCP Top 10 and when is it coming out?
-0f0e717921e2,What version of MCP security guidance does OWASP provide?
-b08de361c0bd,OWASP MCP Top 10 CC BY-NC-SA license
-b08de361c0bd,What license applies to the OWASP MCP Top 10?
-b08de361c0bd,Can you use OWASP MCP Top 10 freely in commercial work?
 0245e2d8fb5a,OWASP Top 10 LLM Applications 2025
 0245e2d8fb5a,What is the OWASP Top 10 for LLM Applications?
 0245e2d8fb5a,How many items are in the OWASP LLM security guidance?
@@ -399,9 +393,6 @@ e526a0cbfd72,Where can you find the OWASP 2026 LLM security best practices?
 0260134df84f,OWASP GenAI 2026 Top 10 announcement date
 0260134df84f,When did OWASP announce the 2026 LLM Top 10?
 0260134df84f,What date was the LLM security guidelines 2026 released?
-b4ea814fdd5f,LLM Top 10 2026 identifiers titles list
-b4ea814fdd5f,Where are the OWASP LLM Top 10 2026 item titles listed?
-b4ea814fdd5f,Are the LLM Top 10 2026 vulnerability IDs available online?
 75f2293ca4ed,OpenSSH Windows minimum version requirements
 75f2293ca4ed,What is the minimum Windows version for OpenSSH?
 75f2293ca4ed,Can you install OpenSSH on Windows 10 version 1809?
@@ -762,9 +753,6 @@ a752ffc9b9d0,What was the comment deadline for pseudonymisation guidance?
 13a076753a3d,EDPB pseudonymisation work status
 13a076753a3d,Has EDPB published final pseudonymisation guidelines?
 13a076753a3d,What pseudonymisation resources does EDPB offer?
-88548822bd23,EDPB Guidelines 01/2025 final version
-88548822bd23,Is a final version of EDPB Guidelines 01/2025 available?
-88548822bd23,Did EDPB release pseudonymisation guidance after consultation?
 0ff3c43a5ee4,Court of Justice pseudonymisation case
 0ff3c43a5ee4,What did the Court of Justice decide about pseudonymisation?
 0ff3c43a5ee4,What was the outcome of case C-413/23 P?
@@ -774,9 +762,6 @@ aef480da3af0,How does the controller's perspective affect pseudonymisation?
 d0ca697cabb6,EU institutions data regulation
 d0ca697cabb6,Which regulation applies to EU institution data?
 d0ca697cabb6,What is the difference between EU institutions and GDPR rules?
-dd2c67a09c88,court judgment authority
-dd2c67a09c88,Are court press releases officially binding?
-dd2c67a09c88,What is the official source for court decisions?
 e566f33e85f8,PowerShell execution policy security
 e566f33e85f8,Is execution policy a real security boundary?
 e566f33e85f8,Can users bypass execution policy?

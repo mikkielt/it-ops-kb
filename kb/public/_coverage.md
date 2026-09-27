@@ -97,10 +97,10 @@ Every topic of this root with its priority (the research order, not importance),
 | `claude/plugins` | P2 | complete | `claude/plugins.md`, `claude/plugins.csv` | 12 |
 | `claude/settings-and-scopes` | P2 | complete | `claude/settings-and-scopes.md`, `claude/settings-keys.csv`, `claude/env-vars.csv` | 11 |
 | `claude/skills-and-subagents` | P2 | complete | `claude/skills-and-subagents.md`, `claude/skills-and-subagents.csv` | 3 |
-| `defender/machine-resource` | P1 | partial | `defender/machine-resource.md`, `defender/machine-properties.csv` | 8 |
+| `defender/machine-resource` | P1 | complete | `defender/machine-resource.md`, `defender/machine-properties.csv` | 9 |
 | `defender/mde-onboarding` | P1 | complete | `defender/mde-onboarding.md` | 23 |
 | `defender/permissions-limits` | P1 | complete | `defender/permissions-limits.md` | 6 |
-| `defender/response-actions-api` | P1 | partial | `defender/response-actions-api.md`, `defender/machine-actions.csv` | 15 |
+| `defender/response-actions-api` | P1 | complete | `defender/response-actions-api.md`, `defender/machine-actions.csv` | 18 |
 | `defender/advanced-hunting` | P2 | complete | `defender/advanced-hunting.md`, `defender/advanced-hunting-tables.csv` | 25 |
 | `defender/asr-and-antivirus` | P2 | complete | `defender/asr-and-antivirus.md`, `defender/asr-rules.csv` | 16 |
 | `dsc/cli-reference` | P0 | complete | `dsc/cli-reference.md`, `dsc/cli/` | 13 |
@@ -211,15 +211,15 @@ Every topic of this root with its priority (the research order, not importance),
 | `prior-art/pseudonymization-tokenization` | P2 | complete | `prior-art/pseudonymization-tokenization.md` | 6 |
 | `prior-art/secret-vault-encryption` | P2 | complete | `prior-art/secret-vault-encryption.md` | 11 |
 | `prior-art/tiered-approval-ops` | P2 | partial | `prior-art/tiered-approval-ops.md` | 6 |
-| `privacy/gdpr-pseudonymisation` | P0 | partial | `privacy/gdpr-pseudonymisation.md` | 6 |
-| `privacy/gliner-models` | P0 | partial | `privacy/gliner-models.md`, `privacy/gliner-models.csv` | 6 |
+| `privacy/gdpr-pseudonymisation` | P0 | complete | `privacy/gdpr-pseudonymisation.md` | 8 |
+| `privacy/gliner-models` | P0 | complete | `privacy/gliner-models.md`, `privacy/gliner-models.csv` | 8 |
 | `privacy/nist-sp800-38g` | P0 | complete | `privacy/nist-sp800-38g.md` | 5 |
 | `privacy/presidio` | P0 | complete | `privacy/presidio.md` | 12 |
 | `privacy/presidio-entities` | P0 | complete | `privacy/presidio-entities.md`, `privacy/presidio-entities.csv` | 14 |
 | `privacy/presidio-evaluator` | P0 | complete | `privacy/presidio-evaluator.md` | 4 |
 | `privacy/presidio-operators-deanonymize` | P0 | complete | `privacy/presidio-operators-deanonymize.md` | 13 |
 | `privacy/presidio-recognizer-yaml` | P0 | complete | `privacy/presidio-recognizer-yaml.md`, `privacy/presidio-recognizer-registry.schema.json`, `privacy/presidio-example_recognizers.yaml` | 9 |
-| `privacy/spacy-model-licence` | P0 | complete | `privacy/spacy-model-licence.md` | 4 |
+| `privacy/spacy-model-licence` | P0 | complete | `privacy/spacy-model-licence.md` | 5 |
 | `python/pytest` | P2 | complete | `python/pytest.md` | 6 |
 | `python/pytest-xdist` | P2 | complete | `python/pytest-xdist.md` | 3 |
 | `python/ruff` | P2 | complete | `python/ruff.md` | 8 |
@@ -252,7 +252,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `sqlserver/linux-container` | P0 | partial | `sqlserver/linux-container.md`, `sqlserver/mssql-server-tags.json` | 8 |
 | `sqlserver/sp-getapplock` | P0 | complete | `sqlserver/sp-getapplock.md` | 1 |
 | `sqlserver/temporal-tables` | P0 | complete | `sqlserver/temporal-tables.md` | 7 |
-| `standards/owasp` | P2 | partial | `standards/owasp.md`, `standards/owasp.csv` | 7 |
+| `standards/owasp` | P2 | complete | `standards/owasp.md`, `standards/owasp.csv` | 8 |
 | `windows/execution-policy-signing` | P0 | complete | `windows/execution-policy-signing.md` | 9 |
 | `windows/gitlab-runner-windows` | P0 | partial | `windows/gitlab-runner-windows.md` | 12 |
 | `windows/gmsa` | P0 | partial | `windows/gmsa.md` | 6 |

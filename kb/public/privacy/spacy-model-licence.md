@@ -2,8 +2,8 @@
 topic: privacy/spacy-model-licence
 priority: P0
 applies_to: "en_core_web_lg 3.8.0 (GitHub) / 3.7.1 (Hugging Face)"
-retrieved_utc: 2026-09-26
-sources: [S850, S851, S852, S833]
+retrieved_utc: 2026-09-27
+sources: [S850, S851, S852, S833, S-kujx3zxn]
 status: complete
 ---
 # spaCy en_core_web_lg licence
@@ -20,7 +20,8 @@ status: complete
 - Hugging Face `spacy/en_core_web_lg`: `license: mit`, last modified 2023-11-21 (sha 557bf75). The repo contains `LICENSE` and `LICENSES_SOURCES` files. [DOC S851]
 - The spacy.io models page builds its model details on the client side, and the static HTML has no licence text. [DOC S852]
 - The Presidio sample installs the model with `python -m spacy download en_core_web_lg`. [DOC S833]
-- The licence terms of the training-data sources (in `LICENSES_SOURCES`) were not read. [UNK]
+- `LICENSES_SOURCES` (HF sha 557bf75) gives the training-data source terms: OntoNotes 5 "commercial (licensed by Explosion)"; ClearNLP conversion guidelines cited for reference only, no code packaged; WordNet 3.0 under the WordNet 3.0 License (use, copy, modify and distribute for any purpose without fee, keeping Princeton's copyright notice and disclaimer on all copies); Explosion Vectors (OSCAR 2109, Wikipedia, OpenSubtitles, WMT News Crawl) CC0. [DOC S-kujx3zxn]
+- So no training-source licence adds a non-commercial or share-alike condition to the MIT model; the one obligation that travels with copies is WordNet's notice. [DER S-kujx3zxn, S851: the four source terms read with the MIT model licence]
 
 ## Reference
 | Source | Version | Licence |

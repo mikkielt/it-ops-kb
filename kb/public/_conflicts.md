@@ -275,7 +275,9 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
 - **Collect diagnostics and Graph.** collect-diagnostics.md says diagnostics "can't be collected or downloaded by calling Microsoft Graph directly". Its reference links still list the Graph actions createDeviceLogCollectionRequest and createDownloadUrl (S616). (topic: intune/collect-diagnostics)
 - **MDE machine $filter.** get-machines (S621) lists 14 filterable properties, including aadDeviceId, id, version, deviceValue, machineTags and lastIpAddress. exposed-apis-odata-samples (S628) lists only 8 for Machine and leaves out aadDeviceId. https://learn.microsoft.com/defender-endpoint/api/get-machines vs https://learn.microsoft.com/defender-endpoint/api/exposed-apis-odata-samples (topic: defender/machine-resource)
 - **MDE permissions.** get-machines (S621) accepts Machine.Read.All and Machine.Read. get-machine-by-id (S622) lists only Machine.ReadWrite.All and Machine.ReadWrite. (topic: defender/machine-resource)
+  - Re-read 2026-09-27, still open: get-machine-by-id still lists only the ReadWrite permissions. (topic: defender/machine-resource)
 - **MDE property table vs examples.** rbacGroupId is typed String (S620), but the examples show the number 140 (S621, S622). isAadJoined appears in the examples but not in the property table. (topic: defender/machine-resource)
+  - Re-read 2026-09-27, still open: the get-machine-by-id example still shows `"rbacGroupId": 140` and `isAadJoined`. (topic: defender/machine-resource)
 - **Device query operators.** The single-device table operators (S612) do not include `summarize`, yet the same page says its aggregation functions work with it. The multi-device page (S613) does list `summarize`. (topic: intune/device-query)
 - **Co-management query.** how-to-monitor (S603) lists four SMS_Client_ComanagementState fields: MachineId, MDMEnrolled, Authority and ComgmtPolicyPresent. The WQL in create-queries (S647) also filters on MDMProvisioned, which is not in that list. (topic: intune/co-management)
 
@@ -302,7 +304,9 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
 
 - Presidio CHANGELOG vs release 2.2.364: the CHANGELOG (S800) has no `[2.2.364]` section. Items that shipped in 2.2.364 per the release notes (S801), e.g. the threshold flag (#2114), PH_UMID (#2045) and the cryptography bump (#2144), sit under `[unreleased]` together with post-release items such as UuidRecognizer (S807). (topic: privacy/presidio)
 - EDPB Guidelines 01/2025 consultation end: the news item (S873) says "until 28 February 2025". The consultation page (S872) shows the feedback period "17 January - 14 March 2025". (topic: privacy/gdpr-pseudonymisation)
+  - Re-read 2026-09-27, still open: the consultation page and the EDPB consultations list both show 17 January - 14 March 2025 (23:59 CET); the news item keeps 28 February 2025. The consultation page is the operative record. (topic: privacy/gdpr-pseudonymisation)
 - spaCy en_core_web_lg versions: GitHub releases have 3.8.0 (2024-09-30, S850). The Hugging Face repo was last modified 2023-11-21 with 3.7.1 (S851). Both say MIT. (topic: privacy/spacy-model-licence)
+- Nemotron-PII size: the dataset card (S-dcu4qhyp) says 100,000 records, 50k train and 50k test; the Hugging Face datasets-server `size` endpoint (read 2026-09-27) reports 100,000 rows in each of the train and test splits (200,000 in all). The kb states the card's figure. (topic: privacy/gliner-models)
 - NIST SP 800-38G: the page at /pubs/sp/800/38/g/final is the 2016-03-29 version, marked withdrawn (S865). The current final is /upd1/final (S866). Both carry the same number, "SP 800-38G". (topic: privacy/nist-sp800-38g)
 
 ## reuse

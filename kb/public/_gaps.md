@@ -440,8 +440,11 @@ Still open: (topic: auth/configmgr-rbac-auth)
 - Claude Code use of MCP tool annotations (readOnlyHint/destructiveHint) for permission decisions: searched mcp.md, permissions.md, changelog.md. Only "annotations display in /mcp" (1.0.44). UNK. (topic: claude/permissions-mcp)
 - Claude Code support for the Tasks extension (io.modelcontextprotocol/tasks): searched mcp.md, changelog.md, MCP client-matrix.mdx (no Tasks column). UNK. (topic: mcp/tasks-extension)
 - OWASP LLM Top 10 2026 item ids/titles: tried genai.owasp.org/llm-top-10/ (2025 list only), /resource/owasp-genai-llm-top-10-2026/ (no list in HTML), 2026-09-01 announcement (no list in HTML). Stopped after 3 attempts; list is in a PDF not fetched. (topic: standards/owasp)
+  - Resolved 2026-09-27: the resource page's download link (genai.owasp.org/download/56857/) serves the PDF; LLM01:2026-LLM10:2026 and its CC BY-SA 4.0 licence are now in owasp.md and owasp.csv (S-mq77ii5m). (topic: standards/owasp)
 - OWASP Agentic 2026 resource page HTML does not carry ASI titles; titles taken from the OWASP GenAI announcement blog (S762). Licence of genai.owasp.org content not verified on page. (topic: standards/owasp)
+  - Partly resolved 2026-09-27: the genai.owasp.org footer says all content is CC BY-SA 4.0 unless otherwise specified (read on S764), and the 2026 LLM PDF states CC BY-SA 4.0; the ASI titles still come from the announcement (S762). (topic: standards/owasp)
 - OWASP MCP Top 10 index.md fetched from `main` (not sha-pinned); commit sha not recorded. (topic: standards/owasp)
+  - Resolved 2026-09-27: pinned at commit 165fe0f78ef1 (S-s3hkw2h4, main HEAD on 2026-09-27); S760 now superseded, citations re-pointed. (topic: standards/owasp)
 - privacy.claude.com / support.claude.com commercial-terms pages not fetched (time budget); retention facts come from code.claude.com data-usage/ZDR and platform.claude.com API retention pages. (topic: claude/data-retention)
 - MCP spec repo is a shallow clone: git history for 2026-07-28 release date not available; release date inferred only from the version string and SDK v2.0.0 release date (2026-07-28). (topic: mcp/spec-overview)
 - Enterprise-Managed Authorization's stable date is not in `mcp/registry-and-extensions.md`: the ext-auth file at commit fb374c7d (S-hrri7kcy, added in the auth wave 2026-09-27) marks it Stable, promoted by PR #29 merged 2026-06-18. For the mcp wave to write up. (topic: mcp/registry-and-extensions)
@@ -476,7 +479,9 @@ Still open: (topic: auth/configmgr-rbac-auth)
 ## ops
 
 - **Q11: Defender aadDeviceId for hybrid join.** No official statement found. Tried: learn defender-endpoint/api/machine, get-machines and get-machine-by-id; defender-xdr/advanced-hunting-deviceinfo-table; defender-endpoint/machines-view-overview; exposed-apis-odata-samples; microsoft-graph-docs-contrib security-deviceevidence; the microsoft-365-docs clone (it has no defender-endpoint content because that moved to the private defender-docs repo); 2 WebSearch queries. Stopped after 3+ attempts. (topic: defender/machine-resource)
+  - Tried 2026-09-27, still open: Learn searches (Machine resource, device inventory, device entity page, Entra device identity pages) and a web search found no hybrid statement; the article now records the absence as DER and a `computerDnsName` fallback. Verification: on a hybrid joined lab device, compare `GET /api/machines/{id}` `aadDeviceId` with `dsregcmd /status` DeviceId. (topic: defender/machine-resource)
 - **DeviceInfo JoinType values.** The advanced-hunting-deviceinfo-table page does not list them. (topic: defender/advanced-hunting)
+  - Tried 2026-09-27, still open: Learn page and code-sample search, web search, GitHub code search; Microsoft's Azure-Sentinel hunting queries (S-axmpfgwf) match JoinType with `has_any ("Hybrid", "Azure AD", "Entra")`, so no exact value set is published. (topic: defender/machine-resource)
 - **Remediations script size limit and timeout.** Not in deploy-remediations.md or management-extension-windows.md (memdocs). The 200 KB and 30-minute figures cover platform scripts only (run-powershell-scripts-windows.md). (topic: intune/remediations)
 - **Full `-area` list for MDMDiagnosticsTool.** learn windows/client-management/diagnose-mdm-failures-in-windows-10 shows only DeviceEnrollment, DeviceProvisioning and Autopilot. memdocs and SupportArticles add TPM. No complete list found. The Windows client-management repo was not cloned. (topic: intune/mdmdiagnosticstool)
 - **Co-management workload flags (CoManagementFlags).** A grep of the memdocs and SupportArticles clones found nothing. (topic: intune/co-management)
@@ -541,9 +546,13 @@ Still open: (topic: auth/configmgr-rbac-auth)
 
 - Next Presidio release date / version: not announced. Tried GitHub releases API (S801), PyPI JSON (S802), CHANGELOG `[unreleased]` (S800). (topic: privacy/presidio)
 - spaCy `en_core_web_lg` training-data source licences (`LICENSES_SOURCES`): not read. The fetch of https://huggingface.co/spacy/en_core_web_lg/raw/557bf75.../LICENSES_SOURCES was declined during the session. spacy.io/models/en (S852) renders details client-side, so the static HTML has no licence text. The model licence itself (MIT) is confirmed by S850 and S851. (topic: privacy/spacy-model-licence)
+  - Resolved 2026-09-27: LICENSES_SOURCES read at sha 557bf75 (S-kujx3zxn): OntoNotes 5 commercial (licensed by Explosion), ClearNLP citation only, WordNet 3.0 License, Explosion Vectors CC0. (topic: privacy/spacy-model-licence)
 - nvidia/gliner-PII full label list (55+): not in the model card (S860) or the HF API (S859). The dataset card and NVIDIA licence text were not fetched (the nvidia.com licence is not on an allowed host). (topic: privacy/gliner-models)
+  - Resolved 2026-09-27: the NVIDIA Open Model License (last modified 2025-10-24) was read directly (S-zw4luelo). The label list stays unpublished: the Nemotron-PII dataset card (S-dcu4qhyp) says only 55+ categories with examples; distinct labels could be counted from its parquet `spans` column, which needs a parquet reader. (topic: privacy/gliner-models)
 - EDPB Guidelines 01/2025 final (post-consultation) version: not found. Tried the consultation page (S872), the news item (S873), the topic page (S874), and two WebSearch queries restricted to edpb.europa.eu. Only the "version for public consultation" exists. (topic: privacy/gdpr-pseudonymisation)
+  - Tried 2026-09-27, still open: consultation page (S872, still only the January 2025 PDFs), EDPB guidelines listing (01/2025 shown under closed consultations), topic page (S874) and the 2026-07-08 news (S-eickk3hp: separate anonymisation guidelines adopted, consultation to 2026-10-30). The article records the absence as DER. (topic: privacy/gdpr-pseudonymisation)
 - CJEU C-413/23 P full judgment text: not fetched. Used press release 107/25 (S875) only. (topic: privacy/gdpr-pseudonymisation)
+  - Resolved 2026-09-27: the full judgment was read on EUR-Lex (S-2s2xlwgf; operative part, paras 80-86 and 111). (topic: privacy/gdpr-pseudonymisation)
 - `surrogate_ahds` operator behaviour over REST: not checked. (topic: privacy/presidio-operators-deanonymize)
 
 ## reuse
@@ -731,6 +740,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
 ## defender/response-actions-api
 
 - No Microsoft Graph security API equivalent for MDE machine response actions (isolate/unisolate/restrict/scan/quarantine/live response) was found this session either: `security.deviceEvidence` remains read-only, and the only Graph action found for a similarly-named operation, `windowsDefenderScan` (`POST /deviceManagement/managedDevices/{id}/windowsDefenderScan`, v1.0), is an **Intune-managed-device** action, not an MDE machine action, and does not cover isolate/restrict/scan-via-MDE or live response. Confirmed distinct scope via Microsoft Learn search (2026-09-26); MDE's own `api.securitycenter.microsoft.com`/Graph `security` machineAction surface remains the only documented path for these specific actions. (topic: defender/response-actions-api)
+  - Resolved 2026-09-27: Graph beta does carry device actions, but only as custom detection rule `automatedActions` (deviceAction, isolateDeviceAction, stopAndQuarantineFileAction; S-bxbx2kp5, S-mx6w5ffh); the per-incident-task `incidentTaskResponseAction` family is deprecated and removed 2026-10-01 (S-x6wwggq6). On-demand isolate/scan/live response stays on the MDE API; the article says so. (topic: defender/response-actions-api)
 
 ## entra/conditional-access-devices
 

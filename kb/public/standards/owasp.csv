@@ -9,16 +9,16 @@ OWASP Top 10 for Agentic Applications 2026,ASI07,Insecure Inter-Agent Communicat
 OWASP Top 10 for Agentic Applications 2026,ASI08,Cascading Failures,https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/,S762
 OWASP Top 10 for Agentic Applications 2026,ASI09,Human-Agent Trust Exploitation,https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/,S762
 OWASP Top 10 for Agentic Applications 2026,ASI10,Rogue Agents,https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/,S762
-OWASP MCP Top 10 (2025 beta),MCP01:2025,Token Mismanagement & Secret Exposure,https://owasp.org/www-project-mcp-top-10/,S760
-OWASP MCP Top 10 (2025 beta),MCP02:2025,Privilege Escalation via Scope Creep,https://owasp.org/www-project-mcp-top-10/,S760
-OWASP MCP Top 10 (2025 beta),MCP03:2025,Tool Poisoning,https://owasp.org/www-project-mcp-top-10/,S760
-OWASP MCP Top 10 (2025 beta),MCP04:2025,Software Supply Chain Attacks & Dependency Tampering,https://owasp.org/www-project-mcp-top-10/,S760
-OWASP MCP Top 10 (2025 beta),MCP05:2025,Command Injection & Execution,https://owasp.org/www-project-mcp-top-10/,S760
-OWASP MCP Top 10 (2025 beta),MCP06:2025,Intent Flow Subversion,https://owasp.org/www-project-mcp-top-10/,S760
-OWASP MCP Top 10 (2025 beta),MCP07:2025,Insufficient Authentication & Authorization,https://owasp.org/www-project-mcp-top-10/,S760
-OWASP MCP Top 10 (2025 beta),MCP08:2025,Lack of Audit and Telemetry,https://owasp.org/www-project-mcp-top-10/,S760
-OWASP MCP Top 10 (2025 beta),MCP09:2025,Shadow MCP Servers,https://owasp.org/www-project-mcp-top-10/,S760
-OWASP MCP Top 10 (2025 beta),MCP10:2025,Context Injection & Over-Sharing,https://owasp.org/www-project-mcp-top-10/,S760
+OWASP MCP Top 10 (2025 beta),MCP01:2025,Token Mismanagement & Secret Exposure,https://owasp.org/www-project-mcp-top-10/,S-s3hkw2h4
+OWASP MCP Top 10 (2025 beta),MCP02:2025,Privilege Escalation via Scope Creep,https://owasp.org/www-project-mcp-top-10/,S-s3hkw2h4
+OWASP MCP Top 10 (2025 beta),MCP03:2025,Tool Poisoning,https://owasp.org/www-project-mcp-top-10/,S-s3hkw2h4
+OWASP MCP Top 10 (2025 beta),MCP04:2025,Software Supply Chain Attacks & Dependency Tampering,https://owasp.org/www-project-mcp-top-10/,S-s3hkw2h4
+OWASP MCP Top 10 (2025 beta),MCP05:2025,Command Injection & Execution,https://owasp.org/www-project-mcp-top-10/,S-s3hkw2h4
+OWASP MCP Top 10 (2025 beta),MCP06:2025,Intent Flow Subversion,https://owasp.org/www-project-mcp-top-10/,S-s3hkw2h4
+OWASP MCP Top 10 (2025 beta),MCP07:2025,Insufficient Authentication & Authorization,https://owasp.org/www-project-mcp-top-10/,S-s3hkw2h4
+OWASP MCP Top 10 (2025 beta),MCP08:2025,Lack of Audit and Telemetry,https://owasp.org/www-project-mcp-top-10/,S-s3hkw2h4
+OWASP MCP Top 10 (2025 beta),MCP09:2025,Shadow MCP Servers,https://owasp.org/www-project-mcp-top-10/,S-s3hkw2h4
+OWASP MCP Top 10 (2025 beta),MCP10:2025,Context Injection & Over-Sharing,https://owasp.org/www-project-mcp-top-10/,S-s3hkw2h4
 OWASP Top 10 for LLM Applications 2025,LLM01:2025,Prompt Injection,https://genai.owasp.org/llm-top-10/,S763
 OWASP Top 10 for LLM Applications 2025,LLM02:2025,Sensitive Information Disclosure,https://genai.owasp.org/llm-top-10/,S763
 OWASP Top 10 for LLM Applications 2025,LLM03:2025,Supply Chain,https://genai.owasp.org/llm-top-10/,S763
@@ -29,4 +29,14 @@ OWASP Top 10 for LLM Applications 2025,LLM07:2025,System Prompt Leakage,https://
 OWASP Top 10 for LLM Applications 2025,LLM08:2025,Vector and Embedding Weaknesses,https://genai.owasp.org/llm-top-10/,S763
 OWASP Top 10 for LLM Applications 2025,LLM09:2025,Misinformation,https://genai.owasp.org/llm-top-10/,S763
 OWASP Top 10 for LLM Applications 2025,LLM10:2025,Unbounded Consumption,https://genai.owasp.org/llm-top-10/,S763
+OWASP Top 10 for LLM Applications 2026,LLM01:2026,Prompt Injection,https://genai.owasp.org/resource/owasp-genai-llm-top-10-2026/,S-mq77ii5m
+OWASP Top 10 for LLM Applications 2026,LLM02:2026,Sensitive Information Disclosure,https://genai.owasp.org/resource/owasp-genai-llm-top-10-2026/,S-mq77ii5m
+OWASP Top 10 for LLM Applications 2026,LLM03:2026,Excessive Agency,https://genai.owasp.org/resource/owasp-genai-llm-top-10-2026/,S-mq77ii5m
+OWASP Top 10 for LLM Applications 2026,LLM04:2026,Supply Chain,https://genai.owasp.org/resource/owasp-genai-llm-top-10-2026/,S-mq77ii5m
+OWASP Top 10 for LLM Applications 2026,LLM05:2026,Data and Model Poisoning,https://genai.owasp.org/resource/owasp-genai-llm-top-10-2026/,S-mq77ii5m
+OWASP Top 10 for LLM Applications 2026,LLM06:2026,Unbounded Consumption,https://genai.owasp.org/resource/owasp-genai-llm-top-10-2026/,S-mq77ii5m
+OWASP Top 10 for LLM Applications 2026,LLM07:2026,Misinformation,https://genai.owasp.org/resource/owasp-genai-llm-top-10-2026/,S-mq77ii5m
+OWASP Top 10 for LLM Applications 2026,LLM08:2026,Hidden Context Exposure,https://genai.owasp.org/resource/owasp-genai-llm-top-10-2026/,S-mq77ii5m
+OWASP Top 10 for LLM Applications 2026,LLM09:2026,Vector and Embedding Weaknesses,https://genai.owasp.org/resource/owasp-genai-llm-top-10-2026/,S-mq77ii5m
+OWASP Top 10 for LLM Applications 2026,LLM10:2026,Improper Output Handling,https://genai.owasp.org/resource/owasp-genai-llm-top-10-2026/,S-mq77ii5m
 OWASP MCP Top 10 (2025 beta),(status check),Still Phase 3 beta as of 2026-09-24; no new ids,https://owasp.org/www-project-mcp-top-10/,S1540
