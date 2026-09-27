@@ -126,7 +126,7 @@ status: complete
 - `mecm/software-updates.md` is the on-premises ConfigMgr/WSUS patch pipeline (SUP sync, ADRs, maintenance windows); AUM can consume the same WSUS server as its update source (Facts above) instead of, or alongside, ConfigMgr-managed clients.
 
 ## Examples
-List patch-installation results for a resource group's Windows machines in the last 30 days:
+- SNIPPET: list patch-installation results for a resource group's Windows machines in the last 30 days; context: Azure Resource Graph, `patchinstallationresources` (30-day retention); checked: no [DER S-horf4w6m, S-vtpfmnfq: composed from the documented `patchinstallationresults` properties (`patchServiceUsed`, `rebootStatus`, `lastModifiedDateTime`) and the sample-query pattern]
 ```kql
 PatchInstallationResources
 | where resourceGroup =~ 'PL-SRV-0042-rg'
@@ -139,9 +139,8 @@ PatchInstallationResources
 | project installedTime, id, patchServiceUsed, rebootStatus
 | sort by installedTime desc
 ```
-[DER S-horf4w6m, S-vtpfmnfq: composed from the documented `patchinstallationresults` properties (`patchServiceUsed`, `rebootStatus`, `lastModifiedDateTime`) and the sample-query pattern]
 
-Enable Azure-orchestrated scheduled patching on an existing Azure VM (Azure CLI), a prerequisite for attaching a maintenance configuration:
+- SNIPPET: enable Azure-orchestrated scheduled patching on an existing Azure VM (Azure CLI), a prerequisite for attaching a maintenance configuration; context: Azure CLI, Azure VM `patchSettings`; checked: no [DER S-b5urflpf, S-bbya5ebc: the `az vm update --set ...patchMode=AutomaticByPlatform` pattern from S-b5urflpf plus the `BypassPlatformSafetyChecksOnUserSchedule=True` property that S-bbya5ebc says Customer Managed Schedules sets; the exact property path isn't printed on either page]
 ```bash
 az vm update \
   --resource-group PL-SRV-0042-rg \
@@ -149,5 +148,4 @@ az vm update \
   --set osProfile.windowsConfiguration.patchSettings.patchMode=AutomaticByPlatform \
         osProfile.windowsConfiguration.patchSettings.automaticByPlatformSettings.bypassPlatformSafetyChecksOnUserSchedule=true
 ```
-[DER S-b5urflpf, S-bbya5ebc: the `az vm update --set ...patchMode=AutomaticByPlatform` pattern from S-b5urflpf plus the `BypassPlatformSafetyChecksOnUserSchedule=True` property that S-bbya5ebc says Customer Managed Schedules sets; the exact property path isn't printed on either page]
 

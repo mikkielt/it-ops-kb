@@ -3,7 +3,7 @@ topic: windows/app-control
 priority: P2
 applies_to: "Windows 10/11 clients, Windows Server 2016+ (feature availability varies by version; CiTool.exe requires Windows 11 22H2+ or Windows Server 2025)"
 retrieved_utc: 2026-09-26
-sources: [S-whvei7wr, S-k6lcrjix, S-bdcygezh, S-fq54pkea, S-wk4roik4, S-vawypjoe, S-ickvylma, S-frmf22fa, S-salso3t6, S2202, S-oartdvpr, S2200, S-xju6ufhr]
+sources: [S-whvei7wr, S-k6lcrjix, S-bdcygezh, S-fq54pkea, S-wk4roik4, S-vawypjoe, S-ickvylma, S-frmf22fa, S-salso3t6, S2202, S-oartdvpr, S2200, S-xju6ufhr, S-y3vftsou]
 status: complete
 ---
 
@@ -106,13 +106,13 @@ Full table (all 21 options + the unnumbered Developer Mode option): `windows/app
 | Intune custom policy OMA-URI (1903+) | `./Vendor/MSFT/ApplicationControl/Policies/<GUID>/Policy`, 350,000-byte limit | S2202 |
 
 ## Examples
-Query which App Control policies are currently enforced on PL-LT-00123:
+- SNIPPET: list only currently enforced App Control policies on PL-LT-00123; context: CiTool.exe, Windows 11 22H2+/Server 2025; checked: no [DOC S-bdcygezh: same `CiTool -lp -json` filter/select example]
 ```powershell
 (CiTool -lp -json | ConvertFrom-Json).Policies | Where-Object {$_.IsEnforced -eq "True"} |
     Select-Object -Property PolicyID,FriendlyName
 ```
 
-Build a Multiple Policy Format base policy that allows supplemental policies, then create a supplemental policy for it:
+- SNIPPET: build a Multiple Policy Format base policy allowing supplemental policies, then create a supplemental policy for it; context: Windows 10 1903+/Server 2022+, App Control PowerShell cmdlets; checked: no [DER S-k6lcrjix, S-whvei7wr, S-y3vftsou: `-MultiplePolicyFormat` sets a base policy and needs `Set-RuleOption -Option 17` to allow supplemental policies (S-k6lcrjix); `-Level`/`-Fallback` and `Set-CIPolicyIdInfo -BasePolicyToSupplementPath ... -PolicyId -PolicyName` for the supplemental policy (S-k6lcrjix, S-whvei7wr); `-ResetPolicyID` resets PolicyID and BasePolicyID (S-y3vftsou)]
 ```powershell
 New-CIPolicy -MultiplePolicyFormat -ScanPath "C:\ReferenceApps" -UserPEs -FilePath ".\base.xml" `
     -Level FilePublisher -Fallback SignedVersion,Publisher,Hash
@@ -125,7 +125,7 @@ Set-CIPolicyIdInfo -FilePath ".\supplemental.xml" -BasePolicyToSupplementPath ".
     -PolicyId "00000000-0000-0000-0000-000000000003" -PolicyName "corp-lob-supplemental"
 ```
 
-Enable the managed installer option and turn Configuration Manager into a managed installer, then deploy the resulting binary to PL-LT-00123 with `CiTool`:
+- SNIPPET: enable the managed installer option in a policy and deploy the resulting binary to PL-LT-00123 with `CiTool`; context: Windows 11 22H2+/Server 2025, ships with a Configuration Manager-oriented example policy under the in-box ExamplePolicies folder; checked: no [DER S-vawypjoe, S-bdcygezh, S2200, S-y3vftsou: `13 Enabled:Managed Installer` set via `Set-RuleOption -Option 13` (S-vawypjoe); `CiTool --update-policy` deploys the `.cip` (S-bdcygezh); `%windir%\schemas\CodeIntegrity\ExamplePolicies\` is the in-box example-policy folder (S2200 names `SmartAppControl.xml` there); `Set-CIPolicyIdInfo -ResetPolicyID` gives the copy new policy ids (S-y3vftsou)]
 ```powershell
 Copy-Item "C:\Windows\schemas\CodeIntegrity\ExamplePolicies\DefaultWindows_Audit.xml" ".\policy.xml"
 Set-CIPolicyIdInfo -FilePath ".\policy.xml" -PolicyName "corp-managed-installer" -ResetPolicyID

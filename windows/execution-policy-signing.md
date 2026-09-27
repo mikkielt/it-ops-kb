@@ -49,6 +49,7 @@ status: complete
   Windows PowerShell 5.1, and `-ExecutionPolicy` at install/session start. [DER: cross-link, no new fact]
 
 ## Examples
+- SNIPPET: list the effective execution policy per scope, then Authenticode-sign a script with a timestamp so it stays valid after the certificate expires; context: Windows PowerShell 5.1/PowerShell 7.5, a code-signing certificate in the user's certificate store; checked: no [DER S420, S422: `Get-ExecutionPolicy -List` shows the per-scope policy (S420); `Set-AuthenticodeSignature` appends the signature block and a timestamp keeps it valid past certificate expiry (S422)]
 ```powershell
 Get-ExecutionPolicy -List
 $cert = Get-ChildItem Cert:\CurrentUser\My -CodeSigningCert | Select-Object -First 1

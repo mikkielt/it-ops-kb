@@ -53,6 +53,7 @@ status: partial
 | `Test-ADServiceAccount` | Check that the host can retrieve the password | S400 |
 
 ## Examples
+- SNIPPET: create a gMSA, allow a host group to retrieve its password, then install and test it on the host; context: AD DS, domain/forest functional level 2012+, run as Domain/Enterprise Admins or a delegated account; checked: no [DOC S400: same `New-ADServiceAccount -PrincipalsAllowedToRetrieveManagedPassword`, `Add-ADGroupMember`, `Install-ADServiceAccount`, `Test-ADServiceAccount` cmdlets]
 ```powershell
 # Fixture names only
 New-ADServiceAccount -Name app-sync -DNSHostName app-sync.corp.example.com `

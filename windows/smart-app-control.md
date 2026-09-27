@@ -62,11 +62,11 @@ Related: `defender/asr-and-antivirus.md` (Attack Surface Reduction rules and Def
 | Central control of app trust | App Control for Business via Intune, Group Policy, script, ConfigMgr | S2201, S2204 |
 
 ## Examples
-Read the mode on PL-LT-00123 (elevated prompt):
+- SNIPPET: read Smart App Control's current mode from `citool.exe -lp`; context: Windows 11 22H2+, elevated prompt; checked: no [DOC S2199: `citool.exe -lp` Friendly Name `VerifiedAndReputableDesktopEvaluation`/`VerifiedAndReputableDesktop` with Is Currently Enforced indicates the mode]
 ```powershell
 citool.exe -lp | Select-String 'VerifiedAndReputable|Currently Enforced'
 ```
-Turn SAC off on a fleet member, as Microsoft documents it (this removes the protection):
+- SNIPPET: turn Smart App Control off on a fleet member, as Microsoft documents it (this removes the protection); context: Windows 11 22H2+, elevated prompt, one-way change; checked: no [DOC S2200: same `VerifiedAndReputablePolicyState` registry value (0 = Off) under `HKLM\SYSTEM\CurrentControlSet\Control\CI\Policy`, applied with `CiTool.exe -r`]
 ```powershell
 reg add "HKLM\SYSTEM\CurrentControlSet\Control\CI\Policy" /v VerifiedAndReputablePolicyState /t REG_DWORD /d 0 /f
 citool.exe -r

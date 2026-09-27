@@ -73,19 +73,19 @@ WinGet is the command-line client for the Windows Package Manager, shipped insid
 - `windows/winget-policies.csv` — full DesktopAppInstaller ADMX/CSP policy table.
 
 ## Examples
-Silent, unattended machine-scope install on `PL-LT-00123`, accepting all agreements:
+- SNIPPET: silent, unattended machine-scope install on `PL-LT-00123`, accepting all agreements; context: WinGet CLI, elevated for `--scope machine`; checked: no [DOC S-bx6tsyla: `-e`/`--exact` exact ID match, `--scope machine`, `-h`/`--silent`, `--accept-package-agreements`, `--accept-source-agreements` are all documented install options]
 ```powershell
 winget install --id Git.Git -e --scope machine --silent --accept-package-agreements --accept-source-agreements
 ```
 
-Force a 64-bit machine-wide install of the PowerShell module (e.g. for a SYSTEM-context scheduled task on `PL-SRV-0042`) and repair a broken WinGet registration:
+- SNIPPET: install the `Microsoft.WinGet.Client` module machine-wide and repair a broken WinGet registration, for use from a SYSTEM-context scheduled task on `PL-SRV-0042`; context: PowerShell Gallery, WinGet CLI unsupported as SYSTEM; checked: no [DOC S-bbyce4yg, S-dgnfikws: the module's documented bootstrap pattern (`Install-PackageProvider`, `Install-Module -Scope AllUsers`, `Repair-WinGetPackageManager -AllUsers -Force`) and that this module, not the CLI, is the supported system-context path]
 ```powershell
 Install-PackageProvider -Name NuGet -Force
 Install-Module -Name Microsoft.WinGet.Client -Scope AllUsers -Force -Repository PSGallery
 Repair-WinGetPackageManager -AllUsers -Force
 ```
 
-Minimal v3 WinGet Configuration file (`.config/configuration.winget`) that installs a package and sets a registry value with the native resource:
+- SNIPPET: minimal v3 WinGet Configuration file that installs a package then sets a registry value with the native resource; context: WinGet 1.11+, `dscv3` processor; checked: no [DOC S-sgplcdqr: `resources:` as a top-level array, `metadata.winget.processor.identifier: dscv3`, `Microsoft.WinGet/Package` and native `Microsoft.Windows/Registry` resource types, `dependsOn`]
 ```yaml
 $schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2023/08/config/document.json
 metadata:
@@ -112,7 +112,7 @@ resources:
       securityContext: elevated
 ```
 
-Diagnose a Group-Policy-blocked install (`APPINSTALLER_CLI_ERROR_BLOCKED_BY_POLICY`, `0x8A15003A`) on `PL-LT-00123`:
+- SNIPPET: diagnose a Group-Policy-blocked install (`APPINSTALLER_CLI_ERROR_BLOCKED_BY_POLICY`, `0x8A15003A`) on `PL-LT-00123`; context: WinGet CLI; checked: no [DOC S-7ddssdnb, S-vrwvsimi: `0x8A15003A` is the documented `APPINSTALLER_CLI_ERROR_BLOCKED_BY_POLICY` code (S-7ddssdnb); `winget --info` prints the effective Group Policy state (S-vrwvsimi)]
 ```cmd
 winget --info
 winget error 0x8A15003A

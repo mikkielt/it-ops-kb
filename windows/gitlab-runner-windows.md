@@ -51,12 +51,14 @@ status: partial
 | Default safe.directory (shell executor) | false | S411 |
 
 ## Examples
+- SNIPPET: install and start the runner service as the Built-in System Account (the gMSA line is a community-reported variant, not documented by GitLab); context: GitLab Runner 19.5 on Windows, elevated prompt; checked: no [DOC S406, COMMUNITY S414: `.\gitlab-runner.exe install` / `start` for the Built-in System Account (S406); `install --user "DOMAIN\name$"` with no password for a gMSA (S414, community-reported)]
 ```powershell
 cd C:\GitLab-Runner
 .\gitlab-runner.exe install                      # Built-in System Account (documented)
 .\gitlab-runner.exe install --user "CORP\svc-runner$"   # gMSA, no password: COMMUNITY S414 only
 .\gitlab-runner.exe start
 ```
+- SNIPPET: shell executor config using `pwsh` and the source-only `safe_directory_checkout` option; context: `config.toml`, GitLab Runner 19.5; checked: no [DOC S407; CODE S410: common/config.go#SafeDirectoryCheckout: `shell = "pwsh"` is the default shell for the `shell` executor (S407); `safe_directory_checkout` is the TOML key read from source, not documented]
 ```toml
 [[runners]]
   executor = "shell"

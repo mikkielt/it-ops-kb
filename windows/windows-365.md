@@ -146,7 +146,7 @@ AI-agent variant "Windows 365 for Agents" (preview). [DOC S-7haqmv5t, S-3vcy7oqc
   hybrid join / trustType model documented there.
 
 ## Examples
-Resize a Cloud PC to a new service plan (placeholders only):
+- SNIPPET: Resize a Cloud PC to a new service plan (placeholders only); context: Graph v1.0, `CloudPC.ReadWrite.All`, not supported for personal Microsoft accounts, not available in US Gov L5/China; checked: no [DOC S-5alhdr35: same `POST .../cloudPCs/{id}/resize` request with a `targetServicePlanId` body]
 ```http
 POST https://graph.microsoft.com/v1.0/deviceManagement/virtualEndpoint/cloudPCs/00000000-0000-0000-0000-000000000000/resize
 Content-Type: application/json

@@ -77,7 +77,7 @@ allowed-apps list is enforced with generated AppLocker rules under the hood.
 - Windows 11 multi-app kiosk is therefore a distinct, non-template path (provisioning package / WMI Bridge / MDM policy using the `AssignedAccess` CSP's Windows 11 XML schema). [UNK: not in S-pjgeqktu as re-read 2026-09-27]
 
 ## Examples
-Single-app kiosk, AssignedAccess CSP custom OMA-URI (auto-logon local account running Microsoft Edge full-screen against an intranet site):
+- SNIPPET: Single-app kiosk, AssignedAccess CSP custom OMA-URI (auto-logon local account running Microsoft Edge full-screen against an intranet site); context: `Configuration` node, AssignedAccess CSP, Windows 10/11; checked: no [DOC S-ocgh5a3g: `KioskModeApp`/`v4:ClassicAppPath`/`v4:ClassicAppArguments`, `AutoLogonAccount`, `Configs/Config` structure documented as shown]
 ```xml
 <?xml version="1.0" encoding="utf-8" ?>
 <AssignedAccessConfiguration xmlns="http://schemas.microsoft.com/AssignedAccess/2017/config"
@@ -99,14 +99,14 @@ Single-app kiosk, AssignedAccess CSP custom OMA-URI (auto-logon local account ru
 ```
 OMA-URI row for the above: `./Vendor/MSFT/AssignedAccess/Configuration`, data type String (XML file), value = the XML above (escaped or CDATA-wrapped per the CSP's escaping rules).
 
-Local single-device setup with PowerShell (Calculator UWP app, local account `kioskuser` on `PL-LT-00123`):
+- SNIPPET: Local single-device setup with PowerShell (Calculator UWP app, local account `kioskuser` on `PL-LT-00123`); context: Windows 10/11 client only, `AssignedAccess` module, the account must have signed in once; checked: no [DOC S-jnbupokh: `Set-AssignedAccess -UserName -AppUserModelId` and `Clear-AssignedAccess`]
 ```powershell
 Set-AssignedAccess -UserName "kioskuser" -AppUserModelId "Microsoft.WindowsCalculator_8wekyb3d8bbwe!App"
 # remove later:
 # Clear-AssignedAccess
 ```
 
-Multi-app restricted experience: allow Calculator, Notepad and Explorer, autolaunch Notepad, allow Downloads-only File Explorer access:
+- SNIPPET: Multi-app restricted experience: allow Calculator, Notepad and Explorer, autolaunch Notepad, allow Downloads-only File Explorer access; context: AssignedAccessConfiguration XML, `rs5` namespace (Windows 10 1809+); checked: no [DOC S-ocgh5a3g: `AllAppList`/`AllowedApps`/`App` with `AppUserModelId`/`DesktopAppPath`, `rs5:AutoLaunch`, and `FileExplorerNamespaceRestrictions`/`rs5:AllowedNamespace Name="Downloads"`]
 ```xml
 <AllAppsList>
   <AllowedApps>

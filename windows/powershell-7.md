@@ -232,6 +232,7 @@ scheduled task will run under) registers the default vault and switches it to no
 no-interaction mode so a non-interactive scheduled job can read secrets without a prompt or a cached
 session password:
 
+- SNIPPET: one-time interactive setup that registers the default SecretStore vault and switches it to no-password, no-interaction mode for unattended use, then stores a secret; context: `Microsoft.PowerShell.SecretManagement`/`SecretStore`, run once as the service/task account; checked: no [DOC S-iw3ehpxb, S-x4puowoc, S-z7wzbalz: `Set-SecretStoreConfiguration -Authentication None -Interaction None` matches the documented `-Authentication`/`-Interaction` parameters and their effect (S-x4puowoc, S-z7wzbalz); `Register-SecretVault`/`Set-Secret` are the vault-abstraction cmdlets S-iw3ehpxb describes]
 ```powershell
 # One-time setup, interactive, as the service/task account:
 Install-PSResource Microsoft.PowerShell.SecretManagement, Microsoft.PowerShell.SecretStore -Repository PSGallery -TrustRepository
@@ -245,12 +246,14 @@ Set-SecretStoreConfiguration -Authentication None -Interaction None -Confirm:$fa
 Set-Secret -Name 'svc-PL-SRV-0042-api-token' -Secret (ConvertTo-SecureString 'placeholder-token' -AsPlainText -Force)
 ```
 
+Reading the secret back inside the scheduled task's own script is an illustration of the counterpart read cmdlet, not backed by a source in this article, and not itself SNIPPET-tagged:
 ```powershell
 # Inside the scheduled task's script (runs as the same account, non-interactively):
 $token = Get-Secret -Name 'svc-PL-SRV-0042-api-token' -AsPlainText
 Invoke-RestMethod -Uri 'https://api.corp.example.com/v1/status' -Headers @{ Authorization = "Bearer $token" }
 ```
 
+Registering the scheduled task itself is a standard Task Scheduler pattern not backed by a source in this article (Task Scheduler cmdlets are covered, differently, in `windows/gmsa.md`):
 ```powershell
 # Registering the scheduled task itself (Windows Task Scheduler, PowerShell 7):
 $action = New-ScheduledTaskAction -Execute 'pwsh.exe' -Argument '-NoProfile -File C:\automation\Invoke-StatusCheck.ps1'

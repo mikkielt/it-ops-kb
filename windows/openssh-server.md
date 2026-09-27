@@ -39,6 +39,7 @@ status: complete
 | Default shell key | `HKLM\SOFTWARE\OpenSSH` `DefaultShell` (REG_SZ) | S431 |
 
 ## Examples
+- SNIPPET: install and start the OpenSSH Server capability, then set the default shell to PowerShell 7; context: Windows Server 2019+/Windows 10 1809+, elevated prompt; checked: no [DOC S430, S431: `Add-WindowsCapability -Online -Name OpenSSH.Server~~~~0.0.1.0`, `Start-Service sshd`, `Set-Service -Name sshd -StartupType Automatic` (S430); `DefaultShell` string value under `HKLM:\SOFTWARE\OpenSSH` (S431)]
 ```powershell
 # on PL-SRV-0042
 Add-WindowsCapability -Online -Name OpenSSH.Server~~~~0.0.1.0

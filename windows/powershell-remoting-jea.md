@@ -227,6 +227,7 @@ only to its *parameters* — so once a role can call `Get-LapsADPassword`, the p
 control the moment it's returned to the user's screen. [DER S-p5lwby5b,S-tabagcvn: role-capability
 parameter/value constraints govern *inputs*, not what a role's output can be reused for]
 
+- SNIPPET: role capability file restricting a role to restarting one named service and read-only status; context: `.psrc`, `New-PSRoleCapabilityFile`; checked: no [DOC S-p5lwby5b, S-tabagcvn: `VisibleCmdlets` with per-cmdlet `Parameters`/`ValidateSet` and unconstrained `Get-Service` match the documented `.psrc` fields; `Get-LapsADPassword` deliberately omitted per the do-not-expose guidance]
 ```powershell
 # HelpDeskServiceRestart.psrc — role capability: restart the Spooler service only, nothing else
 @{
@@ -244,6 +245,7 @@ parameter/value constraints govern *inputs*, not what a role's output can be reu
 }
 ```
 
+- SNIPPET: session configuration file mapping a role to a virtual-account JEA endpoint with transcripts on, then register it; context: `.pssc`, `New-PSSessionConfigurationFile`, `Register-PSSessionConfiguration` (restarts WinRM); checked: no [DOC S-xe3uwlpq, S-tabagcvn, S-jwo36v2t: `RunAsVirtualAccount`/`RunAsVirtualAccountGroups`, `TranscriptDirectory`, `RoleDefinitions` are documented `.pssc` fields (S-xe3uwlpq, S-tabagcvn); `Test-PSSessionConfigurationFile` before `Register-PSSessionConfiguration -Path ... -Name ... -Force` matches the documented registration flow (S-jwo36v2t)]
 ```powershell
 # HelpDeskEndpoint.pssc — session configuration: register the role, virtual account, transcripts on
 $parameters = @{
@@ -260,6 +262,7 @@ Test-PSSessionConfigurationFile -Path .\HelpDeskEndpoint.pssc   # must return Tr
 Register-PSSessionConfiguration -Path .\HelpDeskEndpoint.pssc -Name 'HelpDesk-SpoolerRestart' -Force
 ```
 
+- SNIPPET: connect to the registered JEA endpoint by configuration name and run the one allowed command; context: `Invoke-Command -ConfigurationName`, connecting user has no other standing rights on the endpoint; checked: no [DOC S-tabagcvn: a user connects and gets only the commands their role exposes; `Get-LapsADPassword` is not in `VisibleCmdlets` so it fails]
 ```powershell
 # Help-desk technician's side, on PL-LT-00123, connecting to PL-SRV-0042
 Invoke-Command -ComputerName PL-SRV-0042.corp.example.com `

@@ -66,26 +66,28 @@ receiver), `defender/advanced-hunting.md` (querying ingested device events centr
 - `logs/sources.md` Reference section has a back-link to this article for the WEF/Sysmon channels.
 
 ## Examples
-GPO value on domain controllers to point clients at a collector `PL-SRV-0042.corp.example.com`:
+- SNIPPET: GPO "Configure target Subscription Manager" value pointing clients at a collector; context: source-initiated WEF, GPO client setting; checked: no [DOC S-benv5fbb: same `Server=http://<fqdn-of-collector>:5985/wsman/SubscriptionManager/WEC,Refresh=<seconds>` pattern]
 ```
 Server=http://PL-SRV-0042.corp.example.com:5985/wsman/SubscriptionManager/WEC,Refresh=60
 ```
-Prepare and inspect the collector:
+- SNIPPET: prepare the collector service and inspect subscriptions; context: `wecutil`, Windows Event Collector; checked: no [DOC S-zcba3zc7: `wecutil qc`/`quick-config` configures the collector service (`/q:true` skips the confirmation prompt; default false), `{es|enum-subscription}` lists subscription names, `{gs|get-subscription}` shows a subscription's configuration]
 ```cmd
-wecutil qc /q
+wecutil qc /q:true
 wecutil es
 wecutil gs "SysmonForward"
 ```
-Install standalone Sysmon with a config file on `PL-LT-00123`:
+- SNIPPET: install standalone Sysmon with a config file on `PL-LT-00123`; context: Sysinternals Sysmon; checked: no [DOC S-xbogq5nf: same `sysmon64 -accepteula -i [<configfile>]` install syntax]
 ```cmd
 sysmon64 -accepteula -i C:\Sysmon\sysmonconfig.xml
 ```
-Enable the built-in optional feature instead (no standalone installer):
+- SNIPPET: enable the built-in optional feature instead of standalone Sysmon (after confirming nothing is installed); context: Windows 11/Server 2025, built-in Sysmon optional feature; checked: no [DOC S-uzewrile: `Get-Service sysmon*` to verify no standalone service is present, then `Enable-WindowsOptionalFeature -Online -FeatureName Sysmon` and `sysmon -i [<configfile>]` to apply a configuration]
 ```powershell
 Get-Service sysmon*                       # confirm nothing is already installed
 Enable-WindowsOptionalFeature -Online -FeatureName Sysmon
 sysmon -i C:\Sysmon\sysmonconfig.xml
 ```
+
+Query recent Sysmon process-create events on the local machine (illustration; `wevtutil` query syntax not backed by a source in this article):
 Query recent Sysmon process-create events on the local machine:
 ```
 wevtutil qe "Microsoft-Windows-Sysmon/Operational" /q:"*[System[(EventID=1)]]" /c:20 /f:text
