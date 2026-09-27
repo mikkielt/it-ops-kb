@@ -2,7 +2,7 @@
 topic: reuse/device-identity-correlation
 priority: P2
 applies_to: "a cross-plane device identity graph: merge keys, stale thresholds, temporal history"
-retrieved_utc: 2026-09-26
+retrieved_utc: 2026-09-27
 sources: [S1011, S1012, S1013, S1014, S1105, S-ivg7xp7y]
 status: complete
 ---
@@ -27,6 +27,7 @@ copied.
 - Fleet's core is confirmed MIT by direct fetch of its repository `LICENSE` (docs under CC BY-SA 4.0,
   the `ee/` directory under a separate licence, client JS under MIT Expat) -- resolving a prior
   "NOASSERTION" flag for the MIT-licensed core specifically. [DOC S1105]
+- The GitHub API metadata for `fleetdm/fleet` still reports the licence as unrecognised ("NOASSERTION"), primary language Go, description "Open device management", not archived. [DOC S1014]
 - Fleet is a device-management system (MDM, patching, software deployment) with an agent on devices
   and a GUI, REST API and `fleetctl`; running or embedding it would add an always-on service, which a
   no-always-on-service constraint would forbid. [DER S-ivg7xp7y: README describes the agent and central management]

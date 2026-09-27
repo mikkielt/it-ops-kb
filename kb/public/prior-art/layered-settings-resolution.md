@@ -2,7 +2,7 @@
 topic: prior-art/layered-settings-resolution
 priority: P2
 applies_to: "config precedence (flags > env > file > defaults), unknown-key refusal"
-retrieved_utc: 2026-09-26
+retrieved_utc: 2026-09-27
 sources: [S1022, S1023, S-ovuvyg6h]
 status: complete
 ---
@@ -20,6 +20,7 @@ multi-environment merging but its README does not itself state an unknown-key-re
   variables, a dotenv (`.env`) file, the secrets directory, and finally the field's default. Overriding
   `settings_customise_sources` changes this: the order of the returned sources sets the priority (first is
   highest), and sources can be added or removed. This is in the project's documentation, not its README. [DOC S-ovuvyg6h]
+- The pydantic-settings README at the pinned commit describes the package only as settings management using Pydantic and sends readers to the Pydantic documentation for details, so the source-priority facts come from the documentation page. [DOC S1022]
 - Unknown keys are refused only in part: the settings `extra` default is `'forbid'`, so an unmatched
   dotenv entry raises a `ValidationError`, but an environment variable that matches no field is ignored
   even with `extra='forbid'` (a misspelled name silently leaves the default in place); inside a nested

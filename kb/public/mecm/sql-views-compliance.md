@@ -2,7 +2,7 @@
 topic: mecm/sql-views-compliance
 priority: P0
 applies_to: "ConfigMgr current branch 2603 (SQL views docs ms.date 2019-04-30, memdocs 4b5429df)"
-retrieved_utc: 2026-09-26
+retrieved_utc: 2026-09-27
 sources: [S-mmydokhp, S-tnbxhz6o, S-7hxddhnw, S-6qn22dge, S-qqxrnbd5, S-ava6e5jq, S-rljokguo, S-6war5y2t, S234]
 status: partial
 ---
@@ -29,6 +29,7 @@ values of remediated settings.
 - `v_CIComplianceHistory`: compliance start/end dates per CI and resource. [DOC S-tnbxhz6o]
 - `v_CIAssignmentStatus`: last enforcement/evaluation state messages per assignment and resource. [DOC S-tnbxhz6o]
 - `v_AssignmentSummaryPerTopic`: state types 300 (deployment compliance), 301 (enforcement), 302 (evaluation); names in `v_StateNames`. [DOC S-tnbxhz6o]
+- State IDs of topic type 401 (the `ComplianceState` of `v_CICurrentComplianceStatus`): 0 Compliance state unknown, 1 Compliant, 2 Non-Compliant, 3 Conflict Detected; topic types 300/301/302 cover deployment compliance, enforcement and evaluation, and `v_StateNames` holds the names. [DOC S234]
 - `v_CIComplianceSummary`: counts per baseline (targeted, compliant, failed, noncompliant). [DOC S-tnbxhz6o]
 - `v_CIRemediationHistory` (2002+, when "Track remediation history" enabled): `RemediationDate` (UTC), `ResourceID`. [DOC S-mmydokhp]
 - Which SQL view exposes a script CI's discovered/current value is not documented; none of the view descriptions mention a discovered or current value column (only before/after values of remediation). [DER S-tnbxhz6o: searched all 67 descriptions]

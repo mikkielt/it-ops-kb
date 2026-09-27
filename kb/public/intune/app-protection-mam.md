@@ -2,7 +2,7 @@
 topic: intune/app-protection-mam
 priority: P2
 applies_to: "Microsoft Intune app protection policies (APP/MAM) for iOS/iPadOS, Android and Windows; Microsoft Graph v1.0 managedAppPolicies (docs retrieved 2026-09-26)"
-retrieved_utc: 2026-09-26
+retrieved_utc: 2026-09-27
 sources: [S-ngcvmu22, S-msbbtbup, S-qing6dzr, S-qjixnw4g, S-t4g3ekea, S-5cbvuypc, S-jgesqj52, S-eaeb5jdz, S-lu7ablj2, S-36mghzxu, S-27fiskhq, S-5fxhm5mr, S-qj62oq2o, S-xsnx4hlp, S-b3l5wbk6, S-p3vtkyrq, S-ssexz2ef, S-ehjdk3sn, S-gqqrls57, S-2jxyk3ra, S-j6tphfq3, S-x44btgzh]
 status: complete
 ---
@@ -67,6 +67,7 @@ status: complete
 
 ### App configuration policies
 - **App configuration policies** deliver a set of custom key/value settings as-is to all users in the targeted security group; Graph object `targetedManagedAppConfiguration` (inherits `managedAppConfiguration`/`managedAppPolicy`) carries `customSettings` (string key/value pairs) plus `apps`, `assignments`, `deploymentSummary`. [DOC S-5fxhm5mr]
+- A Managed apps app configuration policy uses the MAM channel, so apps built with the Intune App SDK (or wrapped) receive it whatever the device enrollment state; on Windows the only supported app is Microsoft Edge (settings catalog); values may use Intune tokens such as `{{userprincipalname}}`, `{{mail}}`, `{{partialupn}}`, `{{accountid}}`, `{{userid}}`, `{{username}}` and `{{PrimarySMTPAddress}}`; app protection and MAM-channel app configuration on Android need Android 10.0 or later. [DOC S-qing6dzr]
 - `POST /deviceAppManagement/targetedManagedAppConfigurations` (Graph v1.0) creates one; least-privileged permission (delegated or application) is **DeviceManagementApps.ReadWrite.All**; not supported for personal Microsoft accounts. [DOC S-ngcvmu22]
 - The Intune App SDK exposes a separate app-configuration delivery mechanism from Android Enterprise managed configurations; apps must read admin-configured values through the SDK, and this works on devices without Android Enterprise management. [DOC S-msbbtbup]
 

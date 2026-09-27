@@ -2,7 +2,7 @@
 topic: mcp/elicitation
 priority: P1
 applies_to: "MCP specification 2026-07-28 (with legacy 2025-11-25 contrast); MCP Python SDK 2.2.0"
-retrieved_utc: 2026-09-26
+retrieved_utc: 2026-09-27
 sources: [S709, S710, S701, S720, S721, S733]
 status: complete
 ---
@@ -30,6 +30,7 @@ In legacy revisions (2025-11-25 and earlier) the server sent `elicitation/create
 - Clients MUST NOT pre-fetch or open a URL without consent, MUST show the full URL. [DOC S709]
 - Python SDK: `ctx.elicit()` / `ctx.elicit_url()` are server-to-client requests that exist only on legacy connections (2025-11-25 or earlier); on a 2026-07-28 connection they fail. [DOC S720]
 - Python SDK: a parameter `Annotated[T, Resolve(fn)]` whose resolver returns `Elicit(...)` works on every connection: live `elicitation/create` on legacy, `InputRequiredResult` on 2026-07-28. [DOC S720]
+- Python SDK example (`docs_src/elicitation/tutorial004.py`): a `delete_folder` tool takes `confirm: Annotated[ElicitationResult[Confirm], Resolve(confirm_delete)]`, where `Confirm` has one `ok: bool` field; the resolver returns `Confirm(ok=True)` without a round-trip when the folder is empty, else `Elicit(...)`, and the tool matches `AcceptedElicitation`, `DeclinedElicitation` and `CancelledElicitation`, deleting only on an accepted `ok=True`. [CODE S733: docs_src/elicitation/tutorial004.py#confirm_delete]
 - Python SDK: elicitation schemas must be flat primitive fields; a nested model makes `ctx.elicit` raise before sending. [DOC S720]
 - Python SDK: if the client registered no elicitation capability, the call fails with protocol error "Elicitation not supported" (not a decline). [DOC S720]
 - Python SDK: `MCPServer` seals `requestState` by default with a process-local key (default TTL 600 s); multi-instance deployments pass `RequestStateSecurity(keys=[...])`. [DOC S721]

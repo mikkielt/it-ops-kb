@@ -2,7 +2,7 @@
 topic: privacy/presidio-operators-deanonymize
 priority: P0
 applies_to: "presidio-anonymizer main @ e9895a5 (2.2.364 for released behaviour)"
-retrieved_utc: 2026-09-26
+retrieved_utc: 2026-09-27
 sources: [S827, S828, S829, S830, S831, S832, S833, S834, S835, S836, S841, S845, S800]
 status: complete
 ---
@@ -27,6 +27,7 @@ status: complete
 - The FAQ says pseudonymization is not built in; it points to a custom-lambda sample. [DOC S841]
 - `encrypt`/`decrypt` use AES in CBC mode. The key must be 128, 192 or 256 bits (str or bytes). [CODE S835: presidio_anonymizer/operators/aes_cipher.py#AESCipher; CODE S836: presidio_anonymizer/operators/encrypt.py#Encrypt]
 - `BatchDeanonymizeEngine` (`deanonymize_list`, `deanonymize_dict`) exists in the 2.2.364 package tree. [DOC S834; CODE S845: presidio_anonymizer/batch_deanonymize_engine.py#BatchDeanonymizeEngine]
+- The CHANGELOG at commit `e9895a5` lists "Added `BatchDeanonymizeEngine` to complement `BatchAnonymizerEngine`" (batch deanonymization over lists and nested dictionaries) under `[unreleased]`, whose compare link starts at 2.2.363, although the class is in the 2.2.364 package tree. [DOC S800]
 - Presidio keeps no state between calls: "Presidio does not store or maintain stateful sessions". [DOC S827]
 - Overlaps: with a full overlap, the higher score wins. When one entity contains another, the larger span wins. With a partial overlap, both are replaced and the results concatenated. [DOC S827]
 

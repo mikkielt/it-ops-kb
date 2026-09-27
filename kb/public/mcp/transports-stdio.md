@@ -2,7 +2,7 @@
 topic: mcp/transports-stdio
 priority: P1
 applies_to: "MCP specification 2026-07-28; MCP Python SDK 2.2.0"
-retrieved_utc: 2026-09-26
+retrieved_utc: 2026-09-27
 sources: [S705, S706, S703, S707, S724, S735]
 status: complete
 ---
@@ -14,6 +14,8 @@ In 2026-07-28 the server MUST NOT write JSON-RPC requests to stdout: server-to-c
 `InputRequiredResult` replies (MRTR). Legacy-era sessions (initialize handshake) keep the older bidirectional model.
 
 ## Facts
+- The transports overview treats a transport as a binding that frames and delivers messages without changing their meaning: messages MUST be UTF-8 JSON-RPC, servers do not initiate JSON-RPC requests and clients do not send responses on any binding, and a custom transport over a reliable byte stream (Unix socket, TCP) SHOULD reuse the stdio framing. [DOC S706]
+- There is no version handshake in 2026-07-28: every request carries its protocol version in `_meta`, a server that does not support it MUST answer `UnsupportedProtocolVersionError` (code -32022) listing its supported versions, and servers MUST implement `server/discover`, which clients MAY call first. [DOC S703]
 - Server reads JSON-RPC from stdin and writes to stdout; messages are newline-delimited and MUST NOT contain embedded newlines. [DOC S705]
 - Server MAY write UTF-8 to stderr for logging; client SHOULD NOT assume stderr output indicates errors. [DOC S705]
 - Server MUST NOT write anything to stdout that is not a valid MCP message. [DOC S705]

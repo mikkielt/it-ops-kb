@@ -2,7 +2,7 @@
 topic: mecm/adminservice
 priority: P0
 applies_to: "ConfigMgr current branch 2603"
-retrieved_utc: 2026-09-26
+retrieved_utc: 2026-09-27
 sources: [S-o6f7ibqo, S-sldz4d6b, S-igpzfey7, S-wkltnypi, S-tjt262ke, S-uispggqe, S-2fob2ctx, S-7jumyiid, S-nejxr76b, S-dfkr7mdn, S-l2gdpfl2, S-6m7klb4f, S-ebuvm65r, S313, S-mckld2pr, S-qhlzdpie, S-6l4nubjq, S-actyzzlw, S-ounncxk4, S-2mbquiz2, S350]
 status: partial
 files: [mecm/adminservice-routes.csv]
@@ -43,6 +43,7 @@ Route table: `mecm/adminservice-routes.csv`.
 - The AdminService must be set up and working for tenant attach. [DOC S-ounncxk4]
 - A console on a machine behind a proxy fails to connect to the AdminService unless the proxy is disabled or bypassed in `Microsoft.ConfigurationManagement.exe.config`. [DOC S-o6f7ibqo]
 - 2303+: unauthorized AdminService requests are aggregated for 24 hours and shown as status message ID 11618. [DOC S-tjt262ke]
+- 2603 is an in-console update for sites on 2409 or later, and its What's new page has no administration service or SMS Provider entry: the AdminService changes of 2603 are in its fixed issues and security updates below. [DER S-qhlzdpie: What's new in version 2603 read 2026-09-27, no administration service entry]
 - 2603 fixes CMPivot-through-AdminService 400 errors (KustoParser) and updates `System.Linq.Dynamic.Core` to 1.7.1 (CVE-2023-32571). [DOC S-ebuvm65r]
 - Security updates: KB35360093 (elevation of privilege, AdminService and CMPivot, 2403/2409). KB38982839 (SMS Provider and AdminService; 2603, and 2509/2503 with rollup). [DOC S-6l4nubjq,S-actyzzlw]
 - Any device that calls the AdminService uses HTTPS port 443. [DOC S-2mbquiz2]

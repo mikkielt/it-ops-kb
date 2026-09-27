@@ -2,7 +2,7 @@
 topic: sqlserver/insert-only-audit
 priority: P0
 applies_to: "SQL Server 2016+ / Azure SQL (permission model)"
-retrieved_utc: 2026-09-26
+retrieved_utc: 2026-09-27
 sources: [S468, S469, S470, S471, S-deeqomz3]
 status: partial
 ---
@@ -20,6 +20,7 @@ status: partial
 - A table-level DENY does not override a column-level GRANT. This is kept for backward compatibility, and Common Criteria compliance mode changes it. [DOC S468,S469]
 - Schema permissions: INSERT, UPDATE, DELETE and SELECT on a schema are each implied by schema CONTROL and by the same-named database permission. ALTER is implied by ALTER ANY SCHEMA. [DOC S470]
 - `db_datawriter` can add, delete or change data in all user tables. `db_denydatawriter` can't add, modify or delete in any user table. [DOC S471]
+- Table permissions that can be granted per object are DELETE, INSERT, REFERENCES, SELECT and UPDATE, so INSERT can be granted on one table alone; on a column only SELECT, REFERENCES, UPDATE and UNMASK can be granted; INSERT on an object is implied by CONTROL on it and by INSERT on its schema. [DOC S-deeqomz3]
 - Whether ownership chaining lets a stored procedure bypass a DENY on the audit table was not read in this pass. [UNK]
 
 ## Reference

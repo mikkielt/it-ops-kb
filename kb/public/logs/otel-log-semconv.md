@@ -2,7 +2,7 @@
 topic: logs/otel-log-semconv
 priority: P1
 applies_to: "OpenTelemetry semantic conventions main @838e414 (CHANGELOG top v1.44.0)"
-retrieved_utc: 2026-09-26
+retrieved_utc: 2026-09-27
 sources: [S640, S641, S642, S643, S646]
 status: complete
 files: [logs/otel-semconv-log-registry.yaml, logs/otel-semconv-code-registry.yaml]
@@ -18,11 +18,11 @@ log.record.original, log.record.uid. `code.*` (all **Stable**): code.file.path, 
 code.function.name, code.stacktrace; older code.filepath/lineno/column/function/namespace are deprecated.
 
 ## Facts
-- `log.iostream` string, values stdout / stderr; Development. [DOC S640]
-- `log.file.name` basename of the file the record was emitted to (e.g. `audit.log`); `log.file.path` full path; `*_resolved` variants resolve symlinks; all Development. [DOC S640]
+- `log.iostream` string, values stdout / stderr; Development. [DOC S640, S642]
+- `log.file.name` basename of the file the record was emitted to (e.g. `audit.log`); `log.file.path` full path; `*_resolved` variants resolve symlinks; all Development. [DOC S640, S642]
 - `log.record.original`: complete original record; MAY be added when the Body doesn't hold the same value (e.g. syslog, file read). [DOC S640]
 - `log.record.uid`: records with the same ID are duplicates and can be removed; distinct records MUST have different values. [DOC S640]
-- `code.file.path` (string), `code.line.number` (int), `code.column.number` (int), `code.function.name` (fully-qualified, no arguments), `code.stacktrace` (string); Stable; MUST NOT be used on the Profile signal. [DOC S641]
+- `code.file.path` (string), `code.line.number` (int), `code.column.number` (int), `code.function.name` (fully-qualified, no arguments), `code.stacktrace` (string); Stable; MUST NOT be used on the Profile signal. [DOC S641, S643]
 - Deprecated: `code.column`→`code.column.number`, `code.filepath`→`code.file.path`, `code.lineno`→`code.line.number`, `code.function` and `code.namespace`→ folded into `code.function.name`. [DOC S641]
 - Exceptions in logs: `exception.message` and `exception.type` Conditionally Required, `exception.stacktrace` Recommended; all Stable. [DOC S646]
 

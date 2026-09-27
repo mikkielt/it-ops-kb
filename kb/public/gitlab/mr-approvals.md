@@ -2,14 +2,14 @@
 topic: gitlab/mr-approvals
 priority: P0
 applies_to: "GitLab 19.5 docs (gitlab-org/gitlab master @56c82a97, 2026-09-23); GitLab.com, Self-Managed, Dedicated"
-retrieved_utc: 2026-09-26
+retrieved_utc: 2026-09-27
 sources: [S440, S441, S442, S443, S444, S450, S452]
 status: complete
 ---
 
 # Merge request approvals and tiers
 
-GitLab docs are CC BY-SA 4.0 (S452): summarized here, not copied.
+GitLab's repository LICENSE puts all content under `doc/` under CC BY-SA 4.0, so the docs are summarized here, not copied. [DOC S452]
 
 ## Summary
 - Free: any user with the Developer role or higher can approve, but approvals are **optional** and don't block merging.

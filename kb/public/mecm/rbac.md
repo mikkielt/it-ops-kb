@@ -2,7 +2,7 @@
 topic: mecm/rbac
 priority: P0
 applies_to: "ConfigMgr current branch 2603"
-retrieved_utc: 2026-09-26
+retrieved_utc: 2026-09-27
 sources: [S-wkltnypi, S-2z2zfj3l, S-sxtmngif, S-bprslswi, S1520, S-aaryifxi, S-hmjlvsck, S-qa267hnk, S1218, S-lef2ok5a, S-5v5lco6w, S-bjflxpet, S-z2hvjsvn, S-pl6uxpad, S-p2yatbfh]
 status: partial
 files: [mecm/rbac-permissions.csv]
@@ -22,6 +22,7 @@ The documented `GrantedOperations` bit table does not list Notify Resource, Run 
 - Notify Resource is on Collection (SMS_Collection) and is needed for all client notification actions (1810+). [DOC S-hmjlvsck,S-lef2ok5a]
 - Built-in roles with Notify Resource are Full Administrator and Operations Administrator per the client notification section of S-hmjlvsck. S-lef2ok5a (1810) and the client-diagnostics section of S-hmjlvsck say Full Administrator and Infrastructure Administrator. [DOC S-hmjlvsck,S-lef2ok5a] (see conflicts)
 - Run Script is on Collection. Built-in roles: Full Administrator, Infrastructure Administrator, Operations Administrator. [DOC S-hmjlvsck]
+- Script folders exist from 2403; the Full Administrator and Operations Administrator roles can manage them. [DOC S-p2yatbfh]
 - Create on SMS Scripts is needed to import or author scripts, and Approve on SMS Scripts to approve or deny them. [DOC S1520]
 - Microsoft's recommended Script Runners, Authors and Approvers roles are custom roles that you create by copying a role. They are not built in. [DOC S1520]
 - Read Resource, Modify Resource and Delete Resource on a collection containing the device govern reading, setting and removing device custom properties via the AdminService. [DOC S-wkltnypi]
@@ -29,6 +30,7 @@ The documented `GrantedOperations` bit table does not list Notify Resource, Run 
 - With Intune RBAC (2207+), the Intune permissions "Cloud attached devices\Run CMPivot query" and "\Run script" control cloud-console actions. [DOC S-5v5lco6w]
 - Built-in role descriptions: Operations Administrator has all permissions except managing security. Read-only Analyst can view all objects. Full Administrator has all permissions. [DOC S1218]
 - Built-in roles cannot be modified, other than adding administrative users to them. You copy one to create a custom role. [DOC S1218]
+- A permission check before a client operation can be asked of the SMS Provider: the WMI method `SMS_ClientOperation.IsClientOperationAllowed(Type, TargetCollectionID, TargetResourceIDs[])` (resource IDs optional) checks whether the user may run that operation; the reference page does not explain the `Type` values. [DOC S-qa267hnk]
 - `SMS_ARoleOperation.GrantedOperations` is a bit mask with 30 documented positions (0–29). The documented labels do not include Notify Resource, Run Script or Run CMPivot. [DOC S-z2hvjsvn]
 - The bit positions for Notify Resource, Run Script and Run CMPivot are not documented. [UNK]
 - The SQL security views v_SecuredObject, v_Roles, v_Admins, V_CategoryPermissions and v_SecuredScopePermissions expose permissions as decimal bit fields. In the 28-bit table in S-bjflxpet, Collection object key = 1. [DOC S-bjflxpet]

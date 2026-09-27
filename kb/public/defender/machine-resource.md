@@ -2,7 +2,7 @@
 topic: defender/machine-resource
 priority: P1
 applies_to: "Microsoft Defender for Endpoint API v1.0 (api.security.microsoft.com), docs ms.date 2025-12-11 / 2026-06-28"
-retrieved_utc: 2026-09-26
+retrieved_utc: 2026-09-27
 sources: [S620, S621, S622, S627, S628, S629, S630, S631]
 status: partial
 files: [defender/machine-properties.csv]
@@ -17,7 +17,8 @@ joined)" — Microsoft does not say whether it is filled for **hybrid-joined** d
 
 ## Facts
 - `aadDeviceId`: Nullable Guid, "Microsoft Entra Device ID (when machine is Microsoft Entra joined)". [DOC S620]
-- No official page found stating whether `aadDeviceId` is populated for Microsoft Entra hybrid joined devices. [UNK]
+- No official page found stating whether `aadDeviceId` is populated for Microsoft Entra hybrid joined devices. [UNK: not in S629 as re-read 2026-09-27]
+- The device inventory, the API, the export and Advanced Hunting draw from one authoritative data source but are served by separate backends with different update frequencies, so short-term or recently reactivated devices can differ slightly between them; the CSV export ignores UI filters and holds every device; the inventory's **Managed by** filter distinguishes Intune, ConfigMgr, MDE and Unknown. [DOC S629]
 - Response examples include `isAadJoined` (boolean) which is not in the property table. [DOC S621,S622]
 - `lastSeen` is the time of the last full device report (typically every 24 h) and does not correspond to the portal's last seen. [DOC S620]
 - `GET /api/machines` supports OData `$filter` on computerDnsName, id, version, deviceValue, aadDeviceId, machineTags, lastSeen, exposureLevel, onboardingStatus, lastIpAddress, healthStatus, osPlatform, riskScore, rbacGroupId; `$top` max 10,000; `$skip`. [DOC S621]

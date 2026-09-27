@@ -2,7 +2,7 @@
 topic: mecm/run-scripts
 priority: P0
 applies_to: "ConfigMgr current branch 2603"
-retrieved_utc: 2026-09-26
+retrieved_utc: 2026-09-27
 sources: [S-igpzfey7, S-o6f7ibqo, S-sxtmngif, S-e5qqwdcj, S1520, S-kln2au6a, S-aaryifxi, S-hmjlvsck, S335, S336, S337, S-5v5lco6w, S350, S-p2yatbfh]
 status: partial
 ---
@@ -36,6 +36,8 @@ By default an author cannot approve their own script.
 - Logs: client Scripts.log and CcmMessaging.log, MP MP_RelayMsgMgr.log, site server SMS_Message_Processing_Engine.log. [DOC S1520]
 - `Invoke-CMScript` targets a script with `-ScriptGuid` or `-InputObject`, and a device or collection with `-Collection*` or `-Device`. `-ScriptParameter <Hashtable>` applies to 2010 and later. `-ScheduleTime <DateTime>` sets a UTC schedule. [DOC S335]
 - `New-CMScript` takes `-ScriptName` with `-ScriptText` or `-ScriptFile` (.ps1). `Approve-CMScript` takes `-InputObject` and `-Comment`. [DOC S336,S337]
+- Run Script is a permission on the Collection object; the built-in roles holding it are Full Administrator, Infrastructure Administrator and Operations Administrator. [DOC S-hmjlvsck]
+- From the Intune admin center (tenant attach, 2207+ with Intune RBAC), the Intune permission "Cloud attached devices\Run script" controls running scripts on tenant-attached devices. [DOC S-5v5lco6w]
 - Scripts that have parameters are not shown in the Intune admin center and cannot be run from there. [DOC S-aaryifxi]
 - Run Script over the AdminService: the AdminService overview lists console-run PowerShell scripts (Run Scripts) as a custom caller of the AdminService; neither it nor the usage page documents a route to start one. [DOC S-o6f7ibqo, S-igpzfey7]
 - No official source documents a `v1.0` Run Script action or its parameter format. [UNK]

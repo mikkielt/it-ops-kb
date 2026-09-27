@@ -2,7 +2,7 @@
 topic: powerbi/scheduled-refresh
 priority: P2
 applies_to: "Power BI service, docs retrieved 2026-09-23"
-retrieved_utc: 2026-09-26
+retrieved_utc: 2026-09-27
 sources: [S900, S901, S902, S911]
 status: complete
 ---
@@ -28,6 +28,7 @@ report views pause it.
 - There is no monthly refresh interval option. [DOC S901]
 - Only Import mode semantic models require a source data refresh; DirectQuery and live connection models do not import data. [DOC S900]
 - With the enterprise (standard) gateway, credentials are defined on the data source by the gateway admin, not in the model settings. [DOC S901]
+- The on-premises SQL Server tutorial schedules refresh only after the semantic model is bound to a gateway connection: it turns on **Configure a refresh schedule**, adds daily times (up to eight on shared capacity, 48 on Premium), keeps failure notifications to the semantic model owner, and notes that Power BI refreshes at the next scheduled time within 15 minutes; an on-demand refresh does not move the next scheduled time. [DOC S902]
 - Refresh history (status, start, duration, error) is under the semantic model's Refresh > Refresh history. [DOC S901]
 - A Pro workspace on shared capacity therefore gets at most 8 scheduled slots per day, i.e. one per 3 hours on average. [DER S900,S901] (8 slots / 24 h)
 

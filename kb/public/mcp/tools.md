@@ -2,7 +2,7 @@
 topic: mcp/tools
 priority: P1
 applies_to: "MCP specification 2026-07-28; MCP Python SDK 2.2.0"
-retrieved_utc: 2026-09-26
+retrieved_utc: 2026-09-27
 sources: [S708, S711, S701, S710, S725, S726, S736]
 status: complete
 ---
@@ -27,7 +27,7 @@ JSON SHOULD also appear as a TextContent block. `tools/call` may answer with `In
 - A tool returning structured content SHOULD also return the serialized JSON in a TextContent block. [DOC S708]
 - 2026-07-28 loosened `inputSchema`/`outputSchema` to any JSON Schema 2020-12 keywords and added `$ref` resolution requirements. [DOC S701]
 - Two error channels: protocol errors (JSON-RPC error, e.g. unknown tool `-32602`) and tool execution errors (`isError: true` in the result, for the model to self-correct). [DOC S708]
-- `tools/call` MAY return `InputRequiredResult`; the retry carries `inputResponses` and echoed `requestState` with a new JSON-RPC id. [DOC S708]
+- `tools/call` MAY return `InputRequiredResult`; the retry carries `inputResponses` and echoed `requestState` with a new JSON-RPC id. [DOC S708, S710]
 - Stateful tools: no protocol session; servers return explicit handles and SHOULD validate caller authorization against the handle on every call. [DOC S708]
 - Servers MUST validate inputs, implement access control, rate-limit invocations and sanitize outputs; clients SHOULD show inputs before calling, implement timeouts, and log tool usage. [DOC S708]
 - `x-mcp-header` mirrors parameters into HTTP headers; clients on other transports (e.g. stdio) MAY ignore it. [DOC S708]

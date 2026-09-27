@@ -2,7 +2,7 @@
 topic: privacy/presidio-entities
 priority: P0
 applies_to: "Presidio main @ e9895a5; since-version from tags 2.2.355-2.2.364"
-retrieved_utc: 2026-09-26
+retrieved_utc: 2026-09-27
 sources: [S809, S810, S811, S812, S813, S814, S815, S816, S817, S818, S819, S820, S843, S844]
 status: complete
 ---
@@ -18,6 +18,7 @@ status: complete
 - `default_recognizers.yaml` sets `supported_languages: [en]` and `global_regex_flags: 26`. It marks recognizers with `enabled: false` and `country_code`. [CODE S809: presidio_analyzer/conf/default_recognizers.yaml#L1-L20]
 - `SpacyRecognizer.ENTITIES = ["DATE_TIME","NRP","LOCATION","PERSON","ORGANIZATION"]`. [CODE S844: predefined_recognizers/nlp_engine_recognizers/spacy_recognizer.py#SpacyRecognizer.ENTITIES]
 - The default NLP config maps spaCy labels PER/PERSON→PERSON, NORP→NRP, FAC/LOC/GPE/LOCATION→LOCATION, ORG→ORGANIZATION, DATE/TIME→DATE_TIME, and ignores ORGANIZATION, CARDINAL, EVENT, LANGUAGE, LAW, MONEY, ORDINAL, PERCENT, PRODUCT and others. [CODE S843: presidio_analyzer/conf/default.yaml#ner_model_configuration]
+- Recognizer classes added to `predefined_recognizers/__init__.py` from tag to tag (none removed): 2.2.356 `UkNinoRecognizer`; 2.2.357 `GLiNERRecognizer`; 2.2.358 and 2.2.359 none; 2.2.360 `AzureHealthDeidRecognizer`, `KrRrnRecognizer`; 2.2.361 eleven, among them `MacAddressRecognizer`, the LangExtract recognizers, `UsMbiRecognizer`, `InGstinRecognizer` and four Korean ones; 2.2.362 eight, among them `HuggingFaceNerRecognizer`, `MedicalNERRecognizer`, UK passport, postcode and vehicle registration, and `UsNpiRecognizer`; 2.2.363 twenty-two, thirteen of them German plus Swedish, Turkish, `EsPassportRecognizer`, `CaSinRecognizer`, `PhTinRecognizer`, `UkDrivingLicenceRecognizer` and `ZaIdNumberRecognizer`; 2.2.364 `PhUmidRecognizer`. [CODE S811, S812, S813, S814, S815, S816, S817, S818, S819, S820: presidio_analyzer/predefined_recognizers/__init__.py#__all__]
 - `MAC_ADDRESS` (`MacAddressRecognizer`) first appears in 2.2.361. [CODE S817: presidio_analyzer/predefined_recognizers/__init__.py#MacAddressRecognizer]
 - `UUID`, `CA_POSTAL_CODE`, `PH_PASSPORT`, the US healthcare-admin identifiers, and nine `ZA_*` recognizers are in no release yet (only on `main`). [DER S820,S809: class name absent from 2.2.364 `__init__.py` but present on main]
 - On `main` the recognizers enabled by default are 10 global pattern recognizers (CREDIT_CARD, CRYPTO, DATE_TIME, EMAIL_ADDRESS, IBAN_CODE, IP_ADDRESS, MAC_ADDRESS, PHONE_NUMBER, URL, UUID), plus ES/IT/PL/UK_NHS/US legacy ones. Non-`en` ones only run when the analyzer runs that language. [CODE S809: presidio_analyzer/conf/default_recognizers.yaml#recognizers]

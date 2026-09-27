@@ -2,7 +2,7 @@
 topic: mecm/client-settings
 priority: P0
 applies_to: "ConfigMgr current branch 2603 (about-client-settings.md ms.date 2025-12-08)"
-retrieved_utc: 2026-09-26
+retrieved_utc: 2026-09-27
 sources: [S-pm6pjuef, S-le4dru57]
 status: partial
 ---
@@ -24,6 +24,7 @@ Hardware inventory, Software deployment and State messaging; other groups are li
 - Software deployment: Schedule re-evaluation for deployments default every 7 days; Microsoft doesn't recommend lower. [DOC S-pm6pjuef]
 - State message reporting cycle: default 15 minutes. [DOC S-pm6pjuef]
 - Remote tools group: remote control, Remote Assistance, Remote Desktop settings (not tabulated). [DOC S-pm6pjuef]
+- The Deploy applications page tells admins to set the client setting **Grace period for enforcement after deployment deadline (hours)** to a value between 1 and 120 hours and then enable **Delay enforcement of this deployment according to user preferences** on the required deployment; after the deadline the client installs in the first user-configured non-business window up to the grace period, and the period starts when the client gets policy after the deadline. [DOC S-le4dru57]
 
 ## Reference
 | Group | Setting | Values / default | Tag |

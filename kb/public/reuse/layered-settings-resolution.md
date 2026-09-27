@@ -2,7 +2,7 @@
 topic: reuse/layered-settings-resolution
 priority: P2
 applies_to: "layered settings resolution: flags > env vars > config file > built-in defaults, unknown-key refusal"
-retrieved_utc: 2026-09-26
+retrieved_utc: 2026-09-27
 sources: [S1022, S1023, S-ovuvyg6h]
 status: complete
 ---
@@ -20,6 +20,7 @@ rules argue against.
   `cli_parse_args` is enabled) > init kwargs > env vars > dotenv file > secrets directory > field default,
   and overriding `settings_customise_sources` reorders, adds or removes sources (first returned is
   highest). [DOC S-ovuvyg6h]
+- The pydantic-settings README at the pinned commit describes the package only as settings management using Pydantic and sends readers to the Pydantic documentation for details, so the source-priority facts come from the documentation page. [DOC S1022]
 - That order has the same shape as a `flags > env vars > config file > built-in defaults` precedence:
   map parsed CLI flags to init kwargs (or enable its CLI source) and add a config-file source via the
   hook. [DER S-ovuvyg6h: the documented priority list and hook, mapped onto the target order]

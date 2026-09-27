@@ -2,7 +2,7 @@
 topic: windows/azure-arc-servers
 priority: P2
 applies_to: "Azure Arc-enabled servers, Azure Connected Machine agent (azcmagent), Azure Machine Configuration (docs current 2026-09-26)"
-retrieved_utc: 2026-09-26
+retrieved_utc: 2026-09-27
 sources: [S-gma7exwg, S-arygyiia, S-ojs4qilv, S-3ajkoikd, S-lpj5aefn, S-szyeetyp, S-efadnhwv, S-nevhri3m, S-5d7caeeq, S-h7fejg6k, S-oacfa6ee, S-wwbtoald, S-jfzhzjgu, S-nibv7ci5, S-4xar7ise, S-zfc5iphl, S-w3pkna2x, S-ldykf7ob, S-wftu7kvv, S-ucwyn46f, S-d4ny3ufk, S-epoqec7s, S-nofzkxdn, S-vetttstu, S-obkcr6hb, S-xjcjnwtx, S-43ldqczf, S-lkmpjpnp, S-2akwz2fk, S-alputngy, S-3jpzrkqj, S-orth4d7r, S-fio2gurk, S-i2fkwqg2]
 status: partial
 files: [windows/azcmagent-config.csv]
@@ -74,6 +74,7 @@ files: [windows/azcmagent-config.csv]
 ### Windows Server management, ESU, and Hotpatch via Arc
 - Windows Server Management enabled by Azure Arc requires Connected Machine agent **1.47+**, Windows Server 2012+ (Standard/Datacenter), and a *Connected* (not disconnected/expired) server; it works over public endpoint, proxy, Arc Gateway, or private endpoint with no extra endpoints to allow. [DOC S-w3pkna2x]
 - Windows Server 2012/2012 R2 reached end of support 2023-10-10; Arc-enrolled machines can get Extended Security Updates (ESU) pay-as-you-go, billed monthly through Azure, with no keys to acquire or activate (enrollment through the Azure portal or Azure Policy); once enrolled the server is eligible for ESU patches, which Azure Update Manager or any other patching solution can deliver. [DOC S-ucwyn46f]
+- The three ESU paths for Windows Server: Azure VMs get ESUs automatically and free; on-premises or hosted servers enroll through Azure Arc (portal or Azure Policy) and are billed monthly; servers that can't connect to Arc apply a Multiple Activation Key from the Microsoft 365 admin center. Arc and MAK purchases need Software Assurance through a volume licensing program, and before ESUs install a server needs the latest servicing stack update and the Licensing Preparation Package (KB5031043). [DOC S-d4ny3ufk]
 - ESU licensing for WS2012/2012 R2 via Arc offers two models: **vCore** (Standard-edition rate per vCore, 8-core minimum per VM, VM-only) or **pCore** (either edition, 16-core minimum per server, covers physical host/VM/mixed; a Standard host covers up to 2 guest VMs, a Datacenter host covers all guest VMs) — mixing pCore and vCore across VMs is allowed. [DOC S-i2fkwqg2]
 - Windows Server 2025 Datacenter/Standard Edition Hotpatch is available on Arc-enabled machines at **no extra cost** (since 2026-05-19): enable it per machine in Azure Update Manager (Machines > select the machine > Recommended updates > Hotpatch > Change > Enable hotpatching > Confirm) or at scale through Update settings; prerequisites are Virtualization Based Security (VBS) enabled and the machine Arc-enabled. Hotpatch releases install without a restart; planned baselines (a cumulative update every three months), unplanned baselines, and updates outside the program (non-security, .NET, drivers/firmware) still need restarts. [DOC S-ldykf7ob, S-wftu7kvv]
 

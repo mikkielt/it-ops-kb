@@ -2,7 +2,7 @@
 topic: claude/settings-and-scopes
 priority: P2
 applies_to: "Claude Code docs (retrieved 2026-09-26)"
-retrieved_utc: 2026-09-26
+retrieved_utc: 2026-09-27
 sources: [S2057, S-wzatkg4o, S2042, S-22qwtmf7, S-zcuxapgb, S1863, S-rfpmkpck, S-vilbjgtf, S-lreom5ko, S-inpjf36q, S-a2zimsvk]
 status: complete
 files: [claude/settings-keys.csv, claude/env-vars.csv]
@@ -30,6 +30,10 @@ precedence against settings-file `env` values.
 - List settings (e.g. `permissions.allow`) set in more than one file are combined, not overridden (four model-list keys such as `availableModels` follow their own rules); any other key takes the value from the highest-precedence level that sets it. [DOC S2057]
 - `~/.claude.json` is a fifth file Claude Code writes for itself: sign-in session, MCP server configs, per-project trust state, and the small set of global config keys `/config` writes. Not for manual editing. [DOC S2057, S-rfpmkpck]
 - On Windows, `~/.claude` means `%USERPROFILE%\.claude`; `CLAUDE_CONFIG_DIR` relocates it. [DOC S2057]
+- Environment variables (full list in `env-vars.csv`): an `env` value in settings follows settings precedence, so a managed entry overrides the same variable in user or project settings, and project or local settings can't set some variables such as `CLAUDE_CONFIG_DIR`; `ANTHROPIC_API_KEY`, when set, is used instead of a Pro, Max, Team or Enterprise subscription even if the user is logged in. [DOC S-vilbjgtf]
+- Provider switches are environment variables: `CLAUDE_CODE_USE_BEDROCK=1` routes requests through Amazon Bedrock (and unhides `/setup-bedrock`). [DOC S-inpjf36q]
+- Network variables: Claude Code uses the first of `https_proxy`, `HTTPS_PROXY`, `http_proxy`, `HTTP_PROXY` that is set, `NO_PROXY` lists bypassed hosts (loopback WebSockets never use the proxy), and it trusts its bundled CA set plus the OS store by default, with `NODE_EXTRA_CA_CERTS` for more. [DOC S-lreom5ko]
+- Telemetry variables: `DISABLE_TELEMETRY=1` stops usage metrics, `DISABLE_ERROR_REPORTING=1` stops error reports, and `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC` stops all non-essential traffic including surveys; `DISABLE_TELEMETRY` and the non-essential switch also stop the feature-flag evaluation Remote Control needs; on Bedrock, Agent Platform, Foundry and Claude Platform on AWS, metrics and error reports are off by default. [DOC S-a2zimsvk]
 - `/status` shows the `Setting sources` line naming which managed source is active for the current machine. [DOC S2057]
 
 ### Managed settings delivery

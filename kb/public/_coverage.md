@@ -188,7 +188,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `mecm/baselines` | P0 | partial | `mecm/baselines.md` | 6 |
 | `mecm/client-notification` | P0 | partial | `mecm/client-notification.md`, `mecm/client-operation-types.csv` | 12 |
 | `mecm/client-settings` | P0 | partial | `mecm/client-settings.md` | 2 |
-| `mecm/cmpivot` | P0 | partial | `mecm/cmpivot.md`, `mecm/cmpivot-entities.csv` | 12 |
+| `mecm/cmpivot` | P0 | partial | `mecm/cmpivot.md`, `mecm/cmpivot-entities.csv` | 11 |
 | `mecm/compliance-script-ci` | P0 | partial | `mecm/compliance-script-ci.md` | 7 |
 | `mecm/log-files` | P0 | complete | `mecm/log-files.md`, `mecm/log-files.csv` | 2 |
 | `mecm/logging` | P0 | partial | `mecm/logging.md` | 5 |

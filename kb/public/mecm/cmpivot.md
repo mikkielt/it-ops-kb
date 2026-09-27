@@ -2,8 +2,8 @@
 topic: mecm/cmpivot
 priority: P0
 applies_to: "ConfigMgr current branch 2603"
-retrieved_utc: 2026-09-23
-sources: [S-igpzfey7, S-ebuvm65r, S-2z2zfj3l, S-sxtmngif, S-t5dhva6p, S-e5qqwdcj, S-dyvqhf4u, S-bprslswi, S321, S-v5d6zvne, S-5v5lco6w, S-6l4nubjq]
+retrieved_utc: 2026-09-27
+sources: [S-igpzfey7, S-ebuvm65r, S-2z2zfj3l, S-sxtmngif, S-t5dhva6p, S-e5qqwdcj, S-dyvqhf4u, S-bprslswi, S-v5d6zvne, S-5v5lco6w, S-6l4nubjq]
 status: partial
 files: [mecm/cmpivot-entities.csv]
 ---
@@ -56,6 +56,7 @@ Limits: 128 KB per client per query, 100,000 cells in the results, a 1-hour time
 - The monitoring view `vSMS_CMPivotStatus` is queried by TaskID in troubleshooting. [DOC S-e5qqwdcj]
 - CMPivot standalone ships at `<site install path>\tools\CMPivot\CMPivot.msi` and is English only. It cannot open Community hub queries. [DOC S-2z2zfj3l]
 - Security software may block scripts in `%windir%\CCM\ScriptStore`. Microsoft recommends excluding that folder. [DOC S-2z2zfj3l]
+- KB35360093 (released 2025-10-15) fixes an elevation-of-privilege issue in the administration service and CMPivot for versions 2403 and 2409; it needs a site reset but no restart, secondary sites must be updated with Recover Secondary Site, and the same fix ships in the 2503 update rollup KB32851084. [DOC S-6l4nubjq]
 
 ## Reference
 - Entities: `mecm/cmpivot-entities.csv`. Columns: entity, kind, description, parameters, columns seen in official examples, console_only, min_version, source.

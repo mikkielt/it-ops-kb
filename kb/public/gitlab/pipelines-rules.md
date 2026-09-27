@@ -2,7 +2,7 @@
 topic: gitlab/pipelines-rules
 priority: P0
 applies_to: "GitLab 19.5 docs (master @56c82a97)"
-retrieved_utc: 2026-09-26
+retrieved_utc: 2026-09-27
 sources: [S446, S447, S448, S451, S453]
 status: complete
 ---
@@ -27,6 +27,7 @@ status: complete
 - The creator becomes the schedule owner, and the pipeline runs with the owner's permissions. Running it manually uses the permissions of the user who runs it. [DOC S448]
 - Creating or editing needs the Developer role or higher. Protected branches need merge permission, and protected tags need create permission. [DOC S448]
 - If the owner is blocked or removed, the schedule becomes inactive. A Maintainer or Owner can **Take ownership**. [DOC S448]
+- `CI_PIPELINE_SOURCE` tells rules which pipeline type is running: `merge_request_event` (MR created or updated; needed for MR pipelines, merged results and merge trains), `push` (Git push, branches and tags), `schedule`, `web`, `api`, `trigger`, `parent_pipeline`, `pipeline` and others; the values match the `source` field of the pipelines API. [DOC S453]
 - Releases tier: Free, Premium, Ultimate. Release Metrics: Ultimate. [DOC S451]
 - The `release` job needs `glab` on `$PATH`. It creates the release with `glab release create`. The release-cli image `v0.24.0` contains glab `v1.58.0`. [DOC S447,S451]
 - The documented release job pattern uses `rules: - if: $CI_COMMIT_TAG` and `tag_name: '$CI_COMMIT_TAG'`. [DOC S451]
