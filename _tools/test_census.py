@@ -11,7 +11,7 @@ import csv, io, json, os, re, shutil
 import pytest
 
 import census
-from conftest import Repo, copy_kb, git_env, requires_git
+from conftest import P, Repo, copy_kb, git_env, requires_git
 
 
 class TestCensusRules:
@@ -117,10 +117,10 @@ class TestCensusLedger:
         cls.tmp = str(tmp_path_factory.mktemp("kb-census-ledger"))
         cls.kb = copy_kb(os.path.join(cls.tmp, "kb"), skip=("_census", "_fetch_state.csv"))
         cls.repo = Repo(cls.kb, dict(os.environ))
-        with open(os.path.join(cls.kb, "_sources.csv"), encoding="utf-8", newline="") as f:
+        with open(os.path.join(cls.kb, P("_sources.csv")), encoding="utf-8", newline="") as f:
             cls.rows = {r["id"]: r for r in csv.DictReader(f)}
         # an article with exactly two sources: confirm one, then both
-        cls.article = "auth/gitlab-ci-identity.md"
+        cls.article = P("auth/gitlab-ci-identity.md")
         text = open(os.path.join(cls.kb, cls.article), encoding="utf-8").read()
         fm = census.build_index.front_matter(text)
         cls.ids = re.findall(r"S-[a-z2-7]{8}|S\d+", fm["sources"])
@@ -138,7 +138,7 @@ class TestCensusLedger:
         return self.repo.tool("census.py", *args)
 
     def sources(self):
-        with open(os.path.join(self.kb, "_sources.csv"), encoding="utf-8", newline="") as f:
+        with open(os.path.join(self.kb, P("_sources.csv")), encoding="utf-8", newline="") as f:
             return {r["id"]: r for r in csv.DictReader(f)}
 
     def test_1_confirm_only_what_is_confirmed(self):
@@ -150,7 +150,7 @@ class TestCensusLedger:
         assert s[self.ids[1]]["retrieved_utc"] == self.rows[self.ids[1]]["retrieved_utc"]  # CHANGED, unread
         assert s["S100"]["retrieved_utc"] == self.rows["S100"]["retrieved_utc"]
         assert "retrieved_utc: 2031-01-02" not in open(os.path.join(self.kb, self.article), encoding="utf-8").read()
-        with open(os.path.join(self.kb, "_fetch_state.csv"), encoding="utf-8") as f:
+        with open(os.path.join(self.kb, P("_fetch_state.csv")), encoding="utf-8") as f:
             st = {r["id"]: r for r in csv.DictReader(f)}
         assert (st[self.ids[0]]["checked_utc"], st[self.ids[0]]["fetched_utc"]) == ("2031-01-02T00:00:00Z", "")
         assert self.ids[1] not in st

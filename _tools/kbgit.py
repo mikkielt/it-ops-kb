@@ -122,9 +122,41 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import kbcommon, kbid  # noqa: E402
 import build_index  # noqa: E402
 
-KB = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-SOURCES, STATE, ARTIFACTS = "_sources.csv", "_fetch_state.csv", "_artifacts.csv"
-MD_LEDGERS = ("_answers.md", "_gaps.md", "_conflicts.md")
+KB = kbcommon.HOME  # the repository: git runs here, and every path kbgit names is relative to it
+ROOT = kbcommon.PUBLIC  # the public root: ledgers, articles and data, named relative to it in the kb's own files
+
+
+def R(rel):
+    """A path relative to the public root as a repository path (what git takes and prints)."""
+    return kbcommon.repo_rel(rel, ROOT)
+
+
+def FB(path):
+    """A path build_index names (relative to the kb root it reads) as a repository path."""
+    return kbcommon.repo_rel(path)
+
+
+def B(path):
+    """A repository path as build_index names it: relative to the kb root it reads (may climb out with `..`)."""
+    return os.path.relpath(os.path.join(KB, path), kbcommon.KB).replace(os.sep, "/")
+
+
+def user_path(arg):
+    """A path given on the command line, root-relative (`auth/kerberos.md`) or repository-relative, as a repository
+    path: root-relative when it names a file under the public root, else as given."""
+    arg = arg[2:] if arg.startswith("./") else arg
+    return R(arg) if os.path.exists(os.path.join(ROOT, arg)) else arg
+
+
+def with_legacy(path):
+    """[path] plus, for a file under the public root, its path before the kb moved (root-relative), for history."""
+    rel = kbcommon.kb_rel(path, ROOT)
+    return [path] + ([rel] if rel and rel != path else [])
+
+
+SOURCES, STATE, ARTIFACTS = R("_sources.csv"), R("_fetch_state.csv"), R("_artifacts.csv")
+ANSWERS, COVERAGE = R("_answers.md"), R("_coverage.csv")
+MD_LEDGERS = (ANSWERS, R("_gaps.md"), R("_conflicts.md"))
 BASELINE = "_tools/lint_baseline.txt"
 ATTRS = ".gitattributes"
 LINT = os.path.join(".claude", "skills", "kb-verify", "lint.py")
@@ -139,7 +171,7 @@ class Problem(Exception):
 # ---------------------------------------------------------------- io and git
 
 def read(rel):
-    return kbcommon.read(rel, newline="", strict=True)
+    return kbcommon.read(os.path.join(KB, rel), newline="", strict=True)
 
 
 def write(rel, text):
@@ -353,10 +385,10 @@ def cite_count(text, sid):
 def id_files():
     """Text files that may cite a source id or name an answer id: content files and the root ledgers (`_*.md`,
     `_*.csv`). README.md, AGENTS.md and the tools mention ids only as examples and are never rewritten."""
-    out = [f for f in build_index.content_files()]
-    out += sorted(f for f in os.listdir(KB) if f.startswith("_") and f.endswith((".md", ".csv"))
-                  and f not in (SOURCES, STATE, "_coverage.csv"))
-    out += [build_index.EXTRA]
+    out = [FB(f) for f in build_index.content_files()]
+    out += sorted(R(f) for f in os.listdir(ROOT) if f.startswith("_") and f.endswith((".md", ".csv"))
+                  and R(f) not in (SOURCES, STATE, COVERAGE))
+    out += [FB(build_index.EXTRA)]
     return [f for f in out if os.path.isfile(os.path.join(KB, f))]
 
 
@@ -445,7 +477,7 @@ def answer_plan(text, base_text, upstream_text, side_texts, report, problems):
     else the first one; the others get new ids (kbid.answer_id(question), made unique with -2, -3...), and each line
     naming the id gets the id of the question on its side (`side_texts` {side: _answers.md text}).
     An id whose headings are identical is left to resolve_md (verbatim duplicates dropped, different bodies: a human)."""
-    heads = answer_heads(strip_markers(lf(text or ""), "_answers.md")[0])
+    heads = answer_heads(strip_markers(lf(text or ""), ANSWERS)[0])
     protected = {ln for _, ln, _ in answer_heads(base_text) + answer_heads(upstream_text)}
     taken = {i for i, _, _ in heads}
     lines_of = {}
@@ -671,7 +703,7 @@ def resolve_md(text, name, report, problems, side_texts=()):
         for sub in subs:
             kept.extend(dedupe_items(sub, name, report))
     out = "\n".join(ln for ln, _ in kept)
-    if name == "_answers.md":
+    if name == ANSWERS:
         ids = kbid.answer_ids(out)
         for d, n in sorted(Counter(ids).items()):
             if n < 2:
@@ -706,7 +738,8 @@ def resolve_baseline(text, report):
 
 
 def pinned_paths(artifacts_text):
-    return [r["path"] for r in csv.DictReader(io.StringIO(lf(artifacts_text or "")))] if artifacts_text else []
+    """The repository paths of the pinned artifacts (_artifacts.csv names them relative to the public root)."""
+    return [R(r["path"]) for r in csv.DictReader(io.StringIO(lf(artifacts_text or "")))] if artifacts_text else []
 
 
 def resolve_attrs(text, pinned):
@@ -803,11 +836,11 @@ def fix_texts(a, report, problems):
     out[SOURCES] = csv_text(header, rows)
     pinned = set(pinned_paths(read(ARTIFACTS)))
     plan = source_plan(renames, rows) if renames else {}
-    ans = read("_answers.md")
+    ans = read(ANSWERS)
     if ans is not None:
-        aplan = answer_plan(ans, show(base["rev"], "_answers.md") if base else None,
-                            show(side_revs[upstream], "_answers.md") if upstream else None,
-                            {s: show(rev, "_answers.md") for s, rev in side_revs.items()}, report, problems)
+        aplan = answer_plan(ans, show(base["rev"], ANSWERS) if base else None,
+                            show(side_revs[upstream], ANSWERS) if upstream else None,
+                            {s: show(rev, ANSWERS) for s, rev in side_revs.items()}, report, problems)
         if any(p["by_side"] for p in aplan.values()) and not side_revs:
             problems.append("answer ids collide but the merge's sides are unknown; pass --side REV for each merged branch")
         plan.update(aplan)
@@ -820,7 +853,7 @@ def fix_texts(a, report, problems):
         t = out.get(name, read(name))
         if t is not None:
             out[name] = resolve_md(t, name, report, problems, [show(rev, name) for rev in side_revs.values()])
-    for name in ("_coverage.csv",):
+    for name in (COVERAGE,):
         t = read(name)
         if t is not None and has_markers(t):
             out[name] = strip_markers(t, name)[0]  # rebuilt below anyway
@@ -849,20 +882,20 @@ def run(a):
         if a.cmd == "fix" and not problems:
             texts = {}
             try:
-                result, _, warnings = build_index.build(out, texts_out=texts)
+                result, _, warnings = build_index.build({B(p): t for p, t in out.items()}, texts_out=texts)
             except build_index.BuildError as e:
                 raise Problem(f"build_index: {e}")
             for p, (_, new) in result.items():
-                out[p] = new
-            page = build_index.coverage_page(out)
+                out[FB(p)] = new
+            page = FB(build_index.coverage_page({B(p): t for p, t in out.items()}))
             if has_markers(out[page]):
                 problems.append(f"{page} has conflict markers outside the coverage table; resolve them by hand")
             for f in build_index.content_files():
-                t = out.get(f)
+                t = out.get(FB(f))
                 if t is None and f.endswith((".md", ".csv", ".yaml", ".yml", ".json")):
                     t = texts.get(f)  # read once, by build()
                 if has_markers(t):
-                    problems.append(f"{f} has conflict markers; resolve them by hand")
+                    problems.append(f"{FB(f)} has conflict markers; resolve them by hand")
     except Problem as e:
         problems.append(str(e))
     if problems:
@@ -959,8 +992,9 @@ def changed_paths(base, target):
 
 
 def is_content(path):
-    top = path.split("/", 1)[0]
-    return "/" in path and not top.startswith(("_", "."))
+    """A repository path of a domain file: under the public root, in a directory not named `_*` or `.*`."""
+    rel = kbcommon.kb_rel(path, ROOT)
+    return bool(rel) and "/" in rel and not rel.split("/", 1)[0].startswith(("_", "."))
 
 
 def topic_map(coverage_texts):
@@ -970,7 +1004,7 @@ def topic_map(coverage_texts):
         if not t:
             continue
         try:
-            t = strip_markers(lf(t), "_coverage.csv")[0]
+            t = strip_markers(lf(t), COVERAGE)[0]
             rows = list(csv.DictReader(io.StringIO(t)))
         except (Problem, csv.Error):
             continue
@@ -1012,14 +1046,15 @@ def trailers_from(paths, old, new):
     out = {}
     content = [p for p in paths if is_content(p)]
     if content:
-        files, dirs = topic_map([new("_coverage.csv"), old("_coverage.csv")])
+        files, dirs = topic_map([new(COVERAGE), old(COVERAGE)])
         topics = set()
         for p in content:
-            t = set(files.get(p, ())) | {topic for d, topic in dirs if p.startswith(d)}
-            if not t and p.endswith(".md"):
+            rel = kbcommon.kb_rel(p, ROOT)  # _coverage.csv names files relative to the root
+            t = set(files.get(rel, ())) | {topic for d, topic in dirs if rel.startswith(d)}
+            if not t and rel.endswith(".md"):
                 fm = build_index.front_matter(lf(new(p) or old(p) or ""))
                 if fm is not None:
-                    t.add(p[:-3])
+                    t.add(rel[:-3])
             topics |= t
         out["KB-Topics"] = sorted(t for t in topics if t)
     if SOURCES in paths:
@@ -1029,8 +1064,8 @@ def trailers_from(paths, old, new):
         out["KB-Sources-Added"] = sorted(set(b) - set(a), key=id_key)
         out["KB-Sources-Superseded"] = sorted(sup, key=id_key)
         out["KB-Sources-Changed"] = sorted(({i for i in a if i in b and strip(a[i]) != strip(b[i])} - sup) | (set(a) - set(b)), key=id_key)
-    if "_answers.md" in paths:
-        a, b = answer_sections(old("_answers.md")), answer_sections(new("_answers.md"))
+    if ANSWERS in paths:
+        a, b = answer_sections(old(ANSWERS)), answer_sections(new(ANSWERS))
         out["KB-Answers"] = sorted(i for i in set(a) | set(b) if a.get(i) != b.get(i))
     return {k: out[k] for k in KEYS if out.get(k)}
 
@@ -1410,14 +1445,14 @@ def id_regex(sid):
 
 
 def classify(arg):
-    if kbid.is_source_id(kbid.canonical_id(arg)) and not os.path.exists(os.path.join(KB, arg)):
+    if kbid.is_source_id(kbid.canonical_id(arg)) and not os.path.exists(os.path.join(KB, user_path(arg))):
         return "source", kbid.canonical_id(arg)
-    if kbid.QK_ID.fullmatch(arg) or arg in kbid.answer_ids(read("_answers.md") or ""):
+    if kbid.QK_ID.fullmatch(arg) or arg in kbid.answer_ids(read(ANSWERS) or ""):
         return "answer", arg
-    topics = {r["topic"]: r for r in csv.DictReader(io.StringIO(lf(read("_coverage.csv") or "")))}
-    if arg in topics or (os.path.isfile(os.path.join(KB, arg + ".md")) and is_content(arg + ".md")):
+    topics = {r["topic"]: r for r in csv.DictReader(io.StringIO(lf(read(COVERAGE) or "")))}
+    if arg in topics or (os.path.isfile(os.path.join(ROOT, arg + ".md")) and is_content(R(arg + ".md"))):
         return "topic", arg
-    return "path", arg[2:] if arg.startswith("./") else arg
+    return "path", user_path(arg)
 
 
 def cmd_log(a):
@@ -1437,11 +1472,11 @@ def cmd_log(a):
     if kind == "source":
         fallback = [("diff", ["-G", id_regex(what)])]
     elif kind == "answer":
-        fallback = [("diff", ["-G", rf"^## {re.escape(what)}\. ", "--", "_answers.md"])]
+        fallback = [("diff", ["-G", rf"^## {re.escape(what)}\. ", "--", *with_legacy(ANSWERS)])]
     elif kind == "topic":
-        row = {r["topic"]: r for r in csv.DictReader(io.StringIO(lf(read("_coverage.csv") or "")))}.get(what)
+        row = {r["topic"]: r for r in csv.DictReader(io.StringIO(lf(read(COVERAGE) or "")))}.get(what)
         files = [f for f in (row["files"].split(";") if row else [what + ".md"]) if f]
-        fallback = [("path", ["--"] + files)]
+        fallback = [("path", ["--"] + [p for f in files for p in with_legacy(R(f))])]
     else:
         fallback = [("path", ["--follow", "--", what])]
     for label, args in fallback:
@@ -1475,17 +1510,18 @@ def cmd_blame(a):
     if not path or not line.isdigit() or int(line) < 1:
         print(f"{a.target!r}: expected PATH:LINE")
         return 2
-    path = path[2:] if path.startswith("./") else path
+    shown = path[2:] if path.startswith("./") else path
+    path = user_path(shown)
     if rev_parse("HEAD") is None:
         print("not a git clone, or no commits")
         return 2
     b = blame_line(path, int(line), True)
     if b is None:
-        print(f"{path}:{line}: no such tracked file or line")
+        print(f"{shown}:{line}: no such tracked file or line")
         return 1
     zero = set(b["sha"]) == {"0"}
     when = datetime.datetime.fromtimestamp(int(b.get("author-time", "0")), datetime.timezone.utc).date() if not zero else ""
-    print(f"{path}:{line}: {b.get('text', '')}")
+    print(f"{shown}:{line}: {b.get('text', '')}")
     if zero:
         print("  introduced by: not committed yet")
     else:
@@ -1502,7 +1538,7 @@ def cmd_blame(a):
     rows = {r.get("id"): r for r in kbid.read_sources()} if ids else {}
     for sid in ids:
         r = rows.get(sid)
-        added = (git("log", "--reverse", "--format=%h %cs", "-G", rf"^{re.escape(sid)},", "HEAD", "--", SOURCES) or "").split("\n")[0]
+        added = (git("log", "--reverse", "--format=%h %cs", "-G", rf"^{re.escape(sid)},", "HEAD", "--", *with_legacy(SOURCES)) or "").split("\n")[0]
         sup = (r or {}).get("superseded_by", "").strip()
         print(f"  {sid}  {(r or {}).get('url') or 'UNKNOWN id'}" + (f"  superseded by {sup}" if sup else "")
               + (f"  (row added in {added})" if added else ""))
@@ -1521,7 +1557,10 @@ def cmd_asof(a):
             print(f"{a.when!r}: neither YYYY-MM-DD nor a tag or commit here", file=sys.stderr)
             return 2
     path = a.path[2:] if a.path.startswith("./") else a.path
-    p = git_run("show", f"{rev}:./{path}")
+    for cand in with_legacy(user_path(path)):  # before the kb moved, a root file sat at its root-relative path
+        p = git_run("show", f"{rev}:./{cand}")
+        if p is not None and not p.returncode:
+            break
     rec = (log_records("-1", rev) or [("", rev[:7], "", "", "")])[0]
     if p is None or p.returncode:
         print(f"{path} did not exist at {rec[1]} ({rec[2]})", file=sys.stderr)
@@ -1581,7 +1620,7 @@ def cmd_tag_census(a):
 
 # Paths whose rebase conflicts are resolved mechanically: the union ledgers and the generated files. `fix` rebuilds
 # them (the coverage page only when its markers are inside the table; otherwise fix reports it and sync stops).
-MECHANICAL = frozenset((SOURCES, STATE, *MD_LEDGERS, "_coverage.csv", BASELINE, build_index.COVERAGE_MD))
+MECHANICAL = frozenset((SOURCES, STATE, *MD_LEDGERS, COVERAGE, BASELINE, FB(build_index.COVERAGE_MD)))
 IN_PROGRESS = (("rebase-merge", "a rebase", "git rebase --continue, or git rebase --abort"),
                ("rebase-apply", "a rebase", "git rebase --continue, or git rebase --abort"),
                ("MERGE_HEAD", "a merge", "git merge --continue, or git merge --abort"),

@@ -10,7 +10,7 @@
   selfdoc.py check                 map rows naming a missing doc or matching no file, and _self/*.md docs with no row;
                                    exit 1 when any
 
-_self/map.csv (doc,pattern) says what each doc describes: one row per doc and glob, kb-root paths; `*` stays within a
+_self/map.csv (doc,pattern) says what each doc describes: one row per doc and glob, repository-relative paths; `*` stays within a
 directory, `**` crosses directories. A pattern of `-` marks a doc that describes no file (a state file such as
 work-left.md): it is never stale. Reports under _self/reports/ are measurements, each section stating its setup, and need no row. /kb-self is the
 runbook that updates what `stale` lists. A doc that was checked against a change and needed no edit is recorded
@@ -20,8 +20,12 @@ Exit 0 nothing to do, 1 stale docs or map problems, 2 bad arguments, no git, or 
 """
 import argparse, csv, functools, os, re, subprocess, sys
 
-KB = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-MAP = "_self/map.csv"
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import kbcommon  # noqa: E402
+
+KB = kbcommon.HOME  # this repository
+SELF_REL = kbcommon.repo_rel(kbcommon.SELF)  # the kb's own docs, relative to the repository (`_self`)
+MAP = f"{SELF_REL}/map.csv"
 REVIEWED = "Self-Reviewed"  # commit trailer: docs checked against the change that needed no edit
 
 
@@ -152,7 +156,7 @@ def check(root=KB):
             if pat != "-" and not any(matches(pat, f) for f in files):
                 problems.append(f"{doc}: pattern {pat} matches no file")
     for f in sorted(files):
-        if f.startswith("_self/") and f.count("/") == 1 and f.endswith(".md") and f not in docs:
+        if f.startswith(SELF_REL + "/") and "/" not in f[len(SELF_REL) + 1:] and f.endswith(".md") and f not in docs:
             problems.append(f"{f}: no row in {MAP} (pattern - if it describes no file)")
     return problems
 

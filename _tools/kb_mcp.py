@@ -61,11 +61,11 @@ INSTRUCTIONS = (
     "and the url from the pack's sources footer. Single facts: call kb_pack yourself; several parts: one kb_pack with "
     "questions=[...]. Use the kb-lookup agent only for long research whose output would fill your context. Never start a general-purpose agent for a "
     "kb lookup. These tools hold documentation facts, not live device or directory data.")
-if KB != kbcommon.HOME:  # a second kb served with KB_ROOT: its own name; the verdict and tag rules are the same
+if KB != kbcommon.PUBLIC:  # a second kb served with KB_ROOT: its own name; the verdict and tag rules are the same
     INSTRUCTIONS = (f"A kb with it-ops-kb's layout at {KB} (KB_ROOT), served by the it-ops-kb tools: a team's own facts, "
                     "separate from it-ops-kb. " + INSTRUCTIONS.split("AI agents). ", 1)[1])
 DOCS = "Documentation facts from it-ops-kb (not live device or directory data). "
-if KB != kbcommon.HOME:
+if KB != kbcommon.PUBLIC:
     DOCS = f"Documentation facts from the kb at {KB} (KB_ROOT; not live device or directory data). "
 FORMAT = {"type": "string", "enum": ["concise", "detailed"],
           "description": "concise: fact lines with path:line and tag, no url footer; detailed: full text and urls"}
@@ -235,15 +235,15 @@ def kb_show(args):
     if line and not line.isdigit():
         raise ToolError(f"{line!r}: line must be a positive number")
     n = min(max(int(args.get("n") or 40), 1), MAX_LINES)
-    root = os.path.realpath(KB)
-    full = os.path.realpath(os.path.join(root, path))
-    if not path or os.path.commonpath([full, root]) != root:
+    full = os.path.realpath(kbcommon.resolve(path))
+    if not path or not kbfacts.showable(full):
         raise ToolError(f"{path!r}: not a path inside the kb")
-    rel = os.path.relpath(full, root)
-    if rel.split(os.sep)[0] in (".git", "_private", "_cache") or not os.path.isfile(full):
+    root = os.path.realpath(KB)
+    rel = os.path.relpath(full, root if os.path.commonpath([full, root]) == root else os.path.realpath(kbcommon.HOME))
+    if {".git", "_private", "_cache"} & set(rel.split(os.sep)) or not os.path.isfile(full):
         raise ToolError(f"{path}: no such kb file")
     with guarded():
-        text = rag.read_text(rel)
+        text = rag.read_text(full)
     if text is None:
         raise ToolError(f"{path}: not readable as UTF-8 text")
     lines = text.splitlines()
@@ -288,9 +288,10 @@ def status():
     plugins/cache/<marketplace>/<plugin>/<version>/) reports its version, and reads commit dates and tags from the
     marketplace clone Claude Code keeps beside the cache, when that clone has the commit."""
     info = {"kb_root": KB}
-    commit = git("rev-parse", "HEAD") if os.path.exists(os.path.join(KB, ".git")) else None
-    repo = KB if commit else None
-    parts = os.path.normpath(KB).split(os.sep)
+    home = kbcommon.HOME if KB == kbcommon.PUBLIC else KB  # the clone or plugin copy that holds the kb
+    commit = git("rev-parse", "HEAD", cwd=home) if os.path.exists(os.path.join(home, ".git")) else None
+    repo = home if commit else None
+    parts = os.path.normpath(home).split(os.sep)
     if not commit and len(parts) >= 4 and parts[-4] == "cache":
         info["installed_as"] = f"plugin {parts[-2]}@{parts[-3]}, version {parts[-1]}"
         mkt = os.path.join(os.sep.join(parts[:-4]), "marketplaces", parts[-3])
@@ -357,7 +358,7 @@ def error(msg_id, code, message, data=None):
 
 
 def server_info():
-    return {"name": NAME, "title": "it-ops-kb" if KB == kbcommon.HOME else f"kb at {KB} (KB_ROOT)", "version": VERSION}
+    return {"name": NAME, "title": "it-ops-kb" if KB == kbcommon.PUBLIC else f"kb at {KB} (KB_ROOT)", "version": VERSION}
 
 
 def handle(msg):

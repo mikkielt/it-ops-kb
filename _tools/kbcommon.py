@@ -10,18 +10,29 @@ source ledger. One copy, so every tool reads and writes these files the same way
   write_csv(path, header, rows, atomic=False)
   read_sources()              the rows of _sources.csv, in file order
   source_rows()               {id: row} of _sources.csv
-  data_path(rel, shared)      a file of the kb's own retrieval data under <kb>/_tools/
+  data_path(rel, shared)      a file of the kb's own retrieval data under <kb>/DATA_DIR/
+  repo_rel(rel)               a path relative to the kb root as a path relative to this repository (git pathspecs)
+  kb_rel(path)                the inverse: a repository path (or absolute path) relative to the kb root, or None
+  resolve(rel)                the absolute path of a file named relative to the kb root, else to this repository
+
+Layout. The paths below are the only place that says where knowledge sits in this repository: the tools' code in
+_tools/, the kb's own docs in SELF, and the public root PUBLIC (its articles, _sources.csv, ledgers and retrieval
+data). Every path inside a root is relative to that root, so moving a root moves no line inside it.
 
 KB_ROOT=DIR serves another kb with the same layout (articles, _sources.csv, ledgers, and its own retrieval data in
-DIR/_tools/) with these tools: for a team's own facts, which never go into this repository. The read tools (rag.py,
+DIR/DATA_DIR/) with these tools: for a team's own facts, which never go into this repository. The read tools (rag.py,
 kbfacts, kb_mcp.py, the kb: hook) and the checks (check.py, build_index.py, kbid.py) honour it; git, census and fetch
-tooling always works on this repository.
+tooling always works on this repository's public root.
 """
 import csv, io, os
 
 TOOLS = os.path.dirname(os.path.abspath(__file__))
 HOME = os.path.dirname(TOOLS)  # this repository: the tools' code, the shared product aliases
-KB = os.path.abspath(os.path.expanduser(os.environ["KB_ROOT"])) if os.environ.get("KB_ROOT") else HOME
+KB_DIR = HOME  # all knowledge: the public root, team roots and SELF
+PUBLIC = os.path.normpath(os.path.join(KB_DIR, "."))  # the public root: articles, ledgers, retrieval data
+SELF = os.path.join(KB_DIR, "_self")  # the kb's own docs: rules, tool reference, design (searched with --index only)
+DATA_DIR = "_tools"  # a root's retrieval data (signals, eval set, doc2query, index extras), relative to the root
+KB = os.path.abspath(os.path.expanduser(os.environ["KB_ROOT"])) if os.environ.get("KB_ROOT") else PUBLIC
 csv.field_size_limit(2**31 - 1)  # a very wide cell must not abort a whole read
 
 
@@ -96,11 +107,42 @@ def write_csv(path, header, rows, atomic=False):
 
 
 def data_path(rel, shared=False):
-    """A file of the kb's own retrieval data, `rel` under <kb>/_tools/ (signals.csv, lookup_eval.csv,
+    """A file of the kb's own retrieval data, `rel` under <kb>/DATA_DIR/ (signals.csv, lookup_eval.csv,
     doc2query/expansions.csv, index_extra.csv). `shared` (aliases.csv: product names, not kb content) falls back to
-    this repository's copy when a kb given by KB_ROOT has none."""
-    path = os.path.join(KB, "_tools", rel)
+    this repository's copy in _tools/ when the kb has none."""
+    path = os.path.join(KB, DATA_DIR, rel)
     return path if not shared or os.path.exists(path) else os.path.join(TOOLS, rel)
+
+
+def data_rel(rel):
+    """data_path(rel) relative to the kb root, `/`-separated (for messages, defaults and git pathspecs via repo_rel)."""
+    return f"{DATA_DIR}/{rel}"
+
+
+def _slash(p):
+    return p.replace(os.sep, "/")
+
+
+def repo_rel(rel, root=None):
+    """`rel` (relative to the kb root `root`, default KB) as a `/`-separated path relative to this repository: what
+    git takes as a pathspec and prints in a diff. An absolute `rel` is taken as is."""
+    return _slash(os.path.relpath(os.path.join(root or KB, rel), HOME))
+
+
+def kb_rel(path, root=None):
+    """A repository-relative (or absolute) path relative to the kb root `root` (default KB), `/`-separated; None when
+    the path lies outside that root."""
+    full = os.path.normpath(os.path.join(HOME, path))
+    rel = os.path.relpath(full, root or KB)
+    return None if rel == ".." or rel.startswith(".." + os.sep) else _slash(rel)
+
+
+def resolve(rel):
+    """The absolute path of a file named relative to the kb root, else relative to this repository (the SELF docs,
+    README.md): for reading and showing a path a tool printed. A path that exists in neither is taken as the kb
+    root's, so the caller reports it missing. An absolute `rel` is returned as is."""
+    path, repo = os.path.join(KB, rel), os.path.join(HOME, rel)
+    return repo if not os.path.exists(path) and os.path.exists(repo) else path
 
 
 def read_sources():

@@ -26,8 +26,8 @@ import argparse, json, os, re, shutil, subprocess, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import kbfacts  # noqa: E402
 
-KB = kbfacts.KB
-DOCS_MCP = os.path.join(KB, ".claude-plugin", "it-ops-kb-docs", ".mcp.json")
+HOME = kbfacts.kbcommon.HOME  # this repository: the docs servers' config, the kb server, the sessions' cwd
+DOCS_MCP = os.path.join(HOME, ".claude-plugin", "it-ops-kb-docs", ".mcp.json")
 DOCS = ["mcp__microsoft-learn__microsoft_docs_search", "mcp__microsoft-learn__microsoft_docs_fetch",
         "mcp__claude-code-docs__search_claude_code_docs", "mcp__mcp-docs__search_model_context_protocol"]
 # claude -p without the user's plugins, hooks and MCP servers (project and local settings still apply)
@@ -124,7 +124,7 @@ def claude_argv(model, tools):
     argv = ["claude", "-p", "--no-session-persistence", "--model", model, *LEAN]
     if tools:
         argv += ["--mcp-config", DOCS_MCP, "--mcp-config", json.dumps({"mcpServers": {"kb": {
-            "command": sys.executable, "args": [os.path.join(KB, "_tools", "kb_mcp.py")]}}}),
+            "command": sys.executable, "args": [os.path.join(HOME, "_tools", "kb_mcp.py")]}}}),
                  "--effort", "low", "--allowedTools", "mcp__kb", *DOCS]
     else:
         argv += ["--tools", ""]
@@ -133,7 +133,7 @@ def claude_argv(model, tools):
 
 def read(model, system, user):
     """The reader's answer: a tool-less claude -p."""
-    p = subprocess.run(claude_argv(model, tools=False) + ["--append-system-prompt", system], cwd=KB, input=user,
+    p = subprocess.run(claude_argv(model, tools=False) + ["--append-system-prompt", system], cwd=HOME, input=user,
                        capture_output=True, text=True)
     if p.returncode:
         raise SystemExit(p.stderr or f"claude -p exited {p.returncode}")
@@ -188,7 +188,7 @@ def main():
         log(f"reader said {SENTINEL}; escalating to sonnet")
         p["model"] = "sonnet" if not a.model else a.model
     argv = claude_argv(p["model"], tools=True) + ["--append-system-prompt", RESEARCHER]
-    return subprocess.run(argv, cwd=KB, input=prompt(q, p["text"]) + note, text=True).returncode
+    return subprocess.run(argv, cwd=HOME, input=prompt(q, p["text"]) + note, text=True).returncode
 
 
 if __name__ == "__main__":

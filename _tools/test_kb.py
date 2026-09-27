@@ -21,8 +21,11 @@ import csv, functools, glob, json, os, re, subprocess, sys
 
 import pytest
 
-import kb_hook, kbfacts, kbid
-from conftest import KB, TOOLS, copy_kb
+import kb_hook, kbcommon, kbfacts, kbid
+from conftest import KB, P, SELF_REL, TOOLS, copy_kb
+
+PUBLIC = kbcommon.PUBLIC  # the public root: ledgers, articles, retrieval data (KB here is the repository)
+SELF = kbcommon.SELF
 
 LINT = os.path.join(KB, ".claude", "skills", "kb-verify", "lint.py")
 BASELINE = os.path.join(TOOLS, "lint_baseline.txt")
@@ -65,8 +68,8 @@ def text(rel):
 
 
 def pinned():
-    with open(os.path.join(KB, "_artifacts.csv"), encoding="utf-8-sig", newline="") as f:
-        return {r["path"] for r in csv.DictReader(f)}
+    with open(os.path.join(PUBLIC, "_artifacts.csv"), encoding="utf-8-sig", newline="") as f:
+        return {P(r["path"]) for r in csv.DictReader(f)}
 
 
 @functools.lru_cache(maxsize=None)
@@ -119,7 +122,7 @@ def fmt(found, limit=20):
 
 # the docs held to the code: the root docs, the _self/ docs and the skills; flags in _self/reports/ are not checked, since a
 # report shows the command lines a measurement ran
-DOCS = ["README.md", "AGENTS.md"] + sorted(os.path.relpath(p, KB) for p in glob.glob(os.path.join(KB, "_self", "*.md"))) \
+DOCS = ["README.md", "AGENTS.md"] + sorted(os.path.relpath(p, KB) for p in glob.glob(os.path.join(SELF, "*.md"))) \
     + sorted(os.path.relpath(p, KB) for p in glob.glob(os.path.join(KB, ".claude", "skills", "*", "SKILL.md")))
 
 
@@ -131,14 +134,14 @@ class TestToolChecks:
     def test_check_py_reads_a_tag_wrapped_after_its_kind(self, tmp_path):
         # `[DOC\n  S-id]` (a fact wrapped by the editor) must still be checked for unknown ids
         d = copy_kb(str(tmp_path / "kb"))
-        with open(os.path.join(d, "auth", "kerberos.md"), "a", encoding="utf-8") as f:
+        with open(os.path.join(d, P("auth/kerberos.md")), "a", encoding="utf-8") as f:
             f.write("\n- A wrapped fact. [DOC\n  S-zzzzzzzz]\n")
         p = subprocess.run([sys.executable, os.path.join(d, "_tools", "check.py")], capture_output=True, text=True, timeout=120)
         assert "auth/kerberos.md cites unknown source S-zzzzzzzz" in p.stdout, p.stdout[-2000:]
 
     def test_check_py_reads_source_columns_of_data_csvs(self, tmp_path):
         d = copy_kb(str(tmp_path / "kb"))
-        with open(os.path.join(d, "auth", "threats.csv"), "a", encoding="utf-8") as f:
+        with open(os.path.join(d, P("auth/threats.csv")), "a", encoding="utf-8") as f:
             f.write("X,y,z,S3 bucket and S-1-5-18 are not ids here,S-zzzzzzzz\n")
         p = subprocess.run([sys.executable, os.path.join(d, "_tools", "check.py")], capture_output=True, text=True, timeout=120)
         assert "cites unknown source S-zzzzzzzz" in p.stdout and "S3" not in p.stdout.split("cites unknown source")[-1], p.stdout[-2000:]
@@ -178,22 +181,23 @@ class TestCohesion:
         assert not bad, "broken relative links:\n" + fmt(bad)
 
     def test_backtick_paths_resolve(self):
-        roots = {d for d in os.listdir(KB) if os.path.isdir(os.path.join(KB, d))}
+        roots = {d for base in (KB, PUBLIC) for d in os.listdir(base) if os.path.isdir(os.path.join(base, d))}
         allow = allowlist().get("path", set())
         bad = []
         for f in [x for x in authored() if x.endswith(".md")] + DOCS:
             for ref in set(re.findall(r"`((?:[\w.-]+/)+[\w.-]+\.(?:md|csv|ya?ml|json|xml|py|ts|proto|txt))`", text(f) or "")):
                 top = ref.split("/")[0]
                 if top in roots and ref.lower() not in allow and not os.path.exists(os.path.join(KB, ref)) \
+                        and not os.path.exists(os.path.join(PUBLIC, ref)) \
                         and not os.path.exists(os.path.join(KB, os.path.dirname(f), ref)):
                     bad.append((f, 0, ref))
         assert not bad, "backtick paths that do not exist:\n" + fmt(bad)
 
     def test_used_in_paths_exist(self):
-        with open(os.path.join(KB, "_sources.csv"), encoding="utf-8-sig", newline="") as f:
+        with open(os.path.join(PUBLIC, "_sources.csv"), encoding="utf-8-sig", newline="") as f:
             bad = [(r["id"], 0, u) for r in csv.DictReader(f)
                    for u in filter(None, (x.strip() for x in (r.get("used_in") or "").split(";")))
-                   if not os.path.exists(os.path.join(KB, u))]
+                   if not os.path.exists(os.path.join(PUBLIC, u))]
         assert not bad, "_sources.csv used_in names missing files:\n" + fmt(bad)
 
     def test_documented_flags_exist(self):
@@ -280,9 +284,11 @@ class TestCohesion:
     def test_appended_files_have_lf_endings(self):
         """Python's csv writer ends rows with \\r\\n unless told otherwise; the union-merged ledgers, the tool data and
         _self/ must stay \\n-only, or merges and the duplicate checks compare rows that differ only in \\r."""
-        paths = glob.glob(os.path.join(KB, "_*.csv")) + glob.glob(os.path.join(KB, "_*.md")) \
-            + glob.glob(os.path.join(TOOLS, "*.csv")) + glob.glob(os.path.join(TOOLS, "doc2query", "*.csv")) \
-            + glob.glob(os.path.join(KB, "_self", "**", "*.*"), recursive=True)
+        data = os.path.join(PUBLIC, kbcommon.DATA_DIR)
+        paths = glob.glob(os.path.join(PUBLIC, "_*.csv")) + glob.glob(os.path.join(PUBLIC, "_*.md")) \
+            + glob.glob(os.path.join(TOOLS, "*.csv")) + glob.glob(os.path.join(data, "*.csv")) \
+            + glob.glob(os.path.join(data, "doc2query", "*.csv")) + glob.glob(os.path.join(SELF, "**", "*.*"), recursive=True)
+        paths = sorted(set(paths))
         bad = [os.path.relpath(p, KB) for p in sorted(paths) if b"\r" in open(p, "rb").read()]
         assert not bad, "CR line endings (write with csv.writer(f, lineterminator='\\n'), or kbcommon.csv_text): " + ", ".join(bad)
 
@@ -300,15 +306,16 @@ class TestSelfDocs:
     def test_self_docs_stay_out_of_the_pack(self):
         """_self/ words (hook, skill, plugin, pack) must never compete with the domain articles in a pack."""
         main = [u for u in kbfacts.corpus() if not u.get("root")]
-        assert main and not [u["path"] for u in main if u["path"].startswith("_self/")]
-        assert not [f for f in kbfacts.kb_files() if f.startswith("_self/")]
-        assert "_self" not in __import__("rag").topics(None)
+        is_self = lambda p: "_self/" in p.replace(os.sep, "/")  # noqa: E731
+        assert main and not [u["path"] for u in main if is_self(u["path"])]
+        assert not [f for f in kbfacts.kb_files() if is_self(f)]
+        assert "_self" not in __import__("rag").topics(None) and SELF_REL not in __import__("rag").topics(None)
 
     def test_self_code_pointers_resolve(self):
         """A CODE part without a source id (allowed in _self/ only) points into this repository: the file exists and
         the symbol is defined in it (or the line range is inside it)."""
         found, bad = 0, []
-        for p in sorted(glob.glob(os.path.join(KB, "_self", "*.md"))):
+        for p in sorted(glob.glob(os.path.join(SELF, "*.md"))):
             for part in kbfacts.tags_in(open(p, encoding="utf-8").read()):
                 if part["kind"] != "CODE" or part["ids"] or "<" in part["note"]:
                     continue  # a cited source, or a `<id>: <path>#<symbol>` placeholder in a rule
@@ -326,8 +333,8 @@ class TestSelfDocs:
     def test_search_with_index_finds_self_docs(self):
         import rag
         paths = lambda index: [h["path"].replace(os.sep, "/") for h in rag.search("selfdoc stale map.csv docs", 5, None, index, [])]  # noqa: E731
-        assert not [p for p in paths(False) if p.startswith("_self/")]
-        assert any(p.startswith("_self/") for p in paths(True)), paths(True)
+        assert not [p for p in paths(False) if "_self/" in p]
+        assert any("_self/" in p for p in paths(True)), paths(True)
 
 
 class TestLookup:
@@ -432,7 +439,7 @@ class TestLookup:
 
     def test_lint_checks_code_and_snippets(self, tmp_path):
         d = copy_kb(str(tmp_path / "kb"))
-        with open(os.path.join(d, "_sources.csv"), "a", encoding="utf-8", newline="") as f:
+        with open(os.path.join(d, P("_sources.csv")), "a", encoding="utf-8", newline="") as f:
             csv.writer(f, lineterminator="\n").writerows([
                 ["S-zzzzzzz2", "https://raw.githubusercontent.com/o/r/main/a.py", "x", "x", "MIT", "2026-09-27", "", "", "", ""],
                 ["S-zzzzzzz3", "https://raw.githubusercontent.com/o/r/v1.0/a.py", "x", "x", "MIT", "2026-09-27", "", "", "", ""]])
@@ -441,7 +448,7 @@ class TestLookup:
                 "- SNIPPET: no block or context; checked: no [DOC S-zzzzzzz3]\n"
                 "- SNIPPET: bad json; context: any; checked: syntax [DOC S-zzzzzzz3]\n```json\n{\"a\": }\n```\n"
                 "- SNIPPET: unbacked; context: any; checked: maybe [UNK]\n```json\n{}\n```\n")
-        with open(os.path.join(d, "auth", "kerberos.md"), "a", encoding="utf-8") as f:
+        with open(os.path.join(d, P("auth/kerberos.md")), "a", encoding="utf-8") as f:
             f.write(body)
         p = subprocess.run([sys.executable, os.path.join(d, ".claude", "skills", "kb-verify", "lint.py"), "auth/kerberos"],
                            capture_output=True, text=True, timeout=120)
@@ -469,7 +476,7 @@ class TestLookup:
     def test_alias_and_signal_tables(self):
         import kbfacts
         for name, cols in (("aliases.csv", ["term", "canonical"]), ("signals.csv", ["signal", "topic"])):
-            with open(os.path.join(TOOLS, name), encoding="utf-8", newline="") as f:
+            with open(kbcommon.data_path(name, shared=name == "aliases.csv"), encoding="utf-8", newline="") as f:
                 rows = list(csv.reader(f))
             assert rows[0] == cols, name
             keys = [r[0].lower() for r in rows[1:]]
@@ -478,9 +485,9 @@ class TestLookup:
                 assert len(r) == 2, f"{name}: {r}"
                 assert r[0].strip() and r[1].strip(), f"{name}: {r}"
         topics = set(kbfacts.topic_files())
-        bad = [r["signal"] for r in csv.DictReader(open(os.path.join(TOOLS, "signals.csv"), encoding="utf-8")) if r["topic"] not in topics]
+        bad = [r["signal"] for r in csv.DictReader(open(kbcommon.data_path("signals.csv"), encoding="utf-8")) if r["topic"] not in topics]
         assert not bad, f"signals.csv names topics that do not exist: {bad}"
-        for r in csv.DictReader(open(os.path.join(TOOLS, "aliases.csv"), encoding="utf-8")):
+        for r in csv.DictReader(open(kbcommon.data_path("aliases.csv", shared=True), encoding="utf-8")):
             assert r["term"] == r["term"].lower().strip(), "aliases.csv terms are lowercase"
         assert {"last", "sign", "npi"} <= set(kbfacts.terms("approximateLastSignInDateTime US_NPI")), \
                         "compound identifiers are also indexed as their parts"
@@ -500,7 +507,7 @@ class TestLookup:
     def test_doc2query_expansions(self):
         """expansions.csv is well-formed, and its words only rank facts: KB_DOC2QUERY=0 turns them off."""
         import kbfacts
-        path = os.path.join(TOOLS, "doc2query", "expansions.csv")
+        path = kbcommon.data_path("doc2query/expansions.csv")
         with open(path, encoding="utf-8", newline="") as f:
             rows = list(csv.reader(f))
         assert rows[0] == ["key", "question"]
@@ -513,7 +520,7 @@ class TestLookup:
     def test_lookup_eval_ids_unique(self):
         """Eval ids are EV-<slug> of the question (kbid.eval_id), so parallel writers converge instead of colliding.
         Two different questions with one slug: lengthen the newer id by hand (EV-<slug>-2)."""
-        with open(os.path.join(TOOLS, "lookup_eval.csv"), encoding="utf-8", newline="") as f:
+        with open(kbcommon.data_path("lookup_eval.csv"), encoding="utf-8", newline="") as f:
             rows = list(csv.DictReader(f))
         ids = [r["id"] for r in rows]
         dup = sorted({i for i in ids if ids.count(i) > 1})
@@ -597,7 +604,7 @@ class TestLookup:
         flagged = kb_hook.answer("kb: " + SPREAD_GOOD)
         assert "decision" not in flagged and "\ncheck: " in flagged["hookSpecificOutput"]["additionalContext"]
         # no true `good` of the eval set gets it
-        for row in csv.DictReader(open(os.path.join(TOOLS, "lookup_eval.csv"), encoding="utf-8")):
+        for row in csv.DictReader(open(kbcommon.data_path("lookup_eval.csv"), encoding="utf-8")):
             if row["expect_verdict"] == "good":
                 assert not kbfacts.pack(row["question"])["spread"], row["id"]
 
@@ -658,7 +665,7 @@ class TestIds:
         assert re.search(kbid.QK_ID.pattern, kbid.answer_id("???"))
         ids = kbid.answer_ids("## Q1. a\n## QK-x-y. b\n## QK-x-y. c\n### Q2. no\n## QG1 (no dot)\n")
         assert ids == ["Q1", "QK-x-y", "QK-x-y"]
-        real = kbid.answer_ids(text("_answers.md") or "")
+        real = kbid.answer_ids(text(P("_answers.md")) or "")
         assert len(real) == len(set(real)), "duplicate answer ids in _answers.md"
 
 

@@ -49,7 +49,7 @@ KB = kbcommon.KB  # KB_ROOT, else this repository (kbcommon)
 
 KINDS = ("DOC", "CODE", "DER", "COMMUNITY", "UNK")
 _K = "|".join(KINDS)
-SKIP_DIRS = {"_tools", "_private", "_cache", "_census", "_self", "artifacts"}
+SKIP_DIRS = {"_tools", kbcommon.DATA_DIR, "_private", "_cache", "_census", "_self", "artifacts"}
 TAG = re.compile(rf"\[(?:{_K})\b[^\]]*\]")
 ID = kbid.SOURCE_ID
 _PART_SPLIT = re.compile(rf"\s*[;,]\s*(?=(?:{_K})\b)")
@@ -158,16 +158,30 @@ def is_article(text):
 
 
 INDEX_FILES = ("README.md", "_answers.md", "_gaps.md", "_conflicts.md", "_coverage.csv")  # searched with --index only
-SELF_DIR = "_self"  # the kb's own docs (rules, tool reference, design): searched with --index only, never packed
+# the kb's own docs (rules, tool reference, design): searched with --index only, never packed. This repository's
+# (kbcommon.SELF, listed by repository path); a kb given by KB_ROOT may have its own _self/ (listed by kb path)
+SELF_DIR = kbcommon.SELF if KB == kbcommon.PUBLIC else os.path.join(KB, "_self")
 
 
 def index_files():
-    """The files only a search with `index` sees: the root index files, then every .md under _self/, sorted."""
+    """The files only a search with `index` sees: the root index files (README.md is this repository's when the
+    root has none: kbcommon.resolve), then every .md under the kb's own docs (SELF_DIR), sorted."""
     out = list(INDEX_FILES)
-    for root, dirs, files in os.walk(os.path.join(KB, SELF_DIR)):
+    base = kbcommon.HOME if SELF_DIR == kbcommon.SELF else KB
+    for root, dirs, files in os.walk(SELF_DIR):
         dirs.sort()
-        out += sorted(os.path.relpath(os.path.join(root, f), KB).replace(os.sep, "/") for f in files if f.endswith(".md"))
+        out += sorted(os.path.relpath(os.path.join(root, f), base).replace(os.sep, "/") for f in files if f.endswith(".md"))
     return out
+
+
+def showable(full):
+    """Whether an absolute (real) path may be shown: a file of the kb, of its own docs (SELF_DIR) or the README.md an
+    index search lists."""
+    for base in (KB, SELF_DIR):
+        base = os.path.realpath(base)
+        if os.path.commonpath([full, base]) == base:
+            return True
+    return full == os.path.realpath(kbcommon.resolve("README.md"))
 
 
 def kb_files(exts=(".md", ".csv")):
@@ -198,7 +212,7 @@ def fingerprint():
              os.path.join(TOOLS, "kbfacts.py"), os.path.join(TOOLS, "kbid.py")]  # absolute: join(KB, abs) is abs
     for rel in list(kb_files()) + extra:
         try:
-            st = os.stat(os.path.join(KB, rel))
+            st = os.stat(kbcommon.resolve(rel))
             h.update(f"{rel}\0{st.st_mtime_ns}\0{st.st_size}\n".encode())
         except OSError:
             h.update(f"{rel}\0-\n".encode())
@@ -577,7 +591,7 @@ def index_units():
     """Units of the index files (index_files()): every bullet, table row, paragraph and data row, tagged or not."""
     out = []
     for rel in index_files():
-        text = read(rel)
+        text = read(kbcommon.resolve(rel))
         if text is not None:
             out += md_units(rel, text, untagged=True) if rel.endswith(".md") else csv_units(rel, text)
     for u in out:
@@ -812,7 +826,7 @@ def index_path(fp):
     if where == "0":
         return None
     if not where:
-        where = os.environ.get("CLAUDE_PLUGIN_DATA") or os.path.join(KB, "_cache")
+        where = os.environ.get("CLAUDE_PLUGIN_DATA") or os.path.join(kbcommon.HOME if KB == kbcommon.PUBLIC else KB, "_cache")
         if not _writable(where):
             where = os.path.join(tempfile.gettempdir(), "it-ops-kb-" + hashlib.sha1(KB.encode()).hexdigest()[:8])
     return os.path.join(where, f"kbindex-{_root_key()}{fp[:16]}.sqlite")
@@ -820,7 +834,7 @@ def index_path(fp):
 
 def _root_key():
     """'' for this repository, else `r<8 hex>-` for the KB_ROOT kb (the fingerprint is hex, so never starts with r)."""
-    return "" if KB == kbcommon.HOME else "r" + hashlib.sha1(KB.encode()).hexdigest()[:8] + "-"
+    return "" if KB == kbcommon.PUBLIC else "r" + hashlib.sha1(KB.encode()).hexdigest()[:8] + "-"
 
 
 def _same_root(name):

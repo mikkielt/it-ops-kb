@@ -10,7 +10,7 @@ import os, re, shutil, subprocess, sys
 import pytest
 
 import kbgit, kbid
-from conftest import KB, TOOLS, SOURCES_HEADER as HEADER, Repo, git_env, requires_git
+from conftest import KB, TOOLS, SOURCES_HEADER as HEADER, P, Repo, git_env, requires_git
 COVERAGE = ("topic,priority,status,files,n_sources\n"
             "windows/demo,P1,partial,windows/demo.md;windows/demo.csv,1\n"
             "dsc/manifests,P2,complete,dsc/manifests.md;dsc/raw/,1\n")
@@ -22,26 +22,26 @@ class TestTrailerRules:
         return kbgit.trailers_from(paths, old.get, new.get)
 
     def test_topics_from_the_coverage_mapping(self):
-        old = {"_coverage.csv": COVERAGE, "windows/demo.csv": "a\n1\n", "dsc/raw/x.json": "{}",
-               "windows/loose.md": "---\ntopic: windows/loose\n---\n", "windows/notes.txt": "x", "_gaps.md": "g"}
-        new = {**old, "windows/demo.csv": "a\n2\n", "dsc/raw/x.json": "{ }", "windows/loose.md": "---\ntopic: windows/loose\n---\nx\n",
-               "windows/notes.txt": "y", "_gaps.md": "h", "README.md": "r"}
+        old = {P("_coverage.csv"): COVERAGE, P("windows/demo.csv"): "a\n1\n", P("dsc/raw/x.json"): "{}",
+               P("windows/loose.md"): "---\ntopic: windows/loose\n---\n", P("windows/notes.txt"): "x", P("_gaps.md"): "g"}
+        new = {**old, P("windows/demo.csv"): "a\n2\n", P("dsc/raw/x.json"): "{ }", P("windows/loose.md"): "---\ntopic: windows/loose\n---\nx\n",
+               P("windows/notes.txt"): "y", P("_gaps.md"): "h", "README.md": "r"}
         assert self.compute(old, new) == {"KB-Topics": ["dsc/manifests", "windows/demo", "windows/loose"]}
 
     def test_sources_added_changed_superseded(self):
         u = "https://learn.microsoft.com/en-us/x"
         hid = kbid.source_id(u)
-        old = {"_sources.csv": HEADER.replace(",superseded_by", "") + "S100,https://e.example.com/a,A,p,l,2026-01-01,v,,a.md\n"
+        old = {P("_sources.csv"): HEADER.replace(",superseded_by", "") + "S100,https://e.example.com/a,A,p,l,2026-01-01,v,,a.md\n"
                                 "S101,https://e.example.com/b,B,p,l,2026-01-01,v,,\nS102,https://e.example.com/c,C,p,l,2026-01-01,v,,\n"}
-        new = {"_sources.csv": HEADER + "S100,https://e.example.com/a,A,p,l,2026-01-01,v,,b.md,\n"  # used_in + new empty column: no edit
+        new = {P("_sources.csv"): HEADER + "S100,https://e.example.com/a,A,p,l,2026-01-01,v,,b.md,\n"  # used_in + new empty column: no edit
                                 "S101,https://e.example.com/b,B2,p,l,2026-02-01,v,,,\nS102,https://e.example.com/c,C,p,l,2026-01-01,v,,,"
                                 f"{hid}\n{hid},{u},X,p,l,2026-02-01,v,,,\n"}
         assert self.compute(old, new) == {"KB-Sources-Added": [hid], "KB-Sources-Changed": ["S101"],
                                                   "KB-Sources-Superseded": ["S102"]}
 
     def test_answers_added_and_edited(self):
-        old = {"_answers.md": "# Answers\n\nintro\n\n## Q1. a?\n\nyes\n\n## Q2. b?\n\nno\n"}
-        new = {"_answers.md": "# Answers\n\nintro changed\n\n## Q1. a?\n\nyes, really\n\n## Q2. b?\n\nno\n\n## QK-new-one. c?\n\nmaybe\n"}
+        old = {P("_answers.md"): "# Answers\n\nintro\n\n## Q1. a?\n\nyes\n\n## Q2. b?\n\nno\n"}
+        new = {P("_answers.md"): "# Answers\n\nintro changed\n\n## Q1. a?\n\nyes, really\n\n## Q2. b?\n\nno\n\n## QK-new-one. c?\n\nmaybe\n"}
         assert self.compute(old, new) == {"KB-Answers": ["Q1", "QK-new-one"]}
 
     def test_format_threshold_and_matching(self):
@@ -68,19 +68,19 @@ class TestHistoryInGit:
     def scenario(cls, tmp_path_factory):
         cls.tmp = tmp_path_factory.mktemp("kb-history")
         cls.kb = str(cls.tmp / "kb")
-        os.makedirs(os.path.join(cls.kb, "windows"))
+        os.makedirs(os.path.join(cls.kb, P("windows")))
         shutil.copytree(TOOLS, os.path.join(cls.kb, "_tools"), ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
         shutil.copytree(os.path.join(KB, ".githooks"), os.path.join(cls.kb, ".githooks"))
         cls.env = git_env(GIT_EDITOR="true")
         cls.repo = Repo(cls.kb, cls.env)
         cls.hid = kbid.source_id(cls.URL)
-        cls.repo.write("_sources.csv", HEADER + "S100,https://learn.microsoft.com/en-us/history-test/old,Old,Microsoft,MIT,2026-01-01,v,,,\n")
-        cls.repo.write("_answers.md", "# Answers\n\n## Q1. Is this old?\n\nYes. [DOC S100]\n")
-        cls.repo.write("_coverage.csv", COVERAGE.splitlines(keepends=True)[0] + COVERAGE.splitlines(keepends=True)[1])
+        cls.repo.write(P("_sources.csv"), HEADER + "S100,https://learn.microsoft.com/en-us/history-test/old,Old,Microsoft,MIT,2026-01-01,v,,,\n")
+        cls.repo.write(P("_answers.md"), "# Answers\n\n## Q1. Is this old?\n\nYes. [DOC S100]\n")
+        cls.repo.write(P("_coverage.csv"), COVERAGE.splitlines(keepends=True)[0] + COVERAGE.splitlines(keepends=True)[1])
         cls.article = ("---\ntopic: windows/demo\npriority: P1\napplies_to: [test]\nretrieved_utc: 2026-01-01\nsources: [S100]\n"
                        "status: partial\n---\n# Demo\n\n## Facts\n\n- The old fact. [DOC S100]\n")
-        cls.repo.write("windows/demo.md", cls.article)
-        cls.repo.write("windows/demo.csv", "a,b\n1,2\n")
+        cls.repo.write(P("windows/demo.md"), cls.article)
+        cls.repo.write(P("windows/demo.csv"), "a,b\n1,2\n")
         cls.repo.git("init", "-q", "-b", "main")
         cls.repo.git("add", "-A")
         cls.commit("2026-01-01", "-m", "base")
@@ -89,19 +89,19 @@ class TestHistoryInGit:
 
         # 1. a topic change + a new source row + a new QK answer, `git commit -m`, with a Co-Authored-By trailer
         cls.fact = f"- A new fact. [DOC {cls.hid}]"
-        cls.repo.write("windows/demo.md", cls.article + cls.fact + "\n")
-        cls.repo.write("windows/demo.csv", "a,b\n1,3\n")
-        cls.repo.write("_sources.csv", f"{cls.hid},{cls.URL},New,Microsoft,MIT,2026-03-01,v,,,\n", "a")
-        cls.repo.write("_answers.md", "\n## QK-history-test-question. Does it work?\n\nYes. [DOC S-aaaaaaaa]\n", "a")
+        cls.repo.write(P("windows/demo.md"), cls.article + cls.fact + "\n")
+        cls.repo.write(P("windows/demo.csv"), "a,b\n1,3\n")
+        cls.repo.write(P("_sources.csv"), f"{cls.hid},{cls.URL},New,Microsoft,MIT,2026-03-01,v,,,\n", "a")
+        cls.repo.write(P("_answers.md"), "\n## QK-history-test-question. Does it work?\n\nYes. [DOC S-aaaaaaaa]\n", "a")
         cls.repo.git("add", "-A")
         cls.commit("2026-03-01", "-m", "docs(kb): add a fact\n\nWhy: testing.\n\nCo-Authored-By: T <noreply@example.com>")
         cls.c1 = cls.repo.rev("HEAD")
 
         # 2. an editor commit (GIT_EDITOR=true keeps the template), then --amend adding an answer edit
-        cls.repo.write("windows/demo.csv", "a,b\n1,4\n")
+        cls.repo.write(P("windows/demo.csv"), "a,b\n1,4\n")
         cls.commit("2026-03-02", "-a", "-e", "-m", "docs(kb): csv only")
         cls.msg_editor = cls.message("HEAD")
-        cls.repo.write("_answers.md", cls.repo.read("_answers.md").replace("Yes. [DOC S100]", "Still yes. [DOC S100]"))
+        cls.repo.write(P("_answers.md"), cls.repo.read(P("_answers.md")).replace("Yes. [DOC S100]", "Still yes. [DOC S100]"))
         cls.commit("2026-03-02", "-a", "--amend", "--no-edit")
         cls.c2 = cls.repo.rev("HEAD")
 
@@ -110,10 +110,10 @@ class TestHistoryInGit:
         cls.repo.git("add", "-A")
         cls.commit("2026-03-03", "-m", "chore: notes")
         cls.c3 = cls.repo.rev("HEAD")
-        cls.repo.write("_sources.csv", cls.repo.read("_sources.csv").replace("2026-01-01,v,,,", f"2026-01-01,v,,,{cls.hid}"))
+        cls.repo.write(P("_sources.csv"), cls.repo.read(P("_sources.csv")).replace("2026-01-01,v,,,", f"2026-01-01,v,,,{cls.hid}"))
         cls.commit("2026-03-04", "-a", "-m", "fix(kb): supersede S100", env={"KB_VERIFIED": "2026-03-04"})
         cls.c4 = cls.repo.rev("HEAD")
-        cls.repo.write("windows/demo.md", cls.repo.read("windows/demo.md") + "- Unhooked fact. [DOC S100]\n")
+        cls.repo.write(P("windows/demo.md"), cls.repo.read(P("windows/demo.md")) + "- Unhooked fact. [DOC S100]\n")
         cls.commit("2026-03-05", "-a", "--no-verify", "-m", "docs(kb): no hook")
         cls.c5 = cls.repo.rev("HEAD")
         cls.check_bad = cls.tool("check-trailers", f"{cls.base}..HEAD")
@@ -186,7 +186,7 @@ class TestHistoryInGit:
         assert self.tool("log", "QK-no-such-answer").returncode == 1
 
     def test_blame_resolves_sources(self):
-        n = self.repo.read("windows/demo.md").splitlines().index(self.fact) + 1
+        n = self.repo.read(P("windows/demo.md")).splitlines().index(self.fact) + 1
         r = self.tool("blame", f"windows/demo.md:{n}")
         assert r.returncode == 0, r.stdout + r.stderr
         assert f"introduced by: {self.c1[:7]}" in r.stdout
@@ -207,7 +207,7 @@ class TestHistoryInGit:
         assert self.repo.git("cat-file", "-t", "census-2026-03-06").strip() == "tag"
         body = self.repo.git("tag", "-l", "--format=%(contents)", "census-2026-03-06")
         assert "kb confirmed current as of 2026-03-06" in body
-        assert re.search(r"sources: 2 in _sources.csv \(1 superseded\)", body)
+        assert f"sources: 2 in {P('_sources.csv')} (1 superseded)" in body
         assert self.tool("tag-census", "2026-03-06").returncode == 2  # never moves an existing tag
         assert self.fact in self.tool("asof", "census-2026-03-06", "windows/demo.md").stdout
 

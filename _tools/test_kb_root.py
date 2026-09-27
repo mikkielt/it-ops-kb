@@ -7,7 +7,7 @@ repository's without either pruning the other's file.
 """
 import csv, glob, json, os, subprocess, sys
 
-import kbid
+import kbcommon, kbid
 from conftest import KB, TOOLS
 
 URL = "https://docs.example.com/print/queue-retention"
@@ -99,7 +99,7 @@ def test_second_kb_is_built_checked_and_searched(tmp_path):
     code, out = run("kb_mcp.py", "--status", root=root)
     assert f"kb_root: {os.path.abspath(root)}" in out and "topics: 7" in out, out
     code, out = run("kb_mcp.py", "--status")
-    assert f"kb_root: {KB}" in out, "without KB_ROOT the tools serve this repository: " + out
+    assert f"kb_root: {kbcommon.PUBLIC}" in out, "without KB_ROOT the tools serve this repository's public root: " + out
 
 
 def test_server_texts_name_the_second_kb(tmp_path):

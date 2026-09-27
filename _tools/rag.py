@@ -45,7 +45,7 @@ csv.field_size_limit(2**31 - 1)  # a very wide cell must not abort a read
 def read_text(rel):
     """Return a kb file's text, or None (with a warning on stderr) if it cannot be read."""
     try:
-        with open(os.path.join(KB, rel), encoding="utf-8", errors="replace") as f:
+        with open(kbcommon.resolve(rel), encoding="utf-8", errors="replace") as f:
             return f.read()
     except OSError as e:
         print(f"warning: skipped {rel}: {e.strerror}", file=sys.stderr)
@@ -68,7 +68,7 @@ def search(query, k, domain, index=False, notes=None):
 def topics(domain):
     out = defaultdict(lambda: {"articles": [], "dirs": Counter(), "data": []})
     for root, dirs, files in os.walk(KB):
-        dirs[:] = sorted(d for d in dirs if d not in {"_tools", "_private", "_cache", "_census", "_self"} and not d.startswith("."))
+        dirs[:] = sorted(d for d in dirs if d not in kbfacts.SKIP_DIRS - {"artifacts"} and not d.startswith("."))
         for f in sorted(files):
             rel = os.path.relpath(os.path.join(root, f), KB)
             parts = rel.split(os.sep)
@@ -246,7 +246,7 @@ def main():
     au.add_argument("--format", choices=FORMATS, default="concise")
     tf = sub.add_parser("topics-for"); tf.add_argument("paths", nargs="*", help="files or directories of the code to map")
     tf.add_argument("--keywords", help="text to map instead of (or as well as) files")
-    ev = sub.add_parser("eval"); ev.add_argument("--file", default=os.path.join("_tools", "lookup_eval.csv"))
+    ev = sub.add_parser("eval"); ev.add_argument("--file", default=kbcommon.data_rel("lookup_eval.csv"))
     w = sub.add_parser("show"); w.add_argument("target"); w.add_argument("-n", type=positive_int, default=40)
     a = ap.parse_args()
 
@@ -346,15 +346,14 @@ def main():
             sys.exit(1)
     else:
         path, _, line = a.target.partition(":")
-        root = os.path.realpath(KB)
-        full = os.path.realpath(os.path.join(root, path))
-        if os.path.commonpath([full, root]) != root:
+        full = os.path.realpath(kbcommon.resolve(path))
+        if not kbfacts.showable(full):
             sys.exit(f"{path}: outside the kb")
         if not os.path.isfile(full):
             sys.exit(f"{path}: no such file")
         if line and not line.isdigit():
             sys.exit(f"{line!r}: line must be a positive number")
-        text = read_text(os.path.relpath(full, root))
+        text = read_text(full)
         if text is None:
             sys.exit(1)
         lines = text.splitlines()

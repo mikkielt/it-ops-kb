@@ -15,7 +15,7 @@ import concurrent.futures as cf, csv, functools, http.server, io, json, os, rand
 import pytest
 
 import kbid
-from conftest import KB
+from conftest import D, KB, P, SELF_REL
 
 pytestmark = pytest.mark.stress
 TIMEOUT = 300
@@ -23,13 +23,14 @@ SCALE = int(os.environ.get("KB_STRESS_SCALE") or 5)
 random.seed(7)
 
 
+COV = f"{SELF_REL}/coverage.md"  # the coverage page (build_index.py prints it relative to the public root)
 SKIP = shutil.ignore_patterns(".git", "__pycache__", ".venv", ".pytest_cache", ".ruff_cache", "_private")
 
 
 def skip(src, names):
     """Everything in _cache but the pack index (census clones there reach gigabytes: 14 workers' copies filled a
     disk on 2026-09-26)."""
-    if os.path.abspath(src) == os.path.join(KB, "_cache"):
+    if os.path.abspath(src) == os.path.join(KB, P("_cache")):
         return {n for n in names if not n.startswith("kbindex-")}
     return SKIP(src, names)
 
@@ -95,14 +96,14 @@ def is_json(out):
 
 def add_sources(d, new=(), patch=None):
     """Append rows (dicts) to a copy's _sources.csv and apply `patch` {id: {column: value}} to existing rows."""
-    rows = list(csv.DictReader(io.StringIO(read(d, "_sources.csv"))))
+    rows = list(csv.DictReader(io.StringIO(read(d, P("_sources.csv")))))
     for r in rows:
         r.update((patch or {}).get(r["id"], {}))
     buf = io.StringIO()
     w = csv.DictWriter(buf, list(rows[0].keys()), lineterminator="\n")
     w.writeheader()
     w.writerows(rows + [{**dict.fromkeys(rows[0], ""), **r} for r in new])
-    write(d, "_sources.csv", buf.getvalue())
+    write(d, P("_sources.csv"), buf.getvalue())
 
 
 def ids(cases):
@@ -176,10 +177,11 @@ def test_search_is_deterministic(base):
 @pytest.mark.skipif(SCALE < 2, reason="KB_STRESS_SCALE < 2")
 def test_corpus_scaling(tmp_path):
     d = copy_kb(tmp_path, "scale")
-    doms = [x for x in os.listdir(d) if os.path.isdir(os.path.join(d, x)) and not x.startswith(("_", "."))]
+    pub = os.path.join(d, P("."))
+    doms = [x for x in os.listdir(pub) if os.path.isdir(os.path.join(pub, x)) and not x.startswith(("_", "."))]
     for i in range(1, SCALE):
         for dom in doms:
-            shutil.copytree(os.path.join(d, dom), os.path.join(d, f"{dom}-copy{i}"))
+            shutil.copytree(os.path.join(pub, dom), os.path.join(pub, f"{dom}-copy{i}"))
     call(d, "rag.py", ["search", "kerberos", "delegation", "-k", "5"], 0)
     call(d, "check.py", [], 0)
 
@@ -187,70 +189,70 @@ def test_corpus_scaling(tmp_path):
 # ---------------------------------------------------------------- malformed kb content: each mutation on a fresh copy
 
 def to_dir(d):
-    p = os.path.join(d, "sqlserver/mssql-server-tags.json")
+    p = os.path.join(d, P("sqlserver/mssql-server-tags.json"))
     os.remove(p)
     os.makedirs(p)
 
 
 def unreadable(d):
-    write(d, "ad/secret.md", "kerberos")
-    os.chmod(os.path.join(d, "ad/secret.md"), 0)
+    write(d, P("ad/secret.md"), "kerberos")
+    os.chmod(os.path.join(d, P("ad/secret.md")), 0)
 
 
 MUTATIONS = [  # (name, mutate(copy), [(tool, args, rc[, expect[, check]]), ...])
-    ("invalid UTF-8 .md", lambda d: write(d, "ad/bad.md", b"---\ntopic: ad/bad\n---\n# x \xff\xfe kerberos\n"), [
+    ("invalid UTF-8 .md", lambda d: write(d, P("ad/bad.md"), b"---\ntopic: ad/bad\n---\n# x \xff\xfe kerberos\n"), [
         ("rag.py", ["search", "kerberos"], 0), ("rag.py", ["topics", "ad"], 0),
         ("check.py", [], 1, "ad/bad.md is unreadable")]),
-    ("binary blob named .md", lambda d: write(d, "ad/blob.md", random.Random(7).randbytes(200000)), [
+    ("binary blob named .md", lambda d: write(d, P("ad/blob.md"), random.Random(7).randbytes(200000)), [
         ("rag.py", ["search", "kerberos"], 0), ("rag.py", ["topics", "ad"], 0), ("check.py", [], 1, "unreadable")]),
-    ("20 MB single-line .md", lambda d: write(d, "ad/huge.md", "kerberos " * 2_300_000), [
+    ("20 MB single-line .md", lambda d: write(d, P("ad/huge.md"), "kerberos " * 2_300_000), [
         ("rag.py", ["--json", "search", "kerberos", "-k", "1"], 0, "", lambda o: len(o) < 10000),
         ("check.py", [], 0)]),
-    ("CSV cell over 131072 chars", lambda d: write(d, "ad/wide.csv", 'a,b\n"' + "x" * 200000 + '",kerberos\n'), [
+    ("CSV cell over 131072 chars", lambda d: write(d, P("ad/wide.csv"), 'a,b\n"' + "x" * 200000 + '",kerberos\n'), [
         ("rag.py", ["search", "kerberos"], 0)]),
-    ("CSV with NUL byte", lambda d: write(d, "ad/nul.csv", b"a,b\nkerberos\x00,1\n"), [
+    ("CSV with NUL byte", lambda d: write(d, P("ad/nul.csv"), b"a,b\nkerberos\x00,1\n"), [
         ("rag.py", ["search", "kerberos"], 0)]),
-    ("empty and header-only CSV", lambda d: (write(d, "ad/empty.csv", ""), write(d, "ad/hdr.csv", "a,b\n")), [
+    ("empty and header-only CSV", lambda d: (write(d, P("ad/empty.csv"), ""), write(d, P("ad/hdr.csv"), "a,b\n")), [
         ("rag.py", ["search", "kerberos"], 0), ("check.py", [], 0)]),
-    ("CSV row with an unquoted comma", lambda d: write(d, "ad/ragged.csv", "a,b\nx,y\nx,y, z\n"), [
+    ("CSV row with an unquoted comma", lambda d: write(d, P("ad/ragged.csv"), "a,b\nx,y\nx,y, z\n"), [
         ("check.py", [], 1, "ad/ragged.csv has 1 row(s)")]),
-    ("unclosed front matter", lambda d: write(d, "ad/open.md", "---\ntopic: ad/open\nstatus: complete\n# kerberos\n"), [
+    ("unclosed front matter", lambda d: write(d, P("ad/open.md"), "---\ntopic: ad/open\nstatus: complete\n# kerberos\n"), [
         ("rag.py", ["search", "kerberos"], 0), ("rag.py", ["topics", "ad"], 0), ("check.py", [], 1, "front matter lacks")]),
-    ("front matter is only '---'", lambda d: write(d, "ad/dash.md", "---\n"), [
+    ("front matter is only '---'", lambda d: write(d, P("ad/dash.md"), "---\n"), [
         ("rag.py", ["search", "kerberos"], 0), ("rag.py", ["topics", "ad"], 0), ("check.py", [], 0)]),
-    ("UTF-8 BOM in _sources.csv", lambda d: write(d, "_sources.csv", "﻿" + read(d, "_sources.csv")), [
+    ("UTF-8 BOM in _sources.csv", lambda d: write(d, P("_sources.csv"), "﻿" + read(d, P("_sources.csv"))), [
         ("rag.py", ["src", "S100"], 0, "S100"), ("rag.py", ["search", "kerberos", "-u"], 0, "->"),
         ("check.py", [], 0), ("fetch.py", ["--offline"], 0)]),
-    ("_sources.csv without url column", lambda d: write(d, "_sources.csv", read(d, "_sources.csv").replace("id,url,", "id,link,", 1)), [
+    ("_sources.csv without url column", lambda d: write(d, P("_sources.csv"), read(d, P("_sources.csv")).replace("id,url,", "id,link,", 1)), [
         ("rag.py", ["src", "S100"], 1, "lacks"), ("rag.py", ["search", "kerberos", "-u"], 1, "lacks"),
         ("check.py", [], 1, "lacks column"), ("fetch.py", ["--offline"], 1, "lacks column")]),
-    ("_sources.csv deleted", lambda d: os.remove(os.path.join(d, "_sources.csv")), [
+    ("_sources.csv deleted", lambda d: os.remove(os.path.join(d, P("_sources.csv"))), [
         ("rag.py", ["search", "kerberos"], 0), ("rag.py", ["src", "S100"], 1, "cannot read"),
         ("check.py", [], 1, "cannot read"), ("fetch.py", ["--offline"], 1, "cannot read")]),
-    ("_artifacts.csv deleted", lambda d: os.remove(os.path.join(d, "_artifacts.csv")), [
+    ("_artifacts.csv deleted", lambda d: os.remove(os.path.join(d, P("_artifacts.csv"))), [
         ("check.py", [], 1, "cannot read"), ("fetch.py", ["--offline"], 1, "cannot read")]),
-    ("_artifacts.csv header only", lambda d: write(d, "_artifacts.csv", "path,source_id,sha256,zip_member\n"), [
+    ("_artifacts.csv header only", lambda d: write(d, P("_artifacts.csv"), "path,source_id,sha256,zip_member\n"), [
         ("fetch.py", ["--offline"], 1, "no artifacts")]),
-    ("pinned artifact tampered", lambda d: write(d, "sqlserver/mssql-server-tags.json", "{}"), [
+    ("pinned artifact tampered", lambda d: write(d, P("sqlserver/mssql-server-tags.json"), "{}"), [
         ("fetch.py", ["--offline"], 1, "MISMATCH"), ("check.py", [], 0)]),
     ("pinned artifact replaced by a directory", to_dir, [
         ("fetch.py", ["--offline"], 1, "is a directory"), ("check.py", [], 1, "is missing")]),
-    ("symlink loop", lambda d: os.symlink(os.path.join(d, "ad"), os.path.join(d, "ad", "loop")), [
+    ("symlink loop", lambda d: os.symlink(os.path.join(d, P("ad")), os.path.join(d, P("ad"), "loop")), [
         ("rag.py", ["search", "kerberos"], 0), ("rag.py", ["topics"], 0), ("check.py", [], 0)]),
-    ("symlink to /etc", lambda d: os.symlink("/etc", os.path.join(d, "ad", "etc")), [
+    ("symlink to /etc", lambda d: os.symlink("/etc", os.path.join(d, P("ad"), "etc")), [
         ("rag.py", ["search", "kerberos"], 0), ("rag.py", ["show", "ad/etc/hosts"], 1, "outside the kb")]),
     pytest.param("unreadable .md", unreadable, [
         ("rag.py", ["search", "kerberos"], 0, "skipped ad/secret.md"), ("rag.py", ["topics", "ad"], 0),
         ("check.py", [], 1, "unreadable")],
         marks=pytest.mark.skipif(os.name != "posix" or os.geteuid() == 0, reason="root can read a chmod 000 file"),
         id="unreadable .md"),
-    ("3000 extra topic files", lambda d: [write(d, f"bulk/t{i}.md", (
+    ("3000 extra topic files", lambda d: [write(d, P(f"bulk/t{i}.md"), (
         f"---\ntopic: bulk/t{i}\npriority: P3\nretrieved_utc: 2026-09-25\nsources: [S100]\nstatus: complete\n---\n"
         f"# t{i}\n## Facts\n- kerberos {i} [DOC S100]\n")) for i in range(3000)], [
         ("rag.py", ["search", "kerberos"], 0), ("rag.py", ["topics", "bulk"], 0), ("check.py", [], 0)]),
-    ("citation to unknown source", lambda d: write(d, "ad/cite.md", "x [DOC S999999] y\n"), [
+    ("citation to unknown source", lambda d: write(d, P("ad/cite.md"), "x [DOC S999999] y\n"), [
         ("check.py", [], 1, "cites unknown source S999999")]),
-    ("100k citations in one file", lambda d: write(d, "ad/many.md", "".join(f"- flood [DOC S{100 + i % 900}]\n" for i in range(100000))), [
+    ("100k citations in one file", lambda d: write(d, P("ad/many.md"), "".join(f"- flood [DOC S{100 + i % 900}]\n" for i in range(100000))), [
         ("check.py", [], (0, 1)), ("rag.py", ["search", "flood", "-u"], 0)]),
 ]
 
@@ -267,7 +269,7 @@ DUP = "\n## QK-dup-answer. first\n- x [UNK]\n\n## QK-dup-answer. second\n- y [UN
 
 def with_hash(d):
     add_sources(d, [ROW])
-    write(d, "ad/hashid.md", f"---\ntopic: ad/hashid\npriority: P3\nretrieved_utc: 2026-09-25\nsources: [{HID}, S100]\n"
+    write(d, P("ad/hashid.md"), f"---\ntopic: ad/hashid\npriority: P3\nretrieved_utc: 2026-09-25\nsources: [{HID}, S100]\n"
                              f"status: complete\n---\n# t\n## Facts\n- zanzibarquux fact [DOC {HID}, S100]\n")
 
 
@@ -297,17 +299,17 @@ MUTATIONS += [
         ("check.py", [], 1, f"hash id collision {kbid.source_id(COLL_A)}"), ("kbid.py", ["check"], 1, "collision")]),
     ("malformed id in _sources.csv", lambda d: add_sources(d, [{**ROW, "id": "S-12"}]), [
         ("check.py", [], 1, "malformed source id")]),
-    ("malformed hash id cited", lambda d: write(d, "ad/badid.md", "x [DOC S-ZZZZ] y\n"), [
+    ("malformed hash id cited", lambda d: write(d, P("ad/badid.md"), "x [DOC S-ZZZZ] y\n"), [
         ("check.py", [], 1, "cites unknown source S-ZZZZ")]),
-    ("_sources.csv without superseded_by column", lambda d: write(d, "_sources.csv", "\n".join(
-        ln.rpartition(",")[0] for ln in read(d, "_sources.csv").splitlines()) + "\n"), [
+    ("_sources.csv without superseded_by column", lambda d: write(d, P("_sources.csv"), "\n".join(
+        ln.rpartition(",")[0] for ln in read(d, P("_sources.csv")).splitlines()) + "\n"), [
         ("check.py", [], 1, "lacks column(s) superseded_by"), ("rag.py", ["src", "S100"], 0, "S100"),
         ("fetch.py", ["--offline"], 0)]),
-    ("duplicate QK answer id", lambda d: write(d, "_answers.md", read(d, "_answers.md") + DUP), [
+    ("duplicate QK answer id", lambda d: write(d, P("_answers.md"), read(d, P("_answers.md")) + DUP), [
         ("check.py", [], 1, "duplicate answer id QK-dup-answer"), ("kbid.py", ["answer", "dup answer"], 0, "already used")]),
-    ("numbered QK answer id", lambda d: write(d, "_answers.md", read(d, "_answers.md") + "\n## QK7. q\n- x [UNK]\n"), [
+    ("numbered QK answer id", lambda d: write(d, P("_answers.md"), read(d, P("_answers.md")) + "\n## QK7. q\n- x [UNK]\n"), [
         ("check.py", [], 1, "QK ids are QK-<slug>")]),
-    ("slug QK answer id", lambda d: write(d, "_answers.md", read(d, "_answers.md") + "\n## QK-dataverse-onprem-sync. q\n- x [UNK]\n"), [
+    ("slug QK answer id", lambda d: write(d, P("_answers.md"), read(d, P("_answers.md")) + "\n## QK-dataverse-onprem-sync. q\n- x [UNK]\n"), [
         ("check.py", [], 0)]),
 ]
 
@@ -327,21 +329,21 @@ def test_mutation(tmp_path, name, mutate, calls):
 # ---------------------------------------------------------------- generated index files: build_index.py
 
 def coverage(d):
-    return {r["topic"]: r for r in csv.DictReader(io.StringIO(read(d, "_coverage.csv")))}
+    return {r["topic"]: r for r in csv.DictReader(io.StringIO(read(d, P("_coverage.csv"))))}
 
 
 def test_index_extras_flow(tmp_path):
     """build_index.py: files: extras, topics without an article, ordering, the coverage page row, used_in, idempotency."""
-    B, GEN = "build_index.py", ("_coverage.csv", "_self/coverage.md", "_sources.csv")
+    B, GEN = "build_index.py", (P("_coverage.csv"), COV, P("_sources.csv"))
     d = copy_kb(tmp_path, "index")
     call(d, B, ["--check"], 0, "out_of_date=0")
     art = lambda topic, extra="": (f"---\ntopic: {topic}\npriority: P3\nretrieved_utc: 2026-09-25\nsources: [S100, S101]\n"  # noqa: E731
                                    f"status: partial\n{extra}---\n# t\n## Summary\n## Facts\n- quux [DOC S100, S101]\n## Reference\n## Examples\n")
-    write(d, "ad/extras.md", art("ad/extras", "files: [ad/extras-data/, ad/extras-data/digest.md]\n"))
-    write(d, "ad/extras.csv", "a,b\nx,S102\n")
-    write(d, "ad/extras-data/digest.md", art("ad/extras-data/digest"))
-    write(d, "ad/table-only.csv", "op,sources\nx,S100;S101\ny,S101;S999999\n")
-    write(d, "_tools/index_extra.csv", read(d, "_tools/index_extra.csv") + "ad/table-only,P3,partial,ad/table-only.csv\n")
+    write(d, P("ad/extras.md"), art("ad/extras", "files: [ad/extras-data/, ad/extras-data/digest.md]\n"))
+    write(d, P("ad/extras.csv"), "a,b\nx,S102\n")
+    write(d, P("ad/extras-data/digest.md"), art("ad/extras-data/digest"))
+    write(d, P("ad/table-only.csv"), "op,sources\nx,S100;S101\ny,S101;S999999\n")
+    write(d, D("index_extra.csv"), read(d, D("index_extra.csv")) + "ad/table-only,P3,partial,ad/table-only.csv\n")
     call(d, B, ["--check"], 1, "_coverage.csv: ad/extras row missing")  # the new article and extra row are detected
     call(d, B, [], 0, "written=3")
     cov = coverage(d)
@@ -353,8 +355,8 @@ def test_index_extras_flow(tmp_path):
     topics = list(cov)
     assert topics == sorted(topics, key=lambda t: (t.split("/")[0], cov[t]["priority"], t)), "rows not ordered by domain, priority, topic"
     assert "| `ad/extras` | P3 | partial | `ad/extras.md`, `ad/extras.csv`, `ad/extras-data/`, `ad/extras-data/digest.md` | 2 |" \
-        in read(d, "_self/coverage.md"), "coverage page row missing between the markers"
-    src = {r["id"]: r for r in csv.DictReader(io.StringIO(read(d, "_sources.csv")))}
+        in read(d, COV), "coverage page row missing between the markers"
+    src = {r["id"]: r for r in csv.DictReader(io.StringIO(read(d, P("_sources.csv"))))}
     assert "ad/extras.csv" in src["S102"]["used_in"].split(";") and "ad/table-only.csv" in src["S101"]["used_in"].split(";") \
         and not any(u.startswith(("_", ".")) or "/" not in u for r in src.values() for u in r["used_in"].split(";") if u), \
         f"used_in must cite csv files, never root or tool files: {src['S102']['used_in']}"
@@ -367,26 +369,26 @@ def test_index_extras_flow(tmp_path):
     call(d, "check.py", [], 1, "ad/table-only.csv:3 cites unknown source S999999")
 
 
-T0 = next(iter(csv.DictReader(io.StringIO(read(KB, "_coverage.csv")))))["topic"]
+T0 = next(iter(csv.DictReader(io.StringIO(read(KB, P("_coverage.csv"))))))["topic"]
 HAND_EDITS = [  # (name, mutate(copy), --check exit, expect, a build repairs it)
-    ("hand-edited n_sources", lambda d: write(d, "_coverage.csv", "\n".join(
-        ln.rpartition(",")[0] + ",999" if ln.startswith(T0 + ",") else ln for ln in read(d, "_coverage.csv").split("\n"))),
+    ("hand-edited n_sources", lambda d: write(d, P("_coverage.csv"), "\n".join(
+        ln.rpartition(",")[0] + ",999" if ln.startswith(T0 + ",") else ln for ln in read(d, P("_coverage.csv")).split("\n"))),
      1, f"_coverage.csv: {T0}: n_sources", True),
-    ("hand-added coverage row", lambda d: write(d, "_coverage.csv", read(d, "_coverage.csv") + "zz/ghost,P0,complete,zz/ghost.md,1\n"),
+    ("hand-added coverage row", lambda d: write(d, P("_coverage.csv"), read(d, P("_coverage.csv")) + "zz/ghost,P0,complete,zz/ghost.md,1\n"),
      1, "zz/ghost is not a topic", True),
-    ("rows swapped", lambda d: write(d, "_coverage.csv", (lambda ls: "\n".join([ls[0], ls[2], ls[1]] + ls[3:]))(
-        read(d, "_coverage.csv").split("\n"))), 1, "row order", True),
-    ("CRLF _coverage.csv", lambda d: write(d, "_coverage.csv", read(d, "_coverage.csv").replace("\n", "\r\n")), 1, "_coverage.csv", True),
-    ("hand-edited coverage page row", lambda d: write(d, "_self/coverage.md", read(d, "_self/coverage.md").replace(
+    ("rows swapped", lambda d: write(d, P("_coverage.csv"), (lambda ls: "\n".join([ls[0], ls[2], ls[1]] + ls[3:]))(
+        read(d, P("_coverage.csv")).split("\n"))), 1, "row order", True),
+    ("CRLF _coverage.csv", lambda d: write(d, P("_coverage.csv"), read(d, P("_coverage.csv")).replace("\n", "\r\n")), 1, "_coverage.csv", True),
+    ("hand-edited coverage page row", lambda d: write(d, COV, read(d, COV).replace(
         f"| `{T0}` |", f"| `{T0}` | P9 |", 1)), 1, "_self/coverage.md: coverage table differs", True),
     ("hand-edited used_in", lambda d: add_sources(d, patch={"S100": {"used_in": "dsc/nothing.md"}}), 1, "S100 used_in", True),
-    ("front matter changed, index not rebuilt", lambda d: write(d, T0 + ".md", read(d, T0 + ".md").replace(
+    ("front matter changed, index not rebuilt", lambda d: write(d, P(T0 + ".md"), read(d, P(T0 + ".md")).replace(
         "\nstatus: ", "\nstatus: unknown\nold_status: ", 1)), 1, f"_coverage.csv: {T0}: status", True),
-    ("coverage page without markers", lambda d: write(d, "_self/coverage.md", read(d, "_self/coverage.md").replace(
+    ("coverage page without markers", lambda d: write(d, COV, read(d, COV).replace(
         "<!-- coverage:start -->", "")), 2, "_self/coverage.md lacks the", False),
-    ("files: names a missing path (warned, lint errors)", lambda d: write(d, T0 + ".md", read(d, T0 + ".md").replace(
+    ("files: names a missing path (warned, lint errors)", lambda d: write(d, P(T0 + ".md"), read(d, P(T0 + ".md")).replace(
         "\nstatus: ", "\nfiles: [ad/nope.csv]\nstatus: ", 1)), 1, "files: lists missing ad/nope.csv", True),
-    ("_sources.csv deleted", lambda d: os.remove(os.path.join(d, "_sources.csv")), 2, "cannot read _sources.csv", False),
+    ("_sources.csv deleted", lambda d: os.remove(os.path.join(d, P("_sources.csv"))), 2, "cannot read _sources.csv", False),
 ]
 
 
@@ -409,19 +411,19 @@ def test_kbgit_fixes_union_merged_ledgers(tmp_path):
     d = copy_kb(tmp_path, "kbgit")
     call(d, G, ["fix", "--check"], 0, "changed=0")
     call(d, G, ["fmt", "--check"], 0, "changed=0")
-    src = read(d, "_sources.csv")
+    src = read(d, P("_sources.csv"))
     head, body = src.split("\n", 1)
     lines = body.splitlines()
     newer = lines[0].replace(",2026-", ",2027-", 1)
-    write(d, "_sources.csv", head + "\n" + "\n".join(lines[::-1]) + "\n" + "<<<<<<< ours\n" + lines[1] + "\n=======\n"
+    write(d, P("_sources.csv"), head + "\n" + "\n".join(lines[::-1]) + "\n" + "<<<<<<< ours\n" + lines[1] + "\n=======\n"
           + head + "\n" + newer + "\n>>>>>>> theirs\n")
-    write(d, "_answers.md", read(d, "_answers.md") + read(d, "_answers.md").split("\n## ", 2)[1].join(["\n## ", ""]))
+    write(d, P("_answers.md"), read(d, P("_answers.md")) + read(d, P("_answers.md")).split("\n## ", 2)[1].join(["\n## ", ""]))
     call(d, G, ["fmt"], 2, "conflict markers")
-    call(d, G, ["fix", "--check"], 1, "WOULD CHANGE _sources.csv")
+    call(d, G, ["fix", "--check"], 1, "WOULD CHANGE " + P("_sources.csv"))
     call(d, G, ["fix"], 0, "removed 1 repeated header")
     call(d, G, ["fix", "--check"], 0, "changed=0")
-    assert read(d, "_sources.csv") == src.replace(lines[0], newer), "rows not back in canonical order with the newer duplicate merged"
-    assert read(d, "_answers.md") == read(KB, "_answers.md"), "the repeated answer was not dropped"
+    assert read(d, P("_sources.csv")) == src.replace(lines[0], newer), "rows not back in canonical order with the newer duplicate merged"
+    assert read(d, P("_answers.md")) == read(KB, P("_answers.md")), "the repeated answer was not dropped"
     call(d, "check.py", [], 0)
 
 
@@ -434,11 +436,11 @@ def test_kbgit_collision_needs_a_git_base(tmp_path):
 
 def test_kbgit_needs_a_human_writes_nothing(tmp_path):
     d = copy_kb(tmp_path, "kbgit")
-    write(d, "_answers.md", read(d, "_answers.md") + "\n## QK-dup. a\n\none\n\n## QK-dup. a\n\ntwo\n")
-    write(d, "_gaps.md", read(d, "_gaps.md") * 2)
-    before = read(d, "_gaps.md")
+    write(d, P("_answers.md"), read(d, P("_answers.md")) + "\n## QK-dup. a\n\none\n\n## QK-dup. a\n\ntwo\n")
+    write(d, P("_gaps.md"), read(d, P("_gaps.md")) * 2)
+    before = read(d, P("_gaps.md"))
     call(d, "kbgit.py", ["fix"], 2, "QK-dup appears 2 times")
-    assert read(d, "_gaps.md") == before
+    assert read(d, P("_gaps.md")) == before
 
 
 # ---------------------------------------------------------------- fetch.py --diff / --status against a local web server
@@ -461,7 +463,7 @@ def test_fetch_diff_and_status_flow(tmp_path, www):
     write(root, "a.html", page("<p>line one</p><p>line two</p>"))
     write(root, "b.txt", "plain text\n")
     d = copy_kb(tmp_path, "diff")
-    rows = list(csv.DictReader(io.StringIO(read(d, "_sources.csv"))))
+    rows = list(csv.DictReader(io.StringIO(read(d, P("_sources.csv")))))
     for r in rows:  # S100 -> html page, S101 -> text file, S102 -> dead port, S103 -> not http
         r["url"] = {"S100": f"{url}/a.html", "S101": f"{url}/b.txt", "S102": "http://127.0.0.1:9/x", "S103": "file:///etc/hosts"}.get(r["id"], r["url"])
         if r["id"] in ("S100", "S101"):
@@ -470,13 +472,13 @@ def test_fetch_diff_and_status_flow(tmp_path, www):
     w = csv.DictWriter(buf, list(rows[0].keys()), lineterminator="\n")
     w.writeheader()
     w.writerows(rows)
-    write(d, "_sources.csv", buf.getvalue())
+    write(d, P("_sources.csv"), buf.getvalue())
     F = ["--delay", "0", "--timeout", "5"]
     two = ["--source", "S100", "--source", "S101"]
     call(d, "fetch.py", ["--status", *two], 0, "never_fetched=2")
     call(d, "fetch.py", ["--diff", *two, *F], 0, "new=2")
     call(d, "fetch.py", ["--status", *two, "--json"], 0,  # state and snapshots saved
-         check=lambda o: all(x["fetched_utc"] for x in json.loads(o)) and os.path.isfile(os.path.join(d, "_cache/snapshots/S100.txt")))
+         check=lambda o: all(x["fetched_utc"] for x in json.loads(o)) and any(os.path.isfile(os.path.join(d, c, "_cache/snapshots/S100.txt")) for c in (".", P("."))))
     call(d, "fetch.py", ["--diff", *two, *F], 0, "unchanged=2")
     write(root, "a.html", page("<p>line one</p><p>line two</p>", nav="other menu"))
     call(d, "fetch.py", ["--diff", "--source", "S100", *F], 0, "unchanged=1")  # a change outside <main> is ignored

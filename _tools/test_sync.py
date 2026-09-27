@@ -18,7 +18,7 @@ import csv, io, os, re, shutil
 import pytest
 
 import kbgit, kbid
-from conftest import Repo, copy_kb, git_env, requires_git
+from conftest import P, Repo, copy_kb, git_env, requires_git
 
 
 def rows(text):
@@ -27,10 +27,10 @@ def rows(text):
 
 class TestSyncRules:
     def test_mechanical_paths(self):
-        for p in ("_sources.csv", "_fetch_state.csv", "_answers.md", "_gaps.md", "_conflicts.md", "_coverage.csv",
-                  "_tools/lint_baseline.txt", "_self/coverage.md"):
+        for p in [P(f) for f in ("_sources.csv", "_fetch_state.csv", "_answers.md", "_gaps.md", "_conflicts.md",
+                                 "_coverage.csv")] + ["_tools/lint_baseline.txt", kbgit.FB(kbgit.build_index.COVERAGE_MD)]:
             assert p in kbgit.MECHANICAL
-        for p in ("auth/kerberos.md", "_tools/kbgit.py", "AGENTS.md", "README.md", ".gitattributes", "_artifacts.csv"):
+        for p in (P("auth/kerberos.md"), "_tools/kbgit.py", "AGENTS.md", "README.md", ".gitattributes", P("_artifacts.csv")):
             assert p not in kbgit.MECHANICAL
 
     def test_fix_args_and_renumber_lines(self):
@@ -85,15 +85,15 @@ class TestSyncInGit:
         cls.a1_pushed = int(Repo(cls.remote, cls.env).git("rev-list", "--count", f"{cls.base}..main").strip())
         hb = kbid.source_id(cls.URL_B1)
         cls.add_source(cls.b, "S-", cls.URL_B1, "b1")
-        cls.b.append("_answers.md", f"\n## {kbid.answer_id(cls.Q_B)}. {cls.Q_B}\n\nYes, it does. [DOC {hb}]\n")
+        cls.b.append(P("_answers.md"), f"\n## {kbid.answer_id(cls.Q_B)}. {cls.Q_B}\n\nYes, it does. [DOC {hb}]\n")
         cls.commit(cls.b, "docs(kb): sync test b1")
         cls.b_head_before = cls.b.rev("HEAD")
-        cls.b_sources_before = cls.b.read("_sources.csv")
+        cls.b_sources_before = cls.b.read(P("_sources.csv"))
         cls.dry = cls.b.kbgit("sync", "--dry-run", "--push")
-        cls.b_after_dry = (cls.b.rev("HEAD"), cls.b.git("status", "--porcelain"), cls.b.read("_sources.csv"))
+        cls.b_after_dry = (cls.b.rev("HEAD"), cls.b.git("status", "--porcelain"), cls.b.read(P("_sources.csv")))
         cls.b.append("README.md", "x\n")
         cls.b.git("add", "README.md")
-        cls.b.append("_gaps.md", "x\n")
+        cls.b.append(P("_gaps.md"), "x\n")
         cls.dirty = cls.b.kbgit("sync", "--push")
         cls.b.git("reset", "-q", "--hard", "HEAD")
         cls.push_b1 = cls.b.kbgit("sync", "--push")
@@ -101,12 +101,12 @@ class TestSyncInGit:
         # 2. both clones take the legacy id S9999 for different urls
         cls.add_source(cls.a, "S9999", cls.URL_A2, "a2")
         cls.article(cls.a, "a2", ["S9999"], ["Clone a cites its S9999."])
-        cls.a.append("_answers.md", f"\n## QK-sync-shared. {cls.Q_SHARED_A}\n\nClone a answers. [DOC S9999]\n")
+        cls.a.append(P("_answers.md"), f"\n## QK-sync-shared. {cls.Q_SHARED_A}\n\nClone a answers. [DOC S9999]\n")
         cls.commit(cls.a, "docs(kb): sync test a2 with S9999")
         cls.push_a2 = cls.a.kbgit("sync", "--push")
         cls.add_source(cls.b, "S9999", cls.URL_B2, "b2")
         cls.article(cls.b, "b2", ["S9999"], ["Clone b cites its S9999.", "Answer: `_answers.md` QK-sync-shared."])
-        cls.b.append("_answers.md", f"\n## QK-sync-shared. {cls.Q_SHARED_B}\n\nClone b answers. [DOC S9999]\n")
+        cls.b.append(P("_answers.md"), f"\n## QK-sync-shared. {cls.Q_SHARED_B}\n\nClone b answers. [DOC S9999]\n")
         cls.commit(cls.b, "docs(kb): sync test b2 with S9999")
         cls.push_b2 = cls.b.kbgit("sync", "--push")
         cls.b2_checks = {t: cls.b.tool(t, *args) for t, args in
@@ -115,9 +115,9 @@ class TestSyncInGit:
 
         # 2b. both clones add a research answer at the same place, with the same footer line (a zealous merge splices)
         for d, q in ((cls.a, cls.Q_FOOT_A), (cls.b, cls.Q_FOOT_B)):
-            t = d.read("_answers.md")
+            t = d.read(P("_answers.md"))
             i = t.index("\n## R1. ")
-            d.write("_answers.md", t[:i] + cls.foot_block(q) + t[i:])
+            d.write(P("_answers.md"), t[:i] + cls.foot_block(q) + t[i:])
             cls.commit(d, f"docs(kb): answer {kbid.answer_id(q)}")
         cls.push_a4 = cls.a.kbgit("sync", "--push")
         cls.push_b4 = cls.b.kbgit("sync", "--push")
@@ -126,7 +126,7 @@ class TestSyncInGit:
         # 3. the same article line edited on both sides
         cls.pull_a = cls.a.kbgit("sync")
         for d, who in ((cls.a, "clone a now words it"), (cls.b, "clone b words it")):
-            d.write("windows/sync-test-a.md", d.read("windows/sync-test-a.md").replace(
+            d.write(P("windows/sync-test-a.md"), d.read(P("windows/sync-test-a.md")).replace(
                 "The first fact from clone a.", f"The first fact, as {who}."))
             cls.commit(d, "docs(kb): reword the first fact")
         cls.push_a3 = cls.a.kbgit("sync", "--push")
@@ -146,11 +146,11 @@ class TestSyncInGit:
         sid = kbid.source_id(url) if sid == "S-" else sid
         buf = io.StringIO()
         csv.writer(buf, lineterminator="\n").writerow([sid, url, f"Sync test {tag}", "Microsoft", "MIT", "2026-09-25", "v", "", "", ""])
-        d.append("_sources.csv", buf.getvalue())
+        d.append(P("_sources.csv"), buf.getvalue())
 
     @classmethod
     def article(cls, d, name, sids, facts):
-        d.write(f"windows/sync-test-{name}.md",
+        d.write(P(f"windows/sync-test-{name}.md"),
                 f"---\ntopic: windows/sync-test-{name}\npriority: P3\napplies_to: [test]\nretrieved_utc: 2026-09-25\n"
                 f"sources: [{', '.join(sids)}]\nstatus: partial\n---\n# Sync test {name}\n\n## Summary\n\nTest.\n\n## Facts\n\n"
                 + "".join(f"- {f} [DOC {sids[0]}]\n" for f in facts) + "\n## Reference\n\n## Examples\n")
@@ -183,7 +183,7 @@ class TestSyncInGit:
         assert r.returncode == 0, r.stdout + r.stderr
         assert f"local 1 ahead, {self.a1_pushed} behind" in r.stdout
         assert "would rebase 1 local commit(s)" in r.stdout
-        assert "mechanical (fix): _sources.csv" in r.stdout
+        assert f"mechanical (fix): {P('_sources.csv')}" in r.stdout
         assert self.b_after_dry == (self.b_head_before, "", self.b_sources_before)
         assert "pushed: yes" not in r.stdout
 
@@ -191,7 +191,7 @@ class TestSyncInGit:
         r = self.dirty
         assert r.returncode == 2, r.stdout + r.stderr
         assert "staged:   README.md" in r.stdout
-        assert "unstaged: _gaps.md" in r.stdout
+        assert f"unstaged: {P('_gaps.md')}" in r.stdout
         assert "git stash" in r.stdout
 
     def test_clean_rebase_is_fixed_gated_and_pushed(self):
@@ -202,13 +202,13 @@ class TestSyncInGit:
         assert re.search(r"gate check-trailers origin/main\.\.HEAD: ok", r.stdout)
         assert "gate tests.py (fast): skipped" in r.stdout
         assert "pushed: yes" in r.stdout
-        src = rows(self.remote_file("_sources.csv"))
+        src = rows(self.remote_file(P("_sources.csv")))
         ha, hb = kbid.source_id(self.URL_A1), kbid.source_id(self.URL_B1)
         assert ha in src
         assert hb in src
         assert src[ha]["used_in"] == "windows/sync-test-a.md"
-        assert kbid.answer_id(self.Q_B) in self.remote_file("_answers.md")
-        ids = list(rows(self.remote_file("_sources.csv")))
+        assert kbid.answer_id(self.Q_B) in self.remote_file(P("_answers.md"))
+        ids = list(rows(self.remote_file(P("_sources.csv"))))
         assert ids == sorted(ids, key=kbid.sort_key)
 
     def test_collision_renumbered_with_trailers_refreshed(self):
@@ -219,15 +219,15 @@ class TestSyncInGit:
         assert re.search(r"ids renumbered: .*QK-sync-shared collision", r.stdout)
         assert "trailers refreshed on" in r.stdout
         assert "pushed: yes" in r.stdout
-        src = rows(self.remote_file("_sources.csv"))
+        src = rows(self.remote_file(P("_sources.csv")))
         hb = kbid.source_id(self.URL_B2)
         assert (src["S9999"]["url"], src[hb]["url"]) == (self.URL_A2, self.URL_B2)  # pushed ids are never renumbered
-        assert "[DOC S9999]" in self.remote_file("windows/sync-test-a2.md")
-        b2 = self.remote_file("windows/sync-test-b2.md")
+        assert "[DOC S9999]" in self.remote_file(P("windows/sync-test-a2.md"))
+        b2 = self.remote_file(P("windows/sync-test-b2.md"))
         qb = kbid.answer_id(self.Q_SHARED_B)
         assert f"[DOC {hb}]" in b2
         assert f"`_answers.md` {qb}." in b2
-        ans = self.remote_file("_answers.md")
+        ans = self.remote_file(P("_answers.md"))
         for want in (f"## QK-sync-shared. {self.Q_SHARED_A}\n\nClone a answers. [DOC S9999]",
                      f"## {qb}. {self.Q_SHARED_B}\n\nClone b answers. [DOC {hb}]"):
             assert want in ans
@@ -239,7 +239,7 @@ class TestSyncInGit:
         """Rebased with diff3: B's answer is added after A's, A's section is untouched, B's trailers name only B's answer."""
         for r in (self.push_a4, self.push_b4):
             assert r.returncode == 0, r.stdout + r.stderr
-        ans = self.remote_file("_answers.md")
+        ans = self.remote_file(P("_answers.md"))
         blocks = [self.foot_block(q) for q in (self.Q_FOOT_A, self.Q_FOOT_B)]
         assert blocks[0] + blocks[1] in ans
         subjects = dict(ln.strip("\n").split("\x1f") for ln in self.b4_log.split("\x1e") if "\x1f" in ln)
@@ -251,7 +251,7 @@ class TestSyncInGit:
         assert self.push_a3.returncode == 0, self.push_a3.stdout + self.push_a3.stderr
         r = self.push_b3
         assert r.returncode == 3, r.stdout + r.stderr
-        assert "needs-human: windows/sync-test-a.md" in r.stdout
+        assert f"needs-human: {P('windows/sync-test-a.md')}" in r.stdout
         assert "git rebase --abort" in r.stdout
         assert "  python3 _tools/kbgit.py sync --push\n" in r.stdout  # the next step repeats the user's own command
         assert re.search(r"sync-state: base=[0-9a-f]{40} upstream=[0-9a-f]{40} orig_head=[0-9a-f]{40}", r.stdout)
@@ -259,7 +259,7 @@ class TestSyncInGit:
         assert self.b3_again.returncode == 2, self.b3_again.stdout
         assert "rebase is in progress" in self.b3_again.stdout
         assert self.b3_after_abort == self.b3_head
-        assert "clone b words it" not in self.remote_file("windows/sync-test-a.md")
+        assert "clone b words it" not in self.remote_file(P("windows/sync-test-a.md"))
 
 
 @requires_git
@@ -285,7 +285,7 @@ class TestPrePushInGit:
         assert c.kbgit("install-hooks").returncode == 0
         cls.base = c.rev("HEAD")
         # a hand edit of the generated _coverage.csv: build_index.py --check fails
-        c.write("_coverage.csv", c.read("_coverage.csv").replace(",P1,", ",P9,", 1))
+        c.write(P("_coverage.csv"), c.read(P("_coverage.csv")).replace(",P1,", ",P9,", 1))
         c.git("commit", "-qam", "chore: hand edit")
         cls.bad = c.run_git("push", "-q", "origin", "HEAD:main")
         cls.after_bad = cls.remote.rev("main")

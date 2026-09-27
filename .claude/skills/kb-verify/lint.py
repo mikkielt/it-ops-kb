@@ -20,9 +20,10 @@ ids missing from the header.
 """
 import csv, glob, json, os, re, sys
 
-KB = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
-sys.path.insert(0, os.path.join(KB, "_tools"))
+HOME = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
+sys.path.insert(0, os.path.join(HOME, "_tools"))
 import build_index  # noqa: E402
+import kbcommon  # noqa: E402
 import kbfacts  # noqa: E402
 import kbid  # noqa: E402
 SID = kbid.SOURCE_ID  # hash source ids (S-k3f7q2zd) and legacy ones (S123)
@@ -101,12 +102,12 @@ def candidates(prefixes):
 
 def main():
     args = [a for a in sys.argv[1:] if a not in ("--json", "--candidates")]
-    os.chdir(KB)
+    os.chdir(kbcommon.KB)  # the kb root: every path below, and every path printed, is relative to it
     if "--candidates" in sys.argv:
         return candidates(args)
     with open("_coverage.csv", encoding="utf-8-sig", newline="") as f:
         cov = {r["topic"]: r for r in csv.DictReader(f)}
-    page = build_index.coverage_page()  # _self/coverage.md (README.md in a kb without it)
+    page = build_index.coverage_page()  # coverage.md in SELF (README.md in a kb without it)
     table = open(page, encoding="utf-8").read()
     try:
         gen = {r["topic"]: r for r in build_index.build()[1]}

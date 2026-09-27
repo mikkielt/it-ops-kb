@@ -10,6 +10,10 @@ from pyproject.toml's dev group) or `uv run pytest`.
                         which is what KB_TESTS_FAST=1 (kbgit.py sync's gate) does
   marker `stress`       test_stress.py: stress_test.py runs it, tests.py leaves it out
   SOURCES_HEADER        the header line of _sources.csv
+  P(rel)                a path relative to the public root as a path relative to the repository (kbcommon.repo_rel):
+                        what a scenario passes to Repo.write/read or git for a ledger, article or retrieval data file
+  D(rel)                P() of a retrieval data file (signals.csv, lookup_eval.csv, doc2query/expansions.csv, ...)
+  SELF_REL              the kb's own docs directory relative to the repository (`_self`)
 """
 import os, shutil, subprocess, sys
 
@@ -20,6 +24,18 @@ KB = os.path.dirname(TOOLS)
 os.environ.pop("KB_ROOT", None)  # the suite tests this repository; test_kb_root.py sets it per call
 if TOOLS not in sys.path:
     sys.path.insert(0, TOOLS)
+import kbcommon  # noqa: E402
+
+
+def P(rel):
+    return kbcommon.repo_rel(rel, kbcommon.PUBLIC)
+
+
+def D(rel):
+    return P(kbcommon.data_rel(rel))
+
+
+SELF_REL = kbcommon.repo_rel(kbcommon.SELF)
 
 GIT = shutil.which("git")
 requires_git = pytest.mark.skipif(not GIT, reason="git is not installed")

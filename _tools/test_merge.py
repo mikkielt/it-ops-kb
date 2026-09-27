@@ -10,7 +10,8 @@ import csv, io, os, re, shutil
 import pytest
 
 import kbgit, kbid
-from conftest import KB, SOURCES_HEADER as HEADER, Repo, copy_kb, requires_git
+from conftest import KB, SOURCES_HEADER as HEADER, P, Repo, copy_kb, requires_git
+COVERAGE_PAGE = kbgit.FB(kbgit.build_index.COVERAGE_MD)  # the generated coverage table's page, a repository path
 
 
 def rows(text):
@@ -107,25 +108,25 @@ class TestMergeRules:
     def test_answer_mentions_follow_only_the_owning_side(self):
         """A renamed colliding id is rewritten on the owner's lines; the pushed side's own mention and docs stay."""
         assert not {"README.md", "AGENTS.md", "CLAUDE.md"} & set(kbgit.id_files())
-        up = {"x/a.md": "# A\n- The other kb calls it QK-dup.\n", "_answers.md": "# A\n\n## QK-dup. Pushed question\n"}
-        mine = {"x/a.md": "# A\n- Answer: `_answers.md` QK-dup.\n", "_answers.md": "# A\n\n## QK-dup. Local question\n"}
-        merged = {"x/a.md": "# A\n- The other kb calls it QK-dup.\n- Answer: `_answers.md` QK-dup.\n",
-                  "_answers.md": "# A\n\n## QK-dup. Pushed question\n\n## QK-dup. Local question\n"}
-        revs = {"base": {"x/a.md": "# A\n", "_answers.md": "# A\n"}, "up": up, "mine": mine}
+        up = {P("x/a.md"): "# A\n- The other kb calls it QK-dup.\n", P("_answers.md"): "# A\n\n## QK-dup. Pushed question\n"}
+        mine = {P("x/a.md"): "# A\n- Answer: `_answers.md` QK-dup.\n", P("_answers.md"): "# A\n\n## QK-dup. Local question\n"}
+        merged = {P("x/a.md"): "# A\n- The other kb calls it QK-dup.\n- Answer: `_answers.md` QK-dup.\n",
+                  P("_answers.md"): "# A\n\n## QK-dup. Pushed question\n\n## QK-dup. Local question\n"}
+        revs = {"base": {P("x/a.md"): "# A\n", P("_answers.md"): "# A\n"}, "up": up, "mine": mine}
         saved = kbgit.id_files, kbgit.read, kbgit.show
         try:
             kbgit.id_files, kbgit.read = (lambda: sorted(merged)), merged.get
             kbgit.show = lambda rev, f: revs[rev].get(f)
-            plan = kbgit.answer_plan(merged["_answers.md"], revs["base"]["_answers.md"], up["_answers.md"],
-                                     {"up": up["_answers.md"], "mine": mine["_answers.md"]}, [], [])
+            ans = P("_answers.md")
+            plan = kbgit.answer_plan(merged[ans], revs["base"][ans], up[ans], {"up": up[ans], "mine": mine[ans]}, [], [])
             texts, problems = {}, []
             kbgit.rewrite_ids(plan, "base", {"up": "up", "mine": "mine"}, texts, set(), problems, [])
         finally:
             kbgit.id_files, kbgit.read, kbgit.show = saved
         new = kbid.answer_id("Local question")
         assert problems == []
-        assert texts["x/a.md"] == f"# A\n- The other kb calls it QK-dup.\n- Answer: `_answers.md` {new}.\n"
-        assert texts["_answers.md"] == f"# A\n\n## QK-dup. Pushed question\n\n## {new}. Local question\n"
+        assert texts[P("x/a.md")] == f"# A\n- The other kb calls it QK-dup.\n- Answer: `_answers.md` {new}.\n"
+        assert texts[P("_answers.md")] == f"# A\n\n## QK-dup. Pushed question\n\n## {new}. Local question\n"
 
     def test_fetch_state_one_row_per_id(self):
         h = "id,url,checked_utc,fetched_utc,changed_utc,sha256,text_sha256,bytes,error\n"
@@ -159,25 +160,25 @@ class TestMergeRules:
         spliced = "# A\n\n## QK-a. qa\n- a1 [DOC S1]\n## QK-b. qb\n- b1 [DOC S-aaaaaaaa]\n\n_Agent: kb-research_\n\n## R1. r\n"
         whole = "# A\n\n## QK-a. qa\n- a1 [DOC S1]\n\n_Agent: kb-research_\n\n## QK-b. qb\n- b1 [DOC S-aaaaaaaa]\n\n_Agent: kb-research_\n\n## R1. r\n"
         report = []
-        assert kbgit.resolve_md(spliced, "_answers.md", report, [], [a, b]) == whole  # ids renamed since: ignored
+        assert kbgit.resolve_md(spliced, kbgit.ANSWERS, report, [], [a, b]) == whole  # ids renamed since: ignored
         assert any("restored 1 line(s)" in r for r in report), report
-        assert kbgit.resolve_md(whole, "_answers.md", [], [], [a, b]) == whole  # idempotent
-        assert kbgit.resolve_md(spliced, "_answers.md", [], []) == spliced  # sides unknown: left alone
+        assert kbgit.resolve_md(whole, kbgit.ANSWERS, [], [], [a, b]) == whole  # idempotent
+        assert kbgit.resolve_md(spliced, kbgit.ANSWERS, [], []) == spliced  # sides unknown: left alone
         cut = spliced.replace("\n\n_Agent: kb-research_\n\n## R1", "\n\n## R1")  # the tail is not where the merge puts it
-        assert kbgit.resolve_md(cut, "_answers.md", [], [], [a, b]) == cut
+        assert kbgit.resolve_md(cut, kbgit.ANSWERS, [], [], [a, b]) == cut
 
     def test_answer_id_clash_is_a_problem(self):
         problems = []
-        kbgit.resolve_md("# A\n\n## QK-x. q\n\none\n\n## QK-x. q\n\ntwo\n", "_answers.md", [], problems)
+        kbgit.resolve_md("# A\n\n## QK-x. q\n\none\n\n## QK-x. q\n\ntwo\n", kbgit.ANSWERS, [], problems)
         assert problems and "QK-x" in problems[0]
         problems = []
-        out = kbgit.resolve_md("# A\n\n## QK-x. q\n\none\n\n## QK-x. q\n\none\n", "_answers.md", [], problems)
+        out = kbgit.resolve_md("# A\n\n## QK-x. q\n\none\n\n## QK-x. q\n\none\n", kbgit.ANSWERS, [], problems)
         assert (problems, out.count("## QK-x.")) == ([], 1)
 
     def test_gitattributes_pins_every_artifact(self):
         with open(os.path.join(KB, ".gitattributes"), encoding="utf-8") as f:
             attrs = f.read()
-        with open(os.path.join(KB, "_artifacts.csv"), encoding="utf-8") as f:
+        with open(os.path.join(KB, P("_artifacts.csv")), encoding="utf-8") as f:
             pinned = kbgit.pinned_paths(f.read())
         assert kbgit.resolve_attrs(attrs, pinned) == attrs, ".gitattributes pinned block is stale; run python3 _tools/kbgit.py fix"
         for name in ("_sources.csv", "_fetch_state.csv", "_answers.md", "_gaps.md", "_conflicts.md"):
@@ -197,7 +198,7 @@ class TestMergeInGit:
     def scenario(cls, tmp_path_factory):
         cls.tmp = tmp_path_factory.mktemp("kb-merge")
         cls.repo = Repo(copy_kb(cls.tmp / "kb", skip=("_fetch_state.csv",)))
-        cls.repo.write("_fetch_state.csv", cls.STATE_H + "S100,https://x.example.com/,2026-01-01T00:00:00Z,2026-01-01T00:00:00Z,"
+        cls.repo.write(P("_fetch_state.csv"), cls.STATE_H + "S100,https://x.example.com/,2026-01-01T00:00:00Z,2026-01-01T00:00:00Z,"
                   "2026-01-01T00:00:00Z,s0,t0,1,\nS101,https://y.example.com/,2026-01-01T00:00:00Z,,,,,,\n")
         cls.repo.git("init", "-q", "-b", "main")
         cls.repo.git("add", "-A")
@@ -220,19 +221,19 @@ class TestMergeInGit:
         cls.repo.git("checkout", "-q", "-b", name)
         extra = f"https://learn.microsoft.com/en-us/merge-test/extra-{name}"
         hid = kbid.source_id(extra)
-        cls.repo.write("_sources.csv", f"S9999,{url},Merge test {name},Microsoft,MIT,2026-09-25,v,,,\n"
+        cls.repo.write(P("_sources.csv"), f"S9999,{url},Merge test {name},Microsoft,MIT,2026-09-25,v,,,\n"
                                   f"{hid},{extra},Extra {name},Microsoft,MIT,2026-09-25,v,,,\n", "a")
-        cls.repo.write(f"windows/merge-test-{name}.md",
+        cls.repo.write(P(f"windows/merge-test-{name}.md"),
                   f"---\ntopic: windows/merge-test-{name}\npriority: P3\napplies_to: [test]\nretrieved_utc: 2026-09-25\n"
                   f"sources: [S9999, {hid}]\nstatus: partial\n---\n# Merge test {name}\n\n## Summary\n\nTest.\n\n## Facts\n\n"
                   f"- Branch {name} says this. [DOC S9999]\n- And this. [DOC {hid}]\n\n## Reference\n\n## Examples\n")
-        cls.repo.write("_answers.md", f"\n## QK-merge-test-{name}. Does branch {name} merge?\n\nYes, says branch {name} [DOC S9999].\n"
+        cls.repo.write(P("_answers.md"), f"\n## QK-merge-test-{name}. Does branch {name} merge?\n\nYes, says branch {name} [DOC S9999].\n"
                                  f"\n{cls.FOOTER}\n", "a")  # the same last line on both branches: a plain merge splices
-        cls.repo.write("_gaps.md", f"\n- **Merge test gap from branch {name}.** Tried nothing, cites S9999. [UNK]\n", "a")
-        state = cls.repo.read("_fetch_state.csv").replace(
+        cls.repo.write(P("_gaps.md"), f"\n- **Merge test gap from branch {name}.** Tried nothing, cites S9999. [UNK]\n", "a")
+        state = cls.repo.read(P("_fetch_state.csv")).replace(
             "S100,https://x.example.com/,2026-01-01T00:00:00Z,2026-01-01T00:00:00Z,",
             f"S100,https://x.example.com/,{checked},{checked},")
-        cls.repo.write("_fetch_state.csv", state)
+        cls.repo.write(P("_fetch_state.csv"), state)
         r = cls.repo.tool("build_index.py")
         assert r.returncode == 0, r.stdout + r.stderr
         cls.repo.git("add", "-A")
@@ -240,43 +241,43 @@ class TestMergeInGit:
 
     def test_attributes_keep_a_fresh_checkout_clean(self):
         assert self.dirty_after_init == "", "the committed tree is not stable under .gitattributes"
-        with open(os.path.join(KB, "_artifacts.csv"), encoding="utf-8") as f:
+        with open(os.path.join(KB, P("_artifacts.csv")), encoding="utf-8") as f:
             pinned = kbgit.pinned_paths(f.read())
         out = self.repo.git("check-attr", "text", "--", *pinned)
         assert [ln for ln in out.splitlines() if not ln.endswith(": text: unset")] == [], "pinned artifacts must be -text"
-        assert "_sources.csv: merge: union" in self.repo.git("check-attr", "merge", "--", "_sources.csv")
+        assert f"{P('_sources.csv')}: merge: union" in self.repo.git("check-attr", "merge", "--", P("_sources.csv"))
 
     def test_union_ledgers_have_no_markers(self):
         conflicted = set(self.repo.git("diff", "--name-only", "--diff-filter=U").split()) if self.merge.returncode else set()
-        assert conflicted <= {"_self/coverage.md"}, self.merge.stdout  # only the generated coverage table may conflict
+        assert conflicted <= {COVERAGE_PAGE}, self.merge.stdout  # only the generated coverage table may conflict
 
     def test_fix_resolves_everything(self):
         assert self.fix.returncode == 0, self.fix.stdout + self.fix.stderr
-        for rel in ("_sources.csv", "_fetch_state.csv", "_answers.md", "_gaps.md", "_coverage.csv", "_self/coverage.md",
-                    "windows/merge-test-a.md", "windows/merge-test-b.md"):
+        for rel in [P(f) for f in ("_sources.csv", "_fetch_state.csv", "_answers.md", "_gaps.md", "_coverage.csv",
+                                   "windows/merge-test-a.md", "windows/merge-test-b.md")] + [COVERAGE_PAGE]:
             assert not kbgit.has_markers(self.repo.read(rel)), rel
 
     def test_collision_renumbered_and_citations_rewritten(self):
-        src = {r["id"]: r for r in rows(self.repo.read("_sources.csv"))}
+        src = {r["id"]: r for r in rows(self.repo.read(P("_sources.csv")))}
         ha, hb = kbid.source_id(self.URL_A), kbid.source_id(self.URL_B)
         assert "S9999" not in src
         assert (src[ha]["url"], src[hb]["url"]) == (self.URL_A, self.URL_B)
         for n in ("a", "b"):
             assert kbid.source_id(f"https://learn.microsoft.com/en-us/merge-test/extra-{n}") in src
-        a, b = self.repo.read("windows/merge-test-a.md"), self.repo.read("windows/merge-test-b.md")
+        a, b = self.repo.read(P("windows/merge-test-a.md")), self.repo.read(P("windows/merge-test-b.md"))
         assert f"[DOC {ha}]" in a
         assert f"[DOC {hb}]" in b
         assert "S9999" not in a + b
         assert src[ha]["used_in"] == "windows/merge-test-a.md"
-        ans = self.repo.read("_answers.md")
+        ans = self.repo.read(P("_answers.md"))
         assert "QK-merge-test-a" in ans
         assert "QK-merge-test-b" in ans
-        assert "S9999" not in ans + self.repo.read("_gaps.md"), "root ledgers were changed on both sides: their citations too"
-        ids = [r["id"] for r in rows(self.repo.read("_sources.csv"))]
+        assert "S9999" not in ans + self.repo.read(P("_gaps.md")), "root ledgers were changed on both sides: their citations too"
+        ids = [r["id"] for r in rows(self.repo.read(P("_sources.csv")))]
         assert ids == sorted(ids, key=kbid.sort_key)
 
     def test_answers_keep_their_shared_footer(self):
-        ans = self.repo.read("_answers.md")
+        ans = self.repo.read(P("_answers.md"))
         for n in ("a", "b"):
             sec = ans[ans.index(f"## QK-merge-test-{n}."):]
             sec = sec[:sec.find("\n## ", 1) if "\n## " in sec[1:] else len(sec)].rstrip()
@@ -284,7 +285,7 @@ class TestMergeInGit:
         assert "restored 1 line(s) a merge moved out of" in self.fix.stdout
 
     def test_fetch_state_merged(self):
-        st = [r for r in rows(self.repo.read("_fetch_state.csv")) if r["id"] == "S100"]
+        st = [r for r in rows(self.repo.read(P("_fetch_state.csv"))) if r["id"] == "S100"]
         assert len(st) == 1
         assert st[0]["checked_utc"] == "2026-09-27T00:00:00Z"
 

@@ -19,7 +19,7 @@ import json, os, re, shutil, subprocess, sys
 
 import pytest
 
-from conftest import KB, TOOLS
+from conftest import KB, P, TOOLS
 
 SERVER = os.path.join(TOOLS, "kb_mcp.py")
 REMOTE = "git@gitlab.com:mikkielt/it-ops-kb.git"
@@ -273,7 +273,7 @@ class TestPluginManifest:
     def test_agents(self):
         """The lookup agent is lean (kb tools only, small model, no CLAUDE.md); the reviewer reads code."""
         assert self.plugin["agents"] == ["./.claude/agents/kb-lookup.md", "./.claude/agents/kb-reviewer.md"]
-        assert os.path.isdir(os.path.join(KB, "agents")), "the kb's agents/ articles: never a default scan"
+        assert os.path.isdir(os.path.join(KB, P("agents"))), "the kb's agents/ articles: never a default scan"
 
         def fm(rel):
             with open(os.path.join(KB, rel), encoding="utf-8") as f:

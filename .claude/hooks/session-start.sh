@@ -12,6 +12,8 @@ fi
 cd "${CLAUDE_PROJECT_DIR:-$(dirname "$0")/../..}" || exit 0
 
 say() { printf '%s\n' "$*"; }
+self=_self  # the kb's own docs
+[ -d kb/_self ] && self=kb/_self
 
 if ! python3 -c 'import sys; sys.exit(sys.version_info < (3, 11))' 2>/dev/null; then
   say "it-ops-kb: python3 3.11+ is missing; the kb tools cannot run."
@@ -37,7 +39,7 @@ say "- MCP servers (local scope; new ones load after a restart): ${servers}"
 say "- check.py: ${check}"
 say "- test tools: ${deps}"
 say "- branch ${branch} at ${head} (${sync:-origin/main not fetched})"
-say "- Read _self/work-left.md first: it lists the open work. Before any change read _self/maintaining.md; _self/README.md"
+say "- Read ${self}/work-left.md first: it lists the open work. Before any change read ${self}/maintaining.md; ${self}/README.md"
 say "  maps the kb's own docs (content rules, tools, git, plugin, design)."
 say "- The full gate before a commit takes about 60 s: check.py, build_index.py --check, kbgit.py fix --check, tests.py"
 say "  (pytest in parallel, ~20 s, includes rag.py eval), stress_test.py (~35 s), fetch.py --offline; after reworded facts also"

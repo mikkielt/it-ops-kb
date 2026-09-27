@@ -155,7 +155,7 @@ def main():
         question = " ".join(a.question)
         eid = eval_id(question)
         try:
-            with open(os.path.join(KB, "_tools", "lookup_eval.csv"), encoding="utf-8", newline="") as f:
+            with open(kbcommon.data_path("lookup_eval.csv"), encoding="utf-8", newline="") as f:
                 have = {r["id"]: r["question"] for r in csv.DictReader(f)}
         except OSError:
             have = {}

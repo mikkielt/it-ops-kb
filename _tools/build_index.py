@@ -31,10 +31,11 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import kbcommon, kbid  # noqa: E402
 
 KB = kbcommon.KB  # KB_ROOT, else this repository
-EXTRA = os.path.join("_tools", "index_extra.csv")
+EXTRA = kbcommon.data_rel("index_extra.csv")
 COVERAGE_FIELDS = ["topic", "priority", "status", "files", "n_sources"]
 START, END = "<!-- coverage:start -->", "<!-- coverage:end -->"
-COVERAGE_MD = "_self/coverage.md"
+# the coverage page in SELF, relative to the public root (a kb given by KB_ROOT keeps its own, coverage_page)
+COVERAGE_MD = os.path.relpath(os.path.join(kbcommon.SELF, "coverage.md"), kbcommon.PUBLIC).replace(os.sep, "/")
 CITE = kbid.SOURCE_ID
 
 
@@ -151,9 +152,10 @@ csv_text = kbcommon.csv_text
 
 
 def coverage_page(override=None):
-    """The file that holds the coverage table: _self/coverage.md, or README.md in a kb without it (KB_ROOT)."""
-    if COVERAGE_MD in (override or {}) or os.path.exists(os.path.join(KB, COVERAGE_MD)):
-        return COVERAGE_MD
+    """The file that holds the coverage table: coverage.md in SELF, or README.md in a kb without it (KB_ROOT)."""
+    page = COVERAGE_MD if KB == kbcommon.PUBLIC else "_self/coverage.md"
+    if page in (override or {}) or os.path.exists(os.path.join(KB, page)):
+        return page
     return "README.md"
 
 

@@ -14,7 +14,10 @@ routing deterministic instead of relying on the model to match a skill descripti
 
 `--test "<prompt>"` prints what the hook would add, for a check from a shell.
 """
-import json, re, sys
+import json, os, re, sys
+
+HOME = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+SELF = "kb/_self" if os.path.isdir(os.path.join(HOME, "kb", "_self")) else "_self"  # the kb's own docs
 
 CHANGE = re.compile(r"\b(?:add|create|write|update|edit|change|modify|fix|correct|remove|delete|rename|move|refactor|"
                     r"implement|improve|extend|replace|commit|push|sync|merge|rebase|refresh|re-?verify|research|"
@@ -37,7 +40,7 @@ ROUTES = (  # (skill, when, pattern): the first three that match are named, in t
      r"\bskills?\b|\bhooks?\b|\bplugin\b|\btests?\b|\b_self\b|\bAGENTS\.md\b|\bREADME\b|\bdocs?\b|\.py\b"),
 )
 ALWAYS = ("Any change: /kb-verify before committing, then `python3 _tools/kbgit.py sync --push` (/kb-git-sync if it "
-          "stops); a change to tools, skills, hooks, plugin or rules also /kb-self. Rules: _self/maintaining.md.")
+          f"stops); a change to tools, skills, hooks, plugin or rules also /kb-self. Rules: {SELF}/maintaining.md.")
 
 
 def answer(prompt):
@@ -47,7 +50,7 @@ def answer(prompt):
             or QUESTION.match(p):
         return None
     hits = [(s, w) for s, w, rx in ROUTES if re.search(rx, p, re.I)][:3]
-    likely = "; ".join(f"/{s} ({w})" for s, w in hits) or "none named by the wording; pick from the list in _self/maintaining.md"
+    likely = "; ".join(f"/{s} ({w})" for s, w in hits) or f"none named by the wording; pick from the list in {SELF}/maintaining.md"
     text = ("it-ops-kb change routing (from the prompt's words; ignore it if the prompt only asks a question): make a "
             "change to the kb through its skill, invoked with the Skill tool, not by editing freehand. Likely: "
             f"{likely}. {ALWAYS}")

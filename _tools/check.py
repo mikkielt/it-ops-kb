@@ -17,8 +17,16 @@ import csv, glob, os, re, sys
 from collections import Counter
 import kbcommon, kbid, kbfacts
 
-KB = kbcommon.KB  # KB_ROOT, else this repository
+KB = kbcommon.KB  # KB_ROOT, else this repository's public root
+# the public root is checked with the rest of this repository (SELF, _tools/ data, README.md): the same files
+# wherever the layout puts the root; a kb given by KB_ROOT is checked on its own
+SCAN = kbcommon.HOME if KB == kbcommon.PUBLIC else KB
 errors = []
+
+
+def rel_of(p):
+    """A scanned file's path for messages: relative to the kb root, else to this repository."""
+    return kbcommon.kb_rel(p) or os.path.relpath(p, SCAN).replace(os.sep, "/")
 
 
 def read_csv(name, required):
@@ -64,8 +72,8 @@ for r in read_csv("_artifacts.csv", ("path", "source_id", "sha256")):
     if not os.path.isfile(os.path.join(KB, r["path"])):
         errors.append(f"artifact {r['path']} is missing")
 cited = 0
-for p in glob.glob(os.path.join(KB, "**", "*.csv"), recursive=True):
-    rel = os.path.relpath(p, KB)
+for p in glob.glob(os.path.join(SCAN, "**", "*.csv"), recursive=True):
+    rel = rel_of(p)
     try:
         with open(p, encoding="utf-8-sig", newline="") as f:
             rows = list(csv.reader(f))
@@ -86,8 +94,8 @@ for p in glob.glob(os.path.join(KB, "**", "*.csv"), recursive=True):
                     cited += 1
                     if sid not in known:
                         errors.append(f"{rel}:{n} cites unknown source {sid}")
-for p in glob.glob(os.path.join(KB, "**", "*.md"), recursive=True):
-    rel = os.path.relpath(p, KB)
+for p in glob.glob(os.path.join(SCAN, "**", "*.md"), recursive=True):
+    rel = rel_of(p)
     try:
         with open(p, encoding="utf-8") as f:
             text = f.read()

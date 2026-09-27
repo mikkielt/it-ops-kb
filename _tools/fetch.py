@@ -40,10 +40,10 @@ A failed download is reported as `unknown`, never as a match.
 import argparse, datetime, difflib, hashlib, html.parser, io, json, os, re, sys, time, urllib.parse, urllib.request, zipfile
 import kbcommon, kbid
 
-KB = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+KB = kbcommon.PUBLIC  # the public root: ledgers and articles (the cache stays in the repository)
 STATE = "_fetch_state.csv"
 STATE_COLS = ["id", "url", "checked_utc", "fetched_utc", "changed_utc", "sha256", "text_sha256", "bytes", "error"]
-SNAPSHOTS = os.path.join("_cache", "snapshots")
+SNAPSHOTS = os.path.join(kbcommon.HOME, "_cache", "snapshots")
 DELAY, TIMEOUT = 1.1, 180
 _last = {}
 

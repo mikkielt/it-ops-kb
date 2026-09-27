@@ -20,8 +20,8 @@ import csv, io, os, re, shutil
 
 import pytest
 
-import kbid
-from conftest import KB, Repo, git_env, requires_git
+import kbgit, kbid
+from conftest import KB, P, Repo, git_env, requires_git
 
 A_URLS = [f"https://learn.microsoft.com/en-us/power-apps/maker/data-platform/research-merge-a{i}" for i in range(1, 6)]
 B_URLS = [f"https://docs.keeper.io/en/research-merge/b{i}" for i in range(1, 4)]
@@ -29,13 +29,15 @@ Q_A = "Research-merge test: how does Dataverse reach an on-prem SQL Server?"
 Q_B = "Research-merge test: can Keeper Secrets Manager hold agent tokens?"
 ARTICLE_A = "powerbi/research-merge-test-dataverse.md"
 ARTICLE_B = "agents/api-tokens-issue-and-store.md"
+FILE_A, FILE_B = P(ARTICLE_A), P(ARTICLE_B)  # the articles' repository paths (ARTICLE_*: root-relative, as the kb names them)
+COVERAGE_PAGE = kbgit.FB(kbgit.build_index.COVERAGE_MD)
 KEEPER = "### Research-merge test: Keeper Secrets Manager"
 FOOTER = "_Agent: kb-research_"
 
 
 def next_legacy():
     """The number both branches take: the next legacy id after the kb's own."""
-    with open(os.path.join(KB, "_sources.csv"), encoding="utf-8", newline="") as f:
+    with open(os.path.join(KB, P("_sources.csv")), encoding="utf-8", newline="") as f:
         nums = [int(r["id"][1:]) for r in csv.DictReader(f) if re.fullmatch(r"S\d+", r["id"] or "")]
     return max(nums + [2204]) + 1
 
@@ -82,16 +84,16 @@ class TestResearchMergeInGit:
             if name in (".git", "_cache", "_private", "__pycache__", "_fetch_state.csv"):
                 continue
             s, d = os.path.join(KB, name), src.file(name)
-            shutil.copytree(s, d, symlinks=True, ignore=shutil.ignore_patterns("__pycache__")) if os.path.isdir(s) else shutil.copy2(s, d)
+            shutil.copytree(s, d, symlinks=True, ignore=shutil.ignore_patterns("__pycache__", "_fetch_state.csv")) if os.path.isdir(s) else shutil.copy2(s, d)
         src.git("add", "-A")
         if src.git("status", "--porcelain").strip():
             src.git("commit", "-q", "--no-verify", "-m", "the working tree under test")
-        now = src.read(ARTICLE_B)
+        now = src.read(FILE_B)
         assert FILES_NOW in now, f"{ARTICLE_B} no longer lists {FILES_NOW.strip()}: update the test"
-        src.write(ARTICLE_B, now.replace(FILES_NOW, FILES_FORK, 1))
+        src.write(FILE_B, now.replace(FILES_NOW, FILES_FORK, 1))
         src.git("commit", "-q", "--no-verify", "-am", "the fork point")
         fork = src.git("rev-parse", "HEAD").strip()
-        src.write(ARTICLE_B, now)
+        src.write(FILE_B, now)
         src.git("commit", "-q", "--no-verify", "-am", "docs(kb): the upstream edit made since the fork")
         top.git("init", "-q", "--bare", "-b", "main", cls.remote)
         src.git("push", "-q", cls.remote, "HEAD:refs/heads/main")
@@ -136,7 +138,7 @@ class TestResearchMergeInGit:
 
     @classmethod
     def research_a(cls, d):
-        d.append("_sources.csv", rows(FIRST, A_URLS, "Microsoft", "Microsoft Learn terms of use (paraphrased; quote <=25 words)"))
+        d.append(P("_sources.csv"), rows(FIRST, A_URLS, "Microsoft", "Microsoft Learn terms of use (paraphrased; quote <=25 words)"))
         facts = [f"Dataverse reaches an on-prem SQL Server only through the on-premises data gateway. [DOC {LEG[0]}]",
                  f"Virtual tables expose external rows without copying them. [DOC {LEG[1]}]",
                  f"Azure Synapse Link replaces the retired Export to Data Lake service. [DOC {LEG[2]}]",
@@ -144,22 +146,22 @@ class TestResearchMergeInGit:
                  f"Fabric shortcuts read Dataverse tables without an export job. [DOC {LEG[4]}]",
                  f"The research answer is `_answers.md` {QID}. [DER {LEG[0]}, {LEG[1]}]",
                  "The exact refresh latency is not documented. [UNK]"]
-        d.write(ARTICLE_A,
+        d.write(FILE_A,
                   f"---\ntopic: {ARTICLE_A[:-3]}\npriority: P3\napplies_to: \"Dataverse\"\nretrieved_utc: 2026-09-25\n"
                   f"sources: [{', '.join(LEG)}]\nstatus: partial\n---\n\n# Dataverse and an on-prem SQL Server estate\n\n"
                   "## Summary\n\nResearch-a.\n\n## Facts\n\n" + "".join(f"- {f}\n" for f in facts)
                   + "\n## Reference\n\n- powerbi/on-prem-gateway-sql.md\n\n## Examples\n\n- `PL-SRV-0042` in `corp.example.com`.\n")
         cls.before_r1(d, answer(Q_A, [f"Through the gateway, with virtual tables or dataflows. [DOC {LEG[0]}, {LEG[1]}, {LEG[3]}]"],
                                 ARTICLE_A))
-        d.append("_gaps.md", f"\n## {ARTICLE_A[:-3]}\n\n- Refresh latency of virtual tables: not on the pages searched. (research-a)\n")
-        d.write("_coverage.csv", d.read("_coverage.csv").replace(
+        d.append(P("_gaps.md"), f"\n## {ARTICLE_A[:-3]}\n\n- Refresh latency of virtual tables: not on the pages searched. (research-a)\n")
+        d.write(P("_coverage.csv"), d.read(P("_coverage.csv")).replace(
             "powerbi/configmgr-views,P2,partial,powerbi/configmgr-views.md,2\n",
             f"powerbi/configmgr-views,P2,partial,powerbi/configmgr-views.md,2\n{ARTICLE_A[:-3]},P3,partial,{ARTICLE_A},5\n"))
 
     @classmethod
     def research_b(cls, d):
-        d.append("_sources.csv", rows(FIRST, B_URLS, "Keeper Security", "not verified (summarized only)"))
-        t = d.read(ARTICLE_B)
+        d.append(P("_sources.csv"), rows(FIRST, B_URLS, "Keeper Security", "not verified (summarized only)"))
+        t = d.read(FILE_B)
         t = t.replace("S2056, S2057]\nstatus: complete\n", f"S2056, S2057, {', '.join(LEG[:3])}]\nstatus: partial\n", 1)
         t = t.replace("\n## Reference: each option's threat", f"\n{KEEPER}\n\n"
                       f"- Keeper Secrets Manager serves secrets through a zero-knowledge client device. [COMMUNITY {LEG[0]}]\n"
@@ -167,12 +169,12 @@ class TestResearchMergeInGit:
                       "- Rotation of the client device's config is not described. [UNK]\n"
                       f"- The research answer is `_answers.md` {QID}. [COMMUNITY {LEG[2]}]\n"
                       "\n## Reference: each option's threat", 1)
-        d.write(ARTICLE_B, t)
+        d.write(FILE_B, t)
         cls.before_r1(d, answer(Q_B, [f"Yes, through its SDK and a client device per host. [COMMUNITY {LEG[0]}, {LEG[1]}]",
                                       "Open: config rotation. [UNK]"], ARTICLE_B))
-        d.write("_coverage.csv", d.read("_coverage.csv").replace(
+        d.write(P("_coverage.csv"), d.read(P("_coverage.csv")).replace(
             "agents/api-tokens-issue-and-store,P1,complete,", "agents/api-tokens-issue-and-store,P1,partial,"))
-        d.write("_self/coverage.md", d.read("_self/coverage.md").replace(
+        d.write(COVERAGE_PAGE, d.read(COVERAGE_PAGE).replace(
             "| `agents/api-tokens-issue-and-store` | P1 | complete |", "| `agents/api-tokens-issue-and-store` | P1 | partial |"))
 
     @classmethod
@@ -180,7 +182,7 @@ class TestResearchMergeInGit:
         """Resolved by meaning, as /kb-git-sync says: facts added on both sides are both kept (upstream's first); the
         front matter gets the ids the resolved body cites, partial (an [UNK] is left) and the union of files:."""
         rx = re.compile(r"^<<<<<<< [^\n]*\n(.*?)^(?:\|\|\|\|\|\|\| [^\n]*\n.*?)?^=======\n(.*?)^>>>>>>> [^\n]*\n", re.S | re.M)
-        t = d.read(ARTICLE_B)
+        t = d.read(FILE_B)
         fm = [m for m in rx.finditer(t) if "sources:" in m.group(0)]
         t = rx.sub(lambda m: m.group(0) if "sources:" in m.group(0) else m.group(1) + m.group(2), t)
         m = next(rx.finditer(t), None) if fm else None
@@ -190,18 +192,18 @@ class TestResearchMergeInGit:
             cited = sorted(set(kbid.SOURCE_ID.findall(body)), key=kbid.sort_key)
             new = f"sources: [{', '.join(cited)}]\nstatus: {'partial' if '[UNK]' in body else 'complete'}\n" + (files.group(0) if files else "")
             t = t[:m.start()] + new + body
-        d.write(ARTICLE_B, t)
+        d.write(FILE_B, t)
 
     # ---------------------------------------------------------------- helpers
 
     @classmethod
     def before_r1(cls, d, block):
-        t = d.read("_answers.md")
+        t = d.read(P("_answers.md"))
         i = t.index("\n## R1. ")
-        d.write("_answers.md", t[:i] + "\n" + block + t[i:])
+        d.write(P("_answers.md"), t[:i] + "\n" + block + t[i:])
 
     def sources(self):
-        return {r["id"]: r for r in csv.DictReader(io.StringIO(self.v.read("_sources.csv")))}
+        return {r["id"]: r for r in csv.DictReader(io.StringIO(self.v.read(P("_sources.csv"))))}
 
     # ---------------------------------------------------------------- tests
 
@@ -211,8 +213,8 @@ class TestResearchMergeInGit:
 
     def test_b_stops_on_the_article_then_finishes(self):
         assert self.stop_b.returncode == 3, self.stop_b.stdout + self.stop_b.stderr
-        assert f"needs-human: {ARTICLE_B}" in self.stop_b.stdout
-        assert ARTICLE_B in self.conflicted_b
+        assert f"needs-human: {FILE_B}" in self.stop_b.stdout
+        assert FILE_B in self.conflicted_b
         assert self.fix_b.returncode == 0, self.fix_b.stdout
         assert f"{QID} collision" in self.fix_b.stdout
         assert self.cont_b.returncode == 0, self.cont_b.stdout + self.cont_b.stderr
@@ -230,7 +232,7 @@ class TestResearchMergeInGit:
         hb = [kbid.source_id(u) for u in B_URLS]
         for h, u in zip(hb, B_URLS):
             assert src[h]["url"] == u
-        art = self.v.read(ARTICLE_B)
+        art = self.v.read(FILE_B)
         keeper = art[art.index(KEEPER):art.index("## Reference: each option")]
         for sid in LEG:
             assert not re.search(rf"{sid}\b", keeper + art.split("---")[1])
@@ -239,10 +241,10 @@ class TestResearchMergeInGit:
             assert h in art.split("---")[1], "front matter sources: must list the renumbered ids"
         assert FILES_NOW in art
         assert "status: partial" in art
-        assert f"[DOC {LEG[0]}]" in self.v.read(ARTICLE_A)
+        assert f"[DOC {LEG[0]}]" in self.v.read(FILE_A)
 
     def test_answers_distinct_and_whole(self):
-        ans = self.v.read("_answers.md")
+        ans = self.v.read(P("_answers.md"))
         qa, qb = QID, kbid.answer_id(Q_B)
         assert qa != qb
         assert ans.count(f"## {qa}. ") == 1
@@ -250,8 +252,8 @@ class TestResearchMergeInGit:
             sec = ans[ans.index(f"## {q}. "):]
             sec = sec[:sec.index("\n## ", 1)].rstrip()
             assert sec.endswith(FOOTER), sec
-        assert f"`_answers.md` {qb}." in self.v.read(ARTICLE_B)
-        assert f"`_answers.md` {qa}." in self.v.read(ARTICLE_A)
+        assert f"`_answers.md` {qb}." in self.v.read(FILE_B)
+        assert f"`_answers.md` {qa}." in self.v.read(FILE_A)
 
     def test_b_trailers_name_only_b_and_log_finds_it(self):
         hb = kbid.source_id(B_URLS[0])

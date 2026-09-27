@@ -29,12 +29,13 @@ new when the text changes. kbfacts.pack reads expansions.csv when it exists and 
 import argparse, collections, csv, json, os, random, sys
 
 TOOLS = os.path.dirname(os.path.abspath(__file__))
-KB = os.path.dirname(TOOLS)
-DIR = os.path.join(TOOLS, "doc2query")
-ARMS = os.path.join(DIR, "arms.json")
-EXPANSIONS = os.path.join(DIR, "expansions.csv")
 sys.path.insert(0, TOOLS)
 import kbcommon  # noqa: E402
+
+HOME = kbcommon.HOME  # this repository: arms files of earlier rounds are recorded relative to it
+DIR = kbcommon.data_path("doc2query")  # the kb's retrieval data: arms, expansions, off-kb questions
+ARMS = os.path.join(DIR, "arms.json")
+EXPANSIONS = os.path.join(DIR, "expansions.csv")
 
 
 def key_of(text):
@@ -72,7 +73,7 @@ def split(seed, n, exclude=()):
                 arms[arm].append(a)
     os.makedirs(DIR, exist_ok=True)
     with open(ARMS, "w", encoding="utf-8") as f:
-        json.dump({"seed": seed, "excluded": sorted(os.path.relpath(p, KB) for p in exclude), **arms}, f, indent=1)
+        json.dump({"seed": seed, "excluded": sorted(os.path.relpath(p, HOME) for p in exclude), **arms}, f, indent=1)
     for arm, arts in arms.items():
         print(f"{arm}: {len(arts)} articles, {sum(counts[a] for a in arts)} facts")
     return arms
@@ -162,7 +163,7 @@ def evaluate(path):
             c["line"] += f"{u['path']}:{u['line']} " in p["text"]
             c["article"] += u["path"] in p["paths"]
             c[p["verdict"]] += 1
-        ev = rag.run_eval(os.path.join("_tools", "lookup_eval.csv"))
+        ev = rag.run_eval(kbcommon.data_rel("lookup_eval.csv"))
         negv = collections.Counter(kbfacts.pack(q)["verdict"] for q in open(neg, encoding="utf-8").read().splitlines() if q.strip()) \
             if os.path.exists(neg) else collections.Counter()
         results[mode] = (res, ev, negv)
