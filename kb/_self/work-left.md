@@ -23,7 +23,6 @@ The open work, and only that: a finished item leaves this file (its commit recor
   - **Partial knowledge:** the kb covers part of a question and the agent must search the web for the rest. Does it skip urls the pack already cites as fetched and fact-checked, or fetch them again? Does it keep the kb's facts and only fill the gap?
   - **A newer version upstream:** a cited source has a newer release or a changed page since its `retrieved_utc`. Does the agent notice (the fact's date, a version in the question), check the source, and say which version its answer is for?
   - **An older kb than `origin`:** the installed copy is behind the kb's remote. Does `kb_status` show it, and does the agent say so or suggest updating the plugin?
-- **Re-measure the `kb-lookup` agent's start context.** The 3.9k in `kb/_self/reports/token-usage.md` predates the growth of the skill it preloads.
 - **Watch `claude -p` defaults.** If `--bare` becomes the default for `claude -p`, `_tools/agent_bench.py` configs that rely on the clone's plugins and settings must load them explicitly; `_tools/kb_ask.py` already passes its servers.
 - **Watch native citations.** The Messages API's `search_result` blocks give citations from tool results, but MCP does not carry them and the Agent SDK drops them from MCP tool results; revisit when MCP or Claude Code supports them. The block format is in `agents/hybrid-retrieval.md`.
 

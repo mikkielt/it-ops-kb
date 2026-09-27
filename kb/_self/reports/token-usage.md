@@ -71,7 +71,7 @@ What it shows:
 
 - T1, T3, T4, T5: one `kb_pack`, then the answer; T3 and T4 put their parts in one call with `questions`. No ToolSearch before the first kb call. T2: ToolSearch for the deferred `kb_source`, then `kb_source` with `cited`. T6: `kb_audit` in the host, `rag.py audit` through Bash in the clone.
 - Against the previous section the clone went from 19 turns and 691k to 13 and 312k. About half is Claude Code's own fixed context falling from 41.2k to 22.3k between versions; the rest is fewer turns from batch packs, concise output and the always-loaded `kb_pack`. The host costs the same as the clone, a little less without `AGENTS.md` (1.5k).
-- **Subagents** (first request of the transcript): `it-ops-kb:kb-lookup` (Haiku, low effort, kb tools only, no `CLAUDE.md`, the lookup skill preloaded) starts at **3.9k**, the whole lookup 13.2k in 2 requests; a general-purpose Sonnet agent starts at 13.5k.
+- **Subagents** (first request of the transcript): `it-ops-kb:kb-lookup` (Haiku, low effort, kb tools only, no `CLAUDE.md`, the lookup skill preloaded) starts at 3.9k ("`kb-lookup` agent start context" below); a general-purpose Sonnet agent starts at 13.5k.
 - **`/kb-review-workspace`:** forked into `it-ops-kb:kb-reviewer`; 9 tool calls (Glob, `kb_topics_for`, 4 Reads, 2 batch `kb_pack`, 1 `kb_facts`), 73.1k input and 3.9k output in 32 s. It found all five planted problems (NTLM fallback rejected since ConfigMgr 2509, a malformed SPN, simple bind over plain LDAP, `console.log` on a stdio MCP server, over-broad Graph scopes), each with the host `path:line`, the kb `path:line`, the tag and the url.
 - **No duplicates in the clone:** `/context` showed each tool, skill and agent once. `--plugin-dir .` in a clone would load the project skills and agents a second time.
 
@@ -88,6 +88,21 @@ What it shows:
 - What is left: the `kb_pack` schema, the server instructions, the skill and agent descriptions, the 7 deferred tool names, and Claude Code's own framing of each.
 - A host lookup with the trimmed texts (Haiku, `--allowedTools mcp__plugin_it-ops-kb_kb`, "How many apps can an Intune Win32 app supersede?"): `kb_pack`, a `kb_show` called with its schema unloaded (`root` passed for `path`; refused), a second `kb_pack`, and a correct cited answer (the 10-node supersedence graph, `S-wc6e3fba`), 4 turns, $0.020.
 - `claude plugin details it-ops-kb` shows far less (it counts skills and instructions, misses path-listed agents and the inline server, and needs an installed plugin); measure this way instead.
+
+### `kb-lookup` agent start context
+
+**Setup:** Claude Code 2.1.283; 266 topics in one root (`kb/public`); `.claude/agents/kb-lookup.md` (Haiku, `effort: low`, `maxTurns: 6`, `omitClaudeMd: true`, 12 kb tools) preloading the current `kb-lookup` skill (4,236 bytes; 3,597 when the agent was first measured at 3.9k). In an empty directory, 4 runs of `claude -p "Use the it-ops-kb:kb-lookup agent to answer this, then relay its answer: How many apps can an Intune Win32 app supersede?" --model haiku --output-format json --setting-sources project,local --plugin-dir <this repository> --allowedTools "Agent,mcp__plugin_it-ops-kb_kb"`, session persistence on. Input per request (uncached + cache-write + cache-read) read from the subagent transcript (`<session>/subagents/agent-*.jsonl`), one row per `requestId`; the start context is its first request.
+
+| run | start context (first request) | later requests | whole lookup | kb calls |
+|---|---|---|---|---|
+| 1 | 3,937 | 7,212 | 11,149 in 2 | `kb_pack` |
+| 2 | 3,938 | 6,001; 8,087 | 18,026 in 3 | `kb_pack`, `kb_show` |
+| 3 | 3,932 | 6,005 | 9,937 in 2 | `kb_pack` |
+| 4 | 3,931 | 6,004 | 9,935 in 2 | `kb_pack` |
+
+- The agent still starts at **3.9k** (3,931-3,938; the spread is the prompt the caller writes). The skill's growth since the first measurement is about 160 tokens and left the rounded figure unchanged.
+- The first request is all uncached input (no cache write): at 3.9k it is below Haiku 4.5's minimum cacheable prompt (4,096 tokens, `kb/public/agents/agent-caching.md`), so every hand-off pays it in full. The second request writes the cache.
+- Every run had the `kb` server connected before the agent's first request (its first call was `kb_pack`) and answered correctly (10 nodes, `intune/win32-apps.csv`).
 
 ## Retrieval quality
 
