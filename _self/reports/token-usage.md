@@ -547,3 +547,19 @@ plugin's `kb-lookup` skill leaked in, and Haiku then answered "32 characters" fo
 - For what the kb lacks, the router costs a web search plus the reader's check (about $0.01 and a few seconds), and
   labels the result as live docs.
 - Answers from the kb carry `path:line`, a tag and the source url; web answers carry urls only.
+
+## CODE and SNIPPET migration (2026-09-27)
+
+What changed (W1 and W2 in `_self/work-left.md`):
+- CODE: 129 `DOC` facts citing only code or config files, plus 28 citing code beside a documentation page, were re-read at their pins by four Sonnet readers; a script then checked each of the 149 `path#symbol` pointers against the pinned file (all found). About 100 facts became `CODE`. The 29 candidates `lint.py --candidates` still lists are published machine-readable contracts kept `DOC` on purpose (Graph CSDL, DSC JSON Schemas, MCP `schema.ts`, ECS, OTel metadata, ATT&CK STIX, MSRC swagger).
+- SNIPPET: 191 code blocks in 99 articles, six Sonnet readers checking every cmdlet, parameter, field and endpoint against a source. 179 now carry a `SNIPPET:` bullet with evidence; 12 stay illustrations. The readers found real defects: an assign endpoint Learn does not document, a cmdlet that does not exist (`New-MgDeviceManagementReportExportJob`), custom-compliance JSON without its `Rules` wrapper, wrong runtime and auth types in a Copilot plugin manifest, a VS Code input missing a required field. Two readers also removed real parameters because the article's own sources did not show them (`Set-CIPolicyIdInfo -ResetPolicyID`, `wecutil qc /q`); the lead restored both from their reference pages. Lesson for future readers: check the reference page before dropping anything.
+- 11 new source rows; 12 new `lookup_eval.csv` rows (8 how-to, 4 CODE); `rag.py eval` 111/111. One existing row (`EV-collect-windows-security-4624-4625-sysmon`) went from `weak` to `good` because the tagged DCR snippet now answers it.
+
+Agent benchmark, three how-to scenarios (`h1_gmsa`, `h2_applock`, `h3_mggraph` in `_tools/agent_bench.py`), one run each, before W2 and after:
+
+| config | before: cost, checks | after: cost, checks |
+|---|---|---|
+| Haiku | $0.168 (0.083 + 0.030 + 0.055), 8/9 (h2 missed `@LockTimeout = 0` and `sp_releaseapplock`) | $0.126 (0.039 + 0.042 + 0.045), 9/9 |
+| Sonnet | $0.427 (0.210 + 0.102 + 0.115), 9/9 | $0.352 (0.117 + 0.103 + 0.132), 9/9 |
+
+Each cell is one run, so the cost difference is within run-to-run noise (the before-Sonnet h1 run paid a larger cache write). Only Haiku's h2 check is a real difference: after W2 it reproduced the whole lock-and-release snippet. Every run used `kb_pack` first and 1-4 kb calls in all.

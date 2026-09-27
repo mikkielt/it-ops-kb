@@ -1,34 +1,10 @@
 # Work left (as of 2026-09-27)
 
-## W. Next up: CODE and SNIPPET migration (approved 2026-09-27; for a local session)
+## W. CODE and SNIPPET migration: done 2026-09-27
 
-Start here once `main` on GitHub has the commit "feat(kb): enforce the gate on push; add CODE and SNIPPET" (check with `git log origin/main --oneline -5` after `git pull --ff-only`). Done in that commit: the stricter push gate, the pre-push hook, `.github/workflows/kb.yml`, the `CODE` kind and `SNIPPET:` units in the grammar, lint and tests, and every text that lists the tags. Rules: `_self/content-rules.md` ("CODE" and "SNIPPET" sections). What is left is converting existing content, in this order. Decided: all of it now, not gradually during refreshes.
-
-**W0. Check the setup (a few minutes).**
-- `python3 _tools/kbgit.py install-hooks` (adds the new `pre-push` hook; `git config core.hooksPath` must print `.githooks`), then `python3 _tools/tests.py` and `python3 _tools/stress_test.py`: green.
-- The first GitHub Actions run of `kb.yml` on that commit: green (GitHub, Actions tab). If a step fails only on GitHub (container, permissions, the `before` sha), fix the workflow, not the checks.
-- Decide separately: GitHub branch protection for `main` (the kb does not cover GitHub's required status checks; read the live docs first). The workflow stays a detective control either way.
-
-**W1. CODE migration (B3): done 2026-09-27** (commits ef8f1d8, b0d0ed9, 8e786fa). 129 candidates and 28 facts citing code beside docs, read by four Sonnet readers; every new CODE pointer was checked against its pinned file by script. The 28 CODE-CANDIDATE lines left are deliberate DOC: published machine-readable contracts (Graph CSDL, DSC JSON Schemas, MCP schema.ts, ECS, OTel metadata, ATT&CK STIX, MSRC swagger), listed in 8e786fa. Conventions settled: a release binary's own `--help` output is DOC; rustdoc comments in source are CODE; absence from a release archive is DER. The plan as it was:
-- Candidates: `python3 .claude/skills/kb-verify/lint.py --candidates` (`CODE-CANDIDATE path:line ids text`): DOC facts whose every cited source is a source-code or config file. Also check the about 50 facts that cite a code file next to a documentation page: `rag.py src <id> --cited` for each code-file source.
-- Group by domain; one reader subagent per group (`/kb-refresh` procedure, Sonnet, several groups in parallel). For each fact: open the cited file at its pinned url and find the line. Then:
-  - the documentation also states it: keep `DOC` and add the documentation source (or re-point to it);
-  - only the code states it: `[CODE <id>: <path>#<symbol or L10-L20>]`;
-  - the source url is not pinned (a branch such as `main`): add a new row at a tag or commit (`kbid.py url`), set `superseded_by` on the old row, re-point the fact. The lint rejects an unpinned CODE source.
-- A fact whose text changes needs `python3 _tools/doc2query.py stale`, then `prune`. Then `build_index.py`, `check.py`, `lint.py` (errors=0), `rag.py eval`, and one commit per domain group (`/kb-verify`, `kbgit.py sync --push`).
-- Done when `lint.py --candidates` lists no CODE-CANDIDATE that is not a deliberate DOC (note such cases in the commit body).
-
-**W2. SNIPPET migration (C2): 191 code blocks in 99 articles (47 PowerShell, 30 JSON, 21 HTTP).**
-- Candidates: `SNIPPET-CANDIDATE path:line lang` from the same command.
-- For each block decide: (a) a how-to someone would run or copy: add the `- SNIPPET: <what>; context: <versions, prerequisites>; checked: no|syntax|run [DOC|CODE|DER ids: ...]` bullet directly above it, with evidence for the cmdlet, parameters or fields it uses (the reader checks each parameter against its source; a wrong or unbacked one is fixed or the block becomes an illustration); (b) an illustration (a payload shape, a config excerpt, output): leave it without a bullet, in Reference or Examples.
-- `checked: syntax` only after parsing (the lint re-parses json, toml and python; there is no `pwsh` in the cloud container, so PowerShell is `no` unless someone ran it, then `run` with where in the note).
-- Placeholders only (`PL-LT-00123`, `corp.example.com`, `jan.kowalski`; the leak tests run on staged files: `git add` first).
-- One reader per domain group, one commit per group, as in W1. Done when every remaining SNIPPET-CANDIDATE is a deliberate illustration.
-
-**W3. Measure (D).**
-- Add 5-10 `lookup_eval.csv` rows for how-to questions a snippet answers (`kbid.py eval`) and 3-5 for CODE facts ("what is ruff's default rule set"); `rag.py eval` passes.
-- An `agent_bench.py` run (a few how-to scenarios, Haiku and Sonnet) before W2 and after it; record it with `/kb-self --report "CODE and SNIPPET migration"`, which updates `_self/design.md`.
-- Then trim this section to one "done" line.
+Done: W1 CODE (ef8f1d8, b0d0ed9, 8e786fa), W2 SNIPPET (9f6ecd9 to 9f7e578), W3 eval rows and benchmark (`_self/reports/token-usage.md`, "CODE and SNIPPET migration"). `lint.py --candidates` lists 29 deliberate DOC (published contracts) and 12 illustrations. Conventions settled: a release binary's own `--help` output is DOC; rustdoc in source is CODE; absence from a release archive is DER; a reader checks a parameter's reference page before dropping it. Still open from W0:
+- The GitHub Actions runs of `kb.yml` were not checked (the repository is private and this machine has no `gh`): look at the Actions tab.
+- GitHub branch protection for `main`: undecided; read GitHub's live docs on required status checks first.
 
 **Other open items from 2026-09-27 (independent of W):**
 - Done 2026-09-27: Python 3.9 was end-of-life; `requires-python` is now `>=3.11` (the oldest release with security fixes after October 2026), development and CI run on 3.14 (`.python-version`), and CI runs the tests on 3.11 too.

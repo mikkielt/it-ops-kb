@@ -33,6 +33,16 @@ S = {
     "s7_web": ("How should the KRBTGT account password be reset safely in an AD domain (how many times, how long between "
                "resets)? Check the kb first; if it lacks this, use live docs or web search and label the source.",
                [r"(?i)twice|two times|2 times", r"(?i)\b10\b ?hours|replicat"]),
+    # how-to scenarios: the answer is a code example in the kb (the SNIPPET migration measures these)
+    "h1_gmsa": ("Using the kb, give the PowerShell to create a gMSA, allow a server group to retrieve its password, and "
+                "install and test it on the server. Cite path:line.",
+                [r"New-ADServiceAccount", r"PrincipalsAllowedToRetrieveManagedPassword", r"Install-ADServiceAccount"]),
+    "h2_applock": ("Using the kb, show T-SQL that takes an exclusive session-owned application lock without waiting, "
+                   "fails if it is held, and releases it. Cite path:line.",
+                   [r"sp_getapplock", r"(?i)@LockTimeout\s*=\s*0", r"sp_releaseapplock"]),
+    "h3_mggraph": ("Using the kb, show how to sign in to Microsoft Graph PowerShell app-only with a certificate and "
+                   "call the devices endpoint directly. Cite path:line.",
+                   [r"Connect-MgGraph", r"-CertificateThumbprint", r"Invoke-MgGraphRequest"]),
 }
 AGENTS = {"kb-live-docs": {
     "description": "Live-docs research for a question the it-ops-kb does not answer: searches Microsoft Learn, Claude Code "
