@@ -2,8 +2,8 @@
 topic: agents/doc-lookup-sources
 priority: P2
 applies_to: "stable (GA) MCP servers and public APIs that return current official documentation for this kb's domains, as of 2026-09-25"
-retrieved_utc: 2026-09-26
-sources: [S2176, S2177, S2178, S2179, S2180, S2181, S2182, S2183, S2184, S2185, S2186, S2187, S2188, S2189, S2190, S2191, S2192, S2193, S2194, S2195, S2196, S2197, S1809, S-el34o4bb]
+retrieved_utc: 2026-09-27
+sources: [S2176, S2177, S2178, S2179, S2180, S2181, S2182, S2183, S2184, S2185, S2186, S2187, S2188, S2189, S2190, S2191, S2192, S2193, S2194, S2195, S2196, S2197, S1809, S-el34o4bb, S-eutmp4xp, S-j7xzzcxj]
 status: partial
 ---
 
@@ -39,6 +39,12 @@ reading the current page.
 - PyPI's JSON API (`https://pypi.org/pypi/<package>/json`) returns a project's latest-version metadata, its releases and project URLs without authentication; the `releases` key is marked deprecated in favour of the Index API, and `/pypi/<package>/<version>/json` gives one release. [DOC S2192]
 - DeepWiki's MCP server is free, remote and needs no authentication, but its wikis are generated automatically from the repositories (Devin indexes them and produces the wikis), so it can only supply leads. [COMMUNITY S2193, S1809]
 - Context7 indexes library docs contributed by its community and states that it cannot guarantee their accuracy. [COMMUNITY S2194]
+- Context7 (Upstash) serves library docs through a remote MCP server at `https://mcp.context7.com/mcp` with two tools, `resolve-library-id` (library name to a Context7 id such as `/vercel/next.js`) and `query-docs` (docs for that id and a query), or through the `ctx7` CLI; a free API key, sent as `Authorization: Bearer`, is recommended for higher rate limits. [DOC S-eutmp4xp]
+- Context7's repository (MIT) holds only the MCP server's source; its API backend, parsing engine and crawling engine are private. [DOC S-eutmp4xp]
+- Anyone can add a public GitHub library to Context7 without owning it; Context7 indexes its `.md`, `.mdx`, `.rst`, `.txt` and `.ipynb` files, falls back to generating examples from source code when a public repository has little documentation, and refreshes libraries automatically "based on popularity". Private sources need a Pro or Enterprise plan. [DOC S-j7xzzcxj]
+- DeepWiki's MCP server (`https://mcp.deepwiki.com/mcp`, Streamable HTTP; `/sse` is being deprecated) offers `read_wiki_structure`, `read_wiki_contents` and `ask_question` (an AI-generated answer about a GitHub repository) for public repositories only; private repositories need a Devin account and the Devin MCP server with an API key. [DOC S2193]
+- Context7 and DeepWiki answer a question from content generated or crawled at query time, with no per-statement evidence level; this kb answers from facts that each carry one tag (`DOC`, `CODE`, `DER`, `COMMUNITY`, `UNK`) and a source row, so an answer drawn from either service enters this kb only as a `COMMUNITY` lead until an official page confirms it. [DER S-eutmp4xp, S-j7xzzcxj, S2193, S1809: Context7 disclaims accuracy of community-contributed docs and generates examples from code; DeepWiki's wikis and `ask_question` answers are Devin-generated]
+- Scope differs: Context7 covers libraries whose docs sit in a public GitHub repository and DeepWiki covers GitHub repositories, while most of this kb's domains (ConfigMgr, Intune, Entra ID, GPO) are documented on Microsoft Learn rather than in a library repository, which the Learn MCP server already reaches as a first-party source. [DER S-j7xzzcxj, S2193, S2177]
 - Microsoft Learn's terms of use limit copying and reposting of its documents, so Learn text fetched through the MCP server is paraphrased in this kb, not stored verbatim. [DOC S2195]
 - The `MicrosoftDocs/memdocs` repository, source of many pinned ConfigMgr/Intune raw files in this kb, is archived (last push 2026-09-02); current ConfigMgr pages are read through Learn. [DOC S2196]
 - `api.github.com/repos/microsoft/presidio` redirects (HTTP 301) to the repository now named `data-privacy-stack/presidio`. [DOC S2197]

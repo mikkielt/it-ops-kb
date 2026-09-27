@@ -601,6 +601,9 @@ Still open: (topic: auth/configmgr-rbac-auth)
   remain readable through GitHub).
 - The Claude Code Docs and MCP docs MCP servers carry no explicit GA statement; they are kept because Anthropic's
   own quickstart documents the first and both report version 1.0.0 with no preview label.
+- Context7's refresh cadence ("based on popularity"), its rate-limit numbers with and without an API key, and
+  whether `query-docs` results carry source urls: not read (2026-09-27; only the pinned README and
+  context7.com/docs/adding-libraries were read). (topic: agents/doc-lookup-sources)
 
 ## windows/smart-app-control
 

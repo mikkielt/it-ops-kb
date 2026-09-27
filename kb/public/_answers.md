@@ -1783,6 +1783,16 @@ _Agent: agents-overuse_
 
 _Agent: agents-overuse_
 
+## QK-compare-context7-deepwiki-this-kb. Compare Context7 and DeepWiki with this kb
+- Context7 (Upstash): remote MCP server `https://mcp.context7.com/mcp` with `resolve-library-id` and `query-docs`, or the `ctx7` CLI; free API key recommended for higher rate limits; only the MCP server is open source (MIT), the backend, parser and crawler are private. [DOC S-eutmp4xp]
+- Context7's index is community-submitted (anyone can add a public GitHub library), built from the repository's documentation files with a fallback to examples generated from source code, and refreshed automatically by popularity; private sources need a paid plan. Upstash disclaims the accuracy of community-contributed docs. [DOC S-j7xzzcxj, S-eutmp4xp]
+- DeepWiki (Cognition): free, no-auth MCP server `https://mcp.deepwiki.com/mcp` with `read_wiki_structure`, `read_wiki_contents` and `ask_question`, public GitHub repositories only; its wikis are Devin-generated. [DOC S2193, S1809]
+- Conclusion: both are live, generated or crawled views of code repositories with no per-statement evidence level, while this kb stores checked facts offline, each with one tag and a source row. Use them as leads: anything they return is `COMMUNITY` here until an official page confirms it. For most of this kb's Microsoft domains, the first-party Learn MCP server is the better live source. [DER S-eutmp4xp, S-j7xzzcxj, S2193, S2177]
+- Open: Context7's refresh cadence and rate-limit numbers, and whether its results carry source urls, were not read. [UNK]
+- See agents/doc-lookup-sources.md, agents/docs-maintenance-agents.md.
+
+_Agent: kb-research_
+
 ## R1. Reuse candidates
 
 - **Highest leverage: `pydantic-settings` as a `dependency` for a project's config-file/env-var/flags

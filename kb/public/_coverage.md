@@ -30,7 +30,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `agents/azure-openai-deployments` | P2 | partial | `agents/azure-openai-deployments.md`, `agents/azure-openai-deployment-types.csv` | 12 |
 | `agents/coding-agents-mcp` | P2 | partial | `agents/coding-agents-mcp.md` | 7 |
 | `agents/content-safety-prompt-shields` | P2 | partial | `agents/content-safety-prompt-shields.md`, `agents/content-safety-limits.csv` | 11 |
-| `agents/doc-lookup-sources` | P2 | partial | `agents/doc-lookup-sources.md`, `agents/doc-lookup-sources.csv` | 24 |
+| `agents/doc-lookup-sources` | P2 | partial | `agents/doc-lookup-sources.md`, `agents/doc-lookup-sources.csv` | 26 |
 | `agents/docs-maintenance-agents` | P2 | partial | `agents/docs-maintenance-agents.md` | 18 |
 | `agents/genai-telemetry` | P2 | complete | `agents/genai-telemetry.md` | 5 |
 | `agents/github-copilot-admin` | P2 | partial | `agents/github-copilot-admin.md` | 6 |
