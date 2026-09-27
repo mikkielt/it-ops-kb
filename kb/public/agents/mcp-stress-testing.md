@@ -4,7 +4,7 @@ priority: P1
 applies_to: "a self-hosted stdio MCP server for device management (example design: operation/tier/limit table, instance kinds)"
 retrieved_utc: 2026-09-27
 sources: [S1883, S1884, S1890, S1891, S1892, S1901, S1902, S1903, S1904, S1905, S1935]
-status: partial
+status: complete
 ---
 
 # Stress dimensions for a self-hosted MCP server like a device-management CLI's `mcp` subcommand

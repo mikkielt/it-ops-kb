@@ -5,12 +5,16 @@ Merged from `_parts/<agent>/gaps.md`.
 ## agents-a2a-cache
 
 - **A2A v1.0.0 exact release date and "Agentic AI Foundation" naming.** The fetched spec page (S2120) surfaced a reference to an "A2A joins the Agentic AI Foundation" post dated 2026-08-27, which may signal a further governance rename beyond the original Linux Foundation "Agent2Agent Protocol Project" (S2123). Not independently confirmed with a direct fetch of that post (1 attempt: relied on the spec page's own summary, did not separately fetch the referenced post). [UNK] (topic: agents/a2a-protocol)
+  - Resolved 2026-09-27: v1.0.0 released 2026-03-12, v1.0.1 published 2026-05-28 with bug fixes only (GitHub releases API, S-xasyjfgi); AAIF is the Linux Foundation-directed Agentic AI Foundation that accepted A2A as a Growth Stage project on 2026-08-27 (S-2jevtssc). (topic: agents/a2a-protocol)
 - **Whether any Anthropic product speaks A2A natively.** Checked: A2A GitHub repo listing (no Anthropic in supporting orgs list, S2121), WebSearch for "Claude Agent SDK A2A support" (found only community wrapper projects and one Anthropic+Google Cloud joint webinar demonstrating Claude *inside* an A2A system via Vertex AI, not first-party support, S2129). Did not find an Anthropic docs page stating support or non-support either way. 2 search/fetch attempts; stopping per budget. [UNK] (topic: agents/a2a-protocol)
+  - Tried 2026-09-27: searched the Claude Code docs (claude-code-docs server, `a2a|agent2agent`: 0 hits), platform.claude.com `llms.txt` (no A2A mention), a WebSearch on anthropic.com and platform.claude.com (only the S2129 webinar), and the AAIF adopter list in S-2jevtssc (no Anthropic product). Recorded as a documented absence (DER) in the article; a positive statement from Anthropic either way is still missing. (topic: agents/a2a-protocol)
 - **A2A SDK language list beyond Python.** The claim that Go/JavaScript/Java/.NET/Rust SDKs exist under `a2aproject` came from one WebFetch summary of the main A2A repo page (S2121) and was not verified by listing each sub-repository individually. [DER, low confidence — treat as needing reconfirmation before citing precisely] (topic: agents/a2a-protocol)
+  - Resolved 2026-09-27: the a2aproject organisation listing (GitHub API, S-t24szuu4) shows `a2a-python`, `a2a-js`, `a2a-java`, `a2a-go`, `a2a-dotnet` and `a2a-rs`, plus `a2a-tck`, `a2a-inspector` and `a2a-cli`. (topic: agents/a2a-protocol)
 - **`anthropics/courses` repository contents.** Found only via WebSearch snippet, not independently WebFetched in this session (1 attempt, then treated as sufficient given the more pressing budget spent on caching detail). Row is present in `anthropic-materials.csv` marked accordingly. [COMMUNITY-tier evidence for an official repo] (topic: agents/anthropic-materials)
   - Resolved 2026-09-26: repository read directly (S2156): five courses, archived by the owner 2026-09-15 (read-only) (topic: agents/anthropic-materials)
 - **Exact cache-read price multiplier for the newest Anthropic model tier.** The fetched prompt-caching page (S2130) states 0.025x-0.05x for "Opus 5.5, Fable 5.1, Mythos 5.1" versus 0.1x for "other models," which conflicts in precision with the separately fetched pricing page's worked example implying 0.05x for Opus 5.5 specifically (S2131). Recorded as a conflict below rather than resolved. [DOC, conflicting] (topic: agents/agent-caching)
 - **JSON Schema (non-proto) artifact for A2A.** Searched the pinned commit's tree for a `.json` schema alongside `a2a.proto` and found none at `specification/`; the spec itself says JSON artifacts are generated, non-normative build outputs, so only the proto was saved as the pinned artifact. Not a gap in effort, but noting no separate JSON schema file exists to pin. [DOC S2120] (topic: agents/a2a-protocol)
+  - Resolved 2026-09-27: `specification/json/README.md` at v1.0.1 (S-byrq57yo) says `a2a.json` is a non-normative build artifact generated from the proto and not committed; the site serves it at `a2a-protocol.org/latest/spec/a2a.json`. (topic: agents/a2a-protocol)
 
 ## agents-authz
 
@@ -113,6 +117,7 @@ Remaining gaps:
   shaped internal MCP server specifically.** Every mapping in `agents/mcp-stress-testing.md` from a QG11 stress dimension to
   a concrete tool is therefore `DER`, not `DOC`. This is expected (such a server is not a public product) and is not
   treated as a failed source attempt.
+  - Closed 2026-09-27: not a failed lookup. The mappings are DER by design (no vendor documents a private device-management MCP server), as the entry itself says. (topic: agents/mcp-stress-testing)
 - **No published number for how many fetched pages state a licence for promptfoo's or garak's *documentation
   site* content separately from the code repository.** (Census 2026-09-25: garak's code is Apache-2.0 per its LICENSE,
   README and pyproject.toml; the GPL-3.0 statement below was wrong.) garak's own GitHub README states GPL-3.0 for the
@@ -120,6 +125,7 @@ Remaining gaps:
   garak.ai and was not independently re-fetched from garak.ai itself within the 3-attempt/40-page budget for
   this sub-question. Recorded as a soft confirmation gap, not blocking, since the code licence (GPL-3.0,
   S1891) is what would govern any local re-use. (topic: agents/agent-evaluation)
+  - Tried 2026-09-27: garak's reference docs are built from `docs/source` in NVIDIA/garak (docs README: `make -C docs/source clean doc`), a repository whose GitHub licence field is Apache-2.0, so the docs text falls under that licence (DER); reference.garak.ai itself carries no licence statement. promptfoo's docs site not re-checked. (topic: agents/agent-evaluation)
 - **DeepEval's exact latest released version/date** was not visible in the fetched GitHub README excerpt
   (only commit count). Not pursued further (budget); the licence (Apache-2.0) and MCP metric names were
   the load-bearing facts for QG9 and were confirmed. [UNK] (topic: agents/agent-evaluation)
@@ -127,6 +133,7 @@ Remaining gaps:
   questions every N days") beyond Anthropic's qualitative "run continuously" / "nearly 100% pass rate"
   guidance (S1896); a specific regression cadence number is therefore left to the adopting
   task, per QG12's instruction that this baseline is a draft, not a decision. (topic: agents/eval-question-baseline)
+  - Tried 2026-09-27: re-read S1896. It gives cadences for running evals (every commit), reading transcripts (weekly) and graduating saturated capability evals into a continuously run regression suite, now in the article; still no cadence for rotating golden-set questions. Recorded as a documented absence; article marked complete. (topic: agents/eval-question-baseline)
 
 ## agents-extra
 
@@ -136,11 +143,13 @@ Remaining gaps:
   remotes) are recorded from the overview page (S2012) only; exact schema types and required/optional markers are
   not confirmed. 2 fetch attempts made (repo root + one guessed raw path that 404'd); stopped short of the 3-attempt
   ceiling to conserve budget for the other three topics. (topic: agents/mcp-server-lifecycle)
+  - Resolved 2026-09-27: the 2025-12-11 `server.json` schema read at registry commit bf4e88cb (S-7xsfc3ct): `name`, `description`, `version` required; package entries require `registryType`, `identifier`, `transport`; version ranges rejected. Facts in the article. (topic: agents/mcp-server-lifecycle)
 - QG23: "how clients react to a changed tool description (cache, permissions)" is answered only from the MCP spec's
   `listChanged` mechanics (S2135 (reused id, already recorded elsewhere in this kb)) and Claude Code's own cache-invalidation notes already
   in `claude/otel-monitoring.md`/other parts' `agent-caching.md` (topic 9); no vendor doc found stating whether a
   changed tool description silently re-triggers a user permission prompt in Claude Code specifically. Recorded as
   `UNK` in `mcp-server-lifecycle.md`.
+  - Partly resolved 2026-09-27: Claude Code refreshes a server's tools on `list_changed` without reconnecting (S1862), and the Claude API MCP connector beta `mcp-client-2026-09-15` lets a caller pin a server's tool list (S-qpqoaaqj); both now in `mcp-server-lifecycle.md`. Still undocumented: whether a changed description re-triggers a Claude Code permission prompt (claude-code-docs server searched 2026-09-27). (topic: agents/mcp-server-lifecycle)
 - QG21: could not fetch the full PDF text of arXiv 2506.08837 with attribution-quality precision beyond WebFetch's
   own extraction; pattern names and one-line trade-offs are taken from that extraction (S2005) and are not verified
   against the original section headings word-for-word. (topic: agents/prompt-injection-design-patterns)
@@ -152,8 +161,10 @@ Remaining gaps:
 
 - **No published per-call latency number for Claude subagent spawn overhead** (only qualitative "fresh context, higher latency" from S1923). Tried: code.claude.com/docs/en/sub-agents (S1923, qualitative only), WebSearch for "claude code subagent spawn latency milliseconds" style queries returned no vendor number. [UNK] (topic: agents/subagents-vs-deterministic-tools)
 - **No vendor-published success-rate/eval-pass-rate threshold for "replace this subagent with a tool."** Anthropic's evals guidance (S1935) describes *how* to measure tool-use quality (task success, tool-call count, token count, error rate) but does not publish a numeric threshold at which a workflow step should convert from agent-driven to hard-coded. Tried: S1920, S1935, S1936; no vendor number found. Recorded as `DER` in answers.md instead. [UNK] (topic: agents/subagents-vs-deterministic-tools)
+  - Tried 2026-09-27: re-read S1896 and a WebSearch; the guidance says an eval at 100% tracks regressions but gives no improvement signal, and publishes no numeric threshold for replacing a subagent with a tool. Still open. (topic: agents/subagents-vs-deterministic-tools)
 - **No official Anthropic or Microsoft page stating an exact percentage figure for cost escalation from a runaway/recursive subagent** beyond the "another 10x or more" figure from a secondary (COMMUNITY) source (S1930). Anthropic's own multi-agent post (S1921) describes the failure mode (excessive subagent spawning) but not a cost multiplier for it. Tried: S1921 (qualitative), S1930 (COMMUNITY, has the number). [COMMUNITY only, tagged as such] (topic: agents/agent-overuse-patterns)
 - **MCP "tasks" capability (`execution.taskSupport`) details** were found only via a WebSearch summary (S1929-adjacent search, not independently re-fetched from the modelcontextprotocol.io tasks page) — not fetched directly in this session; the fetched tools page (S1928) is the 2025-06-18 revision and does not itself describe `taskSupport`. Tried: one WebSearch, one WebFetch of the tools page only (budget stopped after the outputSchema/annotations facts were confirmed there). Recorded as `UNK` for the exact task-support default value beyond the search snippet. [UNK] (topic: mcp/tasks-extension)
+  - Found 2026-09-27 (for the mcp wave to write up): MCP schema 2025-11-25 `ToolExecution.taskSupport` takes "forbidden" | "optional" | "required" and "forbidden" is the default when absent (modelcontextprotocol/modelcontextprotocol@ab3a39c1 `schema/2025-11-25/schema.ts`); the 2026-07-28 schema drops it and tasks move to the ext-tasks extension (S718). (topic: mcp/tasks-extension)
 
 ## agents-ner
 
@@ -765,4 +776,5 @@ Still open: (topic: auth/configmgr-rbac-auth)
 ## agents/hybrid-retrieval
 
 - **Does any MCP client turn MCP tool results into Claude `search_result` blocks?** The MCP 2026-07-28 tool result has no citation content type; the Claude Code docs mention `search_result` only for web search errors. Looked in code.claude.com docs (rg `search_result`, `citations`) 2026-09-27. Needs Claude Code or Agent SDK release notes. (topic: agents/hybrid-retrieval)
+  - Tried 2026-09-27: platform.claude.com search-results page (S-4c46o537: blocks come only from the caller's own `tool_result`, no MCP mention), the MCP connector page (S-qpqoaaqj: `mcp_tool_result` example is text only), claude-code-docs rg `search_result`. No conversion documented; recorded in the article as a DER absence. (topic: agents/hybrid-retrieval)
 

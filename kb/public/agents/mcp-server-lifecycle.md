@@ -2,9 +2,9 @@
 topic: agents/mcp-server-lifecycle
 priority: P2
 applies_to: "MCP specification 2026-07-28; modelcontextprotocol/registry (preview, API freeze v0.1 since 2025-10-24)"
-retrieved_utc: 2026-09-26
-sources: [S2135, S2012]
-status: partial
+retrieved_utc: 2026-09-27
+sources: [S2135, S2012, S-7xsfc3ct, S1862, S-qpqoaaqj]
+status: complete
 ---
 
 # MCP server lifecycle: versioning, deprecation, listChanged, registry, contract tests
@@ -13,8 +13,8 @@ status: partial
 A server that may change its tool set declares `listChanged: true` and sends `notifications/tools/list_changed`;
 clients are expected to re-`tools/list` and are encouraged to cache a deterministic ordering for both correctness
 and LLM prompt-cache hit rate. The spec has no per-tool version field; versioning is left to the tool name (e.g.
-`DATA_EXPORT_v2`) or to the server-level `server.json` manifest used by the community MCP Registry, whose exact
-schema this pass could not pin (see `gaps.md`). A generated, byte-for-byte-compared contract test already exceeds
+`DATA_EXPORT_v2`) or to the server-level `server.json` manifest used by the community MCP Registry (schema 2025-12-11: `name`, `description` and
+`version` required). A generated, byte-for-byte-compared contract test already exceeds
 the spec's own SHOULD-level validation guidance.
 
 ## Facts
@@ -39,8 +39,21 @@ the spec's own SHOULD-level validation guidance.
   relicensing consent stay MIT) is a
   directory of MCP servers analogous to a package registry; a `server.json` manifest (fields at least `name`,
   `version`, `packages`, `remotes`) is the unit of registration. It launched in preview 2025-09-08 and entered a
-  v0.1 API freeze (no breaking changes) on 2025-10-24; it is not yet GA. The exact `server.json` schema (required
-  vs. optional fields, `$schema` URL, deprecation markers) was not confirmed in this pass. [DOC S2012; gap noted]
+  v0.1 API freeze (no breaking changes) on 2025-10-24; it is not yet GA. [DOC S2012]
+- The `server.json` schema (`$id` `https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json`,
+  embedded in the registry's validators): a server entry requires `name`, `description` and `version`. `name` is
+  3-200 characters in reverse-DNS form with exactly one slash (pattern `^[a-zA-Z0-9.-]+/[a-zA-Z0-9._-]+$`),
+  `description` 1-100 characters, optional `title` 1-100 characters, `version` at most 255 characters, SHOULD be
+  semantic, and version ranges such as `^1.2.3` or `1.x` are rejected. A package entry requires `registryType`,
+  `identifier` and `transport`. [DOC S-7xsfc3ct]
+- Client reaction in Claude Code: when a server sends a `list_changed` notification, Claude Code refreshes that
+  server's tools, prompts and resources without a reconnect. [DOC S1862]
+- Client reaction in the Claude API MCP connector: the beta header `mcp-client-2026-09-15` records each server's tool
+  list as an `mcp_tool_listing` block and lets the caller pin it (the toolset's `tools` field), so a server that
+  changes its tools mid-conversation does not change what Claude sees; it includes everything `mcp-client-2025-11-20`
+  does. Beta. [DOC S-qpqoaaqj]
+- No Claude Code or MCP page read on 2026-09-27 says whether a changed tool description re-triggers a permission
+  prompt. [DER S1862: absence on the page read; see _gaps.md]
 
 ## Reference
 | Mechanism | What it signals | Client reaction |

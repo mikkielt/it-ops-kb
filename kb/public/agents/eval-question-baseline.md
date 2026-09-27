@@ -2,9 +2,9 @@
 topic: agents/eval-question-baseline
 priority: P1
 applies_to: "tiered-confirmation MCP device-management server (example design), operation/tier table"
-retrieved_utc: 2026-09-26
+retrieved_utc: 2026-09-27
 sources: [S1896, S1898, S1899]
-status: partial
+status: complete
 ---
 
 # Draft question baseline for a tiered MCP device-management server (DER)
@@ -23,6 +23,10 @@ kinds carry declared roles. It is a task input, not a decision. Every row uses e
   asking the grader to reason before scoring, then discarding the reasoning. [DOC S1898]
 - τ-bench's `pass^k` (all of k trials succeed) and `pass@k` (at least one of k succeeds) are defined by
   Sierra's own benchmark and paper. [DOC S1899]
+- Cadence in Anthropic's guidance: automated evals can run on every commit; teams should triage user feedback
+  constantly and sample transcripts to read weekly; capability evals with high pass rates "graduate" into a
+  regression suite run continuously, and saturation is watched for because an eval at 100% gives no signal for
+  improvement. The guidance sets no cadence for rotating or replacing golden-set questions. [DOC S1896]
 - Grading column values used: `code` (deterministic — exact tool name, tier, limit or exit-code check) and
   `model` (LLM- or human-graded rubric, for open-ended refusal/ambiguity judgments), following the order
   Anthropic's guidance recommends among its three grader types (code-based, model-based, human): deterministic

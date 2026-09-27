@@ -6,6 +6,7 @@ Merged from `_parts/<agent>/conflicts.md`.
 
 - **Anthropic cache-read price multiplier for the newest model tier.** `platform.claude.com/docs/en/build-with-claude/prompt-caching` (S2130) states a range of "0.05x-0.025x" base input price for "Claude Opus 5.5, Fable 5.1, Mythos 5.1" reads, distinct from "0.1x" for other models. The same page's own worked example for Opus 5.5 computes cache read at "$0.20/MTok" against a "$4/MTok" base input, which is exactly 0.05x, not the lower bound of the stated range (0.025x). `platform.claude.com/docs/en/about-claude/pricing` (S2131) was fetched to cross-check but the exact per-model read multiplier was not independently re-extracted from it in this session. Recorded here rather than resolved; a task that needs the exact number should re-fetch S2131 directly for the model in question. [DOC S2130 vs itself; S2131 unconfirmed] (topic: agents/agent-caching)
 - **A2A v1.0.0 timeline vs Linux Foundation transfer date.** The Linux Foundation press release (S2123) dates the protocol's transfer to Linux Foundation governance at 2025-06-23, describing it then as the "Agent2Agent Protocol Project." The spec site (S2120), fetched in 2026, references a 2026-08-27 post titled "A2A joins the Agentic AI Foundation," which reads as a distinct, later governance event or rename not described in S2123. Whether "Agentic AI Foundation" is the same body as the original Agent2Agent Protocol Project under a new name, a sibling foundation, or an unrelated grouping was not resolved (see gaps.md). [DOC S2120 vs S2123, unresolved] (topic: agents/a2a-protocol)
+  - Resolved 2026-09-27: not a conflict but two sequential events. The 2026-08-27 post (S-2jevtssc) says A2A was accepted as a Growth Stage project of the Agentic AI Foundation (AAIF), which the Linux Foundation directs, alongside MCP, goose and AGENTS.md; the 2025 transfer (S2123) stands. v1.0.0 itself was released 2026-03-12 (S-xasyjfgi). (topic: agents/a2a-protocol)
 
 ## agents-authz
 
@@ -492,6 +493,7 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
 ## agents/a2a-protocol
 
 - A2A Agent Card well-known path: the A2A spec (S2120) registers `/.well-known/agent-card.json`, while Microsoft Copilot Studio's A2A connector docs (S2126, re-read 2026-09-27) tell makers to find the card at the endpoint plus `/.well-known/agent.json`. (topic: agents/a2a-protocol)
+  - Explained 2026-09-27, still open: the A2A v0.3.0 release notes (S-xasyjfgi, 2025-07-30) changed the well-known URI from `agent.json` to `agent-card.json`, so the Copilot Studio page gives the pre-v0.3.0 path; the Learn page, re-read 2026-09-27, still says `agent.json`. Kept until Microsoft updates it. (topic: agents/a2a-protocol)
 
 ## agents/docs-maintenance-agents
 

@@ -9,22 +9,22 @@ Every topic of this root with its priority (the research order, not importance),
 | `ad/krbtgt-password-reset` | P1 | complete | `ad/krbtgt-password-reset.md` | 7 |
 | `ad/ldap-paging-filters` | P1 | complete | `ad/ldap-paging-filters.md` | 6 |
 | `agents/agent-caching` | P1 | complete | `agents/agent-caching.md` | 8 |
-| `agents/agent-dispatch-and-shared-services` | P1 | partial | `agents/agent-dispatch-and-shared-services.md` | 10 |
+| `agents/agent-dispatch-and-shared-services` | P1 | complete | `agents/agent-dispatch-and-shared-services.md` | 10 |
 | `agents/agent-error-catalogue` | P1 | partial | `agents/agent-error-catalogue.md`, `agents/agent-error-catalogue.csv` | 15 |
 | `agents/agent-evaluation` | P1 | complete | `agents/agent-evaluation.md` | 30 |
 | `agents/agent-overuse-patterns` | P1 | partial | `agents/agent-overuse-patterns.md`, `agents/agent-overuse-patterns.csv` | 28 |
 | `agents/agent-rbac` | P1 | complete | `agents/agent-rbac.md` | 14 |
 | `agents/api-tokens-issue-and-store` | P1 | complete | `agents/api-tokens-issue-and-store.md`, `agents/api-tokens.csv`, `agents/secret-storage-options.csv` | 14 |
 | `agents/copilot-studio-inventory` | P1 | complete | `agents/copilot-studio-inventory.md`, `agents/copilot-studio-feature-map.csv` | 20 |
-| `agents/eval-question-baseline` | P1 | partial | `agents/eval-question-baseline.md`, `agents/eval-question-baseline.csv` | 3 |
+| `agents/eval-question-baseline` | P1 | complete | `agents/eval-question-baseline.md`, `agents/eval-question-baseline.csv` | 3 |
 | `agents/foundry-agent-service` | P1 | complete | `agents/foundry-agent-service.md`, `agents/foundry-agent-tools.csv` | 16 |
 | `agents/instruction-and-context-limits` | P1 | partial | `agents/instruction-and-context-limits.md`, `agents/instruction-and-context-limits.csv` | 31 |
 | `agents/m365-copilot-extensibility` | P1 | complete | `agents/m365-copilot-extensibility.md`, `agents/declarative-agent-manifest.csv` | 21 |
-| `agents/mcp-stress-testing` | P1 | partial | `agents/mcp-stress-testing.md` | 11 |
+| `agents/mcp-stress-testing` | P1 | complete | `agents/mcp-stress-testing.md` | 11 |
 | `agents/own-chatbot-architecture` | P1 | complete | `agents/own-chatbot-architecture.md` | 15 |
 | `agents/shared-ner-service` | P1 | partial | `agents/shared-ner-service.md` | 29 |
 | `agents/subagents-vs-deterministic-tools` | P1 | complete | `agents/subagents-vs-deterministic-tools.md` | 27 |
-| `agents/a2a-protocol` | P2 | partial | `agents/a2a-protocol.md`, `agents/a2a/a2a-proto-digest.md`, `agents/a2a/a2a.proto` | 10 |
+| `agents/a2a-protocol` | P2 | complete | `agents/a2a-protocol.md`, `agents/a2a/a2a-proto-digest.md`, `agents/a2a/a2a.proto` | 15 |
 | `agents/agent-cost-governance` | P2 | complete | `agents/agent-cost-governance.md` | 2 |
 | `agents/anthropic-materials` | P2 | complete | `agents/anthropic-materials.md`, `agents/anthropic-materials.csv` | 23 |
 | `agents/azure-openai-deployments` | P2 | partial | `agents/azure-openai-deployments.md`, `agents/azure-openai-deployment-types.csv` | 12 |
@@ -35,8 +35,8 @@ Every topic of this root with its priority (the research order, not importance),
 | `agents/genai-telemetry` | P2 | complete | `agents/genai-telemetry.md` | 5 |
 | `agents/github-copilot-admin` | P2 | partial | `agents/github-copilot-admin.md` | 6 |
 | `agents/headless-agent-runtimes` | P2 | partial | `agents/headless-agent-runtimes.md` | 13 |
-| `agents/hybrid-retrieval` | P2 | partial | `agents/hybrid-retrieval.md` | 14 |
-| `agents/mcp-server-lifecycle` | P2 | partial | `agents/mcp-server-lifecycle.md` | 2 |
+| `agents/hybrid-retrieval` | P2 | complete | `agents/hybrid-retrieval.md` | 15 |
+| `agents/mcp-server-lifecycle` | P2 | complete | `agents/mcp-server-lifecycle.md` | 5 |
 | `agents/microsoft-agent-framework` | P2 | partial | `agents/microsoft-agent-framework.md` | 16 |
 | `agents/prompt-injection-design-patterns` | P2 | complete | `agents/prompt-injection-design-patterns.md` | 6 |
 | `agents/security-copilot-endpoint` | P2 | partial | `agents/security-copilot-endpoint.md` | 23 |

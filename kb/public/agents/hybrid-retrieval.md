@@ -3,8 +3,8 @@ topic: agents/hybrid-retrieval
 priority: P2
 applies_to: "Azure AI Search hybrid/vector/semantic search (api-version 2026-04-01, retrieved 2026-09-26); Anthropic Contextual Retrieval (engineering post, retrieved 2026-09-26); pgvector (README/LICENSE at master, retrieved 2026-09-26); Elasticsearch RRF retriever (docs, retrieved 2026-09-26); Claude API search result blocks (retrieved 2026-09-27)"
 retrieved_utc: 2026-09-27
-sources: [S-pgtfj4fh, S-btrwp2yj, S-dh75h5qt, S-jt6qyh46, S-jaycbw5k, S-net4uvqm, S-idqwhfg2, S-z7wh2sbr, S-4hditql5, S-524t5qtl, S-76smovmo, S-fn6fxrr5, S-4c46o537, S2135]
-status: partial
+sources: [S-pgtfj4fh, S-btrwp2yj, S-dh75h5qt, S-jt6qyh46, S-jaycbw5k, S-net4uvqm, S-idqwhfg2, S-z7wh2sbr, S-4hditql5, S-524t5qtl, S-76smovmo, S-fn6fxrr5, S-4c46o537, S2135, S-qpqoaaqj]
+status: complete
 ---
 
 # Hybrid retrieval for agents and RAG
@@ -65,7 +65,7 @@ Hybrid retrieval combines a lexical ranker (BM25 or Elasticsearch's equivalent) 
 - Each citation is a `search_result_location` with `source`, `title`, `cited_text` (not counted as output tokens), `search_result_index` (0-based across all search results in the request) and `start_block_index`/`end_block_index`; Claude cites whole text blocks, so smaller blocks give finer citations [DOC S-4c46o537].
 - Search result blocks are available on the Claude API, Amazon Bedrock and Google Cloud [DOC S-4c46o537].
 - MCP's tool result content types are text, image, audio, resource links and embedded resources (2026-07-28 revision); the protocol has no search-result or citation content type [DOC S2135].
-- A client that wants citations from an MCP server's results would have to convert them into `search_result` blocks itself; no Claude Code or Agent SDK page read documents such a conversion for MCP tool results [UNK: searched code.claude.com docs for `search_result` and citations 2026-09-27; only web search errors and a subagent `citations` field appear].
+- A client that wants citations from an MCP server's results has to convert them into `search_result` blocks itself: the search-results page takes such blocks only from the caller's own `tool_result` content and never mentions MCP, the MCP connector page's `mcp_tool_result` example carries only a text block, and no Claude Code or Agent SDK page read on 2026-09-27 documents a conversion [DER S-4c46o537, S-qpqoaaqj, S2135: documented block sources compared; absence on the pages read].
 - A kb fact line (path:line, tag, source url) maps directly onto one `search_result` block (`source` = the source url, `title` = the article, one text block per fact), which would let an API client get per-fact citations from `rag.py pack` output [DER S-4c46o537: block fields compared with the pack's line format].
 
 ### pgvector
