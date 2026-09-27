@@ -563,3 +563,12 @@ Agent benchmark, three how-to scenarios (`h1_gmsa`, `h2_applock`, `h3_mggraph` i
 | Sonnet | $0.427 (0.210 + 0.102 + 0.115), 9/9 | $0.352 (0.117 + 0.103 + 0.132), 9/9 |
 
 Each cell is one run, so the cost difference is within run-to-run noise (the before-Sonnet h1 run paid a larger cache write). Only Haiku's h2 check is a real difference: after W2 it reproduced the whole lock-and-release snippet. Every run used `kb_pack` first and 1-4 kb calls in all.
+
+## Bare agent vs agent with the kb (2026-09-27)
+
+24 subagents (4 scenarios x bare/kb x Haiku 4.5, Sonnet 5, Opus 5.5, usage from transcripts) and 134 headless runs (`agent_bench.py`, 10 scenarios x 7 configs x 2 runs, billed cost, $17.08). Tables, cases and routes: `_self/reports/benchmark-2026-09-27.md`; summary in `README.md`.
+
+- Covered questions, same model: kb 38-39% cheaper on Haiku and Sonnet, equal on Opus (a session in this clone starts at 58-90k tokens, the bare empty directory at 17-56k), 41-69% faster, 1-2 tool calls instead of 5-6.
+- The router: $0.018, 9 s, 14k input tokens per covered question; 12 of 14 fully right (the Haiku reader dropped the TGT step of `x1_synth` twice).
+- Not covered: the kb arms cost the same or slightly more; Sonnet stopped at `none` on the Purview question; Opus was right in all 4 runs.
+- 69 runs of the first pass returned "You've hit your session limit" at $0 and passed as answers; `agent_bench.py` now records them as errors.

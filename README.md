@@ -30,6 +30,19 @@ An agent that looks a fact up on the web reads whole pages to find one line. Mea
 
 Details, numbers and the reasoning: `_self/design.md`.
 
+## Benchmark: bare agent vs agent with the kb (2026-09-27)
+
+158 runs on Haiku 4.5, Sonnet 5 and Opus 5.5: 24 subagents and 134 headless sessions with billed cost; every question but one (a count over the kb itself) was asked both with and without the kb.
+
+**Summary.** On questions the kb covers:
+- An agent that uses the kb pays 26-53% less than the same model searching the web, except Opus in a fresh headless session, which paid the same.
+- It is 40-70% faster, makes 1-2 tool calls instead of 5-14, and was never less correct.
+- The kb router (`kb_ask.py`) costs $0.018 and 9 s per question, 4-13x cheaper than any bare model.
+
+On questions the kb lacks, the kb adds one pack call (1-2k tokens) to the same web research. The cheapest correct setup measured was Haiku reading the kb, not Opus reading the web.
+
+The cases, the models, token counts, costs and the route each run took: `_self/reports/benchmark-2026-09-27.md`.
+
 ## Where things are
 
 - `<domain>/`: the articles and their data.

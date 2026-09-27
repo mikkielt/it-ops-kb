@@ -43,6 +43,15 @@ S = {
     "h3_mggraph": ("Using the kb, show how to sign in to Microsoft Graph PowerShell app-only with a certificate and "
                    "call the devices endpoint directly. Cite path:line.",
                    [r"Connect-MgGraph", r"-CertificateThumbprint", r"Invoke-MgGraphRequest"]),
+    # cross-topic synthesis: facts from two articles (auth/kerberos, mecm/adminservice)
+    "x1_synth": ("Using the kb: a Python CLI must call the ConfigMgr AdminService as the engineer's own identity. Which "
+                 "authentication works on ConfigMgr 2509 and later, what does the Python side need before the call, and "
+                 "what ConfigMgr permission must the account have? Cite path:line.",
+                 [r"(?i)NTLM", r"(?i)requests-gssapi|kinit|TGT", r"(?i)administrative user|admin(istrative)? user"]),
+    # off-kb with a fallback allowed: the kb must say it lacks it, then live docs or the web answer
+    "o1_offkb": ("How do I run the Kubernetes Cluster Autoscaler on AWS EKS with spot instances? Check the kb first; if "
+                 "it lacks this, use live docs or web search and label the source.",
+                 [r"(?i)spot", r"(?i)auto ?scaling group|node ?group|ASG"]),
 }
 AGENTS = {"kb-live-docs": {
     "description": "Live-docs research for a question the it-ops-kb does not answer: searches Microsoft Learn, Claude Code "
@@ -66,7 +75,7 @@ def execute(cmd, prompt, cwd=KB):
     t = time.time()
     p = subprocess.run(cmd, cwd=cwd, input=prompt, capture_output=True, text=True, timeout=900)
     wall = time.time() - t
-    tools, res, subs = Counter(), None, Counter()
+    tools, res, subs, path = Counter(), None, Counter(), []
     for line in p.stdout.splitlines():
         try:
             ev = json.loads(line)
@@ -77,22 +86,26 @@ def execute(cmd, prompt, cwd=KB):
                 if c.get("type") == "tool_use":
                     name = c["name"] + (":" + c["input"].get("subagent_type", "") if c["name"] in ("Agent", "Task") else "")
                     (subs if ev.get("parent_tool_use_id") else tools)[name] += 1
+                    path.append(("sub:" if ev.get("parent_tool_use_id") else "") + name.replace("mcp__", ""))
         if ev.get("type") == "result":
             res = ev
     if not res:
         return {"error": p.stderr[-500:]}
+    if res.get("is_error") or (not res.get("total_cost_usd") and re.search(r"(?i)hit your (session|usage) limit", res.get("result") or "")):
+        return {"error": (res.get("result") or "is_error")[:200]}  # a refused run is void, not a cheap answer
     u = res["usage"]
     return {"wall_s": round(wall, 1), "api_s": round(res["duration_api_ms"] / 1000, 1),
             "cost": round(res["total_cost_usd"], 4), "turns": res["num_turns"],
             "in_uncached": u["input_tokens"], "cache_write": u["cache_creation_input_tokens"],
             "cache_read": u["cache_read_input_tokens"], "out": u["output_tokens"],
             "models": {m: round(v["costUSD"], 4) for m, v in res.get("modelUsage", {}).items()},
-            "tools": dict(tools), "sub_tools": dict(subs), "answer": res.get("result") or ""}
+            "tools": dict(tools), "sub_tools": dict(subs), "route": path, "answer": res.get("result") or ""}
 
 
 def add(a, b):
     """Two runs of one question (reader, then escalation) as one row."""
     out = dict(b)
+    out["route"] = a.get("route", []) + ["escalate"] + b.get("route", [])
     for k in ("wall_s", "api_s", "cost", "turns", "in_uncached", "cache_write", "cache_read", "out"):
         out[k] = round(a[k] + b[k], 4)
     out["models"] = {m: round(a["models"].get(m, 0) + b["models"].get(m, 0), 4) for m in {*a["models"], *b["models"]}}
@@ -109,7 +122,7 @@ def route(q):
     if tool is not None:
         return {"wall_s": round(time.time() - t, 1), "api_s": 0, "cost": 0, "turns": 0, "in_uncached": 0,
                 "cache_write": 0, "cache_read": 0, "out": 0, "models": {}, "tools": {"kb_ask:tool": 1},
-                "sub_tools": {}, "answer": tool}
+                "sub_tools": {}, "route": ["kb_ask:tool"], "answer": tool}
     p = kb_ask.plan(q)
     stream = ["--output-format", "stream-json", "--verbose"]
     user = kb_ask.prompt(q, p["text"])
@@ -117,11 +130,14 @@ def route(q):
     if p["kind"] == "good":
         first = execute(kb_ask.claude_argv(p["model"], False)[:2] + stream + kb_ask.claude_argv(p["model"], False)[2:]
                         + ["--append-system-prompt", kb_ask.READER], user)
+        first["route"] = [f"pack:{p['kind']}", f"reader:{p['model']}"] + first.get("route", [])
         if "error" in first or not first["answer"].lstrip().startswith(kb_ask.SENTINEL):
             return first
         user += f"\n\nA first reader of this evidence said: {first['answer'].strip().splitlines()[0]}"
     argv = kb_ask.claude_argv("sonnet", True)
     second = execute(argv[:2] + stream + argv[2:] + ["--append-system-prompt", kb_ask.RESEARCHER], user)
+    if "error" not in second:
+        second["route"] = ([] if first else [f"pack:{p['kind']}"]) + ["researcher:sonnet"] + second.get("route", [])
     return add(first, second) if first and "error" not in second else second
 
 
@@ -135,6 +151,14 @@ WEB_Q = {  # the same questions without the kb: what a session without it would 
     "s7_web": ("How should the KRBTGT account password be reset safely in an AD domain (how many times, how long between "
                "resets)? Cite the source urls."),
     "s8_falsegood2": "Microsoft Purview Data Loss Prevention endpoint DLP onboarding requirements. Cite the source urls.",
+    "h1_gmsa": ("Give the PowerShell to create a gMSA, allow a server group to retrieve its password, and install and "
+                "test it on the server. Cite the source urls."),
+    "h2_applock": ("Show T-SQL that takes an exclusive session-owned application lock without waiting, fails if it is "
+                   "held, and releases it. Cite the source urls."),
+    "x1_synth": ("A Python CLI must call the ConfigMgr AdminService as the engineer's own identity. Which authentication "
+                 "works on ConfigMgr 2509 and later, what does the Python side need before the call, and what ConfigMgr "
+                 "permission must the account have? Cite the source urls."),
+    "o1_offkb": "How do I run the Kubernetes Cluster Autoscaler on AWS EKS with spot instances? Cite the source urls.",
 }
 
 
