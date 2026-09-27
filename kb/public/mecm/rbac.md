@@ -4,7 +4,7 @@ priority: P0
 applies_to: "ConfigMgr current branch 2603"
 retrieved_utc: 2026-09-27
 sources: [S-wkltnypi, S-2z2zfj3l, S-sxtmngif, S-bprslswi, S1520, S-aaryifxi, S-hmjlvsck, S-qa267hnk, S1218, S-lef2ok5a, S-5v5lco6w, S-bjflxpet, S-z2hvjsvn, S-pl6uxpad, S-p2yatbfh]
-status: partial
+status: complete
 files: [mecm/rbac-permissions.csv]
 ---
 
@@ -32,7 +32,7 @@ The documented `GrantedOperations` bit table does not list Notify Resource, Run 
 - Built-in roles cannot be modified, other than adding administrative users to them. You copy one to create a custom role. [DOC S1218]
 - A permission check before a client operation can be asked of the SMS Provider: the WMI method `SMS_ClientOperation.IsClientOperationAllowed(Type, TargetCollectionID, TargetResourceIDs[])` (resource IDs optional) checks whether the user may run that operation; the reference page does not explain the `Type` values. [DOC S-qa267hnk]
 - `SMS_ARoleOperation.GrantedOperations` is a bit mask with 30 documented positions (0–29). The documented labels do not include Notify Resource, Run Script or Run CMPivot. [DOC S-z2hvjsvn]
-- The bit positions for Notify Resource, Run Script and Run CMPivot are not documented. [UNK]
+- The bit positions for Notify Resource, Run Script and Run CMPivot are not documented: re-read 2026-09-27, the `SMS_ARoleOperation` labels and the security-views bit table omit them, and a Learn search for the three permissions returns only console and role descriptions. Read them from a role that holds only one of these permissions on a lab site before testing a mask. [DER S-z2hvjsvn, S-bjflxpet: absence across the class page and the views bit table]
 - The SQL security views v_SecuredObject, v_Roles, v_Admins, V_CategoryPermissions and v_SecuredScopePermissions expose permissions as decimal bit fields. In the 28-bit table in S-bjflxpet, Collection object key = 1. [DOC S-bjflxpet]
 
 ## Reference

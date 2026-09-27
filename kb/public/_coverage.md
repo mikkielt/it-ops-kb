@@ -183,22 +183,22 @@ Every topic of this root with its priority (the research order, not importance),
 | `mcp/registry-and-extensions` | P2 | complete | `mcp/registry-and-extensions.md` | 17 |
 | `mcp/resources-prompts` | P2 | complete | `mcp/resources-prompts.md` | 7 |
 | `mcp/transports-streamable-http` | P2 | complete | `mcp/transports-streamable-http.md` | 8 |
-| `mecm/adminservice` | P0 | partial | `mecm/adminservice.md`, `mecm/adminservice-routes.csv` | 21 |
+| `mecm/adminservice` | P0 | complete | `mecm/adminservice.md`, `mecm/adminservice-routes.csv` | 21 |
 | `mecm/application-model` | P0 | complete | `mecm/application-model.md` | 4 |
-| `mecm/baselines` | P0 | partial | `mecm/baselines.md` | 6 |
-| `mecm/client-notification` | P0 | partial | `mecm/client-notification.md`, `mecm/client-operation-types.csv` | 12 |
-| `mecm/client-settings` | P0 | partial | `mecm/client-settings.md` | 2 |
-| `mecm/cmpivot` | P0 | partial | `mecm/cmpivot.md`, `mecm/cmpivot-entities.csv` | 11 |
-| `mecm/compliance-script-ci` | P0 | partial | `mecm/compliance-script-ci.md` | 7 |
+| `mecm/baselines` | P0 | complete | `mecm/baselines.md` | 7 |
+| `mecm/client-notification` | P0 | complete | `mecm/client-notification.md`, `mecm/client-operation-types.csv` | 12 |
+| `mecm/client-settings` | P0 | complete | `mecm/client-settings.md` | 2 |
+| `mecm/cmpivot` | P0 | complete | `mecm/cmpivot.md`, `mecm/cmpivot-entities.csv` | 12 |
+| `mecm/compliance-script-ci` | P0 | complete | `mecm/compliance-script-ci.md` | 8 |
 | `mecm/log-files` | P0 | complete | `mecm/log-files.md`, `mecm/log-files.csv` | 2 |
-| `mecm/logging` | P0 | partial | `mecm/logging.md` | 5 |
-| `mecm/rbac` | P0 | partial | `mecm/rbac.md`, `mecm/rbac-permissions.csv` | 15 |
-| `mecm/run-scripts` | P0 | partial | `mecm/run-scripts.md` | 14 |
-| `mecm/sql-views-compliance` | P0 | partial | `mecm/sql-views-compliance.md`, `mecm/sql-views-compliance.csv` | 9 |
+| `mecm/logging` | P0 | complete | `mecm/logging.md` | 6 |
+| `mecm/rbac` | P0 | complete | `mecm/rbac.md`, `mecm/rbac-permissions.csv` | 15 |
+| `mecm/run-scripts` | P0 | complete | `mecm/run-scripts.md` | 14 |
+| `mecm/sql-views-compliance` | P0 | complete | `mecm/sql-views-compliance.md`, `mecm/sql-views-compliance.csv` | 9 |
 | `mecm/versions-lifecycle` | P0 | complete | `mecm/versions-lifecycle.md` | 5 |
-| `mecm/osd-task-sequences` | P1 | partial | `mecm/osd-task-sequences.md`, `mecm/task-sequence-variables.csv` | 15 |
-| `mecm/software-updates` | P1 | complete | `mecm/software-updates.md` | 22 |
-| `mecm/collect-client-logs` | P2 | partial | `mecm/collect-client-logs.md` | 6 |
+| `mecm/osd-task-sequences` | P1 | complete | `mecm/osd-task-sequences.md`, `mecm/task-sequence-variables.csv` | 17 |
+| `mecm/software-updates` | P1 | complete | `mecm/software-updates.md` | 23 |
+| `mecm/collect-client-logs` | P2 | complete | `mecm/collect-client-logs.md` | 7 |
 | `powerbi/configmgr-views` | P2 | partial | `powerbi/configmgr-views.md` | 2 |
 | `powerbi/on-prem-gateway-sql` | P2 | complete | `powerbi/on-prem-gateway-sql.md` | 8 |
 | `powerbi/row-level-security` | P2 | complete | `powerbi/row-level-security.md` | 2 |

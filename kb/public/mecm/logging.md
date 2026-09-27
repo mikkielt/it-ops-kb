@@ -2,9 +2,9 @@
 topic: mecm/logging
 priority: P0
 applies_to: "ConfigMgr current branch 2603 (memdocs 4b5429df)"
-retrieved_utc: 2026-09-26
-sources: [S-jtvk6o4y, S-hvtmunqo, S-m6tydsnh, S234, S-hmjlvsck]
-status: partial
+retrieved_utc: 2026-09-27
+sources: [S-jtvk6o4y, S-hvtmunqo, S-m6tydsnh, S234, S-hmjlvsck, S-3ed5gfct]
+status: complete
 ---
 
 ## Summary
@@ -29,8 +29,8 @@ only examples are published.
 - CMTrace reads CCM-format logs and plain ASCII/Unicode text; in CCM format each entry has an explicit type value marking error or warning; for other formats it matches "error"/"warn" text. [DOC S-hvtmunqo]
 - CMTrace installed at `C:\Windows\CCM\CMTrace.exe` (client), `C:\SMS_CCM\CMTrace.exe` (MP), `cd.latest\SMSSETUP\Tools`, boot images `X:\sms\bin\x64`. [DOC S-hvtmunqo]
 - CCM line shape from published examples: `<![LOG[text]LOG]!><time="..." date="..." component="..." context="" type="1" thread="N" file="src.cpp:line">` (the published examples replace the time and date values with placeholders). [DOC S234]
-- The time value format `HH:MM:SS.mmm+bias` and date format `MM-DD-YYYY` inside a CCM line. [UNK: not in S234 as re-read 2026-09-27]
-- The numeric meaning of `type` (1/2/3) and the sign/unit of the time bias are not officially specified. [UNK]
+- An official `smsts.log` example shows the value forms: `time="14:24:33.329+420"` (hours:minutes:seconds.milliseconds, then a signed bias) and `date="06-26-2015"` (month-day-year), with `type="1"` on an informational line. [DOC S-3ed5gfct]
+- No page defines the `type` values or the sign and unit of the time bias: re-read 2026-09-27, CMTrace says only that the type value marks errors and warnings, and the published lines show `type="1"` on informational entries. Parsers should treat 2 and 3 as warning and error only as an assumption, and read the bias as an offset in minutes only after checking it against a known local time. [DER S-hvtmunqo, S-3ed5gfct, S234: absence; examples only]
 
 ## Reference
 | Key | Values | Default |

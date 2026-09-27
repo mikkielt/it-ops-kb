@@ -2,9 +2,9 @@
 topic: mecm/compliance-script-ci
 priority: P0
 applies_to: "ConfigMgr current branch 2603 (docs at MicrosoftDocs/memdocs 4b5429df)"
-retrieved_utc: 2026-09-26
-sources: [S-mmydokhp, S-pm6pjuef, S-nejxr76b, S-5lqbi3py, S-j2tke6bb, S-7s2aa2cm, S1520]
-status: partial
+retrieved_utc: 2026-09-27
+sources: [S-mmydokhp, S-pm6pjuef, S-nejxr76b, S-5lqbi3py, S-j2tke6bb, S-7s2aa2cm, S1520, S-lojuttbo]
+status: complete
 ---
 
 ## Summary
@@ -21,13 +21,13 @@ a CI script's output was found. The full list of script data types and the 32-bi
 - Remediation script is optional and remediates noncompliant setting values. [DOC S-mmydokhp]
 - To report a remediation failure correctly, scripts must throw exceptions rather than return a nonzero exit code. [DOC S-mmydokhp]
 - "Run scripts by using the logged on user credentials": when enabled, the script runs with the signed-in user's credentials. [DOC S-mmydokhp]
-- Without that option the script runs in the client's default context; the doc does not name the account. [UNK]
+- Without that option the account the script runs as is not named: re-read 2026-09-27, the CI page describes only the logged-on-user option, and neither the global-conditions page nor the client-settings page names the default account. Do not assume a specific account in a design; test it on a lab client. [DER S-mmydokhp, S-7s2aa2cm, S-pm6pjuef: absence across the three pages]
 - A signed PowerShell script must be loaded with **Open**; copy/paste of a signed script is not supported. [DOC S-mmydokhp]
 - Setting name and description: max 256 characters each. [DOC S-mmydokhp]
 - Data type is chosen per setting ("format in which the condition returns the data"); the list is not shown for all setting types; Floating point supports only three digits after the decimal point. [DOC S-mmydokhp]
-- The full enumeration of data types available for a script setting is not listed in the docs. [UNK]
+- No page lists every data type for a script setting: the Windows CI page and the global-conditions page say only that the list depends on the setting type (re-read 2026-09-27). The macOS CI page names **Floating point**, **Boolean** and **Integer** (Boolean is not supported for Mac script settings; use Integer instead). [DER S-mmydokhp, S-7s2aa2cm, S-lojuttbo: no full list; three types named on the Mac page]
 - A global-condition script returning multiple values must put them on a single line separated by semicolons; values on separate lines make evaluation fail. [DOC S-7s2aa2cm]
-- Whether the same multi-value rule applies to CI script settings is not stated in the CI doc. [UNK]
+- The CI page (re-read 2026-09-27) states no multi-value output rule for script settings; the single-line, semicolon-separated rule is documented only for global-condition scripts, so treat it as a global-condition rule. [DER S-mmydokhp, S-7s2aa2cm: rule present on one page, absent on the other]
 - Before a setting is evaluated it must have at least one compliance rule; WMI, registry and script settings can remediate. [DOC S-mmydokhp]
 - Rule types: **Value** (compare returned value with a specified value) and **Existential** (exists / must not exist / occurs N times). [DOC S-mmydokhp]
 - "Remediate noncompliant rules when supported" works for Registry value, Script (runs the remediation script) and WQL query rules, and only when the rule operator is **Equals**. [DOC S-mmydokhp]
@@ -36,12 +36,13 @@ a CI script's output was found. The full list of script data types and the 32-bi
 - "Track remediation history when supported" (version 2002+) makes each remediation generate a state message stored in the site database; exposed through view `v_CIRemediationHistory` (`RemediationDate` UTC, `ResourceID`). [DOC S-mmydokhp]
 - Script Execution Timeout (seconds) is a client setting in the **Compliance settings** group, introduced in 2207; range 60-600 s; the default is 60 s; described as giving "more flexibility for configuration items when you need to run scripts that may exceed the default of 60 seconds". [DOC S-pm6pjuef,S-nejxr76b]
 - The CI doc links this timeout to compliance settings scripts ("Starting in 2207, you can define a Script Execution Timeout (seconds) when configuring client settings for compliance settings"). [DOC S-mmydokhp]
-- Whether this timeout also applies to application detection scripts or global-condition scripts is not stated. [UNK]
+- No page says whether Script Execution Timeout also applies to application detection or global-condition scripts: re-read 2026-09-27, the client-settings page places it in the Compliance settings group and ties it to configuration items only, and the create-applications and global-conditions pages do not mention it. [DER S-pm6pjuef, S-j2tke6bb, S-7s2aa2cm: absence on the app and global-condition pages]
 - Client setting **PowerShell execution policy** (Computer agent) governs PowerShell scripts used "for detection in configuration items for compliance settings": Bypass, Restricted, All Signed; default **All Signed**. [DOC S-pm6pjuef]
 - Unsigned-script failures under that setting show error 0x87D00327 "Script is not signed" (Discovery Error), or 0x87D00320 "The script host has not been installed yet"; `DcmWmiProvider.log` records "Script is not signed (Error: 87D00327; Source: CCM)". [DOC S-pm6pjuef]
 - The CI wizard for a script setting has no documented 32-bit / 64-bit host option; the 64-bit options documented are for File system, Registry key/value and XPath settings. [DER S-mmydokhp: option lists per setting type, script section has none]
 - Application detection scripts (a different feature) have "Run script as 32-bit process on 64-bit clients" and a 32 KB max script size. [DOC S-j2tke6bb]
-- Size limit on the output (discovered value) of a CI script: not documented. Run Scripts (a different feature) truncates output to 4 KB. [UNK] [DOC S1520]
+- No size limit on the output (discovered value) of a CI script is documented (CI page re-read 2026-09-27). [DER S-mmydokhp: absence]
+- Run Scripts (a different feature) truncates output to 4 KB. [DOC S1520]
 - File system settings: UNC paths unsupported; `%USERPROFILE%` searches all profiles; inaccessible path or file in use gives a discovery error. [DOC S-mmydokhp]
 - An invalid XPath query evaluates noncompliant; an encrypted XML file yields no results and no error. [DOC S-mmydokhp]
 - SQL query settings run only read-only SQL on a local instance. [DOC S-mmydokhp]

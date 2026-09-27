@@ -2,9 +2,9 @@
 topic: mecm/osd-task-sequences
 priority: P1
 applies_to: "ConfigMgr current branch (osd/* docs, checked 2026-09-26)"
-retrieved_utc: 2026-09-26
-sources: [S-lydse5ww, S-nmfqbv57, S-dz6j2643, S-kwn2lclu, S-ruy2unms, S-6pxhq347, S-jjjidz73, S-bf2nomrq, S-xigzahvp, S-qethz2s6, S-5lqbi3py, S-ohy3ejva, S-n2n6jxit, S-pcnabydm, S-qyxi4l4m]
-status: partial
+retrieved_utc: 2026-09-27
+sources: [S-lydse5ww, S-nmfqbv57, S-dz6j2643, S-kwn2lclu, S-ruy2unms, S-6pxhq347, S-jjjidz73, S-bf2nomrq, S-xigzahvp, S-qethz2s6, S-5lqbi3py, S-ohy3ejva, S-n2n6jxit, S-pcnabydm, S-qyxi4l4m, S-4eqz4ngg, S-gppz6zvr]
+status: complete
 files: [mecm/task-sequence-variables.csv]
 ---
 
@@ -71,8 +71,10 @@ the row cited by every phase below.
 - `windows/bitlocker.md` covers BitLocker management policy and recovery-key handling after deployment; this article covers only the OSD-time Pre-provision BitLocker / Enable BitLocker task sequence steps.
 - `autopilot/device-preparation.md` covers Autopilot device preparation (Entra-join, no on-prem task sequence); cross-linked here because it is the alternative, ConfigMgr-free provisioning path for the same "get a new device to a usable Windows state" goal.
 - `mecm/log-files.csv` has the full log reference cited by row above (`Smsts.log`, `TSDTHandler.log`, `smstsvc.log`) rather than duplicated here.
-- The full list of common/specific step properties for every step type (success codes, continue-on-error, per-step settings) and the complete PowerShell cmdlet set per step (`Get/New/Remove/Set-CMTSStep*`) were reviewed only for the steps named above. [UNK: not exhaustively reviewed for every step type]
-- Windows 11 in-place upgrade task sequence specifics (SetupCompletePause timing variable, `_SMSTSOSUpgradeActionReturnCode`) were found in the variable reference but not cross-checked against a dedicated in-place-upgrade walkthrough page. [UNK]
+- Settings common to every step: on Properties, **Name** (at most 50 characters) and **Description** (at most 256); on Options, **Disable this step**, **Continue on error** and **Add Condition**. Step-specific options are listed per step, e.g. **Success codes** (extra exit codes treated as success) and a run-as **Account** on Run Command Line and Run PowerShell Script. [DOC S-dz6j2643]
+- The per-step `Get/New/Remove/Set-CMTSStep*` cmdlet set was checked only for the steps named above; the steps page (re-read 2026-09-27) is the per-step property reference. [DER S-dz6j2643: scope of this article's review]
+- In-place upgrade: a Run Command Line step `cmd /c exit %_SMSTSOSUpgradeActionReturnCode%`, conditioned on `_SMSTSOSUpgradeActionReturnCode` not equal to `3247440400` (MOSETUP_E_COMPAT_SCANONLY, 0xC1900210, a clean compatibility scan), fails the task sequence when the Upgrade Assessment step reports any other code. [DOC S-4eqz4ngg]
+- `SetupCompletePause` (added in 1910): a value in seconds that Windows setup waits after it completes before starting the task sequence, giving the client time to initialize on fast devices during an in-place upgrade. [DOC S-gppz6zvr]
 
 ## Examples
 - SNIPPET: Read the log path and set a custom variable from a `Run PowerShell Script` step using the `Microsoft.SMS.TSEnvironment` COM object; context: ConfigMgr current branch, Run PowerShell Script step; checked: no [DOC S-nmfqbv57: `Microsoft.SMS.TSEnvironment` as the way to read/write task sequence variables from a script]

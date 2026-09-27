@@ -2,9 +2,9 @@
 topic: mecm/baselines
 priority: P0
 applies_to: "ConfigMgr current branch 2603 (docs at MicrosoftDocs/memdocs 4b5429df)"
-retrieved_utc: 2026-09-26
-sources: [S-f6ejsacc, S-smzttlyd, S-6war5y2t, S-pm6pjuef, S-xcvlnpgb, S-eswaciiy]
-status: partial
+retrieved_utc: 2026-09-27
+sources: [S-f6ejsacc, S-smzttlyd, S-6war5y2t, S-pm6pjuef, S-xcvlnpgb, S-eswaciiy, S-g5gii62f]
+status: complete
 ---
 
 ## Summary
@@ -33,7 +33,8 @@ minutes on manual re-evaluation. No minimum evaluation interval is documented.
 - `Get-CMBaselineDeployment` returns `AssignmentUniqueID` (the ID seen on the client). [DOC S-smzttlyd]
 - Manual evaluation from Control Panel > Configuration Manager > Configurations > Evaluate; results cached 15 minutes. [DOC S-smzttlyd,S-6war5y2t]
 - Default schedule for baseline deployments is set by client setting **Schedule compliance evaluation**; can be changed per deployment. [DOC S-pm6pjuef]
-- Minimum evaluation interval for a baseline deployment: not documented in the compliance docs. [UNK]
+- No minimum evaluation interval for a baseline deployment is documented: re-read 2026-09-27, the deploy, create, common-tasks and client-settings pages describe only a simple or custom schedule, and the only default stated is **7 Days** in the common-tasks walkthrough. [DER S-smzttlyd, S-f6ejsacc, S-pm6pjuef, S-g5gii62f: absence across the four pages]
+- The common-tasks walkthrough keeps the deployment's evaluation schedule at its default of **7 Days** unless changed. [DOC S-g5gii62f]
 - The schedule token class `SMS_ST_RecurInterval` accepts `MinuteSpan` 0-59, `HourSpan` 0-23, `DaySpan` 0-31, so the token format itself can express sub-hour intervals; whether the console or client enforces a floor for baselines is not documented. [DER S-xcvlnpgb,S-eswaciiy: EvaluationSchedule is a schedule-token string on SMS_CIAssignmentBaseClass; token ranges from S-xcvlnpgb]
 - Baselines can be included in compliance policy assessment only when deployed to device collections. [DOC S-f6ejsacc]
 - Logs for baseline evaluation in compliance policy assessment: ComplianceHandler.log, SettingsAgent.log, DCMAgent.log, CIAgent.log. [DOC S-f6ejsacc]
@@ -46,7 +47,8 @@ minutes on manual re-evaluation. No minimum evaluation interval is documented.
 | Randomization window (device) | 2 hours | [DOC S-smzttlyd] |
 | First-run launch-condition deadline | 24 h (1440 min) | [DOC S-smzttlyd] |
 | Manual re-evaluation cache | 15 min | [DOC S-6war5y2t] |
-| Minimum schedule interval | not documented | [UNK] |
+| Minimum schedule interval | not documented (2026-09-27) | [DER S-smzttlyd, S-g5gii62f: absence] |
+| Default evaluation schedule (walkthrough) | 7 days | [DOC S-g5gii62f] |
 | Schedule token ranges | MinuteSpan 0-59, HourSpan 0-23, DaySpan 0-31 | [DOC S-xcvlnpgb] |
 
 ## Examples

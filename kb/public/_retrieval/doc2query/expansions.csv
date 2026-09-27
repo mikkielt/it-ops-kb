@@ -296,11 +296,6 @@ ae893edc1e2f,compressed diagnostics file size maximum
 e833fb3ea865,SMS_G_System_CollectedFile configmgr
 e833fb3ea865,How do I query collected files in ConfigMgr?
 e833fb3ea865,v_GS_CollectedFile SQL view
-6dd46bc55a7e,support zip files SMS_G_System_CollectedFile
-6dd46bc55a7e,AdminService collected files
-aa48fe09f00a,client notification operation type collect logs
-aa48fe09f00a,What is the notification type for collecting client logs?
-aa48fe09f00a,mecm2 agent client notification
 b89ad9a3091e,diagnostic file compressed size
 b89ad9a3091e,What's the maximum size for client diagnostic collection?
 b89ad9a3091e,100 MB log limit configmgr

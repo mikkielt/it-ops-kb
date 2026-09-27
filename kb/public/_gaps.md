@@ -434,6 +434,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
 - DSC v3 GroupPolicyTemplate adapter: which released version first ships it is left to dsc/ (only the main-branch manifest was checked, S924). [UNK] (topic: gpo/dsc-group-policy-adapter)
 - `ansible.windows.win_dsc` check-mode support: the docs page as fetched shows no attributes table; not confirmed. [UNK] (topic: ansible/dsc3-module)
 - powerbi/configmgr-views.md depends on mecm/sql-views-compliance.md (other agent); that file did not exist at time of writing.
+  - Resolved 2026-09-27: mecm/sql-views-compliance.md exists; the dependency is satisfied. (topic: mecm/sql-views-compliance)
 
 ## mcp
 
@@ -453,29 +454,49 @@ Still open: (topic: auth/configmgr-rbac-auth)
 ## mecm1
 
 - Minimum baseline evaluation interval (Q19): searched memdocs compliance/*, about-client-settings.md, develop/compliance/*, schedule token classes; SupportArticles-docs support/mem/configmgr (no compliance-settings troubleshooting articles). Not documented. (topic: mecm/baselines)
+  - Tried 2026-09-27, still open: live Learn search (deploy/create/monitor baseline pages, about-client-settings, the Orchestrator Deploy Configuration Baseline activity) found no floor; the common-tasks walkthrough gives only a 7-day default (S-g5gii62f). The article records the absence as DER. Verification: in a lab console, try a 1-minute custom schedule on a baseline deployment and read the stored EvaluationSchedule token. (topic: mecm/baselines)
 - CI script output size limit (Q19): searched memdocs (compliance, apps, client settings, develop) for "output", "size", "maximum"; SupportArticles-docs. Not documented. (topic: mecm/compliance-script-ci)
+  - Tried 2026-09-27, still open: live Learn search and a re-grep of the memdocs archive (compliance, apps, client settings) found no output size limit for CI scripts. The article records the absence as DER. (topic: mecm/compliance-script-ci)
 - Full column lists of compliance SQL views: SQL views docs (compliance-settings-views, status-alert-views, sql-server-views) give descriptions and join columns only. Column lists only available from sample queries and WMI classes. (topic: mecm/sql-views-compliance)
+  - Not retried 2026-09-27: the views pages still describe joins only; the column lists would come from a lab site database (sp_columns on the views). (topic: mecm/sql-views-compliance)
 - SQL view behind SMS_DCMDeploymentCompliantDetailsPerAsset: not in develop/reference/compliance or sqlviews docs. (topic: mecm/sql-views-compliance)
+  - Tried 2026-09-27, still open: a re-grep of the memdocs archive finds the class only in the WMI reference (class page, error-status cross-links, TOC); no SQL view page names it. The article records the absence as DER. (topic: mecm/sql-views-compliance)
 - Enumeration of CI setting data types (String, Integer, ... ) and a 32-bit/64-bit host option for script settings: not in create-custom-configuration-items doc or create-global-conditions doc; only "Floating point supports three decimals" is stated. (topic: mecm/compliance-script-ci)
+  - Partly resolved 2026-09-27: the macOS CI page (S-lojuttbo) names Floating point, Boolean and Integer; no page gives the full list or a 32/64-bit host option for script settings. (topic: mecm/compliance-script-ci)
 - Execution account of a CI script without "logged on user credentials": not stated. (topic: mecm/compliance-script-ci)
+  - Tried 2026-09-27, still open: CI, global-conditions and client-settings pages re-read, Learn search for the local system account with compliance scripts; no account named. (topic: mecm/compliance-script-ci)
 - Scope of Script Execution Timeout beyond compliance settings (app detection, global conditions): not stated. (topic: mecm/compliance-script-ci)
+  - Tried 2026-09-27, still open: client-settings (Compliance settings group), create-applications and create-global-conditions re-read; only configuration items are named. (topic: mecm/compliance-script-ci)
 - CCM log format: no formal spec; `type` values and time-bias semantics not defined (only examples in memdocs osd doc and SupportArticles state-messaging article). (topic: mecm/log-files)
+  - Partly resolved 2026-09-27: the Windows PE peer cache page (S-3ed5gfct) shows a full line with time="14:24:33.329+420" and date="06-26-2015", so the value forms are now DOC by example (mecm/logging.md). The type values and the bias sign/unit remain undefined. (topic: mecm/logging)
 - Collect client logs programmatic retrieval (WMI class / AdminService route for Support_*.zip): not documented. (topic: mecm/collect-client-logs)
+  - Tried 2026-09-27, still open: re-grep of the memdocs archive for Support_ and diagnostic files (only Resource Explorer and client-notification pages), live Learn search; no WMI class, SQL view or AdminService route is tied to diagnostic files. The article records the absence as DER. (topic: mecm/collect-client-logs)
 - learn.microsoft.com URLs were derived from repo paths (intune/configmgr/...) and not fetched; historic URL form was learn.microsoft.com/mem/configmgr/... . Raw pinned URLs in sources.csv are authoritative.
 
 ## mecm2
 
 - CMPivot `CcmLog()`, `WinEvent()` and per-entity columns. Tried: grep of the memdocs clone (4b5429df) for CcmLog/WinEvent (only examples found), cmpivot*.md, the tenant-attach cmpivot pages, and the cmpivot-samples include. Not documented. Only columns used in examples are recorded in mecm/cmpivot-entities.csv. (topic: mecm/cmpivot)
+  - Tried 2026-09-27, still open: live Learn search (CMPivot overview, samples, changes, tenant-attach CMPivot) and a re-grep of the memdocs archive (4b5429df) show CcmLog only as a call form; no column list for CcmLog, WinEvent or the entities. The article records the absences as DER. Verification: run `CcmLog('Scripts',1h)` against a lab client (PL-LT-00123) and record the result header. (topic: mecm/cmpivot)
 - InitiateClientOperation Type values (policy, HW inventory, app eval, SU eval). Tried: the SDK reference (develop/reference/protect/*clientoperation*), grep of memdocs, SupportArticles-docs and windows-powershell-docs for "client operation <n>", and the Learn Invoke-CMClientAction page (names only). Only 135/145 from log samples. (topic: mecm/client-notification)
+  - Tried 2026-09-27, still open: live Learn search (SMS_ClientOperation, InitiateClientOperation, Get-CMClientOperation pages) and a GitHub code search; only community modules (e.g. ansible-collections/microsoft.mecm, SharpSCCM) carry numbers. The Invoke-CMClientAction page (S334, updated_at 2022-01-03) still lists ActionType names only, and its public source repo MicrosoftDocs/sccm-docs-powershell-ref is archived (CC BY 4.0) with no enum values. (topic: mecm/client-notification)
 - InitiateClientOperationEx. Tried: grep of all clones (no hits) and a web search (only the older InitiateClientOperation pages and community posts). Not in the current SDK docs. (topic: mecm/client-notification)
+  - Tried 2026-09-27, still open: the live SMS_ClientOperation methods table (updated_at 2026-08-28) has no Ex method, a Learn search returns only InitiateClientOperation, and a GitHub code search finds it only in community tools (SharpSCCM, MECM7). The article now records the absence as DER. (topic: mecm/client-notification)
 - Invoke-CMClientAction ActionType numeric values. The Learn page lists names only. The sccm-docs-powershell repo is private. (topic: mecm/client-notification)
+  - Tried 2026-09-27, still open: the live page still gives names only; the page's feedback repo MicrosoftDocs/sccm-docs-powershell-ref is public but archived (2026-05-12) and holds the same Markdown, so the numbers exist only in the module's compiled enum. (topic: mecm/client-notification)
 - AdminService per-route support through CMG and delegated tokens. Tried: set-up.md, usage.md, faq.yml, azure-services-wizard.md, whats-new 2207, and the Microsoft TokenSample.ps1. None lists routes. Fetching the other configmgr-hub samples was declined this session and not retried. (topic: mecm/adminservice)
+  - Tried 2026-09-27, still open: live set-up (updated_at 2026-08-28) and FAQ pages still describe only the CMG endpoint form and the SMS Provider checkbox, with no per-route list; a GitHub code search of the microsoft and MicrosoftDocs orgs for AdminService samples found none. (topic: mecm/adminservice)
 - AdminService v1.0 Run Script action. Tried: the adminservice docs folder, a grep of all memdocs for v1.0 routes, and Learn Invoke-CMScript. Only a community sample was found (search result, not fetched). (topic: mecm/adminservice)
+  - Tried 2026-09-27, still open: Learn search for AdminService.RunScript / ScriptResult returns only Invoke-CMScript and Intune Graph script cmdlets; GitHub code search in the microsoft and MicrosoftDocs orgs finds no RunScript route. Only community tools use it (the article keeps them as COMMUNITY S350). (topic: mecm/adminservice)
 - Run Scripts maximum script size. Tried: create-deploy-scripts.md, learn-script-security.md, and a grep for script size/length. Not documented. (topic: mecm/run-scripts)
+  - Tried 2026-09-27, still open: live create-deploy-scripts (updated_at 2026-08-31) Limitations section and Learn search; only the 4 KB output truncation is stated. The article records the absence as DER. (topic: mecm/run-scripts)
 - RBAC bit positions for Notify Resource, Run Script and Run CMPivot. Tried: SMS_ARoleOperation, SMS_RbacSecuredObject, and the security views doc. Not listed. (topic: mecm/rbac)
+  - Tried 2026-09-27, still open: Learn search (GrantedOperations, the three permission names) returns only console and CMPivot permission text; the article records the absence as DER. (topic: mecm/rbac)
 - Full built-in role × permission matrix. The docs point to the RBA Viewer tool (a live site) and give no static table. (topic: mecm/rbac)
+  - Tried 2026-09-27, still open: no static matrix on Learn; the kb keeps the documented rows in mecm/rbac-permissions.csv. (topic: mecm/rbac)
 - Response schemas of AdminService.RunCMPivot / CMPivotResult. Not documented, and there is no Swagger document (S305). (topic: mecm/adminservice)
+  - Tried 2026-09-27, still open: the FAQ still says no OpenAPI (Swagger) document is published, and a GitHub code search of the microsoft and MicrosoftDocs orgs for RunCMPivot finds nothing. (topic: mecm/adminservice)
 - Learn URL invoke-cmclientnotification returned 404. It is an alias of Invoke-CMClientAction (S334). (topic: mecm/client-notification)
+  - Re-checked 2026-09-27: the URL still returns 404; nothing to change, the alias fact stays on S334. (topic: mecm/client-notification)
 
 ## ops
 
@@ -815,6 +836,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
 ## mecm/osd-task-sequences
 
 - The full per-step-type property list (success codes, continue-on-error, per-step settings) and complete `Get/New/Remove/Set-CMTSStep*` cmdlet set were reviewed only for the step types already named in the article, not exhaustively (budget-limited at authoring time). Windows 11 in-place-upgrade task sequence specifics (`SetupCompletePause` timing variable, `_SMSTSOSUpgradeActionReturnCode`) were found in the variable reference but not cross-checked against a dedicated in-place-upgrade walkthrough page (1 lookup). (topic: mecm/osd-task-sequences)
+  - Resolved 2026-09-27: the steps page's Common settings (S-dz6j2643) give the properties and options shared by every step, and the in-place upgrade recommendations (S-4eqz4ngg) and 1910 what's new (S-gppz6zvr) confirm the _SMSTSOSUpgradeActionReturnCode check and SetupCompletePause; per-step CMTSStep cmdlets remain reviewed only for the steps the article names (a scope note, DER). (topic: mecm/osd-task-sequences)
 
 ## mecm/software-updates
 

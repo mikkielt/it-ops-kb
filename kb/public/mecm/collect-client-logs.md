@@ -2,9 +2,9 @@
 topic: mecm/collect-client-logs
 priority: P2
 applies_to: "ConfigMgr current branch 2603 (memdocs 4b5429df)"
-retrieved_utc: 2026-09-26
-sources: [S-hmjlvsck, S-a2vstihu, S-lsjjopsz, S-pzvndq5z, S-mt7k74n7, S-iqjy5rwm]
-status: partial
+retrieved_utc: 2026-09-27
+sources: [S-hmjlvsck, S-a2vstihu, S-lsjjopsz, S-pzvndq5z, S-mt7k74n7, S-iqjy5rwm, S334]
+status: complete
 ---
 
 ## Summary
@@ -25,8 +25,8 @@ Cleanup: "Delete Aged Collected Diagnostic Files" (default 14 days, 2010+).
 - The 1912 technical preview note named Full Administrator and Operations Administrator instead. [DOC S-pzvndq5z]
 - Maintenance task **Delete Aged Collected Diagnostic Files** (2010+, enabled on primary site, default 14 days) deletes them; 2006 and earlier used Delete Aged Collected Files. [DOC S-lsjjopsz]
 - Collected files in general: SMS Provider class `SMS_G_System_CollectedFile` (CollectionDate, FileData, FileName, FilePath, FileSize, LocalFilePath, ResourceID, RevisionID) and SQL view `v_GS_CollectedFile`. [DOC S-mt7k74n7,S-iqjy5rwm]
-- Whether diagnostic `Support_*.zip` files appear in `SMS_G_System_CollectedFile` / `v_GS_CollectedFile` or in AdminService is not documented. [UNK]
-- The client notification operation type value for Collect Client Logs: covered by agent mecm2 (client notification); not checked here. [UNK]
+- No page says whether the diagnostic `Support_*.zip` files appear in `SMS_G_System_CollectedFile` / `v_GS_CollectedFile` or through the administration service: re-read 2026-09-27, the Resource Explorer page gives only the console path, and the class and view pages do not mention diagnostic files. Treat the console (Resource Explorer > Diagnostic Files) as the only documented retrieval path. [DER S-a2vstihu, S-mt7k74n7, S-iqjy5rwm: absence across the three pages]
+- The console action maps to the `Invoke-CMClientAction -ActionType DiagnosticsCollectFiles` name; its numeric client operation type is not documented (see `mecm/client-operation-types.csv`). [DER S334: the cmdlet lists the name only, no numeric values]
 
 ## Reference
 | Item | Value | Tag |

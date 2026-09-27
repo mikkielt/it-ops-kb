@@ -253,21 +253,34 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
 ## mecm1
 
 - Client log level values: registry doc says LogLevel 0 Verbose / 1 Default / 2 Warnings and errors / 3 Errors only (S214 about-log-files.md); SDK SetGlobalLoggingConfiguration says 0 Verbose / 1 Normal / 2 No logging (S225). (topic: mecm/log-files)
+  - Re-read 2026-09-27, still open: about-log-files (updated_at 2026-08-31) still lists 0 Verbose among four levels, and the SetGlobalLoggingConfiguration page still lists Verbose, Normal and No logging. (topic: mecm/log-files)
 - Collect client logs permission holders: current doc names Full Administrator and Infrastructure Administrator (S221); 1912 preview note names Full Administrator and Operations Administrator (S-pzvndq5z). (topic: mecm/collect-client-logs)
+  - Re-read 2026-09-27, still open: the live client-notification page's Client diagnostics prerequisites still name Full Administrator and Infrastructure Administrator, while its Client notification section names Full Administrator and Operations Administrator. (topic: mecm/collect-client-logs)
 - Collected file versions: Delete Aged Collected Files / software inventory doc keep "five most-recent copies" in sinv.box\FileCol (S223, S204); client diagnostics section says "no defined limit to the number of versions" for collected client logs (S221). (topic: mecm/collect-client-logs)
+  - Re-read 2026-09-27, still open: the live client-notification page still says there's no defined limit to the number of versions of collected diagnostics. (topic: mecm/collect-client-logs)
 - Enforcement grace period range: client settings says 0-120 hours (S204); deploy applications says 1-120 hours (S229). (topic: mecm/client-settings)
+  - Re-read 2026-09-27, still open: both live pages (updated_at 2026-08-31) keep 0 to 120 hours (about-client-settings) and 1 to 120 hours (deploy-applications). (topic: mecm/client-settings)
 - SMS_DCMDeploymentCompliantDetailsPerAsset (a "compliant details" class) describes DiscoveredValue/InstanceData as reported "when the rule is non-compliant" (S209); internal inconsistency within one page. (topic: mecm/sql-views-compliance)
+  - Re-read 2026-09-27, still open: the live class page (updated_at 2026-08-28) still describes DiscoveredValue and InstanceData in non-compliant terms. (topic: mecm/sql-views-compliance)
 - Version-support pages: updates.md front matter ms.date 2024-12-04 yet it lists 2603 (May 2026) (S217); content newer than its date stamp. Not a factual disagreement, noted for freshness checks. (topic: mecm/versions-lifecycle)
+  - Not a factual disagreement; left as a freshness note. (topic: mecm/versions-lifecycle)
 
 ## mecm2
 
 - Built-in roles with Notify Resource: client-notification.md "Client notification" section (S326) says Full Administrator + Operations Administrator. The same page's "Client diagnostics" section (S326) and whats-new 1810 (S340) say Full Administrator + Infrastructure Administrator. (topic: mecm/client-notification)
+  - Re-read 2026-09-27, still open: the live page (updated_at 2026-08-31) still names Full Administrator + Operations Administrator under Client notification and Full Administrator + Infrastructure Administrator under Client diagnostics. (topic: mecm/client-notification)
 - AdminService class-name case: overview.md (S300) says class names are case-sensitive. release-notes.md (S306) says the wmi route is case-insensitive from 2006. (topic: mecm/adminservice)
+  - Re-read 2026-09-27, still open: the live overview still says class names are case-sensitive and the release notes still say the wmi route is case-insensitive from 2006. (topic: mecm/adminservice)
 - SMS_ClientOperation.Priority is "1 Highest, 50 Lowest" (S328), but SMS_ClientOperationStatus.Priority is "1 highest, 10 lowest" (S330). (topic: mecm/client-notification)
+  - Re-read 2026-09-27, still open: both live class pages (updated_at 2026-08-28) keep 1-50 and 1-10. (topic: mecm/client-notification)
 - Value 8 RequestPolicyNow is listed under PrimaryActionType in SMS_ClientOperation (S328) but under PrimaryActionTargetObjectType in SMS_ClientOperationStatus (S330). (topic: mecm/client-notification)
+  - Re-read 2026-09-27, still open: SMS_ClientOperationStatus still lists 8 RequestPolicyNow under PrimaryActionTargetObjectType. (topic: mecm/client-notification)
 - Invoke-CMScript (S335): -ScheduleTime is shown as Mandatory:True for all parameter sets, yet it is absent from both syntax blocks and the examples omit it. (topic: mecm/run-scripts)
+  - Re-read 2026-09-27, still open: the live page (updated_at 2023-09-20) still marks -ScheduleTime Mandatory: True for (All) parameter sets while neither syntax block lists it. (topic: mecm/run-scripts)
 - Tenant-attach troubleshooting pages say "IIS must be installed on provider machine" (e.g. troubleshoot-cmpivot.md), but set-up.md (S301) says IIS is not required from 2010. (topic: mecm/adminservice)
+  - Re-read 2026-09-27, still open: tenant-attach/troubleshoot-cmpivot (updated_at 2026-08-31) still says IIS must be installed; set-up (updated_at 2026-08-28) still says IIS is not needed from 2010. Follow set-up.md for 2010 and later. (topic: mecm/adminservice)
 - CMPivot permission for a failed AdminService path: cmpivot.md (S315) names HTTP 503 fallback to the SMS Provider (needs SMS Scripts Read). The 2603 KB (S312) also describes a fallback on HTTP 400 parse errors, fixed in 2603. (topic: mecm/cmpivot)
+  - Re-read 2026-09-27, still open: the live cmpivot page (updated_at 2026-08-31) still names only the 503 fallback; the 2603 KB (S312) adds the 400 parse-error fallback. Both paths need SMS Scripts Read on the SMS Provider when the fallback happens. (topic: mecm/cmpivot)
 
 ## ops
 

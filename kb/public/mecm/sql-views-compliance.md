@@ -4,7 +4,7 @@ priority: P0
 applies_to: "ConfigMgr current branch 2603 (SQL views docs ms.date 2019-04-30, memdocs 4b5429df)"
 retrieved_utc: 2026-09-27
 sources: [S-mmydokhp, S-tnbxhz6o, S-7hxddhnw, S-6qn22dge, S-qqxrnbd5, S-ava6e5jq, S-rljokguo, S-6war5y2t, S234]
-status: partial
+status: complete
 ---
 
 ## Summary
@@ -35,7 +35,7 @@ values of remediated settings.
 - Which SQL view exposes a script CI's discovered/current value is not documented; none of the view descriptions mention a discovered or current value column (only before/after values of remediation). [DER S-tnbxhz6o: searched all 67 descriptions]
 - WMI class `SMS_DCMDeploymentCompliantDetailsPerAsset` has `DiscoveredValue` ("value of the setting that was discovered and reported when the rule is non-compliant"), `PreviousValue` (value at prior evaluation), `InstanceData` (discovered path), plus `RuleStateDisplay` (Compliant/Non-compliant/Error/Conflict), `ResourceID`-equivalent `ItemKey`, `CI_ID`, `Setting_ID`, `Rule_ID`. [DOC S-qqxrnbd5]
 - `SMS_CI_CurrentComplianceStatus` columns: CI_ID, CI_UniqueID, CIVersion, ComplianceState, ComplianceStateName, ComplianceStatusDetails, ComplianceValidationRuleFailures, DesiredState, EnforcementState, EnforcementStateName, IsApplicable, IsDetected, LastComplianceMessageTime, LastEnforcementMessageTime, MaxNoncomplianceCriticality, ModelName, ResourceID, SDMPackageVersion, UserName. [DOC S-ava6e5jq]
-- The underlying SQL view that backs `SMS_DCMDeploymentCompliantDetailsPerAsset` is not documented. [UNK]
+- The SQL view behind `SMS_DCMDeploymentCompliantDetailsPerAsset` is not documented: the class page names no view, and the compliance SQL views pages (re-read 2026-09-27) map none to it; query the class through the SMS Provider or the administration service `wmi/` route instead of guessing a view. [DER S-qqxrnbd5: absence on the class page and the views pages]
 - Built-in reports (category Compliance and Settings Management, 22 reports) include "Details of non-compliant rules of configuration items in a configuration baseline for an asset", "Details of compliant rules...", "Details of remediated rules...", "List of unknown assets for a configuration baseline". [DOC S-rljokguo]
 - Report "validation criteria" fields show raw SML. [DOC S-6war5y2t]
 

@@ -3,8 +3,8 @@ topic: mecm/cmpivot
 priority: P0
 applies_to: "ConfigMgr current branch 2603"
 retrieved_utc: 2026-09-27
-sources: [S-igpzfey7, S-ebuvm65r, S-2z2zfj3l, S-sxtmngif, S-t5dhva6p, S-e5qqwdcj, S-dyvqhf4u, S-bprslswi, S-v5d6zvne, S-5v5lco6w, S-6l4nubjq]
-status: partial
+sources: [S-igpzfey7, S-ebuvm65r, S-2z2zfj3l, S-sxtmngif, S-t5dhva6p, S-e5qqwdcj, S-dyvqhf4u, S-bprslswi, S-v5d6zvne, S-5v5lco6w, S-6l4nubjq, S-uispggqe]
+status: complete
 files: [mecm/cmpivot-entities.csv]
 ---
 
@@ -28,11 +28,12 @@ Limits: 128 KB per client per query, 100,000 cells in the results, a 1-hour time
 - `datetime_diff('day', now(), QuickScanEndTime)` is used in an official example. [DOC S-sxtmngif]
 - Timespan suffixes used in official examples: `h` (1h, 2h), `d` (1d, 7d, 120d). No other suffixes are listed. [DER S-sxtmngif,S-v5d6zvne: set of suffixes seen in examples only]
 - `CcmLog('<log name>'[, <timespan>])` returns lines from a Ccm log file, from the last 24 hours by default. Example: `CcmLog('Scripts',1h)`. [DOC S-sxtmngif,S-t5dhva6p]
-- `CcmLog()` result columns are not documented in any official source found. [UNK]
+- `CcmLog()` result columns are not documented: re-read 2026-09-27, the entity table, the samples and the 1910 change notes show only the call form (`CcmLog('Scripts',1h)`, `CcmLog('ciagent', 120d)`) and no column. Discover columns by running the entity once and reading the result header. [DER S-sxtmngif, S-t5dhva6p: absence across the overview, samples and change notes]
 - `WinEvent(<logname>,[<timespan>])` reads Windows event logs and ETW log files, from the last 24 hours by default. Example: `WinEvent('Microsoft-Windows-HelloForBusiness/Operational', 1d)`. [DOC S-sxtmngif]
 - The only `WinEvent()` column named in official docs is `LevelDisplayName`. Other columns are not documented. [DOC S-sxtmngif]
 - `EventLog('<log>'[, <timespan>])` also defaults to 24 hours. An example uses column `EventID`. [DOC S-sxtmngif]
-- Per-entity columns cannot be customized. [DOC S-2z2zfj3l] Official docs give no column list per entity. [UNK]
+- Per-entity columns cannot be customized. [DOC S-2z2zfj3l]
+- Official docs give no column list per entity (re-read 2026-09-27: the entity table has name and description only); hardware-inventory entities follow their inventory classes, and `mecm/cmpivot-entities.csv` records only the columns used in official examples. [DER S-sxtmngif, S-2z2zfj3l: absence in the entity table]
 - Hardware inventory classes, including extended ones, can be queried as entities. These classes do not support array properties, Real32/Real64 or embedded objects. Cached inventory data is returned first, then live data. [DOC S-sxtmngif]
 - Entities Administrators, Connection, IPConfig and SMBConfig need PowerShell 5.0 on the client. Other entities need PowerShell 4 or later. [DOC S-2z2zfj3l]
 - Each client returns at most 128 KB per query. Larger results are truncated, and a warning is shown from 2103; they cannot be exported. [DOC S-sxtmngif]
@@ -49,7 +50,7 @@ Limits: 128 KB per client per query, 100,000 cells in the results, a 1-hour time
 - Each CMPivot run creates an audit status message with MessageID 40805 (1810+). The CMPivot script GUID is `7DC6B6F1-E7F6-43C1-96E0-E1D16BC25C14`. [DOC S-sxtmngif]
 - smsprov.log records "initiated client operation 145" for CMPivot in 1906+. [DOC S-e5qqwdcj]
 - AdminService routes: POST `v1.0/Device(<id>)/AdminService.RunCMPivot` with body `{"InputQuery":"..."}`, then GET `.../AdminService.CMPivotResult(OperationId=<id>)`. [DOC S-igpzfey7]
-- The response schemas of `RunCMPivot` and `CMPivotResult` are not documented. [UNK]
+- The response schemas of `RunCMPivot` and `CMPivotResult` are not documented: the usage page gives only the request forms, and the administration service publishes no OpenAPI (Swagger) document (both re-read 2026-09-27). Parse the responses defensively. [DER S-igpzfey7, S-uispggqe: request forms only; the FAQ states there is no Swagger document]
 - 2603 fixed CMPivot-over-AdminService "400 Bad Request" parse failures. Before the fix, CMPivot fell back to the SMS Provider path, which needs Script Read. [DOC S-ebuvm65r]
 - Entities not supported from the Intune admin center: AccountSID, FileContent(), NAPClient, NAPSystemHealthAgent, RegistryKey(). [DOC S-t5dhva6p]
 - Logs: server-side SmsProv.log, BgbServer.log, StateSys.log. Client-side CcmNotificationAgent.log, Scripts.log, StateMessage.log. [DOC S-2z2zfj3l]

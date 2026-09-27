@@ -4,7 +4,7 @@ priority: P0
 applies_to: "ConfigMgr current branch 2603"
 retrieved_utc: 2026-09-27
 sources: [S-igpzfey7, S-o6f7ibqo, S-sxtmngif, S-e5qqwdcj, S1520, S-kln2au6a, S-aaryifxi, S-hmjlvsck, S335, S336, S337, S-5v5lco6w, S350, S-p2yatbfh]
-status: partial
+status: complete
 ---
 
 # Run Scripts
@@ -27,7 +27,7 @@ By default an author cannot approve their own script.
 - Scripts run as the SYSTEM/computer account, which has limited network access. [DOC S1520]
 - Output is returned as JSON via `ConvertTo-Json` where possible and is truncated to 4 KB. [DOC S1520]
 - Client output under 80 KB uses the fast channel, and larger output uses state messages. This is stated for script and query output from 1810 clients. [DOC S-sxtmngif]
-- A size limit on the script body is not documented. [UNK]
+- No size limit on the script body is documented: re-read 2026-09-27, the page's Limitations section names only the language (PowerShell) and parameter types, and the only size stated is the 4 KB output truncation. [DER S1520: absence in Limitations]
 - ConfigMgr documents no signing requirement for Run Scripts. The security guidance recommends "Sign your scripts" after vetting, not storing secrets, validating parameters with regex, and using predefined parameters. [DOC S-kln2au6a]
 - Microsoft warns that parameters open a PowerShell injection surface. [DOC S1520]
 - Security software should exclude `%windir%\CCM\ScriptStore`. [DOC S1520]
@@ -40,7 +40,7 @@ By default an author cannot approve their own script.
 - From the Intune admin center (tenant attach, 2207+ with Intune RBAC), the Intune permission "Cloud attached devices\Run script" controls running scripts on tenant-attached devices. [DOC S-5v5lco6w]
 - Scripts that have parameters are not shown in the Intune admin center and cannot be run from there. [DOC S-aaryifxi]
 - Run Script over the AdminService: the AdminService overview lists console-run PowerShell scripts (Run Scripts) as a custom caller of the AdminService; neither it nor the usage page documents a route to start one. [DOC S-o6f7ibqo, S-igpzfey7]
-- No official source documents a `v1.0` Run Script action or its parameter format. [UNK]
+- No official source documents a `v1.0` Run Script action or its parameter format: a Learn search (2026-09-27) for `AdminService.RunScript`/`ScriptResult` returns only `Invoke-CMScript`, and the usage page lists only CMPivot and other v1.0 routes. Use `Invoke-CMScript` or the console for a supported path. [DER S-igpzfey7, S335: absence on the usage page; the cmdlet is the documented path]
 - A community sample posts a body with only `ScriptGuid` to `v1.0/Device(<id>)/AdminService.RunScript`, then polls `AdminService.ScriptResult(OperationId=...)` on the same device. It was not verified. [COMMUNITY S350]
 - Folders for scripts exist from 2403, and the Full Administrator and Operations Administrator roles can manage them. [DOC S-p2yatbfh]
 

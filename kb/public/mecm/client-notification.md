@@ -2,9 +2,9 @@
 topic: mecm/client-notification
 priority: P0
 applies_to: "ConfigMgr current branch 2603"
-retrieved_utc: 2026-09-26
+retrieved_utc: 2026-09-27
 sources: [S-e5qqwdcj, S-hmjlvsck, S-43sy3dqq, S-6rr2wgl6, S-z7zcccd3, S-wquiagrh, S-qa267hnk, S-vkpl2xpq, S-ihvcmxec, S334, S-lef2ok5a, S352]
-status: partial
+status: complete
 files: [mecm/client-operation-types.csv]
 ---
 
@@ -28,7 +28,7 @@ The SDK documents `InitiateClientOperation(Type, TargetCollectionID, Randomizati
 - `SMS_ClientOperation` properties: Actions[], CollectionID, CreatedBy, DependentClientOperations[], Filter, FilterType, ID (key), IsActionsDependent, PrimaryActionTargetObjectID/Name/Type, PrimaryActionType, Priority, RequestedTime, SourceSite, State, TargetCollectionName, TargetResourceIDs[], TargetType, UniqueID. [DOC S-6rr2wgl6]
 - `SMS_ClientOperation` methods: AllowThreat, CancelClientOperation(OperationID), DeleteClientOperation(OperationID), ExcludeScanPaths, IsClientOperationAllowed(Type, TargetCollectionID, TargetResourceIDs[]), IsClientOperationUpdateAllowed(OperationID), InitiateClientOperation, RestoreQuarantinedItem. [DOC S-6rr2wgl6,S-qa267hnk,S-vkpl2xpq,S-ihvcmxec]
 - `InitiateClientOperation`: in `Type` (UInt32), `TargetCollectionID` (String), `RandomizationWindow` (UInt32, optional) and `TargetResourceIDs` (UInt32[], optional). Out: `OperationID` (UInt32). The descriptions only repeat the parameter names. [DOC S-z7zcccd3]
-- `InitiateClientOperationEx` does not appear in the current MicrosoftDocs/memdocs SDK reference. Its parameters are not officially documented. [UNK]
+- `InitiateClientOperationEx` is not documented: re-read 2026-09-27, the live `SMS_ClientOperation` methods table still lists only AllowThreat, CancelClientOperation, DeleteClientOperation, ExcludeScanPaths, IsClientOperationAllowed, IsClientOperationUpdateAllowed, InitiateClientOperation and RestoreQuarantinedItem, and a Learn search finds no page for it; the method name appears only in community tools. Do not build on its parameters. [DER S-6rr2wgl6: absence from the class's methods table]
 - `PrimaryActionType` values 1–8 (Full Scan, Quick Scan, Download Definition, Evaluate Software Update, Exclude Scan Path, Override Default Action, Restore Quarantine Items, RequestPolicyNow) are documented on the class. [DOC S-6rr2wgl6] These are primary-action codes, not `InitiateClientOperation` Type values. [DER S-6rr2wgl6,S-z7zcccd3: separate property, and the Type parameter has no table]
 - `TargetType`: 0 current members of a collection, 1 specific clients in a collection, 2 members of a collection, 3 members matching criteria. [DOC S-6rr2wgl6]
 - `State`: 0 Inactive, 1 Active, 2 Decommission. [DOC S-6rr2wgl6]

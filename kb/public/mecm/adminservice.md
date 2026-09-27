@@ -4,7 +4,7 @@ priority: P0
 applies_to: "ConfigMgr current branch 2603"
 retrieved_utc: 2026-09-27
 sources: [S-o6f7ibqo, S-sldz4d6b, S-igpzfey7, S-wkltnypi, S-tjt262ke, S-uispggqe, S-2fob2ctx, S-7jumyiid, S-nejxr76b, S-dfkr7mdn, S-l2gdpfl2, S-6m7klb4f, S-ebuvm65r, S313, S-mckld2pr, S-qhlzdpie, S-6l4nubjq, S-actyzzlw, S-ounncxk4, S-2mbquiz2, S350]
-status: partial
+status: complete
 files: [mecm/adminservice-routes.csv]
 ---
 
