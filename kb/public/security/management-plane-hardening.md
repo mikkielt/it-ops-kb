@@ -3,8 +3,8 @@ topic: security/management-plane-hardening
 priority: P1
 applies_to: "ConfigMgr current branch 2603; SQL Server 2022/2025; GitLab self-managed; Windows GitLab Runner"
 retrieved_utc: 2026-09-27
-sources: [S1480, S1481, S1482, S1483, S1484, S1485, S1486, S1487, S1488, S1489, S1490, S1491, S-thjpegto, S-psoai6ce]
-status: partial
+sources: [S1480, S1481, S1482, S1483, S1484, S1485, S1486, S1487, S1488, S1489, S1490, S1491, S-thjpegto, S-psoai6ce, S-uixd54ua, S-56n7jfkc, S-7nbamxyc]
+status: complete
 ---
 
 # Management-plane hardening
@@ -23,11 +23,13 @@ ConfigMgr, its SQL Server site database, GitLab (a configuration repository) and
 - Microsoft recommends HTTPS for all ConfigMgr communication paths and calls PKI-based HTTPS the more secure configuration; where HTTPS is not possible, it recommends Enhanced HTTP, which uses site-issued self-signed certificates. PKI stays the option for all-HTTPS client communication and advanced control of the signing infrastructure. [DOC S-thjpegto]
 - **NTLM fallback / client push** (constrains a site's push-install config): from ConfigMgr current branch 1806, the site can require Kerberos mutual authentication for client push by not allowing fallback to NTLM; from version 2207, "Allow connection fallback to NTLM" is **disabled by default on new site installations**, and Microsoft recommends disabling it in existing environments. [DOC S-psoai6ce]
 - Hotfix KB15498768 (versions 2103-2207, resolves CVE-2022-37972) fixes a case where disabling the fallback was not honored: after Kerberos failures the push account, or the site server computer account, still tried NTLM. Without an upgrade, disabling automatic and manual client push removes the exposure. [DOC S1484]
-- That NTLM authentication from client push can be coerced to an attacker-controlled name when no PKI client-auth certificate is used. [UNK: not in S1484 as re-read 2026-09-27]
+- KB15599094 (versions 2103-2207) supersedes KB15498768: the client push account **always** makes an NTLM connection to the client to read WMI query results during installation, for computers in a trusted domain, even with **Allow connection fallback to NTLM** disabled; disabling automatic and manual client push removes the exposure to both issues. [DOC S-uixd54ua]
+- CVE-2022-37972 is rated Important, impact Spoofing, CVSS 3.1 base 7.5 with no privileges and no user interaction needed (released 2022-09-20); KB15498768 points to Microsoft's NTLM relay mitigation for AD CS (KB5005413) and the Restrict NTLM outgoing-traffic policy. [DOC S-56n7jfkc, S1484]
+- So client push hands an NTLM authentication from a local-administrator account to whatever host it connects to, which is why Microsoft pairs the fix with NTLM relay mitigations; the safest setting is no client push at all. [DER S-uixd54ua, S-56n7jfkc, S1484: push account NTLM use plus the relay guidance it links]
 - No CIS benchmark for Configuration Manager itself was found on the public CIS benchmark list. [DER S1485: no Configuration Manager entry on the CIS Benchmarks list, read 2026-09-27]
 - Microsoft's cloud security benchmark privileged-access guidance (PA-1) says to limit the number of privileged accounts in the control, management and data/workload planes, and to restrict privileged accounts in system management tools with agents installed on business-critical systems, because attackers who compromise such tools can weaponize them; PA-4 calls for regular review that granted access is valid for each plane. [DOC S1491]
 - A ConfigMgr site is such a system management tool (its client agent runs on managed devices), so its administrative accounts fall under PA-1's restriction. [DER S1491: PA-1's "system management tools with agents" applied to ConfigMgr]
-- No page was found that names ConfigMgr explicitly as "Tier 0"; see [[enterprise-access-model]] for the general tiering model. [UNK]
+- No Microsoft page names ConfigMgr as "Tier 0", but the AD DS tier model puts systems that patch or run agents on Tier 0 identity systems in Tier 0 and IT management of Tier 1 servers in Tier 1, so a ConfigMgr site that manages domain controllers is Tier 0; see [[enterprise-access-model]]. [DER S-7nbamxyc: tier definitions applied to ConfigMgr]
 
 ### SQL Server (constrains the database)
 - Prefer Windows/Entra authentication over SQL authentication; if SQL logins are unavoidable, require strong unique passwords. [DOC S1488]

@@ -351,6 +351,7 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
 
 - **Device-log retention below CIS minimum, audit retention above it.** A design that keeps a 400-day audit table comfortably clears CIS Controls v8.1 Safeguard 8.10 (90-day minimum retention for audit logs), but normalized device logs kept only 30 days (diagnostic rather than security logs) sit below that minimum. See `security/logging-monitoring.md` § Conflicts. [DER S1492]
 - **PyPI Trusted Publishing and self-managed GitLab.** A third-party blog (S1510, COMMUNITY) claims PyPI supports self-managed GitLab. The official *Adding a Trusted Publisher* page (S1597, retrieved 2026-09-24) says only gitlab.com projects are supported, and the official page wins. (topic: security/supply-chain)
+  - Re-read 2026-09-27, now a PyPI-internal disagreement: PyPI's own blog (S-5ry5zerr, 2025-11-10) and 2025 review (S-cos7wdpw) confirm the GitLab Self-Managed beta, and Warehouse supports custom GitLab issuers (CODE S-5t26tmbz); the user docs (S1597) and troubleshooting page still say gitlab.com only. The article states both; the blog is the newer statement. (topic: security/supply-chain)
 
 ### C: frameworks, regulation, AI
 
@@ -582,6 +583,7 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
 ## security/supply-chain
 
 - PyPI's Adding a Trusted Publisher page (S1597) says GitLab self-managed instances are not supported, while Socket (S1510, 2025-11-14) reports PyPI opened a beta for GitLab Self-Managed with manual onboarding. (topic: security/supply-chain)
+  - See the re-read note above: the beta is confirmed by PyPI itself (S-5ry5zerr); the docs page is out of date. (topic: security/supply-chain)
 
 ## windows/bitlocker
 
