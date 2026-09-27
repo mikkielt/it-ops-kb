@@ -37,6 +37,7 @@ Merged from `_parts/<agent>/gaps.md`.
   requirements-quotas (S1960), faq-billing-licensing (S1980, search-summary only). This belongs
   properly to Topic 2 (`agents-errors`); flagged here because QG17's quota inventory surfaces the
   numbers but not the error text. [UNK] (topic: agents/copilot-studio-inventory)
+  - Partly resolved 2026-09-27: a Microsoft Q&A user report (S-f3chtt24, 2026-04-29) gives the message "The length of the prompt instructions exceeds the threshold" with code `OpenAIAdditionalInstructionsLengthExceededLimit` at about 5,300 combined characters on a generative-answers node; COMMUNITY only, no Microsoft page confirms the trigger. Topic-count error text still not found. (topic: agents/instruction-and-context-limits)
 - **Teams AI library current status** (`microsoft.github.io/teams-ai`) returned HTTP 404 on fetch;
   a second candidate path was not tried within budget. Tried: 1 WebFetch attempt. The Microsoft 365
   Agents SDK docs (S1968) do not mention Teams AI library by name, and GitHub search for
@@ -77,17 +78,21 @@ Remaining gaps:
   to `platform.openai.com/docs/guides/*`) — neither states a character/token ceiling for `instructions`. Community
   forum posts (S1844, S1845) remain the only figures (8,000 for the ChatGPT custom-GPT UI; up to 256,000 cited for a
   different field, message content). [UNK] (topic: agents/instruction-and-context-limits)
+  - Resolved for Assistants 2026-09-27: the OpenAI OpenAPI specification at a pinned commit (S-hcl5uw5c) caps `instructions` at 256,000 characters (Assistants operations marked deprecated). Still open: error text, and any limit on the Responses API `instructions` field (not checked). (topic: agents/instruction-and-context-limits)
 - **The commonly cited "128 tools" limit for OpenAI function calling** was not found on either fetched OpenAI page in
   this pass; the pages instead give a soft, non-enforced recommendation ("fewer than 20 functions... at the start of
   a turn"). Whether "128" is a real, separately documented ceiling (for example on the Assistants API specifically,
   which was not directly re-fetched) is unresolved. [UNK] (topic: agents/agent-error-catalogue)
+  - Resolved 2026-09-27: 128 is the Assistants API tools-per-assistant limit and the deprecated Chat Completions `functions` cap; the current `tools` array has no `maxItems` (S-hcl5uw5c). (topic: agents/agent-error-catalogue)
 - **Gemini's official `systemInstruction` length limit and its exact documented error schema** remain unconfirmed
   from an official page: `ai.google.dev/gemini-api/docs/function-calling` was fetched directly in this pass and
   documents neither a `systemInstruction` character/token ceiling nor an enumerated list of unsupported
   OpenAPI-schema keywords for function declarations. The community-reported ~85-90K-token observed boundary (S1846)
   remains the best available number. [UNK] (topic: agents/instruction-and-context-limits)
+  - Partly resolved 2026-09-27: the API reference (S-xxd6fl45) gives `systemInstruction` as a text-only Content object with no stated limit; the API errors page (S-5lgjpf27) documents the error object and codes, none for instruction length. A numeric limit is still unpublished. (topic: agents/instruction-and-context-limits)
 - **Gemini function-declaration count limit and function-name pattern/length restriction** were not found on the
   fetched function-calling guide (style guidance only: "underscores or camelCase"). [UNK] (topic: agents/agent-error-catalogue)
+  - Partly resolved 2026-09-27: name pattern and 128-character limit from the Gemini API reference (S-xxd6fl45); Vertex AI advises at most 64 (S-hzgoj7bh); the guide (S1866) advises 10-20 active tools. No hard cap on declarations is published. (topic: agents/agent-error-catalogue)
 - **A single canonical Claude API reference page enumerating all `stop_reason` values** (including `pause_turn`,
   `refusal`, `model_context_window_exceeded`) was not independently re-fetched in this pass; the three deepening-pass
   additions are tagged `DER` rather than `DOC` for that reason, derived from the tool-use documentation set rather
@@ -95,16 +100,20 @@ Remaining gaps:
   "handling stop reasons" (linked from `platform.claude.com/docs/en/agents-and-tools/tool-use/overview` as
   `handling-stop-reasons`) and requote each value's exact definition as `DOC`. Resolved in the census of
   2026-09-25: the page was fetched and the three values are now `DOC` facts citing S-qso6o6wu. (topic: agents/agent-error-catalogue)
+  - Resolved (already by 2026-09-26, re-read 2026-09-27): the "Stop reasons and fallback" page (S-qso6o6wu) has a quick-reference table of all seven values; the article's fact cites it as DOC. (topic: agents/agent-error-catalogue)
 - **The full "supported JSON Schema subset" reference pages** linked from both Anthropic's strict-tool-use page
   (`build-with-claude/structured-outputs#json-schema-limitations`) and OpenAI's structured-outputs guide were not
   independently fetched in this pass; both parent pages state restrictions exist without enumerating every excluded
   keyword on the page actually fetched. [UNK, partial — the headline restrictions that were confirmed are recorded] (topic: agents/agent-error-catalogue)
+  - Resolved 2026-09-27: Anthropic structured outputs (S-dorcmamy: unsupported features, 20 strict tools / 24 optional / 16 union-type parameters) and OpenAI structured outputs (S1867: unsupported composition keywords, 5000 properties, 10 nesting levels) now in the article. (topic: agents/agent-error-catalogue)
 - **Copilot Studio / M365 Copilot MCP server support limitations and Copilot Studio's own MCP-tool JSON-Schema
   restrictions** (as distinct from generative-orchestration limits) were not researched in this pass; out of the
   budget after the error-codes and instruction-limit lines of inquiry. [UNK] (topic: agents/agent-error-catalogue)
+  - Resolved 2026-09-27: Copilot Studio's MCP troubleshooting page (S-rvnsf5ty, updated 2026-08-19) lists the known schema issues (integer `exclusiveMinimum`, multi-type `type`, reference types filtered, enums as strings, full-URI SSE endpoint); now in the article. (topic: agents/agent-error-catalogue)
 - **No official OpenAI, Google, or Microsoft first-party publication of an instruction-count or context-length
   adherence degradation study** (analogous to IFScale or Chroma's Context Rot) was found; both measurement studies
   surfaced in this part remain third-party. [UNK] (topic: agents/instruction-and-context-limits)
+  - Partly resolved 2026-09-27: Google's long-context guide (S-uyp3vgvo) states qualitatively that multi-needle retrieval loses accuracy; Thoughtworks Radar Vol 34 (S2164) puts "Agent instruction bloat" in Caution. No numeric first-party study found. (topic: agents/instruction-and-context-limits)
 
 ## agents-eval
 
@@ -163,6 +172,7 @@ Remaining gaps:
 - **No vendor-published success-rate/eval-pass-rate threshold for "replace this subagent with a tool."** Anthropic's evals guidance (S1935) describes *how* to measure tool-use quality (task success, tool-call count, token count, error rate) but does not publish a numeric threshold at which a workflow step should convert from agent-driven to hard-coded. Tried: S1920, S1935, S1936; no vendor number found. Recorded as `DER` in answers.md instead. [UNK] (topic: agents/subagents-vs-deterministic-tools)
   - Tried 2026-09-27: re-read S1896 and a WebSearch; the guidance says an eval at 100% tracks regressions but gives no improvement signal, and publishes no numeric threshold for replacing a subagent with a tool. Still open. (topic: agents/subagents-vs-deterministic-tools)
 - **No official Anthropic or Microsoft page stating an exact percentage figure for cost escalation from a runaway/recursive subagent** beyond the "another 10x or more" figure from a secondary (COMMUNITY) source (S1930). Anthropic's own multi-agent post (S1921) describes the failure mode (excessive subagent spawning) but not a cost multiplier for it. Tried: S1921 (qualitative), S1930 (COMMUNITY, has the number). [COMMUNITY only, tagged as such] (topic: agents/agent-overuse-patterns)
+  - Tried 2026-09-27: the only vendor multiplier found is Claude Code's "about 7x more tokens" for agent teams in plan mode (S2132, already in `agent-cost-governance.md`); no vendor figure for runaway or recursive spawning. Still open. (topic: agents/agent-overuse-patterns)
 - **MCP "tasks" capability (`execution.taskSupport`) details** were found only via a WebSearch summary (S1929-adjacent search, not independently re-fetched from the modelcontextprotocol.io tasks page) — not fetched directly in this session; the fetched tools page (S1928) is the 2025-06-18 revision and does not itself describe `taskSupport`. Tried: one WebSearch, one WebFetch of the tools page only (budget stopped after the outputSchema/annotations facts were confirmed there). Recorded as `UNK` for the exact task-support default value beyond the search snippet. [UNK] (topic: mcp/tasks-extension)
   - Found 2026-09-27 (for the mcp wave to write up): MCP schema 2025-11-25 `ToolExecution.taskSupport` takes "forbidden" | "optional" | "required" and "forbidden" is the default when absent (modelcontextprotocol/modelcontextprotocol@ab3a39c1 `schema/2025-11-25/schema.ts`); the 2026-07-28 schema drops it and tasks move to the ext-tasks extension (S718). (topic: mcp/tasks-extension)
 
@@ -205,22 +215,26 @@ Remaining gaps:
   one WebSearch covering both pages. Facts from these are tagged `DOC` (they describe Google's own
   published position) but are recorded here as **not independently re-verified against the primary text**
   in this session. [UNK — verification gap, not a content gap] (topic: agents/agent-overuse-patterns)
+  - Partly resolved 2026-09-27: the Cloud Architecture Center page read directly (S2160, HTTP 200, last updated 2026-04-21); its wording is now quoted in the article and the stable-logic wording it lacked was removed. The Kaggle whitepaper page (S2161) renders no text without JavaScript and Claude in Chrome was unavailable: still unread. (topic: agents/agent-overuse-patterns)
 - **Two Microsoft Community Hub blog posts' bodies could not be retrieved.** "Three tiers of Agentic AI -
   and when to use none of them" and "Stop Letting Agents Run the Workflow" both returned only their page
   title to WebFetch (no body content), and the session's WebSearch budget was exhausted (200/200) before a
   second search could pull a fuller summary. Tried: one WebFetch per URL (title-only response), the prior
   WebSearch that first surfaced the "three tiers" title. No numeric or quoted content from either post is
   used beyond the title itself. [UNK] (topic: agents/agent-overuse-patterns)
+  - Resolved 2026-09-27: S2162's body read from the page's embedded JSON (curl with a pinned resolve), confirming its first-tier question; S2163 was already readable. (topic: agents/agent-overuse-patterns)
 - **No official vendor benchmark comparing agent vs. deterministic-tool cost, latency and error rate on
   the same task exists in what was fetched.** The two numeric figures used (cost-per-token-volume,
   per-model latency spread) are both COMMUNITY (Stevens Online blog, a DEV Community post), not
   vendor-published. Tried: one WebSearch for "'AI agent' cost latency error rate compared to deterministic
   script published numbers postmortem" (returned only community sources); the session's WebSearch budget
   was then exhausted for further attempts. [COMMUNITY only, tagged as such — see `agent-overuse-patterns.md`] (topic: agents/agent-overuse-patterns)
+  - Tried 2026-09-27: one WebSearch for official benchmarks; found only a Microsoft Open Source Blog post on Conductor (S-3zepbhux) arguing that dynamic orchestration adds cost, latency and unpredictability, with no numbers. Still open. (topic: agents/agent-overuse-patterns)
 - **No specific published "post-mortem" of an agent used where a deterministic tool would have sufficed**
   was found from an official source. Tried: the OpenAI/Microsoft/Google/Anthropic pages already fetched
   for QG37 (none names a specific named incident); one WebSearch for cost/latency/error numbers (returned
   general cost-modelling posts, not an incident writeup). [UNK] (topic: agents/agent-overuse-patterns)
+  - Tried 2026-09-27: WebSearch for official post-mortems returned community pages and arXiv only. Still open. (topic: agents/agent-overuse-patterns)
 - **Thoughtworks Technology Radar's exact ring placement (Adopt/Trial/Assess/Hold) for a broader
   "agent overuse" or "coding-agent antipattern" entry beyond "Agent Skills"** was not confirmed by direct
   fetch of the Radar PDF's relevant pages; the facts used come from a WebSearch summary of Volume 34, and
@@ -228,6 +242,7 @@ Remaining gaps:
   the session's WebSearch budget (200 calls, shared across this session's agents) was exhausted after the
   first four queries in this part. Tried: one WebSearch specifically for Radar coding-agent entries
   (blocked by budget exhaustion before it ran). [UNK] (topic: agents/agent-overuse-patterns)
+  - Resolved 2026-09-27: read from the Vol 34 PDF text (S2164): rings are Adopt, Trial, Assess and Caution; Caution blips include Agent instruction bloat, Coding agent swarms, Ignoring durability in agent workflows and MCP by default; Agent Skills and Sandboxed execution for coding agents are Trial. (topic: agents/agent-overuse-patterns)
 - **Session-wide WebSearch budget (200 calls) was exhausted partway through this part's research**, which
   is why several facts above rely on the initial WebSearch summaries rather than a WebFetch of primary
   text, and why no further searches (e.g. for additional Thoughtworks Radar entries, more published

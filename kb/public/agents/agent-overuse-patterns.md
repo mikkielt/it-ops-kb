@@ -3,8 +3,8 @@ topic: agents/agent-overuse-patterns
 priority: P1
 applies_to: "Anthropic/OpenAI/Google/Microsoft agent guidance (2025-2026 docs), Thoughtworks Technology Radar Vol 34 (2026-04), jq 1.8, Renovate (docs 44.115.10), conventional-commits v1.0.0, semantic-release, LSP 3.18, DSC 3.3.0, Presidio (pattern_recognizer.py at commit e9895a51)"
 retrieved_utc: 2026-09-27
-sources: [S2160, S2162, S2163, S2164, S2165, S2166, S2167, S2168, S2169, S2170, S2171, S2172, S2173, S2174, S150, S154, S825, S-2z2zfj3l, S-sxtmngif, S-t5dhva6p, S900, S1920, S1924, S1925, S1935, S1936, S744, S745]
-status: partial
+sources: [S2160, S2162, S2163, S2164, S2165, S2166, S2167, S2168, S2169, S2170, S2171, S2172, S2173, S2174, S150, S154, S825, S-2z2zfj3l, S-sxtmngif, S-t5dhva6p, S900, S1920, S1924, S1925, S1935, S1936, S744, S745, S-3zepbhux]
+status: complete
 ---
 
 # Work routed to agents although plain tools would do
@@ -44,11 +44,12 @@ alongside the deterministic tool that already exists for them.
 - A second Microsoft Foundry Blog post ("Deterministic Spine, Agentic Leaves") keeps workflow control in a
   deterministic, versioned workflow definition you can diff, review, test and roll back, with agents only
   as bounded workers inside controlled steps. [COMMUNITY S2163]
-- Google's Cloud Architecture Center and "Agents Companion" whitepaper (content retrieved via search
-  summary; direct fetch returned HTTP 403) state that summarization, translation and classification "often"
-  do not need an agentic workflow, and name deterministic-and-stable logic, and a need for speed/reliability
-  over flexibility, as reasons to avoid an agent. [DOC S2160 — note: content not independently
-  re-verified by direct WebFetch; see `gaps.md`]
+- Google's Cloud Architecture Center (read directly 2026-09-27, last updated 2026-04-21) says agents can be
+  used for deterministic problems with predefined steps but other approaches can be more efficient and
+  cost-effective, and that tasks like summarizing a document, translating text or classifying customer
+  feedback do not need an agentic workflow. [DOC S2160] The further wording about stable logic and speed or
+  reliability over flexibility is not on that page; it was attributed to the "Agents Companion" whitepaper
+  (S2161), whose Kaggle page renders no text without JavaScript and was not read.
 - Thoughtworks Technology Radar Volume 34 (April 2026) places "Agent Skills" in **Trial** ("worth
   pursuing") as a way to modularize context. Its "permission-hungry agents" theme says zero trust, least
   privilege, model improvements and defense in depth "are now table stakes" and expects safe agent systems to
@@ -56,6 +57,13 @@ alongside the deterministic tool that already exists for them.
   agents is a separate Trial blip, and "ignoring durability in agent workflows" is a Caution blip (systems
   that work in development but fail in production) — an implicit argument for keeping agent scope narrow
   rather than routing whole workflows through one. [DOC S2164, S2165]
+- Radar Vol 34's rings are Adopt, Trial, Assess and Caution (no Hold). Its Caution blips on agents are
+  "Agent instruction bloat" (as instructions grow, important rules are more likely to be ignored), "Coding
+  agent swarms", "Ignoring durability in agent workflows" and "MCP by default" ("We caution against using MCP
+  by default"). [DOC S2164]
+- A Microsoft Open Source Blog post introducing Conductor (2026-05-14) argues that for workflows with a
+  known structure, dynamic LLM-driven orchestration adds cost, latency and unpredictability, and keeps orchestration deterministic so that layer
+  uses no tokens; it publishes no benchmark numbers. [COMMUNITY S-3zepbhux]
 - Independent cost figures (none vendor-published as a general benchmark): a pipeline run 50,000 times a
   day at 3,000 tokens per run costs roughly $1.50/day at current frontier prices, and $15/day at 30,000
   tokens per run; a later passage of the same post calls the 30,000-token case "roughly 15x more" than the

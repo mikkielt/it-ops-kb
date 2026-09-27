@@ -59,6 +59,7 @@ second official statement was fetched), but it is a documented-vs-observed gap w
 under the visible 8,000-character counter can still hit a hard failure. Recorded as a conflict-shaped finding rather
 than a strict DOC/DOC conflict, since one side (the internal threshold) has no official page describing its exact
 value. (topic: agents/instruction-and-context-limits)
+  - Update 2026-09-27: a Microsoft Q&A user report (S-f3chtt24) adds an observed failure at about 5,300 combined characters with `OpenAIAdditionalInstructionsLengthExceededLimit`; still documented-vs-observed, kept open. (topic: agents/instruction-and-context-limits)
 
 ### GitHub Copilot custom-instructions limit: "silently ignored" (docs) vs. "no limit now" (changelog) are not in
 tension — sequential, not contradictory

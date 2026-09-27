@@ -10,15 +10,15 @@ Every topic of this root with its priority (the research order, not importance),
 | `ad/ldap-paging-filters` | P1 | complete | `ad/ldap-paging-filters.md` | 6 |
 | `agents/agent-caching` | P1 | complete | `agents/agent-caching.md` | 8 |
 | `agents/agent-dispatch-and-shared-services` | P1 | complete | `agents/agent-dispatch-and-shared-services.md` | 10 |
-| `agents/agent-error-catalogue` | P1 | partial | `agents/agent-error-catalogue.md`, `agents/agent-error-catalogue.csv` | 15 |
+| `agents/agent-error-catalogue` | P1 | complete | `agents/agent-error-catalogue.md`, `agents/agent-error-catalogue.csv` | 23 |
 | `agents/agent-evaluation` | P1 | complete | `agents/agent-evaluation.md` | 30 |
-| `agents/agent-overuse-patterns` | P1 | partial | `agents/agent-overuse-patterns.md`, `agents/agent-overuse-patterns.csv` | 28 |
+| `agents/agent-overuse-patterns` | P1 | complete | `agents/agent-overuse-patterns.md`, `agents/agent-overuse-patterns.csv` | 29 |
 | `agents/agent-rbac` | P1 | complete | `agents/agent-rbac.md` | 14 |
 | `agents/api-tokens-issue-and-store` | P1 | complete | `agents/api-tokens-issue-and-store.md`, `agents/api-tokens.csv`, `agents/secret-storage-options.csv` | 14 |
 | `agents/copilot-studio-inventory` | P1 | complete | `agents/copilot-studio-inventory.md`, `agents/copilot-studio-feature-map.csv` | 20 |
 | `agents/eval-question-baseline` | P1 | complete | `agents/eval-question-baseline.md`, `agents/eval-question-baseline.csv` | 3 |
 | `agents/foundry-agent-service` | P1 | complete | `agents/foundry-agent-service.md`, `agents/foundry-agent-tools.csv` | 16 |
-| `agents/instruction-and-context-limits` | P1 | partial | `agents/instruction-and-context-limits.md`, `agents/instruction-and-context-limits.csv` | 31 |
+| `agents/instruction-and-context-limits` | P1 | partial | `agents/instruction-and-context-limits.md`, `agents/instruction-and-context-limits.csv` | 38 |
 | `agents/m365-copilot-extensibility` | P1 | complete | `agents/m365-copilot-extensibility.md`, `agents/declarative-agent-manifest.csv` | 21 |
 | `agents/mcp-stress-testing` | P1 | complete | `agents/mcp-stress-testing.md` | 11 |
 | `agents/own-chatbot-architecture` | P1 | complete | `agents/own-chatbot-architecture.md` | 15 |

@@ -3,7 +3,7 @@ topic: agents/instruction-and-context-limits
 priority: P1
 applies_to: "Copilot Studio, M365 Copilot declarative agent manifest 1.4/1.8, GitHub Copilot, OpenAI Assistants/custom GPTs, Gemini API, Claude Code/Projects/Skills, as published 2026-09-25"
 retrieved_utc: 2026-09-27
-sources: [S1840, S1841, S1842, S1843, S1844, S1845, S1846, S1847, S1848, S1849, S1850, S1851, S1852, S1853, S1854, S1855, S1856, S1857, S1859, S1860, S1863, S1864, S1865, S1866, S1867, S1869, S1870, S1960, S-jexpr3gv, S-gwco6fl2, S-etprakdx]
+sources: [S1840, S1841, S1842, S1843, S1844, S1845, S1846, S1847, S1848, S1849, S1850, S1851, S1852, S1853, S1854, S1855, S1856, S1857, S1859, S1860, S1863, S1864, S1865, S1866, S1867, S1869, S1870, S1960, S-jexpr3gv, S-gwco6fl2, S-etprakdx, S746, S-f3chtt24, S-hcl5uw5c, S-tncj2tap, S-xxd6fl45, S-5lgjpf27, S-uyp3vgvo]
 status: partial
 ---
 
@@ -23,9 +23,10 @@ a generic 400 on the underlying model call, worded around "exceeds the maximum" 
 - A community article says Copilot Studio accepts 8,000 characters of agent instructions at creation but some
   configurations enforce 2,000 characters after deployment (citing a Microsoft Q&A thread), and argues that agent
   reliability degrades well before the documented limit. [COMMUNITY S1843]
-- An error `OpenAIAdditionalInstructionsLengthExceededLimit`, returned when combined agent + node + system
-  instructions cross an internal threshold even though each field is under 8,000 characters.
-  [UNK: not in S1843 as re-read 2026-09-27, and not listed on Microsoft's error-code page S1842]
+- An error `OpenAIAdditionalInstructionsLengthExceededLimit` ("The length of the prompt instructions exceeds the
+  threshold"): a Microsoft Q&A user reports it on a generative-answers node once main agent plus node instructions
+  passed about 5,300 characters, although the node field shows an 8,000 limit; the only answer is AI-generated and
+  Microsoft's error-code page (S1842) does not list the code. [COMMUNITY S-f3chtt24]
 - Microsoft's Copilot Studio prompt-node best practices include "Keep it brief": make custom instructions concise,
   because instructions that are too long can lead to latency, timeouts, or issues handling the prompt.
   [DOC S-gwco6fl2]
@@ -58,15 +59,22 @@ a generic 400 on the underlying model call, worded around "exceeds the maximum" 
 - OpenAI Assistants API: a 2023 community forum thread reports a 32,768-character limit on a single message's content
   (validation error "ensure this value has at most 32768 characters"); it says nothing about the `instructions`
   field. [COMMUNITY S1845]
-- The exact `instructions` field limit of the OpenAI Assistants API and its error text: no official OpenAI
-  platform-docs page was fetched to confirm them. [UNK, see gaps.md]
+- OpenAI Assistants API (all `/assistants` operations marked deprecated in the OpenAPI specification): `instructions`
+  is capped at 256,000 characters, `name` at 256 and `description` at 512, with at most 128 tools per assistant; the
+  specification gives no error text for exceeding them. [DOC S-hcl5uw5c]
 - Gemini API: no published fixed `systemInstruction` character/token limit as a single documented number; behavior is
   reported as model- and backend-dependent. A community-reported case: `systemInstruction` around 300k characters
   (~84k tokens) succeeded, ~320k characters (~90k tokens) returned a 400 `INVALID_ARGUMENT` with the generic message
   "Request contains an invalid argument" (no length-specific wording). [COMMUNITY S1846]
-- Gemini API generic input-length error "The input token count (N) exceeds the maximum number of tokens allowed
-  (32768).", about total input tokens rather than an "instructions" field.
-  [UNK: not in S1846 as re-read 2026-09-27; source of this wording not identified]
+- Gemini API input-length error mentioning 32768 tokens: a Google AI Developers Forum thread (2026-06-09) reports
+  intermittent 400 `INVALID_ARGUMENT` errors on Gemini 3.5 Flash saying the input token count exceeds a 32768-token
+  maximum, for requests far below the documented context window; a Google staff reply (2026-06-11) says it is being
+  investigated. It concerns total input tokens, not an instructions field. [COMMUNITY S-tncj2tap]
+- Gemini API reference: `systemInstruction` is a Content object ("currently, text only") with no stated length
+  limit [DOC S-xxd6fl45]. Google's API errors page documents an error object with codes such as `invalid_request`
+  (400), `out_of_range` (416), `rate_limit_exceeded` and `quota_exceeded` (429), none specific to instruction
+  length [DOC S-5lgjpf27]. The long-context guide says the model does not keep single-needle accuracy when several
+  pieces of information must be found in a long context [DOC S-uyp3vgvo].
 - Claude (Anthropic):
   - No API error type named for "instructions" specifically. The Claude API's documented error taxonomy is generic:
     `400 invalid_request_error`, `413 request_too_large` (request exceeds a per-endpoint byte maximum — 32 MB for the
@@ -84,11 +92,11 @@ a generic 400 on the underlying model call, worded around "exceeds the maximum" 
     an Anthropic-authored page in this pass) is reported to cap `description` at 1,024 characters, narrower than
     Claude Code's own 1,536; an open GitHub issue on `anthropics/skills` reports frontmatter descriptions exceeding a
     1,024-character limit as a real failure mode when a skill is meant to be portable across tools. [COMMUNITY S1850]
-  - CLAUDE.md: community measurement and tooling exist around a documented practical threshold; multiple sources
-    describe Claude Code warning once a `CLAUDE.md` file reaches roughly 40KB, framed as a performance-degradation
-    signal rather than a hard rejection. No official Anthropic docs page was fetched in this pass stating this 40KB
-    number directly — a 2026-09-26 search of the Claude Code docs found a "large CLAUDE.md startup notice" in the changelog but no stated
-    threshold. [UNK: search-result digest only, originating page not fetched; see gaps.md]
+  - CLAUDE.md size warning: Claude Code shows a warning at startup and in `/status` when an instruction file is over
+    the recommended length (target under 200 lines), and also when files that are each within that length add up
+    past a combined limit; each CLAUDE.md, rules file and `@path` import counts as a separate file. The page states
+    no kilobyte figure; the often-quoted "~40KB" is not Anthropic's. [DOC S1863] Changelog 2.1.281 made the large
+    CLAUDE.md startup notice also count instruction files together. [DOC S746]
   - Claude Projects: content added to project knowledge is used as context in the project's chats, and on paid plans
     Claude automatically enables RAG mode when project knowledge approaches the context window limit. The support
     article publishes no character limit for the project instructions field. [DOC S1859]

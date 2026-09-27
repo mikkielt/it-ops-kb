@@ -2,9 +2,9 @@
 topic: agents/agent-error-catalogue
 priority: P1
 applies_to: "Claude API/Claude Code as documented 2026-09-25; extends claude/tool-output-limits.md"
-retrieved_utc: 2026-09-26
-sources: [S1847, S1857, S1858, S1855, S1861, S1862, S1864, S1842, S1843, S1865, S1867, S1869, S1860, S1850, S-qso6o6wu]
-status: partial
+retrieved_utc: 2026-09-27
+sources: [S1847, S1857, S1858, S1855, S1861, S1862, S1864, S1842, S1843, S1865, S1867, S1869, S1860, S1850, S-qso6o6wu, S1863, S1866, S-xxd6fl45, S-hzgoj7bh, S-hcl5uw5c, S-dorcmamy, S-rvnsf5ty, S-f3chtt24]
+status: complete
 ---
 
 # Agent and MCP-server error catalogue (extends `claude/tool-output-limits.md`)
@@ -108,12 +108,29 @@ keeping a project's `CLAUDE.md`, skills and MCP tool definitions inside document
     `browser_toolset_20260801` explicitly reject a `strict: true` request. PHI must never appear in `input_schema`
     property names, `enum`/`const` values, or `pattern` regexes, because compiled schemas are cached up to 24 hours
     outside the normal ZDR/HIPAA prompt-and-response protections. [DOC S1869]
-  - *Gemini*: the fetched function-calling guide documents no enumerated list of unsupported OpenAPI-subset keywords
-    and no hard cap on the number of function declarations; function names are only style-guided ("underscores or
-    camelCase"), not regex/length-constrained on the page. [UNK — not found on the fetched page, see gaps.md]
-  - *Copilot Studio / M365 Copilot / Power Platform*: no separate JSON-Schema-keyword restriction was found;
-    `AsyncResponsePayloadTooLarge` and the manifest string-length caps (`agents/instruction-and-context-limits.csv`)
-    are the closest analogues, both shape restrictions rather than keyword restrictions.
+  - *Gemini*: the API reference constrains a `FunctionDeclaration` name to a-z, A-Z, 0-9, underscores, colons, dots
+    and dashes, at most 128 characters (function-call and function-response names: letters, digits, underscores and
+    dashes, also 128) [DOC S-xxd6fl45]. Vertex AI's function-calling page is stricter as a best practice: names should
+    start with a letter or underscore and be at most 64 characters [DOC S-hzgoj7bh]. The Gemini guide supports only a
+    subset of the OpenAPI schema and advises keeping the active set to 10-20 tools; it publishes no hard cap on the
+    number of declarations and no list of unsupported keywords [DOC S1866].
+  - *Anthropic structured outputs / strict tools, schema subset*: recursive schemas, numeric constraints
+    (`minimum`, `maximum`, `multipleOf`) and string length constraints are not supported, and an unsupported feature
+    returns a 400 error; per request at most 20 strict tools, 24 optional parameters and 16 union-type parameters
+    across all strict schemas, and an over-complex schema returns 400 "Schema is too complex for compilation."
+    [DOC S-dorcmamy]
+  - *OpenAI structured outputs, schema subset*: `allOf`, `not`, `dependentRequired`, `dependentSchemas` and
+    `if`/`then`/`else` are unsupported; a schema may have up to 5000 object properties with up to 10 levels of
+    nesting, 120,000 characters of names and enum/const values in total, and 1000 enum values [DOC S1867].
+  - *OpenAI tool counts*: the "128 tools" figure is the Assistants API limit (at most 128 tools per assistant; the
+    Assistants endpoints are marked deprecated) and the cap on the deprecated Chat Completions `functions` array;
+    the current Chat Completions `tools` array carries no `maxItems` in the OpenAPI specification [DOC S-hcl5uw5c].
+  - *Copilot Studio / M365 Copilot / Power Platform*: Copilot Studio's MCP troubleshooting page lists known schema
+    issues: an integer `exclusiveMinimum` (instead of a Boolean) throws `System.FormatException`; a `type` given as
+    an array of types truncates the input schema (use a single type); tools with reference-type inputs are filtered
+    out (reference types are unsupported); enum inputs are read as plain strings; the SSE endpoint must be a full
+    URI [DOC S-rvnsf5ty]. `AsyncResponsePayloadTooLarge` and the manifest string-length caps
+    (`agents/instruction-and-context-limits.csv`) are the other shape restrictions.
 - **Tool-count guidance (soft, not a hard vendor limit):** OpenAI's function-calling guide recommends "fewer than 20
   functions available at the start of a turn" as a soft suggestion, not an enforced ceiling, and directs larger
   toolsets to dynamic/deferred loading — the same shape as Claude Code's default MCP tool search (deferred tool definitions).
@@ -131,9 +148,10 @@ keeping a project's `CLAUDE.md`, skills and MCP tool definitions inside document
   `QuotaExceeded`, `EnforcementMessageC2`, `DataverseStructured429`, `DataverseFileAttachment429`, `SharePoint429`.
   See `agents/agent-error-catalogue.csv` for the full row-by-row breakdown with resolutions as documented. [DOC
   S1842]
-- The error code `OpenAIAdditionalInstructionsLengthExceededLimit` and its cause (combined agent + node + system
-  instructions over an internal threshold below the 8,000-character field cap) have no source in the kb. [UNK: not
-  in S1843 as re-read 2026-09-27]
+- The error code `OpenAIAdditionalInstructionsLengthExceededLimit` ("The length of the prompt instructions exceeds the
+  threshold") is reported by a Copilot Studio user on a generative-answers node once main agent plus node
+  instructions passed about 5,300 characters, although the node field shows an 8,000 limit; no Microsoft staff
+  answer or error-code page confirms the threshold. [COMMUNITY S-f3chtt24]
 - A community post reports that Copilot Studio allows 8,000 characters of agent instructions at creation but
   enforces a 2,000-character limit after deployment in some configurations (citing a Microsoft Q&A thread), and
   recommends keeping instructions to 1,000-2,000 characters. [COMMUNITY S1843]
@@ -161,9 +179,10 @@ should be checked against Claude Code's own documented tip of staying under 500 
 guidance [DOC S1860].
 
 Checklist, each line cited:
-1. Keep `CLAUDE.md` well under the community-reported ~40 KB caution line; if it grows, split into `.claude/rules/`
-   and `@import` rather than inlining more into the root file (community pattern, not an Anthropic-documented
-   mechanism) — [UNK: see the instruction-and-context-limits.md gap on the exact 40 KB source].
+1. Keep each `CLAUDE.md` under about 200 lines: Claude Code warns at startup and in `/status` when an instruction
+   file is over the recommended length or several files add up past a combined limit, and skips a file over 4 MiB;
+   move path-specific instructions into `.claude/rules/` (imports still load at launch). The "~40 KB" figure is not
+   Anthropic's — [DOC S1863].
 2. Keep every `SKILL.md`'s `description` + `when_to_use` combined text under 1,536 characters, front-loading the
    trigger words, since Claude Code truncates silently past that point in the skill listing — [DOC S1860].
 3. If a skill must stay portable to non-Claude-Code tools, keep its `description` under 1,024 characters, the
