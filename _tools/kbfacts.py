@@ -714,7 +714,10 @@ def _corpus(domain):
         meta = metas.get(art) or {}
         u["title"] = meta.get("title", "")
         tf = Counter(terms(f"{bare(u['path'])} {u['title']} {u['section']} {u['text']}"))  # a root name is no word
-        u["len"], u["own"] = sum(tf.values()), frozenset(tf)  # own: words the unit itself has (verdict, df)
+        # own: words the unit itself has (verdict, df). Directory names rank but are not own words: every unit of a
+        # domain holds its name, so a growing domain (agents/) would push that word past the 20% common-word cut.
+        own = terms(f"{os.path.basename(bare(u['path']))} {u['title']} {u['section']} {u['text']}")
+        u["len"], u["own"] = sum(tf.values()), frozenset(own)
         for t in terms(u["title"]):
             tf[t] += TITLE_WEIGHT - 1
         if meta and not u["section"].startswith("Summary"):
@@ -731,7 +734,7 @@ def _corpus(domain):
 
 # ---------------------------------------------------------------- the pack index (postings; persisted with sqlite3)
 
-INDEX_VERSION = 3  # bump when the index layout or what goes into a unit's tf/own changes
+INDEX_VERSION = 4  # bump when the index layout or what goes into a unit's tf/own changes
 
 
 class Store:
