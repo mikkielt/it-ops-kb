@@ -110,6 +110,19 @@ def code_file_source(row):
     return bool(_CODE_FILE.search(url)) and not _DOCS_PATH.search(url)
 
 
+_CONTRACT = re.compile(r"(?:schema|metadata|swagger|openapi|stix)[^?#]*\.(?:json|ya?ml|xml|ts)(?:[#?].*)?$|\.proto(?:[#?].*)?$",
+                       re.I)
+
+
+def contract_source(row):
+    """A source file that is a published contract, so a fact read from it is DOC, not CODE: a data file (json, yaml,
+    xml, ts) whose path names a schema, metadata (Graph CSDL, OTel component metadata), a swagger/openapi definition
+    or a STIX bundle, or a .proto; not a build file such as `schemas.config.yaml`. Neither artifact_sha256 nor
+    _artifacts.csv tells this apart: both also hold pinned code and example configs."""
+    url = (row.get("url") or "").strip()
+    return bool(_CONTRACT.search(url)) and ".config." not in url.rsplit("/", 1)[-1]
+
+
 def pinned_source(row):
     """A source row a CODE fact may cite: a pinned artifact (artifact_sha256), or a repository file url at a tag or
     commit, not at a branch (main, master, HEAD, refs/heads/...)."""

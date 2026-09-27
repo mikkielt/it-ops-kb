@@ -412,6 +412,23 @@ class TestLookup:
         assert not pinned({"url": "https://github.com/o/r/blob/master/a.py"})
         assert not pinned({"url": "https://learn.microsoft.com/en-us/powershell/module/x"})
 
+    def test_contract_sources_are_not_code_candidates(self):
+        import kbfacts
+        contract = kbfacts.contract_source
+        for url in ("https://raw.githubusercontent.com/PowerShell/DSC/abc/schemas/v3/bundled/config/document.json",
+                    "https://raw.githubusercontent.com/microsoftgraph/msgraph-metadata/abc/clean_v10_metadata/cleanMetadata.xml",
+                    "https://raw.githubusercontent.com/modelcontextprotocol/modelcontextprotocol/abc/schema/2026-07-28/schema.ts",
+                    "https://api.msrc.microsoft.com/cvrf/v3.0/swagger/v3/swagger.json",
+                    "https://raw.githubusercontent.com/a2aproject/A2A/abc/specification/a2a.proto",
+                    "https://raw.githubusercontent.com/open-telemetry/c/v0.161.0/receiver/filelogreceiver/metadata.yaml"):
+            assert contract({"url": url}), url
+        for url in ("https://raw.githubusercontent.com/PowerShell/DSC/abc/schemas/schemas.config.yaml",
+                    "https://raw.githubusercontent.com/PowerShell/DSC/abc/lib/dsc-lib/src/configure/mod.rs",
+                    "https://raw.githubusercontent.com/o/r/abc/presidio_analyzer/conf/example_recognizers.yaml",
+                    "https://raw.githubusercontent.com/o/r/abc/src/schema_utils.py",
+                    "https://gitlab.com/g/p/-/raw/abc/shells/abstract.go"):
+            assert not contract({"url": url}), url
+
     def test_lint_checks_code_and_snippets(self, tmp_path):
         d = copy_kb(str(tmp_path / "kb"))
         with open(os.path.join(d, "_sources.csv"), "a", encoding="utf-8", newline="") as f:

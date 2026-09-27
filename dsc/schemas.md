@@ -23,7 +23,7 @@ files: [dsc/schemas/]
 - Generated `configuration-export-result.json` properties: `executionInformation`, `metadata`, `result`, `messages`, `hadErrors`, `outputs`. `configuration-set-result.json`: `executionInformation`, `metadata`, `results`, `messages`, `hadErrors`, `outputs`. [DOC S116]
 - The `$schema` enum in the 3.3.0 generated configuration schema lists v3, v3.0.x, v3.1.x, v3.2.x (up to v3.2.3) and vNext URIs (aka.ms and raw GitHub `main` forms). It has no v3.3 entry. [DOC S116]
 - 21 of the 22 generated schema types differ in bytes between 3.3.0 and 3.4.0-preview.1; only `include` is identical. [DER S116,S117: `dsc schema -t <type> -o pretty-json` output of both binaries compared, re-run 2026-09-27]
-- The repo `schemas/schemas.config.yaml` on release/v3.3 has `version: v3.1.0` and `prefix: PowerShell/DSC/main/schemas`. [DOC S137]
+- The repo `schemas/schemas.config.yaml` on release/v3.3 has `version: v3.1.0` and `prefix: PowerShell/DSC/main/schemas`. [CODE S137: schemas/schemas.config.yaml#version]
 - The repo bundled `config/document.json` has `$id` `https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3/config/document.json` and top-level properties `$schema`, `parameters`, `variables`, `resources`, `metadata` only (no `directives`). [DOC S146]
 - The Learn configuration document schema reference in the `dsc-3.0` docs set gives SchemaID `.../schemas/v3.1.0/config/document.json` and documents only `$schema`, `metadata`, `parameters`, `variables` and `resources` (no `directives`). [DOC S145]
 

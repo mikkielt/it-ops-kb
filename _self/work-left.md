@@ -2,7 +2,7 @@
 
 ## W. CODE and SNIPPET migration: done 2026-09-27
 
-Done: W1 CODE (ef8f1d8, b0d0ed9, 8e786fa), W2 SNIPPET (9f6ecd9 to 9f7e578), W3 eval rows and benchmark (`_self/reports/token-usage.md`, "CODE and SNIPPET migration"). `lint.py --candidates` lists 29 deliberate DOC (published contracts) and 12 illustrations. Conventions settled: a release binary's own `--help` output is DOC; rustdoc in source is CODE; absence from a release archive is DER; a reader checks a parameter's reference page before dropping it. Still open from W0:
+Done: W1 CODE (ef8f1d8, b0d0ed9, 8e786fa), W2 SNIPPET (9f6ecd9 to 9f7e578), W3 eval rows and benchmark (`_self/reports/token-usage.md`, "CODE and SNIPPET migration"). `lint.py --candidates` lists 0 CODE candidates (published contracts are exempt, `_self/content-rules.md`) and 12 illustrations. Conventions settled: a release binary's own `--help` output is DOC; rustdoc in source is CODE; absence from a release archive is DER; a reader checks a parameter's reference page before dropping it. Still open from W0:
 - The GitHub Actions runs of `kb.yml` were not checked (the repository is private and this machine has no `gh`): look at the Actions tab.
 - GitHub branch protection for `main`: undecided; read GitHub's live docs on required status checks first.
 
