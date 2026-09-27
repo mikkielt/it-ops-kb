@@ -1,0 +1,66 @@
+# CI for it-ops-kb on GitHub, mirroring .gitlab-ci.yml. Direct-push model: agents push to main after
+# `kbgit.py sync --push` (and the pre-push hook) ran the same gate locally; this workflow is the safety net that also
+# catches a `git push --no-verify`. It detects a bad push after the fact; it cannot prevent one without a PR workflow.
+name: kb
+
+on:
+  push:
+    branches: ["**"]
+    tags: ["**"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: kb-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHONDONTWRITEBYTECODE: "1"
+
+jobs:
+  # The full image has git, so the git scenarios (merge, history, sync, research merge, census) run instead of
+  # skipping; a full clone keeps the commits the research-merge scenario replays.
+  kb-tests:
+    runs-on: ubuntu-latest
+    container: python:3.12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+      - run: pip install --quiet uv
+      - run: python3 _tools/tests.py
+
+  tool-stress:
+    runs-on: ubuntu-latest
+    container: python:3.12
+    steps:
+      - uses: actions/checkout@v4
+      - run: pip install --quiet uv
+      - run: python3 _tools/stress_test.py
+
+  # What the push gate adds beyond tests.py, on the pushed range: KB-* trailers and the kb's own docs.
+  kb-push-range:
+    if: github.event_name == 'push' && github.ref_type == 'branch'
+    runs-on: ubuntu-latest
+    container: python:3.12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+      - name: KB-* commit trailers and _self/ docs on the pushed commits
+        env:
+          BEFORE: ${{ github.event.before }}
+          SHA: ${{ github.sha }}
+        run: |
+          if [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ] || ! git cat-file -e "$BEFORE^{commit}" 2>/dev/null; then
+            python3 _tools/kbgit.py check-trailers "$SHA"
+          else
+            python3 _tools/kbgit.py check-trailers "$BEFORE..$SHA"
+            python3 _tools/selfdoc.py stale --since "$BEFORE"
+          fi
+          python3 _tools/doc2query.py stale
+          python3 _tools/fetch.py --offline

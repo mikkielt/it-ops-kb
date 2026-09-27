@@ -5,13 +5,20 @@ rag.py (pack, facts, audit, src --cited, eval), kb_mcp.py, check.py and the kb-v
 this module, so a count or a join gives the same answer whichever tool asks.
 
 Tag grammar. A tag is `[PART; PART ...]`; a PART is `KIND[/KIND] [from] [IDS] [NOTE]`:
-  KIND  DOC | DER | COMMUNITY | UNK
+  KIND  DOC | CODE | DER | COMMUNITY | UNK
   IDS   source ids (S123, S-k3f7q2zd) separated by commas or spaces
   NOTE  free text after `:`, ` - `, ` — ` or `,` (a derivation, a pointer to _gaps.md, ...)
+CODE is the implementation read at a pinned commit, not a documented contract: `[CODE S-id: path#symbol]` (or
+`path#L10-L20`); code_pointer() returns the pointer. In _self/ a CODE part may point into this repository without an
+id (`[CODE _tools/kbfacts.py#pack]`; a test checks the file and the symbol exist).
 A `;` or `,` directly followed by a KIND starts the next part, so `[DOC S1208, COMMUNITY S1209]` has two parts and
 `[DER S328,S329: different property; Type has no table]` has one. Canonical form: `[DOC S1, S2]`, `[DER S1: how]`,
-`[UNK]` or `[UNK: why]`. DOC and COMMUNITY parts must name at least one source id (kb-verify lint reports those
-that do not).
+`[UNK]` or `[UNK: why]`, `[CODE S1: path#symbol]`. DOC, CODE and COMMUNITY parts must name at least one source id,
+and a CODE part a pointer and a pinned source (kb-verify lint reports those that do not).
+
+Snippets. A bullet that starts `SNIPPET:` introduces the fenced code block right below it: `- SNIPPET: <what it does>;
+context: <versions, prerequisites>; checked: no|syntax|run [DER S1: ...]`. It is an ordinary fact unit (the pack
+shows the bullet with path:line; `show` prints the block) and must carry an evidence tag other than UNK.
 
 Fact units. In an article (a .md with `topic:` front matter): a bullet with its continuation lines, a table row, or
 a paragraph line that carries at least one tag. In a data .csv: a row. Each unit has its path, first line, section,
@@ -40,12 +47,13 @@ import kbcommon, kbid  # noqa: E402
 
 KB = kbcommon.KB  # KB_ROOT, else this repository (kbcommon)
 
-KINDS = ("DOC", "DER", "COMMUNITY", "UNK")
+KINDS = ("DOC", "CODE", "DER", "COMMUNITY", "UNK")
+_K = "|".join(KINDS)
 SKIP_DIRS = {"_tools", "_private", "_cache", "_census", "_self", "artifacts"}
-TAG = re.compile(r"\[(?:DOC|DER|COMMUNITY|UNK)\b[^\]]*\]")
+TAG = re.compile(rf"\[(?:{_K})\b[^\]]*\]")
 ID = kbid.SOURCE_ID
-_PART_SPLIT = re.compile(r"\s*[;,]\s*(?=(?:DOC|DER|COMMUNITY|UNK)\b)")
-_PART = re.compile(r"(DOC|DER|COMMUNITY|UNK)(?:/(DOC|DER|COMMUNITY|UNK))?\b\s*(?:from\s+)?"
+_PART_SPLIT = re.compile(rf"\s*[;,]\s*(?=(?:{_K})\b)")
+_PART = re.compile(rf"({_K})(?:/({_K}))?\b\s*(?:from\s+)?"
                    r"((?:S-[a-z2-7]{8}|S\d{3,4})(?:[\s,]+(?:S-[a-z2-7]{8}|S\d{3,4})\b)*)?(.*)", re.S)
 TOPIC_MARK = re.compile(r"\btopic:\s*`?([a-z0-9-]+/[a-z0-9./-]+?)`?(?=[\s,;.)\]]|$)")
 csv.field_size_limit(2**31 - 1)
@@ -75,6 +83,43 @@ def tags_in(text):
 
 def kinds_of(parts):
     return sorted({p["kind"] for p in parts}, key=KINDS.index)
+
+
+POINTER = re.compile(r"(?<![\w/.-])((?:[\w.-]+/)*[\w.-]+\.[A-Za-z0-9]+)#([\w.:-]+)")
+
+
+def code_pointer(part):
+    """The `path#symbol` (or `path#L10-L20`) a CODE part points at, as (path, anchor), or None."""
+    m = POINTER.search(part.get("note") or "")
+    return (m.group(1), m.group(2)) if m else None
+
+
+FLOATING = {"main", "master", "head", "develop", "dev", "trunk", "latest", "stable", "default", "next", "nightly"}
+_REF = (re.compile(r"^https://raw\.githubusercontent\.com/[^/]+/[^/]+/(refs/(?:heads|tags)/)?([^/]+)/"),
+        re.compile(r"^https://github\.com/[^/]+/[^/]+/(?:blob|raw|tree)/(refs/(?:heads|tags)/)?([^/]+)/"),
+        re.compile(r"^https://gitlab\.com/.+?/-/(?:raw|blob|tree)/(refs/(?:heads|tags)/)?([^/?#]+)/"))
+
+
+_CODE_FILE = re.compile(r"\.(?:py|rs|ps1|psm1|psd1|cs|go|ts|js|json|ya?ml|xml|proto|toml|sh|bicep)(?:[#?].*)?$", re.I)
+_DOCS_PATH = re.compile(r"/(?:docs?|doc/en|Doc|documentation|articles|peps)/|\.(?:md|rst)(?:[#?].*)?$", re.I)
+
+
+def code_file_source(row):
+    """A source row whose url is a source-code or config file, not a documentation page (the CODE candidates)."""
+    url = (row.get("url") or "").strip()
+    return bool(_CODE_FILE.search(url)) and not _DOCS_PATH.search(url)
+
+
+def pinned_source(row):
+    """A source row a CODE fact may cite: a pinned artifact (artifact_sha256), or a repository file url at a tag or
+    commit, not at a branch (main, master, HEAD, refs/heads/...)."""
+    if (row.get("artifact_sha256") or "").strip():
+        return True
+    for rx in _REF:
+        m = rx.match((row.get("url") or "").strip())
+        if m:
+            return m.group(1) != "refs/heads/" and m.group(2).lower() not in FLOATING
+    return False
 
 
 # ---------------------------------------------------------------- files

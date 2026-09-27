@@ -10,7 +10,7 @@ An agent that looks a fact up on the web reads whole pages to find one line. Mea
 
 ## How it works
 
-1. **Facts with provenance.** One topic is one Markdown article, `<domain>/<topic>.md`, with large tables beside it as CSV. Every fact is one line that ends in a tag: `DOC` (an official document says it), `DER` (derived, with the derivation shown), `COMMUNITY` (a non-official source) or `UNK` (not confirmed). The tag carries source ids from `_sources.csv`, which records each source's url, publisher, licence and date.
+1. **Facts with provenance.** One topic is one Markdown article, `<domain>/<topic>.md`, with large tables beside it as CSV. Every fact is one line that ends in a tag: `DOC` (an official document says it), `CODE` (source code says it, read at a pinned release), `DER` (derived, with the derivation shown), `COMMUNITY` (a non-official source) or `UNK` (not confirmed). Code examples are `SNIPPET:` lines that carry the same kind of tag. The tag carries source ids from `_sources.csv`, which records each source's url, publisher, licence and date.
 2. **Retrieval without a model.** `pack` ranks the fact lines for a question (BM25 over a persisted index, about 0.1 s) and returns a verdict (`good`, `weak` or `none`), the best lines with `path:line`, and one list of source urls, in 1-2k tokens. Counts, lists and "which lines cite this source" are exact tool answers, not reading.
 3. **Three ways in.** The `kb` MCP server, which other projects get through a Claude Code plugin; a `kb: <question>` prompt, answered without any model when the kb covers it; and `kb_ask.py` for scripts, which sends a covered question to a small model with the facts in hand and anything else to a larger one with the live documentation servers.
 4. **Upkeep by agents.** Skills research new topics, refresh changed sources, run a census that re-confirms every source, verify quality and sync with `main`. A gate (consistency checks, tests, stress tests and a lookup eval set) must pass before every push, and commit trailers make the history searchable by source, topic and answer.
@@ -47,6 +47,6 @@ Details, numbers and the reasoning: `_self/design.md`.
 ## What to trust
 
 - A `DOC` fact is only as current as its source's date. A census tag (`census-YYYY-MM-DD`) marks a commit whose sources were all confirmed current on that date.
-- `UNK` and `COMMUNITY` facts are leads to verify, never answers on their own.
+- `UNK` and `COMMUNITY` facts are leads to verify, never answers on their own. A `CODE` fact describes how a tool is implemented at one release, not what its vendor promises. A snippet's `checked:` value says whether anyone ran it.
 - Examples use placeholders only (`PL-LT-00123`, `corp.example.com`, `jan.kowalski`). No real hosts, tenants or people are ever recorded.
 - Licensing: facts are written in our own words, quotes are 25 words or fewer, and verbatim copies appear only where the source's licence allows it.

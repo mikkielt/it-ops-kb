@@ -53,8 +53,10 @@ INSTRUCTIONS = (
     "Entra ID, AD, Graph, GPO, Defender, SQL Server, Power BI, GitLab CI, Ansible, Python tooling, security baselines, identity, "
     "Presidio, MCP, Claude Code, AI agents). Call kb_pack with the question first: one call returns a coverage verdict "
     "and the cited fact lines. coverage: good -> answer from the pack (with a check: line, only if a cited line answers the question itself); weak -> one reworded kb_pack or one kb_show; "
-    "none -> say the kb does not cover it and add nothing from memory. Every fact ends in one tag: DOC (official), DER "
-    "(derived), COMMUNITY (non-official) or UNK (not confirmed); UNK and COMMUNITY are leads, not answers. Counts, "
+    "none -> say the kb does not cover it and add nothing from memory. Every fact ends in one tag: DOC (official), CODE "
+    "(read from source code at a pinned commit: implementation, not a documented promise; say so), DER (derived), "
+    "COMMUNITY (non-official) or UNK (not confirmed); UNK and COMMUNITY are leads, not answers. A 'SNIPPET:' line "
+    "introduces a code example: kb_show prints it. Counts, "
     "lists and 'which files cite X' are kb_audit, kb_facts and kb_source with cited=true, not searches. Cite path:line "
     "and the url from the pack's sources footer. Single facts: call kb_pack yourself; several parts: one kb_pack with "
     "questions=[...]. Use the kb-lookup agent only for long research whose output would fill your context. Never start a general-purpose agent for a "
@@ -90,7 +92,7 @@ TOOL_LIST = [
                     "a file), optionally only facts carrying some tag kinds (e.g. UNK, COMMUNITY).",
      "inputSchema": {"type": "object", "properties": {
          "prefix": {"type": "string"},
-         "tags": {"type": "array", "items": {"type": "string", "enum": ["DOC", "DER", "COMMUNITY", "UNK"]}},
+         "tags": {"type": "array", "items": {"type": "string", "enum": ["DOC", "CODE", "DER", "COMMUNITY", "UNK"]}},
          "response_format": {**FORMAT, "default": "concise"}},
          "required": ["prefix"], "additionalProperties": False},
      "annotations": {"title": "Fact lines by prefix and tag", **READ_ONLY}},

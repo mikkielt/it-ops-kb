@@ -302,6 +302,25 @@ class TestSelfDocs:
         assert not [f for f in kbfacts.kb_files() if f.startswith("_self/")]
         assert "_self" not in __import__("rag").topics(None)
 
+    def test_self_code_pointers_resolve(self):
+        """A CODE part without a source id (allowed in _self/ only) points into this repository: the file exists and
+        the symbol is defined in it (or the line range is inside it)."""
+        found, bad = 0, []
+        for p in sorted(glob.glob(os.path.join(KB, "_self", "*.md"))):
+            for part in kbfacts.tags_in(open(p, encoding="utf-8").read()):
+                if part["kind"] != "CODE" or part["ids"] or "<" in part["note"]:
+                    continue  # a cited source, or a `<id>: <path>#<symbol>` placeholder in a rule
+                found += 1
+                ptr = kbfacts.code_pointer(part)
+                src = text(ptr[0]) if ptr else None
+                lines = re.fullmatch(r"L(\d+)(?:-L(\d+))?", ptr[1]) if ptr else None
+                ok = src is not None and (int(lines.group(lines.lastindex)) <= src.count("\n") + 1 if lines else
+                                          re.search(rf"^\s*(?:def|class)\s+{re.escape(ptr[1])}\b|^{re.escape(ptr[1])}\s*=", src, re.M))
+                if not ok:
+                    bad.append((os.path.relpath(p, KB), 0, part["note"]))
+        assert found, "expected at least one repository CODE pointer in _self/ (tools.md)"
+        assert not bad, "CODE pointers into this repository that do not resolve:\n" + fmt(bad)
+
     def test_search_with_index_finds_self_docs(self):
         import rag
         paths = lambda index: [h["path"].replace(os.sep, "/") for h in rag.search("selfdoc stale map.csv docs", 5, None, index, [])]  # noqa: E731
@@ -372,6 +391,54 @@ class TestLookup:
         for tag, want in cases.items():
             assert [(p["kind"], p["ids"]) for p in kbfacts.parse_tag(tag)] == want, tag
         assert kbfacts.parse_tag("[DER S100: how; why]")[0]["note"] == "how; why"
+
+    def test_code_kind_pointer_and_pinned_sources(self):
+        import kbfacts
+        part = kbfacts.parse_tag("[CODE S-abcdefgh: crates/ruff_linter/src/settings/mod.rs#DEFAULT_SELECTORS]")[0]
+        assert (part["kind"], part["ids"]) == ("CODE", ["S-abcdefgh"])
+        assert kbfacts.code_pointer(part) == ("crates/ruff_linter/src/settings/mod.rs", "DEFAULT_SELECTORS")
+        assert kbfacts.code_pointer(kbfacts.parse_tag("[CODE S100: src/x.py#L10-L20]")[0]) == ("src/x.py", "L10-L20")
+        assert kbfacts.code_pointer(kbfacts.parse_tag("[CODE S100]")[0]) is None
+        assert kbfacts.parse_tag("[DOC S1, CODE S2: a.py#f]")[1]["kind"] == "CODE"
+        pinned = kbfacts.pinned_source
+        assert pinned({"url": "https://raw.githubusercontent.com/astral-sh/ruff/0.16.9/crates/x.rs"})
+        assert pinned({"url": "https://raw.githubusercontent.com/python/peps/ff16962a22fdc5e2095e0cbc5c243ea76e34fb52/peps/pep-0596.rst"})
+        assert pinned({"url": "https://github.com/o/r/blob/v3.8.0/src/a.py"})
+        assert pinned({"url": "https://gitlab.com/g/p/-/raw/v1.2/a.py"})
+        assert pinned({"url": "https://example.com/tool.zip", "artifact_sha256": "ab" * 32})
+        assert not pinned({"url": "https://raw.githubusercontent.com/o/r/main/a.py"})
+        assert not pinned({"url": "https://raw.githubusercontent.com/o/r/refs/heads/release/a.py"})
+        assert not pinned({"url": "https://github.com/o/r/blob/master/a.py"})
+        assert not pinned({"url": "https://learn.microsoft.com/en-us/powershell/module/x"})
+
+    def test_lint_checks_code_and_snippets(self, tmp_path):
+        d = copy_kb(str(tmp_path / "kb"))
+        with open(os.path.join(d, "_sources.csv"), "a", encoding="utf-8", newline="") as f:
+            csv.writer(f, lineterminator="\n").writerows([
+                ["S-zzzzzzz2", "https://raw.githubusercontent.com/o/r/main/a.py", "x", "x", "MIT", "2026-09-27", "", "", "", ""],
+                ["S-zzzzzzz3", "https://raw.githubusercontent.com/o/r/v1.0/a.py", "x", "x", "MIT", "2026-09-27", "", "", "", ""]])
+        body = ("\n- Unpinned. [CODE S-zzzzzzz2: a.py#f]\n- No pointer. [CODE S-zzzzzzz3]\n- Pinned. [CODE S-zzzzzzz3: a.py#f]\n"
+                "- SNIPPET: list things; context: PowerShell 7.4; checked: no [DER S-zzzzzzz3: from a.py]\n\n```powershell\nGet-Thing\n```\n"
+                "- SNIPPET: no block or context; checked: no [DOC S-zzzzzzz3]\n"
+                "- SNIPPET: bad json; context: any; checked: syntax [DOC S-zzzzzzz3]\n```json\n{\"a\": }\n```\n"
+                "- SNIPPET: unbacked; context: any; checked: maybe [UNK]\n```json\n{}\n```\n")
+        with open(os.path.join(d, "auth", "kerberos.md"), "a", encoding="utf-8") as f:
+            f.write(body)
+        p = subprocess.run([sys.executable, os.path.join(d, ".claude", "skills", "kb-verify", "lint.py"), "auth/kerberos"],
+                           capture_output=True, text=True, timeout=120)
+        out = p.stdout
+        assert "CODE cites S-zzzzzzz2, which is not pinned" in out and "S-zzzzzzz3, which is not pinned" not in out, out
+        assert out.count("CODE tag without a path#symbol pointer") == 1, out
+        assert "SNIPPET without `context:`: 'SNIPPET: no block or context" in out
+        assert "SNIPPET not followed by a fenced code block: 'SNIPPET: no block or context" in out
+        assert "its json block does not parse" in out
+        assert "SNIPPET without `checked: no|syntax|run`: 'SNIPPET: unbacked" in out
+        assert "SNIPPET without an evidence tag (DOC, CODE, DER or COMMUNITY): 'SNIPPET: unbacked" in out
+        assert "list things" not in out, "a well-formed snippet has no findings"
+        c = subprocess.run([sys.executable, os.path.join(d, ".claude", "skills", "kb-verify", "lint.py"), "--candidates",
+                            "auth/kerberos"], capture_output=True, text=True, timeout=120)
+        assert c.returncode == 0 and "code_candidates=" in c.stdout, c.stdout + c.stderr
+        assert "Unpinned." not in c.stdout, "a CODE fact is no longer a candidate"
 
     def test_ledger_topic_markers_link_entries(self):
         import kbfacts

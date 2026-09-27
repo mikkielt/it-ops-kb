@@ -1,0 +1,14 @@
+#!/bin/sh
+# it-ops-kb: run the push gate (the checks `kbgit.py sync --push` runs) before a plain `git push` of a branch.
+# Enabled by `python3 _tools/kbgit.py install-hooks` (git config core.hooksPath .githooks). Blocks the push when a
+# check fails; `sync` sets KB_GATE_DONE=1 for its own push (it gated already). `git push --no-verify` skips it, and CI
+# reports what it would have caught. Without Python the push goes through with a warning.
+[ "${KB_GATE_DONE:-}" = "1" ] && exit 0
+top=$(git rev-parse --show-toplevel 2>/dev/null) || exit 0
+for py in python3 python; do
+  if command -v "$py" >/dev/null 2>&1; then
+    exec "$py" "$top/_tools/kbgit.py" hook pre-push "$@"
+  fi
+done
+echo "kb pre-push: python3 not found; push not checked" >&2
+exit 0

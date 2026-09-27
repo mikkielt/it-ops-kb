@@ -34,7 +34,8 @@ DOCS = ["mcp__microsoft-learn__microsoft_docs_search", "mcp__microsoft-learn__mi
 LEAN = ["--setting-sources", "project,local", "--strict-mcp-config"]
 SENTINEL = "INSUFFICIENT"
 RULES = ("Answer from the kb evidence below: lead with the answer, then each supporting fact with its path:line, tag "
-         "and source url. COMMUNITY and UNK facts are leads, not answers; a `(no tag)` line is untagged article "
+         "and source url. COMMUNITY and UNK facts are leads, not answers; a CODE fact is implementation read from "
+         "source code, not a documented promise: say so; a `(no tag)` line is untagged article "
          "content. Never fill gaps from memory.")
 READER = RULES + (f" If the facts are about something related but do not answer what was asked, reply with one line "
                   f"only: `{SENTINEL}: <what is missing>`.")

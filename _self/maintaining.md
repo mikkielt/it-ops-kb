@@ -18,7 +18,7 @@ Run `/kb-setup` (Claude Code), or do the same by hand. In Claude Code on the web
    - Other agents (not Claude Code): register the same three urls as streamable-HTTP MCP servers in your client.
    - Optional, per user: GitHub's read-only repository server needs a personal token. Add it at user scope, never in a repo file:
      `claude mcp add --scope user --transport http github-repos-ro https://api.githubcopilot.com/mcp/x/repos/readonly --header "Authorization: Bearer $GITHUB_PAT"`
-4. **Commit hook:** `python3 _tools/kbgit.py install-hooks`, once per clone (`_self/git.md`).
+4. **Git hooks:** `python3 _tools/kbgit.py install-hooks`, once per clone: KB-* trailers on commits, and the gate on a plain `git push` (`_self/git.md`).
 5. **Do not** run `python3 _tools/fetch.py --diff` over the whole kb as part of setup: it is a long network job that writes `_fetch_state.csv`. A whole-kb baseline is the maintainer's decision; a targeted `--diff` from `/kb-refresh` is committed with that refresh.
 
 ## Skills that change the kb (`.claude/skills/`)

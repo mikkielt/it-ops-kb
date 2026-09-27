@@ -104,8 +104,8 @@ Set up the it-ops-kb knowledge base for this project, read-only:
    `python3 ~/src/it-ops-kb/_tools/rag.py pack "<question>"`; no subagent for a lookup. These are documentation
    facts, not live device or directory data. coverage: good -> answer
    from the pack (with a check: line, only if a cited line answers the question itself); weak -> one more pack or kb_show; none -> say the kb does not cover it, add nothing from memory.
-   Counts and lists: kb_audit, kb_facts, kb_source with cited=true. Every fact ends in one tag: DOC, DER,
-   COMMUNITY or UNK; UNK and COMMUNITY are leads, not answers. Cite path:line and the source url. Never call
+   Counts and lists: kb_audit, kb_facts, kb_source with cited=true. Every fact ends in one tag: DOC, CODE,
+   DER, COMMUNITY or UNK; UNK and COMMUNITY are leads, not answers; CODE is implementation, not a documented promise. Cite path:line and the source url. Never call
    submit_feedback. The kb is read-only here; contribute through a clone of the repo (its _self/maintaining.md).
 6. Run python3 ~/src/it-ops-kb/_tools/kb_mcp.py --status and show me the output. Tell me to restart Claude Code
    so the servers load, then to ask for kb_status.

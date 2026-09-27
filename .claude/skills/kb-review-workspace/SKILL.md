@@ -17,5 +17,5 @@ Read-only: read code and kb facts, write no file, run no command, change nothing
 
 1. `kb_topics_for` on the source files or directories in scope.
 2. Per relevant topic (at most 8): `kb_facts` or `kb_pack` with `response_format` = `detailed`.
-3. Read the matched code and compare it with the DOC and DER facts; COMMUNITY and UNK facts give at most a "check" note.
+3. Read the matched code and compare it with the DOC, CODE and DER facts; COMMUNITY and UNK facts give at most a "check" note.
 4. Report in chat: one line per finding, most severe first, each with the workspace `path:line`, the kb `path:line`, tag and source url, and a one-sentence fix. Then the topics checked without a finding, and the ones the kb has no facts for.

@@ -14,9 +14,23 @@ What a fact, an article, a source row and a ledger entry look like, and how to a
 
 ## Facts and tags
 
-- Every fact ends in exactly one tag with ids from `_sources.csv`: `DOC` (an official document states it), `DER` (derived from DOC facts, derivation shown), `COMMUNITY` (a non-official source; never the only evidence for a DOC fact), `UNK` (not confirmed).
-- Canonical forms: `[DOC <id>, <id>]`, `[DER <id>: how]`, `[COMMUNITY <id>]`, `[UNK]` or `[UNK: why]`. `_tools/kbfacts.py` parses them for every tool (grammar in its docstring); the kb-verify lint reports a DOC or COMMUNITY tag without an id.
+- Every fact ends in exactly one tag with ids from `_sources.csv`: `DOC` (an official document states it), `CODE` (source code states it, read at a pinned commit), `DER` (derived from DOC or CODE facts, derivation shown), `COMMUNITY` (a non-official source; never the only evidence for a DOC fact), `UNK` (not confirmed).
+- Canonical forms: `[DOC <id>, <id>]`, `[CODE <id>: path#symbol]` (or `path#L10-L20`), `[DER <id>: how]`, `[COMMUNITY <id>]`, `[UNK]` or `[UNK: why]`. `_tools/kbfacts.py` parses them for every tool (grammar in its docstring); the kb-verify lint reports a DOC or COMMUNITY tag without an id.
 - `UNK` and `COMMUNITY` facts are leads to verify, not a basis to build on.
+
+## CODE: what the implementation does
+
+- Use `CODE` when the evidence is source code rather than documentation (a default read from a settings file, a limit in a validator, undocumented behaviour). It is implementation, not a promise: it can change in any release, and an answer built on it must say so. When the documentation states the same thing, the fact is `DOC`.
+- The source row must be pinned: a repository file url at a release tag or commit (`raw.githubusercontent.com/<owner>/<repo>/<tag>/...`, `github.com/.../blob/<sha>/...`, `gitlab.com/.../-/raw/<tag>/...`) or a pinned artifact (`artifact_sha256`), never a branch. When upstream moves, add a new pinned row and set `superseded_by` (as for any replaced source).
+- The note is a pointer into that file: `path#symbol` (a function, class, constant or key) or `path#L10-L20`. The lint rejects a CODE part without an id, without a pointer, or citing an unpinned source.
+- In `_self/` only, a CODE part may point into this repository without a source row: `[CODE _tools/kbfacts.py#pack]`. A test checks that the file and the symbol exist; `_self/` never enters the pack.
+
+## SNIPPET: a code example with evidence
+
+- A code example is a bullet that starts `SNIPPET:`, directly above its fenced block: `- SNIPPET: <what it does>; context: <versions, prerequisites>; checked: no|syntax|run [DER <id>, <id>: parameters from the cmdlet page]`.
+- The bullet carries an evidence tag other than `UNK`: a snippet nobody can back stays out. `checked:` says what was verified: `no`, `syntax` (parsed: the lint re-parses json, toml and python blocks), or `run` (executed in the stated context; say where in the note).
+- Placeholders only, as in every example. The pack shows the bullet with `path:line`; `rag.py show` prints the block.
+- A block without a `SNIPPET:` bullet is illustration only (Reference and Examples may keep them) and carries no evidence.
 
 ## Ids
 

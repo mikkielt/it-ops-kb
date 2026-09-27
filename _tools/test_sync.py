@@ -11,6 +11,7 @@
                               renumbers its own (citations and mentions follow), trailers are refreshed and check.py passes;
                            3. A and B edit the same article line: B's sync stops with exit 3, the rebase in progress.
                            The gate skips tests.py here (KB_SYNC_NO_TESTS=1: no recursive test run). Skipped without git.
+  TestPrePushInGit         (marker git) the pre-push hook blocks a plain push when the gate fails; tags and sync pushes pass.
 """
 import csv, io, os, re, shutil
 
@@ -259,3 +260,56 @@ class TestSyncInGit:
         assert "rebase is in progress" in self.b3_again.stdout
         assert self.b3_after_abort == self.b3_head
         assert "clone b words it" not in self.remote_file("windows/sync-test-a.md")
+
+
+@requires_git
+@pytest.mark.git
+class TestPrePushInGit:
+    """The pre-push hook (.githooks/pre-push -> `kbgit.py hook pre-push`): a plain `git push` of the checked-out branch
+    runs the gate and is refused when a check fails; a tag push and sync's own push (KB_GATE_DONE=1) are not gated."""
+
+    @pytest.fixture(scope="class", autouse=True)
+    @classmethod
+    def scenario(cls, tmp_path_factory):
+        tmp = str(tmp_path_factory.mktemp("kb-prepush"))
+        env = git_env(KB_SYNC_NO_TESTS="1")
+        top = Repo(tmp, env)
+        seed = Repo(copy_kb(os.path.join(tmp, "seed"), skip=("_fetch_state.csv",)), env)
+        seed.git("init", "-q", "-b", "main")
+        seed.git("add", "-A")
+        seed.git("commit", "-q", "-m", "base")
+        cls.remote = Repo(os.path.join(tmp, "remote.git"), env)
+        top.git("clone", "-q", "--bare", seed.path, cls.remote.path)
+        c = cls.c = Repo(os.path.join(tmp, "c"), env)
+        top.git("clone", "-q", cls.remote.path, c.path)
+        assert c.kbgit("install-hooks").returncode == 0
+        cls.base = c.rev("HEAD")
+        # a hand edit of the generated _coverage.csv: build_index.py --check fails
+        c.write("_coverage.csv", c.read("_coverage.csv").replace(",P1,", ",P9,", 1))
+        c.git("commit", "-qam", "chore: hand edit")
+        cls.bad = c.run_git("push", "-q", "origin", "HEAD:main")
+        cls.after_bad = cls.remote.rev("main")
+        c.git("tag", "t-prepush")
+        cls.tag = c.run_git("push", "-q", "origin", "t-prepush")
+        cls.gated = c.run_git("push", "-q", "origin", "HEAD:main", env={"KB_GATE_DONE": "1"})
+        cls.after_gated = cls.remote.rev("main")
+        assert c.tool("build_index.py").returncode == 0
+        c.git("commit", "-qam", "chore: rebuild the index")
+        cls.good = c.run_git("push", "-q", "origin", "HEAD:main")
+        cls.after_good = cls.remote.rev("main")
+        cls.head = c.rev("HEAD")
+
+    def test_failing_gate_blocks_a_plain_push(self):
+        assert self.bad.returncode != 0, self.bad.stdout + self.bad.stderr
+        assert "kb pre-push build_index.py --check: FAILED" in self.bad.stderr
+        assert "nothing pushed" in self.bad.stderr
+        assert self.after_bad == self.base
+
+    def test_tags_and_sync_pushes_are_not_gated(self):
+        assert self.tag.returncode == 0, self.tag.stderr
+        assert self.gated.returncode == 0 and self.after_gated != self.base, self.gated.stderr
+
+    def test_green_gate_pushes(self):
+        assert self.good.returncode == 0, self.good.stdout + self.good.stderr
+        assert "kb pre-push selfdoc.py stale" in self.good.stderr and "kb pre-push kbgit.py fix --check: ok" in self.good.stderr
+        assert self.after_good == self.head

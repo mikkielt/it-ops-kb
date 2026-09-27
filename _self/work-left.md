@@ -1,5 +1,38 @@
 # Work left (as of 2026-09-27)
 
+## W. Next up: CODE and SNIPPET migration (approved 2026-09-27; for a local session)
+
+Start here once `main` on GitHub has the commit "feat(kb): enforce the gate on push; add CODE and SNIPPET" (check with `git log origin/main --oneline -5` after `git pull --ff-only`). Done in that commit: the stricter push gate, the pre-push hook, `.github/workflows/kb.yml`, the `CODE` kind and `SNIPPET:` units in the grammar, lint and tests, and every text that lists the tags. Rules: `_self/content-rules.md` ("CODE" and "SNIPPET" sections). What is left is converting existing content, in this order. Decided: all of it now, not gradually during refreshes.
+
+**W0. Check the setup (a few minutes).**
+- `python3 _tools/kbgit.py install-hooks` (adds the new `pre-push` hook; `git config core.hooksPath` must print `.githooks`), then `python3 _tools/tests.py` and `python3 _tools/stress_test.py`: green.
+- The first GitHub Actions run of `kb.yml` on that commit: green (GitHub, Actions tab). If a step fails only on GitHub (container, permissions, the `before` sha), fix the workflow, not the checks.
+- Decide separately: GitHub branch protection for `main` (the kb does not cover GitHub's required status checks; read the live docs first). The workflow stays a detective control either way.
+
+**W1. CODE migration (B3): about 129 facts.**
+- Candidates: `python3 .claude/skills/kb-verify/lint.py --candidates` (`CODE-CANDIDATE path:line ids text`): DOC facts whose every cited source is a source-code or config file. Also check the about 50 facts that cite a code file next to a documentation page: `rag.py src <id> --cited` for each code-file source.
+- Group by domain; one reader subagent per group (`/kb-refresh` procedure, Sonnet, several groups in parallel). For each fact: open the cited file at its pinned url and find the line. Then:
+  - the documentation also states it: keep `DOC` and add the documentation source (or re-point to it);
+  - only the code states it: `[CODE <id>: <path>#<symbol or L10-L20>]`;
+  - the source url is not pinned (a branch such as `main`): add a new row at a tag or commit (`kbid.py url`), set `superseded_by` on the old row, re-point the fact. The lint rejects an unpinned CODE source.
+- A fact whose text changes needs `python3 _tools/doc2query.py stale`, then `prune`. Then `build_index.py`, `check.py`, `lint.py` (errors=0), `rag.py eval`, and one commit per domain group (`/kb-verify`, `kbgit.py sync --push`).
+- Done when `lint.py --candidates` lists no CODE-CANDIDATE that is not a deliberate DOC (note such cases in the commit body).
+
+**W2. SNIPPET migration (C2): 191 code blocks in 99 articles (47 PowerShell, 30 JSON, 21 HTTP).**
+- Candidates: `SNIPPET-CANDIDATE path:line lang` from the same command.
+- For each block decide: (a) a how-to someone would run or copy: add the `- SNIPPET: <what>; context: <versions, prerequisites>; checked: no|syntax|run [DOC|CODE|DER ids: ...]` bullet directly above it, with evidence for the cmdlet, parameters or fields it uses (the reader checks each parameter against its source; a wrong or unbacked one is fixed or the block becomes an illustration); (b) an illustration (a payload shape, a config excerpt, output): leave it without a bullet, in Reference or Examples.
+- `checked: syntax` only after parsing (the lint re-parses json, toml and python; there is no `pwsh` in the cloud container, so PowerShell is `no` unless someone ran it, then `run` with where in the note).
+- Placeholders only (`PL-LT-00123`, `corp.example.com`, `jan.kowalski`; the leak tests run on staged files: `git add` first).
+- One reader per domain group, one commit per group, as in W1. Done when every remaining SNIPPET-CANDIDATE is a deliberate illustration.
+
+**W3. Measure (D).**
+- Add 5-10 `lookup_eval.csv` rows for how-to questions a snippet answers (`kbid.py eval`) and 3-5 for CODE facts ("what is ruff's default rule set"); `rag.py eval` passes.
+- An `agent_bench.py` run (a few how-to scenarios, Haiku and Sonnet) before W2 and after it; record it with `/kb-self --report "CODE and SNIPPET migration"`, which updates `_self/design.md`.
+- Then trim this section to one "done" line.
+
+**Other open items from 2026-09-27 (independent of W):**
+- `pyproject.toml` says `requires-python = ">=3.9"`, but Python 3.9 reached end of life on 2025-10-31 (`python/version-lifecycle.md`). Decide whether to raise the floor; the tools' stdlib-only rule is unaffected either way.
+
 **2026-09-27: the kb's own docs moved to `_self/`.** Agents read `_self/` (see `_self/README.md`); people read the short root `README.md`; `AGENTS.md` stays the lookup rules. `MAINTAINING.md` became `_self/maintaining.md` plus `_self/content-rules.md`, `_self/tools.md`, `_self/git.md` and `_self/plugin.md`; the coverage table moved from the README to `_self/coverage.md`; the plans and the token report are dated records in `_self/reports/`; `_self/design.md` holds the current conclusions on when the kb is token-efficient. `_self/` is out of `pack` and the default search (`rag.py search --index` finds it). `_tools/selfdoc.py` lists docs behind the files they describe (`_self/map.csv`); `/kb-self` updates them, and `/kb-verify` reports them. Open:
 - The remote branch `claude/relaxed-keller-e8qyl3` on GitHub is merged but not deleted (this session's git proxy refused the delete): `git push origin --delete claude/relaxed-keller-e8qyl3` from a clone with push rights.
 - `_self/reports/` still carries the old section names and some superseded numbers by design (dated records); `_self/design.md` is where current numbers go (`/kb-self --report`).

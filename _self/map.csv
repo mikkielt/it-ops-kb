@@ -42,6 +42,7 @@ _self/git.md,_tools/kbgit.py
 _self/git.md,.githooks/*
 _self/git.md,.gitattributes
 _self/git.md,.gitlab-ci.yml
+_self/git.md,.github/workflows/*
 _self/plugin.md,.claude-plugin/**
 _self/plugin.md,.claude/agents/*.md
 _self/plugin.md,.claude/skills/kb-lookup/SKILL.md

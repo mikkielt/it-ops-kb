@@ -4,7 +4,7 @@
   kbgit.py fix [--check] [--base REV] [--upstream REV] [--side REV ...]   post-merge cleanup; safe any time, idempotent
   kbgit.py fmt [--check]                                   only canonical CSV formatting and order (never adds or drops a row)
   kbgit.py trailers [--staged | REV | --amend] [--verified YYYY-MM-DD]   the KB-* trailers of the staged change or a commit
-  kbgit.py install-hooks [--uninstall]                     core.hooksPath=.githooks: commits get their KB-* trailers
+  kbgit.py install-hooks [--uninstall]                     core.hooksPath=.githooks: KB-* trailers, and the gate on a plain push
   kbgit.py check-trailers [A..B | REV]                     exit 1 listing kb commits whose KB-* trailers are missing or wrong
   kbgit.py log <S-id | topic | QK-id | path> [-n N]        commits that touched it (trailers first, then diff/path history)
   kbgit.py blame <path:line>                               the commit that wrote that line, and the sources it cites
@@ -33,7 +33,9 @@ replaces any KB-Topics/KB-Sources-*/KB-Answers lines with the computed ones via 
 re-running, `-m`, editor commits and --amend never duplicate them), skips merges, skips a rebase re-application whose
 message already has KB-* trailers, and never blocks a commit (any error is a warning). prepare-commit-msg only
 notes an --amend so commit-msg diffs against HEAD's parent. `git commit --no-verify` skips commit-msg: CI's
-check-trailers catches that. Fix unpushed commits with `trailers --amend` (HEAD) or
+check-trailers catches that. pre-push runs the sync gate plus `fix --check` before a plain `git push` of the checked-out
+branch and blocks it (exit 1) when a check fails; it skips sync's own push (KB_GATE_DONE=1), tags and deletes, and a
+pushed ref that is not HEAD (with a note: the checks read the working tree). `git push --no-verify` skips it. Fix unpushed commits with `trailers --amend` (HEAD) or
 `git rebase --exec "python3 _tools/kbgit.py trailers --amend" @{upstream}`.
 
 check-trailers without a range: in GitLab CI, CI_COMMIT_BEFORE_SHA..CI_COMMIT_SHA (only CI_COMMIT_SHA when the
@@ -55,8 +57,10 @@ Sync (the only way to push; people push straight to main, CI is a safety net):
   d. fix (with --base/--side when both sides had commits); what it changed is committed on its own as
      "chore(kb): kbgit fix after sync" with KB-* trailers. Unpushed commits whose trailers no longer match their diff
      (conflict resolution, renumbered ids) get them rewritten (`git rebase --exec "kbgit.py trailers --amend"`).
-     Gate: build_index.py --check, check.py, tests.py with KB_TESTS_FAST=1 (no git scenarios; KB_SYNC_NO_TESTS=1
-     skips it, for the tool's own tests), check-trailers REMOTE/BRANCH..HEAD. A red gate: exit 1, nothing pushed.
+     Gate: build_index.py --check, check.py, fetch.py --offline, doc2query.py stale, selfdoc.py stale --since
+     REMOTE/BRANCH (a `Self-Reviewed:` trailer clears a doc), tests.py with KB_TESTS_FAST=1 (no git scenarios;
+     KB_SYNC_NO_TESTS=1 skips it, for the tool's own tests), check-trailers REMOTE/BRANCH..HEAD. A red gate: exit 1,
+     nothing pushed.
   e. --push: git push REMOTE HEAD:BRANCH, never --force. Rejected because the remote moved: fetch and rebase once more,
      then give up (exit 1).
   f. a report: commits rebased, conflicts resolved, fix, ids renumbered, trailers refreshed, gate, pushed or not.
@@ -899,7 +903,8 @@ KEY_LINE = re.compile(r"^(" + "|".join(re.escape(k) for k in KEYS) + r")\s*:", r
 DATE = re.compile(r"\d{4}-\d{2}-\d{2}")
 INDEX = None  # compute() target: the index (staged changes)
 HOOKS_DIR = ".githooks"
-HOOKS = ("prepare-commit-msg", "commit-msg")
+HOOKS = ("prepare-commit-msg", "commit-msg", "pre-push")
+ZERO = "0" * 40
 
 
 def hooks_path_is_ours(cur):
@@ -1180,10 +1185,53 @@ def hook_commit_msg(args):
 
 
 def cmd_hook(a):
+    if a.name == "pre-push":
+        return hook_pre_push(a.args, sys.stdin.read())
     try:
         (hook_prepare if a.name == "prepare-commit-msg" else hook_commit_msg)(a.args)
     except Exception as e:  # noqa: BLE001 - a hook must never block a commit
         print(f"kbgit.py {a.name}: KB trailers not added ({type(e).__name__}: {e})", file=sys.stderr)
+    return 0
+
+
+def hook_pre_push(args, stdin):
+    """The pre-push hook: run the sync gate (plus `fix --check`, which sync runs itself) before a plain `git push` of
+    a branch. Exit 1 blocks the push. Skipped when `sync` pushes (it gated already: KB_GATE_DONE=1), for tag-only and
+    delete-only pushes, and with a note when the pushed commit is not HEAD (the checks read the working tree)."""
+    if os.environ.get("KB_GATE_DONE") == "1":
+        return 0
+    remote = args[0] if args else "origin"
+    head = rev_parse("HEAD")
+    ups, other = [], []
+    for ln in stdin.splitlines():
+        parts = ln.split()
+        if len(parts) != 4 or not parts[2].startswith("refs/heads/") or parts[1] == ZERO:
+            continue  # a tag, a delete or a malformed line (the local ref may be `HEAD` for `git push origin HEAD:main`)
+        local_ref, local_sha, remote_ref, remote_sha = parts
+        if local_sha != head:
+            other.append(local_ref)
+            continue
+        if remote_sha != ZERO and git("cat-file", "-e", remote_sha + "^{commit}") is not None:
+            ups.append(remote_sha)
+        else:  # a new remote branch: gate against where it left the remote's main
+            base = rev_parse(f"refs/remotes/{remote}/main")
+            ups.append((git("merge-base", base, head) or "").strip() if base else None)
+    for ref in other:
+        print(f"kb pre-push: {ref} is not HEAD; not checked (the checks read the working tree). "
+              "Check it out and push again, or use python3 _tools/kbgit.py sync --push", file=sys.stderr)
+    if not ups:
+        return 0
+    staged, unstaged = dirty_paths()
+    if staged or unstaged:
+        print("kb pre-push: the working tree has uncommitted changes; the checks include them", file=sys.stderr)
+    r = {"target": remote, "gate": []}
+    ok = gate(r, ups[0], fix_check=True)
+    for label, result, _ in r["gate"]:
+        print(f"kb pre-push {label}: {result}", file=sys.stderr)
+    if not ok:
+        print("kb pre-push: a check failed; nothing pushed. Fix the cause (python3 _tools/kbgit.py sync --push "
+              "fixes the ledgers itself); `git push --no-verify` skips this and CI reports it instead", file=sys.stderr)
+        return 1
     return 0
 
 
@@ -1702,12 +1750,21 @@ def refresh_trailers(r, up):
     return True
 
 
-def gate(r, up):
-    """build_index --check, check.py, tests.py (KB_TESTS_FAST=1: no git scenarios) and check-trailers on up..HEAD."""
+def gate(r, up, fix_check=False):
+    """build_index --check, check.py, fetch.py --offline, doc2query.py stale, selfdoc.py stale --since UP (the kb's
+    own docs behind the files they describe; a `Self-Reviewed:` trailer clears one), tests.py (KB_TESTS_FAST=1: no
+    git scenarios) and check-trailers on up..HEAD. `fix_check` (the pre-push hook) adds `fix --check` first: sync
+    runs fix itself before its gate."""
     results = []
-    for label, name, args, env in (("build_index.py --check", "build_index.py", ["--check"], None),
-                                   ("check.py", "check.py", [], None),
-                                   ("tests.py (fast)", "tests.py", [], {"KB_TESTS_FAST": "1"})):
+    checks = [("kbgit.py fix --check", "kbgit.py", ["fix", "--check"], None)] if fix_check else []
+    checks += [("build_index.py --check", "build_index.py", ["--check"], None),
+               ("check.py", "check.py", [], None),
+               ("fetch.py --offline", "fetch.py", ["--offline"], None),
+               ("doc2query.py stale", "doc2query.py", ["stale"], None)]
+    if up:
+        checks.append((f"selfdoc.py stale --since {short(up)}", "selfdoc.py", ["stale", "--since", up], None))
+    checks.append(("tests.py (fast)", "tests.py", [], {"KB_TESTS_FAST": "1"}))
+    for label, name, args, env in checks:
         if name == "tests.py" and os.environ.get("KB_SYNC_NO_TESTS") == "1":
             results.append((label, "skipped (KB_SYNC_NO_TESTS=1)", True))
             continue
@@ -1799,7 +1856,7 @@ def sync_once(a, r):
     if not now_ahead:
         r["pushed"] = "nothing to push"
         return 0
-    code, out = gitx("push", a.remote, f"HEAD:refs/heads/{a.branch}")
+    code, out = gitx("push", a.remote, f"HEAD:refs/heads/{a.branch}", env={"KB_GATE_DONE": "1"})  # gated above
     if code:
         if REJECTED.search(out):
             print(f"push rejected ({target} moved):\n" + out.rstrip())

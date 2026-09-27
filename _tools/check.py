@@ -8,7 +8,7 @@
 - a non-empty superseded_by names another known source id and forms no cycle;
 - every _artifacts.csv row names a known source and an existing file;
 - every Markdown file is readable UTF-8;
-- every [DOC|DER|COMMUNITY S...] tag in a Markdown file cites a known source id (S123 or S-k3f7q2zd);
+- every [DOC|CODE|DER|COMMUNITY S...] tag in a Markdown file cites a known source id (S123 or S-k3f7q2zd);
 - no answer id (`## <ID>. ` heading) appears twice in _answers.md; QK answers use QK-<slug>;
 - every topic file's front matter has topic, priority, retrieved_utc, sources and status in {complete, partial, unknown};
 - every `topic: <domain>/<slug>` marker in _gaps.md and _conflicts.md names an existing topic (kbfacts.py).
@@ -94,7 +94,7 @@ for p in glob.glob(os.path.join(KB, "**", "*.md"), recursive=True):
     except (OSError, UnicodeDecodeError) as e:
         errors.append(f"{rel} is unreadable: {e}")
         continue
-    for tag in re.findall(r"\[(?:DOC|DER|COMMUNITY)\s([^\]]+)\]", text):  # \s: a tag may wrap after DOC
+    for tag in re.findall(r"\[(?:DOC|CODE|DER|COMMUNITY)\s([^\]]+)\]", text):  # \s: a tag may wrap after DOC
         for sid in kbid.ANY_ID.findall(tag):
             cited += 1
             if sid not in known:

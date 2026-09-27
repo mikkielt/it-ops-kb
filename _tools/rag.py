@@ -174,10 +174,10 @@ def format_hits(hits, fmt="concise"):
 
 def format_audit(rows, entries=False, fmt="detailed"):
     if fmt == "concise":
-        out = ["| path | status | facts | DOC | DER | COMMUNITY | UNK | gaps | conflicts |", "|---|---|---|---|---|---|---|---|---|"]
+        out = ["| path | status | facts | DOC | CODE | DER | COMMUNITY | UNK | gaps | conflicts |", "|---|---|---|---|---|---|---|---|---|---|"]
         for r in rows:
             gv, cv = len(r["gaps_via_sources"]), len(r["conflicts_via_sources"])
-            out.append(f"| {r['path']} | {r['status']} | {r['facts']} | {r['DOC']} | {r['DER']} | {r['COMMUNITY']} | "
+            out.append(f"| {r['path']} | {r['status']} | {r['facts']} | {r['DOC']} | {r['CODE']} | {r['DER']} | {r['COMMUNITY']} | "
                        f"{r['UNK']} | {len(r['gaps'])}" + (f"+{gv}" if gv else "") + f" | {len(r['conflicts'])}"
                        + (f"+{cv}" if cv else "") + " |")
         if entries:
@@ -187,11 +187,11 @@ def format_audit(rows, entries=False, fmt="detailed"):
                         out.append(f"{r['topic']}  {key}: {e['file']}:{e['line']}  {e['text'][:100]}")
         out.append(f"articles={len(rows)}; gaps/conflicts N+M: N name the topic, M cite a source it uses")
         return "\n".join(out)
-    out = ["| path | status | retrieved | facts | DOC | DER | COMMUNITY | UNK | gaps | conflicts |", "|---|---|---|---|---|---|---|---|---|---|"]
+    out = ["| path | status | retrieved | facts | DOC | CODE | DER | COMMUNITY | UNK | gaps | conflicts |", "|---|---|---|---|---|---|---|---|---|---|---|"]
     for r in rows:
         g, c = len(r["gaps"]), len(r["conflicts"])
         gv, cv = len(r["gaps_via_sources"]), len(r["conflicts_via_sources"])
-        out.append(f"| {r['path']} | {r['status']} | {r['retrieved_utc']} | {r['facts']} | {r['DOC']} | {r['DER']} | "
+        out.append(f"| {r['path']} | {r['status']} | {r['retrieved_utc']} | {r['facts']} | {r['DOC']} | {r['CODE']} | {r['DER']} | "
                    f"{r['COMMUNITY']} | {r['UNK']} | {g}" + (f" (+{gv} via sources)" if gv else "") + f" | {c}"
                    + (f" (+{cv} via sources)" if cv else "") + " |")
     if entries:

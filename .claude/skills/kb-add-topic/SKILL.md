@@ -22,7 +22,8 @@ Run each command on its own (no `;`, `&&`, pipes into other tools or loops): the
 - Never call `submit_feedback`.
 - Prefer a url pinned at a commit or version when one exists.
 - Read the full page before citing it (`microsoft_docs_fetch` for Learn; for other sites, fetch the page and keep the key sentence verbatim, at most 25 words, for the report). Cite the page the sentence is on; a fact whose sentence you cannot find is `[UNK]`, logged in `_gaps.md`.
-- Official sources give `DOC` facts. A non-official source is `COMMUNITY` and is never the only evidence for a DOC fact. Unconfirmed items are `UNK`.
+- Official sources give `DOC` facts. What you read in source code rather than documentation is `CODE`, cited at a tag or commit url with a `path#symbol` pointer (`[CODE S-id: src/settings.rs#DEFAULT_SELECTORS]`): implementation, which can change in any release. A non-official source is `COMMUNITY` and is never the only evidence for a DOC fact. Unconfirmed items are `UNK`.
+- A code example is a `SNIPPET:` bullet right above its fenced block: `- SNIPPET: <what it does>; context: <versions, prerequisites>; checked: no|syntax|run [DER S1: parameters from ...]`. It needs an evidence tag (not `UNK`), placeholders only, and `checked: syntax` only when you parsed it (json, toml and python blocks are parsed by the lint).
 
 ## 3. Add sources first
 Append rows to `_sources.csv`: `id,url,title,publisher,licence,retrieved_utc,version_or_date,artifact_sha256,used_in,superseded_by`.
@@ -58,7 +59,7 @@ files: [<path>, <dir>/]    # optional: only files beyond <slug>.md and <slug>.* 
 ## Examples
 ```
 - `topic` equals the path without `.md`. `sources` lists exactly the ids the body cites.
-- Each Facts bullet ends in exactly one tag: `[DOC S-k3f7q2zd]`, `[DER S1, S-k3f7q2zd]` (show the derivation), `[COMMUNITY S9]` or `[UNK]`.
+- Each Facts bullet ends in exactly one tag: `[DOC S-k3f7q2zd]`, `[CODE S-k3f7q2zd: path#symbol]`, `[DER S1, S-k3f7q2zd]` (show the derivation), `[COMMUNITY S9]` or `[UNK]`.
 - Our own words. Quotes of 25 words or fewer unless the licence permits copying (MIT, Apache-2.0, CC BY 4.0), with attribution. Never copy CIS or ISO text.
 - Placeholders only: `PL-LT-00123`, `PL-SRV-0042`, `corp.example.com`, tenant `00000000-0000-0000-0000-000000000000`, `jan.kowalski`.
 - Large tables go in `<domain>/<slug>.csv` beside the article (listed automatically). Data under another name or in a subdirectory goes in `files:` (kb-root paths; a directory ends in `/`).

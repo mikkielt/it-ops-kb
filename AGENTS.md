@@ -4,7 +4,7 @@ An offline knowledge base of facts from official sources on Windows endpoint man
 
 ## Look things up: deterministic tools first
 
-- Answer lookups in the session that asked. Never start a general-purpose subagent for a lookup (it pays its whole startup context first); several parts go in one `pack` call too; the `kb-lookup` agent only for long research whose output would fill the context (no cheaper, twice as slow).
+- Answer lookups in the session that asked. Never start a general-purpose subagent for a lookup; several parts go in one `pack` call too; the `kb-lookup` agent only for long research whose output would fill the context (no cheaper, slower).
 - From a shell or a script: `python3 _tools/kb_ask.py "<question>"` answers at the lowest cost that works (routing in `_self/tools.md`); `--route` shows the plan.
 - One call first: `kb_pack` (MCP) or `python3 _tools/rag.py pack "<question>"`; several parts in one call: `questions` / `pack -q PART -q PART`. It prints `coverage: good|weak|none`, the best fact lines by article with `path:line` and tag, and one footer of source urls.
   - `good`: answer from the pack. A `check:` line under it flags a possible false `good`: answer only if a cited line answers the question itself, else treat it as `none`.
@@ -12,16 +12,16 @@ An offline knowledge base of facts from official sources on Windows endpoint man
   - `none`: say the kb does not cover it. Add nothing from memory.
 - Counts, lists and joins are tools, not reading: `rag.py audit [PREFIX] [--status partial] [--entries]` (per article: tag counts, linked gaps and conflicts), `rag.py facts PREFIX --tag UNK,COMMUNITY`, `rag.py src S123 --cited` (the row plus every line that cites it). MCP: `kb_audit`, `kb_facts`, `kb_source` with `cited`. Concise by default; `--format detailed` / `response_format` for full text and urls.
 - Also: `rag.py show PATH:LINE -n 30`, `rag.py search "<keywords>" [-d DOMAIN] [--index]` (`--index` adds `_answers.md`, `_gaps.md`, `_conflicts.md` and the `_self/` docs), `rag.py topics [DOMAIN]`.
-- A person can type `kb: <question>`: a hook answers from the pack without the model when coverage is good, and otherwise passes the pack to you as context (`kb+:` always passes it).
+- `kb: <question>` from a person: a hook answers from the pack without the model when coverage is good, else passes the pack to you (`kb+:` always does).
 - The `/kb-lookup` skill is the same procedure.
 
 ## Tags
 
-Every fact ends in a tag with ids from `_sources.csv`: `DOC` (official), `DER` (derived, derivation shown), `COMMUNITY` (non-official), `UNK` (not confirmed). `UNK` and `COMMUNITY` are leads, never the answer by themselves. Cite `path:line`, the tag and the source url.
+Every fact ends in a tag with ids from `_sources.csv`: `DOC` (official), `CODE` (source code at a pinned commit: implementation, not a promise), `DER` (derived), `COMMUNITY` (non-official), `UNK` (not confirmed). `UNK`, `COMMUNITY`: leads, never the answer alone. `SNIPPET:` lines are tagged code examples. Cite `path:line`, the tag and the source url.
 
 ## Live documentation (only when the kb lacks it)
 
-Three remote servers, no authentication (`.claude-plugin/it-ops-kb-docs/.mcp.json`; the `it-ops-kb-docs` plugin elsewhere, `python3 _tools/kb_mcp.py --register-local` in a clone). Label what they give "live docs, not in the kb", with the url and date.
+Three remote servers, no authentication (`.claude-plugin/it-ops-kb-docs/.mcp.json`; the `it-ops-kb-docs` plugin elsewhere, `python3 _tools/kb_mcp.py --register-local` in a clone). Label their answers "live docs, not in the kb", with url and date.
 
 | name | url | use for |
 |---|---|---|
