@@ -9,7 +9,7 @@ Start here once `main` on GitHub has the commit "feat(kb): enforce the gate on p
 - The first GitHub Actions run of `kb.yml` on that commit: green (GitHub, Actions tab). If a step fails only on GitHub (container, permissions, the `before` sha), fix the workflow, not the checks.
 - Decide separately: GitHub branch protection for `main` (the kb does not cover GitHub's required status checks; read the live docs first). The workflow stays a detective control either way.
 
-**W1. CODE migration (B3): about 129 facts.**
+**W1. CODE migration (B3): done 2026-09-27** (commits ef8f1d8, b0d0ed9, 8e786fa). 129 candidates and 28 facts citing code beside docs, read by four Sonnet readers; every new CODE pointer was checked against its pinned file by script. The 28 CODE-CANDIDATE lines left are deliberate DOC: published machine-readable contracts (Graph CSDL, DSC JSON Schemas, MCP schema.ts, ECS, OTel metadata, ATT&CK STIX, MSRC swagger), listed in 8e786fa. Conventions settled: a release binary's own `--help` output is DOC; rustdoc comments in source are CODE; absence from a release archive is DER. The plan as it was:
 - Candidates: `python3 .claude/skills/kb-verify/lint.py --candidates` (`CODE-CANDIDATE path:line ids text`): DOC facts whose every cited source is a source-code or config file. Also check the about 50 facts that cite a code file next to a documentation page: `rag.py src <id> --cited` for each code-file source.
 - Group by domain; one reader subagent per group (`/kb-refresh` procedure, Sonnet, several groups in parallel). For each fact: open the cited file at its pinned url and find the line. Then:
   - the documentation also states it: keep `DOC` and add the documentation source (or re-point to it);
