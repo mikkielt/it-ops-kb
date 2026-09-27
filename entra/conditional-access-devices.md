@@ -75,7 +75,7 @@ files: [entra/ca-device-filter-properties.csv]
 - `intune/app-protection-mam.md`: the "Require app protection policy" grant control (MAM path for unmanaged/BYOD devices, including Windows Edge MAM) that combines with this article's device-based grant controls — typically OR'd with "Require device to be marked as compliant" so either an app-protected unmanaged device or a compliant managed device can pass.
 
 ## Examples
-Create a report-only Conditional Access policy requiring a compliant device for a placeholder line-of-business app, excluding a break-glass account, for tenant `00000000-0000-0000-0000-000000000000` (least-privileged permission `Policy.Read.All` + `Policy.ReadWrite.ConditionalAccess`):
+- SNIPPET: Create a report-only Conditional Access policy requiring a compliant device for a placeholder line-of-business app, excluding a break-glass account, for tenant `00000000-0000-0000-0000-000000000000` (least-privileged permission `Policy.Read.All` + `Policy.ReadWrite.ConditionalAccess`); context: Graph v1.0, `Policy.Read.All` + `Policy.ReadWrite.ConditionalAccess`, body needs an application rule, a user rule and a grant control; checked: no [DOC S-evafm3dr, S-isovad24]
 ```http
 POST https://graph.microsoft.com/v1.0/identity/conditionalAccess/policies
 Content-Type: application/json

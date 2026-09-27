@@ -52,7 +52,7 @@ See `defender/permissions-limits.md` for the base MDE API rate limits (100/min, 
 See `defender/machine-resource.md` for the `Machine` entity that these actions operate on (`{id}` in the URL) and its `GET /api/machines` filters.
 
 ## Examples
-Isolate a device:
+- SNIPPET: isolate a device (full isolation); context: MDE API v1.0, `Machine.Isolate` permission, body `Comment` + `IsolationType`; checked: no [DOC S-ipjyevd4]
 ```http
 POST https://api.security.microsoft.com/api/machines/1e5bc9d7e413ddd7902c2932e418702b84d0cc07/isolate
 Content-Type: application/json
@@ -63,11 +63,11 @@ Authorization: Bearer <token>
   "IsolationType": "Full"
 }
 ```
-Poll the action:
+- SNIPPET: poll a machine action's status; context: MDE API v1.0, `GET /api/machineactions/{id}`; checked: no [DOC S-hvfrvt73]
 ```http
 GET https://api.security.microsoft.com/api/machineactions/{machineactionid}
 ```
-Live response: put a file, run a script, retrieve output (rate limit 10 calls/minute):
+- SNIPPET: run a live response session (RunScript then GetFile); context: MDE API v1.0, `Machine.LiveResponse` permission, 10 calls/minute rate limit, commands run in listed order; checked: no [DOC S-ad63a4vv]
 ```json
 POST https://api.security.microsoft.com/api/machines/PL-LT-00123/runliveresponse
 {

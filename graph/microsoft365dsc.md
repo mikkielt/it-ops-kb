@@ -91,6 +91,7 @@ and `prior-art/projects.csv`, source `S1010`). Docs below (microsoft365dsc.com) 
 - Classic MOF-based DSC resource shape vs. DSC v3's resource manifest / `dsc` CLI model: `dsc/cli-reference.md`.
 
 ## Examples
+- SNIPPET: install Microsoft365DSC, discover needed permissions, and export Intune + Entra ID config with certificate auth; context: elevated Windows PowerShell 5.1, module 1.26.909.1; checked: no [COMMUNITY S-zmngjhe5, S-44mrima5, S-ahgkqifj]
 ```powershell
 # Install and prep dependencies (elevated Windows PowerShell 5.1)
 Install-Module Microsoft365DSC -Force

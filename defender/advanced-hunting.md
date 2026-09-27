@@ -3,7 +3,7 @@ topic: defender/advanced-hunting
 priority: P2
 applies_to: "Microsoft Defender XDR advanced hunting (Defender portal, Graph security API, legacy MDE advancedqueries API), docs ms.date through 2026-09"
 retrieved_utc: 2026-09-26
-sources: [S-a7zqfimk, S-oq2hykox, S-gstozrro, S-5nnb4rik, S-l5g4lirw, S-zaka5sgl, S-fnmkxefn, S627, S621, S-bw46kqrh, S-v5mr4bu5, S-osk3cbyu, S-vjtqqsri, S-x7sbbxju, S-4w7mhn5x, S-ktfxaivl, S-bvp2lhfv, S-yjjcwawd, S-r7vkbj73, S-cctucraa, S-3itm74ex, S-jh7vdeyt, S-tnlgchd2, S-elscbjku]
+sources: [S-a7zqfimk, S-oq2hykox, S-gstozrro, S-5nnb4rik, S-l5g4lirw, S-zaka5sgl, S-fnmkxefn, S627, S621, S-bw46kqrh, S-v5mr4bu5, S-osk3cbyu, S-vjtqqsri, S-x7sbbxju, S-4w7mhn5x, S-ktfxaivl, S-bvp2lhfv, S-yjjcwawd, S-r7vkbj73, S-cctucraa, S-3itm74ex, S-jh7vdeyt, S-tnlgchd2, S-elscbjku, S-6nonrav3]
 status: complete
 files: [defender/advanced-hunting-tables.csv]
 ---
@@ -128,7 +128,7 @@ DeviceTvmSoftwareVulnerabilities
 | order by CriticalCves desc
 ```
 
-Python (Graph `runHuntingQuery`, client-credentials placeholders):
+- SNIPPET: run a KQL hunting query via Graph `runHuntingQuery` using client-credentials auth; context: Graph v1.0, `ThreatHunting.Read.All`, body `Query`/`Timespan`; checked: no [DOC S-zaka5sgl]
 ```python
 import requests
 
@@ -161,7 +161,7 @@ resp.raise_for_status()
 print(resp.json()["results"])
 ```
 
-PowerShell (`Microsoft.Graph.Security`), engineer `jan.kowalski`:
+- SNIPPET: run a hunting query with the Microsoft Graph Security PowerShell module, engineer `jan.kowalski`; context: `Microsoft.Graph.Security`, `Connect-MgGraph -Scopes "ThreatHunting.Read.All"`, cmdlet `Start-MgSecurityHuntingQuery` wraps Graph `runHuntingQuery`; checked: no [DER S-zaka5sgl, S-6nonrav3: `runHuntingQuery` and the `ThreatHunting.Read.All` permission (S-zaka5sgl); `Start-MgSecurityHuntingQuery -BodyParameter` with a `Query` key (S-6nonrav3)]
 ```powershell
 Import-Module Microsoft.Graph.Security
 Connect-MgGraph -Scopes "ThreatHunting.Read.All"

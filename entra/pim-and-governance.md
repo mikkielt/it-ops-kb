@@ -68,7 +68,7 @@ status: partial
 | License expiry effect on PIM | active time-bound -> permanent active; eligible -> removed; ongoing role access reviews end | DOC S-ay5o5ism |
 
 ## Examples
-- Self-activate an eligible role via Graph (placeholders):
+- SNIPPET: self-activate an eligible Entra role via Graph (placeholders); context: Graph v1.0, `action: selfActivate`, caller must already have MFA enforced/challenged in the session; checked: no [DOC S-bcq2wujf, S-byjcvmyn]
 ```http
 POST https://graph.microsoft.com/v1.0/roleManagement/directory/roleAssignmentScheduleRequests
 Content-Type: application/json

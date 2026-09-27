@@ -67,6 +67,7 @@ Nullable=false only in v1.0.
 Per-workload resource pages: `concepts/utcm-{entra,exchange,intune,securityandcompliance,teams}-resources.md` in docs-contrib (Intune page = S955).
 
 ## Examples
+- SNIPPET: list active configuration drifts with selected fields; context: Graph v1.0, `ConfigurationMonitoring.Read.All`; checked: no [DOC S947, S951]
 ```http
 GET https://graph.microsoft.com/v1.0/admin/configurationManagement/configurationDrifts?$filter=status eq 'active'&$select=id,resourceType,baselineResourceDisplayName,driftedProperties
 ```

@@ -64,7 +64,7 @@ status: complete
 Related: `graph/batching-and-query.md` (the REST-level `$batch`, paging, `$select`/`$expand` and advanced-query facts these cmdlets wrap); `graph/permissions.md` (least-privileged Graph permissions per device call, cross-checked with `Find-MgGraphPermission`).
 
 ## Examples
-- App-only sign-in with a certificate and a direct Graph call:
+- SNIPPET: app-only sign-in with a certificate, then a direct Graph call via `Invoke-MgGraphRequest`; context: `AppCertificateParameterSet`, no dedicated cmdlet needed for the filter call; checked: no [DOC S-d7byvsls, S-qqaa5jqp]
 ```powershell
 Connect-MgGraph -ClientId "00000000-0000-0000-0000-000000000000" `
   -TenantId "00000000-0000-0000-0000-000000000000" `
@@ -72,16 +72,16 @@ Connect-MgGraph -ClientId "00000000-0000-0000-0000-000000000000" `
 
 Invoke-MgGraphRequest -Method GET -Uri "https://graph.microsoft.com/v1.0/devices?`$filter=displayName eq 'PL-LT-00123'"
 ```
-- Managed identity sign-in (e.g. from an Azure Automation runbook):
+- SNIPPET: managed-identity sign-in then a paged `Get-MgUser` call; context: `IdentityParameterSet` (`-Identity`), e.g. from an Azure Automation runbook; checked: no [DOC S-d7byvsls, S-6jt4shfp]
 ```powershell
 Connect-MgGraph -Identity
 Get-MgUser -Top 5
 ```
-- Discover permissions before granting consent:
+- SNIPPET: discover the permissions a cmdlet needs before granting consent; context: `Find-MgGraphCommand -Command <cmdlet>`; checked: no [DOC S-5q4kuvo5, S-h7l5c7uo]
 ```powershell
 Find-MgGraphCommand -Command Get-MgDevice | Select -First 1 -ExpandProperty Permissions
 ```
-- Advanced query for a near-instant device count:
+- SNIPPET: advanced query for a device count with a display-name prefix filter; context: `-ConsistencyLevel eventual` enables `Count`/`Filter`/`Search`, `-All` pages beyond the default; checked: no [DOC S-h7l5c7uo]
 ```powershell
 Get-MgDevice -ConsistencyLevel eventual -CountVariable deviceCount -Filter "startsWith(DisplayName,'PL-LT')" -All
 ```

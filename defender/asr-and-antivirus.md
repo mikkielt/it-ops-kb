@@ -89,6 +89,7 @@ enables 15 of the 19 documented ASR rules in Block mode; the baseline's exact ro
 - Intune Windows compliance policy's Defender/antivirus and Microsoft Defender for Endpoint risk-score settings: `intune/compliance-policies.md`.
 
 ## Examples
+- SNIPPET: set ASR rule modes by GUID, add a global exclusion, and read back rule/mode pairs and Defender AV state; context: elevated Windows PowerShell, `Set-MpPreference`/`Add-MpPreference`/`Get-MpPreference`/`Get-MpComputerStatus`; checked: no [DOC S-tn7i36es, S-oc7bghb6, S-kp35fytq, S-mxlwzhw5]
 ```powershell
 # Set two ASR rules to Block, one to Audit, on device PL-LT-00123 (elevated PowerShell)
 Set-MpPreference -AttackSurfaceReductionRules_Ids `

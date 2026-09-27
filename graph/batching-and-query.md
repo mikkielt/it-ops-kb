@@ -79,7 +79,7 @@ See `change-notification-lifetimes.csv` for the full per-resource lifetime and q
 Related articles: `graph/throttling.md` (per-request throttling inside a batch, 429/Retry-After); `graph/delta-query.md` (same undocumented-support gap for `device`/`managedDevice`/`windowsAutopilotDeviceIdentity`, for delta instead of change notifications); `graph/csdl-device.md` (`device` properties and which support `$filter`/`$search`); `graph/powershell-sdk.md` (PowerShell SDK equivalents `-Top`, `-Property`, `-Expand`, `-ConsistencyLevel`, `-CountVariable`).
 
 ## Examples
-- Batch with a dependency:
+- SNIPPET: JSON batch request with `dependsOn` sequencing a dependent call; context: Graph v1.0, `POST /$batch`, up to 20 requests per batch; checked: no [DOC S-l6y7tegw]
 ```json
 POST https://graph.microsoft.com/v1.0/$batch
 {
@@ -89,12 +89,12 @@ POST https://graph.microsoft.com/v1.0/$batch
   ]
 }
 ```
-- Advanced query count of stale devices:
+- SNIPPET: advanced query with `$count=true` over directory objects; context: Graph v1.0, `ConsistencyLevel: eventual` header required for `$count`/`$search`/added filter operators; checked: no [DOC S530]
 ```http
 GET https://graph.microsoft.com/v1.0/devices?$filter=approximateLastSignInDateTime le 2026-01-01T00:00:00Z&$count=true
 ConsistencyLevel: eventual
 ```
-- Create a 29-day `user` change-notification subscription:
+- SNIPPET: create a `user` change-notification subscription near the maximum lifetime; context: Graph v1.0, `notificationUrl` must be HTTPS, `clientState` max 128 chars in v1.0, max lifetime 41,760 minutes; checked: no [DOC S-z2jpontw, S-mutvll3h]
 ```json
 POST https://graph.microsoft.com/v1.0/subscriptions
 {

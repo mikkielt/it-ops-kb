@@ -97,19 +97,19 @@ connectivity for the EDR sensor is configured separately from Defender Antivirus
 - `mecm/application-model.md`, `mecm/client-settings.md`: no MDE-onboarding-specific content found in either article at the time of writing (gap, not linked).
 
 ## Examples
-Group Policy static proxy for the EDR sensor (registry values a GPO applies):
+- SNIPPET: registry values a GPO sets for the EDR sensor's static proxy; context: Windows, GPO "Configure connected user experiences and telemetry" + "Configure Authenticated Proxy usage..."; checked: no [DOC S-qulvb6va]
 ```
 HKLM\Software\Policies\Microsoft\Windows\DataCollection
   DisableEnterpriseAuthProxy = 1 (REG_DWORD)
   TelemetryProxyServer       = "192.0.2.6:8080" (REG_SZ)
 ```
 
-Manual device tag via registry (Windows, local or GPO Preferences):
+- SNIPPET: set a Defender for Endpoint device tag via registry; context: Windows, local or GPO Preferences, `REG_SZ` value `Group`, max 200 characters, syncs daily or on restart; checked: no [DOC S-qt5r5zbp]
 ```
 reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows Advanced Threat Protection\DeviceTagging" /v Group /t REG_SZ /d "PL-Site-Warsaw" /f
 ```
 
-Client Analyzer pre-onboarding connectivity test using a downloaded (not-yet-run) onboarding script, from an elevated prompt on `PL-LT-00123`:
+- SNIPPET: run the MDE Client Analyzer against a not-yet-run onboarding script before onboarding, on `PL-LT-00123`; context: Windows, elevated prompt, tests the script's own geo parameters; checked: no [DOC S-xzhocopu, S-gmhqowfa]
 ```
 MDEClientAnalyzer.cmd -o %USERPROFILE%\Desktop\WindowsDefenderATPOnboardingScript.cmd
 ```

@@ -148,6 +148,7 @@ ConfigMgr status messages, SQL Server Audit, GitLab).
   events retrievable via `deviceManagement/auditEvents`.
 
 ## Examples
+- SNIPPET: Search-UnifiedAuditLog paged export using ReturnLargeSet; context: Exchange Online PowerShell, up to 50,000 unsorted records per session; checked: no [DOC S-pzhjwitg, S-p7uijoop]
 ```powershell
 # Search-UnifiedAuditLog with paging for a large export (Exchange Online PowerShell)
 $sessionId = "audit-export-2026-09-26"
@@ -159,12 +160,14 @@ do {
 } while ($batch.Count -eq 5000)
 ```
 
+- SNIPPET: start an Office 365 Management Activity API content-type subscription; context: Entra app-only token with the ActivityFeed.Read claim, tenant's unified audit log must be on; checked: no [DOC S-2xp7a2zn]
 ```http
 # Start an Office 365 Management Activity API subscription (Entra app-only token, ActivityFeed.Read claim)
 POST https://manage.office.com/api/v1.0/00000000-0000-0000-0000-000000000000/activity/feed/subscriptions/start?contentType=Audit.AzureActiveDirectory&PublisherIdentifier=00000000-0000-0000-0000-000000000000
 Authorization: Bearer <token>
 ```
 
+- SNIPPET: create a Graph Purview Audit Search auditLogQuery, then list its records; context: Graph v1.0, `AuditLogsQuery-Entra.Read.All` (or broader `AuditLogsQuery.Read.All`) to create/list, `ThreatIntelligence.Read.All` to read the query object, global service cloud only; checked: no [DOC S-ojti56n4, S-wsetw6to, S-p26bti63]
 ```http
 # Graph Purview Audit Search: create a query, then list its records
 POST https://graph.microsoft.com/v1.0/security/auditLog/queries
@@ -180,6 +183,7 @@ Content-Type: application/json
 GET https://graph.microsoft.com/v1.0/security/auditLog/queries/{auditLogQueryId}/records
 ```
 
+- SNIPPET: list Intune deviceManagement/auditEvents filtered by date range; context: Graph beta, `DeviceManagementApps.Read.All` (or broader `.ReadWrite.All`), Intune licence required; checked: no [DOC S-n5ozkko3, S-tmpjr3zu]
 ```http
 # Intune audit events for a managed device's PL-LT-00123 role assignment change, last 24h
 GET https://graph.microsoft.com/beta/deviceManagement/auditEvents?$filter=activityDateTime gt 2026-09-25T00:00:00Z&$orderby=activityDateTime desc
