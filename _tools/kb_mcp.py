@@ -50,40 +50,36 @@ SUPPORTED = [MODERN, *LEGACY]
 PV_KEY = "io.modelcontextprotocol/protocolVersion"
 MAX_LINES = 400
 INSTRUCTIONS = (
-    "it-ops-kb: facts from official sources on Windows endpoint management (DSC v3, ConfigMgr, Intune, Autopilot, "
-    "Entra ID, AD, Graph, GPO, Defender, SQL Server, Power BI, GitLab CI, Ansible, Python tooling, security baselines, identity, "
-    "Presidio, MCP, Claude Code, AI agents). Call kb_pack with the question first: one call returns a coverage verdict "
-    "and the cited fact lines. coverage: good -> answer from the pack (with a check: line, only if a cited line answers the question itself); weak -> one reworded kb_pack or one kb_show; "
-    "none -> say the kb does not cover it and add nothing from memory. Every fact ends in one tag: DOC (official), CODE "
-    "(read from source code at a pinned commit: implementation, not a documented promise; say so), DER (derived), "
-    "COMMUNITY (non-official) or UNK (not confirmed); UNK and COMMUNITY are leads, not answers. A 'SNIPPET:' line "
-    "introduces a code example: kb_show prints it. Counts, "
-    "lists and 'which files cite X' are kb_audit, kb_facts and kb_source with cited=true, not searches. Cite path:line "
-    "and the url from the pack's sources footer. Single facts: call kb_pack yourself; several parts: one kb_pack with "
-    "questions=[...]. Use the kb-lookup agent only for long research whose output would fill your context. Never start a general-purpose agent for a "
-    "kb lookup. These tools hold documentation facts, not live device or directory data.")
+    "it-ops-kb: cited facts from official sources on Windows endpoint management (ConfigMgr, Intune, Autopilot, "
+    "Entra ID, AD, Graph, GPO, Defender, DSC v3, SQL Server, Power BI, GitLab CI, Ansible, Python tooling, baselines, "
+    "identity, Presidio), MCP, Claude Code and AI agents. Call kb_pack first; several parts: one call with "
+    "questions=[...]. coverage good: answer from the pack (under a check: line, only if a cited line answers the "
+    "question itself); weak: one reworded kb_pack or one kb_show; none: say the kb does not cover it and add nothing "
+    "from memory. Tags: DOC official, CODE source code at a pinned commit (implementation, not a promise; say so), "
+    "DER derived; COMMUNITY and UNK are leads, not answers. SNIPPET: lines are tagged code examples. Cite path:line "
+    "and the footer url. Counts, lists, 'who cites X': kb_audit, kb_facts, kb_source cited=true. Never start a "
+    "general-purpose agent for a lookup; the kb-lookup agent only for long research. Documentation facts, not live "
+    "device or directory data.")
 DOCS = "Documentation facts from it-ops-kb (not live device or directory data). "
-ROOT = {"type": "string", "description": "one root only, e.g. 'public'"}
+ROOT = {"type": "string", "description": "one root, e.g. 'public'"}
 FORMAT = {"type": "string", "enum": ["concise", "detailed"],
-          "description": "concise: fact lines with path:line and tag, no url footer; detailed: full text and urls"}
+          "description": "concise: no url footer"}
 
 READ_ONLY = {"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True, "openWorldHint": False}
 TOOL_LIST = [
     {"name": "kb_pack", "title": "Evidence pack for a question",
-     "description": DOCS + "Start here. Ranks the kb's fact lines for a question and returns a coverage verdict "
-                    "(good, weak, none), the best facts grouped by article with path:line and tag, and one footer of "
-                    "the cited sources' urls, within a token budget. A question with several parts: pass them all in "
-                    "`questions` (one call, a verdict per part).",
+     "description": DOCS + "Start here: a coverage verdict (good, weak, none), the best fact lines by article "
+                    "with path:line and tag, and a footer of source urls.",
      "inputSchema": {"type": "object", "properties": {
-         "question": {"type": "string", "description": "the question as asked, or 3-10 keywords"},
+         "question": {"type": "string", "description": "the question, or 3-10 keywords"},
          "questions": {"type": "array", "items": {"type": "string"}, "minItems": 1, "maxItems": 6,
-                       "description": "the parts of a multi-part question, one pack each (instead of question)"},
-         "budget": {"type": "integer", "minimum": 200, "maximum": 6000, "default": 1200, "description": "about this many tokens per question; 3+ questions share 2x this (at least 800 each)"},
-         "domain": {"type": "string", "description": "limit to one domain directory, e.g. 'auth'"},
+                       "description": "parts of a multi-part question, a verdict each (instead of question)"},
+         "budget": {"type": "integer", "minimum": 200, "maximum": 6000, "default": 1200, "description": "tokens per part"},
+         "domain": {"type": "string", "description": "one domain, e.g. 'auth'"},
          "root": ROOT,
          "response_format": {**FORMAT, "default": "detailed"}},
          "additionalProperties": False},
-     "annotations": {"title": "Evidence pack for a question", **READ_ONLY},
+     "annotations": READ_ONLY,
      "_meta": {"anthropic/alwaysLoad": True}},
     {"name": "kb_facts", "title": "Fact lines by prefix and tag",
      "description": DOCS + "Every fact line under a path prefix (a domain like 'agents', a topic like 'auth/kerberos', or "

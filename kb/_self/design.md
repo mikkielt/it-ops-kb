@@ -28,7 +28,7 @@ A lookup costs an agent its fixed context times its turns, plus what the tools r
 | against web search, 5 covered questions | kb router $0.011, 8.9 s, 10.4k input, 10/10 correct; Sonnet web search $0.128, 26.9 s, 98k, 10/10; Haiku web search $0.025 but 8/10, often without searching | "Router against web search" |
 | bare agent vs kb agent, same model, 7 covered questions | kb Haiku $0.042 vs bare $0.067, kb Sonnet $0.110 vs $0.180, kb Opus $0.229 vs $0.230 (the clone's 58-90k startup context eats Opus's saving); 41-69% faster, 1-2 tool calls vs 5-6; router $0.018, 9 s | "Bare agent against agent with the kb" |
 | how-to question answered by a `SNIPPET` | one `kb_pack` (1-4 kb calls with Haiku); Haiku $0.039-0.045 and 9/9 checks, Sonnet $0.10-0.13, one run per scenario | "How-to questions and SNIPPET units" |
-| the kb as a plugin in another project | about 1.45k always-on tokens per session; the same six questions cost the same as in a clone (306k vs 312k in total) | "Always-on cost", "Plugin in a host project" |
+| the kb as a plugin in another project | about 1.24k always-on tokens per session; the same six questions cost the same as in a clone (306k vs 312k in total) | "Always-on cost", "Plugin in a host project" |
 
 ## When it is not
 

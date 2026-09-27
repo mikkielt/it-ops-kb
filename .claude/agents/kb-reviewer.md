@@ -1,6 +1,6 @@
 ---
 name: kb-reviewer
-description: Reviews a workspace's code against the it-ops-kb documentation facts (auth flows, ConfigMgr AdminService, LDAP, Graph permissions, MCP servers) and reports findings with the code's path:line and the kb citation. Read-only; started by /kb-review-workspace.
+description: Reviews a workspace's code against it-ops-kb facts and reports findings with the code's path:line and the kb citation. Read-only; started by /kb-review-workspace.
 tools: Read, Grep, Glob, mcp__plugin_it-ops-kb_kb__kb_topics_for, mcp__plugin_it-ops-kb_kb__kb_facts, mcp__plugin_it-ops-kb_kb__kb_pack, mcp__plugin_it-ops-kb_kb__kb_show, mcp__plugin_it-ops-kb_kb__kb_source, mcp__kb__kb_topics_for, mcp__kb__kb_facts, mcp__kb__kb_pack, mcp__kb__kb_show, mcp__kb__kb_source
 model: sonnet
 effort: medium

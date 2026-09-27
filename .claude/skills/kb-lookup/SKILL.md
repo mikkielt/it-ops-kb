@@ -1,6 +1,6 @@
 ---
 name: kb-lookup
-description: Answer a question from the it-ops-kb knowledge base with cited sources (Windows endpoint management - DSC v3, ConfigMgr/MECM, Intune, Autopilot, Entra ID, Active Directory, Graph, GPO, Defender, SQL Server, Power BI, GitLab CI, Ansible, Python tooling (uv, pytest, ruff), security baselines, identity/auth, Presidio/privacy, MCP, Claude Code, AI agents). Use whenever a question touches those domains, or the user asks what the kb says. Read-only.
+description: Answer from the it-ops-kb knowledge base with cited sources (Windows endpoint management: ConfigMgr/MECM, Intune, Autopilot, Entra ID, AD, Graph, GPO, Defender, DSC v3, SQL Server, Power BI, GitLab CI, Ansible, Python tooling, baselines, identity, Presidio; MCP, Claude Code, AI agents). Use when a question touches those or asks what the kb says. Read-only.
 allowed-tools: mcp__plugin_it-ops-kb_kb__kb_pack mcp__plugin_it-ops-kb_kb__kb_facts mcp__plugin_it-ops-kb_kb__kb_audit mcp__plugin_it-ops-kb_kb__kb_search mcp__plugin_it-ops-kb_kb__kb_show mcp__plugin_it-ops-kb_kb__kb_source mcp__plugin_it-ops-kb_kb__kb_status mcp__kb__kb_pack mcp__kb__kb_facts mcp__kb__kb_audit mcp__kb__kb_search mcp__kb__kb_show mcp__kb__kb_source mcp__kb__kb_status
 disallowed-tools: mcp__claude-code-docs__submit_feedback mcp__mcp-docs__submit_feedback mcp__plugin_it-ops-kb-docs_claude-code-docs__submit_feedback mcp__plugin_it-ops-kb-docs_mcp-docs__submit_feedback
 ---
