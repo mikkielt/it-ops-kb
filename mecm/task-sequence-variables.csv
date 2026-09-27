@@ -1,6 +1,6 @@
 variable,read_only_or_settable,type,default,purpose,source_id
 _SMSTSMachineName,read-only,string,(computer name),Name of the computer the task sequence uses to log status messages; to rename the OS use OSDComputerName instead.,S-lydse5ww
-_SMSTSLogPath,read-only,string,(current log directory),Full path of the directory where task sequence steps write their logs (moves as smsts.log relocates through the phases).,S-lydse5ww
+_SMSTSLogPath,read-only,string,(current log directory),Full path of the log directory where task sequence steps log their actions; not set when a hard drive is not available.,S-lydse5ww
 _SMSTSInWinPE,read-only,boolean,(set by engine),true while the current step runs in Windows PE; used as a step/group condition.,S-lydse5ww
 _SMSTSCurrentActionName,read-only,string,(set by engine),Name of the task sequence step currently running; set before each step runs.,S-lydse5ww
 _SMSTSLastActionName,read-only,string,(set by engine),Name of the last action that ran; paired with _SMSTSLastActionRetCode for error handling.,S-lydse5ww
@@ -9,9 +9,9 @@ _SMSTSLastActionSucceeded,read-only,boolean,(set by engine),true or false depend
 _SMSTSClientGUID,read-only,string (GUID),(client GUID),Configuration Manager client GUID; unset when running from standalone media.,S-lydse5ww
 _SMSTSClientCache,read-only,string (path),(unset if no cache),Path to the local content cache once the task sequence caches content on the local drive.,S-lydse5ww
 _SMSTSLaunchMode,read-only,string,(set by engine),How the task sequence started: SMS or UFD or UFD+FORMAT or CD or DVD or PXE or HD (prestaged media).,S-lydse5ww
-_SMSTSMediaType,read-only,string,(set by engine),Media type used to start the installation: BootMedia or FullMedia or PXE.,S-lydse5ww
+_SMSTSMediaType,read-only,string,(set by engine),Media type used to start the installation: BootMedia or FullMedia or PXE or OEMMedia (prestaged media).,S-lydse5ww
 _SMSTSBootUEFI,read-only,boolean,(set by engine),Set when the task sequence detects the computer is running in UEFI mode.,S-lydse5ww
-_SMSTSUserStarted,read-only,boolean,false,true only when a user manually starts the task sequence from Software Center (_SMSTSLaunchMode = SMS).,S-lydse5ww
+_SMSTSUserStarted,read-only,boolean,(set only when started from Software Center),true when a user manually starts the task sequence from Software Center; false when the Configuration Manager scheduler starts it automatically. Set only when _SMSTSLaunchMode = SMS.,S-lydse5ww
 _SMSTSType,read-only,integer,(set by engine),1 = generic task sequence; 2 = OS deployment task sequence.,S-lydse5ww
 _SMSTSPackageID,read-only,string,(current TS package ID),Package ID of the currently running task sequence (same format as a ConfigMgr package ID).,S-lydse5ww
 _SMSTSPackageName,read-only,string,(TS name),Name of the currently running task sequence.,S-lydse5ww
@@ -23,15 +23,15 @@ OSDComputerName,settable (input),string,%_SMSTSMachineName%,New computer name to
 OSDDomainName,settable (input),string,(none),Active Directory domain to join; applies to the Apply Network Settings step.,S-lydse5ww
 OSDWorkgroupName,settable (input),string,(none),Workgroup to join instead of a domain (max 32 characters); applies to the Apply Network Settings step.,S-lydse5ww
 OSDJoinAccount,settable (input),string,(none),Account used to join the destination computer to the domain.,S-lydse5ww
-OSDJoinPassword,settable (input),string,(none),Password for OSDJoinAccount; case-sensitive.,S-lydse5ww
+OSDJoinPassword,settable (input),string,(none),Password for OSDJoinAccount; if not set Windows Setup tries a blank password; required when OSDJoinType is 0 (join domain).,S-lydse5ww
 OSDAdapterCount,settable (input),integer,(none),Number of network adapters to configure; applies to the Apply Network Settings step. All OSDAdapterN* values must be set together.,S-lydse5ww
 OSDDiskIndex,settable (input),integer,(none),"Physical disk number to partition; max 99 in version 2010 and earlier, max 10000 from version 2103 (SAN support).",S-lydse5ww
 OSDTargetSystemDrive,read-only (output),string (drive letter),(set by engine),Drive letter of the partition that receives the OS files; set by the Apply Operating System Image step.,S-dz6j2643
 OSDConfigFileName,settable (input),string,(none),File name of the OS deployment answer file used by the Apply OS Image step.,S-lydse5ww
-OSDDoNotLogCommand,settable (input),boolean,false,"When true, suppresses logging of a Run Command Line step's full command line (protects variable values containing secrets) in smsts.log.",S-lydse5ww
-SMSTSRebootDelay,settable (input),integer (seconds),0 (no notification dialog),Seconds to display a restart-warning dialog before the Restart Computer step reboots; 0 shows no dialog.,S-lydse5ww
+OSDDoNotLogCommand,settable (input),boolean,false,"When TRUE, masks the program name in smsts.log during an Install Package step and hides the Run Command Line step command line in the log, to keep sensitive data out of it.",S-lydse5ww
+SMSTSRebootDelay,settable (input),integer (seconds),0 (no notification dialog),Seconds to wait before the computer restarts; 0 means the task sequence manager shows no notification dialog before the reboot.,S-lydse5ww
 SMSTSRebootMessage,settable (input),string,(default system message),Custom message text shown in the restart notification dialog.,S-lydse5ww
-SMSRebootTimeout,settable (input),integer (seconds),0 (no message),Seconds the restart warning is displayed to the user before the Restart Computer step reboots.,S-lydse5ww
+SMSRebootTimeout,settable (input),integer (seconds),(none),Seconds the restart warning is displayed to the user before the Restart Computer step reboots.,S-lydse5ww
 SMSTSPreferredAdvertID,settable (input; prestart/media only),string,(none),Forces the task sequence to run a specific deployment on the destination computer; overrides required deployments; set via a prestart command from media or PXE.,S-lydse5ww
 SMSTSMPListRequestTimeout,settable (input),integer (milliseconds),60000,Wait time before retrying to retrieve the management point list from location services (retries up to 3 times); applies to Install Application and Install Software Updates steps.,S-lydse5ww
 SMSTSPersistContent,settable (input),boolean,false,Temporarily keeps content in the task sequence cache (cleared when the task sequence ends); distinct from SMSTSPreserveContent.,S-lydse5ww

@@ -3,7 +3,7 @@ topic: windows/kiosk-assigned-access
 priority: P2
 applies_to: "Windows 10/11 client (single-app kiosk since 1803, ShellLauncher since 1803/v2, multi-app via provisioning/CSP), Intune kiosk profile template and settings catalog, Microsoft Edge kiosk mode 87+"
 retrieved_utc: 2026-09-26
-sources: [S-c6tea7ux, S-ocgh5a3g, S-snqf6qj3, S-hkbq4xlj, S-grpxcouj, S-mti33mjr, S-pjgeqktu, S-jnbupokh, S-qd4qftlt]
+sources: [S-c6tea7ux, S-ocgh5a3g, S-snqf6qj3, S-hkbq4xlj, S-grpxcouj, S-mti33mjr, S-pjgeqktu, S-jnbupokh, S-qd4qftlt, S-lz7th2mw]
 status: complete
 ---
 
@@ -11,9 +11,9 @@ status: complete
 
 ## Summary
 Windows kiosk/restricted user-experience is built on the **AssignedAccess CSP**, applied via an XML *AssignedAccessConfiguration*
-file (single-app or multi-app), the older `ShellLauncher` node (replaces `Explorer.exe` with a custom shell for
+file (single-app or multi-app), the `ShellLauncher` node (replaces `Explorer.exe` with a custom shell for
 kiosks/ATMs/signage), or the local `Set-AssignedAccess`/Windows Settings path for a single device with a local account.
-[DOC S-c6tea7ux] Intune exposes the same mechanism through the **Templates > Kiosk** profile (single-app, full-screen or
+[DOC S-c6tea7ux, S-hkbq4xlj, S-mti33mjr] Intune exposes the same mechanism through the **Templates > Kiosk** profile (single-app, full-screen or
 multi-app) and through **Templates > Custom** OMA-URI against the CSP directly; see `intune/configuration-policies.md`
 for how any custom OMA-URI profile is delivered and refreshed, and `windows/app-control.md` for how a multi-app kiosk's
 allowed-apps list is enforced with generated AppLocker rules under the hood.
@@ -22,9 +22,9 @@ allowed-apps list is enforced with generated AppLocker rules under the hood.
 ### AssignedAccess CSP nodes
 - `./Vendor/MSFT/AssignedAccess` has five nodes: `Configuration`, `KioskModeApp` (deprecated), `ShellLauncher`, `Status`, `StatusConfiguration`; once the CSP is executed, the *next* user sign-in tied to the Assigned Access profile puts the device in kiosk mode. [DOC S-c6tea7ux]
 - `Configuration` (string, Add/Delete/Get/Replace) takes the AssignedAccessConfiguration XML; scope is device-only, editions Pro/Enterprise/Education/IoT Enterprise, from Windows 10 1709 (10.0.16299) onward. [DOC S-c6tea7ux]
-- `KioskModeApp` (string, Windows 10 1507+) takes JSON `{"Account":"domain\\user","AUMID":"..."}`; from 1803 onward it is a no-op if `Configuration` is set, and the two nodes **cannot both be set** on a device at the same time. It is deprecated in favor of the single-app kiosk profile inside `Configuration`. [DOC S-c6tea7ux]
-- `ShellLauncher` (string, Windows 10 1803+, Enterprise/Education/IoT Enterprise editions only — **not supported on Pro**) takes a ShellLauncherConfiguration XML; setting it via CSP automatically enables the Shell Launcher feature if present in the SKU. `ShellLauncher` and `KioskModeApp`/single-app `Configuration` also cannot coexist. [DOC S-c6tea7ux]
-- `Status` (read-only, Windows 10 1809+) reports kiosk health only when `StatusConfiguration` is `On`/`OnWithAlerts`; status codes: `0` Unknown, `1` Running, `2` AppNotFound (kiosk app not deployed), `3` ActivationFailed (sign-in failed), `4` AppNoResponse (app launched but hung). Payload also includes `profileId` and an `OperationList` of failed apply operations. [DOC S-c6tea7ux]
+- `KioskModeApp` (string, Windows 10 1507+) takes JSON `{"Account":"domain\\user","AUMID":"..."}`; from 1803 onward it is a no-op if `Configuration` is set (Add/Replace/Delete still return success, the data has no effect). It is deprecated in favor of the single-app kiosk profile inside `Configuration`. [DOC S-c6tea7ux]
+- `ShellLauncher` (string, Windows 10 1803+, Enterprise/Education/IoT Enterprise editions only — **not supported on Pro**) takes a ShellLauncherConfiguration XML; setting it via CSP automatically enables the Shell Launcher feature if present in the SKU. `ShellLauncher` and `KioskModeApp` cannot both be set on a device. [DOC S-c6tea7ux]
+- `Status` (read-only node, Windows 10 1803+; runtime status covers single-app and multi-app modes from 1809) reports kiosk health only when `StatusConfiguration` is `On`/`OnWithAlerts`; status codes: `0` Unknown, `1` Running, `2` AppNotFound (kiosk app not deployed), `3` ActivationFailed (sign-in failed), `4` AppNoResponse (app launched but hung). Payload also includes `profileId` and an `OperationList` of failed apply operations. [DOC S-c6tea7ux]
 - `StatusConfiguration` takes `StatusEnabled` = `Off` (default)/`On`/`OnWithAlerts`; `OnWithAlerts` makes Assigned Access push an MDM alert (`MDMAlertType: com.microsoft.mdm.assignedaccess.status`, `MDMAlertMark: Critical`) immediately when the runtime status changes to an error. [DOC S-c6tea7ux]
 
 ### Configuration XML: profiles, configs, versioning
@@ -49,20 +49,20 @@ allowed-apps list is enforced with generated AppLocker rules under the hood.
 ### PowerShell and local setup
 - `Set-AssignedAccess` (module `AssignedAccess`) configures a **single local user account** to a single Windows Store app by `-UserName`/`-UserSID` plus `-AppName` or `-AppUserModelId`; the account must have signed in at least once when using `-AppName`. Supported on Windows 10/11 client only (not Server). If a user is signed in, or the device has a PS/2 keyboard, a restart is required to apply. Exit assigned access on-device with five quick presses of the left Windows key; remove the config with `Clear-AssignedAccess`. [DOC S-jnbupokh, S-mti33mjr]
 - `Get-AppxPackage -User "username"` lists the Store apps available to a user (source list for `-AppName`/`-AppUserModelId`). [DOC S-jnbupokh]
-- Advanced local/off-CSP delivery uses the MDM Bridge WMI Provider `MDM_AssignedAccess` class (`root\cimv2\mdm\dmmap`, properties `Configuration`, `KioskModeApp`) run as SYSTEM (e.g. via `psexec -i -s powershell.exe`), or a provisioning package at path `AssignedAccess/MultiAppAssignedAccessSettings`. [DOC S-mti33mjr]
+- Advanced local/off-CSP delivery uses the MDM Bridge WMI Provider `MDM_AssignedAccess` class (`root\cimv2\mdm\dmmap`; the page's scripts set its `Configuration` and `ShellLauncher` properties) run as SYSTEM (e.g. via `psexec -i -s powershell.exe`), or a provisioning package; for a single-app kiosk the package path is `AssignedAccess/AssignedAccessSettings` with an Account/AUMID JSON value. [DOC S-mti33mjr]
 
 ### Troubleshooting and logs
 - Event log: **Applications and Services Logs > Microsoft > Windows > AssignedAccess > Operational**. [DOC S-grpxcouj]
 - Registry: applied Assigned Access configuration lives under `HKLM\Software\Microsoft\Windows\AssignedAccessConfiguration` and `HKLM\Software\Microsoft\Windows\AssignedAccessCsp`; the per-signed-in-user configuration is under `HKCU\SOFTWARE\Microsoft\Windows\AssignedAccessConfiguration`. [DOC S-grpxcouj]
-- Recommendation: use a least-privilege local standard account for public-facing kiosks (not an AD/Entra domain account, to limit blast radius if the kiosk is compromised); enable auto sign-in via the AutoLogonAccount XML element, or by hand via `HKLM\Software\Microsoft\Windows NT\CurrentVersion\Winlogon` values `AutoAdminLogon=1`, `DefaultUserName`, `DefaultPassword`, and (domain accounts only) `DefaultDomainName`. The Policy CSP `WindowsLogon/PreferredAadTenantDomainName` setting can break auto sign-in if misapplied. [DOC S-grpxcouj]
+- Recommendation: use a least-privilege local standard account for public-facing kiosks (not an AD/Entra domain account, to limit blast radius if the kiosk is compromised); enable auto sign-in via the AutoLogonAccount XML element, or by hand via `HKLM\Software\Microsoft\Windows NT\CurrentVersion\Winlogon` values `AutoAdminLogon=1`, `DefaultUserName`, `DefaultPassword`, and (domain accounts only) `DefaultDomainName`. The Policy CSP `Authentication/PreferredAadTenantDomainName` setting prevents automatic sign-in from working. [DOC S-grpxcouj]
 
 ### Intune kiosk profile (Templates > Kiosk)
 - Path: **Devices > Manage devices > Configuration > Create > New policy**, platform **Windows 10 and later**, profile type **Templates > Kiosk**; Intune supports **one kiosk profile per device** — a device needing several kiosk configurations instead needs a custom OMA-URI profile against the CSP. [DOC S-snqf6qj3]
 - Kiosk mode choices: **Not configured** (default, Intune doesn't touch the setting), **Single app, full-screen kiosk**, **Multi app kiosk**. Multi-app kiosk via this template is documented for **Windows 10 only**; Windows 11 multi-app lockdown is configured separately (`windows/configuration/lock-down-windows-11-to-specific-apps`, not yet covered in this kb). Windows 10 reached end of support 2025-10-14 but remains an Intune-allowed OS version with no functionality guarantee. [DOC S-snqf6qj3]
 - Single-app kiosk **User logon type** options: **Auto logon** (Windows 10 1803+, uses the AssignedAccess CSP, no user credential needed), **Local user account**, or **Microsoft Entra user or group** (Windows 10 1803+, multi-select). [DOC S-pjgeqktu]
-- Single-app **Application type** options: Microsoft Edge (version 87+, configured further via the settings catalog — see `intune/configuration-policies.md`) with **Edge Kiosk URL**, **Edge kiosk mode type** (Public Browsing InPrivate, or Digital/Interactive Signage) and **Refresh browser after idle time** (0–1440 minutes); Microsoft Edge Legacy (77 and 45-and-older) configured via a device-restrictions profile instead; or the separately-installed **Kiosk browser** Store app (Default home page URL, home button show/hide). [DOC S-pjgeqktu]
+- Single-app **Application type** options: Microsoft Edge (version 87+, configured further via the settings catalog — see `intune/configuration-policies.md`) with **Edge Kiosk URL**, **Edge kiosk mode type** (Public Browsing InPrivate, or Digital/Interactive Signage) and **Refresh browser after idle time** (0–1440 minutes); Microsoft Edge Legacy (version 77, and 45 and older; 77+ settings go through the settings catalog, 45-and-older through a device-restrictions profile); or the separately-installed **Kiosk browser** Store app (Default home page URL, home button show/hide). [DOC S-pjgeqktu]
 - Multi-app kiosk lets an admin add several Store apps, Win32 apps, browsers or inbox Windows apps (referenced by AUMID); only the listed apps are available on the device. [DOC S-pjgeqktu, S-snqf6qj3]
-- Creating the profile requires at minimum the **Policy and Profile Manager** built-in role (same as other device-configuration profile types — see `intune/configuration-policies.md`). [DER S-snqf6qj3: the article's Create-the-profile steps use the same Devices > Configuration workflow gated by that role in the settings-catalog article]
+- Creating the profile requires at minimum the **Policy and Profile Manager** built-in role (same as other device-configuration profile types — see `intune/configuration-policies.md`). [DER S-snqf6qj3, S-lz7th2mw: the kiosk template is created through the same Devices > Configuration > Create > New policy path that S-lz7th2mw says needs at least that role]
 
 ### Microsoft Edge kiosk mode (standalone, applies to 87+)
 - Two lockdown experiences, both run in an Edge **InPrivate** session (autofill disabled): **Digital/Interactive Signage** (full-screen single site) and **Public-Browsing** (limited multi-tab InPrivate browser). [DOC S-qd4qftlt]
@@ -73,7 +73,8 @@ allowed-apps list is enforced with generated AppLocker rules under the hood.
 ## Reference
 - `intune/configuration-policies.md` — settings catalog and custom OMA-URI delivery mechanics (check-in/refresh cadence, `deviceManagementConfigurationPolicy`, role requirements) that any custom `AssignedAccess` OMA-URI profile or Edge settings-catalog policy in a kiosk deployment relies on. Back-link added there under Reference.
 - `windows/app-control.md` — AppLocker rules generated for a multi-app kiosk's allowed-apps list run under the same rule-collection mechanics documented there (Executable/Packaged apps collections).
-- Confirmed 2026-09-26: Intune's built-in kiosk template (`Devices > Configuration > Templates > Kiosk`, **Multi app kiosk** mode) is explicitly documented as **Windows 10-only** — every Intune kiosk-template page states "Currently, you can use Intune to configure a multi-app kiosk on Windows 10 devices" and points to the separate, non-Intune-template `lock-down-windows-11-to-specific-apps` procedure for Windows 11. Windows 11 multi-app kiosk is therefore **not** the same settings/limits path as the Windows 10 Intune template — it is a distinct, non-template mechanism (provisioning package / WMI Bridge / MDM policy driven directly by the `AssignedAccess` CSP's Windows 11 multi-app XML schema, not the Intune UI wizard). [DOC S-pjgeqktu]
+- Confirmed 2026-09-26: Intune's built-in kiosk template (`Devices > Configuration > Templates > Kiosk`, **Multi app kiosk** mode) is explicitly documented as **Windows 10-only** — every Intune kiosk-template page states "Currently, you can use Intune to configure a multi-app kiosk on Windows 10 devices" and points to the separate, non-Intune-template `lock-down-windows-11-to-specific-apps` procedure for Windows 11. [DOC S-pjgeqktu]
+- Windows 11 multi-app kiosk is therefore a distinct, non-template path (provisioning package / WMI Bridge / MDM policy using the `AssignedAccess` CSP's Windows 11 XML schema). [UNK: not in S-pjgeqktu as re-read 2026-09-27]
 
 ## Examples
 Single-app kiosk, AssignedAccess CSP custom OMA-URI (auto-logon local account running Microsoft Edge full-screen against an intranet site):

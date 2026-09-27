@@ -1,22 +1,22 @@
 action,permission,object_class,built_in_roles_with_permission,version_note,source
-Run CMPivot (console/standalone),Run CMPivot,Collection (SMS_Collection),Full Administrator (all permissions); Security Administrator (added 1906); others UNK,1906+; in 1902 and earlier Run Script was required,S315;S316;S339
-Run CMPivot (console/standalone),Read,Inventory Reports,Security Administrator (added 1906); others UNK,all versions,S315;S316
-Run CMPivot (console/standalone),Read,SMS Scripts,Security Administrator (added 1906),not required from 2107 except when AdminService falls back to SMS Provider (HTTP 503),S315;S316
-Run CMPivot (console/standalone),Default scope,Security scope,,not required from 2107,S315
-Run CMPivot (Intune admin center / tenant attach),Read + Run CMPivot,Collection,,plus an Intune role; with Intune RBAC: Cloud attached devices\Run CMPivot query (Endpoint Security Manager; School Administrator; Help Desk Operator),S320;S341
-Client notification actions (all items in Client notification menu),Notify Resource,Collection (SMS_Collection),Full Administrator; Operations Administrator (S326) / Full Administrator; Infrastructure Administrator (S340; S326 client diagnostics),1810+,S326;S340
-Client diagnostics (verbose logging; collect client logs),Notify Resource,Collection,Full Administrator; Infrastructure Administrator,1910+,S326
-Wake Up (client notification),Notify Resource,Collection,,,S326
-Tenant attach timeline,Read; Read Resource; Notify Resource,Collection,,plus an Intune role,S349
-Run Script,Run Script,Collection (SMS_Collection),Full Administrator; Infrastructure Administrator; Operations Administrator,Run Scripts is a superset of Run CMPivot,S326;S323;S316
-Run Script (custom role Script Runners),Run Script + Site Read + SMS Scripts Read,Collection; Site; SMS Scripts,custom role (not built in),,S323
-Author/import script,Create (+ Read; Modify; Delete),SMS Scripts (SMS_Scripts),custom role Script Authors,,S323
-Approve or deny script,Approve (+ Read; Modify),SMS Scripts,custom role Script Approvers,author cannot approve own script unless hierarchy setting 'Script authors require additional script approver' is cleared,S323
-Run script from Intune admin center,Read; Read Resource; Run Script,Collection,,plus Intune role; scripts with parameters not shown; Intune RBAC: Cloud attached devices\Run script (School Administrator; Help Desk Operator),S325;S341
-Script folders (2403+),manage folders,SMS Scripts,Full Administrator; Operations Administrator,2403+,S351
-Read device custom properties via AdminService,Read Resource,Collection,,2107+,S303
-Set device custom properties via AdminService,Modify Resource,Collection,,2107+,S303
-Delete device custom properties via AdminService,Delete Resource,Collection,,2107+,S303
-Install client,Modify Resource + Read,Collection,Application Administrator; Full Administrator; Infrastructure Administrator; Operations Administrator; OS Deployment Manager,,S326
-Endpoint Protection actions,Enforce Security,Collection,Full Administrator; Endpoint Protection Manager; Operations Administrator,,S326
-Any AdminService call,administrative user in ConfigMgr (RBAC applies),per object,,CMG access also needs an Entra ID account,S300;S305
+Run CMPivot (console/standalone),Run CMPivot,Collection (SMS_Collection),Full Administrator (all permissions); Security Administrator (added 1906); others UNK,1906+; in 1902 and earlier Run Script was required,S-2z2zfj3l;S-sxtmngif;S1218
+Run CMPivot (console/standalone),Read,Inventory Reports,Security Administrator (added 1906); others UNK,all versions,S-2z2zfj3l;S-sxtmngif
+Run CMPivot (console/standalone),Read,SMS Scripts,Security Administrator (added 1906),not required from 2107 except when AdminService falls back to SMS Provider (HTTP 503),S-2z2zfj3l;S-sxtmngif
+Run CMPivot (console/standalone),Default scope,Security scope,,not required from 2107,S-2z2zfj3l
+Run CMPivot (Intune admin center / tenant attach),Read + Run CMPivot,Collection,,plus an Intune role; with Intune RBAC: Cloud attached devices\Run CMPivot query (Endpoint Security Manager; School Administrator; Help Desk Operator),S-bprslswi;S-5v5lco6w
+Client notification actions (all items in Client notification menu),Notify Resource,Collection (SMS_Collection),Full Administrator; Operations Administrator (S-hmjlvsck) / Full Administrator; Infrastructure Administrator (S-lef2ok5a; S-hmjlvsck client diagnostics),1810+,S-hmjlvsck;S-lef2ok5a
+Client diagnostics (verbose logging; collect client logs),Notify Resource,Collection,Full Administrator; Infrastructure Administrator,UNK (1910 on no official page),S-hmjlvsck
+Wake Up (client notification),Notify Resource,Collection,,,S-hmjlvsck
+Tenant attach timeline,Read; Read Resource; Notify Resource,Collection,,plus an Intune role,S-pl6uxpad
+Run Script,Run Script,Collection (SMS_Collection),Full Administrator; Infrastructure Administrator; Operations Administrator,Run Scripts is a superset of Run CMPivot,S-hmjlvsck;S1520;S-sxtmngif
+Run Script (custom role Script Runners),Run Script + Site Read + SMS Scripts Read,Collection; Site; SMS Scripts,custom role (not built in),,S1520
+Author/import script,Create (+ Read; Modify; Delete),SMS Scripts (SMS_Scripts),custom role Script Authors,,S1520
+Approve or deny script,Approve (+ Read; Modify),SMS Scripts,custom role Script Approvers,author cannot approve own script unless hierarchy setting 'Script authors require additional script approver' is cleared,S1520
+Run script from Intune admin center,Read; Read Resource; Run Script,Collection,,plus Intune role; scripts with parameters not shown; Intune RBAC: Cloud attached devices\Run script (School Administrator; Help Desk Operator),S-aaryifxi;S-5v5lco6w
+Script folders (2403+),manage folders,SMS Scripts,Full Administrator; Operations Administrator,2403+,S-p2yatbfh
+Read device custom properties via AdminService,Read Resource,Collection,,2107+,S-wkltnypi
+Set device custom properties via AdminService,Modify Resource,Collection,,2107+,S-wkltnypi
+Delete device custom properties via AdminService,Delete Resource,Collection,,2107+,S-wkltnypi
+Install client,Modify Resource + Read,Collection,Application Administrator; Full Administrator; Infrastructure Administrator; Operations Administrator; OS Deployment Manager,,S-hmjlvsck
+Endpoint Protection actions,Enforce Security,Collection,Full Administrator; Endpoint Protection Manager; Operations Administrator,,S-hmjlvsck
+Any AdminService call,administrative user in ConfigMgr (RBAC applies),per object,,CMG access also needs an Entra ID account,S-o6f7ibqo;S-uispggqe

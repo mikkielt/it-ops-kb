@@ -28,14 +28,14 @@ retyped by hand [DOC S1576]. T1562 "Impair Defenses" is revoked in the v19.2 dat
 - LINDDUN (Linking, Identifying, Non-repudiation, Detecting, Data Disclosure, Unawareness, Non-compliance) is a privacy-focused
   threat-modeling method with a catalog of privacy threat types, threat trees, mitigation strategies and tool
   support, developed and maintained by KU Leuven's DistriNet research unit. [DOC S1573]
-- The Microsoft Threat Modeling Tool is a free tool that uses a STRIDE-per-element methodology and produces a
-  data-flow-diagram-based report; current version is documented on Microsoft Learn. [DOC S1574]
-- T1072 Software Deployment Tools: adversaries may abuse third-party software/configuration-management tools to
-  move laterally and execute code across an estate; the technique was expanded to cover tools like configuration
-  managers and cloud admin consoles. Component touched: ConfigMgr baselines/Run Scripts, which is exactly this
+- The Microsoft Threat Modeling Tool is a core element of the Microsoft SDL, built for non-security experts; it
+  gives guidance while drawing a model, guided STRIDE-per-element analysis of threats and mitigations, and reporting. [DOC S1574]
+- T1072 Software Deployment Tools: adversaries may use centralized software suites (configuration management and
+  software deployment, e.g. SCCM, Intune, Azure Arc) to execute commands and move laterally; SaaS-based services
+  can also run commands on on-premises endpoints. Component touched: ConfigMgr baselines/Run Scripts, which is exactly this
   class of tool. [DOC S1565]
-- T1484 Domain or Tenant Policy Modification: adversaries may modify Group Policy or Entra/Azure AD tenant policy
-  to bypass security controls, covering both on-prem GPO and cloud IdP policy objects. Component touched:
+- T1484 Domain or Tenant Policy Modification: adversaries may modify domain or identity-tenant settings (e.g. AD
+  GPOs, domain or federation trusts) to evade defenses or escalate privileges. Component touched:
   policy-precedence surface (GPO vs DSC vs MDM, see `security/policy-precedence.md`, part A). [DOC S1566]
 - T1098 Account Manipulation: adversaries may add credentials, permissions or group memberships to maintain
   access. Component touched: the identity/RBAC surface covered in `auth/threats.md` — not duplicated here.
@@ -46,15 +46,15 @@ retyped by hand [DOC S1576]. T1562 "Impair Defenses" is revoked in the v19.2 dat
 - T1078 Valid Accounts: use of legitimate credentials (default, local, domain or cloud) to gain and maintain
   access, evading detections aimed at malware. Component touched: the engineer's delegated identity and any
   scheduled-job read-only identity; already covered in `auth/threats.md`. [DOC S1569]
-- T1219 Remote Access Software: legitimate remote-access/remote-monitoring tools used for persistence or lateral
-  movement. Component touched: not a direct function of a device-management tool, but relevant to the admin-workstation hardening
+- T1219 Remote Access Tools: legitimate remote-access tools
+  used as an interactive command-and-control channel or for redundant access; installing them may add persistence. Component touched: not a direct function of a device-management tool, but relevant to the admin-workstation hardening
   covered in `management-plane-hardening.md` (part B). [DOC S1570]
 - T1562 Impair Defenses: disabling or modifying security tools, including Defender exclusions and tampering
   protection bypass. In the v19.2 STIX data this technique id is revoked and replaced by T1685 "Disable or Modify
   Tools", which carries the current mitigations/detections. [DOC S1571][DOC S1576] Component touched:
   read-only visibility into Defender machine state (design scope); a tool built this way does not itself
   disable defenses (tier ≤3 only).
-- Mitigation and detection-strategy ids for all 7 techniques (5-9 mitigations and one detection strategy with
+- Mitigation and detection-strategy ids for all 7 techniques (3-10 mitigations and one detection strategy with
   2-7 analytics each) are in `attack-subset.csv`; not retyped here to avoid transcription drift from the pinned
   bundle. [DOC S1576]
 
@@ -62,7 +62,7 @@ retyped by hand [DOC S1576]. T1562 "Impair Defenses" is revoked in the v19.2 dat
 
 | Technique | Name | Component | Mitigation ids (M####) | Detection strategy id (DET####) | Source |
 |---|---|---|---|---|---|
-| T1072 | Software Deployment Tools | ConfigMgr baselines / Run Scripts | M1029,M1033,M1017,M1030,M1027,M1018,M1026,M1032,M1015,M1051 (9) | DET0223 (5 analytics) | S1565,S1576 |
+| T1072 | Software Deployment Tools | ConfigMgr baselines / Run Scripts | M1029,M1033,M1017,M1030,M1027,M1018,M1026,M1032,M1015,M1051 (10) | DET0223 (5 analytics) | S1565,S1576 |
 | T1484 | Domain or Tenant Policy Modification | GPO/DSC/MDM policy precedence (see policy-precedence.md, part A) | M1018,M1026,M1047 (3) | DET0270 (2 analytics) | S1566,S1576 |
 | T1098 | Account Manipulation | identity/RBAC (see auth/threats.md) | M1028,M1030,M1018,M1022,M1026,M1032,M1042 (7) | DET0096 (6 analytics) | S1567,S1576 |
 | T1558 | Steal or Forge Kerberos Tickets | interactive identity (see auth/threats.md, auth/kerberos.md) | M1015,M1043,M1041,M1027,M1047,M1026 (6) | DET0522 (3 analytics) | S1568,S1576 |

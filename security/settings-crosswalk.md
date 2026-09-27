@@ -3,7 +3,7 @@ topic: security/settings-crosswalk
 priority: P0
 applies_to: "Windows 11 Enterprise 24H2 (Microsoft baseline package 24H2), DISA STIG Windows 11 V2R9 and Windows Server 2025 V1R3 (2026-08-10), Intune Windows baseline 24H2 pivot, DSC 3.3.0"
 retrieved_utc: 2026-09-26
-sources: [S1470, S1471, S1472, S1598, S1473, S-oeh7ui3h, S1477, S1478, S1479, S1590, S1591, S1413, S1414, S1415, S1416, S1594, S1595, S1596]
+sources: [S1470, S1471, S1472, S1598, S1473, S-oeh7ui3h, S1477, S1478, S1479, S1590, S1591, S1413, S1414, S1415, S1416, S1594, S1595, S1596, S114, S-lzzhbeao]
 status: partial
 files: [security/artifacts/disa/, security/artifacts/microsoft/, security/artifacts/osconfig/]
 ---
@@ -25,7 +25,8 @@ files: [security/artifacts/disa/, security/artifacts/microsoft/, security/artifa
 - Windows Server 2025 STIG V1R3 has 291 rules, 96 of them with a registry path. [DER S1471]
 - The Intune Windows baseline for 24H2 says it takes its settings from the Windows 11 24H2 security baseline in the Security Compliance Toolkit, and keeps only the settings that apply to Windows devices managed through Intune. [DOC S-oeh7ui3h]
 - Column `intune_baseline` is `yes` when the setting name from the Microsoft workbook appears as a setting name in the Intune 24H2 pivot. This is true for 164 of 335 registry rows. `no_name_match` does not prove absence, because CSP names can differ from GPO names. [DER S1472,S-oeh7ui3h]
-- The OSConfig Server 2025 baseline v2606 (MIT) has 361 settings. It maps 329 of them to a CIS RuleID and 147 to a Server 2025 STIG id. 165 crosswalk rows match an OSConfig registry setting, and 152 of those carry a CIS RuleID. [DOC S1598] [DER S1598: join on registry key + value]
+- The OSConfig Server 2025 baseline v2606 (MIT) has 361 settings. It maps 329 of them to a CIS RuleID and 147 to a Server 2025 STIG id. [DOC S1598]
+- 165 crosswalk rows match an OSConfig registry setting, and 152 of those carry a CIS RuleID. [DER S1598: join on registry key + value]
 - `SecurityPolicyDsc` and `AuditPolicyDsc` are the adapter paths for security policy, user rights and advanced audit policy (see `dsc-coverage.md`). [DOC S1413,S1415,S1594,S1595]
 
 ## Reference

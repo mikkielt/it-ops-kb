@@ -3,7 +3,7 @@ topic: security/policy-precedence
 priority: P0
 applies_to: "Windows 11 Enterprise 24H2/25H2, AD DS Group Policy, Intune MDM, ConfigMgr current branch co-management, DSC 3.3.0"
 retrieved_utc: 2026-09-26
-sources: [S1412, S1592, S1593, S1591, S1477, S-oeh7ui3h]
+sources: [S1412, S1592, S1593, S1591, S1477, S-oeh7ui3h, S-ycuzbjvk]
 status: partial
 ---
 
@@ -12,7 +12,7 @@ status: partial
 ## Summary
 - **Order of Group Policy:** local GPO, then site, domain and OU GPOs. The GPO closest to the object wins, unless a higher link is *enforced*.
 - **Refresh:** the background refresh runs every 90 minutes plus up to 30 random minutes (every 5 minutes on DCs). By default an extension reapplies settings only when its GPOs or its GPO list changed.
-- So a DSC `set` that changes a GPO-managed value is **not** necessarily reverted at the next refresh. It is reverted at the next change to the GPO, or at the next forced run (`gpupdate /force`, startup). [DER S1592]
+- So a DSC `set` that changes a GPO-managed value is **not** necessarily reverted at the next refresh. It is reverted at the next change to the GPO or its GPO list, or at the next forced refresh (`gpupdate /force` reapplies all settings); whether a startup (foreground) run reapplies unchanged settings is not stated. [DER S1592,S-ycuzbjvk: the refresh rule plus the /force parameter]
 - **MDM versus GP:** `MDMWinsOverGP` is off by default. When on, it covers only Policy CSP settings that have a GP equivalent.
 - **Co-management:** when the *Device configuration* workload is moved to Intune, ConfigMgr configuration baselines stop applying to co-managed devices unless the baseline has **"Always apply this baseline even for co-managed clients"** enabled.
 - **DSC `test`** reports only the live value against the document. It cannot tell which writer set the value.
@@ -24,13 +24,11 @@ status: partial
   - An *enforced* link stops lower containers from overriding it.
   - Enforced takes precedence over *block inheritance*. [DOC S1592]
 - Computer policy applies at startup and user policy at logon (foreground). After that, policy refreshes in the background every 90 minutes, with a random addition of up to 30 minutes. Domain controllers check for computer policy changes every 5 minutes. [DOC S1592]
-- "During a policy refresh, by default, a client-side extension reapplies policy settings only if it detects a change to one of its GPOs or to its list of GPOs." [DOC S1592] (quoted, 31 words; CC BY 4.0)
-- So a local change to a GPO-managed registry value can stay until one of these happens:
-  - the GPO or the GPO list changes;
-  - a forced refresh;
-  - the extension is set to process even when the GPOs have not changed.
-
-  The page does not say whether the security-settings extension has a separate periodic reapply. [DER S1592] [UNK]
+- By default, during a policy refresh a client-side extension reapplies its settings only when it detects a change to one of its GPOs or to its GPO list, for performance reasons. [DOC S1592]
+- `gpupdate /force` reapplies all policy settings; by default only settings that changed are applied. [DOC S-ycuzbjvk]
+- So a local change to a GPO-managed registry value can stay until the GPO or the GPO list changes, or a forced refresh runs. [DER S1592,S-ycuzbjvk: the refresh rule plus the /force parameter]
+- An extension can also be set to process even when its GPOs have not changed. [UNK: not in S1592 as re-read 2026-09-27]
+- The page does not say whether the security-settings extension has a separate periodic reapply. [UNK]
 - All Group Policy processing must finish within 60 minutes. This timeout cannot be changed. [DOC S1592]
 - Tattooing: none of the pages fetched this pass states whether registry values under `...\Policies\...` are removed when a GPO stops applying, or whether values outside `Policies` persist. [UNK, see `gaps.md`]
 - The only official statement found is the LSA protection page: setting the policy to *Not Configured* after it was enabled does not clean up the earlier setting, which "continues to be enforced". [DOC S1477]
@@ -38,7 +36,7 @@ status: partial
 - `MDMWinsOverGP` (Policy CSP `ControlPolicyConflict`):
   - default is `0`, and with `0` Group Policy is not blocked;
   - it applies only to policies represented in the Policy CSP with a GP mapping (ADMX-backed or mapped), not to other CSPs such as Defender. [DOC S1412]
-- When `MDMWinsOverGP` is `1`, it must be reapplied at every MDM sync. Each sync then removes conflicting out-of-band changes. [DOC S1412]
+- When `MDMWinsOverGP` is `1`, the policy should be set at every MDM sync. Each sync then removes conflicting values that scripts or users set outside GP. [DOC S1412]
 - Co-management has seven workloads: compliance policies, Windows Update policies, resource access, Endpoint Protection, device configuration, Office Click-to-Run apps and client apps. Until a workload is switched, ConfigMgr keeps managing it. [DOC S1593]
 - When the *Device configuration* workload is switched to Intune:
   - ConfigMgr settings can still reach co-managed devices through a configuration baseline with **Always apply this baseline even for co-managed clients**;

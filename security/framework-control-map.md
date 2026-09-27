@@ -3,7 +3,7 @@ topic: security/framework-control-map
 priority: P2
 applies_to: "ISO/IEC 27001:2022 Annex A; NIST CSF 2.0; CIS Controls v8.1; NIS2 Art. 21(2), as of 2026-09-24"
 retrieved_utc: 2026-09-24
-sources: [S1552, S1560, S1562, S1563, S-n3ela3o4]
+sources: [S1552, S-fr4o3437, S1562, S1563, S-n3ela3o4, S-riwffp3c]
 status: partial
 ---
 
@@ -22,9 +22,10 @@ non-commercial) [DOC S1563], so safeguard IDs and titles are cited but not modif
   AU-06/AU-12 and A.8.32 from CM-03/CM-05/SA-10/SI-02. [DOC S-n3ela3o4]
 - The csv titles (Access control, Access rights, Privileged access rights, ...) and the grouping of Annex A into four
   themes (organizational, people, physical, technological; 93 controls) are not confirmed: the NIST crosswalk lists
-  ids without titles, and iso.org (S1560) is not readable here. [UNK: titles and themes not in S-n3ela3o4; S1560 unreadable]
-- NIST CSF 2.0 (published 2024-02-26) added the "Govern" function to the five prior functions (Identify, Protect,
-  Detect, Respond, Recover). [DOC S1562]
+  ids without titles, and iso.org is not readable here. [UNK: titles and themes not in S-n3ela3o4; iso.org unreadable]
+- NIST CSF 2.0 (CSWP 29, published 2024-02-26) organizes its Core into six Functions: Govern, Identify, Protect,
+  Detect, Respond and Recover; the csv's CSF subcategory ids and short titles come from it. [DOC S-riwffp3c]
+- That Govern is the one Function added to the five of CSF 1.1. [UNK: not in S1562 as re-read 2026-09-27]
 - CIS Controls v8.1 (March 2025) has 18 Controls and 153 Safeguards across three Implementation Groups; licensed
   CC BY-NC-ND 4.0 (no derivatives). The csv therefore cites safeguard IDs only, with a short own-words paraphrase
   in place of the official safeguard title, rather than reproducing CIS wording. [DOC S1563]

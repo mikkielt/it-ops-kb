@@ -313,30 +313,15 @@ b9ea60da0f5c,support zip guid naming
 87b26059d5cf,14 day cleanup schedule
 52ed0df88a5e,collect logs rbac permission
 52ed0df88a5e,Notify resource role
-0ceba47b7c57,sops encryption formats
-0ceba47b7c57,What formats of files can sops encrypt?
-0ceba47b7c57,What key sources does sops support for encryption?
-6ddec84e70bc,.sops.yaml routing configuration
-6ddec84e70bc,How do you configure which encryption keys are used for different files in sops?
-6ddec84e70bc,Can you change sops recipients without re-encrypting the data values?
-6183591bdb16,age encryption recipients
-6183591bdb16,How do you encrypt files with age and specify who can decrypt them?
-6183591bdb16,Does age support key expiry or revocation?
-116f9f50acf7,Vault transit encrypt decrypt
-116f9f50acf7,What does Vault's transit engine do and how does it work?
-116f9f50acf7,Do callers get access to the raw encryption key in Vault transit operations?
-9551a506b59f,HashiCorp Vault license open source
-9551a506b59f,What license does HashiCorp Vault use starting in version 1.11?
-9551a506b59f,Is Vault considered open source software?
-cb9c20c6f1aa,Python Fernet symmetric encryption
-cb9c20c6f1aa,How does Python's cryptography Fernet class implement encryption?
-cb9c20c6f1aa,Can Fernet tokens have an expiration time without external scheduling?
-b99b09578957,git-crypt transparent encryption
-b99b09578957,How does git-crypt encrypt files in a git repository?
-b99b09578957,How are git-crypt keys shared with team members?
-e3e0242105a7,encryption audit logging reveal events
-e3e0242105a7,Which encryption tool has built-in logging for access to decrypted data?
-e3e0242105a7,"Do sops, age, Vault, Python cryptography, or git-crypt track secret access?"
+fb900473a31d,.sops.yaml routing configuration
+fb900473a31d,How do you configure which encryption keys are used for different files in sops?
+fb900473a31d,Can you change sops recipients without re-encrypting the data values?
+caebc1ca66f8,HashiCorp Vault license open source
+caebc1ca66f8,What license does HashiCorp Vault use starting in version 1.11?
+caebc1ca66f8,Is Vault considered open source software?
+418a85bf9dd7,Python Fernet symmetric encryption
+418a85bf9dd7,How does Python's cryptography Fernet class implement encryption?
+418a85bf9dd7,Can Fernet tokens have an expiration time without external scheduling?
 30ddeba18ce6,RecognizerRegistryConfig top level fields
 30ddeba18ce6,What fields are defined in the top-level RecognizerRegistryConfig?
 30ddeba18ce6,How do you specify supported languages in the recognizer registry?

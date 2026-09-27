@@ -3,7 +3,7 @@ topic: security/supply-chain
 priority: P1
 applies_to: "a Python 3.13 package built with uv; GitLab self-managed CI/CD"
 retrieved_utc: 2026-09-26
-sources: [S1501, S1502, S-paztzzud, S1504, S1505, S1506, S1507, S1508, S1509, S1510, S1511, S1512, S1517, S1522, S1523, S1524, S1525, S1597, S-sxp3exzp]
+sources: [S1501, S1502, S-paztzzud, S1504, S1505, S1506, S1507, S1508, S1509, S1510, S1511, S1512, S1517, S1522, S1523, S1524, S1525, S1597, S-sxp3exzp, S-dlc2x6gf]
 status: partial
 ---
 
@@ -19,14 +19,15 @@ NIST SSDF (SP 800-218 v1.1, plus the 800-218A generative-AI companion profile) a
 - OpenSSF Scorecard is an automated tool that scores an open-source project (0-10) across security-practice checks (branch protection, pinned dependencies, CI permissions, etc.); source at github.com/ossf/scorecard, Apache-2.0 licensed. [DOC S1504]
 - SPDX (Software Package Data Exchange) is at spec version 3.0.x, restructured around profiles (core, software, security, build, AI, dataset, licensing, lite). SPDX 2.2.1 corresponds to the ratified ISO/IEC 5962:2021 standard; SPDX 3.0's ISO/IEC submission was still in draft status (DIS) as of this research pass. [DOC S1505]
 - CycloneDX is an OWASP-project SBOM format; the 1.x line has continued to add fields (cryptographic assurance, IP visibility) through recent releases. [DOC S1506]
-- `uv pip compile --generate-hashes` emits a requirements file (or PEP 751 `pylock.toml`) with every dependency's version pinned and hash recorded. [DOC S1522]
+- `uv pip compile` locks dependencies to exact versions in a `requirements.txt` or PEP 751 `pylock.toml` output file, and `--generate-hashes` adds distribution hashes to that file. [DOC S1522, S-dlc2x6gf]
 - `pip install`/`pip download --require-hashes` puts pip into hash-checking mode: installation fails unless every requirement, including transitive dependencies, carries a matching hash. [DOC S1507]
 - PyPI Trusted Publishing lets a CI job obtain a short-lived PyPI API token via OIDC instead of storing a long-lived token as a secret; the minted token is project-scoped and valid for 15 minutes. Supported OIDC issuers are GitHub Actions, GitLab CI/CD, Google Cloud and ActiveState. [DOC S1508,S1597]
-- PyPI's *Adding a Trusted Publisher* page states, for GitLab: "Currently, only projects hosted on https://gitlab.com are supported. Self-managed instances are not supported." [DOC S1597] A third-party report claiming support for self-managed instances is contradicted by this page. [COMMUNITY S1510]
+- PyPI's *Adding a Trusted Publisher* page states, for GitLab: "Currently, only projects hosted on https://gitlab.com are supported. Self-managed instances are not supported." [DOC S1597]
+- A Socket post (2025-11-14) reports that PyPI extended Trusted Publishing to GitLab Self-Managed as a beta, with PyPI staff onboarding each instance by hand; the PyPI page above does not reflect this. [COMMUNITY S1510]
 - Registering a GitLab Trusted Publisher on PyPI requires the repository's namespace, the repository's name and the file path of the top-level GitLab CI/CD pipeline definition (e.g. `.gitlab-ci.yml`) authorized to upload; a GitLab environment name is optional but strongly recommended. [DOC S1597]
 - The publishing CI job requests an OIDC token with GitLab's `id_tokens:` keyword (named `PYPI_ID_TOKEN` in PyPI's example) with audience `pypi` (`testpypi` for TestPyPI); twine then uploads with no token configured and exchanges the OIDC token for a PyPI API token. [DOC S1525]
 - GitLab's SLSA Build Level 3 provenance/attestation feature (behind the `slsa_provenance_statement` flag and the `ATTEST_BUILD_ARTIFACTS` CI/CD variable) requires the **project to be public**, and the attested artifact must be 100 MB or smaller. [DOC S1523]
-- GitLab describes its own default DevSecOps pipeline behaviour as reaching SLSA Level 1-2 out of the box, with Level 3 requiring the explicit attestation feature above. [DOC S1524]
+- A 2022 GitLab blog post says the platform then supported SLSA Levels 1 and 2 (the Runner writes provenance metadata when `RUNNER_GENERATE_ARTIFACTS_METADATA: true` is set) and that features such as signing the attestation were planned for Levels 3 and 4; it predates SLSA v1.x build levels. [DOC S1524]
 - GitLab's dependency scanning using SBOM (Ultimate; GitLab.com, Self-Managed and Dedicated; generally available in GitLab 19.0) has its analyzer emit a CycloneDX SBOM for each directory with a supported lockfile, manifest or dependency graph, and scans it for known vulnerabilities; third-party CycloneDX SBOMs supplied as CI/CD artifact reports are technically possible but documented as subject to change, and must comply with CycloneDX spec 1.4, 1.5 or 1.6 and GitLab's CycloneDX property taxonomy (the page does not state which spec version the analyzer itself emits). [DOC S1511]
 - GitLab's pipeline security guidance says to always use SHA digests for job images (`image: <name>@sha256:<digest>`) instead of tags like `:latest`, for client-side integrity verification, and to prefer registries with protected repositories and protected tags; the `image` keyword accepts `<image-name>@<digest>`. [DOC S-sxp3exzp, S1512]
 - DSC v3's resource manifest format has no supply-chain integrity field of its own (see `security/script-and-code-signing.md`); any provenance for a DSC resource distributed with a package has to come from the package/CI supply chain above, not from DSC itself. [DER S1517: manifest schema has no signing/checksum field, so package-level provenance is the only lever]
@@ -38,7 +39,7 @@ NIST SSDF (SP 800-218 v1.1, plus the 800-218A generative-AI companion profile) a
 | SLSA v1.2 build levels | target level for a configuration repository's/package's CI builds | S-paztzzud |
 | PyPI Trusted Publishing | not available for self-managed GitLab; relevant only if the package is published to public PyPI | S1508,S1597 |
 | GitLab SLSA attestation | needs a **public** GitLab project; internal repos cannot use it as documented | S1523 |
-| uv/pip hash pinning | available today, no GitLab-tier dependency | S1522,S1507 |
+| uv/pip hash pinning | available today, no GitLab-tier dependency | S1522,S-dlc2x6gf,S1507 |
 | GitLab image digest pinning | available today (CI/CD YAML syntax), no GitLab-tier dependency | S-sxp3exzp, S1512 |
 
 ## Examples

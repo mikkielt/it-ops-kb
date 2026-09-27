@@ -1,17 +1,17 @@
 framework,control_id,title,control_example,sources
-ISO/IEC 27001:2022 Annex A,5.15,Access control,role-based access control + a tier table [DER],"S-n3ela3o4,S1560"
-ISO/IEC 27001:2022 Annex A,5.18,Access rights,platform RBAC + identity-provider group targets [DER],"S-n3ela3o4,S1560"
-ISO/IEC 27001:2022 Annex A,8.2,Privileged access rights,separate admin accounts; privileged-access-workstation guidance in management-plane-hardening.md (part B) [DER],"S-n3ela3o4,S1560"
-ISO/IEC 27001:2022 Annex A,8.8,Management of technical vulnerabilities,,"S-n3ela3o4,S1560"
-ISO/IEC 27001:2022 Annex A,8.9,Configuration management,configuration-as-code documents + merge-request review [DER],"S-n3ela3o4,S1560"
-ISO/IEC 27001:2022 Annex A,8.15,Logging,an audit table [DER],"S-n3ela3o4,S1560"
-ISO/IEC 27001:2022 Annex A,8.16,Monitoring activities,,"S-n3ela3o4,S1560"
-ISO/IEC 27001:2022 Annex A,8.32,Change management,merge-request review before a configuration change is applied [DER],"S-n3ela3o4,S1560"
-NIST CSF 2.0,GV.OC-01,Organizational mission informs cybersecurity risk management,a written scope statement for the tool [DER],S1562
-NIST CSF 2.0,PR.AA-05,Access permissions incorporate least privilege,role-based access control + a tier table [DER],S1562
-NIST CSF 2.0,PR.PS-01,Configuration management practices established,configuration-as-code documents + merge-request review [DER],S1562
-NIST CSF 2.0,DE.CM-01,Networks and network services monitored,out of scope for a CLI/stdio-only tool with no service/network component [UNK],S1562
-NIST CSF 2.0,RS.MA-01,Incident response plan executed,not yet defined; gap [UNK],S1562
+ISO/IEC 27001:2022 Annex A,5.15,Access control,role-based access control + a tier table [DER],"S-n3ela3o4,S-fr4o3437"
+ISO/IEC 27001:2022 Annex A,5.18,Access rights,platform RBAC + identity-provider group targets [DER],"S-n3ela3o4,S-fr4o3437"
+ISO/IEC 27001:2022 Annex A,8.2,Privileged access rights,separate admin accounts; privileged-access-workstation guidance in management-plane-hardening.md (part B) [DER],"S-n3ela3o4,S-fr4o3437"
+ISO/IEC 27001:2022 Annex A,8.8,Management of technical vulnerabilities,,"S-n3ela3o4,S-fr4o3437"
+ISO/IEC 27001:2022 Annex A,8.9,Configuration management,configuration-as-code documents + merge-request review [DER],"S-n3ela3o4,S-fr4o3437"
+ISO/IEC 27001:2022 Annex A,8.15,Logging,an audit table [DER],"S-n3ela3o4,S-fr4o3437"
+ISO/IEC 27001:2022 Annex A,8.16,Monitoring activities,,"S-n3ela3o4,S-fr4o3437"
+ISO/IEC 27001:2022 Annex A,8.32,Change management,merge-request review before a configuration change is applied [DER],"S-n3ela3o4,S-fr4o3437"
+NIST CSF 2.0,GV.OC-01,Organizational mission informs cybersecurity risk management,a written scope statement for the tool [DER],S-riwffp3c
+NIST CSF 2.0,PR.AA-05,Access permissions incorporate least privilege,role-based access control + a tier table [DER],S-riwffp3c
+NIST CSF 2.0,PR.PS-01,Configuration management practices established,configuration-as-code documents + merge-request review [DER],S-riwffp3c
+NIST CSF 2.0,DE.CM-01,Networks and network services monitored,out of scope for a CLI/stdio-only tool with no service/network component [UNK],S-riwffp3c
+NIST CSF 2.0,RS.MA-01,Incident response plan executed,not yet defined; gap [UNK],S-riwffp3c
 CIS Controls v8.1,4.1,keep a documented process for configuring systems securely,configuration-as-code documents as the configuration process [DER],S1563
 CIS Controls v8.1,5.4,use separate accounts for admin work,privileged-access-workstation guidance referenced in management-plane-hardening.md (part B) [DER],S1563
 CIS Controls v8.1,6.8,keep role-based access control defined and current,platform RBAC + identity-provider group targets [DER],S1563

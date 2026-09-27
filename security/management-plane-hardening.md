@@ -3,7 +3,7 @@ topic: security/management-plane-hardening
 priority: P1
 applies_to: "ConfigMgr current branch 2603; SQL Server 2022/2025; GitLab self-managed; Windows GitLab Runner"
 retrieved_utc: 2026-09-26
-sources: [S1480, S1481, S1482, S1483, S1484, S1485, S1486, S1487, S1488, S1489, S1490, S1491]
+sources: [S1480, S1481, S1482, S1483, S1484, S1485, S1486, S1487, S1488, S1489, S1490, S1491, S-thjpegto, S-psoai6ce]
 status: partial
 ---
 
@@ -16,11 +16,17 @@ ConfigMgr, its SQL Server site database, GitLab (a configuration repository) and
 ### ConfigMgr (constrains a scheduled-sync host, and any engineer using a CLI/MCP role against it)
 - Microsoft's site-administration security guidance recommends IPsec between site systems, and keeping site system roles off the site server rather than co-locating them, as security/operational-resilience best practices. [DOC S1480]
 - Client security guidance: deploy the ConfigMgr client only to trusted devices; site property lets you require HTTPS-only for site systems. [DOC S1483]
-- **MFA for SMS Provider calls** (constrains any interactive identity that reaches AdminService/SDK): available since ConfigMgr current branch 1702. When enabled, the SMS Provider and AdminService require the caller's token to carry an MFA claim from Windows Hello for Business (smart card or Hello for Business PIN/biometric) — this is a Windows sign-in MFA claim, not SMS-based OTP despite the setting's name. It is a global, hierarchy-wide setting; only a Full Administrator scoped to All can set it. [DOC S1482]
-- **Enhanced HTTP vs PKI HTTPS** (constrains a site's client communication config): sites allowing plain HTTP client communication are deprecated from ConfigMgr 2103 onward. Microsoft recommends PKI-certificate HTTPS for its finer-grained, enterprise-class controls; Enhanced HTTP is the fallback when PKI/HTTPS is not available. [DER S1480,S1483: general HTTPS-only guidance plus the deprecation note]
-- **NTLM fallback / client push** (constrains a site's push-install config, and is a documented attack surface against the site's own machine account): when automatic client push installation is enabled without a PKI client-auth certificate, NTLM authentication from the management point can be coerced to an attacker-controlled name. From ConfigMgr current branch 1806, the site can require Kerberos mutual authentication and refuse NTLM fallback. From version 2207 (hotfix KB15498768), "Allow connection fallback to NTLM" is **disabled by default on new site installations**, and Microsoft recommends disabling it on existing hierarchies. [DOC S1484]
+- **MFA for SMS Provider calls** (constrains any interactive identity that reaches the SMS Provider): available since ConfigMgr current branch 1702 (SMS here is Systems Management Server, not text messages). It is set with the `SMS_Site` method `SetAuthenticationLevel`: `AuthenticationLevel` 0 (default) adds no second layer, 10 allows provider calls only from users signed in with a PIN or smart card, 20 only from users signed in with a PIN; SIDs in `ExceptionList` (such as service accounts) bypass it. It is a global setting used on all primary sites; only a Full Administrator with the All scope can set it, signed in with the same method being enabled. [DOC S1482]
+- Whether the AdminService REST API enforces the same SMS Provider authentication level. [UNK: not in S1482 as re-read 2026-09-27]
+- **Enhanced HTTP vs PKI HTTPS** (constrains a site's client communication config): sites allowing plain HTTP client communication are deprecated from ConfigMgr 2103 onward; configure the site for HTTPS or Enhanced HTTP. [DOC S1480,S1483]
+- Microsoft recommends HTTPS for all ConfigMgr communication paths and calls PKI-based HTTPS the more secure configuration; where HTTPS is not possible, it recommends Enhanced HTTP, which uses site-issued self-signed certificates. PKI stays the option for all-HTTPS client communication and advanced control of the signing infrastructure. [DOC S-thjpegto]
+- **NTLM fallback / client push** (constrains a site's push-install config): from ConfigMgr current branch 1806, the site can require Kerberos mutual authentication for client push by not allowing fallback to NTLM; from version 2207, "Allow connection fallback to NTLM" is **disabled by default on new site installations**, and Microsoft recommends disabling it in existing environments. [DOC S-psoai6ce]
+- Hotfix KB15498768 (versions 2103-2207, resolves CVE-2022-37972) fixes a case where disabling the fallback was not honored: after Kerberos failures the push account, or the site server computer account, still tried NTLM. Without an upgrade, disabling automatic and manual client push removes the exposure. [DOC S1484]
+- That NTLM authentication from client push can be coerced to an attacker-controlled name when no PKI client-auth certificate is used. [UNK: not in S1484 as re-read 2026-09-27]
 - No CIS benchmark for Configuration Manager itself was found on the public CIS benchmark list. [UNK]
-- Microsoft's cloud security benchmark privileged-access guidance treats control-plane, management-plane and data-workload-plane administrative accounts as separate tiers to limit blast radius, and calls for regular review of the access granted for each plane. [DOC S1491] No page was found that names ConfigMgr explicitly as "Tier 0"; Microsoft's general enterprise access model (linked, not duplicated here — see [[enterprise-access-model]]) treats systems that can control identity or execute code across the estate, which a ConfigMgr site fits by function, as control-plane assets. [DER S1491: general control-plane tiering principle applied to a site that can push code to devices; UNK for an explicit "ConfigMgr = Tier 0" statement]
+- Microsoft's cloud security benchmark privileged-access guidance (PA-1) says to limit the number of privileged accounts in the control, management and data/workload planes, and to restrict privileged accounts in system management tools with agents installed on business-critical systems, because attackers who compromise such tools can weaponize them; PA-4 calls for regular review that granted access is valid for each plane. [DOC S1491]
+- A ConfigMgr site is such a system management tool (its client agent runs on managed devices), so its administrative accounts fall under PA-1's restriction. [DER S1491: PA-1's "system management tools with agents" applied to ConfigMgr]
+- No page was found that names ConfigMgr explicitly as "Tier 0"; see [[enterprise-access-model]] for the general tiering model. [UNK]
 
 ### SQL Server (constrains the database)
 - Prefer Windows/Entra authentication over SQL authentication; if SQL logins are unavoidable, require strong unique passwords. [DOC S1488]
@@ -46,8 +52,8 @@ ConfigMgr, its SQL Server site database, GitLab (a configuration repository) and
 | Guidance area | Component constrained | Source |
 |---|---|---|
 | MFA for SMS Provider | interactive client role, any AdminService/SDK caller | S1482 |
-| Enhanced HTTP / PKI HTTPS | site system config | S1480,S1483 |
-| NTLM fallback / client push | push install config | S1484 |
+| Enhanced HTTP / PKI HTTPS | site system config | S1480,S1483,S-thjpegto |
+| NTLM fallback / client push | push install config | S1484,S-psoai6ce |
 | SQL Server hardening + CIS benchmark | the store database | S1486,S1488 |
 | GitLab CIS benchmark | CI runner, configuration repository | S1487,S1489 |
 | Privileged-access tiering | all identities | S1491 |

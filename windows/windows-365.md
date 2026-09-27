@@ -3,7 +3,7 @@ topic: windows/windows-365
 priority: P2
 applies_to: "Windows 365 Cloud PC (Enterprise, Frontline/Flex, Business, Government, Link, Boot), Graph v1.0, docs retrieved 2026-09-26"
 retrieved_utc: 2026-09-26
-sources: [S-3vcy7oqc, S-7haqmv5t, S-6bbkebpi, S-n5j76cvh, S-cklvv7d5, S-egljiuze, S-5alhdr35, S-lvqy67bp, S-vavpj2l2, S-pixm6i65, S-77ejmtcy, S-s4d4qbht, S-j3m43d2a, S-i3gqas6g, S-n3hgvxzn]
+sources: [S-3vcy7oqc, S-7haqmv5t, S-6bbkebpi, S-n5j76cvh, S-cklvv7d5, S-egljiuze, S-5alhdr35, S-lvqy67bp, S-vavpj2l2, S-pixm6i65, S-77ejmtcy, S-s4d4qbht, S-j3m43d2a, S-i3gqas6g, S-n3hgvxzn, S-k6rj6uel, S-qrxf7f4h, S-mbwkcgji]
 status: complete
 ---
 
@@ -11,26 +11,28 @@ status: complete
 
 ## Summary
 Windows 365 provisions a per-user Cloud PC virtual machine and streams it to any device; admins configure who
-gets one (and which image/network) via a **provisioning policy**, and Windows 365 then creates and licenses the
-Cloud PC automatically — admins never create a Cloud PC by hand. [DOC S-6bbkebpi, S-pixm6i65] Five editions:
-Business, Enterprise, Government, Flex (formerly Frontline), Reserve, plus the AI-agent variant "Windows 365 for
-Agents" (preview). [DOC S-3vcy7oqc] Graph exposes the same objects under
+gets one (and which image/network) via a **provisioning policy**, and Windows 365 then checks licensing and
+creates the Cloud PC automatically — admins don't create Cloud PCs manually. [DOC S-6bbkebpi, S-3vcy7oqc] Five
+editions: Business, Enterprise, Government, Flex (formerly Frontline), Reserve; the overview page also lists the
+AI-agent variant "Windows 365 for Agents" (preview). [DOC S-7haqmv5t, S-3vcy7oqc] Graph exposes the same objects under
 `/deviceManagement/virtualEndpoint/...`, gated mostly by `CloudPC.ReadWrite.All`. [DOC S-n5j76cvh, S-cklvv7d5]
 
 ## Facts
 
 ### Editions and identity
-- Windows 365 Business: up to 300 users, simple buy/deploy/manage, no Intune requirement. [DOC S-7haqmv5t]
+- Windows 365 Business: up to 300 users, simple buy/deploy/manage; the feature table marks Intune policy-driven
+  provisioning/management, custom images and Graph API enablement as Enterprise-only. [DOC S-7haqmv5t]
 - Windows 365 Enterprise: no license limit; requires Windows 11/10 Enterprise, Microsoft Intune, and Microsoft
   Entra ID P1 per user; managed through Intune with Entra ID and Defender for Endpoint integration; unattended
   RPA/bot use needs a Microsoft 365 Unattended License. [DOC S-7haqmv5t]
 - Windows 365 Government: spans a regulated US Government Community Cloud (GCC) and a public-facing cloud;
   Windows 365 Enterprise itself has been assessed by a FedRAMP-authorized auditor to meet FedRAMP requirements
-  at US data centers. [DOC S-7haqmv5t, S-3vcy7oqc]
-- Windows 365 Flex (formerly Frontline): a single license lets you provision up to three Cloud PCs for
-  non-concurrent use by different users (one active Cloud PC at a time per license); GA since service release
-  2306 (previously preview). Flex in **Shared mode** provisions a pool of Cloud PCs mapped to an Entra ID group,
-  one active Cloud PC per license. [DOC S-77ejmtcy]
+  at data centers within the Continental US. [DOC S-7haqmv5t, S-3vcy7oqc]
+- Windows 365 Flex, **Dedicated mode**: a single license lets you provision up to three Cloud PCs for
+  non-concurrent use, each assigned to one user, with one concurrent session per license. **Shared mode**: a
+  single license provisions one Cloud PC shared non-concurrently among a group of users (the licences set up for
+  a group give that many Cloud PCs); user data is deleted at sign-out. [DOC S-77ejmtcy]
+- Flex (then Frontline) GA since service release 2306, previously preview. [UNK: not in S-77ejmtcy as re-read 2026-09-27]
 - Windows 365 Reserve: each user can have a single Reserve Cloud PC in addition to their per-SKU Enterprise
   Cloud PCs. [DOC S-6bbkebpi]
 - In Enterprise, Business, and Government, users have a 1:1 relationship with their Cloud PC; with Flex, multiple
@@ -93,44 +95,44 @@ Agents" (preview). [DOC S-3vcy7oqc] Graph exposes the same objects under
   detail. [DOC S-egljiuze]
 - `POST /deviceManagement/virtualEndpoint/cloudPCs/{id}/resize`, body `{"targetServicePlanId": "<guid>"}`,
   returns `204 No Content`; least-privileged permission (delegated and application) is `CloudPC.ReadWrite.All`;
-  not supported for personal Microsoft accounts; unavailable in the China (21Vianet) national cloud (available in
-  global and US Gov L4/L5). [DOC S-5alhdr35]
+  not supported for personal Microsoft accounts; available in the global service and US Government L4, not in
+  US Government L5 (DOD) or China (21Vianet). [DOC S-5alhdr35]
 - `POST /deviceManagement/virtualEndpoint/cloudPCs/{id}/restore`, body
   `{"cloudPcSnapshotId": "<snapshot id>"}`, returns `204 No Content`; same `CloudPC.ReadWrite.All` permission and
   same national-cloud availability as resize. [DOC S-lvqy67bp]
 - `POST /deviceManagement/virtualEndpoint/cloudPCs/{id}/reprovision` uses the same `CloudPC.ReadWrite.All`
   permission model. [DOC S-vavpj2l2]
-- Provisioning-policy CRUD/assign (`cloudPcProvisioningPolicy` under
-  `/deviceManagement/virtualEndpoint/provisioningPolicies`) also uses `CloudPC.ReadWrite.All` (delegated and
-  application, least-privileged, work/school accounts only). [DOC S-cklvv7d5]
+- Creating a provisioning policy (`POST /deviceManagement/virtualEndpoint/provisioningPolicies`, returns
+  `201 Created` with a `cloudPcProvisioningPolicy`) also uses `CloudPC.ReadWrite.All` (delegated and
+  application, least-privileged; personal Microsoft accounts not supported). [DOC S-cklvv7d5]
 - `cloudPcProvisioningPolicy` key properties: `cloudPcNamingTemplate` (tokens `%USERNAME:x%`, `%RAND:x%`; total
   generated name ≤15 characters), `displayName` (required), `domainJoinConfigurations` (ordered list, priority
   for how Cloud PCs join Entra ID; required), `enableSingleSignOn` (bool, default `false` — lets Windows 365
   users authenticate to Entra ID passwordlessly, e.g. FIDO keys, to reach their Cloud PC), `imageDisplayName`,
   `cloudPcGroupDisplayName` (read-only), `autopatch` (Windows Autopatch settings, effective only when the tenant
   is enrolled in Autopatch and `microsoftManagedDesktop.managedType` is `starterManaged`), `alternateResourceUrl`
-  (read-only). [DOC S-n5j76cvh]
+  (read-only). [DOC S-n5j76cvh, S-cklvv7d5]
 - Other Graph `cloudPc*` resources: `cloudPcDeviceImage` and `cloudPcGalleryImage` (custom/gallery OS images),
   `cloudPcOnPremisesConnection` (Azure network connections, incl. health checks and AD password rotation),
-  `cloudPcAuditEvent` (audit log), `cloudPcUserSetting`. [DOC S-pixm6i65]
+  `cloudPcAuditEvent` (audit log), `cloudPcUserSetting`. [DOC S-k6rj6uel, S-pixm6i65]
 
 ### Windows 365 Boot
 - Windows 365 Boot lets a shared or dedicated Windows 11 physical device sign a user in directly to their Cloud
   PC instead of the physical desktop; requires the physical device and the Cloud PC to run Windows 11 Enterprise,
   Professional, or IoT Enterprise, version 22621.3374 or later, and a Windows 365 Enterprise licence to create
-  Boot provisioning policies. [DOC S-i3gqas6g, S-n3hgvxzn]
+  Boot provisioning policies. [DOC S-i3gqas6g, S-n3hgvxzn, S-qrxf7f4h]
 - Two modes: **Shared** (multiple users per device, each routed to their own Cloud PC; supports FIDO
   authentication) and **Dedicated** (one user per device; supports Windows Hello for Business). Authentication
   support matrix: username/password (both modes), Windows Hello for Business (Dedicated only), FIDO key (both),
   convenience PIN (neither). [DOC S-i3gqas6g]
-- Configured via the `WindowsLogon` CSP (`OverrideShellProgram`) and `CloudDesktop`/`SharedPC` policy nodes;
-  troubleshooting registry keys: `HKLM\Software\Microsoft\PolicyManager\current\device\CloudDesktop\BootToCloudMode=1`,
+- Enabled through the `CloudDesktop` CSP (shared mode also applies `SharedPC` settings); troubleshooting
+  registry entries to verify: `HKLM\Software\Microsoft\PolicyManager\current\device\CloudDesktop\BootToCloudMode=1`,
   `HKLM\...\WindowsLogon\OverrideShellProgram=1`, `HKLM\Software\Microsoft\Windows\CurrentVersion\SharedPC\NodeValues`
-  entries `18=1` and `01=1`. [DOC S-n3hgvxzn]
+  entries `18=1` and `01=1`. [DOC S-mbwkcgji, S-qrxf7f4h]
 - Deployment onboards the physical device through Windows Autopilot (`Get-WindowsAutopilotInfo -Online`) and
   requires the Windows App (package family name `MicrosoftCorporationII.Windows365_8wekyb3d8bbwe`) installed in
   **System** context so it's available to every signed-in user; an allowlist-style application-control policy on
-  the device must explicitly allow this package or Windows 365 Boot fails to launch. [DOC S-n3hgvxzn]
+  the device must explicitly allow this package or Windows 365 Boot fails to launch. [DOC S-n3hgvxzn, S-qrxf7f4h]
 
 ## Reference
 - `autopilot/device-preparation.md`: device preparation (v2) is the closest Autopilot analogue for onboarding

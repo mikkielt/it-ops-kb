@@ -105,7 +105,7 @@ _Agent: ops_
 ## Q12. Run Script parameters over the AdminService v1.0 route: documented?
 - No. The official AdminService docs list no v1.0 Run Script action. The documented v1.0 device actions are RunCMPivot, CMPivotResult and Set/Get/DeleteExtensionData. [DOC S302,S303,S306]
 - The documented way to pass parameters is `Invoke-CMScript -ScriptParameter <Hashtable>` (ConfigMgr 2010+). [DOC S335]
-- A community sample uses `v1.0/Device(<id>)/AdminService.RunScript` with `ScriptGuid` and parameters. It was not verified and is not official. [COMMUNITY S350]
+- A community sample uses `v1.0/Device(<id>)/AdminService.RunScript` with only `ScriptGuid` in the body (no parameters). It was not verified and is not official. [COMMUNITY S350]
 
 _Agent: mecm2_
 
@@ -192,7 +192,7 @@ _Agent: dsc_
 
 ## QA1. Does the AdminService require Kerberos, or fall back to NTLM?
 - Since ConfigMgr 2509, the AdminService rejects NTLM outright and logs "Rejecting NTLM authentication"; Kerberos/Negotiate with a correct SPN and FQDN is required. [DOC S307]
-- A community report confirms clients that previously relied on NTLM fallback (bad SPN, non-FQDN access) fail after upgrading past 2509 instead of degrading gracefully. [COMMUNITY S1213]
+- Clients that previously relied on NTLM fallback (bad SPN, non-FQDN access) fail after upgrading past 2509 instead of degrading gracefully; the community post S1213 only restates the 2509 rejection and its log line, not this failure mode. [UNK: not in S1213 as re-read 2026-09-27]
 
 _Agent: auth_
 
@@ -213,23 +213,25 @@ _Agent: auth_
 _Agent: auth_
 
 ## QA4. GitLab OIDC -> Entra federation: sub for protected tags, per-app FIC limit, flexible FIC status
-- Flexible/mutable-subject federated identity credentials exist as a documented Entra feature, distinct from exact-subject FICs, letting one credential match a pattern of GitLab tags. [DOC S1278]
+- Flexible federated identity credentials exist as a documented Entra feature, distinct from exact-subject FICs, letting one credential match a pattern of GitLab tags (e.g. `claims['sub'] matches '...'`). [DOC S1294]
+- Microsoft's "mutable subjects" page is a risk article, not a matching feature: a `sub` built from renameable names can be recycled by another party, so it recommends trusting an immutable subject (GitLab `sub` led by `project_id`). [DOC S1278]
 - Per-app/per-user-assigned-managed-identity limit: **20 federated identity credentials**; FICs don't consume the tenant service-principal quota. [DOC S1293]
-- Flexible FIC status: **preview**. Supported issuers named explicitly: GitHub, GitLab, Terraform Cloud. Expression language matches claim/operator/comparand (for GitLab: `sub` plus `project_id`/`namespace_id`/`user_id`); manageable only via Graph or the Azure portal. [DOC S1294]
+- Flexible FIC status: **preview**. Supported issuers named explicitly: GitHub, GitLab, Terraform Cloud. Expression language matches claim/operator/comparand; for GitLab the page lists only `sub` and `project_id` as supported claims. Manage it through Microsoft Graph, the Azure portal, or `az rest` (against Graph for apps, Azure Resource Manager for user-assigned managed identities); Azure CLI, Azure PowerShell and Terraform have no flexible FIC support. [DOC S1294]
+- The mutable-subjects page instead names `sub` plus one or more of `project_id`, `namespace_id`, `user_id` for a GitLab flexible FIC, which disagrees with S1294's claim list. [DOC S1278]
 - Exact GitLab `sub` for a tag pipeline (confirmed against docs.gitlab.com, not just search snippets): `project_path:{group}/{project}:ref_type:tag:ref:{tag_name}`, or with the immutable-subject option, `project_id:{id}:ref_type:tag:ref:{tag_name}`. [DOC S1276]
 
 _Agent: auth_
 
 ## QA5. MSAL Python + WAM on Windows 11/Server 2025; device code flow blocking
-- `msal[broker]>=1.33,<2`; Windows 10+/Server 2019+ only; redirect URI `ms-appx-web://microsoft.aad.brokerplugin/<client_id>`; needs a window handle, with `CONSOLE_WINDOW_HANDLE` provided for CLI apps. [DOC S1270]
-- IWA silent token acquisition works for public clients on a domain- or Entra-joined Windows machine, independent of WAM. [DOC S1271]
-- Conditional Access has a dedicated "Authentication flows" condition that can target and Block device code flow specifically; Microsoft recommends blocking it wherever possible as high-risk. [DOC S1272][S1273]
+- `msal[broker]>=1.20,<2` (the install command on the WAM page); Windows 10+/Server 2019+ only; redirect URI `ms-appx-web://microsoft.aad.brokerplugin/<client_id>`; needs a window handle, with `CONSOLE_WINDOW_HANDLE` provided for CLI apps. [DOC S1270]
+- IWA signs a domain user in silently on a domain- or Entra-joined Windows machine, only for federated+ (AD-backed) users, and does not bypass MFA; the IWA page states the flow is not yet supported in MSAL Python. [DOC S-o4jltpni]
+- Conditional Access has a dedicated "Authentication flows" condition that can target and Block device code flow specifically; Microsoft recommends blocking it wherever possible as high-risk. [DOC S1272, S1273]
 - Explicit headless/jump-host WAM caveats beyond "supported OS": [UNK].
 
 _Agent: auth_
 
 ## QA6. Token Protection and MSAL Python public clients
-- Token Protection (Conditional Access) binds refresh tokens to the device via proof-of-possession; documented scope is desktop apps accessing Exchange Online/SharePoint Online on Windows. [DOC S1274][S1227]
+- Token Protection (Conditional Access) accepts only device-bound sign-in session tokens (such as the PRT); native apps are generally available on Windows, iOS/iPadOS and macOS; documented resources are Exchange Online, SharePoint Online and Microsoft Teams, plus Azure Virtual Desktop and Windows 365 on Windows. [DOC S1227, S1274]
 - Whether it applies to a bespoke MSAL Python public client's Graph calls: [UNK] — not stated either way in the fetched deployment/concept pages.
 - Token Protection: native apps only (Client Apps condition = "Mobile apps and desktop clients"); browser-based clients (MSAL.js, Teams Web) excluded and can be blocked if Client Apps is left unscoped to Browser. Windows is GA; macOS/iOS preview since early 2026. Requires Entra ID P1. [DOC S1274]
 - No page names "MSAL Python" specifically; the boundary is by client type (native vs. browser), so a Windows MSAL Python CLI is architecturally the kind of client the feature targets, but this is derived, not stated. [DER S1274]
@@ -248,14 +250,15 @@ _Agent: auth_
 _Agent: auth_
 
 ## QA8. Entra Connect Sync / Cloud Sync intervals; group writeback status
-- Entra Connect Sync: 30-minute default and minimum supported cycle. [DOC S1279]
+- Entra Connect Sync: 30-minute default cycle; the supported floor is the tenant's `AllowedSyncCycleInterval`, and running faster is unsupported. [DOC S1279]
 - Cloud Sync: user/group provisioning ~10-20 min; password hash sync 2-5 min. [DOC S1280]
 - Group writeback via Cloud Sync: on-prem AD provisioning job runs ~every 20 minutes; the feature is live and documented as of this retrieval (2026-09-24), i.e. shipped, not preview. [DOC S1281]
 
 _Agent: auth_
 
 ## QA9. PIM for Groups activation latency in tokens / checkMemberGroups; reach to on-prem AD
-- PIM for Groups manages cloud-only Entra groups; on-prem AD is reached only via Cloud Sync group writeback, adding that job's own ~20-minute cycle on top of activation. [DOC S1282][S1283][S1281]
+- PIM for Groups cannot manage groups synchronized from on-premises (or dynamic groups). [DOC S-4teqh3ha]
+- On-prem AD is reached only via Cloud Sync group writeback of the PIM-managed cloud group, whose provisioning job runs every ~20 minutes, on top of activation. [DOC S1281]
 - A token already issued/cached does not reflect an activation until the client acquires a new token (no forced push-refresh of live tokens on activation). [DOC S1282]
 
 _Agent: auth_
@@ -283,8 +286,9 @@ _Agent: auth_
 _Agent: auth_
 
 ## QA13. SQL Server 2022/2025 on-prem Entra authentication: Arc required? Groups supported?
-- Yes, Azure Arc-enablement is required for on-prem Entra authentication; SQL Server 2025 (17.x) adds a "primary managed identity" model via the Azure Extension for SQL Server (portal steps differ from earlier versions). [DOC S1206]
-- Entra security groups are supported for authorization, the same way AD groups map to Windows Authentication logins. [DOC S1206,S1207]
+- No, Azure Arc is not strictly required: the Entra-auth overview documents setup with Arc and also on Windows without Arc (manual certificates, registry, app registration). [DOC S1207]
+- Arc is required for the SQL Server 2025 (17.x) "primary managed identity" setup via the Azure Extension for SQL Server. [DOC S1206]
+- Entra groups can be SQL Server logins (`CREATE LOGIN [group] FROM EXTERNAL PROVIDER`) and database users. [DOC S-jyoprgy5]
 
 _Agent: auth_
 
@@ -314,7 +318,7 @@ _Agent: auth_
 - No explicit "ConfigMgr = Tier 0" statement found in the enterprise access model, PAW or Windows LAPS docs reviewed this session (S1210, S1212, S1225, S1226). [UNK]
 - The enterprise access model generically defines a control plane whose compromise grants full environment control, and recommends PAWs + Windows LAPS + MFA universally; MFA for SMS Provider calls has been available since CB 1702 as the concrete lever. [DOC S1210,S1212,S1225,S1226]
 - KB5014754 (certificate strong-mapping) reached Full Enforcement on 2025-02-11 — directly relevant admin-security guidance for any certificate-based auth touching the SMS Provider/domain controllers. [DOC S1224]
-- Derived judgement (not an official Microsoft label): ConfigMgr's device/config control over the whole estate fits the control-plane definition. [DER S1210,S1212]
+- The enterprise access model puts "enterprise-wide IT management functions" in the management plane and bases the control plane on centralized identity systems, so on its wording ConfigMgr reads as management plane; treating it as control-plane (Tier 0) equivalent is a local judgement, not a Microsoft classification (see `_conflicts.md`). [DER S1210: plane definitions compared with ConfigMgr's role]
 
 _Agent: auth_
 
@@ -322,7 +326,8 @@ _Agent: auth_
 - `checkMemberGroups`: signed-in user (`/me`) delegated `User.Read` (no application support); other users `User.ReadBasic.All` + `GroupMember.Read.All` (delegated or application); any directory object `Directory.Read.All`. At most 20 group ids per call; membership is transitive. [DOC S1286]
 - `getMemberGroups`: user target `User.ReadBasic.All` + `GroupMember.Read.All`; any object `Directory.Read.All`. [DOC S1287]
 - So a client-side role check against a small fixed set of role groups fits one `/me/checkMemberGroups` call under `User.Read`. [DER S1286]
-- Call-specific throttling limits, caching guidance and CAE interplay for these two methods specifically: [UNK] — not stated on the API reference pages fetched.
+- `getMemberGroups` returns at most 11,000 group ids; beyond that it fails with 400 `Directory_ResultSizeLimitExceeded` (use transitive memberOf instead). [DOC S1287]
+- Other call-specific throttling limits, caching guidance and CAE interplay for these two methods: [UNK] — not stated on the API reference pages fetched.
 
 _Agent: auth_
 
@@ -338,8 +343,8 @@ _Agent: auth_
 
 ## QA20. On-prem runner Graph app-only tokens with no stored secret
 - Yes, via Azure Arc-enabled server system-assigned managed identity: local endpoint `http://localhost:40342/metadata/identity/oauth2/token`, protected by a challenge-response step so an unprivileged local process cannot mint tokens for the identity. [DOC S1290]
-- Also yes for the `ci` kind via GitLab OIDC → Entra workload identity federation: each job's `id_tokens` JWT is exchanged, no secret stored. Condition: Entra fetches the issuer's OIDC keys, so the GitLab instance's discovery and JWKS endpoints must be reachable by Entra ID; an internal-only GitLab cannot be the issuer. [DOC S1278,S1276,S1302]
-- Trade-off: CAE for workload identities (fast revocation on SP disable/delete) covers single-tenant service principals, not managed identities, so the Arc path gives up CAE. [DOC S1306]
+- Also yes for the `ci` kind via GitLab OIDC → Entra workload identity federation: each job's `id_tokens` JWT is exchanged, no secret stored. Condition: Entra fetches the issuer's OIDC keys, so the GitLab instance's discovery and JWKS endpoints must be reachable by Entra ID; an internal-only GitLab cannot be the issuer. [DOC S-w6ryunvm, S1293, S1276, S1302]
+- Trade-off: managed identities are excluded from both CAE for workload identities (fast revocation on SP disable/delete) and Conditional Access for workload identities, which cover single-tenant service principals only, so the Arc path gives up both. [DOC S1306, S1305]
 - Cost/requirement: Arc enrollment brings an Azure control-plane object, the Connected Machine agent as an additional always-on process on the host, and outbound HTTPS to Arc endpoints — a real cost for any design that intends no gateway/extra always-on service. [DER S1289]
 
 _Agent: auth_
@@ -387,7 +392,8 @@ _Agent: security_
   - not class-based;
   - last stable 2.10.0.0 (2019-09-19), last prerelease 3.0.0-preview0006 (2021-05-21);
   - repository active but no release since 2021. [DOC S1594,S1596]
-- `AuditPolicyDsc`: MOF resources (AuditPolicySubcategory, GUID, Option, Csv); not class-based; last release 1.4.0.0 (2019-01-10); last push 2019-02-13. [DOC S1595,S1596]
+- `AuditPolicyDsc`: last release 1.4.0.0 (2019-01-10) declares the resources `AuditPolicySubcategory`, `AuditPolicyGUID`, `AuditPolicyOption` and `AuditPolicyCsv` in its PowerShell Gallery tags. [DOC S1595]
+- That these are MOF (not class-based) resources and that the repository was last pushed on 2019-02-13. [UNK: not in S1596 as re-read 2026-09-27]
 - Script/MOF PSDSC resources can run only through the Windows PowerShell adapter. The PowerShell 7 adapter handles class-based resources only. [DOC S1473,S1474]
 - The adapter has no what-if, so `set --what-if` returns an error for these resources. [DOC S114]
 - No official page states that either module was tested with DSC v3. Running them needs a lab check. [UNK]
@@ -398,7 +404,8 @@ _Agent: security_
 - Group Policy applies local, then site, domain and OU GPOs. The GPO closest to the object wins unless a link is enforced. [DOC S1592]
 - The background refresh runs every 90 minutes plus up to 30 random minutes (DCs: 5 minutes). [DOC S1592]
 - By default, a client-side extension reapplies its settings only when its GPOs or its GPO list changed. [DOC S1592]
-- So a DSC `set` that contradicts a GPO keeps its value until one of: a GPO change, a forced refresh, a foreground refresh at startup, or a "process even if unchanged" setting. After that, GPO wins. [DER S1592]
+- So a DSC `set` that contradicts a GPO keeps its value until a GPO or GPO-list change, or a forced refresh (`gpupdate /force` reapplies all settings). After that, GPO wins. [DER S1592, S-ycuzbjvk: the refresh rule plus the /force parameter]
+- Whether a foreground refresh at startup, or a "process even if unchanged" setting, also reapplies unchanged settings. [UNK: not stated in S1592]
 - `MDMWinsOverGP` is 0 by default. It covers only Policy CSP settings with a GP mapping, not plain registry values or other CSPs. [DOC S1412]
 - Co-managed devices with the Device configuration workload on Intune evaluate ConfigMgr baselines only when the baseline has *Always apply this baseline even for co-managed clients*. [DOC S1593]
 - DSC `test` compares the live value to the document and does not report who wrote it:
@@ -472,9 +479,12 @@ _Agent: security_
 - **AdminService**: exposed via CMG for internet access when the SMS Provider is explicitly configured to allow it (opt-in, not default); CMG requires mutual HTTPS with either a PKI client certificate or Microsoft Entra ID auth, and CMG only maps endpoints it is explicitly told to publish. [DOC S1483] (see also `mecm/run-scripts.md`, `auth/configmgr-rbac-auth.md` for route-level detail, not duplicated here)
 - **CMPivot**: permission requirements were simplified from ConfigMgr current branch 2107 onward (no longer requires SMS Scripts read permission or a default security scope). [DOC S1480] (full entity/permission reference already in existing kb parts, not duplicated)
 - **Run Scripts approval**: by default a script author cannot approve their own script; "Script authors require additional script approver" is a hierarchy setting that should only be relaxed in a lab, per Microsoft's own recommendation (already documented in `mecm/run-scripts.md`). No signing requirement is layered on top of approval — see QS18. [DOC S1520]
-- **MFA for SMS Provider**: available since ConfigMgr current branch 1702; requires an MFA claim (Windows Hello for Business/smart card) on the caller's token for SMS Provider, console, SDK and AdminService calls; it is a hierarchy-wide, Full-Administrator-only setting. [DOC S1482]
-- **NTLM and client push**: client push installation uses NTLM by default and is documented as the least-secure client install method; from ConfigMgr 1806 the site can require Kerberos mutual auth, and from 2207 "Allow connection fallback to NTLM" is disabled by default on new installs (Microsoft recommends disabling it on existing sites too). [DOC S1484]
-- **Enhanced HTTP**: plain HTTP client communication has been deprecated since ConfigMgr 2103; Microsoft's stated preference is PKI-certificate HTTPS, with Enhanced HTTP (site-issued self-signed certs) as the fallback when full PKI is not deployed — Enhanced HTTP and PKI HTTPS can coexist site-system by site-system. [DOC S1480]
+- **MFA for SMS Provider**: available since ConfigMgr current branch 1702; set via `SetAuthenticationLevel` on `SMS_Site`: `AuthenticationLevel` 10 allows provider calls only from users signed in with a PIN or smart card, 20 only with a PIN; SIDs in `ExceptionList` bypass it; it is a global setting used on all primary sites, settable only by a Full Administrator with the All scope. [DOC S1482]
+- **NTLM and client push**: client push installation uses NTLM by default and is documented as the least-secure client install method. [DOC S1483]
+- From ConfigMgr 1806 the site can require Kerberos mutual auth for client push, and from 2207 "Allow connection fallback to NTLM" is disabled by default on new installs (Microsoft recommends disabling it on existing sites too). [DOC S-psoai6ce]
+- Hotfix KB15498768 (resolves CVE-2022-37972) fixes a case where disabling the NTLM fallback was not honored. [DOC S1484]
+- **Enhanced HTTP**: plain HTTP client communication has been deprecated since ConfigMgr 2103. [DOC S1480]
+- Microsoft recommends HTTPS for all communication paths and calls PKI-based HTTPS the more secure configuration; where HTTPS is not possible it recommends Enhanced HTTP (site-issued self-signed certificates). [DOC S-thjpegto]
 - Full detail is in `security/management-plane-hardening.md`.
 
 _Agent: security_
@@ -559,7 +569,7 @@ _Agent: security_
 
 ## QS17. GitLab features for build provenance/attestation of a Python package, and tier needed
 - GitLab's SLSA **Build Level 3** provenance/attestation feature (the `slsa_provenance_statement` flag plus the `ATTEST_BUILD_ARTIFACTS` CI/CD variable) requires the **project to be public** and the attested artifact to be ≤100 MB — a requirement independent of subscription tier as documented, but effectively unusable for an internal package unless the repo is made public. [DOC S1523]
-- GitLab's default DevSecOps pipeline reaches SLSA Level 1-2 without the explicit attestation feature. [DOC S1524]
+- A 2022 GitLab blog post says GitLab then supported SLSA Levels 1 and 2, with the Runner writing provenance metadata when `RUNNER_GENERATE_ARTIFACTS_METADATA: true` is set (not by default), and planned attestation signing for Levels 3 and 4; it predates SLSA v1.x build levels. [DOC S1524]
 - GitLab dependency scanning using SBOM (GA in 19.0, Ultimate) generates CycloneDX SBOMs itself and scans them; consuming a third-party CycloneDX SBOM works but is documented as subject to change. [DOC S1511]
 - The exact GitLab **subscription tier** required for Dependency Scanning, SLSA attestation, and artifact/container signing was **not confirmed** against the official tier-comparison page in this pass — see `gaps.md`. [UNK]
 
@@ -616,7 +626,7 @@ _Agent: security_
 ## QR3. Is a gMSA broker needed for containers?
 - No. Windows containers get a gMSA through a credential spec: directly on a domain-joined host, or through `ccg.exe` and a plug-in on a non-domain-joined host; Kubernetes adds the `GMSACredentialSpec` CRD and admission webhooks; AKS ships a Key Vault CCG plug-in. [DOC S1600, S1601, S1602]
 - Linux containers use keytabs of conventional accounts; `adutil` needs the account password and no Microsoft page turns a gMSA into a keytab; only AWS `credentials-fetcher` claims it. [DOC S1605, S1606; COMMUNITY S1608]
-- Entra workload identity covers Graph only; AdminService, LDAP and SMB still need Kerberos; SQL Server needs Arc for Entra auth; on-prem clusters need Arc-enabled Kubernetes workload identity (preview) and an Entra-reachable issuer. [DOC S1206, S1207, S1302, S1609]
+- Entra workload identity covers Graph only; AdminService, LDAP and SMB still need Kerberos; SQL Server needs Entra auth configured (via Arc, or the manual non-Arc setup on Windows); on-prem clusters need Arc-enabled Kubernetes workload identity (preview) and an Entra-reachable issuer. [DOC S1206, S1207, S1302, S1609]
 
 ## QR4. What keeps later containerization cheap?
 - Secrets as mounted files or env are both allowed by Kubernetes; a policy that forbids secrets in a child process's environment should prefer mounted files, which Kubernetes also supports. [DOC S1725, S1729]
@@ -691,9 +701,12 @@ _Agent: agents-wiki_
 - No product in scope publishes the literal phrase "instruction limit exceeded" as a documented, stable error string.
   [DER S1840,S1841,S1842,S1843,S1844,S1845,S1846,S1847,S1860: none of the fetched official pages use this exact
   phrase]
-- The closest real match is Microsoft Copilot Studio's `OpenAIAdditionalInstructionsLengthExceededLimit`, reported
-  when combined prompt instructions (main agent + node + system text) cross an internal threshold, even though the
-  documented per-field cap (8,000 characters) is not itself exceeded. [COMMUNITY S1843]
+- A Copilot Studio error `OpenAIAdditionalInstructionsLengthExceededLimit`, said to fire when combined prompt
+  instructions (main agent + node + system text) cross an internal threshold below the 8,000-character field cap,
+  has no source: it is not in S1843 (re-read 2026-09-27) nor on Microsoft's error-code page S1842. [UNK: not in
+  S1843 or S1842 as re-read 2026-09-27]
+- What Copilot Studio does document is an 8,000-character limit on agent instructions and on prompt (custom)
+  instructions. [DOC S1960, S-jexpr3gv]
 - M365 Copilot declarative agents document `instructions` as a schema-validated field, "must ... be 8,000 characters
   or less" — a package-validation constraint, worded as a requirement, not phrased as a runtime "limit exceeded"
   error. [DOC S1840]
@@ -701,11 +714,11 @@ _Agent: agents-wiki_
   cap, now removed). [DOC S1851, S1852]
 - OpenAI's ChatGPT custom-GPT builder silently blocks saving past 8,000 characters, with no confirmed banner text
   captured in this pass. [COMMUNITY S1844]
-- Gemini's closest published wording is generic 400 `INVALID_ARGUMENT: Request contains an invalid argument` for an
-  oversized `systemInstruction` in one reported case, and, in other reported cases against a stated token ceiling,
-  "The input token count (N) exceeds the maximum number of tokens allowed (32768)." — this second phrasing is the
-  closest match anywhere in this research pass to the user's "exceeds the maximum length" wording, but it is
-  reported via a developer forum, not fetched from an official Gemini error-reference page. [COMMUNITY S1846]
+- Gemini's closest reported wording is a generic 400 `INVALID_ARGUMENT: Request contains an invalid argument` for an
+  oversized `systemInstruction` in one reported case (no length-specific wording). [COMMUNITY S1846]
+- A second Gemini wording, "The input token count (N) exceeds the maximum number of tokens allowed (32768).", is
+  about total input tokens rather than an instructions field, and its source is not identified. [UNK: not in S1846
+  as re-read 2026-09-27]
 - Claude/Anthropic: no "instructions" error type exists in the documented API error taxonomy (`invalid_request_error`,
   `rate_limit_error`, `overloaded_error`, etc. — none instruction-specific). [DOC S1847] Claude Code silently
   truncates skill `description`+`when_to_use` past 1,536 characters rather than erroring. [DOC S1860]
@@ -749,15 +762,15 @@ instructions this extends rather than repeats `claude/tool-output-limits.md`.
   false` + all-properties-`required` strict-mode rule [DOC S1865], Anthropic's strict-tool-use grammar-compilation
   model and its two toolset exclusions and PHI caching caveat [DOC S1869]; Gemini's page enumerates no such keyword
   list [UNK, gap remains].
-- **Copilot Studio's error-codes page is now exhaustively parsed**: ~50 named codes plus 5 numbered channel codes
-  were extracted into the CSV, including the full throttling/timeout/quota family
-  (`HTTP429TooManyRequests`, `GenAISearchandSummarizeRateLimitReached`, `GenAIToolPlannerRateLimitReached`,
-  `QuotaExceeded`, `EnforcementMessageC2`, `DataverseStructured429`, etc.). Notably, the community-reported
+- **Copilot Studio's error-codes page is now exhaustively parsed**: its web-app tab documents 66 named error codes
+  and its Classic/Teams tab a numbered table (2000-2030, 2100-2102, 3000-3003), including the throttling/timeout/quota
+  family (`HTTP429TooManyRequests`, `GenAISearchandSummarizeRateLimitReached`, `GenAIToolPlannerRateLimitReached`,
+  `QuotaExceeded`, `EnforcementMessageC2`, `DataverseStructured429`, etc.). The
   `OpenAIAdditionalInstructionsLengthExceededLimit` string does **not** appear on the official page at all — this is
   now stated as a confirmed absence, not an unparsed page. [DOC S1842]
-- **Power Platform / Power Automate throttling for agent flows** shares the same connector-level throttling codes as
-  Copilot Studio (`HTTP429TooManyRequests`, `DataverseStructured429`, etc.); no agent-flow-specific throttling code
-  distinct from the shared connector codes was found. [DOC S1842]
+- **Power Platform / Power Automate throttling for agent flows**: the error-codes page has no agent-flow-specific
+  throttling code; the flow-specific code it documents is `FlowActionTimedOut` (a cloud flow that takes more than
+  100 seconds to return to the agent). [DOC S1842]
 
 _Agent: agents-errors_
 
@@ -900,11 +913,12 @@ _Agent: agents-eval_
 - Published variance decomposition on the BrowseComp eval: **token usage alone explains ~80%** of performance variance; tool-call count and model choice explain most of the remaining ~15% (~95% total from three factors). [DOC S1921]
 - Anthropic's stated cost-benefit rule for when multi-agent is worth it: the task's value must exceed the token cost; good fits are heavy parallelization, information that exceeds one context window, and complex tool interfacing; poor fits are coding tasks with tight coordination requirements and few parallelizable components. [DOC S1921]
 - Anthropic's own named failure modes for its multi-agent system: excessive subagent spawning for simple queries, duplicated work from vague task descriptions, agents favoring SEO-heavy content over authoritative sources, and sequential (non-parallel) execution causing needless slowness. [DOC S1921]
-- Code execution with MCP (Anthropic engineering post): presenting MCP tools as on-disk code (a directory the agent explores) plus letting the agent write code to call and filter tool outputs **cut one example task from 150,000 to 2,000 tokens (98.7% reduction)**, because intermediate tool results stay in the execution environment instead of round-tripping through the model. [DOC S1922]
-- Independent replications of the code-execution pattern (not Anthropic's own numbers, so `COMMUNITY`): a 78.5% input-token cut (165K vs 771K) on one GPT-4.1 test; a token-usage drop from 43,588 to 27,297 (37%) on a complex research task; a separate report of code execution scaling from 58% savings at 96 tools to 92.8% at 508 tools. [COMMUNITY S1931, S1932, S1934]
+- Code execution with MCP (Anthropic engineering post): presenting MCP servers as code APIs on a filesystem (a directory the agent explores), so the agent loads only the tool definitions the task needs, **cut one example task from 150,000 to 2,000 tokens (98.7% reduction)**; letting the agent filter tool outputs in code, so intermediate results stay in the execution environment, is a separate benefit the post describes. [DOC S1922]
+- Independent tests of the code-execution pattern (not Anthropic's own numbers, so `COMMUNITY`): a 78.5% input-token cut (165K vs 771K) on one GPT-4.1 test; a separate report of code execution scaling from 58% savings at 96 tools to 92.8% at 508 tools. The same secondary write-up also reports Anthropic's own Programmatic Tool Calling at 43,588→27,297 average tokens (37%) on complex research tasks, which is not an independent replication. [COMMUNITY S1931, S1932]
 - OpenAI's practical guide: start with a single agent with tools, and only split into multiple agents when there is complex conditional logic or overlapping tool responsibilities that a single agent's instructions can no longer express cleanly; it names two multi-agent patterns — **manager** (one central agent calls specialists as tools) and **decentralized** (peers hand off execution outright). [DOC S1924, S1941]
-- Microsoft's Azure Architecture Center states a **complexity spectrum**: direct model call → single agent with tools → multi-agent orchestration, with the rule "use the lowest level of complexity that reliably meets your requirements." It lists sequential, concurrent, group-chat/maker-checker, handoff, and magentic orchestration patterns, and names the orchestrator-worker pattern (matching Anthropic's own architecture) as its top-ranked production pattern. [DOC S1925]
-- Microsoft Agent Framework (GA 2026-04-03, open source, Python/.NET) ships stable Sequential, Group Chat, and Magentic-One orchestration patterns, with OpenTelemetry-based observability and middleware for injecting content-safety/logging/compliance checks into the execution loop without touching prompts. [DOC S1938, S1939; COMMUNITY (announcement date/detail) S1940]
+- Microsoft's Azure Architecture Center states a **complexity spectrum**: direct model call → single agent with tools → multi-agent orchestration, with the rule "use the lowest level of complexity that reliably meets your requirements." It lists sequential, concurrent, group-chat/maker-checker, handoff, and magentic orchestration patterns. [DOC S1925]
+- Microsoft Agent Framework (MIT, Python/.NET) combines agents, workflows with explicit multi-agent execution paths, middleware for intercepting agent actions, and OpenTelemetry-based observability. [DOC S1938, S1939]
+- Agent Framework 1.0 reached GA on 2026-04-03 with stable Sequential, Group Chat and Magentic-One orchestration patterns and a middleware pipeline that injects logic (e.g. content safety) into the agent loop without touching prompts. [COMMUNITY S1940]
 - Notable community position against multi-agent designs: Cognition ("Don't Build Multi-Agents", 2025-06-12) argues subagents fail because they act on incomplete shared context — "actions carry implicit decisions, and conflicting decisions carry bad results" — and recommends single-threaded linear agents by default, compressing history with an LLM summarization layer only when a task exceeds one context window. [COMMUNITY S1926]
 - Cognition's own later, undated follow-up softens this: it now reports multi-agent setups that work in production, where multiple agents contribute intelligence to a task but writes stay single-threaded (see `conflicts.md` — a vendor revising its own earlier position, tagged per PROMPT.md rule 6). [COMMUNITY S1927]
 
@@ -914,8 +928,10 @@ _Agent: agents-mcp_
 
 - **Stable tool-call sequence / repeatability across runs**: Anthropic's own tool-writing guidance treats a fixed multi-step sequence (e.g., `list_users` → `list_events` → `create_event`) as a signal to consolidate into one tool ("schedule_event") rather than let the agent re-derive the sequence every run — the same signal applies to collapsing a subagent whose job is always the same sequence into one MCP tool. [DOC S1935]
 - **Token and latency cost**: measurable directly from the published multipliers — a workflow step done as one deterministic tool call costs the baseline chat-token rate; the same step done by a spawned subagent costs roughly 4× that, and by a multi-agent branch roughly 15× that. [DER from S1921: derivation — subagent/multi-agent multipliers published for whole-task token cost are the ceiling for any one step done that way instead of by a fixed tool call]
-- **Error compounding / runaway cost**: Anthropic names "a subagent that recursively spawns more subagents" as an observed failure mode of its own architecture, and states the published architecture has no circuit breakers or per-run cap in the post itself; a secondary source puts a compounding runaway or oversized-result event at "another 10x or more" on top of the 15× baseline. [DOC S1921 for the named failure mode; COMMUNITY S1930 for the 10x compounding number]
-- **Auditability**: community engineering commentary states plainly that "an LLM-based filter deciding something looks fine... doesn't generate a record that holds up in a SOC 2 audit," and recommends composing deterministic flows in code rather than in prompts, wrapping multi-step orchestration into single composite tools instead of relying on the model to sequence calls, to remove sequential-dependency errors and get a verifiable record. [COMMUNITY S1945, S1944]
+- **Error compounding / runaway cost**: Anthropic reports its early agents spawning 50 subagents for simple queries, an observed failure mode of its own architecture. [DOC S1921]
+- A secondary write-up says a subagent that recursively spawns more subagents, or a tool that returns oversized results, can multiply a query's cost by "another 10x or more" on top of the 15× baseline, and that the published architecture has no circuit breakers or per-run caps. [COMMUNITY S1934]
+- **Auditability**: one vendor write-up says that when an LLM decides "this looks fine," it "doesn't generate a record that holds up in a SOC 2 audit," and recommends deterministic rules enforced at the tool-call layer, each decision logged with the tool call, arguments and rule that fired. [COMMUNITY S1945]
+- Composing deterministic flows in code and wrapping multi-step orchestration into single composite tools, instead of relying on the model to sequence calls, removes sequential-dependency errors and yields a verifiable record. [COMMUNITY S1944]
 - **Need for confirmation (a higher-tier/consequential-action case)**: MCP's own spec puts the human-in-the-loop requirement at the protocol level, independent of agent vs tool framing — servers "SHOULD" always keep a human able to deny invocations, and clients "SHOULD" prompt for confirmation on sensitive operations; a deterministic tool with a fixed, auditable input schema is easier to gate this way than a subagent whose exact call sequence is not known until it runs. [DOC S1928]
 - **Eval pass rate as the trigger, not a raw threshold**: Anthropic's evals guidance measures agent tool use by generating realistic multi-step tasks, then tracking accuracy alongside runtime, tool-call count, token consumption and error rate — but does not publish a numeric pass-rate threshold that should trigger converting an agentic step to a deterministic tool; this is left to the adopting team's own eval baseline. No vendor number found for this specific threshold; recorded as a gap. [DOC S1935 for the *method*; UNK for a numeric trigger threshold, see gaps.md]
 - **Measuring from transcripts / OTel data**: `claude/otel-monitoring.md` (already written, part `arch`, reused here) documents that Claude Code's own `claude_code.tool_result` and `claude_code.tool_decision` OTel events carry `duration_ms`, `success`, `tool_input_size_bytes`/`tool_result_size_bytes`, and (with `OTEL_LOG_TOOL_DETAILS=1`) the MCP server/tool name and arguments — these are the concrete fields to pull per-tool-call latency, error rate and payload size, the inputs to every decision signal above, without a new logging mechanism. [DOC S744, S745 — reused from `claude/otel-monitoring.md`, part `arch`/`claude`]
@@ -928,8 +944,8 @@ _Agent: agents-mcp_
 - **Behavioral annotations replace some of what a subagent's judgment used to decide**: MCP tool `annotations` (`readOnlyHint`/`destructiveHint`/`idempotentHint`/`openWorldHint`) let a host auto-approve safe read-only tools and force confirmation on destructive ones, deterministically, instead of relying on a subagent (or the model) to reason about risk each time — though the spec warns annotations **MUST** be treated as untrusted unless the server itself is trusted. [DOC S1928]
 - **Agent logic → a skill with scripts**: Anthropic's Agent Skills guidance draws the line explicitly: "certain operations are better suited for traditional code execution... sorting a list via token generation is far more expensive than simply running a sorting algorithm," and states many applications "require the deterministic reliability that only code can provide." A skill's `scripts/` directory runs deterministic operations (e.g., `validate.py`) whose *output* — not source — enters context, so a script that used to be a subagent's whole job can shrink to a ~20-token result instead of a full subagent invocation. [DOC S1936, S1937]
 - **Progressive disclosure as an alternative to spawning a subagent for isolation**: a skill loads in three tiers — frontmatter metadata (always in context), the SKILL.md body (loaded once relevant), and referenced resource files (loaded only as needed) — giving "effectively unbounded" skill complexity without the fresh-context startup cost or lost conversation history of a subagent. [DOC S1936]
-- **Agent logic → code execution over MCP**: rather than exposing every tool definition and round-tripping every intermediate result through the model, tools are exposed as files/modules the agent explores and then calls from written code; Anthropic measured this pattern's 150,000→2,000 token (98.7%) reduction on a Drive-to-Salesforce task specifically because intermediate results (the whole reason a subagent used to exist, to isolate noisy output) never re-enter the model's context at all. [DOC S1922]
-- **Keeping behavior equal during migration — record, replay, compare**: no fetched vendor source publishes a named "record MCP transcripts and replay against a baseline" workflow for this specific migration (agent→tool), but the general technique is documented by third-party eval tooling: Promptfoo's coding-agent evaluation guide runs a fixed task set against an agent build and asserts on the outcome in CI; a community tool (AgentInspect) explicitly "diffs the full agent trajectory — tool calls, parameters, sequence, output, cost — against a golden baseline," which is the applicable pattern for proving a new deterministic tool reproduces what a removed subagent used to do. [COMMUNITY S1942, S1943]
+- **Agent logic → code execution over MCP**: rather than exposing every tool definition and round-tripping every intermediate result through the model, tools are exposed as files/modules the agent explores and then calls from written code; Anthropic's 150,000→2,000 token (98.7%) reduction on a Drive-to-Salesforce task comes from loading only the tool definitions the task needs, while filtering intermediate results in the execution environment before they reach the model (the isolation job a subagent used to do) is a separate benefit. [DOC S1922]
+- **Keeping behavior equal during migration — record, replay, compare**: no fetched vendor source publishes a named "record MCP transcripts and replay against a baseline" workflow for this specific migration (agent→tool), but the general technique is documented by third-party eval tooling: Promptfoo's coding-agent evaluation guide runs a fixed task set against an agent build and asserts on the outcome in CI; a community write-up of AgentInspect checks an agent's trajectory (the tool-call sequence) and recorded error spans alongside the final answer, showing two runs with the same answer but different execution paths, which is the applicable pattern for proving a new deterministic tool reproduces what a removed subagent used to do. [COMMUNITY S1942, S1943]
 - **What Claude Code's own subagent docs say about the same choice**: "Use one when a side task would flood your main conversation with search results, logs, or file contents you won't reference again," but "consider Skills instead when you want reusable prompts or workflows that run in the main conversation context rather than isolated subagent context" — i.e., the vendor's own decision rule is context-volume isolation, not task complexity; a subagent that does not produce large, disposable intermediate output has no isolation benefit to trade against its token/latency cost. [DOC S1923]
 
 _Agent: agents-mcp_
@@ -1413,18 +1429,21 @@ _Agent: agents-extra_
 
 ## QG25. RBAC for agents and MCP tools: which tool a caller may use, agent identity vs delegated identity, least privilege
 
-- `mcp/authorization.md` (S707, pinned to the 2026-07-28 revision) already covers audience-bound tokens, RFC 9728 discovery and CIMD. **New in the draft revision fetched for this part** (S2045, later than S707): MCP servers **SHOULD** send a `scope` parameter in the `WWW-Authenticate: Bearer` header of a 401, naming exactly the scopes needed for the resource being called, "following the principle of least privilege and preventing clients from requesting excessive permissions" — this is the spec's own least-privilege mechanism for *which tool/resource a token may reach*, not just *which server*. [DOC S2045]
-- The draft also formalizes **step-up (incremental) scope authorization** at runtime: a tool call with insufficient scope gets `403 Forbidden` + `WWW-Authenticate: Bearer error="insufficient_scope", scope="files:write", resource_metadata=..."`; the client is required to union newly-required scopes with previously-granted ones and re-authorize, rather than replacing them — this is the spec-level analogue of a tiered confirmation gate, but implemented as OAuth scope elevation rather than an interactive confirm prompt. [DOC S2045]
+- `mcp/authorization.md` (S707, pinned to the 2026-07-28 revision) already covers audience-bound tokens, RFC 9728 discovery and CIMD. **Present in both the pinned 2026-07-28 revision (S707) and the later draft (S2045)**, not new in the draft: MCP servers **SHOULD** send a `scope` parameter in the `WWW-Authenticate: Bearer` header of a 401, naming the scopes needed for the resource being called, "following the principle of least privilege and preventing clients from requesting excessive permissions" — this is the spec's own least-privilege mechanism for *which tool/resource a token may reach*, not just *which server*. [DOC S2045, S707]
+- Both revisions also define **step-up (incremental) scope authorization** at runtime: a tool call with insufficient scope gets `403 Forbidden` + `WWW-Authenticate: Bearer error="insufficient_scope", scope="files:write", resource_metadata=..."`; clients **SHOULD** attempt a step-up re-authorization using the union of the previously requested scopes and the challenged scopes, rather than replacing them — this is the spec-level analogue of a tiered confirmation gate, but implemented as OAuth scope elevation rather than an interactive confirm prompt. [DOC S2045, S707]
 - MCP's `scopes_supported` field in Protected Resource Metadata is defined as "the minimal set of scopes necessary for basic functionality," with additional scopes meant to be requested incrementally — i.e., the spec's own worked example of scope minimization is exactly a tiered-access pattern (tier 0 read vs tier ≥2 write), just expressed as OAuth scopes rather than an application-level confirmation gate. [DER S2045]
 - None of this changes `mcp/authorization.md`'s finding that **stdio transports SHOULD NOT follow the authorization spec at all** and take credentials from the environment (S707) — so the scope/step-up mechanism above applies only if/when a stdio MCP server is ever exposed over HTTP, not to a stdio-only server. [DER S707]
-- **Claude Code's own tool-level RBAC** (not covered in `mcp/*`, which documents the *protocol* not a specific client): Claude Code supports a `permissions.mcp_tools` list of `{pattern, allowed}` rules matching `mcp__<server>__<tool>` (or, for a plugin-bundled server, `mcp__plugin_<plugin-name>_<server-name>__<tool-name>`), letting an operator allow or deny individual MCP tools by name pattern, independent of the server's own auth. [DOC S2041]
-- Claude Code layers a **second, organization-level control on top of per-tool rules** for connectors managed by an organization: each tool on a managed connector can be set to `ask` (Claude Code always prompts, with the reason "Your organization requires approval for this tool," even in `acceptEdits`/`auto`/`bypassPermissions` modes, and is denied outright in `dontAsk` mode) or `blocked` (the tool is filtered out before the model ever sees it, identically in the desktop app and claude.ai chat). `/mcp` shows which of these settings applies to each tool on a connector. [DOC S2041]
+- **Claude Code's own tool-level RBAC** (not covered in `mcp/*`, which documents the *protocol* not a specific client): ordinary `permissions` allow/ask/deny rules name MCP tools as `mcp__<server>` (every tool of that server), `mcp__<server>__*` or `mcp__<server>__<tool>`; an allow glob must start with a literal `mcp__<server>__` prefix. This lets an operator allow or deny individual MCP tools independent of the server's own auth. [DOC S742]
+- A plugin-bundled server's tools are named `mcp__plugin_<plugin>_<server>__<tool>`. [DOC S740]
+- Claude Code layers a **second, organization-level control on top of per-tool rules** for connectors managed by an organization: each tool on a managed connector can be set to `ask` (Claude Code always prompts, with the reason "Your organization requires approval for this tool," even in `acceptEdits`/`auto`/`bypassPermissions` modes, and is denied outright in `dontAsk` mode) or `blocked` (the tool is filtered out before the model ever sees it, identically in the desktop app and claude.ai chat). In the desktop app's local and SSH sessions `ask` does not reach Claude Code, which applies its ordinary permission rules there instead. `/mcp` shows which of these settings applies to each tool on a connector. [DOC S740]
 - **`managed-settings.json`** is Claude Code's file-based policy mechanism: it "applies above every other level, so no user, project, local, or `--settings` value overrides them," apart from a short list of security-sensitive exceptions where a *stricter* value from a lower level still counts; it also carries `allowedMcpServers`/`deniedMcpServers` (allow/deny by server name or URL pattern), `managedMcpServers` (organization-provided server definitions) and `disabledMcpjsonServers` (reject specific project-scoped servers) — this is the kind of mechanism relevant to any instance-kind/role model, since it is a machine-level, non-overridable policy rather than a per-session choice. [DOC S2042]
 - **Agent identity vs the user's delegated identity** (the core of QG25's second half) is now a *named, first-class Entra construct*, not just a design pattern some systems already follow by policy. Microsoft Entra Agent ID's **agent identity** is documented as "a special service principal... that represents an identity that the agent identity blueprint created and is authorized to impersonate," with three distinct token-acquisition modes stated explicitly: (a) an autonomous agent acquiring an **app token** where the token's subject is the agent identity itself; (b) an interactive agent called with a user token acquiring a **user token on behalf of the agent identity**, where the token's *subject is the user* and the *actor is the agent identity*; and (c) the agent identity requesting tokens where it itself is the audience. [DOC S2040]
 - **Agent identities never hold their own credentials.** All credentials (federated identity credentials, certificates, or client secrets) live on the reusable **agent identity blueprint**, not on the individual agent identity; the blueprint acquires tokens on the agent identity's behalf. Agent identities are always single-tenant even when their blueprint is published as multitenant (a multitenant blueprint creates a separate tenant-local agent identity per tenant it's added to). [DOC S2040]
 - **Consistent, fleet-wide policy is the blueprint's stated purpose**: because every agent identity of a "kind" (e.g. "Sales Assistant Agent") shares one blueprint, an Entra admin can "apply a conditional access policy to all [agents of that kind], disable all of them, or revoke a permission grant for all of them" in one action — this is Microsoft's own stated least-privilege/blast-radius argument for the blueprint model, distinct from OWASP's or NIST's framing (neither of which was independently confirmed to state this same point — see `gaps.md`). [DOC S2040]
 - **This is directly relevant to a design's own agent-vs-user distinction.** A policy that "interactive calls use the engineer's own identity... shared state is written only by scheduled sync jobs under read-only identities" is architecturally the same split Entra Agent ID formalizes with agent-identity "actor" tokens (case b above) vs plain app tokens (case a). A design need not use Entra Agent ID for this split to hold, so this is a *naming and tooling* parallel, not something such a design currently consumes. [DER S2040]
-- **Agent identity is in public preview**, delivered through "Microsoft Agent 365, available through Frontier," Microsoft's early-access program, from early 2026, with a stated roadmap of "more access management, security, and identity governance capabilities... over the next six months," plus support for Security Copilot, Microsoft 365 Copilot and third-party agents. [DOC S2051 — reached via WebSearch synthesis only, not independently WebFetched; see gaps.md]
+- **Agent identity status**: the public preview was announced on 2025-05-19 at Microsoft Build, starting with a unified directory of agent identities created in Copilot Studio and Azure AI Foundry, with a stated six-month roadmap for more access-management, security and governance capabilities and for Security Copilot, Microsoft 365 Copilot and third-party agents. [DOC S2051]
+- Microsoft Entra Agent ID is now generally available (What's new page; the overview page no longer carries the preview banner). [DOC S-ifhonpv7]
+- Access through "Microsoft Agent 365, available through Frontier" since early 2026. [UNK: not in S2051 as re-read 2026-09-27]
 - **App roles vs OAuth scopes, restated in agent terms**: `auth/group-claims.md` already establishes that app roles assigned to groups are Microsoft's recommended authorization pattern over raw `groups` claims (smaller token, decouples assignment from app config) — nothing fetched in this part contradicts or extends that specifically for agent identities; agent identity authorization instead runs through the blueprint's own Graph-permission grants (S2040's "read the signed-in user's calendar" example), which is a delegated-permission-consent model, not the app-role-on-group pattern `group-claims.md` covers. [DER S2040 vs auth/group-claims.md — different mechanism, not a conflict]
 
 ### Deepening (QG25): app roles assigned to groups vs group claims, restated for agent authorization specifically (closing a prior gap)
@@ -1438,7 +1457,7 @@ _Agent: agents-authz_
 
 ## QG26. Entra ID groups and PIM in an agent's authorization path
 
-- `auth/entra-intune-rbac.md` already answers the core latency question this QG asks (PIM for Groups activation visible at next Graph token acquisition; on-prem AD only via Cloud Sync writeback, ~20 min) — not repeated here.
+- `auth/entra-intune-rbac.md` already answers the core latency question this QG asks (PIM for Groups adds or removes the membership within seconds, while apps that cached membership may lag; on-prem AD only via Cloud Sync writeback, ~20 min) — not repeated here.
 - **New precision on the write-side latency**: Microsoft's own PIM-for-Groups activation page states the active-assignment write itself, not just the eventual token visibility, happens "within seconds" in both directions — "Microsoft Entra PIM creates an active assignment... within seconds" on activation, and "removes the user's group membership or ownership within seconds as well" on deactivation (manual or by expiry). The page also warns explicitly that an *application* relying on cached group membership may not reflect either direction immediately, and that "signing out and signing back in might help" — this is Microsoft's own statement of exactly the token-cache gap `entra-intune-rbac.md` already derived. [DOC S1282, reused]
 - **PIM-for-Groups eligible-ownership deactivation can be blocked for up to 30 days** by a documented rule: Entra ID will not remove the *last active owner* of a group, so if the sole active owner is removed from the tenant while an eligible owner has an active (PIM-activated) ownership, PIM retries deactivating that eligible owner's ownership for up to 30 days and gives up (leaving them permanently active) if no other active owner is added in that window. Relevant if role groups are ever owned via PIM rather than by a fixed administrative account. [DOC S1282]
 - **Role-assignable groups**: a group must have `isAssignableToRole: true` set **at creation time only** — "creating a group to which Microsoft Entra roles can be assigned is a setting that cannot be changed later" — and needs Entra ID P1 or P2, `Privileged Role Administrator` to create, and cannot be a dynamic-membership group. A tenant is capped at **500 role-assignable groups**. [DOC S2050]
@@ -1470,7 +1489,7 @@ _Agent: agents-authz_
 - **New: a full lifetime/rotation/revocation/audit/storage table for every credential kind touched by this part** is now `agents/api-tokens.csv` (one row per kind: Entra FIC, Entra app cert, GitLab PAT, GitLab project token, GitLab CI job token, GitLab `id_tokens`, Vault AppRole SecretID, Vault dynamic DB credential, Azure Key Vault secret, Claude Code login credential, Claude Code MCP OAuth token, OBO downstream token). [DER, synthesizing S2041, S2046, S2047, S2049, S2054, S2055, S2056, S740, S1297, auth/workload-identity.md, auth/msal-public-client.md]
 
 ### Deepening (QG27): Vault dynamic secrets and GitLab CI's native secrets integration (closing prior gaps)
-- **Vault's database secrets engine** generates unique, per-request database credentials dynamically via a plugin interface, rather than a single shared static password; default **1-hour TTL, 24-hour max TTL** (adjustable per role); Vault's own stated reason: "every service is accessing the database with unique credentials, it makes auditing much easier when questionable data access is discovered." Credentials are revoked automatically by Vault's own internal lease-revocation system at lease expiry, or renewed before expiry. Supports 20+ database engines (PostgreSQL, MySQL/MariaDB, MSSQL, Oracle, MongoDB, etc.); static roles offer scheduled/cron-style password rotation with a configurable password policy (default 20-character mixed-case/number/special) as the alternative to per-request dynamic credentials. [DOC S2054] This directly answers the prior gap for a rotating SQL Server credential: a `site` instance's SQL write identity (against a temporal-tables schema) could in principle be a Vault-issued dynamic MSSQL credential with a short TTL rather than a long-lived service account password — a fact for a future task to weigh, not a recommendation. [DER S2054]
+- **Vault's database secrets engine** generates unique, per-request database credentials dynamically via a plugin interface, rather than a single shared static password; default **1-hour TTL, 24-hour max TTL** (adjustable per role); Vault's own stated reason: "every service is accessing the database with unique credentials, it makes auditing much easier when questionable data access is discovered." Credentials are revoked automatically by Vault's own internal lease-revocation system at lease expiry, or renewed before expiry. The support table lists 15 built-in database plugins (among them PostgreSQL, MySQL/MariaDB, MSSQL, Oracle, MongoDB) plus custom plugins; static roles offer scheduled/cron-style password rotation with a configurable password policy (default 20-character mixed-case/number/special) as the alternative to per-request dynamic credentials. [DOC S2054] This directly answers the prior gap for a rotating SQL Server credential: a `site` instance's SQL write identity (against a temporal-tables schema) could in principle be a Vault-issued dynamic MSSQL credential with a short TTL rather than a long-lived service account password — a fact for a future task to weigh, not a recommendation. [DER S2054]
 - **GitLab's native secrets integration** (`ci/secrets/`) supports four providers out of the box — **HashiCorp Vault, Google Cloud Secret Manager, Azure Key Vault, AWS Secrets Manager** — authenticated via GitLab's own **`id_tokens`** (OIDC JWTs), the same mechanism `auth/workload-identity.md` already documents for Entra FIC; a job can also authenticate manually to any other OIDC-compliant secrets provider. The stated operational difference from ordinary CI/CD variables: "secrets must be explicitly requested by a job," fetched at run time, rather than "always available in jobs" the way every CI/CD variable is injected into every job's environment by default. GitLab's docs do not explicitly rank this as more secure than a masked/protected variable, but the on-demand model structurally reduces which jobs a given secret's value ever reaches. [DOC S2055]
 - **Vault's JWT/OIDC auth method** is the concrete mechanism GitLab's `id_tokens` would use against a self-hosted Vault: a role bound with `bound_audiences` (must exactly match the JWT's `aud` claim) and optional `bound_claims` (arbitrary claim/value matching, e.g. restricting by GitLab project or ref), then `vault write auth/jwt/login role=<name> jwt=<token>` exchanges the GitLab-minted JWT for a Vault token scoped to the role's policies and TTL. [DOC S2056] Combined with a "one job per runner and trigger" rule and a policy that MR code never runs with a domain identity, this gives a concrete non-PAT path for a protected `sync` job to reach Vault-issued secrets without any static credential stored in GitLab. [DER S2056]
 
@@ -1675,10 +1694,14 @@ solution before reaching for an agent, phrased slightly differently:
   heavy unstructured-data reliance; otherwise "a deterministic solution may suffice." A single-turn LLM
   call, a simple chatbot or a sentiment classifier is explicitly *not* an agent by OpenAI's own definition.
   [DOC S1924]
-- Microsoft (Azure Architecture Center): first question is "does the problem need natural language
-  understanding or dynamic generation? If no — it's a deterministic system and you should stop"; recommends
-  starting with deterministic orchestration and escalating only when predetermined logic is insufficient,
-  with agents as "bounded leaf workers" under a deterministic workflow spine. [DOC S1925]
+- Microsoft (Azure Architecture Center): use the lowest level of complexity that reliably meets the
+  requirements; "if prompt engineering can solve the problem, you don't need an agent." [DOC S1925]
+- Microsoft Foundry Blog practitioner post: the first tier decision is whether the problem needs natural
+  language understanding or dynamic generation; if not, it is a deterministic system and you stop there.
+  [COMMUNITY S2162]
+- A second Foundry Blog post ("Deterministic Spine, Agentic Leaves"): workflow control stays in a
+  deterministic, versioned workflow definition, with agents only as bounded workers inside controlled
+  steps. [COMMUNITY S2163]
 - Google (Cloud Architecture Center / "Agents Companion" whitepaper, content via search summary — see
   `gaps.md`): summarization, translation and classification "often" don't need an agentic workflow; a
   deterministic-and-stable task, or one where speed/reliability outweighs flexibility, is named as a
@@ -1692,8 +1715,8 @@ solution before reaching for an agent, phrased slightly differently:
 No vendor page fetched in this session publishes a single cross-product cost/latency/error benchmark for
 "agent vs. deterministic tool." The numeric figures found are independent (COMMUNITY) cost/latency
 write-ups: cost scaling roughly linearly with token volume ($1.50/day at 3,000 tokens/run × 50,000
-runs/day vs. $15/day at 30,000 tokens/run) [COMMUNITY S2173], and a ~21x per-model latency spread on one
-measured agentic task (613 ms–12,874 ms) [COMMUNITY S2174]. Anthropic's own multi-agent token multipliers
+runs/day vs. $15/day at 30,000 tokens/run) [COMMUNITY S2174], and per-call latency of under 10 ms for a
+deterministic step against 300-600 ms per LLM call [COMMUNITY S2174]. Anthropic's own multi-agent token multipliers
 (~4x agent, ~15x multi-agent vs. a single chat turn) are reused from topic 4 (`agents/
 subagents-vs-deterministic-tools.md`, S1921) rather than re-derived here. No official "post-mortem" naming
 a specific over-routed-agent incident was found; the closest is a Microsoft blog post titled "Stop Letting
@@ -1728,8 +1751,9 @@ recurs across runs** — the same consolidation signal topic 4 already documents
 applied one level up to the whole task [DOC S1935, reused]; (3) **a spec or grammar already exists** —
 JSON, DSC documents, conventional commits and Presidio patterns are all named, published grammars, so a
 parser suffices over an LLM [DER]; (4) **errors unacceptable / audit needs exact reproduction** — a
-deterministic tool's output is reproducible by construction, while a model can silently vary run to run
-(illustrated, not measured precisely, by the "95%/5%" framing) [COMMUNITY S2174]; and (5) **volume/latency**
+deterministic tool's output is reproducible by construction, while an agentic system carries an
+"Unreliability Tax" (a demo that works 80% of the time, a production system failing 20%) [COMMUNITY S2173],
+though deterministic pipelines in turn break silently on out-of-distribution input [COMMUNITY S2174]; and (5) **volume/latency**
 — cost and latency both scale unfavourably for an LLM call at high volume or tight latency budgets per the
 two published community figures above. No vendor page fetched here names a specific OTel query for
 finding over-routed candidates; topic 4 already documents the concrete Claude Code OTel fields
@@ -1767,20 +1791,29 @@ _Agent: agents-overuse_
   dependency, this is close to a drop-in that shrinks part of a settings-resolution custom code path. [DOC S-ovuvyg6h]
 - **`cryptography`'s `Fernet.decrypt(token, ttl=seconds)` as a `dependency` for a short-TTL
   pseudonymization vault's reveal check.** Confirmed dual Apache-2.0/BSD-3-Clause by direct LICENSE
-  fetch; implements a TTL-based reveal-refusal behaviour with no custom scheduler. [S1003,S1103]
+  fetch. [DOC S1103]
+- `Fernet.decrypt(token, ttl=seconds)` raises `InvalidToken` when the token is older than `ttl` seconds,
+  so the reveal-refusal check happens at decrypt time with no custom scheduler. [DOC S-6osxhfhb]
 - **LLM Guard's MIT-licensed `Vault` class shape as a `logic` candidate** for the mapping-object half
   of such a vault (placeholder<->value), with Presidio as the detector. [S1006]
 - **Everything else surveyed (Vault transit, git-crypt, GLPI, Snipe-IT, NetBox, Fleet, Rundeck,
   StackStorm, Teleport, AWX, OTel Collector, Fluent Bit, Puppet, InSpec, Microsoft365DSC,
   microsoft/mcp catalog, dynaconf, python-fpe) is `no` or `pattern`-only** — either wrong licence
-  (BUSL-1.1, GPL-3.0, AGPL-3.0 — now confirmed by direct LICENSE fetch rather than "NOASSERTION" for
-  Vault, InSpec, Fleet, AWX), wrong domain, an always-on service a no-gateway/no-service design
+  (GPL-3.0, AGPL-3.0 — now confirmed by direct LICENSE fetch rather than "NOASSERTION" for
+  InSpec, Fleet, AWX), wrong domain, an always-on service a no-gateway/no-service design
   forbids running, or a concept simple enough to cover directly without a dependency. See
   `reuse/matrix.csv` for the row-by-row verdicts.
+- Vault is under BUSL-1.1, which permits copying, modification, derivative works and non-production use
+  (production per its Additional Use Grant), so the licence alone does not rule it out. [DOC S1102]
+- Vault stays `no` because using it means running Vault itself, a new always-on service. [DER S1002: the
+  README describes applications asking Vault to encrypt and decrypt on request]
 - **sops/age do not cover a model-boundary vault requirement** (per-conversation, short TTL,
-  audited reveal): neither has a native TTL or a per-reveal audit event; both leave that to the
-  caller. They fit long-lived, encrypted-at-rest, git-committed site secrets, not
-  a short-TTL model-boundary vault. [S1000,S1001]
+  audited reveal): they fit long-lived, encrypted-at-rest, git-committed site secrets, not a short-TTL
+  model-boundary vault. [DER S1000, S-wqbnua3h: sops has no TTL setting, so a reveal expiry stays in the caller]
+- sops can write an optional audit log entry to a pre-configured PostgreSQL database each time a file is
+  decrypted (timestamp, user name, file), but records no reason for the reveal; it has no native TTL.
+  [DOC S-wqbnua3h]
+- age has no built-in expiry or audit log. [UNK: not in S1001 as re-read 2026-09-27]
 
 _Agent: reuse_
 

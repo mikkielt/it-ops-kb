@@ -63,14 +63,16 @@ attribution. NCSC (UK)/BSI/ANSSI rows remain UNK.
   Restrict NTLM audit settings, blocks ROCA-vulnerable WHfB keys on DCs, disables sudo and IE11 COM
   launch, applies Mark of the Web, sets the print RPC listener to Kerberos on member servers and adds
   `RESTRICTED SERVICES\PrintSpoolerService` to Impersonate a client after authentication [DOC S1419].
-- Intune ships three separate baseline products: a Windows security baseline, a
-  Defender for Endpoint baseline (explicitly *not recommended* for virtual machines or VDI
-  endpoints per Microsoft Learn), and an Edge baseline (settings format changed May 2023) [DOC
-  S1421, S1422, S1423]. Exact current version identifiers for each were not extracted this pass
-  [UNK].
+- Intune lists separate baselines for Windows (Security Baseline for Windows 10 and later, latest
+  version 25H2), Defender for Endpoint (latest version 24H1; optimized for physical devices and *not
+  recommended* for virtual machines or VDI endpoints) and Edge (latest version 139, April 2026; its
+  settings moved to a new format in May 2023), besides Microsoft 365 Apps, HoloLens 2, Windows 365,
+  Windows 365 for Agents, a Local AI Agent (OpenClaw) preview and a GCC High-only STIG audit
+  baseline (re-read 2026-09-27) [DOC S1421, S1422, S1423].
 - OSConfig for Windows Server 2025 ships as the `Microsoft.OSConfig` PowerShell module (PSGallery),
-  with role-based baseline profiles (Domain Controller, Member Server, Workgroup Member) enforcing
-  over 300 settings (TLS 1.2+, SMB 3.0+, credential protections cited as examples) [DOC S1424].
+  with role-based baseline profiles (Domain Controller, Member Server, Workgroup Member); examples
+  of its settings are TLS 1.2 or higher, a minimum of SMB 3.0 and credential-theft protections such
+  as Credential Guard [DOC S1424].
   Once applied, OSConfig baseline settings are described as protected from drift automatically —
   i.e. OSConfig **remediates**, unlike a ConfigMgr baseline kept deliberately in test (visibility-only)
   mode. [DOC S1424; DER: a general implication for any drift-visibility-first design: expect this
@@ -95,7 +97,8 @@ attribution. NCSC (UK)/BSI/ANSSI rows remain UNK.
 - NCSC (UK) device guidance, BSI IT-Grundschutz/SiSyPHuS and ANSSI recommendations remain UNK; rows
   are placeholders in the CSV [UNK].
 
-- Coordinator addendum: the OSConfig Server 2025 baseline is also published as machine-readable CSV (MIT) in `microsoft/osconfig`, versions 2409-2606. Version 2606 has 361 settings with registry or CSP paths, per-role expected values, CIS RuleIDs and STIG ids. [DOC S1598]
+- Coordinator addendum: the OSConfig Server 2025 baseline version 2606 is published as a machine-readable CSV in `microsoft/osconfig`, with 361 settings carrying registry or CSP paths, per-role expected values, CIS RuleIDs and STIG ids. [DOC S1598]
+- The same `security/` folder at commit `82a54b9e` also holds versions 2409, 2411, 2504 and 2510, and the repository is MIT-licensed. [DER S1598: file names beside the pinned file and the repository licence at the same commit]
 - Coordinator addendum: the Microsoft Windows 11 v24H2 baseline package was retrieved (426 settings). DISA Windows 11 V2R9 and Server 2025 V1R3 were both retrieved, with benchmark date 2026-08-10. See `settings-crosswalk.md`. [DOC S1472,S1470,S1471]
 
 ## Reference

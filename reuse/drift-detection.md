@@ -3,7 +3,7 @@ topic: reuse/drift-detection
 priority: P2
 applies_to: "detecting configuration drift with DSC v3 in test (report-only) mode via ConfigMgr baselines, with remediation left off"
 retrieved_utc: 2026-09-26
-sources: [S1008, S1009, S1010, S1104]
+sources: [S1008, S1009, S1010, S1104, S-3aphi7n2]
 status: complete
 ---
 
@@ -24,10 +24,14 @@ opens remediation.
   all, unlike Puppet noop), which is an even closer conceptual match to a "test mode only, ever"
   posture -- but it is a Ruby framework with its own `describe`/control DSL, not portable into a
   pure-Python package. [DOC S1009,S1104]
-- Microsoft365DSC packages PowerShell DSC resources (`Get`/`Test`/`Set`) for M365 workloads and is MIT
-  licensed; it confirms the same Get/Test/Set DSC v3 shape, but its PowerShell resource code is out of
-  scope for a Python-core tool and only becomes relevant if that tool ever ships its own DSC resources.
+- Microsoft365DSC (MIT) manages, configures, extracts and monitors Microsoft 365 tenant
+  configurations; its repository topics include `powershell` and `desiredstateconfiguration`.
   [DOC S1010]
+- At release 1.26.909.1 its resources (e.g. `MSFT_AADUser`) implement classic PowerShell DSC
+  `Get-TargetResource`/`Set-TargetResource`/`Test-TargetResource` functions rather than DSC v3
+  resource manifests. [DOC S-3aphi7n2]
+- Its PowerShell resource code is out of scope for a Python-core tool and only becomes relevant if
+  that tool ever ships its own DSC resources. [DER S1010, S-3aphi7n2: the resources are PowerShell modules]
 
 ## Reference
 | project | drift-only mode | enforcement mode | licence | portable into a Python core? |

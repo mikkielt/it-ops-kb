@@ -3,7 +3,7 @@ topic: reuse/log-collection-normalization
 priority: P2
 applies_to: "reading and normalizing CMTrace/CCM/event logs from an on-workstation search/tail/collect tool"
 retrieved_utc: 2026-09-26
-sources: [S1020, S1021]
+sources: [S1020, S1021, S-5ub6genn, S-knqivzgt]
 status: complete
 ---
 
@@ -14,16 +14,17 @@ would forbid, and neither ships a built-in CMTrace parser. Log fetch/normalize i
 library code invoked per-call, not a piped collector.
 
 ## Facts
-- OpenTelemetry Collector (Apache-2.0, Go) uses a receivers -> processors -> exporters architecture
-  that is, by its own naming, extensible via custom receivers/processors -- the mechanism by which a
-  CMTrace parser would be added, but no such parser ships by default. Deploying it means running a
-  standing collector process, not calling a library. [DOC S1020]
-- Fluent Bit (Apache-2.0, C) explicitly lists Windows as a supported platform and is similarly
-  extensible via inputs/parsers, but likewise ships no built-in CMTrace parser and is deployed as a
-  standing process. [DOC S1021]
-- Both licences (Apache-2.0) would permit copying a parser design if one existed, but neither project
-  documents one at the depth fetched, and the deployment model (always-on collector) does not match a
-  per-call, on-workstation execution model regardless. [DER S1020,S1021]
+- OpenTelemetry Collector is Apache-2.0 licensed. [DOC S1020]
+- The Collector is an executable whose pipelines chain receivers, optional processors and exporters;
+  the docs cover building custom components, the mechanism by which a CMTrace parser would be added,
+  and as an agent it runs as a daemon on the VM or container -- a standing process, not a library
+  call. [DOC S-5ub6genn]
+- Fluent Bit (Apache-2.0) is a telemetry agent for Linux, Windows, macOS, BSD and embedded systems,
+  with pluggable input, filter and output plugins (plugins written in C). [DOC S-knqivzgt]
+- Neither OpenTelemetry Collector nor Fluent Bit ships a built-in CMTrace parser. [UNK: not in S1020 or S1021 as re-read 2026-09-27]
+- Both licences (Apache-2.0) would permit copying a parser design if one existed, but the deployment
+  model (a standing agent or collector) does not match a per-call, on-workstation execution model
+  regardless. [DER S-5ub6genn, S-knqivzgt: both are described as agents or executables that run continuously]
 
 ## Reference
 | project | Windows support | built-in CMTrace parser | licence | reuse verdict |

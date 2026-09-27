@@ -3,7 +3,7 @@ topic: windows/powershell-remoting-jea
 priority: P2
 applies_to: "WinRM-based PowerShell Remoting (WMF 5.1+/PowerShell 7); Just Enough Administration (JEA); PowerShell remoting over SSH (Windows/Linux/macOS)"
 retrieved_utc: 2026-09-26
-sources: [S-twfugriu, S-p5lwby5b, S-xe3uwlpq, S-jwo36v2t, S-azyqynh4, S-tabagcvn, S-c7yxdr7e, S-fmtt7m5j, S-o3cdlg27, S-zopt2et4, S-hcszfxta, S1298, S-sgyc73tt, S-utydlnf7]
+sources: [S-twfugriu, S-p5lwby5b, S-xe3uwlpq, S-jwo36v2t, S-azyqynh4, S-tabagcvn, S-c7yxdr7e, S-fmtt7m5j, S-o3cdlg27, S-zopt2et4, S-hcszfxta, S-j2g6dv6n, S-sgyc73tt, S-utydlnf7]
 status: complete
 files: [windows/jea-config-fields.csv]
 ---
@@ -52,15 +52,14 @@ fits alongside those mechanisms.
 - `Enable-PSRemoting` starts the WinRM service, sets it to auto-start, and creates a listener plus a
   firewall exception; on server SKUs it succeeds on all network profiles (opening private/domain
   broadly, public to the local subnet only); on client SKUs it fails on public networks unless
-  `-SkipNetworkProfileCheck` is used (then it opens only the local subnet). [DOC S-zopt2et4]
+  `-SkipNetworkProfileCheck` is used (then it opens only the local subnet). [DOC S-zopt2et4, S-j2g6dv6n]
 - WinRM 2.0 default listener ports: **5985 HTTP**, **5986 HTTPS**; `winrm quickconfig` (`winrm qc`)
   creates the HTTP listener and firewall exception for the current profile only — reapply after a
   firewall-profile change. [DOC S-o3cdlg27]
 - `TrustedHosts` (WinRM client setting) suppresses the identity-verification error for NTLM connections
   to hosts not covered by Kerberos mutual authentication (e.g. workgroup members, cross-domain by name);
-  it is **not** a trust statement — NTLM can't guarantee the client is really talking to that host, so a
-  host added to `TrustedHosts` can still receive credential material sent in good faith to the wrong
-  endpoint. IPv6 addresses in the list must be bracketed. [DOC S-o3cdlg27, DOC S-fmtt7m5j]
+  it is **not** a trust statement — NTLM can't guarantee the client is really talking to the host it
+  intended, so the list only names hosts whose unverifiable server identity you accept. IPv6 addresses in the list must be bracketed. [DOC S-o3cdlg27, DOC S-fmtt7m5j]
 - On the wire, HTTPS connections are encrypted by TLS; HTTP connections are encrypted only by the
   authentication protocol's own message-level encryption — Basic auth gives **no** encryption, NTLM uses
   RC4-128, Kerberos uses the ticket's `etype` (AES-256 on modern systems), and CredSSP uses the
@@ -78,7 +77,7 @@ fits alongside those mechanisms.
   | Method | Pros | Cons |
   |---|---|---|
   | CredSSP | balances ease of use and security; works on Windows Server 2008+ | credentials are cached on the remote server (ServerB) — a compromise there exposes them; disabled by default on both client and server; incompatible with the Protected Users group |
-  | Resource-based Kerberos constrained delegation (RBCD) | credentials never stored; PowerShell-cmdlet configurable, no Domain Admin rights needed; works cross-domain/forest | requires Windows Server 2012+; requires rights to update the target object and its SPNs; doesn't support the second hop for plain WinRM in the constrained-delegation-only case |
+  | Resource-based Kerberos constrained delegation (RBCD) | credentials never stored; PowerShell-cmdlet configurable, no Domain Admin rights needed; works cross-domain/forest | requires Windows Server 2012+; requires rights to update objects and SPNs; Microsoft's cons list also says it doesn't support the second hop for WinRM |
   | Classic (front-end) constrained delegation | no special coding; credentials not stored | requires Domain Administrator to configure; limited to one domain; configured on ServerB's AD object |
   | Unconstrained Kerberos delegation | credentials not stored | **not recommended** — no control over where delegated credentials are used; doesn't support WinRM's second hop |
   | JEA | best security ceiling; no password to maintain with a virtual account | requires WMF 5.0+; must be configured on every intermediate server (ServerB) |
@@ -96,11 +95,12 @@ fits alongside those mechanisms.
   with the Entra/Kerberos delegation article. The KDC negative-caches a prior denied attempt for 15
   minutes; `klist purge -li 0x3e7` on the intermediate server (ServerB) clears it without a reboot.
   [DOC S-c7yxdr7e]
-- Both classic and resource-based constrained delegation are blocked outright for any account (front-end
-  or the delegated user) that has the **"Account is sensitive and cannot be delegated"** flag set. [DOC
+- Under both classic and resource-based constrained delegation, Microsoft notes that Active Directory
+  accounts with the **"Account is sensitive and can't be delegated"** property set can't be delegated. [DOC
   S-c7yxdr7e]
 - This is the same flag documented in `auth/delegation-kcd-obo.md` for Entra/on-prem Kerberos delegation
-  generally — the second-hop scenario here is one more mechanism that flag blocks. [DER S-c7yxdr7e,S1298]
+  generally — the second-hop scenario here is one more mechanism that flag blocks. [DER S-c7yxdr7e: its
+  classic and RBCD sections both carry the same "can't be delegated" note]
 
 ### JEA: role capabilities and session configuration
 - A JEA endpoint needs two authored files: a **role capability file** (`.psrc`, created with
@@ -108,7 +108,7 @@ fits alongside those mechanisms.
   configuration file** (`.pssc`, created with `New-PSSessionConfigurationFile -SessionType
   RestrictedRemoteServer`) mapping users/groups to roles and setting session-wide options. Full field
   list: `windows/jea-config-fields.csv`. [DOC S-p5lwby5b, DOC S-xe3uwlpq]
-- `SessionType RestrictedRemoteServer` puts the session in **NoLanguage** mode with only 7 default
+- `SessionType RestrictedRemoteServer` puts the session in **NoLanguage** mode with only 8 default
   commands visible (`Clear-Host`, `Exit-PSSession`, `Get-Command`, `Get-FormatData`, `Get-Help`,
   `Measure-Object`, `Out-Default`, `Select-Object`) and no providers or external programs — everything
   else must be explicitly added via role capabilities or the session configuration file itself. [DOC
@@ -130,7 +130,7 @@ fits alongside those mechanisms.
   each custom function as its own trust boundary and validate its own inputs (e.g. never pipe raw user
   input into `Invoke-Expression`). [DOC S-p5lwby5b]
 - `.pssc` **run-as identity** choices and their effect on the second hop: **`RunAsVirtualAccount =
-  $true`** creates a one-time account, destroyed at session end, unknown to the connecting user, that is
+  $true`** creates a one-time account, destroyed at session end, whose credentials the connecting user never knows, that is
   a member server's local `Administrators` (or a DC's `Domain Admins`) by default — restrict its
   membership with `RunAsVirtualAccountGroups` when full admin isn't needed; a virtual account has **no**
   network identity of its own (network calls appear to come from the machine's own computer account), so
@@ -162,7 +162,7 @@ fits alongside those mechanisms.
   principal to invoke the endpoint; `Get-PSSessionConfiguration -Name <n> | Select Permission` audits it,
   and `Set-PSSessionConfiguration -ShowSecurityDescriptorUI` / `-SecurityDescriptorSddl` changes it. A
   user with *Invoke* rights but no matching role in `RoleDefinitions` can still connect but only gets the
-  7 default `RestrictedRemoteServer` commands. [DOC S-tabagcvn]
+  default commands. [DOC S-tabagcvn]
 - JEA does **not** protect against users who already hold standing admin rights (Domain Admins, local
   Administrators): they can bypass any JEA endpoint via RDP, MMC, or an unconstrained PowerShell
   endpoint, and a local admin can edit the JEA configuration itself to widen it — JEA's benefit comes

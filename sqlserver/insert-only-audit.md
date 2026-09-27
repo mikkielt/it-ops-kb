@@ -3,7 +3,7 @@ topic: sqlserver/insert-only-audit
 priority: P0
 applies_to: "SQL Server 2016+ / Azure SQL (permission model)"
 retrieved_utc: 2026-09-26
-sources: [S468, S469, S470, S471]
+sources: [S468, S469, S470, S471, S-deeqomz3]
 status: partial
 ---
 
@@ -25,7 +25,7 @@ status: partial
 ## Reference
 | Grant | Effect | Source |
 |---|---|---|
-| `GRANT INSERT ON dbo.operation TO app_writer` | insert only on that table | S469 (object permissions) |
+| `GRANT INSERT ON dbo.operation TO app_writer` | INSERT on that table only; INSERT is an object permission separate from UPDATE, DELETE and SELECT | S-deeqomz3 (GRANT object permissions) |
 | `DENY UPDATE, DELETE ON dbo.operation TO app_writer` | blocks those permissions even if granted through another role | S468 |
 | `GRANT INSERT ON SCHEMA::audit TO r` | insert on every object in the schema | S470 |
 

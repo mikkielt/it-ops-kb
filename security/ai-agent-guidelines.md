@@ -3,7 +3,7 @@ topic: security/ai-agent-guidelines
 priority: P2
 applies_to: "OWASP GenAI 2025-2026 lists; NIST AI RMF 1.0 / AI 600-1; MITRE ATLAS; ISO/IEC 42001:2023; Claude Code / MCP current; a tool-using agent with a tiered confirm gate, a model boundary and an audit table"
 retrieved_utc: 2026-09-24
-sources: [S760, S761, S762, S763, S764, S765, S1540, S1541, S1542, S-vtejnyyv, S-fr4o3437, S1545, S1862, S1547, S1548, S1575, S-rfm4qs32, S1480]
+sources: [S760, S761, S762, S763, S764, S765, S1540, S1541, S1542, S-vtejnyyv, S-fr4o3437, S1545, S1862, S1547, S1548, S1575, S-rfm4qs32, S1480, S-uvrn2v43]
 status: partial
 ---
 
@@ -19,7 +19,9 @@ model boundary (a pseudonymization vault with a short TTL and strict restore), a
 allowlist.
 
 ## Facts
-- NIST AI RMF 1.0 was published 2023-01-26; it defines four functions (Govern, Map, Measure, Manage) and is public domain as a US government work. [DOC S1541]
+- NIST released the AI RMF (1.0) on 2023-01-26, for voluntary use; NIST also publishes a companion Playbook, Roadmap and Crosswalk. [DOC S1541]
+- The AI RMF Core has four functions: GOVERN, MAP, MEASURE and MANAGE, each broken into categories and subcategories. [DOC S-uvrn2v43]
+- AI RMF 1.0 is public domain as a US government work. [UNK: not in S1541 as re-read 2026-09-27]
 - NIST AI 600-1 (Generative AI Profile) was published July 2024 and lists suggested actions under the RMF functions, each with an Action ID such as `GV-1.1-001`. They include policies that define roles for human-AI configurations and oversight of AI systems (GOVERN 3.2), and procedures for GAI incident response and recovery (e.g. `GV-2.1-002`, `MG-2.3-001`). The profile also notes that GAI use may warrant additional human review, tracking and documentation. [DOC S1542]
 - NIST AI 600-1 actions relevant to a tool-using agent operating on production systems: restrict and monitor tool/plugin access granted to the model, log agent actions and their outcomes, apply least-privilege to any credentials the agent can reach, and require human review before consequential actions. [DER S1542: read against a generic tier/confirm design]
 - MITRE ATLAS catalogs adversarial-ML and AI-system tactics/techniques (its own matrix, `ATLAS-matrix`, separate from enterprise ATT&CK, which its tooling only merges into an optional combined STIX bundle); MITRE publishes the data monthly (content version `YYYY.MM`, `2026.09` on 2026-09-27) under Apache-2.0, so reuse must keep MITRE's notices. [DOC S-vtejnyyv]
@@ -28,7 +30,8 @@ allowlist.
 - Microsoft's Zero Trust guidance for securely adopting AI says AI agents and applications should use managed, secure identities with least-privilege access and comprehensive logging. It also says to classify and label sensitive data so AI models do not ingest or expose it, to extend DLP to AI applications and agents, and to extend security monitoring to AI workloads and agents. [DOC S-rfm4qs32]
 - Claude Code's MCP documentation points organizations needing central control to managed MCP configuration: a fixed, exclusive server set via `managed-mcp.json`, servers provided to every user via `managedMcpServers`, and `allowedMcpServers`/`deniedMcpServers` filtering, distinct from servers users add at local, project or user scope. [DOC S1862]
 - Claude Code's security documentation describes permission modes and confirmation prompts for tool calls, which is the same class of control a tiered confirm gate provides for higher-risk actions. [DOC S1547]
-- Anthropic introduced MCP (2024-11-25) as an open protocol so that AI applications can connect to external tools and data through a single interface; the design separates the tool-calling client from the tools themselves, which is the boundary a workstation CLI/MCP role sits on. [DOC S1548]
+- Anthropic open-sourced MCP on 2024-11-25 as an open standard for connecting AI assistants to the systems where data lives through a single protocol; developers either expose data through MCP servers or build AI applications (MCP clients) that connect to those servers. [DOC S1548]
+- That client/server split is the boundary a workstation CLI/MCP role sits on. [DER S1548: the MCP client/server architecture applied to a workstation role]
 - Microsoft's ConfigMgr site-administration security guidance says to grant administrative access only to trusted users with the minimum permissions (built-in or custom security roles), to audit administrative user assignments periodically, and to audit all administrative user activity and review the audit logs routinely, because an authorized administrator can use ConfigMgr to attack the network. It is the same source used in `security/management-plane-hardening.md`. [DOC S1480]
 
 ### Mapping to representative controls

@@ -3,7 +3,7 @@ topic: windows/powershell-7
 priority: P2
 applies_to: "PowerShell 7.0-7.7 (pwsh); side-by-side with Windows PowerShell 5.1; Microsoft.PowerShell.SecretManagement/SecretStore, PSResourceGet"
 retrieved_utc: 2026-09-26
-sources: [S-7rfzq5p7, S-rwd5gx6b, S-qb6m7uly, S-iw3ehpxb, S-x4puowoc, S-onrxwhf7, S-z7wzbalz, S-6vnttaga, S-62djuv2f, S-66rxa5r3, S-awsrthdz, S-zghw4ytw, S-fzd5uvn2, S-vx532wl3, S-cfculwad]
+sources: [S-7rfzq5p7, S-rwd5gx6b, S-qb6m7uly, S-iw3ehpxb, S-x4puowoc, S-onrxwhf7, S-z7wzbalz, S-6vnttaga, S-62djuv2f, S-66rxa5r3, S-awsrthdz, S-zghw4ytw, S-fzd5uvn2, S-vx532wl3, S-cfculwad, S-gzff3gao, S-54flhyvx]
 status: complete
 files: [windows/powershell-lifecycle.csv]
 ---
@@ -53,18 +53,19 @@ files: [windows/powershell-lifecycle.csv]
   vs "03-Dec-2022") — see `_conflicts.md`. [DOC S-7rfzq5p7, S-cfculwad]
 - `[System.Runtime.InteropServices.RuntimeInformation]::FrameworkDescription` prints the exact .NET build
   a running `pwsh` session is on. [DOC S-cfculwad]
-- Support for a PowerShell version also depends on the OS it runs on: Windows, macOS, Alpine, Debian,
-  RHEL and Ubuntu each have their own supported-version list and end-of-life dates on the same page,
-  independent of the PowerShell version's own .NET-driven end date. [DOC S-cfculwad]
+- Support for a PowerShell version also depends on the platform it runs on: support ends when either the
+  PowerShell version or the target platform reaches end of life. The same page lists supported macOS
+  versions and per-version end dates for Alpine, Debian, RHEL and Ubuntu; Windows support follows the
+  Windows lifecycle. [DOC S-cfculwad]
 - PowerShell modules that ship separately from the PowerShell release package (e.g. `ActiveDirectory`,
   shipped with Windows Server) are **not** covered by the PowerShell support lifecycle; they follow their
   own product's (here, Windows Server's) lifecycle. [DOC S-cfculwad]
 - PowerShell is released under the MIT license; without a paid Microsoft support agreement, users get
-  community support only (GitHub issues, Discord/Slack), with no guaranteed responsiveness. [DOC S-cfculwad]
-- Experimental features are not intended for production and get best-effort support only, regardless of
-  which PowerShell release channel ships them. [DOC S-cfculwad]
-- Point releases stay on the same .NET minor version: PowerShell 7.5.11 is built on the .NET 9.0.20
-  runtime (a patch update within .NET 9.0, not a jump to a new .NET minor version). [DOC S-rwd5gx6b]
+  community support only (the most active channels are Discord and Slack; GitHub takes bug reports but
+  the team doesn't provide support there), with no guaranteed responsiveness or fixes. [DOC S-cfculwad]
+- Experimental features are not intended for production; Microsoft gives them best-effort support
+  only. [DOC S-cfculwad]
+- PowerShell 7.5.11 is built on the .NET 9.0.20 runtime. [DOC S-rwd5gx6b]
 
 ### Side-by-side with Windows PowerShell 5.1
 - PowerShell 7 doesn't replace Windows PowerShell 5.1; it installs to its own directory and runs
@@ -79,14 +80,14 @@ files: [windows/powershell-lifecycle.csv]
 - Modules loaded into `WinPSCompatSession` are reflected into the current PS7 session via **implicit
   remoting** — the same transport PowerShell jobs use — generating a proxy module under `$Env:TEMP` that
   is imported into the current session so PowerShell can detect it was loaded via compatibility. [DOC S-vx532wl3]
-- The compatibility session can be driven directly, e.g. to run an entire pipeline in Windows PowerShell
-  and return only the final (already-serialized) result:
+- The compatibility session can be driven directly for operations that don't work correctly on
+  deserialized objects: the entire pipeline runs in Windows PowerShell and only the final result returns:
   `Invoke-Command -Session (Get-PSSession -Name WinPSCompatSession) -ScriptBlock { ... }`. [DOC S-vx532wl3]
 - PowerShell Remoting over SSH accepts an SSH-style connection string: `Enter-PSSession -HostName
   user@host:port`. [DOC S-awsrthdz]
-- Telemetry in PS7.x can only be disabled with the `POWERSHELL_TELEMETRY_OPTOUT` environment variable
-  (`true`/`yes`/`1`); the old approach of deleting a `DELETE_ME_TO_DISABLE_CONSOLEHOST_TELEMETRY` file no
-  longer works. [DOC S-awsrthdz]
+- Deleting a `DELETE_ME_TO_DISABLE_CONSOLEHOST_TELEMETRY` file no longer disables telemetry; the
+  differences page names the `POWERSHELL_TELEMETRY_OPTOUT` environment variable (`true`/`yes`/`1`) as the
+  opt-out (about_Telemetry adds a Windows setting from 7.6.2, see Install below). [DOC S-awsrthdz]
 
 ### Install (Windows)
 - Install methods and their intended scenario: **WinGet** (recommended for Windows clients; `winget
@@ -105,17 +106,18 @@ files: [windows/powershell-lifecycle.csv]
 - Example silent MSI install: `msiexec /package PowerShell-7.6.6-win-x64.msi /quiet
   ADD_EXPLORER_CONTEXT_MENU_OPENPOWERSHELL=1 ADD_FILE_CONTEXT_MENU_RUNPOWERSHELL=1 ENABLE_PSREMOTING=1
   REGISTER_MANIFEST=1 USE_MU=1 ENABLE_MU=1 ADD_PATH=1`. [DOC S-qb6m7uly]
-- MSIX/Store-based installs are single-user only, run in an application sandbox that blocks all-users
-  configuration, and **don't support PowerShell remoting** (including `Register-PSSessionConfiguration`,
-  `Update-Help -Scope AllUsers`, `Enable-ExperimentalFeature -Scope AllUsers`,
-  `Set-ExecutionPolicy -Scope LocalMachine`, and modifying `$PROFILE.AllUsersAllHosts`/`AllUsersCurrentHost`).
+- MSIX/Store-based installs are single-user only and run in an application sandbox that blocks changes
+  to the application's root folder (`$PSHOME`), so they **don't support PowerShell remoting** (inbound
+  WSMan config can't be changed). Commands that need write access to `$PSHOME` are also unsupported:
+  `Register-PSSessionConfiguration`, `Update-Help -Scope AllUsers`, `Enable-ExperimentalFeature -Scope AllUsers`,
+  `Set-ExecutionPolicy -Scope LocalMachine`, and creating or modifying `$PROFILE.AllUsersAllHosts`/`AllUsersCurrentHost`.
   User-level config and outbound SSH remoting still work. [DOC S-qb6m7uly]
 - To find how PowerShell was installed, check `$PSHOME`: `$HOME\.dotnet\tools` = .NET Global tool;
   `$Env:ProgramFiles\PowerShell\7` = likely MSI; a path under `$Env:ProgramFiles\WindowsApps\` = MSIX;
   anything else = likely ZIP. [DOC S-qb6m7uly]
 - Upgrade check via WinGet: `winget list --id Microsoft.PowerShell --upgrade-available`, then
-  `winget upgrade --id Microsoft.PowerShell` (keeps the same package format, MSI or MSIX, as the current
-  install). [DOC S-qb6m7uly]
+  `winget upgrade --id Microsoft.PowerShell` (uses the same package format, MSI or MSIX, as the current
+  install when the new version offers it). [DOC S-qb6m7uly]
 - Update notifications: PowerShell waits 3 seconds after startup, then (if it's been >24h since the last
   check) checks for a newer version, and only shows the notification once that newer release is more than
   7 days old. Controlled by `POWERSHELL_UPDATECHECK`: `Off` disables it; `Default` (same as unset) has GA
@@ -124,7 +126,7 @@ files: [windows/powershell-lifecycle.csv]
 - Telemetry: sent to Microsoft via Application Insights at startup (OS name/version, PS version,
   `POWERSHELL_DISTRIBUTION_CHANNEL`, App Insights SDK version, geo-located-by-IP host location — the IP
   itself isn't stored — the effective Execution Policy, session/user GUIDs) and periodically during the
-  session (module import names/versions, experimental feature names, `$PSNativeCommandUseErrorActionPreference`
+  session (names/versions of imported Microsoft-owned modules, experimental feature names, `$PSNativeCommandUseErrorActionPreference`
   value, etc.); opt out with `POWERSHELL_TELEMETRY_OPTOUT=true|yes|1` set before the process starts, or
   (from PowerShell 7.6.2 on Windows) by turning off **Send optional diagnostic data** under
   Settings > Privacy & security > Diagnostics & feedback. [DOC S-62djuv2f, S-6vnttaga]
@@ -133,8 +135,7 @@ files: [windows/powershell-lifecycle.csv]
 
 ### SecretManagement / SecretStore
 - `Microsoft.PowerShell.SecretManagement` is a vault-abstraction module: a common cmdlet set
-  (`Get-Secret`, `Set-Secret`, `Register-SecretVault`, ...) that talks to whatever extension vault is
-  registered, so scripts don't hardcode a specific vault's API; switching vaults across
+  that talks to whatever extension vault is registered, so scripts don't hardcode a specific vault's API; switching vaults across
   local/test/production is "change one parameter, **Vault**". It imposes no authentication model itself —
   each extension vault defines its own. [DOC S-iw3ehpxb]
 - Both modules are Microsoft-stated **feature complete**: no further active development, security/critical
@@ -149,7 +150,7 @@ files: [windows/powershell-lifecycle.csv]
   `.JustinGrote.CredMan`. [DOC S-iw3ehpxb]
 - `Get-SecretStoreConfiguration` default output: `Scope=CurrentUser, Authentication=Password,
   PasswordTimeout=900, Interaction=Prompt`. **Scope** is always `CurrentUser` (`AllUsers` isn't
-  supported despite being an accepted enum value). [DOC S-z7wzbalz]
+  supported despite being an accepted enum value). [DOC S-z7wzbalz, S-x4puowoc]
 - `Set-SecretStoreConfiguration` parameters: **`-Authentication`** `Password` (default) or `None` (no
   password required — Microsoft's own caution: "less secure ... may be useful for testing scenarios but
   shouldn't be used with important secrets"); **`-PasswordTimeout`** seconds the store stays unlocked
@@ -159,7 +160,7 @@ files: [windows/powershell-lifecycle.csv]
   `Microsoft.PowerShell.SecretStore.PasswordRequiredException`); **`-Password`** a `SecureString`, used
   either as the new password (switching `None`→`Password`) or to authorize a change (switching
   `Password`→`None`); **`-Default`** resets to the factory configuration; **`-PassThru`** returns the
-  resulting config object (no output by default). [DOC S-x4puowoc]
+  resulting config object (no output by default). [DOC S-x4puowoc, S-z7wzbalz]
 - `Unlock-SecretStore` supplies the session password for the current PowerShell session (used when
   `Interaction=None` and a password is still required); the vault stays unlocked until
   `PasswordTimeout` elapses. `Set-SecretStorePassword` changes the vault's stored password but is
@@ -168,15 +169,16 @@ files: [windows/powershell-lifecycle.csv]
   non-Windows — `$HOME/.secretmanagement/localstore/`. [DOC S-z7wzbalz]
 - Microsoft's own unattended-automation walkthrough exports the vault password as a DPAPI-encrypted
   `SecureString` XML (`Export-Clixml`), then applies it in one `Set-SecretStoreConfiguration` call with
-  `Authentication='Password'` (not `None`), `Interaction='None'` and `-Confirm:$false` — i.e. its
-  recommended pattern still requires a password (imported via `Import-CliXml`) rather than removing
+  `Authentication='Password'` (not `None`), `PasswordTimeout=3600`, `Interaction='None'` and
+  `-Confirm:$false`, then unlocks with `Unlock-SecretStore` in the script — i.e. its example still requires a password (imported via `Import-CliXml`) rather than removing
   authentication entirely; `Authentication=None` is a further step beyond what Microsoft's own example
   uses. [DOC S-onrxwhf7]
 
 ### PSResourceGet
-- `Microsoft.PowerShell.PSResourceGet` is a from-scratch (C#) rewrite of PowerShellGet: it drops the
-  dependency on the `PackageManagement` module and calls the NuGet APIs directly, aiming at simpler code,
-  fewer breaking-change constraints than PowerShellGet v2, and faster search/install. [DOC S-fzd5uvn2]
+- `Microsoft.PowerShell.PSResourceGet` is an updated PowerShellGet written entirely in C#: it drops the
+  dependency on the `PackageManagement` module and calls the NuGet APIs directly, simplifies the code
+  base, fixes long-standing usability issues that would have been breaking changes in PowerShellGet v2,
+  and improves search/install performance. [DOC S-fzd5uvn2]
 - `Install-PSResource` combines `Install-Module` and `Install-Script` from PowerShellGet v2 into one
   cmdlet; it does not load the newly installed module into the current session (import it or start a new
   session). It does not install NuGet-v3-protocol dependencies automatically (install those
@@ -184,12 +186,12 @@ files: [windows/powershell-lifecycle.csv]
 - `Update-PSResource` replaces `Update-Module`/`Update-Script`; it installs the newest version
   side-by-side with older ones and does not delete or provide a way to uninstall the older versions
   (delete their files/folders manually), and (like `Install-PSResource`) doesn't auto-load the update.
-  Alias: `udres`. [DOC S-zghw4ytw]
+  Alias: `udres`. [DOC S-gzff3gao]
 - On first use, PSResourceGet registers the PowerShell Gallery (`PSGallery`) as a repository with
   priority 50, marked **untrusted** by default; trust it explicitly with
   `Set-PSResourceRepository -Name PSGallery -Trusted -PassThru`. [DOC S-fzd5uvn2]
 - `Get-InstalledPSResource` (aliases `Get-PSResource`, `gres`) returns the combined equivalent of
-  PowerShellGet v2's `Get-InstalledModule` + `Get-InstalledScript`. [DOC S-zghw4ytw]
+  PowerShellGet v2's `Get-InstalledModule` + `Get-InstalledScript`. [DOC S-54flhyvx]
 
 ## Reference
 | release | type | .NET base | end-of-support | notes |

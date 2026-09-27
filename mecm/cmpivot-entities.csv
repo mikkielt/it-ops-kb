@@ -1,154 +1,153 @@
 entity,kind,description,parameters,columns_documented_in_examples,console_only,min_version,source
-Entity,entity,Description,,,no,,S317
-AadStatus,entity,Status of Microsoft Entra ID,,DeviceId,no,,S317;S316;S321
-Administrators,entity,Members of the local administrators group (client needs PowerShell 5.0),,,no,,S317
-AppCrash,entity,Recent application crash reports,,FileName,no,,S317;S316;S321
-AppVClientApplication,entity,AppV Client Application,,,no,,S317
-AppVClientPackage,entity,AppV Client Package,,,no,,S317
-AutoStartSoftware,entity,"Software that starts automatically with, or immediately after, the operating system",,,no,,S317
-BaseBoard,entity,BaseBoard,,,no,,S317
-Battery,entity,Battery,,,no,,S317
-Bios,entity,System BIOS information,,Manufacturer;Version,no,,S317;S316;S321
-BitLocker,entity,BitLocker,,,no,,S317
-BitLockerEncryptionDetails,entity,BitLocker Encryption Details,,,no,,S317
-BitLockerPolicy,entity,BitLocker Policy,,,no,,S317
-BootConfiguration,entity,Boot Configuration,,,no,,S317
-BrowserHelperObject,entity,Browser Helper Object,,,no,,S317
-BrowserUsage,entity,Browser Usage,,,no,,S317
-CcmLog(),function-entity,Lines within 24 hours (by default) from a Ccm Log file,"CcmLog('<log name>'[, <timespan>]); default window 24h",,no,,S317
-CCMRAX,entity,CCM_RAX,,,no,,S317
-CCMRecentlyUsedApplications,entity,Recently Used Applications,,CompanyName;ExplorerFileName;LastUsedTime;LaunchCount;FolderPath;ProductName;ProductVersion,no,,S317;S316;S321
-CCMWebAppInstallInfo,entity,Web Applications,,,no,,S317
-CDROM,entity,CDROM Drive,,,no,,S317
-ClientEvents,entity,Client Events,,,no,,S317
-ComputerSystem,entity,Computer System,,Manufacturer;Model,no,,S317;S316;S321
-ComputerSystemEx,entity,Computer System Ex,,,no,,S317
-ComputerSystemProduct,entity,Computer System Product,,,no,,S317
-ConnectedDevice,entity,Connected Device,,,no,,S317
-Connection,entity,An active Tcp connection in or out of the device (client needs PowerShell 5.0),,,no,,S317
-Desktop,entity,Desktop,,,no,,S317
-DesktopMonitor,entity,Desktop Monitor,,,no,,S317
-Device,entity,Basic information about the device,,UserName,no,,S317;S316;S321
-Disk,entity,Local storage device information on a computer system running Windows,,Description;FreeSpace,no,,S317;S316;S321
-DMA,entity,DMA,,,no,,S317
-DMAChannel,entity,DMA Channel,,,no,,S317
-DriverVxD,entity,Driver - VxD,,,no,,S317
-EmbeddedDeviceInformation,entity,Embedded Device Information,,,no,,S317
-Environment,entity,Environment,,,no,,S317
-EPStatus,entity,"Status of antimalware software on the computer gathered by the `Get-MpComputerStatus` cmdlet. Supported on Windows 10 and Server 2016, or later with defender running.",,QuickScanEndTime,no,,S317;S316;S321
-EventLog(),function-entity,Events within 24 hours (by default) from an event log,"EventLog('<log>'[, <timespan>]); default 24h",EventID,no,,S317;S316;S321
-File(),function-entity,Information about a specific file,File('<path with wildcards>'),FileName;SHA256Hash (MD5 hash and Hidden/System flags added 1910; column names not stated),no,,S317;S316;S321
-FileShare,entity,Active file share information,,,no,,S317
-Firmware,entity,Firmware,,,no,,S317
-IDEController,entity,IDE Controller,,,no,,S317
-InstalledExecutable,entity,Installed Executable,,,no,,S317
-InstalledSoftware,entity,An application installed on the device,,,no,,S317
-IPConfig,entity,"Gets network configuration, including usable interfaces, IP addresses, and DNS servers (client needs PowerShell 5.0)",,,no,,S317
-IRQTable,entity,IRQ Table,,,no,,S317
-Keyboard,entity,Keyboard,,,no,,S317
-LoadOrderGroup,entity,Load Order Group,,,no,,S317
-LogicalDisk,entity,Logical Disk,,DeviceID;Name;Description;FileSystem;Size;FreeSpace,no,,S317;S316;S321
-MDMDevDetail,entity,Device Information,,,no,,S317
-Memory,entity,Memory,,,no,,S317
-Modem,entity,Modem,,,no,,S317
-Motherboard,entity,Motherboard,,,no,,S317
-NetworkAdapter,entity,Network Adapter,,,no,,S317
-NetworkAdapterConfiguration,entity,Network Adapter Configuration,,,no,,S317
-NetworkClient,entity,Network Client,,,no,,S317
-NetworkLoginProfile,entity,Network Login Profile,,,no,,S317
-NTEventlogFile,entity,NT Eventlog File,,,no,,S317
-Office365ProPlusConfigurations,entity,Office 365 Apps Configurations,,,no,,S317
-OfficeAddin,entity,Office add-ins,,,no,,S317
-OfficeClientMetric,entity,Office Client Metric,,,no,,S317
-OfficeDeviceSummary,entity,Office Device Summary,,,no,,S317
-OfficeDocumentMetric,entity,Office document metrics,,,no,,S317
-OfficeDocumentSolution,entity,Office Document Solution,,,no,,S317
-OfficeMacroError,entity,Office Macro Error,,,no,,S317
-OfficeProductInfo,entity,Office Product Info,,,no,,S317
-OfficeVbaRuleViolation,entity,Office Vba Rule Violation,,,no,,S317
-OfficeVbaSummary,entity,Office VBA scan summary,,,no,,S317
-OperatingSystem,entity,Operating System,,Caption;LastBootUpTime,no,,S317;S316;S321
-OperatingSystemEx,entity,Operating System Ex,,,no,,S317
-OperatingSystemRecoveryConfiguration,entity,Operating System Recovery Configuration,,,no,,S317
-OptionalFeature,entity,Optional Feature,,,no,,S317
-OS,entity,Basic information about the operating system,,Version,no,,S317;S316;S321
-PageFileSetting,entity,Page File Setting,,,no,,S317
-ParallelPort,entity,Parallel Port,,,no,,S317
-Partition,entity,Disk Partitions,,,no,,S317
-PCMCIAController,entity,PCMCIA Controller,,,no,,S317
-PhysicalDisk,entity,PhysicalDisk,,,no,,S317
-PhysicalMemory,entity,Physical Memory,,,no,,S317
-PNPDEVICEDRIVER,entity,PNP Device Driver,,,no,,S317
-PointingDevice,entity,Pointing Device,,,no,,S317
-PortableBattery,entity,Portable Battery,,,no,,S317
-Ports,entity,Ports,,,no,,S317
-PowerCapabilities,entity,Power Capabilities,,,no,,S317
-PowerClientOptOutSettings,entity,Power Management Exclusion Settings,,,no,,S317
-PowerConfigurations,entity,Power Configuration,,,no,,S317
-PowerManagementDaily,entity,Power Management Daily Data,,,no,,S317
-PowerManagementInsomniaReasons,entity,Power Insomnia Reasons,,,no,,S317
-PowerManagementMonthly,entity,Power Management Monthly Data,,,no,,S317
-PowerSettings,entity,Power Settings,,,no,,S317
-PrinterConfiguration,entity,Printer Configuration,,,no,,S317
-PrinterDevice,entity,Printer Device,,,no,,S317
-PrintJobs,entity,Print Jobs,,,no,,S317
-Process,entity,A process on an operating system,,,no,,S317
-ProcessModule(),function-entity,Modules loaded by specified processes,ProcessModule('<processname>'),ModuleName,no,,S317;S316;S321
-Processor,entity,Processor,,,no,,S317
-ProtectedVolumeInformation,entity,Protected Volume Information,,,no,,S317
-Protocol,entity,Protocol,,,no,,S317
-QuickFixEngineering,entity,Quick Fix Engineering,,,no,,S317
-Registry,entity,"All values for a specific registry key   Starting in version 2107, Key value was added to the Registry() entity",Registry('<hive path with wildcards>'),,no,,S317
-SCSIController,entity,SCSI Controller,,,no,,S317
-SerialPortConfiguration,entity,Serial Port Configuration,,,no,,S317
-SerialPorts,entity,Serial Ports,,,no,,S317
-ServerFeature,entity,Server Feature,,,no,,S317
-Service,entity,A service on a computer system running Windows,,Name,no,,S317;S316;S321
-Services,entity,Services,,,no,,S317
-Shares,entity,Shares,,,no,,S317
-SMBConfig,entity,SMB Configuration of a device (client needs PowerShell 5.0),,,no,,S317
-SMSAdvancedClientPorts,entity,Configuration Manager Client Ports,,,no,,S317
-SMSAdvancedClientSSLConfigurations,entity,Configuration Manager Client SSL Configurations,,,no,,S317
-SMSAdvancedClientState,entity,Configuration Manager Client State,,,no,,S317
-SMSDefaultBrowser,entity,Default Browser,,,no,,S317
-SMSSoftwareTag,entity,Software Tag,,,no,,S317
-SMSWindows8Application,entity,Windows app,,,no,,S317
-SMSWindows8ApplicationUserInfo,entity,Windows app User Info,,,no,,S317
-SoftwareShortcut,entity,Software Shortcut,,,no,,S317
-SoftwareUpdate,entity,A software update applicable but not installed on the device,,,no,,S317
-SoundDevices,entity,Sound Devices,,,no,,S317
-SWLicensingProduct,entity,Software Licensing Product,,,no,,S317
-SWLicensingService,entity,Software Licensing Service,,,no,,S317
-SystemAccount,entity,System Account,,,no,,S317
-SystemBootData,entity,System Boot Data,,SystemStartTime;BootDuration;EventLogStart;GPDuration;UpdateDuration,no,,S317;S316;S321
-SystemBootSummary,entity,System Boot Summary,,,no,,S317
-SystemConsoleUsage,entity,System Console Usage,,,no,,S317
-SystemConsoleUser,entity,System Console User,,,no,,S317
-SystemDevices,entity,System Devices,,,no,,S317
-SystemDrivers,entity,System Drivers,,,no,,S317
-SystemEnclosure,entity,System Enclosure,,,no,,S317
-TapeDrive,entity,Tape Drive,,,no,,S317
-TimeZone,entity,Time Zone,,,no,,S317
-TPM,entity,TPM,,,no,,S317
-TPMStatus,entity,TPM Status,,,no,,S317
-TSIssuedLicense,entity,TS Issued License,,,no,,S317
-TSLicenseKeyPack,entity,TS License Key Pack,,,no,,S317
-UninterruptiblePowerSupply,entity,Uninterruptible Power Supply,,,no,,S317
-USBController,entity,USB Controller,,,no,,S317
-USBDevice,entity,USB Device,,,no,,S317
-User,entity,A user account with an active connection to the device,,,no,,S317
-USMFolderRedirectionHealth,entity,Folder Redirection Health,,,no,,S317
-USMUserProfile,entity,User Profile Health,,,no,,S317
-VideoController,entity,Video Controller,,,no,,S317
-VirtualMachine,entity,Virtual Machine,,,no,,S317
-VirtualMachine64,entity,Virtual Machine (64),,,no,,S317
-Volume,entity,Volume,,,no,,S317
-WindowsUpdate,entity,Windows Update,,,no,,S317
-WindowsUpdateAgentVersion,entity,Windows Update Agent Version,,,no,,S317
-WinEvent(),function-entity,Events within 24 hours (by default) from a Windows event log,"WinEvent('<logname>'[, <timespan>]); default 24h",LevelDisplayName,no,,S317;S316;S321
-WriteFilterState,entity,Write Filter State,,,no,,S317
-AccountSID,entity,Account SID,,,yes (not in Intune admin center),,S317;S316
-FileContent(),function-entity,Content of a specific file,FileContent('<path>'); column Content (per example),Content,yes (not in Intune admin center),1910,S317;S316
-NAPClient,entity,NAP Client,,,yes (not in Intune admin center),,S317;S316
-NAPSystemHealthAgent,entity,NAP System Health Agent,,,yes (not in Intune admin center),,S317;S316
-RegistryKey(),function-entity,All registry keys matching the expression,RegistryKey('<hive path with wildcards>'),,yes (not in Intune admin center),2107,S317;S316
+AadStatus,entity,Status of Microsoft Entra ID,,DeviceId,no,,S-t5dhva6p;S-sxtmngif
+Administrators,entity,Members of the local administrators group (client needs PowerShell 5.0),,,no,,S-t5dhva6p;S-2z2zfj3l
+AppCrash,entity,Recent application crash reports,,FileName,no,,S-t5dhva6p;S-2z2zfj3l
+AppVClientApplication,entity,AppV Client Application,,,no,,S-t5dhva6p
+AppVClientPackage,entity,AppV Client Package,,,no,,S-t5dhva6p
+AutoStartSoftware,entity,"Software that starts automatically with, or immediately after, the operating system",,,no,,S-t5dhva6p
+BaseBoard,entity,BaseBoard,,,no,,S-t5dhva6p
+Battery,entity,Battery,,,no,,S-t5dhva6p
+Bios,entity,System BIOS information,,Manufacturer;Version,no,,S-t5dhva6p;S-sxtmngif;S-v5d6zvne;S-2z2zfj3l
+BitLocker,entity,BitLocker,,,no,,S-t5dhva6p
+BitLockerEncryptionDetails,entity,BitLocker Encryption Details,,,no,,S-t5dhva6p
+BitLockerPolicy,entity,BitLocker Policy,,,no,,S-t5dhva6p
+BootConfiguration,entity,Boot Configuration,,,no,,S-t5dhva6p
+BrowserHelperObject,entity,Browser Helper Object,,,no,,S-t5dhva6p
+BrowserUsage,entity,Browser Usage,,,no,,S-t5dhva6p
+CcmLog(),function-entity,Lines within 24 hours (by default) from a Ccm Log file,"CcmLog('<log name>'[, <timespan>]); default window 24h",,no,,S-t5dhva6p
+CCMRAX,entity,CCM_RAX,,,no,,S-t5dhva6p
+CCMRecentlyUsedApplications,entity,Recently Used Applications,,CompanyName;ExplorerFileName;LastUsedTime;LaunchCount;FolderPath;ProductName;ProductVersion,no,,S-t5dhva6p;S-sxtmngif;S-v5d6zvne
+CCMWebAppInstallInfo,entity,Web Applications,,,no,,S-t5dhva6p
+CDROM,entity,CDROM Drive,,,no,,S-t5dhva6p
+ClientEvents,entity,Client Events,,,no,,S-t5dhva6p
+ComputerSystem,entity,Computer System,,Manufacturer;Model,no,,S-t5dhva6p;S-sxtmngif;S-v5d6zvne
+ComputerSystemEx,entity,Computer System Ex,,,no,,S-t5dhva6p
+ComputerSystemProduct,entity,Computer System Product,,,no,,S-t5dhva6p
+ConnectedDevice,entity,Connected Device,,,no,,S-t5dhva6p
+Connection,entity,An active Tcp connection in or out of the device (client needs PowerShell 5.0),,,no,,S-t5dhva6p;S-2z2zfj3l
+Desktop,entity,Desktop,,,no,,S-t5dhva6p
+DesktopMonitor,entity,Desktop Monitor,,,no,,S-t5dhva6p
+Device,entity,Basic information about the device,,UserName,no,,S-t5dhva6p;S-sxtmngif
+Disk,entity,Local storage device information on a computer system running Windows,,Description;FreeSpace,no,,S-t5dhva6p;S-2z2zfj3l
+DMA,entity,DMA,,,no,,S-t5dhva6p
+DMAChannel,entity,DMA Channel,,,no,,S-t5dhva6p
+DriverVxD,entity,Driver - VxD,,,no,,S-t5dhva6p
+EmbeddedDeviceInformation,entity,Embedded Device Information,,,no,,S-t5dhva6p
+Environment,entity,Environment,,,no,,S-t5dhva6p
+EPStatus,entity,"Status of antimalware software on the computer gathered by the `Get-MpComputerStatus` cmdlet. Supported on Windows 10 and Server 2016, or later with defender running.",,QuickScanEndTime,no,,S-t5dhva6p;S-sxtmngif;S-v5d6zvne
+EventLog(),function-entity,Events within 24 hours (by default) from an event log,"EventLog('<log>'[, <timespan>]); default 24h",EventID,no,,S-t5dhva6p;S-sxtmngif;S-v5d6zvne
+File(),function-entity,Information about a specific file,File('<path with wildcards>'),FileName;SHA256Hash (MD5 hash and Hidden/System flags added 1910; column names not stated),no,,S-t5dhva6p;S-sxtmngif;S-v5d6zvne
+FileShare,entity,Active file share information,,,no,,S-t5dhva6p
+Firmware,entity,Firmware,,,no,,S-t5dhva6p
+IDEController,entity,IDE Controller,,,no,,S-t5dhva6p
+InstalledExecutable,entity,Installed Executable,,,no,,S-t5dhva6p
+InstalledSoftware,entity,An application installed on the device,,,no,,S-t5dhva6p
+IPConfig,entity,"Gets network configuration, including usable interfaces, IP addresses, and DNS servers (client needs PowerShell 5.0)",,,no,,S-t5dhva6p;S-2z2zfj3l
+IRQTable,entity,IRQ Table,,,no,,S-t5dhva6p
+Keyboard,entity,Keyboard,,,no,,S-t5dhva6p
+LoadOrderGroup,entity,Load Order Group,,,no,,S-t5dhva6p
+LogicalDisk,entity,Logical Disk,,DeviceID;Name;Description;FileSystem;Size;FreeSpace,no,,S-t5dhva6p;S-sxtmngif;S-v5d6zvne
+MDMDevDetail,entity,Device Information,,,no,,S-t5dhva6p
+Memory,entity,Memory,,,no,,S-t5dhva6p
+Modem,entity,Modem,,,no,,S-t5dhva6p
+Motherboard,entity,Motherboard,,,no,,S-t5dhva6p
+NetworkAdapter,entity,Network Adapter,,,no,,S-t5dhva6p
+NetworkAdapterConfiguration,entity,Network Adapter Configuration,,,no,,S-t5dhva6p
+NetworkClient,entity,Network Client,,,no,,S-t5dhva6p
+NetworkLoginProfile,entity,Network Login Profile,,,no,,S-t5dhva6p
+NTEventlogFile,entity,NT Eventlog File,,,no,,S-t5dhva6p
+Office365ProPlusConfigurations,entity,Office 365 Apps Configurations,,,no,,S-t5dhva6p
+OfficeAddin,entity,Office add-ins,,,no,,S-t5dhva6p
+OfficeClientMetric,entity,Office Client Metric,,,no,,S-t5dhva6p
+OfficeDeviceSummary,entity,Office Device Summary,,,no,,S-t5dhva6p
+OfficeDocumentMetric,entity,Office document metrics,,,no,,S-t5dhva6p
+OfficeDocumentSolution,entity,Office Document Solution,,,no,,S-t5dhva6p
+OfficeMacroError,entity,Office Macro Error,,,no,,S-t5dhva6p
+OfficeProductInfo,entity,Office Product Info,,,no,,S-t5dhva6p
+OfficeVbaRuleViolation,entity,Office Vba Rule Violation,,,no,,S-t5dhva6p
+OfficeVbaSummary,entity,Office VBA scan summary,,,no,,S-t5dhva6p
+OperatingSystem,entity,Operating System,,Caption;LastBootUpTime,no,,S-t5dhva6p;S-sxtmngif;S-v5d6zvne
+OperatingSystemEx,entity,Operating System Ex,,,no,,S-t5dhva6p
+OperatingSystemRecoveryConfiguration,entity,Operating System Recovery Configuration,,,no,,S-t5dhva6p
+OptionalFeature,entity,Optional Feature,,,no,,S-t5dhva6p
+OS,entity,Basic information about the operating system,,Version,no,,S-t5dhva6p;S-2z2zfj3l
+PageFileSetting,entity,Page File Setting,,,no,,S-t5dhva6p
+ParallelPort,entity,Parallel Port,,,no,,S-t5dhva6p
+Partition,entity,Disk Partitions,,,no,,S-t5dhva6p
+PCMCIAController,entity,PCMCIA Controller,,,no,,S-t5dhva6p
+PhysicalDisk,entity,PhysicalDisk,,,no,,S-t5dhva6p
+PhysicalMemory,entity,Physical Memory,,,no,,S-t5dhva6p
+PNPDEVICEDRIVER,entity,PNP Device Driver,,,no,,S-t5dhva6p
+PointingDevice,entity,Pointing Device,,,no,,S-t5dhva6p
+PortableBattery,entity,Portable Battery,,,no,,S-t5dhva6p
+Ports,entity,Ports,,,no,,S-t5dhva6p
+PowerCapabilities,entity,Power Capabilities,,,no,,S-t5dhva6p
+PowerClientOptOutSettings,entity,Power Management Exclusion Settings,,,no,,S-t5dhva6p
+PowerConfigurations,entity,Power Configuration,,,no,,S-t5dhva6p
+PowerManagementDaily,entity,Power Management Daily Data,,,no,,S-t5dhva6p
+PowerManagementInsomniaReasons,entity,Power Insomnia Reasons,,,no,,S-t5dhva6p
+PowerManagementMonthly,entity,Power Management Monthly Data,,,no,,S-t5dhva6p
+PowerSettings,entity,Power Settings,,,no,,S-t5dhva6p
+PrinterConfiguration,entity,Printer Configuration,,,no,,S-t5dhva6p
+PrinterDevice,entity,Printer Device,,,no,,S-t5dhva6p
+PrintJobs,entity,Print Jobs,,,no,,S-t5dhva6p
+Process,entity,A process on an operating system,,,no,,S-t5dhva6p
+ProcessModule(),function-entity,Modules loaded by specified processes,ProcessModule('<processname>'),ModuleName,no,,S-t5dhva6p;S-sxtmngif;S-v5d6zvne
+Processor,entity,Processor,,,no,,S-t5dhva6p
+ProtectedVolumeInformation,entity,Protected Volume Information,,,no,,S-t5dhva6p
+Protocol,entity,Protocol,,,no,,S-t5dhva6p
+QuickFixEngineering,entity,Quick Fix Engineering,,,no,,S-t5dhva6p
+Registry,entity,"All values for a specific registry key; starting in version 2107, a Key value was added to the Registry() entity",Registry('<hive path with wildcards>'),,no,,S-t5dhva6p;S-sxtmngif
+SCSIController,entity,SCSI Controller,,,no,,S-t5dhva6p
+SerialPortConfiguration,entity,Serial Port Configuration,,,no,,S-t5dhva6p
+SerialPorts,entity,Serial Ports,,,no,,S-t5dhva6p
+ServerFeature,entity,Server Feature,,,no,,S-t5dhva6p
+Service,entity,A service on a computer system running Windows,,Name,no,,S-t5dhva6p;S-2z2zfj3l
+Services,entity,Services,,,no,,S-t5dhva6p
+Shares,entity,Shares,,,no,,S-t5dhva6p
+SMBConfig,entity,SMB Configuration of a device (client needs PowerShell 5.0),,,no,,S-t5dhva6p;S-2z2zfj3l
+SMSAdvancedClientPorts,entity,Configuration Manager Client Ports,,,no,,S-t5dhva6p
+SMSAdvancedClientSSLConfigurations,entity,Configuration Manager Client SSL Configurations,,,no,,S-t5dhva6p
+SMSAdvancedClientState,entity,Configuration Manager Client State,,,no,,S-t5dhva6p
+SMSDefaultBrowser,entity,Default Browser,,,no,,S-t5dhva6p
+SMSSoftwareTag,entity,Software Tag,,,no,,S-t5dhva6p
+SMSWindows8Application,entity,Windows app,,,no,,S-t5dhva6p
+SMSWindows8ApplicationUserInfo,entity,Windows app User Info,,,no,,S-t5dhva6p
+SoftwareShortcut,entity,Software Shortcut,,,no,,S-t5dhva6p
+SoftwareUpdate,entity,A software update applicable but not installed on the device,,,no,,S-t5dhva6p
+SoundDevices,entity,Sound Devices,,,no,,S-t5dhva6p
+SWLicensingProduct,entity,Software Licensing Product,,,no,,S-t5dhva6p
+SWLicensingService,entity,Software Licensing Service,,,no,,S-t5dhva6p
+SystemAccount,entity,System Account,,,no,,S-t5dhva6p
+SystemBootData,entity,System Boot Data,,SystemStartTime;BootDuration;EventLogStart;GPDuration;UpdateDuration,no,,S-t5dhva6p;S-sxtmngif;S-v5d6zvne
+SystemBootSummary,entity,System Boot Summary,,,no,,S-t5dhva6p
+SystemConsoleUsage,entity,System Console Usage,,,no,,S-t5dhva6p
+SystemConsoleUser,entity,System Console User,,,no,,S-t5dhva6p
+SystemDevices,entity,System Devices,,,no,,S-t5dhva6p
+SystemDrivers,entity,System Drivers,,,no,,S-t5dhva6p
+SystemEnclosure,entity,System Enclosure,,,no,,S-t5dhva6p
+TapeDrive,entity,Tape Drive,,,no,,S-t5dhva6p
+TimeZone,entity,Time Zone,,,no,,S-t5dhva6p
+TPM,entity,TPM,,,no,,S-t5dhva6p
+TPMStatus,entity,TPM Status,,,no,,S-t5dhva6p
+TSIssuedLicense,entity,TS Issued License,,,no,,S-t5dhva6p
+TSLicenseKeyPack,entity,TS License Key Pack,,,no,,S-t5dhva6p
+UninterruptiblePowerSupply,entity,Uninterruptible Power Supply,,,no,,S-t5dhva6p
+USBController,entity,USB Controller,,,no,,S-t5dhva6p
+USBDevice,entity,USB Device,,,no,,S-t5dhva6p
+User,entity,A user account with an active connection to the device,,,no,,S-t5dhva6p
+USMFolderRedirectionHealth,entity,Folder Redirection Health,,,no,,S-t5dhva6p
+USMUserProfile,entity,User Profile Health,,,no,,S-t5dhva6p
+VideoController,entity,Video Controller,,,no,,S-t5dhva6p
+VirtualMachine,entity,Virtual Machine,,,no,,S-t5dhva6p
+VirtualMachine64,entity,Virtual Machine (64),,,no,,S-t5dhva6p
+Volume,entity,Volume,,,no,,S-t5dhva6p
+WindowsUpdate,entity,Windows Update,,,no,,S-t5dhva6p
+WindowsUpdateAgentVersion,entity,Windows Update Agent Version,,,no,,S-t5dhva6p
+WinEvent(),function-entity,Events within 24 hours (by default) from a Windows event log,"WinEvent('<logname>'[, <timespan>]); default 24h",LevelDisplayName,no,,S-t5dhva6p;S-sxtmngif
+WriteFilterState,entity,Write Filter State,,,no,,S-t5dhva6p
+AccountSID,entity,Account SID,,,yes (not in Intune admin center),,S-t5dhva6p
+FileContent(),function-entity,Content of a specific file,FileContent('<path>'); column Content (per example),Content,yes (not in Intune admin center),1910,S-t5dhva6p;S-sxtmngif
+NAPClient,entity,NAP Client,,,yes (not in Intune admin center),,S-t5dhva6p
+NAPSystemHealthAgent,entity,NAP System Health Agent,,,yes (not in Intune admin center),,S-t5dhva6p
+RegistryKey(),function-entity,All registry keys matching the expression,RegistryKey('<hive path with wildcards>'),,yes (not in Intune admin center),2107,S-t5dhva6p;S-sxtmngif;S-v5d6zvne

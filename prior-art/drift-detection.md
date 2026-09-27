@@ -3,7 +3,7 @@ topic: prior-art/drift-detection
 priority: P2
 applies_to: "detecting configuration drift without applying fixes (DSC test mode, no remediation)"
 retrieved_utc: 2026-09-26
-sources: [S1008, S1009, S1010, S-e4iemhin]
+sources: [S1008, S1009, S1010, S-e4iemhin, S-2fvvbt5t]
 status: partial
 ---
 
@@ -32,11 +32,15 @@ facts sourced from Microsoft Learn).
   report nothing and do nothing; not every module supports it, and tasks conditioned on registered
   variables from earlier tasks produce no output in check mode. `--diff` adds before/after detail for
   modules that support diff mode. [DOC S-e4iemhin]
-- Microsoft365DSC packages PowerShell DSC resources for Microsoft 365 workloads (Exchange Online,
-  SharePoint Online, Teams, Entra ID, Intune, etc.); like core PowerShell DSC, each resource exposes
-  `Get`/`Test`/`Set`, so a `Test-DSCConfiguration` (or `Start-DSCConfiguration -WhatIf`) run reports
-  drift against the declared `.ps1`/MOF configuration without invoking `Set`. Repository licence MIT,
-  language PowerShell. [DOC S1010]
+- Microsoft365DSC manages, configures, extracts and monitors Microsoft 365 tenant configurations through
+  PowerShell DSC resources (resource families include Azure AD, Exchange, Intune, SharePoint, OneDrive,
+  Planner and Power Platform). Repository licence MIT, language PowerShell. [DOC S1010]
+- After a Microsoft365DSC configuration is applied, the DSC engine on that machine checks the tenant
+  against the desired state (every 15 minutes by default) and Microsoft365DSC logs each detected drift,
+  with the drifted component and properties, to the M365DSC event log; the `ApplyAndAutocorrect`
+  configuration mode makes the engine also correct the drift. [DOC S-2fvvbt5t]
+- A `Test-DSCConfiguration` or `Start-DSCConfiguration -WhatIf` run reports Microsoft365DSC drift
+  without invoking `Set`. [UNK: not in S1010 as re-read 2026-09-27]
 
 ## Reference
 `prior-art/projects.csv` `latest_release` and `release_date` are GitHub's latest-release marker (`releases/latest`) at retrieval, not the newest tag: a project can carry newer tags on other release lines (Puppet 8.x, InSpec 7.x).
@@ -46,7 +50,7 @@ facts sourced from Microsoft Learn).
 | Puppet | `--noop` | yes (normal agent run) | Apache-2.0 | Ruby |
 | Chef InSpec | yes, by design (no enforcement) | no (separate from Chef Infra) | UNK (repo reports NOASSERTION) | Ruby |
 | Ansible | `--check` (per-module support varies) | yes (normal playbook run) | UNK (not fetched this session) | Python |
-| Microsoft365DSC | `Test-DSCConfiguration` / `-WhatIf` | yes (`Start-DSCConfiguration`) | MIT | PowerShell |
+| Microsoft365DSC | DSC engine drift checks logged to the M365DSC event log | yes (`ApplyAndAutocorrect` mode) | MIT | PowerShell |
 
 ## Examples
 No fixture data required (mechanism-only facts).

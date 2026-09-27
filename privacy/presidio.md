@@ -16,7 +16,7 @@ status: complete
 
 ## Facts
 - GitHub releases list: newest tag `2.2.364` published 2026-07-22T08:30:12Z; previous `2.2.363` 2026-06-28. [DOC S801]
-- PyPI `presidio-analyzer` and `presidio-anonymizer` latest version is 2.2.364, uploaded 2026-07-22T07:54:34. [DOC S802]
+- PyPI `presidio-analyzer` and `presidio-anonymizer` latest version is 2.2.364, uploaded 2026-07-22T07:54:34. [DOC S802, S803]
 - `presidio-anonymizer` PyPI latest is also 2.2.364. [DOC S803]
 - Tag `2.2.364` points at commit `779dbd286d5ef4d1fbe2514275fb1bce358f2417`. [DOC S804]
 - At tag 2.2.364, `predefined_recognizers/generic/` has no `uuid_recognizer.py` (files: credit_card, crypto, date, email, iban, ip, mac, phone, url). [DOC S805]

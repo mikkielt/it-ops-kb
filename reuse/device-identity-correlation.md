@@ -3,7 +3,7 @@ topic: reuse/device-identity-correlation
 priority: P2
 applies_to: "a cross-plane device identity graph: merge keys, stale thresholds, temporal history"
 retrieved_utc: 2026-09-26
-sources: [S1011, S1012, S1013, S1014, S1105]
+sources: [S1011, S1012, S1013, S1014, S1105, S-ivg7xp7y]
 status: complete
 ---
 
@@ -17,18 +17,20 @@ also copyleft-licensed (GPL-3.0, AGPL-3.0), so even a documented algorithm could
 copied.
 
 ## Facts
-- GLPI (GPL-3.0, PHP) and Snipe-IT (AGPL-3.0, PHP) are both licensed such that no source may be copied
-  regardless of fit; their scope (ITIL service desk / asset-licence tracking) does not overlap with a
-  cross-plane device merge problem either. [DOC S1011,S1012]
-- NetBox (Apache-2.0, Python) would permit copying by licence, but its documented scope is IPAM/DCIM
-  (IP addresses, racks, interfaces) -- a different data model from a device-centric merge across
-  AD/Entra/Intune/Autopilot/ConfigMgr/Defender. [DOC S1013]
+- GLPI (GPL-3.0, PHP) and Snipe-IT (AGPL-3.0, PHP) are copyleft-licensed, so code copied from them
+  would carry GPL-3.0/AGPL-3.0 terms, which a no-GPL codebase cannot take; their scope (ITIL service desk
+  / asset-licence tracking) does not overlap with a cross-plane device merge problem either.
+  [DOC S1011,S1012]
+- NetBox (Apache-2.0, Python) would permit copying by licence, but its repository describes it as a
+  network-automation source of truth with IPAM/DCIM topics -- a different data model from a
+  device-centric merge across AD/Entra/Intune/Autopilot/ConfigMgr/Defender. [DOC S1013]
 - Fleet's core is confirmed MIT by direct fetch of its repository `LICENSE` (docs under CC BY-SA 4.0,
   the `ee/` directory under a separate licence, client JS under MIT Expat) -- resolving a prior
-  "NOASSERTION" flag for the MIT-licensed core specifically. Licence would permit copying the core, but
-  Fleet is a full client+server service (osquery-based endpoint management), and running or embedding
-  it would add an always-on service, which a no-always-on-service constraint would forbid; no
-  Fleet-specific merge-key algorithm was found documented at the depth fetched either. [DOC S1105]
+  "NOASSERTION" flag for the MIT-licensed core specifically. [DOC S1105]
+- Fleet is a device-management system (MDM, patching, software deployment) with an agent on devices
+  and a GUI, REST API and `fleetctl`; running or embedding it would add an always-on service, which a
+  no-always-on-service constraint would forbid. [DER S-ivg7xp7y: README describes the agent and central management]
+- No Fleet-specific merge-key algorithm was found documented. [UNK: not in S1105 as re-read 2026-09-27]
 - None of the four projects' fetched documentation states an explicit merge-key precedence or
   duplicate-resolution algorithm comparable to a hand-specified table (strong keys merge, serial is
   medium-confidence with OEM-duplicate rejection, hostname never merges) -- there is nothing here to

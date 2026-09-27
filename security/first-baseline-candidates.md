@@ -3,7 +3,7 @@ topic: security/first-baseline-candidates
 priority: P0
 applies_to: "Windows 11 Enterprise 24H2/25H2; Microsoft baseline 24H2 package; DISA STIG Windows 11 V2R9 (2026-08-10); DSC 3.3.0"
 retrieved_utc: 2026-09-26
-sources: [S1470, S1471, S1472, S-oeh7ui3h, S1477, S1478, S1479, S1590, S1591, S1592, S1593]
+sources: [S1470, S1471, S1472, S-oeh7ui3h, S1477, S1478, S1479, S1590, S1591, S1592, S1593, S-ycuzbjvk]
 status: partial
 ---
 
@@ -26,7 +26,7 @@ status: partial
 - STIG `WN11-00-000155` requires the PowerShell 2.0 feature disabled, but its check text marks it Not Applicable for Windows 11 24H2 and newer, so it is not a live requirement in the 24H2 comparison. The Microsoft 24H2 baseline has no such setting. [DOC S1470,S1472]
 - Long paths:
   - `LongPathsEnabled=1` under `HKLM\SYSTEM\CurrentControlSet\Control\FileSystem` only affects applications that declare `longPathAware`;
-  - each process caches the value, so all apps see it only after a reboot;
+  - each process caches the value, so a reboot might be needed before all apps see it;
   - GP *Enable Win32 long paths* controls the same value. [DOC S1591]
 - LSA protection (not a gate candidate; in both baselines):
   - since Windows 11 22H2 it is on by default for new installs that are enterprise-joined and HVCI-capable, without a UEFI lock;
@@ -39,7 +39,7 @@ status: partial
 - The Microsoft baseline sets both the policy (`LsaCfgFlags=1`, UEFI lock) and `RunAsPPL=1`. `RunAsPPL=1` means UEFI lock. [DOC S1472,S1477]
 - A UEFI-locked setting cannot be changed back by registry or policy. [DOC S1477]
 - On a co-managed device with Device configuration moved to Intune, a ConfigMgr baseline applies only with *Always apply this baseline even for co-managed clients*. [DOC S1593]
-- GPO reapplies registry policy only when its GPOs change, or at a forced or foreground refresh. See `policy-precedence.md`. [DOC S1592]
+- By default a Group Policy refresh reapplies an extension's settings only when its GPOs or GPO list changed; `gpupdate /force` reapplies all settings. See `policy-precedence.md`. [DOC S1592,S-ycuzbjvk]
 - For C2 (`wuauserv`), C4 (`fDenyTSConnections`) and C6 (`RemoteRegistry`), the Windows 11 default values were not confirmed from an official page this pass. [UNK]
 
 ## Reference

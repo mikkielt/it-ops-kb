@@ -29,8 +29,9 @@ rules argue against.
 - So an "unknown keys are refused" requirement needs custom code for environment variables (e.g.
   comparing prefixed names in the environment with the field names), in addition to any
   nearest-key-name message. [DER S-ovuvyg6h: follows from the env-var behaviour above]
-- `dynaconf` (MIT) supports layered sources (TOML/YAML/JSON/INI/.env files, env vars, multiple
-  environments, and external providers like Vault/Redis merged in a defined order), but its own README
+- `dynaconf` (MIT) supports layered sources (TOML/YAML/JSON/INI/PY settings files loaded in the given
+  order, env vars with dotenv support overriding them, optional per-environment layers, and Vault/Redis
+  as settings and secrets storage), but its own README
   does not state an unknown-key-refusal default -- unconfirmed whether it supports strict/refuse-unknown
   validation at all from the README alone. [DOC S1023]
 - `dynaconf`'s external-provider surface (Vault, Redis as settings sources) is unneeded by a simple

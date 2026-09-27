@@ -3,7 +3,7 @@ topic: prior-art/log-collection-normalization
 priority: P2
 applies_to: "reading CMTrace/CCM logs and Windows event logs via ConfigMgr"
 retrieved_utc: 2026-09-26
-sources: [S1020, S1021]
+sources: [S1020, S1021, S-5ub6genn]
 status: partial
 ---
 
@@ -17,10 +17,10 @@ distributed from nxlog.co as a closed-source-adjacent "Community Edition" binary
 a gap rather than fetched.
 
 ## Facts
-- OpenTelemetry Collector is described in its own repository as "OpenTelemetry Collector"; licensed
-  Apache-2.0, written in Go; the project's architecture (per its own naming, not fetched in depth this
-  session) is receivers → processors → exporters, where a receiver ingests a given log/metric/trace
-  format and a processor can transform/normalize records before export. [DOC S1020]
+- OpenTelemetry Collector is described in its own repository as a vendor-agnostic way to receive,
+  process and export telemetry data; licensed Apache-2.0, written in Go. Each pipeline is a set of
+  receivers that collect the data, optional processors that take the data from the receivers and process
+  it, and exporters that send it on. [DOC S1020, S-5ub6genn]
 - Fluent Bit is described as a "Fast and Lightweight Logs, Metrics and Traces processor for Linux,
   BSD, OSX and Windows"; licensed Apache-2.0, written in C; it explicitly lists Windows as a supported
   platform, relevant to collecting Windows Event Log and CCM/CMTrace-format log files from a Windows

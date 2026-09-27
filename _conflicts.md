@@ -362,6 +362,7 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
   - Resolved 2026-09-26: GitHub's latest-release marker still reads v5.24.24 (2026-06-25); the v7.x tags are not marked latest. Value confirmed. (topic: prior-art/drift-detection)
 - The Ansible check-mode fact in `prior-art/drift-detection.md` is tagged [DOC S1009], but S1009 is the inspec/inspec repository metadata, which says nothing about Ansible. The fact needs an Ansible documentation source, or should become [UNK]. (census 2026-09-25)
   - Resolved 2026-09-26: re-sourced to Ansible's check-mode page (S-e4iemhin) and corrected: modules without check-mode support report nothing and do nothing (not "skipped or run for real"). (topic: prior-art/drift-detection)
+- reuse/drift-detection.md:37 (outside this unit) lists Test-DSCConfiguration as Microsoft365DSC's drift-only mode; not stated by S1010 or S-2fvvbt5t (the M365DSC drift page describes LCM drift checks logged to the M365DSC event log). (topic: prior-art/drift-detection)
 
 ## prior-art/tiered-approval-ops
 
@@ -458,6 +459,7 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
   pages; the article uses the Support Lifecycle page's plain dates in its Reference table and CSV, and records
   both along with the PT explanation. (rechecked 2026-09-26, kept — explained as a TZ/rounding artifact, not
   resolved to a single date) (topic: windows/powershell-7)
+- Telemetry opt-out: the Differences page (S-awsrthdz) says telemetry can only be disabled with POWERSHELL_TELEMETRY_OPTOUT, while about_Telemetry (S-62djuv2f) adds the Windows "Send optional diagnostic data" setting from PowerShell 7.6.2. The kb now states both, each with its own source. (topic: windows/powershell-7)
 
 ## auth/ntlm-deprecation
 
@@ -539,3 +541,39 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
 
 - Minimum iOS version for account driven user enrollment: the Apple enrollment guide (S-wdoafrjc) says "Starting with iOS 13 and newer", while the Apple User Enrollment overview (S-7synnxi2) and the account-driven setup page (S-fdtw5sil) say iOS/iPadOS 15 or later (14.9 and earlier fall back to user enrollment with Company Portal). Kb follows 15+. (topic: intune/ios-android-management)
 - End of Intune support for Android device administrator on GMS devices: the Android enrollment guide (S-3v22wodo) says August 2024; the device administrator page (S-pcr6rjdl) says end of 2024. Both re-read 2026-09-27. (topic: intune/ios-android-management)
+
+## prior-art/secret-vault-encryption
+
+- reuse/secret-vault-encryption.md:22 (outside this unit) still states age has no expiry/revocation/audit log as confirmed by its own README; S1001 README re-read 2026-09-27 does not state it (now UNK in prior-art/secret-vault-encryption.md). (topic: prior-art/secret-vault-encryption)
+
+## security/privacy-compliance
+
+- AI Omnibus political agreement date: privacy-compliance.md:74-76 (COMMUNITY S1558) says provisional agreement 2026-05-06; the Commission page S1557 re-read 2026-09-27 says a political agreement was reached on 7 May 2026 (and entry into force 27 July 2026). (topic: security/privacy-compliance)
+
+## windows/azure-arc-servers
+
+- The Azure SDK AgentConfiguration model (S-75xvev6g) describes agent configuration properties as settable 'locally via the azcmagent config command, or remotely via ARM', while Extensions security for Azure Arc-enabled servers (S-efadnhwv) says the local agent security controls can only be set on the server itself and can't be modified from Azure. (topic: windows/azure-arc-servers)
+- Machine Configuration parameter types: S-nibv7ci5 says Azure Policy parameters passed to guest assignments must be string (no arrays); S-lkmpjpnp (create-policy-definition) lists String, Boolean, Double and Float as supported parameter value types. Re-read 2026-09-27. (topic: windows/azure-arc-servers)
+- Azure Arc gateway status: S-wwbtoald (agent-overview) still calls it 'Limited preview'; the kb had stated GA with no source (now UNK). S-szyeetyp only says it reduces required endpoints. Re-read 2026-09-27. (topic: windows/azure-arc-servers)
+
+## security/supply-chain
+
+- PyPI's Adding a Trusted Publisher page (S1597) says GitLab self-managed instances are not supported, while Socket (S1510, 2025-11-14) reports PyPI opened a beta for GitLab Self-Managed with manual onboarding. (topic: security/supply-chain)
+
+## windows/bitlocker
+
+- BitLocker CSP ConfigureRecoveryPasswordRotation default (S-pfrwongj): prose says not configured = rotation on for Entra ID only and off on hybrid; the value list labels 2 as 'Default value'; the description-framework table gives Default Value 0. Re-read 2026-09-27. (topic: windows/bitlocker)
+- Automatic device encryption prerequisite: S-sr7tk6jz requires Modern Standby AND HSTI compliance (1703+); S-jdytzqlj and S-7qrbvran say Modern Standby OR HSTI (removed entirely in Windows 11 24H2 per S-7qrbvran). Re-read 2026-09-27. (topic: windows/bitlocker)
+
+## windows/delivery-optimization
+
+- DOCacheHost with several Connected Cache servers: the DO reference (S-7olkz3h6) says clients round-robin across connection attempts and can download from several cache servers simultaneously; the Policy CSP note (S-3dmxye5u) says clients don't talk to several servers at once and round-robin until one connects; the configure page (S-kyd2lkfv) says clients connect in list order. (topic: windows/delivery-optimization)
+- MCC HTTPS: the secure-content-delivery page (S-s4n26zjf) still says nodes use HTTP and HTTPS support is planned; the HTTPS overview (S-umnfbn5b) says since GA nodes can be configured for HTTPS (Intune Win32 apps and Teams). (topic: windows/delivery-optimization)
+
+## windows/laps
+
+- Invalid ADPasswordEncryptionPrincipal: Configure policy settings for Windows LAPS (S-twjwzzdw) says the Domain Admins default applies only when unset and an invalid name causes a policy processing failure with no backup; the LAPS CSP page (S-jmzxsdjr) says the device falls back to Domain Admins. (topic: windows/laps)
+
+## windows/windows-update-management
+
+- Windows 10 consumer ESU end date: the kb said security updates through 2026-10-13; the consumer ESU page (S-fllu73v2, re-read 2026-09-27) now says the program and coverage run through 2027-10-12. Fact corrected from the source; the Learn ESU page (S-hdprezk3) gives no consumer end date. (topic: windows/windows-update-management)

@@ -1,31 +1,31 @@
 kind,value,name,meaning,status,source,note
-InitiateClientOperation.Type,135,Run Script (also CMPivot in 1902 and earlier),"smsprov.log: 'Type parameter is 135' / 'initiated client operation 135' when CMPivot ran as script 7DC6B6F1-E7F6-43C1-96E0-E1D16BC25C14",DOC (log excerpt only),S318,Value appears in troubleshooting log samples; the SDK Type parameter has no value table
-InitiateClientOperation.Type,145,CMPivot (1906 and later),"smsprov.log: 'initiated client operation 145 to collection'",DOC (log excerpt only),S318,Same caveat
-InitiateClientOperation.Type,,Download computer (machine) policy,,UNK,S329,Not officially documented as a number; community sources list values (S352 lead not verified)
-InitiateClientOperation.Type,,Collect hardware inventory,,UNK,S329,Not officially documented as a number
-InitiateClientOperation.Type,,Evaluate application deployments,,UNK,S329,Not officially documented as a number
-InitiateClientOperation.Type,,Evaluate software update deployments,,UNK,S329,Not officially documented as a number
-SMS_ClientOperation.PrimaryActionType,1,Full Scan,,DOC,S328,
-SMS_ClientOperation.PrimaryActionType,2,Quick Scan,,DOC,S328,
-SMS_ClientOperation.PrimaryActionType,3,Download Definition,,DOC,S328,
-SMS_ClientOperation.PrimaryActionType,4,Evaluate Software Update,,DOC,S328,Endpoint Protection action family; not the client-notification SU evaluation Type
-SMS_ClientOperation.PrimaryActionType,5,Exclude Scan Path,,DOC,S328,
-SMS_ClientOperation.PrimaryActionType,6,Override Default Action,,DOC,S328,
-SMS_ClientOperation.PrimaryActionType,7,Restore Quarantine Items,,DOC,S328,
-SMS_ClientOperation.PrimaryActionType,8,RequestPolicyNow,,DOC,S328,S330 lists 8 under PrimaryActionTargetObjectType instead (see conflicts)
-SMS_ClientOperation.TargetType,0,Current members of a specified collection,,DOC,S328,
-SMS_ClientOperation.TargetType,1,Specific clients in a specified collection,,DOC,S328,
-SMS_ClientOperation.TargetType,2,Members of a specified collection,,DOC,S328,
-SMS_ClientOperation.TargetType,3,Members of a specific collection matching specified criteria,,DOC,S328,
-SMS_ClientOperation.State,0,Inactive,,DOC,S328,
-SMS_ClientOperation.State,1,Active,,DOC,S328,
-SMS_ClientOperation.State,2,Decommission,,DOC,S328,
-SMS_ClientOperation.FilterType,0,No filter,,DOC,S328,
-SMS_ClientOperation.FilterType,1,Infected by given threat,,DOC,S328,
-SMS_ClientOperationStatus.State,0,Action Unknown,,DOC,S330,
-SMS_ClientOperationStatus.State,1,Action Not Applicable,,DOC,S330,
-SMS_ClientOperationStatus.State,2,Action Failed,,DOC,S330,
-SMS_ClientOperationStatus.State,3,Action Succeeded,,DOC,S330,
+InitiateClientOperation.Type,135,CMPivot (1902 and earlier); Run Script label inferred,"smsprov.log: 'initiated client operation 135' (1810 and earlier) and 'Type parameter is 135' followed by 'ran script 7DC6B6F1-E7F6-43C1-96E0-E1D16BC25C14' (1902), the CMPivot Script-Guid",DOC (log excerpt only); name Run Script is DER,S-e5qqwdcj;S-z7zcccd3,"DER S-e5qqwdcj: the 1902 log pairs Type 135 with 'ran script <CMPivot Script-Guid>', so 135 is read as the Run Script operation that CMPivot used; no page labels 135 Run Script. The SDK Type parameter has no value table (S-z7zcccd3)"
+InitiateClientOperation.Type,145,CMPivot (1906 and later),smsprov.log: 'initiated client operation 145 to collection',DOC (log excerpt only),S-e5qqwdcj,Log line documented for 1906 only; 'and later' is DER (no later version shown). SDK Type parameter has no value table
+InitiateClientOperation.Type,,Download computer (machine) policy,,UNK,S-z7zcccd3,Not officially documented as a number; community sources list values (S352 lead not verified)
+InitiateClientOperation.Type,,Collect hardware inventory,,UNK,S-z7zcccd3,Not officially documented as a number
+InitiateClientOperation.Type,,Evaluate application deployments,,UNK,S-z7zcccd3,Not officially documented as a number
+InitiateClientOperation.Type,,Evaluate software update deployments,,UNK,S-z7zcccd3,Not officially documented as a number
+SMS_ClientOperation.PrimaryActionType,1,Full Scan,,DOC,S-6rr2wgl6,
+SMS_ClientOperation.PrimaryActionType,2,Quick Scan,,DOC,S-6rr2wgl6,
+SMS_ClientOperation.PrimaryActionType,3,Download Definition,,DOC,S-6rr2wgl6,
+SMS_ClientOperation.PrimaryActionType,4,Evaluate Software Update,,DOC,S-6rr2wgl6,Endpoint Protection action family; not the client-notification SU evaluation Type
+SMS_ClientOperation.PrimaryActionType,5,Exclude Scan Path,,DOC,S-6rr2wgl6,
+SMS_ClientOperation.PrimaryActionType,6,Override Default Action,,DOC,S-6rr2wgl6,
+SMS_ClientOperation.PrimaryActionType,7,Restore Quarantine Items,,DOC,S-6rr2wgl6,
+SMS_ClientOperation.PrimaryActionType,8,RequestPolicyNow,,DOC,S-6rr2wgl6,S-wquiagrh lists 8 under PrimaryActionTargetObjectType instead (see conflicts)
+SMS_ClientOperation.TargetType,0,Current members of a specified collection,,DOC,S-6rr2wgl6,
+SMS_ClientOperation.TargetType,1,Specific clients in a specified collection,,DOC,S-6rr2wgl6,
+SMS_ClientOperation.TargetType,2,Members of a specified collection,,DOC,S-6rr2wgl6,
+SMS_ClientOperation.TargetType,3,Members of a specific collection matching specified criteria,,DOC,S-6rr2wgl6,
+SMS_ClientOperation.State,0,Inactive,,DOC,S-6rr2wgl6,
+SMS_ClientOperation.State,1,Active,,DOC,S-6rr2wgl6,
+SMS_ClientOperation.State,2,Decommission,,DOC,S-6rr2wgl6,
+SMS_ClientOperation.FilterType,0,No filter,,DOC,S-6rr2wgl6,
+SMS_ClientOperation.FilterType,1,Infected by given threat,,DOC,S-6rr2wgl6,
+SMS_ClientOperationStatus.State,0,Action Unknown,,DOC,S-wquiagrh,
+SMS_ClientOperationStatus.State,1,Action Not Applicable,,DOC,S-wquiagrh,
+SMS_ClientOperationStatus.State,2,Action Failed,,DOC,S-wquiagrh,
+SMS_ClientOperationStatus.State,3,Action Succeeded,,DOC,S-wquiagrh,
 Invoke-CMClientAction.ActionType,,None,,DOC (name only; numeric value not documented),S334,Listed order is the doc's accepted-values order; it is not evidence of numeric values
 Invoke-CMClientAction.ActionType,,EndpointProtectionFullScan,,DOC (name only; numeric value not documented),S334,Listed order is the doc's accepted-values order; it is not evidence of numeric values
 Invoke-CMClientAction.ActionType,,EndpointProtectionQuickScan,,DOC (name only; numeric value not documented),S334,Listed order is the doc's accepted-values order; it is not evidence of numeric values

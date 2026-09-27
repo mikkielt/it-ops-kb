@@ -26,7 +26,7 @@ files: [sqlserver/mssql-server-tags.json]
 - MSSQL_PID for 2025 and later: Evaluation, Express, StandardDeveloper, Standard, EnterpriseDeveloper, Enterprise (legacy), EnterpriseCore, or a product key. [DOC S475]
 - Production use needs a valid licence. With `ACCEPT_EULA=Y` and a production `MSSQL_PID` you state that you have one. The Developer image can run production editions. [DOC S473]
 - Other env vars: `MSSQL_TCP_PORT` (default 1433), `MSSQL_MEMORY_LIMIT_MB` (default 80% of RAM), `MSSQL_COLLATION`, `MSSQL_AGENT_ENABLED` (default off). [DOC S474]
-- Developer editions have the Enterprise (or Standard) feature set, so temporal retention works in CI. [DER S466,S460]
+- Developer editions have the Enterprise (or Standard) feature set, so temporal retention works in CI. [DER S466,S460: S466 gives Enterprise Developer the Enterprise and Standard Developer the Standard feature set, both with temporal tables; S460 documents retention for SQL Server 2017 and later with no edition limit]
 - Microsoft docs don't give a digest (`@sha256:`) pinning policy for mssql/server. [UNK]
 
 ## Reference

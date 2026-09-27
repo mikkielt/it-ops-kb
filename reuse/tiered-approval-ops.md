@@ -15,10 +15,13 @@ for a fixed number of tiers. Running any of the four as a service would also vio
 service, no-gateway constraint.
 
 ## Facts
-- Rundeck (Apache-2.0, Groovy) and StackStorm (Apache-2.0, Python) would both permit copying by
-  licence, but both are full web/API automation platforms (always-on services); importing either adds
-  exactly the kind of new service a no-always-on-service constraint rules out, for a surface that a
-  small in-code tier table already covers deliberately. [DOC S1015,S1016]
+- Rundeck (Apache-2.0; self-service operations that give specific users access to existing tools,
+  services and scripts) and StackStorm (Apache-2.0, Python; event-driven automation with a rules
+  engine, workflows, integration packs and ChatOps) would both permit copying by licence.
+  [DOC S1015,S1016]
+- Both are operations platforms rather than libraries; importing either adds exactly the kind of new
+  service a no-always-on-service constraint rules out, for a surface that a small in-code tier table
+  already covers deliberately. [DER S1015,S1016: repository descriptions of platforms, not packages]
 - Teleport's repository licence is AGPL-3.0 (confirmed unchanged from prior-art fetch), so no copying
   is permitted regardless of fit; its "Access Requests" feature (time-bound, approval-gated role
   elevation) is a plausible pattern reference for a future, more general approval workflow, but that is
@@ -28,8 +31,8 @@ service, no-gateway constraint.
   engine (a service, not a Python library) -- adopting it would add infrastructure that a
   no-always-on-service, pure-Python-package design explicitly avoids. [DOC S1018,S1106]
 - None of the four projects' fetched metadata documents a small numbered tier concept comparable to a
-  fixed 0-3 scheme; each instead exposes a role/permission model a caller maps onto tiers, which is
-  exactly what a small hand-written tier table already does directly in code. [DER S1015,S1016,S1017,S1018]
+  fixed 0-3 scheme, so a small hand-written tier table in code remains the whole mechanism.
+  [DER S1015,S1016,S1017,S1018: no tier concept in their descriptions or topics]
 
 ## Reference
 | project | licence | copying permitted | why not adopted |

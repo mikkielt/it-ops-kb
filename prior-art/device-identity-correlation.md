@@ -21,12 +21,12 @@ limited to what each project's repository metadata states about its own scope an
   Service Desk, licenses tracking and software auditing") is GPL-3.0 licensed, written in PHP, and
   bundles both an asset/CMDB module and an ITIL service-desk module in one application. [DOC S1011]
 - Snipe-IT (current org `grokability/snipe-it`, formerly `snipe/snipe-it`) is described as "a free
-  open source IT asset/license management system," AGPL-3.0 licensed, written in PHP; it is scoped to
-  asset/licence tracking rather than network or service-topology modeling. [DOC S1012]
+  open source IT asset/license management system," AGPL-3.0 licensed, written in PHP; its README scopes it to IT
+  asset management (who has which laptop, purchase dates for depreciation, software licences). [DOC S1012]
 - NetBox describes itself as "the premier source of truth powering network automation," Apache-2.0
-  licensed, written in Python; its documented scope is IP address management (IPAM) and data-center
-  infrastructure management (DCIM) — device records there are primarily network/rack/interface
-  centric, not endpoint-management centric. [DOC S1013]
+  licensed, written in Python; its README presents it as a successor to IPAM and DCIM applications,
+  built for modeling network infrastructure (racks, devices, cables, IP addresses, VLANs, circuits), so
+  device records there are network centric, not endpoint-management centric. [DOC S1013]
 - Fleet ("Open device management") is licensed under a source-available licence the GitHub API
   reports as unrecognised ("NOASSERTION" — Fleet's actual terms mix an Elastic-License-2.0-derived
   core with an MIT-licensed osquery-facing agent per its own repository, not independently confirmed

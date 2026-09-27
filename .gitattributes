@@ -186,11 +186,7 @@ logs/otel-windowseventlogreceiver.config.csv -text
 logs/otel-windowseventlogreceiver.metadata.yaml -text
 mcp/schema/2026-07-28/schema.json -text
 mcp/schema/2026-07-28/schema.ts -text
-mecm/adminservice-routes.csv -text
-mecm/client-operation-types.csv -text
-mecm/cmpivot-entities.csv -text
 mecm/log-files.csv -text
-mecm/rbac-permissions.csv -text
 mecm/sql-views-compliance.csv -text
 privacy/gliner-models.csv -text
 privacy/presidio-entities.csv -text

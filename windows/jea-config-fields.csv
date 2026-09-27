@@ -2,12 +2,12 @@ file,field,purpose,example,source
 .psrc,VisibleCmdlets,"cmdlets/functions exposed in the session, optionally restricted by parameter and allowed value","@{ Name='Restart-Service'; Parameters=@{ Name='Name'; ValidateSet=@('Spooler') } }",S-p5lwby5b
 .psrc,VisibleFunctions,"functions (built-in or custom, via FunctionDefinitions) exposed in the session","VisibleFunctions = 'Get-TopProcess'",S-p5lwby5b
 .psrc,VisibleExternalCommands,executables/.ps1 scripts exposed by full path only,"'C:\Windows\System32\whoami.exe'",S-p5lwby5b
-.psrc,VisibleProviders,PowerShell providers exposed (none by default); never expose FileSystem or Certificate,"VisibleProviders = 'Registry'",S-p5lwby5b
+.psrc,VisibleProviders,PowerShell providers exposed (none by default); for file system/registry/certificate tasks Microsoft suggests a custom function instead of exposing the provider,VisibleProviders = 'Registry',S-p5lwby5b
 .psrc,VisibleAliases,aliases exposed in the session,"VisibleAliases = 'gsv'",S-p5lwby5b
-.psrc,FunctionDefinitions,script blocks defining custom functions named in VisibleFunctions; run in full language mode not JEA-constrained,"@{ Name='Get-TopProcess'; ScriptBlock={...} }",S-p5lwby5b
-.psrc,ModulesToImport,modules made available to the role,"ModulesToImport = 'DnsServer'",S-p5lwby5b
+.psrc,FunctionDefinitions,script blocks defining custom functions named in VisibleFunctions; the body runs in the system's default language mode and is not subject to JEA's language constraints,@{ Name='Get-TopProcess'; ScriptBlock={...} },S-p5lwby5b
+.psrc,ModulesToImport,modules to import into sessions that use the role (a New-PSRoleCapabilityFile field),ModulesToImport = 'DnsServer',S-r3cngad7
 .pssc,SessionType,must be RestrictedRemoteServer for a JEA endpoint (NoLanguage mode; only Clear-Host/Exit-PSSession/Get-Command/Get-FormatData/Get-Help/Measure-Object/Out-Default/Select-Object visible by default),"SessionType = 'RestrictedRemoteServer'",S-xe3uwlpq
-.pssc,RoleDefinitions,maps users/groups to one or more .psrc role capabilities by base filename (no .psrc extension); every listed principal gets WinRM ACL access,"RoleDefinitions = @{ 'CONTOSO\JEA_DNS_ADMINS' = @{ RoleCapabilities = 'DnsAdmin' } }",S-xe3uwlpq
+.pssc,RoleDefinitions,maps users/groups to one or more .psrc role capabilities by base filename (no .psrc extension); every listed user or group is granted permission to the endpoint when it's registered,RoleDefinitions = @{ 'CONTOSO\JEA_DNS_ADMINS' = @{ RoleCapabilities = 'DnsAdmin' } },S-xe3uwlpq
 .pssc,RunAsVirtualAccount,run connected users as a one-time virtual account destroyed when the session ends; default membership is local Administrators (Domain Admins on a DC),"RunAsVirtualAccount = $true",S-xe3uwlpq
 .pssc,RunAsVirtualAccountGroups,"restrict the virtual account to named local (or, on a DC, domain) security groups instead of Administrators/Domain Admins","RunAsVirtualAccountGroups = 'NetworkOperator','NetworkAuditor'",S-xe3uwlpq
 .pssc,GroupManagedServiceAccount,"run the session as a domain gMSA instead of a virtual account, needed when the session must reach network resources (the second hop); all users share one identity in logs","GroupManagedServiceAccount = 'Domain\MyJEAGMSA'",S-xe3uwlpq

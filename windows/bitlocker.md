@@ -14,8 +14,8 @@ files: [windows/bitlocker.csv]
 - Intune manages BitLocker through the BitLocker CSP (`./Device/Vendor/MSFT/BitLocker/...`); full node list, formats, allowed values, defaults in `windows/bitlocker.csv`. [DOC S-pfrwongj]
 - Standard encryption lets the user interact; silent encryption enables BitLocker with no user interaction or admin rights, using specific CSP settings. [DOC S-cqv5zeve]
 - Settings Catalog lacks the TPM startup-authentication controls needed for reliable silent BitLocker, so endpoint security (Disk encryption) or device configuration (Endpoint protection) policies must be used instead. [DOC S-cqv5zeve]
-- Silent-encryption failures show as event IDs and status-node bitmasks; common causes are missing/locked TPM, WinRE not configured, legacy BIOS, or Secure Boot off. [DOC S-sr7tk6jz]
-- Automatic encryption (Entra join triggers it) differs from silent encryption (Intune suppresses UI via the CSP); each has its own prerequisites. [DOC S-jdytzqlj]
+- Silent-encryption failures show as event IDs and status-node bitmasks; common causes are missing/locked TPM, WinRE not configured, legacy BIOS, or Secure Boot off. [DOC S-sr7tk6jz, S-pfrwongj]
+- Automatic encryption (Entra join triggers it) differs from silent encryption (Intune suppresses UI via the CSP); each has its own prerequisites. [DOC S-jdytzqlj, S-sr7tk6jz]
 
 ## Facts
 
@@ -24,12 +24,12 @@ files: [windows/bitlocker.csv]
 - Settings are enforced only when encryption starts; a settings change doesn't restart encryption on an already-encrypting or already-encrypted drive. [DOC S-pfrwongj]
 - Required CSP settings for silent encryption: `RequireDeviceEncryption=1`, `AllowWarningForOtherDiskEncryption=0`; add `AllowStandardUserEncryption=1` when the signed-in user is a standard (non-admin) user. [DOC S-cqv5zeve, S-sr7tk6jz]
 - For silent encryption, every TPM startup-authentication option under `SystemDrivesRequireStartupAuthentication` (PIN, key, PIN+key) must be Disallowed or not Required -- a required PIN/key blocks silent enablement because it needs user interaction. [DOC S-cqv5zeve]
-- Silent-encryption device requirements: Microsoft Entra joined or hybrid joined; TPM 1.2 or later, unlocked; native UEFI BIOS; Secure Boot enabled; WinRE configured and available. [DOC S-cqv5zeve]
+- Silent-encryption device requirements: Microsoft Entra joined or hybrid joined; TPM 1.2 or later; native UEFI BIOS; Secure Boot enabled; WinRE configured and available. [DOC S-cqv5zeve]
 - OS version for silent encryption: Windows 10 1803+/Windows 11 when end users sign in as Administrators; Windows 10 1809+/Windows 11 when end users sign in as Standard Users. [DOC S-cqv5zeve]
 - When BitLocker enables silently, the system automatically uses full disk encryption on non-modern-standby devices and used-space-only encryption on modern-standby devices; the type can't be customized for silent scenarios. [DOC S-cqv5zeve]
 - Intune enforces silent BitLocker for Autopilot devices with standard-user profiles when `RequireDeviceEncryption=1`, `AllowStandardUserEncryption=1` and `AllowWarningForOtherDiskEncryption=0` are all set together. [DOC S-sr7tk6jz]
 - Silent-encryption prerequisites (troubleshooting doc): TPM 1.2 or 2.0 unlocked; WinRE enabled; system drive >= 350 MB formatted FAT32 for UEFI (NTFS for BIOS) and an NTFS OS drive; UEFI BIOS required for TPM 2.0 devices; device connected to Entra ID or hybrid Azure services. [DOC S-jdytzqlj]
-- Automatic encryption (triggered by Entra join, no endpoint protection policy needed) requires Windows 10 1703+, Modern Standby support and HSTI compliance; it is distinct from silent encryption, which suppresses UI purely via BitLocker CSP settings. [DOC S-jdytzqlj]
+- Automatic encryption (triggered by Entra join, no endpoint protection policy needed) requires Windows 10 1703+, Modern Standby support and HSTI compliance per the known-issues article (the encryption-report article describes it as running during OOBE on modern-standby or HSTI-compliant devices); it is distinct from silent encryption, which suppresses UI purely via BitLocker CSP settings. [DOC S-sr7tk6jz, S-jdytzqlj]
 - Windows 10 1809+ lets an endpoint protection policy enforce silent Device Encryption even on devices that aren't HSTI-compliant (an update to the BitLocker Policy CSP). [DOC S-sr7tk6jz]
 - Intune's three enforcement types: Automatic (Entra join, 1703+), Silent (endpoint protection policy, 1803+), Interactive (endpoint policy on Windows versions older than 1803). [DOC S-sr7tk6jz]
 
@@ -58,14 +58,14 @@ files: [windows/bitlocker.csv]
 - "Conflicting Group Policy settings for recovery options on operating system drives" occurs when AD DS backup of recovery info is Required while recovery-password generation is disallowed; resolve by fixing the conflicting GPOs. [DOC S-sr7tk6jz]
 - Normal operation logs Event ID 796 and Event ID 845 in Applications and Services Logs > Microsoft > Windows > BitLocker-API > Management/Operations. [DOC S-sr7tk6jz]
 - On-device policy settings can be checked under registry keys `HKLM\SOFTWARE\Microsoft\PolicyManager\current\device\BitLocker` and `...\current\device`. [DOC S-sr7tk6jz]
-- The Intune encryption report (Devices > Monitor > Encryption report) flags six common failure patterns: not-ready/not-encrypted (missing TPM), ready-but-not-encrypted (non-silent policy, user hasn't acted), not-ready-won't-encrypt-silently (TPM not ready), ready-but-not-silently-encrypted (WinRE disabled or standard user without "Allow standard users to enable encryption during Autopilot"), error-but-encrypted (encryption-method mismatch, e.g. policy wants XTS-AES128 but device is XTS-AES256), and encrypted-but-profile-error (device encrypted by another means, e.g. manually or by MBAM/ConfigMgr before enrollment). [DOC S-jdytzqlj]
+- The Intune encryption report (Devices > Monitor > Encryption report) flags six common failure patterns: not-ready/not-encrypted (missing TPM), ready-but-not-encrypted (non-silent policy, user hasn't acted), not-ready-won't-encrypt-silently (TPM not ready), ready-but-not-silently-encrypted (WinRE disabled or standard user without "Allow standard users to enable encryption during Autopilot"), error-but-encrypted (encryption-method mismatch, e.g. policy wants XTS-AES128 but device is XTS-AES256, typically because the device was encrypted manually, by MBAM or by ConfigMgr before enrollment), and encrypted-but-profile-error (device encrypted by another means, possibly manually, with settings matching the policy). [DOC S-jdytzqlj]
 - Decrypting and re-encrypting through Intune's own policy is the fix for an encryption-method mismatch (Scenario 5). [DOC S-jdytzqlj]
 
 ### Graph recovery key retrieval
 - `GET /informationProtection/bitlocker/recoveryKeys/{id}` (v1.0) omits the `key` property by default; adding `$select=key` returns it and triggers a Microsoft Entra audit log entry for the operation. [DOC S-dwu7auzi]
 - Least-privileged permission for this call is delegated/application `BitlockerKey.ReadBasic.All`; the higher-privileged alternative is `BitlockerKey.Read.All` (same pair already recorded at `graph/permissions.csv:12`; not repeated here). [DOC S-dwu7auzi]
 - For delegated calls the signed-in user must either be the device's registered owner or hold one of these Entra roles: Cloud device administrator, Helpdesk administrator, Intune service administrator, Security administrator, Security reader, Global reader. [DOC S-dwu7auzi]
-- Request headers: `Authorization` (required) and `User-Agent` (required); `ocp-client-name` and `ocp-client-version` are optional debugging headers, not enforced by the API. [DOC S-dwu7auzi]
+- Request headers: `Authorization` (required) and `User-Agent` (required); `ocp-client-name` and `ocp-client-version` are optional headers used for debugging. [DOC S-dwu7auzi]
 - The list operation supports `$filter=deviceId eq '{deviceId}'` to find a device's recovery keys (also used in `entra/bitlocker-key-deletion.md`). [DOC S531]
 
 ### PowerShell BitLocker module and manage-bde
@@ -81,7 +81,8 @@ files: [windows/bitlocker.csv]
 ### Windows editions, licensing, and 24H2 change
 - BitLocker management is supported on Windows Pro, Enterprise, Pro Education/SE and Education; but the BitLocker management license entitlement itself is granted only by Windows Enterprise E3/E5 or Education A3/A5 -- Windows Pro/Pro Education/SE has no entitlement (matches the CSP page's own licence note in `windows/bitlocker.csv`). [DOC S-2cojjewu]
 - Device encryption (the automatic, no-policy BitLocker mode) historically required a device to meet either Modern Standby or HSTI security requirements and have no externally accessible DMA ports. [DOC S-7qrbvran]
-- Starting in Windows 11, version 24H2, the Modern Standby/HSTI and DMA-interface prerequisites for device encryption are removed, so more devices are eligible for automatic and manual device encryption; this change doesn't apply to Windows IoT editions. [DOC S-7qrbvran]
+- Starting in Windows 11, version 24H2, the Modern Standby/HSTI and DMA-interface prerequisites for device encryption are removed, so more devices are eligible for automatic and manual device encryption. [DOC S-7qrbvran]
+- The 24H2 prerequisite removal doesn't apply to Windows IoT editions. [UNK: not in S-7qrbvran as re-read 2026-09-27]
 
 ## Reference
 - Recovery key storage, deletion via device removal, and Graph least-privileged permissions for reading `bitlockerKeys`: `entra/bitlocker-key-deletion.md`, `graph/permissions.md` (`BitlockerKey.ReadBasic.All` / `.Read.All`).
