@@ -25,7 +25,7 @@ In 2026-07-28 the server MUST NOT write JSON-RPC requests to stdout: server-to-c
 - Backward compatibility: a dual-era client SHOULD probe with `server/discover`; any non-modern error or timeout means a legacy server, and the fallback MUST NOT be keyed to one error code. [DOC S705]
 - Authorization spec: stdio implementations SHOULD NOT follow the HTTP authorization spec and instead retrieve credentials from the environment. [DOC S707]
 - Python SDK: `mcp.run()` with no argument uses stdio; while serving, the SDK diverts flushed stdout writes to stderr; use `logging` for output. [DOC S724]
-- Python SDK low-level `Server.run` uses `serve_dual_era_loop`, i.e. the stdio server answers both `initialize` (legacy) and modern requests. [DOC S735]
+- Python SDK low-level `Server.run` uses `serve_dual_era_loop`, i.e. the stdio server answers both `initialize` (legacy) and modern requests. [CODE S735: src/mcp/server/lowlevel/server.py#Server.run]
 
 ## Reference
 See mcp/transports-streamable-http.md for the other standard binding (single POST endpoint, header mirroring,

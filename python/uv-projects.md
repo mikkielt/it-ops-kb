@@ -32,7 +32,7 @@ this article does not repeat.
   environment as well, on top of `--frozen`/`--locked`. [DOC S-wmmyfoun]
 - `UV_FROZEN` and `UV_LOCKED` environment variables are equivalent to the `--frozen` and `--locked`
   CLI flags respectively (added in uv 0.4.25); `UV_NO_SYNC` is equivalent to `--no-sync` (added in
-  0.4.18). [DOC S-x7kevebo]
+  0.4.18). [CODE S-x7kevebo: crates/uv-static/src/env_vars.rs#UV_FROZEN]
 - A lockfile is considered outdated if the project's dependency constraints changed such that the
   locked version would now be excluded; uv never considers a lockfile outdated just because newer
   package versions were released upstream (an explicit `uv lock --upgrade` is required to move

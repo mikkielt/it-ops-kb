@@ -15,12 +15,12 @@ status: complete
 
 ## Facts
 - The docs page lists global entities CREDIT_CARD, CRYPTO, DATE_TIME, EMAIL_ADDRESS, IBAN_CODE, IP_ADDRESS, MAC_ADDRESS, NRP, LOCATION, PERSON, PHONE_NUMBER, MEDICAL_LICENSE, URL, UUID, plus per-country tables. [DOC S810]
-- `default_recognizers.yaml` sets `supported_languages: [en]` and `global_regex_flags: 26`. It marks recognizers with `enabled: false` and `country_code`. [DOC S809]
-- `SpacyRecognizer.ENTITIES = ["DATE_TIME","NRP","LOCATION","PERSON","ORGANIZATION"]`. [DOC S844]
-- The default NLP config maps spaCy labels PER/PERSON→PERSON, NORP→NRP, FAC/LOC/GPE/LOCATION→LOCATION, ORG→ORGANIZATION, DATE/TIME→DATE_TIME, and ignores ORGANIZATION, CARDINAL, EVENT, LANGUAGE, LAW, MONEY, ORDINAL, PERCENT, PRODUCT and others. [DOC S843]
-- `MAC_ADDRESS` (`MacAddressRecognizer`) first appears in 2.2.361. [DOC S817]
+- `default_recognizers.yaml` sets `supported_languages: [en]` and `global_regex_flags: 26`. It marks recognizers with `enabled: false` and `country_code`. [CODE S809: presidio_analyzer/conf/default_recognizers.yaml#L1-L20]
+- `SpacyRecognizer.ENTITIES = ["DATE_TIME","NRP","LOCATION","PERSON","ORGANIZATION"]`. [CODE S844: predefined_recognizers/nlp_engine_recognizers/spacy_recognizer.py#SpacyRecognizer.ENTITIES]
+- The default NLP config maps spaCy labels PER/PERSON→PERSON, NORP→NRP, FAC/LOC/GPE/LOCATION→LOCATION, ORG→ORGANIZATION, DATE/TIME→DATE_TIME, and ignores ORGANIZATION, CARDINAL, EVENT, LANGUAGE, LAW, MONEY, ORDINAL, PERCENT, PRODUCT and others. [CODE S843: presidio_analyzer/conf/default.yaml#ner_model_configuration]
+- `MAC_ADDRESS` (`MacAddressRecognizer`) first appears in 2.2.361. [CODE S817: presidio_analyzer/predefined_recognizers/__init__.py#MacAddressRecognizer]
 - `UUID`, `CA_POSTAL_CODE`, `PH_PASSPORT`, the US healthcare-admin identifiers, and nine `ZA_*` recognizers are in no release yet (only on `main`). [DER S820,S809: class name absent from 2.2.364 `__init__.py` but present on main]
-- On `main` the recognizers enabled by default are 10 global pattern recognizers (CREDIT_CARD, CRYPTO, DATE_TIME, EMAIL_ADDRESS, IBAN_CODE, IP_ADDRESS, MAC_ADDRESS, PHONE_NUMBER, URL, UUID), plus ES/IT/PL/UK_NHS/US legacy ones. Non-`en` ones only run when the analyzer runs that language. [DOC S809]
+- On `main` the recognizers enabled by default are 10 global pattern recognizers (CREDIT_CARD, CRYPTO, DATE_TIME, EMAIL_ADDRESS, IBAN_CODE, IP_ADDRESS, MAC_ADDRESS, PHONE_NUMBER, URL, UUID), plus ES/IT/PL/UK_NHS/US legacy ones. Non-`en` ones only run when the analyzer runs that language. [CODE S809: presidio_analyzer/conf/default_recognizers.yaml#recognizers]
 - There is no recognizer for hostnames, Windows computer names, UPNs (other than as EMAIL_ADDRESS), AD SIDs, or serial numbers. [DER S809,S810: none listed in either]
 
 ## Reference

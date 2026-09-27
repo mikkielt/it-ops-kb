@@ -3,7 +3,7 @@ topic: windows/gitlab-runner-windows
 priority: P0
 applies_to: "GitLab Runner 19.5 (main @49138a48, 2026-09-23) on Windows"
 retrieved_utc: 2026-09-26
-sources: [S406, S407, S408, S409, S410, S411, S412, S413, S414, S415, S400]
+sources: [S406, S407, S408, S409, S410, S411, S412, S413, S-xiyru25z, S414, S415, S400]
 status: partial
 ---
 
@@ -25,14 +25,14 @@ status: partial
 - Runner service logs go to the Windows Event Log under provider `gitlab-runner` (`Get-WinEvent -ProviderName gitlab-runner`). [DOC S406]
 - As a service, jobs run in session 0: no interactive desktop, and display resolution is limited to 1024x768. [DOC S406]
 - When the service runs under a standard (non-administrator) user account it can't access mapped network drives (service logon sessions are restricted); use UNC paths. [DOC S406]
-- On Windows the `install` command has flags `--user/-u` ("Specify user-name to secure the runner") and `--password/-p` (usage text says "(required)"). These are passed to the service config as `UserName` and the `Password` option (kardianos/service library). [DOC S413]
+- On Windows the `install` command has flags `--user/-u` ("Specify user-name to secure the runner") and `--password/-p` (usage text says "(required)"). These are passed to the service config as `UserName` and the `Password` option (kardianos/service library). [CODE S413: commands/service.go#createServiceConfig; CODE S-xiyru25z: commands/service_windows.go#setupOSServiceConfig]
 - Shells: `powershell` (Desktop) is the default for the `kubernetes` and `docker-windows` executors. `pwsh` (Core) is the default for new registrations on Windows and for the `shell` executor. The registration default applies only when `shell` is set in `config.toml`. [DOC S407]
 - "PowerShell doesn't support executing the build in context of another user." [DOC S407]
 - The generated script runs as `pwsh -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command <file>` (or `powershell ...` for Desktop). [DOC S407]
 - `[runners.docker] security_opt` passes `--security-opt` to `docker run`. [DOC S408]
-- Source: when `build.SafeDirectoryCheckout` is true, the runner writes `git config --global --add safe.directory <projectDir>` before checkout. [DOC S409]
-- `safe_directory_checkout` (TOML) / `--safe-directory-checkout` / `RUNNER_SAFE_DIRECTORY_CHECKOUT` sets it per runner. [DOC S410]
-- Executor defaults: `shell` false, docker true (read from source). [DOC S411,S412]
+- Source: when `build.SafeDirectoryCheckout` is true, the runner writes `git config --global --add safe.directory <projectDir>` before checkout. [CODE S409: shells/abstract.go#AbstractShell.setupTemplateDir]
+- `safe_directory_checkout` (TOML) / `--safe-directory-checkout` / `RUNNER_SAFE_DIRECTORY_CHECKOUT` sets it per runner. [CODE S410: common/config.go#SafeDirectoryCheckout]
+- Executor defaults: `shell` false, docker true (read from source). [CODE S411: executors/shell/shell.go#NewProvider; CODE S412: executors/docker/docker_command.go#newDockerOptions]
 - Other executor defaults (kubernetes, virtualbox, parallels true; ssh and custom false). [UNK: not in S411, S412 as re-read 2026-09-27]
 - `safe_directory_checkout` does not appear in the runner docs (`docs/`) at this commit. [UNK]
 - Microsoft: services configured through Service Control Manager can use a gMSA. [DOC S400]

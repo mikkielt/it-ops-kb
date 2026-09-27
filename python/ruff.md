@@ -39,7 +39,7 @@ since it sets `select = ["F"]` explicitly.
   individually-listed rules (not a small set of prefixes), drawn heavily from `PYI`, `UP`, `F`, `RUF`,
   `PLE`/`PLW`/`PLR`/`PLC`, `B`, `SIM`, `FURB`, `C` (mccabe/comprehensions), `ASYNC`, `YTT`, `DTZ`, `PT`,
   `PIE`, `TRY`, `LOG`, `TC`, `G`, `EXE`, `S`, `PERF`, `INT`, `PTH`, `FA`, plus a couple each of `E`/`W`.
-  [DOC S-yfbe6ete]
+  [CODE S-yfbe6ete: crates/ruff_linter/src/settings/mod.rs#DEFAULT_SELECTORS]
 - This repository overrides that default entirely: `[tool.ruff.lint] select = ["F"]` (Pyflakes rules
   only — unused/undefined names and redefinitions), with `ignore = ["E731"]` (this ignore has no
   effect while `E` is not selected, but is harmless) and a comment explaining the choice keeps "the
@@ -57,17 +57,17 @@ since it sets `select = ["F"]` explicitly.
   exit `1` if violations were found even though `--fix` fixed all of them. [DOC S-7fmtkrv5]
 - `--output-format` accepts `concise`, `full` (default), `json`, `json-lines`, `junit`, `grouped`,
   `github`, `gitlab`, `pylint`, `rdjson`, `azure`, `sarif`; only `full`, `concise` and `grouped` are
-  "human-readable" (include header/footer text) rather than machine-oriented. [DOC S-guaor3a5]
+  "human-readable" (include header/footer text) rather than machine-oriented. [CODE S-guaor3a5: crates/ruff_linter/src/settings/types.rs#OutputFormat]
 - `target-version` (e.g. `"py39"`) sets the minimum Python syntax/version ruff assumes for
   version-gated rules (defaults to `"py310"` if left unset and there is no `requires-python`). If a
   `pyproject.toml` sets `project.requires-python` (e.g. `">=3.9"`) and `target-version` is *not* set
   explicitly, ruff derives the equivalent `target-version` from the lower bound of `requires-python`
   (`>=3.9` behaves like `target-version = "py39"`; this repository sets both explicitly:
   `target-version = "py311"` and `requires-python = ">=3.11"`). If both are set, the explicit
-  `target-version` wins. [DOC S-s3ytflwh, S-ntllah3f]
+  `target-version` wins. [CODE S-s3ytflwh: crates/ruff_workspace/src/options.rs#target_version; CODE S-ntllah3f: crates/ruff_workspace/src/pyproject.rs#find_fallback_target_version]
 - `per-file-ignores` (a table mapping glob file patterns to rule codes/prefixes to ignore for matching
   files) and `extend-per-file-ignores` (adds to it without replacing) let a project silence rules only
-  in specific files, e.g. `E402` in `__init__.py`. [DOC S-s3ytflwh]
+  in specific files, e.g. `E402` in `__init__.py`. [CODE S-s3ytflwh: crates/ruff_workspace/src/options.rs#per_file_ignores]
 - The default `line-length` is 88 and `indent-width` is 4 (matching Black); this repository overrides
   `line-length` to 200. Ruff's own stated default configuration also excludes common tooling
   directories (`.venv`, `.git`, `.mypy_cache`, `dist`, `build`, etc.) by default. [DOC S-7fmtkrv5]

@@ -15,16 +15,16 @@ files: [privacy/presidio-recognizer-registry.schema.json, privacy/presidio-examp
 - The default flags are `26` = `DOTALL | MULTILINE | IGNORECASE`. Matching uses the third-party `regex` module with a per-match timeout (default 60 s, env `REGEX_TIMEOUT_SECONDS`).
 
 ## Facts
-- Top-level model `RecognizerRegistryConfig` has `supported_languages`, `global_regex_flags` (default 26) and `recognizers`, with `extra="forbid"`. [DOC S821]
-- Recognizer fields: `name` (required), `class_name`, `enabled` (default true), `type`, `supported_language` / `supported_languages` (strings or `{language, context}` objects), `context`, `supported_entity` / `supported_entities`, `score_thresholds`. [DOC S821]
-- Custom recognizers also take `patterns` (each needs `name`, `regex`, `score` in 0..1), `deny_list`, `deny_list_score`, `country_code`. At least one of `patterns` or `deny_list` is required. A custom name may not collide with a predefined class name. [DOC S821]
+- Top-level model `RecognizerRegistryConfig` has `supported_languages`, `global_regex_flags` (default 26) and `recognizers`, with `extra="forbid"`. [CODE S821: presidio_analyzer/input_validation/yaml_recognizer_models.py#RecognizerRegistryConfig]
+- Recognizer fields: `name` (required), `class_name`, `enabled` (default true), `type`, `supported_language` / `supported_languages` (strings or `{language, context}` objects), `context`, `supported_entity` / `supported_entities`, `score_thresholds`. [CODE S821: presidio_analyzer/input_validation/yaml_recognizer_models.py#BaseRecognizerConfig]
+- Custom recognizers also take `patterns` (each needs `name`, `regex`, `score` in 0..1), `deny_list`, `deny_list_score`, `country_code`. At least one of `patterns` or `deny_list` is required. A custom name may not collide with a predefined class name. [CODE S821: presidio_analyzer/input_validation/yaml_recognizer_models.py#CustomRecognizerConfig]
 - `type` defaults to custom when omitted. For predefined recognizers `name` is the class name; for custom ones it is the display name. [DOC S823]
 - `deny_list_score` defaults to 1.0. The docs say it used to default to 0.0 through `RecognizerRegistryProvider`. [DOC S823]
 - The docs say `supported_languages` in the registry must be identical to the analyzer engine's. [DOC S823]
 - `score_thresholds` per recognizer / per entity (e.g. `default: 0.4`, `CREDIT_CARD: 0.7`), with the analyzer's `default_score_threshold` as fallback, shipped in 2.2.364 (PR #2116 in the release notes), although the CHANGELOG lists it under `[unreleased]`. [DOC S801, S800]
-- `supported_countries` (top level, ISO-3166-1 alpha-2) restricts predefined recognizers to those whose class has a matching `COUNTRY_CODE`. Locale-agnostic recognizers always load. [DOC S822, S809]
-- `PatternRecognizer` compiles each pattern with `regex.compile(pattern, flags=flags)`, using the per-call flags or else its `global_regex_flags`. It matches with `finditer(text, timeout=REGEX_TIMEOUT_SECONDS)`. [DOC S825]
-- `REGEX_TIMEOUT_SECONDS = int(os.environ.get("REGEX_TIMEOUT_SECONDS", 60))`. [DOC S825]
+- `supported_countries` (top level, ISO-3166-1 alpha-2) restricts predefined recognizers to those whose class has a matching `COUNTRY_CODE`. Locale-agnostic recognizers always load. [CODE S822: presidio_analyzer/conf/example_recognizers.yaml#L1-L16; CODE S809: presidio_analyzer/conf/default_recognizers.yaml#L6-L23]
+- `PatternRecognizer` compiles each pattern with `regex.compile(pattern, flags=flags)`, using the per-call flags or else its `global_regex_flags`. It matches with `finditer(text, timeout=REGEX_TIMEOUT_SECONDS)`. [CODE S825: presidio_analyzer/pattern_recognizer.py#PatternRecognizer]
+- `REGEX_TIMEOUT_SECONDS = int(os.environ.get("REGEX_TIMEOUT_SECONDS", 60))`. [CODE S825: presidio_analyzer/pattern_recognizer.py#REGEX_TIMEOUT_SECONDS]
 - `RecognizerRegistry(global_regex_flags=...)` defaults to `re.DOTALL | re.MULTILINE | re.IGNORECASE`. The docs show how to set flags for one recognizer or for all of them. [DOC S826, S824]
 - 26 = DOTALL(16) + MULTILINE(8) + IGNORECASE(2). So by default, custom patterns are case-insensitive and `.` matches newlines. [DER S826: Python flag values]
 - The JSON Schema does not express the validators (pattern field checks, patterns-or-deny_list, name-collision check). [DER S821: they are `field_validator` / `model_validator` code]

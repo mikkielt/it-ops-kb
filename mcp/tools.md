@@ -31,7 +31,7 @@ JSON SHOULD also appear as a TextContent block. `tools/call` may answer with `In
 - Stateful tools: no protocol session; servers return explicit handles and SHOULD validate caller authorization against the handle on every call. [DOC S708]
 - Servers MUST validate inputs, implement access control, rate-limit invocations and sanitize outputs; clients SHOULD show inputs before calling, implement timeouts, and log tool usage. [DOC S708]
 - `x-mcp-header` mirrors parameters into HTTP headers; clients on other transports (e.g. stdio) MAY ignore it. [DOC S708]
-- Python SDK: `@mcp.tool(title=..., annotations=ToolAnnotations(read_only_hint=True, open_world_hint=False))`; snake_case fields in Python. [DOC S736]
+- Python SDK: `@mcp.tool(title=..., annotations=ToolAnnotations(read_only_hint=True, open_world_hint=False))`; snake_case fields in Python. [DOC S725, S736]
 - Python SDK: return type annotation is the output schema; scalars/lists are wrapped as `{"result": ...}`; results validated against the schema, mismatch becomes a tool error; `structured_output=False` opts out. [DOC S726]
 
 ## Reference

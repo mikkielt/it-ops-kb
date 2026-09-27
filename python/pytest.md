@@ -45,7 +45,7 @@ the built-in fixtures (`capsys`, `monkeypatch`, `tmp_path`, `tmp_path_factory`) 
 - Built-in fixtures have exactly five possible scopes: `function` (default), `class`, `module`,
   `package` and `session`, declared with `@pytest.fixture(scope=...)`. A higher-scoped fixture (e.g.
   `session`) is instantiated once for all the tests sharing that scope, not once per test function.
-  [DOC S-7pmymrvf]
+  [CODE S-7pmymrvf: src/_pytest/fixtures.py#fixture]
 - `tmp_path` returns a `pathlib.Path` unique to each test *function* invocation, backed by
   `tmp_path_factory` (a `session`-scoped fixture) for the underlying base temp directory management.
   [DOC S-h5gurdir, S-tivsgmaq]
