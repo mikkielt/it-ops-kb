@@ -6,7 +6,7 @@ agents/agent-caching,P1,complete,agents/agent-caching.md,8
 agents/agent-dispatch-and-shared-services,P1,partial,agents/agent-dispatch-and-shared-services.md,10
 agents/agent-error-catalogue,P1,partial,agents/agent-error-catalogue.md;agents/agent-error-catalogue.csv,15
 agents/agent-evaluation,P1,complete,agents/agent-evaluation.md,30
-agents/agent-overuse-patterns,P1,partial,agents/agent-overuse-patterns.md;agents/agent-overuse-patterns.csv,28
+agents/agent-overuse-patterns,P1,partial,agents/agent-overuse-patterns.md;agents/agent-overuse-patterns.csv,27
 agents/agent-rbac,P1,complete,agents/agent-rbac.md,14
 agents/api-tokens-issue-and-store,P1,complete,agents/api-tokens-issue-and-store.md;agents/api-tokens.csv;agents/secret-storage-options.csv,14
 agents/copilot-studio-inventory,P1,complete,agents/copilot-studio-inventory.md;agents/copilot-studio-feature-map.csv,20

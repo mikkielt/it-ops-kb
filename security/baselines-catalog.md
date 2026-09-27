@@ -85,9 +85,10 @@ attribution. NCSC (UK)/BSI/ANSSI rows remain UNK.
   short paraphrase of the recommendation title is allowed with attribution, for non-commercial
   internal use; a crosswalk CSV may therefore carry CIS IDs and short paraphrases,
   attributed, once a direct citation is confirmed — recorded as a residual gap.
-- ACSC's Essential Eight maturity model was first published June 2017, with a maturity-model
-  revision seen dated November 2023 and an FAQ revision dated April 2024; a more recent 2026
-  revision was not confirmed this pass [DOC S1425, partial].
+- ACSC's Essential Eight maturity model page gives first published 30 June 2017 and last updated
+  27 November 2023 (the November 2023 model PDF is its attachment), and defines Maturity Levels Zero to
+  Three; read from the Internet Archive capture of 2026-08-27, since cyber.gov.au times out from here.
+  [DOC S1425]
 - ACSC's "Hardening Microsoft Windows 11 workstations" (first published May 2017) was last updated
   January 2026; that edition takes its settings from Windows 11 version 25H2, and ACSC's January 2026
   change log records the move from the September 2025 (24H2) edition, adding measures for auditing,
