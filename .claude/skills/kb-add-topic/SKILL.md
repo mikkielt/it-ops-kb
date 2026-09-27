@@ -1,7 +1,6 @@
 ---
 name: kb-add-topic
-description: Research and write a new it-ops-kb topic that follows the repository's contract (front matter, four sections, one tag per fact, source rows, coverage index). Use when the user asks to add or document a new topic in the kb.
-disable-model-invocation: true
+description: Use when the user asks to add, write or document a new topic, article or data table in it-ops-kb (<domain>/<slug>): researches official sources and writes it to the kb contract (source rows, one tag per fact, four sections, index).
 argument-hint: "<domain>/<topic-slug> and what it should cover"
 ---
 

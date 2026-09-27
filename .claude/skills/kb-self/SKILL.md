@@ -1,7 +1,6 @@
 ---
 name: kb-self
-description: Bring it-ops-kb's own docs (_self/, AGENTS.md, README.md) back in line with the tools, skills, hooks and config they describe. Scope by one doc, a commit range or everything; record a new measurement in the reports. Finds what is stale with selfdoc.py, updates only those docs, and verifies them with the cohesion tests.
-disable-model-invocation: true
+description: Use after changing it-ops-kb's tools, skills, hooks, plugin, config or rules, or when the user asks to update the kb's own docs (_self/, AGENTS.md, README.md) or record a measurement: finds stale docs with selfdoc.py and brings them in line.
 argument-hint: "[--since REV | <doc path, e.g. _self/tools.md> | all | --report \"<title>\"] [--check]"
 ---
 

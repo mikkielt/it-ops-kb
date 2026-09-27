@@ -42,7 +42,7 @@ Details, numbers and the reasoning: `_self/design.md`.
 ## Using it
 
 - **From another project:** ask Claude Code to set up the `it-ops-kb` plugin by following `_self/plugin.md`, then ask your questions. Pin a census tag for a confirmed copy.
-- **Changing the kb:** open a clone in Claude Code and use the skills: `/kb-research`, `/kb-add-topic`, `/kb-refresh`, `/kb-census`, `/kb-verify`, `/kb-git-sync`, and `/kb-self` for the kb's own documentation.
+- **Changing the kb:** open a clone in Claude Code and ask for the change in plain words. Claude routes it to the skill that does it (`/kb-research`, `/kb-add-topic`, `/kb-refresh`, `/kb-census`, `/kb-verify`, `/kb-git-sync`, and `/kb-self` for the kb's own documentation), and a hook names the likely skill. You can also type a skill yourself.
 
 ## What to trust
 

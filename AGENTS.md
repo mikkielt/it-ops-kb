@@ -21,7 +21,7 @@ Every fact ends in a tag with ids from `_sources.csv`: `DOC` (official), `DER` (
 
 ## Live documentation (only when the kb lacks it)
 
-Three remote servers that need no authentication, in `.claude-plugin/it-ops-kb-docs/.mcp.json`: the `it-ops-kb-docs` plugin for other projects, `python3 _tools/kb_mcp.py --register-local` in a clone. Label what they give "live docs, not in the kb", with the url and date.
+Three remote servers, no authentication (`.claude-plugin/it-ops-kb-docs/.mcp.json`; the `it-ops-kb-docs` plugin elsewhere, `python3 _tools/kb_mcp.py --register-local` in a clone). Label what they give "live docs, not in the kb", with the url and date.
 
 | name | url | use for |
 |---|---|---|
@@ -31,10 +31,10 @@ Three remote servers that need no authentication, in `.claude-plugin/it-ops-kb-d
 
 ## Skills
 
-`/kb-lookup`, `/kb-review-workspace` and `/kb-gap` (read-only: review another project's code against the kb; draft a report of what the kb lacks). The following change the kb and follow `_self/maintaining.md`: `/kb-setup`, `/kb-research`, `/kb-refresh`, `/kb-add-topic`, `/kb-census`, `/kb-verify`, `/kb-git-sync`, `/kb-self` (keeps `_self/` in line with the code).
+`/kb-lookup`, `/kb-review-workspace` and `/kb-gap` (read-only: review another project's code against the kb; draft a report of what the kb lacks). **A request to change the kb goes through its skill**, not freehand edits (a hook names it): `/kb-setup`, `/kb-research`, `/kb-refresh`, `/kb-add-topic`, `/kb-census`, `/kb-verify`, `/kb-git-sync`, `/kb-self`. They follow `_self/maintaining.md`.
 
 ## Agent conduct
 
 - Never call a docs server's `submit_feedback` tool (denied in settings): it posts text outside the repo.
 - Placeholders only in examples: `PL-LT-00123`, `PL-SRV-0042`, `corp.example.com`, tenant `00000000-0000-0000-0000-000000000000`, `jan.kowalski`. Never add real hostnames, tenant or object ids, addresses, people or tokens; `_cache/` and `_private/` are never committed.
-- Run shell commands one at a time: permission rules match single commands, so `a; b`, `a && b` and loops need approval.
+- Run shell commands one at a time: permission rules match one command, so `a; b`, `a && b` and loops need approval.

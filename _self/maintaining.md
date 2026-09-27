@@ -23,7 +23,9 @@ Run `/kb-setup` (Claude Code), or do the same by hand. In Claude Code on the web
 
 ## Skills that change the kb (`.claude/skills/`)
 
-Each is started by hand (`disable-model-invocation: true`) and names the `_self/` files it relies on.
+**A request to change the kb goes through one of these skills, never freehand edits.** Claude invokes them on its own: they are model-invocable, with descriptions that start with their trigger ("Use when ..."), and they stay out of the plugin, so their descriptions cost nothing in host projects. A person can still type them. Each names the `_self/` files it relies on.
+
+The routing is also deterministic: `.claude/hooks/kb_change_router.py`, a UserPromptSubmit hook in `.claude/settings.json` (never in the plugin), adds one line of context to a prompt that asks for a change (add, update, fix, refresh, research, commit, push, ...), naming the likely skill from its words plus the rule below the table. Questions, `kb:` prompts and slash commands pass unchanged. `python3 .claude/hooks/kb_change_router.py --test "<prompt>"` shows what it adds. A new change skill needs a route there (`_tools/test_change_router.py` fails otherwise).
 
 | skill | does | reads |
 |---|---|---|
@@ -36,7 +38,7 @@ Each is started by hand (`disable-model-invocation: true`) and names the `_self/
 | `/kb-git-sync [--push]` | sync with `origin/main` when `kbgit.py sync` stops (exit 1 or 3): resolves conflicts by meaning, fixes a red gate, pushes only when asked | git, content rules |
 | `/kb-self [doc\|--since REV\|all]` | bring `_self/` back in line with the code, skills and config it describes | `_self/README.md`, `_self/map.csv` |
 
-The read-only skills (`/kb-lookup`, `/kb-review-workspace`, `/kb-gap`) follow `AGENTS.md` and the plugin rules.
+Any change ends with `/kb-verify`, then `python3 _tools/kbgit.py sync --push` (`/kb-git-sync` when it stops); a change to tools, skills, hooks, the plugin or a rule also runs `/kb-self`. The read-only skills (`/kb-lookup`, `/kb-review-workspace`, `/kb-gap`) follow `AGENTS.md` and the plugin rules.
 
 ## Conduct for changes
 

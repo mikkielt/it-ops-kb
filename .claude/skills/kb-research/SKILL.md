@@ -1,7 +1,6 @@
 ---
 name: kb-research
-description: Research a question on the web in the context of what it-ops-kb already covers - map the related topics, gaps and conflicts first, research only what is missing from official sources, then extend the existing topics (or add one), record a tagged answer in _answers.md and pass the checks. Use when the user asks to research, investigate or compare something related to topics in the kb.
-disable-model-invocation: true
+description: Use when the user asks to research, investigate or compare something for it-ops-kb, or to extend what the kb says about a subject: maps existing topics and gaps first, researches only what is missing from official sources, extends topics, records a tagged answer.
 argument-hint: "<question or subject, optionally with the angle, e.g. 'X and how agents can use it'>"
 ---
 

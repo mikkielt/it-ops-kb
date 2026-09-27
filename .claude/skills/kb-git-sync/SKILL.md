@@ -1,7 +1,6 @@
 ---
 name: kb-git-sync
-description: Bring local it-ops-kb commits onto origin/main when `kbgit.py sync` cannot finish alone - resolve article, tool and doc conflicts by meaning (keep both sides' facts, newer confirmed evidence wins a changed fact, record real disagreements in _conflicts.md), fix a red gate at its cause, and push only when asked. Use when the user asks to sync, pull or push the kb, or sync stopped with exit 1 or 3.
-disable-model-invocation: true
+description: Use when the user asks to commit and push, sync, pull or merge it-ops-kb, or `kbgit.py sync` stopped with exit 1 or 3: resolves conflicts by meaning, fixes a red gate at its cause, pushes only when asked.
 argument-hint: "[--push]"
 ---
 

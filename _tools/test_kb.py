@@ -4,7 +4,8 @@ runs them with every other test module).
 TestToolChecks, TestCohesion: check.py and fetch.py --offline pass; no lint errors beyond the recorded baseline; the
 generated index files (_coverage.csv, the _self/coverage.md table, used_in) are up to date (build_index.py --check); links,
 backtick paths and used_in paths resolve; every CLI flag the docs mention exists in that tool; the docs servers' .mcp.json (.claude-plugin/it-ops-kb-docs/), .claude/settings.json and AGENTS.md agree;
-skills are well-formed and only /kb-lookup is model-invocable; AGENTS.md stays under 4 KB (every session and subagent
+skills are well-formed; of the plugin skills only /kb-lookup is model-invocable, and the clone-only change skills all are
+(a change request must reach them); the change router hook routes change prompts; AGENTS.md stays under 4 KB (every session and subagent
 loads it; maintainer rules live in _self/maintaining.md) and README.md under 8 KB (people read it); _self/map.csv names
 every _self doc and matches files (selfdoc.py check); `ruff check` is clean (pyproject.toml).
 TestSelfDocs: _self/ stays out of the pack and the default search, and a search with index finds it.
@@ -27,6 +28,8 @@ LINT = os.path.join(KB, ".claude", "skills", "kb-verify", "lint.py")
 BASELINE = os.path.join(TOOLS, "lint_baseline.txt")
 ALLOWLIST = os.path.join(TOOLS, "tests_allowlist.txt")
 MAX_BYTES = 10 * 1024 * 1024
+PLUGIN_SKILLS = {os.path.basename(s.rstrip("/")) for s in json.load(open(os.path.join(KB, ".claude-plugin", "plugin.json"),
+                                                                        encoding="utf-8"))["skills"]}
 # the benchmark's false good (agent_bench s8): the pack matched Copilot Studio's "data-loss-prevention (DLP)" words
 FALSE_GOOD = "Microsoft Purview Data Loss Prevention endpoint DLP onboarding requirements"
 SPREAD_GOOD = "How do I migrate user mailboxes between tenants?"
@@ -241,8 +244,13 @@ class TestCohesion:
             assert name and name.group(1) == os.path.basename(os.path.dirname(p)), f"{p}: name must equal its directory"
             assert re.search(r"(?m)^description:\s*\S.{20,}", fm), f"{p}: description missing or too short"
             assert os.path.basename(os.path.dirname(p)) in text("AGENTS.md"), f"{p}: skill not listed in AGENTS.md"
-            if os.path.basename(os.path.dirname(p)) != "kb-lookup":  # its description would load into every session
-                assert re.search(r"(?m)^disable-model-invocation: true$", fm), f"{p}: only /kb-lookup is model-invocable"
+            name = os.path.basename(os.path.dirname(p))
+            manual = bool(re.search(r"(?m)^disable-model-invocation: true$", fm))
+            if name in PLUGIN_SKILLS:  # shipped to hosts: a description there loads into every host session
+                assert manual == (name != "kb-lookup"), f"{p}: of the plugin skills only /kb-lookup is model-invocable"
+            else:  # clone-only skills that change the kb: Claude must reach them when a person asks for a change
+                assert not manual, f"{p}: a skill that changes the kb must stay model-invocable (disable-model-invocation)"
+                assert fm.split("description:", 1)[1].lstrip().startswith("Use "), f"{p}: description must start with its trigger (Use when ...)"
 
     def test_python_passes_ruff_when_installed(self):
         """pyflakes rules (pyproject.toml [tool.ruff]): no unused or undefined names; skipped without ruff."""

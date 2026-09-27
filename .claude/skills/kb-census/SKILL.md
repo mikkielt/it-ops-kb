@@ -1,7 +1,6 @@
 ---
 name: kb-census
-description: Confirm that every source in it-ops-kb is still current - mechanical checks of all sources with census.py (pins by git, releases, Learn source files, sitemap dates, links), reading every source they cannot decide, updating or re-sourcing the facts that changed, dating only what was really confirmed, an independent sample check, then the census tag. Use when the user asks for a census, a full re-verification or to "refresh all sources".
-disable-model-invocation: true
+description: Use when the user asks for a census, a full re-verification or to confirm or refresh all it-ops-kb sources: mechanical checks of every source, reading the undecided ones, dating only what was confirmed, a sample check, the census tag.
 argument-hint: "[YYYY-MM-DD, default today] [--resume]"
 ---
 

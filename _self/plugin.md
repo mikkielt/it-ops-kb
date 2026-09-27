@@ -27,7 +27,7 @@ The writing skills (`/kb-research`, `/kb-refresh`, `/kb-add-topic`, `/kb-census`
 - **No root plugin directories:** never add a root `skills/`, `commands/`, `hooks/`, `bin/` or similar directory, or a root `.mcp.json`: the plugin would load it. The root plugin loads a root `.mcp.json` whatever `plugin.json` says, so the docs servers live in their own plugin, and a clone registers its servers at local scope (`kb_mcp.py --register-local`).
 - **No `version` field:** users get each commit; census tags are the stable channel (section 4).
 - **Agent frontmatter:** plugin agents honour `model`, `effort`, `maxTurns`, `tools`, `skills`, `omitClaudeMd` and a few more, and ignore `permissionMode`, `hooks` and `mcpServers`. `effort` goes in an agent, never in a skill (a skill's effort overrides the host session's while it runs). The agents list the kb tools under both names, `mcp__plugin_it-ops-kb_kb__*` (a host) and `mcp__kb__*` (a clone's local server).
-- `/kb-lookup` is the only skill Claude may invoke on its own; every other skill sets `disable-model-invocation: true`, which keeps its description out of every session (tested).
+- Of the plugin's skills, only `/kb-lookup` is model-invocable; `/kb-review-workspace` and `/kb-gap` set `disable-model-invocation: true`, which keeps their descriptions out of every host session. The clone-only change skills are model-invocable (so a change request reaches them) and must never be added to `plugin.json`; nor must the change router hook (tested).
 - `python3 _tools/test_kb_mcp.py` checks these and runs `claude plugin validate` on both plugins when the CLI is installed.
 
 ## 3. Install and update

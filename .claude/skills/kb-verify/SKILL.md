@@ -1,7 +1,6 @@
 ---
 name: kb-verify
-description: Quality gate for it-ops-kb before a commit or a push. Runs the repository checks, the stress tests, the lookup eval, the doc2query stale check, extra contract checks (coverage vs front matter, untagged facts, topic ids) and the _self/ docs check (docs behind the code they describe), and reports findings without changing anything.
-disable-model-invocation: true
+description: Use before any it-ops-kb commit or push, or when the user asks to check, verify or gate a change: runs the checks, tests, stress tests, lookup eval, contract lint and the _self/ docs check, and reports findings without changing files.
 argument-hint: "[path prefixes to limit the contract checks, e.g. auth dsc/what-if] [--base REV]"
 ---
 

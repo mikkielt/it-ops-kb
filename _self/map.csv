@@ -4,11 +4,12 @@ AGENTS.md,_tools/kb_ask.py
 AGENTS.md,_tools/kb_hook.py
 AGENTS.md,.claude-plugin/it-ops-kb-docs/.mcp.json
 AGENTS.md,.claude/skills/*/SKILL.md
+AGENTS.md,.claude/hooks/kb_change_router.py
 README.md,_self/design.md
 _self/README.md,_self/map.csv
 _self/README.md,_tools/selfdoc.py
 _self/README.md,.claude/skills/kb-self/SKILL.md
-_self/maintaining.md,.claude/hooks/session-start.sh
+_self/maintaining.md,.claude/hooks/*
 _self/maintaining.md,.claude/settings.json
 _self/maintaining.md,.claude/skills/*/SKILL.md
 _self/maintaining.md,_tools/tests.py
@@ -49,6 +50,7 @@ _self/plugin.md,.claude/skills/kb-gap/SKILL.md
 _self/plugin.md,_tools/kb_mcp.py
 _self/plugin.md,_tools/kb_hook.py
 _self/plugin.md,_tools/kbcommon.py
+_self/plugin.md,.claude/hooks/kb_change_router.py
 _self/design.md,_self/reports/*.md
 _self/design.md,_tools/kb_ask.py
 _self/design.md,AGENTS.md

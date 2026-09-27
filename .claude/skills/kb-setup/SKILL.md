@@ -1,7 +1,6 @@
 ---
 name: kb-setup
-description: First-time setup and health check of the it-ops-kb repository. Checks Python, runs the kb checks and stress tests, installs the local commit hook (KB-* trailers), registers the kb and documentation MCP servers at local scope and checks they answer, and ends with a pass/fail report. Use when someone has just cloned the repo or asks to set it up.
-disable-model-invocation: true
+description: Use when the it-ops-kb clone is fresh, a check or MCP server fails at start, or the user asks to set up the kb: checks Python, runs the checks and stress tests, installs the commit hook, registers the MCP servers, reports pass/fail.
 ---
 
 # Set up it-ops-kb

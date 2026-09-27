@@ -1,7 +1,6 @@
 ---
 name: kb-refresh
-description: Check whether the sources behind a kb topic, directory or file have changed, and update the affected facts, source rows and logs. Use when the user asks to refresh, re-verify or update part of it-ops-kb.
-disable-model-invocation: true
+description: Use when the user asks to refresh, re-verify, update or fix facts in an existing it-ops-kb topic, directory, file or source id, or says a source changed: diffs the sources and updates the facts, source rows and logs.
 argument-hint: "<topic | directory | file | S-id>"
 ---
 
