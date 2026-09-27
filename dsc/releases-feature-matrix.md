@@ -59,6 +59,7 @@ Rows for 3.0.0 to 3.2.0 come from `args.rs`, `functions/mod.rs` and the `resourc
 Release dates (GitHub, published): 3.0.0 2025-02-28 (CHANGELOG), 3.1.0 2025-06-18, 3.2.0 2026-04-29, 3.2.3 2026-07-16, 3.3.0 2026-09-17, 3.4.0-preview.1 2026-09-10. [DOC S113,S143]
 
 ## Examples
+- SNIPPET: check the installed dsc version and whether a 3.4-only resource is present; context: dsc 3.3.0 or 3.4.0-preview.1; checked: no [DER S116, S117: `dsc --version` and `dsc resource list` output from both binaries, matching the feature matrix's yes/no rows]
 ```powershell
 # Confirm what a host really runs before trusting release notes
 dsc --version

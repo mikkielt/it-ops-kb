@@ -39,6 +39,7 @@ status: complete
 | Azure SQL Database / MI | yes | yes | S460 |
 
 ## Examples
+- SNIPPET: create a system-versioned temporal table with a named history table and finite retention; context: SQL Server 2017+, Azure SQL Database/MI; checked: no [DOC S460, S461: `SYSTEM_VERSIONING`/`HISTORY_TABLE`/`HISTORY_RETENTION_PERIOD` syntax]
 ```sql
 CREATE TABLE dbo.device_assignment (
   device_key  UNIQUEIDENTIFIER NOT NULL PRIMARY KEY,

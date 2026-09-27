@@ -169,8 +169,7 @@ receiver is `logs/otel-collector-receivers.md`.
   the back-link to this article.
 
 ## Examples
-DCR JSON fragment collecting Security 4624/4625 and Sysmon Operational via XPath, sending to a Log Analytics
-workspace (placeholder subscription `00000000-0000-0000-0000-000000000000`, resource group `PL-SRV-0042`):
+- SNIPPET: DCR JSON fragment collecting Security 4624/4625 and Sysmon Operational via XPath, sending to a Log Analytics workspace (placeholder subscription `00000000-0000-0000-0000-000000000000`, resource group `PL-SRV-0042`); context: Data Collection Rules API 2024-03-11; checked: syntax [DOC S-luprngvc: windowsEventLogs `name`/`streams`/`xPathQueries` shape and dataFlows/destinations structure]
 ```json
 {
   "location": "eastus",
@@ -205,16 +204,17 @@ workspace (placeholder subscription `00000000-0000-0000-0000-000000000000`, reso
   }
 }
 ```
-Install AMA on an Azure Arc server (managed identity auth) and check heartbeat:
+- SNIPPET: Install AMA on an Azure Arc server (managed identity auth) and check heartbeat; context: Az.ConnectedMachine module; checked: no [DOC S-mix3xqam: Arc servers use `New-AzConnectedMachineExtension` with the same extension type/publisher as `Set-AzVMExtension`]
 ```powershell
 New-AzConnectedMachineExtension -Name AzureMonitorWindowsAgent -ExtensionType AzureMonitorWindowsAgent `
   -Publisher Microsoft.Azure.Monitor -ResourceGroupName PL-SRV-0042 -MachineName PL-SRV-0042 `
   -Location eastus -EnableAutomaticUpgrade
 ```
+- SNIPPET: verify AMA is sending a heartbeat to the workspace; context: Log Analytics KQL; checked: no [DOC S-mix3xqam: `Heartbeat | where Category == "Azure Monitor Agent"` verification query]
 ```kusto
 Heartbeat | where Category == "Azure Monitor Agent" | where TimeGenerated > ago(5m)
 ```
-Test an XPath query locally on `PL-LT-00123` before adding it to a DCR:
+- SNIPPET: Test an XPath query locally on `PL-LT-00123` before adding it to a DCR; context: PowerShell, XPath 1.0 only; checked: no [DOC S-3dcvyq2z, S-me4bxp52: `Get-WinEvent -FilterXPath` as the way to test a DCR XPath query locally]
 ```powershell
 $XPath = '*[System[(EventID=4624 or EventID=4625)]]'
 Get-WinEvent -LogName 'Security' -FilterXPath $XPath

@@ -70,7 +70,7 @@ Manifest files (3.3.0 zip): appx.dsc.extension.json, assertion, echo, featureond
 Other files in both zips (not saved except settings/examples): `dsc.exe`, resource executables, `dsc_default.settings.json` and `dsc.settings.json` (saved in `zip-extras/`), `windows_baseline.dsc.yaml` and `windows_inventory.dsc.yaml` (sample documents, saved in `zip-extras/`), `dsc-bicep-ext.exe`, `y2j.exe`, psDscAdapter and WMI adapter scripts.
 
 ## Examples
-Check which types a host's dsc really has (read-only):
+- SNIPPET: Check which types a host's dsc really has (read-only); context: dsc 3.3.0, PowerShell; checked: no [DER S106: command_discovery.rs resource enumeration backs `dsc resource list` and its `capabilities` field]
 ```powershell
 dsc resource list --output-format json | ConvertFrom-Json | Select-Object type, version, capabilities
 ```

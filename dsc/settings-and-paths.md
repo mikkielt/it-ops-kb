@@ -39,7 +39,7 @@ status: complete
 Saved copies: `zip-extras/<version>/dsc.settings.json` and `dsc_default.settings.json`.
 
 ## Examples
-Policy file `C:\ProgramData\dsc\dsc.settings.json` on PL-SRV-0042 that pins discovery and blocks env overrides:
+- SNIPPET: Policy file `C:\ProgramData\dsc\dsc.settings.json` on PL-SRV-0042 that pins discovery and blocks env overrides; context: dsc 3.3.0; checked: syntax [DER S107, S127: util.rs settings resolution and the shipped `dsc.settings.json`'s `resourcePath`/`tracing` shape]
 ```json
 {
   "resourcePath": { "allowEnvOverride": false, "appendEnvPath": false, "directories": ["C:\\Program Files\\DSC"] },

@@ -41,6 +41,7 @@ status: complete
 | -999 | parameter/call error |
 
 ## Examples
+- SNIPPET: take a session-owned exclusive app lock with no wait, and release it after the work; context: SQL Server 2017+, Azure SQL Database/MI; checked: no [DOC S467: `@LockMode`/`@LockOwner`/`@LockTimeout` semantics and return codes]
 ```sql
 DECLARE @rc INT;
 EXEC @rc = sp_getapplock @Resource = N'app.sync.intune', @LockMode = 'Exclusive',

@@ -53,6 +53,7 @@ files: [dsc/cli/]
 Subcommand history (from `args.rs` at each tag): 3.0.0 has completer, config, resource, schema. 3.1.0 adds `extension`. 3.2.0 adds `function` and `mcp`. 3.3.0 renames `mcp` to `server` (alias `mcp`) and adds `--ignore-settings-file`. The 3.2 line got the flag later as a backport: tag v3.2.3 defines it as `-i, --ignore-settings-file` and still names the subcommand `mcp`. [DER S132,S133,S134,S100,S-mmshotst]
 
 ## Examples
+- SNIPPET: run a config, get/list resources and print a schema; context: dsc 3.3.0, dsc.exe on PATH; checked: no [DER S116, S117: subcommand and flag syntax from the 3.3.0/3.4.0-preview.1 binaries' --help and schema output]
 ```powershell
 dsc -l warn -t json config test -f .\baseline.dsc.yaml -o json > result.json
 dsc resource get -r Microsoft.Windows/Service -i '{"name":"Spooler"}'

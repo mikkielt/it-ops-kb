@@ -51,6 +51,7 @@ Observed matrix (3.3.0 binary, which reports lib version 3.2.0):
 | `'*'` | 0 |
 
 ## Examples
+- SNIPPET: document directives requiring a version range and elevated security context; context: dsc 3.3.0, reports lib version 3.2.0; checked: no [DER S102, S103: ConfigDirective/SecurityContextKind fields and validation match the Reference table's observed matrix]
 ```yaml
 $schema: https://aka.ms/dsc/schemas/v3/bundled/config/document.json
 directives:

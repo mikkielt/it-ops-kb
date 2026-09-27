@@ -34,6 +34,7 @@ status: complete
 | Output (`-o json`) | redacted to `<secureValue>` where dsc applies `redact()` |
 
 ## Examples
+- SNIPPET: pass a secureString parameter through to a resource property, showing where it leaks; context: dsc 3.3.0; checked: no [DER S105, S106: command_resource.rs/command_discovery.rs pass parameter values to resource argv/stdin unredacted except in `-o json` output]
 ```yaml
 parameters:
   svcPassword:

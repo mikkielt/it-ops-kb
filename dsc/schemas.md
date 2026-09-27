@@ -39,6 +39,7 @@ files: [dsc/schemas/]
 sha256 of every file: `_parts/dsc/artifacts.csv`.
 
 ## Examples
+- SNIPPET: dump the configuration-test-result schema to a file; context: dsc 3.3.0; checked: no [DER S116, S117: `configuration-test-result` is one of the `dsc schema -t` types listed by the 3.3.0/3.4.0-preview.1 binaries]
 ```powershell
 dsc schema -t configuration-test-result -o json > test-result.schema.json
 ```

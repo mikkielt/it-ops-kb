@@ -43,6 +43,7 @@ The SDK documents `InitiateClientOperation(Type, TargetCollectionID, Randomizati
 - `mecm/client-operation-types.csv`: every enum and value, with its status and source.
 
 ## Examples
+- SNIPPET: trigger a machine policy retrieval and a hardware inventory cycle on one device; context: ConfigMgr current branch 2603, ConfigurationManager PowerShell module; checked: no [DOC S334: `Invoke-CMClientAction` `-DeviceName`/`-ActionType`]
 ```powershell
 Invoke-CMClientAction -DeviceName 'PL-LT-00123' -ActionType ClientNotificationRequestMachinePolicyNow
 Invoke-CMClientAction -DeviceName 'PL-LT-00123' -ActionType ClientNotificationRequestHWInvNow

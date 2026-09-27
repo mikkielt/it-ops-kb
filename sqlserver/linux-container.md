@@ -33,6 +33,7 @@ files: [sqlserver/mssql-server-tags.json]
 Artifact: `sqlserver/mssql-server-tags.json` (sha256 `058736f6cdb5ab26a766cb3a491e785c8f6f26c098cec38b74e7276d27bc4c83`). It is a live endpoint, so re-fetching gives a different hash as tags are added.
 
 ## Examples
+- SNIPPET: run a pinned SQL Server 2025 Enterprise Developer container for CI; context: mcr.microsoft.com/mssql/server, Docker; checked: no [DOC S473, S474, S475: `ACCEPT_EULA`/`MSSQL_SA_PASSWORD` env vars, `MSSQL_PID=EnterpriseDeveloper` for 2025+, and pinning to a specific CU tag]
 ```bash
 docker run -e ACCEPT_EULA=Y -e MSSQL_PID=EnterpriseDeveloper -e "MSSQL_SA_PASSWORD=$CI_SA_PASSWORD" \
   -p 1433:1433 -d mcr.microsoft.com/mssql/server:2025-CU9-ubuntu-24.04

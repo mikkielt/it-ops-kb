@@ -51,6 +51,7 @@ By default an author cannot approve their own script.
 Source: S1520. Built-in roles with Run Script: Full, Infrastructure and Operations Administrator (S-hmjlvsck).
 
 ## Examples
+- SNIPPET: run an approved script with a hashtable parameter against one device; context: ConfigMgr current branch 2603, client 1706+/PowerShell 3.0+, `-ScriptParameter` requires 2010+; checked: no [DOC S335: `Invoke-CMScript` `-ScriptGuid`/`-Device`/`-ScriptParameter` parameters]
 ```powershell
 $p = @{ ServiceName = 'Spooler' }
 Invoke-CMScript -ScriptGuid '00000000-0000-0000-0000-000000000001' -Device (Get-CMDevice -Name 'PL-LT-00123') -ScriptParameter $p

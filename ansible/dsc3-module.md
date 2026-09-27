@@ -41,6 +41,7 @@ PowerShell DSC (v1/v2, PS 5.x) single-resource module; it does not run on PowerS
 | Added | (not stated on page) | ansible.windows 3.4.0 |
 
 ## Examples
+- SNIPPET: run a DSC v3 config file in check mode via the dsc3 module; context: ansible.windows 3.8.0, dsc.exe on PATH; checked: no [DER S931: config_file, remote_config_file, trace_level options; check_mode maps to dsc config test]
 ```yaml
 - name: Test example baseline document on PL-LT-00123 (check mode = dsc config test)
   ansible.windows.dsc3:

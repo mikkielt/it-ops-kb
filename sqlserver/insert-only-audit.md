@@ -30,6 +30,7 @@ status: partial
 | `GRANT INSERT ON SCHEMA::audit TO r` | insert on every object in the schema | S470 |
 
 ## Examples
+- SNIPPET: create an insert-only role for an audit table by granting INSERT and denying UPDATE/DELETE; context: SQL Server 2016+ / Azure SQL; checked: no [DOC S468, S470: DENY takes precedence over a granted permission; INSERT/UPDATE/DELETE are separate object permissions]
 ```sql
 CREATE ROLE app_audit_writer;
 GRANT INSERT ON OBJECT::dbo.operation TO app_audit_writer;

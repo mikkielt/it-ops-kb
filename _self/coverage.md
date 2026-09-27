@@ -19,7 +19,7 @@ Every topic with its priority (the research order, not importance), status, file
 | `agents/eval-question-baseline` | P1 | partial | `agents/eval-question-baseline.md`, `agents/eval-question-baseline.csv` | 3 |
 | `agents/foundry-agent-service` | P1 | complete | `agents/foundry-agent-service.md`, `agents/foundry-agent-tools.csv` | 16 |
 | `agents/instruction-and-context-limits` | P1 | partial | `agents/instruction-and-context-limits.md`, `agents/instruction-and-context-limits.csv` | 31 |
-| `agents/m365-copilot-extensibility` | P1 | complete | `agents/m365-copilot-extensibility.md`, `agents/declarative-agent-manifest.csv` | 20 |
+| `agents/m365-copilot-extensibility` | P1 | complete | `agents/m365-copilot-extensibility.md`, `agents/declarative-agent-manifest.csv` | 21 |
 | `agents/mcp-stress-testing` | P1 | partial | `agents/mcp-stress-testing.md` | 11 |
 | `agents/own-chatbot-architecture` | P1 | complete | `agents/own-chatbot-architecture.md` | 15 |
 | `agents/shared-ner-service` | P1 | partial | `agents/shared-ner-service.md` | 29 |
@@ -30,14 +30,14 @@ Every topic with its priority (the research order, not importance), status, file
 | `agents/azure-openai-deployments` | P2 | partial | `agents/azure-openai-deployments.md`, `agents/azure-openai-deployment-types.csv` | 12 |
 | `agents/coding-agents-mcp` | P2 | partial | `agents/coding-agents-mcp.md` | 7 |
 | `agents/content-safety-prompt-shields` | P2 | partial | `agents/content-safety-prompt-shields.md`, `agents/content-safety-limits.csv` | 11 |
-| `agents/doc-lookup-sources` | P2 | partial | `agents/doc-lookup-sources.md`, `agents/doc-lookup-sources.csv` | 23 |
+| `agents/doc-lookup-sources` | P2 | partial | `agents/doc-lookup-sources.md`, `agents/doc-lookup-sources.csv` | 24 |
 | `agents/docs-maintenance-agents` | P2 | partial | `agents/docs-maintenance-agents.md` | 18 |
 | `agents/genai-telemetry` | P2 | complete | `agents/genai-telemetry.md` | 5 |
 | `agents/github-copilot-admin` | P2 | partial | `agents/github-copilot-admin.md` | 6 |
 | `agents/headless-agent-runtimes` | P2 | partial | `agents/headless-agent-runtimes.md` | 13 |
 | `agents/hybrid-retrieval` | P2 | complete | `agents/hybrid-retrieval.md` | 12 |
 | `agents/mcp-server-lifecycle` | P2 | partial | `agents/mcp-server-lifecycle.md` | 2 |
-| `agents/microsoft-agent-framework` | P2 | partial | `agents/microsoft-agent-framework.md` | 15 |
+| `agents/microsoft-agent-framework` | P2 | partial | `agents/microsoft-agent-framework.md` | 16 |
 | `agents/prompt-injection-design-patterns` | P2 | complete | `agents/prompt-injection-design-patterns.md` | 6 |
 | `agents/security-copilot-endpoint` | P2 | partial | `agents/security-copilot-endpoint.md` | 23 |
 | `agents/windows-agentic-platform` | P2 | complete | `agents/windows-agentic-platform.md`, `agents/windows-ai-policies.csv` | 16 |
@@ -100,7 +100,7 @@ Every topic with its priority (the research order, not importance), status, file
 | `defender/mde-onboarding` | P1 | complete | `defender/mde-onboarding.md` | 23 |
 | `defender/permissions-limits` | P1 | complete | `defender/permissions-limits.md` | 6 |
 | `defender/response-actions-api` | P1 | partial | `defender/response-actions-api.md`, `defender/machine-actions.csv` | 15 |
-| `defender/advanced-hunting` | P2 | complete | `defender/advanced-hunting.md`, `defender/advanced-hunting-tables.csv` | 24 |
+| `defender/advanced-hunting` | P2 | complete | `defender/advanced-hunting.md`, `defender/advanced-hunting-tables.csv` | 25 |
 | `defender/asr-and-antivirus` | P2 | complete | `defender/asr-and-antivirus.md`, `defender/asr-rules.csv` | 16 |
 | `dsc/cli-reference` | P0 | complete | `dsc/cli-reference.md`, `dsc/cli/` | 13 |
 | `dsc/directives` | P0 | complete | `dsc/directives.md` | 11 |
@@ -122,7 +122,7 @@ Every topic with its priority (the research order, not importance), status, file
 | `entra/hybrid-deviceid-objectguid` | P1 | partial | `entra/hybrid-deviceid-objectguid.md` | 7 |
 | `entra/stale-devices` | P1 | complete | `entra/stale-devices.md` | 3 |
 | `entra/pim-and-governance` | P2 | partial | `entra/pim-and-governance.md` | 15 |
-| `gitlab/codeowners` | P0 | complete | `gitlab/codeowners.md` | 3 |
+| `gitlab/codeowners` | P0 | complete | `gitlab/codeowners.md` | 4 |
 | `gitlab/mr-approvals` | P0 | complete | `gitlab/mr-approvals.md` | 7 |
 | `gitlab/pipelines-rules` | P0 | complete | `gitlab/pipelines-rules.md` | 5 |
 | `gitlab/protected-branches-tags` | P0 | complete | `gitlab/protected-branches-tags.md` | 3 |
@@ -150,9 +150,9 @@ Every topic with its priority (the research order, not importance), status, file
 | `intune/remediations` | P1 | partial | `intune/remediations.md` | 3 |
 | `intune/remote-actions` | P1 | complete | `intune/remote-actions.md`, `intune/remote-actions.csv` | 27 |
 | `intune/tenant-attach` | P1 | complete | `intune/tenant-attach.md` | 5 |
-| `intune/app-protection-mam` | P2 | complete | `intune/app-protection-mam.md` | 21 |
+| `intune/app-protection-mam` | P2 | complete | `intune/app-protection-mam.md` | 22 |
 | `intune/certificates-pki` | P2 | partial | `intune/certificates-pki.md`, `intune/certificate-variables.csv` | 11 |
-| `intune/compliance-policies` | P2 | complete | `intune/compliance-policies.md`, `intune/compliance-policies.csv` | 12 |
+| `intune/compliance-policies` | P2 | complete | `intune/compliance-policies.md`, `intune/compliance-policies.csv` | 14 |
 | `intune/configuration-policies` | P2 | partial | `intune/configuration-policies.md` | 19 |
 | `intune/device-inventory-analytics` | P2 | complete | `intune/device-inventory-analytics.md` | 16 |
 | `intune/ios-android-management` | P2 | complete | `intune/ios-android-management.md` | 15 |
@@ -160,9 +160,9 @@ Every topic with its priority (the research order, not importance), status, file
 | `intune/network-profiles` | P2 | partial | `intune/network-profiles.md` | 14 |
 | `intune/platform-scripts` | P2 | complete | `intune/platform-scripts.md` | 6 |
 | `intune/remote-help` | P2 | complete | `intune/remote-help.md`, `intune/remote-help.csv` | 5 |
-| `intune/reports-export-api` | P2 | complete | `intune/reports-export-api.md`, `intune/export-report-names.csv` | 11 |
+| `intune/reports-export-api` | P2 | complete | `intune/reports-export-api.md`, `intune/export-report-names.csv` | 12 |
 | `intune/win32-apps` | P2 | complete | `intune/win32-apps.md`, `intune/win32-apps.csv` | 9 |
-| `intune/linux-management` | P3 | complete | `intune/linux-management.md` | 9 |
+| `intune/linux-management` | P3 | complete | `intune/linux-management.md` | 10 |
 | `logs/ecs-log-fields` | P1 | complete | `logs/ecs-log-fields.md`, `logs/ecs-log.yml` | 2 |
 | `logs/otel-log-data-model` | P1 | complete | `logs/otel-log-data-model.md` | 1 |
 | `logs/otel-log-semconv` | P1 | complete | `logs/otel-log-semconv.md`, `logs/otel-semconv-log-registry.yaml`, `logs/otel-semconv-code-registry.yaml` | 5 |
@@ -257,7 +257,7 @@ Every topic with its priority (the research order, not importance), status, file
 | `windows/gmsa` | P0 | partial | `windows/gmsa.md` | 6 |
 | `windows/openssh-server` | P0 | complete | `windows/openssh-server.md` | 3 |
 | `windows/smart-app-control` | P1 | partial | `windows/smart-app-control.md` | 7 |
-| `windows/app-control` | P2 | complete | `windows/app-control.md`, `windows/app-control.csv` | 13 |
+| `windows/app-control` | P2 | complete | `windows/app-control.md`, `windows/app-control.csv` | 14 |
 | `windows/azure-arc-servers` | P2 | partial | `windows/azure-arc-servers.md`, `windows/azcmagent-config.csv` | 34 |
 | `windows/azure-update-manager` | P2 | complete | `windows/azure-update-manager.md` | 26 |
 | `windows/bitlocker` | P2 | complete | `windows/bitlocker.md`, `windows/bitlocker.csv` | 16 |

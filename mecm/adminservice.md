@@ -52,6 +52,7 @@ Route table: `mecm/adminservice-routes.csv`.
 - Logs: `adminservice.log`, `SMS_REST_PROVIDER.log`, `RESTPROVIDERSetup.log`. The logs cited for tenant attach are `CMGatewayNotification.log` and `AdminService.log`.
 
 ## Examples
+- SNIPPET: query a device by ResourceID and run a CMPivot query on it, over the v1.0 AdminService route; context: ConfigMgr current branch 2603, Kerberos/UseDefaultCredentials; checked: no [DOC S-igpzfey7: `v1.0/Device(<id>)` and `AdminService.RunCMPivot` with body `{"InputQuery": ...}`]
 ```powershell
 # Kerberos (engineer's own identity), on-prem
 Invoke-RestMethod -Uri "https://PL-SRV-0042.corp.example.com/AdminService/v1.0/Device(16777219)" -UseDefaultCredentials

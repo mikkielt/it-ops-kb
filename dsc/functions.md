@@ -32,6 +32,7 @@ files: [dsc/functions-3.3.0.csv]
 See `functions-3.3.0.csv`. Categories: array, cidr, comparison, date, deployment, lambda, logical, numeric, object, resource, string, system.
 
 ## Examples
+- SNIPPET: build a path from an environment variable with the `path` and `envvar` functions; context: dsc 3.0.0+; checked: no [DER S116, S117: `functions-3.3.0.csv` rows for `envvar` and `path`, generated from the 3.3.0 binary's function list]
 ```yaml
 resources:
 - name: PL-LT-00123 temp path

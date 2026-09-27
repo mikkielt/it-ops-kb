@@ -51,7 +51,7 @@ See `sql-views-compliance.csv`. Key views for drift reads:
 | State names | v_StateNames (TopicType 401) | [DOC S-6qn22dge] |
 
 ## Examples
-Documented join (S-6qn22dge), fixture filter added:
+- SNIPPET: Documented join (S-6qn22dge), fixture filter added; context: ConfigMgr current branch 2603 site database; checked: no [DOC S-tnbxhz6o, S-6qn22dge: `v_CICurrentComplianceStatus`/`v_StateNames` join columns CI_ID, ComplianceState/StateID, TopicType 401]
 ```sql
 SELECT s.Netbios_Name0, p.DisplayName, n.StateName
 FROM v_CICurrentComplianceStatus c

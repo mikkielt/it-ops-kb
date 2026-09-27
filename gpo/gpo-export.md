@@ -41,6 +41,7 @@ The reference pages carry ms.date 12/20/2016 in all docsets (2016/2019/2022/2025
 DSC v3 Group Policy (ADMX) adapter: see `gpo/dsc-group-policy-adapter.md` (pointer to dsc/).
 
 ## Examples
+- SNIPPET: export all GPOs as XML and back up one GPO by name; context: GroupPolicy module, RSAT or Windows Server; checked: no [DOC S920, S921: Get-GPOReport `-All`/`-ReportType`/`-Domain`/`-Server`/`-Path` and Backup-GPO `-Name`/`-Path`/`-Comment` parameters]
 ```powershell
 Get-GPOReport -All -ReportType Xml -Domain corp.example.com -Server PL-SRV-0042 -Path C:\gpo\all.xml
 Backup-GPO -Name "Workstation Baseline" -Path \\PL-SRV-0042\GpoBackups -Comment "release-2026.09.24.1"

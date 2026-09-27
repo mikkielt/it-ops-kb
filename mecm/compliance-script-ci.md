@@ -60,7 +60,7 @@ a CI script's output was found. The full list of script data types and the 32-bi
 Learn URL (derived from repo path): https://learn.microsoft.com/intune/configmgr/compliance/deploy-use/create-custom-configuration-items-for-windows-desktop-and-server-computers-managed-with-the-client
 
 ## Examples
-Discovery script (PowerShell, String data type) on `PL-LT-00123`, output compared by a Value rule "Equals Enabled":
+- SNIPPET: Discovery script (PowerShell, String data type) on `PL-LT-00123`, output compared by a Value rule "Equals Enabled"; context: ConfigMgr current branch 2603, PowerShell run with `-NoProfile`; checked: no [DOC S-mmydokhp: a script setting's discovery script "is used to find the value"; PowerShell scripts run with `-NoProfile`]
 ```powershell
 $v = (Get-ItemProperty 'HKLM:\SOFTWARE\Contoso\Agent' -Name State -ErrorAction Stop).State
 Write-Output $v

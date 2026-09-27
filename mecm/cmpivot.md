@@ -62,6 +62,7 @@ Limits: 128 KB per client per query, 100,000 cells in the results, a 1-hour time
 - Version-scoped permission table: see `mecm/rbac.md` and `mecm/rbac-permissions.csv`.
 
 ## Examples
+- SNIPPET: CMPivot queries over Scripts.log, a Windows event log, boot time and one device; context: ConfigMgr current branch 2603, CMPivot console/AdminService; checked: no [DOC S-t5dhva6p, S-sxtmngif, S-v5d6zvne: `CcmLog()`, `WinEvent()`, `OperatingSystem` and `Device` entities/syntax in `cmpivot-entities.csv`]
 ```kusto
 CcmLog('Scripts', 1h)
 WinEvent('Microsoft-Windows-DSC/Operational', 2d) | where LevelDisplayName == 'Error' | summarize count() by Device

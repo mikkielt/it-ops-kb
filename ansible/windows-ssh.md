@@ -31,6 +31,7 @@ Auth: key (no delegation), GSSAPI/Kerberos (delegation possible), password (dele
 See `windows/` for the OpenSSH Server capability name and service (windows agent).
 
 ## Examples
+- SNIPPET: inventory group with SSH connection vars for Windows hosts; context: ansible-core 2.18+, Windows-shipped OpenSSH 7.9.0.0+; checked: no [DOC S933: ansible_connection, ansible_shell_type, ansible_user vars]
 ```ini
 [lab]
 PL-LT-00123.corp.example.com

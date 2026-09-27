@@ -42,6 +42,7 @@ stability **alpha**, Windows only). Full option tables are saved as CSV beside t
 - `otel-filelogreceiver.metadata.yaml`, `otel-windowseventlogreceiver.metadata.yaml`: verbatim, Apache-2.0, © OpenTelemetry Authors.
 
 ## Examples
+- SNIPPET: configure a filelog receiver for CCM logs and a windowseventlog receiver for a DSC channel; context: opentelemetry-collector-contrib v0.161.0; checked: no [DOC S961, S963: filelog `include`/`start_at`/`encoding`/`include_file_path`/`storage` and windowseventlog `channel`/`start_at`/`storage` options]
 ```yaml
 receivers:
   file_log/ccm:

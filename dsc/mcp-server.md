@@ -41,7 +41,7 @@ status: complete
 | show_dsc_schema | no | yes | yes | type (schema type) | true |
 
 ## Examples
-Claude Code project `.mcp.json` entry (stdio). Every invoke tool can change the machine it runs on, and on 3.3.0 no argument makes it a dry run:
+- SNIPPET: Claude Code project `.mcp.json` entry (stdio). Every invoke tool can change the machine it runs on, and on 3.3.0 no argument makes it a dry run; context: dsc 3.3.0 (`server` subcommand, alias `mcp`); checked: syntax [DER S116, S134: 3.3.0 renames `mcp` to `server` with a `mcp` alias]
 ```json
 { "mcpServers": { "dsc": { "command": "dsc", "args": ["server"] } } }
 ```

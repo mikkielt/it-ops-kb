@@ -45,6 +45,7 @@ What-if mode per type, from the saved 3.3.0 manifests (full table in `manifests-
 Adapter and group rows follow from their own manifests. Resources run *through* an adapter take the adapter's set path. [DER S105,S114: `invoke_set` takes the what-if path from the adapter's own manifest (`resource.manifest`), with the adapted resource passed as `target_resource`, plus the adapter manifest flags]
 
 ## Examples
+- SNIPPET: run a config and a single resource set in what-if mode; context: dsc 3.3.0, Microsoft.Windows/Service supports native what-if; checked: no [DER S100, S138: `--what-if`/`-w` flags parsed by args.rs and by the windows_service resource's `parse_what_if_flag`]
 ```powershell
 # Elevated PowerShell on PL-SRV-0042; nothing is changed
 dsc config set --what-if --file .\baseline.dsc.yaml --output-format json

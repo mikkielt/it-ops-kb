@@ -212,7 +212,7 @@ tables are in `defender/advanced-hunting.md`.
   read for this topic. [UNK]
 
 ## Examples
-KQL — mirrors the AMA-fed `SecurityEvent`/`DeviceEvents` cross-source hunting pattern (placeholders only):
+- SNIPPET: KQL — mirrors the AMA-fed `SecurityEvent`/`DeviceEvents` cross-source hunting pattern (placeholders only); context: Sentinel analytics/hunting KQL; checked: no [DOC S-qkyfycn6, S-vicgida6: `imAuthentication` is the Authentication schema's unifying parser]
 ```kusto
 // Failed sign-ins followed by a success, per account, last 24h (ASIM authentication schema)
 imAuthentication
@@ -233,7 +233,7 @@ Onboard a workspace via ARM template snippet — simplified pricing at a 300 GB/
 Set `capacityReservationLevel` to `300` on the paired `Microsoft.OperationalInsights/workspaces` resource for
 tenant `00000000-0000-0000-0000-000000000000`, workspace resource group `rg-PL-SRV-0042`.
 
-Terraform (azurerm provider) — workspace + Sentinel onboarding (placeholders):
+- SNIPPET: Terraform (azurerm provider) — workspace + Sentinel onboarding (placeholders); context: azurerm provider; checked: no [DOC S-5kjwbj3c: `workspace_id` and `customer_managed_key_enabled` arguments]
 ```hcl
 resource "azurerm_log_analytics_workspace" "example" {
   name                = "law-PL-SRV-0042"

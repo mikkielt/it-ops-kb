@@ -75,7 +75,7 @@ the row cited by every phase below.
 - Windows 11 in-place upgrade task sequence specifics (SetupCompletePause timing variable, `_SMSTSOSUpgradeActionReturnCode`) were found in the variable reference but not cross-checked against a dedicated in-place-upgrade walkthrough page. [UNK]
 
 ## Examples
-Read the log path and set a custom variable from a `Run PowerShell Script` step using the `Microsoft.SMS.TSEnvironment` COM object:
+- SNIPPET: Read the log path and set a custom variable from a `Run PowerShell Script` step using the `Microsoft.SMS.TSEnvironment` COM object; context: ConfigMgr current branch, Run PowerShell Script step; checked: no [DOC S-nmfqbv57: `Microsoft.SMS.TSEnvironment` as the way to read/write task sequence variables from a script]
 ```powershell
 # Create an object to access the task sequence environment
 $tsenv = New-Object -ComObject Microsoft.SMS.TSEnvironment
@@ -94,7 +94,7 @@ $tsenv.Value("startTime") = (Get-Date -Format HH:mm:ss) + ".000+000"
 ```
 [DOC S-nmfqbv57]
 
-Set `OSDComputerName` from a placeholder naming scheme (e.g. a `Run PowerShell Script` step earlier in the sequence, output variable disabled since this writes directly):
+- SNIPPET: Set `OSDComputerName` from a placeholder naming scheme (e.g. a `Run PowerShell Script` step earlier in the sequence, output variable disabled since this writes directly); context: ConfigMgr current branch, Run PowerShell Script step; checked: no [DOC S-lydse5ww, S-nmfqbv57: `OSDComputerName` applies to Apply Windows Settings; TSEnvironment sets a variable]
 ```powershell
 $tsenv = New-Object -ComObject Microsoft.SMS.TSEnvironment
 
@@ -103,7 +103,7 @@ $tsenv.Value("OSDComputerName") = "PL-LT-00123"
 ```
 Or, without a script, add a **Set Task Sequence Variable** step: Task Sequence Variable `OSDComputerName`, Value `PL-LT-00123`. [DOC S-lydse5ww, S-nmfqbv57]
 
-Copy smsts.log to a share on failure (error-handler group, `_SMSTSLastActionSucceeded` = `false`), Windows PE branch:
+- SNIPPET: Copy smsts.log to a share on failure (error-handler group, `_SMSTSLastActionSucceeded` = `false`), Windows PE branch; context: ConfigMgr current branch, error-handler group condition `_SMSTSInWinPE` true; checked: no [DOC S-xigzahvp: the `smsswd.exe /run:` copy pattern and WinPE log path]
 ```cmd
 smsswd.exe /run: cmd /c copy x:\windows\temp\smsts.log \\PL-SRV-0042\TSLogs\%_SMSTSClientGuid%-smsts.log
 ```
