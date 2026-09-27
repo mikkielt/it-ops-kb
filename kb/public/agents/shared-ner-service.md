@@ -2,7 +2,7 @@
 topic: agents/shared-ner-service
 priority: P1
 applies_to: "Presidio 2.2.364 (main, data-privacy-stack), Azure AI Language PII detection (Foundry Tools, 2026-08 docs), Amazon Comprehend, Google Sensitive Data Protection, GLiNER ONNX exports"
-retrieved_utc: 2026-09-26
+retrieved_utc: 2026-09-27
 sources: [S2086, S2087, S2088, S2090, S2091, S2092, S2093, S2094, S2095, S2096, S2097, S2098, S2099, S2100, S2101, S2102, S2105, S2106, S2107, S2108, S2111, S2112, S-tks3v5p5, S-g33kybfp, S-gpnrqpjt, S-hocpkynn, S-azdam24d, S-blcom642, S-clgh6hxa]
 status: partial
 ---
@@ -61,6 +61,7 @@ choice (Presidio + spaCy `en_core_web_lg`, in-process) is not itself re-argued h
 - A fully disconnected deployment exists but requires a separate application, an approved commitment
   plan, and a downloaded, time-limited licence file (`DownloadLicense=True`) mounted into the container;
   the licence has an expiration date after which the container stops validating. [DOC S2091]
+- In disconnected mode the container writes usage records to a mounted output volume and reports them at `/records/usage-logs/` (and per month); the commitment plan runs for a calendar year, is charged in full at purchase and cannot be changed during the period, though more units can be bought pro rata. [DOC S2094]
 - Per-call data limit for the synchronous Text PII container API: **5,120 characters per document, up to
   10 documents per call**. [DOC S2091]
 - The cloud (non-container) service limits for PII: synchronous requests take up to 5,120 characters per
@@ -72,6 +73,8 @@ choice (Presidio + spaCy `en_core_web_lg`, in-process) is not itself re-argued h
 - A cloud Text PII behaviour of analyzing only the first 50,000 characters with a warning, and a 10 MB
   document file-size limit, were recorded earlier from a search summary. [UNK: not in S2093 as re-read
   2026-09-27; see `conflicts.md`]
+- The cloud Language service may store data sent in synchronous or asynchronous calls for up to 48 hours (encrypted, reachable only by on-call engineers for catastrophic-failure debugging); the `LoggingOptOut` parameter prevents this and defaults to true for the PII and health endpoints; data stays in the resource's region. [DOC S2106]
+- Synchronous PII detection is stateless: nothing is stored in the account and results, including the input text with PII entities redacted, come back in the response; asynchronous results stay retrievable for 24 hours and are then purged. [DOC S2112]
 - Explicit non-customization note: "Analysis is performed as-is, with no customization to the model used
   on your data" for the cloud PII feature family (text, conversation, document). [DOC S2092]
 - Text PII lists two supported API versions, stable **2026-05-01** (GA) and **2026-05-15-preview**, and marks

@@ -2,7 +2,7 @@
 topic: agents/mcp-stress-testing
 priority: P1
 applies_to: "a self-hosted stdio MCP server for device management (example design: operation/tier/limit table, instance kinds)"
-retrieved_utc: 2026-09-26
+retrieved_utc: 2026-09-27
 sources: [S1883, S1884, S1890, S1891, S1892, S1901, S1902, S1903, S1904, S1905, S1935]
 status: partial
 ---
@@ -17,6 +17,10 @@ tests must run against fixtures/recordings, not a live ConfigMgr/Graph tenant, w
 kind exists to enforce.
 
 ## Facts
+- Tool support for these stress runs: promptfoo's MCP provider calls a server's tools directly against a `command`/`args` (stdio) or `path` target and asserts on each response (contains, valid JSON, which tool was routed to), with assertions set per test case rather than a built-in pass rate. [DOC S1883]
+- garak (NVIDIA, Apache-2.0 per its LICENSE file) probes a configured generator for hallucination, data leakage, prompt injection, misinformation, toxicity and jailbreaks; it ships no MCP client of its own. [DOC S1890, S1891]
+- A garak issue proposing OWASP MCP Top 10 scanning (NVIDIA/garak#1639) was closed on 2026-05-12 without an MCP probe or generator shipping in garak. [COMMUNITY S1903]
+- MCP-specific fuzzers exist only as community projects: `mcp-fuzz` (calls every tool with schema-derived inputs and checks the behaviour against the tool's description and schema), `mcp-server-fuzzer` (stdio, HTTP, SSE, streamable HTTP), `mcp-guard` and `mcpsec` (adversarial and protocol fuzzers). [COMMUNITY S1901, S1902, S1904, S1905]
 - **DER — tool-count scaling**: an example design lists 13 named operations (`device.show` … `change.draft`);
   a stress run should confirm agent behaviour (routing, confirmation) is unchanged as the tool list grows
   toward this ceiling, since Anthropic's tool-authoring guidance calls out namespacing and clear boundaries

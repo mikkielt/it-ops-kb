@@ -2,7 +2,7 @@
 topic: agents/instruction-and-context-limits
 priority: P1
 applies_to: "Copilot Studio, M365 Copilot declarative agent manifest 1.4/1.8, GitHub Copilot, OpenAI Assistants/custom GPTs, Gemini API, Claude Code/Projects/Skills, as published 2026-09-25"
-retrieved_utc: 2026-09-26
+retrieved_utc: 2026-09-27
 sources: [S1840, S1841, S1842, S1843, S1844, S1845, S1846, S1847, S1848, S1849, S1850, S1851, S1852, S1853, S1854, S1855, S1856, S1857, S1859, S1860, S1863, S1864, S1865, S1866, S1867, S1869, S1870, S1960, S-jexpr3gv, S-gwco6fl2, S-etprakdx]
 status: partial
 ---
@@ -32,7 +32,7 @@ a generic 400 on the underlying model call, worded around "exceeds the maximum" 
 - A Microsoft Community Hub question (posted 2025-11-07, read 2026-09-27) reports an 8,000-character limit on agent
   instructions when building an agent with a Microsoft 365 Copilot licence and asks whether a Copilot Studio licence
   has a different limit; the thread has no reply, so whether Copilot Studio differs stays open.
-  [UNK: user report in an unanswered thread (S1841), no Microsoft answer]
+  [COMMUNITY S1841: user report in an unanswered thread, no Microsoft answer]
 - Microsoft's Copilot Studio authoring error-code reference (re-read in full 2026-09-27) lists no
   `OpenAIAdditionalInstructionsLengthExceededLimit` code and no instructions-length code; the nearest size errors are
   `TooMuchDataToHandle` (the request sent to OpenAI exceeds the maximum request size: user input, prior action
@@ -50,6 +50,8 @@ a generic 400 on the underlying model call, worded around "exceeds the maximum" 
   raised — content past the old limit was silently truncated/ignored, not rejected. [DOC S1851, S1852]
   - Best practice from GitHub's own docs after the limit's removal: keep any single instruction file to roughly 1,000
     lines, since response quality can degrade past that size — a guidance line, not an enforced limit. [DOC S1851]
+- A GitHub community question (2025-02-19) asking for the file-size limit of Copilot custom instructions in Visual Studio has no reply (read 2026-09-27), so no community answer fills that gap. [COMMUNITY S1853]
+- Claude API strict tool use: `strict: true` on a tool definition constrains token sampling to the tool's `input_schema` (grammar-constrained sampling), so `input` always matches the schema and `name` is always valid; the schema may use only the JSON Schema subset listed under structured outputs, and a request that sets `strict: true` on the `computer_toolset_20260801` or `browser_toolset_20260801` entry is rejected. [DOC S1869]
 - OpenAI: a community forum thread states that the ChatGPT custom-GPT builder UI caps instructions at 8,000
   characters (against a much larger Assistants API figure); the thread does not say what happens past the cap
   (error, blocked save or truncation). [COMMUNITY S1844]

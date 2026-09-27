@@ -2,7 +2,7 @@
 topic: agents/agent-rbac
 priority: P1
 applies_to: "MCP specification draft (post 2026-07-28), Claude Code 2.1.x, Microsoft Entra Agent ID (public preview, 2026-03 docs), Microsoft Entra role-assignable groups / PIM for Groups"
-retrieved_utc: 2026-09-26
+retrieved_utc: 2026-09-27
 sources: [S707, S740, S742, S1282, S1297, S2040, S2041, S2042, S2045, S2050, S2051, S2052, S2053, S2058]
 status: complete
 ---
@@ -58,6 +58,7 @@ group claims/overage, PIM-for-Groups sync latency).
   it too). In the desktop app's local and SSH sessions `ask` does not reach Claude Code, which applies
   its ordinary permission rules there instead. `/mcp` shows which setting applies to which tool where
   Claude Code fetches the connectors itself. [DOC S740]
+- Account-level controls sit outside the tool rules: a Claude Console admin invites users with the **Claude Code** role (can create only Claude Code API keys) or the **Developer** role (any API key); managed settings `forceLoginMethod` and `forceLoginOrgUUID` make Claude Code reject a claude.ai login to any other organization, but for Console logins `forceLoginOrgUUID` only pre-selects the organization and does not check the resulting credential. [DOC S2041]
 - `managed-settings.json` policy applies "above every other level," with a short, documented list of
   security-sensitive exceptions where a *stricter* lower-level value still counts; it carries
   `allowedMcpServers`/`deniedMcpServers` (by server name or URL pattern), `managedMcpServers`

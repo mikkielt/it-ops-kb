@@ -2,7 +2,7 @@
 topic: agents/own-chatbot-architecture
 priority: P1
 applies_to: "Microsoft 365 Agents SDK (GA), Bot Framework SDK (retiring), Azure AI Foundry Agent Service, docs current 2026-09-25"
-retrieved_utc: 2026-09-26
+retrieved_utc: 2026-09-27
 sources: [S1961, S1964, S1965, S1966, S1967, S1968, S1969, S1970, S1971, S1972, S1974, S1975, S1976, S1977, S1985]
 status: complete
 ---
@@ -99,6 +99,12 @@ status: complete
   Studio's Power-Platform-solution/pipeline model (S1967) — for a team whose change record is a merge
   request with no self-approval and one CI script per trigger, plain source code under git is a strictly
   better fit than a solution-based ALM model. [DER S1967: solution-based ALM vs source code]
+
+- **Billing** → Copilot Studio bills standard-harness agents in Copilot Credits (since 2025-09-01), with usage by Microsoft 365 Copilot-licensed users inside Microsoft 365 Copilot zero-rated. [DOC S1961]
+- **Custom MCP server** → Copilot Studio's own guidance builds one with an MCP SDK from `github.com/modelcontextprotocol`, with optional API-key or OAuth 2.0 authentication. [DOC S1965]
+- **Governance** → Copilot Studio puts MCP connectors under Power Platform data policies like any other connector. [DOC S1974]
+- **SSO on a custom canvas** → Copilot Studio already needs two separate Entra app registrations, a custom scope, a token-exchange URL and MSAL code in the canvas. [DOC S1966]
+- **Channels and surfaces** → Copilot Studio publishes to Teams, Microsoft 365 Copilot, websites, SharePoint and Azure Bot Service channels, can be blocked per channel by admins, and accepts no user attachments on any channel; an agent for Microsoft 365 Copilot is a declarative agent that is not auto-deployed and can be downloaded as a .zip for the Teams or org catalog. [DOC S1977, S1975]
 
 ### Serving both a CLI agent and a Teams front from one MCP server (design tension)
 - Copilot Studio's MCP onboarding wizard (S1964) and Foundry Agent Service's remote-MCP support

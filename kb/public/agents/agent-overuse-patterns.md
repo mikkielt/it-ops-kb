@@ -2,8 +2,8 @@
 topic: agents/agent-overuse-patterns
 priority: P1
 applies_to: "Anthropic/OpenAI/Google/Microsoft agent guidance (2025-2026 docs), Thoughtworks Technology Radar Vol 34 (2026-04), jq 1.8, Renovate (docs 44.115.10), conventional-commits v1.0.0, semantic-release, LSP 3.18, DSC 3.3.0, Presidio (pattern_recognizer.py at commit e9895a51)"
-retrieved_utc: 2026-09-25
-sources: [S2160, S2162, S2163, S2164, S2165, S2166, S2167, S2168, S2169, S2170, S2171, S2172, S2173, S2174, S150, S154, S825, S-2z2zfj3l, S-sxtmngif, S317, S-t5dhva6p, S900, S1920, S1924, S1925, S1935, S1936, S744, S745]
+retrieved_utc: 2026-09-27
+sources: [S2160, S2162, S2163, S2164, S2165, S2166, S2167, S2168, S2169, S2170, S2171, S2172, S2173, S2174, S150, S154, S825, S-2z2zfj3l, S-sxtmngif, S-t5dhva6p, S900, S1920, S1924, S1925, S1935, S1936, S744, S745]
 status: partial
 ---
 
@@ -106,6 +106,8 @@ alongside the deterministic tool that already exists for them.
 - LSP (spec version 3.18) "standardizes the protocol for how [language] servers and development tools
   communicate," giving deterministic go-to-definition/find-references/completion without re-implementing
   per editor-language pair and without a model reasoning over source text. [DOC S2171]
+- Anthropic's Agent Skills post says some operations suit traditional code execution better than a model: sorting a list via token generation is far more expensive than running a sorting algorithm, and many applications need the deterministic reliability only code provides, so a skill can bundle a script for Claude to run. [DOC S1936]
+- The AgentAssay preprint (arXiv 2603.02601, 2026-03-03) says no principled method existed for checking that an agent has not regressed after changes to its prompts, tools, models or orchestration, and proposes statistical regression testing of non-deterministic agent workflows with three-valued verdicts (PASS, FAIL, INCONCLUSIVE) and CI/CD gates as statistical decision procedures. [COMMUNITY S2172]
 - `dsc config test` and ConfigMgr baseline compliance evaluation are deterministic drift-detection
   tools for Windows endpoint management: DSC's `test` operation has a published output schema
   (`schemas/v3/bundled/outputs/{config,resource}/test.json`) [DOC S150, S154 — reused from `dsc/`,

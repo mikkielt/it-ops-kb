@@ -2,7 +2,7 @@
 topic: agents/copilot-studio-inventory
 priority: P1
 applies_to: "Microsoft Copilot Studio (standard harness, GitHub Copilot harness, Copilot chat harness), docs current 2026-09-25"
-retrieved_utc: 2026-09-26
+retrieved_utc: 2026-09-27
 sources: [S1960, S1961, S1962, S1963, S1964, S1965, S1966, S1967, S1972, S1973, S1974, S1975, S1977, S1978, S1979, S1980, S1981, S1982, S1983, S1984]
 status: complete
 files: [agents/copilot-studio-feature-map.csv]
@@ -30,6 +30,8 @@ files: [agents/copilot-studio-feature-map.csv]
 
 ## Facts
 
+- Billing FAQ: publishing needs a Microsoft 365 Copilot licence, or a Copilot Studio User License with credits allocated to the environment or drawn from the tenant pool (trial licences don't qualify); credit usage resets on the first day of each month with no carry-over; a proactive greeting is a billed Copilot Credit even when the user never replies; test-chat messages are not billed; agents built with Copilot Studio for Teams consume no credits. [DOC S1980]
+
 ### Topics, orchestration, instructions
 - Topics are authored on a visual canvas or in a **YAML code editor** (`kind: AdaptiveDialog`,
   nodes, conditions, redirects); YAML nodes can be copy-pasted between topics, but Microsoft warns
@@ -41,6 +43,7 @@ files: [agents/copilot-studio-feature-map.csv]
   active. [DOC S1960, S1983]
 - **Instructions** for a Copilot agent (the quotas page links this to agents for Microsoft 365 Copilot)
   are capped at 8,000 characters. [DOC S1960]
+- Standard-harness topics come as system topics (can be turned off and edited, not created or deleted) and custom topics; classic orchestration picks a topic by its 5 to 10 trigger phrases, generative orchestration by its description. The code editor shows a topic as YAML, but designing a topic entirely in the code editor and pasting complex topics isn't fully supported, and a topic name with a period blocks exporting the solution. [DOC S1982]
 - Up to 1,000 topics/agent in Dataverse environments (250/agent in Dataverse for Teams before
   upgrade); 200 trigger phrases/topic. [DOC S1960]
 
@@ -53,6 +56,7 @@ files: [agents/copilot-studio-feature-map.csv]
   levels per source, 512 MB/file, 4-6 hour sync latency; documents with *confidential*/*highly
   confidential* sensitivity labels or password protection are silently excluded (show "Ready" but
   never answer). [DOC S1960]
+- Custom knowledge sources: a topic with the `OnKnowledgeRequested` trigger (YAML code view only) calls any search endpoint, receives the rewritten `System.SearchQuery` / `System.KeywordSearchQuery`, and returns snippets in `System.SearchResults`; all such topics run at once when knowledge is needed, and at most 15 snippets across all of them feed a generative answer. [DOC S1984]
 - Dataverse: max 2 sources/agent, 15 tables/source, requires maker READ permission on every table.
   [DOC S1960]
 - Salesforce, Confluence, ServiceNow, Zendesk: no limit on article count or article size; 4-6 hour

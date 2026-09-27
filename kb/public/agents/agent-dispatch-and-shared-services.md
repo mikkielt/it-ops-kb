@@ -2,7 +2,7 @@
 topic: agents/agent-dispatch-and-shared-services
 priority: P1
 applies_to: "Copilot Studio connected agents (2026-06-23 docs), Microsoft Agent Framework (BUILD 2026), Claude Code subagents (2026-09 docs), MCP spec 2026-07-28"
-retrieved_utc: 2026-09-26
+retrieved_utc: 2026-09-27
 sources: [S2080, S2081, S2082, S2083, S2084, S2109, S2110, S1920, S1928, S-vqothyeg]
 status: partial
 ---
@@ -30,6 +30,7 @@ topic 9 (`agents-a2a-cache`) covers it; A2A is named below only as one transport
   primary agents), **separation of concerns** (different teams own different agents), and
   **scalability** (add capability by connecting an agent rather than growing one agent's instructions).
   [DOC S2080]
+- Copilot Studio's multi-agent guidance separates inline (child) agents, which share the main agent's context, from connected agents, which have their own orchestration, tools and knowledge and receive the conversation history only when their context-inclusion setting allows it. It advises splitting out an agent only for a distinct domain, different governance or access rules, or reuse across main agents; treating a connected-agent call like any powerful action, since it may be allowed what the parent is not; and logging each invocation so the parent and connected transcripts can be correlated. [DOC S2081]
 - As of the 2026-06-23 Copilot Studio docs, the new agent experience can only connect other agents that
   are themselves built in Copilot Studio — not an arbitrary external service. [DOC S2080]
 - Connected-agent invocation is usage-metered: "usage-based billing applies to using, building, testing,
