@@ -573,6 +573,7 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
 ## security/privacy-compliance
 
 - AI Omnibus political agreement date: privacy-compliance.md:74-76 (COMMUNITY S1558) says provisional agreement 2026-05-06; the Commission page S1557 re-read 2026-09-27 says a political agreement was reached on 7 May 2026 (and entry into force 27 July 2026). (topic: security/privacy-compliance)
+  - Re-read 2026-09-27, still open: the Commission press release IP/26/1024 (S-tzbutlvs, published 2026-05-07 07:59 CEST) says the agreement was "reached today"; the Council release (dated 2026-05-07 in its url, a search snippet says 6 May) could not be read past its browser check. The article now leads with the Commission's date and keeps S1558's 6 May as COMMUNITY. (topic: security/privacy-compliance)
 
 ## windows/azure-arc-servers
 

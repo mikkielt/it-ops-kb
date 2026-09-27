@@ -3,8 +3,8 @@ topic: security/ai-agent-guidelines
 priority: P2
 applies_to: "OWASP GenAI 2025-2026 lists; NIST AI RMF 1.0 / AI 600-1; MITRE ATLAS; ISO/IEC 42001:2023; Claude Code / MCP current; a tool-using agent with a tiered confirm gate, a model boundary and an audit table"
 retrieved_utc: 2026-09-27
-sources: [S-s3hkw2h4, S761, S762, S763, S764, S765, S1540, S1541, S1542, S-vtejnyyv, S-fr4o3437, S1862, S1547, S1548, S-rfm4qs32, S1480, S-uvrn2v43]
-status: partial
+sources: [S-s3hkw2h4, S761, S762, S763, S764, S765, S1540, S1541, S1542, S-vtejnyyv, S-fr4o3437, S1862, S1547, S1548, S-rfm4qs32, S1480, S-uvrn2v43, S-txcdv36f, S-ipluqqp5, S-m6uptfmu]
+status: complete
 ---
 
 # AI-agent and MCP security guidelines, mapped to representative controls
@@ -23,10 +23,15 @@ allowlist.
 - OWASP announced a 2026 Top 10 for LLM Applications on 2026-09-01 (resource page dated 2026-08-03); the mapping below still uses the 2025 LLM ids. [DOC S765, S764]
 - NIST released the AI RMF (1.0) on 2023-01-26, for voluntary use; NIST also publishes a companion Playbook, Roadmap and Crosswalk. [DOC S1541]
 - The AI RMF Core has four functions: GOVERN, MAP, MEASURE and MANAGE, each broken into categories and subcategories. [DOC S-uvrn2v43]
-- AI RMF 1.0 is public domain as a US government work. [UNK: not in S1541 as re-read 2026-09-27]
+- NIST has no AI RMF profile for AI agents: its AI RMF page (read 2026-09-27) lists the Generative AI Profile (AI 600-1, 2024-07-26) and a concept note for a Critical Infrastructure profile (2026-04-07). Agent work sits in the separate AI Agent Standards Initiative (CAISI, launched 2026-02-17): industry-led standards, open agent protocols, and research on agent authentication and identity, with an RFI on AI agent security and an NCCoE draft concept paper on software and AI agent identity and authorization. [DOC S1541, S-m6uptfmu]
+- NIST treats information on its sites as public information that may be distributed or copied, except material marked as copyrighted; the AI RMF 1.0 PDF (NIST AI 100-1) carries no copyright mark, only "available free of charge" from its DOI. [DOC S-ipluqqp5, S-uvrn2v43]
+- So AI RMF text can be quoted and copied with attribution; as a work of US federal employees it is also outside US copyright (17 U.S.C. 105). [DER S-ipluqqp5, S-uvrn2v43: NIST public-information statement applied to an unmarked NIST publication]
 - NIST AI 600-1 (Generative AI Profile) was published July 2024 and lists suggested actions under the RMF functions, each with an Action ID such as `GV-1.1-001`. They include policies that define roles for human-AI configurations and oversight of AI systems (GOVERN 3.2), and procedures for GAI incident response and recovery (e.g. `GV-2.1-002`, `MG-2.3-001`). The profile also notes that GAI use may warrant additional human review, tracking and documentation. [DOC S1542]
 - NIST AI 600-1 actions relevant to a tool-using agent operating on production systems: restrict and monitor tool/plugin access granted to the model, log agent actions and their outcomes, apply least-privilege to any credentials the agent can reach, and require human review before consequential actions. [DER S1542: read against a generic tier/confirm design]
 - MITRE ATLAS catalogs adversarial-ML and AI-system tactics/techniques (its own matrix, `ATLAS-matrix`, separate from enterprise ATT&CK, which its tooling only merges into an optional combined STIX bundle); MITRE publishes the data monthly (content version `YYYY.MM`, `2026.09` on 2026-09-27) under Apache-2.0, so reuse must keep MITRE's notices. [DOC S-vtejnyyv]
+- ATLAS 2026.09 techniques that fit a tool-using agent (208 techniques in all): AML.T0051 LLM Prompt Injection, AML.T0053 AI Agent Tool Invocation, AML.T0080 AI Agent Context Poisoning, AML.T0083 Credentials from AI Agent Configuration, AML.T0084 Discover AI Agent Configuration, AML.T0086 Exfiltration via AI Agent Tool Invocation, AML.T0098 AI Agent Tool Credential Harvesting, AML.T0101 Data Destruction via AI Agent Tool Invocation, AML.T0110 AI Agent Tool Poisoning. [DOC S-txcdv36f]
+- ATLAS mitigations for agents (40 in all): AML.M0024 AI Telemetry Logging, AML.M0026 Privileged AI Agent Permissions Configuration, AML.M0027 Single-User AI Agent Permissions Configuration, AML.M0028 AI Agent Tools Permissions Configuration, AML.M0029 Human In-the-Loop for AI Agent Actions, AML.M0030 Restrict AI Agent Tool Invocation on Untrusted Data, AML.M0032 Segmentation of AI Agent Components, AML.M0033 Input and Output Validation for AI Agent Components, AML.M0037 AI Agent Authority Expansion Controls, AML.M0038 AI Agent Scope Drift Detection. [DOC S-txcdv36f]
+- A tiered confirm gate maps to AML.M0029, a model boundary and per-tool allowlist to AML.M0028 and AML.M0030, and the audit table to AML.M0024. [DER S-txcdv36f: mitigation names read against the tier, boundary and audit design]
 - ISO/IEC 42001:2023 ("Information technology — Artificial intelligence — Management system", published 2023-12-18, 51 pages, ISO/IEC JTC 1/SC 42) specifies requirements and guidance for an AI management system in any organization that provides or uses AI systems; ISO's public catalogue record carries only metadata and this scope, not the text. [DOC S-fr4o3437]
 - Because ISO/IEC 42001:2023 is a requirements standard for a management system, an organization can be certified against it. [DER S-fr4o3437: "specifies the requirements" in the catalogue scope]
 - Microsoft's Zero Trust guidance for securely adopting AI says AI agents and applications should use managed, secure identities with least-privilege access and comprehensive logging. It also says to classify and label sensitive data so AI models do not ingest or expose it, to extend DLP to AI applications and agents, and to extend security monitoring to AI workloads and agents. [DOC S-rfm4qs32]
@@ -56,7 +61,7 @@ agent accounts, agent workspace isolation, MCP-server containment via the on-dev
 | NIST AI 600-1 | logging of agent actions | audit table (long retention) | DER |
 | OWASP MCP Top 10 (beta) | MCP07, MCP09 | engineer identity + MCP-server allowlist | DER |
 | OWASP LLM/Agentic 2025-2026 | LLM02, LLM06, ASI02, ASI03 | pseudonymization model boundary, tier table | DER |
-| MITRE ATLAS | (catalog, not itemized here) | out of scope for a tool with no model training/serving | DER |
+| MITRE ATLAS | agent techniques (AML.T0051, T0053, T0086, T0101, T0110, ...) and mitigations (AML.M0024, M0028-M0030) | agent-side techniques apply; model training/serving ones do not | DOC/DER |
 | ISO/IEC 42001 | management-system scope | not adopted; noted for future evidence mapping only | UNK |
 
 ## Examples

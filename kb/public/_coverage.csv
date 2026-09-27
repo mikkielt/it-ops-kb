@@ -237,9 +237,9 @@ security/logging-monitoring,P1,complete,security/logging-monitoring.md,15
 security/management-plane-hardening,P1,complete,security/management-plane-hardening.md,17
 security/script-and-code-signing,P1,complete,security/script-and-code-signing.md,13
 security/supply-chain,P1,complete,security/supply-chain.md,26
-security/ai-agent-guidelines,P2,partial,security/ai-agent-guidelines.md,17
-security/framework-control-map,P2,partial,security/framework-control-map.md;security/framework-control-map.csv,6
-security/privacy-compliance,P2,partial,security/privacy-compliance.md,14
+security/ai-agent-guidelines,P2,complete,security/ai-agent-guidelines.md,20
+security/framework-control-map,P2,complete,security/framework-control-map.md;security/framework-control-map.csv,7
+security/privacy-compliance,P2,complete,security/privacy-compliance.md,20
 security/threat-model-inputs,P2,complete,security/threat-model-inputs.md;security/artifacts/mitre/attack-subset.csv;security/artifacts/mitre/attack-subset.md,12
 security/vulnerability-prioritization,P2,complete,security/vulnerability-prioritization.md;security/vuln-data-apis.csv,18
 sqlserver/insert-only-audit,P0,partial,sqlserver/insert-only-audit.md,5

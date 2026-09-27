@@ -203,6 +203,7 @@ Remaining gaps:
   opposed to pseudonymisation and identifiability generally, already covered in
   `privacy/gdpr-pseudonymisation.md`) was found in any EDPB or Microsoft/AWS/Google compliance page
   fetched this session. [UNK — `_answers.md` QG31]
+  - Resolved 2026-09-27: EDPB Guidelines 07/2020 v2.0 (S-zg4p62eo): a processor must be a separate entity, a department cannot be a processor to another department of the same entity; added to `security/privacy-compliance.md` with the DER for an internal shared endpoint. (topic: security/privacy-compliance)
 - No published numeric trigger (consumer count, detection-gap percentage, or maintenance-hour figure) for
   when to centralize a shared NER service was found from any vendor or community source. [UNK —
   `_answers.md` QG32] (topic: agents/shared-ner-service)
@@ -649,23 +650,28 @@ Still open: (topic: auth/configmgr-rbac-auth)
 - PyPI Trusted Publishing's self-managed-GitLab support status is unresolved: the official `docs.pypi.org` page (S1509) does not list self-managed GitLab as supported, while a third-party (Socket) report (S1510, COMMUNITY) claims PyPI expanded support to self-managed GitLab. Recorded as a conflict-worthy discrepancy in `security/supply-chain.md` rather than asserted either way as `DOC`.
   - Resolved 2026-09-27: PyPI's own blog (S-5ry5zerr) confirms a hand-onboarded beta for GitLab Self-Managed and Warehouse supports custom GitLab issuers (CODE S-5t26tmbz); the user docs still lag (see _conflicts.md). (topic: security/supply-chain)
 - NIST AI RMF "Agentic Profile" (if any, beyond the Generative AI Profile SP 800-218A/AI 600-1) was not found on nist.gov directly; a third-party (Cloud Security Alliance) reference to such a profile was not treated as authoritative and is not cited. (topic: security/framework-control-map)
+  - Resolved 2026-09-27 (negative): NIST's AI RMF page (S1541) lists only the GenAI profile and a Critical Infrastructure profile concept note (2026-04-07); agent work is the CAISI AI Agent Standards Initiative (S-m6uptfmu). Recorded in `security/ai-agent-guidelines.md`. (topic: security/framework-control-map)
 
 ### C: frameworks, regulation, AI
 
 - ISO/IEC 42001:2023 and ISO/IEC 27001:2022/27002:2022 full clause text is paid; only public metadata (numbers,
   titles) was captured. `Verification: obtain ISO/IEC 27001:2022, 27002:2022 and 42001:2023 full text under
   organisational licence if clause-level detail beyond Annex A numbers/titles is needed.` (topic: security/framework-control-map)
+  - Tried 2026-09-27, still open: iso.org returns 403 to scripted requests and Claude in Chrome did not respond; the csv titles are now labelled own-words (DER) instead of UNK. (topic: security/framework-control-map)
 - MITRE ATLAS technique-level detail (specific technique ids/mitigations for tool-using agents) was not
   enumerated; only the catalog's existence and licensing note were captured. Three-attempt budget on ATLAS
   technique enumeration was not exhausted, but time was allocated to higher-priority QS10-QS14 items first. (topic: security/ai-agent-guidelines)
+  - Resolved 2026-09-27: agent techniques and mitigations read from ATLAS-2026.09.yaml at commit 3259f38 (S-txcdv36f) and added to the article. (topic: security/ai-agent-guidelines)
 - (Resolved 2026-09-24) MITRE ATT&CK mitigation (M-id) and detection-strategy (DET-id) values for
   T1072/T1484/T1098/T1558/T1078/T1219/T1562 are now extracted from the pinned v19.2 STIX bundle into
   `security/artifacts/mitre/attack-subset.csv` and summarized in `threat-model-inputs.md` and QS15. (topic: security/threat-model-inputs)
 - UODO's DPIA list (S-5jbvhlmx; M.P. 2019 poz. 666, communication of 2019-06-17) is in Polish; only the fact that such a list exists and its URL were captured, not a
   translated enumeration of its entries. (topic: security/privacy-compliance)
+  - Resolved 2026-09-27: the list was read in the Monitor Polski PDF (S-k3lipqns); its 12 criteria and the workplace-monitoring example are now in the article. (topic: security/privacy-compliance)
 - Whether a given device-log/AI-processing system's specific processing meets two or more EDPB DPIA criteria, and
   whether its use case falls under EU AI Act Annex III, are open questions this research pass deliberately left as
   facts-only / UNK, per the brief's instruction not to decide policy questions. (topic: security/privacy-compliance)
+  - Partly resolved 2026-09-27: the Commission's AI system definition guidelines (S-twztbg3z) now back the split between rule-based tooling and the model (DER); Annex III and the DPIA count stay per-deployment questions by design. (topic: security/privacy-compliance)
 
 
 ## agents/doc-lookup-sources

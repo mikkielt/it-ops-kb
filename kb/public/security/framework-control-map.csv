@@ -10,8 +10,8 @@ ISO/IEC 27001:2022 Annex A,8.32,Change management,merge-request review before a 
 NIST CSF 2.0,GV.OC-01,Organizational mission informs cybersecurity risk management,a written scope statement for the tool [DER],S-riwffp3c
 NIST CSF 2.0,PR.AA-05,Access permissions incorporate least privilege,role-based access control + a tier table [DER],S-riwffp3c
 NIST CSF 2.0,PR.PS-01,Configuration management practices established,configuration-as-code documents + merge-request review [DER],S-riwffp3c
-NIST CSF 2.0,DE.CM-01,Networks and network services monitored,out of scope for a CLI/stdio-only tool with no service/network component [UNK],S-riwffp3c
-NIST CSF 2.0,RS.MA-01,Incident response plan executed,not yet defined; gap [UNK],S-riwffp3c
+NIST CSF 2.0,DE.CM-01,Networks and network services monitored,out of scope for a CLI/stdio-only tool with no service/network component [DER],S-riwffp3c
+NIST CSF 2.0,RS.MA-01,Incident response plan executed,no incident response plan defined for the tool yet; a gap to close [DER],S-riwffp3c
 CIS Controls v8.1,4.1,keep a documented process for configuring systems securely,configuration-as-code documents as the configuration process [DER],S1563
 CIS Controls v8.1,5.4,use separate accounts for admin work,privileged-access-workstation guidance referenced in management-plane-hardening.md (part B) [DER],S1563
 CIS Controls v8.1,6.8,keep role-based access control defined and current,platform RBAC + identity-provider group targets [DER],S1563
