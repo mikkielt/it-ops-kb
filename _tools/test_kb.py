@@ -19,7 +19,7 @@ import csv, functools, glob, json, os, re, subprocess, sys
 import pytest
 
 import kb_hook, kbfacts, kbid
-from conftest import KB, TOOLS
+from conftest import KB, TOOLS, copy_kb
 
 LINT = os.path.join(KB, ".claude", "skills", "kb-verify", "lint.py")
 BASELINE = os.path.join(TOOLS, "lint_baseline.txt")
@@ -118,6 +118,14 @@ class TestToolChecks:
     def test_check_py_passes(self):
         code, out = run(os.path.join(TOOLS, "check.py"))
         assert code == 0, out[-3000:]
+
+    def test_check_py_reads_a_tag_wrapped_after_its_kind(self, tmp_path):
+        # `[DOC\n  S-id]` (a fact wrapped by the editor) must still be checked for unknown ids
+        d = copy_kb(str(tmp_path / "kb"))
+        with open(os.path.join(d, "auth", "kerberos.md"), "a", encoding="utf-8") as f:
+            f.write("\n- A wrapped fact. [DOC\n  S-zzzzzzzz]\n")
+        p = subprocess.run([sys.executable, os.path.join(d, "_tools", "check.py")], capture_output=True, text=True, timeout=120)
+        assert "auth/kerberos.md cites unknown source S-zzzzzzzz" in p.stdout, p.stdout[-2000:]
 
     def test_pinned_artifacts_match(self):
         code, out = run(os.path.join(TOOLS, "fetch.py"), "--offline")

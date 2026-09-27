@@ -84,7 +84,7 @@ for p in glob.glob(os.path.join(KB, "**", "*.md"), recursive=True):
     except (OSError, UnicodeDecodeError) as e:
         errors.append(f"{rel} is unreadable: {e}")
         continue
-    for tag in re.findall(r"\[(?:DOC|DER|COMMUNITY) ([^\]]+)\]", text):
+    for tag in re.findall(r"\[(?:DOC|DER|COMMUNITY)\s([^\]]+)\]", text):  # \s: a tag may wrap after DOC
         for sid in kbid.ANY_ID.findall(tag):
             cited += 1
             if sid not in known:
