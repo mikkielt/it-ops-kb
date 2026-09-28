@@ -159,7 +159,7 @@ Every row has `id` (a fresh UUID), `ts` (UTC, milliseconds) and `surface`; a hoo
 - **The lock uses no `fcntl`**, which is Unix only: an `O_EXCL` file (or an `os.mkdir` directory) holding the owner's PID and start time, stale after `LOCK_STALE_S`, never checked by signalling the PID (`python/stdlib-windows-portability.md`, DOC S-oavxfpsn, S-ew7mucsg).
 - **The `SessionEnd` launcher detaches** with `start_new_session=True` on POSIX and `creationflags=DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP` on Windows, with stdin, stdout and stderr redirected (`python/stdlib-windows-portability.md`, DOC S-dabwnzz5). Whether Claude Code's hook process on Windows sits in a job object that ends the child is undocumented; the launcher's Windows test decides.
 - **Files and processes:** every file is opened with `encoding="utf-8"` (and `newline="\n"` when writing), paths go through `pathlib`, and subprocesses take argument lists, never `shell=True`.
-- **Tested on Linux and Windows in CI**, macOS on the maintainer's machine. The Windows job runs only when the tools, hooks, plugin, CI file or lock change, since its minutes count against the Free quota (`gitlab/hosted-runners-windows.md`, DOC S-lfuz2ssn; `kb/_self/git.md`).
+- **Tested on Linux in CI on every push, on Windows in CI on demand**, macOS on the maintainer's machine. The Windows job is manual, offered when the tools, hooks, plugin, CI file or lock change, since its minutes count against the Free quota (`gitlab/hosted-runners-windows.md`, DOC S-lfuz2ssn); the maintainer runs it before an item is closed (`kb/_self/git.md`).
 
 ## Reporting
 

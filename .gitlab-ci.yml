@@ -53,8 +53,11 @@ kb-tests-floor:
 # The same tests on Windows: GitLab.com's hosted Windows runner (beta, every tier, cost factor 1 against the Free
 # quota; kb/public/gitlab/hosted-runners-windows.md). A fresh Windows Server 2022 VM per job, PowerShell, no image:
 # its preinstalled `python` installs uv, and uv the pinned CPython; MinGit's own sh goes on PATH last, as Git Bash
-# would have it, so the launcher tests run too. Only when the tools, hooks or CI change (every push of kb content
-# alone would spend the monthly minutes); a new branch always runs it.
+# would have it, so the launcher tests run too. Manual only (every Windows minute counts against the Free quota): the play
+# button appears on a branch pipeline when the tools, hooks, plugin, CI file or lock changed (a new branch always
+# offers it), and the maintainer starts it before closing work that touches them. `when: manual` inside `rules` makes
+# a blocking manual job by default (allow_failure false, the pipeline shows blocked); allow_failure true makes it
+# optional, so an unrun or failed run never blocks the pipeline or turns it red (docs.gitlab.com/ci/jobs/job_control).
 kb-tests-windows:
   stage: test
   tags: [saas-windows-medium-amd64]
@@ -71,7 +74,8 @@ kb-tests-windows:
       python _tools/tests.py
       if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
   rules:
-    - changes:
+    - if: $CI_COMMIT_BRANCH
+      changes:
         - _tools/**/*
         - .claude/**/*
         - .claude-plugin/**/*
@@ -79,6 +83,8 @@ kb-tests-windows:
         - .gitlab-ci.yml
         - pyproject.toml
         - uv.lock
+      when: manual
+      allow_failure: true
 
 tool-stress:
   stage: test
