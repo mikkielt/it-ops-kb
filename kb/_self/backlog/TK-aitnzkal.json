@@ -1,0 +1,35 @@
+{
+  "id": "TK-aitnzkal",
+  "kind": "task",
+  "title": "stdio and HTTP answer the same, against one contract",
+  "status": "todo",
+  "parent": "ST-z6fw4er5",
+  "priority": "P2",
+  "rank": 3,
+  "goal": "A test sends the same initialize, tools/list and tools/call messages for kb_pack, kb_search and kb_show to kb_mcp.py over stdio and to kb_http.py over POST /mcp, finds the JSON-RPC results identical, and checks the HTTP answers against _tools/fixtures/kb_mcp_contract.json, so both paths to Copilot Studio (direct, and through a host MCP server) serve one contract",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "kb_http_parity"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "embed_contract"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/test_kb_http.py"
+  ],
+  "depends_on": [
+    "TK-65xwwvdb",
+    "TK-eo5jmjbd"
+  ]
+}

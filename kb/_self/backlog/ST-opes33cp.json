@@ -1,0 +1,59 @@
+{
+  "id": "ST-opes33cp",
+  "kind": "story",
+  "title": "The kb covers Copilot Studio as a remote MCP client",
+  "status": "draft",
+  "parent": "EP-5sc7hr36",
+  "priority": "P2",
+  "rank": 3,
+  "goal": "kb/public answers with cited DOC facts how Copilot Studio reaches a self-hosted MCP server: its network path (public endpoint, Power Platform outbound addresses or service tags, whether a custom MCP connector can use a virtual network or the on-premises data gateway), the MCP protocol versions and features its client uses (sessions, server instructions, tool annotations, content types), and the custom connector's x-ms-agentic-protocol definition",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/rag.py",
+        "pack",
+        "Power Platform outbound IP addresses service tags Copilot Studio connector"
+      ],
+      "exit": 0,
+      "match": "coverage: good"
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/rag.py",
+        "pack",
+        "Copilot Studio MCP custom connector virtual network on-premises data gateway"
+      ],
+      "exit": 0,
+      "match": "coverage: good"
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/rag.py",
+        "pack",
+        "Copilot Studio MCP client protocol version sessions server instructions"
+      ],
+      "exit": 0,
+      "match": "coverage: good"
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/rag.py",
+        "pack",
+        "Copilot Studio custom connector x-ms-agentic-protocol mcp-streamable-1.0"
+      ],
+      "exit": 0,
+      "match": "coverage: good"
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/rag.py",
+        "eval"
+      ]
+    }
+  ]
+}

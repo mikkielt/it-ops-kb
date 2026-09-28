@@ -1,0 +1,24 @@
+{
+  "id": "TK-22ebw2ow",
+  "kind": "task",
+  "title": "kb_http.py refuses a bad Origin, a public bind and oversized bodies",
+  "status": "todo",
+  "parent": "ST-z6fw4er5",
+  "priority": "P2",
+  "rank": 1,
+  "goal": "kb_http.py answers 403 to a request whose Origin header is present and not in --allow-origin, refuses to start on a non-loopback address unless --bind-any is given, and answers 413 to a body over its size cap and 415 to a non-JSON content type; each refusal has a test with a planted failure",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "kb_http_guard"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kb_http.py",
+    "_tools/test_kb_http.py"
+  ]
+}

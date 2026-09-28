@@ -1,0 +1,38 @@
+{
+  "id": "TK-m4dvkqhc",
+  "kind": "task",
+  "title": "Write kb/_self/embedding.md, the contract for a host MCP server",
+  "status": "todo",
+  "parent": "ST-2zvzr6gr",
+  "priority": "P2",
+  "rank": 2,
+  "goal": "kb/_self/embedding.md tells a host MCP server how to embed the kb: the spawn command and working directory, KB_INDEX and KB_ROOTS, --roots with kb/public as the default for an audience outside the team, re-exposing kb_pack, kb_search and kb_show with a kb_ prefix, copying the kb's instructions and none rule into the host's tool descriptions, restarting on a census tag, and the contract test; map.csv maps kb_mcp.py and the fixture to it, and plugin.md and tools.md point to it",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/selfdoc.py",
+        "check"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "selfdoc"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/embedding.md",
+    "kb/_self/map.csv",
+    "kb/_self/plugin.md",
+    "kb/_self/tools.md",
+    "kb/_self/README.md"
+  ],
+  "depends_on": [
+    "TK-ux5ufed5",
+    "TK-eo5jmjbd"
+  ]
+}
