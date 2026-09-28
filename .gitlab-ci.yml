@@ -1,10 +1,9 @@
-# Minimal CI for it-ops-kb: documentation cohesion, leak detection and KB-* commit trailers. The tools are stdlib
-# Python; the tests run with pytest and pytest-xdist, which uv installs from uv.lock (pyproject.toml's dev group).
-# Direct-push model: people and the query log's automatic commits push to main (after `kbgit.py sync --push`, which
-# runs the same gate locally). The one merge request is the query log's conflict MR: a `querylog/<run-id>` branch pushed
-# with merge-request push options when sync cannot resolve a conflict (kb/_self/querylog.md), never auto-merged; its
-# branch pipeline runs through the branch rule below. CI is the safety net: a pipeline on every branch push and on
-# every tag. No job writes to the repository.
+# CI for it-ops-kb: the tests (Python 3.14, the 3.11 floor, Windows), the stress suite and KB-* commit trailers. The
+# tools are stdlib Python; the tests run with pytest and pytest-xdist, which uv installs from uv.lock (pyproject.toml's
+# dev group). A pipeline is created for every branch push and every tag; the query log's conflict MR (a
+# `querylog/<run-id>` branch, kb/_self/querylog.md) runs through the branch rule. Every job is manual: `when: manual`
+# with `allow_failure: true` in its rules, since a manual job in `rules` otherwise blocks the pipeline
+# (docs.gitlab.com/ci/jobs/job_control). No job writes to the repository.
 workflow:
   rules:
     - if: $CI_COMMIT_BRANCH
@@ -36,6 +35,9 @@ kb-tests:
     - git config --global --add safe.directory "$CI_PROJECT_DIR"
     - pip install --quiet uv
     - python3 _tools/tests.py
+  rules:
+    - when: manual
+      allow_failure: true
 
 # The tools' floor (pyproject.toml requires-python >=3.11): the same tests on the image's Python 3.11 instead of the
 # 3.14 pinned in .python-version (UV_PYTHON takes precedence over it), without the git scenarios.
@@ -49,15 +51,13 @@ kb-tests-floor:
     - git config --global --add safe.directory "$CI_PROJECT_DIR"
     - pip install --quiet uv
     - python3 _tools/tests.py
+  rules:
+    - when: manual
+      allow_failure: true
 
-# The same tests on Windows: GitLab.com's hosted Windows runner (beta, every tier, cost factor 1 against the Free
-# quota; kb/public/gitlab/hosted-runners-windows.md). A fresh Windows Server 2022 VM per job, PowerShell, no image:
-# its preinstalled `python` installs uv, and uv the pinned CPython; MinGit's own sh goes on PATH last, as Git Bash
-# would have it, so the launcher tests run too. Manual only (every Windows minute counts against the Free quota): the play
-# button appears on a branch pipeline when the tools, hooks, plugin, CI file or lock changed (a new branch always
-# offers it), and the maintainer starts it before closing work that touches them. `when: manual` inside `rules` makes
-# a blocking manual job by default (allow_failure false, the pipeline shows blocked); allow_failure true makes it
-# optional, so an unrun or failed run never blocks the pipeline or turns it red (docs.gitlab.com/ci/jobs/job_control).
+# The same tests on Windows: GitLab.com's hosted Windows runner (kb/public/gitlab/hosted-runners-windows.md). A fresh
+# Windows Server 2022 VM per job, PowerShell, no image: its preinstalled `python` installs uv, and uv the pinned
+# CPython; MinGit's own sh goes on PATH last, as Git Bash would have it, so the launcher tests run too.
 kb-tests-windows:
   stage: test
   tags: [saas-windows-medium-amd64]
@@ -95,6 +95,8 @@ tool-stress:
     - changes:
         - _tools/**/*
         - .claude/skills/**/*.py
+      when: manual
+      allow_failure: true
 
 # KB-* commit trailers (kbgit.py check-trailers) on the pushed commits: CI_COMMIT_BEFORE_SHA..CI_COMMIT_SHA, or only
 # CI_COMMIT_SHA for a new branch (before sha all zeros). Needs git, which python:3.14-slim lacks: the full python:3.14
@@ -109,3 +111,5 @@ kb-trailers:
     - python3 _tools/kbgit.py check-trailers
   rules:
     - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH
+      when: manual
+      allow_failure: true

@@ -12,7 +12,7 @@ Every kb lookup leaves a redacted, judged record in the repository (`kb/_querylo
 - nothing outside its constraints changed.
 
 The shared minimum for every item:
-- the gate in `kb/_self/maintaining.md` passes, locally and in CI on Linux, and the manual Windows CI job (`kb/_self/git.md`), which the maintainer starts before the item is closed, passes too;
+- the gate in `kb/_self/maintaining.md` passes, and the tests pass on Linux and Windows;
 - every new gate has a test with a planted failure that makes it fail;
 - no new dependency;
 - portability: every file read or written passes `encoding="utf-8"` (and `newline="\n"` when writing), paths go through `pathlib`, and subprocesses take argument lists (never `shell=True` or a command string);
@@ -72,7 +72,7 @@ Kb facts the build rests on: `claude/hooks.md` (async hooks, `prompt_id`, `Stop`
   - Hooks call one Python entry point that finds the interpreter on each OS (`python3`, `python` or `py -3`).
   - The per-machine lock uses no `fcntl` (atomic `mkdir` or an `O_EXCL` file with a stale-PID check).
   - The `SessionEnd` launcher detaches with `start_new_session` on POSIX and `DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP` on Windows.
-  - CI tests on Linux on every push and on Windows in a manual job the maintainer starts; macOS is tested on the maintainer's machine.
+  - The tests pass on Linux, Windows and macOS.
 - Reporting: a weekly digest from the committed store; `git log --format='%h %(trailers:key=KB-Auto,valueonly)'` is the audit trail.
 
 **GitLab project state** (read with `glab api`; `glab` is signed in as the project Owner on the maintainer's machine):
@@ -80,7 +80,7 @@ Kb facts the build rests on: `claude/hooks.md` (async hooks, `prompt_id`, `Stop`
 - merge method `merge`; **Pipelines must succeed** is off; remove source branch after merge is on;
 - `main` is protected, with push and merge for Maintainers;
 - **Allow Git push requests to the repository** is off (no CI job pushes);
-- `.gitlab-ci.yml` runs branch and tag pipelines only (a direct-push model), which fits this design unchanged; the Windows job is manual, so it never holds up an automatic push.
+- `.gitlab-ci.yml` runs branch and tag pipelines only (a direct-push model), which fits this design unchanged.
 
 4. **Distill and the store** (`querylog.py distill`, `kb/_querylog/`, mode `local`).
 
