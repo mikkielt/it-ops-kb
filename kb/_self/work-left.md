@@ -82,18 +82,6 @@ Kb facts the build rests on: `claude/hooks.md` (async hooks, `prompt_id`, `Stop`
 - **Allow Git push requests to the repository** is off (no CI job pushes);
 - `.gitlab-ci.yml` runs branch and tag pipelines only (a direct-push model), which fits this design unchanged.
 
-4. **Distill and the store** (`querylog.py distill`, `kb/_querylog/`, mode `local`).
-
-   Done:
-   - a fixture spool plus a recorded Haiku response file gives a golden run file (a header with run id, pipeline and retrieval versions and kb commit; entries without them);
-   - a doubtful entry is dropped and only counted; over the caps, entries wait;
-   - a second distill on the same machine exits on the lock, on all three OSes;
-   - the `SessionEnd` launcher returns within the 1.5-second budget, and the child outlives the session on POSIX and Windows;
-   - `SessionStart` picks up only closed sessions.
-
-   Store gates, each with its planted failure: a duplicate id across run files (`kbgit.py fix --check`); a missing header or provenance field; an identifier in a run file; a fetch entry with a query string, a non-public host or command text. `pack` and `search` never return a `kb/_querylog/` line.
-
-   Check: the distill tests and the gate. Unchanged: nothing raw is committed; `_cache/` stays ignored.
 5. **Learn** (`querylog.py learn`). Done: every judged miss is re-run on `HEAD` first (`fixed-since` when it now passes); fixtures give findings of each kind; source findings read the registry and the routes table, not a copy. Check:
    - two `learn` runs on the same store and `HEAD` give byte-identical findings files;
    - a test fails when a trigger in `querylog.py` differs from `web-sources.md`;

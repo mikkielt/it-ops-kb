@@ -12,16 +12,35 @@
                     argument list without it, or with false), and nothing is written unless a hook or a tool runs
   TestHookConfig    the capture hooks are async on UserPromptSubmit, PostToolUse, PostToolUseFailure and Stop in
                     .claude/settings.json and the plugin, through kbpy, with matchers for the kb and fetch tools
-                    (planted: a synchronous capture hook, a missing event); the shell form runs end to end
-Every run writes under a temporary plugin data directory (conftest.querylog_env), never the clone's own spool.
+                    (planted: a synchronous capture hook, a missing event); the shell form runs end to end; the
+                    launcher runs on SessionEnd (synchronous) and SessionStart (async) in both files
+  TestDistill       the fixture spool (_tools/fixtures/querylog/spool/) and the recorded Haiku reply file give the
+                    golden run file (golden.jsonl): a header with run id, pipeline and retrieval versions and kb
+                    commit, entries without them; only rule-redacted text reaches Haiku; nothing raw in the run
+                    file; a flagged entry and a malformed reply's batch are dropped and only counted; over the batch,
+                    run and daily caps entries wait in the spool; a failed call leaves its entries waiting; a second
+                    run on the same spool writes nothing
+  TestLock          a second distill exits on the lock (exit 3) and changes nothing; a stale lock is taken over;
+                    of several processes taking the lock at once exactly one gets it
+  TestLaunch        SessionEnd marks its session closed; the launcher returns within the 1.5-second budget with its
+                    pipes free, and the distill it starts writes its run file after the launcher exited, also when
+                    the launcher's process group is killed (POSIX) or its Windows job object closes with
+                    kill-on-close (Windows only); SessionStart picks up closed sessions only, and starts nothing when
+                    none is closed
+  TestStore         the store gates, each with a planted failure: a duplicate id across run files (also through
+                    `kbgit.py fix --check`), a missing header or provenance field, run metadata or raw fields in an
+                    entry, an identifier in a text field, a fetch with a query string, a non-public host or command
+                    text; `pack` and `search` never return a kb/_querylog/ line; _cache/ stays ignored
+Every run writes under a temporary plugin data directory (conftest.querylog_env), never the clone's own spool, and no
+test calls the real `claude`: Haiku is the recorded reply file or a stub.
 """
-import datetime, http.server, json, os, re, shutil, subprocess, sys, threading, time, uuid
+import datetime, getpass, http.server, json, os, re, shutil, signal, socket, subprocess, sys, threading, time, uuid
 from pathlib import Path
 
 import pytest
 
 import querylog
-from conftest import KB, TOOLS, querylog_env
+from conftest import GIT, KB, TOOLS, copy_kb, querylog_env
 
 SID = "3f2a4c1e-0000-4000-8000-00000000abcd"
 QL = os.path.join(TOOLS, "querylog.py")
@@ -378,6 +397,21 @@ class TestNoHooks:
                      redact.names_argv("haiku")):
             assert "-p" in argv and hooks_off(argv), argv
 
+    def test_distill_haiku_call(self, monkeypatch):
+        """distill's Haiku call is redact.names_argv as an argument list: hooks off, --model haiku, no tools."""
+        seen = {}
+
+        def fake_run(argv, **kw):
+            seen.update(argv=argv, **kw)
+            return subprocess.CompletedProcess(argv, 0, "[]", "")
+        monkeypatch.setattr(querylog.subprocess, "run", fake_run)
+        assert querylog.claude_haiku("prompt") == "[]"
+        argv = seen["argv"]
+        assert isinstance(argv, list) and "-p" in argv and hooks_off(argv), argv
+        assert argv[argv.index("--model") + 1] == querylog.HAIKU_MODEL == "haiku"
+        assert argv[argv.index("--tools") + 1] == "" and not seen.get("shell")
+        assert seen["input"] == "prompt" and seen["timeout"] == querylog.HAIKU_TIMEOUT_S
+
     def test_planted_argument_lists_fail(self):
         assert not hooks_off(["claude", "-p", "--model", "haiku"])
         assert not hooks_off(["claude", "-p", "--settings", json.dumps({"disableAllHooks": False})])
@@ -430,10 +464,32 @@ def capture_problems(cfg, var):
     return bad
 
 
+def launch_problems(cfg, var):
+    """What is wrong with the distill launcher hooks: one on SessionEnd (synchronous: it returns within the budget
+    anyway) and one async on SessionStart, both `sh "<root>/_tools/kbpy" _tools/querylog.py launch`."""
+    want = f'sh "${{{var}}}/_tools/kbpy" _tools/querylog.py launch'
+    bad = []
+    for event, is_async in (("SessionEnd", None), ("SessionStart", True)):
+        hs = [h for g in cfg.get("hooks", {}).get(event, []) for h in g.get("hooks", []) if "querylog.py" in h.get("command", "")]
+        if [(h.get("command"), h.get("async"), h.get("type")) for h in hs] != [(want, is_async, "command")]:
+            bad.append(f"{event}: {hs}")
+    return bad
+
+
 class TestHookConfig:
     def test_settings_and_plugin(self):
         assert capture_problems(load(".claude/settings.json"), "CLAUDE_PROJECT_DIR") == []
         assert capture_problems(load(".claude-plugin/plugin.json"), "CLAUDE_PLUGIN_ROOT") == []
+
+    def test_launcher_hooks(self):
+        assert launch_problems(load(".claude/settings.json"), "CLAUDE_PROJECT_DIR") == []
+        assert launch_problems(load(".claude-plugin/plugin.json"), "CLAUDE_PLUGIN_ROOT") == []
+        cfg = load(".claude/settings.json")
+        missing = json.loads(json.dumps(cfg))
+        del missing["hooks"]["SessionEnd"]
+        asleep = json.loads(json.dumps(cfg))
+        asleep["hooks"]["SessionEnd"][0]["hooks"][0]["async"] = True
+        assert launch_problems(missing, "CLAUDE_PROJECT_DIR") and launch_problems(asleep, "CLAUDE_PROJECT_DIR")
 
     def test_planted_configs_fail(self):
         cfg = load(".claude/settings.json")
@@ -459,3 +515,571 @@ class TestHookConfig:
                            input=json.dumps(stop("done")).encode("utf-8"), capture_output=True, env=env, timeout=120)
         assert (p.returncode, p.stdout) == (0, b""), p.stderr
         assert [r["surface"] for r in lines(tmp_path)] == ["prompt", "stop"]
+
+
+# ---------------------------------------------------------------- distill and the store (Query log item 4)
+
+FIXTURES = Path(TOOLS) / "fixtures" / "querylog"
+NOW = datetime.datetime(2026, 9, 28, 12, 0, tzinfo=datetime.timezone.utc)
+RUN_ID = "20260928T120000Z-0000abcd"
+S_ENDED, S_IDLE, S_OPEN = (f"aaaaaaaa-0000-4000-8000-00000000000{i}" for i in (1, 2, 3))
+RAW = ["anna.nowak", "acme", "10." + "1.20.33", "PL-LAPTOP-7731", "it-helpdesk", "Kowalczyk", "Warsaw", "anowak",
+       "session_id", "prompt_id", "transcript_path", S_ENDED, S_IDLE, '"pa1"', '"prompt":', '"answer":', "mailed"]
+
+
+def c(s):
+    """The fixtures break every identifier with `~`, so the leak scan of tracked files passes over them."""
+    return s.replace("~", "")
+
+
+def plant_spool(qdir, now=NOW):
+    """The fixture spool under qdir/spool: S_ENDED ended (SessionEnd marker), S_IDLE idle for two days, S_OPEN
+    active a minute ago; the tools file of the day before."""
+    sp = Path(qdir) / "spool"
+    sp.mkdir(parents=True, exist_ok=True)
+    for f in (FIXTURES / "spool").iterdir():
+        (sp / f.name).write_text(c(f.read_text(encoding="utf-8")), encoding="utf-8", newline="\n")
+    t = now.timestamp()
+    for sid, age in ((S_ENDED, 3600), (S_IDLE, 2 * 86400), (S_OPEN, 60)):
+        os.utime(sp / f"{sid}.jsonl", (t - age, t - age))
+    (sp / f"{S_ENDED}.end").touch()
+    return sp
+
+
+def run_distill(qdir, haiku, now=NOW, run_id=RUN_ID):
+    said = []
+    rc = querylog.distill(qdir=qdir, cfg=Path(qdir) / "config.json", haiku=haiku, now_dt=now, run_id=run_id,
+                          kb_commit="0" * 40, out=said.append)
+    return rc, said
+
+
+def store_files(qdir):
+    return sorted((Path(qdir) / "store").rglob("*.jsonl"))
+
+
+def jsonl(path):
+    return [json.loads(ln) for ln in Path(path).read_text(encoding="utf-8").splitlines() if ln.strip()]
+
+
+def echo(prompt):
+    """A Haiku stub that answers every entry: its question is the rule-redacted prompt."""
+    items = json.loads(prompt[prompt.index("\n\n[") + 2:])
+    return json.dumps([{"i": it["i"], "question": it["prompt"], "summary": "Stub summary.", "judged": "answered",
+                        "best": None, "identifying": False} for it in items])
+
+
+class TestDistill:
+    def test_golden_run_file(self, tmp_path):
+        q = tmp_path / "querylog"
+        sp = plant_spool(q)
+        open_before = (sp / f"{S_OPEN}.jsonl").read_bytes()
+        replay = querylog.Replay(FIXTURES / "haiku.json")
+        rc, said = run_distill(q, replay)
+        assert rc == 0 and said == [f"distill: run={RUN_ID} entries=6 dropped=1 waiting=0"], said
+        (run,) = store_files(q)
+        assert run.relative_to(q / "store").as_posix() == f"2026-09/{RUN_ID}.jsonl"
+        got, want = jsonl(run), jsonl(FIXTURES / "golden.jsonl")
+        import kbfacts
+        want[0]["retrieval"] = kbfacts.INDEX_VERSION
+        assert got == want
+        assert run.read_bytes().endswith(b"\n") and b"\r" not in run.read_bytes()
+        header, entries = got[0], got[1:]
+        assert set(header) == set(querylog.HEADER_KEYS) and header["run"] == RUN_ID
+        assert all(not set(e) & set(querylog.HEADER_KEYS) for e in entries)
+        assert querylog.store_problems(q / "store") == []
+        # the spool: the closed sessions and the finished day's tools file are gone, the open session is untouched
+        assert sorted(p.name for p in sp.iterdir()) == [f"{S_OPEN}.jsonl"]
+        assert (sp / f"{S_OPEN}.jsonl").read_bytes() == open_before
+
+    def test_only_rule_redacted_text_reaches_haiku(self, tmp_path):
+        q = tmp_path / "querylog"
+        plant_spool(q)
+        replay = querylog.Replay(FIXTURES / "haiku.json")
+        run_distill(q, replay)
+        (sent,) = replay.prompts
+        for raw in ("anna.nowak", "acme-corp", "10." + "1.20.33", "PL-LAPTOP-7731", "it-helpdesk", "ACME\\anowak"):
+            assert raw not in sent, raw
+        assert "jan.kowalski@corp.example.com" in sent and "PL-LT-00123" in sent
+        assert "Kowalczyk" in sent  # names rest on Haiku, which gets them only after the rules
+        assert "Warsaw" not in sent  # a prompt that never used the kb is never sent
+
+    def test_nothing_raw_in_the_run_file(self, tmp_path):
+        q = tmp_path / "querylog"
+        plant_spool(q)
+        run_distill(q, querylog.Replay(FIXTURES / "haiku.json"))
+        text = store_files(q)[0].read_text(encoding="utf-8")
+        for raw in RAW:
+            assert raw not in text, raw
+        for who in {getpass.getuser(), socket.gethostname().split(".")[0]} - {""}:
+            assert not re.search(rf"(?<![\w-]){re.escape(who)}(?![\w-])", text), who
+
+    def test_doubtful_entry_is_dropped_and_counted(self, tmp_path):
+        q = tmp_path / "querylog"
+        plant_spool(q)
+        run_distill(q, querylog.Replay(FIXTURES / "haiku.json"))
+        header, *entries = jsonl(store_files(q)[0])
+        assert header["counts"]["dropped"] == 1
+        assert "11111111-0000-4000-8000-0000000000c1" not in {e["id"] for e in entries}  # Haiku flagged it
+        planted = tmp_path / "planted"
+        plant_spool(planted)
+        rc, said = run_distill(planted, lambda prompt: "I cannot help with that.")  # a reply that is not the JSON
+        header, *entries = jsonl(store_files(planted)[0])
+        assert header["counts"] == {"entries": 2, "dropped": 5, "waiting": 0}, said
+        assert {e["surface"] for e in entries} == {"tool_fetch"}
+
+    def test_a_best_article_code_did_not_offer_is_not_kept(self, tmp_path):
+        q = tmp_path / "querylog"
+        plant_spool(q)
+        run_distill(q, querylog.Replay(FIXTURES / "haiku.json"))
+        e = next(e for e in jsonl(store_files(q)[0]) if e.get("id") == "11111111-0000-4000-8000-0000000000b1")
+        assert "best" not in e and e["articles"] == ["public/intune/win32-apps.md"]
+
+    def test_over_the_caps_entries_wait(self, tmp_path, monkeypatch):
+        monkeypatch.setattr(querylog, "HAIKU_BATCH_ENTRIES", 2)
+        monkeypatch.setattr(querylog, "HAIKU_BATCHES_PER_RUN", 1)
+        monkeypatch.setattr(querylog, "HAIKU_DAILY_CALLS", 2)
+        q = tmp_path / "querylog"
+        sp = plant_spool(q)
+        calls = []
+
+        def stub(prompt):
+            calls.append(prompt)
+            return echo(prompt)
+        rc, said = run_distill(q, stub, run_id="20260928T120000Z-00000001")
+        assert said == ["distill: run=20260928T120000Z-00000001 entries=4 dropped=0 waiting=3"] and len(calls) == 1
+        assert (sp / f"{S_ENDED}.jsonl").exists() and (sp / f"{S_ENDED}.end").exists()  # its lookups wait
+        rc, said = run_distill(q, stub, run_id="20260928T120001Z-00000002")
+        assert said[-1].endswith("entries=2 dropped=0 waiting=1") and len(calls) == 2
+        rc, said = run_distill(q, stub, run_id="20260928T120002Z-00000003")
+        assert said == ["distill: nothing to write (waiting=1)"] and len(calls) == 2  # the daily cap
+        rc, said = run_distill(q, stub, now=NOW + datetime.timedelta(days=1), run_id="20260929T120000Z-00000004")
+        # the last waiting lookup, and S_OPEN's: a day idle, it now counts as closed
+        assert said[-1].endswith("entries=2 dropped=0 waiting=0") and len(calls) == 3
+        ids = [e["id"] for f in store_files(q) for e in jsonl(f)[1:]]
+        assert len(ids) == len(set(ids)) == 8
+        assert list(sp.iterdir()) == []
+        assert querylog.store_problems(q / "store") == []
+
+    def test_a_failed_call_leaves_its_entries_waiting(self, tmp_path):
+        q = tmp_path / "querylog"
+        sp = plant_spool(q)
+        before = {p.name: p.read_bytes() for p in sp.iterdir()}
+
+        def down(prompt):
+            raise OSError("no network")
+        rc, said = run_distill(q, down)
+        assert rc == 0 and said[-1].endswith("entries=2 dropped=0 waiting=5"), said
+        assert (sp / f"{S_IDLE}.jsonl").read_bytes() == before[f"{S_IDLE}.jsonl"]
+        kept = [r["prompt_id"] for r in jsonl(sp / f"{S_ENDED}.jsonl")]
+        assert sorted(set(kept)) == ["pa1", "pa2", "pa3"]  # the prompt that never used the kb is gone already
+        assert len(kept) == len(jsonl(FIXTURES / "spool" / f"{S_ENDED}.jsonl")) - 1
+        rc, said = run_distill(q, querylog.Replay(FIXTURES / "haiku.json"), run_id="20260928T120500Z-0000abce")
+        assert said[-1].endswith("entries=4 dropped=1 waiting=0"), said
+        ids = [e["id"] for f in store_files(q) for e in jsonl(f)[1:]]
+        assert len(ids) == len(set(ids)) == 6
+
+    def test_a_second_run_on_the_same_spool_writes_nothing(self, tmp_path):
+        q = tmp_path / "querylog"
+        plant_spool(q)
+        run_distill(q, querylog.Replay(FIXTURES / "haiku.json"))
+        files = {p: p.read_bytes() for p in store_files(q)}
+        rc, said = run_distill(q, echo, run_id="20260928T130000Z-0000abcf")
+        assert rc == 0 and said == ["distill: nothing to write (waiting=0)"]
+        assert {p: p.read_bytes() for p in store_files(q)} == files
+
+    @pytest.mark.parametrize("config,marker", [('{"mode": "off"}', False), ("{broken", False), (None, True)])
+    def test_off_or_disabled_distills_nothing(self, tmp_path, config, marker):
+        q = tmp_path / "querylog"
+        sp = plant_spool(q)
+        if config:
+            (q / "config.json").write_text(config, encoding="utf-8")
+        if marker:
+            (q / "DISABLED").write_text("", encoding="utf-8")
+        rc, said = run_distill(q, echo)
+        assert (rc, said, store_files(q)) == (0, ["distill: logging is off"], [])
+        assert (sp / f"{S_ENDED}.jsonl").exists()
+
+
+def distill_cli(data, *args):
+    return subprocess.run([sys.executable, QL, "distill", *args], capture_output=True, text=True, encoding="utf-8",
+                          env=querylog_env(data), timeout=120)
+
+
+LOCK_TAKER = """
+import sys, time
+import querylog
+got = querylog.acquire(sys.argv[1])
+print("got" if got else "busy", flush=True)
+time.sleep(1.5)
+"""
+
+
+class TestLock:
+    def test_a_second_distill_exits_on_the_lock(self, tmp_path):
+        q = tmp_path / "querylog"
+        sp = plant_spool(q)
+        lock = querylog.acquire(q)
+        info = json.loads(lock.read_text(encoding="utf-8"))
+        assert info["pid"] == os.getpid() and info["started"].endswith("Z")
+        before = {p.name: p.read_bytes() for p in sp.iterdir()}
+        p = distill_cli(tmp_path, "--replay", str(FIXTURES / "haiku.json"))
+        assert (p.returncode, p.stdout) == (3, "distill: another distill holds the lock\n"), p.stderr
+        assert {p.name: p.read_bytes() for p in sp.iterdir()} == before and store_files(q) == []
+        querylog.release(lock)
+        p = distill_cli(tmp_path, "--replay", str(FIXTURES / "haiku.json"))  # planted: without the lock it runs
+        assert p.returncode == 0 and "entries=" in p.stdout, p.stdout + p.stderr
+        assert not (q / querylog.LOCK_NAME).exists()
+
+    def test_a_stale_lock_is_taken_over(self, tmp_path):
+        q = tmp_path / "querylog"
+        q.mkdir()
+        old = time.time() - querylog.LOCK_STALE_S - 5
+        (q / querylog.LOCK_NAME).write_text(json.dumps({"pid": 1, "started_epoch": old}), encoding="utf-8")
+        p = distill_cli(tmp_path)
+        assert p.returncode == 0 and "nothing to write" in p.stdout, p.stdout + p.stderr
+        (q / querylog.LOCK_NAME).write_text(json.dumps({"pid": 1, "started_epoch": time.time() - 5}), encoding="utf-8")
+        assert distill_cli(tmp_path).returncode == 3  # planted: a fresh one holds
+
+    def test_one_taker_wins(self, tmp_path):
+        env = dict(os.environ, PYTHONPATH=TOOLS)
+        procs = [subprocess.Popen([sys.executable, "-c", LOCK_TAKER, str(tmp_path)], stdout=subprocess.PIPE, text=True,
+                                  encoding="utf-8", env=env) for _ in range(6)]
+        said = sorted(p.communicate(timeout=60)[0].strip() for p in procs)
+        assert said == ["busy"] * 5 + ["got"], said
+
+
+# ---------------------------------------------------------------- the launcher
+
+def session_end(sid=SID):
+    return {"hook_event_name": "SessionEnd", "session_id": sid, "reason": "prompt_input_exit"}
+
+
+def session_start(sid="new-session"):
+    return {"hook_event_name": "SessionStart", "session_id": sid, "source": "startup"}
+
+
+def plant_fetch_day(data, n=1):
+    """A tools file of yesterday (UTC) holding n fetch.py requests: ready to distill, with nothing for Haiku."""
+    sp = spool(data)
+    sp.mkdir(parents=True, exist_ok=True)
+    day = (datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=1)).date().isoformat()
+    rows = [{"id": str(uuid.uuid4()), "ts": f"{day}T08:00:0{i}.000Z", "surface": "tool_fetch", "tool": "fetch.py",
+             "host": "learn.microsoft.com", "path": f"/en-us/p{i}", "outcome": "http-200"} for i in range(n)]
+    (sp / f"tools-{day}.jsonl").write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8", newline="\n")
+    return rows
+
+
+def wait_for_run(data, timeout=60):
+    """The store's run files once one exists (the detached distill wrote it), else []."""
+    end = time.time() + timeout
+    while time.time() < end:
+        files = sorted((Path(data) / "querylog" / "store").rglob("*.jsonl"))
+        if files and not (Path(data) / "querylog" / querylog.LOCK_NAME).exists():
+            return files
+        time.sleep(0.2)
+    return []
+
+
+def launch_proc(data, event, **kw):
+    """Run the launcher as Claude Code runs a hook: (exit code, stdout, seconds until it returned, time it exited)."""
+    t0 = time.monotonic()
+    p = subprocess.run([sys.executable, QL, "launch"], input=json.dumps(event).encode("utf-8"), capture_output=True,
+                       env=querylog_env(data), timeout=60, **kw)
+    return p.returncode, p.stdout, time.monotonic() - t0, time.time()
+
+
+JOB_PARENT = r"""
+import ctypes, subprocess, sys
+from ctypes import wintypes
+k32 = ctypes.WinDLL("kernel32", use_last_error=True)
+k32.CreateJobObjectW.restype = wintypes.HANDLE
+k32.CreateJobObjectW.argtypes = [ctypes.c_void_p, wintypes.LPCWSTR]
+k32.GetCurrentProcess.restype = wintypes.HANDLE
+k32.AssignProcessToJobObject.argtypes = [wintypes.HANDLE, wintypes.HANDLE]
+k32.SetInformationJobObject.argtypes = [wintypes.HANDLE, ctypes.c_int, ctypes.c_void_p, wintypes.DWORD]
+
+
+class Basic(ctypes.Structure):
+    _fields_ = [("PerProcessUserTimeLimit", ctypes.c_int64), ("PerJobUserTimeLimit", ctypes.c_int64),
+                ("LimitFlags", wintypes.DWORD), ("MinimumWorkingSetSize", ctypes.c_size_t),
+                ("MaximumWorkingSetSize", ctypes.c_size_t), ("ActiveProcessLimit", wintypes.DWORD),
+                ("Affinity", ctypes.c_size_t), ("PriorityClass", wintypes.DWORD), ("SchedulingClass", wintypes.DWORD)]
+
+
+class Io(ctypes.Structure):
+    _fields_ = [(n, ctypes.c_uint64) for n in ("Read", "Write", "Other", "ReadBytes", "WriteBytes", "OtherBytes")]
+
+
+class Extended(ctypes.Structure):
+    _fields_ = [("Basic", Basic), ("Io", Io), ("ProcessMemoryLimit", ctypes.c_size_t),
+                ("JobMemoryLimit", ctypes.c_size_t), ("PeakProcessMemoryUsed", ctypes.c_size_t),
+                ("PeakJobMemoryUsed", ctypes.c_size_t)]
+
+
+job = k32.CreateJobObjectW(None, None)
+info = Extended()
+info.Basic.LimitFlags = 0x2000 | 0x800  # JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE | JOB_OBJECT_LIMIT_BREAKAWAY_OK
+if not k32.SetInformationJobObject(job, 9, ctypes.byref(info), ctypes.sizeof(info)):
+    sys.exit(f"SetInformationJobObject: {ctypes.get_last_error()}")
+if not k32.AssignProcessToJobObject(job, k32.GetCurrentProcess()):
+    sys.exit(f"AssignProcessToJobObject: {ctypes.get_last_error()}")
+p = subprocess.run([sys.executable, sys.argv[1], "launch"], input=sys.stdin.buffer.read(), timeout=60)
+sys.exit(p.returncode)
+"""  # the job's only handle closes when this process exits: every process still in the job ends with it
+
+
+class TestLaunch:
+    def test_session_end_marks_its_session_closed(self, tmp_path):
+        spool(tmp_path).mkdir(parents=True)
+        (spool(tmp_path) / f"{SID}.jsonl").write_text("{}\n", encoding="utf-8")
+        assert launch_proc(tmp_path, session_end())[:2] == (0, b"")
+        assert (spool(tmp_path) / f"{SID}.end").exists()
+        assert not (tmp_path / "querylog" / "store").exists()  # its only row used no kb: nothing to write
+        assert launch_proc(tmp_path, session_end("../../x"))[:2] == (0, b"")
+        assert not (tmp_path / "x.end").exists()
+
+    def test_the_launcher_returns_in_budget_and_its_child_outlives_it(self, tmp_path):
+        rows = plant_fetch_day(tmp_path)
+        rc, out, took, exited = launch_proc(tmp_path, session_end())
+        assert (rc, out) == (0, b"") and took < 1.5, took  # SessionEnd hooks share 1.5 s; the pipes are free
+        files = wait_for_run(tmp_path)
+        assert files, (tmp_path / "querylog" / querylog.LOG_NAME).read_text(encoding="utf-8")
+        assert files[0].stat().st_mtime > exited  # written after the launcher was gone (LAUNCH_SETTLE_S)
+        assert [e["id"] for e in jsonl(files[0])[1:]] == [r["id"] for r in rows]
+        log = (tmp_path / "querylog" / querylog.LOG_NAME).read_text(encoding="utf-8")
+        assert "entries=1" in log and "Haiku" not in log
+
+    def test_launch_itself_fits_its_share_of_the_budget(self, tmp_path, monkeypatch):
+        for k, v in querylog_env(tmp_path).items():
+            if k.startswith("CLAUDE_PLUGIN_"):
+                monkeypatch.setenv(k, v)
+        plant_fetch_day(tmp_path)
+        t0 = time.monotonic()
+        pid = querylog.launch(session_end())
+        took = time.monotonic() - t0
+        assert pid and took < querylog.LAUNCH_BUDGET_S, took
+        assert wait_for_run(tmp_path)
+
+    @pytest.mark.skipif(os.name == "nt", reason="POSIX sessions and process groups")
+    def test_child_survives_its_launchers_process_group(self, tmp_path):
+        plant_fetch_day(tmp_path)
+        p = subprocess.Popen([sys.executable, QL, "launch"], stdin=subprocess.PIPE, stdout=subprocess.DEVNULL,
+                             env=querylog_env(tmp_path), start_new_session=True)
+        p.communicate(json.dumps(session_end()).encode("utf-8"), timeout=60)
+        exited = time.time()
+        try:
+            os.killpg(p.pid, signal.SIGKILL)  # what ending the hook's session does to what is left in it
+        except ProcessLookupError:
+            pass  # nothing left in the group: the child runs in a session of its own
+        files = wait_for_run(tmp_path)
+        assert files and files[0].stat().st_mtime > exited
+
+    @pytest.mark.skipif(os.name != "nt", reason="Windows job objects")
+    def test_child_survives_a_kill_on_close_job(self, tmp_path):
+        """The launcher runs inside a job object that kills its processes when the job closes; the distill it starts
+        breaks away (CREATE_BREAKAWAY_FROM_JOB) and writes its run file after the job is gone."""
+        plant_fetch_day(tmp_path)
+        p = subprocess.run([sys.executable, "-c", JOB_PARENT, QL], input=json.dumps(session_end()).encode("utf-8"),
+                           capture_output=True, env=querylog_env(tmp_path), timeout=120)
+        exited = time.time()
+        assert p.returncode == 0, p.stderr
+        files = wait_for_run(tmp_path)
+        assert files and files[0].stat().st_mtime > exited
+
+    @pytest.mark.skipif(not SH, reason="no sh on PATH (Windows without Git Bash)")
+    @pytest.mark.parametrize("rel,var", [(".claude/settings.json", "CLAUDE_PROJECT_DIR"),
+                                         (".claude-plugin/plugin.json", "CLAUDE_PLUGIN_ROOT")])
+    def test_shell_form_launches(self, tmp_path, rel, var):
+        """The SessionEnd command as Claude Code runs it (`sh -c`, Git Bash on Windows)."""
+        (h,) = load(rel)["hooks"]["SessionEnd"][0]["hooks"]
+        plant_fetch_day(tmp_path)
+        env = querylog_env(tmp_path, base=dict(os.environ, **{var: KB}))
+        t0 = time.monotonic()
+        p = subprocess.run([SH, "-c", h["command"].replace("${" + var + "}", KB.replace("\\", "/"))],
+                           input=json.dumps(session_end()).encode("utf-8"), capture_output=True, env=env, timeout=120)
+        assert (p.returncode, p.stdout) == (0, b"") and time.monotonic() - t0 < 1.5, p.stderr
+        assert wait_for_run(tmp_path)
+
+    def test_session_start_picks_up_closed_sessions_only(self, tmp_path):
+        sp = spool(tmp_path)
+        sp.mkdir(parents=True)
+        closed, active = "cccccccc-0000-4000-8000-000000000001", "cccccccc-0000-4000-8000-000000000002"
+        for sid in (closed, active):
+            row = {"id": str(uuid.uuid4()), "ts": "2026-09-20T10:00:00.000Z", "surface": "mcp", "session_id": sid,
+                   "prompt_id": "p1", "tool": "kb_show", "args": {"path": "public/windows/laps.md:12"},
+                   "articles": ["public/windows/laps.md"]}  # no question text: nothing for Haiku
+            (sp / f"{sid}.jsonl").write_text(json.dumps(row) + "\n", encoding="utf-8", newline="\n")
+        old = time.time() - querylog.SESSION_IDLE_CLOSED_S - 60
+        os.utime(sp / f"{closed}.jsonl", (old, old))
+        before = (sp / f"{active}.jsonl").read_bytes()
+        rc, out, took, _ = launch_proc(tmp_path, session_start())
+        assert (rc, out) == (0, b"") and took < 1.5
+        (run,) = wait_for_run(tmp_path)
+        (entry,) = jsonl(run)[1:]
+        assert (entry["surface"], entry["articles"]) == ("mcp", ["public/windows/laps.md"])
+        assert sorted(p.name for p in sp.iterdir()) == [f"{active}.jsonl"]
+        assert (sp / f"{active}.jsonl").read_bytes() == before
+
+    def test_session_start_starts_nothing_when_no_session_is_closed(self, tmp_path):
+        sp = spool(tmp_path)
+        sp.mkdir(parents=True)
+        (sp / f"{SID}.jsonl").write_text("{}\n", encoding="utf-8")
+        today = datetime.datetime.now(datetime.timezone.utc).date().isoformat()
+        (sp / f"tools-{today}.jsonl").write_text("{}\n", encoding="utf-8")
+        assert launch_proc(tmp_path, session_start())[:2] == (0, b"")
+        assert not (tmp_path / "querylog" / querylog.LOG_NAME).exists()
+        assert querylog.launch({"hook_event_name": "Stop"}) is None
+
+    def test_launcher_starts_nothing_while_a_distill_runs(self, tmp_path):
+        plant_fetch_day(tmp_path)
+        lock = querylog.acquire(tmp_path / "querylog")
+        assert launch_proc(tmp_path, session_start())[:2] == (0, b"")
+        assert not (tmp_path / "querylog" / querylog.LOG_NAME).exists()
+        querylog.release(lock)
+
+
+# ---------------------------------------------------------------- the store gates
+
+def golden_store(store, lines_=None, name=RUN_ID):
+    """The store `store` with the golden run file (or `lines_`, JSON objects) as <yyyy-mm>/<run-id>.jsonl."""
+    objs = lines_ if lines_ is not None else jsonl(FIXTURES / "golden.jsonl")
+    p = Path(store) / f"{name[:4]}-{name[4:6]}" / f"{name}.jsonl"
+    p.parent.mkdir(parents=True, exist_ok=True)
+    p.write_text("".join(json.dumps(o, ensure_ascii=False) + "\n" for o in objs), encoding="utf-8", newline="\n")
+    return Path(store)
+
+
+def planted(tmp_path, change):
+    """The golden run file with `change(objects)` applied: the store's problems."""
+    objs = jsonl(FIXTURES / "golden.jsonl")
+    change(objs)
+    return querylog.store_problems(golden_store(tmp_path / "store", objs))
+
+
+@pytest.fixture(scope="module")
+def kb_copy(tmp_path_factory):
+    """A copy of the kb with one run file under kb/_querylog/ whose question holds a word no article has."""
+    home = copy_kb(str(tmp_path_factory.mktemp("ql") / "kb"))
+    objs = jsonl(FIXTURES / "golden.jsonl")
+    objs[1]["question"] = "Which zqxvortel recognizers cover the Polish PESEL number?"
+    golden_store(Path(home) / "kb" / "_querylog", objs)
+    return home
+
+
+class TestStore:
+    def test_the_committed_store_passes(self):
+        assert querylog.store_problems() == []
+        p = subprocess.run([sys.executable, QL, "check"], capture_output=True, text=True, encoding="utf-8", timeout=120)
+        assert (p.returncode, p.stdout) == (0, "querylog check: problems=0\n"), p.stdout
+
+    def test_golden_passes_and_check_reports(self, tmp_path):
+        store = golden_store(tmp_path / "store")
+        assert querylog.store_problems(store) == []
+        bad =golden_store(tmp_path / "bad", [{"run": "x"}])
+        p = subprocess.run([sys.executable, QL, "check", str(bad)], capture_output=True, text=True, encoding="utf-8",
+                           timeout=120)
+        assert p.returncode == 1 and "header lacks" in p.stdout, p.stdout
+
+    def test_duplicate_id_across_run_files(self, tmp_path):
+        store = golden_store(tmp_path / "store")
+        assert querylog.duplicate_ids(store) == []
+        golden_store(store, name="20260928T130000Z-0000ffff", lines_=[
+            {**jsonl(FIXTURES / "golden.jsonl")[0], "run": "20260928T130000Z-0000ffff",
+             "counts": {"entries": 1, "dropped": 0, "waiting": 0}}, jsonl(FIXTURES / "golden.jsonl")[1]])
+        (dup,) = querylog.duplicate_ids(store)
+        assert "2026-09/20260928T130000Z-0000ffff.jsonl:2: duplicate entry id 22222222-" in dup
+        assert querylog.store_problems(store)[-1] == dup
+
+    def test_kbgit_fix_check_fails_on_a_duplicate_id(self, kb_copy):
+        env = {k: v for k, v in os.environ.items() if k not in ("KB_ROOTS", "KB_INDEX")}
+        run = lambda: subprocess.run([sys.executable, os.path.join(kb_copy, "_tools", "kbgit.py"), "fix", "--check"],  # noqa: E731
+                                     cwd=kb_copy, capture_output=True, text=True, encoding="utf-8", env=env, timeout=300)
+        p = run()
+        assert p.returncode == 0, p.stdout + p.stderr
+        dup = Path(kb_copy) / "kb" / "_querylog" / "2026-09" / "20260928T130000Z-0000ffff.jsonl"
+        objs = jsonl(FIXTURES / "golden.jsonl")
+        dup.write_text(json.dumps({**objs[0], "run": dup.stem, "counts": {"entries": 1, "dropped": 0, "waiting": 0}})
+                       + "\n" + json.dumps(objs[2]) + "\n", encoding="utf-8", newline="\n")
+        try:
+            p = run()
+        finally:
+            dup.unlink()
+        assert p.returncode == 2 and "PROBLEM kb/_querylog/2026-09/20260928T130000Z-0000ffff.jsonl:2: duplicate entry id" \
+            in p.stdout, p.stdout + p.stderr
+
+    @pytest.mark.parametrize("change,problem", [
+        (lambda o: o[0].pop("kb_commit"), "header lacks kb_commit"),
+        (lambda o: o[0].pop("retrieval"), "header lacks retrieval"),
+        (lambda o: o[0].pop("pipeline"), "header lacks pipeline"),
+        (lambda o: o.pop(0), "header lacks run, pipeline, retrieval, kb_commit, counts"),
+        (lambda o: o[0].update(run="20260928T120000Z-00000000"), "run id does not name this file"),
+        (lambda o: o[0].update(kb_commit="HEAD"), "kb commit is not a commit id"),
+        (lambda o: o[0]["counts"].update(entries=2), "counts.entries is 2"),
+        (lambda o: o[0].update(host="build-agent-7"), "header fields a header never has: host"),
+        (lambda o: o[1].update(kb_commit="0" * 40), "run metadata in an entry: kb_commit"),
+        (lambda o: o[1].update(run=RUN_ID, retrieval=4), "run metadata in an entry: retrieval, run"),
+        (lambda o: o[1].update(prompt="kb: raw"), "raw spool fields: prompt"),
+        (lambda o: o[1].update(session_id=S_ENDED), "raw spool fields: session_id"),
+        (lambda o: o[1].update(prompt_id="pa1", transcript_path="/tmp/t.jsonl"), "raw spool fields: prompt_id, transcript_path"),
+        (lambda o: o[1].update(user="jan"), "raw spool fields: user"),
+        (lambda o: o[1].update(hostname="PL-LT-00123"), "raw spool fields: hostname"),
+    ])
+    def test_header_and_provenance_gates(self, tmp_path, change, problem):
+        problems = planted(tmp_path, change)
+        assert any(problem in p for p in problems), problems
+
+    @pytest.mark.parametrize("text", ["sign-in fails for anna.nowak~@acme-corp.pl", "the DP at 10.~1.20.33 times out",
+                                      "files on fs01.acme.local are locked", "the key Zk9xR2tWb3BqM3NlY3JldDEyMzQ1Ng fails",
+                                      "whoami says ACME\\anowak", "object 3f2b8c1~e-5d4a-4b7c-9e1f-aa3b4c5d6e7f fails"])
+    def test_identifier_gate(self, tmp_path, text):
+        problems = planted(tmp_path, lambda o: o[1].update(question=c(text)))
+        assert any("an identifier in `question`" in p for p in problems), problems
+        problems = planted(tmp_path / "s", lambda o: o[4].update(summary=c(text)))
+        assert any("an identifier in `summary`" in p for p in problems), problems
+
+    @pytest.mark.parametrize("change,problem", [
+        (lambda e: e.update(path="/en-us/windows?token=abc"), "query string"),
+        (lambda e: e.update(path="/en-us/windows#top"), "query string"),
+        (lambda e: e.update(host="10." + "1.2.3"), "not a public host"),
+        (lambda e: e.update(host="wiki.acme-corp.pl"), "not a public host"),
+        (lambda e: e.update(host="fs01.corp"), "not a public host"),
+        (lambda e: e.update(tool="curl -s https://learn.microsoft.com/x"), "not a tool name (command text?)"),
+        (lambda e: e.update(command="curl -s https://learn.microsoft.com/x"), "raw spool fields: command"),
+        (lambda e: e.update(outcome="a bot page"), "not an outcome class"),
+        (lambda e: e.pop("host"), "fetch path without a public host"),
+    ])
+    def test_fetch_gates(self, tmp_path, change, problem):
+        problems = planted(tmp_path, lambda o: change(o[2]))  # the standalone fetch.py entry
+        assert any(problem in p for p in problems), problems
+        nested = planted(tmp_path / "n", lambda o: change(o[6]["fetches"][1]))  # a fetch inside a lookup
+        if problem != "raw spool fields: command":
+            assert any(problem in p for p in nested), nested
+        else:
+            assert any("fetch fields a fetch never keeps: command" in p for p in nested), nested
+
+    def test_pack_and_search_never_return_a_querylog_line(self, kb_copy, tmp_path):
+        env = {**{k: v for k, v in os.environ.items() if k not in ("KB_ROOTS",)}, "KB_INDEX": str(tmp_path / "index")}
+        rag = [sys.executable, os.path.join(kb_copy, "_tools", "rag.py")]
+
+        def out(*args):
+            p = subprocess.run(rag + list(args), capture_output=True, text=True, encoding="utf-8", env=env, timeout=300)
+            return p.stdout + p.stderr
+        for args in (["search", "zqxvortel recognizers"], ["search", "zqxvortel", "--index"],
+                     ["pack", "Which zqxvortel recognizers cover the Polish PESEL number?"]):
+            text = out(*args)
+            assert "_querylog" not in text and "cover the Polish PESEL" not in text, text[:800]
+        article = Path(kb_copy) / "kb" / "public" / "reuse" / "pseudonymization-tokenization.md"
+        saved = article.read_bytes()
+        try:  # planted: the same word in an article is found
+            article.write_bytes(saved + b"\n- Planted zqxvortel line for the test. [DER S-h2cmbqvf]\n")
+            assert "Planted zqxvortel line" in out("search", "zqxvortel")
+        finally:
+            article.write_bytes(saved)
+
+    @pytest.mark.skipif(not GIT, reason="git is not installed")
+    def test_the_spool_and_local_store_stay_ignored(self):
+        def ignored(rel):
+            return subprocess.run(["git", "check-ignore", "-q", rel], cwd=KB, capture_output=True).returncode == 0
+        assert ignored("_cache/querylog/spool/x.jsonl") and ignored("_cache/querylog/store/2026-09/x.jsonl")
+        assert ignored("_private/querylog.json")
+        assert not ignored("kb/_querylog/2026-09/x.jsonl")  # planted: the store itself is committed

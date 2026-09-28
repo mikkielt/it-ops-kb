@@ -5,7 +5,7 @@
 | command | does |
 |---|---|
 | `python3 _tools/kbgit.py sync [--push] [--dry-run] [--remote R] [--branch B]` | the way to push: fetch, rebase onto `origin/main`, fix, gate, push (exit 0 done, 1 gate red or push rejected, 2 refused, 3 conflict needs `/kb-git-sync` or a human) |
-| `python3 _tools/kbgit.py fix [--check] [--base REV] [--upstream REV]` | after any merge or pull, per root in `kb/`: dedupe/merge the union-merged ledgers, renumber colliding legacy ids (the `--upstream` side, already pushed, keeps its ids), rename colliding answer ids to `QK-<slug>`, rebuild the index (exit 1 `--check` stale, 2 needs a human); `fmt` only canonicalises the CSV ledgers |
+| `python3 _tools/kbgit.py fix [--check] [--base REV] [--upstream REV]` | after any merge or pull, per root in `kb/`: dedupe/merge the union-merged ledgers, renumber colliding legacy ids (the `--upstream` side, already pushed, keeps its ids), rename colliding answer ids to `QK-<slug>`, rebuild the index, and report an entry id that two query-log run files under `kb/_querylog/` share (exit 1 `--check` stale, 2 needs a human); `fmt` only canonicalises the CSV ledgers |
 | `python3 _tools/kbgit.py install-hooks [--uninstall]` | once per clone: `core.hooksPath=.githooks`, so commits get their KB-* trailers and a plain `git push` runs the gate |
 | `python3 _tools/kbgit.py trailers [--staged] [REV] [--verified YYYY-MM-DD]` | print the KB-* trailers of the staged change or of a commit; `--amend` rewrites HEAD's message with them |
 | `python3 _tools/kbgit.py check-trailers [A..B]` | exit 1 listing kb commits whose trailers are missing or wrong (default: CI's push range, else `@{upstream}..HEAD`) |

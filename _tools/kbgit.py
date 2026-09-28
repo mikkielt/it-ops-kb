@@ -114,6 +114,8 @@ _tools/lint_baseline.txt  if a merge touched it (markers, unsorted or duplicate 
 .gitattributes  the block between `# pinned:start` and `# pinned:end` lists every _artifacts.csv path as `-text`.
 Then build_index.py regenerates _coverage.csv, the coverage table in kb/_self/coverage.md (conflict markers inside the
 table go with it) and used_in. Conflict markers left anywhere else in a ledger, that page or an article: exit 2.
+kb/_querylog/  one run file per distill run, never edited after it: an entry id in two run files (the same lookup
+               distilled twice) is reported, exit 2 (querylog.duplicate_ids; kb/_self/querylog.md, Store).
 
 Sides of the merge (for collisions): --side REV (repeatable), else MERGE_HEAD during a merge (HEAD + MERGE_HEAD),
 else the parents of HEAD when HEAD is a merge commit. Base: --base REV (e.g. `git merge-base A B`). --upstream REV is
@@ -130,6 +132,7 @@ from collections import Counter
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import kbcommon, kbid  # noqa: E402
 import build_index  # noqa: E402
+import querylog  # noqa: E402
 
 KB = kbcommon.HOME  # the repository: git runs here, and every path kbgit names is relative to it
 ROOT = kbcommon.PUBLIC  # the root fix and the history commands work on now (use_root); the public root by default
@@ -1022,6 +1025,8 @@ def run(a):
                 rebuild_root(out, problems)
     except Problem as e:
         problems.append(str(e))
+    if a.cmd == "fix":
+        problems += [f"{kbcommon.repo_rel(str(querylog.STORE))}/{p}" for p in querylog.duplicate_ids(querylog.STORE)]
     if problems:
         for ln in report:
             print(ln if ln.startswith("WARN") else "  " + ln)

@@ -67,6 +67,27 @@
           }
         ]
       }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/_tools/kbpy\" _tools/querylog.py launch",
+            "async": true
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/_tools/kbpy\" _tools/querylog.py launch"
+          }
+        ]
+      }
     ]
   }
 }

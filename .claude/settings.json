@@ -30,6 +30,21 @@
           {
             "type": "command",
             "command": "sh \"${CLAUDE_PROJECT_DIR}/_tools/kbpy\" .claude/hooks/session_start.py"
+          },
+          {
+            "type": "command",
+            "command": "sh \"${CLAUDE_PROJECT_DIR}/_tools/kbpy\" _tools/querylog.py launch",
+            "async": true
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh \"${CLAUDE_PROJECT_DIR}/_tools/kbpy\" _tools/querylog.py launch"
           }
         ]
       }

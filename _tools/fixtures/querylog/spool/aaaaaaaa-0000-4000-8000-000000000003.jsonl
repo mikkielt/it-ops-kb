@@ -1,0 +1,2 @@
+{"id":"33333333-0000-4000-8000-0000000000a1","ts":"2026-09-28T11:58:00.000Z","surface":"prompt","session_id":"aaaaaaaa-0000-4000-8000-000000000003","prompt_id":"pc1","prompt":"kb: bitlocker recovery key escrow to entra","kb_intent":"lookup"}
+{"id":"33333333-0000-4000-8000-0000000000a2","ts":"2026-09-28T11:58:00.200Z","surface":"kb_hook","session_id":"aaaaaaaa-0000-4000-8000-000000000003","prompt_id":"pc1","question":"bitlocker recovery key escrow to entra","forward":false,"verdict":"good","articles":["public/intune/bitlocker.md"],"answered":true}

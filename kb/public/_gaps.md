@@ -1034,6 +1034,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
 ## python/stdlib-windows-portability
 
 - **Whether a detached child started by a Claude Code hook on Windows survives the hook's exit** (a job object that kills children on close, and whether `CREATE_BREAKAWAY_FROM_JOB` is needed): not in the Claude Code hooks reference or the Python subprocess docs, looked 2026-09-28. Needs a Windows test of the `SessionEnd` launcher (query-log item 4). (topic: python/stdlib-windows-portability)
+  - Tried 2026-09-28: the launcher (`_tools/querylog.py launch`) now adds `CREATE_BREAKAWAY_FROM_JOB` and falls back without it when the job refuses breakaway. On macOS the detached distill wrote its run file after the launcher exited and after its process group was killed (`_tools/test_querylog.py`, TestLaunch). The Windows test, which runs the launcher inside a kill-on-close job that allows breakaway, has not run on Windows yet; still missing: that run, and what job, if any, Claude Code puts hook processes in on Windows. (topic: python/stdlib-windows-portability)
 
 ## claude/hooks
 
