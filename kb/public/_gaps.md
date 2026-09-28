@@ -1047,6 +1047,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
 ## security/management-plane-hardening
 
 - **what benchmarks tell us?** The kb was asked this in a logged lookup of 2026-09-28, and no article answered it (query log finding F-27b9b6ccd368). Looked in the kb 2026-09-28: `rag.py pack` gives `weak`, with this topic in the lead. Needs an official source that states it (`/kb-research`, or the query log's opt-in research). (topic: security/management-plane-hardening)
+  - Superseded 2026-09-28: not a gap: the judge found the logged lookup answered, and a weak pack with such a judgement is not a miss. (topic: security/management-plane-hardening)
 
 ## claude/plugins
 
