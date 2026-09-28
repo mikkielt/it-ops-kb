@@ -61,4 +61,4 @@ The cases, the models, token counts, costs and the route each run took: `kb/_sel
 - A `DOC` fact is only as current as its source's date. A census tag (`census-YYYY-MM-DD`) marks a commit whose sources were all confirmed current on that date.
 - `UNK` and `COMMUNITY` facts are leads to verify, never answers on their own. A `CODE` fact describes how a tool is implemented at one release, not what its vendor promises. A snippet's `checked:` value says whether anyone ran it.
 - Examples use placeholders only (`PL-LT-00123`, `corp.example.com`, `jan.kowalski`). No real hosts, tenants or people are ever recorded.
-- Licensing: facts are written in our own words, quotes are 25 words or fewer, and verbatim copies appear only where the source's licence allows it.
+- Licensing: facts are written in our own words, quotes are 25 words or fewer, and verbatim copies appear only where the source's licence allows it. The code is Apache-2.0 (`LICENSE`), the kb text CC BY 4.0 (`LICENSE-CONTENT`); snapshots and pinned files keep their sources' licences (`NOTICE`).

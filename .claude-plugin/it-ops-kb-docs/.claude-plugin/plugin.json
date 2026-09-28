@@ -8,6 +8,7 @@
   },
   "homepage": "https://gitlab.com/mikkielt/it-ops-kb",
   "repository": "git@gitlab.com:mikkielt/it-ops-kb.git",
+  "license": "Apache-2.0",
   "keywords": ["microsoft-learn", "claude-code", "mcp", "documentation"],
   "hooks": {
     "PreToolUse": [

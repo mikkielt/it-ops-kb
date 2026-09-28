@@ -8,6 +8,7 @@
   },
   "homepage": "https://gitlab.com/mikkielt/it-ops-kb",
   "repository": "git@gitlab.com:mikkielt/it-ops-kb.git",
+  "license": "Apache-2.0 AND CC-BY-4.0",
   "keywords": ["windows", "endpoint-management", "intune", "configmgr", "entra-id", "dsc", "mcp", "claude-code", "knowledge-base"],
   "skills": ["./.claude/skills/kb-lookup", "./.claude/skills/kb-review-workspace", "./.claude/skills/kb-gap"],
   "agents": ["./.claude/agents/kb-lookup.md", "./.claude/agents/kb-reviewer.md"],

@@ -1,0 +1,23 @@
+it-ops-kb
+Copyright 2026 Mikolaj Kielt-Zewar
+
+Code (_tools/, .githooks/, .claude-plugin/, .claude/, the CI files) is licensed
+under the Apache License, Version 2.0 (LICENSE).
+
+Knowledge base text under kb/ written for this project is licensed under
+Creative Commons Attribution 4.0 International (LICENSE-CONTENT), except as
+stated below.
+
+Third-party material keeps its own licence and is not covered by the above:
+- kb/*/_snapshots/: verbatim text of sources; each file's header names its
+  source, publisher, licence and changes. CC BY-SA 4.0 files stay CC BY-SA 4.0.
+- Files listed in kb/*/_artifacts.csv: pinned copies of upstream files; the
+  licence of each is in the source row it names in kb/*/_sources.csv
+  (Microsoft DSC: MIT; Model Context Protocol and A2A: Apache-2.0; Microsoft
+  Learn docs: CC BY 4.0 or MIT; DISA and NIST: US Government work; MITRE
+  ATT&CK: ATT&CK terms of use, (c) The MITRE Corporation).
+- Short quotations (25 words or fewer) from sources without an open licence are
+  used for citation; their rights stay with their owners.
+
+Product names and trademarks belong to their owners. This project is not
+affiliated with or endorsed by Microsoft, Anthropic, GitLab or other vendors.
