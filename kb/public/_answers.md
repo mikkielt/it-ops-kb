@@ -1836,6 +1836,18 @@ _Agent: kb-research_
 
 _Agent: kb-research_
 
+## QK-files-repository-agent-leave-out-ingests. Which files of a repository should an agent leave out when it ingests the repository into kb facts, and where do the facts land when the kb is an installed plugin?
+- Repositories mark generated and vendored files in `.gitattributes`: Linguist's `linguist-generated` (excluded from statistics, hidden in diffs) and `linguist-vendored`, GitLab's `gitlab-generated`; a `-attr` line un-marks a default. [DOC S-czqctq3z, S-rhxv4cuv]
+- Without attributes, the defaults are Linguist's `vendor.yml` and `generated.rb` lists, and GitLab's: lock files, `node_modules`, minified `js`/`css`, source maps and generated Go files. [DOC S-czqctq3z, S-rhxv4cuv]
+- `git check-attr --source=<commit> --stdin -z` reads the attributes at the commit the facts will cite, as `set`, `unset`, `unspecified` or a value. [DOC S-drdhmn2b] Go's generated files carry a `// Code generated ... DO NOT EDIT.` line before the first non-comment text. [DOC S-me5pwvu4]
+- An installed plugin's copy lives in `cache/<marketplace>/<plugin>/<version>/` and is orphaned on update and removed 14 days later; `${CLAUDE_PLUGIN_DATA}` persists across updates but is deleted on uninstall. [DOC S-toe7z3kj]
+- `--add-dir` gives a session a directory to read and edit, and loads that directory's `.claude/skills/` (even under `--bare`). [DOC S1800]
+- Conclusion: skip files whose attribute is `set`, keep those where it is `unset`, and apply the default lists and the Go header when it is `unspecified`. Facts from a host project go to a writable clone of the team's fork (or a `KB_ROOTS` directory in its own git repository) opened with `--add-dir`, never to the plugin copy or its data directory, which no git history holds. [DER S-czqctq3z, S-rhxv4cuv, S-drdhmn2b, S-toe7z3kj, S1800]
+- Open: secret files have no attribute convention in these sources; this kb's `_tools/kbingest.py` uses its own leak-scan patterns. [UNK]
+- See agents/repository-ingestion.md, claude/plugins.md, claude/ci-and-headless.md.
+
+_Agent: kb-research_
+
 ## R1. Reuse candidates
 
 - **Highest leverage: `pydantic-settings` as a `dependency` for a project's config-file/env-var/flags

@@ -25,10 +25,10 @@ Three remote servers, no authentication, urls in `.claude-plugin/it-ops-kb-docs/
 
 ## Skills
 
-`/kb-lookup`, `/kb-review-workspace` and `/kb-gap` (read-only: review another project's code against the kb; report what the kb lacks). **A request to change the kb goes through its skill**, not freehand (a hook names it): `/kb-setup`, `/kb-research`, `/kb-refresh`, `/kb-add-topic`, `/kb-add-root`, `/kb-census`, `/kb-probe`, `/kb-verify`, `/kb-git-sync`, `/kb-self`. They follow `kb/_self/maintaining.md`.
+`/kb-lookup`, `/kb-review-workspace` and `/kb-gap` (read-only: review another project's code against the kb; report what the kb lacks). **A request to change the kb goes through its skill**, not freehand (a hook names it): `/kb-setup`, `/kb-research`, `/kb-refresh`, `/kb-add-topic`, `/kb-add-root`, `/kb-ingest`, `/kb-census`, `/kb-probe`, `/kb-verify`, `/kb-git-sync`, `/kb-self`. They follow `kb/_self/maintaining.md`.
 
 ## Agent conduct
 
 - Never call a docs server's `submit_feedback` tool (denied in settings): it posts text outside the repo.
 - Placeholders only in examples outside `internal` roots: `PL-LT-00123`, `PL-SRV-0042`, `corp.example.com`, tenant `00000000-0000-0000-0000-000000000000`, `jan.kowalski`. Never add real hostnames, tenant or object ids, addresses, people or tokens; `_cache/` and `_private/` are never committed.
-- Run shell commands one at a time: permission rules match one command, so `a; b`, `a && b` and loops need approval.
+- Run shell commands one at a time: permission rules match one command, so `a; b`, `a && b`, loops need approval.

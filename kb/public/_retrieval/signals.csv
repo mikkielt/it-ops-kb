@@ -339,3 +339,7 @@ merge_request.auto_merge,gitlab/automated-merge-requests
 ci_push_repository_for_job_token_allowed,gitlab/automated-merge-requests
 feature_list.json,agents/agent-planning-and-done
 claude-progress.txt,agents/agent-planning-and-done
+linguist-generated,agents/repository-ingestion
+linguist-vendored,agents/repository-ingestion
+gitlab-generated,agents/repository-ingestion
+check-attr,agents/repository-ingestion

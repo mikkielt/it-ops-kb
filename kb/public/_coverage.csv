@@ -38,6 +38,7 @@ agents/windows-agentic-platform,P2,complete,agents/windows-agentic-platform.md;a
 agents/agent-planning-and-done,P3,complete,agents/agent-planning-and-done.md,5
 agents/doc-change-detection,P3,complete,agents/doc-change-detection.md,36
 agents/langgraph,P3,complete,agents/langgraph.md,11
+agents/repository-ingestion,P3,complete,agents/repository-ingestion.md,4
 ansible/dsc3-module,P3,complete,ansible/dsc3-module.md,6
 ansible/windows-ssh,P3,complete,ansible/windows-ssh.md,1
 arch/docs-home-options,P1,complete,arch/docs-home-options.md,4

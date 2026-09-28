@@ -46,6 +46,7 @@ the vendor docs found this session state a fully-autonomous merge-with-no-review
 
 ## Reference
 - `agents/doc-change-detection.md`: detecting that a cited source page changed, moved or died (version signals, redirects, archives, soft 404s).
+- `agents/repository-ingestion.md`: which files of a repository an agent leaves out when it reads the repository into facts (generated and vendored files, `.gitattributes`, `git check-attr`).
 
 | Product | Trigger | What it reads | Human review before publish? |
 |---|---|---|---|

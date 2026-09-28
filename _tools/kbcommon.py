@@ -73,6 +73,18 @@ REUSE = {
 }
 PREFIX = re.compile(r"[A-Z]{1,4}")  # a root's source id prefix: its ids are <prefix>-<8 base32 chars>
 RESERVED_PREFIXES = {"DOC", "CODE", "DER", "UNK", "QK", "EV", "PL"}  # tag kinds, answer and eval ids, placeholders
+# Secret shapes: the leak scan over tracked files (test_kb.py, TestLeaks) and kbingest.py's survey of a repository.
+SECRETS = (
+    r"-----BEGIN (?:RSA |EC |OPENSSH |DSA |PGP |ENCRYPTED )?PRIVATE KEY-----",
+    r"\bAKIA[0-9A-Z]{16}\b",
+    r"\bgh[pousr]_[A-Za-z0-9]{36}\b", r"\bgithub_pat_[A-Za-z0-9_]{22,}\b",
+    r"\bglpat-[A-Za-z0-9_-]{20,}\b", r"\bglrt-[A-Za-z0-9_-]{20,}\b",
+    r"\bxox[abprs]-[A-Za-z0-9-]{10,}\b",
+    r"\bsk-ant-[A-Za-z0-9_-]{20,}\b", r"\bsk-(?:proj-)?[A-Za-z0-9]{32,}\b",
+    r"AccountKey=[A-Za-z0-9+/]{40,}={0,2}", r"[?&]sig=[A-Za-z0-9%+/]{30,}",
+    r"\beyJ[A-Za-z0-9_-]{10,}\.eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}",
+    r"(?i)\b(?:password|passwd|pwd|client_secret|api_key|apikey|secret)\b\s*[:=]\s*[\"'][^\"'\s<>${}]{8,}[\"']",
+)
 csv.field_size_limit(2**31 - 1)  # a very wide cell must not abort a whole read
 
 

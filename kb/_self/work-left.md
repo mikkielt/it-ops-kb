@@ -2,13 +2,6 @@
 
 The open work, and only that: a finished item leaves this file (its commit records it). GitHub has no issues or merge requests for this repository; this list is the queue. Counts that move (partial articles, `UNK` facts, ledger entries) are commands here, not numbers.
 
-## Roots
-
-- **Design a skill that ingests a team's repositories into its roots.** Sources are repository files at a pinned commit (`CODE` tags) and the repositories' own docs, so the kb answers questions across a team's services. Two modes:
-  - **From a host project:** the kb is installed as a plugin in another code repository, and an agent working there turns that repository's knowledge into facts of a root. The plugin copy is read-only, so the design has to say where the facts land (the team's fork, a clone, a root under `KB_ROOTS`) and how they get committed.
-  - **From this clone:** "source `<repo>` and put it here", run inside this repository.
-  - Both modes need the agent to reason and guide the user rather than follow a fixed script: which root the knowledge belongs to or whether to create one (`/kb-add-root`), its visibility, which parts of the repository are worth facts, how to split them into topics, and what to leave out (secrets, generated code, vendored copies).
-
 ## Query log: a self-improving lookup pipeline
 
 Every kb lookup leaves a redacted, judged record in the repository (`kb/_querylog/`). `learn` turns the records into findings, and `apply` turns accepted findings into eval rows, aliases, expansions and `_gaps.md` entries, pushed straight to `main` once the local gate passes. The aim is better knowledge handling by agents, not an approval workflow for people to run: no merge requests unless a conflict needs one. Stages: capture (hooks, local spool) -> distill (stdlib rules, then Haiku in batches) -> learn (deterministic findings) -> apply (local gate, then a direct push). Standard library only, plus the `claude` CLI for Haiku. It must run on macOS, Linux and Windows.

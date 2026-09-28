@@ -18,7 +18,7 @@ The repository root is a Claude Code plugin marketplace (`.claude-plugin/marketp
 
 **`it-ops-kb-docs`** (`.claude-plugin/it-ops-kb-docs/`): the three documentation servers (Microsoft Learn, Claude Code docs, MCP spec), with every `submit_feedback` call blocked by the plugin's PreToolUse hook (a plugin cannot ship permission rules). Install it only for servers the project does not have already: each adds its name and instructions to every session.
 
-The writing skills (`/kb-research`, `/kb-refresh`, `/kb-add-topic`, `/kb-census`, `/kb-git-sync`, `/kb-self`) and the gate stay in a clone of this repository: the plugin copy is replaced on every update.
+The writing skills (`/kb-research`, `/kb-refresh`, `/kb-add-topic`, `/kb-ingest`, `/kb-census`, `/kb-git-sync`, `/kb-self`) and the gate stay in a clone of this repository: the plugin copy is replaced on every update.
 
 ## 2. Rules for changing the plugin
 
@@ -77,6 +77,7 @@ A team keeps its own knowledge (its systems, repositories, runbooks; real hostna
 - **Outside the repository:** `KB_ROOTS=DIR[:DIR]` adds roots kept elsewhere (each with its own `_root.md`) to the read tools and checks, e.g. `claude mcp add --scope user kb -e KB_ROOTS=$HOME/src/team-kb -- python3 ~/src/it-ops-kb/_tools/kb_mcp.py`. Set it on the server only (`-e`); git, census and fetch work on the repository's roots only. The index file then gets its own name (`kbindex-r<hash>-...`) beside the default one.
 - **Filter:** `root` on `kb_pack`, `kb_search`, `kb_facts` and `kb_audit` (`--root NAME` on the command line) keeps one root; `kb_status` lists every root with its prefix, visibility and counts. A bare `domain` covers that domain in every root and is matched without regard to case; one no path is under is an error that lists the domains.
 - **Checked in a host:** a fork with a team root, installed as a plugin in a host project (a local-scope directory marketplace), loaded with `--plugin-dir`, and served through `KB_ROOTS`, answered a question spanning both roots with lines and citations from each (`kb/_self/reports/host-plugin-roots.md`). A fork runs the upstream tests unchanged whatever it names its roots.
+- **A team's repositories into its root:** `/kb-ingest` turns a repository at a pushed commit into `CODE` and `DOC` facts of a root, leaving out secret, generated and vendored files (`python3 _tools/kbingest.py survey`). From a clone, "source `<repo>` and put it here" writes to `kb/<root>/`. From a host project the plugin copy stays read-only: the facts land in a writable clone of the team's fork (the default: the gate, trailers and `kbgit.py sync` apply, and every installed copy gets them at its next update) or in a `KB_ROOTS` directory committed by its own repository's git; never in the plugin cache or `${CLAUDE_PLUGIN_DATA}`, which no git history holds. The host session opens the clone with `claude --add-dir <clone>`, which loads the clone's skills, and runs its tools by path (they find the kb from their own location, not the working directory).
 - **Size:** a word counts as a key word only when under a fifth of the lines of all roots together hold it, so a small team root reaches `good` for words the public root rarely uses.
 
 ## 7. Without plugins, and contributing back

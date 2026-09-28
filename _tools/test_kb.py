@@ -428,6 +428,9 @@ class TestLookup:
         assert pinned({"url": "https://raw.githubusercontent.com/python/peps/ff16962a22fdc5e2095e0cbc5c243ea76e34fb52/peps/pep-0596.rst"})
         assert pinned({"url": "https://github.com/o/r/blob/v3.8.0/src/a.py"})
         assert pinned({"url": "https://gitlab.com/g/p/-/raw/v1.2/a.py"})
+        assert pinned({"url": "https://gitlab.corp.example.com/ops/deploy/-/raw/" + "ab12" * 10 + "/src/a.py"})  # self-managed
+        assert not pinned({"url": "https://gitlab.corp.example.com/ops/deploy/-/raw/main/src/a.py"})
+        assert not pinned({"url": "https://git.corp.example.com/ops/deploy/raw/" + "ab12" * 10 + "/src/a.py"})  # no /-/
         assert pinned({"url": "https://example.com/tool.zip", "artifact_sha256": "ab" * 32})
         assert not pinned({"url": "https://raw.githubusercontent.com/o/r/main/a.py"})
         assert not pinned({"url": "https://raw.githubusercontent.com/o/r/refs/heads/release/a.py"})
@@ -721,17 +724,7 @@ class TestIds:
 
 
 class TestLeaks:
-    SECRETS = [
-        r"-----BEGIN (?:RSA |EC |OPENSSH |DSA |PGP |ENCRYPTED )?PRIVATE KEY-----",
-        r"\bAKIA[0-9A-Z]{16}\b",
-        r"\bgh[pousr]_[A-Za-z0-9]{36}\b", r"\bgithub_pat_[A-Za-z0-9_]{22,}\b",
-        r"\bglpat-[A-Za-z0-9_-]{20,}\b", r"\bglrt-[A-Za-z0-9_-]{20,}\b",
-        r"\bxox[abprs]-[A-Za-z0-9-]{10,}\b",
-        r"\bsk-ant-[A-Za-z0-9_-]{20,}\b", r"\bsk-(?:proj-)?[A-Za-z0-9]{32,}\b",
-        r"AccountKey=[A-Za-z0-9+/]{40,}={0,2}", r"[?&]sig=[A-Za-z0-9%+/]{30,}",
-        r"\beyJ[A-Za-z0-9_-]{10,}\.eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}",
-        r"(?i)\b(?:password|passwd|pwd|client_secret|api_key|apikey|secret)\b\s*[:=]\s*[\"'][^\"'\s<>${}]{8,}[\"']",
-    ]
+    SECRETS = kbcommon.SECRETS  # one list: kbingest.py's survey of a repository flags the same shapes
 
     def test_no_secrets(self):
         allow = allowlist().get("secret", set())

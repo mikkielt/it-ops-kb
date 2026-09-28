@@ -20,7 +20,7 @@ SELF = "kb/_self"  # the kb's own docs
 
 CHANGE = re.compile(r"\b(?:add|create|write|update|edit|change|modify|fix|correct|remove|delete|rename|move|refactor|"
                     r"implement|improve|extend|replace|commit|push|sync|merge|rebase|refresh|re-?verify|research|"
-                    r"investigate|census|verify|bump|upgrade|set ?up|install)\b", re.I)
+                    r"investigate|census|verify|bump|upgrade|set ?up|install|ingest|import|put)\b", re.I)
 QUESTION = re.compile(r"(?:how|what|why|when|where|which|who|does|do|did|is|are|was|can|could|should|would)\b[^\n]*\?\s*$",
                       re.I | re.S)  # a single question ("how do I fix error X?") is a lookup, not a change request
 HARNESS = re.compile(r"[<\[]|Another Claude session sent a message")  # a subagent's report or a task notification,
@@ -29,6 +29,8 @@ ROUTES = (  # (skill, when, pattern): the first three that match are named, in t
     ("kb-census", "confirm every source", r"\bcensus\b|\ball (?:the |kb )?sources\b|\bevery source\b"),
     ("kb-refresh", "facts of an existing topic, file or source id", r"\brefresh|\bre-?verify|\bre-?check|\boutdated\b|"
      r"\bstale\b|\bout of date\b|\bsources? (?:has |have )?(?:changed|moved)\b|\bS-[a-z2-7]{8}\b|\bS\d{3,4}\b"),
+    ("kb-ingest", "a team's repository into a root", r"\bingest|\bput (?:it|them) here\b|\brepo(?:sitor(?:y|ies))? into\b|"
+     r"\b(?:source|import) (?:the |this |our |a |their )?(?:team'?s? )?(?:\S+ )?repo(?:sitor(?:y|ies))?\b"),
     ("kb-add-root", "a new knowledge root under kb/", r"\bnew (?:kb )?root\b|\b(?:add|create) (?:a |an )?(?:new )?(?:kb |knowledge )?root\b"),
     ("kb-add-topic", "a new topic, article or data table", r"\bnew (?:topic|article|domain|table)\b|"
      r"\b(?:add|write|create) (?:a |an )?(?:new )?(?:topic|article|domain|table)\b"),

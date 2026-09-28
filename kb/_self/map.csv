@@ -79,3 +79,5 @@ kb/_self/web-sources.md,_tools/providers.csv
 kb/_self/tools.md,_tools/factdiff.py
 kb/_self/tools.md,_tools/factdiff.toml
 kb/_self/content-rules.md,_tools/factdiff.py
+kb/_self/tools.md,_tools/kbingest.py
+kb/_self/plugin.md,.claude/skills/kb-ingest/SKILL.md
