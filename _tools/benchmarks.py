@@ -188,19 +188,40 @@ def _isnum(v):
         return False
 
 
-BLOCK = re.compile(r"(<!-- bench:(table|records) ([\w-]+)((?: [\w-]+=[^ >]+)*) -->\n)(.*?)(<!-- /bench -->)", re.S)
+BLOCK = re.compile(r"(<!-- bench:(table|records|spend)((?: [^\n]*?)?) -->\n)(.*?)(<!-- /bench -->)", re.S)
+OPT = re.compile(r"(\w+)=(.*?)(?= \w+=|$)")
+
+
+def spend_table(rows):
+    """Each scenario's spend per record: paid runs, input and output tokens, dollars (its `all paid runs` rows)."""
+    got = {}
+    for r in rows:
+        if r["case"] == "all paid runs":
+            got.setdefault((r["scenario"], r["record"]), {"runs": r["runs"]})[r["metric"]] = r["value"]
+    out = ["| scenario | record | paid runs | input tokens | output tokens | spend |", "|---|---|---|---|---|---|"]
+    tot = [0, 0.0, 0.0, 0.0]
+    for (scen, rec), v in sorted(got.items()):
+        inp, outp, usd = (float(v.get(k, 0)) for k in ("spend_input_tokens", "spend_output_tokens", "spend_usd"))
+        tot = [tot[0] + int(v["runs"] or 0), tot[1] + inp, tot[2] + outp, tot[3] + usd]
+        out.append(f"| {scen} | {rec} | {v['runs']} | {inp:,.0f} | {outp:,.0f} | ${usd:.2f} |")
+    out.append(f"| all | | {tot[0]} | {tot[1]:,.0f} | {tot[2]:,.0f} | ${tot[3]:.2f} |")
+    return "\n".join(out)
 
 
 def render(text, rows):
     """The report text with every generated block rewritten from `rows`."""
     def one(m):
-        kind, scen, opts = m.group(2), m.group(3), dict(o.split("=", 1) for o in m.group(4).split())
-        if kind == "records":
+        kind, rest = m.group(2), m.group(3).strip()
+        scen, _, rest = rest.partition(" ")
+        opts = dict(OPT.findall(rest))
+        if kind == "spend":
+            body = spend_table(rows)
+        elif kind == "records":
             body = records_table(rows, scen)
         else:
             split = lambda k: opts[k].split(",") if k in opts else None  # noqa: E731
             body = table(rows, scen, split("metrics"), split("cases"), split("arms"))
-        return m.group(1) + body + "\n" + m.group(6)
+        return m.group(1) + body + "\n" + m.group(5)
     return BLOCK.sub(one, text)
 
 

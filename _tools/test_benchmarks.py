@@ -67,7 +67,8 @@ def test_the_report_names_every_scenario_and_its_command():
     for name, (section, _) in bm.SCENARIOS.items():
         assert f"python3 _tools/benchmarks.py run {name}`" in text, name
     for m in bm.BLOCK.finditer(text):
-        assert m.group(3) in bm.SCENARIOS or any(r["scenario"] == m.group(3) for r in bm.read_rows()), m.group(3)
+        scen = m.group(3).split()[0] if m.group(3).strip() else ""
+        assert m.group(2) == "spend" or scen in bm.SCENARIOS or any(r["scenario"] == scen for r in bm.read_rows()), scen
 
 
 def test_results_rows_are_complete():
