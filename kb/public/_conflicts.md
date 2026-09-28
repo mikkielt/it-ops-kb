@@ -606,8 +606,10 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
 ## windows/azure-arc-servers
 
 - The Azure SDK AgentConfiguration model (S-75xvev6g) describes agent configuration properties as settable 'locally via the azcmagent config command, or remotely via ARM', while Extensions security for Azure Arc-enabled servers (S-efadnhwv) says the local agent security controls can only be set on the server itself and can't be modified from Azure. (topic: windows/azure-arc-servers)
+  - Re-checked 2026-09-28, still stands: the Az.ConnectedMachine models mark `guestConfigurationEnabled` read-only (no create or update) and the security pages (S-efadnhwv, S-wvoeevrw) say the controls are set only on the machine, while the Python SDK docstring still says ARM can set them. (topic: windows/azure-arc-servers)
 - Machine Configuration parameter types: S-nibv7ci5 says Azure Policy parameters passed to guest assignments must be string (no arrays); S-lkmpjpnp (create-policy-definition) lists String, Boolean, Double and Float as supported parameter value types. Re-read 2026-09-27. (topic: windows/azure-arc-servers)
 - Azure Arc gateway status: S-wwbtoald (agent-overview) still calls it 'Limited preview'; the kb had stated GA with no source (now UNK). S-szyeetyp only says it reduces required endpoints. Re-read 2026-09-27. (topic: windows/azure-arc-servers)
+  - Resolved 2026-09-28 in favour of GA: agent release notes version 1.58 (November 2025, S-jduwmt53) remove the Preview flag because the gateway was promoted to General Availability, and the Arc gateway page (updated 2026-05-19) carries no preview label; agent-overview (updated 2026-07-28) still says "Limited preview", a stale label. (topic: windows/azure-arc-servers)
 
 ## security/supply-chain
 
@@ -640,3 +642,7 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
 ## entra
 
 - Blueprints per pro-code agent: the Agent 365 Copilot Studio identity page (S-ketmxnue, updated_at 2026-05-19) says each pro-code agent has its own blueprint, while Entra's planning guide (S-3tt3ywvk, updated_at 2026-08-14) defaults to one blueprint per trust boundary with several agent identities under it. Follow the Entra guide for design; the Agent 365 sentence reads as a simplification. (topic: entra/agent-id)
+
+## windows/smart-app-control
+
+- Smart App Control re-enable path: the Learn developer pages say SAC can only be enabled on a clean install (S2198) and that Off and On are one-way in Settings (S2199), while the March 2026 update note KB5079391 (S-5zawgrph) and the consumer FAQ (S-n2kx46hd) say SAC can now be turned on or off without a clean install. The rollout is gradual, so both hold on different builds until the Learn pages are updated. Read 2026-09-28. (topic: windows/smart-app-control)

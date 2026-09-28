@@ -2,8 +2,8 @@
 topic: windows/azure-update-manager
 priority: P2
 applies_to: "Azure Update Manager for Azure VMs and Azure Arc-enabled servers (Windows/Linux); docs current 2026-09-26"
-retrieved_utc: 2026-09-26
-sources: [S-e6petnio, S-icfvnq2h, S-fync3qzc, S-kemkbiwb, S-5sy3a7ev, S-4gkojj4d, S-ci26bqyc, S-bbya5ebc, S-qpjly7jd, S-wvznmns5, S-horf4w6m, S-h3kjbi2l, S-deu5qnsc, S-q3ieo6m5, S-nd4cmnsq, S-umxt7njc, S-b5urflpf, S-vgw6qot7, S-5g472jm4, S-hvijyhte, S-nyw5rvsw, S-oo4lrs7s, S-5c4oo5gx, S-w3pkna2x, S-vtpfmnfq, S-2kizbajy]
+retrieved_utc: 2026-09-28
+sources: [S-e6petnio, S-icfvnq2h, S-fync3qzc, S-kemkbiwb, S-5sy3a7ev, S-4gkojj4d, S-ci26bqyc, S-bbya5ebc, S-qpjly7jd, S-wvznmns5, S-horf4w6m, S-h3kjbi2l, S-deu5qnsc, S-q3ieo6m5, S-nd4cmnsq, S-umxt7njc, S-b5urflpf, S-vgw6qot7, S-5g472jm4, S-hvijyhte, S-nyw5rvsw, S-oo4lrs7s, S-5c4oo5gx, S-w3pkna2x, S-vtpfmnfq, S-2kizbajy, S-kpgnxzkx, S-jibvb745]
 status: complete
 ---
 
@@ -73,7 +73,7 @@ status: complete
 ### Azure Resource Graph queries
 - AUM pushes every assessment and installation result to Azure Resource Graph via two tables: `patchassessmentresources` (pending-update / assessment data, retained 7 days) and `patchinstallationresources` (installation-run results, retained 30 days). [DOC S-wvznmns5, S-horf4w6m]
 - Record types: `patchassessmentresources` holds `patchassessmentresults` (per-machine summary, id `<resourcePath>/patchAssessmentResults/latest`) and `patchassessmentresults/softwarepatches` (one available update); `patchinstallationresources` holds `patchinstallationresults` (per-run summary) and `patchinstallationresults/softwarepatches` (one installed update). [DOC S-horf4w6m]
-- The provider namespaces behind those records are `microsoft.compute/virtualmachines`, `microsoft.hybridcompute/machines` and `microsoft.connectedvmwarevsphere/virtualmachines`. [UNK: not in S-horf4w6m as re-read 2026-09-27]
+- The Resource Graph type reference lists those records under `microsoft.compute/virtualmachines`, `microsoft.hybridcompute/machines` and `microsoft.connectedvmwarevsphere/virtualmachines` (for example `microsoft.hybridcompute/machines/patchassessmentresults/softwarepatches`). [DOC S-kpgnxzkx]
 - Key `patchinstallationresults`/`patchassessmentresults` properties: `patchServiceUsed` (`WU-WSUS` for Windows, or `YUM`/`APT`/`Zypper` for Linux), `osType` (`Windows`/`Linux`), `rebootPending`/`rebootRequired`, `classifications`, `Kbid` (Windows KB ID) or `version` (Linux package version), `patchName`, `startedBy`, `errorDetails` (first five error messages). [DOC S-horf4w6m]
 - Example: list Windows Server update installations from the last 7 days (Azure Resource Graph / KQL):
   ```kql
@@ -103,7 +103,7 @@ status: complete
 - To cancel a run, the pre-event handler must call the cancellation API at least 10 minutes before the schedule's start time. [DOC S-h3kjbi2l]
 - Event Grid delivers at-least-once, so pre/post event handlers should be idempotent (a handler can be invoked more than once for the same event). [DER S-2kizbajy: Event Grid tries to deliver each message at least once per matching subscription and retries on failure, so a handler may see the same event twice]
 - Multiple pre-events and/or post-events can be attached to one schedule; a pre/post event is created either while creating a new maintenance configuration (Events tab, "Add Event Subscription") or added later to an existing one (Maintenance Configuration > Settings > Events). [DOC S-deu5qnsc, S-h3kjbi2l]
-- Delivery/matched/published event counts and per-event trigger times are visible as Event Grid system-topic metrics. [UNK: not in S-deu5qnsc or S-h3kjbi2l as re-read 2026-09-27]
+- A maintenance configuration's Events page shows Event Grid metrics: Published and Matched Events should equal Delivered Events for the subscription, a single event shows Matched against Delivered, and hovering the graph gives the trigger time. [DOC S-jibvb745]
 - A cloud-native patch-management pattern layered on pre/post events: sequence maintenance configurations with time offsets so web servers patch before app servers before database servers, and use update include/exclude lists to hold back a known-bad update or restrict to security-only content. [DOC S-nyw5rvsw]
 
 ### Update sources (WSUS) and supported OS

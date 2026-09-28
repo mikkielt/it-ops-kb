@@ -2,9 +2,9 @@
 topic: windows/gmsa
 priority: P0
 applies_to: "Windows Server 2012 and later AD DS (docs current to Windows Server 2025)"
-retrieved_utc: 2026-09-26
-sources: [S400, S401, S402, S403, S404, S405]
-status: partial
+retrieved_utc: 2026-09-28
+sources: [S400, S401, S402, S403, S404, S405, S-sav2ixtw]
+status: complete
 ---
 
 # Group Managed Service Accounts (gMSA)
@@ -39,7 +39,7 @@ status: partial
 - `Reset-ADServiceAccountPassword` applies to sMSAs only, not gMSAs. [DOC S403]
 - Task Scheduler logon types: `TASK_LOGON_PASSWORD`=1 (the password must be supplied at registration), `TASK_LOGON_S4U`=2 (no stored password; no network access), `TASK_LOGON_SERVICE_ACCOUNT`=5 (documented as Local System, Local Service or Network Service). [DOC S404]
 - `New-ScheduledTaskPrincipal -LogonType` accepts None, Password, S4U, Interactive, Group, ServiceAccount, InteractiveOrPassword. [DOC S405]
-- Which `LogonType` a gMSA task needs (and whether `-UserId` takes the `DOMAIN\name$` form) is not stated on the pages above. [UNK]
+- Microsoft's Engage Center guide moves a scheduled task to a gMSA with `New-ScheduledTaskPrincipal -UserId <DOMAIN>\<gmsa>$ -LogonType Password` and then `Set-ScheduledTask ... -Principal`: the `$`-suffixed account name and `LogonType Password`, with no password supplied. [DOC S-sav2ixtw]
 - Service accounts table: the gMSA column shows "No" in the row "App runs on Windows Server". This contradicts S400 (see conflicts). [DOC S403]
 
 ## Reference

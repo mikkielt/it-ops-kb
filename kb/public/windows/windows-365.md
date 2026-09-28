@@ -2,8 +2,8 @@
 topic: windows/windows-365
 priority: P2
 applies_to: "Windows 365 Cloud PC (Enterprise, Frontline/Flex, Business, Government, Link, Boot), Graph v1.0, docs retrieved 2026-09-26"
-retrieved_utc: 2026-09-26
-sources: [S-3vcy7oqc, S-7haqmv5t, S-6bbkebpi, S-n5j76cvh, S-cklvv7d5, S-egljiuze, S-5alhdr35, S-lvqy67bp, S-vavpj2l2, S-pixm6i65, S-77ejmtcy, S-s4d4qbht, S-j3m43d2a, S-i3gqas6g, S-n3hgvxzn, S-k6rj6uel, S-qrxf7f4h, S-mbwkcgji]
+retrieved_utc: 2026-09-28
+sources: [S-3vcy7oqc, S-7haqmv5t, S-6bbkebpi, S-n5j76cvh, S-cklvv7d5, S-egljiuze, S-5alhdr35, S-lvqy67bp, S-vavpj2l2, S-pixm6i65, S-77ejmtcy, S-s4d4qbht, S-j3m43d2a, S-i3gqas6g, S-n3hgvxzn, S-k6rj6uel, S-qrxf7f4h, S-mbwkcgji, S-yqegtsih]
 status: complete
 ---
 
@@ -32,7 +32,7 @@ AI-agent variant "Windows 365 for Agents" (preview). [DOC S-7haqmv5t, S-3vcy7oqc
   non-concurrent use, each assigned to one user, with one concurrent session per license. **Shared mode**: a
   single license provisions one Cloud PC shared non-concurrently among a group of users (the licences set up for
   a group give that many Cloud PCs); user data is deleted at sign-out. [DOC S-77ejmtcy]
-- Flex (then Frontline) GA since service release 2306, previously preview. [UNK: not in S-77ejmtcy as re-read 2026-09-27]
+- Windows 365 Frontline (now Flex) moved from preview to general availability in service release 2306 (week of July 3, 2023). [DOC S-yqegtsih]
 - Windows 365 Reserve: each user can have a single Reserve Cloud PC in addition to their per-SKU Enterprise
   Cloud PCs. [DOC S-6bbkebpi]
 - In Enterprise, Business, and Government, users have a 1:1 relationship with their Cloud PC; with Flex, multiple

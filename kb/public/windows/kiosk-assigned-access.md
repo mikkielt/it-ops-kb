@@ -2,8 +2,8 @@
 topic: windows/kiosk-assigned-access
 priority: P2
 applies_to: "Windows 10/11 client (single-app kiosk since 1803, ShellLauncher since 1803/v2, multi-app via provisioning/CSP), Intune kiosk profile template and settings catalog, Microsoft Edge kiosk mode 87+"
-retrieved_utc: 2026-09-26
-sources: [S-c6tea7ux, S-ocgh5a3g, S-snqf6qj3, S-hkbq4xlj, S-grpxcouj, S-mti33mjr, S-pjgeqktu, S-jnbupokh, S-qd4qftlt, S-lz7th2mw]
+retrieved_utc: 2026-09-28
+sources: [S-c6tea7ux, S-ocgh5a3g, S-snqf6qj3, S-hkbq4xlj, S-grpxcouj, S-mti33mjr, S-pjgeqktu, S-jnbupokh, S-qd4qftlt, S-lz7th2mw, S-jqkumeuj]
 status: complete
 ---
 
@@ -74,7 +74,7 @@ allowed-apps list is enforced with generated AppLocker rules under the hood.
 - `intune/configuration-policies.md` — settings catalog and custom OMA-URI delivery mechanics (check-in/refresh cadence, `deviceManagementConfigurationPolicy`, role requirements) that any custom `AssignedAccess` OMA-URI profile or Edge settings-catalog policy in a kiosk deployment relies on. Back-link added there under Reference.
 - `windows/app-control.md` — AppLocker rules generated for a multi-app kiosk's allowed-apps list run under the same rule-collection mechanics documented there (Executable/Packaged apps collections).
 - Confirmed 2026-09-26: Intune's built-in kiosk template (`Devices > Configuration > Templates > Kiosk`, **Multi app kiosk** mode) is explicitly documented as **Windows 10-only** — every Intune kiosk-template page states "Currently, you can use Intune to configure a multi-app kiosk on Windows 10 devices" and points to the separate, non-Intune-template `lock-down-windows-11-to-specific-apps` procedure for Windows 11. [DOC S-pjgeqktu]
-- Windows 11 multi-app kiosk is therefore a distinct, non-template path (provisioning package / WMI Bridge / MDM policy using the `AssignedAccess` CSP's Windows 11 XML schema). [UNK: not in S-pjgeqktu as re-read 2026-09-27]
+- Windows 11 multi-app kiosk (a restricted user experience) takes an Assigned Access XML file through the AssignedAccess CSP: an MDM custom policy on `./Vendor/MSFT/AssignedAccess/Configuration`, a provisioning package at `AssignedAccess/MultiAppAssignedAccessSettings`, or PowerShell through the MDM Bridge WMI Provider run as SYSTEM; Settings can't configure it. [DOC S-jqkumeuj]
 
 ## Examples
 - SNIPPET: Single-app kiosk, AssignedAccess CSP custom OMA-URI (auto-logon local account running Microsoft Edge full-screen against an intranet site); context: `Configuration` node, AssignedAccess CSP, Windows 10/11; checked: no [DOC S-ocgh5a3g: `KioskModeApp`/`v4:ClassicAppPath`/`v4:ClassicAppArguments`, `AutoLogonAccount`, `Configs/Config` structure documented as shown]

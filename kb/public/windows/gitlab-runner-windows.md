@@ -2,9 +2,9 @@
 topic: windows/gitlab-runner-windows
 priority: P0
 applies_to: "GitLab Runner 19.5 (main @49138a48, 2026-09-23) on Windows"
-retrieved_utc: 2026-09-26
-sources: [S406, S407, S408, S409, S410, S411, S412, S413, S-xiyru25z, S414, S415, S400]
-status: partial
+retrieved_utc: 2026-09-28
+sources: [S406, S407, S408, S409, S410, S411, S412, S413, S-xiyru25z, S414, S415, S400, S-dmxxlc75, S-5x5wqdjs, S-c7hn5f2e, S-z2riv2e3, S-wlt4mta2, S-kw4zko43]
+status: complete
 ---
 
 # GitLab Runner on Windows
@@ -33,8 +33,8 @@ status: partial
 - Source: when `build.SafeDirectoryCheckout` is true, the runner writes `git config --global --add safe.directory <projectDir>` before checkout. [CODE S409: shells/abstract.go#AbstractShell.setupTemplateDir]
 - `safe_directory_checkout` (TOML) / `--safe-directory-checkout` / `RUNNER_SAFE_DIRECTORY_CHECKOUT` sets it per runner. [CODE S410: common/config.go#SafeDirectoryCheckout]
 - Executor defaults: `shell` false, docker true (read from source). [CODE S411: executors/shell/shell.go#NewProvider; CODE S412: executors/docker/docker_command.go#newDockerOptions]
-- Other executor defaults (kubernetes, virtualbox, parallels true; ssh and custom false). [UNK: not in S411, S412 as re-read 2026-09-27]
-- `safe_directory_checkout` does not appear in the runner docs (`docs/`) at this commit. [UNK]
+- Other executor defaults at the same commit: `kubernetes`, `virtualbox` and `parallels` true; `ssh` and `custom` false. [CODE S-dmxxlc75: executors/kubernetes/kubernetes.go#executorOptions; CODE S-5x5wqdjs: executors/virtualbox/virtualbox.go#NewProvider; CODE S-c7hn5f2e: executors/parallels/parallels.go#NewProvider; CODE S-z2riv2e3: executors/ssh/ssh.go#NewProvider; CODE S-wlt4mta2: executors/custom/custom.go#NewProvider]
+- `safe_directory_checkout` is undocumented: no file in the runner's `docs/` mentions it, neither at 49138a48 nor at main 0e3fe7d3 (2026-09-28), and the published advanced-configuration page has no mention either. [DER S410, S-kw4zko43: case-insensitive search of the docs directory at both commits]
 - Microsoft: services configured through Service Control Manager can use a gMSA. [DOC S400]
 - Issue 27895, "Group Managed Service Account Support" (closed 2023-04-20, milestone 15.5): the proposer marks runner service support as "Already supported" with `install --user "CORP\Test-gMSA$"` and no password, and asks for the docs to drop "(required)" from `--password`. [COMMUNITY S414]
 - The delivered GitLab feature is gMSA for the `docker-windows` executor through a credential spec in `security_opt` (15.5, MR 2913). [COMMUNITY S414]

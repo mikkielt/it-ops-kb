@@ -2,9 +2,9 @@
 topic: windows/azure-arc-servers
 priority: P2
 applies_to: "Azure Arc-enabled servers, Azure Connected Machine agent (azcmagent), Azure Machine Configuration (docs current 2026-09-26)"
-retrieved_utc: 2026-09-27
-sources: [S-gma7exwg, S-arygyiia, S-ojs4qilv, S-3ajkoikd, S-lpj5aefn, S-szyeetyp, S-efadnhwv, S-nevhri3m, S-5d7caeeq, S-h7fejg6k, S-oacfa6ee, S-wwbtoald, S-jfzhzjgu, S-nibv7ci5, S-4xar7ise, S-zfc5iphl, S-w3pkna2x, S-ldykf7ob, S-wftu7kvv, S-ucwyn46f, S-d4ny3ufk, S-epoqec7s, S-nofzkxdn, S-vetttstu, S-obkcr6hb, S-xjcjnwtx, S-43ldqczf, S-lkmpjpnp, S-2akwz2fk, S-alputngy, S-3jpzrkqj, S-orth4d7r, S-fio2gurk, S-i2fkwqg2]
-status: partial
+retrieved_utc: 2026-09-28
+sources: [S-gma7exwg, S-arygyiia, S-ojs4qilv, S-3ajkoikd, S-lpj5aefn, S-szyeetyp, S-efadnhwv, S-nevhri3m, S-5d7caeeq, S-h7fejg6k, S-oacfa6ee, S-wwbtoald, S-jfzhzjgu, S-nibv7ci5, S-4xar7ise, S-zfc5iphl, S-w3pkna2x, S-ldykf7ob, S-wftu7kvv, S-ucwyn46f, S-d4ny3ufk, S-epoqec7s, S-nofzkxdn, S-vetttstu, S-obkcr6hb, S-xjcjnwtx, S-43ldqczf, S-lkmpjpnp, S-2akwz2fk, S-alputngy, S-3jpzrkqj, S-orth4d7r, S-fio2gurk, S-i2fkwqg2, S-uoxtujn6, S-jduwmt53, S-qhjsqrr5, S-3pxztrbk]
+status: complete
 files: [windows/azcmagent-config.csv]
 ---
 
@@ -33,7 +33,8 @@ files: [windows/azcmagent-config.csv]
 - Required service tags for firewall/NSG allow rules: `AzureActiveDirectory`, `AzureTrafficManager`, `AzureResourceManager`, `AzureArcInfrastructure`, `Storage`, `AzureFrontDoor.Frontend` (required as of April 2026), and `WindowsAdminCenter` if using Windows Admin Center. [DOC S-szyeetyp]
 - Azure Arc-enabled servers does **not** support using a Log Analytics gateway as a proxy for the Connected Machine agent (Azure Monitor Agent does support it). [DOC S-szyeetyp]
 - In the Azure public cloud, Azure Arc gateway reduces the number of endpoints that must be allowed for Arc-enabled servers. [DOC S-szyeetyp]
-- Indirectly-connected mode retired September 2025, and Azure Arc gateway is GA. [UNK: not in S-szyeetyp as re-read 2026-09-27; S-wwbtoald still calls the gateway "Limited preview"]
+- Azure Arc's indirectly connected mode has been retired since September 2025. [DOC S-uoxtujn6]
+- Connected Machine agent version 1.58 (November 2025) removed the Preview flag from the `connection.type` setting because Azure Arc gateway was promoted to general availability; the agent overview page still labels the gateway "Limited preview" (see `_conflicts.md`). [DOC S-jduwmt53]
 - Proxy: `azcmagent config set proxy.url "http://ProxyServerFQDN:port"` is the agent-specific proxy setting (checked before the system `HTTPS_PROXY` env var, available since agent 1.13) and takes precedence when both are set; `azcmagent show` reports the effective proxy. `proxy.bypass` (agent 1.15+) skips the proxy for named services (`AAD`, `ARM`, `AMA`, `Arc`, `ArcData`) — e.g. `proxy.bypass "Arc"` routes Entra/ARM traffic through the proxy while Arc's own endpoints (`his.arc.azure.com`, `guestconfiguration.azure.com`) go direct; `ArcData` (SQL Server enabled by Arc traffic only) needs agent 1.36+. [DOC S-nevhri3m]
 - Private Link: an Azure Arc private link scope can replace public-endpoint/proxy connectivity; `azcmagent connect --private-link-scope <resource-id>` associates the server with it. [DOC S-ojs4qilv, S-szyeetyp]
 
@@ -69,7 +70,7 @@ files: [windows/azcmagent-config.csv]
 - On a disconnected Arc machine, guest assignments are stored locally for **14 days**; if the agent reconnects within that window the assignments are reapplied, otherwise they're deleted and not reassigned after the 14 days. [DOC S-wwbtoald]
 - Microsoft provides built-in Machine Configuration policies for common scenarios (e.g. Windows Firewall enabled, password minimum length, certain services running). [DOC S-epoqec7s]
 - Custom policy definitions are generated from a package with `New-GuestConfigurationPolicy` (writes `auditIfNotExists.json` or `deployIfNotExists.json`) and published with `New-AzPolicyDefinition`. [DOC S-lkmpjpnp]
-- Built-in packages name DSC resource modules such as `SecurityPolicyDsc`, `WindowsTimeZone`, `CertificateManagement`. [UNK: not in S-epoqec7s as re-read 2026-09-27]
+- Built-in Machine Configuration policy definitions name their package, not the DSC modules inside it, in `metadata.guestConfiguration` (for example `WindowsTimeZone` version `1.*` for the time-zone audit and `CertificateExpiration` `1.*` for the certificate-expiry audit). [DOC S-qhjsqrr5, S-3pxztrbk]
 
 ### Windows Server management, ESU, and Hotpatch via Arc
 - Windows Server Management enabled by Azure Arc requires Connected Machine agent **1.47+**, Windows Server 2012+ (Standard/Datacenter), and a *Connected* (not disconnected/expired) server; it works over public endpoint, proxy, Arc Gateway, or private endpoint with no extra endpoints to allow. [DOC S-w3pkna2x]
@@ -126,4 +127,4 @@ files: [windows/azcmagent-config.csv]
 - Run Command for Arc-enabled servers is a separate, still **public preview** feature built into the Connected Machine agent (1.33+) that runs scripts/commands on a server without an RDP or SSH connection and without installing another extension. [DOC S-obkcr6hb]
 - Azure Machine Configuration uses **PowerShell DSC v3** on Linux (side-loaded to a folder used only by Azure Policy, not added to system path) and **PowerShell DSC v2** on Windows. [DOC S-xjcjnwtx]
 - Machine Configuration's DSC v3 doesn't rely on the earlier `PowerShell-DSC-for-Linux` implementation or its `nx*` providers; it can coexist with older DSC versions on Windows and Linux as a separate implementation, with no conflict detection across versions (so don't manage the same settings from both). [DOC S-nibv7ci5]
-- The specific DSC v3 build bundled with a given machine-configuration agent release, and whether it matches this kb's `dsc/` 3.3.0 coverage, isn't stated. [UNK: bundled DSC v3 build/version number not published]
+- No page states which DSC v3 build a machine-configuration agent release bundles, so whether it matches this kb's `dsc/` 3.3.0 coverage is unknown; the agent release notes list only the Guest Config agent versions. [DER S-xjcjnwtx, S-nibv7ci5, S-jduwmt53: none names a DSC v3 version]

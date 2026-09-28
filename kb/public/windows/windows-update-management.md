@@ -2,7 +2,7 @@
 topic: windows/windows-update-management
 priority: P2
 applies_to: "Windows 10/11 Update policy CSP; Intune update rings/feature/quality/driver update policies; Windows Autopatch (incl. hotpatch); Microsoft Graph windowsUpdates (beta); Windows Update for Business reports"
-retrieved_utc: 2026-09-26
+retrieved_utc: 2026-09-28
 sources: [S-6soaabdg, S-nxcrbrj4, S-2z6lunfo, S-dlg7lumx, S-4oi245yf, S-xoerk6of, S-qffa6b5k, S-jpgvmrt5, S-vrrtfarn, S-hdprezk3, S-p4dpx2og, S-34u26yld, S-rek3chkd, S-bujcbcpv, S-m6wsqtyu, S-ee46ukhy, S-pfc25kvx, S-j63ax7eh, S-fllu73v2]
 status: complete
 files: [windows/windows-update-management.csv]
@@ -27,7 +27,7 @@ files: [windows/windows-update-management.csv]
 - Pausing an update ring blocks feature or quality updates for up to 35 days from the pause command; the pause auto-expires after 35 days, and resuming then re-pausing resets the period back to a full 35 days; **Extend** also resets the pause to 35 days without first resuming. [DOC S-nxcrbrj4]
 - A device can uninstall (roll back) its latest installed feature update only within the configured uninstall period (`ConfigureFeatureUpdateUninstallPeriod`, 2-60 days); rollback isn't possible once that window has elapsed, and isn't possible at all if the feature update was applied via an Enablement Package. [DOC S-nxcrbrj4]
 - Deleting an update ring removes its configuration from Intune, so Intune no longer applies or enforces those settings. [DOC S-nxcrbrj4]
-- Settings a deleted ring already applied are not reverted on devices, and devices can still receive settings from other active rings. [UNK: not in S-nxcrbrj4 as re-read 2026-09-27]
+- Deleting a ring doesn't change the settings on devices it was assigned to: they keep their current settings, hold no record of earlier ones, and can still get settings from other active rings. [DOC S-nxcrbrj4]
 
 ### Update CSP: key settings (full table in the CSV)
 - `DeferQualityUpdatesPeriodInDays` defers quality updates 0-30 days (default 0); pausing via `PauseQualityUpdatesStartTime` holds updates for 35 days from the specified date or until the field is cleared. [DOC S-2z6lunfo]

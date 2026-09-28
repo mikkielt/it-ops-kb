@@ -424,8 +424,11 @@ Still open: (topic: auth/configmgr-rbac-auth)
 ## infra
 
 - **gMSA scheduled task registration syntax** (LogonType, `-UserId DOMAIN\name$`): not found in windowsserverdocs gMSA pages (S400-S403), win32 TaskSchd `principal-logontype.md` (S404, which only lists LocalSystem/LocalService/NetworkService for SERVICE_ACCOUNT), or `New-ScheduledTaskPrincipal` (S405). There was also a repo-wide grep for gmsa+scheduled task across all clones. 3 attempts; stopped. [UNK] (topic: windows/gmsa)
+  - Resolved 2026-09-28: Microsoft's Engage Center guide (S-sav2ixtw, found with the Learn code-sample search) sets a task's principal with `New-ScheduledTaskPrincipal -UserId <DOMAIN>\<gmsa>$ -LogonType Password`; recorded in `windows/gmsa.md`. (topic: windows/gmsa)
 - **GitLab Runner as gMSA, official statement**: runner docs install/windows.md, advanced-configuration.md, shells, faq, security (S406-S408), a grep of all runner `docs/` for "gmsa"/"managed service", and the issue API. Only COMMUNITY issue text was found (S414); issue 30963 is open. Issue notes need a login (HTTP 401), so they weren't read. [UNK for official support] (topic: windows/gitlab-runner-windows)
+  - Tried 2026-09-28, still open: the runner `docs/` at main 0e3fe7d3 (S-kw4zko43) has no gMSA or managed-service-account mention; only the COMMUNITY issue text (S414) says it works. Needs GitLab to document it; not answerable by web research. (topic: windows/gitlab-runner-windows)
 - **`safe_directory_checkout` documentation**: the option is in the runner source (S410), but a grep of runner `docs/` at 49138a48 finds no mention. [UNK in docs] (topic: windows/gitlab-runner-windows)
+  - Resolved 2026-09-28 as a documented absence: still in no file of the runner `docs/` at main 0e3fe7d3 (S-kw4zko43) nor on the published advanced-configuration page; the per-executor defaults are now read from source (CODE). (topic: windows/gitlab-runner-windows)
 - **mssql/server digest pinning policy**: containers/deploy.md, quickstart-install-docker.md and environment-variables.md (S473, S474, S477) have no `@sha256` or digest guidance. MCR tag list saved (S478). [UNK] (topic: sqlserver/linux-container)
 - **S478 artifact hash is not stable**: `tags/list` is a live endpoint, so `fetch.py --verify` will report a mismatch once new tags appear. (topic: sqlserver/linux-container)
 - **Ownership chaining vs DENY for the audit table**: not read (sql-docs ownership-chains page not checked). [UNK] (topic: sqlserver/insert-only-audit)
@@ -752,8 +755,11 @@ Still open: (topic: auth/configmgr-rbac-auth)
 ## windows/smart-app-control
 
 - No documented Intune setting, ADMX/Group Policy setting or CSP node for Smart App Control's own mode (Off/On/Evaluation) was found. Tried (2026-09-25, Microsoft Learn MCP search): "Smart App Control policy CSP VerifiedAndReputablePolicyState ApplicationControl Intune configure"; "Smart App Control App Control for Business policy Intune Group Policy manage"; fetched the SAC overview, the test-your-app page and the App Control for Windows page. Only the `VerifiedAndReputablePolicyState` registry value (turn off) and App Control for Business policies surfaced.
+  - Tried 2026-09-28, still none: Learn search of Policy CSP, ApplicationControl CSP and the Intune App Control pages, plus the KB5079391 note (S-5zawgrph) that adds a user switch; recorded as a DER absence. (topic: windows/smart-app-control)
 - "Enterprise managed" (48-hour evaluation rule) is not defined on the pages read. Tried: same searches plus "enterprise managed devices turned off evaluation 48 hours domain joined Intune enrolled".
+  - Tried 2026-09-28, still undefined: the consumer FAQ (S-n2kx46hd) lists enterprise-managed as a reason SAC is off without defining it; recorded as a DER absence. (topic: windows/smart-app-control)
 - The consumer FAQ at support.microsoft.com (linked from S2200) was not read: the Learn MCP server does not serve it. It may state the re-enable path and region list.
+  - Resolved 2026-09-28: read directly with curl (S-n2kx46hd): reasons SAC is off, and recent updates allow turning it on without a clean install, confirmed by KB5079391 (S-5zawgrph); no region list. (topic: windows/smart-app-control)
 
 ## security/vulnerability-prioritization
 
@@ -883,6 +889,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
 
 (Resolved 2026-09-26: `--enable-automatic-upgrade`/automatic agent upgrade confirmed still public-preview via agent-release-notes and manage-agent pages [S-nofzkxdn]; SSH-over-Arc and Run Command fully documented [S-vetttstu, S-obkcr6hb]; Azure Machine Configuration confirmed to use DSC v3 on Linux / DSC v2 on Windows [S-xjcjnwtx].)
 - The specific DSC v3 build/version number bundled with a given Azure Machine Configuration agent release is not published on Microsoft Learn (machine-configuration and Connected Machine agents version independently); whether it matches this kb's `dsc/` 3.3.0 coverage remains unconfirmed after 1 lookup (2026-09-26). (topic: windows/azure-arc-servers)
+  - Tried 2026-09-28, still unpublished: the agent release notes (S-jduwmt53) list Guest Config agent versions only; recorded as a DER absence. Needs Microsoft to publish it or a lab reading of the agent folder. (topic: windows/azure-arc-servers)
 
 ## windows/delivery-optimization
 

@@ -2,8 +2,8 @@
 topic: windows/bitlocker
 priority: P2
 applies_to: "Windows 10 1703+/11, BitLocker CSP; Intune endpoint security disk encryption and device configuration Endpoint protection policies"
-retrieved_utc: 2026-09-26
-sources: [S-pfrwongj, S-cqv5zeve, S-sr7tk6jz, S-jdytzqlj, S-dwu7auzi, S-prkgx2hs, S-kszikunl, S-c4224tvs, S-mld6grwd, S-a7iwz7je, S-wzeeikuf, S-pi5lmjbg, S-77cduhcg, S-2cojjewu, S-7qrbvran, S531]
+retrieved_utc: 2026-09-28
+sources: [S-pfrwongj, S-cqv5zeve, S-sr7tk6jz, S-jdytzqlj, S-dwu7auzi, S-prkgx2hs, S-kszikunl, S-c4224tvs, S-mld6grwd, S-a7iwz7je, S-wzeeikuf, S-pi5lmjbg, S-77cduhcg, S-2cojjewu, S-7qrbvran, S531, S-m5inbpyi]
 status: complete
 files: [windows/bitlocker.csv]
 ---
@@ -82,7 +82,7 @@ files: [windows/bitlocker.csv]
 - BitLocker management is supported on Windows Pro, Enterprise, Pro Education/SE and Education; but the BitLocker management license entitlement itself is granted only by Windows Enterprise E3/E5 or Education A3/A5 -- Windows Pro/Pro Education/SE has no entitlement (matches the CSP page's own licence note in `windows/bitlocker.csv`). [DOC S-2cojjewu]
 - Device encryption (the automatic, no-policy BitLocker mode) historically required a device to meet either Modern Standby or HSTI security requirements and have no externally accessible DMA ports. [DOC S-7qrbvran]
 - Starting in Windows 11, version 24H2, the Modern Standby/HSTI and DMA-interface prerequisites for device encryption are removed, so more devices are eligible for automatic and manual device encryption. [DOC S-7qrbvran]
-- The 24H2 prerequisite removal doesn't apply to Windows IoT editions. [UNK: not in S-7qrbvran as re-read 2026-09-27]
+- The 24H2 reduction of the automatic device encryption requirements doesn't apply to Windows IoT editions. [DOC S-m5inbpyi]
 
 ## Reference
 - Recovery key storage, deletion via device removal, and Graph least-privileged permissions for reading `bitlockerKeys`: `entra/bitlocker-key-deletion.md`, `graph/permissions.md` (`BitlockerKey.ReadBasic.All` / `.Read.All`).
