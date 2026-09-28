@@ -19,7 +19,7 @@ source ledger. One copy, so every tool reads and writes these files the same way
 Roots. Knowledge lives in roots: kb/public (the upstream facts) and any kb/<name>/ a team adds, each a directory
 with a ROOT_FILE (`_root.md`: front matter `root`, `id_prefix`, `visibility`, `description`) and the same layout:
 domain directories of articles, the ledgers (SOURCES, ANSWERS, GAPS, CONFLICTS, COVERAGE_CSV, COVERAGE_MD, STATE,
-ARTIFACTS), `_census/` and DATA_DIR. Every path inside a root is relative to that root, so moving a root moves no
+ARTIFACTS, ANCHORS), `_census/`, SNAPSHOTS and DATA_DIR. Every path inside a root is relative to that root, so moving a root moves no
 line inside it. Tools that span roots name a file by its qualified path `<root>/<path in root>` (`public/intune/x.md`)
 and a topic by `<root>/<topic>`.
 
@@ -51,9 +51,19 @@ DATA_DIR = "_retrieval"  # a root's retrieval data (signals, eval set, doc2query
 KB = PUBLIC
 ROOT_FILE = "_root.md"
 SOURCES, STATE, ARTIFACTS = "_sources.csv", "_fetch_state.csv", "_artifacts.csv"
+# _fetch_state.csv: fetch.py's columns (the text hash of --diff), then factdiff.py detect's (the provider's signals as
+# last seen: validators, version id, the normalized document's hash, where the url led, its status and simhash)
+STATE_COLS = ["id", "url", "checked_utc", "fetched_utc", "changed_utc", "sha256", "text_sha256", "bytes", "error",
+              "etag", "last_modified", "version", "doc_sha256", "final_url", "http_status", "simhash", "detected_utc"]
 ANSWERS, GAPS, CONFLICTS = "_answers.md", "_gaps.md", "_conflicts.md"
 COVERAGE_CSV, COVERAGE_MD = "_coverage.csv", "_coverage.md"
 CENSUS_DIR = "_census"
+# Fact anchors (factdiff.py): where each fact's backing passage sits in its source; check.py enforces the format.
+ANCHORS = "_anchors.csv"
+ANCHOR_COLS = ["fact", "path", "source_id", "status", "heading", "terms", "sha", "quote", "verified_utc"]
+ANCHOR_REASONS = ("fetch-error", "not-text", "no-match", "gone")
+SNAPSHOTS = "_snapshots"  # normalized copies of the root's live `copy` sources, with attribution (factdiff.py snapshot)
+QUOTE_WORDS = 25  # the longest quote a `quote` source allows (kb/_self/content-rules.md, Licensing)
 # What a source's licence allows with its text: the `reuse` column of _sources.csv (check.py rejects anything else).
 REUSE = {
     "copy": "an open licence allows a verbatim copy and redistribution, with attribution (and its other conditions)",

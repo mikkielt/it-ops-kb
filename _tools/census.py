@@ -656,7 +656,7 @@ def cmd_confirm(a):
             new = re.sub(r"(?m)^retrieved_utc:.*$", f"retrieved_utc: {date}", text, count=1)
             articles.append((path, new))
     state_path = os.path.join(KB, "_fetch_state.csv")
-    state_cols = ["id", "url", "checked_utc", "fetched_utc", "changed_utc", "sha256", "text_sha256", "bytes", "error"]
+    state_cols = kbcommon.STATE_COLS
     state = {}
     if os.path.exists(state_path):
         with open(state_path, encoding="utf-8", newline="") as f:

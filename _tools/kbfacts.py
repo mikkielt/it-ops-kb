@@ -56,7 +56,7 @@ ROOT_LEDGERS = (kbcommon.ANSWERS, kbcommon.GAPS, kbcommon.CONFLICTS)
 
 KINDS = ("DOC", "CODE", "DER", "COMMUNITY", "UNK")
 _K = "|".join(KINDS)
-SKIP_DIRS = {"_tools", kbcommon.DATA_DIR, "_private", "_cache", "_census", "_self", "artifacts"}
+SKIP_DIRS = {"_tools", kbcommon.DATA_DIR, "_private", "_cache", "_census", "_self", "artifacts", kbcommon.SNAPSHOTS}
 TAG = re.compile(rf"\[(?:{_K})\b[^\]]*\]")
 ID = kbid.SOURCE_ID
 _PART_SPLIT = re.compile(rf"\s*[;,]\s*(?=(?:{_K})\b)")

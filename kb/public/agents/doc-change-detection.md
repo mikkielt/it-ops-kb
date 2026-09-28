@@ -1,9 +1,9 @@
 ---
 topic: agents/doc-change-detection
 priority: P3
-applies_to: "Microsoft Learn page metadata, markdown endpoint, sitemaps and MicrosoftDocs redirection files (probed 2026-09-27); Memento (RFC 7089); Internet Archive Wayback Availability and CDX APIs; soft-404 detection (WWW 2004)"
+applies_to: "Microsoft Learn page metadata, markdown endpoint, sitemaps and MicrosoftDocs redirection files (probed 2026-09-27); Memento (RFC 7089); Internet Archive Wayback Availability and CDX APIs; soft-404 detection (WWW 2004); docs MCP server capabilities; reference rot studies; urlwatch 2.29, changedetection.io 0.60.7, htmldate 1.10.0, trafilatura 2.2.0; FEVER and AIS"
 retrieved_utc: 2026-09-28
-sources: [S-7jumyiid, S-zb3jd525, S-lldnrkhv, S-ecrpwvoh, S-v3vc7a3l, S-xv7jeuvk, S-ybuoluc4, S-xpbhjzu7, S-rgpijsmb, S-pcy7cqea, S2196, S2177, S-2dckbgu5, S-km6slvii, S-s6xjctzu, S-oo5kmppv, S-znp63ln6, S-xc4ibwg4, S-vh33l6f5, S-qvogwadn, S2176, S-lylm4eqz, S-7ivxsp4z, S-ffzntayk, S-7n65j7bo]
+sources: [S-7jumyiid, S-zb3jd525, S-lldnrkhv, S-ecrpwvoh, S-v3vc7a3l, S-xv7jeuvk, S-ybuoluc4, S-xpbhjzu7, S-rgpijsmb, S-pcy7cqea, S2196, S2177, S-2dckbgu5, S-km6slvii, S-s6xjctzu, S-oo5kmppv, S-znp63ln6, S-xc4ibwg4, S-vh33l6f5, S-qvogwadn, S2176, S-lylm4eqz, S-7ivxsp4z, S-ffzntayk, S-7n65j7bo, S2180, S2181, S-uq2hafxi, S-shha3est, S-wcrrjfwh, S-a6bblnnl, S-gceoq2qq, S-yvdwutca, S-niqtbnmc, S-hgu2bdgi, S-wkj4aa2g]
 status: complete
 ---
 
@@ -72,6 +72,31 @@ through Memento (RFC 7089) and the Wayback CDX API. A page that answers `200` wi
 - The paper notes one case the test cannot settle: a dead domain's home page bought or parked by a new owner. [DOC S-xc4ibwg4]
 - Google Search treats a `2xx` response whose content "suggests an error", such as an empty page or an error message, as a soft 404 in Search Console. [DOC S-vh33l6f5]
 - Google treats `301` as a strong signal that the redirect target should be processed, `308` as equivalent to `301`, and `304` as "the content is the same as last time it was crawled". [DOC S-vh33l6f5]
+
+### Docs MCP servers and change feeds
+- An MCP server that supports resources declares a `resources` capability with two optional sub-features, `listChanged` and `subscribe`; only `subscribe` lets a client follow updates of one resource. [DOC S-uq2hafxi]
+- Asked to `initialize`, the Learn MCP server declared `logging`, `prompts`, `resources` and `tools` with `listChanged` only, and the Claude Code and MCP docs servers `tools` and `resources` with `listChanged` only; none declared `subscribe`. [DOC S2177, S2180, S2181]
+- So none of the three documentation servers offers a per-page change feed; a change check has to poll the pages or their version signals. [DER S2177, S2180, S2181, S-uq2hafxi: declared capabilities read on 2026-09-28]
+
+### Reference rot and content drift
+- Klein et al. (PLoS ONE, 2014) name the combination of link rot and content drift "reference rot"; over a million web references in 3.5 million science, technology and medicine articles (1997-2012), one in five articles suffered from it, and seven in ten of those that cite web resources. [DOC S-shha3est]
+- Jones et al. (PLoS ONE, 2016) found that for over 75% of web references with a representative archived snapshot, the live content had drifted from what it was when cited; representative snapshots existed for about 30% of references. [DOC S-wcrrjfwh]
+- Jones et al. compared the text of snapshots with Simhash, Jaccard, Sørensen-Dice and cosine similarity, and used a high threshold to call two snapshots the same content; they dropped Spamsum because its input needs more than 4 KB of text, which about 70% of their comparisons lacked. [DOC S-wcrrjfwh]
+- So a 200 answer on a cited URL says little: most references drift, and only text comparison (not the status code) shows it. [DER S-shha3est, S-wcrrjfwh]
+
+### Change monitors, extraction and date rules
+- urlwatch runs two filter stages per job: `filter` on the downloaded page before diffing and `diff_filter` on the diff before reporting; built-in filters include `css`, `element-by-id`, `html2text`, `format-json`, `pretty-xml`, `grep`, `grepi` and `re.sub`. [DOC S-a6bblnnl]
+- urlwatch applies `filter` only to new content: the old content keeps the filter of the time it was retrieved, so a changed filter shows up in the next diff as a content change. [DOC S-a6bblnnl]
+- changedetection.io (Apache-2.0) offers filters such as "Trigger on text", "Remove text by selector", "Ignore text" and "Extract text" (regular expressions too), targets elements with XPath 1 and 2, CSS selectors, JSONPath or jq, and can parse JSON embedded in an HTML page. [DOC S-gceoq2qq]
+- changedetection.io's optional AI rules evaluate each detected diff against a plain-English intent and send the diff and extracted text to a third-party AI provider the user chooses. [DOC S-gceoq2qq]
+- htmldate finds a page's original and updated dates in three steps: markup in the header (`link` and `meta` elements, Open Graph), structural markers in the whole document (`abbr`, `time`, attributes), then heuristics on the text, in a `fast` or an `extensive` mode; it is Apache-2.0 from v1.8.0, GPLv3+ before. [DOC S-yvdwutca]
+- htmldate's README reports, on 1,000 pages with identifiable dates, precision 0.924 and recall 0.927 in `fast` mode and 0.908 and 0.993 in `extensive` mode. [DOC S-yvdwutca]
+- trafilatura (Apache-2.0 from v1.8.0) extracts a page's main text with common patterns and falls back on generic algorithms such as jusText and readability, to leave out recurring headers and footers. [DOC S-niqtbnmc]
+
+### Claim checks
+- FEVER (Thorne et al., NAACL 2018) holds 185,445 claims made by altering Wikipedia sentences, each labelled Supported, Refuted or NotEnoughInfo, with the evidence sentences recorded for the first two. [DOC S-hgu2bdgi]
+- Attributable to Identified Sources (AIS, Rashkin et al.) is a human evaluation framework for whether generated statements about the external world are supported by their underlying sources, with a two-stage annotation pipeline. [DOC S-wkj4aa2g]
+- So a fact whose backing passage changed can be re-checked as a claim against the new passage with FEVER's three labels, which tells a contradicted fact (fix it) from one the new page no longer states (a gap). [DER S-hgu2bdgi, S-wkj4aa2g]
 
 ## Reference
 - Cheapest check first, per Learn source: a `HEAD` or conditional `GET` with the stored ETag (`304` means unchanged); else the `updated_at`/`git_commit_id` from the first few KB of the page or its markdown form; then a text hash. Site level: sitemap diff for added and removed URLs, redirection files for moves. [DER S-7jumyiid, S-lldnrkhv, S-ecrpwvoh]

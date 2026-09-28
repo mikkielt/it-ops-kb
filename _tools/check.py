@@ -11,6 +11,9 @@
 - every source has a licence and a reuse class from kbcommon.REUSE (copy, quote, paraphrase, unknown);
 - a non-empty superseded_by names another source id of the same root and forms no cycle;
 - every _artifacts.csv row names a known source of its root and an existing file;
+- a root's _anchors.csv (factdiff.py), when present: a 12-hex fact key, an existing file, a known source, status
+  located (16-hex sha and terms) or unlocated:<reason> (no sha, terms or quote), a quote of at most 25 words and only
+  from a copy or quote source, a YYYY-MM-DD verified_utc, no (fact, path, source_id) twice;
 - every Markdown file is readable UTF-8;
 - every [DOC|CODE|DER|COMMUNITY <id>] tag and data-file source column cites a source of its own root: an id of
   another root is an error that says so (a root cites only its own sources; add the source to its _sources.csv);
@@ -86,12 +89,53 @@ def check_root_ledgers(root, owner):
     errors.extend(f"duplicate answer id {i} in {q(kbcommon.ANSWERS)}" for i, n in sorted(Counter(aids).items()) if n > 1)
     errors.extend(f"answer id {i} in {q(kbcommon.ANSWERS)}: QK ids are QK-<slug> (lowercase, hyphenated)"
                   for i in aids if i.startswith("QK") and not kbid.QK_ID.fullmatch(i))
+    check_anchors(root, {r["id"]: (r.get("reuse") or "").strip() for r in sources})
     for r in read_csv(root, kbcommon.ARTIFACTS, ("path", "source_id", "sha256")):
         if r["source_id"] not in known:
             errors.append(f"artifact {q(r['path'])} names unknown source {r['source_id']}")
         if not os.path.isfile(os.path.join(root.path, r["path"])):
             errors.append(f"artifact {q(r['path'])} is missing")
     return known
+
+
+ANCHOR_STATUS = re.compile(r"located|unlocated:(?:%s)" % "|".join(kbcommon.ANCHOR_REASONS))
+
+
+def check_anchors(root, reuse):
+    """The format of a root's _anchors.csv (factdiff.py), when it has one."""
+    if not os.path.exists(os.path.join(root.path, kbcommon.ANCHORS)):
+        return
+    name = kbcommon.qualify(root, kbcommon.ANCHORS)
+    seen = set()
+    for n, r in enumerate(read_csv(root, kbcommon.ANCHORS, kbcommon.ANCHOR_COLS), start=2):
+        bad = []
+        key = (r["fact"], r["path"], r["source_id"])
+        if key in seen:
+            bad.append("duplicate (fact, path, source_id)")
+        seen.add(key)
+        if not re.fullmatch(r"[0-9a-f]{12}", r["fact"]):
+            bad.append(f"fact {r['fact']!r} is not a 12-hex fact key")
+        if r["source_id"] not in reuse:
+            bad.append(f"unknown source {r['source_id']}")
+        if not os.path.isfile(os.path.join(root.path, r["path"])):
+            bad.append(f"no file {r['path']}")
+        if not ANCHOR_STATUS.fullmatch(r["status"]):
+            bad.append(f"status {r['status']!r} (located or unlocated:{'|'.join(kbcommon.ANCHOR_REASONS)})")
+        elif r["status"] == "located":
+            if not re.fullmatch(r"[0-9a-f]{16}", r["sha"]):
+                bad.append("a located anchor needs a 16-hex sha")
+            if not r["terms"].strip():
+                bad.append("a located anchor needs its terms")
+        elif r["sha"] or r["terms"] or r["quote"]:
+            bad.append("an unlocated anchor has no sha, terms or quote")
+        if r["quote"]:
+            if len(r["quote"].split()) > kbcommon.QUOTE_WORDS:
+                bad.append(f"quote over {kbcommon.QUOTE_WORDS} words")
+            if reuse.get(r["source_id"]) not in ("copy", "quote"):
+                bad.append(f"a quote of a source whose reuse is {reuse.get(r['source_id'])!r} (only copy or quote)")
+        if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", r["verified_utc"]):
+            bad.append("verified_utc is not YYYY-MM-DD")
+        errors.extend(f"{name}:{n} {b}" for b in bad)
 
 
 def cite_error(sid, root, owner, known):

@@ -46,7 +46,7 @@ import kbcommon, kbid
 
 KB = kbcommon.PUBLIC  # the root being checked (--root; the public root by default); the cache stays in the repository
 STATE = "_fetch_state.csv"
-STATE_COLS = ["id", "url", "checked_utc", "fetched_utc", "changed_utc", "sha256", "text_sha256", "bytes", "error"]
+STATE_COLS = kbcommon.STATE_COLS
 SNAPSHOTS = os.path.join(kbcommon.HOME, "_cache", "snapshots")
 DELAY, TIMEOUT = 1.1, 180
 _last = {}
@@ -286,7 +286,7 @@ def diff_sources(a, sources):
                     res["diff_truncated"] = bool(a.max_lines and len(lines) > a.max_lines)
         if not a.no_save:
             changed = res["status"] in ("changed", "new") or not prev
-            state[sid] = {"id": sid, "url": src["url"], "checked_utc": stamp, "fetched_utc": stamp,
+            state[sid] = {**(prev or {}), "id": sid, "url": src["url"], "checked_utc": stamp, "fetched_utc": stamp,
                           "changed_utc": stamp if changed else prev.get("changed_utc", stamp),
                           "sha256": raw_sha, "text_sha256": text_sha, "bytes": len(body), "error": ""}
             if text is not None:

@@ -244,6 +244,13 @@ def doc_text(body, ctype, url=""):
         t = MD_LINK.sub(lambda m: m.group(1) or "", t)
         t = "\n".join(ln.rstrip() for ln in t.splitlines())
         return re.sub(r"\n{3,}", "\n\n", t).strip() + "\n"
+    if "json" in (ctype or "") or t.lstrip()[:1] in ("{", "["):
+        try:  # one value per line, so a fact can be located in it
+            return json.dumps(json.loads(t), indent=1, ensure_ascii=False) + "\n"
+        except ValueError:
+            pass
+    if ("xml" in (ctype or "") or t.lstrip().startswith("<?xml")) and len(t) > 500 * (t.count("\n") + 1):
+        return re.sub(r">\s*<", ">\n<", t)
     return t
 
 
@@ -263,6 +270,8 @@ def document(url, row=None, etag="", lastmod=""):
            "text": None, "sha": "", "bytes": len(r["body"]), "error": r["error"], "ctype": r["headers"].get("content-type", "")}
     if r["status"] == 200 and r["body"]:
         raw = r["body"].decode("utf-8", errors="replace")
+        out["raw"] = raw if doc_text(r["body"], out["ctype"], rurl) is not None else None
+        out["raw_url"] = rurl
         keys = [k for k in (row.get("version_meta") or "").split(",") if k.strip() and k != "-"]
         out["version"] = version_of(raw, keys)
         out["text"] = doc_text(r["body"], out["ctype"], rurl)

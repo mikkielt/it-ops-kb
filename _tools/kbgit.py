@@ -96,8 +96,10 @@ _sources.csv   conflict markers (a merge made without our .gitattributes) are dr
                  sides cite the id in, or an old citation of an id the base did not have, is ambiguous: reported,
                  exit 2, nothing written.
                Canonical form: legacy ids numerically, then hash ids sorted; csv module quoting; `\\n`; no BOM.
+_anchors.csv   one row per (fact, path, source_id): the latest verified_utc wins (factdiff.py).
 _fetch_state.csv  one row per id: checked_utc/error from the row with the latest check, the fetch columns
-               (fetched_utc, sha256, text_sha256, bytes) from the row with the latest fetch, changed_utc the max.
+               (fetched_utc, sha256, text_sha256, bytes) from the row with the latest fetch, factdiff.py's columns
+               (etag ... simhash, detected_utc) from the row with the latest detected_utc, changed_utc the max.
 _answers.md, _gaps.md, _conflicts.md  conflict markers dropped (union semantics); verbatim duplicate `##`/`###`
                sections, duplicate list items (20+ characters) in one section and duplicate rows in one table removed.
                With the merge's sides known, a `##` section that a merge cut short is made whole: git keeps lines that
@@ -596,11 +598,40 @@ def resolve_state(text, renames, report):
         for c in ("fetched_utc", "sha256", "text_sha256", "bytes"):
             if c in row:
                 row[c] = fetched.get(c, "")
+        detected = max(g, key=lambda r: r.get("detected_utc", ""))  # factdiff.py detect's columns travel together
+        for c in ("etag", "last_modified", "version", "doc_sha256", "final_url", "http_status", "simhash", "detected_utc"):
+            if c in row:
+                row[c] = detected.get(c, "")
         if "changed_utc" in row:
             row["changed_utc"] = max(r.get("changed_utc", "") for r in g)
         report.append(f"{STATE}: {sid}: merged {len(g)} rows (latest check {row.get('checked_utc')})")
         out.append(row)
     return csv_text(header, sorted(out, key=lambda r: id_key(r["id"])))
+
+
+def resolve_anchors(text, renames, report):
+    """_anchors.csv after a union merge: markers dropped, one row per (fact, path, source_id), the one found last
+    (verified_utc; a located row over an unlocated one on the same day); a source id kbgit renamed follows its one
+    new id."""
+    name = R(kbcommon.ANCHORS)
+    text, n = strip_markers(lf(text), name)
+    if n:
+        report.append(f"{name}: dropped markers of {n} conflict region(s) (union)")
+    header, rows, dropped = parse_csv(text, name, ("fact", "path", "source_id", "status", "verified_utc"))
+    if dropped:
+        report.append(f"{name}: removed {dropped} repeated header line(s)")
+    best = {}
+    for r in rows:
+        new = renames.get(r["source_id"], [])
+        if len(new) == 1:
+            r["source_id"] = new[0][1]
+        k = (r["fact"], r["path"], r["source_id"])
+        rank = (r.get("verified_utc", ""), r.get("status") == "located")
+        if k not in best or rank > best[k][0]:
+            if k in best:
+                report.append(f"{name}: {k[2]} {k[1]} {k[0]}: kept the row of {rank[0]}")
+            best[k] = (rank, r)
+    return csv_text(header, sorted((r for _, r in best.values()), key=lambda r: (r["path"], r["fact"], id_key(r["source_id"]))))
 
 
 # ---------------------------------------------------------------- Markdown ledgers
@@ -937,6 +968,9 @@ def fix_root_texts(a, report, problems):
     st = read(STATE)
     if st is not None:
         out[STATE] = resolve_state(out.get(STATE, st), renames, report)
+    an = read(R(kbcommon.ANCHORS))
+    if an is not None:
+        out[R(kbcommon.ANCHORS)] = resolve_anchors(an, renames, report)
     for name in MD_LEDGERS:
         t = out.get(name, read(name))
         if t is not None:

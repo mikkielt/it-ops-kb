@@ -23,7 +23,7 @@ SOURCES_HEADER = "id,url,title,publisher,licence,reuse,retrieved_utc,version_or_
 FILES = {
     kbcommon.SOURCES: SOURCES_HEADER,
     kbcommon.ARTIFACTS: "path,source_id,sha256,zip_member\n",
-    kbcommon.STATE: "id,url,checked_utc,fetched_utc,changed_utc,sha256,text_sha256,bytes,error\n",
+    kbcommon.STATE: ",".join(kbcommon.STATE_COLS) + "\n",
     kbcommon.COVERAGE_CSV: ",".join(build_index.COVERAGE_FIELDS) + "\n",
     kbcommon.ANSWERS: "# Answers to research questions\n\nEach answer is headed `## QK-<slug>. <question>` "
                       "(`python3 _tools/kbid.py answer \"<question>\" --root {name}`); every bullet carries one tag.\n",

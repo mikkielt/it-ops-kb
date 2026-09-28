@@ -1,0 +1,26 @@
+# Cut-offs of _tools/factdiff.py, each measured on real data: kb/_self/reports/fact-diff.md, "Calibration", has the
+# numbers (samples, accuracy) behind every value. Re-measure with `python3 _tools/factdiff.py calibrate` before
+# changing one, and replace the report section with the new measurement.
+
+[anchor]
+# A fact's backing passage: the window of 1 to `span` consecutive units of its source whose terms hold at least
+# `min_cover` of the fact's term weight (rarity in that document) and at least `min_shared` of its terms; each extra
+# unit of the window costs `window_cost` cover. Below the cut the fact is listed as unlocated, never guessed.
+min_cover = 0.4
+min_shared = 3
+span = 3
+window_cost = 0.05
+
+[resolve]
+# A passage not found verbatim: its best candidate in the new text (by shared terms) counts as the same passage
+# edited when difflib's ratio of the two normalized passages is at least `modified_min`; below it the passage is not
+# found on the page and the search moves to linked pages.
+modified_min = 0.7
+
+[dead]
+# A 200 page whose text has Jaccard similarity (3-word shingles) of at least `soft404_min` with the page a made-up
+# sibling url returns, when its previous version was not, is a soft 404.
+soft404_min = 0.8
+# A 200 page whose simhash similarity to its previous version is at most `zombie_max`, with none of its anchors
+# found, had its content replaced (a zombie).
+zombie_max = 0.75

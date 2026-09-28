@@ -9,7 +9,8 @@
 
 # Append-only ledgers: union merge. When both branches add lines at the same place, git keeps both sides'
 # lines (ours first) instead of writing conflict markers. Caveats, all handled by `kbgit.py fix`:
-# - a row or line that BOTH sides edited is kept twice (old and new version): fix merges rows by id;
+# - a row or line that BOTH sides edited is kept twice (old and new version): fix merges rows by id (and
+#   _anchors.csv rows by fact and source);
 # - the same new line added on both sides can appear twice: fix drops exact duplicates;
 # - the CSV header is shared context and is not duplicated; a header changed on one side needs a human;
 # - union works on lines: CSV records must stay on one line (no newline inside a quoted field), and every
@@ -18,6 +19,7 @@
 # - union never fails, so it cannot tell a real disagreement from an addition: read the merged diff.
 _sources.csv merge=union
 _fetch_state.csv merge=union
+_anchors.csv merge=union
 _answers.md merge=union
 _gaps.md merge=union
 _conflicts.md merge=union
