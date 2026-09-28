@@ -94,11 +94,36 @@ Kb facts the build rests on: `claude/hooks.md` (async hooks, `prompt_id`, `Stop`
 11. **End-to-end run and switch-on.**
 
     Done:
-    - one test drives a temporary clone with a bare remote through capture, distill (recorded Haiku), learn, apply and the push, then checks the store, the findings, the eval file and the gate;
+    - end-to-end tests drive a temporary clone with a bare remote through capture (hook commands fed recorded stdin), distill (recorded Haiku), learn, apply and the push. After each scenario they check the store, the findings, the eval file, the ledgers, the spool and the gate. One test per scenario:
+      - a `kb:` answer with `good` coverage: an entry, no finding, nothing pushed but the run file;
+      - a miss fixed by an alias, one fixed by an expansion, and a miss with no accepted fix that ends as a `_gaps.md` entry under its topic;
+      - a miss that passes on `HEAD` by the time `learn` runs (`fixed-since`, no change);
+      - web and docs-server fetches beside a kb lookup (host and path only) and a fetch in a prompt without kb use (no row);
+      - `kb_ask.py`, `fetch.py` and `census.py` rows joined to their prompt;
+      - an identifier in a prompt (redacted in the run file), and an entry Haiku flags as still identifying (dropped, only counted);
+      - more entries than the Haiku caps allow (the rest wait, and the next run takes them);
+      - two clones distilling against one remote (separate run files, no duplicate id, no conflict);
+      - a conflict with `origin/main` (the `querylog/<run-id>` branch with the MR push options, findings pending, held on the next run);
+      - red CI on the last automatic commit (a revert, `apply-failed`, never retried), and `manual`, `skipped` or unfinished CI (not red);
+      - research on, within its daily cap (a quote-checked fact added, a disagreement as a `_conflicts.md` entry), research over its cap, and research off;
+      - modes `off`, `local` and `auto`, a `DISABLED` marker, and an unreadable config;
+      - a session still open (not distilled), one closed by `SessionEnd`, and one closed by idle time;
+      - a failed push (the spool stays) and a successful one (the spool goes only once its run file is on the remote);
+      - a second run on unchanged inputs changes nothing.
     - `/kb-setup` states the default (logging, fixes, gap entries and pushes automatic; research off; what is recorded and what is sent to the API) and asks whether to keep it;
     - the program default becomes `auto`.
 
-    Check: that test on Linux and Windows, `/kb-verify`, and `selfdoc.py stale` with no stale doc.
+    Check: those tests on Linux, Windows and macOS, `/kb-verify`, and `selfdoc.py stale` with no stale doc. Unchanged: the `kb:` hook's answers, and people's `kbgit.py sync --push`.
+12. **Benchmarks: one report, re-run and extended.** `kb/_self/reports/benchmark-bare-vs-kb.md` and `kb/_self/reports/token-usage.md` become one new report, `benchmarks.md`, in the same folder.
+
+    Done:
+    - every scenario of both old reports is run again with the current tools and models, by the method its setup section states, and each result sits beside its historical records (date, commit, model, value, change);
+    - the historical records and the new runs are data in one committed results file beside the report, one row per scenario, run and metric, and the report's comparison tables are generated from it, not typed;
+    - new scenarios cover what changed since the last runs, at least: the query-log hooks (always-on cost, per-prompt latency of capture, the `SessionEnd` launcher), distill, learn and apply (run time, Haiku tokens per entry, the adoption gates' effect on eval pass rate, mean pack and off-kb `good`), redaction speed, research cost per accepted fact, `/kb-ingest` on a sample repository, a host plugin with team roots, and the hook launcher's start-up on each OS;
+    - one command re-runs every scenario (or one named scenario), and each section names its command;
+    - every doc that cites the old reports (`design.md`, `token-efficiency.md`, `doc2query.md`, `plugin.md`, `querylog.md`, `tools.md`, `map.csv`, `README.md`, ...) points at the new sections, and the old files are gone.
+
+    Check: `grep -rn "benchmark-bare-vs-kb\|reports/token-usage" kb/ _tools/ .claude/ .claude-plugin/ README.md AGENTS.md` prints nothing; `python3 _tools/tests.py` (doc cohesion and links) and `selfdoc.py stale` pass; re-running one old and one new scenario with its section's command reproduces its row within the noise the report states. Unchanged: each measurement's method, unless the report states the change beside its numbers.
 
 ## Watch
 
