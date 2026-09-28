@@ -16,7 +16,7 @@ Claude Code version and kb size (topics). The report's tables sit between `<!-- 
 and `<!-- /bench -->` (a cell is each record's value in date order and the change of the newest from the one before),
 and its records tables between `<!-- bench:records SCENARIO -->` and `<!-- /bench -->`.
 
-Isolation: model runs start `claude -p` with hooks off (querylog.NO_HOOKS) from a throwaway clone of HEAD under the
+Isolation: model runs start `claude -p` with hooks off (kbcommon.NO_HOOKS) from a throwaway clone of HEAD under the
 scratch directory (BENCH_SCRATCH, default <temp>/it-ops-kb-bench) whose query log is `off` and whose origin is a local
 bare repository; the scenarios that measure the query log's hooks run them in a throwaway clone in mode `local` with a
 local bare origin, or as a plugin copy whose hooks write under the scratch directory. Nothing a run does reaches this
@@ -35,7 +35,7 @@ TOOLS = Path(__file__).resolve().parent
 HOME = TOOLS.parent
 sys.path.insert(0, str(TOOLS))
 import agent_bench  # noqa: E402
-from querylog import NO_HOOKS  # noqa: E402
+from kbcommon import NO_HOOKS  # noqa: E402
 
 RESULTS = HOME / "kb" / "_self" / "reports" / "benchmarks.csv"
 REPORT = HOME / "kb" / "_self" / "reports" / "benchmarks.md"
@@ -1305,7 +1305,7 @@ def s_querylog_pipeline(b):
         entries = _store_counts(data / "querylog" / "store")
     _stats(b, "querylog-pipeline", "distill (recorded Haiku)", "fixtures", secs, note=f"{entries} entries written")
     b.row("querylog-pipeline", "distill (recorded Haiku)", "fixtures", "entries", entries, len(secs))
-    pv = subprocess.run([sys.executable, "-c", "import querylog; print(querylog.PIPELINE_VERSION)"], cwd=clone / "_tools",
+    pv = subprocess.run([sys.executable, "-c", "import ql_base; print(ql_base.PIPELINE_VERSION)"], cwd=clone / "_tools",
                         capture_output=True, text=True).stdout.strip()
     b.row("querylog-pipeline", "pipeline version", "fixtures", "PIPELINE_VERSION", pv, 1)
     store = b.scratch / "ql-store"
@@ -1381,8 +1381,8 @@ def _logged(log):
 
 def s_redaction(b):
     """Redaction speed: the rules and the leak scan over the fixture texts, the public-root allowlist's load."""
-    import redact, kbcommon, querylog
-    b.row("redaction", "pipeline version", "rules", "PIPELINE_VERSION", querylog.PIPELINE_VERSION, 1)
+    import redact, kbcommon, ql_base
+    b.row("redaction", "pipeline version", "rules", "PIPELINE_VERSION", ql_base.PIPELINE_VERSION, 1)
     t = time.perf_counter()
     k = redact.known()
     b.row("redaction", "allowlist load (known())", "rules", "s", time.perf_counter() - t, 1)

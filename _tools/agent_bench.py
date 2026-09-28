@@ -19,7 +19,7 @@ returned, `refetched`), `n*` a newer version upstream (a scratch clone planted w
 `k*` a kb copy behind its remote (a scratch clone whose origin/main is 3 commits ahead). Checks are regexes over the
 answer, or `tool:NAME` (a tool called), `web` (a search or fetch) and `no-refetch`.
 
-Every `claude -p` it starts runs with hooks off (`--settings '{"disableAllHooks": true}'`, querylog.NO_HOOKS), so no
+Every `claude -p` it starts runs with hooks off (`--settings '{"disableAllHooks": true}'`, kbcommon.NO_HOOKS), so no
 run is captured, distilled or pushed by the query log of the clone or of a plugin. The kb arms run in this clone with
 the `kb` server registered at local scope for it; _tools/benchmarks.py runs this file from a throwaway clone whose
 query log is off and whose origin is a local bare repository. Results: kb/_self/reports/benchmarks.md.
@@ -29,7 +29,7 @@ from collections import Counter
 
 KB = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(KB, "_tools"))
-from querylog import NO_HOOKS  # noqa: E402  every run's hooks are off
+from kbcommon import NO_HOOKS  # noqa: E402  every run's hooks are off
 S = {
     "s1_fact": ("What is the default Windows LAPS password length? Answer from the kb with citation.", [r"\b14\b"]),
     "s2_fact_csv": ("Which TCP port does Delivery Optimization use for peer-to-peer traffic? Answer from the kb with citation.", [r"7680"]),

@@ -261,8 +261,7 @@ NAMES_TASK = (
 def names_argv(model):
     """The `claude -p` argument list of the Haiku stage: the pipeline never logs itself (disableAllHooks), no tools, no
     user plugins or MCP servers (as kb_ask.py's lean reader). The prompt goes on stdin (no command-line length limit)."""
-    return [shutil.which("claude") or "claude", "-p", "--model", model, "--tools", "",
-            "--settings", json.dumps({"disableAllHooks": True}),
+    return [shutil.which("claude") or "claude", "-p", "--model", model, "--tools", "", *kbcommon.NO_HOOKS,
             "--setting-sources", "project,local", "--strict-mcp-config", "--no-session-persistence"]
 
 

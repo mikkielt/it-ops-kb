@@ -127,7 +127,7 @@ from pathlib import Path
 
 import pytest
 
-import querylog
+import querylog, ql_apply, ql_base, ql_capture, ql_deliver, ql_distill, ql_learn, ql_report, ql_research, ql_store
 from conftest import GIT, KB, TOOLS, D, P, Repo, copy_kb, git_env, querylog_env
 
 SID = "3f2a4c1e-0000-4000-8000-00000000abcd"
@@ -198,7 +198,7 @@ class TestHookRows:
         assert [r["prompt"] for r in rows][2] == "hello there" and rows[0]["prompt_id"] == "p0"
         assert len({r["id"] for r in rows}) == 3 and all(is_uuid4(r["id"]) for r in rows)
         assert all(r["session_id"] == SID for r in rows)
-        assert all(r["v"] == querylog.ROW_FORMAT for r in rows)  # the row format distill branches on
+        assert all(r["v"] == ql_capture.ROW_FORMAT for r in rows)  # the row format distill branches on
         assert [f.name for f in spool(tmp_path).iterdir()] == [f"{SID}.jsonl"]
         datetime.datetime.fromisoformat(rows[0]["ts"].replace("Z", "+00:00"))
 
@@ -286,7 +286,7 @@ class TestHookRows:
     def test_tool_rows_in_the_prompt_window_count_as_kb_use(self, tmp_path):
         env = querylog_env(tmp_path)
         hook(tmp_path, prompt("run the ask tool", pid="w"))
-        p = subprocess.run([sys.executable, "-c", "import querylog; querylog.record('kb_ask', question='q', route='plan')"],
+        p = subprocess.run([sys.executable, "-c", "import ql_capture; ql_capture.record('kb_ask', question='q', route='plan')"],
                            cwd=TOOLS, env=env, capture_output=True, timeout=60)
         assert p.returncode == 0, p.stderr
         hook(tmp_path, stop("answer", pid="w"))
@@ -297,8 +297,8 @@ class TestHookRows:
         data = raw(tmp_path)
         assert b"\r" not in data and data.endswith(b"\n")
         line = data.decode("utf-8").rstrip("\n")
-        assert len(line) <= querylog.SPOOL_ROW_MAX_CHARS and "Łódź ☃" in line
-        assert json.loads(line)["prompt"].endswith(querylog.CUT)
+        assert len(line) <= ql_capture.SPOOL_ROW_MAX_CHARS and "Łódź ☃" in line
+        assert json.loads(line)["prompt"].endswith(ql_capture.CUT)
 
     def test_unsafe_session_id_goes_to_the_tools_file(self, tmp_path):
         hook(tmp_path, prompt("hi", sid="../../escape"))
@@ -310,7 +310,7 @@ class TestHookRows:
         old, new = spool(tmp_path) / "old.jsonl", spool(tmp_path) / "new.jsonl"
         for f in (old, new):
             f.write_text("{}\n", encoding="utf-8", newline="\n")
-        t = time.time() - (querylog.SPOOL_MAX_AGE_DAYS + 1) * 86400
+        t = time.time() - (ql_capture.SPOOL_MAX_AGE_DAYS + 1) * 86400
         os.utime(old, (t, t))
         hook(tmp_path, prompt("hi"))
         assert not old.exists() and new.exists()
@@ -338,7 +338,7 @@ class TestSwitches:
         return lines(data)
 
     def test_default_mode_is_auto_and_writes(self, tmp_path):
-        assert querylog.DEFAULT_MODE == "auto"
+        assert ql_base.DEFAULT_MODE == "auto"
         rows = self.run_all(tmp_path)  # planted: the same events with no config file do write
         assert [r["surface"] for r in rows] == ["prompt", "mcp", "fetch", "stop"]
         self.write_config(tmp_path / "x", '{"mode": "local"}')
@@ -364,13 +364,13 @@ class TestSwitches:
     def test_places(self, tmp_path, monkeypatch):
         monkeypatch.delenv("CLAUDE_PLUGIN_DATA", raising=False)
         monkeypatch.delenv("CLAUDE_PLUGIN_ROOT", raising=False)
-        assert querylog.HOME.samefile(KB)
-        assert querylog.places() == (querylog.HOME / "_cache" / "querylog", querylog.HOME / "_private" / "querylog.json")
+        assert ql_base.HOME.samefile(KB)
+        assert ql_base.places() == (ql_base.HOME / "_cache" / "querylog", ql_base.HOME / "_private" / "querylog.json")
         monkeypatch.setenv("CLAUDE_PLUGIN_DATA", str(tmp_path))
         monkeypatch.setenv("CLAUDE_PLUGIN_ROOT", str(tmp_path))  # another plugin's hook: not this copy
-        assert querylog.places()[0] == querylog.HOME / "_cache" / "querylog"
+        assert ql_base.places()[0] == ql_base.HOME / "_cache" / "querylog"
         monkeypatch.setenv("CLAUDE_PLUGIN_ROOT", KB)
-        assert querylog.places() == (tmp_path / "querylog", tmp_path / "querylog" / "config.json")
+        assert ql_base.places() == (tmp_path / "querylog", tmp_path / "querylog" / "config.json")
 
     def test_where(self, tmp_path):
         p = subprocess.run([sys.executable, QL, "where"], env=querylog_env(tmp_path), capture_output=True, text=True,
@@ -417,9 +417,9 @@ def inproc(tmp_path, monkeypatch):
             monkeypatch.setenv(k, v)
     monkeypatch.setenv("NO_PROXY", "*")
     monkeypatch.setenv("no_proxy", "*")
-    querylog.spool_dir.cache_clear()
+    ql_capture.spool_dir.cache_clear()
     yield tmp_path
-    querylog.spool_dir.cache_clear()
+    ql_capture.spool_dir.cache_clear()
 
 
 class TestToolRows:
@@ -436,7 +436,7 @@ class TestToolRows:
                ("kb_hook", "p9", "intune win32 app detection rule", "good", True, False)
         assert "public/intune/win32-apps.md" in row["articles"] and is_uuid4(row["id"])
         assert "reason" not in row and "text" not in row and "pack" not in row
-        assert row["lines"] and all(querylog.CITATION.fullmatch(x["line"]) and set(x) <= {"line", "tag", "verdict"}
+        assert row["lines"] and all(ql_store.CITATION.fullmatch(x["line"]) and set(x) <= {"line", "tag", "verdict"}
                                     for x in row["lines"])  # the pack's kb lines as path:line, never their text
 
     def test_plain_prompt_writes_nothing(self, tmp_path):
@@ -453,7 +453,7 @@ class TestToolRows:
             assert p.returncode == 0, p.stderr
         a, b = lines(tmp_path)
         assert (a["surface"], a["route"], a["verdict"], a["parts"]) == ("kb_ask", "plan", "good", 1)
-        assert a["lines"] and all(querylog.CITATION.fullmatch(x["line"]) for x in a["lines"])
+        assert a["lines"] and all(ql_store.CITATION.fullmatch(x["line"]) for x in a["lines"])
         assert (b["route"], "verdict" in b, "session_id" in a) == ("tool", False, False)
         assert [f.name for f in spool(tmp_path).iterdir()] == [f"tools-{a['ts'][:10]}.jsonl"]
 
@@ -481,11 +481,11 @@ class TestToolRows:
         assert [r.get("chars") for r in lines(inproc)] == [5, None, 3, None]
 
     def test_request_outcome(self):
-        o = querylog.request_outcome
+        o = ql_capture.request_outcome
         assert o(200, None, 5, "https://a.example.com/x", "https://b.example.com/y") == "redirect-cross-host"
         assert o(200, None, 5, "https://a.example.com/x", "https://a.example.com/y") == "http-200"
         assert (o(None, "boom"), o(200, None, 0), o(200, None, 10, limit=10), o()) == ("error", "empty", "truncated", "unknown")
-        assert querylog.host_path("ftp://x.example.com/a") == (None, None) and querylog.host_path("not a url") == (None, None)
+        assert ql_capture.host_path("ftp://x.example.com/a") == (None, None) and ql_capture.host_path("not a url") == (None, None)
 
 
 def hooks_off(argv):
@@ -504,7 +504,7 @@ class TestNoHooks:
     def test_pipeline_claude_runs_carry_disable_all_hooks(self):
         import kb_ask, redact
         for argv in (kb_ask.claude_argv("haiku", tools=False), kb_ask.claude_argv("sonnet", tools=True),
-                     redact.names_argv("haiku"), querylog.research_argv()):
+                     redact.names_argv("haiku"), ql_research.research_argv()):
             assert "-p" in argv and hooks_off(argv), argv
 
     def test_distill_haiku_call(self, monkeypatch):
@@ -514,13 +514,13 @@ class TestNoHooks:
         def fake_run(argv, **kw):
             seen.update(argv=argv, **kw)
             return subprocess.CompletedProcess(argv, 0, "[]", "")
-        monkeypatch.setattr(querylog.subprocess, "run", fake_run)
-        assert querylog.claude_haiku("prompt") == "[]"
+        monkeypatch.setattr(subprocess, "run", fake_run)
+        assert ql_distill.claude_haiku("prompt") == "[]"
         argv = seen["argv"]
         assert isinstance(argv, list) and "-p" in argv and hooks_off(argv), argv
-        assert argv[argv.index("--model") + 1] == querylog.HAIKU_MODEL == "haiku"
+        assert argv[argv.index("--model") + 1] == ql_distill.HAIKU_MODEL == "haiku"
         assert argv[argv.index("--tools") + 1] == "" and not seen.get("shell")
-        assert seen["input"] == "prompt" and seen["timeout"] == querylog.HAIKU_TIMEOUT_S
+        assert seen["input"] == "prompt" and seen["timeout"] == ql_distill.HAIKU_TIMEOUT_S
 
     def test_research_call(self, monkeypatch):
         """research's call is research_argv as an argument list, in an empty directory: hooks off, web search and
@@ -530,13 +530,13 @@ class TestNoHooks:
         def fake_run(argv, **kw):
             seen.update(argv=argv, **kw)
             return subprocess.CompletedProcess(argv, 0, '{"facts": []}', "")
-        monkeypatch.setattr(querylog.subprocess, "run", fake_run)
-        assert querylog.claude_research("prompt") == '{"facts": []}'
+        monkeypatch.setattr(subprocess, "run", fake_run)
+        assert ql_research.claude_research("prompt") == '{"facts": []}'
         argv = seen["argv"]
         assert isinstance(argv, list) and "-p" in argv and hooks_off(argv) and not seen.get("shell"), argv
         assert argv[argv.index("--tools") + 1] == "WebSearch,WebFetch"
         assert argv[argv.index("--permission-mode") + 1] == "dontAsk" and "--strict-mcp-config" in argv
-        assert seen["input"] == "prompt" and seen["timeout"] == querylog.RESEARCH_TIMEOUT_S
+        assert seen["input"] == "prompt" and seen["timeout"] == ql_research.RESEARCH_TIMEOUT_S
         assert seen["cwd"] and not Path(seen["cwd"]).exists()  # a temporary directory, gone after the run
 
     def test_planted_argument_lists_fail(self):
@@ -546,9 +546,9 @@ class TestNoHooks:
 
     def test_every_claude_p_in_the_pipeline_is_checked(self):
         """The pipeline's modules build their `claude -p` lists only in the functions tested above."""
-        for name, allowed in (("kb_ask.py", 1), ("redact.py", 1), ("querylog.py", 1)):
-            text = Path(TOOLS, name).read_text(encoding="utf-8")
-            assert len(re.findall(r'"-p"', text)) == allowed, name
+        allowed = {"kb_ask.py": 1, "redact.py": 1, "ql_research.py": 1}
+        for p in [Path(TOOLS, n) for n in ("kb_ask.py", "redact.py", "querylog.py")] + sorted(Path(TOOLS).glob("ql_*.py")):
+            assert len(re.findall(r'"-p"', p.read_text(encoding="utf-8"))) == allowed.get(p.name, 0), p.name
 
     def test_nothing_is_written_when_no_hook_runs(self, tmp_path):
         """With hooks disabled Claude Code never starts the capture hook: importing the module, its help and `where`
@@ -612,7 +612,7 @@ def digest_problems(cfg, var):
     for event, groups in cfg.get("hooks", {}).items():
         hs = [h for g in groups for h in g.get("hooks", []) if "querylog.py digest" in h.get("command", "")]
         got = [(h.get("command"), h.get("async"), h.get("type"), h.get("timeout")) for h in hs]
-        if event == "SessionStart" and got != [(want, None, "command", querylog.DIGEST_HOOK_TIMEOUT_S)]:
+        if event == "SessionStart" and got != [(want, None, "command", ql_report.DIGEST_HOOK_TIMEOUT_S)]:
             bad.append(f"{event}: {hs}")
         elif event != "SessionStart" and hs:
             bad.append(f"{event}: a digest hook")
@@ -709,7 +709,7 @@ def plant_spool(qdir, now=NOW):
 
 def run_distill(qdir, haiku, now=NOW, run_id=RUN_ID):
     said = []
-    rc = querylog.distill(qdir=qdir, cfg=Path(qdir) / "config.json", haiku=haiku, now_dt=now, run_id=run_id,
+    rc = ql_distill.distill(qdir=qdir, cfg=Path(qdir) / "config.json", haiku=haiku, now_dt=now, run_id=run_id,
                           kb_commit="0" * 40, out=said.append)
     return rc, said
 
@@ -733,7 +733,7 @@ class TestDistill:
         q = tmp_path / "querylog"
         sp = plant_spool(q)
         open_before = (sp / f"{S_OPEN}.jsonl").read_bytes()
-        replay = querylog.Replay(FIXTURES / "haiku.json")
+        replay = ql_base.Replay(FIXTURES / "haiku.json")
         rc, said = run_distill(q, replay)
         assert rc == 0 and said == [f"distill: run={RUN_ID} entries=6 dropped=1 waiting=0"], said
         (run,) = store_files(q)
@@ -744,9 +744,9 @@ class TestDistill:
         assert got == want
         assert run.read_bytes().endswith(b"\n") and b"\r" not in run.read_bytes()
         header, entries = got[0], got[1:]
-        assert set(header) == set(querylog.HEADER_KEYS) and header["run"] == RUN_ID
-        assert all(not set(e) & set(querylog.HEADER_KEYS) for e in entries)
-        assert querylog.store_problems(q / "store") == []
+        assert set(header) == set(ql_store.HEADER_KEYS) and header["run"] == RUN_ID
+        assert all(not set(e) & set(ql_store.HEADER_KEYS) for e in entries)
+        assert ql_store.store_problems(q / "store") == []
         # the spool: the closed sessions and the finished day's tools file are gone, the open session is untouched
         assert sorted(p.name for p in sp.iterdir()) == [f"{S_OPEN}.jsonl"]
         assert (sp / f"{S_OPEN}.jsonl").read_bytes() == open_before
@@ -754,7 +754,7 @@ class TestDistill:
     def test_only_rule_redacted_text_reaches_haiku(self, tmp_path):
         q = tmp_path / "querylog"
         plant_spool(q)
-        replay = querylog.Replay(FIXTURES / "haiku.json")
+        replay = ql_base.Replay(FIXTURES / "haiku.json")
         run_distill(q, replay)
         (sent,) = replay.prompts
         for raw in ("anna.nowak", "acme-corp", "10." + "1.20.33", "PL-LAPTOP-7731", "it-helpdesk", "ACME\\anowak"):
@@ -766,7 +766,7 @@ class TestDistill:
     def test_nothing_raw_in_the_run_file(self, tmp_path):
         q = tmp_path / "querylog"
         plant_spool(q)
-        run_distill(q, querylog.Replay(FIXTURES / "haiku.json"))
+        run_distill(q, ql_base.Replay(FIXTURES / "haiku.json"))
         text = store_files(q)[0].read_text(encoding="utf-8")
         for raw in RAW:
             assert raw not in text, raw
@@ -776,7 +776,7 @@ class TestDistill:
     def test_doubtful_entry_is_dropped_and_counted(self, tmp_path):
         q = tmp_path / "querylog"
         plant_spool(q)
-        run_distill(q, querylog.Replay(FIXTURES / "haiku.json"))
+        run_distill(q, ql_base.Replay(FIXTURES / "haiku.json"))
         header, *entries = jsonl(store_files(q)[0])
         assert header["counts"]["dropped"] == 1
         assert "11111111-0000-4000-8000-0000000000c1" not in {e["id"] for e in entries}  # Haiku flagged it
@@ -790,7 +790,7 @@ class TestDistill:
     def test_a_best_article_code_did_not_offer_is_not_kept(self, tmp_path):
         q = tmp_path / "querylog"
         plant_spool(q)
-        run_distill(q, querylog.Replay(FIXTURES / "haiku.json"))
+        run_distill(q, ql_base.Replay(FIXTURES / "haiku.json"))
         e = next(e for e in jsonl(store_files(q)[0]) if e.get("id") == "11111111-0000-4000-8000-0000000000b1")
         assert "best" not in e and e["articles"] == ["public/intune/win32-apps.md"]
 
@@ -814,7 +814,7 @@ class TestDistill:
                 {"id": E("f2"), "ts": "2026-09-27T10:00:05.000Z", "surface": "mcp", "session_id": SID,
                  "prompt_id": "w1", "tool": "kb_pack",
                  "args": {"question": "intune win32 detection script licence file at 10." + "1.20.33"},
-                 "verdict": "weak", "articles": ["public/intune/win32-apps.md"], **querylog.pack_summary(pack)},
+                 "verdict": "weak", "articles": ["public/intune/win32-apps.md"], **ql_capture.pack_summary(pack)},
                 {"id": E("f3"), "ts": "2026-09-27T10:02:00.000Z", "surface": "stop", "session_id": SID,
                  "prompt_id": "w1", "answer": answer}]
         (sp / f"{SID}.jsonl").write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8", newline="\n")
@@ -839,7 +839,7 @@ class TestDistill:
         for word in ("Anna", "Nowak", "Kestrel", "Globex", "rollout", "status", "validation", "issues", "inquiry",
                      "comprehensive", "summary", "10." + "1.20.33"):
             assert word not in text, word
-        assert querylog.store_problems(q / "store") == []
+        assert ql_store.store_problems(q / "store") == []
 
     def test_citations_are_the_packs_first_lines_when_the_reply_names_none(self):
         import redact
@@ -849,7 +849,7 @@ class TestDistill:
                + [{"line": "the LAPS article", "tag": "DOC"}, "public/windows/laps.md:40"]}]
         rows = [{"id": E("g1"), "ts": "2026-09-27T10:00:00.000Z", "surface": "prompt", "prompt": "how long?"}, *kb,
                 {"id": E("g3"), "ts": "2026-09-27T10:01:00.000Z", "surface": "stop", "answer": "It is 14 (laps.md:99)."}]
-        entry, judge, drop = querylog.entry_of(rows, redact.known())
+        entry, judge, drop = ql_distill.entry_of(rows, redact.known())
         assert drop is None and entry["cited"] == "pack" and entry["question"] == "windows laps password length"
         assert [x["line"] for x in entry["citations"]] == [f"public/windows/laps.md:{n}" for n in range(20, 25)]
         assert judge == {"question": "windows laps password length", "prompt": "how long?",
@@ -861,13 +861,13 @@ class TestDistill:
                              "judged": "answered", "best": "public/windows/laps.md", "identifying": False},
                             {"i": 1, "text": "free", "judged": "missed", "best": "public/other.md",
                              "identifying": False}])
-        got = querylog.parse_distill(reply, items)
+        got = ql_distill.parse_distill(reply, items)
         assert got == [{"judged": "answered", "best": "public/windows/laps.md", "identifying": False},
                        {"judged": "missed", "best": None, "identifying": False}]
-        assert [querylog.judged(r) for r in got] == [{"judged": "answered", "best": "public/windows/laps.md"},
+        assert [ql_distill.judged(r) for r in got] == [{"judged": "answered", "best": "public/windows/laps.md"},
                                                      {"judged": "missed", "best": None}]
         with pytest.raises(ValueError):  # planted: free text in place of a judgement is no reply
-            querylog.parse_distill(json.dumps([{"i": 0, "judged": "Anna got the steps", "best": None,
+            ql_distill.parse_distill(json.dumps([{"i": 0, "judged": "Anna got the steps", "best": None,
                                                 "identifying": False}, {"i": 1, "judged": "missed", "best": None,
                                                                         "identifying": False}]), items)
 
@@ -894,7 +894,7 @@ class TestDistill:
         assert e == {"id": E("h1"), "surface": "prompt", "day": "2026-09-27", "intent": "skill",
                      "fetches": [{"tool": "WebFetch", "host": "learn.microsoft.com", "path": "/en-us/laps",
                                   "outcome": "http-200", "n": 1, "chars": 900}]}
-        assert not querylog.is_miss(e) and querylog.host_fetches([(RUN_ID, e)])  # no lookup to learn from; the fetch counts
+        assert not ql_learn.is_miss(e) and ql_learn.host_fetches([(RUN_ID, e)])  # no lookup to learn from; the fetch counts
 
     def test_an_entry_whose_articles_have_no_kb_lines_keeps_no_articles(self, tmp_path):
         """A row of format 1 whose result held no kb line: the entry is kept without `articles` (an article is stored
@@ -902,18 +902,18 @@ class TestDistill:
         import redact
         rows = [{"id": E("j1"), "ts": "2026-09-27T10:00:00.000Z", "surface": "kb_hook", "v": 1, "question": "laps",
                  "verdict": "good", "articles": ["public/windows/laps.md"]}]
-        entry, judge, drop = querylog.entry_of(rows, redact.known())
+        entry, judge, drop = ql_distill.entry_of(rows, redact.known())
         assert drop is None and not {"citations", "cited", "articles"} & set(entry) and entry["question"] == "laps"
         assert judge["candidates"] == ["public/windows/laps.md"]
         rows[0]["lines"] = [{"line": "public/windows/laps.md:24", "tag": "DOC", "verdict": "good"}]
-        entry, judge, drop = querylog.entry_of(rows, redact.known())
+        entry, judge, drop = ql_distill.entry_of(rows, redact.known())
         assert drop is None and entry["citations"] == rows[0]["lines"] and judge["question"] == "laps"
         assert entry["articles"] == ["public/windows/laps.md"]
 
     def test_over_the_caps_entries_wait(self, tmp_path, monkeypatch):
-        monkeypatch.setattr(querylog, "HAIKU_BATCH_ENTRIES", 2)
-        monkeypatch.setattr(querylog, "HAIKU_BATCHES_PER_RUN", 1)
-        monkeypatch.setattr(querylog, "HAIKU_DAILY_CALLS", 2)
+        monkeypatch.setattr(ql_distill, "HAIKU_BATCH_ENTRIES", 2)
+        monkeypatch.setattr(ql_distill, "HAIKU_BATCHES_PER_RUN", 1)
+        monkeypatch.setattr(ql_distill, "HAIKU_DAILY_CALLS", 2)
         q = tmp_path / "querylog"
         sp = plant_spool(q)
         calls = []
@@ -934,7 +934,7 @@ class TestDistill:
         ids = [e["id"] for f in store_files(q) for e in jsonl(f)[1:]]
         assert len(ids) == len(set(ids)) == 8
         assert list(sp.iterdir()) == []
-        assert querylog.store_problems(q / "store") == []
+        assert ql_store.store_problems(q / "store") == []
 
     def test_a_failed_call_leaves_its_entries_waiting(self, tmp_path):
         q = tmp_path / "querylog"
@@ -949,7 +949,7 @@ class TestDistill:
         kept = [r["prompt_id"] for r in jsonl(sp / f"{S_ENDED}.jsonl")]
         assert sorted(set(kept)) == ["pa1", "pa2", "pa3"]  # the prompt that never used the kb is gone already
         assert len(kept) == len(jsonl(FIXTURES / "spool" / f"{S_ENDED}.jsonl")) - 1
-        rc, said = run_distill(q, querylog.Replay(FIXTURES / "haiku.json"), run_id="20260928T120500Z-0000abce")
+        rc, said = run_distill(q, ql_base.Replay(FIXTURES / "haiku.json"), run_id="20260928T120500Z-0000abce")
         assert said[-1].endswith("entries=4 dropped=1 waiting=0"), said
         ids = [e["id"] for f in store_files(q) for e in jsonl(f)[1:]]
         assert len(ids) == len(set(ids)) == 6
@@ -957,7 +957,7 @@ class TestDistill:
     def test_a_second_run_on_the_same_spool_writes_nothing(self, tmp_path):
         q = tmp_path / "querylog"
         plant_spool(q)
-        run_distill(q, querylog.Replay(FIXTURES / "haiku.json"))
+        run_distill(q, ql_base.Replay(FIXTURES / "haiku.json"))
         files = {p: p.read_bytes() for p in store_files(q)}
         rc, said = run_distill(q, echo, run_id="20260928T130000Z-0000abcf")
         assert rc == 0 and said == ["distill: nothing to write (waiting=0)"]
@@ -1012,12 +1012,12 @@ class TestSpoolFormats:
     def test_the_compat_spool_distills_and_passes_check(self, tmp_path):
         q = tmp_path / "querylog"
         sp = plant_compat(q)
-        rc, said = run_distill(q, querylog.Replay(COMPAT / "haiku.json"))
+        rc, said = run_distill(q, ql_base.Replay(COMPAT / "haiku.json"))
         assert rc == 0 and said == [f"distill: run={RUN_ID} entries=17 dropped=0 waiting=0"], said
         (run,) = store_files(q)
         header, *entries = jsonl(run)
-        assert header["pipeline"] == querylog.PIPELINE_VERSION and "skipped" not in header["counts"]
-        assert querylog.store_problems(q / "store") == []
+        assert header["pipeline"] == ql_base.PIPELINE_VERSION and "skipped" not in header["counts"]
+        assert ql_store.store_problems(q / "store") == []
         p = subprocess.run([sys.executable, QL, "check", str(q / "store")], capture_output=True, text=True,
                            encoding="utf-8", timeout=300)
         assert p.returncode == 0, p.stdout + p.stderr
@@ -1030,7 +1030,7 @@ class TestSpoolFormats:
         for e in entries:
             assert not {"verdicts", "chars", "v", "cut", "answer", "prompt"} & set(e) or e["surface"] == "tool_fetch"
             for f in e.get("fetches", []):
-                assert set(f) <= set(querylog.FETCH_KEYS)
+                assert set(f) <= set(ql_store.FETCH_KEYS)
         # format 0 kb rows without `lines`: pack re-ran their own questions, lines of their recorded articles only
         for pid, article in (("pa", LAPS), ("pb", "public/intune/win32-apps.md")):
             e = next(e for i, e in by.items() if rows[i].get("prompt_id") == pid)
@@ -1058,7 +1058,7 @@ class TestSpoolFormats:
         entries a run file holds are not distilled again, pack's re-run included."""
         q = tmp_path / "querylog"
         plant_compat(q)
-        run_distill(q, querylog.Replay(COMPAT / "haiku.json"))
+        run_distill(q, ql_base.Replay(COMPAT / "haiku.json"))
         files = {p: p.read_bytes() for p in store_files(q)}
         rc, said = run_distill(q, echo, run_id="20260928T130000Z-0000abcf")
         assert rc == 0 and said == ["distill: nothing to write (waiting=0)"] and \
@@ -1066,12 +1066,12 @@ class TestSpoolFormats:
         k = tmp_path / "keep"
         sp = plant_compat(k)
         said = []
-        querylog._distill(k, querylog.Replay(COMPAT / "haiku.json"), NOW, RUN_ID, "0" * 40, said.append, keep=True)
+        ql_distill._distill(k, ql_base.Replay(COMPAT / "haiku.json"), NOW, RUN_ID, "0" * 40, said.append, keep=True)
         assert said[0] == f"distill: run={RUN_ID} entries=17 dropped=0 waiting=0", said
         files = {p: p.read_bytes() for p in store_files(k)}
         spool_before = {p.name: p.read_bytes() for p in sp.iterdir()}
         said = []
-        querylog._distill(k, echo, NOW, "20260928T130000Z-0000abcf", "0" * 40, said.append, keep=True)
+        ql_distill._distill(k, echo, NOW, "20260928T130000Z-0000abcf", "0" * 40, said.append, keep=True)
         assert said[0] == "distill: nothing to write (waiting=0)", said
         assert {p: p.read_bytes() for p in store_files(k)} == files
         assert {p.name: p.read_bytes() for p in sp.iterdir()} == spool_before
@@ -1102,7 +1102,7 @@ class TestSpoolFormats:
             (sp / f"{S_COMPAT}.end").touch()
         rc, said = run_distill(q, echo)
         assert rc == 0 and said == [f"distill: run={RUN_ID} entries=1 dropped=0 waiting=0"], said
-        assert querylog.store_problems(q / "store") == []
+        assert ql_store.store_problems(q / "store") == []
         assert list(sp.iterdir()) == []
 
     def test_unknown_and_malformed_rows_are_skipped_and_counted(self, tmp_path):
@@ -1119,11 +1119,11 @@ class TestSpoolFormats:
                                  "question": "laps"})]
         q = tmp_path / "querylog"
         sp = plant_compat(q, bad, tools_bad)
-        rc, said = run_distill(q, querylog.Replay(COMPAT / "haiku.json"))
+        rc, said = run_distill(q, ql_base.Replay(COMPAT / "haiku.json"))
         assert rc == 0 and said == [f"distill: run={RUN_ID} entries=17 dropped=0 waiting=0 skipped=10"], said
         header = jsonl(store_files(q)[0])[0]
         assert header["counts"] == {"entries": 17, "dropped": 0, "waiting": 0, "skipped": 10}
-        assert querylog.store_problems(q / "store") == [] and list(sp.iterdir()) == []
+        assert ql_store.store_problems(q / "store") == [] and list(sp.iterdir()) == []
         rc, said = run_distill(q, echo, run_id="20260928T130000Z-0000abcf")
         assert said == ["distill: nothing to write (waiting=0)"]
         # an open session's rows are neither read nor counted, and stay as they are
@@ -1139,7 +1139,7 @@ class TestSpoolFormats:
         (sp / f"{S_COMPAT}.end").touch()
         rc, said = run_distill(o, echo)
         assert said == [f"distill: run={RUN_ID} entries=0 dropped=0 waiting=0 skipped=1"], said
-        assert querylog.store_problems(o / "store") == [] and list(sp.iterdir()) == []
+        assert ql_store.store_problems(o / "store") == [] and list(sp.iterdir()) == []
 
     def test_a_finished_days_tools_file_that_stays_loses_its_skipped_rows(self, tmp_path):
         """A tools file kept for a waiting entry is rewritten without the rows counted as skipped, so no later pass
@@ -1152,7 +1152,7 @@ class TestSpoolFormats:
         rc, said = run_distill(q, down)
         assert said[-1].endswith("skipped=1"), said
         assert all(json.loads(ln) for ln in (sp / "tools-2026-09-25.jsonl").read_text(encoding="utf-8").splitlines())
-        rc, said = run_distill(q, querylog.Replay(COMPAT / "haiku.json"), run_id="20260928T120500Z-0000abce")
+        rc, said = run_distill(q, ql_base.Replay(COMPAT / "haiku.json"), run_id="20260928T120500Z-0000abce")
         assert said[-1].endswith("waiting=0"), said
         assert "skipped" not in jsonl(store_files(q)[-1])[0]["counts"]
 
@@ -1162,21 +1162,21 @@ class TestSpoolFormats:
         text = ("coverage: good (...)\n\n## public/windows/laps.md  LAPS\n- public/windows/laps.md:24 A. [DOC S-1]\n"
                 "\n## public/intune/win32-apps.md  Win32\n- public/intune/win32-apps.md:49 B. [DOC S-2]\n")
         asked = []
-        monkeypatch.setattr(querylog, "head_pack_text", lambda q: asked.append(q) or text)
+        monkeypatch.setattr(ql_distill, "head_pack_text", lambda q: asked.append(q) or text)
         old = {"id": E("r1"), "ts": "2026-09-26T09:00:00.000Z", "surface": "mcp", "tool": "kb_pack",
                "args": {"questions": ["laps length", "laps age"]}, "articles": [LAPS]}
-        got, again = querylog.row_lines(old)
+        got, again = ql_distill.row_lines(old)
         assert again and got == [{"line": f"{LAPS}:24", "tag": "DOC", "verdict": "good"}] * 2
         assert asked == ["laps length", "laps age"]
-        assert querylog.citations([old], "")[0] == [{"line": f"{LAPS}:24", "tag": "DOC", "verdict": "good"}]
+        assert ql_distill.citations([old], "")[0] == [{"line": f"{LAPS}:24", "tag": "DOC", "verdict": "good"}]
         asked.clear()
         for row in (dict(old, v=1), dict(old, lines=[{"line": f"{LAPS}:9"}]), dict(old, articles=None),
                     dict(old, args={"path": f"{LAPS}:24"}), dict(old, articles=["public/other/none.md"])):
-            got, again = querylog.row_lines(row)
+            got, again = ql_distill.row_lines(row)
             assert not again and got == row.get("lines", []), row
         assert asked == ["laps length", "laps age"]  # only the row whose articles pack could not back
         # planted: an entry whose re-run lines name the reply's line is still `pack`, never `reply`
-        assert querylog.citations([old], f"see {LAPS}:24")[1] == "pack"
+        assert ql_distill.citations([old], f"see {LAPS}:24")[1] == "pack"
 
 
 def distill_cli(data, *args):
@@ -1188,8 +1188,8 @@ def distill_cli(data, *args):
 
 LOCK_TAKER = """
 import sys, time
-import querylog
-got = querylog.acquire(sys.argv[1])
+import ql_base
+got = ql_base.acquire(sys.argv[1])
 print("got" if got else "busy", flush=True)
 time.sleep(1.5)
 """
@@ -1199,26 +1199,26 @@ class TestLock:
     def test_a_second_distill_exits_on_the_lock(self, tmp_path):
         q = tmp_path / "querylog"
         sp = plant_spool(q)
-        lock = querylog.acquire(q)
+        lock = ql_base.acquire(q)
         info = json.loads(lock.read_text(encoding="utf-8"))
         assert info["pid"] == os.getpid() and info["started"].endswith("Z")
         before = {p.name: p.read_bytes() for p in sp.iterdir()}
         p = distill_cli(tmp_path, "--replay", str(FIXTURES / "haiku.json"))
         assert (p.returncode, p.stdout) == (3, "distill: another distill holds the lock\n"), p.stderr
         assert {p.name: p.read_bytes() for p in sp.iterdir()} == before and store_files(q) == []
-        querylog.release(lock)
+        ql_base.release(lock)
         p = distill_cli(tmp_path, "--replay", str(FIXTURES / "haiku.json"))  # planted: without the lock it runs
         assert p.returncode == 0 and "entries=" in p.stdout, p.stdout + p.stderr
-        assert not (q / querylog.LOCK_NAME).exists()
+        assert not (q / ql_base.LOCK_NAME).exists()
 
     def test_a_stale_lock_is_taken_over(self, tmp_path):
         q = tmp_path / "querylog"
         q.mkdir()
-        old = time.time() - querylog.LOCK_STALE_S - 5
-        (q / querylog.LOCK_NAME).write_text(json.dumps({"pid": 1, "started_epoch": old}), encoding="utf-8")
+        old = time.time() - ql_base.LOCK_STALE_S - 5
+        (q / ql_base.LOCK_NAME).write_text(json.dumps({"pid": 1, "started_epoch": old}), encoding="utf-8")
         p = distill_cli(tmp_path)
         assert p.returncode == 0 and "nothing to write" in p.stdout, p.stdout + p.stderr
-        (q / querylog.LOCK_NAME).write_text(json.dumps({"pid": 1, "started_epoch": time.time() - 5}), encoding="utf-8")
+        (q / ql_base.LOCK_NAME).write_text(json.dumps({"pid": 1, "started_epoch": time.time() - 5}), encoding="utf-8")
         assert distill_cli(tmp_path).returncode == 3  # planted: a fresh one holds
 
     def test_one_taker_wins(self, tmp_path):
@@ -1255,7 +1255,7 @@ def wait_for_run(data, timeout=60):
     end = time.time() + timeout
     while time.time() < end:
         files = sorted((Path(data) / "querylog" / "store").rglob("*.jsonl"))
-        if files and not (Path(data) / "querylog" / querylog.LOCK_NAME).exists():
+        if files and not (Path(data) / "querylog" / ql_base.LOCK_NAME).exists():
             return files
         time.sleep(0.2)
     return []
@@ -1324,10 +1324,10 @@ class TestLaunch:
         rc, out, took, exited = launch_proc(tmp_path, session_end())
         assert (rc, out) == (0, b"") and took < 1.5, took  # SessionEnd hooks share 1.5 s; the pipes are free
         files = wait_for_run(tmp_path)
-        assert files, (tmp_path / "querylog" / querylog.LOG_NAME).read_text(encoding="utf-8")
+        assert files, (tmp_path / "querylog" / ql_distill.LOG_NAME).read_text(encoding="utf-8")
         assert files[0].stat().st_mtime > exited  # written after the launcher was gone (LAUNCH_SETTLE_S)
         assert [e["id"] for e in jsonl(files[0])[1:]] == [r["id"] for r in rows]
-        log = (tmp_path / "querylog" / querylog.LOG_NAME).read_text(encoding="utf-8")
+        log = (tmp_path / "querylog" / ql_distill.LOG_NAME).read_text(encoding="utf-8")
         assert "entries=1" in log and "Haiku" not in log
 
     def test_launch_itself_fits_its_share_of_the_budget(self, tmp_path, monkeypatch):
@@ -1336,9 +1336,9 @@ class TestLaunch:
                 monkeypatch.setenv(k, v)
         plant_fetch_day(tmp_path)
         t0 = time.monotonic()
-        pid = querylog.launch(session_end())
+        pid = ql_distill.launch(session_end())
         took = time.monotonic() - t0
-        assert pid and took < querylog.LAUNCH_BUDGET_S, took
+        assert pid and took < ql_distill.LAUNCH_BUDGET_S, took
         assert wait_for_run(tmp_path)
 
     @pytest.mark.skipif(os.name == "nt", reason="POSIX sessions and process groups")
@@ -1392,7 +1392,7 @@ class TestLaunch:
                    "articles": ["public/windows/laps.md"], "lines": [{"line": "public/windows/laps.md:12"}]}
             # no question: nothing for Haiku
             (sp / f"{sid}.jsonl").write_text(json.dumps(row) + "\n", encoding="utf-8", newline="\n")
-        old = time.time() - querylog.SESSION_IDLE_CLOSED_S - 60
+        old = time.time() - ql_distill.SESSION_IDLE_CLOSED_S - 60
         os.utime(sp / f"{closed}.jsonl", (old, old))
         before = (sp / f"{active}.jsonl").read_bytes()
         rc, out, took, _ = launch_proc(tmp_path, session_start())
@@ -1410,15 +1410,15 @@ class TestLaunch:
         today = datetime.datetime.now(datetime.timezone.utc).date().isoformat()
         (sp / f"tools-{today}.jsonl").write_text("{}\n", encoding="utf-8")
         assert launch_proc(tmp_path, session_start())[:2] == (0, b"")
-        assert not (tmp_path / "querylog" / querylog.LOG_NAME).exists()
-        assert querylog.launch({"hook_event_name": "Stop"}) is None
+        assert not (tmp_path / "querylog" / ql_distill.LOG_NAME).exists()
+        assert ql_distill.launch({"hook_event_name": "Stop"}) is None
 
     def test_launcher_starts_nothing_while_a_distill_runs(self, tmp_path):
         plant_fetch_day(tmp_path)
-        lock = querylog.acquire(tmp_path / "querylog")
+        lock = ql_base.acquire(tmp_path / "querylog")
         assert launch_proc(tmp_path, session_start())[:2] == (0, b"")
-        assert not (tmp_path / "querylog" / querylog.LOG_NAME).exists()
-        querylog.release(lock)
+        assert not (tmp_path / "querylog" / ql_distill.LOG_NAME).exists()
+        ql_base.release(lock)
 
 
 # ---------------------------------------------------------------- the store gates
@@ -1436,7 +1436,7 @@ def planted(tmp_path, change):
     """The golden run file with `change(objects)` applied: the store's problems."""
     objs = jsonl(FIXTURES / "golden.jsonl")
     change(objs)
-    return querylog.store_problems(golden_store(tmp_path / "store", objs))
+    return ql_store.store_problems(golden_store(tmp_path / "store", objs))
 
 
 @pytest.fixture(scope="module")
@@ -1451,13 +1451,13 @@ def kb_copy(tmp_path_factory):
 
 class TestStore:
     def test_the_committed_store_passes(self):
-        assert querylog.store_problems() == []
+        assert ql_store.store_problems() == []
         p = subprocess.run([sys.executable, QL, "check"], capture_output=True, text=True, encoding="utf-8", timeout=120)
         assert (p.returncode, p.stdout) == (0, "querylog check: problems=0\n"), p.stdout
 
     def test_golden_passes_and_check_reports(self, tmp_path):
         store = golden_store(tmp_path / "store")
-        assert querylog.store_problems(store) == []
+        assert ql_store.store_problems(store) == []
         bad =golden_store(tmp_path / "bad", [{"run": "x"}])
         p = subprocess.run([sys.executable, QL, "check", str(bad)], capture_output=True, text=True, encoding="utf-8",
                            timeout=120)
@@ -1465,13 +1465,13 @@ class TestStore:
 
     def test_duplicate_id_across_run_files(self, tmp_path):
         store = golden_store(tmp_path / "store")
-        assert querylog.duplicate_ids(store) == []
+        assert ql_store.duplicate_ids(store) == []
         golden_store(store, name="20260928T130000Z-0000ffff", lines_=[
             {**jsonl(FIXTURES / "golden.jsonl")[0], "run": "20260928T130000Z-0000ffff",
              "counts": {"entries": 1, "dropped": 0, "waiting": 0}}, jsonl(FIXTURES / "golden.jsonl")[1]])
-        (dup,) = querylog.duplicate_ids(store)
+        (dup,) = ql_store.duplicate_ids(store)
         assert "2026-09/20260928T130000Z-0000ffff.jsonl:2: duplicate entry id 22222222-" in dup
-        assert querylog.store_problems(store)[-1] == dup
+        assert ql_store.store_problems(store)[-1] == dup
 
     def test_kbgit_fix_check_fails_on_a_duplicate_id(self, kb_copy):
         env = {k: v for k, v in os.environ.items() if k not in ("KB_ROOTS", "KB_INDEX")}
@@ -1627,13 +1627,13 @@ def learn_store(tmp_path, name="store"):
 
 def run_learn(store, pack, **kw):
     said = []
-    rc = querylog.learn(store, pack=pack, kb_commit="0" * 40, out=said.append, **kw)
+    rc = ql_learn.learn(store, pack=pack, kb_commit="0" * 40, out=said.append, **kw)
     return rc, said
 
 
 def findings(store):
     """[(file, [records])] of the store's findings files, oldest first."""
-    return [(p, jsonl(p)[1:]) for p in querylog.findings_files(store)]
+    return [(p, jsonl(p)[1:]) for p in ql_store.findings_files(store)]
 
 
 def by_id(store):
@@ -1651,7 +1651,7 @@ def head_pack():
 
     def pack(q):
         if q not in seen:
-            seen[q] = querylog.default_pack(q)
+            seen[q] = ql_learn.default_pack(q)
         return seen[q]
     return pack
 
@@ -1672,7 +1672,7 @@ class TestLearn:
         ((f, recs),) = findings(store)
         assert f.parent.name == "2026-09" and f.parent.parent.name == "findings"
         kinds = {(r["kind"], r.get("entry", r.get("host"))): r for r in recs}
-        assert {k for k, _ in kinds} == set(querylog.FINDING_KINDS)
+        assert {k for k, _ in kinds} == set(ql_store.FINDING_KINDS)
 
         def e(n):
             return f"55555555-0000-4000-8000-0000000000{n}"
@@ -1692,7 +1692,7 @@ class TestLearn:
         assert set(src) == {("stage", "www.anthropic.com"), ("stage", "arxiv.org"), ("route", "learn.microsoft.com")}
         assert src[("stage", "www.anthropic.com")]["triggers"] == ["share"]
         assert src[("stage", "arxiv.org")]["triggers"] == ["failures"]
-        assert querylog.store_problems(store) == []
+        assert ql_store.store_problems(store) == []
 
     def test_learn_writes_findings_only(self, tmp_path, head_pack):
         store = learn_store(tmp_path)
@@ -1713,7 +1713,7 @@ class TestLearn:
             return passing(q)
         store = learn_store(tmp_path)
         run_learn(store, pack)
-        entries = {e["id"]: e for _, e in querylog.store_entries(store)}
+        entries = {e["id"]: e for _, e in ql_store.store_entries(store)}
         assert sorted(asked) == sorted(entries[i]["question"] for i in MISS)
         recs = [r for _, rs in findings(store) for r in rs if r["kind"] != "source"]
         # all pass now: each miss is fixed-since, and none gets a fix finding
@@ -1746,7 +1746,7 @@ class TestLearn:
         assert {r["id"] for r in two} == {i for i, r in opened.items() if r["kind"] != "source"}
         run_learn(store, failing)  # regressed on a later HEAD: open again
         assert all(by_id(store)[i]["state"] == "open" for i in opened)
-        assert querylog.store_problems(store) == []
+        assert ql_store.store_problems(store) == []
 
     def test_cli(self, tmp_path):
         store = learn_store(tmp_path)
@@ -1762,22 +1762,22 @@ class TestLearn:
 
 class TestSourceFindings:
     def test_triggers_match_web_sources(self, monkeypatch):
-        assert querylog.trigger_problems() == []
-        doc = querylog.WEB_SOURCES.read_text(encoding="utf-8")
+        assert ql_learn.trigger_problems() == []
+        doc = ql_learn.WEB_SOURCES.read_text(encoding="utf-8")
         assert "at least 25 rows" in doc and "Three or more failures" in doc
         planted = doc.replace("at least 25 rows", "at least 30 rows")
-        assert querylog.trigger_problems(planted) == ["trigger share_rows: querylog.py has 25, web-sources.md has 30"]
-        assert querylog.trigger_problems(doc.replace("Three or more failures", "Four or more failures"))
-        assert querylog.trigger_problems(doc.replace("at least 5%", "at least 10%"))
-        monkeypatch.setattr(querylog, "STAGE_FAILURES", 4)
-        assert querylog.trigger_problems(doc) == ["trigger failures: querylog.py has 4, web-sources.md has 3"]
+        assert ql_learn.trigger_problems(planted) == ["trigger share_rows: ql_learn.py has 25, web-sources.md has 30"]
+        assert ql_learn.trigger_problems(doc.replace("Three or more failures", "Four or more failures"))
+        assert ql_learn.trigger_problems(doc.replace("at least 5%", "at least 10%"))
+        monkeypatch.setattr(ql_learn, "STAGE_FAILURES", 4)
+        assert ql_learn.trigger_problems(doc) == ["trigger failures: ql_learn.py has 4, web-sources.md has 3"]
 
     def test_level_from_the_registry_else_the_routes_table(self, tmp_path, monkeypatch):
-        assert querylog.staging_level("learn.microsoft.com") == (3, "registry")  # in both: the registry decides
-        assert querylog.staging_level("raw.githubusercontent.com") == (3, "registry")
-        assert querylog.staging_level("pypi.org") == (1, "routes")
-        assert querylog.staging_level("platform.claude.com") == (1, "routes")
-        assert querylog.staging_level("www.anthropic.com") == (0, None)
+        assert ql_learn.staging_level("learn.microsoft.com") == (3, "registry")  # in both: the registry decides
+        assert ql_learn.staging_level("raw.githubusercontent.com") == (3, "registry")
+        assert ql_learn.staging_level("pypi.org") == (1, "routes")
+        assert ql_learn.staging_level("platform.claude.com") == (1, "routes")
+        assert ql_learn.staging_level("www.anthropic.com") == (0, None)
         import kbcommon, provider  # a root's own _providers.csv counts as the registry
         team = tmp_path / "team"
         team.mkdir()
@@ -1785,20 +1785,20 @@ class TestSourceFindings:
                                                newline="\n")
         roots = kbcommon.roots()
         monkeypatch.setattr(kbcommon, "roots", lambda: roots + [kbcommon.Root("team", str(team), "TM", "internal", "")])
-        assert querylog.staging_level("wiki.corp.example.com") == (3, "registry")
+        assert ql_learn.staging_level("wiki.corp.example.com") == (3, "registry")
 
     def test_the_registry_and_the_routes_table_agree(self):
-        assert querylog.registry_problems() == []
+        assert ql_learn.registry_problems() == []
         import provider
         rows = provider._read(provider.SHARED)
         planted = rows + [{"provider": "vendor", "match": "docs.vendor.example.org/"}]
-        assert querylog.registry_problems(planted) == [
+        assert ql_learn.registry_problems(planted) == [
             "provider vendor: docs.vendor.example.org has a registry row but no row in the routes table"]
-        doc = querylog.WEB_SOURCES.read_text(encoding="utf-8")
-        routes = querylog.routes_table(doc.replace("| `learn.microsoft.com` |", "| Learn |"))
-        assert any("learn.microsoft.com" in p for p in querylog.registry_problems(rows, routes))
+        doc = ql_learn.WEB_SOURCES.read_text(encoding="utf-8")
+        routes = ql_learn.routes_table(doc.replace("| `learn.microsoft.com` |", "| Learn |"))
+        assert any("learn.microsoft.com" in p for p in ql_learn.registry_problems(rows, routes))
         team = [{"provider": "team-wiki", "match": "wiki.corp.example.com/", "_root": "team"}]
-        assert querylog.registry_problems(rows + team) == []  # a root's own providers are its team's
+        assert ql_learn.registry_problems(rows + team) == []  # a root's own providers are its team's
 
     def test_no_source_finding_for_a_host_with_the_needed_level(self, tmp_path):
         store = learn_store(tmp_path)
@@ -1815,12 +1815,12 @@ class TestSourceFindings:
         row = ["anthropic", "www.anthropic.com/"] + [""] * (len(provider.COLS) - 2)
         shared.write_text(Path(provider.SHARED).read_text(encoding="utf-8") + ",".join(row) + "\n",
                           encoding="utf-8", newline="\n")
-        assert querylog.registry_row("www.anthropic.com") is None
+        assert ql_learn.registry_row("www.anthropic.com") is None
         monkeypatch.setattr(provider, "SHARED", str(shared))  # a registry row added: the host has level 3
-        doc = querylog.WEB_SOURCES.read_text(encoding="utf-8").replace(
+        doc = ql_learn.WEB_SOURCES.read_text(encoding="utf-8").replace(
             "| PyPI |", "| `arxiv.org` | WebSearch | the abstract page | WebFetch |\n| PyPI |")
-        monkeypatch.setattr(querylog, "WEB_SOURCES", tmp_path / "web-sources.md")
-        querylog.WEB_SOURCES.write_text(doc, encoding="utf-8", newline="\n")  # a routes row added: level 1
+        monkeypatch.setattr(ql_learn, "WEB_SOURCES", tmp_path / "web-sources.md")
+        ql_learn.WEB_SOURCES.write_text(doc, encoding="utf-8", newline="\n")  # a routes row added: level 1
         store = learn_store(tmp_path)
         run_learn(store, passing)
         assert not [r for r in by_id(store).values() if r.get("signal") == "stage"]
@@ -1842,14 +1842,14 @@ class TestFindingsGates:
     def planted(self, learned, tmp_path, change):
         store = tmp_path / "store"
         shutil.copytree(learned, store)
-        (p,) = querylog.findings_files(store)
+        (p,) = ql_store.findings_files(store)
         objs = jsonl(p)
         change(objs)
         p.write_text("".join(json.dumps(o) + "\n" for o in objs), encoding="utf-8", newline="\n")
-        return querylog.store_problems(store)
+        return ql_store.store_problems(store)
 
     def test_the_learned_store_passes(self, learned):
-        assert querylog.store_problems(learned) == []
+        assert ql_store.store_problems(learned) == []
 
     @pytest.mark.parametrize("change,problem", [
         (lambda o: o[0].pop("kb_commit"), "header lacks kb_commit"),
@@ -1892,7 +1892,7 @@ def apply_store(tmp_path, name="store"):
     """The fixture store with a1 a paraphrase an expansion fixes and a2 an unknown word an alias fixes; a3 (its best
     article cannot be reached without breaking the eval set), a4 (a gap) and the fetches as they are."""
     store = learn_store(tmp_path, name)
-    (p,) = querylog.run_files(store)
+    (p,) = ql_store.run_files(store)
     objs = jsonl(p)
     for o in objs:
         o["question"] = {E("a1"): PARAPHRASE_Q, E("a2"): ALIAS_Q}.get(o.get("id"), o.get("question"))
@@ -1926,7 +1926,7 @@ def applied(tmp_path_factory):
 
 
 def kb_rows(home, rel):
-    return querylog.csv_rows(Path(home) / rel)
+    return ql_apply.csv_rows(Path(home) / rel)
 
 
 class TestApply:
@@ -1936,7 +1936,7 @@ class TestApply:
         m = re.search(r"eval=(\d+)/(\d+) mean-pack=(\d+)->(\d+) offkb-good=(\d+)->(\d+)", said[1])
         passed, n, mean0, mean1, good0, good1 = map(int, m.groups())
         assert passed == n and mean1 <= mean0 and good1 <= good0, said[1]  # the doc2query.md measurements
-        added = {rel: kb_rows(home, rel)[len(querylog.csv_rows(Path(KB) / rel)):] for rel in KB_DATA}
+        added = {rel: kb_rows(home, rel)[len(ql_apply.csv_rows(Path(KB) / rel)):] for rel in KB_DATA}
         import kbfacts, kbid
         assert added["kb/public/_retrieval/lookup_eval.csv"] == [
             [kbid.eval_id(PARAPHRASE_Q), PARAPHRASE_Q, "windows/laps.md", "good", ""],
@@ -1966,7 +1966,7 @@ class TestApply:
         assert kinds[("expansion", E("a3"))]["state"] == "rejected" and kinds[("expansion", E("a3"))]["observed"]["gate"]
         assert not [r for r in outcomes if r["kind"] in ("source", "gap")]  # left alone
         assert {r["id"] for r in learned} >= {r["id"] for r in outcomes}  # the learn file is not edited
-        assert querylog.store_problems(store) == []
+        assert ql_store.store_problems(store) == []
 
     def test_a_second_apply_changes_nothing(self, applied):
         home, store, env, said, before = applied
@@ -1993,7 +1993,7 @@ class TestApply:
         assert (p.returncode, p.stdout) == (0, "apply: logging is off\n")
 
 
-class StubGate(querylog.Gate):
+class StubGate(ql_apply.Gate):
     """The kb gates on three files in a temporary directory: the eval set, the aliases and the expansions. A new eval
     row passes when `works` and some fix row was written with it; `measure` counts its calls."""
 
@@ -2016,7 +2016,7 @@ class StubGate(querylog.Gate):
 
     def measure(self):
         self.measured += 1
-        rows = querylog.csv_rows(self.files["eval"])
+        rows = ql_apply.csv_rows(self.files["eval"])
         fixed = any(self.files[k].read_bytes() != self.first[k] for k in ("aliases", "expansions"))
         passed = len(rows) if self.works and fixed else 1
         return {"n": len(rows), "passed": passed, "failed": [r[0] for r in rows[passed:]],
@@ -2048,7 +2048,7 @@ def stub_store(tmp_path):
 
 def run_apply(store, gate):
     said = []
-    rc = querylog.apply(store, gate=gate, kb_commit="0" * 40, out=said.append)
+    rc = ql_apply.apply(store, gate=gate, kb_commit="0" * 40, out=said.append)
     return rc, said
 
 
@@ -2057,18 +2057,18 @@ class TestApplyGates:
         gate = StubGate(tmp_path)
         rc, said = run_apply(stub_store, gate)
         assert rc == 0 and "applied=6 rejected=0 no-fix=0" in said[0], said
-        assert [r[0] for r in querylog.csv_rows(gate.files["aliases"])][-3:] == ["laps", "zqxlapsor", "plomkinator"]
+        assert [r[0] for r in ql_apply.csv_rows(gate.files["aliases"])][-3:] == ["laps", "zqxlapsor", "plomkinator"]
         first = tree(stub_store), {k: p.read_bytes() for k, p in gate.files.items()}
         n = gate.measured
         assert run_apply(stub_store, gate) == (0, ["apply: nothing to apply"])
         assert (tree(stub_store), {k: p.read_bytes() for k, p in gate.files.items()}) == first
         assert gate.measured == n  # nothing open: no gate ran
-        assert querylog.store_problems(stub_store) == []
+        assert ql_store.store_problems(stub_store) == []
 
     def test_an_eval_row_is_never_written_without_its_fix(self, stub_store, tmp_path):
-        (p,) = querylog.findings_files(stub_store)  # planted: learn's fix records gone
+        (p,) = ql_store.findings_files(stub_store)  # planted: learn's fix records gone
         objs = jsonl(p)
-        objs = [objs[0]] + [o for o in objs[1:] if o["kind"] not in querylog.FIX_KINDS]
+        objs = [objs[0]] + [o for o in objs[1:] if o["kind"] not in ql_store.FIX_KINDS]
         objs[0]["counts"]["findings"] = len(objs) - 1
         p.write_text("".join(json.dumps(o) + "\n" for o in objs), encoding="utf-8", newline="\n")
         gate = StubGate(tmp_path)
@@ -2083,7 +2083,7 @@ class TestApplyGates:
         rc, said = run_apply(stub_store, gate)
         assert rc == 0 and "applied=0 rejected=3 no-fix=3" in said[0], said
         assert {k: p.read_bytes() for k, p in gate.files.items()} == gate.first  # every file as it was
-        assert querylog.store_problems(stub_store) == []
+        assert ql_store.store_problems(stub_store) == []
 
     @pytest.mark.parametrize("unknown,terms,problem", [
         (("sccm",), ["sccm"], "alias sccm: already a term of configmgr"),
@@ -2092,7 +2092,7 @@ class TestApplyGates:
     def test_an_alias_colliding_with_an_existing_term_is_refused(self, tmp_path, unknown, terms, problem):
         store = learn_store(tmp_path)
         run_learn(store, unknown_pack)
-        (p,) = querylog.findings_files(store)
+        (p,) = ql_store.findings_files(store)
         objs = jsonl(p)
         for o in objs[1:]:
             if o["kind"] == "alias":
@@ -2103,16 +2103,16 @@ class TestApplyGates:
         assert gate.files["aliases"].read_bytes() == gate.first["aliases"]
         rec = next(r for r in by_id(store).values() if r["kind"] == "alias")
         assert rec["state"] == "rejected" and problem in rec["observed"]["gate"], rec
-        miss = by_id(store)[querylog.finding_id("eval", E("a2"))]
+        miss = by_id(store)[ql_store.finding_id("eval", E("a2"))]
         assert (miss["state"], miss["stage"]) == ("no-fix", "candidate-gap")
 
     def test_alias_problems(self):
         existing = {"sccm": "configmgr", "configmgr": "configmgr", "laps": "laps"}
-        assert querylog.alias_problems(["zqx"], "laps", existing, ["zqx"]) == []
-        assert querylog.alias_problems(["sccm"], "laps", existing, ["sccm"]) == ["alias sccm: already a term of configmgr"]
-        assert querylog.alias_problems(["laps"], "laps", existing, []) == ["alias laps: already a term of laps"]
-        assert querylog.alias_problems(["zqx"], "laps", existing, []) == ["alias zqx: a word the kb holds"]
-        assert querylog.alias_problems(["zqx"], "sccm", existing, ["zqx"]) == ["alias sccm: a term of configmgr"]
+        assert ql_apply.alias_problems(["zqx"], "laps", existing, ["zqx"]) == []
+        assert ql_apply.alias_problems(["sccm"], "laps", existing, ["sccm"]) == ["alias sccm: already a term of configmgr"]
+        assert ql_apply.alias_problems(["laps"], "laps", existing, []) == ["alias laps: already a term of laps"]
+        assert ql_apply.alias_problems(["zqx"], "laps", existing, []) == ["alias zqx: a word the kb holds"]
+        assert ql_apply.alias_problems(["zqx"], "sccm", existing, ["zqx"]) == ["alias sccm: a term of configmgr"]
 
     def test_source_findings_are_never_applied(self, tmp_path):
         store = learn_store(tmp_path)
@@ -2141,12 +2141,12 @@ class TestPushRules:
         ("ssh://git@gitlab.corp.example.com:2222/a/b.git", ("gitlab", "gitlab.corp.example.com", "a/b")),
         ("https://github.com/o/r.git", ("github", "github.com", "o/r")),
         ("git@github.com:o/r.git", ("github", "github.com", "o/r")),
-        ("/tmp/x/remote.git", ("gitlab", querylog.FALLBACK_GITLAB_HOST, "x/remote")),
-        ("C:\\work\\x\\remote.git", ("gitlab", querylog.FALLBACK_GITLAB_HOST, "x/remote")),
-        ("file:///srv/x/remote.git", ("gitlab", querylog.FALLBACK_GITLAB_HOST, "x/remote")),
+        ("/tmp/x/remote.git", ("gitlab", ql_deliver.FALLBACK_GITLAB_HOST, "x/remote")),
+        ("C:\\work\\x\\remote.git", ("gitlab", ql_deliver.FALLBACK_GITLAB_HOST, "x/remote")),
+        ("file:///srv/x/remote.git", ("gitlab", ql_deliver.FALLBACK_GITLAB_HOST, "x/remote")),
     ])
     def test_the_host_comes_from_origins_url(self, url, want):
-        assert querylog.origin_forge(url) == want
+        assert ql_deliver.origin_forge(url) == want
 
     @pytest.mark.parametrize("status,want", [
         ("failed", "red"), ("success", "ok"), ("manual", "ok"), ("skipped", "ok"), ("canceled", "ok"),
@@ -2154,7 +2154,7 @@ class TestPushRules:
         ("preparing", "pending"), ("scheduled", "pending"), ("canceling", "pending"),
     ])
     def test_only_a_finished_failure_is_red_on_gitlab(self, status, want):
-        assert querylog.pipeline_verdict("gitlab", [status]) == want
+        assert ql_deliver.pipeline_verdict("gitlab", [status]) == want
 
     @pytest.mark.parametrize("runs,want", [
         ([("completed", "failure")], "red"), ([("completed", "timed_out")], "red"),
@@ -2163,7 +2163,7 @@ class TestPushRules:
         ([("in_progress", None)], "pending"), ([("queued", None), ("completed", "success")], "pending"),
     ])
     def test_only_a_finished_failure_is_red_on_github(self, runs, want):
-        assert querylog.pipeline_verdict("github", runs) == want
+        assert ql_deliver.pipeline_verdict("github", runs) == want
 
     def test_the_ci_check_is_skipped_when_no_cli_is_signed_in(self):
         calls = []
@@ -2171,7 +2171,7 @@ class TestPushRules:
         def run(argv, cwd=None):
             calls.append(argv)
             return 1, "", "not logged in"
-        verdict, detail = querylog.ci_status("git@gitlab.corp.example.com:grp/proj.git", "a" * 40, run)
+        verdict, detail = ql_deliver.ci_status("git@gitlab.corp.example.com:grp/proj.git", "a" * 40, run)
         assert verdict == "skip" and "glab is not signed in to gitlab.corp.example.com" in detail
         assert calls == [["glab", "auth", "status", "--hostname", "gitlab.corp.example.com"]]  # no API call
 
@@ -2186,45 +2186,45 @@ class TestPushRules:
                 return 0, json.dumps([{"status": "completed", "conclusion": "failure"}]), ""
             return 0, json.dumps([{"id": 7, "status": "manual"}]), ""
         sha = "b" * 40
-        assert querylog.ci_status("git@gitlab.corp.example.com:grp/sub/proj.git", sha, run)[0] == "ok"
+        assert ql_deliver.ci_status("git@gitlab.corp.example.com:grp/sub/proj.git", sha, run)[0] == "ok"
         assert calls[-1] == ["glab", "api", "--hostname", "gitlab.corp.example.com",
                              f"projects/grp%2Fsub%2Fproj/pipelines?sha={sha}&per_page=1"]
-        assert querylog.ci_status("https://github.com/o/r.git", sha, run)[0] == "red"
+        assert ql_deliver.ci_status("https://github.com/o/r.git", sha, run)[0] == "red"
         assert calls[-1][:6] == ["gh", "run", "list", "--commit", sha, "-R"] and calls[-1][6] == "github.com/o/r"
 
     def test_a_failed_or_empty_api_answer(self):
         def run(argv, cwd=None):
             return (0, "", "") if argv[1] == "auth" else (0, "[]", "")
-        assert querylog.ci_status("/x/y.git", "c" * 40, run)[0] == "none"
+        assert ql_deliver.ci_status("/x/y.git", "c" * 40, run)[0] == "none"
 
         def broken(argv, cwd=None):
             return (0, "", "") if argv[1] == "auth" else (1, "", "HTTP 404")
-        assert querylog.ci_status("/x/y.git", "c" * 40, broken) == ("skip", "glab api failed (HTTP 404)")
+        assert ql_deliver.ci_status("/x/y.git", "c" * 40, broken) == ("skip", "glab api failed (HTTP 404)")
 
     def test_auto_kinds(self):
         import kbgit
         paths = ["kb/_querylog/findings/2026-09/x.jsonl", "_tools/aliases.csv", "kb/public/_retrieval/lookup_eval.csv",
                  "kb/public/_retrieval/doc2query/expansions.csv", "kb/team/_retrieval/aliases.csv", "kb/public/_gaps.md"]
-        assert querylog.auto_kinds(paths) == ["alias", "eval", "expansion", "gap", "querylog"]
-        assert set(querylog.auto_kinds(paths)) <= set(kbgit.AUTO_VALUES)
+        assert ql_deliver.auto_kinds(paths) == ["alias", "eval", "expansion", "gap", "querylog"]
+        assert set(ql_deliver.auto_kinds(paths)) <= set(kbgit.AUTO_VALUES)
         research = ["kb/public/windows/laps.md", "kb/public/_sources.csv", "kb/public/_conflicts.md",
                     "kb/public/_coverage.csv", "kb/public/_coverage.md", "kb/team/infra/dns/zones.md"]
-        assert querylog.auto_kinds(paths + research) == ["alias", "eval", "expansion", "gap", "querylog", "research"]
+        assert ql_deliver.auto_kinds(paths + research) == ["alias", "eval", "expansion", "gap", "querylog", "research"]
         for p in ("_tools/kbfacts.py", "kb/_self/tools.md", "kb/public/_answers.md", "kb/public/_anchors.csv",
                   "README.md", "kb/public/_retrieval/signals.csv", "kb/public/_snapshots/S100.txt"):
             with pytest.raises(ValueError, match=re.escape(p)):  # planted: a path apply never writes
-                querylog.auto_kinds(paths + [p])
+                ql_deliver.auto_kinds(paths + [p])
 
     def test_an_edited_line_is_refused_at_commit(self, tmp_path):
         """apply --push checks the worktree's change against HEAD: added lines pass, an edited fact line, ledger
         entry or source row is refused (planted)."""
         old = "---\ntopic: a/b\n---\n## Facts\n- One fact. [DOC S100]\n"
-        f = tmp_path / querylog.WORKTREE_NAME / "kb" / "public" / "a" / "b.md"
+        f = tmp_path / ql_deliver.WORKTREE_NAME / "kb" / "public" / "a" / "b.md"
         f.parent.mkdir(parents=True)
 
         def run(argv, cwd=None):
             return (0, old, "") if argv[:2] == ["git", "show"] else (1, "", "")
-        p = querylog.Pusher(tmp_path, tmp_path, run, None, print)
+        p = ql_deliver.Pusher(tmp_path, tmp_path, run, None, print)
         f.write_text(old + "- Two facts. [DOC S101]\n", encoding="utf-8", newline="\n")
         assert p.edited(["kb/public/a/b.md"]) == []
         f.write_text(old.replace("One fact.", "One fact, edited."), encoding="utf-8", newline="\n")
@@ -2234,9 +2234,9 @@ class TestPushRules:
 
 def reopen(store, ids):
     """Planted: a later findings file that records `ids` open again, as a parallel learn in another clone could."""
-    last = querylog.finding_states(store)
+    last = ql_store.finding_states(store)
     recs = [{**{k: v for k, v in last[i].items() if k != "observed"}, "state": "open"} for i in ids]
-    querylog.write_findings(store, querylog.store_entries(store), recs, querylog.LEARN_STATES, "0" * 40)
+    ql_store.write_findings(store, ql_store.store_entries(store), recs, ql_store.LEARN_STATES, "0" * 40)
 
 
 class TestRetry:
@@ -2245,29 +2245,29 @@ class TestRetry:
         assert run_apply(stub_store, StubGate(tmp_path / "a"))[0] == 0
         applied = {i: r for i, r in by_id(stub_store).items() if r["state"] == "applied"}
         assert len(applied) == 6
-        failed = [{**{k: v for k, v in r.items() if k != "observed"}, "state": querylog.APPLY_FAILED,
+        failed = [{**{k: v for k, v in r.items() if k != "observed"}, "state": ql_store.APPLY_FAILED,
                    "observed": {"ci": "failed", "commit": "0" * 12}} for r in applied.values()]
-        querylog.write_findings(stub_store, querylog.store_entries(stub_store), failed, (querylog.APPLY_FAILED,),
+        ql_store.write_findings(stub_store, ql_store.store_entries(stub_store), failed, (ql_store.APPLY_FAILED,),
                                 "0" * 40)
-        assert querylog.store_problems(stub_store) == []
+        assert ql_store.store_problems(stub_store) == []
         reopen(stub_store, list(applied))
         (tmp_path / "b").mkdir()
         gate = StubGate(tmp_path / "b")
         assert run_apply(stub_store, gate) == (0, ["apply: nothing to apply"])
         assert gate.measured == 0 and {k: p.read_bytes() for k, p in gate.files.items()} == gate.first
-        monkeypatch.setattr(querylog, "FAILED_RETRIES", 1)  # planted: one retry allowed, and it is taken
+        monkeypatch.setattr(ql_apply, "FAILED_RETRIES", 1)  # planted: one retry allowed, and it is taken
         rc, said = run_apply(stub_store, gate)
         assert rc == 0 and "applied=6" in said[0], said
 
     def test_held_findings_are_left_alone(self, stub_store, tmp_path):
         gate = StubGate(tmp_path)
-        hold = {i for i, r in by_id(stub_store).items() if r["kind"] in ("eval",) + querylog.FIX_KINDS}
+        hold = {i for i, r in by_id(stub_store).items() if r["kind"] in ("eval",) + ql_store.FIX_KINDS}
         said = []
-        assert querylog.apply(stub_store, gate=gate, kb_commit="0" * 40, out=said.append, hold=hold) == 0
+        assert ql_apply.apply(stub_store, gate=gate, kb_commit="0" * 40, out=said.append, hold=hold) == 0
         assert said == ["apply: nothing to apply"] and gate.measured == 0
 
     def test_the_command_line(self, stub_store, capsys):
-        hold = sorted(i for i, r in by_id(stub_store).items() if r["kind"] in ("eval",) + querylog.FIX_KINDS)
+        hold = sorted(i for i, r in by_id(stub_store).items() if r["kind"] in ("eval",) + ql_store.FIX_KINDS)
         argv = ["apply", "--store", str(stub_store)]
         for i in hold:
             argv += ["--hold", i]
@@ -2275,7 +2275,7 @@ class TestRetry:
         assert querylog.main(["apply", "--push", "--store", str(stub_store)]) == 2  # the push has its own store
 
 
-class RepoGate(querylog.Gate):
+class RepoGate(ql_apply.Gate):
     """apply's gate on a worktree: the clone's real alias terms, facts and titles, a pack that misses, and a measure
     under which every candidate passes (the gates themselves are tested above); the files written are the
     worktree's."""
@@ -2294,12 +2294,12 @@ class RepoGate(querylog.Gate):
                 "expansions": self.wt / D("doc2query/expansions.csv")}
 
     def measure(self):
-        rows = querylog.csv_rows(self.targets(None)["eval"])
+        rows = ql_apply.csv_rows(self.targets(None)["eval"])
         return {"n": len(rows), "passed": len(rows), "failed": [], "chars": {r[0]: 100 for r in rows}, "offkb_good": 0}
 
 
 def repo_step(wt, store, hold, out):
-    return querylog.apply(store, gate=RepoGate(wt), kb_commit="0" * 40, out=out, hold=hold)
+    return ql_apply.apply(store, gate=RepoGate(wt), kb_commit="0" * 40, out=out, hold=hold)
 
 
 def signed_out(argv):
@@ -2339,7 +2339,7 @@ class TestPushInGit:
         seed = Repo(copy_kb(str(cls.tmp / "seed"), skip=("_fetch_state.csv",)), cls.env)
         store = learn_store(cls.tmp, "learned")
         run_learn(store, unknown_pack)
-        shutil.copytree(store, Path(seed.path) / querylog.STORE_REL)
+        shutil.copytree(store, Path(seed.path) / ql_base.STORE_REL)
         seed.git("init", "-q", "-b", "main")
         seed.git("add", "-A")
         seed.git("commit", "-q", "-m", "base")
@@ -2388,9 +2388,9 @@ class TestPushInGit:
             if argv[0] in ("glab", "gh"):
                 cls.calls.append(list(argv))
                 return ci(argv)
-            return querylog.run_cmd(argv, cwd=cwd, env=cls.env)
+            return ql_base.run_cmd(argv, cwd=cwd, env=cls.env)
         said = []
-        rc = querylog.push(home=clone.path, qdir=Path(clone.path) / "_cache" / "querylog", run=run, apply_step=step,
+        rc = ql_deliver.push(home=clone.path, qdir=Path(clone.path) / "_cache" / "querylog", run=run, apply_step=step,
                            out=said.append)
         return rc, said
 
@@ -2401,7 +2401,7 @@ class TestPushInGit:
         rc = repo_step(wt, store, hold, out)
         (new,) = set(Path(store).rglob("*.jsonl")) - before
         rel = new.relative_to(wt).as_posix()
-        header = {"run": new.stem, "pipeline": querylog.PIPELINE_VERSION, "retrieval": querylog.retrieval_version(),
+        header = {"run": new.stem, "pipeline": ql_base.PIPELINE_VERSION, "retrieval": ql_store.retrieval_version(),
                   "kb_commit": "0" * 40, "counts": {"findings": 0}}
         cls.planter.write(rel, json.dumps(header, separators=(",", ":")) + "\n")
         cls.planter.git("add", "-A")
@@ -2429,7 +2429,7 @@ class TestPushInGit:
 
     def findings_at(self, repo, rev):
         """{finding id: last record} of the findings files at `rev`."""
-        names = repo.git("ls-tree", "-r", "--name-only", rev, "--", f"{querylog.STORE_REL}/findings").split()
+        names = repo.git("ls-tree", "-r", "--name-only", rev, "--", f"{ql_base.STORE_REL}/findings").split()
         last = {}
         for n in sorted(names, key=lambda n: Path(n).stem):
             for line in self.show(repo, rev, n).splitlines()[1:]:
@@ -2482,14 +2482,14 @@ class TestPushInGit:
         assert self.r1.git("log", "-1", "--format=%s", rev).strip() == f"revert: query log commit {self.main1[:9]}"
         for rel in (D("lookup_eval.csv"), D("doc2query/expansions.csv"), "_tools/aliases.csv"):
             assert self.show(self.r1, "main", rel) == self.show(self.r1, self.base, rel), rel
-        before = set(self.r1.git("ls-tree", "-r", "--name-only", self.main1, "--", querylog.STORE_REL).split())
-        after = set(self.r1.git("ls-tree", "-r", "--name-only", "main", "--", querylog.STORE_REL).split())
+        before = set(self.r1.git("ls-tree", "-r", "--name-only", self.main1, "--", ql_base.STORE_REL).split())
+        after = set(self.r1.git("ls-tree", "-r", "--name-only", "main", "--", ql_base.STORE_REL).split())
         assert before < after and len(after - before) == 1  # the store's files stay; one findings file is added
         states = self.findings_at(self.r1, "main")
-        failed = [r for r in states.values() if r["state"] == querylog.APPLY_FAILED]
+        failed = [r for r in states.values() if r["state"] == ql_store.APPLY_FAILED]
         assert len(failed) == 6 and all(r["observed"]["commit"] == self.main1[:12] for r in failed)
-        wt = Path(self.a.path) / "_cache" / "querylog" / querylog.WORKTREE_NAME
-        assert querylog.store_problems(wt / querylog.STORE_REL) == []
+        wt = Path(self.a.path) / "_cache" / "querylog" / ql_deliver.WORKTREE_NAME
+        assert ql_store.store_problems(wt / ql_base.STORE_REL) == []
 
     def test_a_revert_is_not_reverted_and_nothing_is_retried(self):
         rc, said = self.red_again
@@ -2500,12 +2500,12 @@ class TestPushInGit:
         assert rc == 0, said
         (line,) = [s for s in said if "conflict: pushed" in s]
         branch = line.split("pushed ", 1)[1].split(" ", 1)[0]
-        assert branch == querylog.CONFLICT_BRANCH_PREFIX + Path(self.planted_rel).stem
+        assert branch == ql_deliver.CONFLICT_BRANCH_PREFIX + Path(self.planted_rel).stem
         assert self.r2.rev("main") == self.planted  # nothing of the run reached main
         assert self.show(self.r2, branch, D("lookup_eval.csv")) == self.branch_eval
         assert len(self.added_evals(self.r2, branch)) == 3
         opts = (Path(self.r2.path) / "push-options.txt").read_text(encoding="utf-8").splitlines()
-        assert opts == list(querylog.MR_OPTIONS) == ["merge_request.create", "merge_request.target=main"]
+        assert opts == list(ql_deliver.MR_OPTIONS) == ["merge_request.create", "merge_request.target=main"]
         states = self.findings_at(self.r2, "main")
         assert {r["state"] for r in states.values() if r["kind"] in ("eval", "alias", "expansion")} == {"open"}
 
@@ -2555,7 +2555,7 @@ class TestDeliverRules:
             calls.append(spool_names(qdir))
             return rc
         said = []
-        got = querylog.distill(qdir=q, cfg=auto_config(q, mode), haiku=querylog.Replay(FIXTURES / "haiku.json"),
+        got = ql_distill.distill(qdir=q, cfg=auto_config(q, mode), haiku=ql_base.Replay(FIXTURES / "haiku.json"),
                                now_dt=NOW, run_id=RUN_ID, kb_commit="0" * 40, out=said.append, deliver=deliver)
         return got, said
 
@@ -2581,8 +2581,8 @@ class TestDeliverRules:
         assert rc == 1 and said[0] == "distill: nothing to write (waiting=0)", said
         assert store_files(q) == [run] and run.read_bytes() == before
         ids = [e["id"] for e in jsonl(run)[1:]]
-        assert querylog.spool_delivered(q, ids[:0], NOW) == 0 and set(CLOSED) <= set(spool_names(q))
-        assert querylog.spool_delivered(q, ids, NOW) == 6
+        assert ql_distill.spool_delivered(q, ids[:0], NOW) == 0 and set(CLOSED) <= set(spool_names(q))
+        assert ql_distill.spool_delivered(q, ids, NOW) == 6
         assert spool_names(q) == [f"{S_OPEN}.jsonl"]  # the open session is never touched
 
     def test_one_delivered_entry_leaves_the_others(self, tmp_path):
@@ -2594,7 +2594,7 @@ class TestDeliverRules:
         sessions = {S_ENDED: (q / "spool" / f"{S_ENDED}.jsonl").read_text(encoding="utf-8"),
                     S_IDLE: (q / "spool" / f"{S_IDLE}.jsonl").read_text(encoding="utf-8")}
         one = next(e["id"] for e in entries if e["id"] in sessions[S_ENDED])
-        assert querylog.spool_delivered(q, [one], NOW) == 1
+        assert ql_distill.spool_delivered(q, [one], NOW) == 1
         left = (q / "spool" / f"{S_ENDED}.jsonl").read_text(encoding="utf-8")
         assert one not in left and (q / "spool" / f"{S_IDLE}.jsonl").read_text(encoding="utf-8") == sessions[S_IDLE]
         rc, said = self.distill(q, "auto", [], rc=1)
@@ -2604,17 +2604,17 @@ class TestDeliverRules:
         store = tmp_path / "store"
         golden_store(store)
         rel = f"2026-09/{RUN_ID}.jsonl"
-        assert querylog.leak_problems(store, [rel]) == []
+        assert ql_store.leak_problems(store, [rel]) == []
         objs = jsonl(FIXTURES / "golden.jsonl")
         objs[1]["tools"] = objs[1]["tools"] + ["anna.nowak" + "@" + "acme-corp.pl"]  # planted: a field check never reads
         golden_store(store, objs)
-        (hit,) = querylog.leak_problems(store, [rel])
+        (hit,) = ql_store.leak_problems(store, [rel])
         assert hit == f"{rel}:2: the leak scan flags an identifier (email)", hit
 
 
 def learn_then_apply(wt, store, hold, out):
     """learn (pack: every question misses) and apply with the repo gate, in the worktree on its store."""
-    rc = querylog.learn(store, pack=unknown_pack, kb_commit="0" * 40, out=out)
+    rc = ql_learn.learn(store, pack=unknown_pack, kb_commit="0" * 40, out=out)
     return rc or repo_step(wt, store, hold, out)
 
 
@@ -2686,7 +2686,7 @@ class TestDeliverInGit:
         def run(argv, cwd=None):
             if argv[0] in ("glab", "gh"):
                 return signed_out(argv)
-            return querylog.run_cmd(argv, cwd=cwd, env=cls.env)
+            return ql_base.run_cmd(argv, cwd=cwd, env=cls.env)
         return run
 
     @classmethod
@@ -2696,28 +2696,28 @@ class TestDeliverInGit:
 
         def deliver(qdir, out):
             seen.append(spool_names(qdir))  # the spool as the push starts
-            return querylog.Pusher(clone.path, qdir, cls.runner(), learn_then_apply, out, NOW)()
-        rc = querylog.distill(qdir=q, cfg=auto_config(q), haiku=querylog.Replay(FIXTURES / "haiku.json"), now_dt=NOW,
+            return ql_deliver.Pusher(clone.path, qdir, cls.runner(), learn_then_apply, out, NOW)()
+        rc = ql_distill.distill(qdir=q, cfg=auto_config(q), haiku=ql_base.Replay(FIXTURES / "haiku.json"), now_dt=NOW,
                               run_id=RUN_ID, kb_commit="0" * 40, out=said.append, deliver=deliver)
         return rc, said, seen
 
     @classmethod
     def push(cls, clone):
         said = []
-        rc = querylog.push(home=clone.path, qdir=Path(clone.path) / "_cache" / "querylog", run=cls.runner(),
+        rc = ql_deliver.push(home=clone.path, qdir=Path(clone.path) / "_cache" / "querylog", run=cls.runner(),
                            apply_step=learn_then_apply, out=said.append, now_dt=NOW)
         return rc, said
 
     @staticmethod
     def tree(repo, rev):
-        return repo.git("ls-tree", "-r", "--name-only", rev, "--", querylog.STORE_REL).split()
+        return repo.git("ls-tree", "-r", "--name-only", rev, "--", ql_base.STORE_REL).split()
 
     def test_the_run_file_and_findings_land_on_main(self):
         rc, said, seen = self.first
         assert rc == 0, "\n".join(said)
-        rel = f"{querylog.STORE_REL}/2026-09/{RUN_ID}.jsonl"
+        rel = f"{ql_base.STORE_REL}/2026-09/{RUN_ID}.jsonl"
         files = self.tree(self.r1, self.main1)
-        assert rel in files and any(f.startswith(f"{querylog.STORE_REL}/findings/") for f in files), files
+        assert rel in files and any(f.startswith(f"{ql_base.STORE_REL}/findings/") for f in files), files
         local = (self.qa / "store" / "2026-09" / f"{RUN_ID}.jsonl").read_text(encoding="utf-8")
         assert self.r1.git("show", f"{self.main1}:{rel}") == local
         commits = self.r1.git("rev-list", "--reverse", f"{self.base}..{self.main1}").split()
@@ -2728,8 +2728,8 @@ class TestDeliverInGit:
             self.r1, commits[1]), subjects
         check = self.a.kbgit("check-trailers", f"{self.base}..{self.main1}")
         assert check.returncode == 0, check.stdout
-        wt = self.qa / querylog.WORKTREE_NAME
-        assert querylog.store_problems(wt / querylog.STORE_REL) == []
+        wt = self.qa / ql_deliver.WORKTREE_NAME
+        assert ql_store.store_problems(wt / ql_base.STORE_REL) == []
         assert self.a.rev("main") == self.base and not self.a.git("status", "--porcelain")  # the person's checkout
 
     def test_the_spool_goes_only_after_the_push(self):
@@ -2761,7 +2761,7 @@ class TestDeliverInGit:
         rc, said, seen = self.retried
         assert rc == 0, "\n".join(said)
         assert said[0] == "distill: nothing to write (waiting=0)", said  # nothing distilled twice
-        assert f"{querylog.STORE_REL}/2026-09/{RUN_ID}.jsonl" in self.tree(self.r2, self.main_retried)
+        assert f"{ql_base.STORE_REL}/2026-09/{RUN_ID}.jsonl" in self.tree(self.r2, self.main_retried)
         assert self.spool_retried == [f"{S_OPEN}.jsonl"]
 
     def test_a_leak_in_a_run_file_blocks_the_push(self):
@@ -2814,7 +2814,7 @@ class TestHostRules:
          "error: 403", "http-403"),
     ])
     def test_a_refusal_for_want_of_rights(self, text, kind):
-        assert querylog.push_refusal(text).startswith(kind + ": "), querylog.push_refusal(text)
+        assert ql_deliver.push_refusal(text).startswith(kind + ": "), ql_deliver.push_refusal(text)
 
     @pytest.mark.parametrize("text", [
         f"remote: {PUSH_RULE}\n ! [remote rejected] main -> main (pre-receive hook declined)",
@@ -2828,16 +2828,16 @@ class TestHostRules:
         "",
     ])
     def test_no_refusal(self, text):
-        assert querylog.push_refusal(text) is None
+        assert ql_deliver.push_refusal(text) is None
 
     def test_the_install_url(self, tmp_path, monkeypatch):
         root = plugins_dir(tmp_path / "a", {"source": "git", "url": "git@gitlab.corp.example.com:grp/proj.git"})
-        assert querylog.install_url(root) == "git@gitlab.corp.example.com:grp/proj.git"
+        assert ql_deliver.install_url(root) == "git@gitlab.corp.example.com:grp/proj.git"
         root = plugins_dir(tmp_path / "b", {"source": "github", "repo": "grp/proj"})
-        assert querylog.install_url(root) == "https://github.com/grp/proj.git"
-        assert querylog.install_url(tmp_path / "not-a-cache" / "x") is None
+        assert ql_deliver.install_url(root) == "https://github.com/grp/proj.git"
+        assert ql_deliver.install_url(tmp_path / "not-a-cache" / "x") is None
         monkeypatch.delenv("CLAUDE_PLUGIN_ROOT", raising=False)
-        assert querylog.install_url(None) is None
+        assert ql_deliver.install_url(None) is None
 
     @pytest.mark.skipif(not GIT, reason="git is not installed")
     def test_the_install_url_from_the_marketplace_clone(self, tmp_path):
@@ -2845,35 +2845,35 @@ class TestHostRules:
         mkt = Repo(tmp_path / "plugins" / "marketplaces" / "mkt", git_env())
         os.makedirs(mkt.path)
         mkt.git("init", "-q")
-        assert querylog.install_url(root) is None  # a clone without origin names nothing
+        assert ql_deliver.install_url(root) is None  # a clone without origin names nothing
         mkt.git("remote", "add", "origin", "https://gitlab.corp.example.com/grp/proj.git")
-        assert querylog.install_url(root) == "https://gitlab.corp.example.com/grp/proj.git"
+        assert ql_deliver.install_url(root) == "https://gitlab.corp.example.com/grp/proj.git"
 
     def test_a_cloud_session(self, monkeypatch):
         monkeypatch.setenv("CLAUDE_CODE_REMOTE", "true")
-        assert querylog.cloud_session()
+        assert ql_deliver.cloud_session()
         monkeypatch.setenv("CLAUDE_CODE_REMOTE", "false")
-        assert not querylog.cloud_session()
+        assert not ql_deliver.cloud_session()
         monkeypatch.delenv("CLAUDE_CODE_REMOTE")
-        assert not querylog.cloud_session()
+        assert not ql_deliver.cloud_session()
 
     def test_apply_push_in_a_plugin_host(self, tmp_path, monkeypatch):
         monkeypatch.setenv("CLAUDE_PLUGIN_DATA", str(tmp_path))
-        monkeypatch.setenv("CLAUDE_PLUGIN_ROOT", str(querylog.HOME))
+        monkeypatch.setenv("CLAUDE_PLUGIN_ROOT", str(ql_base.HOME))
         seen = []
 
         def host_push(qdir, run, apply_step, out, now_dt, root):
             seen.append(Path(qdir))
             return 0
-        monkeypatch.setattr(querylog, "host_push", host_push)
+        monkeypatch.setattr(ql_deliver, "host_push", host_push)
         assert querylog.main(["apply", "--push"]) == 0 and seen == [tmp_path / "querylog"]
         assert querylog.main(["apply", "--push", "--plugin-data", str(tmp_path)]) == 2  # the push names its own
 
     def test_a_host_without_an_install_source_is_refused(self, tmp_path):
         said = []
-        assert querylog.host_push(tmp_path, lambda argv, cwd=None: (1, "", ""), None, said.append,
+        assert ql_deliver.host_push(tmp_path, lambda argv, cwd=None: (1, "", ""), None, said.append,
                                   root=tmp_path / "x") == 2
-        assert "install source is not recorded" in said[0] and not (tmp_path / querylog.DISABLED_NAME).exists()
+        assert "install source is not recorded" in said[0] and not (tmp_path / ql_base.DISABLED_NAME).exists()
 
     def test_the_hosts_apply_reads_research_from_its_data_directory(self, tmp_path):
         calls = []
@@ -2881,11 +2881,11 @@ class TestHostRules:
         def run(argv, cwd=None):
             calls.append(argv)
             return 0, "", ""
-        p = querylog.Pusher(tmp_path / "clone", tmp_path, run, None, print, research=["--plugin-data", str(tmp_path)])
+        p = ql_deliver.Pusher(tmp_path / "clone", tmp_path, run, None, print, research=["--plugin-data", str(tmp_path)])
         assert p.learn_and_apply(tmp_path / "wt", tmp_path / "wt" / "store", {"F-1"}, print) == 0
         assert calls[1][-4:] == ["--plugin-data", str(tmp_path), "--hold", "F-1"]
-        assert querylog.research_places(None, tmp_path) == (tmp_path, tmp_path / "config.json")
-        p = querylog.Pusher(tmp_path / "clone", tmp_path, run, None, print)
+        assert ql_research.research_places(None, tmp_path) == (tmp_path, tmp_path / "config.json")
+        p = ql_deliver.Pusher(tmp_path / "clone", tmp_path, run, None, print)
         calls.clear()
         p.learn_and_apply(tmp_path / "wt", tmp_path / "wt" / "store", set(), print)
         assert calls[1][-2:] == ["--clone", str(tmp_path / "clone")]
@@ -2942,27 +2942,27 @@ class TestHostInGit:
         def run(argv, cwd=None):
             if argv[0] in ("glab", "gh"):
                 return signed_out(argv)
-            return querylog.run_cmd(argv, cwd=cwd, env=env)
+            return ql_base.run_cmd(argv, cwd=cwd, env=env)
         if case == "unreachable-at-push":  # the fetch works, the push meets a closed port
-            clone = querylog.managed_clone(q, bare.path, run, print)
+            clone = ql_deliver.managed_clone(q, bare.path, run, print)
             Repo(clone, env).git("config", "remote.origin.pushurl", UNREACHABLE)
         said = []
-        rc = querylog.distill(qdir=q, cfg=auto_config(q), haiku=querylog.Replay(FIXTURES / "haiku.json"),
+        rc = ql_distill.distill(qdir=q, cfg=auto_config(q), haiku=ql_base.Replay(FIXTURES / "haiku.json"),
                               now_dt=NOW, run_id=RUN_ID, kb_commit="0" * 40, out=said.append,
-                              deliver=lambda qd, out: querylog.host_push(qd, run, learn_then_apply, out, NOW, root))
+                              deliver=lambda qd, out: ql_deliver.host_push(qd, run, learn_then_apply, out, NOW, root))
         return rc, said, q, bare
 
     @pytest.mark.parametrize("case", HOST_CASES)
     def test_case(self, case, seed, tmp_path):
         rc, said, q, bare = self.run_case(case, seed[0], seed[1], tmp_path)
         text = "\n".join(said)
-        disabled = q / querylog.DISABLED_NAME
+        disabled = q / ql_base.DISABLED_NAME
         base = seed[0].rev("HEAD")
         if case == "delivers":
             assert rc == 0, text
-            assert (q / querylog.CLONE_NAME / ".git").is_dir() and (q / querylog.WORKTREE_NAME / ".git").exists()
-            files = bare.git("ls-tree", "-r", "--name-only", "main", "--", querylog.STORE_REL).split()
-            assert f"{querylog.STORE_REL}/2026-09/{RUN_ID}.jsonl" in files, files
+            assert (q / ql_deliver.CLONE_NAME / ".git").is_dir() and (q / ql_deliver.WORKTREE_NAME / ".git").exists()
+            files = bare.git("ls-tree", "-r", "--name-only", "main", "--", ql_base.STORE_REL).split()
+            assert f"{ql_base.STORE_REL}/2026-09/{RUN_ID}.jsonl" in files, files
             assert spool_names(q) == [f"{S_OPEN}.jsonl"] and not disabled.exists()
             return
         assert rc == 1, text
@@ -2976,7 +2976,7 @@ class TestHostInGit:
             assert not (q / "spool").exists(), spool_names(q)
             assert "wrote DISABLED and deleted the spool" in text, text
             again = []
-            assert querylog.distill(qdir=q, cfg=auto_config(q), out=again.append) == 0
+            assert ql_distill.distill(qdir=q, cfg=auto_config(q), out=again.append) == 0
             assert again == ["distill: logging is off"]
         else:
             assert not disabled.exists(), text
@@ -3019,7 +3019,7 @@ class TestCloudInGit:
         cls.branch2 = cls.bare.rev("claude/work")
         cls.a.git("checkout", "-q", "--detach")
         cls.detached = []
-        cls.detached_rc = querylog.Pusher(cls.a.path, cls.q, cls.runner(), learn_then_apply, cls.detached.append, NOW,
+        cls.detached_rc = ql_deliver.Pusher(cls.a.path, cls.q, cls.runner(), learn_then_apply, cls.detached.append, NOW,
                                           cloud=True)()
 
     @classmethod
@@ -3027,7 +3027,7 @@ class TestCloudInGit:
         def run(argv, cwd=None):
             if argv[0] in ("glab", "gh"):
                 return signed_out(argv)
-            return querylog.run_cmd(argv, cwd=cwd, env=cls.env)
+            return ql_base.run_cmd(argv, cwd=cwd, env=cls.env)
         return run
 
     @classmethod
@@ -3035,8 +3035,8 @@ class TestCloudInGit:
         said = []
 
         def deliver(qdir, out):
-            return querylog.Pusher(cls.a.path, qdir, cls.runner(), learn_then_apply, out, NOW, cloud=True)()
-        rc = querylog.distill(qdir=cls.q, cfg=auto_config(cls.q), haiku=querylog.Replay(FIXTURES / "haiku.json"),
+            return ql_deliver.Pusher(cls.a.path, qdir, cls.runner(), learn_then_apply, out, NOW, cloud=True)()
+        rc = ql_distill.distill(qdir=cls.q, cfg=auto_config(cls.q), haiku=ql_base.Replay(FIXTURES / "haiku.json"),
                               now_dt=NOW, run_id=RUN_ID, kb_commit="0" * 40, out=said.append, deliver=deliver)
         return rc, said
 
@@ -3044,8 +3044,8 @@ class TestCloudInGit:
         rc, said = self.first
         assert rc == 0, "\n".join(said)
         assert "apply --push: cloud session: automatic commits go to its working branch claude/work" in said
-        files = self.bare.git("ls-tree", "-r", "--name-only", "claude/work", "--", querylog.STORE_REL).split()
-        assert f"{querylog.STORE_REL}/2026-09/{RUN_ID}.jsonl" in files, files
+        files = self.bare.git("ls-tree", "-r", "--name-only", "claude/work", "--", ql_base.STORE_REL).split()
+        assert f"{ql_base.STORE_REL}/2026-09/{RUN_ID}.jsonl" in files, files
         assert self.bare.rev("main") == self.base
         assert "apply --push: deleted the spool rows of 6 entries whose run file is on origin/claude/work" in said
         assert spool_names(self.q) == [f"{S_OPEN}.jsonl"]
@@ -3067,7 +3067,7 @@ GOOD_QUOTE = "it doesn't support Windows Server 2012 R2"  # the page writes does
 BAD_QUOTE = "Windows LAPS supports Windows Server 2012 R2 with the April 2023 update"
 LEGACY_QUOTE = "The legacy Microsoft LAPS product remains available for older operating systems"  # a link and <em>
 DAY = "2026-09-28"
-GAP_ID = querylog.finding_id("gap", E("a4"))
+GAP_ID = ql_store.finding_id("gap", E("a4"))
 ARTICLE_MD = """---
 topic: windows/laps
 priority: P1
@@ -3120,7 +3120,7 @@ def reply(*cands):
     return "Here is what I found.\n" + json.dumps({"facts": list(cands)})
 
 
-class KbGate(querylog.Gate):
+class KbGate(ql_apply.Gate):
     """The gap step's and research's gate on a one-article root in a temporary directory: pack leads with that
     article (`res`), build_index and check.py stubbed (`checks` are their problems), the eval set unchanged."""
 
@@ -3174,7 +3174,7 @@ def gap_store(tmp_path, extra=()):
     """The fixture store after one learn in which only a4 (and the `extra` entries, copies of a4 with other ids)
     still fail: open gap candidates, the evals fixed since."""
     store = learn_store(tmp_path)
-    (p,) = querylog.run_files(store)
+    (p,) = ql_store.run_files(store)
     objs = jsonl(p)
     a4 = next(o for o in objs if o.get("id") == E("a4"))
     for n in extra:
@@ -3187,7 +3187,7 @@ def gap_store(tmp_path, extra=()):
 
 def run_gap_apply(store, gate, research=None):
     said = []
-    rc = querylog.apply(store, gate=gate, kb_commit="0" * 40, out=said.append, research=research, day=DAY)
+    rc = ql_apply.apply(store, gate=gate, kb_commit="0" * 40, out=said.append, research=research, day=DAY)
     return rc, said
 
 
@@ -3204,12 +3204,12 @@ class TestGapStep:
         assert new.startswith("- **How do I configure VMware Horizon instant clone pools?** ") and lines[at + 3] == \
             "## other/topic"
         assert new.endswith("(topic: windows/laps)") and f"Looked in the kb {DAY}" in new and GAP_ID in new
-        assert querylog.edit_problems("_gaps.md", GAPS_MD, text) == []  # added, nothing edited
+        assert ql_research.edit_problems("_gaps.md", GAPS_MD, text) == []  # added, nothing edited
         rec = by_id(store)[GAP_ID]
         assert (rec["state"], rec["stage"], rec["article"]) == ("applied", "gap", LAPS)
         assert rec["promotions"] == [{"from": "miss", "to": "candidate-gap", "by": "learn"},
                                      {"from": "candidate-gap", "to": "gap", "by": "apply"}]
-        assert querylog.store_problems(store) == []
+        assert ql_store.store_problems(store) == []
         first = tree(store), root_files(root)
         assert run_gap_apply(store, KbGate(root)) == (0, ["apply: nothing to apply"])  # converges
         assert (tree(store), root_files(root)) == first
@@ -3227,7 +3227,7 @@ class TestGapStep:
         store = gap_store(tmp_path)
         run_gap_apply(store, KbGate(root))
         text = (root / "_gaps.md").read_bytes()
-        querylog.findings_files(store)[-1].unlink()  # the record is gone (a lost run), the entry is there
+        ql_store.findings_files(store)[-1].unlink()  # the record is gone (a lost run), the entry is there
         run_gap_apply(store, KbGate(root))
         assert (root / "_gaps.md").read_bytes() == text
 
@@ -3245,9 +3245,9 @@ class TestGapStep:
         assert (by_id(store)[GAP_ID]["state"], by_id(store)[GAP_ID]["stage"]) == ("open", "candidate-gap")
 
     def test_add_under(self):
-        assert querylog.add_under("", "a/b", "- x") == "## a/b\n\n- x\n"
-        assert querylog.add_under("# T\n\n## a/b\n", "a/b", "- x") == "# T\n\n## a/b\n\n- x\n"
-        assert querylog.add_under("# T\n\n## a/b\n\n- y\n\n\n## c/d\n\n- z\n", "a/b", "- x") == \
+        assert ql_research.add_under("", "a/b", "- x") == "## a/b\n\n- x\n"
+        assert ql_research.add_under("# T\n\n## a/b\n", "a/b", "- x") == "# T\n\n## a/b\n\n- x\n"
+        assert ql_research.add_under("# T\n\n## a/b\n\n- y\n\n\n## c/d\n\n- z\n", "a/b", "- x") == \
             "# T\n\n## a/b\n\n- y\n- x\n\n\n## c/d\n\n- z\n"
 
 
@@ -3259,7 +3259,7 @@ class TestQuoteCheck:
         "WINDOWS SERVER 2012 R2 & EARLIER RELEASES",  # &amp; on the page
     ])
     def test_a_quote_on_its_page(self, quote):
-        assert querylog.quotecheck(PAGE_URL, quote, pages) == (True, "quote is on the page")
+        assert ql_research.quotecheck(PAGE_URL, quote, pages) == (True, "quote is on the page")
 
     @pytest.mark.parametrize("quote,why", [
         (BAD_QUOTE, "quote is not on the page"),  # planted: a quote not on its page
@@ -3268,26 +3268,26 @@ class TestQuoteCheck:
         ("Windows LAPS", "quote has 2 words, under 5"),
     ])
     def test_a_quote_not_accepted(self, quote, why):
-        assert querylog.quotecheck(PAGE_URL, quote, pages) == (False, why)
+        assert ql_research.quotecheck(PAGE_URL, quote, pages) == (False, why)
 
     def test_a_page_that_cannot_be_fetched(self):
-        ok, why = querylog.quotecheck("https://docs.example.com/other", GOOD_QUOTE, pages)
+        ok, why = ql_research.quotecheck("https://docs.example.com/other", GOOD_QUOTE, pages)
         assert not ok and why.startswith("page not fetched: OSError")
 
     def test_a_markdown_page(self):
         md = b"See the [LAPS overview](https://docs.example.com/o) for **supported** platforms and more.\n"
-        assert querylog.quotecheck(PAGE_URL, "See the LAPS overview for supported platforms",
+        assert ql_research.quotecheck(PAGE_URL, "See the LAPS overview for supported platforms",
                                    lambda u: (md, "text/markdown"))[0]
 
     def test_pages_are_fetched_as_fetch_py_fetches_them(self, monkeypatch):
         import fetch
         asked = []
         monkeypatch.setattr(fetch, "fetch", lambda url: asked.append(url) or pages(url))
-        assert querylog.quotecheck(PAGE_URL, GOOD_QUOTE)[0] and asked == [PAGE_URL]
+        assert ql_research.quotecheck(PAGE_URL, GOOD_QUOTE)[0] and asked == [PAGE_URL]
 
     def test_quote_max_words_is_the_kb_rule(self):
         import kbcommon
-        assert querylog.QUOTE_MAX_WORDS == kbcommon.QUOTE_WORDS == 25
+        assert ql_research.QUOTE_MAX_WORDS == kbcommon.QUOTE_WORDS == 25
 
     @pytest.mark.parametrize("quote,rc,said", [(GOOD_QUOTE, 0, "quotecheck: quote is on the page\n"),
                                                (BAD_QUOTE, 1, "quotecheck: quote is not on the page\n")])
@@ -3301,7 +3301,7 @@ class TestResearchConfig:
     @pytest.mark.parametrize("text,want", [
         (None, (False, 0)),  # no file: research is off by default
         ('{"mode": "local"}', (False, 0)),
-        ('{"research": true}', (True, querylog.DEFAULT_RESEARCH_DAILY)),
+        ('{"research": true}', (True, ql_base.DEFAULT_RESEARCH_DAILY)),
         ('{"research": true, "research_daily": 1}', (True, 1)),
         ('{"research": true, "research_daily": 0}', (True, 0)),
         ('{"research": "yes"}', (False, 0)),  # fail closed
@@ -3314,28 +3314,28 @@ class TestResearchConfig:
         cfg = tmp_path / "config.json"
         if text is not None:
             cfg.write_text(text, encoding="utf-8")
-        assert querylog.read_research(cfg) == want
-        assert querylog.DEFAULT_RESEARCH is False
+        assert ql_base.read_research(cfg) == want
+        assert ql_base.DEFAULT_RESEARCH is False
 
     def test_the_daily_cap_counts_runs(self, tmp_path):
         cfg = tmp_path / "config.json"
         cfg.write_text('{"mode": "local", "research": true, "research_daily": 2}', encoding="utf-8")
-        assert querylog.research_budget(tmp_path, cfg, DAY) == 2
-        querylog.count_research(tmp_path, DAY)
-        assert querylog.research_budget(tmp_path, cfg, DAY) == 1
-        querylog.count_research(tmp_path, DAY)
-        assert querylog.research_budget(tmp_path, cfg, DAY) == 0
-        querylog.count_research(tmp_path, DAY)  # never below 0
-        assert querylog.research_budget(tmp_path, cfg, DAY) == 0
-        assert querylog.research_budget(tmp_path, cfg, "2026-09-29") == 2  # a new day
+        assert ql_research.research_budget(tmp_path, cfg, DAY) == 2
+        ql_research.count_research(tmp_path, DAY)
+        assert ql_research.research_budget(tmp_path, cfg, DAY) == 1
+        ql_research.count_research(tmp_path, DAY)
+        assert ql_research.research_budget(tmp_path, cfg, DAY) == 0
+        ql_research.count_research(tmp_path, DAY)  # never below 0
+        assert ql_research.research_budget(tmp_path, cfg, DAY) == 0
+        assert ql_research.research_budget(tmp_path, cfg, "2026-09-29") == 2  # a new day
         (tmp_path / "DISABLED").write_text("", encoding="utf-8")
-        assert querylog.research_budget(tmp_path, cfg, "2026-09-29") == 0
+        assert ql_research.research_budget(tmp_path, cfg, "2026-09-29") == 0
         (tmp_path / "DISABLED").unlink()
         cfg.write_text('{"mode": "off", "research": true}', encoding="utf-8")
-        assert querylog.research_budget(tmp_path, cfg, "2026-09-29") == 0
+        assert ql_research.research_budget(tmp_path, cfg, "2026-09-29") == 0
 
     def test_a_clone_names_its_own_config(self, tmp_path):
-        assert querylog.research_places(tmp_path) == (tmp_path / "_cache" / "querylog",
+        assert ql_research.research_places(tmp_path) == (tmp_path / "_cache" / "querylog",
                                                       tmp_path / "_private" / "querylog.json")
 
 
@@ -3348,7 +3348,7 @@ class TestResearch:
         def call(prompt):
             calls.append(prompt)
             return reply(*cands)
-        research = querylog.Researcher(runs, call=call, fetcher=pages, counted=lambda: counted.append(1))
+        research = ql_research.Researcher(runs, call=call, fetcher=pages, counted=lambda: counted.append(1))
         return root, store, KbGate(root, checks=checks), research, calls, counted
 
     def test_facts_sources_and_a_conflict_are_added(self, tmp_path):
@@ -3364,7 +3364,7 @@ class TestResearch:
         import kbid
         sid = kbid.source_id(PAGE_URL, "S")
         art = (root / "windows" / "laps.md").read_text(encoding="utf-8")
-        assert querylog.edit_problems("laps.md", ARTICLE_MD, art) == []
+        assert ql_research.edit_problems("laps.md", ARTICLE_MD, art) == []
         lines = art.split("\n")
         assert lines[19] == f"- {cand()['text']} [DOC {sid}]" and lines[20:22] == ["", "## Reference"]
         assert f"sources: [S100, S101, {sid}]" in lines
@@ -3381,9 +3381,9 @@ class TestResearch:
             ("candidate-gap", "learn"), ("gap", "apply"), ("candidate-fact", "research"), ("claim", "research")]
         assert rec["observed"] == {"facts": 1, "conflicts": 1, "sources": [sid],
                                    "gate": ["fact 1: quote is not on the page"]}
-        assert gate.indexed == 1 and querylog.store_problems(store) == []
+        assert gate.indexed == 1 and ql_store.store_problems(store) == []
         first = tree(store), root_files(root)
-        assert run_gap_apply(store, gate, querylog.Researcher(1, call=calls.append, fetcher=pages)) == \
+        assert run_gap_apply(store, gate, ql_research.Researcher(1, call=calls.append, fetcher=pages)) == \
             (0, ["apply: nothing to apply"])  # a claim is not researched again
         assert (tree(store), root_files(root)) == first
 
@@ -3399,14 +3399,14 @@ class TestResearch:
         rec = by_id(store)[GAP_ID]
         assert (rec["state"], rec["stage"], rec["observed"]["gate"]) == (
             "rejected", "candidate-fact", ["fact 0: quote is not on the page"])
-        assert querylog.store_problems(store) == []
+        assert ql_store.store_problems(store) == []
 
     def test_research_editing_an_existing_fact_line_is_put_back(self, tmp_path, monkeypatch):
         root, store, gate, research, _, _ = self.setup(tmp_path, cand())
         run_gap_apply(store, gate)
         before = root_files(root)
-        add = querylog.add_fact
-        monkeypatch.setattr(querylog, "add_fact", lambda text, line: add(text, line).replace(
+        add = ql_research.add_fact
+        monkeypatch.setattr(ql_research, "add_fact", lambda text, line: add(text, line).replace(
             "is 14 characters", "is 16 characters"))  # planted: the writer also edits an existing fact line
         rc, said = run_gap_apply(store, gate, research)
         assert rc == 0 and "rejected=1" in said[0], said
@@ -3431,7 +3431,7 @@ class TestResearch:
         assert len(calls) == len(counted) == 1
         stages = sorted(r["stage"] for r in by_id(store).values() if r["kind"] == "gap")
         assert stages == ["claim", "gap"]  # the second waits for another day
-        rc, said = run_gap_apply(store, gate, querylog.Researcher(0, call=calls.append, fetcher=pages))
+        rc, said = run_gap_apply(store, gate, ql_research.Researcher(0, call=calls.append, fetcher=pages))
         assert said == ["apply: nothing to apply"] and len(calls) == 1
 
     def test_no_research_leaves_gap_findings(self, tmp_path):
@@ -3448,7 +3448,7 @@ class TestResearch:
 
         def down(prompt):
             raise OSError("claude -p exited 1")
-        rc, said = run_gap_apply(store, gate, querylog.Researcher(2, call=down, counted=lambda: counted.append(1)))
+        rc, said = run_gap_apply(store, gate, ql_research.Researcher(2, call=down, counted=lambda: counted.append(1)))
         assert said == ["apply: nothing to apply (research runs=1, no reply)"] and counted == [1]
         assert (tree(store), root_files(root)) == before  # tried again on a later run
 
@@ -3462,7 +3462,7 @@ class TestResearch:
         store = gap_store(tmp_path)
         run_gap_apply(store, KbGate(root))
         before = root_files(root)
-        run_gap_apply(store, KbGate(root), querylog.Researcher(1, call=lambda p: text, fetcher=pages))
+        run_gap_apply(store, KbGate(root), ql_research.Researcher(1, call=lambda p: text, fetcher=pages))
         rec = by_id(store)[GAP_ID]
         assert (rec["state"], rec["stage"], rec["observed"]["gate"]) == ("rejected", "gap", [why])
         assert root_files(root) == before
@@ -3481,13 +3481,13 @@ class TestResearch:
         ({"conflicts_with": 3}, "conflicts_with 3 names no fact line"),
     ])
     def test_candidate_problems(self, change, why):
-        facts = querylog.fact_lines(ARTICLE_MD)
+        facts = ql_research.fact_lines(ARTICLE_MD)
         assert [n for n, _ in facts] == [18, 19]
-        assert querylog.candidate_problems(cand(), facts) == []
-        assert any(why in p for p in querylog.candidate_problems(cand(**change), facts)), change
+        assert ql_research.candidate_problems(cand(), facts) == []
+        assert any(why in p for p in ql_research.candidate_problems(cand(**change), facts)), change
 
     def test_edit_problems(self):
-        e = querylog.edit_problems
+        e = ql_research.edit_problems
         assert e("x/a.md", ARTICLE_MD, ARTICLE_MD.replace("## Reference", "- New. [DOC S1]\n\n## Reference")) == []
         assert e("x/a.md", ARTICLE_MD, ARTICLE_MD.replace("14", "16"))  # planted: an edited fact line
         assert e("x/a.md", ARTICLE_MD, ARTICLE_MD.replace("A test article.", "Other words.")) == []  # no fact line
@@ -3504,9 +3504,9 @@ class TestResearch:
         text = SOURCES_CSV + "S-aaaaaaaa,https://a.example.com/,A,P,L,quote,2026-09-01,,,windows/laps.md,\n"
         new = ["S-mmmmmmmm,https://m.example.com/,M,P,L,quote,2026-09-28,,,windows/laps.md,",
                "S150,https://s.example.com/,S,P,L,quote,2026-09-28,,,windows/laps.md,"]
-        got = querylog.insert_rows(text, new)
+        got = ql_research.insert_rows(text, new)
         assert [ln.split(",")[0] for ln in got.splitlines()] == ["id", "S100", "S101", "S150", "S-aaaaaaaa", "S-mmmmmmmm"]
-        assert kbgit.canon_csv(got, True) == got and querylog.edit_problems("_sources.csv", text, got) == []
+        assert kbgit.canon_csv(got, True) == got and ql_research.edit_problems("_sources.csv", text, got) == []
         appended = text + "".join(ln + "\n" for ln in new)
         assert kbgit.canon_csv(appended, True) != appended
 
@@ -3532,7 +3532,7 @@ def researched(tmp_path_factory):
     run.write_text("".join(json.dumps(o, separators=(",", ":")) + "\n" for o in (header, entry)), encoding="utf-8",
                    newline="\n")
     art = home / "kb" / "public" / "windows" / "laps.md"
-    n, line = querylog.fact_lines(art.read_text(encoding="utf-8"))[0]
+    n, line = ql_research.fact_lines(art.read_text(encoding="utf-8"))[0]
     legacy = cand(text="Legacy Microsoft LAPS stays available for older operating systems.", quote=LEGACY_QUOTE,
                   conflicts_with=n)
     shutil.copy(PAGE, base / "page.html")
@@ -3580,20 +3580,20 @@ class TestResearchInKbCopy:
         rel = "kb/public/windows/laps.md"
         art = after[rel].decode("utf-8")
         assert f"- {cand()['text']} [DOC {sid}]" in art.split("\n")
-        assert querylog.edit_problems(rel, before[rel].decode("utf-8"), art) == []
-        assert querylog.edit_problems("kb/public/_sources.csv", before["kb/public/_sources.csv"].decode("utf-8"),
+        assert ql_research.edit_problems(rel, before[rel].decode("utf-8"), art) == []
+        assert ql_research.edit_problems("kb/public/_sources.csv", before["kb/public/_sources.csv"].decode("utf-8"),
                                       after["kb/public/_sources.csv"].decode("utf-8")) == []
         import kbgit  # the new row sits in id order: kbgit.py fix, which sorts the rows by id, changes nothing
         sources = after["kb/public/_sources.csv"].decode("utf-8")
         assert kbgit.canon_csv(sources, True) == sources
-        assert querylog.insert_rows(before["kb/public/_sources.csv"].decode("utf-8"), [
+        assert ql_research.insert_rows(before["kb/public/_sources.csv"].decode("utf-8"), [
             ln for ln in sources.splitlines() if ln.startswith(sid + ",")]) == sources
         conflicts = after["kb/public/_conflicts.md"].decode("utf-8")
-        assert querylog.edit_problems("kb/public/_conflicts.md", before["kb/public/_conflicts.md"].decode("utf-8"),
+        assert ql_research.edit_problems("kb/public/_conflicts.md", before["kb/public/_conflicts.md"].decode("utf-8"),
                                       conflicts) == []
         (entry,) = [ln for ln in conflicts.split("\n") if GAP_ID in ln]
         assert f"(line {n} of the article)" in entry and entry.endswith("(topic: windows/laps)")
-        assert json.loads((Path(researched[7]) / "querylog" / querylog.RESEARCH_RUNS_NAME).read_text(
+        assert json.loads((Path(researched[7]) / "querylog" / ql_research.RESEARCH_RUNS_NAME).read_text(
             encoding="utf-8"))["runs"] == 1
 
     def test_check_passes_after_the_research_run(self, researched):
@@ -3602,7 +3602,7 @@ class TestResearchInKbCopy:
             argv = [sys.executable, str(home / "_tools" / tool)] + (["--check"] if tool == "build_index.py" else [])
             p = subprocess.run(argv, capture_output=True, text=True, encoding="utf-8", env=env, cwd=home, timeout=600)
             assert p.returncode == 0 and want in p.stdout, p.stdout[-600:] + p.stderr[-600:]
-        assert querylog.store_problems(store) == []
+        assert ql_store.store_problems(store) == []
         rec = by_id(store)[GAP_ID]
         assert (rec["state"], rec["stage"]) == ("applied", "claim")
 
@@ -3621,10 +3621,10 @@ W40_FINDINGS = "20260929T080000Z-0000d2ce"  # findings written in 2026-W40: afte
 
 
 def f_rec(kind, entry=None, state="open", **kw):
-    rec = {"id": querylog.finding_id(kind, entry if entry else kw.get("signal", ""), kw.get("host", "")),
+    rec = {"id": ql_store.finding_id(kind, entry if entry else kw.get("signal", ""), kw.get("host", "")),
            "kind": kind, "state": state}
     if entry:
-        rec["id"] = querylog.finding_id(kind, entry)
+        rec["id"] = ql_store.finding_id(kind, entry)
         rec.update(stage=kw.pop("stage", "miss"), entry=entry)
     rec.update(kw)
     return rec
@@ -3686,7 +3686,7 @@ class TestDigest:
         outs = []
         for name in ("one", "two"):
             store = digest_store(tmp_path / name / "store")
-            assert querylog.store_problems(store) == []
+            assert ql_store.store_problems(store) == []
             p = subprocess.run([sys.executable, QL, "digest", "--store", str(store), "--week", "2026-W39"],
                                capture_output=True, timeout=120, cwd=str(tmp_path / name))
             assert p.returncode == 0, p.stderr
@@ -3696,24 +3696,24 @@ class TestDigest:
 
     def test_the_default_week_is_the_newest_entrys(self, tmp_path):
         store = digest_store(tmp_path / "store")
-        week, lines_, found = querylog.digest(store)
+        week, lines_, found = ql_report.digest(store)
         assert (week, "\n".join(lines_), found) == ("2026-W39", DIGEST_W39, True)
-        assert querylog.digest(store) == querylog.digest(store)  # nothing but the store goes in
+        assert ql_report.digest(store) == ql_report.digest(store)  # nothing but the store goes in
 
     def test_the_weeks_end_bounds_the_findings(self, tmp_path):
         store = digest_store(tmp_path / "store")
-        week, lines_, found = querylog.digest(store, "2026-W40")
+        week, lines_, found = ql_report.digest(store, "2026-W40")
         text = "\n".join(lines_)
         assert found and "lookups: 0\n" in text and "finding records written: 2" in text
         assert "  eval: fixed-since 1, applied 2" in text and "  alias: applied 1" in text
         assert "runs: 1," in text  # the fixture's run file, written 2026-09-28
 
     def test_an_empty_or_missing_store_and_a_bad_week(self, tmp_path):
-        assert querylog.digest(tmp_path / "none") == (None, ["query log digest: the store holds no run file"], False)
+        assert ql_report.digest(tmp_path / "none") == (None, ["query log digest: the store holds no run file"], False)
         store = digest_store(tmp_path / "store")
-        assert querylog.digest(store, "2026-W30")[2] is False
+        assert ql_report.digest(store, "2026-W30")[2] is False
         with pytest.raises(ValueError):
-            querylog.digest(store, "2026-09-27")
+            ql_report.digest(store, "2026-09-27")
         p = subprocess.run([sys.executable, QL, "digest", "--store", str(store), "--week", "last"], capture_output=True,
                            timeout=120)
         assert p.returncode == 2 and b"not an ISO week" in p.stderr
@@ -3726,7 +3726,7 @@ class TestDigest:
             rows.append({"id": str(uuid.uuid4()), "ts": f"2026-09-27T08:00:0{i + 1}.000Z", "surface": "fetch",
                          "tool": "WebFetch", "host": "learn.microsoft.com", "path": "/en-us/a", "outcome": "unknown",
                          **({"chars": c} if c is not None else {})})
-        entry, _, _ = querylog.entry_of(rows, redact.known())
+        entry, _, _ = ql_distill.entry_of(rows, redact.known())
         assert entry["fetches"] == [{"tool": "WebFetch", "host": "learn.microsoft.com", "path": "/en-us/a",
                                      "outcome": "unknown", "n": 3, "chars": 15}]
 
@@ -3737,43 +3737,43 @@ class TestDigestHook:
     @pytest.fixture
     def qdir(self, tmp_path, monkeypatch):
         q = tmp_path / "querylog"
-        monkeypatch.setattr(querylog, "places", lambda: (q, q / "config.json"))
+        monkeypatch.setattr(ql_report, "places", lambda: (q, q / "config.json"))
         return q
 
     def test_the_first_session_of_a_week_shows_last_weeks_digest_once(self, tmp_path, qdir):
         store = digest_store(tmp_path / "store")
-        line = querylog.digest_hook(self.MONDAY, store)
+        line = ql_report.digest_hook(self.MONDAY, store)
         assert json.loads(line) == {"systemMessage": DIGEST_W39}
-        assert (qdir / querylog.DIGEST_MARKER).read_text(encoding="utf-8") == "2026-W40\n"
-        assert querylog.digest_hook(self.MONDAY + datetime.timedelta(days=6, hours=16), store) is None  # Sunday
-        nxt = querylog.digest_hook(self.MONDAY + datetime.timedelta(days=7), store)  # 2026-W41 shows 2026-W40
+        assert (qdir / ql_report.DIGEST_MARKER).read_text(encoding="utf-8") == "2026-W40\n"
+        assert ql_report.digest_hook(self.MONDAY + datetime.timedelta(days=6, hours=16), store) is None  # Sunday
+        nxt = ql_report.digest_hook(self.MONDAY + datetime.timedelta(days=7), store)  # 2026-W41 shows 2026-W40
         assert json.loads(nxt)["systemMessage"].startswith("query log digest 2026-W40 ")
 
     def test_off_disabled_empty_and_over_budget_show_nothing(self, tmp_path, qdir, monkeypatch):
         store = digest_store(tmp_path / "store")
         qdir.mkdir(parents=True)
         (qdir / "config.json").write_text('{"mode": "off"}', encoding="utf-8")
-        assert querylog.digest_hook(self.MONDAY, store) is None and not (qdir / querylog.DIGEST_MARKER).exists()
+        assert ql_report.digest_hook(self.MONDAY, store) is None and not (qdir / ql_report.DIGEST_MARKER).exists()
         (qdir / "config.json").unlink()
         (qdir / "DISABLED").touch()
-        assert querylog.digest_hook(self.MONDAY, store) is None and not (qdir / querylog.DIGEST_MARKER).exists()
+        assert ql_report.digest_hook(self.MONDAY, store) is None and not (qdir / ql_report.DIGEST_MARKER).exists()
         (qdir / "DISABLED").unlink()
         late = datetime.datetime(2026, 12, 1, tzinfo=datetime.timezone.utc)
-        assert querylog.digest_hook(late, store) is None  # an empty week
-        assert (qdir / querylog.DIGEST_MARKER).exists()
-        (qdir / querylog.DIGEST_MARKER).unlink()
-        monkeypatch.setattr(querylog, "DIGEST_BUDGET_S", -1)  # planted: reading the store took too long
-        assert querylog.digest_hook(self.MONDAY, store) is None
-        assert (qdir / querylog.DIGEST_MARKER).read_text(encoding="utf-8") == "2026-W40\n"  # not tried again
+        assert ql_report.digest_hook(late, store) is None  # an empty week
+        assert (qdir / ql_report.DIGEST_MARKER).exists()
+        (qdir / ql_report.DIGEST_MARKER).unlink()
+        monkeypatch.setattr(ql_report, "DIGEST_BUDGET_S", -1)  # planted: reading the store took too long
+        assert ql_report.digest_hook(self.MONDAY, store) is None
+        assert (qdir / ql_report.DIGEST_MARKER).read_text(encoding="utf-8") == "2026-W40\n"  # not tried again
 
     def test_the_hook_command_prints_at_most_one_json_line_and_exits_0(self, tmp_path):
         t0 = time.monotonic()
         p = subprocess.run([sys.executable, QL, "digest", "--hook"], input=json.dumps(session_start()).encode("utf-8"),
                            capture_output=True, env=querylog_env(tmp_path), timeout=60)
-        assert p.returncode == 0 and time.monotonic() - t0 < querylog.DIGEST_HOOK_TIMEOUT_S, p.stderr
+        assert p.returncode == 0 and time.monotonic() - t0 < ql_report.DIGEST_HOOK_TIMEOUT_S, p.stderr
         out = p.stdout.decode("utf-8").strip()
         assert out == "" or list(json.loads(out)) == ["systemMessage"]
-        assert (tmp_path / "querylog" / querylog.DIGEST_MARKER).exists()
+        assert (tmp_path / "querylog" / ql_report.DIGEST_MARKER).exists()
         p = subprocess.run([sys.executable, QL, "digest", "--hook"], input=b"not json", capture_output=True,
                            env=querylog_env(tmp_path), timeout=60)
         assert (p.returncode, p.stdout) == (0, b"")  # shown once this week already
@@ -3798,7 +3798,7 @@ class StubRun:
 
 def status_lines(store, run):
     said = []
-    assert querylog.status(store, home=str(store.parent), run=run, out=said.append) == 0
+    assert ql_report.status(store, home=str(store.parent), run=run, out=said.append) == 0
     return said
 
 
@@ -3817,9 +3817,9 @@ class TestStatus:
         assert said == [
             "open source findings, most result characters first: 2",
             f"  1018432 chars  learn.microsoft.com  stage: level 0, needs 1 (failures)  "
-            f"{querylog.finding_id('source', 'stage', 'learn.microsoft.com')}",
+            f"{ql_store.finding_id('source', 'stage', 'learn.microsoft.com')}",
             f"  0 chars  arxiv.org  stage: level 0, needs 1 (failures)  "
-            f"{querylog.finding_id('source', 'stage', 'arxiv.org')}",
+            f"{ql_store.finding_id('source', 'stage', 'arxiv.org')}",
             "open conflict merge requests (glab on gitlab.corp.example.com): 1",
             "  !12 querylog/20260927T230000Z-0000d1ce  chore(kb): query log apply  "
             "https://gitlab.corp.example.com/grp/kb/-/merge_requests/12",
@@ -3865,5 +3865,5 @@ class TestStatus:
         def run(argv, cwd=None):
             p = subprocess.run(argv, cwd=cwd, env=repo.env, capture_output=True, text=True, encoding="utf-8")
             return p.returncode, p.stdout, p.stderr
-        got = querylog.reverted_commits(repo.path, run)
+        got = ql_report.reverted_commits(repo.path, run)
         assert [s for _, s in got] == ["revert: query log commit abc"]

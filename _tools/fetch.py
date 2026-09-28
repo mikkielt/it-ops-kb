@@ -45,7 +45,7 @@ Every request writes one query log spool row (kb/_self/querylog.md, Capture): ho
 query string or the body.
 """
 import argparse, datetime, difflib, hashlib, html.parser, io, json, os, re, sys, time, urllib.error, urllib.parse, urllib.request, zipfile
-import kbcommon, kbid, querylog
+import kbcommon, kbid, ql_capture
 
 KB = kbcommon.PUBLIC  # the root being checked (--root; the public root by default); the cache stays in the repository
 STATE = "_fetch_state.csv"
@@ -68,14 +68,14 @@ def fetch(url):
     try:
         with urllib.request.urlopen(req, timeout=TIMEOUT) as r:
             body = r.read()
-            querylog.record_request(url, querylog.request_outcome(r.status, None, len(body), url, r.geturl()),
+            ql_capture.record_request(url, ql_capture.request_outcome(r.status, None, len(body), url, r.geturl()),
                                     body)
             return body, r.headers.get("Content-Type", "")
     except urllib.error.HTTPError as e:
-        querylog.record_request(url, f"http-{e.code}")
+        ql_capture.record_request(url, f"http-{e.code}")
         raise
     except Exception:
-        querylog.record_request(url, "error")
+        ql_capture.record_request(url, "error")
         raise
 
 

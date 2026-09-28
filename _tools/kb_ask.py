@@ -28,8 +28,8 @@ Claude Code context; skipping user plugins and MCP servers takes it to 25k, and 
 import argparse, json, os, re, shutil, subprocess, sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import kbfacts  # noqa: E402
-import querylog  # noqa: E402
+import kbcommon, kbfacts  # noqa: E402
+import ql_capture  # noqa: E402
 
 HOME = kbfacts.kbcommon.HOME  # this repository: the docs servers' config, the kb server, the sessions' cwd
 DOCS_MCP = os.path.join(HOME, ".claude-plugin", "it-ops-kb-docs", ".mcp.json")
@@ -37,7 +37,7 @@ DOCS = ["mcp__microsoft-learn__microsoft_docs_search", "mcp__microsoft-learn__mi
         "mcp__claude-code-docs__search_claude_code_docs", "mcp__mcp-docs__search_model_context_protocol"]
 # claude -p without the user's plugins and MCP servers (project and local settings still apply) and with every hook
 # off, so the query log's capture hooks never log kb_ask.py's own session (it writes its own row)
-LEAN = ["--setting-sources", "project,local", "--strict-mcp-config", *querylog.NO_HOOKS]
+LEAN = ["--setting-sources", "project,local", "--strict-mcp-config", *kbcommon.NO_HOOKS]
 SENTINEL = "INSUFFICIENT"
 RULES = ("Answer from the kb evidence below: lead with the answer, then each supporting fact with its path:line, tag "
          "and source url. COMMUNITY and UNK facts are leads, not answers; a CODE fact is implementation read from "
@@ -161,7 +161,7 @@ def main():
         return run(row)
     finally:
         if row.get("question"):
-            querylog.record("kb_ask", **row)
+            ql_capture.record("kb_ask", **row)
 
 
 def run(row):
@@ -182,7 +182,7 @@ def run(row):
         return 0
     p = plan(q, a.model)
     row.update(route="plan" if a.route else p["kind"], verdict=p["verdict"], parts=len(p["parts"]),
-               lines=querylog.pack_lines(p["text"]))
+               lines=ql_capture.pack_lines(p["text"]))
     line = f"kind={p['kind']} verdict={p['verdict']} parts={len(p['parts'])} model={p['model']}"
     log(line)
     if a.route:

@@ -8,7 +8,7 @@ import pytest
 
 import agent_bench, benchmarks as bm, kb_ask
 from conftest import GIT, Repo, git_env
-from querylog import NO_HOOKS
+from kbcommon import NO_HOOKS
 
 ROWS = [
     {"scenario": "demo", "record": "a1b2c3d", "date": "2026-09-26", "commit": "a1b2c3d", "claude_code": "2.1.283",

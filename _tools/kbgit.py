@@ -135,7 +135,7 @@ from collections import Counter
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import kbcommon, kbid  # noqa: E402
 import build_index  # noqa: E402
-import querylog  # noqa: E402
+import ql_store  # noqa: E402
 
 KB = kbcommon.HOME  # the repository: git runs here, and every path kbgit names is relative to it
 ROOT = kbcommon.PUBLIC  # the root fix and the history commands work on now (use_root); the public root by default
@@ -1029,7 +1029,7 @@ def run(a):
     except Problem as e:
         problems.append(str(e))
     if a.cmd == "fix":
-        problems += [f"{kbcommon.repo_rel(str(querylog.STORE))}/{p}" for p in querylog.duplicate_ids(querylog.STORE)]
+        problems += [f"{kbcommon.repo_rel(str(ql_store.STORE))}/{p}" for p in ql_store.duplicate_ids(ql_store.STORE)]
     if problems:
         for ln in report:
             print(ln if ln.startswith("WARN") else "  " + ln)

@@ -1,0 +1,627 @@
+"""The query log's distill (kb/_self/querylog.md, Spool and Distill): the closed sessions of the spool become one run
+file in the local store. Per lookup the question the kb was asked (never the prompt) after the rules and the leak
+scan, the path:line citations of the kb lines it returned (never the reply), and Haiku's judgement in capped batches;
+no text of Haiku's is stored. Also the SessionEnd and SessionStart launcher that starts a detached distill.
+
+Distill reads every row format capture has written (ROW_FORMAT, format 0 for a row without `v`) and skips and counts a
+row it cannot read.
+"""
+import datetime, functools, json, os, re, subprocess, sys, time, uuid
+from pathlib import Path
+
+import ql_store as store_
+from ql_base import (ENTRY, HOME, LOCK_NAME, LOCK_STALE_S, acquire, claude_p, iso, json_lines, lock_age,
+                     logging_off, one_line, places, plugin_data, read_json, read_mode, release, run_cmd, write_text)
+from ql_capture import ROW_FORMAT, SAFE_SESSION, TAGS, VERDICTS, pack_lines
+from ql_store import (ARTICLE, CITATION, CITATIONS_MAX, ENTRY_KEYS, JUDGED, NAME, OUTCOME, QUESTION_MAX_CHARS,
+                      SKIPPED_KEY, SURFACES, URL_PATH, public_host)
+
+HAIKU_MODEL = "haiku"
+HAIKU_BATCH_ENTRIES = 25
+HAIKU_BATCHES_PER_RUN = 4
+HAIKU_DAILY_CALLS = 20
+HAIKU_TIMEOUT_S = 180
+HAIKU_TEXT_MAX_CHARS = 1500
+LAUNCH_BUDGET_S = 0.5
+LAUNCH_SETTLE_S = 2
+SESSION_IDLE_CLOSED_S = 86400
+LOG_NAME = "distill.log"
+LOG_MAX_BYTES = 1_000_000  # the launcher starts a fresh log above it
+CALLS_NAME = "haiku-calls.json"  # {"day", "calls"}: the Haiku calls this machine made today
+CONSUMED_NAME = "consumed.json"  # {tools file: [row ids]}: tools rows already distilled into an entry
+KB_SURFACES = ("kb_hook", "mcp", "kb_ask", "tool_fetch")
+REPLY_CITE = re.compile(r"(?<![\w./-])(?:kb/)?((?:[\w-]+/)+[\w.-]+:[1-9]\d*)")  # a path:line a reply names
+DISTILL_TASK = (
+    "Each entry below is one lookup in an IT knowledge base, already stripped of addresses, ids, paths and secrets: "
+    "`question` is what the kb was asked, `prompt` what the person typed and `answer` the reply they got (either may "
+    "be empty), `candidates` the kb articles the lookup's kb calls returned. Judge each entry; write no text of your "
+    "own. Give only: `judged`: \"answered\", \"partly\" or \"missed\", whether the reply answered the question from the "
+    "kb; `best`: the one candidate that answers the question, copied exactly, or null (never an article that is not a "
+    "candidate); `identifying`: true when `question` names a person or an organisation's own name (the company, a "
+    "customer, a team; product, vendor and technology names and placeholders such as PL-..., jan.kowalski, CORP and "
+    "corp.example.com do not count). Reply with only a JSON array, one object per entry, in order, with no other "
+    'fields: [{"i": 0, "judged": "answered", "best": null, "identifying": false}, ...].')
+
+
+def ts_of(r):
+    return r.get("ts") if isinstance(r.get("ts"), str) else ""
+
+
+# ---------------------------------------------------------------- reading the spool
+
+def row_format(r):
+    """The format of a spool row: 0 for a row without `v` (every row written before the field), its `v` when it is a
+    format this code reads (1 to ROW_FORMAT), else None."""
+    if "v" not in r:
+        return 0
+    v = r["v"]
+    return v if isinstance(v, int) and not isinstance(v, bool) and 1 <= v <= ROW_FORMAT else None
+
+
+def readable(r):
+    """Whether distill reads a spool row: a JSON object with a string `id` and `ts`, a surface capture writes and a
+    row format this code reads. Any other row is skipped and counted (querylog.md, Spool)."""
+    return (isinstance(r, dict) and isinstance(r.get("id"), str) and bool(r["id"]) and isinstance(r.get("ts"), str)
+            and r.get("surface") in SURFACES and row_format(r) is not None)
+
+
+def spool_rows(path):
+    """(the rows distill reads, the number of rows it skips) of one spool file; blank lines are neither."""
+    good, skipped = [], 0
+    try:
+        with open(path, encoding="utf-8", errors="replace") as f:
+            for line in f:
+                if not line.strip():
+                    continue
+                try:
+                    r = json.loads(line)
+                except ValueError:
+                    r = None
+                if readable(r):
+                    good.append(r)
+                else:
+                    skipped += 1
+    except OSError:
+        pass
+    return good, skipped
+
+
+def read_spool(spool, t_now):
+    """({session id: session}, {tools file name: rows}, {file name: rows skipped}). A session is closed when its
+    SessionEnd marker exists or it has been idle for SESSION_IDLE_CLOSED_S; its `end` bounds the window of its last
+    prompt."""
+    sessions, tools, skipped = {}, {}, {}
+    if not Path(spool).is_dir():
+        return sessions, tools, skipped
+    for p in sorted(Path(spool).glob("*.jsonl")):
+        rs, bad = spool_rows(p)
+        if bad:
+            skipped[p.name] = bad
+        if p.name.startswith("tools-"):
+            tools[p.name] = rs
+            continue
+        marker = p.with_suffix(".end")
+        try:
+            mtime = p.stat().st_mtime
+            ended = marker.stat().st_mtime if marker.exists() else None
+        except OSError:
+            continue
+        closed = ended is not None or t_now - mtime >= SESSION_IDLE_CLOSED_S
+        sessions[p.stem] = {"path": p, "marker": marker, "rows": rs, "closed": closed,
+                            "end": iso(max(mtime, ended or 0)) if closed else "9999"}
+    return sessions, tools, skipped
+
+
+def groups(session):
+    """[key, rows, window start, window end] per prompt of a session, in time order: a prompt's window runs from its
+    prompt row to its Stop row, else to the next prompt (the last one: to the session's end)."""
+    by = {}
+    for r in session["rows"]:
+        by.setdefault(r.get("prompt_id") if isinstance(r.get("prompt_id"), str) else f"row:{r['id']}", []).append(r)
+    out = []
+    for key, rs in by.items():
+        rs.sort(key=ts_of)
+        prompt = next((r for r in rs if r.get("surface") == "prompt"), rs[0])
+        out.append([key, rs, ts_of(prompt), None])
+    out.sort(key=lambda g: (g[2], g[0]))
+    for i, g in enumerate(out):
+        stops = [ts_of(r) for r in g[1] if r.get("surface") == "stop"]
+        g[3] = max(stops) if stops else (out[i + 1][2] if i + 1 < len(out) else session["end"])
+    return out
+
+
+def assign(sessions, tools, consumed):
+    """Tools rows (kb_ask.py, fetch.py, census.py) not yet distilled, by the prompt window that holds their time
+    (the latest-starting one when several do): ({(session id, key): [(file, row)]}, {file: [rows in no window]})."""
+    windows = [(g[2], g[3], sid, g[0]) for sid, s in sessions.items() for g in s["groups"]]
+    attached, left = {}, {}
+    for name, rs in tools.items():
+        done = consumed.get(name, set())
+        for r in rs:
+            if r["id"] in done:
+                continue
+            t = ts_of(r)
+            inside = [w for w in windows if w[0] <= t <= w[1]]
+            if inside:
+                w = max(inside, key=lambda w: (w[0], w[2]))
+                attached.setdefault((w[2], w[3]), []).append((name, r))
+            else:
+                left.setdefault(name, []).append(r)
+    return attached, left
+
+
+# ---------------------------------------------------------------- entries
+
+def worst(verdicts):
+    vs = [v for v in verdicts if v in VERDICTS]
+    return min(vs, key=VERDICTS.index) if vs else None
+
+
+def fetch_item(r, k):
+    """The stored form of a fetch or tool_fetch row: tool, fetcher, outcome class, and host and path only for a
+    public host (querylog.md, Store)."""
+    import redact
+    item = {"tool": r.get("tool") if isinstance(r.get("tool"), str) and NAME.fullmatch(r["tool"]) else None,
+            "fetcher": r.get("fetcher") if r.get("fetcher") in ("curl", "wget") else None,
+            "host": None, "path": None,
+            "outcome": r.get("outcome") if isinstance(r.get("outcome"), str) and OUTCOME.fullmatch(r["outcome"]) else "unknown"}
+    host = r.get("host")
+    if public_host(host, k):
+        item["host"] = host
+        path = redact.redact(r["path"], k) if isinstance(r.get("path"), str) else None
+        item["path"] = path if path and URL_PATH.fullmatch(path) else None
+    c = r.get("chars")
+    item["chars"] = c if isinstance(c, int) and not isinstance(c, bool) and c >= 0 else None
+    return {key: v for key, v in item.items() if v is not None}
+
+
+def ordered(entry):
+    return {key: entry[key] for key in ENTRY_KEYS if entry.get(key) not in (None, [], "")}
+
+
+def row_questions(r):
+    """The questions one kb row recorded, in order: the `kb:` hook's or kb_ask.py's `question`, else a kb MCP call's
+    `question`, the parts of its `questions`, or its `query`."""
+    if r.get("surface") in ("kb_hook", "kb_ask"):
+        q = r.get("question")
+    else:
+        args = r.get("args") if r.get("surface") == "mcp" and isinstance(r.get("args"), dict) else {}
+        q = args.get("question") or args.get("questions") or args.get("query")
+    qs = q if isinstance(q, list) else [q]
+    return [x for x in qs if isinstance(x, str) and x.strip()]
+
+
+def kb_question(kb):
+    """The question the kb was asked, from the first of the kb rows (time order) that names one (row_questions, its
+    first). The prompt as typed is never a question. None when no kb row names one."""
+    return next((qs[0] for qs in map(row_questions, kb) if qs), None)
+
+
+@functools.lru_cache(maxsize=512)
+def head_pack_text(question):
+    """The text of `pack` on this clone's kb for a question; "" when the kb cannot be read."""
+    import kbfacts
+    try:
+        return kbfacts.pack(question, fmt="concise")["text"]
+    except Exception:  # noqa: BLE001 - a question pack cannot run keeps no citations; distill goes on
+        return ""
+
+
+def row_lines(r):
+    """(the kb lines of one kb row, whether pack re-ran them). A row of format 1 on, or of format 0 with `lines`,
+    gives its own `lines`. A row of format 0 without `lines` (written before capture kept them) that names articles
+    gets the lines of `pack` on the kb at HEAD for each question it recorded, only those in the articles it recorded;
+    no question, or no such line, gives none."""
+    if "lines" in r or row_format(r) != 0:
+        return (r.get("lines") if isinstance(r.get("lines"), list) else []), False
+    arts = {a for a in r.get("articles") or [] if isinstance(a, str)} if isinstance(r.get("articles"), list) else set()
+    if not arts:
+        return [], False
+    out = []
+    for q in row_questions(r):
+        out += [x for x in pack_lines(head_pack_text(q)) or [] if x["line"].rsplit(":", 1)[0] in arts]
+    return out, bool(out)
+
+
+def citations(kb, answer):
+    """(citations, cited) of one lookup: the kb lines its kb rows returned ({line, tag, verdict}, each once; for a
+    format 0 row without them, row_lines), those whose path:line the reply's text names when it names any
+    (`reply`), else the first ones (`pack`); at most CITATIONS_MAX. Lines that pack re-ran give the first ones,
+    `pack`. ([], None) when no line."""
+    lines, seen, rerun = [], set(), False
+    for r in kb:
+        got, again = row_lines(r)
+        rerun = rerun or again
+        for x in got:
+            if not (isinstance(x, dict) and isinstance(x.get("line"), str) and CITATION.fullmatch(x["line"])) \
+                    or x["line"] in seen:
+                continue
+            seen.add(x["line"])
+            lines.append({"line": x["line"], "tag": x.get("tag") if x.get("tag") in TAGS else None,
+                          "verdict": x.get("verdict") if x.get("verdict") in VERDICTS else None})
+    lines = [{key: v for key, v in x.items() if v} for x in lines]
+    named = set() if rerun else set(REPLY_CITE.findall(answer or ""))
+    used = [x for x in lines if any(x["line"] == n or x["line"].endswith("/" + n) for n in named)]
+    if used:
+        return used[:CITATIONS_MAX], "reply"
+    return lines[:CITATIONS_MAX], ("pack" if lines else None)
+
+
+def entry_of(rs, k):
+    """(entry without the Haiku fields, what Haiku judges or None, why the entry is dropped or None), or None when
+    the rows never used the kb. `rs` is one prompt's rows with the tools rows of its window, or a single tools row
+    outside every window. The entry's `question` is the kb's own (kb_question), after the rules and the leak scan;
+    Haiku judges an entry that has one, from it, the prompt and the reply, which it sees rule-redacted and which are
+    never stored."""
+    import redact
+    rs = sorted(rs, key=ts_of)
+    prompt = next((r for r in rs if r.get("surface") == "prompt"), None)
+    intent_ = prompt.get("kb_intent") if prompt and prompt.get("kb_intent") in ("lookup", "skill", "change") else None
+    kb = [r for r in rs if r.get("surface") in KB_SURFACES]
+    if not kb and not intent_:
+        return None
+    first = prompt or rs[0]
+    alone = prompt is None and len(rs) == 1
+    if alone and first.get("surface") == "tool_fetch":
+        item = fetch_item(first, k)
+        return ordered({"id": first["id"], "surface": "tool_fetch", "day": ts_of(first)[:10], **item}), None, None
+    tools = []
+    for r in kb:
+        name = r["surface"] if r["surface"] in ("kb_hook", "kb_ask") else r.get("tool")
+        if isinstance(name, str) and NAME.fullmatch(name) and name not in tools:
+            tools.append(name)
+    articles = []
+    for r in kb:
+        for a in r.get("articles") or []:
+            if isinstance(a, str) and ARTICLE.fullmatch(a) and a not in articles:
+                articles.append(a)
+    fetches = {}
+    for r in rs:
+        if r.get("surface") in ("fetch", "tool_fetch"):
+            item = fetch_item(r, k)
+            chars = item.pop("chars", None)
+            key = json.dumps(item, sort_keys=True)
+            f = fetches.setdefault(key, dict(item, n=0))
+            f["n"] += 1
+            if chars is not None:
+                f["chars"] = f.get("chars", 0) + chars
+    route = next((r.get("route") for r in kb if r.get("surface") == "kb_ask" and isinstance(r.get("route"), str)
+                  and NAME.fullmatch(r["route"])), None)
+    entry = {"id": first["id"], "surface": "prompt" if prompt else first.get("surface"), "day": ts_of(first)[:10],
+             "intent": intent_, "tools": tools, "route": route,
+             "verdict": worst(r.get("verdict") for r in kb), "articles": articles[:20],
+             "fetches": sorted(fetches.values(), key=lambda f: json.dumps(f, sort_keys=True))}
+    answer = "\n".join(r["answer"] for r in rs if r.get("surface") == "stop" and isinstance(r.get("answer"), str))
+    entry["citations"], entry["cited"] = citations(kb, answer)
+    candidates = entry["articles"]
+    if not entry["citations"]:
+        entry["articles"] = []  # an article is stored only with the kb lines that back it
+    asked = kb_question(kb)
+    if asked is None:
+        return ordered(entry), None, None
+    question = redact.finish(one_line(asked, QUESTION_MAX_CHARS), k)
+    if not question:
+        return ordered(entry), None, "the leak scan"
+    entry["question"] = question[:QUESTION_MAX_CHARS]
+    typed = prompt.get("prompt") if prompt and isinstance(prompt.get("prompt"), str) else ""
+    return ordered(entry), {"question": entry["question"], "prompt": typed.strip(), "answer": answer.strip(),
+                            "candidates": candidates}, None
+
+
+# ---------------------------------------------------------------- Haiku
+
+def claude_haiku(prompt):
+    """One `claude -p` call of the Haiku stage (redact.names_argv: hooks off, no tools, no user plugins or MCP
+    servers), in an empty directory so no project instructions load. OSError when it cannot answer."""
+    import redact
+    return claude_p(redact.names_argv(HAIKU_MODEL), prompt, HAIKU_TIMEOUT_S)
+
+
+def haiku_items(texts, candidates, k):
+    """The batch Haiku judges: per entry the question the entry stores, and the rule-redacted prompt and reply, each
+    cut to HAIKU_TEXT_MAX_CHARS, only to judge (querylog.md, Redaction); nothing Haiku writes is stored."""
+    import redact
+    return [{"i": i, "question": t["question"], "prompt": redact.redact(t["prompt"], k)[:HAIKU_TEXT_MAX_CHARS],
+             "answer": redact.redact(t["answer"], k)[:HAIKU_TEXT_MAX_CHARS], "candidates": c}
+            for i, (t, c) in enumerate(zip(texts, candidates))]
+
+
+def parse_distill(reply, items):
+    """[{judged, best, identifying}] of a Haiku reply; ValueError when it is not that JSON. Any other field of the
+    reply (free text included) is left out, and a `best` that is not one of the entry's candidates becomes null:
+    Haiku judges only among what code listed, and writes nothing that is stored."""
+    a, b = reply.find("["), reply.rfind("]")
+    if a < 0 or b < a:
+        raise ValueError("no JSON array in the reply")
+    got = json.loads(reply[a:b + 1])
+    if not isinstance(got, list) or len(got) != len(items):
+        raise ValueError(f"expected {len(items)} entries")
+    out = []
+    for i, (r, it) in enumerate(zip(got, items)):
+        if not isinstance(r, dict) or r.get("i") != i or r.get("judged") not in JUDGED \
+                or not isinstance(r.get("identifying"), bool) \
+                or not (r.get("best") is None or isinstance(r.get("best"), str)):
+            raise ValueError(f"entry {i} is malformed")
+        out.append({"judged": r["judged"], "best": r.get("best") if r.get("best") in it["candidates"] else None,
+                    "identifying": r["identifying"]})
+    return out
+
+
+def judged(r):
+    """The Haiku fields one entry stores ({judged, best}), or None to drop it (Haiku found it identifying)."""
+    return None if r["identifying"] else {"judged": r["judged"], "best": r["best"]}
+
+
+# ---------------------------------------------------------------- the run
+
+def distill(qdir=None, cfg=None, haiku=None, now_dt=None, run_id=None, kb_commit=None, settle=0.0, out=print,
+            deliver=None):
+    """One distill: 0 done (or nothing to do, or logging off), 1 when the push of mode `auto` failed, 3 when another
+    distill holds the lock. Mode `auto` keeps the spool rows of the entries it writes and then runs
+    `deliver(qdir, out)` under the same lock (default: the push of `apply --push`, from the clone, or in a plugin
+    host from its managed clone), which deletes them once their run file is on origin/main; mode `local` deletes
+    them at once."""
+    d, c = places()
+    qdir, cfg = Path(qdir or d), Path(cfg or c)
+    mode = read_mode(cfg)
+    if logging_off(qdir, cfg):
+        out("distill: logging is off")
+        return 0
+    if mode == "auto" and deliver is None:
+        import ql_deliver
+        if qdir.resolve() == (HOME / "_cache" / "querylog").resolve():
+            def deliver(q, say):
+                return ql_deliver.Pusher(HOME, q, run_cmd, None, say)()
+        elif plugin_data() is not None and qdir.resolve() == d.resolve():
+            def deliver(q, say):
+                return ql_deliver.host_push(q, run_cmd, None, say)
+    if mode != "auto":
+        deliver = None
+    lock = acquire(qdir)
+    if lock is None:
+        out("distill: another distill holds the lock")
+        return 3
+    try:
+        if settle:
+            time.sleep(settle)
+        now_dt = now_dt or datetime.datetime.now(datetime.timezone.utc)
+        rc = _distill(qdir, haiku or claude_haiku, now_dt, run_id, kb_commit, out, keep=deliver is not None)
+        if deliver is not None:
+            rc = 1 if deliver(qdir, out) not in (0, None) else rc
+        return rc
+    finally:
+        release(lock)
+
+
+def _plan(qdir, t_now, today, k):
+    """One reading of the spool: (spool, sessions, tools, consumed, todo, skipped), `todo` holding one item {entry,
+    texts, sid, key, tools, ts} per kb lookup of a closed session or of a finished day, in time order, and `skipped`
+    the rows distill does not read ({file name: count}) in the files of the closed sessions and the finished days."""
+    spool = qdir / "spool"
+    sessions, tools, bad = read_spool(spool, t_now)
+    skipped = {n: c for n, c in bad.items()
+               if (n[6:16] < today if n.startswith("tools-") else sessions.get(n[:-6], {}).get("closed"))}
+    consumed = {n: set(ids) for n, ids in read_json(qdir / CONSUMED_NAME, {}).items()
+                if n in tools and isinstance(ids, list)}
+    for s in sessions.values():
+        s["groups"] = groups(s)
+    attached, left = assign(sessions, tools, consumed)
+
+    todo = []  # {entry, texts, sid, key, tools}: one per kb lookup of a closed session or a finished day
+    for sid, s in sessions.items():
+        if not s["closed"]:
+            continue
+        for key, rs, _, _ in s["groups"]:
+            extra = attached.get((sid, key), [])
+            built = entry_of(rs + [r for _, r in extra], k)
+            if built:
+                todo.append({"entry": built[0], "texts": built[1], "drop": built[2], "sid": sid, "key": key,
+                             "tools": extra, "ts": ts_of(rs[0])})
+            else:
+                s.setdefault("skipped", []).append(extra)  # tools rows of a prompt that never used the kb
+    for name, rs in left.items():
+        if name[6:16] >= today:
+            continue  # tools rows outside every window wait for their day to end
+        for r in rs:
+            built = entry_of([r], k)
+            if built:
+                todo.append({"entry": built[0], "texts": built[1], "drop": built[2], "sid": None, "key": None,
+                             "tools": [(name, r)], "ts": ts_of(r)})
+            else:
+                consumed.setdefault(name, set()).add(r["id"])
+    todo.sort(key=lambda t: (t["ts"], t["entry"]["id"]))
+    return spool, sessions, tools, consumed, todo, skipped
+
+
+def _distill(qdir, haiku, now_dt, run_id, kb_commit, out, keep=False):
+    """The run file of the closed sessions (entries a run file of the local store already holds are not distilled
+    again), then the spool: the rows of dropped entries go, and so do those of written ones unless `keep`."""
+    k = None  # the known ids of the public root (redact.known) are read when an entry first needs them
+    t_now, today = now_dt.timestamp(), now_dt.date().isoformat()
+    spool, sessions, tools, consumed, todo, skipped = _plan(qdir, t_now, today, k)
+    stored = {e["id"] for _, e in store_.store_entries(qdir / "store")}
+    done = [t for t in todo if t["entry"]["id"] in stored]
+    todo = [t for t in todo if t["entry"]["id"] not in stored]
+
+    dropped = [t for t in todo if t["drop"]]  # the leak scan caught its question
+    need = [t for t in todo if t["texts"] and not t["drop"]]
+    written = [t for t in todo if not t["texts"] and not t["drop"]]
+    waiting = []
+    calls = read_json(qdir / CALLS_NAME, {})
+    used = calls.get("calls", 0) if isinstance(calls, dict) and calls.get("day") == today else 0
+    budget = max(0, min(HAIKU_BATCHES_PER_RUN, HAIKU_DAILY_CALLS - used))
+    batches = [need[i:i + HAIKU_BATCH_ENTRIES] for i in range(0, len(need), HAIKU_BATCH_ENTRIES)]
+    for n, batch in enumerate(batches):
+        if n >= budget:
+            waiting += batch
+            continue
+        used += 1
+        write_text(qdir / CALLS_NAME, json.dumps({"day": today, "calls": used}) + "\n")
+        items = haiku_items([t["texts"] for t in batch], [t["texts"]["candidates"] for t in batch], k)
+        try:
+            reply = haiku(DISTILL_TASK + "\n\n" + json.dumps(items, ensure_ascii=False))
+        except (OSError, subprocess.SubprocessError) as e:
+            out(f"distill: Haiku call failed ({type(e).__name__}); its entries wait")
+            waiting += [t for b in batches[n:] for t in b]
+            break
+        try:
+            results = [judged(r) for r in parse_distill(reply, items)]
+        except ValueError:
+            dropped += batch  # a reply that is not the expected JSON drops its batch
+            continue
+        for t, res in zip(batch, results):
+            if res is None:
+                dropped.append(t)
+            else:
+                t["entry"] = ordered({**t["entry"], **res})
+                written.append(t)
+
+    counts = {"entries": len(written), "dropped": len(dropped), "waiting": len(waiting)}
+    if skipped:
+        counts[SKIPPED_KEY] = sum(skipped.values())
+    if written or dropped or skipped:
+        run_id = run_id or f"{now_dt.strftime('%Y%m%dT%H%M%SZ')}-{uuid.uuid4().hex[:8]}"
+        written.sort(key=lambda t: (t["ts"], t["entry"]["id"]))
+        write_text(store_.run_path(qdir / "store", run_id),
+                   json_lines([store_.header(run_id, counts, kb_commit)] + [t["entry"] for t in written]))
+        out(f"distill: run={run_id} entries={counts['entries']} dropped={counts['dropped']} "
+            f"waiting={counts['waiting']}" + (f" skipped={counts[SKIPPED_KEY]}" if skipped else ""))
+    else:
+        out(f"distill: nothing to write (waiting={counts['waiting']})")
+    if keep:
+        _settle(spool, sessions, tools, consumed, qdir, today, dropped, waiting + written + done, skipped)
+        if written or done:
+            from ql_deliver import BRANCH, REMOTE
+            out(f"distill: the spool keeps the rows of {len(written) + len(done)} entries until their run file is "
+                f"on {REMOTE}/{BRANCH}")
+    else:
+        _settle(spool, sessions, tools, consumed, qdir, today, written + dropped + done, waiting, skipped)
+    return 0
+
+
+def _settle(spool, sessions, tools, consumed, qdir, today, gone, stay, skipped=None):
+    """The spool after a pass: the rows of the `gone` entries and of the prompts that never used the kb go, the rows
+    of the `stay` entries stay (a closed session keeps its window end), a finished day's tools file goes once all
+    its rows are consumed, and the `skipped` rows (counted in this pass) go from the files that stay."""
+    wait_keys = {(t["sid"], t["key"]) for t in stay if t["sid"]}
+    for t in gone:
+        for name, r in t["tools"]:
+            consumed.setdefault(name, set()).add(r["id"])
+    for sid, s in sessions.items():
+        if not s["closed"]:
+            continue
+        for extra in s.get("skipped", []):
+            for name, r in extra:
+                consumed.setdefault(name, set()).add(r["id"])
+        keep = [r for key, rs, _, _ in s["groups"] if (sid, key) in wait_keys for r in rs]
+        try:
+            if keep:  # the session stays closed, with the same window end: marker first, then the old times
+                st = s["path"].stat()
+                if not s["marker"].exists():  # closed by idleness: it stays closed although the file is rewritten
+                    s["marker"].touch()
+                    os.utime(s["marker"], (st.st_atime, st.st_mtime))
+                write_text(s["path"], json_lines(keep))
+                os.utime(s["path"], (st.st_atime, st.st_mtime))
+            else:
+                s["path"].unlink()
+                if s["marker"].exists():
+                    s["marker"].unlink()
+        except OSError:
+            pass
+    for name, rs in tools.items():
+        if name[6:16] < today and all(r["id"] in consumed.get(name, ()) for r in rs):
+            try:
+                (spool / name).unlink()
+                consumed.pop(name, None)
+            except OSError:
+                pass
+        elif name in (skipped or {}):  # a finished day's file, which no capture appends to any more
+            write_text(spool / name, json_lines(rs))
+    if consumed or (qdir / CONSUMED_NAME).exists():
+        write_text(qdir / CONSUMED_NAME, json.dumps({n: sorted(ids) for n, ids in sorted(consumed.items())}) + "\n")
+
+
+def spool_delivered(qdir, ids, now_dt=None):
+    """Delete the spool rows of the entries `ids`, whose run file is on origin/main; every other entry's rows stay.
+    The number of entries whose rows went. Runs under the distill lock (distill and apply --push hold it)."""
+    ids = set(ids)
+    if not ids or not (Path(qdir) / "spool").is_dir():
+        return 0
+    now_dt = now_dt or datetime.datetime.now(datetime.timezone.utc)
+    today = now_dt.date().isoformat()
+    spool, sessions, tools, consumed, todo, _ = _plan(Path(qdir), now_dt.timestamp(), today, None)
+    gone = [t for t in todo if t["entry"]["id"] in ids]
+    if gone:
+        _settle(spool, sessions, tools, consumed, Path(qdir), today, gone,
+                [t for t in todo if t["entry"]["id"] not in ids])
+    return len(gone)
+
+
+# ---------------------------------------------------------------- the SessionEnd and SessionStart launcher
+
+def ready(spool, t_now):
+    """Whether the spool holds a closed session, or a tools file whose day is over."""
+    try:
+        files = list(Path(spool).iterdir())
+    except OSError:
+        return False
+    names = {p.name for p in files}
+    today = iso(t_now)[:10]
+    for p in files:
+        n = p.name
+        if not n.endswith(".jsonl"):
+            continue
+        if n.startswith("tools-"):
+            if n[6:16] < today:
+                return True
+        elif f"{n[:-6]}.end" in names:
+            return True
+        else:
+            try:
+                if t_now - p.stat().st_mtime >= SESSION_IDLE_CLOSED_S:
+                    return True
+            except OSError:
+                pass
+    return False
+
+
+def detach(argv, log):
+    """Start `argv` detached from this process, its output appended to `log`; its PID. POSIX: a new session.
+    Windows: DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP, plus CREATE_BREAKAWAY_FROM_JOB when the job the hook runs
+    in allows it (a job that forbids breakaway refuses the flag, and the child is started without it)."""
+    log = Path(log)
+    log.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        fresh = log.stat().st_size > LOG_MAX_BYTES
+    except OSError:
+        fresh = False
+    with open(log, "w" if fresh else "a", encoding="utf-8", newline="\n") as f:
+        kw = dict(stdin=subprocess.DEVNULL, stdout=f, stderr=subprocess.STDOUT, cwd=str(HOME), close_fds=True)
+        if os.name == "nt":
+            flags = subprocess.DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP
+            try:
+                return subprocess.Popen(argv, creationflags=flags | subprocess.CREATE_BREAKAWAY_FROM_JOB, **kw).pid
+            except OSError:
+                return subprocess.Popen(argv, creationflags=flags, **kw).pid
+        return subprocess.Popen(argv, start_new_session=True, **kw).pid
+
+
+def launch(event):
+    """The PID of the distill a SessionEnd or SessionStart event starts, or None. SessionEnd first marks its session
+    closed. Nothing starts when logging is off, nothing is ready, or a distill holds a fresh lock."""
+    if not isinstance(event, dict) or event.get("hook_event_name") not in ("SessionEnd", "SessionStart"):
+        return None
+    qdir, cfg = places()
+    if logging_off(qdir, cfg):
+        return None
+    spool = qdir / "spool"
+    sid = event.get("session_id")
+    if event["hook_event_name"] == "SessionEnd" and isinstance(sid, str) and SAFE_SESSION.fullmatch(sid) \
+            and (spool / f"{sid}.jsonl").exists():
+        (spool / f"{sid}.end").touch()
+    if not ready(spool, time.time()):
+        return None
+    age = lock_age(qdir / LOCK_NAME)
+    if age is not None and age < LOCK_STALE_S:
+        return None
+    return detach([sys.executable, str(ENTRY), "distill", "--settle", str(LAUNCH_SETTLE_S)], qdir / LOG_NAME)

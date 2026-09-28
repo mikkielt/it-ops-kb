@@ -74,6 +74,7 @@ ANCHORS = "_anchors.csv"
 ANCHOR_COLS = ["fact", "path", "source_id", "status", "heading", "terms", "sha", "quote", "verified_utc"]
 ANCHOR_REASONS = ("fetch-error", "not-text", "no-match", "gone")
 SNAPSHOTS = "_snapshots"  # normalized copies of the root's live `copy` sources, with attribution (factdiff.py snapshot)
+NO_HOOKS = ["--settings", '{"disableAllHooks": true}']  # every `claude -p` the tools start runs no hook
 QUOTE_WORDS = 25  # the longest quote a `quote` source allows (kb/_self/content-rules.md, Licensing)
 # What a source's licence allows with its text: the `reuse` column of _sources.csv (check.py rejects anything else).
 REUSE = {

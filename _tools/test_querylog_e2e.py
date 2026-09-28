@@ -3,7 +3,7 @@
 Each scenario drives a clone of a kb copy whose `origin` is a local bare repository through the whole pipeline:
 capture (the query log hook commands of the clone's .claude/settings.json, fed the recorded events of
 _tools/fixtures/querylog/e2e.json on stdin: capture, kb_hook.py, and the SessionEnd launcher), distill with the
-recorded Haiku replies of that file, then the push of mode `auto` (querylog.Pusher: the worktree's own
+recorded Haiku replies of that file, then the push of mode `auto` (ql_deliver.Pusher: the worktree's own
 `querylog.py learn` and `apply`, then its `kbgit.py sync --push`). After each scenario the tests check the store on the
 remote, the findings, the eval file, the ledgers, the spool and the gate (the store gates and check-trailers).
 
@@ -41,7 +41,7 @@ from pathlib import Path
 
 import pytest
 
-import querylog
+import ql_base, ql_deliver, ql_distill, ql_research, ql_store
 from conftest import GIT, Repo, copy_kb, git_env
 from test_querylog import (ALIAS_Q, BAD_QUOTE, FIXTURES, LAPS, LAPS_GAP_Q, LEGACY_QUOTE, PAGE, PAGE_URL, PARAPHRASE_Q,
                            PUSH_OPTIONS_HOOK, REJECT_HOOK, SH, c, cand, jsonl, pipeline, prompt, reply, serve, signed_out,
@@ -98,7 +98,7 @@ def seed(tmp_path_factory):
         Repo(tmp, env()).git("clone", "-q", "--bare", repo.path, str(tmp / "seed.git"))
         got = {"bare": str(tmp / "seed.git"), "base": repo.rev("HEAD")}
     finally:
-        querylog.write_text(done, json.dumps(got))
+        ql_base.write_text(done, json.dumps(got))
     return Path(got["bare"]), got["base"]
 
 
@@ -203,12 +203,12 @@ class World:
     def end(self, sid):
         """The SessionEnd hook, run while this process holds the distill lock: the launcher marks the session closed
         and starts nothing."""
-        lock = querylog.acquire(self.q)
+        lock = ql_base.acquire(self.q)
         assert lock is not None
         try:
             self.hook({"hook_event_name": "SessionEnd", "session_id": sid, "reason": "prompt_input_exit"})
         finally:
-            querylog.release(lock)
+            ql_base.release(lock)
 
     # --- the pipeline ---------------------------------------------------------------------------------------------
 
@@ -216,14 +216,14 @@ class World:
         if argv[0] in ("glab", "gh"):
             self.calls.append(list(argv))
             return self.ci(argv)
-        return querylog.run_cmd(argv, cwd=cwd, env=self.env)
+        return ql_base.run_cmd(argv, cwd=cwd, env=self.env)
 
     def pusher(self, out, now, step=None):
         """The push of `apply --push` for this clone: its worktree's learn and apply (research from the clone's config,
         answered from `replay`), then kbgit.py sync --push. `step(pusher, wt, store, hold, out)` wraps learn and
         apply."""
         research = ["--clone", str(self.home)] + (["--replay-research", str(self.replay)] if self.replay else [])
-        p = querylog.Pusher(self.home, self.q, self.run, None, out, now, research=research, cloud=False)
+        p = ql_deliver.Pusher(self.home, self.q, self.run, None, out, now, research=research, cloud=False)
         if step:
             p.apply_step = lambda wt, store, hold, o: step(p, wt, store, hold, o)
         return p
@@ -231,7 +231,7 @@ class World:
     def distill(self, now=None, step=None):
         """One distill (the mode of the clone's config), with the push of mode `auto`: (exit code, output lines)."""
         said, now = [], now or datetime.datetime.now(datetime.timezone.utc)
-        rc = querylog.distill(qdir=self.q, cfg=self.cfg, haiku=self.haiku, now_dt=now, kb_commit=self.clone.rev("HEAD"),
+        rc = ql_distill.distill(qdir=self.q, cfg=self.cfg, haiku=self.haiku, now_dt=now, kb_commit=self.clone.rev("HEAD"),
                               out=said.append, deliver=lambda q, out: self.pusher(out, now, step)())
         return rc, said
 
@@ -252,37 +252,37 @@ class World:
     def store(self, rev="main"):
         """The remote's kb/_querylog at `rev`, written out under the scenario's directory."""
         d = self.tmp / f"store-{uuid.uuid4().hex[:8]}"
-        names = self.remote.git("ls-tree", "-r", "--name-only", rev, "--", querylog.STORE_REL).split()
+        names = self.remote.git("ls-tree", "-r", "--name-only", rev, "--", ql_base.STORE_REL).split()
         for n in names:
             (d / n).parent.mkdir(parents=True, exist_ok=True)
             (d / n).write_text(self.show(n, rev), encoding="utf-8", newline="\n")
-        return d / querylog.STORE_REL
+        return d / ql_base.STORE_REL
 
     def spool(self):
         sp = self.q / "spool"
         return sorted(p.name for p in sp.iterdir()) if sp.is_dir() else []
 
     def local_runs(self):
-        return querylog.run_files(self.q / "store")
+        return ql_store.run_files(self.q / "store")
 
     def state(self, rev="main"):
         """What the remote holds at `rev` and what the clone keeps: run files, entries, findings, the kb files'
         added lines, the spool, and the gate (the store gates and the leak scan, check-trailers, the person's checkout
         untouched)."""
         store = self.store(rev)
-        runs = querylog.run_files(store)
-        rels = [p.relative_to(store).as_posix() for p in runs + querylog.findings_files(store)]
+        runs = ql_store.run_files(store)
+        rels = [p.relative_to(store).as_posix() for p in runs + ql_store.findings_files(store)]
         self.clone.git("fetch", "-q", "origin")
         trailers = self.clone.kbgit("check-trailers", f"{self.base}..origin/main")
         return {
             "runs": [p.stem for p in runs],
             "headers": [jsonl(p)[0] for p in runs],
             "entries": [e for p in runs for e in jsonl(p)[1:]],
-            "findings": querylog.finding_states(store),
+            "findings": ql_store.finding_states(store),
             "text": "".join(p.read_text(encoding="utf-8") for p in sorted(store.rglob("*.jsonl"))),
             **{rel: self.added(rel, rev) for rel in KB_FILES},
             "spool": self.spool(),
-            "gate": querylog.store_problems(store) + querylog.leak_problems(store, rels) +
+            "gate": ql_store.store_problems(store) + ql_store.leak_problems(store, rels) +
                     ([] if trailers.returncode == 0 else [trailers.stdout.strip()]) +
                     [f"person's checkout: {s}" for s in [self.clone.git("status", "--porcelain").strip()] if s] +
                     ([] if self.clone.rev("HEAD") == self.base else ["person's checkout moved"]),
@@ -401,7 +401,7 @@ class TestFixes:
         for rel in (EVAL, ALIASES, EXPANSIONS, GAPS):
             assert st[rel] == [], rel  # the fixes are gone from main
         assert set(self.st1["runs"]) == set(st["runs"])  # the store's files stay
-        failed = sorted(r["kind"] for r in st["findings"].values() if r["state"] == querylog.APPLY_FAILED)
+        failed = sorted(r["kind"] for r in st["findings"].values() if r["state"] == ql_store.APPLY_FAILED)
         assert failed == ["alias", "eval", "eval", "expansion", "gap"], failed
         assert st["gate"] == [], st["gate"]
         rc, said = self.after  # the next run: CI on a revert is not checked, and nothing is applied again
@@ -496,12 +496,12 @@ class TestToolRows:
         assert (e["surface"], e["tools"], e["route"], e.get("intent")) == \
             ("prompt", ["kb_ask", "fetch.py", "census.py"], "plan", None)
         assert e["question"] == LOOKUPS["tools"]["asked"] and "route kb_ask takes" not in st["text"]  # kb_ask's own
-        assert e["citations"] and all(querylog.CITATION.fullmatch(x["line"]) for x in e["citations"])
+        assert e["citations"] and all(ql_store.CITATION.fullmatch(x["line"]) for x in e["citations"])
         assert sorted((f["tool"], f["outcome"], f["n"], f.get("chars")) for f in e["fetches"]) == [
             ("census.py", "http-404", 1, None), ("fetch.py", "http-200", 1, 5)]
         assert not any("host" in f for f in e["fetches"])  # 127.0.0.1 is no public host
         assert len(self.tools) == 1 and st["spool"] in ([], self.tools)  # today's tools file goes after its day
-        consumed = json.loads((w.q / querylog.CONSUMED_NAME).read_text(encoding="utf-8")) if st["spool"] else {}
+        consumed = json.loads((w.q / ql_distill.CONSUMED_NAME).read_text(encoding="utf-8")) if st["spool"] else {}
         assert all(len(ids) == 3 for ids in consumed.values())
         assert st["gate"] == [], st["gate"]
 
@@ -548,9 +548,9 @@ class TestCaps:
         w.end(s)
         now = datetime.datetime.now(datetime.timezone.utc)
         with pytest.MonkeyPatch.context() as mp:
-            mp.setattr(querylog, "HAIKU_BATCH_ENTRIES", 2)
-            mp.setattr(querylog, "HAIKU_BATCHES_PER_RUN", 1)
-            mp.setattr(querylog, "HAIKU_DAILY_CALLS", 1)
+            mp.setattr(ql_distill, "HAIKU_BATCH_ENTRIES", 2)
+            mp.setattr(ql_distill, "HAIKU_BATCHES_PER_RUN", 1)
+            mp.setattr(ql_distill, "HAIKU_DAILY_CALLS", 1)
             cls.first = w.distill(now)
             cls.spool1, cls.st1 = w.spool(), w.state()
             cls.second = w.distill(now + datetime.timedelta(minutes=1))
@@ -605,7 +605,7 @@ class TestTwoClones:
         assert rc_b == 0 and says(said_b, "apply --push: pushed ") and not says(said_b, "conflict"), said_b
         st = self.st
         assert len(st["runs"]) == 2 and len({e["id"] for e in st["entries"]}) == 2
-        assert querylog.duplicate_ids(self.b.store()) == []
+        assert ql_store.duplicate_ids(self.b.store()) == []
         assert self.branches == ["refs/heads/main"]
         assert kinds(st["findings"]) == [("eval", "fixed-since", "miss")]
         assert st["spool"] == [] and self.a_spool == [] and st["gate"] == [], st["gate"]
@@ -635,7 +635,7 @@ class TestConflict:
             rc = p.learn_and_apply(wt, store, hold, out)
             new = max(set(Path(store).rglob("*.jsonl")) - before, key=lambda f: f.stem)
             cls.planted_rel = new.relative_to(wt).as_posix()
-            header = {"run": new.stem, "pipeline": querylog.PIPELINE_VERSION, "retrieval": querylog.retrieval_version(),
+            header = {"run": new.stem, "pipeline": ql_base.PIPELINE_VERSION, "retrieval": ql_store.retrieval_version(),
                       "kb_commit": "0" * 40, "counts": {"findings": 0}}
             planter.write(cls.planted_rel, json.dumps(header, separators=(",", ":")) + "\n")
             planter.git("add", "-A")
@@ -657,9 +657,9 @@ class TestConflict:
         assert rc == 0, said
         (line,) = [s for s in said if "conflict: pushed" in s]
         branch = line.split("pushed ", 1)[1].split(" ", 1)[0]
-        assert branch == querylog.CONFLICT_BRANCH_PREFIX + Path(self.planted_rel).stem
+        assert branch == ql_deliver.CONFLICT_BRANCH_PREFIX + Path(self.planted_rel).stem
         assert self.main1 == self.planted  # nothing of the run reached main
-        assert self.opts == list(querylog.MR_OPTIONS)
+        assert self.opts == list(ql_deliver.MR_OPTIONS)
         assert w.show(GAPS, branch) != w.show(GAPS) and self.spool1  # the gap entry waits on the branch; rows stay
         rc, said = self.again
         assert rc == 0 and says(said, "finding(s) wait on a querylog/ branch and are left alone"), said
@@ -710,7 +710,7 @@ class TestResearch:
     def scenario(cls, tmp_path_factory, seed):
         tmp = Path(tmp_path_factory.mktemp("e2e-research"))
         w = cls.w = World(tmp, seed)
-        n, _ = querylog.fact_lines((w.home / ARTICLE).read_text(encoding="utf-8"))[0]
+        n, _ = ql_research.fact_lines((w.home / ARTICLE).read_text(encoding="utf-8"))[0]
         legacy = cand(text="Legacy Microsoft LAPS stays available for older operating systems.", quote=LEGACY_QUOTE,
                       conflicts_with=n)
         shutil.copy(PAGE, tmp / "page.html")
@@ -729,7 +729,7 @@ class TestResearch:
             w.lookup(name, s)
             w.end(s)
             before = w.main()
-            cls.runs.append((w.distill(), querylog.read_json(w.q / querylog.RESEARCH_RUNS_NAME, {})))
+            cls.runs.append((w.distill(), ql_base.read_json(w.q / ql_research.RESEARCH_RUNS_NAME, {})))
             cls.states.append(w.state())
             cls.commits.append(w.commits(before))
 
@@ -786,7 +786,7 @@ def test_modes(tmp_path, seed, mode):
     elif mode == "disabled":
         w.config({"mode": "auto"})
         w.q.mkdir(parents=True)
-        (w.q / querylog.DISABLED_NAME).write_text("push refused for want of rights\n", encoding="utf-8")
+        (w.q / ql_base.DISABLED_NAME).write_text("push refused for want of rights\n", encoding="utf-8")
     elif mode == "unreadable":
         w.config("{not json")
     s = sid()
@@ -799,10 +799,10 @@ def test_modes(tmp_path, seed, mode):
     assert rc == 0 and st["gate"] == [], (said, st["gate"])
     if mode in ("off", "disabled", "unreadable"):
         assert wrote == [] and said == ["distill: logging is off"] and w.local_runs() == []
-        assert w.main() == w.base and not (w.q / querylog.WORKTREE_NAME).exists()
+        assert w.main() == w.base and not (w.q / ql_deliver.WORKTREE_NAME).exists()
     elif mode == "local":
         assert wrote == [f"{s}.jsonl"] and says(said, "entries=1 dropped=0 waiting=0") and len(w.local_runs()) == 1
-        assert w.spool() == [] and w.main() == w.base and not (w.q / querylog.WORKTREE_NAME).exists()
+        assert w.spool() == [] and w.main() == w.base and not (w.q / ql_deliver.WORKTREE_NAME).exists()
     else:
         assert says(said, "apply --push: pushed ") and len(st["runs"]) == 1 and st["spool"] == [], said
 
@@ -820,7 +820,7 @@ class TestSessions:
         w.lookup("do_port", cls.idle)
         w.end(cls.ended)
         cls.markers = sorted(p.name for p in (w.q / "spool").glob("*.end"))
-        old = datetime.datetime.now().timestamp() - querylog.SESSION_IDLE_CLOSED_S - 60
+        old = datetime.datetime.now().timestamp() - ql_distill.SESSION_IDLE_CLOSED_S - 60
         os.utime(w.q / "spool" / f"{cls.idle}.jsonl", (old, old))
         cls.open_before = (w.q / "spool" / f"{cls.open_}.jsonl").read_bytes()
         cls.rc, cls.said = w.distill()

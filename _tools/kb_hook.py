@@ -45,7 +45,7 @@ def respond(prompt):
                                         "additionalContext": f"it-ops-kb could not read its roots: {e}"}},
                 {"question": question, "forward": forward, "verdict": "error"})
     row = {"question": question, "forward": forward, "verdict": res["verdict"], "articles": res["paths"][:20],
-           "pack": res["text"]}  # main keeps the pack's kb lines (querylog.pack_lines), never its text
+           "pack": res["text"]}  # main keeps the pack's kb lines (ql_capture.pack_lines), never its text
     if res["verdict"] == "good" and not forward and not res.get("unmatched") and not res.get("spread"):
         return {"decision": "block", "reason": res["text"] + NOTE}, dict(row, answered=True)
     if res["verdict"] == "none":
@@ -78,9 +78,9 @@ def main():
     if out is not None:
         print(json.dumps(out, ensure_ascii=False))
     if row is not None:  # a kb: prompt: one spool row (kb/_self/querylog.md, Capture); a plain prompt loads nothing
-        import querylog
-        row["lines"] = querylog.pack_lines(row.pop("pack", ""))
-        querylog.record("kb_hook", event.get("session_id"), prompt_id=event.get("prompt_id"), **row)
+        import ql_capture
+        row["lines"] = ql_capture.pack_lines(row.pop("pack", ""))
+        ql_capture.record("kb_hook", event.get("session_id"), prompt_id=event.get("prompt_id"), **row)
 
 
 if __name__ == "__main__":
