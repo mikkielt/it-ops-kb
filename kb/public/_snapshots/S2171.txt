@@ -1,0 +1,34 @@
+source: S2171
+url: https://microsoft.github.io/language-server-protocol/
+title: Language Server Protocol
+publisher: Microsoft (microsoft.github.io)
+licence: CC BY 4.0 (microsoft/language-server-protocol License.txt)
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+# LSP / LSIF
+Overview
+Implementations
+Specification
+# Language Server Protocol
+The Language Server Protocol (LSP) defines the protocol used between an editor or IDE and a language server that provides language features like auto complete, go to definition, find all references etc. The goal of the Language Server Index Format (LSIF, pronounced like "else if") is to support rich code navigation in development tools or a Web UI without needing a local copy of the source code.
+Star
+## What is the Language Server Protocol?
+Adding features like auto complete, go to definition, or documentation on hover for a programming language takes significant effort. Traditionally this work had to be repeated for each development tool, as each tool provides different APIs for implementing the same feature.
+A Language Server is meant to provide the language-specific smarts and communicate with development tools over a protocol that enables inter-process communication.
+The idea behind the Language Server Protocol (LSP) is to standardize the protocol for how such servers and development tools communicate. This way, a single Language Server can be re-used in multiple development tools, which in turn can support multiple languages with minimal effort.
+LSP is a win for both language providers and tooling vendors!
+CSS code complete in VS Code powered by the CSS LSP Server
+CSS code complete in Atom powered by the CSS LSP Server
+CSS code complete in Eclipse IDE powered by the CSS LSP Server
+PowerShell Hover in VS Code powered by the PowerShell LSP Server
+Rust code complete in Visual Studio powered by the Rust LSP Server
+#
+### Overview
+The protocol defines the format of the messages sent using JSON-RPC between the development tool and the language server. LSIF defines a graph format to store information about programming artifacts.
+#
+### Specification
+The latest version of the LSP specification is version 3.18. There is now also a specification for the upcoming language server index format (LSIF).
+#
+### Implementations
+The LSP has been implemented for many languages and many development tools are integrating these language servers.

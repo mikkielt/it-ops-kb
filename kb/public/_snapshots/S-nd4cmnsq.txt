@@ -1,0 +1,89 @@
+source: S-nd4cmnsq
+url: https://learn.microsoft.com/azure/update-manager/configure-wu-agent
+title: Configure Windows Update settings for Azure Update Manager
+publisher: Microsoft Learn
+licence: CC BY 4.0 (public mirror MicrosoftDocs/azure-docs)
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+# Configure Windows Update Settings in Azure Update Manager | Microsoft Learn
+
+Azure Update Manager uses the native Windows Update client to manage patching. However, the behavior differs depending on whether the machine is an Azure virtual machine (VM) or an Azure Arc-enabled server. This guide outlines how to configure update settings, what Update Manager modifies, and how to avoid conflicts with Group Policy.
+
+## Key differences: Azure VMs vs. Azure Arc-enabled machines
+
+| Feature | Azure VMs | Azure Arc-enabled machines |
+| --- | --- | --- |
+| Patch orchestration | Azure orchestrated or OS orchestrated | OS orchestrated only |
+| Registry changes by Update Manager | Yes (when Azure orchestrated) | No (Update Manager doesn't modify the registry) |
+| Group Policy interaction | Can override Update Manager settings | Fully controls update behavior |
+| Windows Server Update Services (WSUS) support | Supported | Supported |
+| Pre-download support | Not supported | Not supported |
+
+## What Update Manager configures automatically (Azure VMs only)
+
+When Azure-orchestrated patching is enabled on an Azure VM, Update Manager might configure the following registry keys:
+
+| Registry path | Key | Purpose |
+| --- | --- | --- |
+| `HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU` | `AUOptions` | Sets automatic update behavior |
+| `HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update` | `RebootRequired` | Tracks reboot status |
+| `HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Services` | `ServiceID` | Registers the Microsoft Update service |
+
+These changes are applied only when the VM is configured for Azure-orchestrated patching (`AutomaticByPlatform = Azure-Orchestrated`). Azure Arc-enabled machines aren't affected.
+
+## Group Policy conflicts
+
+Group Policy can override or conflict with Update Manager settings. This behavior is especially important for:
+
+- **Automatic updates**: If Group Policy enforces a different `AUOptions` value, Update Manager might not be able to control update timing.
+- **Reboot behavior**: If Update Manager is set to **Never Reboot**, Group Policy or registry keys can still trigger reboots. If Update Manager is set to **Always Reboot**, Group Policy or registry keys can prevent reboots from occurring.
+- **Microsoft Update source**: Group Policy might restrict updates to WSUS or block Microsoft Update, which can cause Update Manager deployments to fail.
+
+If you use Group Policy, a best practice is to ensure that it aligns with the intended behavior of Update Manager. Avoid setting conflicting values in the following policies:
+
+- **Configure Automatic Updates**
+- **No auto-restart with logged on users**
+- **Always automatically restart at the scheduled time**.
+
+## How to enable Microsoft Update
+
+To receive updates for products like SQL Server or Office, use the following instructions.
+
+### Azure VMs (Azure-orchestrated patching)
+
+Run this PowerShell script:
+
+```
+$ServiceManager = (New-Object -com "Microsoft.Update.ServiceManager")
+$ServiceID = "7971f918-a847-4430-9279-4a52d1efe18d"
+$ServiceManager.AddService2($ServiceId,7,"")
+```
+
+### Azure Arc-enabled machines or OS-orchestrated VMs
+
+Use Group Policy:
+
+1. Go to **Computer Configuration** &gt; **Administrative Templates** &gt; **Windows Components** &gt; **Windows Update** &gt; **Manage end user experience**.
+2. Open the **Configure Automatic Updates** setting.
+3. Set the option to **Enabled**, and then select the **Install updates for other Microsoft products** checkbox.
+
+## WSUS configuration
+
+Update Manager supports WSUS. To configure it:
+
+- Use Group Policy to set the WSUS server location.
+- Ensure that updates are approved in WSUS, to prevent the failure of Update Manager deployments.
+- To restrict internet access, enable **Do not connect to any Windows Update Internet locations**.
+
+## Verification of the patch source
+
+Check these registry keys to confirm the update source:
+
+- `HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\`
+- `HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Services`
+
+## Not supported
+
+- Update Manager doesn't support the pre-download of updates.
+- To change the patch source (for example, from WSUS to Microsoft Update), use Windows settings or Group Policy. Don't use Update Manager for this configuration.

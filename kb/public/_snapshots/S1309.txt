@@ -1,0 +1,812 @@
+source: S1309
+url: https://learn.microsoft.com/en-us/powershell/module/microsoft.graph.applications/new-mgserviceprincipalapproleassignment
+title: New-MgServicePrincipalAppRoleAssignment (Microsoft Graph PowerShell)
+publisher: Microsoft
+licence: CC BY 4.0 (public mirror MicrosoftDocs/microsoftgraph-docs-powershell)
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+# New-MgServicePrincipalAppRoleAssignment
+
+- Module:
+    - Microsoft.Graph.Applications Module
+
+Assign an app role to a client service principal. App roles that are assigned to service principals are also known as application permissions. Application permissions can be granted directly with app role assignments, or through a consent experience. To grant an app role assignment to a client service principal, you need three identifiers:
+
+Note
+
+To view the beta release of this cmdlet, view New-MgBetaServicePrincipalAppRoleAssignment
+
+## Syntax
+
+### CreateExpanded (Default)
+
+```Syntax
+New-MgServicePrincipalAppRoleAssignment
+    -ServicePrincipalId <string>
+    [-ResponseHeadersVariable <string>]
+    [-AdditionalProperties <hashtable>]
+    [-AppRoleId <string>]
+    [-CreatedDateTime <datetime>]
+    [-DeletedDateTime <datetime>]
+    [-Id <string>]
+    [-PrincipalDisplayName <string>]
+    [-PrincipalId <string>]
+    [-PrincipalType <string>]
+    [-ResourceDisplayName <string>]
+    [-ResourceId <string>]
+    [-Break]
+    [-Headers <IDictionary>]
+    [-HttpPipelineAppend <SendAsyncStep[]>]
+    [-HttpPipelinePrepend <SendAsyncStep[]>]
+    [-Proxy <uri>]
+    [-ProxyCredential <pscredential>]
+    [-ProxyUseDefaultCredentials]
+    [-WhatIf]
+    [-Confirm]
+    [<CommonParameters>]
+```
+
+### Create
+
+```Syntax
+New-MgServicePrincipalAppRoleAssignment
+    -ServicePrincipalId <string>
+    -BodyParameter <IMicrosoftGraphAppRoleAssignment>
+    [-ResponseHeadersVariable <string>]
+    [-Break]
+    [-Headers <IDictionary>]
+    [-HttpPipelineAppend <SendAsyncStep[]>]
+    [-HttpPipelinePrepend <SendAsyncStep[]>]
+    [-Proxy <uri>]
+    [-ProxyCredential <pscredential>]
+    [-ProxyUseDefaultCredentials]
+    [-WhatIf]
+    [-Confirm]
+    [<CommonParameters>]
+```
+
+### CreateViaIdentityExpanded
+
+```Syntax
+New-MgServicePrincipalAppRoleAssignment
+    -InputObject <IApplicationsIdentity>
+    [-ResponseHeadersVariable <string>]
+    [-AdditionalProperties <hashtable>]
+    [-AppRoleId <string>]
+    [-CreatedDateTime <datetime>]
+    [-DeletedDateTime <datetime>]
+    [-Id <string>]
+    [-PrincipalDisplayName <string>]
+    [-PrincipalId <string>]
+    [-PrincipalType <string>]
+    [-ResourceDisplayName <string>]
+    [-ResourceId <string>]
+    [-Break]
+    [-Headers <IDictionary>]
+    [-HttpPipelineAppend <SendAsyncStep[]>]
+    [-HttpPipelinePrepend <SendAsyncStep[]>]
+    [-Proxy <uri>]
+    [-ProxyCredential <pscredential>]
+    [-ProxyUseDefaultCredentials]
+    [-WhatIf]
+    [-Confirm]
+    [<CommonParameters>]
+```
+
+### CreateViaIdentity
+
+```Syntax
+New-MgServicePrincipalAppRoleAssignment
+    -InputObject <IApplicationsIdentity>
+    -BodyParameter <IMicrosoftGraphAppRoleAssignment>
+    [-ResponseHeadersVariable <string>]
+    [-Break]
+    [-Headers <IDictionary>]
+    [-HttpPipelineAppend <SendAsyncStep[]>]
+    [-HttpPipelinePrepend <SendAsyncStep[]>]
+    [-Proxy <uri>]
+    [-ProxyCredential <pscredential>]
+    [-ProxyUseDefaultCredentials]
+    [-WhatIf]
+    [-Confirm]
+    [<CommonParameters>]
+```
+
+## Description
+
+Assign an app role to a client service principal. App roles that are assigned to service principals are also known as application permissions. Application permissions can be granted directly with app role assignments, or through a consent experience. To grant an app role assignment to a client service principal, you need three identifiers:
+
+**Permissions**
+
+| Permission type | Permissions (from least to most privileged) |
+| --- | --- |
+| Delegated (work or school account) | Directory.Read.All, AppRoleAssignment.ReadWrite.All, Application.Read.All, |
+| Delegated (personal Microsoft account) | Not supported |
+| Application | Directory.Read.All, AppRoleAssignment.ReadWrite.All, Application.Read.All, |
+
+## Examples
+
+### Example 1: Code snippet
+
+```powershell
+
+Import-Module Microsoft.Graph.Applications
+
+$params = @{principalId = "9028d19c-26a9-4809-8e3f-20ff73e2d75e"resourceId = "8fce32da-1246-437b-99cd-76d1d4677bd5"appRoleId = "498476ce-e0fe-48b0-b801-37ba7e2685c6"
+}
+
+New-MgServicePrincipalAppRoleAssignment -ServicePrincipalId $servicePrincipalId -BodyParameter $params
+
+```
+
+This example shows how to use the New-MgServicePrincipalAppRoleAssignment Cmdlet.
+
+## Parameters
+
+### -AdditionalProperties
+
+Additional Parameters
+
+#### Parameter properties
+
+| Type: | System.Collections.Hashtable |
+| --- | --- |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ CreateViaIdentityExpanded
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+ CreateExpanded
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -AppRoleId
+
+The identifier (id) for the app role that's assigned to the principal. This app role must be exposed in the appRoles property on the resource application's service principal (resourceId). If the resource application hasn't declared any app roles, a default app role ID of 00000000-0000-0000-0000-000000000000 can be specified to signal that the principal is assigned to the resource app without any specific app roles. Required on create.
+
+#### Parameter properties
+
+| Type: | System.String |
+| --- | --- |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ CreateViaIdentityExpanded
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+ CreateExpanded
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -BodyParameter
+
+appRoleAssignment To construct, see NOTES section for BODYPARAMETER properties and create a hash table.
+
+#### Parameter properties
+
+| Type: | Microsoft.Graph.PowerShell.Models.IMicrosoftGraphAppRoleAssignment |
+| --- | --- |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ CreateViaIdentity
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | True |
+| Value from pipeline: | True |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+ Create
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | True |
+| Value from pipeline: | True |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -Break
+
+Wait for .NET debugger to attach
+
+#### Parameter properties
+
+| Type: | System.Management.Automation.SwitchParameter |
+| --- | --- |
+| Default value: | False |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ (All)
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -Confirm
+
+Prompts you for confirmation before running the cmdlet.
+
+#### Parameter properties
+
+| Type: | System.Management.Automation.SwitchParameter |
+| --- | --- |
+| Supports wildcards: | False |
+| DontShow: | False |
+| Aliases: | cf |
+
+#### Parameter sets
+
+ (All)
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -CreatedDateTime
+
+The time when the app role assignment was created. The Timestamp type represents date and time information using ISO 8601 format and is always in UTC time. For example, midnight UTC on Jan 1, 2014 is 2014-01-01T00:00:00Z. Read-only.
+
+#### Parameter properties
+
+| Type: | System.DateTime |
+| --- | --- |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ CreateViaIdentityExpanded
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+ CreateExpanded
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -DeletedDateTime
+
+Date and time when this object was deleted. Always null when the object hasn't been deleted.
+
+#### Parameter properties
+
+| Type: | System.DateTime |
+| --- | --- |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ CreateViaIdentityExpanded
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+ CreateExpanded
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -Headers
+
+Optional headers that will be added to the request.
+
+#### Parameter properties
+
+| Type: | System.Collections.IDictionary |
+| --- | --- |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ (All)
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | True |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -HttpPipelineAppend
+
+SendAsync Pipeline Steps to be appended to the front of the pipeline
+
+#### Parameter properties
+
+| Type: | Microsoft.Graph.PowerShell.Runtime.SendAsyncStep[] |
+| --- | --- |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ (All)
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -HttpPipelinePrepend
+
+SendAsync Pipeline Steps to be prepended to the front of the pipeline
+
+#### Parameter properties
+
+| Type: | Microsoft.Graph.PowerShell.Runtime.SendAsyncStep[] |
+| --- | --- |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ (All)
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -Id
+
+The unique identifier for an entity. Read-only.
+
+#### Parameter properties
+
+| Type: | System.String |
+| --- | --- |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ CreateViaIdentityExpanded
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+ CreateExpanded
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -InputObject
+
+Identity Parameter To construct, see NOTES section for INPUTOBJECT properties and create a hash table.
+
+#### Parameter properties
+
+| Type: | Microsoft.Graph.PowerShell.Models.IApplicationsIdentity |
+| --- | --- |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ CreateViaIdentityExpanded
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | True |
+| Value from pipeline: | True |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+ CreateViaIdentity
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | True |
+| Value from pipeline: | True |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -PrincipalDisplayName
+
+The display name of the user, group, or service principal that was granted the app role assignment. Maximum length is 256 characters. Read-only. Supports $filter (eq and startswith).
+
+#### Parameter properties
+
+| Type: | System.String |
+| --- | --- |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ CreateViaIdentityExpanded
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+ CreateExpanded
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -PrincipalId
+
+The unique identifier (id) for the user, security group, or service principal being granted the app role. Security groups with dynamic memberships are supported. Required on create.
+
+#### Parameter properties
+
+| Type: | System.String |
+| --- | --- |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ CreateViaIdentityExpanded
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+ CreateExpanded
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -PrincipalType
+
+The type of the assigned principal. This can either be User, Group, or ServicePrincipal. Read-only.
+
+#### Parameter properties
+
+| Type: | System.String |
+| --- | --- |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ CreateViaIdentityExpanded
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+ CreateExpanded
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -Proxy
+
+The URI for the proxy server to use
+
+#### Parameter properties
+
+| Type: | System.Uri |
+| --- | --- |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ (All)
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -ProxyCredential
+
+Credentials for a proxy server to use for the remote call
+
+#### Parameter properties
+
+| Type: | System.Management.Automation.PSCredential |
+| --- | --- |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ (All)
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -ProxyUseDefaultCredentials
+
+Use the default credentials for the proxy
+
+#### Parameter properties
+
+| Type: | System.Management.Automation.SwitchParameter |
+| --- | --- |
+| Default value: | False |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ (All)
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -ResourceDisplayName
+
+The display name of the resource app's service principal to which the assignment is made. Maximum length is 256 characters.
+
+#### Parameter properties
+
+| Type: | System.String |
+| --- | --- |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ CreateViaIdentityExpanded
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+ CreateExpanded
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -ResourceId
+
+The unique identifier (id) for the resource service principal for which the assignment is made. Required on create. Supports $filter (eq only).
+
+#### Parameter properties
+
+| Type: | System.String |
+| --- | --- |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ CreateViaIdentityExpanded
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+ CreateExpanded
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -ResponseHeadersVariable
+
+Optional Response Headers Variable.
+
+#### Parameter properties
+
+| Type: | System.String |
+| --- | --- |
+| Supports wildcards: | False |
+| DontShow: | False |
+| Aliases: | RHV |
+
+#### Parameter sets
+
+ (All)
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -ServicePrincipalId
+
+The unique identifier of servicePrincipal
+
+#### Parameter properties
+
+| Type: | System.String |
+| --- | --- |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ CreateExpanded
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | True |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+ Create
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | True |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -WhatIf
+
+Runs the command in a mode that only reports what would happen without performing the actions.
+
+#### Parameter properties
+
+| Type: | System.Management.Automation.SwitchParameter |
+| --- | --- |
+| Supports wildcards: | False |
+| DontShow: | False |
+| Aliases: | wi |
+
+#### Parameter sets
+
+ (All)
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### CommonParameters
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable, -ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see about_CommonParameters.
+
+## Inputs
+
+### Microsoft.Graph.PowerShell.Models.IApplicationsIdentity
+
+{{ Fill in the Description }}
+
+### Microsoft.Graph.PowerShell.Models.IMicrosoftGraphAppRoleAssignment
+
+{{ Fill in the Description }}
+
+### System.Collections.IDictionary
+
+{{ Fill in the Description }}
+
+## Outputs
+
+### Microsoft.Graph.PowerShell.Models.IMicrosoftGraphAppRoleAssignment
+
+{{ Fill in the Description }}
+
+## Notes
+
+COMPLEX PARAMETER PROPERTIES
+
+To create the parameters described below, construct a hash table containing the appropriate properties. For information on hash tables, run Get-Help about\_Hash\_Tables.
+
+BODYPARAMETER `<IMicrosoftGraphAppRoleAssignment>`: appRoleAssignment [(Any) &lt;Object&gt;]: This indicates any property can be added to this object. [DeletedDateTime &lt;DateTime?&gt;]: Date and time when this object was deleted. Always null when the object hasn't been deleted. [Id &lt;String&gt;]: The unique identifier for an entity. Read-only. [AppRoleId &lt;String&gt;]: The identifier (id) for the app role that's assigned to the principal. This app role must be exposed in the appRoles property on the resource application's service principal (resourceId). If the resource application hasn't declared any app roles, a default app role ID of 00000000-0000-0000-0000-000000000000 can be specified to signal that the principal is assigned to the resource app without any specific app roles. Required on create. [CreatedDateTime &lt;DateTime?&gt;]: The time when the app role assignment was created. The Timestamp type represents date and time information using ISO 8601 format and is always in UTC time. For example, midnight UTC on Jan 1, 2014 is 2014-01-01T00:00:00Z. Read-only. [PrincipalDisplayName &lt;String&gt;]: The display name of the user, group, or service principal that was granted the app role assignment. Maximum length is 256 characters. Read-only. Supports $filter (eq and startswith). [PrincipalId &lt;String&gt;]: The unique identifier (id) for the user, security group, or service principal being granted the app role. Security groups with dynamic memberships are supported. Required on create. [PrincipalType &lt;String&gt;]: The type of the assigned principal. This can either be User, Group, or ServicePrincipal. Read-only. [ResourceDisplayName &lt;String&gt;]: The display name of the resource app's service principal to which the assignment is made. Maximum length is 256 characters. [ResourceId &lt;String&gt;]: The unique identifier (id) for the resource service principal for which the assignment is made. Required on create. Supports $filter (eq only).
+
+INPUTOBJECT `<IApplicationsIdentity>`: Identity Parameter [AppId &lt;String&gt;]: Alternate key of application [AppManagementPolicyId &lt;String&gt;]: The unique identifier of appManagementPolicy [AppRoleAssignmentId &lt;String&gt;]: The unique identifier of appRoleAssignment [ApplicationId &lt;String&gt;]: The unique identifier of application [ApplicationTemplateId &lt;String&gt;]: The unique identifier of applicationTemplate [ClaimsMappingPolicyId &lt;String&gt;]: The unique identifier of claimsMappingPolicy [DelegatedPermissionClassificationId &lt;String&gt;]: The unique identifier of delegatedPermissionClassification [DirectoryDefinitionId &lt;String&gt;]: The unique identifier of directoryDefinition [DirectoryObjectId &lt;String&gt;]: The unique identifier of directoryObject [EndpointId &lt;String&gt;]: The unique identifier of endpoint [ExtensionPropertyId &lt;String&gt;]: The unique identifier of extensionProperty [FederatedIdentityCredentialId &lt;String&gt;]: The unique identifier of federatedIdentityCredential [GroupId &lt;String&gt;]: The unique identifier of group [HomeRealmDiscoveryPolicyId &lt;String&gt;]: The unique identifier of homeRealmDiscoveryPolicy [Name &lt;String&gt;]: Alternate key of federatedIdentityCredential [OAuth2PermissionGrantId &lt;String&gt;]: The unique identifier of oAuth2PermissionGrant [ServicePrincipalId &lt;String&gt;]: The unique identifier of servicePrincipal [SynchronizationJobId &lt;String&gt;]: The unique identifier of synchronizationJob [SynchronizationTemplateId &lt;String&gt;]: The unique identifier of synchronizationTemplate [TargetDeviceGroupId &lt;String&gt;]: The unique identifier of targetDeviceGroup [TokenIssuancePolicyId &lt;String&gt;]: The unique identifier of tokenIssuancePolicy [TokenLifetimePolicyId &lt;String&gt;]: The unique identifier of tokenLifetimePolicy [UniqueName &lt;String&gt;]: Alternate key of application [UserId &lt;String&gt;]: The unique identifier of user
+
+## Related Links
+
+- New-MgServicePrincipalAppRoleAssignment
+- Graph API Reference

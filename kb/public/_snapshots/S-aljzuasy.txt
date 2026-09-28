@@ -1,0 +1,158 @@
+source: S-aljzuasy
+url: https://www.ncsc.gov.uk/collection/device-security-guidance/platform-guides/windows
+title: NCSC Device security guidance: Platform guides, Windows
+publisher: UK National Cyber Security Centre
+licence: NCSC website terms and conditions: Crown copyright content reusable under the Open Government Licence v3.0 with acknowledgement, except third-party material, images and logos (read 2026-09-28)
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+Guidance
+# Device security guidance
+Guidance for organisations on how to choose, configure and use devices securely.
+## Pages
+Page 7 of 37
+## Windows
+Whilst this guide does not apply to any specific version of Windows, it was last tested on Windows 11 25H2 Enterprise Edition, which has more features available than some other versions of Windows.
+The NCSC recommends using the latest version of Windows alongside the latest available version of our guidance, even if the guidance has not been updated since the latest Windows release. Using the latest version of Windows ensures you receive feature updates, including improvements to security features that offer defence in depth.
+### Download Windows Configurations
+You can download the NCSC's recommended settings for this platform from our GitHub repository.
+## General recommendations
+For an enterprise deployment of Windows devices, you should do the following:
+### Select suitable Windows devices
+Choose devices that support modern Windows security features. Devices that meet hardware requirements for Virtualization-Based Security (VBS) and full disk encryption are preferred.
+### Keep devices on supported Windows versions
+Windows devices receive software updates regularly, and major updates once or twice a year. Organisations should keep devices as up to date as operational requirements allow.
+Use Microsoft's Windows lifecycle fact sheet to plan upgrades and ensure devices remain on supported versions of Windows.
+### Use an appropriate enterprise network architecture
+Provide remote access to enterprise services where needed using one of the recommended network architectures for enterprise deployment.
+For organisations transitioning from on-premises infrastructure to cloud services, an initial hybrid deployment may be appropriate. This can be implemented using Entra Connect.
+### Use mobile device management
+Use a Mobile Device Management service to configure, monitor and enforce technical controls on your Windows devices.
+Enable logging and monitoring features to support security monitoring and incident response.
+### Provision devices securely
+Use Windows Autopilot to enrol and provision devices using zero touch enrolment and a trusted Windows base image.
+Provision non-administrative accounts during setup, removing the need for local admin accounts.
+### Deploy endpoint protection
+Install and configure an antivirus or endpoint detection and response (EDR) solution.
+Microsoft Defender Antivirus is an antivirus tool that is included with Windows and provides integrated protection. If using third-party antivirus software, select a reputable vendor and ensure the product provides equivalent functionality, including integration with the Anti-Malware Scan Interface (AMSI).
+### Configure device hardware features appropriately
+Windows devices commonly include cameras that support Windows Hello authentication and video conferencing.
+If cameras are not appropriate for your deployment environment, disable them.
+### Restrict Microsoft Office macros
+Disable Microsoft Office macros where possible.
+If macros are required for specific workflows, restrict their use to defined applications or users. Refer to macro security for Microsoft Office for further configuration guidance.
+### Ensure use of enterprise infrastructure
+Ensure devices consistently use organisational infrastructure services.
+For example, configure endpoints so they use your enterprise DNS solution regardless of local device settings.
+## Device configuration
+Once you have selected your MDM service, architecture and application management approach, create a device configuration profile to enforce your organisation’s technical security controls.
+Your configuration profile should include policies covering the following areas:
+### Configure authentication and identity controls
+Configure authentication mechanisms such as biometrics and passcodes using Windows Hello for Business.
+### Enable full disk encryption
+Configure BitLocker to protect data at rest and reduce the risk of data extraction through physical attacks.
+We recommend:
+enabling Full Disk Encryption
+using a Trusted Platform Module (TPM) with a PIN
+### Protect external interfaces
+Restrict or monitor the use of external interfaces and peripherals, including wired and wireless devices.
+Enable Direct Memory Access (DMA) protections, such as preventing new DMA-capable devices from being enumerated when the device is locked.
+### Enable automatic updates
+Configure automatic updates for:
+the Windows operating system
+installed applications
+firmware and drivers, where applicable
+We recommend using Windows Update for Business to centrally manage update policies across your estate.
+### Configure platform security features
+Enable hardware-based platform protections where supported by the device. This includes:
+Secure Boot
+a firmware password
+Secure Launch
+System Management Mode (SMM) protection
+### Configure VPN access securely
+If a VPN is required, configure the Windows built-in Always on VPN (IKEv2).
+Where possible, use hardware-backed storage for VPN credentials, such as
+Windows Hello for Business
+Windows Key Attestation
+Configure the Windows Built-In VPN Client in line with NCSC's IPsec guidance.
+If you use a third-party VPN, configure it according to the NCSC’s IPsec guidance or TLS guidance, and follow our platform independent guidance on VPNs.
+### Implement application control
+Deploy Application Control policies to help defend against malware and ransomware.
+Third-party applications used for work should be distributed through an enterprise application catalogue, delivered via MDM or a private application store.
+### Use device health signals to protect cloud access
+Use device health signals to influence access to built-in cloud services.
+For example, Intune compliance policies can enforce conditional access, allowing access to sensitive services only from devices that meet your organisation’s security requirements.
+### Configure host firewall rules
+Configure Windows Defender Firewall to reduce unwanted connections.
+As a baseline:
+block traffic on Public and Private networks
+create explicit allow rules for required services and protocols
+## Controlling which applications are allowed on a device
+Implement an Application Control policy to restrict the user and business applications that are allowed to run on a Windows device.
+Before selecting a control mechanism, determine whether your organisation requires per-user/group policies, or per-machine policies.
+#### Per-user or group policies
+Per-user tools permit different application policies depending on the logged in user or group. Available tools include Microsoft AppLocker and several third-party application control products.
+#### Per-machine policies
+Per-machine tools enforce a single policy across the entire machine. Available tools include Microsoft App Control for Business (ACfB) and and several third-party application control products.
+#### Designing an application control policy
+When implementing application control, ensure the following conditions are met:
+Prevent execution from writable locations.
+Users should not be able to run programs from locations where they can write files.
+Consider application update behaviour
+Application updates must not conflict with existing application control rules.
+Review applications before enterprise-wide deployment.
+Applications must not undermine an organisation's other technical controls to limit execution of software. This is particularly important for scripting languages (such as Python or Node.js) which have their own execution environments and may allow code to bypass your application control mechanisms.
+If ACfB is not deployed, consider implementing additional system integrity measures to reduce the risk of untrusted kernel‑mode code (see note below).
+For details on the differences between App Control for Business and AppLocker, see the Microsoft overview documentation. When creating customised AppLocker rules, follow Microsoft's design guide to minimise operational impact.
+Note: Kernel Mode Code Integrity (KMCI) protects Windows system integrity by ensuring only trusted drivers and boot-time components can load. It is separate from user‑mode Application Control, which governs business applications. App Control for Business (ACfB) uses the Windows Code Integrity engine to configure both KMCI and, when User Mode Code Integrity (UMCI) is enabled, user‑mode application restrictions.
+## Universal applications
+This guidance prevents users from installing applications directly from the public Microsoft Store. Organisations can still distribute approved applications through the Company Portal, allowing employees to install authorised software.
+If the Microsoft Store is enabled:
+users should sign in using their corporate Microsoft ID
+users should not associate the work device with a personal Microsoft ID.
+You can use AppLocker to allow installation only for applications included in an enterprise-configured allow list.
+Configure the Microsoft Store to automatically update installed applications, including built-in Windows apps. The same mechanism can also be used to remove unwanted built-in universal applications. Applications that are not permitted by policy can be blocked and removed from the Start menu.
+## Windows Defender SmartScreen
+Windows Defender SmartScreen is an extension of Windows Defender Antivirus which uses heuristic analysis of an application or web page to determine its 'reputation'.
+Configure SmartScreen to help protect users from malicious websites and malware.
+Users may be able to override SmartScreen warnings. Where appropriate, configure SmartScreen policies to prevent users from bypassing these protections.
+## See also
+Windows Security, Microsoft
+Guidance provided by your MDM vendor
+Managing supply chain risk in cloud-enabled products, NCSC
+App Locker, Microsoft
+Restrict Microsoft Store, Microsoft
+Antivirus and other security software, NCSC
+Managing web browser security, NCSC
+#### Published
+29 June 2021
+#### Reviewed
+13 May 2025
+#### Version
+2.1
+#### Written for
+Cyber security professionals
+Large organisations
+Public sector
+#### Share and print this article
+Share
+Share onFacebook
+Share onLinkedIn
+Share onX
+## Was this article helpful?
+Yes the article was helpful
+No the article was not helpful
+Share
+Share onFacebook
+Share onLinkedIn
+Share onX
+## Also see
+Blog Post 13 Aug 2026
+### How BitLocker PINs help protect your data and devices
+Using a PIN mitigates many BitLocker vulnerabilities. Make sure you’re ready for the next one...
+Blog Post 29 Jul 2026
+### Making forensic observability the norm for network devices
+Progress is being made, but too many network devices still remain difficult to investigate after compromise
+News 22 Apr 2026
+### World-first NCSC-engineered device secures vulnerable display links
+SilentGlass, a plug-and-play device, actively blocks any unexpected or malicious HDMI and Display Port connections.

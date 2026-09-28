@@ -1,0 +1,680 @@
+source: S-5kn2m73o
+url: https://learn.microsoft.com/microsoft-365/admin/manage/manage-tools-for-agent
+title: Manage tools for agents in Microsoft 365 admin center
+publisher: Microsoft Learn
+licence: CC BY 4.0 (public mirror MicrosoftDocs/microsoft-365-docs)
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+# Manage tools for agents in Microsoft 365 admin center - Microsoft 365 admin | Microsoft Learn
+
+Agent Tools in the Microsoft 365 admin center provides a centralized view of all AI-powered tools and Model Context Protocol (MCP) servers available in your organization. These tools define how an AI model interacts with user data, tools, and workflows. Agent Tools allows you to handle requests, responses, and actions in a consistent, safe, secure, and transparent manner.
+
+Each tool listed represents a service that supports Copilot experiences across Microsoft 365 apps. You can monitor availability, manage access, and ensure compliance with organizational policies. Use the **Registry** tab to view and manage tools available in your tenant, and the **Requests** tab to review and approve tool requests from users in your organization.
+
+Note
+
+The Bring Your Own (BYO) MCP server feature enables organizations to register their own remote MCP servers with Agent 365 for centralized governance and observability. For more information, see Bring your own (BYO) MCP server.
+
+## View the Agent Tools registry
+
+1. Sign in to the Microsoft 365 admin center.
+2. In the left navigation pane, select **Agents** &gt; **Tools** &gt; **Registry**.
+
+    ![Screenshot showing a list of available agent tools for a tenant.](../../media/agents/agent-tools-registry.png#lightbox)
+
+## Key components of Agent Tools
+
+The Agent Tools list under the **Registry** tab and **Request** tab provides filters, columns, and actions to help you manage your agent tools.
+
+### Actions
+
+Select actions directly from the list, or select a listed agent to display an overview of an agent tool. Agent tools include the following actions:
+
+| Action | Description |
+| --- | --- |
+| Block | Prevents the selected tool from being used by agents or workflows. |
+| Unblock | Restores access to a previously blocked tool. |
+
+### Filters
+
+The agent tools registry can contain a large and diverse inventory of tools. Filter the list to narrow the view to the agent tools you want to focus on.
+
+Filters are based on the following criteria:
+
+| Filter | Description |
+| --- | --- |
+| Status | Filter tools by their current state, such as **Available** or **Blocked**. |
+| Publisher | View tools published by Microsoft or other providers. |
+
+### Columns
+
+The following table describes the columns that are available in the agent tools registry:
+
+| Column | Description |
+| --- | --- |
+| Name | The tool's display name, such as **Microsoft Teams MCP Server**. |
+| Status | Shows whether the tool is **Available** or **Blocked**. |
+| Type | Shows the tool category, such as **MCP Server**. |
+| Publisher | Shows the publisher, such as Microsoft for first-party tools. |
+
+## Common MCP servers
+
+Use MCP servers as a service to expose data, actions, and business logic to agents.
+
+The following are examples of MCP servers:
+
+- Dataverse MCP Server.
+- Windows 365 for Agents MCP server.
+- Microsoft MCP management MCP server.
+- Admin tools MCP Server for Microsoft 365 admin center.
+
+For related information, see Microsoft Agent 365 SDK and CLI.
+
+## Bring your own (BYO) MCP server
+
+The Bring Your Own (BYO) MCP server feature enables organizations to register their own remote MCP servers with Microsoft Agent 365 for centralized governance and observability.
+
+Important
+
+- This feature is a preview feature.
+- Preview features aren't meant for production use and might have restricted functionality. These features are subject to supplemental terms of use, and are available before an official release so that customers can get early access and provide feedback.
+
+Large enterprises often build and operate internal MCP servers to power their agents across various business workflows. These servers typically run outside any organizational governance boundary, with no admin visibility into what tools are exposed, no policy enforcement over how they're invoked, and no usage of telemetry for security and compliance teams. BYO MCP server addresses this problem by routing registered servers through the Agent 365 Tooling Gateway, giving IT admins control via the Microsoft 365 admin center and security teams the observability data they need.
+
+Note
+
+BYO MCP server is currently in preview. Supported client surfaces are Copilot Studio, Visual Studio Code, Claude Code, and GitHub Copilot CLI. Azure AI Foundry and Microsoft 365 Declarative Agents aren't yet supported.
+
+### How a BYO MCP server works
+
+A BYO MCP server follows a structured developer-to-admin flow to ensure all remote MCP servers are reviewed and governed before agents can access them.
+
+The BYO MCP server developer-to-admin flow:
+
+1. **Developer registers** a remote MCP server through the Agent 365 CLI, providing the server URL, authentication type, and the tools to expose. For more information, see Register a remote MCP server.
+2. **IT admin reviews** the server details and declared tools in the Microsoft 365 admin center, and approves or rejects the request. Upon approval, the admin grants the required Microsoft Entra permissions for the server. For more information, see Review and approve tool requests.
+3. **Approved MCP server is used by the supported clients**, such as Copilot Studio and Visual Studio Code, to build and test agents against real tool invocations. For more information, see Use an approved MCP server.
+4. **Security team monitors** the MCP server activity and tool invocations through Microsoft Defender advanced hunting for compliance and anomaly detection. For more information, see Monitor and observe MCP server activity.
+
+Important
+
+This approach ensures that all external MCP integrations go through proper governance and compliance reviews before becoming available to end users.
+
+Note
+
+BYO MCP server is currently in preview. Republishing new versions of your remote MCP server isn't currently supported.
+
+### Register a remote MCP server
+
+Tip
+
+As an administrator, it can be helpful to understand how to register a remote MCP server. Alternatively, you can provide the steps in this section to a developer to implement.
+
+You or a developer can register your own remote MCP server with Agent 365. This section walks you through the required steps to register a remote MCP server with Agent 365 using the CLI, so that IT admins can review and approve it for use in agent building surfaces.
+
+This section provides the needed steps (commonly implemented by a developer) to register a remote MCP server:
+
+- Understand developer prerequisites.
+- Install the Agent 365 CLI.
+- Register your MCP server.
+
+#### Developer prerequisites
+
+Before registering a remote MCP server, make sure you have the following prerequisites:
+
+- Install the Agent 365 CLI (or update to the latest version). For this flow to function, you need version 1.1.165-preview or greater.
+- Ensure the Agent 365 service principal is provisioned in your tenant. If you can't find the service principal associated with appId `ea9ffc3e-8a23-4a7d-836d-234d7c7565c1`, the service principal isn't provisioned for your tenant. To set up a service principal for Agent 365 in your tenant, see:
+
+    - Set up service principal.
+    - Learn who can provision service principal.
+- A publicly accessible MCP server endpoint that you can reach from the internet.
+- The server is configured with one of the supported authentication types:
+
+    - **NoAuth**.
+    - **APIKey** (Header or Query).
+    - **ExternalOAuth**.
+    - **EntraOAuth**.
+
+#### Install the Agent 365 CLI
+
+To install the Agent 365 CLI, follow the instructions in Install the Agent 365 CLI.
+
+#### Register your MCP server
+
+You're ready to register your MCP server with Agent 365 after you:
+
+- Install the Agent 365 CLI.
+- Make sure that your MCP server endpoint is publicly accessible.
+- Configure the server with a supported authentication type.
+
+IT admins can review and approve it for use in agent building surfaces.
+
+You have a couple of options for registering your MCP server with Agent 365:
+
+- **Manual registration via CLI**: Run the `a365 develop-mcp register-external-mcp-server` command from the CLI and manually provide the server details, authentication type, and the tools that your MCP server exposes.
+
+Important
+
+The examples in this section use *zava.com* as a fictional domain and generic server and tool names for illustration. Replace these values with your actual server URL, name, and tool identifiers.
+
+- **Registration via JSON file**: Use `a365 develop-mcp register-external-mcp-server -f <path-to-file.json>` to register your MCP server by providing a JSON file that contains all of the server details, authentication type, and tool definitions in a single file, rather than specifying them individually on the command line.
+
+Refer to the examples in the following sections for how to register an MCP server with Agent 365 using the CLI for different authentication types.
+
+##### NoAuth
+
+For MCP servers that require no authentication:
+
+```bash
+a365 develop-mcp register-external-mcp-server \
+--server-name "ZavaServer" \
+--server-url "https://mcp.zava.com/mcp" \
+--publisher "Contoso" \
+--description "My external MCP server for document search" \
+--auth-type "NoAuth" \
+--tools "tool1,tool2"
+```
+
+```json
+{
+  "serverName": "ext_DocsSearch",
+  "serverUrl": "https://docs.contoso.com/api/mcp",
+  "authType": "NoAuth",
+  "description": "Documentation search MCP Server for Contoso developer docs.",
+  "publisherName": "Contoso",
+  "tools": [
+    {
+      "name": "search_docs",
+      "description": "Search Contoso developer documentation and code samples."
+    }
+  ],
+  "remoteScopes": null,
+  "externalOAuth": null,
+  "apiKey": null
+}
+```
+
+##### APIKey (Query Parameter)
+
+For servers that pass the API key as a query parameter:
+
+```bash
+a365 develop-mcp register-external-mcp-server \
+--server-name "ZavaServer" \
+--server-url "https://mcp.zava.com/mcp" \
+--publisher "Contoso" \
+--description "My external MCP server for document search" \
+--auth-type APIKey \
+--api-key-location Query \
+--api-key-name apiKey \
+--tools "tool1,tool2"
+```
+
+```json
+{
+  "serverName": "ext_MarketData",
+  "serverUrl": "https://api.contoso.com/market/mcp",
+  "authType": "APIKey",
+  "description": "Real-time stock market data and search from Contoso Market Services.",
+  "publisherName": "Contoso",
+  "tools": [
+    {
+      "name": "stock-market-data",
+      "description": "Get real-time stock market data and financial information."
+    },
+    {
+      "name": "real-time-search",
+      "description": "Search the web for real-time information and news."
+    }
+  ],
+  "remoteScopes": null,
+  "externalOAuth": null,
+  "apiKey": {
+    "location": "Query",
+    "name": "apiKey"
+  }
+}
+```
+
+##### APIKey (Header)
+
+For servers that pass the API key in a request header:
+
+```bash
+a365 develop-mcp register-external-mcp-server \
+--server-name "ZavaServer" \
+--server-url "https://mcp.zava.com/mcp" \
+--publisher "Contoso" \
+--description "My external MCP server for document search" \
+--auth-type APIKey \
+--api-key-location Header \
+--api-key-name token \
+--tools "tool1,tool2"
+```
+
+```json
+{
+  "serverName": "ext_InternalTools",
+  "serverUrl": "https://tools.contoso.com/mcp",
+  "authType": "APIKey",
+  "description": "Contoso internal tools MCP Server with API key authentication.",
+  "publisherName": "Contoso",
+  "tools": [
+    {
+      "name": "tool1",
+      "description": "First tool exposed by the server."
+    },
+    {
+      "name": "tool2",
+      "description": "Second tool exposed by the server."
+    }
+  ],
+  "remoteScopes": null,
+  "externalOAuth": null,
+  "apiKey": {
+    "location": "Header",
+    "name": "X-API-Key"
+  }
+}
+```
+
+##### ExternalOAuth
+
+For servers that authenticate via an external OAuth provider:
+
+```bash
+a365 develop-mcp register-external-mcp-server \
+--server-name "ZavaServer" \
+--server-url "https://zava.com/mcp" \
+--publisher "Contoso" \
+--description "My external MCP server for document search" \
+--auth-type ExternalOAuth \
+--idp-authorization-url "https://idp.zava.com/o/oauth2/v2/auth" \
+--idp-token-url "https://idp.zava.com/oauth2/token" \
+--idp-scopes "https://api.zava.com/read" \
+--idp-client-id "<your-client-id>" \
+--idp-client-secret "<your-client-secret>" \
+--remote-scopes "https://api.zava.com/read" \
+--tools "tool1,tool2"
+```
+
+```json
+
+{
+  "serverName": "ext_Analytics",
+  "serverUrl": "https://analytics.contoso.com/mcp",
+  "authType": "ExternalOAuth",
+  "description": "Contoso Analytics MCP Server for dataset and query operations.",
+  "publisherName": "Contoso",
+  "tools": [
+    {
+      "name": "list_datasets",
+      "description": "List all available analytics datasets."
+    }
+  ],
+  "remoteScopes": "https://analytics.contoso.com/.default",
+  "externalOAuth": {
+    "authorizationUrl": "https://auth.contoso.com/oauth2/authorize",
+    "tokenUrl": "https://auth.contoso.com/oauth2/token",
+    "scopes": "https://analytics.contoso.com/.default",
+    "clientId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "clientSecret": "<your-client-secret>"
+  },
+  "apiKey": null
+}
+```
+
+##### EntraOAuth
+
+For servers that authenticate via Microsoft Entra ID:
+
+```bash
+a365 develop-mcp register-external-mcp-server \
+--server-name "ZavaServer" \
+--server-url "https://mcp.zava.com/mcp" \
+--publisher "Contoso" \
+--description "My external MCP server for document search" \
+--auth-type EntraOAuth \
+--remote-scopes "https://api.zava.com/.default" \
+--tools "tool1,tool2"
+```
+
+```json
+{
+  "serverName": "ext_OrgDirectory",
+  "serverUrl": "https://directory.contoso.com/mcp",
+  "authType": "EntraOAuth",
+  "description": "Contoso organization directory MCP Server secured with Entra OAuth.",
+  "publisherName": "Contoso",
+  "tools": [
+    {
+      "name": "list_users",
+      "description": "List users in the organization directory."
+    },
+    {
+      "name": "get_user_profile",
+      "description": "Get the profile of a specific user by ID or UPN."
+    }
+  ],
+  "remoteScopes": "api://contoso-directory/.default",
+  "externalOAuth": null,
+  "apiKey": null
+}
+```
+
+After successful registration, submit the MCP server for admin review in the Microsoft 365 admin center.
+
+## Evaluate MCP servers
+
+You can evaluate the quality of your MCP tool definitions with the `a365 develop-mcp evaluate` command. This command inspects your server's tool schemas and generates a report with actionable guidance for improving tool names, descriptions, and parameter schemas.
+
+The semantic checks are scored by a coding agent CLI (GitHub Copilot CLI or Claude Code) that runs *locally on your machine*, under your own account and AI subscription. This command doesn't send tool-schema data to Microsoft.
+
+Important
+
+Only run `evaluate` against MCP servers you trust. The server's tool names, descriptions, and parameter schemas are read through a standard MCP `tools/list` call and handed to a coding agent running on your machine for scoring. This trust notice is printed once at the start of every run that uses an agent. It doesn't apply to `--eval-engine none`, which keeps everything local.
+
+**Minimum role required**: None. The evaluation runs locally against the MCP server URL you provide and doesn't call Azure or Microsoft Graph.
+
+### Prerequisites
+
+- The Agent 365 CLI. See Install the Agent 365 CLI.
+- For semantic (AI) scoring, one locally installed coding agent CLI:
+    - **GitHub Copilot CLI**: Install with `npm install -g @github/copilot` (Node.js 18 or later). This is the standalone `copilot` binary, not the `gh copilot` GitHub CLI extension.
+    - **Claude Code**: Install with `npm install -g @anthropic-ai/claude-code`, or follow Claude Code install.
+- If neither agent is installed, the command still runs the deterministic checks and writes the checklist, then stops so you can score the semantic checks with your own LLM (bring-your-own-LLM). Pass `--eval-engine none` to skip agent probing entirely.
+
+### How the evaluation works
+
+The command runs a five-step pipeline and logs progress as shown in the following table:
+
+| Step | What it does |
+| --- | --- |
+| 1 Discover tools | Connects to the MCP server, calls `tools/list`, and captures each tool's schema. |
+| 2 Generate checklist | Writes `<server-name>_checklist.json` to the output directory. |
+| 3 Run semantic evaluation | Hands the checklist to the selected coding agent for scoring. Skipped when `--eval-engine none` or no agent is available. |
+| 4 Analyze | Aggregates per-tool and overall scores and determines the maturity level. |
+| 5 Write reports | Produces `<server-name>_eval_report.html` and `<server-name>_eval_report.json`. |
+
+Each check is one of two types:
+
+- **Deterministic**: Rule-based logic in the CLI; pass or fail is exact and needs no AI (for example, "tool name isn't empty").
+- **Semantic**: Scored by the coding agent, with a `reason` string explaining the judgment.
+
+The run is idempotent. Re-running the same command reuses an existing `<server-name>_checklist.json` and skips server discovery, which is how the bring-your-own-LLM round trip works: score the checklist yourself, then rerun to resume. Delete the checklist file to force a fresh discovery after you change your tool schemas.
+
+### Examples
+
+Evaluate a local server with automatic engine selection:
+
+```powershell
+a365 develop-mcp evaluate --server-url "http://localhost:5000/mcp"
+```
+
+Evaluate an authenticated server, with the token supplied through an environment variable and artifacts written to a subfolder:
+
+```powershell
+$env:A365_MCP_AUTH_TOKEN = "<bearer-token>"
+a365 develop-mcp evaluate --server-url "https://my-mcp-server.contoso.com/mcp" --output-dir "./eval"
+```
+
+Generate the checklist only, then score it with your own LLM:
+
+```powershell
+a365 develop-mcp evaluate --server-url "https://my-mcp-server.contoso.com/mcp" --eval-engine none
+```
+
+Force a specific scoring engine:
+
+```powershell
+a365 develop-mcp evaluate --server-url "http://localhost:5000/mcp" --eval-engine claude-code
+```
+
+### Read the report
+
+Open `<server-name>_eval_report.html` from the output directory in a browser. The report shows:
+
+- The **overall score** (0-100; higher is better).
+- The **maturity level** (0-4) and its label.
+- **Per-tool scores** with category breakdowns: tool name, tool description, parameter name, parameter description, and schema structure.
+- A **prioritized action-item list**, ordered by impact, including the concrete requirements to reach the next maturity level.
+
+![Screenshot of the develop-mcp evaluate HTML report showing overall quality score, maturity level, key counts, and per-dimension category scores.](../../media/develop-mcp-evaluate-report.png#lightbox)
+
+### Data handling and AI transparency
+
+- The command processes only your MCP server's **static tool schemas** (names, descriptions, and parameter schemas) from `tools/list`. It doesn't process runtime payloads, end-user data, or personal data.
+- The coding agent CLI runs on your machine under your own AI subscription. The model API call is made directly by that CLI to the AI provider under your terms of service and billing. The `a365` CLI specifies the model but doesn't mediate the call.
+- The `--auth-token` value is held in memory, sent only as the HTTP `Authorization` header to your server, and never written to disk or passed to the coding agent.
+- Output files (`_checklist.json`, `_eval_report.html`, `_eval_report.json`) are written only to your `--output-dir` and stay on your machine.
+
+### Troubleshooting
+
+Use the following troubleshooting guide to diagnose common errors and apply the recommended fix.
+
+| Symptom | Likely cause | Fix |
+| --- | --- | --- |
+| `Unauthorized` from `tools/list` | Wrong or expired bearer token | Reacquire the token and pass it through `A365_MCP_AUTH_TOKEN`. |
+| `Unknown eval engine` | Invalid `--eval-engine` value | Use one of `auto`, `github-copilot`, `claude-code`, or `none`. |
+| Pipeline stops after `[2/5]` | No coding agent on `PATH` | Install GitHub Copilot CLI or Claude Code, or score the checklist yourself and rerun. |
+| `--output-dir cannot be empty or whitespace` | An empty value was passed to `--output-dir` | Pass a valid directory path, or omit the option to use the current directory. |
+| `Failed to read existing checklist` | The checklist file is locked or malformed | Delete the checklist file to force a fresh discovery on the next run. |
+
+## Review and approve tool requests
+
+After a developer registers a tool, such as a remote MCP server, the tool appears in the Microsoft 365 Admin Center for review and approval.
+
+![Screenshot showing a list of available agent tool requests for a tenant.](../../media/agents/agent-tools-requests.png#lightbox)
+
+As an admin with the right permissions to manage agent tools in the Microsoft 365 Admin Center, you can review, approve, or reject these requests to control which tools are available for use in your organization.
+
+Important
+
+To complete the review and approval process, you need to meet two requirements:
+
+- You need access to the Microsoft 365 admin center's tool page where you manage agent tools and review MCP server registration requests.
+- You need the ability to grant tenant-wide consent.
+
+Two roles meet both requirements:
+
+- AI admin.
+- Global admin.
+
+Use roles with the fewest permissions, and limit the number of users who have admin permissions. See Least privileged roles by task in Microsoft Entra ID. To learn more about admin roles and permissions in the Microsoft 365 admin center, see:
+
+- About administrator roles in the Microsoft 365 admin center.
+- Grant tenant-wide admin consent to an application.
+
+To review and approve MCP server registration requests, follow these steps:
+
+1. Sign in to the Microsoft 365 admin center.
+2. Select **Agents** &gt; **Tools**, and then select the **Requests** tab.
+3. Pending requests display the following details for each server:
+
+    - Server name
+    - Publisher
+    - Requested by
+    - Requested date
+4. Review the server information and declared tools for accuracy and compliance.
+5. Select **Approve** to make the server available in the organizational registry, or **Reject** to deny the request.
+6. Upon approval, consent to the Microsoft Entra permissions required by the MCP server. The server becomes available to agent building surfaces only after consent is granted.
+
+Note
+
+It can take up to 30 minutes for the MCP server to show up in all the Microsoft Copilot Studio environments in the tenant once the MCP server is approved and consent is granted.
+
+Based on the MCP servers availability, the following status indicators are displayed:
+
+- **Available** - Tool is active and ready for use.
+- **Blocked** - Tool is disabled and agents can't access it.
+
+### Key governance controls
+
+The following table summarizes the key governance controls:
+
+| Control | Description |
+| --- | --- |
+| Approval/Rejection | Admin explicitly approves or rejects each BYO MCP server before it can be used. |
+| Server-Level Block | Admin can block approved servers at any time; blocked servers are enforced at runtime. |
+| Tools Snapshot | Admin can view the declared tools exposed by each MCP server for transparency. |
+| Runtime Enforcement | Blocked MCP servers can't be invoked at runtime across any client surface. |
+
+## Use an approved MCP server
+
+After an MCP server is approved and Microsoft Entra grants consent, you can use it across supported agent-building surfaces. The following client surfaces currently support invoking approved BYO MCP servers in preview:
+
+| Client | Status |
+| --- | --- |
+| Copilot Studio | ✅ Supported |
+| VS Code | ✅ Supported |
+| Claude Code | ✅ Supported |
+| GitHub Copilot CLI | ✅ Supported |
+
+As a user in Copilot Studio, take the following steps to invoke the approved BYO MCP server:
+
+1. Go to Copilot Studio in your environment.
+2. Create a new custom agent (or open an existing one).
+3. Go to the **Tools** section and select **MCP Server**.
+4. Select the MCP server from the registry.
+5. Test the agent by entering a prompt that invokes the MCP server.
+
+Note
+
+**First-time connection setup**: On the initial invocation, you might be prompted to complete a one-time connection setup. Follow the provided URL to create the required connection, such as entering your API key for APIKey-based servers. When you finish, return to your agent and retry the prompt. On successful invocation, you see the MCP server respond with the correct tool output.
+
+Learn how to invoke approved BYO MCP servers from Claude Code, VS Code, and GitHub Copilot CLI in the Set up Work IQ MCP Servers for coding agents section of the Work IQ MCP overview.
+
+## Monitor and observe MCP server activity
+
+As a member of your organization's security team, use Microsoft Defender advanced hunting to track and analyze MCP server invocations. This process helps you see which agents invoke which MCP servers, when the invocations occur, and other relevant metadata that can help detect unusual or unauthorized usage patterns.
+
+Sample KQL Query - Defender Advanced Hunting:
+
+```kusto
+CloudAppEvents
+| where ActionType in ( "ExecuteToolByGateway")
+| where RawEventData contains "tool name"
+```
+
+This query returns details including agent name, MCP server name, and invocation metadata.
+
+## Deleting a BYO MCP server
+
+Microsoft doesn't currently support deleting a BYO MCP server.
+
+## Upload plugins or skills
+
+You can upload your own plugins or skills to make them available for agents in your organization through the Microsoft 365 admin center.
+
+Before you can upload a plugin or a skill, a developer needs to package it into a manifest file. For more information about creating a manifest file, see Cowork plugin development.
+
+To upload a plugin or skill, follow these steps:
+
+1. Sign in to the Microsoft 365 admin center.
+2. Select **Agents** &gt; **Tools** &gt; **Registry**.
+3. Select **Upload**.
+4. Upload the manifest file for the plugin or skill.
+5. Once uploaded, review the components, such as MCP servers and skills, included in the package, and then select **Next**.
+6. In the **Scope users** pane, choose who can use the plugin or skill by selecting either **All users** or **specific users or groups**.
+7. Select **Upload**.
+
+## Manage plugins and skills
+
+Plugins are API-based integrations that provide agents with access to external data and business actions. Unlike MCP servers, which expose capabilities through the Model Context Protocol, plugins typically connect agents directly to application-specific services and APIs.
+
+Skills are another type of tool that agents can use. Managing a skill uses the same actions and steps as managing a plugin, so this section applies to both plugins and skills.
+
+### Tool actions
+
+| Tool actions | Description |
+| --- | --- |
+| **Install and uninstall** | Install a plugin or skill for users so that it's ready to use without manual installation by end users. You can uninstall a previously installed plugin or skill. |
+| **Block and unblock** | Restrict access to a plugin or skill across the organization. This action prevents any user from using it. |
+| **Delete** | Delete a previously uploaded plugin or skill. |
+
+### Install a tool
+
+You can install a plugin or skill across your entire organization, or for specific users or groups by using the same process as any other app in the Microsoft 365 admin center.
+
+To install a plugin or skill so that it's available, follow these steps:
+
+1. Sign in to the Microsoft 365 admin center.
+2. Select **Agents** &gt; **Tools** &gt; **Plugins**.
+3. From the list, select a plugin or skill to install. The **Overview** pane is displayed.
+4. In the **Overview** pane, select **Install**.
+5. In the **Select users** pane, confirm the details.
+6. Choose who can use it by selecting either **All users** or **specific users or groups**.
+7. Select **Next**.
+8. In the **Review & install** pane, confirm the details and select **Install**.
+
+### Uninstall a tool
+
+You can uninstall a plugin or skill across your entire organization, or for specific users or groups, by using the same process as any other app in the Microsoft 365 admin center. When you uninstall it, you remove it from the environment. It isn't available to agents unless it's installed again.
+
+To uninstall a plugin or skill so that it's unavailable, follow these steps:
+
+1. Sign in to the Microsoft 365 admin center.
+2. Select **Agents** &gt; **Tools** &gt; **Plugins**.
+3. From the list, select a plugin or skill to uninstall. The **Overview** pane is displayed.
+4. In the **Overview** pane, select **Uninstall**.
+5. Confirm the uninstall action by selecting **Uninstall**.
+
+### Block a tool
+
+You can block a plugin or skill across your entire organization by using the Microsoft 365 admin center. When you block it, you prevent it from being used while keeping it registered and visible within Microsoft 365 admin center. It remains installed and available in the tenant, but agents can't invoke it until it's unblocked.
+
+To block a plugin or skill, follow these steps:
+
+1. Sign in to the Microsoft 365 admin center.
+2. Select **Agents** &gt; **Tools** &gt; **Plugins**.
+3. From the list, select a plugin or skill to block. The **Overview** pane is displayed.
+4. Select **Block**.
+5. Confirm that the plugin or skill is successfully blocked.
+
+### Unblock a tool
+
+You can unblock a plugin or skill across your entire organization by using the Microsoft 365 admin center.
+
+To unblock a plugin or skill, follow these steps:
+
+1. Sign in to the Microsoft 365 admin center.
+2. Select **Agents** &gt; **Tools** &gt; **Plugins**.
+3. From the list, select a plugin or skill to unblock. The **Overview** pane is displayed.
+4. Select **Unblock**.
+5. Confirm that the plugin or skill is successfully unblocked.
+
+### Delete a tool
+
+You can delete a previously uploaded plugin or skill package across your entire organization by using the Microsoft 365 admin center. When you delete it, agents can no longer use it and it's removed from the registry.
+
+To delete a plugin or skill, follow these steps:
+
+1. Sign in to the Microsoft 365 admin center.
+2. Select **Agents** &gt; **Tools** &gt; **Plugins**.
+3. From the list, select a plugin or skill to delete. The **Overview** pane is displayed.
+4. Select **Delete**.
+5. Confirm the delete action by selecting **Delete**.
+
+## View Power Platform connector usage
+
+Use the Microsoft 365 admin center to view the Power Platform connectors that agents use in your organization. This view helps you understand which connectors are connected to agents.
+
+Viewing connector usage can help you:
+
+- Discover the Power Platform connectors used by agents in your organization.
+- Identify which agents use a specific connector.
+- Better understand how connectors are used before applying governance policies.
+
+Note
+
+Currently, this experience only provides visibility into connector usage.
+
+To view connector usage, follow these steps:
+
+1. Sign in to the Microsoft 365 admin center.
+2. Select **Agents** &gt; **Tools** &gt; **Registry**.
+3. Select **Connectors**.
+4. Review the list of Power Platform connectors used by agents in your organization.
+5. Select a connector to view the agents that use it. The connector's overview page shows the agents associated with the selected connector, making it easier to understand how the connector is used across your organization.
+6. If you need to manage the connector's policy, select **View in Power Platform** on the connector's overview page to go to the Power Platform admin center. This action takes you to the Power Platform admin center where you can block, allow, and govern the connector's use. For more information, see Advanced connector policies.

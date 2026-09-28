@@ -1,0 +1,9 @@
+source: S-forvn2ly
+url: https://nvd.nist.gov/developers/start-here
+title: NVD API 2.0 - Start Here (rate limits, API key)
+publisher: NIST NVD
+licence: US Government work (NIST: public information, may be copied)
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+

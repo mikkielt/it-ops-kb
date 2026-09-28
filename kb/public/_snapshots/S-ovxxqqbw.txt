@@ -1,0 +1,49 @@
+source: S-ovxxqqbw
+url: https://docs.github.com/en/enterprise-cloud@latest/copilot/how-tos/administer-copilot/manage-for-organization/manage-policies
+title: Managing policies for Copilot in your organization
+publisher: GitHub Docs
+licence: CC BY 4.0 (github/docs LICENSE; code MIT)
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+# Managing policies and features for GitHub Copilot in your organization
+Control the availability of GitHub Copilot features and models for users granted a license by your organization.
+## Who can use this feature?
+Organization owners
+Organizations with a GitHub Copilot Business or GitHub Copilot Enterprise plan
+## In this article
+Copilot policies are also managed at the enterprise level. If your enterprise owner has selected a specific policy, such as enabling a feature everywhere, disabling it everywhere, or enabling it for selected organizations only, you cannot override that setting at the organization level. For information on how policies combine, see GitHub Copilot policies for enterprises and organizations.
+## Enabling Copilot features and models in your organization
+In the upper-right corner of GitHub, click your profile picture, then click Organizations.
+Select an organization by clicking on it.
+Under your organization name, click Settings. If you cannot see the "Settings" tab, select the dropdown menu, then click Settings.
+In the sidebar, under "Code, planning, and automation", click Copilot.
+Click Policies to edit the policies that control privacy and availability of features.
+Click Models to edit the policies that control availability of models beyond the basic models provided with Copilot, which may incur additional costs.
+For each policy you want to configure, click the dropdown menu and select an enforcement option.
+Note
+The MCP servers in Copilot policy controls use where MCP server support is generally available (GA). This policy does not control access and permissions for the GitHub MCP server in third-party host applications (like Cursor, Windsurf or Claude). For more information on controlling access to the GitHub MCP server, see the Policies and Governance documentation in the GitHub MCP Server repository.
+## Enabling or disabling third-party coding agents in your repositories
+Note
+Available for all paid Copilot plans.
+If your organization is owned by an enterprise, these settings are only visible if an enterprise admin has enabled third-party coding agents at the enterprise level. See Managing policies and features for GitHub Copilot in your enterprise.
+Agent apps are not enabled here. They are controlled separately by a single "agent apps" policy. For more information, see About agent apps.
+You can choose whether to allow the following coding agents to be enabled in your organization:
+Anthropic Claude
+OpenAI Codex
+Coding agents have access to the same repositories that Copilot cloud agent has been enabled in.
+To enable coding agents:
+In the upper-right corner of GitHub, click your profile picture, then click Organizations.
+Select an organization by clicking on it.
+Under your organization name, click Settings. If you cannot see the "Settings" tab, select the dropdown menu, then click Settings.
+In the sidebar, under "Code, planning, and automation", click Copilot, and then click Cloud agent.
+In the sidebar, under Copilot, click Cloud agent.
+On the Copilot cloud agent page, under "Partner agents", click the toggle to enable the third-party agent you want to use.
+## Opting in to previews or feedback
+If your organization has a Copilot Business or Copilot Enterprise plan and you enable "Copilot in GitHub.com", two additional options are displayed:
+Opt in to user feedback collection: If enabled, users will see options to provide feedback on selected Copilot features.
+Opt in to preview features: If enabled, users can test new Copilot features that are not yet generally available. Be aware that previews of features may have flaws, and the features may be changed or discontinued at any time.
+## Further reading
+Managing the availability of models in an organization
+Managing availability of models in your enterprise
+Supported surfaces for GitHub Copilot policies

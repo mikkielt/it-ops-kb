@@ -1,0 +1,50 @@
+source: S-ujkfhzif
+url: https://docs.langchain.com/langsmith/deploy-to-self-hosted-overview
+title: Self-hosted deployment overview (LangSmith)
+publisher: LangChain (langchain-ai/docs)
+licence: MIT (langchain-ai/docs LICENSE)
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+# Deploy to self-hosted
+Run the LangSmith Deployment platform on your own infrastructure with full control over data, networking, and resources.
+Self-hosted LangSmith Deployment runs the Agent Server, control plane, data plane, and supporting databases inside infrastructure that you operate.
+LangChain ships the container images, Helm charts, and license; you provide the Kubernetes cluster (or Docker host), PostgreSQL, Redis, and the networking and observability tooling that fit your environment. Self-hosted is the best deployment option when you have data residency, regulatory constraints, custom networking, or air-gapped requirements.
+Self-hosted deployments require an Enterprise plan and the LangSmith license key delivered with that plan. For a setup guide, see Self-hosted LangSmith.
+##
+​
+Topologies
+LangSmith supports three self-hosted topologies that trade off setup complexity against control-plane features. Reference pages for platform features, Agent Server metrics, and diagnostics apply to all three.
+## Full self-hosted platform
+The complete LangSmith platform—control plane UI and APIs, data plane listener, observability, evaluation, and agent deployment management. Best for teams that want the LangSmith product experience inside their own network.
+## Hybrid
+LangChain-hosted control plane with the data plane (Agent Servers and databases) in your infrastructure. Best when you want managed deployment workflows but need agent workloads and customer data to stay inside your VPC.
+## Standalone server
+The lightest option—Agent Server containers (API + queue workers) with your own PostgreSQL and Redis. No control plane, no managed UI. Best for embedding the runtime into existing infrastructure or running air-gapped.
+## Platform features
+Reference for self-hosted-only platform behavior: custom Postgres and Redis, listeners, and resource customization.
+## Agent Server metrics
+Prometheus and Datadog export for Agent Server, including Deployment UI metrics and internal metrics.
+## Diagnostics
+Collect logs, inspect state, and troubleshoot a self-hosted installation.
+##
+​
+Who manages what
+Self-hosted shifts ownership of infrastructure operations from LangChain to your team, which provides flexibility and control over how you configure and operate is layer:
+Who manages itWhere it runs
+LangSmith platform (UI, APIs, datastores)YouYour infrastructure
+Agent Server runtimeYouYour infrastructure
+PostgreSQL and RedisYouYour infrastructure
+CI/CD for your appsYouYour CI environment
+Upgrades, scaling, and backupsYouYour infrastructure
+In return, you can integrate with your own Postgres and Redis, size CPU and memory for your workload, and operate inside your existing network and observability stack. For the corresponding Cloud-managed model, see Deploy to Cloud.
+##
+​
+Next steps
+## Pick a topology
+Compare standalone server, full platform, and hybrid to find the right fit.
+## Install the full platform
+Deploy LangSmith on Kubernetes with the control plane and data plane.
+Connect these docs to your agent of choice via MCP for real-time answers.
+Edit this page on GitHub or file an issue.
+Was this page helpful?

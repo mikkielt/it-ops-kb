@@ -1,0 +1,85 @@
+source: S1523
+url: https://docs.gitlab.com/ci/pipeline_security/slsa/level_3/
+title: Achieving SLSA Build Level 3 with GitLab CI/CD
+publisher: GitLab
+licence: CC BY-SA 4.0 (GitLab docs)
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+/
+# SLSA level 3 provenance attestations
+Tier: Ultimate
+Offering: GitLab.com
+Status: Experiment
+Introduced in GitLab 18.3 with a feature flag named slsa_provenance_statement. Disabled by default.
+The availability of this feature is controlled by a feature flag.
+For more information, see the history.
+This feature is available for testing, but not ready for production use.
+GitLab can generate SLSA level 3 compatible provenance attestations.
+The key differences between level 2 and 3 provenance attestation are isolation and “unforgeable” requirements.
+For the details of attestations, see the GitLab SLSA provenance specification.
+## Prerequisites
+These conditions need to be met for the attestation of any container or artifact:
+The project associated with the build is public. This requirement is enforced to prevent accidental
+disclosure of information to Rekor.
+The build must use the build stage.
+The slsa_provenance_statement feature flag must be enabled for the project.
+## Generate an attestation for artifacts
+To generate an attestation for all artifacts produced by a build:
+Set the ATTEST_BUILD_ARTIFACTS CI/CD variable to true.
+The artifact must not exceed 100 MB.
+For example, GitLab generates an attestation for the artifacts in this CI/CD job:
+yaml
+build-job:
+stage: build
+variables:
+ATTEST_BUILD_ARTIFACTS: true
+script:
+- echo "Hello, $GITLAB_USER_LOGIN!"
+- echo "Hello, $GITLAB_USER_LOGIN!" > test.txt
+artifacts:
+paths:
+- test.txt
+## Generate an attestation for a container
+To generate an attestation for a container:
+Set the CI/CD variable ATTEST_CONTAINER_IMAGES to true.
+Set the IMAGE_DIGEST variable to a valid SHA256 reference, with this format:
+sha256:9bf00f5090086aba643d21f8ed663576855add63b7b780b4eaffc5124812c3c9
+org/project-name@sha256:9bf00f5090086aba643d21f8ed663576855add63b7b780b4eaffc5124812c3c9
+9bf00f5090086aba643d21f8ed663576855add63b7b780b4eaffc5124812c3c9
+For example, GitLab generates an attestation for the image created in this CI/CD job:
+yaml
+build-dockerhub:
+stage: build
+variables:
+ATTEST_CONTAINER_IMAGES: true
+CI_REGISTRY: docker.io
+DOCKER_IMAGE_NAME: sroqueworcel/test-slsa-sbom:stable
+script:
+- echo $DOCKER_REGISTRY_PASSWORD | docker login $CI_REGISTRY -u $DOCKER_REGISTRY_USER --password-stdin
+- docker build -t $DOCKER_IMAGE_NAME .
+- docker push $DOCKER_IMAGE_NAME
+- IMAGE_DIGEST="$(docker inspect --format='{{index .Id}}' "$DOCKER_IMAGE_NAME")"
+- echo "IMAGE_DIGEST=$IMAGE_DIGEST" >> build.env
+artifacts:
+reports:
+dotenv: build.env
+## View attestations
+Successful attestations are stored in the attestations page. To view the attestations:
+In the top bar, select Search or go to and find your project.
+In the left sidebar, select Build > Attestations.
+If the attestation is not successful, the CI/CD job log shows an error.
+You can also fetch successful attestations with the Attestations API.
+## Verifying attestations
+You can verify both artifacts and containers by using the glab command-line interface.
+For example:
+A successful verification:
+shell
+% glab attestation verify ~/file-or-container -p org/project-name
+Artifact provenance successfully verified. Signatures confirm file.txt was attested by org/project-name
+A failed verification:
+shell
+% glab attestation verify ~/file.txt -p org/project-name
+ERROR
+Unable to find a provenance statement for 1f9e5808a340916aa5618ee13a893dcf9d4f7e2d42a254be0f7eb06a094ab8ea.
+Was this page helpful?

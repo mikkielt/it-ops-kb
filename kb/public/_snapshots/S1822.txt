@@ -1,0 +1,293 @@
+source: S1822
+url: https://vale.sh/
+title: Vale: a prose linter
+publisher: Vale project (errata-ai)
+licence: MIT (vale-cli/vale LICENSE)
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+OPEN SOURCE · MIT · 6K STARS ↗
+# Your style.
+Our editor.
+GitHub stars
+6K
+downloads
+13.2M
+teams listed
+159
+Vale brings code-like linting to prose. Turn a team’s style guide, a house voice, or a
+journal’s author guidelines into checks that run in your editor and alongside your code.
+Get started See how it works
+macOS, Windows & Linux · Runs offline
+01Your guideline
+Writing guide · Terminology
+The product is Vale CLI. Don’t write Vale cli or vale-cli.
+02A rule you own
+styles/Docs/Terms.yml
+extends: substitution
+message: "Use '%s' instead of '%s'."
+level: error
+action:
+name: replace
+swap:
+'Vale cli|vale-cli': Vale CLI
+'style ?guide': style guide
+'e-?mail': email
+03Feedback where you write
+docs/install.md
+# Installation
+Vale cli runs on macOS, Windows, and Linux.
+error Use 'Vale CLI' instead of 'Vale cli'. Docs.Terms
+Encode your guidelines in YAML, or start with a published style: Microsoft, Google, or Red Hat. Browse them all in the Explorer.
+Setting up with an agent?Open in Claude ↗Open in ChatGPT ↗Agent skills →
+Thanks to Claude for Open Source.
+Supporting the project
+## Sponsor spotlights #
+These companies support Vale's future — and put it to work in their own products today.
+Mintlify Sponsor Ships Vale as a built-in CI check. Read the story Promptless Sponsor Runs Vale on every doc its agents write. Read the story
+See everyone who funds Vale
+Used in production
+## Read their configs #
+Every team here publishes something you can open — the .vale.ini they run,
+or the page they wrote about running it. Hover a mark for where.
+Datadog 20,000 docs pull requests merged in 2023 From 1,400 contributors, with an on-call writer reviewing over 40 a day. Vale runs before they look. Read the source
+GitLab 69 Vale rules in the docs pipeline Two styles, gitlab_base and gitlab_docs, run on every merge request; error-level rules fail the job. Read the source
+Grafana Labs 106 style-guide rules, as Vale checks The Writers' Toolkit lists every rule by name, from em dashes to "please", each with the fix. Read the source
+Red Hat 37 rules in the RedHat style Language rules for open source docs, mandatory for Red Hat products, and published as a package anyone can sync. Read the source
+Amazon Web Services
+Microsoft
+NVIDIA
+Epic Games
+GitHub
+Docker
+MongoDB
+MetaMask
+GOV.UK
+Discord
+SAP
+Spotify
+159
+teams
+across 9 sectors
+98 / 137
+run Vale in CI
+of the repos checked
+4,192
+repos using the Vale Action
+GitHub's dependents count
+AI & machine learning 8
+Cloud & infrastructure 23
+Data & observability 30
+Developer tools 33
+Enterprise software 10
+Hardware & semiconductors 8
+Open source & communities 23
+Academia & public sector 17
+Web3 & blockchain 7
+Browse all 159
+Why Vale
+## Most tools see text. Vale sees a document. #
+Check the writing in context. Target a heading, a comment, or a description, while leaving the code around it alone.
+01Scopes
+### Your document has structure.
+Your rules should too.
+Apply different checks to headings, lists, and table cells. Vale parses the markup first,
+so code blocks and link URLs stay out of the way.
+Explore markup and scopes
+guide.mdWhat Vale sees
+# Getting startedheading
+Write with your team’s voice.paragraph
+- Keep instructions clear.list
+[Read the guide](https://example.com)URL skipped
+```sh
+vale docs/
+```code skipped
+Check the prose. Preserve the code.
+12 markup formats
+Markdown
+AsciiDoc
+reStructuredText
+MDX
+MyST
+Quarto
+Typst
+HTML
+XML
+DITA
+Org
+QDoc
+02Code
+### The comments count, too.
+Extract comments with tree-sitter grammars, then check the Markdown inside them. A comment
+marker inside a string stays code.
+Markdown inside a doc comment
+/// Creates a person with the given name. paragraph
+///
+/// # Examples heading
+/// ``` code skipped
+/// let person = Person::new("name");
+/// ```
+pub fn new(name: &str) -> Person { not a comment
+19 languages
+Go
+Rust
+Python
+Ruby
+C++
+C
+JavaScript
+TypeScript
+TSX
+Java
+Haskell
+Julia
+Lua
+PHP
+R
+QML
+Protobuf
+YAML
+CSS
+Explore code comments
+03Views
+### Find prose in unexpected places.
+A View selects the writing inside structured files. Check an API description, a notebook
+cell, or a commit message with rules for that context.
+Select the description
+openapi: 3.1.0
+info:
+title: Example API
+version: 1.0.0
+description: Manage your projects. description
+paths:
+/projects: {}
+Beyond documents
+OpenAPI
+Jupyter
+Commit messages
+Transcripts
+Docstrings
+JSON
+YAML
+TOML
+Explore Views
+04Speed
+### Built for the whole repository.
+One Go binary. Parallel checks. No separate runtime.
+See the benchmark
+GitLab documentation · one run
+Markdown pages
+2,827
+Rules applied
+82
+Start to finish
+<20s
+Distribution
+## Where Vale is downloaded #
+Seven registries publish a download count, and each counts a different window, so they sit side by side here rather than in one total.
+13.2M
+downloads to date
+GitHub Releases, Docker Hub, conda-forge, Chocolatey · the channels reporting a lifetime total
+6K
+stars on GitHub
+vale-cli/vale
+63
+contributors
+across the main repository
+GitHub Releases 10.7M lifetime
+Docker Hub 2.3M lifetime
+PyPI 1.7M past 6 mo · community-maintained wrapper
+npm 183.8K past mo · community-maintained wrapper
+conda-forge 169.4K lifetime
+Homebrew 76.9K past 12 mo
+Chocolatey 19.5K lifetime
+GitHub Action 4.2K repositories · using it today
+Also ships on
+WI WinGet v3.23.0
+Snap Store v3.17.1
+LI Linux & BSD 17 repositories
+Sources: GitHub, Docker Hub, PyPI, npm, conda-forge, Homebrew, Chocolatey, WinGet, Snapcraft,
+and Repology · updated 2026-08-28
+One tool, every app
+## More than just a command-line interface. #
+Vale runs where you already write—in your editor, in your notes app, and in CI before anything merges.
+### Apps
+Wherever the prose gets written, with diagnostics as you type.
+VS Code VS Code, Cursor, Windsurf
+Neovim via nvim-lspconfig
+Sublime Text LSP-vale-ls
+Zed zed-vale
+Emacs flymake-vale
+JetBrains IntelliJ, PyCharm, WebStorm
+Obsidian obsidian-vale
+Oxygen XML Vale linter add-on
+Qt Creator via the Qt wiki
+ALE Vim, Neovim
+### Automation
+The same run, before anything merges.
+GitHub Actions vale-cli/vale-action
+pre-commit Local hooks
+Language server Any LSP-capable editor
+### Documentation platforms
+Hosted docs that run Vale for you.
+Mintlify Built-in CI check
+Promptless Lints every draft it writes
+Learn more about our integrations
+From the blog
+## Notes from building Vale. #
+Releases, the standard library, and prose linting in the age of agents. Every post ships with Vale's own report on it.
+vale docs/
+Tutorial 5:60
+How-to 3:15
+Explanation 7:4
+Reference 5:1
+Sep 24, 2026
+### Linting the four kinds of documentation
+Diataxis is a Vale package for the four kinds of documentation in Diátaxis: tutorials, how-to guides, reference, and explanation, each checked against the job it claims to do.
+0 alerts 6 min
+vale trial.md
+# A randomized trial of zetaprol in adults
+## Abstract
+Blood pressure fell 12mmHg (p = 0.002). 5:21
+## Methods 7:4
+Adults aged 18–65 years were eligible.
+## Results
+We analyzed 60 participants per group.
+Sep 17, 2026
+### Linting a manuscript
+Journals is a Vale package for scientific papers: the conventions every journal shares, the Nature and PLOS ONE author guidelines, and the CONSORT, STROBE, and PRISMA checklists, read section by section.
+0 alerts 7 min
+vale --path=COMMIT_EDITMSG
+fix!: report the shortfall at the scope that fell short. 1:56
+Zero matches leave no occurence to point at, but the scope 3:23
+has a position of its own.
+BREAKING CHANGE: the alert lands on the scope's first line.
+Signed-off-by: Jane Doe <jane@example.com>
+Sep 10, 2026
+### Linting commit messages
+Commits is a Vale package for the log: nine conventions, the rule sets of commitlint, gitlint, committed, conform, and commitizen, spelling on the body, and a hook that runs in 12 ms.
+0 alerts 6 min
+Read all 6 posts RSS
+## A few lines of config.
+A consistent first draft.
+Start with an existing style guide. Keep the configuration in your project so everyone runs
+the same checks.
+Install Vale.Choose a package for your operating system.
+Pick your styles.Save this as .vale.ini in your project.
+Sync, then lint.Download the styles and check your docs.
+Get started Check out the source code →
+.vale.iniConfig reference ↗
+StylesPath = styles
+MinAlertLevel = suggestion
+Packages = Microsoft
+[*.md]
+BasedOnStyles = Vale, Microsoft
+$ vale sync
+$ vale docs/
+Make it your own with a YAML rule +
+extends: substitution
+message: "Use '%s' instead of '%s'."
+level: warning
+swap:
+utilize: use
+Learn to write rules →

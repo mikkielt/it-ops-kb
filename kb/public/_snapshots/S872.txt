@@ -1,0 +1,38 @@
+source: S872
+url: https://www.edpb.europa.eu/our-work-tools/documents/public-consultations/2025/guidelines-012025-pseudonymisation_en
+title: EDPB consultation page Guidelines 01/2025
+publisher: EDPB
+licence: EDPB reuse notice (reuse authorised, source acknowledged, meaning not distorted)
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+##
+Guidelines 01/2025 on Pseudonymisation
+Closed for feedback
+Reference
+01/2025
+Feedback period
+17 January
+- 14 March 2025 (23:59 CET)
+## Downloadable documents
+Guidelines 01/2025
+PDF, 885.25 KB
+Download Guidelines 01/2025
+Summary: pseudonymisation, when and how to apply it
+PDF, 3.93 MB
+Download Summary: pseudonymisation, when and how to apply it
+Relevant topics
+Technology
+## Submitted feedback
+Download all
+DateTypeCountrySubmitted by
+14 March 2025Company/business organisation Denmark PII Guard View feedback
+14 March 2025Individual Netherlands Evert-Ben van Veen View feedback
+14 March 2025Business association Romania American Chamber of Commerce in Romania (AmCham Romania) View feedback
+14 March 2025Non-governmental organisation (NGO) Germany TMF - Technology, Methods, and Infrastructure for Networked Medical Research View feedback
+14 March 2025Academic/research institution Poland Sano Centre for Computational Personalised Medicine International Research Foundation View feedback
+14 March 2025Business association Belgium American Chamber of Commerce to the EU (AmCham EU) View feedback
+14 March 2025Company/business organisation France SAMMAN Law &amp; Corporate Affairs View feedback
+14 March 2025Business association United States International Pharmaceutical and Medical Device Privacy Consortium (IPMPC) View feedback
+14 March 2025Business association Belgium Insurance Europe View feedback
+14 March 2025Business association Bulgaria American Chamber of Commerce in Bulgaria / Сдружение Американска търговска камара в България View feedback

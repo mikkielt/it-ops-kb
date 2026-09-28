@@ -1,0 +1,70 @@
+source: S2167
+url: https://docs.renovatebot.com/
+title: Renovate Docs
+publisher: Renovate (Mend)
+licence: AGPL-3.0 (docs in renovatebot/renovate)
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+# Renovate documentation¶
+Automated dependency updates.
+Multi-platform and multi-language.
+Renovate banner
+Renovate banner
+## Why use Renovate?¶
+Automatic updates
+Get pull requests to update your dependencies and lock files.
+On your schedule
+Reduce noise by scheduling when Renovate creates PRs.
+Works out of the box
+Renovate finds relevant package files automatically, including in monorepos.
+How you like it
+You can customize Renovate's behavior with configuration files.
+Share your configuration
+Share your configuration with ESLint-like config presets.
+Out with the old, in with the new
+Get replacement PRs to migrate from a deprecated dependency to the community suggested replacement, works with most managers, see issue 14149 for exceptions.
+Open source
+Renovate is licensed under the GNU Affero General Public License (AGPL-3.0-only).
+## Supported Platforms¶
+Renovate works on these platforms:
+Azure DevOps
+AWS CodeCommit
+Bitbucket Cloud
+Bitbucket Server
+Forgejo
+Gerrit (experimental)
+Gitea
+GitHub (.com and Enterprise Server)
+GitLab (.com and CE/EE)
+## Who Uses Renovate?¶
+A non-exhaustive list of companies and projects using Renovate can be seen below:
+List of companies and projects that use Renovate
+Prisma
+Netlify
+Envoy
+Condé Nast
+Microsoft
+Atlassian
+Sourcegraph
+Mozilla
+Deloitte
+Telus
+Yarn
+HashiCorp
+Automattic
+Algolia
+eBay
+Cypress
+Red Hat
+Financial Times
+Uber
+Buildkite
+## Ways to run Renovate¶
+You can run Renovate as:
+an Open Source npm package
+a pre-built Open Source image on GitHub Container Registry
+a pre-built Open Source image on Docker Hub
+Or you can use the Mend Renovate App which is hosted by Mend.
+Install the Mend Renovate app for GitHub
+Check out our tutorial

@@ -1,0 +1,53 @@
+source: S-ci26bqyc
+url: https://learn.microsoft.com/azure/update-manager/dynamic-scope-overview
+title: About dynamic scoping
+publisher: Microsoft Learn
+licence: CC BY 4.0 (public mirror MicrosoftDocs/azure-docs)
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+# Overview of Dynamic Scoping | Microsoft Learn
+
+**Applies to:** ✔️ Windows VMs ✔️ Linux VMs ✔️ On-premises environment ✔️ Azure VMs ✔️ Azure Arc-enabled servers.
+
+Dynamic scoping is a capability of scheduled patching in Azure Update Manager. You can use it to:
+
+- Group machines based on criteria such as subscription, resource group, location, resource type, OS type, and tags. This grouping becomes the definition of the scope.
+- Associate the scope to a maintenance configuration to apply updates at scale.
+
+The criteria are evaluated at the scheduled run time to produce a final list of machines for scheduled patching. The machines evaluated during the create or edit phase might differ from the group at the scheduled run time.
+
+## Key benefits
+
+**At scale and simplified patching**. You don't have to manually change associations between machines and schedules. For example, if you want to remove a machine from a schedule and your scope was defined based on tag criteria, removing the tag on the machine automatically drops the association. You can drop and add these associations for multiple machines at scale.
+
+**Reusability of the same schedule**. You can associate a schedule with multiple machines dynamically, statically, or both.
+
+## Prerequisites
+
+# Azure VMs
+**Patch Orchestration** must be set to **Customer Managed Schedules**.
+
+# Azure Arc-enabled VMs
+There are *no prerequisites* for patch orchestration. However, you must associate a schedule with the VM for scheduled patching.
+
+---
+
+## Permissions
+
+For dynamic scoping and configuration assignment, ensure that you have:
+
+- Write permissions at the subscription level to create or modify a schedule.
+- Read permissions at the subscription level to assign or read a schedule.
+
+## Service limits
+
+The following recommended limits are for *each dynamic scope in the guest scope only*.
+
+| Resource | Limit |
+| --- | --- |
+| Resource associations | 1,000 |
+| Number of tag filters | 50 |
+| Number of resource group filters | 50 |
+
+For more information, see Service limits for scheduled patching.

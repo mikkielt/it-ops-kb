@@ -1,0 +1,219 @@
+source: S-y3vftsou
+url: https://learn.microsoft.com/powershell/module/configci/set-cipolicyidinfo
+title: Set-CIPolicyIdInfo (ConfigCI module)
+publisher: Microsoft
+licence: CC BY 4.0 (public mirror MicrosoftDocs/windows-powershell-docs)
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+# Set-CIPolicyIdInfo
+
+- Module:
+    - ConfigCI Module
+
+Modifies the name and ID of a Code Integrity policy.
+
+## Syntax
+
+### Default (Default)
+
+```Syntax
+Set-CIPolicyIdInfo
+    [-FilePath] <String>
+    [-PolicyName <String>]
+    [-SupplementsBasePolicyID <Guid>]
+    [-BasePolicyToSupplementPath <String>]
+    [-ResetPolicyID]
+    [-PolicyId <String>]
+    [<CommonParameters>]
+```
+
+## Description
+
+The **Set-CIPolicyIdInfo** cmdlet modifies the policy name and policy ID of a Code Integrity policy. Specify the .xml file of the policy to modify. Event Tracing for Windows (ETW) events use the **PolicyID** and **Name** properties to identify which policy is currently running on a computer.
+
+## Examples
+
+### Example 1: Modify the ID and name of a policy
+
+```
+PS C:\> Set-CIPolicyIdInfo -FilePath ".\Policy03.xml" -PolicyId "CIP077" -PolicyName "CIPolicy03"
+```
+
+This command modifies the policy ID and the policy name for the policy stored in the Policy03.xml file.
+
+### Example 2: Modify the name of a policy
+
+```
+PS C:\> Set-CIPolicyIdInfo -FilePath ".\Policy03.xml" -PolicyName "CIPolicy77"
+```
+
+This command modifies only the policy name for the policy stored in the Policy03.xml file.
+
+### Example 3: Specify the base policy ID of a supplemental policy
+
+```
+PS C:\> Set-CIPolicyIdInfo -FilePath ".\Supplemental_Policy.xml" -BasePolicyToSupplementPath ".\Base_Policy.xml"
+```
+
+This command will extract the PolicyID field from the Base\_Policy.xml file and modify the BasePolicyID field in the Supplemental\_Policy.xml file.
+
+## Parameters
+
+### -BasePolicyToSupplementPath
+
+Specifies the path to a base policy to get the value for the **BasePolicyID** property for a supplemental policy.
+
+#### Parameter properties
+
+| Type: | String |
+| --- | --- |
+| Default value: | None |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ (All)
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -FilePath
+
+Specifies the path of a Code Integrity policy .xml file.
+
+#### Parameter properties
+
+| Type: | String |
+| --- | --- |
+| Default value: | None |
+| Supports wildcards: | False |
+| DontShow: | False |
+| Aliases: | f |
+
+#### Parameter sets
+
+ (All)
+
+| Position: | 0 |
+| --- | --- |
+| Mandatory: | True |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -PolicyId
+
+Specifies the value for the **PolicyID** property. This string is not required to be a GUID.
+
+#### Parameter properties
+
+| Type: | String |
+| --- | --- |
+| Default value: | None |
+| Supports wildcards: | False |
+| DontShow: | False |
+| Aliases: | pid |
+
+#### Parameter sets
+
+ (All)
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -PolicyName
+
+Specifies the value for the **Name** property.
+
+#### Parameter properties
+
+| Type: | String |
+| --- | --- |
+| Default value: | None |
+| Supports wildcards: | False |
+| DontShow: | False |
+| Aliases: | pn |
+
+#### Parameter sets
+
+ (All)
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -ResetPolicyID
+
+Resets both the PolicyID and BasePolicyID values. This parameter will convert a single-policy format policy to multi-policy format.
+
+#### Parameter properties
+
+| Type: | SwitchParameter |
+| --- | --- |
+| Default value: | None |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ (All)
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -SupplementsBasePolicyID
+
+Specifies the value for the **BasePolicyID** property for a supplemental policy.
+
+#### Parameter properties
+
+| Type: | Guid |
+| --- | --- |
+| Default value: | None |
+| Supports wildcards: | False |
+| DontShow: | False |
+| Aliases: | None |
+
+#### Parameter sets
+
+ (All)
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### CommonParameters
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable, -ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see about_CommonParameters.
+
+## Related Links
+
+- Get-CIPolicyIdInfo
+
+---
+
+## Other Supported Versions
+
+- windowsserver2016-ps
+- windowsserver2019-ps
+- windowsserver2022-ps

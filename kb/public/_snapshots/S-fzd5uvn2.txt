@@ -1,0 +1,124 @@
+source: S-fzd5uvn2
+url: https://learn.microsoft.com/powershell/module/microsoft.powershell.psresourceget/about/about_psresourceget
+title: about_PSResourceGet
+publisher: Microsoft Learn
+licence: CC BY 4.0 (public mirror MicrosoftDocs/PowerShell-Docs-PSGet)
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+# about PSResourceGet - PowerShell | Microsoft Learn
+
+## Short description
+
+Describes how to use version 1.2.0 of the **Microsoft.PowerShell.PSResourceGet** module.
+
+## Long description
+
+**Microsoft.PowerShell.PSResourceGet** is an updated version of the **PowerShellGet** module completely written in C# and provides the following benefits over previous versions of PowerShellGet:
+
+- Simplifies the code base making it easier to enhance and fix bugs
+- Removes the dependency on the **PackageManagement** module and uses the **NuGet** APIs directly
+- Addresses long-standing usability issues that would be breaking changes if made in **PowerShellGet** v2
+- Improves search and installation performance
+
+The first time you use **Microsoft.PowerShell.PSResourceGet**, the module registers the PowerShell Gallery as a PSResource repository. By default, the PSGallery repository is registered with a priority of 50 and is marked as untrusted. Use the following command to trust the PSGallery repository:
+
+```powershell
+Set-PSResourceRepository -Name PSGallery -Trusted -PassThru
+```
+
+## Design changes
+
+Previous versions of **PowerShellGet** had separate commands to work with modules and scripts. In **Microsoft.PowerShell.PSResourceGet**, all packages in the PowerShell Gallery are defined as **PSResource** objects.
+
+The following table shows the cmdlets that are available in **Microsoft.PowerShell.PSResourceGet** and their **PowerShellGet** v2 equivalents.
+
+| Microsoft.PowerShell.PSResourceGet | PowerShellGet v2 |
+| --- | --- |
+| `Compress-PSResource` | n/a |
+| `Find-PSResource` | `Find-Command` |
+| `Find-PSResource` | `Find-DscResource` |
+| `Find-PSResource` | `Find-Module` |
+| `Find-PSResource` | `Find-Script` |
+| n/a | `Find-RoleCapability` |
+| `Get-InstalledPSResource` | `Get-InstalledModule` |
+| `Get-InstalledPSResource` | `Get-InstalledScript` |
+| `Get-PSResourceRepository` | `Get-PSRepository` |
+| `Get-PSScriptFileInfo` | n/a |
+| `Import-PSGetRepository` | n/a |
+| `Install-PSResource` | `Install-Module` |
+| `Install-PSResource` | `Install-Script` |
+| `New-PSScriptFileInfo` | `New-ScriptFileInfo` |
+| `Publish-PSResource` | `Publish-Module` |
+| `Publish-PSResource` | `Publish-Script` |
+| `Register-PSResourceRepository` | `Register-PSRepository` |
+| `Reset-PSResourceRepository` | n/a |
+| `Save-PSResource` | `Save-Module` |
+| `Save-PSResource` | `Save-Script` |
+| `Set-PSResourceRepository` | `Set-PSRepository` |
+| `Test-PSScriptFileInfo` | `Test-ScriptFileInfo` |
+| `Uninstall-PSResource` | `Uninstall-Module` |
+| `Uninstall-PSResource` | `Uninstall-Script` |
+| `Unregister-PSResourceRepository` | `Unregister-PSRepository` |
+| `Update-PSModuleManifest` | `Update-ModuleManifest` |
+| `Update-PSResource` | `Update-Module` |
+| `Update-PSResource` | `Update-Script` |
+| `Update-PSScriptFileInfo` | `Update-ScriptFileInfo` |
+
+## Searching by NuGet version ranges
+
+Several **Microsoft.PowerShell.PSResourceGet** cmdlets provide a **Version** parameter that allows you to specify a range of versions to search for. The **Version** parameter uses the NuGet versioning syntax. For more information about NuGet version ranges, see Package versioning.
+
+PowerShellGet supports all but the *minimum inclusive version* listed in the NuGet version range documentation. Using `1.0.0.0` as the version doesn't yield versions 1.0.0.0 and higher (minimum inclusive range). Instead, the value is considered to be the required version. To search for a minimum inclusive range, use `[1.0.0.0, ]` as the version range.
+
+## Searching by required resources
+
+The `Install-PSResource` cmdlet has **RequiredResource** and **RequiredResourceFile** parameters that are used to find **PSResource** objects matching specific criteria. You can specify the search criteria using a hashtable or a JSON object. For the **RequiredResourceFile** parameter, the hashtable is stored in a `.psd1` file and the JSON object is stored in a `.json` file.
+
+The hashtable can contain attributes for multiple modules. The following example show the structure of the module specification:
+
+```Syntax
+@{
+    <modulename> = @{
+        version = '<version-spcification>'
+        repository = '<reponame>'
+        prerelease = '<boolean>'
+    }
+}
+```
+
+This example contains specifications for three modules. As you can, the module attributes are optional.
+
+```powershell
+ @{
+    TestModule = @{
+        version = '[0.0.1,1.3.0]'
+        repository = 'PSGallery'
+    }
+
+    TestModulePrerelease = @{
+        version = '[0.0.0,0.0.5]'
+        repository = 'PSGallery'
+        prerelease = $true
+    }
+
+    TestModule99 = @{}
+}
+```
+
+The next example shows the same specification in JSON format.
+
+```json
+{
+  "TestModule": {
+    "version": "[0.0.1,1.3.0)",
+    "repository": "PSGallery"
+  },
+  "TestModulePrerelease": {
+    "version": "[0.0.0,0.0.5]",
+    "repository": "PSGallery",
+    "prerelease": "true"
+  },
+  "TestModule99": {}
+}
+```

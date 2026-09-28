@@ -1,0 +1,26 @@
+source: S1574
+url: https://learn.microsoft.com/en-us/azure/security/develop/threat-modeling-tool
+title: Microsoft Learn: Microsoft Threat Modeling Tool
+publisher: Microsoft
+licence: CC BY 4.0 (public mirror MicrosoftDocs/azure-docs)
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+# Microsoft Threat Modeling Tool overview - Azure | Microsoft Learn
+
+The Threat Modeling Tool is a core element of the Microsoft Security Development Lifecycle (SDL). It allows software architects to identify and mitigate potential security issues early, when they are relatively easy and cost-effective to resolve. As a result, it greatly reduces the total cost of development. Also, we designed the tool with non-security experts in mind, making threat modeling easier for all developers by providing clear guidance on creating and analyzing threat models.
+
+The tool enables anyone to:
+
+- Communicate about the security design of their systems
+- Analyze those designs for potential security issues using a proven methodology
+- Suggest and manage mitigations for security issues
+
+Here are some tooling capabilities and innovations, just to name a few:
+
+- **Automation:** Guidance and feedback in drawing a model
+- **STRIDE per Element:** Guided analysis of threats and mitigations
+- **Reporting:** Security activities and testing in the verification phase
+- **Unique Methodology:** Enables users to better visualize and understand threats
+- **Designed for Developers and Centered on Software:** many approaches are centered on assets or attackers. We are centered on software. We build on activities that all software developers and architects are familiar with -- such as drawing pictures for their software architecture
+- **Focused on Design Analysis:** The term "threat modeling" can refer to either a requirements or a design analysis technique. Sometimes, it refers to a complex blend of the two. The Microsoft SDL approach to threat modeling is a focused design analysis technique

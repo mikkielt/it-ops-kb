@@ -1,0 +1,367 @@
+source: S910
+url: https://learn.microsoft.com/en-us/power-bi/enterprise/service-admin-rls
+title: Row-level security (RLS) with Power BI
+publisher: Microsoft
+licence: CC BY 4.0 (public mirror MicrosoftDocs/fabric-docs)
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+# Row-level security (RLS) with Power BI - Microsoft Fabric | Microsoft Learn
+
+Row-level security (RLS) restricts data access for specific users of a Power BI semantic model. Filters restrict data at the row level, and you define filters within roles. In the Power BI service, users with access to a workspace have access to semantic models in that workspace. RLS only restricts data access for users with **Viewer** permissions. It doesn't apply to workspace **Admin**, **Member**, or **Contributor** roles.
+
+To implement RLS, follow this high-level workflow:
+
+1. **Define roles and rules** in Power BI Desktop using DAX filter expressions.
+2. **Publish** the semantic model and report to the Power BI service.
+3. **Add members** to roles in the Power BI service.
+4. **Validate** by using the **Test as role** feature to confirm data filtering works as expected.
+
+You can configure RLS for imported semantic models in Power BI Desktop or the Power BI service. You can also configure RLS on semantic models that use DirectQuery, such as SQL Server. For Analysis Services or Azure Analysis Services live connections, you configure row-level security in the model, not in Power BI. The security option doesn't show up for live connection semantic models.
+
+Note
+
+This article covers RLS for Power BI semantic models specifically. For data security in other Microsoft Fabric items, see Security in Microsoft Fabric.
+
+Note
+
+For Direct Lake semantic models in Microsoft Fabric, RLS is supported. However, if a DAX query falls back to DirectQuery mode due to unsupported features, RLS filters still apply but performance characteristics may change. Monitor query fallback behavior in the Fabric capacity metrics app.
+
+## Define roles and rules in Power BI Desktop
+
+You can define roles and rules within Power BI Desktop. With this editor, you can toggle between using the default drop-down interface and a DAX interface. When you publish to Power BI, you also publish the role definitions.
+
+To define security roles:
+
+1. Import data into your Power BI Desktop report, or configure a DirectQuery connection.
+
+    Note
+
+    You can't define roles within Power BI Desktop for Analysis Services live connections. You need to do that within the Analysis Services model.
+2. From the **Modeling** tab, select **Manage Roles**.
+3. From the **Manage roles** window, select **New** to create a new role.
+4. Under **Roles**, provide a name for the role and select enter.
+
+    Note
+
+    You can't define a role with a comma, for example `London,ParisRole`.
+5. Under **Select tables**, select the table to which you want to apply a row-level security filter.
+6. Under **Filter data**, use the default editor to define your roles. The expressions created return a true or false value. A DAX filter evaluates TRUE/FALSE for each row. Only rows that return TRUE are visible Everything else is completely removed.
+
+    Note
+
+    Not all row-level security filters supported in Power BI can be defined using the default editor. Limitations include expressions that today can only be defined using DAX including dynamic rules such as *username()* or *userprincipalname()*. To define roles using these filters switch to use the DAX editor.
+7. Optionally select **Switch to DAX editor** to switch to using the DAX editor to define your role. DAX expressions return a value of true or false. For example: `[Entity ID] = “Value”`. The DAX editor is complete with autocomplete for formulas (intellisense). You can select the checkmark above the expression box to validate the expression and the X button above the expression box to revert changes.
+
+    Note
+
+    You can use *username()* within this expression. Be aware that *username()* has the format of *DOMAIN\username* within Power BI Desktop. Within the Power BI service and Power BI Report Server, it's in the format of the user's User Principal Name (UPN). Additionally, in this expression box, use commas to separate DAX function arguments even if you're using a locale that normally uses semicolon separators, such as French or German.
+8. You can switch back to the default editor by selecting **Switch to default editor**. All changes made in either editor interface persist when switching interfaces when possible. When defining a role using the DAX editor that can't be defined in the default editor, if you attempt to switch to the default editor you'll be prompted with a warning that switching editors may result in some information being lost. To keep this information, select **Cancel** and continue only editing this role in the DAX editor.
+
+    Note
+
+    In this expression box, use commas to separate DAX function arguments even if you're using a locale that normally uses semicolon separators, such as French or German.
+9. Select **Save**.
+
+You can't assign users to a role within Power BI Desktop. You assign them in the Power BI service. You can enable dynamic security within Power BI Desktop by making use of the *username()* or *userprincipalname()* DAX functions and having the proper relationships configured.
+
+## Common DAX filter patterns for RLS roles
+
+The following examples show common DAX filter expressions you can use when defining RLS roles in Power BI Desktop:
+
+- **Static RLS** — Restricts data to a fixed value:
+
+    ```dax
+    [Region] = "West"
+    ```
+- **Dynamic RLS with UPN** — Restricts data based on the signed-in user's email address:
+
+    ```dax
+    [UserEmail] = USERPRINCIPALNAME()
+    ```
+- **Dynamic RLS with USERNAME** — Restricts data based on the user's domain and username:
+
+    ```dax
+    [UserDomain] = USERNAME()
+    ```
+- **Dynamic RLS with CUSTOMDATA** — Restricts data based on a custom string passed from the embedding application:
+
+    ```dax
+    [AppRole] = CUSTOMDATA()
+    ```
+
+    Note
+
+    `CUSTOMDATA()` is primarily used in embedded scenarios where the application passes a custom effective identity string via the Power BI REST API.
+
+Dynamic RLS is the most common approach because it allows a single role definition to filter data differently for each user, based on a user-mapping table in your data model.
+
+## Example: Filter Power BI sales data by region
+
+Suppose you have a `Sales` table with columns `Region`, `Product`, and `Amount`. You want to restrict users assigned to the "West" role so they see only rows where the region is "West".
+
+In the **DAX filter** field for the "West" role, enter the following expression:
+
+```dax
+[Region] = "West"
+```
+
+**Before filtering (all data):**
+
+| Region | Product | Amount |
+| --- | --- | --- |
+| West | Widget A | 500 |
+| East | Widget B | 300 |
+| West | Widget C | 450 |
+| South | Widget A | 200 |
+| East | Widget C | 375 |
+
+**After filtering (view for "West" role users):**
+
+| Region | Product | Amount |
+| --- | --- | --- |
+| West | Widget A | 500 |
+| West | Widget C | 450 |
+
+The DAX expression acts as a row filter that evaluates each row in the table. Only rows where the `Region` column equals "West" are visible to users assigned to that role.
+
+Tip
+
+Use the **View as role** feature (described in Validate the role within the Power BI service) to validate that your filter returns the expected rows before publishing the report.
+
+## Bi-directional cross-filtering with RLS
+
+By default, row-level security filtering uses single-directional filters, whether the relationships are set to single direction or bi-directional.
+
+You can manually enable bi-directional cross-filtering with row-level security by selecting the relationship and checking the **Apply security filter in both directions** checkbox. Select this option when you've also implemented dynamic row-level security at the server level, where row-level security is based on username or login ID. If a table takes part in multiple bi-directional relationships, you can only select this option for one of those relationships.
+
+Caution
+
+Enabling bi-directional security filtering can negatively impact query performance, especially in models with many relationships or large datasets. Test thoroughly before deploying to production.
+
+For more information, see Bidirectional cross-filtering using DirectQuery in Power BI and the Securing the Tabular BI Semantic Model technical article.
+
+## Manage security on your semantic model
+
+To manage security on your semantic model, open the workspace where you saved your semantic model in Microsoft Fabric and do the following steps:
+
+1. In Microsoft Fabric, select the **More options** menu for a semantic model. This menu appears when you hover on a semantic model name.
+
+2. Select **Security**.
+
+**Security** takes you to the Row-Level Security page where you add members to a role you created. Users with the workspace **Contributor** role or higher see the **Security** option and can assign users to a role. Semantic model ownership or **Build** permission might also be required depending on the scenario.
+
+Note
+
+You can only manage security on semantic models that have row-level security roles already defined in Power BI Desktop or when editing your data model in the Power BI service. If your semantic model doesn't have roles already defined, you can't manage security in the Power BI service.
+
+## Manage RLS role membership in the Power BI service
+
+### Add members to an RLS role
+
+In the Power BI service, you can add a member to an RLS role by typing in the email address or name of the user or security group. You can't add groups created in Power BI. You can add members external to your organization. For guidance on how RLS works with external B2B guest users, see Considerations for external (B2B guest) users.
+
+You can use the following Microsoft Entra ID and email-enabled groups to set up row-level security:
+
+- Distribution group
+- Mail-enabled group
+- Microsoft Entra security group — If the security group contains external B2B guest users, see Considerations for external (B2B guest) users for known limitations.
+
+Important
+
+Microsoft 365 groups aren't supported and can't be added to any RLS roles. Only the group types listed above are supported for RLS role membership.
+
+You can see how many members are part of the role by the number in parentheses next to the role name, or next to **Members**.
+
+### Remove members from an RLS role
+
+You can remove members by selecting the **X** next to their name.
+
+## Validate the role within the Power BI service
+
+You can validate that the RLS role you defined works correctly in the Power BI service by testing the role.
+
+1. Select **More options** (...) next to the role.
+2. Select **Test as role**.
+
+Note
+
+Dashboards aren't available for testing using the **Test as role** option. You're redirected to the report that was published from Power BI Desktop with this semantic model, if one exists.
+
+When the report loads, verify the following:
+
+- The report displays only data rows that match the filter expression defined in the role.
+- Visuals, tables, and charts reflect the filtered data, not the full dataset.
+- If you use dynamic RLS, the data corresponds to the identity shown in the **Now viewing as** header.
+
+In the page header, the role being applied is shown. Test other roles, a combination of roles, or a specific person by selecting **Now viewing as**. Here you see important permissions details pertaining to the individual or role being tested. For more information about how permissions interact with RLS, see RLS user experience.
+
+Test other reports connected to the semantic model by selecting **Viewing** in the page header. You can only test reports located in the same workspace as your semantic model.
+
+To return to normal viewing, select **Back to Row-Level Security**.
+
+Note
+
+The **Test as role** feature doesn't work for DirectQuery semantic models with single sign-on (SSO) enabled. Additionally, not all aspects of a report can be validated in the **Test as role** feature, including Q&A visualizations, Quick insights visualizations, and Copilot.
+
+Tip
+
+**If Test as role doesn't show the expected results**, try the following:
+
+- Verify the DAX filter expression syntax is correct and references the right column names.
+- Make sure you selected the correct role to test.
+- For dynamic RLS, confirm the user-mapping table contains matching values for `USERPRINCIPALNAME()` or `USERNAME()`.
+- For DirectQuery semantic models with SSO enabled, **Test as role** isn't supported. Instead, sign in as an actual Viewer-role user to validate data filtering.
+
+## Using the username() or userprincipalname() DAX function
+
+You can take advantage of the DAX functions *username()* or *userprincipalname()* within your dataset. You can use them within expressions in Power BI Desktop. When you publish your model, it will be used within the Power BI service.
+
+Within Power BI Desktop, *username()* will return a user in the format of *DOMAIN\User* and *userprincipalname()* will return a user in the format of *user@contoso.com*.
+
+Within the Power BI service, *username()* and *userprincipalname()* will both return the user's User Principal Name (UPN). This looks similar to an email address.
+
+## Use RLS with workspaces in Power BI
+
+If you publish your Power BI Desktop report to a workspace in the Power BI service, the RLS roles are applied to members assigned to the **Viewer** role in the workspace. Even if **Viewers** are given **Build** permissions to the semantic model, RLS still applies. For example, if Viewers with **Build** permissions use Analyze in Excel, their view of the data is restricted by RLS. Workspace members assigned **Admin**, **Member**, or **Contributor** have edit permission for the semantic model and, therefore, RLS doesn't apply to them. If you want RLS to apply to people in a workspace, you can only assign them the **Viewer** role. For more information, see roles in workspaces.
+
+## Considerations for external (B2B guest) users
+
+If you share Power BI content with external users through Microsoft Entra B2B, be aware of the following considerations for RLS.
+
+### Microsoft Entra security groups with external members
+
+Microsoft Entra security groups that contain external B2B guest users might not work as expected when used for RLS role membership. In some configurations — particularly when the external user has a guest-type account (rather than a member-type account) — the guest's group membership isn't correctly evaluated by the Power BI service when enforcing RLS filters.
+
+**Recommended workaround:** Instead of adding external users to RLS roles through Microsoft Entra security groups, add them directly to the role by email address. The email address is resolved to the user's B2B account. This ensures their identity is correctly matched when RLS filters are applied. For more information, see Manage RLS role membership in the Power BI service.
+
+For organizations with many external users, consider using dynamic RLS with `USERPRINCIPALNAME()` instead of group-based role membership. This approach evaluates each user's identity individually and avoids the group membership resolution issue entirely.
+
+Important
+
+If you currently use Microsoft Entra security groups for RLS role membership and those groups include B2B guest users, verify that the guest users see the correct filtered data. If they don't, add the external users directly to the RLS role by email address.
+
+Note
+
+The exact scope of this limitation may vary depending on your Microsoft Entra ID configuration and the type of B2B guest invitation used. Always test with actual guest user accounts before relying on group-based RLS for external access.
+
+If the issue persists after applying the workaround, see Troubleshoot: External B2B guest sees no data in a Power BI report for additional diagnostic steps.
+
+### UPN resolution for B2B guests in Power BI RLS
+
+When an external B2B guest user accesses a Power BI report, the `USERPRINCIPALNAME()` DAX function typically returns an email-like identifier (for example, `user@partner.com`). In some configurations, it might return a guest UPN in the `#EXT#` format (for example, `user_partner.com#EXT#@yourtenant.onmicrosoft.com`).
+
+This distinction matters for dynamic RLS. If your user-mapping table stores a different identifier format than what `USERPRINCIPALNAME()` returns, the filter expression won't match, and the guest user might see no data or incorrect data.
+
+### USERNAME() behavior for B2B guests in Power BI RLS
+
+The `USERNAME()` DAX function returns the user's `domain\username` identifier. For B2B guest users, `USERNAME()` often returns a UPN-like identifier similar to `USERPRINCIPALNAME()`, depending on configuration (for example, `user@partner.com`) rather than a `domain\username` format. Because `USERNAME()` and `USERPRINCIPALNAME()` often return the same value for B2B guests, most implementations use `USERPRINCIPALNAME()` for consistency.
+
+Tip
+
+If your existing dynamic RLS uses `USERNAME()`, verify what value it returns for guest users in your environment before sharing content externally. You can check by adding a card visual displaying `USERNAME()` in a test report.
+
+**Recommended approach:** Store and consistently use the same identifier format in your user-mapping table as the value returned by `USERPRINCIPALNAME()`. In most cases, using email addresses simplifies management:
+
+```dax
+[UserEmail] = USERPRINCIPALNAME()
+```
+
+Where the `UserEmail` column contains email addresses like `user@partner.com` for both internal and external users.
+
+Note
+
+The value returned by `USERPRINCIPALNAME()` is the user's sign-in identifier (UPN), not necessarily their email address. For most users these are the same, but they can differ (for example, when a user's email is an alias). When building your user-mapping table, use the value returned by `USERPRINCIPALNAME()` rather than the `mail` attribute from Microsoft Entra ID.
+
+Important
+
+If you use dynamic RLS with `USERPRINCIPALNAME()`, always test with actual external guest users. The Test as role feature uses your own identity and won't reveal external user UPN resolution issues.
+
+Note
+
+UPN resolution behavior for B2B guests can vary depending on your Microsoft Entra ID configuration, such as cross-tenant access settings and guest user type. Always validate the behavior in your specific environment.
+
+### Troubleshoot: External B2B guest sees no data in a Power BI report
+
+If a B2B guest user sees an empty report or receives a "no data" message, follow these steps:
+
+1. **Verify the returned UPN format** — Create a test measure using `USERPRINCIPALNAME()` and display it in a card visual. Have the guest user view the report to see the actual value returned.
+2. **Check the user-mapping table** — Confirm the mapping table contains a row with a value that exactly matches what `USERPRINCIPALNAME()` returns for that guest.
+3. **Check for case sensitivity** — DAX string comparisons are case-insensitive by default, but verify your data source hasn't introduced case-sensitive values.
+4. **Review cross-tenant access settings** — If your organization uses cross-tenant access policies, these can affect which UPN format is presented to Power BI.
+5. **Test with the actual guest user** — The **Test as role** feature uses your own identity. Always validate with the real external guest account.
+6. **Verify role assignment** — If a guest user sees *more* data than expected, confirm they're assigned to an RLS role. Users who aren't assigned to any RLS role typically see no data (empty results), because RLS is enforced but no matching role is applied. A DAX filter evaluates TRUE/FALSE for each row. Only rows that return TRUE are visible. Everything else is completely removed.
+
+For more information on sharing Power BI content with external users, see Distribute Power BI content to external guest users with Microsoft Entra B2B.
+
+## Considerations and limitations
+
+You can see the current limitations for row-level security on cloud models here:
+
+- If you previously defined roles and rules in the Power BI service, you must re-create them in Power BI Desktop.
+- You can define RLS only on the semantic models created with Power BI Desktop. If you want to enable RLS for semantic models created with Excel, you must convert your files into Power BI Desktop (PBIX) files first. Learn more.
+- Service principals can't be added to an RLS role. Accordingly, RLS isn't applied for apps using a service principal as the final effective identity.
+- Only Import and DirectQuery connections are supported. Live connections to Analysis Services are handled in the on-premises model.
+- With RLS enabled, using the USERELATIONSHIP() function in DAX queries and measures might cause unexpected errors. To work around this issue, redesign your DAX expressions to avoid USERELATIONSHIP() and use model-level relationships or other DAX patterns instead.
+- The Test as role/View as role feature doesn't work for DirectQuery models with single sign-on (SSO) enabled.
+- The Test as role/view as role feature shows only reports from semantic models workspace.
+- The Test as role/View as role feature doesn't work for paginated reports.
+- The token-based identity only works for DirectQuery models on a capacity connected to an Azure SQL Database that's configured to allow Microsoft Entra authentication. For more information, see Embed a report with token-based identity
+- The 'IdentityBlob' parameter is an OAuth 2.0 access token for Azure SQL and is only supported for datasets with a DirectQuery connection to Azure SQL. The mechanism itself is Azure-SQL-specific: The blob *is* a Microsoft Entra access token scoped to `https://database.windows.net/.default`. There's no equivalent token-passing mechanism for other data sources in App-owns-data embedding. For more information, see REST API reference for GenerateToken.
+
+## Considerations and limitations for dynamic RLS
+
+When you use dynamic row-level security (RLS) with DAX functions like `USERPRINCIPALNAME()`, `USERNAME()`, or `CUSTOMDATA()`, be aware of the following considerations.
+
+### B2B cross-tenant scenarios
+
+In B2B scenarios, `USERPRINCIPALNAME()` returns the identity as resolved by the Power BI service, which may differ depending on tenant configuration. It can appear as either:
+
+- The external user’s email address (user@partner.com), or
+- A tenant-resolved value such as user\_partner.com#EXT#@tenant.onmicrosoft.com
+
+The exact format isn’t guaranteed and must be validated in your environment.
+
+If your user-mapping table stores identifiers in a different format than what `USERPRINCIPALNAME()` returns for guest users, the RLS filter expression won't match and the guest sees no data or incorrect data. Always verify the exact value returned by `USERPRINCIPALNAME()` for external users in your environment.
+
+Tip
+
+Create a test measure using `USERPRINCIPALNAME()` and display it in a card visual. Have external guest users view the report to confirm the returned value matches your user-mapping table. This simple test can prevent hours of debugging mismatched identity values.
+
+### Test as role limitations with dynamic RLS
+
+The **Test as role** feature in the Power BI service uses your own identity when evaluating dynamic RLS expressions. This means `USERPRINCIPALNAME()` returns **your** UPN, not that of the user you're trying to simulate. You can't use **Test as role** to see what a specific B2B guest user or service principal would see.
+
+**Test as role** simulates role membership but doesn’t fully replicate the authentication context of another user, especially for B2B guests or embedded scenarios.
+
+To validate dynamic RLS for external users, sign in as the actual guest user and view the report directly. This is the only way to confirm that `USERPRINCIPALNAME()` returns the expected value and that RLS filters match correctly for that user.
+
+### Embedded scenarios with service principals
+
+When a report is accessed through an embedded application that authenticates with a service principal, `USERPRINCIPALNAME()` and `USERNAME()` return the service principal's application ID or an empty string—not an end user's identity.
+
+These functions don’t return the end user identity and therefore can’t be used for per-user filtering in service principal embedding scenarios. This means dynamic RLS filters based on these functions won't filter data per user in embedded scenarios.
+
+To apply per-user RLS in embedded scenarios, use the **effective identity** feature of the Power BI REST API. Pass the `EffectiveIdentity` object with the appropriate username and roles when generating an embed token. If your RLS rules use `CUSTOMDATA()`, pass the custom data string through `EffectiveIdentity.CustomData`.
+
+For more information, see RLS for Embedded scenarios for ISVs.
+
+Important
+
+When embedding with a service principal, always test with actual embed tokens that include `EffectiveIdentity` to verify that RLS filters are applied correctly. The **Test as role** feature in the Power BI service does not simulate embedded authentication flows.
+
+Keep in mind that if a Power BI report references a row with RLS configured then the same message displays as for a deleted or non-existing field. To these users, it looks like the report is broken.
+
+## FAQ
+
+**Question:** What if I have previously created roles and rules for a dataset in the Power BI service? Do they still work if I do nothing?**Answer:** No, visuals won't render properly. You have to re-create the roles and rules within Power BI Desktop and then publish to the Power BI service.
+
+**Question:** Can I create these roles for Analysis Services data sources?**Answer:** Yes, if you imported the data into Power BI Desktop. If you're using a live connection, you can't configure RLS within the Power BI service. You define RLS in the Analysis Services model on-premises.
+
+**Question:** Can I use RLS to limit the columns or measures accessible by my users?**Answer:** No, if a user has access to a particular row of data, they can see all the columns of data for that row. To restrict access to columns and column metadata, consider using object-level security.
+
+**Question:** Does RLS let me hide detailed data but give access to data summarized in visuals?**Answer:** No, you secure individual rows of data, but users can always see either the details or the summarized data.
+
+**Question:** My data source already has security roles defined (for example SQL Server roles or SAP BW roles). What's the relationship between these roles and RLS?**Answer:** The answer depends on whether you're importing data or using DirectQuery. If you're importing data into your Power BI dataset, the security roles in your data source aren't used. In this case, you should define RLS to enforce security rules for users who connect in Power BI. If you're using DirectQuery, the security roles in your data source are used. When a user opens a report, Power BI sends a query to the underlying data source, which applies security rules to the data based on the user's credentials.
+
+**Question:** Can a user belong to more than one role?**Answer:** A user can belong to multiple roles, and the roles are additive. For example, if a user belongs to both the "Sales" and "Marketing" roles, they can see data for both these roles.

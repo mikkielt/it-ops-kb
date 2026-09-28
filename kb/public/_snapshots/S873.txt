@@ -1,0 +1,44 @@
+source: S873
+url: https://www.edpb.europa.eu/news/news/2025/edpb-adopts-pseudonymisation-guidelines-and-paves-way-improve-cooperation_en
+title: EDPB news: adopts pseudonymisation guidelines (+ PDF https://www.edpb.europa.eu/system/files/2025-01/edpb_guidelines_202501_pseudonymisation_en.pdf sha256 db1b9931b3403fab8bab846cb5868df776c415589ad925477117bc6b062bd085)
+publisher: EDPB
+licence: EDPB reuse notice (reuse authorised, source acknowledged, meaning not distorted)
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+##
+EDPB adopts pseudonymisation guidelines and paves the way to improve cooperation with competition authorities
+EDPB News
+17 January 2025
+Brussels, 17 January - During its January 2025 plenary meeting, the European Data Protection Board (EDPB) has adopted guidelines on pseudonymisation, as well as a statement on the interplay of competition law and data protection.
+EDPB clarifies the use of pseudonymisation for GDPR compliance
+The GDPR introduces the term ‘pseudonymisation’* and refers to it as a safeguard that may be appropriate and effective to meet data protection obligations. In its guidelines, the EDPB clarifies the definition and applicability of pseudonymisation and pseudonymised data, and the advantages of pseudonymisation.
+The guidelines provide two important legal clarifications:
+Pseudonymised data, which could be attributed to an individual by the use of additional information, remains information related to an identifiable natural person and is therefore still personal data. Indeed, if the data can be linked back to an individual by the data controller or someone else, it remains personal data.
+Pseudonymisation can reduce risks and make it easier to use legitimate interests as a legal basis (Art. 6(1)(f) GDPR), as long as all other GDPR requirements are met. Likewise, pseudonymisation can aid in securing compatibility with the original purpose (Art. 6(4) GDPR).
+The guidelines also explain how pseudonymisation can help organisations meet their obligations relating to the implementation of data protection principles (Art. 5 GDPR), data protection by design and default (Art. 25 GDPR) and security (Art. 32 GDPR).
+Finally, the guidelines analyse technical measures and safeguards, when using pseudonymisation, to ensure confidentiality and prevent unauthorised identification of individuals.
+The guidelines will be subject to public consultation until 28 February 2025, providing stakeholders with the opportunity to comment and allowing for the incorporation of future developments in case law.
+Interplay between data protection law and competition law: the EDPB’s take on how to improve cooperation between regulators
+During the plenary meeting, the EDPB also adopted a position paper on the interplay between data protection law and competition law.
+The CJEU Meta vs. Bundeskartellamt ruling of 4 July 2023 clearly indicated that data protection and competition authorities are required to work together, in some cases, to achieve effective and coordinated enforcement of data protection and competition law. While these are separate areas of law pursuing different goals in different frameworks, they may in some cases apply to the same entities. It is therefore important to assess situations where the laws may intersect.
+In this position paper, the EDPB explains how data protection and competition law interact. It suggests steps for incorporating market and competition factors into data protection practices and for data protection rules to be considered in competition assessments. It also provides recommendations for improving cooperation between regulators. For example: authorities should consider creating a single point of contact to manage coordination with other regulators.
+EDPB Deputy Chair Zdravko Vukíc said: “As business models evolve, the need to protect personal data is becoming increasingly central. The EDPB promotes coherence among separate but interacting areas of regulation, to ensure the best possible protection of individuals. To this end, we will continue to work together with Competition Authorities to strengthen the ability of Data Protection Authorities (DPAs) to take into account the economic context, and the ability of Competition Authorities to incorporate data protection considerations in their assessments and decisions.”
+Note to editors:
+*’ Pseudonymisation’ is defined in Art. 4 (5) GDPR as “the processing of personal data in such a manner that the personal data can no longer be attributed to a specific data subject without the use of additional information, provided that such additional information is kept separately and is subject to technical and organisational measures to ensure that the personal data are not attributed to an identified or identifiable natural person.”
+Relevant topics
+Cooperation between authorities
+## Latest news
+RSS Feed
+National News
+ie
+### The Irish Data Protection Commission fines Google 403 000 000 EUR following Inquiry into Google’s processing of location data
+23 September 2026
+National News
+es
+### The Spanish DPA fined Securitas Direct 100 000 EUR for making the exercise of data subject rights more difficult by directing individuals to a chargeable telephone number
+22 September 2026
+EDPB News
+### EDPB harmonises fining methodology and adopts final DSA-GDPR guidelines
+21 September 2026
+All news

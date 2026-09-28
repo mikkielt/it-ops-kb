@@ -1,0 +1,95 @@
+source: S2093
+url: https://learn.microsoft.com/en-us/azure/ai-services/language-service/concepts/data-limits
+title: Service limits for Azure Language in Foundry Tools
+publisher: Microsoft
+licence: CC BY 4.0 (public mirror MicrosoftDocs/azure-ai-docs)
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+# Data limits for Language service features - Foundry Tools | Microsoft Learn
+
+Note
+
+This article only describes the limits for preconfigured features in Azure Language in Foundry Tools: To see the service limits for customizable features, see the following articles:
+
+- Custom classification
+- Custom NER
+- Conversational language understanding
+- Question answering
+
+Use this article to find the limits for the size, and rates that you can send data to the following features of Azure Language.
+
+- Named Entity Recognition (NER)
+- Personally Identifiable Information (PII) detection
+- Key phrase extraction
+- Entity linking
+- Text Analytics for health
+- Sentiment analysis and opinion mining
+- Language detection
+
+When using features of Azure Language, keep the following information in mind:
+
+- Pricing is independent of data or rate limits. Pricing is based on the number of text records you send to the API, and is subject to your Language resource's pricing details. **A text record is measured as 1000 characters**.
+- Data and rate limits are based on the number of documents you send to the API. If you need to analyze larger documents than the limit allows, you can break the text into smaller chunks of text before sending them to the API.
+- A document is a single string of text characters.
+
+## Maximum characters per document
+
+| The following limit specifies the maximum number of characters that can be in a single document. |
+
+| Feature | Maximum value |
+| --- | --- |
+| **Text Analytics for health** | 125,000 characters as measured by StringInfo.LengthInTextElements. |
+| **Conversation PII** | 1,000 characters as measured by **Analyze Conversations** API. A conversation can have a list of conversation items (turns). 1,000 is the max limit for each conversation item (not for the entire conversation). The conversation PII API supports asynchronous requests only. |
+| **All other preconfigured features (synchronous)** | 5,120 as measured by StringInfo.LengthInTextElements. If you need to submit larger documents, consider using the feature asynchronously. |
+| **All other preconfigured features (asynchronous)** | 125,000 characters across all submitted documents, as measured by StringInfo.LengthInTextElements (maximum of 25 documents). |
+
+If a document exceeds the character limit, the API behaves differently depending on how you're sending requests.
+
+If you're sending requests synchronously:
+
+- The API doesn't process documents that exceed the maximum size, and returns an invalid document error for it. If an API request has multiple documents, the API continues processing them if they are within the character limit.
+
+If you're sending requests asynchronously:
+
+- The API rejects the entire request and returns a `400 bad request` error if any document within it exceeds the maximum size.
+
+## Maximum request size
+
+The following limit specifies the maximum size of documents contained in the entire request.
+
+| Feature | Value |
+| --- | --- |
+| All preconfigured features | 1 MB |
+
+## Maximum documents per request
+
+Exceeding the following document limits generates an HTTP 400 error code.
+
+Note
+
+When sending asynchronous API requests, you can send a maximum of 25 documents per request.
+
+| Feature | Max Documents Per Request |
+| --- | --- |
+| Conversation summarization | 1 |
+| Language Detection | 1000 |
+| Sentiment Analysis | 10 |
+| Opinion Mining | 10 |
+| Key Phrase Extraction | 10 |
+| Named Entity Recognition (NER) | 5 |
+| Personally Identifying Information (PII) detection | 5 |
+| Document summarization | 25 |
+| Entity Linking | 5 |
+| Text Analytics for health | 25 for the web-based API, 1000 for the container. (125,000 characters in total) |
+
+## Rate limits
+
+Your rate limit varies with your pricing tier. These limits are the same for both versions of the API. These rate limits don't apply to the Text Analytics for health container, which doesn't have a set rate limit.
+
+| Tier | Requests per second | Requests per minute |
+| --- | --- | --- |
+| S / Multi-service | 1000 | 1000 |
+| S0 / F0 | 100 | 300 |
+
+Requests rates are measured for each feature separately. You can send the maximum number of requests for your pricing tier to each feature, at the same time. For example, if you're in the `S` tier and send 1000 requests at once, you wouldn't be able to send another request for 59 seconds.

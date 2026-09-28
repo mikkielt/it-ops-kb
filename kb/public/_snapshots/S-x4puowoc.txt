@@ -1,0 +1,309 @@
+source: S-x4puowoc
+url: https://learn.microsoft.com/powershell/module/microsoft.powershell.secretstore/set-secretstoreconfiguration
+title: Set-SecretStoreConfiguration
+publisher: Microsoft Learn
+licence: CC BY 4.0 (public mirror MicrosoftDocs/PowerShell-Docs-Modules)
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+# Set-SecretStoreConfiguration
+
+- Module:
+    - Microsoft.PowerShell.SecretStore Module
+
+Configures the **SecretStore**.
+
+## Syntax
+
+### ParameterSet (Default)
+
+```Syntax
+Set-SecretStoreConfiguration
+    [-Scope <SecureStoreScope>]
+    [-Authentication <Authenticate>]
+    [-PasswordTimeout <Int32>]
+    [-Interaction <Interaction>]
+    [-Password <SecureString>]
+    [-PassThru]
+    [-WhatIf]
+    [-Confirm]
+    [<CommonParameters>]
+```
+
+### DefaultParameterSet
+
+```Syntax
+Set-SecretStoreConfiguration
+    [-Default]
+    [-Password <SecureString>]
+    [-PassThru]
+    [-WhatIf]
+    [-Confirm]
+    [<CommonParameters>]
+```
+
+## Description
+
+Important
+
+The PowerShell team has decided that Secret modules are feature complete and will no longer be actively developed. The modules will continue to be supported for security and critical bug fixes. The code repository has been archived.
+
+The latest versions published are:
+
+- Microsoft.PowerShell.SecretManagement v1.1.2
+- Microsoft.PowerShell.SecretStore v1.0.6
+
+The nature of secrets has fundamentally changed since this project was designed. Passwordless authentication methods such as passkeys, single sign-on, and federated credential systems such as Microsoft Entra ID, biometrics, and hardware security keys are the future.
+
+This cmdlet configures the **SecretStore** for the current user.
+
+## Examples
+
+### Example 1
+
+```powershell
+PS C:\> Set-SecretStoreConfiguration -Default
+
+Confirm
+Are you sure you want to perform this action?
+Performing the operation "Changes local store configuration" on target "SecretStore module local store".
+[Y] Yes  [A] Yes to All  [N] No  [L] No to All  [S] Suspend  [?] Help (default is "Y"): Y
+
+      Scope Authentication PasswordTimeout Interaction
+      ----- -------------- --------------- -----------
+CurrentUser       Password             900      Prompt
+```
+
+This example restores the **SecretStore** to its default configuration.
+
+## Parameters
+
+### -Authentication
+
+Specifies how to authenticate access to the **SecretStore**. The value must be `Password` or `None`. If specified as `None`, the cmdlet enables access to the **SecretStore** without a password. The default authentication is `Password`.
+
+Caution
+
+Setting the **Authentication** to `None` is less secure than `Password`. Specifying `None` may be useful for testing scenarios but shouldn't be used with important secrets.
+
+#### Parameter properties
+
+| Type: | Microsoft.PowerShell.SecretStore.Authenticate |
+| --- | --- |
+| Default value: | Password |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ ParameterSet
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -Confirm
+
+Prompts you for confirmation before running the cmdlet.
+
+#### Parameter properties
+
+| Type: | SwitchParameter |
+| --- | --- |
+| Default value: | False |
+| Supports wildcards: | False |
+| DontShow: | False |
+| Aliases: | cf |
+
+#### Parameter sets
+
+ (All)
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -Default
+
+Indicates that the **SecretStore** should be set to its default configuration.
+
+#### Parameter properties
+
+| Type: | SwitchParameter |
+| --- | --- |
+| Default value: | False |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ DefaultParameterSet
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -Interaction
+
+Specifies whether the **SecretStore** should prompt a user when they access it. If the value is `Prompt`, the user is prompted for their password in interactive sessions when required. If the value is `None`, the user isn't prompted for a password. If the value is `None` and a password is required, the cmdlet requiring the password throws a **Microsoft.PowerShell.SecretStore.PasswordRequiredException** error.
+
+#### Parameter properties
+
+| Type: | Microsoft.PowerShell.SecretStore.Interaction |
+| --- | --- |
+| Default value: | False |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ ParameterSet
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -PassThru
+
+Indicates that the cmdlet should return the **SecretStore** configuration after updating it. By default, the cmdlet returns no output.
+
+#### Parameter properties
+
+| Type: | SwitchParameter |
+| --- | --- |
+| Default value: | False |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ (All)
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -Password
+
+Specifies the password needed to access the **SecretStore**. This parameter can't be used to change the existing password. To change the existing password, use `Set-SecretStorePassword`.
+
+When this parameter is used with the **Authenticate** parameter to change the configuration for authentication from `None` to `Password`, this parameter's value is set as the new password for the **SecretStore**.
+
+When this parameter is used with the **Authenticate** parameter to change the configuration for authentication from `Password` to `None`, this parameter's value must be the current password for the **SecretStore**. It's used to authorize the configuration change.
+
+#### Parameter properties
+
+| Type: | SecureString |
+| --- | --- |
+| Default value: | None |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ (All)
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -PasswordTimeout
+
+Specifies how many seconds the **SecretStore** remains unlocked after authenticating with a password. After the timeout has elapsed, the current password value is invalidated for the session. Accessing the **SecretStore** after the timeout requires the password again.
+
+#### Parameter properties
+
+| Type: | Int32 |
+| --- | --- |
+| Default value: | None |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ ParameterSet
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -Scope
+
+Specifies the context the **SecretStore** is configured for. Only `CurrentUser` is currently supported.
+
+#### Parameter properties
+
+| Type: | Microsoft.PowerShell.SecretStore.SecureStoreScope |
+| --- | --- |
+| Default value: | None |
+| Accepted values: | CurrentUser, AllUsers |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ ParameterSet
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -WhatIf
+
+Shows what would happen if the cmdlet runs. The cmdlet isn't run.
+
+#### Parameter properties
+
+| Type: | SwitchParameter |
+| --- | --- |
+| Default value: | False |
+| Supports wildcards: | False |
+| DontShow: | False |
+| Aliases: | wi |
+
+#### Parameter sets
+
+ (All)
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### CommonParameters
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable, -ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see about_CommonParameters.
+
+## Inputs
+
+### None
+
+## Outputs
+
+### Microsoft.PowerShell.SecretStore.SecureStoreConfig

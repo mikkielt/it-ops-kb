@@ -1,0 +1,143 @@
+source: S931
+url: https://docs.ansible.com/ansible/latest/collections/ansible/windows/dsc3_module.html
+title: ansible.windows.dsc3 module
+publisher: Ansible project
+licence: GPL-3.0 (ansible/ansible-documentation COPYING; module docs GPL-3.0-or-later)
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+Blog
+Ansible community forum
+Documentation
+Ansible Community Documentation
+Collection Index
+Collections in the Ansible Namespace
+Ansible.Windows
+ansible.windows.dsc3 module – Sets or checks DSC v3 configuration state
+Edit on GitHub
+# ansible.windows.dsc3 module – Sets or checks DSC v3 configuration state
+Note
+This module is part of the ansible.windows collection (version 3.8.0).
+You might already have this collection installed if you are using the ansible package.
+It is not included in ansible-core.
+To check whether it is installed, run ansible-galaxy collection list.
+To install it, use: ansible-galaxy collection install ansible.windows.
+To use it in a playbook, specify: ansible.windows.dsc3.
+New in ansible.windows 3.4.0
+## Synopsis
+Calls dsc config set or dsc config test using config as the configuration document.
+This module assumes that dsc can be found using PATH environment variable, and dsc itself relies on PATH for resource discovery. Manipulate the environment variable directly if dsc is not already discoverable using PATH.
+Note
+This module has a corresponding action plugin.
+## Parameters
+Parameter
+Comments
+config
+dictionary
+The DSC configuration document to set or test.
+See https://learn.microsoft.com/en-us/powershell/dsc/concepts/configuration-documents/overview?view=dsc-3.0 for an overview of how to author a configuration document.
+The $schema top-level property may be omitted. If so, it will default to https://aka.ms/dsc/schemas/v3/bundled/config/document.json
+One of config or config_file must be specified.
+config_file
+path
+Path to DSC configuration document either on the control node or the target host.
+The remote_config_file parameter controls whether the file is located on the control node (false) or the target host (true).
+This corresponds to the --file DSC commandline option.
+One of config or config_file must be specified.
+parameters
+dictionary
+Runtime parameter values.
+This corresponds to the --parameters commandline option.
+remote_config_file
+boolean
+Whether the provided config_file is already on the target host.
+If false, the file will be transferred from the control node to the target host and removed after the module is done.
+A local config_file cannot be used with async tasks, the file will need to be pre-transferred to the target host.
+Choices:
+false
+true ← (default)
+trace_level
+string
+Specify level of tracing output, which are returned in stderr_lines.
+This corresponds to the --trace-level DSC commandline option.
+Choices:
+"error"
+"warn" ← (default)
+"info"
+"debug"
+"trace"
+## Examples
+- name: Install DSC3 using WinGet
+ansible.windows.win_command:
+argv:
+- winget
+- install
+- --id=Microsoft.DSC
+- --exact
+- --source=winget
+- --scope=machine
+- --accept-package-agreements
+- --accept-source-agreements
+- --disable-interactivity
+creates: '{{ ansible_env.ProgramFiles }}\WinGet\Links\dsc.exe'
+- name: Install .NET Framework SDK from winget
+ansible.windows.dsc3:
+config:
+resources:
+- name: Install .NET Framework
+type: Microsoft.WinGet/Package
+properties:
+id: Microsoft.DotNet.Framework.DeveloperPack_4
+source: winget
+- name: Install Visual Studio Build Tools
+ansible.windows.dsc3:
+config:
+resources:
+- name: Install Visual Studio
+type: Microsoft.WinGet/Package
+properties:
+id: Microsoft.VisualStudio.2022.{{ vs_product }}
+source: winget
+- name: Install Visual Studio components
+type: Microsoft.VisualStudio.DSC/VSComponents
+properties:
+productId: Microsoft.VisualStudio.Product.{{ vs_product }}
+channelId: VisualStudio.17.Release
+components:
+- Microsoft.VisualStudio.Component.VC.14.44.17.14.x86.x64
+- Microsoft.VisualStudio.Component.Windows11SDK.22621
+vars:
+vs_product: BuildTools
+## Return Values
+Common return values are documented here, the following are the fields unique to this module:
+Key
+Description
+rc
+integer
+Exit code of dsc
+Returned: always
+result
+dictionary
+Result object returned by dsc.
+The exact schema of this object depends on the command used to invoke dsc. For example, https://learn.microsoft.com/en-us/powershell/dsc/reference/schemas/outputs/config/set?view=dsc-3.0 or https://learn.microsoft.com/en-us/powershell/dsc/reference/schemas/outputs/config/test?view=dsc-3.0.
+Returned: success
+metadata
+dictionary
+Details regarding the DSC execution.
+See https://learn.microsoft.com/en-us/powershell/dsc/reference/schemas/metadata/microsoft.dsc/properties?view=dsc-3.0.
+Returned: success
+results
+list / elements=string
+List of results from each resource that were configured.
+The schema of each item depends on the DSC operation used, and the resource’s type.
+Returned: success
+stderr_lines
+list / elements=string
+Logging and tracing messages from dsc.
+May be empty if no messages were emitted at the levels allowed by trace_level.
+Returned: always
+### Authors
+Yang Zhao (@yangskyboxlabs)
+### Collection links
+Issue Tracker
+Repository (Sources)

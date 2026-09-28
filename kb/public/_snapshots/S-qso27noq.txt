@@ -1,0 +1,579 @@
+source: S-qso27noq
+url: https://github.com/github/gh-aw
+title: github/gh-aw (GitHub Agentic Workflows)
+publisher: GitHub
+licence: MIT
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+github
+/
+gh-aw
+Public
+Notifications
+You must be signed in to change notification settings
+Fork
+562
+Star
+5.2k
+BranchesTags
+Open more actions menu
+## Latest commit
+## History
+17,966 Commits
+17,966 Commits
+## Folders and files
+NameName
+Last commit message
+Last commit date
+.changeset
+.changeset
+.claude/skills/playwright-cli
+.claude/skills/playwright-cli
+.devcontainer
+.devcontainer
+.github
+.github
+.sentrux
+.sentrux
+.serena
+.serena
+.smoke-tests
+.smoke-tests
+.squad
+.squad
+.vscode
+.vscode
+actions
+actions
+cmd
+cmd
+docs
+docs
+eslint-factory
+eslint-factory
+internal/tools
+internal/tools
+pkg
+pkg
+research
+research
+schema-demos
+schema-demos
+schemas
+schemas
+scratchpad
+scratchpad
+scripts
+scripts
+specs
+specs
+tmp
+tmp
+.architecture.yml
+.architecture.yml
+.gitattributes
+.gitattributes
+.gitignore
+.gitignore
+.golangci.yml
+.golangci.yml
+.grant.yaml
+.grant.yaml
+.grype.yaml
+.grype.yaml
+.nvmrc
+.nvmrc
+.poutine.yml
+.poutine.yml
+.prettierignore
+.prettierignore
+.prettierrc.json
+.prettierrc.json
+AGENTS.md
+AGENTS.md
+CHANGELOG.md
+CHANGELOG.md
+CODEOWNERS
+CODEOWNERS
+CODE_OF_CONDUCT.md
+CODE_OF_CONDUCT.md
+CONTRIBUTING.md
+CONTRIBUTING.md
+DEADCODE.md
+DEADCODE.md
+DEVGUIDE.md
+DEVGUIDE.md
+DICTATION.md
+DICTATION.md
+Dockerfile
+Dockerfile
+LICENSE
+LICENSE
+Makefile
+Makefile
+README.md
+README.md
+SECURITY.md
+SECURITY.md
+SKILL.md
+SKILL.md
+SUPPORT.md
+SUPPORT.md
+create.md
+create.md
+debug.md
+debug.md
+gh-aw-wasm
+gh-aw-wasm
+go.mod
+go.mod
+go.sum
+go.sum
+install-gh-aw.ps1
+install-gh-aw.ps1
+install-gh-aw.sh
+install-gh-aw.sh
+install.md
+install.md
+linters
+linters
+meet-the-squad.md
+meet-the-squad.md
+optimize.md
+optimize.md
+package.md
+package.md
+test-setup-local.sh
+test-setup-local.sh
+test_dup_import
+test_dup_import
+{outname}.f
+{outname}.f
+## Repository files navigation
+# GitHub Agentic Workflows
+Agent quick links
+Hello fellow agent! Welcome to GitHub Agentic Workflows = Actions + Agent + Safety.
+Here are some pointers to get you started in using this tool.
+Create a new workflow: https://raw.githubusercontent.com/github/gh-aw/main/create.md
+Install: https://raw.githubusercontent.com/github/gh-aw/main/install.md
+Package a workflow repository: https://raw.githubusercontent.com/github/gh-aw/main/package.md
+Reference: https://raw.githubusercontent.com/github/gh-aw/main/.github/aw/github-agentic-workflows.md
+GitHub Agentic Workflows (gh-aw) lets developers define AI-powered repository automation in Markdown with YAML frontmatter and run AI agents securely through GitHub Actions. The gh-aw GitHub CLI extension compiles each agentic workflow into a standard GitHub Actions workflow.
+Use conventional GitHub Actions for deterministic builds, tests, linting, deployments, and reproducible scripts. Add an agentic workflow when a task needs reasoning or interpretation, such as issue triage, pull-request review, CI failure investigation, documentation maintenance, dependency analysis, or repository reporting. GitHub Agentic Workflows complements existing CI/CD; it does not replace it.
+Built-in AI engines include GitHub Copilot, Claude Code, OpenAI Codex, Google Gemini, and Pi. Agent jobs are read-only and sandboxed by default, and configured GitHub writes are normally applied through validated safe-outputs jobs with scoped permissions.
+## Contents
+Quick Start
+How Agentic Workflows work
+Security and permissions
+Documentation
+Contributing
+Community Contributions
+Related Projects
+Workshop
+Note
+A security vulnerability was discovered in versions >= 0.83.3, < 0.85.4 and, as a result, those releases were retired as a pre-emptive measure.
+## Quick Start
+Install the GitHub CLI extension:
+gh extension install github/gh-aw
+Then follow the GitHub Agentic Workflows quickstart to select an AI engine, add a sample workflow, and run it through GitHub Actions.
+## How Agentic Workflows work
+An agentic workflow has two parts: YAML frontmatter configures triggers, permissions, tools, and the AI engine; the Markdown body tells the AI agent what to accomplish. The gh aw compile command validates this source and generates the .lock.yml workflow that GitHub Actions executes. Learn how GitHub Agentic Workflows works.
+## Security and permissions
+Security, permissions, and controlled writes are core design concerns. The supported agent-job path defaults to read-only GitHub access and sandboxed execution. Safe outputs buffer configured writes, validate them, and apply them in separate jobs with scoped permissions. These controls are configurable, so workflow authors must review permissions, tools, network access, and generated files before deployment. Learn how GitHub Agentic Workflows handles security and permissions.
+Using agentic workflows in your repository requires careful attention to security considerations and careful human supervision, and even then things can still go wrong. Use it with caution, and at your own risk.
+## Documentation
+Use the GitHub Agentic Workflows documentation for these paths:
+Create an agentic workflow
+Choose and authenticate an AI engine
+Browse GitHub Agentic Workflows examples by task
+Review the security architecture
+Read the GitHub Agentic Workflows FAQ
+For AI agents and retrieval tools, use the published agent prompt index, full prompt corpus, and AI-readable project summary.
+## Contributing
+For development setup and contribution guidelines, see CONTRIBUTING.md.
+### Custom Go linters
+To build and test repository custom linters:
+go test ./pkg/linters/<linter-name>/...
+go build ./cmd/linters
+make golint-custom
+make golint-custom builds cmd/linters and runs the custom analyzers against ./cmd/... and ./pkg/....
+## 🌍 Community Contributions
+Community members whose issues were resolved — updated automatically.
+@a-sjogren-accenture (2)
+@aaronspindler (1)
+@abbottdev (1)
+@abillingsley (2)
+@adam-cobb (1)
+@adamhenson (2)
+@adamtasteslikegood (1)
+@adhikjoshi (1)
+@ahmadabdalla (1)
+@ajfeldman6 (1)
+@akkikumar72 (1)
+@AkshatRaj00 (1)
+@alanpeabody (1)
+@alcastaneda (1)
+@AlexanderWert (1)
+@AlexDeMichieli (1)
+@alexsiilvaa (2)
+@alondahari (17)
+@alvistar (2)
+@AmoebaChant (1)
+@anthonymastreanvae (11)
+@aoxiangtianyu-go (1)
+@apenab (1)
+@arabkin (1)
+@arezero (6)
+@arthurfvives (8)
+@Artur- (1)
+@asatara (1)
+@askpaisa (1)
+@askpt (1)
+@astefan (1)
+@awoisoak (1)
+@b-dantas (1)
+@b2pacific (1)
+@babaakihiro (2)
+@bartul (1)
+@bbonafed (23)
+@beardofedu (1)
+@benissimo (10)
+@benvillalobos (12)
+@blavity-machine-user (1)
+@blozano-tt (9)
+@bmerkle (3)
+@boydj (2)
+@Bra1nFartz (1)
+@BrandonLewis (1)
+@brendanlapuma (1)
+@bryanchen-d (24)
+@bryanknox (1)
+@bshore-bf (1)
+@Calidus (8)
+@camposbrunocampos (2)
+@carlincherry (1)
+@carlosflorencio (1)
+@CatsMiaow (1)
+@chepa92 (1)
+@chrisfregly (2)
+@chrizbo (7)
+@CiscoRob (2)
+@ckittel (2)
+@cknight (2)
+@clementbolin (1)
+@cogni-ai-ee (2)
+@consulthys (3)
+@Corb3nik (3)
+@corygehr (20)
+@corymhall (1)
+@crmitchelmore (3)
+@DaanLucas (1)
+@dagecko (1)
+@Daidanny008 (1)
+@Dan-Albrecht (1)
+@Dan-Co (2)
+@danielmeppiel (8)
+@danquirk (2)
+@darwin-gonzales (1)
+@davidahmann (3)
+@davidslater (4)
+@dbudym-cs (1)
+@DeagleGross (4)
+@devantler (2)
+@deyaaeldeen (10)
+@dfrysinger (2)
+@dgolombek (1)
+@dholmes (3)
+@dhrapson (2)
+@DimaBir (1)
+@dkurepa (1)
+@dneimke (1)
+@DogeAmazed (1)
+@Dongbumlee (2)
+@doughgle (1)
+@drehelis (4)
+@DrPye (1)
+@dsfaccini (4)
+@dsibilio (4)
+@dsolteszopyn (2)
+@dsyme (39)
+@duncankmckinnon (1)
+@eaftan (3)
+@edburns (1)
+@edgeq (2)
+@ekbritecore (3)
+@elefthei (1)
+@elika56 (1)
+@emexelem (1)
+@enbw-mmattes (1)
+@eran-medan (1)
+@ericchansen (1)
+@ericstj (2)
+@Esomoire-consultancy-Company (1)
+@Etienne-M (5)
+@Evangelink (5)
+@fbecar22 (3)
+@fchareyr (1)
+@FDevTakima (1)
+@ferryhinardi (1)
+@flatiron32 (2)
+@florianbader (1)
+@fr4nc1sc0-r4m0n (3)
+@funkymonkeyjam (2)
+@G1Vh (1)
+@GandrotulaRajesh (1)
+@github-actions (11)
+@github-antoine-brechon (4)
+@GKersten (1)
+@glitch-ux (1)
+@golivax (1)
+@grahame-white (9)
+@graphaelli (1)
+@GregoireW (1)
+@gregsmi (2)
+@h-no (1)
+@h3y6e (2)
+@haavamoa (1)
+@haolpku (1)
+@HardMax71 (1)
+@harrisoncramer (2)
+@heaversm (1)
+@heiskr (9)
+@hermanho (1)
+@holwerda (3)
+@hpsin (1)
+@hrishikeshathalye (1)
+@ianreay (1)
+@IEvangelist (14)
+@ilja (5)
+@Infinnerty (1)
+@insop (1)
+@ivancea (9)
+@j-srodka (6)
+@JaganGopalkrish (1)
+@jamesadevine (4)
+@JamesNK (4)
+@JanKrivanek (4)
+@jaroslawgajewski (29)
+@JasonYeMSFT (1)
+@Jasper13006 (1)
+@jbaruch (1)
+@jcooklin (1)
+@jeffhandley (12)
+@jeremiah-snee-openx (1)
+@jfomhover (1)
+@jhamon (2)
+@jiec-msft (1)
+@jitran (5)
+@JKamsker (1)
+@joesturge (1)
+@johndowns (1)
+@johnpreed (5)
+@johnwilliams-12 (11)
+@jonas-harmoney (1)
+@jonathanpeppers (5)
+@joperezr (1)
+@JoshGreenslade (2)
+@joshjohanning (1)
+@joshuadavidson (1)
+@jsalmassy (1)
+@jsoref (2)
+@jsquire (1)
+@jtracey93 (1)
+@kaovilai (4)
+@karl-petter-sj (1)
+@katriendg (1)
+@kbreit-insight (5)
+@KGoovaer (1)
+@kkruel8100 (4)
+@Knufle (1)
+@Krzysztof-Cieslak (1)
+@kthompson (1)
+@kubaflo (1)
+@labudis (2)
+@ladamski (1)
+@lecoursen (1)
+@lilseyi (2)
+@lindeberg (1)
+@lkraav (1)
+@loganrosen (7)
+@look (1)
+@lpcox (8)
+@ludoviclafole (1)
+@lukeed (1)
+@lupinthe14th (3)
+@lw396 (1)
+@m-titov (1)
+@maikelvdh (2)
+@mark-hingston (1)
+@mason-tim (8)
+@massirr (1)
+@matiloti (4)
+@mattcosta7 (1)
+@MatthewBunker (2)
+@MatthewLabasan-NBCU (2)
+@MattSkala (7)
+@MauroDruwel (4)
+@maxbeizer (1)
+@maxknv (1)
+@mcantrell (1)
+@mdashrraf (1)
+@MH0386 (1)
+@mhavelock (1)
+@michen00 (2)
+@microsasa (10)
+@misrarim (1)
+@mlinksva (1)
+@mnkiefer (13)
+@molson504x (2)
+@Mossaka (3)
+@mrfelton (5)
+@mrjf (7)
+@MrSanchez (1)
+@mstrathman (1)
+@mthalman (1)
+@mur6 (1)
+@Muradbarakat1986 (1)
+@mvdbos (2)
+@mwpastore (1)
+@NadyaDrozdova (1)
+@nestele (2)
+@neta-vega (3)
+@NicoAvanzDev (3)
+@NicolasRannou (1)
+@nihal467 (1)
+@Nikhil-Anand-DSG (1)
+@NikolajBjorner (2)
+@norrietaylor (11)
+@not-mksv (3)
+@octatone (1)
+@oscarvalenzuelab (1)
+@PaulAylward2 (1)
+@peter-hendy (1)
+@petercort (1)
+@pethers (1)
+@pgaskin (1)
+@pholleran (4)
+@Phonesis (1)
+@Pierrci (1)
+@plengauer (1)
+@pmalarme (1)
+@polmichel (2)
+@ppusateri (1)
+@praveenkuttappan (1)
+@prpercival (1)
+@PureWeen (10)
+@qwert666 (1)
+@r-garcia-de-oliveira (2)
+@rabo-unumed (4)
+@racedale (1)
+@radiantspace (3)
+@rafael-unloan (1)
+@rbstp (5)
+@reggie-k (4)
+@remypanicker (1)
+@rhardouin (4)
+@ricohomewood (2)
+@rmarinho (1)
+@robertdewilde-dev (1)
+@robinmam (1)
+@romainh-betclic (3)
+@rspurgeon (4)
+@Rubyj (3)
+@ruokun-niu (1)
+@ryckmansm (2)
+@salekseev (3)
+@salmanmkc (1)
+@samuelkahessay (30)
+@samus-aran (1)
+@SanthoshNandha (1)
+@sbodapati-gfm (1)
+@seangibeault (2)
+@sebastianbiallas (1)
+@seesharprun (6)
+@sg650 (16)
+@shaeck (1)
+@shawnHartsell (1)
+@Shazwazza (2)
+@shiran-gutsy (1)
+@shubhamtanwar23 (3)
+@sigh71 (3)
+@siyo-rms (1)
+@srgibbs99 (6)
+@ssulei7 (1)
+@stacktick (1)
+@stefankrzyz (1)
+@steliosfran (3)
+@stephen2002119 (1)
+@stephlocke (1)
+@straub (6)
+@strawgate (48)
+@susmahad (3)
+@swimmesberger (1)
+@syarihu (1)
+@szabta89 (3)
+@tadelesh (1)
+@talk2MeGooseman (1)
+@Tarekchehahde (2)
+@theletterf (26)
+@thi-feonir (1)
+@timdittler (3)
+@tinytelly (1)
+@tobio (1)
+@tomasmed (1)
+@tomforsell525 (1)
+@tore-unumed (16)
+@trask (4)
+@tsm-harmoney (5)
+@tspascoal (2)
+@tvu4-wowcorp (1)
+@tylersmalley (1)
+@UncleBats (2)
+@v1v (7)
+@verkyyi (2)
+@veverkap (3)
+@ViktorHofer (3)
+@virenpepper (1)
+@vishalagrawal-jisr (2)
+@whoschek (1)
+@wizardofosmium (1)
+@wtgodbe (4)
+@xirzec (1)
+@xpepper (1)
+@yaananth (1)
+@Yoyokrazy (2)
+@yskopets (53)
+@zarenner (5)
+@zkoppert (2)
+## Workshop
+Tip
+Ready to learn GitHub Agentic Workflows hands-on? The Factory Tour Workshop is a self-contained, step-by-step workshop repository designed to teach you how to build, run, and customize agentic workflows from scratch.
+## About
+GitHub Agentic Workflows
+gh.io/gh-aw
+### Topics
+actionscaiciclaude-codecodexcopilotgh-extensiongithub-actions
+### Resources
+Readme
+MIT license
+### Code of conduct
+Code of conduct
+### Contributing
+Contributing
+### Security policy
+Security policy
+Activity
+Custom properties
+### Stars
+5.2k stars
+### Watchers
+49 watching
+### Forks
+562 forks
+Report repository
+## Releases
+## Packages
+## Used by
+## Contributors
+## Languages

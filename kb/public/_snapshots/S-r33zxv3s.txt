@@ -1,0 +1,373 @@
+source: S-r33zxv3s
+url: https://learn.microsoft.com/azure/azure-monitor/fundamentals/service-limits
+title: Azure Monitor service limits
+publisher: Microsoft Learn
+licence: CC BY 4.0 (public mirror MicrosoftDocs/azure-monitor-docs)
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+# Azure Monitor service limits - Azure Monitor | Microsoft Learn
+
+This article lists limits in different areas of Azure Monitor.
+
+## Alerts
+
+| Resource | Default limit | Maximum limit |
+| --- | --- | --- |
+| Metric alerts | 5,000 active alert rules per subscription in Azure public, Microsoft Azure operated by 21Vianet, and Azure Government clouds. If you're hitting this limit, explore if you can use the same type multi-resource alerts.10,000 metric time-series per alert rule. | Call support. |
+| Activity log alerts | 100 active alert rules per subscription (can't be increased). This includes Service Health and Resource Health Alerts. As this limit can't be increased, consider sending your Activity Logs to a Log Analytics workspace and creating log search alerts instead, if you need a larger number of rules per subscription. | Same as default. |
+| Log alerts | 5,000 active alert rules per subscription. Out of which, 100 active alert rules with a 1-minute frequency.1,000 active alert rules per resource. | Call support. |
+| Log alerts | Each stateless alert rule can trigger up to 6,000 alerts per evaluation.Each stateful alert rule can trigger up to 300 alerts per evaluation.Up to 5,000 fired stateful alerts at a time per alert rule.Stateful alert rules can be configured with a frequency of up to 12 hours.The combined size of all data in the log alert rule properties can't exceed 64 KB.The Kusto query results can't exceed more than 20 MB.  500 active alert rules per managed identity on Log Analytics or ADX workspace.  50 active alert rules per managed identity on Azure resource graph workspace. | Same as default. |
+| Alert processing rules | 1,000 active rules per subscription. | Call support. |
+| Alert rules and alert processing rules description length | Log search alerts 4,096 characters.All others are 2,048 characters. | Same as default. |
+
+### Alerts API
+
+Azure Monitor alerts have several throttling limits to protect against users making an excessive number of calls. Such behavior can potentially overload the system back-end resources and jeopardize service responsiveness. The following limits are designed to protect customers from interruptions and ensure a consistent service level. The user throttling and limits are designed to affect only extreme usage scenarios. They shouldn't be relevant for typical usage.
+
+Note
+
+There is a limit of API calls per instance. The exact limit number depands on the number of instances.
+
+| Resource | Default limit | Maximum limit |
+| --- | --- | --- |
+| Alerts - Get Summary | 50 calls per minute per subscription | Same as default |
+| Alerts - Get All (not "Get By ID") | 100 calls per minute per subscription | Same as default |
+| All other alerts calls | 1,000 calls per minute per subscription | Same as default |
+
+## Action groups
+
+You can have an unlimited number of action groups in a subscription. (ARM resource group limits still apply See more).
+
+| Resource | Default limit | Maximum limit |
+| --- | --- | --- |
+| **Notifications (rate limits)** | **Per subscription:** 300 notifications per minute per region.**Per alert rule:** 100 notifications every 5 minutes per region.**Per action group:** **Service Health (per rule):** 150 notifications every 5 minutes per region.**Service Health (per subscription):** 200 notifications per minute per region.**Test (per action group):** 2 test notifications every 5 minutes per region.**Test (per subscription):** 5 test notifications every 5 minutes per region. | Same as Default |
+| Azure app push | 10 Azure app actions per action group. | Same as Default |
+| Email | 1,000 email actions in an action group.No more than 100 emails every hour for each email address per region.The character limit in an e-mail address is 64.The character limit in an e-mail is 55296.Also see Service limits for notifications. | Same as Default |
+| Email Azure Resource Manager role | 10 Email ARM role actions per action group.In production: No more than 100 emails in an hour per region.In a test action group: No more than two emails in every one (1) minute. | Same as Default |
+| Event Hubs | 10 Event Hubs actions per action group. | Same as Default |
+| ITSM | 10 ITSM actions in an action group. | Same as Default |
+| Logic app | 10 logic app actions in an action group. | Same as Default |
+| Runbook | 10 runbook actions in an action group. | Same as Default |
+| Secure Webhook | 10 secure webhook actions in an action group.Maximum number of webhook calls is 1500 per minute per subscription. | Same as Default |
+| SMS | 10 SMS actions in an action group.In production: No more than one SMS message every five minutes.In a test action group: No more than one SMS every one minute. | Same as Default |
+| Voice | 10 voice actions in an action group.In production: No more than one voice call every five minutes.In a test action group: No more than one voice call every one minute. | Same as Default |
+| Webhook | 10 webhook actions in an action group.Maximum number of webhook calls is 1500 per minute per subscription. | Same as Default |
+
+#### Avoiding rate limits
+
+- Deploy action groups across multiple regions - Regional limits apply per region. Distributing action groups across East US, West Europe, and Southeast Asia triples available capacity. (All Action Group supported regions)
+- Consolidate alert rules - Use multi-resource alerts instead of creating duplicate rules per resource.
+- Use stateful alerts - Reduces notifications by alerting only on state changes.
+- Tune evaluation frequency - Use longer intervals (5+ minutes) for non-critical alerts.
+- Avoid action group reuse - Don't share one action group across hundreds of alert rules.
+
+## Autoscale
+
+| Resource | Default limit | Maximum limit |
+| --- | --- | --- |
+| Autoscale settings | 100 per region per subscription. | Same as default |
+| Autoscale profiles | 20 profiles per autoscale setting. | Same as default |
+
+## Prometheus metrics
+
+### Ingestion
+
+Azure managed Prometheus is a case insensitive system. It treats strings, such as metric names, label names, or label values, as the same time series if they differ from another time series only by the case of the string. For more information, see Prometheus metrics overview.
+
+The following limits apply to the Azure Monitor workspace ingesting your Prometheus metrics.
+
+| Limit | Value |
+| --- | --- |
+| Active time series with metrics that have been reported in the last ~12 hours. | 1,000,000You can request an increase. |
+| Events per minute ingested. | 1,000,000You can request an increase. |
+
+The following limits apply to the data collection rule (DCR) sending Prometheus metrics data to your Azure Monitor workspace.
+
+| Limit | Value |
+| --- | --- |
+| Ingestion requests per minute to a data collection rule | 15,000This limit can't be increased. |
+| Data ingestion per minute to a data collection rule | 50 GBThis limit can't be increased. |
+
+#### Queries
+
+Prometheus queries are created by using PromQL and can be authored in either Azure Managed Grafana or self-managed Grafana.
+
+| Limit | Value |
+| --- | --- |
+| Data retention | 18 months.This limit can't be increased. |
+| Query time range | 32 days between the start time and end time of your PromQL query.This limit can't be increased. |
+| Query time series per metric | 500,000 time series. |
+| Query samples returned | 50,000,000 samples per query. |
+| Minimum query step sizewith time range &gt;= 48 hours | 60 seconds. |
+
+**Query data limits** For client traffic:
+
+| Limit | Value |
+| --- | --- |
+| Throttling window lookup length | 30 seconds |
+| Data returned per Azure Monitor workspace | 0.5 GB |
+
+For recording rules traffic:
+
+| Limit | Value |
+| --- | --- |
+| Throttling window lookup length | 3 minutes |
+| Data returned per Azure Monitor workspace | 1 GB |
+
+**Query pre-parsing limits** Based on query time range and request type, over a 30-second window (for client traffic):
+
+| Limit | Value |
+| --- | --- |
+| Query hours per user (Microsoft Entra ID, managed identity, Azure Managed Grafana workspace) | 30,000 |
+| Query hours per Azure Monitor workspace | 60,000 |
+| Query hours per Azure tenant | 600,000 |
+
+Based on query time range and request type, over a 3-minute window (for recording rules traffic):
+
+| Limit | Value |
+| --- | --- |
+| Query hours per Azure Monitor workspace | 60,000 |
+| Query hours per Azure tenant | 600,000 |
+
+**Query post-parsing limits** Based on query time range and range vectors in query over a 30-second window (for client traffic):
+
+| Limit | Value |
+| --- | --- |
+| Query hours per user (Microsoft Entra ID, managed identity, Azure Managed Grafana workspace) | 2,000,000 |
+| Query hours per Azure Monitor workspace | 2,000,000 |
+| Query hours per Azure tenant | 20,000,000 |
+
+Based on query time range and range vectors in query over a 3-minute window (for recording rules traffic):
+
+| Limit | Value |
+| --- | --- |
+| Query hours per Azure Monitor workspace | 2,000,000 |
+| Query hours per Azure tenant | 20,000,000 |
+
+**Query cost throttling limits**
+
+| Limit | Value |
+| --- | --- |
+| Maximum query cost per query | 15000 |
+| Maximum query cost for recording rules query | 3000 |
+
+Query cost calculation is done as follows:
+
+Query Cost = (Number of time series requested \* (queried time duration in seconds / *Inferred time resolution of queried data*)) / 5000
+
+*Inferred time resolution of queried data* = Number of data points stored in any one randomly selected time series keys of queried metric / queried time duration in seconds
+
+Note
+
+A single metric in the query has a limit of max size of 64MB in bytes for the result of time series keys requested in the query.
+
+#### Alert and recording rules
+
+Prometheus alert rules and recording rules are defined in PromQL. They're performed on the managed Ruler service as part of Azure Monitor managed service for Prometheus.
+
+| Limit | Value |
+| --- | --- |
+| Rule groups per Azure Monitor workspace, in an Azure subscription | 500You can request an increase. |
+| Rules per rule group | 20This limit can't be increased. |
+| Rule group evaluation interval | Between 1 minute - 24 hours.Default is 1 minute. |
+| Active alerts | No limit at this time. |
+
+#### Remote write
+
+Calculations were determined by using a remote batch size of 500, which is the default.
+
+| Limit | Value |
+| --- | --- |
+| CPU usage | 0.25 x (number of metrics) + 1.25 x (average number of series per metric) |
+| CPU request | 0.75 x (CPU usage) |
+| CPU limit | 2 x (CPU request) |
+| Memory request | 150 Mb |
+| Memory limit | 200 Mb |
+| Maximum throughput | Remote write container can process up to 150,000 unique time series. The container might throw errors serving requests over 150,000 because of the high number of concurrent connections. This issue can be mitigated by increasing the remote batch size from 500 to 1,000. This change reduces the number of open connections. |
+
+## Logs Ingestion API
+
+| Limit | Value | Comments |
+| --- | --- | --- |
+| Maximum size of API call | 1 MB | Both compressed and uncompressed data. |
+| Maximum size for field values | 64 KB | Fields longer than 64 KB are truncated. |
+| Maximum data/minute per DCR | ^\*^2 GB | Both compressed and uncompressed data. Retry after the duration listed in the `Retry-After` header in the response. |
+| Maximum requests/minute per DCR | ^\*^12,000 | Retry after the duration listed in the `Retry-After` header in the response. |
+| Nested JSON | Auxiliary table plans only support nested JSON when ingesting to `dynamic` type columns | Logs ingestion API returns HTTP status code 400 "malformed JSON" error and fails if schema isn't matched. |
+
+^\*^ Gradual increases beyond this threshold might be accommodated automatically by the system, although temporary throttling can still occur as it scales. For anticipated large or abrupt increases that significantly exceed this threshold, contact Azure support ahead of time for guidance.
+
+## Data collection rules
+
+| Limit | Value |
+| --- | --- |
+| Maximum number of data sources | 10 |
+| Maximum number of counter specifiers in performance counter | 100 |
+| Maximum number of facility names in Syslog | 20 |
+| Maximum number of XPath queries in Event Log | 100 |
+| Maximum number of data flows | 20 |
+| Maximum number of data streams | 20 |
+| Maximum number of extensions | 10 |
+| Maximum size of extension settings | 32 Kb |
+| Maximum number of Log Analytics workspaces | 10 |
+| Maximum number of characters in a transformation | 15,360 |
+
+## Diagnostic settings
+
+| Resource | Default Limit | Maximum Limit |
+| --- | --- | --- |
+| Maximum number of diagnostic settings per resource | 5 | Same as default. |
+
+## Log queries and language
+
+### General query limits
+
+| Limit | Description |
+| --- | --- |
+| Query language | Azure Monitor uses the same Kusto Query Language (KQL) as Azure Data Explorer. See Azure Monitor log query language differences for KQL language elements not supported in Azure Monitor. |
+| Azure regions | Log queries can experience excessive overhead when data spans Log Analytics workspaces in multiple Azure regions. See Query limits for details. |
+| Cross resource queries | Maximum number of Application Insights resources and Log Analytics workspaces in a single query limited to 100.View Designer doesn't support cross-resource query.The scheduledQueryRules API supports cross-resource query in log alerts.See Cross-resource query limits for details. |
+| Log Analytics dashboard queries | Maximum number of records returned in a single Log Analytics dashboard query is 2,000. |
+
+### User query throttling
+
+Azure Monitor has several throttling limits to protect back-end system resources against users sending an excessive number of queries and ensure consistent service level. These per user limits reflect extreme usage scenarios and shouldn't be relevant for typical query behavior.
+
+| Measure | Limit per user | Description |
+| --- | --- | --- |
+| Concurrent Analytics queries | 5 | A user can run up to five concurrent queries against Analytics tables. The system adds extra queries to the concurrency queue in a first in, first out order (FIFO). When one of the concurrent running queries finishes, the first query from the queue is added to the concurrent queries and starts running. Alert queries aren't part of this limit. |
+| Concurrent Basic and Auxiliary queries | 2 | A user can run up to two concurrent search queries against Basic and Auxiliary tables. The concurrency queue follows the same FIFO model. |
+| Time in concurrency queue | 3 minutes | If a query sits in the queue for more than 3 minutes without starting, the system terminates it with an HTTP error response with code 429. |
+| Total queries in concurrency queue | 200 | When the number of queries in the queue reaches 200, the next query is rejected with an HTTP error code 429. This number is in addition to the five queries that can be running simultaneously. |
+| Query rate | 200 queries per 30 seconds | Overall rate of queries that a single user can submit to all workspaces. This limit applies to programmatic queries or queries initiated by visualization parts such as Azure dashboards and the Log Analytics workspace summary (deprecated) page. |
+| Activity log API query rate | 50 queries per 30 seconds | This activity log API has a separate rate limit from the general Logs query API. Querying activity log from a Log Analytics workspace `AzureActivity` table counts against the general Logs query API limits. |
+| Activity log API timeout | 75 seconds | The maximum timeout period for the activity log REST API is 75 seconds. Clients can explicitly set the maximum time they wait for a response before timing out by using the `Prefer` header. |
+
+Keep these best practices in mind to ensure system responsiveness:
+
+- Optimize your queries as described in Optimize log queries in Azure Monitor.
+- Dashboards and workbooks can contain multiple queries in a single view that generate a burst of queries every time they load or refresh. Consider breaking them up into multiple views that load on demand.
+- In Power BI, consider extracting only aggregated results rather than raw logs.
+
+## Log Analytics workspaces
+
+### Data collection volume and retention
+
+| Pricing tier | Limit per day | Data retention | Comment |
+| --- | --- | --- | --- |
+| Pay-as-you-go(introduced April 2018) | No limit | Up to 730 days interactive retention/ up to 12 years data archive | Data retention beyond 31 days is available for extra charges. Learn more about Azure Monitor pricing. |
+| Commitment tiers(introduced November 2019) | No limit | Up to 730 days interactive retention/ up to 12 years data archive | Data retention beyond 31 days is available for extra charges. Learn more about Azure Monitor pricing. |
+| Legacy Per Node (OMS)(introduced April 2016) | No limit | 30 to 730 days | Data retention beyond 31 days is available for extra charges. Learn more about Azure Monitor pricing. Only customers who meet one of the following conditions can access this pricing tier:- subscriptions that contained a Log Analytics workspace or Application Insights resource before April 2, 2018- subscriptions linked to an Enterprise Agreement that started before February 1, 2019 and is still active. |
+| Legacy Standalone tier(introduced April 2016) | No limit | 30 to 730 days | Data retention beyond 31 days is available for extra charges. Learn more about Azure Monitor pricing. Only customers who meet one of the following conditions can access this pricing tier:- subscriptions that contained a Log Analytics workspace or Application Insights resource before April 2, 2018- subscriptions linked to an Enterprise Agreement that started before February 1, 2019 and is still active. |
+| Legacy Free tier(introduced April 2016) | 500 MB | 7 days | When your workspace reaches the 500-MB-per-day limit, data ingestion stops and resumes at the start of the next day. A day is based on UTC. Data collected by Microsoft Defender for Cloud isn't included in this 500-MB-per-day limit and continues to be collected above this limit. Creating new workspaces in, or moving existing workspaces into, the legacy Free Trial pricing tier was only possible until July 1, 2022. |
+| Legacy Standard tier | No limit | 30 days | Retention can't be adjusted. This tier is unavailable to new workspaces since October 1, 2016. |
+| Legacy Premium tier | No limit | 365 days | Retention can't be adjusted. This tier is unavailable to new workspaces since October 1, 2016. |
+
+### Number of workspaces per subscription
+
+| Pricing tier | Workspace limit | Comments |
+| --- | --- | --- |
+| Legacy Free tier | 10 | This limit can't be increased. Creating new workspaces in, or moving existing workspaces into, the legacy Free Trial pricing tier was only possible until July 1, 2022. |
+| All other tiers | No limit | You're limited by the number of resources within a resource group and the number of resource groups per subscription. |
+
+### Azure portal
+
+| Category | Limit | Comments |
+| --- | --- | --- |
+| Maximum records returned by a log query | 500,000 | Reduce results by using query scope, time range, and filters in the query. |
+| Maximum size of data returned | ~104 MB (~100 MiB) | The portal UI returns up to 64 MB of compressed data, which translates to up to 100 MB of raw data. |
+
+### Data Collector API
+
+| Category | Limit | Comments |
+| --- | --- | --- |
+| Maximum size for a single post | 30 MB | Split larger volumes into multiple posts. |
+| Maximum size for field values | 32 KB | Fields longer than 32 KB are truncated. |
+
+### Query API
+
+| Category | Limit | Comments |
+| --- | --- | --- |
+| Maximum records returned in a single query | 500,000 |  |
+| Maximum size of data returned | ~104 MB (~100 MiB) | The API returns up to 64 MB of compressed data, which translates to up to 100 MB of raw data. |
+| Maximum query running time | 10 minutes | See Timeouts for details. |
+| Maximum request rate | 200 requests per 30 seconds per Microsoft Entra user or client IP address | See Log queries and language. |
+
+### Azure Monitor Logs connector
+
+| Category | Limit | Comments |
+| --- | --- | --- |
+| Maximum size of data | ~16.7 MB (~16 MiB) | The connector infrastructure dictates that limit is set lower than query API limit. |
+| Maximum number of records | 500,000 |  |
+| Maximum connector timeout | 110 second |  |
+| Maximum query timeout | 100 second |  |
+| Charts |  | The Logs page and the connector use different charting libraries for visualization. Some functionality isn't currently available in the connector. |
+
+### Summary rules
+
+| Category | Limit |
+| --- | --- |
+| Maximum number of active rules in a workspace | 30 |
+| Maximum number of results per bin | 500,000 |
+| Maximum results set volume | 100 MB |
+| Query time-out for bin processing | 10 minutes |
+
+### General workspace limits
+
+| Category | Limit | Comments |
+| --- | --- | --- |
+| Maximum columns in a table | 500 | **AzureDiagnostics** - columns above the limit are added to the dynamic `AdditionalFields` column**Custom logs created by Data collector API** - columns above the limit are added to the dynamic `AdditionalFields` column**Custom log** - contact support to increase limit |
+| Maximum number of custom log tables | 500 | If the combined total of active and soft-deleted tables reaches the limit, you can't create new tables. Either wait for the soft-deleted retention period of 15 days to expire which frees up capacity, or contact support to raise the limit. |
+| Maximum characters for column name | 45 |  |
+
+**Data ingestion volume rate**
+
+Azure Monitor is a high-scale data service that serves thousands of customers sending Terabytes of data each daily and at a growing pace. A soft volume rate limit intends to isolate Azure Monitor customers from sudden ingestion spikes in a multitenancy environment. The default ingestion volume rate threshold in workspaces is 500 MB (compressed), which is translated to approximately 6 GB/min uncompressed.
+
+The volume rate limit applies to data ingested from workspace-based Application Insights, Azure resources via Diagnostic settings, and Data Collector API. When the volume rate limit is reached, a retry mechanism attempts to ingest the data four times in a period of 12 hours and drop it if operation fails. The limit doesn't apply to data ingested from agents, or via Data Collection Rule (DCR).
+
+When volume rate is higher than 80% of the threshold in your workspace, an event is sent to the `Operation` table in your workspace every 6 hours while the threshold exceeds. When the ingested volume rate is higher than the threshold, some data is dropped, an event is sent to the `Operation` table in your workspace every 6 hours while the threshold exceeds.
+
+If your ingestion volume rate exceeds this threshold or you're planning to increase ingestion past that threshold, **contact support to request increasing the rate limit in your workspace**.
+
+**Best practice** - Create an alert rule to get notified when nearing or reaching ingestion rate limits. See Monitor health of Log Analytics workspace in Azure Monitor.
+
+Note
+
+Depending on how long you've been using Log Analytics, you might have access to legacy pricing tiers. Learn more about Log Analytics legacy pricing tiers.
+
+## Application Insights
+
+There are some limits on the number of metrics and events per application, that is, per connection string. Limits depend on the pricing plan that you choose.
+
+| Resource | Default limit | Maximum limit | Notes |
+| --- | --- | --- | --- |
+| Total data per day | 100 GB | Contact support. | You can set a cap to reduce data. If you need more data, you can increase the limit in the portal, up to 1,000 GB. For capacities greater than 1,000 GB, send email to AIDataCap@microsoft.com. |
+| Throttling | 32,000 events/second | Contact support. | The limit is measured over a minute. |
+| Data retention logs | 30 to 730 days | 730 days | This resource is for Logs. |
+| Data retention metrics | 90 days | 90 days | This resource is for Metrics Explorer. |
+| Availability multistep test detailed results retention | 90 days | 90 days | This resource provides detailed results of each step. |
+| Maximum telemetry item size | 64 KB | 64 KB |  |
+| Maximum telemetry items per batch | 64,000 | 64,000 |  |
+| Property and metric name length | 150 | 150 | See type schemas. |
+| Property value string length | 8,192 | 8,192 | See type schemas. |
+| Trace and exception message length | 32,768 | 32,768 | See type schemas. |
+| Availability tests count per Application Insights resource | 100 | 100 |  |
+| Availability tests count per resource group | 800 | 800 | See Azure Resource Manager |
+| Availability tests maximum redirects per test | 10 | 10 |  |
+| Availability tests minimum test frequency | 300 seconds |  | Frequencies less than 5 minutes require a custom monitoring approach outside Standard availability tests. |
+| .NET Profiler and Snapshot Debugger data retention | Two weeks | Contact support. Maximum retention limit is six months. |  |
+| .NET Profiler data sent per day | No limit | No limit. |  |
+| Snapshot Debugger data sent per day | 30 snapshots per day per monitored app | No limit. | The number of snapshots collected per application can be modified through configuration. |
+
+For more information about pricing and quotas, see Application Insights billing.
+
+## Azure Monitor Private Link Scope (AMPLS)
+
+AMPLS objects have the following limits:
+
+- A virtual network can connect to only one AMPLS object. That means the AMPLS object must provide access to all the Azure Monitor resources to which the virtual network should have access.
+- An AMPLS object can connect to up to 3,000 Log Analytics workspaces and up to 10,000 Application Insights components.
+- An Azure Monitor resource can connect to up to 100 AMPLS.
+- An AMPLS object can connect to up to 10 private endpoints.

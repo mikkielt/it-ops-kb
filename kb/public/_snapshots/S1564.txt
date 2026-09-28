@@ -1,0 +1,52 @@
+source: S1564
+url: https://attack.mitre.org/resources/updates/
+title: MITRE ATT&CK: updates / current version
+publisher: MITRE
+licence: ATT&CK terms of use (copy with MITRE copyright notice and licence)
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+ATT&CKcon 7.0 in-person tickets are open! Join us October 27-28, 2026 in McLean, VA. Register here for in-person tickets; hotel and location details can be found in the FAQ.
+Home
+Resources
+Updates
+# Updates - August 2026
+Version
+Start Date
+End Date
+Data
+Changelog
+ATT&CK v19
+August 6, 2026
+Current version of ATT&CK
+v19.2 on MITRE/CTI
+19.1 - 19.2 Details (JSON)
+Note: This page covers the ATT&CK v19.2 release. For the original ATT&CK v19 release notes, see Updates - April 2026.
+The August 2026 v19.2 ATT&CK Agile release updates Groups and Software for Enterprise.
+This is ATT&CK’s first Agile release, a narrower-scope release model that publishes targeted updates to Groups, Software, and Campaigns outside the standard biannual cadence when significant threat activity emerges or expands between scheduled releases.
+This agile release adds ShinyHunters, TeamPCP, software entries tied to CI/CD and software supply chain attacks, and Kali365. These additions capture high-impact threat activity seen in current intrusions, including credential and identity token theft, attacks on developer and cloud environments, abuse of trusted software channels to spread, phishing leading users to execute attacker-controlled actions, and the monetization of access through extortion, resale, and follow-on compromise.
+ShinyHunters (G1057) is a cybercriminal group active since at least 2019 that steals credentials and personally identifiable information for resale or extortion. Public reporting also links it to The Community (The Com) and to collaborative activity described under names such as Scattered Lapsus Hunters, Scattered Lapsus Shiny Hunters, and SLSH.
+TeamPCP (G1056) is a financially motivated, cloud-native threat group that shifted from ransomware and cryptocurrency theft to worm-driven credential theft and software supply chain attacks targeting CI/CD workflows. This release also adds Shai-Hulud (S9008), Mini Shai-Hulud (S9043), CanisterWorm (S9042), and TeamPCP Cloud Stealer (S9041) to capture the software associated with this activity.
+Kali365 (S9044) is a phishing-as-a-service kit that uses targeted lures to trick users into copying and pasting attacker-controlled commands, generates device codes on demand, and steals OAuth tokens and session cookies through adversary-in-the-middle collection.
+×
+Core ATT&CK Objects
+Matrices
+Tactics
+Techniques
+Sub-Techniques
+Defenses
+Mitigations
+Assets
+Detection Strategies
+Analytics
+Data Components
+CTI
+Groups
+Software
+Campaigns
+Reference
+Resources
+Domains
+Enterprise
+Mobile
+ICS

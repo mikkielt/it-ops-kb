@@ -1,0 +1,85 @@
+source: S-vhwb6zo5
+url: https://github.com/microsoft/New-KrbtgtKeys.ps1
+title: New-KrbtgtKeys.ps1 (archived repository)
+publisher: Microsoft (GitHub)
+licence: MIT
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+This repository was archived by the owner on Mar 8, 2024. It is now read-only.
+microsoftarchive
+/
+New-KrbtgtKeys.ps1
+Public archive
+Notifications
+You must be signed in to change notification settings
+Fork
+114
+Star
+468
+BranchesTags
+Open more actions menu
+## Latest commit
+## History
+10 Commits
+10 Commits
+## Folders and files
+NameName
+Last commit message
+Last commit date
+v1
+v1
+CODE_OF_CONDUCT.md
+CODE_OF_CONDUCT.md
+Clear-KrbClientCachesForAllSessions.ps1
+Clear-KrbClientCachesForAllSessions.ps1
+LICENSE
+LICENSE
+New-KrbtgtKeys.ps1
+New-KrbtgtKeys.ps1
+README.md
+README.md
+SECURITY.md
+SECURITY.md
+## Repository files navigation
+Development of this project has come to an end. It was being maintained by a few dedicated engineers
+from Microsoft outside of their normal work assignments in their spare time. With changing roles and
+responsibilities, they have moved on to other projects and no longer are able to maintain this code.
+The repo will be archived at some time in the future, date to be determined. The code at the time of archive
+while functional, did not handle retired DCs that were offline but had not been completely removed from
+Active Directory. The script generates an error because it cannot reach the offline DC. Newer versions of
+the script that are published elsewhere reportedly address this issue. The offline DC should be removed from
+AD using ntdsutil, see these articles for guidance.
+https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/deploy/ad-ds-metadata-cleanup
+https://techcommunity.microsoft.com/t5/itops-talk-blog/step-by-step-manually-removing-a-domain-controller-server/ba-p/280564
+The good news is that there are other coders that have picked up maintaining this code. Some of the other
+resources that you can check are:
+https://gist.github.com/mubix/fd0c89ec021f70023695
+https://github.com/zjorz/Public-AD-Scripts/blob/5666e5fcafd933c3288a47944cd6fb289dde54a1/Reset-KrbTgt-Password-For-RWDCs-And-RODCs.ps1
+You can also check the Forks of this repo to see other versions.
+This project has adopted the Microsoft Open Source Code of Conduct.
+For more information see the Code of Conduct FAQ or
+contact opencode@microsoft.com with any additional questions or comments.
+## About
+This script will enable you to reset the krbtgt account password and related keys while minimizing the likelihood of Kerberos authentication issues being caused by the operation.
+### Resources
+Readme
+MIT license
+### Code of conduct
+Code of conduct
+### Security policy
+Security policy
+Activity
+Custom properties
+### Stars
+468 stars
+### Watchers
+1 watching
+### Forks
+114 forks
+Report repository
+## Releases
+## Packages
+## Used by
+## Contributors
+## Languages

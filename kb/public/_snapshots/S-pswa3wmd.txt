@@ -1,0 +1,593 @@
+source: S-pswa3wmd
+url: https://learn.microsoft.com/powershell/module/microsoft.graph.reports/get-mgdevicemanagementreportexportjob?view=graph-powershell-1.0
+title: Get-MgDeviceManagementReportExportJob (Microsoft.Graph.Reports)
+publisher: Microsoft
+licence: CC BY 4.0 (public mirror MicrosoftDocs/microsoftgraph-docs-powershell)
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+# Get-MgDeviceManagementReportExportJob
+
+- Module:
+    - Microsoft.Graph.Reports Module
+
+Entity representing a job to export a report.
+
+Note
+
+To view the beta release of this cmdlet, view Get-MgBetaDeviceManagementReportExportJob
+
+## Syntax
+
+### List (Default)
+
+```Syntax
+Get-MgDeviceManagementReportExportJob
+    [-ExpandProperty <string[]>]
+    [-Property <string[]>]
+    [-Filter <string>]
+    [-Search <string>]
+    [-Skip <int>]
+    [-Sort <string[]>]
+    [-Top <int>]
+    [-ResponseHeadersVariable <string>]
+    [-Break]
+    [-Headers <IDictionary>]
+    [-HttpPipelineAppend <SendAsyncStep[]>]
+    [-HttpPipelinePrepend <SendAsyncStep[]>]
+    [-Proxy <uri>]
+    [-ProxyCredential <pscredential>]
+    [-ProxyUseDefaultCredentials]
+    [-PageSize <int>]
+    [-All]
+    [-CountVariable <string>]
+    [<CommonParameters>]
+```
+
+### Get
+
+```Syntax
+Get-MgDeviceManagementReportExportJob
+    -DeviceManagementExportJobId <string>
+    [-ExpandProperty <string[]>]
+    [-Property <string[]>]
+    [-ResponseHeadersVariable <string>]
+    [-Break]
+    [-Headers <IDictionary>]
+    [-HttpPipelineAppend <SendAsyncStep[]>]
+    [-HttpPipelinePrepend <SendAsyncStep[]>]
+    [-Proxy <uri>]
+    [-ProxyCredential <pscredential>]
+    [-ProxyUseDefaultCredentials]
+    [<CommonParameters>]
+```
+
+### GetViaIdentity
+
+```Syntax
+Get-MgDeviceManagementReportExportJob
+    -InputObject <IReportsIdentity>
+    [-ExpandProperty <string[]>]
+    [-Property <string[]>]
+    [-ResponseHeadersVariable <string>]
+    [-Break]
+    [-Headers <IDictionary>]
+    [-HttpPipelineAppend <SendAsyncStep[]>]
+    [-HttpPipelinePrepend <SendAsyncStep[]>]
+    [-Proxy <uri>]
+    [-ProxyCredential <pscredential>]
+    [-ProxyUseDefaultCredentials]
+    [<CommonParameters>]
+```
+
+## Description
+
+Entity representing a job to export a report.
+
+**Permissions**
+
+| Permission type | Permissions (from least to most privileged) |
+| --- | --- |
+| Delegated (work or school account) | DeviceManagementConfiguration.Read.All, DeviceManagementManagedDevices.ReadWrite.All, DeviceManagementManagedDevices.Read.All, DeviceManagementConfiguration.ReadWrite.All, DeviceManagementApps.ReadWrite.All, DeviceManagementApps.Read.All, |
+| Delegated (personal Microsoft account) | Not supported |
+| Application | DeviceManagementConfiguration.Read.All, DeviceManagementManagedDevices.ReadWrite.All, DeviceManagementManagedDevices.Read.All, DeviceManagementConfiguration.ReadWrite.All, DeviceManagementApps.ReadWrite.All, DeviceManagementApps.Read.All, |
+
+## Examples
+
+### Example 1: Code snippet
+
+```powershell
+
+Import-Module Microsoft.Graph.Reports
+
+Get-MgDeviceManagementReportExportJob
+
+```
+
+This example shows how to use the Get-MgDeviceManagementReportExportJob Cmdlet.
+
+## Parameters
+
+### -All
+
+List all pages.
+
+#### Parameter properties
+
+| Type: | System.Management.Automation.SwitchParameter |
+| --- | --- |
+| Default value: | False |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ List
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -Break
+
+Wait for .NET debugger to attach
+
+#### Parameter properties
+
+| Type: | System.Management.Automation.SwitchParameter |
+| --- | --- |
+| Default value: | False |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ (All)
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -CountVariable
+
+Specifies a count of the total number of items in a collection. By default, this variable will be set in the global scope.
+
+#### Parameter properties
+
+| Type: | System.String |
+| --- | --- |
+| Supports wildcards: | False |
+| DontShow: | False |
+| Aliases: | CV |
+
+#### Parameter sets
+
+ List
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -DeviceManagementExportJobId
+
+The unique identifier of deviceManagementExportJob
+
+#### Parameter properties
+
+| Type: | System.String |
+| --- | --- |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ Get
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | True |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -ExpandProperty
+
+Expand related entities
+
+#### Parameter properties
+
+| Type: | System.String[] |
+| --- | --- |
+| Supports wildcards: | False |
+| DontShow: | False |
+| Aliases: | Expand |
+
+#### Parameter sets
+
+ (All)
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -Filter
+
+Filter items by property values
+
+#### Parameter properties
+
+| Type: | System.String |
+| --- | --- |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ List
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -Headers
+
+Optional headers that will be added to the request.
+
+#### Parameter properties
+
+| Type: | System.Collections.IDictionary |
+| --- | --- |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ (All)
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | True |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -HttpPipelineAppend
+
+SendAsync Pipeline Steps to be appended to the front of the pipeline
+
+#### Parameter properties
+
+| Type: | Microsoft.Graph.PowerShell.Runtime.SendAsyncStep[] |
+| --- | --- |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ (All)
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -HttpPipelinePrepend
+
+SendAsync Pipeline Steps to be prepended to the front of the pipeline
+
+#### Parameter properties
+
+| Type: | Microsoft.Graph.PowerShell.Runtime.SendAsyncStep[] |
+| --- | --- |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ (All)
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -InputObject
+
+Identity Parameter To construct, see NOTES section for INPUTOBJECT properties and create a hash table.
+
+#### Parameter properties
+
+| Type: | Microsoft.Graph.PowerShell.Models.IReportsIdentity |
+| --- | --- |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ GetViaIdentity
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | True |
+| Value from pipeline: | True |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -PageSize
+
+Sets the page size of results.
+
+#### Parameter properties
+
+| Type: | System.Int32 |
+| --- | --- |
+| Default value: | 0 |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ List
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -Property
+
+Select properties to be returned
+
+#### Parameter properties
+
+| Type: | System.String[] |
+| --- | --- |
+| Supports wildcards: | False |
+| DontShow: | False |
+| Aliases: | Select |
+
+#### Parameter sets
+
+ (All)
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -Proxy
+
+The URI for the proxy server to use
+
+#### Parameter properties
+
+| Type: | System.Uri |
+| --- | --- |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ (All)
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -ProxyCredential
+
+Credentials for a proxy server to use for the remote call
+
+#### Parameter properties
+
+| Type: | System.Management.Automation.PSCredential |
+| --- | --- |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ (All)
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -ProxyUseDefaultCredentials
+
+Use the default credentials for the proxy
+
+#### Parameter properties
+
+| Type: | System.Management.Automation.SwitchParameter |
+| --- | --- |
+| Default value: | False |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ (All)
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -ResponseHeadersVariable
+
+Optional Response Headers Variable.
+
+#### Parameter properties
+
+| Type: | System.String |
+| --- | --- |
+| Supports wildcards: | False |
+| DontShow: | False |
+| Aliases: | RHV |
+
+#### Parameter sets
+
+ (All)
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -Search
+
+Search items by search phrases
+
+#### Parameter properties
+
+| Type: | System.String |
+| --- | --- |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ List
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -Skip
+
+Skip the first n items
+
+#### Parameter properties
+
+| Type: | System.Int32 |
+| --- | --- |
+| Default value: | 0 |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ List
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -Sort
+
+Order items by property values
+
+#### Parameter properties
+
+| Type: | System.String[] |
+| --- | --- |
+| Supports wildcards: | False |
+| DontShow: | False |
+| Aliases: | OrderBy |
+
+#### Parameter sets
+
+ List
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -Top
+
+Show only the first n items
+
+#### Parameter properties
+
+| Type: | System.Int32 |
+| --- | --- |
+| Default value: | 0 |
+| Supports wildcards: | False |
+| DontShow: | False |
+| Aliases: | Limit |
+
+#### Parameter sets
+
+ List
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### CommonParameters
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable, -ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see about_CommonParameters.
+
+## Inputs
+
+### Microsoft.Graph.PowerShell.Models.IReportsIdentity
+
+{{ Fill in the Description }}
+
+### System.Collections.IDictionary
+
+{{ Fill in the Description }}
+
+## Outputs
+
+### Microsoft.Graph.PowerShell.Models.IMicrosoftGraphDeviceManagementExportJob
+
+{{ Fill in the Description }}
+
+## Notes
+
+COMPLEX PARAMETER PROPERTIES
+
+To create the parameters described below, construct a hash table containing the appropriate properties. For information on hash tables, run Get-Help about\_Hash\_Tables.
+
+INPUTOBJECT `<IReportsIdentity>`: Identity Parameter [Date &lt;DateTime?&gt;]: Usage: date={date} [DeviceManagementExportJobId &lt;String&gt;]: The unique identifier of deviceManagementExportJob [DirectoryAuditId &lt;String&gt;]: The unique identifier of directoryAudit [EndDateTime &lt;DateTime?&gt;]: Usage: endDateTime={endDateTime} [Filter &lt;String&gt;]: Usage: filter='{filter}' [GroupId &lt;String&gt;]: Usage: groupId='{groupId}' [IncludedUserRoles &lt;String&gt;]: Usage: includedUserRoles='{includedUserRoles}' [IncludedUserTypes &lt;String&gt;]: Usage: includedUserTypes='{includedUserTypes}' [ManifestId &lt;String&gt;]: The unique identifier of manifest [OperationId &lt;String&gt;]: The unique identifier of operation [Period &lt;String&gt;]: Usage: period='{period}' [PrintUsageByPrinterId &lt;String&gt;]: The unique identifier of printUsageByPrinter [PrintUsageByUserId &lt;String&gt;]: The unique identifier of printUsageByUser [PrinterId &lt;String&gt;]: Usage: printerId='{printerId}' [ProvisioningObjectSummaryId &lt;String&gt;]: The unique identifier of provisioningObjectSummary [SignInId &lt;String&gt;]: The unique identifier of signIn [Skip &lt;Int32?&gt;]: Usage: skip={skip} [SkipToken &lt;String&gt;]: Usage: skipToken='{skipToken}' [StartDateTime &lt;DateTime?&gt;]: Usage: startDateTime={startDateTime} [Top &lt;Int32?&gt;]: Usage: top={top} [UserId &lt;String&gt;]: Usage: userId='{userId}' [UserRegistrationDetailsId &lt;String&gt;]: The unique identifier of userRegistrationDetails
+
+## Related Links
+
+- Get-MgDeviceManagementReportExportJob

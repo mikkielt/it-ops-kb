@@ -1,0 +1,754 @@
+source: S-d7byvsls
+url: https://learn.microsoft.com/powershell/module/microsoft.graph.authentication/connect-mggraph?view=graph-powershell-1.0
+title: Connect-MgGraph
+publisher: Microsoft Learn
+licence: CC BY 4.0 (public mirror MicrosoftDocs/microsoftgraph-docs-powershell)
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+# Connect-MgGraph
+
+- Module:
+    - Microsoft.Graph.Authentication Module
+
+Microsoft Graph PowerShell supports two types of authentication: delegated and app-only access. There are a number of cmdlets that can be used to manage the different parameters required during authentication, for example, environment, application ID, and certificate.
+
+## Syntax
+
+### UserParameterSet (Default)
+
+```Syntax
+Connect-MgGraph
+    [[-Scopes] <string[]>]
+    [[-TenantId] <string>]
+    [-ClientId <string>]
+    [-ContextScope <ContextScope>]
+    [-Environment <string>]
+    [-UseDeviceCode]
+    [-ClientTimeout <double>]
+    [-NoWelcome]
+    [-Break]
+    [<CommonParameters>]
+```
+
+### AppCertificateParameterSet
+
+```Syntax
+Connect-MgGraph
+    [-ClientId] <string>
+    [[-CertificateSubjectName] <string>]
+    [[-CertificateThumbprint] <string>]
+    [-SendCertificateChain <bool>]
+    [-Certificate <X509Certificate2>]
+    [-TenantId <string>]
+    [-ContextScope <ContextScope>]
+    [-Environment <string>]
+    [-ClientTimeout <double>]
+    [-NoWelcome]
+    [-Break]
+    [<CommonParameters>]
+```
+
+### IdentityParameterSet
+
+```Syntax
+Connect-MgGraph
+    [-Identity]
+    [-ClientId <string>]
+    [-ContextScope <ContextScope>]
+    [-Environment <string>]
+    [-ClientTimeout <double>]
+    [-NoWelcome]
+    [-Break]
+    [<CommonParameters>]
+```
+
+### AppSecretCredentialParameterSet
+
+```Syntax
+Connect-MgGraph
+    [-ClientSecretCredential <pscredential>]
+    [-TenantId <string>]
+    [-ContextScope <ContextScope>]
+    [-Environment <string>]
+    [-ClientTimeout <double>]
+    [-NoWelcome]
+    [-Break]
+    [<CommonParameters>]
+```
+
+### AccessTokenParameterSet
+
+```Syntax
+Connect-MgGraph
+    [-AccessToken] <securestring>
+    [-Environment <string>]
+    [-ClientTimeout <double>]
+    [-NoWelcome]
+    [-Break]
+    [<CommonParameters>]
+```
+
+### EnvironmentVariableParameterSet
+
+```Syntax
+Connect-MgGraph
+    [-ContextScope <ContextScope>]
+    [-Environment <string>]
+    [-ClientTimeout <double>]
+    [-EnvironmentVariable]
+    [-NoWelcome]
+    [-Break]
+    [<CommonParameters>]
+```
+
+## Description
+
+You must invoke Connect-MgGraph before any commands that access Microsoft Graph. This cmdlet gets the access token using the Microsoft Authentication Library
+
+## Examples
+
+### Delegated access: Using interactive authentication, where you provide the scopes that you require during your session
+
+PS C:&gt; Connect-MgGraph -Scopes "User.Read.All", "Group.ReadWrite.All"
+
+This example shows how to authenticate to graph with scopes.
+
+### Delegated access: Using device code flow
+
+PS C:&gt; Connect-MgGraph -Scopes "User.Read.All", "Group.ReadWrite.All" -UseDeviceAuthentication
+
+This example shows how to authenticate to graph with scopes and device.
+
+### Delegated access: Using your own access token
+
+PS C:&gt; Connect-MgGraph -AccessToken $AccessToken
+
+This example shows how to authenticate to graph using an access token.
+
+### Delegated access: custom application for Microsoft Graph PowerShell
+
+PS C:&gt; Connect-MgGraph -ClientId &lt;YOUR\_NEW\_APP\_ID&gt; -TenantId &lt;YOUR\_TENANT\_ID&gt;
+
+Follow this link (https://learn.microsoft.com/en-us/powershell/microsoftgraph/authentication-commands?view=graph-powershell-1.0#using-connect-mggraph)for more information on the steps for creating custom applications.
+
+### App-only access: Using client credential with a certificate - Certificate Thumbprint
+
+PS C:&gt; Connect-MgGraph -ClientId "YOUR\_APP\_ID" -TenantId "YOUR\_TENANT\_ID" -CertificateThumbprint "YOUR\_CERT\_THUMBPRINT"
+
+Follow this link (https://learn.microsoft.com/en-us/powershell/microsoftgraph/authentication-commands?view=graph-powershell-1.0#using-connect-mggraph)for more information on how to load the certificate.
+
+### App-only access: Using client credential with a certificate - Certificate name
+
+PS C:&gt; Connect-MgGraph -ClientId "YOUR\_APP\_ID" -TenantId "YOUR\_TENANT\_ID" -CertificateName "YOUR\_CERT\_SUBJECT"
+
+Follow this link (https://learn.microsoft.com/en-us/powershell/microsoftgraph/authentication-commands?view=graph-powershell-1.0#using-connect-mggraph)for more information on how to load the certificate.
+
+### App-only access: Using client credential with a certificate - Certificate
+
+PS C:&gt; $Cert = Get-ChildItem Cert:\LocalMachine\My$CertThumbprint PS C:&gt; Connect-MgGraph -ClientId "YOUR\_APP\_ID" -TenantId "YOUR\_TENANT\_ID" -Certificate $Cert
+
+Follow this link (https://learn.microsoft.com/en-us/powershell/microsoftgraph/authentication-commands?view=graph-powershell-1.0#using-connect-mggraph)for more information on how to load the certificate.
+
+### Using client secret credentials
+
+PS C:&gt; $ClientSecretCredential = Get-Credential -Credential "Client\_Id"
+
+### Using managed identity: System-assigned managed identity
+
+PS C:&gt; Connect-MgGraph -Identity
+
+Uses an automatically managed identity on a service instance. The identity is tied to the lifecycle of a service instance.
+
+### Using managed identity: User-assigned managed identity
+
+PS C:&gt; Connect-MgGraph -Identity -ClientId "User\_Assigned\_Managed\_identity\_Client\_Id"
+
+Uses a user created managed identity as a standalone Azure resource.
+
+### Connecting to an environment or cloud
+
+PS C:&gt; Get-MgEnvironment Name AzureADEndpoint GraphEndpoint Type
+
+China https://login.chinacloudapi.cnhttps://microsoftgraph.chinacloudapi.cn Built-in Global `https://login.microsoftonline.com``https://graph.microsoft.com` Built-in USGov https://login.microsoftonline.ushttps://graph.microsoft.us Built-in USGovDoD https://login.microsoftonline.ushttps://dod-graph.microsoft.us Built-in PS C:&gt; Connect-MgGraph -Environment USGov
+
+When you use Connect-MgGraph, you can choose to target other environments. By default, Connect-MgGraph targets the global public cloud.
+
+### Connecting to an environment as a different identity
+
+PS C:&gt; Connect-MgGraph -ContextScope Process
+
+To connect as a different identity other than CurrentUser, specify the -ContextScope parameter with the value Process.
+
+## Parameters
+
+### -AccessToken
+
+Specifies a bearer token for Microsoft Graph service. Access tokens do timeout and you'll have to handle their refresh.
+
+#### Parameter properties
+
+| Type: | System.Security.SecureString |
+| --- | --- |
+| Default value: | None |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ AccessTokenParameterSet
+
+| Position: | 1 |
+| --- | --- |
+| Mandatory: | True |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -Break
+
+Wait for .NET debugger to attach
+
+#### Parameter properties
+
+| Type: | System.Management.Automation.SwitchParameter |
+| --- | --- |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ (All)
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -Certificate
+
+An X.509 certificate supplied during invocation.
+
+#### Parameter properties
+
+| Type: | System.Security.Cryptography.X509Certificates.X509Certificate2 |
+| --- | --- |
+| Default value: | None |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ AppCertificateParameterSet
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -CertificateSubjectName
+
+The subject distinguished name of a certificate. The Certificate will be retrieved from the current user's certificate store.
+
+#### Parameter properties
+
+| Type: | System.String |
+| --- | --- |
+| Default value: | None |
+| Supports wildcards: | False |
+| DontShow: | False |
+| Aliases: | CertificateSubject, CertificateName |
+
+#### Parameter sets
+
+ AppCertificateParameterSet
+
+| Position: | 2 |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -CertificateThumbprint
+
+The thumbprint of your certificate. The Certificate will be retrieved from the current user's certificate store.
+
+#### Parameter properties
+
+| Type: | System.String |
+| --- | --- |
+| Default value: | None |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ AppCertificateParameterSet
+
+| Position: | 3 |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -ClientId
+
+The client id of your application.
+
+#### Parameter properties
+
+| Type: | System.String |
+| --- | --- |
+| Default value: | None |
+| Supports wildcards: | False |
+| DontShow: | False |
+| Aliases: | AppId, ApplicationId |
+
+#### Parameter sets
+
+ AppCertificateParameterSet
+
+| Position: | 1 |
+| --- | --- |
+| Mandatory: | True |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+ UserParameterSet
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+ IdentityParameterSet
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -ClientSecretCredential
+
+The PSCredential object provides the application ID and client secret for service principal credentials. For more information about the PSCredential object, type Get-Help Get-Credential.
+
+#### Parameter properties
+
+| Type: | System.Management.Automation.PSCredential |
+| --- | --- |
+| Default value: | None |
+| Supports wildcards: | False |
+| DontShow: | False |
+| Aliases: | SecretCredential, Credential |
+
+#### Parameter sets
+
+ AppSecretCredentialParameterSet
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -ClientTimeout
+
+Sets the HTTP client timeout in seconds.
+
+#### Parameter properties
+
+| Type: | System.Double |
+| --- | --- |
+| Default value: | None |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ AppCertificateParameterSet
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+ AppSecretCredentialParameterSet
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+ AccessTokenParameterSet
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+ UserParameterSet
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+ IdentityParameterSet
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+ EnvironmentVariableParameterSet
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -ContextScope
+
+Determines the scope of authentication context. This accepts `Process` for the current process, or `CurrentUser` for all sessions started by user.
+
+#### Parameter properties
+
+| Type: | Microsoft.Graph.PowerShell.Authentication.ContextScope |
+| --- | --- |
+| Default value: | None |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ AppCertificateParameterSet
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+ AppSecretCredentialParameterSet
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+ UserParameterSet
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+ IdentityParameterSet
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+ EnvironmentVariableParameterSet
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -Environment
+
+The name of the national cloud environment to connect to. By default global cloud is used.
+
+#### Parameter properties
+
+| Type: | System.String |
+| --- | --- |
+| Default value: | None |
+| Supports wildcards: | False |
+| DontShow: | False |
+| Aliases: | EnvironmentName, NationalCloud |
+
+#### Parameter sets
+
+ AppCertificateParameterSet
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+ AppSecretCredentialParameterSet
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+ AccessTokenParameterSet
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+ UserParameterSet
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+ IdentityParameterSet
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+ EnvironmentVariableParameterSet
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -EnvironmentVariable
+
+Allows for authentication using environment variables configured on the host machine. See https://github.com/Azure/azure-sdk-for-net/tree/main/sdk/identity/Azure.Identity#environment-variables.
+
+#### Parameter properties
+
+| Type: | System.Management.Automation.SwitchParameter |
+| --- | --- |
+| Default value: | False |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ EnvironmentVariableParameterSet
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -Identity
+
+Login using a Managed Identity.
+
+#### Parameter properties
+
+| Type: | System.Management.Automation.SwitchParameter |
+| --- | --- |
+| Default value: | False |
+| Supports wildcards: | False |
+| DontShow: | False |
+| Aliases: | ManagedIdentity, ManagedServiceIdentity, MSI |
+
+#### Parameter sets
+
+ IdentityParameterSet
+
+| Position: | 1 |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -NoWelcome
+
+Hides the welcome message.
+
+#### Parameter properties
+
+| Type: | System.Management.Automation.SwitchParameter |
+| --- | --- |
+| Default value: | False |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ (All)
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -Scopes
+
+An array of delegated permissions to consent to.
+
+#### Parameter properties
+
+| Type: | System.String[] |
+| --- | --- |
+| Default value: | None |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ UserParameterSet
+
+| Position: | 1 |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -SendCertificateChain
+
+Include x5c header in client claims when acquiring a token to enable subject name / issuer based authentication using given certificate.
+
+#### Parameter properties
+
+| Type: | System.Boolean |
+| --- | --- |
+| Default value: | None |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ AppCertificateParameterSet
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -TenantId
+
+The id of the tenant to connect to. You can also use this parameter to specify your sign-in audience. i.e., common, organizations, or consumers. See https://docs.microsoft.com/en-us/azure/active-directory/develop/msal-client-application-configuration#authority.
+
+#### Parameter properties
+
+| Type: | System.String |
+| --- | --- |
+| Default value: | None |
+| Supports wildcards: | False |
+| DontShow: | False |
+| Aliases: | Audience, Tenant |
+
+#### Parameter sets
+
+ AppCertificateParameterSet
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+ AppSecretCredentialParameterSet
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+ UserParameterSet
+
+| Position: | 4 |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -UseDeviceCode
+
+Use device code authentication instead of a browser control.
+
+#### Parameter properties
+
+| Type: | System.Management.Automation.SwitchParameter |
+| --- | --- |
+| Default value: | False |
+| Supports wildcards: | False |
+| DontShow: | False |
+| Aliases: | UseDeviceAuthentication, DeviceCode, DeviceAuth, Device |
+
+#### Parameter sets
+
+ UserParameterSet
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### CommonParameters
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable, -ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see about_CommonParameters.
+
+## Outputs
+
+### System.Object
+
+## Related Links
+
+- https://learn.microsoft.com/en-us/powershell/module/microsoft.graph.authentication/connect-mggraph

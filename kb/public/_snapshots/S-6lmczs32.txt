@@ -1,0 +1,55 @@
+source: S-6lmczs32
+url: https://learn.microsoft.com/en-us/troubleshoot/mem/intune/device-enrollment/azure-ad-device-registration-autopilot
+title: Troubleshooting Microsoft Entra device registration and Windows Autopilot
+publisher: Microsoft Learn
+licence: CC BY 4.0 (public mirror MicrosoftDocs/SupportArticles-docs)
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+# Troubleshoot Microsoft Entra device registration and Windows Autopilot - Intune | Microsoft Learn
+
+This article contains tips for troubleshooting Microsoft Entra device registration and Windows Autopilot issues.
+
+## Microsoft Entra device registration
+
+By connecting devices to Microsoft Entra ID, users can easily access the organization's assets, and IT administrators can easily control and manage the connected devices to protect the organization's assets. For more information about device identity, see What is a device identity?
+
+You have the following options to connect a device to Microsoft Entra ID:
+
+- Microsoft Entra registered
+- Microsoft Entra joined
+- Microsoft Entra hybrid joined
+
+To troubleshoot common device registration issues, use the Device Registration Troubleshooter Tool.
+
+The following screenshot shows the main menu of the tool:
+
+For example, if the device health status is **Pending**, select **5** on the menu. If the device doesn't have the Primary Refresh Token (PRT) issued, select **6** on the menu.
+
+For more information about Microsoft Entra device registration, see the Microsoft Entra device identity documentation.
+
+## Windows Autopilot
+
+To add Windows Autopilot devices in Microsoft Intune, import a CSV file that contains the device information. To import the CSV file, open the Microsoft Intune admin center, and then select **Devices** &gt; **Windows** &gt; **Windows enrollment** &gt; **Devices** (under **Windows Autopilot Deployment Program**) &gt; **Import**.
+
+You can use the Get-WindowsAutoPilotInfo PowerShell script to generate the CSV file. You can either manually download the script or run the following command to install the script:
+
+```powershell
+Install-Script -Name Get-WindowsAutoPilotInfo
+```
+
+For more information about how to use the script, see Collecting the hardware hash from existing devices using PowerShell.
+
+To troubleshoot Windows Autopilot issues, first collect logs. The following files are useful for troubleshooting related issues:
+
+- microsoft-windows-devicemanagement-enterprise-diagnostics-provider-admin.evtx
+- microsoft-windows-moderndeployment-diagnostics-provider-autopilot.evtx
+- MdmDiagReport\_RegistryDump.reg
+- TpmHliInfo\_Output.txt
+- microsoft-windows-provisioning-diagnostics-provider-admin.evtx This file contains some informational messages about the Enrollment Status Page (ESP), such as app installation failures or timeouts. Here are some examples:
+
+    - AutoPilotGetOobeSettingsOverride succeeded: OOBE setting = AUTOPILOT\_OOBE\_SETTINGS\_AAD\_JOIN\_ONLY; state = enabled.
+    - CloudExperienceHost Web App Event 1. Name: 'UnifiedEnrollment\_ProvisioningProgressPage\_ApplicationsFailed'.
+    - CloudExperienceHost Web App Event 1. Name: 'UnifiedEnrollment\_ProvisioningProgressPage\_DeviceConfigurationTimeOut'.
+
+For additional guidance, see Troubleshooting overview in the Windows Autopilot documentation, and Troubleshooting Windows Autopilot (level 300/400).

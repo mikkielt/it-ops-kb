@@ -1,0 +1,183 @@
+source: S-bygurlbr
+url: https://docs.langchain.com/oss/python/migrate/langchain-mcp-adapters
+title: Migrate from langchain-mcp-adapters
+publisher: LangChain (langchain-ai/docs)
+licence: MIT (langchain-ai/docs LICENSE)
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+# Migrate from langchain-mcp-adapters
+Migrate from the standalone langchain-mcp-adapters package to the built-in langchain.mcp namespace.
+MCP support now ships inside LangChain in the langchain.mcp namespace, built on FastMCP. It replaces the standalone langchain-mcp-adapters package, whose MultiServerMCPClient is collapsed into a single MCPAdapter class.
+For the full feature documentation, see Model Context Protocol (MCP).
+Migrate from langchain-mcp-adapters to langchain.mcp
+The langchain.mcp namespace requires langchain[mcp]>=1.4.0 and is in beta. Importing from it raises a LangChainBetaWarning. The API may change.
+##
+​
+Install
+Replace the standalone package with the mcp extra, which pulls in FastMCP:
+pip uninstall langchain-mcp-adapters
+pip install "langchain[mcp]"
+uv remove langchain-mcp-adapters
+uv add "langchain[mcp]"
+##
+​
+Import paths
+langchain-mcp-adapterslangchain.mcp
+from langchain_mcp_adapters.client import MultiServerMCPClientfrom langchain.mcp import MCPAdapter
+from langchain_mcp_adapters.tools import load_mcp_toolsfrom langchain.mcp import MCPAdapter (use MCPAdapter(...).list_tools())
+from langchain_mcp_adapters.tools import convert_mcp_tool_to_langchain_toolfrom langchain.mcp import as_langchain_tool (renamed)
+from langchain_mcp_adapters.tools import MCPToolArtifactfrom langchain.mcp import MCPToolArtifact
+##
+​
+Client
+MultiServerMCPClient took a server config dict and exposed several methods. MCPAdapter is an async context manager that infers the transport from its target and exposes list_tools().
+Before:
+from langchain_mcp_adapters.client import MultiServerMCPClient
+client = MultiServerMCPClient(
+{
+"math": {"transport": "stdio", "command": "python", "args": ["/path/to/math_server.py"]},
+"weather": {"transport": "http", "url": "http://localhost:8000/mcp"},
+}
+)
+tools = await client.get_tools()
+After:
+from langchain.mcp import MCPAdapter
+config = {
+"mcpServers": {
+"math": {"command": "python", "args": ["/path/to/math_server.py"]},
+"weather": {"url": "http://localhost:8000/mcp"},
+}
+}
+async with MCPAdapter(config) as adapter:
+tools = await adapter.list_tools()
+The config uses the standard MCPConfig shape (mcpServers), and the transport is inferred from each entry rather than named with a transport key. For a single server, pass its URL, script path, or in-process server directly. See Connections.
+###
+​
+Client methods
+MultiServerMCPClient methodlangchain.mcp
+get_tools(server_name=...)MCPAdapter(...).list_tools(). Scope to one server by pointing the adapter at that server.
+get_prompt(server_name, prompt_name, arguments=...)Not supported. See Prompts and resources.
+get_resources(server_name, uris=...)Not supported. See Prompts and resources.
+session(server_name, auto_initialize=...)Not exposed. list_tools() manages the session; each returned tool opens its own session per call. See connection lifecycle.
+###
+​
+Constructor arguments
+MultiServerMCPClient(...) argumentlangchain.mcp
+connections (dict of connection configs)The adapter’s target: a URL, Path, in-process server, MCPConfig dict, prebuilt fastmcp.Client, or ClientGroup.
+tool_name_prefixPrefixing is automatic for a multi-server MCPConfig or a ClientGroup ({server}_{tool}). See multiple servers.
+handle_tool_errorsRemoved as a flag. Behavior is now fixed: isError=True becomes a ToolMessage(status="error"); transport failures raise. See Tools.
+callbacks (Callbacks)Set the corresponding handler on a fastmcp.Client. See Callbacks.
+tool_interceptors (ToolCallInterceptor)Use LangChain @wrap_tool_call middleware.
+##
+​
+Connection configuration
+langchain-mcp-adapters used typed connection classes. MCPAdapter infers the transport, or you pass a fastmcp transport for full control.
+langchain-mcp-adapterslangchain.mcp
+StdioConnectionA Path target, or an MCPConfig entry with command/args.
+StreamableHttpConnectionAn http/https URL target, or an MCPConfig entry with url.
+SSEConnectionClient(SSETransport(url)), passed to MCPAdapter. Supported, but the transport is deprecated. See Deprecated transports.
+WebsocketConnectionNo FastMCP transport. Migrate the server to Streamable HTTP. See Deprecated transports.
+httpx_client_factorySet on a fastmcp transport. See shared connection pool.
+auth (per connection)Set auth on a fastmcp.Client. See Authentication.
+headers (per connection)Set on a fastmcp transport (StreamableHttpTransport(url, headers=...)).
+###
+​
+Deprecated transports
+The MCP specification deprecated the HTTP+SSE transport (protocol version 2024-11-05) in favor of Streamable HTTP. FastMCP still ships an SSETransport for back-compatibility, so an SSE server keeps working through MCPAdapter(Client(SSETransport(url))), but prefer migrating the server to Streamable HTTP. WebSocket has no FastMCP transport.
+##
+​
+Elicitation
+Elicitation moved from a callback registered on the client to a LangGraph interrupt, and it is now on by default. MCPAdapter arms every client it builds to advertise the capability and drives the interrupt loop; answer the server’s request when the run pauses, resuming with Command(resume={"responses": {key: answer}}).
+langchain-mcp-adapterslangchain.mcp
+Callbacks(on_elicitation=...)Automatic. MCPAdapter(target) arms elicitation with no opt-in. A prebuilt client’s own elicitation handler is honored instead.
+See Elicitation.
+##
+​
+Sampling and roots
+langchain.mcp answers elicitation requests through interrupts, but not sampling (a server asking the client to run an LLM completion) or roots (a server asking which local paths the client can reach). A tool call that returns either raises NotImplementedError.
+This follows the protocol. The modern MCP era is sessionless and has no live back-channel for a server to call into mid-request, so the pushed forms of sampling and roots exist only on the legacy handshake era. FastMCP 4 removed ctx.sample() and ctx.list_roots() from every era for that reason. If you need a server’s sampling or roots request answered through LangChain, open an issue.
+##
+​
+Callbacks
+The langchain-mcp-adapters Callbacks object is gone, but the underlying handlers are not: FastMCP takes them directly on its Client. Build a fastmcp.Client with the handler you need and pass it to MCPAdapter.
+Callbacks fieldlangchain.mcp
+on_elicitationHandled automatically as an interrupt; no handler needed. A prebuilt client’s own elicitation_handler is honored instead. See Elicitation.
+on_progressClient(transport, progress_handler=...).
+on_logging_messageClient(transport, log_handler=...).
+from fastmcp.client import Client
+from langchain.mcp import MCPAdapter
+client = Client("https://example.com/mcp", progress_handler=on_progress, log_handler=on_log)
+async with MCPAdapter(client) as adapter:
+tools = await adapter.list_tools()
+See Callback handlers in the FastMCP documentation.
+##
+​
+Tool interceptors
+The langchain-mcp-adapters interceptor types (tool_interceptors, ToolCallInterceptor, MCPToolCallRequest, MCPToolCallResult) are gone. Intercept tool calls agent-side with LangChain @wrap_tool_call middleware, which wraps every tool a create_agent runs, not only MCP tools. MCP provenance is available on the tool’s metadata under metadata["mcp"], so an interceptor can still branch on it:
+from collections.abc import Callable
+from langchain.agents import create_agent
+from langchain.agents.middleware import wrap_tool_call
+from langchain.mcp import MCPAdapter
+from langchain.messages import ToolMessage
+from langchain.tools.tool_node import ToolCallRequest
+@wrap_tool_call
+def log_mcp_calls(
+request: ToolCallRequest,
+handler: Callable[[ToolCallRequest], ToolMessage],
+) -> ToolMessage:
+"""Intercept every tool call, MCP or otherwise, before and after it runs."""
+# Inspect or rewrite the request here; MCP provenance is on the tool's
+# metadata under `request.tool.metadata["mcp"]`.
+print(f"calling {request.tool_call['name']}")
+result = handler(request)
+print(f"-> {request.tool_call['name']} done")
+return result
+async def agent_with_interception(target):
+async with MCPAdapter(target) as adapter:
+tools = await adapter.list_tools()
+return create_agent("claude-sonnet-5", tools, middleware=[log_mcp_calls])
+##
+​
+Error handling
+The handle_tool_errors flag is gone. Behavior is now fixed: an MCP tool that reports isError=True reaches the model as a ToolMessage with status="error" carrying the server’s message, while transport failures raise. See Tools.
+##
+​
+Authentication
+Auth moved onto the fastmcp.Client. Instead of auth and headers on the connection config, build a client with auth set to a bearer token, the literal "oauth", or any httpx.Auth, and pass that client to MCPAdapter. Per-server and per-user auth are both supported. See Authentication.
+##
+​
+Tool results
+Tool result handling is preserved and extended.
+langchain-mcp-adapterslangchain.mcp
+MCPToolArtifact (structured content)Kept. Exported from langchain.mcp. See structured content.
+Multimodal content blocksKept. See multimodal content.
+Tool metadataExtended. Grouped under an mcp namespace on the tool’s metadata, with annotations and server identity. See tool metadata.
+convert_mcp_tool_to_langchain_toolRenamed to as_langchain_tool, and now a coroutine: await as_langchain_tool(tool, client).
+to_fastmcp (LangChain tool → FastMCP tool)No langchain.mcp equivalent yet. If you convert LangChain tools into MCP tools, open an issue — we would like to hear about the use case.
+##
+​
+Prompts and resources
+langchain.mcp focuses on tools and does not yet wrap MCP prompts or resources. These langchain-mcp-adapters helpers have no langchain.mcp equivalent today:
+langchain-mcp-adapterslangchain.mcp
+load_mcp_prompt, get_prompt, convert_mcp_prompt_message_to_langchain_messageNo wrapper yet
+load_mcp_resources, get_resources, get_mcp_resource, convert_mcp_resource_to_langchain_blobNo wrapper yet
+We have not seen enough demand to prioritize a first-class wrapper yet. If you have a use case, open an issue — we would genuinely like to hear about it, and it helps us prioritize. In the meantime, you can read prompts and resources directly through the FastMCP client: client.get_prompt(...) and client.read_resource(...). See Reading resources and Getting prompts in the FastMCP documentation.
+##
+​
+Deprecated in the MCP protocol
+Some langchain-mcp-adapters features have no replacement because the MCP protocol itself deprecated or removed the mechanism they relied on, not because langchain.mcp chose to drop them. langchain.mcp targets the modern, sessionless protocol era through FastMCP 4.
+MechanismProtocol statusEffect on migration
+HTTP+SSE transportDeprecated (protocol 2024-11-05) in favor of Streamable HTTPSSE still works through FastMCP’s SSETransport, but prefer migrating servers to Streamable HTTP. WebSocket has no FastMCP transport.
+Server-pushed sampling and rootsRemoved from the modern era; the sessionless protocol has no live back-channel. FastMCP 4 removed ctx.sample() and ctx.list_roots() from every eraNot answered by langchain.mcp. See Sampling and roots.
+Server-pushed elicitationModern era replaces the pushed request with input-required roundsAnswered through interrupts instead of a callback. See Elicitation.
+JSON-RPC batchingRemoved (protocol 2025-06-18)Not applicable; requests are sent individually.
+##
+​
+See also
+Model Context Protocol (MCP)
+FastMCP client documentation
+MCP specification
+Connect these docs to your agent of choice via MCP for real-time answers.
+Edit this page on GitHub or file an issue.
+Was this page helpful?

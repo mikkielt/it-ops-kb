@@ -1,0 +1,150 @@
+source: S1886
+url: https://github.com/UKGovernmentBEIS/inspect_ai
+title: Inspect: A framework for LLM evaluations (repository)
+publisher: UK AI Security Institute (AISI)
+licence: MIT
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+UKGovernmentBEIS
+/
+inspect_ai
+Public
+Notifications
+You must be signed in to change notification settings
+Fork
+756
+Star
+2.9k
+BranchesTags
+Open more actions menu
+## Latest commit
+## History
+7,846 Commits
+7,846 Commits
+## Folders and files
+NameName
+Last commit message
+Last commit date
+.agents/skills
+.agents/skills
+.claude
+.claude
+.devcontainer
+.devcontainer
+.github
+.github
+.vscode
+.vscode
+design
+design
+docs
+docs
+examples
+examples
+scripts
+scripts
+src
+src
+tests
+tests
+.dockerignore
+.dockerignore
+.editorconfig
+.editorconfig
+.gitignore
+.gitignore
+.gitmodules
+.gitmodules
+.pre-commit-config.yaml
+.pre-commit-config.yaml
+AGENTS.md
+AGENTS.md
+CHANGELOG.md
+CHANGELOG.md
+CITATION.cff
+CITATION.cff
+CLAUDE.md
+CLAUDE.md
+CONTRIBUTING.md
+CONTRIBUTING.md
+LICENSE
+LICENSE
+MANIFEST.in
+MANIFEST.in
+Makefile
+Makefile
+README.md
+README.md
+SECURITY.md
+SECURITY.md
+pyproject.toml
+pyproject.toml
+requirements-dev.txt
+requirements-dev.txt
+requirements-dist.txt
+requirements-dist.txt
+requirements-doc.txt
+requirements-doc.txt
+requirements-math.txt
+requirements-math.txt
+requirements.txt
+requirements.txt
+suppressions.json
+suppressions.json
+uv.lock
+uv.lock
+yarn.lock
+yarn.lock
+## Repository files navigation
+Welcome to Inspect, a framework for large language model evaluations created by the UK AI Security Institute.
+Inspect provides many built-in components, including facilities for prompt engineering, tool usage, multi-turn dialog, and model graded evaluations. Extensions to Inspect (e.g. to support new elicitation and scoring techniques) can be provided by other Python packages.
+To get started with Inspect, please see the documentation at https://inspect.aisi.org.uk/.
+Inspect also includes a collection of over 200 pre-built evaluations ready to run on any model (learn more at https://inspect.aisi.org.uk/evals/).
+Coding agents: a structured index of the docs is published at https://inspect.aisi.org.uk/llms.txt. The user guide is concatenated as Markdown at https://inspect.aisi.org.uk/llms-guide.txt, and https://inspect.aisi.org.uk/llms-full.txt additionally bundles the API and CLI reference. Individual pages are available as Markdown by appending .md to the .html path (e.g. /extensions/index.html.md).
+To work on development of Inspect, clone the repository and install with the -e flag and [dev] optional dependencies:
+git clone https://github.com/UKGovernmentBEIS/inspect_ai.git
+cd inspect_ai
+pip install -e ".[dev]"
+Alternatively, if you use uv, sync the development environment from the checked-in lockfile:
+uv sync --extra dev
+The uv workflow is supported but not required. The uv.lock file records a reproducible development resolution; project dependencies are still declared in requirements*.txt and exposed through pyproject.toml. When changing dependencies, update the appropriate requirements file and refresh the lockfile rather than relying on uv add.
+Optionally install pre-commit hooks via
+make hooks
+Run linting, formatting, and tests via
+make check
+make test
+When working in a uv-managed environment, prefix those commands with uv run (for example, uv run make check).
+If you use VS Code, you should be sure to have installed the recommended extensions (Python, Ruff, and MyPy). Note that you'll be prompted to install these when you open the project in VS Code.
+### Frontend development (TypeScript)
+The web UI lives in a git submodule at src/inspect_ai/_view/ts-mono/. These steps are only needed if you plan to work on the TypeScript/React frontend — Python-only contributors can skip this entirely.
+Initialize the submodule and install dependencies — see the one-time setup guide.
+### Documentation
+To work on the Inspect documentation, install the optional [doc] dependencies with the -e flag and build the docs:
+pip install -e ".[doc]"
+cd docs
+quarto render # or 'quarto preview'
+If you intend to work on the docs iteratively, you'll want to install the Quarto extension in VS Code.
+## About
+Inspect: A framework for large language model evaluations
+inspect.aisi.org.uk/
+### Resources
+Readme
+MIT license
+### Contributing
+Contributing
+### Security policy
+Security policy
+Activity
+Custom properties
+### Stars
+2.9k stars
+### Watchers
+20 watching
+### Forks
+756 forks
+Report repository
+## Releases
+## Used by
+## Contributors
+## Languages

@@ -1,0 +1,221 @@
+source: S2125
+url: https://github.com/a2aproject/a2a-python
+title: a2aproject/a2a-python (a2a-sdk)
+publisher: Linux Foundation / a2aproject
+licence: Apache-2.0
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+a2aproject
+/
+a2a-python
+Public
+Notifications
+You must be signed in to change notification settings
+Fork
+499
+Star
+2.2k
+BranchesTags
+Open more actions menu
+## Latest commit
+## History
+770 Commits
+770 Commits
+## Folders and files
+NameName
+Last commit message
+Last commit date
+.agents/skills/mistake-reflection
+.agents/skills/mistake-reflection
+.gemini
+.gemini
+.github
+.github
+.vscode
+.vscode
+acts
+acts
+docs
+docs
+itk
+itk
+samples
+samples
+scripts
+scripts
+src/a2a
+src/a2a
+tck
+tck
+tests
+tests
+.git-blame-ignore-revs
+.git-blame-ignore-revs
+.gitignore
+.gitignore
+.jscpd.json
+.jscpd.json
+.pre-commit-config.yaml
+.pre-commit-config.yaml
+.python-version
+.python-version
+.release-please-manifest.json
+.release-please-manifest.json
+AGENTS.md
+AGENTS.md
+CHANGELOG.md
+CHANGELOG.md
+CODE_OF_CONDUCT.md
+CODE_OF_CONDUCT.md
+CONTRIBUTING.md
+CONTRIBUTING.md
+LICENSE
+LICENSE
+README.md
+README.md
+SECURITY.md
+SECURITY.md
+buf.compat.gen.yaml
+buf.compat.gen.yaml
+buf.gen.yaml
+buf.gen.yaml
+pyproject.toml
+pyproject.toml
+release-please-config.json
+release-please-config.json
+uv.lock
+uv.lock
+## Repository files navigation
+# A2A Python SDK
+###
+A Python library for running agentic applications as A2A Servers, following the Agent2Agent (A2A) Protocol.
+Important
+Upgrading the SDK from 0.3 to 1.0? See the v0.3 → v1.0 migration guide. For supported A2A spec versions, see Compatibility.
+## ✨ Features
+A2A Protocol Compliant: Build agentic applications that adhere to the Agent2Agent (A2A) Protocol.
+Extensible: Easily add support for different communication protocols and database backends.
+Asynchronous: Built on modern async Python for high performance.
+Optional Integrations: Includes optional support for:
+HTTP servers (FastAPI, Starlette)
+gRPC
+OpenTelemetry for tracing
+SQL databases (PostgreSQL, MySQL, SQLite)
+## 🧩 Compatibility
+This SDK implements the A2A Protocol Specification 1.0, with compatibility mode for 0.3. See #742 for details on the compatibility scope.
+Spec Version
+Transport
+Client
+Server
+1.0
+JSON-RPC
+✅
+✅
+1.0
+HTTP+JSON/REST
+✅
+✅
+1.0
+gRPC
+✅
+✅
+0.3 (compat)
+JSON-RPC
+✅
+✅
+0.3 (compat)
+HTTP+JSON/REST
+✅
+✅
+0.3 (compat)
+gRPC
+✅
+✅
+## 🚀 Getting Started
+### Prerequisites
+Python 3.10+
+uv (recommended) or pip
+### 🔧 Installation
+Install the core SDK and any desired extras using your preferred package manager.
+Feature
+uv Command
+pip Command
+Core SDK
+uv add a2a-sdk
+pip install a2a-sdk
+All Extras
+uv add "a2a-sdk[all]"
+pip install "a2a-sdk[all]"
+HTTP Server
+uv add "a2a-sdk[http-server]"
+pip install "a2a-sdk[http-server]"
+FastAPI Integration
+uv add "a2a-sdk[fastapi]"
+pip install "a2a-sdk[fastapi]"
+gRPC Support
+uv add "a2a-sdk[grpc]"
+pip install "a2a-sdk[grpc]"
+OpenTelemetry Tracing
+uv add "a2a-sdk[telemetry]"
+pip install "a2a-sdk[telemetry]"
+Encryption
+uv add "a2a-sdk[encryption]"
+pip install "a2a-sdk[encryption]"
+Database Drivers
+PostgreSQL
+uv add "a2a-sdk[postgresql]"
+pip install "a2a-sdk[postgresql]"
+MySQL
+uv add "a2a-sdk[mysql]"
+pip install "a2a-sdk[mysql]"
+SQLite
+uv add "a2a-sdk[sqlite]"
+pip install "a2a-sdk[sqlite]"
+All SQL Drivers
+uv add "a2a-sdk[sql]"
+pip install "a2a-sdk[sql]"
+## Examples
+### Helloworld Example
+Run Remote Agent
+git clone https://github.com/a2aproject/a2a-samples.git
+cd a2a-samples/samples/python/agents/helloworld
+uv run .
+In another terminal, run the client
+cd a2a-samples/samples/python/agents/helloworld
+uv run test_client.py
+You can validate your agent using the agent inspector. Follow the instructions at the a2a-inspector repo.
+## 🌐 More Examples
+You can find a variety of more detailed examples in the a2a-samples repository:
+Python Examples
+JavaScript Examples
+## 🤝 Contributing
+Contributions are welcome! Please see the CONTRIBUTING.md file for guidelines on how to get involved.
+## 📄 License
+This project is licensed under the Apache 2.0 License. See the LICENSE file for more details.
+## About
+Official Python SDK for the Agent2Agent (A2A) Protocol
+a2a-protocol.org/latest/sdk/python/api/
+### Topics
+a2aa2a-clienta2a-mcpa2a-protocola2a-serveragent2agentagentsgenerative-ai
+### Resources
+Readme
+Apache-2.0 license
+### Code of conduct
+Code of conduct
+### Contributing
+Contributing
+### Security policy
+Security policy
+Activity
+Custom properties
+### Stars
+2.2k stars
+### Watchers
+28 watching
+### Forks
+499 forks
+Report repository
+## Releases
+## Used by
+## Contributors
+## Languages

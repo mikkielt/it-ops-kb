@@ -1,0 +1,107 @@
+source: S1207
+url: https://learn.microsoft.com/en-us/sql/relational-databases/security/authentication-access/azure-ad-authentication-sql-server-overview?view=sql-server-ver17
+title: Microsoft Entra authentication for SQL Server overview
+publisher: Microsoft (MicrosoftDocs/sql-docs)
+licence: CC BY 4.0 (public mirror MicrosoftDocs/sql-docs)
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+# Microsoft Entra authentication for SQL Server overview - SQL Server | Microsoft Learn
+
+**Applies to:** SQL Server 2022 (16.x) and later versions
+
+SQL Server 2022 (16.x) introduces support for authentication with Microsoft Entra ID (formerly Azure Active Directory), on both Windows and Linux on-premises, and SQL Server on Azure Windows VMs.
+
+Use Microsoft Entra ID with standalone SQL Server instances or Always On availability groups. SQL Server failover cluster instances do not currently support Microsoft Entra authentication.
+
+## Overview
+
+You can now connect to SQL Server using the following Microsoft Entra authentication methods:
+
+- Default authentication
+- Username and password
+- Integrated
+- Universal with multifactor authentication
+- Service principal
+- Managed identity
+- Access token
+
+The existing authentication modes, SQL authentication and Windows authentication remain unchanged.
+
+Microsoft Entra ID is Azure's cloud-based identity and access management service. Microsoft Entra ID is conceptually similar to Active Directory, providing a centralized repository for managing access to your organization's resources. Identities are objects in Microsoft Entra ID that represent users, groups, or applications. They can be assigned permissions through role-based access control and be used for authentication to Azure resources. Microsoft Entra authentication is supported for:
+
+- Azure SQL Database
+- Azure SQL Managed Instance
+- SQL Server on Windows Azure VMs
+- Azure Synapse Analytics
+- SQL Server
+
+For more information, see Use Microsoft Entra authentication with Azure SQL and Configure and manage Microsoft Entra authentication with Azure SQL.
+
+If your Windows Server Active Directory is federated with Microsoft Entra ID, users can authenticate with SQL Server using their Windows credentials, either as Windows logins or Microsoft Entra logins. While Microsoft Entra ID doesn't support all AD features supported by Windows Server Active Directory, such as service accounts or complex networking forest architecture. There are other capabilities of Microsoft Entra ID such as multifactor authentication that isn't available with Active Directory. Compare Microsoft Entra ID with Active Directory to learn more.
+
+## Connect SQL Server to Azure with Microsoft Entra ID
+
+### Setting up Microsoft Entra authentication with Azure Arc
+
+For SQL Server to communicate with Azure, both SQL Server and the Windows or Linux host it runs on can be registered with Azure Arc. To enable SQL Server's communication with Azure, you need to install the Azure Arc Agent and Azure extension for SQL Server.
+
+To get started, see Connect your SQL Server to Azure Arc.
+
+Note
+
+If you are running SQL Server on an Azure VM, you don't need to register the VM with Azure Arc, you must instead register the VM with the SQL IaaS Agent extension. Once the VM is registered, see Enable Azure AD authentication for SQL Server on Azure VMs for more details.
+
+### Setting up Microsoft Entra authentication without Azure Arc
+
+You can also set up Microsoft Entra authentication for SQL Server on Windows without using Azure Arc. This approach involves manually configuring certificates, registry settings, and Microsoft Entra ID application registrations. For detailed instructions, see Tutorial: Enable Microsoft Entra authentication for SQL Server on Windows without Azure Arc.
+
+## Default authentication
+
+The default authentication option with Microsoft Entra ID that enables authentication through password-less and non-interactive mechanisms including managed identities, Visual Studio, Visual Studio Code, the Azure CLI, and more.
+
+## Username and password
+
+Allows specifying the username and password to the client and driver. The username and password method is commonly disabled on many tenants for security reasons. Although the connections are encrypted, it's best practice/recommended to avoid the use of username and password when possible as it requires sending passwords over the network.
+
+## Integrated
+
+With Integrated Windows authentication (IWA), Microsoft Entra ID provides a solution to organizations with both on-premises and cloud infrastructures. On-premises Active Directory domains can be synchronized with Microsoft Entra ID through federation, allowing management and access control to be handled within Microsoft Entra ID, while user authentication remains on-premises. With IWA, the user's Windows credentials are authenticated against Active Directory, and upon success the user's authentication token from Microsoft Entra ID is returned to SQL.
+
+### Universal with multifactor authentication
+
+This is the standard interactive method with multifactor authentication option for Microsoft Entra accounts. This works in most scenarios.
+
+## Service principal
+
+A service principal is an identity that can be created for use with automated tools, jobs and applications. With the service principal authentication method, you can connect to your SQL Server instance using the client ID and secret of a service principal identity.
+
+## Managed identity
+
+Managed identities are special forms of service principals. There are two types of managed identities: system-assigned and user-assigned. System-assigned managed identities are enabled directly on an Azure resource, whereas user-assigned managed identities are a standalone resource that can be assigned to one or more Azure resources.
+
+Note
+
+In order to use a managed identity to connect to a SQL resource through GUI clients such as SSMS and ADS, the machine running the client application must have a Microsoft Entra client running with the identity's certificate stored in it. This is most commonly achieved through an Azure VM, as the identity can be easily assigned to the machine through the VM's portal pane.
+
+For tools that use Azure identity libraries such as SQL Server Management Studio (SSMS), when connecting with a managed identity you need to use the GUID for the login such as `abcd1234-abcd-1234-abcd-abcd1234abcd1234`. For more information, see (ManagedIdentityCredential. If you incorrectly pass the username, an error occurs such as:
+
+```output
+ManagedIdentityCredential authentication unavailable. The requested identity has not been assigned to this resource.
+Status: 400 (Bad Request)
+Content:
+{"error":"invalid_request","error_description":"Identity not found"}
+```
+
+### Access token
+
+Some non-GUI clients such as Invoke-sqlcmd allow providing an access token. The scope or audience of the access token must be `https://database.windows.net/`.
+
+## Remarks
+
+- Only SQL Server 2022 (16.x) on-premises with a supported Windows or Linux operating system, or SQL Server 2022 on Windows Azure VMs, is supported for Microsoft Entra authentication.
+- To connect SQL Server to Azure Arc, the Microsoft Entra account needs the following permissions:
+    - Member of the *Azure Connected Machine Onboarding* group or *Contributor* role in the resource group.
+    - Member of the *Azure Connected Machine Resource Administrator* role in the resource group.
+    - Member of the *Reader* role in the resource group.
+- Microsoft Entra authentication is not supported for SQL Server failover cluster instances

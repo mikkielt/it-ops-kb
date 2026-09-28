@@ -1,0 +1,82 @@
+source: S-jfzhzjgu
+url: https://learn.microsoft.com/en-us/azure/azure-arc/servers/overview
+title: What is Azure Arc-enabled servers?
+publisher: Microsoft Learn
+licence: CC BY 4.0 (public mirror MicrosoftDocs/azure-management-docs)
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+# Azure Arc-enabled servers Overview - Azure Arc | Microsoft Learn
+
+Azure Arc-enabled servers lets you manage Windows and Linux physical servers and virtual machines hosted *outside* of Azure, on your corporate network or with another cloud provider. With Azure Arc, these machines that you host outside of Azure are considered hybrid machines, with a representation of each machine in Azure. You manage these hybrid machines in Azure Arc the same way you manage native Azure virtual machines.
+
+When you connect a machine to Azure Arc, it's treated as a resource in Azure. Each connected machine has an Azure Resource ID, so you can include it in an Azure resource group along with other native Azure resources.
+
+To connect hybrid machines to Azure, install the Azure Connected Machine agent on the machine. You can install the Connected Machine agent manually or at scale on multiple machines by using the deployment method that works best for your scenario.
+
+Note
+
+For additional guidance regarding the different services Azure Arc offers, see Choosing the right Azure Arc service for machines.
+
+## Supported cloud operations
+
+When you connect your machine to Azure Arc-enabled servers, you can perform many operational functions, just as you would with native Azure virtual machines. The following list describes some of the key supported actions for connected machines.
+
+- **Govern**:
+    - Assign Azure machine configurations to audit settings inside the machine. For cost information, see the Azure Policy pricing guide.
+- **Protect**:
+    - Protect non-Azure servers by using Microsoft Defender for Endpoint, included through Microsoft Defender for Cloud, for threat detection, vulnerability management, and to proactively monitor for potential security threats. Microsoft Defender for Cloud presents the alerts and remediation suggestions from the threats detected.
+    - Use Microsoft Sentinel to collect security-related events and correlate them with other data sources.
+- **Configure**:
+    - Use Azure Automation for frequent and time-consuming management tasks by using PowerShell and Python runbooks. Assess configuration changes for installed software, Microsoft services, Windows registry and files, and Linux daemons by using the Azure Monitor agent for change tracking and inventory.
+    - Use Azure Update Manager to manage operating system updates for your Windows and Linux servers.
+    - Use machine enrollment (preview) to automatically configure Arc-enabled servers with a curated set of features for monitoring, security, and management.
+    - Perform post-deployment configuration and automation tasks by using supported Arc-enabled servers VM extensions for your non-Azure Windows or Linux machine.
+- **Monitor**:
+    - Monitor operating system performance and discover application components to monitor processes and dependencies with other resources by using VM insights.
+    - Collect other log data, such as performance data and events, from the operating system or workloads running on the machine by using the Azure Monitor Agent. This data is stored in a Log Analytics workspace and contains properties specific to the machine, such as a Resource ID, to support resource-context log access.
+
+To learn more about Azure monitoring, security, and update services across hybrid and multicloud environments, watch the following video.
+
+Note
+
+This service supports Azure Lighthouse, which lets service providers sign in to their own tenant to manage subscriptions and resource groups that customers have delegated.
+
+## Agent status
+
+You can view the status for a connected machine in the Azure portal under **Azure Arc &gt; Machines**.
+
+The Connected Machine agent sends a regular heartbeat message to the service every five minutes. If the service stops receiving these heartbeat messages from a machine, the service considers that machine offline, and the status will change to **Disconnected** within 15 to 30 minutes. When the service receives a subsequent heartbeat message from the Connected Machine agent, the status automatically changes back to **Connected**.
+
+If a machine remains disconnected for 45 days, its status might change to **Expired**. An expired machine can't be managed through Azure Arc until a server administrator disconnects and then reconnects it to Azure. The expiration date of the managed identity's credential determines the exact date upon which a machine expires. The credential is valid for up to 90 days and renews every 45 days.
+
+If a machine receives 429 error messages or shows intermittent connection statuses, it might be an incorrectly cloned machine. For more information, see Cloning guidelines.
+
+## Supported regions
+
+For a list of supported regions with Azure Arc-enabled servers, see the Azure products by region page.
+
+In most cases, you should select the Azure region geographically closest to your machine's location when you create the installation script. Data at rest is stored within the Azure geography containing the region you specify, which might affect your choice of region if you have data residency requirements.
+
+## Supported environments
+
+Azure Arc-enabled servers supports the management of physical servers and virtual machines hosted *outside* of Azure. For specific details about supported environments, see the connected Machine agent prerequisites.
+
+Note
+
+Azure Arc-enabled servers isn't designed or supported to enable management of virtual machines running in Azure.
+
+## Service limits
+
+There's no limit to the number of Arc-enabled servers and VM extensions you can deploy in a resource group or subscription. The standard 800 instance limit per resource group limit does apply to the Azure Arc Private Link Scope resource type.
+
+## Data residency
+
+Azure Arc-enabled servers stores customer data. By default, customer data stays within the region the customer deploys the service instance in. For regions with data residency requirements, customer data is always kept within the same region. For example, if you register the machine with Azure Arc using the East US region, data is stored in East US.
+
+For example, instance metadata information about the connected machine is collected and stored in this region. This metadata includes the following information:
+
+- Operating system name and version
+- Computer name
+- Computer fully qualified domain name (FQDN)
+- Connected Machine agent version

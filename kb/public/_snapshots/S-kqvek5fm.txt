@@ -1,0 +1,127 @@
+source: S-kqvek5fm
+url: https://learn.microsoft.com/en-us/windows-server/identity/laps/laps-faq
+title: Windows LAPS frequently asked questions
+publisher: Microsoft Learn
+licence: CC BY 4.0 (public mirror MicrosoftDocs/windowsserverdocs)
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+# Windows LAPS frequently asked questions | Microsoft Learn
+
+This article provides answers to many commonly asked questions about Windows Local Administrator Password Solution (Windows LAPS).
+
+## General
+
+### Is it supported to run 3rd-party local account password manager products side-by-side with Windows LAPS?
+
+Yes, this scenario is supported with the following condition. You must take care to configure Windows LAPS and the 3rd-party product to manage different local accounts. If you mistakenly configure both to manage the same account, Windows LAPS rejects attempts by the 3rd-party product to modify the account's password. See Account password tampering protection.
+
+### Why can't I change the password of a local admin account currently managed by Windows LAPS?
+
+Windows LAPS prevents accidental or spurious changes to the managed account's password. This protection helps prevent a torn state situation where the password stored in the directory doesn't match the password stored locally on the device. See Account password tampering protection.
+
+### Why isn't the Windows LAPS PowerShell module hosted on GitHub, PowerShell Gallery, or similar?
+
+The Windows LAPS PowerShell module is part of Windows and not available outside of the operating system.
+
+### How can I copy the Windows LAPS PowerShell module to an older operating system?
+
+This scenario isn't supported.
+
+### How can I submit unanswered questions or feature requests?
+
+See Submit feedback.
+
+### I see errors in my Windows LAPS event log - how do I fix them?
+
+See Windows LAPS Troubleshooting Guidance.
+
+### Microsoft promotes a password-less strategy and direction. Why was a password-based feature like Windows LAPS added to Windows?
+
+All Windows LAPS scenarios involve the management of a Windows local account's password for use with help desk tasks, device recovery, and other scenarios. Since Windows only supports password-based authentication for local accounts, password management is necessary.
+
+## Windows LAPS and Active Directory
+
+### Can I deploy and use Windows LAPS even if my domain is running older domain controllers?
+
+Yes with some limitations. See Domain functional level and domain controller version requirements.
+
+### Can I deploy and use Windows LAPS even if my domain isn't yet at Windows Server 2016 Domain Functional Level?
+
+Yes with some limitations. See Domain functional level and domain controller version requirements.
+
+### Do I need to deploy a Windows Server 2022 or 2019 DC in order to extend my forest's schema with the Windows LAPS schema extensions?
+
+No - you can run the `Update-LapsADSchema` cmdlet from any operating system updated with the Windows LAPS feature. The only requirement is that the client credentials are authorized to modify the Active Directory schema. See Update the Windows Server Active Directory schema.
+
+### How can I copy the Windows LAPS-enabled Active Directory User and Computers snap-in to an older operating system?
+
+This scenario isn't supported.
+
+### I installed RSAT and I still don't see the new LAPS-enabled Active Directory User and Computers snap-in?
+
+The new snap-in is only available in the Windows in-box versions of RSAT on supported Windows LAPS platforms. See Windows LAPS snap-in availability.
+
+### Why don't I see the new Windows LAPS policy in my GPO central store?
+
+The new Windows LAPS policy isn't automatically installed as part of the GPO central store. See Group Policy Object Central Store.
+
+### Are Windows LAPS passwords available during a catastrophic AD disaster scenario?
+
+Yes, assuming that AD domain controller database backups are being regularly taken and maintained. For more information, see Retrieve passwords during Active Directory disaster recovery scenarios
+
+### Is it supported to run legacy Microsoft LAPS side-by-side with Windows LAPS?
+
+Yes, this scenario is supported with the following conditions. A new Windows LAPS policy must be configured, and you must take care to configure Windows LAPS and the legacy LAPS to manage different local accounts.
+
+### What happens if I accidentally configure a Windows LAPS policy setting with an unsupported value?
+
+See Windows LAPS default policy values.
+
+### How can I enable passphrases, which are only available in Windows 11 24H2, since older operating systems don't support the new passphrase-related PasswordComplexity settings (6-8)?
+
+There are two options in this scenario. Either allow the older OSs to fall back to the default setting, or create two policies. See Windows LAPS default policy values.
+
+## Windows LAPS and Microsoft Entra ID
+
+### Why is my Microsoft Entra joined device getting an error when attempting to post the password to Microsoft Entra ID?
+
+The most common reason for this forgetting to enable the LAPS feature for your Microsoft Entra tenant. See Enabling Windows LAPS with Microsoft Entra ID.
+
+### Do I need to extend my forest's schema if I'm only planning to back up passwords to Microsoft Entra ID?
+
+No.
+
+### Do I need Intune in order to use Windows LAPS?
+
+No. You can deploy and use Windows LAPS in either Active Directory or Microsoft Entra mode without Intune. Intune does provide many benefits to the Windows LAPS scenario (for example, policy deployment at scale, monitoring, and password-reset action support).
+
+### Do I need Microsoft Entra Connect in order to use Windows LAPS?
+
+No. There are no dependencies between these two features. See Windows LAPS and Microsoft Entra Connect in hybrid environments.
+
+### How do I configure a hybrid-joined device to back up the password to both Microsoft Entra ID and AD?
+
+This scenario isn't supported. You can only back up the password to one directory at a time.
+
+### Which specific Azure clouds support Windows LAPS?
+
+See Windows Local Administrator Password Solution in Microsoft Entra ID and Microsoft Intune support for Windows LAPS for information on which specific clouds are supported.
+
+### Does Microsoft Entra Domain Services support Windows LAPS?
+
+Microsoft Entra Domain Services doesn't currently support Windows LAPS.
+
+### How are Windows LAPS passwords protected when stored in Microsoft Entra ID?
+
+Windows LAPS passwords are always protected in transit (https) when sent from the managed device to the cloud. Windows LAPS passwords that are stored in the cloud are always encrypted with AES256. The decryption keys are only available to those internal Microsoft Entra services that have a technical need to actually handle the clear-text passwords, for example during storage or query operations. This encryption layer is specific to Windows LAPS passwords, and is always enabled in addition to the default Microsoft Entra data protection mechanisms - see Microsoft Entra Data Security Considerations.
+
+### I see a 20000 warning event in the event log during a Windows Autopilot pre-provisioning workflow - how do I fix this issue?
+
+The Windows LAPS CSP rejects MDM configuration directives when the device doesn't appear to be joined. The CSP logs an event ID 20000 in the Windows LAPS operational event log when this condition occurs. You might see one or more of these events during the technician flow phase of an Autopilot pre-provisioning workflow, when Autopilot unjoins the device from Microsoft Entra.
+
+This situation gets resolved during the later user flow phase of Autopilot provisioning when the device is rejoined to Microsoft Entra. At that point Windows LAPS is fully functional and starts backing up passwords to Microsoft Entra.
+
+This issue doesn't affect other Autopilot scenarios aside from pre-provisioning. The CSP warning events should be ignored when seen in an Autopilot pre-provisioning workflow as described earlier.
+
+See Step by step tutorial for Windows Autopilot for pre-provisioned deployment Microsoft Entra join in Intune.

@@ -1,0 +1,248 @@
+source: S1603
+url: https://github.com/microsoft/Windows-Containers-AKS-gMSA
+title: Windows-Containers-AKS-gMSA (AksGMSA PowerShell module tooling)
+publisher: Microsoft (microsoft/Windows-Containers-AKS-gMSA)
+licence: MIT
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+microsoft
+/
+Windows-Containers-AKS-gMSA
+Public
+Notifications
+You must be signed in to change notification settings
+Fork
+1
+Star
+3
+BranchesTags
+Open more actions menu
+## Latest commit
+## History
+89 Commits
+89 Commits
+## Folders and files
+NameName
+Last commit message
+Last commit date
+AksGMSA
+AksGMSA
+gMSA-on-AKS-trial
+gMSA-on-AKS-trial
+.gitignore
+.gitignore
+CODE_OF_CONDUCT.md
+CODE_OF_CONDUCT.md
+CONTRIBUTING.md
+CONTRIBUTING.md
+LICENSE
+LICENSE
+README.md
+README.md
+SECURITY.md
+SECURITY.md
+TROUBLESHOOTING.md
+TROUBLESHOOTING.md
+## Repository files navigation
+# AKS gMSA PowerShell Tool
+PowerShell module used to configure an AKS cluster with Active Directory (AD) gMSA.
+## Requirements
+### Environment
+AKS cluster (with Windows agents) ready for AD gMSA usage. Windows agents must have the new CCGAKVPlugin.
+ADDC (Active Directory Domain Controller) machine configured. The AD DS managed solution should work as well.
+AKS Windows agents must have network connectivity to the ADDC machine (or AD DS).
+Domain admin credentials. They are used to setup the gMSA and the standard domain user. This task can be delegated to the authorized people (if needed).
+### Tooling
+The kubectl.exe tool installed (see instructions here).
+The following PowerShell modules installed:
+Az.Accounts
+Az.Resources
+Az.Aks
+Az.Compute
+Az.ManagedServiceIdentity
+Az.KeyVault
+ActiveDirectory (via the appropriate RSAT package).
+The Azure CLI installed (see instructions here).
+For convenience purposes, the module function:
+Install-ToolingRequirements
+can be used to install the tooling requirements.
+If needed, call it from PowerShell (with administrative privileges), after importing the module.
+## Usage
+Import the PowerShell module:
+Import-Module AksGMSA
+Login to Azure, and use the subscription with the AKS deployment:
+Connect-AzAccount -DeviceCode -Subscription "<SUBSCRIPTION_ID>"
+az login --use-device-code
+az account set --subscription "<SUBSCRIPTION_ID>"
+### Setup AKS with gMSA
+First of all, we need some input variables for the steps below.
+The following function can be used to interactively get the input variables:
+$params = Get-AksGMSAParameters
+Import the AKS kubeconfig:
+Import-AzAksCredential -Force `
+-ResourceGroupName $params["aks-cluster-rg-name"] `
+-Name $params["aks-cluster-name"]
+Validate that the AKS API is reachable:
+kubectl.exe get nodes
+NAME STATUS ROLES AGE VERSION
+aks-nodepool1-38219188-vmss000000 Ready agent 32m v1.20.5
+aksk8swin000000 Ready agent 10m v1.20.5
+Validate that the AKS Windows hosts have proper connectivity to the AD DC machine:
+Confirm-AksADDCConnectivity `
+-AksResourceGroupName $params["aks-cluster-rg-name"] `
+-AksClusterName $params["aks-cluster-name"] `
+-AksWindowsNodePoolsNames $params["aks-win-node-pools-names"] `
+-DomainDnsServer $params["domain-dns-server"] `
+-RootDomainName $params["domain-fqdn"]
+Now, we are ready to execute the AKS gMSA setup steps.
+For any of the functions below, the parameter -Verbose can be used to display more information on what's happening behind the scenes.
+#### Confirm that the AKS cluster has gMSA feature properly configured
+Confirm-AksGMSAConfiguration `
+-AksResourceGroupName $params["aks-cluster-rg-name"] `
+-AksClusterName $params["aks-cluster-name"] `
+-AksGMSADomainDnsServer $params["domain-dns-server"] `
+-AksGMSARootDomainName $params["domain-fqdn"]
+#### Setup standard domain user and gMSA
+For this step, the commands need to be executed with domain admin credentials, against the ADDC machine.
+This task can be delegated to authorized people.
+Before anything else, make sure the KDS (Key Distribution Service) root key is already created. This is required for the gMSA accounts (more details here).
+From the ADDC machine PowerShell prompt, the root key can be created for:
+production environments with:
+# You will need to wait 10 hours before the KDS root key is
+# replicated and available for use on all domain controllers.
+Add-KdsRootKey -EffectiveImmediately
+testing environments with:
+# For single-DC test environments ONLY.
+Add-KdsRootKey -EffectiveTime (Get-Date).AddHours(-10)
+Important notes for the commands below, that run against the ADDC machine:
+They assume that ADDC machine is configured for remote commands execution. This means that:
+The Active Directory Web Services (ADWS) is started.
+The ADWS port (9389 TCP) is reachable.
+If the ADDC machine doesn't allow remote commands execution, you can run everything locally there.
+The parameter DomainControllerAddress can be omitted if the commands run locally, into the ADDC machine.
+Moreover, if the logged user is a domain admin, the parameters DomainAdmin and DomainAdminPassword can be omitted as well.
+If everything is ready, remotely create the standard domain user and the gMSA with the commands below.
+##### Create the standard domain user
+# Creates the standard domain user.
+New-GMSADomainUser `
+-Name $params["gmsa-domain-user-name"] `
+-Password $params["gmsa-domain-user-password"] `
+-DomainControllerAddress $params["domain-controller-address"] `
+-DomainAdmin "$($params["domain-fqdn"])\$($params["domain-admin-user-name"])" `
+-DomainAdminPassword $params["domain-admin-user-password"]
+##### Create the gMSA
+# Creates the gMSA account, and it authorizes only the standard domain user.
+New-GMSA `
+-Name $params["gmsa-name"] `
+-AuthorizedUser $params["gmsa-domain-user-name"] `
+-DomainControllerAddress $params["domain-controller-address"] `
+-DomainAdmin "$($params["domain-fqdn"])\$($params["domain-admin-user-name"])" `
+-DomainAdminPassword $params["domain-admin-user-password"]
+#### Setup AKV (Azure Key Vault) and Azure user-assigned MI (Managed Identity)
+##### Create the Azure key vault
+# The Azure key vault will have a secret with the credentials of the standard
+# domain user authorized to fetch the gMSA.
+New-GMSAAzureKeyVault `
+-ResourceGroupName $params["aks-cluster-rg-name"] `
+-Location $params["azure-location"] `
+-Name $params["akv-name"] `
+-SecretName $params["akv-secret-name"] `
+-GMSADomainUser "$($params["domain-fqdn"])\$($params["gmsa-domain-user-name"])" `
+-GMSADomainUserPassword $params["gmsa-domain-user-password"]
+IMPORTANT NOTE: The GMSADomainUser needs to have the format DOMAIN\USERNAME, otherwise the pods using the credential spec will crash.
+##### Create the Azure user-assigned managed identity
+New-GMSAManagedIdentity `
+-ResourceGroupName $params["aks-cluster-rg-name"] `
+-Location $params["azure-location"] `
+-Name $params["ami-name"]
+#### Grant AKV access to the AKS Windows hosts
+# Appends the user-assigned managed identity to the AKS Windows agent pools given as input parameter.
+# Configures the AKV read access policy for the user-assigned managed identity.
+Grant-AkvAccessToAksWindowsHosts `
+-AksResourceGroupName $params["aks-cluster-rg-name"] `
+-AksClusterName $params["aks-cluster-name"] `
+-AksWindowsNodePoolsNames $params["aks-win-node-pools-names"] `
+-VaultResourceGroupName $params["aks-cluster-rg-name"] `
+-VaultName $params["akv-name"] `
+-ManagedIdentityResourceGroupName $params["aks-cluster-rg-name"] `
+-ManagedIdentityName $params["ami-name"]
+The AKS agent pools access can be verified with:
+Get-AksAgentPoolsAkvAccess `
+-AksResourceGroupName $params["aks-cluster-rg-name"] `
+-AksClusterName $params["aks-cluster-name"] `
+-VaultResourceGroupNames $params["aks-cluster-rg-name"]
+#### Setup gMSA credential spec with the RBAC resources
+# Creates the gMSA credential spec.
+# Configures the appropriate RBAC resources (ClusterRole and RoleBinding) for the spec.
+# Executes AD commands to get the appropriate domain information for the credential spec.
+New-GMSACredentialSpec `
+-Name $params["gmsa-spec-name"] `
+-GMSAName $params["gmsa-name"] `
+-ManagedIdentityResourceGroupName $params["aks-cluster-rg-name"] `
+-ManagedIdentityName $params["ami-name"] `
+-VaultName $params["akv-name"] `
+-VaultGMSASecretName $params["akv-secret-name"] `
+-DomainControllerAddress $params["domain-controller-address"] `
+-DomainUser "$($params["domain-fqdn"])\$($params["gmsa-domain-user-name"])" `
+-DomainUserPassword $params["gmsa-domain-user-password"]
+If the AD domain controller doesn't allow remote commands execution, this function can be executed locally on the AD domain controller. The parameters DomainControllerAddress, DomainUser, and DomainUserPassword can be omitted in that case.
+#### Validation
+Validate that the gMSA credential spec works with:
+Start-GMSACredentialSpecValidation `
+-SpecName $params["gmsa-spec-name"] `
+-AksWindowsNodePoolsNames $params["aks-win-node-pools-names"]
+#### Collect Logs
+The following command can be used to extract logs from the Windows hosts:
+# Extracts the following logs from each Windows host:
+# - kubelet logs.
+# - CCG (Container Credential Guard) logs (as a .evtx file).
+Copy-WindowsHostsLogs -LogsDirectory $params["logs-directory"]
+The logs will be copied from each Windows hosts to the local directory $params["logs-directory"]. The logs directory will have a subdirectory named after each Windows agent host.
+The CCG (Container Credential Guard) .evtx log file can be properly inspected in the Event Viewer, only after the following requirements are met:
+The Containers Windows feature is installed. It can be installed via PowerShell with:
+# Needs computer restart
+Install-WindowsFeature -Name Containers
+The CCGEvents.man logging manifest file is registered via:
+wevtutil im CCGEvents.man
+Note: The logging manifest file needs to be provided by Microsoft.
+#### Setup sample application using gMSA
+The following function will output a sample YAML manifest with an application using the gMSA credential spec:
+Get-GMSASampleApplicationYAML `
+-SpecName $params["gmsa-spec-name"] `
+-AksWindowsNodePoolsNames $params["aks-win-node-pools-names"]
+Moreover, this can be deployed with:
+Get-GMSASampleApplicationYAML `
+-SpecName $params["gmsa-spec-name"] `
+-AksWindowsNodePoolsNames $params["aks-win-node-pools-names"] | kubectl apply -f -
+# Release nodes
+Dec 2023:
+Updated images to use LTSC2022. This means the following cmdlets of this module will only work with nodes running Windows Server 2022:
+Start-GMSACredentialSpecValidation
+Get-GMSASampleApplicationYAML
+All other commands of this module, including its setup, will work with both Windows Server 2019 and 2022.
+## About
+gMSA tooling for configuring Windows containers on AKS for Active Directory dependent applications.
+### Resources
+Readme
+MIT license
+### Code of conduct
+Code of conduct
+### Contributing
+Contributing
+### Security policy
+Security policy
+Activity
+Custom properties
+### Stars
+3 stars
+### Watchers
+4 watching
+### Forks
+1 fork
+Report repository
+## Releases
+## Packages
+## Used by
+## Contributors
+## Languages

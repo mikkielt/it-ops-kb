@@ -1,0 +1,126 @@
+source: S-jbhevlal
+url: https://learn.microsoft.com/azure/ai-services/content-safety/how-to/migrate-to-general-availability
+title: Migrate from Content Safety public preview to GA
+publisher: Microsoft Learn
+licence: CC BY 4.0 (public mirror MicrosoftDocs/azure-ai-docs)
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+# Migrate from Azure AI Content Safety public preview to GA - Azure AI services | Microsoft Learn
+
+This guide shows you how to upgrade your existing code from the public preview version of Azure AI Content Safety to the GA version.
+
+## REST API calls
+
+In all API calls, be sure to change the *api-version* parameter in your code:
+
+| old | new |
+| --- | --- |
+| `api-version=2023-04-30-preview` | `api-version=2023-10-01` (or later version) |
+
+Note the following REST endpoint name changes from the preview API:
+
+| Public preview term | GA term |
+| --- | --- |
+| **addBlockItems** | **addOrUpdateBlocklistItems** |
+| **blockItems** | **blocklistItems** |
+| **removeBlockItems** | **removeBlocklistItems** |
+
+## JSON fields
+
+The following JSON fields have been renamed. Be sure to change them when you send data to a REST call:
+
+| Public preview Term | GA Term |
+| --- | --- |
+| `blockItems` | `blocklistItems` |
+| `BlockItemId` | `blocklistItemId` |
+| `blockItemIds` | `blocklistItemIds` |
+| `blocklistMatchResults` | `blocklistsMatch` |
+| `breakByBlocklists` | `haltOnBlocklistHit` |
+
+## Return formats
+
+Some of the JSON return formats have changed. See the following updated JSON return examples.
+
+The **text:analyze** API call with category analysis:
+
+```json
+{
+  "categoriesAnalysis": [
+    {
+      "category": "Hate",
+      "severity": 2
+    },
+    {
+      "category": "SelfHarm",
+      "severity": 0
+    },
+    {
+      "category": "Sexual",
+      "severity": 0
+    },
+    {
+      "category": "Violence",
+      "severity": 0
+    }
+ ]
+}
+```
+
+The **text:analyze** API call with a blocklist:
+
+```json
+{
+  "blocklistsMatch": [
+    {
+      "blocklistName": "string",
+      "blocklistItemId": "string",
+      "blocklistItemText": "bleed"
+    }
+  ],
+  "categoriesAnalysis": [
+    {
+      "category": "Hate",
+      "severity": 0
+    }
+  ]
+}
+```
+
+The **addOrUpdateBlocklistItems** API call:
+
+```json
+{
+  "blocklistItems:"[
+    {
+      "blocklistItemId": "string",
+      "description": "string",
+      "text": "bleed"
+    }
+  ]
+}
+```
+
+The **blocklistItems** API call (list all blocklist items):
+
+```json
+{
+  "values": [
+    {
+      "blocklistItemId": "string",
+      "description": "string",
+      "text": "bleed",
+    }
+  ]
+}
+```
+
+The **blocklistItems** API call with an item ID (retrieve a single item):
+
+```json
+{
+  "blocklistItemId": "string",
+  "description": "string",
+  "text": "string"
+}
+```

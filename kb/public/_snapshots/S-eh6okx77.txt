@@ -1,0 +1,186 @@
+source: S-eh6okx77
+url: https://learn.microsoft.com/azure/foundry/concepts/capability-reference
+title: Microsoft Foundry capability reference
+publisher: Microsoft Learn
+licence: CC BY 4.0 (public mirror MicrosoftDocs/azure-ai-docs)
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+# Microsoft Foundry capability reference - Microsoft Foundry | Microsoft Learn
+
+This article lists Microsoft Foundry capabilities by area and links each one to its canonical documentation. Use it when you know roughly what you need and want to find the right article.
+
+If you're deciding where to start instead, see Microsoft Foundry product and capability map.
+
+Each entry is a capability family rather than an individual article, model, or API operation. Capabilities marked (preview) are offered under supplemental terms of use and aren't recommended for production workloads. Preview status can vary by feature, region, and API version, so check the linked article for current details.
+
+## Build surfaces and developer tools
+
+Where you author, test, and ship Foundry work.
+
+| Capability | What it does |
+| --- | --- |
+| Foundry portal | Web experience for exploring models, building prompt agents, running evaluations, and managing resources. |
+| Playgrounds | Try models, prompts, and agents interactively before you write code. |
+| Microsoft Foundry SDKs | Client libraries for Python, C#, JavaScript, and Java. |
+| Azure Developer CLI (azd) extensions | Scaffold, run, test, and deploy agent projects from the command line. |
+| Visual Studio Code extension | Work with Foundry projects, models, and agents inside VS Code. |
+| Foundry Agent Canvas | Visual surface for composing and inspecting agents. |
+| Coding agent integration | Build Foundry projects with AI coding agents such as GitHub Copilot, including Model Context Protocol access through the Foundry MCP Server. |
+| Templates and samples | Start from prebuilt application templates and GitHub samples. |
+| LangChain and LangGraph integration | Use Foundry models, tools, memory, and tracing from LangChain and LangGraph apps. |
+
+## Models
+
+Model selection, deployment, and lifecycle.
+
+| Capability | What it does |
+| --- | --- |
+| Foundry Models catalog | Discover and compare models from Microsoft, OpenAI, Anthropic, Meta, and others, across models sold by Azure and models from partners and community. |
+| Model deployment | Create and manage model endpoints from the portal or code. |
+| Deployment types | Choose how capacity is served, including standard, global, data zone, provisioned throughput (PTU), batch, and priority processing. |
+| Managed compute (preview) | Deploy models to dedicated virtual machine capacity in your resource. |
+| Instant access models (preview) | Use selected models without provisioning a deployment first. |
+| Model router | Route requests automatically to the best model for cost and quality. |
+| Model benchmarks and leaderboards | Compare model quality, cost, and performance before you commit. |
+| Fine-tuning | Customize models on your own data, including synthetic data generation. |
+| Model versions and lifecycle | Track versions, automatic updates, retirement schedules, and support policy. |
+| Healthcare AI models | Domain-specific models for medical imaging and reporting scenarios. |
+| Hugging Face models | Deploy open models from Hugging Face into Foundry. |
+| Fireworks on Foundry | Use Fireworks models and import custom models. |
+| Quotas and region availability | Understand and manage capacity limits by model and region. |
+
+## Agents
+
+Foundry Agent Service and the agent development lifecycle.
+
+| Capability | What it does |
+| --- | --- |
+| Foundry Agent Service | Build, run, and operate agents as a managed service. |
+| Prompt agents | Declarative agents defined by instructions, a model, and attached tools. |
+| Hosted agents | Run your own agent code or framework in a Foundry-managed runtime. |
+| Agent development lifecycle | End-to-end build, test, deploy, and iterate workflow for agents. |
+| Agent identity | Give agents a Microsoft Entra identity for authenticated access to resources. |
+| Workflows | Coordinate multiple agents and steps into a single orchestrated process. |
+| Routines | Package repeatable agent procedures for reuse. |
+| Agent-to-agent (A2A) | Let agents call other agents across services and vendors. |
+| Responses API | Stateful API for model and agent interactions. |
+| Voice agents | Add speech input and output to agents. |
+| Microsoft Agent 365 integration | Manage and observe Foundry agents alongside Microsoft 365 agents. |
+| Continuous integration and deployment | Ship agents through automated pipelines. |
+| Agent debugging tools | Inspect and diagnose agent behavior locally and in the cloud. |
+
+## Tools
+
+Capabilities you attach to an agent so it can act.
+
+| Capability | What it does |
+| --- | --- |
+| Tool catalog | Browse every tool an agent can use, with setup requirements. |
+| Function calling | Let an agent call your own functions with structured arguments. |
+| Code interpreter | Run generated code in a sandbox to analyze data and produce files. |
+| File search | Ground answers in uploaded files through managed vector stores. |
+| Web search and Grounding with Bing | Ground answers in current web results. |
+| Browser automation (preview) | Let an agent navigate and act on websites. |
+| Computer use (preview) | Let an agent operate a virtual computer interface. |
+| Image generation (preview) | Generate images from an agent. |
+| OpenAPI tool | Call any REST API described by an OpenAPI specification. |
+| Model Context Protocol (MCP) | Connect agents to MCP servers, including managed servers and your own. |
+| Azure Functions | Trigger serverless functions as agent actions. |
+| SharePoint and Fabric connectors (preview) | Reach enterprise data sources from an agent. |
+| Toolbox | Bundle and manage the tools available to an agent, including tool search for large tool sets and a private catalog of organization-approved tools. |
+| Skills (preview) | Package reusable agent behavior beyond a single tool call. |
+| Foundry Tools: Speech, Language, Translator | Add speech, language understanding, PII detection, and translation. |
+
+## Knowledge and retrieval
+
+How agents and applications ground responses in your data.
+
+| Capability | What it does |
+| --- | --- |
+| Retrieval-augmented generation (RAG) | Patterns for grounding model responses in your own content. |
+| Azure AI Search integration | Use Azure AI Search indexes as agent knowledge. |
+| Vector stores | Managed storage and indexing for file search. |
+| Foundry IQ | Agentic retrieval over a knowledge base, including private networking. |
+| Fabric IQ (preview) | Reason over Microsoft Fabric data and semantic models. |
+| Work IQ (preview) | Reason over Microsoft 365 work data. |
+| Memory (preview) | Give agents persistent memory across sessions. |
+
+## Observability
+
+Understand what your agents and models are doing in production.
+
+| Capability | What it does |
+| --- | --- |
+| Foundry Observability | Unified monitoring, tracing, and evaluation for agents and models. |
+| Tracing | Capture and replay agent execution traces, including client-side spans. |
+| Agent monitoring dashboard | Track agent health, usage, quality, and cost over time. |
+| Model deployment monitoring | Watch latency, throughput, and errors for model endpoints. |
+| End-user feedback logging | Collect and analyze feedback signals from your application. |
+| Notification Center | See service and resource notifications in the portal. |
+| External agent registration (preview) | Bring agents that run outside Foundry into Foundry observability. |
+| Diagnostic logging | Send platform logs and metrics to Azure Monitor. |
+
+## Evaluation and optimization
+
+Measure and improve quality, safety, and cost.
+
+| Capability | What it does |
+| --- | --- |
+| Evaluations | Score generative AI apps and agents from the portal, SDK, or CI/CD. |
+| Built-in evaluators | Use general purpose, similarity, RAG, agent, safety, and rubric evaluators. |
+| Custom evaluators | Define your own scoring logic. |
+| Agent evaluation | Evaluate agent trajectories, tool calls, and task completion. |
+| Continuous evaluation | Evaluate production traffic on an ongoing basis. |
+| Evaluation datasets | Generate synthetic test data or build datasets from agent traces when you don't have labeled examples. |
+| Human evaluation | Collect structured human judgments and annotate traces. |
+| Prompt optimizer | Improve agent instructions automatically from evaluation results. |
+| Agent optimizer (preview) | Tune hosted agent instructions and skills against a target dataset. |
+| AI red teaming | Run automated adversarial scans locally or in the cloud. |
+| Evaluations in CI/CD | Gate releases with evaluations in GitHub Actions or Azure DevOps. |
+
+## Trust and safety
+
+Guardrails, content safety, and responsible AI.
+
+| Capability | What it does |
+| --- | --- |
+| Guardrails and controls | Filter and control content across models and agents. Includes harm category filters, Prompt Shields for jailbreak and prompt injection, groundedness detection, sensitive data (PII) detection, and protected material detection. |
+| Custom filtering | Extend the built-in filters with your own block lists and custom categories. |
+| Task adherence | Detect when an agent strays from its assigned task. |
+| Guided Guardrail (preview) | Configure guardrails through a guided setup experience. |
+| Third-party guardrail integrations | Plug partner safety systems into Foundry intervention points. |
+| Responsible AI transparency notes | Understand intended uses, limitations, and data handling. |
+| Customer Copyright Commitment | Review Microsoft's copyright commitment for covered services. |
+
+## Manage, secure, and govern
+
+Platform administration for Foundry at scale.
+
+| Capability | What it does |
+| --- | --- |
+| Foundry resources and projects | Organize work with Foundry resources and projects. |
+| Foundry control plane | Govern agents, models, and tools across your estate. |
+| Fleet monitoring | Track health and performance across many agents. |
+| Token limit enforcement | Cap model consumption per agent, project, or team. |
+| AI gateway integration | Front Foundry with Azure API Management for routing and policy. |
+| Role-based access control | Assign Foundry roles and scope permissions. |
+| Keyless authentication | Use Microsoft Entra identities instead of API keys. |
+| Network isolation | Use private endpoints, managed virtual networks, and network security perimeter. |
+| Customer-managed keys | Encrypt data with keys you control. |
+| Azure Policy support | Apply built-in and custom policy definitions to Foundry resources. |
+| Cost management | Plan, monitor, and optimize Foundry spend. |
+| High availability and disaster recovery | Design for resiliency and recover from outages or data loss. |
+| Azure Government support | Run Foundry workloads in Azure Government. |
+| Infrastructure as code | Deploy Foundry with Bicep, Terraform, or the Azure CLI. |
+
+## APIs and SDKs
+
+Programmatic surfaces for building on Foundry.
+
+| Capability | What it does |
+| --- | --- |
+| Foundry API reference | Browse the interactive reference for Foundry data plane operations. |
+| Foundry Models endpoints | Call deployed models over a consistent inference endpoint. |
+| Foundry v1 REST API | Use the OpenAI-compatible surface for chat, responses, embeddings, files, and fine-tuning. |
+| Resource management API | Create and configure Foundry resources with ARM, Bicep, or the Azure CLI. |

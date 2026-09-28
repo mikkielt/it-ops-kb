@@ -1,0 +1,66 @@
+source: S1502
+url: https://csrc.nist.gov/pubs/sp/800/218/a/final
+title: NIST SP 800-218A - Secure Software Development Practices for Generative AI and Dual-Use Foundation Models: An SSDF Community Profile
+publisher: NIST
+licence: US Government work (NIST: public information, may be copied)
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+You are viewing this page in an unauthorized frame window.
+This is a potential security issue, you are being redirected to https://csrc.nist.gov.
+An official website of the United States government
+Here’s how you know
+Official websites use .gov
+A
+.gov website belongs to an official government
+organization in the United States.
+Secure .gov websites use HTTPS
+A
+lock (
+) or https:// means you’ve safely connected to
+the .gov website. Share sensitive information only on official,
+secure websites.
+Information Technology Laboratory
+Computer Security Resource Center
+Publications
+###
+NIST SP 800-218A
+# Secure Software Development Practices for Generative AI and Dual-Use Foundation Models: An SSDF Community Profile
+Share to Facebook
+Share to X
+Share to LinkedIn
+Share ia Email
+Documentation
+Topics
+Date Published: July 2024
+#### Author(s)
+Harold Booth (NIST), Murugiah Souppaya (NIST), Apostol Vassilev (NIST), Michael Ogata (NIST), Martin Stanley (CISA), Karen Scarfone (Scarfone Cybersecurity)
+#### Abstract
+This document augments the secure software development practices and tasks defined in Secure Software Development Framework (SSDF) version 1.1 by adding practices, tasks, recommendations, considerations, notes, and informative references that are specific to AI model development throughout the software development life cycle. These additions are documented in the form of an SSDF Community Profile to support Executive Order (EO) 14110, Safe, Secure, and Trustworthy Development and Use of Artificial Intelligence, which tasked NIST with “developing a companion resource to the [SSDF] to incorporate secure development practices for generative AI and for dual-use foundation models.” This Community Profile is intended to be useful to the producers of AI models, the producers of AI systems that use those models, and the acquirers of those AI systems. This Profile should be used in conjunction with NIST Special Publication (SP) 800-218, Secure Software Development Framework (SSDF) Version 1.1: Recommendations for Mitigating the Risk of Software Vulnerabilities.
+This document augments the secure software development practices and tasks defined in Secure Software Development Framework (SSDF) version 1.1 by adding practices, tasks, recommendations, considerations, notes, and informative references that are specific to AI model development throughout the...
+See full abstract
+This document augments the secure software development practices and tasks defined in Secure Software Development Framework (SSDF) version 1.1 by adding practices, tasks, recommendations, considerations, notes, and informative references that are specific to AI model development throughout the software development life cycle. These additions are documented in the form of an SSDF Community Profile to support Executive Order (EO) 14110, Safe, Secure, and Trustworthy Development and Use of Artificial Intelligence, which tasked NIST with “developing a companion resource to the [SSDF] to incorporate secure development practices for generative AI and for dual-use foundation models.” This Community Profile is intended to be useful to the producers of AI models, the producers of AI systems that use those models, and the acquirers of those AI systems. This Profile should be used in conjunction with NIST Special Publication (SP) 800-218, Secure Software Development Framework (SSDF) Version 1.1: Recommendations for Mitigating the Risk of Software Vulnerabilities.
+Hide full abstract
+#### Keywords
+artificial intelligence; artificial intelligence model; cybersecurity risk management; generative artificial intelligence; secure software development; Secure Software Development Framework (SSDF); software acquisition; software development; software security
+##### Control Families
+None selected
+#### Documentation
+Publication:
+https://doi.org/10.6028/NIST.SP.800-218A
+Download URL
+Supplemental Material:
+Secure Software Development Framework
+NIST news article
+White House fact sheet
+NIST AI publications
+Publication Parts:
+SP 800-218
+Document History:
+04/29/24: SP 800-218A (Draft)
+07/26/24: SP 800-218A (Final)
+#### Topics
+Security and Privacy
+acquisition, risk management
+Technologies
+artificial intelligence, software & firmware

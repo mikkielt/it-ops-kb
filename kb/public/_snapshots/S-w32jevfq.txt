@@ -1,0 +1,37 @@
+source: S-w32jevfq
+url: https://learn.microsoft.com/en-us/microsoft-365/admin/manage/agent-roles-perms
+title: Agent management roles and permissions in Microsoft 365 admin center
+publisher: Microsoft Learn
+licence: CC BY 4.0 (public mirror MicrosoftDocs/microsoft-365-docs)
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+# Agent management roles and permissions in Microsoft 365 admin center - Microsoft 365 admin | Microsoft Learn
+
+Access to agent management in Microsoft 365 admin center is controlled by Microsoft Entra admin roles.
+
+While several administrative and security roles can view agent-related information for monitoring and reporting purposes, only select roles are authorized to perform governance actions such as approving agent requests or assigning ownership.
+
+The following table provides agent management capabilities in the Microsoft 365 admin center:
+
+| Role | View insights and organization data | View agent registry information | Install, modify, approve, and manage agent configurations |
+| --- | --- | --- | --- |
+| Global Administrator | ✔ | ✔ | ✔ |
+| AI Administrator | ✔ | ✔ | ✔ |
+| Global Reader | ✔ | ✔ | ✖\* |
+| AI Reader | ✔ | ✔ | ✖\* |
+| Security Administrator | ✔ | ✔ | ✖ |
+| Security Reader | ✔ | ✔ | ✖ |
+| Reports Reader | ✔ | ✔ | ✖ |
+| User Experience Success Manager | ✔ | ✔ | ✖ |
+| User Account Administrator | ✔ | ✖ | ✖ |
+
+\* *Read Only – Tools and settings*
+
+The **AI Administrator** and **Global Administrator** roles have tenant-wide visibility and governance authority, where-as by contrast, product-specific admin roles allow governance only within the boundaries of their products (such as Power Platform Administrator and Fabric Administrator).
+
+Important
+
+Use and assign roles with the fewest permissions to accomplish tasks. Accounts with lower permission roles help improve security for your organization. Global Administrator is a highly privileged role. Limit its use to emergency scenarios when you can't use an existing role. For more information, see About admin roles in the Microsoft 365 admin center.
+
+For more information about roles and permissions related to agents, see About administrator roles in the Microsoft 365 admin center.

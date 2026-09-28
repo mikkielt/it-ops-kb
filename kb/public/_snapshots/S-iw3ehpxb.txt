@@ -1,0 +1,55 @@
+source: S-iw3ehpxb
+url: https://learn.microsoft.com/en-us/powershell/utility-modules/secretmanagement/overview
+title: Overview of the SecretManagement and SecretStore modules
+publisher: Microsoft Learn
+licence: CC BY 4.0 (public mirror MicrosoftDocs/PowerShell-Docs-Modules)
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+# Overview of the SecretManagement and SecretStore modules - PowerShell | Microsoft Learn
+
+Important
+
+The PowerShell team has decided that Secret modules are feature complete and will no longer be actively developed. The modules will continue to be supported for security and critical bug fixes. The code repository has been archived.
+
+The latest versions published are:
+
+- Microsoft.PowerShell.SecretManagement v1.1.2
+- Microsoft.PowerShell.SecretStore v1.0.6
+
+The nature of secrets has fundamentally changed since this project was designed. Passwordless authentication methods such as passkeys, single sign-on, and federated credential systems such as Microsoft Entra ID, biometrics, and hardware security keys are the future.
+
+The **SecretManagement** module helps users manage secrets by providing a common set of cmdlets that interface with secrets vaults. **SecretManagement** provides an extensible model where local and remote vaults can be registered for use. This allows you to separate the specific details for accessing and managing the vault from your scripts that need secrets.
+
+Since **SecretManagement** is a module abstraction layer in PowerShell, it becomes useful once extension vaults are registered. There are trade-offs between security, usability, and specificity for any vault so it's up to the user to configure **SecretManagement** to integrate with the vaults that best match their requirements, as well as to assess the extent to which they trust any vault extensions not developed by Microsoft.
+
+**SecretManagement** doesn't impose authentication requirements for extension vaults. This allows each individual vault to provide its own mechanism. Some may require a password or token, while others may leverage current account credentials.
+
+**SecretManagement** enables the following key scenarios:
+
+- Sharing a script across your organization without knowing the local vault of all the users
+- Running your deployment script in local, test, and production environments with the change of only a single parameter, **Vault**
+- Changing the backend of the authentication method to meet specific security or organizational needs without needing to update all your scripts
+
+## Extension Vault Ecosystem
+
+**SecretManagement** becomes useful once you install and register extension vaults. Extension vaults, which are PowerShell modules with a particular structure, provide the connection between the **SecretManagement** module and any local or remote Secret Vault.
+
+**SecretStore** is a cross-platform extension module that implements a local vault. The **SecretStore** vault stores secrets, locally in a file, for the current user. It uses .NET Core cryptographic APIs to encrypt file contents. This extension vault works on all platforms that support PowerShell 7.
+
+### Discovering and Installing Vault Extensions
+
+To find extension vault modules, search the PowerShell Gallery for the SecretManagement tag.
+
+Some community vault extensions that are available:
+
+- Azure KeyVault (Microsoft Owned)
+- KeePass
+- LastPass
+- Hashicorp Vault
+- KeyChain
+- CredMan
+
+## Community feedback and support
+
+Community feedback has been essential to the iterative development of these modules. To file issues or get support for the SecretManagement interface or vault development experience please use the SecretManagement repository. For issues with the SecretStore module please use the SecretStore repository.

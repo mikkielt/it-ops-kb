@@ -1,0 +1,221 @@
+source: S1885
+url: https://github.com/promptfoo/promptfoo
+title: promptfoo repository (README + LICENSE)
+publisher: Promptfoo Inc.
+licence: MIT
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+promptfoo
+/
+promptfoo
+Public
+### Uh oh!
+There was an error while loading. Please reload this page.
+Notifications
+You must be signed in to change notification settings
+Fork
+2.4k
+Star
+25.5k
+BranchesTags
+Open more actions menu
+## Latest commit
+## History
+9,925 Commits
+9,925 Commits
+## Folders and files
+NameName
+Last commit message
+Last commit date
+.agents
+.agents
+.claude-plugin
+.claude-plugin
+.claude
+.claude
+.cursor
+.cursor
+.devcontainer
+.devcontainer
+.github
+.github
+.husky
+.husky
+.vscode
+.vscode
+architecture
+architecture
+code-scan-action
+code-scan-action
+docs
+docs
+drizzle
+drizzle
+examples
+examples
+helm/chart/promptfoo
+helm/chart/promptfoo
+plugins
+plugins
+scripts
+scripts
+site
+site
+src
+src
+test
+test
+tools/biome
+tools/biome
+.biomeignore
+.biomeignore
+.dockerignore
+.dockerignore
+.git-blame-ignore-revs
+.git-blame-ignore-revs
+.gitignore
+.gitignore
+.mailmap
+.mailmap
+.npmignore
+.npmignore
+.npmrc
+.npmrc
+.nvmrc
+.nvmrc
+.prettierignore
+.prettierignore
+.prettierrc.yaml
+.prettierrc.yaml
+.release-please-manifest.json
+.release-please-manifest.json
+.rubocop.yml
+.rubocop.yml
+.ruff.toml
+.ruff.toml
+AGENTS.md
+AGENTS.md
+CHANGELOG.md
+CHANGELOG.md
+CITATION.cff
+CITATION.cff
+CODE_OF_CONDUCT.md
+CODE_OF_CONDUCT.md
+CONTRIBUTING.md
+CONTRIBUTING.md
+Dockerfile
+Dockerfile
+LICENSE
+LICENSE
+README.md
+README.md
+SECURITY.md
+SECURITY.md
+biome.jsonc
+biome.jsonc
+codecov.yml
+codecov.yml
+drizzle.config.ts
+drizzle.config.ts
+knip.jsonc
+knip.jsonc
+package-lock.json
+package-lock.json
+package.json
+package.json
+pnpm-workspace.yaml
+pnpm-workspace.yaml
+release-please-config.json
+release-please-config.json
+renovate.json
+renovate.json
+tsconfig.json
+tsconfig.json
+tsdown.config.ts
+tsdown.config.ts
+vitest.config.ts
+vitest.config.ts
+vitest.integration.config.ts
+vitest.integration.config.ts
+vitest.setup.ts
+vitest.setup.ts
+vitest.smoke.config.ts
+vitest.smoke.config.ts
+## Repository files navigation
+# Promptfoo: LLM evals & red teaming
+promptfoo is a CLI and library for evaluating and red-teaming LLM-based apps. Stop using trial-and-error... start shipping secure, reliable agents
+Website ·
+Getting Started ·
+Red Teaming ·
+Documentation ·
+Discord
+Promptfoo is now part of OpenAI. Promptfoo remains open source and MIT licensed. Read the company update.
+## Quick Start
+npm install -g promptfoo
+promptfoo init --example getting-started
+Also available via brew install promptfoo and pip install promptfoo. Or use npx promptfoo@latest to run any command without installing.
+Most LLM providers require an API key. Set yours as an environment variable:
+export OPENAI_API_KEY=sk-abc123
+Run an eval and view results:
+cd examples/getting-started
+promptfoo eval
+promptfoo view
+See Getting Started (evals) or Red Teaming (vulnerability scanning) for more!
+## What can you do with Promptfoo?
+Test your prompts and models with automated evaluations
+Secure your LLM apps with red teaming and vulnerability scanning
+Compare models side-by-side (OpenAI, Anthropic, Azure, Bedrock, Ollama, and more)
+Automate checks in CI/CD
+Review pull requests for LLM-related security and compliance issues with code scanning
+Share results with your team
+Here's what it looks like in action:
+It works on the command line too:
+It also can generate security vulnerability reports:
+## Why Promptfoo?
+Developer-first: Fast, with features like live reload and caching
+Private: LLM evals run 100% locally - your prompts never leave your machine
+Flexible: Works with any LLM API or programming language
+Battle-tested: Powers LLM apps serving 10M+ users in production
+Data-driven: Make decisions based on metrics, not gut feel
+Open source: MIT licensed, with an active community
+## Learn More
+Getting Started
+Full Documentation
+Red Teaming Guide
+CLI Usage
+Node.js Package
+Supported Models
+Code Scanning Guide
+## Contributing
+We welcome contributions! Check out our contributing guide to get started.
+Join our Discord community for help and discussion.
+## About
+Test your prompts, agents, and RAGs. Red teaming/pentesting/vulnerability scanning for AI. Compare performance of GPT, Claude, Gemini, DeepSeek, and more. Simple declarative configs with command line and CI/CD integration. Used by OpenAI and Anthropic.
+promptfoo.dev
+### Topics
+cici-cdcicdevaluationevaluation-frameworkllmllm-evalllm-evaluationllm-evaluation-frameworkllmopspentestingprompt-engineeringprompt-testingpromptsragred-teamingtestingvulnerability-scanners
+### Resources
+Readme
+MIT license
+### Code of conduct
+Code of conduct
+### Contributing
+Contributing
+### Security policy
+Security policy
+Activity
+Custom properties
+### Stars
+25.5k stars
+### Watchers
+75 watching
+### Forks
+2.4k forks
+Report repository
+## Releases
+## Sponsor this project
+## Packages
+## Used by
+## Contributors
+## Languages

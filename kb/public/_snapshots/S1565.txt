@@ -1,0 +1,157 @@
+source: S1565
+url: https://attack.mitre.org/techniques/T1072/
+title: MITRE ATT&CK T1072 Software Deployment Tools
+publisher: MITRE
+licence: ATT&CK terms of use (copy with MITRE copyright notice and licence)
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+ATT&CKcon 7.0 in-person tickets are open! Join us October 27-28, 2026 in McLean, VA. Register here for in-person tickets; hotel and location details can be found in the FAQ.
+Home
+Techniques
+Enterprise
+Software Deployment Tools
+#
+Software Deployment Tools
+Adversaries may gain access to and use centralized software suites installed within an enterprise to execute commands and move laterally through the network. Configuration management and software deployment applications may be used in an enterprise network or cloud environment for routine administration purposes. These systems may also be integrated into CI/CD pipelines. Examples of such solutions include: SCCM, HBSS, Altiris, AWS Systems Manager, Microsoft Intune, Azure Arc, and GCP Deployment Manager.
+Access to network-wide or enterprise-wide endpoint management software may enable an adversary to achieve remote code execution on all connected systems. The access may be used to laterally move to other systems, gather information, or cause a specific effect, such as wiping the hard drives on all endpoints.
+SaaS-based configuration management services may allow for broad Cloud Administration Command on cloud-hosted instances, as well as the execution of arbitrary commands on on-premises endpoints. For example, Microsoft Configuration Manager allows Global or Intune Administrators to run scripts as SYSTEM on on-premises devices joined to Entra ID.[1] Such services may also utilize Web Protocols to communicate back to adversary owned infrastructure.[2]
+Network infrastructure devices may also have configuration management tools that can be similarly abused by adversaries.[3]
+The permissions required for this action vary by system configuration; local credentials may be sufficient with direct access to the third-party system, or specific domain credentials may be required. However, the system may require an administrative account to log in or to access specific functionality.
+ID: T1072
+Sub-techniques:
+No sub-techniques
+ⓘ
+Tactics:
+Execution, Lateral Movement
+ⓘ
+Platforms: Linux, Network Devices, SaaS, Windows, macOS
+Contributors: Joe Gumke, U.S. Bank; Shane Tully, @securitygypsy; Tamir Yehuda
+Version: 3.2
+Created: 31 May 2017
+Last Modified: 12 May 2026
+Version Permalink
+Live Version
+## Procedure Examples
+ID
+Name
+Description
+G0050
+APT32
+APT32 compromised McAfee ePO to move laterally by distributing malware as a software deployment task.[4]
+C0018
+C0018
+During C0018, the threat actors used PDQ Deploy to move AvosLocker and tools across the network.[5]
+G1051
+Medusa Group
+Medusa Group has utilized software deployment and management solutions to deploy their encryption payload to include BigFix and PDQ Deploy.[6]
+G0129
+Mustang Panda
+Mustang Panda has leveraged legitimate software tools such as AntiVirus Agents, Security Services, and App Development tools to execute scripts and to side-load dlls.[7][8]
+G0034
+Sandworm Team
+Sandworm Team has used the commercially available tool RemoteExec for agentless remote code execution.[9]
+G1057
+ShinyHunters
+ShinyHunters has abused software deployment tools for lateral movement.[10]
+G0091
+Silence
+Silence has used RAdmin, a remote software tool used to remotely control workstations and ATMs.[11]
+G0028
+Threat Group-1314
+Threat Group-1314 actors used a victim's endpoint management platform, Altiris, for lateral movement.[12]
+G1055
+VOID MANTICORE
+VOID MANTICORE has leveraged legitimate built-in features of cloud-based management platforms to include mobile device management (MDM) and Remote Monitoring and Management (RMM) solutions.[13][14] VOID MANTICORE has also initiated built-in remote wipe instructions using a privileged account within Microsoft Intune.[13][14]
+S0041
+Wiper
+It is believed that a patch management system for an anti-virus product commonly installed among targeted companies was used to distribute the Wiper malware.[15]
+## Mitigations
+ID
+Mitigation
+Description
+M1015
+Active Directory Configuration
+Ensure proper system and access isolation for critical network systems through use of group policy.
+M1033
+Limit Software Installation
+Restrict the use of third-party software suites installed within an enterprise network.
+M1032
+Multi-factor Authentication
+Ensure proper system and access isolation for critical network systems through use of multi-factor authentication.
+M1030
+Network Segmentation
+Ensure proper system isolation for critical network systems through use of firewalls.
+M1027
+Password Policies
+Verify that account credentials that may be used to access deployment systems are unique and not used throughout the enterprise network.
+M1026
+Privileged Account Management
+Grant access to application deployment systems only to a limited number of authorized administrators.
+M1029
+Remote Data Storage
+If the application deployment system can be configured to deploy only signed binaries, then ensure that the trusted signing certificates are not co-located with the application deployment system and are instead located on a system that cannot be accessed remotely or to which remote access is tightly controlled.
+M1051
+Update Software
+Patch deployment systems regularly to prevent potential remote access through Exploitation for Privilege Escalation.
+M1018
+User Account Management
+Ensure that any accounts used by third-party providers to access these systems are traceable to the third-party and are not used throughout the network or used by other third-party providers in the same environment. Ensure there are regular reviews of accounts provisioned to these systems to verify continued business need, and ensure there is governance to trace de-provisioning of access that is no longer required. Ensure proper system and access isolation for critical network systems through use of account privilege separation.
+M1017
+User Training
+Have a strict approval policy for use of deployment systems.
+## Detection Strategy
+ID
+Name
+Analytic ID
+Analytic Description
+DET0223
+Detection of Adversary Abuse of Software Deployment Tools
+AN0623
+Detects SCCM, Intune, or remote push execution spawning scripts or binaries from SYSTEM context or unusual consoles (e.g., cmtrace.exe launching PowerShell or cmd.exe).
+AN0624
+Detects remote scripts or binaries deployed via Puppet, Chef, Ansible, or shell scripts from orchestration servers executing outside maintenance windows or in unmanaged nodes.
+AN0625
+Detects script or binary execution initiated via JAMF, Munki, or custom MDM agents outside of baseline, or JAMF launching new Terminal or osascript processes from remote command payloads.
+AN0626
+Detects cloud-native software deployment or management (e.g., SSM Run Command, Intune) initiating script execution on endpoints outside expected org IDs, admin groups, or maintenance windows.
+AN0627
+Detects central router or switch config management tools (e.g., FortiManager, Cisco Prime) triggering device reboots or config pushes using abnormal accounts or IPs.
+## References
+Andy Robbins. (2020, August 17). Death from Above: Lateral Movement from Azure to On-Prem AD. Retrieved March 13, 2023.
+Ariel Szarf, Or Aspir. (n.d.). Mitiga Security Advisory: Abusing the SSM Agent as a Remote Access Trojan. Retrieved January 31, 2024.
+ALEXANDER MARVI, BRAD SLAYBAUGH, DAN EBREO, TUFAIL AHMED, MUHAMMAD UMAIR, TINA JOHNSON. (2023, March 16). Fortinet Zero-Day and Custom Malware Used by Suspected Chinese Actor in Espionage Operation. Retrieved May 15, 2023.
+Carr, N.. (2017, May 14). Cyber Espionage is Alive and Well: APT32 and the Threat to Global Corporations. Retrieved June 18, 2017.
+Venere, G. Neal, C. (2022, June 21). Avos ransomware group expands with new attack arsenal. Retrieved January 11, 2023.
+Cybersecurity and Infrastructure Security Agency. (2025, March 12). AA25-071A #StopRansomware: Medusa Ransomware. Retrieved October 15, 2025.
+Lior Rochberger, Tom Fakterman, Robert Falcone. (2023, September 22). Cyberespionage Attacks Against Southeast Asian Government Linked to Stately Taurus, Aka Mustang Panda. Retrieved September 9, 2025.
+Nathaniel Morales, Nick Dai. (2025, February 18). Earth Preta Mixes Legitimate and Malicious Components to Sidestep Detection. Retrieved September 10, 2025.
+MSTIC. (2022, October 14). New “Prestige” ransomware impacts organizations in Ukraine and Poland. Retrieved January 19, 2023.
+SOCRadar. (2024, March 18). Dark Web Profile: ShinyHunters. Retrieved May 18, 2026.
+Group-IB. (2018, September). Silence: Moving Into the Darkside. Retrieved May 5, 2020.
+Dell SecureWorks Counter Threat Unit Special Operations Team. (2015, May 28). Living off the Land. Retrieved January 26, 2016.
+David Ketler. (2026, March 30). Stryker Cyber-Attack: What we Know so Far About the Remote Wipe Attack. Retrieved April 20, 2026.
+Justin Moore. (2026, March 16). Iranian Cyber Threat Evolution: From MBR Wipers to Identity Weaponization. Retrieved April 20, 2026.
+Dell SecureWorks. (2013, March 21). Wiper Malware Analysis Attacking Korean Financial Sector. Retrieved May 13, 2015.
+×
+Core ATT&CK Objects
+Matrices
+Tactics
+Techniques
+Sub-Techniques
+Defenses
+Mitigations
+Assets
+Detection Strategies
+Analytics
+Data Components
+CTI
+Groups
+Software
+Campaigns
+Reference
+Resources
+Domains
+Enterprise
+Mobile
+ICS

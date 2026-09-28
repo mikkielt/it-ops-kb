@@ -1,0 +1,134 @@
+source: S2105
+url: https://github.com/data-privacy-stack/presidio-research/blob/main/README.md
+title: presidio-research README
+publisher: Presidio Contributors
+licence: MIT
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+data-privacy-stack
+/
+presidio-research
+Public
+Notifications
+You must be signed in to change notification settings
+Fork
+83
+Star
+313
+## Expand file tree
+/
+# README.md
+Copy path
+More file actions
+More file actions
+## Latest commit
+## History
+History
+History
+152 lines (107 loc) · 6.75 KB
+/
+# README.md
+Copy path
+## File metadata and controls
+152 lines (107 loc) · 6.75 KB
+Raw
+Copy raw file
+Download raw file
+Outline
+Edit and raw actions
+# Presidio-research
+This package provides evaluation and data-science capabilities for
+Presidio and PII detection models in general.
+It also includes a fake data generator that creates synthetic sentences based on templates and fake PII.
+## Who should use it?
+Anyone interested in developing or evaluating PII detection models, an existing Presidio instance or a Presidio PII recognizer.
+Anyone interested in generating new data based on previous datasets or sentence templates (e.g., to increase the coverage of entity values) for Named Entity Recognition models.
+## Getting started
+### Using notebooks
+The easiest way to get started is by reviewing the notebooks.
+Notebook 1: Shows how to use the PII data generator.
+Notebook 2: Shows a simple analysis of the PII dataset.
+Notebook 3: Provides tools to split the dataset into train/test/validation sets while avoiding leakage due to the same pattern appearing in multiple folds (only applicable for synthetically generated data).
+Notebook 4: Shows how to use the evaluation tools to evaluate how well Presidio detects PII. Note that this is using the vanilla Presidio, and the results aren't very accurate.
+Notebook 5: Shows how one can configure Presidio to detect PII much more accurately, and boost the f score in ~30%.
+Notebook 6: Explains the entity mapping process, which is crucial when evaluating multiple models each returning a different set of entities.
+### Installation
+#### From PyPI
+pip install presidio-evaluator
+python -m spacy download en_core_web_sm # for tokenization
+python -m spacy download en_core_web_lg # for NER
+#### From source
+To install the package:
+Clone the repo
+Install all dependencies:
+# Install uv if not already installed
+pip install uv
+# Install package + dev dependencies
+uv sync --extra dev
+# Download the spaCy pipeline used for tokenization
+uv run python -m spacy download en_core_web_sm
+# To use the default Presidio configuration, a spaCy model is required:
+uv run python -m spacy download en_core_web_lg
+# Verify installation
+uv run pytest
+Note that some dependencies (such as Flair and Stanza) are no longer supported. Use Presidio Analyzer directly to add custom NER models.
+## What's in this package?
+Fake data generator for PII recognizers and NER models
+Data representation layer for data generation, modeling and analysis
+Model/Recognizer evaluation for Presidio Analyzer and custom Presidio recognizers
+Helper functions for results analysis
+## 1. Data generation
+See the Data Generation docs for more details.
+The data generation process takes a file with templates, e.g. My name is {{name}}.
+Then, it creates new synthetic sentences by sampling templates and PII values.
+Furthermore, it tokenizes the data, creates tags (either IO/BIO/BILUO) and spans for the newly created samples.
+For information on data generation/augmentation, see the Data Generation docs.
+For an example for running the generation process, see this notebook.
+For an understanding of the underlying fake PII data used, see this exploratory data analysis notebook.
+Once data is generated, it could be split into train/test/validation sets
+while ensuring that each template only exists in one set.
+See this notebook for more details.
+## 2. Data representation
+In order to standardize the process,
+we use specific data objects that hold all the information needed for generating,
+analyzing, modeling and evaluating data and models. Specifically,
+see data_objects.py.
+The standardized structure, List[InputSample], can be translated into different formats:
+CoNLL
+To CoNLL:
+from presidio_evaluator import InputSample
+dataset = InputSample.read_dataset_json("data/synth_dataset_v2.json")
+conll = InputSample.create_conll_dataset(dataset)
+conll.to_csv("dataset.csv", sep="\t")
+From CoNLL
+from pathlib import Path
+from presidio_evaluator.dataset_formatters import CONLL2003Formatter
+# Read from a folder containing ConLL2003 files
+conll_formatter = CONLL2003Formatter(files_path=Path("data/conll2003").resolve())
+train_samples = conll_formatter.to_input_samples(fold="train")
+spaCy v3
+from presidio_evaluator import InputSample
+dataset = InputSample.read_dataset_json("data/synth_dataset_v2.json")
+InputSample.create_spacy_dataset(dataset, output_path="dataset.spacy")
+json
+from presidio_evaluator import InputSample
+dataset = InputSample.read_dataset_json("data/synth_dataset_v2.json")
+InputSample.to_json(dataset, output_file="dataset_json")
+## 3. PII models evaluation
+The presidio-evaluator framework allows you to evaluate Presidio as a system, a NER model, or a specific PII recognizer for precision, recall, and error analysis. See Notebook 5 for an example.
+## For more information
+Blog post on PII evaluation
+Blog post on NLP approaches to data anonymization
+How to evaluate PII Detection output with Presidio Evaluator
+Conference talk about leveraging Presidio and utilizing NLP approaches for data anonymization
+# Contributing
+This project welcomes contributions and suggestions. Open an issue to discuss larger changes
+before submitting a pull request.
+This project has adopted the Contributor Covenant Code of Conduct.
+By participating, you are expected to uphold this code. Please report unacceptable behavior
+to presidio@dataprivacystack.org.
+Copyright notice:
+Fake Name Generator identities by the Fake Name Generator
+are licensed under a Creative Commons Attribution-Share Alike 3.0 United States License.
+Fake Name Generator and the Fake Name Generator logo are trademarks of Corban Works, LLC.

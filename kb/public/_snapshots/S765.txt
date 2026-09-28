@@ -1,0 +1,56 @@
+source: S765
+url: https://genai.owasp.org/2026/09/01/owasp-genai-security-project-unveils-2026-top-10-for-llm-applications-new-agent-control-standard-and-sponsors-as-community-tops-30000-members/
+title: OWASP GenAI announcement: 2026 Top 10 for LLM Applications
+publisher: OWASP GenAI Security Project
+licence: CC BY-SA 4.0 (site footer)
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+GEN AI SECURITY
+blog
+# OWASP GenAI Security Project Unveils 2026 Top 10 for LLM Applications, New Agent Control Standard and Sponsors as Community Tops 30,000 Members
+Written By:
+OWASPGenAIProject Editor
+,
+September 1, 2026
+OWASP GenAI Security Project Releases 2026 Top 10 for LLM Applications, Debuts Agent Control Standard and New Resources for Securing Generative and Agentic AI
+F5, WitnessAI, Evoke Security and Mondoo Inc. join as new sponsors as community expands AI security solutions guidance and surpasses 30,000 members
+WILMINGTON, Del. — Sept. 2, 2026 — The OWASP GenAI Security Project, a global open-source community dedicated to advancing the security of generative AI and agentic systems, today announced a major expansion of its security resources, including the 2026 Top 10 for LLM Applications, a new Agent Control Standard for securing agentic AI systems, and expanded AI security solutions guidance. The resources coincide with the project surpassing 30,000 members worldwide and welcoming four new industry sponsors.
+The OWASP GenAI Security Project’s Top 10 for LLM Applications 2026 is the latest edition of the project’s flagship guidance for identifying and mitigating the most critical security risks facing applications powered by large language models. The new edition surpassed 10,000 downloads within its first 48 hours, demonstrating the continued demand for practical, community-developed guidance as organizations move AI applications from experimentation into production.
+The 2026 edition was developed with contributions from hundreds of AI security experts and incorporates updated rankings, expanded threat coverage and research drawn from thousands of real-world AI security incidents. It also expands mappings to other leading frameworks, including NIST, MITRE ATLAS, CWE and the OWASP GenAI Security Project’s Top 10 for Agentic Applications.
+The OWASP GenAI LLM Top 10 2026 is available for download at https://genai.owasp.org/resource/owasp-genai-llm-top-10-2026/
+The project also welcomed additional industry sponsors supporting its open-source research and community programs. New Gold Sponsors are F5 and WitnessAI. New Silver Sponsors are Evoke Security and Mondoo Inc.
+Other key announcements from the events include:
+The project also unveiled its expanded AI Security Solutions Directory, an interactive resource that provides multiple lenses for understanding the rapidly evolving AI security market, including Generative AI Security, Agentic Security, and AI and Agentic Red Teaming.
+The Agent Control Standard (ACS) has been donated to the OWASP GenAI Security Project. The addition of ACS complements the project’s existing work on agentic AI risks, security controls, identity, governance and testing by extending that guidance toward practical runtime enforcement.
+The project also highlighted the new GenAI Security Industry Framework Crosswalk, an open resource designed to help organizations connect OWASP GenAI security guidance with established security, risk and compliance frameworks.
+The project has now surpassed 30,000 members on LinkedIn, bringing together security practitioners, AI developers, researchers, technology providers, government participants and other contributors from around the world.
+Scott Clinton, chair and co-founder, OWASP GenAI Security Project, said: “Generative AI security has moved incredibly quickly from an emerging concern to an operational priority. What we saw at Black Hat and DEF CON this summer reinforces the need for open, practical guidance that security teams, developers and AI practitioners can put to work today. The growth of the project – and the breadth of contributions coming from across the industry – reflect how important community-driven standards and resources have become as AI and autonomous agents move into production.”
+Steve Wilson, Top 10 for LLM founder and board member at OWASP GenAI Security project, and chief AI and product officer at Exabeam, said: “The 2025 Top 10 captured what practitioners were seeing as generative AI rapidly moved into the enterprise. In 2026, we’ve taken an important step forward, testing that community expertise against thousands of real-world incidents and using the evidence to sharpen how we prioritize risk. It also points to an important evolution ahead: AI is moving from models that generate content to agents that can act autonomously. Security must evolve with it—assuming AI will sometimes fail or be fooled and putting enforceable controls around what these systems can access, decide and do.”
+#### Hear what our Project Sponsors and Supporters Have to Say Below:
+Jason Rebholz, CEO, Evoke Security said: “There are few names more synonymous with security than OWASP. When I started digging into securing agents, before anyone knew what that was, their research was one of the only resources that existed. Security teams are now sprinting to understand these risks as agents roll out, and OWASP continues to be the first stop. That’s why Evoke Security is proud to support the OWASP GenAI Security Project.”
+Jaimin Patel, VP Product, Prisma AIRS, Palo Alto Networks said: “The latest OWASP Top Ten for LLM Applications demonstrates the evolution of AI security from theoretical attacks to real-world incidents, where agents can access each organization’s crown jewels. Alongside the Top Ten for Agentic Applications, the 2026 LLM Top Ten provides a guiding framework on the most important AI security threats and mitigations. Palo Alto Networks is proud to contribute to the Top Ten and collaborate with OWASP to secure enterprises’ adoption of AI apps and agents.”
+Shankar Krishnan, Managing Director, PromptArmor said: “Agents are changing rapidly, at a pace that nobody can keep up with themselves. New vulnerabilities and risks are emerging that affect cross-functional teams, and new asset types (eg connectors, skills, plugins). Knowledge of the risks and remediations are critical for the industry to respond effectively. We are proud to be part of the OWASP GenAI Security Project and its democratization of cybersecurity resources that set the industry standard for secure AI.”
+Rick Caccia, Founder & CEO, WitnessAI said: “Agentic AI changes the security question from what a model can say to what a system can do. As agents gain access to tools, data, and business workflows, security teams need clear guidance for identity, governance, testing, and runtime controls. The Agent Control Standard is an important step toward that goal, and WitnessAI is proud to support the OWASP GenAI Security Project as a new Gold Sponsor.”
+Michael Bargury, Co-Founder and CTO of Zenity said: “This is the first edition to weigh the community’s ranking against a large body of real incident data, and the risk where expert judgment and the record agree most clearly is Excessive Agency, now number three. That tells enterprises where to start. Give an agent real tools and real permissions and the failure shows up in what it does, so the work is to contain what a fooled agent can reach before it acts. Zenity is glad to back the community behind this list.”
+### Share this:
+Share on X (Opens in new window)
+X
+Share on Facebook (Opens in new window)
+Facebook
+More
+Print (Opens in new window)
+Print
+Email a link to a friend (Opens in new window)
+Email
+Share on X (Opens in new window)
+X
+## Related Blogs
+## OWASP GenAI Security Project Unveils 2026 Top 10 for LLM Applications, New Agent Control Standard and Sponsors as Community Tops 30,000 Members
+Read More
+## Memory Is a Feature. It Is Also an Attack Surface
+Read More
+## FinBot CTF Is Live: A Hands-On Companion to the OWASP GenAI Security Project
+Read More
+## OWASP GenAI Exploit Round-up Report Q1 2026
+Read More

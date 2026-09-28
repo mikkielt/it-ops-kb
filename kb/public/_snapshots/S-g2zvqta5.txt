@@ -1,0 +1,112 @@
+source: S-g2zvqta5
+url: https://learn.microsoft.com/en-us/sql/connect/driver-feature-matrix
+title: Driver feature support matrix for Microsoft SQL
+publisher: Microsoft Learn
+licence: CC BY 4.0 (public mirror MicrosoftDocs/sql-docs)
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+# Driver Feature Support Matrix - SQL Server | Microsoft Learn
+
+This matrix compares capabilities implemented by drivers that connect applications to SQL Server, Azure SQL Database, Azure SQL Managed Instance, Azure Synapse Analytics, and SQL database in Microsoft Fabric. It doesn't indicate whether a feature is available in every database product or service. Check the linked feature documentation for product availability.
+
+Start with the driver for your programming language and runtime, and then verify that it supports the capabilities your application requires. Driver support varies because a capability might not apply to the driver technology, might depend on another component, or might not be implemented.
+
+## How to read the matrix
+
+- **Yes** means the driver supports the capability. The link provides supporting documentation.
+- **Partial** means the driver supports only the scenario or representation described in the cell.
+- **No** means the driver doesn't provide driver-level support for the capability. Where applicable, applications might still access data through a generic representation, such as text or binary data.
+
+Driver version qualifiers appear only when a capability isn't available in every currently supported release. Select a linked driver name or support value to open the corresponding documentation. If you need an unsupported capability, use the **Request a feature** section on the driver's landing page.
+
+## .NET drivers
+
+Important
+
+Use Microsoft.Data.SqlClient for new .NET development. The System.Data.SqlClient columns describe compatibility for existing applications only. System.Data.SqlClient isn't recommended for new development. Migrate existing applications by following Migrate from System.Data.SqlClient to Microsoft.Data.SqlClient.
+
+The System.Data.SqlClient NuGet package supports .NET 8, but not .NET 9 or later versions. After .NET 8 reaches end of support in November 2026, the package won't have a supported .NET runtime.
+
+| Feature | Microsoft.Data.SqlClient (.NET) | Microsoft.Data.SqlClient (.NET Framework) | System.Data.SqlClient (.NET 8 NuGet package, existing applications) | System.Data.SqlClient (.NET Framework, existing applications) |
+| --- | --- | --- | --- | --- |
+| Always Encrypted | Yes | Yes | No | Yes (.NET Framework 4.6 and later versions) |
+| Always Encrypted with secure enclaves | Yes | Yes | No | Yes (.NET Framework 4.7.2 and later versions) |
+| Microsoft Entra access token authentication | Yes | Yes | Yes | Yes (.NET Framework 4.6 and later versions) |
+| Microsoft Entra password authentication (deprecated) | Yes | Yes | No | Yes (.NET Framework 4.6 and later versions) |
+| Microsoft Entra integrated authentication | Yes | Yes | No | Yes (.NET Framework 4.6 and later versions) |
+| Microsoft Entra Interactive (MFA) authentication | Yes | Yes | No | Yes (.NET Framework 4.7.2 and later versions) |
+| Microsoft Entra managed identity authentication | Yes | Yes | No | No |
+| Microsoft Entra service principal authentication | Yes | Yes | No | No |
+| Microsoft Entra service principal certificate authentication | No | No | No | No |
+| Microsoft Entra default Azure authentication | Yes | Yes | No | No |
+| Integrated authentication | Yes | Yes | Yes | Yes |
+| Bulk Copy | Yes | Yes | Yes | Yes |
+| Data Discovery and Classification metadata | Yes | Yes | No | No |
+| Multiple Active Result Sets (MARS) | Yes | Yes | Yes | Yes |
+| Spatial Data Types | Partial (with `Microsoft.SqlServer.Types`) | Partial (with `Microsoft.SqlServer.Types`) | Partial (with `Microsoft.SqlServer.Types`) | Partial (with `Microsoft.SqlServer.Types`) |
+| Table-Valued Parameters (TVP) | Yes | Yes | Yes | Yes |
+| MultiSubnetFailover | Yes | Yes | Yes | Yes |
+| Transparent Network IP Resolution | No | Yes | No | Yes |
+| TDS 8.0 strict encryption | Yes | Yes | No | No |
+| TLS 1.3 | Yes | Yes | No | No |
+| JSON data type | Yes | Yes | No | No |
+| Vector (float32) data type | Yes | Yes | No | No |
+
+## ODBC, JDBC, and OLE DB drivers
+
+| Feature | ODBC Driver for SQL Server on Windows | ODBC Driver for SQL Server on Linux and macOS | JDBC Driver for SQL Server | OLE DB Driver for SQL Server |
+| --- | --- | --- | --- | --- |
+| Always Encrypted | Yes | Yes | Yes | No |
+| Always Encrypted with secure enclaves | Yes | Yes | Yes | No |
+| Microsoft Entra access token authentication | Yes | Yes | Yes | Yes |
+| Microsoft Entra password authentication (deprecated) | Yes | Yes | Yes | Yes |
+| Microsoft Entra integrated authentication | Yes | Yes | Yes | Yes |
+| Microsoft Entra Interactive (MFA) authentication | Yes | No | Yes | Yes |
+| Microsoft Entra managed identity authentication | Yes | Yes | Yes | Yes |
+| Microsoft Entra service principal authentication | Yes | Yes | Yes | Yes |
+| Microsoft Entra service principal certificate authentication | No | No | Yes (12.4 and later versions) | No |
+| Microsoft Entra default Azure authentication | No | No | Yes (12.2 and later versions) | No |
+| Integrated authentication | Yes | Yes | Yes | Yes |
+| Bulk Copy | Yes | Yes | Yes | Yes |
+| Data Discovery and Classification metadata | Yes | Yes | Yes | Yes |
+| Multiple Active Result Sets (MARS) | Yes | Yes | No | Yes |
+| Spatial Data Types | Partial (via UDT) | Partial (via UDT) | Yes | Partial (via UDT) |
+| Table-Valued Parameters (TVP) | Yes | Yes | Yes | Yes |
+| MultiSubnetFailover | Yes | Yes | Yes | Yes |
+| Transparent Network IP Resolution | Yes | Yes | Yes | Yes |
+| TDS 8.0 strict encryption | Yes (ODBC 18 only) | Yes (ODBC 18 only) | Yes (11.2 and later versions) | Yes (OLE DB 19 only) |
+| TLS 1.3 | Yes (ODBC 18 only) | Yes (ODBC 18 only) | Yes (11.2 and later versions) | Yes (OLE DB 19 only) |
+| JSON data type | No | No | Yes (13.2 and later versions) | No |
+| Vector (float32) data type | Yes (ODBC 18 only) | Yes (ODBC 18 only) | Yes (13.2 and later versions) | No |
+| Vector (float16) data type | Yes (ODBC 18 only) | Yes (ODBC 18 only) | Yes (13.4 and later versions) | No |
+
+## PHP, Node.js, Python, and Go drivers
+
+| Feature | Microsoft Drivers for PHP for SQL Server^1^ | Tedious (Node.js) | mssql-python (Python) | go-mssqldb (Go) |
+| --- | --- | --- | --- | --- |
+| Always Encrypted | Yes | No | No | Yes |
+| Always Encrypted with secure enclaves | Yes | No | No | No |
+| Microsoft Entra access token authentication | Yes | Yes | Yes | Yes |
+| Microsoft Entra password authentication (deprecated) | Yes | Yes | Yes | Yes |
+| Microsoft Entra integrated authentication | No | No | Yes | No |
+| Microsoft Entra Interactive (MFA) authentication | No | No | Yes | Yes |
+| Microsoft Entra managed identity authentication | Yes | Yes | Yes | Yes |
+| Microsoft Entra service principal authentication | Yes | Yes | Yes | Yes |
+| Microsoft Entra service principal certificate authentication | No | No | No | Yes |
+| Microsoft Entra default Azure authentication | No | Yes | Yes | Yes |
+| Integrated authentication | Yes; see Linux and macOS | Partial | Yes | Yes |
+| Bulk Copy | No | Yes | Yes | Yes |
+| Data Discovery and Classification metadata | Yes | No | No | No |
+| Multiple Active Result Sets (MARS) | Yes | No | No | No |
+| Spatial Data Types | Partial (via UDT binary or stream) | Partial (UDT buffer) | Partial (binary or WKT) | Partial (via UDT) |
+| Table-Valued Parameters (TVP) | Yes | Yes | No | Yes |
+| MultiSubnetFailover | Yes | Yes | Yes | Yes (enabled by default) |
+| Transparent Network IP Resolution | Yes | No | No | No |
+| TDS 8.0 strict encryption | Partial | Yes | Yes | Yes |
+| TLS 1.3 | Yes | Yes | Yes | Yes |
+| JSON data type | No | No | No | No |
+| Vector (float32) data type | No | No | No | No |
+| Vector (float16) data type | No | No | No | No |
+
+^1^ The PHP drivers rely on the Microsoft ODBC Driver for SQL Server. Use an ODBC driver version that supports the feature.

@@ -1,0 +1,119 @@
+source: S118
+url: https://github.com/PowerShell/DSC/releases/tag/v3.3.0
+title: DSC v3.3.0 release notes
+publisher: Microsoft (PowerShell/DSC)
+licence: MIT
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+PowerShell
+/
+DSC
+Public
+Notifications
+You must be signed in to change notification settings
+Fork
+76
+Star
+530
+# v3.3.0
+Latest
+Latest
+#
+Choose a tag to compare
+## Sorry, something went wrong.
+Filter
+Loading
+## Sorry, something went wrong.
+### Uh oh!
+There was an error while loading. Please reload this page.
+## No results found
+View all tags
+SteveL-MSFT
+released this
+17 Sep 14:53
+·
+7 commits
+to main
+since this release
+v3.3.0
+4b49240
+This commit was created on GitHub.com and signed with GitHub’s verified signature.
+GPG key ID: B5690EEEBB952194
+Verified
+Learn about vigilant mode.
+## What's changed
+These release notes describe updates to DSC since the v3.3.0-rc.2 release.
+This document includes the following sections:
+Added for changes that improve or add functionality without breaking existing usage.
+Fixed for changes that resolve a bug in existing behavior.
+Documentation for changes that only affect documentation.
+Maintenance for changes that affect the project or internals without changing the user experience.
+Each section has one or more subsections describing the area that the change affects:
+CLI for changes that affect the user eperience when invoking dsc itself.
+Engine for changes that affect the DSC engine, configuration documents, and manifests.
+Resources for changes that affect specific DSC resources.
+Server for changes that affect DSC when running as a JSON-RPC/MCP server.
+Bicep extension for changes that affect the Bicep extension.
+For the full changelog, see v3.3.0-rc.2...v3.3.0
+### Added
+#### CLI
+(GH-1393) Rename --version to --required-version for resource commands by Mikey Lombardi (He/Him) (@michaeltlombardi) in #1610
+#### Engine
+Add support to pass resource version to adapter by Steve Lee (@SteveL-MSFT) in #1645
+feat: remove experimental flag format() by Gijs Reijn (@Gijsreyn) in #1648
+feat: implement export filter functionality for resource exports by Gijs Reijn (@Gijsreyn) in #1621
+Use JSON Schema defaults in synthetic test get_diff by Steve Lee (@SteveL-MSFT) in #1670
+Ignore write-only properties in schema-aware diffs by Steve Lee (@SteveL-MSFT) in #1674
+Add support for adapted resource manifests to indicate required security context by Steve Lee (@SteveL-MSFT) in #1701
+#### Resources
+feat: Add --what-if for Microsoft.Windows/UpdateList by Gijs Reijn (@Gijsreyn) in #1616
+(GH-1563) Enhance the PSScript resources by Mikey Lombardi (He/Him) (@michaeltlombardi) in #1657
+Add scoped unspecified firewall rule handling and allow empty rules by Steve Lee (@SteveL-MSFT) in #1671
+Update Firewall manifest to declare implementsPretest by Steve Lee (@SteveL-MSFT) in #1682
+Add Group Policy template adapter by Steve Lee (@SteveL-MSFT) in #1686
+Add Windows environment variable resource by Steve Lee (@SteveL-MSFT) in #1675
+Add Microsoft.Filesystem.File/Content resource by Steve Lee (@SteveL-MSFT) in #1676
+#### Server
+(GH-1696) Add --what-if in MCP server tools by Gijs Reijn (@Gijsreyn) in #1697
+#### Bicep extension
+Fix bicep extension to require transport to be specified otherwise return error by Steve Lee (@SteveL-MSFT) in #1721
+### Fixed
+#### Engine
+Fix nested diff w/ schema and schema cache miss by Steve Lee (@SteveL-MSFT) in #1680
+#### Resources
+fix: add support for preserving quoted group names in sshd_config by Gijs Reijn (@Gijsreyn) in #1639
+Fix registry resource what-if for non-existing key by Steve Lee (@SteveL-MSFT) in #1692
+### Documentation
+docs: add Microsoft.DSC/Include reference documentation by Gijs Reijn (@Gijsreyn) in #1649
+(DOCS) Update changelog for 3.2.* releases by Mikey Lombardi (He/Him) (@michaeltlombardi) in #1578
+docs: Add reference documentation for Microsoft.OpenSSH.SSHD/Windows by Gijs Reijn (@Gijsreyn) in #934
+docs: Add extensions reference documentation by Gijs Reijn (@Gijsreyn) in #1661
+docs: Sync fixes from Microsoft Learn by Gijs Reijn (@Gijsreyn) in #1664
+docs: Sync fixes from Microsoft Learn (part two) by Gijs Reijn (@Gijsreyn) in #1677
+### Maintenance
+Add code review instructions derived from PR feedback patterns by Steve Lee (@SteveL-MSFT) in #1646
+Fix clippy rule violation by Steve Lee (@SteveL-MSFT) in #1688
+Update dsc.exe to have single process exit point by Steve Lee (@SteveL-MSFT) in #1693
+(GH-538) Enhance schema export functionality and add error handling for duplicate paths by Gijs Reijn (@Gijsreyn) in #1672
+(GH-538) Define transforms for Option<T> by Mikey Lombardi (He/Him) (@michaeltlombardi) in #1702
+Pin GitHub Actions to full-length commit SHAs by Dan Fiedler (@danfiedler-msft) in #1710
+Localize dsc-lib tracing and standardize builds by Steve Lee (@SteveL-MSFT) in #1720
+Change copilot code review from instruciton to skill by Steve Lee (@SteveL-MSFT) in #1718
+(MAINT) Always rebuild for updated translations by Mikey Lombardi (He/Him) (@michaeltlombardi) in #1711
+(AI) Update schema guidance for code review by Mikey Lombardi (He/Him) (@michaeltlombardi) in #1715
+Update code coverage report to always add comment even if failures by Steve Lee (@SteveL-MSFT) in #1714
+(CI) Update Rust workflow for PR events by Mikey Lombardi (He/Him) (@michaeltlombardi) in #1719
+(GH-538) Set URI and docs keywords for DscRepoSchema types by Mikey Lombardi (He/Him) (@michaeltlombardi) in #1699
+## New Contributors
+Dan Fiedler (@danfiedler-msft) made their first contribution in #1710
+### Contributors
+SteveL-MSFT, michaeltlombardi, and 2 other contributors
+Assets
+13
+Loading
+### Uh oh!
+There was an error while loading. Please reload this page.
+3 people reacted
+1
+Join discussion

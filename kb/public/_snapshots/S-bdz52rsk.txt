@@ -1,0 +1,112 @@
+source: S-bdz52rsk
+url: https://learn.microsoft.com/en-us/python/api/msal/msal.token_cache.serializabletokencache?view=msal-py-latest
+title: SerializableTokenCache class (MSAL Python API reference)
+publisher: Microsoft
+licence: CC BY 4.0 (public mirror MicrosoftDocs/microsoft-authentication-library-for-python)
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+# SerializableTokenCache Class
+
+This serialization can be a starting point to implement your own persistence.
+
+This class does NOT actually persist the cache on disk/db/etc.. Depending on your need, the following simple recipe for file-based, unencrypted persistence may be sufficient:
+
+```default
+
+   import os, atexit, msal
+   cache_filename = os.path.join(  # Persist cache into this file
+       os.getenv(
+           # Automatically wipe out the cache from Linux when user's ssh session ends.
+           # See also https://github.com/AzureAD/microsoft-authentication-library-for-python/issues/690
+           "XDG_RUNTIME_DIR", ""),
+       "my_cache.bin")
+   cache = msal.SerializableTokenCache()
+   if os.path.exists(cache_filename):
+       cache.deserialize(open(cache_filename, "r").read())
+   atexit.register(lambda:
+       open(cache_filename, "w").write(cache.serialize())
+       # Hint: The following optional line persists only when state changed
+       if cache.has_state_changed else None
+       )
+   app = msal.ClientApplication(..., token_cache=cache)
+   ...
+```
+
+Alternatively, you may use a more sophisticated cache persistence library, MSAL Extensions, which provides token cache persistence with encryption, and more.
+
+## Constructor
+
+```python
+SerializableTokenCache()
+```
+
+## Variables
+
+| Name | Description |
+| --- | --- |
+| has\_state\_changed | bool<br><br>Indicates whether the cache state in the memory has changed since last serialize or deserialize call. |
+
+## Methods
+
+| add |  |
+| --- | --- |
+| deserialize | Deserialize the cache from a state previously obtained by serialize() |
+| modify |  |
+| serialize | Serialize the current cache state into a string. |
+
+### add
+
+```python
+add(event, **kwargs)
+```
+
+#### Parameters
+
+| Name | Description |
+| --- | --- |
+| event<br><br>Required |  |
+
+### deserialize
+
+Deserialize the cache from a state previously obtained by serialize()
+
+```python
+deserialize(state: str | None) -> None
+```
+
+#### Parameters
+
+| Name | Description |
+| --- | --- |
+| state<br><br>Required |  |
+
+### modify
+
+```python
+modify(credential_type, old_entry, new_key_value_pairs=None)
+```
+
+#### Parameters
+
+| Name | Description |
+| --- | --- |
+| credential\_type<br><br>Required |  |
+| old\_entry<br><br>Required |  |
+| new\_key\_value\_pairs | Default value: None |
+
+### serialize
+
+Serialize the current cache state into a string.
+
+```python
+serialize() -> str
+```
+
+## Attributes
+
+### has\_state\_changed
+
+```python
+has_state_changed = False
+```

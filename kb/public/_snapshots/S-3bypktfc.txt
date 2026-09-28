@@ -1,0 +1,50 @@
+source: S-3bypktfc
+url: https://www.nist.gov/news-events/news/2024/02/nist-releases-version-20-landmark-cybersecurity-framework
+title: NIST news: NIST Releases Version 2.0 of Landmark Cybersecurity Framework (2024-02-26)
+publisher: NIST
+licence: US Government work (NIST: public information, may be copied)
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+Skip to main content
+An official website of the United States government
+Here’s how you know
+Official websites use .gov
+A .gov website belongs to an official government organization in the United States.
+Secure .gov websites use HTTPS
+A lock (
+) or https:// means you’ve safely connected to the .gov website. Share sensitive information only on official, secure websites.
+https://www.nist.gov/news-events/news/2024/02/nist-releases-version-20-landmark-cybersecurity-framework
+NEWS
+# NIST Releases Version 2.0 of Landmark Cybersecurity Framework
+### The agency has finalized the framework’s first major update since its creation in 2014.
+February 26, 2024
+## Share
+Facebook
+Linkedin
+X.com
+Email
+NIST’s cybersecurity framework (CSF) now explicitly aims to help all organizations — not just those in critical infrastructure, its original target audience — to manage and reduce risks.
+NIST has updated the CSF’s core guidance and created a suite of resources to help all organizations achieve their cybersecurity goals, with added emphasis on governance as well as supply chains.
+This update is the outcome of a multiyear process of discussions and public comments aimed at making the framework more effective.
+More roads lead to NIST’s updated cybersecurity framework, which now features quick-start guides aimed at specific audiences, success stories outlining other organizations’ implementations, and a searchable catalog of informative references that allows users to cross-reference the framework’s guidance to more than 50 other cybersecurity documents.
+Credit:
+N. Hanacek/NIST
+The National Institute of Standards and Technology (NIST) has updated the widely used Cybersecurity Framework (CSF), its landmark guidance document for reducing cybersecurity risk. The new 2.0 edition is designed for all audiences, industry sectors and organization types, from the smallest schools and nonprofits to the largest agencies and corporations — regardless of their degree of cybersecurity sophistication.
+In response to the numerous comments received on the draft version, NIST has expanded the CSF’s core guidance and developed related resources to help users get the most out of the framework. These resources are designed to provide different audiences with tailored pathways into the CSF and make the framework easier to put into action.
+“The CSF has been a vital tool for many organizations, helping them anticipate and deal with cybersecurity threats,” said Under Secretary of Commerce for Standards and Technology and NIST Director Laurie E. Locascio. “CSF 2.0, which builds on previous versions, is not just about one document. It is about a suite of resources that can be customized and used individually or in combination over time as an organization’s cybersecurity needs change and its capabilities evolve.”
+The CSF 2.0, which supports implementation of the National Cybersecurity Strategy, has an expanded scope that goes beyond protecting critical infrastructure, such as hospitals and power plants, to all organizations in any sector. It also has a new focus on governance, which encompasses how organizations make and carry out informed decisions on cybersecurity strategy. The CSF’s governance component emphasizes that cybersecurity is a major source of enterprise risk that senior leaders should consider alongside others such as finance and reputation.
+“Developed by working closely with stakeholders and reflecting the most recent cybersecurity challenges and management practices, this update aims to make the framework even more relevant to a wider swath of users in the United States and abroad,” according to Kevin Stine, chief of NIST’s Applied Cybersecurity Division.
+Following a presidential Executive Order, NIST first released the CSF in 2014 to help organizations understand, reduce and communicate about cybersecurity risk. The framework’s core is now organized around six key functions: Identify, Protect, Detect, Respond and Recover, along with CSF 2.0’s newly added Govern function. When considered together, these functions provide a comprehensive view of the life cycle for managing cybersecurity risk.
+The updated framework anticipates that organizations will come to the CSF with varying needs and degrees of experience implementing cybersecurity tools. New adopters can learn from other users’ successes and select their topic of interest from a new set of implementation examples and quick-start guides designed for specific types of users, such as small businesses, enterprise risk managers, and organizations seeking to secure their supply chains.
+Credit:
+Natasha Hanacek, NIST
+A new CSF 2.0 Reference Tool now simplifies the way organizations can implement the CSF, allowing users to browse, search and export data and details from the CSF’s core guidance in human-consumable and machine-readable formats.
+In addition, the CSF 2.0 offers a searchable catalog of informative references that shows how their current actions map onto the CSF. This catalog allows an organization to cross-reference the CSF’s guidance to more than 50 other cybersecurity documents, including others from NIST, such as SP 800-53 Rev. 5, a catalog of tools (called controls) for achieving specific cybersecurity outcomes.
+Organizations can also consult the Cybersecurity and Privacy Reference Tool (CPRT), which contains an interrelated, browsable and downloadable set of NIST guidance documents that contextualizes these NIST resources, including the CSF, with other popular resources. And the CPRT offers ways to communicate these ideas to both technical experts and the C-suite, so that all levels of an organization can stay coordinated.
+NIST plans to continue enhancing its resources and making the CSF an even more helpful resource to a broader set of users, Stine said, and feedback from the community will be crucial.
+“As users customize the CSF, we hope they will share their examples and successes, because that will allow us to amplify their experiences and help others,” he said. “That will help organizations, sectors and even entire nations better understand and manage their cybersecurity risk.”
+The CSF is used widely internationally; Versions 1.1 and 1.0 have been translated into 13 languages, and NIST expects that CSF 2.0 also will be translated by volunteers around the world. Those translations will be added to NIST’s expanding portfolio of CSF resources. Over the last 11 years, NIST’s work with the International Organization for Standardization (ISO), in conjunction with the International Electrotechnical Commission (IEC), has helped to align multiple cybersecurity documents. ISO/IEC resources now allow organizations to build cybersecurity frameworks and organize controls using the CSF functions. NIST plans to continue working with ISO/IEC to continue this international alignment.
+Information technology and Cybersecurity and privacy
+Released February 26, 2024, Updated February 19, 2025
+Was this page helpful?

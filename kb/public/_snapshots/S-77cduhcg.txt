@@ -1,0 +1,51 @@
+source: S-77cduhcg
+url: https://learn.microsoft.com/windows-server/administration/windows-commands/manage-bde-status
+title: manage-bde status
+publisher: Microsoft Learn
+licence: CC BY 4.0 (public mirror MicrosoftDocs/windowsserverdocs)
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+# manage-bde status | Microsoft Learn
+
+Provides information about all drives on the computer; whether or not they are BitLocker-protected, including:
+
+- Size
+- BitLocker version
+- Conversion status
+- Percentage encrypted
+- Encryption method
+- Protection status
+- Lock status
+- Identification field
+- Key protectors
+
+## Syntax
+
+```
+manage-bde -status [<drive>] [-protectionaserrorlevel] [-computername <name>] [{-?|/?}] [{-help|-h}]
+```
+
+### Parameters
+
+| Parameter | Description |
+| --- | --- |
+| `<drive>` | Represents a drive letter followed by a colon. |
+| -protectionaserrorlevel | Causes the manage-bde command-line tool to send the return code of **0** if the volume is protected and **1** if the volume is unprotected; most commonly used for batch scripts to determine if a drive is BitLocker-protected. You can also use **-p** as an abbreviated version of this command. |
+| -computername | Specifies that manage-bde.exe will be used to modify BitLocker protection on a different computer. You can also use **-cn** as an abbreviated version of this command. |
+| `<name>` | Represents the name of the computer on which to modify BitLocker protection. Accepted values include the computer's NetBIOS name and the computer's IP address. |
+| -? or /? | Displays brief Help at the command prompt. |
+| -help or -h | Displays complete Help at the command prompt. |
+
+### Examples
+
+To display the status of drive C, type:
+
+```
+manage-bde -status C:
+```
+
+## Related links
+
+- Command-Line Syntax Key
+- manage-bde command

@@ -1,0 +1,107 @@
+source: S1280
+url: https://learn.microsoft.com/en-us/entra/identity/hybrid/cloud-sync/reference-cloud-sync-faq
+title: Microsoft Entra Cloud Sync FAQ
+publisher: Microsoft
+licence: MIT (public mirror MicrosoftDocs/entra-docs)
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+# Microsoft Entra Cloud Sync FAQ - Microsoft Entra ID | Microsoft Learn
+
+Read about frequently asked questions for Microsoft Entra Cloud Sync.
+
+## How often does cloud sync run?
+
+Password hash synchronization is scheduled every 2-5 minutes. Cloud provisioning synchronization for users and groups is scheduled approximately every 10 to 20 minutes. However, the actual time it takes to provision objects in Microsoft Entra ID depends on the number of changes pending in each sync cycle. Larger volumes of changes may extend the provisioning time, while smaller sets may complete more quickly. Therefore, object sync latency is influenced by both the sync cycle interval and the volume of changes being processed.
+
+## Seeing password hash sync failures on the first run. Why?
+
+This behavior is expected. The failures are due to the user object not present in Microsoft Entra ID. Once the user is provisioned, wait for a couple of runs and confirm that password hash sync no longer has the errors.
+
+## What's the difference between Microsoft Entra Connect Sync and cloud sync?
+
+With Microsoft Entra Connect Sync, provisioning runs on the on-premises sync server. Configuration is stored on the on-premises sync server. With Microsoft Entra Cloud Sync, the provisioning configuration is stored in the cloud and runs in the cloud as part of the Microsoft Entra provisioning service. See the detailed article What is Microsoft Entra Cloud Sync for a detailed comparison.
+
+## Can I use cloud sync to sync from multiple Active Directory forests?
+
+Yes. Cloud provisioning can be used to sync from multiple Active Directory forests. In the multi-forest environment, all the references (example, manager) need to be within the domain.
+
+## How is the agent updated?
+
+The agents are auto upgraded by Microsoft. For the IT team, this reduces the burden of having to test and validate new agent versions.
+
+## Can I disable auto upgrade?
+
+There's no supported way to disable auto upgrade.
+
+## Can I change the source anchor for cloud sync?
+
+By default, cloud sync uses ms-ds-consistency-GUID with a fallback to ObjectGUID as source anchor. There's no supported way to change the source anchor.
+
+## I see new service principals with the AD domain name(s) when using cloud sync. Is it expected?
+
+Yes, cloud sync creates a service principal for the provisioning configuration with the domain name as the service principal name. Don't make any changes to the service principal configuration.
+
+## What happens when a synced user is required to change password on next logon?
+
+If password hash sync is enabled in cloud sync and the synced user is required to change password on next logon in on-premises AD, cloud sync doesn't provision the "to-be-changed" password hash to Microsoft Entra ID. Once the user changes the password, the user password hash is provisioned from AD to Microsoft Entra ID.
+
+## Does cloud sync support writeback of ms-ds-consistencyGUID for any object?
+
+No, cloud sync doesn't support writeback of ms-ds-consistencyGUID for any object (including user objects).
+
+## I'm provisioning users using cloud sync. I deleted the configuration. Why do I still see the old synced objects in Microsoft Entra ID?
+
+When you delete the configuration, cloud sync doesn't automatically remove the synced objects in Microsoft Entra ID. To ensure you don't have the old objects, change the scope of the configuration to an empty group or Organizational Units. Once the provisioning runs and cleans up the objects, disable and delete the configuration.
+
+## I uninstalled the cloud sync agent. How long until it's removed from the portal?
+
+When you uninstall or stop a cloud sync agent, the agent isn't removed from the Microsoft Entra admin center immediately. After approximately one hour, the agent shows as **Inactive**. After approximately 10 days, the agent is soft-deleted and no longer appears in the portal. The agent is permanently removed when its certificate expires, which prevents any further interaction with Microsoft services. For more information, see Agent removal from the portal after uninstall.
+
+## Does cloud sync support Exchange hybrid?
+
+Yes. Cloud sync now supports Exchange hybrid scenarios. For more information, see Exchange hybrid with cloud sync
+
+## Can I install the cloud provisioning agent on Windows Server Core?
+
+No, installing the agent on server core isn't supported.
+
+## Can I install the cloud provisioning agent on the same server as Microsoft Entra Connect Sync?
+
+Yes, installing the agent on the same server is supported.
+
+## Can I use a staging server with the cloud provisioning agent?
+
+No, staging servers aren't supported.
+
+## Can I synchronize a Guest user account?
+
+No, synchronizing a guest user account isn't supported.
+
+## If I move a user from an OU that is scoped for cloud sync to an OU that is scoped for Microsoft Entra Connect, what happens?
+
+The user is deleted and recreated. Moving a user from an OU that is scoped for cloud sync is viewed as a delete operation. If the user is moved to an OU that is managed by Microsoft Entra Connect, it will be reprovisioned to Microsoft Entra ID and a new user created.
+
+## If I rename or move the OU that is in scope for the cloud sync filter, what happens to the users that were created in Microsoft Entra ID?
+
+Nothing. The users aren't deleted if the OU is renamed or moved.
+
+## Does Microsoft Entra Cloud Sync support large groups?
+
+Yes. Today we support up to 50,000 group members synchronized using the OU scope filtering.
+
+## Does Microsoft Entra Cloud Sync support nested groups with group scoping?
+
+No. Nested objects beyond the first level aren't included when scoping using security groups. Only use group scope filtering for pilot scenarios, there are limitations to syncing large groups.
+
+## Does the cloud provisioning agent load balance if I have multiple agents installed?
+
+No. Only one agent is ever active.
+
+## Does the cloud provisioning agent require a preferred domain controller list be set?
+
+No. The preferred domain controller list is specified during agent installation but it's optional. If no preferred DCs are configured, then the agent uses any available DC in the domain.
+
+## I have a multi-forest environment and the network between the two forests is using NAT (Network Address Translation). Is using Microsoft Entra Cloud Sync between these two forests supported?
+
+No, using Microsoft Entra Cloud Sync over NAT isn't supported because it's dependent on Active Directory which does not support NAT. See support boundaries for Active Directory over NAT.

@@ -1,0 +1,26 @@
+source: S1221
+url: https://learn.microsoft.com/en-us/windows/win32/adsi/binding-with-encryption
+title: Binding With Encryption (ADSI)
+publisher: Microsoft (MicrosoftDocs/win32)
+licence: CC BY 4.0 (public mirror MicrosoftDocs/win32)
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+# Binding With Encryption - Win32 apps | Microsoft Learn
+
+Sensitive data exchanged over a network should be encrypted. To allow this, ADSI supports two types of encryption, Kerberos and Secure Sockets Layer (SSL). Both types of encryption require the use of **ADsOpenObject** or **IADsOpenDSObject::OpenDSObject** for binding.
+
+**GetObject** and **ADsGetObject** cannot be used for binding in this case because these functions cause the LDAP requests used by ADSI and the data returned from the directory server to transmit across the network as plaintext. For debugging purposes, it is helpful to turn encryption off so the Network Monitor can be used to view the LDAP requests and data between the client and the directory server.
+
+## Kerberos-based Encryption
+
+To use Kerberos-based encryption, specify the **ADS\_USE\_SEALING** flag when calling **ADsOpenObject** or **IADsOpenDSObject::OpenDSObject**. The **ADS\_USE\_SEALING** flag can also be used to verify data integrity, that is, to ensure the data received is the same as the data sent. If the **ADS\_USE\_SEALING** flag is specified, the **ADS\_USE\_SIGNING** flag is automatically specified as well. Both flags require Kerberos authentication, which works only under the following conditions:
+
+- The client computer must be logged on to the Windows domain, or to a domain trusted by a Windows domain.
+- **ADsOpenObject** or **IADsOpenDSObject::OpenDSObject** must be called with null credentials; that is, alternate credentials cannot be specified.
+
+## SSL-based Encryption
+
+To use SSL-based encryption, specify the **ADS\_USE\_SSL** flag when calling **ADsOpenObject** or **IADsOpenDSObject::OpenDSObject**. If only the **ADS\_USE\_SSL** flag is specified, ADSI opens SSL port 636 and then performs a simple bind over that SSL channel. If both the **ADS\_SECURE\_AUTHENTICATION** and **ADS\_USE\_SSL** flags are specified, the binding behavior depends on the client that the call is made from. On unsupported versions of Windows, ADSI first opened an SSL channel and performs a simple bind using the specified user name and password or the current user context if both user name and password are null. On supported versions of Windows, ADSI performs a secure authentication rather than a simple bind.
+
+To use SSL-based encryption while communicating with Active Directory, Active Directory must have enabled Public Key Infrastructure (PKI). PKI can be enabled by setting up an enterprise certification authority on one of the servers in Active Directory, including one of the Active Directory servers itself. Setting up an enterprise certification authority causes an Active Directory server to get a server certificate that can then be used to do SSL-based encryption.

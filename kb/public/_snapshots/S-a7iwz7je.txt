@@ -1,0 +1,178 @@
+source: S-a7iwz7je
+url: https://learn.microsoft.com/powershell/module/bitlocker/suspend-bitlocker
+title: Suspend-BitLocker
+publisher: Microsoft Learn
+licence: CC BY 4.0 (public mirror MicrosoftDocs/windows-powershell-docs)
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+# Suspend-BitLocker
+
+- Module:
+    - BitLocker Module
+
+Suspends Bitlocker encryption for the specified volume.
+
+## Syntax
+
+### Default (Default)
+
+```Syntax
+Suspend-BitLocker
+    [-MountPoint] <String[]>
+    [[-RebootCount] <Int32>]
+    [-WhatIf]
+    [-Confirm]
+    [<CommonParameters>]
+```
+
+## Description
+
+The **Suspend-BitLocker** cmdlet suspends Bitlocker encryption, allowing users to access encrypted data on a volume that uses BitLocker Drive Encryption. This cmdlet makes the encryption key available in the clear.
+
+Suspension of BitLocker does not mean that BitLocker decrypts data on the volume. Instead, suspension makes key used to decrypt the data available to everyone in the clear. New data written to the disk is still encrypted.
+
+While suspended, BitLocker does not validate system integrity at start up. You might suspend BitLocker protection for firmware upgrades or system updates.
+
+You can specify the number of times that a computer restarts before the BitLocker suspension ends by using the *RebootCount* parameter, or you can use the **Resume-BitLocker** cmdlet to manually resume protection. If you do not specify the *RebootCount* parameter, the cmdlet uses a value of one (1), so BitLocker protection resumes after the next restart.
+
+For an overview of BitLocker, see BitLocker Drive Encryption Overview on TechNet.
+
+## Examples
+
+### Example 1: Suspend BitLocker protection
+
+```
+PS C:\> Suspend-BitLocker -MountPoint "C:" -RebootCount 0
+```
+
+This command suspends Bitlocker encryption on the BitLocker volume specified by the *MountPoint* parameter. Because the *RebootCount* parameter value is 0, BitLocker encryption remains suspended until you run the **Resume-BitLocker** cmdlet.
+
+## Parameters
+
+### -Confirm
+
+Prompts you for confirmation before running the cmdlet.
+
+#### Parameter properties
+
+| Type: | SwitchParameter |
+| --- | --- |
+| Default value: | False |
+| Supports wildcards: | False |
+| DontShow: | False |
+| Aliases: | cf |
+
+#### Parameter sets
+
+ (All)
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -MountPoint
+
+Specifies an array of drive letters or BitLocker volume objects. This cmdlet suspends protection for the volumes specified. To obtain a BitLocker volume object, use the **Get-BitLockerVolume** cmdlet.
+
+#### Parameter properties
+
+| Type: | String[] |
+| --- | --- |
+| Default value: | None |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ (All)
+
+| Position: | 0 |
+| --- | --- |
+| Mandatory: | True |
+| Value from pipeline: | True |
+| Value from pipeline by property name: | True |
+| Value from remaining arguments: | False |
+
+### -RebootCount
+
+Specifies the number of computer restarts before BitLocker restores protection. The acceptable values for this parameter are: integers from 0 to 15.
+
+Specify zero to suspend protection indefinitely until you resume it by using the **Resume-BitLocker** cmdlet.
+
+If you do not include this parameter, the cmdlet uses a value of one.
+
+#### Parameter properties
+
+| Type: | Int32 |
+| --- | --- |
+| Default value: | None |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ (All)
+
+| Position: | 1 |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -WhatIf
+
+Shows what would happen if the cmdlet runs. The cmdlet is not run.
+
+#### Parameter properties
+
+| Type: | SwitchParameter |
+| --- | --- |
+| Default value: | False |
+| Supports wildcards: | False |
+| DontShow: | False |
+| Aliases: | wi |
+
+#### Parameter sets
+
+ (All)
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### CommonParameters
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable, -ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see about_CommonParameters.
+
+## Inputs
+
+### BitLockerVolume
+
+## Outputs
+
+### BitLockerVolume
+
+## Related Links
+
+- Disable-BitLocker
+- Enable-BitLocker
+- Get-BitLockerVolume
+- Lock-BitLocker
+- Resume-BitLocker
+- Unlock-BitLocker
+
+---
+
+## Other Supported Versions
+
+- windowsserver2016-ps
+- windowsserver2019-ps
+- windowsserver2022-ps

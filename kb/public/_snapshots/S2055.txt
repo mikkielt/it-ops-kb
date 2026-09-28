@@ -1,0 +1,26 @@
+source: S2055
+url: https://docs.gitlab.com/ci/secrets/
+title: Using external secrets in CI/CD
+publisher: GitLab
+licence: CC BY-SA 4.0 (GitLab docs)
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+/
+# Use external secrets in CI/CD
+Tier: Premium, Ultimate
+Offering: GitLab.com, GitLab Self-Managed, GitLab Dedicated
+CI/CD jobs might need sensitive information, called secrets, to complete work.
+This sensitive information could be items like API tokens, database credentials, or private keys.
+Secrets are sourced from a secrets provider.
+Unlike CI/CD variables which are always available in jobs, secrets must be explicitly
+requested by a job.
+GitLab supports several secret management providers, including:
+HashiCorp Vault
+Google Cloud Secret Manager
+Azure Key Vault
+AWS Secrets Manager
+These integrations use ID tokens for authentication.
+You can also use ID tokens to manually authenticate with any secrets provider that supports
+OIDC authentication with JSON web tokens (JWT).
+Was this page helpful?

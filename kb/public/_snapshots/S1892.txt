@@ -1,0 +1,145 @@
+source: S1892
+url: https://github.com/microsoft/PyRIT
+title: PyRIT: Python Risk Identification Tool (repository)
+publisher: Microsoft
+licence: MIT
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+microsoft
+/
+PyRIT
+Public
+Notifications
+You must be signed in to change notification settings
+Fork
+915
+Star
+4.6k
+BranchesTags
+Open more actions menu
+## Latest commit
+## History
+2,094 Commits
+2,094 Commits
+## Folders and files
+NameName
+Last commit message
+Last commit date
+.azuredevops
+.azuredevops
+.devcontainer
+.devcontainer
+.github
+.github
+LICENSES
+LICENSES
+assets
+assets
+build_scripts
+build_scripts
+doc
+doc
+docker
+docker
+frontend
+frontend
+infra
+infra
+pyrit
+pyrit
+tests
+tests
+third_party
+third_party
+.dockerignore
+.dockerignore
+.env_example
+.env_example
+.env_local_example
+.env_local_example
+.gitattributes
+.gitattributes
+.gitignore
+.gitignore
+.pre-commit-config.yaml
+.pre-commit-config.yaml
+.pyrit_conf_example
+.pyrit_conf_example
+CITATION.cff
+CITATION.cff
+CODE_OF_CONDUCT.md
+CODE_OF_CONDUCT.md
+LICENSE
+LICENSE
+MANIFEST.in
+MANIFEST.in
+Makefile
+Makefile
+NOTICE.txt
+NOTICE.txt
+README.md
+README.md
+SECURITY.md
+SECURITY.md
+SUPPORT.md
+SUPPORT.md
+THIRD_PARTY_NOTICES.txt
+THIRD_PARTY_NOTICES.txt
+gui-deploy.yml
+gui-deploy.yml
+policheck.yml
+policheck.yml
+pyproject.toml
+pyproject.toml
+pyrightconfig.json
+pyrightconfig.json
+uv.lock
+uv.lock
+## Repository files navigation
+# Python Risk Identification Tool for generative AI (PyRIT)
+The Python Risk Identification Tool for generative AI (PyRIT) is an open source
+framework built to empower security professionals and engineers to proactively
+identify risks in generative AI systems.
+Check out our website for more information
+about how to use, install, or contribute to PyRIT.
+Review our security policy
+to report vulnerabilities privately through the Microsoft Security Response Center.
+Visit our Discord server to chat with the team and community.
+## Trademarks and Citations
+This project may contain trademarks or logos for projects, products, or services.
+Authorized use of Microsoft trademarks or logos is subject to and must follow
+Microsoft's Trademark & Brand Guidelines.
+Use of Microsoft trademarks or logos in modified versions of this project must
+not cause confusion or imply Microsoft sponsorship.
+Any use of third-party trademarks or logos are subject to those third-party's
+policies.
+If you use PyRIT in your research, please cite our paper,
+PyRIT: Democratizing AI Red Teaming Through Open-Source Tooling,
+using the citation in the CITATION.cff file in the root of this repository.
+## About
+The Python Risk Identification Tool for generative AI (PyRIT) is an open source framework built to empower security professionals and engineers to proactively identify risks in generative AI systems.
+microsoft.github.io/PyRIT/
+### Topics
+ai-red-teamgenerative-aired-team-toolsresponsible-ai
+### Resources
+Readme
+MIT license
+### Code of conduct
+Code of conduct
+### Security policy
+Security policy
+Activity
+Custom properties
+### Stars
+4.6k stars
+### Watchers
+49 watching
+### Forks
+915 forks
+Report repository
+## Releases
+## Packages
+## Used by
+## Contributors
+## Languages

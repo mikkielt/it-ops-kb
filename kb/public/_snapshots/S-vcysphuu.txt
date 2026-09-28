@@ -1,0 +1,2214 @@
+source: S-vcysphuu
+url: https://learn.microsoft.com/en-us/windows/win32/adschema/c-computer
+title: Computer class (Active Directory schema)
+publisher: Microsoft Learn
+licence: CC BY 4.0 (public mirror MicrosoftDocs/win32)
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+# Computer class - Win32 apps | Microsoft Learn
+
+This class represents a computer account in the domain.
+
+| Entry | Value |
+| --- | --- |
+| CN | Computer |
+| Ldap-Display-Name | computer |
+| Update Privilege | This value is set by the domain administrator. |
+| Update Frequency | - |
+| Schema-Id-Guid | bf967a86-0de6-11d0-a285-00aa003049e2 |
+
+## Implementations
+
+- **Windows 2000 Server**
+- **Windows Server 2003**
+- **Windows Server 2003 R2**
+- **Windows Server 2008**
+- **Windows Server 2008 R2**
+- **Windows Server 2012**
+
+## Windows 2000 Server
+
+- Attributes
+- Extended Rights
+- Validated Writes
+- Property Sets
+
+| Entry | Value |
+| --- | --- |
+| System-Only | False |
+| Object-Category | 1 |
+| Default-Object-Category | - |
+| Governs-Id | 1.2.840.113556.1.3.30 |
+| Default-Hiding-Value | 0 |
+| Rdn-Att-Id | **Common-Name** |
+| Subclass of | **User** |
+| Possible Superiors | **Domain-DNS****Organizational-Unit****Container** |
+| Auxiliary Classes | - |
+| NT-Security-Descriptor | O:BAG:BAD:S: |
+| Default Security Descriptor | D:(A;;RPWPCRCCDCLCLORCWOWDSDDTSW;;;DA)(A;;RPWPCRCCDCLCLORCWOWDSDDTSW;;;AO)(A;;RPWPCRCCDCLCLORCWOWDSDDTSW;;;SY)(A;;RPCRLCLORCSDDT;;;CO)(OA;;WP;4c164200-20c0-11d0-a768-00aa006e0529;;CO)(A;;RPLCLORC;;;AU)(OA;;CR;ab721a53-1e2f-11d0-9819-00aa0040529b;;WD)(OA;;CCDC;;;PS)(OA;;CCDC;bf967aa8-0de6-11d0-a285-00aa003049e2;;PO)(OA;;RPWP;bf967a7f-0de6-11d0-a285-00aa003049e2;;CA)(OA;;SW;f3a64788-5306-11d1-a9c5-0000f80367c1;;PS)(OA;;RPWP;77B5B886-944A-11d1-AEBD-0000F80367C1;;PS)(OA;;SW;72e39547-7b18-11d1-adef-00c04fd8d5cd;;PS)(OA;;SW;72e39547-7b18-11d1-adef-00c04fd8d5cd;;CO)(OA;;SW;f3a64788-5306-11d1-a9c5-0000f80367c1;;CO) |
+| System-Flags | 0x00000010 |
+
+## Windows 2000 Server Attributes
+
+This class contains the following attributes for Windows 2000 Server:
+
+| Attribute | Mandatory | Derived from |
+| --- | --- | --- |
+| **Account-Expires** | False | **User** |
+| **ACS-Policy-Name** | False | **User** |
+| **Address** | False | **Organizational-Person** |
+| **Address-Home** | False | **Organizational-Person** |
+| **Admin-Count** | False | **User** |
+| **Admin-Description** | False | **Top** |
+| **Admin-Display-Name** | False | **Top** |
+| **Allowed-Attributes** | False | **Top** |
+| **Allowed-Attributes-Effective** | False | **Top** |
+| **Allowed-Child-Classes** | False | **Top** |
+| **Allowed-Child-Classes-Effective** | False | **Top** |
+| **Assistant** | False | **Organizational-Person** |
+| **Bad-Password-Time** | False | **User** |
+| **Bad-Pwd-Count** | False | **User** |
+| **Bridgehead-Server-List-BL** | False | **Top** |
+| **Canonical-Name** | False | **Top** |
+| **Catalogs** | False | **Computer** |
+| **Code-Page** | False | **User** |
+| **Common-Name** | True | **Computer****Top****Person** |
+| **Company** | False | **Organizational-Person** |
+| **Control-Access-Rights** | False | **User** |
+| **Country-Code** | False | **Organizational-Person** |
+| **Country-Name** | False | **Organizational-Person** |
+| **Create-Time-Stamp** | False | **Top** |
+| **DBCS-Pwd** | False | **User** |
+| **Default-Class-Store** | False | **User** |
+| **Default-Local-Policy-Object** | False | **Computer** |
+| **Department** | False | **Organizational-Person** |
+| **Description** | False | **Top** |
+| **Desktop-Profile** | False | **User** |
+| **Destination-Indicator** | False | **Organizational-Person** |
+| **Display-Name** | False | **Top** |
+| **Display-Name-Printable** | False | **Top** |
+| **Division** | False | **Organizational-Person** |
+| **DNS-Host-Name** | False | **Computer** |
+| **DSA-Signature** | False | **Top** |
+| **DS-Core-Propagation-Data** | False | **Top** |
+| **Dynamic-LDAP-Server** | False | **User** |
+| **E-mail-Addresses** | False | **Organizational-Person** |
+| **Employee-ID** | False | **Organizational-Person** |
+| **Extension-Name** | False | **Top** |
+| **Facsimile-Telephone-Number** | False | **Organizational-Person** |
+| **Flags** | False | **Top** |
+| **From-Entry** | False | **Top** |
+| **Frs-Computer-Reference-BL** | False | **Top** |
+| **FRS-Member-Reference-BL** | False | **Top** |
+| **FSMO-Role-Owner** | False | **Top** |
+| **Generation-Qualifier** | False | **Organizational-Person** |
+| **Given-Name** | False | **Organizational-Person** |
+| **Group-Membership-SAM** | False | **User** |
+| **Group-Priority** | False | **User** |
+| **Groups-to-Ignore** | False | **User** |
+| **Home-Directory** | False | **User** |
+| **Home-Drive** | False | **User** |
+| **Initials** | False | **Organizational-Person** |
+| **Instance-Type** | True | **Top** |
+| **International-ISDN-Number** | False | **Organizational-Person** |
+| **Is-Critical-System-Object** | False | **Top** |
+| **Is-Deleted** | False | **Top** |
+| **Is-Member-Of-DL** | False | **Top** |
+| **Is-Privilege-Holder** | False | **Top** |
+| **Last-Known-Parent** | False | **Top** |
+| **Last-Logoff** | False | **User** |
+| **Last-Logon** | False | **User** |
+| **Lm-Pwd-History** | False | **User** |
+| **Locale-ID** | False | **User** |
+| **Locality-Name** | False | **Organizational-Person** |
+| **Local-Policy-Flags** | False | **Computer** |
+| **Location** | False | **Computer** |
+| **Lockout-Time** | False | **User** |
+| **Logo** | False | **Organizational-Person** |
+| **Logon-Count** | False | **User** |
+| **Logon-Hours** | False | **User** |
+| **Logon-Workstation** | False | **User** |
+| **Machine-Role** | False | **Computer** |
+| **Managed-By** | False | **Computer** |
+| **Managed-Objects** | False | **Top** |
+| **Manager** | False | **Organizational-Person** |
+| **Mastered-By** | False | **Top** |
+| **Max-Storage** | False | **User** |
+| **MHS-OR-Address** | False | **Organizational-Person** |
+| **Modify-Time-Stamp** | False | **Top** |
+| **MS-DS-Consistency-Child-Count** | False | **Top** |
+| **MS-DS-Consistency-Guid** | False | **Top** |
+| **MS-DS-Creator-SID** | False | **User** |
+| **MSMQ-Digests** | False | **User** |
+| **MSMQ-Digests-Mig** | False | **User** |
+| **MSMQ-Sign-Certificates** | False | **User** |
+| **MSMQ-Sign-Certificates-Mig** | False | **User** |
+| **msNPAllowDialin** | False | **User** |
+| **msNPCallingStationID** | False | **User** |
+| **msNPSavedCallingStationID** | False | **User** |
+| **msRADIUSCallbackNumber** | False | **User** |
+| **msRADIUSFramedIPAddress** | False | **User** |
+| **msRADIUSFramedRoute** | False | **User** |
+| **msRADIUSServiceType** | False | **User** |
+| **msRASSavedCallbackNumber** | False | **User** |
+| **msRASSavedFramedIPAddress** | False | **User** |
+| **msRASSavedFramedRoute** | False | **User** |
+| **Netboot-GUID** | False | **Computer** |
+| **Netboot-Initialization** | False | **Computer** |
+| **Netboot-Machine-File-Path** | False | **Computer** |
+| **Netboot-Mirror-Data-File** | False | **Computer** |
+| **netboot-SCP-BL** | False | **Top** |
+| **Netboot-SIF-File** | False | **Computer** |
+| **Network-Address** | False | **Computer****User** |
+| **Non-Security-Member-BL** | False | **Top** |
+| **Nt-Pwd-History** | False | **User** |
+| **NT-Security-Descriptor** | True | **Top** |
+| **Obj-Dist-Name** | False | **Top** |
+| **Object-Category** | True | **Top** |
+| **Object-Class** | True | **Top** |
+| **Object-Guid** | False | **Top** |
+| **Object-Version** | False | **Top** |
+| **Operating-System** | False | **Computer** |
+| **Operating-System-Hotfix** | False | **Computer** |
+| **Operating-System-Service-Pack** | False | **Computer** |
+| **Operating-System-Version** | False | **Computer** |
+| **Operator-Count** | False | **User** |
+| **Organizational-Unit-Name** | False | **Organizational-Person** |
+| **Organization-Name** | False | **Organizational-Person** |
+| **Other-Login-Workstations** | False | **User** |
+| **Other-Mailbox** | False | **Organizational-Person** |
+| **Other-Name** | False | **Organizational-Person** |
+| **Other-Well-Known-Objects** | False | **Top** |
+| **Partial-Attribute-Deletion-List** | False | **Top** |
+| **Partial-Attribute-Set** | False | **Top** |
+| **Personal-Title** | False | **Organizational-Person** |
+| **Phone-Fax-Other** | False | **Organizational-Person** |
+| **Phone-Home-Other** | False | **Organizational-Person** |
+| **Phone-Home-Primary** | False | **Organizational-Person** |
+| **Phone-Ip-Other** | False | **Organizational-Person** |
+| **Phone-Ip-Primary** | False | **Organizational-Person** |
+| **Phone-ISDN-Primary** | False | **Organizational-Person** |
+| **Phone-Mobile-Other** | False | **Organizational-Person** |
+| **Phone-Mobile-Primary** | False | **Organizational-Person** |
+| **Phone-Office-Other** | False | **Organizational-Person** |
+| **Phone-Pager-Other** | False | **Organizational-Person** |
+| **Phone-Pager-Primary** | False | **Organizational-Person** |
+| **Physical-Delivery-Office-Name** | False | **Organizational-Person** |
+| **Physical-Location-Object** | False | **Computer** |
+| **Picture** | False | **Organizational-Person** |
+| **Policy-Replication-Flags** | False | **Computer** |
+| **Possible-Inferiors** | False | **Top** |
+| **Postal-Address** | False | **Organizational-Person** |
+| **Postal-Code** | False | **Organizational-Person** |
+| **Post-Office-Box** | False | **Organizational-Person** |
+| **Preferred-Delivery-Method** | False | **Organizational-Person** |
+| **Preferred-OU** | False | **User** |
+| **Primary-Group-ID** | False | **User** |
+| **Profile-Path** | False | **User** |
+| **Proxied-Object-Name** | False | **Top** |
+| **Proxy-Addresses** | False | **Top** |
+| **Pwd-Last-Set** | False | **User** |
+| **Query-Policy-BL** | False | **Top** |
+| **RDN** | False | **Top** |
+| **Registered-Address** | False | **Organizational-Person** |
+| **Repl-Property-Meta-Data** | False | **Top** |
+| **Repl-UpToDate-Vector** | False | **Top** |
+| **Reports** | False | **Top** |
+| **Reps-From** | False | **Top** |
+| **Reps-To** | False | **Top** |
+| **Revision** | False | **Top** |
+| **RID-Set-References** | False | **Computer** |
+| **Script-Path** | False | **User** |
+| **SD-Rights-Effective** | False | **Top** |
+| **See-Also** | False | **Person** |
+| **Server-Reference-BL** | False | **Top** |
+| **Service-Principal-Name** | False | **User** |
+| **Show-In-Advanced-View-Only** | False | **Top** |
+| **Site-GUID** | False | **Computer** |
+| **Site-Object-BL** | False | **Top** |
+| **State-Or-Province-Name** | False | **Organizational-Person** |
+| **Street-Address** | False | **Organizational-Person** |
+| **Sub-Refs** | False | **Top** |
+| **SubSchemaSubEntry** | False | **Top** |
+| **Surname** | False | **Person** |
+| **System-Flags** | False | **Top** |
+| **Telephone-Number** | False | **Person** |
+| **Teletex-Terminal-Identifier** | False | **Organizational-Person** |
+| **Telex-Number** | False | **Organizational-Person** |
+| **Telex-Primary** | False | **Organizational-Person** |
+| **Terminal-Server** | False | **User** |
+| **Text-Country** | False | **Organizational-Person** |
+| **Title** | False | **Organizational-Person** |
+| **Unicode-Pwd** | False | **User** |
+| **User-Account-Control** | False | **User** |
+| **User-Comment** | False | **Organizational-Person** |
+| **User-Parameters** | False | **User** |
+| **User-Password** | False | **Person** |
+| **User-Principal-Name** | False | **User** |
+| **User-Shared-Folder** | False | **User** |
+| **User-Shared-Folder-Other** | False | **User** |
+| **User-Workstations** | False | **User** |
+| **USN-Changed** | False | **Top** |
+| **USN-Created** | False | **Top** |
+| **USN-DSA-Last-Obj-Removed** | False | **Top** |
+| **USN-Intersite** | False | **Top** |
+| **USN-Last-Obj-Rem** | False | **Top** |
+| **USN-Source** | False | **Top** |
+| **Volume-Count** | False | **Computer** |
+| **Wbem-Path** | False | **Top** |
+| **Well-Known-Objects** | False | **Top** |
+| **When-Changed** | False | **Top** |
+| **When-Created** | False | **Top** |
+| **WWW-Home-Page** | False | **Top** |
+| **WWW-Page-Other** | False | **Top** |
+| **X121-Address** | False | **Organizational-Person** |
+| **X509-Cert** | False | **User** |
+
+## Windows 2000 Server Extended Rights
+
+This class contains the following extended rights for Windows 2000 Server:
+
+| Common Name |
+| --- |
+| **User-Change-Password** |
+| **User-Force-Change-Password** |
+| **Send-As** |
+| **Receive-As** |
+
+## Windows 2000 Server Validated Writes
+
+This class contains the following validated writes for Windows 2000 Server:
+
+| Common Name |
+| --- |
+| **Validated-DNS-Host-Name** |
+| **Validated-SPN** |
+
+## Windows 2000 Server Property Sets
+
+This class contains the following property sets for Windows 2000 Server:
+
+| Common Name |
+| --- |
+| **User-Account-Restrictions** |
+| **Personal-Information** |
+| **Public-Information** |
+
+## Windows Server 2003
+
+- Attributes
+- Extended Rights
+- Validated Writes
+- Property Sets
+
+| Entry | Value |
+| --- | --- |
+| System-Only | False |
+| Object-Category | 1 |
+| Default-Object-Category | - |
+| Governs-Id | 1.2.840.113556.1.3.30 |
+| Default-Hiding-Value | 0 |
+| Rdn-Att-Id | **Common-Name** |
+| Subclass of | **User** |
+| Possible Superiors | **Domain-DNS****Organizational-Unit****Container** |
+| Auxiliary Classes | - |
+| NT-Security-Descriptor | O:BAG:BAD:S: |
+| Default Security Descriptor | D:(A;;RPWPCRCCDCLCLORCWOWDSDDTSW;;;DA)(A;;RPWPCRCCDCLCLORCWOWDSDDTSW;;;AO)(A;;RPWPCRCCDCLCLORCWOWDSDDTSW;;;SY)(A;;RPCRLCLORCSDDT;;;CO)(OA;;WP;4c164200-20c0-11d0-a768-00aa006e0529;;CO)(A;;RPLCLORC;;;AU)(OA;;CR;ab721a53-1e2f-11d0-9819-00aa0040529b;;WD)(A;;CCDC;;;PS)(OA;;CCDC;bf967aa8-0de6-11d0-a285-00aa003049e2;;PO)(OA;;RPWP;bf967a7f-0de6-11d0-a285-00aa003049e2;;CA)(OA;;SW;f3a64788-5306-11d1-a9c5-0000f80367c1;;PS)(OA;;RPWP;77B5B886-944A-11d1-AEBD-0000F80367C1;;PS)(OA;;SW;72e39547-7b18-11d1-adef-00c04fd8d5cd;;PS)(OA;;SW;72e39547-7b18-11d1-adef-00c04fd8d5cd;;CO)(OA;;SW;f3a64788-5306-11d1-a9c5-0000f80367c1;;CO)(OA;;WP;3e0abfd0-126a-11d0-a060-00aa006c33ed;bf967a86-0de6-11d0-a285-00aa003049e2;CO)(OA;;WP;5f202010-79a5-11d0-9020-00c04fc2d4cf;bf967a86-0de6-11d0-a285-00aa003049e2;CO)(OA;;WP;bf967950-0de6-11d0-a285-00aa003049e2;bf967a86-0de6-11d0-a285-00aa003049e2;CO)(OA;;WP;bf967953-0de6-11d0-a285-00aa003049e2;bf967a86-0de6-11d0-a285-00aa003049e2;CO)(OA;;RP;46a9b11d-60ae-405a-b7e8-ff8a58d456d2;;S-1-5-32-560) |
+| System-Flags | 0x00000010 |
+
+## Windows Server 2003 Attributes
+
+This class contains the following attributes for Windows Server 2003:
+
+| Attribute | Mandatory | Derived from |
+| --- | --- | --- |
+| **Account-Expires** | False | **User** |
+| **ACS-Policy-Name** | False | **User** |
+| **Address** | False | **Organizational-Person** |
+| **Address-Home** | False | **User****Organizational-Person** |
+| **Admin-Count** | False | **User** |
+| **Admin-Description** | False | **Top** |
+| **Admin-Display-Name** | False | **Top** |
+| **Allowed-Attributes** | False | **Top** |
+| **Allowed-Attributes-Effective** | False | **Top** |
+| **Allowed-Child-Classes** | False | **Top** |
+| **Allowed-Child-Classes-Effective** | False | **Top** |
+| **Assistant** | False | **Organizational-Person** |
+| **attributeCertificateAttribute** | False | **Person** |
+| **audio** | False | **User** |
+| **Bad-Password-Time** | False | **User** |
+| **Bad-Pwd-Count** | False | **User** |
+| **Bridgehead-Server-List-BL** | False | **Top** |
+| **Business-Category** | False | **User** |
+| **Canonical-Name** | False | **Top** |
+| **carLicense** | False | **User** |
+| **Catalogs** | False | **Computer** |
+| **Code-Page** | False | **User** |
+| **Common-Name** | True | **Computer****Top****Person** |
+| **Company** | False | **Organizational-Person** |
+| **Control-Access-Rights** | False | **User** |
+| **Country-Code** | False | **Organizational-Person** |
+| **Country-Name** | False | **Organizational-Person** |
+| **Create-Time-Stamp** | False | **Top** |
+| **DBCS-Pwd** | False | **User** |
+| **Default-Class-Store** | False | **User** |
+| **Default-Local-Policy-Object** | False | **Computer** |
+| **Department** | False | **Organizational-Person** |
+| **departmentNumber** | False | **User** |
+| **Description** | False | **Top** |
+| **Desktop-Profile** | False | **User** |
+| **Destination-Indicator** | False | **Organizational-Person** |
+| **Display-Name** | False | **User****Top** |
+| **Display-Name-Printable** | False | **Top** |
+| **Division** | False | **Organizational-Person** |
+| **DNS-Host-Name** | False | **Computer** |
+| **DSA-Signature** | False | **Top** |
+| **DS-Core-Propagation-Data** | False | **Top** |
+| **Dynamic-LDAP-Server** | False | **User** |
+| **E-mail-Addresses** | False | **User****Organizational-Person** |
+| **Employee-ID** | False | **Organizational-Person** |
+| **Employee-Number** | False | **User** |
+| **Employee-Type** | False | **User** |
+| **Extension-Name** | False | **Top** |
+| **Facsimile-Telephone-Number** | False | **Organizational-Person** |
+| **Flags** | False | **Top** |
+| **From-Entry** | False | **Top** |
+| **Frs-Computer-Reference-BL** | False | **Top** |
+| **FRS-Member-Reference-BL** | False | **Top** |
+| **FSMO-Role-Owner** | False | **Top** |
+| **Generation-Qualifier** | False | **Organizational-Person** |
+| **Given-Name** | False | **User****Organizational-Person** |
+| **Group-Membership-SAM** | False | **User** |
+| **Group-Priority** | False | **User** |
+| **Groups-to-Ignore** | False | **User** |
+| **Home-Directory** | False | **User** |
+| **Home-Drive** | False | **User** |
+| **houseIdentifier** | False | **Organizational-Person** |
+| **Initials** | False | **User****Organizational-Person** |
+| **Instance-Type** | True | **Top** |
+| **International-ISDN-Number** | False | **Organizational-Person** |
+| **Is-Critical-System-Object** | False | **Top** |
+| **Is-Deleted** | False | **Top** |
+| **Is-Member-Of-DL** | False | **Top** |
+| **Is-Privilege-Holder** | False | **Top** |
+| **jpegPhoto** | False | **User** |
+| **labeledURI** | False | **User** |
+| **Last-Known-Parent** | False | **Top** |
+| **Last-Logoff** | False | **User** |
+| **Last-Logon** | False | **User** |
+| **Last-Logon-Timestamp** | False | **User** |
+| **Lm-Pwd-History** | False | **User** |
+| **Locale-ID** | False | **User** |
+| **Locality-Name** | False | **Organizational-Person** |
+| **Local-Policy-Flags** | False | **Computer** |
+| **Location** | False | **Computer** |
+| **Lockout-Time** | False | **User** |
+| **Logo** | False | **Organizational-Person** |
+| **Logon-Count** | False | **User** |
+| **Logon-Hours** | False | **User** |
+| **Logon-Workstation** | False | **User** |
+| **Machine-Role** | False | **Computer** |
+| **Managed-By** | False | **Computer** |
+| **Managed-Objects** | False | **Top** |
+| **Manager** | False | **User****Organizational-Person** |
+| **Mastered-By** | False | **Top** |
+| **Max-Storage** | False | **User** |
+| **MHS-OR-Address** | False | **Organizational-Person** |
+| **Modify-Time-Stamp** | False | **Top** |
+| **ms-COM-PartitionSetLink** | False | **Top** |
+| **ms-COM-UserLink** | False | **Top** |
+| **ms-COM-UserPartitionSetLink** | False | **User** |
+| **MS-DRM-Identity-Certificate** | False | **User** |
+| **ms-DS-Additional-Dns-Host-Name** | False | **Computer** |
+| **ms-DS-Additional-Sam-Account-Name** | False | **Computer** |
+| **ms-DS-Allowed-To-Delegate-To** | False | **Organizational-Person** |
+| **ms-DS-Approx-Immed-Subordinates** | False | **Top** |
+| **ms-DS-Cached-Membership** | False | **User** |
+| **ms-DS-Cached-Membership-Time-Stamp** | False | **User** |
+| **MS-DS-Consistency-Child-Count** | False | **Top** |
+| **MS-DS-Consistency-Guid** | False | **Top** |
+| **MS-DS-Creator-SID** | False | **User** |
+| **ms-DS-Mastered-By** | False | **Top** |
+| **ms-DS-Members-For-Az-Role-BL** | False | **Top** |
+| **ms-DS-NC-Repl-Cursors** | False | **Top** |
+| **ms-DS-NC-Repl-Inbound-Neighbors** | False | **Top** |
+| **ms-DS-NC-Repl-Outbound-Neighbors** | False | **Top** |
+| **ms-DS-Non-Members-BL** | False | **Top** |
+| **ms-DS-Object-Reference-BL** | False | **Top** |
+| **ms-DS-Operations-For-Az-Role-BL** | False | **Top** |
+| **ms-DS-Operations-For-Az-Task-BL** | False | **Top** |
+| **ms-DS-Repl-Attribute-Meta-Data** | False | **Top** |
+| **ms-DS-Repl-Value-Meta-Data** | False | **Top** |
+| **ms-DS-Site-Affinity** | False | **User** |
+| **ms-DS-Tasks-For-Az-Role-BL** | False | **Top** |
+| **ms-DS-Tasks-For-Az-Task-BL** | False | **Top** |
+| **ms-DS-User-Account-Control-Computed** | False | **User** |
+| **ms-Exch-House-Identifier** | False | **Organizational-Person** |
+| **ms-Exch-Owner-BL** | False | **Top** |
+| **ms-IIS-FTP-Dir** | False | **User** |
+| **ms-IIS-FTP-Root** | False | **User** |
+| **MSMQ-Digests** | False | **User** |
+| **MSMQ-Digests-Mig** | False | **User** |
+| **MSMQ-Sign-Certificates** | False | **User** |
+| **MSMQ-Sign-Certificates-Mig** | False | **User** |
+| **msNPAllowDialin** | False | **User** |
+| **msNPCallingStationID** | False | **User** |
+| **msNPSavedCallingStationID** | False | **User** |
+| **msRADIUSCallbackNumber** | False | **User** |
+| **msRADIUSFramedIPAddress** | False | **User** |
+| **msRADIUSFramedRoute** | False | **User** |
+| **msRADIUSServiceType** | False | **User** |
+| **msRASSavedCallbackNumber** | False | **User** |
+| **msRASSavedFramedIPAddress** | False | **User** |
+| **msRASSavedFramedRoute** | False | **User** |
+| **Netboot-GUID** | False | **Computer** |
+| **Netboot-Initialization** | False | **Computer** |
+| **Netboot-Machine-File-Path** | False | **Computer** |
+| **Netboot-Mirror-Data-File** | False | **Computer** |
+| **netboot-SCP-BL** | False | **Top** |
+| **Netboot-SIF-File** | False | **Computer** |
+| **Network-Address** | False | **Computer****User** |
+| **Non-Security-Member-BL** | False | **Top** |
+| **Nt-Pwd-History** | False | **User** |
+| **NT-Security-Descriptor** | True | **Top** |
+| **Obj-Dist-Name** | False | **Top** |
+| **Object-Category** | True | **Top** |
+| **Object-Class** | True | **Top** |
+| **Object-Guid** | False | **Top** |
+| **Object-Version** | False | **Top** |
+| **Operating-System** | False | **Computer** |
+| **Operating-System-Hotfix** | False | **Computer** |
+| **Operating-System-Service-Pack** | False | **Computer** |
+| **Operating-System-Version** | False | **Computer** |
+| **Operator-Count** | False | **User** |
+| **Organizational-Unit-Name** | False | **Organizational-Person** |
+| **Organization-Name** | False | **User****Organizational-Person** |
+| **Other-Login-Workstations** | False | **User** |
+| **Other-Mailbox** | False | **Organizational-Person** |
+| **Other-Name** | False | **Organizational-Person** |
+| **Other-Well-Known-Objects** | False | **Top** |
+| **Partial-Attribute-Deletion-List** | False | **Top** |
+| **Partial-Attribute-Set** | False | **Top** |
+| **Personal-Title** | False | **Organizational-Person** |
+| **Phone-Fax-Other** | False | **Organizational-Person** |
+| **Phone-Home-Other** | False | **Organizational-Person** |
+| **Phone-Home-Primary** | False | **User****Organizational-Person** |
+| **Phone-Ip-Other** | False | **Organizational-Person** |
+| **Phone-Ip-Primary** | False | **Organizational-Person** |
+| **Phone-ISDN-Primary** | False | **Organizational-Person** |
+| **Phone-Mobile-Other** | False | **Organizational-Person** |
+| **Phone-Mobile-Primary** | False | **User****Organizational-Person** |
+| **Phone-Office-Other** | False | **Organizational-Person** |
+| **Phone-Pager-Other** | False | **Organizational-Person** |
+| **Phone-Pager-Primary** | False | **User****Organizational-Person** |
+| **photo** | False | **User** |
+| **Physical-Delivery-Office-Name** | False | **Organizational-Person** |
+| **Physical-Location-Object** | False | **Computer** |
+| **Picture** | False | **Organizational-Person** |
+| **Policy-Replication-Flags** | False | **Computer** |
+| **Possible-Inferiors** | False | **Top** |
+| **Postal-Address** | False | **Organizational-Person** |
+| **Postal-Code** | False | **Organizational-Person** |
+| **Post-Office-Box** | False | **Organizational-Person** |
+| **Preferred-Delivery-Method** | False | **Organizational-Person** |
+| **preferredLanguage** | False | **User** |
+| **Preferred-OU** | False | **User** |
+| **Primary-Group-ID** | False | **User** |
+| **Profile-Path** | False | **User** |
+| **Proxied-Object-Name** | False | **Top** |
+| **Proxy-Addresses** | False | **Top** |
+| **Pwd-Last-Set** | False | **User** |
+| **Query-Policy-BL** | False | **Top** |
+| **RDN** | False | **Top** |
+| **Registered-Address** | False | **Organizational-Person** |
+| **Repl-Property-Meta-Data** | False | **Top** |
+| **Repl-UpToDate-Vector** | False | **Top** |
+| **Reports** | False | **Top** |
+| **Reps-From** | False | **Top** |
+| **Reps-To** | False | **Top** |
+| **Revision** | False | **Top** |
+| **RID-Set-References** | False | **Computer** |
+| **roomNumber** | False | **User** |
+| **Script-Path** | False | **User** |
+| **SD-Rights-Effective** | False | **Top** |
+| **secretary** | False | **User** |
+| **See-Also** | False | **Person** |
+| **Serial-Number** | False | **Person** |
+| **Server-Reference-BL** | False | **Top** |
+| **Service-Principal-Name** | False | **User** |
+| **Show-In-Advanced-View-Only** | False | **Top** |
+| **Site-GUID** | False | **Computer** |
+| **Site-Object-BL** | False | **Top** |
+| **State-Or-Province-Name** | False | **Organizational-Person** |
+| **Street-Address** | False | **Organizational-Person** |
+| **Structural-Object-Class** | False | **Top** |
+| **Sub-Refs** | False | **Top** |
+| **SubSchemaSubEntry** | False | **Top** |
+| **Surname** | False | **Person** |
+| **System-Flags** | False | **Top** |
+| **Telephone-Number** | False | **Person** |
+| **Teletex-Terminal-Identifier** | False | **Organizational-Person** |
+| **Telex-Number** | False | **Organizational-Person** |
+| **Telex-Primary** | False | **Organizational-Person** |
+| **Terminal-Server** | False | **User** |
+| **Text-Country** | False | **Organizational-Person** |
+| **Title** | False | **Organizational-Person** |
+| **uid** | False | **User** |
+| **Unicode-Pwd** | False | **User** |
+| **User-Account-Control** | False | **User** |
+| **User-Comment** | False | **Organizational-Person** |
+| **User-Parameters** | False | **User** |
+| **User-Password** | False | **Person** |
+| **userPKCS12** | False | **User** |
+| **User-Principal-Name** | False | **User** |
+| **User-Shared-Folder** | False | **User** |
+| **User-Shared-Folder-Other** | False | **User** |
+| **User-SMIME-Certificate** | False | **User** |
+| **User-Workstations** | False | **User** |
+| **USN-Changed** | False | **Top** |
+| **USN-Created** | False | **Top** |
+| **USN-DSA-Last-Obj-Removed** | False | **Top** |
+| **USN-Intersite** | False | **Top** |
+| **USN-Last-Obj-Rem** | False | **Top** |
+| **USN-Source** | False | **Top** |
+| **Volume-Count** | False | **Computer** |
+| **Wbem-Path** | False | **Top** |
+| **Well-Known-Objects** | False | **Top** |
+| **When-Changed** | False | **Top** |
+| **When-Created** | False | **Top** |
+| **WWW-Home-Page** | False | **Top** |
+| **WWW-Page-Other** | False | **Top** |
+| **X121-Address** | False | **Organizational-Person** |
+| **x500uniqueIdentifier** | False | **User** |
+| **X509-Cert** | False | **User** |
+
+## Windows Server 2003 Extended Rights
+
+This class contains the following extended rights for Windows Server 2003:
+
+| Common Name |
+| --- |
+| **User-Change-Password** |
+| **User-Force-Change-Password** |
+| **Send-As** |
+| **Receive-As** |
+| **Allowed-To-Authenticate** |
+
+## Windows Server 2003 Validated Writes
+
+This class contains the following validated writes for Windows Server 2003:
+
+| Common Name |
+| --- |
+| **Validated-DNS-Host-Name** |
+| **Validated-SPN** |
+
+## Windows Server 2003 Property Sets
+
+This class contains the following property sets for Windows Server 2003:
+
+| Common Name |
+| --- |
+| **User-Account-Restrictions** |
+| **Personal-Information** |
+| **Public-Information** |
+| **DNS-Host-Name-Attributes** |
+
+## Windows Server 2003 R2
+
+- Attributes
+- Extended Rights
+- Validated Writes
+- Property Sets
+
+| Entry | Value |
+| --- | --- |
+| System-Only | False |
+| Object-Category | 1 |
+| Default-Object-Category | - |
+| Governs-Id | 1.2.840.113556.1.3.30 |
+| Default-Hiding-Value | 0 |
+| Rdn-Att-Id | **Common-Name** |
+| Subclass of | **User** |
+| Possible Superiors | **Domain-DNS****Organizational-Unit****Container** |
+| Auxiliary Classes | **ipHost** |
+| NT-Security-Descriptor | O:BAG:BAD:S: |
+| Default Security Descriptor | D:(A;;RPWPCRCCDCLCLORCWOWDSDDTSW;;;DA)(A;;RPWPCRCCDCLCLORCWOWDSDDTSW;;;AO)(A;;RPWPCRCCDCLCLORCWOWDSDDTSW;;;SY)(A;;RPCRLCLORCSDDT;;;CO)(OA;;WP;4c164200-20c0-11d0-a768-00aa006e0529;;CO)(A;;RPLCLORC;;;AU)(OA;;CR;ab721a53-1e2f-11d0-9819-00aa0040529b;;WD)(A;;CCDC;;;PS)(OA;;CCDC;bf967aa8-0de6-11d0-a285-00aa003049e2;;PO)(OA;;RPWP;bf967a7f-0de6-11d0-a285-00aa003049e2;;CA)(OA;;SW;f3a64788-5306-11d1-a9c5-0000f80367c1;;PS)(OA;;RPWP;77B5B886-944A-11d1-AEBD-0000F80367C1;;PS)(OA;;SW;72e39547-7b18-11d1-adef-00c04fd8d5cd;;PS)(OA;;SW;72e39547-7b18-11d1-adef-00c04fd8d5cd;;CO)(OA;;SW;f3a64788-5306-11d1-a9c5-0000f80367c1;;CO)(OA;;WP;3e0abfd0-126a-11d0-a060-00aa006c33ed;bf967a86-0de6-11d0-a285-00aa003049e2;CO)(OA;;WP;5f202010-79a5-11d0-9020-00c04fc2d4cf;bf967a86-0de6-11d0-a285-00aa003049e2;CO)(OA;;WP;bf967950-0de6-11d0-a285-00aa003049e2;bf967a86-0de6-11d0-a285-00aa003049e2;CO)(OA;;WP;bf967953-0de6-11d0-a285-00aa003049e2;bf967a86-0de6-11d0-a285-00aa003049e2;CO)(OA;;RP;46a9b11d-60ae-405a-b7e8-ff8a58d456d2;;S-1-5-32-560) |
+| System-Flags | 0x00000010 |
+
+## Windows Server 2003 R2 Attributes
+
+This class contains the following attributes for Windows Server 2003 R2:
+
+| Attribute | Mandatory | Derived from |
+| --- | --- | --- |
+| **Account-Expires** | False | **User** |
+| **ACS-Policy-Name** | False | **User** |
+| **Address** | False | **Organizational-Person** |
+| **Address-Home** | False | **User****Organizational-Person** |
+| **Admin-Count** | False | **User** |
+| **Admin-Description** | False | **Top** |
+| **Admin-Display-Name** | False | **Top** |
+| **Allowed-Attributes** | False | **Top** |
+| **Allowed-Attributes-Effective** | False | **Top** |
+| **Allowed-Child-Classes** | False | **Top** |
+| **Allowed-Child-Classes-Effective** | False | **Top** |
+| **Assistant** | False | **Organizational-Person** |
+| **attributeCertificateAttribute** | False | **Person** |
+| **audio** | False | **User** |
+| **Bad-Password-Time** | False | **User** |
+| **Bad-Pwd-Count** | False | **User** |
+| **Bridgehead-Server-List-BL** | False | **Top** |
+| **Business-Category** | False | **User** |
+| **Canonical-Name** | False | **Top** |
+| **carLicense** | False | **User** |
+| **Catalogs** | False | **Computer** |
+| **Code-Page** | False | **User** |
+| **Common-Name** | True | **Computer****Top****Person****ipHost** |
+| **Company** | False | **Organizational-Person** |
+| **Control-Access-Rights** | False | **User** |
+| **Country-Code** | False | **Organizational-Person** |
+| **Country-Name** | False | **Organizational-Person** |
+| **Create-Time-Stamp** | False | **Top** |
+| **DBCS-Pwd** | False | **User** |
+| **Default-Class-Store** | False | **User** |
+| **Default-Local-Policy-Object** | False | **Computer** |
+| **Department** | False | **Organizational-Person** |
+| **departmentNumber** | False | **User** |
+| **Description** | False | **Top****ipHost** |
+| **Desktop-Profile** | False | **User** |
+| **Destination-Indicator** | False | **Organizational-Person** |
+| **Display-Name** | False | **User****Top** |
+| **Display-Name-Printable** | False | **Top** |
+| **Division** | False | **Organizational-Person** |
+| **DNS-Host-Name** | False | **Computer** |
+| **DSA-Signature** | False | **Top** |
+| **DS-Core-Propagation-Data** | False | **Top** |
+| **Dynamic-LDAP-Server** | False | **User** |
+| **E-mail-Addresses** | False | **User****Organizational-Person** |
+| **Employee-ID** | False | **Organizational-Person** |
+| **Employee-Number** | False | **User** |
+| **Employee-Type** | False | **User** |
+| **Extension-Name** | False | **Top** |
+| **Facsimile-Telephone-Number** | False | **Organizational-Person** |
+| **Flags** | False | **Top** |
+| **From-Entry** | False | **Top** |
+| **Frs-Computer-Reference-BL** | False | **Top** |
+| **FRS-Member-Reference-BL** | False | **Top** |
+| **FSMO-Role-Owner** | False | **Top** |
+| **Generation-Qualifier** | False | **Organizational-Person** |
+| **Given-Name** | False | **User****Organizational-Person** |
+| **Group-Membership-SAM** | False | **User** |
+| **Group-Priority** | False | **User** |
+| **Groups-to-Ignore** | False | **User** |
+| **Home-Directory** | False | **User** |
+| **Home-Drive** | False | **User** |
+| **houseIdentifier** | False | **Organizational-Person** |
+| **Initials** | False | **User****Organizational-Person** |
+| **Instance-Type** | True | **Top** |
+| **International-ISDN-Number** | False | **Organizational-Person** |
+| **ipHostNumber** | False | **ipHost** |
+| **Is-Critical-System-Object** | False | **Top** |
+| **Is-Deleted** | False | **Top** |
+| **Is-Member-Of-DL** | False | **Top** |
+| **Is-Privilege-Holder** | False | **Top** |
+| **jpegPhoto** | False | **User** |
+| **labeledURI** | False | **User** |
+| **Last-Known-Parent** | False | **Top** |
+| **Last-Logoff** | False | **User** |
+| **Last-Logon** | False | **User** |
+| **Last-Logon-Timestamp** | False | **User** |
+| **Lm-Pwd-History** | False | **User** |
+| **Locale-ID** | False | **User** |
+| **Locality-Name** | False | **Organizational-Person****ipHost** |
+| **Local-Policy-Flags** | False | **Computer** |
+| **Location** | False | **Computer** |
+| **Lockout-Time** | False | **User** |
+| **Logo** | False | **Organizational-Person** |
+| **Logon-Count** | False | **User** |
+| **Logon-Hours** | False | **User** |
+| **Logon-Workstation** | False | **User** |
+| **Machine-Role** | False | **Computer** |
+| **Managed-By** | False | **Computer** |
+| **Managed-Objects** | False | **Top** |
+| **Manager** | False | **User****Organizational-Person** |
+| **Mastered-By** | False | **Top** |
+| **Max-Storage** | False | **User** |
+| **MHS-OR-Address** | False | **Organizational-Person** |
+| **Modify-Time-Stamp** | False | **Top** |
+| **ms-COM-PartitionSetLink** | False | **Top** |
+| **ms-COM-UserLink** | False | **Top** |
+| **ms-COM-UserPartitionSetLink** | False | **User** |
+| **ms-DFSR-ComputerReferenceBL** | False | **Top** |
+| **ms-DFSR-MemberReferenceBL** | False | **Top** |
+| **MS-DRM-Identity-Certificate** | False | **User** |
+| **ms-DS-Additional-Dns-Host-Name** | False | **Computer** |
+| **ms-DS-Additional-Sam-Account-Name** | False | **Computer** |
+| **ms-DS-Allowed-To-Delegate-To** | False | **Organizational-Person** |
+| **ms-DS-Approx-Immed-Subordinates** | False | **Top** |
+| **ms-DS-Cached-Membership** | False | **User** |
+| **ms-DS-Cached-Membership-Time-Stamp** | False | **User** |
+| **MS-DS-Consistency-Child-Count** | False | **Top** |
+| **MS-DS-Consistency-Guid** | False | **Top** |
+| **MS-DS-Creator-SID** | False | **User** |
+| **ms-DS-Mastered-By** | False | **Top** |
+| **ms-DS-Members-For-Az-Role-BL** | False | **Top** |
+| **ms-DS-NC-Repl-Cursors** | False | **Top** |
+| **ms-DS-NC-Repl-Inbound-Neighbors** | False | **Top** |
+| **ms-DS-NC-Repl-Outbound-Neighbors** | False | **Top** |
+| **ms-DS-Non-Members-BL** | False | **Top** |
+| **ms-DS-Object-Reference-BL** | False | **Top** |
+| **ms-DS-Operations-For-Az-Role-BL** | False | **Top** |
+| **ms-DS-Operations-For-Az-Task-BL** | False | **Top** |
+| **ms-DS-Repl-Attribute-Meta-Data** | False | **Top** |
+| **ms-DS-Repl-Value-Meta-Data** | False | **Top** |
+| **ms-DS-Site-Affinity** | False | **User** |
+| **ms-DS-Source-Object-DN** | False | **User** |
+| **ms-DS-Tasks-For-Az-Role-BL** | False | **Top** |
+| **ms-DS-Tasks-For-Az-Task-BL** | False | **Top** |
+| **ms-DS-User-Account-Control-Computed** | False | **User** |
+| **ms-Exch-House-Identifier** | False | **Organizational-Person** |
+| **ms-Exch-Owner-BL** | False | **Top** |
+| **ms-IIS-FTP-Dir** | False | **User** |
+| **ms-IIS-FTP-Root** | False | **User** |
+| **MSMQ-Digests** | False | **User** |
+| **MSMQ-Digests-Mig** | False | **User** |
+| **MSMQ-Sign-Certificates** | False | **User** |
+| **MSMQ-Sign-Certificates-Mig** | False | **User** |
+| **msNPAllowDialin** | False | **User** |
+| **msNPCallingStationID** | False | **User** |
+| **msNPSavedCallingStationID** | False | **User** |
+| **msRADIUSCallbackNumber** | False | **User** |
+| **msRADIUSFramedIPAddress** | False | **User** |
+| **msRADIUSFramedRoute** | False | **User** |
+| **msRADIUSServiceType** | False | **User** |
+| **msRASSavedCallbackNumber** | False | **User** |
+| **msRASSavedFramedIPAddress** | False | **User** |
+| **msRASSavedFramedRoute** | False | **User** |
+| **msSFU-30-Aliases** | False | **Computer** |
+| **msSFU-30-Name** | False | **Computer****User** |
+| **msSFU-30-Nis-Domain** | False | **Computer****User** |
+| **msSFU-30-Posix-Member-Of** | False | **Top** |
+| **Netboot-GUID** | False | **Computer** |
+| **Netboot-Initialization** | False | **Computer** |
+| **Netboot-Machine-File-Path** | False | **Computer** |
+| **Netboot-Mirror-Data-File** | False | **Computer** |
+| **netboot-SCP-BL** | False | **Top** |
+| **Netboot-SIF-File** | False | **Computer** |
+| **Network-Address** | False | **Computer****User** |
+| **nisMapName** | False | **Computer** |
+| **Non-Security-Member-BL** | False | **Top** |
+| **Nt-Pwd-History** | False | **User** |
+| **NT-Security-Descriptor** | True | **Top** |
+| **Obj-Dist-Name** | False | **Top** |
+| **Object-Category** | True | **Top** |
+| **Object-Class** | True | **Top** |
+| **Object-Guid** | False | **Top** |
+| **Object-Version** | False | **Top** |
+| **Operating-System** | False | **Computer** |
+| **Operating-System-Hotfix** | False | **Computer** |
+| **Operating-System-Service-Pack** | False | **Computer** |
+| **Operating-System-Version** | False | **Computer** |
+| **Operator-Count** | False | **User** |
+| **Organizational-Unit-Name** | False | **Organizational-Person** |
+| **Organization-Name** | False | **User****Organizational-Person** |
+| **Other-Login-Workstations** | False | **User** |
+| **Other-Mailbox** | False | **Organizational-Person** |
+| **Other-Name** | False | **Organizational-Person** |
+| **Other-Well-Known-Objects** | False | **Top** |
+| **Partial-Attribute-Deletion-List** | False | **Top** |
+| **Partial-Attribute-Set** | False | **Top** |
+| **Personal-Title** | False | **Organizational-Person** |
+| **Phone-Fax-Other** | False | **Organizational-Person** |
+| **Phone-Home-Other** | False | **Organizational-Person** |
+| **Phone-Home-Primary** | False | **User****Organizational-Person** |
+| **Phone-Ip-Other** | False | **Organizational-Person** |
+| **Phone-Ip-Primary** | False | **Organizational-Person** |
+| **Phone-ISDN-Primary** | False | **Organizational-Person** |
+| **Phone-Mobile-Other** | False | **Organizational-Person** |
+| **Phone-Mobile-Primary** | False | **User****Organizational-Person** |
+| **Phone-Office-Other** | False | **Organizational-Person** |
+| **Phone-Pager-Other** | False | **Organizational-Person** |
+| **Phone-Pager-Primary** | False | **User****Organizational-Person** |
+| **photo** | False | **User** |
+| **Physical-Delivery-Office-Name** | False | **Organizational-Person** |
+| **Physical-Location-Object** | False | **Computer** |
+| **Picture** | False | **Organizational-Person** |
+| **Policy-Replication-Flags** | False | **Computer** |
+| **Possible-Inferiors** | False | **Top** |
+| **Postal-Address** | False | **Organizational-Person** |
+| **Postal-Code** | False | **Organizational-Person** |
+| **Post-Office-Box** | False | **Organizational-Person** |
+| **Preferred-Delivery-Method** | False | **Organizational-Person** |
+| **preferredLanguage** | False | **User** |
+| **Preferred-OU** | False | **User** |
+| **Primary-Group-ID** | False | **User** |
+| **Profile-Path** | False | **User** |
+| **Proxied-Object-Name** | False | **Top** |
+| **Proxy-Addresses** | False | **Top** |
+| **Pwd-Last-Set** | False | **User** |
+| **Query-Policy-BL** | False | **Top** |
+| **RDN** | False | **Top** |
+| **Registered-Address** | False | **Organizational-Person** |
+| **Repl-Property-Meta-Data** | False | **Top** |
+| **Repl-UpToDate-Vector** | False | **Top** |
+| **Reports** | False | **Top** |
+| **Reps-From** | False | **Top** |
+| **Reps-To** | False | **Top** |
+| **Revision** | False | **Top** |
+| **RID-Set-References** | False | **Computer** |
+| **roomNumber** | False | **User** |
+| **Script-Path** | False | **User** |
+| **SD-Rights-Effective** | False | **Top** |
+| **secretary** | False | **User** |
+| **See-Also** | False | **Person** |
+| **Serial-Number** | False | **Person** |
+| **Server-Reference-BL** | False | **Top** |
+| **Service-Principal-Name** | False | **User** |
+| **Show-In-Advanced-View-Only** | False | **Top** |
+| **Site-GUID** | False | **Computer** |
+| **Site-Object-BL** | False | **Top** |
+| **State-Or-Province-Name** | False | **Organizational-Person** |
+| **Street-Address** | False | **Organizational-Person** |
+| **Structural-Object-Class** | False | **Top** |
+| **Sub-Refs** | False | **Top** |
+| **SubSchemaSubEntry** | False | **Top** |
+| **Surname** | False | **Person** |
+| **System-Flags** | False | **Top** |
+| **Telephone-Number** | False | **Person** |
+| **Teletex-Terminal-Identifier** | False | **Organizational-Person** |
+| **Telex-Number** | False | **Organizational-Person** |
+| **Telex-Primary** | False | **Organizational-Person** |
+| **Terminal-Server** | False | **User** |
+| **Text-Country** | False | **Organizational-Person** |
+| **Title** | False | **Organizational-Person** |
+| **uid** | False | **User****ipHost** |
+| **Unicode-Pwd** | False | **User** |
+| **User-Account-Control** | False | **User** |
+| **User-Comment** | False | **Organizational-Person** |
+| **User-Parameters** | False | **User** |
+| **User-Password** | False | **Person** |
+| **userPKCS12** | False | **User** |
+| **User-Principal-Name** | False | **User** |
+| **User-Shared-Folder** | False | **User** |
+| **User-Shared-Folder-Other** | False | **User** |
+| **User-SMIME-Certificate** | False | **User** |
+| **User-Workstations** | False | **User** |
+| **USN-Changed** | False | **Top** |
+| **USN-Created** | False | **Top** |
+| **USN-DSA-Last-Obj-Removed** | False | **Top** |
+| **USN-Intersite** | False | **Top** |
+| **USN-Last-Obj-Rem** | False | **Top** |
+| **USN-Source** | False | **Top** |
+| **Volume-Count** | False | **Computer** |
+| **Wbem-Path** | False | **Top** |
+| **Well-Known-Objects** | False | **Top** |
+| **When-Changed** | False | **Top** |
+| **When-Created** | False | **Top** |
+| **WWW-Home-Page** | False | **Top** |
+| **WWW-Page-Other** | False | **Top** |
+| **X121-Address** | False | **Organizational-Person** |
+| **x500uniqueIdentifier** | False | **User** |
+| **X509-Cert** | False | **User** |
+
+## Windows Server 2003 R2 Extended Rights
+
+This class contains the following extended rights for Windows Server 2003 R2:
+
+| Common Name |
+| --- |
+| **User-Change-Password** |
+| **User-Force-Change-Password** |
+| **Send-As** |
+| **Receive-As** |
+| **Allowed-To-Authenticate** |
+
+## Windows Server 2003 R2 Validated Writes
+
+This class contains the following validated writes for Windows Server 2003 R2:
+
+| Common Name |
+| --- |
+| **Validated-DNS-Host-Name** |
+| **Validated-SPN** |
+
+## Windows Server 2003 R2 Property Sets
+
+This class contains the following property sets for Windows Server 2003 R2:
+
+| Common Name |
+| --- |
+| **User-Account-Restrictions** |
+| **Personal-Information** |
+| **Public-Information** |
+| **DNS-Host-Name-Attributes** |
+
+## Windows Server 2008
+
+- Attributes
+- Extended Rights
+- Validated Writes
+- Property Sets
+
+| Entry | Value |
+| --- | --- |
+| System-Only | False |
+| Object-Category | 1 |
+| Default-Object-Category | - |
+| Governs-Id | 1.2.840.113556.1.3.30 |
+| Default-Hiding-Value | 0 |
+| Rdn-Att-Id | **Common-Name** |
+| Subclass of | **User** |
+| Possible Superiors | **Domain-DNS****Organizational-Unit****Container** |
+| Auxiliary Classes | **ipHost** |
+| NT-Security-Descriptor | O:BAG:BAD:S: |
+| Default Security Descriptor | D:(A;;RPWPCRCCDCLCLORCWOWDSDDTSW;;;DA)(A;;RPWPCRCCDCLCLORCWOWDSDDTSW;;;AO)(A;;RPWPCRCCDCLCLORCWOWDSDDTSW;;;SY)(A;;RPCRLCLORCSDDT;;;CO)(OA;;WP;4c164200-20c0-11d0-a768-00aa006e0529;;CO)(A;;RPLCLORC;;;AU)(OA;;CR;ab721a53-1e2f-11d0-9819-00aa0040529b;;WD)(A;;CCDC;;;PS)(OA;;CCDC;bf967aa8-0de6-11d0-a285-00aa003049e2;;PO)(OA;;RPWP;bf967a7f-0de6-11d0-a285-00aa003049e2;;CA)(OA;;SW;f3a64788-5306-11d1-a9c5-0000f80367c1;;PS)(OA;;RPWP;77B5B886-944A-11d1-AEBD-0000F80367C1;;PS)(OA;;SW;72e39547-7b18-11d1-adef-00c04fd8d5cd;;PS)(OA;;SW;72e39547-7b18-11d1-adef-00c04fd8d5cd;;CO)(OA;;SW;f3a64788-5306-11d1-a9c5-0000f80367c1;;CO)(OA;;WP;3e0abfd0-126a-11d0-a060-00aa006c33ed;bf967a86-0de6-11d0-a285-00aa003049e2;CO)(OA;;WP;5f202010-79a5-11d0-9020-00c04fc2d4cf;bf967a86-0de6-11d0-a285-00aa003049e2;CO)(OA;;WP;bf967950-0de6-11d0-a285-00aa003049e2;bf967a86-0de6-11d0-a285-00aa003049e2;CO)(OA;;WP;bf967953-0de6-11d0-a285-00aa003049e2;bf967a86-0de6-11d0-a285-00aa003049e2;CO)(OA;;RP;46a9b11d-60ae-405a-b7e8-ff8a58d456d2;;S-1-5-32-560) |
+| System-Flags | 0x00000010 |
+
+## Windows Server 2008 Attributes
+
+This class contains the following attributes for Windows Server 2008:
+
+| Attribute | Mandatory | Derived from |
+| --- | --- | --- |
+| **Account-Expires** | False | **User** |
+| **ACS-Policy-Name** | False | **User** |
+| **Address** | False | **Organizational-Person** |
+| **Address-Home** | False | **User****Organizational-Person** |
+| **Admin-Count** | False | **User** |
+| **Admin-Description** | False | **Top** |
+| **Admin-Display-Name** | False | **Top** |
+| **Allowed-Attributes** | False | **Top** |
+| **Allowed-Attributes-Effective** | False | **Top** |
+| **Allowed-Child-Classes** | False | **Top** |
+| **Allowed-Child-Classes-Effective** | False | **Top** |
+| **Assistant** | False | **Organizational-Person** |
+| **attributeCertificateAttribute** | False | **Person** |
+| **audio** | False | **User** |
+| **Bad-Password-Time** | False | **User** |
+| **Bad-Pwd-Count** | False | **User** |
+| **Bridgehead-Server-List-BL** | False | **Top** |
+| **Business-Category** | False | **User** |
+| **Canonical-Name** | False | **Top** |
+| **carLicense** | False | **User** |
+| **Catalogs** | False | **Computer** |
+| **Code-Page** | False | **User** |
+| **Common-Name** | True | **Computer****Top****Person****ipHost** |
+| **Company** | False | **Organizational-Person** |
+| **Control-Access-Rights** | False | **User** |
+| **Country-Code** | False | **Organizational-Person** |
+| **Country-Name** | False | **Organizational-Person** |
+| **Create-Time-Stamp** | False | **Top** |
+| **DBCS-Pwd** | False | **User** |
+| **Default-Class-Store** | False | **User** |
+| **Default-Local-Policy-Object** | False | **Computer** |
+| **Department** | False | **Organizational-Person** |
+| **departmentNumber** | False | **User** |
+| **Description** | False | **Top****ipHost** |
+| **Desktop-Profile** | False | **User** |
+| **Destination-Indicator** | False | **Organizational-Person** |
+| **Display-Name** | False | **User****Top** |
+| **Display-Name-Printable** | False | **Top** |
+| **Division** | False | **Organizational-Person** |
+| **DNS-Host-Name** | False | **Computer** |
+| **DSA-Signature** | False | **Top** |
+| **DS-Core-Propagation-Data** | False | **Top** |
+| **Dynamic-LDAP-Server** | False | **User** |
+| **E-mail-Addresses** | False | **User****Organizational-Person** |
+| **Employee-ID** | False | **Organizational-Person** |
+| **Employee-Number** | False | **User** |
+| **Employee-Type** | False | **User** |
+| **Extension-Name** | False | **Top** |
+| **Facsimile-Telephone-Number** | False | **Organizational-Person** |
+| **Flags** | False | **Top** |
+| **From-Entry** | False | **Top** |
+| **Frs-Computer-Reference-BL** | False | **Top** |
+| **FRS-Member-Reference-BL** | False | **Top** |
+| **FSMO-Role-Owner** | False | **Top** |
+| **Generation-Qualifier** | False | **Organizational-Person** |
+| **Given-Name** | False | **User****Organizational-Person** |
+| **Group-Membership-SAM** | False | **User** |
+| **Group-Priority** | False | **User** |
+| **Groups-to-Ignore** | False | **User** |
+| **Home-Directory** | False | **User** |
+| **Home-Drive** | False | **User** |
+| **houseIdentifier** | False | **Organizational-Person** |
+| **Initials** | False | **User****Organizational-Person** |
+| **Instance-Type** | True | **Top** |
+| **International-ISDN-Number** | False | **Organizational-Person** |
+| **ipHostNumber** | False | **ipHost** |
+| **Is-Critical-System-Object** | False | **Top** |
+| **Is-Deleted** | False | **Top** |
+| **Is-Member-Of-DL** | False | **Top** |
+| **Is-Privilege-Holder** | False | **Top** |
+| **jpegPhoto** | False | **User** |
+| **labeledURI** | False | **User** |
+| **Last-Known-Parent** | False | **Top** |
+| **Last-Logoff** | False | **User** |
+| **Last-Logon** | False | **User** |
+| **Last-Logon-Timestamp** | False | **User** |
+| **Lm-Pwd-History** | False | **User** |
+| **Locale-ID** | False | **User** |
+| **Locality-Name** | False | **Organizational-Person****ipHost** |
+| **Local-Policy-Flags** | False | **Computer** |
+| **Location** | False | **Computer** |
+| **Lockout-Time** | False | **User** |
+| **Logo** | False | **Organizational-Person** |
+| **Logon-Count** | False | **User** |
+| **Logon-Hours** | False | **User** |
+| **Logon-Workstation** | False | **User** |
+| **Machine-Role** | False | **Computer** |
+| **Managed-By** | False | **Computer** |
+| **Managed-Objects** | False | **Top** |
+| **Manager** | False | **User****Organizational-Person****ipHost** |
+| **Mastered-By** | False | **Top** |
+| **Max-Storage** | False | **User** |
+| **MHS-OR-Address** | False | **Organizational-Person** |
+| **Modify-Time-Stamp** | False | **Top** |
+| **ms-COM-PartitionSetLink** | False | **Top** |
+| **ms-COM-UserLink** | False | **Top** |
+| **ms-COM-UserPartitionSetLink** | False | **User** |
+| **ms-DFSR-ComputerReferenceBL** | False | **Top** |
+| **ms-DFSR-MemberReferenceBL** | False | **Top** |
+| **MS-DRM-Identity-Certificate** | False | **User** |
+| **ms-DS-Additional-Dns-Host-Name** | False | **Computer** |
+| **ms-DS-Additional-Sam-Account-Name** | False | **Computer** |
+| **ms-DS-Allowed-To-Delegate-To** | False | **Organizational-Person** |
+| **ms-DS-Approx-Immed-Subordinates** | False | **Top** |
+| **ms-DS-AuthenticatedAt-DC** | False | **Computer****User** |
+| **ms-DS-AuthenticatedTo-Accountlist** | False | **Top** |
+| **ms-DS-Cached-Membership** | False | **User** |
+| **ms-DS-Cached-Membership-Time-Stamp** | False | **User** |
+| **MS-DS-Consistency-Child-Count** | False | **Top** |
+| **MS-DS-Consistency-Guid** | False | **Top** |
+| **MS-DS-Creator-SID** | False | **User** |
+| **ms-DS-ExecuteScriptPassword** | False | **Computer** |
+| **ms-DS-Failed-Interactive-Logon-Count** | False | **User** |
+| **ms-DS-Failed-Interactive-Logon-Count-At-Last-Successful-Logon** | False | **User** |
+| **ms-DS-HAB-Seniority-Index** | False | **Organizational-Person** |
+| **ms-DS-Is-Domain-For** | False | **Top** |
+| **ms-DS-Is-Full-Replica-For** | False | **Top** |
+| **ms-DS-isGC** | False | **Computer** |
+| **ms-DS-Is-Partial-Replica-For** | False | **Top** |
+| **ms-DS-isRODC** | False | **Computer** |
+| **ms-DS-Is-User-Cachable-At-Rodc** | False | **Computer** |
+| **ms-DS-KrbTgt-Link** | False | **Computer** |
+| **ms-DS-KrbTgt-Link-BL** | False | **Top** |
+| **ms-DS-Last-Failed-Interactive-Logon-Time** | False | **User** |
+| **ms-DS-Last-Successful-Interactive-Logon-Time** | False | **User** |
+| **ms-DS-Mastered-By** | False | **Top** |
+| **ms-DS-Members-For-Az-Role-BL** | False | **Top** |
+| **ms-DS-NC-Repl-Cursors** | False | **Top** |
+| **ms-DS-NC-Repl-Inbound-Neighbors** | False | **Top** |
+| **ms-DS-NC-Repl-Outbound-Neighbors** | False | **Top** |
+| **ms-DS-NC-RO-Replica-Locations-BL** | False | **Top** |
+| **ms-DS-NC-Type** | False | **Top** |
+| **ms-DS-Never-Reveal-Group** | False | **Computer** |
+| **ms-DS-Non-Members-BL** | False | **Top** |
+| **ms-DS-Object-Reference-BL** | False | **Top** |
+| **ms-DS-Operations-For-Az-Role-BL** | False | **Top** |
+| **ms-DS-Operations-For-Az-Task-BL** | False | **Top** |
+| **ms-DS-Phonetic-Company-Name** | False | **Organizational-Person** |
+| **ms-DS-Phonetic-Department** | False | **Organizational-Person** |
+| **ms-DS-Phonetic-Display-Name** | False | **Organizational-Person** |
+| **ms-DS-Phonetic-First-Name** | False | **Organizational-Person** |
+| **ms-DS-Phonetic-Last-Name** | False | **Organizational-Person** |
+| **ms-DS-Principal-Name** | False | **Top** |
+| **ms-DS-Promotion-Settings** | False | **Computer** |
+| **ms-DS-PSO-Applied** | False | **Top** |
+| **ms-DS-Repl-Attribute-Meta-Data** | False | **Top** |
+| **ms-DS-Repl-Value-Meta-Data** | False | **Top** |
+| **ms-DS-Resultant-PSO** | False | **User** |
+| **ms-DS-Revealed-DSAs** | False | **Top** |
+| **ms-DS-Revealed-List** | False | **Computer** |
+| **ms-DS-Revealed-List-BL** | False | **Top** |
+| **ms-DS-Revealed-Users** | False | **Computer** |
+| **ms-DS-Reveal-OnDemand-Group** | False | **Computer** |
+| **ms-DS-Secondary-KrbTgt-Number** | False | **User** |
+| **ms-DS-Site-Affinity** | False | **User** |
+| **ms-DS-SiteName** | False | **Computer** |
+| **ms-DS-Source-Object-DN** | False | **User** |
+| **ms-DS-Supported-Encryption-Types** | False | **User** |
+| **ms-DS-Tasks-For-Az-Role-BL** | False | **Top** |
+| **ms-DS-Tasks-For-Az-Task-BL** | False | **Top** |
+| **ms-DS-User-Account-Control-Computed** | False | **User** |
+| **ms-DS-User-Password-Expiry-Time-Computed** | False | **User** |
+| **ms-Exch-House-Identifier** | False | **Organizational-Person** |
+| **ms-Exch-Owner-BL** | False | **Top** |
+| **ms-IIS-FTP-Dir** | False | **User** |
+| **ms-IIS-FTP-Root** | False | **User** |
+| **MSMQ-Digests** | False | **User** |
+| **MSMQ-Digests-Mig** | False | **User** |
+| **MSMQ-Sign-Certificates** | False | **User** |
+| **MSMQ-Sign-Certificates-Mig** | False | **User** |
+| **msNPAllowDialin** | False | **User** |
+| **msNPCallingStationID** | False | **User** |
+| **msNPSavedCallingStationID** | False | **User** |
+| **ms-PKI-AccountCredentials** | False | **User** |
+| **ms-PKI-DPAPIMasterKeys** | False | **User** |
+| **ms-PKI-RoamingTimeStamp** | False | **User** |
+| **msRADIUSCallbackNumber** | False | **User** |
+| **ms-RADIUS-FramedInterfaceId** | False | **User** |
+| **msRADIUSFramedIPAddress** | False | **User** |
+| **ms-RADIUS-FramedIpv6Prefix** | False | **User** |
+| **ms-RADIUS-FramedIpv6Route** | False | **User** |
+| **msRADIUSFramedRoute** | False | **User** |
+| **ms-RADIUS-SavedFramedInterfaceId** | False | **User** |
+| **ms-RADIUS-SavedFramedIpv6Prefix** | False | **User** |
+| **ms-RADIUS-SavedFramedIpv6Route** | False | **User** |
+| **msRADIUSServiceType** | False | **User** |
+| **msRASSavedCallbackNumber** | False | **User** |
+| **msRASSavedFramedIPAddress** | False | **User** |
+| **msRASSavedFramedRoute** | False | **User** |
+| **msSFU-30-Aliases** | False | **Computer** |
+| **msSFU-30-Name** | False | **Computer****User** |
+| **msSFU-30-Nis-Domain** | False | **Computer****User** |
+| **msSFU-30-Posix-Member-Of** | False | **Top** |
+| **ms-TPM-OwnerInformation** | False | **Computer** |
+| **ms-TS-Allow-Logon** | False | **User** |
+| **ms-TS-Broken-Connection-Action** | False | **User** |
+| **ms-TS-Connect-Client-Drives** | False | **User** |
+| **ms-TS-Connect-Printer-Drives** | False | **User** |
+| **ms-TS-Default-To-Main-Printer** | False | **User** |
+| **MS-TS-ExpireDate** | False | **User** |
+| **MS-TS-ExpireDate2** | False | **User** |
+| **MS-TS-ExpireDate3** | False | **User** |
+| **MS-TS-ExpireDate4** | False | **User** |
+| **ms-TS-Home-Directory** | False | **User** |
+| **ms-TS-Home-Drive** | False | **User** |
+| **ms-TS-Initial-Program** | False | **User** |
+| **MS-TS-LicenseVersion** | False | **User** |
+| **MS-TS-LicenseVersion2** | False | **User** |
+| **MS-TS-LicenseVersion3** | False | **User** |
+| **MS-TS-LicenseVersion4** | False | **User** |
+| **MS-TSLS-Property01** | False | **User** |
+| **MS-TSLS-Property02** | False | **User** |
+| **MS-TS-ManagingLS** | False | **User** |
+| **MS-TS-ManagingLS2** | False | **User** |
+| **MS-TS-ManagingLS3** | False | **User** |
+| **MS-TS-ManagingLS4** | False | **User** |
+| **ms-TS-Max-Connection-Time** | False | **User** |
+| **ms-TS-Max-Disconnection-Time** | False | **User** |
+| **ms-TS-Max-Idle-Time** | False | **User** |
+| **ms-TS-Profile-Path** | False | **User** |
+| **MS-TS-Property01** | False | **Computer****User** |
+| **MS-TS-Property02** | False | **Computer****User** |
+| **ms-TS-Reconnection-Action** | False | **User** |
+| **ms-TS-Remote-Control** | False | **User** |
+| **ms-TS-Work-Directory** | False | **User** |
+| **Netboot-GUID** | False | **Computer** |
+| **Netboot-Initialization** | False | **Computer** |
+| **Netboot-Machine-File-Path** | False | **Computer** |
+| **Netboot-Mirror-Data-File** | False | **Computer** |
+| **netboot-SCP-BL** | False | **Top** |
+| **Netboot-SIF-File** | False | **Computer** |
+| **Network-Address** | False | **Computer****User** |
+| **nisMapName** | False | **Computer** |
+| **Non-Security-Member-BL** | False | **Top** |
+| **Nt-Pwd-History** | False | **User** |
+| **NT-Security-Descriptor** | True | **Top** |
+| **Obj-Dist-Name** | False | **Top** |
+| **Object-Category** | True | **Top** |
+| **Object-Class** | True | **Top** |
+| **Object-Guid** | False | **Top** |
+| **Object-Version** | False | **Top** |
+| **Operating-System** | False | **Computer** |
+| **Operating-System-Hotfix** | False | **Computer** |
+| **Operating-System-Service-Pack** | False | **Computer** |
+| **Operating-System-Version** | False | **Computer** |
+| **Operator-Count** | False | **User** |
+| **Organizational-Unit-Name** | False | **Organizational-Person** |
+| **Organization-Name** | False | **User****Organizational-Person** |
+| **Other-Login-Workstations** | False | **User** |
+| **Other-Mailbox** | False | **Organizational-Person** |
+| **Other-Name** | False | **Organizational-Person** |
+| **Other-Well-Known-Objects** | False | **Top** |
+| **Partial-Attribute-Deletion-List** | False | **Top** |
+| **Partial-Attribute-Set** | False | **Top** |
+| **Personal-Title** | False | **Organizational-Person** |
+| **Phone-Fax-Other** | False | **Organizational-Person** |
+| **Phone-Home-Other** | False | **Organizational-Person** |
+| **Phone-Home-Primary** | False | **User****Organizational-Person** |
+| **Phone-Ip-Other** | False | **Organizational-Person** |
+| **Phone-Ip-Primary** | False | **Organizational-Person** |
+| **Phone-ISDN-Primary** | False | **Organizational-Person** |
+| **Phone-Mobile-Other** | False | **Organizational-Person** |
+| **Phone-Mobile-Primary** | False | **User****Organizational-Person** |
+| **Phone-Office-Other** | False | **Organizational-Person** |
+| **Phone-Pager-Other** | False | **Organizational-Person** |
+| **Phone-Pager-Primary** | False | **User****Organizational-Person** |
+| **photo** | False | **User** |
+| **Physical-Delivery-Office-Name** | False | **Organizational-Person** |
+| **Physical-Location-Object** | False | **Computer** |
+| **Picture** | False | **Organizational-Person** |
+| **Policy-Replication-Flags** | False | **Computer** |
+| **Possible-Inferiors** | False | **Top** |
+| **Postal-Address** | False | **Organizational-Person** |
+| **Postal-Code** | False | **Organizational-Person** |
+| **Post-Office-Box** | False | **Organizational-Person** |
+| **Preferred-Delivery-Method** | False | **Organizational-Person** |
+| **preferredLanguage** | False | **User** |
+| **Preferred-OU** | False | **User** |
+| **Primary-Group-ID** | False | **User** |
+| **Profile-Path** | False | **User** |
+| **Proxied-Object-Name** | False | **Top** |
+| **Proxy-Addresses** | False | **Top** |
+| **Pwd-Last-Set** | False | **User** |
+| **Query-Policy-BL** | False | **Top** |
+| **RDN** | False | **Top** |
+| **Registered-Address** | False | **Organizational-Person** |
+| **Repl-Property-Meta-Data** | False | **Top** |
+| **Repl-UpToDate-Vector** | False | **Top** |
+| **Reports** | False | **Top** |
+| **Reps-From** | False | **Top** |
+| **Reps-To** | False | **Top** |
+| **Revision** | False | **Top** |
+| **RID-Set-References** | False | **Computer** |
+| **roomNumber** | False | **User** |
+| **Script-Path** | False | **User** |
+| **SD-Rights-Effective** | False | **Top** |
+| **secretary** | False | **User** |
+| **See-Also** | False | **Person** |
+| **Serial-Number** | False | **Person** |
+| **Server-Reference-BL** | False | **Top** |
+| **Service-Principal-Name** | False | **User** |
+| **Show-In-Advanced-View-Only** | False | **Top** |
+| **Site-GUID** | False | **Computer** |
+| **Site-Object-BL** | False | **Top** |
+| **State-Or-Province-Name** | False | **Organizational-Person** |
+| **Street-Address** | False | **Organizational-Person** |
+| **Structural-Object-Class** | False | **Top** |
+| **Sub-Refs** | False | **Top** |
+| **SubSchemaSubEntry** | False | **Top** |
+| **Surname** | False | **Person** |
+| **System-Flags** | False | **Top** |
+| **Telephone-Number** | False | **Person** |
+| **Teletex-Terminal-Identifier** | False | **Organizational-Person** |
+| **Telex-Number** | False | **Organizational-Person** |
+| **Telex-Primary** | False | **Organizational-Person** |
+| **Terminal-Server** | False | **User** |
+| **Text-Country** | False | **Organizational-Person** |
+| **Title** | False | **Organizational-Person** |
+| **uid** | False | **User****ipHost** |
+| **Unicode-Pwd** | False | **User** |
+| **User-Account-Control** | False | **User** |
+| **User-Comment** | False | **Organizational-Person** |
+| **User-Parameters** | False | **User** |
+| **User-Password** | False | **Person** |
+| **userPKCS12** | False | **User** |
+| **User-Principal-Name** | False | **User** |
+| **User-Shared-Folder** | False | **User** |
+| **User-Shared-Folder-Other** | False | **User** |
+| **User-SMIME-Certificate** | False | **User** |
+| **User-Workstations** | False | **User** |
+| **USN-Changed** | False | **Top** |
+| **USN-Created** | False | **Top** |
+| **USN-DSA-Last-Obj-Removed** | False | **Top** |
+| **USN-Intersite** | False | **Top** |
+| **USN-Last-Obj-Rem** | False | **Top** |
+| **USN-Source** | False | **Top** |
+| **Volume-Count** | False | **Computer** |
+| **Wbem-Path** | False | **Top** |
+| **Well-Known-Objects** | False | **Top** |
+| **When-Changed** | False | **Top** |
+| **When-Created** | False | **Top** |
+| **WWW-Home-Page** | False | **Top** |
+| **WWW-Page-Other** | False | **Top** |
+| **X121-Address** | False | **Organizational-Person** |
+| **x500uniqueIdentifier** | False | **User** |
+| **X509-Cert** | False | **User** |
+
+## Windows Server 2008 Extended Rights
+
+This class contains the following extended rights for Windows Server 2008:
+
+| Common Name |
+| --- |
+| **User-Change-Password** |
+| **User-Force-Change-Password** |
+| **Send-As** |
+| **Receive-As** |
+| **Allowed-To-Authenticate** |
+
+## Windows Server 2008 Validated Writes
+
+This class contains the following validated writes for Windows Server 2008:
+
+| Common Name |
+| --- |
+| **Validated-DNS-Host-Name** |
+| **Validated-SPN** |
+
+## Windows Server 2008 Property Sets
+
+This class contains the following property sets for Windows Server 2008:
+
+| Common Name |
+| --- |
+| **User-Account-Restrictions** |
+| **Personal-Information** |
+| **Public-Information** |
+| **DNS-Host-Name-Attributes** |
+| **MS-TS-GatewayAccess** |
+
+## Windows Server 2008 R2
+
+- Attributes
+- Extended Rights
+- Validated Writes
+- Property Sets
+
+| Entry | Value |
+| --- | --- |
+| System-Only | False |
+| Object-Category | 1 |
+| Default-Object-Category | - |
+| Governs-Id | 1.2.840.113556.1.3.30 |
+| Default-Hiding-Value | 0 |
+| Rdn-Att-Id | **Common-Name** |
+| Subclass of | **User** |
+| Possible Superiors | **Domain-DNS****Organizational-Unit****Container** |
+| Auxiliary Classes | **ipHost** |
+| NT-Security-Descriptor | O:BAG:BAD:S: |
+| Default Security Descriptor | D:(A;;RPWPCRCCDCLCLORCWOWDSDDTSW;;;DA)(A;;RPWPCRCCDCLCLORCWOWDSDDTSW;;;AO)(A;;RPWPCRCCDCLCLORCWOWDSDDTSW;;;SY)(A;;RPCRLCLORCSDDT;;;CO)(OA;;WP;4c164200-20c0-11d0-a768-00aa006e0529;;CO)(A;;RPLCLORC;;;AU)(OA;;CR;ab721a53-1e2f-11d0-9819-00aa0040529b;;WD)(A;;CCDC;;;PS)(OA;;CCDC;bf967aa8-0de6-11d0-a285-00aa003049e2;;PO)(OA;;RPWP;bf967a7f-0de6-11d0-a285-00aa003049e2;;CA)(OA;;SW;f3a64788-5306-11d1-a9c5-0000f80367c1;;PS)(OA;;RPWP;77B5B886-944A-11d1-AEBD-0000F80367C1;;PS)(OA;;SW;72e39547-7b18-11d1-adef-00c04fd8d5cd;;PS)(OA;;SW;72e39547-7b18-11d1-adef-00c04fd8d5cd;;CO)(OA;;SW;f3a64788-5306-11d1-a9c5-0000f80367c1;;CO)(OA;;WP;3e0abfd0-126a-11d0-a060-00aa006c33ed;bf967a86-0de6-11d0-a285-00aa003049e2;CO)(OA;;WP;5f202010-79a5-11d0-9020-00c04fc2d4cf;bf967a86-0de6-11d0-a285-00aa003049e2;CO)(OA;;WP;bf967950-0de6-11d0-a285-00aa003049e2;bf967a86-0de6-11d0-a285-00aa003049e2;CO)(OA;;WP;bf967953-0de6-11d0-a285-00aa003049e2;bf967a86-0de6-11d0-a285-00aa003049e2;CO)(OA;;RP;46a9b11d-60ae-405a-b7e8-ff8a58d456d2;;S-1-5-32-560) |
+| System-Flags | 0x00000010 |
+
+## Windows Server 2008 R2 Attributes
+
+This class contains the following attributes for Windows Server 2008 R2:
+
+| Attribute | Mandatory | Derived from |
+| --- | --- | --- |
+| **Account-Expires** | False | **User** |
+| **ACS-Policy-Name** | False | **User** |
+| **Address** | False | **Organizational-Person** |
+| **Address-Home** | False | **User****Organizational-Person** |
+| **Admin-Count** | False | **User** |
+| **Admin-Description** | False | **Top** |
+| **Admin-Display-Name** | False | **Top** |
+| **Allowed-Attributes** | False | **Top** |
+| **Allowed-Attributes-Effective** | False | **Top** |
+| **Allowed-Child-Classes** | False | **Top** |
+| **Allowed-Child-Classes-Effective** | False | **Top** |
+| **Assistant** | False | **Organizational-Person** |
+| **attributeCertificateAttribute** | False | **Person** |
+| **audio** | False | **User** |
+| **Bad-Password-Time** | False | **User** |
+| **Bad-Pwd-Count** | False | **User** |
+| **Bridgehead-Server-List-BL** | False | **Top** |
+| **Business-Category** | False | **User** |
+| **Canonical-Name** | False | **Top** |
+| **carLicense** | False | **User** |
+| **Catalogs** | False | **Computer** |
+| **Code-Page** | False | **User** |
+| **Common-Name** | True | **Computer****Top****Person****ipHost** |
+| **Company** | False | **Organizational-Person** |
+| **Control-Access-Rights** | False | **User** |
+| **Country-Code** | False | **Organizational-Person** |
+| **Country-Name** | False | **Organizational-Person** |
+| **Create-Time-Stamp** | False | **Top** |
+| **DBCS-Pwd** | False | **User** |
+| **Default-Class-Store** | False | **User** |
+| **Default-Local-Policy-Object** | False | **Computer** |
+| **Department** | False | **Organizational-Person** |
+| **departmentNumber** | False | **User** |
+| **Description** | False | **Top****ipHost** |
+| **Desktop-Profile** | False | **User** |
+| **Destination-Indicator** | False | **Organizational-Person** |
+| **Display-Name** | False | **User****Top** |
+| **Display-Name-Printable** | False | **Top** |
+| **Division** | False | **Organizational-Person** |
+| **DNS-Host-Name** | False | **Computer** |
+| **DSA-Signature** | False | **Top** |
+| **DS-Core-Propagation-Data** | False | **Top** |
+| **Dynamic-LDAP-Server** | False | **User** |
+| **E-mail-Addresses** | False | **User****Organizational-Person** |
+| **Employee-ID** | False | **Organizational-Person** |
+| **Employee-Number** | False | **User** |
+| **Employee-Type** | False | **User** |
+| **Extension-Name** | False | **Top** |
+| **Facsimile-Telephone-Number** | False | **Organizational-Person** |
+| **Flags** | False | **Top** |
+| **From-Entry** | False | **Top** |
+| **Frs-Computer-Reference-BL** | False | **Top** |
+| **FRS-Member-Reference-BL** | False | **Top** |
+| **FSMO-Role-Owner** | False | **Top** |
+| **Generation-Qualifier** | False | **Organizational-Person** |
+| **Given-Name** | False | **User****Organizational-Person** |
+| **Group-Membership-SAM** | False | **User** |
+| **Group-Priority** | False | **User** |
+| **Groups-to-Ignore** | False | **User** |
+| **Home-Directory** | False | **User** |
+| **Home-Drive** | False | **User** |
+| **houseIdentifier** | False | **Organizational-Person** |
+| **Initials** | False | **User****Organizational-Person** |
+| **Instance-Type** | True | **Top** |
+| **International-ISDN-Number** | False | **Organizational-Person** |
+| **ipHostNumber** | False | **ipHost** |
+| **Is-Critical-System-Object** | False | **Top** |
+| **Is-Deleted** | False | **Top** |
+| **Is-Member-Of-DL** | False | **Top** |
+| **Is-Privilege-Holder** | False | **Top** |
+| **Is-Recycled** | False | **Top** |
+| **jpegPhoto** | False | **User** |
+| **labeledURI** | False | **User** |
+| **Last-Known-Parent** | False | **Top** |
+| **Last-Logoff** | False | **User** |
+| **Last-Logon** | False | **User** |
+| **Last-Logon-Timestamp** | False | **User** |
+| **Lm-Pwd-History** | False | **User** |
+| **Locale-ID** | False | **User** |
+| **Locality-Name** | False | **Organizational-Person****ipHost** |
+| **Local-Policy-Flags** | False | **Computer** |
+| **Location** | False | **Computer** |
+| **Lockout-Time** | False | **User** |
+| **Logo** | False | **Organizational-Person** |
+| **Logon-Count** | False | **User** |
+| **Logon-Hours** | False | **User** |
+| **Logon-Workstation** | False | **User** |
+| **Machine-Role** | False | **Computer** |
+| **Managed-By** | False | **Computer** |
+| **Managed-Objects** | False | **Top** |
+| **Manager** | False | **User****Organizational-Person****ipHost** |
+| **Mastered-By** | False | **Top** |
+| **Max-Storage** | False | **User** |
+| **MHS-OR-Address** | False | **Organizational-Person** |
+| **Modify-Time-Stamp** | False | **Top** |
+| **ms-COM-PartitionSetLink** | False | **Top** |
+| **ms-COM-UserLink** | False | **Top** |
+| **ms-COM-UserPartitionSetLink** | False | **User** |
+| **ms-DFSR-ComputerReferenceBL** | False | **Top** |
+| **ms-DFSR-MemberReferenceBL** | False | **Top** |
+| **MS-DRM-Identity-Certificate** | False | **User** |
+| **ms-DS-Additional-Dns-Host-Name** | False | **Computer** |
+| **ms-DS-Additional-Sam-Account-Name** | False | **Computer** |
+| **ms-DS-Allowed-To-Delegate-To** | False | **Organizational-Person** |
+| **ms-DS-Approx-Immed-Subordinates** | False | **Top** |
+| **ms-DS-AuthenticatedAt-DC** | False | **Computer****User** |
+| **ms-DS-AuthenticatedTo-Accountlist** | False | **Top** |
+| **ms-DS-Cached-Membership** | False | **User** |
+| **ms-DS-Cached-Membership-Time-Stamp** | False | **User** |
+| **MS-DS-Consistency-Child-Count** | False | **Top** |
+| **MS-DS-Consistency-Guid** | False | **Top** |
+| **MS-DS-Creator-SID** | False | **User** |
+| **ms-DS-Enabled-Feature-BL** | False | **Top** |
+| **ms-DS-ExecuteScriptPassword** | False | **Computer** |
+| **ms-DS-Failed-Interactive-Logon-Count** | False | **User** |
+| **ms-DS-Failed-Interactive-Logon-Count-At-Last-Successful-Logon** | False | **User** |
+| **ms-DS-HAB-Seniority-Index** | False | **Organizational-Person** |
+| **ms-DS-Host-Service-Account** | False | **Computer** |
+| **ms-DS-Host-Service-Account-BL** | False | **Top** |
+| **ms-DS-Is-Domain-For** | False | **Top** |
+| **ms-DS-Is-Full-Replica-For** | False | **Top** |
+| **ms-DS-isGC** | False | **Computer** |
+| **ms-DS-Is-Partial-Replica-For** | False | **Top** |
+| **ms-DS-isRODC** | False | **Computer** |
+| **ms-DS-Is-User-Cachable-At-Rodc** | False | **Computer** |
+| **ms-DS-KrbTgt-Link** | False | **Computer** |
+| **ms-DS-KrbTgt-Link-BL** | False | **Top** |
+| **ms-DS-Last-Failed-Interactive-Logon-Time** | False | **User** |
+| **ms-DS-Last-Known-RDN** | False | **Top** |
+| **ms-DS-Last-Successful-Interactive-Logon-Time** | False | **User** |
+| **ms-DS-local-Effective-Deletion-Time** | False | **Top** |
+| **ms-DS-local-Effective-Recycle-Time** | False | **Top** |
+| **ms-DS-Mastered-By** | False | **Top** |
+| **ms-DS-Members-For-Az-Role-BL** | False | **Top** |
+| **ms-DS-NC-Repl-Cursors** | False | **Top** |
+| **ms-DS-NC-Repl-Inbound-Neighbors** | False | **Top** |
+| **ms-DS-NC-Repl-Outbound-Neighbors** | False | **Top** |
+| **ms-DS-NC-RO-Replica-Locations-BL** | False | **Top** |
+| **ms-DS-NC-Type** | False | **Top** |
+| **ms-DS-Never-Reveal-Group** | False | **Computer** |
+| **ms-DS-Non-Members-BL** | False | **Top** |
+| **ms-DS-Object-Reference-BL** | False | **Top** |
+| **ms-DS-OIDToGroup-Link-BL** | False | **Top** |
+| **ms-DS-Operations-For-Az-Role-BL** | False | **Top** |
+| **ms-DS-Operations-For-Az-Task-BL** | False | **Top** |
+| **ms-DS-Phonetic-Company-Name** | False | **Organizational-Person** |
+| **ms-DS-Phonetic-Department** | False | **Organizational-Person** |
+| **ms-DS-Phonetic-Display-Name** | False | **Organizational-Person** |
+| **ms-DS-Phonetic-First-Name** | False | **Organizational-Person** |
+| **ms-DS-Phonetic-Last-Name** | False | **Organizational-Person** |
+| **ms-DS-Principal-Name** | False | **Top** |
+| **ms-DS-Promotion-Settings** | False | **Computer** |
+| **ms-DS-PSO-Applied** | False | **Top** |
+| **ms-DS-Repl-Attribute-Meta-Data** | False | **Top** |
+| **ms-DS-Repl-Value-Meta-Data** | False | **Top** |
+| **ms-DS-Resultant-PSO** | False | **User** |
+| **ms-DS-Revealed-DSAs** | False | **Top** |
+| **ms-DS-Revealed-List** | False | **Computer** |
+| **ms-DS-Revealed-List-BL** | False | **Top** |
+| **ms-DS-Revealed-Users** | False | **Computer** |
+| **ms-DS-Reveal-OnDemand-Group** | False | **Computer** |
+| **ms-DS-Secondary-KrbTgt-Number** | False | **User** |
+| **ms-DS-Site-Affinity** | False | **User** |
+| **ms-DS-SiteName** | False | **Computer** |
+| **ms-DS-Source-Object-DN** | False | **User** |
+| **ms-DS-Supported-Encryption-Types** | False | **User** |
+| **ms-DS-Tasks-For-Az-Role-BL** | False | **Top** |
+| **ms-DS-Tasks-For-Az-Task-BL** | False | **Top** |
+| **ms-DS-User-Account-Control-Computed** | False | **User** |
+| **ms-DS-User-Password-Expiry-Time-Computed** | False | **User** |
+| **ms-Exch-House-Identifier** | False | **Organizational-Person** |
+| **ms-Exch-Owner-BL** | False | **Top** |
+| **ms-IIS-FTP-Dir** | False | **User** |
+| **ms-IIS-FTP-Root** | False | **User** |
+| **MSMQ-Digests** | False | **User** |
+| **MSMQ-Digests-Mig** | False | **User** |
+| **MSMQ-Sign-Certificates** | False | **User** |
+| **MSMQ-Sign-Certificates-Mig** | False | **User** |
+| **msNPAllowDialin** | False | **User** |
+| **msNPCallingStationID** | False | **User** |
+| **msNPSavedCallingStationID** | False | **User** |
+| **ms-PKI-AccountCredentials** | False | **User** |
+| **ms-PKI-Credential-Roaming-Tokens** | False | **User** |
+| **ms-PKI-DPAPIMasterKeys** | False | **User** |
+| **ms-PKI-RoamingTimeStamp** | False | **User** |
+| **msRADIUSCallbackNumber** | False | **User** |
+| **ms-RADIUS-FramedInterfaceId** | False | **User** |
+| **msRADIUSFramedIPAddress** | False | **User** |
+| **ms-RADIUS-FramedIpv6Prefix** | False | **User** |
+| **ms-RADIUS-FramedIpv6Route** | False | **User** |
+| **msRADIUSFramedRoute** | False | **User** |
+| **ms-RADIUS-SavedFramedInterfaceId** | False | **User** |
+| **ms-RADIUS-SavedFramedIpv6Prefix** | False | **User** |
+| **ms-RADIUS-SavedFramedIpv6Route** | False | **User** |
+| **msRADIUSServiceType** | False | **User** |
+| **msRASSavedCallbackNumber** | False | **User** |
+| **msRASSavedFramedIPAddress** | False | **User** |
+| **msRASSavedFramedRoute** | False | **User** |
+| **msSFU-30-Aliases** | False | **Computer** |
+| **msSFU-30-Name** | False | **Computer****User** |
+| **msSFU-30-Nis-Domain** | False | **Computer****User** |
+| **msSFU-30-Posix-Member-Of** | False | **Top** |
+| **ms-TPM-OwnerInformation** | False | **Computer** |
+| **ms-TS-Allow-Logon** | False | **User** |
+| **ms-TS-Broken-Connection-Action** | False | **User** |
+| **ms-TS-Connect-Client-Drives** | False | **User** |
+| **ms-TS-Connect-Printer-Drives** | False | **User** |
+| **ms-TS-Default-To-Main-Printer** | False | **User** |
+| **ms-TS-Endpoint-Data** | False | **Computer** |
+| **ms-TS-Endpoint-Plugin** | False | **Computer** |
+| **ms-TS-Endpoint-Type** | False | **Computer** |
+| **MS-TS-ExpireDate** | False | **User** |
+| **MS-TS-ExpireDate2** | False | **User** |
+| **MS-TS-ExpireDate3** | False | **User** |
+| **MS-TS-ExpireDate4** | False | **User** |
+| **ms-TS-Home-Directory** | False | **User** |
+| **ms-TS-Home-Drive** | False | **User** |
+| **ms-TS-Initial-Program** | False | **User** |
+| **MS-TS-LicenseVersion** | False | **User** |
+| **MS-TS-LicenseVersion2** | False | **User** |
+| **MS-TS-LicenseVersion3** | False | **User** |
+| **MS-TS-LicenseVersion4** | False | **User** |
+| **MS-TSLS-Property01** | False | **User** |
+| **MS-TSLS-Property02** | False | **User** |
+| **MS-TS-ManagingLS** | False | **User** |
+| **MS-TS-ManagingLS2** | False | **User** |
+| **MS-TS-ManagingLS3** | False | **User** |
+| **MS-TS-ManagingLS4** | False | **User** |
+| **ms-TS-Max-Connection-Time** | False | **User** |
+| **ms-TS-Max-Disconnection-Time** | False | **User** |
+| **ms-TS-Max-Idle-Time** | False | **User** |
+| **ms-TS-Primary-Desktop** | False | **User** |
+| **ms-TS-Primary-Desktop-BL** | False | **Computer** |
+| **ms-TS-Profile-Path** | False | **User** |
+| **MS-TS-Property01** | False | **Computer****User** |
+| **MS-TS-Property02** | False | **Computer****User** |
+| **ms-TS-Reconnection-Action** | False | **User** |
+| **ms-TS-Remote-Control** | False | **User** |
+| **ms-TS-Secondary-Desktop-BL** | False | **Computer** |
+| **ms-TS-Secondary-Desktops** | False | **User** |
+| **ms-TS-Work-Directory** | False | **User** |
+| **Netboot-GUID** | False | **Computer** |
+| **Netboot-Initialization** | False | **Computer** |
+| **Netboot-Machine-File-Path** | False | **Computer** |
+| **Netboot-Mirror-Data-File** | False | **Computer** |
+| **netboot-SCP-BL** | False | **Top** |
+| **Netboot-SIF-File** | False | **Computer** |
+| **Network-Address** | False | **Computer****User** |
+| **nisMapName** | False | **Computer** |
+| **Non-Security-Member-BL** | False | **Top** |
+| **Nt-Pwd-History** | False | **User** |
+| **NT-Security-Descriptor** | True | **Top** |
+| **Obj-Dist-Name** | False | **Top** |
+| **Object-Category** | True | **Top** |
+| **Object-Class** | True | **Top** |
+| **Object-Guid** | False | **Top** |
+| **Object-Version** | False | **Top** |
+| **Operating-System** | False | **Computer** |
+| **Operating-System-Hotfix** | False | **Computer** |
+| **Operating-System-Service-Pack** | False | **Computer** |
+| **Operating-System-Version** | False | **Computer** |
+| **Operator-Count** | False | **User** |
+| **Organizational-Unit-Name** | False | **Organizational-Person** |
+| **Organization-Name** | False | **User****Organizational-Person** |
+| **Other-Login-Workstations** | False | **User** |
+| **Other-Mailbox** | False | **Organizational-Person** |
+| **Other-Name** | False | **Organizational-Person** |
+| **Other-Well-Known-Objects** | False | **Top** |
+| **Partial-Attribute-Deletion-List** | False | **Top** |
+| **Partial-Attribute-Set** | False | **Top** |
+| **Personal-Title** | False | **Organizational-Person** |
+| **Phone-Fax-Other** | False | **Organizational-Person** |
+| **Phone-Home-Other** | False | **Organizational-Person** |
+| **Phone-Home-Primary** | False | **User****Organizational-Person** |
+| **Phone-Ip-Other** | False | **Organizational-Person** |
+| **Phone-Ip-Primary** | False | **Organizational-Person** |
+| **Phone-ISDN-Primary** | False | **Organizational-Person** |
+| **Phone-Mobile-Other** | False | **Organizational-Person** |
+| **Phone-Mobile-Primary** | False | **User****Organizational-Person** |
+| **Phone-Office-Other** | False | **Organizational-Person** |
+| **Phone-Pager-Other** | False | **Organizational-Person** |
+| **Phone-Pager-Primary** | False | **User****Organizational-Person** |
+| **photo** | False | **User** |
+| **Physical-Delivery-Office-Name** | False | **Organizational-Person** |
+| **Physical-Location-Object** | False | **Computer** |
+| **Picture** | False | **Organizational-Person** |
+| **Policy-Replication-Flags** | False | **Computer** |
+| **Possible-Inferiors** | False | **Top** |
+| **Postal-Address** | False | **Organizational-Person** |
+| **Postal-Code** | False | **Organizational-Person** |
+| **Post-Office-Box** | False | **Organizational-Person** |
+| **Preferred-Delivery-Method** | False | **Organizational-Person** |
+| **preferredLanguage** | False | **User** |
+| **Preferred-OU** | False | **User** |
+| **Primary-Group-ID** | False | **User** |
+| **Profile-Path** | False | **User** |
+| **Proxied-Object-Name** | False | **Top** |
+| **Proxy-Addresses** | False | **Top** |
+| **Pwd-Last-Set** | False | **User** |
+| **Query-Policy-BL** | False | **Top** |
+| **RDN** | False | **Top** |
+| **Registered-Address** | False | **Organizational-Person** |
+| **Repl-Property-Meta-Data** | False | **Top** |
+| **Repl-UpToDate-Vector** | False | **Top** |
+| **Reports** | False | **Top** |
+| **Reps-From** | False | **Top** |
+| **Reps-To** | False | **Top** |
+| **Revision** | False | **Top** |
+| **RID-Set-References** | False | **Computer** |
+| **roomNumber** | False | **User** |
+| **Script-Path** | False | **User** |
+| **SD-Rights-Effective** | False | **Top** |
+| **secretary** | False | **User** |
+| **See-Also** | False | **Person** |
+| **Serial-Number** | False | **Person** |
+| **Server-Reference-BL** | False | **Top** |
+| **Service-Principal-Name** | False | **User** |
+| **Show-In-Advanced-View-Only** | False | **Top** |
+| **Site-GUID** | False | **Computer** |
+| **Site-Object-BL** | False | **Top** |
+| **State-Or-Province-Name** | False | **Organizational-Person** |
+| **Street-Address** | False | **Organizational-Person** |
+| **Structural-Object-Class** | False | **Top** |
+| **Sub-Refs** | False | **Top** |
+| **SubSchemaSubEntry** | False | **Top** |
+| **Surname** | False | **Person** |
+| **System-Flags** | False | **Top** |
+| **Telephone-Number** | False | **Person** |
+| **Teletex-Terminal-Identifier** | False | **Organizational-Person** |
+| **Telex-Number** | False | **Organizational-Person** |
+| **Telex-Primary** | False | **Organizational-Person** |
+| **Terminal-Server** | False | **User** |
+| **Text-Country** | False | **Organizational-Person** |
+| **Title** | False | **Organizational-Person** |
+| **uid** | False | **User****ipHost** |
+| **Unicode-Pwd** | False | **User** |
+| **User-Account-Control** | False | **User** |
+| **User-Comment** | False | **Organizational-Person** |
+| **User-Parameters** | False | **User** |
+| **User-Password** | False | **Person** |
+| **userPKCS12** | False | **User** |
+| **User-Principal-Name** | False | **User** |
+| **User-Shared-Folder** | False | **User** |
+| **User-Shared-Folder-Other** | False | **User** |
+| **User-SMIME-Certificate** | False | **User** |
+| **User-Workstations** | False | **User** |
+| **USN-Changed** | False | **Top** |
+| **USN-Created** | False | **Top** |
+| **USN-DSA-Last-Obj-Removed** | False | **Top** |
+| **USN-Intersite** | False | **Top** |
+| **USN-Last-Obj-Rem** | False | **Top** |
+| **USN-Source** | False | **Top** |
+| **Volume-Count** | False | **Computer** |
+| **Wbem-Path** | False | **Top** |
+| **Well-Known-Objects** | False | **Top** |
+| **When-Changed** | False | **Top** |
+| **When-Created** | False | **Top** |
+| **WWW-Home-Page** | False | **Top** |
+| **WWW-Page-Other** | False | **Top** |
+| **X121-Address** | False | **Organizational-Person** |
+| **x500uniqueIdentifier** | False | **User** |
+| **X509-Cert** | False | **User** |
+
+## Windows Server 2008 R2 Extended Rights
+
+This class contains the following extended rights for Windows Server 2008 R2:
+
+| Common Name |
+| --- |
+| **User-Change-Password** |
+| **User-Force-Change-Password** |
+| **Send-As** |
+| **Receive-As** |
+| **Allowed-To-Authenticate** |
+
+## Windows Server 2008 R2 Validated Writes
+
+This class contains the following validated writes for Windows Server 2008 R2:
+
+| Common Name |
+| --- |
+| **Validated-DNS-Host-Name** |
+| **Validated-SPN** |
+
+## Windows Server 2008 R2 Property Sets
+
+This class contains the following property sets for Windows Server 2008 R2:
+
+| Common Name |
+| --- |
+| **User-Account-Restrictions** |
+| **Personal-Information** |
+| **Public-Information** |
+| **DNS-Host-Name-Attributes** |
+| **MS-TS-GatewayAccess** |
+
+## Windows Server 2012
+
+- Attributes
+- Extended Rights
+- Validated Writes
+- Property Sets
+
+| Entry | Value |
+| --- | --- |
+| System-Only | False |
+| Object-Category | 1 |
+| Default-Object-Category | - |
+| Governs-Id | 1.2.840.113556.1.3.30 |
+| Default-Hiding-Value | 0 |
+| Rdn-Att-Id | **Common-Name** |
+| Subclass of | **User** |
+| Possible Superiors | **Domain-DNS****Organizational-Unit****Container** |
+| Auxiliary Classes | **ipHost** |
+| NT-Security-Descriptor | O:BAG:BAD:S: |
+| Default Security Descriptor | D:(A;;RPWPCRCCDCLCLORCWOWDSDDTSW;;;DA)(A;;RPWPCRCCDCLCLORCWOWDSDDTSW;;;AO)(A;;RPWPCRCCDCLCLORCWOWDSDDTSW;;;SY)(A;;RPCRLCLORCSDDT;;;CO)(OA;;WP;4c164200-20c0-11d0-a768-00aa006e0529;;CO)(A;;RPLCLORC;;;AU)(OA;;CR;ab721a53-1e2f-11d0-9819-00aa0040529b;;WD)(A;;CCDC;;;PS)(OA;;CCDC;bf967aa8-0de6-11d0-a285-00aa003049e2;;PO)(OA;;RPWP;bf967a7f-0de6-11d0-a285-00aa003049e2;;CA)(OA;;SW;f3a64788-5306-11d1-a9c5-0000f80367c1;;PS)(OA;;RPWP;77B5B886-944A-11d1-AEBD-0000F80367C1;;PS)(OA;;SW;72e39547-7b18-11d1-adef-00c04fd8d5cd;;PS)(OA;;SW;72e39547-7b18-11d1-adef-00c04fd8d5cd;;CO)(OA;;SW;f3a64788-5306-11d1-a9c5-0000f80367c1;;CO)(OA;;WP;3e0abfd0-126a-11d0-a060-00aa006c33ed;bf967a86-0de6-11d0-a285-00aa003049e2;CO)(OA;;WP;5f202010-79a5-11d0-9020-00c04fc2d4cf;bf967a86-0de6-11d0-a285-00aa003049e2;CO)(OA;;WP;bf967950-0de6-11d0-a285-00aa003049e2;bf967a86-0de6-11d0-a285-00aa003049e2;CO)(OA;;WP;bf967953-0de6-11d0-a285-00aa003049e2;bf967a86-0de6-11d0-a285-00aa003049e2;CO)(OA;;RP;46a9b11d-60ae-405a-b7e8-ff8a58d456d2;;S-1-5-32-560) |
+| System-Flags | 0x00000010 |
+
+## Windows Server 2012 Attributes
+
+This class contains the following attributes for Windows Server 2012:
+
+| Attribute | Mandatory | Derived from |
+| --- | --- | --- |
+| **Account-Expires** | False | **User** |
+| **ACS-Policy-Name** | False | **User** |
+| **Address** | False | **Organizational-Person** |
+| **Address-Home** | False | **User****Organizational-Person** |
+| **Admin-Count** | False | **User** |
+| **Admin-Description** | False | **Top** |
+| **Admin-Display-Name** | False | **Top** |
+| **Allowed-Attributes** | False | **Top** |
+| **Allowed-Attributes-Effective** | False | **Top** |
+| **Allowed-Child-Classes** | False | **Top** |
+| **Allowed-Child-Classes-Effective** | False | **Top** |
+| **Assistant** | False | **Organizational-Person** |
+| **attributeCertificateAttribute** | False | **Person** |
+| **audio** | False | **User** |
+| **Bad-Password-Time** | False | **User** |
+| **Bad-Pwd-Count** | False | **User** |
+| **Bridgehead-Server-List-BL** | False | **Top** |
+| **Business-Category** | False | **User** |
+| **Canonical-Name** | False | **Top** |
+| **carLicense** | False | **User** |
+| **Catalogs** | False | **Computer** |
+| **Code-Page** | False | **User** |
+| **Common-Name** | True | **Computer****Top****Person****ipHost** |
+| **Company** | False | **Organizational-Person** |
+| **Control-Access-Rights** | False | **User** |
+| **Country-Code** | False | **Organizational-Person** |
+| **Country-Name** | False | **Organizational-Person** |
+| **Create-Time-Stamp** | False | **Top** |
+| **DBCS-Pwd** | False | **User** |
+| **Default-Class-Store** | False | **User** |
+| **Default-Local-Policy-Object** | False | **Computer** |
+| **Department** | False | **Organizational-Person** |
+| **departmentNumber** | False | **User** |
+| **Description** | False | **Top****ipHost** |
+| **Desktop-Profile** | False | **User** |
+| **Destination-Indicator** | False | **Organizational-Person** |
+| **Display-Name** | False | **User****Top** |
+| **Display-Name-Printable** | False | **Top** |
+| **Division** | False | **Organizational-Person** |
+| **DNS-Host-Name** | False | **Computer** |
+| **DSA-Signature** | False | **Top** |
+| **DS-Core-Propagation-Data** | False | **Top** |
+| **Dynamic-LDAP-Server** | False | **User** |
+| **E-mail-Addresses** | False | **User****Organizational-Person** |
+| **Employee-ID** | False | **Organizational-Person** |
+| **Employee-Number** | False | **User** |
+| **Employee-Type** | False | **User** |
+| **Extension-Name** | False | **Top** |
+| **Facsimile-Telephone-Number** | False | **Organizational-Person** |
+| **Flags** | False | **Top** |
+| **From-Entry** | False | **Top** |
+| **Frs-Computer-Reference-BL** | False | **Top** |
+| **FRS-Member-Reference-BL** | False | **Top** |
+| **FSMO-Role-Owner** | False | **Top** |
+| **Generation-Qualifier** | False | **Organizational-Person** |
+| **Given-Name** | False | **User****Organizational-Person** |
+| **Group-Membership-SAM** | False | **User** |
+| **Group-Priority** | False | **User** |
+| **Groups-to-Ignore** | False | **User** |
+| **Home-Directory** | False | **User** |
+| **Home-Drive** | False | **User** |
+| **houseIdentifier** | False | **Organizational-Person** |
+| **Initials** | False | **User****Organizational-Person** |
+| **Instance-Type** | True | **Top** |
+| **International-ISDN-Number** | False | **Organizational-Person** |
+| **ipHostNumber** | False | **ipHost** |
+| **Is-Critical-System-Object** | False | **Top** |
+| **Is-Deleted** | False | **Top** |
+| **Is-Member-Of-DL** | False | **Top** |
+| **Is-Privilege-Holder** | False | **Top** |
+| **Is-Recycled** | False | **Top** |
+| **jpegPhoto** | False | **User** |
+| **labeledURI** | False | **User** |
+| **Last-Known-Parent** | False | **Top** |
+| **Last-Logoff** | False | **User** |
+| **Last-Logon** | False | **User** |
+| **Last-Logon-Timestamp** | False | **User** |
+| **Lm-Pwd-History** | False | **User** |
+| **Locale-ID** | False | **User** |
+| **Locality-Name** | False | **Organizational-Person****ipHost** |
+| **Local-Policy-Flags** | False | **Computer** |
+| **Location** | False | **Computer** |
+| **Lockout-Time** | False | **User** |
+| **Logo** | False | **Organizational-Person** |
+| **Logon-Count** | False | **User** |
+| **Logon-Hours** | False | **User** |
+| **Logon-Workstation** | False | **User** |
+| **Machine-Role** | False | **Computer** |
+| **Managed-By** | False | **Computer** |
+| **Managed-Objects** | False | **Top** |
+| **Manager** | False | **User****Organizational-Person****ipHost** |
+| **Mastered-By** | False | **Top** |
+| **Max-Storage** | False | **User** |
+| **MHS-OR-Address** | False | **Organizational-Person** |
+| **Modify-Time-Stamp** | False | **Top** |
+| **ms-COM-PartitionSetLink** | False | **Top** |
+| **ms-COM-UserLink** | False | **Top** |
+| **ms-COM-UserPartitionSetLink** | False | **User** |
+| **ms-DFSR-ComputerReferenceBL** | False | **Top** |
+| **ms-DFSR-MemberReferenceBL** | False | **Top** |
+| **MS-DRM-Identity-Certificate** | False | **User** |
+| **ms-DS-Additional-Dns-Host-Name** | False | **Computer** |
+| **ms-DS-Additional-Sam-Account-Name** | False | **Computer** |
+| **ms-DS-Allowed-To-Act-On-Behalf-Of-Other-Identity** | False | **Organizational-Person** |
+| **ms-DS-Allowed-To-Delegate-To** | False | **Organizational-Person** |
+| **ms-DS-Approx-Immed-Subordinates** | False | **Top** |
+| **ms-DS-AuthenticatedAt-DC** | False | **Computer****User** |
+| **ms-DS-AuthenticatedTo-Accountlist** | False | **Top** |
+| **ms-DS-Cached-Membership** | False | **User** |
+| **ms-DS-Cached-Membership-Time-Stamp** | False | **User** |
+| **ms-DS-Claim-Shares-Possible-Values-With-BL** | False | **Top** |
+| **MS-DS-Consistency-Child-Count** | False | **Top** |
+| **MS-DS-Consistency-Guid** | False | **Top** |
+| **MS-DS-Creator-SID** | False | **User** |
+| **ms-DS-Enabled-Feature-BL** | False | **Top** |
+| **ms-DS-ExecuteScriptPassword** | False | **Computer** |
+| **ms-DS-Failed-Interactive-Logon-Count** | False | **User** |
+| **ms-DS-Failed-Interactive-Logon-Count-At-Last-Successful-Logon** | False | **User** |
+| **ms-DS-Generation-Id** | False | **Computer** |
+| **ms-DS-HAB-Seniority-Index** | False | **Organizational-Person** |
+| **ms-DS-Host-Service-Account** | False | **Computer** |
+| **ms-DS-Host-Service-Account-BL** | False | **Top** |
+| **ms-DS-Is-Domain-For** | False | **Top** |
+| **ms-DS-Is-Full-Replica-For** | False | **Top** |
+| **ms-DS-isGC** | False | **Computer** |
+| **ms-DS-Is-Partial-Replica-For** | False | **Top** |
+| **ms-DS-Is-Primary-Computer-For** | False | **Top** |
+| **ms-DS-isRODC** | False | **Computer** |
+| **ms-DS-Is-User-Cachable-At-Rodc** | False | **Computer** |
+| **ms-DS-KrbTgt-Link** | False | **Computer** |
+| **ms-DS-KrbTgt-Link-BL** | False | **Top** |
+| **ms-DS-Last-Failed-Interactive-Logon-Time** | False | **User** |
+| **ms-DS-Last-Known-RDN** | False | **Top** |
+| **ms-DS-Last-Successful-Interactive-Logon-Time** | False | **User** |
+| **ms-DS-local-Effective-Deletion-Time** | False | **Top** |
+| **ms-DS-local-Effective-Recycle-Time** | False | **Top** |
+| **ms-DS-Mastered-By** | False | **Top** |
+| **ms-DS-Members-For-Az-Role-BL** | False | **Top** |
+| **ms-DS-Members-Of-Resource-Property-List-BL** | False | **Top** |
+| **ms-DS-NC-Repl-Cursors** | False | **Top** |
+| **ms-DS-NC-Repl-Inbound-Neighbors** | False | **Top** |
+| **ms-DS-NC-Repl-Outbound-Neighbors** | False | **Top** |
+| **ms-DS-NC-RO-Replica-Locations-BL** | False | **Top** |
+| **ms-DS-NC-Type** | False | **Top** |
+| **ms-DS-Never-Reveal-Group** | False | **Computer** |
+| **ms-DS-Non-Members-BL** | False | **Top** |
+| **ms-DS-Object-Reference-BL** | False | **Top** |
+| **ms-DS-OIDToGroup-Link-BL** | False | **Top** |
+| **ms-DS-Operations-For-Az-Role-BL** | False | **Top** |
+| **ms-DS-Operations-For-Az-Task-BL** | False | **Top** |
+| **ms-DS-Phonetic-Company-Name** | False | **Organizational-Person** |
+| **ms-DS-Phonetic-Department** | False | **Organizational-Person** |
+| **ms-DS-Phonetic-Display-Name** | False | **Organizational-Person** |
+| **ms-DS-Phonetic-First-Name** | False | **Organizational-Person** |
+| **ms-DS-Phonetic-Last-Name** | False | **Organizational-Person** |
+| **ms-DS-Primary-Computer** | False | **User** |
+| **ms-DS-Principal-Name** | False | **Top** |
+| **ms-DS-Promotion-Settings** | False | **Computer** |
+| **ms-DS-PSO-Applied** | False | **Top** |
+| **ms-DS-Repl-Attribute-Meta-Data** | False | **Top** |
+| **ms-DS-Repl-Value-Meta-Data** | False | **Top** |
+| **ms-DS-Resultant-PSO** | False | **User** |
+| **ms-DS-Revealed-DSAs** | False | **Top** |
+| **ms-DS-Revealed-List** | False | **Computer** |
+| **ms-DS-Revealed-List-BL** | False | **Top** |
+| **ms-DS-Revealed-Users** | False | **Computer** |
+| **ms-DS-Reveal-OnDemand-Group** | False | **Computer** |
+| **ms-DS-Secondary-KrbTgt-Number** | False | **User** |
+| **ms-DS-Site-Affinity** | False | **User** |
+| **ms-DS-SiteName** | False | **Computer** |
+| **ms-DS-Source-Object-DN** | False | **User** |
+| **ms-DS-Supported-Encryption-Types** | False | **User** |
+| **ms-DS-Tasks-For-Az-Role-BL** | False | **Top** |
+| **ms-DS-Tasks-For-Az-Task-BL** | False | **Top** |
+| **ms-DS-TDO-Egress-BL** | False | **Top** |
+| **ms-DS-TDO-Ingress-BL** | False | **Top** |
+| **ms-DS-User-Account-Control-Computed** | False | **User** |
+| **ms-DS-User-Password-Expiry-Time-Computed** | False | **User** |
+| **ms-DS-Value-Type-Reference-BL** | False | **Top** |
+| **ms-Exch-House-Identifier** | False | **Organizational-Person** |
+| **ms-Exch-Owner-BL** | False | **Top** |
+| **ms-IIS-FTP-Dir** | False | **User** |
+| **ms-IIS-FTP-Root** | False | **User** |
+| **ms-Imaging-Hash-Algorithm** | False | **Computer** |
+| **ms-Imaging-Thumbprint-Hash** | False | **Computer** |
+| **MSMQ-Digests** | False | **User** |
+| **MSMQ-Digests-Mig** | False | **User** |
+| **MSMQ-Sign-Certificates** | False | **User** |
+| **MSMQ-Sign-Certificates-Mig** | False | **User** |
+| **msNPAllowDialin** | False | **User** |
+| **msNPCallingStationID** | False | **User** |
+| **msNPSavedCallingStationID** | False | **User** |
+| **ms-PKI-AccountCredentials** | False | **User** |
+| **ms-PKI-Credential-Roaming-Tokens** | False | **User** |
+| **ms-PKI-DPAPIMasterKeys** | False | **User** |
+| **ms-PKI-RoamingTimeStamp** | False | **User** |
+| **msRADIUSCallbackNumber** | False | **User** |
+| **ms-RADIUS-FramedInterfaceId** | False | **User** |
+| **msRADIUSFramedIPAddress** | False | **User** |
+| **ms-RADIUS-FramedIpv6Prefix** | False | **User** |
+| **ms-RADIUS-FramedIpv6Route** | False | **User** |
+| **msRADIUSFramedRoute** | False | **User** |
+| **ms-RADIUS-SavedFramedInterfaceId** | False | **User** |
+| **ms-RADIUS-SavedFramedIpv6Prefix** | False | **User** |
+| **ms-RADIUS-SavedFramedIpv6Route** | False | **User** |
+| **msRADIUSServiceType** | False | **User** |
+| **msRASSavedCallbackNumber** | False | **User** |
+| **msRASSavedFramedIPAddress** | False | **User** |
+| **msRASSavedFramedRoute** | False | **User** |
+| **msSFU-30-Aliases** | False | **Computer** |
+| **msSFU-30-Name** | False | **Computer****User** |
+| **msSFU-30-Nis-Domain** | False | **Computer****User** |
+| **msSFU-30-Posix-Member-Of** | False | **Top** |
+| **ms-TPM-OwnerInformation** | False | **Computer** |
+| **ms-TPM-Tpm-Information-For-Computer** | False | **Computer** |
+| **ms-TS-Allow-Logon** | False | **User** |
+| **ms-TS-Broken-Connection-Action** | False | **User** |
+| **ms-TS-Connect-Client-Drives** | False | **User** |
+| **ms-TS-Connect-Printer-Drives** | False | **User** |
+| **ms-TS-Default-To-Main-Printer** | False | **User** |
+| **ms-TS-Endpoint-Data** | False | **Computer** |
+| **ms-TS-Endpoint-Plugin** | False | **Computer** |
+| **ms-TS-Endpoint-Type** | False | **Computer** |
+| **MS-TS-ExpireDate** | False | **User** |
+| **MS-TS-ExpireDate2** | False | **User** |
+| **MS-TS-ExpireDate3** | False | **User** |
+| **MS-TS-ExpireDate4** | False | **User** |
+| **ms-TS-Home-Directory** | False | **User** |
+| **ms-TS-Home-Drive** | False | **User** |
+| **ms-TS-Initial-Program** | False | **User** |
+| **MS-TS-LicenseVersion** | False | **User** |
+| **MS-TS-LicenseVersion2** | False | **User** |
+| **MS-TS-LicenseVersion3** | False | **User** |
+| **MS-TS-LicenseVersion4** | False | **User** |
+| **MS-TSLS-Property01** | False | **User** |
+| **MS-TSLS-Property02** | False | **User** |
+| **MS-TS-ManagingLS** | False | **User** |
+| **MS-TS-ManagingLS2** | False | **User** |
+| **MS-TS-ManagingLS3** | False | **User** |
+| **MS-TS-ManagingLS4** | False | **User** |
+| **ms-TS-Max-Connection-Time** | False | **User** |
+| **ms-TS-Max-Disconnection-Time** | False | **User** |
+| **ms-TS-Max-Idle-Time** | False | **User** |
+| **ms-TS-Primary-Desktop** | False | **User** |
+| **ms-TS-Primary-Desktop-BL** | False | **Computer** |
+| **ms-TS-Profile-Path** | False | **User** |
+| **MS-TS-Property01** | False | **Computer****User** |
+| **MS-TS-Property02** | False | **Computer****User** |
+| **ms-TS-Reconnection-Action** | False | **User** |
+| **ms-TS-Remote-Control** | False | **User** |
+| **ms-TS-Secondary-Desktop-BL** | False | **Computer** |
+| **ms-TS-Secondary-Desktops** | False | **User** |
+| **ms-TS-Work-Directory** | False | **User** |
+| **Netboot-GUID** | False | **Computer** |
+| **Netboot-Initialization** | False | **Computer** |
+| **Netboot-Machine-File-Path** | False | **Computer** |
+| **Netboot-Mirror-Data-File** | False | **Computer** |
+| **netboot-SCP-BL** | False | **Top** |
+| **Netboot-SIF-File** | False | **Computer** |
+| **Network-Address** | False | **Computer****User** |
+| **nisMapName** | False | **Computer** |
+| **Non-Security-Member-BL** | False | **Top** |
+| **Nt-Pwd-History** | False | **User** |
+| **NT-Security-Descriptor** | True | **Top** |
+| **Obj-Dist-Name** | False | **Top** |
+| **Object-Category** | True | **Top** |
+| **Object-Class** | True | **Top** |
+| **Object-Guid** | False | **Top** |
+| **Object-Version** | False | **Top** |
+| **Operating-System** | False | **Computer** |
+| **Operating-System-Hotfix** | False | **Computer** |
+| **Operating-System-Service-Pack** | False | **Computer** |
+| **Operating-System-Version** | False | **Computer** |
+| **Operator-Count** | False | **User** |
+| **Organizational-Unit-Name** | False | **Organizational-Person** |
+| **Organization-Name** | False | **User****Organizational-Person** |
+| **Other-Login-Workstations** | False | **User** |
+| **Other-Mailbox** | False | **Organizational-Person** |
+| **Other-Name** | False | **Organizational-Person** |
+| **Other-Well-Known-Objects** | False | **Top** |
+| **Partial-Attribute-Deletion-List** | False | **Top** |
+| **Partial-Attribute-Set** | False | **Top** |
+| **Personal-Title** | False | **Organizational-Person** |
+| **Phone-Fax-Other** | False | **Organizational-Person** |
+| **Phone-Home-Other** | False | **Organizational-Person** |
+| **Phone-Home-Primary** | False | **User****Organizational-Person** |
+| **Phone-Ip-Other** | False | **Organizational-Person** |
+| **Phone-Ip-Primary** | False | **Organizational-Person** |
+| **Phone-ISDN-Primary** | False | **Organizational-Person** |
+| **Phone-Mobile-Other** | False | **Organizational-Person** |
+| **Phone-Mobile-Primary** | False | **User****Organizational-Person** |
+| **Phone-Office-Other** | False | **Organizational-Person** |
+| **Phone-Pager-Other** | False | **Organizational-Person** |
+| **Phone-Pager-Primary** | False | **User****Organizational-Person** |
+| **photo** | False | **User** |
+| **Physical-Delivery-Office-Name** | False | **Organizational-Person** |
+| **Physical-Location-Object** | False | **Computer** |
+| **Picture** | False | **Organizational-Person** |
+| **Policy-Replication-Flags** | False | **Computer** |
+| **Possible-Inferiors** | False | **Top** |
+| **Postal-Address** | False | **Organizational-Person** |
+| **Postal-Code** | False | **Organizational-Person** |
+| **Post-Office-Box** | False | **Organizational-Person** |
+| **Preferred-Delivery-Method** | False | **Organizational-Person** |
+| **preferredLanguage** | False | **User** |
+| **Preferred-OU** | False | **User** |
+| **Primary-Group-ID** | False | **User** |
+| **Profile-Path** | False | **User** |
+| **Proxied-Object-Name** | False | **Top** |
+| **Proxy-Addresses** | False | **Top** |
+| **Pwd-Last-Set** | False | **User** |
+| **Query-Policy-BL** | False | **Top** |
+| **RDN** | False | **Top** |
+| **Registered-Address** | False | **Organizational-Person** |
+| **Repl-Property-Meta-Data** | False | **Top** |
+| **Repl-UpToDate-Vector** | False | **Top** |
+| **Reports** | False | **Top** |
+| **Reps-From** | False | **Top** |
+| **Reps-To** | False | **Top** |
+| **Revision** | False | **Top** |
+| **RID-Set-References** | False | **Computer** |
+| **roomNumber** | False | **User** |
+| **Script-Path** | False | **User** |
+| **SD-Rights-Effective** | False | **Top** |
+| **secretary** | False | **User** |
+| **See-Also** | False | **Person** |
+| **Serial-Number** | False | **Person** |
+| **Server-Reference-BL** | False | **Top** |
+| **Service-Principal-Name** | False | **User** |
+| **Show-In-Advanced-View-Only** | False | **Top** |
+| **Site-GUID** | False | **Computer** |
+| **Site-Object-BL** | False | **Top** |
+| **State-Or-Province-Name** | False | **Organizational-Person** |
+| **Street-Address** | False | **Organizational-Person** |
+| **Structural-Object-Class** | False | **Top** |
+| **Sub-Refs** | False | **Top** |
+| **SubSchemaSubEntry** | False | **Top** |
+| **Surname** | False | **Person** |
+| **System-Flags** | False | **Top** |
+| **Telephone-Number** | False | **Person** |
+| **Teletex-Terminal-Identifier** | False | **Organizational-Person** |
+| **Telex-Number** | False | **Organizational-Person** |
+| **Telex-Primary** | False | **Organizational-Person** |
+| **Terminal-Server** | False | **User** |
+| **Text-Country** | False | **Organizational-Person** |
+| **Title** | False | **Organizational-Person** |
+| **uid** | False | **User****ipHost** |
+| **Unicode-Pwd** | False | **User** |
+| **User-Account-Control** | False | **User** |
+| **User-Comment** | False | **Organizational-Person** |
+| **User-Parameters** | False | **User** |
+| **User-Password** | False | **Person** |
+| **userPKCS12** | False | **User** |
+| **User-Principal-Name** | False | **User** |
+| **User-Shared-Folder** | False | **User** |
+| **User-Shared-Folder-Other** | False | **User** |
+| **User-SMIME-Certificate** | False | **User** |
+| **User-Workstations** | False | **User** |
+| **USN-Changed** | False | **Top** |
+| **USN-Created** | False | **Top** |
+| **USN-DSA-Last-Obj-Removed** | False | **Top** |
+| **USN-Intersite** | False | **Top** |
+| **USN-Last-Obj-Rem** | False | **Top** |
+| **USN-Source** | False | **Top** |
+| **Volume-Count** | False | **Computer** |
+| **Wbem-Path** | False | **Top** |
+| **Well-Known-Objects** | False | **Top** |
+| **When-Changed** | False | **Top** |
+| **When-Created** | False | **Top** |
+| **WWW-Home-Page** | False | **Top** |
+| **WWW-Page-Other** | False | **Top** |
+| **X121-Address** | False | **Organizational-Person** |
+| **x500uniqueIdentifier** | False | **User** |
+| **X509-Cert** | False | **User** |
+
+## Windows Server 2012 Extended Rights
+
+This class contains the following extended rights for Windows Server 2012:
+
+| Common Name |
+| --- |
+| **User-Change-Password** |
+| **User-Force-Change-Password** |
+| **Send-As** |
+| **Receive-As** |
+| **Allowed-To-Authenticate** |
+
+## Windows Server 2012 Validated Writes
+
+This class contains the following validated writes for Windows Server 2012:
+
+| Common Name |
+| --- |
+| **Validated-DNS-Host-Name** |
+| **Validated-SPN** |
+| **Validated-MS-DS-Additional-DNS-Host-Name** |
+
+## Windows Server 2012 Property Sets
+
+This class contains the following property sets for Windows Server 2012:
+
+| Common Name |
+| --- |
+| **User-Account-Restrictions** |
+| **Personal-Information** |
+| **Public-Information** |
+| **DNS-Host-Name-Attributes** |
+| **MS-TS-GatewayAccess** |

@@ -1,0 +1,74 @@
+source: S1220
+url: https://www.python-ldap.org/en/python-ldap-3.3.0/reference/ldap-sasl.html
+title: ldap.sasl SASL Authentication Methods (python-ldap documentation)
+publisher: python-ldap project
+licence: Python-style licence (python-ldap LICENCE)
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+Docs »
+python-ldap Reference Documentation »
+ldap.sasl SASL Authentication Methods
+Edit on GitHub
+# ldap.sasl SASL Authentication Methods¶
+This module implements various authentication methods for SASL bind.
+See also
+RFC 4422 - Simple Authentication and Security Layer (SASL)
+RFC 4513 - Lightweight Directory Access Protocol (LDAP): Authentication Methods and Security Mechanisms
+## Constants¶
+ldap.sasl.CB_USER¶
+ldap.sasl.CB_AUTHNAME¶
+ldap.sasl.CB_LANGUAGE¶
+ldap.sasl.CB_PASS¶
+ldap.sasl.CB_ECHOPROMPT¶
+ldap.sasl.CB_NOECHOPROMPT¶
+ldap.sasl.CB_GETREALM¶
+## Classes¶
+class ldap.sasl.sasl(cb_value_dict, mech)¶
+This class handles SASL interactions for authentication.
+If an instance of this class is passed to ldap’s sasl_bind_s()
+method, the library will call its callback() method. For
+specific SASL authentication mechanisms, this method can be
+overridden
+This class is used with ldap.LDAPObject.sasl_interactive_bind_s().
+callback(cb_id, challenge, prompt, defresult)¶
+The callback method will be called by the sasl_bind_s()
+method several times. Each time it will provide the id, which
+tells us what kind of information is requested (the CB_*
+constants above). The challenge might be a short (English) text
+or some binary string, from which the return value is calculated.
+The prompt argument is always a human-readable description string;
+The defresult is a default value provided by the sasl library
+Currently, we do not use the challenge and prompt information, and
+return only information which is stored in the self.cb_value_dict
+cb_value_dictionary. Note that the current callback interface is not very
+useful for writing generic sasl GUIs, which would need to know all
+the questions to ask, before the answers are returned to the sasl
+lib (in contrast to one question at a time).
+Unicode strings are always converted to bytes.
+class ldap.sasl.cram_md5(authc_id, password, authz_id='')¶
+This class handles SASL CRAM-MD5 authentication.
+class ldap.sasl.digest_md5(authc_id, password, authz_id='')¶
+This class handles SASL DIGEST-MD5 authentication.
+class ldap.sasl.gssapi(authz_id='')¶
+This class handles SASL GSSAPI (i.e. Kerberos V) authentication.
+You might consider using convenience method ldap.LDAPObject.sasl_gssapi_bind_s().
+class ldap.sasl.external(authz_id='')¶
+This class handles SASL EXTERNAL authentication
+(i.e. X.509 client certificate)
+You might consider using convenience method ldap.LDAPObject.sasl_external_bind_s().
+### Examples for ldap.sasl¶
+This example connects to an OpenLDAP server via LDAP over IPC
+(see draft-chu-ldap-ldapi)
+and sends a SASL external bind request.
+import ldap, ldap.sasl, urllib
+ldapi_path = '/tmp/openldap-socket'
+ldap_conn = ldap.initialize(
+'ldapi://%s' % (
+urllib.quote_plus(ldapi_path)
+)
+)
+# Send SASL bind request for mechanism EXTERNAL
+ldap_conn.sasl_non_interactive_bind_s('EXTERNAL')
+# Find out the SASL Authorization Identity
+print ldap_conn.whoami_s()

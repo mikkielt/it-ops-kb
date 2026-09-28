@@ -1,0 +1,41 @@
+source: S-3jpzrkqj
+url: https://learn.microsoft.com/azure/azure-arc/servers/deployment-options
+title: Azure Connected Machine agent deployment options
+publisher: Microsoft Learn
+licence: CC BY 4.0 (public mirror MicrosoftDocs/azure-management-docs)
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+# Azure Connected Machine Agent Deployment Options - Azure Arc | Microsoft Learn
+
+You can connect machines in your hybrid environment directly with Azure by using different methods, depending on your requirements and the tools you prefer to use.
+
+## Onboarding methods
+
+The following table highlights each method so that you can determine which one works best for your deployment. For detailed information, follow the links to view the steps for each method.
+
+| Supported OS Type | Method | Description |
+| --- | --- | --- |
+| Linux and Windows | Interactively | Manually install the agent on a single or small number of machines to connect machines by using a deployment script. From the Azure portal, you can generate a script and run it on the machine to automate the installation and configuration steps of the agent. |
+| Linux and Windows | Interactively or at scale | Connect machines by using PowerShell. |
+| Linux and Windows | At scale | Connect machines at scale with Ansible using the Azure Arc onboarding role in Ansible Core or Ansible Automation Platform. |
+| Linux and Windows | At scale | Connect machines by using a service principal to install the agent at scale noninteractively. |
+| Linux and Windows | At scale | Install the Azure Arc agent on VMware virtual machines (VMs) at scale by using Azure Arc-enabled VMware vSphere. With Azure Arc-enabled VMware vSphere, you can connect your VMware vCenter server to Azure, automatically discover your VMware VMs, and install the Azure Arc agent on them. Requires VMware tools on VMs. |
+| Linux and Windows | At scale | Connect your AWS cloud through the multicloud connector enabled by Azure Arc and enable theArc onboardingsolution to autodiscover and onboard EC2 VMs. |
+| Windows | Interactively | Connect machines from Windows Admin Center. |
+| Windows | Interactively | Connect Windows Server machines to Azure through Azure Arc setup. |
+| Windows | At scale | Connect machines by running PowerShell scripts with Configuration Manager. |
+| Windows | At scale | Connect machines with a Configuration Manager custom task sequence. |
+| Windows | At scale | Connect Windows machines by using Group Policy. |
+
+Important
+
+You can't install the Connected Machine agent on an Azure VM. The installation script warns you and rolls back if it detects that the server is running in Azure.
+
+Be sure to review the basic prerequisites and network configuration requirements before you deploy the agent and any specific requirements listed in the steps for the onboarding method that you choose. To learn more about what changes the agent makes to your system, see Overview of the Azure Connected Machine agent.
+
+## Automatic connection for SQL Server
+
+When you connect a Windows or Linux server to Azure Arc that also has Microsoft SQL Server installed, the SQL Server instances are automatically connected to Azure Arc as well. SQL Server enabled by Azure Arc provides a detailed inventory and additional management capabilities for your SQL Server instances and databases. As part of the connection process, an extension is deployed to your Azure Arc-enabled server, and new roles are applied to your SQL Server and databases. If you don't want to automatically connect your SQL Servers to Azure Arc, you can opt out by adding a tag to the Windows or Linux server with the name `ArcSQLServerExtensionDeployment` and value `Disabled` when connecting it to Azure Arc.
+
+For more information, see Manage automatic connection for SQL Server enabled by Azure Arc.

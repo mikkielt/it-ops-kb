@@ -1,0 +1,53 @@
+source: S-g33kybfp
+url: https://presidio.dataprivacystack.org/samples/deployments/k8s/
+title: Deploy presidio to Kubernetes
+publisher: Presidio Contributors (Data Privacy Stack docs site)
+licence: MIT (docs in data-privacy-stack/presidio)
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+# Deploy presidio to Kubernetes
+You can install Presidio locally using KIND, as a service in Kubernetes or AKS.
+Deploy locally using KIND
+Deploy with Kubernetes
+Prerequisites
+Step by Step Deployment with customizable parameters
+## Deploy locally with KIND
+KIND (Kubernetes IN Docker).
+Install Docker.
+Clone Presidio.
+Run the following script, which will use KIND (Kubernetes emulation in Docker)
+cd docs/samples/deployments/k8s/deployment/
+./run-with-kind.sh
+Wait and verify all pods are running:
+kubectl get pod -n presidio
+Port forwarding of HTTP requests to the API micro-service will be done automatically. In order to run manual:
+kubectl port-forward <presidio-analyzer-pod-name> 8080:8080 -n presidio
+## Presidio As a Service with Kubernetes
+### Prerequisites
+A Kubernetes 1.18+ cluster with RBAC enabled. If you are using AKS RBAC is enabled by default.
+!!! note: Note
+Note the pod's resource requirements (CPU and memory) and plan the cluster accordingly.
+kubectl installed. Verify you can communicate with the cluster by running:
+kubectl version
+Local helm client.
+Optional - Container Registry - such as ACR. Only needed if you are using your own Presidio images and not the default ones from GitHub Container Registry.
+Recent presidio repo is cloned on your local machine.
+### Step by step deployment with customizable parameters
+Install Helm with RBAC.
+Optional - Ingress controller for presidio API, e.g., NGINX.
+NOTE:
+Presidio is deployed with an ingress controller by default, and uses nginx as ingress.class. To change
+this behavior, deploy the helm chart with ingress.enabled=false.
+Deploy from /docs/samples/deployments/k8s/charts/presidio
+# Choose a namespace and ensure it is created
+NAMESPACE=presidio
+# Choose the tag from ghcr.io/data-privacy-stack, e.g. `latest`
+TAG=latest
+# Choose a name for the deployment
+NAME=<name>
+# Use Helm to install all required components
+helm install $NAME . --set tag=$TAG --namespace $NAMESPACE
+# If you have your own images in a separate ACR, run
+DOCKER_REGISTRY=<your_registry>
+helm install $NAME . --set registry=$DOCKER_REGISTRY,tag=$TAG --namespace $NAMESPACE

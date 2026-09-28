@@ -1,0 +1,68 @@
+source: S-ygq2kmmq
+url: https://learn.microsoft.com/en-us/entra/agent-id/agent-oauth-protocols
+title: OAuth protocols supported by Microsoft Entra Agent ID
+publisher: Microsoft (MicrosoftDocs/entra-docs)
+licence: MIT (public mirror MicrosoftDocs/entra-docs)
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+# Authentication protocols in agents - Microsoft Entra Agent ID | Microsoft Learn
+
+Agents use OAuth 2.0 protocols with specialized token exchange patterns enabled by Federated Identity Credentials (FIC). All agent auth flows involve multi-stage token exchanges where the agent identity blueprint impersonates the agent identity to perform operations. This article explains the authentication protocols and token flows used by agents. It covers delegation scenarios, autonomous operations, and federated identity credential patterns. Microsoft recommends that you use our SDKs like Microsoft Entra ID Auth SDK (sidecar) since implementing these protocol steps isn't easy.
+
+All agent entities are confidential clients that can also serve as APIs for On-Behalf-Of scenarios. Interactive flows aren't supported for any agent entity type, ensuring that all authentication occurs through programmatic token exchanges rather than user interaction flows.
+
+Warning
+
+Microsoft recommends using the approved SDKs like Microsoft.Identity.Web and Microsoft Entra ID Auth SDK (sidecar) libraries to implement these protocols. Manual implementation of these protocols is complex and error-prone, and using the SDKs helps ensure security and compliance with best practices.
+
+## Prerequisites
+
+If you aren't familiar already, go through the following protocol docs.
+
+- Microsoft identity platform and OAuth 2.0 On-Behalf-Of flow
+- Microsoft identity platform and the OAuth 2.0 client credentials flow
+
+## Supported grant types
+
+The following are the supported grant types for agent applications.
+
+### Agent identity blueprint
+
+Agent identity blueprints support `client_credentials` enabling secure token acquisition for impersonation scenarios. The `jwt-bearer` grant type facilitates token exchanges in On-Behalf Of scenarios, allowing for delegation patterns. `refresh_token` grants enable background operations with user context, supporting long-running processes that maintain user authorization.
+
+### Agent identity
+
+Agent identities use `client_credentials` for app-only autonomous operations, enabling independent functionality without user context, and impersonation for a user agent identity. The `jwt-bearer` grant type supports both client credential flow and On-Behalf Of (OBO) flow providing flexibility in delegation patterns.`refresh_token` grants facilitate background user-delegated operations, allowing agent identities to maintain user context across extended operations.
+
+### Unsupported flows
+
+- The agent application model explicitly excludes certain authentication patterns to maintain security boundaries. Agents aren't supported for interactive (`/authorize`) flows, ensuring all authentication occurs programmatically.
+- Public client capabilities aren't available, requiring all agents to operate as confidential clients.
+- A web redirect URI can be configured on a blueprint for consent flows only (`response_type=none`), but can't be used for interactive token acquisition. Full redirect URI functionality is configured on the client application.
+
+## Core protocol patterns
+
+Agents can operate in three primary modes:
+
+- Agents operating on behalf of regular users in Microsoft Entra ID (interactive agents). This is a regular on-behalf-of flow.
+- Agents operating on their own behalf using service principals created for agents (autonomous).
+- Agents operating on their own behalf using user principals created specifically for that agent (for instance agents having their own mailbox).
+
+## Managed identities integration
+
+Managed identities are the preferred credential type. In this configuration, the managed identity token serves as the credential for the parent agent identity blueprint, while standard MSI protocols apply for credential acquisition. This integration allows the agent ID to receive the full benefits of MSI security and management, including automatic credential rotation and secure storage.
+
+Warning
+
+Client secrets shouldn't be used as client credentials in production environments for agent identity blueprints due to security risks. Instead, use more secure authentication methods such as federated identity credentials (FIC) with managed identities or client certificates. These methods provide enhanced security by eliminating the need to store sensitive secrets directly within your application configuration.
+
+## Oauth protocols
+
+There are three agent oauth flows:
+
+![Diagram showing the illustration of oauth flow for agents.](media/agent-oauth-protocols/agent-flows.png#lightbox)
+
+- Agent on-behalf of flow: Agents operating on behalf of regular users (interactive agents).
+- Autonomous app flow: App-only operations enable agent identities to act autonomously without user context.
+- Agent's user account flow: Agents operating on their own behalf using user principals created specifically for agents.

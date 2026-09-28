@@ -1,0 +1,316 @@
+source: S1732
+url: https://www.mkdocs.org/user-guide/cli/
+title: MkDocs CLI reference (build --strict)
+publisher: MkDocs project
+licence: BSD-2-Clause (mkdocs/mkdocs LICENSE)
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+MkDocs
+Home
+Getting Started
+User Guide
+User Guide
+Installation
+Writing Your Docs
+Choosing Your Theme
+Customizing Your Theme
+Localizing Your Theme
+Configuration
+Command Line Interface
+Deploying Your Docs
+Developer Guide
+Developer Guide
+Themes
+Translations
+Plugins
+API Reference
+About
+Release Notes
+Contributing
+License
+Search
+Previous
+Next
+Edit on GitHub
+Command Line Interface
+mkdocs
+build
+get-deps
+gh-deploy
+new
+serve
+# Command Line Interface
+# mkdocs
+MkDocs - Project documentation with Markdown.
+Usage:
+mkdocs [OPTIONS] COMMAND [ARGS]...
+Options:
+Name
+Type
+Description
+Default
+-V, --version
+boolean
+Show the version and exit.
+False
+-q, --quiet
+boolean
+Silence warnings
+False
+-v, --verbose
+boolean
+Enable verbose output
+False
+--color / --no-color
+boolean
+Force enable or disable color and wrapping for the output. Default is auto-detect.
+None
+--help
+boolean
+Show this message and exit.
+False
+Subcommands
+build: Build the MkDocs documentation
+get-deps: Show required PyPI packages inferred from plugins in mkdocs.yml
+gh-deploy: Deploy your documentation to GitHub Pages
+new: Create a new MkDocs project
+serve: Run the builtin development server
+## mkdocs build
+Build the MkDocs documentation
+Usage:
+mkdocs build [OPTIONS]
+Options:
+Name
+Type
+Description
+Default
+-c, --clean / --dirty
+boolean
+Remove old files from the site_dir before building (the default).
+True
+-f, --config-file
+filename
+Provide a specific MkDocs config. This can be a file name, or '-' to read from stdin.
+None
+-s, --strict / --no-strict
+boolean
+Enable strict mode. This will cause MkDocs to abort the build on any warnings.
+None
+-t, --theme
+choice (mkdocs | readthedocs)
+The theme to use when building your documentation.
+None
+--use-directory-urls / --no-directory-urls
+boolean
+Use directory URLs when building pages (the default).
+None
+-d, --site-dir
+path
+The directory to output the result of the documentation build.
+None
+-q, --quiet
+boolean
+Silence warnings
+False
+-v, --verbose
+boolean
+Enable verbose output
+False
+--help
+boolean
+Show this message and exit.
+False
+## mkdocs get-deps
+Show required PyPI packages inferred from plugins in mkdocs.yml
+Usage:
+mkdocs get-deps [OPTIONS]
+Options:
+Name
+Type
+Description
+Default
+-v, --verbose
+boolean
+Enable verbose output
+False
+-f, --config-file
+filename
+Provide a specific MkDocs config. This can be a file name, or '-' to read from stdin.
+None
+-p, --projects-file
+text
+URL or local path of the registry file that declares all known MkDocs-related projects.
+https://raw.githubusercontent.com/mkdocs/catalog/main/projects.yaml
+--help
+boolean
+Show this message and exit.
+False
+## mkdocs gh-deploy
+Deploy your documentation to GitHub Pages
+Usage:
+mkdocs gh-deploy [OPTIONS]
+Options:
+Name
+Type
+Description
+Default
+-c, --clean / --dirty
+boolean
+Remove old files from the site_dir before building (the default).
+True
+-m, --message
+text
+A commit message to use when committing to the GitHub Pages remote branch. Commit {sha} and MkDocs {version} are available as expansions
+None
+-b, --remote-branch
+text
+The remote branch to commit to for GitHub Pages. This overrides the value specified in config
+None
+-r, --remote-name
+text
+The remote name to commit to for GitHub Pages. This overrides the value specified in config
+None
+--force
+boolean
+Force the push to the repository.
+False
+--no-history
+boolean
+Replace the whole Git history with one new commit.
+False
+--ignore-version
+boolean
+Ignore check that build is not being deployed with an older version of MkDocs.
+False
+--shell
+boolean
+Use the shell when invoking Git.
+False
+-f, --config-file
+filename
+Provide a specific MkDocs config. This can be a file name, or '-' to read from stdin.
+None
+-s, --strict / --no-strict
+boolean
+Enable strict mode. This will cause MkDocs to abort the build on any warnings.
+None
+-t, --theme
+choice (mkdocs | readthedocs)
+The theme to use when building your documentation.
+None
+--use-directory-urls / --no-directory-urls
+boolean
+Use directory URLs when building pages (the default).
+None
+-d, --site-dir
+path
+The directory to output the result of the documentation build.
+None
+-q, --quiet
+boolean
+Silence warnings
+False
+-v, --verbose
+boolean
+Enable verbose output
+False
+--help
+boolean
+Show this message and exit.
+False
+## mkdocs new
+Create a new MkDocs project
+Usage:
+mkdocs new [OPTIONS] PROJECT_DIRECTORY
+Options:
+Name
+Type
+Description
+Default
+-q, --quiet
+boolean
+Silence warnings
+False
+-v, --verbose
+boolean
+Enable verbose output
+False
+--help
+boolean
+Show this message and exit.
+False
+## mkdocs serve
+Run the builtin development server
+Usage:
+mkdocs serve [OPTIONS]
+Options:
+Name
+Type
+Description
+Default
+-a, --dev-addr
+text
+IP address and port to serve documentation locally (default: localhost:8000)
+None
+--no-livereload
+boolean
+Disable the live reloading in the development server.
+False
+--dirty
+text
+Only re-build files that have changed.
+False
+-c, --clean
+text
+Build the site without any effects of mkdocs serve - pure mkdocs build, then serve.
+False
+--watch-theme
+boolean
+Include the theme in list of files to watch for live reloading. Ignored when live reload is not used.
+False
+-w, --watch
+path
+A directory or file to watch for live reloading. Can be supplied multiple times.
+[]
+-f, --config-file
+filename
+Provide a specific MkDocs config. This can be a file name, or '-' to read from stdin.
+None
+-s, --strict / --no-strict
+boolean
+Enable strict mode. This will cause MkDocs to abort the build on any warnings.
+None
+-t, --theme
+choice (mkdocs | readthedocs)
+The theme to use when building your documentation.
+None
+--use-directory-urls / --no-directory-urls
+boolean
+Use directory URLs when building pages (the default).
+None
+-q, --quiet
+boolean
+Silence warnings
+False
+-v, --verbose
+boolean
+Enable verbose output
+False
+--help
+boolean
+Show this message and exit.
+False
+#### Search
+From here you can search these documents. Enter your search terms below.
+#### Keyboard Shortcuts
+Keys
+Action
+?
+Open this help
+n
+Next page
+p
+Previous page
+s
+Search

@@ -1,0 +1,42 @@
+source: S-ybuoluc4
+url: https://learn.microsoft.com/en-us/entra/identity/devices/overview
+title: What is device identity in Microsoft Entra ID (Learn page, markdown front matter)
+publisher: Microsoft
+licence: MIT (public mirror MicrosoftDocs/entra-docs)
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+# What is device identity in Microsoft Entra ID? - Microsoft Entra ID | Microsoft Learn
+
+A device identity is an object in Microsoft Entra ID. This device object is similar to users, groups, or applications. A device identity gives administrators information they can use when making access or configuration decisions.
+
+There are three ways to get a device identity:
+
+- Microsoft Entra registration
+- Microsoft Entra join
+- Microsoft Entra hybrid join
+
+Device identities are a prerequisite for scenarios like device-based Conditional Access policies and Mobile Device Management with the Microsoft Intune family of products.
+
+## Modern device scenario
+
+The modern device scenario focuses on two of these methods:
+
+- Microsoft Entra registration
+    - Bring your own device (BYOD)
+    - Mobile device (cell phone and tablet)
+- Microsoft Entra join
+    - Windows 11 and Windows 10 devices owned by your organization
+    - Windows Server 2019 and newer servers in your organization running as VMs in Azure
+
+Microsoft Entra hybrid join is seen as an interim step on the road to Microsoft Entra join. All three scenarios can coexist in a single organization.
+
+## Resource access
+
+Registering and joining devices to Microsoft Entra ID gives users Seamless Sign-on (SSO) to cloud-based resources.
+
+Devices that are Microsoft Entra joined benefit from SSO to your organization's on-premises resources.
+
+## Provisioning
+
+Getting devices in to Microsoft Entra ID can be done in a self-service manner or a controlled process managed by administrators.

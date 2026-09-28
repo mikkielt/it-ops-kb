@@ -1,0 +1,177 @@
+source: S-d5e5aem4
+url: https://github.com/anthropics/claude-cookbooks
+title: anthropics/claude-cookbooks (Claude Cookbooks)
+publisher: Anthropic
+licence: MIT
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+anthropics
+/
+claude-cookbooks
+Public
+Notifications
+You must be signed in to change notification settings
+Fork
+6.4k
+Star
+53k
+BranchesTags
+Open more actions menu
+## Latest commit
+## History
+639 Commits
+639 Commits
+## Folders and files
+NameName
+Last commit message
+Last commit date
+.claude
+.claude
+.github
+.github
+anthropic_cookbook
+anthropic_cookbook
+capabilities
+capabilities
+claude_agent_sdk
+claude_agent_sdk
+coding
+coding
+cost_optimization
+cost_optimization
+evals/agentic_search
+evals/agentic_search
+extended_thinking
+extended_thinking
+fable_5_fallback_billing
+fable_5_fallback_billing
+finetuning
+finetuning
+images
+images
+managed_agents
+managed_agents
+misc
+misc
+multimodal
+multimodal
+observability
+observability
+patterns/agents
+patterns/agents
+scripts
+scripts
+skills
+skills
+tests
+tests
+third_party
+third_party
+tool_evaluation
+tool_evaluation
+tool_use
+tool_use
+.env.example
+.env.example
+.gitignore
+.gitignore
+.pre-commit-config.yaml
+.pre-commit-config.yaml
+CLAUDE.md
+CLAUDE.md
+CONTRIBUTING.md
+CONTRIBUTING.md
+LICENSE
+LICENSE
+Makefile
+Makefile
+README.md
+README.md
+authors.yaml
+authors.yaml
+lychee.toml
+lychee.toml
+pyproject.toml
+pyproject.toml
+registry.yaml
+registry.yaml
+requirements-dev.txt
+requirements-dev.txt
+tox.ini
+tox.ini
+uv.lock
+uv.lock
+uv.toml
+uv.toml
+## Repository files navigation
+# Claude Cookbooks
+The Claude Cookbooks provide code and guides designed to help developers build with Claude, offering copy-able code snippets that you can easily integrate into your own projects.
+## Prerequisites
+To make the most of the examples in this cookbook, you'll need a Claude API key (sign up for free here).
+While the code examples are primarily written in Python, the concepts can be adapted to any programming language that supports interaction with the Claude API.
+If you're new to working with the Claude API, we recommend starting with our Claude API Fundamentals course to get a solid foundation.
+## Explore Further
+Looking for more resources to enhance your experience with Claude and AI assistants? Check out these helpful links:
+Anthropic developer documentation
+Anthropic support docs
+Anthropic Discord community
+## Contributing
+The Claude Cookbooks thrives on the contributions of the developer community. We value your input, whether it's submitting an idea, fixing a typo, adding a new guide, or improving an existing one. By contributing, you help make this resource even more valuable for everyone.
+To avoid duplication of efforts, please review the existing issues and pull requests before contributing.
+If you have ideas for new examples or guides, share them on the issues page.
+## Table of recipes
+### Capabilities
+Classification: Explore techniques for text and data classification using Claude.
+Retrieval Augmented Generation: Learn how to enhance Claude's responses with external knowledge.
+Summarization: Discover techniques for effective text summarization with Claude.
+### Tool Use and Integration
+Tool use: Learn how to integrate Claude with external tools and functions to extend its capabilities.
+Customer service agent
+Calculator integration
+SQL queries
+### Third-Party Integrations
+Retrieval augmented generation: Supplement Claude's knowledge with external data sources.
+Vector databases (Pinecone)
+Wikipedia
+Web pages
+Embeddings with Voyage AI
+### Multimodal Capabilities
+Vision with Claude:
+Getting started with images
+Best practices for vision
+Interpreting charts and graphs
+Extracting content from forms
+Generate images with Claude: Use Claude with Stable Diffusion for image generation.
+### Advanced Techniques
+Sub-agents: Learn how to use Haiku as a sub-agent in combination with Opus.
+Upload PDFs to Claude: Parse and pass PDFs as text to Claude.
+Automated evaluations: Use Claude to automate the prompt evaluation process.
+Enable JSON mode: Ensure consistent JSON output from Claude.
+Create a moderation filter: Use Claude to create a content moderation filter for your application.
+Prompt caching: Learn techniques for efficient prompt caching with Claude.
+Cost optimization: Work through a cost optimization checklist on an agent, measuring pass rate and cost per task to find the Pareto-optimal configuration.
+## Additional Resources
+Anthropic on AWS: Explore examples and solutions for using Claude on AWS infrastructure.
+AWS Samples: A collection of code samples from AWS which can be adapted for use with Claude. Note that some samples may require modification to work optimally with Claude.
+## About
+A collection of notebooks/recipes showcasing some fun and effective ways of using Claude.
+### Resources
+Readme
+MIT license
+### Contributing
+Contributing
+Activity
+Custom properties
+### Stars
+53.0k stars
+### Watchers
+627 watching
+### Forks
+6.4k forks
+Report repository
+## Releases
+## Packages
+## Used by
+## Contributors
+## Languages

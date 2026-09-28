@@ -1,0 +1,93 @@
+source: S-sp6pux45
+url: https://learn.microsoft.com/en-us/sql/t-sql/statements/alter-symmetric-key-transact-sql?view=sql-server-ver17
+title: ALTER SYMMETRIC KEY (Transact-SQL)
+publisher: Microsoft (MicrosoftDocs/sql-docs)
+licence: CC BY 4.0 (public mirror MicrosoftDocs/sql-docs)
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+# ALTER SYMMETRIC KEY (Transact-SQL) - SQL Server | Microsoft Learn
+
+**Applies to:**SQL ServerAzure SQL DatabaseAzure SQL Managed InstanceAzure Synapse AnalyticsSQL database in Microsoft Fabric
+
+Changes the properties of a symmetric key.
+
+Transact-SQL syntax conventions
+
+Note
+
+This syntax is not supported by serverless SQL pool in Azure Synapse Analytics.
+
+## Syntax
+
+```syntaxsql
+ALTER SYMMETRIC KEY Key_name <alter_option>
+
+<alter_option> ::=
+   ADD ENCRYPTION BY <encrypting_mechanism> [ , ... n ]
+   |
+   DROP ENCRYPTION BY <encrypting_mechanism> [ , ... n ]
+<encrypting_mechanism> ::=
+   CERTIFICATE certificate_name
+   |
+   PASSWORD = 'password'
+   |
+   SYMMETRIC KEY Symmetric_Key_Name
+   |
+   ASYMMETRIC KEY Asym_Key_Name
+```
+
+## Arguments
+
+*Key\_name* Is the name by which the symmetric key to be changed is known in the database.
+
+ADD ENCRYPTION BY Adds encryption by using the specified method.
+
+DROP ENCRYPTION BY Drops encryption by the specified method. You cannot remove all the encryptions from a symmetric key.
+
+CERTIFICATE *Certificate\_name* Specifies the certificate that is used to encrypt the symmetric key. This certificate must already exist in the database.
+
+PASSWORD **='***password***'** Specifies the password that is used to encrypt the symmetric key. *password* must meet the Windows password policy requirements of the computer that is running the instance of SQL Server.
+
+SYMMETRIC KEY *Symmetric\_Key\_Name* Specifies the symmetric key that is used to encrypt the symmetric key that is being changed. This symmetric key must already exist in the database and must be open.
+
+ASYMMETRIC KEY *Asym\_Key\_Name* Specifies the asymmetric key that is used to encrypt the symmetric key that is being changed. This asymmetric key must already exist in the database.
+
+## Remarks
+
+Caution
+
+When a symmetric key is encrypted with a password instead of with the public key of the database master key, the TRIPLE\_DES encryption algorithm is used. Because of this, keys that are created with a strong encryption algorithm, such as AES, are themselves secured by a weaker algorithm.
+
+To change the encryption of the symmetric key, use the ADD ENCRYPTION and DROP ENCRYPTION phrases. It is never possible for a key to be entirely without encryption. For this reason, the best practice is to add the new form of encryption before removing the old form of encryption.
+
+To protect the key material of the symmetric key, SQL Server and Azure SQL store the key material in encrypted form. Historically, this encryption utilized PKCS#1 v1.5 padding mode; starting with database compatibility level 170, the encryption uses OAEP-256 padding mode for encryption by certificate or asymmetric key.
+
+To change the owner of a symmetric key, use ALTER AUTHORIZATION.
+
+Note
+
+The RC4 algorithm is only supported for backward compatibility. New material can only be encrypted using RC4 or RC4\_128 when the database is in compatibility level 90 or 100. (Not recommended.) Use a newer algorithm such as one of the AES algorithms instead. In SQL Server 2012 (11.x) material encrypted using RC4 or RC4\_128 can be decrypted in any compatibility level.
+
+## Permissions
+
+Requires ALTER permission on the symmetric key. If adding encryption by a certificate or asymmetric key, requires VIEW DEFINITION permission on the certificate or asymmetric key. If dropping encryption by a certificate or asymmetric key, requires CONTROL permission on the certificate or asymmetric key.
+
+## Examples
+
+The following example changes the encryption method that is used to protect a symmetric key. The symmetric key `JanainaKey043` is encrypted using certificate `Shipping04` when the key was created. Because the key can never be stored unencrypted, in this example, encryption is added by password, and then encryption is removed by certificate. Replace each `<password>` occurrence with a strong password.
+
+```sql
+CREATE SYMMETRIC KEY JanainaKey043 WITH ALGORITHM = AES_256
+    ENCRYPTION BY CERTIFICATE Shipping04;
+-- Open the key.
+OPEN SYMMETRIC KEY JanainaKey043 DECRYPTION BY CERTIFICATE Shipping04
+    WITH PASSWORD = '<password>';
+-- First, encrypt the key with a password.
+ALTER SYMMETRIC KEY JanainaKey043
+    ADD ENCRYPTION BY PASSWORD = '<password>';
+-- Now remove encryption by the certificate.
+ALTER SYMMETRIC KEY JanainaKey043
+    DROP ENCRYPTION BY CERTIFICATE Shipping04;
+CLOSE SYMMETRIC KEY JanainaKey043;
+```

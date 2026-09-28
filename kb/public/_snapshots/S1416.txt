@@ -1,0 +1,157 @@
+source: S1416
+url: https://github.com/dsccommunity/AuditPolicyDsc
+title: AuditPolicyDsc repository (dsccommunity)
+publisher: dsccommunity
+licence: MIT
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+dsccommunity
+/
+AuditPolicyDsc
+Public
+Notifications
+You must be signed in to change notification settings
+Fork
+12
+Star
+25
+BranchesTags
+Open more actions menu
+## Latest commit
+## History
+380 Commits
+380 Commits
+## Folders and files
+NameName
+Last commit message
+Last commit date
+.github
+.github
+DSCResources
+DSCResources
+Examples
+Examples
+Tests
+Tests
+.codecov.yml
+.codecov.yml
+.gitignore
+.gitignore
+AuditPolicyDsc.psd1
+AuditPolicyDsc.psd1
+LICENSE
+LICENSE
+README.md
+README.md
+appveyor.yml
+appveyor.yml
+## Repository files navigation
+# AuditPolicyDsc
+The AuditPolicyDsc module allows you to configure and manage the advanced audit policy on all
+currently supported versions of Windows.
+This project has adopted the Microsoft Open Source Code of Conduct.
+For more information see the Code of Conduct FAQ
+or contact opencode@microsoft.com with any additional questions
+or comments.
+## Branches
+### master
+This is the branch containing the latest release -
+no contributions should be made directly to this branch.
+### dev
+This is the development branch
+to which contributions should be proposed by contributors as pull requests.
+This development branch will periodically be merged to the master branch,
+and be released to PowerShell Gallery.
+## Contributing
+Please check out common DSC Resources contributing guidelines.
+## Resources
+AuditPolicySubcategory: Provides a mechanism to manage advanced auditpolicy subcategory audit flags.
+AuditPolicyOption: Provides a mechanism to manage audit policy options.
+AuditPolicyCsv: Provides a mechanism to restore an audit policy backup from a CSV file.
+AuditPolicyGUID: Provides a version of AuditPolicySubcategory that works around localization issues with auditpol.
+### AuditPolicySubcategory
+Provides a mechanism to manage advanced audit policy subcategory audit flags.
+This resource works on Nano Server.
+#### Requirements
+None
+#### Parameters
+[String] Name (Key): The name of the subcategory in the advanced audit policy to manage.
+[String] AuditFlag (Key): The name of the audit flag to apply to the subcategory. { Success | Failure }.
+[String] Ensure (Write): Indicates whether the service is present or absent. Defaults to Present. { Present | Absent }.
+#### Read-Only Properties from Get-TargetResource
+None
+#### Examples
+Set Audit Policy Subcategory Audit Flags
+### AuditPolicyOption
+Provides a mechanism to manage audit policy options.
+This resource works on Nano Server.
+#### Requirements
+None
+#### Parameters
+[String] Name (Key): The name of the option to configure.
+[String] Value (Key): The value to apply to the option. { Enabled | Disabled }.
+#### Read-Only Properties from Get-TargetResource
+None
+#### Examples
+Set Audit Policy Option
+### AuditPolicyCsv
+Provides a mechanism to restore an audit policy backup.
+This resource works on Nano Server.
+#### Requirements
+None
+#### Parameters
+[String] CsvPath (Required): The path to the CSV file to apply to the node.
+[String] IsSingleInstance (Key): Specifies if the resource is a single instance, the value must be 'Yes'.
+#### Read-Only Properties from Get-TargetResource
+None
+#### Examples
+Apply audit policy backup from a CSV file
+### AuditPolicyGuid
+Provides a version of AuditPolicySubcategory that works around localization issues with auditpol.
+#### Requirements
+None
+#### Parameters
+[String] Name (Key): The name of the subcategory in the advanced audit policy to manage.
+[String] AuditFlag (Key): The name of the audit flag to apply to the subcategory. { Success | Failure }.
+[String] Ensure (Write): Indicates whether the service is present or absent. Defaults to Present. { Present | Absent }.
+#### Read-Only Properties from Get-TargetResource
+None
+#### Examples
+Set Audit Policy Subcategory Audit Flags
+## Versions
+### Unreleased
+### 1.4.0.0
+Explicitly removed extra hidden files from release package
+### 1.3.0.0
+Update LICENSE file to match the Microsoft Open Source Team standard.
+Added the AuditPolicyGuid resource.
+### 1.2.0.0
+Moved auditpol call in the helper module to an external process to better control output
+auditpol output is now converted to CSV to remove the need to parse the text output
+All resources have been updated to use the new helper module functionality
+Added the Ensure parameter default value of Present to the AuditPolicySubcategory resource Test-TargetResource function
+### 1.1.0.0
+Added the AuditPolicyCsv resource.
+### 1.0.0.0
+Initial release with the following resources:
+AuditPolicySubcategory
+AuditPolicyOption
+## About
+No description, website, or topics provided.
+### Resources
+Readme
+MIT license
+Activity
+Custom properties
+### Stars
+25 stars
+### Watchers
+7 watching
+### Forks
+12 forks
+Report repository
+## Releases
+## Packages
+## Contributors
+## Languages

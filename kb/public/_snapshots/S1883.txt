@@ -1,0 +1,448 @@
+source: S1883
+url: https://www.promptfoo.dev/docs/providers/mcp/
+title: MCP Provider
+publisher: Promptfoo
+licence: MIT (docs in promptfoo/promptfoo)
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+# MCP (Model Context Protocol) Provider
+The mcp provider calls Model Context Protocol (MCP) tools directly, so you can test or red team the server itself.
+To give MCP tools to a model you're testing, use the MCP integration for other providers.
+## Setup​
+To use the MCP provider, you need to have an MCP server running. This can be a local server or a remote one.
+### Prerequisites​
+An MCP server (local or remote)
+Node.js dependencies for MCP SDK (automatically handled by promptfoo)
+## Basic Configuration​
+The most basic MCP provider configuration:
+promptfooconfig.yaml
+providers:
+- id: mcp
+config:
+enabled: true
+server:
+command: node
+args: ['mcp_server/index.js']
+name: test-server
+## Configuration Options​
+### Server Configuration​
+The MCP provider supports both local and remote MCP servers:
+#### Local Server (Command-based)​
+providers:
+- id: mcp
+config:
+enabled: true
+server:
+command: node # Command to run the server
+args: ['server.js'] # Arguments for the command
+name: local-server # Optional name for the server
+env: # Optional environment variables for the server process
+MY_SERVER_TOKEN: '{{ env.MY_SERVER_TOKEN }}'
+LOG_LEVEL: debug
+env applies to stdio servers only (command or path). Values are layered on top of
+Promptfoo's own environment, so the server process inherits everything Promptfoo was started
+with and a per-server entry wins on conflict.
+Keep secrets out of the config file. {{ env.VAR }} placeholders are resolved from the
+environment when the provider loads, so the config stays committable while the credential comes
+from your shell or --env-file. A placeholder for an unset variable is preserved verbatim
+rather than collapsing to an empty string, so a missing credential fails visibly.
+A stdio server can also be started from a script with path, which accepts .js and .py files
+and is resolved relative to the config file. Use it in place of command/args: args is not
+applied to a path server, and command takes precedence when both are set.
+providers:
+- id: mcp
+config:
+enabled: true
+server:
+path: ./mcp_server/index.js # .js runs with Node; .py runs with Python
+name: local-server
+#### Remote Server (URL-based)​
+providers:
+- id: mcp
+config:
+enabled: true
+server:
+url: https://api.example.com/mcp # URL of the remote MCP server
+name: remote-server # Optional name for the server
+headers: # Optional custom headers
+Authorization: 'Bearer token'
+X-API-Key: 'your-api-key'
+#### Multiple Servers​
+You can connect to multiple MCP servers simultaneously:
+providers:
+- id: mcp
+config:
+enabled: true
+servers:
+- command: node
+args: ['server1.js']
+name: server-1
+- url: https://api.example.com/mcp
+name: server-2
+headers:
+Authorization: 'Bearer token'
+### Authentication​
+For servers requiring authentication, use the auth configuration. The MCP provider supports multiple authentication methods.
+#### Bearer Token​
+For APIs that accept a static bearer token:
+providers:
+- id: mcp
+config:
+enabled: true
+server:
+url: https://secure-mcp-server.com
+auth:
+type: bearer
+token: '{{env.MCP_BEARER_TOKEN}}'
+The provider adds an Authorization: Bearer <token> header to each request.
+#### Basic Authentication​
+For servers that use HTTP Basic authentication:
+providers:
+- id: mcp
+config:
+enabled: true
+server:
+url: https://secure-mcp-server.com
+auth:
+type: basic
+username: '{{env.MCP_USERNAME}}'
+password: '{{env.MCP_PASSWORD}}'
+#### API Key​
+For servers that use API key authentication:
+providers:
+- id: mcp
+config:
+enabled: true
+server:
+url: https://secure-mcp-server.com
+auth:
+type: api_key
+value: '{{env.MCP_API_KEY}}'
+keyName: X-API-Key # Header or query parameter name (default: X-API-Key)
+placement: header # 'header' (default) or 'query'
+When placement is header, the key is added as a request header. When placement is query, it's appended as a URL query parameter.
+Backward Compatibility
+The legacy api_key field is still supported for backward compatibility. New configurations should use value instead.
+#### OAuth 2.0​
+OAuth 2.0 authentication supports Client Credentials and Password grant types. Tokens are automatically refreshed with a 60-second buffer before expiry.
+Client Credentials Grant:
+Use this grant type for server-to-server authentication:
+providers:
+- id: mcp
+config:
+enabled: true
+server:
+url: https://secure-mcp-server.com
+auth:
+type: oauth
+grantType: client_credentials
+tokenUrl: https://auth.example.com/oauth/token
+clientId: '{{env.MCP_CLIENT_ID}}'
+clientSecret: '{{env.MCP_CLIENT_SECRET}}'
+scopes:
+- read
+- write
+Password Grant:
+Use this grant type when authenticating with user credentials:
+providers:
+- id: mcp
+config:
+enabled: true
+server:
+url: https://secure-mcp-server.com
+auth:
+type: oauth
+grantType: password
+tokenUrl: https://auth.example.com/oauth/token
+username: '{{env.MCP_USERNAME}}'
+password: '{{env.MCP_PASSWORD}}'
+clientId: '{{env.MCP_CLIENT_ID}}' # Optional
+clientSecret: '{{env.MCP_CLIENT_SECRET}}' # Optional
+scopes:
+- read
+Token Endpoint Discovery:
+If tokenUrl is not specified, the provider automatically discovers the token endpoint using RFC 8414 OAuth 2.0 Authorization Server Metadata. It tries multiple well-known URLs:
+Path-appended: {server-url}/.well-known/oauth-authorization-server (Keycloak style)
+RFC 8414 path-aware: {origin}/.well-known/oauth-authorization-server{path}
+Root level: {origin}/.well-known/oauth-authorization-server
+For maximum compatibility, explicitly configure tokenUrl when possible.
+Token Refresh Behavior:
+When using OAuth authentication:
+The provider requests an access token from tokenUrl (or discovered endpoint) before connecting
+Tokens are proactively refreshed 60 seconds before expiration
+Concurrent requests share the same refresh operation (no duplicate token fetches)
+If a token expires during an evaluation, the provider automatically reconnects with a fresh token
+#### Authentication Options Reference​
+OptionTypeAuth TypeRequiredDescription
+typestringAllYes'bearer', 'basic', 'api_key', 'oauth', or 'none' ('' and 'no_auth' are accepted aliases that disable generated auth)
+tokenstringbearerYesThe bearer token
+usernamestringbasic, oauth (password)YesUsername
+passwordstringbasic, oauth (password)YesPassword
+valuestringapi_keyYes*The API key value
+api_keystringapi_keyYes*Legacy field, use value instead
+keyNamestringapi_keyNoHeader or query parameter name (default: X-API-Key)
+placementstringapi_keyNo'header' (default) or 'query'
+grantTypestringoauthVaries'client_credentials' (the default when omitted) or 'password', which must be set explicitly
+tokenUrlstringoauthNoOAuth token endpoint URL (auto-discovered if omitted)
+clientIdstringoauthVariesRequired for client_credentials
+clientSecretstringoauthVariesRequired for client_credentials
+scopesstring[]oauthNoOAuth scopes to request
+* Either value or api_key is required for api_key auth type.
+### Tool Filtering​
+Control which tools are available from the MCP server:
+providers:
+- id: mcp
+config:
+enabled: true
+server:
+command: node
+args: ['server.js']
+tools: ['get_user_data', 'process_payment'] # Only allow these tools
+exclude_tools: ['delete_user', 'admin_access'] # Exclude these tools
+### Advanced Configuration​
+providers:
+- id: mcp
+config:
+enabled: true
+server:
+command: node
+args: ['server.js']
+name: advanced-server
+timeout: 900000 # Request timeout in milliseconds (15 minutes)
+debug: true # Enable debug logging
+verbose: true # Enable verbose output
+defaultArgs: # Tool call arguments override these defaults
+session_id: 'test-session'
+user_role: 'customer'
+Tools and response transforms receive the full arguments. Debug logs list argument names only. Promptfoo redacts credential fields such as session_id and apiKey in saved result metadata and tool traces. Use the separate server authentication settings for credentials that authenticate the connection itself.
+### Response Transforms​
+Use transformResponse when the MCP tool result needs to be reshaped before Promptfoo evaluates it.
+This is useful when a tool returns structured content, multiple content blocks, or metadata that you
+want to promote into a ProviderResponse.
+providers:
+- id: mcp
+config:
+enabled: true
+server:
+command: node
+args: ['server.js']
+transformResponse: |
+{
+output: result.structuredContent?.answer ?? content,
+metadata: { source: result.structuredContent?.source }
+}
+The transform receives three arguments:
+result: The raw MCP SDK tool result
+content: Promptfoo's normalized string representation of the tool result
+context: Tool-call metadata with toolName, toolArgs, and originalPayload
+You can provide the transform as a JavaScript expression, a function, or a file reference:
+transformResponse: 'file://path/to/parser.js'
+module.exports = (result, content, context) => ({
+output: result.structuredContent?.answer ?? content,
+metadata: { toolName: context.toolName },
+});
+Return a primitive value to set output, or return a full ProviderResponse object when you need
+fields such as metadata, guardrails, or sessionId.
+Function and file-based transforms may be async; Promptfoo awaits them before evaluating the tool
+result.
+### Timeout Configuration​
+MCP tool calls have a default timeout of 60 seconds (from the MCP SDK). For long-running tools, you can increase the timeout:
+Via config (per-provider):
+providers:
+- id: mcp
+config:
+enabled: true
+timeout: 900000 # 15 minutes in milliseconds
+server:
+url: https://api.example.com/mcp
+Via environment variable (global default):
+# Set default timeout for all MCP requests (in milliseconds)
+export MCP_REQUEST_TIMEOUT_MS=900000 # 15 minutes
+The priority order is: config.timeout > MCP_REQUEST_TIMEOUT_MS env var > SDK default (60 seconds).
+### Advanced Timeout Options​
+For long-running MCP tools that send progress notifications, you can use advanced timeout options:
+providers:
+- id: mcp
+config:
+enabled: true
+timeout: 300000 # 5 minutes initial timeout
+resetTimeoutOnProgress: true # Reset timeout when progress is received
+maxTotalTimeout: 900000 # 15 minutes absolute maximum
+server:
+url: https://api.example.com/mcp
+OptionDescription
+timeoutRequest timeout in milliseconds (default: 60000)
+resetTimeoutOnProgressReset timeout when progress notifications are received (default: false)
+maxTotalTimeoutAbsolute maximum timeout regardless of progress (optional)
+pingOnConnectPing server after connecting to verify responsiveness (default: false)
+## Usage with Tool Calls​
+The MCP provider expects prompts to be formatted as JSON tool calls. The expected format is:
+{
+"tool": "function_name",
+"args": {
+"parameter1": "value1",
+"parameter2": "value2"
+}
+}
+### Example Test Case​
+promptfooconfig.yaml
+# yaml-language-server: $schema=https://promptfoo.dev/config-schema.json
+description: Testing MCP payment processing system
+providers:
+- id: mcp
+config:
+enabled: true
+server:
+command: node
+args: ['payment_server.js']
+name: payment-system
+prompts:
+- '{{prompt}}'
+tests:
+- vars:
+prompt: '{"tool": "process_payment", "args": {"amount": 100, "currency": "USD", "user_id": "12345"}}'
+assert:
+- type: contains
+value: success
+- vars:
+prompt: '{"tool": "get_transaction", "args": {"transaction_id": "txn_123"}}'
+assert:
+- type: is-json
+## Asserting on Executed Tool Calls​
+When a chat provider runs MCP tools on the model's behalf (mcp.enabled: true on
+anthropic:messages or openai:chat), each executed call is published on
+metadata.toolCalls, so you can test tool routing rather than only the final answer —
+useful when several tools have overlapping domains and a wrong-but-plausible call still
+produces a plausible-looking answer.
+Each entry is { id, name, input, output, is_error }, in call order, and spans every
+continuation round. The key is absent when no MCP tool ran, so guard with ?.:
+promptfooconfig.yaml
+# yaml-language-server: $schema=https://promptfoo.dev/config-schema.json
+providers:
+- id: anthropic:messages:claude-sonnet-5
+config:
+mcp:
+enabled: true
+server:
+command: node
+args: ['company_server.js']
+tests:
+- vars:
+prompt: How many people work at Acme Solar?
+assert:
+- type: javascript
+value: |
+const calls = context.metadata?.toolCalls ?? [];
+return calls.some((c) => c.name === 'get_headcount' && !c.is_error);
+The list is also populated on the failure paths — a run that trips max_tool_calls, or
+one where the model mixed MCP and non-MCP tool blocks, still reports the calls that did
+execute before the bail-out. metadata.toolCalls uses the same field names as the
+Claude Agent SDK provider, so one assertion reads both.
+## Red Team Testing with MCP​
+The MCP provider is particularly powerful for red team testing of agentic systems. Here's a recommended configuration for comprehensive security testing:
+promptfooconfig.yaml
+# yaml-language-server: $schema=https://promptfoo.dev/config-schema.json
+description: MCP Red Team Security Testing
+providers:
+- id: mcp
+config:
+enabled: true
+server:
+command: node
+args: ['mcp_server/index.js']
+name: target-system
+redteam:
+purpose: |
+The system manages payment transactions, user data, and provides analytics.
+Users include customers and TechMart employees with different access levels.
+Test for unauthorized access, data leakage, and function manipulation.
+# Recommended plugins for MCP testing
+plugins:
+- pii # Test for PII data exposure
+- bfla # Test function-level authorization
+- bola # Test object-level authorization
+- sql-injection # Test for SQL injection vulnerabilities
+strategies:
+- basic
+numTests: 25
+### Recommended Plugins for MCP Testing​
+Based on common MCP security concerns, these plugins are particularly relevant:
+pii - Tests for exposure of personally identifiable information through tool responses
+bfla (Broken Function Level Authorization) - Tests whether users can access functions they shouldn't
+bola (Broken Object Level Authorization) - Tests whether users can access data objects they shouldn't
+sql-injection - Tests for SQL injection vulnerabilities in tool parameters
+These plugins target the most common security vulnerabilities in systems that expose tools and data through MCP interfaces.
+## Environment Variables​
+The MCP provider supports these environment variables:
+VariableDescriptionDefault
+MCP_REQUEST_TIMEOUT_MSDefault timeout for MCP tool calls and requests (ms)60000
+MCP_DEBUGEnable debug logging for MCP connectionsfalse
+MCP_VERBOSEEnable verbose output for MCP connectionsfalse
+## Error Handling​
+The MCP provider handles various error conditions:
+Connection errors: When the MCP server is unreachable
+Invalid JSON: When the prompt is not valid JSON
+Tool not found: When requesting a non-existent tool
+Tool execution errors: When the tool call fails
+Timeout errors: When tool calls exceed the configured timeout
+Example error response:
+{
+"error": "MCP tool error: Tool 'unknown_function' not found in any connected MCP server"
+}
+## Debugging​
+Enable debug mode to troubleshoot MCP provider issues:
+providers:
+- id: mcp
+config:
+enabled: true
+debug: true
+verbose: true
+server:
+command: node
+args: ['server.js']
+This will log:
+MCP server connection status
+Available tools from connected servers
+Tool call details and responses
+Error messages with stack traces
+## Limitations​
+The MCP provider requires prompts to be formatted as JSON tool calls
+Only supports MCP servers that implement the standard MCP protocol
+Remote server support depends on the specific MCP server implementation
+Tool responses are returned as JSON strings
+## Examples​
+For complete working examples, see:
+Basic MCP Red Team Testing
+MCP Authentication - OAuth and other authentication methods
+Simple MCP Integration
+You can initialize these examples with:
+npx promptfoo@latest init --example redteam-mcp
+npx promptfoo@latest init --example redteam-mcp-auth
+## See Also​
+MCP Integration for Other Providers
+Red Team Testing Guide
+MCP Plugin Documentation
+Configuration Reference
+Setup
+Prerequisites
+Basic Configuration
+Configuration Options
+Server Configuration
+Authentication
+Tool Filtering
+Advanced Configuration
+Response Transforms
+Timeout Configuration
+Advanced Timeout Options
+Usage with Tool Calls
+Example Test Case
+Asserting on Executed Tool Calls
+Red Team Testing with MCP
+Recommended Plugins for MCP Testing
+Environment Variables
+Error Handling
+Debugging
+Limitations
+Examples
+See Also

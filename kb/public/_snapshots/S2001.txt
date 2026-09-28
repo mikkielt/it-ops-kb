@@ -1,0 +1,116 @@
+source: S2001
+url: https://github.com/open-telemetry/semantic-conventions-genai
+title: semantic-conventions-genai repository
+publisher: OpenTelemetry Authors
+licence: Apache-2.0
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+open-telemetry
+/
+semantic-conventions-genai
+Public
+Notifications
+You must be signed in to change notification settings
+Fork
+108
+Star
+394
+BranchesTags
+Open more actions menu
+## Latest commit
+## History
+640 Commits
+640 Commits
+## Folders and files
+NameName
+Last commit message
+Last commit date
+.github
+.github
+changelog.d
+changelog.d
+docs
+docs
+model
+model
+policies/check/json-schema-annotations
+policies/check/json-schema-annotations
+reference
+reference
+templates/registry
+templates/registry
+.editorconfig
+.editorconfig
+.gitattributes
+.gitattributes
+.gitignore
+.gitignore
+AGENTS.md
+AGENTS.md
+CHANGELOG.md
+CHANGELOG.md
+CLAUDE.md
+CLAUDE.md
+CONTRIBUTING.md
+CONTRIBUTING.md
+LICENSE
+LICENSE
+Makefile
+Makefile
+README.md
+README.md
+RELEASING.md
+RELEASING.md
+mise.toml
+mise.toml
+versions.env
+versions.env
+## Repository files navigation
+# OpenTelemetry GenAI Semantic Conventions
+Semantic Conventions for Generative AI (GenAI), including spans, metrics,
+and events for GenAI clients, MCP (Model Context Protocol), and
+provider-specific conventions (OpenAI, etc.).
+This repository extends the
+OpenTelemetry Semantic Conventions
+with GenAI-specific conventions, using
+Weaver to manage dependencies
+on the core semantic conventions.
+## Schema URL
+TODO
+## Read the docs
+The human-readable version of the semantic conventions resides in the
+docs folder. Major parts of these Markdown documents are generated
+from the YAML definitions located in the model folder.
+Reference implementations and their tooling live under reference.
+For the Python reference compliance matrix and per-signal support reports, see
+reference/README.md.
+For contribution guidance specific to that project, see
+reference/CONTRIBUTING.md.
+## Contributing
+See CONTRIBUTING.md.
+## About
+opentelemetry.io
+### Resources
+Readme
+Apache-2.0 license
+### Code of conduct
+Code of conduct
+### Contributing
+Contributing
+### Security policy
+Security policy
+Activity
+Custom properties
+### Stars
+394 stars
+### Watchers
+9 watching
+### Forks
+108 forks
+Report repository
+## Releases
+## Packages
+## Used by
+## Contributors
+## Languages

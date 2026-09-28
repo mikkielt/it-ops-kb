@@ -1,0 +1,9 @@
+source: S-ofreafga
+url: https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_data_collection_rule
+title: azurerm_monitor_data_collection_rule | Resources | hashicorp/azurerm
+publisher: Terraform Registry (HashiCorp)
+licence: MPL-2.0 (hashicorp/terraform-provider-azurerm LICENSE)
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+

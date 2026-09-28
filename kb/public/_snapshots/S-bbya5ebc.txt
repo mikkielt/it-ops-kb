@@ -1,0 +1,130 @@
+source: S-bbya5ebc
+url: https://learn.microsoft.com/azure/update-manager/manage-dynamic-scoping
+title: Manage a dynamic scope
+publisher: Microsoft Learn
+licence: CC BY 4.0 (public mirror MicrosoftDocs/azure-docs)
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+# Manage a Dynamic Scope | Microsoft Learn
+
+**Applies to:** ✔️ Windows VMs ✔️ Linux VMs ✔️ On-premises environment ✔️ Azure Arc-enabled servers.
+
+This article describes how to view, add, edit, and delete a dynamic scope that's associated with a maintenance configuration in Azure Update Manager.
+
+You can create a dynamic scope at either the subscription level or the resource group level. A subscription or resource group is mandatory for the creation of a dynamic scope, and you can't edit it after the dynamic scope is created.
+
+Resources eligible to be attached to a dynamic scope are determined by the level at which you create the scope. If you set the scope at the resource group level (for example, RG1), resources from other groups (for example, RG2) will be unassigned if they're attached to the dynamic scope created under RG1. Those resources from other groups will be reassigned even if they're under the same subscription.
+
+## Prerequisites
+
+# Azure VMs
+**Patch Orchestration** must be set to **Customer Managed Schedules**.
+
+# Azure Arc-enabled VMs
+There are *no prerequisites* for patch orchestration. However, you must associate a schedule with the VM for scheduled patching.
+
+---
+
+## Add a dynamic scope
+
+1. Sign in to the Azure portal and go to **Azure Update Manager**.
+2. Select **Machines** &gt; **Maintenance configurations**.
+3. On the **Maintenance configurations** pane, select the name of the maintenance configuration for which you want to add a dynamic scope.
+4. On the page for the chosen maintenance configuration, select **Dynamic scopes** &gt; **Add a dynamic scope**.
+5. On the **Add a dynamic scope** pane, select **subscriptions** (mandatory).
+
+    Note
+
+    You should create subscription-level dynamic scope assignments with an empty location, because a subscription isn't associated with any specific region.
+6. In **Filter by**, choose **Select**. In **Select Filter by**, specify the resource group, resource type, location, tags, and OS type. Then select **Ok**. These filters are optional fields.
+7. In **Preview of machines based on above scope**, you can view the list of machines for the selected criteria. When you finish, select **Save**.
+
+    Note
+
+    The list of machines might be different at run time.
+8. On the **Configure Azure VMs for schedule updates** pane, select one of the following options to provide your consent:
+
+    - **Change the required options to ensure schedule supportability** ensures that the machines are patched according to the schedule and not automatically patched. By selecting this option, you're confirming that you want to update the patch orchestration to **Customer Managed Schedules**. This setting updates the following two properties on your behalf:
+
+        - `Patch mode = AutomaticByPlatform`
+        - `BypassPlatformSafetyChecksOnUserSchedule = True`
+    - **Continue with supported machines only** confirms that you want to proceed with only the machines that already have patch orchestration set to **Customer Managed Schedules**.
+
+        In **Preview of machines based on above scope**, you can view only the machines that don't have patch orchestration set to **Customer Managed Schedules**.
+9. Select **Save**. A notification confirms that the dynamic scopes are successfully applied.
+
+## View a dynamic scope
+
+1. Sign in to the Azure portal and go to **Azure Update Manager**.
+2. Select **Machines** &gt; **Maintenance configurations**.
+3. On the **Maintenance configurations** pane, select the name of the maintenance configuration for which you want to view the dynamic scope.
+4. On the pane for the chosen maintenance configuration, select **Dynamic scopes** to view all the dynamic scopes that are associated with that configuration.
+5. The schedules associated with dynamic scopes appear in the following two areas:
+
+    - **Azure Update Manager** &gt; **Machines** &gt; **Associated schedules** column
+    - Virtual machine (VM) home page &gt; **Updates** &gt; **Scheduling** tab
+
+    To view the VMs that are associated with the schedule, go to the existing schedule and then select the **Dynamic scopes** tab.
+
+## Edit a dynamic scope
+
+1. Sign in to the Azure portal and go to **Azure Update Manager**.
+2. Select **Machines** &gt; **Maintenance configurations**.
+3. On the **Maintenance configurations** pane, select the name of the maintenance configuration for which you want to edit an existing dynamic scope.
+4. On the pane for the chosen maintenance configuration, select **Dynamic scopes**, and then select the scope that you want to edit. In the **Actions** column, select the edit icon.
+5. On the **Edit Dynamic scope** pane, in **Filter By**, select the edit icon. Edit the filters as needed, and then select **Ok**.
+6. Select **Save**.
+
+## Delete a dynamic scope
+
+1. Sign in to the Azure portal and go to **Azure Update Manager**.
+2. Select **Machines** &gt; **Browse maintenance configurations** &gt; **Maintenance configurations**.
+3. On the **Maintenance configurations** pane, select the name of the maintenance configuration for which you want to edit an existing dynamic scope.
+4. On the pane for the chosen maintenance configuration, select **Dynamic scopes**, and then select the scope that you want to delete. Select **Remove dynamic scope**, and then select **Ok**.
+
+## View the patch history of a dynamic scope
+
+1. Sign in to the Azure portal and go to **Azure Update Manager**.
+2. Select **History** to view the patch history of a dynamic scope.
+
+## Provide consent to apply updates
+
+Obtaining consent to apply updates is an important step in the workflow of dynamic scoping. The following tabs describe the various ways to provide consent.
+
+Note
+
+There are no prerequisites for Azure Arc-enabled VMs.
+
+# From a virtual machine
+1. In the Azure portal, go to **+Create a resource** &gt; **Virtual machine** &gt; **Create**.
+2. On the **Create a virtual machine** pane, select the **Management** tab. Under **Guest OS Updates**, in **Patch orchestration options**, select **Azure-orchestrated**. It sets the following properties:
+
+    - `Patch mode = AutomaticByPlatform`
+    - `BypassPlatformSafetyChecksOnUserSchedule = True`
+3. Complete the details on the **Monitoring**, **Advanced**, and **Tags** tabs.
+4. Select **Review + Create**. Under **Management**, you can view the **Periodic assessment** value as **Off** and the **Patch orchestration options** value as **Azure-orchestrated**.
+5. Select **Create**.
+
+# From the tab for scheduled updates
+1. Follow the steps from 1 to 5 in the earlier procedure for adding a dynamic scope.
+2. On the **Configure Azure VMs for schedule updates** pane, select the **Change the required options to ensure schedule supportability** option. Confirm that **Patch orchestration** is set as **Customer Managed Schedules**. It sets the following properties:
+
+    - `Patch mode = AutomaticByPlatform`
+    - `BypassPlatformSafetyChecksOnUserSchedule = True`
+
+    The selection allows you to provide consent to apply the update settings. It also ensures that automatic patching isn't applied and that patching on the VMs runs according to the schedule that you defined.
+3. Select **Save**.
+
+# From update settings
+1. In **Azure Update Manager**, go to **Overview** &gt; **Settings** &gt; **Update settings**.
+2. On the **Change Update settings** pane, select **+Add machine** to add the machines.
+3. In the list of machines sorted according to the operating system, go to the **Patch orchestration** option and select **Customer Managed Schedules**. It sets the following properties:
+
+    - `Patch mode = AutomaticByPlatform`
+    - `BypassPlatformSafetyChecksOnUserSchedule = True`
+4. Select **Save**.
+
+    The selection that you made in this workflow automatically applies the update settings, and no consent is explicitly obtained.
+
+---

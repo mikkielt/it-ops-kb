@@ -1,0 +1,174 @@
+source: S1969
+url: https://github.com/microsoft/Agents-for-python
+title: microsoft/Agents-for-python (Microsoft 365 Agents SDK - Python)
+publisher: Microsoft (github.com/microsoft)
+licence: MIT
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+microsoft
+/
+Agents-for-python
+Public
+Notifications
+You must be signed in to change notification settings
+Fork
+91
+Star
+211
+BranchesTags
+Open more actions menu
+## Latest commit
+## History
+338 Commits
+338 Commits
+## Folders and files
+NameName
+Last commit message
+Last commit date
+.azdo
+.azdo
+.devcontainer
+.devcontainer
+.github
+.github
+dev
+dev
+libraries
+libraries
+scripts
+scripts
+test_samples
+test_samples
+tests
+tests
+versioning
+versioning
+.coveragerc
+.coveragerc
+.flake8
+.flake8
+.gitignore
+.gitignore
+.pre-commit-config.yaml
+.pre-commit-config.yaml
+CLAUDE.md
+CLAUDE.md
+CODEOWNERS
+CODEOWNERS
+CODE_OF_CONDUCT.md
+CODE_OF_CONDUCT.md
+DevInstructions.md
+DevInstructions.md
+LICENSE
+LICENSE
+README.md
+README.md
+SECURITY.md
+SECURITY.md
+SUPPORT.md
+SUPPORT.md
+changelog.md
+changelog.md
+dev_dependencies.txt
+dev_dependencies.txt
+pytest.ini
+pytest.ini
+replace-version.ps1
+replace-version.ps1
+## Repository files navigation
+# Microsoft 365 Agents SDK - Python
+The Microsoft 365 Agent SDK simplifies building full stack, multichannel, trusted agents for platforms including M365, Teams, Copilot Studio, and Webchat. We also offer integrations with 3rd parties such as Facebook Messenger, Slack, or Twilio. The SDK provides developers with the building blocks to create agents that handle user interactions, orchestrate requests, reason responses, and collaborate with other agents.
+The M365 Agent SDK is a comprehensive framework for building enterprise-grade agents, enabling developers to integrate components from the Azure AI Foundry SDK, Semantic Kernel, as well as AI components from other vendors.
+For more information please see the parent project information here Microsoft 365 Agents SDK.
+## Getting Started
+The best way to get started with these packages is to look at the samples available in https://github.com/microsoft/Agents
+## Packages Overview
+We offer the following PyPI packages to create conversational experiences based on Agents:
+Package Name
+PyPI Version
+Description
+Replaces
+microsoft-agents-activity
+Types and validators implementing the Activity protocol spec.
+botframework-schema
+microsoft-agents-hosting-core
+Core library for Microsoft Agents hosting.
+botbuilder-core, botframework-connector
+microsoft-agents-hosting-aiohttp
+Configures aiohttp to run the Agent.
+botbuilder-integration-aiohttp
+microsoft-agents-hosting-fastapi
+Configures FastAPI to run the Agent.
+N/A
+microsoft-agents-hosting-msteams
+Provides classes to host an Agent for Teams.
+N/A
+microsoft-agents-hosting-dialogs
+Dialog system with waterfall dialogs, prompts, and multi-turn conversation management.
+botbuilder-dialogs
+microsoft-agents-storage-blob
+Extension to use Azure Blob as storage.
+botbuilder-azure
+microsoft-agents-storage-cosmos
+Extension to use CosmosDB as storage.
+botbuilder-azure
+microsoft-agents-authentication-msal
+MSAL-based authentication for Microsoft Agents.
+N/A
+microsoft-agents-authentication-entra-auth-sidecar
+Credential-free Entra ID Agent ID authentication via the sidecar.
+N/A
+Additionally we provide a Copilot Studio Client, to interact with Agents created in CopilotStudio:
+Package Name
+PyPI Version
+Description
+microsoft-agents-copilotstudio-client
+Direct to Engine client to interact with Agents created in CopilotStudio
+### Environment requirements
+The packages should target Python 3.10 or greater, and can be used with modern Python package managers like pip, poetry, or conda.
+Note: We recommend using Python 3.11 or later for optimal performance and compatibility with all features. The SDK supports Python 3.10, 3.11, 3.12, 3.13, and 3.14.
+### Code Style
+We are using black and flake8 for code formatting and linting.
+## Contributing
+#### Note for Microsoft internal developers:
+Internal Microsoft Developers should join the Core identity group Agents SDK Contrib
+#### Non-Microsoft internal developers:
+This project welcomes contributions and suggestions. Most contributions require you to agree to a
+Contributor License Agreement (CLA) declaring that you have the right to, and actually do, grant us
+the rights to use your contribution. For details, visit https://cla.opensource.microsoft.com.
+When you submit a pull request, a CLA bot will automatically determine whether you need to provide
+a CLA and decorate the PR appropriately (e.g., status check, comment). Simply follow the instructions
+provided by the bot. You will only need to do this once across all repos using our CLA.
+This project has adopted the Microsoft Open Source Code of Conduct.
+For more information see the Code of Conduct FAQ or
+contact opencode@microsoft.com with any additional questions or comments.
+## Trademarks
+This project may contain trademarks or logos for projects, products, or services. Authorized use of Microsoft
+trademarks or logos is subject to and must follow
+Microsoft's Trademark & Brand Guidelines.
+Use of Microsoft trademarks or logos in modified versions of this project must not cause confusion or imply Microsoft sponsorship.
+Any use of third-party trademarks or logos are subject to those third-party's policies.
+## About
+This repository is for active development of the Microsoft 365 Agent SDK components for Python
+### Resources
+Readme
+MIT license
+### Code of conduct
+Code of conduct
+### Security policy
+Security policy
+Activity
+Custom properties
+### Stars
+211 stars
+### Watchers
+8 watching
+### Forks
+91 forks
+Report repository
+## Releases
+## Packages
+## Used by
+## Contributors
+## Languages

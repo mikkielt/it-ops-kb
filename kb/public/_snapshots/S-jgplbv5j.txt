@@ -1,0 +1,88 @@
+source: S-jgplbv5j
+url: https://www.mintlify.com/docs/guides/use-automations
+title: Use automations (Mintlify)
+publisher: Mintlify (mintlify/docs)
+licence: MIT (mintlify/docs LICENSE)
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+AI
+# Use automations
+Use Mintlify automations to automate recurring docs maintenance: choose the right trigger, write effective instructions, and get consistent agent results.
+Listen to this pageabout 4 min
+Automations run the agent automatically so your content stays accurate without manual effort. This guide covers how to choose the right automation, configure it effectively, and write instructions that produce consistent results.
+##
+​
+When to use automations
+Automations are best for tasks that are:
+Repetitive: The same task runs regularly on a predictable schedule or whenever a specific event occurs.
+Time-consuming: Tasks that take time to do manually but follow a consistent pattern.
+Reactive: Tasks that should happen automatically in response to code or content changes, like updating docs after a feature ships.
+For one-off or exploratory tasks, use the agent directly in the dashboard or from Slack.
+##
+​
+Choose a trigger
+Each automation runs on one of four trigger types. Choose the one that matches when you need the work done.
+TriggerUse when
+Content updateThe task should run whenever your project content changes—translating new pages, fixing broken links, or auditing SEO metadata.
+Code changeThe task should run when source code changes—updating API specifications or documentation after a PR merges.
+Custom scheduleThe task should run on a fixed cadence regardless—publishing weekly changelogs or running periodic grammar checks.
+IntegrationThe task should run when an event occurs in a connected tool—responding to a new message in a Slack channel. Available for custom automations.
+##
+​
+Predefined automations
+Mintlify includes predefined automations for the most common content maintenance tasks. Enable any of them from the Automations page of your dashboard.
+See Predefined automations for more details.
+##
+​
+Custom automations
+Create a custom automation for tasks that aren’t covered by the predefined options. Custom automations give you full control over the trigger, instructions, and context repositories.
+See Create a custom automation for setup steps.
+###
+​
+Write effective instructions
+Custom automation instructions are prompts the agent follows on every run. The quality of your instructions directly affects the consistency of results.
+Describe the outcome, not just the task. Tell the agent what done looks like.
+Review the API reference pages.
+Review every page in the /api-reference directory. For each endpoint, confirm that the request parameters, response fields, and example payloads match the OpenAPI spec in the api/openapi.yaml file. Open a pull request with corrections for any discrepancies you find.
+Write a procedure. Agents follow step-by-step instructions more reliably than open-ended prompts.
+Example procedure
+1. Read the merged pull request diff from the trigger repository.
+2. Identify any changed API endpoints, parameters, or response shapes.
+3. Search the documentation for pages that reference those endpoints.
+4. Update the affected pages to match the changes in the pull request.
+5. Open a pull request with a summary of the pages you changed and why.
+Keep scope narrow. An automation that does one thing well is more reliable than one that tries to do many things. Split complex tasks across multiple automations.
+Specify files and directories. The more precise you are about where the agent should look, the less time it spends searching.
+Example with specific paths
+Check every MDX file in the /content directory for broken internal links (links beginning with /).
+For each broken link, either fix the path or remove the link if no replacement exists.
+###
+​
+Use context repositories
+For custom automations and some predefined automations, you can add context repositories the agent reads when the automation runs.
+Add context repositories when:
+Your content references code, APIs, or configuration that lives in a separate repository.
+You want the agent to compare your content against source code when deciding what to update.
+The automation prompt refers to files outside your Mintlify project repository.
+You can add up to 10 context repositories per automation.
+###
+​
+Update mode
+Decide how much review you want before changes go live.
+Update and merge changes: Changes merge directly into your Mintlify project repository without review. Best for low-risk, high-frequency tasks like translation, grammar checks, and link fixes.
+Modify and wait for review: The agent opens a pull request and a human reviews it before merging. Best for tasks that change content meaning, like syncing with code changes or updating API references.
+##
+​
+Control credit usage
+Every automation run that updates your docs costs 250 credits, no matter how much content the agent reads or how many pages it changes. Runs that find nothing to update cost nothing. To see how many credits your automations use, check the activity log on the Usage page.
+Scheduling cron jobs to run at specific times gives you more precise control over credit usage. For example, run an automation once a day or once a week to cap how many updates it can make per month. A schedule also batches several source changes into one update, so you don’t pay for each change separately. Push-triggered automations can vary more from month to month because they depend on how often content or code changes.
+##
+​
+Review and improve automation results
+Automations run automatically, but they benefit from periodic review.
+Open the Runs tab on the Automations page to see recent run history and status.
+To see more information about a run, click the actions menu button and select View run details to see the prompt, summary, files, and pull request.
+If results are inconsistent, refine your instructions: add more specific procedures, narrow the file scope, or split the automation into smaller tasks.
+A few review cycles after enabling a new automation are usually enough to dial in the instructions.
+⌘I

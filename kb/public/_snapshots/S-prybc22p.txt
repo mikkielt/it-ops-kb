@@ -1,0 +1,201 @@
+source: S-prybc22p
+url: https://learn.microsoft.com/azure/azure-monitor/logs/logs-ingestion-api-overview
+title: Logs Ingestion API in Azure Monitor
+publisher: Microsoft Learn
+licence: CC BY 4.0 (public mirror MicrosoftDocs/azure-monitor-docs)
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+# Logs Ingestion API in Azure Monitor - Azure Monitor | Microsoft Learn
+
+The Logs Ingestion API in Azure Monitor lets you send data to a Log Analytics workspace using either a REST API call or client libraries. The API allows you to send data to supported Azure tables or to custom tables that you create. You can also extend the schema of Azure tables with custom columns to accept additional data.
+
+Important
+
+Starting March 1, 2026, the Logs Ingestion API will enforce TLS 1.2 or higher connections. For more information, see Secure Logs data in transit.
+
+## Basic operation
+
+Data can be sent to the Logs Ingestion API from any application that can make a REST API call. This may be a custom application that you create, or it may be an application or agent that understands how to send data to the API. It specifies a data collection rule (DCR) that includes the target table and workspace and the credentials of an app registration with access to the specified DCR. It sends the data to an endpoint specified by the DCR, or to a data collection endpoint (DCE) if you're using private link.
+
+The data sent by your application to the API must be formatted in JSON and match the structure expected by the DCR. It doesn't necessarily need to match the structure of the target table because the DCR can include a transformation to convert the data to match the table's structure. You can modify the target table and workspace by modifying the DCR without any change to the API call or source data.
+
+![Diagram that shows an overview of logs ingestion API.](media/logs-ingestion-api-overview/overview-log-ingestion-api.png#lightbox)
+
+## Configuration
+
+The following table describes each component in Azure that you must configure before you can use the Logs Ingestion API.
+
+Note
+
+For a PowerShell script that automates the configuration of these components, see Sample code to send data to Azure Monitor using Logs ingestion API.
+
+| Component | Function |
+| --- | --- |
+| App registration and secret | The application registration is used to authenticate the API call. It must be granted permission to the DCR described below. The API call includes the **Application (client) ID** and **Directory (tenant) ID** of the application and the **Value** of an application secret.See Create a Microsoft Entra application and service principal that can access resources and Create a new application secret. |
+| Table in Log Analytics workspace | The table in the Log Analytics workspace must exist before you can send data to it. You can use one of the supported Azure tables or create a custom table using any of the available methods. If you use the Azure portal to create the table, then the DCR is created for you, including a transformation if it's required. With any other method, you need to create the DCR manually as described in the next section.See Create a custom table. |
+| Data collection rule (DCR) | Azure Monitor uses the Data collection rule (DCR) to understand the structure of the incoming data and what to do with it. If the structure of the table and the incoming data don't match, the DCR can include a transformation to convert the source data to match the target table. You can also use the transformation to filter source data and perform any other calculations or conversions.If you create a custom table using the Azure portal, the DCR and the transformation are created for you based on sample data that you provide. If you use an existing table or create a custom table using another method, then you must manually create the DCR using details in the following section.Once your DCR is created, you must grant access to it for the application that you created in the first step. From the **Monitor** menu in the Azure portal, select **Data Collection rules** and then the DCR that you created. Select **Access Control (IAM)** for the DCR and then select **Add role assignment** to add the **Monitoring Metrics Publisher** role. |
+
+## Endpoint
+
+The REST API endpoint for the Logs Ingestion API can either be a data collection endpoint (DCE) or the DCR logs ingestion endpoint.
+
+The DCR logs ingestion endpoint is generated when you create a DCR for direct ingestion. To retrieve this endpoint, open the DCR in the JSON view in the Azure portal. You may need to change the **API version** to the latest version for the endpoints to be displayed.
+
+![Screenshot that shows log ingestion endpoint in a DCR.](media/logs-ingestion-api-overview/logs-ingestion-endpoint.png#lightbox)
+
+You only need a DCE when you're connecting to a Log Analytics workspace using private link or if your DCR doesn't include the logs ingestion endpoint. This condition might apply if you're using an older DCR or if you created the DCR without the `"kind": "Direct"` parameter. See Data collection rule (DCR) below for more details.
+
+Note
+
+The `logsIngestion` property was added on March 31, 2024. Prior to this date, a DCE was required for the Logs ingestion API. Endpoints can't be added to an existing DCR, but you can keep using any existing DCRs with existing DCEs. If you want to move to a DCR endpoint, then you must create a new DCR to replace the existing one. A DCR with endpoints can also use a DCE. In this case, you can choose whether to use the DCE or the DCR endpoints for each of the clients that use the DCR.
+
+## Data collection rule
+
+When you create a custom table in a Log Analytics workspace using the Azure portal, a DCR that can be used with the Logs ingestion API is created for you. If you're sending data to a table that already exists, then you must create the DCR manually. Start with the sample DCR below, replacing values for the following parameters in the template. Use any of the methods described in Create and edit data collection rules (DCRs) in Azure Monitor to create the DCR.
+
+| Parameter | Description |
+| --- | --- |
+| `region` | Region to create your DCR. This must match the region of the Log Analytics workspace and the DCE if you're using one. |
+| `dataCollectionEndpointId` | Resource ID of your DCE. Remove this parameter if you're using the DCR ingestion point. |
+| `streamDeclarations` | Change the column list to the columns in your incoming data. You don't need to change the name of the stream since this just needs to match the `streams` name in `dataFlows`. |
+| `workspaceResourceId` | Resource ID of your Log Analytics workspace. You don't need to change the name since this just needs to match the `destinations` name in `dataFlows`. |
+| `transformKql` | KQL query to be applied to the incoming data. If the schema of the incoming data matches the schema of the table, then you can use `source` for the transformation which will pass on the incoming data unchanged. Otherwise, use a query that will transform the data to match the destination table schema. |
+| `outputStream` | Name of the table to send the data. For a custom table, add the prefix *Custom-&lt;table-name&gt;*. For a built-in table, add the prefix *Microsoft-&lt;table-name&gt;*. |
+
+```json
+{
+    "location": "eastus",
+    "dataCollectionEndpointId": "/subscriptions/aaaa0a0a-bb1b-cc2c-dd3d-eeeeee4e4e4e/resourceGroups/my-resource-group/providers/Microsoft.Insights/dataCollectionEndpoints/dce-eastus",
+    "kind": "Direct",
+    "properties": {
+        "streamDeclarations": {
+            "Custom-MyTable": {
+                "columns": [
+                    {
+                        "name": "Time",
+                        "type": "datetime"
+                    },
+                    {
+                        "name": "Computer",
+                        "type": "string"
+                    },
+                    {
+                        "name": "AdditionalContext",
+                        "type": "string"
+                    },
+                    {
+                        "name": "NestedJson",
+                        "type": "dynamic"
+                    }
+                ]
+            }
+        },
+        "destinations": {
+            "logAnalytics": [
+                {
+                    "workspaceResourceId": "/subscriptions/aaaa0a0a-bb1b-cc2c-dd3d-eeeeee4e4e4e/resourceGroups/cefingestion/providers/microsoft.operationalinsights/workspaces/my-workspace",
+                    "name": "LogAnalyticsDest"
+                }
+            ]
+        },
+        "dataFlows": [
+            {
+                "streams": [
+                    "Custom-MyTable"
+                ],
+                "destinations": [
+                    "LogAnalyticsDest"
+                ],
+                "transformKql": "source",
+                "outputStream": "Custom-MyTable_CL"
+            }
+        ]
+    }
+}
+```
+
+## Client libraries
+
+In addition to making a REST API call, you can use the following client libraries to send data to the Logs ingestion API. The libraries require the same components described in Configuration. For examples using each of these libraries, see Sample code to send data to Azure Monitor using Logs ingestion API.
+
+- .NET
+- Go
+- Java
+- JavaScript
+- Python
+
+## REST API call
+
+To send data to Azure Monitor with a REST API call, make a POST call over HTTPS. Details required for this call are described in this section.
+
+### URI
+
+The URI includes the region, the DCE or DCR ingestion endpoint, DCR ID, and the stream name. It also specifies the API version.
+
+The URI uses the following format.
+
+```
+{endpoint}/dataCollectionRules/{dcrImmutableId}/streams/{streamName}?api-version={apiVersion}
+```
+
+For example:
+
+```
+https://my-dce-5kyl.eastus-1.ingest.monitor.azure.com/dataCollectionRules/dcr-000a00a000a00000a000000aa000a0aa/streams/Custom-MyTable?api-version=2023-01-01
+```
+
+The `DCR Immutable ID` is generated for the DCR when it's created. You can retrieve it from the Overview page for the DCR in the Azure portal.
+
+![Screenshot of a data collection rule showing the immutable ID.](media/logs-ingestion-api-overview/data-collection-rule-immutable-id.png#lightbox)
+
+`Stream Name` refers to the stream in the DCR that should handle the custom data.
+
+### Request headers
+
+The following table describes request headers for your API call.
+
+| Header | Required? | Description |
+| --- | --- | --- |
+| Authorization | Yes | Bearer token obtained through the client credentials flow. Use the token audience value (scope) for your cloud:Azure public cloud - `https://monitor.azure.com`Microsoft Azure operated by 21Vianet cloud - `https://monitor.azure.cn`Azure US Government cloud - `https://monitor.azure.us` |
+| Content-Type | Yes | `application/json` |
+| Content-Encoding | No | `gzip` |
+| x-ms-client-request-id | No | String-formatted GUID. This is a request ID that can be used by Microsoft for any troubleshooting purposes. |
+
+### Request body
+
+The body of the call includes the custom data to send to Azure Monitor. The data must be a JSON array with an item structure that matches the format expected by the stream in the DCR. Here's an example of a single-item array that matches the `streamDeclarations` in the Data Collection Rule section.
+
+```json
+[
+    {
+        "Time": "2023-11-14 15:10:02",
+        "Computer": "Value01",
+        "AdditionalContext": "Value02",
+        "NestedJson": {
+            "Level2": {
+              "Key1": "Value03",
+              "Key2": "Value04"
+            }
+        }
+    }
+]
+```
+
+Ensure that the request body is properly encoded in UTF-8 to prevent any issues with data transmission. If your ingestion data includes nested JSON and your table plan is Auxiliary, the table schema for that column must be `dynamic`.
+
+### Example
+
+See Sample code to send data to Azure Monitor using Logs ingestion API for an example of the API call using PowerShell.
+
+## Supported tables
+
+The Logs Ingestion API supports custom tables and selected Azure tables. The target table must exist before you send data. Custom table names must have the `_CL` suffix. For the current list of Azure tables that support the API, see Azure Monitor Logs table feature support.
+
+Note
+
+Column names must start with a letter and can consist of up to 45 alphanumeric characters and underscores (`_`). `_ResourceId`, `id`, `_SubscriptionId`, `TenantId`, `Type`, `UniqueId`, and `Title` are reserved column names. Custom columns you add to an Azure table must have the suffix `_CF`.
+
+## Limits and considerations
+
+For limits related to the Logs Ingestion API, see Azure Monitor service limits.

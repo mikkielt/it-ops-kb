@@ -1,0 +1,28 @@
+source: S2000
+url: https://opentelemetry.io/docs/specs/semconv/gen-ai/
+title: GenAI semantic conventions (index; content moved)
+publisher: OpenTelemetry Authors
+licence: CC BY 4.0 (open-telemetry/opentelemetry.io LICENSE)
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+# Moved: Generative AI semantic conventions
+Important
+GenAI semantic conventions have moved to the
+OpenTelemetry GenAI semantic conventions repository.
+This page has moved and is no longer maintained in this repository.
+##### Moved: Generative AI semantic conventions
+##### Moved: Generative AI semantic conventions
+##### Moved: Generative AI semantic conventions
+##### Moved: Generative AI semantic conventions
+##### Moved: Generative AI semantic conventions
+##### Moved: Generative AI semantic conventions
+##### Moved: Generative AI semantic conventions
+##### Moved: Generative AI semantic conventions
+##### Moved: Generative AI semantic conventions
+##### Moved: Generative AI semantic conventions
+##### Moved: Generative AI semantic conventions
+## Feedback
+Was this page helpful?
+Thank you. Your feedback is appreciated!
+Please let us know how we can improve this page. Your feedback is appreciated!

@@ -1,0 +1,488 @@
+source: S-qqaa5jqp
+url: https://learn.microsoft.com/powershell/module/microsoft.graph.authentication/invoke-mggraphrequest?view=graph-powershell-1.0
+title: Invoke-MgGraphRequest
+publisher: Microsoft Learn
+licence: CC BY 4.0 (public mirror MicrosoftDocs/microsoftgraph-docs-powershell)
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+# Invoke-MgGraphRequest
+
+- Module:
+    - Microsoft.Graph.Authentication Module
+
+Invoke-MgGraphRequest issues REST API requests to the Graph API. It works for any Graph API if you know the REST URI, method, and optional body parameter. This command is especially useful for accessing APIs for which there isn't an equivalent cmdlet yet.
+
+## Syntax
+
+### UserParameterSet (Default)
+
+```Syntax
+Invoke-MgGraphRequest
+    [[-Method] <GraphRequestMethod>]
+    [-Uri] <uri>
+    [[-Body] <Object>]
+    [[-Headers] <IDictionary>]
+    [[-OutputFilePath] <string>]
+    [[-InputFilePath] <string>]
+    [[-ContentType] <string>]
+    [[-SessionVariable] <string>]
+    [[-ResponseHeadersVariable] <string>]
+    [[-StatusCodeVariable] <string>]
+    [[-GraphRequestSession] <GraphRequestSession>]
+    [[-UserAgent] <string>]
+    [[-OutputType] <OutputType>]
+    [-InferOutputFileName]
+    [-PassThru]
+    [-SkipHeaderValidation]
+    [-SkipHttpErrorCheck]
+    [-Break]
+    [<CommonParameters>]
+```
+
+## Description
+
+This command issues REST API requests.
+
+## Examples
+
+### Using Invoke-MgGraphRequest
+
+PS C:&gt; Invoke-MgGraphRequest -Method GET `https://graph.microsoft.com/v1.0/me` Name Value
+
+userPrincipalName admin@Contoso.com preferredLanguage en-US mobilePhone 425-555-0101 displayName MOD Administrator givenName MOD mail admin@contoso.com @odata.context`https://graph.microsoft.com/v1.0/$metadata#users/$entity` id 694bab60-392a-4f64-9430-c1dea2951f50 jobTitle officeLocation businessPhones {425-555-0100} surname Administrator
+
+Issues REST API requests.
+
+## Parameters
+
+### -Body
+
+Request Body. Required when Method is Post or Patch
+
+#### Parameter properties
+
+| Type: | System.Object |
+| --- | --- |
+| Default value: | None |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ UserParameterSet
+
+| Position: | 3 |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | True |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -Break
+
+Wait for .NET debugger to attach
+
+#### Parameter properties
+
+| Type: | System.Management.Automation.SwitchParameter |
+| --- | --- |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ (All)
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -ContentType
+
+Custom Content Type
+
+#### Parameter properties
+
+| Type: | System.String |
+| --- | --- |
+| Default value: | None |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ UserParameterSet
+
+| Position: | 11 |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -GraphRequestSession
+
+Custom Graph Request Session
+
+#### Parameter properties
+
+| Type: | Microsoft.Graph.PowerShell.Authentication.Helpers.GraphRequestSession |
+| --- | --- |
+| Default value: | None |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ UserParameterSet
+
+| Position: | 17 |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -Headers
+
+Optional Custom Headers
+
+#### Parameter properties
+
+| Type: | System.Collections.IDictionary |
+| --- | --- |
+| Default value: | None |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ UserParameterSet
+
+| Position: | 4 |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -InferOutputFileName
+
+Infer output filename
+
+#### Parameter properties
+
+| Type: | System.Management.Automation.SwitchParameter |
+| --- | --- |
+| Default value: | False |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ UserParameterSet
+
+| Position: | 6 |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -InputFilePath
+
+Input file to send in the request
+
+#### Parameter properties
+
+| Type: | System.String |
+| --- | --- |
+| Default value: | None |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ UserParameterSet
+
+| Position: | 7 |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -Method
+
+HTTP Method
+
+#### Parameter properties
+
+| Type: | Microsoft.Graph.PowerShell.Authentication.Models.GraphRequestMethod |
+| --- | --- |
+| Default value: | None |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ UserParameterSet
+
+| Position: | 1 |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -OutputFilePath
+
+Output file where the response body will be saved
+
+#### Parameter properties
+
+| Type: | System.String |
+| --- | --- |
+| Default value: | None |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ UserParameterSet
+
+| Position: | 5 |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -OutputType
+
+Output Type to return to the caller
+
+#### Parameter properties
+
+| Type: | Microsoft.Graph.PowerShell.Authentication.Models.OutputType |
+| --- | --- |
+| Default value: | None |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ UserParameterSet
+
+| Position: | 19 |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -PassThru
+
+Indicates that the cmdlet returns the results, in addition to writing them to a file. Only valid when the OutFile parameter is also used.
+
+#### Parameter properties
+
+| Type: | System.Management.Automation.SwitchParameter |
+| --- | --- |
+| Default value: | False |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ UserParameterSet
+
+| Position: | 8 |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -ResponseHeadersVariable
+
+Response Headers Variable
+
+#### Parameter properties
+
+| Type: | System.String |
+| --- | --- |
+| Default value: | None |
+| Supports wildcards: | False |
+| DontShow: | False |
+| Aliases: | RHV |
+
+#### Parameter sets
+
+ UserParameterSet
+
+| Position: | 14 |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -SessionVariable
+
+Specifies a web request session. Enter the variable name, including the dollar sign ($).You can't use the SessionVariable and GraphRequestSession parameters in the same command.
+
+#### Parameter properties
+
+| Type: | System.String |
+| --- | --- |
+| Default value: | None |
+| Supports wildcards: | False |
+| DontShow: | False |
+| Aliases: | SV |
+
+#### Parameter sets
+
+ UserParameterSet
+
+| Position: | 13 |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -SkipHeaderValidation
+
+Add headers to Request Header collection without validation
+
+#### Parameter properties
+
+| Type: | System.Management.Automation.SwitchParameter |
+| --- | --- |
+| Default value: | False |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ UserParameterSet
+
+| Position: | 10 |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -SkipHttpErrorCheck
+
+Skip Checking HTTP Errors
+
+#### Parameter properties
+
+| Type: | System.Management.Automation.SwitchParameter |
+| --- | --- |
+| Default value: | False |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ UserParameterSet
+
+| Position: | 16 |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -StatusCodeVariable
+
+Response Status Code Variable
+
+#### Parameter properties
+
+| Type: | System.String |
+| --- | --- |
+| Default value: | None |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ UserParameterSet
+
+| Position: | 15 |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -Uri
+
+Uri to call can be segments such as /beta/me or fully qualified `https://graph.microsoft.com/beta/me`
+
+#### Parameter properties
+
+| Type: | System.Uri |
+| --- | --- |
+| Default value: | None |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ UserParameterSet
+
+| Position: | 2 |
+| --- | --- |
+| Mandatory: | True |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -UserAgent
+
+Custom User Specified User Agent
+
+#### Parameter properties
+
+| Type: | System.String |
+| --- | --- |
+| Default value: | None |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ UserParameterSet
+
+| Position: | 18 |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### CommonParameters
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable, -ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see about_CommonParameters.
+
+## Inputs
+
+### System.Object
+
+## Outputs
+
+### System.Object
+
+## Related Links
+
+- https://learn.microsoft.com/en-us/powershell/module/microsoft.graph.authentication/invoke-mggraphrequest

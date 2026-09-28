@@ -1,0 +1,265 @@
+source: S1351
+url: https://learn.microsoft.com/en-us/sql/connect/python/mssql-python/python-sql-driver-mssql-python?view=sql-server-ver17
+title: Learn: Microsoft Python Driver for SQL Server (mssql-python) overview
+publisher: Microsoft Learn
+licence: CC BY 4.0 (public mirror MicrosoftDocs/sql-docs)
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+# Microsoft Python Driver for SQL Server - mssql-python - Python driver for SQL Server | Microsoft Learn
+
+`mssql-python` is Microsoft's Python driver for SQL Server, Azure SQL Database, Azure SQL Managed Instance, and SQL database in Microsoft Fabric. It uses Direct Database Connectivity (DDBC), so you can connect without installing an external driver manager. The driver supports Python 3.10 or later and complies with the Python Database API Specification 2.0 while adding Python-friendly improvements for day-to-day development.
+
+## Choose your starting point
+
+- To connect to SQL Server, Azure SQL Database, or SQL database in Microsoft Fabric and run your first query, start with Quickstart: Connect with the mssql-python driver.
+- To create a local SQL Server container, start with Container and local development.
+- To connect to Azure SQL with passwordless authentication, start with Microsoft Entra authentication and Connection strings.
+- To explore data interactively, start with Connect from a Jupyter Notebook or Rapid prototyping.
+- To move large volumes of data efficiently, go to Bulk copy operations or the Bulk copy quickstart.
+- To migrate from another driver, go to Migrate from pyodbc, Migrate from pymssql, Migrate from SQLite, or Migrate from PostgreSQL.
+
+## Production baseline for Azure SQL
+
+Use this sample as a starting point for a production-oriented Azure SQL connection. It reads configuration from the environment, authenticates with managed identity, and enables Tabular Data Stream (TDS) 8.0 encryption. It also sets login and per-statement query timeouts, retries transient failures with exponential backoff (a fresh connection for connection errors, the same connection for query errors like deadlocks), logs outcomes, and relies on context managers to release resources.
+
+The `ConnectRetryCount` and `ConnectRetryInterval` keywords in the connection string enable SQL Server *idle connection resiliency*: the driver transparently reconnects a dropped idle connection. That's distinct from the application-level retry in this sample, which retries a *query* that fails with a transient error such as a deadlock or query timeout. The two are complementary, so keep both.
+
+```python
+import logging
+import os
+import time
+
+import mssql_python
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s %(name)s %(message)s",
+)
+logger = logging.getLogger("app")
+
+# Transient errors that require a fresh connection to recover.
+CONNECT_RETRY_ERRORS = frozenset({
+    "Timeout expired",
+    "Connection timeout expired",
+    "Client unable to establish connection",
+    "Communication link failure",
+    "Connection failure during transaction",
+})
+
+# Transient errors that leave the connection usable, such as a deadlock victim
+# or a query timeout, so retry on the same connection.
+QUERY_RETRY_ERRORS = frozenset({
+    "Serialization failure",
+    "Timeout expired",
+})
+
+def connect_with_retry(conn_str: str, max_attempts: int = 3, login_timeout_s: int = 5) -> mssql_python.Connection:
+    """Open a connection, retrying transient failures with exponential backoff."""
+    for attempt in range(1, max_attempts + 1):
+        try:
+            conn = mssql_python.connect(
+                conn_str,
+                attrs_before={mssql_python.SQL_ATTR_LOGIN_TIMEOUT: login_timeout_s},
+            )
+            logger.info("connected on attempt %d/%d", attempt, max_attempts)
+            return conn
+        except mssql_python.OperationalError as exc:
+            if exc.driver_error not in CONNECT_RETRY_ERRORS or attempt == max_attempts:
+                logger.error("connect failed on attempt %d/%d: %s", attempt, max_attempts, exc.driver_error)
+                raise
+            delay = 2 ** (attempt - 1)  # 1s, 2s, 4s
+            logger.warning(
+                "connect attempt %d/%d hit transient error %r; retrying in %ds",
+                attempt, max_attempts, exc.driver_error, delay,
+            )
+            time.sleep(delay)
+
+def execute_with_retry(
+    conn: mssql_python.Connection,
+    sql: str,
+    *params,
+    max_attempts: int = 3,
+    query_timeout_s: int = 10,
+) -> mssql_python.Cursor:
+    """Run sql on an open connection and return the ready-to-fetch cursor.
+
+    Retries errors that leave the connection usable so callers don't wrap each
+    query in its own function. Pass query values as parameters. Retry only
+    idempotent statements; wrap writes in an explicit transaction.
+    """
+    for attempt in range(1, max_attempts + 1):
+        cursor = mssql_python.Cursor(conn, timeout=query_timeout_s)
+        try:
+            cursor.execute(sql, *params)
+            if attempt > 1:
+                logger.info("query succeeded on attempt %d/%d", attempt, max_attempts)
+            return cursor
+        except mssql_python.OperationalError as exc:
+            cursor.close()
+            if exc.driver_error not in QUERY_RETRY_ERRORS or attempt == max_attempts:
+                logger.error("query failed on attempt %d/%d: %s", attempt, max_attempts, exc.driver_error)
+                raise
+            delay = 2 ** (attempt - 1)  # 1s, 2s, 4s
+            logger.warning(
+                "query attempt %d/%d hit transient error %r; retrying in %ds",
+                attempt, max_attempts, exc.driver_error, delay,
+            )
+            time.sleep(delay)
+    raise RuntimeError("unreachable: the retry loop exits by return or raise")
+
+def main() -> None:
+    # Read configuration from the environment; never hard-code secrets.
+    server = os.environ["SQL_SERVER"]      # for example, <server>.database.windows.net
+    database = os.environ["SQL_DATABASE"]  # for example, AdventureWorks
+    client_id = os.getenv("AZURE_CLIENT_ID")  # set for a user-assigned managed identity
+
+    # Authenticate with the workload's managed identity over TDS 8.0 encryption.
+    # ConnectRetryCount/ConnectRetryInterval transparently reconnect a dropped
+    # idle connection; they don't replay a failed query.
+    conn_str = (
+        f"Server={server};"
+        f"Database={database};"
+        "Authentication=ActiveDirectoryMsi;"
+        "Encrypt=strict;"
+        "ConnectRetryCount=3;"
+        "ConnectRetryInterval=10;"
+        # Parallel dials to all resolved IPs; safe on single-IP targets.
+        "MultiSubnetFailover=Yes;"
+    )
+    if client_id:
+        conn_str += f"UID={client_id};"
+
+    query = """
+        SELECT TOP 10
+            p.BusinessEntityID,
+            p.FirstName,
+            p.LastName
+        FROM Person.Person AS p
+        ORDER BY p.BusinessEntityID;
+    """
+
+    try:
+        # Context managers close the cursor and connection automatically.
+        with connect_with_retry(conn_str) as conn:
+            with execute_with_retry(conn, query) as cursor:
+                for business_entity_id, first_name, last_name in cursor.fetchall():
+                    print(f"{business_entity_id}\t{first_name}\t{last_name}")
+    except mssql_python.Error:
+        logger.exception("query failed")
+        raise
+
+if __name__ == "__main__":
+    main()
+```
+
+For deeper guidance on each concern in this sample, see Microsoft Entra authentication, Connection pooling, Encryption and certificates, Retry logic, and Error handling.
+
+## Key features
+
+- **PEP 249 compliance**: Standard `connect`, `cursor`, `execute`, and `fetch*` interfaces, plus Pythonic extensions.
+- **Direct Database Connectivity (DDBC)**: No external driver manager required. Install `mssql-python` and you're ready to connect.
+- **Microsoft Entra ID authentication**: Built-in support for authentication modes, including managed identities and service principals.
+- **SQL Server and Windows authentication**: SQL logins, Kerberos, and Windows single sign-on (SSO) on supported platforms.
+- **Bulk copy**: High-performance bulk insert for large data loads with native TDS protocol support.
+- **Native data type support**: JSON, XML, spatial, sparse columns, datetimeoffset, and decimal/money with precise handling.
+- **Apache Arrow integration**: Zero-copy result sets for fast data interchange with pandas, Polars, and DuckDB.
+- **Async patterns**: Use the driver with `asyncio`-based applications and FastAPI through ThreadPoolExecutor workarounds. See Async patterns for integration patterns.
+- **TLS by default**: TLS encryption and certificate validation on by default (via ODBC Driver 18). TDS 8.0 encryption available when you set `Encrypt=strict`.
+
+## Get started
+
+| Article | Description |
+| --- | --- |
+| Installation | Install `mssql-python` and verify your Python environment. |
+| Quickstart: Connect with mssql-python | Connect to a local or test SQL Server instance and run your first query. |
+| Quickstart: Connect from a Jupyter Notebook | Use mssql-python inside a notebook for interactive data exploration. |
+| Quickstart: Bulk copy | Move large data sets into SQL Server with the bulk copy API. |
+| Quickstart: Rapid prototyping | Build small scripts and proofs of concept quickly. |
+| Quickstart: Repeatable deployments | Package, configure, and ship Python applications that talk to SQL. |
+| Apache Arrow quickstart | Fetch query results as Apache Arrow tables for analytics workflows. |
+
+## Configure and authenticate
+
+| Article | Description |
+| --- | --- |
+| Connection strings | Connection string syntax, common keywords, and examples. |
+| Build connection strings programmatically | Compose connection strings safely from configuration and secrets. |
+| Connection management | Open, reuse, and close connections cleanly. |
+| Connection pooling | Pool tuning, lifetimes, and reuse patterns. |
+| Encryption and certificates | TLS encryption modes, certificate validation, and TDS 8.0. |
+| Microsoft Entra authentication | Passwordless authentication for Azure SQL with managed identity, service principal, interactive, and device code flows. |
+| Security best practices | Parameterization, secrets management, least privilege, and encryption. |
+| Availability groups | Connect to Always On availability groups and read-only replicas. |
+
+## Work with data
+
+| Article | Description |
+| --- | --- |
+| Executing queries | `execute`, `executemany`, multi-statement batches, and result sets. |
+| Retrieving data | `fetchone`, `fetchmany`, `fetchall`, and streaming patterns. |
+| Parameterized queries | Bind parameters safely to prevent SQL injection. |
+| Stored procedures | Call procedures, read output parameters, and process result sets. |
+| Cursor management | Cursor lifetimes, scrolling, and arraysize tuning. |
+| Row objects | Access rows by index, name, or as mappings. |
+| Transaction management | Commit, rollback, savepoints, and isolation levels. |
+| Pagination | Keyset and offset pagination patterns over large result sets. |
+| Error handling | `mssql_python.Error`, `DatabaseError`, and SQL Server error structure. |
+| Retry logic | Detect transient errors and retry with exponential backoff. |
+
+## SQL Server data types and features
+
+| Article | Description |
+| --- | --- |
+| Data type mappings | SQL Server-to-Python type table and conversion rules. |
+| Datetime handling | `datetime`, `datetime2`, `datetimeoffset`, and time zone considerations. |
+| Decimal and money types | Exact numeric types and `decimal.Decimal` precision. |
+| String and Unicode data | `varchar`, `nvarchar`, collations, and code pages. |
+| NULL handling | Three-valued logic, sentinels, and pandas interop. |
+| Binary data | `varbinary`, `image`, and streaming large objects. |
+| Custom type converters | Register input and output converters for custom types. |
+| Bulk copy operations | High-throughput inserts with the bulk copy API. |
+| JSON data | Store, query, and shred JSON with `FOR JSON` and `OPENJSON`. |
+| XML data | Work with the `xml` data type, XPath, and XQuery. |
+| Spatial data | `geometry` and `geography` types from Python. |
+| Sparse columns | Sparse columns and column sets for wide tables. |
+| Schema discovery | Inspect databases, tables, columns, and indexes. |
+
+## Integrate with Python tools and frameworks
+
+| Article | Description |
+| --- | --- |
+| Apache Arrow integration | Fetch results as Arrow tables for zero-copy analytics. |
+| pandas integration | Load query results into DataFrames and write them back. |
+| Polars integration | Use Polars with mssql-python for columnar workloads. |
+| DuckDB integration | Query SQL Server data alongside local DuckDB tables. |
+| FastAPI integration | Wire mssql-python into FastAPI services. |
+| Test and deploy FastAPI applications | Configure pooling, errors, authentication, tests, and deployment settings for FastAPI services. |
+| Flask integration | Use mssql-python in Flask applications. |
+| Async patterns | Combine mssql-python with `asyncio` and thread pools. |
+| Data access and analytics patterns | Choose the right read path for cursor access, Arrow extraction, pandas, Polars, and DuckDB analytics over SQL data. |
+| Data loading and movement patterns | Choose the right write path for row inserts, bulk copy, MERGE upserts, DataFrame loading, and CSV ingest. |
+
+## Deploy and operate
+
+| Article | Description |
+| --- | --- |
+| Container and local development | Set up Docker containers, devcontainers, and CI pipelines for Python applications that connect to SQL. |
+| Performance tuning | Pool tuning, prepared statements, batch sizes, and bulk copy. |
+| Troubleshooting | Find guidance by symptom or error message. |
+| Installation and connection troubleshooting | Resolve installation, connection, container, and CI issues. |
+| Query, data, and operation troubleshooting | Resolve query, data type, performance, transaction, and bulk copy issues. |
+| Module configuration | Module-level settings, logging hooks, and feature flags. |
+
+## Migrate to mssql-python
+
+| Article | Description |
+| --- | --- |
+| Migrate from pyodbc | Map pyodbc APIs and connection strings to mssql-python. |
+| Migrate from pymssql | Replace pymssql with mssql-python while preserving behavior. |
+| Migrate from SQLite | Move local SQLite workloads to SQL Server or Azure SQL. |
+| Migrate from PostgreSQL | One-stop guide for Python developers moving from PostgreSQL to SQL Server with mssql-python. |
+
+## Request a feature
+
+To request a feature, open an issue in the mssql-python GitHub repository.

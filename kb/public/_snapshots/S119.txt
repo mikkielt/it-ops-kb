@@ -1,0 +1,98 @@
+source: S119
+url: https://github.com/PowerShell/DSC/releases/tag/v3.4.0-preview.1
+title: DSC v3.4.0-preview.1 release notes
+publisher: Microsoft (PowerShell/DSC)
+licence: MIT
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+PowerShell
+/
+DSC
+Public
+Notifications
+You must be signed in to change notification settings
+Fork
+76
+Star
+530
+# v3.4.0-preview.1
+Pre-release
+Pre-release
+#
+Choose a tag to compare
+## Sorry, something went wrong.
+Filter
+Loading
+## Sorry, something went wrong.
+### Uh oh!
+There was an error while loading. Please reload this page.
+## No results found
+View all tags
+SteveL-MSFT
+released this
+10 Sep 20:02
+·
+16 commits
+to main
+since this release
+v3.4.0-preview.1
+9c60d04
+This commit was created on GitHub.com and signed with GitHub’s verified signature.
+GPG key ID: B5690EEEBB952194
+Verified
+Learn about vigilant mode.
+## What's Changed
+Add devcontainer by Thomas Nieto (@ThomasNieto) in #1631
+Fix universal package publishing by Aditya Patwardhan (@adityapatwardhan) in #1638
+Fix PMC publishing script and mapping by Steve Lee (@SteveL-MSFT) in #1635
+Fix DSC_RESOURCE_PATH and add DSC_RESTRICTED_PATH by Steve Lee (@SteveL-MSFT) in #1636
+Update version to 3.3-rc.1, update crates by Steve Lee (@SteveL-MSFT) in #1644
+Add support to pass resource version to adapter by Steve Lee (@SteveL-MSFT) in #1645
+feat: remove experimental flag format() by Gijs Reijn (@Gijsreyn) in #1648
+feat: Add --what-if for Microsoft.Windows/UpdateList by Gijs Reijn (@Gijsreyn) in #1616
+Add JSON schema caching by Steve Lee (@SteveL-MSFT) in #1637
+docs: add Microsoft.DSC/Include reference documentation by Gijs Reijn (@Gijsreyn) in #1649
+fix: add support for preserving quoted group names in sshd_config by Gijs Reijn (@Gijsreyn) in #1639
+(DOCS) Update changelog for 3.2.* releases by Mikey Lombardi (He/Him) (@michaeltlombardi) in #1578
+(GH-1393) Rename --version to --required-version for resource commands by Mikey Lombardi (He/Him) (@michaeltlombardi) in #1610
+Update dsc version to 3.4-preview.1 and jsonschema crate to 0.49.1 by Steve Lee (@SteveL-MSFT) in #1651
+Add code review instructions derived from PR feedback patterns by Steve Lee (@SteveL-MSFT) in #1646
+feat: implement export filter functionality for resource exports by Gijs Reijn (@Gijsreyn) in #1621
+docs: Add reference documentation for Microsoft.OpenSSH.SSHD/Windows by Gijs Reijn (@Gijsreyn) in #934
+(GH-1563) Enhance the PSScript resources by Mikey Lombardi (He/Him) (@michaeltlombardi) in #1657
+docs: Add extensions reference documentation by Gijs Reijn (@Gijsreyn) in #1661
+(GH-1061) Add dsc-lib-telemetry crate by Mikey Lombardi (He/Him) (@michaeltlombardi) in #1663
+Use JSON Schema defaults in synthetic test get_diff by Steve Lee (@SteveL-MSFT) in #1670
+docs: Sync fixes from Microsoft Learn by Gijs Reijn (@Gijsreyn) in #1664
+Add scoped unspecified firewall rule handling and allow empty rules by Steve Lee (@SteveL-MSFT) in #1671
+Ignore write-only properties in schema-aware diffs by Steve Lee (@SteveL-MSFT) in #1674
+docs: Sync fixes from Microsoft Learn (part two) by Gijs Reijn (@Gijsreyn) in #1677
+Fix nested diff w/ schema and schema cache miss by Steve Lee (@SteveL-MSFT) in #1680
+Update Firewall manifest to declare implementsPretest by Steve Lee (@SteveL-MSFT) in #1682
+Fix clippy rule violation by Steve Lee (@SteveL-MSFT) in #1688
+Update dsc.exe to have single process exit point by Steve Lee (@SteveL-MSFT) in #1693
+(GH-538) Enhance schema export functionality and add error handling for duplicate paths by Gijs Reijn (@Gijsreyn) in #1672
+Fix registry resource what-if for non-existing key by Steve Lee (@SteveL-MSFT) in #1692
+(GH-1696) Add --what-if in MCP server tools by Gijs Reijn (@Gijsreyn) in #1697
+(GH-538) Define transforms for Option<T> by Mikey Lombardi (He/Him) (@michaeltlombardi) in #1702
+Pin GitHub Actions to full-length commit SHAs by Dan Fiedler (@danfiedler-msft) in #1710
+Add Group Policy template adapter by Steve Lee (@SteveL-MSFT) in #1686
+Bump the github-actions group with 4 updates by Dependabot (@dependabot)[bot] in #1712
+Add Windows environment variable resource by Steve Lee (@SteveL-MSFT) in #1675
+Update crate versions and version of msrustup by Steve Lee (@SteveL-MSFT) in #1713
+Add Microsoft.Filesystem.File/Content resource by Steve Lee (@SteveL-MSFT) in #1676
+Add support for adapted resource manifests to indicate required security context by Steve Lee (@SteveL-MSFT) in #1701
+## New Contributors
+Dan Fiedler (@danfiedler-msft) made their first contribution in #1710
+Full Changelog: v3.3.0-preview.4...v3.4.0-preview.1
+### Contributors
+SteveL-MSFT, adityapatwardhan, and 5 other contributors
+Assets
+13
+Loading
+### Uh oh!
+There was an error while loading. Please reload this page.
+1 person reacted
+0
+Join discussion

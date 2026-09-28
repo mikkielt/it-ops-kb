@@ -1,0 +1,2992 @@
+source: S2100
+url: https://docs.cloud.google.com/sensitive-data-protection/docs/infotypes-reference
+title: InfoType detector reference - Sensitive Data Protection
+publisher: Google
+licence: CC BY 4.0 (Google Developers site policies; code Apache-2.0)
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+Cloud Data Loss Prevention (Cloud DLP) is now a part of Sensitive Data Protection. The API name remains the same: Cloud Data Loss Prevention API (DLP API). For information about the services that make up Sensitive Data Protection, see Sensitive Data Protection overview.
+Home
+Documentation
+Security
+Sensitive Data Protection
+Guides
+#
+InfoType detector reference
+Stay organized with collections
+Save and categorize content based on your preferences.
+Sensitive Data Protection uses information types—or infoTypes—to define
+what it scans for. An infoType is a type of sensitive data, such as a name,
+email address, telephone number, identification number, or credit card number.
+Every infoType defined in Sensitive Data Protection has a corresponding detector.
+Sensitive Data Protection uses infoType detectors in the configuration for its
+scans to determine what to inspect for and how to transform findings. InfoType
+names are also used when displaying or reporting scan results.
+For more in-depth information about infoType detectors, see InfoTypes and
+infoType detectors.
+The Sensitive Data Protection team releases new infoType detectors and groups
+periodically. To get the latest list of built-in infoTypes, call the
+infoTypes.list
+method of Sensitive Data Protection.
+## InfoType descriptions
+Name
+Description
+FINANCIAL_ID
+A general infoType that represents private financial ID numbers for an individual.
+DOCUMENT_TYPE/LEGAL/BRIEF
+A legal brief is a document advocating a particular outcome of the case, presenting supporting points, law interpretations, and recommendations.
+FRANCE_DRIVERS_LICENSE_NUMBER
+A French driver's license number.
+MEXICO_CURP_NUMBER
+The Mexico Clave Única de Registro de Población (CURP) number, or Unique Population Registry Code or Personal Identification Code number. This is an 18-character state-issued identification number assigned by the Mexican government to citizens or residents of Mexico and used for taxpayer identification.
+ORGANIZATION_NAME
+A name of a chain store, business or organization. Note: Not recommended for use during latency sensitive operations.
+DOD_ID_NUMBER
+A Department of Defense ID number uniquely identifies a person associated with the US Department of Defense.
+STORAGE_SIGNED_POLICY_DOCUMENT
+A storage signed policy document is an HTML form used to upload objects. These uploads can overwrite existing objects and may contain many form fields (some of which may be optional) for further customization. All forms will use the *.googleapis.com and will be used for individual file uploads within a POST request form. The form must be UTF-8 encoded.
+KOREA_PASSPORT
+A Korean passport number.
+OBJECT_TYPE/PERSON/FACE
+Image of a person's face.
+This infoType detector is in
+Preview.
+HONG_KONG_ID_NUMBER
+The 香港身份證, or Hong Kong identity card (HKIC), is used as the main identity document for citizens of Hong Kong.
+EMAIL_ADDRESS
+An email address identifies the mailbox that emails are sent to or from. The maximum length of the domain name is 255 characters, and the maximum length of the local-part is 64 characters.
+IRELAND_EIRCODE
+Eircode is an Irish postal code that uniquely identifies an address.
+CZECHIA_PASSPORT
+A Czech passport number.
+DOCUMENT_TYPE/R&D/SOURCE_CODE/SHELL
+Shell script source code.
+AUSTRIA_SOCIAL_SECURITY_NUMBER
+An Austria social security number is assigned to individuals for social security and healthcare purposes. It's used for various interactions with the tax office and public employment services in Austria.
+TAIWAN_ID_NUMBER
+A Taiwanese ID number.
+ICD9_CODE
+The International Classification of Diseases, Ninth Revision, Clinical Modification (ICD-9-CM) lexicon is used to assign diagnostic and procedure codes associated with inpatient, outpatient, and physician office use in the United States. It was created by the US National Center for Health Statistics (NCHS). The ICD-9-CM is based on the ICD-9 but provides for additional morbidity detail. It's updated annually on October 1.
+COUNTRY_DEMOGRAPHIC
+A country when used to reference someone's place of birth, residence or citizenship.
+SPAIN_CIF_NUMBER
+The Spanish Código de Identificación Fiscal (CIF) was the tax identification system used in Spain for legal entities until 2008. It was then replaced by the Número de Identificación Fiscal (NIF) for natural and juridical persons.
+US_ADOPTION_TAXPAYER_IDENTIFICATION_NUMBER
+A United States Adoption Taxpayer Identification Number (ATIN) is a type of Tax Identification Number (TIN), issued by the Internal Revenue Service (IRS) to individuals who are in the process of legally adopting a US citizen or resident child.
+DOCUMENT_TYPE/R&D/SOURCE_CODE/C
+C source code.
+RELIGIOUS_TERM
+Terms that commonly refer to religious beliefs, religious leaders, religious organizations, and religious practices.
+SSL_CERTIFICATE
+SSL certificates are cryptographic certificates used to verify identity and establish secured connections using the Secured Sockets Layer protocol.
+INDONESIA_NIK_NUMBER
+An Indonesian Single Identity Number (Nomor Induk Kependudukan, or NIK) is the national identification number of Indonesia. The NIK is used as the basis for issuing Indonesian resident identity cards (Kartu Tanda Penduduk, or KTP), passports, driver's licenses and other identity documents.
+BRAZIL_CPF_NUMBER
+The Brazilian Cadastro de Pessoas Físicas (CPF) number, or Natural Persons Register number, is an 11-digit number used in Brazil for taxpayer identification.
+CRIME_STATUS
+A crime victim status or criminal record.
+HTTP_USER_AGENT
+A user agent used for facilitating web content; contains information about the computer sending the request and often appears as a header.
+AZURE_AUTH_TOKEN
+Azure certificate credentials for application authentication.
+STREET_ADDRESS
+A street address. Note: Not recommended for use during latency sensitive operations.
+MEDICAL_DATA
+A general infoType representing all medical data excluding medical IDs of people. This includes individual medical data, such as blood type, as well as general medical content.
+LOCATION
+A physical address or location. Note: Not recommended for use during latency sensitive operations.
+GCP_CREDENTIALS
+Google Cloud Platform service account credentials. Credentials that can be used to authenticate with Google API client libraries and service accounts.
+DOCUMENT_TYPE/R&D/SOURCE_CODE/TYPESCRIPT
+TypeScript source code.
+DOCUMENT_TYPE/CONTEXT/SEXUAL
+Content contains sex-related topics.
+WEAK_PASSWORD_HASH
+A commonly used password which has a very easy to guess hash.
+POLITICAL_TERM
+Terms that commonly refer to an association or membership to a political party.
+BLOOD_TYPE
+A classification of blood.
+CANADA_QUEBEC_HIN
+The Québec Health Insurance Number (HIN) is issued to citizens, permanent residents, temporary workers, students and other individuals who are entitled to health care coverage in the Province of Québec.
+DOCUMENT_TYPE/CONTEXT/HEALTH
+Content contains health topics.
+PORTUGAL_NIB_NUMBER
+A Portuguese Número de Identificação Bancária (NIB) or Banking Identification Number is assigned by the Banco de Portugal and identifies bank accounts for all national interbanking operations.
+DOCUMENT_TYPE/R&D/SOURCE_CODE/CS
+C# source code.
+VEHICLE_IDENTIFICATION_NUMBER
+A vehicle identification number (VIN) is a unique 17-digit code assigned to every on-road motor vehicle.
+CHILE_CDI_NUMBER
+A Chilean Cédula de Identidad (CDI), or identity card, is used as the main identity document for citizens.
+US_BANK_ROUTING_MICR
+The American Bankers Association (ABA) Routing Number (also called the transit number) is a nine-digit code. It's used to identify the financial institution that's responsible to credit or entitled to receive credit for a check or electronic transaction.
+AUTH_TOKEN
+An authentication token is a machine readable way of determining whether a particular request has been authorized for a user. This detector currently identifies tokens that comply with OAuth or Bearer authentication.
+DOCUMENT_TYPE/FINANCE/INVOICE
+An invoice is a written request for payment, typically issued by a seller to a buyer, for goods or services provided. This type of document details the cost of the items or services, payment terms, and other relevant information.
+SINGAPORE_NATIONAL_REGISTRATION_ID_NUMBER
+A unique set of nine alpha-numeric characters on the Singapore National Registration Identity Card.
+PORTUGAL_SOCIAL_SECURITY_NUMBER
+The Portuguese Social Security number (Número de Identificação de Segurança Social) is a 11-digit sequence that identifies a person in Portugal for all interactions with the country's Social Security system.
+UK_NATIONAL_INSURANCE_NUMBER
+The National Insurance number (NINO) is a number used in the United Kingdom (UK) in the administration of the National Insurance or social security system. It identifies people, and is also used for some purposes in the UK tax system. The number is sometimes referred to as NI No or NINO.
+CHINA_PASSPORT
+A Chinese passport number.
+ARGENTINA_DNI_NUMBER
+An Argentine Documento Nacional de Identidad (DNI), or national identity card, is used as the main identity document for citizens.
+USER_NAME
+A username is a name used to identify a user of a computer system or service.
+DOCUMENT_TYPE/R&D/SOURCE_CODE
+A source code text.
+AMERICAN_BANKERS_CUSIP_ID
+An American Bankers' Committee on Uniform Security Identification Procedures (CUSIP) number is a 9-character alphanumeric code that identifies a North American financial security.
+AWS_CREDENTIALS
+Amazon Web Services account access keys.
+SCOTLAND_COMMUNITY_HEALTH_INDEX_NUMBER
+The Scotland Community Health Index Number (CHI number) is a 10-digit sequence used to uniquely identify a patient within National Health Service Scotland (NHS Scotland).
+ADVERTISING_ID
+Identifiers used by developers to track users for advertising purposes. These include Google Play Advertising IDs, Amazon Advertising IDs, Apple's identifierForAdvertising (IDFA), and Apple's identifierForVendor (IDFV).
+VAT_NUMBER
+Value-added tax identification number is used as an identifier for anything related to a valued-added tax.
+OAUTH_CLIENT_SECRET
+A client secret value used by Open Authorization
+MAC_ADDRESS_UNIVERSAL
+A universal media access control address (MAC address), which is an identifier for a network adapter.
+INDONESIA_PASSPORT
+An Indonesian passport number.
+DOCUMENT_TYPE/CONTEXT/LEGAL
+Content contains legal topics
+HTTP_COOKIE
+Headers containing cookies either sent to or from a server. They are part of the HTTP specification.
+DOCUMENT_TYPE/CONTEXT/OFFENSIVE
+Content contains offensive topics.
+BELGIUM_NATIONAL_ID_CARD_NUMBER
+A 12-digit Belgian national identity card number.
+DOCUMENT_TYPE/CONTEXT/RELIGION
+Content contains religious topics.
+ITALY_FISCAL_CODE
+An Italy fiscal code number is a unique 16-digit code assigned to Italian citizens as a form of identification.
+OBJECT_TYPE/PERSON/SIGNATURE
+Image of a signature which is done by a human on some document for their identity verification.
+POLAND_PASSPORT
+A Polish passport number. Polish passport is an international travel document for Polish citizens. It can also be used as a proof of Polish citizenship.
+IMAGE_TYPE/CONTEXT/SEXUALLY_SUGGESTIVE
+A finding of this type indicates that an image contains racy or sexually suggestive content. Racy content might include elements like revealing clothing, lewd or provocative poses or themes, or other sexually suggestive material.
+OBJECT_TYPE/PERSON/PHOTO_ID_CARD
+Image of a person's photo ID card, which can be government-issued (for example, driver's license) or non-government-issued (for example, school ID or employee ID).
+DOCUMENT_TYPE/R&D/SOURCE_CODE/PHP
+PHP source code.
+MARITAL_STATUS
+A marital status, which specifies if a person has ever been married.
+OBJECT_TYPE/WHITEBOARD
+Image of a whiteboard.
+PARAGUAY_TAX_NUMBER
+A Paraguayan Registro Único de Contribuyente (RUC), or tax number, is used to identify businesses and individuals for tax purposes in Paraguay.
+SOUTH_AFRICA_ID_NUMBER
+A South Africa ID number.
+MAC_ADDRESS
+A media access control address (MAC address), which is an identifier for a network adapter.
+OBJECT_TYPE/PERSON/PASSPORT
+Image of a person's passport card or passport booklet, which is often used for identification and travel purposes. Note that images of the inner visa-stamped pages might not be identified.
+SEXUAL_ORIENTATION
+A person's sexual orientation.
+SWEDEN_PASSPORT
+A Swedish passport number.
+US_SOCIAL_SECURITY_NUMBER
+A United States Social Security number (SSN) is a 9-digit number issued to US citizens, permanent residents, and temporary residents. This detector will not match against numbers with all zeroes in any digit group (that is, 000-##-####, ###-00-####, or ###-##-0000), against numbers with 666 in the first digit group, or against numbers whose first digit is 9.
+US_STATE
+A United States state name.
+ENCRYPTION_KEY
+Encryption key
+DOCUMENT_TYPE/HR/RESUME
+A resume or a Curriculum Vitae document.
+PORTUGAL_CDC_NUMBER
+A Portuguese Cartão de cidadão (CDC), or Citizen Card, is used as the main identity, Social Security, health services, taxpayer, and voter document for citizens.
+UK_DRIVERS_LICENSE_NUMBER
+A driver's license number for the United Kingdom of Great Britain and Northern Ireland (UK).
+INDIA_AADHAAR_INDIVIDUAL
+The Indian Aadhaar number is a 12-digit unique identity number obtained by residents of India, based on their biometric and demographic data.
+DOCUMENT_TYPE/R&D/SOURCE_CODE/CPP
+C++ source code.
+US_INDIVIDUAL_TAXPAYER_IDENTIFICATION_NUMBER
+A United States Individual Taxpayer Identification Number (ITIN) is a type of Tax Identification Number (TIN), issued by the Internal Revenue Service (IRS). An ITIN is a tax processing number only available for certain nonresident and resident aliens, their spouses, and dependents who cannot get a Social Security Number (SSN).
+OBJECT_TYPE/PERSON
+Image of a human-like figure, which can include a full body, a face, or other body parts.
+DOCUMENT_TYPE/LEGAL/COURT_ORDER
+A court order, ruling, or decision is document produced by a court requesting a specific action from the involved parties.
+US_DEA_NUMBER
+A US Drug Enforcement Administration (DEA) number is assigned to a health care provider by the US DEA. It allows the health care provider to write prescriptions for controlled substances. The DEA number is often used as a general "prescriber number" that is a unique identifier for anyone who can prescribe medication.
+TINK_KEYSET
+A keyset created with the TINK cryptographic library.
+IMSI_ID
+An International Mobile Subscriber Identity (IMSI) identifier, used to identify users of a cellular network.
+EMPLOYMENT_STATUS
+A person's employment status.
+SWITZERLAND_SOCIAL_SECURITY_NUMBER
+Switzerland social security number.
+US_PASSPORT
+A United States passport number.
+CANADA_BANK_ACCOUNT
+A Canadian bank account number.
+DOCUMENT_TYPE/R&D/SOURCE_CODE/JSON
+JSON source code.
+US_HEALTHCARE_NPI
+The US National Provider Identifier (NPI) is a unique 10-digit identification number issued to health care providers in the United States by the Centers for Medicare and Medicaid Services (CMS). The NPI has replaced the unique provider identification number (UPIN) as the required identifier for Medicare services. It's also used by other payers, including commercial healthcare insurers.
+SECURITY_DATA
+A general infoType representing security data. Some examples of this are passwords and API keys.
+UK_ELECTORAL_ROLL_NUMBER
+A UK electoral roll number is a number issued to United Kingdom citizens for voter identification. This number is composed of 3 to 7 digits.
+DOCUMENT_TYPE/LEGAL/LAW
+A document containing the text of a law or a regulation.
+NORWAY_NI_NUMBER
+Norway‘s Fødselsnummer, National Identification Number, or Birth Number is assigned at birth, or on migration into the country. It is registered with the Norwegian Tax Office.
+KOREA_ARN
+A South Korean alien registration number.
+GERMANY_PASSPORT
+A German passport number. The format of a German passport number is 10 alphanumeric characters, chosen from numerals 0-9 and letters C, F, G, H, J, K, L, M, N, P, R, T, V, W, X, Y, Z.
+AUSTRALIA_DRIVERS_LICENSE_NUMBER
+An Australian driver's license number.
+LOCATION_COORDINATES
+A specific location as noted by a lat/long pair, or an S2 value.
+IRELAND_DRIVING_LICENSE_NUMBER
+An Irish driving license number.
+AGE
+An age measured in months or years.
+AUSTRALIA_MEDICARE_NUMBER
+A 9-digit Australian Medicare account number is issued to permanent residents of Australia (except for Norfolk island). The primary purpose of this number is to prove Medicare eligibility to receive subsidized care in Australia.
+URUGUAY_CDI_NUMBER
+An Uruguayan Cédula de Identidad (CDI), or identity card, is used as the main identity document for citizens.
+POLAND_PESEL_NUMBER
+The PESEL number is the national identification number used in Poland. It is mandatory for all permanent residents of Poland, as well as for temporary residents staying there longer than 2 months. It is assigned to just one person and cannot be changed.
+DOCUMENT_TYPE/R&D/SOURCE_CODE/PYTHON
+Python source code.
+GOVERNMENT_ID
+A general infoType that represents government ID numbers that identify an individual.
+DOCUMENT_TYPE/FINANCE/SEC_FILING
+An SEC filing is a formal document submitted to the U.S. Securities and Exchange Commission. The most commonly filed SEC forms are 10-K and 10-Q.
+TIME
+A timestamp of a specific time of day.
+SPAIN_NIE_NUMBER
+The Spanish Número de Identificación de Extranjeros (NIE) is an identification number for foreigners living or doing business in Spain. An NIE number is needed for key transactions such as opening a bank account, buying a car, or setting up a mobile phone contract.
+IMEI_HARDWARE_ID
+An International Mobile Equipment Identity (IMEI) hardware identifier, used to identify mobile phones.
+POLAND_NATIONAL_ID_NUMBER
+The Polish identity card number. is a government identification number for Polish citizens. Every citizen older than 18 years must have an identity card. The card is issued by the local Office of Civic Affairs. Every identity card has its own unique number.
+DOCUMENT_TYPE/CONTEXT/FINANCE
+Content contains finance topics.
+NEW_ZEALAND_DRIVERS_LICENSE_NUMBER
+A New Zealand drivers license number.
+JSON_WEB_TOKEN
+JSON Web Token in compact form. Represents a set of claims as a JSON object that is digitally signed using JSON Web Signature.
+ETHNIC_GROUP
+A person's ethnic group.
+DOCUMENT_TYPE/LEGAL/PLEADING
+A pleading is a formal written statement of a party's claims or defenses to another party's claims. Examples include a complaint, a demurrer, or an answer.
+CREDIT_CARD_TRACK_NUMBER
+A credit card track number is a variable length alphanumeric string. It is used to store key cardholder information.
+IMAGE_TYPE/CONTEXT/SEXUALLY_EXPLICIT
+A finding of this type indicates that an image contains adult content of a sexual nature. Adult content might include elements such as nudity, specific contours or shapes of reproductive body parts, sexual activities, or pornographic images including photo-realistic or cartoon in nature.
+DOCUMENT_TYPE/CONTEXT/POLITICS
+Content contains political topics.
+GERMANY_DRIVERS_LICENSE_NUMBER
+A German driver's license number.
+FINLAND_BUSINESS_ID
+A Finnish business id number, which identifies a company or organization in Finland.
+MAC_ADDRESS_LOCAL
+A local media access control address (MAC address), which is an identifier for a network adapter.
+KOREA_BRN
+A South Korean business registration number.
+FRANCE_PASSPORT
+A French passport number.
+CANADA_SOCIAL_INSURANCE_NUMBER
+The Canadian Social Insurance Number (SIN) is the main identifier used in Canada for citizens, permanent residents, and those on work or study visas. With a Canadian SIN and mailing address, one can apply for health care coverage, driver's licenses, and other important services.
+FEMALE_NAME
+A common female name. This is a legacy infoType that returns a strict subset of PERSON_NAME findings. We recommend using PERSON_NAME instead. Note: Not recommended for use during latency sensitive operations.
+DOCUMENT_TYPE/R&D/SOURCE_CODE/HTML
+HTML source code.
+ITALY_PASSPORT
+An Italian passport number.
+US_EMPLOYER_IDENTIFICATION_NUMBER
+A United States Employer Identification Number (EIN) is also known as a Federal Tax Identification Number, and is used to identify a business entity.
+KOREA_RRN
+A South Korean Social Security number.
+DOCUMENT_TYPE/R&D/PATENT
+A patent or a patent application document.
+KAZAKHSTAN_PASSPORT
+A Kazakhstani passport number.
+IMAGE_TYPE/CONTEXT/VIOLENCE
+A finding of this type indicates that an image contains violent or gory content either real or fictionalized. Violent content might include imagery related to death, serious injury, or harm to an individual or group of individuals or animals.
+AUSTRALIA_PASSPORT
+An Australian passport number.
+CREDIT_CARD_EXPIRATION_DATE
+Indicates when a credit or debit card will expire.
+PERU_DNI_NUMBER
+A Peruvian Documento Nacional de Identidad (DNI), or national identity card, is used as the main identity document for citizens.
+COLOMBIA_CDC_NUMBER
+A Colombian Cédula de Ciudadanía (CDC), or citizenship card, is used as the main identity document for citizens.
+GENERIC_ID
+Alphanumeric and special character strings that may be personally identifying but do not belong to a well-defined category, such as user IDs or medical record numbers.
+SPAIN_NIF_NUMBER
+The Spanish Número de Identificación Fiscal (NIF) is a government identification number for Spanish citizens. An NIF number is needed for key transactions such as opening a bank account, buying a car, or setting up a mobile phone contract.
+DENMARK_CPR_NUMBER
+A Personal Identification Number (CPR, Det Centrale Personregister) is a national ID number in Denmark. It is used with public agencies such as health care and tax authorities. Banks and insurance companies also use it as a customer number. The CPR number is required for people who reside in Denmark, pay tax or own property there.
+SPAIN_SOCIAL_SECURITY_NUMBER
+The Spanish Social Security number (Número de Afiliación a la Seguridad Social) is a 10-digit sequence that identifies a person in Spain for all interactions with the country's Social Security system.
+SPAIN_DRIVERS_LICENSE_NUMBER
+A Spanish driver's license number.
+GEOGRAPHIC_DATA
+A general infoType representing geographic data. This includes information like locations, addresses, and coordinates.
+US_DRIVERS_LICENSE_NUMBER
+A driver's license number for the United States. Format can vary depending on the issuing state.
+PHONE_NUMBER
+A telephone number.
+PASSPORT
+A passport number that matches passport numbers for the following countries: Armenia, Australia, Azerbaijan, Belarus, Canada, China, France, Germany, India, Indonesia, Ireland, Italy, Japan, Kazakhstan, Korea, Mexico, The Netherlands, Poland, Russia, Singapore, Spain, Sweden, Taiwan, United Kingdom, Ukraine, the United States, and Uzbekistan.
+IRELAND_PASSPORT
+An Irish passport number.
+GERMANY_SCHUFA_ID
+A German Schufa identification number. Schufa Holding AG is a German credit bureau whose aim is to protect clients from credit risk.
+STORAGE_SIGNED_URL
+A storage signed URL is a URL that provides time-limited resource access to anyone in possession of the URL, regardless of whether they have a Google account. Signed URLs contain authentication information in their query string, allowing users without credentials to perform specific actions on a resource.
+MALE_NAME
+A common male name. This is a legacy infoType that returns a strict subset of PERSON_NAME findings. We recommend using PERSON_NAME instead. Note: Not recommended for use during latency sensitive operations.
+DOCUMENT_TYPE/R&D/SOURCE_CODE/JAVASCRIPT
+Javascript source code.
+MEDICAL_RECORD_NUMBER
+A generic medical record number.
+TRADE_UNION
+A trade union is a collection of workers that works to improve their working conditions.
+LAST_NAME
+A last name is defined as the last part of a PERSON_NAME. This is a legacy infoType that returns a strict subset of PERSON_NAME findings. We recommend using PERSON_NAME instead. Note: Not recommended for use during latency sensitive operations.
+BRAZIL_RG_NUMBER
+Brazil general registry number (Registro Geral or RG).
+URL
+A Uniform Resource Locator (URL).
+NEW_ZEALAND_IRD_NUMBER
+A New Zealand IRD number is a unique number issued to entities for tax purposes in New Zealand.
+ANTHROPIC_API_KEY
+API key used to authenticate requests to Anthropic APIs.
+FINLAND_NATIONAL_ID_NUMBER
+A Finnish personal identity code, a national government identification number for Finnish citizens used on identity cards, driver's licenses and passports.
+SWIFT_CODE
+A SWIFT code is the same as a Bank Identifier Code (BIC). It's a unique identification code for a particular bank. These codes are used when transferring money between banks, particularly for international wire transfers. Banks also use the codes for exchanging other messages.
+SINGAPORE_PASSPORT
+A Singaporean passport number.
+JAPAN_CORPORATE_NUMBER
+A Japanese corporate number.
+DEMOGRAPHIC_DATA
+A general infoType representing demographic data. This includes information like age, date of birth, gender identity, sexual orientation, marital status, and other similar information.
+THAILAND_NATIONAL_ID_NUMBER
+The Thai บัตรประจำตัวประชาชนไทย, or identity card, is used as the main identity document for Thai nationals.
+GEMINI_API_KEY
+API key used to authenticate requests to Gemini APIs.
+CANADA_OHIP
+The Ontario Health Insurance Plan (OHIP) number is issued to citizens, permanent residents, temporary workers, students, and other individuals who are entitled to health care coverage in the Province of Ontario.
+DOCUMENT_TYPE/FINANCE/REGULATORY
+Finance regulatory documents include financial regulations, tax laws, rules, and guidelines. Typically issued by tax or regulatory authorities.
+JAPAN_DRIVERS_LICENSE_NUMBER
+A Japanese driver's license number.
+OBJECT_TYPE/BARCODE
+Image of a 1D or 2D barcode, which is a machine-readable image that represents a piece of data. Barcodes are typically used to identify or track products.
+OBJECT_TYPE/LICENSE_PLATE
+Image of a license plate, which is a government-issued vehicle identifier.
+XSRF_TOKEN
+A token which is used to authenticate users and prevent cross site scripting attacks.
+DOMAIN_NAME
+A domain name as defined by the DNS standard.
+DOCUMENT_TYPE/R&D/SOURCE_CODE/SQL
+SQL source code.
+FRANCE_NIR
+The French Numéro d'Inscription au Répertoire (NIR) is a permanent personal identification number that's also known as the French social security number for services including healthcare as well as pensions.
+NETHERLANDS_BSN_NUMBER
+A Dutch Burgerservicenummer (BSN), or Citizen's Service Number, is a state-issued identification number that's on driver's licenses, passports, and international ID cards.
+FRANCE_TAX_IDENTIFICATION_NUMBER
+The French tax identification number is a government-issued ID for all individuals paying taxes in France.
+AZERBAIJAN_PASSPORT
+An Azerbaijani passport number.
+KOREA_NHI_NUMBER
+A Korean national health insurance number.
+INDIA_GST_INDIVIDUAL
+The Indian GST identification number (GSTIN) is a unique identifier required of every business in India for taxation.
+DOCUMENT_TYPE/R&D/SOURCE_CODE/JAVA
+Java source code.
+PERSON_NAME
+A full or partial person name, which can include first names, middle names or initials, and last names. Note: Not recommended for use during latency sensitive operations.
+CANADA_DRIVERS_LICENSE_NUMBER
+A driver's license number for each of the ten provinces in Canada.
+CREDIT_CARD_DATA
+A general infoType representing credit card numbers, credit card track numbers, credit card expiration dates, and CVV numbers.
+JAPAN_BANK_ACCOUNT
+A Japanese bank account number.
+DOCUMENT_TYPE/R&D/SOURCE_CODE/POWERSHELL
+PowerShell source code.
+JAPAN_INDIVIDUAL_NUMBER
+The Japanese national identification number—sometimes referred to as "My Number"—is a new national ID number as of January 2016.
+DOCUMENT_TYPE/MEDICAL/RECORD
+A medical record is a documented account of an individual's health history, including treatments, diagnoses, medications, and other relevant information.
+FDA_CODE
+Drug product name or active ingredient registered by the United States Food and Drug Administration (FDA).
+NEW_ZEALAND_NHI_NUMBER
+A New Zealand NHI number is a unique identifier that is assigned to every person who uses health and disability support services in New Zealand.
+ICD10_CODE
+Like ICD-9-CM codes, the International Classification of Diseases, Tenth Revision, Clinical Modification (ICD-10-CM) lexicon is a series of diagnostic codes published by the World Health Organization (WHO) to describe causes of morbidity and mortality.
+UK_PASSPORT
+A United Kingdom (UK) passport number.
+VENEZUELA_CDI_NUMBER
+A Venezuelan Cédula de Identidad (CDI), or national identity card, is used as the main identity document for citizens.
+SWITZERLAND_PASSPORT
+A Switzerland passport number.
+PARAGUAY_CIC_NUMBER
+A Paraguayan Cédula de Identidad Civil (CIC), or civil identity card, is used as the main identity document for citizens.
+DOCUMENT_TYPE/CONTEXT/OBSCENE
+Content contains obscene topics.
+JAPAN_PASSPORT
+A Japanese passport number. The passport number consists of two alphabetic characters followed by seven digits.
+MEDICAL_ID
+A general infoType representing medical IDs that identify an individual.
+DOCUMENT_TYPE/R&D/DATABASE_BACKUP
+A database backup file.
+TAIWAN_PASSPORT
+A Taiwanese passport number.
+UK_TAXPAYER_REFERENCE
+A United Kingdom (UK) Unique Taxpayer Reference (UTR) number. This number, comprised of a string of 10 decimal digits, is an identifier used by the UK government to manage the taxation system. Unlike other identifiers, such as the passport number or social insurance number, the UTR is not listed on official identity cards.
+SPAIN_DNI_NUMBER
+A Spain national identity number.
+INDIA_PAN_INDIVIDUAL
+The Indian Personal Permanent Account Number (PAN) is a unique 10-digit alphanumeric identifier used for identification of individuals, particularly those who pay income tax. It's issued by the Indian Income Tax Department. The PAN is valid for the lifetime of the holder.
+DATE
+A date. This includes most date formats, as well as the names of common world holidays.
+IRELAND_PPSN
+The Irish Personal Public Service Number (PPS number, or PPSN) is a unique number for accessing social welfare benefits, public services, and information in Ireland.
+BASIC_AUTH_HEADER
+A basic authentication header is a HTTP header used to identify a user to a server. It is part of the HTTP specification in rfc 1945. (https://tools.ietf.org/html/rfc1945#section-11)
+ARMENIA_PASSPORT
+An Armenian passport number.
+DOCUMENT_TYPE/R&D/SYSTEM_LOG
+System or application software log.
+PASSWORD
+Clear text passwords in configs, code, and other text.
+FRANCE_CNI
+The French Carte Nationale d'Identité Sécurisée (CNI or CNIS) is the French national identity card. It's an official identity document consisting of a 12-digit identification number. This number is commonly used when opening bank accounts and when paying by check. It can sometimes be used instead of a passport or visa within the European Union (EU) and in some other countries.
+AUSTRALIA_TAX_FILE_NUMBER
+An Australian tax file number (TFN) is a number issued by the Australian Tax Office for taxpayer identification. Every taxpaying entity, such as an individual or an organization, is assigned a unique number.
+US_PREPARER_TAXPAYER_IDENTIFICATION_NUMBER
+A United States Preparer Taxpayer Identification Number (PTIN) is an identification number that all paid tax return preparers must use on US federal tax returns or claims for refund submitted to the US Internal Revenue Service (IRS).
+US_VEHICLE_IDENTIFICATION_NUMBER
+A vehicle identification number (VIN) is a unique 17-digit code assigned to every on-road motor vehicle in North America.
+DOCUMENT_TYPE/R&D/SOURCE_CODE/RUST
+Rust source code.
+US_TOLLFREE_PHONE_NUMBER
+A US toll-free telephone number.
+DOCUMENT_TYPE/LEGAL/BLANK_FORM
+A blank legal form or a template. Typically has multiple areas or boxes left empty with the intention of it being filled by the person and then submitting it to a legal institution.
+ICCID_NUMBER
+The integrated circuit card identifier uniquely identifies SIM cards.
+FIRST_NAME
+A first name is defined as the first part of a PERSON_NAME. This is a legacy infoType that returns a strict subset of PERSON_NAME findings. We recommend using PERSON_NAME instead. Note: Not recommended for use during latency sensitive operations.
+UKRAINE_PASSPORT
+A Ukrainian passport number.
+MEXICO_PASSPORT
+A Mexican passport number.
+NETHERLANDS_PASSPORT
+A Dutch passport number.
+CHINA_RESIDENT_ID_NUMBER
+A Chinese resident identification number.
+GENDER
+A person’s gender identity.
+CANADA_PASSPORT
+A Canadian passport number.
+UZBEKISTAN_PASSPORT
+An Uzbekistani passport number.
+CZECHIA_PERSONAL_ID_NUMBER
+A Czechia personal identification number that all Czech citizens as well as foreigners staying in Czechia temporarily or permanently must have.
+DATE_OF_BIRTH
+A date that is identified by context as a date of birth. Note: Not recommended for use during latency sensitive operations.
+DOCUMENT_TYPE/R&D/SOURCE_CODE/GO
+Go source code.
+CREDIT_CARD_NUMBER
+A credit card number is 12 to 19 digits long. They are used for payment transactions globally.
+TURKEY_ID_NUMBER
+A unique Turkish personal identification number, assigned to every citizen of Turkey.
+CROATIA_PERSONAL_ID_NUMBER
+A Croatia Personal Identification Number (OIB) is a permanent national identification number of every Croatian citizen and resident in the Republic of Croatia.
+US_MEDICARE_BENEFICIARY_ID_NUMBER
+A US Medicare Beneficiary Identifier is an identification number that is used on all US Medicare transactions.
+TECHNICAL_ID
+A general infoType representing technical IDs that are used to identify an entity on the internet. Some examples of this are advertising IDs, IP addresses, and MAC addresses.
+GERMANY_TAXPAYER_IDENTIFICATION_NUMBER
+An 11-digit German taxpayer identification number assigned to both natural-born and other legal residents of Germany for the purposes of recording tax payments.
+CANADA_BC_PHN
+The British Columbia Personal Health Number (PHN) is issued to citizens, permanent residents, temporary workers, students, and other individuals who are entitled to health care coverage in the Province of British Columbia.
+BELARUS_PASSPORT
+A Belarusian passport number.
+KOREA_DRIVERS_LICENSE_NUMBER
+A Korean driver's license number.
+GCP_API_KEY
+Google Cloud API key. Simple encrypted string that can be used when calling certain Google Cloud APIs that don't need to access private user data.
+ISRAEL_IDENTITY_CARD_NUMBER
+Israel identity card number is issued to all Israeli citizens at birth by the Ministry of the Interior. Temporary residents are assigned a number when they receive temporary resident status.
+INDIA_PASSPORT
+An Indian passport number.
+CVV_NUMBER
+A CVV number is a number made up of 3 to 4 digits that is located on credit and debit cards. A CVV number is used to verify the card.
+MEDICAL_TERM
+Terms that commonly refer to a person's medical condition or health.
+DRIVERS_LICENSE_NUMBER
+A driver's license number that matches driver's license numbers for the following countries: Australia, Canada, Germany, Ireland, Japan, Korea, Spain, the United Kingdom, and the United States.
+UK_NATIONAL_HEALTH_SERVICE_NUMBER
+A National Health Service (NHS) number is the unique number allocated to a registered user of the three public health services in England, Wales, and the Isle of Man.
+SPAIN_PASSPORT
+A Spanish Ordinary Passport (Pasaporte Ordinario) number. There are 4 different types of passports in Spain. This detector is for the Ordinary Passport (Pasaporte Ordinario) type, which is issued for ordinary travel, such as vacations and business trips.
+RUSSIA_PASSPORT
+A Russian passport number.
+GERMANY_IDENTITY_CARD_NUMBER
+The German Personalausweis, or identity card, is used as the main identity document for citizens of Germany.
+IMMIGRATION_STATUS
+An immigration status denotes a person's right to be in a country.
+IP_ADDRESS
+An Internet Protocol (IP) address (either IPv4 or IPv6).
+SWEDEN_NATIONAL_ID_NUMBER
+A Swedish Personal Identity Number (personnummer), a national government identification number for Swedish citizens.
+FINANCIAL_ACCOUNT_NUMBER
+A number referring to a specific financial account, for example, a bank account number or a retirement account number.
+OPENAI_API_KEY
+API key used to authenticate requests to OpenAI APIs.
+IBAN_CODE
+An International Bank Account Number (IBAN) is defined as an internationally agreed-upon method for identifying bank accounts. It's defined by the International Standard of Organization (ISO) 13616:2007 standard. ISO 13616:2007 was created by the European Committee for Banking Standards (ECBS). An IBAN consists of up to 34 alphanumeric characters including elements such as a country code or account number.
+## InfoType categories
+The following table shows the categories of each infoType. Location
+specifies the geographic location that the infoType is typically associated
+with. Availability indicates the regions or multi-regions where the infoType
+is supported. The value ANY_LOCATION means that the infoType is available in
+all regions.
+Name
+Location
+Industry
+Type
+Availability
+FINANCIAL_ID
+GLOBAL
+FINANCE
+PII
+SPII
+ANY_LOCATION
+DOCUMENT_TYPE/LEGAL/BRIEF
+GLOBAL
+DOCUMENT
+ANY_LOCATION
+FRANCE_DRIVERS_LICENSE_NUMBER
+FRANCE
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+MEXICO_CURP_NUMBER
+MEXICO
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+ORGANIZATION_NAME
+GLOBAL
+CONTEXTUAL_INFORMATION
+ANY_LOCATION
+DOD_ID_NUMBER
+UNITED_STATES
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+STORAGE_SIGNED_POLICY_DOCUMENT
+GLOBAL
+CREDENTIAL
+PII
+SPII
+ANY_LOCATION
+KOREA_PASSPORT
+KOREA
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+OBJECT_TYPE/PERSON/FACE
+GLOBAL
+DEMOGRAPHIC
+PII
+SPII
+REGIONAL:
+asia
+asia-southeast1
+europe
+europe-north1
+global
+us
+us-central1
+us-east4
+us-west1
+HONG_KONG_ID_NUMBER
+HONG_KONG
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+EMAIL_ADDRESS
+GLOBAL
+PII
+ANY_LOCATION
+IRELAND_EIRCODE
+IRELAND
+PII
+ANY_LOCATION
+CZECHIA_PASSPORT
+CZECHIA
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+DOCUMENT_TYPE/R&D/SOURCE_CODE/SHELL
+GLOBAL
+DOCUMENT
+ANY_LOCATION
+AUSTRIA_SOCIAL_SECURITY_NUMBER
+AUSTRIA
+HEALTH
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+TAIWAN_ID_NUMBER
+TAIWAN
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+ICD9_CODE
+GLOBAL
+HEALTH
+CONTEXTUAL_INFORMATION
+ANY_LOCATION
+COUNTRY_DEMOGRAPHIC
+GLOBAL
+DEMOGRAPHIC
+ANY_LOCATION
+SPAIN_CIF_NUMBER
+SPAIN
+GOVERNMENT_ID
+ANY_LOCATION
+US_ADOPTION_TAXPAYER_IDENTIFICATION_NUMBER
+UNITED_STATES
+FINANCE
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+DOCUMENT_TYPE/R&D/SOURCE_CODE/C
+GLOBAL
+DOCUMENT
+ANY_LOCATION
+RELIGIOUS_TERM
+GLOBAL
+CONTEXTUAL_INFORMATION
+DEMOGRAPHIC
+ANY_LOCATION
+SSL_CERTIFICATE
+GLOBAL
+CREDENTIAL
+PII
+SPII
+ANY_LOCATION
+INDONESIA_NIK_NUMBER
+INDONESIA
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+BRAZIL_CPF_NUMBER
+BRAZIL
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+CRIME_STATUS
+GLOBAL
+DEMOGRAPHIC
+ANY_LOCATION
+HTTP_USER_AGENT
+GLOBAL
+ANY_LOCATION
+AZURE_AUTH_TOKEN
+GLOBAL
+CREDENTIAL
+PII
+SPII
+ANY_LOCATION
+STREET_ADDRESS
+GLOBAL
+PII
+ANY_LOCATION
+MEDICAL_DATA
+GLOBAL
+HEALTH
+DEMOGRAPHIC
+ANY_LOCATION
+LOCATION
+GLOBAL
+CONTEXTUAL_INFORMATION
+ANY_LOCATION
+GCP_CREDENTIALS
+GLOBAL
+CREDENTIAL
+PII
+SPII
+ANY_LOCATION
+DOCUMENT_TYPE/R&D/SOURCE_CODE/TYPESCRIPT
+GLOBAL
+DOCUMENT
+ANY_LOCATION
+DOCUMENT_TYPE/CONTEXT/SEXUAL
+GLOBAL
+CONTEXTUAL_INFORMATION
+DOCUMENT
+REGIONAL:
+europe
+global
+us
+WEAK_PASSWORD_HASH
+GLOBAL
+CREDENTIAL
+ANY_LOCATION
+POLITICAL_TERM
+GLOBAL
+CONTEXTUAL_INFORMATION
+DEMOGRAPHIC
+ANY_LOCATION
+BLOOD_TYPE
+GLOBAL
+HEALTH
+ANY_LOCATION
+CANADA_QUEBEC_HIN
+CANADA
+HEALTH
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+DOCUMENT_TYPE/CONTEXT/HEALTH
+GLOBAL
+CONTEXTUAL_INFORMATION
+DOCUMENT
+REGIONAL:
+europe
+global
+us
+PORTUGAL_NIB_NUMBER
+PORTUGAL
+FINANCE
+PII
+SPII
+ANY_LOCATION
+DOCUMENT_TYPE/R&D/SOURCE_CODE/CS
+GLOBAL
+DOCUMENT
+ANY_LOCATION
+VEHICLE_IDENTIFICATION_NUMBER
+GLOBAL
+PII
+ANY_LOCATION
+CHILE_CDI_NUMBER
+CHILE
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+US_BANK_ROUTING_MICR
+UNITED_STATES
+FINANCE
+CONTEXTUAL_INFORMATION
+ANY_LOCATION
+AUTH_TOKEN
+GLOBAL
+CREDENTIAL
+PII
+SPII
+ANY_LOCATION
+DOCUMENT_TYPE/FINANCE/INVOICE
+GLOBAL
+FINANCE
+DOCUMENT
+REGIONAL:
+asia
+europe
+global
+us
+SINGAPORE_NATIONAL_REGISTRATION_ID_NUMBER
+SINGAPORE
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+PORTUGAL_SOCIAL_SECURITY_NUMBER
+PORTUGAL
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+UK_NATIONAL_INSURANCE_NUMBER
+UNITED_KINGDOM
+FINANCE
+HEALTH
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+CHINA_PASSPORT
+CHINA
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+ARGENTINA_DNI_NUMBER
+ARGENTINA
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+USER_NAME
+GLOBAL
+PII
+ANY_LOCATION
+DOCUMENT_TYPE/R&D/SOURCE_CODE
+GLOBAL
+DOCUMENT
+ANY_LOCATION
+AMERICAN_BANKERS_CUSIP_ID
+GLOBAL
+FINANCE
+CONTEXTUAL_INFORMATION
+ANY_LOCATION
+AWS_CREDENTIALS
+GLOBAL
+CREDENTIAL
+PII
+SPII
+ANY_LOCATION
+SCOTLAND_COMMUNITY_HEALTH_INDEX_NUMBER
+UNITED_KINGDOM
+HEALTH
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+ADVERTISING_ID
+GLOBAL
+PII
+ANY_LOCATION
+VAT_NUMBER
+GLOBAL
+GOVERNMENT_ID
+ANY_LOCATION
+OAUTH_CLIENT_SECRET
+GLOBAL
+CREDENTIAL
+PII
+SPII
+ANY_LOCATION
+MAC_ADDRESS_UNIVERSAL
+GLOBAL
+TELECOMMUNICATIONS
+PII
+ANY_LOCATION
+INDONESIA_PASSPORT
+INDONESIA
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+DOCUMENT_TYPE/CONTEXT/LEGAL
+GLOBAL
+CONTEXTUAL_INFORMATION
+DOCUMENT
+REGIONAL:
+europe
+global
+us
+HTTP_COOKIE
+GLOBAL
+CREDENTIAL
+PII
+SPII
+ANY_LOCATION
+DOCUMENT_TYPE/CONTEXT/OFFENSIVE
+GLOBAL
+CONTEXTUAL_INFORMATION
+DOCUMENT
+REGIONAL:
+europe
+global
+us
+BELGIUM_NATIONAL_ID_CARD_NUMBER
+BELGIUM
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+DOCUMENT_TYPE/CONTEXT/RELIGION
+GLOBAL
+CONTEXTUAL_INFORMATION
+DOCUMENT
+REGIONAL:
+europe
+global
+us
+ITALY_FISCAL_CODE
+ITALY
+FINANCE
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+OBJECT_TYPE/PERSON/SIGNATURE
+GLOBAL
+PII
+SPII
+REGIONAL:
+asia
+asia-southeast1
+europe
+europe-north1
+global
+us
+us-central1
+us-east4
+us-west1
+POLAND_PASSPORT
+POLAND
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+IMAGE_TYPE/CONTEXT/SEXUALLY_SUGGESTIVE
+GLOBAL
+CONTEXTUAL_INFORMATION
+REGIONAL:
+asia
+asia-southeast1
+europe
+europe-north1
+global
+us
+us-central1
+us-east4
+us-west1
+OBJECT_TYPE/PERSON/PHOTO_ID_CARD
+GLOBAL
+DEMOGRAPHIC
+PII
+SPII
+REGIONAL:
+asia
+asia-southeast1
+europe
+europe-north1
+global
+us
+us-central1
+us-east4
+us-west1
+DOCUMENT_TYPE/R&D/SOURCE_CODE/PHP
+GLOBAL
+DOCUMENT
+ANY_LOCATION
+MARITAL_STATUS
+GLOBAL
+DEMOGRAPHIC
+ANY_LOCATION
+OBJECT_TYPE/WHITEBOARD
+GLOBAL
+CONTEXTUAL_INFORMATION
+REGIONAL:
+asia
+asia-southeast1
+europe
+europe-north1
+global
+us
+us-central1
+us-east4
+us-west1
+PARAGUAY_TAX_NUMBER
+PARAGUAY
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+SOUTH_AFRICA_ID_NUMBER
+SOUTH_AFRICA
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+MAC_ADDRESS
+GLOBAL
+TELECOMMUNICATIONS
+PII
+ANY_LOCATION
+OBJECT_TYPE/PERSON/PASSPORT
+GLOBAL
+GOVERNMENT_ID
+PII
+SPII
+REGIONAL:
+asia
+asia-southeast1
+europe
+europe-north1
+global
+us
+us-central1
+us-east4
+us-west1
+SEXUAL_ORIENTATION
+GLOBAL
+DEMOGRAPHIC
+ANY_LOCATION
+SWEDEN_PASSPORT
+SWEDEN
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+US_SOCIAL_SECURITY_NUMBER
+UNITED_STATES
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+US_STATE
+UNITED_STATES
+ANY_LOCATION
+ENCRYPTION_KEY
+GLOBAL
+CREDENTIAL
+PII
+SPII
+ANY_LOCATION
+DOCUMENT_TYPE/HR/RESUME
+GLOBAL
+DOCUMENT
+ANY_LOCATION
+PORTUGAL_CDC_NUMBER
+PORTUGAL
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+UK_DRIVERS_LICENSE_NUMBER
+UNITED_KINGDOM
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+INDIA_AADHAAR_INDIVIDUAL
+INDIA
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+DOCUMENT_TYPE/R&D/SOURCE_CODE/CPP
+GLOBAL
+DOCUMENT
+ANY_LOCATION
+US_INDIVIDUAL_TAXPAYER_IDENTIFICATION_NUMBER
+UNITED_STATES
+FINANCE
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+OBJECT_TYPE/PERSON
+GLOBAL
+DEMOGRAPHIC
+PII
+REGIONAL:
+asia
+asia-southeast1
+europe
+europe-north1
+global
+us
+us-central1
+us-east4
+us-west1
+DOCUMENT_TYPE/LEGAL/COURT_ORDER
+GLOBAL
+DOCUMENT
+ANY_LOCATION
+US_DEA_NUMBER
+UNITED_STATES
+HEALTH
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+TINK_KEYSET
+GLOBAL
+CREDENTIAL
+PII
+SPII
+ANY_LOCATION
+IMSI_ID
+GLOBAL
+TELECOMMUNICATIONS
+PII
+ANY_LOCATION
+EMPLOYMENT_STATUS
+GLOBAL
+DEMOGRAPHIC
+ANY_LOCATION
+SWITZERLAND_SOCIAL_SECURITY_NUMBER
+SWITZERLAND
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+US_PASSPORT
+UNITED_STATES
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+CANADA_BANK_ACCOUNT
+CANADA
+FINANCE
+PII
+SPII
+ANY_LOCATION
+DOCUMENT_TYPE/R&D/SOURCE_CODE/JSON
+GLOBAL
+DOCUMENT
+ANY_LOCATION
+US_HEALTHCARE_NPI
+UNITED_STATES
+HEALTH
+GOVERNMENT_ID
+PII
+ANY_LOCATION
+SECURITY_DATA
+GLOBAL
+CREDENTIAL
+PII
+SPII
+ANY_LOCATION
+UK_ELECTORAL_ROLL_NUMBER
+UNITED_KINGDOM
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+DOCUMENT_TYPE/LEGAL/LAW
+GLOBAL
+DOCUMENT
+ANY_LOCATION
+NORWAY_NI_NUMBER
+NORWAY
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+KOREA_ARN
+KOREA
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+GERMANY_PASSPORT
+GERMANY
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+AUSTRALIA_DRIVERS_LICENSE_NUMBER
+AUSTRALIA
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+LOCATION_COORDINATES
+GLOBAL
+CONTEXTUAL_INFORMATION
+ANY_LOCATION
+IRELAND_DRIVING_LICENSE_NUMBER
+IRELAND
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+AGE
+GLOBAL
+DEMOGRAPHIC
+PII
+ANY_LOCATION
+AUSTRALIA_MEDICARE_NUMBER
+AUSTRALIA
+HEALTH
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+URUGUAY_CDI_NUMBER
+URUGUAY
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+POLAND_PESEL_NUMBER
+POLAND
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+DOCUMENT_TYPE/R&D/SOURCE_CODE/PYTHON
+GLOBAL
+DOCUMENT
+ANY_LOCATION
+GOVERNMENT_ID
+GLOBAL
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+DOCUMENT_TYPE/FINANCE/SEC_FILING
+GLOBAL
+FINANCE
+DOCUMENT
+ANY_LOCATION
+TIME
+GLOBAL
+ANY_LOCATION
+SPAIN_NIE_NUMBER
+SPAIN
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+IMEI_HARDWARE_ID
+GLOBAL
+TELECOMMUNICATIONS
+PII
+ANY_LOCATION
+POLAND_NATIONAL_ID_NUMBER
+POLAND
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+DOCUMENT_TYPE/CONTEXT/FINANCE
+GLOBAL
+CONTEXTUAL_INFORMATION
+DOCUMENT
+REGIONAL:
+europe
+global
+us
+NEW_ZEALAND_DRIVERS_LICENSE_NUMBER
+NEW_ZEALAND
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+JSON_WEB_TOKEN
+GLOBAL
+CREDENTIAL
+PII
+SPII
+ANY_LOCATION
+ETHNIC_GROUP
+GLOBAL
+DEMOGRAPHIC
+ANY_LOCATION
+DOCUMENT_TYPE/LEGAL/PLEADING
+GLOBAL
+DOCUMENT
+ANY_LOCATION
+CREDIT_CARD_TRACK_NUMBER
+GLOBAL
+FINANCE
+PII
+SPII
+ANY_LOCATION
+IMAGE_TYPE/CONTEXT/SEXUALLY_EXPLICIT
+GLOBAL
+CONTEXTUAL_INFORMATION
+REGIONAL:
+asia
+asia-southeast1
+europe
+europe-north1
+global
+us
+us-central1
+us-east4
+us-west1
+DOCUMENT_TYPE/CONTEXT/POLITICS
+GLOBAL
+CONTEXTUAL_INFORMATION
+DOCUMENT
+REGIONAL:
+europe
+global
+us
+GERMANY_DRIVERS_LICENSE_NUMBER
+GERMANY
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+FINLAND_BUSINESS_ID
+FINLAND
+GOVERNMENT_ID
+ANY_LOCATION
+MAC_ADDRESS_LOCAL
+GLOBAL
+TELECOMMUNICATIONS
+PII
+ANY_LOCATION
+KOREA_BRN
+KOREA
+GOVERNMENT_ID
+ANY_LOCATION
+FRANCE_PASSPORT
+FRANCE
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+CANADA_SOCIAL_INSURANCE_NUMBER
+CANADA
+HEALTH
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+FEMALE_NAME
+GLOBAL
+PII
+ANY_LOCATION
+DOCUMENT_TYPE/R&D/SOURCE_CODE/HTML
+GLOBAL
+DOCUMENT
+ANY_LOCATION
+ITALY_PASSPORT
+ITALY
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+US_EMPLOYER_IDENTIFICATION_NUMBER
+UNITED_STATES
+GOVERNMENT_ID
+ANY_LOCATION
+KOREA_RRN
+KOREA
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+DOCUMENT_TYPE/R&D/PATENT
+GLOBAL
+DOCUMENT
+ANY_LOCATION
+KAZAKHSTAN_PASSPORT
+KAZAKHSTAN
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+IMAGE_TYPE/CONTEXT/VIOLENCE
+GLOBAL
+CONTEXTUAL_INFORMATION
+REGIONAL:
+asia
+asia-southeast1
+europe
+europe-north1
+global
+us
+us-central1
+us-east4
+us-west1
+AUSTRALIA_PASSPORT
+AUSTRALIA
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+CREDIT_CARD_EXPIRATION_DATE
+GLOBAL
+FINANCE
+PII
+SPII
+ANY_LOCATION
+PERU_DNI_NUMBER
+PERU
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+COLOMBIA_CDC_NUMBER
+COLOMBIA
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+GENERIC_ID
+GLOBAL
+FINANCE
+HEALTH
+TELECOMMUNICATIONS
+DEMOGRAPHIC
+ANY_LOCATION
+SPAIN_NIF_NUMBER
+SPAIN
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+DENMARK_CPR_NUMBER
+DENMARK
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+SPAIN_SOCIAL_SECURITY_NUMBER
+SPAIN
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+SPAIN_DRIVERS_LICENSE_NUMBER
+SPAIN
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+GEOGRAPHIC_DATA
+GLOBAL
+CONTEXTUAL_INFORMATION
+ANY_LOCATION
+US_DRIVERS_LICENSE_NUMBER
+UNITED_STATES
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+PHONE_NUMBER
+GLOBAL
+TELECOMMUNICATIONS
+PII
+ANY_LOCATION
+PASSPORT
+GLOBAL
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+IRELAND_PASSPORT
+IRELAND
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+GERMANY_SCHUFA_ID
+GERMANY
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+STORAGE_SIGNED_URL
+GLOBAL
+CREDENTIAL
+PII
+SPII
+ANY_LOCATION
+MALE_NAME
+GLOBAL
+PII
+ANY_LOCATION
+DOCUMENT_TYPE/R&D/SOURCE_CODE/JAVASCRIPT
+GLOBAL
+DOCUMENT
+ANY_LOCATION
+MEDICAL_RECORD_NUMBER
+GLOBAL
+HEALTH
+PII
+SPII
+ANY_LOCATION
+TRADE_UNION
+GLOBAL
+CONTEXTUAL_INFORMATION
+DEMOGRAPHIC
+ANY_LOCATION
+LAST_NAME
+GLOBAL
+PII
+ANY_LOCATION
+BRAZIL_RG_NUMBER
+BRAZIL
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+URL
+GLOBAL
+ANY_LOCATION
+NEW_ZEALAND_IRD_NUMBER
+NEW_ZEALAND
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+ANTHROPIC_API_KEY
+GLOBAL
+CREDENTIAL
+PII
+SPII
+ANY_LOCATION
+FINLAND_NATIONAL_ID_NUMBER
+FINLAND
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+SWIFT_CODE
+GLOBAL
+FINANCE
+CONTEXTUAL_INFORMATION
+ANY_LOCATION
+SINGAPORE_PASSPORT
+SINGAPORE
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+JAPAN_CORPORATE_NUMBER
+JAPAN
+GOVERNMENT_ID
+ANY_LOCATION
+DEMOGRAPHIC_DATA
+GLOBAL
+CONTEXTUAL_INFORMATION
+DEMOGRAPHIC
+ANY_LOCATION
+THAILAND_NATIONAL_ID_NUMBER
+THAILAND
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+GEMINI_API_KEY
+GLOBAL
+CREDENTIAL
+PII
+SPII
+ANY_LOCATION
+CANADA_OHIP
+CANADA
+HEALTH
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+DOCUMENT_TYPE/FINANCE/REGULATORY
+GLOBAL
+FINANCE
+DOCUMENT
+ANY_LOCATION
+JAPAN_DRIVERS_LICENSE_NUMBER
+JAPAN
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+OBJECT_TYPE/BARCODE
+GLOBAL
+CONTEXTUAL_INFORMATION
+REGIONAL:
+asia
+asia-southeast1
+europe
+europe-north1
+global
+us
+us-central1
+us-east4
+us-west1
+OBJECT_TYPE/LICENSE_PLATE
+GLOBAL
+GOVERNMENT_ID
+PII
+REGIONAL:
+asia
+asia-southeast1
+europe
+europe-north1
+global
+us
+us-central1
+us-east4
+us-west1
+XSRF_TOKEN
+GLOBAL
+CREDENTIAL
+PII
+SPII
+ANY_LOCATION
+DOMAIN_NAME
+GLOBAL
+ANY_LOCATION
+DOCUMENT_TYPE/R&D/SOURCE_CODE/SQL
+GLOBAL
+DOCUMENT
+ANY_LOCATION
+FRANCE_NIR
+FRANCE
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+NETHERLANDS_BSN_NUMBER
+THE_NETHERLANDS
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+FRANCE_TAX_IDENTIFICATION_NUMBER
+FRANCE
+FINANCE
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+AZERBAIJAN_PASSPORT
+AZERBAIJAN
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+KOREA_NHI_NUMBER
+KOREA
+HEALTH
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+INDIA_GST_INDIVIDUAL
+INDIA
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+DOCUMENT_TYPE/R&D/SOURCE_CODE/JAVA
+GLOBAL
+DOCUMENT
+ANY_LOCATION
+PERSON_NAME
+GLOBAL
+PII
+ANY_LOCATION
+CANADA_DRIVERS_LICENSE_NUMBER
+CANADA
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+CREDIT_CARD_DATA
+GLOBAL
+FINANCE
+PII
+SPII
+ANY_LOCATION
+JAPAN_BANK_ACCOUNT
+JAPAN
+FINANCE
+PII
+SPII
+ANY_LOCATION
+DOCUMENT_TYPE/R&D/SOURCE_CODE/POWERSHELL
+GLOBAL
+DOCUMENT
+ANY_LOCATION
+JAPAN_INDIVIDUAL_NUMBER
+JAPAN
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+DOCUMENT_TYPE/MEDICAL/RECORD
+GLOBAL
+HEALTH
+DOCUMENT
+REGIONAL:
+asia
+europe
+global
+us
+FDA_CODE
+GLOBAL
+HEALTH
+CONTEXTUAL_INFORMATION
+ANY_LOCATION
+NEW_ZEALAND_NHI_NUMBER
+NEW_ZEALAND
+HEALTH
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+ICD10_CODE
+GLOBAL
+HEALTH
+CONTEXTUAL_INFORMATION
+ANY_LOCATION
+UK_PASSPORT
+UNITED_KINGDOM
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+VENEZUELA_CDI_NUMBER
+VENEZUELA
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+SWITZERLAND_PASSPORT
+SWITZERLAND
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+PARAGUAY_CIC_NUMBER
+PARAGUAY
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+DOCUMENT_TYPE/CONTEXT/OBSCENE
+GLOBAL
+CONTEXTUAL_INFORMATION
+DOCUMENT
+REGIONAL:
+europe
+global
+us
+JAPAN_PASSPORT
+JAPAN
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+MEDICAL_ID
+GLOBAL
+HEALTH
+PII
+SPII
+ANY_LOCATION
+DOCUMENT_TYPE/R&D/DATABASE_BACKUP
+GLOBAL
+DOCUMENT
+ANY_LOCATION
+TAIWAN_PASSPORT
+TAIWAN
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+UK_TAXPAYER_REFERENCE
+UNITED_KINGDOM
+FINANCE
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+SPAIN_DNI_NUMBER
+SPAIN
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+INDIA_PAN_INDIVIDUAL
+INDIA
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+DATE
+GLOBAL
+ANY_LOCATION
+IRELAND_PPSN
+IRELAND
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+BASIC_AUTH_HEADER
+GLOBAL
+CREDENTIAL
+PII
+SPII
+ANY_LOCATION
+ARMENIA_PASSPORT
+ARMENIA
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+DOCUMENT_TYPE/R&D/SYSTEM_LOG
+GLOBAL
+DOCUMENT
+ANY_LOCATION
+PASSWORD
+GLOBAL
+CREDENTIAL
+PII
+SPII
+ANY_LOCATION
+FRANCE_CNI
+FRANCE
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+AUSTRALIA_TAX_FILE_NUMBER
+AUSTRALIA
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+US_PREPARER_TAXPAYER_IDENTIFICATION_NUMBER
+UNITED_STATES
+FINANCE
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+US_VEHICLE_IDENTIFICATION_NUMBER
+UNITED_STATES
+PII
+ANY_LOCATION
+DOCUMENT_TYPE/R&D/SOURCE_CODE/RUST
+GLOBAL
+DOCUMENT
+ANY_LOCATION
+US_TOLLFREE_PHONE_NUMBER
+UNITED_STATES
+TELECOMMUNICATIONS
+ANY_LOCATION
+DOCUMENT_TYPE/LEGAL/BLANK_FORM
+GLOBAL
+DOCUMENT
+ANY_LOCATION
+ICCID_NUMBER
+GLOBAL
+TELECOMMUNICATIONS
+PII
+ANY_LOCATION
+FIRST_NAME
+GLOBAL
+PII
+ANY_LOCATION
+UKRAINE_PASSPORT
+UKRAINE
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+MEXICO_PASSPORT
+MEXICO
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+NETHERLANDS_PASSPORT
+THE_NETHERLANDS
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+CHINA_RESIDENT_ID_NUMBER
+CHINA
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+GENDER
+GLOBAL
+DEMOGRAPHIC
+ANY_LOCATION
+CANADA_PASSPORT
+CANADA
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+UZBEKISTAN_PASSPORT
+UZBEKISTAN
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+CZECHIA_PERSONAL_ID_NUMBER
+CZECHIA
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+DATE_OF_BIRTH
+GLOBAL
+DEMOGRAPHIC
+PII
+ANY_LOCATION
+DOCUMENT_TYPE/R&D/SOURCE_CODE/GO
+GLOBAL
+DOCUMENT
+ANY_LOCATION
+CREDIT_CARD_NUMBER
+GLOBAL
+FINANCE
+PII
+SPII
+ANY_LOCATION
+TURKEY_ID_NUMBER
+TURKEY
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+CROATIA_PERSONAL_ID_NUMBER
+CROATIA
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+US_MEDICARE_BENEFICIARY_ID_NUMBER
+UNITED_STATES
+HEALTH
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+TECHNICAL_ID
+GLOBAL
+TELECOMMUNICATIONS
+PII
+ANY_LOCATION
+GERMANY_TAXPAYER_IDENTIFICATION_NUMBER
+GERMANY
+FINANCE
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+CANADA_BC_PHN
+CANADA
+HEALTH
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+BELARUS_PASSPORT
+BELARUS
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+KOREA_DRIVERS_LICENSE_NUMBER
+KOREA
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+GCP_API_KEY
+GLOBAL
+CREDENTIAL
+PII
+SPII
+ANY_LOCATION
+ISRAEL_IDENTITY_CARD_NUMBER
+ISRAEL
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+INDIA_PASSPORT
+INDIA
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+CVV_NUMBER
+GLOBAL
+FINANCE
+PII
+SPII
+ANY_LOCATION
+MEDICAL_TERM
+GLOBAL
+HEALTH
+CONTEXTUAL_INFORMATION
+ANY_LOCATION
+DRIVERS_LICENSE_NUMBER
+GLOBAL
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+UK_NATIONAL_HEALTH_SERVICE_NUMBER
+UNITED_KINGDOM
+HEALTH
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+SPAIN_PASSPORT
+SPAIN
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+RUSSIA_PASSPORT
+RUSSIA
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+GERMANY_IDENTITY_CARD_NUMBER
+GERMANY
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+IMMIGRATION_STATUS
+GLOBAL
+DEMOGRAPHIC
+ANY_LOCATION
+IP_ADDRESS
+GLOBAL
+TELECOMMUNICATIONS
+PII
+ANY_LOCATION
+SWEDEN_NATIONAL_ID_NUMBER
+SWEDEN
+GOVERNMENT_ID
+PII
+SPII
+ANY_LOCATION
+FINANCIAL_ACCOUNT_NUMBER
+GLOBAL
+FINANCE
+PII
+SPII
+ANY_LOCATION
+OPENAI_API_KEY
+GLOBAL
+CREDENTIAL
+PII
+SPII
+ANY_LOCATION
+IBAN_CODE
+GLOBAL
+FINANCE
+PII
+SPII
+ANY_LOCATION
+## Sensitivity scores
+The following table shows the default sensitivity score of each infoType. For
+information about how to customize default sensitivity values, see Edit the
+settings of a built-in
+infoType.
+Name
+Sensitivity score
+FINANCIAL_ID
+SENSITIVITY_HIGH
+DOCUMENT_TYPE/LEGAL/BRIEF
+SENSITIVITY_MODERATE
+FRANCE_DRIVERS_LICENSE_NUMBER
+SENSITIVITY_HIGH
+MEXICO_CURP_NUMBER
+SENSITIVITY_HIGH
+ORGANIZATION_NAME
+SENSITIVITY_LOW
+DOD_ID_NUMBER
+SENSITIVITY_HIGH
+STORAGE_SIGNED_POLICY_DOCUMENT
+SENSITIVITY_HIGH
+KOREA_PASSPORT
+SENSITIVITY_HIGH
+OBJECT_TYPE/PERSON/FACE
+SENSITIVITY_HIGH
+HONG_KONG_ID_NUMBER
+SENSITIVITY_HIGH
+EMAIL_ADDRESS
+SENSITIVITY_MODERATE
+IRELAND_EIRCODE
+SENSITIVITY_MODERATE
+CZECHIA_PASSPORT
+SENSITIVITY_HIGH
+DOCUMENT_TYPE/R&D/SOURCE_CODE/SHELL
+SENSITIVITY_MODERATE
+AUSTRIA_SOCIAL_SECURITY_NUMBER
+SENSITIVITY_HIGH
+TAIWAN_ID_NUMBER
+SENSITIVITY_HIGH
+ICD9_CODE
+SENSITIVITY_MODERATE
+COUNTRY_DEMOGRAPHIC
+SENSITIVITY_MODERATE
+SPAIN_CIF_NUMBER
+SENSITIVITY_MODERATE
+US_ADOPTION_TAXPAYER_IDENTIFICATION_NUMBER
+SENSITIVITY_HIGH
+DOCUMENT_TYPE/R&D/SOURCE_CODE/C
+SENSITIVITY_MODERATE
+RELIGIOUS_TERM
+SENSITIVITY_MODERATE
+SSL_CERTIFICATE
+SENSITIVITY_HIGH
+INDONESIA_NIK_NUMBER
+SENSITIVITY_HIGH
+BRAZIL_CPF_NUMBER
+SENSITIVITY_HIGH
+CRIME_STATUS
+SENSITIVITY_MODERATE
+HTTP_USER_AGENT
+SENSITIVITY_LOW
+AZURE_AUTH_TOKEN
+SENSITIVITY_HIGH
+STREET_ADDRESS
+SENSITIVITY_MODERATE
+MEDICAL_DATA
+SENSITIVITY_MODERATE
+LOCATION
+SENSITIVITY_MODERATE
+GCP_CREDENTIALS
+SENSITIVITY_HIGH
+DOCUMENT_TYPE/R&D/SOURCE_CODE/TYPESCRIPT
+SENSITIVITY_MODERATE
+DOCUMENT_TYPE/CONTEXT/SEXUAL
+SENSITIVITY_MODERATE
+WEAK_PASSWORD_HASH
+SENSITIVITY_HIGH
+POLITICAL_TERM
+SENSITIVITY_MODERATE
+BLOOD_TYPE
+SENSITIVITY_MODERATE
+CANADA_QUEBEC_HIN
+SENSITIVITY_HIGH
+DOCUMENT_TYPE/CONTEXT/HEALTH
+SENSITIVITY_MODERATE
+PORTUGAL_NIB_NUMBER
+SENSITIVITY_HIGH
+DOCUMENT_TYPE/R&D/SOURCE_CODE/CS
+SENSITIVITY_MODERATE
+VEHICLE_IDENTIFICATION_NUMBER
+SENSITIVITY_MODERATE
+CHILE_CDI_NUMBER
+SENSITIVITY_HIGH
+US_BANK_ROUTING_MICR
+SENSITIVITY_MODERATE
+AUTH_TOKEN
+SENSITIVITY_HIGH
+DOCUMENT_TYPE/FINANCE/INVOICE
+SENSITIVITY_MODERATE
+SINGAPORE_NATIONAL_REGISTRATION_ID_NUMBER
+SENSITIVITY_HIGH
+PORTUGAL_SOCIAL_SECURITY_NUMBER
+SENSITIVITY_HIGH
+UK_NATIONAL_INSURANCE_NUMBER
+SENSITIVITY_HIGH
+CHINA_PASSPORT
+SENSITIVITY_HIGH
+ARGENTINA_DNI_NUMBER
+SENSITIVITY_HIGH
+USER_NAME
+SENSITIVITY_MODERATE
+DOCUMENT_TYPE/R&D/SOURCE_CODE
+SENSITIVITY_MODERATE
+AMERICAN_BANKERS_CUSIP_ID
+SENSITIVITY_MODERATE
+AWS_CREDENTIALS
+SENSITIVITY_HIGH
+SCOTLAND_COMMUNITY_HEALTH_INDEX_NUMBER
+SENSITIVITY_HIGH
+ADVERTISING_ID
+SENSITIVITY_MODERATE
+VAT_NUMBER
+SENSITIVITY_MODERATE
+OAUTH_CLIENT_SECRET
+SENSITIVITY_HIGH
+MAC_ADDRESS_UNIVERSAL
+SENSITIVITY_MODERATE
+INDONESIA_PASSPORT
+SENSITIVITY_HIGH
+DOCUMENT_TYPE/CONTEXT/LEGAL
+SENSITIVITY_MODERATE
+HTTP_COOKIE
+SENSITIVITY_HIGH
+DOCUMENT_TYPE/CONTEXT/OFFENSIVE
+SENSITIVITY_MODERATE
+BELGIUM_NATIONAL_ID_CARD_NUMBER
+SENSITIVITY_HIGH
+DOCUMENT_TYPE/CONTEXT/RELIGION
+SENSITIVITY_MODERATE
+ITALY_FISCAL_CODE
+SENSITIVITY_HIGH
+OBJECT_TYPE/PERSON/SIGNATURE
+SENSITIVITY_HIGH
+POLAND_PASSPORT
+SENSITIVITY_HIGH
+IMAGE_TYPE/CONTEXT/SEXUALLY_SUGGESTIVE
+SENSITIVITY_HIGH
+OBJECT_TYPE/PERSON/PHOTO_ID_CARD
+SENSITIVITY_HIGH
+DOCUMENT_TYPE/R&D/SOURCE_CODE/PHP
+SENSITIVITY_MODERATE
+MARITAL_STATUS
+SENSITIVITY_MODERATE
+OBJECT_TYPE/WHITEBOARD
+SENSITIVITY_LOW
+PARAGUAY_TAX_NUMBER
+SENSITIVITY_HIGH
+SOUTH_AFRICA_ID_NUMBER
+SENSITIVITY_HIGH
+MAC_ADDRESS
+SENSITIVITY_MODERATE
+OBJECT_TYPE/PERSON/PASSPORT
+SENSITIVITY_HIGH
+SEXUAL_ORIENTATION
+SENSITIVITY_MODERATE
+SWEDEN_PASSPORT
+SENSITIVITY_HIGH
+US_SOCIAL_SECURITY_NUMBER
+SENSITIVITY_HIGH
+US_STATE
+SENSITIVITY_LOW
+ENCRYPTION_KEY
+SENSITIVITY_HIGH
+DOCUMENT_TYPE/HR/RESUME
+SENSITIVITY_MODERATE
+PORTUGAL_CDC_NUMBER
+SENSITIVITY_HIGH
+UK_DRIVERS_LICENSE_NUMBER
+SENSITIVITY_HIGH
+INDIA_AADHAAR_INDIVIDUAL
+SENSITIVITY_HIGH
+DOCUMENT_TYPE/R&D/SOURCE_CODE/CPP
+SENSITIVITY_MODERATE
+US_INDIVIDUAL_TAXPAYER_IDENTIFICATION_NUMBER
+SENSITIVITY_HIGH
+OBJECT_TYPE/PERSON
+SENSITIVITY_MODERATE
+DOCUMENT_TYPE/LEGAL/COURT_ORDER
+SENSITIVITY_MODERATE
+US_DEA_NUMBER
+SENSITIVITY_HIGH
+TINK_KEYSET
+SENSITIVITY_HIGH
+IMSI_ID
+SENSITIVITY_MODERATE
+EMPLOYMENT_STATUS
+SENSITIVITY_MODERATE
+SWITZERLAND_SOCIAL_SECURITY_NUMBER
+SENSITIVITY_HIGH
+US_PASSPORT
+SENSITIVITY_HIGH
+CANADA_BANK_ACCOUNT
+SENSITIVITY_HIGH
+DOCUMENT_TYPE/R&D/SOURCE_CODE/JSON
+SENSITIVITY_MODERATE
+US_HEALTHCARE_NPI
+SENSITIVITY_MODERATE
+SECURITY_DATA
+SENSITIVITY_HIGH
+UK_ELECTORAL_ROLL_NUMBER
+SENSITIVITY_HIGH
+DOCUMENT_TYPE/LEGAL/LAW
+SENSITIVITY_MODERATE
+NORWAY_NI_NUMBER
+SENSITIVITY_HIGH
+KOREA_ARN
+SENSITIVITY_HIGH
+GERMANY_PASSPORT
+SENSITIVITY_HIGH
+AUSTRALIA_DRIVERS_LICENSE_NUMBER
+SENSITIVITY_HIGH
+LOCATION_COORDINATES
+SENSITIVITY_MODERATE
+IRELAND_DRIVING_LICENSE_NUMBER
+SENSITIVITY_HIGH
+AGE
+SENSITIVITY_MODERATE
+AUSTRALIA_MEDICARE_NUMBER
+SENSITIVITY_HIGH
+URUGUAY_CDI_NUMBER
+SENSITIVITY_HIGH
+POLAND_PESEL_NUMBER
+SENSITIVITY_HIGH
+DOCUMENT_TYPE/R&D/SOURCE_CODE/PYTHON
+SENSITIVITY_MODERATE
+GOVERNMENT_ID
+SENSITIVITY_HIGH
+DOCUMENT_TYPE/FINANCE/SEC_FILING
+SENSITIVITY_MODERATE
+TIME
+SENSITIVITY_LOW
+SPAIN_NIE_NUMBER
+SENSITIVITY_HIGH
+IMEI_HARDWARE_ID
+SENSITIVITY_MODERATE
+POLAND_NATIONAL_ID_NUMBER
+SENSITIVITY_HIGH
+DOCUMENT_TYPE/CONTEXT/FINANCE
+SENSITIVITY_MODERATE
+NEW_ZEALAND_DRIVERS_LICENSE_NUMBER
+SENSITIVITY_HIGH
+JSON_WEB_TOKEN
+SENSITIVITY_HIGH
+ETHNIC_GROUP
+SENSITIVITY_MODERATE
+DOCUMENT_TYPE/LEGAL/PLEADING
+SENSITIVITY_MODERATE
+CREDIT_CARD_TRACK_NUMBER
+SENSITIVITY_HIGH
+IMAGE_TYPE/CONTEXT/SEXUALLY_EXPLICIT
+SENSITIVITY_HIGH
+DOCUMENT_TYPE/CONTEXT/POLITICS
+SENSITIVITY_MODERATE
+GERMANY_DRIVERS_LICENSE_NUMBER
+SENSITIVITY_HIGH
+FINLAND_BUSINESS_ID
+SENSITIVITY_MODERATE
+MAC_ADDRESS_LOCAL
+SENSITIVITY_MODERATE
+KOREA_BRN
+SENSITIVITY_MODERATE
+FRANCE_PASSPORT
+SENSITIVITY_HIGH
+CANADA_SOCIAL_INSURANCE_NUMBER
+SENSITIVITY_HIGH
+FEMALE_NAME
+SENSITIVITY_MODERATE
+DOCUMENT_TYPE/R&D/SOURCE_CODE/HTML
+SENSITIVITY_MODERATE
+ITALY_PASSPORT
+SENSITIVITY_HIGH
+US_EMPLOYER_IDENTIFICATION_NUMBER
+SENSITIVITY_MODERATE
+KOREA_RRN
+SENSITIVITY_HIGH
+DOCUMENT_TYPE/R&D/PATENT
+SENSITIVITY_MODERATE
+KAZAKHSTAN_PASSPORT
+SENSITIVITY_HIGH
+IMAGE_TYPE/CONTEXT/VIOLENCE
+SENSITIVITY_HIGH
+AUSTRALIA_PASSPORT
+SENSITIVITY_HIGH
+CREDIT_CARD_EXPIRATION_DATE
+SENSITIVITY_HIGH
+PERU_DNI_NUMBER
+SENSITIVITY_HIGH
+COLOMBIA_CDC_NUMBER
+SENSITIVITY_HIGH
+GENERIC_ID
+SENSITIVITY_MODERATE
+SPAIN_NIF_NUMBER
+SENSITIVITY_HIGH
+DENMARK_CPR_NUMBER
+SENSITIVITY_HIGH
+SPAIN_SOCIAL_SECURITY_NUMBER
+SENSITIVITY_HIGH
+SPAIN_DRIVERS_LICENSE_NUMBER
+SENSITIVITY_HIGH
+GEOGRAPHIC_DATA
+SENSITIVITY_MODERATE
+US_DRIVERS_LICENSE_NUMBER
+SENSITIVITY_HIGH
+PHONE_NUMBER
+SENSITIVITY_MODERATE
+PASSPORT
+SENSITIVITY_HIGH
+IRELAND_PASSPORT
+SENSITIVITY_HIGH
+GERMANY_SCHUFA_ID
+SENSITIVITY_HIGH
+STORAGE_SIGNED_URL
+SENSITIVITY_HIGH
+MALE_NAME
+SENSITIVITY_MODERATE
+DOCUMENT_TYPE/R&D/SOURCE_CODE/JAVASCRIPT
+SENSITIVITY_MODERATE
+MEDICAL_RECORD_NUMBER
+SENSITIVITY_HIGH
+TRADE_UNION
+SENSITIVITY_MODERATE
+LAST_NAME
+SENSITIVITY_MODERATE
+BRAZIL_RG_NUMBER
+SENSITIVITY_HIGH
+URL
+SENSITIVITY_LOW
+NEW_ZEALAND_IRD_NUMBER
+SENSITIVITY_HIGH
+ANTHROPIC_API_KEY
+SENSITIVITY_HIGH
+FINLAND_NATIONAL_ID_NUMBER
+SENSITIVITY_HIGH
+SWIFT_CODE
+SENSITIVITY_MODERATE
+SINGAPORE_PASSPORT
+SENSITIVITY_HIGH
+JAPAN_CORPORATE_NUMBER
+SENSITIVITY_MODERATE
+DEMOGRAPHIC_DATA
+SENSITIVITY_MODERATE
+THAILAND_NATIONAL_ID_NUMBER
+SENSITIVITY_HIGH
+GEMINI_API_KEY
+SENSITIVITY_HIGH
+CANADA_OHIP
+SENSITIVITY_HIGH
+DOCUMENT_TYPE/FINANCE/REGULATORY
+SENSITIVITY_MODERATE
+JAPAN_DRIVERS_LICENSE_NUMBER
+SENSITIVITY_HIGH
+OBJECT_TYPE/BARCODE
+SENSITIVITY_LOW
+OBJECT_TYPE/LICENSE_PLATE
+SENSITIVITY_MODERATE
+XSRF_TOKEN
+SENSITIVITY_HIGH
+DOMAIN_NAME
+SENSITIVITY_LOW
+DOCUMENT_TYPE/R&D/SOURCE_CODE/SQL
+SENSITIVITY_MODERATE
+FRANCE_NIR
+SENSITIVITY_HIGH
+NETHERLANDS_BSN_NUMBER
+SENSITIVITY_HIGH
+FRANCE_TAX_IDENTIFICATION_NUMBER
+SENSITIVITY_HIGH
+AZERBAIJAN_PASSPORT
+SENSITIVITY_HIGH
+KOREA_NHI_NUMBER
+SENSITIVITY_HIGH
+INDIA_GST_INDIVIDUAL
+SENSITIVITY_HIGH
+DOCUMENT_TYPE/R&D/SOURCE_CODE/JAVA
+SENSITIVITY_MODERATE
+PERSON_NAME
+SENSITIVITY_MODERATE
+CANADA_DRIVERS_LICENSE_NUMBER
+SENSITIVITY_HIGH
+CREDIT_CARD_DATA
+SENSITIVITY_HIGH
+JAPAN_BANK_ACCOUNT
+SENSITIVITY_HIGH
+DOCUMENT_TYPE/R&D/SOURCE_CODE/POWERSHELL
+SENSITIVITY_MODERATE
+JAPAN_INDIVIDUAL_NUMBER
+SENSITIVITY_HIGH
+DOCUMENT_TYPE/MEDICAL/RECORD
+SENSITIVITY_MODERATE
+FDA_CODE
+SENSITIVITY_MODERATE
+NEW_ZEALAND_NHI_NUMBER
+SENSITIVITY_HIGH
+ICD10_CODE
+SENSITIVITY_MODERATE
+UK_PASSPORT
+SENSITIVITY_HIGH
+VENEZUELA_CDI_NUMBER
+SENSITIVITY_HIGH
+SWITZERLAND_PASSPORT
+SENSITIVITY_HIGH
+PARAGUAY_CIC_NUMBER
+SENSITIVITY_HIGH
+DOCUMENT_TYPE/CONTEXT/OBSCENE
+SENSITIVITY_MODERATE
+JAPAN_PASSPORT
+SENSITIVITY_HIGH
+MEDICAL_ID
+SENSITIVITY_HIGH
+DOCUMENT_TYPE/R&D/DATABASE_BACKUP
+SENSITIVITY_MODERATE
+TAIWAN_PASSPORT
+SENSITIVITY_HIGH
+UK_TAXPAYER_REFERENCE
+SENSITIVITY_HIGH
+SPAIN_DNI_NUMBER
+SENSITIVITY_HIGH
+INDIA_PAN_INDIVIDUAL
+SENSITIVITY_HIGH
+DATE
+SENSITIVITY_LOW
+IRELAND_PPSN
+SENSITIVITY_HIGH
+BASIC_AUTH_HEADER
+SENSITIVITY_HIGH
+ARMENIA_PASSPORT
+SENSITIVITY_HIGH
+DOCUMENT_TYPE/R&D/SYSTEM_LOG
+SENSITIVITY_MODERATE
+PASSWORD
+SENSITIVITY_HIGH
+FRANCE_CNI
+SENSITIVITY_HIGH
+AUSTRALIA_TAX_FILE_NUMBER
+SENSITIVITY_HIGH
+US_PREPARER_TAXPAYER_IDENTIFICATION_NUMBER
+SENSITIVITY_HIGH
+US_VEHICLE_IDENTIFICATION_NUMBER
+SENSITIVITY_MODERATE
+DOCUMENT_TYPE/R&D/SOURCE_CODE/RUST
+SENSITIVITY_MODERATE
+US_TOLLFREE_PHONE_NUMBER
+SENSITIVITY_MODERATE
+DOCUMENT_TYPE/LEGAL/BLANK_FORM
+SENSITIVITY_MODERATE
+ICCID_NUMBER
+SENSITIVITY_MODERATE
+FIRST_NAME
+SENSITIVITY_MODERATE
+UKRAINE_PASSPORT
+SENSITIVITY_HIGH
+MEXICO_PASSPORT
+SENSITIVITY_HIGH
+NETHERLANDS_PASSPORT
+SENSITIVITY_HIGH
+CHINA_RESIDENT_ID_NUMBER
+SENSITIVITY_HIGH
+GENDER
+SENSITIVITY_MODERATE
+CANADA_PASSPORT
+SENSITIVITY_HIGH
+UZBEKISTAN_PASSPORT
+SENSITIVITY_HIGH
+CZECHIA_PERSONAL_ID_NUMBER
+SENSITIVITY_HIGH
+DATE_OF_BIRTH
+SENSITIVITY_MODERATE
+DOCUMENT_TYPE/R&D/SOURCE_CODE/GO
+SENSITIVITY_MODERATE
+CREDIT_CARD_NUMBER
+SENSITIVITY_HIGH
+TURKEY_ID_NUMBER
+SENSITIVITY_HIGH
+CROATIA_PERSONAL_ID_NUMBER
+SENSITIVITY_HIGH
+US_MEDICARE_BENEFICIARY_ID_NUMBER
+SENSITIVITY_HIGH
+TECHNICAL_ID
+SENSITIVITY_MODERATE
+GERMANY_TAXPAYER_IDENTIFICATION_NUMBER
+SENSITIVITY_HIGH
+CANADA_BC_PHN
+SENSITIVITY_HIGH
+BELARUS_PASSPORT
+SENSITIVITY_HIGH
+KOREA_DRIVERS_LICENSE_NUMBER
+SENSITIVITY_HIGH
+GCP_API_KEY
+SENSITIVITY_HIGH
+ISRAEL_IDENTITY_CARD_NUMBER
+SENSITIVITY_HIGH
+INDIA_PASSPORT
+SENSITIVITY_HIGH
+CVV_NUMBER
+SENSITIVITY_HIGH
+MEDICAL_TERM
+SENSITIVITY_MODERATE
+DRIVERS_LICENSE_NUMBER
+SENSITIVITY_HIGH
+UK_NATIONAL_HEALTH_SERVICE_NUMBER
+SENSITIVITY_HIGH
+SPAIN_PASSPORT
+SENSITIVITY_HIGH
+RUSSIA_PASSPORT
+SENSITIVITY_HIGH
+GERMANY_IDENTITY_CARD_NUMBER
+SENSITIVITY_HIGH
+IMMIGRATION_STATUS
+SENSITIVITY_MODERATE
+IP_ADDRESS
+SENSITIVITY_MODERATE
+SWEDEN_NATIONAL_ID_NUMBER
+SENSITIVITY_HIGH
+FINANCIAL_ACCOUNT_NUMBER
+SENSITIVITY_HIGH
+OPENAI_API_KEY
+SENSITIVITY_HIGH
+IBAN_CODE
+SENSITIVITY_HIGH
+## General infotypes
+The following table lists the available general infoTypes and the specific
+infoTypes that they detect. For more information, see General and specific
+infotype
+detectors.
+General infoType
+Specific infoTypes included
+FINANCIAL_ID
+CANADA_BANK_ACCOUNT
+CREDIT_CARD_NUMBER
+CREDIT_CARD_TRACK_NUMBER
+CVV_NUMBER
+FINANCIAL_ACCOUNT_NUMBER
+IBAN_CODE
+JAPAN_BANK_ACCOUNT
+PORTUGAL_NIB_NUMBER
+MEDICAL_DATA
+BLOOD_TYPE
+FDA_CODE
+ICD10_CODE
+ICD9_CODE
+MEDICAL_TERM
+US_HEALTHCARE_NPI
+VEHICLE_IDENTIFICATION_NUMBER
+US_VEHICLE_IDENTIFICATION_NUMBER
+MAC_ADDRESS
+MAC_ADDRESS_LOCAL
+MAC_ADDRESS_UNIVERSAL
+SECURITY_DATA
+ANTHROPIC_API_KEY
+AUTH_TOKEN
+AWS_CREDENTIALS
+AZURE_AUTH_TOKEN
+BASIC_AUTH_HEADER
+ENCRYPTION_KEY
+GCP_API_KEY
+GCP_CREDENTIALS
+GEMINI_API_KEY
+HTTP_COOKIE
+JSON_WEB_TOKEN
+OAUTH_CLIENT_SECRET
+OPENAI_API_KEY
+PASSWORD
+SSL_CERTIFICATE
+STORAGE_SIGNED_POLICY_DOCUMENT
+STORAGE_SIGNED_URL
+TINK_KEYSET
+WEAK_PASSWORD_HASH
+XSRF_TOKEN
+GOVERNMENT_ID
+ARGENTINA_DNI_NUMBER
+ARMENIA_PASSPORT
+AUSTRALIA_DRIVERS_LICENSE_NUMBER
+AUSTRALIA_MEDICARE_NUMBER
+AUSTRALIA_PASSPORT
+AUSTRALIA_TAX_FILE_NUMBER
+AUSTRIA_SOCIAL_SECURITY_NUMBER
+AZERBAIJAN_PASSPORT
+BELARUS_PASSPORT
+BELGIUM_NATIONAL_ID_CARD_NUMBER
+BRAZIL_CPF_NUMBER
+BRAZIL_RG_NUMBER
+CANADA_BC_PHN
+CANADA_DRIVERS_LICENSE_NUMBER
+CANADA_OHIP
+CANADA_PASSPORT
+CANADA_QUEBEC_HIN
+CANADA_SOCIAL_INSURANCE_NUMBER
+CHILE_CDI_NUMBER
+CHINA_PASSPORT
+CHINA_RESIDENT_ID_NUMBER
+COLOMBIA_CDC_NUMBER
+CROATIA_PERSONAL_ID_NUMBER
+CZECHIA_PASSPORT
+CZECHIA_PERSONAL_ID_NUMBER
+DENMARK_CPR_NUMBER
+DOD_ID_NUMBER
+FINLAND_NATIONAL_ID_NUMBER
+FRANCE_CNI
+FRANCE_DRIVERS_LICENSE_NUMBER
+FRANCE_NIR
+FRANCE_PASSPORT
+FRANCE_TAX_IDENTIFICATION_NUMBER
+GERMANY_DRIVERS_LICENSE_NUMBER
+GERMANY_IDENTITY_CARD_NUMBER
+GERMANY_PASSPORT
+GERMANY_SCHUFA_ID
+GERMANY_TAXPAYER_IDENTIFICATION_NUMBER
+HONG_KONG_ID_NUMBER
+INDIA_AADHAAR_INDIVIDUAL
+INDIA_GST_INDIVIDUAL
+INDIA_PAN_INDIVIDUAL
+INDIA_PASSPORT
+INDONESIA_NIK_NUMBER
+INDONESIA_PASSPORT
+IRELAND_DRIVING_LICENSE_NUMBER
+IRELAND_PASSPORT
+IRELAND_PPSN
+ISRAEL_IDENTITY_CARD_NUMBER
+ITALY_FISCAL_CODE
+ITALY_PASSPORT
+JAPAN_DRIVERS_LICENSE_NUMBER
+JAPAN_INDIVIDUAL_NUMBER
+JAPAN_PASSPORT
+KAZAKHSTAN_PASSPORT
+KOREA_ARN
+KOREA_DRIVERS_LICENSE_NUMBER
+KOREA_NHI_NUMBER
+KOREA_PASSPORT
+KOREA_RRN
+MEXICO_CURP_NUMBER
+MEXICO_PASSPORT
+NETHERLANDS_BSN_NUMBER
+NETHERLANDS_PASSPORT
+NEW_ZEALAND_DRIVERS_LICENSE_NUMBER
+NEW_ZEALAND_IRD_NUMBER
+NEW_ZEALAND_NHI_NUMBER
+NORWAY_NI_NUMBER
+PARAGUAY_CIC_NUMBER
+PARAGUAY_TAX_NUMBER
+PASSPORT
+PERU_DNI_NUMBER
+POLAND_NATIONAL_ID_NUMBER
+POLAND_PASSPORT
+POLAND_PESEL_NUMBER
+PORTUGAL_CDC_NUMBER
+PORTUGAL_SOCIAL_SECURITY_NUMBER
+RUSSIA_PASSPORT
+SCOTLAND_COMMUNITY_HEALTH_INDEX_NUMBER
+SINGAPORE_NATIONAL_REGISTRATION_ID_NUMBER
+SINGAPORE_PASSPORT
+SOUTH_AFRICA_ID_NUMBER
+SPAIN_DNI_NUMBER
+SPAIN_DRIVERS_LICENSE_NUMBER
+SPAIN_NIE_NUMBER
+SPAIN_NIF_NUMBER
+SPAIN_PASSPORT
+SPAIN_SOCIAL_SECURITY_NUMBER
+SWEDEN_NATIONAL_ID_NUMBER
+SWEDEN_PASSPORT
+SWITZERLAND_PASSPORT
+SWITZERLAND_SOCIAL_SECURITY_NUMBER
+TAIWAN_ID_NUMBER
+TAIWAN_PASSPORT
+THAILAND_NATIONAL_ID_NUMBER
+TURKEY_ID_NUMBER
+UK_DRIVERS_LICENSE_NUMBER
+UK_ELECTORAL_ROLL_NUMBER
+UK_NATIONAL_HEALTH_SERVICE_NUMBER
+UK_NATIONAL_INSURANCE_NUMBER
+UK_PASSPORT
+UK_TAXPAYER_REFERENCE
+UKRAINE_PASSPORT
+URUGUAY_CDI_NUMBER
+US_ADOPTION_TAXPAYER_IDENTIFICATION_NUMBER
+US_DEA_NUMBER
+US_DRIVERS_LICENSE_NUMBER
+US_INDIVIDUAL_TAXPAYER_IDENTIFICATION_NUMBER
+US_MEDICARE_BENEFICIARY_ID_NUMBER
+US_PASSPORT
+US_PREPARER_TAXPAYER_IDENTIFICATION_NUMBER
+US_SOCIAL_SECURITY_NUMBER
+UZBEKISTAN_PASSPORT
+VENEZUELA_CDI_NUMBER
+GEOGRAPHIC_DATA
+IRELAND_EIRCODE
+LOCATION
+LOCATION_COORDINATES
+STREET_ADDRESS
+PHONE_NUMBER
+US_TOLLFREE_PHONE_NUMBER
+PASSPORT
+ARMENIA_PASSPORT
+AUSTRALIA_PASSPORT
+AZERBAIJAN_PASSPORT
+BELARUS_PASSPORT
+CANADA_PASSPORT
+CHINA_PASSPORT
+CZECHIA_PASSPORT
+FRANCE_PASSPORT
+GERMANY_PASSPORT
+INDONESIA_PASSPORT
+INDIA_PASSPORT
+IRELAND_PASSPORT
+ITALY_PASSPORT
+JAPAN_PASSPORT
+KAZAKHSTAN_PASSPORT
+KOREA_PASSPORT
+MEXICO_PASSPORT
+NETHERLANDS_PASSPORT
+POLAND_PASSPORT
+RUSSIA_PASSPORT
+SINGAPORE_PASSPORT
+SPAIN_PASSPORT
+SWEDEN_PASSPORT
+SWITZERLAND_PASSPORT
+TAIWAN_PASSPORT
+UK_PASSPORT
+US_PASSPORT
+UKRAINE_PASSPORT
+UZBEKISTAN_PASSPORT
+DEMOGRAPHIC_DATA
+AGE
+COUNTRY_DEMOGRAPHIC
+DATE_OF_BIRTH
+EMPLOYMENT_STATUS
+ETHNIC_GROUP
+GENDER
+IMMIGRATION_STATUS
+MARITAL_STATUS
+POLITICAL_TERM
+RELIGIOUS_TERM
+SEXUAL_ORIENTATION
+TRADE_UNION
+CREDIT_CARD_DATA
+CREDIT_CARD_EXPIRATION_DATE
+CREDIT_CARD_NUMBER
+CREDIT_CARD_TRACK_NUMBER
+CVV_NUMBER
+MEDICAL_ID
+AUSTRALIA_MEDICARE_NUMBER
+CANADA_BC_PHN
+CANADA_OHIP
+CANADA_QUEBEC_HIN
+KOREA_NHI_NUMBER
+NEW_ZEALAND_NHI_NUMBER
+SCOTLAND_COMMUNITY_HEALTH_INDEX_NUMBER
+UK_NATIONAL_HEALTH_SERVICE_NUMBER
+US_MEDICARE_BENEFICIARY_ID_NUMBER
+TECHNICAL_ID
+ADVERTISING_ID
+ICCID_NUMBER
+IMEI_HARDWARE_ID
+IMSI_ID
+IP_ADDRESS
+MAC_ADDRESS_LOCAL
+MAC_ADDRESS_UNIVERSAL
+DRIVERS_LICENSE_NUMBER
+AUSTRALIA_DRIVERS_LICENSE_NUMBER
+CANADA_DRIVERS_LICENSE_NUMBER
+FRANCE_DRIVERS_LICENSE_NUMBER
+GERMANY_DRIVERS_LICENSE_NUMBER
+IRELAND_DRIVING_LICENSE_NUMBER
+JAPAN_DRIVERS_LICENSE_NUMBER
+KOREA_DRIVERS_LICENSE_NUMBER
+NEW_ZEALAND_DRIVERS_LICENSE_NUMBER
+SPAIN_DRIVERS_LICENSE_NUMBER
+UK_DRIVERS_LICENSE_NUMBER
+US_DRIVERS_LICENSE_NUMBER
+## Documents
+To help with document risk assessment and policy enforcement,
+Sensitive Data Protection can classify documents into enterprise, sensitive,
+and regulated content categories. This classification becomes
+particularly useful when combined with personally identifiable information
+(PII) inspection scan results.
+DOCUMENT_TYPE/CONTEXT/FINANCE
+DOCUMENT_TYPE/CONTEXT/HEALTH
+DOCUMENT_TYPE/CONTEXT/LEGAL
+DOCUMENT_TYPE/CONTEXT/OBSCENE
+DOCUMENT_TYPE/CONTEXT/OFFENSIVE
+DOCUMENT_TYPE/CONTEXT/POLITICS
+DOCUMENT_TYPE/CONTEXT/RELIGION
+DOCUMENT_TYPE/CONTEXT/SEXUAL
+DOCUMENT_TYPE/FINANCE/INVOICE
+DOCUMENT_TYPE/FINANCE/REGULATORY
+DOCUMENT_TYPE/FINANCE/SEC_FILING
+DOCUMENT_TYPE/HR/RESUME
+DOCUMENT_TYPE/LEGAL/BLANK_FORM
+DOCUMENT_TYPE/LEGAL/BRIEF
+DOCUMENT_TYPE/LEGAL/COURT_ORDER
+DOCUMENT_TYPE/LEGAL/LAW
+DOCUMENT_TYPE/LEGAL/PLEADING
+DOCUMENT_TYPE/MEDICAL/RECORD
+DOCUMENT_TYPE/R&D/DATABASE_BACKUP
+DOCUMENT_TYPE/R&D/PATENT
+DOCUMENT_TYPE/R&D/SOURCE_CODE
+DOCUMENT_TYPE/R&D/SOURCE_CODE/C
+DOCUMENT_TYPE/R&D/SOURCE_CODE/CPP
+DOCUMENT_TYPE/R&D/SOURCE_CODE/CS
+DOCUMENT_TYPE/R&D/SOURCE_CODE/GO
+DOCUMENT_TYPE/R&D/SOURCE_CODE/HTML
+DOCUMENT_TYPE/R&D/SOURCE_CODE/JAVA
+DOCUMENT_TYPE/R&D/SOURCE_CODE/JAVASCRIPT
+DOCUMENT_TYPE/R&D/SOURCE_CODE/JSON
+DOCUMENT_TYPE/R&D/SOURCE_CODE/PHP
+DOCUMENT_TYPE/R&D/SOURCE_CODE/POWERSHELL
+DOCUMENT_TYPE/R&D/SOURCE_CODE/PYTHON
+DOCUMENT_TYPE/R&D/SOURCE_CODE/RUST
+DOCUMENT_TYPE/R&D/SOURCE_CODE/SHELL
+DOCUMENT_TYPE/R&D/SOURCE_CODE/SQL
+DOCUMENT_TYPE/R&D/SOURCE_CODE/TYPESCRIPT
+DOCUMENT_TYPE/R&D/SYSTEM_LOG
+## Secrets
+The following infoType detectors detect credentials and other
+secret data.
+ANTHROPIC_API_KEY
+AUTH_TOKEN
+AWS_CREDENTIALS
+AZURE_AUTH_TOKEN
+BASIC_AUTH_HEADER
+ENCRYPTION_KEY
+GCP_API_KEY
+GCP_CREDENTIALS
+GEMINI_API_KEY
+HTTP_COOKIE
+JSON_WEB_TOKEN
+OAUTH_CLIENT_SECRET
+OPENAI_API_KEY
+PASSWORD
+SECURITY_DATA
+SSL_CERTIFICATE
+STORAGE_SIGNED_POLICY_DOCUMENT
+STORAGE_SIGNED_URL
+TINK_KEYSET
+WEAK_PASSWORD_HASH
+XSRF_TOKEN
+## Image-based infoTypes
+The following sections list infoType detectors that analyze image pixels and
+features directly. In contrast, all other infoType detectors are text-based;
+when analyzing images, they first extract text from images and then analyze the
+text.
+### Object infoTypes
+The following infoType detectors can detect objects in images. For more
+information, see Inspect an image for sensitive
+objects.
+OBJECT_TYPE/BARCODE
+OBJECT_TYPE/LICENSE_PLATE
+OBJECT_TYPE/PERSON
+OBJECT_TYPE/PERSON/FACE
+OBJECT_TYPE/PERSON/PASSPORT
+OBJECT_TYPE/PERSON/PHOTO_ID_CARD
+OBJECT_TYPE/PERSON/SIGNATURE
+OBJECT_TYPE/WHITEBOARD
+### Image context infoTypes
+The following infoType detectors analyze an entire image for sensitive or
+harmful subject matter. For more information, see Image safety
+classification.
+IMAGE_TYPE/CONTEXT/SEXUALLY_EXPLICIT
+IMAGE_TYPE/CONTEXT/SEXUALLY_SUGGESTIVE
+IMAGE_TYPE/CONTEXT/VIOLENCE
+## Limited-availability infoTypes
+These limited-availability infoTypes can cause scanning issues if you use them
+to scan data in unsupported regions. To see which regions support these
+infoTypes, see the Availability column in InfoType categories
+in this document.
+DOCUMENT_TYPE/CONTEXT/FINANCE
+DOCUMENT_TYPE/CONTEXT/HEALTH
+DOCUMENT_TYPE/CONTEXT/LEGAL
+DOCUMENT_TYPE/CONTEXT/OBSCENE
+DOCUMENT_TYPE/CONTEXT/OFFENSIVE
+DOCUMENT_TYPE/CONTEXT/POLITICS
+DOCUMENT_TYPE/CONTEXT/RELIGION
+DOCUMENT_TYPE/CONTEXT/SEXUAL
+DOCUMENT_TYPE/FINANCE/INVOICE
+DOCUMENT_TYPE/MEDICAL/RECORD
+Except as otherwise noted, the content of this page is licensed under the Creative Commons Attribution 4.0 License, and code samples are licensed under the Apache 2.0 License. For details, see the Google Developers Site Policies. Java is a registered trademark of Oracle and/or its affiliates.
+Last updated 2026-09-24 UTC.

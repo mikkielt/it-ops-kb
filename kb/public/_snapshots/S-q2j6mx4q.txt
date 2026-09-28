@@ -1,0 +1,43 @@
+source: S-q2j6mx4q
+url: https://learn.microsoft.com/windows/win32/adschema/a-msds-allowedtoactonbehalfofotheridentity
+title: ms-DS-Allowed-To-Act-On-Behalf-Of-Other-Identity attribute
+publisher: Microsoft Learn
+licence: CC BY 4.0 (public mirror MicrosoftDocs/win32)
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+# ms-DS-Allowed-To-Act-On-Behalf-Of-Other-Identity attribute - Win32 apps | Microsoft Learn
+
+This attribute is used for access checks to determine if a requestor has permission to act on the behalf of other identities to services running as this account.
+
+| Entry | Value |
+| --- | --- |
+| CN | ms-DS-Allowed-To-Act-On-Behalf-Of-Other-Identity |
+| Ldap-Display-Name | msDS-AllowedToActOnBehalfOfOtherIdentity |
+| Size | - |
+| Update Privilege | - |
+| Update Frequency | - |
+| Attribute-Id | 1.2.840.113556.1.4.2182 |
+| System-Id-Guid | 3f78c3e5-f79a-46bd-a0b8-9d18116ddc79 |
+| Syntax | **String(NT-Sec-Desc)** |
+
+## Implementations
+
+- **Windows Server 2012**
+
+## Windows Server 2012
+
+| Entry | Value |
+| --- | --- |
+| Link-Id | - |
+| MAPI-Id | - |
+| System-Only | True |
+| Is-Single-Valued | True |
+| Is Indexed | False |
+| In Global Catalog | False |
+| NT-Security-Descriptor | O:BAG:BAD:S: |
+| Range-Lower | 0 |
+| Range-Upper | 132096 |
+| Search-Flags | 0x00000000 |
+| System-Flags | 0x00000010 |
+| Classes used in | **Organizational-Person** |

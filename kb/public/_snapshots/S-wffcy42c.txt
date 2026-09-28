@@ -1,0 +1,244 @@
+source: S-wffcy42c
+url: https://learn.microsoft.com/agent-framework/integrations/by-component/tools/foundry-toolbox
+title: Microsoft Foundry Toolbox (Agent Framework)
+publisher: Microsoft Learn
+licence: CC BY 4.0 (public mirror MicrosoftDocs/azure-ai-docs)
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+# Microsoft Foundry Toolbox | Microsoft Learn
+
+A Microsoft Foundry Toolbox is a named, versioned server-side bundle of hosted tool configurations, such as code interpreter, file search, image generation, MCP, and web search. Toolboxes let you manage tool configuration once in Foundry and reuse it across agents.
+
+Agent Framework covers Toolbox consumption. Create and update Toolbox versions through the Foundry portal or the `azure-ai-projects` SDK.
+
+Important
+
+`FoundryToolbox` is provided by the beta `agent-framework-foundry-hosting` package and can change before stable release.
+
+::: zone pivot="programming-language-csharp"
+
+For a service-managed `FoundryAgent`, attach the Toolbox to the agent definition in Foundry. Client-side .NET Toolbox consumption guidance isn't currently documented.
+
+::: zone-end
+
+::: zone pivot="programming-language-python"
+
+## Install the packages
+
+```bash
+pip install agent-framework-foundry-hosting agent-framework-foundry --pre
+```
+
+`FoundryToolbox` is imported from `agent_framework.foundry` and supplied by `agent-framework-foundry-hosting`.
+
+## Configure the Toolbox
+
+Set an explicit Toolbox MCP endpoint:
+
+```bash
+TOOLBOX_ENDPOINT="https://<account>.services.ai.azure.com/api/projects/<project>/toolboxes/<name>/mcp?api-version=v1"
+```
+
+Or let `FoundryToolbox` construct the endpoint:
+
+```bash
+FOUNDRY_PROJECT_ENDPOINT="https://<account>.services.ai.azure.com/api/projects/<project>"
+TOOLBOX_NAME="<toolbox-name>"
+```
+
+The hosted-agent samples also use `AZURE_AI_MODEL_DEPLOYMENT_NAME` for `FoundryChatClient`.
+
+## Use `FoundryToolbox` with a hosted agent
+
+`FoundryToolbox` resolves its endpoint, authenticates every MCP request with the supplied Azure credential, forwards the Foundry per-request call ID, and participates in the agent's connection lifecycle.
+
+```python
+import asyncio
+import os
+
+from agent_framework import Agent
+from agent_framework.foundry import FoundryChatClient, FoundryToolbox, ResponsesHostServer
+from azure.identity import DefaultAzureCredential
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
+
+async def main():
+    credential = DefaultAzureCredential()
+
+    # FoundryToolbox resolves the toolbox endpoint from the environment
+    # (TOOLBOX_ENDPOINT, or FOUNDRY_PROJECT_ENDPOINT + TOOLBOX_NAME), authenticates
+    # every request with the credential, and transparently forwards the platform
+    # per-request call-id to the toolbox. The hosting server enters the agent, which
+    # connects the toolbox on first use and closes it at shutdown.
+    toolbox = FoundryToolbox(credential)
+
+    # Create the chat client
+    client = FoundryChatClient(
+        project_endpoint=os.environ["FOUNDRY_PROJECT_ENDPOINT"],
+        model=os.environ["AZURE_AI_MODEL_DEPLOYMENT_NAME"],
+        credential=credential,
+    )
+
+    agent = Agent(
+        client=client,
+        instructions="You are a friendly assistant. Keep your answers brief.",
+        tools=toolbox,
+        # History will be managed by the hosting infrastructure, thus there
+        # is no need to store history by the service. Learn more at:
+        # https://developers.openai.com/api/reference/resources/responses/methods/create
+        default_options={"store": False},
+    )
+
+    server = ResponsesHostServer(agent)
+    await server.run_async()
+```
+
+## Expose Toolbox skills
+
+A Toolbox can expose Agent Skills over MCP. Set `load_tools=False` when only skills should be model-visible, then add the Toolbox as a tool so its MCP session connects and use `as_skills_provider()` as a context provider.
+
+```python
+import asyncio
+import os
+
+from agent_framework import Agent
+from agent_framework.foundry import FoundryChatClient, FoundryToolbox, ResponsesHostServer
+from azure.identity import DefaultAzureCredential
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
+
+async def main() -> None:
+    credential = DefaultAzureCredential()
+
+    # FoundryToolbox resolves the toolbox endpoint from the environment
+    # (TOOLBOX_ENDPOINT, or FOUNDRY_PROJECT_ENDPOINT + TOOLBOX_NAME), authenticates
+    # every request with the credential, and forwards the platform per-request
+    # call-id. ``load_tools=False`` keeps the toolbox's tools hidden so only its
+    # Agent Skills (SEP-2640) are surfaced; passing it via ``tools=`` connects the
+    # MCP session that ``as_skills_provider()`` reads from.
+    toolbox = FoundryToolbox(credential, load_tools=False)
+
+    # as_skills_provider() discovers skills from skill://index.json on the toolbox
+    # MCP session and exposes them as an agent context provider; SKILL.md bodies are
+    # fetched on demand via resources/read. disable_load_skill_approval=True registers
+    # the load_skill tool with approval_mode="never_require" so this unattended agent
+    # can load skills without an approval round-trip -- the Responses host runs the
+    # agent without an AgentSession, which the default approval flow requires.
+    skills_provider = toolbox.as_skills_provider(disable_load_skill_approval=True)
+
+    client = FoundryChatClient(
+        project_endpoint=os.environ["FOUNDRY_PROJECT_ENDPOINT"],
+        model=os.environ["AZURE_AI_MODEL_DEPLOYMENT_NAME"],
+        credential=credential,
+    )
+
+    agent = Agent(
+        client=client,
+        name=os.environ.get("AGENT_NAME", "hosted-toolbox-mcp-skills"),
+        instructions="You are a helpful assistant.",
+        tools=toolbox,
+        context_providers=[skills_provider],
+        # History will be managed by the hosting infrastructure, thus there
+        # is no need to store history by the service. Learn more at:
+        # https://developers.openai.com/api/reference/resources/responses/methods/create
+        default_options={"store": False},
+    )
+
+    server = ResponsesHostServer(agent)
+    await server.run_async()
+```
+
+Approval remains enabled by default for skill operations. Disable individual approvals only for trusted, unattended scenarios.
+
+## Use a Toolbox with `FoundryAgent`
+
+Attach the Toolbox to the Prompt or Hosted Agent definition in Foundry. `FoundryAgent` uses that stored tool configuration; passing a Toolbox client-side doesn't add it to the managed agent.
+
+## Connect through raw MCP
+
+Use `MCPStreamableHTTPTool` directly when the application doesn't use the `FoundryToolbox` hosting wrapper. Supply the Toolbox endpoint and an Entra ID bearer token through `header_provider`.
+
+```python
+import asyncio
+import os
+from collections.abc import Callable
+from typing import Any, cast
+
+from agent_framework import Agent, MCPStreamableHTTPTool
+from agent_framework.foundry import FoundryChatClient
+from azure.core.credentials import TokenCredential
+from azure.identity import AzureCliCredential, DefaultAzureCredential, get_bearer_token_provider
+from dotenv import load_dotenv
+def make_toolbox_header_provider(credential: TokenCredential) -> Callable[[dict[str, Any]], dict[str, str]]:
+    """Build a header_provider that injects a fresh Azure AI bearer token on every MCP request."""
+    get_token = get_bearer_token_provider(credential, "https://ai.azure.com/.default")
+
+    def provide(_kwargs: dict[str, Any]) -> dict[str, str]:
+        return {
+            "Authorization": f"Bearer {get_token()}",
+        }
+
+    return provide
+
+async def main() -> None:
+    credential = DefaultAzureCredential()
+
+    toolbox_tool = MCPStreamableHTTPTool(
+        name="foundry_toolbox",
+        description="Tools exposed by the configured Foundry toolbox",
+        url=os.environ["FOUNDRY_TOOLBOX_ENDPOINT"],
+        header_provider=make_toolbox_header_provider(credential),
+        load_prompts=False,
+    )
+
+    async with Agent(
+        client=FoundryChatClient(
+            project_endpoint=os.environ["FOUNDRY_PROJECT_ENDPOINT"],
+            model=os.environ["FOUNDRY_MODEL"],
+            credential=credential,
+        ),
+        instructions="You are a helpful assistant. Use the available toolbox tools to answer the user.",
+        tools=toolbox_tool,
+    ) as agent:
+        query = "What tools do you have access to?"
+        print(f"User: {query}")
+        result = await agent.run(query)
+        print(f"Assistant: {result}")
+```
+
+The lower-level sample uses `FOUNDRY_TOOLBOX_ENDPOINT`. The Toolbox skills sample uses `FOUNDRY_TOOLBOX_MCP_SERVER_URL`; these names belong to those samples and are separate from the `FoundryToolbox` class's `TOOLBOX_ENDPOINT` and `TOOLBOX_NAME` settings.
+
+## Limitations
+
+- MCP tools inside a Toolbox use server-side authentication through a Foundry `project_connection_id`; the Agent Framework client doesn't hold the upstream MCP bearer token.
+- Consuming a Toolbox as an MCP server requires client-side Entra ID authentication for the Toolbox endpoint.
+- Consent-flow responses such as `CONSENT_REQUIRED` are handled while the agent runs, not while the Toolbox connection is created.
+
+## Samples
+
+| Sample | Description |
+| --- | --- |
+| foundry_toolbox/main.py | `FoundryToolbox` with a hosted Responses agent |
+| foundry_toolbox_mcp_skills/main.py | Toolbox-backed Agent Skills |
+| foundry_chat_client_with_toolbox.py | Toolbox MCP consumption with `MCPStreamableHTTPTool` |
+| foundry_chat_client_with_toolbox_skills.py | Toolbox-backed skills configuration |
+| invoke_foundry_toolbox_mcp | Workflow-side MCP consumption |
+
+::: zone-end
+
+::: zone pivot="programming-language-go"
+
+Go doesn't currently expose a Foundry Toolbox helper. Configure Toolboxes through Foundry and use supported local or hosted tool declarations for Go agents.
+
+::: zone-end
+
+## Related guidance
+
+- Microsoft Foundry model provider
+- Microsoft Foundry Agent Service
+- Local MCP tools

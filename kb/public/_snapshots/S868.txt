@@ -1,0 +1,74 @@
+source: S868
+url: https://csrc.nist.gov/pubs/sp/800/38/g/r1/2pd
+title: SP 800-38G Rev. 1 second public draft
+publisher: NIST
+licence: US Government work (NIST: public information, may be copied)
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+You are viewing this page in an unauthorized frame window.
+This is a potential security issue, you are being redirected to https://csrc.nist.gov.
+An official website of the United States government
+Here’s how you know
+Official websites use .gov
+A
+.gov website belongs to an official government
+organization in the United States.
+Secure .gov websites use HTTPS
+A
+lock (
+) or https:// means you’ve safely connected to
+the .gov website. Share sensitive information only on official,
+secure websites.
+Information Technology Laboratory
+Computer Security Resource Center
+Publications
+###
+NIST SP 800-38G Rev. 1
+(2nd Public Draft)
+# Recommendation for Block Cipher Modes of Operation: Methods for Format-Preserving Encryption
+Share to Facebook
+Share to X
+Share to LinkedIn
+Share ia Email
+Documentation
+Topics
+Date Published: February 3, 2025
+Comments Due: April 4, 2025 (public comment period is CLOSED)
+Email Questions to:
+[email protected]
+#### Author(s)
+Morris Dworkin (NIST), Nicky Mouha (FedWriters)
+#### Announcement
+##### Summary
+NIST has released a second public draft (2PD) of Special Publication (SP) 800-38Gr1 (Revision 1), Recommendation for Block Cipher Modes of Operation: Methods for Format-Preserving Encryption, for public comment. The main technical changes to the original publication are the following:
+The domain size for the FF1 encryption method is increased.
+The encryption method FF3 is no longer specified.
+The inverse AES cipher function is no longer allowed to be CIPH.
+Floating point arithmetic is disallowed in implementations of FF1.
+The public comment period for this draft is open through April 4, 2025. Submit comments to [email protected] with the subject “Comments on SP 800-38Gr1 Second Public Draft.” Comments received in response to this request will be posted on this page under "Supplemental Material" after the due date. Submitters’ names and affiliations (when provided) will be included, while contact information will be removed.
+##### Details
+SP 800-38G was published in March of 2016 in order to specify and approve the FF1 and FF3 methods for format-preserving encryption (FPE); see the original announcement for a description of this type of encryption. Since the release of this publication, several sets of researchers have identified vulnerabilities when the number of possible inputs (i.e., the domain size) is sufficiently small.
+In response to the analysis of Durak and Vaudenay on FF3, NIST announced the intention to either revise the FF3 specification by reducing the size of its tweak parameter from 64 bits to 48 bits, as suggested by the researchers in their paper, or to withdraw FF3. In the initial public draft (IPD) of SP 800-38Gr1, the tweak parameter was reduced instead to 56 bits in a manner that was subsequently developed by the designers of the method in consultation with the researchers. The revised FF3 was named FF3-1.
+The domain size for both FF1 and FF3 in SP 800-38G was required to be at least one hundred and recommended to be at least one million. In response to the analysis of Hoang, Tessaro, and Trieu and building on earlier work with Bellare, this recommendation was strengthened to a requirement in the IPD revision: the minimum domain size for FF1 and FF3-1 was one million.
+In follow-up work, Beyne described a weakness in the tweak schedule that affected both FF3 and FF3-1 but not FF1. This led to the removal of FF3 in the 2PD revision. For compatibility with existing implementations of FF1, the use of the inverse AES cipher function is no longer allowed in the 2PD revision. Additionally, Bleichenbacher discovered an implementation bug in an earlier version of Bouncy Castle due to floating point arithmetic. To avoid this class of bugs, the use of floating point arithmetic is disallowed in the 2PD revision.
+The 2PD revision also incorporates some minor editorial changes.
+#### Abstract
+This recommendation specifies the FF1 method for format-preserving encryption. This method is a mode of operation for an underlying, approved symmetric-key block cipher algorithm.
+This recommendation specifies the FF1 method for format-preserving encryption. This method is a mode of operation for an underlying, approved symmetric-key block cipher algorithm.
+#### Keywords
+block cipher; confidentiality; encryption; FF1; format-preserving encryption; information security; mode of operation
+##### Control Families
+None selected
+#### Documentation
+Publication:
+https://doi.org/10.6028/NIST.SP.800-38Gr1.2pd
+Download URL
+Supplemental Material:
+None available
+Document History:
+02/28/19: SP 800-38G Rev. 1 (Draft)
+02/03/25: SP 800-38G Rev. 1 (Draft)
+#### Topics
+Security and Privacy
+encryption

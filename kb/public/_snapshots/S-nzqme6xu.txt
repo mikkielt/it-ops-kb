@@ -1,0 +1,95 @@
+source: S-nzqme6xu
+url: https://digital-strategy.ec.europa.eu/en/policies/nis2-directive-poland
+title: NIS2 Directive implementation in Poland (Commission state of play)
+publisher: European Commission
+licence: CC BY 4.0 (European Commission reuse policy, Decision 2011/833/EU)
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+This page gives state of play of the implementation of the NIS2 Directive in Poland and points of contact.
+The content will be updated progressively as information will be made available to the Commission, without prejudice to the formal assessment of the compliance of transposition measures with the requirements of the NIS2 Directive.
+## Status of transposition
+On 7 May 2025 the Commission sent a reasoned opinion for failure to notify full transposition.
+## National strategy on the security of network and information systems
+The strategy is available online.
+## Single point of contact
+Ministry of Digital Affairs, Department of cybersecurity
+Address: Królewska Str. 27, 00-060 Warsaw
+E-mail: ppk_ksc@mc.gov.pl
+Phone: +48 22 245 59 22
+Contact Hours: 08:00-16:00
+## National competent authority for DSPs
+Ministry of Digital Affairs, Department of cybersecurity
+Address: Królewska Str. 27, 00-060 Warsaw
+E-mail: duc_ksc@mc.gov.pl
+Phone: +48 22 245 59 22
+Contact Hours: 08:00-16:00
+National competent authority for DSPs (only for specific entities refered to in Article 26 item 5 of the Act of 5 July 2018 on the national cyber security system)
+Ministry of National Defence of the Republic of Poland, Department of Science and Military Education, Development and Cybersecurity Unit
+Phone: +48 261 846 738
+E-mail: dcsu@mon.gov.pl
+## National competent authorities for OES
+### Energy (all sectors)
+Ministry of State Assets, Department of Security and Crisis Management
+Address: Krucza 36/Wspólna 6, 00-522 Warszawa
+E-mail: ow.ksc@map.gov.pl
+Phone: + 48 22 695 82 47
+Contact Hours: 08:15-16:15
+### Transport (All sectors excluding the water transport)
+Ministry of Infrastructure
+Address: Chałubińskiego 4/6, 00-928 Warszawa
+Phone: +48 22 630 1013, +48 22 630 1079
+Contact Hours: 08:00-16:00
+### Transport (Water)
+Ministry of Marine Economy and Inland Navigation
+Address: Nowy Świat 6/12, 00-400 Warszawa
+Phone: +48 22 583 8543, +48 22 583 8970
+Contact Hours: 08:00-16:00
+### Banking and financial market infrastructures
+Polish Financial Supervision Authority
+Address: Piękna 20, 00-001 Warszawa
+Contact Hours: 08:00-16:00
+### Health sector
+Ministry of Health
+Address: Miodowa 15, 00-952 Warszawa
+Contact Hours: 08:00-16:00
+#### Health sector (only for specific entities referred to in Article 26 item 5 of the Act of 5 July 2018 on the national cyber security system)
+Ministry of National Defence of the Republic of Poland, Department of Science and Military Education, Development and Cybersecurity Unit
+Phone: +48 261 846 738
+E-mail: dcsu@mon.gov.pl
+### Drinking water supply and distribution
+Ministry of Marine Economy and Inland Navigation
+Address: Nowy Świat 6/12, 00-400 Warszawa
+Phone: +48 22 583 8543, +48 583 8970
+### Digital infrastructure
+Ministry of Digital Affairs, Department of Cybersecurity
+Address: Królewska 27, 00-060 Warszawa
+E-mail: ow_ksc@mc.gov.pl
+Phone: +48 22 245 59 22
+Contact Hours: 08:00-16:00
+#### Digital infrastructure (only for specific entities refered to in Article 26 item 5 of the Act of 5 July 2018 on the national cyber security system)
+Ministry of National Defence of the Republic of Poland, Department of Science and Military Education, Development and Cybersecurity Unit
+Phone: +48 261 846 738
+E-mail: dcsu@mon.gov.pl
+## National CSIRT
+Poland has three national CSIRTs:
+#### 1. CSIRT NASK (led by Research and Academic Computer Network – National Research Institute)
+Address: Kolska 12, 01-045 Warszawa
+E-mail: info@cert.pl and cert@cert.pl
+Phone: +48 22 380 82 74
+Contact Hours: 24/7
+#### 2. CSIRT MON (led by the Minister of National Defence)
+E-mail: csirt-mon@ron.mil.pl
+Phone: + 48 261 871 641
+Contact Hours: 24/7
+#### 3. CSIRT GOV (led by the Head of the Internal Security Agency)
+Address: Rakowiecka 2A, 00-993 Warszawa
+E-mail: csirt@csirt.gov.pl
+Phone: +48 22 58 59 373
+## Related Content
+### Big Picture
+NIS2 Directive transposition in EU countries
+The Commission, together with European Union Agency for Network and Information Security, works closely with the Member States to ensure the transposition of the NIS2 Directive into national legislation.
+#### Last update
+7 July 2025
+Print as PDF

@@ -1,0 +1,482 @@
+source: S-gzff3gao
+url: https://learn.microsoft.com/powershell/module/microsoft.powershell.psresourceget/update-psresource
+title: Update-PSResource
+publisher: Microsoft Learn
+licence: CC BY 4.0 (public mirror MicrosoftDocs/PowerShell-Docs-PSGet)
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+# Update-PSResource
+
+- Module:
+    - Microsoft.PowerShell.PSResourceGet Module
+
+Downloads and installs the newest version of a package already installed on the local machine.
+
+## Syntax
+
+### Default (Default)
+
+```Syntax
+Update-PSResource
+    [[-Name] <string[]>]
+    [-Version <string>]
+    [-Prerelease]
+    [-Repository <string[]>]
+    [-Scope <ScopeType>]
+    [-TemporaryPath <string>]
+    [-TrustRepository]
+    [-Credential <pscredential>]
+    [-Quiet]
+    [-AcceptLicense]
+    [-Force]
+    [-PassThru]
+    [-SkipDependencyCheck]
+    [-AuthenticodeCheck]
+    [-WhatIf]
+    [-Confirm]
+    [<CommonParameters>]
+```
+
+## Description
+
+`Update-PSResource` downloads and installs the newest version of a package already installed on the local machine. This cmdlet replaces the `Update-Module` and `Update-Script` cmdlets from **PowerShellGet** v2. The new version of the resource is installed side-by-side with previous versions in a new versioned folder.
+
+By default, `Update-PSResource` installs the latest version of the package and any of its dependencies without deleting the older versions installed. There is no command to uninstall older versions of a package. You must manually delete the files and folders of the older versions.
+
+`Update-PSResource` doesn't load the updated module into the current session. You must import the new version or start a new session to use the updated module. For more information, see Import-Module.
+
+## Examples
+
+### Example 1
+
+In this example, the user already has the **TestModule** package installed and they update the package.
+
+```powershell
+Get-PSResource -Name "TestModule"
+```
+
+```Output
+Name                                    Version                         Prerelease   Description
+----                                    -------                         ----------   -----------
+TestModule                              1.2.0                                        test
+```
+
+```powershell
+Update-PSResource -Name "TestModule"
+```
+
+```Output
+Name                                    Version                         Prerelease   Description
+----                                    -------                         ----------   -----------
+TestModule                              1.3.0                                        test
+TestModule                              1.2.0                                        test
+```
+
+## Parameters
+
+### -AcceptLicense
+
+For resources that require a license, **AcceptLicense** automatically accepts the license agreement during the update.
+
+#### Parameter properties
+
+| Type: | SwitchParameter |
+| --- | --- |
+| Default value: | False |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ (All)
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -AuthenticodeCheck
+
+Validates signed files and catalog files on Windows.
+
+#### Parameter properties
+
+| Type: | SwitchParameter |
+| --- | --- |
+| Default value: | False |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ (All)
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -Confirm
+
+Prompts you for confirmation before running the cmdlet.
+
+#### Parameter properties
+
+| Type: | SwitchParameter |
+| --- | --- |
+| Default value: | False |
+| Supports wildcards: | False |
+| DontShow: | False |
+| Aliases: | cf |
+
+#### Parameter sets
+
+ (All)
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -Credential
+
+Specifies optional credentials used when accessing a private repository.
+
+#### Parameter properties
+
+| Type: | PSCredential |
+| --- | --- |
+| Default value: | None |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ (All)
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -Force
+
+When specified, bypasses checks for **TrustRepository** and **AcceptLicense** and updates the package.
+
+#### Parameter properties
+
+| Type: | SwitchParameter |
+| --- | --- |
+| Default value: | False |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ (All)
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -Name
+
+Specifies the name of one or more resources to update. Wildcards are supported but NuGet only accepts the `*` character. NuGet doesn't support wildcard searches of local (file-based) repositories.
+
+#### Parameter properties
+
+| Type: | String[] |
+| --- | --- |
+| Default value: | \* |
+| Supports wildcards: | True |
+| DontShow: | False |
+
+#### Parameter sets
+
+ (All)
+
+| Position: | 0 |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | True |
+| Value from pipeline by property name: | True |
+| Value from remaining arguments: | False |
+
+### -PassThru
+
+When specified, outputs a **PSResourceInfo** object for the saved resource.
+
+#### Parameter properties
+
+| Type: | SwitchParameter |
+| --- | --- |
+| Default value: | False |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ (All)
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -Prerelease
+
+When specified, allows updating to a prerelease version.
+
+#### Parameter properties
+
+| Type: | SwitchParameter |
+| --- | --- |
+| Default value: | False |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ (All)
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -Quiet
+
+Suppresses progress information.
+
+#### Parameter properties
+
+| Type: | SwitchParameter |
+| --- | --- |
+| Default value: | False |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ (All)
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -Repository
+
+Specifies one or more repository names to search. If not specified, search includes all registered repositories, in priority order (highest first), until a repository is found that contains the package. Repositories are sorted by priority then by name. Lower **Priority** values have a higher precedence.
+
+When searching for resources across multiple repositories, the **PSResourceGet** cmdlets search the repositories using this sort order. `Update-PSResource` updates the first matching package from the sorted list of repositories.
+
+The parameter supports the `*` wildcard character. If you specify multiple repositories, all names must include or omit the wildcard character. You can't specify a mix of names with and without wildcards.
+
+#### Parameter properties
+
+| Type: | String[] |
+| --- | --- |
+| Default value: | None |
+| Supports wildcards: | True |
+| DontShow: | False |
+
+#### Parameter sets
+
+ (All)
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -Scope
+
+Specifies the installation scope. Accepted values are:
+
+- `CurrentUser`
+- `AllUsers`
+
+The default scope is `CurrentUser`, which doesn't require elevation.
+
+#### Parameter properties
+
+| Type: | Microsoft.PowerShell.PSResourceGet.UtilClasses.ScopeType |
+| --- | --- |
+| Default value: | None |
+| Accepted values: | CurrentUser, AllUsers |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ (All)
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -SkipDependencyCheck
+
+Skips the check for resource dependencies. This means that only named resources are updated.
+
+#### Parameter properties
+
+| Type: | SwitchParameter |
+| --- | --- |
+| Default value: | False |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ (All)
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -TemporaryPath
+
+Specifies the path to temporarily install the resource before actual installatoin. If no temporary path is provided, the resource is temporarily installed in the current user's temporary folder.
+
+#### Parameter properties
+
+| Type: | String |
+| --- | --- |
+| Default value: | None |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ (All)
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -TrustRepository
+
+Suppress prompts to trust repository. The prompt to trust repository only occurs if the repository isn't configured as trusted.
+
+#### Parameter properties
+
+| Type: | SwitchParameter |
+| --- | --- |
+| Default value: | False |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ (All)
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -Version
+
+Specifies the version of the resource to be returned. The value can be an exact version or a version range using the NuGet versioning syntax.
+
+For more information about NuGet version ranges, see Package versioning.
+
+PowerShellGet supports all but the *minimum inclusive version* listed in the NuGet version range documentation. Using `1.0.0.0` as the version doesn't yield versions 1.0.0.0 and higher (minimum inclusive range). Instead, the value is considered to be the required version. To search for a minimum inclusive range, use `[1.0.0.0, ]` as the version range.
+
+#### Parameter properties
+
+| Type: | String |
+| --- | --- |
+| Default value: | None |
+| Supports wildcards: | True |
+| DontShow: | False |
+
+#### Parameter sets
+
+ (All)
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -WhatIf
+
+Shows what would happen if the cmdlet runs. The cmdlet isn't run.
+
+#### Parameter properties
+
+| Type: | SwitchParameter |
+| --- | --- |
+| Default value: | False |
+| Supports wildcards: | False |
+| DontShow: | False |
+| Aliases: | wi |
+
+#### Parameter sets
+
+ (All)
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### CommonParameters
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable, -ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see about_CommonParameters.
+
+## Inputs
+
+### String
+
+## Outputs
+
+### Microsoft.PowerShell.PSResourceGet.UtilClasses.PSResourceInfo
+
+By default, the cmdlet doesn't return any objects. When the **PassThru** parameter is used, the cmdlet outputs a **PSResourceInfo** object for the saved resource.
+
+## Notes
+
+The module defines `udres` as an alias for `Update-PSResource`.
+
+## Related Links
+
+- Install-PSResource

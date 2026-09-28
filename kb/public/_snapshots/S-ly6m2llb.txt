@@ -1,0 +1,305 @@
+source: S-ly6m2llb
+url: https://github.com/microsoft/osconfig/releases
+title: microsoft/osconfig releases
+publisher: Microsoft (microsoft/osconfig)
+licence: MIT
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+microsoft
+/
+osconfig
+Public
+Notifications
+You must be signed in to change notification settings
+Fork
+8
+Star
+55
+# Releases: microsoft/osconfig
+Releases · microsoft/osconfig
+## Release list
+1.3.12-preview5
+1.3.12-preview2
+1.3.10-preview13
+1.3.9-preview13
+1.3.9-preview11
+AzureLinuxBaseline (Prerelease)
+Export-OSConfigDiagnostics.ps1
+Sample
+SSH (Prerelease)
+AzureWindowsBaseline (Prerelease)
+## 1.3.12-preview5
+1.3.12-preview5
+Pre-release
+Pre-release
+#
+Choose a tag to compare
+## Sorry, something went wrong.
+Filter
+Loading
+## Sorry, something went wrong.
+### Uh oh!
+There was an error while loading. Please reload this page.
+## No results found
+View all tags
+robertschaedler3
+released this
+20 May 01:02
+1.3.12-preview5
+bc01f54
+This commit was created on GitHub.com and signed with GitHub’s verified signature.
+GPG key ID: B5690EEEBB952194
+Verified
+Learn about vigilant mode.
+Pre-release packages are not intended for production use.
+Assets
+13
+Loading
+### Uh oh!
+There was an error while loading. Please reload this page.
+## 1.3.12-preview2
+1.3.12-preview2
+Pre-release
+Pre-release
+#
+Choose a tag to compare
+## Sorry, something went wrong.
+Filter
+Loading
+## Sorry, something went wrong.
+### Uh oh!
+There was an error while loading. Please reload this page.
+## No results found
+View all tags
+robertschaedler3
+released this
+15 May 21:44
+1.3.12-preview2
+f4abab4
+This commit was created on GitHub.com and signed with GitHub’s verified signature.
+GPG key ID: B5690EEEBB952194
+Verified
+Learn about vigilant mode.
+Pre-release packages are not intended for production use.
+Assets
+13
+Loading
+### Uh oh!
+There was an error while loading. Please reload this page.
+## 1.3.10-preview13
+1.3.10-preview13
+Pre-release
+Pre-release
+#
+Choose a tag to compare
+## Sorry, something went wrong.
+Filter
+Loading
+## Sorry, something went wrong.
+### Uh oh!
+There was an error while loading. Please reload this page.
+## No results found
+View all tags
+simonjaeger
+released this
+27 Apr 21:39
+1.3.10-preview13
+f4abab4
+This commit was created on GitHub.com and signed with GitHub’s verified signature.
+GPG key ID: B5690EEEBB952194
+Verified
+Learn about vigilant mode.
+Pre-release packages are not intended for production use.
+Assets
+13
+Loading
+### Uh oh!
+There was an error while loading. Please reload this page.
+## 1.3.9-preview13
+1.3.9-preview13
+Pre-release
+Pre-release
+#
+Choose a tag to compare
+## Sorry, something went wrong.
+Filter
+Loading
+## Sorry, something went wrong.
+### Uh oh!
+There was an error while loading. Please reload this page.
+## No results found
+View all tags
+simonjaeger
+released this
+21 Apr 17:44
+1.3.9-preview13
+d0fbae5
+This commit was created on GitHub.com and signed with GitHub’s verified signature.
+GPG key ID: B5690EEEBB952194
+Verified
+Learn about vigilant mode.
+Pre-release packages are not intended for production use.
+Assets
+7
+Loading
+### Uh oh!
+There was an error while loading. Please reload this page.
+## 1.3.9-preview11
+1.3.9-preview11
+Pre-release
+Pre-release
+#
+Choose a tag to compare
+## Sorry, something went wrong.
+Filter
+Loading
+## Sorry, something went wrong.
+### Uh oh!
+There was an error while loading. Please reload this page.
+## No results found
+View all tags
+simonjaeger
+released this
+18 Apr 01:20
+1.3.9-preview11
+d3e6bb9
+This commit was created on GitHub.com and signed with GitHub’s verified signature.
+GPG key ID: B5690EEEBB952194
+Verified
+Learn about vigilant mode.
+Pre-release packages are not intended for production use.
+Assets
+7
+Loading
+### Uh oh!
+There was an error while loading. Please reload this page.
+## AzureLinuxBaseline (Prerelease)
+AzureLinuxBaseline (Prerelease)
+Pre-release
+Pre-release
+#
+Choose a tag to compare
+## Sorry, something went wrong.
+Filter
+Loading
+## Sorry, something went wrong.
+### Uh oh!
+There was an error while loading. Please reload this page.
+## No results found
+View all tags
+simonjaeger
+released this
+27 Jan 05:19
+devtest-linux
+64ec145
+This commit was created on GitHub.com and signed with GitHub’s verified signature.
+GPG key ID: B5690EEEBB952194
+Verified
+Learn about vigilant mode.
+Pre-release packages are not intended for production use.
+Assets
+21
+Loading
+### Uh oh!
+There was an error while loading. Please reload this page.
+## Export-OSConfigDiagnostics.ps1
+Export-OSConfigDiagnostics.ps1
+Latest
+Latest
+#
+Choose a tag to compare
+## Sorry, something went wrong.
+Filter
+Loading
+## Sorry, something went wrong.
+### Uh oh!
+There was an error while loading. Please reload this page.
+## No results found
+View all tags
+simonjaeger
+released this
+06 Mar 06:11
+tools
+66f2386
+Adds a new PowerShell function, Export-OSConfigDiagnostics, to gather diagnostics. It collects key registry entries, event logs, and directory contents, while also running diagnostic scripts for module and configuration information. All the gathered data is then compressed into a ZIP file for easy analysis.
+Assets
+3
+Loading
+### Uh oh!
+There was an error while loading. Please reload this page.
+## Sample
+Sample
+Pre-release
+Pre-release
+#
+Choose a tag to compare
+## Sorry, something went wrong.
+Filter
+Loading
+## Sorry, something went wrong.
+### Uh oh!
+There was an error while loading. Please reload this page.
+## No results found
+View all tags
+simonjaeger
+released this
+19 Dec 23:44
+sample
+66f2386
+9E894051FD53899BFE59F710B941DFD828A1DC2BA7C98014791F09FABB6578B8
+Assets
+9
+Loading
+### Uh oh!
+There was an error while loading. Please reload this page.
+## SSH (Prerelease)
+SSH (Prerelease)
+Pre-release
+Pre-release
+#
+Choose a tag to compare
+## Sorry, something went wrong.
+Filter
+Loading
+## Sorry, something went wrong.
+### Uh oh!
+There was an error while loading. Please reload this page.
+## No results found
+View all tags
+simonjaeger
+released this
+19 Feb 23:30
+ppe-ssh
+66f2386
+Pre-release packages are not intended for production use.
+Assets
+6
+Loading
+### Uh oh!
+There was an error while loading. Please reload this page.
+## AzureWindowsBaseline (Prerelease)
+AzureWindowsBaseline (Prerelease)
+Pre-release
+Pre-release
+#
+Choose a tag to compare
+## Sorry, something went wrong.
+Filter
+Loading
+## Sorry, something went wrong.
+### Uh oh!
+There was an error while loading. Please reload this page.
+## No results found
+View all tags
+simonjaeger
+released this
+17 Sep 05:10
+devtest
+54d8b3c
+Pre-release packages are not intended for production use.
+Assets
+22
+Loading
+### Uh oh!
+There was an error while loading. Please reload this page.

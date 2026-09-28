@@ -1,0 +1,252 @@
+source: S-hfymbj4j
+url: https://docs.cloud.google.com/sensitive-data-protection/docs/concepts-hybrid-jobs
+title: Hybrid jobs and job triggers (Sensitive Data Protection)
+publisher: Google Cloud
+licence: CC BY 4.0 (Google Developers site policies; code Apache-2.0)
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+Cloud Data Loss Prevention (Cloud DLP) is now a part of Sensitive Data Protection. The API name remains the same: Cloud Data Loss Prevention API (DLP API). For information about the services that make up Sensitive Data Protection, see Sensitive Data Protection overview.
+Home
+Documentation
+Security
+Sensitive Data Protection
+Guides
+#
+Hybrid jobs and job triggers
+Stay organized with collections
+Save and categorize content based on your preferences.
+Hybrid jobs and job triggers encompass a set of asynchronous API methods that
+allow you to scan payloads of data sent from virtually any source for sensitive
+information, and then store the findings in Google Cloud. Hybrid jobs enable you
+to write your own data crawlers that behave and serve data similarly to the
+Sensitive Data Protection storage inspection methods.
+Using hybrid jobs, you can stream data from any source to
+Sensitive Data Protection. Sensitive Data Protection inspects the data for sensitive
+information or PII, and then saves the inspection scan results to a
+Sensitive Data Protection job resource. You can examine the scan results in the
+Sensitive Data Protection Console UI or API, or you can specify post-scan actions
+to run, such as saving inspection results data to a BigQuery
+table or emitting a Pub/Sub notification.
+The hybrid jobs workflow is summarized in the following diagram:
+This conceptual topic describes hybrid jobs and job triggers and how they work.
+To learn how to implement hybrid jobs and job triggers, see Inspecting external
+data using hybrid jobs.
+## When to use hybrid jobs
+The following are some common use cases:
+Inspect data in hybrid and multi-cloud environments: Stream data from
+on-premises databases, virtual machines, or other cloud providers into
+Sensitive Data Protection while storing findings in Google Cloud.
+Centralize multi-source compliance reporting: Aggregate inspection
+findings from custom crawlers and distributed microservices into a single
+BigQuery table for unified risk governance.
+Sanitize data during cloud migrations: Inspect, validate, and track
+sensitive content as datasets are migrated from legacy systems into
+Google Cloud.
+## About hybrid environments
+"Hybrid" environments are common in organizations. Many organizations store and
+process sensitive data using some combination of the following:
+Other cloud providers
+On-premises servers or other data repositories
+Non-native storage systems, such as systems running inside a virtual machine
+Web and mobile apps
+Google Cloud-based solutions
+Using hybrid jobs, Sensitive Data Protection can inspect data sent to it from any
+of these sources. Listed here are some example scenarios:
+Inspect data stored in Amazon Relational Database Service (RDS), MySQL
+running inside a virtual machine, or an on-premises database.
+Inspect and tokenize data as you migrate from on-premises to the cloud, or
+between production, development, and analytics.
+Inspect and redact transactions from a web or mobile application before
+storing the data at rest.
+## Inspection options
+As described in more detail in Method types,
+when you want to inspect content for sensitive data, Sensitive Data Protection
+provides three default options:
+Content methods inspection: Using content inspection, you stream small
+payloads of data to Sensitive Data Protection along with instructions about
+what to inspect for. Sensitive Data Protection then inspects the data for
+sensitive content and PII, and then returns the results of its scan back to
+you.
+Storage methods inspection: Using storage inspection, Sensitive Data Protection
+inspects a Google Cloud-based storage repository such as a
+BigQuery database, Cloud Storage bucket, or
+Datastore kind. You tell Sensitive Data Protection what to inspect and
+what to inspect for, and then Sensitive Data Protection runs a job that scans
+the repository. After the scan is complete, Sensitive Data Protection saves a
+summary of the results of the scan back to the job. You can additionally
+specify that the results are sent to another Google Cloud product
+for analysis, such as a separate BigQuery table.
+Hybrid jobs inspection: Hybrid jobs provide the benefits of both of the
+previous two methods. They enable you to stream data as you would with the
+content methods, while gaining the storage, visualization, and actions of
+storage inspection jobs. All inspection configuration is managed within
+Sensitive Data Protection, with no extra configuration required on the client
+side. Hybrid jobs can be useful for scanning non-native storage systems
+such as a database running in a virtual machine (VM), on-premises, or on
+another cloud. Hybrid methods can also be useful for inspecting processing
+systems such as migration workloads, or even to proxy service-to-service
+communication. While content methods can also do this, hybrid methods
+provide you the findings storage backend that can aggregate your data
+across multiple API calls so that you don't have to.
+## About hybrid jobs and job triggers
+A hybrid job is effectively a hybrid of content methods and storage
+methods. The basic workflow for using hybrid
+jobs and job triggers is as follows:
+You write a script or create a workflow that sends data to
+Sensitive Data Protection for inspection along with some metadata.
+You configure and create a hybrid job resource or trigger and enable it to
+activate when it receives data.
+Your script or workflow runs on the client side and sends data to
+Sensitive Data Protection in the form of a
+hybridInspect
+request. The data includes an activation message and the job or job
+trigger's identifier, which triggers the inspection.
+Sensitive Data Protection inspects the data according to the criteria you set
+in the hybrid job or trigger.
+Sensitive Data Protection saves the results of the scan to the hybrid job
+resource, along with metadata that you provide. You can examine the
+results using the Sensitive Data Protection UI in Google Cloud console.
+Optionally, Sensitive Data Protection can run post-scan actions, such as
+saving inspection results data to a BigQuery table or
+notifying you by email or Pub/Sub.
+A hybrid job trigger enables you to create, activate, and stop jobs so that you
+can trigger actions whenever you need. By ensuring that your script or code
+sends data that includes the hybrid job trigger's identifier, you don't need
+to update your script or code whenever a new job is started.
+## Typical hybrid job scenarios
+Hybrid jobs are well suited for objectives such as the following:
+Execute a one-off scan of a database outside of Google Cloud as
+part of a quarterly spot check of databases.
+Monitor all new content added on a daily basis to a database
+that Sensitive Data Protection does not natively support.
+Scan data coming into a database, while controlling how the data
+is partitioned.
+Monitor traffic in a network using
+Sensitive Data Protection Filter for Envoy
+(a WebAssembly HTTP filter for Envoy sidecar proxies) to identify
+problematic sensitive data movement.
+For information about how to approach these scenarios, see
+Typical hybrid inspection scenarios.
+## Types of metadata you can provide
+This section describes the types of metadata that you can attach to the
+external data that you want to inspect or to the findings.
+You can set metadata at the following levels:
+The hybrid job or hybrid job trigger
+The hybridInspect request
+### Metadata in a hybrid job or hybrid job trigger
+This section describes the types of metadata that you can attach to a hybrid
+job or hybrid job trigger.
+#### Required labels
+In the hybrid job or hybrid job trigger, you can specify a list of required
+labels that must be included in all hybrid inspection requests that you send.
+Any requests for that hybrid job or hybrid job trigger that don't include these
+required labels are rejected. For more information, see Require labels from
+hybridInspect requests.
+#### Optional labels
+You can specify key-value pairs to be attached to all findings
+from a hybrid job or hybrid job trigger. For example, if you want all of a
+hybrid job's findings to have the label "env"="prod", you specify this
+key-value pair when creating the hybrid job.
+#### Tabular data options
+You can specify any columns that are row identifiers (primary keys) for table
+objects in your data. If the specified columns exist in the table, the values
+from the given columns are included alongside each finding so you can trace the
+finding to the row it came from. These tabular options only apply to requests
+that send tabular data such as an item.table or
+byteItem format
+like CSV.
+If you know the primary keys ahead of time, you can set them as identifying
+fields when you create the hybrid job or hybrid job trigger. You can list up to
+three column names in the hybridOptions.tableOptions.identifyingFields field.
+### Metadata in a hybridInspect request
+This section describes the types of metadata that you can attach to a
+hybridInspect request. Metadata that you send in a hybridInspect request is
+applied only to that request.
+#### Container details
+Each request that you send to a hybrid job or hybrid job trigger
+can specify details about the data source,
+including elements like fullPath, rootPath, relativePath, type,
+version, and others. For example, if you're scanning tables in a database,
+you might set the fields as follows:
+{
+"hybridItem": {
+"item": {...},
+"findingDetails": {
+"containerDetails": {
+"fullPath": "10.0.0.20/database1/table1",
+"relativePath": "table1",
+"rootPath": "10.0.0.20/database1",
+"type": "postgres",
+"version": "9.6"
+},
+"labels": {...}
+}
+}
+}
+You can't set container details at the hybrid job or hybrid job trigger level.
+#### Required labels
+If you set required labels when creating a hybrid job or hybrid job trigger,
+then any hybridInspect request that you send to that hybrid job or hybrid job
+trigger must include those required labels. For more information, see Require
+labels from hybridInspect
+requests.
+#### Optional labels
+In each hybridInspect request, you can specify key-value pairs to be attached
+to any findings in that request. This method lets you attach different labels
+with each hybridInspect request.
+#### Tabular data options
+You can specify any columns that are row identifiers (primary keys) for table
+objects in your data. If the specified columns exist in the table, the values
+from the given columns are included alongside each finding so you can trace the
+finding to the row it came from. These tabular options only apply to requests
+that send tabular data such as an item.table or
+byteItem format
+like CSV.
+If you don't know the primary keys ahead of time, you don't have to set them at
+the hybrid job or hybrid job trigger level. You can set them in your
+hybridInspect request along with the tabular data to be inspected. Any fields
+you list at the hybrid job or hybrid job trigger level are combined with those
+you list in the hybridInspect request.
+## Supported actions
+Like other Sensitive Data Protection jobs, hybrid jobs support
+actions. Not all actions apply to hybrid jobs.
+Following are the currently supported actions along with information about how
+they work. Be aware that with the Pub/Sub, email, and
+Cloud Monitoring actions, findings are made available when the job ends.
+Save findings to Sensitive Data Protection and Save findings to
+BigQuery: Findings are saved to a Sensitive Data Protection
+resource or BigQuery table, respectively. These actions work
+with hybrid jobs similarly to how they work with other job types, with one
+important difference: With hybrid jobs, findings are made available while
+the job is running; with other job types, findings are made available when
+the job ends.
+Send Pub/Sub: When a job is done, a Pub/Sub
+message will be emitted.
+Send Email: When a job is done, an email message will be sent.
+Publish to Cloud Monitoring: When a job is done, its findings will
+be published to Monitoring.
+## Summary
+Following are some key features and benefits of using hybrid jobs and job
+triggers:
+Hybrid jobs enable you to stream data to Sensitive Data Protection from
+virtually any source, on- or off-cloud.
+Hybrid job triggers activate when Sensitive Data Protection receives a data
+stream that includes an activation message and the job trigger's identifier.
+You can wait until the inspection scan has completed, or you can stop the
+job manually. Inspection results are saved to a Sensitive Data Protection or to
+BigQuery whether you allow the job to finish or stop the job
+early.
+Sensitive Data Protection inspection scan results from a hybrid job trigger are
+saved to a hybrid job resource within Sensitive Data Protection.
+You can examine the inspection scan results by viewing the job trigger
+resource within Sensitive Data Protection.
+You can also instruct Sensitive Data Protection to, using an action, send
+hybrid job results to a BigQuery database and notify you by
+email or Pub/Sub notification.
+## What's next
+To learn how to use hybrid jobs and job triggers to receive data for
+inspection, see Sending external data to Sensitive Data Protection using
+hybrid jobs.
+Except as otherwise noted, the content of this page is licensed under the Creative Commons Attribution 4.0 License, and code samples are licensed under the Apache 2.0 License. For details, see the Google Developers Site Policies. Java is a registered trademark of Oracle and/or its affiliates.
+Last updated 2026-09-24 UTC.

@@ -1,0 +1,33 @@
+source: S-zmngjhe5
+url: https://microsoft365dsc.com/user-guide/get-started/how-to-install/
+title: Microsoft365DSC: How to Install
+publisher: microsoft365dsc.com
+licence: MIT (docs in Microsoft365DSC/Microsoft365DSC)
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+# Installing Microsoft365DSC¶
+While the source code of the solution is open-sourced on GitHub, the releases of the solutions are being published to the PowerShell Gallery. This means that the tool can be installed onto any machine by running the following PowerShell command:
+Install-Module Microsoft365DSC -Force
+Installing Microsoft365DSC
+Executing this command can take a minute or two to complete, after which the base Microsoft365DSC module has been installed.
+NOTE: Make sure you run the above command in an elevated Windows PowerShell 5.1 window. In a regular window the module will be installed in the Current User scope, which will not work!
+## Dependencies¶
+However, Microsoft365DSC depends on several other modules to function properly. For example, it uses the MSCloudLoginAssistant module to delegate all authentication logic to the various workloads, it leverages a dozen Microsoft Graph PowerShell modules to interact with various configuration settings, etc. Current versions of Microsoft365DSC no longer download all the required prerequisites by default. When you install the Microsoft365DSC module, you only get the core component after which you have to download all prerequisite modules as well. It is our recommendation that you run the following command to update all dependencies on the system after installing the module:
+Update-M365DSCDependencies
+Installing Microsoft365DSC Dependencies
+Running the above command will automatically read the list of dependencies from the [Module Root]/Dependencies/Manifest.psd1 file, check to see if the proper version of these modules are installed on the machine, and (if not) automatically download them from the PowerShell Gallery and install on the local computer.
+Depending on your configuration and the version of PowerShell you are using, the installed modules may be put in different locations. The process of installing a PowerShell module from the PowerShell Gallery really just comes down to downloading the files from the gallery as a zip, extracting them and copying to a location on the system that is associated with PowerShell via environment variables. The following command will allow you to view the version of any given PowerShell module on a system along with its associated version:
+Get-Module Microsoft365DSC -ListAvailable | select ModuleBase, Version
+Viewing Installed Microsoft365DSC module
+## Updating To A Newer Version¶
+To update an older version of Microsoft365DSC, use the Update-M365DSCModule cmdlet. This will update the current version of Microsoft365DSC and all dependencies in one go as well as uninstalling all outdated versions.
+Update-M365DSCModule
+## More Information¶
+More information about installing modules:
+Installing a PowerShell module
+Find-Module cmdlet
+Install-Module cmdlet
+Update-M365DSCModule cmdlet
+Save-Module cmdlet
+About PSModulePath

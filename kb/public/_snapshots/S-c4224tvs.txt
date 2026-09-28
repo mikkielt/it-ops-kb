@@ -1,0 +1,171 @@
+source: S-c4224tvs
+url: https://learn.microsoft.com/powershell/module/bitlocker/backuptoaad-bitlockerkeyprotector
+title: BackupToAAD-BitLockerKeyProtector
+publisher: Microsoft Learn
+licence: CC BY 4.0 (public mirror MicrosoftDocs/windows-powershell-docs)
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+# BackupToAAD-BitLockerKeyProtector
+
+- Module:
+    - BitLocker Module
+
+Saves a key protector for a BitLocker volume in Microsoft Entra ID.
+
+## Syntax
+
+### Default (Default)
+
+```Syntax
+BackupToAAD-BitLockerKeyProtector
+    [-MountPoint] <String[]>
+    [-KeyProtectorId] <String>
+    [-WhatIf]
+    [-Confirm]
+    [<CommonParameters>]
+```
+
+## Description
+
+The **BackupToAAD-BitLockerKeyProtector** cmdlet saves a recovery password key protector for a volume protected by BitLocker Drive Encryption to Microsoft Entra ID. Specify a key to be saved by ID.
+
+## Examples
+
+### Example 1
+
+```powershell
+PS C:\> $BLV = Get-BitLockerVolume -MountPoint "C:"
+PS C:\> BackupToAAD-BitLockerKeyProtector -MountPoint "C:" -KeyProtectorId $BLV.KeyProtector[1].KeyProtectorId
+
+```
+
+This example saves a key protector for a specified BitLocker volume.
+
+The first command uses **Get-BitLockerVolume** to obtain a BitLocker volume and store it in the $BLV variable.
+
+The second command backs up the key protector for the BitLocker volume specified by the MountPoint parameter. The command specifies the key protector by using its ID, contained in the BitLocker object stored in $BLV.
+
+### Example 2
+
+```powershell
+PS C:\> BackupToAAD-BitLockerKeyProtector -MountPoint "C:" -KeyProtectorId "{E2611001E-6AD0-4A08-BAAA-C9c031DB2AA6}"
+```
+
+This command saves a key protector for a specified BitLocker volume to Microsoft Entra ID. The command specifies the key protector by using its ID.
+
+## Parameters
+
+### -Confirm
+
+Prompts you for confirmation before running the cmdlet.
+
+#### Parameter properties
+
+| Type: | SwitchParameter |
+| --- | --- |
+| Default value: | None |
+| Supports wildcards: | False |
+| DontShow: | False |
+| Aliases: | cf |
+
+#### Parameter sets
+
+ (All)
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -KeyProtectorId
+
+The **KeyProtector** attribute contains an array of key protectors associated to the volume. This command uses standard array syntax to index the KeyProtector object. The key protector that corresponds to the recovery password key protector can be identified by using the KeyProtectorType attribute in the KeyProtector object.
+
+#### Parameter properties
+
+| Type: | String |
+| --- | --- |
+| Default value: | None |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ (All)
+
+| Position: | 1 |
+| --- | --- |
+| Mandatory: | True |
+| Value from pipeline: | True |
+| Value from pipeline by property name: | True |
+| Value from remaining arguments: | False |
+
+### -MountPoint
+
+The volume to be used by **KeyProtector**.
+
+#### Parameter properties
+
+| Type: | String[] |
+| --- | --- |
+| Default value: | None |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ (All)
+
+| Position: | 0 |
+| --- | --- |
+| Mandatory: | True |
+| Value from pipeline: | True |
+| Value from pipeline by property name: | True |
+| Value from remaining arguments: | False |
+
+### -WhatIf
+
+Shows what would happen if the cmdlet runs. The cmdlet is not run.
+
+#### Parameter properties
+
+| Type: | SwitchParameter |
+| --- | --- |
+| Default value: | None |
+| Supports wildcards: | False |
+| DontShow: | False |
+| Aliases: | wi |
+
+#### Parameter sets
+
+ (All)
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### CommonParameters
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable, -ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see about_CommonParameters.
+
+## Inputs
+
+### String
+
+### String
+
+## Outputs
+
+### Object
+
+---
+
+## Other Supported Versions
+
+- windowsserver2022-ps

@@ -1,0 +1,69 @@
+source: S-moam7wlp
+url: https://learn.microsoft.com/en-us/windows/win32/api/gpmgmt/nf-gpmgmt-igpmgpo-backup
+title: IGPMGPO::Backup method (gpmgmt.h)
+publisher: Microsoft
+licence: CC BY 4.0 (public mirror MicrosoftDocs/sdk-api)
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+# IGPMGPO::Backup (gpmgmt.h) - Win32 apps | Microsoft Learn
+
+Backs up a Group Policy object (GPO) to the specified directory. A backup operation transfers the contents of a GPO from the Active Directory directory service to the file system. The backup includes the policy settings, the GPO ID, and any access control lists (ACLs) that are associated with the GPO. This method is also used for exporting GPOs to the file system.
+
+## Syntax
+
+```cpp
+HRESULT Backup(
+  [in]            BSTR       bstrBackupDir,
+  [in]            BSTR       bstrComment,
+  [in, optional]  VARIANT    *pvarGPMProgress,
+  [out, optional] VARIANT    *pvarGPMCancel,
+  [out]           IGPMResult **ppIGPMResult
+);
+```
+
+## Parameters
+
+`[in] bstrBackupDir`
+
+Name of the file system directory in which the GPMBackup object should be stored. The directory must already exist.
+
+`[in] bstrComment`
+
+Comment to associate with the GPMBackup object.
+
+`[in, optional] pvarGPMProgress`
+
+Specifies a pointer to an IGPMAsyncProgress interface that allows the client to receive status notifications about the progress of the backup operation. The method runs synchronously if this parameter is **NULL**. The method runs asynchronously if this parameter is not **NULL**. This parameter must be **NULL** if the client should not receive asynchronous notifications.
+
+`[out, optional] pvarGPMCancel`
+
+Receives a pointer to an IGPMAsyncCancel interface that the client can use to cancel the backup operation. This parameter is not returned if *pvarGPMProgress* is **NULL**.
+
+`[out] ppIGPMResult`
+
+Address of a pointer to the IGPMResult interface that represents the result of the backup operation. That interface contains pointers to an IGPMBackup interface and to an IGPMStatusMsgCollection interface.
+
+## Return value
+
+### C++
+ Returns **S\_OK** if successful. Returns a failure code if an error occurs.
+### JScript
+ Returns a reference to a GPMResult object.
+### VB
+ Returns a reference to a GPMResult object.
+## Remarks
+
+A GPO that has been backed-up (also called exported) can be restored to the Active Directory by calling the IGPMDomain::RestoreGPO method or imported into another existing GPO using the IGPMGPO::Import method, depending on the required result.
+
+You must check the code that is returned by the IGPMResult::OverallStatus method as well as the one that is returned by this method to determine whether the operation succeeded. **OverallStatus** returns an overall status code for the operation. If no error occurred during the operation, it returns a success code. Otherwise, it returns a failure code.
+
+## Requirements
+
+| Requirement | Value |
+| --- | --- |
+| **Minimum supported client** | Windows Vista |
+| **Minimum supported server** | Windows Server 2008 |
+| **Target Platform** | Windows |
+| **Header** | gpmgmt.h |
+| **DLL** | Gpmgmt.dll |

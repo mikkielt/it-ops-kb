@@ -1,0 +1,212 @@
+source: S-lbitjans
+url: https://learn.microsoft.com/en-us/microsoftteams/platform/bots/how-to/authentication/bot-sso-manifest
+title: Update app manifest for SSO and preview your app (Teams bots)
+publisher: Microsoft Learn
+licence: CC BY 4.0 (public mirror MicrosoftDocs/msteams-docs)
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+# Enable SSO for Bot & Message Extension - Teams | Microsoft Learn
+
+Before you update app manifest (previously called Teams app manifest), ensure that you configure the code to enable single sign-on (SSO) in your app.
+
+You've registered your app and bot resource in Microsoft Entra ID. You've also configured code to handle tokens. Now, you must update the app manifest to enable SSO for your app. The app manifest describes how an app integrates into Teams.
+
+## webApplicationInfo property
+
+Configure the `webApplicationInfo` property in the app manifest file. This property enables SSO for your app to help app users access your bot app seamlessly.
+
+`webApplicationInfo` has two elements, `id` and `resource`.
+
+| Element | Description |
+| --- | --- |
+| `id` | Enter the app ID (GUID) that you created in Microsoft Entra ID. |
+| `resource` | Enter your app's subdomain URI and the application ID URI that you created in Microsoft Entra ID when creating scope. You can copy it from the **Microsoft Entra ID** &gt; **Expose an API** section. |
+
+Note
+
+Use the app manifest version 1.5 or later to implement the `webApplicationInfo` property.
+
+Important
+
+If your bot is created using **User-Assigned Managed Identity**, an App Registration (Entra App ID) isn't automatically created. RSC permissions are mapped against the `webApplicationInfo.id` property, which must correspond to an App Registration in Microsoft Entra ID. To use RSC permissions with a managed identity bot, you must:
+
+1. Create a new App Registration in the Azure portal.
+2. Assign the required RSC permissions to the App Registration.
+3. Use the Application (client) ID of the new App Registration as the `id` value in the `webApplicationInfo` section of your app manifest.
+
+If you use the managed identity ID directly in `webApplicationInfo` without an associated App Registration, app installation fails with the error: *Failed to execute TeamsGraphService backend request IsUserAuthorizedToGrantPersonalScopeResourceSpecificPermissionsRequestV2*.
+
+The application ID URI that you registered in Microsoft Entra ID is configured with the scope of the API you exposed. Configure your app's subdomain URI in `resource` to ensure that the authentication request using `getAuthToken()` is from the domain given in app manifest.
+
+For more information, see webApplicationInfo.
+
+## To configure app manifest
+
+1. Open the app project.
+2. Open the app manifest folder.
+
+    Note
+
+    - The app manifest folder should be at the root of your project. For more information, see Create a Microsoft Teams app package.
+    - For more information on learning how to create a manifest.json, see the app manifest schema for Microsoft Teams.
+3. Open the `manifest.json` file.
+4. Add one of the following code snippets to the app manifest file to add the new property:
+
+    - If your app has a standalone bot, add the following code snippet:
+
+        ```json
+        "webApplicationInfo":
+        {
+        "id": "{Azure AD AppId}",
+        "resource": "api://botid-{Azure AD AppId}"
+        }
+        ```
+    - If your app contains a bot and a tab, add the following code snippet:
+
+        ```json
+        "webApplicationInfo":
+        {
+        "id": "{Azure AD AppId}",
+        "resource": "api://subdomain.example.com/botid-{Azure AD AppId}"
+        }
+        ```
+
+        where,
+
+        - `{Azure AD AppId}` is the app ID you created when you registered your app in Microsoft Entra ID. It's the GUID.
+        - `subdomain.example.com` is the application ID URI that you registered when creating scope in Microsoft Entra ID.
+5. Update the app ID from Microsoft Entra ID in the **id** property.
+6. Update the subdomain URL in the following properties:
+
+    1. `contentUrl`
+    2. `configurationUrl`
+    3. `validDomains`
+
+    Note
+
+    To handle authentication and token exchange, add `https://token.botframework.com` to the `validDomains` property for bots using Bot Framework. For OAuth URLs and data residency list, see OAuth URL support in Azure AI Bot Service.
+7. Save the app manifest file. For more information, see app manifest.
+
+Here's an example of the app manifest after it's updated
+
+```json
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/teams/v1.24/MicrosoftTeams.schema.json",
+  "manifestVersion": "1.24",
+  "version": "1.0",
+  "id": "00000000-0000-0000-0000-000000000000",
+  "packageName": "com.microsoft.teams.samples.auth",
+  "developer": {
+    "name": "Your Name Here",
+    "websiteUrl": "https://www.example.com",
+    "privacyUrl": "https://www.example.com/PrivacyStatement",
+    "termsOfUseUrl": "https://www.example.com/TermsOfUse"
+  },
+  "name": {
+    "short": "Teams AuthBot"
+  },
+  "description": {
+    "short": "Authentication sample for Microsoft Teams",
+    "full": "Authentication sample for Microsoft Teams"
+  },
+  "icons": {
+    "outline": "outline.png",
+    "color": "color.png"
+  },
+  "accentColor": "#F3F4F6",
+  "configurableTabs": [
+
+  ],
+  "staticTabs": [
+    {
+      "contentUrl": "https://<<BASE_URI_DOMAIN>>/tab/simple",
+      "entityId": "simpleAuth",
+      "name": "Simple Auth",
+      "scopes": [
+        "personal"
+      ]
+    },
+    {
+      "contentUrl": "https://<<BASE_URI_DOMAIN>>/tab/silent?loginHint={loginHint}&userObjectId={userObjectId}&tenantId={tid}",
+      "entityId": "silentAuth",
+      "name": "Silent Auth",
+      "scopes": [
+        "personal"
+      ]
+    },
+    {
+      "contentUrl": "https://<<BASE_URI_DOMAIN>>/tab/sso",
+      "entityId": "ssoAuth",
+      "name": "SSO Auth",
+      "scopes": [
+        "personal"
+      ]
+    }
+  ],
+  "bots": [
+    {
+      "botId": "<<REGISTERED_BOT_ID>>",
+      "scopes": [
+        "personal",
+        "groupChat"
+      ]
+    }
+  ],
+  "permissions": [
+    "messageTeamMembers",
+    "identity"
+  ],
+  "validDomains": [
+    "<<BASE_URI_DOMAIN>>",
+    "token.botframework.com"
+  ],
+  "webApplicationInfo": {
+      "id": "<<REGISTERED_BOT_ID>>",
+      "resource": "api://<<BASE_URI_DOMAIN>>/<<REGISTERED_BOT_ID>>"
+  }
+}
+```
+
+Note
+
+During debug, you can use ngrok to test your app in Microsoft Entra ID. In that case, you need to replace the subdomain in `api://subdomain.example.com/00000000-0000-0000-0000-000000000000` with the ngrok URL. You'll need to update the URL whenever your ngrok subdomain changes. For example, api://23c3-103-50-148-128.ngrok.io/bccfbe67-e08b-4ec1-a7fd-e0aaf41a097c.
+
+## Upload a custom app and Preview in Teams
+
+You've configured the app to enable SSO. You can now upload your custom app in Teams and preview it in Teams environment.
+
+To preview your app in Teams:
+
+1. Create an app package.
+
+    The app package is a zip file that contains the app manifest file and app icons.
+2. Open Teams.
+3. Select **Apps** &gt; **Manage your apps** &gt; **Upload an app**.
+
+    The options to upload an app appear.
+4. Select **Upload a custom app** to upload your custom app into Teams.
+5. Select your app package zip file, and then select **Add**.
+
+    The custom app is uploaded. A consent dialog appears to inform you of the permissions that might be required.
+6. Select **View permissions** and provide the necessary permissions to authenticate the app.
+
+    ![Screenshot shows a bot authentication consent message in Teams.](../../../assets/images/authentication/teams-sso-bots/bot-consent.png#lightbox)
+
+Teams opens the app and you can use it.
+
+Congratulations! You've enabled SSO for your bot or message extension app.
+
+## SSO support in Developer Portal
+
+You can import your SSO-enabled app in Developer Portal for Teams. For more information, see import an existing app. To enable SSO support for your app in Developer Portal after you import it, follow these steps:
+
+1. Go to Developer Portal.
+2. Select **Apps**, and from the list that appears, select your app.
+3. Go to **Configure** &gt; **Single sign-on**.
+4. Under **Application ID URI**, enter the messaging endpoint you configured as the endpoint address in Microsoft Entra ID.
+
+    ![Screenshot shows how to configure SSO for an app in Developer Portal.](../../../assets/images/authentication/teams-sso-bots/dev-portal-sso.png#lightbox)
+5. Select **Save**.
+
+Developer Portal now supports SSO for your app.

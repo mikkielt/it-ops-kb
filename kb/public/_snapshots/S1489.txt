@@ -1,0 +1,11 @@
+source: S1489
+url: https://gitlab.com/gitlab-security-oss/cis/gitlabcis
+title: CIS GitLab Benchmark Scanner (gitlabcis)
+publisher: GitLab (community/security-oss project)
+licence: Apache-2.0 (gitlabcis project licence)
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+#
+CIS GitLab Benchmark Scanner
+Loading

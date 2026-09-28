@@ -1,0 +1,280 @@
+source: S1517
+url: https://github.com/MicrosoftDocs/PowerShell-Docs-DSC/blob/main/dsc/docs-conceptual/dsc-3.0/reference/schemas/resource/manifest/root.md
+title: DSC v3 resource manifest schema (root)
+publisher: Microsoft (MicrosoftDocs/PowerShell-Docs-DSC)
+licence: CC BY 4.0 (MicrosoftDocs/PowerShell-Docs-DSC LICENSE; code MIT)
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+MicrosoftDocs
+/
+PowerShell-Docs-DSC
+Public
+Notifications
+You must be signed in to change notification settings
+Fork
+50
+Star
+61
+## Expand file tree
+/
+# root.md
+Copy path
+More file actions
+More file actions
+## Latest commit
+## History
+History
+History
+367 lines (284 loc) · 15.5 KB
+/
+# root.md
+Copy path
+## File metadata and controls
+367 lines (284 loc) · 15.5 KB
+Raw
+Copy raw file
+Download raw file
+Outline
+Edit and raw actions
+description
+JSON schema reference for a DSC Resource manifest
+ms.date
+08/21/2025
+ms.topic
+reference
+title
+Command-based DSC Resource manifest schema reference
+# Command-based DSC Resource manifest schema reference
+## Synopsis
+The data file that defines a command-based DSC Resource.
+## Metadata
+SchemaDialect: https://json-schema.org/draft/2020-12/schema
+SchemaID: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.1.0/resource/manifest.json
+Type: object
+## Description
+Every command-based DSC Resource must have a manifest. The manifest file must:
+Be discoverable in the PATH environment variable.
+Be formatted as either JSON or YAML.
+Follow the naming convention <name>.dsc.resource.<extension>. Valid extensions include json,
+yml, and yaml.
+Be valid for the schema described in this document.
+The rest of this document describes the manifest's schema.
+## Required properties
+The manifest must include these properties:
+$schema
+type
+version
+get
+## Properties
+### $schema
+The $schema property indicates the canonical URI of this schema that the manifest validates
+against. This property is mandatory. DSC uses this value to validate the manifest against the
+correct JSON schema.
+The JSON schemas for DSC are published in multiple versions and forms. This documentation is for
+the latest version of the schema. As a convenience, you can specify either the full URI for the
+schema hosted in GitHub or use the shorter aka.ms URI. You can specify the schema for a specific
+semantic version, the latest schema for a minor version, or the latest schema for a major version
+of DSC. For more information about schema URIs and versioning, see
+DSC JSON Schema URIs.
+For every version of the schema, there are three valid urls:
+.../resource/manifest.json
+The URL to the canonical non-bundled schema. When it's used for validation, the validating client
+needs to retrieve this schema and every schema it references.
+.../bundled/resource/manifest.json
+The URL to the canonically bundled schema. When it's used for validation, the validating client
+only needs to retrieve this schema.
+This schema uses the bundling model introduced for JSON Schema 2020-12. While DSC can still
+validate the document when it uses this schema, other tools may error or behave in unexpected
+ways if they don't fully support the 2020-12 specification.
+.../bundled/resource/manifest.vscode.json
+The URL to the enhanced authoring schema. This schema is much larger than the other schemas, as
+it includes additional definitions that provide contextual help and snippets that the others
+don't include.
+This schema uses keywords that are only recognized by VS Code. While DSC can still validate the
+document when it uses this schema, other tools may error or behave in unexpected ways.
+Type: string
+Required: true
+Format: URI
+ValidValues: [
+https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3/resource/manifest.json
+https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3/bundled/resource/manifest.json
+https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3/bundled/resource/manifest.vscode.json
+https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.1/resource/manifest.json
+https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.1/bundled/resource/manifest.json
+https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.1/bundled/resource/manifest.vscode.json
+https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.1.0/resource/manifest.json
+https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.1.0/bundled/resource/manifest.json
+https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.1.0/bundled/resource/manifest.vscode.json
+https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.0/resource/manifest.json
+https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.0/bundled/resource/manifest.json
+https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.0/bundled/resource/manifest.vscode.json
+https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.0.2/resource/manifest.json
+https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.0.2/bundled/resource/manifest.json
+https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.0.2/bundled/resource/manifest.vscode.json
+https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.0.1/resource/manifest.json
+https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.0.1/bundled/resource/manifest.json
+https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.0.1/bundled/resource/manifest.vscode.json
+https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.0.0/resource/manifest.json
+https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.0.0/bundled/resource/manifest.json
+https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/v3.0.0/bundled/resource/manifest.vscode.json
+https://aka.ms/dsc/schemas/v3/resource/manifest.json
+https://aka.ms/dsc/schemas/v3/bundled/resource/manifest.json
+https://aka.ms/dsc/schemas/v3/bundled/resource/manifest.vscode.json
+https://aka.ms/dsc/schemas/v3.1/resource/manifest.json
+https://aka.ms/dsc/schemas/v3.1/bundled/resource/manifest.json
+https://aka.ms/dsc/schemas/v3.1/bundled/resource/manifest.vscode.json
+https://aka.ms/dsc/schemas/v3.1.0/resource/manifest.json
+https://aka.ms/dsc/schemas/v3.1.0/bundled/resource/manifest.json
+https://aka.ms/dsc/schemas/v3.1.0/bundled/resource/manifest.vscode.json
+https://aka.ms/dsc/schemas/v3.0/resource/manifest.json
+https://aka.ms/dsc/schemas/v3.0/bundled/resource/manifest.json
+https://aka.ms/dsc/schemas/v3.0/bundled/resource/manifest.vscode.json
+https://aka.ms/dsc/schemas/v3.0.2/resource/manifest.json
+https://aka.ms/dsc/schemas/v3.0.2/bundled/resource/manifest.json
+https://aka.ms/dsc/schemas/v3.0.2/bundled/resource/manifest.vscode.json
+https://aka.ms/dsc/schemas/v3.0.1/resource/manifest.json
+https://aka.ms/dsc/schemas/v3.0.1/bundled/resource/manifest.json
+https://aka.ms/dsc/schemas/v3.0.1/bundled/resource/manifest.vscode.json
+https://aka.ms/dsc/schemas/v3.0.0/resource/manifest.json
+https://aka.ms/dsc/schemas/v3.0.0/bundled/resource/manifest.json
+https://aka.ms/dsc/schemas/v3.0.0/bundled/resource/manifest.vscode.json
+]
+### type
+The type property represents the fully qualified type name of the resource. It's used to specify
+the resource in configuration documents and as the value of the --resource flag when using the
+dsc resource * commands. For more information about resource type names, see
+DSC Resource fully qualified type name schema reference.
+Type: string
+Required: true
+Pattern: ^\w+(\.\w+){0,2}\/\w+$
+### version
+The version property must be the current version of the resource as a valid semantic version
+(semver) string. The version applies to the resource, not the software it manages.
+Type: string
+Required: true
+Pattern: ^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$
+### description
+The description property defines a synopsis for the resource's purpose. The value for this
+property must be a short string.
+Type: string
+Required: false
+### kind
+The kind property defines how DSC should handle the resource. DSC supports several kinds
+of DSC resources: resource, group, adapter, importer, and exporter.
+When kind isn't defined in the resource manifest, DSC infers the value for the property. If the
+adapter property is defined in the resource manifest, DSC infers the value of kind as
+adapter. If the adapter property isn't defined, DSC infers the value of kind as resource.
+DSC can't infer whether a manifest is for a group or importer resource.
+When defining a group resource, always explicitly define the kind property in the manifest as
+group. When defining an importer resource, always explicitly define the kind property in the
+manifest as importer.
+For more information, see DSC Resource kind schema reference.
+Type: string
+Required: false
+ValidValues: [resource, adapter, group, importer, exporter]
+### tags
+The tags property defines a list of searchable terms for the resource. The value of this
+property must be an array of strings. Each tag must contain only alphanumeric characters and
+underscores. No other characters are permitted. Each tag must be unique.
+Type: array
+Required: false
+ItemsMustBeUnique: true
+ItemsType: string
+ItemsPattern: ^\w+$
+### export
+The export property defines how to call the resource to get the current state of every instance.
+When this property is defined, users can:
+Specify an instance of the resource in the input configuration for the dsc config export
+command to generate an usable configuration document.
+Specify the resource with the dsc resource export command to generate a configuration
+document that defines every instance of the resource.
+Specify the resource with the dsc resource get command and the --all option to return
+the current state for every instance of the resource.
+The value of this property must be an object. The object's executable property, defining the name
+of the command to call, is mandatory. The args property is optional. For more
+information, see DSC Resource manifest export property schema reference.
+Type: object
+Required: true
+### get
+The get property defines how to call the resource to get the current state of an instance. This
+property is mandatory for all resources.
+The value of this property must be an object. The object's executable property, defining the name
+of the command to call, is mandatory. The args and input properties are optional. For more
+information, see DSC Resource manifest get property schema reference.
+Type: object
+Required: true
+### set
+The set property defines how to call the resource to set the desired state of an instance. It
+also defines how to process the output from the resource for this method. When this property isn't
+defined, the DSC can't manage instances of the resource. It can only get their current state and
+test whether the instance is in the desired state.
+The value of this property must be an object. The executable property, defining the name of the
+command to call, is mandatory. The args input, implementsPretest, and returns properties
+are optional. For more information, see DSC Resource manifest set property schema reference.
+Type: object
+Required: false
+### whatIf
+Defines how DSC must call the DSC Resource to indicate whether and how the set command will modify
+an instance and how to process the output from the DSC Resource. If a resource doesn't define this
+method in the manifest, DSC synthesizes this behavior by converting the result of the test
+operation for the resource into the set result.
+The value of this property must be an object. The executable property, defining the name of the
+command to call, is mandatory. The args input, implementsPretest, and returns properties
+are optional. For more information, see
+DSC Resource manifest whatIf property schema reference.
+### test
+The test property defines how to call the resource to test whether an instance is in the desired
+state. It also defines how to process the output from the resource for this method. When this
+property isn't defined, DSC performs a basic synthetic test for instances of the DSC Resource.
+The value of this property must be an object. The object's executable property, defining the name
+of the command to call, is mandatory. The args input, and returns properties are optional.
+For more information, see DSC Resource manifest test property schema reference.
+Type: object
+Required: false
+### validate
+The validate property defines how to call a DSC Group Resource to validate its instances. This
+property is mandatory for DSC Group Resources. DSC ignores this property for all other resources.
+The value of this property must be an object. The object's executable property, defining the name
+of the command to call, is mandatory. The args property is optional. For more information, see
+DSC Resource manifest validate property schema reference.
+Type: object
+Required: false
+### provider
+When specified, the provider property defines the resource as a DSC Resource Provider.
+The value of this property must be an object. The object's list and config properties are
+mandatory. The list property defines how to call the provider to return the resources that the
+provider can manage. The config property defines how the provider expects input. For more
+information, see the DSC Resource manifest provider property schema reference.
+### exitCodes
+The exitCodes property defines a set of valid exit codes for the resource and their meaning.
+Define this property as a set of key-value pairs where:
+The key is a string containing a signed integer that maps to a known exit code for the resource.
+The exit code must be a literal signed integer. You can't use alternate formats for the exit
+code. For example, instead of the hexadecimal value 0x80070005 for "Access denied", specify the
+exit code as -2147024891.
+The value is a string describing the semantic meaning of that exit code for a human reader.
+DSC interprets exit code 0 as a successful operation and any other exit code as an error.
+Tip
+If you're authoring your resource manifest in yaml, be sure to wrap the exit code in single
+quotes to ensure the YAML file can be parsed correctly. For example:
+exitCodes:
+'0': Success
+'1': Invalid parameter
+'2': Invalid input
+'3': Registry error
+'4': JSON serialization failed
+Type: object
+Required: false
+PropertyNamePattern: ^-?[0-9]+#
+PropertyValueType: string
+### schema
+The schema property defines how to get the JSON schema that validates an instance of the
+resource. This property must always be an object that defines one of the following properties:
+command - When you specify the command property, DSC calls the defined command to get the
+JSON schema.
+embedded - When you specify the embedded property, DSC uses the defined value as the JSON
+schema.
+For more information, see DSC Resource manifest schema property reference.
+Type: object
+Required: true

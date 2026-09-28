@@ -1,0 +1,702 @@
+source: S-gs56zhuk
+url: https://github.com/microsoft/agent-framework/releases
+title: microsoft/agent-framework GitHub releases
+publisher: Microsoft (GitHub)
+licence: MIT
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+microsoft
+/
+agent-framework
+Public
+Notifications
+You must be signed in to change notification settings
+Fork
+2.4k
+Star
+13.8k
+# Releases: microsoft/agent-framework
+Releases · microsoft/agent-framework
+## Release list
+Previous Next
+python-1.19.0
+dotnet-1.22.0
+dotnet-1.21.0
+python-1.18.0
+python-1.17.0
+dotnet-1.20.0
+python-1.16.0
+dotnet-1.19.0
+python-1.15.0
+dotnet-1.18.0
+Previous Next
+## python-1.19.0
+python-1.19.0
+#
+Choose a tag to compare
+## Sorry, something went wrong.
+Filter
+Loading
+## Sorry, something went wrong.
+### Uh oh!
+There was an error while loading. Please reload this page.
+## No results found
+View all tags
+moonbox3
+released this
+18 Sep 09:14
+python-1.19.0
+703fbce
+This commit was created on GitHub.com and signed with GitHub’s verified signature.
+GPG key ID: B5690EEEBB952194
+Verified
+Learn about vigilant mode.
+## [1.19.0] - 2026-09-18
+### Added
+agent-framework, agent-framework-core: Add generic vector-store provider protocols, instrumentation message-event controls, and per-tool AgentModeProvider exposure controls (#8421, #8451, #8450)
+agent-framework-mongodb: Add the alpha MongoDB vector-store connector (#8184)
+agent-framework-azure-documentdb: Add the alpha Azure DocumentDB vector-store connector (#8185)
+agent-framework-azure-cosmos, agent-framework-core: Add an Azure Cosmos DB NoSQL implementation of the shared vector-store APIs (#8186)
+agent-framework-orchestrations: Add stable names for built-in orchestration workflows and register their checkpoint types for restoration (#8384, #8258)
+agent-framework-devui: Display Aspire traces in the developer UI (#7874)
+agent-framework-core: Add an option to invoke function calls sequentially (#8453)
+agent-framework-core, agent-framework-hyperlight, agent-framework-monty: Expose CodeAct tool parameter schemas and configurable compact or JSON descriptions (#8459)
+### Changed
+agent-framework-a2a, agent-framework-ag-ui, agent-framework-core, agent-framework-declarative: [BREAKING] Make HTTP cookie persistence explicit for framework-owned and caller-owned clients (#8371)
+agent-framework-core: [BREAKING] Limit MCP skill archives to ZIP files and deprecate the MCP sampling callback (#8290, #8401)
+agent-framework-declarative: [BREAKING] Scope provider-backed MCP sessions per invocation (#8425)
+agent-framework-redis: [BREAKING - beta] Scope history storage keys by provider and session identity (#8236)
+agent-framework-core: Refine skill frontmatter parsing, propagate runtime arguments to skill callbacks, and clarify MCP annotation override behavior (#8430, #8387, #8399)
+agent-framework-core, agent-framework-hosting-a2a: Tighten security-label enforcement and restrict owned-input argument labels (#8238, #8394)
+agent-framework-purview: Handle additional content types during Purview policy processing (#8370)
+agent-framework-mistral, agent-framework-hosting-responses: Reject unsupported per-call Mistral transport options (#8392)
+agent-framework-monty: Update the Monty bridge for the current pydantic-monty pool API and reuse registered tools in callbacks (#8152, #8395)
+agent-framework-openai: Separate hosted and local shell calls (#8294)
+agent-framework-ag-ui, agent-framework-anthropic, agent-framework-bedrock, agent-framework-core, agent-framework-foundry-hosting, agent-framework-hosting-a2a, agent-framework-hosting-mcp, agent-framework-hosting-responses, agent-framework-openai: Keep tool diagnostics internal by default (#8235)
+agent-framework-azure-cosmos: Clarify Cosmos history-provider storage scope (#8391)
+tests: Add public API compatibility checks and update root and Lab development dependencies and lockfiles (#8271, #8469, #8266, #8470, #8249, #8471, #8472, #8473)
+docs: Document keyed web search through the Serply MCP server and correct Python documentation wording (#8319, #8323)
+### Fixed
+agent-framework-core: Preserve function-call and approval context across mixed batches, resumed runs, nested workflows, and streaming merges (#8428, #8433, #8345, #8337)
+agent-framework-core: Preserve compaction summaries and configuration while excluding encrypted reasoning payloads from token counts (#8354, #8329, #8117, #7944)
+agent-framework-core: Make file checkpoint saves, deletion, encoding, and round trips concurrency-safe and lossless (#7757, #8261, #8272, #8262, #8181)
+agent-framework-core: Preserve workflow streaming, response metadata, state, return types, and invocation keyword arguments across completion and resume paths (#8231, #8389, #8300, #8309, #8311, #7999, #8287, #8331)
+agent-framework-core: Authenticate and scope MCP requests and sessions to the correct invocation identity, origin, and ownership (#8303, #8285, #8246, #8225)
+agent-framework-core: Verify MCP skill archive digests, avoid duplicate structured content, and reject ambiguous MCP configuration matches (#8404, #8274, #8386)
+agent-framework-core: Propagate result-parser and asynchronous tool invocation failures correctly and count async invocation exceptions (#8420, #8278)
+agent-framework-core: Avoid OpenTelemetry context detach errors and record failed client-operation durations (#8398, #8347)
+agent-framework-core: Preserve instruction ordering, support Literal annotations, allow middleware argument repair, and deduplicate MessagePack history writes (#8353, #8351, #8288, #8224)
+agent-framework-core: Bound stateless approval pause batches to the current user turn (#8449)
+agent-framework-ag-ui, agent-framework-core, agent-framework-foundry: Preserve checkpoint, approval, replay, reasoning, and session metadata across AG-UI interrupts and resumes (#8163, #8373, #8058, #8149, #8279, #8199)
+agent-framework-anthropic, agent-framework-core: Isolate Anthropic request parsing state and handle provider-invalidated responses (#8237, [...
+Read more
+Assets
+81
+Loading
+### Uh oh!
+There was an error while loading. Please reload this page.
+1 person reacted
+## dotnet-1.22.0
+dotnet-1.22.0
+Latest
+Latest
+#
+Choose a tag to compare
+## Sorry, something went wrong.
+Filter
+Loading
+## Sorry, something went wrong.
+### Uh oh!
+There was an error while loading. Please reload this page.
+## No results found
+View all tags
+westey-m
+released this
+18 Sep 18:12
+dotnet-1.22.0
+0c9944c
+This commit was created on GitHub.com and signed with GitHub’s verified signature.
+GPG key ID: B5690EEEBB952194
+Verified
+Learn about vigilant mode.
+## What's Changed
+.NET: fix: race concdition in workflow formula state by Vincent Biret (@baywet) in #8252
+.NET: update remaining dependencies by Vincent Biret (@baywet) in #8307
+.NET: fix: inspect for delemiter value before adding headers by Vincent Biret (@baywet) in #8301
+docs: fix 'availble' typo in ADR 0001 by mrchatam (@mrchatam) in #8325
+.NET: docs: use 'a FunctionApprovalRequestContent' in ADR 0006 by mrchatam (@mrchatam) in #8322
+.NET: docs: fix 'valueable' typo in ADR 0001 by mrchatam (@mrchatam) in #8318
+.NET: docs: remove duplicate 'turns' in ADR 0006 by mrchatam (@mrchatam) in #8317
+.NET: docs: fix 'extention' typo in ADR 0001 by mrchatam (@mrchatam) in #8316
+docs: fix 'allow to' grammar in ADR 0011 by mrchatam (@mrchatam) in #8335
+Improve issue triage by Evan Mattson (@moonbox3) in #8362
+.NET: expose OpenTelemetryAgent.DefaultSourceName by Yashvant Mahadev Hange (@YashvantHange) in #7815
+.NET: Temporarily skip flaky steering harness session reuse test by Roger Barreto (@rogerbarreto) with @Copilot in #8377
+.NET: [PREVIEW BREAKING] Promote AgentSessionStore into Agents.AI.Abstractions by Roger Barreto (@rogerbarreto) in #7991
+.NET: Preserve hosted session key boundaries by Ricky-7-Yan in #8263
+.NET: Preserve cached and reasoning token counts in Foundry Hosting by Manjunath Janardhan (@manjunathshiva) in #8334
+.NET: [BREAKING] Improve replay support with Approval Binding by westey (@westey-m) in #8375
+.NET: fix: uri canonization in workflow http handler by Vincent Biret (@baywet) in #8406
+.NET: tests(workflows): adds a regression test for cookie jar handling in redirection by Vincent Biret (@baywet) in #8427
+.NET: Add AsIChatClient extension to expose an AIAgent as an IChatClient by Tomas Rampas (@tomas-rampas) in #7687
+.NET/Python: Refine skill frontmatter parsing by SergeyMenshykh in #8430
+.NET/Python: Add more content types to purview handling by westey (@westey-m) in #8370
+.NET: [BREAKING] Scope provider-backed MCP sessions per invocation by Jose Alvarez (@jpalvarezl) in #8425
+.NET: Add per-tool AgentModeProvider controls by westey (@westey-m) in #8458
+.NET: Clarify Agent Skills caching behavior by SergeyMenshykh in #8474
+ci: excludes samples from dotnet dependabot because they are causing a timeout by Vincent Biret (@baywet) in #8476
+docs: clarifies the additional languages policy by Vincent Biret (@baywet) in #8477
+.NET: [BREAKING] Make Foundry delegated user identity sticky on AgentSession by Roger Barreto (@rogerbarreto) in #8434
+Build(deps): Bump astral-sh/setup-uv from 10.0.1 to 10.1.0 by Dependabot (@dependabot)[bot] in #8482
+Build(deps): Bump azure/login from 3.0.2 to 3.1.0 in /.github/actions/github-app-token by Dependabot (@dependabot)[bot] in #8483
+Build(deps): Bump astral-sh/setup-uv from 10.0.1 to 10.1.0 in /.github/actions/python-setup by Dependabot (@dependabot)[bot] in #8484
+Build(deps): Bump azure/login from 3.0.2 to 3.1.0 in /.github/actions/sample-validation-setup by Dependabot (@dependabot)[bot] in #8485
+Build(deps): Bump the codeql-actions group across 1 directory with 3 updates by Dependabot (@dependabot)[bot] in #8480
+Build(deps): Bump azure/login from 3.0.2 to 3.1.0 by Dependabot (@dependabot)[bot] in #8481
+Build(deps-dev): Bump uv from 0.12.9 to 0.12.12 in /python/packages/lab in the basics group across 1 directory by Dependabot (@dependabot)[bot] in #8469
+Build(deps-dev): Bump pyright from 1.1.411 to 1.1.414 in /python/packages/lab in the python-type-checkers group across 1 directory by Dependabot (@dependabot)[bot] in #8470
+.NET: Bind always approval responses to surfaced requests by westey (@westey-m) in #8432
+[BREAKING] Python: Add request-scoped Foundry agent factories by Roger Barreto (@rogerbarreto) in #8372
+.NET: Preserve harness middleware for dynamic tools by Roger Barreto (@rogerbarreto) in #8402
+.NET: 2026-09-18 Release version bump by westey (@westey-m) in #8529
+.NET: Pass ChatClientAgent tools per run only rather than setting on FICC by westey (@westey-m) in #8531
+## New Contributors
+mrchatam (@mrchatam) made their first contribution in #8325
+Sunhy (@Shy7777) made their first contribution in #8331
+LI (@ktz03) made their first contribution in #8149
+Manohar Paturi (@ManoharPaturi) made their first contribution in #8351
+HeZzz (@HeZ2z) made their first contribution in #7999
+fzfzzfzzzfzzzz made their first contribution in #8260
+Serply (@googio) made their first contribution in #8319
+RKS (@rksharma-owg) made their first contribution in #8347
+alanhuangyoo made their first contribution in #8358
+Harsheet Shah (@harsheet-shah) made their first contribution in #8363
+Saibernard made their first contribution in #7874
+Anish Mehta (@anishmehta24) made their first contribution in #8405
+Tomas Rampas (@tomas-rampas) made their first contribution in #7687
+Vedant Sonkar (@vedantsonkar) made their first contribution in #8117
+Naveen Chatlapalli (@1aifanatic) made their first contribution in #8231
+Lubaoshuai made their first contribution in #8354
+Full Changelog: dotnet-1.21.0...dotnet-1.22.0
+### Contributors
+tomas-rampas, baywet, and 24 other contributors
+Assets
+2
+Loading
+### Uh oh!
+There was an error while loading. Please reload this page.
+1 person reacted
+## dotnet-1.21.0
+dotnet-1.21.0
+#
+Choose a tag to compare
+## Sorry, something went wrong.
+Filter
+Loading
+## Sorry, something went wrong.
+### Uh oh!
+There was an error while loading. Please reload this page.
+## No results found
+View all tags
+SergeyMenshykh
+released this
+11 Sep 17:31
+dotnet-1.21.0
+c47da07
+This commit was created on GitHub.com and signed with GitHub’s verified signature.
+GPG key ID: B5690EEEBB952194
+Verified
+Learn about vigilant mode.
+## What's Changed
+.NET: Replace deprecated AWSSDK.Extensions.Bedrock.MEAI with AWS.Bedrock.MEAI by Ben Thompson (@BenGearset) in #7983
+.NET: Remove Azure.AI.OpenAI dependency by Roger Barreto (@rogerbarreto) in #7986
+.NET: Track and update A2A task state by SergeyMenshykh in #7998
+.NET: Update Azure AI Projects to 3.0.0 beta 1 by Roger Barreto (@rogerbarreto) in #7995
+.NET: Bump Aspire.Hosting from 13.5.2 to 13.5.3 by Dependabot (@dependabot)[bot] in #8029
+.NET: [BREAKING] Add file_access_read_lines and move the line-numbering contract onto AgentFileStore by Anton Sokolovskyi (@antsok) in #7671
+Bump Anthropic from 12.42.0 to 12.43.0 by Dependabot (@dependabot)[bot] in #8028
+.NET: Bump AgentMemory.AgentFramework from 1.4.1 to 1.5.0 by Dependabot (@dependabot)[bot] in #8027
+.NET: [BREAKING] Clarify A2A agent run modes by SergeyMenshykh in #8032
+.NET: Clarify declarative workflow input serialization by 宇宙的山峰 (@UniversePeak) in #8046
+.NET: Preserve streamed annotations in Foundry hosted responses by Roger Barreto (@rogerbarreto) in #7984
+.NET: Improve Hosted Agent LRA Resilient Recovery Sample by Roger Barreto (@rogerbarreto) in #8082
+.NET: Include workflow outputs in hosted agent responses by 宇宙的山峰 (@UniversePeak) in #8020
+.NET: Improve inline skill argument error guidance by SergeyMenshykh in #8118
+.NET: Bump Azure.Monitor.OpenTelemetry.Exporter from 1.5.0 to 1.8.3 by Dependabot (@dependabot)[bot] in #7887
+[BREAKING] .NET: Isolate LocalCodeAct subprocess environment by Eduard van Valkenburg (@eavanvalkenburg) in #8159
+.NET: Scope OpenAI hosting storage by isolation key by SergeyMenshykh in #8146
+.NET: chore: updates source link dependency due to transitive vulnerability by Vincent Biret (@baywet) in #8179
+.NET: chore: updates Microsoft owned testing dependencies by Vincent Biret (@baywet) in #8167
+.NET: ci: update Microsoft.CodeAnalysis.NetAnalyzers and Microsoft.VisualStudio.Threading.Analyzers versions by Vincent Biret (@baywet) in #8166
+.NET: chore: updates microsoft extensions and related packages to their latest version, as well as global.json dotnet sdk version to align by Vincent Biret (@baywet) in #8190
+.NET: Bump Azure.AI.Projects to 3.0.0-beta.2 by Roger Barreto (@rogerbarreto) in #8165
+.NET: fix: revalidate file skill paths before use by SergeyMenshykh in #8151
+.NET: Opt in to client function forwarding for Responses hosting by Roger Barreto (@rogerbarreto) with @Copilot in #7844
+.NET: chore: updates additional analyzers packages by Vincent Biret (@baywet) in #8198
+.NET: Harden LocalCodeAct OS validation by Eduard van Valkenburg (@eavanvalkenburg) in #8239
+.NET: upgrades xunit and other dependencies by Vincent Biret (@baywet) in #8202
+.NET: ci/promote removed apis by Vincent Biret (@baywet) in #8229
+.NET: fix: do not forward headers on redirect by Vincent Biret (@baywet) in #8164
+.NET: updates open telemetry deps by Vincent Biret (@baywet) in #8253
+.NET: Dotnet: reset $LASTEXITCODE per command in persistent PowerShell sessions by westey (@westey-m) in #8259
+.NET: Implement same approval process for LocalCodeAct as is used by Hyperlight by westey (@westey-m) in #8289
+.NET: Add Foundry hosted session client samples by Roger Barreto (@rogerbarreto) in #8227
+.NET: deps/ai extensions by Vincent Biret (@baywet) in #8270
+.Net + Python: [BREAKING] Limit MCP skill archives to the ZIP format by SergeyMenshykh in #8290
+.NET: Update version for 1.21.0 release by SergeyMenshykh in #8297
+.NET: Canonicalize Hyperlight sandbox fingerprints by Eduard van Valkenburg (@eavanvalkenburg) in #8295
+## New Contributors
+Ben Thompson (@BenGearset) made their first contribution in #7983
+Zihao Peng (@xiaobaZeo) made their first contribution in #8004
+Ricky-7-Yan made their first contribution in #7680
+Choppa (@Choppaaahh) made their first contribution in #8011
+karthikchundi-commits made their first contribution in #7855
+Anton Sokolovskyi (@antsok) made their first contribution in #7671
+wang ke (@CoffeeDrivenCoder) made their first contribution in #7790
+宇宙的山峰 (@UniversePeak) made their first contribution in #8046
+Shxiao (@Shxiao101) made their first contribution in #8090
+George Pickett (@georgeatparallel) made their first contribution in #8084
+vedanth bora (@VedanthB) made their first contribution in #8097
+Shivani . (@Shivani767) made their first contribution in #7798
+Jose Alvarez (@jpalvarezl) made their first contribution in #8122
+Manideep Malyala (@manideep-malyala) made their first contribution in #7808
+JHf0912 made their first contribution in #8087
+Xiaoping Liao (@kyletser) made their first contribution in #7839
+ZF (@feizhuzheng) made their first contribution in #7942
+CoralGarden52 made their first contribution in #8116
+leilei3167 made their first contribution in #8171
+aeon (@aeonframework) made their first contribution in #8172
+lsmlhi_25 (@FOWEPJF255) made their first contribution in #8215
+Leo Camus (@Dev-next-gen) made their first contribution in #8206
+WhaleTech (@ryo-whaletech) made their first contribution in #8269
+Full Changelog: dotnet-1.20.0...dotnet-1.21.0
+### Contributors
+baywet, antsok, and 27 other contributors
+Assets
+2
+Loading
+### Uh oh!
+There was an error while loading. Please reload this page.
+2 people reacted
+## python-1.18.0
+python-1.18.0
+#
+Choose a tag to compare
+## Sorry, something went wrong.
+Filter
+Loading
+## Sorry, something went wrong.
+### Uh oh!
+There was an error while loading. Please reload this page.
+## No results found
+View all tags
+moonbox3
+released this
+10 Sep 09:23
+python-1.18.0
+3ad2b07
+This commit was created on GitHub.com and signed with GitHub’s verified signature.
+GPG key ID: B5690EEEBB952194
+Verified
+Learn about vigilant mode.
+## [1.18.0] - 2026-09-10
+### Added
+samples: Add Magentic custom-manager prompts and MLflow observability examples (#7876, #8085)
+agent-framework-core: Add shared vector-store abstractions, portable filters, and an in-memory vector store (#8014, #8115)
+agent-framework-core: Add a maximum-duration bound and stop-reason signal to the tool invocation loop (#7772)
+agent-framework-core: Support mixed workflow invocation keyword arguments (#7963)
+agent-framework-ag-ui: Add emit_messages_snapshot configuration for suppressing the terminal message snapshot (#7808)
+agent-framework-ag-ui, agent-framework-core: Add supported MCP Host-history conversion for persisted AG-UI conversations (#8130)
+agent-framework-azure-ai-search, agent-framework-core: Add an Azure AI Search implementation of the shared vector-store APIs (#8153)
+agent-framework-redis, agent-framework-core: Add Redis HASH and JSON vector stores (#8156)
+agent-framework-qdrant: Add the alpha Qdrant vector-store connector (#8154)
+agent-framework-postgres: Add the alpha PostgreSQL/pgvector connector (#8155)
+### Changed
+agent-framework, agent-framework-core, agent-framework-foundry, agent-framework-lab: [BREAKING] Isolate Lab dependency resolution, remove Lab from core[all], and support Azure AI Projects through 2.6 with OpenAI 3.x (#8188)
+agent-framework-core: [BREAKING - experimental] Add ranged file reads and move the line-numbering contract onto AgentFileStore (#7669)
+agent-framework-core: [BREAKING - experimental] Centralize file, memory, session, and skill path normalization (#8123)
+agent-framework-anthropic, agent-framework-azure-ai-search, agent-framework-azure-cosmos, agent-framework-bedrock, agent-framework-copilotstudio, agent-framework-core, agent-framework-foundry, agent-framework-gemini, agent-framework-mem0, agent-framework-openai: [BREAKING] Make SecretString a masked value wrapper rather than a str subclass and align provider credential handling (#8127)
+agent-framework-github-copilot: [BREAKING] Make workspace file hooks opt-in and document enable_file_hooks migration (#7517)
+agent-framework-foundry-hosting: [BREAKING - beta] Restrict checkpoint deserialization by default and allow applications to register additional checkpoint types (#8045)
+agent-framework-core, agent-framework-foundry: Move Foundry evaluation serialization into the Foundry integration (#8031)
+agent-framework-github-copilot: Update the GitHub Copilot SDK dependency to 1.0.11 and align file-operation behavior (#8002)
+agent-framework-ag-ui, agent-framework-devui: Expand compatibility through FastAPI 0.141 (#8052)
+agent-framework-core, agent-framework-hyperlight: Update Hyperlight Sandbox to 0.6 and enable supported Python 3.14 installations (#8174)
+agent-framework-foundry, agent-framework-foundry-hosting, agent-framework-openai: Lazily load Foundry and OpenAI integrations to avoid unnecessary import-time dependencies (#8219)
+agent-framework-devui: Update frontend transitive dependencies (#8019, #8009, #8175)
+agent-framework: Replace stale Python documentation placeholders with live documentation links (#7777)
+docs: Repair external links, document anonymous Parallel Search MCP usage, and correct Python documentation wording (#8090, #8084, #7942)
+tests: Update uv, Ruff, Zuban, ty, pytest, and Python type-checking dependencies; isolate Lab test dependencies; and make the optional Lightning test robust to nested import failures (#8038, #8036, #8037, #8062, #8110, #8064, #8071, #8209, #8207, #8208)
+### Fixed
+agent-framework-purview: Request inline policy evaluation while the protection-scope cache is cold (#7976)
+agent-framework-anthropic, agent-framework-gemini: Wrap provider SDK failures consistently in ChatClientException (#7855)
+agent-framework-a2a: Avoid AttributeError and preserve caller ownership when an A2AAgent uses a supplied HTTP client (#8095, #7951)
+agent-framework-chatkit: Preserve ChatKit input tags when converting user messages (#8097)
+agent-framework-claude, agent-framework-github-copilot: Reject MCP servers passed through provider-agent tool collections (#7835)
+agent-framework-claude: Preserve message roles in Claude prompt history (#8122)
+agent-framework-declarative: Preserve URL query parameters and correctly route DevUI message input in declarative workflows (#7765, #7839)
+agent-framework-core: Preserve runtime raw representations and recursively serialize nested container values (#8023, #7790)
+agent-framework-core: Scope MCP headers to transport requests, clean up failed HTTP connections, and retain bounded MCP Host payload metadata (#8039, #8126, #8128)
+agent-framework-core: Finalize abandoned functional-workflow streams, restore fan-in edge buffers, and validate checkpoint state when saving (#7798, #7948, #8215)
+agent-framework-core: Include tool trajectory details in summarizer input (#8087)
+agent-framework-core: Preserve the Param unset sentinel with current typing-extensions releases (#8145)
+agent-framework-core: Preserve empty signed Anthropic thinking blocks during streaming replay (#8171)
+agent-framework-core: Revalidate discovered skill paths immediately before use (#8151)
+agent-framework-core: Isolate FIDES state per session, enforce labels on expanded variables, preserve confidentiality through security tools, and keep MCP labels subordinate to local policy (#8138, #8139, #8141, #8187)
+agent-framework-ag-ui: Stamp checkpoint ownership, surface workflow intermediate events as reasoning, and preserve function-call/result ordering (#8011, #8003, #8005)
+agent-framework-ag-ui: Scope internal session identifiers and reject empty scope-resolver results ([#8158](https://github.com/microso...
+Read more
+Assets
+77
+Loading
+### Uh oh!
+There was an error while loading. Please reload this page.
+3 people reacted
+## python-1.17.0
+python-1.17.0
+#
+Choose a tag to compare
+## Sorry, something went wrong.
+Filter
+Loading
+## Sorry, something went wrong.
+### Uh oh!
+There was an error while loading. Please reload this page.
+## No results found
+View all tags
+moonbox3
+released this
+03 Sep 09:49
+python-1.17.0
+4507512
+This commit was created on GitHub.com and signed with GitHub’s verified signature.
+GPG key ID: B5690EEEBB952194
+Verified
+Learn about vigilant mode.
+## [1.17.0] - 2026-09-03
+### Added
+samples: Add an end-to-end Foundry-hosted Telegram agent sample (#7883)
+agent-framework-foundry-hosting: Add explicit Agent Server or agent-owned model history selection while preventing duplicated conversation replay (#7997)
+### Changed
+agent-framework-core, agent-framework-foundry: [BREAKING] Restore sequence-only agent middleware inputs and remove the experimental agent-hooks core extra (#7918)
+agent-framework-core, agent-framework-foundry, agent-framework-openai: Document the same-event-loop concurrency contract for shared chat clients (#7680)
+agent-framework-devui, agent-framework-hosting-responses, agent-framework-openai: Support OpenAI SDK 3.x while retaining the existing supported floors (#7967)
+agent-framework-mistral: Migrate chat and embedding clients to the official Mistral SDK (#7960)
+### Fixed
+agent-framework-core, agent-framework-devui, agent-framework-foundry-hosting, agent-framework-hosting-responses, agent-framework-openai: Preserve provider refusals as marked text across history, replay, hosting, and UI conversion (#7992)
+agent-framework-ag-ui, agent-framework-core, agent-framework-devui, agent-framework-openai: Bind approvals to stable function-call occurrences while preserving legacy approval compatibility (#7988)
+agent-framework-foundry-hosting: Persist valid OAuth consent responses and restore consent state during recovery (#8006)
+agent-framework-core: Surface the underlying MCP initialization error when cancellation masks a connection failure (#7704)
+agent-framework-ag-ui, agent-framework-core: Preserve client tools and request correlation when resuming workflow-as-agent approvals (#7776)
+agent-framework-core: Project each model call's effective tool set to agent-hooks pre_model_call events (#7747)
+agent-framework-ag-ui: Preserve every parallel function result during AG-UI message conversion (#7980)
+agent-framework-devui, agent-framework-openai: Preserve Responses message boundaries, multimodal content, measured usage, and streamed response IDs in DevUI (#7968)
+agent-framework-hosting-responses: Align continuation, input, output, and media parsing with the OpenAI Responses schemas (#7966)
+agent-framework-foundry: Declare the HTTPX runtime dependency required by Azure AI Projects 2.3
+agent-framework-openai: Preserve falsey provider values, valid request content, usage details, and embedding order (#7964)
+agent-framework-foundry-hosting: Preserve JSON-safe arguments, falsey results, MCP output consistency, and shell limits in response conversion (#7965)
+agent-framework-ag-ui, agent-framework-foundry, agent-framework-openai: Preserve Responses replay metadata across stateless and provider-managed AG-UI continuations (#7906)
+agent-framework-core: Preserve compaction mutations across tool-loop calls and align thresholds and observability (#7912)
+agent-framework-gemini: Send Pydantic response formats to Gemini as response schemas (#7879)
+agent-framework-redis: Keep history-provider typing compatible across the supported Redis range (#7604)
+Full Changelog: python-1.16.0...python-1.17.0
+Assets
+73
+Loading
+### Uh oh!
+There was an error while loading. Please reload this page.
+2 people reacted
+## dotnet-1.20.0
+dotnet-1.20.0
+#
+Choose a tag to compare
+## Sorry, something went wrong.
+Filter
+Loading
+## Sorry, something went wrong.
+### Uh oh!
+There was an error while loading. Please reload this page.
+## No results found
+View all tags
+SergeyMenshykh
+released this
+31 Aug 18:53
+dotnet-1.20.0
+575b408
+This commit was created on GitHub.com and signed with GitHub’s verified signature.
+GPG key ID: B5690EEEBB952194
+Verified
+Learn about vigilant mode.
+## What's Changed
+.NET: Bump AWSSDK.Extensions.Bedrock.MEAI from 4.0.6.10 to 4.0.101.8 by Dependabot (@dependabot)[bot] in #7829
+.NET: Stabilize Foundry recovery tests by Roger Barreto (@rogerbarreto) in #7817
+.NET: fix: preserve Responses logprobs field by Yufeng He (@he-yufeng) in #5860
+.NET: Honor cancellation for Foundry-hosted workflow responses by Roger Barreto (@rogerbarreto) with @Copilot in #7842
+.NET: Use Responses API for hosted web search in AG-UI by Roger Barreto (@rogerbarreto) with @Copilot in #7843
+.NET: Bump Aspire.Hosting from 13.1.0 to 13.5.2 by Dependabot (@dependabot)[bot] in #7826
+.NET: Suppress false positive Zip Slip alert by SergeyMenshykh in #7858
+.NET: added Mem0Sharp integration for in-memory storage in agent samples. by Jay Khawaja (@jihadkhawaja) in #7792
+.NET: Annotate DevUI aggregator static-analysis false positives by SergeyMenshykh in #7864
+.NET: Rename CommunityToolkit.VectorData.CosmosNoSql to AzureCosmosDB by Adam Sitnik (@adamsitnik) in #7878
+.NET: chore: upgrades aspnet openapi dependency by Vincent Biret (@baywet) in #7870
+.NET: Simplify A2A function tool samples by SergeyMenshykh in #7861
+.NET: Bump Azure.AI.AgentServer.Invocations from 1.0.0-beta.5 to 1.0.0-beta.6 by Dependabot (@dependabot)[bot] in #7886
+.NET: docs: updates the contributing information for CFS users by Vincent Biret (@baywet) in #7869
+Bump CommunityToolkit.VectorData.InMemory from 1.0.0 to 1.0.1 by Dependabot (@dependabot)[bot] in #7888
+.NET: Remove retired OpenAI Assistants integration tests by Roger Barreto (@rogerbarreto) in #7896
+.NET: Simplify A2A client-server sample by SergeyMenshykh in #7891
+Bump Dapr.AI.Microsoft.Extensions from 1.18.4 to 1.18.5 by Dependabot (@dependabot)[bot] in #7889
+.NET: docs/workflow fileinput sample dotnet by Vincent Biret (@baywet) in #7913
+.NET: Add timeout for wait-for-first-completion by westey (@westey-m) in #7911
+.NET: Fix duplicate Foundry AgentHost port binding by Roger Barreto (@rogerbarreto) in #7932
+.NET: tests: removes dependency on fluent assersion because of licensing concerns by Vincent Biret (@baywet) in #7938
+.NET: docs(decisions): resolve duplicate ADR sequence numbers (0016, 0021, 0024) by John CSA (@jluocsa) in #6046
+.NET: Bump Azure.Core from 1.61.0 to 1.62.0 by Dependabot (@dependabot)[bot] in #7954
+.NET: Improve Cosmos DB Emulator startup reliability by Theo van Kraay (@TheovanKraay) in #3932
+.NET: add public API analyzers by Vincent Biret (@baywet) in #7935
+.NET: Update version for 1.20.0 release by SergeyMenshykh in #7972
+## New Contributors
+madanmishra1223 made their first contribution in #7705
+Yashvant Mahadev Hange (@YashvantHange) made their first contribution in #7850
+Jay Khawaja (@jihadkhawaja) made their first contribution in #7792
+Adam Sitnik (@adamsitnik) made their first contribution in #7878
+Vincent Biret (@baywet) made their first contribution in #7870
+Patel Namraa (@Namraa310806) made their first contribution in #7901
+Sweetteabittersugar made their first contribution in #7903
+Jeremy Schoemaker (@shoemoney) made their first contribution in #7837
+John CSA (@jluocsa) made their first contribution in #6046
+Full Changelog: dotnet-1.19.0...dotnet-1.20.0
+### Contributors
+shoemoney, adamsitnik, and 13 other contributors
+Assets
+2
+Loading
+### Uh oh!
+There was an error while loading. Please reload this page.
+5 people reacted
+## python-1.16.0
+python-1.16.0
+#
+Choose a tag to compare
+## Sorry, something went wrong.
+Filter
+Loading
+## Sorry, something went wrong.
+### Uh oh!
+There was an error while loading. Please reload this page.
+## No results found
+View all tags
+giles17
+released this
+28 Aug 00:52
+python-1.16.0
+6d532cf
+This commit was created on GitHub.com and signed with GitHub’s verified signature.
+GPG key ID: B5690EEEBB952194
+Verified
+Learn about vigilant mode.
+## [1.16.0] - 2026-08-27
+### Added
+agent-framework-core: Add configurable timeouts for waiting on the first background-agent task completion (#7908)
+agent-framework-core: Allow programmatic OpenTelemetry service metadata, resource attributes, and OTLP exporter configuration (#7703)
+### Changed
+agent-framework-foundry-hosting: Update Agent Server dependencies and expose parent FoundryToolbox constructor options (#7921)
+samples: Apply ChatKit attachment lifecycle checks consistently in the end-to-end sample (#7846)
+### Fixed
+agent-framework-ag-ui, agent-framework-foundry-hosting: Preserve backend-owned service-session snapshots and validate incremental provider continuation input (#7770)
+agent-framework-anthropic, agent-framework-mistral: Preserve unmapped provider finish reasons (#7850)
+agent-framework-azure-ai-search: Preserve the kinds of heterogeneous knowledge sources (#7875)
+agent-framework-core: Prevent workflow checkpoints from being mutated outside storage implementations (#7847)
+agent-framework-core: Discard unsafe Content fields during deep copy (#7903)
+agent-framework-core: Avoid mutating caller input in SerializationMixin.from_dict() (#7901)
+agent-framework-core: Keep the private agent-loop iteration marker out of provider SDK requests (#7860)
+agent-framework-gemini: Preserve unmapped finish reasons and attach usage details to the correct response (#7837)
+agent-framework-openai: Preserve streaming when GenAI instrumentation replaces the raw SDK response (#7705)
+Assets
+73
+Loading
+### Uh oh!
+There was an error while loading. Please reload this page.
+1 person reacted
+## dotnet-1.19.0
+dotnet-1.19.0
+#
+Choose a tag to compare
+## Sorry, something went wrong.
+Filter
+Loading
+## Sorry, something went wrong.
+### Uh oh!
+There was an error while loading. Please reload this page.
+## No results found
+View all tags
+rogerbarreto
+released this
+22 Aug 12:48
+dotnet-1.19.0
+d9d3fb6
+This commit was created on GitHub.com and signed with GitHub’s verified signature.
+GPG key ID: B5690EEEBB952194
+Verified
+Learn about vigilant mode.
+## What's Changed
+.NET: Add session-persisted chat client routing by westey (@westey-m) in #7641
+.NET: Fix snake_case argument names in Harness file tool descriptions by westey (@westey-m) with @Copilot in #7731
+.NET: Pass IServiceProvider to ChatClientAgent in AddAIAgent overloads by westey (@westey-m) in #7737
+.NET: Python: Clarify PR review comment resolution by Evan Mattson (@moonbox3) in #7746
+.NET: Update AG-UI samples for latest MAF + AG-UI SDK and align with docs by Daniel Roth (@danroth27) in #7295
+.NET: Migrate remaining Foundry hosted samples to source deployment by Roger Barreto (@rogerbarreto) in #7668
+.NET: agent-hooks interception contract as a first-class experimental feature by MohammadHaroonAbuomar in #7564
+.NET: Forward AG-UI context and additional properties by Javier Calvarro Nelson (@javiercn) in #7742
+.NET: Suppress Swagger UI CodeQL alert in AgentWebChat sample by SergeyMenshykh in #7764
+.NET: Remove AGUI history special cases from ChatClientAgent by Javier Calvarro Nelson (@javiercn) in #7741
+.NET: Fix A2A streaming artifact updates by SergeyMenshykh in #7722
+Python: Harness blog part4 samples by westey (@westey-m) in #7698
+.NET: Clarify compaction provider and chat reducer choices by Ravi Kiran Pagidi (@ravikiranpagidi) in #7678
+.NET: Add Azure Blob Storage session persistence by Korolev Dmitry (@DeagleGross) in #1893
+.NET: Persist hosted agent state in Foundry by Roger Barreto (@rogerbarreto) in #7649
+.NET: [BREAKING] Migrate MCP long-running task support to the 2026-07-28 Tasks extension by Peter Ibekwe (@peibekwe) in #7774
+.NET: Add feature-usage bitmask by Peter Ibekwe (@peibekwe) in #7709
+Bump Anthropic from 12.35.1 to 12.42.0 by Dependabot (@dependabot)[bot] in #7778
+.NET: Fix ReasoningSummary passthrough in GitHub Copilot resume config by Chandramouleswaran (@chandramouleswaran) in #6441
+.NET: Bump AgentMemory from 1.3.0 to 1.4.1 by Dependabot (@dependabot)[bot] in #7639
+.NET: Add support for Resilient long-running and Steerable Foundry Hosted Agents by Roger Barreto (@rogerbarreto) in #7370
+.NET: Update version for 1.19.0 release by Roger Barreto (@rogerbarreto) in #7814
+## New Contributors
+Daniel Roth (@danroth27) made their first contribution in #7295
+Manjunath Janardhan (@manjunathshiva) made their first contribution in #7755
+ALEX LILUZ (@alexliluz) made their first contribution in #7766
+Dan Fiedler (@danfiedler-msft) made their first contribution in #7768
+Ravi Kiran Pagidi (@ravikiranpagidi) made their first contribution in #7678
+Sadok Barbouche (@cr-sbarbouche) made their first contribution in #7734
+Ran Shemtov (@ranst91) made their first contribution in #7423
+Quim Muntal (@qmuntal) made their first contribution in #7754
+Full Changelog: dotnet-1.18.0...dotnet-1.19.0
+### Contributors
+danroth27, chandramouleswaran, and 16 other contributors
+Assets
+2
+Loading
+### Uh oh!
+There was an error while loading. Please reload this page.
+2 people reacted
+## python-1.15.0
+python-1.15.0
+#
+Choose a tag to compare
+## Sorry, something went wrong.
+Filter
+Loading
+## Sorry, something went wrong.
+### Uh oh!
+There was an error while loading. Please reload this page.
+## No results found
+View all tags
+giles17
+released this
+21 Aug 23:08
+python-1.15.0
+7a2b803
+This commit was created on GitHub.com and signed with GitHub’s verified signature.
+GPG key ID: B5690EEEBB952194
+Verified
+Learn about vigilant mode.
+## [1.15.0] - 2026-08-21
+### Added
+agent-framework-ag-ui, agent-framework-openai: Add optional A2UI support for agent-generated interfaces and preserve streaming tool-call indices for A2UI consumers (#7423)
+agent-framework-core: Add MiddlewareFailure as a first-class fatal signal for function middleware (#7562)
+agent-framework-core, agent-framework-azure-cosmos: Add a process-wide workflow checkpoint type registry, register Cosmos checkpoint state types, and declare the compatibility dependency required by the supported Cosmos SDK floor (#7636)
+agent-framework-core, agent-framework-foundry-hosting: Add steering, retry, and recovery support for resilient Foundry Hosted Agents, with long-running workflow samples (#7670)
+samples: Add the production-ready installment of the build-your-own-claw harness sample (#7698)
+### Changed
+agent-framework-ag-ui, agent-framework-core: [BREAKING] Consolidate OpenTelemetry GenAI semantic-convention support around stable and experimental modes with explicit message-event controls (#7673)
+agent-framework-ag-ui: Align run continuity and avoid emitting unchanged predictive state snapshots (#7662, #7766)
+agent-framework-core: Defer turn-scoped after_run context providers to the agent-loop boundary (#7289)
+agent-framework-ag-ui, agent-framework-core, agent-framework-declarative: Persist approval state and distinguish absent values from falsey approval data (#7631)
+agent-framework-devui: Forward function_invocation_kwargs through DevUI agent runs (#7779)
+agent-framework-core, samples: Clarify skill script arguments and MCP tool argument-filtering behavior (#7695, #7801)
+tests: Update uv, Ruff, mypy, ty, Flit, and the root build-system dependency range (#7644, #7645, #7780, #7781, #7782, #7783, #7784)
+docs: Clarify PR review resolution and pin the Agent Lightning installation documentation link (#7746, #7693)
+### Fixed
+agent-framework-a2a, agent-framework-core, agent-framework-orchestrations: Preserve and normalize A2A inputs when used through orchestrations (#7761)
+agent-framework-ag-ui: Preserve tool-message IDs, URL-source attachments, and JSON workflow resume payloads (#7510, #7655, #7684)
+agent-framework-anthropic, agent-framework-core: Preserve structured instructions when merging chat options (#7730)
+agent-framework-core: Preserve all fan-in trace contexts and restrict workflow type deserialization (#7557, #7500)
+agent-framework-core: Avoid remote MCP tool-name shadowing while retaining the documented argument allowlist (#7799)
+agent-framework-core: Always emit an arguments field for zero-argument tool calls in Foundry evaluations (#7734)
+agent-framework-core, agent-framework-github-copilot: Forward telemetry configuration to the GitHub Copilot client (#7625)
+agent-framework-core, agent-framework-redis: Prevent superlinear history growth by deduplicating saved messages (#7242)
+agent-framework-devui: Deduplicate streamed tool calls (#7652)
+agent-framework-foundry-hosting: Surface A2A preview consent URLs and prevent duplicate streamed function calls (#7606, #7486)
+agent-framework-orchestrations: Preserve agent additional_properties in handoff clones (#7755)
+Assets
+73
+Loading
+### Uh oh!
+There was an error while loading. Please reload this page.
+1 person reacted
+## dotnet-1.18.0
+dotnet-1.18.0
+#
+Choose a tag to compare
+## Sorry, something went wrong.
+Filter
+Loading
+## Sorry, something went wrong.
+### Uh oh!
+There was an error while loading. Please reload this page.
+## No results found
+View all tags
+SergeyMenshykh
+released this
+18 Aug 14:30
+dotnet-1.18.0
+4ce2804
+This commit was created on GitHub.com and signed with GitHub’s verified signature.
+GPG key ID: B5690EEEBB952194
+Verified
+Learn about vigilant mode.
+## What's Changed
+.NET: [Experimental] Extend A2A task store with isolation key scoping by SergeyMenshykh in #7504
+.NET: Add CodeQL suppression for DevUI proxy validation by SergeyMenshykh in #7505
+.NET: Bound the tool-approval auto-approval loop (#7472) by Atharva Vichare (@atty57) in #7474
+.NET: Harden file skill discovery by SergeyMenshykh in #7540
+.NET: Give a hosted agent a single source of conversation history by Roger Barreto (@rogerbarreto) in #7525
+.NET: Aggregate usage across looping agents and chat clients by westey (@westey-m) in #7539
+.NET: Store executable function calls bypassed by declaration-only tool calls by westey (@westey-m) in #7388
+.NET: [BREAKING] Rename to AgentIsolationKeyProvider by SergeyMenshykh in #7567
+.NET: Improve string parsing in declarative workflows by Peter Ibekwe (@peibekwe) in #7535
+.NET: Add Cosmos NoSQL vector memory sample by Saurish (@nos-redacted) in #7552
+.NET: Fix misleading workflow protocol attribute diagnostics by Peter Ibekwe (@peibekwe) in #7609
+.NET: Prevent telemetry serialization failures from failing workflows by Peter Ibekwe (@peibekwe) in #7612
+.NET: Add Options for Hosted Agent to Allow Backend Storage by Roger Barreto (@rogerbarreto) in #7572
+.NET: Add BackgroundAgentsProvider.ReleaseSessionAsync to cancel and release per-session background tasks by westey (@westey-m) in #7602
+.NET: Remove clear and package source mapping from nuget.config to allow user level config inheritance by westey (@westey-m) in #7646
+.NET: Fix IDE0039 by using local functions in samples by Roger Barreto (@rogerbarreto) in #7666
+.NET: Allow agents to opt into concurrent tool invocation by ump45nose in #7650
+.NET: Add Foundry hosted session and user identity pass-through by Roger Barreto (@rogerbarreto) in #7648
+.NET: Add Cosmos chat history retrieval API by Ilia Sokolov (@ilia-sokolov) in #7412
+.NET: Fix declarative workflows deep research sample by Peter Ibekwe (@peibekwe) in #7674
+.NET: Update version for 1.18.0 release by SergeyMenshykh in #7713
+.NET: Fix release build analyzer failures by SergeyMenshykh in #7721
+## New Contributors
+Saurish (@nos-redacted) made their first contribution in #7552
+Luis Rodriguez (@luisangelrod) made their first contribution in #7509
+Ruiming Zhao (@uuzzrm) made their first contribution in #7597
+Chinmay V (@chinmayv095) made their first contribution in #7470
+ump45nose made their first contribution in #7650
+Ilia Sokolov (@ilia-sokolov) made their first contribution in #7412
+Leo Zhao (@LobsterQBA) made their first contribution in #7606
+badhope (@weed33834) made their first contribution in #7557
+Full Changelog: dotnet-1.17.0...dotnet-1.18.0
+### Contributors
+ilia-sokolov, rogerbarreto, and 11 other contributors
+Assets
+2
+Loading
+### Uh oh!
+There was an error while loading. Please reload this page.
+2 people reacted
+Previous 1 2 3 4 5 … 12 13 Next
+Previous Next

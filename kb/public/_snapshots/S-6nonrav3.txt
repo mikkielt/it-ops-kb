@@ -1,0 +1,402 @@
+source: S-6nonrav3
+url: https://learn.microsoft.com/powershell/module/microsoft.graph.security/start-mgsecurityhuntingquery
+title: Start-MgSecurityHuntingQuery (Microsoft.Graph.Security)
+publisher: Microsoft
+licence: CC BY 4.0 (public mirror MicrosoftDocs/microsoftgraph-docs-powershell)
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+# Start-MgSecurityHuntingQuery
+
+- Module:
+    - Microsoft.Graph.Security Module
+
+Queries a specified set of event, activity, or entity data supported by Microsoft 365 Defender to proactively look for specific threats in your environment. This method is for advanced hunting in Microsoft 365 Defender. This method includes a query in Kusto Query Language (KQL). It specifies a data table in the advanced hunting schema and a piped sequence of operators to filter or search that data, and format the query output in specific ways. Find out more about hunting for threats across devices, emails, apps, and identities. Learn about KQL. For information on using advanced hunting in the Microsoft 365 Defender portal, see Proactively hunt for threats with advanced hunting in Microsoft 365 Defender.
+
+Note
+
+To view the beta release of this cmdlet, view Start-MgBetaSecurityHuntingQuery
+
+## Syntax
+
+### RunExpanded (Default)
+
+```Syntax
+Start-MgSecurityHuntingQuery
+    [-ResponseHeadersVariable <string>]
+    [-AdditionalProperties <hashtable>]
+    [-Query <string>]
+    [-Timespan <string>]
+    [-Break]
+    [-Headers <IDictionary>]
+    [-HttpPipelineAppend <SendAsyncStep[]>]
+    [-HttpPipelinePrepend <SendAsyncStep[]>]
+    [-Proxy <uri>]
+    [-ProxyCredential <pscredential>]
+    [-ProxyUseDefaultCredentials]
+    [-WhatIf]
+    [-Confirm]
+    [<CommonParameters>]
+```
+
+### Run
+
+```Syntax
+Start-MgSecurityHuntingQuery
+
+    -BodyParameter <IPathsU5PqctSecurityMicrosoftGraphSecurityRunhuntingqueryPostRequestbodyContentApplicationJsonSchema>
+    [-ResponseHeadersVariable <string>]
+    [-Break]
+    [-Headers <IDictionary>]
+    [-HttpPipelineAppend <SendAsyncStep[]>]
+    [-HttpPipelinePrepend <SendAsyncStep[]>]
+    [-Proxy <uri>]
+    [-ProxyCredential <pscredential>]
+    [-ProxyUseDefaultCredentials]
+    [-WhatIf]
+    [-Confirm]
+    [<CommonParameters>]
+```
+
+## Parameters
+
+### -AdditionalProperties
+
+Additional Parameters
+
+#### Parameter properties
+
+| Type: | System.Collections.Hashtable |
+| --- | --- |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ RunExpanded
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -BodyParameter
+
+To construct, see NOTES section for BODYPARAMETER properties and create a hash table.
+
+#### Parameter properties
+
+| Type: | Microsoft.Graph.PowerShell.Models.IPathsU5PqctSecurityMicrosoftGraphSecurityRunhuntingqueryPostRequestbodyContentApplicationJsonSchema |
+| --- | --- |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ Run
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | True |
+| Value from pipeline: | True |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -Break
+
+Wait for .NET debugger to attach
+
+#### Parameter properties
+
+| Type: | System.Management.Automation.SwitchParameter |
+| --- | --- |
+| Default value: | False |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ (All)
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -Confirm
+
+Prompts you for confirmation before running the cmdlet.
+
+#### Parameter properties
+
+| Type: | System.Management.Automation.SwitchParameter |
+| --- | --- |
+| Supports wildcards: | False |
+| DontShow: | False |
+| Aliases: | cf |
+
+#### Parameter sets
+
+ (All)
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -Headers
+
+Optional headers that will be added to the request.
+
+#### Parameter properties
+
+| Type: | System.Collections.IDictionary |
+| --- | --- |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ (All)
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | True |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -HttpPipelineAppend
+
+SendAsync Pipeline Steps to be appended to the front of the pipeline
+
+#### Parameter properties
+
+| Type: | Microsoft.Graph.PowerShell.Runtime.SendAsyncStep[] |
+| --- | --- |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ (All)
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -HttpPipelinePrepend
+
+SendAsync Pipeline Steps to be prepended to the front of the pipeline
+
+#### Parameter properties
+
+| Type: | Microsoft.Graph.PowerShell.Runtime.SendAsyncStep[] |
+| --- | --- |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ (All)
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -Proxy
+
+The URI for the proxy server to use
+
+#### Parameter properties
+
+| Type: | System.Uri |
+| --- | --- |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ (All)
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -ProxyCredential
+
+Credentials for a proxy server to use for the remote call
+
+#### Parameter properties
+
+| Type: | System.Management.Automation.PSCredential |
+| --- | --- |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ (All)
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -ProxyUseDefaultCredentials
+
+Use the default credentials for the proxy
+
+#### Parameter properties
+
+| Type: | System.Management.Automation.SwitchParameter |
+| --- | --- |
+| Default value: | False |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ (All)
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -Query
+
+#### Parameter properties
+
+| Type: | System.String |
+| --- | --- |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ RunExpanded
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -ResponseHeadersVariable
+
+Optional Response Headers Variable.
+
+#### Parameter properties
+
+| Type: | System.String |
+| --- | --- |
+| Supports wildcards: | False |
+| DontShow: | False |
+| Aliases: | RHV |
+
+#### Parameter sets
+
+ (All)
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -Timespan
+
+#### Parameter properties
+
+| Type: | System.String |
+| --- | --- |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ RunExpanded
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -WhatIf
+
+Runs the command in a mode that only reports what would happen without performing the actions.
+
+#### Parameter properties
+
+| Type: | System.Management.Automation.SwitchParameter |
+| --- | --- |
+| Supports wildcards: | False |
+| DontShow: | False |
+| Aliases: | wi |
+
+#### Parameter sets
+
+ (All)
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### CommonParameters
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable, -ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see about_CommonParameters.
+
+## Inputs
+
+### Microsoft.Graph.PowerShell.Models.IPathsU5PqctSecurityMicrosoftGraphSecurityRunhuntingqueryPostRequestbodyContentApplicationJsonSchema
+
+{{ Fill in the Description }}
+
+### System.Collections.IDictionary
+
+{{ Fill in the Description }}
+
+## Outputs
+
+### Microsoft.Graph.PowerShell.Models.IMicrosoftGraphSecurityHuntingQueryResults
+
+{{ Fill in the Description }}
+
+## Notes
+
+COMPLEX PARAMETER PROPERTIES
+
+To create the parameters described below, construct a hash table containing the appropriate properties. For information on hash tables, run Get-Help about\_Hash\_Tables.
+
+BODYPARAMETER `<IPathsU5PqctSecurityMicrosoftGraphSecurityRunhuntingqueryPostRequestbodyContentApplicationJsonSchema>`: . [(Any) &lt;Object&gt;]: This indicates any property can be added to this object. [Query &lt;String&gt;]: [Timespan &lt;String&gt;]:
+
+## Related Links
+
+- Start-MgSecurityHuntingQuery

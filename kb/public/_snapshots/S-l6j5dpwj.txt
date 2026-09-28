@@ -1,0 +1,654 @@
+source: S-l6j5dpwj
+url: https://github.com/microsoft/Microsoft365DSC/releases
+title: Microsoft365DSC GitHub releases
+publisher: GitHub (microsoft/Microsoft365DSC)
+licence: MIT
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+Microsoft365DSC
+/
+Microsoft365DSC
+Public
+Notifications
+You must be signed in to change notification settings
+Fork
+679
+Star
+2.4k
+# Releases: Microsoft365DSC/Microsoft365DSC
+Releases · Microsoft365DSC/Microsoft365DSC
+## Release list
+Previous Next
+Release 1.26.909.1
+Release 1.26.902.1
+Release 1.26.819.1
+Release 1.26.812.1
+Release 1.26.805.1
+Release 1.26.729.2
+Release 1.26.729.1
+Release 1.26.722.1
+Release 1.26.715.1
+Release 1.26.708.1
+Previous Next
+## Release 1.26.909.1
+Release 1.26.909.1
+Latest
+Latest
+#
+Choose a tag to compare
+## Sorry, something went wrong.
+Filter
+Loading
+## Sorry, something went wrong.
+### Uh oh!
+There was an error while loading. Please reload this page.
+## No results found
+View all tags
+FabienTschanz
+released this
+11 Sep 00:11
+1.26.909.1
+294f4fd
+This commit was created on GitHub.com and signed with GitHub’s verified signature.
+GPG key ID: B5690EEEBB952194
+Verified
+Learn about vigilant mode.
+MISC
+Refreshed Microsoft Graph shim module.
+Assets
+2
+Loading
+### Uh oh!
+There was an error while loading. Please reload this page.
+## Release 1.26.902.1
+Release 1.26.902.1
+#
+Choose a tag to compare
+## Sorry, something went wrong.
+Filter
+Loading
+## Sorry, something went wrong.
+### Uh oh!
+There was an error while loading. Please reload this page.
+## No results found
+View all tags
+FabienTschanz
+released this
+03 Sep 16:56
+1.26.902.1
+82ba676
+This commit was created on GitHub.com and signed with GitHub’s verified signature.
+GPG key ID: B5690EEEBB952194
+Verified
+Learn about vigilant mode.
+AADApplicationFederatedIdentityCredential
+Fixed an issue where an incorrect count check resulted in a single object
+being detected as multiple objects.
+IntuneDeviceConfigurationPlatformScriptMacOS
+Fixed an issue where the scriptContent property was incorrectly converted
+to a binary array during Set.
+IntuneDeviceConfigurationPlatformScriptWindows10
+Fixed an issue where the scriptContent property was incorrectly converted
+to a binary array during Set.
+FIXES #7431
+IntuneDeviceRemediation
+Fixed an issue where the DetectionScriptContent and RemediationScriptContent
+properties were incorrectly converted to a binary array during Set.
+SCDLPComplianceRule
+Updated the GenerateAlert property to always export as an array without
+being omitted from the export.
+FIXES #7434
+M365DSCGraphShim
+Changed how an object is returned from Graph if both value and
+presentation properties are present. This fixes an issue with the resource
+IntuneDeviceConfigurationAdministrativeTemplatePolicyWindows10.
+MISC
+Fixed an issue when building the Windows docker image.
+Assets
+2
+Loading
+### Uh oh!
+There was an error while loading. Please reload this page.
+## Release 1.26.819.1
+Release 1.26.819.1
+#
+Choose a tag to compare
+## Sorry, something went wrong.
+Filter
+Loading
+## Sorry, something went wrong.
+### Uh oh!
+There was an error while loading. Please reload this page.
+## No results found
+View all tags
+FabienTschanz
+released this
+20 Aug 20:46
+1.26.819.1
+aa19368
+This commit was created on GitHub.com and signed with GitHub’s verified signature.
+GPG key ID: B5690EEEBB952194
+Verified
+Learn about vigilant mode.
+AADAuthenticationMethodPolicy
+Added additional support for Passkeys (FIDO2) as the target of a registrationcampaign.
+TargetedAuthenticationMethod can now contain microsoftAuthenticator or fido2.
+AADCertificateBasedApplicationConfiguration
+Fixed an issue where the target address for the POST request was incorrect.
+FIXES #7405
+AADConditionalAccessPolicy
+Added missing -All switch when fetching policies with a filter.
+FIXES #7350
+AADUser
+Add support for CustomSecurityAttributes
+FIXES #7399
+EXOIntraOrganizationConnector
+Fixed an issue where TargetSharingEpr could fail with a null-reference exception.
+FIXES #7413
+EXOOrganizationConfig
+Added support for EwsAllowedAppIDs when EwsEnabled is set to true.
+EXOOwaMailboxPolicy
+Added new properties AllowedOrganizationAccountDomains, AttachmentsOfflineEnabledWin,
+BizBarEnabled, BookingsMailboxDomain, DefaultClientLanguage, EmptyStateEnabled,
+HideClassicOutlookToggleOut, LinkedInEnabled, MonthlyUpdatesEnabled,
+OfflineEnabledWeb, OfflineEnabledWin, OneDriveAttachmentsEnabled, OutlookDataFile,
+OutlookNewslettersAccessLevel, OutlookNewslettersReactions, OutlookNewslettersShowMore,
+PersonalBookingsDisabled, SMimeSuppressNameChecksEnabled, SpellCheckerEnabled, TasksEnabled.
+M365DSCReverse
+Fixed an issue where exporting the Intune workload against a tenant with no
+matching Settings Catalog configuration policies aborted the entire export.
+FIXES #7396
+Fixed an issue where using multiple Filters passed through empty filters to
+other exported resources.
+SCDLPComplianceRule
+Fixed an issue where testing a missing rule with an advanced rule containing
+ML model classifiers could fail before reporting drift.
+FIXES #7403
+MISC
+Updated import warning that PowerShell 7.6 is going to be required starting October 2026.
+Assets
+2
+Loading
+### Uh oh!
+There was an error while loading. Please reload this page.
+## Release 1.26.812.1
+Release 1.26.812.1
+#
+Choose a tag to compare
+## Sorry, something went wrong.
+Filter
+Loading
+## Sorry, something went wrong.
+### Uh oh!
+There was an error while loading. Please reload this page.
+## No results found
+View all tags
+FabienTschanz
+released this
+13 Aug 05:10
+1.26.812.1
+64da15c
+This commit was created on GitHub.com and signed with GitHub’s verified signature.
+GPG key ID: B5690EEEBB952194
+Verified
+Learn about vigilant mode.
+M365DSCTenantInfo
+Added support for Bleu and Delos sovereign cloud.
+DEPENDENCIES
+Updated DSCParser to version 3.1.0.2.
+Updated MSCloudLoginAssistant to version 1.2.2.
+Updated ReverseDSC to version 2.0.0.35.
+Assets
+2
+Loading
+### Uh oh!
+There was an error while loading. Please reload this page.
+## Release 1.26.805.1
+Release 1.26.805.1
+#
+Choose a tag to compare
+## Sorry, something went wrong.
+Filter
+Loading
+## Sorry, something went wrong.
+### Uh oh!
+There was an error while loading. Please reload this page.
+## No results found
+View all tags
+NikCharlebois
+released this
+07 Aug 14:37
+1.26.805.1
+3c8acda
+This commit was created on GitHub.com and signed with GitHub’s verified signature.
+GPG key ID: B5690EEEBB952194
+Verified
+Learn about vigilant mode.
+AADApplicationFederatedIdentityCredential
+Initial release.
+AADEntitlementManagementAccessPackage
+Fixed an issue where a resource role scope whose AccessPackageResourceOriginId
+is specified as the object GUID was removed and re-added on every Set,
+eventually leaving the access package with no resource roles. The desired
+OriginId is now resolved to the same value that Get-TargetResource returns
+before comparison.
+FIXES #7386
+AADApplicationFederatedIdentityCredential
+Added resource to manage federated identity credentials for Azure AD applications.
+IntuneCloudProvisioningPolicyWindows365
+Added missing geographic location australiaNewZealand
+IntuneDeviceFeaturesConfigurationPolicyIOS
+Demoted property bookmarkFolder from Required to Write.
+M365DSCConnection
+Fixed an issue with client secret authentication.
+M365DSCReverse
+Fixed an issue where filtering was not applied correctly.
+Assets
+2
+Loading
+### Uh oh!
+There was an error while loading. Please reload this page.
+## Release 1.26.729.2
+Release 1.26.729.2
+#
+Choose a tag to compare
+## Sorry, something went wrong.
+Filter
+Loading
+## Sorry, something went wrong.
+### Uh oh!
+There was an error while loading. Please reload this page.
+## No results found
+View all tags
+FabienTschanz
+released this
+30 Jul 17:24
+1.26.729.2
+6965ebc
+This commit was created on GitHub.com and signed with GitHub’s verified signature.
+GPG key ID: B5690EEEBB952194
+Verified
+Learn about vigilant mode.
+M365DSCConnection
+Fixed issue connecting to a workload using New-M365DSCConnection
+Assets
+2
+Loading
+### Uh oh!
+There was an error while loading. Please reload this page.
+## Release 1.26.729.1
+Release 1.26.729.1
+#
+Choose a tag to compare
+## Sorry, something went wrong.
+Filter
+Loading
+## Sorry, something went wrong.
+### Uh oh!
+There was an error while loading. Please reload this page.
+## No results found
+View all tags
+FabienTschanz
+released this
+30 Jul 11:37
+1.26.729.1
+11716e0
+This commit was created on GitHub.com and signed with GitHub’s verified signature.
+GPG key ID: B5690EEEBB952194
+Verified
+Learn about vigilant mode.
+AADApplication
+Added new properties DefaultRedirectUri, Info, Logo and
+ServiceManagementReference.
+FIXES #4321
+AADConditionalAccessPolicy
+Added requirement to specify ExcludeExternalTenantsMembershipKind if
+ExcludeExternalTenantsMembers is specified during apply.
+Assigned the value All as default for ExcludeExternalTenantsMembershipKind
+during apply.
+FIXES #6163
+AADEntitlementManagementAccessPackageAssignmentPolicy
+Fixed an issue where lookup by DisplayName returned all results.
+FIXES #7374
+AADEntitlementManagementAccessPackageCatalogResource
+Fixed an issue where a non-existing Service Principal or Group would
+throw an error during the export instead of continuing.
+EXOManagementRole
+Added retry and logging when Get-ManagementRole returns no results.
+IntuneAppConfigurationPolicy
+Added information about no support for Settings catalog policy entries due to
+delegated authentication requirements.
+FIXES #5672
+IntuneDeviceManagementDeviceDiagnosticSettings
+Initial release.
+FIXES #4154
+IntuneWindowsDataProcessingSettings
+Initial release.
+FIXES #4154
+M365DSCConnection
+Fixed an issue where ApplicationSecret was not converted to a secure string.
+SentinelAlertRule
+Added SubscriptionId parameter to Export-TargetResource.
+Fixed an issue where non-Sentinel Log Analytics Workspaces were exported.
+SentinelSetting
+Added SubscriptionId parameter to Export-TargetResource.
+Fixed an issue where non-Sentinel Log Analytics Workspaces were exported.
+SentinelThreatIntelligenceIndicator
+Added SubscriptionId parameter to Export-TargetResource.
+Fixed an issue where non-Sentinel Log Analytics Workspaces were exported.
+SentinelWatchlist
+Added SubscriptionId parameter to Export-TargetResource.
+Fixed an issue where non-Sentinel Log Analytics Workspaces were exported.
+M365DSCDocGenerator
+Fixed an issue where not all permissions were shown on the resource docs page.
+M365DSCExportUtil
+Removed validation from SubscriptionId parameter.
+M365DSCReverse
+Updated SubscriptionId handling to pass to all export functions that define it.
+M365DSCUtil
+Added the function Update-M365DSCAuthenticationConfiguration to update a
+configuration to use a different authentication mode and save it to a new file.
+FIXES #3205
+MISC
+Updated documentation for the Update-M365DSCAzureAdApplication function.
+FIXES #5399
+Updated required permissions and documentation for Azure resources.
+FIXES #6960
+Added support to run Docker release images with older Microsoft365DSC versions
+DEPENDENCIES
+Updated MSCloudLoginAssistant to version 1.1.72.
+FIXES #7371
+Assets
+2
+Loading
+### Uh oh!
+There was an error while loading. Please reload this page.
+## Release 1.26.722.1
+Release 1.26.722.1
+#
+Choose a tag to compare
+## Sorry, something went wrong.
+Filter
+Loading
+## Sorry, something went wrong.
+### Uh oh!
+There was an error while loading. Please reload this page.
+## No results found
+View all tags
+FabienTschanz
+released this
+22 Jul 22:45
+1.26.722.1
+ec1dbc4
+This commit was created on GitHub.com and signed with GitHub’s verified signature.
+GPG key ID: B5690EEEBB952194
+Verified
+Learn about vigilant mode.
+O365OrgCustomizationSetting
+Removed unused backtick in hashtable.
+O365OrgSettings
+Added missing workload connections.
+O365SearchAndIntelligenceConfigurations
+Added missing workload connection.
+M365DSCExportUtil
+Added auto completion for -Components in Export-M365DSCConfiguration.
+Since M365DSCStringReplacementMap is now being sent in parallel exports
+as global variable we need to set it as script scope based to be able to
+inspect it.
+M365DSCReverse
+Fixed an issue where parallel exports for EXO, O365 and SC could fail
+if combined with resources that use Microsoft Graph.
+Fixed an issue where parallel exports were not being sent with the variable
+M365DSCStringReplacementMap and therefore mappings were not working and
+creating drifts.
+Reduced the number of calls to Get-M365DSCAllResources if -Components
+was specified.
+Reduced the number of calls to Get-M365DSCAllResources by caching its
+results.
+M365DSCUtil
+Added new helper function Get-M365DSCAllResourcesPath
+DEPENDENCIES
+Updated MSCloudLoginAssistant to version 1.1.71.
+MISC
+Reduced time to export Intune policies by up to 50%.
+Updated function help descriptions and added / removed parameters.
+Assets
+2
+Loading
+### Uh oh!
+There was an error while loading. Please reload this page.
+## Release 1.26.715.1
+Release 1.26.715.1
+#
+Choose a tag to compare
+## Sorry, something went wrong.
+Filter
+Loading
+## Sorry, something went wrong.
+### Uh oh!
+There was an error while loading. Please reload this page.
+## No results found
+View all tags
+FabienTschanz
+released this
+15 Jul 21:27
+1.26.715.1
+8c0f234
+This commit was created on GitHub.com and signed with GitHub’s verified signature.
+GPG key ID: B5690EEEBB952194
+Verified
+Learn about vigilant mode.
+AADConditionalAccessPolicy
+Updated the code to return a GUID for IncludeApplications and
+ExcludeApplications if the input already contains that GUID.
+FIXES #7118
+AADIdentityGovernanceProgram
+Deprecated resource. It is superseded by the access review resources.
+AADServicePrincipal
+Fixed an issue where attempting to resolve 3rd-party SPNs would fail.
+Fixed several issues when creating or updating an SPN.
+AADUser
+Deprecate property PasswordNeverExpires
+FIXES #7339
+Fixed issue with how BusinessPhones property was being sent when trying to
+set that value
+AzureBillingAccountPolicy
+Added SubscriptionId parameter to specify the Azure subscription
+that is used to connect to.
+AzureBillingAccountsAssociatedTenant
+Added SubscriptionId parameter to specify the Azure subscription
+that is used to connect to.
+AzureBillingAccountScheduledAction
+Added SubscriptionId parameter to specify the Azure subscription
+that is used to connect to.
+AzureBillingAccountsRoleAssignment
+Added SubscriptionId parameter to specify the Azure subscription
+that is used to connect to.
+AzureDiagnosticSettings
+Added SubscriptionId parameter to specify the Azure subscription
+that is used to connect to.
+AzureDiagnosticSettingsCustomSecurityAttribute
+Added SubscriptionId parameter to specify the Azure subscription
+that is used to connect to.
+AzureRoleAssignmentScheduleRequest
+Added SubscriptionId parameter to specify the Azure subscription
+that is used to connect to.
+AzureRoleAssignmentScheduleRequest
+Added SubscriptionId parameter to specify the Azure subscription
+that is used to connect to.
+AzureRoleDefinition
+Added SubscriptionId parameter to specify the Azure subscription
+that is used to connect to.
+FIXES #7321
+AzureRoleEligibilityScheduleRequest
+Added SubscriptionId parameter to specify the Azure subscription
+that is used to connect to.
+AzureRoleEligibilityScheduleSettings
+Added SubscriptionId parameter to specify the Azure subscription
+that is used to connect to.
+EXOAvailabilityAddressSpace
+Fixed an issue where the Credentials property had the correct
+parameter type in its definition.
+EXODistributionGroup
+Deprecate property Notes
+EXOIRMConfiguration
+Deprecate property EnablePortalTrackingLogs
+EXOManagementRoleEntry
+Deprecate property Type
+EXOMigration
+Fixed unit-tests so datetimes are parsed in US-format
+EXOPlace
+Deprecate property Desks
+IntuneDeviceEnrollmentScopeConfigurationMam
+Fixed issue where function Get-CompareParameters was not being exported
+IntuneDeviceEnrollmentScopeConfigurationMdm
+Fixed issue where function Get-CompareParameters was not being exported
+IntuneWifiConfigurationPolicyIOS
+Added wpa3Personal to the WifiSecurityType property.
+SettingsCatalogHelper
+Fixed an issue where complex administrative template names
+were not handled correctly.
+Teams
+Updated resource settings to use the Teams Reader role and remove Graph
+permissions from resources that do not require Microsoft Graph modules.
+TeamsCallQueue
+Added new properties AutoRecordingTemplateId, CallbackEmailNotificationTarget,
+CallbackOfferAudioFilePromptResourceId, CallbackOfferTextToSpeechPrompt,
+CallbackRequestDtmf, CallToAgentRatioThresholdBeforeOfferingCallback,
+ComplianceRecordingForCallQueueTemplateId, CustomAudioFileAnnouncementForCR,
+CustomAudioFileAnnouncementForCRFailure, EnableNoAgentSharedVoicemailSystemPromptSuppression,
+EnableNoAgentSharedVoicemailTranscription, EnableOverflowSharedVoicemailSystemPromptSuppression,
+EnableTimeoutSharedVoicemailSystemPromptSuppression, IsCallbackEnabled, NoAgentAction,
+NoAgentActionCallPriority, NoAgentActionTarget, NoAgentApplyTo,
+NoAgentDisconnectAudioFilePrompt, NoAgentDisconnectTextToSpeechPrompt,
+NoAgentRedirectPersonAudioFilePrompt, NoAgentRedirectPersonTextToSpeechPrompt,
+NoAgentRedirectPhoneNumberAudioFilePrompt, NoAgentRedirectPhoneNumberTextToSpeechPrompt,
+NoAgentRedirectVoiceAppAudioFilePrompt, NoAgentRedirectVoiceAppTextToSpeechPrompt,
+NoAgentRedirectVoicemailAudioFilePrompt, NoAgentRedirectVoicemailTextToSpeechPrompt,
+NoAgentSharedVoicemailAudioFilePrompt, NoAgentSharedVoicemailTextToSpeechPrompt,
+NumberOfCallsInQueueBeforeOfferingCallback, OverflowActionCallPriority,
+ServiceLevelThresholdResponseTimeInSecond, SharedCallQueueHistoryTemplateId,
+ShiftsSchedulingGroupId, ShiftsTeamId,
+ShouldOverwriteCallableChannelProperty, TimeoutActionCallPriority,
+WaitTimeBeforeOfferingCallbackInSecond, WelcomeTextToSpeechPrompt
+TeamsGuestMessagingConfiguration
+Deprecated property UsersCanDeleteBotMessages
+TeamsOnlineVoicemailUserSettings
+Deprecated property OofGreetingFollowCalendarEnabled
+TeamsTenantNetworkSite
+Deprecated property SiteAddress
+M365DSCCheckProperties
+Fixed an issue with function Get-PropertyReport where it wasn't working
+because the Teams module was being loaded last and causing conflicts
+Added authentication methods ApplicationSecret, AccesstTokens and
+ManagedIdentity as internal M365DSC properties that should to be ignored
+M365DSCDllLoader
+Fixed an issue when trying to load assemblies that were already loaded.
+M365DSCDocGenerator
+Moved function Get-TemporaryPath to M365DSCUtil and use $env:TEMP
+directly instead of the function's output
+M365DSCErrorHandler
+Fixed an issue when writing in parallel to the same export file.
+M365DSCExportUtil
+Fixed a formatting issue with CertificatePassword during export.
+Removed usage of function Resolve-Credentials and instead just use the
+appropriate hardcoded strings
+M365DSCModuleMgmt
+Fixed invalid arg used in Confirm-M365DSCLoadedModule when run in Windows Powershell 5.1
+M365DSCReverse
+Fixed an issue with Credential and CertificatePassword parameters.
+Fixed an issue generating the blueprint if using Azure Automation with
+Credential parameter.
+Fixed an issue when exporting resources in parallel.
+Removed usage of function Save-Credentials since it's not required any
+longer.
+M365DSCUtil
+Added function Get-TemporaryPath taken from M365DSCDocGenerator and use
+its output to assign $env:TEMP variable
+Enabled parallel export on Assert-M365DSCBlueprint
+DEPENDENCIES
+Updated MSCloudLoginAssistant to version 1.1.69.
+MISC
+Added Docker image publishing for Windows and Linux platforms.
+Updated workflow triggers for GitHub Actions.
+Stopped pinning Pester dependency to 5.7.1 on Docker images since all
+tests were made compatible in previous release with version 6.x
+Added License Requirements section to README.md documenting Microsoft
+365 E5 / Defender for Office 365 Plan 2 licensing requirements for EXO
+Defender resources.
+Assets
+2
+Loading
+### Uh oh!
+There was an error while loading. Please reload this page.
+## Release 1.26.708.1
+Release 1.26.708.1
+#
+Choose a tag to compare
+## Sorry, something went wrong.
+Filter
+Loading
+## Sorry, something went wrong.
+### Uh oh!
+There was an error while loading. Please reload this page.
+## No results found
+View all tags
+FabienTschanz
+released this
+08 Jul 22:31
+1.26.708.1
+f8946b4
+This commit was created on GitHub.com and signed with GitHub’s verified signature.
+GPG key ID: B5690EEEBB952194
+Verified
+Learn about vigilant mode.
+AADAdministrativeUnit
+Added test for duplicated DisplayName across AUs
+Fixed an issue that made unit tests under Windows PowerShell fail.
+AADCustomSecurityAttributeDefinition
+Fixed an issue where missing allowed values were not added to existing
+custom security attribute definitions.
+FIXES #7305
+AADEntitlementManagementAccessPackageCatalog
+Fixed an issue that made unit tests under Windows PowerShell fail.
+AADGroup
+Fixed an issue where GroupTypes would be returned as a null object.
+FIXES #7253
+AADTenantAppManagementPolicy
+Fixed an issue where the RestrictForAppsCreatedAfterDateTime timestamp
+was incorrectly converted to a DateTime object.
+FIXES #7291
+AzureBillingAccountScheduledAction
+Fixed an issue that made unit tests under Windows PowerShell fail.
+IntuneDeviceCompliancePolicyMacOS
+Fixed an issue where ScheduledActionsForRule was not compared correctly.
+M365DSCExportUtil
+Updated the export to use the Microsoft365DSC module path as base for the
+resource import.
+M365DSCReport
+Removed check for PowerShell remoting.
+M365DSCTelemetryEngine
+Removed the output when connecting to Microsoft Graph for telemetry.
+FIXES #7302
+M365DSCUtil
+Added ApplicationSecret, ManagedIdentity AccessTokens to the
+Assert-M365DSCBlueprint function.
+Fixed an issue with the foreground color when run under Linux.
+Fixed an issue where $env:TEMP was not defined when run under Linux.
+MISC
+Added Dockerfile and an ancillary script which is used to install
+Microsoft365DSC module and its dependencies on that Windows docker image.
+Fixed an issue where assignments through a policy set were exported for
+resources that were not of the IntunePolicySets type.
+Fixed unit tests so that they all pass under both Windows PowerShell and
+PowerShell 7.
+Updated all unit tests for Pester v6.0.0.
+Updated the drift event to mask authentication parameters in the message.
+Assets
+2
+Loading
+### Uh oh!
+There was an error while loading. Please reload this page.
+Previous 1 2 3 4 5 … 24 25 Next
+Previous Next

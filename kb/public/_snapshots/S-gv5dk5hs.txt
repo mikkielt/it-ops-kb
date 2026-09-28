@@ -1,0 +1,33 @@
+source: S-gv5dk5hs
+url: https://learn.microsoft.com/en-us/troubleshoot/mem/configmgr/discovery/lastlogontimestamp-not-accurate
+title: The lastLogonTimestamp attribute in Configuration Manager may not be accurate (KB 2679653)
+publisher: Microsoft Learn
+licence: CC BY 4.0 (public mirror MicrosoftDocs/SupportArticles-docs)
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+# lastLogonTimestamp is not accurate - Configuration Manager | Microsoft Learn
+
+This article describes a by design behavior that the `lastLogonTimestamp` attribute may not be updated as expected in Configuration Manager.
+
+*Original product version:* Microsoft System Center 2012 Configuration Manager*Original KB number:* 2679653
+
+## Symptoms
+
+Consider the following scenario in System Center 2012 Configuration Manager:
+
+- Active Directory User Discovery is enabled in Configuration Manager.
+- You use the `lastLogonTimestamp` attribute to determine the last logon for a user.
+
+In this scenario, the exact time at which a particular user last logged on may not be accurate.
+
+## Cause
+
+This behavior occurs because the design and default configuration of Active Directory may result in the value of the `lastLogonTimestamp` attribute being updated only when the current value in Active Directory is 9 to 14 days older than the time of logon.
+
+## References
+
+For more information about the `lastLogonTimestamp` attribute, see the following articles:
+
+- Last-Logon-Timestamp attribute
+- "The LastLogonTimeStamp Attribute" - "What it was designed for and how it works"

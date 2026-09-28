@@ -1,0 +1,798 @@
+source: S1823
+url: https://github.com/DavidAnson/markdownlint
+title: DavidAnson/markdownlint
+publisher: David Anson (GitHub)
+licence: MIT
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+DavidAnson
+/
+markdownlint
+Public
+### Uh oh!
+There was an error while loading. Please reload this page.
+Notifications
+You must be signed in to change notification settings
+Fork
+945
+Star
+6.4k
+BranchesTags
+Open more actions menu
+## Latest commit
+## History
+2,570 Commits
+2,570 Commits
+## Folders and files
+NameName
+Last commit message
+Last commit date
+.github
+.github
+declaration
+declaration
+demo
+demo
+doc-build
+doc-build
+doc
+doc
+example
+example
+helpers
+helpers
+lib
+lib
+schema
+schema
+scripts
+scripts
+style
+style
+test
+test
+.gitignore
+.gitignore
+.markdownlint.json
+.markdownlint.json
+.npmignore
+.npmignore
+.npmrc
+.npmrc
+CHANGELOG.md
+CHANGELOG.md
+CONTRIBUTING.md
+CONTRIBUTING.md
+LICENSE
+LICENSE
+README.md
+README.md
+eslint.config.mjs
+eslint.config.mjs
+package.json
+package.json
+## Repository files navigation
+# markdownlint
+A Node.js style checker and lint tool for Markdown/CommonMark files.
+## Install
+npm install markdownlint --save-dev
+## Overview
+The Markdown markup language is designed to be easy to read, write,
+and understand. It succeeds - and its flexibility is both a benefit and a
+drawback. Many styles are possible, so formatting can be inconsistent; some
+constructs don't work well in all parsers and should be avoided.
+markdownlint is a static analysis tool for
+Node.js with a library of rules to enforce standards and consistency
+for Markdown files. It was inspired by - and heavily influenced by - Mark
+Harrison's markdownlint for Ruby. The initial rules, rule
+documentation, and test cases came from that project.
+markdownlint uses the micromark parser and honors the
+CommonMark specification for Markdown. It additionally supports
+popular GitHub Flavored Markdown (GFM) syntax like autolinks and tables
+as well as directives, footnotes, and math syntax - all implemented by
+micromark extensions. (Note that inline directives are
+not supported to avoid confusion due to over-matching.)
+### Related
+CLI
+markdownlint-cli command-line interface for Node.js
+(works with pre-commit)
+markdownlint-cli2 command-line interface for Node.js
+(works with pre-commit)
+GitHub
+GitHub Action for markdownlint-cli2
+GitHub Super-Linter Action
+GitHub Actions problem matcher for
+markdownlint-cli
+Editor
+vscode-markdownlint extension for VS Code
+Sublime Text markdownlint for Sublime Text
+coc-markdownlint extension for Vim/Neovim
+flymake-markdownlint-cli2 extension for Emacs
+Tooling
+eslint-plugin-markdownlint for the ESLint analyzer
+grunt-markdownlint for the Grunt task runner
+Cake.Markdownlint addin for Cake build automation system
+Lombiq Node.js Extensions for MSBuild (.NET builds)
+Ruby
+markdownlint/mdl gem for Ruby
+### References
+The following specifications are considered authoritative in cases of ambiguity:
+CommonMark
+GitHub Flavored Markdown Spec
+## Demonstration
+markdownlint demo, an interactive, in-browser
+playground for learning and exploring.
+## Rules / Aliases
+MD001 heading-increment - Heading levels should only increment by one level at a time
+MD003 heading-style - Heading style
+MD004 ul-style - Unordered list style
+MD005 list-indent - Inconsistent indentation for list items at the same level
+MD007 ul-indent - Unordered list indentation
+MD009 no-trailing-spaces - Trailing spaces
+MD010 no-hard-tabs - Hard tabs
+MD011 no-reversed-links - Reversed link syntax
+MD012 no-multiple-blanks - Multiple consecutive blank lines
+MD013 line-length - Line length
+MD014 commands-show-output - Dollar signs used before commands without showing output
+MD018 no-missing-space-atx - No space after hash on atx style heading
+MD019 no-multiple-space-atx - Multiple spaces after hash on atx style heading
+MD020 no-missing-space-closed-atx - No space inside hashes on closed atx style heading
+MD021 no-multiple-space-closed-atx - Multiple spaces inside hashes on closed atx style heading
+MD022 blanks-around-headings - Headings should be surrounded by blank lines
+MD023 heading-start-left - Headings must start at the beginning of the line
+MD024 no-duplicate-heading - Multiple headings with the same content
+MD025 single-title/single-h1 - Multiple top-level headings in the same document
+MD026 no-trailing-punctuation - Trailing punctuation in heading
+MD027 no-multiple-space-blockquote - Multiple spaces after blockquote symbol
+MD028 no-blanks-blockquote - Blank line inside blockquote
+MD029 ol-prefix - Ordered list item prefix
+MD030 list-marker-space - Spaces after list markers
+MD031 blanks-around-fences - Fenced code blocks should be surrounded by blank lines
+MD032 blanks-around-lists - Lists should be surrounded by blank lines
+MD033 no-inline-html - Inline HTML
+MD034 no-bare-urls - Bare URL used
+MD035 hr-style - Horizontal rule style
+MD036 no-emphasis-as-heading - Emphasis used instead of a heading
+MD037 no-space-in-emphasis - Spaces inside emphasis markers
+MD038 no-space-in-code - Spaces inside code span elements
+MD039 no-space-in-links - Spaces inside link text
+MD040 fenced-code-language - Fenced code blocks should have a language specified
+MD041 first-line-heading/first-line-h1 - First line in a file should be a top-level heading
+MD042 no-empty-links - No empty links
+MD043 required-headings - Required heading structure
+MD044 proper-names - Proper names should have the correct capitalization
+MD045 no-alt-text - Images should have alternate text (alt text)
+MD046 code-block-style - Code block style
+MD047 single-trailing-newline - Files should end with a single newline character
+MD048 code-fence-style - Code fence style
+MD049 emphasis-style - Emphasis style
+MD050 strong-style - Strong style
+MD051 link-fragments - Link fragments should be valid
+MD052 reference-links-images - Reference links and images should use a label that is defined
+MD053 link-image-reference-definitions - Link and image reference definitions should be needed
+MD054 link-image-style - Link and image style
+MD055 table-pipe-style - Table pipe style
+MD056 table-column-count - Table column count
+MD058 blanks-around-tables - Tables should be surrounded by blank lines
+MD059 descriptive-link-text - Link text should be descriptive
+MD060 table-column-style - Table column style
+See Rules.md for more details.
+### Custom Rules
+In addition to built-in rules, custom rules can be used to address
+project-specific requirements. To find community-developed rules use
+keyword markdownlint-rule on npm.
+To implement your own rules, refer to CustomRules.md.
+## Tags
+Tags group related rules and can be used to enable/disable multiple
+rules at once.
+accessibility - MD045, MD059
+atx - MD018, MD019
+atx_closed - MD020, MD021
+blank_lines - MD012, MD022, MD031, MD032, MD047
+blockquote - MD027, MD028
+bullet - MD004, MD005, MD007, MD032
+code - MD014, MD031, MD038, MD040, MD046, MD048
+emphasis - MD036, MD037, MD049, MD050
+hard_tab - MD010
+headings - MD001, MD003, MD018, MD019, MD020, MD021,
+MD022, MD023, MD024, MD025, MD026, MD036, MD041, MD043
+hr - MD035
+html - MD033
+images - MD045, MD052, MD053, MD054
+indentation - MD005, MD007, MD027
+language - MD040
+line_length - MD013
+links - MD011, MD034, MD039, MD042, MD051, MD052, MD053,
+MD054, MD059
+ol - MD029, MD030, MD032
+spaces - MD018, MD019, MD020, MD021, MD023
+spelling - MD044
+table - MD055, MD056, MD058, MD060
+ul - MD004, MD005, MD007, MD030, MD032
+url - MD034
+whitespace - MD009, MD010, MD012, MD027, MD028, MD030,
+MD037, MD038, MD039
+## Configuration
+Text passed to markdownlint is parsed as Markdown, analyzed, and any
+issues reported. Two kinds of text are ignored by most rules:
+HTML comments
+Front matter (see
+options.frontMatter below)
+All rules are enabled by default. Rules can be enabled, disabled, and configured
+for each call to the lint API by passing an options.config object (described
+below). To enable or disable rules within a file, use one of the following HTML
+comments (which are not rendered):
+Disable all rules: <!-- markdownlint-disable -->
+Enable all rules: <!-- markdownlint-enable -->
+Disable all rules for the current line: <!-- markdownlint-disable-line -->
+Disable all rules for the next line: <!-- markdownlint-disable-next-line -->
+Disable one or more rules by name: <!-- markdownlint-disable MD001 MD005 -->
+Enable one or more rules by name: <!-- markdownlint-enable MD001 MD005 -->
+Disable one or more rules by name for the current line:
+<!-- markdownlint-disable-line MD001 MD005 -->
+Disable one or more rules by name for the next line:
+<!-- markdownlint-disable-next-line MD001 MD005 -->
+Capture the current rule configuration: <!-- markdownlint-capture -->
+Restore the captured rule configuration: <!-- markdownlint-restore -->
+For example:
+<!-- markdownlint-disable-next-line no-space-in-emphasis -->
+space * in * emphasis
+Or:
+space * in * emphasis <!-- markdownlint-disable-line no-space-in-emphasis -->
+Or:
+<!-- markdownlint-disable no-space-in-emphasis -->
+space * in * emphasis
+<!-- markdownlint-enable no-space-in-emphasis -->
+To temporarily disable rule(s), then restore the former configuration:
+<!-- markdownlint-capture -->
+<!-- markdownlint-disable -->
+any violations you want
+<!-- markdownlint-restore -->
+The initial configuration is captured by default (as if every document
+began with <!-- markdownlint-capture -->), so the pattern above can
+be expressed more simply:
+<!-- markdownlint-disable -->
+any violations you want
+<!-- markdownlint-restore -->
+Changes take effect starting with the line a comment is on, so the following
+has no effect:
+space * in * emphasis <!-- markdownlint-disable --> <!-- markdownlint-enable -->
+To apply changes to an entire file regardless of where the comment is located,
+the following syntax is supported:
+Disable all rules: <!-- markdownlint-disable-file -->
+Enable all rules: <!-- markdownlint-enable-file -->
+Disable one or more rules by name: <!-- markdownlint-disable-file MD001 -->
+Enable one or more rules by name: <!-- markdownlint-enable-file MD001 -->
+This can be used to "hide" markdownlint comments at the bottom of a file.
+In cases where it is desirable to change the configuration of one or
+more rules for a file, the following more advanced syntax is supported:
+Configure: <!-- markdownlint-configure-file { options.config JSON } -->
+For example:
+<!-- markdownlint-configure-file { "hr-style": { "style": "---" } } -->
+or
+<!-- markdownlint-configure-file
+{
+"hr-style": {
+"style": "---"
+},
+"no-trailing-spaces": false
+}
+-->
+These changes apply to the entire file regardless of where the comment is
+located. Multiple such comments (if present) are applied top-to-bottom. By
+default, content of markdownlint-configure-file is assumed to be JSON, but
+options.configParsers can be used to support
+alternate formats.
+## API
+### Linting
+Asynchronous API via import { lint } from "markdownlint/async":
+/**
+* Lint specified Markdown files.
+*
+* @param {Options | null} options Configuration options.
+* @param {LintCallback} callback Callback (err, result) function.
+* @returns {void}
+*/
+function lint(options, callback) { ... }
+Synchronous API via import { lint } from "markdownlint/sync":
+/**
+* Lint specified Markdown files.
+*
+* @param {Options | null} options Configuration options.
+* @returns {LintResults} Results object.
+*/
+function lint(options) { ... }
+Promise API via import { lint } from "markdownlint/promise":
+/**
+* Lint specified Markdown files.
+*
+* @param {Options | null} options Configuration options.
+* @returns {Promise<LintResults>} Results object.
+*/
+function lint(options) { ... }
+#### options
+Type: Object
+Configures the function. All properties are optional, but at least one
+of files or strings should be set to provide input.
+##### options.config
+Type: Object mapping String to Boolean | "error" | "warning" | Object
+Configures the rules to use.
+Object keys are rule names/aliases; object values are the rule's configuration.
+The value false disables a rule. The values true or "error" enable a rule
+in its default configuration and report violations as errors. The value
+"warning" enables a rule in its default configuration and reports violations
+as warnings. Passing an object enables and customizes the rule; the properties
+severity ("error" | "warning") and enabled (false | true) can be used in
+this context. The special default rule assigns the default for all rules.
+Using a tag name (e.g., whitespace) and a setting of false, true,
+"error", or "warning" applies that setting to all rules with that tag. When
+no configuration object is passed or the optional default setting is not
+present, all rules are enabled.
+The following syntax disables the specified rule, tag, or default:
+{
+"rule_tag_or_default": false
+}
+The following syntax enables the specified rule, tag, or default to report
+violations as errors:
+{
+"rule_tag_or_default": true
+// OR
+"rule_tag_or_default": "error"
+}
+The following syntax enables the specified rule, tag, or default to report
+violations as warnings:
+{
+"rule_tag_or_default": "warning"
+}
+The following syntax enables and configures the specified rule to report
+violations as errors:
+{
+"rule": {
+"severity": "error"
+}
+// OR
+"rule": {
+"rule_parameter": "value"
+}
+// OR
+"rule": {
+"severity": "error",
+"rule_parameter": "value"
+}
+}
+The following syntax enables and configures the specified rule to report
+violations as warnings:
+{
+"rule": {
+"severity": "warning"
+}
+// OR
+"rule": {
+"severity": "warning",
+"rule_parameter": "value"
+}
+}
+Note that values "error" and "warning" and the property severity are not
+supported by library versions earlier than 0.39.0. However, the examples
+above behave the same there, with warnings being reported as errors.
+The following syntax disables and configures the specified rule:
+{
+"rule": {
+"enabled": false,
+"rule_parameter": "value"
+}
+// OR
+"rule": {
+"enabled": false,
+"severity": "warning",
+"rule_parameter": "value"
+}
+}
+Note that this example behaves differently with library versions earlier
+than 0.39.0 because the property enabled is not supported: it enables
+the rule instead of disabling it. As such, this syntax is discouraged when
+interoperability is important.
+To evaluate a configuration object, the default setting is applied first, then
+keys are processed in order from top to bottom. If multiple values apply to a
+rule (because of tag names or duplication), later values override earlier ones.
+Keys (including rule names, aliases, tags, or default) are not case-sensitive.
+Example using default, rule names, and tag names together:
+{
+"default": true,
+"MD003": { "style": "atx_closed" },
+"MD007": { "indent": 4 },
+"no-hard-tabs": false,
+"whitespace": false
+}
+See .markdownlint.jsonc and/or
+.markdownlint.yaml for an example
+configuration object with all properties set to the default value.
+Sets of rules (known as a "style") can be stored separately and loaded
+as JSON.
+Example of referencing a built-in style from JavaScript:
+const options = {
+"files": [ "..." ],
+"config": require("style/relaxed.json")
+};
+Example doing so from .markdownlint.json via extends (more on this below):
+{
+"extends": "markdownlint/style/relaxed"
+}
+See the style directory for more samples.
+See markdownlint-config-schema.json
+for the JSON Schema of the options.config
+object.
+See ValidatingConfiguration.md for ways to
+use the JSON Schema to validate configuration.
+For more advanced scenarios, styles can reference and build upon other styles
+via the extends keyword and a file path or (installed) package name. The
+readConfig function can be used to read such aggregate styles from code.
+For example, assuming a base.json configuration file:
+{
+"default": true
+}
+And a custom.json configuration file:
+{
+"extends": "base.json",
+"line-length": false
+}
+Then code like the following:
+const options = {
+"config": markdownlint.readConfigSync("./custom.json")
+};
+Merges custom.json and base.json and is equivalent to:
+const options = {
+"config": {
+"default": true,
+"line-length": false
+}
+};
+##### options.configParsers
+Type: Optional Array of Function taking (String) and returning Object
+Array of functions to parse the content of markdownlint-configure-file blocks.
+As shown in the Configuration section, inline comments can be
+used to customize the configuration object for a document. By
+default, the JSON.parse built-in is used, but custom parsers can be specified.
+Content is passed to each parser function until one returns a value (vs.
+throwing an exception). As such, strict parsers should come before flexible
+ones.
+For example:
+[ JSON.parse, require("toml").parse, require("js-yaml").load ]
+##### options.customRules
+Type: Array of Object
+List of custom rules to include with the default rule set for linting.
+Each array element should define a rule. Rules are typically exported
+by another package, but can be defined locally.
+Example:
+const extraRules = require("extraRules");
+const options = {
+"customRules": [ extraRules.one, extraRules.two ]
+};
+See CustomRules.md for details about authoring
+custom rules.
+##### options.files
+Type: Array of String
+List of files to lint.
+Each array element should be a single file (via relative or absolute path);
+globbing is the
+caller's responsibility.
+Example: [ "one.md", "dir/two.md" ]
+##### options.frontMatter
+Type: RegExp
+Matches any front matter
+found at the beginning of a file.
+Some Markdown content begins with metadata; the default RegExp for
+this option ignores common forms of "front matter". To match differently,
+specify a custom RegExp or use the value null to disable the feature.
+The default value:
+/((^---[^\S\r\n\u2028\u2029]*$[\s\S]+?^---\s*)|(^\+\+\+[^\S\r\n\u2028\u2029]*$[\s\S]+?^(\+\+\+|\.\.\.)\s*)|(^\{[^\S\r\n\u2028\u2029]*$[\s\S]+?^\}\s*))(\r\n|\r|\n|$)/m
+Ignores YAML,
+TOML, and
+JSON front matter such as:
+---
+layout: post
+title: Title
+---
+Note: Matches must occur at the start of the file.
+##### options.fs
+Type: Object implementing the file system API
+In advanced scenarios, it may be desirable to bypass the default file system
+API. If a custom file system implementation is provided, markdownlint will use
+that instead of using node:fs.
+Note: The only methods called are readFile and readFileSync.
+##### options.handleRuleFailures
+Type: Boolean
+Catches exceptions thrown during rule processing and reports the problem
+as a rule violation.
+By default, exceptions thrown by rules (or the library itself) are unhandled
+and bubble up the stack to the caller in the conventional manner. By setting
+handleRuleFailures to true, exceptions thrown by failing rules will
+be handled by the library and the exception message logged as a rule violation.
+This setting can be useful in the presence of (custom) rules that encounter
+unexpected syntax and fail. By enabling this option, the linting process
+is allowed to continue and report any violations that were found.
+##### options.markdownItFactory
+Type: Function returning an instance of a markdown-it parser
+Provides a factory function for creating instances of the markdown-it parser.
+Previous versions of the markdownlint library declared markdown-it as a
+direct dependency. This function makes it possible to avoid that dependency
+entirely. In cases where markdown-it is needed, the caller is responsible for
+declaring the dependency and returning an instance from this factory. If any
+markdown-it plugins are needed, they should be used by
+the caller before returning the markdown-it instance.
+For compatibility with previous versions of markdownlint, this function should
+be similar to:
+import markdownIt from "markdown-it";
+const markdownItFactory = () => markdownIt({ "html": true });
+When an asynchronous implementation of lint is being invoked (e.g., via
+markdownlint/async or markdownlint/promise), this function can return a
+Promise in order to defer the import of markdown-it:
+const markdownItFactory = () => import("markdown-it").then((module) => module.default({ "html": true }));
+Note that this function is only invoked when a markdown-it parser is
+needed. None of the built-in rules use the markdown-it parser, so it is only
+invoked when one or more custom rules are present that use the
+markdown-it parser.
+##### options.noInlineConfig
+Type: Boolean
+Disables the use of HTML comments like <!-- markdownlint-enable --> to toggle
+rules within the body of Markdown content.
+By default, properly-formatted inline comments can be used to create exceptions
+for parts of a document. Setting noInlineConfig to true ignores all such
+comments.
+##### options.strings
+Type: Object mapping String to String
+Map of identifiers to strings for linting.
+When Markdown content is not available as files, it can be passed as
+strings. The keys of the strings object are used to identify each
+input value in the result summary.
+Example:
+{
+"readme": "# README\n...",
+"changelog": "# CHANGELOG\n..."
+}
+#### callback
+Type: Function taking (Error, Object)
+Standard completion callback.
+#### result
+Type: Object
+Map of input file names and string identifiers to issues within.
+See the Usage section for an example of the structure of this object.
+### Config
+The options.config configuration object is simple and can be stored in a file
+for readability and easy reuse. The readConfig function loads configuration
+settings and supports the extends keyword for referencing files or packages
+(see above).
+By default, configuration files are parsed as JSON (and named
+.markdownlint.json). Custom parsers can be provided to handle other formats
+like JSONC, YAML, and TOML.
+Asynchronous API via import { readConfig } from "markdownlint/async":
+/**
+* Read specified configuration file.
+*
+* @param {string} file Configuration file name.
+* @param {ConfigurationParser[] | ReadConfigCallback} [parsers] Parsing function(s).
+* @param {Object} [fs] File system implementation.
+* @param {ReadConfigCallback} [callback] Callback (err, result) function.
+* @returns {void}
+*/
+function readConfig(file, parsers, fs, callback) { ... }
+Synchronous API via import { readConfig } from "markdownlint/sync":
+/**
+* Read specified configuration file.
+*
+* @param {string} file Configuration file name.
+* @param {ConfigurationParser[]} [parsers] Parsing function(s).
+* @param {Object} [fs] File system implementation.
+* @returns {Configuration} Configuration object.
+*/
+function readConfig(file, parsers, fs) { ... }
+Promise API via import { readConfig } from "markdownlint/promise":
+/**
+* Read specified configuration file.
+*
+* @param {string} file Configuration file name.
+* @param {ConfigurationParser[]} [parsers] Parsing function(s).
+* @param {Object} [fs] File system implementation.
+* @returns {Promise<Configuration>} Configuration object.
+*/
+function readConfig(file, parsers, fs) { ... }
+#### file
+Type: String
+Location of configuration file to read.
+The file is resolved relative to the current working directory. If an
+extends key is present once read, its value will be resolved as a path
+relative to file and loaded recursively. Settings from a file referenced by
+extends are applied first, then those of file are applied on top (overriding
+any of the same keys appearing in the referenced file). If either the file or
+extends path begins with the ~ directory, it will act as a placeholder for
+the home directory.
+#### parsers
+Type: Optional Array of Function taking (String) and returning Object
+Array of functions to parse configuration files.
+The contents of a configuration file are passed to each parser function until
+one of them returns a value (vs. throwing an exception). Consequently, strict
+parsers should come before flexible parsers.
+For example:
+[ JSON.parse, require("toml").parse, require("js-yaml").load ]
+#### fs
+Type: Optional Object implementing the file system API
+In advanced scenarios, it may be desirable to bypass the default file system
+API. If a custom file system implementation is provided, markdownlint will use
+that instead of invoking node:fs.
+Note: The only methods called are readFile, readFileSync, access, and
+accessSync.
+#### callback
+Type: Function taking (Error, Object)
+Standard completion callback.
+#### result
+Type: Object
+Configuration object.
+### Fixing
+Rules that can be fixed automatically include a fixInfo property which is
+outlined in the documentation for custom rules.
+To apply fixes consistently, the applyFix/applyFixes methods may be used via
+import { applyFix, applyFixes } from "markdownlint":
+/**
+* Applies the specified fix to a Markdown content line.
+*
+* @param {string} line Line of Markdown content.
+* @param {RuleOnErrorFixInfo} fixInfo RuleOnErrorFixInfo instance.
+* @param {string} [lineEnding] Line ending to use.
+* @returns {string | null} Fixed content or null if deleted.
+*/
+function applyFix(line, fixInfo, lineEnding = "\n") { ... }
+/**
+* Applies as many of the specified fixes as possible to Markdown content.
+*
+* @param {string} input Lines of Markdown content.
+* @param {RuleOnErrorInfo[]} errors RuleOnErrorInfo instances.
+* @returns {string} Fixed content.
+*/
+function applyFixes(input, errors) { ... }
+Invoking applyFixes with the results of a call to lint can be done like so:
+import { applyFixes } from "markdownlint";
+import { lint as lintSync } from "markdownlint/sync";
+const results = lintSync({ "strings": { "content": original } });
+const fixed = applyFixes(original, results.content);
+### Miscellaneous
+To get the semantic version of the library, the getVersion method
+can be used:
+/**
+* Gets the (semantic) version of the library.
+*
+* @returns {string} SemVer string.
+*/
+function getVersion() { ... }
+Invoking getVersion is simple:
+import { getVersion } from "markdownlint";
+// Displays the library version
+console.log(getVersion());
+## Usage
+Invoke lint as an asynchronous call:
+import { lint as lintAsync } from "markdownlint/async";
+const options = {
+"files": [ "good.md", "bad.md" ],
+"strings": {
+"good.string": "# good.string\n\nThis string passes all rules.",
+"bad.string": "#bad.string\n\n#This string fails\tsome rules."
+}
+};
+lintAsync(options, function callback(error, results) {
+if (!error && results) {
+console.dir(results, { "colors": true, "depth": null });
+}
+});
+Or as a synchronous call:
+import { lint as lintSync } from "markdownlint/sync";
+const results = lintSync(options);
+console.dir(results, { "colors": true, "depth": null });
+Or as a Promise-based call:
+import { lint as lintPromise } from "markdownlint/promise";
+const results = await lintPromise(options);
+console.dir(results, { "colors": true, "depth": null });
+All of which return an object like:
+{
+"good.md": [],
+"bad.md": [
+{ "lineNumber": 3,
+"ruleNames": [ "MD010", "no-hard-tabs" ],
+"ruleDescription": "Hard tabs",
+"ruleInformation": "https://github.com/DavidAnson/markdownlint/blob/v0.41.1/doc/md010.md",
+"errorDetail": "Column: 17",
+"errorContext": null,
+"errorRange": [ 17, 1 ],
+"fixInfo": { "editColumn": 17, "deleteCount": 1, "insertText": " " },
+"severity": "error" },
+{ "lineNumber": 1,
+"ruleNames": [ "MD018", "no-missing-space-atx" ],
+"ruleDescription": "No space after hash on atx style heading",
+"ruleInformation": "https://github.com/DavidAnson/markdownlint/blob/v0.41.1/doc/md018.md",
+"errorDetail": null,
+"errorContext": "#bad.md",
+"errorRange": [ 1, 2 ],
+"fixInfo": { "editColumn": 2, "insertText": " " },
+"severity": "error" },
+{ "lineNumber": 3,
+"ruleNames": [ "MD018", "no-missing-space-atx" ],
+"ruleDescription": "No space after hash on atx style heading",
+"ruleInformation": "https://github.com/DavidAnson/markdownlint/blob/v0.41.1/doc/md018.md",
+"errorDetail": null,
+"errorContext": "#This file fails\tsome rules.",
+"errorRange": [ 1, 2 ],
+"fixInfo": { "editColumn": 2, "insertText": " " },
+"severity": "error" },
+{ "lineNumber": 1,
+"ruleNames": [ "MD041", "first-line-heading", "first-line-h1" ],
+"ruleDescription": "First line in a file should be a top-level heading",
+"ruleInformation": "https://github.com/DavidAnson/markdownlint/blob/v0.41.1/doc/md041.md",
+"errorDetail": null,
+"errorContext": "#bad.md",
+"errorRange": null,
+"fixInfo": null,
+"severity": "error" }
+]
+}
+## Browser
+markdownlint also works in the browser.
+Generate normal and minified scripts with:
+npm run build-demo
+Then reference the markdownlint-browser script:
+<script src="demo/markdownlint-browser.min.js"></script>
+And call it like so:
+const options = {
+"strings": {
+"content": "Some Markdown to lint."
+}
+};
+const results = globalThis.markdownlint.lintSync(options);
+## Examples
+For ideas how to integrate markdownlint into your workflow, refer to the
+following projects or one of the tools in the Related section:
+.NET Documentation (Search repository)
+ally.js (Search repository)
+Apache Airflow (Search repository)
+CodiMD (Search repository)
+Electron (Search repository)
+ESLint (Search repository)
+Garden React Components (Search repository)
+MDN Web Docs (Search repository)
+MkDocs (Search repository)
+Pi-hole documentation (Search repository)
+Reactable (Search repository)
+V8 (Search repository)
+webhint (Search repository)
+webpack (Search repository)
+WordPress (Search repository)
+For more advanced integration scenarios:
+GitHub Docs content linter
+GitHub's markdownlint-github repository
+## Contributing
+See CONTRIBUTING.md for more information.
+## Releasing
+See ReleaseProcess.md for more information.
+## History
+See CHANGELOG.md.
+## About
+A Node.js style checker and lint tool for Markdown/CommonMark files.
+### Topics
+commonmarklintmarkdownnodejs
+### Resources
+Readme
+MIT license
+### Contributing
+Contributing
+Activity
+### Stars
+6.4k stars
+### Watchers
+74 watching
+### Forks
+945 forks
+Report repository
+## Releases
+## Sponsor this project
+## Packages
+## Used by
+## Contributors
+## Languages

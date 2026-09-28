@@ -1,0 +1,192 @@
+source: S2121
+url: https://github.com/a2aproject/A2A
+title: a2aproject/A2A repository
+publisher: Linux Foundation / a2aproject
+licence: Apache-2.0
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+a2aproject
+/
+A2A
+Public
+Notifications
+You must be signed in to change notification settings
+Fork
+2.6k
+Star
+25.9k
+BranchesTags
+Open more actions menu
+## Latest commit
+## History
+631 Commits
+631 Commits
+## Folders and files
+NameName
+Last commit message
+Last commit date
+.devcontainer
+.devcontainer
+.gemini
+.gemini
+.github
+.github
+.mkdocs
+.mkdocs
+.vscode
+.vscode
+adrs
+adrs
+docs
+docs
+scripts
+scripts
+specification
+specification
+.editorconfig
+.editorconfig
+.git-blame-ignore-revs
+.git-blame-ignore-revs
+.gitattributes
+.gitattributes
+.gitignore
+.gitignore
+.gitvote.yml
+.gitvote.yml
+.prettierrc
+.prettierrc
+.ruff.toml
+.ruff.toml
+CHANGELOG.md
+CHANGELOG.md
+CODE_OF_CONDUCT.md
+CODE_OF_CONDUCT.md
+CONTRIBUTING.md
+CONTRIBUTING.md
+GOVERNANCE.md
+GOVERNANCE.md
+LICENSE
+LICENSE
+MAINTAINERS.md
+MAINTAINERS.md
+README.md
+README.md
+SECURITY.md
+SECURITY.md
+lychee.toml
+lychee.toml
+mkdocs.yml
+mkdocs.yml
+requirements-docs.txt
+requirements-docs.txt
+## Repository files navigation
+# Agent2Agent (A2A) Protocol
+🌐 Language
+English
+| 简体中文
+| 繁體中文
+| 日本語
+| 한국어
+| हिन्दी
+| ไทย
+| Français
+| Deutsch
+| Español
+| Italiano
+| Русский
+| Português
+| Nederlands
+| Polski
+| العربية
+| فارسی
+| Türkçe
+| Tiếng Việt
+| Bahasa Indonesia
+| অসমীয়া
+# Agent2Agent (A2A) Protocol
+An open protocol enabling communication and interoperability between opaque agentic applications.
+The Agent2Agent (A2A) protocol addresses a critical challenge in the AI landscape: enabling gen AI agents, built on diverse frameworks by different companies running on separate servers, to communicate and collaborate effectively - as agents, not just as tools. A2A aims to provide a common language for agents, fostering a more interconnected, powerful, and innovative AI ecosystem.
+With A2A, agents can:
+Discover each other's capabilities.
+Negotiate interaction modalities (text, forms, media).
+Securely collaborate on long-running tasks.
+Operate without exposing their internal state, memory, or tools.
+## DeepLearning.AI Course
+Join this short course on A2A: The Agent2Agent Protocol, built in partnership with Google Cloud and IBM Research, and taught by Holt Skinner, Ivan Nardini, and Sandi Besen.
+What you'll learn:
+Make agents A2A-compliant: Expose agents built with frameworks like Google ADK, LangGraph, or BeeAI as A2A servers.
+Connect agents: Create A2A clients from scratch or using integrations to connect to A2A-compliant agents.
+Orchestrate workflows: Build sequential and hierarchical workflows of A2A-compliant agents.
+Multi-agent systems: Build a healthcare multi-agent system using different frameworks and see how A2A enables collaboration.
+A2A and MCP: Learn how A2A complements MCP by enabling agents to collaborate with each other.
+## Why A2A?
+As AI agents become more prevalent, their ability to interoperate is crucial for building complex, multi-functional applications. A2A aims to:
+Break Down Silos: Connect agents across different ecosystems.
+Enable Complex Collaboration: Allow specialized agents to work together on tasks that a single agent cannot handle alone.
+Promote Open Standards: Foster a community-driven approach to agent communication, encouraging innovation and broad adoption.
+Preserve Opacity: Allow agents to collaborate without needing to share internal memory, proprietary logic, or specific tool implementations, enhancing security and protecting intellectual property.
+### Key Features
+Standardized Communication: JSON-RPC 2.0 over HTTP(S).
+Agent Discovery: Via "Agent Cards" detailing capabilities and connection info.
+Flexible Interaction: Supports synchronous request/response, streaming (SSE), and asynchronous push notifications.
+Rich Data Exchange: Handles text, files, and structured JSON data.
+Enterprise-Ready: Designed with security, authentication, and observability in mind.
+## Getting Started
+📚 Explore the Documentation: Visit the Agent2Agent Protocol Documentation Site for a complete overview, the full protocol specification, tutorials, and guides.
+📝 View the Specification: A2A Protocol Specification
+Use the SDKs:
+🐍 A2A Python SDK pip install a2a-sdk
+🐿️ A2A Go SDK go get github.com/a2aproject/a2a-go
+🧑‍💻 A2A JS SDK npm install @a2a-js/sdk
+☕️ A2A Java SDK using maven
+🔷 A2A .NET SDK using NuGet dotnet add package A2A
+🦀 A2A Rust SDK cargo add a2a-lf
+🎬 Use our samples to see A2A in action
+## Contributing
+We welcome community contributions to enhance and evolve the A2A protocol!
+Questions & Discussions: Join our GitHub Discussions or the A2A Discord server.
+Issues & Feedback: Report issues or suggest improvements via GitHub Issues.
+Contribution Guide: See our CONTRIBUTING.md for details on how to contribute.
+Private Feedback: Use this Google Form.
+Partner Program: Google Cloud customers can join our partner program via this form.
+## What's next
+### Protocol Enhancements
+Agent Discovery:
+Formalize inclusion of authorization schemes and optional credentials directly within the AgentCard.
+Agent Collaboration:
+Investigate a QuerySkill() method for dynamically checking unsupported or unanticipated skills.
+Task Lifecycle & UX:
+Support for dynamic UX negotiation within a task (e.g., agent adding audio/video mid-conversation).
+Client Methods & Transport:
+Explore extending support to client-initiated methods (beyond task management).
+Improvements to streaming reliability and push notification mechanisms.
+## About
+The A2A Protocol is an open source project under the Linux Foundation, contributed by Google. It is licensed under the Apache License 2.0 and is open to contributions from the community.
+## About
+Agent2Agent (A2A) is an open protocol enabling communication and interoperability between opaque agentic applications.
+a2a-protocol.org/
+### Topics
+a2aa2a-mcpa2a-protocola2a-serveragentsgenerative-ailinux-foundation
+### Resources
+Readme
+Apache-2.0 license
+### Code of conduct
+Code of conduct
+### Contributing
+Contributing
+### Security policy
+Security policy
+Activity
+Custom properties
+### Stars
+25.9k stars
+### Watchers
+238 watching
+### Forks
+2.6k forks
+Report repository
+## Releases
+## Used by
+## Contributors
+## Languages

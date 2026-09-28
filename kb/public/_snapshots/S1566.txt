@@ -1,0 +1,99 @@
+source: S1566
+url: https://attack.mitre.org/techniques/T1484/
+title: MITRE ATT&CK T1484 Domain or Tenant Policy Modification
+publisher: MITRE
+licence: ATT&CK terms of use (copy with MITRE copyright notice and licence)
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+ATT&CKcon 7.0 in-person tickets are open! Join us October 27-28, 2026 in McLean, VA. Register here for in-person tickets; hotel and location details can be found in the FAQ.
+Home
+Techniques
+Enterprise
+Domain or Tenant Policy Modification
+#
+Domain or Tenant Policy Modification
+##### Sub-techniques (2)
+ID
+Name
+T1484.001
+Group Policy Modification
+T1484.002
+Trust Modification
+Adversaries may modify the configuration settings of a domain or identity tenant to evade defenses and/or escalate privileges in centrally managed environments. Such services provide a centralized means of managing identity resources such as devices and accounts, and often include configuration settings that may apply between domains or tenants such as trust relationships, identity syncing, or identity federation.
+Modifications to domain or tenant settings may include altering domain Group Policy Objects (GPOs) in Microsoft Active Directory (AD) or changing trust settings for domains, including federation trusts relationships between domains or tenants.
+With sufficient permissions, adversaries can modify domain or tenant policy settings. Since configuration settings for these services apply to a large number of identity resources, there are a great number of potential attacks malicious outcomes that can stem from this abuse. Examples of such abuse include:
+modifying GPOs to push a malicious Scheduled Task to computers throughout the domain environment[1][2][3]
+modifying domain trusts to include an adversary-controlled domain, allowing adversaries to forge access tokens that will subsequently be accepted by victim domain resources[4]
+changing configuration settings within the AD environment to implement a Rogue Domain Controller.
+adding new, adversary-controlled federated identity providers to identity tenants, allowing adversaries to authenticate as any user managed by the victim tenant [5]
+Adversaries may temporarily modify domain or tenant policy, carry out a malicious action(s), and then revert the change to remove suspicious indicators.
+ID: T1484
+Sub-techniques:
+T1484.001, T1484.002
+ⓘ
+Tactics:
+Defense Impairment, Privilege Escalation
+ⓘ
+Platforms: Identity Provider, Windows
+Contributors: Obsidian Security
+Version: 4.0
+Created: 07 March 2019
+Last Modified: 12 May 2026
+Version Permalink
+Live Version
+## Mitigations
+ID
+Mitigation
+Description
+M1047
+Audit
+Identify and correct GPO permissions abuse opportunities (ex: GPO modification privileges) using auditing tools such as BloodHound (version 1.5.1 and later)[6].
+M1026
+Privileged Account Management
+Use least privilege and protect administrative access to the Domain Controller and Active Directory Federation Services (AD FS) server. Do not create service accounts with administrative privileges.
+M1018
+User Account Management
+Consider implementing WMI and security filtering to further tailor which users and computers a GPO will apply to.[2][7][8]
+## Detection Strategy
+ID
+Name
+Analytic ID
+Analytic Description
+DET0270
+Detection of Domain or Tenant Policy Modifications via AD and Identity Provider
+AN0755
+Adversary modifies Group Policy Objects (GPOs), domain trust, or directory service objects via GUI, CLI, or programmatic APIs. Behavior includes creation/modification of GPOs, delegation permissions, trust objects, or rogue domain controller registration.
+AN0756
+Adversary modifies tenant policy through changes to federation configuration, trust settings, or identity provider additions in Microsoft 365/AzureAD via Portal, PowerShell, or Graph API. Includes setting authentication to federated or updating federated domains.
+## References
+Metcalf, S. (2016, March 14). Sneaky Active Directory Persistence #17: Group Policy. Retrieved March 5, 2019.
+Robbins, A. (2018, April 2). A Red Teamer’s Guide to GPOs and OUs. Retrieved March 5, 2019.
+Schroeder, W. (2016, March 17). Abusing GPO Permissions. Retrieved September 23, 2024.
+MSRC. (2020, December 13). Customer Guidance on Recent Nation-State Cyber Attacks. Retrieved December 30, 2020.
+Okta Defensive Cyber Operations. (2023, August 31). Cross-Tenant Impersonation: Prevention and Detection. Retrieved February 15, 2024.
+Robbins, A., Vazarkar, R., and Schroeder, W. (2016, April 17). Bloodhound: Six Degrees of Domain Admin. Retrieved March 5, 2019.
+Microsoft. (2008, September 11). Fun with WMI Filters in Group Policy. Retrieved March 13, 2019.
+Microsoft. (2018, May 30). Filtering the Scope of a GPO. Retrieved March 13, 2019.
+×
+Core ATT&CK Objects
+Matrices
+Tactics
+Techniques
+Sub-Techniques
+Defenses
+Mitigations
+Assets
+Detection Strategies
+Analytics
+Data Components
+CTI
+Groups
+Software
+Campaigns
+Reference
+Resources
+Domains
+Enterprise
+Mobile
+ICS

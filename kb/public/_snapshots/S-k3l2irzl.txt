@@ -1,0 +1,363 @@
+source: S-k3l2irzl
+url: https://learn.microsoft.com/azure/foundry/concepts/rbac-foundry
+title: Role-based access control for Microsoft Foundry
+publisher: Microsoft Learn
+licence: CC BY 4.0 (public mirror MicrosoftDocs/azure-ai-docs)
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+# Role-based access control for Microsoft Foundry - Microsoft Foundry | Microsoft Learn
+
+In this article, you learn core role-based access control (RBAC) concepts for Microsoft Foundry, including scopes, built-in roles, and common enterprise assignment patterns.
+
+Tip
+
+RBAC roles apply when you authenticate using Microsoft Entra ID. If you use key-based authentication instead, the key grants full access without role restrictions. Microsoft recommends using Entra ID authentication for improved security and granular access control.
+
+For more information about authentication and authorization in Microsoft Foundry, see Authentication and Authorization.
+
+## Minimum role assignments to get started
+
+For new users to Azure and Microsoft Foundry, start with these minimum assignments so both your user principal and project managed identity can access Foundry features.
+
+You can verify current assignments by using Check access for a user to a single Azure resource.
+
+- Assign the **Foundry User** role on your Foundry resource to your **user principal**.
+
+    Important
+
+    The Foundry RBAC roles were recently renamed. **Foundry User**, **Foundry Owner**, **Foundry Account Owner**, and **Foundry Project Manager** were previously named Azure AI User, Azure AI Owner, Azure AI Account Owner, and Azure AI Project Manager. You might still see the previous names in some places while the rename rolls out. The role IDs and core permissions are unchanged by the rename.
+- Assign the **Foundry User** role on your Foundry resource to your **project's managed identity**.
+- If users need to view quota or run deployment eligibility checks, assign the **Cognitive Services Usages Reader** role at the subscription scope. For more information, see Access quota and usage information.
+
+If the user who created the project can assign roles (for example, by having the Azure Owner role at the subscription or resource group scope), both assignments are added automatically **when the project is created through the Microsoft Foundry portal UI**.
+
+Tip
+
+If a user or service principal only needs to interact with agents (for example, calling the Responses API) without creating or modifying them, assign **Foundry Agent Consumer** instead of **Foundry User**. This role provides least-privilege access for agent consumers.
+
+To assign the **Foundry User** role manually, use the following quick steps.
+
+### Assign Foundry User role to your user principal
+
+In the Azure portal, open your Foundry resource and go to **Access control (IAM)**. Create a role assignment for **Foundry User**, set **Members** to **User, group, or service principal**, select your user principal, and then select **Review + assign**.
+
+### Assign Foundry User role to your project's managed identity
+
+In the Azure portal, open your Foundry resource and go to **Access control (IAM)**. Create a role assignment for **Foundry User**, set **Members** to **Managed identity**, select your project's managed identity, and then select **Review + assign**.
+
+## Terminology for role-based access control in Foundry
+
+To understand role-based access control in Microsoft Foundry, consider two questions for your enterprise.
+
+- What permissions do I want my team to have when building in Microsoft Foundry?
+- At what scope do I want to assign permissions to my team?
+
+To help answer these questions, here are descriptions of some terminology used throughout this article.
+
+- **Permissions**: Allowed or denied actions that an identity can perform on a resource, such as reading, writing, deleting, or managing both control plane and data plane operations.
+- **Scope**: The set of Azure resources to which a role assignment applies. Typical scopes include subscription, resource group, Foundry resource, Foundry project, or an individual agent.
+- **Role**: A named collection of permissions that defines which actions can be performed on Azure resources at a given scope.
+
+An identity gets a *role* with specific *permissions* at a selected *scope* based on your enterprise requirements.
+
+In Microsoft Foundry, consider the following scopes when completing role assignments.
+
+- **Foundry resource**: The top-level scope that defines the administrative, security, and monitoring boundary for a Microsoft Foundry environment.
+- **Foundry project**: A sub-scope within a Foundry resource used to organize work and enforce access control for Foundry APIs, tools, and developer workflows.
+- **Agent**: A narrower scope within a Foundry project that applies to an individual agent. Role assignments at this scope are currently evaluated only for agent endpoint access, so use this scope to grant access to a specific agent's endpoints without granting endpoint access to all agents in the project. For more information, see Agent-scope role assignments.
+
+## Built-in roles
+
+A **built-in role** in Foundry is a role created by Microsoft that covers common access scenarios that you can assign to your team members. Key built-in roles used across Azure include Owner, Contributor, and Reader. These roles aren't specific to Foundry resource permissions.
+
+For Foundry resources, use additional built-in roles to follow least-privilege access principles. The following table lists key built-in roles for Foundry and links to the exact role definitions in AI + Machine Learning built-in roles.
+
+| Role | Description |
+| --- | --- |
+| **Foundry Agent Consumer** | Grants access to interact with agent endpoints in a Foundry project. Least-privilege access role for principals that only need to interact with agents. |
+| **Foundry User** | Grants reader access to Foundry project, Foundry resource, and data actions for your Foundry project. If you can assign roles, this role is assigned to you automatically. Otherwise, your subscription Owner or a user with role assignment permissions grants it. Least-privilege access role for developers building and testing agents. |
+| **Foundry Project Manager** | Lets you perform management actions on Foundry projects, build and develop with projects, and conditionally assign the Foundry User role to other user principals. |
+| **Foundry Account Owner** | Grants full access to manage projects and resources, and lets you conditionally assign the Foundry User, ACR, and monitoring roles to other user principals. |
+| **Foundry Owner** | Grants full access to manage projects and resources and build and develop with projects. Lets you conditionally assign the Foundry User, ACR, and monitoring roles. Highly privileged self-serve role designed for digital natives. |
+
+Note
+
+Except for **Cognitive Services Usages Reader** when users need quota visibility, don't assign built-in roles that start with **Cognitive Services**. These roles are designed for accessing AI Services resources directly and don't apply to Foundry scenarios.
+
+Similarly, don't use the **Azure AI Developer** role for Foundry work. Despite the name, this role is scoped to Azure Machine Learning workspaces and Foundry hubs, not to Foundry projects or Foundry hosted agents. For Foundry project access, use **Foundry User** or **Foundry Owner** instead.
+
+For more information about assigning a role to an individual agent, see Agent-scope role assignments.
+
+### Permissions for each built-in role
+
+Use the following table to see the permissions allowed for each built-in role in Microsoft Foundry.
+
+| Built-in role | Create Foundry projects | Create Foundry accounts | Build and develop in a project (data actions) | Complete role assignments | Reader access to projects and accounts | Manage models | Publish agents | Interact with agent endpoints |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| **Foundry Agent Consumer** | ✘ | ✘ | ✘ | ✘ | ✘ | ✘ | ✘ | ✔ |
+| **Foundry User** | ✘ | ✘ | ✔ | ✘ | ✔ | ✘ | ✘ | ✔ |
+| **Foundry Project Manager** | ✘ | ✘ | ✔ | ✔ (only assign Foundry User role) | ✔ | ✘ | ✔ | ✔ |
+| **Foundry Account Owner** | ✔ | ✔ | ✘ | ✔ (assign Foundry User, ACR, and monitoring roles) | ✔ | ✔ | ✘ | ✘ |
+| **Foundry Owner** | ✔ | ✔ | ✔ | ✔ (assign Foundry User, ACR, and monitoring roles) | ✔ | ✔ | ✔ | ✔ |
+
+Important
+
+The Foundry RBAC roles were recently renamed. **Foundry User**, **Foundry Owner**, **Foundry Account Owner**, and **Foundry Project Manager** were previously named Azure AI User, Azure AI Owner, Azure AI Account Owner, and Azure AI Project Manager. You might still see the previous names in some places while the rename rolls out. The role IDs and core permissions are unchanged by the rename.
+
+Use the following table to see the permissions allowed for each key Azure built-in roles (Owner, Contributor, Reader).
+
+| Built-in role | Create Foundry projects | Create Foundry accounts | Build and develop in a project (data actions) | Complete role assignments | Reader access to projects and accounts | Manage models | Publish agents | Interact with agent endpoints |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| **Owner** | ✔ | ✔ | ✘ | ✔ (assign any role to any user) | ✔ | ✔ | ✔ | ✘ |
+| **Contributor** | ✔ | ✔ | ✘ | ✘ | ✔ | ✔ | ✘ | ✘ |
+| **Reader** | ✘ | ✘ | ✘ | ✘ | ✔ | ✘ | ✘ | ✘ |
+
+To publish agents, you need the **Foundry Project Manager** role (minimum) on the Foundry resource scope. For more information, see Agent applications in Microsoft Foundry.
+
+Use these tabs to explore the differences between the built-in roles, assigned at the Foundry resource level (except for Owner, which is assigned at the subscription level)
+
+# Owner
+
+# Foundry Owner
+
+# Foundry Account Owner
+
+# Foundry Project Manager
+
+# Foundry User
+
+---
+
+## Sample enterprise RBAC mappings for projects
+
+Here's an example of how to implement role-based access control (RBAC) for an enterprise Foundry resource.
+
+| Persona | Role and Scope | Purpose |
+| --- | --- | --- |
+| IT admin | Owner on subscription scope | The IT admin ensures the Foundry resource meets enterprise standards. Assign managers the **Foundry Account Owner** role on the resource to let them create new Foundry accounts. Assign managers the **Foundry Project Manager** role on the resource to let them create projects within an account. |
+| Managers | Foundry Account Owner on Foundry resource scope | Managers manage the Foundry resource, deploy models, audit compute resources, audit connections, and create shared connections. They can't build in projects, but they can assign the **Foundry User** role to themselves and others to start building. |
+| Team lead or lead developer | Foundry Project Manager on Foundry resource scope | Lead developers create projects for their team and start building in those projects. After you create a project, project owners invite other members and assign the **Foundry User** role. |
+| Team members or developers | Foundry User on Foundry project scope and Reader on the Foundry resource scope | Developers build agents in a project with pre-deployed Foundry models and pre-built connections. |
+| Agent consumers or end users | Foundry Agent Consumer on Foundry project scope (or agent scope for per-agent control) | Users and service principals that only need to interact with agents through their endpoints. This role provides least-privilege access without granting broader development capabilities. |
+
+## Access quota and usage information
+
+Foundry uses Azure quota and usage information for experiences such as deployment validation and quota reporting. Azure RBAC governs access to this subscription-level information.
+
+Assign **Cognitive Services Usages Reader** at the subscription scope to grant the least-privilege access required for quota visibility. Other subscription-scoped roles that include `Microsoft.CognitiveServices/locations/usages/read` can also provide access, but they might grant broader permissions.
+
+If Foundry can't retrieve quota information, some experiences might not display available quota or validate deployments correctly. Verify that the signed-in user has the required permission at the subscription scope.
+
+Important
+
+The Usages API requires a subscription-scoped role assignment. Resource group, Foundry resource, and project role assignments don't authorize access to subscription-level quota information.
+
+## Manage role assignments
+
+To manage roles in Foundry, you must have permission to assign and remove roles in Azure. The Azure built-in **Owner** role includes that permission. You can assign roles through the Foundry portal (**Manage** pane), Azure portal IAM, or Azure CLI. You can remove roles by using Azure portal IAM or Azure CLI.
+
+Important
+
+The Azure portal currently supports assigning **Foundry Agent Consumer** only at the Foundry account scope. To follow least-privilege principles, use Azure CLI to assign the role at project scope or agent scope. Project scope grants access to every agent endpoint in the project. Agent scope grants access only to the specified agent endpoint.
+
+# Foundry portal
+In the Foundry portal, manage permissions by:
+
+1. In Foundry, select **Manage** &gt; **Project details**.
+2. Select the **Users** tab.
+3. Select **Add user** to manage project access. This action is available only if you have role-assignment permissions.
+4. Apply the same flow on the **Resource details** page for Foundry resource-level access.
+
+# Azure portal
+You can manage permissions in the Azure portal under **Access Control (IAM)**.
+
+# Azure CLI
+You can assign and remove roles by using the Azure CLI.
+
+For example, the following command assigns the Foundry User role to `joe@contoso.com` for resource group `this-rg` in subscription `00000000-0000-0000-0000-000000000000`:
+
+```azurecli
+az role assignment create --role "53ca6127-db72-4b80-b1b0-d745d6d5456d" --assignee "joe@contoso.com" --scope /subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/this-rg
+```
+
+Note
+
+Because the Foundry RBAC roles were recently renamed, use the role definition ID (GUID) instead of the role name in your code to avoid issues during the rename rollout:
+
+- **Foundry User**: `53ca6127-db72-4b80-b1b0-d745d6d5456d`
+- **Foundry Owner**: `c883944f-8b7b-4483-af10-35834be79c4a`
+- **Foundry Account Owner**: `e47c6f54-e4a2-4754-9501-8e0985b135e1`
+- **Foundry Project Manager**: `eadc314b-1a2d-4efa-be10-5d325db5065e`
+
+To assign **Foundry Agent Consumer** at project scope, store the project resource ID in a variable and then create the role assignment:
+
+```azurecli
+PROJECT_SCOPE="/subscriptions/<subscriptionId>/resourceGroups/<resourceGroupName>/providers/Microsoft.CognitiveServices/accounts/<accountName>/projects/<projectName>"
+
+az role assignment create \
+    --assignee-object-id "<principalId>" \
+    --assignee-principal-type ServicePrincipal \
+    --role "eed3b665-ab3a-47b6-8f48-c9382fb1dad6" \
+    --scope "$PROJECT_SCOPE"
+```
+
+---
+
+### Agent-scope role assignments
+
+Assign roles at the scope of a specific agent rather than the entire project. This approach lets you grant endpoint access to one agent without granting endpoint access to all agents in the project. The scope URI for an agent follows this pattern:
+
+```
+/subscriptions/<subscriptionId>/resourceGroups/<resourceGroupName>/providers/Microsoft.CognitiveServices/accounts/<accountName>/projects/<projectName>/agents/<agentName>
+```
+
+Note
+
+The system currently assesses agent-scope role assignments only for agent endpoint access. Assigning a role at the scope of an individual agent affects whether the assignee can interact with that agent's endpoints, but it doesn't grant broader control-plane or management permissions.
+
+For example, the following command assigns the Foundry Agent Consumer role (role definition ID `eed3b665-ab3a-47b6-8f48-c9382fb1dad6`) to a service principal at the scope of a specific agent.
+
+```azurecli
+AGENT_SCOPE="/subscriptions/<subscriptionId>/resourceGroups/<resourceGroupName>/providers/Microsoft.CognitiveServices/accounts/<accountName>/projects/<projectName>/agents/<agentName>"
+
+az role assignment create \
+    --assignee-object-id "<principalId>" \
+    --assignee-principal-type ServicePrincipal \
+    --role "eed3b665-ab3a-47b6-8f48-c9382fb1dad6" \
+    --scope "$AGENT_SCOPE"
+```
+
+Role-assignment mechanics for agent scopes follow the same Azure RBAC model as project-scope assignments. Any role that can be assigned at the project scope can also be assigned at the agent scope. However, at the agent scope, role assignments are currently evaluated only for agent endpoint access and don't grant broader control-plane or management permissions.
+
+## Create custom roles for projects
+
+If the built-in roles don't meet your enterprise requirements, create a custom role that allows for precise control over allowed actions and scopes. Here's an example subscription-level custom role definition:
+
+```json
+{
+  "Name": "My Enterprise Foundry User",
+  "IsCustom": true,
+  "Description": "Custom role for Foundry at my enterprise to only allow building Agents. Assign at subscription level.",
+  "Actions": [
+    "Microsoft.CognitiveServices/*/read",
+    "Microsoft.Authorization/*/read",
+    "Microsoft.CognitiveServices/accounts/listkeys/action",
+    "Microsoft.Resources/deployments/*"
+  ],
+  "NotActions": [],
+  "DataActions": [
+    "Microsoft.CognitiveServices/accounts/AIServices/agents/*"
+  ],
+  "NotDataActions": [],
+  "AssignableScopes": ["/subscriptions/<your-subscription-id>"]
+}
+```
+
+Save the definition to a file and create the role:
+
+```azurecli
+az role definition create --role-definition custom-role.json
+```
+
+Note
+
+This format is what the Azure CLI and Azure PowerShell accept. The REST API and Azure Resource Manager templates wrap the same fields in a `properties` object and use camel case, such as `roleName` instead of `Name`.
+
+For more information on creating a custom role, see the following articles.
+
+- Azure portal
+- Azure CLI
+- Azure PowerShell
+- Disable preview features in Microsoft Foundry. This article provides more details on specific permissions in Foundry across control and data plane which you can utilize when building custom roles.
+
+## Notes and limitations
+
+- To view and purge deleted Foundry accounts, you must have the Contributor role assigned at the subscription scope.
+- Users with the Contributor role can deploy models in Foundry.
+- You need the Owner role on a resource's scope to create custom roles in the resource.
+- If you have permissions to role assign in Azure (for example, the Owner role assigned on the account scope) to your user principal, and you deploy a Foundry resource from the Azure portal or Foundry portal UI, then the Foundry User role gets automatically assigned to your user principal. This assignment doesn't apply when deploying Foundry from SDK or CLI.
+
+    Important
+
+    The Foundry RBAC roles were recently renamed. **Foundry User**, **Foundry Owner**, **Foundry Account Owner**, and **Foundry Project Manager** were previously named Azure AI User, Azure AI Owner, Azure AI Account Owner, and Azure AI Project Manager. You might still see the previous names in some places while the rename rolls out. The role IDs and core permissions are unchanged by the rename.
+- When you create a Foundry resource, the built-in role-based access control (RBAC) permissions give you access to the resource. To use resources created outside Foundry, ensure the resource has permissions that let you access it. Here are some examples:
+
+    - To use a new Azure Blob Storage account, add the Foundry account resource's managed identity to the Storage Blob Data Reader role on that storage account.
+    - To use a new Azure AI Search source, add Foundry to the Azure AI Search role assignments.
+- To fine-tune a model in Foundry, you need both data plane and control plane permissions. Deploying a fine-tuned model is a control plane permission. Therefore, the only built-in role with both data plane and control plane permissions is the **Foundry Owner** role. Or, if you prefer, you can also assign the **Foundry User** role for data plane permissions and the **Foundry Account Owner** role for control plane permissions.
+
+## Deployment type–specific permissions
+
+The following sections cover the permission surface for specific deployment types. Use them alongside the built-in role tables in Permissions for each built-in role when planning role assignments for a particular workload.
+
+### Managed compute control-plane operations
+
+Managed compute deployments (Preview) are governed by their own set of Azure resource provider operations under the `Microsoft.CognitiveServices` provider. These operations control who can create, read, update, and delete a managed compute deployment, and who can read the available accelerator capacity and quota usage for a Foundry account.
+
+This section lists the five required control-plane operations, the built-in roles that grant them, and how the role-to-permission mapping differs from standard (pay-per-token and PTU) deployments.
+
+Note
+
+The operations in this section govern the **control plane** — creating, configuring, and deleting deployments. To call a deployment at inference time, assign the **Foundry User** role on the Foundry account scope (or use the account API key). See Authentication and Authorization in Foundry.
+
+#### Required operations
+
+Five operations are required to fully manage managed compute deployments on a Foundry account:
+
+| Operation | Description |
+| --- | --- |
+| `Microsoft.CognitiveServices/accounts/managedComputeDeployments/read` | Read or list managed compute deployments on a Foundry account. |
+| `Microsoft.CognitiveServices/accounts/managedComputeDeployments/write` | Create or update a managed compute deployment. |
+| `Microsoft.CognitiveServices/accounts/managedComputeDeployments/delete` | Delete a managed compute deployment. |
+| `Microsoft.CognitiveServices/managedComputeCapacities/read` | List available accelerator capacity by region. |
+| `Microsoft.CognitiveServices/locations/usages/read` | Read accelerator usage and quota consumption. |
+
+Important
+
+The provider registers `managedComputeCapacities/read` at its root as `Microsoft.CognitiveServices/managedComputeCapacities/read`, not under `locations/`. A root-level operation `Microsoft.CognitiveServices/capacities/read` doesn't exist. A wildcard such as `Microsoft.CognitiveServices/locations/*/read` matches `locations/usages/read` but doesn't match the capacities operation. List `Microsoft.CognitiveServices/managedComputeCapacities/read` explicitly when you author a custom role.
+
+#### Role-to-permission mapping
+
+The following table shows which built-in roles grant each of the five managed compute control-plane operations.
+
+| Role | `managedComputeDeployments/read` | `managedComputeDeployments/write` | `managedComputeDeployments/delete` | `managedComputeCapacities/read` | `usages/read` |
+| --- | --- | --- | --- | --- | --- |
+| **Cognitive Services Contributor** | ✔ | ✔ | ✔ | ✔ | ✔ |
+| **Cognitive Services User** | ✔ | ✘ | ✘ | ✔ | ✔ |
+| **Foundry Owner** | ✔ | ✔ | ✔ | ✔ | ✔ |
+| **Foundry Account Owner** | ✔ | ✔ | ✔ | ✔ | ✔ |
+| **Foundry Project Manager** | ✔ | ✘ | ✘ | ✔ | ✔ |
+| **Foundry User** | ✔ | ✘ | ✘ | ✔ | ✔ |
+
+The Azure built-in **Owner** and **Contributor** roles grant all five operations through their wildcard action grant on the subscription or resource group.
+
+#### Comparison: standard deployments vs managed compute deployments
+
+The control-plane permission surface for managed compute deployments mirrors the surface for standard (pay-per-token and PTU) deployments; the operation names differ only by the resource type segment (`deployments` vs `managedComputeDeployments`, and `modelCapacities` vs `managedComputeCapacities`).
+
+The following table summarizes how each role's CRUD coverage compares across the two deployment families:
+
+| Role | Standard deployments CRUD | Managed compute deployments CRUD | Difference |
+| --- | --- | --- | --- |
+| Cognitive Services Contributor | Full | Full | Same |
+| Cognitive Services User | Read-only | Read-only | Same |
+| Foundry Owner | Full | Full | Same |
+| Foundry Account Owner | Full | Full | Same |
+| Foundry Project Manager | Read + capacities + usages | Read + capacities + usages | Same |
+| Foundry User | Read + capacities + usages | Read + capacities + usages | Same |
+
+Note
+
+If you author a custom role that uses a `locations/*/read` wildcard to grant capacity reads for standard deployments, that wildcard doesn't cover `managedComputeCapacities/read`. Add `Microsoft.CognitiveServices/managedComputeCapacities/read` to the custom role explicitly to grant capacity reads on the managed compute control plane.
+
+#### Recommended role assignments
+
+Use the following starting points when assigning access for these operations with managed compute:
+
+- **Deploy and operate managed compute deployments**: assign **Cognitive Services Contributor** on the Foundry account scope.
+- **Read-only viewer for deployments and quota**: assign **Cognitive Services User** or **Foundry User** on the Foundry account scope.
+- **Manage a Foundry project but not deploy models**: assign **Foundry Project Manager** on the Foundry account scope. Project Managers can read deployments and quota but cannot create or delete them.
+- **Call a managed compute deployment with Microsoft Entra ID at inference time**: assign **Foundry User** on the Foundry account scope, in addition to whatever control-plane role the user holds (or with no control-plane role at all for inference-only users).
+
+For the end-to-end deployment workflow, see Deploy open-source models with managed compute.

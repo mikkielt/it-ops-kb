@@ -1,0 +1,101 @@
+source: S930
+url: https://docs.ansible.com/ansible/latest/collections/ansible/windows/index.html
+title: Ansible.Windows collection index
+publisher: Ansible project
+licence: GPL-3.0 (ansible/ansible-documentation COPYING; module docs GPL-3.0-or-later)
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+Blog
+Ansible community forum
+Documentation
+Ansible Community Documentation
+Collection Index
+Collections in the Ansible Namespace
+Ansible.Windows
+# Ansible.Windows
+Collection version 3.8.0
+## Description
+Ansible collection for core Windows plugins.
+Authors:
+Jordan Borean @jborean93
+Matt Davis @nitzmahone
+Supported ansible-core versions:
+2.16.0 or newer
+Issue Tracker
+Repository (Sources)
+## Plugin Index
+These are the plugins in the ansible.windows collection:
+### Modules
+async_status module – Obtain status of asynchronous task
+dsc3 module – Sets or checks DSC v3 configuration state
+setup module – Gathers facts about remote hosts
+slurp module – Slurps a file from remote nodes
+win_acl module – Set file/directory/registry/certificate permissions for a system user or group
+win_acl_inheritance module – Change ACL inheritance
+win_audit_policy_system module – Used to make changes to the system wide Audit Policy
+win_audit_rule module – Adds an audit rule to files, folders, or registry keys
+win_auto_logon module – Adds or Sets auto logon registry keys.
+win_capability module – Manage Windows capabilities
+win_capability_info module – Get information about Windows capabilities
+win_certificate_info module – Get information on certificates from a Windows Certificate Store
+win_certificate_store module – Manages the certificate store
+win_command module – Executes a command on a remote Windows node
+win_computer_description module – Set windows description, owner and organization
+win_copy module – Copies files to remote locations on windows hosts
+win_credential module – Manages Windows Credentials in the Credential Manager
+win_dhcp_lease module – Manage Windows Server DHCP Leases
+win_dns_client module – Configures DNS lookup on Windows hosts
+win_dns_record module – Manage Windows Server DNS records
+win_dns_zone module – Manage Windows Server DNS Zones
+win_dsc module – Invokes a PowerShell DSC configuration
+win_environment module – Modify environment variables on windows hosts
+win_eventlog module – Manage Windows event logs
+win_feature module – Installs and uninstalls Windows Features on Windows Server
+win_feature_info module – Gather information about Windows features
+win_file module – Creates, touches or removes files or directories
+win_file_compression module – Alters the compression of files and directories on NTFS partitions.
+win_find module – Return a list of files based on specific criteria
+win_firewall module – Enable or disable the Windows Firewall
+win_get_url module – Downloads file from HTTP, HTTPS, or FTP to node
+win_group module – Add and remove local groups
+win_group_membership module – Manage Windows local group membership
+win_hostname module – Manages local Windows computer name
+win_hosts module – Manages hosts file entries on Windows.
+win_hotfix module – Install and uninstalls Windows hotfixes
+win_http_proxy module – Manages proxy settings for WinHTTP
+win_inet_proxy module – Manages proxy settings for WinINet and Internet Explorer
+win_listen_ports_facts module – Recopilates the facts of the listening ports of the machine
+win_mapped_drive module – Map network drives for users
+win_optional_feature module – Manage optional Windows features
+win_owner module – Set owner
+win_package module – Installs/uninstalls an installable package
+win_path module – Manage Windows path environment variables
+win_ping module – A windows version of the classic ping module
+win_powershell module – Run PowerShell scripts
+win_product_facts module – Provides Windows product and license information
+win_reboot module – Reboot a windows machine
+win_reboot_info module – Get reboot status information for a Windows host
+win_reg_stat module – Get information about Windows registry keys
+win_regedit module – Add, change, or remove registry keys and values
+win_region module – Set the region and format settings
+win_route module – Add or remove a static route
+win_service module – Manage Windows services
+win_service_info module – Gather information about Windows services
+win_share module – Manage Windows shares
+win_shell module – Execute shell commands on target hosts
+win_stat module – Get information about Windows files
+win_tempfile module – Creates temporary files and directories
+win_template module – Template a file out to a remote server
+win_timezone module – Sets Windows machine timezone
+win_updates module – Download and install Windows updates
+win_uri module – Interacts with webservices
+win_user module – Manages local Windows user accounts
+win_user_profile module – Manages the Windows user profiles.
+win_user_right module – Manage Windows User Rights
+win_wait_for module – Waits for a condition before continuing
+win_whoami module – Get information about the current user and process
+### Filter Plugins
+quote filter – Quotes argument(s) for various Windows shells
+See also
+List of collections with docs hosted here.

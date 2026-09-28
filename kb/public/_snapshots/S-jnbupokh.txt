@@ -1,0 +1,300 @@
+source: S-jnbupokh
+url: https://learn.microsoft.com/powershell/module/assignedaccess/set-assignedaccess?view=windowsserver2025-ps
+title: Set-AssignedAccess
+publisher: Microsoft Learn
+licence: CC BY 4.0 (public mirror MicrosoftDocs/windows-powershell-docs)
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+# Set-AssignedAccess
+
+- Module:
+    - AssignedAccess Module
+
+Configures a user to launch only one app.
+
+## Syntax
+
+### UserNameANDAppName (Default)
+
+```Syntax
+Set-AssignedAccess
+    -UserName <String>
+    -AppName <String>
+    [-WhatIf]
+    [-Confirm]
+    [<CommonParameters>]
+```
+
+### UserNameANDAppId
+
+```Syntax
+Set-AssignedAccess
+    -UserName <String>
+    -AppUserModelId <String>
+    [-WhatIf]
+    [-Confirm]
+    [<CommonParameters>]
+```
+
+### UserSidANDAppId
+
+```Syntax
+Set-AssignedAccess
+    -UserSID <String>
+    -AppUserModelId <String>
+    [-WhatIf]
+    [-Confirm]
+    [<CommonParameters>]
+```
+
+### UserSidANDAppName
+
+```Syntax
+Set-AssignedAccess
+    -UserSID <String>
+    -AppName <String>
+    [-WhatIf]
+    [-Confirm]
+    [<CommonParameters>]
+```
+
+## Description
+
+The **Set-AssignedAccess** cmdlet configures the specified user account so that it can use only one Windows Store app. The user cannot exit the app, sign out, or access any system settings.
+
+If a user is signed-in or the computer has a PS/2 keyboard, you must restart the computer to apply the changes.
+
+To sign out of assigned access, quickly press the left Windows logo key five times.
+
+Assigned Access cmdlets are supported on Windows 10 and Windows 11 client operating systems only.
+
+## Examples
+
+### Example 1: Set assigned access by SID and app name
+
+```
+PS C:\> Set-AssignedAccess -UserSID "S-1-5-21-523423449-2432423479-234123443-1004" -AppName "CustomApp"
+```
+
+This command configures assigned access by using the user SID and the app name.
+
+### Example 2: Set assigned access by user name and AppUserModelID
+
+```
+PS C:\> Set-AssignedAccess -UserName "UserName" -AppUserModelId "microsoft.windowsphotos_8wekyb3d8bbwe!app"
+```
+
+This command configures assigned access by using the user name and AppUserModelID.
+
+## Parameters
+
+### -AppName
+
+Specifies the name of the installed Windows Store app to use for assigned access. Wildcard characters are accepted.
+
+#### Parameter properties
+
+| Type: | String |
+| --- | --- |
+| Default value: | None |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ UserNameANDAppName
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | True |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+ UserSidANDAppName
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | True |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -AppUserModelId
+
+Specifies the Application User Model ID (AppUserModelID) for the installed Windows Store app to use for assigned access. The AppUserModelID is found in the app's AUMIDs.txt file.
+
+#### Parameter properties
+
+| Type: | String |
+| --- | --- |
+| Default value: | None |
+| Supports wildcards: | False |
+| DontShow: | False |
+| Aliases: | AUMID |
+
+#### Parameter sets
+
+ UserNameANDAppId
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | True |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+ UserSidANDAppId
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | True |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -Confirm
+
+Prompts you for confirmation before running the cmdlet.
+
+#### Parameter properties
+
+| Type: | SwitchParameter |
+| --- | --- |
+| Default value: | False |
+| Supports wildcards: | False |
+| DontShow: | False |
+| Aliases: | cf |
+
+#### Parameter sets
+
+ (All)
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -UserName
+
+Specifies the local user account name to use for assigned access. This cannot be a domain account or an administrator account.
+
+#### Parameter properties
+
+| Type: | String |
+| --- | --- |
+| Default value: | None |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ UserNameANDAppName
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | True |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+ UserNameANDAppId
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | True |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -UserSID
+
+Specifies the security identifier (SID) for the local user account to use for assigned access. This account cannot be a domain account or an administrator account.
+
+#### Parameter properties
+
+| Type: | String |
+| --- | --- |
+| Default value: | None |
+| Supports wildcards: | False |
+| DontShow: | False |
+
+#### Parameter sets
+
+ UserSidANDAppId
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | True |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+ UserSidANDAppName
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | True |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### -WhatIf
+
+Shows what would happen if the cmdlet runs. The cmdlet is not run.
+
+#### Parameter properties
+
+| Type: | SwitchParameter |
+| --- | --- |
+| Default value: | False |
+| Supports wildcards: | False |
+| DontShow: | False |
+| Aliases: | wi |
+
+#### Parameter sets
+
+ (All)
+
+| Position: | Named |
+| --- | --- |
+| Mandatory: | False |
+| Value from pipeline: | False |
+| Value from pipeline by property name: | False |
+| Value from remaining arguments: | False |
+
+### CommonParameters
+
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutBuffer, -OutVariable, -PipelineVariable, -ProgressAction, -Verbose, -WarningAction, and -WarningVariable. For more information, see about_CommonParameters.
+
+## Inputs
+
+### None.
+
+You cannot pipe input to this cmdlet.
+
+## Outputs
+
+### Object
+
+## Notes
+
+- To get all the Windows Store apps installed for a user account, use the Get-AppxPackage cmdlet as follows:
+
+`Get-AppxPackage -User "username"`
+
+## Related Links
+
+- Clear-AssignedAccess
+- Get-AssignedAccess
+
+---
+
+## Other Supported Versions
+
+- windowsserver2016-ps
+- windowsserver2019-ps
+- windowsserver2022-ps

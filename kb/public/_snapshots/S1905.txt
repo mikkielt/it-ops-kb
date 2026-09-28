@@ -1,0 +1,303 @@
+source: S1905
+url: https://github.com/manthanghasadiya/mcpsec
+title: mcpsec: dynamic protocol fuzzer for MCP
+publisher: manthanghasadiya (community)
+licence: MIT (manthanghasadiya/mcpsec LICENSE)
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+manthanghasadiya
+/
+mcpsec
+Public
+Notifications
+You must be signed in to change notification settings
+Fork
+3
+Star
+26
+BranchesTags
+Open more actions menu
+## Latest commit
+## History
+126 Commits
+126 Commits
+## Folders and files
+NameName
+Last commit message
+Last commit date
+.github
+.github
+assets
+assets
+mcpsec
+mcpsec
+tests
+tests
+.gitignore
+.gitignore
+CHANGELOG.md
+CHANGELOG.md
+CONTRIBUTING.md
+CONTRIBUTING.md
+LICENSE
+LICENSE
+README.md
+README.md
+SECURITY.md
+SECURITY.md
+pyproject.toml
+pyproject.toml
+shell.nix
+shell.nix
+## Repository files navigation
+# mcpsec
+Security scanner and protocol fuzzer for MCP servers
+Installation • Quick Start • Audit v3 • Scanners • Fuzzing
+## Why mcpsec?
+MCP (Model Context Protocol) connects AI agents to external tools. Claude Desktop, Cursor, VS Code Copilot, and every major AI IDE uses it. Security is often an afterthought.
+Most MCP security tools do static analysis. mcpsec connects to live servers and proves exploitation.
+## Real Bugs Found
+Target
+Vulnerability
+Severity
+Status
+mobile-mcp
+URL Scheme Injection (CVE-2026-35394, CVSS 8.3) - Arbitrary code execution via unsanitized tool input
+High
+Fixed - PR #299
+MCP Python SDK
+ClosedResourceError DoS (invalid UTF-8)
+High
+Issue #2328 - Fix in PR #2334
+radare2-mcp
+Arbitrary RCE via shell escape (!) in run_command/run_javascript
+Critical
+Issue #45 - Fixed in commit 482cde6
+radare2-mcp
+Multiple SIGSEGV via params type confusion
+High
+Issue #42
+radare2-mcp
+SIGSEGV in initialize via params type confusion
+High
+Issue #52
+MCP Python SDK
+UnicodeDecodeError DoS
+Medium
+Fixed - PR #2302
+mcp-server-fetch
+61 crash cases, exception handling DoS
+High
+Issue #3359
+mcp-server-git
+61 crash cases
+High
+Issue #3359
+MCP TypeScript SDK
+EPIPE crash
+Medium
+Issue #1564
+MCP TypeScript SDK
+Integer overflow DoS (MAX_SAFE_INTEGER+1)
+Medium
+Issue #1765
+More findings under responsible disclosure.
+## Installation
+pip install mcpsec
+For AI-powered features:
+pip install mcpsec[ai]
+### Nix
+nix-shell # basic
+nix-shell --arg withAll true # all optional deps
+## Quick Start
+### Runtime Scanning
+# Scan via stdio
+mcpsec scan --stdio "npx @modelcontextprotocol/server-filesystem /tmp"
+# Scan via HTTP with auth
+mcpsec scan --http http://localhost:8080/mcp -H "Authorization: Bearer TOKEN"
+# Auto-discover and scan all local servers
+mcpsec scan --auto
+# Enumerate attack surface
+mcpsec info --stdio "python my_server.py"
+### Static Analysis (Audit v3)
+# Local source - pattern-based + AI reachability
+mcpsec audit --path ./my-mcp-server
+# GitHub repository
+mcpsec audit --github https://github.com/user/mcp-server
+# With LLM-powered taint analysis
+mcpsec audit --github https://github.com/user/mcp-server --ai
+# Known vulnerable servers
+mcpsec audit --github https://github.com/radareorg/radare2-mcp
+### Protocol Fuzzing
+# Standard fuzzing (~200 cases)
+mcpsec fuzz --stdio "python my_server.py"
+# High intensity (~800 cases)
+mcpsec fuzz --stdio "python my_server.py" --intensity high
+# AI-powered payload generation
+mcpsec fuzz --stdio "python my_server.py" --ai
+### Advanced
+# SQL Injection scanner with DB fingerprinting
+mcpsec sql --stdio "npx @benborla29/mcp-server-mysql" --fingerprint
+# Dangerous tool chain detection
+mcpsec chains --stdio "npx @example/complex-server"
+# Interactive exploitation REPL
+mcpsec exploit --stdio "npx vulnerable-server"
+# Rogue server for client-side testing
+mcpsec rogue-server --port 9999 --attack all
+## Static Analysis - Audit v3
+New in v2.7.1 - Complete rewrite of the audit engine with a pattern-based architecture.
+### 7-Stage Analysis Pipeline
+Source Code
+│
+├─ 1. Fetch - Clone GitHub repo or load local path
+├─ 2. Detect - Identify language, MCP SDK, and framework
+├─ 3. Sink Scan - 3,450+ regex patterns across 12 languages
+├─ 4. Semgrep - 149 semantic rules (AST-level)
+├─ 5. AST - Python/JS taint flow analysis
+├─ 6. Reachability - LLM taint tracing (heuristic fallback)
+└─ 7. Deduplicate - Merge, rank, and report findings
+### Pattern Database - 3,450+ Sink Patterns
+Vulnerability Class
+Patterns
+Languages
+Command Injection
+181
+Python, JS/TS, Go, Rust, Java, C, C#, Ruby, PHP
+SQL / NoSQL Injection
+~100
+All drivers + ORM-specific (Sequelize, SQLAlchemy, Drizzle, Kysely)
+Path Traversal
+~60
+fs, aiofiles, Deno, Bun, tarfile, ZipSlip
+SSRF
+~80
+requests, httpx, aiohttp, gRPC, OkHttp, WebSocket, got
+Deserialization
+~60
+pickle, YAML, torch.load, numpy, joblib, BinaryFormatter
+Code Execution
+~50
+eval, vm, exec, DOM XSS, format strings
+Template Injection
+~30
+Jinja2, Pug, EJS, Handlebars, Lodash, ERB, Velocity, Thymeleaf
+Crypto Weaknesses
+~40
+MD5/SHA-1, RC4, weak keys, JWT none alg
+XXE
+~25
+lxml, untangle, DOMDocument, SAXParser
+Log/Header/LDAP
+~50
+All major frameworks
+Prototype Pollution
+~15
+Object.assign, deepmerge, __proto__
+Sanitizers
+105
+Command, SQL, Path, XSS sanitizers (Python, JS, Go, Rust)
+MCP-Specific
+~45
+Tool args → sinks, prompt/resource handlers (20+ SDKs)
+### Framework Detection
+Automatically identifies:
+MCP SDKs: @modelcontextprotocol/sdk, mcp (Python), mcp-go, rmcp (Rust), mcpx (C#)
+Languages: TypeScript, JavaScript, Python, Go, Rust, Java, C#, PHP, Ruby, C/C++
+Frameworks: Express, FastAPI, Django, Gin, Axum, Spring Boot, ASP.NET
+### Heuristic Fallback
+When no LLM is configured, the reachability analyzer uses confidence scoring to report findings without false silence - high-confidence patterns (CRITICAL/HIGH + direct taint) are always reported.
+## Scanners
+Scanner
+Description
+prompt-injection
+Hidden instructions in tool descriptions
+command-injection
+OS command injection with 138 payloads
+path-traversal
+Directory traversal with 104 payloads
+ssrf
+Server-Side Request Forgery with 81 payloads
+sql
+SQL Injection (Error, Time, Boolean, Stacked)
+auth-audit
+Missing authentication, dangerous tool combos
+description-prompt-injection
+LLM manipulation via descriptions
+resource-ssrf
+SSRF via MCP resource URIs
+capability-escalation
+Undeclared capability abuse
+chains
+Dangerous tool combination detection
+code-execution
+Detects eval(), exec(), and compile() sinks
+template-injection
+Targets SSTI and string formatting vulnerabilities
+rag-poisoning
+Identifies dangerous Write→Read data flows
+idor
+Insecure Direct Object Reference detection
+info-leak
+Environment variable and credential disclosure
+deserialization
+Pickle, XXE, and unsafe YAML parsing
+## Fuzz Generators
+22 generators organized by intensity level:
+Low (~65 cases): malformed_json, protocol_violation, type_confusion, boundary_testing, unicode_attacks
+Medium (~200 cases): + session_attacks, encoding_attacks, integer_boundaries
+High (~800 cases): + injection_payloads, method_mutations, param_mutations, timing_attacks, header_mutations, json_edge_cases, protocol_state, id_confusion, concurrency_attacks, regex_dos, deserialization
+Insane (~1500+ cases): + resource_exhaustion, memory_exhaustion
+## How It Works
+┌─────────┐ MCP Protocol ┌────────────┐
+│ mcpsec │ ◄──── JSON-RPC ────► │ Target │
+│ │ (stdio / HTTP) │ Server │
+└────┬────┘ └────────────┘
+│
+├── Connect & enumerate attack surface
+├── Run 10+ security scanners
+├── Generate 800+ fuzz cases
+├── Execute AI-powered payload mutations
+├── Static audit: 3,450+ sink patterns + 149 Semgrep rules
+└── Report findings with PoC evidence
+## Configuration
+### AI Provider Setup
+mcpsec setup
+Supports: OpenAI, Anthropic, Google, Groq, DeepSeek, Ollama
+### Output Formats
+# JSON
+mcpsec scan --stdio "server" --output results.json
+# SARIF 2.1.0 (GitHub/GitLab/Azure DevOps CI/CD)
+mcpsec fuzz --stdio "server" --output results.sarif
+See CHANGELOG.md for the full release history.
+## Contributing
+See CONTRIBUTING.md for guidelines.
+CI runs automatically on all PRs - linting with Ruff and cross-platform tests (Ubuntu, Windows, macOS).
+## Disclaimer
+For authorized security testing only. Only scan servers you own or have explicit permission to test.
+## License
+MIT
+Built by Manthan Ghasadiya
+## About
+An AI-driven dynamic protocol fuzzer for the Model Context Protocol (MCP). Prove runtime exploitability by discovering state violations, transport crashes, and application-layer logic flaws (SSRF, LFI) before your AI agents do.
+### Topics
+ai-securityappseccybersecurityfuzzermcpmcp-servermcp-toolsmodel-context-protocolpentestingssrfvulnerability-scanners
+### Resources
+Readme
+MIT license
+### Contributing
+Contributing
+### Security policy
+Security policy
+Activity
+### Stars
+26 stars
+### Watchers
+0 watching
+### Forks
+3 forks
+Report repository
+## Releases
+## Packages
+## Contributors
+## Languages

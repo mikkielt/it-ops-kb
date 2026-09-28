@@ -1,0 +1,102 @@
+source: S-75xvev6g
+url: https://learn.microsoft.com/en-us/python/api/azure-mgmt-hybridcompute/azure.mgmt.hybridcompute.types.agentconfiguration?view=azure-python
+title: AgentConfiguration class (azure-mgmt-hybridcompute)
+publisher: Microsoft Learn
+licence: CC BY 4.0 (public mirror MicrosoftDocs/azure-docs-sdk-python)
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+# AgentConfiguration Class
+
+Configurable properties that the user can set locally via the azcmagent config command, or remotely via ARM.
+
+## Constructor
+
+```python
+AgentConfiguration()
+```
+
+## Variables
+
+| Name | Description |
+| --- | --- |
+| proxy\_url | str<br><br>Specifies the URL of the proxy to be used. |
+| incoming\_connections\_ports | list[str] <br><br>Specifies the list of ports that the agent will be able to listen on. |
+| extensions\_allow\_list | list[&lt;xref:"ConfigurationExtension"&gt;] <br><br>Array of extensions that are allowed to be installed or updated. |
+| extensions\_block\_list | list[&lt;xref:"ConfigurationExtension"&gt;] <br><br>Array of extensions that are blocked (cannot be installed or updated). |
+| proxy\_bypass | list[str] <br><br>List of service names which should not use the specified proxy server. |
+| extensions\_enabled | str<br><br>Specifies whether the extension service is enabled or disabled. |
+| guest\_configuration\_enabled | str<br><br>Specified whether the guest configuration service is enabled or disabled. |
+| config\_mode | Union[str, &lt;xref:"AgentConfigurationMode"&gt;] <br><br>Name of configuration mode to use. Modes are pre-defined configurations of security controls, extension allowlists and guest configuration, maintained by Microsoft. Known values are: "full" and "monitor". |
+
+## Attributes
+
+### configMode
+
+Name of configuration mode to use. Modes are pre-defined configurations of security controls, extension allowlists and guest configuration, maintained by Microsoft. Known values are: "full" and "monitor".
+
+```python
+configMode: str | AgentConfigurationMode
+```
+
+### extensionsAllowList
+
+Array of extensions that are allowed to be installed or updated.
+
+```python
+extensionsAllowList: list['ConfigurationExtension']
+```
+
+### extensionsBlockList
+
+Array of extensions that are blocked (cannot be installed or updated).
+
+```python
+extensionsBlockList: list['ConfigurationExtension']
+```
+
+### extensionsEnabled
+
+Specifies whether the extension service is enabled or disabled.
+
+```python
+extensionsEnabled: str
+```
+
+### guestConfigurationEnabled
+
+Specified whether the guest configuration service is enabled or disabled.
+
+```python
+guestConfigurationEnabled: str
+```
+
+### incomingConnectionsPorts
+
+Specifies the list of ports that the agent will be able to listen on.
+
+```python
+incomingConnectionsPorts: list[str]
+```
+
+### proxyBypass
+
+List of service names which should not use the specified proxy server.
+
+```python
+proxyBypass: list[str]
+```
+
+### proxyUrl
+
+Specifies the URL of the proxy to be used.
+
+```python
+proxyUrl: str
+```
+
+---
+
+## Other Supported Versions
+
+- azure-python-preview

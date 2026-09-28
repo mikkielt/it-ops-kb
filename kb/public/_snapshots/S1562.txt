@@ -1,0 +1,51 @@
+source: S1562
+url: https://www.nist.gov/cyberframework
+title: NIST Cybersecurity Framework 2.0
+publisher: NIST
+licence: US Government work (NIST: public information, may be copied)
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+Skip to main content
+An official website of the United States government
+Here’s how you know
+Official websites use .gov
+A .gov website belongs to an official government organization in the United States.
+Secure .gov websites use HTTPS
+A lock (
+) or https:// means you’ve safely connected to the .gov website. Share sensitive information only on official, secure websites.
+https://www.nist.gov/cyberframework
+# Cybersecurity Framework
+Helping organizations to better understand and improve their management of cybersecurity risk
+Seeking comments until October 15, 2026, at 11:59 PM: Special Publication (SP) 1353 ipd (Initial Public Draft), Quick-Start Guide for Using Artificial Intelligence (AI) for Cybersecurity Framework (CSF) Analysis and Reporting.
+## CSF 2.0
+For industry, government, and organizations to reduce cybersecurity risks
+Read the Document
+## Quick Start Guides
+For users with specific common goals
+View the Quick Start Guides
+## CSF 2.0 Profiles
+Templates and useful resources for creating and using both CSF profiles
+See the Profiles
+## Informative References (Mappings)
+See how NIST's resources overlap and share themes
+See the Mappings
+## Videos
+The NIST CSF 2.0
+See more Videos
+CSF 2.0 Webinar Series: Implementing CSF 2.0—The Why, What, and How
+## Latest Updates
+Available for public comment: CSF 2.0 Community Profile for Federal Agency Open Radio Access Network (O-RAN) Deployment. This draft CSF 2.0 profile describes how components that conform to the security specifications produced by the O-RAN ALLIANCE support various CSF 2.0 outcomes.
+The final version of CSF 2.0 Informative References Quick‑Start Guide has published. This document explains how to find, filter, and apply informative references using NIST tools. The document also provides two sample use cases along with examples of how artificial intelligence (AI) tools can support reference data use when implemented with continuous evaluation and improvement.
+Available for public comment: CSF 2.0 Quick-Start Guide for Using Artificial Intelligence (AI) for CSF Analysis and Reporting. This draft quick-start guide illustrates practical and actionable ways AI could be used for analyzing, planning, implementing, and monitoring an organization’s progress toward achieving CSF 2.0 outcomes. The comment period closes October 15.
+The CSF 2.0 has now been translated into Arabic. View all translations of the CSF 2.0 and its many resources.
+February 24, 2026: Celebrating Two Years of CSF 2.0! View the anniversary blog.
+Celebrating 2 years of CSF 2.0
+Credit:
+NIST
+See more Latest Updates
+## Contacts
+### For further information and/or questions about the Cybersecurity Framework
+CONTACT:
+[email protected]
+Was this page helpful?

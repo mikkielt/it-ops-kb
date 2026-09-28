@@ -1,0 +1,17 @@
+source: S1711
+url: https://projectfluent.org/fluent/guide/
+title: Fluent Syntax Guide
+publisher: Project Fluent
+licence: Apache-2.0 (Fluent spec)
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+# Fluent Syntax Guide
+Fluent is a localization paradigm designed to unleash the expressive power
+of the natural language. The format used to describe translation resources
+used by Fluent is called FTL.
+FTL is designed to be simple to read, but at the same time allows to represent
+complex concepts from natural languages like gender, plurals, conjugations,
+and others.
+The following chapters will demonstrate how to use FTL to solve localization
+challenges. Each chapter contains a hands-on example of simple FTL concepts.
