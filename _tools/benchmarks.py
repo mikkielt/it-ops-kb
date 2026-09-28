@@ -1366,15 +1366,27 @@ def s_redaction(b):
     b.row("redaction", "leak scan", "rules", "chars_per_s", chars / (time.perf_counter() - t0), len(texts) * 20)
 
 
+RESEARCH_ENTRY = {  # a judged miss the kb's LAPS article leads for but does not answer (the e2e fixture's `gap` lookup)
+    "id": "66666666-0000-4000-8000-000000000001", "surface": "prompt", "day": "2026-09-28", "tools": ["kb_pack"],
+    "question": "Can Windows LAPS back up the password of a Windows Server 2012 R2 member server to Azure?",
+    "verdict": "weak", "articles": ["public/windows/laps.md"],
+    "summary": "The kb does not say whether Windows Server 2012 R2 is supported.", "judged": "missed"}
+
+
 def s_research(b):
-    """Research cost per accepted fact: learn and apply on the fixture store in a throwaway clone with research on
+    """Research cost per accepted fact: learn and apply on a one-entry store (a gap in the LAPS article's topic) in a
+    throwaway clone with research on
     (one run a day), mode `local` and a local bare origin; the Sonnet run through a shim that logs its usage."""
     clone = b.clone("kb-research", "local")
     (clone / "_private" / "querylog.json").write_text(json.dumps({"mode": "local", "research": True, "research_daily": 1})
                                                       + "\n", encoding="utf-8")
     store = b.scratch / "research-store"
     shutil.rmtree(store, ignore_errors=True)
-    shutil.copytree(FIXTURES / "store", store)
+    (store / "2026-09").mkdir(parents=True)
+    head = {"run": "20260928T120000Z-0000cafe", "pipeline": 2, "retrieval": 4, "kb_commit": "0" * 40,
+            "counts": {"entries": 1, "dropped": 0, "waiting": 0}}
+    (store / "2026-09" / (head["run"] + ".jsonl")).write_text(json.dumps(head) + "\n" + json.dumps(RESEARCH_ENTRY) + "\n",
+                                                             encoding="utf-8", newline="\n")
     log = b.scratch / "research-usage.jsonl"
     log.unlink(missing_ok=True)
     sd = shim_dir(b.scratch / "log-shim", log)
@@ -1391,6 +1403,9 @@ def s_research(b):
     facts = len([ln for ln in diff.splitlines() if ln.startswith("+- ") and re.search(r"\[(DOC|COMMUNITY) ", ln)])
     conflicts = len([ln for ln in git("diff", "--unified=0", "--", "kb/public/_conflicts.md", cwd=clone).splitlines()
                      if ln.startswith("+") and not ln.startswith("+++")])
+    gaps = len([ln for ln in git("diff", "--unified=0", "--", "kb/public/_gaps.md", cwd=clone).splitlines()
+                if ln.startswith("+") and not ln.startswith("+++")])
+    b.row("research", "apply with research", "sonnet", "gap_lines", gaps, 1)
     b.row("research", "apply with research", "sonnet", "research_runs", len(calls), 1)
     b.row("research", "apply with research", "sonnet", "cost", cost, 1)
     b.row("research", "apply with research", "sonnet", "facts_accepted", facts, 1)
