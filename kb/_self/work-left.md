@@ -94,6 +94,15 @@ Kb facts the build rests on: `claude/hooks.md` (async hooks, `prompt_id`, `Stop`
     - `README.md` carries the new results: its opening comparison, the cost table and the benchmark section give the re-run numbers with their Claude Code version, kb size and date, name the new scenarios in a line each, and link the new report.
 
     Check: `grep -rn "benchmark-bare-vs-kb\|reports/token-usage" kb/ _tools/ .claude/ .claude-plugin/ README.md AGENTS.md` prints nothing; `python3 _tools/tests.py` (doc cohesion and links) and `selfdoc.py stale` pass; every number in `README.md` matches a row of the results file; re-running one old and one new scenario with its section's command reproduces its row within the noise the report states. Unchanged: each measurement's method, unless the report states the change beside its numbers.
+13. **Research from the query log.** `querylog.py queue` lists the query log's open gap findings and the `_gaps.md` entries they wrote, and `/kb-research --queue [N]` works through the top N the way `/kb-research` works any question.
+
+    Done:
+    - `queue` re-runs each gap with `pack` on `HEAD` first; a gap that now passes is recorded `fixed-since` and leaves the queue;
+    - the queue groups gaps by topic and ranks them by how many logged lookups asked them, then by age; the same store and `HEAD` give the same output in any clone;
+    - `/kb-research --queue [N]` researches each queued gap within its topic as the skill does today (topic map first, official sources, tagged facts, source rows, an answer), closes its `_gaps.md` entry by the content rules, and appends a findings record with the promotion (gap to claim, by kb-research); a gap official sources do not settle keeps its entry with a dated note of what was tried and stays out of the next queue until its note is older than a set age;
+    - the router hook sends "research the query log's gaps" and similar prompts to `/kb-research`, and `AGENTS.md` stays within its cap.
+
+    Check: tests for the ranking, the `fixed-since` re-run and convergence (a second `queue` after a closing run omits the closed gap; a planted closed gap that reappears fails); `python3 .claude/hooks/kb_change_router.py --test "research the gaps from the query log"` names `/kb-research`; one real `/kb-research --queue 1` on an open gap when the store has one, else on a fixture kb copy; `/kb-verify`. Unchanged: `/kb-research` on a plain question.
 
 ## Watch
 
