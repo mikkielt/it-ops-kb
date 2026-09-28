@@ -2,8 +2,8 @@
 topic: agents/doc-change-detection
 priority: P3
 applies_to: "Microsoft Learn page metadata, markdown endpoint, sitemaps and MicrosoftDocs redirection files (probed 2026-09-27); Memento (RFC 7089); Internet Archive Wayback Availability and CDX APIs; soft-404 detection (WWW 2004)"
-retrieved_utc: 2026-09-27
-sources: [S-7jumyiid, S-zb3jd525, S-lldnrkhv, S-ecrpwvoh, S-v3vc7a3l, S-xv7jeuvk, S-ybuoluc4, S-xpbhjzu7, S-rgpijsmb, S-pcy7cqea, S2196, S2177, S-2dckbgu5, S-km6slvii, S-s6xjctzu, S-oo5kmppv, S-znp63ln6, S-xc4ibwg4, S-vh33l6f5, S-qvogwadn, S2176, S-lylm4eqz]
+retrieved_utc: 2026-09-28
+sources: [S-7jumyiid, S-zb3jd525, S-lldnrkhv, S-ecrpwvoh, S-v3vc7a3l, S-xv7jeuvk, S-ybuoluc4, S-xpbhjzu7, S-rgpijsmb, S-pcy7cqea, S2196, S2177, S-2dckbgu5, S-km6slvii, S-s6xjctzu, S-oo5kmppv, S-znp63ln6, S-xc4ibwg4, S-vh33l6f5, S-qvogwadn, S2176, S-lylm4eqz, S-7ivxsp4z, S-ffzntayk, S-7n65j7bo]
 status: complete
 ---
 
@@ -33,6 +33,12 @@ through Memento (RFC 7089) and the Wayback CDX API. A page that answers `200` wi
 - The public mirror repositories hold those commits: the Entra device-identity page's `git_commit_id` resolves in `MicrosoftDocs/entra-docs` and its file is readable at that commit, and the ConfigMgr page's commit resolves in the archived `MicrosoftDocs/memdocs`. [DOC S-xpbhjzu7, S-rgpijsmb]
 - So the old text of a Learn page can be fetched from the public mirror at a stored `git_commit_id`, without keeping a local copy, as long as the mirror is public and still receives commits; `memdocs` was archived on 2026-09-02, so later ConfigMgr and Intune commits cannot be found there. [DER S-xpbhjzu7, S-rgpijsmb, S2196: commit lookups plus the archive date]
 - `microsoft_docs_fetch` (the Learn MCP server) returns the article as markdown without the front matter, so it carries no `updated_at` or `git_commit_id`; a change check needs a plain HTTP request for those. [DER S2177: the fetches made for this article returned bare markdown]
+
+### Learn site search endpoint
+- `learn.microsoft.com/api/search?search=<query>&locale=en-us&$top=<n>` answered `200 application/json` without authentication; each result carries `title`, `url`, `description`, `lastUpdatedDate`, `breadcrumbs`, `category` and `products`, and the response has `count` and `nextLink`. [DOC S-7ivxsp4z]
+- For the Entra page "Manage devices in Microsoft Entra ID", the search result's `lastUpdatedDate` (2026-08-25T07:33) was the page's own `updated_at` from its markdown form. [DOC S-7ivxsp4z, S-7n65j7bo]
+- So one search request returns the content date of up to `$top` pages at once, a cheaper batch signal than fetching each page, and it also finds pages a moved passage may have gone to. [DER S-7ivxsp4z, S-7n65j7bo: one page compared; a larger sample would confirm]
+- The documented Learn Platform API (`learn.microsoft.com/api/v1`) is an authenticated catalog of training content (modules, learning paths, certifications, exams) and states it does not output documentation, so the site search endpoint above is undocumented and may change without notice. [DOC S-ffzntayk]
 
 ### Sitemaps
 - `learn.microsoft.com/robots.txt` names `https://learn.microsoft.com/_sitemaps/sitemapindex.xml`; the index listed several thousand sitemap files split by product and locale (for example `intune_en-us_1.xml`), each with a `lastmod` date. [DOC S-zb3jd525]

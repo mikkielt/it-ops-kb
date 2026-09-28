@@ -89,13 +89,15 @@ def repo_roots():
 
 
 class _PageText(html.parser.HTMLParser):
-    """Visible text of an HTML page, one block per line; <main> only when the page has one."""
+    """Visible text of an HTML page, one block per line; <main> only when the page has one. `headings` starts each
+    h1-h6 line with Markdown `#` marks (provider.py's document text; the hash text of --diff has none)."""
     SKIP = {"script", "style", "noscript", "svg", "template", "head", "nav", "footer", "button", "form", "aside"}
     BLOCK = {"p", "div", "li", "tr", "br", "h1", "h2", "h3", "h4", "h5", "h6", "pre", "table", "section", "article", "dd", "dt"}
 
-    def __init__(self):
+    def __init__(self, headings=False):
         super().__init__(convert_charrefs=True)
         self.skip = self.main = 0
+        self.headings = headings
         self.all, self.in_main, self.saw_main = [], [], False
 
     def handle_starttag(self, tag, attrs):
@@ -106,6 +108,8 @@ class _PageText(html.parser.HTMLParser):
             self.saw_main = True
         if tag in self.BLOCK:
             self._emit("\n")
+        if self.headings and not self.skip and re.fullmatch(r"h[1-6]", tag):
+            self._emit("#" * int(tag[1]) + " ")
 
     def handle_endtag(self, tag):
         if tag in self.SKIP and self.skip:

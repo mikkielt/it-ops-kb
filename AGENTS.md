@@ -25,7 +25,7 @@ Three remote servers, no authentication, urls in `.claude-plugin/it-ops-kb-docs/
 
 ## Skills
 
-`/kb-lookup`, `/kb-review-workspace` and `/kb-gap` (read-only: review another project's code against the kb; draft a report of what the kb lacks). **A request to change the kb goes through its skill**, not freehand edits (a hook names it): `/kb-setup`, `/kb-research`, `/kb-refresh`, `/kb-add-topic`, `/kb-add-root`, `/kb-census`, `/kb-verify`, `/kb-git-sync`, `/kb-self`. They follow `kb/_self/maintaining.md`.
+`/kb-lookup`, `/kb-review-workspace` and `/kb-gap` (read-only: review another project's code against the kb; report what the kb lacks). **A request to change the kb goes through its skill**, not freehand (a hook names it): `/kb-setup`, `/kb-research`, `/kb-refresh`, `/kb-add-topic`, `/kb-add-root`, `/kb-census`, `/kb-probe`, `/kb-verify`, `/kb-git-sync`, `/kb-self`. They follow `kb/_self/maintaining.md`.
 
 ## Agent conduct
 

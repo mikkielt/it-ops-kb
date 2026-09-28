@@ -1,6 +1,6 @@
 # Web sources: fetch routes and staging a new source family
 
-How the kb reads web pages, which route each source family takes, and the runbook for staging a new family when it grows (for example a vendor whose documentation comes to back a large share of a root's facts). The routes table is what `/kb-research` and `/kb-refresh` follow; change detection per provider is a separate open item (`kb/_self/work-left.md`, "Provider registry and a probe skill"), and a staged family's properties become its row there once the registry exists.
+How the kb reads web pages, which route each source family takes, and the runbook for staging a new family when it grows (for example a vendor whose documentation comes to back a large share of a root's facts). The routes table is what `/kb-research` and `/kb-refresh` follow. How each provider tells that a page changed (validators, version ids, raw form, sitemap, soft 404s) is its row in the provider registry, `_tools/providers.csv` (a team's internal providers: its root's `_providers.csv`), measured by `/kb-probe` with `_tools/provider.py`; a staged family's properties become its row there.
 
 ## Two readers
 
@@ -39,7 +39,7 @@ Stop at the lowest level that passes the acceptance check. Most families stop at
 | 0 generic | `_PageText` as is | none | nothing |
 | 1 route | a better endpoint than the HTML page | what the vendor documents: an MCP server or search API; a raw or markdown form (`.md`, `llms.txt`, `Accept: text/markdown`); a public source repository of the docs; a JSON API for versions or packages; authentication and rate limits; the licence class for `reuse`; the url scheme for versions (a release or product version in the path), so rows can be pinned as `kb/_self/content-rules.md` requires | a row in the table above; the endpoints as facts in `agents/doc-lookup-sources.md` and its csv (through `/kb-research`); a `classify` branch in `_tools/census.py` when the route gives a cheaper change signal |
 | 2 extractor recipe | host-specific HTML reduction | from a sample of pages (below), per page template: the content container (tag, id or class); chrome inside it (breadcrumbs, version picker, in-page table of contents, feedback widgets, "was this helpful"); how code blocks and tables are marked; server-rendered text or JSON in `<script>`; whether one topic spans several pages; redirects | a per-host entry in `_PageText` (`_tools/fetch.py`) and its acceptance expectations |
-| 3 change signals | cheaper detection than the text hash | the provider properties in `kb/_self/work-left.md` (version ids, ETag, sitemap `lastmod`, redirect records, a history API) | a census check for the family; later its provider registry row |
+| 3 change signals | cheaper detection than the text hash | the provider properties (version ids, ETag, sitemap `lastmod`, redirect records, a history API) | its row in `_tools/providers.csv`, measured by `/kb-probe`; a census check for the family |
 
 A bot wall, a login or a JavaScript challenge is a level 1 problem (find another route, or a person reads it in a browser), never something a recipe works around.
 

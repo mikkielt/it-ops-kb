@@ -35,6 +35,7 @@ The routing is also deterministic: `.claude/hooks/kb_change_router.py`, a UserPr
 | `/kb-add-root <name>` | a new knowledge root beside `kb/public` (name, id prefix, visibility), created with `kbroot.py` and checked | content rules, git |
 | `/kb-refresh <topic\|dir\|file\|S-id>` | diff sources and update the facts | content rules, tools, git |
 | `/kb-census [date]` | confirm every source is current: mechanical checks, reading the undecided ones, dates only for what was confirmed, a sample check, the census tag | content rules, tools, git |
+| `/kb-probe <provider>` | measure a documentation provider's change signals and update its registry row (`_tools/providers.csv`, or a root's `_providers.csv`) | web sources, tools, git |
 | `/kb-verify [prefixes]` | quality gate before a commit or a push | content rules, tools |
 | `/kb-git-sync [--push]` | sync with `origin/main` when `kbgit.py sync` stops (exit 1 or 3): resolves conflicts by meaning, fixes a red gate, pushes only when asked | git, content rules |
 | `/kb-self [doc\|--since REV\|all]` | bring `kb/_self/` back in line with the code, skills and config it describes | `kb/_self/README.md`, `kb/_self/map.csv` |

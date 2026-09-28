@@ -32,6 +32,7 @@ ROUTES = (  # (skill, when, pattern): the first three that match are named, in t
     ("kb-add-root", "a new knowledge root under kb/", r"\bnew (?:kb )?root\b|\b(?:add|create) (?:a |an )?(?:new )?(?:kb |knowledge )?root\b"),
     ("kb-add-topic", "a new topic, article or data table", r"\bnew (?:topic|article|domain|table)\b|"
      r"\b(?:add|write|create) (?:a |an )?(?:new )?(?:topic|article|domain|table)\b"),
+    ("kb-probe", "measure a documentation provider's change signals", r"\bprobe\b|\bproviders?\b"),
     ("kb-research", "research a question and extend the topics", r"\bresearch|\binvestigat|\bfind out\b"),
     ("kb-git-sync", "commit, push, pull, merge", r"\bcommit\b|\bpush|\bpull\b|\bsync\b|\brebase\b|\bmerg|\bconflict"),
     ("kb-verify", "check a change before committing", r"\bverify\b|\bgate\b|\blint\b|\bbefore (?:the |a )?commit"),

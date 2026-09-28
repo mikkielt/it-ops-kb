@@ -72,3 +72,7 @@ kb/_self/web-sources.md,_tools/fetch.py
 kb/_self/web-sources.md,_tools/census.py
 kb/_self/web-sources.md,.claude/skills/kb-research/SKILL.md
 kb/_self/work-left.md,-
+kb/_self/tools.md,_tools/provider.py
+kb/_self/tools.md,_tools/providers.csv
+kb/_self/web-sources.md,_tools/provider.py
+kb/_self/web-sources.md,_tools/providers.csv
