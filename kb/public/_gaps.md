@@ -1039,3 +1039,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
 ## claude/hooks
 
 - **The shape of `tool_response` for an MCP tool call in `PostToolUse`.** The hooks reference documents `tool_response` as "the result it returned" with a per-tool schema, and shows it for Write, Bash, Agent and ExitPlanMode, but not for an MCP tool (searched `code.claude.com/docs/en/hooks.md` for `tool_response` and `MCP`, 2026-09-28). The query log capture reads it defensively (a string, a content-block list or an object). [UNK] (topic: claude/hooks)
+
+## gitlab/automated-merge-requests
+
+- The exit code of `glab auth status` when the host is not signed in: the generated command page (S-d6wuvfpd, gitlab-org/cli @37ebe99d `docs/source/auth/status.md`) describes the checks and flags but no exit status (2026-09-28). [UNK] (topic: gitlab/automated-merge-requests)

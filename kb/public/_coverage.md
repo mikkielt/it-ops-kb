@@ -130,7 +130,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `gitlab/pipelines-rules` | P0 | complete | `gitlab/pipelines-rules.md` | 6 |
 | `gitlab/protected-branches-tags` | P0 | complete | `gitlab/protected-branches-tags.md` | 3 |
 | `gitlab/variables` | P0 | complete | `gitlab/variables.md` | 2 |
-| `gitlab/automated-merge-requests` | P3 | complete | `gitlab/automated-merge-requests.md` | 5 |
+| `gitlab/automated-merge-requests` | P3 | complete | `gitlab/automated-merge-requests.md` | 15 |
 | `gitlab/hosted-runners-windows` | P3 | complete | `gitlab/hosted-runners-windows.md` | 5 |
 | `gpo/admx-central-store` | P1 | complete | `gpo/admx-central-store.md` | 8 |
 | `gpo/dsc-group-policy-adapter` | P2 | complete | `gpo/dsc-group-policy-adapter.md` | 3 |

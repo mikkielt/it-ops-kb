@@ -1872,6 +1872,19 @@ _Agent: kb-research_
 
 _Agent: kb-research_
 
+## QK-automation-that-pushes-main-read-commit. How does an automation that pushes to main read its commit's CI status on GitLab or GitHub, which states are red, and how are push options tested against a local bare remote
+- GitLab: `GET /projects/:id/pipelines?sha=<sha>` lists the commit's pipelines, newest first, with `:id` the project ID or URL-encoded path; `GET /projects/:id/repository/commits/:sha` gives `last_pipeline.status`. [DOC S-kdfwn4eo, S-ijtwicvp]
+- Pipeline statuses: `created`, `waiting_for_resource`, `preparing`, `waiting_for_callback`, `pending`, `running`, `success`, `failed`, `canceling`, `canceled`, `skipped`, `manual`, `scheduled`. [DOC S-kdfwn4eo]
+- Optional manual jobs do not count toward the pipeline status; a blocking manual job leaves the pipeline **blocked**. [DOC S-4darq3cp]
+- `glab api` takes `--hostname` (default: the Git directory's authenticated host, else `gitlab.com`) and fills `:id` or `:fullpath` from the current repository; `glab auth status --hostname <host>` checks one instance. [DOC S-fa7zbfwo, S-d6wuvfpd]
+- GitHub: `gh run list --commit <SHA> --json status,conclusion`; runs have `status` `queued` ... `completed`, and a completed one a `conclusion` such as `failure`, `timed_out`, `cancelled`, `skipped` or `success`; `gh auth status` exits 1 when the host's account has authentication issues. [DOC S-zg5iu4oe, S-4hzaehlu, S-6omn4l4d]
+- A bare repository advertises push options only with `receive.advertisePushOptions=true` (false by default), and its `pre-receive` hook sees them in `GIT_PUSH_OPTION_COUNT` and `GIT_PUSH_OPTION_<n>`. [DOC S-ygtpb7no, S-7dwkyip6]
+- Conclusion: only a finished failure is red (`failed`; `failure`, `timed_out`, `startup_failure`); unfinished states mean wait, and `manual`, `skipped` and `canceled` are not red. Tests of the conflict branch's push options need a bare remote with `receive.advertisePushOptions` set and a hook that records the options. [DER S-kdfwn4eo, S-4darq3cp, S-4hzaehlu, S-ygtpb7no, S-7dwkyip6]
+- Open: the exit code of `glab auth status` for a host that is not signed in is not documented. [UNK]
+- See gitlab/automated-merge-requests.md.
+
+_Agent: kb-research_
+
 ## R1. Reuse candidates
 
 - **Highest leverage: `pydantic-settings` as a `dependency` for a project's config-file/env-var/flags
