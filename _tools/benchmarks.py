@@ -1528,7 +1528,9 @@ How the team names its Intune compliance policies and sets the grace period of t
 ROOTS_Q = ("what is our team's naming rule for Intune compliance policies, and can the built-in Mark device "
            "noncompliant action be removed?")
 ROOTS_CHECKS = [r"CMP-", r"(?i)can.?not be removed|can't be removed|cannot remove|can't remove|not be removed",
-                r"team/intune/compliance-naming\.md", r"compliance-policies\.md"]
+                # a citation from each root: its path or its source id or url
+                r"team/intune/compliance-naming|TM-unavfdbc|intune-compliance-naming",
+                r"compliance-policies\.md|S-u3qwumeu|actions-for-noncompliance"]
 
 
 def s_host_roots(b):
