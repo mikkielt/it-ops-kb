@@ -25,6 +25,11 @@
                     name and private context and a generic kb_pack question store the pack's question and no word of
                     the prompt or the reply), its citations are the path:line of the kb lines the reply named, else
                     the pack's first ones; Haiku's free text is ignored; a kb prompt with no kb call has no question
+  TestSpoolFormats  the compat spool (_tools/fixtures/querylog/compat/: one row per row format capture has written,
+                    per surface) and its recorded Haiku reply distill to a run file that passes `check`, with nothing
+                    dropped; format 0 kb rows without `lines` get pack's lines of their recorded articles only
+                    (`cited: pack`), and an entry with no citation keeps no articles; a planted row of each shape;
+                    an unknown future `v` and malformed rows are skipped and counted; a second distill writes nothing
   TestLock         a second distill exits on the lock (exit 3) and changes nothing; a stale lock is taken over;
                     of several processes taking the lock at once exactly one gets it
   TestLaunch        SessionEnd marks its session closed; the launcher returns within the 1.5-second budget with its
@@ -35,7 +40,8 @@
   TestStore         the store gates, each with a planted failure: a duplicate id across run files (also through
                     `kbgit.py fix --check`), a missing header or provenance field, run metadata or raw fields in an
                     entry, an identifier in the question, free text in an entry (a summary, an unknown field, text in
-                    a closed field), citations that are not path:line or missing beside articles, a fetch with a
+                    a closed field), citations that are not path:line or missing beside articles, a count other than
+                    entries, dropped, waiting and a positive skipped, a fetch with a
                     query string, a non-public host or command
                     text; `pack` and `search` never return a kb/_querylog/ line; _cache/ stays ignored
   TestLearn         the fixture store (_tools/fixtures/querylog/store/) gives findings of each kind with pack on
@@ -192,6 +198,7 @@ class TestHookRows:
         assert [r["prompt"] for r in rows][2] == "hello there" and rows[0]["prompt_id"] == "p0"
         assert len({r["id"] for r in rows}) == 3 and all(is_uuid4(r["id"]) for r in rows)
         assert all(r["session_id"] == SID for r in rows)
+        assert all(r["v"] == querylog.ROW_FORMAT for r in rows)  # the row format distill branches on
         assert [f.name for f in spool(tmp_path).iterdir()] == [f"{SID}.jsonl"]
         datetime.datetime.fromisoformat(rows[0]["ts"].replace("Z", "+00:00"))
 
@@ -846,7 +853,7 @@ class TestDistill:
         assert drop is None and entry["cited"] == "pack" and entry["question"] == "windows laps password length"
         assert [x["line"] for x in entry["citations"]] == [f"public/windows/laps.md:{n}" for n in range(20, 25)]
         assert judge == {"question": "windows laps password length", "prompt": "how long?",
-                         "answer": "It is 14 (laps.md:99)."}  # Haiku judges from these; none of it is stored
+                         "answer": "It is 14 (laps.md:99).", "candidates": []}  # Haiku judges from these; none is stored
 
     def test_haiku_free_text_is_ignored(self):
         items = [{"i": 0, "candidates": ["public/windows/laps.md"]}, {"i": 1, "candidates": []}]
@@ -889,15 +896,19 @@ class TestDistill:
                                   "outcome": "http-200", "n": 1, "chars": 900}]}
         assert not querylog.is_miss(e) and querylog.host_fetches([(RUN_ID, e)])  # no lookup to learn from; the fetch counts
 
-    def test_an_entry_whose_articles_have_no_kb_lines_is_dropped(self, tmp_path):
+    def test_an_entry_whose_articles_have_no_kb_lines_keeps_no_articles(self, tmp_path):
+        """A row of format 1 whose result held no kb line: the entry is kept without `articles` (an article is stored
+        only with the lines that back it), and Haiku still judges among the recorded articles."""
         import redact
-        rows = [{"id": E("j1"), "ts": "2026-09-27T10:00:00.000Z", "surface": "kb_hook", "question": "laps",
+        rows = [{"id": E("j1"), "ts": "2026-09-27T10:00:00.000Z", "surface": "kb_hook", "v": 1, "question": "laps",
                  "verdict": "good", "articles": ["public/windows/laps.md"]}]
         entry, judge, drop = querylog.entry_of(rows, redact.known())
-        assert (judge, drop) == (None, "articles without their kb lines") and "citations" not in entry
+        assert drop is None and not {"citations", "cited", "articles"} & set(entry) and entry["question"] == "laps"
+        assert judge["candidates"] == ["public/windows/laps.md"]
         rows[0]["lines"] = [{"line": "public/windows/laps.md:24", "tag": "DOC", "verdict": "good"}]
         entry, judge, drop = querylog.entry_of(rows, redact.known())
         assert drop is None and entry["citations"] == rows[0]["lines"] and judge["question"] == "laps"
+        assert entry["articles"] == ["public/windows/laps.md"]
 
     def test_over_the_caps_entries_wait(self, tmp_path, monkeypatch):
         monkeypatch.setattr(querylog, "HAIKU_BATCH_ENTRIES", 2)
@@ -963,6 +974,209 @@ class TestDistill:
         rc, said = run_distill(q, echo)
         assert (rc, said, store_files(q)) == (0, ["distill: logging is off"], [])
         assert (sp / f"{S_ENDED}.jsonl").exists()
+
+
+COMPAT = FIXTURES / "compat"  # one spool row per row format capture has written, per surface
+S_COMPAT = "bbbbbbbb-0000-4000-8000-000000000001"
+SHAPES = json.loads((COMPAT / "shapes.json").read_text(encoding="utf-8"))  # {row id: the shape it stands for}
+SHAPE_ROWS = {shape: rid for rid, shape in reversed(list(SHAPES.items()))}  # {shape: its first row id}
+LAPS = "public/windows/laps.md"
+
+
+def plant_compat(qdir, extra_session=(), extra_tools=()):
+    """The compat spool under qdir/spool, its session ended an hour before NOW, plus raw lines appended to the
+    session file and to the tools file."""
+    sp = Path(qdir) / "spool"
+    sp.mkdir(parents=True, exist_ok=True)
+    for f in (COMPAT / "spool").iterdir():
+        more = extra_tools if f.name.startswith("tools-") else extra_session
+        (sp / f.name).write_text(f.read_text(encoding="utf-8") + "".join(ln + "\n" for ln in more),
+                                 encoding="utf-8", newline="\n")
+        os.utime(sp / f.name, (NOW.timestamp() - 3600,) * 2)
+    (sp / f"{S_COMPAT}.end").touch()
+    return sp
+
+
+def compat_rows():
+    out = []
+    for f in sorted((COMPAT / "spool").iterdir()):
+        out += jsonl(f)
+    return out
+
+
+class TestSpoolFormats:
+    """Every spool row format capture has written distills: rows without `v` (format 0) with or without `lines`,
+    `verdicts`, `kb_intent`, `chars`, host and path; rows cut to their ids; rows of format 1. A row distill cannot
+    read is skipped and counted."""
+
+    def test_the_compat_spool_distills_and_passes_check(self, tmp_path):
+        q = tmp_path / "querylog"
+        sp = plant_compat(q)
+        rc, said = run_distill(q, querylog.Replay(COMPAT / "haiku.json"))
+        assert rc == 0 and said == [f"distill: run={RUN_ID} entries=17 dropped=0 waiting=0"], said
+        (run,) = store_files(q)
+        header, *entries = jsonl(run)
+        assert header["pipeline"] == querylog.PIPELINE_VERSION and "skipped" not in header["counts"]
+        assert querylog.store_problems(q / "store") == []
+        p = subprocess.run([sys.executable, QL, "check", str(q / "store")], capture_output=True, text=True,
+                           encoding="utf-8", timeout=300)
+        assert p.returncode == 0, p.stdout + p.stderr
+        assert list(sp.iterdir()) == []  # the closed session and the finished day are distilled
+        by = {e["id"]: e for e in entries}
+        kept = {r["id"] for r in compat_rows() if r.get("surface") == "prompt" and r.get("prompt_id") != "pj"}
+        kept |= {r["id"] for r in compat_rows() if "session_id" not in r}
+        assert set(by) == kept  # every lookup is an entry; the prompt that never used the kb is none
+        rows = {r["id"]: r for r in compat_rows()}
+        for e in entries:
+            assert not {"verdicts", "chars", "v", "cut", "answer", "prompt"} & set(e) or e["surface"] == "tool_fetch"
+            for f in e.get("fetches", []):
+                assert set(f) <= set(querylog.FETCH_KEYS)
+        # format 0 kb rows without `lines`: pack re-ran their own questions, lines of their recorded articles only
+        for pid, article in (("pa", LAPS), ("pb", "public/intune/win32-apps.md")):
+            e = next(e for i, e in by.items() if rows[i].get("prompt_id") == pid)
+            assert e["cited"] == "pack" and e["articles"] == [article], e
+            assert e["citations"] and all(x["line"].rsplit(":", 1)[0] == article for x in e["citations"])
+        # no line of the recorded article (format 0), and no line in the result (format 1): kept without articles
+        for pid in ("pc", "pk"):
+            e = next(e for i, e in by.items() if rows[i].get("prompt_id") == pid)
+            assert e["question"] and not {"articles", "citations", "cited"} & set(e), e
+        pk = next(e for i, e in by.items() if rows[i].get("prompt_id") == "pk")
+        assert pk["best"] == LAPS  # Haiku judged among the recorded articles
+        # format 0 rows with `lines` keep their own: the reply named one
+        pf = next(e for i, e in by.items() if rows[i].get("prompt_id") == "pf")
+        assert (pf["cited"], pf["citations"]) == ("reply", [{"line": f"{LAPS}:25", "tag": "DOC", "verdict": "good"}])
+        # a fetch row without chars, host or path keeps what it has
+        pb = next(e for i, e in by.items() if rows[i].get("prompt_id") == "pb")
+        assert all("chars" not in f for f in pb["fetches"])
+        assert {"tool": "mcp__microsoft-learn__microsoft_docs_search", "outcome": "unknown", "n": 1} in pb["fetches"]
+        # rows cut to their ids give an entry of the day alone
+        pi = next(e for i, e in by.items() if rows[i].get("prompt_id") == "pi")
+        assert set(pi) == {"id", "surface", "day"}
+
+    def test_a_second_distill_writes_nothing_new(self, tmp_path):
+        """Convergence, in mode local (the spool rows go) and with the rows kept for delivery (mode auto): the
+        entries a run file holds are not distilled again, pack's re-run included."""
+        q = tmp_path / "querylog"
+        plant_compat(q)
+        run_distill(q, querylog.Replay(COMPAT / "haiku.json"))
+        files = {p: p.read_bytes() for p in store_files(q)}
+        rc, said = run_distill(q, echo, run_id="20260928T130000Z-0000abcf")
+        assert rc == 0 and said == ["distill: nothing to write (waiting=0)"] and \
+            {p: p.read_bytes() for p in store_files(q)} == files
+        k = tmp_path / "keep"
+        sp = plant_compat(k)
+        said = []
+        querylog._distill(k, querylog.Replay(COMPAT / "haiku.json"), NOW, RUN_ID, "0" * 40, said.append, keep=True)
+        assert said[0] == f"distill: run={RUN_ID} entries=17 dropped=0 waiting=0", said
+        files = {p: p.read_bytes() for p in store_files(k)}
+        spool_before = {p.name: p.read_bytes() for p in sp.iterdir()}
+        said = []
+        querylog._distill(k, echo, NOW, "20260928T130000Z-0000abcf", "0" * 40, said.append, keep=True)
+        assert said[0] == "distill: nothing to write (waiting=0)", said
+        assert {p: p.read_bytes() for p in store_files(k)} == files
+        assert {p.name: p.read_bytes() for p in sp.iterdir()} == spool_before
+
+    @pytest.mark.parametrize("shape", sorted(SHAPE_ROWS))
+    def test_a_planted_row_of_each_shape(self, tmp_path, shape):
+        """One row of each shape in a spool of its own: in a kb prompt of a closed session (a prompt row: with a
+        kb_hook row of format 1), or alone in a finished day's tools file. It is read, never skipped or dropped, and
+        the run file passes the gates."""
+        row = next(r for r in compat_rows() if r["id"] == SHAPE_ROWS[shape])
+        q = tmp_path / "querylog"
+        sp = q / "spool"
+        sp.mkdir(parents=True)
+        if "session_id" not in row:
+            (sp / "tools-2026-09-25.jsonl").write_text(json.dumps(row) + "\n", encoding="utf-8", newline="\n")
+        else:
+            row = dict(row, prompt_id="d1")
+            ts = row["ts"][:-5]
+            base = [{"id": E("d1"), "ts": ts + "0.000Z", "surface": "prompt", "session_id": S_COMPAT,
+                     "prompt_id": "d1", "prompt": "kb: laps password length", "kb_intent": "lookup"},
+                    {"id": E("d2"), "ts": ts + "0.500Z", "surface": "kb_hook", "v": 1, "session_id": S_COMPAT,
+                     "prompt_id": "d1", "question": "laps password length", "verdict": "good", "articles": [LAPS],
+                     "lines": [{"line": f"{LAPS}:24", "tag": "DOC", "verdict": "good"}]}]
+            rs = [row, base[1]] if row["surface"] == "prompt" else base + [row]
+            (sp / f"{S_COMPAT}.jsonl").write_text("".join(json.dumps(r) + "\n" for r in rs), encoding="utf-8",
+                                                  newline="\n")
+            os.utime(sp / f"{S_COMPAT}.jsonl", (NOW.timestamp() - 3600,) * 2)
+            (sp / f"{S_COMPAT}.end").touch()
+        rc, said = run_distill(q, echo)
+        assert rc == 0 and said == [f"distill: run={RUN_ID} entries=1 dropped=0 waiting=0"], said
+        assert querylog.store_problems(q / "store") == []
+        assert list(sp.iterdir()) == []
+
+    def test_unknown_and_malformed_rows_are_skipped_and_counted(self, tmp_path):
+        """A row of an unknown future format, or one distill cannot read, is skipped and counted in the header; the
+        rest distills as before, and the skipped rows go with the pass that counted them."""
+        future = {"id": E("e1"), "ts": "2026-09-26T09:00:02.000Z", "surface": "kb_hook", "v": 2,
+                  "session_id": S_COMPAT, "prompt_id": "pa", "question": "laps", "cites": ["laps@24"]}
+        bad = [json.dumps(future), json.dumps(dict(future, id=E("e2"), v="1")), json.dumps(dict(future, id=E("e3"), v=True)),
+               json.dumps(dict(future, id=E("e4"), v=0)), '{"id": "' + E("e5") + '", "ts": "2026-09-26T09', "[1, 2]",
+               json.dumps({"ts": "2026-09-26T09:00:03.000Z", "surface": "prompt"}),
+               json.dumps({"id": E("e6"), "ts": "2026-09-26T09:00:04.000Z", "surface": "telemetry"}),
+               json.dumps({"id": E("e7"), "surface": "stop", "answer": "no time"}), ""]
+        tools_bad = [json.dumps({"id": E("e8"), "ts": "2026-09-25T08:00:01.000Z", "surface": "kb_ask", "v": 9,
+                                 "question": "laps"})]
+        q = tmp_path / "querylog"
+        sp = plant_compat(q, bad, tools_bad)
+        rc, said = run_distill(q, querylog.Replay(COMPAT / "haiku.json"))
+        assert rc == 0 and said == [f"distill: run={RUN_ID} entries=17 dropped=0 waiting=0 skipped=10"], said
+        header = jsonl(store_files(q)[0])[0]
+        assert header["counts"] == {"entries": 17, "dropped": 0, "waiting": 0, "skipped": 10}
+        assert querylog.store_problems(q / "store") == [] and list(sp.iterdir()) == []
+        rc, said = run_distill(q, echo, run_id="20260928T130000Z-0000abcf")
+        assert said == ["distill: nothing to write (waiting=0)"]
+        # an open session's rows are neither read nor counted, and stay as they are
+        o = tmp_path / "open"
+        sp = o / "spool"
+        sp.mkdir(parents=True)
+        (sp / f"{S_COMPAT}.jsonl").write_text(json.dumps(future) + "\n", encoding="utf-8", newline="\n")
+        before = (sp / f"{S_COMPAT}.jsonl").read_bytes()
+        rc, said = run_distill(o, echo)
+        assert said == ["distill: nothing to write (waiting=0)"] and store_files(o) == []
+        assert (sp / f"{S_COMPAT}.jsonl").read_bytes() == before
+        # only skipped rows in a closed session: a run file that counts them, with no entry
+        (sp / f"{S_COMPAT}.end").touch()
+        rc, said = run_distill(o, echo)
+        assert said == [f"distill: run={RUN_ID} entries=0 dropped=0 waiting=0 skipped=1"], said
+        assert querylog.store_problems(o / "store") == [] and list(sp.iterdir()) == []
+
+    def test_a_finished_days_tools_file_that_stays_loses_its_skipped_rows(self, tmp_path):
+        """A tools file kept for a waiting entry is rewritten without the rows counted as skipped, so no later pass
+        counts them again."""
+        q = tmp_path / "querylog"
+        sp = plant_compat(q, (), ["not json"])
+
+        def down(prompt):
+            raise OSError("no network")
+        rc, said = run_distill(q, down)
+        assert said[-1].endswith("skipped=1"), said
+        assert all(json.loads(ln) for ln in (sp / "tools-2026-09-25.jsonl").read_text(encoding="utf-8").splitlines())
+        rc, said = run_distill(q, querylog.Replay(COMPAT / "haiku.json"), run_id="20260928T120500Z-0000abce")
+        assert said[-1].endswith("waiting=0"), said
+        assert "skipped" not in jsonl(store_files(q)[-1])[0]["counts"]
+
+    def test_row_lines_keep_only_the_recorded_articles(self, monkeypatch):
+        """pack re-runs only a format 0 row without `lines`, on the questions the row recorded, and keeps only the
+        lines of the articles it recorded; it never adds a line of another article."""
+        text = ("coverage: good (...)\n\n## public/windows/laps.md  LAPS\n- public/windows/laps.md:24 A. [DOC S-1]\n"
+                "\n## public/intune/win32-apps.md  Win32\n- public/intune/win32-apps.md:49 B. [DOC S-2]\n")
+        asked = []
+        monkeypatch.setattr(querylog, "head_pack_text", lambda q: asked.append(q) or text)
+        old = {"id": E("r1"), "ts": "2026-09-26T09:00:00.000Z", "surface": "mcp", "tool": "kb_pack",
+               "args": {"questions": ["laps length", "laps age"]}, "articles": [LAPS]}
+        got, again = querylog.row_lines(old)
+        assert again and got == [{"line": f"{LAPS}:24", "tag": "DOC", "verdict": "good"}] * 2
+        assert asked == ["laps length", "laps age"]
+        assert querylog.citations([old], "")[0] == [{"line": f"{LAPS}:24", "tag": "DOC", "verdict": "good"}]
+        asked.clear()
+        for row in (dict(old, v=1), dict(old, lines=[{"line": f"{LAPS}:9"}]), dict(old, articles=None),
+                    dict(old, args={"path": f"{LAPS}:24"}), dict(old, articles=["public/other/none.md"])):
+            got, again = querylog.row_lines(row)
+            assert not again and got == row.get("lines", []), row
+        assert asked == ["laps length", "laps age"]  # only the row whose articles pack could not back
+        # planted: an entry whose re-run lines name the reply's line is still `pack`, never `reply`
+        assert querylog.citations([old], f"see {LAPS}:24")[1] == "pack"
 
 
 def distill_cli(data, *args):
@@ -1285,6 +1499,9 @@ class TestStore:
         (lambda o: o[0].update(kb_commit="HEAD"), "kb commit is not a commit id"),
         (lambda o: o[0]["counts"].update(entries=2), "counts.entries is 2"),
         (lambda o: o[0].update(host="build-agent-7"), "header fields a header never has: host"),
+        (lambda o: o[0]["counts"].update(skipped=0), "counts hold a field other than"),
+        (lambda o: o[0]["counts"].update(skipped="3"), "counts hold a field other than"),
+        (lambda o: o[0]["counts"].update(lost=1), "counts hold a field other than"),
         (lambda o: o[1].update(kb_commit="0" * 40), "run metadata in an entry: kb_commit"),
         (lambda o: o[1].update(run=RUN_ID, retrieval=4), "run metadata in an entry: retrieval, run"),
         (lambda o: o[1].update(prompt="kb: raw"), "raw spool fields: prompt"),

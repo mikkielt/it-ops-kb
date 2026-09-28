@@ -17,7 +17,9 @@ push, the weekly digest and status are built.
                         beside the spool, laid out as kb/_querylog/): per lookup the question the kb was asked (never
                         the prompt) after the rules and the leak scan, the path:line citations of the kb lines it
                         returned (never the reply), and Haiku's judgement in capped batches (no text of Haiku's is
-                        stored); an entry a local run file already holds is not distilled again. Mode `local` deletes the spool rows of the entries written or dropped. Mode `auto` (in
+                        stored); an entry a local run file already holds is not distilled again. It reads every row
+                        format capture has written (querylog.md, Spool), and skips and counts a row it cannot read.
+                        Mode `local` deletes the spool rows of the entries written or dropped. Mode `auto` (in
                         a clone, or in a plugin host from its managed clone) deletes those of dropped entries only,
                         then runs `apply --push` under the same lock,
                         which deletes the others once their run file is on origin/main. --replay answers the Haiku
@@ -99,7 +101,8 @@ push, the weekly digest and status are built.
 
 Tools write their own rows with `record(surface, session_id, **fields)`: kb_hook.py (`kb:` prompts), kb_ask.py (one
 row per run), fetch.py and census.py (one row per request, through `record_request`). Every row has a fresh UUID
-`id`, the UTC time `ts` and its `surface`; the fields per surface are in kb/_self/querylog.md (Capture).
+`id`, the UTC time `ts`, its `surface` and the row format `v` (ROW_FORMAT); the fields per surface are in
+kb/_self/querylog.md (Surfaces), and the row formats distill reads in its Spool section.
 
 Where (querylog.md, Spool and Configuration): in a clone `_cache/querylog/spool/<session_id>.jsonl` (rows without a
 session: `tools-<yyyy-mm-dd>.jsonl`), the config file `_private/querylog.json` and the marker
@@ -136,7 +139,8 @@ SESSION_IDLE_CLOSED_S = 86400
 QUESTION_MAX_CHARS = 500
 CITATIONS_MAX = 5  # kb lines an entry keeps
 LINES_MAX = 12  # kb lines a spool row keeps of one kb tool's result
-PIPELINE_VERSION = 3  # bumped when what distill writes, or how it decides it, changes
+PIPELINE_VERSION = 4  # bumped when what distill writes, or how it decides it, changes
+ROW_FORMAT = 1  # the `v` of the spool rows capture writes; a row without `v` is format 0 (querylog.md, Spool)
 STORE = HOME / "kb" / "_querylog"
 DISABLED_NAME = "DISABLED"  # beside the spool: logging off for good
 NO_HOOKS = ["--settings", json.dumps({"disableAllHooks": True})]  # every `claude -p` the pipeline starts carries it
@@ -248,7 +252,7 @@ def fit(row):
         target = encoded - (len(line) - SPOOL_ROW_MAX_CHARS)
         row[k] = v[:max(0, int(len(v) * target / encoded) - len(CUT) - 1)] + CUT
         line = json.dumps(row, ensure_ascii=False, separators=(",", ":"))
-    keep = {k: row[k] for k in ("id", "ts", "surface", "session_id", "prompt_id") if k in row}
+    keep = {k: row[k] for k in ("id", "ts", "surface", "v", "session_id", "prompt_id") if k in row}
     return json.dumps(dict(keep, cut=True), ensure_ascii=False, separators=(",", ":"))
 
 
@@ -265,7 +269,7 @@ def record(surface, session_id=None, **fields):
         spool = spool_dir()
         if spool is None:
             return None
-        row = {"id": str(uuid.uuid4()), "ts": now(), "surface": surface}
+        row = {"id": str(uuid.uuid4()), "ts": now(), "surface": surface, "v": ROW_FORMAT}
         if isinstance(session_id, str) and session_id:
             row["session_id"] = session_id
         row.update((k, v) for k, v in fields.items() if v is not None)
@@ -523,6 +527,7 @@ CALLS_NAME = "haiku-calls.json"  # {"day", "calls"}: the Haiku calls this machin
 CONSUMED_NAME = "consumed.json"  # {tools file: [row ids]}: tools rows already distilled into an entry
 HEADER_KEYS = ("run", "pipeline", "retrieval", "kb_commit", "counts")
 COUNT_KEYS = ("entries", "dropped", "waiting")
+SKIPPED_KEY = "skipped"  # a count a header holds only when distill skipped spool rows
 ENTRY_KEYS = ("id", "surface", "day", "intent", "tools", "route", "question", "verdict", "articles", "citations",
               "cited", "judged", "best", "fetches", "tool", "fetcher", "host", "path", "outcome", "chars")
 CITATION_KEYS = ("line", "tag", "verdict")
@@ -636,14 +641,54 @@ def release(path):
 
 # --- reading the spool ----------------------------------------------------------------------------------------------
 
+def row_format(r):
+    """The format of a spool row: 0 for a row without `v` (every row written before the field), its `v` when it is a
+    format this code reads (1 to ROW_FORMAT), else None."""
+    if "v" not in r:
+        return 0
+    v = r["v"]
+    return v if isinstance(v, int) and not isinstance(v, bool) and 1 <= v <= ROW_FORMAT else None
+
+
+def readable(r):
+    """Whether distill reads a spool row: a JSON object with a string `id` and `ts`, a surface capture writes and a
+    row format this code reads. Any other row is skipped and counted (querylog.md, Spool)."""
+    return (isinstance(r, dict) and isinstance(r.get("id"), str) and bool(r["id"]) and isinstance(r.get("ts"), str)
+            and r.get("surface") in SURFACES and row_format(r) is not None)
+
+
+def spool_rows(path):
+    """(the rows distill reads, the number of rows it skips) of one spool file; blank lines are neither."""
+    good, skipped = [], 0
+    try:
+        with open(path, encoding="utf-8", errors="replace") as f:
+            for line in f:
+                if not line.strip():
+                    continue
+                try:
+                    r = json.loads(line)
+                except ValueError:
+                    r = None
+                if readable(r):
+                    good.append(r)
+                else:
+                    skipped += 1
+    except OSError:
+        pass
+    return good, skipped
+
+
 def read_spool(spool, t_now):
-    """({session id: session}, {tools file name: rows}). A session is closed when its SessionEnd marker exists or it
-    has been idle for SESSION_IDLE_CLOSED_S; its `end` bounds the window of its last prompt."""
-    sessions, tools = {}, {}
+    """({session id: session}, {tools file name: rows}, {file name: rows skipped}). A session is closed when its
+    SessionEnd marker exists or it has been idle for SESSION_IDLE_CLOSED_S; its `end` bounds the window of its last
+    prompt."""
+    sessions, tools, skipped = {}, {}, {}
     if not Path(spool).is_dir():
-        return sessions, tools
+        return sessions, tools, skipped
     for p in sorted(Path(spool).glob("*.jsonl")):
-        rs = [r for r in rows(p) if isinstance(r, dict) and isinstance(r.get("id"), str)]
+        rs, bad = spool_rows(p)
+        if bad:
+            skipped[p.name] = bad
         if p.name.startswith("tools-"):
             tools[p.name] = rs
             continue
@@ -656,7 +701,7 @@ def read_spool(spool, t_now):
         closed = ended is not None or t_now - mtime >= SESSION_IDLE_CLOSED_S
         sessions[p.stem] = {"path": p, "marker": marker, "rows": rs, "closed": closed,
                             "end": iso(max(mtime, ended or 0)) if closed else "9999"}
-    return sessions, tools
+    return sessions, tools, skipped
 
 
 def groups(session):
@@ -737,30 +782,60 @@ def ordered(entry):
     return {key: entry[key] for key in ENTRY_KEYS if entry.get(key) not in (None, [], "")}
 
 
+def row_questions(r):
+    """The questions one kb row recorded, in order: the `kb:` hook's or kb_ask.py's `question`, else a kb MCP call's
+    `question`, the parts of its `questions`, or its `query`."""
+    if r.get("surface") in ("kb_hook", "kb_ask"):
+        q = r.get("question")
+    else:
+        args = r.get("args") if r.get("surface") == "mcp" and isinstance(r.get("args"), dict) else {}
+        q = args.get("question") or args.get("questions") or args.get("query")
+    qs = q if isinstance(q, list) else [q]
+    return [x for x in qs if isinstance(x, str) and x.strip()]
+
+
 def kb_question(kb):
-    """The question the kb was asked, from the first of the kb rows (time order) that names one: the `kb:` hook's or
-    kb_ask.py's `question`, else a kb MCP call's `question`, the first part of its `questions`, or its `query`. The
-    prompt as typed is never a question. None when no kb row names one."""
-    for r in kb:
-        if r.get("surface") in ("kb_hook", "kb_ask"):
-            q = r.get("question")
-        else:
-            args = r.get("args") if r.get("surface") == "mcp" and isinstance(r.get("args"), dict) else {}
-            q = args.get("question") or args.get("questions") or args.get("query")
-        if isinstance(q, list):
-            q = next((p for p in q if isinstance(p, str) and p.strip()), None)
-        if isinstance(q, str) and q.strip():
-            return q
-    return None
+    """The question the kb was asked, from the first of the kb rows (time order) that names one (row_questions, its
+    first). The prompt as typed is never a question. None when no kb row names one."""
+    return next((qs[0] for qs in map(row_questions, kb) if qs), None)
+
+
+@functools.lru_cache(maxsize=512)
+def head_pack_text(question):
+    """The text of `pack` on this clone's kb for a question; "" when the kb cannot be read."""
+    import kbfacts
+    try:
+        return kbfacts.pack(question, fmt="concise")["text"]
+    except Exception:  # noqa: BLE001 - a question pack cannot run keeps no citations; distill goes on
+        return ""
+
+
+def row_lines(r):
+    """(the kb lines of one kb row, whether pack re-ran them). A row of format 1 on, or of format 0 with `lines`,
+    gives its own `lines`. A row of format 0 without `lines` (written before capture kept them) that names articles
+    gets the lines of `pack` on the kb at HEAD for each question it recorded, only those in the articles it recorded;
+    no question, or no such line, gives none."""
+    if "lines" in r or row_format(r) != 0:
+        return (r.get("lines") if isinstance(r.get("lines"), list) else []), False
+    arts = {a for a in r.get("articles") or [] if isinstance(a, str)} if isinstance(r.get("articles"), list) else set()
+    if not arts:
+        return [], False
+    out = []
+    for q in row_questions(r):
+        out += [x for x in pack_lines(head_pack_text(q)) or [] if x["line"].rsplit(":", 1)[0] in arts]
+    return out, bool(out)
 
 
 def citations(kb, answer):
-    """(citations, cited) of one lookup: the kb lines its kb rows returned ({line, tag, verdict}, each once), those
-    whose path:line the reply's text names when it names any (`reply`), else the first ones (`pack`); at most
-    CITATIONS_MAX. ([], None) when the kb returned no line."""
-    lines, seen = [], set()
+    """(citations, cited) of one lookup: the kb lines its kb rows returned ({line, tag, verdict}, each once; for a
+    format 0 row without them, row_lines), those whose path:line the reply's text names when it names any
+    (`reply`), else the first ones (`pack`); at most CITATIONS_MAX. Lines that pack re-ran give the first ones,
+    `pack`. ([], None) when no line."""
+    lines, seen, rerun = [], set(), False
     for r in kb:
-        for x in r.get("lines") or []:
+        got, again = row_lines(r)
+        rerun = rerun or again
+        for x in got:
             if not (isinstance(x, dict) and isinstance(x.get("line"), str) and CITATION.fullmatch(x["line"])) \
                     or x["line"] in seen:
                 continue
@@ -768,7 +843,7 @@ def citations(kb, answer):
             lines.append({"line": x["line"], "tag": x.get("tag") if x.get("tag") in TAGS else None,
                           "verdict": x.get("verdict") if x.get("verdict") in VERDICTS else None})
     lines = [{key: v for key, v in x.items() if v} for x in lines]
-    named = set(REPLY_CITE.findall(answer or ""))
+    named = set() if rerun else set(REPLY_CITE.findall(answer or ""))
     used = [x for x in lines if any(x["line"] == n or x["line"].endswith("/" + n) for n in named)]
     if used:
         return used[:CITATIONS_MAX], "reply"
@@ -821,8 +896,9 @@ def entry_of(rs, k):
              "fetches": sorted(fetches.values(), key=lambda f: json.dumps(f, sort_keys=True))}
     answer = "\n".join(r["answer"] for r in rs if r.get("surface") == "stop" and isinstance(r.get("answer"), str))
     entry["citations"], entry["cited"] = citations(kb, answer)
-    if entry["articles"] and not entry["citations"]:
-        return ordered(entry), None, "articles without their kb lines"  # kb rows that name articles but no lines
+    candidates = entry["articles"]
+    if not entry["citations"]:
+        entry["articles"] = []  # an article is stored only with the kb lines that back it
     asked = kb_question(kb)
     if asked is None:
         return ordered(entry), None, None
@@ -831,7 +907,8 @@ def entry_of(rs, k):
         return ordered(entry), None, "the leak scan"
     entry["question"] = question[:QUESTION_MAX_CHARS]
     typed = prompt.get("prompt") if prompt and isinstance(prompt.get("prompt"), str) else ""
-    return ordered(entry), {"question": entry["question"], "prompt": typed.strip(), "answer": answer.strip()}, None
+    return ordered(entry), {"question": entry["question"], "prompt": typed.strip(), "answer": answer.strip(),
+                            "candidates": candidates}, None
 
 
 # --- Haiku ----------------------------------------------------------------------------------------------------------
@@ -965,10 +1042,13 @@ def distill(qdir=None, cfg=None, haiku=None, now_dt=None, run_id=None, kb_commit
 
 
 def _plan(qdir, t_now, today, k):
-    """One reading of the spool: (spool, sessions, tools, consumed, todo), `todo` holding one item {entry, texts,
-    sid, key, tools, ts} per kb lookup of a closed session or of a finished day, in time order."""
+    """One reading of the spool: (spool, sessions, tools, consumed, todo, skipped), `todo` holding one item {entry,
+    texts, sid, key, tools, ts} per kb lookup of a closed session or of a finished day, in time order, and `skipped`
+    the rows distill does not read ({file name: count}) in the files of the closed sessions and the finished days."""
     spool = qdir / "spool"
-    sessions, tools = read_spool(spool, t_now)
+    sessions, tools, bad = read_spool(spool, t_now)
+    skipped = {n: c for n, c in bad.items()
+               if (n[6:16] < today if n.startswith("tools-") else sessions.get(n[:-6], {}).get("closed"))}
     consumed = {n: set(ids) for n, ids in read_json(qdir / CONSUMED_NAME, {}).items()
                 if n in tools and isinstance(ids, list)}
     for s in sessions.values():
@@ -999,7 +1079,7 @@ def _plan(qdir, t_now, today, k):
             else:
                 consumed.setdefault(name, set()).add(r["id"])
     todo.sort(key=lambda t: (t["ts"], t["entry"]["id"]))
-    return spool, sessions, tools, consumed, todo
+    return spool, sessions, tools, consumed, todo, skipped
 
 
 def _distill(qdir, haiku, now_dt, run_id, kb_commit, out, keep=False):
@@ -1008,12 +1088,12 @@ def _distill(qdir, haiku, now_dt, run_id, kb_commit, out, keep=False):
     import redact
     k = redact.known()
     t_now, today = now_dt.timestamp(), now_dt.date().isoformat()
-    spool, sessions, tools, consumed, todo = _plan(qdir, t_now, today, k)
+    spool, sessions, tools, consumed, todo, skipped = _plan(qdir, t_now, today, k)
     stored = {e["id"] for _, e in store_entries(qdir / "store")}
     done = [t for t in todo if t["entry"]["id"] in stored]
     todo = [t for t in todo if t["entry"]["id"] not in stored]
 
-    dropped = [t for t in todo if t["drop"]]  # the leak scan caught its question, or no kb line backs its articles
+    dropped = [t for t in todo if t["drop"]]  # the leak scan caught its question
     need = [t for t in todo if t["texts"] and not t["drop"]]
     written = [t for t in todo if not t["texts"] and not t["drop"]]
     waiting = []
@@ -1027,7 +1107,7 @@ def _distill(qdir, haiku, now_dt, run_id, kb_commit, out, keep=False):
             continue
         used += 1
         write_text(qdir / CALLS_NAME, json.dumps({"day": today, "calls": used}) + "\n")
-        items = haiku_items([t["texts"] for t in batch], [t["entry"].get("articles", []) for t in batch], k)
+        items = haiku_items([t["texts"] for t in batch], [t["texts"]["candidates"] for t in batch], k)
         try:
             reply = haiku(distill_prompt(items))
         except (OSError, subprocess.SubprocessError) as e:
@@ -1047,7 +1127,9 @@ def _distill(qdir, haiku, now_dt, run_id, kb_commit, out, keep=False):
                 written.append(t)
 
     counts = {"entries": len(written), "dropped": len(dropped), "waiting": len(waiting)}
-    if written or dropped:
+    if skipped:
+        counts[SKIPPED_KEY] = sum(skipped.values())
+    if written or dropped or skipped:
         run_id = run_id or f"{now_dt.strftime('%Y%m%dT%H%M%SZ')}-{uuid.uuid4().hex[:8]}"
         header = {"run": run_id, "pipeline": PIPELINE_VERSION, "retrieval": retrieval_version(),
                   "kb_commit": kb_commit or head_commit(), "counts": counts}
@@ -1056,23 +1138,23 @@ def _distill(qdir, haiku, now_dt, run_id, kb_commit, out, keep=False):
         write_text(path, "".join(json.dumps(x, ensure_ascii=False, separators=(",", ":")) + "\n"
                                  for x in [header] + [t["entry"] for t in written]))
         out(f"distill: run={run_id} entries={counts['entries']} dropped={counts['dropped']} "
-            f"waiting={counts['waiting']}")
+            f"waiting={counts['waiting']}" + (f" skipped={counts[SKIPPED_KEY]}" if skipped else ""))
     else:
         out(f"distill: nothing to write (waiting={counts['waiting']})")
     if keep:
-        _settle(spool, sessions, tools, consumed, qdir, today, dropped, waiting + written + done)
+        _settle(spool, sessions, tools, consumed, qdir, today, dropped, waiting + written + done, skipped)
         if written or done:
             out(f"distill: the spool keeps the rows of {len(written) + len(done)} entries until their run file is "
                 f"on {REMOTE}/{BRANCH}")
     else:
-        _settle(spool, sessions, tools, consumed, qdir, today, written + dropped + done, waiting)
+        _settle(spool, sessions, tools, consumed, qdir, today, written + dropped + done, waiting, skipped)
     return 0
 
 
-def _settle(spool, sessions, tools, consumed, qdir, today, gone, stay):
+def _settle(spool, sessions, tools, consumed, qdir, today, gone, stay, skipped=None):
     """The spool after a pass: the rows of the `gone` entries and of the prompts that never used the kb go, the rows
-    of the `stay` entries stay (a closed session keeps its window end), and a finished day's tools file goes once all
-    its rows are consumed."""
+    of the `stay` entries stay (a closed session keeps its window end), a finished day's tools file goes once all
+    its rows are consumed, and the `skipped` rows (counted in this pass) go from the files that stay."""
     wait_keys = {(t["sid"], t["key"]) for t in stay if t["sid"]}
     for t in gone:
         for name, r in t["tools"]:
@@ -1106,6 +1188,9 @@ def _settle(spool, sessions, tools, consumed, qdir, today, gone, stay):
                 consumed.pop(name, None)
             except OSError:
                 pass
+        elif name in (skipped or {}):  # a finished day's file, which no capture appends to any more
+            write_text(spool / name, "".join(json.dumps(r, ensure_ascii=False, separators=(",", ":")) + "\n"
+                                             for r in rs))
     if consumed or (qdir / CONSUMED_NAME).exists():
         write_text(qdir / CONSUMED_NAME, json.dumps({n: sorted(ids) for n, ids in sorted(consumed.items())}) + "\n")
 
@@ -1119,7 +1204,7 @@ def spool_delivered(qdir, ids, now_dt=None):
     import redact
     now_dt = now_dt or datetime.datetime.now(datetime.timezone.utc)
     today = now_dt.date().isoformat()
-    spool, sessions, tools, consumed, todo = _plan(Path(qdir), now_dt.timestamp(), today, redact.known())
+    spool, sessions, tools, consumed, todo, _ = _plan(Path(qdir), now_dt.timestamp(), today, redact.known())
     gone = [t for t in todo if t["entry"]["id"] in ids]
     if gone:
         _settle(spool, sessions, tools, consumed, Path(qdir), today, gone,
@@ -1370,6 +1455,12 @@ def store_problems(store=None, k=None):
             out.append(f"{rel}:{hn}: counts lack {', '.join(COUNT_KEYS)}")
         elif isinstance(counts, dict) and counts.get("entries") != len(entries):
             out.append(f"{rel}:{hn}: counts.entries is {counts.get('entries')}, the file has {len(entries)}")
+        if isinstance(counts, dict):
+            n = counts.get(SKIPPED_KEY, 1)
+            if set(counts) - set(COUNT_KEYS) - {SKIPPED_KEY} or not (isinstance(n, int) and not isinstance(n, bool)
+                                                                     and n > 0):
+                out.append(f"{rel}:{hn}: counts hold a field other than {', '.join(COUNT_KEYS)} and a positive "
+                           f"{SKIPPED_KEY}")
         extra = sorted(set(h) - set(HEADER_KEYS))
         if extra:
             out.append(f"{rel}:{hn}: header fields a header never has: {', '.join(extra)}")
