@@ -1,7 +1,7 @@
 ---
 topic: claude/hooks
 priority: P1
-applies_to: "Claude Code 2.1.281 docs (retrieved 2026-09-23; UserPromptSubmit, common input, async and Stop sections re-read 2026-09-27; SessionEnd and Windows command hooks read 2026-09-28; tool event input, Stop input and disableAllHooks read 2026-09-28)"
+applies_to: "Claude Code 2.1.281 docs (retrieved 2026-09-23; UserPromptSubmit, common input, async and Stop sections re-read 2026-09-27; SessionEnd and Windows command hooks read 2026-09-28; tool event input, Stop input and disableAllHooks read 2026-09-28; SessionStart, systemMessage and output caps read 2026-09-28)"
 retrieved_utc: 2026-09-28
 sources: [S743, S746, S1800, S-h5sble4p, S-sjuwcuhk, S-3yod3u7q]
 status: complete
@@ -49,6 +49,16 @@ instead, so a hook can answer a prompt without a model call.
 - `SessionEnd` hooks share a 1.5-second budget on exit, `/clear` and interactive `/resume`. A per-hook `timeout` raises the budget to the highest such value in settings files, up to 60 seconds, but timeouts on plugin-provided hooks do not raise it; `CLAUDE_CODE_SESSIONEND_HOOKS_TIMEOUT_MS` sets the budget explicitly and, since v2.1.268, also the timeout of each hook without its own. [DOC S743]
 - On a `claude -p` run stopped by SIGTERM, only `SessionEnd` hooks still run before exit (`claude/ci-and-headless.md`). [DOC S1800]
 - A `SessionEnd` hook that must do more than about a second of work (a batch job, a network push) fits only as a launcher that starts a detached process and returns; from a plugin it cannot win more time with `timeout`, and an environment variable is a per-user setting, not something a repository can ship. [DER S743: the 1.5-second shared budget, the plugin exception and the variable above]
+
+### SessionStart, and what reaches the user
+- `SessionStart` runs when Claude Code starts or resumes a session (matchers `startup`, `resume`, `clear`, `compact`, `fork`); it runs on every session, so its hooks should stay fast, and only `command` and `mcp_tool` hooks are supported. [DOC S743]
+- At an interactive start, a `--continue` or `--resume` launch or `/clear`, `SessionStart` hooks run in the background: the user can type at once, but Claude's first response waits for the hooks to finish. [DOC S743]
+- `SessionStart` plain-text stdout is added to Claude's context, and `hookSpecificOutput.additionalContext` is added before the first prompt. [DOC S743]
+- The universal JSON output field `systemMessage` is a warning message shown to the user; some events discard it or deliver it elsewhere (`SessionEnd` discards it). [DOC S743]
+- After an async hook's process exits, its `additionalContext` and `systemMessage` are delivered to Claude on the next conversation turn and, unlike a synchronous hook's `systemMessage`, neither is shown to the user. [DOC S743]
+- A hook's `additionalContext`, `systemMessage` and plain stdout are each capped at 10,000 characters; longer output is saved to a file and replaced by its path and a preview of the first 2,000 characters. [DOC S743]
+- A command hook's `timeout` defaults to 600 seconds on `SessionStart` (the default for most events), and a hook canceled at its timeout has its output discarded. [DOC S743]
+- A message a hook must show the person, not Claude, comes from a synchronous `SessionStart` command hook that prints a JSON object with `systemMessage` only: an async hook's `systemMessage` and any plain stdout reach Claude instead. Such a hook stays short and sets its own `timeout`, since Claude's first response waits for it. [DER S743: `systemMessage`, async delivery, SessionStart stdout and waiting above]
 
 ### Tool event input
 - `PreToolUse` hooks receive `tool_name`, `tool_input` and `tool_use_id` beyond the common input fields; `PostToolUse` fires only after a tool executed successfully and its input holds `tool_input` (the arguments sent) and `tool_response` (the result returned), whose schema depends on the tool, plus an optional `duration_ms`. [DOC S743]

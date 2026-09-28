@@ -1885,6 +1885,16 @@ _Agent: kb-research_
 
 _Agent: kb-research_
 
+## QK-query-log-show-weekly-digest-session. How does a query log show a weekly digest to the person at session start, and list its open conflict merge requests on GitLab or GitHub
+- `SessionStart` plain stdout and `additionalContext` go to Claude's context; the universal `systemMessage` field is shown to the user. [DOC S743]
+- An async hook's `systemMessage` and `additionalContext` reach Claude on the next turn and are not shown to the user. [DOC S743]
+- `SessionStart` hooks run in the background at an interactive start, but Claude's first response waits for them; they should stay fast, output is capped at 10,000 characters, and a command hook's `timeout` defaults to 600 seconds. [DOC S743]
+- GitLab: `GET /projects/:id/merge_requests` with `state=opened` and `target_branch`, whose items carry `iid`, `title`, `source_branch` and `web_url`; GitHub: `gh pr list --base <branch> --json number,title,headRefName,url` (open only by default, 30 unless `-L`). [DOC S-4abgkvor, S-dn5ck62j]
+- Conclusion: the digest comes from a synchronous `SessionStart` command hook that prints only `{"systemMessage": ...}` with a short `timeout`; the launcher stays async. Open conflict MRs are the open ones targeting `main` whose source branch starts with the prefix, matched by the caller, since both branch filters take one whole name. [DER S743, S-4abgkvor, S-dn5ck62j]
+- See claude/hooks.md, gitlab/automated-merge-requests.md.
+
+_Agent: kb-research_
+
 ## R1. Reuse candidates
 
 - **Highest leverage: `pydantic-settings` as a `dependency` for a project's config-file/env-var/flags

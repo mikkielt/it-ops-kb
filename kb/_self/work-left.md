@@ -83,13 +83,6 @@ Kb facts the build rests on: `claude/hooks.md` (async hooks, `prompt_id`, `Stop`
 - `.gitlab-ci.yml` runs branch and tag pipelines only (a direct-push model), which fits this design unchanged.
 
 7. **Direct push, on the real `origin`:** once, `python3 _tools/querylog.py apply --push` lands one automatic commit on `main`, and one planted conflict ends as an open MR.
-9. **Digest and status.** Done:
-   - `querylog.py digest` computes the same numbers from the committed store in any clone;
-   - the first `SessionStart` of an ISO week shows it once;
-   - `status` lists open source findings ranked by result characters, open conflict MRs, and reverted automatic commits;
-   - each mechanism's removal condition is in `querylog.md`.
-
-   Check: the digest test on two copies of one fixture store gives identical output.
 10. **Plugin hosts and cloud sessions.** Done: a host distills in a managed clone under `${CLAUDE_PLUGIN_DATA}`; a push refused for want of rights writes `DISABLED` and deletes the spool, while a network error or a red gate does not; a cloud session pushes to its own `origin`. Check: tests with a fake remote for each refusal kind, and the always-on measurement in `kb/_self/reports/token-usage.md` (not `claude plugin details`, which undercounts), which must show no rise from the new hooks.
 11. **End-to-end run and switch-on.**
 

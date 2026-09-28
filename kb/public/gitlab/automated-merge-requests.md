@@ -1,9 +1,9 @@
 ---
 topic: gitlab/automated-merge-requests
 priority: P3
-applies_to: "GitLab 19.x docs (gitlab-org/gitlab master @9f1632e2, 2026-09-27); glab (gitlab-org/cli main @37ebe99d, 2026-09-28); GitHub CLI and REST docs read 2026-09-28; git v2.55.0; Free tier and CE unless stated"
+applies_to: "GitLab 19.x docs (gitlab-org/gitlab master @9f1632e2, 2026-09-27); glab (gitlab-org/cli main @37ebe99d, 2026-09-28); GitHub CLI and REST docs read 2026-09-28, gh pr list included; merge requests API @9f1632e2; git v2.55.0; Free tier and CE unless stated"
 retrieved_utc: 2026-09-28
-sources: [S-2d2dlaeq, S-rivqro7b, S-zh7oqkup, S-7zthwzzb, S446, S-kdfwn4eo, S-ijtwicvp, S-4darq3cp, S-fa7zbfwo, S-d6wuvfpd, S-6omn4l4d, S-zg5iu4oe, S-4hzaehlu, S-ygtpb7no, S-7dwkyip6]
+sources: [S-2d2dlaeq, S-rivqro7b, S-zh7oqkup, S-7zthwzzb, S446, S-kdfwn4eo, S-ijtwicvp, S-4darq3cp, S-fa7zbfwo, S-d6wuvfpd, S-6omn4l4d, S-zg5iu4oe, S-4hzaehlu, S-ygtpb7no, S-7dwkyip6, S-4abgkvor, S-dn5ck62j]
 status: complete
 ---
 
@@ -37,6 +37,9 @@ A script can open a merge request, set it to auto-merge and ask for its source b
 - `gh auth status` exits 1, writing to stderr, when an account on any host (or only the one given with `--hostname`) has authentication issues; with `--json` it always exits 0 unless there is a fatal error. [DOC S-6omn4l4d]
 - `gh run list --commit <SHA>` lists the workflow runs of one commit (20 by default, `-L` for more); `--json` fields include `status`, `conclusion`, `headSha` and `databaseId`, and `-R [HOST/]OWNER/REPO` picks the repository. [DOC S-zg5iu4oe]
 - GitHub check suites and check runs have a `status` of `queued`, `in_progress`, `requested`, `waiting`, `pending` or `completed`; only a `completed` one has a `conclusion`: `action_required`, `cancelled`, `timed_out`, `failure`, `neutral`, `skipped`, `success`, and for suites also `stale` and `startup_failure`. [DOC S-4hzaehlu]
+- `GET /projects/:id/merge_requests` lists a project's merge requests: `state` takes `opened`, `closed`, `locked`, `merged` or `all` (the default), `source_branch` and `target_branch` return the merge requests with the given branch, and `page` and `per_page` paginate. [DOC S-4abgkvor]
+- Each listed merge request carries `iid`, `title`, `source_branch`, `target_branch`, `state` and `web_url`. [DOC S-4abgkvor]
+- `gh pr list` lists only open pull requests by default (`--state open|closed|merged|all`), 30 at most unless `-L` sets more; `--base` and `--head` filter by base and head branch, `--json` fields include `number`, `title`, `headRefName`, `baseRefName` and `url`, and `-R [HOST/]OWNER/REPO` picks the repository. [DOC S-dn5ck62j]
 - `receive.advertisePushOptions`: when true, `git-receive-pack` advertises the push options capability to clients; it is false by default. [DOC S-ygtpb7no]
 - The `pre-receive` and `post-receive` hooks read the push options from `GIT_PUSH_OPTION_COUNT` and `GIT_PUSH_OPTION_0`, `GIT_PUSH_OPTION_1`, ...; the variables are not set when the push options phase is not negotiated. [DOC S-7dwkyip6]
 
@@ -45,6 +48,7 @@ A script can open a merge request, set it to auto-merge and ask for its source b
 - A failed auto-merge MR does not close itself: a retried job can still merge it. An automation that must never retry a red MR has to remove the possibility itself, for example by deleting the source branch from a failure job with a job-token push (`git push --delete`), which starts no pipeline. [DER S-rivqro7b, S-7zthwzzb: retry-merges rule; job-token push rules]
 - A job-token push that records an outcome on `main` starts no pipeline, so it is not itself tested, and it runs with the rights of the user who started the job: branch protection cannot tell it from that user. [DER S-7zthwzzb]
 - An automation that reverts its own commit on red CI counts only a finished failure as red: `failed` on GitLab, a `completed` run with conclusion `failure`, `timed_out` or `startup_failure` on GitHub. `created`, `pending`, `running` and the other unfinished states are not finished yet, and `manual`, `skipped` and `canceled` are no failures; optional manual jobs never turn a pipeline `failed`. [DER S-kdfwn4eo, S-4darq3cp, S-4hzaehlu]
+- An automation that lists its own open merge requests by a branch prefix (`querylog/`) lists the open ones targeting `main` (`state=opened&target_branch=main` through `glab api`, or `gh pr list --base main --json number,headRefName,url`) and matches the prefix itself: both filters take one whole branch name. [DER S-4abgkvor, S-dn5ck62j]
 - Code that tests `git push -o` against a local bare repository must set `receive.advertisePushOptions=true` on it, and a `pre-receive` hook there can record `GIT_PUSH_OPTION_*` to check which options arrived. [DER S-ygtpb7no, S-7dwkyip6]
 
 ## Reference

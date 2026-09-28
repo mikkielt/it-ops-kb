@@ -20,7 +20,7 @@ from conftest import querylog_env
 TOOLS = os.path.dirname(os.path.abspath(__file__))
 KB = os.path.dirname(TOOLS)
 SH = shutil.which("sh")
-LAUNCH = re.compile(r'sh "\$\{(?P<var>CLAUDE_PROJECT_DIR|CLAUDE_PLUGIN_ROOT)\}/_tools/kbpy" (?P<script>[\w./-]+\.py)(?: [a-z][\w-]*)*$')
+LAUNCH = re.compile(r'sh "\$\{(?P<var>CLAUDE_PROJECT_DIR|CLAUDE_PLUGIN_ROOT)\}/_tools/kbpy" (?P<script>[\w./-]+\.py)(?: (?:--)?[a-z][\w-]*)*$')
 needs_sh = pytest.mark.skipif(not SH, reason="no sh on PATH (Windows without Git Bash)")
 
 

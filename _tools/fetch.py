@@ -68,7 +68,8 @@ def fetch(url):
     try:
         with urllib.request.urlopen(req, timeout=TIMEOUT) as r:
             body = r.read()
-            querylog.record_request(url, querylog.request_outcome(r.status, None, len(body), url, r.geturl()))
+            querylog.record_request(url, querylog.request_outcome(r.status, None, len(body), url, r.geturl()),
+                                    body)
             return body, r.headers.get("Content-Type", "")
     except urllib.error.HTTPError as e:
         querylog.record_request(url, f"http-{e.code}")

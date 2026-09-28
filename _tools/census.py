@@ -373,7 +373,7 @@ def fetch(url, timeout=25, limit=1_000_000):
             with urllib.request.urlopen(req, timeout=timeout, context=ssl_ctx()) as resp:
                 body = resp.read(limit)
                 querylog.record_request(url, querylog.request_outcome(resp.status, None, len(body), url, resp.geturl(),
-                                                                      limit))
+                                                                      limit), body)
                 return resp.status, body.decode("utf-8", "replace"), resp.geturl()
         except urllib.error.HTTPError as e:
             querylog.record_request(url, f"http-{e.code}")

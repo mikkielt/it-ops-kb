@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""The query log pipeline: capture, distill, learn and apply for kb lookups (stdlib only).
+"""The query log pipeline: capture, distill, learn and apply for kb lookups, and its digest (stdlib only).
 
 kb/_self/querylog.md is the design, and the Query log items of kb/_self/work-left.md build the commands in order.
-Capture, distill, learn, a local apply with its gap step and opt-in research, the quote check and apply's direct
-push are built.
+Capture, distill, learn, a local apply with its gap step and opt-in research, the quote check, apply's direct
+push, the weekly digest and status are built.
 
   querylog.py capture   the capture hook (UserPromptSubmit, PostToolUse, PostToolUseFailure and Stop, async, in
                         .claude/settings.json and the plugin): reads one hook event as JSON on stdin and appends at
@@ -72,6 +72,21 @@ push are built.
                         identifiers, fetch entries, duplicate ids and the findings files; one line per problem, exit 1
                         when there is any
   querylog.py where     prints the mode, the config file, the spool directory and whether capture writes
+  querylog.py digest [--store DIR] [--week YYYY-Www]
+                        the week's numbers from the committed store (default kb/_querylog): lookups by surface,
+                        verdicts, judgements, misses and how many are fixed, fetches and their result characters, run
+                        files and dropped entries, finding records written, and findings by kind and state at the
+                        week's end. The week defaults to the ISO week of the store's newest entry; only the store and
+                        the week go in, so every clone at one commit prints the same lines. Exit 0, 2 a bad week
+  querylog.py digest --hook
+                        the SessionStart hook (synchronous, `timeout` DIGEST_HOOK_TIMEOUT_S): at the first
+                        SessionStart of an ISO week (the marker `digest-week` beside the spool), last week's digest
+                        as one JSON line {"systemMessage": ...}, which Claude Code shows the person; nothing when
+                        logging is off, the week is empty or reading the store took over DIGEST_BUDGET_S. Exit 0
+  querylog.py status [--store DIR]
+                        open source findings of the committed store, most result characters first; open merge
+                        requests from querylog/ branches on origin's forge (glab or gh, skipped with a note when not
+                        signed in); automatic commits reverted (KB-Auto: revert in git log). Exit 0
 
 Tools write their own rows with `record(surface, session_id, **fields)`: kb_hook.py (`kb:` prompts), kb_ask.py (one
 row per run), fetch.py and census.py (one row per request, through `record_request`). Every row has a fresh UUID
@@ -111,7 +126,7 @@ LOCK_STALE_S = 3600
 SESSION_IDLE_CLOSED_S = 86400
 QUESTION_MAX_CHARS = 500
 SUMMARY_MAX_CHARS = 300
-PIPELINE_VERSION = 1  # bumped when what distill writes, or how it decides it, changes
+PIPELINE_VERSION = 2  # bumped when what distill writes, or how it decides it, changes
 STORE = HOME / "kb" / "_querylog"
 NO_HOOKS = ["--settings", json.dumps({"disableAllHooks": True})]  # every `claude -p` the pipeline starts carries it
 
@@ -266,11 +281,13 @@ def request_outcome(status=None, error=None, body_len=None, url=None, final_url=
     return f"http-{status}" if isinstance(status, int) else "unknown"
 
 
-def record_request(url, outcome):
-    """One row per request made by fetch.py or census.py (the tool is the running script)."""
+def record_request(url, outcome, body=None):
+    """One row per request made by fetch.py or census.py (the tool is the running script); `chars` is the length of
+    the body read, decoded as UTF-8, when there is one."""
     host, path = host_path(url)
     if host:
-        record("tool_fetch", tool=Path(sys.argv[0]).name or None, host=host, path=path, outcome=outcome)
+        chars = len(body.decode("utf-8", "replace")) if isinstance(body, bytes) else None
+        record("tool_fetch", tool=Path(sys.argv[0]).name or None, host=host, path=path, outcome=outcome, chars=chars)
 
 
 # ---------------------------------------------------------------- the capture hook
@@ -442,8 +459,9 @@ def capture(event):
         if target is None or not used_kb(spool, sid, pid):
             return None  # a fetch counts only in a prompt that also used the kb (querylog.md, Surfaces)
         host, path, fetcher = target
+        chars = len(text_of(event.get("tool_response"))) if ok and tool not in SHELL_TOOLS else None
         return record("fetch", sid, prompt_id=pid, tool=tool, fetcher=fetcher, host=host, path=path,
-                      outcome=fetch_outcome(tool, ok, event, host))
+                      outcome=fetch_outcome(tool, ok, event, host), chars=chars)
     if name == "Stop":
         if not used_kb(spool, sid, pid):
             return None
@@ -461,8 +479,8 @@ CONSUMED_NAME = "consumed.json"  # {tools file: [row ids]}: tools rows already d
 HEADER_KEYS = ("run", "pipeline", "retrieval", "kb_commit", "counts")
 COUNT_KEYS = ("entries", "dropped", "waiting")
 ENTRY_KEYS = ("id", "surface", "day", "intent", "tools", "route", "question", "verdict", "articles", "summary",
-              "judged", "best", "fetches", "tool", "fetcher", "host", "path", "outcome")
-FETCH_KEYS = ("tool", "fetcher", "host", "path", "outcome", "n")
+              "judged", "best", "fetches", "tool", "fetcher", "host", "path", "outcome", "chars")
+FETCH_KEYS = ("tool", "fetcher", "host", "path", "outcome", "n", "chars")
 RAW_KEYS = ("prompt", "answer", "session_id", "prompt_id", "transcript_path", "cwd", "user", "hostname", "command",
             "args", "ts")  # spool fields a run file never holds
 SURFACES = ("prompt", "kb_hook", "mcp", "kb_ask", "tool_fetch", "fetch", "stop")
@@ -661,6 +679,8 @@ def fetch_item(r, k):
         item["host"] = host
         path = redact.redact(r["path"], k) if isinstance(r.get("path"), str) else None
         item["path"] = path if path and URL_PATH.fullmatch(path) else None
+    c = r.get("chars")
+    item["chars"] = c if isinstance(c, int) and not isinstance(c, bool) and c >= 0 else None
     return {key: v for key, v in item.items() if v is not None}
 
 
@@ -711,8 +731,12 @@ def entry_of(rs, k):
     for r in rs:
         if r.get("surface") in ("fetch", "tool_fetch"):
             item = fetch_item(r, k)
+            chars = item.pop("chars", None)
             key = json.dumps(item, sort_keys=True)
-            fetches.setdefault(key, dict(item, n=0))["n"] += 1
+            f = fetches.setdefault(key, dict(item, n=0))
+            f["n"] += 1
+            if chars is not None:
+                f["chars"] = f.get("chars", 0) + chars
     route = next((r.get("route") for r in kb if r.get("surface") == "kb_ask" and isinstance(r.get("route"), str)
                   and NAME.fullmatch(r["route"])), None)
     entry = {"id": first["id"], "surface": "prompt" if prompt else first.get("surface"), "day": ts_of(first)[:10],
@@ -1154,6 +1178,9 @@ def fetch_problems(item, where, k):
             out.append(f"{where}: fetch path without a public host")
     if not (isinstance(item.get("outcome"), str) and OUTCOME.fullmatch(item["outcome"])):
         out.append(f"{where}: fetch outcome is not an outcome class")
+    for key in ("n", "chars"):
+        if key in item and not (isinstance(item[key], int) and not isinstance(item[key], bool) and item[key] >= 0):
+            out.append(f"{where}: fetch {key} is not a count")
     return out
 
 
@@ -1471,7 +1498,8 @@ def miss_findings(e, res):
 
 
 def host_fetches(entries):
-    """{host: {failures, entries, webfetch}} of the fetches the store's entries record."""
+    """{host: {failures, entries, webfetch, chars}} of the fetches the store's entries record; `chars` sums the
+    result characters of the fetches that recorded them."""
     hosts = {}
     for _, e in entries:
         items = [f for f in e.get("fetches") or [] if isinstance(f, dict)]
@@ -1482,8 +1510,10 @@ def host_fetches(entries):
             if not isinstance(h, str):
                 continue
             n = f.get("n") if isinstance(f.get("n"), int) else 1
-            s = hosts.setdefault(h, {"failures": 0, "entries": set(), "webfetch": set()})
+            s = hosts.setdefault(h, {"failures": 0, "entries": set(), "webfetch": set(), "chars": 0})
             s["entries"].add(e["id"])
+            if isinstance(f.get("chars"), int):
+                s["chars"] += f["chars"]
             if isinstance(f.get("outcome"), str) and FAILED.fullmatch(f["outcome"]):
                 s["failures"] += n
             if f.get("tool") == "WebFetch":
@@ -2995,6 +3025,258 @@ def findings_problems(store, k=None):
     return out
 
 
+# --- reporting: the weekly digest and status (querylog.md, Reporting) ----------------------------------------------
+
+DIGEST_MARKER = "digest-week"  # beside the spool: the ISO week in which the SessionStart digest was last shown
+DIGEST_BUDGET_S = 3  # the SessionStart digest prints nothing when reading the store took longer
+DIGEST_HOOK_TIMEOUT_S = 10  # the digest hook's `timeout` in .claude/settings.json and the plugin
+WEEK = re.compile(r"(\d{4})-W(\d{2})")
+MISS_KINDS = ("eval", "gap")  # one finding per judged miss: an eval finding with a best article, else a gap finding
+
+
+def iso_week(day):
+    """`YYYY-Www`, the ISO week of a date."""
+    y, w, _ = day.isocalendar()
+    return f"{y}-W{w:02d}"
+
+
+def week_days(week):
+    """(Monday, Sunday) of the ISO week `YYYY-Www`; ValueError for anything else."""
+    m = WEEK.fullmatch(str(week or ""))
+    if not m:
+        raise ValueError(f"not an ISO week (YYYY-Www): {week!r}")
+    monday = datetime.date.fromisocalendar(int(m.group(1)), int(m.group(2)), 1)
+    return monday, monday + datetime.timedelta(days=6)
+
+
+def run_day(run_id):
+    """The UTC date of a run id, or None when it is not one."""
+    m = RUN_ID.fullmatch(str(run_id))
+    return datetime.date(int(run_id[:4]), int(run_id[4:6]), int(run_id[6:8])) if m else None
+
+
+def latest_week(store):
+    """The ISO week of the newest entry's day in the store, else of its newest run or findings file; None when the
+    store holds neither."""
+    days = [e["day"] for _, e in store_entries(store) if isinstance(e.get("day"), str)
+            and re.fullmatch(r"\d{4}-\d{2}-\d{2}", e["day"])]
+    if days:
+        return iso_week(datetime.date.fromisoformat(max(days)))
+    runs = [d for d in (run_day(p.stem) for p in run_files(store) + findings_files(store)) if d]
+    return iso_week(max(runs)) if runs else None
+
+
+def _counts(pairs):
+    return ", ".join(f"{k} {n}" for k, n in pairs)
+
+
+def digest(store=None, week=None):
+    """(week, lines, whether the week holds anything) of the committed store (default kb/_querylog) for the ISO week
+    `week` (default: the week of the newest entry). Only the store and `week` go in, so every clone at the same
+    commit prints the same lines. Entries count by their `day`, run and findings files by their run id's date, and
+    findings states are each finding's last record in the findings files dated up to the week's Sunday."""
+    store = Path(store or STORE)
+    week = week or latest_week(store)
+    if week is None:
+        return None, ["query log digest: the store holds no run file"], False
+    monday, sunday = week_days(week)
+    lo, hi = monday.isoformat(), sunday.isoformat()
+
+    def inside(d):
+        return d is not None and monday <= d <= sunday
+
+    entries = [e for _, e in store_entries(store) if isinstance(e.get("day"), str) and lo <= e["day"] <= hi]
+    runs, dropped = 0, 0
+    for p in run_files(store):
+        if not inside(run_day(p.stem)):
+            continue
+        runs += 1
+        try:
+            counts = load_run(p)[0][1].get("counts")
+        except (OSError, ValueError, IndexError):
+            continue
+        if isinstance(counts, dict) and isinstance(counts.get("dropped"), int):
+            dropped += counts["dropped"]
+    state, recorded = {}, 0
+    for p in findings_files(store):
+        d = run_day(p.stem)
+        if d is None or d > sunday:
+            continue
+        try:
+            recs = [r for _, r in load_run(p)[1:] if isinstance(r.get("id"), str)]
+        except (OSError, ValueError):
+            continue
+        recorded += len(recs) if inside(d) else 0
+        state.update((r["id"], r) for r in recs)
+    surfaces = [(s, sum(1 for e in entries if e.get("surface") == s)) for s in SURFACES]
+    verdicts = [(v, sum(1 for e in entries if e.get("verdict") == v)) for v in reversed(VERDICTS)]
+    verdicts.append(("no verdict", sum(1 for e in entries if e.get("verdict") not in VERDICTS)))
+    judged_ = [(j, sum(1 for e in entries if e.get("judged") == j)) for j in JUDGED]
+    judged_.append(("not judged", sum(1 for e in entries if e.get("judged") not in JUDGED)))
+    misses = [e for e in entries if is_miss(e)]
+    fixed = {"by the kb since": 0, "by apply": 0, "by research": 0}
+    for e in misses:
+        for kind in MISS_KINDS:
+            r = state.get(finding_id(kind, e["id"]))
+            if r is None:
+                continue
+            if r.get("state") == "fixed-since":
+                fixed["by the kb since"] += 1
+            elif r.get("state") == "applied" and kind == "eval":
+                fixed["by apply"] += 1
+            elif r.get("state") == "applied" and r.get("stage") == "claim":
+                fixed["by research"] += 1
+    items = []
+    for e in entries:
+        items += [f for f in e.get("fetches") or [] if isinstance(f, dict)]
+        if e.get("outcome"):
+            items.append({k: e[k] for k in FETCH_KEYS if k in e})
+    nfetch = sum(f["n"] if isinstance(f.get("n"), int) else 1 for f in items)
+    failed = sum(f["n"] if isinstance(f.get("n"), int) else 1 for f in items
+                 if isinstance(f.get("outcome"), str) and FAILED.fullmatch(f["outcome"]))
+    chars = sum(f["chars"] for f in items if isinstance(f.get("chars"), int))
+    lines = [f"query log digest {week} ({lo} to {hi})",
+             f"lookups: {len(entries)}" + (f" ({_counts((s, n) for s, n in surfaces if n)})" if entries else ""),
+             f"verdicts: {_counts(verdicts)}",
+             f"judged: {_counts(judged_)}",
+             f"misses: {len(misses)}, fixed: {sum(fixed.values())} ({_counts(fixed.items())})",
+             f"fetches: {nfetch}, failed {failed}, result characters {chars}",
+             f"runs: {runs}, entries dropped by redaction {dropped}",
+             f"finding records written: {recorded}"]
+    table = {}
+    for r in state.values():
+        if r.get("kind") in FINDING_KINDS and r.get("state") in FINDING_STATES:
+            table.setdefault(r["kind"], {}).setdefault(r["state"], 0)
+            table[r["kind"]][r["state"]] += 1
+    lines.append("findings by kind and state at the week's end:" + ("" if table else " none"))
+    for kind in FINDING_KINDS:
+        if kind in table:
+            lines.append(f"  {kind}: " + _counts((s, table[kind][s]) for s in FINDING_STATES if s in table[kind]))
+    return week, lines, bool(entries or runs or recorded)
+
+
+def digest_hook(now_dt=None, store=None):
+    """The SessionStart digest: the JSON line `{"systemMessage": ...}` the first SessionStart of an ISO week prints
+    (last week's digest), or None: logging off (mode `off`, the DISABLED marker), already shown this week (the marker
+    beside the spool names the week), an empty week, or reading the store took more than DIGEST_BUDGET_S. The
+    marker is written before the store is read, so a slow or failed digest is not tried again that week."""
+    t0 = time.monotonic()
+    qdir, cfg = places()
+    if (qdir / "DISABLED").exists() or read_mode(cfg) == "off":
+        return None
+    today = (now_dt or datetime.datetime.now(datetime.timezone.utc)).date()
+    this = iso_week(today)
+    marker = qdir / DIGEST_MARKER
+    try:
+        if marker.read_text(encoding="utf-8").strip() == this:
+            return None
+    except OSError:
+        pass
+    write_text(marker, this + "\n")
+    _, lines, found = digest(store, iso_week(today - datetime.timedelta(days=7)))
+    if not found or time.monotonic() - t0 > DIGEST_BUDGET_S:
+        return None
+    return json.dumps({"systemMessage": "\n".join(lines)}, ensure_ascii=False)
+
+
+def hook_digest():
+    """`digest --hook`: the SessionStart event on stdin is read and left unused; at most one JSON line; exit 0."""
+    try:
+        sys.stdin.reconfigure(encoding="utf-8", errors="replace")
+        sys.stdin.read()
+    except Exception:  # noqa: BLE001 - the event carries nothing the digest needs
+        pass
+    try:
+        line = digest_hook()
+    except Exception:  # noqa: BLE001 - a session starts whatever happens here
+        line = None
+    if line:
+        sys.stdout.reconfigure(encoding="utf-8")
+        print(line)
+    return 0
+
+
+def conflict_mrs(url, run):
+    """([(number, branch, title, url)] (`!iid` on GitLab, `#number` on GitHub) of the open merge requests from a CONFLICT_BRANCH_PREFIX branch to BRANCH on
+    origin's forge, None and a note when glab or gh is not signed in or the call fails). The API filters by one
+    whole branch name, so the open ones targeting BRANCH are listed and the prefix is matched here."""
+    import urllib.parse
+    forge, host, project = origin_forge(url)
+    cli = "gh" if forge == "github" else "glab"
+    code, _, err = run([cli, "auth", "status", "--hostname", host])
+    if code:
+        return None, f"{cli} is not signed in to {host} ({(err.strip().splitlines() or ['not installed'])[-1][:80]})"
+    if forge == "github":
+        argv = ["gh", "pr", "list", "-R", f"{host}/{project}", "--base", BRANCH, "--state", "open",
+                "--json", "number,title,headRefName,url", "-L", "100"]
+    else:
+        argv = ["glab", "api", "--hostname", host, f"projects/{urllib.parse.quote(project, safe='')}/merge_requests"
+                f"?state=opened&target_branch={BRANCH}&per_page=100"]
+    code, o, err = run(argv)
+    try:
+        data = json.loads(o) if code == 0 else None
+    except ValueError:
+        data = None
+    if not isinstance(data, list):
+        return None, f"{' '.join(argv[:3] if forge == 'github' else argv[:2])} failed ({(err.strip().splitlines() or ['no JSON list'])[-1][:80]})"
+    out = []
+    for r in data:
+        if not isinstance(r, dict):
+            continue
+        branch = r.get("headRefName") if forge == "github" else r.get("source_branch")
+        if isinstance(branch, str) and branch.startswith(CONFLICT_BRANCH_PREFIX):
+            num = f"#{r.get('number')}" if forge == "github" else f"!{r.get('iid')}"
+            out.append((num, branch, str(r.get("title") or ""), str(r.get("url") or r.get("web_url") or "")))
+    return sorted(out, key=lambda m: m[1]), f"{cli} on {host}"
+
+
+def reverted_commits(home, run):
+    """[(short hash, subject)] of the commits at HEAD whose KB-Auto trailer holds `revert`, newest first."""
+    code, o, _ = run(["git", "log", "--format=%h%x1f%s%x1f%(trailers:key=KB-Auto,valueonly,separator=%x2C)%x1e",
+                      "HEAD"], cwd=str(home))
+    out = []
+    for rec in o.split("\x1e") if code == 0 else []:
+        parts = rec.strip("\n").split("\x1f")
+        if len(parts) == 3 and "revert" in [v.strip() for v in parts[2].split(",")]:
+            out.append((parts[0], parts[1]))
+    return out
+
+
+def status(store=None, home=None, run=None, out=print):
+    """Three lists from the committed store and the clone at `home`: open source findings, most result characters
+    first (the characters the store's fetches of the host returned); open conflict merge requests on origin's forge
+    (skipped with a note when glab or gh is not signed in, or there is no origin); automatic commits that were
+    reverted (KB-Auto: revert). 0."""
+    store, home, run = Path(store or STORE), Path(home or HOME), run or run_cmd
+    hosts = host_fetches(store_entries(store))
+    found = [r for r in finding_states(store).values() if r.get("kind") == "source" and r.get("state") == "open"]
+    chars = {r["id"]: hosts.get(r.get("host"), {}).get("chars", 0) for r in found}
+    found.sort(key=lambda r: (-chars[r["id"]], str(r.get("host")), str(r.get("signal")), r["id"]))
+    out(f"open source findings, most result characters first: {len(found)}")
+    for r in found:
+        if r.get("signal") == "stage":
+            what = f"stage: level {r.get('level')}, needs {r.get('needs')} ({', '.join(r.get('triggers') or [])})"
+        else:
+            what = f"route: {r.get('tool')} read a host of `{r.get('route')}`"
+        out(f"  {chars[r['id']]} chars  {r.get('host')}  {what}  {r['id']}")
+    code, url, _ = run(["git", "remote", "get-url", REMOTE], cwd=str(home))
+    if code:
+        out(f"open conflict merge requests: not checked: no remote {REMOTE}")
+    else:
+        mrs, note = conflict_mrs(url.strip(), run)
+        if mrs is None:
+            out(f"open conflict merge requests: not checked: {note}")
+        else:
+            out(f"open conflict merge requests ({note}): {len(mrs)}")
+            for num, branch, title, link in mrs:
+                out(f"  {num} {branch}  {title}  {link}".rstrip())
+    reverts = reverted_commits(home, run)
+    out(f"reverted automatic commits: {len(reverts)}")
+    for h, subject in reverts:
+        out(f"  {h} {subject}")
+    return 0
+
+
 def check(argv):
     problems = store_problems(argv[0] if argv else None)
     for p in problems:
@@ -3100,6 +3382,29 @@ def main(argv=None):
         ok, why = quotecheck(a.url, a.quote, fetcher)
         print(f"quotecheck: {why}")
         return 0 if ok else 1
+    if argv[:1] == ["digest"]:
+        import argparse
+        ap = argparse.ArgumentParser(prog="querylog.py digest")
+        ap.add_argument("--store", help="the store to read (default: kb/_querylog, the committed store)")
+        ap.add_argument("--week", help="the ISO week YYYY-Www (default: the week of the store's newest entry)")
+        ap.add_argument("--hook", action="store_true", help="the SessionStart hook: last week's digest as a "
+                        "systemMessage, once per ISO week")
+        a = ap.parse_args(argv[1:])
+        if a.hook:
+            return hook_digest()
+        try:
+            _, lines, _ = digest(a.store, a.week)
+        except ValueError as e:
+            print(f"digest: {e}", file=sys.stderr)
+            return 2
+        print("\n".join(lines))
+        return 0
+    if argv[:1] == ["status"]:
+        import argparse
+        ap = argparse.ArgumentParser(prog="querylog.py status")
+        ap.add_argument("--store", help="the store to read (default: kb/_querylog, the committed store)")
+        a = ap.parse_args(argv[1:])
+        return status(a.store)
     if argv[:1] == ["distill"]:
         import argparse
         ap = argparse.ArgumentParser(prog="querylog.py distill")
