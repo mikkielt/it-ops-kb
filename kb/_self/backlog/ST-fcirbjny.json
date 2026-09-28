@@ -28,7 +28,9 @@
         "synchronous horizon hook",
         "only in /kb-sprint"
       ],
-      "recommendation": "async SessionStart hook"
+      "recommendation": "async SessionStart hook",
+      "answer": "async SessionStart hook",
+      "by": "agent"
     }
   ]
 }
