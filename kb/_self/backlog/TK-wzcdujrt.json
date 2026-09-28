@@ -2,7 +2,7 @@
   "id": "TK-wzcdujrt",
   "kind": "task",
   "title": "File one bug per red main pipeline",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-fcirbjny",
   "priority": "P3",
   "rank": 0,
@@ -24,5 +24,6 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md",
     "kb/_self/token-efficiency.md"
-  ]
+  ],
+  "claimed_by": "sub-redpipe"
 }

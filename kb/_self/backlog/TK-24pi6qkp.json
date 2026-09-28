@@ -2,7 +2,7 @@
   "id": "TK-24pi6qkp",
   "kind": "task",
   "title": "Change learn's miss rule and test it",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-r4jcj3fn",
   "priority": "P1",
   "rank": 0,
@@ -21,5 +21,6 @@
     "_tools/ql_learn.py",
     "_tools/test_querylog.py",
     "kb/_self/querylog.md"
-  ]
+  ],
+  "claimed_by": "sub-learn"
 }
