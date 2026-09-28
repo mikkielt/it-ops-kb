@@ -169,10 +169,6 @@ Kb facts the build rests on: `claude/hooks.md` (async hooks, `prompt_id`, `Stop`
 
     Check: that test on Linux and Windows, `/kb-verify`, and `selfdoc.py stale` with no stale doc.
 
-## Content
-
-- **Sources with `reuse` `unknown`** (treated as paraphrase): their `licence` says what was tried; the terms pages are blocked from the maintainer's network (cyber.gov.au) or refuse scripted reads (iso.org). Read them in a browser (Claude in Chrome during `/kb-refresh`, or a person) and set the class.
-
 ## Watch
 
 Triggers, not tasks: act when one fires.
