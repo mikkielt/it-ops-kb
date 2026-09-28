@@ -70,7 +70,9 @@
         "a CI job on the integration main with a deploy key for the public home: publishes within the pipeline, the key is a CI secret",
         "a push mirror set on the integration host: no tool code, but it mirrors without the green or public-content checks"
       ],
-      "recommendation": "the async SessionStart hook in each maintainer clone, beside red-pipeline: no credential in CI, publishes at the next session after main turns green"
+      "recommendation": "the async SessionStart hook in each maintainer clone, beside red-pipeline: no credential in CI, publishes at the next session after main turns green",
+      "answer": "the async SessionStart hook in each maintainer clone, beside red-pipeline: no credential in CI, publishes at the next session after main turns green",
+      "by": "operator"
     }
   ],
   "notes": "Refusing keeps one history on both remotes; stripping would fork it. A GitLab push mirror (optional host setup; ST-mmmn42ks “The kb covers the server side of the git regime” researches it) can replace the command where the integration host is trusted to decide what is public."

@@ -1,0 +1,28 @@
+{
+  "id": "TK-opkxumeu",
+  "kind": "task",
+  "title": "Session-start hook runs publish",
+  "status": "todo",
+  "parent": "ST-su4em5sl",
+  "priority": "P2",
+  "rank": 1,
+  "goal": "kbgit.py publish --hook runs silently from an async SessionStart hook in .claude/settings.json beside red-pipeline: in a clone with a publish remote it publishes when the integration main is green and ahead of the public home, prints only a refusal, and does nothing in a clone without one",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "publish_hook"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/settings.json",
+    "_tools/kbgit.py",
+    "_tools/test_sync.py"
+  ],
+  "depends_on": [
+    "TK-h6oy6jlh"
+  ]
+}
