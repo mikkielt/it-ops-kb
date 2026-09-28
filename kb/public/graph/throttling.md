@@ -2,9 +2,9 @@
 topic: graph/throttling
 priority: P1
 applies_to: "Microsoft Graph (throttling-limits ms.date 01/14/2025)"
-retrieved_utc: 2026-09-26
-sources: [S525, S526, S527, S528, S529]
-status: partial
+retrieved_utc: 2026-09-28
+sources: [S525, S526, S527, S528, S529, S-ma3wej5u]
+status: complete
 ---
 
 # Graph throttling limits: directory (devices) and Intune
@@ -14,7 +14,7 @@ status: partial
 - Directory (`device` included): token bucket in ResourceUnits; app+tenant 3,500 / 5,000 / 8,000 RU per 10 s for S / M / L tenants.
 - Device writes: 3,000 per 2 min 30 s per app per tenant, 25 per 10 s per user per tenant.
 - Intune devices (`managedDevice`): 2,000 requests / 20 s per app per tenant, 4,000 / 20 s per tenant (any request type).
-- Autopilot identities are not listed in any Intune throttling group. [UNK]
+- Autopilot device identities are not listed in any Intune throttling group; only Autopilot events, policy status details and deployment-profile policy set items are.
 
 ## Facts
 - Microsoft states the specific limits are subject to change. [DOC S525]
@@ -27,7 +27,7 @@ status: partial
 - Intune devices service (includes `managedDevice`, `windowsManagedDevice`): writes 200 / 20 s per app per tenant and 400 / 20 s per tenant; any request 2,000 / 20 s per app per tenant and 4,000 / 20 s per tenant. [DOC S528]
 - Throttled requests return 429 with `Retry-After`; wait that many seconds and retry; with no `Retry-After`, use exponential backoff. [DOC S529]
 - Requests in a JSON batch are evaluated individually; a throttled item fails with 429 while the batch returns 200. [DOC S529]
-- `windowsAutopilotDeviceIdentity` does not appear in any Intune throttling include. [UNK]
+- `windowsAutopilotDeviceIdentity` appears in no Intune throttling group, neither in the pinned includes nor on the live page (updated 2026-09-17), which lists `deviceManagementAutopilotEvent`, `deviceManagementAutopilotPolicyStatusDetail` and `windowsAutopilotDeploymentProfilePolicySetItem` only. [DER S525, S-ma3wej5u: resource lists searched for Autopilot]
 
 ## Reference
 | Scope | Resource | Limit | Source |

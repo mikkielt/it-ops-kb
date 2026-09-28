@@ -2,9 +2,9 @@
 topic: graph/microsoft365dsc
 priority: P3
 applies_to: "Microsoft365DSC PowerShell module 1.26.909.1 (2026-09-11)"
-retrieved_utc: 2026-09-27
-sources: [S1010, S-jya6izpo, S-l6j5dpwj, S-44mrima5, S-ahgkqifj, S-2fvvbt5t, S-zmngjhe5, S-prjyny3b, S-3aphi7n2, S-omyb2en3]
-status: partial
+retrieved_utc: 2026-09-28
+sources: [S1010, S-jya6izpo, S-l6j5dpwj, S-44mrima5, S-ahgkqifj, S-2fvvbt5t, S-zmngjhe5, S-prjyny3b, S-3aphi7n2, S-omyb2en3, S-dlzkqwix, S-fbhq2yc2, S-qkxsdf32, S-c6kla37l, S-fylt7wwn]
+status: complete
 ---
 
 # Microsoft365DSC
@@ -71,19 +71,16 @@ and `prior-art/projects.csv`, source `S1010`). Docs below (microsoft365dsc.com) 
   journal/log. [COMMUNITY S-2fvvbt5t]
 - The DSC engine can be configured in `ApplyAndAutoCorrect` mode to automatically remediate detected drift and restore
   the declared state, as opposed to report-only monitoring. [COMMUNITY S-2fvvbt5t]
-- `New-M365DSCDeltaReport` and `Test-M365DSCAgent` are cmdlets for drift/compliance reporting, listed in the project's
-  navigation and cmdlet index, but their parameter-level syntax was not found on a working page during this research
-  pass (the dedicated `/cmdlets/New-M365DSCDeltaReport/` page returned HTTP 404). [UNK]
+- `New-M365DSCDeltaReport` compares two configurations: mandatory `-Source` and `-Destination`, with `-OutputPath`, `-Type` (`HTML` or `JSON`), `-DriftOnly`, `-HeaderFilePath`, `-ExcludedProperties`, `-ExcludedResources` and variable-substitution options. [CODE S-dlzkqwix: Modules/Microsoft365DSC/Modules/M365DSCReport.psm1#New-M365DSCDeltaReport]
+- The project's guide uses it to compare two exported configurations, or one tenant's snapshot with another tenant's, writing an HTML report. [DOC S-c6kla37l]
+- `Test-M365DSCAgent` takes no parameters and checks the agent machine, not a tenant: PowerShell version (5.1 recommended), the WinRM MaxEnvelopeSize and the module dependencies, and reports issues and recommendations. It is not a drift report. [CODE S-fbhq2yc2: Modules/Microsoft365DSC/Modules/M365DSCAgent.psm1#Test-M365DSCAgent]
 - In release 1.26.909.1 each Microsoft365DSC resource follows classic PowerShell DSC's `Get-TargetResource`/`Test-TargetResource`/
   `Set-TargetResource` (MOF-based) pattern rather than DSC v3's resource-manifest model, so `Test-DscConfiguration`
-  (or `Start-DscConfiguration -WhatIf`) reports drift without applying `Set`, matching the report-only mode covered in
-  `prior-art/drift-detection.md`. [DER S-3aphi7n2: MSFT_AADUser at the release tag has a `.schema.mof` and Get/Set/Test-TargetResource functions; drift behaviour from dsc/cli-reference.md]
+  reports drift without applying `Set`, matching the report-only mode covered in `prior-art/drift-detection.md`. [DER S-3aphi7n2, S-fylt7wwn: MSFT_AADUser at the release tag has a `.schema.mof` and Get/Set/Test-TargetResource functions; Test-DscConfiguration only tests]
 - On the `Dev` branch (commit of 2026-09-26) resources are being converted to class-based `[DscResource()]` classes
   deriving from a shared `M365DSCResourceBase`, and `MSFT_AADUser` no longer has a `.schema.mof`; releases after
   1.26.909.1 may therefore not be MOF-based. [COMMUNITY S-omyb2en3]
-- Individual Intune resource names (e.g. resource types beginning `Intune*`) were not independently confirmed on a
-  working documentation page this session; the repository overview confirms Intune as a supported workload but lists
-  no resource names. [UNK]
+- Release 1.26.909.1 ships 166 Intune resources named `MSFT_Intune*` (for example `MSFT_IntuneAccountProtectionLocalAdministratorPasswordSolutionPolicy`, `MSFT_IntuneAntivirusPolicyLinux`). [DER S-qkxsdf32: count of the `DscResources` directory at the release tag]
 
 ## Reference
 - Tenant-level configuration monitoring/drift at the Graph API layer (not PowerShell/DSC-based): `graph/tcm-apis.md`

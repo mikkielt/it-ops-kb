@@ -2,9 +2,9 @@
 topic: sqlserver/linux-container
 priority: P0
 applies_to: "mcr.microsoft.com/mssql/server (tag list retrieved 2026-09-24)"
-retrieved_utc: 2026-09-26
+retrieved_utc: 2026-09-28
 sources: [S460, S466, S473, S474, S475, S476, S477, S478]
-status: partial
+status: complete
 files: [sqlserver/mssql-server-tags.json]
 ---
 
@@ -27,7 +27,7 @@ files: [sqlserver/mssql-server-tags.json]
 - Production use needs a valid licence. With `ACCEPT_EULA=Y` and a production `MSSQL_PID` you state that you have one. The Developer image can run production editions. [DOC S473]
 - Other env vars: `MSSQL_TCP_PORT` (default 1433), `MSSQL_MEMORY_LIMIT_MB` (default 80% of RAM), `MSSQL_COLLATION`, `MSSQL_AGENT_ENABLED` (default off). [DOC S474]
 - Developer editions have the Enterprise (or Standard) feature set, so temporal retention works in CI. [DER S466,S460: S466 gives Enterprise Developer the Enterprise and Standard Developer the Standard feature set, both with temporal tables; S460 documents retention for SQL Server 2017 and later with no edition limit]
-- Microsoft docs don't give a digest (`@sha256:`) pinning policy for mssql/server. [UNK]
+- Microsoft's container docs give no digest (`@sha256:`) pinning policy for mssql/server: the deploy, quickstart and environment-variable pages pin by tag only. [DER S473, S474, S477: no digest guidance on any of them, also at sql-docs live 2e21fb07 on 2026-09-28, where no page references `mssql/server@`]
 
 ## Reference
 Artifact: `sqlserver/mssql-server-tags.json` (sha256 `058736f6cdb5ab26a766cb3a491e785c8f6f26c098cec38b74e7276d27bc4c83`). It is a live endpoint, so re-fetching gives a different hash as tags are added.

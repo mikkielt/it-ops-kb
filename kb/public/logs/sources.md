@@ -2,9 +2,9 @@
 topic: logs/sources
 priority: P1
 applies_to: "Windows 10/11, ConfigMgr current branch, Intune, Autopilot, Entra ID (docs 2021-2026)"
-retrieved_utc: 2026-09-27
-sources: [S-ygo5rdrm, S-6q3ioupn, S-ta4g5get, S-6epv7qzl, S617, S618, S-fzoar2ya, S632, S633, S634, S635, S636, S637, S638, S648, S-d3ml3kug]
-status: partial
+retrieved_utc: 2026-09-28
+sources: [S-ygo5rdrm, S-6q3ioupn, S-ta4g5get, S-6epv7qzl, S617, S618, S-fzoar2ya, S632, S633, S634, S635, S636, S637, S638, S648, S-d3ml3kug, S-77gkdi7q, S-3ykamo74, S-6lmczs32]
+status: complete
 ---
 # Device log sources (files, event channels, commands)
 
@@ -36,7 +36,9 @@ channels; the full ConfigMgr log table is `mecm/log-files.csv` (another agent).
 - Intune's Collect diagnostics remote action gathers, among others, `%windir%\ccm\logs\*.log`, `%windir%\ccmsetup\logs\*.log`, `%windir%\logs\WindowsUpdate\*.etl`, `%windir%\Logs\SetupDiag\SetupDiagResults.xml`, `%windir%\logs\Panther\unattendgc\setupact.log`, the `Microsoft-Windows-SENSE/Operational` and `Microsoft-Windows-WMI-Activity/Operational` channels, and the output of `Dsregcmd.exe /status`. [DOC S-6epv7qzl]
 - Co-management enrollment is logged in `ComanagementHandler.log` on the client; enrollment with the Entra device token shows the entry `Enrolling device with RegisterDeviceWithManagementUsingAADDeviceCredentials`. [DOC S-ygo5rdrm]
 - Windows Update client errors also appear as events in the `Microsoft-Windows-WindowsUpdateClient/Operational` log. [DOC S648]
-- A `DeviceManagement-Enterprise-Diagnostics-Provider/Operational` channel is not documented in the cloned sources. [UNK]
+- The MDM client also has an Operational channel: declared configuration processing errors go to `Application and Service Logs\Microsoft\Windows\DeviceManagement-Enterprise-Diagnostics-Provider\Operational` as well as `...\Admin`. [DOC S-77gkdi7q]
+- The DiagnosticLog CSP enables an Event Viewer channel by full name, for example `Microsoft-Windows-DeviceManagement-Enterprise-Diagnostics-Provider%2FAdmin` (the `/` URL-encoded). [DOC S-3ykamo74]
+- Autopilot troubleshooting collects `microsoft-windows-moderndeployment-diagnostics-provider-autopilot.evtx` beside the MDM Admin log, which matches the derived channel name `Microsoft-Windows-ModernDeployment-Diagnostics-Provider/Autopilot`. [DOC S-6lmczs32]
 
 ## Reference
 `sources.csv`: path_or_channel, kind, product, component, scenario, source_id.

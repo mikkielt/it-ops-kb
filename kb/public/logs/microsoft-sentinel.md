@@ -2,9 +2,9 @@
 topic: logs/microsoft-sentinel
 priority: P2
 applies_to: "Microsoft Sentinel (Defender portal unified SecOps and Azure portal), docs ms.date through 2026-09"
-retrieved_utc: 2026-09-26
-sources: [S-qmi72hvd, S-56eqdqa6, S-btmphtyp, S-6c6jslfs, S-cmyl6p5v, S-guca45p3, S-etccrdda, S-hya3uz6p, S-34uiuy35, S-tf6fezvb, S-vjefvouf, S-ur2l6cs3, S-luprngvc, S-me4bxp52, S-ycrujjsf, S-5kjwbj3c, S-ofreafga, S-w47nempm, S-3dcvyq2z, S-r4klpeuf, S-apxtyshr, S-hvr4bpb2, S-qkyfycn6, S-vicgida6]
-status: partial
+retrieved_utc: 2026-09-28
+sources: [S-qmi72hvd, S-56eqdqa6, S-btmphtyp, S-6c6jslfs, S-cmyl6p5v, S-guca45p3, S-etccrdda, S-hya3uz6p, S-34uiuy35, S-tf6fezvb, S-vjefvouf, S-ur2l6cs3, S-luprngvc, S-me4bxp52, S-ycrujjsf, S-5kjwbj3c, S-ofreafga, S-w47nempm, S-3dcvyq2z, S-r4klpeuf, S-apxtyshr, S-hvr4bpb2, S-qkyfycn6, S-vicgida6, S-bxionmbk]
+status: complete
 ---
 
 # Microsoft Sentinel
@@ -207,9 +207,9 @@ tables are in `defender/advanced-hunting.md`.
 - `defender/advanced-hunting.md` — the KQL hunting surface, Defender XDR table schema (`DeviceEvents`,
   `AlertEvidence`, etc.), the 30-day XDR native retention and the 150-alert-per-run custom-detection cap that
   parallels this article's analytics-rule alert cap; see its Reference section for the back-link to this article.
-- Whether the Defender-portal Table insights view (ingestion volume, cost estimates) is billing-grade, or purely
-  advisory, beyond the one caution already captured, and its exact refresh cadence, was not covered in the pages
-  read for this topic. [UNK]
+- Table insights (Defender portal, Microsoft Sentinel > Configuration > Tables) is a visualization surface for investigation, not a billing-grade or alerting surface; alerting on table health needs a scheduled analytics rule on `SentinelHealth` or a KQL query on `Usage`. [DOC S-btmphtyp, S-bxionmbk]
+- Its limits: ingestion volume cards cover the last 30 days; fluctuations compare the last 24 hours with the same day a week earlier and need at least a 10 percent and 1 MB change (tables under 1 MB a day are not evaluated); **Est. daily ingestion cost** uses public list price for the tier and region, without commitment-tier discounts, reservations or private pricing; one workspace at a time. [DOC S-bxionmbk]
+- The pages give no refresh cadence for Table insights. [DER S-btmphtyp, S-bxionmbk: no refresh interval stated]
 
 ## Examples
 - SNIPPET: KQL — mirrors the AMA-fed `SecurityEvent`/`DeviceEvents` cross-source hunting pattern (placeholders only); context: Sentinel analytics/hunting KQL; checked: no [DOC S-qkyfycn6, S-vicgida6: `imAuthentication` is the Authentication schema's unifying parser]

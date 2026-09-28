@@ -415,6 +415,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
 - Q10 Autopilot `id` vs ZTDId: searched memdocs (all), entra-docs, graph docs-contrib v1.0 for `ztdid`; no statement linking them. UNK. (topic: autopilot/device-identity)
   - Tried 2026-09-27, still open: Graph v1.0 and beta windowsAutopilotDeviceIdentity pages at microsoft-graph-docs-contrib 4ad99fd3 (id = 'The GUID for the object'), Learn search (Autopilot device groups, CA device filters, known issues, dynamic membership rules) name ZTDId only in physicalIds. The article records the absence as DER. Verification: compare GET windowsAutopilotDeviceIdentities/{id} with the Entra device's physicalIds on a lab device. (topic: autopilot/device-identity)
 - Throttling limit for `windowsAutopilotDeviceIdentity`: not listed in any `includes/throttling-intune-*.md` in docs-contrib (grep of all includes). UNK. (topic: graph/throttling)
+  - Resolved 2026-09-28 as a documented absence: the live throttling page (S-ma3wej5u, updated 2026-09-17) lists only Autopilot events, policy status details and deployment-profile policy set items; recorded as DER. (topic: graph/throttling)
 - Intune RBAC needed for delegated Graph calls on managedDevices / Autopilot identities: API pages S518-S523 state only Graph permissions. Not searched further in memdocs (budget). UNK. (topic: graph/permissions)
 - `dsregcmd /status` Tenant details fields: documented only through sample output on S544; not extracted. (topic: entra/dsregcmd)
   - Resolved 2026-09-27: the section's visibility rule, MDM URL note and sample field names are now DOC in entra/dsregcmd.md (S544); the page still has no per-field descriptions, so the CSV stays without them. (topic: entra/dsregcmd)
@@ -430,8 +431,11 @@ Still open: (topic: auth/configmgr-rbac-auth)
 - **`safe_directory_checkout` documentation**: the option is in the runner source (S410), but a grep of runner `docs/` at 49138a48 finds no mention. [UNK in docs] (topic: windows/gitlab-runner-windows)
   - Resolved 2026-09-28 as a documented absence: still in no file of the runner `docs/` at main 0e3fe7d3 (S-kw4zko43) nor on the published advanced-configuration page; the per-executor defaults are now read from source (CODE). (topic: windows/gitlab-runner-windows)
 - **mssql/server digest pinning policy**: containers/deploy.md, quickstart-install-docker.md and environment-variables.md (S473, S474, S477) have no `@sha256` or digest guidance. MCR tag list saved (S478). [UNK] (topic: sqlserver/linux-container)
+  - Resolved 2026-09-28 as a documented absence: the three pages at sql-docs live 2e21fb07 still have no digest guidance and a GitHub code search finds no `mssql/server@` reference in the repository; recorded as DER. (topic: sqlserver/linux-container)
 - **S478 artifact hash is not stable**: `tags/list` is a live endpoint, so `fetch.py --verify` will report a mismatch once new tags appear. (topic: sqlserver/linux-container)
+  - Closed 2026-09-28: a property of the source, not missing knowledge. The saved copy stays pinned by its sha256 (`fetch.py --offline` passes); a `--verify` mismatch on this live endpoint means new tags, and the article says so. (topic: sqlserver/linux-container)
 - **Ownership chaining vs DENY for the audit table**: not read (sql-docs ownership-chains page not checked). [UNK] (topic: sqlserver/insert-only-audit)
+  - Resolved 2026-09-28: the current Ownership Chains page is gone (404); the archived 2008 R2 page (S-qkecle6c) states that permissions on a same-owner referenced object are not evaluated, and the current tutorial (S-yjcvd3to) shows access through a procedure; the DENY consequence is recorded as DER. (topic: sqlserver/insert-only-audit)
 - **Free-tier author self-approval**: approvals `_index.md` (S441) says Free approvals are optional. Whether a Free author can approve their own MR is not stated on the pages read. [UNK] (topic: gitlab/mr-approvals)
 
 ## later
@@ -444,6 +448,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
 - `ansible.windows.win_dsc` check-mode support: the docs page as fetched shows no attributes table; not confirmed. [UNK] (topic: ansible/dsc3-module)
 - powerbi/configmgr-views.md depends on mecm/sql-views-compliance.md (other agent); that file did not exist at time of writing.
   - Resolved 2026-09-27: mecm/sql-views-compliance.md exists; the dependency is satisfied. (topic: mecm/sql-views-compliance)
+  - Closed 2026-09-28: the article now also carries the Power BI Report Server integration facts (S-djtnspkg) and moves to complete. (topic: powerbi/configmgr-views)
 
 ## mcp
 
@@ -520,11 +525,14 @@ Still open: (topic: auth/configmgr-rbac-auth)
 - **Co-management workload flags (CoManagementFlags).** A grep of the memdocs and SupportArticles clones found nothing. (topic: intune/co-management)
   - Partly resolved 2026-09-27: the SupportArticles co-management troubleshooting page (S-wnwinphx) shows log samples testing workloadFlags 7 against workload 2 (compliance), 4 (resource access) and 16 (Windows Update for Business); the other workloads' bits are still undocumented. (topic: intune/co-management)
 - **Channel `Microsoft-Windows-DeviceManagement-Enterprise-Diagnostics-Provider/Operational`.** Not found in the memdocs, SupportArticles, entra or windowsserverdocs clones. (topic: logs/sources)
+  - Resolved 2026-09-28: the Windows declared configuration protocol page (S-77gkdi7q) logs processing errors to `DeviceManagement-Enterprise-Diagnostics-Provider\Operational` and `\Admin`; added to `logs/sources.csv`. (topic: logs/sources)
 - **Exact channel string for ModernDeployment-Diagnostics-Provider/Autopilot.** Only the Event Viewer path is documented (autopilot/troubleshooting-faq.yml). The channel name in this kb is derived (DER). (topic: logs/sources)
+  - Narrowed 2026-09-28: the Autopilot device-registration troubleshooting article (S-6lmczs32) collects `microsoft-windows-moderndeployment-diagnostics-provider-autopilot.evtx`, which matches the derived channel name; no page spells the channel string itself, so it stays DER. (topic: logs/sources)
 - **ConfigMgr-specific Windows event channels.** None are documented in the clones. ConfigMgr writes log files instead (see mecm/log-files.csv).
 - **Query length limit for multi-device query.** Not stated. (topic: intune/device-query)
   - Tried 2026-09-27, still open: the live multi-device page (updated_at 2026-09-02) Known limitations list joins, records, rate and export limits but no query length; the 2,048-character limit is stated only for single-device query. (topic: intune/device-query)
 - **ECS base fields (@timestamp, message).** base.yml was not fetched. (topic: logs/ecs-log-fields)
+  - Resolved 2026-09-28: `schemas/base.yml` and `schemas/event.yml` read at the same commit (S-okri4cz3, S-gho2sfjp). (topic: logs/ecs-log-fields)
 - **Licence of the Defender learn pages.** The MicrosoftDocs/defender-docs repo is private, so the licence could not be checked. That content is summarised only.
 
 ## priorart
@@ -833,6 +841,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
 ## graph/microsoft365dsc
 
 - `New-M365DSCDeltaReport`/`Test-M365DSCAgent` parameter-level syntax (dedicated cmdlet page 404s) and the individual `Intune*`-prefixed resource names were not confirmed on a working page this pass (1 lookup: Microsoft Learn/GitHub search for "Microsoft365DSC New-M365DSCDeltaReport cmdlet reference"). (topic: graph/microsoft365dsc)
+  - Resolved 2026-09-28: both read from source at tag 1.26.909.1 (S-dlzkqwix, S-fbhq2yc2); `Test-M365DSCAgent` turns out to check the agent machine, not drift, and the article is corrected. The 166 `MSFT_Intune*` resources are counted from the release tree (S-qkxsdf32). The docs site still has no cmdlet pages. (topic: graph/microsoft365dsc)
 
 ## intune/app-protection-mam
 
@@ -858,6 +867,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
 
 - EPM Agent's own log file names/paths and Windows Event Log channel were not found on the EPM troubleshooting/known-issues/deployment-planning pages fetched this session (2 lookups, 2026-09-26); only the client install folder (`C:\Program Files\Microsoft EPM Agent`) and service name are documented on those pages. (topic: intune/endpoint-privilege-management)
   - Partly resolved 2026-09-27: the Collect diagnostics page (S-6epv7qzl) collects %ProgramFiles%\Microsoft EPM Agent\Logs\*.* and HKLM\SOFTWARE\Microsoft\EPMAgent; file names and an event channel remain undocumented (Learn search on EPM logs found none). The Approve-/Deny-/Revoke-MgBetaDeviceManagementElevationRequest cmdlets are confirmed from the PowerShell Gallery listing (S-hepxqkky) because their Learn pages return 404. (topic: intune/endpoint-privilege-management)
+  - Tried 2026-09-28, still open: Learn search of the EPM deployment-planning, known-issues and elevation-settings pages gives the agent folder, service and the EpmTools cmdlets (`Get-Policies`, `Get-ClientSettings`, ...) but no log file names or event channel. Needs a lab device reading `%ProgramFiles%\Microsoft EPM Agent\Logs`. (topic: intune/endpoint-privilege-management)
 
 ## intune/network-profiles
 
@@ -871,6 +881,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
 ## logs/microsoft-sentinel
 
 - Whether the Defender-portal Table insights view (ingestion volume/cost estimates) is billing-grade vs advisory, and its exact refresh cadence, was not covered on the pages read for this topic (1 Microsoft Learn search for "Defender portal table insights billing cost refresh"). (topic: logs/microsoft-sentinel)
+  - Resolved 2026-09-28: Table insights is a visualization surface, not billing-grade or alerting (S-btmphtyp, S-bxionmbk); cost estimates use public list price; 30-day lookback; no refresh cadence is published (recorded as DER). (topic: logs/microsoft-sentinel)
 
 ## mecm/osd-task-sequences
 

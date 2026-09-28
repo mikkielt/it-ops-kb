@@ -2,8 +2,8 @@
 topic: graph/permissions
 priority: P1
 applies_to: "Microsoft Graph v1.0 and beta, docs-contrib commit 4ad99fd37a9e"
-retrieved_utc: 2026-09-27
-sources: [S512, S513, S514, S515, S516, S517, S518, S519, S520, S521, S522, S523, S524, S531]
+retrieved_utc: 2026-09-28
+sources: [S512, S513, S514, S515, S516, S517, S518, S519, S520, S521, S522, S523, S524, S531, S-ilovbr2g]
 status: complete
 files: [graph/permission-ids.csv]
 ---
@@ -27,7 +27,7 @@ files: [graph/permission-ids.csv]
 - List/Get windowsAutopilotDeviceIdentities: `DeviceManagementServiceConfig.Read.All`; Delete: `DeviceManagementServiceConfig.ReadWrite.All`. [DOC S521,S522,S523]
 - Personal Microsoft accounts are not supported for any of these calls. [DOC S512,S518,S521]
 - List BitLocker recoveryKeys (`GET /informationProtection/bitlocker/recoveryKeys`, `$filter` on `deviceId`, no `$top`) never returns the `key` property; a delegated caller must be the registered owner of the device the key was backed up from or hold a supported Entra role (Cloud device administrator, Helpdesk administrator, Intune service administrator, Security administrator, Security reader, Global reader). Permission names per call: `permissions.csv`. [DOC S531]
-- Intune RBAC role requirements for delegated Intune Graph calls are not stated on these API pages. [UNK]
+- The Graph API pages list scopes but no Intune RBAC role per call; Intune's Graph-access guide says a user who manages Intune settings through such an app needs at least the Intune Service Administrator role and an Intune licence (stated for a partner's account in a customer tenant). [DOC S-ilovbr2g]
 
 ## Reference
 - `permissions.csv`, `permission-ids.csv` (this directory).

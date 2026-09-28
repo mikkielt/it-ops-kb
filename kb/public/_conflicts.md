@@ -584,6 +584,7 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
 ## graph/microsoft365dsc
 
 - Microsoft365DSC release 1.26.909.1 ships MOF-based function resources (S-3aphi7n2), while the Dev branch at 2026-09-26 has converted resources to class-based [DscResource()] classes without .schema.mof (S-omyb2en3); facts about resource shape depend on version. (topic: graph/microsoft365dsc)
+  - Re-checked 2026-09-28, still stands: 1.26.909.1 is still the latest release, and `MSFT_AADUser` on Dev (70a46e5b) still has no `.schema.mof`. Settles when a release ships the class-based resources. (topic: graph/microsoft365dsc)
 
 ## intune/ios-android-management
 

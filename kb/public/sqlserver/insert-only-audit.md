@@ -2,9 +2,9 @@
 topic: sqlserver/insert-only-audit
 priority: P0
 applies_to: "SQL Server 2016+ / Azure SQL (permission model)"
-retrieved_utc: 2026-09-27
-sources: [S468, S469, S470, S471, S-deeqomz3]
-status: partial
+retrieved_utc: 2026-09-28
+sources: [S468, S469, S470, S471, S-deeqomz3, S-qkecle6c, S-yjcvd3to]
+status: complete
 ---
 
 # Roles and permissions for an insert-only audit table
@@ -21,7 +21,9 @@ status: partial
 - Schema permissions: INSERT, UPDATE, DELETE and SELECT on a schema are each implied by schema CONTROL and by the same-named database permission. ALTER is implied by ALTER ANY SCHEMA. [DOC S470]
 - `db_datawriter` can add, delete or change data in all user tables. `db_denydatawriter` can't add, modify or delete in any user table. [DOC S471]
 - Table permissions that can be granted per object are DELETE, INSERT, REFERENCES, SELECT and UPDATE, so INSERT can be granted on one table alone; on a column only SELECT, REFERENCES, UPDATE and UNMASK can be granted; INSERT on an object is implied by CONTROL on it and by INSERT on its schema. [DOC S-deeqomz3]
-- Whether ownership chaining lets a stored procedure bypass a DENY on the audit table was not read in this pass. [UNK]
+- In an ownership chain, SQL Server compares the owner of each referenced object with the owner of the calling object; when they match, it doesn't evaluate permissions on the referenced object (an unbroken chain). [DOC S-qkecle6c]
+- The current tutorial shows the effect: a user with no rights on the base tables reads them through a stored procedure whose schema owner also owns the tables. [DOC S-yjcvd3to]
+- So a DENY on the audit table does not stop writes made through a procedure owned by the table's owner: the table's permissions are never evaluated in that chain. The DENY holds for direct access, and for a procedure owned by someone else (a broken chain). [DER S-qkecle6c, S-yjcvd3to: unbroken chains skip permission checks on the referenced object]
 
 ## Reference
 | Grant | Effect | Source |

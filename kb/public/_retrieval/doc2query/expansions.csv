@@ -209,9 +209,6 @@ c4a57dbcdc7e,system update service logs windows
 7c936563010c,IntuneManagementExtension log location
 7c936563010c,Where are the Intune Management Extension logs?
 5a40ec5a1f4e,tenant attach logs configmgr
-5e1f7ab5865a,DeviceManagement-Enterprise-Diagnostics-Provider Operational channel
-5e1f7ab5865a,Is there an Operational channel for Device Management diagnostics?
-5e1f7ab5865a,MDM operational events event viewer
 3cd8013baefe,MRTR roots/list sampling createMessage
 3cd8013baefe,What replaced server-initiated requests in MCP?
 3cd8013baefe,how to migrate from old MCP request pattern

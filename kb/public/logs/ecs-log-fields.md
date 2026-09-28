@@ -2,8 +2,8 @@
 topic: logs/ecs-log-fields
 priority: P1
 applies_to: "Elastic Common Schema main @9868ff5 (version file 9.6.0-dev)"
-retrieved_utc: 2026-09-26
-sources: [S644, S645, S639, S640, S641]
+retrieved_utc: 2026-09-28
+sources: [S644, S645, S639, S640, S641, S-okri4cz3, S-gho2sfjp]
 status: complete
 files: [logs/ecs-log.yml]
 ---
@@ -24,7 +24,8 @@ appname, procid, msgid, structured_data). Pinned YAML: `ecs-log.yml`. Licence Ap
 - `log.origin.file.name` keyword, `log.origin.file.line` long, `log.origin.function` keyword; extended: code origin. [DOC S644]
 - `log.syslog` object with `severity.code` (long), `severity.name`, `facility.code` (long), `facility.name`, `priority` (long), `version`, `hostname`, `appname`, `procid`, `msgid` (keyword), `structured_data` (flattened). [DOC S644]
 - Repository licence: Apache License 2.0. [DOC S645]
-- Base fields (`@timestamp`, `message`) and `event.*` were not fetched. [UNK]
+- Base fields: `@timestamp` (date, core, required: when the event originated), `message` (match_only_text, core), `tags` (keyword) and `labels` (object). [DOC S-okri4cz3]
+- The `event.*` field set has 26 fields; the core ones include `event.kind`, `event.category`, `event.type`, `event.outcome`, `event.action`, `event.dataset`, `event.module`, `event.original` (keywords), `event.severity` (long) and `event.created`/`event.ingested` (dates); `event.code`, `event.provider` and `event.sequence` (long) are extended. [DOC S-gho2sfjp]
 
 ## Reference
 | ECS | OTel equivalent (by meaning; DER) |
