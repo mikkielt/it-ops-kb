@@ -1,0 +1,23 @@
+{
+  "id": "ST-i3t6i2to",
+  "kind": "story",
+  "title": "Knowledge state per item: known or to research",
+  "status": "draft",
+  "parent": "EP-vpb7u3us",
+  "priority": "P2",
+  "rank": 1,
+  "goal": "show, next and horizon run rag.py pack (no network, no model) on each ask of an item and report it known (coverage good without a check line naming a false good) or to research; an item with an ask to research is not ready unless a research task covering that ask exists and is done; horizon lists the research still needed. The SessionStart hook does not run pack.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "knowledge_state"
+      ]
+    }
+  ],
+  "depends_on": [
+    "ST-ireqmpda"
+  ]
+}

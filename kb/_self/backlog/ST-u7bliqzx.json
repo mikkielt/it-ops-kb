@@ -1,0 +1,36 @@
+{
+  "id": "ST-u7bliqzx",
+  "kind": "story",
+  "title": "A brief per item for the agent that works it",
+  "status": "draft",
+  "parent": "EP-vpb7u3us",
+  "priority": "P2",
+  "rank": 4,
+  "goal": "backlog.py brief ID prints the packs of the item's asks and the text of its referenced facts, with their path:line and source urls, within a token budget; /kb-item and /kb-sprint put it in the working agent's brief.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "brief"
+      ]
+    }
+  ],
+  "depends_on": [
+    "ST-zptutwlf"
+  ],
+  "gates": [
+    {
+      "id": "measured",
+      "kind": "blocking",
+      "question": "Build the brief command and the skill changes, given the measurement in kb/_self/reports/backlog-briefs.md?",
+      "options": [
+        "build",
+        "drop the brief, keep asks and research tasks",
+        "measure again with another setup"
+      ],
+      "recommendation": "build only if the with-brief arm used fewer tokens in every run"
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "id": "ST-wgymzw72",
+  "kind": "story",
+  "title": "Research tasks are scheduled before the work that needs them",
+  "status": "draft",
+  "parent": "EP-vpb7u3us",
+  "priority": "P2",
+  "rank": 2,
+  "goal": "A task with research: true carries the asks it must make known; its done runs pack for each and requires coverage good; backlog.py can create one research task for an item's unknown asks and add it to the item's depends_on; /kb-research is the skill that works it.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "research_task"
+      ]
+    }
+  ],
+  "depends_on": [
+    "ST-i3t6i2to"
+  ],
+  "links": [
+    ".claude/skills/kb-research/SKILL.md"
+  ]
+}

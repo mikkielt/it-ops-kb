@@ -1,0 +1,15 @@
+{
+  "id": "EP-vpb7u3us",
+  "kind": "epic",
+  "title": "Work items know the kb facts they rest on",
+  "status": "todo",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "Every story and task names the knowledge it needs as kb lookup questions and stable references (topic, QK answer, source id, fact key); research that the kb lacks is scheduled before the work that needs it; agents start from the packs of that knowledge instead of rediscovering it.",
+  "links": [
+    "kb/_self/backlog.md",
+    "agents/agent-planning-and-done.md",
+    "kb/_self/token-efficiency.md"
+  ],
+  "notes": "Unanswered questions block an item until a research task covers them. A research item is a task with research: true whose check is pack giving coverage good. show, next and horizon run pack; the SessionStart hook does not. The brief command (story 4) and the skill changes (story 5) are built only after the measurement (story 6) shows a saving."
+}

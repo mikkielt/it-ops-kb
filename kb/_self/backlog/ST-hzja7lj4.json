@@ -1,0 +1,23 @@
+{
+  "id": "ST-hzja7lj4",
+  "kind": "story",
+  "title": "Planning skills write knowledge and order research first",
+  "status": "draft",
+  "parent": "EP-vpb7u3us",
+  "priority": "P2",
+  "rank": 5,
+  "goal": "/kb-backlog writes each item's asks and refs from the packs it already runs while planning; /kb-sprint plan adds research tasks for unknown asks and puts them first; kb/_self/backlog.md describes the knowledge field, research tasks and briefs.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "backlog or router"
+      ]
+    }
+  ],
+  "depends_on": [
+    "ST-u7bliqzx"
+  ]
+}
