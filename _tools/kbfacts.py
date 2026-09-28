@@ -175,6 +175,29 @@ def scope(domain=None, root=None):
     return f"{root}/{domain.strip('/')}"
 
 
+def domain_prefix(domain):
+    """A pack or search `domain` as the kb spells it, matched against the indexed paths without regard to case:
+    `Intune` or `/intune/` is `intune`, `Public/Intune` is `public/intune`. None when no path is under it, so a
+    caller can refuse it instead of reporting a question it narrowed to nothing as not in the kb."""
+    p = (domain or "").strip().strip("/")
+    if not p:
+        return None
+    paths = set(store().paths)
+    if any(in_prefix(x, p) for x in paths):
+        return p
+    low, qualified = p.lower(), kbcommon.split(p.lower())[0] is not None
+    for x in sorted(paths):
+        rel = x if qualified else bare(x)
+        if in_prefix(rel.lower(), low):
+            return rel[:len(p)]
+    return None
+
+
+def domains():
+    """The domain directories of every root (bare names, sorted): what a pack or search `domain` can name."""
+    return sorted({bare(x).split("/")[0] for x in store().paths if "/" in bare(x) and not bare(x).startswith("_")})
+
+
 def front_matter(text):
     meta = {}
     lines = text.splitlines()

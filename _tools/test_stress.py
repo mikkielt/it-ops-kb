@@ -145,7 +145,7 @@ BASE_CASES = [  # (name, tool, args, rc, expect, check)
     ("search -k -5 rejected", "rag.py", ["search", "kerberos", "-k", "-5"], 2, "must be >= 1", None),
     ("search -k abc rejected", "rag.py", ["search", "kerberos", "-k", "abc"], 2, "", None),
     ("search -k 10000000 --json -u", "rag.py", ["--json", "search", "the", "-k", "10000000", "-u"], 0, "", is_json),
-    ("search -d ../..", "rag.py", ["search", "kerberos", "-d", "../.."], 1, "no match", None),
+    ("search -d ../..", "rag.py", ["search", "kerberos", "-d", "../.."], 1, "no domain", None),
     ("src 5000 ids", "rag.py", ["src", *[f"S{i}" for i in range(5000)]], 0, "", None),
     ("src junk ids", "rag.py", ["src", "'; DROP TABLE", "S", "S-1", "s0100"], 0, "UNKNOWN id", None),
     ("show -n 100000000", "rag.py", ["show", "_answers.md", "-n", "100000000"], 0, "", None),

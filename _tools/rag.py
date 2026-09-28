@@ -64,6 +64,16 @@ def positive_int(v):
     return n
 
 
+def domain_arg(domain):
+    """-d as the kb spells it (`Intune` is `intune`); exits naming the domains when no path is under it."""
+    if not domain:
+        return None
+    d = kbfacts.domain_prefix(domain)
+    if d is None:
+        sys.exit(f"no domain {domain!r}; omit -d, or use one of: {', '.join(kbfacts.domains())}")
+    return d
+
+
 def search(query, k, domain, index=False, notes=None, root=None):
     """The top-k hits for a query: kbfacts.search (the pack index; prose, code blocks and data rows included, the
     index files only with `index`)."""
@@ -298,7 +308,7 @@ def main():
                 print("  data: " + ", ".join(os.path.basename(p) for p in v["data"]))
     elif a.cmd == "search":
         notes = []
-        res = search(" ".join(a.query), a.k, a.domain, a.index, notes, a.root)
+        res = search(" ".join(a.query), a.k, domain_arg(a.domain), a.index, notes, a.root)
         for n in notes:
             print(f"note: {n}", file=sys.stderr)
         if a.urls:
@@ -329,7 +339,7 @@ def main():
             sys.exit("pack: give a question, or -q PART for each part")
         if len(parts) > kbfacts.MAX_QUESTIONS:
             sys.exit(f"pack: at most {kbfacts.MAX_QUESTIONS} parts")
-        res = kbfacts.pack_many(parts, a.budget, a.domain, a.format, a.root)
+        res = kbfacts.pack_many(parts, a.budget, domain_arg(a.domain), a.format, a.root)
         if a.json:
             return print(json.dumps(res, indent=1))
         print(res["text"])

@@ -176,7 +176,7 @@ def kb_search(args):
     notes = []
     fmt = fmt_of(args, "concise")
     with guarded():
-        hits = rag.search(query, k, args.get("domain") or None, bool(args.get("index")), notes, root_of(args))
+        hits = rag.search(query, k, domain_of(args), bool(args.get("index")), notes, root_of(args))
         if fmt == "detailed":
             rag.add_urls(hits)
     out = [f"note: {n}" for n in notes]
@@ -193,6 +193,18 @@ def root_of(args):
     if name and name not in {r.name for r in kbcommon.roots()}:
         raise ToolError(f"no root {name!r}; roots: {', '.join(r.name for r in kbcommon.roots())}")
     return name or None
+
+
+def domain_of(args):
+    """The `domain` argument as the kb spells it (`Intune` is `intune`), None when absent; a domain no path is
+    under is an error that lists the domains, never a pack or search narrowed to nothing."""
+    raw = str(args.get("domain") or "").strip()
+    if not raw:
+        return None
+    d = kbfacts.domain_prefix(raw)
+    if d is None:
+        raise ToolError(f"no domain {raw!r}; omit domain, or use one of: {', '.join(kbfacts.domains())}")
+    return d
 
 
 def fmt_of(args, default):
@@ -212,7 +224,7 @@ def kb_pack(args):
         raise ToolError(f"at most {kbfacts.MAX_QUESTIONS} questions per call")
     budget = min(max(int(args.get("budget") or 1200), 200), 6000)
     with guarded():
-        return kbfacts.pack_many(questions, budget, args.get("domain") or None, fmt_of(args, "detailed"), root_of(args))["text"]
+        return kbfacts.pack_many(questions, budget, domain_of(args), fmt_of(args, "detailed"), root_of(args))["text"]
 
 
 def kb_facts(args):
@@ -312,10 +324,11 @@ def status():
     if not commit and len(parts) >= 4 and parts[-4] == "cache":
         info["installed_as"] = f"plugin {parts[-2]}@{parts[-3]}, version {parts[-1]}"
         mkt = os.path.join(os.sep.join(parts[:-4]), "marketplaces", parts[-3])
-        if re.fullmatch(r"[0-9a-f]{7,40}", parts[-1]) and os.path.isdir(os.path.join(mkt, ".git")):
-            commit = git("rev-parse", "--verify", "-q", parts[-1] + "^{commit}", cwd=mkt)
-            repo = mkt if commit else None
-            if not commit:
+        if re.fullmatch(r"[0-9a-f]{7,40}", parts[-1]):
+            if os.path.isdir(os.path.join(mkt, ".git")):
+                commit = git("rev-parse", "--verify", "-q", parts[-1] + "^{commit}", cwd=mkt)
+                repo = mkt if commit else None
+            if not commit:  # no marketplace clone has it (a local directory marketplace keeps none): the version is the commit
                 info["commit"] = parts[-1]
     if commit:
         info["commit"] = commit[:12]

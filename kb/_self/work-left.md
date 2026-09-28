@@ -4,7 +4,6 @@ The open work, and only that: a finished item leaves this file (its commit recor
 
 ## Roots
 
-- **Check a host-plugin lookup across roots.** The tests cover a second root through `KB_ROOTS` and a copy of the repository; no installed plugin has served a team root yet. With a fork that has one: install it as a plugin in a host project, ask a question spanning both roots, and check the pack carries both roots' lines.
 - **Design a skill that ingests a team's repositories into its roots.** Sources are repository files at a pinned commit (`CODE` tags) and the repositories' own docs, so the kb answers questions across a team's services. Two modes:
   - **From a host project:** the kb is installed as a plugin in another code repository, and an agent working there turns that repository's knowledge into facts of a root. The plugin copy is read-only, so the design has to say where the facts land (the team's fork, a clone, a root under `KB_ROOTS`) and how they get committed.
   - **From this clone:** "source `<repo>` and put it here", run inside this repository.

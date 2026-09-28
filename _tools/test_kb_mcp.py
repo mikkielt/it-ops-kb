@@ -368,3 +368,42 @@ class TestPluginManifest:
             assert "Validation passed" in p.stdout + p.stderr
             warnings = [ln for ln in (p.stdout + p.stderr).splitlines() if ln.strip().startswith(">") or ln.strip().startswith("\u276f")]
             assert all("No version specified" in w for w in warnings), "\n".join(warnings)
+
+
+def test_status_of_a_plugin_copy_from_a_directory_marketplace(tmp_path):
+    """A plugin installed from a local directory marketplace has no clone under plugins/marketplaces/: kb_status
+    reports its version (the commit) as the commit instead of calling the copy unknown."""
+    from conftest import copy_kb
+    sha = "929d59973c2b"
+    home = copy_kb(str(tmp_path / "plugins" / "cache" / "it-ops-kb" / "it-ops-kb" / sha))
+    env = {k: v for k, v in os.environ.items() if k not in ("KB_ROOTS", "KB_INDEX", "CLAUDE_PLUGIN_DATA")}
+    p = subprocess.run([sys.executable, os.path.join(home, "_tools", "kb_mcp.py"), "--status"], capture_output=True,
+                       text=True, timeout=120, env=env, cwd=str(tmp_path))
+    assert p.returncode == 0, p.stdout + p.stderr
+    assert f"installed_as: plugin it-ops-kb@it-ops-kb, version {sha}" in p.stdout, p.stdout
+    assert f"commit: {sha}\n" in p.stdout, p.stdout
+
+
+def test_domain_is_matched_without_case_and_an_unknown_one_is_refused():
+    """A model passed domain "Intune" and got `coverage: none` for a question the kb covers: a domain is matched
+    against the kb's paths without regard to case, and one no path is under is an error listing the domains."""
+    code = ("import json, kb_mcp\n"
+            "out = {'pack': kb_mcp.kb_pack({'question': 'Can the Mark device noncompliant action be removed?', "
+            "'domain': 'Intune'})}\n"
+            "out['search'] = kb_mcp.kb_search({'query': 'noncompliance actions', 'domain': '/Public/Intune/'})\n"
+            "for d in ('no-such-domain', 'Public/NoSuch'):\n"
+            "    try:\n"
+            "        kb_mcp.kb_pack({'question': 'x', 'domain': d}); out[d] = 'accepted'\n"
+            "    except kb_mcp.ToolError as e:\n"
+            "        out[d] = str(e)\n"
+            "print(json.dumps(out))")
+    env = {k: v for k, v in os.environ.items() if k not in ("KB_ROOTS", "CLAUDE_PLUGIN_DATA")}
+    p = subprocess.run([sys.executable, "-c", code], cwd=TOOLS, capture_output=True, text=True, env=env, timeout=180)
+    out = json.loads(p.stdout.strip().splitlines()[-1])
+    assert out["pack"].startswith("coverage: good") and "public/intune/" in out["pack"], out["pack"][:300]
+    assert "public/intune/" in out["search"], out["search"][:300]
+    for d in ("no-such-domain", "Public/NoSuch"):
+        assert out[d].startswith(f"no domain {d!r}") and "intune" in out[d], out[d]
+    p = subprocess.run([sys.executable, os.path.join(TOOLS, "rag.py"), "pack", "noncompliance actions", "-d", "nosuch"],
+                       capture_output=True, text=True, env=env, timeout=180)
+    assert p.returncode == 1 and "no domain 'nosuch'" in p.stderr and "coverage:" not in p.stdout, p.stdout + p.stderr

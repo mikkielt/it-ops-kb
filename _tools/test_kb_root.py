@@ -13,10 +13,10 @@ import kbid
 from conftest import KB, TOOLS
 
 URL = "https://docs.example.com/print/queue-retention"
-SID = "T-" + kbid.source_id(URL)[2:]  # the team root's prefix: the same hash, its own letter
+SID = kbid.source_id(URL, "FXT")  # the fixture root's prefix: a name and prefix a fork's own roots do not take
 ROOT_MD = """---
-root: team
-id_prefix: T
+root: fixture
+id_prefix: FXT
 visibility: internal
 description: the team's print and office notes
 ---
@@ -46,12 +46,12 @@ How long the team's print servers keep finished jobs.
 QUESTION = "How long are finished print jobs kept on the spooler?"
 
 
-def make_root(path, prefix="T"):
+def make_root(path, prefix="FXT"):
     """A root in a temporary directory: its ROOT_FILE, one article, its ledgers and its retrieval data."""
     os.makedirs(os.path.join(path, "print"))
     os.makedirs(os.path.join(path, "_retrieval"))
     files = {
-        "_root.md": ROOT_MD.replace("id_prefix: T", f"id_prefix: {prefix}"),
+        "_root.md": ROOT_MD.replace("id_prefix: FXT", f"id_prefix: {prefix}"),
         "print/queues.md": ARTICLE,
         "_answers.md": "# Answers\n",
         "_gaps.md": "# Gaps\n\n- Which task purges the queues is not documented. (topic: print/queues)\n",
@@ -88,40 +88,40 @@ def test_second_root_is_packed_filtered_and_shown(tmp_path):
     root = str(tmp_path / "team-kb")
     make_root(root)
     code, out = run("rag.py", "pack", QUESTION, roots=root)
-    assert out.startswith("coverage: good") and "team/print/queues.md:" in out and URL in out, out[:600]
+    assert out.startswith("coverage: good") and "fixture/print/queues.md:" in out and URL in out, out[:600]
     assert f"-> {SID}  {URL}" in out, "the source footer resolves the second root's id"
     code, out = run("rag.py", "pack", QUESTION, "--root", "public", roots=root)
-    assert "team/print/queues.md" not in out, "--root public leaves the team root out: " + out[:300]
-    code, out = run("rag.py", "pack", "What is the default Windows LAPS password length?", "--root", "team", roots=root)
-    assert out.startswith("coverage: none"), "--root team holds only the team's facts: " + out[:300]
+    assert "fixture/print/queues.md" not in out, "--root public leaves the fixture root out: " + out[:300]
+    code, out = run("rag.py", "pack", "What is the default Windows LAPS password length?", "--root", "fixture", roots=root)
+    assert out.startswith("coverage: none"), "--root fixture holds only its own facts: " + out[:300]
     line = next(n for n, ln in enumerate(ARTICLE.splitlines(), start=1) if "14 days" in ln)
-    code, out = run("rag.py", "show", f"team/print/queues.md:{line}", "-n", "1", roots=root)
+    code, out = run("rag.py", "show", f"fixture/print/queues.md:{line}", "-n", "1", roots=root)
     assert code == 0 and "14 days" in out, out
     code, out = run("rag.py", "src", SID, "--cited", roots=root)
-    assert URL in out and "cited at team/print/queues.md:" in out, out
+    assert URL in out and "cited at fixture/print/queues.md:" in out, out
 
 
 def test_second_root_ledgers_signals_and_eval(tmp_path):
     root = str(tmp_path / "team-kb")
     make_root(root)
-    code, out = run("rag.py", "audit", "--root", "team", "--entries", roots=root)
-    assert "| team/print/queues.md | partial |" in out and "team/print/queues  gaps: team/_gaps.md:3" in out, out
+    code, out = run("rag.py", "audit", "--root", "fixture", "--entries", roots=root)
+    assert "| fixture/print/queues.md | partial |" in out and "fixture/print/queues  gaps: fixture/_gaps.md:3" in out, out
     code, out = run("rag.py", "topics-for", "--keywords", "the spooler service", roots=root)
-    assert "- team/print/queues  spooler" in out, "a root's signals name its own topics: " + out
+    assert "- fixture/print/queues  spooler" in out, "a root's signals name its own topics: " + out
     code, out = run("rag.py", "facts", "print", roots=root)
-    assert "team/print/queues.md" in out and "facts=2" in out, "a bare prefix covers the domain in every root: " + out
+    assert "fixture/print/queues.md" in out and "facts=2" in out, "a bare prefix covers the domain in every root: " + out
     code, out = run("rag.py", "--json", "eval", "--file", os.path.join(root, "_retrieval", "lookup_eval.csv"), roots=root)
     res = json.loads(out[out.index("{"):])
-    assert res["passed"] == 1 and res["rows"][0]["found"] == ["team/print/queues.md"], res["rows"]
-    code, out = run("rag.py", "search", "purges queues task", "--index", "--root", "team", roots=root)
-    assert "team/_gaps.md:3" in out, "--index searches the root's own ledgers: " + out
+    assert res["passed"] == 1 and res["rows"][0]["found"] == ["fixture/print/queues.md"], res["rows"]
+    code, out = run("rag.py", "search", "purges queues task", "--index", "--root", "fixture", roots=root)
+    assert "fixture/_gaps.md:3" in out, "--index searches the root's own ledgers: " + out
 
 
 def test_status_and_server_texts(tmp_path):
     root = str(tmp_path / "team-kb")
     make_root(root)
     code, out = run("kb_mcp.py", "--status", roots=root)
-    assert "roots: public (prefix S, public," in out and "; team (prefix T, internal," in out, out
+    assert "roots: public (prefix S, public," in out and "; fixture (prefix FXT, internal," in out, out
     code = ("import json, kb_mcp; print(json.dumps([kb_mcp.INSTRUCTIONS, kb_mcp.server_info()['title'], "
             "[t['description'] for t in kb_mcp.TOOL_LIST]]))")
     texts = []

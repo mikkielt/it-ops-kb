@@ -5,7 +5,7 @@ of that root cites the root's own source ids (`T-...`); a citation of another ro
 root; two roots with one prefix are an error; kbid.py url --root gives the root's id; lint.py names findings by
 their qualified path.
 """
-import os, subprocess, sys
+import os, shutil, subprocess, sys
 
 import pytest
 
@@ -40,6 +40,9 @@ def article(sid, extra=""):
 def kb(tmp_path_factory):
     """A kb copy with a root `team` (prefix T) holding one article that cites the root's own source."""
     d = copy_kb(str(tmp_path_factory.mktemp("roots") / "kb"))
+    for name in os.listdir(os.path.join(d, "kb")):  # a fork's own roots (even one named team) stay out of the copy
+        if name != "public" and os.path.isfile(os.path.join(d, "kb", name, "_root.md")):
+            shutil.rmtree(os.path.join(d, "kb", name))
     code, out = run(d, "kbroot.py", "add", "team", "--prefix", "T", "--description", "the team's runbooks")
     assert code == 0, out
     with open(os.path.join(d, "kb", "team", "_sources.csv"), "a", encoding="utf-8", newline="") as f:
