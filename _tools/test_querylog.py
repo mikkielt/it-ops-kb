@@ -3527,6 +3527,7 @@ verdicts: good 3, weak 1, none 2, no verdict 10
 judged: answered 1, partly 1, missed 3, not judged 11
 misses: 4, fixed: 2 (by the kb since 1, by apply 1, by research 0)
 fetches: 11, failed 9, result characters 1079632
+usage: 0 of 16 lookups
 runs: 1, entries dropped by redaction 2
 finding records written: 8
 findings by kind and state at the week's end:

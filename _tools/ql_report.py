@@ -3,14 +3,14 @@ per ISO week by a SessionStart hook, and `status` (open source findings, open co
 automatic commits). Only the store and the week go into the digest, so every clone at one commit prints the same
 lines.
 """
-import datetime, json, re, sys, time
+import datetime, json, math, re, sys, time
 from pathlib import Path
 
 from ql_base import HOME, STORE, logging_off, places, run_cmd, write_text
 from ql_deliver import BRANCH, CONFLICT_BRANCH_PREFIX, REMOTE, auto_log, forge_list, origin_forge
 from ql_learn import FAILED, host_fetches, is_miss
 from ql_store import (FETCH_KEYS, FINDING_KINDS, FINDING_STATES, JUDGED, RUN_ID, SURFACES, finding_id,
-                      finding_states, findings_files, load_run, records, run_files, store_entries)
+                      finding_states, findings_files, load_run, records, run_files, store_entries, usage_records)
 from ql_capture import VERDICTS
 
 DIGEST_MARKER = "digest-week"  # beside the spool: the ISO week in which the SessionStart digest was last shown
@@ -54,6 +54,45 @@ def latest_week(store):
 
 def _counts(pairs):
     return ", ".join(f"{k} {n}" for k, n in pairs)
+
+
+def rank(values, p):
+    """The nearest-rank `p` quantile of a list of numbers, `-` when it is empty."""
+    v = sorted(values)
+    return v[max(0, math.ceil(p * len(v)) - 1)] if v else "-"
+
+
+def usage_lines(entries, usage):
+    """The digest's usage lines for the week's entries and the store's usage sidecar lines ({entry id: line})."""
+    have = [usage[e["id"]] for e in entries if e.get("id") in usage]
+    if not have:
+        return [f"usage: 0 of {len(entries)} lookups"]
+
+    def models(u):
+        yield from (u.get("main") or {}).values()
+        for group in (u.get("sub") or {}).values():
+            yield from group.values()
+
+    def inp(c):
+        return c["in"] + c["cw"] + c["cr"]
+
+    per_in = [sum(inp(c) for c in models(u)) for u in have]
+    per_out = [sum(c["out"] for c in models(u)) for u in have]
+    total = sum(per_in)
+    cread = sum(c["cr"] for u in have for c in models(u))
+    sub = sum(inp(c) for u in have for g in (u.get("sub") or {}).values() for c in g.values())
+    kb = [s for u in have for s in u.get("steps") or []
+          if s.get("tools") and all(str(t.get("tool", "")).startswith("kb_") for t in s["tools"])]
+    grow = [s["grow"] for s in kb if isinstance(s.get("grow"), int)]
+    chars = [sum(t["chars"] for t in s["tools"]) for s in kb]
+    pct = (lambda n: f"{round(100 * n / total)}%") if total else (lambda n: "0%")
+    out = [f"usage: {len(have)} of {len(entries)} lookups; input tokens per lookup median {rank(per_in, 0.5)}, "
+           f"p90 {rank(per_in, 0.9)}; output median {rank(per_out, 0.5)}; cache reads {pct(cread)} of input, "
+           f"subagents {pct(sub)}"]
+    if kb:
+        out.append(f"kb results: {len(kb)} steps, context growth median {rank(grow, 0.5)} tokens, "
+                   f"result characters median {rank(chars, 0.5)}")
+    return out
 
 
 def digest(store=None, week=None):
@@ -122,6 +161,7 @@ def digest(store=None, week=None):
              f"judged: {_counts(judged_)}",
              f"misses: {len(misses)}, fixed: {sum(fixed.values())} ({_counts(fixed.items())})",
              f"fetches: {nfetch}, failed {failed}, result characters {chars}",
+             *usage_lines(entries, usage_records(store)),
              f"runs: {runs}, entries dropped by redaction {dropped}",
              f"finding records written: {recorded}"]
     table = {}

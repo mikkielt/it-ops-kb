@@ -1,7 +1,8 @@
 """The query log's distill (kb/_self/querylog.md, Spool and Distill): the closed sessions of the spool become one run
 file in the local store. Per lookup the question the kb was asked (never the prompt) after the rules and the leak
 scan, the path:line citations of the kb lines it returned (never the reply), and Haiku's judgement in capped batches;
-no text of Haiku's is stored. Also the SessionEnd and SessionStart launcher that starts a detached distill.
+no text of Haiku's is stored. The `usage` rows of the written entries become the run's usage sidecar. Also the
+SessionEnd and SessionStart launcher that starts a detached distill.
 
 Distill reads every row format capture has written (ROW_FORMAT, format 0 for a row without `v`) and skips and counts a
 row it cannot read.
@@ -9,12 +10,13 @@ row it cannot read.
 import datetime, functools, json, os, re, subprocess, sys, time, uuid
 from pathlib import Path
 
+import kbusage
 import ql_store as store_
 from ql_base import (ENTRY, HOME, LOCK_NAME, LOCK_STALE_S, acquire, claude_p, iso, json_lines, lock_age,
                      logging_off, one_line, places, plugin_data, read_json, read_mode, release, run_cmd, write_text)
 from ql_capture import ROW_FORMAT, SAFE_SESSION, TAGS, VERDICTS, pack_lines
 from ql_store import (ARTICLE, CITATION, CITATIONS_MAX, ENTRY_KEYS, JUDGED, NAME, OUTCOME, QUESTION_MAX_CHARS,
-                      SKIPPED_KEY, SURFACES, URL_PATH, public_host)
+                      ROW_SURFACES, SKIPPED_KEY, URL_PATH, public_host)
 
 HAIKU_MODEL = "haiku"
 HAIKU_BATCH_ENTRIES = 25
@@ -62,7 +64,7 @@ def readable(r):
     """Whether distill reads a spool row: a JSON object with a string `id` and `ts`, a surface capture writes and a
     row format this code reads. Any other row is skipped and counted (querylog.md, Spool)."""
     return (isinstance(r, dict) and isinstance(r.get("id"), str) and bool(r["id"]) and isinstance(r.get("ts"), str)
-            and r.get("surface") in SURFACES and row_format(r) is not None)
+            and r.get("surface") in ROW_SURFACES and row_format(r) is not None)
 
 
 def spool_rows(path):
@@ -308,6 +310,16 @@ def entry_of(rs, k):
                             "candidates": candidates}, None
 
 
+def usage_of(rs):
+    """The usage record of one prompt's rows: its last `usage` row's, when that row's reader is this code's
+    (kbusage.READER_VERSION); else None."""
+    rows_ = [r for r in sorted(rs, key=ts_of) if r.get("surface") == "usage"]
+    last = rows_[-1] if rows_ else None
+    if last is None or last.get("reader") != kbusage.READER_VERSION or not isinstance(last.get("usage"), dict):
+        return None
+    return last["usage"]
+
+
 # ---------------------------------------------------------------- Haiku
 
 def claude_haiku(prompt):
@@ -416,7 +428,7 @@ def _plan(qdir, t_now, today, k):
             built = entry_of(rs + [r for _, r in extra], k)
             if built:
                 todo.append({"entry": built[0], "texts": built[1], "drop": built[2], "sid": sid, "key": key,
-                             "tools": extra, "ts": ts_of(rs[0])})
+                             "tools": extra, "ts": ts_of(rs[0]), "usage": usage_of(rs)})
             else:
                 s.setdefault("skipped", []).append(extra)  # tools rows of a prompt that never used the kb
     for name, rs in left.items():
@@ -484,8 +496,11 @@ def _distill(qdir, haiku, now_dt, run_id, kb_commit, out, keep=False):
         written.sort(key=lambda t: (t["ts"], t["entry"]["id"]))
         write_text(store_.run_path(qdir / "store", run_id),
                    json_lines([store_.header(run_id, counts, kb_commit)] + [t["entry"] for t in written]))
+        lines = [ln for ln in (store_.usage_line(t["entry"]["id"], t.get("usage")) for t in written) if ln]
+        store_.write_usage(qdir / "store", run_id, lines, len(written) - len(lines), kbusage.READER_VERSION)
         out(f"distill: run={run_id} entries={counts['entries']} dropped={counts['dropped']} "
-            f"waiting={counts['waiting']}" + (f" skipped={counts[SKIPPED_KEY]}" if skipped else ""))
+            f"waiting={counts['waiting']}" + (f" skipped={counts[SKIPPED_KEY]}" if skipped else "")
+            + (f" usage={len(lines)}" if lines else ""))
     else:
         out(f"distill: nothing to write (waiting={counts['waiting']})")
     if keep:

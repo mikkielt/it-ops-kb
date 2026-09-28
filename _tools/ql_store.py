@@ -3,6 +3,8 @@ local store laid out the same way), their readers and writers, and the gates `qu
 
   <yyyy-mm>/<run-id>.jsonl            a header line (HEADER_KEYS), then one entry per line (ENTRY_KEYS)
   findings/<yyyy-mm>/<run-id>.jsonl   the same header, then one record per finding whose state the run changed
+  usage/<yyyy-mm>/<run-id>.jsonl      the usage sidecar of a run file: a header (USAGE_HEADER_KEYS), then one line per
+                                      entry with token counts (USAGE_KEYS)
 """
 import datetime, hashlib, json, re, subprocess
 from pathlib import Path
@@ -23,6 +25,7 @@ FETCH_KEYS = ("tool", "fetcher", "host", "path", "outcome", "n", "chars")
 RAW_KEYS = ("prompt", "answer", "session_id", "prompt_id", "transcript_path", "cwd", "user", "hostname", "command",
             "args", "ts")  # spool fields a run file never holds
 SURFACES = ("prompt", "kb_hook", "mcp", "kb_ask", "tool_fetch", "fetch", "stop")
+ROW_SURFACES = SURFACES + ("usage",)  # spool rows; a `usage` row goes to the usage sidecar, never an entry
 TEXT_KEYS = ("question",)
 JUDGED = ("answered", "partly", "missed")
 QUESTION_MAX_CHARS = 500
@@ -55,6 +58,14 @@ FINDING_KEYS = ("id", "kind", "state", "stage", "promotions", "entry", "expect",
                 "host", "level", "needs", "triggers", "tool", "route", "observed")
 CLOSED_STAGE = "claim"  # a gap finding at this stage is closed: its _gaps.md entry is resolved
 
+USAGE = "usage"
+USAGE_HEADER_KEYS = ("run", "reader", "counts")
+USAGE_COUNT_KEYS = ("entries", "missing")
+USAGE_KEYS = ("id", "main", "sub", "start", "steps", "cut")
+USAGE_COUNTS = ("requests", "in", "cw", "cw1h", "cr", "out")
+USAGE_STEP_KEYS = ("tools", "grow")
+USAGE_TOOL_KEYS = ("tool", "ok", "chars")
+
 
 # ---------------------------------------------------------------- reading
 
@@ -68,6 +79,22 @@ def findings_files(store):
     """The findings files of a store, oldest run first: findings/<yyyy-mm>/<run-id>.jsonl."""
     d = Path(store) / FINDINGS
     return sorted(d.glob("*/*.jsonl"), key=lambda p: p.stem) if d.is_dir() else []
+
+
+def usage_files(store):
+    """The usage sidecars of a store, oldest run first: usage/<yyyy-mm>/<run-id>.jsonl."""
+    d = Path(store) / USAGE
+    return sorted(d.glob("*/*.jsonl"), key=lambda p: p.stem) if d.is_dir() else []
+
+
+def usage_records(store):
+    """{entry id: usage line} of the store's usage sidecars, each id once (its first sidecar)."""
+    out = {}
+    for _, objs in records(usage_files(store)):
+        for _, u in objs:
+            if isinstance(u.get("id"), str):
+                out.setdefault(u["id"], u)
+    return out
 
 
 def load_run(p):
@@ -153,8 +180,29 @@ def header(run_id, counts, kb_commit=None):
             "kb_commit": kb_commit or head_commit(), "counts": counts}
 
 
-def run_path(store, run_id, findings=False):
-    return Path(store) / (FINDINGS if findings else "") / f"{run_id[:4]}-{run_id[4:6]}" / f"{run_id}.jsonl"
+def run_path(store, run_id, findings=False, usage=False):
+    sub = FINDINGS if findings else USAGE if usage else ""
+    return Path(store) / sub / f"{run_id[:4]}-{run_id[4:6]}" / f"{run_id}.jsonl"
+
+
+def usage_line(entry_id, usage):
+    """The sidecar line of one entry from a `usage` spool row's record, or None when the record is not the closed
+    shape the store keeps (usage_problems)."""
+    if not isinstance(usage, dict):
+        return None
+    line = {"id": entry_id, **{k: usage[k] for k in USAGE_KEYS[1:] if k in usage}}
+    return None if usage_line_problems(line, "") or set(usage) - set(USAGE_KEYS[1:]) else line
+
+
+def write_usage(store, run_id, lines, missing, reader):
+    """The usage sidecar of run `run_id`: a header (the run, the transcript reader's version, counts), then one line
+    per entry that has usage. Nothing is written without a line."""
+    if not lines:
+        return None
+    path = run_path(store, run_id, usage=True)
+    write_text(path, json_lines([{"run": run_id, "reader": reader,
+                                  "counts": {"entries": len(lines), "missing": missing}}] + lines))
+    return path
 
 
 def learn_run_id(store, entries_runs, body):
@@ -347,7 +395,7 @@ def store_problems(store=None, k=None):
             out.append(f"{rel}:{hn}: header fields a header never has: {', '.join(extra)}")
         for n, e in entries:
             out += entry_problems(e, f"{rel}:{n}", k)
-    return out + duplicate_ids(store) + findings_problems(store, k)
+    return out + duplicate_ids(store) + findings_problems(store, k) + usage_problems(store)
 
 
 def findings_problems(store, k=None):
@@ -475,6 +523,118 @@ def leak_problems(store, rels, k=None):
             for v in values({key: val for key, val in obj.items() if key not in ("id", "entry", "run", "kb_commit")}):
                 for kind, _ in redact.scan(v, k):
                     out.append(f"{rel}:{n}: the leak scan flags an identifier ({kind})")
+    return out
+
+
+def _count(v):
+    return isinstance(v, int) and not isinstance(v, bool) and v >= 0
+
+
+def _models_problems(models, where):
+    import kbusage
+    if not (isinstance(models, dict) and models):
+        return [f"{where}: not a map of model ids to counts"]
+    out = []
+    for m, c in models.items():
+        if not (m == "other" or kbusage.MODEL.fullmatch(m)):
+            out.append(f"{where}: {m!r:.60} is not a model id")
+        if not (isinstance(c, dict) and set(c) == set(USAGE_COUNTS) and all(_count(v) for v in c.values())):
+            out.append(f"{where}: counts of {m!r:.60} are not {', '.join(USAGE_COUNTS)} as counts")
+        elif c["cw1h"] > c["cw"]:
+            out.append(f"{where}: cw1h of {m!r:.60} exceeds cw")
+    return out
+
+
+def usage_line_problems(u, where):
+    """The gates on one usage line: an entry id, only numbers, model ids, agent groups and tool groups in their
+    closed shapes."""
+    import kbusage
+    out = []
+    other = sorted(set(u) - set(USAGE_KEYS))
+    if other:
+        out.append(f"{where}: fields a usage line never has: {', '.join(other)}")
+    if not (isinstance(u.get("id"), str) and ENTRY_ID.fullmatch(u["id"])):
+        out.append(f"{where}: usage id is not an entry id")
+    out += _models_problems(u.get("main"), f"{where}: main")
+    if "sub" in u:
+        groups = set(kbusage.AGENTS.values()) | {kbusage.OTHER_AGENT}
+        if not (isinstance(u["sub"], dict) and u["sub"]):
+            out.append(f"{where}: sub is not a map of agent groups")
+        else:
+            for g, models in u["sub"].items():
+                if g not in groups:
+                    out.append(f"{where}: {g!r:.60} is not an agent group")
+                out += _models_problems(models, f"{where}: sub {g!r:.40}")
+    if not _count(u.get("start")):
+        out.append(f"{where}: start is not a count")
+    if "cut" in u and not (_count(u["cut"]) and u["cut"] > 0):
+        out.append(f"{where}: cut is not a positive count")
+    st = u.get("steps", [])
+    if not (isinstance(st, list) and len(st) <= kbusage.STEPS_MAX):
+        out.append(f"{where}: steps are not a list of at most {kbusage.STEPS_MAX}")
+        st = []
+    for s in st:
+        ok = (isinstance(s, dict) and set(s) <= set(USAGE_STEP_KEYS) and isinstance(s.get("tools"), list)
+              and s["tools"] and ("grow" not in s or _count(s["grow"])))
+        tools = s.get("tools") if ok else []
+        ok = ok and all(isinstance(t, dict) and set(t) == set(USAGE_TOOL_KEYS) and isinstance(t["tool"], str)
+                        and kbusage.TOOL_GROUP.fullmatch(t["tool"]) and isinstance(t["ok"], bool)
+                        and _count(t["chars"]) for t in tools)
+        if not ok:
+            out.append(f"{where}: a step that is not tool groups with ok and chars, and a grow count: {s!r:.80}")
+    return out
+
+
+def usage_problems(store):
+    """The usage sidecar gates: a header (run, reader, counts) naming its file beside a run file of the same run, a
+    line count that matches, lines of entries that run file holds, each id once across sidecars, and the line
+    gates."""
+    store = Path(store)
+    out, seen = [], {}
+    runs = {p.stem: p for p in run_files(store)}
+    for p in usage_files(store):
+        rel = p.relative_to(store).as_posix()
+        try:
+            objs = load_run(p)
+        except (OSError, ValueError) as e:
+            out.append(f"{rel}: not a usage sidecar ({e})")
+            continue
+        if not objs:
+            out.append(f"{rel}: empty usage sidecar")
+            continue
+        (hn, h), lines = objs[0], objs[1:]
+        m = RUN_ID.fullmatch(str(h.get("run", "")))
+        if not (m and h["run"] == p.stem and p.parent.name == f"{m.group(1)}-{m.group(2)}"):
+            out.append(f"{rel}:{hn}: run id does not name this file")
+        if set(h) != set(USAGE_HEADER_KEYS):
+            out.append(f"{rel}:{hn}: a usage header is exactly {', '.join(USAGE_HEADER_KEYS)}")
+        if not (_count(h.get("reader")) and h.get("reader")):
+            out.append(f"{rel}:{hn}: reader is not a version number")
+        c = h.get("counts")
+        if not (isinstance(c, dict) and set(c) == set(USAGE_COUNT_KEYS) and all(_count(v) for v in c.values())):
+            out.append(f"{rel}:{hn}: counts are not {', '.join(USAGE_COUNT_KEYS)} as counts")
+        elif c["entries"] != len(lines):
+            out.append(f"{rel}:{hn}: counts.entries is {c['entries']}, the file has {len(lines)}")
+        run = runs.get(p.stem)
+        ids = set()
+        if run is None:
+            out.append(f"{rel}: no run file {p.stem} beside it")
+        else:
+            try:
+                ids = {e.get("id") for _, e in load_run(run)[1:]}
+            except (OSError, ValueError):
+                pass
+        for n, u in lines:
+            where = f"{rel}:{n}"
+            out += usage_line_problems(u, where)
+            i = u.get("id")
+            if run is not None and i not in ids:
+                out.append(f"{where}: entry {i} is not in run file {p.stem}")
+            if isinstance(i, str):
+                if i in seen:
+                    out.append(f"{where}: duplicate usage id {i} (also {seen[i]})")
+                else:
+                    seen[i] = where
     return out
 
 

@@ -322,8 +322,23 @@ def capture(event):
     if name == "Stop":
         if not used_kb(spool, sid, pid):
             return None
-        return record("stop", sid, prompt_id=pid, answer=str(event.get("last_assistant_message") or ""))
+        row = record("stop", sid, prompt_id=pid, answer=str(event.get("last_assistant_message") or ""))
+        record_usage(sid, pid, event.get("transcript_path"))
+        return row
     return None
+
+
+def record_usage(session_id, prompt_id, transcript_path):
+    """The `usage` row of one prompt (kbusage.prompt_usage: counts, tool groups and model ids read from its
+    transcript), or None when the transcript gives none or cannot be read."""
+    try:
+        import kbusage
+        rec = kbusage.prompt_usage(transcript_path, prompt_id)
+    except Exception:  # noqa: BLE001
+        return None
+    if rec is None:
+        return None
+    return record("usage", session_id, prompt_id=prompt_id, reader=kbusage.READER_VERSION, usage=rec)
 
 
 def where():

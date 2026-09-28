@@ -13,8 +13,8 @@ from ql_base import (DISABLED_NAME, HOME, STORE_REL, acquire, now, places, plugi
                      write_text)
 from ql_distill import spool_delivered
 from ql_research import edit_problems
-from ql_store import (APPLY_FAILED, FINDINGS, LEARN_STATES, finding_states, findings_files, leak_problems, load_run,
-                      run_files, store_entries, write_findings)
+from ql_store import (APPLY_FAILED, FINDINGS, LEARN_STATES, USAGE, finding_states, findings_files, leak_problems,
+                      load_run, run_files, store_entries, usage_files, write_findings)
 
 REMOTE, BRANCH = "origin", "main"  # the repository the clone came from, and the branch automatic commits land on
 CONFLICT_BRANCH_PREFIX = "querylog/"  # a conflict sync cannot resolve goes to querylog/<run-id>, as a merge request
@@ -284,10 +284,10 @@ class Pusher:
 
     def local_files(self):
         """(entry ids of the local store's run files that origin/main holds, [(source, published path, entry ids)]
-        of the local files to copy, [published paths] of the local findings files that stay local). A run file is
-        copied when origin/main lacks its path; a findings file when origin/main lacks its path, all its records
-        are in a state learn writes (not apply's outcomes for this clone's working tree) and origin/main records
-        none of its findings yet."""
+        of the local files to copy, [published paths] of the local findings files that stay local). A run file or a
+        usage sidecar is copied when origin/main lacks its path; a findings file when origin/main lacks its path,
+        all its records are in a state learn writes (not apply's outcomes for this clone's working tree) and
+        origin/main records none of its findings yet."""
         local, store = self.qdir / "store", self.wt / STORE_REL
         delivered, new, kept = set(), [], []
         for p in run_files(local):
@@ -313,6 +313,10 @@ class Pusher:
                 new.append((p, rel, set()))
             else:
                 kept.append(rel)
+        for p in usage_files(local):
+            rel = p.relative_to(local).as_posix()
+            if not (store / rel).exists():
+                new.append((p, rel, set()))
         return delivered, new, kept
 
     def forget(self, ids):
@@ -339,9 +343,11 @@ class Pusher:
             self.say("refused: the store gates fail on the local store's files; nothing committed or pushed\n  " +
                      "\n  ".join(problems[:10]))
             return 1
-        runs = sorted(Path(rel).stem for _, rel, _ in new if not rel.startswith(FINDINGS + "/"))
-        found = len(new) - len(runs)
-        what = f"{len(runs)} run file(s)" + (f", {found} findings file(s)" if found else "")
+        runs = sorted(Path(rel).stem for _, rel, _ in new if not rel.startswith((FINDINGS + "/", USAGE + "/")))
+        found = sum(1 for _, rel, _ in new if rel.startswith(FINDINGS + "/"))
+        used = sum(1 for _, rel, _ in new if rel.startswith(USAGE + "/"))
+        what = (f"{len(runs)} run file(s)" + (f", {found} findings file(s)" if found else "")
+                + (f", {used} usage sidecar(s)" if used else ""))
         body = (f"Automatic commit of querylog.py: the local store's {what} ({', '.join(runs) or 'no run file'}), "
                 "copied into kb/_querylog/ after querylog.py check and the leak scan (kb/_self/querylog.md, "
                 "Delivery).")

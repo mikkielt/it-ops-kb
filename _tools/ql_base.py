@@ -24,7 +24,7 @@ DEFAULT_RESEARCH_DAILY = 3  # research runs per user per day when the config fil
 DISABLED_NAME = "DISABLED"  # beside the spool: logging off for good
 LOCK_NAME = "distill.lock"
 LOCK_STALE_S = 3600
-PIPELINE_VERSION = 4  # bumped when what distill writes, or how it decides it, changes
+PIPELINE_VERSION = 5  # bumped when what distill writes, or how it decides it, changes
 
 
 def _same(a, b):

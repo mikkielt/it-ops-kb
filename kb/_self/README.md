@@ -17,6 +17,7 @@ Everything an agent needs to run, change and ship this kb, except the lookup rul
 | `kb/_self/web-sources.md` | reading a web source during research, or a source family that keeps failing or grows large: the fetch route per family and the runbook for staging a new one | runbook |
 | `kb/_self/doc2query.md` | document expansion for pack: protocol and results | protocol |
 | `kb/_self/querylog.md` | building or changing the query log (capture, distill, redaction, the store, learn, apply, the direct push): its rules and every program default | design |
+| `kb/_self/usage.md` | reading or changing how token usage is measured: the transcript reader (`kbusage.py`), what a usage record holds and never holds, the query log's usage sidecar | reference |
 | `kb/_self/work-left.md` | at the start of a maintenance session: the open work | state |
 | `kb/_self/reports/` | the measurements `design.md` and `token-efficiency.md` rest on, each section with its setup; `benchmarks.md` generates its tables from `benchmarks.csv`, which `_tools/benchmarks.py` fills | measurements |
 | `kb/_self/map.csv` | which files each doc above describes (`selfdoc.py`) | data |
