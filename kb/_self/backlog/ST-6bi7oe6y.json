@@ -33,7 +33,9 @@
         "direct only: tokens inside the item's windows, nothing attributed or shared",
         "one number per item, shared tokens split evenly between the items of a session"
       ],
-      "recommendation": "split: direct (inside the item's claim-to-done window), attributed (its subagents), shared (session tokens outside any window) and the session total, printed apart; cache writes reported apart, never amortised; research charged to the item that claims the research task; background runs as system overhead"
+      "recommendation": "split: direct (inside the item's claim-to-done window), attributed (its subagents), shared (session tokens outside any window) and the session total, printed apart; cache writes reported apart, never amortised; research charged to the item that claims the research task; background runs as system overhead",
+      "answer": "split: direct (inside the item's claim-to-done window), attributed (its subagents), shared (session tokens outside any window) and the session total, printed apart; cache writes reported apart, never amortised; research charged to the item that claims the research task; background runs as system overhead",
+      "by": "operator"
     }
   ],
   "links": [
