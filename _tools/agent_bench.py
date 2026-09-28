@@ -80,13 +80,20 @@ S = {
                  [r"(?i)^\W*no\b|2\.2\.364\W+(does not|doesn.t) (include|contain|ship)|(not|isn.t) (included |shipped |present )?"
                   r"in (presidio-analyzer )?\*?\*?2\.2\.364|still unreleased",
                   r"2\.2\.361", "web"]),
+    # the same two questions with leave to use the web ("Using the kb:" kept every model inside the kb)
+    "n3_newer": ("what is the latest presidio-analyzer release, and when was it published? Check the kb first; use live "
+                 "docs or web search where it is not enough, and label the source.", [r"2\.2\.364", r"2\.2\.361", "web"]),
+    "n4_newer": ("does presidio-analyzer 2.2.364 include the UuidRecognizer? Check the kb first; use live docs or web "
+                 "search where it is not enough, and label the source.", None),
     # An older kb than its remote: the stale clone (stale()) is 3 commits behind the origin/main it follows.
     "k1_stale": ("Using the kb: which Claude Code version added the Elicitation hook? I need this to be current, so also "
                  "tell me how current the kb copy you are using is.",
                  [r"2\.1\.76", "tool:kb_status", r"(?i)\bbehind\b|out of date|outdated|not (up to date|current|the latest)"
                                                   r"|newer commits|pull --ff-only|marketplace update|update (the|your) (kb|plugin|copy)"]),
 }
-HOST = {"p1_partial": "current", "p2_partial": "current", "n1_newer": "planted", "n2_newer": "planted", "k1_stale": "stale"}
+S["n4_newer"] = (S["n4_newer"][0], S["n2_newer"][1])
+HOST = {"p1_partial": "current", "p2_partial": "current", "n1_newer": "planted", "n2_newer": "planted",
+        "n3_newer": "planted", "n4_newer": "planted", "k1_stale": "stale"}
 SCRATCH = os.environ.get("BENCH_SCRATCH") or os.path.join(KB, "_cache", "bench")
 STALE_BY = 3
 PLANT = [("2.2.364", "2.2.361"), ("2.2.363", "2.2.360")]  # every kb file: the copy's newest release is older

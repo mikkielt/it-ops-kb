@@ -256,11 +256,11 @@ One run per cell, so the cost difference is within noise; Haiku's h2 check is th
 
 ## Partial knowledge, newer versions and stale copies
 
-**Setup:** Claude Code 2.1.283; Haiku 4.5 and Sonnet 5; 266 topics, 2,644 sources in one root (`kb/public`). `_tools/agent_bench.py` host scenarios: one `claude -p --output-format stream-json` per run in an empty directory, the kb plugin and the docs plugin loaded with `--plugin-dir`, `--setting-sources project,local`, claude.ai connectors off (`ENABLE_CLAUDEAI_MCP_SERVERS=false`), the kb index in the scratch directory; allowed tools: the kb and docs servers, WebSearch and WebFetch. 2 runs per scenario and model. Scoring is read from the stream, not from the answer's own account: every url a kb tool returned, every url a fetch tool (WebFetch, `microsoft_docs_fetch`) read, the searches, the tools called, and regexes over the answer.
+**Setup:** Claude Code 2.1.283; Haiku 4.5 and Sonnet 5; 266 topics, 2,644 sources in one root (`kb/public`). `_tools/agent_bench.py` host scenarios: one `claude -p --output-format stream-json` per run in an empty directory, the kb plugin and the docs plugin loaded with `--plugin-dir`, `--setting-sources project,local`, claude.ai connectors off (`ENABLE_CLAUDEAI_MCP_SERVERS=false`), the kb index in the scratch directory; allowed tools: the kb and docs servers, WebSearch and WebFetch. 2 runs per scenario and model (1 for `n3`/`n4`); 44 runs in all, $2.61. Scoring is read from the stream, not from the answer's own account: every url a kb tool returned, every url a fetch tool (WebFetch, `microsoft_docs_fetch`) read, the searches, the tools called, and regexes over the answer.
 
 Scenarios, each with its ground truth:
 - **Partial knowledge.** `p1_partial`: Entra ID sign-in log retention with P1 (in the kb: 30 days) and Intune audit log retention (not in the kb; Microsoft Learn: two years). `p2_partial`: where the Intune EPM agent installs (in the kb) and its log file names (the kb records them as undocumented, a DER absence from its `_gaps.md` entry). Checks: both parts right, a search or fetch made, no url the pack had cited fetched again (`no-refetch`).
-- **A newer version upstream.** A scratch clone planted so that presidio-analyzer 2.2.361 (2026-02-12) is the newest release, the articles retrieved 2026-02-20; PyPI's latest is 2.2.364 (2026-07-22), which still lacks `UuidRecognizer` (the unplanted kb, `privacy/presidio.md`). `n1_newer`: "what is the latest presidio-analyzer release?"; `n2_newer`: "does 2.2.364 include the UuidRecognizer?" (the planted copy says it was merged after 2.2.361). Checks: the right answer (2.2.364; no), the kb's version named, a live check made.
+- **A newer version upstream.** A scratch clone planted so that presidio-analyzer 2.2.361 (2026-02-12) is the newest release, the articles retrieved 2026-02-20; PyPI's latest is 2.2.364 (2026-07-22), which still lacks `UuidRecognizer` (the unplanted kb, `privacy/presidio.md`). `n1_newer`: "what is the latest presidio-analyzer release?"; `n2_newer`: "does 2.2.364 include the UuidRecognizer?" (the planted copy says it was merged after 2.2.361). Checks: the right answer (2.2.364; no), the kb's version named, a live check made. `n3_newer`/`n4_newer` ask the same with "Check the kb first; use live docs or web search where it is not enough, and label the source."
 - **An older kb than its remote.** A scratch clone of `HEAD` whose `origin/main` is 3 commits ahead (as a fetch that brought newer commits leaves it). `k1_stale`: "which Claude Code version added the Elicitation hook? ... tell me how current the kb copy you are using is." Checks: 2.1.76, `kb_status` called, the answer says the copy is behind or how to update it.
 
 Before the fixes below (20 runs, $1.20):
@@ -283,6 +283,32 @@ What it shows:
 - **Nobody checked for a newer release.** In 8 of 8 `n*` runs the model answered from the planted copy without any live call: "the latest release is 2.2.361" (n1, 4 of 4, Sonnet adding "as of the kb's last check, 2026-02-20"), and for 2.2.364 Haiku inferred "likely to include it" (wrong, 2 of 2) while Sonnet said it could not confirm and told the user to check (2 of 2). The pack showed the article's `retrieved 2026-02-20` and, for n2, `coverage: none; not in the kb: 2.2.364`.
 - **Nobody said the copy was stale.** `kb_status` showed commit, date and census but nothing about the remote, and 1 of 4 runs called it; all 4 called the copy current from the facts' retrieval dates ("as current as the kb gets").
 - A Haiku run once called a tool name it made up (`mcp__plugin_it-ops_kb__kb_pack`) before the right one: a wasted turn, not a wrong answer.
+
+After the fixes (`kb/_self/tools.md`: the `freshness:` line; `kb_status` and the `kb copy:` line), the same planted and stale copies built from the fixed commit:
+
+| scenario | model | runs | cost per run | checks passed | live checks | what changed |
+|---|---|---|---|---|---|---|
+| n1 newer | Haiku | 2 | $0.010, $0.010 | 1/3, 1/3 | 0, 0 | both answers now give the kb's date (2026-02-20) and say a newer release may exist; before, neither did |
+| n1 newer | Sonnet | 2 | $0.024, $0.032 | 1/3, 1/3 | 0, 0 | as before: the date and "confirm against PyPI" |
+| n2 newer | Haiku | 2 | $0.019, $0.020 | 1/3, 1/3 | 0, 0 | the wrong guess ("likely includes it") in 1 of 2 runs, was 2 of 2 |
+| n2 newer | Sonnet | 2 | $0.018, $0.051 | 1/3, 1/3 | 0, 0 | as before: cannot confirm, check the release notes |
+| k1 stale | Haiku | 2 | $0.015, $0.014 | 2/3, 2/3 | - | both say "3 commits behind origin/main" and give the `git pull --ff-only` command, without calling `kb_status` (the check for it fails) |
+| k1 stale | Sonnet | 2 | $0.059, $0.025 | 2/3, 2/3 | - | the same |
+
+With leave to use the web (`n3`/`n4`, 1 run each), against a planted copy of the commit before the fixes:
+
+| question | model | before the fixes | with the `freshness:` line |
+|---|---|---|---|
+| latest release (n3) | Haiku | no live check, 2.2.361 as the latest, $0.027 | PyPI fetched, 2.2.364 of 2026-07-22 with the kb's 2.2.361 beside it, $0.089 |
+| latest release (n3) | Sonnet | PyPI fetched, 2.2.364, $0.158 | the same, $0.141 |
+| does 2.2.364 include it (n4) | Haiku | searched, then "Yes" from a search summary (wrong), $0.050 | "No", from the tag's tree, $0.122 |
+| does 2.2.364 include it (n4) | Sonnet | searched, then "Yes" from the kb's line on `main` read as a release (wrong), $0.117 | "No", after 6 fetches, $0.240 |
+
+What the fixes did:
+- **A stale copy is now reported, 4 of 4 runs, at no cost to a current one.** The `kb copy:` line reaches the model through the pack it already calls; no model called `kb_status` in these runs, so the field alone would not have been seen.
+- **The `freshness:` line makes the answer say which version it is for, not the model check.** Asked "using the kb", both models stayed inside the kb in 8 of 8 runs and relayed the date and the caveat (Haiku had given neither). A stronger wording ("The kb cannot tell what is newest: before answering, check the cited source live ...", 4 runs on a scratch copy, $0.17) changed nothing: no live check. Given leave to use the web, both models checked, and the line turned two wrong answers into right ones: without it, Haiku did not check the latest release and both models answered "Yes" for 2.2.364. A live check costs 3-6 times the kb-only answer ($0.09-0.24 against $0.01-0.05).
+- **Fetching a cited url again is right here:** the live check of a version question is a fetch of the url the pack cites (PyPI's JSON), so `no-refetch` scores only the partial-knowledge scenarios.
+- The wording stays the short one; the scoping "using the kb" is the user's to lift.
 
 ## Tool speed
 
