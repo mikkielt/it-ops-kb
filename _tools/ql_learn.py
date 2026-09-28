@@ -136,9 +136,13 @@ def share_trigger(per_root):
 # ---------------------------------------------------------------- the findings
 
 def is_miss(e):
-    """A judged miss: Haiku judged the lookup missed or partly answered, or the pack's verdict was weak or none."""
-    return isinstance(e.get("question"), str) and (e.get("judged") in ("missed", "partly")
-                                                    or e.get("verdict") in ("weak", "none"))
+    """A judged miss: Haiku judged the lookup missed or partly answered, or the pack's verdict was weak or none; but a
+    weak pack that Haiku judged answered is no miss (a verdict none stays one)."""
+    if not isinstance(e.get("question"), str):
+        return False
+    if e.get("judged") in ("missed", "partly"):
+        return True
+    return e.get("verdict") == "none" or (e.get("verdict") == "weak" and e.get("judged") != "answered")
 
 
 def passes(res, best):

@@ -1750,6 +1750,24 @@ class TestLearn:
         assert all(by_id(store)[i]["state"] == "open" for i in opened)
         assert ql_store.store_problems(store) == []
 
+    def test_a_weak_pack_judged_answered_is_no_miss(self, tmp_path):
+        base = {"surface": "prompt", "day": "2026-09-27", "tools": ["kb_pack"], "judged": "answered", "best": None}
+        weak = {**base, "id": "55555555-0000-4000-8000-0000000000d1", "question": "Planted weak but answered?",
+                "verdict": "weak"}
+        none = {**base, "id": "55555555-0000-4000-8000-0000000000d2", "question": "Planted none but answered?",
+                "verdict": "none"}
+        assert not ql_learn.is_miss(weak) and ql_learn.is_miss(none)
+        assert ql_learn.is_miss({**weak, "judged": "partly"}) and ql_learn.is_miss({**weak, "judged": "missed"})
+        assert ql_learn.is_miss({k: v for k, v in weak.items() if k != "judged"})  # not judged: the verdict decides
+        store = learn_store(tmp_path)
+        run = ql_store.run_files(store)[0]
+        with open(run, "a", encoding="utf-8", newline="\n") as f:
+            for e in (weak, none):
+                f.write("\n" + json.dumps(e))  # the fixture file ends without a newline
+        run_learn(store, failing)
+        found = {r.get("entry") for r in by_id(store).values()}
+        assert none["id"] in found and weak["id"] not in found  # the planted weak entry yields no finding
+
     def test_cli(self, tmp_path):
         store = learn_store(tmp_path)
         p = subprocess.run([sys.executable, QL, "learn", "--store", str(store)], capture_output=True, text=True,
