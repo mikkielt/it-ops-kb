@@ -1,0 +1,30 @@
+{
+  "id": "ST-7atbtpz5",
+  "kind": "story",
+  "title": "Backlog check catches touches that name a moved file",
+  "status": "todo",
+  "parent": "EP-uzf2w6ym",
+  "sprint": "SP-rks3vx5g",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "backlog.py check reports an error when an open item's touches names a plain path that git history had and HEAD no longer has, and backlog.py selectors prints every tests.py -k selector of open items with the number of tests it collects now, so a file move that strands an item's scope or proof is visible before the item is worked",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "backlog_stale_touches"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "backlog_selectors"
+      ]
+    }
+  ],
+  "notes": "Selectors in item checks are an interface a refactor can strand. Zero collected tests already fails a check (pytest exits 5), so the risk is scope, not false proof: many open items name _tools/test_querylog.py or _tools/test_kb.py in touches, and done refuses a commit outside touches. Most -k selectors in item checks name tests their items have yet to write, so selectors reports counts and never fails on zero."
+}

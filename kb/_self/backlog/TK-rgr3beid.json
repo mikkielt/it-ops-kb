@@ -1,0 +1,27 @@
+{
+  "id": "TK-rgr3beid",
+  "kind": "task",
+  "title": "Move history commands to kg_history.py",
+  "status": "todo",
+  "parent": "ST-3i3dl6xg",
+  "priority": "P2",
+  "rank": 2,
+  "goal": "kg_history.py holds log, blame, asof, check-trailers and tag-census, and those commands behave as before",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbgit.py",
+    "_tools/kg_history.py",
+    "_tools/test_history.py",
+    "_tools/conftest.py"
+  ],
+  "depends_on": [
+    "TK-sjlsvrij"
+  ]
+}

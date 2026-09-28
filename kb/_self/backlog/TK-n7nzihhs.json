@@ -1,0 +1,33 @@
+{
+  "id": "TK-n7nzihhs",
+  "kind": "task",
+  "title": "Move sync to kg_sync.py",
+  "status": "todo",
+  "parent": "ST-3i3dl6xg",
+  "priority": "P2",
+  "rank": 3,
+  "goal": "kg_sync.py holds sync, its rebase, conflict help and push gate, kbgit sync behaves as before on the sync scenarios, and the stress suite passes",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/stress_test.py"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbgit.py",
+    "_tools/kg_sync.py",
+    "_tools/test_sync.py",
+    "_tools/conftest.py"
+  ],
+  "depends_on": [
+    "TK-rgr3beid"
+  ]
+}

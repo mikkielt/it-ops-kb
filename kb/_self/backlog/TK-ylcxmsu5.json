@@ -1,0 +1,26 @@
+{
+  "id": "TK-ylcxmsu5",
+  "kind": "task",
+  "title": "Write the co-change report",
+  "status": "todo",
+  "parent": "ST-snby6hcz",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kb/_self/reports/modules.md records the method, the per-section co-change counts of the five modules and five Verdict lines",
+  "checks": [
+    {
+      "run": [
+        "git",
+        "grep",
+        "-c",
+        "^Verdict:",
+        "--",
+        "kb/_self/reports/modules.md"
+      ],
+      "match": ":5$"
+    }
+  ],
+  "touches": [
+    "kb/_self/reports/modules.md"
+  ]
+}

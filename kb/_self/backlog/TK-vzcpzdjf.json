@@ -1,0 +1,32 @@
+{
+  "id": "TK-vzcpzdjf",
+  "kind": "task",
+  "title": "check reports touches naming a file git deleted",
+  "status": "todo",
+  "parent": "ST-7atbtpz5",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "backlog.py check reports an error for each open item whose touches names a path without glob characters that is missing from the working tree and has at least one commit in git log, and test_backlog.py plants such an item and sees the error",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "backlog_stale_touches"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "check"
+      ],
+      "match": "errors=0"
+    }
+  ],
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/test_backlog.py"
+  ]
+}

@@ -1,0 +1,51 @@
+{
+  "id": "TK-2qnfbjsx",
+  "kind": "task",
+  "title": "Move the test_kb.py classes and retarget items and docs",
+  "status": "todo",
+  "parent": "ST-hnbfoyap",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "test_kb_cohesion.py, test_kb_lookup.py, test_kb_ids.py and test_kb_leaks.py hold the classes unchanged, test_kb.py is deleted, and every open item, tests.py's module list, tools.md and map.csv name the new files in the same commit",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "selfdoc or Leak or TestLookup"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "check"
+      ],
+      "match": "errors=0"
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/selfdoc.py",
+        "check"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/test_kb.py",
+    "_tools/test_kb_*.py",
+    "_tools/conftest.py",
+    "_tools/tests.py",
+    "kb/_self/backlog/*.json",
+    "kb/_self/tools.md",
+    "kb/_self/map.csv",
+    "kb/_self/content-rules.md"
+  ]
+}

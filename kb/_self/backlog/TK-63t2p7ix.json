@@ -1,0 +1,35 @@
+{
+  "id": "TK-63t2p7ix",
+  "kind": "task",
+  "title": "Runbook and tools doc name stale touches and selectors",
+  "status": "todo",
+  "parent": "ST-7atbtpz5",
+  "priority": "P2",
+  "rank": 2,
+  "goal": "kb/_self/backlog.md says check refuses touches naming a deleted file and that a planner or a file move runs backlog.py selectors, and kb/_self/tools.md lists the command",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "selfdoc"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/selfdoc.py",
+        "check"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "TK-vzcpzdjf",
+    "TK-gtdj2ixg"
+  ]
+}

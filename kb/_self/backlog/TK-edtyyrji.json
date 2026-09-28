@@ -1,0 +1,38 @@
+{
+  "id": "TK-edtyyrji",
+  "kind": "task",
+  "title": "Record the pre-split navigation baseline",
+  "status": "todo",
+  "parent": "ST-qxyqfpoz",
+  "priority": "P2",
+  "rank": 1,
+  "goal": "kb/_self/reports/benchmarks.csv holds three runs of the navigation scenario, arm before, at a commit before any file of this sprint moved, and benchmarks.md shows them",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/benchmarks.py",
+        "report",
+        "--check"
+      ]
+    },
+    {
+      "run": [
+        "git",
+        "grep",
+        "-c",
+        "^navigation,.*,before,",
+        "--",
+        "kb/_self/reports/benchmarks.csv"
+      ],
+      "match": ":[1-9]"
+    }
+  ],
+  "touches": [
+    "kb/_self/reports/benchmarks.csv",
+    "kb/_self/reports/benchmarks.md"
+  ],
+  "depends_on": [
+    "TK-xhgrqrsm"
+  ]
+}

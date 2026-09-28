@@ -1,0 +1,41 @@
+{
+  "id": "ST-qxyqfpoz",
+  "kind": "story",
+  "title": "Navigation cost has a baseline before the split",
+  "status": "todo",
+  "parent": "EP-uzf2w6ym",
+  "sprint": "SP-rks3vx5g",
+  "priority": "P2",
+  "rank": 2,
+  "goal": "benchmarks.py has a paid navigation scenario with three prompts, each asking a Sonnet agent in a throwaway clone which functions and tests to change: a query-log delivery rule, a kbgit.py trailer or sync rule, and a benchmark scenario; answers are checked by function and test names that survive a file move, and kb/_self/reports/benchmarks.csv holds three runs of it at a pre-split commit (arm before) with files read, tool calls, turns and input tokens",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "navigation"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/benchmarks.py",
+        "report",
+        "--check"
+      ]
+    },
+    {
+      "run": [
+        "git",
+        "grep",
+        "-c",
+        "^navigation,.*,before,",
+        "--",
+        "kb/_self/reports/benchmarks.csv"
+      ],
+      "match": ":[1-9]"
+    }
+  ],
+  "notes": "Three runs per arm on Sonnet. Checks name functions and tests, never file paths, so the same scenario scores the split layout. Each prompt matches a file the sprint splits: test_querylog.py, kbgit.py and its tests, benchmarks.py."
+}

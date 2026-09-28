@@ -1,0 +1,32 @@
+{
+  "id": "TK-pwrigavm",
+  "kind": "task",
+  "title": "Move the harness and report tables to bench_core.py and bench_report.py",
+  "status": "todo",
+  "parent": "ST-5d5ddbha",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "bench_core.py holds results io, isolation, the Bench run and transcript usage, bench_report.py holds the report tables, benchmarks.py imports both, and report --check passes unchanged",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/benchmarks.py",
+        "report",
+        "--check"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/benchmarks.py",
+    "_tools/bench_core.py",
+    "_tools/bench_report.py",
+    "_tools/test_benchmarks.py"
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "id": "TK-gtdj2ixg",
+  "kind": "task",
+  "title": "backlog.py selectors counts the tests each -k check collects",
+  "status": "todo",
+  "parent": "ST-7atbtpz5",
+  "priority": "P2",
+  "rank": 1,
+  "goal": "python3 _tools/backlog.py selectors prints one line per tests.py -k selector in the checks of open items (selector, collected count from pytest --collect-only, item id and title), marks zero counts, and exits 0; a test plants a selector that collects nothing and one that collects a known test",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "backlog_selectors"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/test_backlog.py"
+  ],
+  "depends_on": [
+    "TK-vzcpzdjf"
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "id": "TK-sjlsvrij",
+  "kind": "task",
+  "title": "Move trailers and hooks to kg_trailers.py",
+  "status": "todo",
+  "parent": "ST-3i3dl6xg",
+  "priority": "P2",
+  "rank": 1,
+  "goal": "kg_trailers.py holds trailer computation, commit and push hooks and install-hooks, and kbgit trailers, hook and install-hooks behave as before",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbgit.py",
+    "_tools/kg_trailers.py",
+    "_tools/test_history.py",
+    "_tools/test_sync.py",
+    "_tools/conftest.py"
+  ],
+  "depends_on": [
+    "TK-gdwb7udj"
+  ]
+}

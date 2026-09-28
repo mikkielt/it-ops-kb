@@ -1,0 +1,35 @@
+{
+  "id": "TK-q6ca2zpp",
+  "kind": "task",
+  "title": "Run the post-split navigation benchmark and write the verdict",
+  "status": "todo",
+  "parent": "ST-2nxdsro2",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "three navigation runs, arm after, are recorded and benchmarks.md states the change in files read, tool calls, turns and input tokens against the before arm and a Verdict line",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/benchmarks.py",
+        "report",
+        "--check"
+      ]
+    },
+    {
+      "run": [
+        "git",
+        "grep",
+        "-c",
+        "^navigation,.*,after,",
+        "--",
+        "kb/_self/reports/benchmarks.csv"
+      ],
+      "match": ":[1-9]"
+    }
+  ],
+  "touches": [
+    "kb/_self/reports/benchmarks.csv",
+    "kb/_self/reports/benchmarks.md"
+  ]
+}

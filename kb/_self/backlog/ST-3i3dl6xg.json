@@ -1,0 +1,52 @@
+{
+  "id": "ST-3i3dl6xg",
+  "kind": "story",
+  "title": "kbgit.py is a CLI over kg_* modules",
+  "status": "todo",
+  "parent": "EP-uzf2w6ym",
+  "sprint": "SP-rks3vx5g",
+  "priority": "P2",
+  "rank": 6,
+  "goal": "Where the co-change verdict supports it, kbgit.py's merge and ledger repair, trailers and hooks, history, and sync live in kg_merge.py, kg_trailers.py, kg_history.py and kg_sync.py; kbgit.py keeps every command, argument, output and exit code; no kg_ module imports kbgit.py; the suite, the stress suite and the import test pass",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/stress_test.py"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "import_layers"
+      ]
+    }
+  ],
+  "depends_on": [
+    "ST-ef2tkepv",
+    "ST-qxyqfpoz",
+    "ST-snby6hcz"
+  ],
+  "gates": [
+    {
+      "id": "boundaries",
+      "kind": "provisional",
+      "question": "Which kbgit.py sections move out, given the co-change report?",
+      "options": [
+        "the four sections the report supports",
+        "only the sections the report marks independent",
+        "none: keep kbgit.py whole"
+      ],
+      "recommendation": "only the sections the report marks independent"
+    }
+  ],
+  "notes": "The file already has section rules: io, text, _sources.csv, renumbering, answer ids, _fetch_state.csv, Markdown ledgers, baseline (merge and fix); trailers and hooks; history (log, blame, asof, census tag); sync. Tests that patch kbgit attributes must patch the kg_ module that now owns the name. A task whose section the report says to keep is dropped with the report's reason."
+}

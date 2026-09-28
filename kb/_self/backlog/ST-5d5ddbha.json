@@ -1,0 +1,54 @@
+{
+  "id": "ST-5d5ddbha",
+  "kind": "story",
+  "title": "Benchmark scenarios live in bench_* modules",
+  "status": "todo",
+  "parent": "EP-uzf2w6ym",
+  "sprint": "SP-rks3vx5g",
+  "priority": "P2",
+  "rank": 7,
+  "goal": "benchmarks.py keeps its list, run and report commands, the SCENARIOS registry and the benchmarks.csv schema, while the harness and report tables live in bench_core.py and bench_report.py and the scenarios in bench_lookup.py, bench_retrieval.py, bench_querylog.py and bench_install.py; report --check and the suite pass",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/benchmarks.py",
+        "report",
+        "--check"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "import_layers"
+      ]
+    }
+  ],
+  "depends_on": [
+    "ST-ef2tkepv",
+    "ST-qxyqfpoz",
+    "ST-snby6hcz"
+  ],
+  "gates": [
+    {
+      "id": "boundaries",
+      "kind": "provisional",
+      "question": "Which benchmarks.py parts move out, given the co-change report?",
+      "options": [
+        "harness, report and the four scenario families",
+        "only the scenario families",
+        "none: keep benchmarks.py whole"
+      ],
+      "recommendation": "harness, report and the four scenario families"
+    }
+  ],
+  "notes": "Families by the registry: lookup (headless, subagents, models, router, howto, partial, files-*, host-lookups, always-on, kb-lookup-agent, navigation), retrieval (retrieval, verdict, doc2query, tool-speed), querylog (querylog-hooks, querylog-pipeline, redaction, research), install (ingest, host-roots, kbpy, new-model). No paid run is needed to prove the move: report --check and the unit tests cover it."
+}

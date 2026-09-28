@@ -1,0 +1,48 @@
+{
+  "id": "ST-hnbfoyap",
+  "kind": "story",
+  "title": "test_kb.py is split by its test classes",
+  "status": "todo",
+  "parent": "EP-uzf2w6ym",
+  "sprint": "SP-rks3vx5g",
+  "priority": "P2",
+  "rank": 4,
+  "goal": "The classes of _tools/test_kb.py live in test_kb_cohesion.py (ToolChecks, Cohesion, SelfDocs), test_kb_lookup.py, test_kb_ids.py and test_kb_leaks.py with names unchanged, test_kb.py is gone, open items' touches name the new files, the docs name them, and the suite passes",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "selfdoc or Leak or TestLookup"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "check"
+      ],
+      "match": "errors=0"
+    },
+    {
+      "run": [
+        "git",
+        "ls-files",
+        "--error-unmatch",
+        "_tools/test_kb.py"
+      ],
+      "exit": 1
+    }
+  ],
+  "depends_on": [
+    "ST-7atbtpz5",
+    "ST-qxyqfpoz"
+  ]
+}

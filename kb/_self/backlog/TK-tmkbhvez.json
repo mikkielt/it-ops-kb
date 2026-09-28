@@ -1,0 +1,35 @@
+{
+  "id": "TK-tmkbhvez",
+  "kind": "task",
+  "title": "Docs name the bench_* modules",
+  "status": "todo",
+  "parent": "ST-5d5ddbha",
+  "priority": "P2",
+  "rank": 2,
+  "goal": "kb/_self/tools.md, kb/_self/code.md and kb/_self/map.csv describe benchmarks.py as the CLI over bench_ modules, and selfdoc reports nothing stale",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "selfdoc"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/selfdoc.py",
+        "check"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/tools.md",
+    "kb/_self/code.md",
+    "kb/_self/map.csv"
+  ],
+  "depends_on": [
+    "TK-4vkmkbwo"
+  ]
+}

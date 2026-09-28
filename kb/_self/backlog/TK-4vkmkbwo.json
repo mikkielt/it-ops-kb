@@ -1,0 +1,42 @@
+{
+  "id": "TK-4vkmkbwo",
+  "kind": "task",
+  "title": "Move the scenario families to bench_* modules",
+  "status": "todo",
+  "parent": "ST-5d5ddbha",
+  "priority": "P2",
+  "rank": 1,
+  "goal": "bench_lookup.py, bench_retrieval.py, bench_querylog.py and bench_install.py hold the scenario functions, benchmarks.py keeps SCENARIOS and main, and benchmarks.py list prints the same lines",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/benchmarks.py",
+        "report",
+        "--check"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "import_layers"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/benchmarks.py",
+    "_tools/bench_*.py",
+    "_tools/test_benchmarks.py"
+  ],
+  "depends_on": [
+    "TK-pwrigavm"
+  ]
+}

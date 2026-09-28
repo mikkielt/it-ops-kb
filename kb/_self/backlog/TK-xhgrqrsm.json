@@ -1,0 +1,25 @@
+{
+  "id": "TK-xhgrqrsm",
+  "kind": "task",
+  "title": "benchmarks.py navigation scenario",
+  "status": "todo",
+  "parent": "ST-qxyqfpoz",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "benchmarks.py run navigation runs three prompts in a throwaway clone with hooks off (locate the code and tests for a query-log delivery rule, a kbgit.py trailer or sync rule, and a benchmark scenario), checks each answer by function and test names, records files read, tool calls, turns and input tokens per run under an arm named by --arm, and test_benchmarks.py covers the checks with a planted wrong answer",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "navigation"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/benchmarks.py",
+    "_tools/test_benchmarks.py",
+    "kb/_self/reports/benchmarks.md"
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "id": "TK-u4f5ba7a",
+  "kind": "task",
+  "title": "Write kb/_self/code.md and map it",
+  "status": "todo",
+  "parent": "ST-ef2tkepv",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kb/_self/code.md holds the rules of the story's goal in short sections, kb/_self/README.md lists it, kb/_self/map.csv maps it to _tools/*.py, and maintaining.md points to it from its conduct section",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "selfdoc"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/selfdoc.py",
+        "check"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/code.md",
+    "kb/_self/README.md",
+    "kb/_self/map.csv",
+    "kb/_self/maintaining.md"
+  ]
+}

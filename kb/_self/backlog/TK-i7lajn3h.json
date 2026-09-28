@@ -1,0 +1,36 @@
+{
+  "id": "TK-i7lajn3h",
+  "kind": "task",
+  "title": "Docs name the query-log test files",
+  "status": "todo",
+  "parent": "ST-klrcnysf",
+  "priority": "P2",
+  "rank": 2,
+  "goal": "tests.py's module list, kb/_self/tools.md, kb/_self/querylog.md and kb/_self/map.csv name the test_ql_*.py files and no doc names test_querylog.py",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "selfdoc"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/selfdoc.py",
+        "check"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/tests.py",
+    "kb/_self/tools.md",
+    "kb/_self/querylog.md",
+    "kb/_self/map.csv"
+  ],
+  "depends_on": [
+    "TK-mose67gs"
+  ]
+}

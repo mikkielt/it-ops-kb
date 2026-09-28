@@ -1,0 +1,32 @@
+{
+  "id": "TK-uhu2ankm",
+  "kind": "task",
+  "title": "Move the capture, distill and store tests",
+  "status": "todo",
+  "parent": "ST-klrcnysf",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "test_ql_capture.py, test_ql_distill.py and test_ql_store.py hold those stages' classes unchanged, the shared helpers sit in one helper module both old and new files import, and the suite collects the same test names as before",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "TestLearn or selfdoc or plugin or red_pipeline or change_router or files_a_bug"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/test_querylog.py",
+    "_tools/test_ql_*.py",
+    "_tools/ql_testkit.py",
+    "_tools/conftest.py"
+  ]
+}
