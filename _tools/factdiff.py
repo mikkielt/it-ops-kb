@@ -419,11 +419,17 @@ def snapshot_path(sid):
     return root_path(os.path.join(kbcommon.SNAPSHOTS, re.sub(r"[^\w.-]", "_", sid) + ".txt"))
 
 
-def wants_snapshot(src):
+SNAPSHOT_MAX = _CFG.get("snapshot", {}).get("max_bytes", 500_000)
+
+
+def wants_snapshot(src, doc=None):
     """A source whose text the kb keeps: reuse class copy, a live url (a pinned file is its upstream at the pin), not
-    superseded."""
-    return ((src.get("reuse") or "").strip() == "copy" and not provider.is_pinned(src["url"])
-            and not (src.get("superseded_by") or "").strip())
+    superseded; with its document, also a document (not a JSON API answer) of at most SNAPSHOT_MAX bytes."""
+    if (src.get("reuse") or "").strip() != "copy" or provider.is_pinned(src["url"]) or (src.get("superseded_by") or "").strip():
+        return False
+    if doc is not None:
+        return bool(doc.get("text")) and "json" not in (doc.get("ctype") or "") and len(doc["text"].encode()) <= SNAPSHOT_MAX
+    return True
 
 
 def read_snapshot(sid):
@@ -463,6 +469,9 @@ def cmd_snapshot(a):
         d = docs.get(sid) or {}
         if d.get("status") != 200 or not d.get("text"):
             skipped["no text" if d.get("status") == 200 else f"HTTP {d.get('status') or d.get('error', '')[:30]}"] += 1
+            continue
+        if not wants_snapshot(srcs[sid], d):
+            skipped["JSON answer or over max_bytes"] += 1
             continue
         if a.dry_run:
             size += len(d["text"].encode())
@@ -887,7 +896,7 @@ def cmd_detect(a):
             outc[r["outcome"]] += 1
         if new is not None and not a.no_save:
             state[sid] = new
-        if doc is not None and doc.get("text") and wants_snapshot(srcs[sid]) and not a.no_save:
+        if doc is not None and wants_snapshot(srcs[sid], doc) and not a.no_save:
             write_snapshot(srcs[sid], doc["text"], date)
     out = a.out or root_path(os.path.join(kbcommon.CENSUS_DIR, f"factdiff-{date}.csv"))
     if not a.no_save:

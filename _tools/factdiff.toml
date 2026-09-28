@@ -24,3 +24,8 @@ soft404_min = 0.8
 # A 200 page whose simhash similarity to its previous version is at most `zombie_max`, with none of its anchors
 # found, had its content replaced (a zombie).
 zombie_max = 0.75
+
+[snapshot]
+# A live `copy` source's normalized text is kept in <root>/_snapshots/ when it is a document (not a JSON API answer)
+# of at most `max_bytes`; larger ones (a whole manual on one page, an API feed) keep only their hash.
+max_bytes = 500000

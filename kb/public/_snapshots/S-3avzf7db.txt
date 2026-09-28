@@ -1,0 +1,46 @@
+source: S-3avzf7db
+url: https://learn.microsoft.com/entra/id-governance/agent-sponsor-tasks
+title: Agent identity sponsor tasks in Lifecycle Workflows
+publisher: Microsoft
+licence: MIT (public mirror MicrosoftDocs/entra-docs)
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+# Agent identity sponsor tasks in Lifecycle Workflows - Microsoft Entra ID Governance | Microsoft Learn
+
+Governing agent identities sponsors is a critical aspect of maintaining lifecycle governance and access control in your organization. Agent identity sponsors are responsible for overseeing the lifecycle and access decisions of agent identities. Keeping sponsor information up to date helps with effective governance and compliance. For an overview of agent identity governance including access packages and sponsor responsibilities, see Governing Agent Identities.
+
+Lifecycle Workflows currently contain the following tasks that involve the governing of sponsors of agent identities:
+
+- Send email to manager about sponsorship changes
+- Send email to cosponsors about sponsor changes
+- Transfer agent identity sponsorships to manager
+
+These tasks ensure continuity of sponsorship when an agent's sponsor changes roles or leaves the organization. All three tasks are classified as **mover and leaver** tasks and are available only under mover or leaver workflow templates.
+
+This article explains how to configure Lifecycle Workflows to streamline agent identity sponsor governance.
+
+## License Requirements
+
+Using Microsoft Entra ID Governance for agent identities requires one of the following license plans:
+
+- **Microsoft 365 E7**, which includes Agent 365 and Microsoft Entra Suite, to provide governance of user and agent identities.
+- **Microsoft Agent 365** license paired with at least Microsoft Entra P1 or Microsoft 365 E3.
+
+For more information, see Microsoft Agent 365 plans and pricing. For the full list of agent-specific capabilities, refer to the **Microsoft Agent 365** column in the Microsoft Entra ID Governance licensing table.
+
+## Create a sponsor workflow using the Microsoft Entra Admin Center
+
+To create a workflow that notifies the manager or cosponsors of an existing agent identity sponsor's move, follow these steps:
+
+1. Sign in to the Microsoft Entra admin center as at least a Lifecycle Workflows Administrator.
+2. Browse to **ID Governance** &gt; **Lifecycle workflows** &gt; **workflows**.
+3. On the workflow screen, select the specific mover or leaver workflow template you want to add the sponsorship email tasks to, or create a new workflow based on a template.
+
+    Note
+
+    The **Send email to manager about sponsorship changes**, **Send email to co-sponsors about sponsor changes**, and **Transfer agent identity sponsorships to manager** are mover and leaver tasks, and are only available as selectable tasks under workflow templates of the same category.
+4. On the **Basics** tab, after entering a unique display name and description for the workflow, select your trigger and select **Next**.
+5. On the **Configure scope** screen, select the scope of the workflow and select **Next**.
+6. On the **Tasks** page, select which sponsor related tasks you want to include and select **Next**.
+7. Review the created workflow, and then select **Create**.

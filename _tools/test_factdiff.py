@@ -245,3 +245,31 @@ def test_apply_confirms_unchanged_sources(kb):
     with open(os.path.join(kb, P("_sources.csv")), encoding="utf-8") as f:
         row = next(r for r in csv.DictReader(f) if r["id"] == sid)
     assert row["retrieved_utc"] == "2031-01-02" and "confirmed 2031-01-02: fact diff: unchanged (etag)" in row["version_or_date"]
+
+
+def test_snapshot_roundtrip_and_check_rule(kb, monkeypatch):
+    """write_snapshot keeps the attribution header and skips an unchanged text; check.py accepts a copy source's
+    snapshot and rejects one of a quote source or one without its header."""
+    import csv
+    with open(os.path.join(kb, P("_sources.csv")), encoding="utf-8") as f:
+        srcs = {r["id"]: r for r in csv.DictReader(f)}
+    copy = next(r for r in srcs.values() if r["reuse"] == "copy" and not F.provider.is_pinned(r["url"]) and not r["superseded_by"])
+    quote = next(r for r in srcs.values() if r["reuse"] == "quote")
+    monkeypatch.setattr(F, "ROOT", kbcommon.Root("public", os.path.join(kb, P("")).rstrip("/"), "S", "public", ""))
+    assert F.wants_snapshot(copy) and not F.wants_snapshot(quote)
+    assert F.write_snapshot(copy, DOC, "2031-01-02") and not F.write_snapshot(copy, DOC, "2031-01-03")
+    head, body = F.read_snapshot(copy["id"])
+    assert body == DOC and head["licence"] == " ".join(copy["licence"].split()) and head["retrieved"] == "2031-01-02"
+
+    def check():
+        p = subprocess.run([sys.executable, os.path.join(kb, "_tools", "check.py"), "--root", "public"], capture_output=True, text=True)
+        return p.returncode, p.stdout
+
+    assert check()[0] == 0, check()[1]
+    bad = os.path.join(kb, P(f"{kbcommon.SNAPSHOTS}/{quote['id']}.txt"))
+    with open(bad, "w", encoding="utf-8") as f:
+        f.write(f"source: {quote['id']}\nurl: x\n---\ntext\n")
+    code, out = check()
+    assert code == 1 and "only copy sources" in out and "lacks" in out, out
+    os.remove(bad)
+    os.remove(F.snapshot_path(copy["id"]))

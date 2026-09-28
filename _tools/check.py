@@ -11,6 +11,8 @@
 - every source has a licence and a reuse class from kbcommon.REUSE (copy, quote, paraphrase, unknown);
 - a non-empty superseded_by names another source id of the same root and forms no cycle;
 - every _artifacts.csv row names a known source of its root and an existing file;
+- every <root>/_snapshots/<id>.txt is a copy source of that root and starts with its attribution header (source, url,
+  title, publisher, licence as in the source row, retrieved, changes);
 - a root's _anchors.csv (factdiff.py), when present: a 12-hex fact key, an existing file, a known source, status
   located (16-hex sha and terms) or unlocated:<reason> (no sha, terms or quote), a quote of at most 25 words and only
   from a copy or quote source, a YYYY-MM-DD verified_utc, no (fact, path, source_id) twice;
@@ -90,6 +92,7 @@ def check_root_ledgers(root, owner):
     errors.extend(f"answer id {i} in {q(kbcommon.ANSWERS)}: QK ids are QK-<slug> (lowercase, hyphenated)"
                   for i in aids if i.startswith("QK") and not kbid.QK_ID.fullmatch(i))
     check_anchors(root, {r["id"]: (r.get("reuse") or "").strip() for r in sources})
+    check_snapshots(root, {r["id"]: r for r in sources})
     for r in read_csv(root, kbcommon.ARTIFACTS, ("path", "source_id", "sha256")):
         if r["source_id"] not in known:
             errors.append(f"artifact {q(r['path'])} names unknown source {r['source_id']}")
@@ -136,6 +139,38 @@ def check_anchors(root, reuse):
         if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", r["verified_utc"]):
             bad.append("verified_utc is not YYYY-MM-DD")
         errors.extend(f"{name}:{n} {b}" for b in bad)
+
+
+SNAP_KEYS = ("source", "url", "title", "publisher", "licence", "retrieved", "changes")
+
+
+def check_snapshots(root, sources):
+    """Every <root>/_snapshots/<id>.txt: a copy source of the root, with its attribution header."""
+    d = os.path.join(root.path, kbcommon.SNAPSHOTS)
+    if not os.path.isdir(d):
+        return
+    for fn in sorted(os.listdir(d)):
+        if not fn.endswith(".txt"):
+            continue
+        name = kbcommon.qualify(root, f"{kbcommon.SNAPSHOTS}/{fn}")
+        sid = fn[:-4]
+        try:
+            with open(os.path.join(d, fn), encoding="utf-8") as f:
+                head = f.read(4000).partition("\n---\n")[0]
+        except (OSError, UnicodeDecodeError) as e:
+            errors.append(f"{name} is unreadable: {e}")
+            continue
+        meta = dict(ln.split(": ", 1) for ln in head.splitlines() if ": " in ln)
+        missing = [k for k in SNAP_KEYS if not meta.get(k, "").strip()]
+        if missing:
+            errors.append(f"{name}: attribution header lacks {', '.join(missing)}")
+        src = sources.get(sid)
+        if src is None or meta.get("source") != sid:
+            errors.append(f"{name}: not a source of {root.name} (or its header names another)")
+        elif (src.get("reuse") or "").strip() != "copy":
+            errors.append(f"{name}: source {sid} has reuse {src.get('reuse')!r}; only copy sources may be kept verbatim")
+        elif meta.get("licence") != " ".join((src.get("licence") or "").split()):
+            errors.append(f"{name}: licence differs from {sid}'s row in {kbcommon.SOURCES}")
 
 
 def cite_error(sid, root, owner, known):

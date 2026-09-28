@@ -134,7 +134,7 @@ class TestCensusLedger:
         # one article's source list do not break the scenario)
         cls.article, cls.ids = None, []
         for rel in sorted(glob.glob(os.path.join(cls.kb, P("*/*.md")))):
-            fm = census.build_index.front_matter(open(rel, encoding="utf-8").read())
+            fm = census.build_index.front_matter(open(rel, encoding="utf-8").read()) or {}  # _snapshots/README.md has none
             ids = re.findall(r"S-[a-z2-7]{8}|S\d+", fm.get("sources", "") or "")
             if len(ids) == 2 and "S100" not in ids and all(i in cls.rows for i in ids):
                 cls.article, cls.ids = os.path.relpath(rel, cls.kb), ids

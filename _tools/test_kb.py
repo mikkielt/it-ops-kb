@@ -84,10 +84,11 @@ def internal_prefixes():
 @functools.lru_cache(maxsize=None)
 def authored():
     """Tracked text files we wrote ourselves that the placeholders-only rule covers: not pinned artifacts, not vendor
-    exports under */artifacts/, not files of internal roots (secrets are checked everywhere: test_no_secrets)."""
+    exports under */artifacts/ or snapshots of copy sources under */_snapshots/, not files of internal roots (secrets are
+    checked everywhere: test_no_secrets)."""
     p, internal = pinned(), internal_prefixes()
-    return tuple(f for f in tracked() if f not in p and "/artifacts/" not in f and not f.startswith(internal)
-                 and text(f) is not None)
+    return tuple(f for f in tracked() if f not in p and "/artifacts/" not in f and f"/{kbcommon.SNAPSHOTS}/" not in f
+                 and not f.startswith(internal) and text(f) is not None)
 
 
 def allowlist():

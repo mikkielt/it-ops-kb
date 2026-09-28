@@ -1,0 +1,139 @@
+source: S-3puxctla
+url: https://learn.microsoft.com/entra/identity/conditional-access/concept-conditional-access-policy-common
+title: Conditional Access policy templates
+publisher: Microsoft Learn
+licence: MIT (public mirror MicrosoftDocs/entra-docs)
+retrieved: 2026-09-28
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+# Conditional Access Templates: Simplify Security - Microsoft Entra ID | Microsoft Learn
+
+## Overview
+
+Conditional Access templates provide a convenient method to deploy new policies aligned with Microsoft recommendations. These templates are designed to provide maximum protection aligned with commonly used policies across various customer types and locations.
+
+![Screenshot that shows Conditional Access policies and templates in the Microsoft Entra admin center.](media/concept-conditional-access-policy-common/conditional-access-policies-azure-ad-listing.png#lightbox)
+
+## Template categories
+
+Conditional Access policy templates are organized into the following categories:
+
+# Secure foundation
+Microsoft recommends these policies as the base for all organizations. Deploy these policies as a group.
+
+- Require multifactor authentication for admins
+- Securing security info registration
+- Block legacy authentication
+- Require multifactor authentication for admins accessing Microsoft admin portals
+- Require multifactor authentication for all users
+- Require multifactor authentication for Azure management
+- Require compliant or Microsoft Entra hybrid joined device or multifactor authentication for all users
+- Require compliant device
+
+# Zero Trust
+These policies help support a Zero Trust architecture.
+
+- Require multifactor authentication for admins
+- Securing security info registration
+- Block legacy authentication
+- Require multifactor authentication for all users
+- Require multifactor authentication for guest access
+- Require multifactor authentication for Azure management
+- Require multifactor authentication for risky sign-ins**Requires Microsoft Entra ID P2**
+- Require password change for high-risk users**Requires Microsoft Entra ID P2**
+- Block access for unknown or unsupported device platform
+- No persistent browser session
+- Require approved client apps or app protection policies
+- Require compliant or Microsoft Entra hybrid joined device or multifactor authentication for all users
+- Require multifactor authentication for admins accessing Microsoft admin portals
+- Block access for users with insider risk**Requires Microsoft Purview**
+
+# Remote work
+These policies help secure organizations with remote workers.
+
+- Securing security info registration
+- Block legacy authentication
+- Require multifactor authentication for all users
+- Require multifactor authentication for guest access
+- Require multifactor authentication for risky sign-ins**Requires Microsoft Entra ID P2**
+- Require password change for high-risk users**Requires Microsoft Entra ID P2**
+- Require compliant or Microsoft Entra hybrid joined device for administrators
+- Block access for unknown or unsupported device platform
+- No persistent browser session
+- Require compliant device
+- Require approved client apps or app protection policies
+- Use application enforced restrictions for unmanaged devices
+
+# Protect administrator
+These policies are for highly privileged administrators in your environment, where compromise might cause the most damage.
+
+- Require multifactor authentication for admins
+- Block legacy authentication
+- Require multifactor authentication for Azure management
+- Require compliant or Microsoft Entra hybrid joined device for administrators
+- Require compliant device
+- Require phishing-resistant multifactor authentication for administrators
+
+# Emerging threats
+Policies in this category provide new ways to protect against compromise.
+
+- Require phishing-resistant multifactor authentication for administrators
+
+# AI Agents
+Policies in this category provide ways to control agents in your environment.
+
+- Block high-risk agent identities
+- Configure policy for autonomous agent access
+- Configure policy for on-behalf-of agent access
+
+---
+
+Find these templates in the Microsoft Entra admin center &gt; **Entra ID** &gt; **Conditional Access** &gt; **Create new policy from templates**. Select **Show more** to view all policy templates in each category.
+
+![Screenshot that shows how to create a Conditional Access policy from a preconfigured template in the Microsoft Entra admin center.](media/concept-conditional-access-policy-common/create-policy-from-template-identity.png#lightbox)
+
+Important
+
+Conditional Access template policies targeting users exclude only the user creating the policy from the template. If your organization needs to exclude other accounts, modify the policy after it's created. You can find these policies in the Microsoft Entra admin center &gt; **Entra ID** &gt; **Conditional Access** &gt; **Policies**. Select a policy to open the editor and modify the excluded users and groups to select accounts you want to exclude.
+
+By default, each policy is created in report-only mode. Test and monitor usage to ensure the intended result before turning on each policy.
+
+Organizations can select individual policy templates and:
+
+- View a summary of the policy settings.
+- Edit, to customize based on organizational needs.
+- Export the JSON definition for use in programmatic workflows.
+    - These JSON definitions can be edited and then imported on the main Conditional Access policies page using the **Upload policy file** option.
+
+## Other common policies
+
+- Require multifactor authentication for device registration
+- Block access by location
+- Block access except specific apps
+
+## User exclusions
+
+Conditional Access policies are powerful tools. We recommend excluding the following accounts from your policies:
+
+- **Emergency access** or **break-glass**accounts to prevent lockout due to policy misconfiguration. In the unlikely scenario where all administrators are locked out, your emergency access administrative account can be used to sign in and recover access.
+    - More information can be found in the article, Manage emergency access accounts in Microsoft Entra ID.
+- **Service accounts** and **Service principals**, such as the Microsoft Entra Connect Sync Account. Service accounts are noninteractive accounts that aren't tied to any specific user. They're typically used by backend services to allow programmatic access to applications, but they're also used to sign in to systems for administrative purposes. Calls made by service principals aren't blocked by Conditional Access policies scoped to users. Use Conditional Access for workload identities to define policies that target service principals.
+    - If your organization uses these accounts in scripts or code, replace them with managed identities.
+
+## Migrate from classic policies
+
+Classic Conditional Access policies are deprecated and stopped enforcing controls after July 10, 2024. They depend on the retired Azure AD Graph service and can't protect your resources. If your tenant still has classic policies, migrate their settings to modern Conditional Access policies.
+
+Warning
+
+After you disable a classic policy, you can't re-enable it. Document the policy's settings before you disable it.
+
+To migrate a classic policy:
+
+1. Sign in to the Microsoft Entra admin center as at least a Conditional Access Administrator.
+2. Browse to **Entra ID** &gt; **Conditional Access** &gt; **Classic policies**.
+3. Select a classic policy and document its configuration settings.
+4. Recreate the settings by using a template or custom policy described earlier in this article. Test the new policy in report-only mode before you turn it on.
+5. Return to the classic policy and select **Disable**.
+
+The What If tool indicates whether classic policies still exist in your environment.
