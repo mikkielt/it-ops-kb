@@ -1,0 +1,30 @@
+{
+  "id": "BG-ovulgaal",
+  "kind": "bug",
+  "title": "The test suite does not pass on Windows: 7 failures and a hang",
+  "status": "todo",
+  "sprint": "SP-z7a5c76b",
+  "priority": "P1",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "python _tools/tests.py exits 0 on Windows (Python 3.14 via uv, Git for Windows sh on PATH), with no test failing and none hanging.",
+  "repro": {
+    "run": [
+      "python",
+      "_tools/tests.py"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python",
+        "_tools/tests.py"
+      ]
+    }
+  ],
+  "links": [
+    "kb/_self/backlog.md",
+    "python/stdlib-windows-portability"
+  ],
+  "notes": "Needs a Windows machine: work it in a Windows session of this clone. Evidence: kb-tests-windows job 16789774076 at commit 66cc0a1 (754 tests, 2 xdist workers) printed 7 F between 28% and 57%, then no output after 85% for 16 minutes until it was cancelled; the log names no test (xdist prints dots). The repro passes on macOS and Linux."
+}

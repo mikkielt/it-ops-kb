@@ -41,5 +41,6 @@
       "answer": "will run it",
       "by": "operator"
     }
-  ]
+  ],
+  "notes": "Needs a Windows machine: work it in a Windows session of this clone. The Windows laptops with Claude Code and this clone are the machine the gate asks for."
 }

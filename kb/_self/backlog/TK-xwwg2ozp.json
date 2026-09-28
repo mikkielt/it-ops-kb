@@ -1,0 +1,26 @@
+{
+  "id": "TK-xwwg2ozp",
+  "kind": "task",
+  "title": "Windows CI names a test that hangs",
+  "status": "todo",
+  "parent": "BG-ovulgaal",
+  "priority": "P2",
+  "rank": 3,
+  "goal": "The kb-tests-windows job passes -o faulthandler_timeout to the tests, so a hanging test's stack is in the job log instead of silence until the job timeout.",
+  "checks": [
+    {
+      "run": [
+        "git",
+        "grep",
+        "-n",
+        "faulthandler_timeout",
+        "--",
+        ".gitlab-ci.yml"
+      ]
+    }
+  ],
+  "touches": [
+    ".gitlab-ci.yml",
+    "kb/_self/git.md"
+  ]
+}

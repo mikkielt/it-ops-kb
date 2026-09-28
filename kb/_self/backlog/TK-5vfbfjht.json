@@ -1,0 +1,25 @@
+{
+  "id": "TK-5vfbfjht",
+  "kind": "task",
+  "title": "Fix the Windows test hang",
+  "status": "todo",
+  "parent": "BG-ovulgaal",
+  "priority": "P1",
+  "rank": 2,
+  "goal": "The test that hung on Windows finishes there within its normal time; if the hang is test_child_survives_a_kill_on_close_job or the SessionEnd launcher, the fix keeps the detached distill alive after the launcher's job object closes.",
+  "checks": [
+    {
+      "run": [
+        "python",
+        "_tools/tests.py"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/**"
+  ],
+  "depends_on": [
+    "TK-kmunpvxo"
+  ],
+  "notes": "Needs a Windows machine: work it in a Windows session of this clone."
+}

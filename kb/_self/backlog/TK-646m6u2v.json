@@ -1,0 +1,25 @@
+{
+  "id": "TK-646m6u2v",
+  "kind": "task",
+  "title": "Fix the Windows test failures",
+  "status": "todo",
+  "parent": "BG-ovulgaal",
+  "priority": "P1",
+  "rank": 1,
+  "goal": "Every test named as failing on Windows passes there, and still passes on macOS and Linux.",
+  "checks": [
+    {
+      "run": [
+        "python",
+        "_tools/tests.py"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/**"
+  ],
+  "depends_on": [
+    "TK-kmunpvxo"
+  ],
+  "notes": "Needs a Windows machine: work it in a Windows session of this clone. Narrow touches to the files the named tests point at before starting."
+}

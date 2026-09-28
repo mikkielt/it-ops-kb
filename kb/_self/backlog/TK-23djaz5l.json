@@ -20,6 +20,9 @@
   "touches": [
     "kb/public/_gaps.md"
   ],
+  "depends_on": [
+    "BG-ovulgaal"
+  ],
   "gates": [
     {
       "id": "glab",
@@ -33,5 +36,6 @@
       "answer": "done",
       "by": "operator"
     }
-  ]
+  ],
+  "notes": "Waits until the suite passes on Windows. Any push to main while the job runs cancels it (auto-cancel of redundant pipelines, jobs interruptible): start it when no push is expected for its whole run."
 }

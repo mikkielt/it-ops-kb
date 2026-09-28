@@ -1,0 +1,23 @@
+{
+  "id": "TK-kmunpvxo",
+  "kind": "task",
+  "title": "Name the failing and the hanging tests on Windows",
+  "status": "todo",
+  "parent": "BG-ovulgaal",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "The bug's notes name each test that fails on Windows with its error line, and the test that hangs with the stack faulthandler dumped, from one local Windows run of python _tools/tests.py -v -o faulthandler_timeout=300.",
+  "checks": [
+    {
+      "run": [
+        "python",
+        "_tools/backlog.py",
+        "check"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/backlog/**"
+  ],
+  "notes": "Needs a Windows machine: work it in a Windows session of this clone. faulthandler_timeout is a built-in pytest option: it dumps every thread's stack when one test runs longer than the timeout, without a new dependency."
+}
