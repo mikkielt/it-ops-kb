@@ -106,7 +106,7 @@ def num(v):
 
 FORMATS = {"cost": "${:.3f}", "cost_est": "${:.3f}", "wall_s": "{:.0f} s", "api_s": "{:.0f} s", "input": "{:.0f}",
            "out": "{:.0f}", "turns": "{:.1f}", "tool_calls": "{:.1f}", "requests": "{:.1f}", "start_ctx": "{:.0f}",
-           "ms": "{:.1f} ms", "s": "{:.2f} s", "pct": "{:.1f}%"}
+           "ms": "{:.1f} ms", "s": "{:.2f} s", "time": "{:.2f} s", "pct": "{:.1f}%"}
 
 
 def fmt(metric, v):
@@ -379,13 +379,24 @@ class Bench:
 
     # -- model runs through agent_bench.py in the lookup clone
 
-    def bench(self, cfgs, scens, reps, tag):
+    def bench(self, cfgs, scens, reps, tag, parallel=False):
+        """agent_bench.py runs in the lookup clone; `parallel` runs each config in its own process at once."""
         clone = self.lookup()
-        out = self.scratch / "raw" / f"{tag}-{self.date}-{uuid.uuid4().hex[:6]}.jsonl"
-        out.parent.mkdir(parents=True, exist_ok=True)
-        subprocess.run([sys.executable, str(clone / "_tools" / "agent_bench.py"), str(out), ",".join(cfgs),
-                        ",".join(scens), str(reps)], cwd=clone, env=no_plugin_env())
-        runs = [json.loads(ln) for ln in out.read_text(encoding="utf-8").splitlines() if ln.strip()]
+        groups = [[c] for c in cfgs] if parallel else [cfgs]
+        outs, procs = [], []
+        for g in groups:
+            out = self.scratch / "raw" / f"{tag}-{self.date}-{uuid.uuid4().hex[:6]}.jsonl"
+            out.parent.mkdir(parents=True, exist_ok=True)
+            outs.append(out)
+            procs.append(subprocess.Popen([sys.executable, str(clone / "_tools" / "agent_bench.py"), str(out),
+                                           ",".join(g), ",".join(scens), str(reps)], cwd=clone, env=no_plugin_env(),
+                                          stdout=subprocess.DEVNULL))
+            if not parallel:
+                procs[-1].wait()
+        for pr in procs:
+            pr.wait()
+        runs = [json.loads(ln) for out in outs if out.exists()
+                for ln in out.read_text(encoding="utf-8").splitlines() if ln.strip()]
         for r in runs:
             _spent_run(r)
         return runs
@@ -549,8 +560,8 @@ def s_headless(b):
     """Bare agent against agent with the kb, headless: agent_bench.py's `web-<model>`, `<model>` and `router` configs
     on the nine questions both arms get, and the count question for the kb arms."""
     runs = b.bench(["web-haiku", "web-sonnet", "web-opus", "haiku", "sonnet", "opus", "router"], HEADLESS_SCENS,
-                   b.reps, "headless")
-    runs += b.bench(["haiku", "sonnet", "opus", "router"], ["s4_count"], b.reps, "headless")
+                   b.reps, "headless", parallel=True)
+    runs += b.bench(["haiku", "sonnet", "opus", "router"], ["s4_count"], b.reps, "headless", parallel=True)
     b.bench_rows("headless", runs)
     covered = {"s1_fact", "s2_fact_csv", "s3_multi", "h1_gmsa", "h2_applock", "x1_synth", "s7_web"}
     for case, scens in (("covered (7)", covered), ("not covered (2)", {"s8_falsegood2", "o1_offkb"})):
@@ -566,6 +577,17 @@ def s_headless(b):
             b.row("headless", case, cfg, "tool_calls", sum(sum(r.get("tools", {}).values()) for r in rs) / n, n)
             full = sum(all(r.get("checks") or [False]) for r in rs)
             b.row("headless", case, cfg, "fully_right", f"{full} of {n}", n)
+    # Router against web search: the router and the web arms on the same covered questions, and on the false good
+    for case, scens in (("covered", covered), ("not covered (false good)", {"s8_falsegood2"})):
+        for cfg in ("router", "web-haiku", "web-sonnet", "web-opus"):
+            rs = [r for r in runs if r["scen"] in scens and r["cfg"] == cfg and "error" not in r]
+            if not rs:
+                continue
+            n = len(rs)
+            b.row("router-web", case, cfg, "cost", sum(r["cost"] for r in rs) / n, n)
+            b.row("router-web", case, cfg, "wall_s", sum(r["wall_s"] for r in rs) / n, n)
+            b.row("router-web", case, cfg, "input", sum(r["in_uncached"] + r["cache_write"] + r["cache_read"] for r in rs) / n, n)
+            b.row("router-web", case, cfg, "correct", f"{sum(all(r.get('checks') or [False]) for r in rs)}/{n}", n)
 
 
 SUB_TASKS = {  # the subagent measurement's four questions, with agent_bench's checks
@@ -594,6 +616,7 @@ def s_subagents(b):
                                              "lacks, and label that part live docs.",
                                    "tools": [*KB_TOOLS, *DOCS_TOOLS, "WebSearch", "WebFetch"]}
     allowed = [*KB_TOOLS, *DOCS_TOOLS, "WebSearch", "WebFetch"]
+    totals = {}
     for case, (task, checks) in SUB_TASKS.items():
         for arm in ("bare", "kb"):
             for m in PRICE:
@@ -612,6 +635,13 @@ def s_subagents(b):
                                   ("start_ctx", s["start_ctx"]), ("checks", f"{passed}/{len(checks)}"),
                                   ("route", " > ".join(t.replace("mcp__", "") for t in tools) or "no tool call")):
                     b.row("subagents", case, arm_name, metric, v, 1, reqs[0]["model"])
+                totals.setdefault(arm_name, [0, 0.0, 0, 0])
+                t = totals[arm_name]
+                t[0] += s["input"]; t[1] += est_cost(m, s, tools.count("WebSearch")); t[2] += passed == len(checks); t[3] += 1
+    for arm_name, (inp, cost, right, n) in totals.items():
+        b.row("subagents", "total (4 scenarios)", arm_name, "input", inp, n)
+        b.row("subagents", "total (4 scenarios)", arm_name, "cost_est", cost, n)
+        b.row("subagents", "total (4 scenarios)", arm_name, "fully_right", f"{right}/{n}", n)
 
 
 def s_models(b):
@@ -722,6 +752,16 @@ def _task_argv(model, extra=()):
             "--model", model, *extra]
 
 
+def _totals(b, scenario, arm, runs):
+    """The six tasks' sums (T1-T6) of one arm: turns, input, output, time."""
+    rs = [r for r in runs if r["scen"] in T_TASKS and "error" not in r]
+    if len(rs) == len(T_TASKS):
+        b.row(scenario, "T1-T6", arm, "turns", sum(r["turns"] for r in rs), 1)
+        b.row(scenario, "T1-T6", arm, "input", sum(r["in_uncached"] + r["cache_write"] + r["cache_read"] for r in rs), 1)
+        b.row(scenario, "T1-T6", arm, "out", sum(r["out"] for r in rs), 1)
+        b.row(scenario, "T1-T6", arm, "wall_s", sum(r["wall_s"] for r in rs), 1)
+
+
 def s_files_headless(b):
     """Lookup tools against reading files: the six tasks in fresh Sonnet sessions, in a clone of the commit before the
     lookup tools and in one of HEAD, rag.py, Read, Grep, Glob and skills allowed, no web, no subagents, no servers."""
@@ -734,6 +774,7 @@ def s_files_headless(b):
             r = stream_run(_task_argv("sonnet", extra), task, cwd)
             runs.append({**r, "cfg": arm, "scen": case, "checks": []})
         b.bench_rows("files-headless", runs)
+        _totals(b, "files-headless", arm, runs)
 
 
 HOST_TS = {  # the throwaway host project of "Plugin in a host project": five planted problems
@@ -798,6 +839,7 @@ def s_host_lookups(b):
             r = stream_run(_task_argv("sonnet", extra), task, cwd, env)
             runs.append({**r, "cfg": arm, "scen": case, "checks": []})
         b.bench_rows("host-lookups", runs)
+        _totals(b, "host-lookups", arm, runs)
     r = stream_run(_task_argv("sonnet", common + ["--plugin-dir", str(clone), "--allowedTools", "mcp__plugin_it-ops-kb_kb",
                                                   "Read", "Grep", "Glob", "Agent"]),
                    "/it-ops-kb:kb-review-workspace", host, env)
@@ -904,7 +946,9 @@ def s_retrieval(b):
         hit[k][1] += 1
         hit[k][0] += f"{u['path']}:{u['line']} " in res["text"] or f"{u['path']}:{u['line']}\n" in res["text"]
     for k, (h, n) in hit.items():
-        b.row("retrieval", f"keyword probes, {k}", "current", "line_in_pack_pct", 100 * h / max(n, 1), n)
+        label = "untagged content" if k == "untagged" else "tagged facts"
+        b.row("retrieval", f"{label}, line in pack (keyword probes)", "current", "value", f"{100 * h / max(n, 1):.0f}%",
+              1, note=f"{h} of {n} sampled units")
     blind = rng.sample([u for u in all_units if u["tags"]], 72)
     qs, cost = _sonnet_json(BLIND + "\n".join(f"{i}. {u['text'][:400]}" for i, u in enumerate(blind)), b.scratch)
     found = false_none = 0
@@ -915,27 +959,26 @@ def s_retrieval(b):
         res = kbfacts.pack(q["question"])
         found += f"{u['path']}:{u['line']} " in res["text"] or f"{u['path']}:{u['line']}\n" in res["text"]
         false_none += res["verdict"] == "none"
-    b.row("retrieval", "blind questions", "current", "line_in_pack", f"{found}/{len(qs)}", 1, "sonnet")
-    b.row("retrieval", "blind questions", "current", "false_none", f"{false_none}/{len(qs)}", 1, "sonnet")
+    b.row("retrieval", "blind questions, line in pack", "current", "value", f"{found}/{len(qs)}", 1, "sonnet")
+    b.row("retrieval", "blind questions, false none", "current", "value", f"{false_none}/{len(qs)}", 1, "sonnet")
     b.row("retrieval", "blind questions", "current", "cost", cost, 1, "sonnet")
     offkb = [q for q in (kbfacts.kbcommon.public().path + "/_retrieval/doc2query/offkb_questions.txt",)]
     lines = [ln.strip() for ln in Path(offkb[0]).read_text(encoding="utf-8").splitlines() if ln.strip() and not ln.startswith("#")]
     verdicts = [kbfacts.pack(q)["verdict"] for q in lines]
-    for v in ("good", "weak", "none"):
-        b.row("retrieval", "off-kb questions", "current", f"verdict_{v}", f"{verdicts.count(v)}/{len(lines)}", 1)
+    b.row("retrieval", "off-kb questions answered good", "current", "value", f"{verdicts.count('good')}/{len(lines)}", 1)
     import rag
     cut_no_tag = 0
     for _, c in rag.eval_cases():
         for ln in kbfacts.pack(c["question"])["text"].splitlines():
             if ln.startswith("- ") and ("..." in ln or "…" in ln) and not re.search(r"\[(DOC|CODE|DER|COMMUNITY|UNK)[^\]]*\]|\(no tag\)", ln):
                 cut_no_tag += 1
-    b.row("retrieval", "cut facts with no visible tag", "current", "count", cut_no_tag, 1)
+    b.row("retrieval", "cut facts with no visible tag", "current", "value", cut_no_tag, 1)
     snippets = [u for u in all_units if u["text"].lstrip().startswith("SNIPPET")]
     got = 0
     for u in snippets:
         words = sorted(set(re.findall(r"[A-Za-z][A-Za-z0-9-]{3,}", u["text"])), key=len, reverse=True)[:6]
         got += f"{u['path']}:{u['line']}" in kbfacts.pack(" ".join(words))["text"]
-    b.row("retrieval", "code examples retrievable", "current", "found", f"{got}/{len(snippets)}", 1)
+    b.row("retrieval", "code blocks retrievable", "current", "value", f"{got}/{len(snippets)}", 1)
 
 
 def s_verdict(b):
@@ -1010,8 +1053,10 @@ def _time(argv, n, cwd, env=None, stdin=None):
     return out
 
 
-def _stats(b, scenario, case, arm, secs, note=""):
+def _stats(b, scenario, case, arm, secs, note="", time_s=False):
     ms = sorted(s * 1000 for s in secs)
+    if time_s:  # the median in seconds too, as the tool-speed history gives it
+        b.row(scenario, case, arm, "time", statistics.median(secs), len(ms), note=note)
     b.row(scenario, case, arm, "median_ms", statistics.median(ms), len(ms), note=note)
     b.row(scenario, case, arm, "p95_ms", ms[max(0, int(round(0.95 * len(ms))) - 1)], len(ms), note=note)
 
@@ -1057,23 +1102,23 @@ def s_tool_speed(b):
     calls, check-trailers over 30 commits, an index build; in-process pack, the server's start, 1,000 random packs."""
     clone = b.lookup()
     py = sys.executable
-    _stats(b, "tool-speed", "rag.py pack (CLI, cold)", "current", _time([py, "_tools/rag.py", "pack", "default Windows LAPS password length"], 5, clone))
+    _stats(b, "tool-speed", "rag.py pack (CLI, cold)", "current", time_s=True, secs=_time([py, "_tools/rag.py", "pack", "default Windows LAPS password length"], 5, clone))
     hook = json.dumps({"hook_event_name": "UserPromptSubmit", "session_id": str(uuid.uuid4()), "prompt":
                        "kb: Does deleting an Entra device also delete its BitLocker recovery keys?"})
-    _stats(b, "tool-speed", "kb: hook", "current", _time([py, "_tools/kb_hook.py"], 5, clone, stdin=hook))
-    _stats(b, "tool-speed", "rag.py eval", "current", _time([py, "_tools/rag.py", "ev" + "al"], 3, clone))
-    _stats(b, "tool-speed", "rag.py search", "current", _time([py, "_tools/rag.py", "search", "gMSA password retrieval"], 5, clone))
-    _stats(b, "tool-speed", "kbgit.py check-trailers (30 commits)", "current",
-           _time([py, "_tools/kbgit.py", "check-trailers", "HEAD~30..HEAD"], 3, clone))
+    _stats(b, "tool-speed", "kb: hook", "current", time_s=True, secs=_time([py, "_tools/kb_hook.py"], 5, clone, stdin=hook))
+    _stats(b, "tool-speed", "rag.py eval", "current", time_s=True, secs=_time([py, "_tools/rag.py", "ev" + "al"], 3, clone))
+    _stats(b, "tool-speed", "rag.py search", "current", time_s=True, secs=_time([py, "_tools/rag.py", "search", "gMSA password retrieval"], 5, clone))
+    _stats(b, "tool-speed", "kbgit.py check-trailers (30 commits)", "current", time_s=True,
+           secs=_time([py, "_tools/kbgit.py", "check-trailers", "HEAD~30..HEAD"], 3, clone))
     secs = [mcp_session(clone)[1] for _ in range(3)]
-    _stats(b, "tool-speed", "MCP session (12 calls)", "current", secs)
+    _stats(b, "tool-speed", "MCP session (12 calls)", "current", secs, time_s=True)
     starts = [mcp_session(clone, [])[0] for _ in range(5)]
     _stats(b, "tool-speed", "MCP server start (initialize reply)", "current", starts)
     idx = b.scratch / "index-build"
     shutil.rmtree(idx, ignore_errors=True)
     idx.mkdir()
     t = _time([py, "_tools/rag.py", "pack", "x"], 1, clone, env=no_plugin_env({"KB_INDEX": str(idx)}))
-    b.row("tool-speed", "index build", "current", "s", t[0], 1)
+    b.row("tool-speed", "index build", "current", "time", t[0], 1)
     b.row("tool-speed", "index build", "current", "size_mb", sum(f.stat().st_size for f in idx.glob("*.sqlite")) / 1e6, 1)
     import kbfacts, rag
     qs = [c["question"] for _, c in rag.eval_cases()]
