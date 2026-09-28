@@ -2,7 +2,7 @@
   "id": "ST-fcirbjny",
   "kind": "story",
   "title": "File a bug automatically for a red main pipeline",
-  "status": "todo",
+  "status": "done",
   "parent": "EP-o2bjijfp",
   "sprint": "SP-z7a5c76b",
   "priority": "P3",
@@ -32,5 +32,20 @@
       "answer": "async SessionStart hook",
       "by": "operator"
     }
-  ]
+  ],
+  "evidence": {
+    "commit": "d7c7fc11096a36c26cbaa310c2f65de6b57e9db7",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "red_pipeline"
+        ],
+        "exit": 0,
+        "sha256": "aa2c29187f52d7a7"
+      }
+    ]
+  }
 }
