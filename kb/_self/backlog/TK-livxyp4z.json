@@ -1,0 +1,30 @@
+{
+  "id": "TK-livxyp4z",
+  "kind": "task",
+  "title": "Expose --imports in rag.py, kb_topics_for and the docs",
+  "status": "todo",
+  "parent": "ST-kj72lcgb",
+  "priority": "P2",
+  "rank": 2,
+  "goal": "rag.py topics-for --imports and kb_topics_for's imports argument reach topics_for(imports=True); test_kb_mcp covers the argument; kb/_self/tools.md and the kb-review-workspace skill say when to use it.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "topics_for"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/rag.py",
+    "_tools/kb_mcp.py",
+    "_tools/test_kb_mcp.py",
+    "kb/_self/tools.md",
+    ".claude/skills/kb-review-workspace/SKILL.md"
+  ],
+  "depends_on": [
+    "TK-yuqgx56h"
+  ]
+}

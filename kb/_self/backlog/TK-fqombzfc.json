@@ -1,0 +1,29 @@
+{
+  "id": "TK-fqombzfc",
+  "kind": "task",
+  "title": "Document kbingest map in the ingest skill and the tool docs",
+  "status": "todo",
+  "parent": "ST-55lva2xl",
+  "priority": "P2",
+  "rank": 4,
+  "goal": "/kb-ingest step 3 says when to run kbingest.py map, what it runs and never runs, and how its output feeds the topic plan; kb/_self docs that describe kbingest.py name the map command.",
+  "checks": [
+    {
+      "run": [
+        "grep",
+        "-c",
+        "-e",
+        "kbingest.py map",
+        ".claude/skills/kb-ingest/SKILL.md"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-ingest/SKILL.md",
+    "kb/_self/*.md"
+  ],
+  "depends_on": [
+    "TK-4rdnf3da",
+    "TK-5ddnrhz3"
+  ]
+}

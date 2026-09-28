@@ -37,7 +37,9 @@
         "will run it",
         "drop this task"
       ],
-      "recommendation": "will run it"
+      "recommendation": "will run it",
+      "answer": "will run it",
+      "by": "operator"
     }
   ]
 }

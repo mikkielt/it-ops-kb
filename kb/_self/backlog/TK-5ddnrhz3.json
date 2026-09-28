@@ -1,0 +1,28 @@
+{
+  "id": "TK-5ddnrhz3",
+  "kind": "task",
+  "title": ".NET and Node/TypeScript mappers",
+  "status": "todo",
+  "parent": "ST-55lva2xl",
+  "priority": "P2",
+  "rank": 3,
+  "goal": "map runs dotnet msbuild -getProperty:TargetFrameworkMoniker,LangVersion -getItem:PackageReference,ProjectReference (never -target) and dotnet package list --format json --no-restore per project, and npm ls --all --json --package-lock-only plus tsc --showConfig and --listFilesOnly where a tsconfig.json exists; fake dotnet, npm and tsc scripts in the tests prove the argument lists.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "kbingest_map"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbingest.py",
+    "_tools/test_kbingest.py",
+    "_tools/fixtures/kbingest/**"
+  ],
+  "depends_on": [
+    "TK-4rdnf3da"
+  ]
+}

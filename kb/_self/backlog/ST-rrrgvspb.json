@@ -1,0 +1,40 @@
+{
+  "id": "ST-rrrgvspb",
+  "kind": "story",
+  "title": "/kb-ingest cites tool-native maps and symbol pointers",
+  "status": "draft",
+  "parent": "EP-g5hizdko",
+  "priority": "P2",
+  "rank": 3,
+  "goal": "/kb-ingest step 4 (what is worth a fact) takes interfaces, dependencies and entry points from the pins and, when available, the kbingest map output and ctags JSON or a language server, and writes CODE pointers as path#symbol from those outputs instead of from reading files; the skill names agents/codebase-mapping.md and windows/powershell-static-analysis.md as the facts it relies on; the change router test still passes.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "change_router"
+      ]
+    },
+    {
+      "run": [
+        "grep",
+        "-c",
+        "-e",
+        "codebase-mapping",
+        ".claude/skills/kb-ingest/SKILL.md"
+      ]
+    }
+  ],
+  "depends_on": [
+    "ST-gmey37if"
+  ],
+  "relates_to": [
+    "ST-55lva2xl"
+  ],
+  "links": [
+    "kb/public/agents/codebase-mapping.md",
+    "kb/public/windows/powershell-static-analysis.md",
+    "kb/_self/content-rules.md"
+  ]
+}
