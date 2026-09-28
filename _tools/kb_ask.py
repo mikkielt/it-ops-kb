@@ -17,8 +17,8 @@
   kb_ask.py -v "<question>"          also print the route to stderr
 
 Every run writes one query log spool row (kb/_self/querylog.md, Capture): the question, the route taken (`tool`,
-`good`, `weak`, `plan` for --route, with `escalated` when the reader answered INSUFFICIENT), the verdict and the
-model. Its own `claude -p` runs with hooks off, so the session it starts never logs itself.
+`good`, `weak`, `plan` for --route, with `escalated` when the reader answered INSUFFICIENT), the verdict, the kb
+lines of the pack (path:line, tag, verdict) and the model. Its own `claude -p` runs with hooks off, so the session it starts never logs itself.
 
 Why (kb/_self/reports/token-usage.md, "Routing by verdict"): a Haiku session costs a fifth of a Sonnet one and an eighth of an
 Opus one with the same answers, but a Haiku manager told to hand work to Sonnet did so once in four runs. The kb's
@@ -181,7 +181,8 @@ def run(row):
         print("kind=tool (audit and source tools, no model)" if a.route else tool)
         return 0
     p = plan(q, a.model)
-    row.update(route="plan" if a.route else p["kind"], verdict=p["verdict"], parts=len(p["parts"]))
+    row.update(route="plan" if a.route else p["kind"], verdict=p["verdict"], parts=len(p["parts"]),
+               lines=querylog.pack_lines(p["text"]))
     line = f"kind={p['kind']} verdict={p['verdict']} parts={len(p['parts'])} model={p['model']}"
     log(line)
     if a.route:

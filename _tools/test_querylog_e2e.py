@@ -300,7 +300,7 @@ def kinds(findings):
 
 
 def question(entries, name):
-    return next(e for e in entries if e.get("question") == LOOKUPS[name]["haiku"]["question"])
+    return next(e for e in entries if e.get("question") == LOOKUPS[name]["asked"])
 
 
 def bullets(lines):
@@ -336,7 +336,7 @@ class TestAnswered:
         (e,) = st["entries"]
         assert (e["surface"], e["intent"], e["tools"], e["verdict"], e["judged"]) == \
             ("prompt", "lookup", ["kb_hook"], "good", "answered")
-        assert "public/intune/win32-apps.md" in e["articles"] and e["question"] == LOOKUPS["win32"]["haiku"]["question"]
+        assert "public/intune/win32-apps.md" in e["articles"] and e["question"] == LOOKUPS["win32"]["asked"]
         assert st["findings"] == {} and w.commits() == [("chore(kb): query log store, 1 run file(s)", "querylog")]
         assert all(st[rel] == [] for rel in KB_FILES)
         assert st["spool"] == [] and st["gate"] == [], st["gate"]
@@ -463,6 +463,11 @@ class TestFetches:
              "/en-us/windows-server/identity/laps/laps-overview", "unknown")]
         for raw in RAW:
             assert raw not in st["text"], raw
+        # the kb's own question and the kb lines it returned; nothing of the prompt as typed or of the reply
+        assert (e["question"], e["cited"]) == (LOOKUPS["fetches"]["asked"], "pack") and "summary" not in e
+        assert e["citations"] == [{"line": "public/windows/laps.md:18", "verdict": "good"}]
+        for word in ("How do I", "turn on", "Entra admin center", "recovery"):
+            assert word not in st["text"], word
         assert {r["kind"] for r in st["findings"].values()} <= {"source"}  # report-only, never applied
         assert all(st[rel] == [] for rel in KB_FILES)
         assert st["spool"] == [] and st["gate"] == [], st["gate"]
@@ -490,6 +495,8 @@ class TestToolRows:
         (e,) = st["entries"]  # one entry: the prompt with the three tools' rows, none of their own
         assert (e["surface"], e["tools"], e["route"], e.get("intent")) == \
             ("prompt", ["kb_ask", "fetch.py", "census.py"], "plan", None)
+        assert e["question"] == LOOKUPS["tools"]["asked"] and "route kb_ask takes" not in st["text"]  # kb_ask's own
+        assert e["citations"] and all(querylog.CITATION.fullmatch(x["line"]) for x in e["citations"])
         assert sorted((f["tool"], f["outcome"], f["n"], f.get("chars")) for f in e["fetches"]) == [
             ("census.py", "http-404", 1, None), ("fetch.py", "http-200", 1, 5)]
         assert not any("host" in f for f in e["fetches"])  # 127.0.0.1 is no public host
@@ -519,7 +526,7 @@ class TestRedaction:
         (h,) = st["headers"]
         assert h["counts"] == {"entries": 1, "dropped": 1, "waiting": 0}
         (e,) = st["entries"]
-        assert e["question"] == LOOKUPS["identifier"]["haiku"]["question"]
+        assert e["question"] == LOOKUPS["identifier"]["asked"]
         assert "Nowakowski" not in st["text"] and "Autopilot" not in st["text"]  # only its count is kept
         sent = w.haiku.sent()
         for raw in ("anna.nowak", "acme-corp", "10." + "1.20.33", "PL-LAPTOP-7731"):
@@ -563,7 +570,7 @@ class TestCaps:
         st = self.st3
         assert len(st["runs"]) == 2 and len(st["entries"]) == 3
         assert sorted(e["question"] for e in st["entries"]) == sorted(
-            LOOKUPS[n]["haiku"]["question"] for n in ("win32", "laps_length", "do_port"))
+            LOOKUPS[n]["asked"] for n in ("win32", "laps_length", "do_port"))
         assert st["spool"] == [] and st["gate"] == [], st["gate"]
 
 
@@ -824,7 +831,7 @@ class TestSessions:
         assert self.markers == [f"{self.ended}.end"]
         assert self.rc == 0 and says(self.said, "entries=2 dropped=0 waiting=0"), self.said
         assert sorted(e["question"] for e in st["entries"]) == sorted(
-            LOOKUPS[n]["haiku"]["question"] for n in ("laps_length", "do_port"))
+            LOOKUPS[n]["asked"] for n in ("laps_length", "do_port"))
         assert st["spool"] == [f"{self.open_}.jsonl"]
         assert (w.q / "spool" / f"{self.open_}.jsonl").read_bytes() == self.open_before
         assert st["gate"] == [], st["gate"]

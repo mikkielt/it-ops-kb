@@ -1,68 +1,78 @@
 {
-  "about": "Recorded lookups for _tools/test_querylog_e2e.py. Each lookup is one prompt as a session sends it to the hooks: `prompt` (identifiers broken with ~, which the test removes), `calls` (kb MCP and fetch tool calls with their recorded responses, `error` for a failed call; `run` for a tool the session starts: kb_ask.py, fetch.py or census.py), `answer` (the Stop hook's last_assistant_message; none when the kb: hook answered and blocked the prompt) and `haiku` (the recorded Haiku reply for the entry, found by `match` in the rule-redacted prompt).",
+  "about": "Recorded lookups for _tools/test_querylog_e2e.py. Each lookup is one prompt as a session sends it to the hooks: `prompt` (identifiers broken with ~, which the test removes), `calls` (kb MCP and fetch tool calls with their recorded responses, `error` for a failed call; `run` for a tool the session starts: kb_ask.py, fetch.py or census.py), `answer` (the Stop hook's last_assistant_message; none when the kb: hook answered and blocked the prompt), `asked` (the question the kb was asked, which the entry stores: the kb: hook's, the first kb MCP call's or kb_ask.py's, after the rules) and `haiku` (the recorded Haiku judgement for the entry, found by `match` in the rule-redacted prompt).",
   "lookups": {
     "win32": {
+      "asked": "intune win32 app detection rule",
       "prompt": "kb: intune win32 app detection rule",
-      "haiku": {"question": "How do Intune Win32 app detection rules work?", "summary": "The kb hook answered it from the Win32 apps article.", "judged": "answered", "best": "public/intune/win32-apps.md", "identifying": false}
+      "haiku": {"judged": "answered", "best": "public/intune/win32-apps.md", "identifying": false}
     },
     "laps_length": {
+      "asked": "windows laps password length",
       "prompt": "kb: windows laps password length",
-      "haiku": {"question": "What is the default Windows LAPS password length?", "summary": "The kb hook answered it from the LAPS article.", "judged": "answered", "best": "public/windows/laps.md", "identifying": false}
+      "haiku": {"judged": "answered", "best": "public/windows/laps.md", "identifying": false}
     },
     "do_port": {
+      "asked": "delivery optimization peer port",
       "prompt": "kb: delivery optimization peer port",
-      "haiku": {"question": "Which port does Delivery Optimization use between peers?", "summary": "The kb hook answered it from the Delivery Optimization article.", "judged": "answered", "best": "public/windows/delivery-optimization.md", "identifying": false}
+      "haiku": {"judged": "answered", "best": "public/windows/delivery-optimization.md", "identifying": false}
     },
     "alias": {
+      "asked": "Which zqxlapsor setting picks the backup directory?",
       "prompt": "Which zqxlapsor setting picks the backup directory?",
       "calls": [
-        {"tool": "mcp__kb__kb_pack", "input": {"question": "zqxlapsor setting backup directory"}, "response": [{"type": "text", "text": "coverage: weak (best article matches 3 of 4 key words: backup, directory, set); not in the kb: zqxlapsor\n\n## public/gpo/gpo-export.md  Exporting GPOs as XML: Get-GPOReport and Backup-GPO\n- public/gpo/gpo-export.md:13 `Backup-GPO` writes a restorable backup of one or all GPOs into an existing directory. (no tag)\n\n## public/windows/laps.md  Windows LAPS\n- public/windows/laps.md:20 The BackupDirectory policy setting picks where the password is backed up. (no tag)\n"}]}
+        {"tool": "mcp__kb__kb_pack", "input": {"question": "Which zqxlapsor setting picks the backup directory?"}, "response": [{"type": "text", "text": "coverage: weak (best article matches 3 of 4 key words: backup, directory, set); not in the kb: zqxlapsor\n\n## public/gpo/gpo-export.md  Exporting GPOs as XML: Get-GPOReport and Backup-GPO\n- public/gpo/gpo-export.md:13 `Backup-GPO` writes a restorable backup of one or all GPOs into an existing directory. (no tag)\n\n## public/windows/laps.md  Windows LAPS\n- public/windows/laps.md:20 The BackupDirectory policy setting picks where the password is backed up. (no tag)\n"}]}
       ],
       "answer": "The kb has no setting named zqxlapsor; the Windows LAPS article names BackupDirectory as the setting that picks where the password is backed up.",
-      "haiku": {"question": "Which zqxlapsor setting picks the backup directory?", "summary": "Partly answered from the LAPS article; the product name was not in the kb.", "judged": "partly", "best": "public/windows/laps.md", "identifying": false}
+      "haiku": {"judged": "partly", "best": "public/windows/laps.md", "identifying": false}
     },
     "expansion": {
+      "asked": "How long is the default password?",
       "prompt": "How long is the default password?",
       "calls": [
-        {"tool": "mcp__kb__kb_pack", "input": {"question": "default password length"}, "response": [{"type": "text", "text": "coverage: good (best article matches 3 of 3 key words: default, length, password)\n\n## public/intune/compliance-policies.md  Intune compliance policies\n- public/intune/compliance-policies.md:30 A compliance policy can require a minimum password length. (no tag)\n"}]},
+        {"tool": "mcp__kb__kb_pack", "input": {"question": "How long is the default password?"}, "response": [{"type": "text", "text": "coverage: good (best article matches 3 of 3 key words: default, length, password)\n\n## public/intune/compliance-policies.md  Intune compliance policies\n- public/intune/compliance-policies.md:30 A compliance policy can require a minimum password length. (no tag)\n"}]},
         {"tool": "mcp__kb__kb_pack", "input": {"question": "windows laps default password length"}, "response": [{"type": "text", "text": "coverage: good (best article matches 4 of 4 key words: default, laps, length, password)\n\n## public/windows/laps.md  Windows LAPS\n- public/windows/laps.md:25 The default password length is 14 characters. (no tag)\n"}]}
       ],
       "answer": "Assuming Windows LAPS: the default password length is 14 characters.",
-      "haiku": {"question": "How long is the default password?", "summary": "Answered from the LAPS article after a second search; the first search found a compliance article.", "judged": "partly", "best": "public/windows/laps.md", "identifying": false}
+      "haiku": {"judged": "partly", "best": "public/windows/laps.md", "identifying": false}
     },
     "gap": {
+      "asked": "Can Windows LAPS back up the password of a Windows Server 2012 R2 member server to Azure?",
       "prompt": "Can Windows LAPS back up the password of a Windows Server 2012 R2 member server to Azure?",
       "calls": [
-        {"tool": "mcp__kb__kb_pack", "input": {"question": "windows laps windows server 2012 r2 backup azure"}, "response": [{"type": "text", "text": "coverage: weak (best article matches 4 of 6 key words: backup, laps, server, windows)\n\n## public/windows/laps.md  Windows LAPS\n- public/windows/laps.md:18 Windows LAPS backs up the password to Microsoft Entra ID or Active Directory. (no tag)\n"}]}
+        {"tool": "mcp__kb__kb_pack", "input": {"question": "Can Windows LAPS back up the password of a Windows Server 2012 R2 member server to Azure?"}, "response": [{"type": "text", "text": "coverage: weak (best article matches 4 of 6 key words: backup, laps, server, windows)\n\n## public/windows/laps.md  Windows LAPS\n- public/windows/laps.md:18 Windows LAPS backs up the password to Microsoft Entra ID or Active Directory. (no tag)\n"}]}
       ],
       "answer": "The kb does not say whether Windows Server 2012 R2 is supported.",
-      "haiku": {"question": "Can Windows LAPS back up the password of a Windows Server 2012 R2 member server to Azure?", "summary": "The kb had no answer for Windows Server 2012 R2.", "judged": "missed", "best": null, "identifying": false}
+      "haiku": {"judged": "missed", "best": null, "identifying": false}
     },
     "gap_gmsa": {
+      "asked": "Does a gMSA password rotate on a Hyper-V replica host?",
       "prompt": "Does a gMSA password rotate on a Hyper-V replica host?",
       "calls": [
-        {"tool": "mcp__kb__kb_pack", "input": {"question": "gmsa password rotate hyper-v replica"}, "response": [{"type": "text", "text": "coverage: weak (best article matches 2 of 5 key words: gmsa, password)\n\n## public/windows/gmsa.md  Group managed service accounts\n- public/windows/gmsa.md:15 The domain controllers rotate a gMSA password every 30 days by default. (no tag)\n"}]}
+        {"tool": "mcp__kb__kb_pack", "input": {"question": "Does a gMSA password rotate on a Hyper-V replica host?"}, "response": [{"type": "text", "text": "coverage: weak (best article matches 2 of 5 key words: gmsa, password)\n\n## public/windows/gmsa.md  Group managed service accounts\n- public/windows/gmsa.md:15 The domain controllers rotate a gMSA password every 30 days by default. (no tag)\n"}]}
       ],
       "answer": "The kb does not cover Hyper-V replica hosts.",
-      "haiku": {"question": "Does a gMSA password rotate on a Hyper-V replica host?", "summary": "The kb had no answer for Hyper-V replica hosts.", "judged": "missed", "best": null, "identifying": false}
+      "haiku": {"judged": "missed", "best": null, "identifying": false}
     },
     "gap_win32": {
+      "asked": "Can Intune Win32 app detection rules read an MSIX package family name from a ZIP archive?",
       "prompt": "Can Intune Win32 app detection rules read an MSIX package family name from a ZIP archive?",
       "calls": [
-        {"tool": "mcp__kb__kb_pack", "input": {"question": "win32 detection rule msix family name zip"}, "response": [{"type": "text", "text": "coverage: weak (best article matches 3 of 6 key words: detection, rule, win32)\n\n## public/intune/win32-apps.md  Intune Win32 apps\n- public/intune/win32-apps.md:22 A detection rule checks an MSI product code, a file or folder, a registry value or a script. (no tag)\n"}]}
+        {"tool": "mcp__kb__kb_pack", "input": {"question": "Can Intune Win32 app detection rules read an MSIX package family name from a ZIP archive?"}, "response": [{"type": "text", "text": "coverage: weak (best article matches 3 of 6 key words: detection, rule, win32)\n\n## public/intune/win32-apps.md  Intune Win32 apps\n- public/intune/win32-apps.md:22 A detection rule checks an MSI product code, a file or folder, a registry value or a script. (no tag)\n"}]}
       ],
       "answer": "The kb does not say.",
-      "haiku": {"question": "Can Intune Win32 app detection rules read an MSIX package family name from a ZIP archive?", "summary": "The kb had no answer.", "judged": "missed", "best": null, "identifying": false}
+      "haiku": {"judged": "missed", "best": null, "identifying": false}
     },
     "fixed_since": {
+      "asked": "default windows laps password length",
       "prompt": "What is the default Windows LAPS password length?",
       "calls": [
         {"tool": "mcp__kb__kb_pack", "input": {"question": "default windows laps password length"}, "response": [{"type": "text", "text": "coverage: weak (best article matches 2 of 5 key words: laps, windows)\n\n## public/windows/laps.md  Windows LAPS\n- public/windows/laps.md:12 Windows LAPS manages the password of one local administrator account. (no tag)\n"}]}
       ],
       "answer": "The kb names Windows LAPS but not the default length.",
-      "haiku": {"question": "What is the default Windows LAPS password length?", "summary": "The kb did not give the length at the time.", "judged": "partly", "best": "public/windows/laps.md", "identifying": false}
+      "haiku": {"judged": "partly", "best": "public/windows/laps.md", "identifying": false}
     },
     "fetches": {
+      "asked": "windows laps backup entra id",
       "prompt": "How do I turn on Windows LAPS backup to Entra ID?",
       "calls": [
         {"tool": "mcp__kb__kb_pack", "input": {"question": "windows laps backup entra id"}, "response": [{"type": "text", "text": "coverage: good (best article matches 4 of 4 key words: backup, entra, laps, windows)\n\n## public/windows/laps.md  Windows LAPS\n- public/windows/laps.md:18 Windows LAPS backs up the password to Microsoft Entra ID or Active Directory. (no tag)\n"}]},
@@ -72,7 +82,7 @@
         {"tool": "Bash", "input": {"command": "curl -s 'https://learn.microsoft.com/en-us/windows-server/identity/laps/laps-management-policy-settings?view=x'"}, "response": {"stdout": "BODY", "stderr": ""}}
       ],
       "answer": "Turn on password backup to Microsoft Entra ID in the Windows LAPS policy, and enable recovery in the Entra admin center.",
-      "haiku": {"question": "How do I turn on Windows LAPS backup to Entra ID?", "summary": "Answered from the LAPS article and a Microsoft Learn page.", "judged": "answered", "best": "public/windows/laps.md", "identifying": false}
+      "haiku": {"judged": "answered", "best": "public/windows/laps.md", "identifying": false}
     },
     "plain_fetch": {
       "prompt": "What is the weather in the capital today?",
@@ -83,6 +93,7 @@
       "answer": "It is sunny."
     },
     "tools": {
+      "asked": "What is the default Windows LAPS password length?",
       "prompt": "Check which route kb_ask takes for the LAPS password length, then read the source pages.",
       "calls": [
         {"run": "kb_ask.py", "args": ["--route", "What is the default Windows LAPS password length?"]},
@@ -90,19 +101,21 @@
         {"run": "census.py", "path": "/missing"}
       ],
       "answer": "kb_ask plans a pack; the page fetched, the census check found it missing.",
-      "haiku": {"question": "Which route does kb_ask take for the default Windows LAPS password length?", "summary": "kb_ask planned a pack and the pages were fetched.", "judged": "answered", "best": null, "identifying": false}
+      "haiku": {"judged": "answered", "best": null, "identifying": false}
     },
     "identifier": {
+      "asked": "why does Windows LAPS fail on PL-LT-00123 at 192.0.2.10 for jan.kowalski@corp.example.com?",
       "prompt": "kb+: why does Windows LAPS fail on PL~LAPTOP-7731 at 10.~1.20.33 for anna.nowak~@acme-corp.pl?",
       "match": "PL-LT-00123 at 192.0.2.10 for jan.kowalski@corp.example.com",
       "answer": "Check that the device can reach a domain controller and that the policy names the right backup directory.",
-      "haiku": {"question": "Why does Windows LAPS fail on PL-LT-00123 at 192.0.2.10 for jan.kowalski@corp.example.com?", "summary": "Answered from the LAPS article.", "judged": "answered", "best": "public/windows/laps.md", "identifying": false}
+      "haiku": {"judged": "answered", "best": "public/windows/laps.md", "identifying": false}
     },
     "identifying": {
+      "asked": "why does Autopilot enrolment fail for the Nowakowski family business?",
       "prompt": "kb+: why does Autopilot enrolment fail for the Nowakowski family business?",
       "match": "Nowakowski family business",
       "answer": "The kb has the Autopilot enrolment steps; the business is not in it.",
-      "haiku": {"question": "Why does Autopilot enrolment fail for the Nowakowski family business?", "summary": "Answered in part from the Autopilot article.", "judged": "partly", "best": null, "identifying": true}
+      "haiku": {"judged": "partly", "best": null, "identifying": true}
     }
   }
 }

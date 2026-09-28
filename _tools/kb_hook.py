@@ -15,8 +15,8 @@ Claude Code runs it from .claude/settings.json (a clone) and from the plugin's p
 reads the hook's JSON on stdin and prints the hook's JSON answer on stdout. `--test "kb: question"` prints what the
 hook would answer, for a check from a shell (no query log row). It runs on every prompt of every session that has the
 plugin, so a prompt without the prefix returns before kbfacts (and the kb) is loaded. A `kb:` or `kb+:` prompt also
-writes one query log spool row (querylog.record: the question, the verdict, the articles the pack cited, whether the
-hook answered it), after the answer is printed.
+writes one query log spool row (querylog.record: the question, the verdict, the articles and the kb lines
+(path:line, tag, verdict) the pack returned, whether the hook answered it), after the answer is printed.
 """
 import json, os, re, sys
 
@@ -44,7 +44,8 @@ def respond(prompt):
         return ({"hookSpecificOutput": {"hookEventName": "UserPromptSubmit",
                                         "additionalContext": f"it-ops-kb could not read its roots: {e}"}},
                 {"question": question, "forward": forward, "verdict": "error"})
-    row = {"question": question, "forward": forward, "verdict": res["verdict"], "articles": res["paths"][:20]}
+    row = {"question": question, "forward": forward, "verdict": res["verdict"], "articles": res["paths"][:20],
+           "pack": res["text"]}  # main keeps the pack's kb lines (querylog.pack_lines), never its text
     if res["verdict"] == "good" and not forward and not res.get("unmatched") and not res.get("spread"):
         return {"decision": "block", "reason": res["text"] + NOTE}, dict(row, answered=True)
     if res["verdict"] == "none":
@@ -78,6 +79,7 @@ def main():
         print(json.dumps(out, ensure_ascii=False))
     if row is not None:  # a kb: prompt: one spool row (kb/_self/querylog.md, Capture); a plain prompt loads nothing
         import querylog
+        row["lines"] = querylog.pack_lines(row.pop("pack", ""))
         querylog.record("kb_hook", event.get("session_id"), prompt_id=event.get("prompt_id"), **row)
 
 

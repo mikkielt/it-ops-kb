@@ -21,8 +21,11 @@
                     commit, entries without them; only rule-redacted text reaches Haiku; nothing raw in the run
                     file; a flagged entry and a malformed reply's batch are dropped and only counted; over the batch,
                     run and daily caps entries wait in the spool; a failed call leaves its entries waiting; a second
-                    run on the same spool writes nothing
-  TestLock          a second distill exits on the lock (exit 3) and changes nothing; a stale lock is taken over;
+                    run on the same spool writes nothing; an entry's question is the kb's own (a work prompt with a
+                    name and private context and a generic kb_pack question store the pack's question and no word of
+                    the prompt or the reply), its citations are the path:line of the kb lines the reply named, else
+                    the pack's first ones; Haiku's free text is ignored; a kb prompt with no kb call has no question
+  TestLock         a second distill exits on the lock (exit 3) and changes nothing; a stale lock is taken over;
                     of several processes taking the lock at once exactly one gets it
   TestLaunch        SessionEnd marks its session closed; the launcher returns within the 1.5-second budget with its
                     pipes free, and the distill it starts writes its run file after the launcher exited, also when
@@ -31,7 +34,9 @@
                     none is closed
   TestStore         the store gates, each with a planted failure: a duplicate id across run files (also through
                     `kbgit.py fix --check`), a missing header or provenance field, run metadata or raw fields in an
-                    entry, an identifier in a text field, a fetch with a query string, a non-public host or command
+                    entry, an identifier in the question, free text in an entry (a summary, an unknown field, text in
+                    a closed field), citations that are not path:line or missing beside articles, a fetch with a
+                    query string, a non-public host or command
                     text; `pack` and `search` never return a kb/_querylog/ line; _cache/ stays ignored
   TestLearn         the fixture store (_tools/fixtures/querylog/store/) gives findings of each kind with pack on
                     HEAD: eval, alias, expansion, gap candidate and source; every judged miss is re-run first
@@ -167,8 +172,10 @@ def stop(answer, pid="p1", sid=SID):
             "last_assistant_message": answer}
 
 
-PACK = ("coverage: good (best article matches 3 of 3 key words)\n\n## public/windows/laps.md  Windows LAPS\n- fact\n"
-        "# Q2\ncoverage: weak (...)\n\n## public/intune/win32-apps.md  Win32 apps\n- fact\n")
+PACK = ("coverage: good (best article matches 3 of 3 key words)\n\n## public/windows/laps.md  Windows LAPS\n"
+        "- public/windows/laps.md:24 The default length is 14. [DOC S-jmzxsdjr]\n"
+        "# Q2\ncoverage: weak (...)\n\n## public/intune/win32-apps.md  Win32 apps\n"
+        "- public/intune/win32-apps.md:49 A rule. (no tag)\n  (+3 more matching lines in public/intune/win32-apps.md)\n")
 
 
 def is_uuid4(s):
@@ -201,6 +208,8 @@ class TestHookRows:
         assert (a["surface"], a["tool"], a["args"], a["verdict"], a["verdicts"]) == \
                ("mcp", "kb_pack", {"questions": ["a", "b"]}, "weak", ["good", "weak"])
         assert a["articles"] == ["public/windows/laps.md", "public/intune/win32-apps.md"] and a["prompt_id"] == "p1"
+        assert a["lines"] == [{"line": "public/windows/laps.md:24", "tag": "DOC", "verdict": "good"},
+                              {"line": "public/intune/win32-apps.md:49", "verdict": "weak"}]  # path:line, never text
         assert (b["tool"], b["args"], b["verdict"]) == ("kb_show", {"path": "public/windows/laps.md:12"}, "weak")
         assert (c["outcome"], "verdict" in c) == ("error", False)
 
@@ -419,7 +428,9 @@ class TestToolRows:
         assert (row["surface"], row["prompt_id"], row["question"], row["verdict"], row["answered"], row["forward"]) == \
                ("kb_hook", "p9", "intune win32 app detection rule", "good", True, False)
         assert "public/intune/win32-apps.md" in row["articles"] and is_uuid4(row["id"])
-        assert "reason" not in row and "text" not in row
+        assert "reason" not in row and "text" not in row and "pack" not in row
+        assert row["lines"] and all(querylog.CITATION.fullmatch(x["line"]) and set(x) <= {"line", "tag", "verdict"}
+                                    for x in row["lines"])  # the pack's kb lines as path:line, never their text
 
     def test_plain_prompt_writes_nothing(self, tmp_path):
         ev = {"hook_event_name": "UserPromptSubmit", "session_id": SID, "prompt_id": "p9", "prompt": "fix the build"}
@@ -435,6 +446,7 @@ class TestToolRows:
             assert p.returncode == 0, p.stderr
         a, b = lines(tmp_path)
         assert (a["surface"], a["route"], a["verdict"], a["parts"]) == ("kb_ask", "plan", "good", 1)
+        assert a["lines"] and all(querylog.CITATION.fullmatch(x["line"]) for x in a["lines"])
         assert (b["route"], "verdict" in b, "session_id" in a) == ("tool", False, False)
         assert [f.name for f in spool(tmp_path).iterdir()] == [f"tools-{a['ts'][:10]}.jsonl"]
 
@@ -704,10 +716,9 @@ def jsonl(path):
 
 
 def echo(prompt):
-    """A Haiku stub that answers every entry: its question is the rule-redacted prompt."""
+    """A Haiku stub that judges every entry answered."""
     items = json.loads(prompt[prompt.index("\n\n[") + 2:])
-    return json.dumps([{"i": it["i"], "question": it["prompt"], "summary": "Stub summary.", "judged": "answered",
-                        "best": None, "identifying": False} for it in items])
+    return json.dumps([{"i": it["i"], "judged": "answered", "best": None, "identifying": False} for it in items])
 
 
 class TestDistill:
@@ -775,6 +786,118 @@ class TestDistill:
         run_distill(q, querylog.Replay(FIXTURES / "haiku.json"))
         e = next(e for e in jsonl(store_files(q)[0]) if e.get("id") == "11111111-0000-4000-8000-0000000000b1")
         assert "best" not in e and e["articles"] == ["public/intune/win32-apps.md"]
+
+    def test_the_entry_holds_the_kb_question_not_the_prompt(self, tmp_path):
+        """A work prompt with a person's name and private project context, and a kb_pack call with a generic
+        question: the entry's question is the pack's (after the rules), its citations the kb lines the reply named,
+        and no word of the prompt, of the reply or of Haiku's free text reaches the run file."""
+        q = tmp_path / "querylog"
+        sp = q / "spool"
+        sp.mkdir(parents=True)
+        work = ("Anna Nowak owns the Kestrel licence rollout for Globex: check the licence files, the validation "
+                "results and the open issues, then tell me where the rollout stands")
+        pack = ("coverage: weak (best article matches 2 of 3 key words)\n\n## public/intune/win32-apps.md  Win32 apps\n"
+                "- public/intune/win32-apps.md:49 All configured detection rules must be met. [DOC S-wc6e3fba]\n"
+                "- public/intune/win32-apps.md:52 A custom detection script must exit 0 and write to STDOUT. "
+                "[DOC S-wc6e3fba]\n")
+        answer = ("Kestrel's licence check for Globex passes; the detection script rule applies "
+                  "(kb/public/intune/win32-apps.md:52). Anna Nowak still has two open issues.")
+        rows = [{"id": E("f1"), "ts": "2026-09-27T10:00:00.000Z", "surface": "prompt", "session_id": SID,
+                 "prompt_id": "w1", "prompt": work},
+                {"id": E("f2"), "ts": "2026-09-27T10:00:05.000Z", "surface": "mcp", "session_id": SID,
+                 "prompt_id": "w1", "tool": "kb_pack",
+                 "args": {"question": "intune win32 detection script licence file at 10." + "1.20.33"},
+                 "verdict": "weak", "articles": ["public/intune/win32-apps.md"], **querylog.pack_summary(pack)},
+                {"id": E("f3"), "ts": "2026-09-27T10:02:00.000Z", "surface": "stop", "session_id": SID,
+                 "prompt_id": "w1", "answer": answer}]
+        (sp / f"{SID}.jsonl").write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8", newline="\n")
+        (sp / f"{SID}.end").touch()
+        free = ("What is the status of the Kestrel licence implementation owned by Anna Nowak at Globex?",
+                "The inquiry received a comprehensive answer detailing licence files added and outstanding issues.")
+
+        def stub(prompt):
+            items = json.loads(prompt[prompt.index("\n\n[") + 2:])
+            return json.dumps([{"i": it["i"], "question": free[0], "summary": free[1], "judged": "answered",
+                                "best": "public/intune/win32-apps.md", "identifying": False, "note": free[1]}
+                               for it in items])
+        rc, said = run_distill(q, stub)
+        assert rc == 0 and said == [f"distill: run={RUN_ID} entries=1 dropped=0 waiting=0"], said
+        _, e = jsonl(store_files(q)[0])
+        assert e == {"id": E("f1"), "surface": "prompt", "day": "2026-09-27", "tools": ["kb_pack"],
+                     "question": "intune win32 detection script licence file at 192.0.2.10", "verdict": "weak",
+                     "articles": ["public/intune/win32-apps.md"],
+                     "citations": [{"line": "public/intune/win32-apps.md:52", "tag": "DOC", "verdict": "weak"}],
+                     "cited": "reply", "judged": "answered", "best": "public/intune/win32-apps.md"}
+        text = store_files(q)[0].read_text(encoding="utf-8")
+        for word in ("Anna", "Nowak", "Kestrel", "Globex", "rollout", "status", "validation", "issues", "inquiry",
+                     "comprehensive", "summary", "10." + "1.20.33"):
+            assert word not in text, word
+        assert querylog.store_problems(q / "store") == []
+
+    def test_citations_are_the_packs_first_lines_when_the_reply_names_none(self):
+        import redact
+        kb = [{"id": E("g2"), "ts": "2026-09-27T10:00:05.000Z", "surface": "mcp", "tool": "kb_pack",
+               "args": {"questions": ["windows laps password length", "bitlocker escrow"]},
+               "lines": [{"line": f"public/windows/laps.md:{n}", "tag": "DOC", "verdict": "good"} for n in range(20, 28)]
+               + [{"line": "the LAPS article", "tag": "DOC"}, "public/windows/laps.md:40"]}]
+        rows = [{"id": E("g1"), "ts": "2026-09-27T10:00:00.000Z", "surface": "prompt", "prompt": "how long?"}, *kb,
+                {"id": E("g3"), "ts": "2026-09-27T10:01:00.000Z", "surface": "stop", "answer": "It is 14 (laps.md:99)."}]
+        entry, judge, drop = querylog.entry_of(rows, redact.known())
+        assert drop is None and entry["cited"] == "pack" and entry["question"] == "windows laps password length"
+        assert [x["line"] for x in entry["citations"]] == [f"public/windows/laps.md:{n}" for n in range(20, 25)]
+        assert judge == {"question": "windows laps password length", "prompt": "how long?",
+                         "answer": "It is 14 (laps.md:99)."}  # Haiku judges from these; none of it is stored
+
+    def test_haiku_free_text_is_ignored(self):
+        items = [{"i": 0, "candidates": ["public/windows/laps.md"]}, {"i": 1, "candidates": []}]
+        reply = json.dumps([{"i": 0, "question": "What does Anna Nowak need?", "summary": "Anna got the steps.",
+                             "judged": "answered", "best": "public/windows/laps.md", "identifying": False},
+                            {"i": 1, "text": "free", "judged": "missed", "best": "public/other.md",
+                             "identifying": False}])
+        got = querylog.parse_distill(reply, items)
+        assert got == [{"judged": "answered", "best": "public/windows/laps.md", "identifying": False},
+                       {"judged": "missed", "best": None, "identifying": False}]
+        assert [querylog.judged(r) for r in got] == [{"judged": "answered", "best": "public/windows/laps.md"},
+                                                     {"judged": "missed", "best": None}]
+        with pytest.raises(ValueError):  # planted: free text in place of a judgement is no reply
+            querylog.parse_distill(json.dumps([{"i": 0, "judged": "Anna got the steps", "best": None,
+                                                "identifying": False}, {"i": 1, "judged": "missed", "best": None,
+                                                                        "identifying": False}]), items)
+
+    def test_a_kb_intent_without_a_kb_call_has_no_question(self, tmp_path):
+        """A /kb-... prompt that made no kb call keeps its fetches (source findings read them) but gets no question
+        and no Haiku call, so learn finds no lookup in it."""
+        q = tmp_path / "querylog"
+        sp = q / "spool"
+        sp.mkdir(parents=True)
+        rows = [{"id": E("h1"), "ts": "2026-09-27T10:00:00.000Z", "surface": "prompt", "session_id": SID,
+                 "prompt_id": "k1", "prompt": "/kb-refresh windows/laps for Anna Nowak's Globex audit",
+                 "kb_intent": "skill"},
+                {"id": E("h2"), "ts": "2026-09-27T10:00:05.000Z", "surface": "fetch", "session_id": SID,
+                 "prompt_id": "k1", "tool": "WebFetch", "host": "learn.microsoft.com", "path": "/en-us/laps",
+                 "outcome": "http-200", "chars": 900},
+                {"id": E("h3"), "ts": "2026-09-27T10:02:00.000Z", "surface": "stop", "session_id": SID,
+                 "prompt_id": "k1", "answer": "Refreshed for Anna Nowak."}]
+        (sp / f"{SID}.jsonl").write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8", newline="\n")
+        (sp / f"{SID}.end").touch()
+        calls = []
+        rc, said = run_distill(q, lambda prompt: calls.append(prompt) or "[]")
+        assert rc == 0 and calls == [] and said == [f"distill: run={RUN_ID} entries=1 dropped=0 waiting=0"], said
+        _, e = jsonl(store_files(q)[0])
+        assert e == {"id": E("h1"), "surface": "prompt", "day": "2026-09-27", "intent": "skill",
+                     "fetches": [{"tool": "WebFetch", "host": "learn.microsoft.com", "path": "/en-us/laps",
+                                  "outcome": "http-200", "n": 1, "chars": 900}]}
+        assert not querylog.is_miss(e) and querylog.host_fetches([(RUN_ID, e)])  # no lookup to learn from; the fetch counts
+
+    def test_an_entry_whose_articles_have_no_kb_lines_is_dropped(self, tmp_path):
+        import redact
+        rows = [{"id": E("j1"), "ts": "2026-09-27T10:00:00.000Z", "surface": "kb_hook", "question": "laps",
+                 "verdict": "good", "articles": ["public/windows/laps.md"]}]
+        entry, judge, drop = querylog.entry_of(rows, redact.known())
+        assert (judge, drop) == (None, "articles without their kb lines") and "citations" not in entry
+        rows[0]["lines"] = [{"line": "public/windows/laps.md:24", "tag": "DOC", "verdict": "good"}]
+        entry, judge, drop = querylog.entry_of(rows, redact.known())
+        assert drop is None and entry["citations"] == rows[0]["lines"] and judge["question"] == "laps"
 
     def test_over_the_caps_entries_wait(self, tmp_path, monkeypatch):
         monkeypatch.setattr(querylog, "HAIKU_BATCH_ENTRIES", 2)
@@ -1052,7 +1175,8 @@ class TestLaunch:
         for sid in (closed, active):
             row = {"id": str(uuid.uuid4()), "ts": "2026-09-20T10:00:00.000Z", "surface": "mcp", "session_id": sid,
                    "prompt_id": "p1", "tool": "kb_show", "args": {"path": "public/windows/laps.md:12"},
-                   "articles": ["public/windows/laps.md"]}  # no question text: nothing for Haiku
+                   "articles": ["public/windows/laps.md"], "lines": [{"line": "public/windows/laps.md:12"}]}
+            # no question: nothing for Haiku
             (sp / f"{sid}.jsonl").write_text(json.dumps(row) + "\n", encoding="utf-8", newline="\n")
         old = time.time() - querylog.SESSION_IDLE_CLOSED_S - 60
         os.utime(sp / f"{closed}.jsonl", (old, old))
@@ -1179,8 +1303,44 @@ class TestStore:
     def test_identifier_gate(self, tmp_path, text):
         problems = planted(tmp_path, lambda o: o[1].update(question=c(text)))
         assert any("an identifier in `question`" in p for p in problems), problems
-        problems = planted(tmp_path / "s", lambda o: o[4].update(summary=c(text)))
-        assert any("an identifier in `summary`" in p for p in problems), problems
+
+    @pytest.mark.parametrize("change,problem", [
+        (lambda e: e.update(summary="The inquiry received a comprehensive answer."), "free text in an entry: summary"),
+        (lambda e: e.update(outline="license files added"), "unknown fields: outline"),
+        (lambda e: e.update(judged="answered in full, see the steps"), "`judged` is not a judged value"),
+        (lambda e: e.update(best="the LAPS article"), "`best` is not a best value"),
+        (lambda e: e.update(articles=["the LAPS article, lines 24 and 25"]), "`articles` is not a articles value"),
+        (lambda e: e.update(intent="a license review for a colleague"), "`intent` is not a intent value"),
+        (lambda e: e.update(tools=["kb_pack asked about licences"]), "`tools` is not a tools value"),
+        (lambda e: e.update(verdict="mostly fine"), "`verdict` is not a verdict value"),
+        (lambda e: e.update(day="last Tuesday"), "`day` is not a day value"),
+    ])
+    def test_free_text_gate(self, tmp_path, change, problem):
+        """An entry holds the kb's question, closed values and citations: a summary or text in another field fails."""
+        assert planted(tmp_path / "ok", lambda o: None) == []
+        problems = planted(tmp_path, lambda o: change(o[5]))  # the kb: hook entry
+        assert any(problem in p for p in problems), problems
+
+    @pytest.mark.parametrize("change,problem", [
+        (lambda e: e.pop("citations"), "articles without citations"),
+        (lambda e: e.update(citations=[]), "citations are not a list"),
+        (lambda e: e.update(citations="public/windows/laps.md:24"), "citations are not a list"),
+        (lambda e: e.update(citations=[{"line": "the LAPS article says 14", "tag": "DOC"}]), "not a path:line"),
+        (lambda e: e.update(citations=[{"line": "public/windows/laps.md"}]), "not a path:line"),
+        (lambda e: e.update(citations=[{"line": "public/windows/laps.md:24", "text": "14 characters"}]),
+         "not a path:line"),
+        (lambda e: e.update(citations=[{"line": "public/windows/laps.md:24", "tag": "OFFICIAL"}]), "not a path:line"),
+        (lambda e: e.update(citations=[{"line": "public/windows/laps.md:24", "verdict": "fine"}]), "not a path:line"),
+        (lambda e: e.update(citations=[{"line": f"public/windows/laps.md:{n}"} for n in range(1, 8)]),
+         "citations are not a list of 1 to 5"),
+        (lambda e: e.pop("cited"), "`cited` is not reply or pack"),
+        (lambda e: e.update(cited="the reply cited both lines"), "`cited` is not reply or pack"),
+    ])
+    def test_citation_gate(self, tmp_path, change, problem):
+        """Citations are path:line with the tag and verdict the kb printed, never text; an entry that names articles
+        carries them."""
+        problems = planted(tmp_path, lambda o: change(o[5]))
+        assert any(problem in p for p in problems), problems
 
     @pytest.mark.parametrize("change,problem", [
         (lambda e: e.update(path="/en-us/windows?token=abc"), "query string"),
@@ -2291,7 +2451,7 @@ class TestDeliverInGit:
         leak = jsonl(FIXTURES / "golden.jsonl")
         cls.leak_run = "20260928T140000Z-0000dead"
         leak[0]["run"] = cls.leak_run
-        leak[1]["summary"] = "Mailed " + "anna.nowak" + "@" + "acme-corp.pl" + " about it."
+        leak[1]["question"] = "Mailed " + "anna.nowak" + "@" + "acme-corp.pl" + " about it."
         golden_store(cls.qb / "store", [leak[0]] + [dict(e, id=str(uuid.uuid4())) for e in leak[1:]], cls.leak_run)
         cls.leaked = cls.push(cls.b)
         cls.main_leaked = cls.r2.rev("main")
@@ -2392,7 +2552,7 @@ class TestDeliverInGit:
         assert rc == 1, said
         text = "\n".join(said)
         assert "refused: the store gates fail on the local store's files; nothing committed or pushed" in text, text
-        assert f"2026-09/{self.leak_run}.jsonl:2: an identifier in `summary`" in text, text
+        assert f"2026-09/{self.leak_run}.jsonl:2: an identifier in `question`" in text, text
         assert f"2026-09/{self.leak_run}.jsonl:2: the leak scan flags an identifier (email)" in text, text
         assert self.main_leaked == self.main_retried
 
@@ -3150,7 +3310,8 @@ def researched(tmp_path_factory):
     header = {"run": run.stem, "pipeline": 1, "retrieval": 4, "kb_commit": "0" * 40,
               "counts": {"entries": 1, "dropped": 0, "waiting": 0}}
     entry = {"id": E("a4"), "surface": "prompt", "day": "2026-09-27", "tools": ["kb_pack"], "question": LAPS_GAP_Q,
-             "verdict": "weak", "articles": [LAPS], "summary": "The kb did not say.", "judged": "missed"}
+             "verdict": "weak", "articles": [LAPS], "citations": [{"line": f"{LAPS}:18", "verdict": "weak"}],
+             "cited": "pack", "judged": "missed"}
     run.write_text("".join(json.dumps(o, separators=(",", ":")) + "\n" for o in (header, entry)), encoding="utf-8",
                    newline="\n")
     art = home / "kb" / "public" / "windows" / "laps.md"
@@ -3348,7 +3509,7 @@ class TestDigest:
             rows.append({"id": str(uuid.uuid4()), "ts": f"2026-09-27T08:00:0{i + 1}.000Z", "surface": "fetch",
                          "tool": "WebFetch", "host": "learn.microsoft.com", "path": "/en-us/a", "outcome": "unknown",
                          **({"chars": c} if c is not None else {})})
-        entry, _ = querylog.entry_of(rows, redact.known())
+        entry, _, _ = querylog.entry_of(rows, redact.known())
         assert entry["fetches"] == [{"tool": "WebFetch", "host": "learn.microsoft.com", "path": "/en-us/a",
                                      "outcome": "unknown", "n": 3, "chars": 15}]
 

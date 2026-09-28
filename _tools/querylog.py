@@ -14,9 +14,10 @@ push, the weekly digest and status are built.
                         prints nothing and exits 0
   querylog.py distill [--replay FILE] [--settle S]
                         the closed sessions of the spool -> one run file in the local store (the `store` directory
-                        beside the spool, laid out as kb/_querylog/): the rules, then Haiku in capped batches, then
-                        the rules and the leak scan again; an entry a local run file already holds is not distilled
-                        again. Mode `local` deletes the spool rows of the entries written or dropped. Mode `auto` (in
+                        beside the spool, laid out as kb/_querylog/): per lookup the question the kb was asked (never
+                        the prompt) after the rules and the leak scan, the path:line citations of the kb lines it
+                        returned (never the reply), and Haiku's judgement in capped batches (no text of Haiku's is
+                        stored); an entry a local run file already holds is not distilled again. Mode `local` deletes the spool rows of the entries written or dropped. Mode `auto` (in
                         a clone, or in a plugin host from its managed clone) deletes those of dropped entries only,
                         then runs `apply --push` under the same lock,
                         which deletes the others once their run file is on origin/main. --replay answers the Haiku
@@ -133,8 +134,9 @@ LAUNCH_SETTLE_S = 2
 LOCK_STALE_S = 3600
 SESSION_IDLE_CLOSED_S = 86400
 QUESTION_MAX_CHARS = 500
-SUMMARY_MAX_CHARS = 300
-PIPELINE_VERSION = 2  # bumped when what distill writes, or how it decides it, changes
+CITATIONS_MAX = 5  # kb lines an entry keeps
+LINES_MAX = 12  # kb lines a spool row keeps of one kb tool's result
+PIPELINE_VERSION = 3  # bumped when what distill writes, or how it decides it, changes
 STORE = HOME / "kb" / "_querylog"
 DISABLED_NAME = "DISABLED"  # beside the spool: logging off for good
 NO_HOOKS = ["--settings", json.dumps({"disableAllHooks": True})]  # every `claude -p` the pipeline starts carries it
@@ -152,6 +154,11 @@ STATUS = re.compile(r"\b(?:HTTP(?:/[\d.]+)?|status(?: code)?)\D{0,3}([1-5]\d\d)\
 CUT = " [...]"
 ARG_MAX_CHARS = 1000
 VERDICTS = ("none", "weak", "good")  # worst first
+TAGS = ("DOC", "CODE", "DER", "COMMUNITY", "UNK")
+KB_LINE = re.compile(r"^\s*(- |\[[\d.]+\] )([\w-]+(?:/[\w.-]+)+:[1-9]\d*)(?![\w:])(.*)$")  # a pack line, a search hit
+LINE_TAG = re.compile(r"\[(DOC|CODE|DER|COMMUNITY|UNK)\b[^\]]*\]\s*$")
+COVERAGE = re.compile(r"^coverage: (good|weak|none)\b", re.M)
+REPLY_CITE = re.compile(r"(?<![\w./-])(?:kb/)?((?:[\w-]+/)+[\w.-]+:[1-9]\d*)")  # a path:line a reply names
 _lock = threading.Lock()
 
 
@@ -331,11 +338,33 @@ def clip(v):
     return v if isinstance(v, (int, float, bool)) or v is None else clip(str(v))
 
 
+def pack_lines(text):
+    """[{line, tag, verdict}] of the kb lines a kb tool's result returned, in order, each once, at most LINES_MAX: a
+    pack's `- path:line ...` and a search hit's `[score] path:line` (its text on the next line). `tag` is the line's
+    `[TAG ids]` and `verdict` the `coverage:` line above it, each left out when there is none. None when no line."""
+    out, seen, verdict = [], set(), None
+    ls = (text or "").splitlines()
+    for n, ln in enumerate(ls):
+        m = COVERAGE.match(ln)
+        if m:
+            verdict = m.group(1)
+            continue
+        m = KB_LINE.match(ln)
+        if not m or m.group(2) in seen or len(out) >= LINES_MAX:
+            continue
+        seen.add(m.group(2))
+        rest = m.group(3) if m.group(1) == "- " else (ls[n + 1] if n + 1 < len(ls) else "")
+        tag = LINE_TAG.search(rest)
+        out.append({k: v for k, v in (("line", m.group(2)), ("tag", tag and tag.group(1)), ("verdict", verdict)) if v})
+    return out or None
+
+
 def pack_summary(text):
-    """{verdict, verdicts, articles} of a kb tool's result text (the pack's `coverage:` lines and `## path` heads)."""
-    verdicts = re.findall(r"^coverage: (good|weak|none)\b", text, re.M)
+    """{verdict, verdicts, articles, lines} of a kb tool's result text (the pack's `coverage:` lines, `## path` heads
+    and kb lines)."""
+    verdicts = COVERAGE.findall(text)
     articles = list(dict.fromkeys(re.findall(r"^## (\S+/\S+)", text, re.M)))[:20]
-    out = {"articles": articles or None}
+    out = {"articles": articles or None, "lines": pack_lines(text)}
     if verdicts:
         out["verdict"] = min(verdicts, key=VERDICTS.index)
         if len(verdicts) > 1:
@@ -494,14 +523,19 @@ CALLS_NAME = "haiku-calls.json"  # {"day", "calls"}: the Haiku calls this machin
 CONSUMED_NAME = "consumed.json"  # {tools file: [row ids]}: tools rows already distilled into an entry
 HEADER_KEYS = ("run", "pipeline", "retrieval", "kb_commit", "counts")
 COUNT_KEYS = ("entries", "dropped", "waiting")
-ENTRY_KEYS = ("id", "surface", "day", "intent", "tools", "route", "question", "verdict", "articles", "summary",
-              "judged", "best", "fetches", "tool", "fetcher", "host", "path", "outcome", "chars")
+ENTRY_KEYS = ("id", "surface", "day", "intent", "tools", "route", "question", "verdict", "articles", "citations",
+              "cited", "judged", "best", "fetches", "tool", "fetcher", "host", "path", "outcome", "chars")
+CITATION_KEYS = ("line", "tag", "verdict")
+CITED = ("reply", "pack")  # the citations the reply named, else the pack's first lines
+FREE_TEXT_KEYS = ("summary",)  # an outcome in words: the entry's citations say what the kb gave
+INTENTS = ("lookup", "skill", "change")
+DAY = re.compile(r"\d{4}-\d{2}-\d{2}")
 FETCH_KEYS = ("tool", "fetcher", "host", "path", "outcome", "n", "chars")
 RAW_KEYS = ("prompt", "answer", "session_id", "prompt_id", "transcript_path", "cwd", "user", "hostname", "command",
             "args", "ts")  # spool fields a run file never holds
 SURFACES = ("prompt", "kb_hook", "mcp", "kb_ask", "tool_fetch", "fetch", "stop")
 KB_SURFACES = ("kb_hook", "mcp", "kb_ask", "tool_fetch")
-TEXT_KEYS = ("question", "summary")
+TEXT_KEYS = ("question",)
 JUDGED = ("answered", "partly", "missed")
 OUTCOME = re.compile(r"http-[1-5]\d\d|empty|redirect-cross-host|truncated|error|unknown")
 RUN_ID = re.compile(r"(\d{4})(\d{2})\d{2}T\d{6}Z-[0-9a-f]{8}")
@@ -509,22 +543,21 @@ ENTRY_ID = re.compile(r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]
 COMMIT = re.compile(r"[0-9a-f]{7,64}")
 NAME = re.compile(r"[A-Za-z0-9_.-]{1,80}")  # a tool or fetcher name: never command text
 ARTICLE = re.compile(r"[\w-]+(?:/[\w.-]+)+")
+CITATION = re.compile(r"[\w-]+(?:/[\w.-]+)+:[1-9]\d*")  # root/path:line
 HOSTNAME = re.compile(r"(?=.{1,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z][a-z0-9-]{0,61}[a-z0-9]")
 URL_PATH = re.compile(r"/[^\s?#]{0,%d}" % (ARG_MAX_CHARS - 1))
 PRIVATE_TLDS = ("local", "lan", "corp", "internal", "intra", "home", "localdomain", "arpa", "localhost", "test",
                 "invalid", "example")
 DISTILL_TASK = (
     "Each entry below is one lookup in an IT knowledge base, already stripped of addresses, ids, paths and secrets: "
-    "`prompt` is what the person typed, `answer` the reply they got (may be empty), `candidates` the kb articles the "
-    "lookup cited. For each entry give: `question`, the question the person asked, as one plain sentence in the "
-    "prompt's language; `summary`, one sentence on the outcome (answered from the kb, partly, or not found), without "
-    "the answer's content; `judged`: \"answered\", \"partly\" or \"missed\"; `best`: the one candidate that answers the "
-    "question, copied exactly, or null (never an article that is not a candidate); `identifying`: true when the entry "
-    "would still identify a person or an organisation. In `question` and `summary`, replace every person's name with "
-    "jan.kowalski and every organisation's own name (the company, a customer, a team) with CORP; keep product, vendor "
-    "and technology names and placeholders (PL-..., corp.example.com, <secret>) as written. Reply with only a JSON "
-    'array, one object per entry, in order: [{"i": 0, "question": "...", "summary": "...", "judged": "answered", '
-    '"best": null, "identifying": false}, ...].')
+    "`question` is what the kb was asked, `prompt` what the person typed and `answer` the reply they got (either may "
+    "be empty), `candidates` the kb articles the lookup's kb calls returned. Judge each entry; write no text of your "
+    "own. Give only: `judged`: \"answered\", \"partly\" or \"missed\", whether the reply answered the question from the "
+    "kb; `best`: the one candidate that answers the question, copied exactly, or null (never an article that is not a "
+    "candidate); `identifying`: true when `question` names a person or an organisation's own name (the company, a "
+    "customer, a team; product, vendor and technology names and placeholders such as PL-..., jan.kowalski, CORP and "
+    "corp.example.com do not count). Reply with only a JSON array, one object per entry, in order, with no other "
+    'fields: [{"i": 0, "judged": "answered", "best": null, "identifying": false}, ...].')
 
 
 def iso(t):
@@ -704,24 +737,51 @@ def ordered(entry):
     return {key: entry[key] for key in ENTRY_KEYS if entry.get(key) not in (None, [], "")}
 
 
-def lookup_text(rs):
-    """(prompt text, answer text) for Haiku: the prompt as typed, else the question a tool row names."""
-    prompt = next((r.get("prompt") for r in rs if r.get("surface") == "prompt" and isinstance(r.get("prompt"), str)), "")
-    if not prompt.strip():
-        for r in rs:
-            q = r.get("question") if r.get("surface") in ("kb_hook", "kb_ask") else None
+def kb_question(kb):
+    """The question the kb was asked, from the first of the kb rows (time order) that names one: the `kb:` hook's or
+    kb_ask.py's `question`, else a kb MCP call's `question`, the first part of its `questions`, or its `query`. The
+    prompt as typed is never a question. None when no kb row names one."""
+    for r in kb:
+        if r.get("surface") in ("kb_hook", "kb_ask"):
+            q = r.get("question")
+        else:
             args = r.get("args") if r.get("surface") == "mcp" and isinstance(r.get("args"), dict) else {}
-            q = q or args.get("question") or args.get("questions") or args.get("query")
-            if q:
-                prompt = "\n".join(map(str, q)) if isinstance(q, list) else str(q)
-                break
-    answer = "\n".join(r["answer"] for r in rs if r.get("surface") == "stop" and isinstance(r.get("answer"), str))
-    return prompt.strip(), answer.strip()
+            q = args.get("question") or args.get("questions") or args.get("query")
+        if isinstance(q, list):
+            q = next((p for p in q if isinstance(p, str) and p.strip()), None)
+        if isinstance(q, str) and q.strip():
+            return q
+    return None
+
+
+def citations(kb, answer):
+    """(citations, cited) of one lookup: the kb lines its kb rows returned ({line, tag, verdict}, each once), those
+    whose path:line the reply's text names when it names any (`reply`), else the first ones (`pack`); at most
+    CITATIONS_MAX. ([], None) when the kb returned no line."""
+    lines, seen = [], set()
+    for r in kb:
+        for x in r.get("lines") or []:
+            if not (isinstance(x, dict) and isinstance(x.get("line"), str) and CITATION.fullmatch(x["line"])) \
+                    or x["line"] in seen:
+                continue
+            seen.add(x["line"])
+            lines.append({"line": x["line"], "tag": x.get("tag") if x.get("tag") in TAGS else None,
+                          "verdict": x.get("verdict") if x.get("verdict") in VERDICTS else None})
+    lines = [{key: v for key, v in x.items() if v} for x in lines]
+    named = set(REPLY_CITE.findall(answer or ""))
+    used = [x for x in lines if any(x["line"] == n or x["line"].endswith("/" + n) for n in named)]
+    if used:
+        return used[:CITATIONS_MAX], "reply"
+    return lines[:CITATIONS_MAX], ("pack" if lines else None)
 
 
 def entry_of(rs, k):
-    """(entry without the Haiku fields, (prompt, answer) for Haiku or None), or None when the rows never used the kb.
-    `rs` is one prompt's rows with the tools rows of its window, or a single tools row outside every window."""
+    """(entry without the Haiku fields, what Haiku judges or None, why the entry is dropped or None), or None when
+    the rows never used the kb. `rs` is one prompt's rows with the tools rows of its window, or a single tools row
+    outside every window. The entry's `question` is the kb's own (kb_question), after the rules and the leak scan;
+    Haiku judges an entry that has one, from it, the prompt and the reply, which it sees rule-redacted and which are
+    never stored."""
+    import redact
     rs = sorted(rs, key=ts_of)
     prompt = next((r for r in rs if r.get("surface") == "prompt"), None)
     intent_ = prompt.get("kb_intent") if prompt and prompt.get("kb_intent") in ("lookup", "skill", "change") else None
@@ -732,7 +792,7 @@ def entry_of(rs, k):
     alone = prompt is None and len(rs) == 1
     if alone and first.get("surface") == "tool_fetch":
         item = fetch_item(first, k)
-        return ordered({"id": first["id"], "surface": "tool_fetch", "day": ts_of(first)[:10], **item}), None
+        return ordered({"id": first["id"], "surface": "tool_fetch", "day": ts_of(first)[:10], **item}), None, None
     tools = []
     for r in kb:
         name = r["surface"] if r["surface"] in ("kb_hook", "kb_ask") else r.get("tool")
@@ -759,8 +819,19 @@ def entry_of(rs, k):
              "intent": intent_, "tools": tools, "route": route,
              "verdict": worst(r.get("verdict") for r in kb), "articles": articles[:20],
              "fetches": sorted(fetches.values(), key=lambda f: json.dumps(f, sort_keys=True))}
-    text, answer = lookup_text(rs)
-    return ordered(entry), ((text, answer) if text else None)
+    answer = "\n".join(r["answer"] for r in rs if r.get("surface") == "stop" and isinstance(r.get("answer"), str))
+    entry["citations"], entry["cited"] = citations(kb, answer)
+    if entry["articles"] and not entry["citations"]:
+        return ordered(entry), None, "articles without their kb lines"  # kb rows that name articles but no lines
+    asked = kb_question(kb)
+    if asked is None:
+        return ordered(entry), None, None
+    question = redact.finish(clip_text(asked, QUESTION_MAX_CHARS), k)
+    if not question:
+        return ordered(entry), None, "the leak scan"
+    entry["question"] = question[:QUESTION_MAX_CHARS]
+    typed = prompt.get("prompt") if prompt and isinstance(prompt.get("prompt"), str) else ""
+    return ordered(entry), {"question": entry["question"], "prompt": typed.strip(), "answer": answer.strip()}, None
 
 
 # --- Haiku ----------------------------------------------------------------------------------------------------------
@@ -795,10 +866,12 @@ class Replay:
 
 
 def haiku_items(texts, candidates, k):
-    """The batch Haiku sees: rule-redacted text only (querylog.md, Redaction)."""
+    """The batch Haiku judges: per entry the question the entry stores, and the rule-redacted prompt and reply, each
+    cut to HAIKU_TEXT_MAX_CHARS, only to judge (querylog.md, Redaction); nothing Haiku writes is stored."""
     import redact
-    return [{"i": i, "prompt": redact.redact(p, k)[:HAIKU_TEXT_MAX_CHARS], "answer": redact.redact(a, k)[:HAIKU_TEXT_MAX_CHARS],
-             "candidates": c} for i, ((p, a), c) in enumerate(zip(texts, candidates))]
+    return [{"i": i, "question": t["question"], "prompt": redact.redact(t["prompt"], k)[:HAIKU_TEXT_MAX_CHARS],
+             "answer": redact.redact(t["answer"], k)[:HAIKU_TEXT_MAX_CHARS], "candidates": c}
+            for i, (t, c) in enumerate(zip(texts, candidates))]
 
 
 def distill_prompt(items):
@@ -806,8 +879,9 @@ def distill_prompt(items):
 
 
 def parse_distill(reply, items):
-    """[{question, summary, judged, best, identifying}] of a Haiku reply; ValueError when it is not that JSON. A
-    `best` that is not one of the entry's candidates becomes null: Haiku judges only among what code listed."""
+    """[{judged, best, identifying}] of a Haiku reply; ValueError when it is not that JSON. Any other field of the
+    reply (free text included) is left out, and a `best` that is not one of the entry's candidates becomes null:
+    Haiku judges only among what code listed, and writes nothing that is stored."""
     a, b = reply.find("["), reply.rfind("]")
     if a < 0 or b < a:
         raise ValueError("no JSON array in the reply")
@@ -816,11 +890,12 @@ def parse_distill(reply, items):
         raise ValueError(f"expected {len(items)} entries")
     out = []
     for i, (r, it) in enumerate(zip(got, items)):
-        if not isinstance(r, dict) or r.get("i") != i or not all(isinstance(r.get(f), str) for f in TEXT_KEYS) \
-                or r.get("judged") not in JUDGED or not isinstance(r.get("identifying"), bool) \
+        if not isinstance(r, dict) or r.get("i") != i or r.get("judged") not in JUDGED \
+                or not isinstance(r.get("identifying"), bool) \
                 or not (r.get("best") is None or isinstance(r.get("best"), str)):
             raise ValueError(f"entry {i} is malformed")
-        out.append(dict(r, best=r["best"] if r["best"] in it["candidates"] else None))
+        out.append({"judged": r["judged"], "best": r.get("best") if r.get("best") in it["candidates"] else None,
+                    "identifying": r["identifying"]})
     return out
 
 
@@ -828,17 +903,9 @@ def clip_text(s, n):
     return " ".join(s.split())[:n]
 
 
-def judged(r, k):
-    """The Haiku fields of one entry after the rules and the leak scan again, or None to drop it."""
-    import redact
-    if r["identifying"]:
-        return None
-    q = redact.finish(clip_text(r["question"], QUESTION_MAX_CHARS), k)
-    s = redact.finish(clip_text(r["summary"], SUMMARY_MAX_CHARS), k)
-    if not q or s is None:
-        return None
-    return {"question": q[:QUESTION_MAX_CHARS], "summary": s[:SUMMARY_MAX_CHARS] or None, "judged": r["judged"],
-            "best": r["best"]}
+def judged(r):
+    """The Haiku fields one entry stores ({judged, best}), or None to drop it (Haiku found it identifying)."""
+    return None if r["identifying"] else {"judged": r["judged"], "best": r["best"]}
 
 
 # --- provenance -----------------------------------------------------------------------------------------------------
@@ -916,8 +983,8 @@ def _plan(qdir, t_now, today, k):
             extra = attached.get((sid, key), [])
             built = entry_of(rs + [r for _, r in extra], k)
             if built:
-                todo.append({"entry": built[0], "texts": built[1], "sid": sid, "key": key, "tools": extra,
-                             "ts": ts_of(rs[0])})
+                todo.append({"entry": built[0], "texts": built[1], "drop": built[2], "sid": sid, "key": key,
+                             "tools": extra, "ts": ts_of(rs[0])})
             else:
                 s.setdefault("skipped", []).append(extra)  # tools rows of a prompt that never used the kb
     for name, rs in left.items():
@@ -925,8 +992,8 @@ def _plan(qdir, t_now, today, k):
             continue  # tools rows outside every window wait for their day to end
         for r in rs:
             built = entry_of([r], k)
-            item = {"entry": built[0], "texts": built[1], "sid": None, "key": None, "tools": [(name, r)],
-                    "ts": ts_of(r)} if built else None
+            item = {"entry": built[0], "texts": built[1], "drop": built[2], "sid": None, "key": None,
+                    "tools": [(name, r)], "ts": ts_of(r)} if built else None
             if item:
                 todo.append(item)
             else:
@@ -946,9 +1013,10 @@ def _distill(qdir, haiku, now_dt, run_id, kb_commit, out, keep=False):
     done = [t for t in todo if t["entry"]["id"] in stored]
     todo = [t for t in todo if t["entry"]["id"] not in stored]
 
-    need = [t for t in todo if t["texts"]]
-    written = [t for t in todo if not t["texts"]]
-    dropped, waiting = [], []
+    dropped = [t for t in todo if t["drop"]]  # the leak scan caught its question, or no kb line backs its articles
+    need = [t for t in todo if t["texts"] and not t["drop"]]
+    written = [t for t in todo if not t["texts"] and not t["drop"]]
+    waiting = []
     calls = read_json(qdir / CALLS_NAME, {})
     used = calls.get("calls", 0) if isinstance(calls, dict) and calls.get("day") == today else 0
     budget = max(0, min(HAIKU_BATCHES_PER_RUN, HAIKU_DAILY_CALLS - used))
@@ -967,7 +1035,7 @@ def _distill(qdir, haiku, now_dt, run_id, kb_commit, out, keep=False):
             waiting += [t for b in batches[n:] for t in b]
             break
         try:
-            results = [judged(r, k) for r in parse_distill(reply, items)]
+            results = [judged(r) for r in parse_distill(reply, items)]
         except ValueError:
             dropped += batch  # a reply that is not the expected JSON drops its batch
             continue
@@ -1204,6 +1272,19 @@ def fetch_problems(item, where, k):
     return out
 
 
+def closed_problems(e, where):
+    """The entry fields that hold a closed value (a day, a verdict, a judgement, names and article paths) holding
+    anything else: free text has no field of its own in an entry."""
+    def names(v, rx):
+        return isinstance(v, list) and all(isinstance(x, str) and rx.fullmatch(x) for x in v)
+    checks = (("day", lambda v: isinstance(v, str) and DAY.fullmatch(v)), ("intent", lambda v: v in INTENTS),
+              ("tools", lambda v: names(v, NAME)), ("route", lambda v: isinstance(v, str) and NAME.fullmatch(v)),
+              ("verdict", lambda v: v in VERDICTS), ("articles", lambda v: names(v, ARTICLE)),
+              ("judged", lambda v: v in JUDGED), ("best", lambda v: isinstance(v, str) and ARTICLE.fullmatch(v)))
+    return [f"{where}: `{key}` is not a {key} value: {e[key]!r:.60}" for key, ok in checks
+            if key in e and not ok(e[key])]
+
+
 def entry_problems(e, where, k):
     import redact
     out = []
@@ -1213,7 +1294,10 @@ def entry_problems(e, where, k):
     prov = sorted(set(e) & set(HEADER_KEYS))
     if prov:
         out.append(f"{where}: run metadata in an entry: {', '.join(prov)}")
-    other = sorted(set(e) - set(ENTRY_KEYS) - set(RAW_KEYS) - set(HEADER_KEYS))
+    free = sorted(set(e) & set(FREE_TEXT_KEYS))
+    if free:
+        out.append(f"{where}: free text in an entry: {', '.join(free)}")
+    other = sorted(set(e) - set(ENTRY_KEYS) - set(RAW_KEYS) - set(HEADER_KEYS) - set(FREE_TEXT_KEYS))
     if other:
         out.append(f"{where}: unknown fields: {', '.join(other)}")
     if not (isinstance(e.get("id"), str) and ENTRY_ID.fullmatch(e["id"])):
@@ -1226,6 +1310,21 @@ def entry_problems(e, where, k):
             continue
         if not isinstance(v, str) or redact.scan(v, k) or redact.redact(v, k) != v:
             out.append(f"{where}: an identifier in `{key}`")
+    out += closed_problems(e, where)
+    cits = e.get("citations")
+    if cits is not None:
+        if not (isinstance(cits, list) and cits and len(cits) <= CITATIONS_MAX):
+            out.append(f"{where}: citations are not a list of 1 to {CITATIONS_MAX} kb lines")
+            cits = []
+        for x in cits:
+            if not (isinstance(x, dict) and set(x) <= set(CITATION_KEYS) and isinstance(x.get("line"), str)
+                    and CITATION.fullmatch(x["line"]) and x.get("tag", "DOC") in TAGS
+                    and x.get("verdict", "good") in VERDICTS):
+                out.append(f"{where}: a citation that is not a path:line with its tag and verdict: {x!r:.80}")
+    if e.get("articles") and not cits:
+        out.append(f"{where}: articles without citations (path:line of the kb lines the lookup returned)")
+    if ("cited" in e) != bool(cits) or e.get("cited", "pack") not in CITED:
+        out.append(f"{where}: `cited` is not {' or '.join(CITED)} beside the citations")
     fetches = e.get("fetches", [])
     fetches = list(fetches) if isinstance(fetches, list) else [None]
     if any(key in e for key in FETCH_KEYS):
@@ -2041,8 +2140,9 @@ def gap_one(g, entry, gate, day):
     text = path.read_text(encoding="utf-8") if path.is_file() else ""
     if g["id"] not in text:
         write_text(path, add_under(text, topic, (
-            f"- **{one_line(entry['question']).replace('**', '')}** A logged lookup of {entry.get('day', day)} found "
-            f"no article that answers it (query log finding {g['id']}). Looked in the kb {day}: `rag.py pack` gives "
+            f"- **{one_line(entry['question']).replace('**', '')}** The kb was asked this in a logged lookup of "
+            f"{entry.get('day', day)}, and no article answered it (query log finding {g['id']}). Looked in the kb "
+            f"{day}: `rag.py pack` gives "
             f"`{res.get('verdict')}`, with this topic in the lead. Needs an official source that states it "
             f"(`/kb-research`, or the query log's opt-in research). (topic: {topic})")))
     keep = {k: v for k, v in g.items() if k != "observed"}

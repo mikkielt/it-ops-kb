@@ -9,8 +9,9 @@ The design is kb/_self/querylog.md (Redaction). Three stages per batch of entrie
   2. Haiku                on the rule-redacted text only: replaces person and organisation names and flags an entry
                           that still identifies someone (names_argv, names_prompt, parse_names); no NER layer
   3. finish(text)         the rules again, then the leak scan (kbcommon.leak_hits); a hit drops the entry
-redact_batch(texts, haiku) runs the three: `haiku` is a callable from rule-redacted texts to [(text, identifying)], so
-querylog.py supplies the real `claude -p` (with its model, caps and timeout) and the tests a stub.
+redact_batch(texts, haiku) runs the three: `haiku` is a callable from rule-redacted texts to [(text, identifying)], and
+the tests supply a stub. querylog.py's distill stores no text Haiku writes: it runs redact() and finish() on the kb's
+own question and starts its judging Haiku call with names_argv (querylog.md, Distill).
 
 What stays (querylog.md): well-known SIDs (only an `S-1-5-21-*` domain identifier names an organisation), anything the
 public root already contains (Graph app ids, CSP GUIDs, vendor hosts: known(), read from kb/public at run time), the

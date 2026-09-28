@@ -30,7 +30,7 @@ Kb facts the build rests on: `claude/hooks.md` (async hooks, `prompt_id`, `Stop`
   - Derived state converges: a second run on unchanged inputs changes nothing, and a test checks it.
   - Miss, candidate gap, gap, candidate fact and claim stay separate stages, each promotion recorded on the finding.
   - `learn` writes findings; `apply` turns accepted findings into changes.
-  - Deterministic code first. Haiku only extracts questions, replaces names, summarises, and judges among candidate articles that code listed.
+  - Deterministic code first. An entry's question and citations come from the kb's own rows; Haiku only judges (`judged`, `best` among candidate articles that code listed, `identifying`), and nothing it writes is stored.
   - Every gate's failure path is tested.
 - Surfaces logged:
   - `kb:`/`kb+:` hook prompts;
@@ -45,10 +45,10 @@ Kb facts the build rests on: `claude/hooks.md` (async hooks, `prompt_id`, `Stop`
   - never committed; deleted once its distilled entry is pushed or dropped;
   - every `claude -p` the pipeline starts runs with `--settings '{"disableAllHooks": true}'`, so it never logs itself.
 - Redaction:
-  - stdlib rules, then Haiku on rule-redacted text only, then the rules and the leak scan again;
-  - person and organisation names rest on Haiku, with no NER layer; the test corpus includes names, and an entry Haiku flags as still identifying is dropped with only its counts kept;
+  - stdlib rules and the leak scan on the kb's question, then Haiku on rule-redacted text only, to judge;
+  - person and organisation names rest on Haiku's flag, with no NER layer; the test corpus includes names, and an entry Haiku flags as identifying is dropped with only its counts kept;
   - the redactor keeps well-known SIDs (`S-1-5-32-*`, `S-1-5-18`, ...) and any identifier a public root already contains (Graph app ids, CSP GUIDs), and redacts down-level `DOMAIN\name` as well as UPNs;
-  - Haiku runs batched at distill (`claude -p --model haiku --tools ""`, no plugins or MCP), with per-batch and daily caps per machine; its output is stored once per entry id and never regenerated.
+  - Haiku runs batched at distill (`claude -p --model haiku --tools ""`, no plugins or MCP), with per-batch and daily caps per machine; its judgement is stored once per entry id and never regenerated.
 - Fetch outcomes: only facts are classified (HTTP status, empty, cross-host redirect, truncated); "bot page" and "the summary lacked it" stay `unknown`. Source signals (hosts to stage, routes misused) are report-only.
 - A host's staging level comes from its provider-registry row (`_tools/providers.csv`, or a root's `_providers.csv`) when it has one, else from the routes table in `kb/_self/web-sources.md`; a test keeps the two in agreement.
 - Store `kb/_querylog/`:
@@ -65,7 +65,7 @@ Kb facts the build rests on: `claude/hooks.md` (async hooks, `prompt_id`, `Stop`
   - Before any new push, distill checks the CI status of the last automatic commit (`glab api` on GitLab, `gh` on GitHub, skipped when neither is signed in); on red it pushes a revert commit and records `apply failed`, and a failed finding is never retried.
   - No CI job writes to the repository.
 - Configuration: no environment variables. Program defaults are constants stated in the design doc. Per-user choices (`mode`: `auto`, `local`, `off`; `research`; `research_daily`) live in one uncommitted file, written by `/kb-setup`: `_private/querylog.json` in a clone, `${CLAUDE_PLUGIN_DATA}/querylog/config.json` in a host.
-- The default is `auto`, and `/kb-setup` says plainly that colleagues' redacted questions are recorded in the repository and that rule-redacted text is sent to the API for Haiku (`claude/data-retention.md`).
+- The default is `auto`, and `/kb-setup` says plainly that the redacted questions the kb was asked are recorded in the repository and that rule-redacted text is sent to the API for Haiku (`claude/data-retention.md`).
 - Research is opt-in per user with their own daily cap: add-only, quote-verified facts, and a disagreement goes to `_conflicts.md`. Its commits go to `main` directly like the rest; the gate and the quote check are its review.
 - Plugin hosts distill in a managed clone under `${CLAUDE_PLUGIN_DATA}`; the first push refused for want of rights turns logging off for good (a `DISABLED` marker). Cloud sessions distill in the container and push to their own `origin`.
 - Portability:

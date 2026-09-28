@@ -1,4 +1,4 @@
 {"id":"44444444-0000-4000-8000-0000000000a1","ts":"2026-09-27T07:00:00.000Z","surface":"tool_fetch","tool":"fetch.py","host":"learn.microsoft.com","path":"/en-us/windows/security/identity-protection/windows-laps/laps-overview","outcome":"http-200"}
 {"id":"44444444-0000-4000-8000-0000000000a2","ts":"2026-09-27T07:00:01.000Z","surface":"tool_fetch","tool":"fetch.py","host":"10.~1.20.33","path":"/share/x","outcome":"error"}
-{"id":"44444444-0000-4000-8000-0000000000a3","ts":"2026-09-27T07:30:00.000Z","surface":"kb_ask","question":"What is the default Windows LAPS password length?","route":"tool","verdict":"good"}
+{"id":"44444444-0000-4000-8000-0000000000a3","ts":"2026-09-27T07:30:00.000Z","surface":"kb_ask","question":"What is the default Windows LAPS password length?","route":"tool","verdict":"good","lines":[{"line":"public/windows/laps.md:24","tag":"DOC","verdict":"good"}]}
 {"id":"44444444-0000-4000-8000-0000000000a4","ts":"2026-09-27T09:05:15.000Z","surface":"kb_ask","question":"intune win32 detection rule","route":"plan","verdict":"good","parts":1}
