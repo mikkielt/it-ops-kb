@@ -721,3 +721,7 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
 ## arch/sql-auth-containers
 
 - ODBC `ActiveDirectoryDefault`: the Microsoft SQL driver feature matrix (S-g2zvqta5) marks "Microsoft Entra default Azure authentication" as not supported by the ODBC driver on Windows or Linux/macOS, and the ODBC `Authentication` keyword list (S1610) has no `ActiveDirectoryDefault`, while the mssql-django Entra page (S-67zasdym) shows `Authentication=ActiveDirectoryDefault` with ODBC Driver 18 and says mssql-django 1.7.3+ passes it through to the driver. Read 2026-09-28; a driver test settles it. (topic: arch/sql-auth-containers)
+
+## windows/windows-sandbox
+
+- Printer redirection and video input defaults in the WindowsSandbox Policy CSP: the page (S-bgz3uymb) says that when `AllowPrinterRedirection` or `AllowVideoInput` is not configured the capability is disabled, and the .wsb page (S-hlmmxoye) agrees for a default sandbox, yet the same CSP page lists `Default Value` 1 (allowed) for both. It also maps `AllowWriteToMappedFolders` to the Group Policy name and registry value `AllowMappedFolders`. Read 2026-09-28; a device test (registry and sandbox behaviour with the policy unset) settles it. (topic: windows/windows-sandbox)

@@ -1940,6 +1940,32 @@ _Agent: kb-research_
 
 _Agent: kb-research_
 
+## QK-hook-input-fields-identify-subagent-posttooluse. Which hook input fields identify a subagent (agent_id, agent_type) in PostToolUse?
+- `agent_id` and `agent_type` are common input fields: `agent_id` is present only when the hook fires inside a subagent call, and `agent_type` is the agent name, present inside a subagent or when the session uses `--agent` (the subagent's type wins). [DOC S743]
+- Configured hooks from settings, managed policy and plugins also run inside subagents, so a subagent's tool call fires the same `PreToolUse` and `PostToolUse` hooks with both fields set. [DOC S743]
+- In the Agent SDK they are on every TypeScript hook input, and optional on Python's `PreToolUse`, `PostToolUse`, `PostToolUseFailure` and `PermissionRequest` inputs. [DOC S-av5665nf]
+- Conclusion: a `PostToolUse` hook tells a subagent's call from a main-thread call by the presence of `agent_id`, and names the subagent by `agent_type`; `agent_type` alone is not enough, since an `--agent` session sets it on the main thread too. [DER S743: the two field descriptions]
+- See claude/hooks.md.
+
+_Agent: kb-research_
+
+## QK-claude-plugin-data-plugin-loaded-plugin. Where is CLAUDE_PLUGIN_DATA for a plugin loaded with --plugin-dir?
+- `${CLAUDE_PLUGIN_DATA}` resolves to `~/.claude/plugins/data/<id>/`, where `<id>` is the plugin identifier with every character other than letters, digits, `_` and `-` replaced by `-`; it is created when first referenced. [DOC S-i7if5i7z]
+- A `--plugin-dir` plugin has the id `<name>@inline`. [DOC S-toe7z3kj]
+- Conclusion: its data directory is `~/.claude/plugins/data/<name>-inline/` (under the plugins root `CLAUDE_CODE_PLUGIN_CACHE_DIR` can move), separate from the directory of the same plugin installed from a marketplace (`<name>-<marketplace>`). [DER S-i7if5i7z, S-toe7z3kj]
+- See claude/plugins.md.
+
+_Agent: kb-research_
+
+## QK-i-limit-windows-sandbox-memory-control. How do I limit Windows Sandbox memory, and control its vGPU and clipboard through Intune or Group Policy?
+- Memory is set per sandbox by `<MemoryInMB>` in a `.wsb` file; a value too small to boot is raised to 2048 MB, and a sandbox started without a file gets at most 4 GB. [DOC S-hlmmxoye]
+- vGPU and clipboard are device policies: `./Device/Vendor/MSFT/Policy/Config/WindowsSandbox/AllowVGPU` and `.../AllowClipboardRedirection` (`int`, `0` not allowed, `1` allowed, default `1`), Group Policy values of the same names under `HKLM\SOFTWARE\Policies\Microsoft\Windows\Sandbox` from `WindowsSandbox.admx`; a change needs a sandbox restart. [DOC S-bgz3uymb]
+- Conclusion: an administrator can switch vGPU, networking, clipboard, printer, audio, video and (Windows 11 24H2) mapped-folder access off for every sandbox with Intune or Group Policy, but cannot cap memory centrally: the CSP has no memory setting, so memory stays a `.wsb` choice. [DER S-bgz3uymb, S-hlmmxoye]
+- Open: the CSP page lists `Default Value` 1 for printer redirection and video input while describing them as off when unconfigured (see _conflicts.md). [UNK]
+- See windows/windows-sandbox.md.
+
+_Agent: kb-research_
+
 ## R1. Reuse candidates
 
 - **Highest leverage: `pydantic-settings` as a `dependency` for a project's config-file/env-var/flags

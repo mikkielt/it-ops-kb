@@ -1,9 +1,9 @@
 ---
 topic: claude/hooks
 priority: P1
-applies_to: "Claude Code 2.1.281 docs (retrieved 2026-09-23; UserPromptSubmit, common input, async and Stop sections re-read 2026-09-27; SessionEnd and Windows command hooks read 2026-09-28; tool event input, Stop input and disableAllHooks read 2026-09-28; SessionStart, systemMessage and output caps read 2026-09-28)"
+applies_to: "Claude Code 2.1.281 docs (retrieved 2026-09-23; UserPromptSubmit, common input, async and Stop sections re-read 2026-09-27; SessionEnd and Windows command hooks read 2026-09-28; tool event input, Stop input and disableAllHooks read 2026-09-28; SessionStart, systemMessage and output caps read 2026-09-28; subagent input fields read 2026-09-28)"
 retrieved_utc: 2026-09-28
-sources: [S743, S746, S1800, S-h5sble4p, S-sjuwcuhk, S-3yod3u7q]
+sources: [S743, S746, S1800, S-h5sble4p, S-sjuwcuhk, S-3yod3u7q, S-av5665nf]
 status: complete
 ---
 # Hooks relevant to MCP tools
@@ -38,6 +38,10 @@ instead, so a hook can answer a prompt without a model call.
 ### UserPromptSubmit, common input and logging
 - Every hook receives common input fields including `session_id`, `transcript_path`, `cwd` and `permission_mode`; `UserPromptSubmit` adds `prompt`, the submitted text, with collapsed `[Pasted text #N]` content expanded in place. [DOC S743]
 - Common input field `prompt_id` (v2.1.196+) is a UUID for the prompt being processed and matches the `prompt.id` attribute on OpenTelemetry events, so hook output can be joined with telemetry for one prompt; it is absent until the first user input. [DOC S743]
+- Common input fields `agent_id` and `agent_type` identify a subagent: `agent_id` is present only when the hook fires inside a subagent call, which tells subagent calls from main-thread calls; `agent_type` is the agent name (e.g. `Explore`), present when the hook fires inside a subagent or the session uses `--agent`, and a subagent's type takes precedence over the session's `--agent` value. [DOC S743]
+- Hooks from settings files, managed policy settings and plugins also run inside subagents: a subagent's tool calls fire the same configured `PreToolUse` and `PostToolUse` hooks as the main conversation, with `agent_id` and `agent_type` in their input. [DOC S743]
+- `SubagentStart` hooks receive `agent_id` and `agent_type` (the name the matcher filters on) beyond the common input fields; `SessionStart` receives `agent_type` only when Claude Code was started with `claude --agent <name>`. [DOC S743]
+- In the Agent SDK's callback hooks, `agent_id` and `agent_type` are set when the hook fires inside a subagent: on the base hook input for every event in TypeScript; in Python, optional on `PreToolUse`, `PostToolUse`, `PostToolUseFailure` and `PermissionRequest` and required on `SubagentStart` and `SubagentStop`. [DOC S-av5665nf]
 - `transcript_path` is written asynchronously and may not yet hold the current turn's latest messages when a hook fires; `Stop` and `SubagentStop` hooks receive `last_assistant_message` (Claude's final response text) for that purpose. [DOC S743]
 - `UserPromptSubmit` output: `decision: "block"` prevents the prompt from being processed and erases it from context; `reason` is shown to the user and not added to context; `suppressOriginalPrompt: true` omits the prompt text from that block message; `sessionTitle` sets the session title. Exit code 2 blocks the same way, showing stderr to the user. [DOC S743]
 - Without a block, plain-text stdout on exit 0 or `hookSpecificOutput.additionalContext` is added to Claude's context as a system reminder starting with the hook's name; neither produces a visible transcript entry. [DOC S743]

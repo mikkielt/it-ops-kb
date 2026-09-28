@@ -76,6 +76,7 @@ status: complete
 
 ## Reference
 Related: `windows/smart-app-control.md` (Smart App Control is built on App Control for Business and reuses the same CiTool, ISG, and CodeIntegrity/Operational 3076/3077 events documented here).
+Related: `windows/windows-sandbox.md` (Windows Sandbox: `.wsb` files and the WindowsSandbox Policy CSP, for running untrusted files in a disposable VM).
 Related: `defender/asr-and-antivirus.md` (Attack Surface Reduction rules and Defender Antivirus core settings; a separate, complementary Defender AV control layer, not part of App Control policy XML).
 
 | Rule option # | Name | Valid in supplemental |

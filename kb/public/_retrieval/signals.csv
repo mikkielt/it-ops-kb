@@ -374,3 +374,9 @@ AGENTS.override.md,agents/coding-agent-codebase-context
 GEMINI.md,agents/coding-agent-codebase-context
 --map-tokens,agents/coding-agent-codebase-context
 memoryBoundaryMarkers,agents/coding-agent-codebase-context
+MemoryInMB,windows/windows-sandbox
+Containers-DisposableClientVM,windows/windows-sandbox
+WindowsSandbox.admx,windows/windows-sandbox
+AllowClipboardRedirection,windows/windows-sandbox
+AllowVGPU,windows/windows-sandbox
+WDAGUtilityAccount,windows/windows-sandbox
