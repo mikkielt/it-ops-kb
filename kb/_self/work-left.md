@@ -82,11 +82,6 @@ Kb facts the build rests on: `claude/hooks.md` (async hooks, `prompt_id`, `Stop`
 - **Allow Git push requests to the repository** is off (no CI job pushes);
 - `.gitlab-ci.yml` runs branch and tag pipelines only (a direct-push model), which fits this design unchanged, apart from the Windows job.
 
-0. **Portability audit and facts.**
-   - First, `/kb-research`, for the facts the kb lacks: how Claude Code runs hook commands on Windows (Git Bash, PowerShell, the interpreter name); GitLab.com hosted Windows runners (availability, tier, image, cost); Python's stdlib options on Windows for detached processes and file locks.
-   - Then add a Windows CI job that runs `tests.py`, and run it over the existing toolset (`kb_hook.py`, `kbgit.py` and its git hooks, `.claude/hooks/session-start.sh`, `kb_change_router.py`, `kb_mcp.py`), fixing what fails.
-
-   Done: the facts are in the kb with their sources; the Windows job is green on `main`; every hook command in `.claude/settings.json` and the plugin runs through the portable entry point. Check: the CI pipeline on `main` (`glab ci status`) and `python3 _tools/tests.py` locally. Unchanged: the tools' behaviour on macOS and Linux.
 1. **Design doc.** Write `querylog.md`, a new doc in `kb/_self/` (present tense, through `/kb-self`), from the decisions above. The `SessionEnd` hook only starts a detached distill: the hooks share a 1.5-second budget, and a plugin hook's `timeout` does not raise it. Replace the triage rule in `kb/_self/plugin.md` ("no scheduled agent pushes unreviewed research to `main`") with the direct-push rule. Rewrite the header comment of `.gitlab-ci.yml`, which says there are no merge requests, to allow the conflict MR.
 
    Done: `querylog.md` has a table of every program default (constant, value, why); `map.csv` maps it to the new `querylog.py` and `redact.py` in `_tools/`; `plugin.md` states the new rule. Check: `python3 _tools/tests.py` (doc cohesion) and `python3 _tools/selfdoc.py stale` print no failure. Unchanged: `AGENTS.md`.
