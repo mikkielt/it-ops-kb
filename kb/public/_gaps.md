@@ -533,6 +533,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
   beyond this — stopped after confirming the official catalog has no match, within session budget.
   Recorded as `status: partial`, not `unknown`, because the official-catalog absence is itself a
   confirmed fact. (topic: prior-art/mcp-microsoft-endpoint-mgmt)
+  - Resolved 2026-09-28: `servers/` re-read (still the three entries); the official MCP Registry API (S-eiluqiui) searched for intune, configmgr, sccm, endpoint, entra, microsoft graph and defender: no ConfigMgr or Intune device-management server; Microsoft's read-only Entra MCP Server for Enterprise (preview, S2190) recorded as the nearest official server. (topic: prior-art/mcp-microsoft-endpoint-mgmt)
 
 ### device-identity-correlation
 - Tried: GLPI, Snipe-IT, NetBox, Fleet repository metadata (GitHub API `repos/<org>/<repo>` only).
@@ -543,6 +544,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
   its device-identity-correlation mechanism specifically (agent/manager enrollment, not asset CMDB)
   was not documented in depth — stopped after repo-metadata level, 1 attempt, given Wazuh is a weaker
   fit for "device identity correlation" than the CMDB-style tools already covered. (topic: prior-art/device-identity-correlation)
+  - Resolved 2026-09-28: GLPI's import-and-link rules (Help Center, S-awv4qk3v) and Fleet's `osquery_host_identifier` (docs at a pinned commit, S-53yzqgkc) are now DOC; ServiceNow's IRE pages were not fetched (the comparison uses the kb's own description of it) and Wazuh stays at metadata level. (topic: prior-art/device-identity-correlation)
 
 ### drift-detection
 - Tried: Puppet, Chef InSpec, Microsoft365DSC repository metadata + brief README passages (Puppet
@@ -552,6 +554,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
   budget); Azure Machine Configuration, Intune tenant configuration management, and osquery/Fleet
   policies (all named in the brief for this mechanism) were not fetched at all this session — no
   attempts made, explicit scope cut to stay near the ~40-fetch budget. (topic: prior-art/drift-detection)
+  - Resolved 2026-09-28: Ansible check mode is DOC (S-e4iemhin, earlier pass); Microsoft365DSC's drift-only call is `Test-DscConfiguration` (M365DSC docs S-qlnd73w2, Learn S-fylt7wwn) and `New-M365DSCDeltaReport` compares files (S-c6kla37l). Machine Configuration and the Graph TCM APIs are covered in `windows/azure-arc-servers.md` and `graph/tcm-apis.md`; osquery/Fleet policies were not added. (topic: prior-art/drift-detection)
 
 ### log-collection-normalization
 - Tried: OpenTelemetry Collector and Fluent Bit repository metadata only (no docs-site fetch for
@@ -560,6 +563,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
   GitHub repository exists to fetch from; nxlog.co was not fetched (not on this agent's official-
   source allowlist as configured in this session). No CMTrace-specific open-source parser project
   (e.g. a standalone CMTrace log parser library) was searched for independently. (topic: prior-art/log-collection-normalization)
+  - Resolved 2026-09-28: the full, untruncated repository trees at pinned commits (S-unpitz6t, S-mblcg5ds) list Windows Event Log inputs and generic parsers and no path mentioning CMTrace; NXLog CE's reference manual v3.2 (S-d7pjd3ma) documents `im_msvistalog` and no CMTrace parser. No standalone CMTrace parser library was searched. (topic: prior-art/log-collection-normalization)
 
 ### secret-vault-encryption
 - Tried: sops, age, Vault, cryptography, git-crypt repository metadata + one README/doc page each.
@@ -567,12 +571,14 @@ Still open: (topic: auth/configmgr-rbac-auth)
   (GitHub API itself only reports "NOASSERTION," it does not identify BUSL-1.1) — this fact carries a
   weaker evidentiary basis than the other DOC-tagged facts in that file and should be reconfirmed
   against Vault's own LICENSE file if precision matters. (topic: prior-art/secret-vault-encryption)
+  - Resolved 2026-09-28: Vault's BUSL-1.1 is read from its LICENSE pinned at a commit (S-b43o3ma3: Licensed Work Vault 1.15.0 or later, Additional Use Grant, Change License MPL 2.0 after four years). (topic: prior-art/secret-vault-encryption)
 
 ### tiered-approval-ops
 - Tried: Rundeck, StackStorm, Teleport, Ansible AWX repository metadata only. None of the four
   projects' README/docs content (ACL policy syntax, RBAC role definitions, Access Request workflow
   steps, AWX approval-node configuration) was fetched — repository-description-level facts only, by
   design given the ~40-fetch budget for this agent. (topic: prior-art/tiered-approval-ops)
+  - Resolved 2026-09-28: Rundeck and StackStorm RBAC were DOC already (S-p6qlnhra, S-nnzeoxyh); Teleport Access Requests (S-bmjfyz5c, S-uh67gxyw) and AWX approval nodes and RBAC (S-smmzgplg, S-askzkdnt) are now read from docs pinned at commits. (topic: prior-art/tiered-approval-ops)
 
 ## privacy
 
@@ -594,16 +600,20 @@ Still open: (topic: auth/configmgr-rbac-auth)
   the GitHub API `commits/HEAD` calls to resolve a sha were rate-limited (403) after ~30 total fetches
   across all kb agents sharing the throttle. URLs are recorded as `HEAD` with `retrieved_utc` as the
   pin instead. Tried: `api.github.com/repos/<org>/<repo>/commits/HEAD` for all five, all 403'd once.
+  - Resolved 2026-09-28: all five pinned at commits (S-b43o3ma3, S-6onf7joh, S-tvp7vziq, S-y47upe33, S-lscdap53); the HEAD rows S1102-S1106 point to them through `superseded_by` and the citations were re-pointed. (topic: reuse/secret-vault-encryption)
 - LLM Guard's `Vault` class was assessed from the prior-art agent's summary of its own docs (S1006),
   not by reading `llm_guard`'s source directly this session (budget); the "port the class shape" logic
   verdict should be re-verified against the actual `vault.py` source before any code is written. (topic: reuse/pseudonymization-tokenization)
+  - Resolved 2026-09-28: `llm_guard/vault.py` read at a pinned commit (S-7t5ulcii): an in-memory tuple list with no persistence, expiry or encryption. (topic: reuse/pseudonymization-tokenization)
 - Teleport's "Access Requests" approval-workflow mechanics and AWX's workflow-approval-node mechanics
   were not fetched this session (inherited gap from prior-art); the `no` verdict here rests on licence
   (AGPL-3.0) and deployment-model (always-on service) grounds, which do not depend on those mechanics,
   so this gap does not change the verdict but is noted for completeness. (topic: reuse/tiered-approval-ops)
+  - Resolved 2026-09-28: both read from repository docs at pinned commits (S-bmjfyz5c, S-uh67gxyw, S-smmzgplg); the verdict is unchanged. (topic: reuse/tiered-approval-ops)
 - A reference age+sops Python wrapper's `store.py` was checked by grep for `ttl`/`TTL`/`expir` only (no match), not read
   in full; a full read would be needed before relying on "no TTL support" as a hard fact rather than a
   grep-based inference. (topic: reuse/secret-vault-encryption)
+  - Closed 2026-09-28: no article or source row names this wrapper, so it cannot be re-read; the kb's no-TTL facts rest on the sops docs (S-3eg2zeqb) and the age format specification (S-f4s2xnfz), not on the wrapper. (topic: reuse/secret-vault-encryption)
 
 ## security
 

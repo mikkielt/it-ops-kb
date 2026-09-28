@@ -2,19 +2,18 @@
 topic: prior-art/drift-detection
 priority: P2
 applies_to: "detecting configuration drift without applying fixes (DSC test mode, no remediation)"
-retrieved_utc: 2026-09-26
-sources: [S1008, S1009, S1010, S-e4iemhin, S-2fvvbt5t]
-status: partial
+retrieved_utc: 2026-09-28
+sources: [S1008, S1009, S1010, S-e4iemhin, S-2fvvbt5t, S-fylt7wwn, S-qlnd73w2, S-c6kla37l]
+status: complete
 ---
 
 ## Summary
 Puppet (`noop`/report mode), Chef InSpec, Ansible `--check` mode and Microsoft365DSC all separate
 "detect and report a gap between desired and actual state" from "apply a fix," matching a
-test-mode-only first milestone. Azure Machine Configuration, Intune's tenant configuration management
-and osquery/Fleet policies are named in the brief but were not independently fetched this session
-(see Gaps); Microsoft365DSC facts below are drawn from its own repository, not from Microsoft's
-official Learn docs (out of scope for this agent — see `mecm/`/`entra/` domains for ConfigMgr/Intune
-facts sourced from Microsoft Learn).
+test-mode-only first milestone. For Microsoft365DSC the drift-only call is `Test-DscConfiguration`
+(its docs name it for self-orchestrated monitoring) and `New-M365DSCDeltaReport` compares two
+configuration files. Azure Machine Configuration, the Graph tenant configuration management APIs and
+osquery/Fleet policies are covered elsewhere (`windows/azure-arc-servers.md`, `graph/tcm-apis.md`).
 
 ## Facts
 - Puppet's agent run has a `--noop` (no-operation) mode: it evaluates the catalog and reports which
@@ -39,8 +38,9 @@ facts sourced from Microsoft Learn).
   against the desired state (every 15 minutes by default) and Microsoft365DSC logs each detected drift,
   with the drifted component and properties, to the M365DSC event log; the `ApplyAndAutocorrect`
   configuration mode makes the engine also correct the drift. [DOC S-2fvvbt5t]
-- A `Test-DSCConfiguration` or `Start-DSCConfiguration -WhatIf` run reports Microsoft365DSC drift
-  without invoking `Set`. [UNK: not in S1010 as re-read 2026-09-27]
+- Microsoft365DSC's own January 2026 post says drift monitoring runs from the compiled MOF by calling `Test-DSCConfiguration` (orchestrated by the caller) or `Start-DSCConfiguration` (on a schedule). [DOC S-qlnd73w2]
+- `Test-DscConfiguration` tests whether the actual configuration matches the desired one and returns `True` or `False`; `-Detailed` adds the resources in and not in the desired state. It applies nothing, so it is the drift-only call. [DOC S-fylt7wwn]
+- `New-M365DSCDeltaReport` compares two configuration files (`-Source`, `-Destination`) and writes an HTML delta report to `-OutputPath`; comparing a snapshot of one tenant with another's current state starts from `Export-M365DSCConfiguration`. [DOC S-c6kla37l]
 
 ## Reference
 `prior-art/projects.csv` `latest_release` and `release_date` are GitHub's latest-release marker (`releases/latest`) at retrieval, not the newest tag: a project can carry newer tags on other release lines (Puppet 8.x, InSpec 7.x).

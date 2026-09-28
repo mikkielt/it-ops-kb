@@ -395,6 +395,7 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
 - The Ansible check-mode fact in `prior-art/drift-detection.md` is tagged [DOC S1009], but S1009 is the inspec/inspec repository metadata, which says nothing about Ansible. The fact needs an Ansible documentation source, or should become [UNK]. (census 2026-09-25)
   - Resolved 2026-09-26: re-sourced to Ansible's check-mode page (S-e4iemhin) and corrected: modules without check-mode support report nothing and do nothing (not "skipped or run for real"). (topic: prior-art/drift-detection)
 - reuse/drift-detection.md:37 (outside this unit) lists Test-DSCConfiguration as Microsoft365DSC's drift-only mode; not stated by S1010 or S-2fvvbt5t (the M365DSC drift page describes LCM drift checks logged to the M365DSC event log). (topic: prior-art/drift-detection)
+  - Resolved 2026-09-28: Microsoft365DSC's own docs name `Test-DSCConfiguration` for self-orchestrated drift monitoring (S-qlnd73w2), and the Learn page says it only tests and returns True/False (S-fylt7wwn); `prior-art/drift-detection.md` carries both as DOC, so the table row stands. (topic: prior-art/drift-detection)
 
 ## prior-art/tiered-approval-ops
 

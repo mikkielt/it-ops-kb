@@ -3,7 +3,7 @@ topic: reuse/tiered-approval-ops
 priority: P2
 applies_to: "a small numbered tier scheme for action risk (tiers >=2 always confirmed), enforced in-process"
 retrieved_utc: 2026-09-26
-sources: [S1015, S1016, S1017, S1018, S1106]
+sources: [S1015, S1016, S1017, S1018, S-lscdap53]
 status: complete
 ---
 
@@ -29,7 +29,7 @@ service, no-gateway constraint.
 - Ansible AWX's repository `LICENSE.md`, fetched directly, confirms Apache-2.0 (the GitHub API had
   reported "NOASSERTION"). Licence would permit copying, but AWX is a full web UI + REST API + task
   engine (a service, not a Python library) -- adopting it would add infrastructure that a
-  no-always-on-service, pure-Python-package design explicitly avoids. [DOC S1018,S1106]
+  no-always-on-service, pure-Python-package design explicitly avoids. [DOC S1018,S-lscdap53]
 - None of the four projects' fetched metadata documents a small numbered tier concept comparable to a
   fixed 0-3 scheme, so a small hand-written tier table in code remains the whole mechanism.
   [DER S1015,S1016,S1017,S1018: no tier concept in their descriptions or topics]

@@ -2,8 +2,8 @@
 topic: reuse/secret-vault-encryption
 priority: P2
 applies_to: "a per-conversation, short-TTL, encrypted-at-rest, audited-reveal secret vault, and long-lived site secrets committed to a repository"
-retrieved_utc: 2026-09-27
-sources: [S1000, S1001, S1002, S1003, S1004, S1102, S1103, S-3eg2zeqb, S-wqbnua3h, S-6osxhfhb]
+retrieved_utc: 2026-09-28
+sources: [S1000, S1001, S1002, S1003, S1004, S-b43o3ma3, S-6onf7joh, S-3eg2zeqb, S-wqbnua3h, S-6osxhfhb, S-f4s2xnfz, S-ls53sliy]
 status: complete
 ---
 
@@ -27,20 +27,20 @@ fit for (1) as-is. `cryptography`'s
 - The sops docs describe no expiry or TTL for encrypted values, so a "reveal fails after N hours" rule
   stays application-level. [DER S-3eg2zeqb: no TTL or expiry setting in the reference or config-file keys]
 - age is licensed BSD-3-Clause. [DOC S1001]
-- age has no built-in expiry, revocation or audit log (caller responsibility). [UNK: not in S1001 as re-read 2026-09-27]
+- age has no built-in expiry, revocation or audit log (caller responsibility): its format is a header of recipient stanzas that each wrap the file key, a header MAC and an encrypted payload, with no field for any of them. [DER S-f4s2xnfz: the format's header and payload sections]
 - Vault 1.15.0 and later is under the Business Source License 1.1 per the repository `LICENSE`, where
-  the GitHub API reports "NOASSERTION". [DOC S1102, S1002]
+  the GitHub API reports "NOASSERTION". [DOC S-b43o3ma3, S1002]
 - BUSL-1.1 grants the right to copy, modify, create derivative works, redistribute and make
   non-production use; Vault's Additional Use Grant allows production use except in an offering that
   competes with IBM's paid versions, and each version changes to MPL 2.0 four years after
-  publication. [DOC S1102]
+  publication. [DOC S-b43o3ma3]
 - Using Vault's encrypt/decrypt feature means running Vault itself, a new always-on service, which a
   no-always-on-service constraint would forbid. [DER S1002: the README describes applications asking
   Vault for secrets and Vault encrypting and decrypting data on request]
-- BUSL-1.1 is not an OSI-approved licence. [UNK: not in S1102 as re-read 2026-09-27]
+- BUSL-1.1 is not an OSI-approved licence: the OSI licence API lists no Business Source License, and its only `BSL` entry, `BSL-1.0`, is the Boost Software License. [DER S-ls53sliy: the approved-licence list read 2026-09-28]
 - Python `cryptography`'s repository `LICENSE` (fetched directly) makes the software available under
   either Apache-2.0 or BSD-3-Clause, with contributions made under both, resolving a prior "UNK (GitHub
-  reports NOASSERTION)" flag: the GitHub API does report the repository licence as NOASSERTION. [DOC S1103, S1003]
+  reports NOASSERTION)" flag: the GitHub API does report the repository licence as NOASSERTION. [DOC S-6onf7joh, S1003]
 - `cryptography.fernet.Fernet.decrypt(token, ttl=seconds)` raises `InvalidToken` when the token is
   older than `ttl` seconds from its creation, so the age check happens at decrypt time -- the "reveal
   fails after N hours" behaviour a short-TTL pseudonymization vault needs, with no scheduler for that

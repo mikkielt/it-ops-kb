@@ -2,8 +2,8 @@
 topic: reuse/device-identity-correlation
 priority: P2
 applies_to: "a cross-plane device identity graph: merge keys, stale thresholds, temporal history"
-retrieved_utc: 2026-09-27
-sources: [S1011, S1012, S1013, S1014, S1105, S-ivg7xp7y]
+retrieved_utc: 2026-09-28
+sources: [S1011, S1012, S1013, S1014, S-y47upe33, S-ivg7xp7y, S-53yzqgkc]
 status: complete
 ---
 
@@ -26,16 +26,16 @@ copied.
   device-centric merge across AD/Entra/Intune/Autopilot/ConfigMgr/Defender. [DOC S1013]
 - Fleet's core is confirmed MIT by direct fetch of its repository `LICENSE` (docs under CC BY-SA 4.0,
   the `ee/` directory under a separate licence, client JS under MIT Expat) -- resolving a prior
-  "NOASSERTION" flag for the MIT-licensed core specifically. [DOC S1105]
+  "NOASSERTION" flag for the MIT-licensed core specifically. [DOC S-y47upe33]
 - The GitHub API metadata for `fleetdm/fleet` still reports the licence as unrecognised ("NOASSERTION"), primary language Go, description "Open device management", not archived. [DOC S1014]
 - Fleet is a device-management system (MDM, patching, software deployment) with an agent on devices
   and a GUI, REST API and `fleetctl`; running or embedding it would add an always-on service, which a
   no-always-on-service constraint would forbid. [DER S-ivg7xp7y: README describes the agent and central management]
-- No Fleet-specific merge-key algorithm was found documented. [UNK: not in S1105 as re-read 2026-09-27]
+- Fleet's only documented identity rule is one configurable key, `osquery_host_identifier` (`provided` by default, or `uuid`, `hostname`, `instance`; `uuid` recommended for most deployments); it documents no multi-key merge or precedence. [DOC S-53yzqgkc]
 - None of the four projects' fetched documentation states an explicit merge-key precedence or
   duplicate-resolution algorithm comparable to a hand-specified table (strong keys merge, serial is
   medium-confidence with OEM-duplicate rejection, hostname never merges) -- there is nothing here to
-  borrow as either logic or pattern beyond such a table. [DER S1011,S1012,S1013,S1105]
+  borrow as either logic or pattern beyond such a table. [DER S1011,S1012,S1013,S-y47upe33]
 
 ## Reference
 | project | domain | licence | copying permitted | reuse verdict |

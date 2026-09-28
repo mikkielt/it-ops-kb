@@ -3,7 +3,7 @@ topic: reuse/drift-detection
 priority: P2
 applies_to: "detecting configuration drift with DSC v3 in test (report-only) mode via ConfigMgr baselines, with remediation left off"
 retrieved_utc: 2026-09-26
-sources: [S1008, S1009, S1010, S1104, S-3aphi7n2]
+sources: [S1008, S1009, S1010, S-tvp7vziq, S-3aphi7n2]
 status: complete
 ---
 
@@ -23,7 +23,7 @@ opens remediation.
   reported "NOASSERTION"); InSpec is read-only compliance-as-code by design (no enforcement path at
   all, unlike Puppet noop), which is an even closer conceptual match to a "test mode only, ever"
   posture -- but it is a Ruby framework with its own `describe`/control DSL, not portable into a
-  pure-Python package. [DOC S1009,S1104]
+  pure-Python package. [DOC S1009,S-tvp7vziq]
 - Microsoft365DSC (MIT) manages, configures, extracts and monitors Microsoft 365 tenant
   configurations; its repository topics include `powershell` and `desiredstateconfiguration`.
   [DOC S1010]

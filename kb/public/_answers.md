@@ -1829,7 +1829,7 @@ _Agent: kb-research_
   dependency, this is close to a drop-in that shrinks part of a settings-resolution custom code path. [DOC S-ovuvyg6h]
 - **`cryptography`'s `Fernet.decrypt(token, ttl=seconds)` as a `dependency` for a short-TTL
   pseudonymization vault's reveal check.** Confirmed dual Apache-2.0/BSD-3-Clause by direct LICENSE
-  fetch. [DOC S1103]
+  fetch. [DOC S-6onf7joh]
 - `Fernet.decrypt(token, ttl=seconds)` raises `InvalidToken` when the token is older than `ttl` seconds,
   so the reveal-refusal check happens at decrypt time with no custom scheduler. [DOC S-6osxhfhb]
 - **LLM Guard's MIT-licensed `Vault` class shape as a `logic` candidate** for the mapping-object half
@@ -1842,7 +1842,7 @@ _Agent: kb-research_
   forbids running, or a concept simple enough to cover directly without a dependency. See
   `reuse/matrix.csv` for the row-by-row verdicts.
 - Vault is under BUSL-1.1, which permits copying, modification, derivative works and non-production use
-  (production per its Additional Use Grant), so the licence alone does not rule it out. [DOC S1102]
+  (production per its Additional Use Grant), so the licence alone does not rule it out. [DOC S-b43o3ma3]
 - Vault stays `no` because using it means running Vault itself, a new always-on service. [DER S1002: the
   README describes applications asking Vault to encrypt and decrypt on request]
 - **sops/age do not cover a model-boundary vault requirement** (per-conversation, short TTL,

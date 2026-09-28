@@ -2,8 +2,8 @@
 topic: prior-art/layered-settings-resolution
 priority: P2
 applies_to: "config precedence (flags > env > file > defaults), unknown-key refusal"
-retrieved_utc: 2026-09-27
-sources: [S1022, S1023, S-ovuvyg6h]
+retrieved_utc: 2026-09-28
+sources: [S1022, S1023, S-ovuvyg6h, S-mambvmwl]
 status: complete
 ---
 
@@ -29,9 +29,8 @@ multi-environment merging but its README does not itself state an unknown-key-re
   file formats (TOML/YAML/JSON/INI/.env), environment-variable overrides, multiple environments
   (`development`/`production`/etc.), and external providers (Vault, Redis) as settings sources merged
   in a defined order; dynaconf is MIT licensed. [DOC S1023]
-- dynaconf's fetched README does not state an unknown-key-refusal default (dynaconf's design instead
-  merges any recognised key from any source into a single settings object); whether dynaconf supports
-  strict/refuse-unknown-key validation was not confirmed from the README alone this session. [UNK]
+- dynaconf validates settings with `Validator` objects built from named keys and rules (`must_exist`, `condition`, comparisons, `default`, `cast`, `when`, `env`); `must_exist=False` makes a named key's presence an error. [DOC S-mambvmwl]
+- The validation docs describe no option that rejects keys no validator names, so refusing unknown keys would need a caller-side check against an allow-list. [DER S-mambvmwl: the validator reference lists per-key rules only]
 
 ## Reference
 | project | precedence order (highest first) | unknown-key refusal | licence | language |

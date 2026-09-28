@@ -2,8 +2,8 @@
 topic: reuse/log-collection-normalization
 priority: P2
 applies_to: "reading and normalizing CMTrace/CCM/event logs from an on-workstation search/tail/collect tool"
-retrieved_utc: 2026-09-27
-sources: [S1020, S1021, S-5ub6genn, S-knqivzgt]
+retrieved_utc: 2026-09-28
+sources: [S1020, S1021, S-5ub6genn, S-knqivzgt, S-unpitz6t, S-mblcg5ds]
 status: complete
 ---
 
@@ -22,7 +22,7 @@ library code invoked per-call, not a piped collector.
 - Fluent Bit (Apache-2.0) is a telemetry agent for Linux, Windows, macOS, BSD and embedded systems,
   with pluggable input, filter and output plugins (plugins written in C). [DOC S-knqivzgt]
 - The GitHub API metadata for `fluent/fluent-bit` gives licence Apache-2.0, primary language C and the description "Fast and Lightweight Logs, Metrics and Traces processor for Linux, BSD, OSX and Windows"; the repository is not archived. [DOC S1021]
-- Neither OpenTelemetry Collector nor Fluent Bit ships a built-in CMTrace parser. [UNK: not in S1020 or S1021 as re-read 2026-09-27]
+- Neither OpenTelemetry Collector contrib nor Fluent Bit ships a CMTrace parser: no path in either full repository tree mentions CMTrace at the pinned commits. [DER S-unpitz6t, S-mblcg5ds: case-insensitive search of the untruncated trees]
 - Both licences (Apache-2.0) would permit copying a parser design if one existed, but the deployment
   model (a standing agent or collector) does not match a per-call, on-workstation execution model
   regardless. [DER S-5ub6genn, S-knqivzgt: both are described as agents or executables that run continuously]

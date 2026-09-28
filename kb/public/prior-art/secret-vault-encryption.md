@@ -2,8 +2,8 @@
 topic: prior-art/secret-vault-encryption
 priority: P2
 applies_to: "a placeholder vault (per-conversation, short TTL, encrypted values, audited reveal)"
-retrieved_utc: 2026-09-27
-sources: [S1000, S1001, S1002, S1003, S1004, S-r3t6wvk5, S-rirjtdlh, S-nijzofsq, S-b43o3ma3, S-6osxhfhb, S-yr2b636y]
+retrieved_utc: 2026-09-28
+sources: [S1000, S1001, S1002, S1003, S1004, S-r3t6wvk5, S-rirjtdlh, S-nijzofsq, S-b43o3ma3, S-6osxhfhb, S-yr2b636y, S-f4s2xnfz]
 status: complete
 ---
 
@@ -31,7 +31,7 @@ is application-level in every case.
 - age encrypts to one or more recipients given with `-r` (an `age1...` public key or an SSH public key)
   or `-R` (a file of recipients), or with a passphrase via `-p`/`--passphrase`; recipient-encrypted files
   are decrypted with identity files passed with `-i`. [DOC S1001]
-- age has no built-in expiry, revocation or audit log; those are the caller's responsibility. [UNK: not in S1001 as re-read 2026-09-27]
+- age has no built-in expiry, revocation or audit log; those are the caller's responsibility. The age format specification defines only a header (version line, recipient stanzas that each wrap the file key, header MAC) and an encrypted payload. [DER S-f4s2xnfz: no field for expiry, revocation or audit in the format]
 - HashiCorp Vault's `transit` engine performs encrypt/decrypt/rewrap/datakey operations with a named key
   managed inside Vault; Vault does not store the data sent to it, so the caller stores the ciphertext in
   its own data store (for example its database) and sends it back to Vault to decrypt. [DOC S-rirjtdlh, S1002]

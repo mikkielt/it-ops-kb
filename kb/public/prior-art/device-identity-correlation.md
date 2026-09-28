@@ -2,19 +2,17 @@
 topic: prior-art/device-identity-correlation
 priority: P2
 applies_to: "one device record across AD/Entra/Intune/Autopilot/ConfigMgr/Defender"
-retrieved_utc: 2026-09-26
-sources: [S1011, S1012, S1013, S1014]
-status: partial
+retrieved_utc: 2026-09-28
+sources: [S1011, S1012, S1013, S1014, S-awv4qk3v, S-53yzqgkc, S-y47upe33]
+status: complete
 ---
 
 ## Summary
 GLPI, Snipe-IT, NetBox and Fleet are open-source inventory/CMDB tools; each keeps one canonical
-record per asset/device and exposes an API others can key off, but none of their public docs were
-fetched deeply enough this session to extract explicit "merge key / precedence / duplicate handling"
-rules comparable to ServiceNow's Identification and Reconciliation Engine (IRE), which is the
-canonical public documentation of that pattern but was not fetched this session (ServiceNow docs are
-not in the allowed-source list for this agent's `tget` budget — flagged as a gap). Facts below are
-limited to what each project's repository metadata states about its own scope and licence.
+record per asset/device and exposes an API others can key off. GLPI documents an ordered, first-match
+import-and-link rule list (serial, name, domain, IP and inventory-tool fields) and Fleet one
+configurable host-identity key (`uuid` recommended); neither documents a ranked multi-key precedence
+like ServiceNow's Identification and Reconciliation Engine (IRE), which was not fetched.
 
 ## Facts
 - GLPI ("GLPI is a Free Asset and IT Management Software package, Data center management, ITIL
@@ -27,15 +25,11 @@ limited to what each project's repository metadata states about its own scope an
   licensed, written in Python; its README presents it as a successor to IPAM and DCIM applications,
   built for modeling network infrastructure (racks, devices, cables, IP addresses, VLANs, circuits), so
   device records there are network centric, not endpoint-management centric. [DOC S1013]
-- Fleet ("Open device management") is licensed under a source-available licence the GitHub API
-  reports as unrecognised ("NOASSERTION" — Fleet's actual terms mix an Elastic-License-2.0-derived
-  core with an MIT-licensed osquery-facing agent per its own repository, not independently confirmed
-  this session); written in Go; scoped to endpoint (osquery-based) device management with its own
-  device inventory API. [DOC S1014]
-- None of GLPI, Snipe-IT, NetBox or Fleet's fetched repository metadata documents a cross-source
-  "merge key" or duplicate-resolution precedence algorithm comparable to ServiceNow CMDB's IRE
-  (identification rules ranked by precedence, independent vs. dependent CI attributes); that
-  documentation was not retrieved this session. [UNK]
+- Fleet ("Open device management") is written in Go and scoped to endpoint (osquery-based) device management with its own device inventory API; the GitHub API reports its licence as unrecognised ("NOASSERTION"). [DOC S1014]
+- Fleet's `LICENSE` puts the repository under MIT except `docs/` (CC BY-SA 4.0), `ee/` (its own licence in `ee/LICENSE`) and third-party components (their own licences); client-side JavaScript is MIT. [DOC S-y47upe33]
+- GLPI passes each inventoried computer through an entity-assignment engine and then an import-and-link engine whose rules either import it into its entity, link it to a computer already in GLPI, or refuse it. Criteria include name, serial number, domain, IP address, subnet and inventory-tool fields; the engine stops at the first matching rule, and the search for an existing machine covers only the destination entity. [DOC S-awv4qk3v]
+- Fleet decides host uniqueness with `osquery_host_identifier`: `provided` (default, the identifier osquery sends), `uuid`, `hostname` or `instance`; the docs call `uuid` the best option in most deployments, and `osquery_enroll_cooldown` rate-limits re-enrolment of hosts that share one identifier. [DOC S-53yzqgkc]
+- So GLPI documents an ordered, first-match rule list over several keys and Fleet a single configurable identity key; neither documents a ranked multi-key precedence with independent and dependent attributes like ServiceNow's IRE. Snipe-IT and NetBox were not found to document one either. [DER S-awv4qk3v, S-53yzqgkc, S1012, S1013: compared against the IRE design]
 
 ## Reference
 | project | primary domain | licence | language |

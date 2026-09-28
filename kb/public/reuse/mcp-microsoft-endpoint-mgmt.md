@@ -2,8 +2,8 @@
 topic: reuse/mcp-microsoft-endpoint-mgmt
 priority: P2
 applies_to: "a stdio MCP server for engineers, targeting ConfigMgr/Intune/Graph/Entra"
-retrieved_utc: 2026-09-26
-sources: [S1019]
+retrieved_utc: 2026-09-28
+sources: [S1019, S-eiluqiui, S-vouhh5ur]
 status: complete
 ---
 
@@ -16,9 +16,7 @@ surface for these APIs stays fully custom; there is nothing to import or port fr
 - `microsoft/mcp`'s `servers/` directory contains exactly three entries at the fetched commit:
   `Azure.Mcp.Server`, `Fabric.Mcp.Server`, `Template.Mcp.Server` (a scaffold for new official servers).
   None targets ConfigMgr, Intune, Graph device/identity endpoints, or Entra. [DOC S1019]
-- No community MCP server for ConfigMgr/Intune/Graph/Entra device management meeting an
-  established/actively-maintained bar was located within the fetch budget; this is recorded as a gap,
-  not a confirmed negative for the whole ecosystem. [UNK]
+- A search of the official MCP Registry (2026-09-28) found no ConfigMgr, SCCM or Intune device-management server, and the registry's permissive moderation means a listing would not vouch for one anyway. [DER S-eiluqiui, S-vouhh5ur: v0 API search results and the moderation policy]
 
 ## Reference
 | project | scope | official? | licence | reuse verdict |
