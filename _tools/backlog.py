@@ -1054,7 +1054,8 @@ def main(argv=None):
     p.add_argument("--status", action="store_true")
     p.add_argument("--hook", action="store_true")
     a = ap.parse_args(argv)
-    sys.stdout.reconfigure(encoding="utf-8")
+    for s in (sys.stdout, sys.stderr):  # refusals go to stderr; on Windows a pipe defaults to the ANSI code page
+        s.reconfigure(encoding="utf-8")
     if a.cmd == "red-pipeline" and a.hook:  # async SessionStart: files a bug at most, prints nothing, never fails
         try:
             cmd_red_pipeline(Backlog(a.root), a)
