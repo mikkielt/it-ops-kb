@@ -2,7 +2,7 @@
   "id": "TK-646m6u2v",
   "kind": "task",
   "title": "backlog.py writes stderr as UTF-8 on Windows",
-  "status": "todo",
+  "status": "done",
   "parent": "BG-ovulgaal",
   "priority": "P1",
   "rank": 1,
@@ -24,5 +24,20 @@
   "depends_on": [
     "TK-kmunpvxo"
   ],
-  "notes": "Needs a Windows machine to confirm. Cause: backlog.py:1057 reconfigures only sys.stdout; the Refused messages printed to sys.stderr at backlog.py:1076 go out in the ANSI code page, byte 0x93 for a curly quote, and the reader thread of subprocess.run(text=True, encoding=\"utf-8\") raises UnicodeDecodeError, leaving p.stderr None. kbcommon.py:49 has a helper that reconfigures both streams; widen touches to _tools/kbcommon.py only if the fix changes it."
+  "notes": "Needs a Windows machine to confirm. Cause: backlog.py:1057 reconfigures only sys.stdout; the Refused messages printed to sys.stderr at backlog.py:1076 go out in the ANSI code page, byte 0x93 for a curly quote, and the reader thread of subprocess.run(text=True, encoding=\"utf-8\") raises UnicodeDecodeError, leaving p.stderr None. kbcommon.py:49 has a helper that reconfigures both streams; widen touches to _tools/kbcommon.py only if the fix changes it.",
+  "evidence": {
+    "commit": "5cefdc057d8565596da5797a6c55d895c35f2876",
+    "checks": [
+      {
+        "run": [
+          "python",
+          "_tools/tests.py",
+          "-k",
+          "test_backlog"
+        ],
+        "exit": 0,
+        "sha256": "f1cf066bffba3ab0"
+      }
+    ]
+  }
 }
