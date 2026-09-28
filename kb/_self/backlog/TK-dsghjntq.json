@@ -2,7 +2,7 @@
   "id": "TK-dsghjntq",
   "kind": "task",
   "title": "Write a bug item in the revert commit",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-oiuwoas3",
   "priority": "P3",
   "rank": 0,
@@ -26,5 +26,19 @@
     "kb/_self/querylog.md",
     "kb/_self/backlog.md"
   ],
-  "claimed_by": "sub-revert"
+  "evidence": {
+    "commit": "def264fbb3e0c79a4f3cee7e99177e939dd9992f",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "files_a_bug"
+        ],
+        "exit": 0,
+        "sha256": "ab296b6a8cd26785"
+      }
+    ]
+  }
 }
