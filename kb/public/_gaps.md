@@ -1043,3 +1043,11 @@ Still open: (topic: auth/configmgr-rbac-auth)
 ## gitlab/automated-merge-requests
 
 - The exit code of `glab auth status` when the host is not signed in: the generated command page (S-d6wuvfpd, gitlab-org/cli @37ebe99d `docs/source/auth/status.md`) describes the checks and flags but no exit status (2026-09-28). [UNK] (topic: gitlab/automated-merge-requests)
+
+## security/management-plane-hardening
+
+- **what benchmarks tell us?** The kb was asked this in a logged lookup of 2026-09-28, and no article answered it (query log finding F-27b9b6ccd368). Looked in the kb 2026-09-28: `rag.py pack` gives `weak`, with this topic in the lead. Needs an official source that states it (`/kb-research`, or the query log's opt-in research). (topic: security/management-plane-hardening)
+
+## claude/plugins
+
+- **CLAUDE_PLUGIN_DATA directory location plugin-dir inline** The kb was asked this in a logged lookup of 2026-09-28, and no article answered it (query log finding F-b3b7f7b7c766). Looked in the kb 2026-09-28: `rag.py pack` gives `good`, with this topic in the lead. Needs an official source that states it (`/kb-research`, or the query log's opt-in research). (topic: claude/plugins)
