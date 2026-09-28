@@ -82,15 +82,6 @@ Kb facts the build rests on: `claude/hooks.md` (async hooks, `prompt_id`, `Stop`
 - **Allow Git push requests to the repository** is off (no CI job pushes);
 - `.gitlab-ci.yml` runs branch and tag pipelines only (a direct-push model), which fits this design unchanged, apart from the Windows job.
 
-3. **Capture**: spool rows from `_tools/kb_hook.py`, `_tools/kb_ask.py`, `_tools/fetch.py` and `_tools/census.py`, plus async `UserPromptSubmit`, `PostToolUse` and `Stop` hooks in `.claude/settings.json` and the plugin.
-
-   Done:
-   - each surface writes one row with a fresh UUID `id`;
-   - fetch rows keep host and path only: query and fragment are dropped, Bash rows exist only for `curl` and `wget`, and command text or results are never kept;
-   - mode `off` and a `DISABLED` marker write nothing;
-   - a `claude -p` started with `disableAllHooks` writes nothing.
-
-   Check: the new capture tests on Linux and Windows, and `python3 _tools/stress_test.py` showing `kb_hook.py` no slower than before within the test's margin. Unchanged: the `kb:` hook's answers and verdicts.
 4. **Distill and the store** (`querylog.py distill`, `kb/_querylog/`, mode `local`).
 
    Done:

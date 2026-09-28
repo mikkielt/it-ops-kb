@@ -40,9 +40,12 @@ detected from the stored hash. The first fetch of a source is `new`; if its _sou
 HTML is reduced to the text of <main> (or the whole body) before hashing, so page chrome does not count.
 
 A failed download is reported as `unknown`, never as a match.
+
+Every request writes one query log spool row (kb/_self/querylog.md, Capture): host, path and outcome class, never the
+query string or the body.
 """
-import argparse, datetime, difflib, hashlib, html.parser, io, json, os, re, sys, time, urllib.parse, urllib.request, zipfile
-import kbcommon, kbid
+import argparse, datetime, difflib, hashlib, html.parser, io, json, os, re, sys, time, urllib.error, urllib.parse, urllib.request, zipfile
+import kbcommon, kbid, querylog
 
 KB = kbcommon.PUBLIC  # the root being checked (--root; the public root by default); the cache stays in the repository
 STATE = "_fetch_state.csv"
@@ -62,8 +65,17 @@ def fetch(url):
         time.sleep(wait)
     _last[host] = time.time()
     req = urllib.request.Request(url, headers={"User-Agent": "it-ops-kb-fetch/1.0"})
-    with urllib.request.urlopen(req, timeout=TIMEOUT) as r:
-        return r.read(), r.headers.get("Content-Type", "")
+    try:
+        with urllib.request.urlopen(req, timeout=TIMEOUT) as r:
+            body = r.read()
+            querylog.record_request(url, querylog.request_outcome(r.status, None, len(body), url, r.geturl()))
+            return body, r.headers.get("Content-Type", "")
+    except urllib.error.HTTPError as e:
+        querylog.record_request(url, f"http-{e.code}")
+        raise
+    except Exception:
+        querylog.record_request(url, "error")
+        raise
 
 
 def get(url):

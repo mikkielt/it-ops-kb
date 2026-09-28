@@ -44,6 +44,46 @@
           {
             "type": "command",
             "command": "sh \"${CLAUDE_PROJECT_DIR}/_tools/kbpy\" .claude/hooks/kb_change_router.py"
+          },
+          {
+            "type": "command",
+            "command": "sh \"${CLAUDE_PROJECT_DIR}/_tools/kbpy\" _tools/querylog.py capture",
+            "async": true
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "mcp__kb__.*|mcp__plugin_it-ops-kb_kb__.*|WebFetch|mcp__microsoft-learn__.*|mcp__claude-code-docs__.*|mcp__mcp-docs__.*|mcp__plugin_it-ops-kb-docs_.*|Bash|PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh \"${CLAUDE_PROJECT_DIR}/_tools/kbpy\" _tools/querylog.py capture",
+            "async": true
+          }
+        ]
+      }
+    ],
+    "PostToolUseFailure": [
+      {
+        "matcher": "mcp__kb__.*|mcp__plugin_it-ops-kb_kb__.*|WebFetch|mcp__microsoft-learn__.*|mcp__claude-code-docs__.*|mcp__mcp-docs__.*|mcp__plugin_it-ops-kb-docs_.*|Bash|PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh \"${CLAUDE_PROJECT_DIR}/_tools/kbpy\" _tools/querylog.py capture",
+            "async": true
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh \"${CLAUDE_PROJECT_DIR}/_tools/kbpy\" _tools/querylog.py capture",
+            "async": true
           }
         ]
       }

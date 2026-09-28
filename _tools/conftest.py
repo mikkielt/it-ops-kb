@@ -2,6 +2,8 @@
 from pyproject.toml's dev group) or `uv run pytest`.
 
   Repo(path, env)       one throwaway directory: git(), run_git(), rev(), tool(), kbgit(), read(), write(), append()
+  querylog_env(data)    the environment of a kb_hook.py or kb_ask.py run on this clone: its query log rows go under
+                        `data`, never into the clone's own spool
   git_env(**extra)      the environment of a git scenario: no global or system git config, a fixed author, and none
                         of the variables that would leak the outer repository, a CI run or a verification date into it
   copy_kb(dst, skip)    a copy of the kb's working tree without .git, _cache, _private, __pycache__ (and `skip`)
@@ -51,6 +53,16 @@ LEAKY = ("KB_VERIFIED", "KB_TESTS_FAST", "CI_COMMIT_SHA", "CI_COMMIT_BEFORE_SHA"
 def pytest_configure(config):
     config.addinivalue_line("markers", "git: a scenario in throwaway git repositories (left out by -m 'not git')")
     config.addinivalue_line("markers", "stress: the stress suite, test_stress.py (stress_test.py runs it; tests.py leaves it out)")
+
+
+def querylog_env(data, home=KB, base=None):
+    """The environment of a tool run whose query log rows must not reach the spool of the clone at `home`: capture
+    writes as the plugin at `home` would, under `data` (querylog/spool/), while KB_INDEX keeps the pack index in
+    `home`'s _cache, where it lives without the plugin variables."""
+    env = dict(os.environ if base is None else base)
+    env.update(CLAUDE_PLUGIN_ROOT=str(home), CLAUDE_PLUGIN_DATA=str(data),
+               KB_INDEX=env.get("KB_INDEX") or os.path.join(str(home), "_cache"))
+    return env
 
 
 def git_env(**extra):

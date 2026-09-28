@@ -2,8 +2,9 @@
 needs, and the hooks read and write UTF-8 whatever the locale (`python3 _tools/tests.py -k portability`).
 
   TestHookCommands   gate: every command hook in .claude/settings.json and the plugin is `sh "<root>/_tools/kbpy"
-                     <script>` in shell form, and every .githooks script calls kbpy, never an interpreter by name
-                     (planted: an interpreter by name, exec form, a git hook with python3)
+                     <script> [word...]` in shell form (words: a subcommand such as `capture`, nothing a shell would
+                     read), and every .githooks script calls kbpy, never an interpreter by name (planted: an
+                     interpreter by name, exec form, shell syntax after the script, a git hook with python3)
   TestLauncher       _tools/kbpy with stub interpreters: python3 first on POSIX; on Windows (OS=Windows_NT) a python3
                      alias that fails its probe is skipped for python, then py -3; exit 127 when none is found
   TestHookEncoding   kb_hook.py and the change router under a cp1252 locale read a UTF-8 prompt and answer in UTF-8
@@ -14,10 +15,12 @@ import json, os, re, shutil, subprocess, sys
 
 import pytest
 
+from conftest import querylog_env
+
 TOOLS = os.path.dirname(os.path.abspath(__file__))
 KB = os.path.dirname(TOOLS)
 SH = shutil.which("sh")
-LAUNCH = re.compile(r'sh "\$\{(?P<var>CLAUDE_PROJECT_DIR|CLAUDE_PLUGIN_ROOT)\}/_tools/kbpy" (?P<script>[\w./-]+\.py)$')
+LAUNCH = re.compile(r'sh "\$\{(?P<var>CLAUDE_PROJECT_DIR|CLAUDE_PLUGIN_ROOT)\}/_tools/kbpy" (?P<script>[\w./-]+\.py)(?: [a-z][\w-]*)*$')
 needs_sh = pytest.mark.skipif(not SH, reason="no sh on PATH (Windows without Git Bash)")
 
 
@@ -67,9 +70,12 @@ class TestHookCommands:
             {"type": "command", "command": 'python3 "$CLAUDE_PROJECT_DIR/_tools/kb_hook.py"'},
             {"type": "command", "command": "python3", "args": ["${CLAUDE_PLUGIN_ROOT}/_tools/kb_hook.py"]},
             {"type": "command", "command": 'sh "${CLAUDE_PROJECT_DIR}/_tools/kbpy" _tools/no_such_tool.py'},
+            {"type": "command", "command": 'sh "${CLAUDE_PROJECT_DIR}/_tools/kbpy" _tools/querylog.py capture; id'},
+            {"type": "command", "command": 'sh "${CLAUDE_PROJECT_DIR}/_tools/kbpy" _tools/querylog.py capture',
+             "async": True},
             {"type": "command", "command": 'sh "${CLAUDE_PLUGIN_ROOT}/_tools/kbpy" _tools/kb_hook.py'},
             {"type": "command", "command": 'sh "${CLAUDE_PROJECT_DIR}/_tools/kbpy" _tools/kb_hook.py'}]}]}}
-        assert len(launcher_offenders(planted, "CLAUDE_PROJECT_DIR")) == 4
+        assert len(launcher_offenders(planted, "CLAUDE_PROJECT_DIR")) == 5
 
     def test_git_hooks_call_the_launcher(self):
         d = os.path.join(KB, ".githooks")
@@ -88,9 +94,9 @@ class TestHookCommands:
                 assert b"\r" not in f.read(), f"{rel}: sh cannot run CRLF scripts"
 
     @needs_sh
-    def test_settings_prompt_hook_runs_end_to_end(self):
+    def test_settings_prompt_hook_runs_end_to_end(self, tmp_path):
         """The UserPromptSubmit commands, run as Claude Code runs shell form (`sh -c` with the placeholder set)."""
-        env = dict(os.environ, CLAUDE_PROJECT_DIR=KB)
+        env = querylog_env(tmp_path, base=dict(os.environ, CLAUDE_PROJECT_DIR=KB))
         for _, h in command_hooks(load(".claude/settings.json")):
             if "kb_hook.py" in h["command"]:
                 cmd = h["command"].replace("${CLAUDE_PROJECT_DIR}", KB)
@@ -162,21 +168,22 @@ PROMPT = "kb: Łódź ☃ zzqxv"  # Ł is C5 81 in UTF-8; 0x81 has no cp1252 cha
 
 
 class TestHookEncoding:
-    def hook(self, path, prompt, env_extra=None):
-        env = dict(os.environ, PYTHONIOENCODING="cp1252", PYTHONPATH=TOOLS, **(env_extra or {}))
+    def hook(self, path, prompt, data):
+        env = querylog_env(data, base=dict(os.environ, PYTHONIOENCODING="cp1252", PYTHONPATH=TOOLS))
         env.pop("PYTHONUTF8", None)
         p = subprocess.run([sys.executable, "-X", "utf8=0", path], input=json.dumps({"prompt": prompt},
                            ensure_ascii=False).encode("utf-8"), capture_output=True, env=env, timeout=120)
         return p.returncode, p.stdout.decode("utf-8"), p.stderr.decode("utf-8", "replace")
 
-    def test_kb_hook_reads_and_writes_utf8(self):
-        rc, out, err = self.hook(os.path.join(TOOLS, "kb_hook.py"), PROMPT)
+    def test_kb_hook_reads_and_writes_utf8(self, tmp_path):
+        rc, out, err = self.hook(os.path.join(TOOLS, "kb_hook.py"), PROMPT, tmp_path)
         assert rc == 0, err
         ctx = json.loads(out)["hookSpecificOutput"]["additionalContext"]
         assert "Łódź" in ctx or "zzqxv" in ctx
 
-    def test_router_reads_utf8(self):
-        rc, out, err = self.hook(os.path.join(KB, ".claude", "hooks", "kb_change_router.py"), "please update the Łódź ☃ article")
+    def test_router_reads_utf8(self, tmp_path):
+        rc, out, err = self.hook(os.path.join(KB, ".claude", "hooks", "kb_change_router.py"), "please update the Łódź ☃ article",
+                                 tmp_path)
         assert rc == 0, err
         assert "kb-" in json.loads(out)["hookSpecificOutput"]["additionalContext"]
 
@@ -202,5 +209,5 @@ class TestHookEncoding:
         assert planted != src
         path = tmp_path / "kb_hook.py"
         path.write_text(planted, encoding="utf-8", newline="\n")
-        rc, out, _ = self.hook(str(path), PROMPT)
+        rc, out, _ = self.hook(str(path), PROMPT, tmp_path / "data")
         assert out == "", "under cp1252 the unconfigured hook cannot read the prompt"

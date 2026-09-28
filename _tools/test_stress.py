@@ -10,7 +10,7 @@ Python traceback (a crash is never an acceptable way to report bad input).
   flows           concurrency and determinism, corpus scaling (KB_STRESS_SCALE, default 5), build_index.py extras,
                   kbgit.py fix after a union-style merge, fetch.py --diff/--status against a local web server
 """
-import concurrent.futures as cf, csv, functools, http.server, io, json, os, random, shutil, subprocess, sys, threading
+import concurrent.futures as cf, csv, functools, http.server, io, json, os, random, shutil, statistics, subprocess, sys, threading, time
 
 import pytest
 
@@ -181,6 +181,42 @@ def test_parallel_searches(base):
 def test_search_is_deterministic(base):
     outs = {run(base, "rag.py", "--json", "search", "gmsa kerberos delegation", "-k", "20")[1] for _ in range(5)}
     assert len(outs) == 1, f"{len(outs)} distinct outputs over 5 runs"
+
+
+HOOK_RUNS, HOOK_MARGIN, HOOK_SLACK_S = 11, 1.25, 0.03
+
+
+def hook_median(kb, prompt):
+    """Median wall time of kb_hook.py over HOOK_RUNS runs of one UserPromptSubmit event."""
+    ev = json.dumps({"hook_event_name": "UserPromptSubmit", "session_id": "0" * 8, "prompt_id": "p", "prompt": prompt})
+    ts = []
+    for _ in range(HOOK_RUNS):
+        t = time.perf_counter()
+        p = subprocess.run([sys.executable, os.path.join(kb, "_tools", "kb_hook.py")], input=ev, capture_output=True,
+                           text=True, encoding="utf-8", timeout=TIMEOUT)
+        ts.append(time.perf_counter() - t)
+        assert p.returncode == 0, p.stderr
+    return statistics.median(ts)
+
+
+def test_kb_hook_latency_with_capture(base):
+    """kb_hook.py writes one query log row per kb: prompt (kb/_self/querylog.md): with capture on (the default mode)
+    it is no slower than with mode off, within HOOK_MARGIN times plus HOOK_SLACK_S; a plain prompt loads nothing."""
+    q = "kb: intune win32 app detection rule"
+    cfg = os.path.join(base, "_private", "querylog.json")
+    try:
+        hook_median(base, q)  # the index is built or opened once, outside the timing
+        write(base, os.path.relpath(cfg, base), '{"mode": "off"}')
+        off = hook_median(base, q)
+        os.remove(cfg)
+        on = hook_median(base, q)
+        plain = hook_median(base, "fix the build please")
+    finally:
+        if os.path.exists(cfg):
+            os.remove(cfg)
+    print(f"kb_hook.py median: capture off {off * 1000:.0f} ms, on {on * 1000:.0f} ms, plain prompt {plain * 1000:.0f} ms")
+    assert on <= off * HOOK_MARGIN + HOOK_SLACK_S, f"capture on {on:.3f} s vs off {off:.3f} s"
+    assert plain < off, "a plain prompt must return before the kb (and the query log) is loaded"
 
 
 @pytest.mark.skipif(SCALE < 2, reason="KB_STRESS_SCALE < 2")

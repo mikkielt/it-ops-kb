@@ -3,7 +3,7 @@
 Every kb lookup leaves a redacted, judged record in the repository, in `kb/_querylog/`. `learn` turns the records into findings, and `apply` turns accepted findings into eval rows, aliases, expansions and `_gaps.md` entries, pushed straight to `main` once the local gate passes. The aim is better knowledge handling by agents, not an approval workflow for people: no merge requests unless a conflict needs one.
 
 - **Stages:** capture (hooks and tools, a local spool) -> distill (stdlib rules, then Haiku in batches) -> learn (deterministic findings) -> apply (the local gate, then a direct push).
-- **Code:** `_tools/querylog.py` (the stages) and `_tools/redact.py` (redaction, tested in `_tools/test_redact.py`). `querylog.py` is a stub that exits 2; the Query log items of `kb/_self/work-left.md` build it in order, and this doc is the design they follow. Standard library only, plus the `claude` CLI for Haiku; macOS, Linux and Windows.
+- **Code:** `_tools/querylog.py` (the stages) and `_tools/redact.py` (redaction, tested in `_tools/test_redact.py`). `querylog.py capture` is built (Capture, below; tested in `_tools/test_querylog.py`); distill, learn and apply exit 2 until the Query log items of `kb/_self/work-left.md` build them in order, and this doc is the design they follow. Standard library only, plus the `claude` CLI for Haiku; macOS, Linux and Windows.
 - **Why it can be built from hooks:** `UserPromptSubmit` gives the prompt with `session_id` and `prompt_id`, and `Stop` gives `last_assistant_message` for the same session (`claude/hooks.md`, DER S743; the answer `QK-self-improving-lookup-pipeline-query-logging` in `kb/public/_answers.md`).
 
 ## Rules
@@ -19,31 +19,42 @@ Every kb lookup leaves a redacted, judged record in the repository, in `kb/_quer
 
 ## Surfaces
 
+Every row has `id` (a fresh UUID), `ts` (UTC, milliseconds) and `surface`; a hook row also has `session_id` and `prompt_id`. Fields that would be empty are left out.
+
 | surface | written by | row keeps |
 |---|---|---|
-| `kb:` and `kb+:` prompts | `_tools/kb_hook.py`, from inside | the prompt, the verdict, the articles the pack cited |
-| kb MCP tool calls | an async `PostToolUse` hook, matchers `mcp__kb__.*` and `mcp__plugin_it-ops-kb_kb__.*` | the tool, its question or path argument, the verdict and articles from the result |
-| `kb_ask.py` runs | `_tools/kb_ask.py`, from inside | the question, the route taken, the verdict |
-| the answer's outcome | an async `Stop` hook | `last_assistant_message`, for prompts that have a kb row |
-| every prompt | an async `UserPromptSubmit` hook | `prompt_id` and the prompt, so distill can extract the question and see a kb change skill (`/kb-...`) |
-| web and docs-server fetches | an async `PostToolUse` hook on the fetch tools, and on Bash for `curl` and `wget` only | host and path (no query or fragment), the tool, the outcome class; never command text or results |
-| `fetch.py` and `census.py` | `_tools/fetch.py` and `_tools/census.py`, from inside | host, path and outcome class per request |
+| `prompt`: every prompt | an async `UserPromptSubmit` hook | `prompt` as typed, and `kb_intent`: `lookup` (`kb:`, `kb+:`), `skill` (a `/kb-...` command) or `change` (the change router names a skill), so distill can extract the question and see a kb change |
+| `kb_hook`: `kb:` and `kb+:` prompts | `_tools/kb_hook.py`, from inside, after its answer | `question`, `forward` (`kb+:`), `verdict`, `articles` the pack cited, `answered` (the hook answered without the model) |
+| `mcp`: kb MCP tool calls | an async `PostToolUse` and `PostToolUseFailure` hook, matchers `mcp__kb__.*` and `mcp__plugin_it-ops-kb_kb__.*` | `tool` (`kb_pack`, ...), `args` (question, questions, path, prefix, query and the other lookup arguments, each clipped), `verdict` (the worst of several), `verdicts` when several, `articles` from the result; `outcome: error` for a failed call |
+| `kb_ask`: `kb_ask.py` runs | `_tools/kb_ask.py`, from inside | `question`, `route` (`tool`, `good`, `weak`, `plan` for `--route`), `verdict`, `parts`, `model`, `escalated` |
+| `stop`: the answer's outcome | an async `Stop` hook | `answer` (`last_assistant_message`), only for a prompt that used the kb |
+| `fetch`: web and docs-server fetches | the same async `PostToolUse` and `PostToolUseFailure` hook on `WebFetch`, the three docs servers (under a clone's and the docs plugin's names), and `Bash` and `PowerShell` for `curl` and `wget` only | `tool`, `fetcher` (`curl`, `wget`), `host` and `path` (no user, port, query or fragment; none for a docs-server call without a url), `outcome`; never command text or results |
+| `tool_fetch`: `fetch.py` and `census.py` requests | `_tools/fetch.py` and `_tools/census.py` (and `factdiff.py` through `fetch.py`), from inside | `tool` (the running script), `host`, `path`, `outcome`, one row per request |
 
-- **Rows join on `prompt_id`.** A tool that writes from inside (`kb_ask.py`, `fetch.py`, `census.py`) sees no `prompt_id`: distill attaches its row to the prompt of the same session and clone whose `UserPromptSubmit`-to-`Stop` window holds the row's time, and a row in no window is an entry of its own (a run outside Claude Code).
-- **Fetches count only beside the kb.** Distill keeps a fetch row only when its prompt also used the kb or a kb change skill.
-- **Bash is parsed only for `curl` and `wget`.** Command-text parsing undercounts (a script, an alias, a variable), which is why `fetch.py` and `census.py` log from inside; the undercount of other commands is accepted.
+- **Rows join on `prompt_id`**, a common hook input field (`claude/hooks.md`, DOC S743). A tool that writes from inside (`kb_ask.py`, `fetch.py`, `census.py`) sees no `prompt_id`: its row goes to the tools file, and distill attaches it to the prompt of the same clone whose `UserPromptSubmit`-to-`Stop` window holds the row's time; a row in no window is an entry of its own (a run outside Claude Code).
+- **Fetches and answers count only beside the kb**, decided at capture: a `fetch` or `stop` row is written only when the prompt already used the kb (a `kb_hook` or `mcp` row, a prompt with a `kb_intent`, or a tool row since the prompt began). A fetch made before the prompt's first kb call is not logged, and an async kb row that lands after the `Stop` hook ran loses that answer; both are accepted.
+- **Failures count.** `PostToolUse` fires only after a successful call, so the same hook runs on `PostToolUseFailure`, which gives the `error` text (`claude/hooks.md`, DOC S743).
+- **Shell commands are parsed only for `curl` and `wget`**, in `Bash` and in `PowerShell` (which takes shell commands on Windows, `claude/hooks.md`, DOC S743): the first http(s) url after the command word gives host and path. Command-text parsing undercounts (a script, an alias, a variable), which is why `fetch.py` and `census.py` log from inside; the undercount of other commands is accepted.
 - **The MCP server does not log**: it never sees `session_id` or `prompt_id`, so its rows could not join.
-- **Logging hooks are async.** An async hook cannot block or add context, which a logging hook never needs, and it does not delay the prompt (`claude/hooks.md`, DOC S743). The `kb:` hook stays synchronous because it answers; its row is one local append.
-- **Fetch outcomes classify facts only:** an HTTP status, an empty body, a cross-host redirect, a truncated body. "A bot page" or "the summary lacked it" stays `unknown`. Source signals (a host that needs staging, a route misused) are report-only findings.
+- **Logging hooks are async.** An async hook cannot block or add context, which a logging hook never needs, and it does not delay the prompt (`claude/hooks.md`, DOC S743). The `kb:` hook stays synchronous because it answers; its row is one local append after the answer is printed (`_tools/test_stress.py` holds it to the latency with capture off).
+- **Fetch outcomes classify facts only:** `http-<status>` (a status the tool or the error text gives), `empty`, `redirect-cross-host` (WebFetch returns such a redirect as text instead of following it, `claude/hooks.md`, DOC S-3yod3u7q; `fetch.py` and `census.py` compare the final url's host), `truncated` (`census.py`'s read limit reached), `error`; everything else is `unknown`: "a bot page", "the summary lacked it", and a shell fetch's exit code 0. Source signals (a host that needs staging, a route misused) are report-only findings.
+- **A tool response is read, never kept:** `tool_response` for an MCP call is undocumented (a gap entry under `claude/hooks.md`), so its text is taken from a string, a content-block list or an object holding one.
 
-Every row has a fresh UUID `id`. Mode `off`, a `DISABLED` marker, or a `claude -p` started with hooks disabled writes nothing.
+## Capture (`querylog.py capture`)
+
+- **One command for every hook event.** `sh "<root>/_tools/kbpy" _tools/querylog.py capture`, async, on `UserPromptSubmit`, `PostToolUse`, `PostToolUseFailure` and `Stop` in `.claude/settings.json` and the plugin (`_tools/test_querylog.py` checks both, and `_tools/test_portability.py` the launcher form). It reads the event on stdin, appends at most one row, prints nothing and exits 0 on any input.
+- **Tools** call `querylog.record(surface, session_id, **fields)`, or `record_request(url, outcome)` per HTTP request; `record` never raises. `kb_hook.py` loads `querylog.py` only for a `kb:` prompt.
+- **Size:** a row longer than `SPOOL_ROW_MAX_CHARS` has its longest text field cut, ending ` [...]`.
+- **Pruning:** every `UserPromptSubmit` capture deletes spool files untouched for `SPOOL_MAX_AGE_DAYS`, so rows never distilled do not outlive the horizon.
+- **`querylog.py where`** prints the mode, the config file, the directory and whether capture writes.
+- **Tests never write the clone's spool:** they run tools with `conftest.querylog_env`, which points capture at a temporary plugin data directory.
 
 ## Spool
 
-- **Where:** `_cache/querylog/spool/<session_id>.jsonl` in a clone on every OS (short UUID names keep Windows paths short), and `${CLAUDE_PLUGIN_DATA}/querylog/spool/` in a plugin host. Tool rows without a session go to `tools-<date>.jsonl` beside them.
+- **Where:** `_cache/querylog/spool/<session_id>.jsonl` in a clone on every OS (short UUID names keep Windows paths short), and `${CLAUDE_PLUGIN_DATA}/querylog/spool/` in a plugin host: the hook runs the plugin's copy, so `CLAUDE_PLUGIN_ROOT` names this code and `CLAUDE_PLUGIN_DATA` is set (`claude/hooks.md`, `claude/plugins.md`, DOC). Rows without a session, or with a session id that is not a safe file name, go to `tools-<yyyy-mm-dd>.jsonl` (UTC) beside them. The `DISABLED` marker is `_cache/querylog/DISABLED` in a clone and `${CLAUDE_PLUGIN_DATA}/querylog/DISABLED` in a host.
 - **Never committed** (`_cache/` is ignored). A spool file is deleted once its distilled entry is pushed (in mode `local`: committed) or dropped; rows never distilled are deleted after `SPOOL_MAX_AGE_DAYS`, the same horizon as Claude Code's own local transcripts (`claude/data-retention.md`, DOC S747).
 - **Raw text stays here.** The spool holds prompts and answers as typed, which is why it is local and short-lived; nothing raw leaves it except rule-redacted text sent to Haiku.
-- **The pipeline never logs itself:** every `claude -p` it starts runs with `--settings '{"disableAllHooks": true}'`.
+- **The pipeline never logs itself:** every `claude -p` it starts (`kb_ask.py`'s reader and researcher, the Haiku stage in `redact.names_argv`) runs with `--settings '{"disableAllHooks": true}'` (`querylog.NO_HOOKS`), which turns hooks off for that run over project and local settings (`claude/hooks.md`, DOC S743); a test fails on an argument list without it. `_tools/agent_bench.py` keeps hooks on, since it measures what a session loads.
 
 ## Distill
 
@@ -112,7 +123,7 @@ Every row has a fresh UUID `id`. Mode `off`, a `DISABLED` marker, or a `claude -
 
 - **No environment variables.** Program defaults are the constants in the table below.
 - **Per-user choices** live in one uncommitted file, written by `/kb-setup`: `_private/querylog.json` in a clone, `${CLAUDE_PLUGIN_DATA}/querylog/config.json` in a host. Keys: `mode` (`auto`, `local`, `off`), `research` (true or false), `research_daily` (runs per day).
-- **Modes:** `auto` distills, commits and pushes; `local` distills and commits in the worktree, and never pushes; `off` writes nothing, not even the spool.
+- **Modes:** `auto` distills, commits and pushes; `local` distills and commits in the worktree, and never pushes; `off` writes nothing, not even the spool. A config file that cannot be read, or names no known mode, counts as `off` (fail closed); no file means `DEFAULT_MODE`.
 - **What `/kb-setup` says:** colleagues' redacted questions are recorded in the repository, and rule-redacted text is sent to the API for Haiku; research is off.
 
 ## Program defaults

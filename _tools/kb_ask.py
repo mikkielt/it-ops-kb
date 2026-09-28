@@ -16,6 +16,10 @@
   kb_ask.py --model M "<question>"   override the routed model of step 3 or 4
   kb_ask.py -v "<question>"          also print the route to stderr
 
+Every run writes one query log spool row (kb/_self/querylog.md, Capture): the question, the route taken (`tool`,
+`good`, `weak`, `plan` for --route, with `escalated` when the reader answered INSUFFICIENT), the verdict and the
+model. Its own `claude -p` runs with hooks off, so the session it starts never logs itself.
+
 Why (kb/_self/reports/token-usage.md, "Routing by verdict"): a Haiku session costs a fifth of a Sonnet one and an eighth of an
 Opus one with the same answers, but a Haiku manager told to hand work to Sonnet did so once in four runs. The kb's
 verdict and a one-line INSUFFICIENT reply cannot ignore the rule. A `claude -p` start carries about 30k tokens of
@@ -25,13 +29,15 @@ import argparse, json, os, re, shutil, subprocess, sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import kbfacts  # noqa: E402
+import querylog  # noqa: E402
 
 HOME = kbfacts.kbcommon.HOME  # this repository: the docs servers' config, the kb server, the sessions' cwd
 DOCS_MCP = os.path.join(HOME, ".claude-plugin", "it-ops-kb-docs", ".mcp.json")
 DOCS = ["mcp__microsoft-learn__microsoft_docs_search", "mcp__microsoft-learn__microsoft_docs_fetch",
         "mcp__claude-code-docs__search_claude_code_docs", "mcp__mcp-docs__search_model_context_protocol"]
-# claude -p without the user's plugins, hooks and MCP servers (project and local settings still apply)
-LEAN = ["--setting-sources", "project,local", "--strict-mcp-config"]
+# claude -p without the user's plugins and MCP servers (project and local settings still apply) and with every hook
+# off, so the query log's capture hooks never log kb_ask.py's own session (it writes its own row)
+LEAN = ["--setting-sources", "project,local", "--strict-mcp-config", *querylog.NO_HOOKS]
 SENTINEL = "INSUFFICIENT"
 RULES = ("Answer from the kb evidence below: lead with the answer, then each supporting fact with its path:line, tag "
          "and source url. COMMUNITY and UNK facts are leads, not answers; a CODE fact is implementation read from "
@@ -150,6 +156,15 @@ def log(msg):
 
 
 def main():
+    row = {}
+    try:
+        return run(row)
+    finally:
+        if row.get("question"):
+            querylog.record("kb_ask", **row)
+
+
+def run(row):
     global VERBOSE
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("question", nargs="+")
@@ -160,11 +175,13 @@ def main():
     a = ap.parse_args()
     VERBOSE = a.verbose
     q = " ".join(a.question)
+    row.update(question=q, route="tool")
     tool = tool_answer(q)
     if tool is not None:
         print("kind=tool (audit and source tools, no model)" if a.route else tool)
         return 0
     p = plan(q, a.model)
+    row.update(route="plan" if a.route else p["kind"], verdict=p["verdict"], parts=len(p["parts"]))
     line = f"kind={p['kind']} verdict={p['verdict']} parts={len(p['parts'])} model={p['model']}"
     log(line)
     if a.route:
@@ -172,6 +189,7 @@ def main():
         for i, part in enumerate(p["parts"], 1):
             print(f"part {i}: {part}")
         return 0
+    row["model"] = None if a.no_model and p["kind"] == "good" else p["model"]
     if a.no_model and p["kind"] == "good":
         print(p["text"])
         return 0
@@ -188,6 +206,7 @@ def main():
         note = f"\n\nA first reader of this evidence said: {text.strip().splitlines()[0]}"
         log(f"reader said {SENTINEL}; escalating to sonnet")
         p["model"] = "sonnet" if not a.model else a.model
+        row.update(escalated=True, model=p["model"])
     argv = claude_argv(p["model"], tools=True) + ["--append-system-prompt", RESEARCHER]
     return subprocess.run(argv, cwd=HOME, input=prompt(q, p["text"]) + note, text=True, encoding="utf-8").returncode
 

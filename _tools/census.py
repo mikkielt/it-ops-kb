@@ -53,7 +53,7 @@ from collections import Counter, defaultdict
 from urllib.parse import unquote, urlparse
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import build_index, kbcommon, kbid  # noqa: E402
+import build_index, kbcommon, kbid, querylog  # noqa: E402
 
 KB = kbcommon.PUBLIC  # the root under census (--root; public by default); the cache stays in the repository
 
@@ -371,13 +371,19 @@ def fetch(url, timeout=25, limit=1_000_000):
         req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept": "*/*"})
         try:
             with urllib.request.urlopen(req, timeout=timeout, context=ssl_ctx()) as resp:
-                return resp.status, resp.read(limit).decode("utf-8", "replace"), resp.geturl()
+                body = resp.read(limit)
+                querylog.record_request(url, querylog.request_outcome(resp.status, None, len(body), url, resp.geturl(),
+                                                                      limit))
+                return resp.status, body.decode("utf-8", "replace"), resp.geturl()
         except urllib.error.HTTPError as e:
+            querylog.record_request(url, f"http-{e.code}")
             return e.code, "", url
         except (urllib.error.URLError, OSError) as e:
+            querylog.record_request(url, "error")
             msg = str(getattr(e, "reason", e))
             return (BLOCKED if re.search(r"(?i)tunnel|403 forbidden", msg) else f"error: {msg[:60]}"), "", url
         except Exception as e:  # noqa: BLE001 - a link check must never stop the census
+            querylog.record_request(url, "error")
             return f"error: {type(e).__name__}", "", url
 
 

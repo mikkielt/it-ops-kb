@@ -13,8 +13,10 @@
 
 Claude Code runs it from .claude/settings.json (a clone) and from the plugin's plugin.json (an installed plugin); it
 reads the hook's JSON on stdin and prints the hook's JSON answer on stdout. `--test "kb: question"` prints what the
-hook would answer, for a check from a shell. It runs on every prompt of every session that has the plugin, so a
-prompt without the prefix returns before kbfacts (and the kb) is loaded.
+hook would answer, for a check from a shell (no query log row). It runs on every prompt of every session that has the
+plugin, so a prompt without the prefix returns before kbfacts (and the kb) is loaded. A `kb:` or `kb+:` prompt also
+writes one query log spool row (querylog.record: the question, the verdict, the articles the pack cited, whether the
+hook answered it), after the answer is printed.
 """
 import json, os, re, sys
 
@@ -25,31 +27,38 @@ NOTE = ("\n\n(answered by the kb hook from the kb alone, without the model; ask 
 
 def answer(prompt):
     """The hook's JSON answer for a prompt, or None to let it through unchanged."""
+    return respond(prompt)[0]
+
+
+def respond(prompt):
+    """(the hook's answer or None, the query log fields of a `kb:` prompt or None)."""
     m = PREFIX.match(prompt or "")
     if not m:
-        return None
+        return None, None
     forward, question = bool(m.group(1)), m.group(2).strip()
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
     import kbcommon, kbfacts
     try:
         res = kbfacts.pack(question)
     except kbcommon.RootError as e:  # a malformed ROOT_FILE or a clash between roots: never block the prompt on it
-        return {"hookSpecificOutput": {"hookEventName": "UserPromptSubmit",
-                                       "additionalContext": f"it-ops-kb could not read its roots: {e}"}}
+        return ({"hookSpecificOutput": {"hookEventName": "UserPromptSubmit",
+                                        "additionalContext": f"it-ops-kb could not read its roots: {e}"}},
+                {"question": question, "forward": forward, "verdict": "error"})
+    row = {"question": question, "forward": forward, "verdict": res["verdict"], "articles": res["paths"][:20]}
     if res["verdict"] == "good" and not forward and not res.get("unmatched") and not res.get("spread"):
-        return {"decision": "block", "reason": res["text"] + NOTE}
+        return {"decision": "block", "reason": res["text"] + NOTE}, dict(row, answered=True)
     if res["verdict"] == "none":
         words = [w for w in kbfacts.WORD.findall(question) if kbfacts.stem(w.lower()) in res["missing"]]
         what = ", ".join(dict.fromkeys(words)) or question
         return {"hookSpecificOutput": {"hookEventName": "UserPromptSubmit", "additionalContext":
-                f"it-ops-kb has no coverage for: {what}; say so and add nothing from memory"}}
+                f"it-ops-kb has no coverage for: {what}; say so and add nothing from memory"}}, dict(row, answered=False)
     context = (f"The kb: hook ran the kb evidence pack for this question (coverage: {res['verdict']}). Answer from "
                "it with path:line and source urls. Search the kb again only if the pack misses what was asked."
                + (" Its check: line flags a possible false good (a name the lead article never mentions, or key "
                   "words spread over separate facts): if no cited line answers the question itself, say the kb does "
                   "not cover it." if res.get("unmatched") or res.get("spread") else "")
                + "\n\n" + res["text"])
-    return {"hookSpecificOutput": {"hookEventName": "UserPromptSubmit", "additionalContext": context}}
+    return {"hookSpecificOutput": {"hookEventName": "UserPromptSubmit", "additionalContext": context}}, dict(row, answered=False)
 
 
 def main():
@@ -63,9 +72,13 @@ def main():
         event = json.load(sys.stdin)
     except ValueError:
         return  # not our input: never block a prompt on a parse error
-    out = answer(event.get("prompt", "") if isinstance(event, dict) else "")
+    event = event if isinstance(event, dict) else {}
+    out, row = respond(event.get("prompt", ""))
     if out is not None:
         print(json.dumps(out, ensure_ascii=False))
+    if row is not None:  # a kb: prompt: one spool row (kb/_self/querylog.md, Capture); a plain prompt loads nothing
+        import querylog
+        querylog.record("kb_hook", event.get("session_id"), prompt_id=event.get("prompt_id"), **row)
 
 
 if __name__ == "__main__":
