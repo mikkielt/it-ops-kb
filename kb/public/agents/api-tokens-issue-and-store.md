@@ -2,7 +2,7 @@
 topic: agents/api-tokens-issue-and-store
 priority: P1
 applies_to: "GitLab (docs current 2026-09), python keyring 25.7.0, msal-extensions (main branch 2026-09), Azure Key Vault (docs 2025-12), HashiCorp Vault (docs current 2026-09), Claude Code 2.1.x"
-retrieved_utc: 2026-09-26
+retrieved_utc: 2026-09-28
 sources: [S449, S740, S1297, S2041, S2043, S2044, S2046, S2047, S2048, S2049, S2054, S2055, S2056, S2057]
 status: complete
 files: [agents/api-tokens.csv, agents/secret-storage-options.csv]
@@ -115,8 +115,6 @@ Encrypted, DPAPI-NG, age/sops) and `mcp/authorization.md` (MCP OAuth 2.1, DCR de
   own guidance recommends short-lived **batch tokens** with AppRole. Threat covered: a long-lived static
   credential handed to a CI job or service — AppRole bounds both the credential's lifetime and its use
   count instead. [DOC S2049]
-- Vault's dynamic-secrets/database-secrets-engine mechanics (e.g. for a rotating SQL Server credential)
-  were not fetched in this pass. [UNK, see gaps.md]
 
 ### GitLab CI/CD variables: a leakage path a secrets-declaration policy has to guard against
 - "Masking a CI/CD variable is not a guaranteed way to prevent malicious users from accessing variable
@@ -190,7 +188,7 @@ Encrypted, DPAPI-NG, age/sops) and `mcp/authorization.md` (MCP OAuth 2.1, DCR de
 | Azure Key Vault | one centralized, RBAC-scoped, HSM-backed store instead of per-machine secrets | still needs a workload identity (FIC/managed identity) to authenticate to it | S2047 |
 | GitLab CI/CD protected + masked variables | exposure on unprotected branches; casual log display | not a guarantee against a malicious job's own printing of the value | S449 |
 | GitLab job tokens (vs PAT) | a long-lived, human-scoped credential used by automation | scope/lifetime details for the fine-grained job-token model itself | S2046 |
-| HashiCorp Vault AppRole | a static, unbounded machine credential | dynamic secrets specifics for a project's own backends — [UNK] | S2049 |
+| HashiCorp Vault AppRole | a static, unbounded machine credential | per-backend role specifics beyond the database engine's 1 h / 24 h TTL defaults | S2049; S2054 |
 
 - See also `entra/agent-id.md`: the credentials this article covers (FIC, certificates, client secrets)
   are exactly what a Microsoft Entra Agent ID **agent identity blueprint** holds and issues on behalf of a

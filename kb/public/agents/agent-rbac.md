@@ -2,8 +2,8 @@
 topic: agents/agent-rbac
 priority: P1
 applies_to: "MCP specification draft (post 2026-07-28), Claude Code 2.1.x, Microsoft Entra Agent ID (public preview, 2026-03 docs), Microsoft Entra role-assignable groups / PIM for Groups"
-retrieved_utc: 2026-09-27
-sources: [S707, S740, S742, S1282, S1297, S2040, S2041, S2042, S2045, S2050, S2051, S2052, S2053, S2058]
+retrieved_utc: 2026-09-28
+sources: [S707, S740, S742, S1282, S1297, S2040, S2041, S2042, S2045, S2050, S2051, S2052, S2053, S2058, S-fwzaxe7i, S-pmj4jc4f, S-ooc6gvno, S-4zkj3ag3]
 status: complete
 ---
 
@@ -84,10 +84,10 @@ group claims/overage, PIM-for-Groups sync latency).
   agent identities created in Copilot Studio and Azure AI Foundry, with a stated six-month roadmap for
   more access-management, security and governance capabilities and for agents from Security Copilot,
   Microsoft 365 Copilot and third-party solutions. [DOC S2051]
-- Access to Agent ID through "Microsoft Agent 365, available through Frontier" since early 2026.
-  [UNK: not in S2051 as re-read 2026-09-27]
-- Not confirmed whether an agent identity can itself be an eligible PIM member/owner of a role-assignable
-  group. [UNK, see gaps.md]
+- Agent ID is now available to all Microsoft Entra customers; extending Entra security features to agents needs a Microsoft Agent 365 licence per user, included in Microsoft 365 E7 and sold as an add-on to E5/A5/Business Premium. [DOC S-ooc6gvno]
+- The "What is Agent ID" page still says Agent ID and Agent 365 are available through the Frontier program, which needs a Microsoft 365 Copilot licence with Frontier enabled; the licensing page is the newer statement. [DOC S-4zkj3ag3]
+- Agent identities can't be members of role-assignable groups, can't hold highly privileged directory roles (Global Administrator, Privileged Role Administrator, User Administrator) or custom roles, and only lower-privileged roles such as readers can be assigned to them. [DOC S-fwzaxe7i, S-pmj4jc4f]
+- So an agent identity can't be a PIM-eligible member of a role-assignable group either: the membership itself is blocked, eligible or active. [DER S-fwzaxe7i, S2052: role-assignable membership is blocked for agents; PIM for Groups only manages memberships]
 
 ### Role-assignable groups (the PIM-for-Groups prerequisite `entra-intune-rbac.md` assumes)
 - A group must have `isAssignableToRole: true` set **at creation time only** — Microsoft's own UI warns
@@ -169,8 +169,6 @@ group claims/overage, PIM-for-Groups sync latency).
   role-assignable groups**, not to PIM-for-Groups-enabled groups generally (more than 500 of the latter
   can exist per tenant). A role-assignable group cannot have another group as an *active* member (an
   *eligible* nested membership is still allowed). [DOC S2052]
-- **Agent identities remain unconfirmed as PIM-eligible members/owners** of a role-assignable group —
-  S2052 (like S2040, S2051) never mentions agent identities in this role. [UNK, see gaps.md]
 
 ## Reference
 | Mechanism | Grain | Applies to | Source |
@@ -208,5 +206,5 @@ group claims/overage, PIM-for-Groups sync latency).
   gaps.md.
 - QG26: PIM-for-Groups write-latency (within seconds), SCIM-provisioning latency (2-10 min, throttled to
   40 min past 5/10s) and role-assignable-group constraints (500-group cap, independence from
-  PIM-for-Groups enablement) — answered above. Whether an agent identity can be a PIM-eligible group
-  member remains [UNK] after two passes; see gaps.md.
+  PIM-for-Groups enablement) — answered above. Agent identities can't join role-assignable groups at all
+  (Agent ID authorization page). [DOC S-fwzaxe7i]

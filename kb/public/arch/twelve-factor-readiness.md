@@ -2,7 +2,7 @@
 topic: arch/twelve-factor-readiness
 priority: P1
 applies_to: [twelve-factor, kubernetes, python]
-retrieved_utc: 2026-09-26
+retrieved_utc: 2026-09-28
 sources: [S1718, S1719, S1720, S1721, S1722, S1723, S1724, S1725, S1726, S1727, S1728, S1729]
 status: complete
 ---
@@ -45,8 +45,7 @@ gap: `zoneinfo` needs the `tzdata` PyPI package there.
   execute before being terminated. [DOC S1727]
 - The CronJob page does not mention liveness/readiness probes. [DER S1726: absent from the page as re-read
   2026-09-27]
-- Probes being meant for long-running services, with finite Jobs relying on Job success/failure status
-  instead. [UNK: not in S1726 as re-read 2026-09-27]
+- Neither the CronJob nor the Job page ties Job completion to probes: a Job is bounded by its own fields such as `activeDeadlineSeconds`, so a finite task's health is its Job's success or failure rather than a liveness or readiness probe. [DER S1726, S1727: no probe on either page; completion fields only]
 - `zoneinfo` looks first in directories on `TZPATH` (POSIX has well-known default locations, e.g.
   `/usr/share/zoneinfo`; Windows has none by default), then falls back to the `tzdata` PyPI package;
   if neither has the key, it raises `ZoneInfoNotFoundError`. Python docs explicitly recommend

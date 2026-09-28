@@ -538,9 +538,6 @@ d95ccede3bd3,Kerberos vs. Entra: on-prem SQL Server from Linux container
 ba5c3b4ea313,ODBC Kerberos failure behavior
 ba5c3b4ea313,What happens when Kerberos fails on the Linux ODBC driver?
 ba5c3b4ea313,"ODBC Driver 18: NTLM fallback disabled, no retry"
-6663e0924e29,ActiveDirectoryDefault ODBC Linux
-6663e0924e29,Is there documentation for ActiveDirectoryDefault on the Linux ODBC driver?
-6663e0924e29,msodbcsql18 ActiveDirectoryDefault on-premises SQL Server behavior
 f5986a17b8c8,LDAP channel binding SMB signing
 f5986a17b8c8,What are the LDAP and SMB signing defaults for Server 2025 and Windows 11 24H2?
 f5986a17b8c8,SMB client outbound signing encryption settings

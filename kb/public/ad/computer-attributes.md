@@ -2,8 +2,8 @@
 topic: ad/computer-attributes
 priority: P1
 applies_to: "Active Directory schema (Windows 2000 Server - Windows Server 2012+ pages, ms.date 05/31/2018)"
-retrieved_utc: 2026-09-26
-sources: [S560, S561, S562, S563, S564, S565, S566, S549, S552, S548]
+retrieved_utc: 2026-09-28
+sources: [S560, S561, S562, S563, S564, S565, S566, S549, S552, S548, S-7365hqko, S-gv5dk5hs]
 status: complete
 ---
 
@@ -26,7 +26,8 @@ status: complete
 - In a managed (non-federated) environment, the hybrid-join task writes a self-signed certificate to the computer's `userCertificate` over LDAP. [DOC S548]
 - Entra Connect 1.4.xx.x syncs only Windows 10 computers carrying a hybrid-join `userCertificate`, recognised by a subject of `CN={ObjectGUID}`. [DOC S552]
 - Entra Connect syncs computer `objectGUID` (as deviceID), `objectSID` (as onPremisesSecurityIdentifier), `operatingSystem`, `operatingSystemVersion`, `userCertificate`, `displayName`, `accountEnabled`. [DOC S549]
-- The default value of `msDS-LogonTimeSyncInterval` when unset is not stated on the schema page. [UNK]
+- `lastLogonTimestamp` is updated at logon only if its value is older than the current time minus `msDS-LogonTimeSyncInterval`; the first update after raising the domain functional level uses 14 days minus a random percentage of 5 days. [DOC S-7365hqko]
+- With the default configuration the attribute is therefore updated only when it is 9 to 14 days old, so it can lag the real last logon by up to 14 days. [DOC S-gv5dk5hs]
 
 ## Reference
 - `computer-attributes.csv` (this directory).

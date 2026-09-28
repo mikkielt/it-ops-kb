@@ -2,7 +2,7 @@
 topic: agents/subagents-vs-deterministic-tools
 priority: P1
 applies_to: "Claude Code / Agent Skills (2026-09 docs), MCP spec 2025-06-18, Microsoft Agent Framework 1.0 (GA 2026-04-03)"
-retrieved_utc: 2026-09-27
+retrieved_utc: 2026-09-28
 sources: [S1920, S1921, S1922, S1923, S1924, S1925, S1926, S1927, S1928, S1930, S1931, S1932, S1934, S1935, S1936, S1937, S1938, S1939, S1940, S1941, S1942, S1943, S1944, S1945, S-teeldzof, S744, S745]
 status: complete
 ---
@@ -95,9 +95,9 @@ because no observed failure yet justifies scripting them.
 - A deterministic tool's fixed schema is easier to gate this way than a subagent's not-yet-known call
   sequence. [DER S1928: confirmation prompts attach to known, declared tools]
 - **Eval pass rate**: Anthropic's method tracks task success alongside runtime, tool-call count, token
-  consumption and error rate, but publishes no numeric pass-rate threshold that should trigger converting
-  an agentic step to a deterministic tool — left to the operator's own baseline. [DOC S1935 for method;
-  UNK for a numeric trigger — see gaps.md]
+  consumption and error rate. [DOC S1935]
+- It publishes no numeric pass-rate threshold for converting an agentic step to a deterministic tool, so
+  the trigger is the operator's own baseline. [DER S1935: the method names metrics, not thresholds]
 - **Measuring from OTel/transcripts**: Claude Code's `claude_code.tool_result` / `claude_code.tool_decision`
   events (documented in `claude/otel-monitoring.md`, part `arch`) carry `duration_ms`, `success`,
   `tool_input_size_bytes`/`tool_result_size_bytes`, and — with `OTEL_LOG_TOOL_DETAILS=1` — the MCP

@@ -2,8 +2,8 @@
 topic: auth/audit-events
 priority: P1
 applies_to: "AD DS, Entra ID, Microsoft Graph, ConfigMgr, SQL Server, GitLab"
-retrieved_utc: 2026-09-27
-sources: [S1357, S1358, S1359, S1360, S1361, S1362, S1363, S1364, S1365, S1366, S1367, S1368, S1369, S1370, S1371, S1372, S1373, S1374, S-2lkr2v7m, S-vudqagwn, S-2gxpfnjz, S-rm7qmev7, S-srnmxykl, S-h2gj3bko, S-fzswb76a, S-mubyxer3]
+retrieved_utc: 2026-09-28
+sources: [S1357, S1358, S1359, S1360, S1361, S1362, S1363, S1364, S1365, S1366, S1367, S1368, S1369, S1370, S1371, S1372, S1373, S1374, S-2lkr2v7m, S-vudqagwn, S-2gxpfnjz, S-rm7qmev7, S-srnmxykl, S-h2gj3bko, S-fzswb76a, S-mubyxer3, S-m2yttazv]
 status: complete
 ---
 
@@ -12,10 +12,10 @@ Full table now in `audit-events.csv`: Windows Security-log event ids for logon, 
 account/group-management auditing; the four Entra sign-in log categories (interactive, non-interactive,
 service principal, managed identity) plus the directory audit log; ConfigMgr's audit status messages;
 SQL Server Audit action groups for login and role/object access; GitLab audit events and their tier gate.
-One row (Microsoft Graph activity logs) stays `[UNK]` -- no dedicated Learn page was fetched by this agent
-for it; it belongs to the base kb's `graph/` topic.
+The Microsoft Graph activity logs row is sourced from its Learn page.
 
 ## Facts
+- Microsoft Graph activity logs record every HTTP request the Graph service processes for the tenant (caller app, service principal or user, method, URI, status, scopes and roles), sent through Entra diagnostic settings to Log Analytics, Storage or Event Hubs; they need Entra ID P1/P2, and delivery is usually within 30 minutes, sometimes up to 2 hours. [DOC S-m2yttazv]
 - Windows's `Audit Security Group Management` subcategory covers the create/change/delete/member-add/
   member-remove events for local (4731-4735), global (4727-4730, 4737) and universal (4754-4758) security
   groups; 4728/4729 are the global-group member add/remove events, 4732/4733 the local-group ones, and

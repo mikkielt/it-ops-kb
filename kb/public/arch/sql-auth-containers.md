@@ -2,8 +2,8 @@
 topic: arch/sql-auth-containers
 priority: P1
 applies_to: "SQL Server 2022/2025, ODBC Driver 18 for SQL Server, Azure Arc-enabled SQL Server (docs current 2026-09-24)"
-retrieved_utc: 2026-09-26
-sources: [S1605, S1206, S1207, S1610, S-jyoprgy5, S-z74feu7u]
+retrieved_utc: 2026-09-28
+sources: [S1605, S1206, S1207, S1610, S-jyoprgy5, S-z74feu7u, S-6v63iou4, S-g2zvqta5, S-67zasdym]
 status: complete
 ---
 
@@ -21,11 +21,12 @@ status: complete
 - Entra authentication for SQL Server 2022+ on-premises (Windows and Linux) is set up by registering the instance with **Azure Arc**; for SQL Server on Windows a manual setup without Arc (certificates, registry settings, app registration) is also documented; failover cluster instances are not supported. [DOC S1207]
 - SQL Server 2025 (17.x) on Windows can use a **primary managed identity** for Entra authentication; prerequisites are an Arc connection and the latest Azure Extension for SQL Server, and the identity needs the Graph application permissions `User.Read.All`, `GroupMember.Read.All` and `Application.Read.All`. [DOC S1206]
 - A Microsoft Entra group can be made a SQL Server login (`CREATE LOGIN [group] FROM EXTERNAL PROVIDER`) and a database user (`CREATE USER [group] FROM LOGIN [group]`, or a contained user `FROM EXTERNAL PROVIDER`). [DOC S-jyoprgy5] (see `auth/sql-authz.md`)
-- Entra group membership changes taking effect only on the next connection (new token), not mid-session. [UNK: not in S1207 as re-read 2026-09-27]
+- For Azure SQL Database, permission and server-role changes for a Microsoft Entra login take effect the next time the login connects; open connections are unaffected unless the authentication caches (`TokenAndPermUserStore`, `DBCC FLUSHAUTHCACHE`) are cleared. [DOC S-6v63iou4]
+- No page says the same for SQL Server with Entra authentication through Arc, so treat group changes there as taking effect at the next connection too until tested. [DER S1207, S-6v63iou4: only the Azure SQL page states the rule]
 - `msodbcsql18` supports `Authentication=ActiveDirectoryMsi` for both system-assigned managed identity (no UID needed) and user-assigned managed identity (`UID` = client ID on Azure App Service or Azure Container Instance, otherwise object ID); ODBC 18.3+ supports it on Azure Arc. [DOC S1610]
 - SqlClient's `Active Directory Workload Identity` is distinct from its `Active Directory Managed Identity`: it uses a federated user-assigned managed identity from environments enabled for workload identity, and only the client ID can be overridden in the connection string. [DOC S-z74feu7u]
 - These Entra auth modes (`ActiveDirectoryMsi`, workload identity) only obtain a token on the client side; against an on-prem SQL Server they work once that instance has Entra authentication configured (via Arc, or the manual non-Arc setup on Windows) and a login exists for the identity. [DER S1207, S1610: the driver acquires a Microsoft Entra token; the server side must accept Entra logins]
-- No doc found describing `ActiveDirectoryDefault` behavior specifically for the Linux/msodbcsql18 driver against on-prem/Arc SQL Server (search results centered on Azure SQL Database/Managed Instance). [UNK]
+- The driver feature matrix lists "Microsoft Entra default Azure authentication" as not supported by the ODBC driver on Windows or on Linux/macOS (JDBC 12.2+ only), and the ODBC `Authentication` keyword list has no `ActiveDirectoryDefault`; the mssql-django page nonetheless shows `Authentication=ActiveDirectoryDefault` with ODBC Driver 18 (see `_conflicts.md`). [DOC S-g2zvqta5, S1610, S-67zasdym]
 
 ## Reference
 | Path | Requires | SQL Server must be Arc-enabled? | Source |

@@ -648,3 +648,7 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
 ## windows/smart-app-control
 
 - Smart App Control re-enable path: the Learn developer pages say SAC can only be enabled on a clean install (S2198) and that Off and On are one-way in Settings (S2199), while the March 2026 update note KB5079391 (S-5zawgrph) and the consumer FAQ (S-n2kx46hd) say SAC can now be turned on or off without a clean install. The rollout is gradual, so both hold on different builds until the Learn pages are updated. Read 2026-09-28. (topic: windows/smart-app-control)
+
+## arch/sql-auth-containers
+
+- ODBC `ActiveDirectoryDefault`: the Microsoft SQL driver feature matrix (S-g2zvqta5) marks "Microsoft Entra default Azure authentication" as not supported by the ODBC driver on Windows or Linux/macOS, and the ODBC `Authentication` keyword list (S1610) has no `ActiveDirectoryDefault`, while the mssql-django Entra page (S-67zasdym) shows `Authentication=ActiveDirectoryDefault` with ODBC Driver 18 and says mssql-django 1.7.3+ passes it through to the driver. Read 2026-09-28; a driver test settles it. (topic: arch/sql-auth-containers)

@@ -5,7 +5,7 @@ Every topic of this root with its priority (the research order, not importance),
 <!-- coverage:start -->
 | Topic | Priority | Status | Files | Sources |
 |---|---|---|---|---|
-| `ad/computer-attributes` | P1 | complete | `ad/computer-attributes.md`, `ad/computer-attributes.csv` | 10 |
+| `ad/computer-attributes` | P1 | complete | `ad/computer-attributes.md`, `ad/computer-attributes.csv` | 12 |
 | `ad/krbtgt-password-reset` | P1 | complete | `ad/krbtgt-password-reset.md` | 7 |
 | `ad/ldap-paging-filters` | P1 | complete | `ad/ldap-paging-filters.md` | 6 |
 | `agents/agent-caching` | P1 | complete | `agents/agent-caching.md` | 8 |
@@ -13,13 +13,13 @@ Every topic of this root with its priority (the research order, not importance),
 | `agents/agent-error-catalogue` | P1 | complete | `agents/agent-error-catalogue.md`, `agents/agent-error-catalogue.csv` | 23 |
 | `agents/agent-evaluation` | P1 | complete | `agents/agent-evaluation.md` | 30 |
 | `agents/agent-overuse-patterns` | P1 | complete | `agents/agent-overuse-patterns.md`, `agents/agent-overuse-patterns.csv` | 29 |
-| `agents/agent-rbac` | P1 | complete | `agents/agent-rbac.md` | 14 |
+| `agents/agent-rbac` | P1 | complete | `agents/agent-rbac.md` | 18 |
 | `agents/api-tokens-issue-and-store` | P1 | complete | `agents/api-tokens-issue-and-store.md`, `agents/api-tokens.csv`, `agents/secret-storage-options.csv` | 14 |
-| `agents/copilot-studio-inventory` | P1 | complete | `agents/copilot-studio-inventory.md`, `agents/copilot-studio-feature-map.csv` | 20 |
+| `agents/copilot-studio-inventory` | P1 | complete | `agents/copilot-studio-inventory.md`, `agents/copilot-studio-feature-map.csv` | 21 |
 | `agents/eval-question-baseline` | P1 | complete | `agents/eval-question-baseline.md`, `agents/eval-question-baseline.csv` | 3 |
 | `agents/foundry-agent-service` | P1 | complete | `agents/foundry-agent-service.md`, `agents/foundry-agent-tools.csv` | 16 |
-| `agents/instruction-and-context-limits` | P1 | partial | `agents/instruction-and-context-limits.md`, `agents/instruction-and-context-limits.csv` | 38 |
-| `agents/m365-copilot-extensibility` | P1 | complete | `agents/m365-copilot-extensibility.md`, `agents/declarative-agent-manifest.csv` | 21 |
+| `agents/instruction-and-context-limits` | P1 | complete | `agents/instruction-and-context-limits.md`, `agents/instruction-and-context-limits.csv` | 38 |
+| `agents/m365-copilot-extensibility` | P1 | complete | `agents/m365-copilot-extensibility.md`, `agents/declarative-agent-manifest.csv` | 26 |
 | `agents/mcp-stress-testing` | P1 | complete | `agents/mcp-stress-testing.md` | 11 |
 | `agents/own-chatbot-architecture` | P1 | complete | `agents/own-chatbot-architecture.md` | 15 |
 | `agents/shared-ner-service` | P1 | complete | `agents/shared-ner-service.md` | 35 |
@@ -48,12 +48,12 @@ Every topic of this root with its priority (the research order, not importance),
 | `arch/docs-home-options` | P1 | complete | `arch/docs-home-options.md` | 4 |
 | `arch/gitlab-ci-components` | P1 | complete | `arch/gitlab-ci-components.md` | 7 |
 | `arch/k8s-gmsa-windows` | P1 | complete | `arch/k8s-gmsa-windows.md` | 5 |
-| `arch/kerberos-linux-containers` | P1 | complete | `arch/kerberos-linux-containers.md` | 5 |
+| `arch/kerberos-linux-containers` | P1 | complete | `arch/kerberos-linux-containers.md` | 6 |
 | `arch/python-single-package-extras` | P1 | complete | `arch/python-single-package-extras.md` | 6 |
-| `arch/sql-auth-containers` | P1 | complete | `arch/sql-auth-containers.md` | 6 |
-| `arch/texts-catalogue-formats` | P1 | complete | `arch/texts-catalogue-formats.md` | 9 |
+| `arch/sql-auth-containers` | P1 | complete | `arch/sql-auth-containers.md` | 9 |
+| `arch/texts-catalogue-formats` | P1 | complete | `arch/texts-catalogue-formats.md` | 13 |
 | `arch/twelve-factor-readiness` | P1 | complete | `arch/twelve-factor-readiness.md` | 12 |
-| `arch/workload-identity-onprem-k8s` | P1 | complete | `arch/workload-identity-onprem-k8s.md` | 5 |
+| `arch/workload-identity-onprem-k8s` | P1 | complete | `arch/workload-identity-onprem-k8s.md` | 6 |
 | `auth/configmgr-rbac-auth` | P0 | complete | `auth/configmgr-rbac-auth.md` | 11 |
 | `auth/flows` | P0 | complete | `auth/flows.md`, `auth/flows.csv` | 28 |
 | `auth/gitlab-ci-identity` | P0 | complete | `auth/gitlab-ci-identity.md` | 4 |
@@ -62,11 +62,11 @@ Every topic of this root with its priority (the research order, not importance),
 | `auth/ldap-smb-signing` | P0 | complete | `auth/ldap-smb-signing.md` | 16 |
 | `auth/msal-public-client` | P0 | complete | `auth/msal-public-client.md` | 10 |
 | `auth/ntlm-deprecation` | P0 | complete | `auth/ntlm-deprecation.md` | 6 |
-| `auth/permissions-matrix` | P0 | partial | `auth/permissions-matrix.csv` | 21 |
+| `auth/permissions-matrix` | P0 | partial | `auth/permissions-matrix.csv` | 25 |
 | `auth/sql-authz` | P0 | complete | `auth/sql-authz.md` | 5 |
 | `auth/workload-identity` | P0 | complete | `auth/workload-identity.md` | 23 |
-| `auth/ad-jit-membership` | P1 | complete | `auth/ad-jit-membership.md` | 4 |
-| `auth/audit-events` | P1 | complete | `auth/audit-events.md`, `auth/audit-events.csv` | 26 |
+| `auth/ad-jit-membership` | P1 | complete | `auth/ad-jit-membership.md` | 9 |
+| `auth/audit-events` | P1 | complete | `auth/audit-events.md`, `auth/audit-events.csv` | 27 |
 | `auth/entra-intune-rbac` | P1 | complete | `auth/entra-intune-rbac.md` | 7 |
 | `auth/group-claims` | P1 | complete | `auth/group-claims.md` | 4 |
 | `auth/key-management-options` | P1 | complete | `auth/key-management-options.md` | 19 |

@@ -25,7 +25,9 @@ Merged from `_parts/<agent>/gaps.md`.
 - **Closed this pass:** App roles vs group claims for a service principal specifically — Microsoft's own documented gap ("Entra ID doesn't add the roles claim" when an app role is assigned to a group containing a service principal) fetched (S2053). See `answers.md` QG25 deepening. (topic: agents/agent-rbac)
 - **Closed this pass (partially):** OWASP-specific guidance on agent/NHI identity separation and least privilege — the OWASP NHI Top 10 list (S2058) was fetched and mapped to this part's own findings (NHI7, NHI10). The OWASP "Agentic AI – Threats and Mitigations" PDF remains unfetchable by WebFetch (content is inside a PDF, not rendered); still [UNK] for that specific document's threat-ID text. (topic: agents/agent-rbac)
 - **Still open: Microsoft Entra Agent ID — PIM support for agent identities specifically.** Neither the agent-identities overview (S2040), the PIM-for-Groups page (S2052, this pass), nor the announcement (S2051) states whether an agent identity can be an eligible PIM member/owner of a role-assignable group the way a human or service principal can. Tried across two passes: S2040, S2051, S2052 (no mention in any); WebSearch budget for this session was exhausted before a further targeted search could be attempted this pass. [UNK] (topic: agents/agent-rbac)
+  - Resolved 2026-09-28: the Agent ID authorization page and FAQ (S-fwzaxe7i, S-pmj4jc4f) say agent identities can't be members of role-assignable groups, so PIM-eligible membership there is ruled out (recorded as DOC plus DER in `agents/agent-rbac.md`). (topic: agents/agent-rbac)
 - **Still open: S2051 (Microsoft Entra Agent ID announcement) was read only as a WebSearch synthesis in the prior pass, not independently WebFetched.** Not re-attempted this pass (WebSearch budget exhausted; WebFetch of the same URL was not separately retried since S2040 already carries the load-bearing mechanics). Treated as DOC per the prior pass's reasoning; flagged for a direct fetch in a future pass. [DOC, flagged] (topic: agents/agent-rbac)
+  - Superseded 2026-09-28: the availability claim now rests on the Entra licensing page (S-ooc6gvno: Agent ID for all Entra customers, Agent 365 licence for security features) and the Agent ID overview (S-4zkj3ag3), not on S2051. (topic: agents/agent-rbac)
 - **Narrowed, not closed: HashiCorp Vault's own numeric SLA or default TTL for a *SQL Server* (MSSQL) dynamic role specifically** — the database-secrets-engine page (S2054) gives the *engine's* default (1h/24h TTL) but no MSSQL-specific example or caveat distinct from the generic default; not pursued further this pass (the generic default answers the design-relevance question adequately per the fact already recorded in `answers.md`). [DOC S2054 for the generic default; UNK for an MSSQL-specific worked example] (topic: agents/api-tokens-issue-and-store)
 
 ## agents-copilot
@@ -171,6 +173,7 @@ Remaining gaps:
 - **No published per-call latency number for Claude subagent spawn overhead** (only qualitative "fresh context, higher latency" from S1923). Tried: code.claude.com/docs/en/sub-agents (S1923, qualitative only), WebSearch for "claude code subagent spawn latency milliseconds" style queries returned no vendor number. [UNK] (topic: agents/subagents-vs-deterministic-tools)
 - **No vendor-published success-rate/eval-pass-rate threshold for "replace this subagent with a tool."** Anthropic's evals guidance (S1935) describes *how* to measure tool-use quality (task success, tool-call count, token count, error rate) but does not publish a numeric threshold at which a workflow step should convert from agent-driven to hard-coded. Tried: S1920, S1935, S1936; no vendor number found. Recorded as `DER` in answers.md instead. [UNK] (topic: agents/subagents-vs-deterministic-tools)
   - Tried 2026-09-27: re-read S1896 and a WebSearch; the guidance says an eval at 100% tracks regressions but gives no improvement signal, and publishes no numeric threshold for replacing a subagent with a tool. Still open. (topic: agents/subagents-vs-deterministic-tools)
+  - Tried 2026-09-28, still none published: recorded as a DER absence in `agents/subagents-vs-deterministic-tools.md`; a threshold would have to come from the operator's own eval baseline. (topic: agents/subagents-vs-deterministic-tools)
 - **No official Anthropic or Microsoft page stating an exact percentage figure for cost escalation from a runaway/recursive subagent** beyond the "another 10x or more" figure from a secondary (COMMUNITY) source (S1930). Anthropic's own multi-agent post (S1921) describes the failure mode (excessive subagent spawning) but not a cost multiplier for it. Tried: S1921 (qualitative), S1930 (COMMUNITY, has the number). [COMMUNITY only, tagged as such] (topic: agents/agent-overuse-patterns)
   - Tried 2026-09-27: the only vendor multiplier found is Claude Code's "about 7x more tokens" for agent teams in plan mode (S2132, already in `agent-cost-governance.md`); no vendor figure for runaway or recursive spawning. Still open. (topic: agents/agent-overuse-patterns)
 - **MCP "tasks" capability (`execution.taskSupport`) details** were found only via a WebSearch summary (S1929-adjacent search, not independently re-fetched from the modelcontextprotocol.io tasks page) — not fetched directly in this session; the fetched tools page (S1928) is the 2025-06-18 revision and does not itself describe `taskSupport`. Tried: one WebSearch, one WebFetch of the tools page only (budget stopped after the outputSchema/annotations facts were confirmed there). Recorded as `UNK` for the exact task-support default value beyond the search snippet. [UNK] (topic: mcp/tasks-extension)
@@ -274,17 +277,22 @@ Remaining gaps:
 ## arch
 
 - **No Microsoft-documented way for Linux (Python gssapi/pyspnego/requests-gssapi, adutil, mssql-conf) to retrieve a gMSA's `msDS-ManagedPassword` and turn it into a keytab.** Tried: `adutil keytab createauto` (requires explicit `--password`, built for conventional AD accounts per S1606), Microsoft Learn search for "gMSA Linux", MIT Kerberos docs. Only AWS's `credentials-fetcher` (S1607/S1608, COMMUNITY, Apache-2.0, AWS open source) claims to fetch gMSA credentials over LDAP for Linux. Verification: could be checked by running `credentials-fetcher` against a lab AD gMSA and a lab Linux host, watching whether it produces a usable keytab/ticket — out of scope for this research pass. (topic: arch/kerberos-linux-containers)
+  - Tried 2026-09-28, still none: recorded as a DER absence (adutil options, AWS daemon only). Needs Microsoft to document it; not resolvable by web research. (topic: arch/kerberos-linux-containers)
 - **No stated Windows-Server-version floor specific to Kubernetes gMSA** beyond the general Windows-container gMSA fix history (2019 fixes for hostname/race-condition issues); kubernetes.io doesn't restate a minimum OS build. Tried: kubernetes.io gmsa page (S1600) — silent on this; would need a targeted Microsoft Learn "Windows container OS compatibility" cross-reference. [UNK, recorded in arch/k8s-gmsa-windows.md]
 - **No GA date for Azure Arc-enabled Kubernetes workload identity federation** — page (S1609) still labelled preview at retrieval (updated 2025-11-18). No separate GA announcement found via search. Verification: not checkable without a live Azure subscription; recheck by re-reading S1609 periodically for a status change. (topic: arch/workload-identity-onprem-k8s)
+  - Resolved 2026-09-28: the Arc-enabled Kubernetes release notes (S-vspquxtf) announce general availability with agent 1.32.7 (February 2026); the conceptual page title still says preview. (topic: arch/workload-identity-onprem-k8s)
 - **`Authentication=ActiveDirectoryDefault` behavior for msodbcsql18 against on-prem/Arc-enabled SQL Server specifically** was not confirmed by a fetched page (search summary only, centered on Azure SQL DB/MI). Tried: WebSearch only, did not fetch the full ODBC Entra ID page content beyond the search summary. Could be closed with one more WebFetch of S1610 if this specific mode becomes load-bearing. (topic: arch/sql-auth-containers)
+  - Resolved 2026-09-28 into a conflict: the driver feature matrix (S-g2zvqta5) says the ODBC driver doesn't support default Azure authentication and the keyword list (S1610) omits it, while the mssql-django page (S-67zasdym) shows it with ODBC Driver 18; recorded in `_conflicts.md`. (topic: arch/sql-auth-containers)
 
 
 - Whether Power BI "field parameters" or a report-bound SQL/CSV table (as opposed to Analysis
   Services metadata translations) is a realistic, officially documented mechanism to localize
   report label text was not confirmed against official Microsoft Learn docs within the fetch
   budget. `arch/texts-catalogue-formats.md` [UNK]
+  - Resolved 2026-09-28: Power BI's multiple-language guidance (S-u6o4ef53, S-r4s5o7eh) says layout text can't be localized and report labels go into a Localized Labels table of measures; field parameters aren't named. (topic: arch/texts-catalogue-formats)
 - No official PowerShell or Power BI Fluent (FTL) runtime was found; absence was inferred from
   search results, not from an exhaustive official-docs negative confirmation. `arch/texts-catalogue-formats.md` [UNK]
+  - Resolved 2026-09-28: Project Fluent's active repositories (S-7sn3nxho) are the JavaScript, Python and Rust runtimes; recorded as DER, and the old "Python and Rust" wording is corrected. (topic: arch/texts-catalogue-formats)
 - GitLab's semantic-versioning requirement for Catalog releases: found stated in prose docs plus a
   still-open backend enforcement issue (#427286) — unclear from official docs alone whether
   non-semver tags are currently rejected at release time or only informally required. `arch/gitlab-ci-components.md` [UNK]
@@ -305,6 +313,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
   - Tried 2026-09-27: Learn searches for SMS Provider membership refresh and token cache, Configure role-based administration (S-iqal4gqk), Plan for the SMS Provider, Accounts, AdminService pages, web search: no provider cache documented. The article records the TGT rule (DOC) and the absence (DER); the lab check stays open. (topic: auth/configmgr-rbac-auth)
 - Mid-ticket TTL group removal (QA10 edge case): does an already-issued, TTL-capped TGT survive an admin's early removal of the membership, or is it invalidated immediately? Not stated in S1219.
   Verification: in an isolated PAM-enabled forest, add then early-remove a TTL group membership and observe whether the already-issued TGT is honoured until its original (TTL-capped) expiry. (topic: auth/ad-jit-membership)
+  - Narrowed 2026-09-28: by the documented Kerberos rule that membership changes don't touch an existing TGT or its service tickets (S-ffrzumip, S-v5wjmc3h), an early removal is kept in tickets until they expire; recorded as DER. The lab check stays to confirm it for PAM TTL links. (topic: auth/ad-jit-membership)
 - `python-ldap` on Windows: does it negotiate SASL sign/seal against a signing-enforced DC over plain `ldap://`? API is documented (S1220) but its Windows sign/seal behaviour is not stated by the docs.
   Verification: attempt `ldap3` vs `python-ldap` vs pywin32/ADSI (`ADS_USE_SIGNING|ADS_USE_SEALING`) GSSAPI binds over plain `ldap://` against a Server 2025 DC with LDAP signing enforced → settles QA15 fully. (topic: auth/ldap-smb-signing)
   - Partly resolved 2026-09-27: python-ldap 3.4.8 builds on OpenLDAP + Cyrus SASL and ships no wheels; Windows builds are unofficial (S-mc5jjnfr); the SSF options are documented (S-qscera6a); pywin32 b312 wraps ADsOpenObject with the flags DWORD (CODE S-eu32xfgv, S-lzhs4uhl); ldap3 2.9.1 raises on a required security layer (CODE S-63f6rimh). Windows sign/seal behaviour against an enforcing DC still needs the lab. (topic: auth/ldap-smb-signing)
@@ -315,6 +324,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
 - SMB 3.1.1 cipher negotiation specifics (AES-128-GCM vs AES-256-GCM) beyond the signing/encryption defaults: not researched. (topic: auth/ldap-smb-signing)
   - Resolved 2026-09-27: AES-128-GCM default for SMB 3.1.1, AES-256-CCM/GCM from Server 2022 and Windows 11, strongest common cipher negotiated, mandatable by Group Policy (S-77zvblfr). (topic: auth/ldap-smb-signing)
 - MIM PAM product support status in 2026: not researched. (topic: auth/ad-jit-membership)
+  - Resolved 2026-09-28: MIM 2016 end of support extended to 2029-01-09, SP3 current (S-a3advgfv). (topic: auth/ad-jit-membership)
 
 ### Entra / Graph / MSAL / GitLab
 
@@ -420,6 +430,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
 - `dsregcmd /status` Tenant details fields: documented only through sample output on S544; not extracted. (topic: entra/dsregcmd)
   - Resolved 2026-09-27: the section's visibility rule, MDM URL note and sample field names are now DOC in entra/dsregcmd.md (S544); the page still has no per-field descriptions, so the CSV stays without them. (topic: entra/dsregcmd)
 - `msDS-LogonTimeSyncInterval` default value when unset: not on schema page S563. Not searched further (budget). UNK. (topic: ad/computer-attributes)
+  - Resolved 2026-09-28: the lastLogonTimestamp schema page (S-7365hqko: 14 days minus a random percentage of 5 days) and KB 2679653 (S-gv5dk5hs: default updates only at 9 to 14 days) give the effective default. (topic: ad/computer-attributes)
 - managedDevice beta List/Delete API pages don't exist under `intune-devices-manageddevice-*` in beta (only Get); beta permissions for list/delete not captured. (topic: graph/permissions)
 
 ## infra
@@ -937,6 +948,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
 ## arch/kerberos-linux-containers
 
 - **Whether `requests-gssapi` (or python-gssapi underneath) acquires credentials from a client keytab on its own (MIT `KRB5_CLIENT_KTNAME` / `KRB5_KTNAME`) without a prior `kinit`.** The kb earlier said it does and quoted 'having a keytab is sufficient'. The requests-gssapi README and repo (HEAD 2025-10-16, S1604) contain no keytab text and require a TGT already in the ccache. Verify against the python-gssapi / MIT Kerberos client-keytab docs or in a lab; until then, run `kinit -kt` first. (topic: arch/kerberos-linux-containers)
+  - Resolved 2026-09-28: MIT Kerberos documents the default client keytab (`KRB5_CLIENT_KTNAME`) as used automatically by GSSAPI client applications; `KRB5_KTNAME` is the server keytab (S-n4ns4gdd). The article now says so. (topic: arch/kerberos-linux-containers)
 
 ## auth/delegation-kcd-obo
 
@@ -959,6 +971,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
 ## agents/instruction-and-context-limits
 
 - **Character limit of the Claude Projects instructions field.** The support article (S1859, re-read 2026-09-27) publishes no number; the field shows a live counter only inside the signed-in claude.ai UI. Tried 2026-09-27: S1859 re-read; Claude in Chrome was unavailable, and the counter is only visible in the signed-in UI, so reading it stays with a person. (topic: agents/instruction-and-context-limits)
+  - Tried 2026-09-28, still open: S1859 re-read with curl, still no number; the article now records only that absence. Reading the counter needs a signed-in claude.ai session. (topic: agents/instruction-and-context-limits)
 
 ## intune (complete articles)
 

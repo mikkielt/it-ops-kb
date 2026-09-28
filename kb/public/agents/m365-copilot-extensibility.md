@@ -2,8 +2,8 @@
 topic: agents/m365-copilot-extensibility
 priority: P1
 applies_to: "Microsoft 365 Copilot extensibility: declarative agents, custom engine agents, API/MCP plugins, Copilot connectors; docs current 2026-09-26"
-retrieved_utc: 2026-09-26
-sources: [S1840, S-gum2njhe, S-46ndqgay, S-3r3y76di, S-nztel442, S-4rvc364j, S-atzopgi7, S-j46dza7u, S-ipjygran, S-dfgcii3c, S-u2bv3zsu, S-7gjdhgh5, S-qgctvfuf, S-rymoydzk, S-nmxo2lu7, S-3wxcangs, S-5kn2m73o, S-aag4xzbw, S-xasz2mbx, S-bjnw7imn, S-rqk5odum]
+retrieved_utc: 2026-09-28
+sources: [S1840, S-gum2njhe, S-46ndqgay, S-3r3y76di, S-nztel442, S-4rvc364j, S-atzopgi7, S-j46dza7u, S-ipjygran, S-dfgcii3c, S-u2bv3zsu, S-7gjdhgh5, S-qgctvfuf, S-rymoydzk, S-nmxo2lu7, S-3wxcangs, S-5kn2m73o, S-aag4xzbw, S-xasz2mbx, S-bjnw7imn, S-rqk5odum, S-xgl6s552, S-x5qiebqy, S-lgyskerc, S-w32jevfq, S-7f2wrltf]
 status: complete
 files: [agents/declarative-agent-manifest.csv]
 ---
@@ -144,9 +144,9 @@ files: [agents/declarative-agent-manifest.csv]
   or the Copilot connector APIs. More than 100 connectors (Azure services, Box, Confluence, Google
   services, MediaWiki, Salesforce, ServiceNow and more) are listed in the Copilot connectors gallery.
   [DOC S-xasz2mbx]
-- Connector details not on the overview page: the "formerly Microsoft Graph connectors" name, ACL
-  enforcement wording, sync frequency/full-crawl controls, gRPC contracts, the on-premises connector
-  agent, and item-quota billing. [UNK: not in S-xasz2mbx as re-read 2026-09-27]
+- Microsoft 365 Copilot connectors were formerly called Microsoft Graph connectors; custom connectors use the Copilot connectors REST API (connections, schema, items, external groups), and items ingested this way consume the tenant's item quota. [DOC S-xgl6s552]
+- The connector agent behind SDK-built connectors runs full and incremental crawls on admin-defined intervals, detects deleted and changed items (by hash), and stamps ACLs from Entra ID or the source for security trimming. [DOC S-x5qiebqy]
+- In the admin center Sync tab, incremental crawls don't pick up permission updates, so full crawls must run periodically; the repeat interval is 15 minutes to 12 hours. [DOC S-lgyskerc]
 
 ### Admin controls and governance
 - The Microsoft 365 admin center's **agent registry** (Agents > All Agents > Registry) lists every
@@ -157,9 +157,7 @@ files: [agents/declarative-agent-manifest.csv]
   S-bjnw7imn]
 - Viewing risk signals in the registry needs an E7 or Agent 365 licence on the tenant; pinning agents
   needs the AI Administrator role. [DOC S-bjnw7imn]
-- Viewing the inventory with only the **AI Reader** role and no specific licence, and Entra Agent ID
-  licensing for governance controls on top (see `entra/agent-id.md`). [UNK: not in S-bjnw7imn as
-  re-read 2026-09-27]
+- AI Reader, Global Reader, Security Administrator/Reader, Reports Reader and User Experience Success Manager can view insights and the agent registry but can't install, modify or approve agents; only AI Administrator and Global Administrator have tenant-wide governance. [DOC S-w32jevfq]
 - A preview Microsoft Graph API surface (`copilotPackages` — list and get-details operations) lets
   admins pull the tenant's full agent inventory and per-agent metadata programmatically, gated on the
   AI Admin role, for bulk management/compliance reporting instead of the admin-center UI. [DOC
@@ -168,8 +166,7 @@ files: [agents/declarative-agent-manifest.csv]
   install it and under **Deploy** (optional) those who get it preinstalled, then apply a security
   policy template. Admins can pin up to three deployed agents into the Agents list in Microsoft
   Copilot, for all users or specific users or groups. [DOC S-bjnw7imn]
-- Per-agent Capabilities/Knowledge/Actions and Security & compliance tabs with separate **Available
-  to** / **Deployed to** settings. [UNK: not in S-bjnw7imn as re-read 2026-09-27]
+- An agent's details pane has tabs Details, Users (users who get it preinstalled and users who can install it), Data & Tools (read-only capabilities, knowledge sources and tools, plus Agent ID details), Security, Permissions, Certification and Activity, with Agent instances, Connected Agents and Computer use shown when they apply. [DOC S-7f2wrltf]
 
 ### Licensing
 - Three licensing tiers for extensibility: **Microsoft 365 Copilot** (paid add-on; frequent users;

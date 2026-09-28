@@ -2,8 +2,8 @@
 topic: arch/kerberos-linux-containers
 priority: P1
 applies_to: "MIT Kerberos, SQL Server on Linux, msodbcsql18, Python gssapi/requests-gssapi (docs current 2026-09-24)"
-retrieved_utc: 2026-09-26
-sources: [S1604, S1605, S1606, S1607, S1608]
+retrieved_utc: 2026-09-28
+sources: [S1604, S1605, S1606, S1607, S1608, S-n4ns4gdd]
 status: complete
 ---
 
@@ -26,10 +26,11 @@ status: complete
 - `adutil` is described as "Support ... limited to SQL Server use cases only," must run on a host already joined to the AD domain, after `kinit` with a privileged domain account allowed to create accounts and SPNs, and its keytab subcommand (`adutil keytab createauto -k <path> -p <port> -H <fqdn> --password '<password>' -s MSSQLSvc`) takes the account password as an explicit flag — there is no gMSA-aware variant or `msDS-ManagedPassword` retrieval option documented. [DOC S1606]
 - `mssql-conf` can also create the SQL Server service keytab, and the adutil docs cross-reference it for the `useLdaps` / LDAPS configuration path, and the page's samples create the account with `adutil user create` and its SPN with `adutil spn addauto`. [DOC S1606]
 - Python `requests-gssapi` (a backward-compatible shim for `requests-kerberos`: replace `import requests_kerberos` with `import requests_gssapi`) needs a Kerberos TGT already present in a credential cache, obtained with `kinit` or by pointing `$KRB5CCNAME` at a cache holding a valid TGT; the README states that ensuring credentials are available and valid is the user's responsibility. [DOC S1604]
-- The earlier claim that `requests-gssapi` reads a keytab through `KRB5_KTNAME` ("having a keytab is sufficient") is not in the project's README or code as of 2026-09-26; for unattended use, populate the ccache with `kinit -kt <keytab>` first (S1605 pattern). [UNK: not in S1604 as re-read 2026-09-26]
+- MIT Kerberos uses a *default client keytab*, if present and readable, to obtain initial credentials automatically for GSSAPI client applications; its name comes from `KRB5_CLIENT_KTNAME`, then `default_client_keytab_name`, then the built-in default. `KRB5_KTNAME` names the *server* default keytab. [DOC S-n4ns4gdd]
+- So the earlier claim that `requests-gssapi` reads a keytab through `KRB5_KTNAME` was wrong: with MIT krb5, a GSSAPI client such as `requests-gssapi` can start from a client keytab named by `KRB5_CLIENT_KTNAME`, or the ccache can be filled with `kinit -kt <keytab>` first (S1605 pattern). [DER S-n4ns4gdd, S1604: requests-gssapi calls the system GSSAPI; client keytab initiation is a krb5 feature]
 - HTTP Negotiate/SPNEGO itself is protocol-defined (RFC 4178 SPNEGO, RFC 4559 HTTP Negotiate), independent of any particular client library; `requests-gssapi`/`pyspnego`/`gssapi` all implement the same wire protocol against the system Kerberos libraries rather than reimplementing crypto. [DOC S1604]
 - AWS's `credentials-fetcher` (Apache 2.0, AWS open source) is a Linux daemon that "retrieves gMSA credentials from Active Directory over LDAP" and creates/refreshes Kerberos tickets from them for containers; it supports both domain-joined and non-domain-joined hosts (non-domain-joined needs AD user credentials in a secret store to bootstrap). It is the closest thing to "gMSA on Linux," but it is AWS's own daemon (originating from and primarily documented for Amazon Linux 2023/Fargate/ECS), not a Microsoft product or Microsoft Learn page. [COMMUNITY S1608]
-- No Microsoft Learn, MIT Kerberos, or SQL Server Linux doc found that states Python (`gssapi`/`pyspnego`/`requests-kerberos`) or any Microsoft-supported Linux tool can retrieve `msDS-ManagedPassword` for a gMSA directly — only `credentials-fetcher` (AWS, COMMUNITY) claims this. [UNK — no first-party Microsoft doc]
+- No Microsoft Learn, MIT Kerberos or SQL Server on Linux page states that Python (`gssapi`/`pyspnego`/`requests-kerberos`) or a Microsoft-supported Linux tool can retrieve `msDS-ManagedPassword` for a gMSA; only AWS's `credentials-fetcher` (COMMUNITY) does, and `adutil` documents no gMSA option. [DER S1606, S1608: adutil's documented options and the AWS daemon's own claim]
 
 ## Reference
 | Question | Answer | Source |

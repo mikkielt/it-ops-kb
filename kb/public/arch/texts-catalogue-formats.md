@@ -2,8 +2,8 @@
 topic: arch/texts-catalogue-formats
 priority: P1
 applies_to: [fluent, gettext, powershell, power-bi]
-retrieved_utc: 2026-09-26
-sources: [S1709, S1710, S1711, S1712, S1713, S1714, S1715, S1716, S1717]
+retrieved_utc: 2026-09-28
+sources: [S1709, S1710, S1711, S1712, S1713, S1714, S1715, S1716, S1717, S-7sn3nxho, S-zqoo6bqj, S-u6o4ef53, S-r4s5o7eh]
 status: complete
 ---
 
@@ -25,8 +25,7 @@ is the closest thing to a format with tooling on more than one of the four consu
 - Fluent (FTL) syntax supports terms (`-term-name`), attributes (`.tooltip`), message references, and
   selector expressions for plurals/gender — features a real, multi-consumer label catalogue would want.
   [DOC S1711]
-- No official PowerShell or Power BI Fluent runtime was found in official documentation or package
-  search; Fluent's maintained runtimes are Python (`fluent.runtime`) and Rust (`fluent-rs`). [UNK]
+- Project Fluent's active repositories provide runtimes for JavaScript (`fluent.js`), Python (`python-fluent`) and Rust (`fluent-rs`), and none for PowerShell, .NET or Power BI. [DER S-7sn3nxho: the organisation's non-archived repositories listed 2026-09-28]
 - PowerShell's built-in internationalization mechanism is `Import-LocalizedData`, which reads a
   `.psd1` data file — produced from `ConvertFrom-StringData` or written directly as a hashtable —
   stored in a culture-named subdirectory next to the script (e.g. `de-DE/<script-name>.psd1`); when no file
@@ -46,8 +45,7 @@ is the closest thing to a format with tooling on more than one of the four consu
   for translated data values. [DOC S1714]
 - TMDL view lets you create or edit semantic-model metadata that has no graphical interface in Power BI
   Desktop, translations among them, as TMDL scripts. [DOC S1715]
-- Per-language translation files under a model's `cultures/` folder, and Translation Builder or Tabular
-  Editor being needed before TMDL view. [UNK: not in S1715 as re-read 2026-09-27]
+- A TMDL folder has a `cultures` subfolder with one file per culture's linguistic schema, and TMDL writes a model object's translations (`caption`, `description`, `displayFolder`) under each culture. [DOC S-zqoo6bqj]
 
 ## Reference
 - Python: `fluent.runtime.FluentLocalization(["en-US"], ["catalogue.ftl"], loader)`.
@@ -78,6 +76,6 @@ is the closest thing to a format with tooling on more than one of the four consu
   support, so runtime parity is not the deciding factor]
 
 ## Gaps
-- Whether Power BI "field parameters" or a bound SQL/CSV table (rather than metadata translations)
-  is realistically usable to localize report text was not confirmed against official docs within the
-  fetch budget. [UNK]
+- Power BI translates only semantic-model metadata; text typed into the report layout (text boxes, buttons, visual titles, page tab names) can't be localized. [DOC S-u6o4ef53]
+- Microsoft's pattern for report labels is a hidden *Localized Labels* table of measures whose DAX uses `USERCULTURE` with `SWITCH`, generated with Translations Builder; the page notes that techniques keeping label translations in a separate CSV file work but are less streamlined. [DOC S-r4s5o7eh]
+- So a bound label table is usable when it feeds measures (the Localized Labels pattern), while field parameters are not named as a localization technique on either guidance page. [DER S-u6o4ef53, S-r4s5o7eh: layout text is not localizable; labels are measures]

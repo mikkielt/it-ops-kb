@@ -2,9 +2,9 @@
 topic: agents/instruction-and-context-limits
 priority: P1
 applies_to: "Copilot Studio, M365 Copilot declarative agent manifest 1.4/1.8, GitHub Copilot, OpenAI Assistants/custom GPTs, Gemini API, Claude Code/Projects/Skills, as published 2026-09-25"
-retrieved_utc: 2026-09-27
+retrieved_utc: 2026-09-28
 sources: [S1840, S1841, S1842, S1843, S1844, S1845, S1846, S1847, S1848, S1849, S1850, S1851, S1852, S1853, S1854, S1855, S1856, S1857, S1859, S1860, S1863, S1864, S1865, S1866, S1867, S1869, S1870, S1960, S-jexpr3gv, S-gwco6fl2, S-etprakdx, S746, S-f3chtt24, S-hcl5uw5c, S-tncj2tap, S-xxd6fl45, S-5lgjpf27, S-uyp3vgvo]
-status: partial
+status: complete
 ---
 
 # "Instruction limit exceeded" and instruction/context limits across products
@@ -102,8 +102,6 @@ a generic 400 on the underlying model call, worded around "exceeds the maximum" 
     article publishes no character limit for the project instructions field. [DOC S1859]
   - Context window on paid Claude plans depends on the model: 200K tokens by default, 500K or 1M tokens for the newer
     models listed (for chat, for example 1M for Claude Opus 5.5 and 500K for Claude Opus 4.8). [DOC S-etprakdx]
-  - A live character counter on the project instructions field with no published number. [UNK: not in S1859 as
-    re-read 2026-09-27; see gaps.md]
   - Tool-count/tool-name limits: a tool name has a documented 128-character limit (reported via a Claude Code bug
     report reproducing the API's rejection), and the raw Messages API is reported to support very large tool catalogs
     (order 10,000) once `defer_loading`/tool search is used, versus client UIs (for example VS Code's tool picker)

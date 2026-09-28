@@ -2,8 +2,8 @@
 topic: agents/copilot-studio-inventory
 priority: P1
 applies_to: "Microsoft Copilot Studio (standard harness, GitHub Copilot harness, Copilot chat harness), docs current 2026-09-25"
-retrieved_utc: 2026-09-27
-sources: [S1960, S1961, S1962, S1963, S1964, S1965, S1966, S1967, S1972, S1973, S1974, S1975, S1977, S1978, S1979, S1980, S1981, S1982, S1983, S1984]
+retrieved_utc: 2026-09-28
+sources: [S1960, S1961, S1962, S1963, S1964, S1965, S1966, S1967, S1972, S1973, S1974, S1975, S1977, S1978, S1979, S1980, S1981, S1982, S1983, S1984, S-jby7reko]
 status: complete
 files: [agents/copilot-studio-feature-map.csv]
 ---
@@ -113,7 +113,7 @@ files: [agents/copilot-studio-feature-map.csv]
 - SSO is **not** supported on Azure Bot Service channels, the Demo Website, Facebook, Mobile App, or
   Power Apps portals; Teams needs its own SSO configuration or authentication always fails there. [DOC
   S1966]
-- Teams SSO is Entra-ID-only (no third-party IdP). [UNK: not in S1966 as re-read 2026-09-27]
+- Teams SSO (Teams 1:1 chats, not group chats or channel messages) is supported only with Microsoft Entra ID; it signs users in with their Teams credentials when the agent uses **Authenticate with Microsoft**. [DOC S-jby7reko]
 
 ### Variables, state, handoff, analytics
 - Variables are topic-scoped by default (with explicit "receive from"/"return to" flags for passing
