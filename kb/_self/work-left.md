@@ -83,15 +83,6 @@ Kb facts the build rests on: `claude/hooks.md` (async hooks, `prompt_id`, `Stop`
 - `.gitlab-ci.yml` runs branch and tag pipelines only (a direct-push model), which fits this design unchanged.
 
 7. **Direct push, on the real `origin`:** once, `python3 _tools/querylog.py apply --push` lands one automatic commit on `main`, and one planted conflict ends as an open MR.
-8. **Gap entries, then opt-in research.**
-
-   Done:
-   - a reproduced gap candidate in a kb domain becomes a `_gaps.md` entry under its topic;
-   - research is off unless the user's local file turns it on, and then runs at most the user's daily cap;
-   - `querylog.py quotecheck` accepts a candidate fact only when its quote (25 words or fewer) is on the page;
-   - research adds facts and sources only, and a disagreement becomes a `_conflicts.md` entry.
-
-   Check: planted failures for a quote not on its page and for research editing an existing fact line; `check.py` `errors=0` after a fixture research run.
 9. **Digest and status.** Done:
    - `querylog.py digest` computes the same numbers from the committed store in any clone;
    - the first `SessionStart` of an ISO week shows it once;

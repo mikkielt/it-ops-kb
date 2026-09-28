@@ -9,7 +9,8 @@
   TestToolRows      kb_hook.py, kb_ask.py, fetch.py and census.py write their own rows; the kb: hook's answer is
                     unchanged
   TestNoHooks       every `claude -p` the pipeline starts carries --settings {"disableAllHooks": true} (planted: an
-                    argument list without it, or with false), and nothing is written unless a hook or a tool runs
+                    argument list without it, or with false), research's call included, and nothing is written
+                    unless a hook or a tool runs
   TestHookConfig    the capture hooks are async on UserPromptSubmit, PostToolUse, PostToolUseFailure and Stop in
                     .claude/settings.json and the plugin, through kbpy, with matchers for the kb and fetch tools
                     (planted: a synchronous capture hook, a missing event); the shell form runs end to end; the
@@ -50,7 +51,8 @@
   TestPushRules     apply --push without git: the host and forge from origin's url (GitLab.com when it names none);
                     only a finished failure is red (planted: each GitLab and GitHub state); the CI check is skipped
                     with a note when glab or gh is not signed in, and the glab and gh calls; the KB-Auto values of a
-                    commit's paths (planted: an article path is refused)
+                    commit's paths, research's articles, sources, conflicts and coverage included (planted: a tool,
+                    a kb/_self doc, the answers or anchors are refused); an edited fact line is refused at commit
   TestRetry         a finding recorded apply-failed is not applied again when a later record opens it (planted:
                     FAILED_RETRIES=1 applies it); findings named by --hold are left alone
   TestPushInGit     (marker git) a kb copy with the learned fixture store and local bare remotes that advertise push
@@ -60,6 +62,21 @@
                     not itself reverted or retried; a planted conflict pushes querylog/<run-id> with the MR push
                     options and nothing to main, its findings stay open and a second run leaves them alone;
                     check-trailers flags a bad or doubled KB-Auto. glab is a stub, never the network
+  TestGapStep       a reproduced gap candidate with an article in the pack's lead becomes a dated _gaps.md entry at
+                    the end of its topic's section (or a new section), once, the finding promoted candidate-gap ->
+                    gap; off the kb's domains, a lead no article holds, or a pass now: it stays a candidate
+  TestQuoteCheck    quotecheck on a recorded page: entities, no-break spaces, curly quotes, links and emphasis
+                    normalized; planted: a quote not on its page, page chrome, over 25 or under 5 words, a page that
+                    cannot be fetched; the default fetcher is fetch.py's; the command line
+  TestResearchConfig  research is off without the config file and fails closed on a bad one; the daily cap counts
+                    runs per day, and mode off or the DISABLED marker turns research off
+  TestResearch      with stub gates on a one-article root: facts and source rows added, a disagreement to
+                    _conflicts.md, the finding promoted gap -> candidate-fact -> claim; planted: a quote not on its
+                    page, research editing an existing fact line, a red check.py (every file put back); at most the
+                    runs left; a failed call writes nothing; a reply that is not the JSON; candidate and edit gates
+  TestResearchInKbCopy  in a kb copy, learn then apply with research off (the gap entry only), then on at one run a day
+                    (recorded reply and page): a fact, a source row and a conflict entry, check.py errors=0 and
+                    build_index --check after it, and a second run changes nothing
 Every run writes under a temporary plugin data directory (conftest.querylog_env), never the clone's own spool, and no
 test calls the real `claude`: Haiku is the recorded reply file or a stub.
 """
@@ -423,7 +440,7 @@ class TestNoHooks:
     def test_pipeline_claude_runs_carry_disable_all_hooks(self):
         import kb_ask, redact
         for argv in (kb_ask.claude_argv("haiku", tools=False), kb_ask.claude_argv("sonnet", tools=True),
-                     redact.names_argv("haiku")):
+                     redact.names_argv("haiku"), querylog.research_argv()):
             assert "-p" in argv and hooks_off(argv), argv
 
     def test_distill_haiku_call(self, monkeypatch):
@@ -441,6 +458,23 @@ class TestNoHooks:
         assert argv[argv.index("--tools") + 1] == "" and not seen.get("shell")
         assert seen["input"] == "prompt" and seen["timeout"] == querylog.HAIKU_TIMEOUT_S
 
+    def test_research_call(self, monkeypatch):
+        """research's call is research_argv as an argument list, in an empty directory: hooks off, web search and
+        fetch the only built-in tools, the prompt on stdin."""
+        seen = {}
+
+        def fake_run(argv, **kw):
+            seen.update(argv=argv, **kw)
+            return subprocess.CompletedProcess(argv, 0, '{"facts": []}', "")
+        monkeypatch.setattr(querylog.subprocess, "run", fake_run)
+        assert querylog.claude_research("prompt") == '{"facts": []}'
+        argv = seen["argv"]
+        assert isinstance(argv, list) and "-p" in argv and hooks_off(argv) and not seen.get("shell"), argv
+        assert argv[argv.index("--tools") + 1] == "WebSearch,WebFetch"
+        assert argv[argv.index("--permission-mode") + 1] == "dontAsk" and "--strict-mcp-config" in argv
+        assert seen["input"] == "prompt" and seen["timeout"] == querylog.RESEARCH_TIMEOUT_S
+        assert seen["cwd"] and not Path(seen["cwd"]).exists()  # a temporary directory, gone after the run
+
     def test_planted_argument_lists_fail(self):
         assert not hooks_off(["claude", "-p", "--model", "haiku"])
         assert not hooks_off(["claude", "-p", "--settings", json.dumps({"disableAllHooks": False})])
@@ -448,7 +482,7 @@ class TestNoHooks:
 
     def test_every_claude_p_in_the_pipeline_is_checked(self):
         """The pipeline's modules build their `claude -p` lists only in the functions tested above."""
-        for name, allowed in (("kb_ask.py", 1), ("redact.py", 1), ("querylog.py", 0)):
+        for name, allowed in (("kb_ask.py", 1), ("redact.py", 1), ("querylog.py", 1)):
             text = Path(TOOLS, name).read_text(encoding="utf-8")
             assert len(re.findall(r'"-p"', text)) == allowed, name
 
@@ -1338,6 +1372,10 @@ def learned(tmp_path_factory):
     return store
 
 
+def gap_of(objs):
+    return next(o for o in objs[1:] if o["kind"] == "gap")
+
+
 class TestFindingsGates:
     def planted(self, learned, tmp_path, change):
         store = tmp_path / "store"
@@ -1366,6 +1404,15 @@ class TestFindingsGates:
         (lambda o: o[-1].update(signal="vibes"), "unknown signal 'vibes'"),
         (lambda o: o[-1].update(state="applied"), "a source finding is never applied"),
         (lambda o: o[1].update(state="applied"), "is applied without its fix"),
+        (lambda o: gap_of(o).update(promotions=[{"from": "miss", "to": "candidate-gap", "by": "haiku"}]),
+         "a promotion by 'haiku'"),
+        (lambda o: gap_of(o).update(stage="gap", article=LAPS, promotions=[
+            {"from": "miss", "to": "candidate-gap", "by": "learn"}, {"from": "miss", "to": "gap", "by": "apply"}]),
+         "promotions do not follow each other"),
+        (lambda o: gap_of(o).update(stage="gap", article=LAPS), "stage gap is not its last promotion's candidate-gap"),
+        (lambda o: gap_of(o).update(stage="gap", promotions=[{"from": "miss", "to": "candidate-gap", "by": "learn"},
+                                                             {"from": "candidate-gap", "to": "gap", "by": "apply"}]),
+         "a gap finding at stage gap names no article"),
     ])
     def test_findings_gates(self, learned, tmp_path, change, problem):
         problems = self.planted(learned, tmp_path, change)
@@ -1698,8 +1745,29 @@ class TestPushRules:
                  "kb/public/_retrieval/doc2query/expansions.csv", "kb/team/_retrieval/aliases.csv", "kb/public/_gaps.md"]
         assert querylog.auto_kinds(paths) == ["alias", "eval", "expansion", "gap", "querylog"]
         assert set(querylog.auto_kinds(paths)) <= set(kbgit.AUTO_VALUES)
-        with pytest.raises(ValueError, match="kb/public/windows/laps.md"):  # planted: an article edit
-            querylog.auto_kinds(paths + ["kb/public/windows/laps.md"])
+        research = ["kb/public/windows/laps.md", "kb/public/_sources.csv", "kb/public/_conflicts.md",
+                    "kb/public/_coverage.csv", "kb/public/_coverage.md", "kb/team/infra/dns/zones.md"]
+        assert querylog.auto_kinds(paths + research) == ["alias", "eval", "expansion", "gap", "querylog", "research"]
+        for p in ("_tools/kbfacts.py", "kb/_self/tools.md", "kb/public/_answers.md", "kb/public/_anchors.csv",
+                  "README.md", "kb/public/_retrieval/signals.csv", "kb/public/_snapshots/S100.txt"):
+            with pytest.raises(ValueError, match=re.escape(p)):  # planted: a path apply never writes
+                querylog.auto_kinds(paths + [p])
+
+    def test_an_edited_line_is_refused_at_commit(self, tmp_path):
+        """apply --push checks the worktree's change against HEAD: added lines pass, an edited fact line, ledger
+        entry or source row is refused (planted)."""
+        old = "---\ntopic: a/b\n---\n## Facts\n- One fact. [DOC S100]\n"
+        f = tmp_path / querylog.WORKTREE_NAME / "kb" / "public" / "a" / "b.md"
+        f.parent.mkdir(parents=True)
+
+        def run(argv, cwd=None):
+            return (0, old, "") if argv[:2] == ["git", "show"] else (1, "", "")
+        p = querylog.Pusher(tmp_path, tmp_path, run, None, print)
+        f.write_text(old + "- Two facts. [DOC S101]\n", encoding="utf-8", newline="\n")
+        assert p.edited(["kb/public/a/b.md"]) == []
+        f.write_text(old.replace("One fact.", "One fact, edited."), encoding="utf-8", newline="\n")
+        (why,) = p.edited(["kb/public/a/b.md"])
+        assert "removes or edits an existing fact line" in why
 
 
 def reopen(store, ids):
@@ -1998,3 +2066,538 @@ class TestPushInGit:
         assert (p.returncode == 0) is ok, p.stdout
         if not ok:
             assert "KB-Auto: has " in p.stdout and "expected once, of querylog|eval|" in p.stdout, p.stdout
+
+
+# --- the gap step, the quote check and research (Query log item 8) --------------------------------------------------
+
+PAGE = FIXTURES / "pages" / "laps-platforms.html"
+PAGE_URL = "https://docs.example.com/laps/platforms"
+GOOD_QUOTE = "it doesn't support Windows Server 2012 R2"  # the page writes doesn&#8217;t and 2012&nbsp;R2
+BAD_QUOTE = "Windows LAPS supports Windows Server 2012 R2 with the April 2023 update"
+LEGACY_QUOTE = "The legacy Microsoft LAPS product remains available for older operating systems"  # a link and <em>
+DAY = "2026-09-28"
+GAP_ID = querylog.finding_id("gap", E("a4"))
+ARTICLE_MD = """---
+topic: windows/laps
+priority: P1
+applies_to: [windows]
+retrieved_utc: 2026-09-01
+sources: [S100, S101]
+status: complete
+---
+
+# Windows LAPS
+
+## Summary
+
+A test article.
+
+## Facts
+
+- Windows LAPS keeps the managed account's password in the directory. [DOC S100]
+- The default password length is 14 characters. [DOC S101]
+
+## Reference
+
+- None.
+"""
+SOURCES_CSV = ("id,url,title,publisher,licence,reuse,retrieved_utc,version_or_date,artifact_sha256,used_in,superseded_by\n"
+               "S100,https://docs.example.com/laps/overview,LAPS overview,Example Docs,CC BY 4.0,copy,2026-09-01,,,"
+               "windows/laps.md,\n"
+               "S101,https://docs.example.com/laps/policy,LAPS policy,Example Docs,CC BY 4.0,copy,2026-09-01,,,"
+               "windows/laps.md,\n")
+GAPS_MD = ("# Gaps\n\n## windows/laps\n\n- **An older entry.** Looked somewhere. (topic: windows/laps)\n\n"
+           "## other/topic\n\n- **Another entry.** Elsewhere. (topic: other/topic)\n")
+
+
+def pages(url):
+    if url != PAGE_URL:
+        raise OSError(f"no recorded page for {url}")
+    return PAGE.read_bytes(), "text/html; charset=utf-8"
+
+
+def cand(**kw):
+    c = {"text": "Windows LAPS does not back up passwords from Windows Server 2012 R2 devices.", "tag": "DOC",
+         "url": PAGE_URL, "title": "Windows LAPS platform support", "publisher": "Example Docs",
+         "licence": "CC BY 4.0, stated on the page (test page)", "reuse": "copy", "quote": GOOD_QUOTE,
+         "conflicts_with": None}
+    c.update(kw)
+    return c
+
+
+def reply(*cands):
+    return "Here is what I found.\n" + json.dumps({"facts": list(cands)})
+
+
+class KbGate(querylog.Gate):
+    """The gap step's and research's gate on a one-article root in a temporary directory: pack leads with that
+    article (`res`), build_index and check.py stubbed (`checks` are their problems), the eval set unchanged."""
+
+    def __init__(self, root, res=None, checks=()):
+        self.dir, self.checks, self.indexed = Path(root), list(checks), 0
+        self.res = res or {"verdict": "weak", "paths": [LAPS, "public/windows/gmsa.md"], "missing": []}
+
+    def fresh(self):
+        pass
+
+    def pack(self, question):
+        return self.res
+
+    def article_of(self, path):
+        return path if path == LAPS else None
+
+    def topic(self, article):
+        return "windows/laps"
+
+    def ledger(self, article, name):
+        return self.dir / name
+
+    def file(self, article):
+        return self.dir / "windows" / "laps.md"
+
+    def id_prefix(self, article):
+        return "S"
+
+    def index_and_check(self):
+        self.indexed += 1
+        return list(self.checks)
+
+    def measure(self):
+        return {"n": 1, "passed": 1, "failed": [], "chars": {"EV-a": 100}, "offkb_good": 0}
+
+
+def kb_root(d, gaps=GAPS_MD):
+    d = Path(d)
+    (d / "windows").mkdir(parents=True, exist_ok=True)
+    for name, text in (("windows/laps.md", ARTICLE_MD), ("_sources.csv", SOURCES_CSV), ("_gaps.md", gaps),
+                       ("_conflicts.md", "# Conflicts\n")):
+        (d / name).write_text(text, encoding="utf-8", newline="\n")
+    return d
+
+
+def root_files(d):
+    return {p.relative_to(d).as_posix(): p.read_bytes() for p in sorted(Path(d).rglob("*")) if p.is_file()}
+
+
+def gap_store(tmp_path, extra=()):
+    """The fixture store after one learn in which only a4 (and the `extra` entries, copies of a4 with other ids)
+    still fail: open gap candidates, the evals fixed since."""
+    store = learn_store(tmp_path)
+    (p,) = querylog.run_files(store)
+    objs = jsonl(p)
+    a4 = next(o for o in objs if o.get("id") == E("a4"))
+    for n in extra:
+        objs.append({**a4, "id": E(n), "question": f"{a4['question']} ({n})"})
+    objs[0]["counts"]["entries"] = len(objs) - 1
+    p.write_text("".join(json.dumps(o, separators=(",", ":")) + "\n" for o in objs), encoding="utf-8", newline="\n")
+    run_learn(store, lambda q: failing(q) if "VMware" in q else passing(q))
+    return store
+
+
+def run_gap_apply(store, gate, research=None):
+    said = []
+    rc = querylog.apply(store, gate=gate, kb_commit="0" * 40, out=said.append, research=research, day=DAY)
+    return rc, said
+
+
+class TestGapStep:
+    def test_a_reproduced_gap_becomes_an_entry_under_its_topic(self, tmp_path):
+        root = kb_root(tmp_path / "root")
+        store = gap_store(tmp_path)
+        rc, said = run_gap_apply(store, KbGate(root))
+        assert rc == 0 and "gaps=1" in said[0] and "applied=1" in said[0], said
+        text = (root / "_gaps.md").read_text(encoding="utf-8")
+        lines = text.split("\n")
+        at = lines.index("- **An older entry.** Looked somewhere. (topic: windows/laps)")
+        new = lines[at + 1]  # at the end of its topic's section, before the next section
+        assert new.startswith("- **How do I configure VMware Horizon instant clone pools?** ") and lines[at + 3] == \
+            "## other/topic"
+        assert new.endswith("(topic: windows/laps)") and f"Looked in the kb {DAY}" in new and GAP_ID in new
+        assert querylog.edit_problems("_gaps.md", GAPS_MD, text) == []  # added, nothing edited
+        rec = by_id(store)[GAP_ID]
+        assert (rec["state"], rec["stage"], rec["article"]) == ("applied", "gap", LAPS)
+        assert rec["promotions"] == [{"from": "miss", "to": "candidate-gap", "by": "learn"},
+                                     {"from": "candidate-gap", "to": "gap", "by": "apply"}]
+        assert querylog.store_problems(store) == []
+        first = tree(store), root_files(root)
+        assert run_gap_apply(store, KbGate(root)) == (0, ["apply: nothing to apply"])  # converges
+        assert (tree(store), root_files(root)) == first
+
+    def test_a_topic_without_a_section_gets_one(self, tmp_path):
+        old = "# Gaps\n\n## other/topic\n\n- **Another entry.** x. (topic: other/topic)\n"
+        root = kb_root(tmp_path / "root", gaps=old)
+        run_gap_apply(gap_store(tmp_path), KbGate(root))
+        text = (root / "_gaps.md").read_text(encoding="utf-8")
+        assert text.startswith(old + "\n## windows/laps\n\n- **How do I configure VMware Horizon instant clone pools?**")
+        assert text.endswith("(topic: windows/laps)\n") and text.count("\n") == old.count("\n") + 4
+
+    def test_an_entry_is_written_once(self, tmp_path):
+        root = kb_root(tmp_path / "root")
+        store = gap_store(tmp_path)
+        run_gap_apply(store, KbGate(root))
+        text = (root / "_gaps.md").read_bytes()
+        querylog.findings_files(store)[-1].unlink()  # the record is gone (a lost run), the entry is there
+        run_gap_apply(store, KbGate(root))
+        assert (root / "_gaps.md").read_bytes() == text
+
+    @pytest.mark.parametrize("res", [
+        {"verdict": "none", "paths": [], "missing": ["horizon"]},  # off the kb's domains
+        {"verdict": "weak", "paths": ["public/nowhere/x.csv"], "missing": []},  # a lead no article holds
+        {"verdict": "good", "paths": [LAPS], "missing": []},  # passes now: learn records it
+    ])
+    def test_a_gap_off_the_kb_or_fixed_stays_a_candidate(self, tmp_path, res):
+        root = kb_root(tmp_path / "root")
+        store = gap_store(tmp_path)
+        before = root_files(root), tree(store)
+        assert run_gap_apply(store, KbGate(root, res=res)) == (0, ["apply: nothing to apply"])
+        assert (root_files(root), tree(store)) == before
+        assert (by_id(store)[GAP_ID]["state"], by_id(store)[GAP_ID]["stage"]) == ("open", "candidate-gap")
+
+    def test_add_under(self):
+        assert querylog.add_under("", "a/b", "- x") == "## a/b\n\n- x\n"
+        assert querylog.add_under("# T\n\n## a/b\n", "a/b", "- x") == "# T\n\n## a/b\n\n- x\n"
+        assert querylog.add_under("# T\n\n## a/b\n\n- y\n\n\n## c/d\n\n- z\n", "a/b", "- x") == \
+            "# T\n\n## a/b\n\n- y\n- x\n\n\n## c/d\n\n- z\n"
+
+
+class TestQuoteCheck:
+    @pytest.mark.parametrize("quote", [
+        GOOD_QUOTE,  # an entity and a no-break space on the page
+        f"\u201c{LEGACY_QUOTE}.\u201d",  # a link and emphasis on the page, the quote in curly quotes
+        "Windows LAPS backs up passwords to Microsoft Entra ID only from devices",  # spread over lines
+        "WINDOWS SERVER 2012 R2 & EARLIER RELEASES",  # &amp; on the page
+    ])
+    def test_a_quote_on_its_page(self, quote):
+        assert querylog.quotecheck(PAGE_URL, quote, pages) == (True, "quote is on the page")
+
+    @pytest.mark.parametrize("quote,why", [
+        (BAD_QUOTE, "quote is not on the page"),  # planted: a quote not on its page
+        ("Docs > Identity > LAPS is the path", "quote is not on the page"),  # page chrome is not the page's text
+        (" ".join(["word"] * 26), "quote has 26 words, over 25"),
+        ("Windows LAPS", "quote has 2 words, under 5"),
+    ])
+    def test_a_quote_not_accepted(self, quote, why):
+        assert querylog.quotecheck(PAGE_URL, quote, pages) == (False, why)
+
+    def test_a_page_that_cannot_be_fetched(self):
+        ok, why = querylog.quotecheck("https://docs.example.com/other", GOOD_QUOTE, pages)
+        assert not ok and why.startswith("page not fetched: OSError")
+
+    def test_a_markdown_page(self):
+        md = b"See the [LAPS overview](https://docs.example.com/o) for **supported** platforms and more.\n"
+        assert querylog.quotecheck(PAGE_URL, "See the LAPS overview for supported platforms",
+                                   lambda u: (md, "text/markdown"))[0]
+
+    def test_pages_are_fetched_as_fetch_py_fetches_them(self, monkeypatch):
+        import fetch
+        asked = []
+        monkeypatch.setattr(fetch, "fetch", lambda url: asked.append(url) or pages(url))
+        assert querylog.quotecheck(PAGE_URL, GOOD_QUOTE)[0] and asked == [PAGE_URL]
+
+    def test_quote_max_words_is_the_kb_rule(self):
+        import kbcommon
+        assert querylog.QUOTE_MAX_WORDS == kbcommon.QUOTE_WORDS == 25
+
+    @pytest.mark.parametrize("quote,rc,said", [(GOOD_QUOTE, 0, "quotecheck: quote is on the page\n"),
+                                               (BAD_QUOTE, 1, "quotecheck: quote is not on the page\n")])
+    def test_cli(self, tmp_path, quote, rc, said):
+        p = subprocess.run([sys.executable, QL, "quotecheck", PAGE_URL, quote, "--page", str(PAGE)],
+                           capture_output=True, text=True, encoding="utf-8", env=querylog_env(tmp_path), timeout=120)
+        assert (p.returncode, p.stdout) == (rc, said), p.stderr
+
+
+class TestResearchConfig:
+    @pytest.mark.parametrize("text,want", [
+        (None, (False, 0)),  # no file: research is off by default
+        ('{"mode": "local"}', (False, 0)),
+        ('{"research": true}', (True, querylog.DEFAULT_RESEARCH_DAILY)),
+        ('{"research": true, "research_daily": 1}', (True, 1)),
+        ('{"research": true, "research_daily": 0}', (True, 0)),
+        ('{"research": "yes"}', (False, 0)),  # fail closed
+        ('{"research": true, "research_daily": -1}', (False, 0)),
+        ('{"research": true, "research_daily": "many"}', (False, 0)),
+        ('{"research": true, "research_daily": true}', (False, 0)),
+        ("{not json", (False, 0)),
+    ])
+    def test_read_research(self, tmp_path, text, want):
+        cfg = tmp_path / "config.json"
+        if text is not None:
+            cfg.write_text(text, encoding="utf-8")
+        assert querylog.read_research(cfg) == want
+        assert querylog.DEFAULT_RESEARCH is False
+
+    def test_the_daily_cap_counts_runs(self, tmp_path):
+        cfg = tmp_path / "config.json"
+        cfg.write_text('{"mode": "local", "research": true, "research_daily": 2}', encoding="utf-8")
+        assert querylog.research_budget(tmp_path, cfg, DAY) == 2
+        querylog.count_research(tmp_path, DAY)
+        assert querylog.research_budget(tmp_path, cfg, DAY) == 1
+        querylog.count_research(tmp_path, DAY)
+        assert querylog.research_budget(tmp_path, cfg, DAY) == 0
+        querylog.count_research(tmp_path, DAY)  # never below 0
+        assert querylog.research_budget(tmp_path, cfg, DAY) == 0
+        assert querylog.research_budget(tmp_path, cfg, "2026-09-29") == 2  # a new day
+        (tmp_path / "DISABLED").write_text("", encoding="utf-8")
+        assert querylog.research_budget(tmp_path, cfg, "2026-09-29") == 0
+        (tmp_path / "DISABLED").unlink()
+        cfg.write_text('{"mode": "off", "research": true}', encoding="utf-8")
+        assert querylog.research_budget(tmp_path, cfg, "2026-09-29") == 0
+
+    def test_a_clone_names_its_own_config(self, tmp_path):
+        assert querylog.research_places(tmp_path) == (tmp_path / "_cache" / "querylog",
+                                                      tmp_path / "_private" / "querylog.json")
+
+
+class TestResearch:
+    def setup(self, tmp_path, *cands, runs=1, checks=(), extra=()):
+        root = kb_root(tmp_path / "root")
+        store = gap_store(tmp_path, extra)
+        calls, counted = [], []
+
+        def call(prompt):
+            calls.append(prompt)
+            return reply(*cands)
+        research = querylog.Researcher(runs, call=call, fetcher=pages, counted=lambda: counted.append(1))
+        return root, store, KbGate(root, checks=checks), research, calls, counted
+
+    def test_facts_sources_and_a_conflict_are_added(self, tmp_path):
+        other = cand(text="Windows LAPS supports Windows Server 2012 R2 after a later update.", quote=BAD_QUOTE)
+        legacy = cand(text="Legacy Microsoft LAPS stays available for older operating systems.", quote=LEGACY_QUOTE,
+                      conflicts_with=19)
+        root, store, gate, research, calls, counted = self.setup(tmp_path, cand(), other, legacy)
+        rc, said = run_gap_apply(store, gate, research)  # the gap step and research in one run
+        assert rc == 0 and "gaps=1 research=1 facts=1 conflicts=1" in said[0], said
+        assert len(calls) == len(counted) == 1 and not research.left()
+        assert "How do I configure VMware Horizon instant clone pools?" in calls[0]
+        assert "19: - The default password length is 14 characters. [DOC S101]" in calls[0]
+        import kbid
+        sid = kbid.source_id(PAGE_URL, "S")
+        art = (root / "windows" / "laps.md").read_text(encoding="utf-8")
+        assert querylog.edit_problems("laps.md", ARTICLE_MD, art) == []
+        lines = art.split("\n")
+        assert lines[19] == f"- {cand()['text']} [DOC {sid}]" and lines[20:22] == ["", "## Reference"]
+        assert f"sources: [S100, S101, {sid}]" in lines
+        src = (root / "_sources.csv").read_text(encoding="utf-8")
+        assert src.startswith(SOURCES_CSV) and src[len(SOURCES_CSV):].count("\n") == 1  # one row for one url
+        assert src.endswith(f"{sid},{PAGE_URL},Windows LAPS platform support,Example Docs,"
+                            f'"CC BY 4.0, stated on the page (test page)",copy,{DAY},,,,\n')
+        conflicts = (root / "_conflicts.md").read_text(encoding="utf-8")
+        assert conflicts.startswith("# Conflicts\n\n## windows/laps\n\n- **The default password length is 14 characters.**")
+        assert f"[DOC {sid} vs S101] (topic: windows/laps)" in conflicts and GAP_ID in conflicts
+        rec = by_id(store)[GAP_ID]
+        assert (rec["state"], rec["stage"]) == ("applied", "claim")
+        assert [(p["to"], p["by"]) for p in rec["promotions"]] == [
+            ("candidate-gap", "learn"), ("gap", "apply"), ("candidate-fact", "research"), ("claim", "research")]
+        assert rec["observed"] == {"facts": 1, "conflicts": 1, "sources": [sid],
+                                   "gate": ["fact 1: quote is not on the page"]}
+        assert gate.indexed == 1 and querylog.store_problems(store) == []
+        first = tree(store), root_files(root)
+        assert run_gap_apply(store, gate, querylog.Researcher(1, call=calls.append, fetcher=pages)) == \
+            (0, ["apply: nothing to apply"])  # a claim is not researched again
+        assert (tree(store), root_files(root)) == first
+
+    def test_a_quote_not_on_its_page_is_rejected(self, tmp_path):
+        root, store, gate, research, calls, _ = self.setup(tmp_path, cand(quote=BAD_QUOTE))  # planted
+        before = root_files(root)
+        run_gap_apply(store, gate)
+        gapped = root_files(root)
+        assert gapped != before  # the gap entry
+        rc, said = run_gap_apply(store, gate, research)
+        assert rc == 0 and "research=1 facts=0 conflicts=0" in said[0] and "rejected=1" in said[0], said
+        assert root_files(root) == gapped and gate.indexed == 0
+        rec = by_id(store)[GAP_ID]
+        assert (rec["state"], rec["stage"], rec["observed"]["gate"]) == (
+            "rejected", "candidate-fact", ["fact 0: quote is not on the page"])
+        assert querylog.store_problems(store) == []
+
+    def test_research_editing_an_existing_fact_line_is_put_back(self, tmp_path, monkeypatch):
+        root, store, gate, research, _, _ = self.setup(tmp_path, cand())
+        run_gap_apply(store, gate)
+        before = root_files(root)
+        add = querylog.add_fact
+        monkeypatch.setattr(querylog, "add_fact", lambda text, line: add(text, line).replace(
+            "is 14 characters", "is 16 characters"))  # planted: the writer also edits an existing fact line
+        rc, said = run_gap_apply(store, gate, research)
+        assert rc == 0 and "rejected=1" in said[0], said
+        assert root_files(root) == before and gate.indexed == 0  # every file put back
+        rec = by_id(store)[GAP_ID]
+        assert rec["state"] == "rejected" and rec["stage"] == "candidate-fact"
+        assert rec["observed"]["gate"] == ["laps.md: removes or edits an existing fact line: - The default password "
+                                           "length is 14 characters. [DOC S101]"]
+
+    def test_a_red_check_puts_everything_back(self, tmp_path):
+        root, store, gate, research, _, _ = self.setup(tmp_path, cand(), checks=["ERROR windows/laps.md cites S9"])
+        run_gap_apply(store, gate)
+        before = root_files(root)
+        run_gap_apply(store, gate, research)
+        assert root_files(root) == before
+        assert by_id(store)[GAP_ID]["observed"]["gate"] == ["ERROR windows/laps.md cites S9"]
+
+    def test_at_most_the_daily_runs(self, tmp_path):
+        root, store, gate, research, calls, counted = self.setup(tmp_path, cand(), runs=1, extra=("a6",))
+        rc, said = run_gap_apply(store, gate, research)
+        assert "gaps=2 research=1" in said[0], said
+        assert len(calls) == len(counted) == 1
+        stages = sorted(r["stage"] for r in by_id(store).values() if r["kind"] == "gap")
+        assert stages == ["claim", "gap"]  # the second waits for another day
+        rc, said = run_gap_apply(store, gate, querylog.Researcher(0, call=calls.append, fetcher=pages))
+        assert said == ["apply: nothing to apply"] and len(calls) == 1
+
+    def test_no_research_leaves_gap_findings(self, tmp_path):
+        root, store, gate, research, calls, _ = self.setup(tmp_path, cand())
+        run_gap_apply(store, gate, None)
+        assert by_id(store)[GAP_ID]["stage"] == "gap" and calls == []
+        assert run_gap_apply(store, gate, None) == (0, ["apply: nothing to apply"])
+
+    def test_a_failed_call_writes_nothing_and_counts(self, tmp_path):
+        root, store, gate, _, _, _ = self.setup(tmp_path)
+        run_gap_apply(store, gate)
+        before = tree(store), root_files(root)
+        counted = []
+
+        def down(prompt):
+            raise OSError("claude -p exited 1")
+        rc, said = run_gap_apply(store, gate, querylog.Researcher(2, call=down, counted=lambda: counted.append(1)))
+        assert said == ["apply: nothing to apply (research runs=1, no reply)"] and counted == [1]
+        assert (tree(store), root_files(root)) == before  # tried again on a later run
+
+    @pytest.mark.parametrize("text,why", [
+        ("no JSON here", "reply: no JSON object in the reply"),
+        ('{"facts": "none"}', "reply: no facts list"),
+        ('{"facts": [{"text": "x"}]}', "reply: fact 0 is malformed"),
+    ])
+    def test_a_reply_that_is_not_the_json_is_rejected(self, tmp_path, text, why):
+        root = kb_root(tmp_path / "root")
+        store = gap_store(tmp_path)
+        run_gap_apply(store, KbGate(root))
+        before = root_files(root)
+        run_gap_apply(store, KbGate(root), querylog.Researcher(1, call=lambda p: text, fetcher=pages))
+        rec = by_id(store)[GAP_ID]
+        assert (rec["state"], rec["stage"], rec["observed"]["gate"]) == ("rejected", "gap", [why])
+        assert root_files(root) == before
+
+    @pytest.mark.parametrize("change,why", [
+        ({"tag": "DER"}, "tag 'DER' is not one of DOC, COMMUNITY"),
+        ({"url": "https://wiki.corp/laps"}, "url is not a public http(s) page"),
+        ({"url": "ftp://docs.example.com/x"}, "url is not a public http(s) page"),
+        ({"reuse": "free"}, "reuse 'free' is not a reuse class"),
+        ({"licence": " "}, "title, publisher or licence is empty"),
+        ({"text": "Short."}, "text is not one short sentence"),
+        ({"text": "Windows LAPS does not support 2012 R2 at all. [DOC S100]"}, "text carries a tag"),
+        ({"text": "The default password length is 14 characters."}, "text is already a fact"),
+        ({"text": "Windows LAPS reads its settings from C:\\Users\\" + "anna.nowak\\laps.json on each device."},
+         "leak scan flags"),  # a home path, joined at run time so the tracked-file leak scan does not flag it
+        ({"conflicts_with": 3}, "conflicts_with 3 names no fact line"),
+    ])
+    def test_candidate_problems(self, change, why):
+        facts = querylog.fact_lines(ARTICLE_MD)
+        assert [n for n, _ in facts] == [18, 19]
+        assert querylog.candidate_problems(cand(), facts) == []
+        assert any(why in p for p in querylog.candidate_problems(cand(**change), facts)), change
+
+    def test_edit_problems(self):
+        e = querylog.edit_problems
+        assert e("x/a.md", ARTICLE_MD, ARTICLE_MD.replace("## Reference", "- New. [DOC S1]\n\n## Reference")) == []
+        assert e("x/a.md", ARTICLE_MD, ARTICLE_MD.replace("14", "16"))  # planted: an edited fact line
+        assert e("x/a.md", ARTICLE_MD, ARTICLE_MD.replace("A test article.", "Other words.")) == []  # no fact line
+        assert e("_gaps.md", GAPS_MD, GAPS_MD.replace("Looked somewhere", "Looked"))  # planted: an edited entry
+        assert e("_sources.csv", SOURCES_CSV, SOURCES_CSV.replace("windows/laps.md,\n", "a.md;b.md,\n")) == []
+        assert e("_sources.csv", SOURCES_CSV, SOURCES_CSV.replace("LAPS policy", "LAPS"))  # planted: a changed row
+        assert e("_sources.csv", SOURCES_CSV, SOURCES_CSV.split("S101")[0])  # planted: a removed row
+        assert e("x/a.md", None, "anything") == []  # a new file
+
+
+LAPS_GAP_Q = "Can Windows LAPS back up the password of a Windows Server 2012 R2 member server to Azure?"
+
+
+@pytest.fixture(scope="module")
+def researched(tmp_path_factory):
+    """A kb copy and a store whose one lookup is a gap under the LAPS article: learn, then apply with research off
+    (the gap entry), then with research on at one run a day (the recorded reply and page), then apply again.
+    (home, store, outputs, the copy's files before, the copy's files after research)."""
+    base = tmp_path_factory.mktemp("research")
+    home = Path(copy_kb(str(base / "kb")))
+    store = base / "store"
+    run = store / "2026-09" / "20260928T130000Z-0000beef.jsonl"
+    run.parent.mkdir(parents=True)
+    header = {"run": run.stem, "pipeline": 1, "retrieval": 4, "kb_commit": "0" * 40,
+              "counts": {"entries": 1, "dropped": 0, "waiting": 0}}
+    entry = {"id": E("a4"), "surface": "prompt", "day": "2026-09-27", "tools": ["kb_pack"], "question": LAPS_GAP_Q,
+             "verdict": "weak", "articles": [LAPS], "summary": "The kb did not say.", "judged": "missed"}
+    run.write_text("".join(json.dumps(o, separators=(",", ":")) + "\n" for o in (header, entry)), encoding="utf-8",
+                   newline="\n")
+    art = home / "kb" / "public" / "windows" / "laps.md"
+    n, line = querylog.fact_lines(art.read_text(encoding="utf-8"))[0]
+    legacy = cand(text="Legacy Microsoft LAPS stays available for older operating systems.", quote=LEGACY_QUOTE,
+                  conflicts_with=n)
+    shutil.copy(PAGE, base / "page.html")
+    replay = base / "research.json"
+    replay.write_text(json.dumps({"replies": [reply(cand(), cand(text="Windows LAPS supports Windows Server 2012 R2 "
+                                                                  "after a later update.", quote=BAD_QUOTE), legacy)],
+                                  "pages": {PAGE_URL: "page.html"}}), encoding="utf-8")
+    data = base / "data"
+    cfg = data / "querylog" / "config.json"
+    cfg.parent.mkdir(parents=True)
+    env = querylog_env(data, home=str(home), base={**os.environ, "KB_INDEX": str(home / "_cache")})
+    files = ("kb/public/windows/laps.md", "kb/public/_sources.csv", "kb/public/_conflicts.md", "kb/public/_gaps.md",
+             "kb/public/_coverage.csv", "kb/public/_coverage.md")
+    snap = lambda: {f: (home / f).read_bytes() for f in files}  # noqa: E731
+    before, said = snap(), []
+    ql = [sys.executable, str(home / "_tools" / "querylog.py")]
+    for config, cmd in (('{"mode": "local"}', ["learn", "--store", str(store)]),
+                        ('{"mode": "local"}', ["apply", "--store", str(store), "--replay-research", str(replay)]),
+                        ('{"mode": "local", "research": true, "research_daily": 1}',
+                         ["apply", "--store", str(store), "--replay-research", str(replay)]),
+                        ('{"mode": "local", "research": true, "research_daily": 1}',
+                         ["apply", "--store", str(store), "--replay-research", str(replay)])):
+        cfg.write_text(config, encoding="utf-8")
+        p = subprocess.run([*ql, *cmd], capture_output=True, text=True, encoding="utf-8", env=env, cwd=home,
+                           timeout=900)
+        assert p.returncode == 0, p.stdout + p.stderr
+        said.append(p.stdout.strip())
+        if len(said) == 3:
+            after = snap()
+    return home, store, env, said, before, after, (n, line), data
+
+
+class TestResearchInKbCopy:
+    def test_research_off_writes_the_gap_entry_only(self, researched):
+        home, store, env, said, before, after, _, _ = researched
+        assert "gaps=1" in said[1] and "research=" not in said[1], said
+        text = (home / "kb" / "public" / "_gaps.md").read_text(encoding="utf-8")
+        assert f"- **{LAPS_GAP_Q}** " in text and "(topic: windows/laps)" in text
+
+    def test_research_adds_a_fact_a_source_and_a_conflict(self, researched):
+        home, store, env, said, before, after, (n, line), _ = researched
+        assert "research=1 facts=1 conflicts=1" in said[2], said
+        import kbid
+        sid = kbid.source_id(PAGE_URL, "S")
+        rel = "kb/public/windows/laps.md"
+        art = after[rel].decode("utf-8")
+        assert f"- {cand()['text']} [DOC {sid}]" in art.split("\n")
+        assert querylog.edit_problems(rel, before[rel].decode("utf-8"), art) == []
+        assert querylog.edit_problems("kb/public/_sources.csv", before["kb/public/_sources.csv"].decode("utf-8"),
+                                      after["kb/public/_sources.csv"].decode("utf-8")) == []
+        conflicts = after["kb/public/_conflicts.md"].decode("utf-8")
+        assert querylog.edit_problems("kb/public/_conflicts.md", before["kb/public/_conflicts.md"].decode("utf-8"),
+                                      conflicts) == []
+        (entry,) = [ln for ln in conflicts.split("\n") if GAP_ID in ln]
+        assert f"(line {n} of the article)" in entry and entry.endswith("(topic: windows/laps)")
+        assert json.loads((Path(researched[7]) / "querylog" / querylog.RESEARCH_RUNS_NAME).read_text(
+            encoding="utf-8"))["runs"] == 1
+
+    def test_check_passes_after_the_research_run(self, researched):
+        home, store, env, *_ = researched
+        for tool, want in (("check.py", "errors=0"), ("build_index.py", "")):
+            argv = [sys.executable, str(home / "_tools" / tool)] + (["--check"] if tool == "build_index.py" else [])
+            p = subprocess.run(argv, capture_output=True, text=True, encoding="utf-8", env=env, cwd=home, timeout=600)
+            assert p.returncode == 0 and want in p.stdout, p.stdout[-600:] + p.stderr[-600:]
+        assert querylog.store_problems(store) == []
+        rec = by_id(store)[GAP_ID]
+        assert (rec["state"], rec["stage"]) == ("applied", "claim")
+
+    def test_a_second_run_changes_nothing(self, researched):
+        home, store, env, said, before, after, *_ = researched
+        assert said[3] == "apply: nothing to apply", said
+        files = {f: (home / f).read_bytes() for f in after}
+        assert files == after

@@ -2,7 +2,8 @@
 """The query log pipeline: capture, distill, learn and apply for kb lookups (stdlib only).
 
 kb/_self/querylog.md is the design, and the Query log items of kb/_self/work-left.md build the commands in order.
-Capture, distill, learn, a local apply and apply's direct push are built.
+Capture, distill, learn, a local apply with its gap step and opt-in research, the quote check and apply's direct
+push are built.
 
   querylog.py capture   the capture hook (UserPromptSubmit, PostToolUse, PostToolUseFailure and Stop, async, in
                         .claude/settings.json and the plugin): reads one hook event as JSON on stdin and appends at
@@ -30,9 +31,24 @@ Capture, distill, learn, a local apply and apply's direct push are built.
                         with which every `rag.py eval` question passes, the mean pack of the eval questions does not
                         grow and off-kb `good` does not rise; an alias term already in an alias file or held by the kb
                         is refused. No accepted fix: the miss becomes a gap candidate (`no-fix`) and its fix
-                        `rejected`. Source and gap findings are left alone, and so are the findings named by --hold
-                        and those recorded `apply-failed` (FAILED_RETRIES). One findings file records each outcome
-                        (none: no file). Exit 0, 1 when `rag.py eval` fails before any change
+                        `rejected`. The gap step: an open gap candidate whose miss the pack still reproduces, with
+                        an article in the lead (not `none`), becomes a dated entry under that article's topic in its
+                        root's _gaps.md (candidate-gap -> gap). Research, only when the user's config turns it on
+                        (`research`, `research_daily`; --clone DIR reads that clone's config and daily count): at
+                        most the day's runs left and RESEARCH_RUNS_PER_APPLY, one `claude -p` (hooks off) per gap
+                        finding, whose candidate facts
+                        are kept only when their quote is on the page (quotecheck); accepted facts and their source
+                        rows are added (gap -> candidate-fact -> claim), a disagreement becomes a _conflicts.md
+                        entry, and nothing existing is edited (build_index and check.py errors=0 after, else every
+                        file is put back). --replay-research FILE answers the runs and page fetches from a recorded
+                        file. Source findings are left alone, and so are the findings named by --hold and those
+                        recorded `apply-failed` (FAILED_RETRIES). One findings file records each outcome (none: no
+                        file). Exit 0, 1 when `rag.py eval` fails before an eval change
+  querylog.py quotecheck URL QUOTE [--page FILE [--ctype TYPE]]
+                        whether QUOTE (QUOTE_MIN_WORDS to QUOTE_MAX_WORDS words) is on the page at URL, fetched as
+                        fetch.py fetches (or read from a recorded FILE) and reduced by fetch.py's to_text; entities,
+                        whitespace, quote marks, Markdown links and emphasis normalized on both sides. Exit 0 on the
+                        page, 1 not (the reason on stdout)
   querylog.py apply --push
                         the direct push, from a clone (explicit in every mode but `off`), under the distill lock:
                         fetch origin; check the CI of the last automatic commit on origin/main with `glab` or `gh`
@@ -72,6 +88,8 @@ HOME = TOOLS.parent
 # Program defaults (kb/_self/querylog.md, "Program defaults"); the rest arrive with the items that use them.
 DEFAULT_MODE = "local"
 MODES = ("auto", "local", "off")
+DEFAULT_RESEARCH = False  # research writes facts: each person turns it on in their own config file
+DEFAULT_RESEARCH_DAILY = 3  # research runs per user per day when the config file turns research on and names no cap
 SPOOL_MAX_AGE_DAYS = 30
 SPOOL_ROW_MAX_CHARS = 4000
 HAIKU_MODEL = "haiku"
@@ -136,6 +154,24 @@ def read_mode(cfg):
         return "off"
     m = data.get("mode", DEFAULT_MODE) if isinstance(data, dict) else None
     return m if m in MODES else "off"
+
+
+def read_research(cfg):
+    """(on, daily cap) the config file sets for research: off with no file (DEFAULT_RESEARCH), off when the file
+    cannot be read, `research` is not true, or `research_daily` is not a whole number of 0 or more (fail closed);
+    the cap is `research_daily`, else DEFAULT_RESEARCH_DAILY."""
+    try:
+        data = json.loads(Path(cfg).read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        return DEFAULT_RESEARCH, DEFAULT_RESEARCH_DAILY if DEFAULT_RESEARCH else 0
+    except (OSError, ValueError):
+        return False, 0
+    if not isinstance(data, dict) or data.get("research", DEFAULT_RESEARCH) is not True:
+        return False, 0
+    daily = data.get("research_daily", DEFAULT_RESEARCH_DAILY)
+    if isinstance(daily, bool) or not isinstance(daily, int) or daily < 0:
+        return False, 0
+    return True, daily
 
 
 @functools.lru_cache(maxsize=None)
@@ -1556,6 +1592,57 @@ class Gate:
         import kbfacts
         return (kbfacts.articles().get(article) or {}).get("title", "")
 
+    def article_of(self, path):
+        """The qualified article (.md) whose topic holds the qualified `path` (the article itself, a same-stem data
+        file or a file its `files:` lists), or None."""
+        import kbfacts
+        arts = kbfacts.articles()
+        if path in arts:
+            return path
+        for topic, files in sorted(kbfacts.topic_files().items()):
+            if path in files:
+                return next((q for q in files if q in arts and arts[q].get("topic") == topic), None)
+        return None
+
+    def topic(self, article):
+        """The topic of a qualified article, as its root's ledgers name it: `<domain>/<slug>`."""
+        import kbfacts
+        return kbfacts.bare((kbfacts.articles().get(article) or {}).get("topic") or article[:-3])
+
+    def root(self, article):
+        import kbcommon, kbfacts
+        return kbcommon.root(kbfacts.root_name(article) or kbcommon.public().name)
+
+    def ledger(self, article, name):
+        """A file of the article's root: `_gaps.md`, `_conflicts.md`, `_sources.csv`."""
+        return Path(self.root(article).path) / name
+
+    def file(self, article):
+        import kbcommon
+        return Path(kbcommon.path_of(article))
+
+    def id_prefix(self, article):
+        return self.root(article).id_prefix
+
+    def research_files(self, article):
+        """Every file research may write for `article`, so a failed gate can put each back: the article, its root's
+        sources, conflicts and the coverage files build_index regenerates."""
+        return [self.file(article)] + [self.ledger(article, n) for n in ("_sources.csv", "_conflicts.md",
+                                                                          "_coverage.csv", "_coverage.md")]
+
+    def index_and_check(self):
+        """build_index.py, then check.py over every root: the ERROR lines when check.py does not end errors=0."""
+        tools = HOME / "_tools"
+        code, o, e = run_cmd([sys.executable, str(tools / "build_index.py")], cwd=HOME)
+        if code:
+            return [one_line(f"build_index.py exit {code}: {(o + e).strip()[-200:]}", 240)]
+        code, o, e = run_cmd([sys.executable, str(tools / "check.py")], cwd=HOME)
+        m = re.search(r"errors=(\d+)", o)
+        if code == 0 and m and m.group(1) == "0":
+            return []
+        errs = [one_line(ln, 200) for ln in o.splitlines() if ln.startswith("ERROR")]
+        return errs[:6] or [one_line(f"check.py exit {code}: {(o + e).strip()[-200:]}", 240)]
+
 
 CSV_HEADERS = {"eval": ["id", "question", "expect_paths", "expect_verdict", "allow_weak"],
                "aliases": ["term", "canonical"], "expansions": ["key", "question"]}
@@ -1725,47 +1812,552 @@ def failed_counts(store):
     return out
 
 
-def apply(store=None, gate=None, kb_commit=None, out=print, hold=()):
-    """One apply over `store` (default: the local store beside the spool): every open eval finding with its open fix
-    finding, in id order, into the working tree of this clone, then one findings file with each outcome. Source and
-    gap findings are left as they are, and so are the findings in `hold` (pending on a conflict branch) and those
-    recorded apply-failed more than FAILED_RETRIES times, even when a later record opens them again. 0; 1 when
-    `rag.py eval` fails before any change."""
+def apply(store=None, gate=None, kb_commit=None, out=print, hold=(), research=None, day=None):
+    """One apply over `store` (default: the local store beside the spool), in the working tree of this clone: every
+    open eval finding with its open fix finding, in id order; then the gap step (each open gap candidate whose miss
+    reproduces under an article becomes a _gaps.md entry under that article's topic); then, when `research` (a
+    Researcher) has runs left, research on the gap findings; then one findings file with each outcome. Source findings
+    are left as they are, and so are the findings in `hold` (pending on a conflict branch) and those recorded
+    apply-failed more than FAILED_RETRIES times, even when a later record opens them again. 0; 1 when `rag.py eval`
+    fails before an eval change."""
     store = Path(store or places()[0] / "store")
     gate = gate or Gate()
+    day = day or datetime.datetime.now(datetime.timezone.utc).date().isoformat()
     entries = store_entries(store)
+    by_entry = {e["id"]: e for _, e in entries}
     last = finding_states(store)
     failed = failed_counts(store)
+
+    def actionable(r):
+        return r["id"] not in hold and failed.get(r["id"], 0) <= FAILED_RETRIES
+
+    def entry_of(r):
+        e = by_entry.get(r.get("entry"))
+        return e if e and isinstance(e.get("question"), str) else None
+
     evals = sorted((r for r in last.values() if r.get("kind") == "eval" and r.get("state") == "open"
-                    and r["id"] not in hold and failed.get(r["id"], 0) <= FAILED_RETRIES), key=lambda r: r["id"])
-    if not evals:
-        out("apply: nothing to apply")
-        return 0
-    base = gate.measure()
-    if base["passed"] != base["n"]:
-        out(f"apply: rag.py eval fails before any change ({base['passed']} of {base['n']} pass); nothing applied")
-        return 1
-    by_entry = {e["id"]: e for _, e in entries}
-    fixes = {r["entry"]: r for r in last.values() if r.get("kind") in FIX_KINDS and r.get("state") == "open"
-             and r["id"] not in hold and failed.get(r["id"], 0) <= FAILED_RETRIES}
-    new = []
-    for ev in evals:
-        entry = by_entry.get(ev.get("entry"))
-        if entry and isinstance(entry.get("question"), str):
-            new += apply_one(ev, fixes.get(ev["entry"]), entry, gate, base)
+                    and actionable(r)), key=lambda r: r["id"])
+    gaps = sorted((r for r in last.values() if r.get("kind") == "gap" and r.get("state") == "open"
+                   and r.get("stage") == "candidate-gap" and actionable(r)), key=lambda r: r["id"])
+    new, base = [], None
+    if evals:
+        base = gate.measure()
+        if base["passed"] != base["n"]:
+            out(f"apply: rag.py eval fails before any change ({base['passed']} of {base['n']} pass); nothing applied")
+            return 1
+        fixes = {r["entry"]: r for r in last.values() if r.get("kind") in FIX_KINDS and r.get("state") == "open"
+                 and actionable(r)}
+        for ev in evals:
+            entry = entry_of(ev)
+            if entry:
+                new += apply_one(ev, fixes.get(ev["entry"]), entry, gate, base)
+    for g in gaps:
+        entry = entry_of(g)
+        if entry:
+            new += gap_one(g, entry, gate, day)
+    runs = {"runs": 0, "facts": 0, "conflicts": 0}
+    if research is not None and research.left():
+        now = {**last, **{r["id"]: r for r in new}}
+        todo = sorted((r for r in now.values() if r.get("kind") == "gap" and r.get("stage") == "gap"
+                       and r.get("state") == "applied" and actionable(r) and entry_of(r)), key=lambda r: r["id"])
+        for g in todo:
+            if not research.left():
+                break
+            rec = research_one(g, entry_of(g), gate, research, day)
+            runs["runs"] += 1
+            if rec is not None:
+                new = [r for r in new if r["id"] != rec["id"]] + [rec]
+                runs["facts"] += (rec.get("observed") or {}).get("facts", 0)
+                runs["conflicts"] += (rec.get("observed") or {}).get("conflicts", 0)
     if not new:
-        out("apply: nothing to apply")
+        out("apply: nothing to apply" + (f" (research runs={runs['runs']}, no reply)" if runs["runs"] else ""))
         return 0
     run_id, counts = write_findings(store, entries, new, APPLY_STATES, kb_commit)
     said = f"apply: run={run_id} records={len(new)} " + " ".join(f"{s}={n}" for s, n in counts.items())
-    if counts["applied"]:
+    if base is not None and any(r["kind"] in FIX_KINDS and r["state"] == "applied" for r in new):
         m = gate.measure()
         ids = [i for i in base["chars"] if i in m["chars"]]
         mean = [round(sum(d["chars"][i] for i in ids) / max(len(ids), 1)) for d in (base, m)]
         said += (f" eval={m['passed']}/{m['n']} mean-pack={mean[0]}->{mean[1]} "
                  f"offkb-good={base['offkb_good']}->{m['offkb_good']}")
+    n_gaps = sum(1 for r in new if r["kind"] == "gap" and any(p.get("to") == "gap" and p.get("by") == "apply"
+                                                              for p in r.get("promotions") or []))
+    if n_gaps:
+        said += f" gaps={n_gaps}"
+    if runs["runs"]:
+        said += f" research={runs['runs']} facts={runs['facts']} conflicts={runs['conflicts']}"
     out(said)
     return 0
+
+
+# --- the gap step: a reproduced gap candidate under an article -> a _gaps.md entry (querylog.md, Learn and apply) --
+
+def one_line(s, n=300):
+    return " ".join(str(s).split())[:n]
+
+
+def add_under(text, heading, line):
+    """`text` with `line` added at the end of the section `## <heading>` (the last one of that name), or in a new
+    section at the end. Existing lines are never changed or moved."""
+    lines = text.split("\n") if text else []
+    while lines and not lines[-1].strip():
+        lines.pop()
+    head = f"## {heading}"
+    at = max((i for i, ln in enumerate(lines) if ln.rstrip() == head), default=None)
+    if at is None:
+        lines += ([""] if lines else []) + [head, "", line]
+    else:
+        end = next((i for i in range(at + 1, len(lines)) if lines[i].startswith("## ")), len(lines))
+        while end - 1 > at and not lines[end - 1].strip():
+            end -= 1
+        lines[end:end] = ["", line] if end - 1 == at else [line]
+    return "\n".join(lines) + "\n"
+
+
+def gap_one(g, entry, gate, day):
+    """The record of one open gap candidate (kind gap, stage candidate-gap), re-run with pack on the working tree: it
+    reproduces when it still fails (`passes` without a best article), and it lies in a kb domain when the pack's lead
+    path belongs to an article (a `none` verdict is off the kb's domains). Then a _gaps.md entry under the article's
+    topic, in the article's root, dated `day`, and the finding promoted from candidate-gap to gap (`applied`). []
+    when it passes now (learn records that) or lies outside the kb's domains (it stays a candidate)."""
+    res = gate.pack(entry["question"])
+    if passes(res, None) or res.get("verdict") == "none" or not res.get("paths"):
+        return []
+    article = gate.article_of(res["paths"][0])
+    if not article:
+        return []
+    topic = gate.topic(article)
+    path = gate.ledger(article, "_gaps.md")
+    text = path.read_text(encoding="utf-8") if path.is_file() else ""
+    if g["id"] not in text:
+        write_text(path, add_under(text, topic, (
+            f"- **{one_line(entry['question']).replace('**', '')}** A logged lookup of {entry.get('day', day)} found "
+            f"no article that answers it (query log finding {g['id']}). Looked in the kb {day}: `rag.py pack` gives "
+            f"`{res.get('verdict')}`, with this topic in the lead. Needs an official source that states it "
+            f"(`/kb-research`, or the query log's opt-in research). (topic: {topic})")))
+    keep = {k: v for k, v in g.items() if k != "observed"}
+    return [{**keep, "state": "applied", "stage": "gap", "article": article,
+             "promotions": [*(g.get("promotions") or []), {"from": "candidate-gap", "to": "gap", "by": "apply"}],
+             "observed": {"verdict": res.get("verdict"), "topic": topic}}]
+
+
+# --- quotecheck: a candidate fact's quote on its page, fetched the way the kb fetches (fetch.py) ------------------
+
+QUOTE_MAX_WORDS = 25  # the longest quote the kb's rules allow (kbcommon.QUOTE_WORDS, kb/_self/content-rules.md)
+QUOTE_MIN_WORDS = 5  # a shorter quote is found on almost any page and backs nothing
+QUOTE_CHARS = str.maketrans({"‘": "'", "’": "'", "“": '"', "”": '"', "–": "-", "—": "-",
+                             "\xa0": " ", "​": ""})
+MD_LINK = re.compile(r"!\[[^\]]*\]\([^)]*\)|\[([^\]]*)\]\([^)]*\)")
+
+
+def quote_norm(s):
+    """Text as the quote check compares it: entities decoded, Markdown links and emphasis marks gone, NFKC, straight
+    quotes and dashes, lower case, single spaces."""
+    import html, unicodedata
+    s = html.unescape(html.unescape(s))
+    s = MD_LINK.sub(lambda m: m.group(1) or "", s)
+    s = unicodedata.normalize("NFKC", s).translate(QUOTE_CHARS)
+    s = re.sub(r"[*_`]+", "", s)
+    return " ".join(s.split()).lower()
+
+
+def page_fetch(url):
+    """(bytes, content type) of a page, as fetch.py fetches it (one request per host per fetch.DELAY, a spool row)."""
+    import fetch
+    return fetch.fetch(url)
+
+
+def quotecheck(url, quote, fetcher=None):
+    """(ok, why): whether `quote` (QUOTE_MIN_WORDS to QUOTE_MAX_WORDS words) is on the page at `url`, fetched by
+    `fetcher` (default: fetch.py's fetch) and reduced to text by fetch.py's to_text; both sides normalized by
+    quote_norm."""
+    quote = str(quote or "").strip().strip("\"'“”").strip()
+    n = len(quote.split())
+    if n > QUOTE_MAX_WORDS:
+        return False, f"quote has {n} words, over {QUOTE_MAX_WORDS}"
+    if n < QUOTE_MIN_WORDS:
+        return False, f"quote has {n} words, under {QUOTE_MIN_WORDS}"
+    try:
+        body, ctype = (fetcher or page_fetch)(url)
+    except Exception as e:  # noqa: BLE001 - any failure to read the page rejects the quote
+        return False, one_line(f"page not fetched: {type(e).__name__}: {e}", 160)
+    import fetch
+    text = fetch.to_text(body, ctype)
+    if text is None:
+        return False, "page is not text"
+    want = quote_norm(quote).rstrip(" .,;:")
+    if want and want in quote_norm(text):
+        return True, "quote is on the page"
+    return False, "quote is not on the page"
+
+
+# --- research: opt-in per user, add-only, quote-checked (querylog.md, Learn and apply) ------------------------------
+
+RESEARCH_MODEL = "sonnet"
+RESEARCH_TIMEOUT_S = 600
+RESEARCH_RUNS_PER_APPLY = 2  # research runs in one apply, whatever the daily cap leaves: bounds LOCK_STALE_S
+RESEARCH_FACTS_MAX = 5  # candidate facts read from one research reply
+RESEARCH_RUNS_NAME = "research-runs.json"  # {"day", "runs"}: the research runs this user started today
+RESEARCH_TOOLS = ("WebSearch", "WebFetch")
+RESEARCH_MCP_TOOLS = ("mcp__microsoft-learn__microsoft_docs_search", "mcp__microsoft-learn__microsoft_docs_fetch",
+                      "mcp__claude-code-docs__search_claude_code_docs",
+                      "mcp__claude-code-docs__query_docs_filesystem_claude_code_docs",
+                      "mcp__mcp-docs__search_model_context_protocol",
+                      "mcp__mcp-docs__query_docs_filesystem_model_context_protocol")
+RESEARCH_TAGS = ("DOC", "COMMUNITY")
+RESEARCH_FIELDS = ("text", "tag", "url", "title", "publisher", "licence", "reuse", "quote")
+PROMOTERS = ("learn", "apply", "research")
+RESEARCH_TASK = (
+    "You research one question for an IT knowledge base whose lookup found no answer. Read official documentation "
+    "(the vendor's own docs, release notes, API reference or repository) with the tools you have; blogs and forums "
+    "only as COMMUNITY. For each fact the question needs, give: `text`, the fact in your own words, one sentence, "
+    "no citation; `tag`: \"DOC\" for an official page, \"COMMUNITY\" otherwise; `url`, the page where the sentence is "
+    "(not a page linking to it); `title`, `publisher`; `licence`, the page's licence or terms in words and where they "
+    "are stated; `reuse`: \"copy\" (an open licence), \"quote\" (terms of use, no reuse licence), \"paraphrase\" (the "
+    "terms forbid copying) or \"unknown\"; `quote`, 5 to 25 words copied verbatim from that page that state the "
+    "fact; `conflicts_with`: the line number of an existing fact below that the page contradicts, else null. Never "
+    "restate an existing fact. Use placeholders, never real hosts, tenants or people. Reply with only JSON: "
+    '{"facts": [{"text": "...", "tag": "DOC", "url": "https://...", "title": "...", "publisher": "...", '
+    '"licence": "...", "reuse": "quote", "quote": "...", "conflicts_with": null}]}; at most %d facts; '
+    '{"facts": []} when no official page answers it.' % RESEARCH_FACTS_MAX)
+
+
+def research_places(clone=None):
+    """(querylog directory, config file) whose research setting and daily count apply: a clone's own
+    _cache/querylog and _private/querylog.json when `clone` names one (apply --push names its clone), else places()."""
+    if clone:
+        return Path(clone) / "_cache" / "querylog", Path(clone) / "_private" / "querylog.json"
+    return places()
+
+
+def research_used(qdir, day):
+    data = read_json(Path(qdir) / RESEARCH_RUNS_NAME, {})
+    runs = data.get("runs") if isinstance(data, dict) and data.get("day") == day else 0
+    return runs if isinstance(runs, int) and not isinstance(runs, bool) and runs > 0 else 0
+
+
+def count_research(qdir, day):
+    """One more research run today in the user's count."""
+    write_text(Path(qdir) / RESEARCH_RUNS_NAME, json.dumps({"day": day, "runs": research_used(qdir, day) + 1}) + "\n")
+
+
+def research_budget(qdir, cfg, day):
+    """The research runs left today: 0 unless the config file turns research on (read_research) and logging is on
+    (not mode off, no DISABLED marker); else its daily cap less the runs counted today."""
+    on, daily = read_research(cfg)
+    if not on or read_mode(cfg) == "off" or (Path(qdir) / "DISABLED").exists():
+        return 0
+    return max(0, daily - research_used(qdir, day))
+
+
+def research_argv(model=RESEARCH_MODEL):
+    """The `claude -p` argument list of one research run: hooks off (the pipeline never logs itself), no user plugins
+    or MCP servers but the kb's three documentation servers, web search and fetch as the only built-in tools, nothing
+    else allowed. The prompt goes on stdin."""
+    import shutil
+    docs = HOME / ".claude-plugin" / "it-ops-kb-docs" / ".mcp.json"
+    return [shutil.which("claude") or "claude", "-p", "--model", model, "--no-session-persistence", *NO_HOOKS,
+            "--setting-sources", "project,local", "--strict-mcp-config", "--mcp-config", str(docs),
+            "--tools", ",".join(RESEARCH_TOOLS), "--permission-mode", "dontAsk",
+            "--allowedTools", *RESEARCH_TOOLS, *RESEARCH_MCP_TOOLS]
+
+
+def claude_research(prompt):
+    """One research run: research_argv in an empty directory (no project instructions load). OSError when it cannot
+    answer."""
+    with tempfile.TemporaryDirectory() as d:
+        try:
+            p = subprocess.run(research_argv(), input=prompt, capture_output=True, text=True, encoding="utf-8",
+                               errors="replace", timeout=RESEARCH_TIMEOUT_S, cwd=d)
+        except subprocess.TimeoutExpired as e:
+            raise OSError(f"claude -p gave no reply in {RESEARCH_TIMEOUT_S} s") from e
+    if p.returncode:
+        raise OSError(f"claude -p exited {p.returncode}")
+    return p.stdout
+
+
+class ResearchReplay:
+    """Recorded research replies and pages: {"replies": [text, ...], "pages": {url: file relative to this file}}.
+    Replies are answered in order (OSError once they run out); a url with no recorded page raises OSError."""
+
+    def __init__(self, path):
+        path = Path(path)
+        data = json.loads(path.read_text(encoding="utf-8"))
+        self.replies, self.prompts = list(data.get("replies") or []), []
+        self.pages = {u: path.parent / f for u, f in (data.get("pages") or {}).items()}
+
+    def __call__(self, prompt):
+        self.prompts.append(prompt)
+        if not self.replies:
+            raise OSError("no recorded reply left")
+        return self.replies.pop(0)
+
+    def fetch(self, url):
+        p = self.pages.get(url)
+        if p is None:
+            raise OSError(f"no recorded page for {url}")
+        ctype = {".html": "text/html; charset=utf-8", ".md": "text/markdown"}.get(p.suffix, "text/plain")
+        return p.read_bytes(), ctype
+
+
+class Researcher:
+    """The research step of one apply: `runs` left (the user's daily cap less today's count), the model `call`
+    (default claude_research), the page `fetcher` for the quote check (default fetch.py's fetch) and `counted`, called
+    once per run started (it adds the run to the user's count)."""
+
+    def __init__(self, runs, call=None, fetcher=None, counted=None):
+        self.runs, self.call, self.fetcher = runs, call or claude_research, fetcher
+        self.counted = counted or (lambda: None)
+
+    def left(self):
+        return self.runs > 0
+
+    def ask(self, prompt):
+        self.runs -= 1
+        self.counted()
+        return self.call(prompt)
+
+
+def fact_lines(text):
+    """[(line number, line)] of the tagged fact lines of an article's body (bullets and table rows with a tag)."""
+    import kbfacts
+    lines = text.split("\n")
+    start = 0
+    if lines and lines[0] == "---":
+        start = next((i + 1 for i in range(1, len(lines)) if lines[i] == "---"), 0)
+    return [(n, ln) for n, ln in enumerate(lines, 1) if n > start and ln.lstrip().startswith(("- ", "* ", "|"))
+            and kbfacts.TAG.search(ln)]
+
+
+def research_prompt(question, topic, facts):
+    listed = "\n".join(f"{n}: {one_line(ln, 400)}" for n, ln in facts[:200])
+    return (f"{RESEARCH_TASK}\n\nQuestion: {one_line(question, QUESTION_MAX_CHARS)}\nTopic: {topic}\n\n"
+            f"Existing facts (line: text):\n{listed or '(none)'}")
+
+
+def parse_research(reply):
+    """[candidate dict] of a research reply, at most RESEARCH_FACTS_MAX; ValueError when it is not that JSON."""
+    a, b = reply.find("{"), reply.rfind("}")
+    if a < 0 or b < a:
+        raise ValueError("no JSON object in the reply")
+    data = json.loads(reply[a:b + 1])
+    facts = data.get("facts") if isinstance(data, dict) else None
+    if not isinstance(facts, list):
+        raise ValueError("no facts list")
+    for i, c in enumerate(facts[:RESEARCH_FACTS_MAX]):
+        cw = c.get("conflicts_with") if isinstance(c, dict) else None
+        if not isinstance(c, dict) or not all(isinstance(c.get(f), str) for f in RESEARCH_FIELDS) \
+                or not (cw is None or (isinstance(cw, int) and not isinstance(cw, bool))):
+            raise ValueError(f"fact {i} is malformed")
+    return facts[:RESEARCH_FACTS_MAX]
+
+
+def candidate_problems(c, facts):
+    """Why a candidate fact cannot be written, before its quote is checked: its text (one sentence of our own, no
+    tag, nothing the leak scan flags, not already a fact), tag, url (http(s), a public DNS name), source fields and
+    reuse class, and a `conflicts_with` that names a fact line."""
+    import kbcommon, kbfacts
+    out = []
+    text = one_line(c["text"], 10_000)
+    if not 20 <= len(text) <= 600:
+        out.append("text is not one short sentence")
+    if kbfacts.TAG.search(text) or "topic:" in text or "\n" in c["text"].strip():
+        out.append("text carries a tag, a topic marker or a line break")
+    if kbcommon.leak_hits(text + " " + c["url"]):
+        out.append("text or url holds what the leak scan flags")
+    if c["tag"] not in RESEARCH_TAGS:
+        out.append(f"tag {one_line(c['tag'], 20)!r} is not one of {', '.join(RESEARCH_TAGS)}")
+    u = urlsplit(c["url"].strip())
+    host = (u.hostname or "").lower()
+    if u.scheme not in ("http", "https") or u.username or not HOSTNAME.fullmatch(host) \
+            or host.rsplit(".", 1)[-1] in PRIVATE_TLDS:
+        out.append("url is not a public http(s) page")
+    if c["reuse"] not in kbcommon.REUSE:
+        out.append(f"reuse {one_line(c['reuse'], 20)!r} is not a reuse class")
+    if not all(one_line(c[f]) for f in ("title", "publisher", "licence")):
+        out.append("title, publisher or licence is empty")
+    if any(one_line(ln, 10_000).lower().lstrip("-* ").startswith(text.lower()) for _, ln in facts):
+        out.append("text is already a fact")
+    cw = c.get("conflicts_with")
+    if cw is not None and cw not in {n for n, _ in facts}:
+        out.append(f"conflicts_with {cw} names no fact line")
+    return out
+
+
+def edit_problems(rel, old, new):
+    """The existing lines a change to the kb file `rel` removes or edits, from `old` to `new` text: an article's fact
+    lines, a ledger's lines, a source row other than its generated `used_in`. The gap step and research add only."""
+    import collections, csv, io
+    if old is None:
+        return []
+    name = rel.replace("\\", "/").rsplit("/", 1)[-1]
+    if name == "_sources.csv":
+        def rows(t):
+            return {r.get("id"): {k: v for k, v in r.items() if k != "used_in"} for r in csv.DictReader(io.StringIO(t))}
+        now = rows(new or "")
+        return [f"{rel}: changes source row {sid}" for sid, r in rows(old).items() if now.get(sid) != r][:6]
+    if name in ("_gaps.md", "_conflicts.md"):
+        keep, what = [ln for ln in old.split("\n") if ln.strip()], "an existing entry line"
+    elif name.endswith(".md") and not name.startswith("_"):
+        keep, what = [ln for _, ln in fact_lines(old)], "an existing fact line"
+    else:
+        return []
+    lost = collections.Counter(keep) - collections.Counter((new or "").split("\n"))
+    return [f"{rel}: removes or edits {what}: {one_line(ln, 80)}" for ln in list(lost.elements())[:6]]
+
+
+def add_fact(text, line):
+    """An article's text with the fact `line` added at the end of its Facts section; ValueError without one."""
+    lines = text.split("\n")
+    at = next((i for i, ln in enumerate(lines) if ln.rstrip() == "## Facts"), None)
+    if at is None:
+        raise ValueError("the article has no Facts section")
+    end = next((i for i in range(at + 1, len(lines)) if lines[i].startswith("## ")), len(lines))
+    while end - 1 > at and not lines[end - 1].strip():
+        end -= 1
+    prev = lines[end - 1]
+    bullet = prev.lstrip().startswith(("- ", "* ")) or (prev[:1] == " " and prev.strip())
+    lines[end:end] = [line] if bullet else ["", line]
+    return "\n".join(lines)
+
+
+def add_header_source(text, sid):
+    """An article's text with `sid` in its front matter `sources: [...]` list (unchanged when it is there or the list
+    is not written inline)."""
+    m = re.match(r"---\n(.*?)\n---\n", text, re.S)
+    if not m:
+        return text
+    head = m.group(1)
+    s = re.search(r"(?m)^sources:\s*\[(.*)\]\s*$", head)
+    if not s or sid in [x.strip() for x in s.group(1).split(",")]:
+        return text
+    items = [x.strip() for x in s.group(1).split(",") if x.strip()] + [sid]
+    head = head[:s.start()] + f"sources: [{', '.join(items)}]" + head[s.end():]
+    return "---\n" + head + "\n---\n" + text[m.end():]
+
+
+def write_research(g, article, accepted, conflicts, gate, day):
+    """Add the accepted facts at the end of the article's Facts section (their ids in its `sources:` header), a
+    _conflicts.md entry under the topic per conflict, and a source row per new url (id from kbid.source_id with the
+    root's prefix, `retrieved_utc` today). [source ids]; ValueError when the article cannot take a fact."""
+    import csv, io, kbfacts, kbid
+    src = gate.ledger(article, "_sources.csv")
+    old = src.read_text(encoding="utf-8") if src.is_file() else ""
+    reader = csv.DictReader(io.StringIO(old))
+    by_url = {kbid.normalize_url(r.get("url") or ""): r.get("id") for r in reader}
+    fields = list(reader.fieldnames or [])
+    prefix, add, ids = gate.id_prefix(article), [], []
+    for c in accepted + conflicts:
+        url = c["url"].strip()
+        sid = by_url.get(kbid.normalize_url(url))
+        if not sid:
+            sid = by_url[kbid.normalize_url(url)] = kbid.source_id(url, prefix)
+            add.append({**{f: "" for f in fields}, "id": sid, "url": url, "title": one_line(c["title"], 200),
+                        "publisher": one_line(c["publisher"], 120), "licence": one_line(c["licence"], 300),
+                        "reuse": c["reuse"], "retrieved_utc": day})
+        c["sid"] = sid
+        ids.append(sid)
+    path = gate.file(article)
+    text = path.read_text(encoding="utf-8")
+    facts = dict(fact_lines(text))
+    for c in accepted:
+        text = add_header_source(add_fact(text, f"- {one_line(c['text'], 600)} [{c['tag']} {c['sid']}]"), c["sid"])
+    topic = gate.topic(article)
+    ledger = gate.ledger(article, "_conflicts.md")
+    ltext = ledger.read_text(encoding="utf-8") if ledger.is_file() else ""
+    for c in conflicts:
+        was = facts[c["conflicts_with"]]
+        old_ids = sorted({i for t in kbfacts.TAG.findall(was) for i in kbfacts.ID.findall(t) if i != c["sid"]})
+        body = one_line(kbfacts.TAG.sub("", was).strip().lstrip("-*| ").rstrip(" |"), 240)
+        vs = f" vs {', '.join(old_ids)}" if old_ids else ""
+        ltext = add_under(ltext, topic, (
+            f"- **{body}** (line {c['conflicts_with']} of the article) and {c['url'].strip()} disagree: that page backs "
+            f"\"{one_line(c['text'], 400)}\". Found by the query log's research {day} (finding {g['id']}); not settled. "
+            f"[{c['tag']} {c['sid']}{vs}] (topic: {topic})"))
+    if add:
+        buf = io.StringIO()
+        csv.DictWriter(buf, fieldnames=fields, lineterminator="\n").writerows(add)
+        write_text(src, old + ("\n" if old and not old.endswith("\n") else "") + buf.getvalue())
+    if accepted:
+        write_text(path, text)
+    if conflicts:
+        write_text(ledger, ltext)
+    return sorted(set(ids))
+
+
+def research_one(g, entry, gate, research, day):
+    """One research run on a gap finding (stage gap): the model's candidate facts (the finding promoted to
+    candidate-fact), each checked (candidate_problems, then quotecheck on its page), the accepted ones written
+    (write_research), then the gates: no existing fact, entry or source line edited (edit_problems), build_index and
+    check.py with errors=0, no eval question newly failing and off-kb `good` not rising. A fact written promotes the
+    finding to claim (`applied`); conflicts only leave it at candidate-fact (`applied`); nothing accepted, a reply
+    that is not the expected JSON, or a failed gate is `rejected` with the reasons, and every file is put back. None
+    when the call itself fails (no record: a later run tries again)."""
+    article = g["article"]
+    path = gate.file(article)
+    facts = fact_lines(path.read_text(encoding="utf-8") if path.is_file() else "")
+    keep = {k: v for k, v in g.items() if k != "observed"}
+    promos = list(g.get("promotions") or [])
+    try:
+        reply = research.ask(research_prompt(entry["question"], gate.topic(article), facts))
+    except OSError:
+        return None
+
+    def record(state, stage, observed, more=()):
+        return {**keep, "state": state, "stage": stage, "promotions": promos + list(more), "observed": observed}
+    try:
+        cands = parse_research(reply)
+    except ValueError as e:
+        return record("rejected", "gap", {"gate": [one_line(f"reply: {e}", 160)]})
+    to_fact = [{"from": "gap", "to": "candidate-fact", "by": "research"}]
+    accepted, conflicts, problems = [], [], []
+    for i, c in enumerate(cands):
+        why = candidate_problems(c, facts)
+        if not why:
+            ok, said = quotecheck(c["url"], c["quote"], research.fetcher)
+            why = [] if ok else [said]
+        if why:
+            problems += [f"fact {i}: {w}" for w in why]
+        else:
+            (conflicts if c.get("conflicts_with") is not None else accepted).append(c)
+    if not accepted and not conflicts:
+        return record("rejected", "candidate-fact", {"candidates": len(cands),
+                                                     "gate": problems[:6] or ["no candidate fact"]}, to_fact)
+    files = gate.research_files(article)
+    saved = {p: (p.read_bytes() if p.is_file() else None) for p in files}
+    base = gate.measure()
+    try:
+        ids = write_research(g, article, accepted, conflicts, gate, day)
+    except ValueError as e:
+        restore(saved)
+        gate.fresh()
+        return record("rejected", "candidate-fact", {"gate": [str(e)]}, to_fact)
+    gate.fresh()
+    after = []
+    for p in files:
+        old = saved[p]
+        after += edit_problems(p.name, None if old is None else old.decode("utf-8"),
+                               p.read_text(encoding="utf-8") if p.is_file() else "")
+    if not after:
+        after += gate.index_and_check()
+    if not after:
+        m = gate.measure()
+        newly = [i for i in m["failed"] if i not in base["failed"]]
+        if newly:
+            after.append(f"eval fails: {', '.join(newly[:3])}")
+        if m["offkb_good"] > base["offkb_good"]:
+            after.append(f"off-kb good rises: {base['offkb_good']} -> {m['offkb_good']}")
+    if after:
+        restore(saved)
+        gate.fresh()
+        return record("rejected", "candidate-fact", {"gate": after[:6]}, to_fact)
+    observed = {"facts": len(accepted), "conflicts": len(conflicts), "sources": ids}
+    if problems:
+        observed["gate"] = problems[:6]
+    if accepted:
+        return record("applied", "claim", observed,
+                      to_fact + [{"from": "candidate-fact", "to": "claim", "by": "research"}])
+    return record("applied", "candidate-fact", observed, to_fact)
 
 
 # --- apply --push: the gate, a rebase on origin/main, the push to origin only (querylog.md, Delivery) ----------------
@@ -1875,6 +2467,9 @@ def auto_kinds(paths):
             kinds.add("expansion")
         elif re.fullmatch(r"kb/[^/]+/_gaps\.md", p):
             kinds.add("gap")
+        elif re.fullmatch(r"kb/[^/_][^/]*/(?:_sources\.csv|_conflicts\.md|_coverage\.csv|_coverage\.md)", p) \
+                or re.fullmatch(r"kb/[^/_][^/]*/[^/_][^/]*/(?:[^/]+/)*[^/_][^/]*\.md", p):
+            kinds.add("research")
         else:
             raise ValueError(p)
     return sorted(kinds)
@@ -1954,13 +2549,25 @@ class Pusher:
 
     def apply_in_worktree(self, wt, store, hold, out):
         """The worktree's own querylog.py apply on its own kb and store."""
-        argv = [sys.executable, str(wt / "_tools" / "querylog.py"), "apply", "--store", str(store)]
+        argv = [sys.executable, str(wt / "_tools" / "querylog.py"), "apply", "--store", str(store),
+                "--clone", str(self.home)]
         for h in sorted(hold):
             argv += ["--hold", h]
         code, o, e = self.run(argv, cwd=str(wt))
         for line in (o + (e if code else "")).strip().splitlines():
             out(line)
         return code
+
+    def edited(self, paths):
+        """The existing lines the worktree's change removes or edits in an article, a ledger or a source row
+        (edit_problems against HEAD): apply's changes add only."""
+        out = []
+        for p in paths:
+            f = self.wt / p
+            code, old, _ = self.git("show", f"HEAD:{p}")
+            if code == 0:
+                out += edit_problems(p, old, f.read_text(encoding="utf-8") if f.is_file() else "")
+        return out
 
     def changed(self):
         code, o, _ = self.git("status", "--porcelain", "--untracked-files=all", "-z")
@@ -2110,10 +2717,15 @@ class Pusher:
         except ValueError as e:
             self.say(f"refused: apply changed {e}, which it never writes; nothing committed")
             return 1
+        edits = self.edited(paths)
+        if edits:
+            self.say("refused: " + "; ".join(edits[:3]) + "; nothing committed")
+            return 1
         runs = [Path(p).stem for p in paths if p.startswith(f"{STORE_REL}/{FINDINGS}/") and p.endswith(".jsonl")]
         run_id = max(runs) if runs else self.git("rev-parse", "--short=12", "HEAD")[1].strip()
         body = (f"Automatic commit of querylog.py apply --push, findings run {run_id}: the eval rows with their "
-                "fixes and the findings file that records each outcome (kb/_self/querylog.md, Delivery).")
+                "fixes, gap entries, opt-in research, and the findings file that records each outcome "
+                "(kb/_self/querylog.md, Delivery).")
         if self.commit(f"chore(kb): query log apply {run_id}", body, kinds):
             return 1
         return self.deliver(run_id)
@@ -2183,9 +2795,21 @@ def findings_problems(store, k=None):
                     out.append(f"{where}: unknown stage {r.get('stage')!r}")
                 if r.get("entry") not in ids:
                     out.append(f"{where}: entry {r.get('entry')} is in no run file of the store")
-                for pr in r.get("promotions") or []:
+                prs = r.get("promotions") or []
+                for pr in prs:
                     if not (isinstance(pr, dict) and pr.get("from") in STAGES and pr.get("to") in STAGES):
                         out.append(f"{where}: a promotion without its from and to stages")
+                    elif pr.get("by") not in PROMOTERS:
+                        out.append(f"{where}: a promotion by {pr.get('by')!r}, not one of {', '.join(PROMOTERS)}")
+                if prs and all(isinstance(pr, dict) for pr in prs):
+                    chain = [pr.get("from") for pr in prs[:1]] + [pr.get("to") for pr in prs]
+                    if any(pr.get("from") != chain[i] for i, pr in enumerate(prs)):
+                        out.append(f"{where}: promotions do not follow each other")
+                    elif chain[-1] != r.get("stage") and r.get("stage") in STAGES:
+                        out.append(f"{where}: stage {r.get('stage')} is not its last promotion's {chain[-1]}")
+                if r.get("kind") == "gap" and r.get("stage") in STAGES[2:] and not ARTICLE.fullmatch(
+                        str(r.get("article", ""))):
+                    out.append(f"{where}: a gap finding at stage {r.get('stage')} names no article")
     last = finding_states(store)
     fixed = {r.get("entry") for r in last.values() if r.get("kind") in FIX_KINDS and r.get("state") == "applied"}
     for r in last.values():
@@ -2250,10 +2874,16 @@ def main(argv=None):
         ap.add_argument("--push", action="store_true",
                         help="apply in the worktree beside the spool on origin/main's kb/_querylog, commit, and push "
                              "to origin through kbgit.py sync")
+        ap.add_argument("--clone", metavar="DIR",
+                        help="the clone whose per-user config (_private/querylog.json) turns research on and whose "
+                             "_cache/querylog counts the day's research runs (apply --push names its own clone)")
+        ap.add_argument("--replay-research", metavar="FILE",
+                        help="answer the research runs and the quote check's page fetches from this recorded file "
+                             '({"replies": [...], "pages": {url: file}})')
         a = ap.parse_args(argv[1:])
-        if a.push and a.store:
-            print("apply --push: refused: the store is the worktree's kb/_querylog; --store is for a local apply",
-                  file=sys.stderr)
+        if a.push and (a.store or a.clone or a.replay_research):
+            print("apply --push: refused: the store is the worktree's kb/_querylog and the clone is this one; "
+                  "--store, --clone and --replay-research are for a local apply", file=sys.stderr)
             return 2
         if a.store is None:
             d, cfg = places()
@@ -2265,7 +2895,34 @@ def main(argv=None):
                 print("apply --push: refused: it pushes from a clone, not from a plugin host")
                 return 2
             return push()
-        return apply(a.store, hold=set(a.hold))
+        day = datetime.datetime.now(datetime.timezone.utc).date().isoformat()
+        rq, rcfg = research_places(a.clone)
+        runs = min(research_budget(rq, rcfg, day), RESEARCH_RUNS_PER_APPLY)
+        research = None
+        if runs:
+            replay = ResearchReplay(a.replay_research) if a.replay_research else None
+            research = Researcher(runs, call=replay, fetcher=replay.fetch if replay else None,
+                                  counted=lambda: count_research(rq, day))
+        return apply(a.store, hold=set(a.hold), research=research, day=day)
+    if argv[:1] == ["quotecheck"]:
+        import argparse
+        ap = argparse.ArgumentParser(prog="querylog.py quotecheck")
+        ap.add_argument("url")
+        ap.add_argument("quote")
+        ap.add_argument("--page", metavar="FILE", help="read the page from this recorded file instead of the url")
+        ap.add_argument("--ctype", default="", help="the recorded page's content type (default: from its suffix)")
+        a = ap.parse_args(argv[1:])
+        fetcher = None
+        if a.page:
+            page = Path(a.page)
+            ctype = a.ctype or {".html": "text/html", ".htm": "text/html", ".md": "text/markdown"}.get(
+                page.suffix.lower(), "text/plain")
+
+            def fetcher(url):
+                return page.read_bytes(), ctype
+        ok, why = quotecheck(a.url, a.quote, fetcher)
+        print(f"quotecheck: {why}")
+        return 0 if ok else 1
     if argv[:1] == ["distill"]:
         import argparse
         ap = argparse.ArgumentParser(prog="querylog.py distill")
