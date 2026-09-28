@@ -263,6 +263,10 @@ def test_snapshot_roundtrip_and_check_rule(kb, monkeypatch):
     quote = next(r for r in srcs.values() if r["reuse"] == "quote")
     monkeypatch.setattr(F, "ROOT", kbcommon.Root("public", os.path.join(kb, P("")).rstrip("/"), "S", "public", ""))
     assert F.wants_snapshot(copy) and not F.wants_snapshot(quote)
+    page = {"text": DOC, "ctype": "text/markdown"}
+    assert F.wants_snapshot(copy, page)
+    header = "-" * 5 + "BEGIN RSA PRIVATE " + "KEY" + "-" * 5  # built, so the leak test does not flag this file
+    assert not F.wants_snapshot(copy, dict(page, text=f"{DOC}\n{header}\n{'QUJD' * 16}\n"))
     assert F.write_snapshot(copy, DOC, "2031-01-02") and not F.write_snapshot(copy, DOC, "2031-01-03")
     head, body = F.read_snapshot(copy["id"])
     assert body == DOC and head["licence"] == " ".join(copy["licence"].split()) and head["retrieved"] == "2031-01-02"

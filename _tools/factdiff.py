@@ -438,15 +438,20 @@ def snapshot_path(sid):
 
 
 SNAPSHOT_MAX = _CFG.get("snapshot", {}).get("max_bytes", 500_000)
+# a private key header in a page (a vendor's sample key, or only the marker in a format note) trips the leak test
+# (test_kb.py, TestLeaks) and secret scanners on push: such a page keeps only its hash, like an oversized one
+KEY_BLOCK = re.compile(r"-----BEGIN (?:RSA |EC |OPENSSH |DSA |PGP |ENCRYPTED )?PRIVATE KEY(?: BLOCK)?-----")
 
 
 def wants_snapshot(src, doc=None):
     """A source whose text the kb keeps: reuse class copy, a live url (a pinned file is its upstream at the pin), not
-    superseded; with its document, also a document (not a JSON API answer) of at most SNAPSHOT_MAX bytes."""
+    superseded; with its document, also a document (not a JSON API answer) of at most SNAPSHOT_MAX bytes that holds
+    no private key header."""
     if (src.get("reuse") or "").strip() != "copy" or provider.is_pinned(src["url"]) or (src.get("superseded_by") or "").strip():
         return False
     if doc is not None:
-        return bool(doc.get("text")) and "json" not in (doc.get("ctype") or "") and len(doc["text"].encode()) <= SNAPSHOT_MAX
+        return (bool(doc.get("text")) and "json" not in (doc.get("ctype") or "")
+                and len(doc["text"].encode()) <= SNAPSHOT_MAX and not KEY_BLOCK.search(doc["text"]))
     return True
 
 
@@ -489,7 +494,7 @@ def cmd_snapshot(a):
             skipped["no text" if d.get("status") == 200 else f"HTTP {d.get('status') or d.get('error', '')[:30]}"] += 1
             continue
         if not wants_snapshot(srcs[sid], d):
-            skipped["JSON answer or over max_bytes"] += 1
+            skipped["JSON answer, over max_bytes or key block"] += 1
             continue
         if a.dry_run:
             size += len(d["text"].encode())

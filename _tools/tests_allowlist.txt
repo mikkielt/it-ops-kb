@@ -42,3 +42,17 @@ guid  97e2ca7b-b657-4ff7-a6db-30ecc73e1e28  # public legacy Microsoft LAPS MSI p
 guid  d76b9641-3288-4f75-942d-087de603e3ea  # public legacy Microsoft LAPS GPExtensions CSE class id from Microsoft's own migration/troubleshooting docs (windows/laps.md)
 guid  d1e49aac-8f56-4280-b9ba-993a6d77406c  # public ASR rule id (PSExec/WMI process creations) in the 25H2 baseline (security/settings-crosswalk.md)
 guid  ec43e873-cce8-4640-b4ab-07ffe4ab5bcd  # MS-ADTS msDS-OptionalFeatureGUID of the AD Privileged Access Management feature (auth/ad-jit-membership.md)
+
+# documented placeholders in snapshots of copy sources (kb/public/_snapshots/): vendor sample values, not credentials
+secret  AKIAIOSFODNN7EXAMPLE  # AWS's documented example access key id, quoted by the SOPS docs (S-wqbnua3h)
+secret  PASSWORD = 'password'  # T-SQL sample in the OPEN/ALTER SYMMETRIC KEY pages (S-3acopzkn, S-sp6pux45)
+secret  PASSWORD = 'decryption_password'  # T-SQL sample in the OPEN SYMMETRIC KEY page (S-3acopzkn)
+secret  PASSWORD ='*password*'  # T-SQL syntax placeholder in the OPEN SYMMETRIC KEY page (S-3acopzkn)
+secret  api_key="not-needed"  # Agent Framework DevUI sample for a local model (S-cjxn455h)
+secret  api_key="your-key"  # Agent Framework migration guide sample (S-lkto4w7b)
+secret  Password="**&lt;*password*&gt;**"  # syntax placeholder in the WEC source-initiated subscription page (S-iuugqauq)
+secret  password='user_password'  # ldap3 bind documentation sample (S1208)
+secret  password='different_user_password'  # ldap3 bind documentation sample (S1208)
+secret  password="password"  # ldap3 bind documentation sample (S1208)
+secret  password="E52CAC67419A9A224A3B108F3FA6CB6D:8846F7EAEE8FB117AD06BDD830B7586C"  # ldap3 NTLM sample: the well-known LM:NT hash of the word "password" (S1208)
+secret  secret: "kq4gihvszzgn1p0r"  # Kubernetes Secret documentation sample value (S1729)
