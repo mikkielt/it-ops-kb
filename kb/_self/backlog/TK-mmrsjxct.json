@@ -2,7 +2,7 @@
   "id": "TK-mmrsjxct",
   "kind": "task",
   "title": "learn's false-none rule over routed answers' urls",
-  "status": "doing",
+  "status": "draft",
   "parent": "ST-hfzdlzai",
   "priority": "P1",
   "rank": 1,
@@ -21,6 +21,5 @@
     "_tools/ql_learn.py",
     "_tools/ql_base.py",
     "_tools/test_querylog.py"
-  ],
-  "claimed_by": "learn-falsenone"
+  ]
 }

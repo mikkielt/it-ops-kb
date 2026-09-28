@@ -2,7 +2,7 @@
   "id": "TK-inhsi42b",
   "kind": "task",
   "title": "route-by-verdict benchmark scenario",
-  "status": "doing",
+  "status": "draft",
   "parent": "ST-fhlyypxw",
   "priority": "P1",
   "rank": 1,
@@ -22,6 +22,5 @@
     "_tools/agent_bench.py",
     "kb/_self/reports/benchmarks.md",
     "kb/_self/reports/benchmarks.csv"
-  ],
-  "claimed_by": "bench-scenario"
+  ]
 }

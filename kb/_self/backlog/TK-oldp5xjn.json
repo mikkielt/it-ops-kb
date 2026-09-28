@@ -2,7 +2,7 @@
   "id": "TK-oldp5xjn",
   "kind": "task",
   "title": "Reword the none rule in AGENTS.md, kb-lookup and the server instructions",
-  "status": "doing",
+  "status": "draft",
   "parent": "ST-uuaooyrm",
   "priority": "P1",
   "rank": 1,
@@ -30,6 +30,5 @@
     ".claude/skills/kb-lookup/SKILL.md",
     "_tools/kb_mcp.py",
     "_tools/test_kb_mcp.py"
-  ],
-  "claimed_by": "rule-wording"
+  ]
 }

@@ -2,7 +2,7 @@
   "id": "SP-aikswrrl",
   "kind": "sprint",
   "title": "Route by verdict",
-  "status": "active",
+  "status": "planned",
   "goal": "kb_pack, kb_ask.py and the kb: hook route each lookup by its verdict with a has/lacks differential; uncovered questions cost no more than bare live-docs research, partial ones less than either arm, clean good packs route as before; false none and false good are guarded, and the query log detects a false none from a routed answer's urls.",
   "gates": [
     {
@@ -14,9 +14,7 @@
         "change",
         "cancel"
       ],
-      "recommendation": "approve",
-      "answer": "approve",
-      "by": "operator"
+      "recommendation": "approve"
     }
   ]
 }
