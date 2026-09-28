@@ -1,9 +1,9 @@
 ---
 topic: claude/hooks
 priority: P1
-applies_to: "Claude Code 2.1.281 docs (retrieved 2026-09-23; UserPromptSubmit, common input, async and Stop sections re-read 2026-09-27)"
-retrieved_utc: 2026-09-27
-sources: [S743, S746]
+applies_to: "Claude Code 2.1.281 docs (retrieved 2026-09-23; UserPromptSubmit, common input, async and Stop sections re-read 2026-09-27; SessionEnd re-read 2026-09-28)"
+retrieved_utc: 2026-09-28
+sources: [S743, S746, S1800]
 status: complete
 ---
 # Hooks relevant to MCP tools
@@ -45,6 +45,10 @@ instead, so a hook can answer a prompt without a model call.
 - `"async": true` (command hooks only) runs a hook in the background; async hooks cannot block or control Claude, so `decision`, `permissionDecision` and `continue` have no effect, and their output is delivered on the next conversation turn. [DOC S743]
 - A hook that answers a prompt itself (block, answer in `reason`) spends no model tokens on that prompt: the prompt is erased from context and `reason` never enters it. This kb's `kb:` hook works this way. [DER S743: `decision`/`reason` semantics above; the kb hook is `_tools/kb_hook.py`]
 - A query log can be built from hooks alone: `UserPromptSubmit` gives the question with `session_id` and `prompt_id`, and `Stop` gives `last_assistant_message` for the same session. A logging hook that must not delay the prompt fits `async: true`, but a hook that blocks or adds context cannot be async. [DER S743: input fields, `async` and decision rules above]
+- `SessionEnd` hooks (input field `reason`: `clear`, `resume`, `logout`, `prompt_input_exit`, `other`) have no decision control and cannot block termination; Claude Code discards their JSON output fields such as `systemMessage`. [DOC S743]
+- `SessionEnd` hooks share a 1.5-second budget on exit, `/clear` and interactive `/resume`. A per-hook `timeout` raises the budget to the highest such value in settings files, up to 60 seconds, but timeouts on plugin-provided hooks do not raise it; `CLAUDE_CODE_SESSIONEND_HOOKS_TIMEOUT_MS` sets the budget explicitly and, since v2.1.268, also the timeout of each hook without its own. [DOC S743]
+- On a `claude -p` run stopped by SIGTERM, only `SessionEnd` hooks still run before exit (`claude/ci-and-headless.md`). [DOC S1800]
+- A `SessionEnd` hook that must do more than about a second of work (a batch job, a network push) fits only as a launcher that starts a detached process and returns; from a plugin it cannot win more time with `timeout`, and an environment variable is a per-user setting, not something a repository can ship. [DER S743: the 1.5-second shared budget, the plugin exception and the variable above]
 
 ## Reference
 | Event | MCP relevance | Replace data |

@@ -334,3 +334,8 @@ web.archive.org/cdx,agents/doc-change-detection
 accept-datetime,agents/doc-change-detection
 search_result,agents/hybrid-retrieval
 search_result_location,agents/hybrid-retrieval
+merge_request.create,gitlab/automated-merge-requests
+merge_request.auto_merge,gitlab/automated-merge-requests
+ci_push_repository_for_job_token_allowed,gitlab/automated-merge-requests
+feature_list.json,agents/agent-planning-and-done
+claude-progress.txt,agents/agent-planning-and-done

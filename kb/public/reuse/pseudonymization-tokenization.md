@@ -3,7 +3,7 @@ topic: reuse/pseudonymization-tokenization
 priority: P2
 applies_to: "a model-boundary pseudonymization layer: schema-aware tokenizing, strict restore, token kinds"
 retrieved_utc: 2026-09-28
-sources: [S1005, S1006, S1007, S827, S-rxee6wqu, S-7t5ulcii]
+sources: [S1005, S1006, S1007, S827, S-rxee6wqu, S-7t5ulcii, S-h2cmbqvf, S-dcjdn73r]
 status: complete
 ---
 
@@ -40,6 +40,12 @@ draft withdrew FF3 and FF3-1.
 - The `python-fpe` README warns that NIST's February 2025 Draft 2 withdrew FF3 and FF3-1 from the
   standard because of published vulnerabilities. [DOC S1007]
 - Since NIST's draft withdrew FF3 and FF3-1, a tokenizer that keeps chosen parts of a value by its own per-kind rules (an IPv4 network keeping its /24, a domain SID keeping its RID) should not depend on them: FPE is a `pattern` to borrow, not a dependency. [DER S1007: the README's withdrawal warning]
+- A SID's string form is `S-R-X-Y1-Y2-...-Yn`: revision, identifier authority, then subauthorities; all subauthorities but the last form the domain identifier and the last is the RID. Example: `S-1-5-32-544` is built-in Administrators (authority 5, NT Authority; domain 32, Builtin; RID 544). [DOC S-h2cmbqvf]
+- Domain accounts' SIDs carry a per-domain identifier after `S-1-5-21-` (the page's example is three 32-bit values, `S-1-5-21-<a>-<b>-<c>-512` for Domain Admins); no two domains in an enterprise share it, and SIDs are never reused. [DOC S-h2cmbqvf]
+- Well-known SIDs are constant on every system: universal ones such as `S-1-1-0` (World), `S-1-5-18` (LocalSystem), `S-1-5-32-5xx` built-in groups and `S-1-5-80-0` (All Services); domain-relative ones reuse fixed RIDs (500 Administrator, 512 Domain Admins, 513 Domain Users). Capability SIDs start `S-1-15-3`. [DOC S-h2cmbqvf]
+- Active Directory also gives every object a 128-bit GUID in `objectGUID`, which never changes, while a user who moves domains gets a new SID and keeps the old one in `SIDHistory`. [DOC S-h2cmbqvf]
+- A UPN is `<user account name>@<UPN suffix>`: implicit as `UserName@DNSDomainName`, or explicit with a name and suffix an administrator chose. The other domain credential format, the down-level logon name, is `DOMAIN\UserName` with the NetBIOS domain name. [DOC S-dcjdn73r]
+- For redaction, a well-known SID or a built-in `S-1-5-32-*` SID identifies no one and can stay, while the domain identifier of an `S-1-5-21-*` SID names the organisation's domain and must go (the RID alone is a per-domain counter); a user must be matched both as a UPN (`name@suffix`) and as a down-level logon name (`DOMAIN\name`), and an explicit UPN's suffix need not be the DNS domain, so a suffix allowlist cannot be derived from DNS names alone. [DER S-h2cmbqvf, S-dcjdn73r: SID structure and well-known values; UPN forms]
 
 ## Reference
 | project | what it would replace | licence | verdict |

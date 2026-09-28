@@ -178,6 +178,8 @@ capability/safety-eval ground for an agent that happens to be hosted in Azure AI
 | Azure AI Evaluation SDK (`azure-ai-evaluation`) | Microsoft (vendor-hosted judge/backend) | not MCP-specific; agent inputs via query/response or OpenAI-style messages | IntentResolution, ToolCallAccuracy, TaskAdherence, Relevance, Groundedness (+ quality/RAG/safety/NLP evaluators); `evaluate()` batch runner | S-zfg6jhgr, S-6jcocxnl |
 | AI Red Teaming Agent (`azure-ai-evaluation[redteam]`, preview) | Microsoft (PyRIT-based; local mode not compatible with the new Foundry portal/SDK) | no MCP target; scans a model config, callback, or PyRIT `PromptChatTarget` | Attack Success Rate per risk category (violence/sexual/self-harm/hate-unfairness/+) and attack-complexity tier | S-onkwuwst, S-p7dq3fku |
 
+See also `agents/agent-planning-and-done.md` (definition of done, verification gates and task lists for agent work).
+
 ## Examples
 A DeepEval-style test case for a device-management MCP server would launch the server's stdio target, call
 a device-lookup tool for `PL-LT-00123`, and grade with `MCPTaskCompletion` against the rubric "returns the identity

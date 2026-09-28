@@ -1821,6 +1821,21 @@ _Agent: kb-research_
 
 _Agent: kb-research_
 
+## QK-kb-need-know-build-query-log. What does the kb need to know to build the query-log pipeline and plan it with a definition of done per subtask: SessionEnd limits, GitLab push options, auto-merge and job-token pushes, identifier shapes for redaction, and agent planning practice
+- `SessionEnd` hooks share a 1.5-second budget on exit, `/clear` and `/resume`; a per-hook `timeout` raises it up to 60 s except on plugin-provided hooks, and they cannot block or return output. [DOC S743]
+- One `git push -o merge_request.create -o merge_request.target=main -o merge_request.auto_merge -o merge_request.remove_source_branch` opens an MR that merges itself when every merge check passes, a successful pipeline among them; auto-merge is in every tier (GA 17.7), `merge_when_pipeline_succeeds` is deprecated since 17.11. [DOC S-2d2dlaeq, S-rivqro7b]
+- A failed pipeline does not end auto-merge: a retried job that succeeds merges the MR. [DOC S-rivqro7b]
+- Merged results pipelines are Premium and Ultimate only. [DOC S-zh7oqkup]
+- **Allow Git push requests to the repository** (off by default, GA 18.4, Maintainer) lets `CI_JOB_TOKEN` push to its own project; such a push triggers no pipeline and carries the rights of the user who started the job. [DOC S-7zthwzzb]
+- SIDs are `S-R-X-Y1-...-Yn` with the domain identifier before the final RID; well-known SIDs are constant everywhere; a UPN is `name@suffix` and the down-level logon name `DOMAIN\name`. [DOC S-h2cmbqvf, S-dcjdn73r]
+- Definition of done: one shared, formal quality bar; an item below it is not released and returns to the backlog; an organisation's DoD is every team's minimum. [DOC S-2wwcyoa4]
+- Long-running agents: a JSON feature list that starts failing and flips to passing only after end-to-end tests, a progress file, git commits, one feature per session, and a start-of-session smoke test. [DOC S2150] Give the agent a pass/fail check, explore and plan before coding, and let something other than the working agent judge done (`/goal`, a Stop hook, a fresh reviewer). [DOC S-o3v6ozch, S-vp5onm7b]
+- Conclusion: the plan's mechanics hold on GitLab CE with three consequences it must design for: the `SessionEnd` hook can only launch distill, a red auto-merge MR must be made unmergeable (deleting its branch) because a retry would merge it, and a job-token outcome push is untested and indistinguishable from its user. Each build subtask gets a done definition of end state, proving command and unchanged constraints, on top of the kb's shared gate. [DER S743, S-rivqro7b, S-7zthwzzb, S-vp5onm7b, S-2wwcyoa4]
+- Open: whether a CE instance's server-side merge honours `merge=union` was not re-checked (gitlab-ce issue 17325); the plan's per-run files avoid it. [UNK]
+- See claude/hooks.md, gitlab/automated-merge-requests.md, gitlab/pipelines-rules.md, reuse/pseudonymization-tokenization.md, agents/agent-planning-and-done.md.
+
+_Agent: kb-research_
+
 ## R1. Reuse candidates
 
 - **Highest leverage: `pydantic-settings` as a `dependency` for a project's config-file/env-var/flags

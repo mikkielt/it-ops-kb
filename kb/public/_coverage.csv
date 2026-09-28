@@ -35,6 +35,7 @@ agents/microsoft-agent-framework,P2,complete,agents/microsoft-agent-framework.md
 agents/prompt-injection-design-patterns,P2,complete,agents/prompt-injection-design-patterns.md,6
 agents/security-copilot-endpoint,P2,complete,agents/security-copilot-endpoint.md,24
 agents/windows-agentic-platform,P2,complete,agents/windows-agentic-platform.md;agents/windows-ai-policies.csv,16
+agents/agent-planning-and-done,P3,complete,agents/agent-planning-and-done.md,5
 agents/doc-change-detection,P3,complete,agents/doc-change-detection.md,36
 agents/langgraph,P3,complete,agents/langgraph.md,11
 ansible/dsc3-module,P3,complete,ansible/dsc3-module.md,6
@@ -55,7 +56,7 @@ auth/gmsa-dmsa,P0,complete,auth/gmsa-dmsa.md,5
 auth/kerberos,P0,complete,auth/kerberos.md,16
 auth/ldap-smb-signing,P0,complete,auth/ldap-smb-signing.md,16
 auth/msal-public-client,P0,complete,auth/msal-public-client.md,10
-auth/ntlm-deprecation,P0,complete,auth/ntlm-deprecation.md,6
+auth/ntlm-deprecation,P0,complete,auth/ntlm-deprecation.md,7
 auth/permissions-matrix,P0,partial,auth/permissions-matrix.csv,25
 auth/sql-authz,P0,complete,auth/sql-authz.md,5
 auth/workload-identity,P0,complete,auth/workload-identity.md,23
@@ -79,7 +80,7 @@ autopilot/device-preparation,P1,complete,autopilot/device-preparation.md;autopil
 autopilot/lifecycle,P1,complete,autopilot/lifecycle.md,5
 claude/data-retention,P1,complete,claude/data-retention.md,6
 claude/elicitation,P1,complete,claude/elicitation.md,5
-claude/hooks,P1,complete,claude/hooks.md,2
+claude/hooks,P1,complete,claude/hooks.md,3
 claude/managed-mcp,P1,complete,claude/managed-mcp.md,2
 claude/messages-api,P1,complete,claude/messages-api.md;claude/models.csv;claude/api-limits.csv,10
 claude/otel-monitoring,P1,complete,claude/otel-monitoring.md,4
@@ -119,9 +120,10 @@ entra/stale-devices,P1,complete,entra/stale-devices.md,3
 entra/pim-and-governance,P2,complete,entra/pim-and-governance.md,16
 gitlab/codeowners,P0,complete,gitlab/codeowners.md,4
 gitlab/mr-approvals,P0,complete,gitlab/mr-approvals.md,7
-gitlab/pipelines-rules,P0,complete,gitlab/pipelines-rules.md,5
+gitlab/pipelines-rules,P0,complete,gitlab/pipelines-rules.md,6
 gitlab/protected-branches-tags,P0,complete,gitlab/protected-branches-tags.md,3
 gitlab/variables,P0,complete,gitlab/variables.md,2
+gitlab/automated-merge-requests,P3,complete,gitlab/automated-merge-requests.md,5
 gpo/admx-central-store,P1,complete,gpo/admx-central-store.md,8
 gpo/dsc-group-policy-adapter,P2,complete,gpo/dsc-group-policy-adapter.md,3
 gpo/gpo-export,P2,complete,gpo/gpo-export.md,5
@@ -225,7 +227,7 @@ reuse/drift-detection,P2,complete,reuse/drift-detection.md,5
 reuse/layered-settings-resolution,P2,complete,reuse/layered-settings-resolution.md,3
 reuse/log-collection-normalization,P2,complete,reuse/log-collection-normalization.md,6
 reuse/mcp-microsoft-endpoint-mgmt,P2,complete,reuse/mcp-microsoft-endpoint-mgmt.md,3
-reuse/pseudonymization-tokenization,P2,complete,reuse/pseudonymization-tokenization.md,6
+reuse/pseudonymization-tokenization,P2,complete,reuse/pseudonymization-tokenization.md,8
 reuse/secret-vault-encryption,P2,complete,reuse/secret-vault-encryption.md,12
 reuse/tiered-approval-ops,P2,complete,reuse/tiered-approval-ops.md,5
 security/baselines-catalog,P0,complete,security/baselines-catalog.md;security/baselines-catalog.csv,30
