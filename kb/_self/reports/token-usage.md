@@ -119,14 +119,48 @@ What it shows:
 
 What makes the difference, all in `_tools/kbfacts.py`:
 - untagged bullets, table rows, csv rows and code blocks are indexed at weight 0.8 and shown as `(no tag)`; they can lift `none` to `weak`, never to `good`;
-- `good` needs tagged facts at 60% of the key words (80% with an unknown word) and every informative name in a top-ranked fact; a lone unknown name among 75% or more matched words is `weak`; the verdict uses the top article that matches the most key words;
+- `good` needs tagged facts at 60% of the key words (80% with an unknown word) and every informative name in a top-ranked fact; a lone unknown name of up to 3 letters among 75% or more matched words is `weak`; the verdict uses the top article that matches the most key words; two corrections follow ("Verdict corrections" below);
 - compound identifiers (`approximateLastSignInDateTime`) are also indexed as their parts at query weight 0.2; aliases cover spelling variants (license/licence, IE/Internet Explorer);
 - a cut fact keeps its tags, and listings say how many lines were cut and how to get them;
 - a batch pack of 3-6 parts gives each part 2 x budget / n tokens, at least 800: on the 88-question eval set 800 keep 98% of the expected article's fact lines that 1200 print, and a 6-part pack shrinks from 21.4k to 16.4k characters.
 
-Tried and rejected: RM3-style query expansion from the top hits (line recall 48-61/72, 1-4 eval regressions); case-sensitive name matching (no gain, 2 regressions: the kb really says "Claude for **Teams**"); an instruction to stop after one weak pack when the missing words are the subject (saved a turn on one question, lost the answer on another); verdict rules against a false `good` (a question bigram the best article lacks; named words required in the best article; tie-breaks by named words): each missed the GPO Central Store case or demoted true `good` eval rows (NTLMv1, `sp_getapplock`, Kerberos), so the verdict stays lexical and the `check:` line flags the doubtful cases instead. On the 88-question eval set the missing-name `check:` line fired once; the spread-key-words line fired on no `good` row and caught 2 of about 10 hand-made common-word false goods.
+Tried and rejected: RM3-style query expansion from the top hits (line recall 48-61/72, 1-4 eval regressions); case-sensitive name matching (no gain, 2 regressions: the kb really says "Claude for **Teams**"); an instruction to stop after one weak pack when the missing words are the subject (saved a turn on one question, lost the answer on another); verdict rules against a false `good` (a question bigram the best article lacks; named words required in the best article; tie-breaks by named words): each missed the GPO Central Store case or demoted true `good` eval rows (NTLMv1, `sp_getapplock`, Kerberos); the `check:` line flags those doubtful cases, and "Verdict corrections" below handles the two kinds a rule could separate. On the 88-question eval set the missing-name `check:` line fired once; the spread-key-words line fired on no `good` row and caught 2 of about 10 hand-made common-word false goods.
 
 Limits: adjacent unanswerable questions (Teams shared-channel size, SharePoint upload limit) match related facts, which retrieval scores cannot separate; the model reading the pack said the kb does not cover them, at one extra lookup. Pure paraphrase is what doc2query addresses (next section).
+
+### Verdict corrections
+
+**Setup:** 266 topics, 12,469 indexed lines, stdlib only, no model. The eval set grew from 129 to 250 rows; the off-kb list (`kb/public/_retrieval/doc2query/offkb_questions.txt`) from 20 to 106 questions. A design set (35 common-word false goods, among them "password reset link", "email attachment size", "page file size", "remote desktop gateway ports" and their long forms; 20 off-domain questions; 30 lowercase true goods) chose the rules; a held-out set written afterwards (16 false goods, 15 off-domain, 19 true goods) checked them. "TG weak" counts design-set true goods a rule demotes.
+
+Common words (a `good` with no single fact holding every key word):
+
+| rule tried | eval (129 rows) | false goods fixed | TG weak |
+|---|---|---|---|
+| one tagged fact holds every key word, unless the question has a name, an identifier or a one-word alias | 126 (`resources subscribe/templates`, `uv sync --frozen`: slash and flag parts were split off; `ruff`/`noqa`) | 29/35 | 8/30 |
+| same, fact must also hold two question words side by side | 126 | 32/35 | 13/30 |
+| two question words side by side only | 128 (ruff) | 17/35 | 1/30 |
+| one fact, identifiers read from the raw question, a title word under 1% of lines as anchor | 129 | 27/35 | 4/30 (`cmpivot`, `bitlocker` typed lowercase) |
+| + the kb's brand spelling as anchor (CMPivot, BitLocker, LAPS) | 129 | 27/35 (rare title words `resolution`, `replacement` anchor false goods) | 2/30 |
+| brand spelling without a title anchor | 128 (ruff) | 29/35 | 3/30 |
+| **shipped:** one fact, or a name, identifier, alias, brand spelling, or word an article is about (60% of its lines in the article named after it) | **129** | **29/35** | **2/30** |
+| shipped, but the fact's own text must hold the words (not its title) | 129 | 30/35 | 4/30 |
+| shipped + two words side by side | 129 | 32/35 | 4/30 |
+
+Of the two shipped TG losses, "dynamic group processing time" led to Azure Update Manager's dynamic scopes, so its `good` was itself false; "client log upload size limit" (the fact lacks "upload") is a real loss and an `allow_weak` eval row. Held out: 19/19 true goods kept, 9 of the 12 false goods that were `good` fixed.
+
+Another product (off-domain `weak` or `good`):
+
+| rule tried | eval (129 rows) | design off-domain `none` | original 20 off-kb `none` |
+|---|---|---|---|
+| before | 129 | 2/20 | 5 |
+| a name no line the pack could print holds, any frequency | 128 (Presidio REST API: "API" is missing from the answer lines) | 14/20 | 11 |
+| a name absent from the lead article (the `check:` condition) and rare | would demote the NTLMv1 row (LmCompatibilityLevel, 2 lines, sits in the second article) | - | - |
+| **shipped:** printable lines lack a name held by under 1% of lines | **129** | 14/20 | 9 (0.5%: 8, 2%: 10, where the extra one is "CIs" matching CIS) |
+| **shipped:** + the AV/PC exemption only for names of up to 3 letters | **129** | **17/20** | **11** |
+
+Held out: 9 of 10 off-domain questions that were not `none` became `none`.
+
+Together, on the 250-row eval set: the previous code passes 190 (36 false `good`, 24 off-domain `weak`/`good`), the current 250. The off-kb list went from 55 `good`, 38 `weak`, 13 `none` to 15, 48, 43; of its 15 `good`, 3 are now covered by the kb (Okta SCIM, Terraform azurerm, FileVault escrow), 2 are the adjacent unanswerables above, and 10 are what no rule separated: common words that one unrelated fact holds together ("password reset link", "page file size", "web proxy port"), a capitalised generic product name ("Remote Desktop Gateway", "Kerberos armoring"), and a product the kb mentions on a printable line ("ServiceNow with Intune"). `pack` stays at 2.3 ms median and 4.6 ms p95 over the 250 questions, warm.
 
 ## doc2query
 

@@ -12,8 +12,11 @@ The open work, and only that: a finished item leaves this file (its commit recor
 
 ## Lookup quality
 
-- **False `good` on common words.** The `check:` line catches a missing product name and key words spread across unrelated facts, but not a question whose every word is common and present in one unrelated fact: "password reset link", "email attachment size", "page file size", "remote desktop gateway ports" still come out `good` without a `check:` line. Every verdict rule tried so far demoted true `good` eval rows (`kb/_self/reports/token-usage.md`, "Retrieval quality").
-- **Off-domain questions come out `weak`, not `none`** (Horizon, SAP GUI, ServiceNow), though the `check:` line fires on them. The model then reads the pack and says the kb does not cover it, at one extra lookup.
+- **False `good` left after the verdict corrections.** The corrections (`kb/_self/tools.md`, "Two corrections to the verdict") need a question with nothing specific whose key words no single fact holds, or a rare product name no printed line holds. What passes them, all on the off-kb list (`kb/public/_retrieval/doc2query/offkb_questions.txt`), none in `lookup_eval.csv`:
+  - common words one unrelated fact holds together: "password reset link" (the KRBTGT article), "page file size" (a remediations fact that says "script file size" and "page"), "web proxy port", "desktop wallpaper setting". A lexical rule would need to know which word is the subject; requiring two question words side by side, or the words in the fact's text rather than its title, fixed 1-3 of them and demoted 2 more true goods ("Verdict corrections" in `kb/_self/reports/token-usage.md`);
+  - a capitalised generic name the lead article happens to hold: "Which ports does Remote Desktop Gateway use?" (Power BI Desktop, the data gateway), "kerberos armoring requirement";
+  - another product the kb mentions on a printable line: "How do I integrate ServiceNow with Intune?" (`good` with a `check:` line), "How does ServiceNow discovery find Windows servers?" (`weak`: the kb has ServiceNow's IRE in `prior-art/`).
+  - One true good is lost: "client log upload size limit" is `weak` (its fact lacks "upload"), an `allow_weak` eval row.
 
 ## Token cost
 

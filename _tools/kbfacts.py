@@ -1072,6 +1072,47 @@ def search(query, k=8, domain=None, index=False, notes=None, root=None):
     return hits
 
 
+TOPIC_SHARE = 0.6  # a word one article is about: that article, named after it, holds this share of its lines
+RARE_NAME = 0.01  # a name held by under this share of all lines is mentioned in passing, not covered
+IDENT = re.compile(r"\w[_./]\w|^--?\w")  # python_files, list/get, ansible.windows.win_dsc, --frozen
+
+
+def specific(st, question, named, known, keys, holders):
+    """True when the question uses a word that names something specific, so a `good` may rest on key words spread
+    over several facts: a name (a capital or a digit), an identifier (`python_files`, `list/get`, `--frozen`,
+    `gitlab-runner`), a one-word product alias (`dsc`), a word an article is about (named in its title or file name,
+    holding TOPIC_SHARE of the word's lines: `ruff`, `krbtgt`, `kiosk`), or a word the kb itself mostly writes as a
+    brand (an inner capital or all capitals: `cmpivot` -> CMPivot, `bitlocker` -> BitLocker, `laps` -> LAPS).
+    Called only for a `good` no single fact covers, so the unit reads of the last test stay rare."""
+    keys = set(keys)
+    if named & set(known):
+        return True
+    words = [w.lower() for w in WORD.findall(question)]
+    found = {stem(w) for w in words if "-" in w} & set(known)
+    for raw in question.split():
+        if IDENT.search(raw):
+            found |= set(key_terms(raw.replace("/", " "))) & keys
+    single = {f[0] for forms in aliases().values() for f in forms if len(f) == 1}
+    found |= {stem(w) for w in words if w in single} & keys
+    if found:
+        return True
+    for w in dict.fromkeys(words):
+        t = stem(w)
+        if t not in known:
+            continue
+        for art, k in Counter(st.paths[i] for i in holders[t]).most_common(1):
+            meta = st.arts.get(art, {})
+            base = re.sub(r"[-_.]", " ", os.path.splitext(os.path.basename(art))[0])
+            if k >= TOPIC_SHARE * len(holders[t]) and t in set(key_terms(f"{meta.get('title', '')} {base}")):
+                return True
+        spelled = re.compile(r"(?<![\w.\-])" + re.escape(w) + r"(?![\w\-])", re.I)
+        brand = Counter(bool(re.search(r"[A-Z]", m[1:]) or (m.isupper() and len(m) > 1))
+                        for i in sorted(holders[t])[:40] for m in spelled.findall(st.unit(i)["text"]))
+        if brand[True] > brand[False]:
+            return True
+    return False
+
+
 def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", footer=True, root=None):
     """Rank fact units for a question and return {verdict, missing, weak_words, groups, sources, text}.
 
@@ -1081,10 +1122,14 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
 
     verdict (counted on whole query words, not hyphen parts), on the top-ranked article that matches the most key
     words: `none` when a third or more of the named words (with a capital or a digit: products, ids) occur nowhere in
-    the kb (unless it is one name among 75%+ matched words, like AV or PC), when half or more of the informative
-    words occur nowhere, or when that article matches under a third of the known ones; `good` when a tagged-fact
-    article matches 60% or more (80% if some word is unknown), no named word is missing, and every informative name
-    appears in a top-ranked tagged fact; else `weak`. Untagged content alone never makes a question `good`. A `good` pack gets a
+    the kb (unless it is one name of up to 3 letters among 75%+ matched words, like AV or PC), when half or more of
+    the informative words occur nowhere, or when that article matches under a third of the known ones; `good` when a
+    tagged-fact article matches 60% or more (80% if some word is unknown), no named word is missing, and every
+    informative name appears in a top-ranked tagged fact; else `weak`. Then two corrections: a `good` whose question
+    names nothing specific (specific()) and whose key words no single tagged fact holds all of becomes `weak`; and a
+    verdict becomes `none` when a name the question uses is held by under RARE_NAME of all lines and by none of the
+    lines the pack could print (up to 6 per shown article), since the question is then about another product.
+    Untagged content alone never makes a question `good`. A `good` pack gets a
     `check:` note (verdict unchanged) when a name the question uses is nowhere in the lead article, or when no tagged
     fact among the top hits holds half of 4+ key words. A word that is a product alias (_tools/aliases.csv) counts as present where any alias of the product is;
     the other aliases rank at a lower weight but never count as key words. `budget` is in tokens (about 3.5
@@ -1121,7 +1166,8 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
     fact_hit = max(arts_fact.values(), key=len, default=set())
     share = len(hit) / len(known) if known else 0.0
     fact_share = len(fact_hit) / len(known) if known else 0.0
-    lone_name = len(named_missing) == 1 and share >= 0.75  # one unknown abbreviation (AV, PC) among well-matched words
+    # one unknown abbreviation (AV, PC) among well-matched words; a longer unknown name (NinjaOne, Ivanti) is the subject
+    lone_name = len(named_missing) == 1 and len(named_missing[0]) <= 3 and share >= 0.75
     if not scored or (named and len(named_missing) * 3 >= len(named) and not lone_name) or (informative and len(missing) * 2 >= len(informative)):
         verdict = "none"
     elif fact_share >= 0.6 and not named_missing and (not missing or fact_share >= 0.8) and not (named & set(known)) - set().union(*arts_fact.values()):
@@ -1130,6 +1176,12 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
         verdict = "weak"
     else:
         verdict = "none"
+    # a `good` on common words only ("email attachment size" matched the Email* hunting tables, "mailbox size limit" a
+    # batching fact and a manifest row): a question that names nothing specific needs one tagged fact holding every
+    # key word
+    if (verdict == "good" and len(known) >= 2 and not any(u["tags"] and all(has(u, t) for t in known) for _, u in scored)
+            and not specific(st, question, named, known, keys, holders)):
+        verdict = "weak"
     # group the best units by article, strongest article first
     by_art, order = defaultdict(list), []
     for s, u in scored[:40]:
@@ -1139,6 +1191,12 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
         by_art[art].append((s, u))
     best = scored[0][0] if scored else 0
     order = [a for a in order if by_art[a][0][0] >= (0.5 if a.endswith(".md") else 0.65) * best][:max_articles]
+    # an off-domain question (VMware Horizon, SAP GUI): its product is a rare name the kb mentions in passing, and no
+    # line the pack could print holds it, whatever the other words match
+    if verdict != "none":
+        cand = [u for a in order for _, u in sorted((x for x in by_art[a] if x[0] >= 0.4 * best), key=lambda x: -x[0])[:6]]
+        if any(len(t) > 2 and kdf[t] < RARE_NAME * n and not any(has(u, t) for u in cand) for t in named & set(known)):
+            verdict = "none"
     concise = fmt == "concise"
     url_cost = 0 if concise else 110  # a source footer line is about 110 characters
     limit, used, groups, cited, paths = int(budget * 3.5), 0, [], [], []
@@ -1175,19 +1233,20 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
             seen.add(i)
             url, sup = st.srcs.get(i, ("", ""))
             srcs.append((i, url or "UNKNOWN id", sup))
-    # a name the question uses (Purview) that the lead article never mentions, not even in its title or applies_to:
-    # the verdict counts words, not meaning, so such a pack may be about something related (a false `good`). Only a
-    # note, never a verdict change: every lexical rule tried as a verdict demoted true `good` eval questions. Names of
-    # two letters (AV, PC) are left out, as lone_name does.
+    # a name the question uses (ServiceNow) that the lead article never mentions, not even in its title or applies_to,
+    # though another printed line holds it (a rare name no printable line holds made the verdict `none` above): the
+    # verdict counts words, not meaning, so such a pack may be about something related (a false `good`). A note, not a
+    # verdict change: the name alone does not tell a related pack from a right one (the NTLMv1 row's
+    # LmCompatibilityLevel sits in a second article). Names of two letters (AV, PC) are left out.
     unmatched = []
     if verdict != "none" and paths:
         lead, meta = paths[0], st.arts.get(paths[0], {})
         own = set(key_terms(f"{meta.get('title', '')} {meta.get('applies_to', '')}"))
         unmatched = sorted(t for t in named & set(known) if len(t) > 2 and t not in own
                            and not any(st.paths[i] == lead for i in holders[t]))
-    # a `good` whose key words are spread over separate facts, none holding half of them (mailboxes between tenants
-    # matched by a tenant fact and a mailbox fact): with no name to flag, the other sign of a false `good`. No true
-    # `good` in the eval set falls under half; a note only, for the same reason as above.
+    # a `good` whose key words are spread over separate facts, none holding half of them (mailboxes, calendars and
+    # contacts between tenants, matched by a tenant fact and a mailbox fact) though the question names something
+    # specific (Graph): the other sign of a false `good`. No true `good` in the eval set falls under half; a note only.
     spread = None
     if verdict == "good" and len(known) >= 4:
         top = max((sum(1 for t in known if has(u, t)) for _, u in scored if u["tags"]), default=0)

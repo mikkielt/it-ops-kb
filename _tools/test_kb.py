@@ -34,8 +34,8 @@ MAX_BYTES = 10 * 1024 * 1024
 PLUGIN_SKILLS = {os.path.basename(s.rstrip("/")) for s in json.load(open(os.path.join(KB, ".claude-plugin", "plugin.json"),
                                                                         encoding="utf-8"))["skills"]}
 # the benchmark's false good (agent_bench s8): the pack matched Copilot Studio's "data-loss-prevention (DLP)" words
-FALSE_GOOD = "Microsoft Purview Data Loss Prevention endpoint DLP onboarding requirements"
-SPREAD_GOOD = "How do I migrate user mailboxes between tenants?"
+FALSE_GOOD = "How do I integrate ServiceNow with Intune?"  # ServiceNow is held by a Copilot connector line only
+SPREAD_GOOD = "Which Graph API migrates mailboxes, calendars and contacts between tenants?"
 
 
 def run(*args):
@@ -609,7 +609,7 @@ class TestLookup:
         flagged = hook("kb: " + FALSE_GOOD)
         assert "decision" not in flagged, "a good pack with a check: line must not be answered without the model"
         ctx = flagged["hookSpecificOutput"]["additionalContext"]
-        assert "coverage: good" in ctx and "\ncheck: " in ctx and "Purview" in ctx, ctx[:400]
+        assert "coverage: good" in ctx and "\ncheck: " in ctx and "ServiceNow" in ctx, ctx[:400]
 
     def test_spread_key_words_get_a_check_line(self):
         # no product named: a tenant fact and a mailbox fact make a `good`, but no fact holds half the key words
@@ -625,14 +625,39 @@ class TestLookup:
 
     def test_false_good_gets_a_check_line(self):
         res = kbfacts.pack(FALSE_GOOD)
-        assert res["verdict"] == "good" and res["unmatched"] == ["purview"], (res["verdict"], res["unmatched"])
-        assert res["text"].splitlines()[1].startswith("check: ") and "never mentions Purview" in res["text"]
+        assert res["verdict"] == "good" and res["unmatched"] == ["servicenow"], (res["verdict"], res["unmatched"])
+        assert res["text"].splitlines()[1].startswith("check: ") and "never mentions ServiceNow" in res["text"]
         # the names an article holds only in its title or applies_to (SQL Server for sp_getapplock) count as held,
         # and two-letter names (AV, PC) are never flagged
         for q in ("What does sp_getapplock do in SQL Server and what lock modes does it take?",
                   "Does deleting an Entra device also delete its BitLocker recovery keys?"):
             res = kbfacts.pack(q)
             assert res["verdict"] == "good" and not res["unmatched"] and "\ncheck: " not in res["text"], (q, res["unmatched"])
+
+    def test_common_words_need_one_fact_that_holds_them_all(self):
+        # every word common, none naming anything: key words spread over unrelated facts are no answer
+        for q in ("email attachment size", "remote desktop gateway ports", "mailbox size limit",
+                  "How do I migrate user mailboxes between tenants?", "What is the maximum email attachment size?"):
+            assert kbfacts.pack(q)["verdict"] == "weak", q
+        # one fact holding every key word stays good (Battery health in endpoint analytics)
+        assert kbfacts.pack("battery health report")["verdict"] == "good"
+        # a specific word lets the key words spread: the article a word is about (ruff), the kb's brand spelling of a
+        # lowercase word (cmpivot -> CMPivot, bitlocker -> BitLocker), an identifier (list/get), a product alias (dsc)
+        for q in ("ruff default rules", "cmpivot query timeout", "bitlocker recovery key escrow", "prompts list/get",
+                  "Where does dsc look for its policy settings file on Windows?"):
+            assert kbfacts.pack(q)["verdict"] == "good", q
+
+    def test_off_domain_product_is_none(self):
+        # a rare name no printable line holds: the subject is another product the kb only mentions in passing
+        for q in ("How do I configure VMware Horizon instant clones?", "How do I deploy SAP GUI to Windows clients?",
+                  "Purview endpoint DLP onboarding requirements for Windows devices",
+                  "What ports does VMware Horizon Connection Server use?", "What ServiceNow roles can approve change requests?"):
+            res = kbfacts.pack(q)
+            assert res["verdict"] == "none" and res["text"].splitlines()[1].startswith("The kb does not cover"), q
+        # a longer unknown name among well-matched words is the subject too (the AV/PC exemption is for abbreviations)
+        assert kbfacts.pack("What does the NinjaOne agent collect from Windows devices?")["verdict"] == "none"
+        # a common name missing from the answer lines (API, in the Presidio REST facts) is not a subject
+        assert kbfacts.pack("Does the Presidio analyzer REST API require authentication?")["verdict"] == "good"
 
 
 class TestIds:
