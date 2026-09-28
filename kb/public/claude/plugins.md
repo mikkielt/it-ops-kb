@@ -2,7 +2,7 @@
 topic: claude/plugins
 priority: P2
 applies_to: "Claude Code 2.1.281 docs (retrieved 2026-09-26)"
-retrieved_utc: 2026-09-26
+retrieved_utc: 2026-09-28
 sources: [S-n5myb3fn, S-3peuisvr, S-3xyywfcr, S-4m2kbuls, S-havfntgx, S-toe7z3kj, S-rp4dtt4w, S-gxuoqjzy, S-r3nam2zs, S-pelzabjq, S-i7if5i7z, S-lkcsn2fs]
 status: complete
 files: [claude/plugins.csv]
@@ -59,6 +59,9 @@ allow/deny controls, and `claude/hooks.md` for hook event/field semantics that a
 - Plugin id form is `<name>@<origin>`; origin `@<marketplace>` (installed), `@inline` (`--plugin-dir`/`--plugin-url`/`CLAUDE_CODE_PLUGIN_DIRS`/SDK `plugins` option, session-only), `@skills-dir` (`.claude/skills/`), `@synced` (claude.ai account). [DOC S-toe7z3kj]
 - Six `enabledPlugins` sources by precedence (low to high): `--add-dir` settings, `user` (`~/.claude/settings.json`), `project` (`.claude/settings.json`), `local` (`.claude/settings.local.json`), `flag` (`--settings`), `managed`; sources merge key by key per plugin id. [DOC S-toe7z3kj]
 - Plugin files layout under `~/.claude/plugins/` (or `CLAUDE_CODE_PLUGIN_CACHE_DIR`): `cache/<marketplace>/<plugin>/<version>/` (`${CLAUDE_PLUGIN_ROOT}`), `data/<plugin-id>/` (`${CLAUDE_PLUGIN_DATA}`, persists across updates, deleted on uninstall from last scope unless `--keep-data`), `marketplaces/<name>/`, `synced/`, `.trash/`, `installed_plugins.json`, `known_marketplaces.json`, `flagged-plugins.json`. [DOC S-toe7z3kj]
+- `known_marketplaces.json` records each marketplace Claude Code has fetched, with its `source`, `installLocation`, `lastUpdated` and `autoUpdate`, one file per user; `marketplaces/<name>/` holds the clone or download of a marketplace added from GitHub, another Git host or a URL, while a local `file` or `directory` marketplace has no copy there and its `installLocation` is the path given. [DOC S-toe7z3kj]
+- `claude plugin marketplace list --json` prints one object per marketplace with string fields `name`, `source` (`github`, `git`, `url`, `directory`, `file` or `claudeai`), `repo` (`owner/repo`, `github` only), `url` (the clone or fetch URL, `git` and `url` only), `path` (`directory` and `file` only), `ref` (when pinned) and `installLocation`. [DOC S-gxuoqjzy]
+- A hook or tool running from a plugin copy (`${CLAUDE_PLUGIN_ROOT}` = `cache/<marketplace>/<plugin>/<version>/`) finds the repository it was installed from through its marketplace: the `<marketplace>` entry of `known_marketplaces.json` beside `cache/`, whose `source` names the git url or GitHub repository. It writes its own state only under `${CLAUDE_PLUGIN_DATA}`, since the cache copy changes with every version. [DER S-toe7z3kj, S-gxuoqjzy]
 - Version resolution order for a marketplace-sourced plugin (all source types except `command`): 1) manifest `version`, 2) marketplace entry `version`, 3) source-type default (e.g. commit SHA for a relative path in a git-hosted marketplace). Setting `version` pins users to that copy until it changes; omitting it tracks commits. [DOC S-toe7z3kj, S-pelzabjq]
 - When the computed version is unchanged, `claude plugin update` prints `<name> is already at the latest version (<version>).` and changes nothing on disk; background auto-update skips the plugin the same way. [DOC S-toe7z3kj]
 - Background auto-update runs in an interactive session after the first message, following a random delay of up to ten minutes: it refreshes each marketplace with auto-update on and updates its installed plugins on disk; the running session keeps the loaded versions and shows `Plugin updated: <name> · Run /reload-plugins to apply`. [DOC S-toe7z3kj]

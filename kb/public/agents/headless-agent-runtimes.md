@@ -2,8 +2,8 @@
 topic: agents/headless-agent-runtimes
 priority: P2
 applies_to: "Claude Code v2.1.x (code.claude.com docs, retrieved 2026-09-25); GitHub Copilot coding agent; GitLab Duo Agent Platform (GA 2026-01-15)"
-retrieved_utc: 2026-09-27
-sources: [S1800, S1801, S1802, S1803, S1804, S1805, S1806, S1807, S1818, S1824, S-qso27noq, S-szgomxsz, S-xpfrl54v, S-5paxdbvt, S-ulr4lcp4]
+retrieved_utc: 2026-09-28
+sources: [S1800, S1801, S1802, S1803, S1804, S1805, S1806, S1807, S1818, S1824, S-qso27noq, S-szgomxsz, S-xpfrl54v, S-5paxdbvt, S-ulr4lcp4, S-gu5aqnrl, S-mkqjh4ac, S743]
 status: complete
 ---
 
@@ -37,6 +37,12 @@ protected branch without a review step.
 - Fired text (API `text` field, or **Run now** text) arrives wrapped in a `<routine-fire-payload>` block labelled untrusted; the routine's saved prompt must explicitly opt in to acting on it, "or the routine treats the text as inert context." [DOC S1803]
 - Routines draw on the normal subscription usage limit plus a **daily cap on routine runs per account**; one-off (single-fire) schedules don't count against that daily cap. If usage credits are off, extra runs are rejected once the cap is hit. [DOC S1803]
 - If a routine's GitHub connection lapses, it skips runs for up to 72 hours before auto-disabling. [DOC S1803]
+- Claude Code on the web: repository cloning and pull request creation require GitHub (GitHub Enterprise Server on Team and Enterprise plans); a GitLab, Bitbucket or other repository can be sent to a cloud session as a local bundle (`CCR_FORCE_BUNDLE=1`), but the session cannot push results back to that remote. [DOC S-mkqjh4ac]
+- In Anthropic-hosted cloud environments every GitHub operation goes through a GitHub proxy that swaps the session's scoped git credential for the user's token; its push protection lets `git push` work only against the session's current working branch, while cloning, fetching and pull-request operations work normally. [DOC S-gu5aqnrl]
+- A self-hosted cloud environment authenticates git with credentials its deployment provides, and can opt in to the same proxy. [DOC S-gu5aqnrl]
+- The session VM's environment carries `CLAUDE_CODE_REMOTE=true`, which is never `true` locally, so a hook or script scopes itself to cloud sessions by checking it; the session reads its own ID from `CLAUDE_CODE_REMOTE_SESSION_ID`. [DOC S-gu5aqnrl, S743]
+- Commits Claude creates in a cloud session carry a `Claude-Session: <url>` git trailer unless `attribution.sessionUrl` is `false`. [DOC S-gu5aqnrl]
+- An automation running inside a cloud session can push only to that session's working branch on the GitHub remote the session cloned: its commits reach `main` when that branch is `main`, and otherwise through the branch's pull request. [DER S-gu5aqnrl, S-mkqjh4ac: push protection; cloning needs GitHub]
 - GitHub's Copilot cloud agent (earlier called the coding agent) works from assigned issues in its own ephemeral development environment, with a firewall on by default that blocks outbound connections to unauthorized hosts to prevent exfiltration; it responds only to users with repository write access, and Actions workflows triggered by its pull requests need approval from a write-access user before they run. [DOC S1804]
 - The cloud agent's ephemeral development environment is powered by GitHub Actions, and a session consumes Actions minutes and AI credits. [DOC S-5paxdbvt] When the firewall blocks a request, a warning naming the blocked address and the command is added to the pull request body (new PRs) or a comment (existing PRs); the firewall operates only inside the GitHub Actions appliance environment. [DOC S-ulr4lcp4]
 - The cloud agent can push to a single branch only: the pull request's branch when triggered by mentioning `@copilot` on an existing PR, otherwise a new `copilot/` branch created for it; it is also subject to the repository's branch protections and required checks, and can perform only simple push operations. [DOC S-szgomxsz]

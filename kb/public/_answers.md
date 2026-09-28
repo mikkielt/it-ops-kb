@@ -1895,6 +1895,17 @@ _Agent: kb-research_
 
 _Agent: kb-research_
 
+## QK-plugin-host-cloud-session-push-automatic. Where can a plugin host and a cloud session push automatic commits, and how is a push refused for want of rights told from a network error
+- A plugin copy lives in `cache/<marketplace>/<plugin>/<version>/` and changes with every version; `${CLAUDE_PLUGIN_DATA}` persists across updates. `known_marketplaces.json` records each marketplace's `source` and `installLocation`, and a git marketplace's source carries its `url`. [DOC S-toe7z3kj, S-gxuoqjzy]
+- Cloud sessions clone only from GitHub, and the GitHub proxy lets `git push` work only against the session's current working branch; a GitLab repository sent as a bundle cannot be pushed back. `CLAUDE_CODE_REMOTE=true` marks a cloud session. [DOC S-mkqjh4ac, S-gu5aqnrl]
+- GitLab refuses pushes with `You are not allowed to push code to this project.` or `... to protected branches on this project.`; GitHub with `Permission to user/repo denied to ...` or `GH006: Protected branch update failed`; over HTTP git prints the server's text as `remote:` lines, then `The requested URL returned error: <status>`. [CODE S-ag7ica4f: lib/gitlab/git_access.rb#check_change_access!; CODE S-qcamxpw6: lib/gitlab/checks/branch_check.rb#ERROR_MESSAGES; DOC S-vtgbttzo, S-fuytyyvw; CODE S-pj72raea: remote-curl.c#discover_refs]
+- `(pre-receive hook declined)` also covers push rules, timeouts and custom hooks, and `remote failure` may be a network break. [DOC S-naq3uqba, S-l6s4hfqp]
+- Conclusion: a host keeps its own clone of the install url under `${CLAUDE_PLUGIN_DATA}`, and treats only the forge's refusal texts (or a 403 on a push after a successful fetch) as a refusal for want of rights. A cloud session reaches `main` only when its working branch is `main`; otherwise its automatic commits ride on the working branch and its pull request. [DER S-toe7z3kj, S-gu5aqnrl, S-ag7ica4f, S-qcamxpw6, S-vtgbttzo, S-naq3uqba]
+- Open: the docs do not say whether the marketplace clone under `marketplaces/<name>/` keeps its source as the git remote `origin`. [UNK]
+- See claude/plugins.md, agents/headless-agent-runtimes.md, gitlab/automated-merge-requests.md.
+
+_Agent: kb-research_
+
 ## R1. Reuse candidates
 
 - **Highest leverage: `pydantic-settings` as a `dependency` for a project's config-file/env-var/flags

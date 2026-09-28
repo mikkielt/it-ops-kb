@@ -34,7 +34,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `agents/docs-maintenance-agents` | P2 | complete | `agents/docs-maintenance-agents.md` | 29 |
 | `agents/genai-telemetry` | P2 | complete | `agents/genai-telemetry.md` | 5 |
 | `agents/github-copilot-admin` | P2 | complete | `agents/github-copilot-admin.md` | 12 |
-| `agents/headless-agent-runtimes` | P2 | complete | `agents/headless-agent-runtimes.md` | 15 |
+| `agents/headless-agent-runtimes` | P2 | complete | `agents/headless-agent-runtimes.md` | 18 |
 | `agents/hybrid-retrieval` | P2 | complete | `agents/hybrid-retrieval.md` | 21 |
 | `agents/mcp-server-lifecycle` | P2 | complete | `agents/mcp-server-lifecycle.md` | 5 |
 | `agents/microsoft-agent-framework` | P2 | complete | `agents/microsoft-agent-framework.md` | 21 |
@@ -130,7 +130,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `gitlab/pipelines-rules` | P0 | complete | `gitlab/pipelines-rules.md` | 6 |
 | `gitlab/protected-branches-tags` | P0 | complete | `gitlab/protected-branches-tags.md` | 3 |
 | `gitlab/variables` | P0 | complete | `gitlab/variables.md` | 2 |
-| `gitlab/automated-merge-requests` | P3 | complete | `gitlab/automated-merge-requests.md` | 17 |
+| `gitlab/automated-merge-requests` | P3 | complete | `gitlab/automated-merge-requests.md` | 25 |
 | `gitlab/hosted-runners-windows` | P3 | complete | `gitlab/hosted-runners-windows.md` | 5 |
 | `gpo/admx-central-store` | P1 | complete | `gpo/admx-central-store.md` | 8 |
 | `gpo/dsc-group-policy-adapter` | P2 | complete | `gpo/dsc-group-policy-adapter.md` | 3 |
