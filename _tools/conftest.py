@@ -7,6 +7,8 @@ from pyproject.toml's dev group) or `uv run pytest`.
   git_env(**extra)      the environment of a git scenario: no global or system git config, a fixed author, and none
                         of the variables that would leak the outer repository, a CI run or a verification date into it
   copy_kb(dst, skip)    a copy of the kb's working tree without .git, _cache, _private, __pycache__ (and `skip`)
+  kb_seed               (fixture) a bare repository of a kb copy, committed once per run and shared by the xdist
+                        workers: the origin a git scenario clones
   requires_git          skip marker for a test that needs the git binary
   marker `git`          a scenario in throwaway git repositories (about 10 s each); `-m "not git"` leaves them out,
                         which is what KB_TESTS_FAST=1 (kbgit.py sync's gate) does
@@ -18,7 +20,8 @@ from pyproject.toml's dev group) or `uv run pytest`.
   Q(rel)                the qualified path of a public-root file (`public/<rel>`): what the read tools print
   SELF_REL              the kb's own docs directory relative to the repository (`_self`)
 """
-import os, shutil, subprocess, sys
+import json, os, shutil, subprocess, sys, time
+from pathlib import Path
 
 import pytest
 
@@ -78,6 +81,40 @@ def copy_kb(dst, skip=()):
     shutil.copytree(KB, dst, ignore=shutil.ignore_patterns(".git", "_cache", "_private", "__pycache__", ".venv", ".pytest_cache",
                                                         ".ruff_cache", *skip))
     return dst
+
+
+@pytest.fixture(scope="session")
+def kb_seed(tmp_path_factory):
+    """(bare repository, its commit) of a kb copy without _fetch_state.csv and the committed query log store, committed
+    once per run: the origin a git scenario clones. Under pytest-xdist the first worker that asks builds it in the
+    run's shared temporary directory, and the others wait for it."""
+    base = tmp_path_factory.getbasetemp()
+    tmp = (base.parent if os.environ.get("PYTEST_XDIST_WORKER") else base) / "kb-seed"
+    done = tmp / "seed.json"
+    try:
+        tmp.mkdir()
+    except FileExistsError:
+        deadline = time.monotonic() + 900
+        while not done.exists():
+            assert time.monotonic() < deadline, f"no seed at {tmp}"
+            time.sleep(0.1)
+        got = json.loads(done.read_text(encoding="utf-8"))
+        assert "error" not in got, got
+        return Path(got["bare"]), got["base"]
+    got = {"error": "not built"}
+    try:
+        repo = Repo(copy_kb(str(tmp / "seed"), skip=("_fetch_state.csv", "_querylog")))
+        repo.git("init", "-q", "-b", "main")
+        repo.git("add", "-A")
+        repo.git("commit", "-q", "-m", "base")
+        Repo(tmp).git("clone", "-q", "--bare", repo.path, str(tmp / "seed.git"))
+        Repo(tmp / "seed.git").git("repack", "-a", "-d", "-q")  # one pack: a clone links two files, not every object
+        got = {"bare": str(tmp / "seed.git"), "base": repo.rev("HEAD")}
+    finally:
+        part = done.with_suffix(".part")
+        part.write_text(json.dumps(got), encoding="utf-8")
+        os.replace(part, done)
+    return Path(got["bare"]), got["base"]
 
 
 class Repo:

@@ -67,31 +67,23 @@
                     a kb/_self doc, the answers or anchors are refused); an edited fact line is refused at commit
   TestRetry         a finding recorded apply-failed is not applied again when a later record opens it (planted:
                     FAILED_RETRIES=1 applies it); findings named by --hold are left alone
-  TestPushInGit     (marker git) a kb copy with the learned fixture store and local bare remotes that advertise push
-                    options and record them: one automatic commit lands on main with its KB-Auto trailer while the
-                    person's checkout stays as it was; CI running pushes nothing; manual is not red; unsigned glab is
-                    a note; failed CI gives a revert commit that keeps the store and records apply-failed, and is
-                    not itself reverted or retried; a planted conflict pushes querylog/<run-id> with the MR push
-                    options and nothing to main, its findings stay open and a second run leaves them alone;
-                    check-trailers flags a bad or doubled KB-Auto. glab is a stub, never the network
+  TestKbAutoTrailer (marker git) check-trailers reads a commit's KB-Auto trailer (planted: an unknown value, a second
+                    line), in a clone of the shared seed; the pushes themselves are test_querylog_e2e.py's scenarios
   TestDeliverRules  distill with a stub push: mode `local` never pushes and deletes the spool rows at once; mode
                     `auto` keeps them while the push fails (planted), distills nothing twice, and spool_delivered
                     deletes only the delivered entries' rows; the leak scan over store files (planted: an address in
                     a field `check` never reads)
-  TestDeliverInGit  (marker git) mode `auto` in a clone of a kb copy with local bare remotes: the distilled fixture
-                    spool ends as a run file (KB-Auto: querylog) plus findings on main, the spool rows go only after
-                    the push, and a second run pushes nothing; planted: a remote that refuses the push keeps the
-                    spool (the next run delivers, then deletes), a leak in a local run file blocks the push
   TestHostRules     push_refusal on each refusal shape (GitLab project and protected branch, GitHub denied and GH006,
                     HTTP 403) and on what is no refusal (a generic declined hook, DNS, connection, remote failure);
                     the install url from known_marketplaces.json (git, github) or the marketplace clone's origin;
                     cloud_session from CLAUDE_CODE_REMOTE; `apply --push` in a plugin host runs host_push; the
                     host's apply names its data directory for research
-  TestHostInGit     (marker git) a plugin host in mode `auto` with a fake plugins directory and a local bare remote:
-                    the push runs from the managed clone under the data directory and lands on main; a remote whose
-                    pre-receive hook refuses with GitLab's or GitHub's message writes DISABLED and deletes the
-                    spool, and distill then logs nothing; planted: a generic declined hook, an unreachable remote
-                    (at clone and at push) and a red gate write no DISABLED and keep the spool
+  TestHost*InGit    (marker git) a plugin host in mode `auto` with a fake plugins directory and a local bare remote:
+                    the push runs from the managed clone under the data directory and lands on main (TestHostInGit);
+                    a remote whose pre-receive hook refuses with GitLab's or GitHub's message writes DISABLED and
+                    deletes the spool, and distill then logs nothing (TestHostRefusalsInGit); planted: an unreachable
+                    remote at clone and a red gate (TestHostInGit), a generic declined hook and an unreachable remote
+                    at push (TestHostNoRefusalInGit) write no DISABLED and keep the spool
   TestCloudInGit    (marker git) a cloud session whose remote takes pushes to the checked-out branch only: the
                     automatic commits land on that branch and main stays; a second run pushes nothing; a detached
                     HEAD is refused
@@ -120,9 +112,10 @@
                     stubs: GitLab MR API, gh pr list) and KB-Auto reverts; not signed in, a failed call and no origin
                     are skipped with a note; the revert trailer read from a real git log (marker git)
 Every run writes under a temporary plugin data directory (conftest.querylog_env), never the clone's own spool, and no
-test calls the real `claude`: Haiku is the recorded reply file or a stub.
+test calls the real `claude`: Haiku is the recorded reply file or a stub. The git scenarios clone the run's shared seed
+(conftest.kb_seed), and a worktree's `querylog.py check` runs in the test process (run_here).
 """
-import contextlib, datetime, getpass, http.server, json, os, re, shutil, signal, socket, subprocess, sys, threading, time, uuid
+import contextlib, datetime, getpass, http.server, io, json, os, re, shutil, signal, socket, subprocess, sys, threading, time, uuid
 from pathlib import Path
 
 import pytest
@@ -710,7 +703,7 @@ def plant_spool(qdir, now=NOW):
 def run_distill(qdir, haiku, now=NOW, run_id=RUN_ID):
     said = []
     rc = ql_distill.distill(qdir=qdir, cfg=Path(qdir) / "config.json", haiku=haiku, now_dt=now, run_id=run_id,
-                          kb_commit="0" * 40, out=said.append)
+                            kb_commit="0" * 40, out=said.append)
     return rc, said
 
 
@@ -865,10 +858,10 @@ class TestDistill:
         assert got == [{"judged": "answered", "best": "public/windows/laps.md", "identifying": False},
                        {"judged": "missed", "best": None, "identifying": False}]
         assert [ql_distill.judged(r) for r in got] == [{"judged": "answered", "best": "public/windows/laps.md"},
-                                                     {"judged": "missed", "best": None}]
+                                                       {"judged": "missed", "best": None}]
         with pytest.raises(ValueError):  # planted: free text in place of a judgement is no reply
             ql_distill.parse_distill(json.dumps([{"i": 0, "judged": "Anna got the steps", "best": None,
-                                                "identifying": False}, {"i": 1, "judged": "missed", "best": None,
+                                                  "identifying": False}, {"i": 1, "judged": "missed", "best": None,
                                                                         "identifying": False}]), items)
 
     def test_a_kb_intent_without_a_kb_call_has_no_question(self, tmp_path):
@@ -1198,7 +1191,8 @@ time.sleep(1.5)
 class TestLock:
     def test_a_second_distill_exits_on_the_lock(self, tmp_path):
         q = tmp_path / "querylog"
-        sp = plant_spool(q)
+        plant_fetch_day(tmp_path)
+        sp = spool(tmp_path)
         lock = ql_base.acquire(q)
         info = json.loads(lock.read_text(encoding="utf-8"))
         assert info["pid"] == os.getpid() and info["started"].endswith("Z")
@@ -1240,12 +1234,13 @@ def session_start(sid="new-session"):
 
 
 def plant_fetch_day(data, n=1):
-    """A tools file of yesterday (UTC) holding n fetch.py requests: ready to distill, with nothing for Haiku."""
+    """A tools file of yesterday (UTC) holding n fetch.py requests to a local address: ready to distill, with nothing
+    for Haiku or the redactor."""
     sp = spool(data)
     sp.mkdir(parents=True, exist_ok=True)
     day = (datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=1)).date().isoformat()
     rows = [{"id": str(uuid.uuid4()), "ts": f"{day}T08:00:0{i}.000Z", "surface": "tool_fetch", "tool": "fetch.py",
-             "host": "learn.microsoft.com", "path": f"/en-us/p{i}", "outcome": "http-200"} for i in range(n)]
+             "host": "127.0.0.1", "path": f"/p{i}", "outcome": "http-200"} for i in range(n)]
     (sp / f"tools-{day}.jsonl").write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8", newline="\n")
     return rows
 
@@ -2306,6 +2301,18 @@ def signed_out(argv):
     return 1, "", "not logged in"
 
 
+def run_here(argv, cwd=None, env=None):
+    """ql_base.run_cmd, but a worktree's `querylog.py check DIR` runs in this process: the same store gates
+    (ql_store.check on that directory), with the public root's known ids read once per process instead of once per
+    push. The command line of `check` is tested on its own (TestStore, TestSpoolFormats)."""
+    if len(argv) == 4 and Path(argv[1]).name == "querylog.py" and argv[2] == "check":
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            code = ql_store.check(argv[3])
+        return code, out.getvalue(), ""
+    return ql_base.run_cmd(argv, cwd=cwd, env=env)
+
+
 def pipeline(status):
     def ci(argv):
         if argv[1:3] == ["auth", "status"]:
@@ -2325,202 +2332,21 @@ done
 
 @pytest.mark.skipif(not GIT, reason="git is not installed")
 @pytest.mark.git
-class TestPushInGit:
-    """A kb copy with the learned fixture store in kb/_querylog, committed; bare remotes cloned from it (push options
-    advertised, a pre-receive hook recording them), never the real origin. glab is a stub; kbgit.py sync runs its
-    gate without tests.py (KB_SYNC_NO_TESTS=1)."""
+class TestKbAutoTrailer:
+    """kbgit.py check-trailers on a commit's KB-Auto trailer, in a clone of the shared seed (conftest.kb_seed)."""
 
-    @pytest.fixture(scope="class", autouse=True)
+    @pytest.fixture(scope="class")
     @classmethod
-    def scenario(cls, tmp_path_factory):
-        cls.tmp = Path(tmp_path_factory.mktemp("ql-push"))
-        cls.env = git_env(KB_SYNC_NO_TESTS="1")
-        cls.top = Repo(cls.tmp, cls.env)
-        seed = Repo(copy_kb(str(cls.tmp / "seed"), skip=("_fetch_state.csv",)), cls.env)
-        store = learn_store(cls.tmp, "learned")
-        run_learn(store, unknown_pack)
-        shutil.copytree(store, Path(seed.path) / ql_base.STORE_REL)
-        seed.git("init", "-q", "-b", "main")
-        seed.git("add", "-A")
-        seed.git("commit", "-q", "-m", "base")
-        cls.seed = seed
-        cls.base = seed.rev("HEAD")
-        cls.calls = []
-
-        # remote 1: a push, CI pending, CI manual, CI red (a revert), CI red again (no second revert)
-        cls.r1, cls.a = cls.remote("r1", "a")
-        cls.pushed = cls.push(cls.a, signed_out)
-        cls.main1 = cls.r1.rev("main")
-        cls.pending = cls.push(cls.a, pipeline("running"))
-        cls.main_pending = cls.r1.rev("main")
-        cls.manual = cls.push(cls.a, pipeline("manual"))
-        cls.main_manual = cls.r1.rev("main")
-        cls.unchecked = cls.push(cls.a, signed_out)
-        cls.red =cls.push(cls.a, pipeline("failed"))
-        cls.main2 = cls.r1.rev("main")
-        cls.red_again = cls.push(cls.a, pipeline("failed"))
-        cls.main3 = cls.r1.rev("main")
-
-        # remote 2: a conflict planted while apply runs, then a second run
-        cls.r2, cls.b = cls.remote("r2", "b")
-        cls.planter = Repo(cls.tmp / "planter", cls.env)
-        cls.top.git("clone", "-q", cls.r2.path, cls.planter.path)
-        cls.conflict = cls.push(cls.b, signed_out, cls.plant_conflict)
-        cls.refs_after_conflict = cls.r2.git("for-each-ref", "--format=%(refname) %(objectname)")
-        cls.again = cls.push(cls.b, signed_out)
-        cls.refs_after_again = cls.r2.git("for-each-ref", "--format=%(refname) %(objectname)")
-
-    @classmethod
-    def remote(cls, name, clone):
-        bare = Repo(cls.tmp / f"{name}.git", cls.env)
-        cls.top.git("clone", "-q", "--bare", cls.seed.path, bare.path)
-        bare.git("config", "receive.advertisePushOptions", "true")
-        hook = Path(bare.path) / "hooks" / "pre-receive"
-        hook.write_text(PUSH_OPTIONS_HOOK, encoding="utf-8", newline="\n")
-        hook.chmod(0o755)
-        c = Repo(cls.tmp / clone, cls.env)
-        cls.top.git("clone", "-q", bare.path, c.path)
-        return bare, c
-
-    @classmethod
-    def push(cls, clone, ci, step=repo_step):
-        def run(argv, cwd=None):
-            if argv[0] in ("glab", "gh"):
-                cls.calls.append(list(argv))
-                return ci(argv)
-            return ql_base.run_cmd(argv, cwd=cwd, env=cls.env)
-        said = []
-        rc = ql_deliver.push(home=clone.path, qdir=Path(clone.path) / "_cache" / "querylog", run=run, apply_step=step,
-                           out=said.append)
-        return rc, said
-
-    @classmethod
-    def plant_conflict(cls, wt, store, hold, out):
-        """apply, then another clone pushes a different file at the path of apply's new findings file to main."""
-        before = set(Path(store).rglob("*.jsonl"))
-        rc = repo_step(wt, store, hold, out)
-        (new,) = set(Path(store).rglob("*.jsonl")) - before
-        rel = new.relative_to(wt).as_posix()
-        header = {"run": new.stem, "pipeline": ql_base.PIPELINE_VERSION, "retrieval": ql_store.retrieval_version(),
-                  "kb_commit": "0" * 40, "counts": {"findings": 0}}
-        cls.planter.write(rel, json.dumps(header, separators=(",", ":")) + "\n")
-        cls.planter.git("add", "-A")
-        cls.planter.git("commit", "-q", "-m", "chore(kb): planted findings file")
-        cls.planter.git("push", "-q", "origin", "HEAD:main")
-        cls.planted, cls.planted_rel = cls.planter.rev("HEAD"), rel
-        cls.branch_eval = Repo(wt, cls.env).read(D("lookup_eval.csv"))
-        return rc
-
-    @classmethod
-    def show(cls, repo, rev, rel):
-        p = repo.run_git("show", f"{rev}:{rel}")
-        return p.stdout if p.returncode == 0 else None
-
-    @staticmethod
-    def trailer(repo, rev):
-        return repo.git("log", "-1", "--format=%(trailers:key=KB-Auto,valueonly)", rev).strip()
-
-    def added_evals(self, repo, rev):
-        """The eval rows `rev` has beyond the base, each expecting its `best` article with `good`."""
-        base = self.show(repo, self.base, D("lookup_eval.csv")).splitlines()
-        new = [ln for ln in self.show(repo, rev, D("lookup_eval.csv")).splitlines() if ln not in base]
-        assert all(ln.endswith(".md,good,") for ln in new), "\n".join(new)
-        return new
-
-    def findings_at(self, repo, rev):
-        """{finding id: last record} of the findings files at `rev`."""
-        names = repo.git("ls-tree", "-r", "--name-only", rev, "--", f"{ql_base.STORE_REL}/findings").split()
-        last = {}
-        for n in sorted(names, key=lambda n: Path(n).stem):
-            for line in self.show(repo, rev, n).splitlines()[1:]:
-                rec = json.loads(line)
-                last[rec["id"]] = rec
-        return last
-
-    def test_one_automatic_commit_lands_on_main(self):
-        rc, said = self.pushed
-        assert rc == 0, "\n".join(said)
-        assert not any("CI" in s for s in said), said  # no automatic commit yet: nothing to check
-        assert any(s.startswith("apply --push: pushed ") for s in said), said
-        commits = self.r1.git("rev-list", f"{self.base}..main").split()
-        assert commits and self.trailer(self.r1, commits[-1]) == "alias, eval, expansion, querylog"
-        assert self.r1.git("log", "-1", "--format=%s", commits[-1]).startswith("chore(kb): query log apply ")
-        states = self.findings_at(self.r1, self.main1)
-        assert sorted(r["state"] for r in states.values() if r["kind"] in ("eval", "alias", "expansion")) == \
-            ["applied"] * 6
-        assert len(self.added_evals(self.r1, self.main1)) == 3
-        assert "zqxlapsor,laps" in self.show(self.r1, self.main1, "_tools/aliases.csv")
-        assert self.r1.git("for-each-ref", "--format=%(refname)", "refs/heads").split() == ["refs/heads/main"]
-        assert not (Path(self.r1.path) / "push-options.txt").exists()  # a push to main carries no push options
-        assert self.a.rev("main") == self.base and not self.a.git("status", "--porcelain")  # the person's checkout
-        self.a.git("fetch", "-q", "origin")
-        check = self.a.kbgit("check-trailers", f"{self.base}..origin/main")
-        assert check.returncode == 0, check.stdout
-
-    def test_an_unfinished_pipeline_pushes_nothing(self):
-        rc, said = self.pending
-        assert rc == 0 and self.main_pending == self.main1, said
-        assert any("is not finished (glab on gitlab.com: running); nothing pushed this run" in s for s in said), said
-        api = [c for c in self.calls if c[:2] == ["glab", "api"]]
-        assert api and api[0][2:4] == ["--hostname", "gitlab.com"] and f"sha={self.main1}" in api[0][4]
-
-    def test_manual_is_not_red(self):
-        rc, said = self.manual
-        assert rc == 0 and self.main_manual == self.main1 and "apply --push: nothing to push" in said, said
-
-    def test_the_ci_check_is_skipped_with_a_note_when_glab_is_not_signed_in(self):
-        rc, said = self.unchecked
-        assert rc == 0 and "apply --push: nothing to push" in said, said
-        assert any("note: CI status not checked: glab is not signed in to gitlab.com" in s for s in said), said
-
-    def test_red_ci_gives_a_revert_and_apply_failed(self):
-        rc, said = self.red
-        assert rc == 0, said
-        assert self.r1.git("rev-list", "--count", f"{self.main1}..{self.main2}").strip() in ("1", "2")
-        rev = self.r1.git("log", "--format=%H", f"{self.main1}..{self.main2}").split()[-1]
-        assert self.trailer(self.r1, rev) == "revert"
-        assert self.r1.git("log", "-1", "--format=%s", rev).strip() == f"revert: query log commit {self.main1[:9]}"
-        for rel in (D("lookup_eval.csv"), D("doc2query/expansions.csv"), "_tools/aliases.csv"):
-            assert self.show(self.r1, "main", rel) == self.show(self.r1, self.base, rel), rel
-        before = set(self.r1.git("ls-tree", "-r", "--name-only", self.main1, "--", ql_base.STORE_REL).split())
-        after = set(self.r1.git("ls-tree", "-r", "--name-only", "main", "--", ql_base.STORE_REL).split())
-        assert before < after and len(after - before) == 1  # the store's files stay; one findings file is added
-        states = self.findings_at(self.r1, "main")
-        failed = [r for r in states.values() if r["state"] == ql_store.APPLY_FAILED]
-        assert len(failed) == 6 and all(r["observed"]["commit"] == self.main1[:12] for r in failed)
-        wt = Path(self.a.path) / "_cache" / "querylog" / ql_deliver.WORKTREE_NAME
-        assert ql_store.store_problems(wt / ql_base.STORE_REL) == []
-
-    def test_a_revert_is_not_reverted_and_nothing_is_retried(self):
-        rc, said = self.red_again
-        assert rc == 0 and self.main3 == self.main2 and "apply --push: nothing to push" in said, said
-
-    def test_a_conflict_pushes_a_branch_and_not_main(self):
-        rc, said = self.conflict
-        assert rc == 0, said
-        (line,) = [s for s in said if "conflict: pushed" in s]
-        branch = line.split("pushed ", 1)[1].split(" ", 1)[0]
-        assert branch == ql_deliver.CONFLICT_BRANCH_PREFIX + Path(self.planted_rel).stem
-        assert self.r2.rev("main") == self.planted  # nothing of the run reached main
-        assert self.show(self.r2, branch, D("lookup_eval.csv")) == self.branch_eval
-        assert len(self.added_evals(self.r2, branch)) == 3
-        opts = (Path(self.r2.path) / "push-options.txt").read_text(encoding="utf-8").splitlines()
-        assert opts == list(ql_deliver.MR_OPTIONS) == ["merge_request.create", "merge_request.target=main"]
-        states = self.findings_at(self.r2, "main")
-        assert {r["state"] for r in states.values() if r["kind"] in ("eval", "alias", "expansion")} == {"open"}
-
-    def test_a_pending_conflict_holds_its_findings(self):
-        rc, said = self.again
-        assert rc == 0, said
-        assert any("finding(s) wait on a querylog/ branch" in s for s in said), said
-        assert "apply --push: nothing to push" in said
-        assert self.refs_after_again == self.refs_after_conflict  # no new branch, main unchanged
+    def clone(cls, kb_seed, tmp_path_factory):
+        c = Repo(tmp_path_factory.mktemp("ql-trailer") / "a")
+        Repo(Path(c.path).parent).git("clone", "-q", str(kb_seed[0]), c.path)
+        return c, kb_seed[1]
 
     @pytest.mark.parametrize("value,ok", [("eval", True), ("alias, eval", True), ("bogus", False),
                                           ("eval\nKB-Auto: alias", False)])
-    def test_check_trailers_reads_kb_auto(self, value, ok):
-        c = self.a
-        c.git("checkout", "-q", "-B", "t-trailer", self.base)
+    def test_check_trailers_reads_kb_auto(self, clone, value, ok):
+        c, base = clone
+        c.git("checkout", "-q", "-B", "t-trailer", base)
         c.append("README.md", "x\n")
         c.git("commit", "-q", "-a", "--no-verify", "-m", "chore: x", "-m", f"KB-Auto: {value}")
         p = c.kbgit("check-trailers", "HEAD")
@@ -2556,7 +2382,7 @@ class TestDeliverRules:
             return rc
         said = []
         got = ql_distill.distill(qdir=q, cfg=auto_config(q, mode), haiku=ql_base.Replay(FIXTURES / "haiku.json"),
-                               now_dt=NOW, run_id=RUN_ID, kb_commit="0" * 40, out=said.append, deliver=deliver)
+                                 now_dt=NOW, run_id=RUN_ID, kb_commit="0" * 40, out=said.append, deliver=deliver)
         return got, said
 
     def test_local_never_pushes_and_deletes_the_rows_at_once(self, tmp_path):
@@ -2619,159 +2445,6 @@ def learn_then_apply(wt, store, hold, out):
 
 
 REJECT_HOOK = "#!/bin/sh\necho 'planted: push refused' >&2\nexit 1\n"
-
-
-@pytest.mark.skipif(not GIT, reason="git is not installed")
-@pytest.mark.git
-class TestDeliverInGit:
-    """Mode `auto` in a clone of a kb copy with no committed store: distill (the fixture spool, the recorded Haiku
-    reply) then the push to a local bare remote. glab is signed out (a stub), and learn and apply run in-process on
-    the worktree's store; kbgit.py sync runs its gate without tests.py (KB_SYNC_NO_TESTS=1)."""
-
-    @pytest.fixture(scope="class", autouse=True)
-    @classmethod
-    def scenario(cls, tmp_path_factory):
-        cls.tmp = Path(tmp_path_factory.mktemp("ql-deliver"))
-        cls.env = git_env(KB_SYNC_NO_TESTS="1")
-        cls.top = Repo(cls.tmp, cls.env)
-        seed = Repo(copy_kb(str(cls.tmp / "seed"), skip=("_fetch_state.csv", "_querylog")), cls.env)
-        seed.git("init", "-q", "-b", "main")
-        seed.git("add", "-A")
-        seed.git("commit", "-q", "-m", "base")
-        cls.seed, cls.base = seed, seed.rev("HEAD")
-
-        # remote 1: the push, then a second run with nothing new
-        cls.r1, cls.a = cls.remote("r1", "a")
-        cls.qa = Path(cls.a.path) / "_cache" / "querylog"
-        plant_spool(cls.qa)
-        cls.first = cls.distill(cls.a)
-        cls.main1 = cls.r1.rev("main")
-        cls.spool1 = spool_names(cls.qa)
-        cls.again = cls.distill(cls.a)
-        cls.again_push = cls.push(cls.a)
-        cls.main_again = cls.r1.rev("main")
-
-        # remote 2: a push refused by the remote keeps the spool; the next push delivers; a planted leak blocks
-        cls.r2, cls.b = cls.remote("r2", "b")
-        hook = Path(cls.r2.path) / "hooks" / "pre-receive"
-        hook.write_text(REJECT_HOOK, encoding="utf-8", newline="\n")
-        hook.chmod(0o755)
-        cls.qb = Path(cls.b.path) / "_cache" / "querylog"
-        plant_spool(cls.qb)
-        cls.refused = cls.distill(cls.b)
-        cls.main_refused = cls.r2.rev("main")
-        cls.spool_refused = spool_names(cls.qb)
-        hook.unlink()
-        cls.retried = cls.distill(cls.b)
-        cls.main_retried = cls.r2.rev("main")
-        cls.spool_retried = spool_names(cls.qb)
-        leak = jsonl(FIXTURES / "golden.jsonl")
-        cls.leak_run = "20260928T140000Z-0000dead"
-        leak[0]["run"] = cls.leak_run
-        leak[1]["question"] = "Mailed " + "anna.nowak" + "@" + "acme-corp.pl" + " about it."
-        golden_store(cls.qb / "store", [leak[0]] + [dict(e, id=str(uuid.uuid4())) for e in leak[1:]], cls.leak_run)
-        cls.leaked = cls.push(cls.b)
-        cls.main_leaked = cls.r2.rev("main")
-
-    @classmethod
-    def remote(cls, name, clone):
-        bare = Repo(cls.tmp / f"{name}.git", cls.env)
-        cls.top.git("clone", "-q", "--bare", cls.seed.path, bare.path)
-        c = Repo(cls.tmp / clone, cls.env)
-        cls.top.git("clone", "-q", bare.path, c.path)
-        return bare, c
-
-    @classmethod
-    def runner(cls):
-        def run(argv, cwd=None):
-            if argv[0] in ("glab", "gh"):
-                return signed_out(argv)
-            return ql_base.run_cmd(argv, cwd=cwd, env=cls.env)
-        return run
-
-    @classmethod
-    def distill(cls, clone):
-        q = Path(clone.path) / "_cache" / "querylog"
-        said, seen = [], []
-
-        def deliver(qdir, out):
-            seen.append(spool_names(qdir))  # the spool as the push starts
-            return ql_deliver.Pusher(clone.path, qdir, cls.runner(), learn_then_apply, out, NOW)()
-        rc = ql_distill.distill(qdir=q, cfg=auto_config(q), haiku=ql_base.Replay(FIXTURES / "haiku.json"), now_dt=NOW,
-                              run_id=RUN_ID, kb_commit="0" * 40, out=said.append, deliver=deliver)
-        return rc, said, seen
-
-    @classmethod
-    def push(cls, clone):
-        said = []
-        rc = ql_deliver.push(home=clone.path, qdir=Path(clone.path) / "_cache" / "querylog", run=cls.runner(),
-                           apply_step=learn_then_apply, out=said.append, now_dt=NOW)
-        return rc, said
-
-    @staticmethod
-    def tree(repo, rev):
-        return repo.git("ls-tree", "-r", "--name-only", rev, "--", ql_base.STORE_REL).split()
-
-    def test_the_run_file_and_findings_land_on_main(self):
-        rc, said, seen = self.first
-        assert rc == 0, "\n".join(said)
-        rel = f"{ql_base.STORE_REL}/2026-09/{RUN_ID}.jsonl"
-        files = self.tree(self.r1, self.main1)
-        assert rel in files and any(f.startswith(f"{ql_base.STORE_REL}/findings/") for f in files), files
-        local = (self.qa / "store" / "2026-09" / f"{RUN_ID}.jsonl").read_text(encoding="utf-8")
-        assert self.r1.git("show", f"{self.main1}:{rel}") == local
-        commits = self.r1.git("rev-list", "--reverse", f"{self.base}..{self.main1}").split()
-        subjects = [self.r1.git("log", "-1", "--format=%s", h).strip() for h in commits]
-        assert subjects[0] == "chore(kb): query log store, 1 run file(s)", subjects
-        assert TestPushInGit.trailer(self.r1, commits[0]) == "querylog"
-        assert subjects[1].startswith("chore(kb): query log apply ") and "querylog" in TestPushInGit.trailer(
-            self.r1, commits[1]), subjects
-        check = self.a.kbgit("check-trailers", f"{self.base}..{self.main1}")
-        assert check.returncode == 0, check.stdout
-        wt = self.qa / ql_deliver.WORKTREE_NAME
-        assert ql_store.store_problems(wt / ql_base.STORE_REL) == []
-        assert self.a.rev("main") == self.base and not self.a.git("status", "--porcelain")  # the person's checkout
-
-    def test_the_spool_goes_only_after_the_push(self):
-        rc, said, seen = self.first
-        (before,) = seen
-        assert set(CLOSED) <= set(before), before  # the push started with the rows still in the spool
-        pushed = next(i for i, s in enumerate(said) if s.startswith("apply --push: pushed "))
-        gone = said.index("apply --push: deleted the spool rows of 6 entries whose run file is on origin/main")
-        assert pushed < gone, said
-        assert self.spool1 == [f"{S_OPEN}.jsonl"]
-
-    def test_nothing_new_pushes_nothing(self):
-        rc, said, seen = self.again
-        assert rc == 0 and said[0] == "distill: nothing to write (waiting=0)", said
-        assert "apply --push: nothing to push" in said, said
-        rc, said = self.again_push
-        assert rc == 0 and "apply --push: nothing to push" in said, said
-        assert self.main_again == self.main1
-
-    def test_a_refused_push_keeps_the_spool(self):
-        rc, said, seen = self.refused
-        assert rc == 1, "\n".join(said)
-        assert any("kbgit.py sync exit 1: nothing pushed to main" in s for s in said), said
-        assert self.main_refused == self.base
-        assert set(CLOSED) <= set(self.spool_refused), self.spool_refused
-        assert not any("deleted the spool rows" in s for s in said), said
-
-    def test_the_next_push_delivers_and_then_deletes(self):
-        rc, said, seen = self.retried
-        assert rc == 0, "\n".join(said)
-        assert said[0] == "distill: nothing to write (waiting=0)", said  # nothing distilled twice
-        assert f"{ql_base.STORE_REL}/2026-09/{RUN_ID}.jsonl" in self.tree(self.r2, self.main_retried)
-        assert self.spool_retried == [f"{S_OPEN}.jsonl"]
-
-    def test_a_leak_in_a_run_file_blocks_the_push(self):
-        rc, said = self.leaked
-        assert rc == 1, said
-        text = "\n".join(said)
-        assert "refused: the store gates fail on the local store's files; nothing committed or pushed" in text, text
-        assert f"2026-09/{self.leak_run}.jsonl:2: an identifier in `question`" in text, text
-        assert f"2026-09/{self.leak_run}.jsonl:2: the leak scan flags an identifier (email)" in text, text
-        assert self.main_leaked == self.main_retried
 
 
 # --- plugin hosts and cloud sessions -------------------------------------------------------------------------------
@@ -2872,7 +2545,7 @@ class TestHostRules:
     def test_a_host_without_an_install_source_is_refused(self, tmp_path):
         said = []
         assert ql_deliver.host_push(tmp_path, lambda argv, cwd=None: (1, "", ""), None, said.append,
-                                  root=tmp_path / "x") == 2
+                                    root=tmp_path / "x") == 2
         assert "install source is not recorded" in said[0] and not (tmp_path / ql_base.DISABLED_NAME).exists()
 
     def test_the_hosts_apply_reads_research_from_its_data_directory(self, tmp_path):
@@ -2891,39 +2564,20 @@ class TestHostRules:
         assert calls[1][-2:] == ["--clone", str(tmp_path / "clone")]
 
 
-def seed_repo(tmp, env):
-    """A kb copy without a committed store, as one commit on main."""
-    seed = Repo(copy_kb(str(Path(tmp) / "seed"), skip=("_fetch_state.csv", "_querylog")), env)
-    seed.git("init", "-q", "-b", "main")
-    seed.git("add", "-A")
-    seed.git("commit", "-q", "-m", "base")
-    return seed
-
-
-HOST_CASES = ("delivers", "gitlab-project", "gitlab-protected", "github-denied", "github-gh006", "push-rule",
-              "unreachable-at-clone", "unreachable-at-push", "red-gate")
 HOST_REFUSALS = {"gitlab-project": GITLAB_PROJECT, "gitlab-protected": GITLAB_PROTECTED,
                  "github-denied": GITHUB_DENIED, "github-gh006": GITHUB_GH006}
 
 
-@pytest.mark.skipif(not GIT, reason="git is not installed")
-@pytest.mark.git
-class TestHostInGit:
-    """A plugin host in mode `auto`: a fake plugins directory whose known_marketplaces.json names a local bare remote,
-    a data directory with the fixture spool, distill with host_push; glab signed out, learn and apply in-process,
-    kbgit.py sync's gate without tests.py (KB_SYNC_NO_TESTS=1). One case per test."""
+class HostCase:
+    """A plugin host in mode `auto`: a fake plugins directory whose known_marketplaces.json names a local bare remote
+    (a clone of the shared seed, conftest.kb_seed), a data directory with the fixture spool, distill with host_push;
+    glab signed out, learn and apply in-process, kbgit.py sync's gate without tests.py (KB_SYNC_NO_TESTS=1). One case
+    per test."""
 
-    @pytest.fixture(scope="class")
-    @classmethod
-    def seed(cls, tmp_path_factory):
-        tmp = Path(tmp_path_factory.mktemp("ql-host-seed"))
-        env = git_env(KB_SYNC_NO_TESTS="1")
-        return seed_repo(tmp, env), env
-
-    def run_case(self, case, seed, env, tmp):
+    def run_case(self, case, kb_seed, env, tmp):
         top = Repo(tmp, env)
         bare = Repo(tmp / "remote.git", env)
-        top.git("clone", "-q", "--bare", seed.path, bare.path)
+        top.git("clone", "-q", "--bare", str(kb_seed[0]), bare.path)
         hook = Path(bare.path) / "hooks" / "pre-receive"
         if case in HOST_REFUSALS or case == "push-rule":
             hook.write_text(reject_hook(HOST_REFUSALS.get(case, PUSH_RULE)), encoding="utf-8", newline="\n")
@@ -2942,22 +2596,21 @@ class TestHostInGit:
         def run(argv, cwd=None):
             if argv[0] in ("glab", "gh"):
                 return signed_out(argv)
-            return ql_base.run_cmd(argv, cwd=cwd, env=env)
+            return run_here(argv, cwd=cwd, env=env)
         if case == "unreachable-at-push":  # the fetch works, the push meets a closed port
             clone = ql_deliver.managed_clone(q, bare.path, run, print)
             Repo(clone, env).git("config", "remote.origin.pushurl", UNREACHABLE)
         said = []
         rc = ql_distill.distill(qdir=q, cfg=auto_config(q), haiku=ql_base.Replay(FIXTURES / "haiku.json"),
-                              now_dt=NOW, run_id=RUN_ID, kb_commit="0" * 40, out=said.append,
-                              deliver=lambda qd, out: ql_deliver.host_push(qd, run, learn_then_apply, out, NOW, root))
+                                now_dt=NOW, run_id=RUN_ID, kb_commit="0" * 40, out=said.append,
+                                deliver=lambda qd, out: ql_deliver.host_push(qd, run, learn_then_apply, out, NOW, root))
         return rc, said, q, bare
 
-    @pytest.mark.parametrize("case", HOST_CASES)
-    def test_case(self, case, seed, tmp_path):
-        rc, said, q, bare = self.run_case(case, seed[0], seed[1], tmp_path)
+    def case(self, case, kb_seed, tmp_path):
+        rc, said, q, bare = self.run_case(case, kb_seed, git_env(KB_SYNC_NO_TESTS="1"), tmp_path)
         text = "\n".join(said)
         disabled = q / ql_base.DISABLED_NAME
-        base = seed[0].rev("HEAD")
+        base = kb_seed[1]
         if case == "delivers":
             assert rc == 0, text
             assert (q / ql_deliver.CLONE_NAME / ".git").is_dir() and (q / ql_deliver.WORKTREE_NAME / ".git").exists()
@@ -2988,6 +2641,30 @@ class TestHostInGit:
 
 @pytest.mark.skipif(not GIT, reason="git is not installed")
 @pytest.mark.git
+class TestHostInGit(HostCase):
+    @pytest.mark.parametrize("case", ["delivers", "unreachable-at-clone", "red-gate"])
+    def test_case(self, case, kb_seed, tmp_path):
+        self.case(case, kb_seed, tmp_path)
+
+
+@pytest.mark.skipif(not GIT, reason="git is not installed")
+@pytest.mark.git
+class TestHostRefusalsInGit(HostCase):
+    @pytest.mark.parametrize("case", ["gitlab-project", "gitlab-protected", "github-denied", "github-gh006"])
+    def test_case(self, case, kb_seed, tmp_path):
+        self.case(case, kb_seed, tmp_path)
+
+
+@pytest.mark.skipif(not GIT, reason="git is not installed")
+@pytest.mark.git
+class TestHostNoRefusalInGit(HostCase):
+    @pytest.mark.parametrize("case", ["push-rule", "unreachable-at-push"])
+    def test_case(self, case, kb_seed, tmp_path):
+        self.case(case, kb_seed, tmp_path)
+
+
+@pytest.mark.skipif(not GIT, reason="git is not installed")
+@pytest.mark.git
 class TestCloudInGit:
     """A cloud session: a clone on the branch `claude/work` of a bare remote whose pre-receive hook takes pushes to
     that branch only (as the session's git proxy does); distill in mode `auto` with a Pusher told it is a cloud
@@ -2995,14 +2672,13 @@ class TestCloudInGit:
 
     @pytest.fixture(scope="class", autouse=True)
     @classmethod
-    def scenario(cls, tmp_path_factory):
+    def scenario(cls, tmp_path_factory, kb_seed):
         cls.tmp = Path(tmp_path_factory.mktemp("ql-cloud"))
         cls.env = git_env(KB_SYNC_NO_TESTS="1")
-        seed = seed_repo(cls.tmp, cls.env)
-        cls.base = seed.rev("HEAD")
+        cls.base = kb_seed[1]
         top = Repo(cls.tmp, cls.env)
         cls.bare = Repo(cls.tmp / "remote.git", cls.env)
-        top.git("clone", "-q", "--bare", seed.path, cls.bare.path)
+        top.git("clone", "-q", "--bare", str(kb_seed[0]), cls.bare.path)
         hook = Path(cls.bare.path) / "hooks" / "pre-receive"
         hook.write_text("#!/bin/sh\nwhile read old new ref; do\n  [ \"$ref\" = refs/heads/claude/work ] || "
                         "{ echo \"push to $ref refused: the session pushes to claude/work only\" >&2; exit 1; }\n"
@@ -3020,14 +2696,14 @@ class TestCloudInGit:
         cls.a.git("checkout", "-q", "--detach")
         cls.detached = []
         cls.detached_rc = ql_deliver.Pusher(cls.a.path, cls.q, cls.runner(), learn_then_apply, cls.detached.append, NOW,
-                                          cloud=True)()
+                                            cloud=True)()
 
     @classmethod
     def runner(cls):
         def run(argv, cwd=None):
             if argv[0] in ("glab", "gh"):
                 return signed_out(argv)
-            return ql_base.run_cmd(argv, cwd=cwd, env=cls.env)
+            return run_here(argv, cwd=cwd, env=cls.env)
         return run
 
     @classmethod
@@ -3037,7 +2713,7 @@ class TestCloudInGit:
         def deliver(qdir, out):
             return ql_deliver.Pusher(cls.a.path, qdir, cls.runner(), learn_then_apply, out, NOW, cloud=True)()
         rc = ql_distill.distill(qdir=cls.q, cfg=auto_config(cls.q), haiku=ql_base.Replay(FIXTURES / "haiku.json"),
-                              now_dt=NOW, run_id=RUN_ID, kb_commit="0" * 40, out=said.append, deliver=deliver)
+                                now_dt=NOW, run_id=RUN_ID, kb_commit="0" * 40, out=said.append, deliver=deliver)
         return rc, said
 
     def test_the_commits_land_on_the_working_branch(self):
@@ -3277,7 +2953,7 @@ class TestQuoteCheck:
     def test_a_markdown_page(self):
         md = b"See the [LAPS overview](https://docs.example.com/o) for **supported** platforms and more.\n"
         assert ql_research.quotecheck(PAGE_URL, "See the LAPS overview for supported platforms",
-                                   lambda u: (md, "text/markdown"))[0]
+                                      lambda u: (md, "text/markdown"))[0]
 
     def test_pages_are_fetched_as_fetch_py_fetches_them(self, monkeypatch):
         import fetch
@@ -3336,7 +3012,7 @@ class TestResearchConfig:
 
     def test_a_clone_names_its_own_config(self, tmp_path):
         assert ql_research.research_places(tmp_path) == (tmp_path / "_cache" / "querylog",
-                                                      tmp_path / "_private" / "querylog.json")
+                                                         tmp_path / "_private" / "querylog.json")
 
 
 class TestResearch:
@@ -3582,7 +3258,7 @@ class TestResearchInKbCopy:
         assert f"- {cand()['text']} [DOC {sid}]" in art.split("\n")
         assert ql_research.edit_problems(rel, before[rel].decode("utf-8"), art) == []
         assert ql_research.edit_problems("kb/public/_sources.csv", before["kb/public/_sources.csv"].decode("utf-8"),
-                                      after["kb/public/_sources.csv"].decode("utf-8")) == []
+                                         after["kb/public/_sources.csv"].decode("utf-8")) == []
         import kbgit  # the new row sits in id order: kbgit.py fix, which sorts the rows by id, changes nothing
         sources = after["kb/public/_sources.csv"].decode("utf-8")
         assert kbgit.canon_csv(sources, True) == sources
@@ -3590,7 +3266,7 @@ class TestResearchInKbCopy:
             ln for ln in sources.splitlines() if ln.startswith(sid + ",")]) == sources
         conflicts = after["kb/public/_conflicts.md"].decode("utf-8")
         assert ql_research.edit_problems("kb/public/_conflicts.md", before["kb/public/_conflicts.md"].decode("utf-8"),
-                                      conflicts) == []
+                                         conflicts) == []
         (entry,) = [ln for ln in conflicts.split("\n") if GAP_ID in ln]
         assert f"(line {n} of the article)" in entry and entry.endswith("(topic: windows/laps)")
         assert json.loads((Path(researched[7]) / "querylog" / ql_research.RESEARCH_RUNS_NAME).read_text(

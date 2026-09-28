@@ -1,17 +1,22 @@
 """Query log end to end (kb/_self/querylog.md; `python3 _tools/tests.py -k e2e`).
 
-Each scenario drives a clone of a kb copy whose `origin` is a local bare repository through the whole pipeline:
+Each scenario drives a clone of a kb copy whose `origin` is a local bare repository (a clone of the run's shared
+seed, conftest.kb_seed) through the whole pipeline:
 capture (the query log hook commands of the clone's .claude/settings.json, fed the recorded events of
 _tools/fixtures/querylog/e2e.json on stdin: capture, kb_hook.py, and the SessionEnd launcher), distill with the
 recorded Haiku replies of that file, then the push of mode `auto` (ql_deliver.Pusher: the worktree's own
 `querylog.py learn` and `apply`, then its `kbgit.py sync --push`). After each scenario the tests check the store on the
 remote, the findings, the eval file, the ledgers, the spool and the gate (the store gates and check-trailers).
 
-  TestAnswered      a kb: lookup the hook answered with `good`: one entry, no finding, only the run file pushed; the
-                    hook's answer is kb_hook.answer's
+  TestAnswered      a kb: lookup the hook answered with `good`: one entry, no finding, only the run file pushed, the
+                    local store's file as it was; the hook's answer is kb_hook.answer's
   TestFixes         a miss fixed by an alias, one fixed by an expansion and one with no article that answers it (a
-                    _gaps.md entry under its topic), in one push; a second run on unchanged inputs changes nothing;
-                    red CI on that push gives a revert and `apply-failed`, and nothing is applied again
+                    _gaps.md entry under its topic), in one push: the store's commit, then the apply commit, main
+                    the only branch, no CI to check yet; a second run on unchanged inputs changes nothing (the CI
+                    check skipped with a note while glab is signed out), and neither does `apply --push` by hand; red
+                    CI on that push gives a revert that keeps the store's files and adds one findings file,
+                    `apply-failed` naming the reverted commit, and red CI on the revert neither reverts it nor
+                    applies anything again
   TestFixedSince    a miss that passes on HEAD by the time learn runs: `fixed-since`, no change to the kb
   TestFetches       web, docs-server and curl fetches beside a kb lookup keep host and path only; a fetch in a prompt
                     that never used the kb writes no row
@@ -22,30 +27,35 @@ remote, the findings, the eval file, the ledgers, the spool and the gate (the st
   TestTwoClones     two clones distilling against one remote, the second pushing after the first moved main:
                     separate run files, no entry id twice, no conflict
   TestConflict      a conflict with origin/main: the querylog/<run-id> branch with the merge-request push options,
-                    main unchanged, the findings pending and held on the next run
-  TestCiNotRed      unfinished CI holds the push; `manual` and `skipped` are not red
+                    main unchanged, the findings pending and held on the next run, whose push to main carries no push
+                    options
+  TestCiNotRed      unfinished CI holds the push; `manual` and `skipped` are not red; the glab call names origin's
+                    host and the last automatic commit
   TestResearch      research on within its daily cap (a quote-checked fact and a _conflicts.md entry), over its cap,
                     and off
-  test_modes        modes `off`, `local`, `auto` and the default (no file), the DISABLED marker, an unreadable config
+  TestModes*        modes `off`, `local`, `auto` and the default (no file), the DISABLED marker, an unreadable config
+                    (test_modes in TestModesOff, TestModesLocal and TestModesAuto)
   TestSessions      an open session is not distilled; one closed by SessionEnd and one idle for a day are
-  TestPushFailure   a refused push keeps the spool; the next push delivers, and the spool goes after it
+  TestPushFailure   a refused push keeps the spool; the next push delivers, and the spool goes after it; a leak in a
+                    local run file blocks the push (planted)
 
 The SessionEnd hook runs while the test holds the distill lock, so the launcher marks the session closed and starts
 no distill of its own: distill runs in this process with the recorded Haiku and with `glab` and `gh` as stubs. The
-worktree's research answers from a recorded reply and page. Nothing reaches the network or the real `claude`, and
+worktree's research answers from a recorded reply and page, and its `querylog.py check` runs in this process
+(test_querylog.run_here). Nothing reaches the network or the real `claude`, and
 nothing is written to this clone's own spool. Every scenario is marked `git` (tests.py runs them; KB_TESTS_FAST=1,
 kbgit.py sync's gate, leaves them out).
 """
-import datetime, json, os, re, shlex, shutil, subprocess, sys, time, uuid
+import datetime, json, os, re, shlex, shutil, subprocess, sys, uuid
 from pathlib import Path
 
 import pytest
 
 import ql_base, ql_deliver, ql_distill, ql_research, ql_store
-from conftest import GIT, Repo, copy_kb, git_env
+from conftest import GIT, Repo, git_env
 from test_querylog import (ALIAS_Q, BAD_QUOTE, FIXTURES, LAPS, LAPS_GAP_Q, LEGACY_QUOTE, PAGE, PAGE_URL, PARAPHRASE_Q,
-                           PUSH_OPTIONS_HOOK, REJECT_HOOK, SH, c, cand, jsonl, pipeline, prompt, reply, serve, signed_out,
-                           stop, tool)
+                           PUSH_OPTIONS_HOOK, REJECT_HOOK, SH, c, cand, golden_store, jsonl, pipeline, prompt, reply,
+                           run_here, serve, signed_out, stop, tool)
 
 pytestmark = [pytest.mark.skipif(not GIT, reason="git is not installed"), pytest.mark.git]
 
@@ -73,33 +83,10 @@ def env():
 
 
 @pytest.fixture(scope="session")
-def seed(tmp_path_factory):
-    """A bare repository of a kb copy with no committed store, and its commit: every scenario's origin starts there.
-    Under pytest-xdist the first worker builds it in the run's shared temporary directory and the others wait for it."""
-    base = tmp_path_factory.getbasetemp()
-    tmp = (base.parent if os.environ.get("PYTEST_XDIST_WORKER") else base) / "e2e-seed"
-    done = tmp / "seed.json"
-    try:
-        tmp.mkdir()
-    except FileExistsError:
-        deadline = time.monotonic() + 900
-        while not done.exists():
-            assert time.monotonic() < deadline, f"no seed at {tmp}"
-            time.sleep(0.2)
-        got = json.loads(done.read_text(encoding="utf-8"))
-        assert "error" not in got, got
-        return Path(got["bare"]), got["base"]
-    got = {"error": "not built"}
-    try:
-        repo = Repo(copy_kb(str(tmp / "seed"), skip=("_fetch_state.csv", "_querylog")), env())
-        repo.git("init", "-q", "-b", "main")
-        repo.git("add", "-A")
-        repo.git("commit", "-q", "-m", "base")
-        Repo(tmp, env()).git("clone", "-q", "--bare", repo.path, str(tmp / "seed.git"))
-        got = {"bare": str(tmp / "seed.git"), "base": repo.rev("HEAD")}
-    finally:
-        ql_base.write_text(done, json.dumps(got))
-    return Path(got["bare"]), got["base"]
+def seed(kb_seed):
+    """A bare repository of a kb copy with no committed store, and its commit (conftest.kb_seed): every scenario's
+    origin starts there."""
+    return kb_seed
 
 
 class Haiku:
@@ -216,7 +203,7 @@ class World:
         if argv[0] in ("glab", "gh"):
             self.calls.append(list(argv))
             return self.ci(argv)
-        return ql_base.run_cmd(argv, cwd=cwd, env=self.env)
+        return run_here(argv, cwd=cwd, env=self.env)
 
     def pusher(self, out, now, step=None):
         """The push of `apply --push` for this clone: its worktree's learn and apply (research from the clone's config,
@@ -231,14 +218,25 @@ class World:
     def distill(self, now=None, step=None):
         """One distill (the mode of the clone's config), with the push of mode `auto`: (exit code, output lines)."""
         said, now = [], now or datetime.datetime.now(datetime.timezone.utc)
-        rc = ql_distill.distill(qdir=self.q, cfg=self.cfg, haiku=self.haiku, now_dt=now, kb_commit=self.clone.rev("HEAD"),
-                              out=said.append, deliver=lambda q, out: self.pusher(out, now, step)())
+        rc = ql_distill.distill(qdir=self.q, cfg=self.cfg, haiku=self.haiku, now_dt=now,
+                                kb_commit=self.clone.rev("HEAD"), out=said.append,
+                                deliver=lambda q, out: self.pusher(out, now, step)())
+        return rc, said
+
+    def push(self, now=None):
+        """`apply --push` by hand in the clone (ql_deliver.push: the lock, then the worktree's own learn and apply):
+        (exit code, output lines)."""
+        said = []
+        rc = ql_deliver.push(home=self.home, qdir=self.q, run=self.run, out=said.append, now_dt=now)
         return rc, said
 
     # --- what there is to check ---------------------------------------------------------------------------------------
 
     def main(self):
         return self.remote.rev("main")
+
+    def branches(self):
+        return self.remote.git("for-each-ref", "--format=%(refname)", "refs/heads").split()
 
     def show(self, rel, rev="main"):
         p = self.remote.run_git("show", f"{rev}:{rel}")
@@ -327,6 +325,7 @@ class TestAnswered:
         w.end(s)
         cls.rc, cls.said = w.distill()
         cls.st = w.state()
+        (cls.local,) = w.local_runs()
 
     def test_an_entry_no_finding_and_only_the_run_file(self):
         import kb_hook
@@ -340,6 +339,8 @@ class TestAnswered:
         assert st["findings"] == {} and w.commits() == [("chore(kb): query log store, 1 run file(s)", "querylog")]
         assert all(st[rel] == [] for rel in KB_FILES)
         assert st["spool"] == [] and st["gate"] == [], st["gate"]
+        rel = f"{ql_base.STORE_REL}/{self.local.relative_to(w.q / 'store').as_posix()}"
+        assert w.show(rel) == self.local.read_text(encoding="utf-8")  # the local store's run file, as it was
 
 
 # ---------------------------------------------------------------- misses: an alias, an expansion, a gap entry
@@ -354,9 +355,10 @@ class TestFixes:
             w.lookup(name, s)
         w.end(s)
         cls.first = w.distill()
-        cls.main1, cls.st1, cls.commits1 = w.main(), w.state(), w.commits()
+        cls.main1, cls.st1, cls.commits1, cls.refs1 = w.main(), w.state(), w.commits(), w.branches()
         cls.local1 = {p: p.read_bytes() for p in (w.q / "store").rglob("*") if p.is_file()}
         cls.again = w.distill()
+        cls.by_hand = w.push()
         cls.main2 = w.main()
         cls.local2 = {p: p.read_bytes() for p in (w.q / "store").rglob("*") if p.is_file()}
         w.ci = pipeline("failed")
@@ -369,7 +371,11 @@ class TestFixes:
         import kbid
         (rc, said), st = self.first, self.st1
         assert rc == 0 and says(said, "entries=3 dropped=0 waiting=0"), said
+        assert not says(said, "CI"), said  # no automatic commit on main yet: no CI to check
         assert [v for _, v in self.commits1] == ["querylog", "alias, eval, expansion, gap, querylog"], self.commits1
+        assert self.commits1[0][0] == "chore(kb): query log store, 1 run file(s)", self.commits1
+        assert self.commits1[1][0].startswith("chore(kb): query log apply "), self.commits1
+        assert self.refs1 == ["refs/heads/main"]
         assert sorted(st[EVAL]) == sorted([f"{kbid.eval_id(q)},{q},windows/laps.md,good," for q in (PARAPHRASE_Q, ALIAS_Q)])
         assert st[ALIASES] == ["zqxlapsor,laps"] and len(st[EXPANSIONS]) == 1 and PARAPHRASE_Q in st[EXPANSIONS][0]
         (gap,) = bullets(st[GAPS])
@@ -390,6 +396,9 @@ class TestFixes:
         rc, said = self.again
         assert rc == 0 and said[0] == "distill: nothing to write (waiting=0)", said
         assert says(said, "apply --push: nothing to push") and self.main2 == self.main1, said
+        assert says(said, "note: CI status not checked: glab is not signed in to gitlab.com"), said
+        rc, said = self.by_hand  # apply --push run by hand: nothing new either
+        assert rc == 0 and "apply --push: nothing to push" in said, said
         assert self.local2 == self.local1  # the local store: no run or findings file
         assert self.w.haiku.batches and len(self.w.haiku.batches) == 1  # Haiku's output is never regenerated
 
@@ -403,6 +412,11 @@ class TestFixes:
         assert set(self.st1["runs"]) == set(st["runs"])  # the store's files stay
         failed = sorted(r["kind"] for r in st["findings"].values() if r["state"] == ql_store.APPLY_FAILED)
         assert failed == ["alias", "eval", "eval", "expansion", "gap"], failed
+        assert {r["observed"]["commit"] for r in st["findings"].values() if r["state"] == ql_store.APPLY_FAILED} == \
+            {self.main1[:12]}
+        before, after = (set(w.remote.git("ls-tree", "-r", "--name-only", rev, "--", ql_base.STORE_REL).split())
+                         for rev in (self.main1, self.main3))
+        assert before < after and len(after - before) == 1  # the store's files stay; one findings file is added
         assert st["gate"] == [], st["gate"]
         rc, said = self.after  # the next run: CI on a revert is not checked, and nothing is applied again
         assert rc == 0 and says(said, "apply --push: nothing to push") and self.main4 == self.main3, said
@@ -650,6 +664,7 @@ class TestConflict:
         cls.again = w.distill()
         cls.st = w.state()
         cls.refs2 = w.remote.git("for-each-ref", "--format=%(refname)", "refs/heads").split()
+        cls.opts2 = (Path(w.remote.path) / "push-options.txt").read_text(encoding="utf-8").splitlines()
 
     def test_a_branch_with_the_mr_options_findings_pending_and_held(self):
         w = self.w
@@ -666,6 +681,7 @@ class TestConflict:
         st = self.st
         assert self.refs2 == self.refs1 and len(self.refs1) == 2  # main and the one branch, no second branch
         assert len(st["runs"]) == 1 and st[GAPS] == []  # the run file reached main; the gap entry is held
+        assert self.opts2 == self.opts  # the push to main carried no push options
         (g,) = [r for r in st["findings"].values() if r["kind"] == "gap"]
         assert (g["state"], g["stage"]) == ("open", "candidate-gap")
         assert st["spool"] == [] and st["gate"] == [], st["gate"]
@@ -700,6 +716,8 @@ class TestCiNotRed:
         st = self.st
         assert len(st["runs"]) == 3 and st["gate"] == [], st["gate"]
         assert all(c[:2] in (["glab", "auth"], ["glab", "api"]) for c in self.w.calls)
+        api = [c for c in self.w.calls if c[:2] == ["glab", "api"]]
+        assert api[0][2:4] == ["--hostname", "gitlab.com"] and f"sha={first}" in api[0][4], api[0]
 
 
 # ---------------------------------------------------------------- opt-in research
@@ -777,8 +795,9 @@ class TestResearch:
 
 # ---------------------------------------------------------------- modes, the DISABLED marker, a broken config
 
-@pytest.mark.parametrize("mode", ["off", "local", "auto", "default", "disabled", "unreadable"])
-def test_modes(tmp_path, seed, mode):
+def run_mode(tmp_path, seed, mode):
+    """One lookup and one distill with the clone's config set to `mode` (`default`: no file; `disabled`: mode auto and
+    the DISABLED marker; `unreadable`: a config that is not JSON)."""
     import kb_hook
     w = World(tmp_path, seed)
     if mode in ("off", "local", "auto"):
@@ -805,6 +824,23 @@ def test_modes(tmp_path, seed, mode):
         assert w.spool() == [] and w.main() == w.base and not (w.q / ql_deliver.WORKTREE_NAME).exists()
     else:
         assert says(said, "apply --push: pushed ") and len(st["runs"]) == 1 and st["spool"] == [], said
+
+
+class TestModesOff:
+    @pytest.mark.parametrize("mode", ["off", "disabled", "unreadable"])
+    def test_modes(self, tmp_path, seed, mode):
+        run_mode(tmp_path, seed, mode)
+
+
+class TestModesLocal:
+    def test_modes(self, tmp_path, seed):
+        run_mode(tmp_path, seed, "local")
+
+
+class TestModesAuto:
+    @pytest.mark.parametrize("mode", ["auto", "default"])
+    def test_modes(self, tmp_path, seed, mode):
+        run_mode(tmp_path, seed, mode)
 
 
 # ---------------------------------------------------------------- sessions open, ended and idle
@@ -856,6 +892,13 @@ class TestPushFailure:
         hook.unlink()
         cls.delivered = w.distill()
         cls.st = w.state()
+        leak = jsonl(FIXTURES / "golden.jsonl")
+        cls.leak_run = leak[0]["run"] = "20260928T140000Z-0000dead"
+        leak[1]["question"] = "Mailed " + "anna.nowak" + "@" + "acme-corp.pl" + " about it."
+        golden_store(w.q / "store", [leak[0]] + [dict(e, id=str(uuid.uuid4())) for e in leak[1:]], cls.leak_run)
+        cls.main2 = w.main()
+        cls.leaked = w.push()
+        cls.main3 = w.main()
 
     def test_a_failed_push_keeps_the_spool_and_a_successful_one_deletes_it_after(self):
         rc, said = self.refused
@@ -869,3 +912,11 @@ class TestPushFailure:
         assert pushed < gone, said
         st = self.st
         assert len(st["runs"]) == 1 and st["spool"] == [] and st["gate"] == [], st["gate"]
+
+    def test_a_leak_in_a_run_file_blocks_the_push(self):
+        rc, said = self.leaked
+        assert rc == 1 and self.main3 == self.main2, said
+        text = "\n".join(said)
+        assert "refused: the store gates fail on the local store's files; nothing committed or pushed" in text, text
+        assert f"2026-09/{self.leak_run}.jsonl:2: an identifier in `question`" in text, text
+        assert f"2026-09/{self.leak_run}.jsonl:2: the leak scan flags an identifier (email)" in text, text
