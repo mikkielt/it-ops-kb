@@ -71,7 +71,20 @@
                     spool ends as a run file (KB-Auto: querylog) plus findings on main, the spool rows go only after
                     the push, and a second run pushes nothing; planted: a remote that refuses the push keeps the
                     spool (the next run delivers, then deletes), a leak in a local run file blocks the push
-  TestGapStep       a reproduced gap candidate with an article in the pack's lead becomes a dated _gaps.md entry at
+  TestHostRules     push_refusal on each refusal shape (GitLab project and protected branch, GitHub denied and GH006,
+                    HTTP 403) and on what is no refusal (a generic declined hook, DNS, connection, remote failure);
+                    the install url from known_marketplaces.json (git, github) or the marketplace clone's origin;
+                    cloud_session from CLAUDE_CODE_REMOTE; `apply --push` in a plugin host runs host_push; the
+                    host's apply names its data directory for research
+  TestHostInGit     (marker git) a plugin host in mode `auto` with a fake plugins directory and a local bare remote:
+                    the push runs from the managed clone under the data directory and lands on main; a remote whose
+                    pre-receive hook refuses with GitLab's or GitHub's message writes DISABLED and deletes the
+                    spool, and distill then logs nothing; planted: a generic declined hook, an unreachable remote
+                    (at clone and at push) and a red gate write no DISABLED and keep the spool
+  TestCloudInGit    (marker git) a cloud session whose remote takes pushes to the checked-out branch only: the
+                    automatic commits land on that branch and main stays; a second run pushes nothing; a detached
+                    HEAD is refused
+  TestGapStep      a reproduced gap candidate with an article in the pack's lead becomes a dated _gaps.md entry at
                     the end of its topic's section (or a new section), once, the finding promoted candidate-gap ->
                     gap; off the kb's domains, a lead no article holds, or a pass now: it stays a candidate
   TestQuoteCheck    quotecheck on a recorded page: entities, no-break spaces, curly quotes, links and emphasis
@@ -104,7 +117,7 @@ from pathlib import Path
 import pytest
 
 import querylog
-from conftest import GIT, KB, TOOLS, D, Repo, copy_kb, git_env, querylog_env
+from conftest import GIT, KB, TOOLS, D, P, Repo, copy_kb, git_env, querylog_env
 
 SID = "3f2a4c1e-0000-4000-8000-00000000abcd"
 QL = os.path.join(TOOLS, "querylog.py")
@@ -2369,6 +2382,291 @@ class TestDeliverInGit:
         assert f"2026-09/{self.leak_run}.jsonl:2: an identifier in `summary`" in text, text
         assert f"2026-09/{self.leak_run}.jsonl:2: the leak scan flags an identifier (email)" in text, text
         assert self.main_leaked == self.main_retried
+
+
+# --- plugin hosts and cloud sessions -------------------------------------------------------------------------------
+
+GITLAB_PROJECT = "GitLab: You are not allowed to push code to this project."
+GITLAB_PROTECTED = "GitLab: You are not allowed to push code to protected branches on this project."
+GITHUB_DENIED = "Permission to grp/proj.git denied to jan-kowalski."
+GITHUB_GH006 = "error: GH006: Protected branch update failed for refs/heads/main.\nerror: Changes have been requested."
+PUSH_RULE = "GitLab: Commit message does not follow the pattern '^(feat|fix):'"
+UNREACHABLE = "http://127.0.0.1:9/grp/proj.git"  # a closed local port: a connection error, never the network
+
+
+def plugins_dir(tmp, source):
+    """A fake ~/.claude/plugins with one marketplace `mkt` whose known_marketplaces.json entry has `source`; the
+    plugin copy's root (cache/mkt/it-ops-kb/<version>)."""
+    plugins = Path(tmp) / "plugins"
+    root = plugins / "cache" / "mkt" / "it-ops-kb" / "0123abcd4567"
+    root.mkdir(parents=True, exist_ok=True)
+    entry = {"source": source, "installLocation": str(plugins / "marketplaces" / "mkt"), "lastUpdated": "x"}
+    (plugins / "known_marketplaces.json").write_text(json.dumps({"mkt": entry}), encoding="utf-8", newline="\n")
+    return root
+
+
+def reject_hook(message):
+    """A pre-receive hook that prints `message` (each line, as a forge does) and refuses the push."""
+    lines = "".join(f"echo {json.dumps(ln)} >&2\n" for ln in message.splitlines())
+    return f"#!/bin/sh\n{lines}exit 1\n"
+
+
+class TestHostRules:
+    @pytest.mark.parametrize("text,kind", [
+        (f"remote: {GITLAB_PROJECT}\nfatal: Could not read from remote repository.", "gitlab"),
+        (f"remote: {GITLAB_PROTECTED}\n ! [remote rejected] main -> main (pre-receive hook declined)", "gitlab"),
+        ("remote: GitLab: You are not allowed to force push code to a protected branch on this project.", "gitlab"),
+        (f"ERROR: {GITHUB_DENIED}\nfatal: Could not read from remote repository.", "github"),
+        ("remote: " + GITHUB_GH006.replace("\n", "\nremote: "), "github"),
+        ("remote: Permission to grp/proj.git denied to jan-kowalski.\nfatal: unable to access "
+         "'https://github.com/grp/proj.git/': The requested URL returned error: 403", "github"),
+        ("fatal: unable to access 'https://gitlab.corp.example.com/grp/proj.git/': The requested URL returned "
+         "error: 403", "http-403"),
+    ])
+    def test_a_refusal_for_want_of_rights(self, text, kind):
+        assert querylog.push_refusal(text).startswith(kind + ": "), querylog.push_refusal(text)
+
+    @pytest.mark.parametrize("text", [
+        f"remote: {PUSH_RULE}\n ! [remote rejected] main -> main (pre-receive hook declined)",
+        " ! [remote rejected] main -> main (pre-receive hook declined)",
+        "fatal: unable to access 'https://gitlab.com/grp/proj.git/': Could not resolve host: gitlab.com",
+        "ssh: Could not resolve hostname gitlab.com: nodename nor servname provided, or not known",
+        "fatal: unable to access 'http://127.0.0.1:9/x.git/': Failed to connect to 127.0.0.1 port 9: Connection refused",
+        " ! [remote failure] main -> main (remote failed to report status)",
+        "fatal: unable to access 'https://gitlab.com/grp/proj.git/': The requested URL returned error: 503",
+        "git@gitlab.corp.example.com: Permission denied (publickey).\nfatal: Could not read from remote repository.",
+        "",
+    ])
+    def test_no_refusal(self, text):
+        assert querylog.push_refusal(text) is None
+
+    def test_the_install_url(self, tmp_path, monkeypatch):
+        root = plugins_dir(tmp_path / "a", {"source": "git", "url": "git@gitlab.corp.example.com:grp/proj.git"})
+        assert querylog.install_url(root) == "git@gitlab.corp.example.com:grp/proj.git"
+        root = plugins_dir(tmp_path / "b", {"source": "github", "repo": "grp/proj"})
+        assert querylog.install_url(root) == "https://github.com/grp/proj.git"
+        assert querylog.install_url(tmp_path / "not-a-cache" / "x") is None
+        monkeypatch.delenv("CLAUDE_PLUGIN_ROOT", raising=False)
+        assert querylog.install_url(None) is None
+
+    @pytest.mark.skipif(not GIT, reason="git is not installed")
+    def test_the_install_url_from_the_marketplace_clone(self, tmp_path):
+        root = plugins_dir(tmp_path, {"source": "url", "url": "https://corp.example.com/marketplace.json"})
+        mkt = Repo(tmp_path / "plugins" / "marketplaces" / "mkt", git_env())
+        os.makedirs(mkt.path)
+        mkt.git("init", "-q")
+        assert querylog.install_url(root) is None  # a clone without origin names nothing
+        mkt.git("remote", "add", "origin", "https://gitlab.corp.example.com/grp/proj.git")
+        assert querylog.install_url(root) == "https://gitlab.corp.example.com/grp/proj.git"
+
+    def test_a_cloud_session(self, monkeypatch):
+        monkeypatch.setenv("CLAUDE_CODE_REMOTE", "true")
+        assert querylog.cloud_session()
+        monkeypatch.setenv("CLAUDE_CODE_REMOTE", "false")
+        assert not querylog.cloud_session()
+        monkeypatch.delenv("CLAUDE_CODE_REMOTE")
+        assert not querylog.cloud_session()
+
+    def test_apply_push_in_a_plugin_host(self, tmp_path, monkeypatch):
+        monkeypatch.setenv("CLAUDE_PLUGIN_DATA", str(tmp_path))
+        monkeypatch.setenv("CLAUDE_PLUGIN_ROOT", str(querylog.HOME))
+        seen = []
+
+        def host_push(qdir, run, apply_step, out, now_dt, root):
+            seen.append(Path(qdir))
+            return 0
+        monkeypatch.setattr(querylog, "host_push", host_push)
+        assert querylog.main(["apply", "--push"]) == 0 and seen == [tmp_path / "querylog"]
+        assert querylog.main(["apply", "--push", "--plugin-data", str(tmp_path)]) == 2  # the push names its own
+
+    def test_a_host_without_an_install_source_is_refused(self, tmp_path):
+        said = []
+        assert querylog.host_push(tmp_path, lambda argv, cwd=None: (1, "", ""), None, said.append,
+                                  root=tmp_path / "x") == 2
+        assert "install source is not recorded" in said[0] and not (tmp_path / querylog.DISABLED_NAME).exists()
+
+    def test_the_hosts_apply_reads_research_from_its_data_directory(self, tmp_path):
+        calls = []
+
+        def run(argv, cwd=None):
+            calls.append(argv)
+            return 0, "", ""
+        p = querylog.Pusher(tmp_path / "clone", tmp_path, run, None, print, research=["--plugin-data", str(tmp_path)])
+        assert p.learn_and_apply(tmp_path / "wt", tmp_path / "wt" / "store", {"F-1"}, print) == 0
+        assert calls[1][-4:] == ["--plugin-data", str(tmp_path), "--hold", "F-1"]
+        assert querylog.research_places(None, tmp_path) == (tmp_path, tmp_path / "config.json")
+        p = querylog.Pusher(tmp_path / "clone", tmp_path, run, None, print)
+        calls.clear()
+        p.learn_and_apply(tmp_path / "wt", tmp_path / "wt" / "store", set(), print)
+        assert calls[1][-2:] == ["--clone", str(tmp_path / "clone")]
+
+
+def seed_repo(tmp, env):
+    """A kb copy without a committed store, as one commit on main."""
+    seed = Repo(copy_kb(str(Path(tmp) / "seed"), skip=("_fetch_state.csv", "_querylog")), env)
+    seed.git("init", "-q", "-b", "main")
+    seed.git("add", "-A")
+    seed.git("commit", "-q", "-m", "base")
+    return seed
+
+
+HOST_CASES = ("delivers", "gitlab-project", "gitlab-protected", "github-denied", "github-gh006", "push-rule",
+              "unreachable-at-clone", "unreachable-at-push", "red-gate")
+HOST_REFUSALS = {"gitlab-project": GITLAB_PROJECT, "gitlab-protected": GITLAB_PROTECTED,
+                 "github-denied": GITHUB_DENIED, "github-gh006": GITHUB_GH006}
+
+
+@pytest.mark.skipif(not GIT, reason="git is not installed")
+@pytest.mark.git
+class TestHostInGit:
+    """A plugin host in mode `auto`: a fake plugins directory whose known_marketplaces.json names a local bare remote,
+    a data directory with the fixture spool, distill with host_push; glab signed out, learn and apply in-process,
+    kbgit.py sync's gate without tests.py (KB_SYNC_NO_TESTS=1). One case per test."""
+
+    @pytest.fixture(scope="class")
+    @classmethod
+    def seed(cls, tmp_path_factory):
+        tmp = Path(tmp_path_factory.mktemp("ql-host-seed"))
+        env = git_env(KB_SYNC_NO_TESTS="1")
+        return seed_repo(tmp, env), env
+
+    def run_case(self, case, seed, env, tmp):
+        top = Repo(tmp, env)
+        bare = Repo(tmp / "remote.git", env)
+        top.git("clone", "-q", "--bare", seed.path, bare.path)
+        hook = Path(bare.path) / "hooks" / "pre-receive"
+        if case in HOST_REFUSALS or case == "push-rule":
+            hook.write_text(reject_hook(HOST_REFUSALS.get(case, PUSH_RULE)), encoding="utf-8", newline="\n")
+            hook.chmod(0o755)
+        if case == "red-gate":  # planted: main on the remote fails check.py (a fact citing no source row)
+            planter = Repo(tmp / "planter", env)
+            top.git("clone", "-q", bare.path, planter.path)
+            planter.append(P("claude/plugins.md"), "- A planted fact. [DOC S-zzzzzzzz]\n")
+            planter.git("commit", "-q", "-a", "--no-verify", "-m", "chore: planted")
+            planter.git("push", "-q", "origin", "HEAD:main")
+        url = UNREACHABLE if case == "unreachable-at-clone" else bare.path
+        root = plugins_dir(tmp, {"source": "git", "url": url})
+        q = tmp / "data" / "querylog"
+        plant_spool(q)
+
+        def run(argv, cwd=None):
+            if argv[0] in ("glab", "gh"):
+                return signed_out(argv)
+            return querylog.run_cmd(argv, cwd=cwd, env=env)
+        if case == "unreachable-at-push":  # the fetch works, the push meets a closed port
+            clone = querylog.managed_clone(q, bare.path, run, print)
+            Repo(clone, env).git("config", "remote.origin.pushurl", UNREACHABLE)
+        said = []
+        rc = querylog.distill(qdir=q, cfg=auto_config(q), haiku=querylog.Replay(FIXTURES / "haiku.json"),
+                              now_dt=NOW, run_id=RUN_ID, kb_commit="0" * 40, out=said.append,
+                              deliver=lambda qd, out: querylog.host_push(qd, run, learn_then_apply, out, NOW, root))
+        return rc, said, q, bare
+
+    @pytest.mark.parametrize("case", HOST_CASES)
+    def test_case(self, case, seed, tmp_path):
+        rc, said, q, bare = self.run_case(case, seed[0], seed[1], tmp_path)
+        text = "\n".join(said)
+        disabled = q / querylog.DISABLED_NAME
+        base = seed[0].rev("HEAD")
+        if case == "delivers":
+            assert rc == 0, text
+            assert (q / querylog.CLONE_NAME / ".git").is_dir() and (q / querylog.WORKTREE_NAME / ".git").exists()
+            files = bare.git("ls-tree", "-r", "--name-only", "main", "--", querylog.STORE_REL).split()
+            assert f"{querylog.STORE_REL}/2026-09/{RUN_ID}.jsonl" in files, files
+            assert spool_names(q) == [f"{S_OPEN}.jsonl"] and not disabled.exists()
+            return
+        assert rc == 1, text
+        if case == "red-gate":
+            assert "gate check.py: FAILED" in text and "kbgit.py sync exit 1: nothing pushed to main" in text, text
+        if case in HOST_REFUSALS:
+            kind = case.split("-")[0]
+            assert disabled.exists(), text
+            why = disabled.read_text(encoding="utf-8")
+            assert why.startswith("push refused for want of rights on ") and f": {kind}: " in why, why
+            assert not (q / "spool").exists(), spool_names(q)
+            assert "wrote DISABLED and deleted the spool" in text, text
+            again = []
+            assert querylog.distill(qdir=q, cfg=auto_config(q), out=again.append) == 0
+            assert again == ["distill: logging is off"]
+        else:
+            assert not disabled.exists(), text
+            assert set(CLOSED) <= set(spool_names(q)), spool_names(q)
+        if case != "red-gate":
+            assert bare.rev("main") == base  # nothing pushed
+        assert bare.git("for-each-ref", "--format=%(refname)", "refs/heads").split() == ["refs/heads/main"]
+
+
+@pytest.mark.skipif(not GIT, reason="git is not installed")
+@pytest.mark.git
+class TestCloudInGit:
+    """A cloud session: a clone on the branch `claude/work` of a bare remote whose pre-receive hook takes pushes to
+    that branch only (as the session's git proxy does); distill in mode `auto` with a Pusher told it is a cloud
+    session."""
+
+    @pytest.fixture(scope="class", autouse=True)
+    @classmethod
+    def scenario(cls, tmp_path_factory):
+        cls.tmp = Path(tmp_path_factory.mktemp("ql-cloud"))
+        cls.env = git_env(KB_SYNC_NO_TESTS="1")
+        seed = seed_repo(cls.tmp, cls.env)
+        cls.base = seed.rev("HEAD")
+        top = Repo(cls.tmp, cls.env)
+        cls.bare = Repo(cls.tmp / "remote.git", cls.env)
+        top.git("clone", "-q", "--bare", seed.path, cls.bare.path)
+        hook = Path(cls.bare.path) / "hooks" / "pre-receive"
+        hook.write_text("#!/bin/sh\nwhile read old new ref; do\n  [ \"$ref\" = refs/heads/claude/work ] || "
+                        "{ echo \"push to $ref refused: the session pushes to claude/work only\" >&2; exit 1; }\n"
+                        "done\n", encoding="utf-8", newline="\n")
+        hook.chmod(0o755)
+        cls.a = Repo(cls.tmp / "a", cls.env)
+        top.git("clone", "-q", cls.bare.path, cls.a.path)
+        cls.a.git("checkout", "-q", "-b", "claude/work")
+        cls.q = Path(cls.a.path) / "_cache" / "querylog"
+        plant_spool(cls.q)
+        cls.first = cls.distill()
+        cls.branch1 = cls.bare.rev("claude/work")
+        cls.again = cls.distill()
+        cls.branch2 = cls.bare.rev("claude/work")
+        cls.a.git("checkout", "-q", "--detach")
+        cls.detached = []
+        cls.detached_rc = querylog.Pusher(cls.a.path, cls.q, cls.runner(), learn_then_apply, cls.detached.append, NOW,
+                                          cloud=True)()
+
+    @classmethod
+    def runner(cls):
+        def run(argv, cwd=None):
+            if argv[0] in ("glab", "gh"):
+                return signed_out(argv)
+            return querylog.run_cmd(argv, cwd=cwd, env=cls.env)
+        return run
+
+    @classmethod
+    def distill(cls):
+        said = []
+
+        def deliver(qdir, out):
+            return querylog.Pusher(cls.a.path, qdir, cls.runner(), learn_then_apply, out, NOW, cloud=True)()
+        rc = querylog.distill(qdir=cls.q, cfg=auto_config(cls.q), haiku=querylog.Replay(FIXTURES / "haiku.json"),
+                              now_dt=NOW, run_id=RUN_ID, kb_commit="0" * 40, out=said.append, deliver=deliver)
+        return rc, said
+
+    def test_the_commits_land_on_the_working_branch(self):
+        rc, said = self.first
+        assert rc == 0, "\n".join(said)
+        assert "apply --push: cloud session: automatic commits go to its working branch claude/work" in said
+        files = self.bare.git("ls-tree", "-r", "--name-only", "claude/work", "--", querylog.STORE_REL).split()
+        assert f"{querylog.STORE_REL}/2026-09/{RUN_ID}.jsonl" in files, files
+        assert self.bare.rev("main") == self.base
+        assert "apply --push: deleted the spool rows of 6 entries whose run file is on origin/claude/work" in said
+        assert spool_names(self.q) == [f"{S_OPEN}.jsonl"]
+
+    def test_a_second_run_starts_from_the_branch_and_pushes_nothing(self):
+        rc, said = self.again
+        assert rc == 0 and "apply --push: nothing to push" in said, said
+        assert self.branch2 == self.branch1
+
+    def test_a_detached_head_is_refused(self):
+        assert self.detached_rc == 2 and "HEAD is detached" in self.detached[0], self.detached
 
 
 # --- the gap step, the quote check and research (Query log item 8) --------------------------------------------------

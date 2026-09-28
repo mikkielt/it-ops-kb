@@ -16,8 +16,9 @@ push, the weekly digest and status are built.
                         the closed sessions of the spool -> one run file in the local store (the `store` directory
                         beside the spool, laid out as kb/_querylog/): the rules, then Haiku in capped batches, then
                         the rules and the leak scan again; an entry a local run file already holds is not distilled
-                        again. Mode `local` deletes the spool rows of the entries written or dropped. Mode `auto` in
-                        a clone deletes those of dropped entries only, then runs `apply --push` under the same lock,
+                        again. Mode `local` deletes the spool rows of the entries written or dropped. Mode `auto` (in
+                        a clone, or in a plugin host from its managed clone) deletes those of dropped entries only,
+                        then runs `apply --push` under the same lock,
                         which deletes the others once their run file is on origin/main. --replay answers the Haiku
                         calls from a recorded reply file ({"replies": [...]}) instead of `claude -p`. Exit 0 done (or
                         nothing to do), 1 the push of mode `auto` failed, 3 another distill holds the lock
@@ -37,7 +38,8 @@ push, the weekly digest and status are built.
                         `rejected`. The gap step: an open gap candidate whose miss the pack still reproduces, with
                         an article in the lead (not `none`), becomes a dated entry under that article's topic in its
                         root's _gaps.md (candidate-gap -> gap). Research, only when the user's config turns it on
-                        (`research`, `research_daily`; --clone DIR reads that clone's config and daily count): at
+                        (`research`, `research_daily`; --clone DIR reads that clone's config and daily count,
+                        --plugin-data DIR a plugin host's): at
                         most the day's runs left and RESEARCH_RUNS_PER_APPLY, one `claude -p` (hooks off) per gap
                         finding, whose candidate facts
                         are kept only when their quote is on the page (quotecheck); accepted facts and their source
@@ -66,8 +68,14 @@ push, the weekly digest and status are built.
                         origin/main, push to origin only). Once the run files are on origin/main, the spool rows of
                         their entries are deleted (a failed push deletes nothing). A conflict sync cannot resolve pushes
                         querylog/<run-id> with `-o merge_request.create -o merge_request.target=main`, main unchanged,
-                        and later runs leave that branch's findings alone until main holds them. Exit 0 (pushed,
-                        nothing to push, CI pending, conflict branch pushed), 1 a step failed, 2 refused, 3 the lock
+                        and later runs leave that branch's findings alone until main holds them. In a plugin host
+                        the same push runs from a managed clone of the plugin's install source (known_marketplaces.json)
+                        under ${CLAUDE_PLUGIN_DATA}/querylog/clone, and a push the remote refuses for want of rights
+                        (GitLab's `You are not allowed to push code ...`, GitHub's `Permission to ... denied` or
+                        `GH006`, an HTTP 403) writes DISABLED and deletes the spool; a network error or a red gate
+                        does not. In a cloud session (CLAUDE_CODE_REMOTE=true) the push goes to the branch the clone
+                        has checked out, the only one its git proxy takes. Exit 0 (pushed, nothing to push, CI
+                        pending, conflict branch pushed), 1 a step failed, 2 refused, 3 the lock
   querylog.py check [DIR]  the store gates over DIR (default kb/_querylog): header and provenance fields, entry fields,
                         identifiers, fetch entries, duplicate ids and the findings files; one line per problem, exit 1
                         when there is any
@@ -100,7 +108,7 @@ Nothing is written when the mode is `off` (or the config file cannot be read: fa
 exists, or when Claude Code does not run the hooks (`--settings '{"disableAllHooks": true}'`, which every `claude -p`
 the pipeline starts carries).
 """
-import datetime, functools, json, os, re, subprocess, sys, tempfile, threading, time, uuid
+import datetime, functools, json, os, re, shutil, subprocess, sys, tempfile, threading, time, uuid
 from pathlib import Path
 from urllib.parse import urlsplit
 
@@ -128,6 +136,7 @@ QUESTION_MAX_CHARS = 500
 SUMMARY_MAX_CHARS = 300
 PIPELINE_VERSION = 2  # bumped when what distill writes, or how it decides it, changes
 STORE = HOME / "kb" / "_querylog"
+DISABLED_NAME = "DISABLED"  # beside the spool: logging off for good
 NO_HOOKS = ["--settings", json.dumps({"disableAllHooks": True})]  # every `claude -p` the pipeline starts carries it
 
 KB_TOOL = re.compile(r"mcp__(?:kb|plugin_it-ops-kb_kb)__(\w+)$")
@@ -155,12 +164,19 @@ def _same(a, b):
         return False
 
 
+def plugin_data():
+    """${CLAUDE_PLUGIN_DATA} when this copy runs as the plugin (the hook's CLAUDE_PLUGIN_ROOT is this copy), else
+    None: a plugin host."""
+    data, root = os.environ.get("CLAUDE_PLUGIN_DATA"), os.environ.get("CLAUDE_PLUGIN_ROOT")
+    return Path(data) if data and root and _same(root, HOME) else None
+
+
 def places():
     """(querylog directory, config file): the plugin's data directory when this copy runs as the plugin, else the
     clone's _cache/querylog and _private/querylog.json."""
-    data, root = os.environ.get("CLAUDE_PLUGIN_DATA"), os.environ.get("CLAUDE_PLUGIN_ROOT")
-    if data and root and _same(root, HOME):
-        d = Path(data) / "querylog"
+    data = plugin_data()
+    if data is not None:
+        d = data / "querylog"
         return d, d / "config.json"
     return HOME / "_cache" / "querylog", HOME / "_private" / "querylog.json"
 
@@ -201,7 +217,7 @@ def spool_dir():
     """The spool directory, or None when capture writes nothing (mode off, or the DISABLED marker). Read once per
     process: a hook is one process, and a tool's requests share its answer."""
     d, cfg = places()
-    if (d / "DISABLED").exists() or read_mode(cfg) == "off":
+    if (d / DISABLED_NAME).exists() or read_mode(cfg) == "off":
         return None
     return d / "spool"
 
@@ -847,18 +863,22 @@ def head_commit():
 def distill(qdir=None, cfg=None, haiku=None, now_dt=None, run_id=None, kb_commit=None, settle=0.0, out=print,
             deliver=None):
     """One distill: 0 done (or nothing to do, or logging off), 1 when the push of mode `auto` failed, 3 when another
-    distill holds the lock. Mode `auto` in a clone keeps the spool rows of the entries it writes and then runs
-    `deliver(qdir, out)` under the same lock (default: the push of `apply --push`), which deletes them once their
-    run file is on origin/main; mode `local` (and `auto` in a plugin host) deletes them at once."""
+    distill holds the lock. Mode `auto` keeps the spool rows of the entries it writes and then runs
+    `deliver(qdir, out)` under the same lock (default: the push of `apply --push`, from the clone, or in a plugin
+    host from its managed clone), which deletes them once their run file is on origin/main; mode `local` deletes
+    them at once."""
     d, c = places()
     qdir, cfg = Path(qdir or d), Path(cfg or c)
     mode = read_mode(cfg)
-    if (qdir / "DISABLED").exists() or mode == "off":
+    if (qdir / DISABLED_NAME).exists() or mode == "off":
         out("distill: logging is off")
         return 0
     if mode == "auto" and deliver is None and qdir.resolve() == (HOME / "_cache" / "querylog").resolve():
         def deliver(q, say):
             return Pusher(HOME, q, run_cmd, None, say)()
+    elif mode == "auto" and deliver is None and plugin_data() is not None and qdir.resolve() == d.resolve():
+        def deliver(q, say):
+            return host_push(q, run_cmd, None, say)
     if mode != "auto":
         deliver = None
     lock = acquire(qdir)
@@ -1094,7 +1114,7 @@ def launch(event):
     if not isinstance(event, dict) or event.get("hook_event_name") not in ("SessionEnd", "SessionStart"):
         return None
     qdir, cfg = places()
-    if (qdir / "DISABLED").exists() or read_mode(cfg) == "off":
+    if (qdir / DISABLED_NAME).exists() or read_mode(cfg) == "off":
         return None
     spool = qdir / "spool"
     sid = event.get("session_id")
@@ -2112,9 +2132,12 @@ RESEARCH_TASK = (
     '{"facts": []} when no official page answers it.' % RESEARCH_FACTS_MAX)
 
 
-def research_places(clone=None):
+def research_places(clone=None, data=None):
     """(querylog directory, config file) whose research setting and daily count apply: a clone's own
-    _cache/querylog and _private/querylog.json when `clone` names one (apply --push names its clone), else places()."""
+    _cache/querylog and _private/querylog.json when `clone` names one (apply --push names its clone), a plugin host's
+    querylog directory and its config.json when `data` names one (the push from a host names it), else places()."""
+    if data:
+        return Path(data), Path(data) / "config.json"
     if clone:
         return Path(clone) / "_cache" / "querylog", Path(clone) / "_private" / "querylog.json"
     return places()
@@ -2135,7 +2158,7 @@ def research_budget(qdir, cfg, day):
     """The research runs left today: 0 unless the config file turns research on (read_research) and logging is on
     (not mode off, no DISABLED marker); else its daily cap less the runs counted today."""
     on, daily = read_research(cfg)
-    if not on or read_mode(cfg) == "off" or (Path(qdir) / "DISABLED").exists():
+    if not on or read_mode(cfg) == "off" or (Path(qdir) / DISABLED_NAME).exists():
         return 0
     return max(0, daily - research_used(qdir, day))
 
@@ -2597,14 +2620,20 @@ def leak_problems(store, rels, k=None):
 class Pusher:
     """One `apply --push` in the worktree `wt` of the clone at `home`, whose query log directory `qdir` holds the
     spool and the local store. `run` starts every command (git, kbgit.py sync, glab, gh); `apply_step(wt, store,
-    hold, out)` learns and applies the store's findings in the worktree."""
+    hold, out)` learns and applies the store's findings in the worktree. `research` is the argument pair that names
+    whose research setting applies (default: `--clone home`). `cloud` (default: cloud_session()) pushes to the
+    branch `home` has checked out instead of main."""
 
-    def __init__(self, home, qdir, run, apply_step, out, now_dt=None):
+    def __init__(self, home, qdir, run, apply_step, out, now_dt=None, research=None, cloud=None):
         self.home, self.qdir, self.run, self.out = Path(home), Path(qdir), run, out
         self.wt = self.qdir / WORKTREE_NAME
         self.apply_step = apply_step or self.learn_and_apply
-        self.up = f"refs/remotes/{REMOTE}/{BRANCH}"
-        self.on_main = False  # set when deliver pushed to origin's main
+        self.research = list(research or ["--clone", str(self.home)])
+        self.cloud = cloud_session() if cloud is None else cloud
+        self.branch = BRANCH  # the branch automatic commits are pushed to
+        self.up = f"refs/remotes/{REMOTE}/{BRANCH}"  # the ref the worktree starts from
+        self.landed = False  # set when deliver pushed to self.branch
+        self.refused = None  # the push output line that refused a push for want of rights (push_refusal)
         self.now_dt = now_dt  # the time the spool is read at (default: now)
 
     def git(self, *args, cwd=None):
@@ -2614,10 +2643,26 @@ class Pusher:
         self.out(f"apply --push: {text}")
 
     def fetch(self):
-        """origin's main and its conflict branches (pruned: a merged branch that GitLab deleted goes)."""
-        return self.git("fetch", "--quiet", "--prune", REMOTE, f"+refs/heads/{BRANCH}:{self.up}",
-                        f"+refs/heads/{CONFLICT_BRANCH_PREFIX}*:refs/remotes/{REMOTE}/{CONFLICT_BRANCH_PREFIX}*",
-                        cwd=self.home)
+        """origin's main and its conflict branches (pruned: a merged branch that GitLab deleted goes); in a cloud
+        session on another branch, that branch too, which the worktree then starts from once origin has it."""
+        main = f"refs/remotes/{REMOTE}/{BRANCH}"
+        code, o, e = self.git("fetch", "--quiet", "--prune", REMOTE, f"+refs/heads/{BRANCH}:{main}",
+                              f"+refs/heads/{CONFLICT_BRANCH_PREFIX}*:refs/remotes/{REMOTE}/{CONFLICT_BRANCH_PREFIX}*",
+                              cwd=self.home)
+        if code or self.branch == BRANCH:
+            return code, o, e
+        ref = f"refs/remotes/{REMOTE}/{self.branch}"
+        code, o, e = self.git("fetch", "--quiet", REMOTE, f"+refs/heads/{self.branch}:{ref}", cwd=self.home)
+        if code == 0:
+            self.up = ref
+        elif re.search(r"couldn't find remote ref", o + e, re.I):
+            return 0, "", ""  # the branch is not on origin yet: the worktree starts from main
+        return code, o, e
+
+    def working_branch(self):
+        """The branch `home` has checked out, or None (a detached HEAD)."""
+        code, o, _ = self.git("symbolic-ref", "--quiet", "--short", "HEAD", cwd=self.home)
+        return (o.strip() or None) if code == 0 else None
 
     def reset(self):
         """The worktree at origin/main, detached and clean (a rebase or revert left over is abandoned)."""
@@ -2673,7 +2718,7 @@ class Pusher:
     def learn_and_apply(self, wt, store, hold, out):
         """The worktree's own querylog.py learn, then its apply, on its own kb and store."""
         ql = [sys.executable, str(wt / "_tools" / "querylog.py")]
-        applying = ql + ["apply", "--store", str(store), "--clone", str(self.home)]
+        applying = ql + ["apply", "--store", str(store)] + self.research
         for h in sorted(hold):
             applying += ["--hold", h]
         for argv in (ql + ["learn", "--store", str(store)], applying):
@@ -2721,7 +2766,7 @@ class Pusher:
         """The spool rows of the entries `ids`, whose run file is on origin/main, are deleted."""
         n = spool_delivered(self.qdir, ids, self.now_dt)
         if n:
-            self.say(f"deleted the spool rows of {n} entries whose run file is on {REMOTE}/{BRANCH}")
+            self.say(f"deleted the spool rows of {n} entries whose run file is on {REMOTE}/{self.branch}")
 
     def bring(self, new, kept):
         """The local files `new` copied into the worktree's store, the worktree's `querylog.py check` and the leak
@@ -2791,30 +2836,39 @@ class Pusher:
         return code
 
     def deliver(self, run_id):
-        """kbgit.py sync --push from the worktree (fetch, rebase on origin/main, fix, gate, push to origin). A
+        """kbgit.py sync --push from the worktree (fetch, rebase on origin/<branch>, fix, gate, push to origin). A
         conflict it cannot resolve (exit 3) pushes the commits as they were before the rebase to
-        querylog/<run-id> with the merge-request push options, and main stays as it was."""
+        querylog/<run-id> with the merge-request push options, and main stays as it was; in a cloud session on
+        another branch, whose proxy takes pushes to that branch only, nothing is pushed then. A push the remote
+        refused for want of rights is recorded in `refused`."""
         mine = self.git("rev-parse", "HEAD")[1].strip()
         code, o, e = self.run([sys.executable, str(self.wt / "_tools" / "kbgit.py"), "sync", "--push",
-                               "--remote", REMOTE, "--branch", BRANCH], cwd=str(self.wt))
+                               "--remote", REMOTE, "--branch", self.branch], cwd=str(self.wt))
         report = [ln for ln in (o + e).splitlines() if ln.startswith(("gate ", "pushed:", "needs-human:", "CONFLICT"))]
         for ln in report:
             self.out("  " + ln)
         if code == 0:
-            self.say(f"pushed {mine[:9]} to {REMOTE}/{BRANCH}")
-            self.on_main = True
+            self.say(f"pushed {mine[:9]} to {REMOTE}/{self.branch}")
+            self.landed = True
             return 0
         if code != 3:
-            self.say(f"kbgit.py sync exit {code}: nothing pushed to {BRANCH}" +
+            self.refused = push_refusal(o + e)
+            self.say(f"kbgit.py sync exit {code}: nothing pushed to {self.branch}" +
+                     (f" (refused for want of rights: {self.refused})" if self.refused else "") +
                      ("" if report else f"\n{(o + e).strip()[-600:]}"))
             return code
         self.git("rebase", "--abort")
+        if self.branch != BRANCH:
+            self.say(f"conflict with {REMOTE}/{self.branch}: nothing pushed (this session pushes to its working "
+                     f"branch only); its findings stay pending")
+            return 1
         branch = CONFLICT_BRANCH_PREFIX + run_id
         argv = ["push"]
         for opt in MR_OPTIONS:
             argv += ["-o", opt]
         code, o, e = self.git(*argv, REMOTE, f"{mine}:refs/heads/{branch}")
         if code:
+            self.refused = push_refusal(o + e)
             self.say(f"conflict, and the push of {branch} failed: {(o + e).strip()[-300:]}")
             return 1
         self.say(f"conflict: pushed {branch} with a merge request for {BRANCH}; its findings stay pending")
@@ -2885,13 +2939,21 @@ class Pusher:
         if code:
             self.say(f"refused: {self.home} is not a git clone with a remote {REMOTE}")
             return 2
+        if self.cloud:
+            branch = self.working_branch()
+            if branch is None:
+                self.say("refused: a cloud session pushes to the branch it has checked out, and HEAD is detached")
+                return 2
+            self.branch = branch
+            if branch != BRANCH:
+                self.say(f"cloud session: automatic commits go to its working branch {branch}")
         code, o, e = self.fetch()
         if code:
             self.say(f"git fetch {REMOTE} failed; nothing pushed ({(o + e).strip()[-300:]})")
             return 1
         code, o, e = self.reset()
         if code:
-            self.say(f"the worktree {self.wt} could not be set to {REMOTE}/{BRANCH}: {(o + e).strip()[-300:]}")
+            self.say(f"the worktree {self.wt} could not be set to {self.up}: {(o + e).strip()[-300:]}")
             return 1
         delivered, new, kept = self.local_files()
         self.forget(delivered)
@@ -2932,15 +2994,16 @@ class Pusher:
             if self.commit(f"chore(kb): query log apply {run_id}", body, kinds):
                 return 1
         code = self.deliver(run_id)
-        if self.on_main:
+        if self.landed:
             self.forget(set().union(*(ids for _, _, ids in new)))
         return code
 
 
-def push(home=None, qdir=None, run=None, apply_step=None, out=print, now_dt=None):
+def push(home=None, qdir=None, run=None, apply_step=None, out=print, now_dt=None, root=None):
     """`apply --push`: under the distill lock, the CI check of the last automatic commit (a revert when red), then in
     the worktree beside the spool the local store's new files (a commit of their own), learn and apply, one commit
-    with its KB-Auto trailer, and kbgit.py sync --push to origin; the spool rows of pushed entries go after it.
+    with its KB-Auto trailer, and kbgit.py sync --push to origin; the spool rows of pushed entries go after it. In a
+    plugin host (no `home`, this copy running as the plugin) the push runs from the managed clone (host_push).
     0 done (pushed, nothing to push, CI pending, or a conflict branch pushed), 1 a step failed, 2 refused, 3 another
     distill or push holds the lock."""
     qdir = Path(qdir or places()[0])
@@ -2949,9 +3012,118 @@ def push(home=None, qdir=None, run=None, apply_step=None, out=print, now_dt=None
         out("apply --push: another distill or push holds the lock")
         return 3
     try:
+        if home is None and plugin_data() is not None:
+            return host_push(qdir, run or run_cmd, apply_step, out, now_dt, root)
         return Pusher(home or HOME, qdir, run or run_cmd, apply_step, out, now_dt)()
     finally:
         release(lock)
+
+
+# --- plugin hosts and cloud sessions (querylog.md, Delivery) --------------------------------------------------------
+
+CLONE_NAME = "clone"  # beside a plugin host's spool: its managed clone of the repository the plugin was installed from
+REFUSALS = (  # a push refused for want of rights, as the remote words it (kb: gitlab/automated-merge-requests.md)
+    ("gitlab", re.compile(r"You are not allowed to (?:push code|force push code|upload code)\b[^\n]*")),
+    ("github", re.compile(r"Permission to \S+ denied to [^\n]*|GH006: Protected branch update failed[^\n]*")),
+    ("http-403", re.compile(r"The requested URL returned error: 403\b[^\n]*")),
+)
+
+
+def cloud_session():
+    """Whether this runs in a Claude Code cloud session: its VM's environment carries CLAUDE_CODE_REMOTE=true."""
+    return os.environ.get("CLAUDE_CODE_REMOTE") == "true"
+
+
+def push_refusal(text):
+    """`<kind>: <text>` for the first refusal for want of rights in a push's output (REFUSALS: GitLab's `You are not
+    allowed to push code ...`, GitHub's `Permission to ... denied` or `GH006`, an HTTP 403), else None. A generic
+    `(pre-receive hook declined)`, a DNS or connection error and a `remote failure` are no refusal."""
+    for kind, pat in REFUSALS:
+        m = pat.search(text or "")
+        if m:
+            return f"{kind}: {m.group(0).strip()[:200]}"
+    return None
+
+
+def install_url(root=None, run=None):
+    """The git url the plugin copy at `root` (default CLAUDE_PLUGIN_ROOT, `<plugins>/cache/<marketplace>/<plugin>/
+    <version>`) was installed from, or None: its marketplace's `source` in <plugins>/known_marketplaces.json (a `git`
+    source's `url`, a `github` source's repository over https), else the `origin` url of the marketplace's git
+    clone or directory (its `installLocation`, `marketplaces/<name>`)."""
+    run = run or run_cmd
+    root = root or os.environ.get("CLAUDE_PLUGIN_ROOT")
+    if not root:
+        return None
+    parts = Path(os.path.normpath(str(root))).parts
+    if len(parts) < 5 or parts[-4] != "cache":
+        return None
+    plugins, name = Path(*parts[:-4]), parts[-3]
+    known = read_json(plugins / "known_marketplaces.json", {})
+    entry = known.get(name) if isinstance(known, dict) else None
+    entry = entry if isinstance(entry, dict) else {}
+    src = entry.get("source") if isinstance(entry.get("source"), dict) else {}
+    if src.get("source") == "git" and isinstance(src.get("url"), str) and src["url"].strip():
+        return src["url"].strip()
+    if src.get("source") == "github" and isinstance(src.get("repo"), str) \
+            and re.fullmatch(r"[\w.-]+/[\w.-]+", src["repo"]):
+        return f"https://github.com/{src['repo']}.git"
+    for d in (entry.get("installLocation"), src.get("path"), plugins / "marketplaces" / name):
+        if isinstance(d, (str, Path)) and str(d) and (Path(d) / ".git").exists():
+            code, o, _ = run(["git", "remote", "get-url", REMOTE], cwd=str(d))
+            if code == 0 and o.strip():
+                return o.strip()
+    return None
+
+
+def managed_clone(qdir, url, run, out):
+    """The clone of `url` under `qdir` (CLONE_NAME), made on first use without a checkout (the worktree beside the
+    spool is where commits are made) and pointed at `url` when the install source moved; None when `git clone`
+    failed (nothing is left behind)."""
+    clone = Path(qdir) / CLONE_NAME
+    if (clone / ".git").exists():
+        code, o, _ = run(["git", "remote", "get-url", REMOTE], cwd=str(clone))
+        if code or o.strip() != url:
+            run(["git", "remote", "set-url", REMOTE, url], cwd=str(clone))
+        return clone
+    if clone.exists():
+        shutil.rmtree(clone, ignore_errors=True)
+    clone.parent.mkdir(parents=True, exist_ok=True)
+    code, o, e = run(["git", "clone", "--quiet", "--no-checkout", url, str(clone)], cwd=str(clone.parent))
+    if code:
+        shutil.rmtree(clone, ignore_errors=True)
+        out(f"apply --push: git clone of the install source failed; nothing pushed ({(o + e).strip()[-300:]})")
+        return None
+    return clone
+
+
+def disable(qdir, why, out):
+    """Logging off for good: the DISABLED marker (why and when) beside the spool, and the spool deleted."""
+    qdir = Path(qdir)
+    write_text(qdir / DISABLED_NAME, f"push refused for want of rights on {now()[:10]}: {why}\n")
+    shutil.rmtree(qdir / "spool", ignore_errors=True)
+    out(f"apply --push: the push was refused for want of rights ({why}): wrote {DISABLED_NAME} and deleted the "
+        "spool; this host logs nothing from now on")
+
+
+def host_push(qdir, run=None, apply_step=None, out=print, now_dt=None, root=None):
+    """The push of a plugin host, whose querylog directory `qdir` is under ${CLAUDE_PLUGIN_DATA}: the managed clone
+    of the install source (install_url, managed_clone), then the push of `apply --push` from it, the research
+    setting and count read from `qdir`. A push refused for want of rights writes DISABLED and deletes the spool
+    (disable); a network error or a red gate leaves both. Runs under the distill lock."""
+    run = run or run_cmd
+    url = install_url(root, run)
+    if not url:
+        out("apply --push: refused: the plugin's install source is not recorded (known_marketplaces.json, the "
+            "marketplace clone); nothing pushed")
+        return 2
+    clone = managed_clone(qdir, url, run, out)
+    if clone is None:
+        return 1
+    p = Pusher(clone, qdir, run, apply_step, out, now_dt, research=["--plugin-data", str(qdir)], cloud=False)
+    rc = p()
+    if p.refused:
+        disable(qdir, p.refused, out)
+    return rc
 
 
 def findings_problems(store, k=None):
@@ -3162,7 +3334,7 @@ def digest_hook(now_dt=None, store=None):
     marker is written before the store is read, so a slow or failed digest is not tried again that week."""
     t0 = time.monotonic()
     qdir, cfg = places()
-    if (qdir / "DISABLED").exists() or read_mode(cfg) == "off":
+    if (qdir / DISABLED_NAME).exists() or read_mode(cfg) == "off":
         return None
     today = (now_dt or datetime.datetime.now(datetime.timezone.utc)).date()
     this = iso_week(today)
@@ -3298,7 +3470,7 @@ def hook():
 def where():
     d, cfg = places()
     spool = spool_dir()
-    print(f"mode={read_mode(cfg)} config={cfg} dir={d} disabled={(d / 'DISABLED').exists()} "
+    print(f"mode={read_mode(cfg)} config={cfg} dir={d} disabled={(d / DISABLED_NAME).exists()} "
           f"writes={'yes' if spool else 'no'}")
     return 0
 
@@ -3320,7 +3492,7 @@ def main(argv=None):
         a = ap.parse_args(argv[1:])
         if a.store is None:
             d, cfg = places()
-            if (d / "DISABLED").exists() or read_mode(cfg) == "off":
+            if (d / DISABLED_NAME).exists() or read_mode(cfg) == "off":
                 print("learn: logging is off")
                 return 0
         return learn(a.store)
@@ -3336,26 +3508,26 @@ def main(argv=None):
         ap.add_argument("--clone", metavar="DIR",
                         help="the clone whose per-user config (_private/querylog.json) turns research on and whose "
                              "_cache/querylog counts the day's research runs (apply --push names its own clone)")
+        ap.add_argument("--plugin-data", metavar="DIR",
+                        help="the plugin host's querylog directory whose config.json turns research on and which "
+                             "counts the day's research runs (the push from a host names it)")
         ap.add_argument("--replay-research", metavar="FILE",
                         help="answer the research runs and the quote check's page fetches from this recorded file "
                              '({"replies": [...], "pages": {url: file}})')
         a = ap.parse_args(argv[1:])
-        if a.push and (a.store or a.clone or a.replay_research):
+        if a.push and (a.store or a.clone or a.plugin_data or a.replay_research):
             print("apply --push: refused: the store is the worktree's kb/_querylog and the clone is this one; "
-                  "--store, --clone and --replay-research are for a local apply", file=sys.stderr)
+                  "--store, --clone, --plugin-data and --replay-research are for a local apply", file=sys.stderr)
             return 2
         if a.store is None:
             d, cfg = places()
-            if (d / "DISABLED").exists() or read_mode(cfg) == "off":
+            if (d / DISABLED_NAME).exists() or read_mode(cfg) == "off":
                 print("apply: logging is off")
                 return 0
         if a.push:
-            if places()[0] != HOME / "_cache" / "querylog":
-                print("apply --push: refused: it pushes from a clone, not from a plugin host")
-                return 2
             return push()
         day = datetime.datetime.now(datetime.timezone.utc).date().isoformat()
-        rq, rcfg = research_places(a.clone)
+        rq, rcfg = research_places(a.clone, a.plugin_data)
         runs = min(research_budget(rq, rcfg, day), RESEARCH_RUNS_PER_APPLY)
         research = None
         if runs:

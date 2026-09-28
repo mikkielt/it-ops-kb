@@ -89,6 +89,18 @@ What it shows:
 - A host lookup with the trimmed texts (Haiku, `--allowedTools mcp__plugin_it-ops-kb_kb`, "How many apps can an Intune Win32 app supersede?"): `kb_pack`, a `kb_show` called with its schema unloaded (`root` passed for `path`; refused), a second `kb_pack`, and a correct cited answer (the 10-node supersedence graph, `S-wc6e3fba`), 4 turns, $0.020.
 - `claude plugin details it-ops-kb` shows far less (it counts skills and instructions, misses path-listed agents and the inline server, and needs an installed plugin); measure this way instead.
 
+### Always-on cost with the query log's host and cloud push (2026-09-28)
+
+**Setup:** Claude Code 2.1.283; 271 topics in one root (`kb/public`). The same command as above, `claude -p "Reply with the single word ok." --model haiku --output-format json --no-session-persistence --setting-sources project,local` in an empty directory; input per run is `input_tokens` + `cache_creation_input_tokens` + `cache_read_input_tokens`. Before: `--plugin-dir` at a copy of `origin/main` 01587ae (the query log's capture, launcher and digest hooks already in `plugin.json`). After: `--plugin-dir` at the working tree of the commit that adds the push from a plugin host's managed clone, the `DISABLED` rule and the cloud session's push to its working branch (Query log item 10 of `kb/_self/work-left.md`). 4 runs without the plugin and 5 with it, each time.
+
+| arm | before | after |
+|---|---|---|
+| no plugin | 22,036 (all 4) | 22,036 (all 4) |
+| `--plugin-dir` | 23,280 (all 5) | 23,280 (all 5) |
+
+- The plugin adds **1,244 tokens** per session before and after: the change adds no hook and no text that loads into a session. The host and cloud push run inside the detached distill that the existing `SessionEnd` and `SessionStart` launcher starts.
+- Every run of both plugin arms had the `kb` server connected (all 5 at the same value); against the 2.1.283 measurement above (22,038 and 23,282) the whole context is 2 tokens smaller on both arms, so the plugin's share is unchanged.
+
 ### `kb-lookup` agent start context
 
 **Setup:** Claude Code 2.1.283; 266 topics in one root (`kb/public`); `.claude/agents/kb-lookup.md` (Haiku, `effort: low`, `maxTurns: 6`, `omitClaudeMd: true`, 12 kb tools) preloading the current `kb-lookup` skill (4,236 bytes; 3,597 when the agent was first measured at 3.9k). In an empty directory, 4 runs of `claude -p "Use the it-ops-kb:kb-lookup agent to answer this, then relay its answer: How many apps can an Intune Win32 app supersede?" --model haiku --output-format json --setting-sources project,local --plugin-dir <this repository> --allowedTools "Agent,mcp__plugin_it-ops-kb_kb"`, session persistence on. Input per request (uncached + cache-write + cache-read) read from the subagent transcript (`<session>/subagents/agent-*.jsonl`), one row per `requestId`; the start context is its first request.
