@@ -18,7 +18,7 @@ Everything an agent needs to run, change and ship this kb, except the lookup rul
 | `kb/_self/doc2query.md` | document expansion for pack: protocol and results | protocol |
 | `kb/_self/querylog.md` | building or changing the query log (capture, distill, redaction, the store, learn, apply, the direct push): its rules and every program default | design |
 | `kb/_self/work-left.md` | at the start of a maintenance session: the open work | state |
-| `kb/_self/reports/` | the measurements `design.md` and `token-efficiency.md` rest on, each section with its setup | measurements |
+| `kb/_self/reports/` | the measurements `design.md` and `token-efficiency.md` rest on, each section with its setup; `benchmarks.md` generates its tables from `benchmarks.csv`, which `_tools/benchmarks.py` fills | measurements |
 | `kb/_self/map.csv` | which files each doc above describes (`selfdoc.py`) | data |
 
 ## Keeping it current

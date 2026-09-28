@@ -20,7 +20,7 @@ Every run writes one query log spool row (kb/_self/querylog.md, Capture): the qu
 `good`, `weak`, `plan` for --route, with `escalated` when the reader answered INSUFFICIENT), the verdict, the kb
 lines of the pack (path:line, tag, verdict) and the model. Its own `claude -p` runs with hooks off, so the session it starts never logs itself.
 
-Why (kb/_self/reports/token-usage.md, "Routing by verdict"): a Haiku session costs a fifth of a Sonnet one and an eighth of an
+Why (kb/_self/reports/benchmarks.md, "Routing by verdict"): a Haiku session costs a fifth of a Sonnet one and an eighth of an
 Opus one with the same answers, but a Haiku manager told to hand work to Sonnet did so once in four runs. The kb's
 verdict and a one-line INSUFFICIENT reply cannot ignore the rule. A `claude -p` start carries about 30k tokens of
 Claude Code context; skipping user plugins and MCP servers takes it to 25k, and no tools to 10k.

@@ -7,7 +7,7 @@ Document expansion for `pack`: a model writes a few questions each fact answers,
 - **Expansion words:** they rank the fact at weight 1.0 (`EXPANSION_WEIGHT` in `kbfacts.py`, chosen in the pilot), but never count as key words for the coverage verdict.
 - **Switch:** `KB_DOC2QUERY=0` turns expansion off.
 
-Background: `kb/_self/reports/token-usage.md`, "Retrieval quality", and Doc2Query-- (<https://arxiv.org/abs/2301.03266>): filtered expansion, up to 16% more effective, a third smaller index.
+Background: `kb/_self/reports/benchmarks.md`, "Retrieval quality", and Doc2Query-- (<https://arxiv.org/abs/2301.03266>): filtered expansion, up to 16% more effective, a third smaller index.
 
 ## Files (per root, in `_retrieval/doc2query/`: `kb/public/_retrieval/doc2query/` for public)
 
@@ -34,7 +34,7 @@ Every command works on one root: `python3 _tools/doc2query.py --root <name> <com
 - the mean pack size does not grow.
 
 ## Results
-See `kb/_self/reports/token-usage.md`, "doc2query".
+See `kb/_self/reports/benchmarks.md`, "doc2query".
 - **Round 1:** pilot 90% -> 97.5%, with the weight tuned on the test set.
 - **Round 2 (fresh arms):** no change, 95% both ways.
 

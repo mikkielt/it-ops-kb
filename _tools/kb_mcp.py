@@ -235,7 +235,7 @@ def kb_pack(args):
 def behind_note():
     """One line for kb_pack when this copy is behind the branch it follows (local refs, no network), else "":
     a model asked how current the kb is answered from the facts' dates without calling kb_status ("Partial
-    knowledge, newer versions and stale copies" in kb/_self/reports/token-usage.md). Recomputed at most once a
+    knowledge, newer versions and stale copies" in kb/_self/reports/benchmarks.md). Recomputed at most once a
     minute."""
     now = time.time()
     if now - _BEHIND[0] > 60:

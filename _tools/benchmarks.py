@@ -179,7 +179,7 @@ def records_table(rows, scenario):
     for rec, first in records(rows, scenario):
         mine = [r for r in rows if r["scenario"] == scenario and r["record"] == rec]
         counts = [r["runs"] for r in mine if r["runs"] and r["case"] != "all paid runs"]
-        runs = [max(set(counts), key=counts.count)] if counts else []
+        runs = [max(sorted(set(counts), key=float), key=counts.count)] if counts else []  # the most common; ties: the smallest
         total = [float(r["value"]) for r in mine if r["metric"] == "spend_usd" and _isnum(r["value"])]
         spend = total[0] if total else sum(float(r["value"]) * float(r["runs"] or 1) for r in mine
                                            if r["metric"] in ("cost", "cost_est") and _isnum(r["value"]))

@@ -1313,7 +1313,7 @@ def freshness(question, missing, meta):
     """A note for a question about the latest release, or naming a version the kb never mentions: the kb's facts
     are as of the lead article's retrieval, so the answer needs the live source and the version it is for. Models
     otherwise report the kb's newest version as the latest ("Partial knowledge, newer versions and stale copies" in
-    kb/_self/reports/token-usage.md). None when neither applies."""
+    kb/_self/reports/benchmarks.md). None when neither applies."""
     versions = [v for v in dict.fromkeys(m.group(0) for m in VERSION.finditer(question)) if stem(v.lower()) in missing]
     if not (LATEST.search(question) or versions):
         return None

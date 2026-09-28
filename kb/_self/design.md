@@ -1,6 +1,6 @@
 # Design: how the kb works, and when it is token-efficient
 
-The reasoning behind the kb's shape, with the measurements it rests on. Numbers come from `kb/_self/reports/token-usage.md` (section names in quotes), where each section states its setup: the Claude Code version, the models and the size of the kb. They move with all three; re-measure with `_tools/agent_bench.py` before relying on one whose setup no longer matches. Each technique, with the file that implements it, is listed in `kb/_self/token-efficiency.md`.
+The reasoning behind the kb's shape, with the measurements it rests on. Numbers come from `kb/_self/reports/benchmarks.md` (section names in quotes), whose records give each number's date, commit, Claude Code version and kb size, beside the earlier records of the same measurement. They move with all of them; `python3 _tools/benchmarks.py run <scenario>` measures one again. Each technique, with the file that implements it, is listed in `kb/_self/token-efficiency.md`.
 
 ## The idea
 
@@ -20,20 +20,20 @@ A lookup costs an agent its fixed context times its turns, plus what the tools r
 
 | situation | measured | where |
 |---|---|---|
-| `kb:` prompt the kb covers | 0 model tokens, $0, about 0.4 s | "Lookup tools against reading files" |
-| lookup inline in a running session | one `kb_pack`, then the answer: 2 turns, 42-49k input in a fresh Sonnet session, most of it Claude Code's own fixed context | "Plugin in a host project" |
+| `kb:` prompt the kb covers | 0 model tokens, $0, about 0.05 s | "Tool speed" |
+| lookup inline in a running session | one `kb_pack`, then the answer: 2 turns, 61-63k input in a fresh Sonnet session in a host, about half of it Claude Code's own fixed context | "Plugin in a host project" |
 | several parts | one `kb_pack` with `questions` (up to 6), a verdict each, one url footer | same |
-| count, list, join | 1 tool call, about 1k tokens, exact; an agent reading files: 28 calls, 363k effective input, 195 s, approximate | "Reading files without the lookup tools", T6 |
-| headless (`kb_ask.py`), question covered | $0.004-0.014 per question; Opus alone $0.18-0.29 | "Routing by verdict" |
-| against web search, 5 covered questions | kb router $0.011, 8.9 s, 10.4k input, 10/10 correct; Sonnet web search $0.128, 26.9 s, 98k, 10/10; Haiku web search $0.025 but 8/10, often without searching | "Router against web search" |
-| bare agent vs kb agent, same model, 7 covered questions | kb Haiku $0.042 vs bare $0.067, kb Sonnet $0.110 vs $0.180, kb Opus $0.229 vs $0.230 (the clone's 58-90k startup context eats Opus's saving); 41-69% faster, 1-2 tool calls vs 5-6; router $0.018, 9 s | "Bare agent against agent with the kb" |
-| how-to question answered by a `SNIPPET` | one `kb_pack` (1-4 kb calls with Haiku); Haiku $0.039-0.045 and 9/9 checks, Sonnet $0.10-0.13, one run per scenario | "How-to questions and SNIPPET units" |
+| count, list, join | 1 tool call, about 1k tokens, exact; an agent reading the files of the kb before these tools: 8 calls, 102k effective input, 49 s (28 calls, 363k and 195 s with the Claude Code of the first measurement) | "Reading files without the lookup tools", T6 |
+| headless (`kb_ask.py`), question covered | $0.008-0.022 on a first run, $0.003-0.005 on a repeat; Opus alone $0.18-0.29 | "Routing by verdict" |
+| against web search, 7 covered questions | kb router $0.033, 10 s, 13.7k input, 5/7 right; Sonnet web search $0.192, 74 s, 188k, 6/7; Opus web search $0.204, 31 s, 7/7; Haiku web search $0.012 but 5/7, mostly without searching | "Router against web search" |
+| bare agent vs kb agent, same model, 7 covered questions | kb Sonnet $0.107 and 16 s vs bare $0.192 and 74 s; kb Opus $0.219 vs $0.204 (the clone's larger start context eats Opus's saving), 22 s vs 31 s; kb Haiku $0.033 and 7/7 vs bare $0.012 and 5/7 (it did not search); 1.1-1.4 tool calls vs 4.6-6.4; router $0.033, 10 s | "Bare agent against agent with the kb" |
+| how-to question answered by a `SNIPPET` | one `kb_pack` first (1-3 tool calls); Haiku $0.036-0.047 and 9/9 checks, Sonnet $0.11-0.14 and 9/9, one run per scenario; `h2_applock` packs a false `none` ("T-SQL" read as a product name) | "How-to questions and SNIPPET units" |
 | a source changed (census, refresh) | the fact diff settles unchanged sources and facts found word for word with no model and dates them in a `KB-Verified` commit; on eight months of real entra edits 117 of 160 facts needed no model, and the other 43 cost about 6k tokens against about 190k for reading the changed pages | "Dry run on the entra domain" in `kb/_self/reports/fact-diff.md` |
-| the kb as a plugin in another project | about 1.24k always-on tokens per session; the same six questions cost the same as in a clone (306k vs 312k in total) | "Always-on cost", "Plugin in a host project" |
+| the kb as a plugin in another project | about 1.24k always-on tokens per session, hooks on or off; the same six questions cost less than in a clone (565k vs 651k in total) | "Always-on cost", "Plugin in a host project" |
 
 ## When it is not
 
-- **A fresh general-purpose subagent per lookup.** It pays its startup context (13.5k tokens with a current Claude Code, 50k with the 15.8 KB `AGENTS.md` of the first measurement) before reading a line, and every turn re-sends it; a fact lookup in one cost 120-136k effective input. Answer inline. Even the lean `kb-lookup` agent (3.9k startup, Haiku; "`kb-lookup` agent start context") never saved money when a larger model handed off to it and took 2-3 times as long ("Models and hand-off patterns"); it pays only for long research whose output would fill the caller's context.
+- **A fresh general-purpose subagent per lookup.** It pays its startup context (15.3k tokens for a general-purpose Sonnet agent, 50k with the 15.8 KB `AGENTS.md` of the first measurement) before reading a line, and every turn re-sends it; a fact lookup in one cost 44-62k effective input (120-136k in the first measurement). Answer inline. Even the lean `kb-lookup` agent (4.0k startup, Haiku; "`kb-lookup` agent start context") never saved money when a larger model handed off to it and took 2-3 times as long ("Models and hand-off patterns"); it pays only for long research whose output would fill the caller's context.
 - **A question the kb does not cover.** The router adds a cheap check (about $0.01 and a few seconds) to what a web search costs anyway; the answer is labelled live docs, not in the kb.
 - **A false `good`.** The verdict counts key words, not meaning, so a `good` pack can be about a related subject. Two lexical corrections make a `good` on common words that no single fact holds together `weak`, and a question about another product the kb names only in passing `none`; the `check:` line catches a missing product name and key words spread across unrelated facts. Common words that one unrelated fact holds together still pass ("Verdict corrections" in "Retrieval quality"); Opus noticed such cases, Haiku mostly did not. `kb_ask.py`'s Haiku reader answers `INSUFFICIENT` and escalates.
 - **Words common across roots.** A word counts as a key word only when under a fifth of the lines of all roots together hold it; a team root on its own would need several articles on different subjects to reach `good`, so it is served together with `kb/public`, never alone.
@@ -45,5 +45,5 @@ A lookup costs an agent its fixed context times its turns, plus what the tools r
 
 - **Code is the source of truth for mechanics.** Each tool's docstring is its reference; `kb/_self/tools.md` is the only table of them. `kb/_self/` docs describe files listed in `kb/_self/map.csv`, and `_tools/selfdoc.py stale` lists docs whose described files changed after the doc did; `/kb-self` updates them.
 - **Tests hold prose to code.** Flags named next to a tool must exist in it, backtick paths must resolve, the generated tables must be current, and `AGENTS.md` and `README.md` have size caps.
-- **Docs describe the present.** `kb/_self/` says what the kb does now, not how it got there: plans, decision dates and superseded numbers live in the git history (`git log`, `kbgit.py log`). Open work is in `kb/_self/work-left.md`, and a measurement is replaced when a new one supersedes it.
+- **Docs describe the present.** `kb/_self/` says what the kb does now, not how it got there: plans, decision dates and superseded numbers live in the git history (`git log`, `kbgit.py log`). Open work is in `kb/_self/work-left.md`. The one exception is the benchmark report: its results file keeps every record of a measurement, so a table shows each value beside the ones before it.
 - **Kept out of retrieval.** `kb/_self/` is searched only with `--index`, never by `pack`: its words (hook, skill, plugin, subagent) are also domain words in `claude/`, `mcp/` and `agents/`, and would crowd out real answers for plugin users.

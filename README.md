@@ -6,7 +6,7 @@ AI agents read it, write it and keep it current. People decide what it should co
 
 ## Why
 
-An agent that looks a fact up on the web reads whole pages to find one line. Measured with the same questions (Claude Code 2.1.283, the kb at 259 topics): a Sonnet web-search session spent about 98k input tokens, $0.13 and 27 s per question. The kb answered them with about 10k tokens, $0.011 and 9 s, and every answer cited the article line, a tag and the source url. The work that does not need judgement (finding the facts, counting, joining) is done by deterministic tools, and the model only picks the tool and writes the reply.
+An agent that looks a fact up on the web reads whole pages to find one line. Measured with the same seven questions (Claude Code 2.1.283, the kb at 271 topics, 2026-09-28): a Sonnet web-search session spent about 188k input tokens, $0.19 and 74 s per question. The kb router answered them with about 14k tokens, $0.033 and 10 s, citing the article line, a tag and the source url. The work that does not need judgement (finding the facts, counting, joining) is done by deterministic tools, and the model only picks the tool and writes the reply.
 
 ## How it works
 
@@ -19,10 +19,10 @@ An agent that looks a fact up on the web reads whole pages to find one line. Mea
 
 | situation | what it costs (measured) |
 |---|---|
-| `kb:` prompt the kb covers | no model call; the pack is shown in under half a second |
+| `kb:` prompt the kb covers | no model call; the pack is shown in about 0.05 s |
 | lookup in a running session (`kb_pack`) | one tool call returning 1-2k tokens |
-| a count, list or "who cites this source" | one exact tool call, about 1k tokens; an agent reading files took 28 calls and 363k tokens and was still approximate |
-| headless answer (`kb_ask.py`) | about $0.01 per covered question, against $0.13-0.23 for web search |
+| a count, list or "who cites this source" | one exact tool call, about 1k tokens; an agent reading the files took 8 calls and 301k tokens |
+| headless answer (`kb_ask.py`) | $0.033 per covered question on a first run, against $0.19-0.20 for Sonnet or Opus web search |
 | a fresh general-purpose subagent per lookup | **not efficient**: it pays its whole startup context before reading a line |
 | a question the kb does not cover | a web search plus a cheap check; the answer is labelled "live docs, not in the kb" |
 | a `good` verdict on the wrong article | the verdict counts words, not meaning; the pack prints a `check:` line, and the model must judge |
@@ -32,16 +32,25 @@ Details, numbers and the reasoning: `kb/_self/design.md`.
 
 ## Benchmark: bare agent vs agent with the kb
 
-158 runs on Haiku 4.5, Sonnet 5 and Opus 5.5 against the kb at 265 topics: 24 subagents and 134 headless sessions with billed cost; every question but one (a count over the kb itself) was asked both with and without the kb.
+Re-run on 2026-09-28 with Claude Code 2.1.283, the kb at 271 topics, Haiku 4.5, Sonnet 5 and Opus 5.5; the report puts each number beside its earlier records.
 
-**Summary.** On questions the kb covers:
-- An agent that uses the kb pays 26-53% less than the same model searching the web, except Opus in a fresh headless session, which paid the same.
-- It is 40-70% faster, makes 1-2 tool calls instead of 5-14, and was never less correct.
-- The kb router (`kb_ask.py`) costs $0.018 and 9 s per question, 4-13x cheaper than any bare model.
+**On the seven questions the kb covers**, one headless session each:
+- Sonnet with the kb: $0.107 and 16 s per question; searching the web: $0.192 and 74 s. Opus: $0.219 with the kb, $0.204 without, 22 s against 31 s.
+- Haiku without the kb made no search on 6 of 7 questions and got 2 wrong; with the kb it was right on all 7, for $0.033.
+- As subagents, the kb arm cost less on every model: Opus $0.412 against $0.962 for the four questions.
 
-On questions the kb lacks, the kb adds one pack call (1-2k tokens) to the same web research. The cheapest correct setup measured was Haiku reading the kb, not Opus reading the web.
+Where the kb lacks the answer it adds one pack call to the same web research. One regression found: "T-SQL" now reads as a product the kb lacks, so an `sp_getapplock` how-to packs `none`.
 
-The cases, the models, token counts, costs and the route each run took: `kb/_self/reports/benchmark-bare-vs-kb.md`.
+New since the first runs, a line each:
+- **Query log hooks:** add no context; the `SessionEnd` launcher returns in 47-50 ms of its 500 ms budget.
+- **Distill:** QLPIPE_README
+- **Redaction:** REDACTION_README
+- **Research:** $0.10 per accepted fact (one Sonnet run, 2 facts).
+- **`/kb-ingest`:** a 12-file sample repository became 18 facts for $2.06, with no `check.py` error.
+- **Host plugin with a team root:** both roots in one pack; Haiku missed the team's part in 1 of 4 runs per mode.
+- **Hook launcher:** `sh _tools/kbpy` adds 3.5 ms on macOS; Linux and Windows are not measured.
+
+Setups, every run and the history: `kb/_self/reports/benchmarks.md`.
 
 ## Where things are
 
