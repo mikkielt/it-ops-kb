@@ -1,11 +1,11 @@
 ---
 name: kb-setup
-description: Use when the it-ops-kb clone is fresh, a check or MCP server fails at start, or the user asks to set up the kb: checks Python, runs the checks and stress tests, installs the commit hook, registers the MCP servers, reports pass/fail.
+description: Use when the it-ops-kb clone is fresh, a check or MCP server fails at start, or the user asks to set up the kb: checks Python, runs the checks and stress tests, installs the commit hook, registers the MCP servers, asks about the query log, reports pass/fail.
 ---
 
 # Set up it-ops-kb
 
-Work from the repository root. Change no kb content (the only changes are the local git setting in step 3 and the local-scope MCP servers in step 4). Do every step even if an earlier one fails, then report.
+Work from the repository root. Change no kb content (the only changes are the local git setting in step 3, the local-scope MCP servers in step 4 and the per-user query log file in step 5). Do every step even if an earlier one fails, then report.
 
 Read `kb/_self/maintaining.md` first, then the `kb/_self/` files this skill relies on: `kb/_self/content-rules.md` (what to write), `kb/_self/tools.md` (the commands) and `kb/_self/git.md` (commits and pushes). `AGENTS.md` covers lookups only.
 
@@ -44,16 +44,32 @@ A clone uses four servers at local scope (this machine and this clone only): `kb
   - `search_model_context_protocol` with query `tools list_changed` (this server can return a very large result; a non-empty answer is enough)
 - Never call `submit_feedback` on any server. It posts text to the vendor and is denied in project settings.
 
-## 5. Optional GitHub server (ask first)
+## 5. Query log (ask)
+Tell the person what the query log does by default, in these words or close to them, then ask whether to keep it:
+
+- **Logging is on.** Every kb lookup in this clone's sessions (a `kb:` prompt, a kb MCP call, a `kb_ask.py` run, and the web and docs fetches of a prompt that used the kb) is logged to `_cache/querylog/spool/`. The spool holds prompts and answers as typed; it is never committed, and its rows are deleted once their entry is delivered (pushed, or in `local` stored), or after 30 days.
+- **Text is sent to the API.** When a session ends, a background distill replaces addresses, ids, paths, user and host names, keys and tokens with placeholders by rule, then sends that rule-redacted text to the Claude API for Haiku, which extracts the question, replaces person and organisation names, summarises the outcome and judges among the kb articles the lookup cited. The API keeps it under the organisation's retention: 30 days standard for commercial use (Team, Enterprise, API), unless zero data retention applies (`claude/data-retention.md`).
+- **Colleagues' questions are recorded in the repository.** The redacted entries (question, one-sentence outcome, verdict, articles cited, fetched hosts and paths) are committed to `kb/_querylog/` and pushed to `main` on `origin`, readable by everyone who can read the repository.
+- **Fixes, gap entries and pushes are automatic.** From those entries the pipeline commits eval rows, aliases, doc2query expansions and `_gaps.md` entries, and pushes them to `main` once the local gate passes; a conflict it cannot resolve becomes a merge request.
+- **Research is off.** When turned on, a `claude -p` run with web search adds quote-checked facts and source rows, and `_conflicts.md` entries, to the articles of gap entries, capped by runs a day.
+
+The choices: keep the default (`auto`); `local` (logged and distilled into `_cache/querylog/store/` only, Haiku still called, nothing committed or pushed); `off` (nothing logged, nothing sent). Research only when the person asks for it: `"research": true` with `"research_daily"` runs a day (3 when not given).
+
+- Write the answer to `_private/querylog.json` (never committed), for example `{"mode": "auto", "research": false}`. When the person also uses the kb as a plugin in other projects, those sessions read `${CLAUDE_PLUGIN_DATA}/querylog/config.json` instead (the plugin's `data/<plugin-id>/` directory under `~/.claude/plugins/`, `claude/plugins.md`); write the same answer there if they want it for those sessions too.
+- A file already there: show its `mode` and research setting and ask whether to keep them; change it only on their answer.
+- No answer (a headless run): write nothing, and report that the default `auto` applies.
+- Check with `python3 _tools/querylog.py where` (expect `mode=<the choice>`; `writes=no` for `off`). A file that cannot be read counts as `off`.
+
+## 6. Optional GitHub server (ask first)
 GitHub's remote MCP server (read-only repository tools, GA) needs the user's own token, so it is never committed. If the user wants it, show this command and let them run it themselves, with `GITHUB_PAT` set in their shell:
 ```
 claude mcp add --scope user --transport http github-repos-ro https://api.githubcopilot.com/mcp/x/repos/readonly --header "Authorization: Bearer $GITHUB_PAT"
 ```
 Never ask for the token or put it in a repo file.
 
-## 6. Do not
+## 7. Do not
 - Run `fetch.py --diff` without a selection, or `--verify`/`--refresh`. They are long network jobs that write state. A first baseline is the user's decision.
 - Commit anything.
 
-## 7. Report
-End with a short table: step, result (PASS/FAIL/SKIPPED), evidence (last output line or error). Then list what the user must do (e.g. approve servers, install Python). Then point to the other skills: `/kb-lookup`, `/kb-review-workspace`, `/kb-gap`, `/kb-research`, `/kb-refresh`, `/kb-add-topic`, `/kb-census`, `/kb-verify`, `/kb-git-sync`.
+## 8. Report
+End with a short table: step, result (PASS/FAIL/SKIPPED), evidence (last output line or error). Include the query log's mode and research setting as the person chose them. Then list what the user must do (e.g. approve servers, install Python). Then point to the other skills: `/kb-lookup`, `/kb-review-workspace`, `/kb-gap`, `/kb-research`, `/kb-refresh`, `/kb-add-topic`, `/kb-census`, `/kb-verify`, `/kb-git-sync`.

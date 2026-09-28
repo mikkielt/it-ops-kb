@@ -65,7 +65,7 @@ Kb facts the build rests on: `claude/hooks.md` (async hooks, `prompt_id`, `Stop`
   - Before any new push, distill checks the CI status of the last automatic commit (`glab api` on GitLab, `gh` on GitHub, skipped when neither is signed in); on red it pushes a revert commit and records `apply failed`, and a failed finding is never retried.
   - No CI job writes to the repository.
 - Configuration: no environment variables. Program defaults are constants stated in the design doc. Per-user choices (`mode`: `auto`, `local`, `off`; `research`; `research_daily`) live in one uncommitted file, written by `/kb-setup`: `_private/querylog.json` in a clone, `${CLAUDE_PLUGIN_DATA}/querylog/config.json` in a host.
-- The default is `auto`, and `/kb-setup` says plainly that colleagues' redacted questions are recorded in the repository and that rule-redacted text is sent to the API for Haiku (`claude/data-retention.md`). Items 3 to 6 run with the default `local` until the switch-on item.
+- The default is `auto`, and `/kb-setup` says plainly that colleagues' redacted questions are recorded in the repository and that rule-redacted text is sent to the API for Haiku (`claude/data-retention.md`).
 - Research is opt-in per user with their own daily cap: add-only, quote-verified facts, and a disagreement goes to `_conflicts.md`. Its commits go to `main` directly like the rest; the gate and the quote check are its review.
 - Plugin hosts distill in a managed clone under `${CLAUDE_PLUGIN_DATA}`; the first push refused for want of rights turns logging off for good (a `DISABLED` marker). Cloud sessions distill in the container and push to their own `origin`.
 - Portability:
@@ -83,29 +83,6 @@ Kb facts the build rests on: `claude/hooks.md` (async hooks, `prompt_id`, `Stop`
 - `.gitlab-ci.yml` runs branch and tag pipelines only (a direct-push model), which fits this design unchanged.
 
 7. **Direct push, on the real `origin`:** once, `python3 _tools/querylog.py apply --push` lands one automatic commit on `main`, and one planted conflict ends as an open MR.
-11. **End-to-end run and switch-on.**
-
-    Done:
-    - end-to-end tests drive a temporary clone with a bare remote through capture (hook commands fed recorded stdin), distill (recorded Haiku), learn, apply and the push. After each scenario they check the store, the findings, the eval file, the ledgers, the spool and the gate. One test per scenario:
-      - a `kb:` answer with `good` coverage: an entry, no finding, nothing pushed but the run file;
-      - a miss fixed by an alias, one fixed by an expansion, and a miss with no accepted fix that ends as a `_gaps.md` entry under its topic;
-      - a miss that passes on `HEAD` by the time `learn` runs (`fixed-since`, no change);
-      - web and docs-server fetches beside a kb lookup (host and path only) and a fetch in a prompt without kb use (no row);
-      - `kb_ask.py`, `fetch.py` and `census.py` rows joined to their prompt;
-      - an identifier in a prompt (redacted in the run file), and an entry Haiku flags as still identifying (dropped, only counted);
-      - more entries than the Haiku caps allow (the rest wait, and the next run takes them);
-      - two clones distilling against one remote (separate run files, no duplicate id, no conflict);
-      - a conflict with `origin/main` (the `querylog/<run-id>` branch with the MR push options, findings pending, held on the next run);
-      - red CI on the last automatic commit (a revert, `apply-failed`, never retried), and `manual`, `skipped` or unfinished CI (not red);
-      - research on, within its daily cap (a quote-checked fact added, a disagreement as a `_conflicts.md` entry), research over its cap, and research off;
-      - modes `off`, `local` and `auto`, a `DISABLED` marker, and an unreadable config;
-      - a session still open (not distilled), one closed by `SessionEnd`, and one closed by idle time;
-      - a failed push (the spool stays) and a successful one (the spool goes only once its run file is on the remote);
-      - a second run on unchanged inputs changes nothing.
-    - `/kb-setup` states the default (logging, fixes, gap entries and pushes automatic; research off; what is recorded and what is sent to the API) and asks whether to keep it;
-    - the program default becomes `auto`.
-
-    Check: those tests on Linux, Windows and macOS, `/kb-verify`, and `selfdoc.py stale` with no stale doc. Unchanged: the `kb:` hook's answers, and people's `kbgit.py sync --push`.
 12. **Benchmarks: one report, re-run and extended.** `kb/_self/reports/benchmark-bare-vs-kb.md` and `kb/_self/reports/token-usage.md` become one new report, `benchmarks.md`, in the same folder.
 
     Done:

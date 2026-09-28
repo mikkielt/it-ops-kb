@@ -111,7 +111,7 @@
 Every run writes under a temporary plugin data directory (conftest.querylog_env), never the clone's own spool, and no
 test calls the real `claude`: Haiku is the recorded reply file or a stub.
 """
-import datetime, getpass, http.server, json, os, re, shutil, signal, socket, subprocess, sys, threading, time, uuid
+import contextlib, datetime, getpass, http.server, json, os, re, shutil, signal, socket, subprocess, sys, threading, time, uuid
 from pathlib import Path
 
 import pytest
@@ -152,8 +152,8 @@ def prompt(text, pid="p1", sid=SID):
     return {"hook_event_name": "UserPromptSubmit", "session_id": sid, "prompt_id": pid, "prompt": text}
 
 
-def tool(name, args, response=None, pid="p1", ok=True, error=None):
-    ev = {"hook_event_name": "PostToolUse" if ok else "PostToolUseFailure", "session_id": SID, "prompt_id": pid,
+def tool(name, args, response=None, pid="p1", ok=True, error=None, sid=SID):
+    ev = {"hook_event_name": "PostToolUse" if ok else "PostToolUseFailure", "session_id": sid, "prompt_id": pid,
           "tool_name": name, "tool_input": args, "tool_use_id": "toolu_01"}
     if ok:
         ev["tool_response"] = response
@@ -162,8 +162,8 @@ def tool(name, args, response=None, pid="p1", ok=True, error=None):
     return ev
 
 
-def stop(answer, pid="p1"):
-    return {"hook_event_name": "Stop", "session_id": SID, "prompt_id": pid, "stop_hook_active": False,
+def stop(answer, pid="p1", sid=SID):
+    return {"hook_event_name": "Stop", "session_id": sid, "prompt_id": pid, "stop_hook_active": False,
             "last_assistant_message": answer}
 
 
@@ -321,8 +321,8 @@ class TestSwitches:
             assert hook(data, ev) == (0, b"")
         return lines(data)
 
-    def test_default_mode_is_local_and_writes(self, tmp_path):
-        assert querylog.DEFAULT_MODE == "local"
+    def test_default_mode_is_auto_and_writes(self, tmp_path):
+        assert querylog.DEFAULT_MODE == "auto"
         rows = self.run_all(tmp_path)  # planted: the same events with no config file do write
         assert [r["surface"] for r in rows] == ["prompt", "mcp", "fetch", "stop"]
         self.write_config(tmp_path / "x", '{"mode": "local"}')
@@ -359,12 +359,14 @@ class TestSwitches:
     def test_where(self, tmp_path):
         p = subprocess.run([sys.executable, QL, "where"], env=querylog_env(tmp_path), capture_output=True, text=True,
                            encoding="utf-8", timeout=60)
-        assert p.returncode == 0 and p.stdout.startswith("mode=local ") and "writes=yes" in p.stdout
+        assert p.returncode == 0 and p.stdout.startswith("mode=auto ") and "writes=yes" in p.stdout
         assert lines(tmp_path) == []
 
 
-@pytest.fixture
-def www():
+@contextlib.contextmanager
+def serve():
+    """A local HTTP server for fetch.py and census.py requests: /ok (200, `hello`), /empty (200, no body), /missing
+    (404), anything else 500. Yields its base url."""
     class H(http.server.BaseHTTPRequestHandler):
         def do_GET(self):
             code, body = {"/ok": (200, b"hello"), "/empty": (200, b""), "/missing": (404, b"no")}.get(
@@ -379,8 +381,16 @@ def www():
 
     srv = http.server.ThreadingHTTPServer(("127.0.0.1", 0), H)
     threading.Thread(target=srv.serve_forever, daemon=True).start()
-    yield f"http://127.0.0.1:{srv.server_address[1]}"
-    srv.shutdown()
+    try:
+        yield f"http://127.0.0.1:{srv.server_address[1]}"
+    finally:
+        srv.shutdown()
+
+
+@pytest.fixture
+def www():
+    with serve() as url:
+        yield url
 
 
 @pytest.fixture
@@ -833,6 +843,8 @@ class TestDistill:
 
 
 def distill_cli(data, *args):
+    """`querylog.py distill ARGS` in mode `local` under the plugin data directory `data`."""
+    auto_config(Path(data) / "querylog", "local")
     return subprocess.run([sys.executable, QL, "distill", *args], capture_output=True, text=True, encoding="utf-8",
                           env=querylog_env(data), timeout=120)
 
@@ -1035,6 +1047,7 @@ class TestLaunch:
     def test_session_start_picks_up_closed_sessions_only(self, tmp_path):
         sp = spool(tmp_path)
         sp.mkdir(parents=True)
+        auto_config(tmp_path / "querylog", "local")  # the rows of what it wrote go at once
         closed, active = "cccccccc-0000-4000-8000-000000000001", "cccccccc-0000-4000-8000-000000000002"
         for sid in (closed, active):
             row = {"id": str(uuid.uuid4()), "ts": "2026-09-20T10:00:00.000Z", "surface": "mcp", "session_id": sid,
@@ -3107,8 +3120,21 @@ class TestResearch:
         assert e("_sources.csv", SOURCES_CSV, SOURCES_CSV.split("S101")[0])  # planted: a removed row
         assert e("x/a.md", None, "anything") == []  # a new file
 
+    def test_source_rows_go_in_id_order(self):
+        """A new source row goes where kbgit.py fix, which sorts the rows by id, would put it (planted: appended at
+        the end, which fix would move)."""
+        import kbgit
+        text = SOURCES_CSV + "S-aaaaaaaa,https://a.example.com/,A,P,L,quote,2026-09-01,,,windows/laps.md,\n"
+        new = ["S-mmmmmmmm,https://m.example.com/,M,P,L,quote,2026-09-28,,,windows/laps.md,",
+               "S150,https://s.example.com/,S,P,L,quote,2026-09-28,,,windows/laps.md,"]
+        got = querylog.insert_rows(text, new)
+        assert [ln.split(",")[0] for ln in got.splitlines()] == ["id", "S100", "S101", "S150", "S-aaaaaaaa", "S-mmmmmmmm"]
+        assert kbgit.canon_csv(got, True) == got and querylog.edit_problems("_sources.csv", text, got) == []
+        appended = text + "".join(ln + "\n" for ln in new)
+        assert kbgit.canon_csv(appended, True) != appended
 
-LAPS_GAP_Q = "Can Windows LAPS back up the password of a Windows Server 2012 R2 member server to Azure?"
+
+LAPS_GAP_Q ="Can Windows LAPS back up the password of a Windows Server 2012 R2 member server to Azure?"
 
 
 @pytest.fixture(scope="module")
@@ -3179,6 +3205,11 @@ class TestResearchInKbCopy:
         assert querylog.edit_problems(rel, before[rel].decode("utf-8"), art) == []
         assert querylog.edit_problems("kb/public/_sources.csv", before["kb/public/_sources.csv"].decode("utf-8"),
                                       after["kb/public/_sources.csv"].decode("utf-8")) == []
+        import kbgit  # the new row sits in id order: kbgit.py fix, which sorts the rows by id, changes nothing
+        sources = after["kb/public/_sources.csv"].decode("utf-8")
+        assert kbgit.canon_csv(sources, True) == sources
+        assert querylog.insert_rows(before["kb/public/_sources.csv"].decode("utf-8"), [
+            ln for ln in sources.splitlines() if ln.startswith(sid + ",")]) == sources
         conflicts = after["kb/public/_conflicts.md"].decode("utf-8")
         assert querylog.edit_problems("kb/public/_conflicts.md", before["kb/public/_conflicts.md"].decode("utf-8"),
                                       conflicts) == []

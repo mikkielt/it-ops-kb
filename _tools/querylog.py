@@ -116,7 +116,7 @@ TOOLS = Path(__file__).resolve().parent
 HOME = TOOLS.parent
 
 # Program defaults (kb/_self/querylog.md, "Program defaults"); the rest arrive with the items that use them.
-DEFAULT_MODE = "local"
+DEFAULT_MODE = "auto"
 MODES = ("auto", "local", "off")
 DEFAULT_RESEARCH = False  # research writes facts: each person turns it on in their own config file
 DEFAULT_RESEARCH_DAILY = 3  # research runs per user per day when the config file turns research on and names no cap
@@ -2349,6 +2349,21 @@ def add_header_source(text, sid):
     return "---\n" + head + "\n---\n" + text[m.end():]
 
 
+def insert_rows(text, lines):
+    """A root's _sources.csv `text` with each record of `lines` (one record per line) put before the first row whose
+    id sorts after its own, in kbgit.py's id order, so `kbgit.py fix` finds the file canonical; no existing line moves
+    or changes."""
+    import kbgit
+    rows = text.split("\n")
+    while rows and not rows[-1]:
+        rows.pop()
+    for line in lines:
+        key = kbgit.id_key(line.split(",", 1)[0])
+        at = next((i for i in range(1, len(rows)) if kbgit.id_key(rows[i].split(",", 1)[0]) > key), len(rows))
+        rows.insert(at, line)
+    return "\n".join(rows) + "\n"
+
+
 def write_research(g, article, accepted, conflicts, gate, day):
     """Add the accepted facts at the end of the article's Facts section (their ids in its `sources:` header), a
     _conflicts.md entry under the topic per conflict, and a source row per new url (id from kbid.source_id with the
@@ -2390,7 +2405,7 @@ def write_research(g, article, accepted, conflicts, gate, day):
     if add:
         buf = io.StringIO()
         csv.DictWriter(buf, fieldnames=fields, lineterminator="\n").writerows(add)
-        write_text(src, old + ("\n" if old and not old.endswith("\n") else "") + buf.getvalue())
+        write_text(src, insert_rows(old, buf.getvalue().splitlines()))
     if accepted:
         write_text(path, text)
     if conflicts:
