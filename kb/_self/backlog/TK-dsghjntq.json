@@ -2,7 +2,7 @@
   "id": "TK-dsghjntq",
   "kind": "task",
   "title": "Write a bug item in the revert commit",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-oiuwoas3",
   "priority": "P3",
   "rank": 0,
@@ -25,5 +25,6 @@
     "_tools/test_querylog_e2e.py",
     "kb/_self/querylog.md",
     "kb/_self/backlog.md"
-  ]
+  ],
+  "claimed_by": "sub-revert"
 }
