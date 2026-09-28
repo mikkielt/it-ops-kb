@@ -1,0 +1,38 @@
+{
+  "id": "BG-wrlg6uqs",
+  "kind": "bug",
+  "title": "Item checks fail on a host whose python3 is the Store alias",
+  "status": "draft",
+  "parent": "EP-5p4ahbnq",
+  "sprint": "SP-fep4fpsx",
+  "priority": "P1",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "backlog.py run_check starts a check whose argv[0] is python3 or python with sys.executable, the interpreter running backlog.py, on every OS, so done, red-pipeline and a bug's repro prove an item wherever backlog.py itself runs (a venv, a python.org install off PATH, py -3), and a Store alias or a missing python3 on PATH no longer fails every check; test_backlog.py plants a python3 on PATH that exits 49 and asserts done still passes a python3 check; backlog.md (Definition of done) says checks name python3 and run with the calling interpreter.",
+  "repro": {
+    "run": [
+      "git",
+      "grep",
+      "-q",
+      "sys.executable",
+      "--",
+      "_tools/backlog.py"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "check_interpreter"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/test_backlog.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ]
+}

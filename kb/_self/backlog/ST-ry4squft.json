@@ -3,6 +3,7 @@
   "kind": "story",
   "title": "Sprint workers run on the newest Sonnet through a kb-worker agent",
   "status": "draft",
+  "sprint": "SP-liemltg2",
   "priority": "P1",
   "rank": 0,
   "goal": "A clone-only .claude/agents/kb-worker.md sets model: sonnet (the alias, which follows the newest Sonnet, never a pinned id or inherit) and effort: high; /kb-sprint run dispatches task and subtask subagents with subagent_type kb-worker and no model override, while S1 and S2 bugs, breakdowns of a story or bug with no tasks, the sprint review and every /kb-census subagent keep the session model. Tests named kb_worker prove each.",

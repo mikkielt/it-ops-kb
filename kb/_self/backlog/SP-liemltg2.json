@@ -3,7 +3,7 @@
   "kind": "sprint",
   "title": "Autonomous work is safe",
   "status": "planned",
-  "goal": "Autonomous writers reach main only through kbgit.py sync --push, repeat runs on unchanged input change nothing, a repeated pipeline failure joins its open bug, and done refuses an item whose KB-Work line git does not read as a trailer",
+  "goal": "Autonomous writers reach main only through kbgit.py sync --push, repeat runs on unchanged input change nothing, a repeated pipeline failure joins its open bug, and done refuses an item whose KB-Work line git does not read as a trailer, work for an item outside a started sprint or without a claim is refused, and sprint workers run on the newest Sonnet through a kb-worker agent.",
   "gates": [
     {
       "id": "start",

@@ -1,0 +1,52 @@
+{
+  "id": "BG-ifszzzis",
+  "kind": "bug",
+  "title": "Work lands for items outside a started sprint and nothing flags it",
+  "status": "draft",
+  "sprint": "SP-liemltg2",
+  "priority": "P1",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "backlog.py check reports an item whose status is todo, doing or done while its sprint is planned (a planned sprint's items are draft until start), and kbgit.py check-trailers, run by the commit and pre-push hooks on commits not yet on origin/main, refuses a KB-Work id whose item is not claimed or is not in a started sprint (not in a started sprint), except the sprint, backlog-planning and review items themselves; every planned sprint's items are draft; each refusal has a planted failure in test_backlog.py; backlog.md states both rules.",
+  "repro": {
+    "run": [
+      "git",
+      "grep",
+      "-q",
+      "not in a started sprint",
+      "--",
+      "_tools/backlog.py",
+      "_tools/kbgit.py"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "started_sprint"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "check"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/kbgit.py",
+    "_tools/test_backlog.py",
+    "kb/_self/backlog.md",
+    "kb/_self/git.md",
+    "kb/_self/backlog/*.json"
+  ],
+  "relates_to": [
+    "BG-iqqigub7",
+    "TK-5s6ehtxp"
+  ],
+  "notes": "Failure it answers: commit 527223d landed TK-5s6ehtxp “Commit install-python.ps1 with a planted-conflict test and its docs” while its sprint SP-fep4fpsx “Windows ready” was planned, the task unclaimed and its dependency TK-cdoww36l open; check printed errors=0. Planned sprints also hold todo items (Windows ready, Ingestion maps code natively, Work has a measured cost and others) although the runbook keeps them draft until start. History stays as it is: check-trailers judges only commits not yet on origin/main."
+}
