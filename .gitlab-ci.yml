@@ -61,6 +61,9 @@ kb-tests-floor:
 kb-tests-windows:
   stage: test
   tags: [saas-windows-medium-amd64]
+  # The run takes longer than the gap between the query log's automatic pushes: once started, a newer pipeline on
+  # main does not cancel it (auto_cancel on_new_commit conservative, the default).
+  interruptible: false
   variables:
     GIT_DEPTH: "0"
   script:
@@ -71,7 +74,8 @@ kb-tests-windows:
       $env:PATH = (python -c "import sysconfig; print(sysconfig.get_path('scripts'))") + ';' + $env:PATH
       if (Test-Path C:\Git\usr\bin\sh.exe) { $env:PATH += ';C:\Git\usr\bin' }
       uv --version
-      python _tools/tests.py
+      # a test past 900 s dumps every thread's stack (three fixtures take 300-450 s locally); the slowest are listed
+      python _tools/tests.py -o faulthandler_timeout=900 --durations=15
       if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
   rules:
     - if: $CI_COMMIT_BRANCH
