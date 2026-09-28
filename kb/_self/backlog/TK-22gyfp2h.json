@@ -1,0 +1,27 @@
+{
+  "id": "TK-22gyfp2h",
+  "kind": "task",
+  "title": "Skills read the sections they need",
+  "status": "todo",
+  "parent": "ST-pqmnnxvm",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "Each skill that now says to read maintaining.md, content-rules.md, tools.md, git.md or querylog.md first names the sections it needs and reads them with selfdoc.py section",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/selfdoc.py",
+        "check"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/*/SKILL.md",
+    "kb/_self/maintaining.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "TK-jsx4wea4"
+  ]
+}

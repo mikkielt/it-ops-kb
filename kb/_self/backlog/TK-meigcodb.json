@@ -1,0 +1,23 @@
+{
+  "id": "TK-meigcodb",
+  "kind": "task",
+  "title": "Cap MCP output for this project",
+  "status": "todo",
+  "parent": "ST-o6krms2n",
+  "priority": "P2",
+  "rank": 0,
+  "goal": ".claude/settings.json sets MAX_MCP_OUTPUT_TOKENS below the Claude Code default, and kb/_self/tools.md says why",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/selfdoc.py",
+        "check"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/settings.json",
+    "kb/_self/tools.md"
+  ]
+}

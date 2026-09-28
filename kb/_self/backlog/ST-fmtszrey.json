@@ -2,8 +2,9 @@
   "id": "ST-fmtszrey",
   "kind": "story",
   "title": "One command writes a valid _sources.csv row",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-hsyx42zz",
+  "sprint": "SP-xb45i7t4",
   "priority": "P2",
   "rank": 0,
   "goal": "A stdlib command takes a url, title, publisher, licence and reuse class (and optional version and artifact hash), writes the row with the id from kbid, converges on a repeated url, and the row passes check.py; kb-add-topic, kb-census, kb-ingest and kb-research use it instead of a hand-written CSV writer",
@@ -43,7 +44,9 @@
         "a new MCP tool beside the read-only kb_* tools",
         "both"
       ],
-      "recommendation": "a kbid.py add subcommand"
+      "recommendation": "a kbid.py add subcommand",
+      "answer": "a kbid.py add subcommand",
+      "by": "operator"
     }
   ],
   "notes": "Baseline census: tool results of 314 transcripts of this project (52 sessions, 262 subagent runs), about 4 characters a token; each result is also re-read from cache on every later turn of its session. 115 ad-hoc Python appends to _sources.csv and 90 ad-hoc reads. kbid.py url only prints the id; rag.py src only reads; ql_research.py write_research appends rows for the query log alone; census.py rewrites the whole table. kb-add-topic/SKILL.md, kb-census/SKILL.md and kb-ingest/SKILL.md tell the agent to append rows with a CSV writer, and check.py rejects bad ids, licences and reuse classes afterwards. Kb facts: public/agents/subagents-vs-deterministic-tools.md:74 (a fixed sequence becomes one tool, DOC S1935), public/agents/agent-evaluation.md:36 (DOC S1935)."

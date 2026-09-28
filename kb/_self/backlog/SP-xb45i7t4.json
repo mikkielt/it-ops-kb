@@ -1,0 +1,20 @@
+{
+  "id": "SP-xb45i7t4",
+  "kind": "sprint",
+  "title": "Commands replace hand-written scripts",
+  "status": "planned",
+  "goal": "Usage by tool, command and file, a _sources.csv row, a backlog field or gate, a point read of query log state and a plain-words backlog question each take one deterministic command, and the skills and docs name those commands",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ]
+}

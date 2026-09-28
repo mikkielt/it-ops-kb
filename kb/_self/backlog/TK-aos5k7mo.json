@@ -1,0 +1,27 @@
+{
+  "id": "TK-aos5k7mo",
+  "kind": "task",
+  "title": "Research skills use the live-docs cache",
+  "status": "todo",
+  "parent": "ST-o6krms2n",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kb-research and kb-refresh use the cached live-docs route, and kb/_self/tools.md documents the cache and its lifetime",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/selfdoc.py",
+        "check"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-research/SKILL.md",
+    ".claude/skills/kb-refresh/SKILL.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "TK-kgguzw2y"
+  ]
+}

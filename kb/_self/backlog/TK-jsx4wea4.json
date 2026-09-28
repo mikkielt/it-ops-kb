@@ -1,0 +1,24 @@
+{
+  "id": "TK-jsx4wea4",
+  "kind": "task",
+  "title": "selfdoc.py section prints one section of a kb/_self doc or SKILL.md",
+  "status": "todo",
+  "parent": "ST-pqmnnxvm",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "python3 _tools/selfdoc.py section DOC HEADING prints the section under that heading down to the next heading of the same level, with its line numbers, and exits 1 naming the headings when none matches",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "selfdoc_section"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/selfdoc.py",
+    "_tools/test_selfdoc.py"
+  ]
+}

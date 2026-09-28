@@ -2,8 +2,9 @@
   "id": "ST-ppxck77t",
   "kind": "story",
   "title": "querylog.py show answers point questions about query log state",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-mzzucemv",
+  "sprint": "SP-xb45i7t4",
   "priority": "P3",
   "rank": 0,
   "goal": "querylog.py show prints one run, one entry, the findings filtered by kind, article or state, one run's usage sidecar, or the local spool, from the committed store or a --store directory, without the caller parsing JSONL",
@@ -34,7 +35,9 @@
         "one show subcommand with --run, --entry, --findings, --usage, --spool",
         "separate run, entry, findings, usage subcommands"
       ],
-      "recommendation": "one show subcommand with --run, --entry, --findings, --usage, --spool"
+      "recommendation": "one show subcommand with --run, --entry, --findings, --usage, --spool",
+      "answer": "one show subcommand with --run, --entry, --findings, --usage, --spool",
+      "by": "operator"
     }
   ],
   "notes": "Baseline census: tool results of 314 transcripts of this project (52 sessions, 262 subagent runs), about 4 characters a token; each result is also re-read from cache on every later turn of its session. About 130 ad-hoc Python scripts over query log state, 106 of them reads. The read-only commands are aggregates: digest (one week's numbers), status (open findings, open merge requests, reverted commits), queue (the research queue), where and check. None prints one run, one entry, one run's usage or the spool. Kb facts: public/agents/agent-evaluation.md:36 (token-efficient tools with filters and defaults, DOC S1935), public/agents/subagents-vs-deterministic-tools.md:74 (DOC S1935)."

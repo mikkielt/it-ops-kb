@@ -1,0 +1,27 @@
+{
+  "id": "TK-xg74cb2a",
+  "kind": "task",
+  "title": "selfdoc.py map-tools prints the symbols and tests of _tools",
+  "status": "todo",
+  "parent": "ST-3p6lizv4",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "python3 _tools/selfdoc.py map-tools [FILE] prints every def and class of _tools/*.py and every test function with file:line and its first docstring line, built from ast on demand, and a test fails when a mapped name is missing from the code",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "tools_map"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/selfdoc.py",
+    "_tools/test_selfdoc.py"
+  ],
+  "depends_on": [
+    "TK-jsx4wea4"
+  ]
+}

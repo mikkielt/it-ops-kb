@@ -1,0 +1,26 @@
+{
+  "id": "TK-j6zvcfgf",
+  "kind": "task",
+  "title": "querylog.py show with run, entry, findings, usage and spool filters",
+  "status": "todo",
+  "parent": "ST-ppxck77t",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "python3 _tools/querylog.py show prints one run (--run), one entry (--entry), findings filtered by --kind, --article or --state (--findings), one run's usage sidecar (--usage) or the local spool (--spool), from the committed store or --store DIR",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "querylog_show"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/querylog.py",
+    "_tools/ql_store.py",
+    "_tools/ql_report.py",
+    "_tools/test_querylog.py"
+  ]
+}

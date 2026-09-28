@@ -2,8 +2,9 @@
   "id": "ST-pqmnnxvm",
   "kind": "story",
   "title": "Skills read the process docs by section, not whole",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-hsyx42zz",
+  "sprint": "SP-mqjeanq3",
   "priority": "P2",
   "rank": 0,
   "goal": "Every skill that reads kb/_self/maintaining.md, content-rules.md, tools.md, git.md or querylog.md names the sections it needs, and a stdlib command prints one section of a kb/_self doc or SKILL.md by heading, so a subagent reads only those sections before acting",
@@ -33,7 +34,9 @@
         "a selfdoc.py section DOC HEADING command that prints one section",
         "split the long docs into smaller files"
       ],
-      "recommendation": "a selfdoc.py section DOC HEADING command that prints one section"
+      "recommendation": "a selfdoc.py section DOC HEADING command that prints one section",
+      "answer": "a selfdoc.py section DOC HEADING command that prints one section",
+      "by": "operator"
     }
   ],
   "notes": "Baseline census: tool results of 314 transcripts of this project (52 sessions, 262 subagent runs), about 4 characters a token; each result is also re-read from cache on every later turn of its session. Whole-file cat/sed of maintaining.md, content-rules.md, tools.md, querylog.md and the older MAINTAINING.md: about 1.5M characters over about 170 calls; kb-add-topic/SKILL.md read as a file about 62 times (440k characters), kb-research/SKILL.md 13 times (200k). Eight skills open with 'read maintaining.md first, then content-rules.md, tools.md and git.md'. selfdoc.py (stale, map, check) and rag.py show do not print a doc section by heading. Kb facts: public/agents/subagents-vs-deterministic-tools.md:122 (progressive disclosure, DOC S1936), public/claude/skills-and-subagents.md:70 (the skills frontmatter preloads whole skills into a subagent, DOC S2157), public/claude/large-codebases.md:33 (DOC S-4jj4dtg4), public/agents/instruction-and-context-limits.md:114 (DOC S1855). Measure: repeat the census on a comparable sample and compare characters read from these paths."

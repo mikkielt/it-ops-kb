@@ -1,0 +1,24 @@
+{
+  "id": "TK-wrlfub26",
+  "kind": "task",
+  "title": "backlog: prompt prefix answered by the hook without the model",
+  "status": "todo",
+  "parent": "ST-3cofh4hv",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "A prompt starting with backlog: is answered by kb_hook.py with backlog.py horizon and next --all --any output and blocked from the model, and backlog+: passes the same output to the model",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "backlog_prompt"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kb_hook.py",
+    "_tools/test_kb.py"
+  ]
+}

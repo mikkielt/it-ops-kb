@@ -2,8 +2,9 @@
   "id": "ST-o6krms2n",
   "kind": "story",
   "title": "Live-docs searches are reused, not paid again",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-hsyx42zz",
+  "sprint": "SP-mqjeanq3",
   "priority": "P3",
   "rank": 0,
   "goal": "A research session that repeats a live docs search or fetch already made within the cache lifetime reads it from a local uncommitted cache instead of calling the docs server, and MCP output in this project is capped below the Claude Code default",
@@ -35,7 +36,22 @@
         "an on-disk cache keyed by server and query with a short lifetime",
         "no cache: research reads the kb first and never repeats a search"
       ],
-      "recommendation": "an on-disk cache keyed by server and query with a short lifetime"
+      "recommendation": "an on-disk cache keyed by server and query with a short lifetime",
+      "answer": "an on-disk cache keyed by server and query with a short lifetime",
+      "by": "operator"
+    },
+    {
+      "id": "mechanism",
+      "kind": "blocking",
+      "question": "The docs servers are remote MCP servers Claude calls directly, so nothing in the repo sees their results today. How does a cached result reach the agent?",
+      "options": [
+        "kb_mcp.py tools that call the remote servers over HTTP, cache, and replace direct use in research skills",
+        "a PostToolUse hook stores results and a PreToolUse hook denies a repeat call with the cached result as its reason",
+        "no cache: keep only the MCP output cap"
+      ],
+      "recommendation": "kb_mcp.py tools that call the remote servers over HTTP, cache, and replace direct use in research skills",
+      "answer": "kb_mcp.py tools that call the remote servers over HTTP, cache, and replace direct use in research skills",
+      "by": "operator"
     }
   ],
   "notes": "Baseline census: tool results of 314 transcripts of this project (52 sessions, 262 subagent runs), about 4 characters a token; each result is also re-read from cache on every later turn of its session. Per call: search_claude_code_docs about 26k characters, microsoft_docs_search about 22k, microsoft_docs_fetch about 10k, WebFetch about 7.5k; about 1.4M characters in all. No MAX_MCP_OUTPUT_TOKENS in the project settings, so results ride the default cap and are paid in full; fetch.py's _cache serves source verification, not the docs servers; no PostToolUse hook trims MCP output. Kb facts: public/claude/tool-output-limits.md:12,18 (MAX_MCP_OUTPUT_TOKENS, anthropic/maxResultSizeChars, DOC S745 S740), public/claude/hooks.md:29,32 (updatedMCPToolOutput, DOC S743), public/agents/doc-lookup-sources.md:23 (DOC S2177), public/claude/otel-monitoring.md:18 (tool_result_size_bytes, DOC S744). The output cap alone is a small task; the cache is the saving."

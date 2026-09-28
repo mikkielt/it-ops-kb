@@ -1,0 +1,26 @@
+{
+  "id": "TK-fyiqle2o",
+  "kind": "task",
+  "title": "Document kbusage.py tree and the census method",
+  "status": "todo",
+  "parent": "ST-exu6fdy6",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kb/_self/usage.md and kb/_self/tools.md describe kbusage.py tree and how a before-and-after census is run with it",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/selfdoc.py",
+        "check"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/usage.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "TK-yxch5sqm"
+  ]
+}

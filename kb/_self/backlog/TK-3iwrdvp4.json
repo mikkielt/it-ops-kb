@@ -1,0 +1,27 @@
+{
+  "id": "TK-3iwrdvp4",
+  "kind": "task",
+  "title": "AGENTS.md routes plain-words backlog questions to backlog.py",
+  "status": "todo",
+  "parent": "ST-3cofh4hv",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "AGENTS.md names backlog.py horizon and next --all --any for questions about open work and its order, and the backlog: prefix; kb/_self/tools.md documents the prefix",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/selfdoc.py",
+        "check"
+      ]
+    }
+  ],
+  "touches": [
+    "AGENTS.md",
+    "kb/_self/tools.md",
+    "README.md"
+  ],
+  "depends_on": [
+    "TK-wrlfub26"
+  ]
+}

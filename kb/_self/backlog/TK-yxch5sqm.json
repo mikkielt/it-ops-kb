@@ -1,0 +1,24 @@
+{
+  "id": "TK-yxch5sqm",
+  "kind": "task",
+  "title": "kbusage.py tree: tool-result rollup over a transcript and its subagents",
+  "status": "todo",
+  "parent": "ST-exu6fdy6",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "python3 _tools/kbusage.py tree PATH reads a session transcript with its subagents/*.jsonl, or a project directory, and prints tool-result characters and calls grouped by tool, Bash command head and file path, with totals checked against the transcripts' usage; --format json gives the same rows",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "kbusage_tree"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbusage.py",
+    "_tools/test_kbusage.py"
+  ]
+}

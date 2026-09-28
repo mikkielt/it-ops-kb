@@ -1,0 +1,30 @@
+{
+  "id": "TK-tej4owh2",
+  "kind": "task",
+  "title": "Skills and content rules write source rows with kbid.py add",
+  "status": "todo",
+  "parent": "ST-fmtszrey",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kb-add-topic, kb-census, kb-ingest and kb-research, kb/_self/content-rules.md and kb/_self/tools.md tell the agent to run kbid.py add instead of appending rows with a CSV writer",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/selfdoc.py",
+        "check"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-add-topic/SKILL.md",
+    ".claude/skills/kb-census/SKILL.md",
+    ".claude/skills/kb-ingest/SKILL.md",
+    ".claude/skills/kb-research/SKILL.md",
+    "kb/_self/content-rules.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "TK-32vchs3i"
+  ]
+}

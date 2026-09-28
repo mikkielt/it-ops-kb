@@ -1,0 +1,29 @@
+{
+  "id": "TK-y2zl2oqd",
+  "kind": "task",
+  "title": "Runbook and skills use set and gate add",
+  "status": "todo",
+  "parent": "ST-wgzgijlw",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kb/_self/backlog.md, kb/_self/tools.md and the kb-backlog, kb-sprint and kb-item skills name set and gate add, and none says to edit item JSON by hand",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/selfdoc.py",
+        "check"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md",
+    ".claude/skills/kb-backlog/SKILL.md",
+    ".claude/skills/kb-sprint/SKILL.md",
+    ".claude/skills/kb-item/SKILL.md"
+  ],
+  "depends_on": [
+    "TK-7jm3ikaa"
+  ]
+}

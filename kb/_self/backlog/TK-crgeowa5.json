@@ -1,0 +1,25 @@
+{
+  "id": "TK-crgeowa5",
+  "kind": "task",
+  "title": "PreToolUse hint for whole-file reads of kb articles",
+  "status": "todo",
+  "parent": "ST-mkaeoctd",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "A PreToolUse hook on Bash adds context naming rag.py show, facts, audit and search --index when a command reads kb/public/**/*.md or a root's _gaps.md with cat, sed -n, head, tail or grep -n, lets the command run, and prints nothing for any other command",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "raw_read_nudge"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kb_hook.py",
+    "_tools/test_kb.py",
+    ".claude/settings.json"
+  ]
+}

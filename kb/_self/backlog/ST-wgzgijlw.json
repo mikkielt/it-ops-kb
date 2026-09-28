@@ -2,8 +2,9 @@
   "id": "ST-wgzgijlw",
   "kind": "story",
   "title": "backlog.py set and gate add edit an item after new",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-o2bjijfp",
+  "sprint": "SP-xb45i7t4",
   "priority": "P3",
   "rank": 0,
   "goal": "backlog.py set ID changes notes, links, touches, checks, depends_on, relates_to, priority, rank and sprint, and backlog.py gate add ID adds a gate with question, options and recommendation, each followed by the same validation as check; status, claimed_by and evidence stay writable only by claim, release, start, close, drop and done; the skills no longer say to edit item JSON",
@@ -36,7 +37,9 @@
         "set for every field except identity and the status family, gates included",
         "set for notes and links only"
       ],
-      "recommendation": "set for every field except identity and the status family; gate add for gates"
+      "recommendation": "set for every field except identity and the status family; gate add for gates",
+      "answer": "set for every field except identity and the status family; gate add for gates",
+      "by": "operator"
     }
   ],
   "notes": "Baseline census: tool results of 314 transcripts of this project (52 sessions, 262 subagent runs), about 4 characters a token; each result is also re-read from cache on every later turn of its session. About 20 Python heredocs load an item's JSON and set notes, gates, checks, touches or links. backlog.py new sets title, parent, sprint, priority, rank, goal, severity, checks, touches, depends_on and repro; nothing changes them later or adds a gate (answer only answers one). kb-backlog/SKILL.md says 'then edit their JSON'. Kb facts: public/agents/agent-planning-and-done.md:43 (task state as structured data flipped by checks, DER S2150), public/gitlab/work-items-planning.md:25 (fixed work item statuses, DOC S-il7kjbdz). Relates to ST-3cofh4hv, which covers backlog questions."

@@ -1,0 +1,24 @@
+{
+  "id": "TK-7jm3ikaa",
+  "kind": "task",
+  "title": "backlog.py set and gate add",
+  "status": "todo",
+  "parent": "ST-wgzgijlw",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "backlog.py set ID changes notes, links, touches, checks, depends_on, relates_to, priority, rank and sprint, and backlog.py gate add ID adds a gate with question, options and recommendation; both validate as check does, and set refuses status, claimed_by, evidence and identity fields",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "backlog_set"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/test_backlog.py"
+  ]
+}
