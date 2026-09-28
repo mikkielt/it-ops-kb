@@ -1,0 +1,27 @@
+{
+  "id": "TK-kgu6p26i",
+  "kind": "task",
+  "title": "Plant a conflict and let apply --push open the merge request",
+  "status": "todo",
+  "parent": "ST-pbonxqx4",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "One querylog/<run-id> branch is on origin with an open merge request to main, opened by apply --push's push options after a planted conflict; the findings of that run stay pending on main.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/querylog.py",
+        "status"
+      ],
+      "match": "open conflict merge requests \\([^)]*\\): [1-9]"
+    }
+  ],
+  "touches": [
+    "kb/_querylog/**",
+    "kb/public/_gaps.md",
+    "kb/public/_retrieval/**",
+    "_tools/aliases.csv",
+    "kb/public/_answers.md"
+  ]
+}

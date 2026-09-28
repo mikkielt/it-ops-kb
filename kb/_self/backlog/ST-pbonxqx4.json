@@ -2,11 +2,12 @@
   "id": "ST-pbonxqx4",
   "kind": "story",
   "title": "Direct push on the real origin",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-mzzucemv",
-  "priority": "P2",
+  "sprint": "SP-z7a5c76b",
+  "priority": "P1",
   "rank": 0,
-  "goal": "Once, python3 _tools/querylog.py apply --push lands one automatic commit on main of the real origin, and one planted conflict ends as an open merge request.",
+  "goal": "python3 _tools/querylog.py apply --push has landed automatic commits on origin/main (done: bbc356f, f237e7b), and once, a planted conflict it cannot rebase ends as a pushed querylog/<run-id> branch with an open merge request to main, while main gets nothing from that run.",
   "checks": [
     {
       "run": [
@@ -28,5 +29,30 @@
       "match": "open conflict merge requests \\([^)]*\\): [1-9]"
     }
   ],
-  "notes": "Read origin's project settings with glab api before the first push (kb/_self/querylog.md, Delivery). The planted conflict branch is for a person or /kb-git-sync to resolve afterwards."
+  "gates": [
+    {
+      "id": "glab",
+      "kind": "blocking",
+      "question": "Sign glab in to gitlab.com (`! glab auth login`; it returns invalid_grant now) and say when it is done.",
+      "options": [
+        "done",
+        "not now"
+      ],
+      "recommendation": "done"
+    },
+    {
+      "id": "real-origin",
+      "kind": "blocking",
+      "question": "May the planted conflict push a querylog/<run-id> branch and open a merge request on the real origin?",
+      "options": [
+        "real origin, operator closes the MR and deletes the branch after the check passes",
+        "scratch project",
+        "skip the conflict part"
+      ],
+      "recommendation": "real origin, operator closes the MR and deletes the branch after the check passes",
+      "answer": "real origin, operator closes the MR and deletes the branch after the check passes",
+      "by": "operator"
+    }
+  ],
+  "notes": "The direct-push half is proven by the KB-Auto commits already on origin/main. For the conflict: prepare a finding whose apply edits a ledger line, then commit a different edit of the same line on origin/main before apply --push runs, so kbgit.py sync exits 3 (kb/_self/querylog.md, Delivery)."
 }

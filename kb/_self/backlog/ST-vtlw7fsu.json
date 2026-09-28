@@ -1,0 +1,26 @@
+{
+  "id": "ST-vtlw7fsu",
+  "kind": "story",
+  "title": "Prove the session-end launcher on Windows",
+  "status": "todo",
+  "parent": "EP-mzzucemv",
+  "sprint": "SP-z7a5c76b",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "test_child_survives_a_kill_on_close_job has passed in the kb-tests-windows CI job, and the kb states which job object Claude Code gives hook processes on Windows, so python/stdlib-windows-portability is complete.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/rag.py",
+        "audit",
+        "public/python/stdlib-windows-portability"
+      ],
+      "match": "\\| complete \\|"
+    }
+  ],
+  "links": [
+    "kb/public/_gaps.md",
+    "python/stdlib-windows-portability"
+  ]
+}

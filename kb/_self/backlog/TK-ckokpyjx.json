@@ -1,0 +1,36 @@
+{
+  "id": "TK-ckokpyjx",
+  "kind": "task",
+  "title": "Close the gap entry of F-27b9b6ccd368",
+  "status": "todo",
+  "parent": "ST-r4jcj3fn",
+  "priority": "P1",
+  "rank": 1,
+  "goal": "The _gaps.md entry for \"what benchmarks tell us?\" carries a Superseded note (not a gap: the judge found it answered) and its finding is closed, so the research queue no longer lists it.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/querylog.py",
+        "queue",
+        "20"
+      ],
+      "match": "(?s)\\A(?!.*F-27b9b6ccd368)"
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/querylog.py",
+        "check"
+      ],
+      "match": "problems=0"
+    }
+  ],
+  "touches": [
+    "kb/public/_gaps.md",
+    "kb/_querylog/**"
+  ],
+  "depends_on": [
+    "TK-24pi6qkp"
+  ]
+}

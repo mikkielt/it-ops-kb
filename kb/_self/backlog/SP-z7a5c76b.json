@@ -1,0 +1,22 @@
+{
+  "id": "SP-z7a5c76b",
+  "kind": "sprint",
+  "title": "Delivery proven",
+  "status": "active",
+  "goal": "The query log's automatic delivery is proven on the real origin and on Windows, learn no longer turns lookups the judge found answered into gaps, and defects the pipeline detects reach the backlog as bugs without a person filing them.",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve",
+      "answer": "approve",
+      "by": "operator"
+    }
+  ]
+}

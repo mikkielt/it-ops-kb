@@ -1,0 +1,25 @@
+{
+  "id": "TK-24pi6qkp",
+  "kind": "task",
+  "title": "Change learn's miss rule and test it",
+  "status": "todo",
+  "parent": "ST-r4jcj3fn",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "ql_learn's judged-miss rule excludes judged answered with verdict weak (a verdict none stays a miss); a planted entry of that kind yields no finding; kb/_self/querylog.md, Learn, states the rule.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "TestLearn"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/ql_learn.py",
+    "_tools/test_querylog.py",
+    "kb/_self/querylog.md"
+  ]
+}

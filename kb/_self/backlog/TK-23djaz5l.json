@@ -1,0 +1,35 @@
+{
+  "id": "TK-23djaz5l",
+  "kind": "task",
+  "title": "Run kb-tests-windows on main and record the result",
+  "status": "todo",
+  "parent": "ST-vtlw7fsu",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "The manual kb-tests-windows job has run on a commit of main that holds the current launcher, test_child_survives_a_kill_on_close_job passed in its log, and the _gaps.md entry for the Windows launcher carries a note naming the job.",
+  "checks": [
+    {
+      "run": [
+        "glab",
+        "api",
+        "projects/:fullpath/jobs?scope[]=success&per_page=100"
+      ],
+      "match": "\"name\":\"kb-tests-windows\""
+    }
+  ],
+  "touches": [
+    "kb/public/_gaps.md"
+  ],
+  "gates": [
+    {
+      "id": "glab",
+      "kind": "blocking",
+      "question": "Sign glab in to gitlab.com (`! glab auth login`; it returns invalid_grant now) and say when it is done.",
+      "options": [
+        "done",
+        "not now"
+      ],
+      "recommendation": "done"
+    }
+  ]
+}
