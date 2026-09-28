@@ -31,7 +31,9 @@
         "yes, but only by a person running the command",
         "no: the public home is updated by hand"
       ],
-      "recommendation": "yes, fast-forward only, after a green integration main"
+      "recommendation": "yes, fast-forward only, after a green integration main",
+      "answer": "yes, fast-forward only, after a green integration main",
+      "by": "operator"
     },
     {
       "id": "publish-when",
@@ -42,7 +44,9 @@
         "after every green integration main",
         "only by a person"
       ],
-      "recommendation": "at sprint close by the orchestrator, and by a person any time"
+      "recommendation": "at sprint close by the orchestrator, and by a person any time",
+      "answer": "after every green integration main",
+      "by": "operator"
     },
     {
       "id": "public-content",
@@ -53,7 +57,20 @@
         "the same, but internal roots are stripped from a published branch instead of refused",
         "everything the integration main holds"
       ],
-      "recommendation": "public roots and the code; never an internal root, _private/, _cache/ or a leak-scan hit (refused, not filtered)"
+      "recommendation": "public roots and the code; never an internal root, _private/, _cache/ or a leak-scan hit (refused, not filtered)",
+      "answer": "public roots and the code; never an internal root, _private/, _cache/ or a leak-scan hit (refused, not filtered)",
+      "by": "operator"
+    },
+    {
+      "id": "publish-runner",
+      "kind": "blocking",
+      "question": "What runs publish after every green integration main?",
+      "options": [
+        "the async SessionStart hook in each maintainer clone, beside red-pipeline: no credential in CI, publishes at the next session after main turns green",
+        "a CI job on the integration main with a deploy key for the public home: publishes within the pipeline, the key is a CI secret",
+        "a push mirror set on the integration host: no tool code, but it mirrors without the green or public-content checks"
+      ],
+      "recommendation": "the async SessionStart hook in each maintainer clone, beside red-pipeline: no credential in CI, publishes at the next session after main turns green"
     }
   ],
   "notes": "Refusing keeps one history on both remotes; stripping would fork it. A GitLab push mirror (optional host setup; ST-mmmn42ks “The kb covers the server side of the git regime” researches it) can replace the command where the integration host is trusted to decide what is public."

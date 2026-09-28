@@ -32,7 +32,9 @@
         "yes, but without auto-merge: a person merges",
         "no: code stays on direct push"
       ],
-      "recommendation": "yes, code/<id> branches with auto-merge; the branch is deleted on merge"
+      "recommendation": "yes, code/<id> branches with auto-merge; the branch is deleted on merge",
+      "answer": "yes, code/<id> branches with auto-merge; the branch is deleted on merge",
+      "by": "operator"
     }
   ],
   "links": [

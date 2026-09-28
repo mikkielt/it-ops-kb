@@ -14,7 +14,9 @@
         "change",
         "cancel"
       ],
-      "recommendation": "approve"
+      "recommendation": "approve",
+      "answer": "approve",
+      "by": "operator"
     },
     {
       "id": "github",
@@ -25,8 +27,10 @@
         "every push",
         "never"
       ],
-      "recommendation": "at sprint close only"
+      "recommendation": "at sprint close only",
+      "answer": "at sprint close only",
+      "by": "operator"
     }
   ],
-  "notes": "Run order 5 of 11; start after SP-aikswrrl “Route by verdict” closes; run backlog.py start when its turn comes; next: SP-rks3vx5g “Codebase maintainability proven”. GitHub (claude) is brought level with kbgit.py sync --push --remote claude at sprint close only. Its epic is EP-rumrqsu5 “Git regime: content and code lanes on any host, published to a public home”; it runs before SP-rks3vx5g so that ST-3i3dl6xg “kbgit.py is a CLI over kg_* modules” splits kbgit.py with the lane, publish and bridge code in it."
+  "notes": "Run order 5 of 11; start after SP-aikswrrl “Route by verdict” closes; start gate approved by the operator; run backlog.py start when its turn comes; next: SP-rks3vx5g “Codebase maintainability proven”. GitHub (claude) is brought level with kbgit.py sync --push --remote claude at sprint close only. Its epic is EP-rumrqsu5 “Git regime: content and code lanes on any host, published to a public home”; it runs before SP-rks3vx5g so that ST-3i3dl6xg “kbgit.py is a CLI over kg_* modules” splits kbgit.py with the lane, publish and bridge code in it."
 }
