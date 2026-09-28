@@ -2,8 +2,8 @@
 topic: python/ruff
 priority: P2
 applies_to: [ruff]
-retrieved_utc: 2026-09-27
-sources: [S-y3zhzpmv, S-7fmtkrv5, S-qgwumz4k, S-s3ytflwh, S-yfbe6ete, S-guaor3a5, S-my7mtswb, S-ntllah3f]
+retrieved_utc: 2026-09-28
+sources: [S-y3zhzpmv, S-7fmtkrv5, S-qgwumz4k, S-s3ytflwh, S-yfbe6ete, S-guaor3a5, S-my7mtswb, S-ntllah3f, S-okwkut4q, S-7e63teyx]
 status: complete
 ---
 
@@ -71,6 +71,10 @@ since it sets `select = ["F"]` explicitly.
 - The default `line-length` is 88 and `indent-width` is 4 (matching Black); this repository overrides
   `line-length` to 200. Ruff's own stated default configuration also excludes common tooling
   directories (`.venv`, `.git`, `.mypy_cache`, `dist`, `build`, etc.) by default. [DOC S-7fmtkrv5]
+- `ruff analyze graph [FILES]` (default `.`) generates a map of Python file dependencies, or of dependents with `--direction dependents`; `--detect-string-imports` also counts imports written as strings, and `--python <venv>` names a virtual environment for resolving further dependencies. [CODE S-okwkut4q: crates/ruff/src/args.rs#AnalyzeGraphCommand]
+- `ruff analyze graph` prints its map as pretty-printed JSON on stdout, with every path relative to the current working directory. [CODE S-7e63teyx: crates/ruff/src/commands/analyze_graph.rs#analyze_graph]
+- At ruff 0.16.9, `ruff analyze graph` warns that it is experimental and may change without warning unless `[tool.ruff.analyze] preview` (default false) is enabled, the setting that exposes unstable commands. [CODE S-7e63teyx: crates/ruff/src/commands/analyze_graph.rs#analyze_graph; CODE S-s3ytflwh: crates/ruff_workspace/src/options.rs#AnalyzeOptions]
+- Related: `agents/codebase-mapping.md` uses the graph as a Python import map for repository mapping. [DER S-7e63teyx: the JSON file-to-files map]
 
 ## Reference
 - SNIPPET: this repository's ruff config (Pyflakes-only linting, 200-column lines, tooling dirs excluded); context: ruff 0.16.9, pyproject.toml; checked: syntax [DER S-y3zhzpmv: `select = ["F"]` selects only Pyflakes rules per the prefix rule; DOC S-7fmtkrv5: default `line-length`/`indent-width` and excluded tooling directories]

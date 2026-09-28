@@ -1,0 +1,65 @@
+---
+topic: windows/powershell-static-analysis
+priority: P3
+applies_to: "PowerShell 7.5 and Windows PowerShell 5.1 (#Requires, module manifests, Import-PowerShellDataFile, Get-Command); System.Management.Automation.Language parser API (SDK 7.4 to 7.6); PSScriptAnalyzer 1.18+"
+retrieved_utc: 2026-09-28
+sources: [S-6jyt4xkf, S-tsdqt57s, S-gw24iv7o, S-f3ndzkct, S-jhjw7ppr, S-oeqxq56y, S-o6gamymj, S-ffmai4hf, S-g6na73gp, S-yx6xgjzj, S-f4p734lc, S-z65pkysn]
+status: complete
+---
+
+# Reading PowerShell code without running it: #Requires, manifests, the AST and PSScriptAnalyzer
+
+## Summary
+A PowerShell repository states its version pins in two places: `#Requires` lines in scripts and the keys of a
+module manifest (`.psd1`). Both can be read without executing anything: the language parser returns an AST with
+the parsed `#Requires` values, and `Import-PowerShellDataFile` reads a `.psd1` as data. `PSScriptAnalyzer` lints a
+tree against a settings file and can check commands and syntax against target PowerShell versions. Several
+familiar commands (`Import-Module`, `Test-ModuleManifest`, `Get-Command` with an exact name, running a script with
+`#Requires -Modules`) import modules and so can run code: an agent mapping an untrusted repository avoids them.
+
+## Facts
+- `#Requires` statements apply globally wherever they sit in the script and must all be met before the script can run; `-Version` gives a minimum `<N>[.<n>]`, `-PSEdition` takes `Core` or `Desktop`, `-RunAsAdministrator` (PowerShell 4.0+) is ignored on non-Windows systems, and `-Modules` takes a name or a hashtable with `ModuleName` plus `ModuleVersion`, `MaximumVersion` or `RequiredVersion`. [DOC S-6jyt4xkf]
+- `#Requires -Assembly` is deprecated and does nothing. [DOC S-6jyt4xkf]
+- When a script with `#Requires -Modules` runs, PowerShell imports any required module that is not in the session and throws a terminating error if it cannot; running the script is therefore not a side-effect-free way to check its pins. [DOC S-6jyt4xkf]
+- `[System.Management.Automation.Language.Parser]::ParseFile(fileName, [ref]tokens, [ref]errors)` parses a script file and returns a `ScriptBlockAst` plus its tokens and parse errors; `ParseInput` does the same for a string. [DOC S-oeqxq56y]
+- `ScriptBlockAst.ScriptRequirements` holds everything parsed from the script's `#requires` lines (null when there are none), so the pins are read from the AST without running the script. [DOC S-ffmai4hf]
+- `Ast.FindAll(predicate, searchNestedScriptBlocks)` walks the whole tree and returns every node the predicate accepts, e.g. every function definition or command invocation. [DOC S-o6gamymj]
+- In a module manifest only `ModuleVersion` is required; every other key is optional. [DOC S-tsdqt57s]
+- Manifest `PowerShellVersion` is the minimum engine version; when it is unset, import is not restricted by version. [DOC S-tsdqt57s]
+- Manifest `CompatiblePSEditions` accepts `Desktop` and `Core`; Windows PowerShell versions older than 5.1 cannot load a module that uses the key, because `$PSEdition` arrived in 5.1. [DOC S-tsdqt57s]
+- Manifest `RequiredModules` entries are a module name, a module specification hashtable (`ModuleName` with `ModuleVersion`, `RequiredVersion` or `MaximumVersion`) or a path; `Import-Module` imports them, or fails when they are missing. [DOC S-tsdqt57s]
+- Manifest `RootModule` sets the module type from its extension: `.psm1`/`.ps1` script, `.dll` binary, `.cdxml` CIM, `.psd1` or none a manifest module. [DOC S-tsdqt57s]
+- Microsoft's guidance for `FunctionsToExport` and `CmdletsToExport` is an explicit list without wildcards; an unset key or `'*'` exports everything, `@()` exports nothing. [DOC S-tsdqt57s]
+- A manifest is evaluated in `Restricted` language mode when a module is imported. [DOC S-tsdqt57s]
+- `Import-PowerShellDataFile` reads a `.psd1` as data without invoking its code; by default it is limited to 500 keys and 5000 AST nodes, and `-SkipLimitCheck` lifts the limit. [DOC S-f3ndzkct]
+- `Test-ModuleManifest` checks that the files a manifest lists exist and returns a `PSModuleInfo` object even when the manifest has errors. [DOC S-gw24iv7o]
+- `Get-Command -Module <name>` lists commands from the named modules; a module imported automatically this way has the same effect as `Import-Module` and can run scripts in the session. [DOC S-jhjw7ppr]
+- `Invoke-ScriptAnalyzer -Path <dir> -Recurse` analyses `.ps1`, `.psm1` and `.psd1` files and by default returns one `DiagnosticRecord` per rule violation; `-Settings` takes a `.psd1` path, a hashtable or a preset name. [DOC S-g6na73gp]
+- A `PSScriptAnalyzerSettings.psd1` in the project root is picked up automatically when that root is passed as `-Path`. [DOC S-yx6xgjzj]
+- Since PSScriptAnalyzer 1.18.0, parse errors come back as diagnostic records with severity `ParseError`; `-EnableExit` sets the exit code to the number of error records. [DOC S-yx6xgjzj, S-g6na73gp]
+- Rule `PSUseCompatibleCommands` (disabled by default) checks commands against `TargetProfiles`, platform profiles named `<os>_<arch>_<osver>_<psver>_<psarch>_<dotnetver>_<edition>`; a command absent from the union profile is treated as local and ignored. The bundled profiles end at PowerShell 7.0. [DOC S-f4p734lc]
+- Rule `PSUseCompatibleSyntax` (disabled by default) flags syntax unsupported by the listed `TargetVersions` (e.g. `'5.1'`); run from PowerShell 3 or 4 it cannot detect newer syntax, since those versions cannot parse it. [DOC S-z65pkysn]
+- A mapper that must not execute repository code can read a PowerShell repository's pins and public surface from the parser (`ScriptRequirements`, `FindAll` for `FunctionDefinitionAst`) and `Import-PowerShellDataFile` on each `.psd1`, and treat an explicit `FunctionsToExport` list as the module's public commands; a wildcard or missing list leaves the surface known only after an import, which it avoids. [DER S-oeqxq56y, S-ffmai4hf, S-o6gamymj, S-f3ndzkct, S-tsdqt57s, S-jhjw7ppr: the read-only APIs versus the importing commands]
+
+## Reference
+- about_Requires: https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_requires?view=powershell-7.5
+- about_Module_Manifests: https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_module_manifests?view=powershell-7.5
+- Import-PowerShellDataFile: https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.utility/import-powershelldatafile?view=powershell-7.5
+- Parser class: https://learn.microsoft.com/en-us/dotnet/api/system.management.automation.language.parser?view=powershellsdk-7.4.0
+- Using PSScriptAnalyzer: https://learn.microsoft.com/en-us/powershell/utility-modules/psscriptanalyzer/using-scriptanalyzer
+- Related: `agents/codebase-mapping.md` (the same approach across languages); `windows/powershell-7.md` (versions, editions and lifecycle the pins refer to).
+
+## Examples
+- SNIPPET: list a script's `#Requires` pins and its function names without running it; context: PowerShell 7.x or 5.1, file `.\Deploy-Example.ps1`; checked: no [DER S-oeqxq56y, S-ffmai4hf, S-o6gamymj: ParseFile, ScriptRequirements and FindAll from their API pages]
+```powershell
+$tokens = $null; $errors = $null
+$ast = [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path .\Deploy-Example.ps1), [ref]$tokens, [ref]$errors)
+$ast.ScriptRequirements | Select-Object RequiredPSVersion, RequiredPSEditions, RequiredModules, IsElevationRequired
+$ast.FindAll({ param($n) $n -is [System.Management.Automation.Language.FunctionDefinitionAst] }, $true) | ForEach-Object Name
+$errors | Select-Object -ExpandProperty Message
+```
+- SNIPPET: read a manifest's pins as data; context: PowerShell 5.1 or later; checked: no [DOC S-f3ndzkct]
+```powershell
+$m = Import-PowerShellDataFile .\ExampleModule.psd1
+$m.ModuleVersion; $m.PowerShellVersion; $m.CompatiblePSEditions; $m.RequiredModules; $m.FunctionsToExport
+```

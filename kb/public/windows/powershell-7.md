@@ -211,6 +211,7 @@ Full table with all released versions: `windows/powershell-lifecycle.csv`. [DOC 
 | PasswordTimeout | 900s | n/a (moot once Authentication=None) | seconds the unlocked state persists after a password is supplied |
 
 ## Reference (cross-links)
+- `windows/powershell-static-analysis.md`: reading `#Requires`, module manifests and the AST without running code, and PSScriptAnalyzer compatibility rules against target versions.
 - `windows/execution-policy-signing.md`: execution policy scopes/precedence, `AllSigned`/`RemoteSigned`
   defaults, Authenticode signing — covers the `-ExecutionPolicy` behavior this article's install/session
   facts build on; back-linked from there.

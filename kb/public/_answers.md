@@ -1915,6 +1915,19 @@ _Agent: kb-research_
 
 _Agent: kb-research_
 
+## QK-codebase-mapped-known-deterministically-agent-ingested. How can a codebase be mapped and known deterministically by an agent, when ingested into the kb or when the kb is a plugin in a host project?
+- Pins first, read as data: Python `.python-version`/`requires-python`, package.json `engines`/`devEngines`/`packageManager` and `.nvmrc`, go.mod `go`/`toolchain`, `rust-toolchain.toml` and `rust-version`, `maven.compiler.release` and Gradle toolchains and wrapper, `global.json` (`rollForward` default `patch`), PowerShell `#Requires` and manifest keys, devcontainer and `.tool-versions`. [DOC S-4qptrwkx, S-st5dilla, S-hvxiebin, S-7cn5bcww, S-2u4dktv3, S-zihpu7lj, S-6jyt4xkf, S-d7lm5uzs, S-6k54ouks]
+- The language's own tools print the map as JSON: `go list -json -deps -e`, `go mod edit -json`, `cargo metadata --format-version 1`, `dotnet package list --format json`, MSBuild `-getProperty`/`-getItem`, `npm ls --json --package-lock-only`, `npm query`, `tsc --showConfig`/`--listFilesOnly`, `mvn dependency:tree -DoutputType=json`, `ruff analyze graph` (experimental); Python's `ast` and `pyclbr` and PowerShell's parser read source without running it. [DOC S-me5pwvu4, S-orgevefw, S-xmboehyd, S-mrtq3wwm, S-p7etrhxc, S-73rwtmys, S-j645b5a2, S-w5jn4cwh, S-ci5jq2sq, S-73jqrgsc, S-oeqxq56y]
+- Read-only forms avoid network and execution: `GOTOOLCHAIN=local`, `cargo metadata --no-deps --offline --locked`, `dotnet package list --no-restore`, MSBuild evaluation without `-target`, `Import-PowerShellDataFile` instead of importing a module. [DOC S-st5dilla, S-orgevefw, S-xmboehyd, S-mrtq3wwm, S-f3ndzkct]
+- Across languages: Universal Ctags JSON Lines (format 1.0, may change; needs libjansson), Tree-sitter tag queries, SCIP indexes, and LSP `documentSymbol`/`workspace/symbol`/`references`/call hierarchy, which Claude Code exposes as a read-only `LSP` tool through code intelligence plugins (inactive in cloud sessions). [DOC S-xdf63oro, S-loh54u4h, S-3zv32lrc, S-43wwsm7t, S-cgtbvuug, S-3yod3u7q]
+- Working on a codebase without loading it: coding agents keep scoped instruction files (CLAUDE.md, AGENTS.md with Codex's 32 KiB cap, GEMINI.md, Cursor rules) and fetch code just in time by path, grep, language server or index; Aider sends a PageRank-ranked map of files and symbols; Copilot's semantic index is remote, Cursor's Instant Grep index local. [DOC S1855, S-c5olve2h, S-c4vaxr7q, S-iuskapuz, S-yq3633pk, S-5yij7tgr, S-4owuypm5]
+- In Claude Code, subdirectory CLAUDE.md files load on demand, `Read` deny rules keep generated and vendored code out (not Bash `grep -r`), MCP tools are deferred until used, and an existing code search or RAG index is best exposed as an MCP tool. [DOC S-4jj4dtg4, S-eubvc22d]
+- Conclusion: an agent maps a repository reproducibly by recording the pins at the pinned commit, then running each language's own JSON-producing commands in their read-only forms under the pinned toolchain, and falling back to ctags, Tree-sitter or a language server where a language has no such output; the result is a map of names (packages, imports, symbols, entry points) that ingestion cites and a host session queries on demand instead of loading files. [DER S-st5dilla, S-me5pwvu4, S-orgevefw, S-mrtq3wwm, S-xdf63oro, S-j2laoer5, S1855: pins, tool-native JSON, cross-language indexers, just-in-time retrieval]
+- Open: machine-readable Gradle dependency output, the `go vet -json` and `npm ls --json` schemas, TypeScript 7 flag support, and whether dev container `image` digests are part of the spec are not confirmed. [UNK]
+- See agents/codebase-mapping.md, agents/codebase-mapping.csv, agents/coding-agent-codebase-context.md, claude/large-codebases.md, windows/powershell-static-analysis.md, agents/repository-ingestion.md.
+
+_Agent: kb-research_
+
 ## R1. Reuse candidates
 
 - **Highest leverage: `pydantic-settings` as a `dependency` for a project's config-file/env-var/flags

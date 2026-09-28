@@ -42,6 +42,8 @@ Every topic of this root with its priority (the research order, not importance),
 | `agents/security-copilot-endpoint` | P2 | complete | `agents/security-copilot-endpoint.md` | 24 |
 | `agents/windows-agentic-platform` | P2 | complete | `agents/windows-agentic-platform.md`, `agents/windows-ai-policies.csv` | 16 |
 | `agents/agent-planning-and-done` | P3 | complete | `agents/agent-planning-and-done.md` | 5 |
+| `agents/codebase-mapping` | P3 | complete | `agents/codebase-mapping.md`, `agents/codebase-mapping.csv` | 60 |
+| `agents/coding-agent-codebase-context` | P3 | complete | `agents/coding-agent-codebase-context.md` | 15 |
 | `agents/doc-change-detection` | P3 | complete | `agents/doc-change-detection.md` | 36 |
 | `agents/langgraph` | P3 | complete | `agents/langgraph.md` | 11 |
 | `agents/repository-ingestion` | P3 | complete | `agents/repository-ingestion.md` | 4 |
@@ -96,9 +98,10 @@ Every topic of this root with its priority (the research order, not importance),
 | `claude/agent-sdk` | P2 | complete | `claude/agent-sdk.md`, `claude/agent-sdk-options.csv` | 10 |
 | `claude/ci-and-headless` | P2 | complete | `claude/ci-and-headless.md` | 7 |
 | `claude/enterprise-admin` | P2 | complete | `claude/enterprise-admin.md` | 8 |
-| `claude/plugins` | P2 | complete | `claude/plugins.md`, `claude/plugins.csv` | 12 |
+| `claude/plugins` | P2 | complete | `claude/plugins.md`, `claude/plugins.csv` | 14 |
 | `claude/settings-and-scopes` | P2 | complete | `claude/settings-and-scopes.md`, `claude/settings-keys.csv`, `claude/env-vars.csv` | 11 |
 | `claude/skills-and-subagents` | P2 | complete | `claude/skills-and-subagents.md`, `claude/skills-and-subagents.csv` | 3 |
+| `claude/large-codebases` | P3 | complete | `claude/large-codebases.md` | 3 |
 | `defender/machine-resource` | P1 | complete | `defender/machine-resource.md`, `defender/machine-properties.csv` | 9 |
 | `defender/mde-onboarding` | P1 | complete | `defender/mde-onboarding.md` | 23 |
 | `defender/permissions-limits` | P1 | complete | `defender/permissions-limits.md` | 6 |
@@ -226,7 +229,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `privacy/spacy-model-licence` | P0 | complete | `privacy/spacy-model-licence.md` | 5 |
 | `python/pytest` | P2 | complete | `python/pytest.md` | 6 |
 | `python/pytest-xdist` | P2 | complete | `python/pytest-xdist.md` | 3 |
-| `python/ruff` | P2 | complete | `python/ruff.md` | 8 |
+| `python/ruff` | P2 | complete | `python/ruff.md` | 10 |
 | `python/stdlib-sqlite3-csv` | P2 | complete | `python/stdlib-sqlite3-csv.md` | 3 |
 | `python/uv-projects` | P2 | complete | `python/uv-projects.md` | 11 |
 | `python/version-lifecycle` | P2 | complete | `python/version-lifecycle.md`, `python/version-lifecycle.csv` | 8 |
@@ -276,4 +279,5 @@ Every topic of this root with its priority (the research order, not importance),
 | `windows/windows-365` | P2 | complete | `windows/windows-365.md` | 19 |
 | `windows/windows-update-management` | P2 | complete | `windows/windows-update-management.md`, `windows/windows-update-management.csv` | 19 |
 | `windows/winget` | P2 | complete | `windows/winget.md`, `windows/winget-policies.csv` | 14 |
+| `windows/powershell-static-analysis` | P3 | complete | `windows/powershell-static-analysis.md` | 12 |
 <!-- coverage:end -->

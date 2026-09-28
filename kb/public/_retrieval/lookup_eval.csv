@@ -249,3 +249,8 @@ EV-set-up-dropbox-team-folder-sync,How do I set up Dropbox team folder sync?,,no
 EV-duo-authentication-windows-logon-handle-offline,How does Duo Authentication for Windows Logon handle offline access?,,none,
 EV-horizon-client-usb-redirection-policy,What is the Horizon Client USB redirection policy?,,none,
 EV-enable-sap-single-sign-kerberos,How do I enable SAP Single Sign-On with Kerberos?,,none,
+EV-list-go-module-packages-imports-json,how to list a Go module's packages and imports as JSON without downloading a toolchain,agents/codebase-mapping.md,good,
+EV-read-powershell-module-manifest-without-executing,read a PowerShell module manifest without executing it,windows/powershell-static-analysis.md,good,
+EV-keep-claude-code-reading-generated-vendored,keep Claude Code from reading generated and vendored code in a large monorepo,claude/large-codebases.md,good,
+EV-copilot-cursor-codex-aider-get-codebase,"how do Copilot, Cursor, Codex and Aider get codebase context without loading the whole repository",agents/coding-agent-codebase-context.md,good,
+EV-coding-agent-find-relevant-code-large,how does a coding agent find relevant code in a large repository without loading the whole codebase,agents/coding-agent-codebase-context.md;claude/large-codebases.md,good,yes

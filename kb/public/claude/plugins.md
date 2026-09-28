@@ -3,7 +3,7 @@ topic: claude/plugins
 priority: P2
 applies_to: "Claude Code 2.1.281 docs (retrieved 2026-09-26)"
 retrieved_utc: 2026-09-28
-sources: [S-n5myb3fn, S-3peuisvr, S-3xyywfcr, S-4m2kbuls, S-havfntgx, S-toe7z3kj, S-rp4dtt4w, S-gxuoqjzy, S-r3nam2zs, S-pelzabjq, S-i7if5i7z, S-lkcsn2fs]
+sources: [S-n5myb3fn, S-3peuisvr, S-3xyywfcr, S-4m2kbuls, S-havfntgx, S-toe7z3kj, S-rp4dtt4w, S-gxuoqjzy, S-r3nam2zs, S-pelzabjq, S-i7if5i7z, S-lkcsn2fs, S-cgtbvuug, S-3yod3u7q]
 status: complete
 files: [claude/plugins.csv]
 ---
@@ -85,6 +85,13 @@ allow/deny controls, and `claude/hooks.md` for hook event/field semantics that a
 - `claude plugin eval init` (optionally `--bare <case-name>` for a blank template) interactively proposes cases and graders and trials them; grader `type` is one of `regex`, `tool_used`, `tool_order`, `file_exists` (free, transcript/file based) or `llm`/`baseline` (judge-model calls, cost money); a `tool_used` grader for `tool: Skill` uses `input_match` against the namespaced `plugin:skill` invocation. [DOC S-lkcsn2fs]
 - Eval suite directory defaults to `evals/` under the plugin root; override via manifest `"experimental": {"evals": "quality/evals"}` or the `--eval-dir` flag (flag wins if both set); path must be relative, no `..`. [DOC S-lkcsn2fs]
 - Grants: a run allows only the read-only tools a case lists in its `allowed_tools` frontmatter, chosen from `Read`, `Glob`, `Grep`, `NotebookRead`, `Skill`, `AskUserQuestion`, `Agent`, `TodoWrite` and the task tools, plus whatever the run grants with `--allow-tools`; `Bash`/`Write`/`Edit`/`WebFetch`/`WebSearch` need an explicit `--allow-tools` grant on the run, and any granted `Bash` runs under the OS-level sandbox. [DOC S-lkcsn2fs]
+
+### Code intelligence (LSP) plugins
+- Anthropic's official marketplace has code intelligence plugins, one language server per plugin (among them `pyright-lsp`, `typescript-lsp`, `gopls-lsp`, `rust-analyzer-lsp`, `csharp-lsp`, `jdtls-lsp`, `clangd-lsp`), installed with `/plugin install <name>@claude-plugins-official`; the language server binary is installed separately. [DOC S-cgtbvuug]
+- A language with no official plugin is added by declaring its server in `.lsp.json` at a plugin root. [DOC S-cgtbvuug, S-i7if5i7z]
+- Claude Code reads a language server's stdout as protocol messages only (logs go to stderr) and accepts message headers up to 64 KiB and message bodies up to 32 MiB. [DOC S-i7if5i7z]
+- Claude Code returns an error result for each `LSP` tool call on a file whose language server it cannot start. [DOC S-3yod3u7q]
+- What the `LSP` tool gives Claude (diagnostics after edits, definitions, references, symbols, call hierarchies) and where it is inactive: `agents/codebase-mapping.md`. [DER S-cgtbvuug, S-3yod3u7q: pointer to the facts kept there]
 
 ## Reference
 | Key / thing | Where | Note |

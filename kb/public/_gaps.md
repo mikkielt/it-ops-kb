@@ -1051,3 +1051,23 @@ Still open: (topic: auth/configmgr-rbac-auth)
 ## claude/plugins
 
 - **CLAUDE_PLUGIN_DATA directory location plugin-dir inline** The kb was asked this in a logged lookup of 2026-09-28, and no article answered it (query log finding F-b3b7f7b7c766). Looked in the kb 2026-09-28: `rag.py pack` gives `good`, with this topic in the lead. Needs an official source that states it (`/kb-research`, or the query log's opt-in research). (topic: claude/plugins)
+
+## agents/codebase-mapping
+
+- **Machine-readable Gradle dependency output.** The Gradle 9.8.0 Viewing Dependencies page documents only the text tree of `gradle dependencies` (searched for "json" and "machine", 2026-09-28); a JSON map likely needs the Tooling API or a custom task, not read yet. (topic: agents/codebase-mapping)
+- **`go vet -json` output schema.** cmd/go at go1.27.1 documents the flag ("emit JSON output") but not the schema; the cmd/vet or `golang.org/x/tools/go/analysis/unitchecker` docs were not read (2026-09-28). (topic: agents/codebase-mapping)
+- **`npm ls --json` output shape.** The npm-ls page at v11.20.0 describes the tree but no JSON schema (2026-09-28). (topic: agents/codebase-mapping)
+- **TypeScript 7 native `tsc` and `--showConfig`/`--listFilesOnly`/`--explainFiles`.** The TypeScript website pages (commit 6556b08) are not versioned by release; whether the native 7.x compiler supports the same flags was not checked (2026-09-28). (topic: agents/codebase-mapping)
+- **Dev container `image` pinned by digest.** The devcontainer.json reference (spec @c95ffee) names a registry image but says nothing about `@sha256:` digests for `image`; only Features have digests in the lock file (2026-09-28). (topic: agents/codebase-mapping)
+- **Minimum SDK for `dotnet package list --vulnerable`.** The dotnet-package-list page ties "9.0.300" to `<AuditSources>` in a sentence that may or may not date the option itself (2026-09-28). (topic: agents/codebase-mapping)
+
+## windows/powershell-static-analysis
+
+- **Explicit statement that `Parser.ParseFile` does not run the script.** The Parser, ParseFile and ParseInput API pages describe parsing only; no sentence says in so many words that nothing executes (Learn, 2026-09-28). (topic: windows/powershell-static-analysis)
+- **Full `DiagnosticRecord` field list.** Invoke-ScriptAnalyzer and Using PSScriptAnalyzer show `RuleName`, `Severity`, `ScriptName`, `Line`, `Message` and `SuggestedCorrections` in examples, not a field reference (2026-09-28). (topic: windows/powershell-static-analysis)
+
+## agents/coding-agent-codebase-context
+
+- **Gemini CLI: just-in-time ancestor loading versus an eager subdirectory scan.** At v0.61.0 `docs/cli/gemini-md.md` describes GEMINI.md files loaded when a tool touches a directory (ancestors up to a trusted root), while `docs/reference/configuration.md` describes a scan below the working directory limited to 200 directories; which one current builds do, or both, was not settled from the docs (2026-09-28). (topic: agents/coding-agent-codebase-context)
+- **Cursor embeddings-based codebase indexing.** Older Cursor docs URLs for codebase indexing and semantic search now redirect to the Search page, which describes a local Instant Grep index with no stored embeddings; no current official page describes an embeddings index (checked cursor.com docs, security and data-use pages, 2026-09-28). (topic: agents/coding-agent-codebase-context)
+- **VS Code local workspace index size limits.** The workspace-context page (DateApproved 9/16/2026) states no file-count limits for a local index (2026-09-28). (topic: agents/coding-agent-codebase-context)

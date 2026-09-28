@@ -35,7 +35,7 @@ source with a fixed header line. This kb's `/kb-ingest` skill and `_tools/kbinge
 - GitLab, collapse generated files: https://docs.gitlab.com/user/project/merge_requests/changes/
 - git-check-attr(1): https://git-scm.com/docs/git-check-attr
 - Go generated-code header: https://pkg.go.dev/cmd/go#hdr-Generate_Go_files_by_processing_source
-- Related: `agents/docs-maintenance-agents.md` (agents that read code into documentation; git's union merge driver for machine-written data); `claude/plugins.md` (an installed plugin's copy is replaced on update, `${CLAUDE_PLUGIN_DATA}` persists).
+- Related: `agents/codebase-mapping.md` (after the file survey: toolchain pins and the language's own tools for imports, dependencies and symbols); `claude/large-codebases.md` (working on a codebase without loading it); `agents/docs-maintenance-agents.md` (agents that read code into documentation; git's union merge driver for machine-written data); `claude/plugins.md` (an installed plugin's copy is replaced on update, `${CLAUDE_PLUGIN_DATA}` persists).
 
 ## Examples
 - SNIPPET: `.gitattributes` lines that mark a generated client and a vendored library, and keep one lock file visible; context: a repository on GitLab or GitHub, attributes take effect once committed; checked: no [DER S-czqctq3z, S-rhxv4cuv: attribute names and the `-attr` form from both pages]

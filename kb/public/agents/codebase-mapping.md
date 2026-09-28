@@ -1,0 +1,151 @@
+---
+topic: agents/codebase-mapping
+priority: P3
+applies_to: "Python 3.14 stdlib; npm 11.20, Node.js 22/24, TypeScript website @6556b08; Go 1.27.1 (go.dev @f2661d9); rustup 1.29.1, Cargo @797e8a9; Maven compiler plugin 3.16.0, dependency plugin 3.11.0, Gradle 9.8.0; .NET SDK 7.0.200 to 10, MSBuild 17.8+; Universal Ctags 6.2.1; LSP 3.17/3.18; Tree-sitter 0.27.0; SCIP 0.10.0; Dev Container spec @c95ffee, asdf 0.20.2, mise 2026.9.16; Claude Code code intelligence plugins (retrieved 2026-09-28)"
+retrieved_utc: 2026-09-28
+sources: [S-ci5jq2sq, S-gcxnhiij, S-73jqrgsc, S-j7sjakc5, S-7e63teyx, S-4qptrwkx, S-p7etrhxc, S-73rwtmys, S-3cfiqwbl, S-dbslj57x, S-e2zwkzvw, S-za45gi6s, S-hbmr57xf, S-q3muwtlb, S-j645b5a2, S-3e3kl7vi, S-ff6may7t, S-st5dilla, S-ecfbexjo, S-me5pwvu4, S-5i5f44rp, S-hvxiebin, S-uwukziri, S-bwtnlzvy, S-orgevefw, S-qb643f4y, S-7cn5bcww, S-6ei7z5hd, S-cmdzei72, S-w5jn4cwh, S-2u4dktv3, S-f62n2ltd, S-ehcgsi7s, S-zihpu7lj, S-6fmskgi2, S-xmboehyd, S-mrtq3wwm, S-zr5edtyi, S-awr5xive, S-f3dxxlte, S-vpvmrtpz, S-lxrnlf4d, S-xdf63oro, S-3dlonliy, S-j2laoer5, S-43wwsm7t, S-cgtbvuug, S-3yod3u7q, S-4jj4dtg4, S-loh54u4h, S-cvfkrw4j, S-223vfyli, S-4xsjlwlt, S-d7lm5uzs, S-6k54ouks, S-3a7yfcq7, S-3zv32lrc, S-jixwe4dj, S-sqwzg5ex, S-pwf7njbf]
+status: complete
+---
+
+# Mapping a codebase deterministically: toolchain pins and the language's own tools
+
+## Summary
+An agent that maps a repository (to ingest it into a kb root, or to review a host project with the kb as a plugin)
+gets reproducible answers by asking the language's own toolchain rather than reading files: compilers, package
+managers and parsers print the resolved configuration, file lists, imports, dependencies and symbols, often as
+JSON. The first step is the repository's pins (interpreter, SDK, toolchain and package-manager versions), read as
+data; the second is tool-native output under flags that avoid network access, installs and code execution; the
+third, for languages without such output, is a cross-language indexer (Universal Ctags, Tree-sitter tags, SCIP) or a
+language server. The per-language cookbook is `agents/codebase-mapping.csv`; PowerShell has its own topic,
+`windows/powershell-static-analysis.md`.
+
+## Facts
+### Python
+- `ast.parse` turns source into an AST and is equivalent to `compile()` with the `PyCF_ONLY_AST` flag; `feature_version=(3, minor)` is a best-effort parse with an older grammar, from `(3, 7)` up to the running interpreter. [DOC S-ci5jq2sq]
+- `ast.parse` does no scoping checks (a successful parse does not prove the code compiles), and a sufficiently large or complex input can crash the interpreter through stack depth limits. [DOC S-ci5jq2sq]
+- `python -m ast [infile]` (3.9+) prints the `ast.dump` text of a file or of stdin; `python -m symtable` (3.13+) dumps the symbol tables, which the compiler builds from the AST to decide every identifier's scope. Neither prints JSON. [DOC S-ci5jq2sq, S-gcxnhiij]
+- `pyclbr` reads functions, classes and methods from Python source without importing the module, which its page calls safe for untrusted code; it cannot read modules not written in Python and takes a module name resolved on `sys.path`, not a file path. [DOC S-73jqrgsc]
+- `py_compile` compiles a file and writes the byte-code cache file, so it changes the tree it checks; its CLI compiles only the files named and exits non-zero if any fails. [DOC S-j7sjakc5]
+- `ast.parse` builds a tree and executes nothing, being `compile()` in AST-only mode; for an untrusted repository it is best run in a separate process because of the crash risk. [DER S-ci5jq2sq: the PyCF_ONLY_AST equivalence and the stack-depth warning]
+- `ruff analyze graph` prints a map from each Python file to the files it imports (or, with `--direction dependents`, the files that import it) as JSON with paths relative to the working directory; at ruff 0.16.9 it warns that it is experimental unless preview is on. Details: `python/ruff.md`. [CODE S-7e63teyx: crates/ruff/src/commands/analyze_graph.rs#analyze_graph]
+
+### Node.js and TypeScript
+- package.json `engines` is advisory: npm only warns, and only when the package is installed as a dependency, unless `engine-strict` is set. [DOC S-4qptrwkx]
+- package.json `devEngines` pins the tools used to develop the package itself, under the keys `cpu`, `os`, `libc`, `runtime` and `packageManager`, each with `name`, an optional `version` and `onFail` (`warn`, `error` or `ignore`). [DOC S-4qptrwkx]
+- The `"packageManager"` field (`"<name>@<version>"`) is marked Experimental in the Node.js 22 docs and takes effect only through Corepack, which reads it from the nearest package.json and must be enabled with `corepack enable`. [DOC S-hbmr57xf, S-za45gi6s]
+- The Node.js 24 docs state that Corepack will no longer be distributed starting with Node.js v25. [DOC S-e2zwkzvw]
+- `.nvmrc` holds exactly one nvm version string followed by a newline; `nvm use`, `nvm install` and `nvm which` look for it upward from the current directory and exit 127 when no version is given and none is found. [DOC S-q3muwtlb]
+- `npm ls` prints the logical dependency tree (from package dependencies, not the `node_modules` layout), only direct dependencies unless `--all`. [DOC S-p7etrhxc]
+- With `--package-lock-only`, `npm ls` builds its output from `package-lock.json` instead of `node_modules`, so it works without an install; `--json` prints JSON. [CODE S-dbslj57x: workspaces/config/lib/definitions/definitions.js#package-lock-only]
+- `npm query "<selector>"` selects dependencies with CSS-like selectors and returns a JSON array; with `--package-lock-only` fields from the dependencies' own package.json (description, homepage, engines) are absent, and `--expect-results` / `--expect-result-count` make it exit non-zero when the tree does not match. [DOC S-73rwtmys]
+- `npm pkg get <field>` reads package.json values by dot or bracket path and always returns JSON. [DOC S-3cfiqwbl]
+- `tsc --showConfig` prints the final configuration instead of building; `--listFilesOnly` prints the files in the compilation and stops; `--noEmit` writes no output files. [DOC S-j645b5a2]
+- `tsc` without input files searches for `tsconfig.json` from the current directory upward, and ignores `tsconfig.json` when files are named on the command line. [DOC S-3e3kl7vi]
+- In `extends`, the base configuration loads first and the inheriting file overrides it; relative paths resolve against the file they appear in, and `references` is the only top-level property not inherited. [DOC S-ff6may7t]
+- `tsc --showConfig` is therefore the way to get a TypeScript project's effective options after `extends`, instead of re-implementing the resolution. [DER S-j645b5a2, S-ff6may7t: showConfig prints the final configuration; extends layers files]
+
+### Go
+- The go.mod `go` line is the minimum Go version for the module; since Go 1.21 it is a mandatory requirement rather than advisory, and a toolchain refuses to load a module or workspace that requires a newer Go than itself. [DOC S-st5dilla]
+- A go.mod without a `go` line is treated as `go 1.16`, a go.work without one as `go 1.18`. [DOC S-st5dilla]
+- The `toolchain` line is a suggested toolchain, implied as `toolchain go<V>` from the `go` line when absent; it cannot be lower than the `go` version and has an effect only in the main module. [DOC S-st5dilla, S-ecfbexjo]
+- `GOTOOLCHAIN` is read from the environment, then the `go env -w` file, then `$GOROOT/go.env`, which sets `auto` in standard toolchains; `GOTOOLCHAIN=local` always runs the bundled toolchain, and the `<name>+path` form disables the download fallback. [DOC S-st5dilla]
+- `go mod edit -json` prints go.mod as JSON (including the `Go` and `Toolchain` fields) instead of writing it back. [DOC S-me5pwvu4]
+- `go list -json` prints each package's data as JSON (optionally only named fields): `ImportPath`, `Dir`, `GoFiles`, `Imports`, `Deps` (all recursive imports) and more, with file lists relative to `Dir`; `-deps` adds every dependency in depth-first post-order, `-e` keeps erroneous packages in the output instead of failing, and `-find` skips dependency resolution. [DOC S-me5pwvu4]
+- For tools, the cmd/go docs point to `go list -m -u -json all` to list modules as JSON (`Path`, `Version`, `Main`, `Indirect`, `Replace`, `GoVersion`); `-u` looks up available updates. [DOC S-me5pwvu4]
+- `go/parser` parses a file into an `ast.File` with no build step; the `ImportsOnly` mode stops after the imports, `SkipObjectResolution` is recommended, and `ParseDir` is deprecated because it ignores build tags. [DOC S-5i5f44rp]
+- Running `go` commands with `GOTOOLCHAIN=local` keeps a mapping run on the installed toolchain instead of switching to (and possibly downloading) the one the repository's go.mod asks for. [DER S-st5dilla: the local and auto semantics]
+
+### Rust
+- rustup picks the toolchain from, in order: `+toolchain` on the command line, `RUSTUP_TOOLCHAIN`, a directory override, `rust-toolchain.toml`, then the default toolchain; a toolchain file nearer the current directory beats a directory override further away. [DOC S-hvxiebin]
+- The toolchain file is `rust-toolchain.toml` or the legacy `rust-toolchain`, which wins when both exist; its `[toolchain]` section is mandatory, `channel` and `path` are mutually exclusive, and `components` and `targets` add to the profile and the host. [DOC S-hvxiebin]
+- Cargo.toml `rust-version` is a bare version (no semver operators) that Cargo respects since 1.56, reporting an error on an older toolchain; a missing `edition` means the 2015 edition. [DOC S-uwukziri, S-bwtnlzvy]
+- `cargo metadata --format-version 1` writes JSON about the workspace members and resolved dependencies; `1` is the only value, and new fields can appear within a format version. [DOC S-orgevefw]
+- `cargo metadata --no-deps` reports only the workspace members, fetches no dependencies and sets `resolve` to null; `--locked` fails if Cargo.lock is missing or would change and `--offline` blocks all network access. [DOC S-orgevefw]
+- `cargo tree` prints a text dependency tree (`(*)` marks a subtree shown elsewhere; `--prefix depth` gives a flat list); its options list no JSON output. [DOC S-qb643f4y]
+
+### Java
+- Maven sets javac's `--release` through the `maven.compiler.release` property or the compiler plugin's `<release>` parameter, available since plugin 3.6; without it, `source` and `target` default to `1.8` since plugin 3.11.0. [DOC S-7cn5bcww, S-6ei7z5hd]
+- Maven Toolchains has two parts: the `maven-toolchains-plugin` requirements in the POM and a `toolchains.xml` with the install paths, by default in `${user.home}/.m2`; a repository thus states the JDK it needs, not where one is. [DOC S-cmdzei72]
+- `mvn dependency:tree` writes text by default; `outputType` also accepts `dot`, `graphml`, `tgf` and `json` (since plugin 3.7.0), and `outputFile` writes to a file. [DOC S-w5jn4cwh]
+- A Gradle Java toolchain is declared with `java { toolchain { languageVersion = JavaLanguageVersion.of(<N>) } }`; Gradle auto-detects installed JDKs and downloads one only when detection fails and a toolchain download repository is configured, and only GA releases. [DOC S-2u4dktv3]
+- The Gradle version is pinned by `distributionUrl` in `gradle/wrapper/gradle-wrapper.properties`; `distributionSha256Sum` fails the build on a mismatch, checked only when the distribution is first downloaded. [DOC S-f62n2ltd]
+- Gradle's wrapper page warns that a pull request can replace the committed `gradle-wrapper.jar` with a malicious one. [DOC S-f62n2ltd]
+- `gradle dependencies` renders a text tree per configuration; the Viewing Dependencies page documents no machine-readable output. [DOC S-ehcgsi7s]
+
+### .NET
+- global.json `sdk.version` needs a full version (no wildcards or ranges); without `rollForward` the policy is `patch`, and without global.json the highest installed SDK is used; `disable` requires an exact match. [DOC S-zihpu7lj]
+- The .NET CLI searches for global.json from the current working directory, not the project directory, so the directory a command runs in selects the SDK. [DOC S-zihpu7lj]
+- global.json accepts JavaScript or C# style comments. [DOC S-zihpu7lj]
+- Microsoft advises `rollForward: disable` with package lock files, so the SDK and the dependency graph stay in step. [DOC S-zihpu7lj]
+- `dotnet sln list` lists a solution's projects and accepts `.sln`, `.slnx` or `.slnf`; since .NET 10 `dotnet new sln` creates `.slnx`. [DOC S-6fmskgi2]
+- `dotnet package list --format json` (the .NET 10 noun-first form of `dotnet list package`; `--format` from SDK 7.0.200) lists package references (`--output-version` pins the JSON schema, only `1` allowed), `--include-transitive` adds their dependencies, and from .NET 10 the command restores first when needed unless `--no-restore`. [DOC S-xmboehyd]
+- MSBuild 17.8 and later print evaluated values with `-getProperty`, `-getItem` and `-getTargetResult`, as JSON when several values or any item are requested; without `-target`, the first two only evaluate and build nothing. [DOC S-mrtq3wwm]
+- `TargetFramework` is only an alias that the SDK translates to `TargetFrameworkMoniker` and related properties. [DOC S-f3dxxlte]
+- Without `LangVersion`, the C# version follows the target framework (.NET 10: C# 14, .NET 8: C# 12, .NET Framework: C# 7.3); `LangVersion=default` means the compiler's latest major version, and Microsoft advises against `latest`. [DOC S-vpvmrtpz, S-lxrnlf4d]
+- Once `packages.lock.json` exists at a project root, restore always uses it; `--locked-mode` restores exactly what it lists or fails. [DOC S-zr5edtyi]
+- With Central Package Management, versions come from `<PackageVersion>` items in `Directory.Packages.props`, and MSBuild imports only the first such file found upward from each project. [DOC S-awr5xive]
+- A .NET project's effective framework and language version are read with `-getProperty:TargetFrameworkMoniker,LangVersion` rather than from the csproj text, since imports, aliases and TFM defaults decide them. [DER S-mrtq3wwm, S-f3dxxlte, S-vpvmrtpz: evaluation output versus the alias and the defaults]
+
+### Cross-language indexers and language servers
+- Universal Ctags writes JSON Lines with `--output-format=json` only when built with libjansson; each line's `_type` is `tag` or `ptag`, and the format is versioned (`JSON_OUTPUT_VERSION` 1.0) with a note that it can change. [DOC S-xdf63oro]
+- `ctags -R` recurses (the current directory when no file is given, following symbolic links by default); `--languages` limits the languages, `--fields` and `--extras` choose the fields, and the `r` extra adds reference tags. Options starting with `_` (e.g. `--_interactive`) are experimental. [DOC S-3dlonliy]
+- LSP 3.18 is the current specification and 3.17 the previous one. [DOC S-43wwsm7t, S-j2laoer5]
+- `textDocument/documentSymbol` returns either `DocumentSymbol[]` (a hierarchy) or `SymbolInformation[]` (a flat list, deprecated); servers should return `DocumentSymbol` where possible, and a client must not infer a hierarchy from a flat list. `SymbolKind` runs from 1 (File) to 26 (TypeParameter). [DOC S-j2laoer5]
+- `workspace/symbol` lists project-wide symbols matching a query, `textDocument/references` returns locations (with `includeDeclaration`), and call hierarchy takes two requests: `textDocument/prepareCallHierarchy`, then incoming or outgoing calls. [DOC S-j2laoer5]
+- Claude Code's code intelligence plugins connect it to a language server for one language; the server binary is installed separately. [DOC S-cgtbvuug]
+- With a code intelligence plugin, Claude gets the server's errors and warnings after each edit and a read-only `LSP` tool for definitions, references, type information, file and workspace symbols, implementations and call hierarchies. [DOC S-cgtbvuug, S-3yod3u7q]
+- The `LSP` tool stays inactive until a code intelligence plugin is installed, and in cloud sessions, where plugin language servers are not started. [DOC S-3yod3u7q]
+- Claude Code's docs recommend a code intelligence plugin in large codebases so Claude finds definitions and references without scanning the tree. [DOC S-4jj4dtg4]
+- Tree-sitter tag queries mark definitions and references with `@role.kind` captures plus an inner `@name` (e.g. `@definition.function`, `@reference.call`), kept in each grammar's `queries/tags.scm`. [DOC S-loh54u4h]
+- `tree-sitter tags [PATHS]` prints tags as a text table; its CLI page lists no JSON output. [DOC S-cvfkrw4j]
+- SCIP is a language-agnostic, Protobuf-based protocol for indexing source code (go to definition, find references), with indexers such as scip-typescript, scip-python, scip-java, scip-dotnet and rust-analyzer. [DOC S-3zv32lrc]
+- SCIP's design notes call it a transmission format, not a storage format for querying, and state that Sourcegraph's LSIF support is deprecated and removed. [DOC S-jixwe4dj]
+
+### Environment pins
+- devcontainer.json `image` names a registry image and `features` adds Dev Container Features; a Feature without a version gets `:latest` implicitly. [DOC S-223vfyli, S-4xsjlwlt]
+- `devcontainer-lock.json`, beside devcontainer.json, records each Feature's version and resolved digest; local Features are not recorded. [DOC S-d7lm5uzs]
+- asdf's `.tool-versions` lists one `<tool> <version>` per line and applies to its directory and every subdirectory; `ref:`, `path:` and `system` are also accepted. [DOC S-6k54ouks]
+- mise reads `.tool-versions` like its own `mise.toml`; reading idiomatic files such as `.nvmrc` is off by default and enabled per tool. [DOC S-3a7yfcq7]
+- Python's `.python-version` and `requires-python` are covered in `python/uv-projects.md`. [DOC S-sqwzg5ex, S-pwf7njbf]
+
+### How it fits an ingesting agent
+- A pin file is data an agent reads without the toolchain installed (JSON, TOML, XML, key=value), while tool-native mapping needs the pinned toolchain; recording the pins first tells the agent which toolchain the mapping commands must run under and lets it cite them at the pinned commit. [DER S-st5dilla, S-hvxiebin, S-zihpu7lj, S-4qptrwkx: each language's pin file and its selection rule]
+- Several mapping commands reach the network or run repository code unless told not to: `go` may switch toolchains, `dotnet package list` restores from .NET 10, `cargo metadata` fetches dependencies, Corepack downloads the pinned package manager, Gradle may download a JDK and runs its wrapper jar, PowerShell imports modules. The read-only forms are `GOTOOLCHAIN=local`, `--no-restore`, `--no-deps`/`--offline`/`--locked`, `npm ls --package-lock-only`, MSBuild `-getProperty` without `-target`, and the PowerShell parser. [DER S-st5dilla, S-xmboehyd, S-orgevefw, S-za45gi6s, S-2u4dktv3, S-f62n2ltd, S-mrtq3wwm, S-p7etrhxc: the side effects each page names and the flags that avoid them]
+- Output stability differs: `cargo metadata` (format version 1), `dotnet package list` (`--output-version 1`) and ctags JSON (1.0) are versioned but may add fields; `ruff analyze graph` is experimental; `tree-sitter tags`, `cargo tree` and `gradle dependencies` are text only. A consumer ignores unknown fields and records the tool version beside the output. [DER S-orgevefw, S-xmboehyd, S-xdf63oro, S-7e63teyx, S-cvfkrw4j, S-qb643f4y, S-ehcgsi7s: the stability statements of each page]
+
+## Reference
+- Cookbook, one row per language: `agents/codebase-mapping.csv`.
+- Go toolchains: https://go.dev/doc/toolchain; cmd/go: https://pkg.go.dev/cmd/go
+- cargo metadata: https://doc.rust-lang.org/cargo/commands/cargo-metadata.html; rustup overrides: https://rust-lang.github.io/rustup/overrides.html
+- global.json: https://learn.microsoft.com/en-us/dotnet/core/tools/global-json; MSBuild evaluation: https://learn.microsoft.com/en-us/visualstudio/msbuild/evaluate-items-and-properties
+- Universal Ctags JSON: https://docs.ctags.io/en/latest/man/ctags-json-output.5.html
+- LSP 3.18: https://microsoft.github.io/language-server-protocol/specifications/lsp/3.18/specification/
+- Claude Code code intelligence: https://code.claude.com/docs/en/plugins/code-intelligence
+- Related: `agents/repository-ingestion.md` (which files to leave out, pinned urls); `windows/powershell-static-analysis.md`; `python/uv-projects.md`, `python/ruff.md`; `claude/plugins.md` (`lspServers`); `agents/agent-overuse-patterns.md` (code navigation is a symbol-table lookup, not an agent task).
+
+## Examples
+- SNIPPET: read a Go module's pins and package graph without switching toolchains; context: Go 1.21+, run at the module root; checked: no [DOC S-me5pwvu4, S-st5dilla: go mod edit -json, go list flags, GOTOOLCHAIN=local]
+```sh
+GOTOOLCHAIN=local go mod edit -json
+GOTOOLCHAIN=local go list -e -json=ImportPath,Dir,GoFiles,Imports ./...
+```
+- SNIPPET: Rust workspace members and targets without fetching dependencies; context: Cargo with a committed Cargo.lock; checked: no [DOC S-orgevefw]
+```sh
+cargo metadata --format-version 1 --no-deps --locked --offline
+```
+- SNIPPET: a .NET project's evaluated framework, language version and package references as JSON; context: MSBuild 17.8+ (.NET 8 SDK or later), SDK 7.0.200+ for `--format json`, .NET 10 SDK for the noun-first `dotnet package list` (`dotnet list package` before); checked: no [DOC S-mrtq3wwm, S-xmboehyd]
+```sh
+dotnet msbuild ./src/Example/Example.csproj -getProperty:TargetFrameworkMoniker,LangVersion,Nullable -getItem:PackageReference
+cd ./src/Example
+dotnet package list --format json --include-transitive --no-restore
+```
+- SNIPPET: Node dependency tree from the lockfile only, and a TypeScript project's effective config; context: npm 7+ lockfile, TypeScript installed; checked: no [DOC S-p7etrhxc, S-j645b5a2; CODE S-dbslj57x: workspaces/config/lib/definitions/definitions.js#package-lock-only]
+```sh
+npm ls --all --json --package-lock-only
+npx tsc --showConfig
+npx tsc --listFilesOnly
+```
+- SNIPPET: definitions and references of a mixed-language tree as JSON Lines; context: Universal Ctags built with libjansson; checked: no [DOC S-xdf63oro, S-3dlonliy]
+```sh
+ctags -R --output-format=json --extras=+r -f tags.jsonl .
+```
