@@ -1410,9 +1410,9 @@ def s_redaction(b):
 
 RESEARCH_ENTRY = {  # a judged miss the kb's LAPS article leads for but does not answer (the e2e fixture's `gap` lookup)
     "id": "66666666-0000-4000-8000-000000000001", "surface": "prompt", "day": "2026-09-28", "tools": ["kb_pack"],
-    "question": "Can Windows LAPS back up the password of a Windows Server 2012 R2 member server to Azure?",
+    "question": "Can Windows LAPS back up the password of a Windows Server 2016 member server to Azure?",
     "verdict": "weak", "articles": ["public/windows/laps.md"],
-    "summary": "The kb does not say whether Windows Server 2012 R2 is supported.", "judged": "missed"}
+    "summary": "The kb does not say whether Windows Server 2016 is supported.", "judged": "missed"}
 
 
 def s_research(b):

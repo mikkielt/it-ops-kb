@@ -1,15 +1,17 @@
-"""The query log's research and quote check (kb/_self/querylog.md, Research), and the add-only writers apply's gap step
-shares with it. Research is opt-in per user, capped by the user's own daily count: one `claude -p` run per gap
-finding at stage `gap`, whose candidate facts are kept only when deterministic gates pass and their quote is on the
-page; nothing existing is edited.
+"""The query log's research and quote check (kb/_self/querylog.md, Research), the add-only writers apply's gap step
+shares with it, and the research queue. Research is opt-in per user, capped by the user's own daily count: one
+`claude -p` run per gap finding at stage `gap`, whose candidate facts are kept only when deterministic gates pass and
+their quote is on the page; nothing existing is edited. The queue (`queue`, `close`) lists the open gap findings with
+their _gaps.md entries for `/kb-research --queue`, and records what that research settled or tried.
 """
-import collections, csv, io, json, re
+import collections, csv, datetime, io, json, re
 from pathlib import Path
 from urllib.parse import urlsplit
 
-from ql_base import (DISABLED_NAME, HOME, Replay, claude_p, one_line, places, read_json, read_mode, read_research,
-                     restore, write_text)
-from ql_store import HOSTNAME, PRIVATE_TLDS, QUESTION_MAX_CHARS
+from ql_base import (DISABLED_NAME, HOME, STORE, Replay, claude_p, one_line, places, read_json, read_mode,
+                     read_research, restore, run_cmd, write_text)
+from ql_store import (APPLY_FAILED, CLOSED_STAGE, HOSTNAME, LEARN_STATES, PRIVATE_TLDS, QUESTION_MAX_CHARS,
+                      closed_gaps, finding_states, reopened_problems, store_entries, write_findings)
 
 QUOTE_MAX_WORDS = 25  # the longest quote the kb's rules allow (kbcommon.QUOTE_WORDS, kb/_self/content-rules.md)
 QUOTE_MIN_WORDS = 5  # a shorter quote is found on almost any page and backs nothing
@@ -463,3 +465,199 @@ def research_one(g, entry, gate, research, day):
         return record("applied", "claim", observed,
                       to_fact + [{"from": "candidate-fact", "to": "claim", "by": "research"}])
     return record("applied", "candidate-fact", observed, to_fact)
+
+
+# ---------------------------------------------------------------- the research queue
+
+QUEUE_TRIED_DAYS = 30  # a gap whose newest tried note is younger than this many days stays out of the queue
+OPEN_GAP_STAGES = ("gap", "candidate-fact")  # a gap finding whose _gaps.md entry no source settled yet
+NOTE = re.compile(r"\s+- (Resolved|Superseded|Partly resolved|Tried) (\d{4}-\d{2}-\d{2})\b")
+SETTLED = ("Resolved", "Superseded")  # the notes that close an entry; `Tried` and `Partly resolved` leave it open
+TOPIC_MARK = re.compile(r"\s*\(topic: [^)]*\)\s*$")
+
+
+def head_day(cwd=HOME):
+    """The UTC day of HEAD's commit, the day a tried note's age is counted to: the same in every clone at one
+    commit. Today (UTC) when git cannot say."""
+    code, o, _ = run_cmd(["git", "log", "-1", "--format=%ct", "HEAD"], cwd=cwd, timeout=30)
+    t = int(o.strip()) if code == 0 and o.strip().isdigit() else None
+    when = datetime.datetime.fromtimestamp(t, datetime.timezone.utc) if t else datetime.datetime.now(
+        datetime.timezone.utc)
+    return when.date().isoformat()
+
+
+def shown(path):
+    """A path as the queue prints it: relative to the repository when it is inside it."""
+    try:
+        return Path(path).resolve().relative_to(HOME.resolve()).as_posix()
+    except ValueError:
+        return Path(path).as_posix()
+
+
+def entry_block(lines, fid):
+    """(index, end) of the top-level bullet of a _gaps.md text (as lines) that names finding `fid`, `end` being the
+    index after its indented lines; None when no entry names it."""
+    rx = re.compile(rf"\b{re.escape(fid)}\b")
+    for i, ln in enumerate(lines):
+        if ln.startswith("- ") and rx.search(ln):
+            end = i + 1
+            while end < len(lines) and lines[end][:1] in (" ", "\t") and lines[end].strip():
+                end += 1
+            return i, end
+    return None
+
+
+def ledger_entry(gate, g):
+    """(the _gaps.md path, the entry's line number, [(note word, day)] of the dated notes under it) of a gap finding's
+    entry in its article's root, or None when the ledger holds no entry naming it."""
+    path = gate.ledger(g["article"], "_gaps.md")
+    lines = path.read_text(encoding="utf-8").split("\n") if path.is_file() else []
+    at = entry_block(lines, g["id"])
+    if at is None:
+        return None
+    notes = [(m.group(1), m.group(2)) for m in (NOTE.match(ln) for ln in lines[at[0] + 1:at[1]]) if m]
+    return path, at[0] + 1, notes
+
+
+def settled(notes):
+    return any(word in SETTLED for word, _ in notes)
+
+
+def open_gaps(store, last):
+    """The gap findings still open, in id order: at a stage before claim with an article, not recorded fixed-since or
+    apply-failed, and never closed."""
+    closed = closed_gaps(store)
+    return sorted((r for r in last.values() if r.get("kind") == "gap" and r.get("stage") in OPEN_GAP_STAGES
+                   and r.get("article") and r.get("state") not in ("fixed-since", APPLY_FAILED)
+                   and r["id"] not in closed), key=lambda r: r["id"])
+
+
+def asked_key(q):
+    return " ".join(str(q).casefold().split())
+
+
+def queue(store=None, limit=None, gate=None, day=None, kb_commit=None, out=print):
+    """`queue [N]`: the open gap findings of `store` (default kb/_querylog, the committed store) with their _gaps.md
+    entries, each re-run with pack first: one that passes now gets a `fixed-since` record (one findings file) and
+    leaves the queue. An entry whose newest tried note is younger than QUEUE_TRIED_DAYS on `day` (default: HEAD's
+    day) waits; an entry a Resolved note closed without its claim record is named, not queued. The rest are one item
+    per question (every gap finding that asked it, with its entry), ranked by the logged lookups that asked it, then by
+    the oldest lookup, then by finding id; the top `limit` items (all when None) are printed grouped by topic. 1 when a
+    closed gap reappears (a later record, or its entry without a Resolved note), else 0."""
+    from ql_apply import Gate  # imported here: ql_apply imports this module
+    from ql_learn import passes
+    store = Path(store or STORE)
+    gate = gate or Gate()
+    day = day or head_day()
+    entries = store_entries(store)
+    by_entry = {e["id"]: e for _, e in entries}
+    asked = collections.Counter(asked_key(e["question"]) for _, e in entries if isinstance(e.get("question"), str))
+    last = finding_states(store)
+    problems = reopened_problems(store)
+    for fid in sorted(closed_gaps(store)):
+        g = last.get(fid) or {}
+        loc = ledger_entry(gate, g) if g.get("stage") == CLOSED_STAGE and g.get("article") else None
+        if loc and not settled(loc[2]):
+            problems.append(f"{fid}: closed at {CLOSED_STAGE}, but its entry {shown(loc[0])}:{loc[1]} has no "
+                            f"Resolved note")
+    items, fixed, waiting, unclosed = {}, [], [], []
+    for g in open_gaps(store, last):
+        e = by_entry.get(g.get("entry")) or {}
+        loc = ledger_entry(gate, g) if isinstance(e.get("question"), str) else None
+        if loc is None:
+            continue
+        path, line, notes = loc
+        where = f"{shown(path)}:{line}"
+        if settled(notes):
+            unclosed.append((g["id"], where))
+            continue
+        res = gate.pack(e["question"])
+        if passes(res, None):
+            fixed.append({**{k: v for k, v in g.items() if k != "observed"}, "state": "fixed-since",
+                          "observed": {"verdict": res.get("verdict"), "paths": list(res.get("paths") or [])[:4]}})
+            continue
+        tried = max((d for word, d in notes if word not in SETTLED), default=None)
+        if tried:
+            back = datetime.date.fromisoformat(tried) + datetime.timedelta(days=QUEUE_TRIED_DAYS)
+            if datetime.date.fromisoformat(day) < back:
+                waiting.append((g["id"], tried, back.isoformat()))
+                continue
+        key = asked_key(e["question"])
+        if key not in items:  # one queue item per question; each lookup that missed it wrote its own finding
+            items[key] = {"question": one_line(e["question"], QUESTION_MAX_CHARS), "topic": gate.topic(g["article"]),
+                          "asked": asked[key], "since": e.get("day") or "", "gaps": []}
+        item = items[key]
+        item["since"] = min(item["since"], e.get("day") or "") or item["since"]
+        item["gaps"].append((g["id"], where))
+    if fixed:
+        write_findings(store, entries, fixed, LEARN_STATES, kb_commit)
+    ranked = sorted(items.values(), key=lambda i: (-i["asked"], i["since"], i["gaps"][0][0]))
+    top = ranked[:limit] if limit else ranked
+    out(f"queue: gaps={sum(len(i['gaps']) for i in ranked) + len(waiting) + len(fixed) + len(unclosed)} "
+        f"queued={len(ranked)} listed={len(top)} waiting={len(waiting)} fixed-since={len(fixed)} day={day}")
+    n = 0
+    for t in dict.fromkeys(i["topic"] for i in top):
+        out(f"topic {t}")
+        for i in (i for i in top if i["topic"] == t):
+            n += 1
+            out(f"  {n}. asked={i['asked']} since={i['since']}")
+            out(f"     question: {i['question']}")
+            for fid, where in i["gaps"]:
+                out(f"     {fid} {where}")
+    for fid, tried, back in waiting:
+        out(f"waiting {fid}: tried {tried}, back in the queue {back}")
+    for g in fixed:
+        out(f"fixed-since {g['id']}: pack answers it on HEAD ({g['observed']['verdict']}); recorded")
+    for fid, where in unclosed:
+        out(f"resolved {fid}: {where} has a Resolved note; record it with `querylog.py close {fid} --claim`")
+    for p in problems:
+        out(f"problem: {p}")
+    return 1 if problems else 0
+
+
+def close(fid, claim=False, tried=None, store=None, gate=None, day=None, kb_commit=None, out=print):
+    """`close F-ID --claim|--tried NOTE`: one findings record for an open gap finding worked by `/kb-research`.
+    --claim: its _gaps.md entry must carry a `Resolved <day>:` note (the content rules), and the finding is promoted
+    to claim (by kb-research, `applied`). --tried: the dated note `  - Tried <day>: NOTE (topic: ...)` goes under the
+    entry, and the record carries `tried` (the day). 0; 1 refused (not an open gap, no entry, no Resolved note for
+    --claim, a resolved entry or an empty note for --tried)."""
+    from ql_apply import Gate  # imported here: ql_apply imports this module
+    store = Path(store or STORE)
+    gate = gate or Gate()
+    day = day or datetime.datetime.now(datetime.timezone.utc).date().isoformat()
+    last = finding_states(store)
+    g = last.get(fid)
+    if not g or g not in open_gaps(store, last):
+        out(f"close: {fid} is no open gap finding of {shown(store)}")
+        return 1
+    loc = ledger_entry(gate, g)
+    if loc is None:
+        out(f"close: no _gaps.md entry names {fid}")
+        return 1
+    path, line, notes = loc
+    where = f"{shown(path)}:{line}"
+    keep = {k: v for k, v in g.items() if k != "observed"}
+    if claim:
+        if not settled(notes):
+            out(f"close: {where} has no `Resolved <date>:` note under it; close the entry by the content rules first")
+            return 1
+        rec = {**keep, "state": "applied", "stage": CLOSED_STAGE,
+               "promotions": [*(g.get("promotions") or []),
+                              {"from": g["stage"], "to": CLOSED_STAGE, "by": "kb-research"}],
+               "observed": {"entry": where}}
+    else:
+        note = TOPIC_MARK.sub("", one_line(tried or "", 1000)).strip()
+        if not note:
+            out("close: --tried needs a note of what was tried and what it still needs")
+            return 1
+        if settled(notes):
+            out(f"close: {where} has a Resolved note; record it with --claim")
+            return 1
+        lines = path.read_text(encoding="utf-8").split("\n")
+        _, end = entry_block(lines, fid)
+        lines[end:end] = [f"  - Tried {day}: {note} (topic: {gate.topic(g['article'])})"]
+        write_text(path, "\n".join(lines))
+        rec = {**keep, "tried": day, "observed": {"entry": where}}
+    run_id, _ = write_findings(store, store_entries(store), [rec], ("applied",), kb_commit)
+    out(f"close: {fid} {CLOSED_STAGE if claim else 'tried ' + day} run={run_id}")
+    return 0

@@ -76,6 +76,20 @@ the ql_*.py modules beside it.
                         does not. In a cloud session (CLAUDE_CODE_REMOTE=true) the push goes to the branch the clone
                         has checked out, the only one its git proxy takes. Exit 0 (pushed, nothing to push, CI
                         pending, conflict branch pushed), 1 a step failed, 2 refused, 3 the lock
+  querylog.py queue [N] [--store DIR]
+                        the research queue for `/kb-research --queue` (default: the committed store kb/_querylog): each
+                        open gap finding with its _gaps.md entry re-run with pack on HEAD first, one that passes now
+                        recorded `fixed-since` (one findings file) and left out; an entry whose newest `Tried` note is
+                        younger than QUEUE_TRIED_DAYS on HEAD's commit day waits; the rest one item per question,
+                        ranked by the logged lookups that asked it, then the oldest lookup, and the top N printed by
+                        topic with the question and each of its finding ids with its entry's path:line. The same store
+                        and HEAD print the same lines in any clone. Exit 0, 1 when a closed gap reappears (a later
+                        record after its claim, or its entry without a Resolved note)
+  querylog.py close F-ID [F-ID ...] (--claim | --tried NOTE) [--store DIR]
+                        records what `/kb-research --queue` did with the gap findings of one queue item: --claim once
+                        each _gaps.md entry carries a `Resolved <date>:` note (gap -> claim, by kb-research); --tried
+                        writes the note `Tried <date>: NOTE` under each entry and records the day. One findings file
+                        per finding; no older file is edited. Exit 0, 1 when one was refused
   querylog.py check [DIR]  the store gates over DIR (default kb/_querylog): header and provenance fields, entry fields,
                         identifiers, fetch entries, duplicate ids and the findings files; one line per problem, exit 1
                         when there is any
@@ -98,7 +112,8 @@ the ql_*.py modules beside it.
 
 Modules: ql_base.py (places, config, the lock, commands), ql_capture.py (the capture hook and `record`, which
 kb_hook.py, kb_ask.py, fetch.py and census.py call), ql_distill.py (distill and the launcher), ql_store.py (run and
-findings files, and the store gates), ql_learn.py, ql_apply.py, ql_research.py (research and the quote check),
+findings files, and the store gates), ql_learn.py, ql_apply.py, ql_research.py (research, the quote check and the
+research queue),
 ql_deliver.py (apply --push, plugin hosts, cloud sessions) and ql_report.py (digest and status).
 
 Where (querylog.md, Spool and Configuration): in a clone `_cache/querylog/spool/<session_id>.jsonl` (rows without a
@@ -191,6 +206,23 @@ def main(argv=None):
         ok, why = ql_research.quotecheck(a.url, a.quote, ql_research.page_file(a.page, a.ctype) if a.page else None)
         print(f"quotecheck: {why}")
         return 0 if ok else 1
+    if argv[:1] == ["queue"]:
+        ap = argparse.ArgumentParser(prog="querylog.py queue")
+        ap.add_argument("n", nargs="?", type=int, help="list the top N gaps (default: all)")
+        ap.add_argument("--store", help="the store to read and record in (default: kb/_querylog, the committed store)")
+        a = ap.parse_args(argv[1:])
+        import ql_research
+        return ql_research.queue(a.store, a.n if a.n and a.n > 0 else None)
+    if argv[:1] == ["close"]:
+        ap = argparse.ArgumentParser(prog="querylog.py close")
+        ap.add_argument("finding", nargs="+", help="the gap findings' ids (F-<12 hex>) of one queue item")
+        how = ap.add_mutually_exclusive_group(required=True)
+        how.add_argument("--claim", action="store_true", help="its _gaps.md entry is resolved: promote it to claim")
+        how.add_argument("--tried", metavar="NOTE", help="not settled: add the dated note NOTE under its entry")
+        ap.add_argument("--store", help="the store to record in (default: kb/_querylog, the committed store)")
+        a = ap.parse_args(argv[1:])
+        import ql_research
+        return max(ql_research.close(f, claim=a.claim, tried=a.tried, store=a.store) for f in a.finding)
     if argv[:1] == ["digest"]:
         ap = argparse.ArgumentParser(prog="querylog.py digest")
         ap.add_argument("--store", help="the store to read (default: kb/_querylog, the committed store)")

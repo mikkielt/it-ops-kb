@@ -31,7 +31,7 @@ The routing is also deterministic: `.claude/hooks/kb_change_router.py`, a UserPr
 | skill | does | reads |
 |---|---|---|
 | `/kb-setup` | the setup above, with a pass/fail report | this file |
-| `/kb-research <question>` | research a question in the context of the topics the kb has, then extend them | content rules, tools, git |
+| `/kb-research <question>` / `--queue [N]` | research a question in the context of the topics the kb has, then extend them; `--queue` works the top N gaps of `querylog.py queue` the same way and closes each `_gaps.md` entry (`querylog.py close`) | content rules, tools, git, query log |
 | `/kb-add-topic <domain>/<slug>` | research and write a new topic | content rules, tools, git |
 | `/kb-add-root <name>` | a new knowledge root beside `kb/public` (name, id prefix, visibility), created with `kbroot.py` and checked | content rules, git |
 | `/kb-ingest <repo> [root]` | a team's repository into a root, from this clone ("source `<repo>` and put it here") or from a host project where the kb is a plugin (the facts land in a clone of the team's fork, or a `KB_ROOTS` directory): the root and its visibility, a survey at a pushed commit with `kbingest.py` (secrets, generated and vendored files left out), a topic plan agreed with the user, then `CODE` and `DOC` facts | content rules, plugin, git |

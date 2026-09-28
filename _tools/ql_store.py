@@ -48,11 +48,12 @@ APPLY_STATES = ("applied", "rejected", "no-fix")  # fix written / fix failed its
 APPLY_FAILED = "apply-failed"  # its automatic commit turned CI red and was reverted (apply --push)
 FINDING_STATES = LEARN_STATES + APPLY_STATES + (APPLY_FAILED,)
 STAGES = ("miss", "candidate-gap", "gap", "candidate-fact", "claim")
-PROMOTERS = ("learn", "apply", "research")
+PROMOTERS = ("learn", "apply", "research", "kb-research")  # kb-research: a person's `/kb-research --queue` run
 SIGNALS = ("stage", "route")  # a host that needs staging, a fetch by a tool its route avoids
 FINDING_ID = re.compile(r"F-[0-9a-f]{12}")
-FINDING_KEYS = ("id", "kind", "state", "stage", "promotions", "entry", "expect", "article", "terms", "signal", "host",
-                "level", "needs", "triggers", "tool", "route", "observed")
+FINDING_KEYS = ("id", "kind", "state", "stage", "promotions", "entry", "expect", "article", "terms", "tried", "signal",
+                "host", "level", "needs", "triggers", "tool", "route", "observed")
+CLOSED_STAGE = "claim"  # a gap finding at this stage is closed: its _gaps.md entry is resolved
 
 
 # ---------------------------------------------------------------- reading
@@ -371,11 +372,35 @@ def findings_problems(store, k=None):
             out.append(f"{rel}:{hn}: counts.findings is {h['counts'].get('findings')}, the file has {len(recs)}")
         for n, r in recs:
             out += record_problems(r, f"{rel}:{n}", ids, k)
+    out += reopened_problems(store)
     last = finding_states(store)
     fixed = {r.get("entry") for r in last.values() if r.get("kind") in FIX_KINDS and r.get("state") == "applied"}
     for r in last.values():
         if r.get("kind") == "eval" and r.get("state") == "applied" and r.get("entry") not in fixed:
             out.append(f"findings: eval finding {r.get('id')} is applied without its fix")
+    return out
+
+
+def closed_gaps(store):
+    """The ids of the gap findings a record of the store's findings files put at CLOSED_STAGE."""
+    return {rec["id"] for _, objs in records(findings_files(store)) for _, rec in objs
+            if rec.get("kind") == "gap" and rec.get("stage") == CLOSED_STAGE and isinstance(rec.get("id"), str)}
+
+
+def reopened_problems(store):
+    """A gap finding closed at CLOSED_STAGE whose later record puts it at another stage: a closed gap reappears."""
+    closed, out = set(), []
+    for p, objs in records(findings_files(store)):
+        rel = p.relative_to(store).as_posix()
+        for n, rec in objs:
+            fid = rec.get("id")
+            if rec.get("kind") != "gap" or not isinstance(fid, str):
+                continue
+            if rec.get("stage") == CLOSED_STAGE:
+                closed.add(fid)
+            elif fid in closed:
+                out.append(f"{rel}:{n}: gap finding {fid} was closed at {CLOSED_STAGE} and reappears at stage "
+                           f"{rec.get('stage')}")
     return out
 
 
@@ -418,6 +443,8 @@ def record_problems(r, where, ids, k):
             out.append(f"{where}: promotions do not follow each other")
         elif chain[-1] != r.get("stage") and r.get("stage") in STAGES:
             out.append(f"{where}: stage {r.get('stage')} is not its last promotion's {chain[-1]}")
+    if "tried" in r and not (r.get("kind") == "gap" and isinstance(r["tried"], str) and DAY.fullmatch(r["tried"])):
+        out.append(f"{where}: `tried` is not the day of a gap finding's tried note: {r['tried']!r:.40}")
     if r.get("kind") == "gap" and r.get("stage") in STAGES[2:] and not ARTICLE.fullmatch(str(r.get("article", ""))):
         out.append(f"{where}: a gap finding at stage {r.get('stage')} names no article")
     return out

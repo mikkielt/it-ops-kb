@@ -8,7 +8,7 @@ from pathlib import Path
 
 from ql_base import HOME, places
 from ql_capture import host_path
-from ql_store import FETCH_KEYS, LEARN_STATES, finding_id, finding_states, store_entries, write_findings
+from ql_store import FETCH_KEYS, LEARN_STATES, STAGES, finding_id, finding_states, store_entries, write_findings
 
 WEB_SOURCES = HOME / "kb" / "_self" / "web-sources.md"
 ROUTE_HOST = re.compile(r"(?:[a-z0-9-]+\.)+[a-z]{2,}")
@@ -245,6 +245,13 @@ def _key(rec):
     return {k: v for k, v in rec.items() if k != "observed"}
 
 
+def later_stage(prev, rec):
+    """Whether a finding's last record is at a later stage than the one learn derives for it (a gap the research
+    queue recorded `fixed-since` at stage gap): learn leaves such a finding as it is."""
+    at = {s: i for i, s in enumerate(STAGES)}
+    return at.get(prev.get("stage"), 0) > at.get(rec.get("stage"), 0)
+
+
 def learn(store=None, pack=None, kb_commit=None, registry=None, routes=None, counts=None, out=print):
     """One learn over `store` (default: the local store beside the spool): every judged miss re-run with `pack` on
     HEAD, the source findings, then one findings file holding only the records that change a finding's state. 0."""
@@ -265,7 +272,8 @@ def learn(store=None, pack=None, kb_commit=None, registry=None, routes=None, cou
     new = []
     for fid, rec in derived.items():
         prev = last.get(fid)
-        if prev is None or (prev.get("state") in LEARN_STATES and _key(prev) != _key(rec)):
+        if prev is None or (prev.get("state") in LEARN_STATES and not later_stage(prev, rec)
+                            and _key(prev) != _key(rec)):
             new.append(rec)
     for fid, prev in last.items():  # an open finding learn no longer derives: the kb at HEAD handles it now
         if fid not in derived and prev.get("state") == "open":

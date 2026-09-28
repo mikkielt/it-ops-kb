@@ -53,6 +53,7 @@ What a fact, an article, a source row and a ledger entry look like, and how to a
 ## Ledgers and retrieval data
 
 - Failed lookups go in `_gaps.md`, disagreements in `_conflicts.md`. Each new entry ends with `(topic: <domain>/<slug>)` so `rag.py audit` links it to its article (`check.py` rejects a marker naming no topic).
+- A later note on a `_gaps.md` entry is an indented bullet under it, starting with its word and date: `  - Resolved <date>: ...` (or `Superseded`) closes the entry, `  - Tried <date>: ...` (or `Partly resolved`) records what was tried and leaves it open; the query log's research queue reads these (`kb/_self/querylog.md`, The research queue).
 - Retrieval data in `_tools/` (CSV writer, one row per line):
   - a topic about code with distinctive names (classes, API routes, libraries, scopes) gets `signals.csv` rows (`signal,topic`) for `topics-for`;
   - a product known by other names gets `aliases.csv` rows (`term,canonical`, term lowercase);

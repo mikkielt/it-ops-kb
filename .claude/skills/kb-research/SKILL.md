@@ -1,16 +1,24 @@
 ---
 name: kb-research
-description: Use when the user asks to research, investigate or compare something for it-ops-kb, or to extend what the kb says about a subject: maps existing topics and gaps first, researches only what is missing from official sources, extends topics, records a tagged answer.
-argument-hint: "<question or subject, optionally with the angle, e.g. 'X and how agents can use it'>"
+description: Use when the user asks to research, investigate or compare something for it-ops-kb, or to extend what the kb says about a subject, or to work the query log's gaps (--queue): maps existing topics and gaps first, researches only what is missing from official sources, extends topics, records a tagged answer.
+argument-hint: "<question or subject, optionally with the angle, e.g. 'X and how agents can use it'> | --queue [N]"
 ---
 
 # Research within the kb's context
 
-Question: $ARGUMENTS. If it is empty or too broad to answer in one pass, ask for the angle before starting.
+Question: $ARGUMENTS. If it is empty or too broad to answer in one pass, ask for the angle before starting. `--queue [N]` works the query log's gaps instead (next section).
 
 Read `kb/_self/maintaining.md` first, then the `kb/_self/` files this skill relies on: `kb/_self/content-rules.md` (what to write), `kb/_self/tools.md` (the commands) and `kb/_self/git.md` (commits and pushes). `AGENTS.md` covers lookups only.
 
 Run each command on its own (no `;`, `&&`, pipes into other tools or loops): the shared permission rules match single commands, so a chained command asks for approval or is refused in a headless run.
+
+## The query log's queue (`--queue [N]`)
+- `python3 _tools/querylog.py queue N` (default 1): the open gap findings of `kb/_querylog`, each re-run with `pack` first (one that passes now is recorded `fixed-since` and left out), by topic, most-asked first. Each gap prints its question, its `_gaps.md` entry (`path:line`) and its finding id (`F-...`). Nothing listed: say so and stop.
+- Each gap is one question: run steps 1 to 6 below on it, within its topic (the entry's `(topic: ...)`).
+- Then close its `_gaps.md` entry by the content rules and record it (`kb/_self/querylog.md`, the research queue):
+  - settled: a `  - Resolved <date>: <what settles it, with source ids> (topic: <domain>/<slug>)` line under the entry, then `python3 _tools/querylog.py close F-... --claim`;
+  - not settled by official sources: `python3 _tools/querylog.py close F-... --tried "<what was tried, where, and what it still needs>"`, which writes the dated `Tried` note under the entry; the gap stays out of the queue until the note is older than `QUEUE_TRIED_DAYS`.
+- `python3 _tools/querylog.py check` must print `problems=0`. The report lists each gap's finding id and how it closed.
 
 ## 1. Map what the kb already knows (before any web search)
 - Split the question into its subjects and angles (e.g. product, sync/integration, use by agents, security).

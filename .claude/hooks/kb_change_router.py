@@ -5,7 +5,7 @@ Registered in .claude/settings.json only, so it runs in a clone of this reposito
 plugin ships only kb_hook.py: a host cannot change the kb). The change skills are model-invocable; this hook makes the
 routing deterministic instead of relying on the model to match a skill description.
 
-  a prompt with a change verb (add, update, fix, refresh, research, commit, push, ...)
+  a prompt with a change verb (add, update, fix, refresh, research, commit, push, ..., or "work the query log")
                   -> additional context naming the likely skill(s) from the prompt's words, then the one-line routing
                      for any change; the model decides (a question that only uses such a word can ignore it)
   kb: / kb+: prompts, slash commands, a single question, prompts without a change verb, and messages from the
@@ -20,7 +20,8 @@ SELF = "kb/_self"  # the kb's own docs
 
 CHANGE = re.compile(r"\b(?:add|create|write|update|edit|change|modify|fix|correct|remove|delete|rename|move|refactor|"
                     r"implement|improve|extend|replace|commit|push|sync|merge|rebase|refresh|re-?verify|research|"
-                    r"investigate|census|verify|bump|upgrade|set ?up|install|ingest|import|put)\b", re.I)
+                    r"investigate|census|verify|bump|upgrade|set ?up|install|ingest|import|put)\b|"
+                    r"\bwork (?:through )?(?:the )?query[ -]?log", re.I)
 QUESTION = re.compile(r"(?:how|what|why|when|where|which|who|does|do|did|is|are|was|can|could|should|would)\b[^\n]*\?\s*$",
                       re.I | re.S)  # a single question ("how do I fix error X?") is a lookup, not a change request
 HARNESS = re.compile(r"[<\[]|Another Claude session sent a message")  # a subagent's report or a task notification,
@@ -35,7 +36,8 @@ ROUTES = (  # (skill, when, pattern): the first three that match are named, in t
     ("kb-add-topic", "a new topic, article or data table", r"\bnew (?:topic|article|domain|table)\b|"
      r"\b(?:add|write|create) (?:a |an )?(?:new )?(?:topic|article|domain|table)\b"),
     ("kb-probe", "measure a documentation provider's change signals", r"\bprobe\b|\bproviders?\b"),
-    ("kb-research", "research a question and extend the topics", r"\bresearch|\binvestigat|\bfind out\b"),
+    ("kb-research", "research a question and extend the topics; `--queue [N]` for the query log's gaps",
+     r"\bresearch|\binvestigat|\bfind out\b|\bquery[ -]?log'?s?\b[^.\n]*\b(?:gaps?|queue)\b"),
     ("kb-git-sync", "commit, push, pull, merge", r"\bcommit\b|\bpush|\bpull\b|\bsync\b|\brebase\b|\bmerg|\bconflict"),
     ("kb-verify", "check a change before committing", r"\bverify\b|\bgate\b|\blint\b|\bbefore (?:the |a )?commit"),
     ("kb-setup", "a fresh clone", r"\bset ?up\b|\bfresh clone\b|\binstall (?:the )?hooks?\b"),

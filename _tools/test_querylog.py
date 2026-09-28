@@ -90,6 +90,13 @@
   TestGapStep      a reproduced gap candidate with an article in the pack's lead becomes a dated _gaps.md entry at
                     the end of its topic's section (or a new section), once, the finding promoted candidate-gap ->
                     gap; off the kb's domains, a lead no article holds, or a pass now: it stays a candidate
+  TestQueue         the research queue on the gap step's entries (two topics): one item per question, ranked by the
+                    logged lookups that asked it, then by age, grouped by topic, the top N; two copies of one store print the
+                    same queue; a gap the pack answers now is recorded `fixed-since` and leaves it (learn leaves that
+                    record); a second queue after `close --claim` omits the closed gap and changes nothing; planted: a
+                    later record reopening a closed gap (check and queue fail), a closed gap whose entry lost its
+                    Resolved note, `--claim` without one; a tried note younger than QUEUE_TRIED_DAYS waits and an
+                    older one is queued; the close records pass `check`; close refuses what is no open gap
   TestQuoteCheck    quotecheck on a recorded page: entities, no-break spaces, curly quotes, links and emphasis
                     normalized; planted: a quote not on its page, page chrome, over 25 or under 5 words, a page that
                     cannot be fetched; the default fetcher is fetch.py's; the command line
@@ -2847,14 +2854,15 @@ def root_files(d):
 
 
 def gap_store(tmp_path, extra=()):
-    """The fixture store after one learn in which only a4 (and the `extra` entries, copies of a4 with other ids)
-    still fail: open gap candidates, the evals fixed since."""
+    """The fixture store after one learn in which only a4 (and the `extra` entries, copies of a4 with other ids, each
+    `n` or `(n, question, day)`) still fail: open gap candidates, the evals fixed since."""
     store = learn_store(tmp_path)
     (p,) = ql_store.run_files(store)
     objs = jsonl(p)
     a4 = next(o for o in objs if o.get("id") == E("a4"))
-    for n in extra:
-        objs.append({**a4, "id": E(n), "question": f"{a4['question']} ({n})"})
+    for x in extra:
+        n, q, day = (x, None, None) if isinstance(x, str) else x
+        objs.append({**a4, "id": E(n), "question": q or f"{a4['question']} ({n})", "day": day or a4["day"]})
     objs[0]["counts"]["entries"] = len(objs) - 1
     p.write_text("".join(json.dumps(o, separators=(",", ":")) + "\n" for o in objs), encoding="utf-8", newline="\n")
     run_learn(store, lambda q: failing(q) if "VMware" in q else passing(q))
@@ -2925,6 +2933,178 @@ class TestGapStep:
         assert ql_research.add_under("# T\n\n## a/b\n", "a/b", "- x") == "# T\n\n## a/b\n\n- x\n"
         assert ql_research.add_under("# T\n\n## a/b\n\n- y\n\n\n## c/d\n\n- z\n", "a/b", "- x") == \
             "# T\n\n## a/b\n\n- y\n- x\n\n\n## c/d\n\n- z\n"
+
+
+GMSA = "public/windows/gmsa.md"
+VMWARE_Q = "How do I configure VMware Horizon instant clone pools?"  # a4's question
+LATER = "2026-10-28"  # QUEUE_TRIED_DAYS after DAY
+
+
+class TwoTopicGate(KbGate):
+    """KbGate with a second article: a question naming gMSA leads with windows/gmsa, any other with windows/laps."""
+
+    def pack(self, question):
+        if self.res.get("verdict") == "good":
+            return self.res
+        return {"verdict": "weak", "paths": [GMSA if "gMSA" in question else LAPS], "missing": []}
+
+    def article_of(self, path):
+        return path if path in (LAPS, GMSA) else None
+
+    def topic(self, article):
+        return {LAPS: "windows/laps", GMSA: "windows/gmsa"}[article]
+
+
+def queued(tmp_path, extra=()):
+    """(root, store, gate): the gap store after the gap step wrote its _gaps.md entries in a one-article root."""
+    root = kb_root(tmp_path / "root")
+    store = gap_store(tmp_path, extra)
+    gate = TwoTopicGate(root)
+    run_gap_apply(store, gate)
+    return root, store, gate
+
+
+def run_queue(store, gate, limit=None, day=DAY):
+    said = []
+    rc = ql_research.queue(store, limit, gate=gate, day=day, kb_commit="0" * 40, out=said.append)
+    return rc, said
+
+
+def run_close(store, gate, fid, **kw):
+    said = []
+    rc = ql_research.close(fid, store=store, gate=gate, day=DAY, kb_commit="0" * 40, out=said.append, **kw)
+    return rc, said
+
+
+def resolve(root, fid, note="the vendor's page states it (S100)"):
+    """The _gaps.md entry of `fid` closed by the content rules: a `Resolved <day>:` note under it."""
+    p = root / "_gaps.md"
+    lines = p.read_text(encoding="utf-8").split("\n")
+    _, end = ql_research.entry_block(lines, fid)
+    lines[end:end] = [f"  - Resolved {DAY}: {note}. (topic: windows/laps)"]
+    p.write_text("\n".join(lines), encoding="utf-8", newline="\n")
+
+
+def listed(said):
+    """The finding ids a queue printed, in order."""
+    return re.findall(r"^     (F-[0-9a-f]{12}) ", "\n".join(said), re.M)
+
+
+class TestQueue:
+    def test_ranked_by_lookups_then_age_and_grouped_by_topic(self, tmp_path):
+        _, store, gate = queued(tmp_path, extra=(("d1", VMWARE_Q, None),  # asked twice with a4
+                                                 ("d2", "Can VMware Horizon run as a gMSA?", "2026-09-20"),  # older
+                                                 ("d3", "VMware Horizon pool sizes?", None)))
+        gap = {n: ql_store.finding_id("gap", E(n)) for n in ("a4", "d1", "d2", "d3")}
+        rc, said = run_queue(store, gate)
+        assert rc == 0 and said[0].startswith("queue: gaps=4 queued=3 listed=3 waiting=0 fixed-since=0"), said
+        # one item per question: a4 and d1 asked the same one; grouped by topic, laps (d3 too), then gmsa (d2)
+        assert listed(said) == sorted([gap["a4"], gap["d1"]]) + [gap["d3"], gap["d2"]]
+        assert [s for s in said if s.startswith("topic ")] == ["topic windows/laps", "topic windows/gmsa"]
+        first = said.index("  1. asked=2 since=2026-09-27")
+        assert said[first + 1] == f"     question: {VMWARE_Q}"
+        assert re.fullmatch(rf"     {sorted([gap['a4'], gap['d1']])[0]} .*_gaps\.md:\d+", said[first + 2])
+        rc, top = run_queue(store, gate, limit=2)  # the top two by rank: the question asked twice, then the oldest
+        assert listed(top) == sorted([gap["a4"], gap["d1"]]) + [gap["d2"]]
+        assert "listed=2" in top[0] and top.count("topic windows/gmsa") == 1
+
+    def test_the_same_store_and_head_give_the_same_queue(self, tmp_path):
+        _, store, gate = queued(tmp_path, extra=("d1",))
+        other = tmp_path / "copy"
+        shutil.copytree(store, other)
+        assert run_queue(store, gate) == run_queue(other, gate) and tree(store) == tree(other)
+
+    def test_a_gap_that_passes_now_is_recorded_fixed_since(self, tmp_path):
+        root, store, gate = queued(tmp_path, extra=("d1",))
+        gate.res = {"verdict": "good", "paths": [LAPS], "missing": []}
+        rc, said = run_queue(store, gate)
+        assert rc == 0 and "queued=0" in said[0] and "fixed-since=2" in said[0], said
+        recs = findings(store)[-1][1]
+        assert {r["state"] for r in recs} == {"fixed-since"} and {r["stage"] for r in recs} == {"gap"}
+        assert ql_store.store_problems(store) == []
+        gate.res = {}  # the kb fails it again: it stays fixed-since, learn leaves it
+        before = tree(store)
+        assert run_queue(store, gate)[1][0].startswith("queue: gaps=0 ")
+        rc, said = run_learn(store, lambda q: failing(q) if "VMware" in q else passing(q))
+        assert said[0].startswith("learn: nothing new") and tree(store) == before, said
+
+    def test_a_second_queue_after_a_closing_run_omits_the_closed_gap(self, tmp_path):
+        root, store, gate = queued(tmp_path, extra=("d1",))
+        fid = listed(run_queue(store, gate)[1])[0]
+        assert run_close(store, gate, fid, claim=True) == (1, [
+            f"close: {root.as_posix()}/_gaps.md:{ql_research.ledger_entry(gate, by_id(store)[fid])[1]} has no "
+            "`Resolved <date>:` note under it; close the entry by the content rules first"])
+        resolve(root, fid)
+        rc, said = run_close(store, gate, fid, claim=True)
+        assert rc == 0 and said[0].startswith(f"close: {fid} claim run="), said
+        rec = by_id(store)[fid]
+        assert (rec["state"], rec["stage"], rec["promotions"][-1]) == (
+            "applied", "claim", {"from": "gap", "to": "claim", "by": "kb-research"})
+        assert querylog.main(["check", str(store)]) == 0
+        rc, again = run_queue(store, gate)
+        assert rc == 0 and fid not in "\n".join(again) and len(listed(again)) == 1
+        before = tree(store), root_files(root)
+        assert run_queue(store, gate) == (rc, again) and (tree(store), root_files(root)) == before  # converges
+        assert run_close(store, gate, fid, claim=True)[0] == 1  # closed: no second record
+
+    def test_a_planted_closed_gap_that_reappears_fails(self, tmp_path):
+        root, store, gate = queued(tmp_path)
+        fid = listed(run_queue(store, gate)[1])[0]
+        resolve(root, fid)
+        run_close(store, gate, fid, claim=True)
+        entries = ql_store.store_entries(store)
+        back = {**by_id(store)[fid], "stage": "gap", "promotions": by_id(store)[fid]["promotions"][:2]}
+        ql_store.write_findings(store, entries, [back], ("applied",), "0" * 40)  # a later record reopens it
+        assert any("reappears at stage gap" in p for p in ql_store.store_problems(store))
+        rc, said = run_queue(store, gate)
+        assert rc == 1 and listed(said) == [] and any("reappears at stage gap" in s for s in said), said
+
+    def test_a_closed_gap_whose_entry_reopens_fails(self, tmp_path):
+        root, store, gate = queued(tmp_path)
+        fid = listed(run_queue(store, gate)[1])[0]
+        text = (root / "_gaps.md").read_text(encoding="utf-8")
+        _, line, _ = ql_research.ledger_entry(gate, by_id(store)[fid])
+        resolve(root, fid)
+        run_close(store, gate, fid, claim=True)
+        assert run_queue(store, gate)[0] == 0
+        (root / "_gaps.md").write_text(text, encoding="utf-8", newline="\n")  # the Resolved note is gone
+        rc, said = run_queue(store, gate)
+        assert rc == 1 and said[-1] == (f"problem: {fid}: closed at claim, but its entry {root.as_posix()}/_gaps.md:"
+                                        f"{line} has no Resolved note"), said
+
+    def test_a_recent_tried_note_waits_and_an_old_one_is_queued(self, tmp_path):
+        root, store, gate = queued(tmp_path)
+        fid = listed(run_queue(store, gate)[1])[0]
+        assert run_close(store, gate, fid, tried="   ")[0] == 1
+        rc, said = run_close(store, gate, fid, tried="Searched the vendor docs; no page states it. (topic: x/y)")
+        assert rc == 0 and said[0].startswith(f"close: {fid} tried {DAY} run="), said
+        lines = (root / "_gaps.md").read_text(encoding="utf-8").split("\n")
+        i, end = ql_research.entry_block(lines, fid)
+        assert lines[end - 1] == f"  - Tried {DAY}: Searched the vendor docs; no page states it. (topic: windows/laps)"
+        assert by_id(store)[fid]["tried"] == DAY and querylog.main(["check", str(store)]) == 0
+        day_before = (datetime.date.fromisoformat(LATER) - datetime.timedelta(days=1)).isoformat()
+        rc, said = run_queue(store, gate, day=day_before)
+        assert listed(said) == [] and f"waiting {fid}: tried {DAY}, back in the queue {LATER}" in said, said
+        assert listed(run_queue(store, gate, day=LATER)[1]) == [fid]
+
+    def test_close_refuses_what_is_no_open_gap(self, tmp_path):
+        root, store, gate = queued(tmp_path)
+        assert run_close(store, gate, "F-000000000000", claim=True)[0] == 1
+        other = next(r["id"] for r in by_id(store).values() if r["kind"] == "eval")
+        assert run_close(store, gate, other, tried="x")[0] == 1
+        (root / "_gaps.md").write_text(GAPS_MD, encoding="utf-8", newline="\n")  # the entry is gone
+        fid = next(r["id"] for r in by_id(store).values() if r["kind"] == "gap")
+        assert run_close(store, gate, fid, tried="x") == (1, [f"close: no _gaps.md entry names {fid}"])
+
+    def test_cli(self, tmp_path):
+        store = learn_store(tmp_path)
+        out = subprocess.run([sys.executable, QL, "queue", "2", "--store", str(store)], capture_output=True, text=True,
+                             encoding="utf-8", cwd=KB, env=querylog_env(tmp_path / "data"))
+        assert out.returncode == 0 and out.stdout.startswith("queue: gaps=0 "), out.stdout + out.stderr
+        out = subprocess.run([sys.executable, QL, "close", "F-000000000000", "--claim", "--store", str(store)],
+                             capture_output=True, text=True, encoding="utf-8", cwd=KB,
+                             env=querylog_env(tmp_path / "data"))
+        assert out.returncode == 1 and "no open gap finding" in out.stdout, out.stdout + out.stderr
 
 
 class TestQuoteCheck:
@@ -3187,7 +3367,7 @@ class TestResearch:
         assert kbgit.canon_csv(appended, True) != appended
 
 
-LAPS_GAP_Q ="Can Windows LAPS back up the password of a Windows Server 2012 R2 member server to Azure?"
+LAPS_GAP_Q ="Can Windows LAPS back up the password of a Windows Server 2016 member server to Azure?"
 
 
 @pytest.fixture(scope="module")

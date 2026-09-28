@@ -36,10 +36,10 @@
       "haiku": {"judged": "partly", "best": "public/windows/laps.md", "identifying": false}
     },
     "gap": {
-      "asked": "Can Windows LAPS back up the password of a Windows Server 2012 R2 member server to Azure?",
-      "prompt": "Can Windows LAPS back up the password of a Windows Server 2012 R2 member server to Azure?",
+      "asked": "Can Windows LAPS back up the password of a Windows Server 2016 member server to Azure?",
+      "prompt": "Can Windows LAPS back up the password of a Windows Server 2016 member server to Azure?",
       "calls": [
-        {"tool": "mcp__kb__kb_pack", "input": {"question": "Can Windows LAPS back up the password of a Windows Server 2012 R2 member server to Azure?"}, "response": [{"type": "text", "text": "coverage: weak (best article matches 4 of 6 key words: backup, laps, server, windows)\n\n## public/windows/laps.md  Windows LAPS\n- public/windows/laps.md:18 Windows LAPS backs up the password to Microsoft Entra ID or Active Directory. (no tag)\n"}]}
+        {"tool": "mcp__kb__kb_pack", "input": {"question": "Can Windows LAPS back up the password of a Windows Server 2016 member server to Azure?"}, "response": [{"type": "text", "text": "coverage: weak (best article matches 4 of 6 key words: backup, laps, server, windows)\n\n## public/windows/laps.md  Windows LAPS\n- public/windows/laps.md:18 Windows LAPS backs up the password to Microsoft Entra ID or Active Directory. (no tag)\n"}]}
       ],
       "answer": "The kb does not say whether Windows Server 2012 R2 is supported.",
       "haiku": {"judged": "missed", "best": null, "identifying": false}
