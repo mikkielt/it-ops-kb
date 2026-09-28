@@ -2,7 +2,7 @@
   "id": "ST-r4jcj3fn",
   "kind": "story",
   "title": "Learn: a weak pack the judge found answered is not a miss",
-  "status": "todo",
+  "status": "done",
   "parent": "EP-mzzucemv",
   "sprint": "SP-z7a5c76b",
   "priority": "P1",
@@ -39,5 +39,39 @@
     "kb/_self/querylog.md",
     "F-27b9b6ccd368",
     "kb/public/_gaps.md"
-  ]
+  ],
+  "evidence": {
+    "commit": "7eaa1cafa1ed2fabc20e5450c0df781a144deb4e",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "TestLearn"
+        ],
+        "exit": 0,
+        "sha256": "3ad3902a453004ae"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/querylog.py",
+          "queue",
+          "20"
+        ],
+        "exit": 0,
+        "sha256": "3e291088060bca9f"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/querylog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "ca69e22a961e6b9a"
+      }
+    ]
+  }
 }

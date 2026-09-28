@@ -2,7 +2,7 @@
   "id": "ST-pbonxqx4",
   "kind": "story",
   "title": "Direct push on the real origin",
-  "status": "todo",
+  "status": "done",
   "parent": "EP-mzzucemv",
   "sprint": "SP-z7a5c76b",
   "priority": "P1",
@@ -56,5 +56,31 @@
       "by": "operator"
     }
   ],
-  "notes": "The direct-push half is proven by the KB-Auto commits already on origin/main. For the conflict: prepare a finding whose apply edits a ledger line, then commit a different edit of the same line on origin/main before apply --push runs, so kbgit.py sync exits 3 (kb/_self/querylog.md, Delivery)."
+  "notes": "The direct-push half is proven by the KB-Auto commits already on origin/main. For the conflict: prepare a finding whose apply edits a ledger line, then commit a different edit of the same line on origin/main before apply --push runs, so kbgit.py sync exits 3 (kb/_self/querylog.md, Delivery).",
+  "evidence": {
+    "commit": "da0bc12aaaf8598fd13685bb063a4486bfdb2d4b",
+    "checks": [
+      {
+        "run": [
+          "git",
+          "log",
+          "origin/main",
+          "-n",
+          "500",
+          "--format=%(trailers:key=KB-Auto,valueonly)"
+        ],
+        "exit": 0,
+        "sha256": "b33dbfe88a6b7f50"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/querylog.py",
+          "status"
+        ],
+        "exit": 0,
+        "sha256": "4649b1d5103c8e93"
+      }
+    ]
+  }
 }
