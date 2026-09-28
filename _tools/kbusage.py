@@ -5,7 +5,7 @@ only; no model and no network.
   kbusage.py TRANSCRIPT [--prompt PROMPT_ID]   the usage record of each prompt of a transcript (or of one), as JSON
                                                lines: the numbers the query log's sidecar keeps, nothing else
 
-prompt_usage(transcript_path, prompt_id) is what the query log's Stop capture calls: a dict of counts, tool groups and
+prompt_usage(transcript_path, prompt_id) is what the query log's distill calls: a dict of counts, tool groups and
 model ids, or None when the transcript cannot be read or holds no request of the prompt.
 """
 import argparse, json, os, re, sys

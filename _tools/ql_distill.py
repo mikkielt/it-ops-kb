@@ -1,8 +1,9 @@
 """The query log's distill (kb/_self/querylog.md, Spool and Distill): the closed sessions of the spool become one run
 file in the local store. Per lookup the question the kb was asked (never the prompt) after the rules and the leak
 scan, the path:line citations of the kb lines it returned (never the reply), and Haiku's judgement in capped batches;
-no text of Haiku's is stored. The `usage` rows of the written entries become the run's usage sidecar. Also the
-SessionEnd and SessionStart launcher that starts a detached distill.
+no text of Haiku's is stored. Started by SessionEnd with the session's transcript, distill first writes a `usage` row
+per kb prompt of that session (kbusage.prompt_usage), and the usage rows of the written entries become the run's usage
+sidecar. Also the SessionEnd and SessionStart launcher that starts a detached distill.
 
 Distill reads every row format capture has written (ROW_FORMAT, format 0 for a row without `v`) and skips and counts a
 row it cannot read.
@@ -14,7 +15,7 @@ import kbusage
 import ql_store as store_
 from ql_base import (ENTRY, HOME, LOCK_NAME, LOCK_STALE_S, acquire, claude_p, iso, json_lines, lock_age,
                      logging_off, one_line, places, plugin_data, read_json, read_mode, release, run_cmd, write_text)
-from ql_capture import ROW_FORMAT, SAFE_SESSION, TAGS, VERDICTS, pack_lines
+from ql_capture import ROW_FORMAT, SAFE_SESSION, TAGS, VERDICTS, add_usage, pack_lines
 from ql_store import (ARTICLE, CITATION, CITATIONS_MAX, ENTRY_KEYS, JUDGED, NAME, OUTCOME, QUESTION_MAX_CHARS,
                       ROW_SURFACES, SKIPPED_KEY, URL_PATH, public_host)
 
@@ -27,6 +28,8 @@ HAIKU_TEXT_MAX_CHARS = 1500
 LAUNCH_BUDGET_S = 0.5
 LAUNCH_SETTLE_S = 2
 SESSION_IDLE_CLOSED_S = 86400
+USAGE_LOCK_WAIT_S = 600  # a distill started with a transcript waits this long for the lock
+USAGE_LOCK_POLL_S = 2
 LOG_NAME = "distill.log"
 LOG_MAX_BYTES = 1_000_000  # the launcher starts a fresh log above it
 CALLS_NAME = "haiku-calls.json"  # {"day", "calls"}: the Haiku calls this machine made today
@@ -367,12 +370,13 @@ def judged(r):
 # ---------------------------------------------------------------- the run
 
 def distill(qdir=None, cfg=None, haiku=None, now_dt=None, run_id=None, kb_commit=None, settle=0.0, out=print,
-            deliver=None):
+            deliver=None, usage_from=None):
     """One distill: 0 done (or nothing to do, or logging off), 1 when the push of mode `auto` failed, 3 when another
     distill holds the lock. Mode `auto` keeps the spool rows of the entries it writes and then runs
     `deliver(qdir, out)` under the same lock (default: the push of `apply --push`, from the clone, or in a plugin
     host from its managed clone), which deletes them once their run file is on origin/main; mode `local` deletes
-    them at once."""
+    them at once. `usage_from` (session id, transcript path): the `usage` rows of that session are written first
+    (add_usage), waiting up to USAGE_LOCK_WAIT_S for the lock."""
     d, c = places()
     qdir, cfg = Path(qdir or d), Path(cfg or c)
     mode = read_mode(cfg)
@@ -390,12 +394,21 @@ def distill(qdir=None, cfg=None, haiku=None, now_dt=None, run_id=None, kb_commit
     if mode != "auto":
         deliver = None
     lock = acquire(qdir)
+    waited = 0.0
+    while lock is None and usage_from and waited < USAGE_LOCK_WAIT_S:
+        time.sleep(USAGE_LOCK_POLL_S)
+        waited += USAGE_LOCK_POLL_S
+        lock = acquire(qdir)
     if lock is None:
         out("distill: another distill holds the lock")
         return 3
     try:
         if settle:
             time.sleep(settle)
+        if usage_from:
+            n = add_usage(qdir / "spool", *usage_from)
+            if n:
+                out(f"distill: usage rows written: {n}")
         now_dt = now_dt or datetime.datetime.now(datetime.timezone.utc)
         rc = _distill(qdir, haiku or claude_haiku, now_dt, run_id, kb_commit, out, keep=deliver is not None)
         if deliver is not None:
@@ -623,7 +636,9 @@ def detach(argv, log):
 
 def launch(event):
     """The PID of the distill a SessionEnd or SessionStart event starts, or None. SessionEnd first marks its session
-    closed. Nothing starts when logging is off, nothing is ready, or a distill holds a fresh lock."""
+    closed; when the session has a spool file and the event names its transcript, the distill it starts gets the
+    session id and the transcript path (`--session`, `--transcript`) and waits for the lock. Otherwise nothing starts
+    when logging is off, nothing is ready, or a distill holds a fresh lock."""
     if not isinstance(event, dict) or event.get("hook_event_name") not in ("SessionEnd", "SessionStart"):
         return None
     qdir, cfg = places()
@@ -631,12 +646,16 @@ def launch(event):
         return None
     spool = qdir / "spool"
     sid = event.get("session_id")
+    argv = [sys.executable, str(ENTRY), "distill", "--settle", str(LAUNCH_SETTLE_S)]
     if event["hook_event_name"] == "SessionEnd" and isinstance(sid, str) and SAFE_SESSION.fullmatch(sid) \
             and (spool / f"{sid}.jsonl").exists():
         (spool / f"{sid}.end").touch()
+        transcript = event.get("transcript_path")
+        if isinstance(transcript, str) and transcript:
+            return detach(argv + ["--session", sid, "--transcript", transcript], qdir / LOG_NAME)
     if not ready(spool, time.time()):
         return None
     age = lock_age(qdir / LOCK_NAME)
     if age is not None and age < LOCK_STALE_S:
         return None
-    return detach([sys.executable, str(ENTRY), "distill", "--settle", str(LAUNCH_SETTLE_S)], qdir / LOG_NAME)
+    return detach(argv, qdir / LOG_NAME)

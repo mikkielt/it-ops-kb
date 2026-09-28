@@ -8,9 +8,10 @@ the ql_*.py modules beside it.
                         most one row to the spool; prints nothing and exits 0 whatever happens (a logging hook must
                         never get in the way of a prompt)
   querylog.py launch    the SessionEnd and SessionStart hook: marks the ended session closed, then starts a detached
-                        `distill --settle LAUNCH_SETTLE_S` when a closed session waits and no distill holds the lock;
-                        prints nothing and exits 0
-  querylog.py distill [--replay FILE] [--settle S]
+                        `distill --settle LAUNCH_SETTLE_S` when a closed session waits and no distill holds the lock
+                        (SessionEnd with the session's transcript: always, with --session and --transcript); prints
+                        nothing and exits 0
+  querylog.py distill [--replay FILE] [--settle S] [--session ID --transcript PATH]
                         the closed sessions of the spool -> one run file in the local store (the `store` directory
                         beside the spool, laid out as kb/_querylog/): per lookup the question the kb was asked (never
                         the prompt) after the rules and the leak scan, the path:line citations of the kb lines it
@@ -21,8 +22,10 @@ the ql_*.py modules beside it.
                         clone, or in a plugin host from its managed clone) deletes those of dropped entries only, then
                         runs `apply --push` under the same lock, which deletes the others once their run file is on
                         origin/main. --replay answers the Haiku calls from a recorded reply file ({"replies": [...]})
-                        instead of `claude -p`. Exit 0 done (or nothing to do), 1 the push of mode `auto` failed, 3
-                        another distill holds the lock
+                        instead of `claude -p`. --session and --transcript first write a `usage` row (token counts
+                        read from the transcript, never text or the path) for each kb prompt of that session, waiting
+                        for the lock. Exit 0 done (or nothing to do), 1 the push of mode `auto` failed, 3 another
+                        distill holds the lock
   querylog.py learn [--store DIR]
                         the store's run files and the kb at HEAD -> findings (default: the local store): every judged
                         miss re-run with pack first (`fixed-since` when it now passes), then eval, alias, expansion,
@@ -250,9 +253,14 @@ def main(argv=None):
         ap = argparse.ArgumentParser(prog="querylog.py distill")
         ap.add_argument("--replay", help="answer the Haiku calls from this recorded reply file")
         ap.add_argument("--settle", type=float, default=0.0, help="seconds to wait after taking the lock")
+        ap.add_argument("--session", help="the session whose usage rows are written first (with --transcript)")
+        ap.add_argument("--transcript", help="that session's transcript, read for its kb prompts' token usage")
         a = ap.parse_args(argv[1:])
+        if bool(a.session) != bool(a.transcript):
+            ap.error("--session and --transcript go together")
         import ql_base, ql_distill
-        return ql_distill.distill(haiku=ql_base.Replay(a.replay) if a.replay else None, settle=a.settle)
+        return ql_distill.distill(haiku=ql_base.Replay(a.replay) if a.replay else None, settle=a.settle,
+                                  usage_from=(a.session, a.transcript) if a.session else None)
     if argv in (["-h"], ["--help"]):
         print(__doc__.strip())
         return 0

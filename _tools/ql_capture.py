@@ -9,7 +9,7 @@ import datetime, functools, json, re, sys, threading, time, uuid
 from pathlib import Path
 from urllib.parse import urlsplit
 
-from ql_base import DISABLED_NAME, HOME, logging_off, now, places, read_mode
+from ql_base import DISABLED_NAME, HOME, json_lines, logging_off, now, places, read_mode
 
 SPOOL_MAX_AGE_DAYS = 30
 SPOOL_ROW_MAX_CHARS = 4000
@@ -302,7 +302,12 @@ def capture(event):
     if name == "UserPromptSubmit":
         prune(spool)
         prompt = str(event.get("prompt") or "")
-        return record("prompt", sid, prompt_id=pid, prompt=prompt, kb_intent=intent(prompt))
+        row = record("prompt", sid, prompt_id=pid, prompt=prompt, kb_intent=intent(prompt))
+        try:
+            add_usage(spool, sid, event.get("transcript_path"), skip=pid)
+        except Exception:  # noqa: BLE001
+            pass
+        return row
     if name in ("PostToolUse", "PostToolUseFailure"):
         tool = str(event.get("tool_name") or "")
         args = event.get("tool_input") if isinstance(event.get("tool_input"), dict) else {}
@@ -322,23 +327,40 @@ def capture(event):
     if name == "Stop":
         if not used_kb(spool, sid, pid):
             return None
-        row = record("stop", sid, prompt_id=pid, answer=str(event.get("last_assistant_message") or ""))
-        record_usage(sid, pid, event.get("transcript_path"))
-        return row
+        return record("stop", sid, prompt_id=pid, answer=str(event.get("last_assistant_message") or ""))
     return None
 
 
-def record_usage(session_id, prompt_id, transcript_path):
-    """The `usage` row of one prompt (kbusage.prompt_usage: counts, tool groups and model ids read from its
-    transcript), or None when the transcript gives none or cannot be read."""
-    try:
-        import kbusage
-        rec = kbusage.prompt_usage(transcript_path, prompt_id)
-    except Exception:  # noqa: BLE001
-        return None
-    if rec is None:
-        return None
-    return record("usage", session_id, prompt_id=prompt_id, reader=kbusage.READER_VERSION, usage=rec)
+def add_usage(spool, session_id, transcript_path, skip=None):
+    """Append a `usage` row (kbusage.prompt_usage) to the spool file of `session_id` for each of its prompts but
+    `skip` that used the kb (a kb_hook or mcp row, or a prompt with a kb intent) and has no usage row of this reader
+    yet. The number of rows written; the transcript path is never written."""
+    if not (isinstance(session_id, str) and SAFE_SESSION.fullmatch(session_id)
+            and isinstance(transcript_path, str) and transcript_path):
+        return 0
+    path = Path(spool) / f"{session_id}.jsonl"
+    kb, done = [], set()
+    for r in rows(path):
+        pid = r.get("prompt_id") if isinstance(r, dict) else None
+        if not isinstance(pid, str) or pid == skip:
+            continue
+        if r.get("surface") == "usage":
+            done.add((pid, r.get("reader")))
+        elif (r.get("surface") in ("kb_hook", "mcp") or r.get("kb_intent")) and pid not in kb:
+            kb.append(pid)
+    if not kb:
+        return 0
+    import kbusage
+    out = []
+    for pid in kb:
+        rec = None if (pid, kbusage.READER_VERSION) in done else kbusage.prompt_usage(transcript_path, pid)
+        if rec is not None:
+            out.append({"id": str(uuid.uuid4()), "ts": now(), "surface": "usage", "v": ROW_FORMAT,
+                        "session_id": session_id, "prompt_id": pid, "reader": kbusage.READER_VERSION, "usage": rec})
+    if out:
+        with _lock, open(path, "a", encoding="utf-8", newline="\n") as f:
+            f.write(json_lines(out))
+    return len(out)
 
 
 def where():

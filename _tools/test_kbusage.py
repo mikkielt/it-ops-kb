@@ -5,8 +5,12 @@
                     agent group, tool groups, steps with their growth (none after a shrink); no text of the transcript
                     reaches a record; a missing file or prompt gives None; the step cap; reading from the end in
                     small blocks gives the same record; the command line
-  TestCapture       the Stop capture writes a `usage` row beside the `stop` row of a prompt that used the kb, with the
-                    reader's version; no row for a prompt that did not, or when the transcript cannot be read
+  TestSessionEnd    add_usage writes one `usage` row per kb prompt of the session (none for a prompt that did not use
+                    the kb, the prompt still running, a transcript that cannot be read or an unsafe session id), once
+                    per prompt and reader, with no text and no path; the next prompt's capture writes the earlier
+                    prompts' rows; the SessionEnd launcher passes the session id and transcript path to
+                    the distill it starts, also while a distill holds the lock; distill writes those rows first;
+                    --session and --transcript go together
   TestSidecar       distill writes the usage sidecar beside the run file: one line per written entry with usage,
                     `missing` counting the rest, the store gates pass; a row of another reader version is left out;
                     a second distill writes nothing; delivery copies the sidecar with its run file
@@ -103,47 +107,78 @@ class TestReader:
         assert got == [{"prompt": 1, **P1}, {"prompt": 2, **P2}]
 
 
-def hook(data, event):
-    p = subprocess.run([sys.executable, QL, "capture"], input=json.dumps(event).encode("utf-8"), capture_output=True,
-                       env=querylog_env(data), timeout=60)
-    return p.returncode
+class TestSessionEnd:
+    def spool(self, tmp_path):
+        sp = tmp_path / "querylog" / "spool"
+        base = {"session_id": SID, "v": 1}
+        write_jsonl(sp / f"{SID}.jsonl", [
+            dict(base, id="r1", ts="2026-09-28T09:00:00.000Z", surface="prompt", prompt_id="p1", prompt="x"),
+            dict(base, id="r2", ts="2026-09-28T09:00:01.000Z", surface="mcp", prompt_id="p1", tool="kb_pack"),
+            dict(base, id="r3", ts="2026-09-28T09:01:00.000Z", surface="prompt", prompt_id="p2", prompt="y")])
+        return sp
 
-
-def spool_rows(data):
-    d = Path(data) / "querylog" / "spool"
-    return [r for f in sorted(d.glob("*.jsonl")) for r in jsonl(f)] if d.is_dir() else []
-
-
-class TestCapture:
-    def events(self, pid, transcript, kb=True):
-        out = [{"hook_event_name": "UserPromptSubmit", "session_id": SID, "prompt_id": pid, "prompt": "hello"}]
-        if kb:
-            out.append({"hook_event_name": "PostToolUse", "session_id": SID, "prompt_id": pid,
-                        "tool_name": "mcp__kb__kb_pack", "tool_input": {"question": "laps"},
-                        "tool_response": "coverage: good (x)\n## public/windows/laps.md\n- public/windows/laps.md:5 "
-                                         "fact [DOC S1]"})
-        out.append({"hook_event_name": "Stop", "session_id": SID, "prompt_id": pid, "transcript_path": transcript,
-                    "last_assistant_message": "answer"})
-        return out
-
-    def test_usage_row_beside_stop(self, tmp_path):
-        for e in self.events("p1", str(SESSION)):
-            assert hook(tmp_path, e) == 0
-        rows = spool_rows(tmp_path)
-        assert [r["surface"] for r in rows] == ["prompt", "mcp", "stop", "usage"]
+    def test_usage_rows_for_kb_prompts_only(self, tmp_path):
+        sp = self.spool(tmp_path)
+        assert ql_distill.add_usage(sp, SID, str(SESSION)) == 1
+        rows = jsonl(sp / f"{SID}.jsonl")
         u = rows[-1]
-        assert u["usage"] == P1 and u["reader"] == kbusage.READER_VERSION and u["prompt_id"] == "p1"
-        assert "PRIVATE-TEXT" not in json.dumps(u) and "transcript_path" not in u
+        assert u["surface"] == "usage" and u["prompt_id"] == "p1" and u["usage"] == P1
+        assert u["reader"] == kbusage.READER_VERSION and ql_distill.readable(u)
+        text = (sp / f"{SID}.jsonl").read_text(encoding="utf-8")
+        assert "PRIVATE-TEXT" not in text and str(SESSION) not in text and "transcript" not in text
+        assert ql_distill.add_usage(sp, SID, str(SESSION)) == 0  # once per prompt and reader
 
-    def test_no_row_without_kb_use(self, tmp_path):
-        for e in self.events("p1", str(SESSION), kb=False):
-            hook(tmp_path, e)
-        assert [r["surface"] for r in spool_rows(tmp_path)] == ["prompt"]
+    def test_unreadable_transcript_or_session(self, tmp_path):
+        sp = self.spool(tmp_path)
+        assert ql_distill.add_usage(sp, SID, str(tmp_path / "missing.jsonl")) == 0
+        assert ql_distill.add_usage(sp, "../x", str(SESSION)) == 0
+        assert len(jsonl(sp / f"{SID}.jsonl")) == 3
 
-    def test_unreadable_transcript(self, tmp_path):
-        for e in self.events("p1", str(tmp_path / "missing.jsonl")):
-            hook(tmp_path, e)
-        assert [r["surface"] for r in spool_rows(tmp_path)] == ["prompt", "mcp", "stop"]
+    def test_launch_passes_the_transcript(self, tmp_path, monkeypatch):
+        q = tmp_path / "querylog"
+        self.spool(tmp_path)
+        (q / "distill.lock").write_text("{}", encoding="utf-8")  # a running distill: the new one waits for it
+        started = []
+        monkeypatch.setattr(ql_distill, "places", lambda: (q, q / "config.json"))
+        monkeypatch.setattr(ql_distill, "detach", lambda argv, log: started.append(argv) or 1)
+        event = {"hook_event_name": "SessionEnd", "session_id": SID, "transcript_path": str(SESSION)}
+        assert ql_distill.launch(event) == 1
+        assert started[0][-4:] == ["--session", SID, "--transcript", str(SESSION)]
+        assert (q / "spool" / f"{SID}.end").exists()
+        started.clear()
+        assert ql_distill.launch({"hook_event_name": "SessionEnd", "session_id": SID}) is None  # the lock is fresh
+        assert started == []
+
+    def test_distill_writes_usage_first(self, tmp_path):
+        q = tmp_path / "querylog"
+        plant(q, usage_rows=False)
+        said = []
+        rc = ql_distill.distill(qdir=q, cfg=q / "config.json", haiku=echo, now_dt=NOW, run_id=RUN_ID,
+                                kb_commit="0" * 40, out=said.append, usage_from=(SID, str(SESSION)))
+        assert rc == 0 and said[0] == "distill: usage rows written: 2", said
+        got = jsonl(sidecar(q))
+        assert got[0]["counts"] == {"entries": 2, "missing": 0}
+        assert got[1:] == [{"id": E1, **P1}, {"id": E2, **P2}]
+        assert ql_store.store_problems(q / "store") == []
+
+    def test_next_prompt_fills_in_the_last_ones(self, tmp_path):
+        self.spool(tmp_path)
+        event = {"hook_event_name": "UserPromptSubmit", "session_id": SID, "prompt_id": "p3", "prompt": "next",
+                 "transcript_path": str(SESSION)}
+        p = subprocess.run([sys.executable, QL, "capture"], input=json.dumps(event).encode("utf-8"),
+                           capture_output=True, env=querylog_env(tmp_path), timeout=60)
+        assert p.returncode == 0 and p.stdout == b""
+        rows = jsonl(tmp_path / "querylog" / "spool" / f"{SID}.jsonl")
+        assert [(r["surface"], r["prompt_id"]) for r in rows[3:]] == [("prompt", "p3"), ("usage", "p1")]
+        assert rows[-1]["usage"] == P1
+
+    def test_the_running_prompt_is_skipped(self, tmp_path):
+        sp = self.spool(tmp_path)
+        assert ql_distill.add_usage(sp, SID, str(SESSION), skip="p1") == 0
+
+    def test_command_line_pairs_session_and_transcript(self):
+        p = subprocess.run([sys.executable, QL, "distill", "--session", SID], capture_output=True, text=True)
+        assert p.returncode == 2 and "go together" in p.stderr
 
 
 def plant(qdir, usage_rows=True, reader=None):
