@@ -4,6 +4,7 @@
   "title": "The kb covers Copilot Studio as a remote MCP client",
   "status": "draft",
   "parent": "EP-5sc7hr36",
+  "sprint": "SP-4udo5jmw",
   "priority": "P2",
   "rank": 3,
   "goal": "kb/public answers with cited DOC facts how Copilot Studio reaches a self-hosted MCP server: its network path (public endpoint, Power Platform outbound addresses or service tags, whether a custom MCP connector can use a virtual network or the on-premises data gateway), the MCP protocol versions and features its client uses (sessions, server instructions, tool annotations, content types), and the custom connector's x-ms-agentic-protocol definition",

@@ -4,6 +4,7 @@
   "title": "A host MCP server embeds the kb over stdio",
   "status": "draft",
   "parent": "EP-5sc7hr36",
+  "sprint": "SP-4udo5jmw",
   "priority": "P2",
   "rank": 0,
   "goal": "Another MCP server (such as a TypeScript server already hosted for Copilot Studio) can spawn python3 _tools/kb_mcp.py as a stdio child and re-expose kb_pack, kb_search and kb_show: kb_mcp.py --roots limits the served roots without changing the default the plugin uses, a contract test fails when those three tools' names, input schemas or the server instructions change without a fixture update and a VERSION bump, and kb/_self/embedding.md is the contract (command, environment, roots, tools to pass on, carrying the kb's instructions and none rule into the host's own tool descriptions, updating on census tags)",

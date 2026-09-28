@@ -4,6 +4,7 @@
   "title": "A runbook deploys kb_http.py behind an authenticating TLS proxy",
   "status": "draft",
   "parent": "EP-5sc7hr36",
+  "sprint": "SP-4udo5jmw",
   "priority": "P2",
   "rank": 2,
   "goal": "kb/_self/hosting.md opens with which path to pick (direct kb_http.py, or a host MCP server embedding kb_mcp.py per kb/_self/embedding.md) and is the runbook for the direct path: a VM with a systemd unit and a reverse proxy that terminates TLS and checks an API-key header (proof of concept) or an Entra token (production), and Azure Container Apps or App Service with built-in authentication; it covers KB_INDEX, a timer that moves the clone to the newest census tag and restarts, one instance per audience because root is a filter and not access control, the network path Copilot Studio needs, and connecting from the MCP onboarding wizard or a custom connector; no secret is in the repository",

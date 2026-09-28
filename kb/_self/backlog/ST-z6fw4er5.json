@@ -4,6 +4,7 @@
   "title": "kb_http.py serves the kb over Streamable HTTP",
   "status": "draft",
   "parent": "EP-5sc7hr36",
+  "sprint": "SP-4udo5jmw",
   "priority": "P2",
   "rank": 1,
   "goal": "python3 _tools/kb_http.py serves kb_mcp.handle over MCP Streamable HTTP on 127.0.0.1: POST /mcp answers a request with one application/json object, a notification with 202 and no body, GET and DELETE with 405, keeps no sessions and ignores Mcp-Session-Id, refuses a bad Origin with 403 and an oversized or non-JSON body with 4xx, and serves kb/public only unless --roots names more; the same messages give the same results as kb_mcp.py over stdio; kb/_self documents it",
