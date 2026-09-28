@@ -190,7 +190,7 @@ class Doc:
                     cover -= WINDOW_COST * (k - 1)  # a longer window must earn its extra sentences
                 if cover > best[1] + 1e-9:
                     own = sum(w[t] for t in known & ts) / total
-                    best = ((i, k), cover, own, sorted(shared, key=lambda t: -w[t]))
+                    best = ((i, k), cover, own, sorted(shared, key=lambda t: (-w[t], t)))
         return best
 
     def locate(self, fact):
@@ -406,7 +406,25 @@ def cmd_anchor(a):
         print("dry run: nothing written")
         return 0
     write_anchors(anchors)
+    state, rows = read_state(), provider.providers(ROOT)
+    for sid in ids:  # the anchors' document is detect's baseline: the next detect compares with it
+        d = docs.get(sid)
+        if d and d.get("status") == 200 and d.get("text"):
+            state[sid] = {**state.get(sid, {}), **baseline(sid, srcs[sid]["url"], d, rows)}
+    write_state(state)
     return 0
+
+
+def baseline(sid, url, d, rows):
+    """The detection columns of _fetch_state.csv for a fetched document."""
+    row = provider.for_url(url, rows) or {}
+    keys = [k for k in (row.get("version_meta") or "").split(",") if k.strip() and k != "-"]
+    stamp = (d.get("fetched_utc") or "")[:19].replace("+00:00", "")
+    return {"id": sid, "url": url, "etag": d.get("etag", ""), "last_modified": d.get("lastmod", ""),
+            "version": (d.get("version") or {}).get(keys[0], "") if keys else "",
+            "doc_sha256": hashlib.sha256(d["text"].encode()).hexdigest(),
+            "final_url": d["final"] if (d.get("final") or "").split("?")[0] != provider.raw_url(url, row)[0].split("?")[0] else "",
+            "http_status": "200", "simhash": simhash(d["text"]), "detected_utc": (stamp + "Z") if stamp else ""}
 
 
 # ---------------------------------------------------------------- snapshots of copy sources
@@ -689,6 +707,7 @@ def detect_source(sid, src, st, rows):
     save_doc(sid, {**d, "id": sid, "url": url, "fetched_utc": datetime.datetime.now(datetime.timezone.utc).isoformat()})
     keys = [k for k in (row.get("version_meta") or "").split(",") if k.strip() and k != "-"]
     version = d["version"].get(keys[0], "") if keys else ""
+    d["sha"] = hashlib.sha256((d["text"] or "").encode()).hexdigest()
     new.update(etag=d["etag"], last_modified=d["lastmod"], version=version, doc_sha256=d["sha"], error="",
                final_url=d["final"] if d["hops"] else "", simhash=simhash(d["text"] or ""))
     raw_url = provider.raw_url(url, row)[0]
@@ -767,18 +786,36 @@ def near(url, urls, n=5):
     return sorted(same, key=lambda x: -len(segs & set(urllib.parse.urlsplit(x).path.strip("/").split("/"))))[:n]
 
 
-def search_urls(fact, anchor, row, src_url):
-    """Candidate pages for a passage that left its page: the provider's search (search_api) with the fact's words."""
+_searches = {}
+
+
+def search_urls(fact, anchor, row, src_url, title=""):
+    """Candidate pages for a passage that left its page, from the provider's search (search_api): first the old page's
+    title (a moved page keeps it), then the anchor's quote, then the fact's words; SEARCH_TOP pages per query."""
     tpl = (row.get("search_api") or "-").strip()
     if tpl in ("-", "") or "{q}" not in tpl:
         return []
-    words = [w for w in re.findall(r"[A-Za-z][\w.-]+", fact_text(fact)) if w.lower() not in kbfacts.STOP][:8]
-    r = provider.request(tpl.replace("{q}", urllib.parse.quote(" ".join(words))))
-    try:
-        res = json.loads(r["body"]).get("results", []) if r["status"] == 200 else []
-    except ValueError:
-        res = []
-    return [x["url"] for x in res if x.get("url") and x["url"].split("?")[0] != src_url.split("?")[0]][:SEARCH_TOP]
+    queries = [re.split(r"\s+[|:-]\s+(?:Microsoft Learn|Microsoft Entra|Microsoft Intune|Configuration Manager)", title)[0]] if title else []
+    if anchor and anchor.get("quote"):
+        queries.append(" ".join(anchor["quote"].split()[:12]))
+    queries.append(" ".join([w for w in re.findall(r"[A-Za-z][\w.-]+", fact_text(fact)) if w.lower() not in kbfacts.STOP][:8]))
+    out = []
+    for q in queries:
+        if not q.strip():
+            continue
+        if q not in _searches:
+            r = provider.request(tpl.replace("{q}", urllib.parse.quote(q)))
+            try:
+                res = json.loads(r["body"]).get("results", []) if r["status"] == 200 else []
+            except ValueError:
+                res = []
+            _searches[q] = [x["url"] for x in res if x.get("url")]
+        hits = [u for u in _searches[q] if urllib.parse.urlsplit(u).path.rstrip("/") != urllib.parse.urlsplit(src_url).path.rstrip("/")
+                and not urllib.parse.urlsplit(u).path.endswith("/")]  # a hub or landing page holds no passage
+        seg = [x for x in urllib.parse.urlsplit(src_url).path.split("/") if x and x != "en-us"][:1]
+        hits.sort(key=lambda u: 0 if seg and f"/{seg[0]}/" in u else 1)  # the source's own docset first
+        out += [u for u in hits[:SEARCH_TOP] if u not in out]
+    return out
 
 
 def elsewhere(fact, anchor, cands, rows):
@@ -835,10 +872,10 @@ def resolve(sid, src, verdict, doc, prev, facts, anchors, rows):
                 rec.update(outcome="modified", note=sim + changed)
                 found += 1
             else:
-                o, t, note = elsewhere(text, a, linked(src, doc, row) + search_urls(text, a, row, src["url"]), rows)
+                o, t, note = elsewhere(text, a, linked(src, doc, row) + search_urls(text, a, row, src["url"], src.get("title", "")), rows)
                 rec.update(outcome=o, target=t, note=note)
         else:
-            cands = linked(src, doc, row) + search_urls(text, a, row, src["url"])
+            cands = linked(src, doc, row) + search_urls(text, a, row, src["url"], src.get("title", ""))
             o, t, note = elsewhere(text, a if located else None, cands, rows)
             rec.update(outcome=o if o == "moved" else "dead", target=t, note=note)
         out.append(rec)
