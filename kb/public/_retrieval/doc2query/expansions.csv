@@ -809,3 +809,26 @@ ff91bfbf1644,Is it safe to allow unsigned scripts?
 0aea1df0b854,PowerShell CI script loading
 0aea1df0b854,How do you load a signed script without breaking the signature?
 0aea1df0b854,Why does copy-paste break PowerShell signatures?
+62145c690d3d,NTLM retirement phases timeline
+62145c690d3d,When will Microsoft disable NTLM by default?
+62145c690d3d,What is the schedule for removing NTLM from Windows?
+109143caba3c,NTLMv1 SSO block by default date BlockNtlmv1SSO
+109143caba3c,When does NTLMv1 become disabled by default on Windows?
+109143caba3c,When are NTLMv1-derived single sign-on credentials blocked by default?
+bfa480789707,enhanced NTLM auditing Windows Server 2025 24H2
+bfa480789707,Which Windows versions support enhanced NTLM auditing?
+bfa480789707,How can I find where NTLM is still used on Windows 11?
+6ee7fc7f4be1,KB5066470 NTLMv1 audit event 4024 4025
+6ee7fc7f4be1,Which event IDs log NTLMv1 SSO use in audit and enforce mode?
+6ee7fc7f4be1,Where are NTLMv1 single sign-on audit events written?
+c77b3fed05ef,IAKerb local KDC NTLM phase two
+c77b3fed05ef,What does phase two of the NTLM deprecation bring?
+c77b3fed05ef,How does Windows avoid NTLM fallback without a line of sight to a domain controller?
+8d6122df1892,BlockNtlmv1SSO registry value default Audit Enforce October 2026
+8d6122df1892,Which registry setting's default flips when NTLMv1 is blocked by default?
+f0413c165b26,network NTLM disabled by default next Windows Server
+f0413c165b26,Can NTLM be re-enabled after it is disabled by default?
+f0413c165b26,When is network NTLM turned off by default?
+ca9e09f7f8d3,Windows Server 2025 removed deprecated features NTLMv1 NTLMv2 LANMAN
+ca9e09f7f8d3,Is NTLMv1 removed from Windows Server 2025?
+ca9e09f7f8d3,"Is NTLMv2 deprecated, and what should replace NTLM?"

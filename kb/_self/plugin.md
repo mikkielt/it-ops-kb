@@ -117,4 +117,4 @@ Contributing back happens in a clone, never in the plugin copy:
 2. Work with `/kb-research`, `/kb-add-topic` or `/kb-refresh`; `/kb-verify` before committing; one logical change per commit.
 3. `python3 _tools/kbgit.py sync --push` (`kb/_self/git.md`); on exit 3, `/kb-git-sync --push`.
 
-Plugin users receive the push at their next update. Reports from `/it-ops-kb:kb-gap` are triaged in a clone: each becomes a `_gaps.md` entry (ending in `(topic: <domain>/<slug>)`) and, when the kb has the article but the pack missed it, a `kb/public/_retrieval/lookup_eval.csv` row (`python3 _tools/kbid.py eval "<question>"`); then `/kb-research` or `/kb-add-topic`, and `kbgit.py sync --push`.
+Plugin users receive the push at their next update. Reports from `/it-ops-kb:kb-gap` are triaged in a clone by the real-miss rule in `kb/_self/maintaining.md` (Conduct for changes): each becomes a `_gaps.md` entry (ending in `(topic: <domain>/<slug>)`) or, when the kb has the article but the pack missed it, a `kb/public/_retrieval/lookup_eval.csv` row (`python3 _tools/kbid.py eval "<question>"`); then `/kb-research` or `/kb-add-topic`, and `kbgit.py sync --push`.

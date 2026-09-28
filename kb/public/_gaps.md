@@ -1022,3 +1022,11 @@ Still open: (topic: auth/configmgr-rbac-auth)
 ## entra/agent-id
 
 - Four UNK lines re-checked 2026-09-27: report-only support for agent CA policies is DOC (S-sxxqhpa2); the Copilot Studio vs pro-code blueprint model is DOC on the Agent 365 page but contradicted by Entra planning guidance (S-ketmxnue vs S-3tt3ywvk, see _conflicts.md); 'risk signals feed the Agent Registry with automatic remediation' is found only in the Learn search index copy of the Agent ID overview, not the live page (recorded as DER); the cutover-date line is now DER pointing to _conflicts.md. (topic: entra/agent-id)
+
+## defender/mde-onboarding
+
+- **Microsoft Purview endpoint DLP onboarding requirements for Windows devices** (supported Windows versions, how onboarding relates to Defender for Endpoint onboarding, the licence): a benchmark lookup found no fact on it; the pack came back `weak` with a `check:` line (`mde-onboarding.md` never mentions DLP or Purview), and a keyword form of it a false `good`. Looked in the kb 2026-09-28 (`rag.py pack`, `rag.py search` for Purview and DLP). Needs the Microsoft Learn Purview endpoint DLP onboarding pages. (topic: defender/mde-onboarding)
+
+## python/uv-projects
+
+- **Installing Python packages behind a corporate proxy or from an internal package index** (pip and uv index settings, proxy variables, custom CA certificates, offline installs): a real lookup came back `weak` with only unrelated supply-chain facts. Looked in the kb 2026-09-28 (`rag.py pack`, grep for index-url, PIP_INDEX_URL, UV_INDEX, proxy in `python/`). Needs the pip configuration and uv index and network docs. (topic: python/uv-projects)
