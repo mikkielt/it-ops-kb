@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """The kb's own backlog: epics, stories, tasks, subtasks, bugs and sprints, one JSON file per item in
-kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; no model and no network.
+kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; no model, and no network except `red-pipeline`.
 
   backlog.py new KIND --title T [--parent ID] [--sprint ID] [--priority P1|P2|P3] [--rank N] [--goal TEXT]
                  [--severity S1..S4] [--check CMD]... [--touch GLOB]... [--depends ID]... [--repro CMD]
@@ -28,6 +28,11 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
   backlog.py horizon [--sprint ID] [--hook]   how far each active sprint can go without the operator: reachable
                                           items, what waits on which gate or trigger, the critical path
   backlog.py goal ID                      a /goal condition for the item: its end state, checks and scope
+  backlog.py red-pipeline [--status|--hook]   the newest finished pipeline of origin's main (glab api, gh on GitHub;
+                                          a note when neither is signed in): when it failed and no automatic revert
+                                          covers it, one bug (S1 when the kb-tests job failed, else S2) unless an item
+                                          already names that pipeline. --status: exit 0 green, 1 red or unreadable
+                                          (the bug's repro). --hook: the async SessionStart form, silent
 
 --root DIR (before the command) runs against another clone. Exit: 0 ok, 1 a refused command or check errors,
 2 bad arguments or an unknown id.
@@ -834,6 +839,126 @@ def cmd_horizon(bl, a):
     return 0
 
 
+GITLAB_FINISHED = ("success", "failed", "canceled", "skipped")
+GATE_JOBS = ("kb-tests",)  # a red one means the gate every push runs fails on main itself: S1; any other job: S2
+STATUS_REPRO = ["python3", "_tools/backlog.py", "red-pipeline", "--status"]
+
+
+def run(argv, cwd=None):
+    """(exit code, stdout, stderr) of a command given as an argument list (git, glab, gh); 127 when it cannot start."""
+    from ql_base import run_cmd
+    return run_cmd(argv, cwd=cwd, timeout=60)
+
+
+def latest_pipeline(root):
+    """(pipeline, note): the newest finished pipeline of origin's main as {id, sha, url, red, jobs}, or None with the
+    note that says why not (no origin, glab or gh not signed in, a failed call, no finished pipeline)."""
+    from ql_deliver import GITHUB_RED, forge_list, origin_forge
+    code, url, _ = run(["git", "remote", "get-url", "origin"], cwd=root)
+    if code:
+        return None, "no origin remote"
+    url = url.strip()
+    forge, host, project = origin_forge(url)
+    data, cli, note = forge_list(
+        url, run, lambda repo: ["gh", "run", "list", "--branch", "main", "-R", repo, "--json",
+                                "databaseId,headSha,status,conclusion,url", "-L", "30"],
+        lambda p: f"projects/{p}/pipelines?ref=main&per_page=30", named=3)
+    if data is None:
+        return None, note
+    for r in data:
+        if not isinstance(r, dict):
+            continue
+        if forge == "github":
+            if r.get("status") != "completed":
+                continue
+            p = {"id": r.get("databaseId"), "sha": r.get("headSha"), "url": r.get("url"),
+                 "red": r.get("conclusion") in GITHUB_RED}
+        else:
+            if r.get("status") not in GITLAB_FINISHED:
+                continue
+            p = {"id": r.get("id"), "sha": r.get("sha"), "url": r.get("web_url"), "red": r.get("status") == "failed"}
+        p["jobs"] = []
+        if p["red"]:
+            if forge == "github":
+                code, o, _ = run(["gh", "run", "view", str(p["id"]), "-R", f"{host}/{project}", "--json", "jobs"])
+                key, bad = "jobs", ("failure", "timed_out", "startup_failure")
+                field = "conclusion"
+            else:
+                quoted = project.replace("/", "%2F")
+                code, o, _ = run(["glab", "api", "--hostname", host,
+                                  f"projects/{quoted}/pipelines/{p['id']}/jobs?scope=failed&per_page=100"])
+                key, bad, field = None, ("failed",), "status"
+            try:
+                js = json.loads(o) if code == 0 else []
+                js = js.get(key, []) if key and isinstance(js, dict) else js
+                p["jobs"] = [j["name"] for j in js if isinstance(j, dict) and j.get(field) in bad and j.get("name")]
+            except ValueError:
+                pass
+        return p, note
+    return None, f"no finished pipeline of main on {host} ({cli})"
+
+
+def covered_by_revert(root, sha):
+    """True when an automatic revert (KB-Auto: revert) on origin/main reverts the automatic push that `sha` ends;
+    None when the history cannot be read. The revert commit names the first commit of that push."""
+    code, o, _ = run(["git", "log", f"{sha}..origin/main", "--format=%B%x1e"], cwd=root)
+    if code:
+        return None
+    for body in o.split("\x1e"):
+        m = re.search(r"^This reverts commit ([0-9a-f]{40})\b", body, re.M)
+        if not m or "KB-Auto: revert" not in body:
+            continue
+        first = m.group(1)
+        if sha == first:
+            return True
+        code, o2, _ = run(["git", "log", f"{first}..{sha}", "--format=%(trailers:key=KB-Auto,valueonly)%x1e"], cwd=root)
+        recs = o2.split("\x1e")[:-1] if code == 0 else []
+        if code == 0 and all(r.strip() for r in recs):
+            return True
+    return False
+
+
+def cmd_red_pipeline(bl, a):
+    if not a.status:
+        run(["git", "fetch", "-q", "origin", "main"], cwd=bl.root)
+    p, note = latest_pipeline(bl.root)
+    if p is None:
+        say(f"red-pipeline: not checked: {note}")
+        return 1 if a.status else 0
+    if a.status:
+        say(f"red-pipeline: latest finished pipeline {p['id']} of main is {'red' if p['red'] else 'green'} ({note})")
+        return 1 if p["red"] else 0
+    if not p["red"]:
+        say(f"red-pipeline: latest finished pipeline {p['id']} of main is green: nothing to file")
+        return 0
+    marker = f"pipeline {p['id']}"
+    for iid, it in bl.items.items():
+        if re.search(rf"\b{re.escape(marker)}\b", " ".join(str(it.get(f, "")) for f in ("title", "goal", "notes"))):
+            say(f"red-pipeline: {marker} already filed as {bl.label(iid)}")
+            return 0
+    if covered_by_revert(bl.root, p["sha"]) is not False:
+        say(f"red-pipeline: {marker} is covered by an automatic revert (or its history is unreadable): nothing to file")
+        return 0
+    jobs = p["jobs"]
+    sev = "S1" if any(j in GATE_JOBS for j in jobs) else "S2"
+    active = [i for i, it in bl.items.items() if it.get("kind") == "sprint" and it.get("status") == "active"]
+    it = {"id": new_id("bug"), "kind": "bug", "title": f"Red main {marker}: {', '.join(jobs) or 'no failed job read'}"[:200],
+          "status": "draft", "priority": "P1" if sev == "S1" else "P2", "rank": 0, "severity": sev,
+          "goal": f"The latest finished pipeline of main is green: `{' '.join(STATUS_REPRO)}` exits 0.",
+          "repro": {"run": STATUS_REPRO},
+          "notes": f"{marker.capitalize()} of commit {str(p['sha'])[:12]} failed"
+                   + (f" in {', '.join(jobs)}" if jobs else "") + (f": {p['url']}" if p.get("url") else "") + "."}
+    if sev == "S1" and len(active) == 1:
+        it.update(sprint=active[0], status="todo")
+    ok, code, _ = run_check(bl.root, it["repro"])
+    if ok:
+        say(f"red-pipeline: {marker} is green on a second read (repro exit {code}): nothing to file")
+        return 0
+    bl.save(it)
+    say(f"red-pipeline: new bug {bl.label(it['id'])}")
+    return 0
+
+
 def cmd_goal(bl, a):
     iid = need(bl, a.id)
     it = bl.items[iid]
@@ -916,8 +1041,17 @@ def main(argv=None):
     p.add_argument("--hook", action="store_true")
     p = sub.add_parser("goal")
     p.add_argument("id")
+    p = sub.add_parser("red-pipeline")
+    p.add_argument("--status", action="store_true")
+    p.add_argument("--hook", action="store_true")
     a = ap.parse_args(argv)
     sys.stdout.reconfigure(encoding="utf-8")
+    if a.cmd == "red-pipeline" and a.hook:  # async SessionStart: files a bug at most, prints nothing, never fails
+        try:
+            cmd_red_pipeline(Backlog(a.root), a)
+        except Exception:  # noqa: BLE001 - a session starts whatever happens here
+            pass
+        return 0
     if a.cmd == "horizon" and a.hook:  # the SessionStart event on stdin carries nothing the horizon needs
         try:
             return cmd_horizon(Backlog(a.root), a)
@@ -925,7 +1059,7 @@ def main(argv=None):
             return 0
     bl = Backlog(a.root)
     try:
-        return globals()["cmd_" + a.cmd](bl, a)
+        return globals()["cmd_" + a.cmd.replace("-", "_")](bl, a)
     except KeyError as e:
         print(f"no item {e.args[0]}", file=sys.stderr)
         return 2

@@ -215,3 +215,104 @@ def test_work_trailer(monkeypatch):
 def test_repository_backlog_is_valid():
     code, out = b(os.path.dirname(TOOLS), "check")
     assert code == 0, out
+
+
+# ---- red-pipeline: a planted red and a green pipeline on origin's main, glab and gh replaced (no network)
+
+def forge(monkeypatch, repo, pipelines, jobs=(), signed_in=True):
+    """origin is a GitLab project; `glab` answers the given pipelines (newest first) and failed jobs."""
+    sh(repo, "git", "remote", "add", "origin", "https://gitlab.example.com/team/kb.git")
+    sh(repo, "git", "update-ref", "refs/remotes/origin/main", "HEAD")
+    real = backlog.run
+
+    def fake(argv, cwd=None):
+        if argv[:2] == ["git", "fetch"]:
+            return 0, "", ""
+        if argv[0] in ("glab", "gh"):
+            if argv[1] == "auth":
+                return (0, "", "") if signed_in else (1, "", "not logged in")
+            return 0, json.dumps(jobs if "/jobs?" in argv[-1] else pipelines), ""
+        return real(argv, cwd=cwd)
+
+    monkeypatch.setattr(backlog, "run", fake)
+    monkeypatch.setattr(backlog, "run_check", lambda root, c: (False, 1, ""))  # the repro fails: main is red
+
+
+def head(repo):
+    return subprocess.run(["git", "rev-parse", "HEAD"], cwd=repo, capture_output=True, text=True).stdout.strip()
+
+
+def bugs(repo):
+    return [it for it in backlog.Backlog(repo).items.values() if it["kind"] == "bug"]
+
+
+def red_pipeline(repo, *a):
+    return backlog.main(["--root", str(repo), "red-pipeline", *a])
+
+
+def test_red_pipeline_files_one_s2_bug_per_pipeline(repo, monkeypatch, capsys):
+    sha = head(repo)
+    forge(monkeypatch, repo, [{"id": 902, "sha": sha, "status": "running"},
+                              {"id": 901, "sha": sha, "status": "failed", "web_url": "https://x/901"},
+                              {"id": 900, "sha": sha, "status": "success"}],
+          jobs=[{"name": "kb-tests-windows", "status": "failed"}])
+    assert red_pipeline(repo) == 0
+    (bug,) = bugs(repo)
+    assert bug["severity"] == "S2" and bug["status"] == "draft" and "pipeline 901" in bug["title"]
+    assert bug["repro"]["run"] == backlog.STATUS_REPRO
+    assert backlog.validate(backlog.Backlog(repo)) == []
+    capsys.readouterr()
+    assert red_pipeline(repo) == 0  # the same pipeline again: named by the bug, nothing filed
+    assert "already filed" in capsys.readouterr().out
+    assert len(bugs(repo)) == 1
+
+
+def test_red_pipeline_gate_job_is_s1_and_joins_the_active_sprint(sprint, monkeypatch):
+    repo = sprint["repo"]
+    forge(monkeypatch, repo, [{"id": 77, "sha": head(repo), "status": "failed"}],
+          jobs=[{"name": "kb-tests", "status": "failed"}])
+    assert red_pipeline(repo) == 0
+    (bug,) = [x for x in bugs(repo) if "pipeline 77" in x["title"]]
+    assert bug["severity"] == "S1" and bug["sprint"] == sprint["sp"] and bug["status"] == "todo"
+
+
+def test_red_pipeline_green_files_nothing(repo, monkeypatch, capsys):
+    forge(monkeypatch, repo, [{"id": 5, "sha": head(repo), "status": "success"},
+                              {"id": 4, "sha": head(repo), "status": "failed"}])
+    assert red_pipeline(repo) == 0
+    assert bugs(repo) == [] and "green" in capsys.readouterr().out
+    assert red_pipeline(repo, "--status") == 0
+
+
+def test_red_pipeline_status_is_the_repro_of_a_red_main(repo, monkeypatch):
+    forge(monkeypatch, repo, [{"id": 5, "sha": head(repo), "status": "failed"}])
+    assert red_pipeline(repo, "--status") == 1
+
+
+def test_red_pipeline_automatic_revert_covers_it(repo, monkeypatch):
+    sh(repo, "git", "commit", "-q", "--allow-empty", "-m", "query log", "-m", "KB-Auto: apply")
+    auto = head(repo)
+    sh(repo, "git", "commit", "-q", "--allow-empty", "-m", "revert: query log commit",
+       "-m", f"This reverts commit {auto}.", "-m", "KB-Auto: revert")
+    forge(monkeypatch, repo, [{"id": 8, "sha": auto, "status": "failed"}])
+    assert red_pipeline(repo) == 0
+    assert bugs(repo) == []
+
+
+def test_red_pipeline_revert_of_another_commit_does_not_cover_it(repo, monkeypatch):
+    sh(repo, "git", "commit", "-q", "--allow-empty", "-m", "query log", "-m", "KB-Auto: apply")
+    auto = head(repo)
+    sh(repo, "git", "commit", "-q", "--allow-empty", "-m", "a human commit")
+    human = head(repo)
+    sh(repo, "git", "commit", "-q", "--allow-empty", "-m", "revert: query log commit",
+       "-m", f"This reverts commit {auto}.", "-m", "KB-Auto: revert")
+    forge(monkeypatch, repo, [{"id": 9, "sha": human, "status": "failed"}])
+    assert red_pipeline(repo) == 0
+    assert "pipeline 9" in bugs(repo)[0]["title"]
+
+
+def test_red_pipeline_notes_when_not_signed_in(repo, monkeypatch, capsys):
+    forge(monkeypatch, repo, [{"id": 5, "sha": head(repo), "status": "failed"}], signed_in=False)
+    assert red_pipeline(repo) == 0
+    assert "not signed in" in capsys.readouterr().out and bugs(repo) == []
+    assert red_pipeline(repo, "--status") == 1
