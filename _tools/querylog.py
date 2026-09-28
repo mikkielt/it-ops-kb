@@ -13,11 +13,14 @@ push are built.
                         `distill --settle LAUNCH_SETTLE_S` when a closed session waits and no distill holds the lock;
                         prints nothing and exits 0
   querylog.py distill [--replay FILE] [--settle S]
-                        the closed sessions of the spool -> one run file in the store (mode `local`: the `store`
-                        directory beside the spool, laid out as kb/_querylog/): the rules, then Haiku in capped
-                        batches, then the rules and the leak scan again. --replay answers the Haiku calls from a
-                        recorded reply file ({"replies": [...]}) instead of `claude -p`. Exit 0 done (or nothing to
-                        do), 3 another distill holds the lock
+                        the closed sessions of the spool -> one run file in the local store (the `store` directory
+                        beside the spool, laid out as kb/_querylog/): the rules, then Haiku in capped batches, then
+                        the rules and the leak scan again; an entry a local run file already holds is not distilled
+                        again. Mode `local` deletes the spool rows of the entries written or dropped. Mode `auto` in
+                        a clone deletes those of dropped entries only, then runs `apply --push` under the same lock,
+                        which deletes the others once their run file is on origin/main. --replay answers the Haiku
+                        calls from a recorded reply file ({"replies": [...]}) instead of `claude -p`. Exit 0 done (or
+                        nothing to do), 1 the push of mode `auto` failed, 3 another distill holds the lock
   querylog.py learn [--store DIR]
                         the store's run files and the kb at HEAD -> findings (default: the local store): every judged
                         miss re-run with pack first (`fixed-since` when it now passes), then eval, alias, expansion,
@@ -55,9 +58,13 @@ push are built.
                         (skipped with a note when neither is signed in; the host comes from origin's url, else
                         FALLBACK_GITLAB_HOST): a finished failure is red and gets a revert commit (KB-Auto: revert)
                         that keeps the store's files and records its findings `apply-failed`, an unfinished pipeline
-                        stops the run; then the worktree's apply on origin/main's kb/_querylog in the worktree beside
-                        the spool, one commit with its KB-Auto trailer, and `kbgit.py sync --push` (gate, rebase on
-                        origin/main, push to origin only). A conflict sync cannot resolve pushes
+                        stops the run; then, in the worktree beside the spool reset to origin/main: the local store's
+                        run files that origin/main lacks, and its findings files that hold only learn's states for
+                        findings origin/main does not record yet, copied into kb/_querylog, gated by `check` and the
+                        leak scan, and committed (KB-Auto: querylog); the worktree's learn and apply on that store,
+                        one commit with its KB-Auto trailer; one `kbgit.py sync --push` (gate, rebase on
+                        origin/main, push to origin only). Once the run files are on origin/main, the spool rows of
+                        their entries are deleted (a failed push deletes nothing). A conflict sync cannot resolve pushes
                         querylog/<run-id> with `-o merge_request.create -o merge_request.target=main`, main unchanged,
                         and later runs leave that branch's findings alone until main holds them. Exit 0 (pushed,
                         nothing to push, CI pending, conflict branch pushed), 1 a step failed, 2 refused, 3 the lock
@@ -813,13 +820,23 @@ def head_commit():
 
 # --- the run --------------------------------------------------------------------------------------------------------
 
-def distill(qdir=None, cfg=None, haiku=None, now_dt=None, run_id=None, kb_commit=None, settle=0.0, out=print):
-    """One distill: 0 done (or nothing to do, or logging off), 3 when another distill holds the lock."""
+def distill(qdir=None, cfg=None, haiku=None, now_dt=None, run_id=None, kb_commit=None, settle=0.0, out=print,
+            deliver=None):
+    """One distill: 0 done (or nothing to do, or logging off), 1 when the push of mode `auto` failed, 3 when another
+    distill holds the lock. Mode `auto` in a clone keeps the spool rows of the entries it writes and then runs
+    `deliver(qdir, out)` under the same lock (default: the push of `apply --push`), which deletes them once their
+    run file is on origin/main; mode `local` (and `auto` in a plugin host) deletes them at once."""
     d, c = places()
     qdir, cfg = Path(qdir or d), Path(cfg or c)
-    if (qdir / "DISABLED").exists() or read_mode(cfg) == "off":
+    mode = read_mode(cfg)
+    if (qdir / "DISABLED").exists() or mode == "off":
         out("distill: logging is off")
         return 0
+    if mode == "auto" and deliver is None and qdir.resolve() == (HOME / "_cache" / "querylog").resolve():
+        def deliver(q, say):
+            return Pusher(HOME, q, run_cmd, None, say)()
+    if mode != "auto":
+        deliver = None
     lock = acquire(qdir)
     if lock is None:
         out("distill: another distill holds the lock")
@@ -827,16 +844,18 @@ def distill(qdir=None, cfg=None, haiku=None, now_dt=None, run_id=None, kb_commit
     try:
         if settle:
             time.sleep(settle)
-        return _distill(qdir, haiku or claude_haiku, now_dt or datetime.datetime.now(datetime.timezone.utc), run_id,
-                        kb_commit, out)
+        now_dt = now_dt or datetime.datetime.now(datetime.timezone.utc)
+        rc = _distill(qdir, haiku or claude_haiku, now_dt, run_id, kb_commit, out, keep=deliver is not None)
+        if deliver is not None:
+            rc = 1 if deliver(qdir, out) not in (0, None) else rc
+        return rc
     finally:
         release(lock)
 
 
-def _distill(qdir, haiku, now_dt, run_id, kb_commit, out):
-    import redact
-    k = redact.known()
-    t_now, today = now_dt.timestamp(), now_dt.date().isoformat()
+def _plan(qdir, t_now, today, k):
+    """One reading of the spool: (spool, sessions, tools, consumed, todo), `todo` holding one item {entry, texts,
+    sid, key, tools, ts} per kb lookup of a closed session or of a finished day, in time order."""
     spool = qdir / "spool"
     sessions, tools = read_spool(spool, t_now)
     consumed = {n: set(ids) for n, ids in read_json(qdir / CONSUMED_NAME, {}).items()
@@ -869,6 +888,19 @@ def _distill(qdir, haiku, now_dt, run_id, kb_commit, out):
             else:
                 consumed.setdefault(name, set()).add(r["id"])
     todo.sort(key=lambda t: (t["ts"], t["entry"]["id"]))
+    return spool, sessions, tools, consumed, todo
+
+
+def _distill(qdir, haiku, now_dt, run_id, kb_commit, out, keep=False):
+    """The run file of the closed sessions (entries a run file of the local store already holds are not distilled
+    again), then the spool: the rows of dropped entries go, and so do those of written ones unless `keep`."""
+    import redact
+    k = redact.known()
+    t_now, today = now_dt.timestamp(), now_dt.date().isoformat()
+    spool, sessions, tools, consumed, todo = _plan(qdir, t_now, today, k)
+    stored = {e["id"] for _, e in store_entries(qdir / "store")}
+    done = [t for t in todo if t["entry"]["id"] in stored]
+    todo = [t for t in todo if t["entry"]["id"] not in stored]
 
     need = [t for t in todo if t["texts"]]
     written = [t for t in todo if not t["texts"]]
@@ -915,10 +947,22 @@ def _distill(qdir, haiku, now_dt, run_id, kb_commit, out):
             f"waiting={counts['waiting']}")
     else:
         out(f"distill: nothing to write (waiting={counts['waiting']})")
+    if keep:
+        _settle(spool, sessions, tools, consumed, qdir, today, dropped, waiting + written + done)
+        if written or done:
+            out(f"distill: the spool keeps the rows of {len(written) + len(done)} entries until their run file is "
+                f"on {REMOTE}/{BRANCH}")
+    else:
+        _settle(spool, sessions, tools, consumed, qdir, today, written + dropped + done, waiting)
+    return 0
 
-    # the spool: rows of written and dropped entries go; rows of waiting entries stay for the next run
-    wait_keys = {(t["sid"], t["key"]) for t in waiting if t["sid"]}
-    for t in written + dropped:
+
+def _settle(spool, sessions, tools, consumed, qdir, today, gone, stay):
+    """The spool after a pass: the rows of the `gone` entries and of the prompts that never used the kb go, the rows
+    of the `stay` entries stay (a closed session keeps its window end), and a finished day's tools file goes once all
+    its rows are consumed."""
+    wait_keys = {(t["sid"], t["key"]) for t in stay if t["sid"]}
+    for t in gone:
         for name, r in t["tools"]:
             consumed.setdefault(name, set()).add(r["id"])
     for sid, s in sessions.items():
@@ -952,7 +996,23 @@ def _distill(qdir, haiku, now_dt, run_id, kb_commit, out):
                 pass
     if consumed or (qdir / CONSUMED_NAME).exists():
         write_text(qdir / CONSUMED_NAME, json.dumps({n: sorted(ids) for n, ids in sorted(consumed.items())}) + "\n")
-    return 0
+
+
+def spool_delivered(qdir, ids, now_dt=None):
+    """Delete the spool rows of the entries `ids`, whose run file is on origin/main; every other entry's rows stay.
+    The number of entries whose rows went. Runs under the distill lock (distill and apply --push hold it)."""
+    ids = set(ids)
+    if not ids or not (Path(qdir) / "spool").is_dir():
+        return 0
+    import redact
+    now_dt = now_dt or datetime.datetime.now(datetime.timezone.utc)
+    today = now_dt.date().isoformat()
+    spool, sessions, tools, consumed, todo = _plan(Path(qdir), now_dt.timestamp(), today, redact.known())
+    gone = [t for t in todo if t["entry"]["id"] in ids]
+    if gone:
+        _settle(spool, sessions, tools, consumed, Path(qdir), today, gone,
+                [t for t in todo if t["entry"]["id"] not in ids])
+    return len(gone)
 
 
 # --- the SessionEnd and SessionStart launcher -----------------------------------------------------------------------
@@ -2475,14 +2535,47 @@ def auto_kinds(paths):
     return sorted(kinds)
 
 
-class Pusher:
-    """One `apply --push` in the worktree `wt` of the clone at `home`. `run` starts every command (git, kbgit.py
-    sync, glab, gh); `apply_step(wt, store, hold, out)` applies the store's findings in the worktree."""
+def leak_problems(store, rels, k=None):
+    """The leak scan (redact.scan: kbcommon.leak_hits with what the public root contains allowed) over every value of
+    the store files `rels`, the ids that name runs, entries and findings aside: one problem per hit."""
+    import redact
+    k = k or redact.known()
+    out = []
 
-    def __init__(self, home, qdir, run, apply_step, out):
-        self.home, self.wt, self.run, self.out = Path(home), Path(qdir) / WORKTREE_NAME, run, out
-        self.apply_step = apply_step or self.apply_in_worktree
+    def values(x):
+        if isinstance(x, dict):
+            for v in x.values():
+                yield from values(v)
+        elif isinstance(x, list):
+            for v in x:
+                yield from values(v)
+        elif isinstance(x, str):
+            yield x
+
+    for rel in rels:
+        try:
+            objs = load_run(Path(store) / rel)
+        except (OSError, ValueError):
+            continue  # `check` reports a file that is not JSON lines
+        for n, obj in objs:
+            for v in values({key: val for key, val in obj.items() if key not in ("id", "entry", "run", "kb_commit")}):
+                for kind, _ in redact.scan(v, k):
+                    out.append(f"{rel}:{n}: the leak scan flags an identifier ({kind})")
+    return out
+
+
+class Pusher:
+    """One `apply --push` in the worktree `wt` of the clone at `home`, whose query log directory `qdir` holds the
+    spool and the local store. `run` starts every command (git, kbgit.py sync, glab, gh); `apply_step(wt, store,
+    hold, out)` learns and applies the store's findings in the worktree."""
+
+    def __init__(self, home, qdir, run, apply_step, out, now_dt=None):
+        self.home, self.qdir, self.run, self.out = Path(home), Path(qdir), run, out
+        self.wt = self.qdir / WORKTREE_NAME
+        self.apply_step = apply_step or self.learn_and_apply
         self.up = f"refs/remotes/{REMOTE}/{BRANCH}"
+        self.on_main = False  # set when deliver pushed to origin's main
+        self.now_dt = now_dt  # the time the spool is read at (default: now)
 
     def git(self, *args, cwd=None):
         return self.run(["git", *args], cwd=str(cwd or self.wt))
@@ -2547,16 +2640,85 @@ class Pusher:
                         ids.add(rec["id"])
         return ids
 
-    def apply_in_worktree(self, wt, store, hold, out):
-        """The worktree's own querylog.py apply on its own kb and store."""
-        argv = [sys.executable, str(wt / "_tools" / "querylog.py"), "apply", "--store", str(store),
-                "--clone", str(self.home)]
+    def learn_and_apply(self, wt, store, hold, out):
+        """The worktree's own querylog.py learn, then its apply, on its own kb and store."""
+        ql = [sys.executable, str(wt / "_tools" / "querylog.py")]
+        applying = ql + ["apply", "--store", str(store), "--clone", str(self.home)]
         for h in sorted(hold):
-            argv += ["--hold", h]
-        code, o, e = self.run(argv, cwd=str(wt))
-        for line in (o + (e if code else "")).strip().splitlines():
-            out(line)
-        return code
+            applying += ["--hold", h]
+        for argv in (ql + ["learn", "--store", str(store)], applying):
+            code, o, e = self.run(argv, cwd=str(wt))
+            for line in (o + (e if code else "")).strip().splitlines():
+                out(line)
+            if code:
+                return code
+        return 0
+
+    def local_files(self):
+        """(entry ids of the local store's run files that origin/main holds, [(source, published path, entry ids)]
+        of the local files to copy, [published paths] of the local findings files that stay local). A run file is
+        copied when origin/main lacks its path; a findings file when origin/main lacks its path, all its records
+        are in a state learn writes (not apply's outcomes for this clone's working tree) and origin/main records
+        none of its findings yet."""
+        local, store = self.qdir / "store", self.wt / STORE_REL
+        delivered, new, kept = set(), [], []
+        for p in run_files(local):
+            rel = p.relative_to(local).as_posix()
+            try:
+                ids = {e["id"] for _, e in load_run(p)[1:] if isinstance(e.get("id"), str)}
+            except (OSError, ValueError):
+                ids = set()  # copied all the same: `check` refuses it
+            if (store / rel).exists():
+                delivered |= ids
+            else:
+                new.append((p, rel, ids))
+        recorded = finding_states(store)
+        for p in findings_files(local):
+            rel = p.relative_to(local).as_posix()
+            if (store / rel).exists():
+                continue
+            try:
+                recs = [r for _, r in load_run(p)[1:]]
+            except (OSError, ValueError):
+                recs = None
+            if recs is not None and all(r.get("state") in LEARN_STATES and r.get("id") not in recorded for r in recs):
+                new.append((p, rel, set()))
+            else:
+                kept.append(rel)
+        return delivered, new, kept
+
+    def forget(self, ids):
+        """The spool rows of the entries `ids`, whose run file is on origin/main, are deleted."""
+        n = spool_delivered(self.qdir, ids, self.now_dt)
+        if n:
+            self.say(f"deleted the spool rows of {n} entries whose run file is on {REMOTE}/{BRANCH}")
+
+    def bring(self, new, kept):
+        """The local files `new` copied into the worktree's store, the worktree's `querylog.py check` and the leak
+        scan over them, then one commit with `KB-Auto: querylog`. 0, or 1 when a gate fails (nothing committed)."""
+        store = self.wt / STORE_REL
+        for src, rel, _ in new:
+            write_text(store / rel, Path(src).read_text(encoding="utf-8"))
+        if kept:
+            self.say(f"{len(kept)} local findings file(s) stay local (apply's outcomes, or findings "
+                     f"{REMOTE}/{BRANCH} already records)")
+        code, o, e = self.run([sys.executable, str(self.wt / "_tools" / "querylog.py"), "check", str(store)],
+                              cwd=str(self.wt))
+        problems = [ln for ln in o.splitlines() if ln.strip() and not ln.startswith("querylog check:")] if code else []
+        if code and not problems:
+            problems = [(o + e).strip()[-300:] or f"querylog.py check exit {code}"]
+        problems += leak_problems(store, [rel for _, rel, _ in new])
+        if problems:
+            self.say("refused: the store gates fail on the local store's files; nothing committed or pushed\n  " +
+                     "\n  ".join(problems[:10]))
+            return 1
+        runs = sorted(Path(rel).stem for _, rel, _ in new if not rel.startswith(FINDINGS + "/"))
+        found = len(new) - len(runs)
+        what = f"{len(runs)} run file(s)" + (f", {found} findings file(s)" if found else "")
+        body = (f"Automatic commit of querylog.py: the local store's {what} ({', '.join(runs) or 'no run file'}), "
+                "copied into kb/_querylog/ after querylog.py check and the leak scan (kb/_self/querylog.md, "
+                "Delivery).")
+        return self.commit(f"chore(kb): query log store, {what}", body, ["querylog"])
 
     def edited(self, paths):
         """The existing lines the worktree's change removes or edits in an article, a ledger or a source row
@@ -2610,6 +2772,7 @@ class Pusher:
             self.out("  " + ln)
         if code == 0:
             self.say(f"pushed {mine[:9]} to {REMOTE}/{BRANCH}")
+            self.on_main = True
             return 0
         if code != 3:
             self.say(f"kbgit.py sync exit {code}: nothing pushed to {BRANCH}" +
@@ -2643,6 +2806,10 @@ class Pusher:
         if verdict == "pending":
             self.say(f"CI of the last automatic commit {sha[:9]} is not finished ({detail}); nothing pushed this run")
             return None
+        if verdict == "red" and values == ["querylog"]:
+            self.say(f"note: CI of the last automatic commit {sha[:9]} is red ({detail}); it changed only "
+                     f"{STORE_REL}, whose files a revert keeps: nothing to revert")
+            return True
         if verdict == "red":
             self.say(f"CI of the last automatic commit {sha[:9]} is red ({detail}): reverting it")
             return self.revert(sha, commits, detail)
@@ -2696,6 +2863,8 @@ class Pusher:
         if code:
             self.say(f"the worktree {self.wt} could not be set to {REMOTE}/{BRANCH}: {(o + e).strip()[-300:]}")
             return 1
+        delivered, new, kept = self.local_files()
+        self.forget(delivered)
         ok = self.check_ci(url.strip())
         if ok is None:
             return 0
@@ -2705,35 +2874,43 @@ class Pusher:
         if hold:
             self.say(f"{len(hold)} finding(s) wait on a {CONFLICT_BRANCH_PREFIX} branch and are left alone")
         store = self.wt / STORE_REL
+        if new and self.bring(new, kept):
+            return 1
         code = self.apply_step(self.wt, store, hold, self.out)
         if code:
             return code
         paths = self.changed()
-        if not paths:
+        if not paths and not new:
             self.say("nothing to push")
             return 0
-        try:
-            kinds = auto_kinds(paths)
-        except ValueError as e:
-            self.say(f"refused: apply changed {e}, which it never writes; nothing committed")
-            return 1
-        edits = self.edited(paths)
-        if edits:
-            self.say("refused: " + "; ".join(edits[:3]) + "; nothing committed")
-            return 1
         runs = [Path(p).stem for p in paths if p.startswith(f"{STORE_REL}/{FINDINGS}/") and p.endswith(".jsonl")]
-        run_id = max(runs) if runs else self.git("rev-parse", "--short=12", "HEAD")[1].strip()
-        body = (f"Automatic commit of querylog.py apply --push, findings run {run_id}: the eval rows with their "
-                "fixes, gap entries, opt-in research, and the findings file that records each outcome "
-                "(kb/_self/querylog.md, Delivery).")
-        if self.commit(f"chore(kb): query log apply {run_id}", body, kinds):
-            return 1
-        return self.deliver(run_id)
+        run_id = max(runs or [Path(rel).stem for _, rel, _ in new]
+                     or [self.git("rev-parse", "--short=12", "HEAD")[1].strip()])
+        if paths:
+            try:
+                kinds = auto_kinds(paths)
+            except ValueError as e:
+                self.say(f"refused: apply changed {e}, which it never writes; nothing committed")
+                return 1
+            edits = self.edited(paths)
+            if edits:
+                self.say("refused: " + "; ".join(edits[:3]) + "; nothing committed")
+                return 1
+            body = (f"Automatic commit of querylog.py apply --push, findings run {run_id}: the findings learn wrote, "
+                    "the eval rows with their fixes, gap entries, opt-in research, and the findings file that "
+                    "records each outcome (kb/_self/querylog.md, Delivery).")
+            if self.commit(f"chore(kb): query log apply {run_id}", body, kinds):
+                return 1
+        code = self.deliver(run_id)
+        if self.on_main:
+            self.forget(set().union(*(ids for _, _, ids in new)))
+        return code
 
 
-def push(home=None, qdir=None, run=None, apply_step=None, out=print):
-    """`apply --push`: under the distill lock, the CI check of the last automatic commit (a revert when red), then
-    apply in the worktree beside the spool, one commit with its KB-Auto trailer, and kbgit.py sync --push to origin.
+def push(home=None, qdir=None, run=None, apply_step=None, out=print, now_dt=None):
+    """`apply --push`: under the distill lock, the CI check of the last automatic commit (a revert when red), then in
+    the worktree beside the spool the local store's new files (a commit of their own), learn and apply, one commit
+    with its KB-Auto trailer, and kbgit.py sync --push to origin; the spool rows of pushed entries go after it.
     0 done (pushed, nothing to push, CI pending, or a conflict branch pushed), 1 a step failed, 2 refused, 3 another
     distill or push holds the lock."""
     qdir = Path(qdir or places()[0])
@@ -2742,7 +2919,7 @@ def push(home=None, qdir=None, run=None, apply_step=None, out=print):
         out("apply --push: another distill or push holds the lock")
         return 3
     try:
-        return Pusher(home or HOME, qdir, run or run_cmd, apply_step, out)()
+        return Pusher(home or HOME, qdir, run or run_cmd, apply_step, out, now_dt)()
     finally:
         release(lock)
 

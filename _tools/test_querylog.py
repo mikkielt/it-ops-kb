@@ -62,6 +62,14 @@
                     not itself reverted or retried; a planted conflict pushes querylog/<run-id> with the MR push
                     options and nothing to main, its findings stay open and a second run leaves them alone;
                     check-trailers flags a bad or doubled KB-Auto. glab is a stub, never the network
+  TestDeliverRules  distill with a stub push: mode `local` never pushes and deletes the spool rows at once; mode
+                    `auto` keeps them while the push fails (planted), distills nothing twice, and spool_delivered
+                    deletes only the delivered entries' rows; the leak scan over store files (planted: an address in
+                    a field `check` never reads)
+  TestDeliverInGit  (marker git) mode `auto` in a clone of a kb copy with local bare remotes: the distilled fixture
+                    spool ends as a run file (KB-Auto: querylog) plus findings on main, the spool rows go only after
+                    the push, and a second run pushes nothing; planted: a remote that refuses the push keeps the
+                    spool (the next run delivers, then deletes), a leak in a local run file blocks the push
   TestGapStep       a reproduced gap candidate with an article in the pack's lead becomes a dated _gaps.md entry at
                     the end of its topic's section (or a new section), once, the finding promoted candidate-gap ->
                     gap; off the kb's domains, a lead no article holds, or a pass now: it stays a candidate
@@ -2066,6 +2074,250 @@ class TestPushInGit:
         assert (p.returncode == 0) is ok, p.stdout
         if not ok:
             assert "KB-Auto: has " in p.stdout and "expected once, of querylog|eval|" in p.stdout, p.stdout
+
+
+# --- the local store's run files and findings delivered to origin/main -------------------------------------------
+
+def auto_config(qdir, mode="auto"):
+    cfg = Path(qdir) / "config.json"
+    cfg.parent.mkdir(parents=True, exist_ok=True)
+    cfg.write_text(json.dumps({"mode": mode}), encoding="utf-8", newline="\n")
+    return cfg
+
+
+def spool_names(qdir):
+    sp = Path(qdir) / "spool"
+    return sorted(p.name for p in sp.iterdir()) if sp.is_dir() else []
+
+
+CLOSED = sorted([f"{S_ENDED}.jsonl", f"{S_ENDED}.end", f"{S_IDLE}.jsonl", "tools-2026-09-27.jsonl"])
+
+
+class TestDeliverRules:
+    """distill's spool rules for the push of mode `auto`, with a stub push (no git)."""
+
+    def distill(self, q, mode, calls, rc=0):
+        def deliver(qdir, out):
+            calls.append(spool_names(qdir))
+            return rc
+        said = []
+        got = querylog.distill(qdir=q, cfg=auto_config(q, mode), haiku=querylog.Replay(FIXTURES / "haiku.json"),
+                               now_dt=NOW, run_id=RUN_ID, kb_commit="0" * 40, out=said.append, deliver=deliver)
+        return got, said
+
+    def test_local_never_pushes_and_deletes_the_rows_at_once(self, tmp_path):
+        q = tmp_path / "querylog"
+        plant_spool(q)
+        calls = []
+        rc, said = self.distill(q, "local", calls)
+        assert rc == 0 and calls == [] and said == [f"distill: run={RUN_ID} entries=6 dropped=1 waiting=0"], said
+        assert spool_names(q) == [f"{S_OPEN}.jsonl"]
+
+    def test_auto_keeps_the_rows_until_their_run_file_is_on_main(self, tmp_path):
+        q = tmp_path / "querylog"
+        plant_spool(q)
+        calls = []
+        rc, said = self.distill(q, "auto", calls, rc=1)  # planted: the push fails
+        assert rc == 1 and len(calls) == 1, said
+        assert "distill: the spool keeps the rows of 6 entries until their run file is on origin/main" in said
+        assert set(CLOSED) <= set(calls[0]) and set(CLOSED) <= set(spool_names(q))  # nothing deleted
+        (run,) = store_files(q)
+        before = run.read_bytes()
+        rc, said = self.distill(q, "auto", calls, rc=1)  # the next run distills nothing twice
+        assert rc == 1 and said[0] == "distill: nothing to write (waiting=0)", said
+        assert store_files(q) == [run] and run.read_bytes() == before
+        ids = [e["id"] for e in jsonl(run)[1:]]
+        assert querylog.spool_delivered(q, ids[:0], NOW) == 0 and set(CLOSED) <= set(spool_names(q))
+        assert querylog.spool_delivered(q, ids, NOW) == 6
+        assert spool_names(q) == [f"{S_OPEN}.jsonl"]  # the open session is never touched
+
+    def test_one_delivered_entry_leaves_the_others(self, tmp_path):
+        q = tmp_path / "querylog"
+        plant_spool(q)
+        self.distill(q, "auto", [], rc=1)
+        (run,) = store_files(q)
+        entries = jsonl(run)[1:]
+        sessions = {S_ENDED: (q / "spool" / f"{S_ENDED}.jsonl").read_text(encoding="utf-8"),
+                    S_IDLE: (q / "spool" / f"{S_IDLE}.jsonl").read_text(encoding="utf-8")}
+        one = next(e["id"] for e in entries if e["id"] in sessions[S_ENDED])
+        assert querylog.spool_delivered(q, [one], NOW) == 1
+        left = (q / "spool" / f"{S_ENDED}.jsonl").read_text(encoding="utf-8")
+        assert one not in left and (q / "spool" / f"{S_IDLE}.jsonl").read_text(encoding="utf-8") == sessions[S_IDLE]
+        rc, said = self.distill(q, "auto", [], rc=1)
+        assert said[0] == "distill: nothing to write (waiting=0)" and store_files(q) == [run], said
+
+    def test_the_leak_scan_over_store_files(self, tmp_path):
+        store = tmp_path / "store"
+        golden_store(store)
+        rel = f"2026-09/{RUN_ID}.jsonl"
+        assert querylog.leak_problems(store, [rel]) == []
+        objs = jsonl(FIXTURES / "golden.jsonl")
+        objs[1]["tools"] = objs[1]["tools"] + ["anna.nowak" + "@" + "acme-corp.pl"]  # planted: a field check never reads
+        golden_store(store, objs)
+        (hit,) = querylog.leak_problems(store, [rel])
+        assert hit == f"{rel}:2: the leak scan flags an identifier (email)", hit
+
+
+def learn_then_apply(wt, store, hold, out):
+    """learn (pack: every question misses) and apply with the repo gate, in the worktree on its store."""
+    rc = querylog.learn(store, pack=unknown_pack, kb_commit="0" * 40, out=out)
+    return rc or repo_step(wt, store, hold, out)
+
+
+REJECT_HOOK = "#!/bin/sh\necho 'planted: push refused' >&2\nexit 1\n"
+
+
+@pytest.mark.skipif(not GIT, reason="git is not installed")
+@pytest.mark.git
+class TestDeliverInGit:
+    """Mode `auto` in a clone of a kb copy with no committed store: distill (the fixture spool, the recorded Haiku
+    reply) then the push to a local bare remote. glab is signed out (a stub), and learn and apply run in-process on
+    the worktree's store; kbgit.py sync runs its gate without tests.py (KB_SYNC_NO_TESTS=1)."""
+
+    @pytest.fixture(scope="class", autouse=True)
+    @classmethod
+    def scenario(cls, tmp_path_factory):
+        cls.tmp = Path(tmp_path_factory.mktemp("ql-deliver"))
+        cls.env = git_env(KB_SYNC_NO_TESTS="1")
+        cls.top = Repo(cls.tmp, cls.env)
+        seed = Repo(copy_kb(str(cls.tmp / "seed"), skip=("_fetch_state.csv", "_querylog")), cls.env)
+        seed.git("init", "-q", "-b", "main")
+        seed.git("add", "-A")
+        seed.git("commit", "-q", "-m", "base")
+        cls.seed, cls.base = seed, seed.rev("HEAD")
+
+        # remote 1: the push, then a second run with nothing new
+        cls.r1, cls.a = cls.remote("r1", "a")
+        cls.qa = Path(cls.a.path) / "_cache" / "querylog"
+        plant_spool(cls.qa)
+        cls.first = cls.distill(cls.a)
+        cls.main1 = cls.r1.rev("main")
+        cls.spool1 = spool_names(cls.qa)
+        cls.again = cls.distill(cls.a)
+        cls.again_push = cls.push(cls.a)
+        cls.main_again = cls.r1.rev("main")
+
+        # remote 2: a push refused by the remote keeps the spool; the next push delivers; a planted leak blocks
+        cls.r2, cls.b = cls.remote("r2", "b")
+        hook = Path(cls.r2.path) / "hooks" / "pre-receive"
+        hook.write_text(REJECT_HOOK, encoding="utf-8", newline="\n")
+        hook.chmod(0o755)
+        cls.qb = Path(cls.b.path) / "_cache" / "querylog"
+        plant_spool(cls.qb)
+        cls.refused = cls.distill(cls.b)
+        cls.main_refused = cls.r2.rev("main")
+        cls.spool_refused = spool_names(cls.qb)
+        hook.unlink()
+        cls.retried = cls.distill(cls.b)
+        cls.main_retried = cls.r2.rev("main")
+        cls.spool_retried = spool_names(cls.qb)
+        leak = jsonl(FIXTURES / "golden.jsonl")
+        cls.leak_run = "20260928T140000Z-0000dead"
+        leak[0]["run"] = cls.leak_run
+        leak[1]["summary"] = "Mailed " + "anna.nowak" + "@" + "acme-corp.pl" + " about it."
+        golden_store(cls.qb / "store", [leak[0]] + [dict(e, id=str(uuid.uuid4())) for e in leak[1:]], cls.leak_run)
+        cls.leaked = cls.push(cls.b)
+        cls.main_leaked = cls.r2.rev("main")
+
+    @classmethod
+    def remote(cls, name, clone):
+        bare = Repo(cls.tmp / f"{name}.git", cls.env)
+        cls.top.git("clone", "-q", "--bare", cls.seed.path, bare.path)
+        c = Repo(cls.tmp / clone, cls.env)
+        cls.top.git("clone", "-q", bare.path, c.path)
+        return bare, c
+
+    @classmethod
+    def runner(cls):
+        def run(argv, cwd=None):
+            if argv[0] in ("glab", "gh"):
+                return signed_out(argv)
+            return querylog.run_cmd(argv, cwd=cwd, env=cls.env)
+        return run
+
+    @classmethod
+    def distill(cls, clone):
+        q = Path(clone.path) / "_cache" / "querylog"
+        said, seen = [], []
+
+        def deliver(qdir, out):
+            seen.append(spool_names(qdir))  # the spool as the push starts
+            return querylog.Pusher(clone.path, qdir, cls.runner(), learn_then_apply, out, NOW)()
+        rc = querylog.distill(qdir=q, cfg=auto_config(q), haiku=querylog.Replay(FIXTURES / "haiku.json"), now_dt=NOW,
+                              run_id=RUN_ID, kb_commit="0" * 40, out=said.append, deliver=deliver)
+        return rc, said, seen
+
+    @classmethod
+    def push(cls, clone):
+        said = []
+        rc = querylog.push(home=clone.path, qdir=Path(clone.path) / "_cache" / "querylog", run=cls.runner(),
+                           apply_step=learn_then_apply, out=said.append, now_dt=NOW)
+        return rc, said
+
+    @staticmethod
+    def tree(repo, rev):
+        return repo.git("ls-tree", "-r", "--name-only", rev, "--", querylog.STORE_REL).split()
+
+    def test_the_run_file_and_findings_land_on_main(self):
+        rc, said, seen = self.first
+        assert rc == 0, "\n".join(said)
+        rel = f"{querylog.STORE_REL}/2026-09/{RUN_ID}.jsonl"
+        files = self.tree(self.r1, self.main1)
+        assert rel in files and any(f.startswith(f"{querylog.STORE_REL}/findings/") for f in files), files
+        local = (self.qa / "store" / "2026-09" / f"{RUN_ID}.jsonl").read_text(encoding="utf-8")
+        assert self.r1.git("show", f"{self.main1}:{rel}") == local
+        commits = self.r1.git("rev-list", "--reverse", f"{self.base}..{self.main1}").split()
+        subjects = [self.r1.git("log", "-1", "--format=%s", h).strip() for h in commits]
+        assert subjects[0] == "chore(kb): query log store, 1 run file(s)", subjects
+        assert TestPushInGit.trailer(self.r1, commits[0]) == "querylog"
+        assert subjects[1].startswith("chore(kb): query log apply ") and "querylog" in TestPushInGit.trailer(
+            self.r1, commits[1]), subjects
+        check = self.a.kbgit("check-trailers", f"{self.base}..{self.main1}")
+        assert check.returncode == 0, check.stdout
+        wt = self.qa / querylog.WORKTREE_NAME
+        assert querylog.store_problems(wt / querylog.STORE_REL) == []
+        assert self.a.rev("main") == self.base and not self.a.git("status", "--porcelain")  # the person's checkout
+
+    def test_the_spool_goes_only_after_the_push(self):
+        rc, said, seen = self.first
+        (before,) = seen
+        assert set(CLOSED) <= set(before), before  # the push started with the rows still in the spool
+        pushed = next(i for i, s in enumerate(said) if s.startswith("apply --push: pushed "))
+        gone = said.index("apply --push: deleted the spool rows of 6 entries whose run file is on origin/main")
+        assert pushed < gone, said
+        assert self.spool1 == [f"{S_OPEN}.jsonl"]
+
+    def test_nothing_new_pushes_nothing(self):
+        rc, said, seen = self.again
+        assert rc == 0 and said[0] == "distill: nothing to write (waiting=0)", said
+        assert "apply --push: nothing to push" in said, said
+        rc, said = self.again_push
+        assert rc == 0 and "apply --push: nothing to push" in said, said
+        assert self.main_again == self.main1
+
+    def test_a_refused_push_keeps_the_spool(self):
+        rc, said, seen = self.refused
+        assert rc == 1, "\n".join(said)
+        assert any("kbgit.py sync exit 1: nothing pushed to main" in s for s in said), said
+        assert self.main_refused == self.base
+        assert set(CLOSED) <= set(self.spool_refused), self.spool_refused
+        assert not any("deleted the spool rows" in s for s in said), said
+
+    def test_the_next_push_delivers_and_then_deletes(self):
+        rc, said, seen = self.retried
+        assert rc == 0, "\n".join(said)
+        assert said[0] == "distill: nothing to write (waiting=0)", said  # nothing distilled twice
+        assert f"{querylog.STORE_REL}/2026-09/{RUN_ID}.jsonl" in self.tree(self.r2, self.main_retried)
+        assert self.spool_retried == [f"{S_OPEN}.jsonl"]
+
+    def test_a_leak_in_a_run_file_blocks_the_push(self):
+        rc, said = self.leaked
+        assert rc == 1, said
+        text = "\n".join(said)
+        assert "refused: the store gates fail on the local store's files; nothing committed or pushed" in text, text
+        assert f"2026-09/{self.leak_run}.jsonl:2: an identifier in `summary`" in text, text
+        assert f"2026-09/{self.leak_run}.jsonl:2: the leak scan flags an identifier (email)" in text, text
+        assert self.main_leaked == self.main_retried
 
 
 # --- the gap step, the quote check and research (Query log item 8) --------------------------------------------------
