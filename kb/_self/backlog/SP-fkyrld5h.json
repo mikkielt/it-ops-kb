@@ -1,0 +1,20 @@
+{
+  "id": "SP-fkyrld5h",
+  "kind": "sprint",
+  "title": "Ingestion maps code natively",
+  "status": "planned",
+  "goal": "kbingest reports toolchain pins and read-only tool-native maps, topics_for matches code by imports, /kb-ingest and the plugin docs use them, and the codebase-mapping topics' gaps are worked",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ]
+}

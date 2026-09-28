@@ -1,0 +1,27 @@
+{
+  "id": "TK-grjvo5w4",
+  "kind": "task",
+  "title": "/kb-item and /kb-sprint put the brief in the working agent's prompt",
+  "status": "todo",
+  "parent": "ST-u7bliqzx",
+  "priority": "P2",
+  "rank": 1,
+  "goal": "The kb-item and kb-sprint skills run backlog.py brief ID and put its output in the working agent's brief; kb/_self/backlog.md, Working on items, says so",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/selfdoc.py",
+        "check"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-item/SKILL.md",
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/backlog.md"
+  ],
+  "depends_on": [
+    "TK-ysawmdua"
+  ]
+}

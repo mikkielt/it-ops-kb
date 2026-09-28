@@ -1,0 +1,24 @@
+{
+  "id": "TK-rcspiyvx",
+  "kind": "task",
+  "title": "backlog.py check validates an item's knowledge asks and refs",
+  "status": "todo",
+  "parent": "ST-ireqmpda",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "An item may carry knowledge {ask: [...], refs: [...]}; backlog.py check rejects a ref (topic id, QK answer id, source id or <root>/<path>#<fact key>) missing from the kb at HEAD and reports a fact key no longer found as stale, with a planted failure for each",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "knowledge_refs"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/test_backlog.py"
+  ]
+}

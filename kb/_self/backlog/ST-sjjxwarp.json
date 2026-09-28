@@ -1,0 +1,26 @@
+{
+  "id": "ST-sjjxwarp",
+  "kind": "story",
+  "title": "Review sprint: Items know their kb facts",
+  "status": "draft",
+  "sprint": "SP-ufr3qnff",
+  "review": true,
+  "priority": "P1",
+  "rank": 999999,
+  "goal": "Every committed item is done or dropped, provisional answers are confirmed by the operator, and a fresh-context review of the sprint's diff found no unfiled defect.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "check"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py"
+      ]
+    }
+  ]
+}

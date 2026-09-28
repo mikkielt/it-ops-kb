@@ -1,0 +1,23 @@
+{
+  "id": "TK-gjrkso7j",
+  "kind": "task",
+  "title": "kb-reviewer prefers the LSP tool over grep when it is active",
+  "status": "todo",
+  "parent": "ST-lewvvodh",
+  "priority": "P2",
+  "rank": 1,
+  "goal": "The kb-reviewer agent's instructions use the LSP tool for definitions and references when it is available and fall back to Grep; the plugin tests still pass",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "plugin"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/agents/kb-reviewer.md"
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "id": "TK-yg4pe6fv",
+  "kind": "task",
+  "title": "Research the open gaps of agents/codebase-mapping",
+  "status": "todo",
+  "parent": "ST-rjxacpdh",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "Each _gaps.md entry under agents/codebase-mapping has a Resolved line with source ids or a dated Tried note; resolved facts are in the topic",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/check.py"
+      ],
+      "match": "errors=0"
+    }
+  ],
+  "touches": [
+    "kb/public/agents/codebase-mapping.md",
+    "kb/public/agents/codebase-mapping.csv",
+    "kb/public/_answers.md",
+    "kb/public/_gaps.md",
+    "kb/public/_sources.csv",
+    "kb/public/_conflicts.md",
+    "kb/public/_coverage.csv",
+    "kb/public/_coverage.md",
+    "kb/public/_retrieval/signals.csv",
+    "_tools/aliases.csv"
+  ]
+}

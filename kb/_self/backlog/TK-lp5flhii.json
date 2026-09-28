@@ -1,0 +1,32 @@
+{
+  "id": "TK-lp5flhii",
+  "kind": "task",
+  "title": "Distill records the kb's background runs as overhead lines",
+  "status": "todo",
+  "parent": "ST-gbnpn6vq",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "The work sidecar gets one overhead line per background run of the kb (distill, digest, eval, census) with its counts and no item id or text; querylog.py check gates the line with a planted failure",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "overhead_sidecar"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/querylog.py",
+        "check"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/ql_distill.py",
+    "_tools/ql_store.py",
+    "_tools/test_querylog.py"
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "id": "TK-dbm2lfbf",
+  "kind": "task",
+  "title": "kbingest.py reports CODE facts whose evidence moved at a new commit",
+  "status": "todo",
+  "parent": "ST-rrrgvspb",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kbingest.py compares the path#symbol cited by a root's CODE facts between the pinned commit and a new one and prints each fact whose file or symbol moved, changed or disappeared as a finding, rewriting nothing",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "ingest_drift"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbingest.py",
+    "_tools/test_kbingest.py"
+  ]
+}

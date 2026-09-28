@@ -1,0 +1,24 @@
+{
+  "id": "TK-4feakz4i",
+  "kind": "task",
+  "title": "done refuses an item with touches and no KB-Work commit on HEAD",
+  "status": "todo",
+  "parent": "BG-iqqigub7",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "backlog.py done refuses an item that has touches when no commit reachable from HEAD carries its KB-Work trailer as git reads trailers; a test plants a commit whose KB-Work line sits in a paragraph before Co-Authored-By and sees the refusal",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "kb_work_outside_trailers"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/test_backlog.py"
+  ]
+}

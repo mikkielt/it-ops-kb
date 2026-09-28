@@ -1,0 +1,20 @@
+{
+  "id": "SP-fvztfmtm",
+  "kind": "sprint",
+  "title": "Work has a measured cost",
+  "status": "planned",
+  "goal": "Every claim-to-done window is captured, distilled and attributed, and backlog.py cost reports tokens per item, sprint, research and overhead in the review and digest",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ]
+}

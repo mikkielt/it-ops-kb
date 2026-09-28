@@ -1,0 +1,26 @@
+{
+  "id": "TK-m6ol5dol",
+  "kind": "task",
+  "title": "Test that autonomous writers push only through kbgit.py sync --push",
+  "status": "todo",
+  "parent": "ST-6dszsvk5",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "tests.py -k autonomous_write runs query-log apply --push, and research and ingest where they push, against a fixture origin and proves each push goes through kbgit.py sync --push; a planted direct git push in a fixture writer fails the test; a red automatic push is reverted and files one bug",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "autonomous_write"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/test_sync.py",
+    "_tools/ql_deliver.py",
+    "_tools/ql_research.py",
+    "_tools/kbingest.py"
+  ]
+}

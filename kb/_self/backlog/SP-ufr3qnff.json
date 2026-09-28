@@ -1,0 +1,20 @@
+{
+  "id": "SP-ufr3qnff",
+  "kind": "sprint",
+  "title": "Items know their kb facts",
+  "status": "planned",
+  "goal": "Items carry knowledge asks and refs with a derived state, the brief measurement has a verdict, and briefs and research-first scheduling are built or dropped by it",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ]
+}

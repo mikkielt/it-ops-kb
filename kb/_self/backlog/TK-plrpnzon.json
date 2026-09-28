@@ -1,0 +1,27 @@
+{
+  "id": "TK-plrpnzon",
+  "kind": "task",
+  "title": "backlog.py cost prints item work, research and overhead apart for a sprint",
+  "status": "todo",
+  "parent": "ST-gbnpn6vq",
+  "priority": "P2",
+  "rank": 1,
+  "goal": "backlog.py cost SP prints item work, research and system overhead (the overhead lines inside the sprint's window) as separate totals",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "cost_overhead"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/test_backlog.py"
+  ],
+  "depends_on": [
+    "TK-lp5flhii"
+  ]
+}

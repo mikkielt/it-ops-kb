@@ -1,0 +1,26 @@
+{
+  "id": "TK-wumpeljo",
+  "kind": "task",
+  "title": "Document system overhead in the cost reports",
+  "status": "todo",
+  "parent": "ST-gbnpn6vq",
+  "priority": "P2",
+  "rank": 2,
+  "goal": "kb/_self/usage.md and kb/_self/querylog.md describe the overhead line and the sprint's three totals",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/selfdoc.py",
+        "check"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/usage.md",
+    "kb/_self/querylog.md"
+  ],
+  "depends_on": [
+    "TK-plrpnzon"
+  ]
+}

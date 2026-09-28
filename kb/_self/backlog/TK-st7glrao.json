@@ -1,0 +1,24 @@
+{
+  "id": "TK-st7glrao",
+  "kind": "task",
+  "title": "show, next and horizon report knowledge state per ask and ref",
+  "status": "todo",
+  "parent": "ST-i3t6i2to",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "show, next and horizon run pack on each ask and ref and print one of sufficient, partial, unknown, stale or conflicting for each; nothing is stored, readiness is unchanged, the SessionStart hook runs no pack",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "knowledge_state"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/test_backlog.py"
+  ]
+}

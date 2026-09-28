@@ -1,0 +1,29 @@
+{
+  "id": "TK-ttoqoxzh",
+  "kind": "task",
+  "title": "Commit examples put KB-Work in the last trailer paragraph",
+  "status": "todo",
+  "parent": "BG-iqqigub7",
+  "priority": "P2",
+  "rank": 1,
+  "goal": "The commit examples in kb-backlog, kb-item and kb-sprint and in kb/_self/git.md and kb/_self/backlog.md put KB-Work in the same last paragraph as Co-Authored-By and the KB-* trailers",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/selfdoc.py",
+        "check"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-backlog/SKILL.md",
+    ".claude/skills/kb-item/SKILL.md",
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/git.md",
+    "kb/_self/backlog.md"
+  ],
+  "depends_on": [
+    "TK-4feakz4i"
+  ]
+}

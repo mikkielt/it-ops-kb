@@ -1,0 +1,20 @@
+{
+  "id": "SP-liemltg2",
+  "kind": "sprint",
+  "title": "Autonomous work is safe",
+  "status": "planned",
+  "goal": "Autonomous writers reach main only through kbgit.py sync --push, repeat runs on unchanged input change nothing, a repeated pipeline failure joins its open bug, and done refuses an item whose KB-Work line git does not read as a trailer",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ]
+}

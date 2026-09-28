@@ -1,0 +1,24 @@
+{
+  "id": "TK-epn3xui5",
+  "kind": "task",
+  "title": "Required asks hold an item until a research task covers them",
+  "status": "todo",
+  "parent": "ST-wgymzw72",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "Asks are marked required or useful; a task with research: true carries asks and its done runs pack on each and requires coverage good; an item with a required ask that is not sufficient is not ready until a research task covering it is done",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "research_task"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/test_backlog.py"
+  ]
+}

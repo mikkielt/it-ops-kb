@@ -1,0 +1,26 @@
+{
+  "id": "TK-rgg2xxqo",
+  "kind": "task",
+  "title": "Document the citation blocks",
+  "status": "todo",
+  "parent": "ST-we3h5s5n",
+  "priority": "P2",
+  "rank": 1,
+  "goal": "kb/_self/tools.md and kb/_self/plugin.md say kb_pack returns search_result blocks and what a host sees",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/selfdoc.py",
+        "check"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/tools.md",
+    "kb/_self/plugin.md"
+  ],
+  "depends_on": [
+    "TK-yittxcs5"
+  ]
+}

@@ -2,7 +2,7 @@
   "id": "EP-hsyx42zz",
   "kind": "epic",
   "title": "Agents spend tokens on the work, not on re-deriving the kb's own state",
-  "status": "draft",
+  "status": "todo",
   "priority": "P2",
   "rank": 0,
   "goal": "Each recurring hand-written read or write that agents repeat against the kb's own docs, tools and state files is one deterministic command or a section-sized read, so a transcript census over a comparable sample of sessions and subagent runs shows the ad-hoc scripts and whole-file reads gone",

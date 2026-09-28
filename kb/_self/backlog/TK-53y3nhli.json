@@ -1,0 +1,40 @@
+{
+  "id": "TK-53y3nhli",
+  "kind": "task",
+  "title": "Research the open gaps of agents/coding-agent-codebase-context",
+  "status": "todo",
+  "parent": "ST-rjxacpdh",
+  "priority": "P2",
+  "rank": 2,
+  "goal": "Each _gaps.md entry under agents/coding-agent-codebase-context has a Resolved line with source ids or a dated Tried note; resolved facts are in the topic",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/check.py"
+      ],
+      "match": "errors=0"
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/rag.py",
+        "eval"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/agents/coding-agent-codebase-context.md",
+    "kb/public/_answers.md",
+    "kb/public/_gaps.md",
+    "kb/public/_sources.csv",
+    "kb/public/_conflicts.md",
+    "kb/public/_coverage.csv",
+    "kb/public/_coverage.md",
+    "kb/public/_retrieval/signals.csv",
+    "_tools/aliases.csv"
+  ],
+  "depends_on": [
+    "TK-blxupnza"
+  ]
+}

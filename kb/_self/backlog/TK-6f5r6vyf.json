@@ -1,0 +1,33 @@
+{
+  "id": "TK-6f5r6vyf",
+  "kind": "task",
+  "title": "The runbook describes knowledge, research tasks and briefs",
+  "status": "todo",
+  "parent": "ST-hzja7lj4",
+  "priority": "P2",
+  "rank": 2,
+  "goal": "kb/_self/backlog.md describes the knowledge field, research: true tasks and briefs in one section",
+  "checks": [
+    {
+      "run": [
+        "grep",
+        "-c",
+        "research: true",
+        "kb/_self/backlog.md"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/selfdoc.py",
+        "check"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/backlog.md"
+  ],
+  "depends_on": [
+    "TK-bhwovpap"
+  ]
+}

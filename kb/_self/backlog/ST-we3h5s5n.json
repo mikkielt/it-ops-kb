@@ -2,7 +2,7 @@
   "id": "ST-we3h5s5n",
   "kind": "story",
   "title": "Native citations from kb tool results",
-  "status": "draft",
+  "status": "todo",
   "priority": "P3",
   "rank": 0,
   "goal": "kb_pack results reach the model as search_result blocks with native citations, once MCP or Claude Code carries them from MCP tool results (block format in agents/hybrid-retrieval.md). Tests named search_result_citations prove the block shape.",

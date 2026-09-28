@@ -1,0 +1,23 @@
+{
+  "id": "TK-w32po2v3",
+  "kind": "task",
+  "title": "Pick the benchmark task and write its compact brief",
+  "status": "todo",
+  "parent": "ST-zptutwlf",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kb/_self/reports/backlog-briefs.md names one backlog task with a knowledge field, the compact brief (packs of its asks and its referenced facts with path:line and tags) and how each arm's fresh subagent is started",
+  "checks": [
+    {
+      "run": [
+        "grep",
+        "-c",
+        "^## Setup",
+        "kb/_self/reports/backlog-briefs.md"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/reports/backlog-briefs.md"
+  ]
+}

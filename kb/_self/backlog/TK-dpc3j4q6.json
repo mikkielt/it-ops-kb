@@ -1,0 +1,24 @@
+{
+  "id": "TK-dpc3j4q6",
+  "kind": "task",
+  "title": "agent_bench configs pass their plugins and settings explicitly",
+  "status": "todo",
+  "parent": "ST-6fb6kzoa",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "Every agent_bench.py config that relies on the clone's plugins or settings passes --plugin-dir and --settings/--setting-sources explicitly; tests named agent_bench_bare prove each",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "agent_bench_bare"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/agent_bench.py",
+    "_tools/test_agent_bench.py"
+  ]
+}

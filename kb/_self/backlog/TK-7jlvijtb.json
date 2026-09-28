@@ -1,0 +1,25 @@
+{
+  "id": "TK-7jlvijtb",
+  "kind": "task",
+  "title": "The runbook defines the five knowledge states",
+  "status": "todo",
+  "parent": "ST-i3t6i2to",
+  "priority": "P2",
+  "rank": 1,
+  "goal": "kb/_self/backlog.md, Status and readiness, defines the five knowledge states and says they never change readiness",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/selfdoc.py",
+        "check"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/backlog.md"
+  ],
+  "depends_on": [
+    "TK-st7glrao"
+  ]
+}

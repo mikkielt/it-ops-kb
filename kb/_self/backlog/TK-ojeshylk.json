@@ -1,0 +1,27 @@
+{
+  "id": "TK-ojeshylk",
+  "kind": "task",
+  "title": "The query-log revert reuses the fingerprint",
+  "status": "todo",
+  "parent": "ST-47hdgt5a",
+  "priority": "P2",
+  "rank": 1,
+  "goal": "ql_deliver.py's revert computes the same fingerprint through backlog.py and adds its pipeline to an open bug carrying it instead of filing a second bug",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "fingerprint"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/ql_deliver.py",
+    "_tools/test_querylog.py"
+  ],
+  "depends_on": [
+    "TK-y7sdxuaa"
+  ]
+}

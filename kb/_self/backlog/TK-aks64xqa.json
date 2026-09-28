@@ -1,0 +1,24 @@
+{
+  "id": "TK-aks64xqa",
+  "kind": "task",
+  "title": "Convergence test over learn, apply, red-pipeline and survey",
+  "status": "todo",
+  "parent": "ST-xp6nkjxi",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "tests.py -k autonomous_converge runs querylog learn and apply (dry run), backlog.py red-pipeline and kbingest.py survey twice on one fixture repository and store, commits the first run's output in between, and asserts the second run changes no file, files no item and queues no research; any tool that does not converge gets a bug item of its own rather than a fix here",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "autonomous_converge"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/test_querylog_e2e.py",
+    "_tools/fixtures/**"
+  ]
+}

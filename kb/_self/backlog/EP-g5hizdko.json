@@ -2,7 +2,7 @@
   "id": "EP-g5hizdko",
   "kind": "epic",
   "title": "Codebase ingestion maps code with the language's own tools",
-  "status": "draft",
+  "status": "todo",
   "priority": "P2",
   "rank": 0,
   "goal": "An agent ingesting a repository, or using the kb as a plugin in a host project, gets the repository's toolchain pins and a map of its packages, imports and symbols from deterministic tools at a pinned commit: kbingest.py survey reports the pins, an operator-approved read-only mapping mode records tool-native maps, topics_for can match code by its imports, /kb-ingest and the plugin docs use them, and the research gaps left by the codebase-mapping topics are worked.",

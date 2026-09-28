@@ -1,0 +1,25 @@
+{
+  "id": "TK-nwzko4of",
+  "kind": "task",
+  "title": "/kb-research works a research task",
+  "status": "todo",
+  "parent": "ST-wgymzw72",
+  "priority": "P2",
+  "rank": 2,
+  "goal": "The kb-research skill takes a research task id, claims it, researches its asks and finishes it with backlog.py done",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/selfdoc.py",
+        "check"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-research/SKILL.md"
+  ],
+  "depends_on": [
+    "TK-fpjw4gv7"
+  ]
+}

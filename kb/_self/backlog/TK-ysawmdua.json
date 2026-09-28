@@ -1,0 +1,24 @@
+{
+  "id": "TK-ysawmdua",
+  "kind": "task",
+  "title": "backlog.py brief ID prints an item's packs and referenced facts",
+  "status": "todo",
+  "parent": "ST-u7bliqzx",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "backlog.py brief ID prints the packs of the item's asks and the text of its referenced facts with path:line and source urls, within a token budget (--budget)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "brief"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/test_backlog.py"
+  ]
+}

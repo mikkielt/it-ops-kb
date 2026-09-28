@@ -1,0 +1,24 @@
+{
+  "id": "TK-y7sdxuaa",
+  "kind": "task",
+  "title": "red-pipeline computes a failure fingerprint and deduplicates on it",
+  "status": "todo",
+  "parent": "ST-47hdgt5a",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "backlog.py red-pipeline computes a 12-hex fingerprint from the failed job, the first failing test id or the normalised first error line, stores it in the bug's links as 'fingerprint <hex>', and adds the new pipeline to an open bug with the same fingerprint instead of filing another",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "fingerprint"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/test_backlog.py"
+  ]
+}
