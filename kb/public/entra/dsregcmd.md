@@ -2,9 +2,9 @@
 topic: entra/dsregcmd
 priority: P1
 applies_to: "Windows 10/11 dsregcmd (doc ms.date 06/27/2025)"
-retrieved_utc: 2026-09-26
+retrieved_utc: 2026-09-27
 sources: [S544, S548]
-status: partial
+status: complete
 files: [entra/dsregcmd-fields.csv]
 ---
 
@@ -13,9 +13,11 @@ files: [entra/dsregcmd-fields.csv]
 ## Summary
 - `dsregcmd-fields.csv`: 74 fields (section, field, description) extracted from the Microsoft Entra docs page (MIT licence, verbatim).
 - Sections: Device state, Device details, User state, SSO state, Pre-join and Post-join diagnostics, NGC prerequisites.
-- The Tenant details section is not in the CSV (the page documents it only through a sample output). [UNK]
+- The Tenant details section is not in the CSV because the page gives it no per-field descriptions, only a sample output (re-read 2026-09-27). [DER S544: field table absent, sample only]
 
 ## Facts
+- Tenant details appear only for Entra joined or hybrid joined devices (not registered ones). The sample shows TenantName, TenantId, Idp, AuthCodeUrl, AccessTokenUrl, MdmUrl, MdmTouUrl, MdmComplianceUrl, SettingsUrl, JoinSrvVersion/Url/Id, KeySrvVersion/Url/Id, WebAuthNSrvVersion/Url/Id and DeviceManagementSrvVer/Url. [DOC S544]
+- Empty MDM URL fields mean MDM isn't configured or the current user isn't in MDM enrollment scope; present MDM URLs don't prove the device is MDM-managed, only that the tenant has automatic-enrollment configuration. [DOC S544]
 - `DeviceId` is "The unique ID of the device in the Microsoft Entra tenant". [DOC S544]
 - Device details are shown only for Entra joined or hybrid joined devices, not for registered ones. [DOC S544]
 - `DeviceAuthStatus` returns SUCCESS, "FAILED. Device is either disabled or deleted", or "FAILED. ERROR"; it was added in Windows 10 21H1 and needs network connectivity in the system context. [DOC S544]

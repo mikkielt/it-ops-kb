@@ -2,9 +2,9 @@
 topic: entra/hybrid-deviceid-objectguid
 priority: P1
 applies_to: "Microsoft Entra Connect Sync, Entra Cloud Sync device sync (preview), hybrid join"
-retrieved_utc: 2026-09-26
+retrieved_utc: 2026-09-27
 sources: [S504, S544, S548, S549, S550, S551, S552]
-status: partial
+status: complete
 ---
 
 # Hybrid join: Entra `deviceId` and AD `objectGUID`
@@ -24,8 +24,8 @@ status: partial
 - Graph describes `device.deviceId` as set by Azure Device Registration Service at registration, without mentioning `objectGUID`. [DOC S504]
 - dsregcmd `DeviceId` is "The unique ID of the device in the Microsoft Entra tenant". [DOC S544]
 - For devices synced by Entra Connect or Cloud Sync, the Entra device ID attribute is populated from `objectGUID`. [DER S549,S550: both sync references map objectGUID to the device ID attribute]
-- An explicit statement that Graph `device.deviceId` equals AD `objectGUID` for every hybrid-joined device (including the AD FS-only path without sync) was not found. [UNK]
-- Byte-order or string-format rules for comparing the 16-byte `objectGUID` with the Graph `deviceId` string are not documented in the sources read. [UNK]
+- No page states that Graph `device.deviceId` equals AD `objectGUID` for every hybrid-joined device, including the AD FS-only path without sync: re-read 2026-09-27, the sync references map objectGUID to the device ID attribute, while the registration flow says DRS "creates a device ID", and a Learn search (hybrid join, manual configuration, design concepts) adds no general statement (see `_conflicts.md`). Verify per device before joining on it. [DER S548, S549, S550: sync mapping vs. registration wording]
+- No page gives byte-order or string-format rules for comparing the 16-byte `objectGUID` with the Graph `deviceId` string (re-read 2026-09-27); test the comparison on a lab device (for example PL-LT-00123) before relying on string equality. [DER S549, S504: absence on the sync reference and the Graph resource page]
 
 ## Reference
 | Doc | Statement | Source |

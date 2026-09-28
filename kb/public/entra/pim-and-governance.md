@@ -2,9 +2,9 @@
 topic: entra/pim-and-governance
 priority: P2
 applies_to: "Microsoft Entra Privileged Identity Management (PIM) for Entra roles and Azure resource roles, Entitlement Management access packages, Access reviews (docs current 2026-09-26)"
-retrieved_utc: 2026-09-26
-sources: [S-h6zdsnii, S-jpsjsa5i, S-5hprvqbx, S-aioepkro, S-xnr7ugsj, S-upv53vkh, S-kzv67wmw, S-bcq2wujf, S-byjcvmyn, S-6psxvqdi, S-a2iaeb54, S-2ooklp7p, S-ay5o5ism, S-efsglmmy, S-tksnvnpk]
-status: partial
+retrieved_utc: 2026-09-27
+sources: [S-h6zdsnii, S-jpsjsa5i, S-5hprvqbx, S-aioepkro, S-xnr7ugsj, S-upv53vkh, S-kzv67wmw, S-bcq2wujf, S-byjcvmyn, S-6psxvqdi, S-a2iaeb54, S-2ooklp7p, S-ay5o5ism, S-efsglmmy, S-tksnvnpk, S-c7vbii6z]
+status: complete
 ---
 
 # PIM for Entra roles, access packages, and access reviews
@@ -93,4 +93,5 @@ Authorization: Bearer {token}
 See also: `auth/entra-intune-rbac.md` (PIM for Groups' effect on group membership propagation timing to on-prem AD, ~20 min Cloud Sync writeback, and token-caching latency after activation — assumed here, not repeated); `auth/ad-jit-membership.md` (the on-prem AD-native equivalent: PAM optional feature TTL group membership, independent of Entra PIM); `auth/enterprise-access-model.md` (tiering/control-plane context for a PIM-eligible role like Global Administrator or Privileged Role Administrator); `entra/agent-id.md` (agent identity governance via Entitlement Management/Agent 365 licensing, referenced above).
 
 ## Open items
-- Exact end-to-end timing for an Entra-role PIM activation to be reflected in a fresh Graph token is not stated: S-jpsjsa5i gives only "within seconds" for the directory-level active assignment and warns that application caching can delay the effect. [UNK: lab check if exact SLA matters]
+- No page gives an end-to-end time for an Entra-role PIM activation to show up in a fresh Graph token (re-read 2026-09-27): the activation page says PIM creates the active assignment "within seconds" and that application caching can delay the effect, with sign-out and sign-in as the remedy. [DER S-jpsjsa5i: only the assignment step is timed]
+- One device-side case is timed: after PIM activation of the Azure AD Joined Device Local Administrator role, a user with a cached primary refresh token gets local admin rights only after the CloudAP plug-in renews the PRT, which it does every four hours. [DOC S-c7vbii6z]

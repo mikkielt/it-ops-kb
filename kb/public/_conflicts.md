@@ -218,7 +218,9 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
 - managedDevice entity set description (S500) says combinations "must use 'and', not 'or'", while property annotations (S500) state "Supports $filter operator 'eq' and 'or'". (topic: graph/csdl-managedDevice)
 - Graph device `id`: `$filter` support stated on resource page (S504), not in CSDL (S500). (topic: graph/csdl-device)
 - Device deletion: manage-device-identities (S546, ms.date 2026-06-17) calls deletion "a nonrecoverable activity"; device soft delete preview (S547, ms.date 2026-04-05) keeps deleted devices recoverable for 30 days. (topic: entra/stale-devices)
+  - Re-read 2026-09-27, still open: manage-device-identities (updated_at 2026-08-25) still calls deletion a nonrecoverable activity and does not mention the soft-delete preview. (topic: entra/stale-devices)
 - Hybrid device ID origin: sync references map objectGUID to deviceID (S549, S550); the registration flow says DRS "creates a device ID" (S548) and Graph says deviceId is set by DRS at registration (S504). (topic: entra/hybrid-deviceid-objectguid)
+  - Re-checked 2026-09-27 (Learn search): no page reconciles the sync mapping with DRS 'creates a device ID'. Still open. (topic: entra/hybrid-deviceid-objectguid)
 - LDAP MaxValRange: ntdsutil article (S569) gives default 1,500; S570 says Windows Server 2008 R2+ hard-codes a maximum of 5,000 overriding higher policy values (different quantities, not a direct contradiction; listed for clarity). (topic: ad/ldap-paging-filters)
 - Licence of microsoftgraph/microsoft-graph-docs-contrib: `LICENSE` is CC BY 4.0, `LICENSE.md` is CC BY-NC-ND 3.0 US (both at commit 4ad99fd37a9e). Only facts and short quotes from this repo are stored in kb.
 
@@ -428,6 +430,7 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
   no longer opt out of automatic agent identity creation" — the same page therefore repeats "May 2026" for
   the opt-out-removed milestone while `whats-new` still says "July 2026"; no reconciling What's new/release
   note for either date was found. (rechecked 2026-09-26, kept unresolved) (topic: entra/agent-id)
+  - Re-checked 2026-09-27 (Learn search): admin-use-entra-agent-identities still says 'Starting May 2026, all new agents have Microsoft Entra Agent IDs'; no release note reconciles the three dates. Still open. (topic: entra/agent-id)
 - Microsoft Learn search index (2026-09-27) still returns the overview page with the PREVIEW banner, while the live page and What's new (S-ifhonpv7) say Entra Agent ID is generally available; the Entra what's-new lists 'General Availability - Microsoft Entra Agent ID platform' in April 2026. (topic: entra/agent-id)
 
 ## agents/windows-agentic-platform
@@ -557,6 +560,7 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
 ## entra/connect-and-cloud-sync
 
 - Cloud Sync device synchronization: the decision guide (S-6q5tyxki, updated 2026-06-15) marks device synchronization / hybrid join as not currently supported in Cloud Sync, while device-sync.md (S550, ms.date 2026-07-21) documents Cloud Sync device sync in preview (AD2AADDeviceSync job, disabled by default, devices can become hybrid joined). Likely the guide predates the preview; lines 14/24 (S-6q5tyxki) and 37 (S550) now state each source as written. (topic: entra/connect-and-cloud-sync)
+  - Re-read 2026-09-27, still open: the decision guide (updated_at 2026-06-15, unchanged) still lists Device Synchronization among Connect-only capabilities and routes hybrid-join device sync to Connect, while the device sync page documents the preview. (topic: entra/connect-and-cloud-sync)
 
 ## gitlab/protected-branches-tags
 
@@ -630,3 +634,7 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
 
 - Endpoint analytics in Adoption Score: the Intune page (S-m5aovwzr, updated_at 2026-04-09) still describes the Adoption Score Endpoint analytics page (score, 180-day trend, startup performance), while the Microsoft 365 Adoption Score page (S-3l57sxrb, updated_at 2026-09-23) says Endpoint analytics was retired from Adoption Score starting 2026-01-22, complete February 2026. The newer M365 page is the likelier current state. (topic: intune/device-inventory-analytics)
 - Linux personal devices: the end-user page Enroll Linux device in Intune (S-dnply3ya, updated_at 2026-04-29) says enrolled Linux devices are corporate-owned and personal devices aren't supported, while the admin deployment guide (S-5vopvhhm) and platform guide (S-nvad3j6y) say employees can enroll their personal Linux devices. (topic: intune/linux-management)
+
+## entra
+
+- Blueprints per pro-code agent: the Agent 365 Copilot Studio identity page (S-ketmxnue, updated_at 2026-05-19) says each pro-code agent has its own blueprint, while Entra's planning guide (S-3tt3ywvk, updated_at 2026-08-14) defaults to one blueprint per trust boundary with several agent identities under it. Follow the Entra guide for design; the Agent 365 sentence reads as a simplification. (topic: entra/agent-id)

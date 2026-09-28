@@ -409,11 +409,15 @@ Still open: (topic: auth/configmgr-rbac-auth)
 ## ident
 
 - Q9 explicit equality "Entra deviceId == AD objectGUID": searched entra-docs (`objectguid` + device id), graph docs-contrib v1.0, memdocs, windowsserverdocs, SupportArticles (entra, mem). Found mapping statements only (S549, S550). Status UNK for explicit equality and for the AD FS-only path. (topic: entra/hybrid-deviceid-objectguid)
+  - Tried 2026-09-27, still open: Learn search (Connect design concepts sourceAnchor, attributes synchronized, hybrid join manual configuration claims, device registration how it works, device disappearance) repeats the objectGUID-deviceID mapping for synced devices only; no statement covers the AD FS-only path. Recorded as DER. (topic: entra/hybrid-deviceid-objectguid)
 - objectGUID vs deviceId string/byte-order comparison rules: not found in win32 ADSchema a-objectguid.md, search-filter-syntax.md, entra-docs. UNK. (topic: entra/hybrid-deviceid-objectguid)
+  - Tried 2026-09-27, still open: same searches; no encoding rule found. Recorded as DER with a lab check. (topic: entra/hybrid-deviceid-objectguid)
 - Q10 Autopilot `id` vs ZTDId: searched memdocs (all), entra-docs, graph docs-contrib v1.0 for `ztdid`; no statement linking them. UNK. (topic: autopilot/device-identity)
+  - Tried 2026-09-27, still open: Graph v1.0 and beta windowsAutopilotDeviceIdentity pages at microsoft-graph-docs-contrib 4ad99fd3 (id = 'The GUID for the object'), Learn search (Autopilot device groups, CA device filters, known issues, dynamic membership rules) name ZTDId only in physicalIds. The article records the absence as DER. Verification: compare GET windowsAutopilotDeviceIdentities/{id} with the Entra device's physicalIds on a lab device. (topic: autopilot/device-identity)
 - Throttling limit for `windowsAutopilotDeviceIdentity`: not listed in any `includes/throttling-intune-*.md` in docs-contrib (grep of all includes). UNK. (topic: graph/throttling)
 - Intune RBAC needed for delegated Graph calls on managedDevices / Autopilot identities: API pages S518-S523 state only Graph permissions. Not searched further in memdocs (budget). UNK. (topic: graph/permissions)
 - `dsregcmd /status` Tenant details fields: documented only through sample output on S544; not extracted. (topic: entra/dsregcmd)
+  - Resolved 2026-09-27: the section's visibility rule, MDM URL note and sample field names are now DOC in entra/dsregcmd.md (S544); the page still has no per-field descriptions, so the CSV stays without them. (topic: entra/dsregcmd)
 - `msDS-LogonTimeSyncInterval` default value when unset: not on schema page S563. Not searched further (budget). UNK. (topic: ad/computer-attributes)
 - managedDevice beta List/Delete API pages don't exist under `intune-devices-manageddevice-*` in beta (only Get); beta permissions for list/delete not captured. (topic: graph/permissions)
 
@@ -800,6 +804,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
 ## entra/pim-and-governance
 
 - Exact end-to-end timing (seconds) for an Entra-role (not Azure-resource-role) PIM activation to be reflected in a fresh Graph token was not independently confirmed on a fetched page this pass (1 Microsoft Learn search for "PIM Entra role activation token propagation seconds"); the Azure-resource-role figure is treated as consistent but not verbatim-confirmed for Entra roles. (topic: entra/pim-and-governance)
+  - Tried 2026-09-27, still open: Learn search (activate Entra role, Azure resource roles, role settings) repeats 'within seconds' plus application caching; the only timed case found is the PRT renewal every four hours for the Device Local Administrator role (support article, now DOC). The article records the rest as DER. (topic: entra/pim-and-governance)
 
 ## graph/microsoft365dsc
 
@@ -918,3 +923,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
 ## intune (complete articles)
 
 - Remaining UNK lines in complete intune articles, re-checked 2026-09-27: macOS Managed Apple ID, EnrollMyMac, DEM 1,000 and direct enrollment now DOC (S-fxcmmurx, S-gjyh2735, S-ischppkc; no USB statement found, the claim was dropped); Linux Azure VM and GNOME DOC (S-dnply3ya, which also contradicts BYOD support, see _conflicts.md), packages.microsoft.com DOC (S-kakqvkfa), custom compliance join-state prerequisites absent from the current page (DER); Data Warehouse connector v1 timing DOC from the what's new entry (S-7x2lmxhr); remote help CA for unattended sessions and iOS ACME re-enrollment remain undocumented (DER absences); the reports generalisation is now tagged DER. (topic: intune/macos-management)
+
+## entra/agent-id
+
+- Four UNK lines re-checked 2026-09-27: report-only support for agent CA policies is DOC (S-sxxqhpa2); the Copilot Studio vs pro-code blueprint model is DOC on the Agent 365 page but contradicted by Entra planning guidance (S-ketmxnue vs S-3tt3ywvk, see _conflicts.md); 'risk signals feed the Agent Registry with automatic remediation' is found only in the Learn search index copy of the Agent ID overview, not the live page (recorded as DER); the cutover-date line is now DER pointing to _conflicts.md. (topic: entra/agent-id)

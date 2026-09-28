@@ -2,8 +2,8 @@
 topic: entra/connect-and-cloud-sync
 priority: P1
 applies_to: "Microsoft Entra Connect Sync 2.x, Microsoft Entra Cloud Sync (provisioning agent), Microsoft Graph synchronization API"
-retrieved_utc: 2026-09-26
-sources: [S-6q5tyxki, S-2vza23mx, S-lcd7y7ff, S-de2kio2b, S-bl4r6qrk, S-qwmc4yvw, S-i2npg2z3, S-t2wo7s3a, S-ze3aud2j, S-6clhfher, S-vra6j7cx, S-rb7ssjjy, S-plhfh6ev, S-qj44i4mg, S-dhrhl2jz, S-nyhpa4pp, S550]
+retrieved_utc: 2026-09-27
+sources: [S-6q5tyxki, S-2vza23mx, S-lcd7y7ff, S-de2kio2b, S-bl4r6qrk, S-qwmc4yvw, S-i2npg2z3, S-t2wo7s3a, S-ze3aud2j, S-6clhfher, S-vra6j7cx, S-rb7ssjjy, S-plhfh6ev, S-qj44i4mg, S-dhrhl2jz, S-nyhpa4pp, S550, S-7dgnspu4, S-nhcfnxec]
 status: complete
 ---
 
@@ -27,7 +27,7 @@ status: complete
 - Cloud Sync auto-upgrades its provisioning agents; there is no supported way to disable auto-upgrade. [DOC S-lcd7y7ff]
 - Device writeback (Connect Sync only): requires Entra ID P1 or P2; enables Windows Hello for Business hybrid certificate trust device registration and AD FS-based Conditional Access; devices must be in the same forest as users (single-forest only); only one device-registration configuration object is allowed per forest; it can take up to 3 hours for device objects to be written back to AD after enablement. [DOC S-qwmc4yvw]
 - Device-writeback prerequisite: the forest holding the devices must have its schema at Windows Server 2012 R2 level so the device object and its attributes exist; the wizard's Device container page prepares the forest itself when given Enterprise Administrator credentials, or generates `CreateDeviceContainer.ps1` for the forest's enterprise administrator to run. [DOC S-qwmc4yvw]
-- The forest preparation is done by `Initialize-ADSyncDeviceWriteBack -domainname <domain.com>` from `AdSyncPrep.psm1`, run per domain. [UNK: not in S-qwmc4yvw as re-read 2026-09-27]
+- When the Device writeback option can't be enabled, the support article's fix is to run, from `%ProgramFiles%\Microsoft Azure Active Directory Connect\AdPrep` in the Active Directory PowerShell module as an enterprise administrator, `Import-Module .\AdSyncPrep.psm1` then `Initialize-ADSyncDeviceWriteBack -domainname <domain>`, possibly for each domain; the current enable page instead prepares the forest from the wizard or `CreateDeviceContainer.ps1`. [DOC S-7dgnspu4]
 - Entra Connect Sync 2.x versions retire 12 months after a newer version releases (policy effective 15 March 2023); a retired version can stop working unexpectedly, loses new security fixes and diagnostic tooling, and may not receive full support. [DOC S-i2npg2z3]
 - Mandatory upgrade deadline: all Connect Sync services stop working on 30 September 2026 for tenants not on at least version 2.5.79.0 (a May 2025 release that hardened a back-end service). [DOC S-i2npg2z3]
 - Azure AD Connect V1 (pre-2.x) retired 31 August 2022; as of 1 October 2023 Entra cloud services stopped accepting connections from V1 servers and identities no longer synchronize; all 1.x versions are now non-functional. [DOC S-t2wo7s3a]
@@ -41,7 +41,7 @@ status: complete
 - OU-based filtering hazard: renaming a filtered-in OU changes its DistinguishedName, silently dropping it from sync scope; the next full import then obsoletes (deletes) its objects in Entra ID unless the OU is reselected in the wizard first. [DOC S-rb7ssjjy]
 - Graph synchronization API: `POST /servicePrincipals/{id}/synchronization/jobs/{jobId}/start` starts a `synchronizationJob` (a paused job continues from where it paused; a quarantined job has its quarantine cleared); it takes no request body and returns `204 No Content`. [DOC S-vra6j7cx]
 - The synchronizationJob resource also has `pause` (temporary stop, all progress and state kept until the next start) and `restart` (start over and reprocess all objects in the directory) methods. [DOC S-nyhpa4pp]
-- A newly created synchronizationJob starts in a disabled state, and `restart` accepts `{"criteria":{"resetScope":"Full"}}`. [UNK: not in S-vra6j7cx as re-read 2026-09-27]
+- Creating a synchronizationJob gives it a default schema in a **disabled** state (call Start to begin); `restart` takes `criteria.resetScope`, a comma-separated mix of `None`, `ConnectorDataStore`, `Escrows`, `Watermark`, `QuarantineState`, `Full` (all options) and `ForceDeletes`, where an empty value matches the admin center's Restart provisioning (QuarantineState, Watermark, Escrows) and `None` / `ConnectorDataStore` are marked do not use. [DOC S-nhcfnxec]
 - Least-privileged Graph permission for starting/creating a synchronization job: delegated `Synchronization.ReadWrite.All`, or application `Application.ReadWrite.OwnedBy` (higher-privileged: `Synchronization.ReadWrite.All`); delegated calls need the signed-in user to be an owner/member of the relevant object or hold Application Administrator, Cloud Application Administrator, or Hybrid Identity Administrator (the role needed to configure Cloud Sync). [DOC S-vra6j7cx]
 - Warning in the synchronizationJob API: do not script continuous calls to start a running job, since that can stop the service; only call start when the job is paused or in quarantine. [DOC S-vra6j7cx]
 - The Connect-to-Cloud-Sync migration tool's current limits: one AD forest with <=2,000 in-scope objects and additive OU inclusion scoping of <=30 containers per domain; migration is blocked by custom sync rules, group filtering, a custom UPN, directory extensions, device synchronization, or unsupported writeback scenarios. [DOC S-qj44i4mg]

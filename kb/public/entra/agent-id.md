@@ -2,9 +2,9 @@
 topic: entra/agent-id
 priority: P1
 applies_to: "Microsoft Entra Agent ID (generally available per its What's new page, docs re-read 2026-09-27), Microsoft Agent 365, Microsoft Graph v1.0 agentIdentityBlueprint/agentIdentity resources, Microsoft Copilot Studio (automatic agent identities since May 2026 per the admin page), Microsoft Foundry"
-retrieved_utc: 2026-09-26
-sources: [S2040, S-fdnhk2tn, S-lekwizgd, S-nzxr4eg2, S-midck7u4, S-735ghpq5, S-5yopk2hr, S-q6lirjr2, S-uva2ob4g, S-l4557zht, S-3puxctla, S-ifhonpv7, S-6ecweang, S-ch6zrjfg, S-avju6l5n, S-3avzf7db, S-ee22tgci, S-rasraulp]
-status: partial
+retrieved_utc: 2026-09-27
+sources: [S2040, S-fdnhk2tn, S-lekwizgd, S-nzxr4eg2, S-midck7u4, S-735ghpq5, S-5yopk2hr, S-q6lirjr2, S-uva2ob4g, S-l4557zht, S-3puxctla, S-ifhonpv7, S-6ecweang, S-ch6zrjfg, S-avju6l5n, S-3avzf7db, S-ee22tgci, S-rasraulp, S-sxxqhpa2, S-ketmxnue, S-3tt3ywvk, S-pbkrk3ow]
+status: complete
 ---
 
 # Microsoft Entra Agent ID
@@ -139,8 +139,7 @@ products create them automatically.
 - CA policies can scope to **All agent identities** or **All agent users (Preview)** (or selected ones)
   against **All resources**; for agent identities the only condition is **agent risk** (high/medium/low)
   and the only control is **Block access**. [DOC S-6ecweang]
-- Report-only mode as a pre-enforcement step for agent-targeted policies. [UNK: not in S-midck7u4 as
-  re-read 2026-09-27]
+- Conditional Access policies for agent identities support **Report-only** mode for evaluation before enforcement (Manage agent identities, 2026-06-17); the best-practices page also says to test agent policies in report-only mode first. [DOC S-sxxqhpa2, S-uva2ob4g]
 - The Conditional Access template list has an **AI Agents** category with three templates: Block high-risk
   agent identities, Configure policy for autonomous agent access, and Configure policy for on-behalf-of agent
   access. [DOC S-3puxctla]
@@ -165,8 +164,7 @@ products create them automatically.
 - Agent risk detections (all offline at retrieval) cover autonomous agent activity; in on-behalf-of flows
   risky activity is attributed to the **user**, not the agent. Risk-based Conditional Access policies can
   block risky agents, and "Confirm compromise" sets the agent's risk to High. [DOC S-5yopk2hr]
-- Agent risk also feeding the Agent Registry with automatic remediation of compromised agents. [UNK: not
-  in S-fdnhk2tn as re-read 2026-09-27]
+- The migration pages still list "risk-based detection and automated remediation" from ID Protection and agent registry visibility as benefits of Agent ID, but the current Agent ID overview (re-read 2026-09-27) no longer says risk signals feed the Agent Registry with automatic remediation; that sentence survives only in the Learn search index's older copy. Treat a registry-driven automatic remediation as unconfirmed. [DER S-pbkrk3ow, S-fdnhk2tn: present on the migration page, absent from the live overview]
 - Programmatic access: Microsoft Graph exposes `riskyAgents` and `agentRiskDetections` collections; the
   Risky Agents report also offers a **Disable** action that blocks all sign-ins for the agent. [DOC
   S-5yopk2hr]
@@ -195,8 +193,8 @@ products create them automatically.
   2026-03-18, see `_conflicts.md`). All Copilot-Studio-created agent identities are children of one
   **Microsoft Copilot Studio agent identity blueprint** (Blueprint ID
   `25664c89-cea5-4ab6-b924-a54fd8a19ae0` at retrieval). [DOC S-q6lirjr2]
-- A pro-code agent typically gets its own blueprint, unlike Copilot Studio agents. [UNK: not in
-  S-q6lirjr2 as re-read 2026-09-27]
+- The Agent 365 Copilot Studio identity page says that unlike pro-code agents, where each agent has its own blueprint, all Copilot Studio app-based agents share one blueprint. [DOC S-ketmxnue]
+- Entra's planning guidance instead defaults to one blueprint per **trust boundary**: agents sharing a runtime, secrets, file system and network can share one, and blocking, audit separation or scale-out are not reasons to add blueprints (see `_conflicts.md`). [DOC S-3tt3ywvk]
 - Agents created **before** the May 2026 rollout keep using legacy **app registrations**; Microsoft will
   migrate them in a future update, and meanwhile they can be migrated manually in the Power Platform admin
   center, with PowerShell scripts, or with Power Platform APIs. Governance works for both identity types
@@ -228,12 +226,7 @@ products create them automatically.
   [DOC S-5yopk2hr]
 
 ### Open item
-- The exact automatic-Agent-ID cutover date for Copilot Studio conflicts across three current Microsoft
-  Learn pages: **2026-03-18** ("Recreate Copilot Studio agents..."), **"May 2026"** (re-confirmed
-  2026-09-26 on `admin-use-entra-agent-identities` and `govern-migrate-api-entra-agent-identity`), and
-  **"July 2026"** (`whats-new`, "you can no longer opt out at the environment level"). Re-checking this
-  session added the third date rather than resolving the discrepancy — see `_conflicts.md`. [UNK: which
-  date is authoritative, or whether these are staged rollout milestones rather than one cutover]
+- The automatic-Agent-ID cutover date for Copilot Studio is given three ways on current Learn pages (2026-03-18, "May 2026", and "July 2026" on What's new); the admin page still says "Starting May 2026" (search index 2026-09-27). Which date applies, or whether they describe a staged rollout, is recorded in `_conflicts.md`; plan on May 2026 as the date the admin page states for new agents. [DER S-q6lirjr2: the admin page's own date; the other two dates are in _conflicts.md]
 
 ## Reference
 | Construct | Credentials? | Created by | Scope | Source |
