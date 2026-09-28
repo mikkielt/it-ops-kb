@@ -7,7 +7,7 @@ What a kb lookup costs an agent, against the same agent without the kb, and what
 - **Re-run:** `python3 _tools/benchmarks.py run` runs every scenario, `run <scenario>` one; each section names its command. Paid runs are fresh `claude -p` sessions; the rest run no model.
 - **Counting:** input is uncached + cache-write + cache-read input tokens, read from each run's result event or transcript, never from an agent's own account. Effective input weights cache writes 2x and cache reads 0.1x. Dollar costs compare only within one batch, since the run that pays a cache write varies; compare tokens across batches.
 - **Isolation:** every `claude -p` runs with hooks off (`--settings '{"disableAllHooks": true}'`) from a throwaway clone of `HEAD` whose query log is `off` and whose `origin` is a local bare repository; the kb and docs servers are registered at local scope for that clone and removed afterwards. The scenarios that measure the query log's hooks run them in a throwaway clone in mode `local` with a local bare `origin`, or as a copy of the plugin whose hook commands write under the scratch directory instead of `~/.claude/plugins/data/`. The historical runs had hooks on; a hook adds no context unless it prints, which the query log's never do.
-- **Repetitions:** the re-run uses 1 run per cell where the history used 2, except where a section says otherwise; the history's run-to-run spread (in its cells) is the noise a single run carries. Model aliases resolved to Haiku 4.5, Sonnet 5 and Opus 5.5.
+- **Repetitions:** the re-run uses 1 run per cell where the history used 2, except where a section says otherwise; the history's run-to-run spread (in its cells) is the noise a single run carries. Re-runs on this machine, with other work on it: timings moved by up to 15% (`capture`'s median 47-55 ms over four runs of `querylog-hooks`), `always-on`'s token counts by under 0.1% (8 tokens). Model aliases resolved to Haiku 4.5, Sonnet 5 and Opus 5.5.
 
 Spend of the runs of each scenario, per record (paid `claude -p` runs, the Haiku and Sonnet calls made through the query log's own commands included):
 
@@ -26,12 +26,12 @@ Spend of the runs of each scenario, per record (paid `claude -p` runs, the Haiku
 | kb-lookup-agent | 2026-09-28 | 3 | 74,652 | 845 | $0.12 |
 | models | 2026-09-28 | 28 | 2,788,545 | 26,211 | $4.01 |
 | partial | 2026-09-28 | 13 | 2,522,765 | 21,392 | $1.79 |
-| querylog-pipeline | 2026-09-28 | 1 | 7,163 | 2,497 | $0.03 |
+| querylog-pipeline | 2026-09-28 | 1 | 7,250 | 2,608 | $0.03 |
 | research | 2026-09-28 | 1 | 112,904 | 2,809 | $0.21 |
 | retrieval | 2026-09-28 | 1 | 16,352 | 3,331 | $0.07 |
 | router | 2026-09-28 | 22 | 358,198 | 8,244 | $0.30 |
 | subagents | 2026-09-28 | 24 | 724,378 | 23,213 | $3.30 |
-| all | | 234 | 24,683,321 | 253,567 | $25.39 |
+| all | | 234 | 24,683,408 | 253,678 | $25.39 |
 <!-- /bench -->
 
 ## Lookups against the web
@@ -44,7 +44,7 @@ Spend of the runs of each scenario, per record (paid `claude -p` runs, the Haiku
 | record | date | commit | Claude Code | kb topics | runs per cell | spend of the runs |
 |---|---|---|---|---|---|---|
 | 7c94354 | 2026-09-27 | 7c94354 | 2.1.283 | 265 | 2 | - |
-| 2026-09-28 | 2026-09-28 | 9dcb5ec | 2.1.283 | 271 | 1 | $8.10 |
+| 2026-09-28 | 2026-09-28 | 3e83754 | 2.1.283 | 271 | 1 | $8.10 |
 <!-- /bench -->
 
 Mean per question, over the seven questions the kb covers and the two it does not:
@@ -157,7 +157,7 @@ What it shows:
 | record | date | commit | Claude Code | kb topics | runs per cell | spend of the runs |
 |---|---|---|---|---|---|---|
 | 7c94354 | 2026-09-27 | 7c94354 | 2.1.282 | 265 | - | - |
-| 2026-09-28 | 2026-09-28 | 9dcb5ec | 2.1.283 | 271 | 1 | $3.30 |
+| 2026-09-28 | 2026-09-28 | 3e83754 | 2.1.283 | 271 | 1 | $3.30 |
 <!-- /bench -->
 
 <!-- bench:table subagents metrics=input,cost_est,wall_s,fully_right,checks -->
@@ -210,7 +210,7 @@ What it shows:
 | record | date | commit | Claude Code | kb topics | runs per cell | spend of the runs |
 |---|---|---|---|---|---|---|
 | 6f4b998 | 2026-09-26 | 6f4b998 | 2.1.283 | 259 | 2 | - |
-| 2026-09-28 | 2026-09-28 | 9dcb5ec | 2.1.283 | 271 | 1 | $3.55 |
+| 2026-09-28 | 2026-09-28 | 3e83754 | 2.1.283 | 271 | 1 | $3.55 |
 <!-- /bench -->
 
 <!-- bench:table router-web metrics=cost,wall_s,input,correct -->
@@ -238,7 +238,7 @@ What it shows: on the covered questions the router cost $0.033 and 10 s against 
 | record | date | commit | Claude Code | kb topics | runs per cell | spend of the runs |
 |---|---|---|---|---|---|---|
 | 3dcb873 | 2026-09-26 | 3dcb873 | 2.1.283 | 259 | 1 | - |
-| 2026-09-28 | 2026-09-28 | 55aa950 | 2.1.283 | 271 | 1 | $4.01 |
+| 2026-09-28 | 2026-09-28 | 654c8ad | 2.1.283 | 271 | 1 | $4.01 |
 <!-- /bench -->
 
 <!-- bench:table models metrics=cost,wall_s,checks,tool_calls -->
@@ -288,7 +288,7 @@ What it shows:
 |---|---|---|---|---|---|---|
 | 3dcb873 | 2026-09-26 | 3dcb873 | 2.1.283 | 259 | - | - |
 | 46aa6ae | 2026-09-26 | 46aa6ae | 2.1.283 | 259 | - | - |
-| 2026-09-28 | 2026-09-28 | 55aa950 | 2.1.283 | 271 | 1 | $0.30 |
+| 2026-09-28 | 2026-09-28 | 654c8ad | 2.1.283 | 271 | 1 | $0.30 |
 <!-- /bench -->
 
 <!-- bench:table router metrics=cost,wall_s,checks,start_ctx,measured -->
@@ -335,7 +335,7 @@ What it shows:
 | record | date | commit | Claude Code | kb topics | runs per cell | spend of the runs |
 |---|---|---|---|---|---|---|
 | 5088c5a | 2026-09-27 | 5088c5a | 2.1.283 | 265 | 1 | - |
-| 2026-09-28 | 2026-09-28 | 55aa950 | 2.1.283 | 271 | 1 | $0.50 |
+| 2026-09-28 | 2026-09-28 | 654c8ad | 2.1.283 | 271 | 1 | $0.50 |
 <!-- /bench -->
 
 <!-- bench:table howto metrics=cost,checks,wall_s -->
@@ -364,7 +364,7 @@ What it shows: with `SNIPPET:` units both models passed 9/9 again, Haiku at $0.1
 |---|---|---|---|---|---|---|
 | 464ae5f | 2026-09-28 | 464ae5f | 2.1.283 | 266 | 2 | - |
 | 85bf6c8 | 2026-09-28 | 85bf6c8 | 2.1.283 | 266 | 2 | - |
-| 2026-09-28 | 2026-09-28 | 55aa950 | 2.1.283 | 271 | 1 | $1.79 |
+| 2026-09-28 | 2026-09-28 | 654c8ad | 2.1.283 | 271 | 1 | $1.79 |
 <!-- /bench -->
 
 <!-- bench:table partial metrics=cost,input,checks,searches,fetched,live checks,outcome -->
@@ -411,7 +411,7 @@ What it shows:
 | record | date | commit | Claude Code | kb topics | runs per cell | spend of the runs |
 |---|---|---|---|---|---|---|
 | 19010a8 | 2026-09-25 | 19010a8 | - | 188 | - | - |
-| 2026-09-28 | 2026-09-28 | 9dcb5ec | 2.1.283 | 271 | 1 | $1.35 |
+| 2026-09-28 | 2026-09-28 | 3e83754 | 2.1.283 | 271 | 1 | $1.35 |
 <!-- /bench -->
 
 <!-- bench:table files-subagents metrics=tool_calls,requests,start_ctx,input,effective_input,wall_s -->
@@ -441,7 +441,7 @@ What it shows: at the old commit and with today's Claude Code, a Sonnet subagent
 | record | date | commit | Claude Code | kb topics | runs per cell | spend of the runs |
 |---|---|---|---|---|---|---|
 | 0f85d24 | 2026-09-25 | 0f85d24 | - | 188 | - | - |
-| 2026-09-28 | 2026-09-28 | 9dcb5ec | 2.1.283 | 271 | 1 | $1.74 |
+| 2026-09-28 | 2026-09-28 | 3e83754 | 2.1.283 | 271 | 1 | $1.74 |
 <!-- /bench -->
 
 <!-- bench:table files-headless metrics=turns,input,out,wall_s -->
@@ -480,7 +480,7 @@ What it shows:
 |---|---|---|---|---|---|---|
 | 0659f83 | 2026-09-25 | 0659f83 | 2.1.282 | 188 | - | - |
 | 945fb09 | 2026-09-27 | 945fb09 | 2.1.282 | 188 | - | - |
-| 2026-09-28 | 2026-09-28 | 9dcb5ec | 2.1.283 | 271 | 1 | $1.50 |
+| 2026-09-28 | 2026-09-28 | 3e83754 | 2.1.283 | 271 | 1 | $1.50 |
 <!-- /bench -->
 
 <!-- bench:table host-lookups metrics=turns,input,out,wall_s,tool_calls,checks,start_ctx -->
@@ -521,7 +521,7 @@ What it shows:
 | 3725d8f | 2026-09-27 | 3725d8f | 2.1.283 | 265 | - | - |
 | 99e464a | 2026-09-28 | 99e464a | 2.1.283 | 271 | - | - |
 | 01587ae | 2026-09-28 | 01587ae | 2.1.283 | 271 | - | - |
-| 2026-09-28 | 2026-09-28 | 9dcb5ec | 2.1.283 | 271 | 4 | $0.12 |
+| 2026-09-28 | 2026-09-28 | 3e83754 | 2.1.283 | 271 | 4 | $0.12 |
 <!-- /bench -->
 
 <!-- bench:table always-on metrics=input,files_the_hooks_wrote -->
@@ -547,7 +547,7 @@ What it shows:
 | record | date | commit | Claude Code | kb topics | runs per cell | spend of the runs |
 |---|---|---|---|---|---|---|
 | 945fb09 | 2026-09-27 | 945fb09 | 2.1.283 | 266 | - | - |
-| 2026-09-28 | 2026-09-28 | 55aa950 | 2.1.283 | 271 | 1 | $0.12 |
+| 2026-09-28 | 2026-09-28 | 654c8ad | 2.1.283 | 271 | 1 | $0.12 |
 <!-- /bench -->
 
 <!-- bench:table kb-lookup-agent metrics=start_ctx,input,requests,route,checks -->
@@ -573,7 +573,7 @@ What it shows: the agent starts at 4.0k (3,999-4,009), 70 tokens above the histo
 | 0659f83 | 2026-09-25 | 0659f83 | - | 188 | - | - |
 | beeb4de | 2026-09-25 | beeb4de | - | 188 | - | - |
 | beacebd | 2026-09-28 | beacebd | - | 188 | - | - |
-| 2026-09-28 | 2026-09-28 | a64ef2a | 2.1.283 | 271 | 1 | $0.07 |
+| 2026-09-28 | 2026-09-28 | f830156 | 2.1.283 | 271 | 1 | $0.07 |
 <!-- /bench -->
 
 <!-- bench:table retrieval metrics=value -->
@@ -604,7 +604,7 @@ What it shows: on the grown kb, keyword probes find 98% of sampled tagged facts'
 | record | date | commit | Claude Code | kb topics | runs per cell | spend of the runs |
 |---|---|---|---|---|---|---|
 | beacebd | 2026-09-28 | beacebd | - | 266 | - | - |
-| 2026-09-28 | 2026-09-28 | 66d7d7a | 2.1.283 | 271 | 1 | - |
+| 2026-09-28 | 2026-09-28 | bfa2a7d | 2.1.283 | 271 | 1 | - |
 <!-- /bench -->
 
 <!-- bench:table verdict metrics=passed,verdict_good,verdict_weak,verdict_none,indexed_lines,median_ms,p95_ms -->
@@ -648,7 +648,7 @@ What it shows: the shipped rules hold on the grown kb: the eval set passes 250 o
 |---|---|---|---|---|---|---|
 | 88e2a10 | 2026-09-25 | 88e2a10 | - | 188 | - | - |
 | 17387ce | 2026-09-25 | 17387ce | - | 188 | - | - |
-| 2026-09-28 | 2026-09-28 | a64ef2a | 2.1.283 | 271 | 1 | $0.10 |
+| 2026-09-28 | 2026-09-28 | f830156 | 2.1.283 | 271 | 1 | $0.10 |
 <!-- /bench -->
 
 <!-- bench:table doc2query metrics=line_in_pack_pct,passed,mean_chars,verdicts,pilot line in pack,control line in pack,eval,off-kb good,mean pack chars -->
@@ -678,7 +678,7 @@ What it shows: as in round 2, expansion adds nothing measurable on fresh blind q
 | record | date | commit | Claude Code | kb topics | runs per cell | spend of the runs |
 |---|---|---|---|---|---|---|
 | e397a24 | 2026-09-27 | e397a24 | - | 259 | - | - |
-| 2026-09-28 | 2026-09-28 | 952427b | 2.1.283 | 271 | 5 | - |
+| 2026-09-28 | 2026-09-28 | 287f380 | 2.1.283 | 271 | 5 | - |
 <!-- /bench -->
 
 <!-- bench:table tool-speed metrics=time,median_ms,p95_ms,s,size_mb -->
@@ -711,55 +711,55 @@ These scenarios have no history: they measure what was built after the last runs
 
 ### Query log hooks
 
-**Setup:** `python3 _tools/benchmarks.py run querylog-hooks`: each hook command through `sh _tools/kbpy` of a throwaway clone, its query log in mode `local` under a scratch plugin data directory: `capture` on a `kb:` prompt, a `kb_pack` call and a `Stop` (30 runs each; async hooks, so no prompt waits on them), the two synchronous `UserPromptSubmit` hooks on a prompt without `kb:`, the `SessionEnd` launcher with nothing waiting and with a closed session to distill (20 each; the second starts a detached distill, whose `claude` here fails at once, so no model runs), and the weekly digest hook. The always-on context of the hooks is in "Always-on cost".
+**Setup:** `python3 _tools/benchmarks.py run querylog-hooks`: each hook command through `sh _tools/kbpy` of a throwaway clone, its query log in mode `local` under a scratch plugin data directory: `capture` on a `kb:` prompt, a `kb_pack` call and a `Stop` (30 runs each; async hooks, so no prompt waits on them), the two synchronous `UserPromptSubmit` hooks on a prompt without `kb:`, the `SessionEnd` launcher with nothing waiting and with a closed session to distill (20 each; the second starts a detached distill, whose `claude` here fails at once, so no model runs), and the weekly digest hook; the query log at `PIPELINE_VERSION` 3. The always-on context of the hooks is in "Always-on cost".
 
 <!-- bench:records querylog-hooks -->
 | record | date | commit | Claude Code | kb topics | runs per cell | spend of the runs |
 |---|---|---|---|---|---|---|
-| 2026-09-28 | 2026-09-28 | 952427b | 2.1.283 | 271 | 30 | - |
+| 2026-09-28 | 2026-09-28 | 8d9ada4 | 2.1.283 | 271 | 30 | - |
 <!-- /bench -->
 
 <!-- bench:table querylog-hooks metrics=median_ms,p95_ms,max_ms -->
 | case | arm | median_ms | p95_ms | max_ms |
 |---|---|---|---|---|
-| capture, UserPromptSubmit | async hook | 48.6 ms | 49.3 ms | - |
-| capture, PostToolUse (kb_pack) | async hook | 48.6 ms | 49.5 ms | - |
-| capture, Stop | async hook | 47.4 ms | 48.8 ms | - |
-| kb_hook.py, a prompt without kb: | sync hook | 17.2 ms | 18.1 ms | - |
-| kb_change_router.py, a question | sync hook (clone only) | 17.4 ms | 18.2 ms | - |
-| SessionEnd launcher, nothing waiting | sync hook | 46.8 ms | 47.7 ms | - |
-| SessionEnd launcher, a session to distill | sync hook | 49.7 ms | 56.4 ms | - |
-| SessionEnd launcher | sync hook | - | - | 57.8 ms |
-| digest --hook | sync hook | 59.8 ms | 61.6 ms | - |
+| capture, UserPromptSubmit | async hook | 48.9 ms | 50.0 ms | - |
+| capture, PostToolUse (kb_pack) | async hook | 48.8 ms | 49.7 ms | - |
+| capture, Stop | async hook | 49.0 ms | 49.5 ms | - |
+| kb_hook.py, a prompt without kb: | sync hook | 17.8 ms | 18.2 ms | - |
+| kb_change_router.py, a question | sync hook (clone only) | 17.7 ms | 18.3 ms | - |
+| SessionEnd launcher, nothing waiting | sync hook | 47.3 ms | 48.1 ms | - |
+| SessionEnd launcher, a session to distill | sync hook | 50.0 ms | 50.7 ms | - |
+| SessionEnd launcher | sync hook | - | - | 51.1 ms |
+| digest --hook | sync hook | 52.0 ms | 54.2 ms | - |
 <!-- /bench -->
 
 What it shows:
-- **The `SessionEnd` launcher returns in 47-50 ms at the median and 58 ms at worst,** about a tenth of `LAUNCH_BUDGET_S` (500 ms), also when it starts a detached distill.
-- `capture` takes 47-49 ms per event, all of it Python's start and the module's import; it runs async, so no prompt waits on it.
-- The synchronous `UserPromptSubmit` hooks add 17 ms each to a prompt without `kb:` (`kb_hook.py`, and in a clone the change router); the weekly digest hook 60 ms.
+- **The `SessionEnd` launcher returns in 47-50 ms at the median and 51 ms at worst,** about a tenth of `LAUNCH_BUDGET_S` (500 ms), also when it starts a detached distill.
+- `capture` takes 49 ms per event, all of it Python's start and the module's import; it runs async, so no prompt waits on it.
+- The synchronous `UserPromptSubmit` hooks add 17 ms each to a prompt without `kb:` (`kb_hook.py`, and in a clone the change router); the weekly digest hook 52 ms.
 
 ### Distill, learn and apply
 
-**Setup:** `python3 _tools/benchmarks.py run querylog-pipeline`: `distill --replay` over the fixture spool (`_tools/fixtures/querylog/`) with the recorded Haiku replies, 5 runs; `learn` and `apply` on the fixture store in a throwaway clone (mode `local`), with the adoption gates' numbers (`rag.py eval`, mean pack, off-kb `good`) before and after, and what the gates refused; then one `distill` of the same spool with the real Haiku, through a `claude` shim that logs each call's usage.
+**Setup:** `python3 _tools/benchmarks.py run querylog-pipeline`: `distill --replay` over the fixture spool (`_tools/fixtures/querylog/`) with the recorded Haiku replies, 5 runs; `learn` and `apply` on the fixture store in a throwaway clone (mode `local`), with the adoption gates' numbers (`rag.py eval`, mean pack, off-kb `good`) before and after, and what the gates refused; then one `distill` of the same spool with the real Haiku, through a `claude` shim that logs each call's usage. The rows name `PIPELINE_VERSION` (3: an entry holds the kb's own question and its citations, and Haiku only judges).
 
 <!-- bench:records querylog-pipeline -->
 | record | date | commit | Claude Code | kb topics | runs per cell | spend of the runs |
 |---|---|---|---|---|---|---|
-| 2026-09-28 | 2026-09-28 | 66d7d7a | 2.1.283 | 271 | 1 | $0.03 |
+| 2026-09-28 | 2026-09-28 | 8d9ada4 | 2.1.283 | 271 | 1 | $0.03 |
 <!-- /bench -->
 
 <!-- bench:table querylog-pipeline metrics=median_ms,s,entries,finding_records,eval_passed,eval_rows,mean_pack_chars,offkb_good,rejected,failed: eval fails,failed: off-kb good rises,failed: mean pack grows,haiku_calls,entries_sent,input_per_entry,out_per_entry,cost -->
 | case | arm | median_ms | s | entries | finding_records | eval_passed | eval_rows | mean_pack_chars | offkb_good | rejected | failed: eval fails | failed: off-kb good rises | failed: mean pack grows | haiku_calls | entries_sent | input_per_entry | out_per_entry | cost |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| distill (recorded Haiku) | fixtures | 4050.2 ms | - | 4 | - | - | - | - | - | - | - | - | - | - | - | - | - | - |
+| distill (recorded Haiku) | fixtures | 4074.5 ms | - | 4 | - | - | - | - | - | - | - | - | - | - | - | - | - | - |
 | learn | fixtures | - | 0.13 s | - | 9 | - | - | - | - | - | - | - | - | - | - | - | - | - |
-| apply | fixtures | - | 24.58 s | - | - | - | - | - | - | - | - | - | - | - | - | - | - | - |
+| apply | fixtures | - | 24.88 s | - | - | - | - | - | - | - | - | - | - | - | - | - | - | - |
 | adoption gates | before apply | - | - | - | - | 250 | 250 | 3,362 | 15 | - | - | - | - | - | - | - | - | - |
 | adoption gates | after apply | - | - | - | - | 250 | 250 | 3,362 | 15 | - | - | - | - | - | - | - | - | - |
 | adoption gates | candidates | - | - | - | - | - | - | - | - | 5 | 4 | 1 | 0 | - | - | - | - | - |
 | apply outcomes | alias | - | - | - | - | - | - | - | - | 1 | - | - | - | - | - | - | - | - |
 | apply outcomes | expansion | - | - | - | - | - | - | - | - | 1 | - | - | - | - | - | - | - | - |
-| distill (real Haiku) | fixtures | - | 27.46 s | - | - | - | - | - | - | - | - | - | - | 1 | 6 | 1,194 | 416 | $0.027 |
+| distill (real Haiku) | fixtures | - | 29.97 s | - | - | - | - | - | - | - | - | - | - | 1 | 6 | 1,208 | 435 | $0.028 |
 <!-- /bench -->
 
 <!-- bench:table querylog-pipeline metrics=open,rejected,no-fix,fixed-since,applied cases=apply outcomes -->
@@ -772,27 +772,30 @@ What it shows:
 | apply outcomes | source | 3 | - | - | - | - |
 <!-- /bench -->
 
-QLPIPE_FINDINGS
+What it shows:
+- **Run time:** `distill` of the fixture spool takes 4.1 s with the recorded replies (4 entries; most of it the redaction allowlist's load, see "Redaction speed"), `learn` 0.13 s and `apply` 24.9 s, which is the adoption gates: each candidate costs a full `rag.py eval` and off-kb run.
+- **The adoption gates refused all 5 candidates** of the fixture store: 4 because an eval question failed with them, 1 because it raised off-kb `good` from 15 to 16. So the eval set stayed at 250 of 250, the mean pack at 3,362 characters and off-kb `good` at 15, and no file changed.
+- **Haiku tokens per entry:** one real batch of the 6 entries with text took 1,208 input and 435 output tokens per entry, $0.028 in all, in 30 s; 3 entries were written, the rest dropped by the rules or waiting.
 
 ### Redaction speed
 
-**Setup:** `python3 _tools/benchmarks.py run redaction`: `redact.known()` (the public root read once as the allowlist), then `redact()` and the leak scan over every prompt, answer and question of the query log fixtures, 20 times over, in process.
+**Setup:** `python3 _tools/benchmarks.py run redaction`: `redact.known()` (the public root read once as the allowlist), then `redact()` and the leak scan over every prompt, answer and question of the query log fixtures, 20 times over, in process, at `PIPELINE_VERSION` 3.
 
 <!-- bench:records redaction -->
 | record | date | commit | Claude Code | kb topics | runs per cell | spend of the runs |
 |---|---|---|---|---|---|---|
-| 2026-09-28 | 2026-09-28 | 66d7d7a | 2.1.283 | 271 | 740 | - |
+| 2026-09-28 | 2026-09-28 | 8d9ada4 | 2.1.283 | 271 | 740 | - |
 <!-- /bench -->
 
 <!-- bench:table redaction metrics=s,median_us,chars_per_s -->
 | case | arm | s | median_us | chars_per_s |
 |---|---|---|---|---|
-| allowlist load (known()) | rules | 4.03 s | - | - |
-| redact() | rules | - | 14.4 us | 3,830,573 |
-| leak scan | rules | - | - | 7,163,161 |
+| allowlist load (known()) | rules | 4.09 s | - | - |
+| redact() | rules | - | 14.6 us | 3,759,641 |
+| leak scan | rules | - | - | 7,177,615 |
 <!-- /bench -->
 
-REDACTION_FINDINGS
+What it shows: the rules redact 3.8M characters a second (a median entry in 15 us) and the leak scan reads 7.2M a second; the one fixed cost is `known()`, which reads the public root once per process: 4.1 s. A distill pays it once per run, which is most of its 4.1 s on the fixtures.
 
 ### Research cost per accepted fact
 
@@ -801,7 +804,7 @@ REDACTION_FINDINGS
 <!-- bench:records research -->
 | record | date | commit | Claude Code | kb topics | runs per cell | spend of the runs |
 |---|---|---|---|---|---|---|
-| 2026-09-28 | 2026-09-28 | 60f9b2f | 2.1.283 | 271 | 1 | $0.21 |
+| 2026-09-28 | 2026-09-28 | b166082 | 2.1.283 | 271 | 1 | $0.21 |
 <!-- /bench -->
 
 <!-- bench:table research metrics=s,research_runs,cost,input,facts_accepted,conflict_lines,gap_lines,cost_per_fact -->
@@ -819,7 +822,7 @@ What it shows: one research run on Sonnet read the LAPS pages for $0.205 (112.9k
 <!-- bench:records ingest -->
 | record | date | commit | Claude Code | kb topics | runs per cell | spend of the runs |
 |---|---|---|---|---|---|---|
-| 2026-09-28 | 2026-09-28 | 55aa950 | 2.1.283 | 271 | 1 | $2.06 |
+| 2026-09-28 | 2026-09-28 | 654c8ad | 2.1.283 | 271 | 1 | $2.06 |
 <!-- /bench -->
 
 <!-- bench:table ingest metrics=median_ms,files_kept,files_left_out,cost,wall_s,turns,tool_calls,facts_written,check_errors -->
@@ -838,7 +841,7 @@ What it shows: the survey of the 12-file repository takes 0.13 s and left nothin
 <!-- bench:records host-roots -->
 | record | date | commit | Claude Code | kb topics | runs per cell | spend of the runs |
 |---|---|---|---|---|---|---|
-| 2026-09-28 | 2026-09-28 | 952427b | 2.1.283 | 271 | 2 | $0.11 |
+| 2026-09-28 | 2026-09-28 | 287f380 | 2.1.283 | 271 | 2 | $0.11 |
 <!-- /bench -->
 
 <!-- bench:table host-roots metrics=cost,wall_s,turns,checks,errors,coverage,roots_in_pack -->
@@ -859,7 +862,7 @@ What it shows: the fork's server over stdio packs both roots with `coverage: goo
 <!-- bench:records kbpy -->
 | record | date | commit | Claude Code | kb topics | runs per cell | spend of the runs |
 |---|---|---|---|---|---|---|
-| 2026-09-28 | 2026-09-28 | 952427b | 2.1.283 | 271 | 50 | - |
+| 2026-09-28 | 2026-09-28 | 287f380 | 2.1.283 | 271 | 50 | - |
 <!-- /bench -->
 
 <!-- bench:table kbpy metrics=median_ms,p95_ms -->

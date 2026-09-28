@@ -43,8 +43,8 @@ Where the kb lacks the answer it adds one pack call to the same web research. On
 
 New since the first runs, a line each:
 - **Query log hooks:** add no context; the `SessionEnd` launcher returns in 47-50 ms of its 500 ms budget.
-- **Distill:** QLPIPE_README
-- **Redaction:** REDACTION_README
+- **Distill, learn and apply:** about 1.2k Haiku input tokens per entry; the adoption gates refused all 5 fixture candidates.
+- **Redaction:** 3.8M characters a second, after a 4.1 s allowlist load.
 - **Research:** $0.10 per accepted fact (one Sonnet run, 2 facts).
 - **`/kb-ingest`:** a 12-file sample repository became 18 facts for $2.06, with no `check.py` error.
 - **Host plugin with a team root:** both roots in one pack; Haiku missed the team's part in 1 of 4 runs per mode.
