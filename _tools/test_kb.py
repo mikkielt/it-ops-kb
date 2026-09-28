@@ -193,7 +193,8 @@ class TestCohesion:
         assert not bad, "broken relative links:\n" + fmt(bad)
 
     def test_backtick_paths_resolve(self):
-        roots = {d for base in (KB, PUBLIC) for d in os.listdir(base) if os.path.isdir(os.path.join(base, d))}
+        roots = {d for base in (KB, PUBLIC) for d in os.listdir(base) if os.path.isdir(os.path.join(base, d))} \
+            - {"_private", "_cache"}
         allow = allowlist().get("path", set())
         bad = []
         for f in [x for x in authored() if x.endswith(".md")] + DOCS:
