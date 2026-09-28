@@ -1000,10 +1000,13 @@ def s_retrieval(b):
     verdicts = [kbfacts.pack(q)["verdict"] for q in lines]
     b.row("retrieval", "off-kb questions answered good", "current", "value", f"{verdicts.count('good')}/{len(lines)}", 1)
     import rag
-    cut_no_tag = 0
+    tagged = {f"{u['path']}:{u['line']}" for u in all_units if u["tags"]}
+    cut_no_tag = 0  # a tagged fact cut to fit the budget whose printed line shows no tag
     for _, c in rag.eval_cases():
         for ln in kbfacts.pack(c["question"])["text"].splitlines():
-            if ln.startswith("- ") and ("..." in ln or "…" in ln) and not re.search(r"\[(DOC|CODE|DER|COMMUNITY|UNK)[^\]]*\]|\(no tag\)", ln):
+            where = ln[2:].split(" ", 1)[0] if ln.startswith("- ") else ""
+            if where in tagged and ("..." in ln or "…" in ln) and \
+                    not re.search(r"\[(DOC|CODE|DER|COMMUNITY|UNK)[^\]]*\]|tag=|\((DOC|CODE|DER|COMMUNITY|UNK)\)", ln):
                 cut_no_tag += 1
     b.row("retrieval", "cut facts with no visible tag", "current", "value", cut_no_tag, 1)
     snippets = [u for u in all_units if u["text"].lstrip().startswith("SNIPPET")]
@@ -1302,6 +1305,9 @@ def s_querylog_pipeline(b):
         entries = _store_counts(data / "querylog" / "store")
     _stats(b, "querylog-pipeline", "distill (recorded Haiku)", "fixtures", secs, note=f"{entries} entries written")
     b.row("querylog-pipeline", "distill (recorded Haiku)", "fixtures", "entries", entries, len(secs))
+    pv = subprocess.run([sys.executable, "-c", "import querylog; print(querylog.PIPELINE_VERSION)"], cwd=clone / "_tools",
+                        capture_output=True, text=True).stdout.strip()
+    b.row("querylog-pipeline", "pipeline version", "fixtures", "PIPELINE_VERSION", pv, 1)
     store = b.scratch / "ql-store"
     shutil.rmtree(store, ignore_errors=True)
     shutil.copytree(FIXTURES / "store", store)
@@ -1375,7 +1381,8 @@ def _logged(log):
 
 def s_redaction(b):
     """Redaction speed: the rules and the leak scan over the fixture texts, the public-root allowlist's load."""
-    import redact, kbcommon
+    import redact, kbcommon, querylog
+    b.row("redaction", "pipeline version", "rules", "PIPELINE_VERSION", querylog.PIPELINE_VERSION, 1)
     t = time.perf_counter()
     k = redact.known()
     b.row("redaction", "allowlist load (known())", "rules", "s", time.perf_counter() - t, 1)
