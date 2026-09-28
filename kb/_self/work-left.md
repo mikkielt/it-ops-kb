@@ -11,59 +11,163 @@ The open work, and only that: a finished item leaves this file (its commit recor
 
 ## Query log: a self-improving lookup pipeline
 
-Every kb lookup leaves a redacted, judged record in the repository (`kb/_querylog/`); `learn` turns the records into findings and `apply` turns accepted findings into eval rows, aliases, expansions and `_gaps.md` entries, which reach `main` through GitLab auto-merge MRs. Stages: capture (hooks, local spool) -> distill (stdlib rules, then Haiku in batches) -> learn (deterministic findings) -> apply (one branch and MR per change) -> the MR pipeline. Standard library only; the `claude` CLI for Haiku.
+Every kb lookup leaves a redacted, judged record in the repository (`kb/_querylog/`). `learn` turns the records into findings, and `apply` turns accepted findings into eval rows, aliases, expansions and `_gaps.md` entries, pushed straight to `main` once the local gate passes. The aim is better knowledge handling by agents, not an approval workflow for people to run: no merge requests unless a conflict needs one. Stages: capture (hooks, local spool) -> distill (stdlib rules, then Haiku in batches) -> learn (deterministic findings) -> apply (local gate, then a direct push). Standard library only, plus the `claude` CLI for Haiku. It must run on macOS, Linux and Windows.
 
-**Definition of done.** Every item below is done when its own three parts hold, and never on a model's say-so (`agents/agent-planning-and-done.md`):
+**Definition of done.** Every item below is done when its own three parts hold, never on a model's say-so (`agents/agent-planning-and-done.md`):
 - the end state it names exists;
 - the command it names proves it, and its output is in the session or the commit body (a transcript-only judge such as `/goal` must be able to see it);
 - nothing outside its constraints changed.
 
-Plus the shared minimum for every item: the gate in `kb/_self/maintaining.md` passes; every new gate has a test with a planted failure that makes it fail; no new dependency; `/kb-self` has run when `_tools/`, `.claude/`, `.claude-plugin/` or `.gitlab-ci.yml` changed; the commit carries its KB-* trailers and went through `kbgit.py sync --push`. Work one item at a time, in this order; an item leaves this list in the commit that meets its definition.
+The shared minimum for every item:
+- the gate in `kb/_self/maintaining.md` passes, locally and in CI on Linux and Windows;
+- every new gate has a test with a planted failure that makes it fail;
+- no new dependency;
+- portability: every file read or written passes `encoding="utf-8"` (and `newline="\n"` when writing), paths go through `pathlib`, and subprocesses take argument lists (never `shell=True` or a command string);
+- `/kb-self` has run when `_tools/`, `.claude/`, `.claude-plugin/` or `.gitlab-ci.yml` changed;
+- the commit carries its KB-* trailers and went through `kbgit.py sync --push`.
 
-Kb facts the build rests on: `claude/hooks.md` (async hooks, `prompt_id`, `Stop`'s `last_assistant_message`, the `SessionEnd` budget), `gitlab/automated-merge-requests.md` (push options, auto-merge, job-token pushes), `gitlab/pipelines-rules.md` (`merge_request_event`, no merged results pipelines below Premium), `reuse/pseudonymization-tokenization.md` (SID and UPN shapes), `agents/docs-maintenance-agents.md` (committing machine-written data), `kb/public/_answers.md` `QK-kb-need-know-build-query-log` and `QK-self-improving-lookup-pipeline-query-logging`.
+Work one item at a time, in this order; an item leaves this list in the commit that meets its definition.
 
-**Decisions the build keeps** (the draft design is not in the repository; these are its settled points, and item 1 turns them into the doc):
-- Rules: one owner per truth (the store owns logged lookups, everything else derives from it and the kb); run metadata once per run file, never per entry; derived state converges (a second run on unchanged inputs changes nothing, tested); miss, candidate gap, gap, candidate fact and claim stay separate stages, each promotion recorded on the finding; `learn` writes findings, `apply` turns accepted findings into changes; deterministic code first, Haiku only to extract questions, replace names, summarise and judge among code-listed candidate articles; every gate's failure path tested; the MR pipeline decides what reaches `main`.
-- Surfaces logged: `kb:`/`kb+:` hook prompts, kb MCP tool calls (`PostToolUse` matchers `mcp__kb__.*` and `mcp__plugin_it-ops-kb_kb__.*`), `kb_ask.py` runs, the answer's outcome (`Stop`), and web or docs-server fetches only in prompts that also used the kb or a kb change skill. The MCP server does not log (it never sees `session_id` or `prompt_id`). Rows join on `prompt_id`.
-- Spool `_cache/querylog/spool/<session_id>.jsonl` in a clone, `${CLAUDE_PLUGIN_DATA}/querylog/spool/` in a host; never committed; deleted once its distilled entry is pushed or dropped. Every `claude -p` the pipeline starts runs with `--settings '{"disableAllHooks": true}'`, so it never logs itself.
-- Redaction: stdlib rules, then Haiku on rule-redacted text only, then the rules and the leak scan again; anything doubtful drops the entry and keeps its counts. Haiku runs batched at distill (`claude -p --model haiku --tools ""`, no plugins or MCP), with per-batch and daily caps per machine; its output is stored once per entry id and never regenerated.
-- Store `kb/_querylog/`: `<yyyy-mm>/<run-id>.jsonl` (a header line, then entries), `findings/<yyyy-mm>/<run-id>.jsonl`, `outcomes/<run-id>-<kind>.json`. One file per run, so parallel MRs never touch one file. Not a root: `pack` and `search` skip it; the leak scan covers it. Never committed: raw prompt or answer, `session_id`, `prompt_id`, `transcript_path`, user, host.
-- Automatic changes reach `main` only through an MR with auto-merge, one branch per change (`querylog/<run-id>-<kind>`), each commit with a `KB-Auto: querylog|eval|alias|expansion|gap|research|outcome` trailer; people keep direct push. Authority is always `origin`; no personal token in the pipeline; CI writes red-MR outcomes to `main` with its job token and deletes the branch; a failed finding is never retried; success needs no write-back (`learn` sees the `KB-Auto` commit on `origin/main`).
-- Configuration: no environment variables. Program defaults are constants stated in the design doc; per-user choices (`mode`: `auto`, `local`, `off`; `research`; `research_daily`) live in one uncommitted file, `_private/querylog.json` in a clone or `${CLAUDE_PLUGIN_DATA}/querylog/config.json` in a host, written by `/kb-setup`.
-- Research is never automatic project-wide: each user opts in with their own daily cap; add-only, quote-verified facts; disagreement goes to `_conflicts.md`. Source signals (hosts to stage, routes misused) are report-only, against the triggers and routes table `kb/_self/web-sources.md` owns.
-- Plugin hosts distill in a managed clone under `${CLAUDE_PLUGIN_DATA}`; the first push refused for want of rights turns logging off for good (a `DISABLED` marker). Cloud sessions distill in the container and push a plain branch.
-- Reporting: a weekly digest from the committed store; `git log --format='%h %(trailers:key=KB-Auto,valueonly)'` is the audit trail. Rollout: capture only (default `local`), then distill and the store on branches without MRs, then learn, then apply through MRs, then gaps and research, then default `auto`.
+Kb facts the build rests on: `claude/hooks.md` (async hooks, `prompt_id`, `Stop`'s `last_assistant_message`, the `SessionEnd` budget), `gitlab/automated-merge-requests.md` (push options for the conflict MR), `reuse/pseudonymization-tokenization.md` (SID and UPN shapes), `agents/docs-maintenance-agents.md` (committing machine-written data), `agents/agent-planning-and-done.md`, and the answers `QK-kb-need-know-build-query-log` and `QK-self-improving-lookup-pipeline-query-logging` in `kb/public/_answers.md`.
 
-**GitLab project state** (read with `glab api`; `glab` is signed in on the maintainer's machine): `origin` is a private project on GitLab.com (19.5), not a self-hosted CE as the draft assumed, so the design must hold for both; merge method `merge` (auto-merge safe); **Allow Git push requests to the repository** is on; **Pipelines must succeed** is off (auto-merge requires a successful pipeline regardless); remove source branch after merge is on; `main` is protected, push and merge for Maintainers, and the job token acts as the user who started the pipeline (the Owner). `.gitlab-ci.yml` runs branch pipelines only (`workflow: rules: $CI_COMMIT_BRANCH`, a direct-push model with no MRs): item 7 must add `merge_request_event` without running every job twice for one push (the usual `workflow:rules` pattern that drops the branch pipeline when an MR is open), and rewrite the file's header comment.
+**Decisions** (from the draft design and the maintainer's interview; the draft itself is not in the repository, and item 1 turns these into the design doc):
+- Rules:
+  - One owner per truth: the store owns logged lookups, and everything else derives from it and the kb.
+  - Run metadata goes once per run file, never per entry.
+  - Derived state converges: a second run on unchanged inputs changes nothing, and a test checks it.
+  - Miss, candidate gap, gap, candidate fact and claim stay separate stages, each promotion recorded on the finding.
+  - `learn` writes findings; `apply` turns accepted findings into changes.
+  - Deterministic code first. Haiku only extracts questions, replaces names, summarises, and judges among candidate articles that code listed.
+  - Every gate's failure path is tested.
+- Surfaces logged:
+  - `kb:`/`kb+:` hook prompts;
+  - kb MCP tool calls (`PostToolUse` matchers `mcp__kb__.*` and `mcp__plugin_it-ops-kb_kb__.*`);
+  - `kb_ask.py` runs, and the answer's outcome (`Stop`);
+  - web and docs-server fetches, only in prompts that also used the kb or a kb change skill;
+  - `fetch.py` and `census.py`, which write their own spool rows from inside, since Bash command-text parsing undercounts (and that undercount is accepted for other commands).
 
-**Open questions** (decide in item 1 or when the item that needs them starts):
-- Person and organisation names rest on Haiku alone (no NER layer); the redaction corpus must include names.
-- Only rule-redacted text reaches the API, but it is sent (`claude/data-retention.md`); the `/kb-setup` text must say plainly that colleagues' redacted questions are recorded.
-- Fetch outcomes such as "bot page" or "summary lacked it" are pattern guesses: classify the doubtful ones with Haiku at distill, or keep them `unknown`.
-- Bash URLs are parsed from command text, so fetches through variables or redirects are missed; the source signal undercounts and never blocks.
-- Whether GitLab's server-side merge honours `merge=union` was not re-checked; per-run files avoid depending on it.
-- Failed MRs stay open with their branch deleted; closing them would need the API, which the pipeline does not use.
-- When the fact-diff provider registry (`_tools/providers.csv`) carries a host's level, `learn` reads it instead of the routes table.
+  The MCP server does not log (it never sees `session_id` or `prompt_id`). Rows join on `prompt_id`.
+- Spool:
+  - `_cache/querylog/spool/<session_id>.jsonl` in a clone, on every OS (short UUID names keep Windows paths short), and `${CLAUDE_PLUGIN_DATA}/querylog/spool/` in a host;
+  - never committed; deleted once its distilled entry is pushed or dropped;
+  - every `claude -p` the pipeline starts runs with `--settings '{"disableAllHooks": true}'`, so it never logs itself.
+- Redaction:
+  - stdlib rules, then Haiku on rule-redacted text only, then the rules and the leak scan again;
+  - person and organisation names rest on Haiku, with no NER layer; the test corpus includes names, and an entry Haiku flags as still identifying is dropped with only its counts kept;
+  - the redactor keeps well-known SIDs (`S-1-5-32-*`, `S-1-5-18`, ...) and any identifier a public root already contains (Graph app ids, CSP GUIDs), and redacts down-level `DOMAIN\name` as well as UPNs;
+  - Haiku runs batched at distill (`claude -p --model haiku --tools ""`, no plugins or MCP), with per-batch and daily caps per machine; its output is stored once per entry id and never regenerated.
+- Fetch outcomes: only facts are classified (HTTP status, empty, cross-host redirect, truncated); "bot page" and "the summary lacked it" stay `unknown`. Source signals (hosts to stage, routes misused) are report-only.
+- A host's staging level comes from its provider-registry row (`_tools/providers.csv`, or a root's `_providers.csv`) when it has one, else from the routes table in `kb/_self/web-sources.md`; a test keeps the two in agreement.
+- Store `kb/_querylog/`:
+  - files: `<yyyy-mm>/<run-id>.jsonl` (a header line, then entries) and `findings/<yyyy-mm>/<run-id>.jsonl`, one file per run, so parallel pushes never touch the same file;
+  - not a root: `pack` and `search` skip it, and the leak scan covers it;
+  - never committed: the raw prompt or answer, `session_id`, `prompt_id`, `transcript_path`, user, host;
+  - no `merge=union` re-check is needed, since nothing depends on it.
+- Delivery:
+  - Automatic changes (run files, findings, eval rows, aliases, expansions, gap entries and opt-in research) are pushed straight to `main` on `origin`, the repository the clone came from, once the local gate passes and a rebase on `origin/main` is clean.
+  - Each commit carries a `KB-Auto: querylog|eval|alias|expansion|gap|research|revert` trailer.
+  - Pushes go to `origin` only; mirroring to other remotes stays a person's job.
+  - Every GitLab host name comes from `origin`'s url, with GitLab.com as the fallback; nothing is hard-coded.
+  - A conflict that `kbgit.py sync` cannot resolve pushes a branch with `-o merge_request.create -o merge_request.target=main` (no auto-merge, no token) for a person or `/kb-git-sync`, and the findings stay pending.
+  - Before any new push, distill checks the CI status of the last automatic commit (`glab api` on GitLab, `gh` on GitHub, skipped when neither is signed in); on red it pushes a revert commit and records `apply failed`, and a failed finding is never retried.
+  - No CI job writes to the repository.
+- Configuration: no environment variables. Program defaults are constants stated in the design doc. Per-user choices (`mode`: `auto`, `local`, `off`; `research`; `research_daily`) live in one uncommitted file, written by `/kb-setup`: `_private/querylog.json` in a clone, `${CLAUDE_PLUGIN_DATA}/querylog/config.json` in a host.
+- The default is `auto`, and `/kb-setup` says plainly that colleagues' redacted questions are recorded in the repository and that rule-redacted text is sent to the API for Haiku (`claude/data-retention.md`). Items 3 to 6 run with the default `local` until the switch-on item.
+- Research is opt-in per user with their own daily cap: add-only, quote-verified facts, and a disagreement goes to `_conflicts.md`. Its commits go to `main` directly like the rest; the gate and the quote check are its review.
+- Plugin hosts distill in a managed clone under `${CLAUDE_PLUGIN_DATA}`; the first push refused for want of rights turns logging off for good (a `DISABLED` marker). Cloud sessions distill in the container and push to their own `origin`.
+- Portability:
+  - Hooks call one Python entry point that finds the interpreter on each OS (`python3`, `python` or `py -3`).
+  - The per-machine lock uses no `fcntl` (atomic `mkdir` or an `O_EXCL` file with a stale-PID check).
+  - The `SessionEnd` launcher detaches with `start_new_session` on POSIX and `DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP` on Windows.
+  - CI tests on Linux and Windows; macOS is tested on the maintainer's machine.
+- Reporting: a weekly digest from the committed store; `git log --format='%h %(trailers:key=KB-Auto,valueonly)'` is the audit trail.
 
-1. **Design doc.** Write the design doc, a new `querylog.md` in `kb/_self/` (present tense, through `/kb-self`) from the decisions above, with these corrections the kb facts require:
-   - the `SessionEnd` hook only starts a detached distill: the hooks share a 1.5-second budget, and a plugin hook's `timeout` does not raise it;
-   - a red automatic MR must be made unmergeable (its branch deleted) because a retried job that succeeds would still auto-merge it;
-   - the project's merge method must be merge commit, or have automatic rebase on: under semi-linear or fast-forward merge a new commit on `main` cancels auto-merge;
-   - version floor: GitLab 17.11 for `merge_request.auto_merge`, 18.4 for job-token pushes (17.2 to 18.3 with the feature flag);
-   - the redactor keeps well-known SIDs (`S-1-5-32-*`, `S-1-5-18`, ...) and any identifier that a public root already contains (Graph app ids, CSP GUIDs), and redacts down-level `DOMAIN\name` as well as UPNs;
-   - the triage rule in `kb/_self/plugin.md` ("no scheduled agent pushes unreviewed research to `main`") is amended for opt-in research that lands through an MR.
+**GitLab project state** (read with `glab api`; `glab` is signed in as the project Owner on the maintainer's machine):
+- `origin` is a private project on GitLab.com (19.5), and the design must hold for any GitLab `origin`;
+- merge method `merge`; **Pipelines must succeed** is off; remove source branch after merge is on;
+- `main` is protected, with push and merge for Maintainers;
+- **Allow Git push requests to the repository** is off (no CI job pushes);
+- `.gitlab-ci.yml` runs branch and tag pipelines only (a direct-push model), which fits this design unchanged, apart from the Windows job.
 
-   Done: `querylog.md` has a table of every program default (constant, value, why); `map.csv` maps it to the new `querylog.py` and `redact.py` in `_tools/`; `plugin.md` states the amended rule. Check: `python3 _tools/tests.py` (doc cohesion) and `python3 _tools/selfdoc.py stale` print no failure. Unchanged: `AGENTS.md`.
-2. **Redactor** (new `redact.py` and `test_redact.py` in `_tools/`). Done: a positive corpus of every identifier shape the design lists (GUIDs hyphenated and bare, IPv4, IPv6, domain SIDs, UPNs, emails, `DOMAIN\name`, FQDNs outside the vendor allowlist, UNC and home paths, JWTs, key and token shapes, high-entropy strings, computer-name patterns, person names in the Haiku stub's output) comes out with kb placeholders only; a negative corpus (well-known SIDs, kb-vocabulary GUIDs, vendor hosts, the placeholders themselves) comes out unchanged; `redact(redact(x)) == redact(x)`. Check: `test_redact.py` through `python3 _tools/tests.py`, and the leak scan in `tests.py` over the corpus output. Unchanged: no other tool imports anything new.
-3. **Capture** (spool rows from `_tools/kb_hook.py` and `_tools/kb_ask.py`; async `UserPromptSubmit`, `PostToolUse` and `Stop` hooks in `.claude/settings.json` and the plugin). Done: each surface writes one row with a fresh UUID `id`; fetch rows keep host and path only (query and fragment dropped; Bash rows only for `curl`, `wget`, `fetch.py`, `census.py`; never command text or results); mode `off` and a `DISABLED` marker write nothing; a `claude -p` started with `disableAllHooks` writes nothing. Check: the new capture tests, and `python3 _tools/stress_test.py` shows `kb_hook.py` no slower than before within the test's margin. Unchanged: the `kb:` hook's answers and its verdicts.
-4. **Distill and the store** (`querylog.py distill`, `kb/_querylog/`). Done: a fixture spool plus a recorded Haiku response file gives a golden run file (header with run id, pipeline and retrieval versions and kb commit; entries without them); a doubtful entry is dropped and only counted; over the caps entries wait; a second distill on the same machine exits on the lock; the `SessionEnd` launcher returns inside the 1.5-second budget and the child survives the session; `SessionStart` picks up only closed sessions; spool rows are deleted only after the push. Store gates, each with its planted failure: a duplicate id across run files (`kbgit.py fix --check`), a missing header or provenance field, an identifier in a run file, a fetch entry with a query string, a non-public host or command text. `pack` and `search` never return a `kb/_querylog/` line. Check: the distill tests and the gate. Unchanged: nothing raw is committed; `_cache/` stays ignored.
-5. **Learn** (`querylog.py learn`). Done: every judged miss is re-run on `HEAD` first (`fixed-since` when it passes); findings of each kind from fixtures; source findings read `kb/_self/web-sources.md`'s table, not a copy. Check: two `learn` runs on the same store and `HEAD` give byte-identical findings files; a test fails when a trigger in `querylog.py` differs from `web-sources.md`; no source finding for a host the routes table already gives the needed level. Unchanged: `learn` writes findings only.
-6. **Apply, locally** (eval, alias and expansion rows; no MR yet). Done: an eval row is written only with a fix that makes it pass; a finding with no accepted fix becomes a gap candidate; source findings are skipped. Check: `python3 _tools/rag.py eval` passes every question, off-kb `good` does not rise and the mean pack does not grow (`kb/_self/doc2query.md`); planted failures: an eval row without its fix, an alias colliding with an existing term, `apply` acting on a source finding.
-7. **The path to `main`** (branches, push options, `.gitlab-ci.yml`). Done: one branch per change, rebased on `origin/main` right before its push; push options only when `origin` is GitLab; `querylog.py` refuses to push `main`; MR pipelines run on `merge_request_event`; the `.post` `on_failure` job for `querylog/*` branches writes `kb/_querylog/outcomes/<run-id>-<kind>.json`, pushes it to `main` with the job token and deletes the branch; `learn` marks `applied` from `origin/main` and never retries `apply failed`. Check: tests against a local bare remote (automatic commit on `main` refused; outcome file missing for a red MR fails; retried finding fails); then, once, on the real GitLab: one green MR merges itself and one planted red MR ends with its outcome file on `main` and its branch gone. `/kb-setup` reads the GitLab version, the merge method and the job-token setting with `glab api` when `glab` is signed in, and offers a Maintainer or Owner to turn the setting on (API field `ci_push_repository_for_job_token_allowed`); without `glab` it says it cannot see them over SSH. The pipeline itself still uses no personal token. Unchanged: people's direct push through `kbgit.py sync --push`.
-8. **Gap entries, then opt-in research.** Done: a reproduced gap candidate in a kb domain becomes a `_gaps.md` entry under its topic; research is off unless the user's local file turns it on, and then runs at most the user's daily cap; `querylog.py quotecheck` accepts a candidate fact only when its quote (25 words or fewer) is on the page; research adds facts and sources only, and a disagreement becomes a `_conflicts.md` entry. Check: planted failures for a quote not on its page and for research editing an existing fact line; `check.py` `errors=0` after a fixture research run.
-9. **Digest and status.** Done: `querylog.py digest` computes the same numbers from the committed store in any clone; the first `SessionStart` of an ISO week shows it once; `status` lists open source findings ranked by result characters; each mechanism's removal condition is in `querylog.md`. Check: the digest test on two copies of one fixture store gives identical output.
-10. **Plugin hosts and cloud sessions.** Done: a host distills in a managed clone under `${CLAUDE_PLUGIN_DATA}`; a push refused for want of rights writes `DISABLED` and deletes the spool, a network error or a red gate does not; a cloud session pushes a plain branch to its `origin`, and the next local `kbgit.py sync` turns `querylog/*` branches into GitLab MRs. Check: tests with a fake remote for each refusal kind; the always-on measurement of `kb/_self/reports/token-usage.md` (not `claude plugin details`, which undercounts) shows no rise from the new hooks.
-11. **End-to-end run and switch-on.** Done: one test drives a temporary clone with a bare remote through capture, distill (recorded Haiku), learn, apply and a simulated MR outcome, then checks the store, the findings, the eval file and the gate; `/kb-setup` states the default (logging, fixes and gap entries automatic; research off; what colleagues' redacted questions reveal) and asks; the default becomes `auto`. Check: that test, `/kb-verify`, and `selfdoc.py stale` with no stale doc.
+0. **Portability audit and facts.**
+   - First, `/kb-research`, for the facts the kb lacks: how Claude Code runs hook commands on Windows (Git Bash, PowerShell, the interpreter name); GitLab.com hosted Windows runners (availability, tier, image, cost); Python's stdlib options on Windows for detached processes and file locks.
+   - Then add a Windows CI job that runs `tests.py`, and run it over the existing toolset (`kb_hook.py`, `kbgit.py` and its git hooks, `.claude/hooks/session-start.sh`, `kb_change_router.py`, `kb_mcp.py`), fixing what fails.
+
+   Done: the facts are in the kb with their sources; the Windows job is green on `main`; every hook command in `.claude/settings.json` and the plugin runs through the portable entry point. Check: the CI pipeline on `main` (`glab ci status`) and `python3 _tools/tests.py` locally. Unchanged: the tools' behaviour on macOS and Linux.
+1. **Design doc.** Write `querylog.md`, a new doc in `kb/_self/` (present tense, through `/kb-self`), from the decisions above. The `SessionEnd` hook only starts a detached distill: the hooks share a 1.5-second budget, and a plugin hook's `timeout` does not raise it. Replace the triage rule in `kb/_self/plugin.md` ("no scheduled agent pushes unreviewed research to `main`") with the direct-push rule. Rewrite the header comment of `.gitlab-ci.yml`, which says there are no merge requests, to allow the conflict MR.
+
+   Done: `querylog.md` has a table of every program default (constant, value, why); `map.csv` maps it to the new `querylog.py` and `redact.py` in `_tools/`; `plugin.md` states the new rule. Check: `python3 _tools/tests.py` (doc cohesion) and `python3 _tools/selfdoc.py stale` print no failure. Unchanged: `AGENTS.md`.
+2. **Redactor** (new `redact.py` and `test_redact.py` in `_tools/`).
+
+   Done:
+   - A positive corpus of every identifier shape comes out with kb placeholders only: GUIDs (hyphenated and bare), IPv4, IPv6, domain SIDs, UPNs, emails, `DOMAIN\name`, FQDNs outside the vendor allowlist, UNC, home and Windows drive paths, JWTs, key and token shapes, high-entropy strings, computer-name patterns, and person names in the Haiku stub's output.
+   - A negative corpus (well-known SIDs, kb-vocabulary GUIDs, vendor hosts, the placeholders themselves) comes out unchanged.
+   - `redact(redact(x)) == redact(x)`.
+
+   Check: `test_redact.py` through `python3 _tools/tests.py` on Linux and Windows, and the leak scan in `tests.py` over the corpus output. Unchanged: no other tool imports anything new.
+3. **Capture**: spool rows from `_tools/kb_hook.py`, `_tools/kb_ask.py`, `_tools/fetch.py` and `_tools/census.py`, plus async `UserPromptSubmit`, `PostToolUse` and `Stop` hooks in `.claude/settings.json` and the plugin.
+
+   Done:
+   - each surface writes one row with a fresh UUID `id`;
+   - fetch rows keep host and path only: query and fragment are dropped, Bash rows exist only for `curl` and `wget`, and command text or results are never kept;
+   - mode `off` and a `DISABLED` marker write nothing;
+   - a `claude -p` started with `disableAllHooks` writes nothing.
+
+   Check: the new capture tests on Linux and Windows, and `python3 _tools/stress_test.py` showing `kb_hook.py` no slower than before within the test's margin. Unchanged: the `kb:` hook's answers and verdicts.
+4. **Distill and the store** (`querylog.py distill`, `kb/_querylog/`, mode `local`).
+
+   Done:
+   - a fixture spool plus a recorded Haiku response file gives a golden run file (a header with run id, pipeline and retrieval versions and kb commit; entries without them);
+   - a doubtful entry is dropped and only counted; over the caps, entries wait;
+   - a second distill on the same machine exits on the lock, on all three OSes;
+   - the `SessionEnd` launcher returns within the 1.5-second budget, and the child outlives the session on POSIX and Windows;
+   - `SessionStart` picks up only closed sessions.
+
+   Store gates, each with its planted failure: a duplicate id across run files (`kbgit.py fix --check`); a missing header or provenance field; an identifier in a run file; a fetch entry with a query string, a non-public host or command text. `pack` and `search` never return a `kb/_querylog/` line.
+
+   Check: the distill tests and the gate. Unchanged: nothing raw is committed; `_cache/` stays ignored.
+5. **Learn** (`querylog.py learn`). Done: every judged miss is re-run on `HEAD` first (`fixed-since` when it now passes); fixtures give findings of each kind; source findings read the registry and the routes table, not a copy. Check:
+   - two `learn` runs on the same store and `HEAD` give byte-identical findings files;
+   - a test fails when a trigger in `querylog.py` differs from `web-sources.md`;
+   - no source finding appears for a host that already has the needed level.
+
+   Unchanged: `learn` writes findings only.
+6. **Apply, locally** (eval, alias and expansion rows; no push yet). Done: an eval row is written only with a fix that makes it pass; a finding with no accepted fix becomes a gap candidate; source findings are skipped. Check: `python3 _tools/rag.py eval` passes every question, off-kb `good` does not rise and the mean pack does not grow (`kb/_self/doc2query.md`); planted failures for an eval row without its fix, an alias colliding with an existing term, and `apply` acting on a source finding.
+7. **Direct push** (`querylog.py apply --push`, through `kbgit.py sync`).
+
+   Done:
+   - the local gate runs, then a rebase on `origin/main`, then the push to `origin` only;
+   - an unresolvable conflict pushes a `querylog/<run-id>` branch with the MR push options and leaves the findings pending;
+   - red CI on the last automatic commit leads to a revert commit before any new push, and the finding is marked `apply failed` and never retried;
+   - the CI-status check uses `glab` or `gh` when signed in and is skipped with a note otherwise;
+   - the GitLab host comes from `origin`'s url.
+
+   Check: tests against a local bare remote (a planted conflict gives a branch and no push to `main`; a planted red status gives a revert; a retried failed finding fails the test). Then, once, on the real `origin`: one automatic commit lands on `main`, and one planted conflict ends as an open MR. Unchanged: people's `kbgit.py sync --push`.
+8. **Gap entries, then opt-in research.**
+
+   Done:
+   - a reproduced gap candidate in a kb domain becomes a `_gaps.md` entry under its topic;
+   - research is off unless the user's local file turns it on, and then runs at most the user's daily cap;
+   - `querylog.py quotecheck` accepts a candidate fact only when its quote (25 words or fewer) is on the page;
+   - research adds facts and sources only, and a disagreement becomes a `_conflicts.md` entry.
+
+   Check: planted failures for a quote not on its page and for research editing an existing fact line; `check.py` `errors=0` after a fixture research run.
+9. **Digest and status.** Done:
+   - `querylog.py digest` computes the same numbers from the committed store in any clone;
+   - the first `SessionStart` of an ISO week shows it once;
+   - `status` lists open source findings ranked by result characters, open conflict MRs, and reverted automatic commits;
+   - each mechanism's removal condition is in `querylog.md`.
+
+   Check: the digest test on two copies of one fixture store gives identical output.
+10. **Plugin hosts and cloud sessions.** Done: a host distills in a managed clone under `${CLAUDE_PLUGIN_DATA}`; a push refused for want of rights writes `DISABLED` and deletes the spool, while a network error or a red gate does not; a cloud session pushes to its own `origin`. Check: tests with a fake remote for each refusal kind, and the always-on measurement in `kb/_self/reports/token-usage.md` (not `claude plugin details`, which undercounts), which must show no rise from the new hooks.
+11. **End-to-end run and switch-on.**
+
+    Done:
+    - one test drives a temporary clone with a bare remote through capture, distill (recorded Haiku), learn, apply and the push, then checks the store, the findings, the eval file and the gate;
+    - `/kb-setup` states the default (logging, fixes, gap entries and pushes automatic; research off; what is recorded and what is sent to the API) and asks whether to keep it;
+    - the program default becomes `auto`.
+
+    Check: that test on Linux and Windows, `/kb-verify`, and `selfdoc.py stale` with no stale doc.
 
 ## Content
 
