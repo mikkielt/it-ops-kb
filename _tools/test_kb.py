@@ -724,32 +724,28 @@ class TestIds:
 
 
 class TestLeaks:
-    SECRETS = kbcommon.SECRETS  # one list: kbingest.py's survey of a repository flags the same shapes
+    # the shapes live in kbcommon: kbingest.py's survey flags the same secrets, redact.py drops what this scan flags
 
     def test_no_secrets(self):
         allow = allowlist().get("secret", set())
         files = [f for f in tracked() if text(f) is not None]
-        rx = "|".join(f"(?i:{p[4:]})" if p.startswith("(?i)") else f"(?:{p})" for p in self.SECRETS)  # one pass per file
-        found = [h for h in hits(rx, files) if h[2].lower() not in allow]
+        found = [h for h in hits(kbcommon.secrets_rx(), files) if h[2].lower() not in allow]  # one pass per file
         assert not found, "possible secrets:\n" + fmt(found)
 
     def test_no_home_paths(self):
-        found = hits(r"(?:/Users/|/home/|[A-Za-z]:\\+Users\\+)(?!<)[A-Za-z][\w.-]+", authored())
-        generic = ("public", "default", "all users", "username", "user", "administrator")
-        found = [h for h in found if re.split(r"[/\\]+", h[2])[-1].lower() not in generic]
+        found = [h for h in hits(kbcommon.LEAK_HOME, authored())
+                 if re.split(r"[/\\]+", h[2])[-1].lower() not in kbcommon.HOME_GENERIC]
         assert not found, "machine-specific home paths:\n" + fmt(found)
 
     def test_no_private_ipv4(self):
         allow = allowlist().get("ip", set())
-        rx = r"(?<![\w.])(?:10\.\d{1,3}\.\d{1,3}\.\d{1,3}|192\.168\.\d{1,3}\.\d{1,3}|172\.(?:1[6-9]|2\d|3[01])\.\d{1,3}\.\d{1,3})(?![\w.])"
-        found = [h for h in hits(rx, authored(), strip_urls=True) if h[2] not in allow
+        found = [h for h in hits(kbcommon.LEAK_IPV4, authored(), strip_urls=True) if h[2] not in allow
                  and all(int(x) < 256 for x in h[2].split("."))]
         assert not found, "private IPv4 addresses (use 192.0.2.x/198.51.100.x/203.0.113.x, or allowlist):\n" + fmt(found)
 
     def test_no_real_email_addresses(self):
         allow = allowlist().get("email", set())
-        found = [h for h in hits(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}\b", authored(), strip_urls=True)
-                 if not re.search(r"(?i)@([\w-]+\.)*example\.(com|org|net)$|@noreply\.|@users\.noreply\.github\.com$", h[2])
+        found = [h for h in hits(kbcommon.LEAK_EMAIL, authored(), strip_urls=True) if not kbcommon.EMAIL_OK.search(h[2])
                  and h[2].lower() not in allow]
         assert not found, "e-mail addresses outside example.com/noreply (placeholders only):\n" + fmt(found)
 
@@ -763,8 +759,8 @@ class TestLeaks:
     def test_no_unexpected_guids_in_prose(self):
         allow = allowlist().get("guid", set())
         md = [f for f in authored() if f.endswith(".md")]
-        found = [h for h in hits(r"\b[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\b", md, strip_urls=True)
-                 if not re.fullmatch(r"0{8}-0{4}-0{4}-0{4}-0{8}[0-9a-f]{4}", h[2].lower()) and h[2].lower() not in allow]
+        found = [h for h in hits(kbcommon.LEAK_GUID, md, strip_urls=True)
+                 if not kbcommon.GUID_OK.fullmatch(h[2].lower()) and h[2].lower() not in allow]
         assert not found, "GUIDs in prose that are neither placeholders nor reviewed public ids " \
                                 "(tenant/object ids leak; add public ones to _tools/tests_allowlist.txt with a reason):\n" + fmt(found)
 

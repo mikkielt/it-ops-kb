@@ -96,6 +96,40 @@ SECRETS = (
     r"\beyJ[A-Za-z0-9_-]{10,}\.eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}",
     r"(?i)\b(?:password|passwd|pwd|client_secret|api_key|apikey|secret)\b\s*[:=]\s*[\"'][^\"'\s<>${}]{8,}[\"']",
 )
+# The placeholders-only shapes: what the leak scan flags in authored files (test_kb.py, TestLeaks) and what drops a
+# query-log entry after redaction (redact.py). One copy, so the redactor keeps nothing the scan would flag.
+LEAK_HOME = r"(?:/Users/|/home/|[A-Za-z]:\\+Users\\+)(?!<)[A-Za-z][\w.-]+"
+HOME_GENERIC = ("public", "default", "all users", "username", "user", "administrator", "jan.kowalski")
+LEAK_IPV4 = (r"(?<![\w.])(?:10\.\d{1,3}\.\d{1,3}\.\d{1,3}|192\.168\.\d{1,3}\.\d{1,3}|172\.(?:1[6-9]|2\d|3[01])\.\d{1,3}"
+             r"\.\d{1,3})(?![\w.])")
+LEAK_EMAIL = r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}\b"
+EMAIL_OK = re.compile(r"(?i)@([\w-]+\.)*example\.(com|org|net)$|@noreply\.|@users\.noreply\.github\.com$")
+LEAK_GUID = r"\b[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\b"
+GUID_OK = re.compile(r"0{8}-0{4}-0{4}-0{4}-0{8}[0-9a-f]{4}")  # the tenant placeholder and its numbered siblings
+
+
+def secrets_rx():
+    """SECRETS as one pattern (one pass per text)."""
+    return "|".join(f"(?i:{p[4:]})" if p.startswith("(?i)") else f"(?:{p})" for p in SECRETS)
+
+
+def leak_hits(text, allow=None):
+    """[(kind, value)] of the leak scan's shapes in `text`: secret, home, ip, email, guid; `allow` maps a kind to
+    lowercased values that pass (the scan of tracked files reads them from _tools/tests_allowlist.txt)."""
+    allow = allow or {}
+    out = [("secret", m.group(0)) for m in re.finditer(secrets_rx(), text)
+           if m.group(0).lower() not in allow.get("secret", ())]
+    out += [("home", m.group(0)) for m in re.finditer(LEAK_HOME, text)
+            if re.split(r"[/\\]+", m.group(0))[-1].lower() not in HOME_GENERIC]
+    out += [("ip", m.group(0)) for m in re.finditer(LEAK_IPV4, text)
+            if m.group(0) not in allow.get("ip", ()) and all(int(x) < 256 for x in m.group(0).split("."))]
+    out += [("email", m.group(0)) for m in re.finditer(LEAK_EMAIL, text)
+            if not EMAIL_OK.search(m.group(0)) and m.group(0).lower() not in allow.get("email", ())]
+    out += [("guid", m.group(0)) for m in re.finditer(LEAK_GUID, text)
+            if not GUID_OK.fullmatch(m.group(0).lower()) and m.group(0).lower() not in allow.get("guid", ())]
+    return out
+
+
 csv.field_size_limit(2**31 - 1)  # a very wide cell must not abort a whole read
 
 

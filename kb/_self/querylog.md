@@ -3,7 +3,7 @@
 Every kb lookup leaves a redacted, judged record in the repository, in `kb/_querylog/`. `learn` turns the records into findings, and `apply` turns accepted findings into eval rows, aliases, expansions and `_gaps.md` entries, pushed straight to `main` once the local gate passes. The aim is better knowledge handling by agents, not an approval workflow for people: no merge requests unless a conflict needs one.
 
 - **Stages:** capture (hooks and tools, a local spool) -> distill (stdlib rules, then Haiku in batches) -> learn (deterministic findings) -> apply (the local gate, then a direct push).
-- **Code:** `_tools/querylog.py` (the stages) and `_tools/redact.py` (redaction). Both are stubs today that exit 2; the Query log items of `kb/_self/work-left.md` build them in order, and this doc is the design they follow. Standard library only, plus the `claude` CLI for Haiku; macOS, Linux and Windows.
+- **Code:** `_tools/querylog.py` (the stages) and `_tools/redact.py` (redaction, tested in `_tools/test_redact.py`). `querylog.py` is a stub that exits 2; the Query log items of `kb/_self/work-left.md` build it in order, and this doc is the design they follow. Standard library only, plus the `claude` CLI for Haiku; macOS, Linux and Windows.
 - **Why it can be built from hooks:** `UserPromptSubmit` gives the prompt with `session_id` and `prompt_id`, and `Stop` gives `last_assistant_message` for the same session (`claude/hooks.md`, DER S743; the answer `QK-self-improving-lookup-pipeline-query-logging` in `kb/public/_answers.md`).
 
 ## Rules
@@ -56,13 +56,28 @@ Every row has a fresh UUID `id`. Mode `off`, a `DISABLED` marker, or a `claude -
 
 ## Redaction (`_tools/redact.py`)
 
-1. **Rules** (stdlib `re`): GUIDs (hyphenated and bare), IPv4, IPv6, domain SIDs, UPNs and emails, down-level `DOMAIN\name`, FQDNs outside the vendor allowlist, UNC paths, home and drive paths, JWTs, key and token shapes, high-entropy strings, computer-name patterns. Each becomes the kb placeholder for its kind (`kb/_self/content-rules.md`).
-2. **Haiku** on the rule-redacted text only: extracts the question, replaces person and organisation names, summarises the outcome, and judges among the candidate articles code listed. Names rest on Haiku, with no NER layer; the test corpus includes names.
-3. **Rules and the leak scan again** on Haiku's output.
+1. **Rules** (stdlib `re`, `redact()`): key and token shapes (`kbcommon.SECRETS`), JWTs, UNC paths, home and drive paths, UPNs and emails, down-level `DOMAIN\name`, domain SIDs, GUIDs (hyphenated and bare), IPv6, IPv4, FQDNs, computer-name patterns, high-entropy strings, in that order. Each becomes the placeholder for its kind (table below).
+2. **Haiku** on the rule-redacted text only: extracts the question, replaces person and organisation names, summarises the outcome, and judges among the candidate articles code listed. Names rest on Haiku, with no NER layer; the test corpus includes names, which a stub replaces. `redact.py` holds the name step's interface (`names_argv`, `names_prompt`, `parse_names`); `querylog.py` supplies the model, the caps, the timeout and the call.
+3. **Rules and the leak scan again** on Haiku's output (`finish()`): the scan is `kbcommon.leak_hits`, the same shapes the tracked-file leak test (`_tools/test_kb.py`, TestLeaks) flags, so nothing the scan would catch reaches the store.
 
-- **What stays:** well-known SIDs (`S-1-5-18`, `S-1-5-32-*` built-in groups and the other constant ones) identify no one, while an `S-1-5-21-*` domain SID names the organisation's domain; a user is matched both as a UPN and as `DOMAIN\name`, since an explicit UPN's suffix need not be the DNS domain (`reuse/pseudonymization-tokenization.md`, DOC and DER S-h2cmbqvf, S-dcjdn73r). Any identifier a public root already contains (Graph app ids, CSP GUIDs) stays too.
-- **Doubt drops.** An entry Haiku flags as still identifying, or one the second leak scan catches, is dropped; only its counts go to the run header.
-- **Haiku runs batched at distill:** `claude -p --model haiku --tools ""` with no plugins or MCP servers. Its output is stored once per entry id and never regenerated, so a second distill cannot change a committed entry.
+| kind | placeholder |
+|---|---|
+| hyphenated / bare GUID | `00000000-0000-0000-0000-000000000000` / 32 zeros |
+| IPv4 / IPv6 | `192.0.2.10` / `2001:db8::10` (the documentation ranges) |
+| domain SID | `S-1-5-21-0-0-0-<RID>`: the domain identifier goes, the RID stays |
+| UPN or email / down-level logon | `jan.kowalski@corp.example.com` / `CORP\jan.kowalski` |
+| FQDN | `corp.example.com` |
+| computer name | `PL-SRV-0042` when it reads as a server (SRV, SQL, DC1, ...), else `PL-LT-00123` |
+| UNC host / home-directory user / other path segment | `\\PL-SRV-0042` / `jan.kowalski` / `PL-PATH` |
+| key, token, JWT, high-entropy string | `<secret>` (angle brackets: the secret shapes never match a placeholder) |
+| person / organisation name (Haiku) | `jan.kowalski` / `CORP` |
+
+- **What stays:** well-known SIDs (`S-1-5-18`, `S-1-5-32-*` built-in groups, capability `S-1-15-3-*` and the other constant ones) identify no one, while an `S-1-5-21-*` domain SID names the organisation's domain; a user is matched both as a UPN and as `DOMAIN\name`, with no suffix allowlist, since an explicit UPN's suffix need not be the DNS domain (`reuse/pseudonymization-tokenization.md`, DOC and DER S-h2cmbqvf, S-dcjdn73r). Windows authorities (`NT AUTHORITY\`, `BUILTIN\`) and registry roots (`HKLM\`) are not logons. Loopback, multicast, netmasks, the documentation ranges and names (`example.com`, `.test`) stay.
+- **The allowlist is the public root, read at run time.** `known()` runs the same shapes over every text file of `kb/public` (never an internal root, which names real tenants) once per process, and any GUID, public IP, host, email, logon, computer name or token found there stays: Graph app ids, CSP and ASR GUIDs, vendor hosts. So the vendor allowlist is the hosts the root names, matched exactly (a tenant's `name.sharepoint.com` is not kept because `sharepoint.com` is). One owner, nothing generated to go stale: an id an article adds is kept from the next run. A private address the kb shows is an example there, so private IPs are never kept this way.
+- **Paths:** a segment made only of words the public root uses stays (`C:\Windows\CCM\Logs`), any other becomes `PL-PATH`; the user of `C:\Users\<name>`, `/Users/<name>` and `/home/<name>` always becomes `jan.kowalski` (`Public`, `Default` stay).
+- **High entropy:** a token of `ENTROPY_MIN_LEN` or more letters, digits, `+` and `_` (trailing `=` allowed), with a letter and a digit, at `ENTROPY_MIN_BITS` or more. Per-character entropy alone does not separate identifiers from keys (`DeviceManagementConfiguration` scores 3.8 bits), so a token made only of words the public root uses, split at case and digit changes with each word 3 letters or more (`Win32LobAppPowerShellScript`), stays.
+- **Doubt drops.** An entry Haiku flags as still identifying, or one the second leak scan catches, is dropped; only its counts go to the run header. A reply that is not the expected JSON drops its batch.
+- **Haiku runs batched at distill:** `claude -p --model haiku --tools "" --settings '{"disableAllHooks": true}'` with no user plugins or MCP servers (`--setting-sources project,local --strict-mcp-config`), the batch on stdin. Its output is stored once per entry id and never regenerated, so a second distill cannot change a committed entry.
 - **Idempotent:** `redact(redact(x)) == redact(x)`, and the placeholders pass through unchanged.
 - **What the API sees:** rule-redacted text goes to the Claude API, under the organisation's retention (30 days standard for commercial use, `claude/data-retention.md`, DOC S747); `/kb-setup` says so.
 
@@ -120,7 +135,7 @@ Every row has a fresh UUID `id`. Mode `off`, a `DISABLED` marker, or a `claude -
 | `QUESTION_MAX_CHARS` | 500 characters | a committed question is a question, not a document |
 | `SUMMARY_MAX_CHARS` | 300 characters | an outcome summary says what happened, not the answer |
 | `ENTROPY_MIN_LEN` (`_tools/redact.py`) | 20 characters | shorter random-looking strings are mostly words and ids the kb names |
-| `ENTROPY_MIN_BITS` (`_tools/redact.py`) | 3.5 bits per character | keys and tokens sit above it, English words and hostnames below |
+| `ENTROPY_MIN_BITS` (`_tools/redact.py`) | 3.5 bits per character | keys and tokens sit above it; long CamelCase names can too, which the kb-word rule (Redaction) keeps |
 | `QUOTE_MAX_WORDS` | 25 words | a short quote is checkable on the page and stays within the kb's quoting rules (`kb/_self/content-rules.md`) |
 | `FAILED_RETRIES` | 0 | a finding whose change turned CI red is never retried; a person or a later finding decides |
 | `CONFLICT_BRANCH_PREFIX` | `querylog/` | conflict branches are recognisable, and `status` lists their open MRs |

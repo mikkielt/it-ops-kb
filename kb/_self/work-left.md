@@ -82,14 +82,6 @@ Kb facts the build rests on: `claude/hooks.md` (async hooks, `prompt_id`, `Stop`
 - **Allow Git push requests to the repository** is off (no CI job pushes);
 - `.gitlab-ci.yml` runs branch and tag pipelines only (a direct-push model), which fits this design unchanged, apart from the Windows job.
 
-2. **Redactor** (new `redact.py` and `test_redact.py` in `_tools/`).
-
-   Done:
-   - A positive corpus of every identifier shape comes out with kb placeholders only: GUIDs (hyphenated and bare), IPv4, IPv6, domain SIDs, UPNs, emails, `DOMAIN\name`, FQDNs outside the vendor allowlist, UNC, home and Windows drive paths, JWTs, key and token shapes, high-entropy strings, computer-name patterns, and person names in the Haiku stub's output.
-   - A negative corpus (well-known SIDs, kb-vocabulary GUIDs, vendor hosts, the placeholders themselves) comes out unchanged.
-   - `redact(redact(x)) == redact(x)`.
-
-   Check: `test_redact.py` through `python3 _tools/tests.py` on Linux and Windows, and the leak scan in `tests.py` over the corpus output. Unchanged: no other tool imports anything new.
 3. **Capture**: spool rows from `_tools/kb_hook.py`, `_tools/kb_ask.py`, `_tools/fetch.py` and `_tools/census.py`, plus async `UserPromptSubmit`, `PostToolUse` and `Stop` hooks in `.claude/settings.json` and the plugin.
 
    Done:
