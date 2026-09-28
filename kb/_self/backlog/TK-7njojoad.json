@@ -1,0 +1,24 @@
+{
+  "id": "TK-7njojoad",
+  "kind": "task",
+  "title": "Reworded facts flag decisions for relink",
+  "status": "todo",
+  "parent": "ST-cumapb4s",
+  "priority": "P2",
+  "rank": 1,
+  "goal": "sweep lists decisions whose context fact_key is gone as relink with the likeliest current fact; relink repoints it; tests named decision_sweep_relink prove it.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "decision_sweep_relink"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbdecide.py",
+    "_tools/test_kbdecide.py"
+  ]
+}

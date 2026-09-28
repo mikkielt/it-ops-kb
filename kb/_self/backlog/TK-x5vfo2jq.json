@@ -1,0 +1,30 @@
+{
+  "id": "TK-x5vfo2jq",
+  "kind": "task",
+  "title": "Document decisions in the kb's docs and skills",
+  "status": "todo",
+  "parent": "ST-dmflypww",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "The docs and skills named by the story describe decisions; kb/_self/map.csv maps kbdecide.py and the decision files; selfdoc.py check passes.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/selfdoc.py",
+        "check"
+      ]
+    }
+  ],
+  "touches": [
+    "AGENTS.md",
+    "README.md",
+    "kb/_self/content-rules.md",
+    "kb/_self/tools.md",
+    "kb/_self/map.csv",
+    ".claude/skills/kb-lookup/SKILL.md",
+    ".claude/skills/kb-refresh/SKILL.md",
+    ".claude/skills/kb-census/SKILL.md",
+    "_tools/kb_mcp.py"
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "id": "TK-n5qhpbik",
+  "kind": "task",
+  "title": "kbdecide.py sweep invalidates on broken context",
+  "status": "todo",
+  "parent": "ST-cumapb4s",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "sweep applies the four invalidation rules with a reason naming the context; a dropped item is told from one deleted at close by its last version in git history; tests named decision_sweep plant each rule.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "decision_sweep"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbdecide.py",
+    "_tools/test_kbdecide.py"
+  ]
+}

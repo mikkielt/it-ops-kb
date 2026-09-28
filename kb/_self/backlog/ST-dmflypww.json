@@ -1,0 +1,45 @@
+{
+  "id": "ST-dmflypww",
+  "kind": "story",
+  "title": "Docs and skills describe decisions",
+  "status": "draft",
+  "parent": "EP-v56iwyry",
+  "priority": "P2",
+  "rank": 8,
+  "goal": "content-rules.md, tools.md, AGENTS.md's Tags section, the kb-lookup skill and the MCP server instructions describe the DECISION tag, the two files and kbdecide.py; /kb-refresh and /kb-census run kbdecide.py sweep; selfdoc.py finds nothing stale.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/selfdoc.py",
+        "check"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/selfdoc.py",
+        "stale"
+      ]
+    }
+  ],
+  "depends_on": [
+    "ST-r25rmm76",
+    "ST-sab3zej4"
+  ],
+  "gates": [
+    {
+      "id": "agents-md-tags",
+      "kind": "blocking",
+      "question": "Add DECISION to the Tags section of AGENTS.md as: 'DECISION (an operator decision from the root's _decisions.csv; scoped to its context, not evidence about a product)'?",
+      "options": [
+        "approve the wording",
+        "approve with changes",
+        "keep AGENTS.md unchanged; content-rules.md only"
+      ],
+      "recommendation": "approve the wording",
+      "answer": "approve the wording",
+      "by": "operator"
+    }
+  ]
+}

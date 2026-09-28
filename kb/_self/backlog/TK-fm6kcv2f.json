@@ -1,0 +1,30 @@
+{
+  "id": "TK-fm6kcv2f",
+  "kind": "task",
+  "title": "Parse and check the DECISION tag in every tool",
+  "status": "todo",
+  "parent": "ST-trjsnvos",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kbfacts.KINDS, check.py TAG, kb_mcp tag enum, ql_capture TAGS and LINE_TAG and benchmarks.py accept DECISION; ql_research.RESEARCH_TAGS stays DOC and COMMUNITY; tests named decision_tag cover parsing, an unknown id and a research reply carrying DECISION.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "decision_tag"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbfacts.py",
+    "_tools/check.py",
+    "_tools/kb_mcp.py",
+    "_tools/ql_capture.py",
+    "_tools/benchmarks.py",
+    "_tools/test_kb.py",
+    "_tools/test_kb_mcp.py",
+    "_tools/test_querylog.py"
+  ]
+}

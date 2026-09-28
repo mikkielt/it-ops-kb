@@ -1,0 +1,24 @@
+{
+  "id": "TK-ncnhzgyc",
+  "kind": "task",
+  "title": "backlog.py answer --record",
+  "status": "todo",
+  "parent": "ST-r25rmm76",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "answer --record calls kbdecide to write the decision; it refuses with --provisional; tests named answer_record cover the write, the refusal and a close that keeps the decision.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "answer_record"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/test_backlog.py"
+  ]
+}

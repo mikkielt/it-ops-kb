@@ -1,0 +1,25 @@
+{
+  "id": "TK-ydxqes3n",
+  "kind": "task",
+  "title": "Decision-maker storage policy per root",
+  "status": "todo",
+  "parent": "ST-rcceqbdr",
+  "priority": "P2",
+  "rank": 1,
+  "goal": "kbdecide.py makers ROOT --policy sets the root's policy in its decision-makers.csv; propose in a root without a policy exits 2 printing the question and options; tests named kbdecide_makers prove both.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "kbdecide_makers"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbdecide.py",
+    "_tools/test_kbdecide.py",
+    "_tools/kbcommon.py"
+  ]
+}

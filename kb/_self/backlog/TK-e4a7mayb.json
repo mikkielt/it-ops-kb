@@ -1,0 +1,27 @@
+{
+  "id": "TK-e4a7mayb",
+  "kind": "task",
+  "title": "pack, show and audit handle decisions",
+  "status": "todo",
+  "parent": "ST-sab3zej4",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kbfacts pack, show and audit, rag.py and kb_mcp implement the labels, coverage from active decisions, the flag and the contradiction list; tests named decision_lookup cover each.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "decision_lookup"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbfacts.py",
+    "_tools/rag.py",
+    "_tools/kb_mcp.py",
+    "_tools/test_kb.py",
+    "_tools/test_kb_mcp.py"
+  ]
+}

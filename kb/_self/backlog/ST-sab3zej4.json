@@ -1,0 +1,24 @@
+{
+  "id": "ST-sab3zej4",
+  "kind": "story",
+  "title": "Lookups show decisions and audit flags contradictions",
+  "status": "draft",
+  "parent": "EP-v56iwyry",
+  "priority": "P2",
+  "rank": 7,
+  "goal": "pack and show print active and proposed DECISION lines beside facts, labelled decided or proposed; an active decision that answers the question counts toward coverage good, a proposed one never does; --invalidated (MCP include_invalidated) adds invalidated ones as 'invalidated because <reason>'; audit lists active decisions sharing a context as possible contradictions without blocking anything.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "decision_lookup"
+      ]
+    }
+  ],
+  "depends_on": [
+    "ST-trjsnvos",
+    "ST-cumapb4s"
+  ]
+}

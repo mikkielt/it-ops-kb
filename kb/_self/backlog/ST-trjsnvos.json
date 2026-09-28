@@ -1,0 +1,30 @@
+{
+  "id": "ST-trjsnvos",
+  "kind": "story",
+  "title": "Facts cite decisions with a DECISION tag",
+  "status": "draft",
+  "parent": "EP-v56iwyry",
+  "priority": "P2",
+  "rank": 3,
+  "goal": "[DECISION D-xxxxxxxx] and [DECISION D-xxxxxxxx: note] parse in kbfacts (KINDS); check.py resolves each id to a row of the root's _decisions.csv; kb_mcp's tag enum, ql_capture and the benchmarks' tag regex accept it; ql_research never emits it.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "decision_tag"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/check.py"
+      ],
+      "match": "errors=0"
+    }
+  ],
+  "depends_on": [
+    "ST-rmabmiaq"
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "id": "TK-xp6iyhiz",
+  "kind": "task",
+  "title": "kbroot.py add creates the decision files",
+  "status": "todo",
+  "parent": "ST-rmabmiaq",
+  "priority": "P2",
+  "rank": 1,
+  "goal": "kbroot.py add writes empty _decisions.csv and decision-makers.csv with their headers into the new root; a test named decisions_store_kbroot proves it.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "decisions_store_kbroot"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbroot.py",
+    "_tools/test_kbroot.py"
+  ]
+}

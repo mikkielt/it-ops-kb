@@ -1,0 +1,35 @@
+{
+  "id": "TK-auqemaih",
+  "kind": "task",
+  "title": "Decision and decision-maker file formats in kbcommon and check.py",
+  "status": "todo",
+  "parent": "ST-rmabmiaq",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kbcommon names both files, their columns and the D- prefix; check.py validates them per root and for kb/_self; empty kb/_self/_decisions.csv and kb/_self/decision-makers.csv exist; tests named decisions_store plant one failure per rule.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "decisions_store"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/check.py"
+      ],
+      "match": "errors=0"
+    }
+  ],
+  "touches": [
+    "_tools/kbcommon.py",
+    "_tools/check.py",
+    "_tools/test_kb.py",
+    "_tools/test_kb_root.py",
+    "kb/_self/_decisions.csv",
+    "kb/_self/decision-makers.csv"
+  ]
+}
