@@ -1,0 +1,50 @@
+{
+  "id": "ST-fmtszrey",
+  "kind": "story",
+  "title": "One command writes a valid _sources.csv row",
+  "status": "draft",
+  "parent": "EP-hsyx42zz",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "A stdlib command takes a url, title, publisher, licence and reuse class (and optional version and artifact hash), writes the row with the id from kbid, converges on a repeated url, and the row passes check.py; kb-add-topic, kb-census, kb-ingest and kb-research use it instead of a hand-written CSV writer",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "add_source"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/check.py"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbid.py",
+    "_tools/test_kb.py",
+    ".claude/skills/kb-add-topic/SKILL.md",
+    ".claude/skills/kb-census/SKILL.md",
+    ".claude/skills/kb-ingest/SKILL.md",
+    ".claude/skills/kb-research/SKILL.md",
+    "kb/_self/content-rules.md",
+    "kb/_self/tools.md"
+  ],
+  "gates": [
+    {
+      "id": "surface",
+      "kind": "blocking",
+      "question": "Where does the row writer live?",
+      "options": [
+        "a kbid.py add subcommand",
+        "a new MCP tool beside the read-only kb_* tools",
+        "both"
+      ],
+      "recommendation": "a kbid.py add subcommand"
+    }
+  ],
+  "notes": "Baseline census: tool results of 314 transcripts of this project (52 sessions, 262 subagent runs), about 4 characters a token; each result is also re-read from cache on every later turn of its session. 115 ad-hoc Python appends to _sources.csv and 90 ad-hoc reads. kbid.py url only prints the id; rag.py src only reads; ql_research.py write_research appends rows for the query log alone; census.py rewrites the whole table. kb-add-topic/SKILL.md, kb-census/SKILL.md and kb-ingest/SKILL.md tell the agent to append rows with a CSV writer, and check.py rejects bad ids, licences and reuse classes afterwards. Kb facts: public/agents/subagents-vs-deterministic-tools.md:74 (a fixed sequence becomes one tool, DOC S1935), public/agents/agent-evaluation.md:36 (DOC S1935)."
+}

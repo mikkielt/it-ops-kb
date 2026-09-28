@@ -1,0 +1,39 @@
+{
+  "id": "ST-exu6fdy6",
+  "kind": "story",
+  "title": "Usage across a transcript tree, by tool, command and file",
+  "status": "draft",
+  "parent": "EP-mzzucemv",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kbusage.py reads a session transcript with its subagents/*.jsonl, or a whole project directory, and prints tool-result characters and calls grouped by tool, Bash command head and file path, with totals checked against the transcripts' own usage",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "kbusage_tree"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbusage.py",
+    "_tools/test_kbusage.py",
+    "kb/_self/usage.md",
+    "kb/_self/tools.md"
+  ],
+  "gates": [
+    {
+      "id": "source",
+      "kind": "blocking",
+      "question": "Which data does the rollup read?",
+      "options": [
+        "transcripts only, stdlib, offline",
+        "transcripts, with OpenTelemetry tool_result events as an optional cross-check"
+      ],
+      "recommendation": "transcripts only, stdlib, offline"
+    }
+  ],
+  "notes": "Baseline census: tool results of 314 transcripts of this project (52 sessions, 262 subagent runs), about 4 characters a token; each result is also re-read from cache on every later turn of its session. 92 ad-hoc reads of .jsonl transcripts and 122 scripts touching usage; the census behind this epic was itself hand-written. kbusage.py covers one transcript and one prompt; ST-6bi7oe6y and ST-mn4j4fis roll usage up by item and work window, not by tool or file. Kb facts: public/claude/otel-monitoring.md:18 (DOC S744), public/claude/agent-sdk.md:68,75 (modelUsage covers subagents; subagent transcripts, DOC S-isqfh6pr S-gztpah4d), public/claude/hooks.md:39 (transcript_path, DOC S743). It measures the other stories of EP-hsyx42zz."
+}

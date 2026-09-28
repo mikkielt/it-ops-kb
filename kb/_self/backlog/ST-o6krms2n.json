@@ -1,0 +1,42 @@
+{
+  "id": "ST-o6krms2n",
+  "kind": "story",
+  "title": "Live-docs searches are reused, not paid again",
+  "status": "draft",
+  "parent": "EP-hsyx42zz",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "A research session that repeats a live docs search or fetch already made within the cache lifetime reads it from a local uncommitted cache instead of calling the docs server, and MCP output in this project is capped below the Claude Code default",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "live_docs_cache"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kb_mcp.py",
+    "_tools/test_kb_mcp.py",
+    ".claude/skills/kb-research/SKILL.md",
+    ".claude/skills/kb-refresh/SKILL.md",
+    ".claude/settings.json",
+    "kb/_self/tools.md"
+  ],
+  "gates": [
+    {
+      "id": "lifetime",
+      "kind": "blocking",
+      "question": "How long may a cached live-docs search or fetch be reused?",
+      "options": [
+        "within one session only",
+        "an on-disk cache keyed by server and query with a short lifetime",
+        "no cache: research reads the kb first and never repeats a search"
+      ],
+      "recommendation": "an on-disk cache keyed by server and query with a short lifetime"
+    }
+  ],
+  "notes": "Baseline census: tool results of 314 transcripts of this project (52 sessions, 262 subagent runs), about 4 characters a token; each result is also re-read from cache on every later turn of its session. Per call: search_claude_code_docs about 26k characters, microsoft_docs_search about 22k, microsoft_docs_fetch about 10k, WebFetch about 7.5k; about 1.4M characters in all. No MAX_MCP_OUTPUT_TOKENS in the project settings, so results ride the default cap and are paid in full; fetch.py's _cache serves source verification, not the docs servers; no PostToolUse hook trims MCP output. Kb facts: public/claude/tool-output-limits.md:12,18 (MAX_MCP_OUTPUT_TOKENS, anthropic/maxResultSizeChars, DOC S745 S740), public/claude/hooks.md:29,32 (updatedMCPToolOutput, DOC S743), public/agents/doc-lookup-sources.md:23 (DOC S2177), public/claude/otel-monitoring.md:18 (tool_result_size_bytes, DOC S744). The output cap alone is a small task; the cache is the saving."
+}
