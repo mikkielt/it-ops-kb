@@ -52,6 +52,7 @@ def test_every_readme_number_must_match_a_row():
     assert bm.readme_misses("costs $0.029 and 10 s, 271 topics, on 2.1.290; Haiku 4.5, Apache-2.0", ROWS) == []
     assert bm.readme_misses("costs $0.29 per question", ROWS) == ["$0.29"]
     assert bm.readme_misses("about 28k tokens", ROWS) == ["28k"]
+    assert bm.readme_misses("3.8M characters", ROWS) == ["3.8M"]  # a row of 9.8 is not 3.8M
 
 
 def test_the_committed_report_and_readme_agree_with_the_results():

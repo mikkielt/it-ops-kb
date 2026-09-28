@@ -246,7 +246,7 @@ def readme_misses(text, rows):
     pool = sorted(set(pool))
     versions = {r["claude_code"] for r in rows}
     misses = []
-    for m in re.finditer(r"(\$?)(\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d+(?:\.\d+)*)(k|x| ?%)?", text):
+    for m in re.finditer(r"(\$?)(\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d+(?:\.\d+)*)(k|M\b|x| ?%)?", text):
         raw, unit = m.group(2), (m.group(3) or "").strip()
         if raw.count(".") > 1:
             if raw not in versions:
@@ -257,7 +257,7 @@ def readme_misses(text, rows):
         n = float(raw.replace(",", ""))
         dec = len(raw.split(".")[1]) if "." in raw else 0
         tol = 0.5 * 10 ** -dec + 1e-9
-        scale = 1000 if unit == "k" else 1
+        scale = {"k": 1000, "M": 1000000}.get(unit, 1)
         if not any(abs(v / scale - n) <= tol or abs(v - n) <= tol for v in pool):
             misses.append(m.group(0))
     return misses
