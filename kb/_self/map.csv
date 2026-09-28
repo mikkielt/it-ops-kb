@@ -68,4 +68,7 @@ kb/_self/token-efficiency.md,AGENTS.md
 kb/_self/token-efficiency.md,kb/_self/reports/*.md
 kb/_self/doc2query.md,_tools/doc2query.py
 kb/_self/doc2query.md,kb/public/_retrieval/doc2query/*
+kb/_self/web-sources.md,_tools/fetch.py
+kb/_self/web-sources.md,_tools/census.py
+kb/_self/web-sources.md,.claude/skills/kb-research/SKILL.md
 kb/_self/work-left.md,-

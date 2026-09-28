@@ -14,6 +14,7 @@ Everything an agent needs to run, change and ship this kb, except the lookup rul
 | `kb/_self/plugin.md` | changing the plugin, installing it in another project, a team's own roots (`/kb-add-root`, `KB_ROOTS`) | rules and runbook |
 | `kb/_self/design.md` | how the kb works and why; when it is token-efficient and when it is not | explanation |
 | `kb/_self/token-efficiency.md` | changing anything a lookup touches (pack, the hooks, the MCP server, the router, agents, plugin, `AGENTS.md`): every token-saving technique, its file and its measurement | catalogue |
+| `kb/_self/web-sources.md` | reading a web source during research, or a source family that keeps failing or grows large: the fetch route per family and the runbook for staging a new one | runbook |
 | `kb/_self/doc2query.md` | document expansion for pack: protocol and results | protocol |
 | `kb/_self/work-left.md` | at the start of a maintenance session: the open work | state |
 | `kb/_self/reports/` | the measurements `design.md` and `token-efficiency.md` rest on, each section with its setup | measurements |

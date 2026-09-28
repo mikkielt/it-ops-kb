@@ -33,12 +33,13 @@ Run each command on its own (no `;`, `&&`, pipes into other tools or loops): the
 ## 3. Research
 - Official sources first, most specific first:
   - Microsoft: `microsoft_docs_search` then `microsoft_docs_fetch`. Claude Code: `search_claude_code_docs`. MCP spec: `search_model_context_protocol`.
-  - Other vendors and open-source projects: WebSearch to find the vendor's own docs, release notes, API reference or repository, then WebFetch the page. Prefer a url pinned to a version, tag or commit.
+  - Other vendors and open-source projects: WebSearch to find the vendor's own docs, release notes, API reference or repository, then read the page by its family's route. Prefer a url pinned to a version, tag or commit.
+  - Read by route, not by the HTML page (`kb/_self/web-sources.md`, "Routes by family"): a GitHub or GitLab blob as the raw file at the same ref; a site's `.md` page or `llms.txt` where it publishes them; PyPI as its JSON; a PDF with `curl` and the Read tool. A host that keeps failing (403, bot page, empty result) goes in the report as a staging candidate for that file's runbook.
   - `agents/doc-lookup-sources.md` lists the stable lookup sources.
 - **Read the full page before you cite it.** A search result is a pointer, not evidence: its snippet may come from another page, an older version or a neighbouring section.
   - Microsoft Learn: `microsoft_docs_fetch` on the url you will cite, and find the sentence in the fetched text.
-  - Claude Code and MCP docs: read the page (`query_docs_filesystem_*` with `cat <page>.mdx`), not just the search hit.
-  - Any other site: WebFetch (or curl) the page and copy the key sentence verbatim, at most 25 words, into your notes with its url; the report lists each new fact with that quote.
+  - Claude Code and MCP docs: read the section, not just the search hit: `query_docs_filesystem_*` with `rg -n -C 8 "<words>" <page>.mdx` (or `sed -n` a line range); `cat` the whole page only when the section cannot be found.
+  - Any other site: curl the page (WebFetch only to locate the passage: it returns a summary, not the text) and copy the key sentence verbatim, at most 25 words, into your notes with its url; the report lists each new fact with that quote.
   - The source row is the page where the sentence is, not the page that linked to it. If you cannot find the sentence on any page you can cite, the fact is not `DOC`: drop it, or keep it as `[UNK]` and log where you looked in `_gaps.md`. Numbers (limits, sizes, latencies, dates) need the exact sentence every time.
 - Record each product's or feature's status as the vendor states it (GA, preview, beta, deprecated, end of support) in the fact itself. A preview feature can be recorded, but say "preview" in the fact and never present it as the recommended path.
 - Blogs, forums, vendor marketing and AI-generated wikis are `COMMUNITY`: a lead, never the only evidence for a `DOC` fact. Integrations that a third party claims but the vendor does not document are `COMMUNITY` or `UNK`.
