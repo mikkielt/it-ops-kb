@@ -1,0 +1,32 @@
+{
+  "id": "ST-pbonxqx4",
+  "kind": "story",
+  "title": "Direct push on the real origin",
+  "status": "draft",
+  "parent": "EP-mzzucemv",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "Once, python3 _tools/querylog.py apply --push lands one automatic commit on main of the real origin, and one planted conflict ends as an open merge request.",
+  "checks": [
+    {
+      "run": [
+        "git",
+        "log",
+        "origin/main",
+        "-n",
+        "500",
+        "--format=%(trailers:key=KB-Auto,valueonly)"
+      ],
+      "match": "querylog"
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/querylog.py",
+        "status"
+      ],
+      "match": "open conflict merge requests \\([^)]*\\): [1-9]"
+    }
+  ],
+  "notes": "Read origin's project settings with glab api before the first push (kb/_self/querylog.md, Delivery). The planted conflict branch is for a person or /kb-git-sync to resolve afterwards."
+}

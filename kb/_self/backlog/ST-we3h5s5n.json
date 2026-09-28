@@ -1,0 +1,26 @@
+{
+  "id": "ST-we3h5s5n",
+  "kind": "story",
+  "title": "Native citations from kb tool results",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb_pack results reach the model as search_result blocks with native citations, once MCP or Claude Code carries them from MCP tool results (block format in agents/hybrid-retrieval.md).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "kb_mcp"
+      ]
+    }
+  ],
+  "trigger": {
+    "when": "MCP or Claude Code carries search_result citation blocks from MCP tool results (the Agent SDK no longer drops them)",
+    "fired": false
+  },
+  "links": [
+    "agents/hybrid-retrieval.md"
+  ]
+}

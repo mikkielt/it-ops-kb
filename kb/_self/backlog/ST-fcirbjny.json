@@ -1,0 +1,20 @@
+{
+  "id": "ST-fcirbjny",
+  "kind": "story",
+  "title": "File a bug automatically for a red main pipeline",
+  "status": "draft",
+  "parent": "EP-o2bjijfp",
+  "priority": "P3",
+  "rank": 1,
+  "goal": "A red pipeline on main that no automatic revert covers becomes one bug item (severity from the failed job: S1 when the gate itself is broken, else S2) the next time a session starts, filed once per pipeline.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "backlog"
+      ]
+    }
+  ]
+}

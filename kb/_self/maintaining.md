@@ -4,7 +4,7 @@ Read this before any edit, research, refresh, census, commit or push. A lookup n
 
 ## Setup (first session in a fresh clone)
 
-Run `/kb-setup` (Claude Code), or do the same by hand. In Claude Code on the web, `.claude/hooks/session_start.py` (a SessionStart hook in `.claude/settings.json`) already installs the commit hooks, registers the MCP servers, runs `check.py` and points the new session to `kb/_self/work-left.md`, on every start, resume and `/clear`. The query log's `SessionStart` hooks start its distill and show its weekly digest once per ISO week, and its `SessionEnd` hook starts the distill (`kb/_self/querylog.md`, Distill and Reporting).
+Run `/kb-setup` (Claude Code), or do the same by hand. In Claude Code on the web, `.claude/hooks/session_start.py` (a SessionStart hook in `.claude/settings.json`) already installs the commit hooks, registers the MCP servers, runs `check.py` and points the new session to the backlog, on every start, resume and `/clear`; in every clone a `SessionStart` hook prints the backlog's horizon (`kb/_self/backlog.md`). The query log's `SessionStart` hooks start its distill and show its weekly digest once per ISO week, and its `SessionEnd` hook starts the distill (`kb/_self/querylog.md`, Distill and Reporting).
 
 1. **Python 3.11+** as `python3` (the floor in `pyproject.toml`); on Windows `python` or `py -3`, plus Git for Windows, whose Git Bash runs the hooks. Every hook (`.claude/settings.json`, the plugin, `.githooks/`) starts its script through `sh _tools/kbpy`, which finds the interpreter on each OS. Nothing to install for the tools: they use the standard library only. The tests use pytest through uv (`pyproject.toml`, `uv.lock`) on the newest stable CPython, pinned in `.python-version` (3.14); `tests.py` installs both on first run. CI also runs them on 3.11 (`UV_PYTHON=3.11`) and on Windows (`kb/_self/git.md`). Moving the pin: edit `.python-version`, `uv lock`, the CI images, then the full gate.
 2. **Checks pass on a clean tree:**
@@ -40,9 +40,12 @@ The routing is also deterministic: `.claude/hooks/kb_change_router.py`, a UserPr
 | `/kb-probe <provider>` | measure a documentation provider's change signals and update its registry row (`_tools/providers.csv`, or a root's `_providers.csv`) | web sources, tools, git |
 | `/kb-verify [prefixes]` | quality gate before a commit or a push | content rules, tools |
 | `/kb-git-sync [--push]` | sync with `origin/main` when `kbgit.py sync` stops (exit 1 or 3): resolves conflicts by meaning, fixes a red gate, pushes only when asked | git, content rules |
+| `/kb-backlog [epic "<outcome>"\|"<what>"\|bug\|triage]` | plan an epic (interview, then the epic and its first stories), stories, tasks and subtasks, file or triage a bug, in `kb/_self/backlog/` | backlog |
+| `/kb-sprint plan\|start\|run\|review\|close` | run a sprint end to end: the operator approves its start, ready items go to subagents in worktrees and land one at a time, the review story checks it, the retrospective turns process failures into stories at close | backlog, git |
+| `/kb-item [ID]` | work one backlog item: claim, work within its `touches`, `backlog.py done`, land | backlog, git |
 | `/kb-self [doc\|--since REV\|all]` | bring `kb/_self/` back in line with the code, skills and config it describes | `kb/_self/README.md`, `kb/_self/map.csv` |
 
-Any change ends with `/kb-verify`, then `python3 _tools/kbgit.py sync --push` (`/kb-git-sync` when it stops); a change to tools, skills, hooks, the plugin or a rule also runs `/kb-self`. The read-only skills (`/kb-lookup`, `/kb-review-workspace`, `/kb-gap`) follow `AGENTS.md` and the plugin rules.
+Work is planned and tracked in the backlog (`kb/_self/backlog.md`); a commit that works on an item carries `KB-Work: <id>`. Any change ends with `/kb-verify`, then `python3 _tools/kbgit.py sync --push` (`/kb-git-sync` when it stops); a change to tools, skills, hooks, the plugin or a rule also runs `/kb-self`. The read-only skills (`/kb-lookup`, `/kb-review-workspace`, `/kb-gap`) follow `AGENTS.md` and the plugin rules.
 
 ## Conduct for changes
 

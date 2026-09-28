@@ -1928,6 +1928,18 @@ _Agent: kb-research_
 
 _Agent: kb-research_
 
+## QK-project-schedule-epics-sprints-stories-tasks. How should a project schedule epics, sprints, stories, tasks, subtasks and bugs, and what do GitLab and Scrum define for them?
+- Scrum defines an ordered Product Backlog refined into smaller items with a description, order and size, a Sprint Backlog of Sprint Goal, selected items and plan, and one Definition of Done for every item; it names no epics, stories, subtasks, velocity or story points. [DOC S-2wwcyoa4]
+- GitLab's hierarchy is epic, then issue (feature or bug), then task. Nested epics (up to 7 levels) are Ultimate only. Links are relates to, blocks and is blocked by, and the blocking links are Premium. [DOC S-cl4h4f7i, S-v2ztgtdn, S-evjlv5hf, S-tyuv57qu]
+- GitLab statuses (Premium, GA 18.4) fall into Triage, To do, In progress, Done and Canceled; only Done and Canceled close an item. Weight, iterations (1 to 3 week time boxes in cadences with roll over) and scoped labels are Premium; milestones are Free. [DOC S-il7kjbdz, S-nonpog4d, S-v53altt3, S-ntqzc5fg, S-kl7x7kl6]
+- GitLab's handbook separates `priority::1`-`4` (when it will be scheduled) from `severity::1`-`4` (a bug's impact: blocker, critical, major, low), with a resolution target per severity. [DOC S-25zwwcdx]
+- For agents, the task list is safest as structured data, failing by default and flipped to passing only after a check; each item carries an end state, a proving command and constraints, and the shared gate is the minimum. [DER S2150, S-o3v6ozch, S-vp5onm7b]
+- Conclusion: a project that tracks its own work in files keeps Scrum's single Definition of Done and Sprint Goal, and borrows GitLab's epic, issue and task levels, its blocks and relates-to links, its status categories and its separate priority and severity scales. It stores them as data a tool validates, since a file tracker gets none of the Premium features and an agent's prose status invites "declared done early". [DER S-2wwcyoa4, S-v2ztgtdn, S-evjlv5hf, S-il7kjbdz, S-25zwwcdx, S2150]
+- Open: no official source read here defines a user story, a subtask or their sizes. [UNK]
+- See gitlab/work-items-planning.md, agents/agent-planning-and-done.md.
+
+_Agent: kb-research_
+
 ## R1. Reuse candidates
 
 - **Highest leverage: `pydantic-settings` as a `dependency` for a project's config-file/env-var/flags

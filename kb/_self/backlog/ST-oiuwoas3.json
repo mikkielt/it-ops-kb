@@ -1,0 +1,20 @@
+{
+  "id": "ST-oiuwoas3",
+  "kind": "story",
+  "title": "File a bug automatically when the query log reverts a push",
+  "status": "draft",
+  "parent": "EP-o2bjijfp",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "When querylog.py apply --push finds its last automatic push red and pushes a revert (apply-failed), the same run adds a bug item with severity S2, the failing pipeline and the reverted findings, and pushes it with the revert.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "querylog or backlog"
+      ]
+    }
+  ]
+}

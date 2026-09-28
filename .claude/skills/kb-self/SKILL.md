@@ -23,7 +23,7 @@ Run each command on its own (no `;`, `&&`, pipes into other tools or loops): the
 ## 1. Find what is stale
 
 1. `python3 _tools/selfdoc.py check` must say `problems=0`. Fix the map first:
-   - a new tool, skill, hook or top-level `kb/_self/` doc needs rows in `kb/_self/map.csv` (`doc,pattern`, CSV writer, one row per line; pattern `-` for a doc that describes no file, such as `work-left.md`);
+   - a new tool, skill, hook or top-level `kb/_self/` doc needs rows in `kb/_self/map.csv` (`doc,pattern`, CSV writer, one row per line; pattern `-` for a doc that describes no file);
    - a pattern that matches no file names a renamed or removed file: point it at the new path or drop the row.
 2. `python3 _tools/selfdoc.py stale --since <REV>` (or without `--since` for `all`): one `STALE <doc> (since <ref>): <files>` line per doc.
 3. For each listed file, see what changed: `git diff <ref> -- <file>`. For a tool, also read its docstring and flags (`python3 _tools/<tool> --help`). For a skill or hook, read the file. Note only changes a reader of the doc would act on: a new or renamed command, flag, exit code, rule, file, skill or default; a changed behaviour or number.
@@ -44,7 +44,7 @@ Change only what the code change made wrong or missing; keep each doc's scope. A
 | `kb/_self/maintaining.md` | setup, the table of skills that change the kb (a new or renamed skill), conduct and the gate | |
 | `kb/_self/design.md` | the current conclusions and each number's report section | a number with no measured source |
 | `kb/_self/README.md` | the file table and the keeping-current rules | |
-| `kb/_self/work-left.md` | the open work only: add new items, delete finished ones (the commit records them) | done items, history |
+| `kb/_self/backlog.md` | the backlog runbook: `backlog.py`'s commands, fields and refusals, the three backlog skills; the items themselves change through `/kb-backlog`, `/kb-sprint` and `/kb-item`, never here | items, history |
 | each root's `_coverage.md` | nothing by hand: `python3 _tools/build_index.py` | edits |
 | `kb/_self/reports/*` | measurements, each section with its setup; `benchmarks.md`'s tables are generated from `benchmarks.csv`, each value beside its earlier records | plans; a table typed by hand where the results file holds its numbers |
 

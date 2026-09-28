@@ -11,8 +11,8 @@
                                    exit 1 when any
 
 kb/_self/map.csv (doc,pattern) says what each doc describes: one row per doc and glob, repository-relative paths; `*` stays within a
-directory, `**` crosses directories. A pattern of `-` marks a doc that describes no file (a state file such as
-work-left.md): it is never stale. Reports under kb/_self/reports/ are measurements, each section stating its setup, and need no row. /kb-self is the
+directory, `**` crosses directories. A pattern of `-` marks a doc that describes no file: it is never
+stale. Reports under kb/_self/reports/ are measurements, each section stating its setup, and need no row. /kb-self is the
 runbook that updates what `stale` lists. A doc that was checked against a change and needed no edit is recorded
 with a commit trailer, `Self-Reviewed: kb/_self/plugin.md, AGENTS.md`: from that commit on, `stale` counts it as up to
 date for everything before. A repository tool like kbgit.py: it reads this clone, never KB_ROOT.

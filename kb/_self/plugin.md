@@ -21,7 +21,7 @@ The repository root is a Claude Code plugin marketplace (`.claude-plugin/marketp
 
 **`it-ops-kb-docs`** (`.claude-plugin/it-ops-kb-docs/`): the three documentation servers (Microsoft Learn, Claude Code docs, MCP spec), with every `submit_feedback` call blocked by the plugin's PreToolUse hook (a plugin cannot ship permission rules), a shell command that prints why and exits 2, so it needs no interpreter. Install it only for servers the project does not have already: each adds its name and instructions to every session.
 
-The writing skills (`/kb-research`, `/kb-refresh`, `/kb-add-topic`, `/kb-ingest`, `/kb-census`, `/kb-git-sync`, `/kb-self`) and the gate stay in a clone of this repository: the plugin copy is replaced on every update.
+The writing skills (`/kb-research`, `/kb-refresh`, `/kb-add-topic`, `/kb-ingest`, `/kb-census`, `/kb-git-sync`, `/kb-self`), the backlog skills (`/kb-backlog`, `/kb-sprint`, `/kb-item`) and the gate stay in a clone of this repository: the plugin copy is replaced on every update.
 
 ## 2. Rules for changing the plugin
 

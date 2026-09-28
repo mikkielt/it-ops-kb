@@ -72,7 +72,11 @@ kb/_self/doc2query.md,kb/public/_retrieval/doc2query/*
 kb/_self/web-sources.md,_tools/fetch.py
 kb/_self/web-sources.md,_tools/census.py
 kb/_self/web-sources.md,.claude/skills/kb-research/SKILL.md
-kb/_self/work-left.md,-
+kb/_self/backlog.md,_tools/backlog.py
+kb/_self/backlog.md,.claude/skills/kb-backlog/SKILL.md
+kb/_self/backlog.md,.claude/skills/kb-sprint/SKILL.md
+kb/_self/backlog.md,.claude/skills/kb-item/SKILL.md
+kb/_self/tools.md,_tools/backlog.py
 kb/_self/tools.md,_tools/provider.py
 kb/_self/tools.md,_tools/providers.csv
 kb/_self/web-sources.md,_tools/provider.py

@@ -1,5 +1,5 @@
 """The query log's redactor (`python3 _tools/tests.py -k redact`): _tools/redact.py against a positive and a negative
-corpus (kb/_self/querylog.md, Redaction; the Query log item "Redactor" of kb/_self/work-left.md).
+corpus (kb/_self/querylog.md, Redaction).
 
   positive   every identifier shape comes out as kb placeholders only, person and organisation names through the
              Haiku stub, and the leak scan (kbcommon.leak_hits, the shapes of test_kb.py's TestLeaks) finds nothing in

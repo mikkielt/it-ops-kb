@@ -3,7 +3,7 @@ topic: agents/agent-planning-and-done
 priority: P3
 applies_to: "planning multi-session agent work and deciding when a task is done: Scrum Guide 2020, Anthropic long-running harness guidance (2025-11-26), Claude Code best practices and /goal (retrieved 2026-09-28)"
 retrieved_utc: 2026-09-28
-sources: [S-2wwcyoa4, S2150, S-o3v6ozch, S-vp5onm7b, S1896]
+sources: [S-2wwcyoa4, S2150, S-o3v6ozch, S-vp5onm7b, S1896, S-v2ztgtdn]
 status: complete
 ---
 
@@ -18,6 +18,13 @@ Scrum's Definition of Done is one shared quality bar that every item must meet b
 - An organisation's Definition of Done is the minimum for all its Scrum Teams; without one, the team creates one for the product; several teams on one product share and comply with the same one. [DOC S-2wwcyoa4]
 - Each Scrum artifact carries a commitment against which progress is measured: the Product Goal for the Product Backlog, the Sprint Goal for the Sprint Backlog and the Definition of Done for the Increment. [DOC S-2wwcyoa4]
 - In Sprint Planning, Developers plan the work to create an Increment that meets the Definition of Done, often by decomposing backlog items into work items of one day or less; the Retrospective inspects the Definition of Done among other things. [DOC S-2wwcyoa4]
+- The Product Backlog is an emergent, ordered list of what is needed to improve the product and the single source of work for the Scrum Team; items the team can make Done within one Sprint are ready for selection at Sprint Planning. [DOC S-2wwcyoa4]
+- Product Backlog refinement breaks items down into smaller, more precise items and adds details such as a description, order and size; the Developers who will do the work size it. [DOC S-2wwcyoa4]
+- The Sprint Backlog holds the Sprint Goal (why), the selected Product Backlog items (what) and an actionable plan for the Increment (how), and is updated through the Sprint as more is learned. [DOC S-2wwcyoa4]
+- The Sprint Goal is the single objective for the Sprint; if the work turns out different than expected, the scope of the Sprint Backlog is renegotiated without changing the Sprint Goal. [DOC S-2wwcyoa4]
+- Sprints are fixed-length events of one month or less, and a new Sprint starts immediately after the previous one ends. [DOC S-2wwcyoa4]
+- The 2020 Scrum Guide names no epics, user stories, tasks or subtasks and no velocity or story points: a backlog item's type and hierarchy are outside the guide. Those levels come from tools and frameworks, for example GitLab's epic, issue and task hierarchy (`gitlab/work-items-planning.md`). [DER S-2wwcyoa4, S-v2ztgtdn: none of the terms occurs in the guide's text, read 2026-09-28; GitLab's child item hierarchy]
+- A goal-bounded Sprint (one that ends when its goal is met rather than at a fixed date) departs from the Scrum Guide's fixed length; what it keeps is the Sprint Goal as the single commitment, with the Definition of Done as the quality bar. [DER S-2wwcyoa4: fixed length versus the Sprint Goal commitment]
 - The 2020 Scrum Guide does not use the term "acceptance criteria": it defines one Definition of Done shared by all items, and item-specific conditions are outside the guide. [DER S-2wwcyoa4: no occurrence of "acceptance" in the guide's text, read 2026-09-28]
 - Anthropic saw two failure modes when an agent ran across many context windows from a high-level prompt: it tried to one-shot the whole app and ran out of context mid-feature, and a later session saw progress and declared the job done. [DOC S2150]
 - The fix was an initializer session that writes an `init.sh`, a `claude-progress.txt` log and an initial git commit, then coding sessions that each make incremental progress and leave structured updates; both used the same system prompt, tools and harness, only a different first prompt. [DOC S2150]
@@ -50,7 +57,7 @@ Scrum's Definition of Done is one shared quality bar that every item must meet b
 | Check | which command proves it | `python3 _tools/tests.py` passes, including the planted-failure test |
 | Constraints | what must not change | `kb_hook.py` latency; no file outside the listed ones |
 
-See also `agents/agent-evaluation.md` (graders, eval sets), `claude/hooks.md` (Stop hooks), `agents/headless-agent-runtimes.md` (unattended runs), `agents/anthropic-materials.md` (the post index).
+See also `gitlab/work-items-planning.md` (GitLab's epic, issue and task hierarchy, blocking links, iterations, priority and severity labels), `agents/agent-evaluation.md` (graders, eval sets), `claude/hooks.md` (Stop hooks), `agents/headless-agent-runtimes.md` (unattended runs), `agents/anthropic-materials.md` (the post index).
 
 ## Examples
 - SNIPPET: a `/goal` condition with an end state, a check and a constraint; context: Claude Code with `/goal` (hooks not disabled); checked: no [DER S-vp5onm7b: the three parts of an effective condition and the turn clause]

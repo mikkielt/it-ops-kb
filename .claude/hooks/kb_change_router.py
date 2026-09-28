@@ -20,13 +20,20 @@ SELF = "kb/_self"  # the kb's own docs
 
 CHANGE = re.compile(r"\b(?:add|create|write|update|edit|change|modify|fix|correct|remove|delete|rename|move|refactor|"
                     r"implement|improve|extend|replace|commit|push|sync|merge|rebase|refresh|re-?verify|research|"
-                    r"investigate|census|verify|bump|upgrade|set ?up|install|ingest|import|put)\b|"
-                    r"\bwork (?:through )?(?:the )?query[ -]?log", re.I)
+                    r"investigate|census|verify|bump|upgrade|set ?up|install|ingest|import|put|plan|schedule|triage)\b|"
+                    r"\bwork (?:through )?(?:the )?query[ -]?log|\bfile (?:a |an )?(?:bug|defect)\b|"
+                    r"\b(?:start|run|close|work on|pick up) (?:(?:the|a|this|next) )*(?:sprint|item|story|task|bug)\b|"
+                    r"\b(?:EP|ST|TK|SB|BG|SP)-[a-z2-7]{8}\b", re.I)
 QUESTION = re.compile(r"(?:how|what|why|when|where|which|who|does|do|did|is|are|was|can|could|should|would)\b[^\n]*\?\s*$",
                       re.I | re.S)  # a single question ("how do I fix error X?") is a lookup, not a change request
 HARNESS = re.compile(r"[<\[]|Another Claude session sent a message")  # a subagent's report or a task notification,
 # delivered as a prompt: not a person's request
 ROUTES = (  # (skill, when, pattern): the first three that match are named, in this order
+    ("kb-sprint", "plan, start, run, review or close a sprint", r"\bsprints?\b"),
+    ("kb-item", "work on one backlog item", r"\b(?:EP|ST|TK|SB|BG)-[a-z2-7]{8}\b|\b(?:backlog|work) item\b|"
+     r"\b(?:work on|pick up) (?:(?:the|a|this|next) )*(?:item|story|task|bug)\b"),
+    ("kb-backlog", "plan epics, stories and tasks, file or triage a bug", r"\bbacklog\b|\bepics?\b|\bstor(?:y|ies)\b|"
+     r"\bsubtasks?\b|\b(?:file|triage) (?:a |an |the )?(?:bug|defect)s?\b"),
     ("kb-census", "confirm every source", r"\bcensus\b|\ball (?:the |kb )?sources\b|\bevery source\b"),
     ("kb-refresh", "facts of an existing topic, file or source id", r"\brefresh|\bre-?verify|\bre-?check|\boutdated\b|"
      r"\bstale\b|\bout of date\b|\bsources? (?:has |have )?(?:changed|moved)\b|\bS-[a-z2-7]{8}\b|\bS\d{3,4}\b"),

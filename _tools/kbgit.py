@@ -32,6 +32,9 @@ changed topic X / source S / answer QK-..." without reading diffs:
   KB-Auto:                written by querylog.py on its automatic commits, once, values from AUTO_VALUES (querylog,
                           eval, alias, expansion, gap, research, revert); never computed here. check-trailers flags a
                           second KB-Auto line or a value outside the list.
+  KB-Work:                written by the agent on a commit that works on backlog items (kb/_self/backlog.md), once,
+                          comma-separated item ids; never computed here. check-trailers flags a second line or an id
+                          whose item file is in neither the commit nor its parent.
 One line per key, values sorted and joined by ", ". A key with more than MAX_IDS (40) values is written as a count,
 e.g. `KB-Sources-Added: 312 ids (see diff)`: trailers cannot wrap, and `log` finds such commits by their diff anyway.
 A commit is diffed against its first parent (the empty tree for a root commit). Merge commits carry no trailers and
@@ -1064,6 +1067,9 @@ KEYS = ("KB-Topics", "KB-Sources-Added", "KB-Sources-Changed", "KB-Sources-Super
 VERIFIED = "KB-Verified"
 AUTO = "KB-Auto"  # querylog.py's automatic commits (kb/_self/querylog.md, Delivery)
 AUTO_VALUES = ("querylog", "eval", "alias", "expansion", "gap", "research", "revert")
+WORK = "KB-Work"  # the backlog items a commit works on (kb/_self/backlog.md); written by the agent, never computed
+WORK_ID = re.compile(r"(?:EP|ST|TK|SB|BG|SP)-[a-z2-7]{8}")
+BACKLOG = "kb/_self/backlog"
 NOUN = {"KB-Topics": "topics", "KB-Answers": "answers"}
 SUMMARY = re.compile(r"^(\d+) (?:ids|topics|answers) \(see diff\)$")
 KEY_LINE = re.compile(r"^(" + "|".join(re.escape(k) for k in KEYS) + r")\s*:", re.I)
@@ -1274,7 +1280,7 @@ def trailer_lines(computed, verified=None):
 def parse_trailers(text):
     """{canonical key: [values]} of the KB-* trailers in `git log %(trailers:only,unfold)` output."""
     out = {}
-    canon = {k.lower(): k for k in KEYS + (VERIFIED, AUTO)}
+    canon = {k.lower(): k for k in KEYS + (VERIFIED, AUTO, WORK)}
     for ln in (text or "").splitlines():
         k, sep, v = ln.partition(":")
         if sep and k.strip().lower() in canon:
@@ -1595,14 +1601,29 @@ def trailer_audit(rng, quiet=False):
         auto = have.get(AUTO)
         if auto and (len(auto) > 1 or not all(x.strip() in AUTO_VALUES for x in auto[0].split(","))):
             wrong.append(AUTO)
+        work = have.get(WORK)
+        if work and not work_ok(sha, work):
+            wrong.append(WORK)
         kb += bool(want)
         if wrong:
             lines = [f"BAD {short} {date} {subject[:70]}"]
             for k in wrong:
-                exp = next((ln for ln in trailer_lines(want) if ln.startswith(k + ":")), {VERIFIED: "YYYY-MM-DD, once", AUTO: "once, of " + "|".join(AUTO_VALUES)}.get(k, f"(no {k})"))
+                exp = next((ln for ln in trailer_lines(want) if ln.startswith(k + ":")), {VERIFIED: "YYYY-MM-DD, once", AUTO: "once, of " + "|".join(AUTO_VALUES),
+                                                                                                 WORK: "once, backlog item ids that exist at the commit or its parent"}.get(k, f"(no {k})"))
                 lines.append(f"    {k}: has {', '.join(have.get(k, [])) or '(none)'}; expected {exp}")
             bad.append((sha, lines))
     return len(recs), kb, bad
+
+
+def work_ok(sha, values):
+    """A KB-Work trailer: one line of comma-separated backlog ids, each an item file at the commit or its parent (a
+    commit that closes a sprint deletes the files)."""
+    if len(values) > 1:
+        return False
+    ids = [x.strip() for x in values[0].split(",") if x.strip()]
+    return bool(ids) and all(WORK_ID.fullmatch(i) and (blob(sha, f"{BACKLOG}/{i}.json") is not None
+                                                      or blob(sha + "^", f"{BACKLOG}/{i}.json") is not None)
+                             for i in ids)
 
 
 def cmd_check_trailers(a):

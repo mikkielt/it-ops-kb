@@ -36,6 +36,11 @@ def likely(prompt):
     ("run a census of all sources", "kb-census"),
     ("commit and push this", "kb-git-sync"),
     ("fix the rag.py search bug", "kb-self"),
+    ("plan an epic for the census rewrite", "kb-backlog"),
+    ("file a bug: pack returns good for an empty article", "kb-backlog"),
+    ("start the sprint", "kb-sprint"),
+    ("work on ST-pbonxqx4", "kb-item"),
+    ("pick up the next task", "kb-item"),
     ("change the kb-verify skill to also run ruff", "kb-self"),
 ])
 def test_change_requests_are_routed(prompt, skill):

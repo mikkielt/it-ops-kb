@@ -1,0 +1,14 @@
+{
+  "id": "EP-mzzucemv",
+  "kind": "epic",
+  "title": "Query log: a self-improving lookup pipeline",
+  "status": "todo",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "Every kb lookup leaves a redacted, judged record in kb/_querylog/; learn turns records into findings and apply turns accepted findings into eval rows, aliases, expansions and _gaps.md entries, pushed straight to main once the local gate passes (kb/_self/querylog.md is the design).",
+  "links": [
+    "kb/_self/querylog.md",
+    "QK-kb-need-know-build-query-log",
+    "QK-self-improving-lookup-pipeline-query-logging"
+  ]
+}

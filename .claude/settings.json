@@ -10,6 +10,7 @@
       "mcp__mcp-docs__query_docs_filesystem_model_context_protocol",
       "mcp__kb",
       "Bash(python3 _tools/rag.py *)",
+      "Bash(python3 _tools/backlog.py *)",
       "Bash(python3 _tools/kb_hook.py *)",
       "Bash(python3 _tools/check.py)",
       "Bash(python3 _tools/fetch.py --offline)",
@@ -39,6 +40,11 @@
           {
             "type": "command",
             "command": "sh \"${CLAUDE_PROJECT_DIR}/_tools/kbpy\" _tools/querylog.py digest --hook",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "sh \"${CLAUDE_PROJECT_DIR}/_tools/kbpy\" _tools/backlog.py horizon --hook",
             "timeout": 10
           }
         ]

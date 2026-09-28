@@ -41,7 +41,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `agents/prompt-injection-design-patterns` | P2 | complete | `agents/prompt-injection-design-patterns.md` | 6 |
 | `agents/security-copilot-endpoint` | P2 | complete | `agents/security-copilot-endpoint.md` | 24 |
 | `agents/windows-agentic-platform` | P2 | complete | `agents/windows-agentic-platform.md`, `agents/windows-ai-policies.csv` | 16 |
-| `agents/agent-planning-and-done` | P3 | complete | `agents/agent-planning-and-done.md` | 5 |
+| `agents/agent-planning-and-done` | P3 | complete | `agents/agent-planning-and-done.md` | 6 |
 | `agents/codebase-mapping` | P3 | complete | `agents/codebase-mapping.md`, `agents/codebase-mapping.csv` | 60 |
 | `agents/coding-agent-codebase-context` | P3 | complete | `agents/coding-agent-codebase-context.md` | 15 |
 | `agents/doc-change-detection` | P3 | complete | `agents/doc-change-detection.md` | 36 |
@@ -135,6 +135,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `gitlab/variables` | P0 | complete | `gitlab/variables.md` | 2 |
 | `gitlab/automated-merge-requests` | P3 | complete | `gitlab/automated-merge-requests.md` | 25 |
 | `gitlab/hosted-runners-windows` | P3 | complete | `gitlab/hosted-runners-windows.md` | 5 |
+| `gitlab/work-items-planning` | P3 | complete | `gitlab/work-items-planning.md` | 11 |
 | `gpo/admx-central-store` | P1 | complete | `gpo/admx-central-store.md` | 8 |
 | `gpo/dsc-group-policy-adapter` | P2 | complete | `gpo/dsc-group-policy-adapter.md` | 3 |
 | `gpo/gpo-export` | P2 | complete | `gpo/gpo-export.md` | 5 |

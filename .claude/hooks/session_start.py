@@ -53,7 +53,7 @@ def report():
         f"- check.py: {check}",
         f"- test tools: {deps}",
         f"- branch {branch} at {head} ({sync})",
-        f"- Read {SELF}/work-left.md first: it lists the open work. Before any change read {SELF}/maintaining.md; {SELF}/README.md",
+        f"- The open work is the backlog ({SELF}/backlog.md; the horizon hook printed its state). Before any change read {SELF}/maintaining.md; {SELF}/README.md",
         "  maps the kb's own docs (content rules, tools, git, plugin, design).",
         "- The full gate before a commit takes about 60 s: check.py, build_index.py --check, kbgit.py fix --check, tests.py",
         "  (pytest in parallel, ~20 s, includes rag.py eval), stress_test.py (~35 s), fetch.py --offline; after reworded facts also",

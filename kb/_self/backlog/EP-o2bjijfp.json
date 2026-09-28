@@ -1,0 +1,12 @@
+{
+  "id": "EP-o2bjijfp",
+  "kind": "epic",
+  "title": "Backlog: automatic intake and review aids",
+  "status": "todo",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Defects the pipeline already detects reach the backlog as bugs without a person filing them.",
+  "links": [
+    "kb/_self/backlog.md"
+  ]
+}
