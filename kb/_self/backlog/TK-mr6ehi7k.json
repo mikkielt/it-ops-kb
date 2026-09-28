@@ -2,7 +2,7 @@
   "id": "TK-mr6ehi7k",
   "kind": "task",
   "title": "The plugin-status tests stay under the Windows path limit",
-  "status": "todo",
+  "status": "done",
   "parent": "BG-ovulgaal",
   "priority": "P1",
   "rank": 3,
@@ -27,5 +27,30 @@
   ],
   "touches": [
     "_tools/test_kb_mcp.py"
-  ]
+  ],
+  "evidence": {
+    "commit": "55a6825a33baee2e982c896f4e8285ec00802373",
+    "checks": [
+      {
+        "run": [
+          "python",
+          "_tools/tests.py",
+          "-k",
+          "test_status_of_a_plugin_copy_from_a_directory_marketplace"
+        ],
+        "exit": 0,
+        "sha256": "18baed1175823957"
+      },
+      {
+        "run": [
+          "python",
+          "_tools/tests.py",
+          "-k",
+          "test_status_says_how_far_an_installed_plugin_is_behind_its_marketplace"
+        ],
+        "exit": 0,
+        "sha256": "f2e4c25a6265b6ed"
+      }
+    ]
+  }
 }
