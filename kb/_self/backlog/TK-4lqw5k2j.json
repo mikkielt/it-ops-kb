@@ -1,0 +1,29 @@
+{
+  "id": "TK-4lqw5k2j",
+  "kind": "task",
+  "title": "Route subagent counts by worktree branch; overlaps to the sprint line",
+  "status": "todo",
+  "parent": "ST-jn7qeb2b",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kbusage reads a subagent transcript's work/<id> branch in memory and distill adds its counts to that item's line; a main-session prompt inside two windows counts once on the line of their sprint.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "work_subagent"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbusage.py",
+    "_tools/ql_distill.py",
+    "_tools/test_kbusage.py",
+    "_tools/fixtures/kbusage/**",
+    "_tools/test_querylog.py",
+    "_tools/fixtures/querylog/**",
+    "kb/_self/usage.md"
+  ]
+}

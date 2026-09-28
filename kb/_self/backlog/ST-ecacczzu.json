@@ -1,0 +1,27 @@
+{
+  "id": "ST-ecacczzu",
+  "kind": "story",
+  "title": "Research cost against the gaps it closed",
+  "status": "draft",
+  "parent": "EP-mzzucemv",
+  "priority": "P3",
+  "rank": 17,
+  "goal": "backlog.py cost --research lists every item with research true or whose links name a query-log gap finding, with its tokens, the gap findings closed by commits carrying its KB-Work trailer, and tokens per closed gap.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "cost_research"
+      ]
+    }
+  ],
+  "depends_on": [
+    "ST-6bi7oe6y"
+  ],
+  "relates_to": [
+    "ST-wgymzw72"
+  ],
+  "notes": "research true comes from ST-wgymzw72; until then only links to gap findings select an item. A /kb-research session that claims no item is not counted."
+}

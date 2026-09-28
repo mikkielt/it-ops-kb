@@ -24,5 +24,27 @@
   ],
   "depends_on": [
     "TK-4rdnf3da"
+  ],
+  "gates": [
+    {
+      "id": "run-dotnet",
+      "kind": "blocking",
+      "question": "May kbingest.py map run dotnet (msbuild -getProperty/-getItem, package list) with exactly the argument list and environment in this task's goal, in a scratch worktree with a timeout? MSBuild evaluation imports the repository's props and targets files.",
+      "options": [
+        "approve",
+        "no: .NET stays unmapped"
+      ],
+      "recommendation": "approve only after checking what evaluation without -target runs"
+    },
+    {
+      "id": "run-node",
+      "kind": "blocking",
+      "question": "May kbingest.py map run npm ls and tsc (--package-lock-only, --showConfig, --listFilesOnly) with exactly the argument list and environment in this task's goal, in a scratch worktree with a timeout? Neither may install packages or run lifecycle scripts.",
+      "options": [
+        "approve",
+        "no: Node and TypeScript stay unmapped"
+      ],
+      "recommendation": "approve"
+    }
   ]
 }

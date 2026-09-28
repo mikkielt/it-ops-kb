@@ -1,0 +1,26 @@
+{
+  "id": "TK-gnxbjdxc",
+  "kind": "task",
+  "title": "backlog.py cost over the work sidecars",
+  "status": "todo",
+  "parent": "ST-6bi7oe6y",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "backlog.py cost ID sums the work lines of the item and its descendants at HEAD, per model, main and sub, with --runs and --format json.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "backlog_cost"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/test_backlog.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ]
+}

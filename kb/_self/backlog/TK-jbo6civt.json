@@ -1,0 +1,26 @@
+{
+  "id": "TK-jbo6civt",
+  "kind": "task",
+  "title": "Parse backlog claim, done and release into work rows",
+  "status": "todo",
+  "parent": "ST-n77nrtv7",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "ql_capture writes a work row {item, action} for a successful backlog.py claim, done or release run through Bash or PowerShell, keyed like every hook row; kb/_self/querylog.md, Surfaces, lists it.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "work_row"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/ql_capture.py",
+    "_tools/test_querylog.py",
+    "_tools/fixtures/querylog/**",
+    "kb/_self/querylog.md"
+  ]
+}

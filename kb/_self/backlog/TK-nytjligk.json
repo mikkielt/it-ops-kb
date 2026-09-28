@@ -1,0 +1,47 @@
+{
+  "id": "TK-nytjligk",
+  "kind": "task",
+  "title": "Research hook identity of subagents, session id and failed Bash exits",
+  "status": "todo",
+  "parent": "ST-fria7ro7",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kb/public/claude/hooks.md holds DOC facts, with source rows, on the hook input fields that identify a subagent, on whether Bash sees the session id, and on whether a Bash command that exits non-zero fires PostToolUse or PostToolUseFailure.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/rag.py",
+        "pack",
+        "hook input agent_id agent_type subagent PostToolUse"
+      ],
+      "match": "coverage: good"
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/rag.py",
+        "pack",
+        "Does Claude Code expose the session id to a Bash command as an environment variable?"
+      ],
+      "match": "coverage: good"
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/rag.py",
+        "pack",
+        "Does a Bash command that exits non-zero fire PostToolUseFailure?"
+      ],
+      "match": "coverage: good"
+    }
+  ],
+  "touches": [
+    "kb/public/claude/**",
+    "kb/public/_sources.csv",
+    "kb/public/_answers.md",
+    "kb/public/_gaps.md",
+    "kb/public/_retrieval/**"
+  ],
+  "notes": "Through /kb-research; S743 (code.claude.com/docs/en/hooks.md) and S2157 (sub-agents) are the likely sources."
+}

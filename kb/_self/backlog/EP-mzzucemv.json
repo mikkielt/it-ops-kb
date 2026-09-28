@@ -10,5 +10,6 @@
     "kb/_self/querylog.md",
     "QK-kb-need-know-build-query-log",
     "QK-self-improving-lookup-pipeline-query-logging"
-  ]
+  ],
+  "notes": "Work cost (ST-fria7ro7 to ST-ecacczzu): per-item token lines in kb/_querylog/work/, joined to items by id; tokens only, no prices. ST-zptutwlf reads them through backlog.py cost. Not planned yet: a per-kind baseline that flags an item far over its peers in horizon."
 }

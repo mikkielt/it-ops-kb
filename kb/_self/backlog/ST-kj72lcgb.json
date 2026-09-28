@@ -6,7 +6,7 @@
   "parent": "EP-g5hizdko",
   "priority": "P2",
   "rank": 4,
-  "goal": "topics_for (rag.py topics-for --imports, kb_topics_for with imports=true) extracts imported package names deterministically (Python via ast, package.json dependencies, go.mod require, csproj/Directory.Packages.props PackageReference, PowerShell #Requires -Modules and RequiredModules) and matches signals against them only, skipping files git check-attr marks generated or vendored; the default lexical mode, signals.csv format and rag.py eval are unchanged; a planted file whose only mention of a signal is a comment is found lexically and not with --imports.",
+  "goal": "topics_for (rag.py topics-for --imports, kb_topics_for with imports=true) extracts imported package names deterministically (Python via ast, package.json dependencies, go.mod require, csproj/Directory.Packages.props PackageReference, PowerShell #Requires -Modules and RequiredModules) and matches signals against them only, ranking an import that matches signals of one topic above one that matches many, and returning candidate topics with the import that matched, never an owner, skipping files git check-attr marks generated or vendored; the default lexical mode, signals.csv format and rag.py eval are unchanged; a planted file whose only mention of a signal is a comment is found lexically and not with --imports.",
   "checks": [
     {
       "run": [

@@ -30,5 +30,6 @@
     "kb/public/agents/codebase-mapping.csv",
     "kb/public/python/uv-projects.md",
     "kb/public/windows/powershell-static-analysis.md"
-  ]
+  ],
+  "notes": "The pins describe the repository at the commit; /kb-ingest puts them on the source row (ST-rrrgvspb), never on facts."
 }

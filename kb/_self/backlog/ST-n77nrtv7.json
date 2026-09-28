@@ -1,0 +1,45 @@
+{
+  "id": "ST-n77nrtv7",
+  "kind": "story",
+  "title": "Capture: a work row when a session claims or finishes an item",
+  "status": "draft",
+  "parent": "EP-mzzucemv",
+  "priority": "P2",
+  "rank": 11,
+  "goal": "querylog.py capture turns a Bash or PowerShell PostToolUse whose command runs backlog.py claim, done or release ID into a work spool row {item, action} with the event's session_id, prompt_id and subagent id when present; a failed call (PostToolUseFailure) writes none; the row format is documented in kb/_self/querylog.md, Surfaces.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "work_row"
+      ]
+    }
+  ],
+  "depends_on": [
+    "ST-fria7ro7"
+  ],
+  "gates": [
+    {
+      "id": "scope",
+      "kind": "blocking",
+      "question": "The query log will record usage of every prompt inside a claim-to-done window, kb prompts or not (counts only, no text); prompts outside a window stay unrecorded. Approve this change to what the query log records?",
+      "options": [
+        "approve",
+        "kb prompts only",
+        "every prompt always"
+      ],
+      "recommendation": "approve",
+      "answer": "approve",
+      "by": "operator"
+    }
+  ],
+  "links": [
+    "kb/_self/querylog.md",
+    "_tools/ql_capture.py",
+    "public/claude/hooks.md:64",
+    "public/claude/hooks.md:66"
+  ],
+  "notes": "The PostToolUse and PostToolUseFailure capture hooks already match Bash|PowerShell, so no hook changes: capture parses the command. tool_input.command holds the command (hooks.md:66, DOC S743). release is a claim given back; a window with no done or release ends at the session's end."
+}

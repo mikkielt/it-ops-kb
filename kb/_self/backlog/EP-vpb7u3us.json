@@ -11,5 +11,5 @@
     "agents/agent-planning-and-done.md",
     "kb/_self/token-efficiency.md"
   ],
-  "notes": "Unanswered questions block an item until a research task covers them. A research item is a task with research: true whose check is pack giving coverage good. show, next and horizon run pack; the SessionStart hook does not. The brief command (story 4) and the skill changes (story 5) are built only after the measurement (story 6) shows a saving."
+  "notes": "Order: the knowledge field (ST-ireqmpda), then the measurement with a compact brief (ST-zptutwlf). The brief command (ST-u7bliqzx), research scheduling (ST-wgymzw72) and the planning skills (ST-hzja7lj4) wait on the measurement's blocking gates. Planning writes knowledge needs (asks and refs); only research and the kb's own skills write facts."
 }

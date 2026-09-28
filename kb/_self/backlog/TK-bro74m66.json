@@ -1,0 +1,26 @@
+{
+  "id": "TK-bro74m66",
+  "kind": "task",
+  "title": "Digest lists the week's items by tokens",
+  "status": "todo",
+  "parent": "ST-zjw6ugq6",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "The weekly digest lists the top items by tokens with their subagent and kb-tool shares.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "digest_work"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/ql_report.py",
+    "_tools/test_querylog.py",
+    "_tools/fixtures/querylog/**",
+    "kb/_self/querylog.md"
+  ]
+}

@@ -1,12 +1,12 @@
 {
   "id": "ST-i3t6i2to",
   "kind": "story",
-  "title": "Knowledge state per item: known or to research",
+  "title": "Knowledge state per item, derived from the kb",
   "status": "draft",
   "parent": "EP-vpb7u3us",
   "priority": "P2",
   "rank": 1,
-  "goal": "show, next and horizon run rag.py pack (no network, no model) on each ask of an item and report it known (coverage good without a check line naming a false good) or to research; an item with an ask to research is not ready unless a research task covering that ask exists and is done; horizon lists the research still needed. The SessionStart hook does not run pack.",
+  "goal": "show, next and horizon run rag.py pack (no network, no model) on each ask of an item and each of its refs, and report one state per ask or ref: sufficient (coverage good, no check line naming a false good), partial (coverage weak), unknown (coverage none), stale (a fact key no longer found, or a source past its refresh date) or conflicting (the article has an open entry in _conflicts.md); no other state exists; the state is reported, never stored, and does not change readiness. The SessionStart hook does not run pack.",
   "checks": [
     {
       "run": [
@@ -19,5 +19,19 @@
   ],
   "depends_on": [
     "ST-ireqmpda"
+  ],
+  "gates": [
+    {
+      "id": "no-failure-yet",
+      "kind": "blocking",
+      "question": "This adds a mechanism before a failure it answers has happened (backlog.md, Changing this process). Add it anyway?",
+      "options": [
+        "add",
+        "wait for the failure"
+      ],
+      "recommendation": "wait for the failure",
+      "answer": "add",
+      "by": "operator"
+    }
   ]
 }

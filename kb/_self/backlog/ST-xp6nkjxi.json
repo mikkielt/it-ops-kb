@@ -1,0 +1,33 @@
+{
+  "id": "ST-xp6nkjxi",
+  "kind": "story",
+  "title": "Autonomous maintenance converges on unchanged input",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "tests.py -k converge runs querylog learn and apply (dry run), backlog.py red-pipeline and kbingest.py survey twice on the same fixture repository and store, committing the first run's output in between, and the second run changes no file, files no item and queues no research.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "converge"
+      ]
+    }
+  ],
+  "gates": [
+    {
+      "id": "no-failure-yet",
+      "kind": "blocking",
+      "question": "This adds a mechanism before a failure it answers has happened (backlog.md, Changing this process). Add it anyway?",
+      "options": [
+        "add",
+        "wait for the failure"
+      ],
+      "recommendation": "wait for the failure",
+      "answer": "add",
+      "by": "operator"
+    }
+  ]
+}

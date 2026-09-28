@@ -1,0 +1,26 @@
+{
+  "id": "TK-skhq4sef",
+  "kind": "task",
+  "title": "Record refused dones as work rows",
+  "status": "todo",
+  "parent": "ST-2w2bqtjf",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "A backlog.py done that exits non-zero leaves a work row with action refused, from whichever hook event the research found carries it.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "work_refused"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/ql_capture.py",
+    "_tools/test_querylog.py",
+    "_tools/fixtures/querylog/**",
+    "kb/_self/querylog.md"
+  ]
+}

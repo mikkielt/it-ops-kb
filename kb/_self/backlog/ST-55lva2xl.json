@@ -6,7 +6,7 @@
   "parent": "EP-g5hizdko",
   "priority": "P2",
   "rank": 2,
-  "goal": "python3 _tools/kbingest.py map REPO --rev REV checks out the commit into a scratch worktree and, for each language whose toolchain is installed, runs only the read-only commands of agents/codebase-mapping.csv (go list -e -json with GOTOOLCHAIN=local, cargo metadata --no-deps --offline --locked, dotnet msbuild -getProperty/-getItem without -target and dotnet package list --no-restore, npm ls --json --package-lock-only, tsc --showConfig/--listFilesOnly, python -m ast in a subprocess), with a timeout and no network flags, and writes one JSON map per language (packages, imports, entry points) naming the tool version; a missing toolchain is a note, not an error; the survey never runs it.",
+  "goal": "python3 _tools/kbingest.py map REPO --rev REV checks out the commit into a scratch worktree and, for each language whose toolchain is installed, runs only the read-only commands of agents/codebase-mapping.csv (go list -e -json with GOTOOLCHAIN=local, cargo metadata --no-deps --offline --locked, dotnet msbuild -getProperty/-getItem without -target and dotnet package list --no-restore, npm ls --json --package-lock-only, tsc --showConfig/--listFilesOnly, python -m ast in a subprocess), with a timeout and no network flags, and writes one JSON map per language (packages, imports, entry points) naming the tool version under _cache/ingest/, never under kb/; a missing toolchain is a note, not an error; the survey never runs it.",
   "checks": [
     {
       "run": [

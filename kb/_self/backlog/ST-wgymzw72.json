@@ -6,7 +6,7 @@
   "parent": "EP-vpb7u3us",
   "priority": "P2",
   "rank": 2,
-  "goal": "A task with research: true carries the asks it must make known; its done runs pack for each and requires coverage good; backlog.py can create one research task for an item's unknown asks and add it to the item's depends_on; /kb-research is the skill that works it.",
+  "goal": "A task with research: true carries the asks it must make known; its done runs pack for each and requires coverage good; an item's asks are marked required or useful, and an item with a required ask that is not sufficient is not ready until a research task covering it is done; backlog.py can create one research task for an item's required asks and add it to the item's depends_on; /kb-research is the skill that works it.",
   "checks": [
     {
       "run": [
@@ -18,7 +18,21 @@
     }
   ],
   "depends_on": [
-    "ST-i3t6i2to"
+    "ST-i3t6i2to",
+    "ST-zptutwlf"
+  ],
+  "gates": [
+    {
+      "id": "measured",
+      "kind": "blocking",
+      "question": "Schedule research before the work that needs it, given the measurement in kb/_self/reports/backlog-briefs.md?",
+      "options": [
+        "build",
+        "drop: asks stay informational",
+        "measure again with another setup"
+      ],
+      "recommendation": "build only if the with-brief arm used fewer tokens and no more rework in every run"
+    }
   ],
   "links": [
     ".claude/skills/kb-research/SKILL.md"

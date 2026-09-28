@@ -1,0 +1,38 @@
+{
+  "id": "ST-mn4j4fis",
+  "kind": "story",
+  "title": "Distill: usage of every prompt in a work window, per item",
+  "status": "draft",
+  "parent": "EP-mzzucemv",
+  "priority": "P2",
+  "rank": 12,
+  "goal": "Distill writes kb/_querylog/work/<yyyy-mm>/<run-id>.jsonl beside the run file: a header (run, reader, counts), then one line per item worked in the run's sessions with the item id, the prompt count and the summed kbusage main and sub counts of every prompt between the item's claim and its done or release (kb prompts or not); no session, prompt or transcript data; querylog.py check gates the file (shape, counts, ids, duplicates) with a planted failure per gate; prompts outside any window stay unrecorded.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "work_sidecar"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/querylog.py",
+        "check"
+      ]
+    }
+  ],
+  "depends_on": [
+    "ST-n77nrtv7"
+  ],
+  "links": [
+    "kb/_self/usage.md",
+    "kb/_self/querylog.md",
+    "_tools/kbusage.py",
+    "_tools/ql_store.py",
+    "_tools/ql_distill.py"
+  ],
+  "notes": "Same counts shape as the usage sidecar (kbusage record main and sub), without steps. The item id alone is stored; rollup resolves the hierarchy later (ST-6bi7oe6y). Store never gets session_id, prompt_id, transcript_path, branch or cwd."
+}

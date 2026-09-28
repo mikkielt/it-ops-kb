@@ -1,0 +1,25 @@
+{
+  "id": "TK-nb6gbc3x",
+  "kind": "task",
+  "title": "cost --research: tokens per closed gap",
+  "status": "todo",
+  "parent": "ST-ecacczzu",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "backlog.py cost --research joins research items' tokens to the gap findings closed by commits with their KB-Work trailer.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "cost_research"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/test_backlog.py",
+    "kb/_self/backlog.md"
+  ]
+}

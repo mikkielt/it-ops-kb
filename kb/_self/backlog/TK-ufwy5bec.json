@@ -1,0 +1,28 @@
+{
+  "id": "TK-ufwy5bec",
+  "kind": "task",
+  "title": "Usage rows for every prompt of a work window",
+  "status": "todo",
+  "parent": "ST-mn4j4fis",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "add_usage and the SessionEnd distill write a usage row for every prompt inside a work window of the session, kb prompts or not.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "work_usage"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/ql_capture.py",
+    "_tools/ql_distill.py",
+    "_tools/test_kbusage.py",
+    "_tools/test_querylog.py",
+    "_tools/fixtures/querylog/**",
+    "kb/_self/usage.md"
+  ]
+}

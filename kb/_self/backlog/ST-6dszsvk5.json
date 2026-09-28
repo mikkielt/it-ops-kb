@@ -1,0 +1,41 @@
+{
+  "id": "ST-6dszsvk5",
+  "kind": "story",
+  "title": "Autonomous writes reach main by the path the operator chose",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kb/_self/git.md and kb/_self/querylog.md name the one path by which autonomous writers (query-log apply, and research or ingest when they push on their own) reach origin's main, and kbgit.py and the query log's delivery follow it; tests.py -k autonomous_write proves that path and that no autonomous writer pushes another way.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "autonomous_write"
+      ]
+    }
+  ],
+  "relates_to": [
+    "ST-pbonxqx4",
+    "EP-g5hizdko"
+  ],
+  "gates": [
+    {
+      "id": "write-path",
+      "kind": "blocking",
+      "question": "By which path do autonomous writers reach origin's main? Research and ingest do not push on their own until this is answered.",
+      "options": [
+        "direct push through kbgit.py sync --push, with the automatic revert and bug on a red pipeline (today's path)",
+        "branch, merge request, merged-results pipeline, auto-merge when green",
+        "merge request for research and ingest, direct push for the query log's small fixes"
+      ],
+      "recommendation": "branch, merge request, merged-results pipeline, auto-merge when green"
+    }
+  ],
+  "links": [
+    "kb/_self/git.md",
+    "kb/_self/querylog.md",
+    "_tools/kbgit.py"
+  ]
+}

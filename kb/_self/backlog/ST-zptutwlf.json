@@ -6,7 +6,7 @@
   "parent": "EP-vpb7u3us",
   "priority": "P2",
   "rank": 3,
-  "goal": "kb/_self/reports/backlog-briefs.md records one comparison, with its setup: the same backlog task worked by a fresh subagent with the packs of its knowledge pasted into the brief and without them, each run's tokens and turns read with kbusage.py, at least three runs per arm.",
+  "goal": "kb/_self/reports/backlog-briefs.md records one comparison, with its setup: the same backlog task, carrying a knowledge field, worked by a fresh subagent with a compact brief (the packs of its asks and its referenced facts with path:line and tags, no prose) and without it, each run's turns, tool calls, tokens and requests read with backlog.py cost ID --runs, and whether its checks passed first time, at least three runs per arm.",
   "checks": [
     {
       "run": [
@@ -18,11 +18,12 @@
     }
   ],
   "depends_on": [
-    "ST-wgymzw72"
+    "ST-ireqmpda",
+    "ST-6bi7oe6y"
   ],
   "links": [
-    "_tools/kbusage.py",
     "kb/_self/usage.md",
-    "kb/_self/reports/"
+    "kb/_self/reports/",
+    "_tools/backlog.py"
   ]
 }
