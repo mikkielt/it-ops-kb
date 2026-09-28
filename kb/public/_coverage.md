@@ -102,7 +102,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `defender/permissions-limits` | P1 | complete | `defender/permissions-limits.md` | 6 |
 | `defender/response-actions-api` | P1 | complete | `defender/response-actions-api.md`, `defender/machine-actions.csv` | 18 |
 | `defender/advanced-hunting` | P2 | complete | `defender/advanced-hunting.md`, `defender/advanced-hunting-tables.csv` | 25 |
-| `defender/asr-and-antivirus` | P2 | complete | `defender/asr-and-antivirus.md`, `defender/asr-rules.csv` | 16 |
+| `defender/asr-and-antivirus` | P2 | complete | `defender/asr-and-antivirus.md`, `defender/asr-rules.csv` | 18 |
 | `dsc/cli-reference` | P0 | complete | `dsc/cli-reference.md`, `dsc/cli/` | 13 |
 | `dsc/directives` | P0 | complete | `dsc/directives.md` | 11 |
 | `dsc/functions` | P0 | complete | `dsc/functions.md`, `dsc/functions-3.3.0.csv` | 7 |
@@ -238,7 +238,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `security/dsc-coverage` | P0 | complete | `security/dsc-coverage.md` | 21 |
 | `security/first-baseline-candidates` | P0 | complete | `security/first-baseline-candidates.md` | 17 |
 | `security/policy-precedence` | P0 | complete | `security/policy-precedence.md` | 13 |
-| `security/settings-crosswalk` | P0 | partial | `security/settings-crosswalk.md`, `security/settings-crosswalk.csv`, `security/artifacts/disa/`, `security/artifacts/microsoft/`, `security/artifacts/osconfig/` | 23 |
+| `security/settings-crosswalk` | P0 | complete | `security/settings-crosswalk.md`, `security/settings-crosswalk.csv`, `security/artifacts/disa/`, `security/artifacts/microsoft/`, `security/artifacts/osconfig/` | 27 |
 | `security/logging-monitoring` | P1 | complete | `security/logging-monitoring.md` | 15 |
 | `security/management-plane-hardening` | P1 | complete | `security/management-plane-hardening.md` | 17 |
 | `security/script-and-code-signing` | P1 | complete | `security/script-and-code-signing.md` | 13 |

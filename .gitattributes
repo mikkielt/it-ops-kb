@@ -199,6 +199,8 @@ kb/public/security/artifacts/disa/stig-ws2025-v1r3-rules.csv -text
 kb/public/security/artifacts/microsoft/intune-baseline-overview.md -text
 kb/public/security/artifacts/microsoft/intune-baseline-ref-windows-mdm-settings.md -text
 kb/public/security/artifacts/microsoft/win11-24h2-baseline-policyrules.csv -text
+kb/public/security/artifacts/microsoft/win11-25h2-baseline-policyrules.csv -text
+kb/public/security/artifacts/microsoft/ws2025-2602-baseline-policyrules.csv -text
 kb/public/security/artifacts/mitre/attack-subset.csv -text
 kb/public/security/artifacts/osconfig/SecurityBaseline_WindowsServer_2025-2606.csv -text
 kb/public/sqlserver/mssql-server-tags.json -text

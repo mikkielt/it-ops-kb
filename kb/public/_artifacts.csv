@@ -161,3 +161,5 @@ security/artifacts/microsoft/win11-24h2-baseline-policyrules.csv,S1472,d2ece80aa
 security/artifacts/mitre/attack-subset.csv,S1576,ef16c9965b7a467635f23d8cf3ae2718daa6b02ab5d95c698ddb10890baee9fb,
 security/artifacts/osconfig/SecurityBaseline_WindowsServer_2025-2606.csv,S1598,e6f00dfd0ca8861c8cb55275c72f7bdebeffd2c63b2e1a52d28f805dc2efdefa,
 sqlserver/mssql-server-tags.json,S478,058736f6cdb5ab26a766cb3a491e785c8f6f26c098cec38b74e7276d27bc4c83,
+security/artifacts/microsoft/win11-25h2-baseline-policyrules.csv,S-bzyxqg37,37f03f4db1aca6dd73a3c863d4f859271130ea0d8a19ef9d741572e942c90c96,
+security/artifacts/microsoft/ws2025-2602-baseline-policyrules.csv,S-p6phzp72,0f10136832b537cfa55cbded655f9652bd36c78d0e0a75dc520ca76a0dade043,

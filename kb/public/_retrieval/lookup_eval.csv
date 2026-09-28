@@ -28,7 +28,7 @@ EV-memcm-cmpivot-query-timeout,MEMCM CMPivot query timeout,mecm/cmpivot.md,good,
 EV-aad-device-delete-bitlocker-keys,AAD device delete BitLocker keys,entra/bitlocker-key-deletion.md,good,
 EV-graph-beta-device-property-ismanagementrestricted-type,Graph beta device property isManagementRestricted type,graph/csdl-device.properties.csv,good,yes
 EV-us-npi-recognizer-presidio-enabled-default,is the US NPI recognizer in Presidio enabled by default,privacy/presidio-entities.md;privacy/presidio-entities.csv,good,yes
-EV-registry-setting-hide-defender-av-exclusions,registry setting to hide Defender AV exclusions from local users,security/settings-crosswalk.csv,good,yes
+EV-registry-setting-hide-defender-av-exclusions,registry setting to hide Defender AV exclusions from local users,security/settings-crosswalk.csv;defender/asr-and-antivirus.md,good,yes
 EV-bitlocker-policy-block-new-dma-devices,BitLocker policy to block new DMA devices while the PC is locked,security/settings-crosswalk.csv,good,yes
 EV-dsregcmd-credential-type-mean-sso-state,dsregcmd what does Credential Type mean in the SSO state section,entra/dsregcmd-fields.csv,good,yes
 EV-okta-scim-provisioning-map-groups-application,How does Okta SCIM provisioning map groups to application roles?,claude/enterprise-admin.md,good,

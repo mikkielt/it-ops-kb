@@ -614,7 +614,9 @@ Still open: (topic: auth/configmgr-rbac-auth)
   - Guessed file names under `download.microsoft.com/download/8/5/C/85C25433-…/` returned 404 for 25H2 and Server 2025. The 24H2 zip, LGPO.zip and PolicyAnalyzer.zip resolved (3 attempts).
   - Verification: download "Windows 11 version 25H2 Security Baseline.zip" and "Windows Server 2025 Security Baseline" (v2602) from https://www.microsoft.com/download/details.aspx?id=55319 into `_private/sct/` (not published). A follow-up pass can then rerun the crosswalk builder. (topic: security/baselines-catalog)
   - Tried 2026-09-27: the Download Center page (S1400) now answers a browser user agent with direct download.microsoft.com links, among them "Windows 11 v25H2 Security Baseline.zip" and "Windows Server 2025 Security Baseline - 2602.zip" (plus Edge v151 and Microsoft 365 Apps 2512). The zips were not downloaded or parsed this pass; the crosswalk rerun stays open. (topic: security/baselines-catalog)
+  - Resolved 2026-09-28: both zips downloaded from the S1400 links and parsed with the 24H2 method (S-bzyxqg37, S-p6phzp72; extracts pinned in `security/artifacts/microsoft/`); `settings-crosswalk.csv` now carries `ms_25h2` and `ms_ws2025`. (topic: security/settings-crosswalk)
 - **CIS ids in `settings-crosswalk.csv`:** empty. Verification: download CIS Microsoft Windows 11 Enterprise Benchmark (current version, see `baselines-catalog.md`) into `_private/cis/` (not published) and map ids offline. (topic: security/settings-crosswalk)
+  - Tried 2026-09-28, still open: the Windows 11 benchmark PDF and its machine-readable forms stay behind CIS's download form and SecureSuite membership (S-li2s6pgb terms); no public list of Windows 11 v5.1.0 ids exists to map. Needs a registered download, not web research. Server 2025 CIS ids remain available through OSConfig (S1598). (topic: security/settings-crosswalk)
 - **Tattooing of `Policies` keys and security-settings-extension periodic reapply:** not found in the Group Policy processing page (S1592). No other official page was fetched this pass. (topic: security/policy-precedence)
   - Mostly resolved 2026-09-27: the process-even-if-unchanged option (S-d24ri6px, S-vzmmy23x), preference removal (S-37hjm3ml), FSLogix Policies vs non-Policies keys (S-z4y7mew3) and `Remove-GPRegistryValue` (S-is2wluoa) are now DOC; no page gives a security-CSE periodic interval (recorded as DER absence) or a general Policies-key cleanup rule (in _conflicts.md). Verification: link a GPO setting a `Policies` value, unlink it, `gpupdate /force`, check the value; repeat with the setting removed from a still-linked GPO. (topic: security/policy-precedence)
 - **Windows 11 defaults for `wuauserv`, `RemoteRegistry` start type and `fDenyTSConnections`:** not confirmed from an official page.
@@ -627,6 +629,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
   Verification: run `dsc config test` with one `UserRightsAssignment` and one `AuditPolicySubcategory` on a lab VM as SYSTEM. This proves whether the non-registry 13% of the Microsoft baseline is testable at all. (topic: security/dsc-coverage)
   - Tried 2026-09-27, still open: no Microsoft or DSC Community statement; one user report (DSC issue #1545, S-ylqrt4md, COMMUNITY) ran both modules under the DSC 3.2.1 adapter on Server 2022, its crash caused by other modules. The lab run stays. (topic: security/dsc-coverage)
 - **Intune column:** matching is by setting name, so `no_name_match` is not proof of absence. It could be closed by parsing the CSP links in the pinned page. (topic: security/settings-crosswalk)
+  - Resolved 2026-09-28: the CSP links of the 24H2 pivot were followed and the ADMX mapping tables of the 45 linked Policy CSP pages parsed (S-4krq7dui); 28 more rows match by registry key and value (`yes_csp`). Non-ADMX CSP policies carry no registry mapping, so the remaining `no_name_match` rows still do not prove absence. (topic: security/settings-crosswalk)
 
 ### A: device settings catalog
 
@@ -639,6 +642,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
   download page (id 55319) into `_private/sct/` (not published), or locate their direct
   download.microsoft.com URLs the same way the coordinator did for the Windows 11 24H2 zip.** Not
   attempted by Part A this pass. (topic: security/baselines-catalog)
+  - Resolved 2026-09-28 for 2602 (S-p6phzp72, parsed into the crosswalk); the SCT page (S1400) no longer offers the 2506 zip, so 2602 is the only Server 2025 package parsed. (topic: security/baselines-catalog)
 - ~~**Verification: open the `microsoft/osconfig` GitHub repository (or the OSConfig Learn docs' schema
   reference, if any) to confirm whether Server 2025 baseline definitions are published as
   structured data (JSON/YAML) versus only exposed through the PowerShell module's cmdlets** (QS7,
@@ -649,6 +653,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
   item: extract the XCCDF from each zip and parse rule ids/registry paths/values into
   `settings-crosswalk.csv`'s `stig_id`/`stig_value` columns — not yet done by either Part A or the
   coordinator as of this message (QS6/QS20). (topic: security/settings-crosswalk)
+  - Resolved 2026-09-28 (checked): `stig_id`, `stig_value` and `stig_server2025_id` are filled from the parsed XCCDF files (`security/artifacts/disa/stig-*-rules.csv`). (topic: security/settings-crosswalk)
 - CIS terms-of-use text for reuse of recommendation IDs/titles was not opened directly (search
   returned explainer articles, not the terms page itself). `settings-crosswalk.csv` therefore
   carries no CIS IDs or paraphrases this pass (QS1). Partly addressed in QS1a: CIS rule ids reach
@@ -660,6 +665,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
   machine-readable sources above plus an Intune baseline JSON export (QS5). Partly addressed in QS5a:
   164 of 335 GPO-baseline registry settings match the Intune 24H2 pivot by name (S1472, S1475);
   a setting-level comparison through CSP names is still open. (topic: security/settings-crosswalk)
+  - Partly resolved 2026-09-28: the CSP registry join adds 28 rows (192 of 335 now matched, `yes_csp`); comparing values still needs each ADMX element's value mapping (the pivot gives *Enabled*/*Disabled* and option labels, the baseline gives registry data) and stays open. (topic: security/settings-crosswalk)
 - ACSC Essential Eight/Windows guidance, NCSC (UK) device guidance, BSI IT-Grundschutz/SiSyPHuS, and
   ANSSI English-language recommendations were not researched beyond placeholder rows in
   `baselines-catalog.csv`. (topic: security/baselines-catalog)
