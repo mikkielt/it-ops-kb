@@ -1,7 +1,10 @@
 # Minimal CI for it-ops-kb: documentation cohesion, leak detection and KB-* commit trailers. The tools are stdlib
 # Python; the tests run with pytest and pytest-xdist, which uv installs from uv.lock (pyproject.toml's dev group).
-# Direct-push model: people push to main (after `kbgit.py sync --push`, which runs the same gate locally); there are
-# no merge requests. CI is the safety net: a pipeline on every branch push and on every tag.
+# Direct-push model: people and the query log's automatic commits push to main (after `kbgit.py sync --push`, which
+# runs the same gate locally). The one merge request is the query log's conflict MR: a `querylog/<run-id>` branch pushed
+# with merge-request push options when sync cannot resolve a conflict (kb/_self/querylog.md), never auto-merged; its
+# branch pipeline runs through the branch rule below. CI is the safety net: a pipeline on every branch push and on
+# every tag. No job writes to the repository.
 workflow:
   rules:
     - if: $CI_COMMIT_BRANCH

@@ -23,7 +23,7 @@ Work one item at a time, in this order; an item leaves this list in the commit t
 
 Kb facts the build rests on: `claude/hooks.md` (async hooks, `prompt_id`, `Stop`'s `last_assistant_message`, the `SessionEnd` budget), `gitlab/automated-merge-requests.md` (push options for the conflict MR), `reuse/pseudonymization-tokenization.md` (SID and UPN shapes), `agents/docs-maintenance-agents.md` (committing machine-written data), `agents/agent-planning-and-done.md`, and the answers `QK-kb-need-know-build-query-log` and `QK-self-improving-lookup-pipeline-query-logging` in `kb/public/_answers.md`.
 
-**Decisions** (from the draft design and the maintainer's interview; the draft itself is not in the repository, and item 1 turns these into the design doc):
+**Decisions** (from the draft design and the maintainer's interview; the draft itself is not in the repository; `kb/_self/querylog.md` is the design doc built from them):
 - Rules:
   - One owner per truth: the store owns logged lookups, and everything else derives from it and the kb.
   - Run metadata goes once per run file, never per entry.
@@ -82,9 +82,6 @@ Kb facts the build rests on: `claude/hooks.md` (async hooks, `prompt_id`, `Stop`
 - **Allow Git push requests to the repository** is off (no CI job pushes);
 - `.gitlab-ci.yml` runs branch and tag pipelines only (a direct-push model), which fits this design unchanged, apart from the Windows job.
 
-1. **Design doc.** Write `querylog.md`, a new doc in `kb/_self/` (present tense, through `/kb-self`), from the decisions above. The `SessionEnd` hook only starts a detached distill: the hooks share a 1.5-second budget, and a plugin hook's `timeout` does not raise it. Replace the triage rule in `kb/_self/plugin.md` ("no scheduled agent pushes unreviewed research to `main`") with the direct-push rule. Rewrite the header comment of `.gitlab-ci.yml`, which says there are no merge requests, to allow the conflict MR.
-
-   Done: `querylog.md` has a table of every program default (constant, value, why); `map.csv` maps it to the new `querylog.py` and `redact.py` in `_tools/`; `plugin.md` states the new rule. Check: `python3 _tools/tests.py` (doc cohesion) and `python3 _tools/selfdoc.py stale` print no failure. Unchanged: `AGENTS.md`.
 2. **Redactor** (new `redact.py` and `test_redact.py` in `_tools/`).
 
    Done:

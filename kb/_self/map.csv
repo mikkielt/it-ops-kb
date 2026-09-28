@@ -83,3 +83,5 @@ kb/_self/tools.md,_tools/kbingest.py
 kb/_self/plugin.md,.claude/skills/kb-ingest/SKILL.md
 kb/_self/tools.md,_tools/kbpy
 kb/_self/plugin.md,_tools/kbpy
+kb/_self/querylog.md,_tools/querylog.py
+kb/_self/querylog.md,_tools/redact.py
