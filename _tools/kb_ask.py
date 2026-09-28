@@ -135,7 +135,7 @@ def claude_argv(model, tools):
 def read(model, system, user):
     """The reader's answer: a tool-less claude -p."""
     p = subprocess.run(claude_argv(model, tools=False) + ["--append-system-prompt", system], cwd=HOME, input=user,
-                       capture_output=True, text=True)
+                       capture_output=True, text=True, encoding="utf-8")
     if p.returncode:
         raise SystemExit(p.stderr or f"claude -p exited {p.returncode}")
     return p.stdout
@@ -189,7 +189,7 @@ def main():
         log(f"reader said {SENTINEL}; escalating to sonnet")
         p["model"] = "sonnet" if not a.model else a.model
     argv = claude_argv(p["model"], tools=True) + ["--append-system-prompt", RESEARCHER]
-    return subprocess.run(argv, cwd=HOME, input=prompt(q, p["text"]) + note, text=True).returncode
+    return subprocess.run(argv, cwd=HOME, input=prompt(q, p["text"]) + note, text=True, encoding="utf-8").returncode
 
 
 if __name__ == "__main__":

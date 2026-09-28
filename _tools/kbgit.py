@@ -799,7 +799,7 @@ def resolve_md(text, name, report, problems, side_texts=()):
 # ---------------------------------------------------------------- lint baseline, .gitattributes
 
 def lint_errors():
-    p = subprocess.run([sys.executable, os.path.join(KB, LINT)], cwd=KB, capture_output=True, text=True, errors="replace")
+    p = subprocess.run([sys.executable, os.path.join(KB, LINT)], cwd=KB, capture_output=True, text=True, encoding="utf-8", errors="replace")
     return {ln.strip() for ln in (p.stdout + p.stderr).splitlines() if ln.startswith("ERROR")}
 
 
@@ -1359,7 +1359,7 @@ def hook_prepare(args):
         os.remove(mark)
     if mark and len(args) >= 3 and args[1] == "commit" and rev_parse(args[2]) == rev_parse("HEAD"):
         parents = (git("rev-list", "--parents", "-n", "1", "HEAD") or "").split()[1:]
-        with open(mark, "w", encoding="utf-8") as f:
+        with open(mark, "w", encoding="utf-8", newline="\n") as f:
             f.write("merge" if len(parents) > 1 else (parents[0] if parents else "root"))
 
 
@@ -1862,7 +1862,7 @@ REJECTED = re.compile(r"\[rejected\]|non-fast-forward|fetch first|stale info", r
 def gitx(*args, env=None):
     """(exit code, stdout + stderr text) of a git command in the kb; (127, message) when git cannot be started."""
     try:
-        p = subprocess.run(["git", *args], cwd=KB, capture_output=True, text=True, errors="replace",
+        p = subprocess.run(["git", *args], cwd=KB, capture_output=True, text=True, encoding="utf-8", errors="replace",
                            env={**os.environ, **(env or {})})
     except OSError as e:
         return 127, str(e)
@@ -1872,7 +1872,7 @@ def gitx(*args, env=None):
 def tool(name, *args, env=None):
     """(exit code, output) of a kb tool in this checkout (the files on disk, which a rebase may have updated)."""
     p = subprocess.run([sys.executable, os.path.join(KB, "_tools", name), *args], cwd=KB, capture_output=True,
-                       text=True, errors="replace", env={**os.environ, **(env or {})})
+                       text=True, encoding="utf-8", errors="replace", env={**os.environ, **(env or {})})
     return p.returncode, p.stdout + p.stderr
 
 
@@ -1984,7 +1984,7 @@ def commit_fix(r):
            "merged the union-merged ledger rows and rebuilt the generated index.\n"
     msg = apply_trailers(body, compute(rev_parse("HEAD") or "", INDEX))
     p = subprocess.run(["git", "commit", "-q", "--no-verify", "--cleanup=whitespace", "-F", "-"], cwd=KB,
-                       input=msg, capture_output=True, text=True, errors="replace")
+                       input=msg, capture_output=True, text=True, encoding="utf-8", errors="replace")
     if p.returncode:
         print("git commit of the fix failed:\n" + (p.stdout + p.stderr).rstrip())
         return False

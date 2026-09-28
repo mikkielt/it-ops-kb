@@ -79,7 +79,7 @@ def test_registered_in_the_clone_only():
 
 
 def test_hook_protocol():
-    run = lambda data: subprocess.run([sys.executable, HOOK], input=data, capture_output=True, text=True, timeout=30)  # noqa: E731
+    run = lambda data: subprocess.run([sys.executable, HOOK], input=data, capture_output=True, text=True, encoding="utf-8", timeout=30)  # noqa: E731
     p = run(json.dumps({"prompt": "add a new topic on Intune scope tags"}))
     out = json.loads(p.stdout)
     assert p.returncode == 0 and out["hookSpecificOutput"]["hookEventName"] == "UserPromptSubmit"

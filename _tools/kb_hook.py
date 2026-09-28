@@ -53,6 +53,9 @@ def answer(prompt):
 
 
 def main():
+    # the hook's JSON is UTF-8 on every OS; Windows would otherwise read and write the locale code page (cp1252)
+    sys.stdin.reconfigure(encoding="utf-8", errors="replace")
+    sys.stdout.reconfigure(encoding="utf-8", newline="\n")
     if sys.argv[1:2] == ["--test"]:
         print(json.dumps(answer(" ".join(sys.argv[2:])), indent=1, ensure_ascii=False))
         return

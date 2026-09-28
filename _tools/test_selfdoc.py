@@ -24,7 +24,7 @@ class TestSelfdocRules:
 
     def test_map_and_describing(self, tmp_path):
         os.makedirs(tmp_path / S)
-        (tmp_path / S / "map.csv").write_text(f"doc,pattern\n{S}/a.md,src/*.py\n{S}/a.md,{S}/a.md\n{S}/b.md,-\n")
+        (tmp_path / S / "map.csv").write_text(f"doc,pattern\n{S}/a.md,src/*.py\n{S}/a.md,{S}/a.md\n{S}/b.md,-\n", encoding="utf-8", newline="\n")
         docs = selfdoc.load_map(str(tmp_path))
         assert docs == {f"{S}/a.md": ["src/*.py", f"{S}/a.md"], f"{S}/b.md": ["-"]}
         assert selfdoc.describing(docs, ["src/x.py", f"{S}/a.md", "other.txt"]) == {f"{S}/a.md": ["src/x.py"]}
@@ -33,7 +33,7 @@ class TestSelfdocRules:
         with pytest.raises(selfdoc.SelfdocError, match="cannot read"):
             selfdoc.load_map(str(tmp_path))
         os.makedirs(tmp_path / S)
-        (tmp_path / S / "map.csv").write_text("path,glob\nx,y\n")
+        (tmp_path / S / "map.csv").write_text("path,glob\nx,y\n", encoding="utf-8", newline="\n")
         with pytest.raises(selfdoc.SelfdocError, match="doc,pattern"):
             selfdoc.load_map(str(tmp_path))
 

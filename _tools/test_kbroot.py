@@ -19,7 +19,7 @@ SID = kbid.source_id(URL, "T")
 
 def run(d, tool, *args):
     path = os.path.join(d, ".claude", "skills", "kb-verify", "lint.py") if tool == "lint.py" else os.path.join(d, "_tools", tool)
-    p = subprocess.run([sys.executable, path, *args], cwd=d, capture_output=True, text=True, errors="replace",
+    p = subprocess.run([sys.executable, path, *args], cwd=d, capture_output=True, text=True, encoding="utf-8", errors="replace",
                        timeout=300, env={k: v for k, v in os.environ.items() if k != "KB_ROOTS"})
     return p.returncode, p.stdout + p.stderr
 

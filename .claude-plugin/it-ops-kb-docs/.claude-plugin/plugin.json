@@ -16,8 +16,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3",
-            "args": ["${CLAUDE_PLUGIN_ROOT}/deny_submit_feedback.py"]
+            "command": "echo 'blocked by the it-ops-kb-docs plugin: submit_feedback posts text to the docs vendor, outside the kb; never call it' >&2; exit 2"
           }
         ]
       }

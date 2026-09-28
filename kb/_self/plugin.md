@@ -14,9 +14,9 @@ The repository root is a Claude Code plugin marketplace (`.claude-plugin/marketp
 - **the `it-ops-kb:kb-lookup` agent**, for long research whose output would fill the caller's context: kb tools only, Haiku, low effort, no `CLAUDE.md`, the lookup procedure preloaded (3.9k tokens of startup context, measured).
 - **`/it-ops-kb:kb-review-workspace [paths or focus]`**, started by hand. It runs in the `it-ops-kb:kb-reviewer` agent (Sonnet, `Read`, `Grep`, `Glob` and the kb tools, the project's `CLAUDE.md` loaded), maps the project's code to kb topics with `kb_topics_for`, and reports findings in chat, each with the project's `path:line` and the kb's `path:line`, tag and source url. It writes nothing.
 - **`/it-ops-kb:kb-gap <question>`**, started by hand when the kb did not answer (`none`, `weak`, or facts that missed the point). It runs `kb_status`, `kb_pack` and `kb_audit` and prints an issue text to paste into the kb's tracker: the question, the kb version, the verdict, the nearest articles with `path:line`, what was missing and whether a gap is already logged. It replaces the organisation's names and ids with the kb's placeholders, and writes, sends and posts nothing.
-- **the `kb:` prompt hook** (UserPromptSubmit, `_tools/kb_hook.py`): `kb: <question>` is answered without the model when the kb covers it; when it does not, Claude gets one line saying so; a `good` pack with a `check:` line goes to Claude with the pack.
+- **the `kb:` prompt hook** (UserPromptSubmit, `_tools/kb_hook.py`): `kb: <question>` is answered without the model when the kb covers it; when it does not, Claude gets one line saying so; a `good` pack with a `check:` line goes to Claude with the pack. It runs in shell form through `sh "${CLAUDE_PLUGIN_ROOT}/_tools/kbpy"`, which finds `python3`, `python` or `py -3`: exec form would need a real `.exe` named in `plugin.json` on Windows, where `python3` is only an alias (`kb/public/claude/hooks.md`).
 
-**`it-ops-kb-docs`** (`.claude-plugin/it-ops-kb-docs/`): the three documentation servers (Microsoft Learn, Claude Code docs, MCP spec), with every `submit_feedback` call blocked by the plugin's PreToolUse hook (a plugin cannot ship permission rules). Install it only for servers the project does not have already: each adds its name and instructions to every session.
+**`it-ops-kb-docs`** (`.claude-plugin/it-ops-kb-docs/`): the three documentation servers (Microsoft Learn, Claude Code docs, MCP spec), with every `submit_feedback` call blocked by the plugin's PreToolUse hook (a plugin cannot ship permission rules), a shell command that prints why and exits 2, so it needs no interpreter. Install it only for servers the project does not have already: each adds its name and instructions to every session.
 
 The writing skills (`/kb-research`, `/kb-refresh`, `/kb-add-topic`, `/kb-ingest`, `/kb-census`, `/kb-git-sync`, `/kb-self`) and the gate stay in a clone of this repository: the plugin copy is replaced on every update.
 
@@ -32,7 +32,7 @@ The writing skills (`/kb-research`, `/kb-refresh`, `/kb-add-topic`, `/kb-ingest`
 
 ## 3. Install and update
 
-Needs: `python3` 3.11+ on `PATH`, and an SSH key with read access to `gitlab.com/mikkielt/it-ops-kb`. Claude Code clones without prompting, so the key must be loaded in `ssh-agent` (no passphrase prompt) and `gitlab.com` must already be in `~/.ssh/known_hosts` (`ssh -T git@gitlab.com` once adds it).
+Needs: `python3` 3.11+ on `PATH` (on Windows the hook also takes `python` or `py -3` and needs Git for Windows for Git Bash; the MCP server entry names `python3`), and an SSH key with read access to `gitlab.com/mikkielt/it-ops-kb`. Claude Code clones without prompting, so the key must be loaded in `ssh-agent` (no passphrase prompt) and `gitlab.com` must already be in `~/.ssh/known_hosts` (`ssh -T git@gitlab.com` once adds it).
 
 In a session:
 ```

@@ -167,7 +167,7 @@ def parse(stdout):
 def execute(cmd, prompt, cwd=KB, env=None):
     """Run one headless claude and parse its stream: the result fields (or {"error": ...})."""
     t = time.time()
-    p = subprocess.run(cmd, cwd=cwd, input=prompt, capture_output=True, text=True, timeout=900,
+    p = subprocess.run(cmd, cwd=cwd, input=prompt, capture_output=True, text=True, encoding="utf-8", timeout=900,
                        env={**os.environ, **env} if env else None)
     wall = time.time() - t
     seen, res = parse(p.stdout)
@@ -256,7 +256,7 @@ def web(model, q):
 
 
 def git(*args, cwd):
-    return subprocess.run(["git", *args], cwd=cwd, capture_output=True, text=True, check=True).stdout.strip()
+    return subprocess.run(["git", *args], cwd=cwd, capture_output=True, text=True, encoding="utf-8", check=True).stdout.strip()
 
 
 def clone(name):
@@ -282,7 +282,7 @@ def plant(dest):
             new = "".join(_swap(_swap(ln, PLANT), PLANT_PRESIDIO) if "presidio" in f + ln.lower() or "2.2.36" in ln
                           else _swap(ln, PLANT) for ln in text.splitlines(keepends=True))
             if new != text:
-                with open(p, "w", encoding="utf-8") as fh:
+                with open(p, "w", encoding="utf-8", newline="\n") as fh:
                     fh.write(new)
     return dest
 
@@ -372,7 +372,7 @@ def run(cfg, scen, copies=None):
 
 def summary(paths):
     for f in paths:
-        for line in open(f):
+        for line in open(f, encoding="utf-8"):
             r = json.loads(line)
             if "error" in r:
                 print(r["cfg"], r["scen"], "ERROR", r["error"][:100])
@@ -391,7 +391,7 @@ def main():
     out, cfgs, scens = sys.argv[1], sys.argv[2].split(","), sys.argv[3].split(",")
     reps = int(sys.argv[4]) if len(sys.argv) > 4 else 1
     copies = {}  # host scenarios build each scratch kb copy once per invocation
-    with open(out, "a") as f:
+    with open(out, "a", encoding="utf-8", newline="\n") as f:
         for _ in range(reps):
             for cfg in cfgs:
                 for s in scens:

@@ -117,7 +117,7 @@ def test_probe_decides_measured_columns(monkeypatch):
 def test_probe_cli_needs_a_known_provider():
     import subprocess, sys
     p = subprocess.run([sys.executable, os.path.join(kbcommon.TOOLS, "provider.py"), "probe", "no-such-provider"],
-                       capture_output=True, text=True)
+                       capture_output=True, text=True, encoding="utf-8")
     assert p.returncode == 2 and "no provider" in p.stderr
 
 

@@ -202,7 +202,7 @@ def snapshot(sid, text=None):
         except OSError:
             return None
     os.makedirs(os.path.dirname(p), exist_ok=True)
-    with open(p, "w", encoding="utf-8") as f:
+    with open(p, "w", encoding="utf-8", newline="\n") as f:
         f.write(text)
 
 

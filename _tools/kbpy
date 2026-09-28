@@ -1,0 +1,44 @@
+#!/bin/sh
+# it-ops-kb: the one entry point for hook commands. Finds a Python interpreter and runs a repository script with it.
+#
+#   sh "<repository>/_tools/kbpy" <script path from the repository root> [arguments...]
+#
+# Every hook in .claude/settings.json, the plugin's plugin.json and .githooks/ calls this file, so no hook names an
+# interpreter itself. Claude Code runs a shell-form hook in `sh -c` on macOS and Linux and in Git Bash on Windows
+# (kb/public/claude/hooks.md), so a POSIX sh script is the one thing every OS runs the same way.
+# - macOS and Linux: `python3`, else `python`, started directly, as the hooks did before this launcher.
+# - Windows (OS=Windows_NT, set by Windows in every process): `python3`, `python`, then `py -3`, each only after a
+#   probe shows it runs Python 3.11+, since `python3` there is a compatibility alias, not the runtime
+#   (kb/public/python/stdlib-windows-portability.md).
+# Exit 127 with a message on stderr when no interpreter is found (the pre-push hook lets the push through on 127).
+# Tested in _tools/test_portability.py.
+
+[ $# -ge 1 ] || { echo "usage: sh _tools/kbpy <script> [args...]" >&2; exit 2; }
+case $0 in
+  */*) here=${0%/*} ;;
+  *\\*) here=${0%\\*} ;;  # a Windows path with backslashes only (Git Bash keeps it as given)
+  *) here=. ;;
+esac
+name=$1
+script=$here/../$name
+shift
+
+if [ "${OS:-}" != "Windows_NT" ]; then
+  for py in python3 python; do
+    if command -v "$py" >/dev/null 2>&1; then
+      exec "$py" "$script" "$@"
+    fi
+  done
+else
+  probe='import sys; sys.exit(sys.version_info < (3, 11))'
+  for py in python3 python; do
+    if "$py" -c "$probe" >/dev/null 2>&1; then
+      exec "$py" "$script" "$@"
+    fi
+  done
+  if py -3 -c "$probe" >/dev/null 2>&1; then
+    exec py -3 "$script" "$@"
+  fi
+fi
+echo "it-ops-kb: no Python 3.11+ found (tried python3, python and, on Windows, py -3); $name not run" >&2
+exit 127

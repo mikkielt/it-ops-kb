@@ -47,7 +47,7 @@ changed (updated/superseded/gone) and of the confirmed ones (bucket OK or outcom
 
 Exit: 0 ok; 1 check could not write, or confirm/record found an unknown id; 2 bad arguments.
 """
-import argparse, concurrent.futures as cf, csv, datetime, functools, io, json, os, random, re, ssl, subprocess, sys, threading
+import argparse, concurrent.futures as cf, csv, datetime, functools, hashlib, io, json, os, random, re, ssl, subprocess, sys, threading
 import urllib.error, urllib.request
 from collections import Counter, defaultdict
 from urllib.parse import unquote, urlparse
@@ -83,7 +83,7 @@ def today():
 
 def run(args, cwd=None, timeout=300):
     try:
-        p = subprocess.run(args, cwd=cwd, capture_output=True, text=True, timeout=timeout)
+        p = subprocess.run(args, cwd=cwd, capture_output=True, text=True, encoding="utf-8", timeout=timeout)
         return p.returncode, p.stdout.strip(), p.stderr.strip()
     except (subprocess.TimeoutExpired, OSError) as e:
         return 124, "", str(e)
@@ -157,7 +157,11 @@ def repo_dir(repo, base=None):
     """(bare blobless clone of https://<repo>, error). `repo` may also be a local path (tests)."""
     base = base or REPOS
     local = os.path.isdir(repo)
-    d = os.path.join(base, re.sub(r"[^\w.-]+", "__", repo.strip("/")) + ".git")
+    # a local path's clone is named by its last part and a hash: its whole path in the name, under a long base, would
+    # pass Windows' 260-character path limit inside the clone
+    name = (f"{os.path.basename(os.path.normpath(repo))}-{hashlib.sha1(repo.encode()).hexdigest()[:8]}" if local
+            else re.sub(r"[^\w.-]+", "__", repo.strip("/")))
+    d = os.path.join(base, name + ".git")
     with _clone_locks[d]:
         if d in _ready:
             return _ready[d]

@@ -39,7 +39,18 @@ Layout. The paths below are the only place that says where knowledge sits in thi
 _tools/, the roots in KB_DIR, the kb's own docs in SELF. KB is the public root, the default of the tools that work on
 one root.
 """
-import csv, io, os, re
+import csv, io, os, re, sys
+
+
+def utf8_stdio():
+    """Print UTF-8 on every OS. A pipe on Windows defaults to the locale code page (cp1252), which cannot encode much
+    of the kb and which a reader expecting UTF-8 cannot decode; a UTF-8 stream (macOS, Linux) is left as it is."""
+    for s in (sys.stdout, sys.stderr):
+        if hasattr(s, "reconfigure") and (s.encoding or "").lower().replace("-", "") != "utf8":
+            s.reconfigure(encoding="utf-8")
+
+
+utf8_stdio()  # every tool imports this module before it prints
 from typing import NamedTuple
 
 TOOLS = os.path.dirname(os.path.abspath(__file__))

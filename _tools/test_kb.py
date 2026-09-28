@@ -39,7 +39,7 @@ SPREAD_GOOD = "Which Graph API migrates mailboxes, calendars and contacts betwee
 
 
 def run(*args):
-    p = subprocess.run([sys.executable, *args], cwd=KB, capture_output=True, text=True, errors="replace")
+    p = subprocess.run([sys.executable, *args], cwd=KB, capture_output=True, text=True, encoding="utf-8", errors="replace")
     return p.returncode, p.stdout + p.stderr
 
 
@@ -146,16 +146,16 @@ class TestToolChecks:
     def test_check_py_reads_a_tag_wrapped_after_its_kind(self, tmp_path):
         # `[DOC\n  S-id]` (a fact wrapped by the editor) must still be checked for unknown ids
         d = copy_kb(str(tmp_path / "kb"))
-        with open(os.path.join(d, P("auth/kerberos.md")), "a", encoding="utf-8") as f:
+        with open(os.path.join(d, P("auth/kerberos.md")), "a", encoding="utf-8", newline="\n") as f:
             f.write("\n- A wrapped fact. [DOC\n  S-zzzzzzzz]\n")
-        p = subprocess.run([sys.executable, os.path.join(d, "_tools", "check.py")], capture_output=True, text=True, timeout=120)
+        p = subprocess.run([sys.executable, os.path.join(d, "_tools", "check.py")], capture_output=True, text=True, encoding="utf-8", timeout=120)
         assert "auth/kerberos.md cites unknown source S-zzzzzzzz" in p.stdout, p.stdout[-2000:]
 
     def test_check_py_reads_source_columns_of_data_csvs(self, tmp_path):
         d = copy_kb(str(tmp_path / "kb"))
-        with open(os.path.join(d, P("auth/threats.csv")), "a", encoding="utf-8") as f:
+        with open(os.path.join(d, P("auth/threats.csv")), "a", encoding="utf-8", newline="\n") as f:
             f.write("X,y,z,S3 bucket and S-1-5-18 are not ids here,S-zzzzzzzz\n")
-        p = subprocess.run([sys.executable, os.path.join(d, "_tools", "check.py")], capture_output=True, text=True, timeout=120)
+        p = subprocess.run([sys.executable, os.path.join(d, "_tools", "check.py")], capture_output=True, text=True, encoding="utf-8", timeout=120)
         assert "cites unknown source S-zzzzzzzz" in p.stdout and "S3" not in p.stdout.split("cites unknown source")[-1], p.stdout[-2000:]
 
     def test_pinned_artifacts_match(self):
@@ -275,7 +275,7 @@ class TestCohesion:
         """pyflakes rules (pyproject.toml [tool.ruff]): no unused or undefined names; skipped without ruff."""
         try:
             p = subprocess.run([sys.executable, "-m", "ruff", "check", "--output-format", "concise", "."], cwd=KB,
-                               capture_output=True, text=True, timeout=120)
+                               capture_output=True, text=True, encoding="utf-8", timeout=120)
         except (OSError, subprocess.SubprocessError):
             pytest.skip("ruff not runnable")
         if "No module named ruff" in p.stderr:
@@ -465,10 +465,10 @@ class TestLookup:
                 "- SNIPPET: no block or context; checked: no [DOC S-zzzzzzz3]\n"
                 "- SNIPPET: bad json; context: any; checked: syntax [DOC S-zzzzzzz3]\n```json\n{\"a\": }\n```\n"
                 "- SNIPPET: unbacked; context: any; checked: maybe [UNK]\n```json\n{}\n```\n")
-        with open(os.path.join(d, P("auth/kerberos.md")), "a", encoding="utf-8") as f:
+        with open(os.path.join(d, P("auth/kerberos.md")), "a", encoding="utf-8", newline="\n") as f:
             f.write(body)
         p = subprocess.run([sys.executable, os.path.join(d, ".claude", "skills", "kb-verify", "lint.py"), "auth/kerberos"],
-                           capture_output=True, text=True, timeout=120)
+                           capture_output=True, text=True, encoding="utf-8", timeout=120)
         out = p.stdout
         assert "CODE cites S-zzzzzzz2, which is not pinned" in out and "S-zzzzzzz3, which is not pinned" not in out, out
         assert out.count("CODE tag without a path#symbol pointer") == 1, out
@@ -479,7 +479,7 @@ class TestLookup:
         assert "SNIPPET without an evidence tag (DOC, CODE, DER or COMMUNITY): 'SNIPPET: unbacked" in out
         assert "list things" not in out, "a well-formed snippet has no findings"
         c = subprocess.run([sys.executable, os.path.join(d, ".claude", "skills", "kb-verify", "lint.py"), "--candidates",
-                            "auth/kerberos"], capture_output=True, text=True, timeout=120)
+                            "auth/kerberos"], capture_output=True, text=True, encoding="utf-8", timeout=120)
         assert c.returncode == 0 and "code_candidates=" in c.stdout, c.stdout + c.stderr
         assert "Unpinned." not in c.stdout, "a CODE fact is no longer a candidate"
 
@@ -559,7 +559,7 @@ class TestLookup:
     def test_kb_ask_routes(self):
         def ask(q, *flags, env=None):
             p = subprocess.run([sys.executable, os.path.join(TOOLS, "kb_ask.py"), *flags, q], capture_output=True,
-                               text=True, cwd=KB, timeout=60, env=env)
+                               text=True, encoding="utf-8", cwd=KB, timeout=60, env=env)
             return p.returncode, p.stdout, p.stderr
         bitlocker = "Does deleting an Entra device also delete its BitLocker recovery keys?"
         code, out, err = ask(bitlocker, "--route")
@@ -585,13 +585,13 @@ class TestLookup:
 
     def test_kb_ask_without_claude_prints_the_evidence(self):
         p = subprocess.run([sys.executable, os.path.join(TOOLS, "kb_ask.py"), "What is the default Windows LAPS password length?"],
-                           capture_output=True, text=True, cwd=KB, timeout=60, env={"PATH": os.path.dirname(sys.executable)})
+                           capture_output=True, text=True, encoding="utf-8", cwd=KB, timeout=60, env={"PATH": os.path.dirname(sys.executable)})
         assert p.returncode == 2 and p.stdout.startswith("coverage: good") and "windows/laps.md:" in p.stdout, p.stdout + p.stderr
 
     def test_kb_hook(self):
         def hook(prompt):
             p = subprocess.run([sys.executable, os.path.join(TOOLS, "kb_hook.py")], input=json.dumps({"prompt": prompt}),
-                               capture_output=True, text=True, cwd=KB, timeout=60)
+                               capture_output=True, text=True, encoding="utf-8", cwd=KB, timeout=60)
             assert p.returncode == 0, p.stderr
             return json.loads(p.stdout) if p.stdout.strip() else None
         assert hook("fix the build please") is None
@@ -605,7 +605,7 @@ class TestLookup:
         assert line.startswith("it-ops-kb has no coverage for: ") and "Roaming" in line, line
         assert "\n" not in line, "coverage none: one line, not the pack"
         p = subprocess.run([sys.executable, "-c", "import sys, kb_hook; kb_hook.answer('fix the build'); "
-                            "sys.exit('kbfacts' in sys.modules)"], cwd=TOOLS, capture_output=True, text=True, timeout=60)
+                            "sys.exit('kbfacts' in sys.modules)"], cwd=TOOLS, capture_output=True, text=True, encoding="utf-8", timeout=60)
         assert p.returncode == 0, "a prompt without kb: must return before kbfacts is loaded"
         forward = hook("kb+: Does deleting an Entra device also delete its BitLocker recovery keys?")
         assert forward["hookSpecificOutput"]["hookEventName"] == "UserPromptSubmit"

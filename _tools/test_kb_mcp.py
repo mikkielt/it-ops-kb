@@ -86,7 +86,7 @@ class TestKbServer:
              "params": {"name": "kb_show", "arguments": {"path": Q("auth/kerberos.md") + ":1", "n": 1}}},
         ]
         stdin = "".join(json.dumps(m) + "\n" for m in msgs) + "this is not json\n"
-        cls.proc = subprocess.run([sys.executable, SERVER], input=stdin, capture_output=True, text=True, timeout=60, cwd=os.sep)
+        cls.proc = subprocess.run([sys.executable, SERVER], input=stdin, capture_output=True, text=True, encoding="utf-8", timeout=60, cwd=os.sep)
         cls.lines = [ln for ln in cls.proc.stdout.splitlines() if ln.strip()]
         cls.replies = [json.loads(ln) for ln in cls.lines]
         cls.by_id = {r.get("id"): r for r in cls.replies}
@@ -346,24 +346,26 @@ class TestPluginManifest:
             assert rx.fullmatch(f"mcp__plugin_{self.docs['name']}_{s}__submit_feedback"), s
         assert not rx.fullmatch(f"mcp__plugin_{self.docs['name']}_microsoft-learn__microsoft_docs_search")
         h = hooks[0]["hooks"][0]
-        assert (h["type"], h["command"], h["args"]) == \
-                         ("command", "python3", ["${CLAUDE_PLUGIN_ROOT}/deny_submit_feedback.py"])
-        p = subprocess.run([sys.executable, os.path.join(KB, DOCS_PLUGIN, "deny_submit_feedback.py")],
-                           input='{"tool_name": "x"}', capture_output=True, text=True, timeout=30)
-        assert (p.returncode, p.stdout) == (2, "")
-        assert "submit_feedback" in p.stderr
+        # shell form with no interpreter to find (the docs plugin has no _tools/kbpy): sh -c, or Git Bash on Windows
+        assert h["type"] == "command" and "args" not in h and "python" not in h["command"]
+        if shutil.which("sh"):
+            p = subprocess.run(["sh", "-c", h["command"]], input='{"tool_name": "x"}', capture_output=True, text=True,
+                               encoding="utf-8", timeout=30)
+            assert (p.returncode, p.stdout) == (2, "")
+            assert "submit_feedback" in p.stderr
         assert "PreToolUse" not in self.plugin["hooks"], "the kb plugin has no docs servers to guard"
 
     def test_kb_prompt_hook_from_the_plugin_root(self):
         hooks = self.plugin["hooks"]["UserPromptSubmit"]
         assert len(hooks) == 1
         h = hooks[0]["hooks"][0]
-        assert (h["type"], h["command"], h["args"]) == ("command", "python3", ["${CLAUDE_PLUGIN_ROOT}/_tools/kb_hook.py"])
+        assert (h["type"], h["command"]) == ("command", 'sh "${CLAUDE_PLUGIN_ROOT}/_tools/kbpy" _tools/kb_hook.py')
+        assert "args" not in h, "exec form needs a real .exe on Windows: the launcher runs in shell form"
 
     @pytest.mark.skipif(not shutil.which("claude"), reason="the claude CLI is not installed")
     def test_claude_plugin_validate(self):
         for target in (KB, os.path.join(KB, DOCS_PLUGIN)):
-            p = subprocess.run(["claude", "plugin", "validate", target], capture_output=True, text=True, timeout=120)
+            p = subprocess.run(["claude", "plugin", "validate", target], capture_output=True, text=True, encoding="utf-8", timeout=120)
             assert p.returncode == 0, p.stdout + p.stderr
             assert "Validation passed" in p.stdout + p.stderr
             warnings = [ln for ln in (p.stdout + p.stderr).splitlines() if ln.strip().startswith(">") or ln.strip().startswith("\u276f")]
@@ -378,7 +380,7 @@ def test_status_of_a_plugin_copy_from_a_directory_marketplace(tmp_path):
     home = copy_kb(str(tmp_path / "plugins" / "cache" / "it-ops-kb" / "it-ops-kb" / sha))
     env = {k: v for k, v in os.environ.items() if k not in ("KB_ROOTS", "KB_INDEX", "CLAUDE_PLUGIN_DATA")}
     p = subprocess.run([sys.executable, os.path.join(home, "_tools", "kb_mcp.py"), "--status"], capture_output=True,
-                       text=True, timeout=120, env=env, cwd=str(tmp_path))
+                       text=True, encoding="utf-8", timeout=120, env=env, cwd=str(tmp_path))
     assert p.returncode == 0, p.stdout + p.stderr
     assert f"installed_as: plugin it-ops-kb@it-ops-kb, version {sha}" in p.stdout, p.stdout
     assert f"commit: {sha}\n" in p.stdout, p.stdout
@@ -387,7 +389,7 @@ def test_status_of_a_plugin_copy_from_a_directory_marketplace(tmp_path):
 def _status(home, cwd):
     env = {k: v for k, v in git_env().items() if k not in ("KB_ROOTS", "KB_INDEX", "CLAUDE_PLUGIN_DATA")}
     p = subprocess.run([sys.executable, os.path.join(home, "_tools", "kb_mcp.py"), "--status"], capture_output=True,
-                       text=True, timeout=120, env=env, cwd=str(cwd))
+                       text=True, encoding="utf-8", timeout=120, env=env, cwd=str(cwd))
     assert p.returncode == 0, p.stdout + p.stderr
     return p.stdout
 
@@ -417,7 +419,7 @@ def test_status_says_how_far_a_clone_is_behind_its_remote(tmp_path):
     assert "behind_upstream: 3 commits\n" in out, out
     assert f"update: git -C {repo.path} pull --ff-only" in out, out
     code = "import kb_mcp; print(kb_mcp.kb_pack({'question': 'default Windows LAPS password length'}))"
-    p = subprocess.run([sys.executable, "-c", code], cwd=os.path.join(repo.path, "_tools"), capture_output=True, text=True,
+    p = subprocess.run([sys.executable, "-c", code], cwd=os.path.join(repo.path, "_tools"), capture_output=True, text=True, encoding="utf-8",
                        timeout=300, env={**git_env(), "KB_INDEX": str(tmp_path / "index")})
     assert p.stdout.startswith("kb copy: 3 commits behind origin/main"), p.stdout[:300] + p.stderr[-500:]
     assert f"to update: git -C {repo.path} pull --ff-only.\n\ncoverage: good" in p.stdout, p.stdout[:300]
@@ -455,12 +457,12 @@ def test_domain_is_matched_without_case_and_an_unknown_one_is_refused():
             "        out[d] = str(e)\n"
             "print(json.dumps(out))")
     env = {k: v for k, v in os.environ.items() if k not in ("KB_ROOTS", "CLAUDE_PLUGIN_DATA")}
-    p = subprocess.run([sys.executable, "-c", code], cwd=TOOLS, capture_output=True, text=True, env=env, timeout=180)
+    p = subprocess.run([sys.executable, "-c", code], cwd=TOOLS, capture_output=True, text=True, encoding="utf-8", env=env, timeout=180)
     out = json.loads(p.stdout.strip().splitlines()[-1])
     assert out["pack"].startswith("coverage: good") and "public/intune/" in out["pack"], out["pack"][:300]
     assert "public/intune/" in out["search"], out["search"][:300]
     for d in ("no-such-domain", "Public/NoSuch"):
         assert out[d].startswith(f"no domain {d!r}") and "intune" in out[d], out[d]
     p = subprocess.run([sys.executable, os.path.join(TOOLS, "rag.py"), "pack", "noncompliance actions", "-d", "nosuch"],
-                       capture_output=True, text=True, env=env, timeout=180)
+                       capture_output=True, text=True, encoding="utf-8", env=env, timeout=180)
     assert p.returncode == 1 and "no domain 'nosuch'" in p.stderr and "coverage:" not in p.stdout, p.stdout + p.stderr

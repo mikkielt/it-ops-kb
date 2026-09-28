@@ -91,7 +91,7 @@ def split(seed, n, exclude=()):
             if len(arms[arm]) < n:
                 arms[arm].append(a)
     os.makedirs(DIR, exist_ok=True)
-    with open(ARMS, "w", encoding="utf-8") as f:
+    with open(ARMS, "w", encoding="utf-8", newline="\n") as f:
         json.dump({"seed": seed, "excluded": sorted(os.path.relpath(p, HOME) for p in exclude), **arms}, f, indent=1)
     for arm, arts in arms.items():
         print(f"{arm}: {len(arts)} articles, {sum(counts[a] for a in arts)} facts")
@@ -256,7 +256,7 @@ def main():
             sys.exit("batch: give an arm (pilot, control) or --path PREFIX")
         out = json.dumps(batch(a.arm, a.path), indent=1, ensure_ascii=False)
         if a.out:
-            with open(a.out, "w", encoding="utf-8") as f:
+            with open(a.out, "w", encoding="utf-8", newline="\n") as f:
                 f.write(out)
             print(f"wrote {a.out}")
         else:

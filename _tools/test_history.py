@@ -240,15 +240,15 @@ class TestHistoryInGit:
         clone = os.path.join(self.tmp, "clone")
         subprocess.run(["git", "clone", "-q", self.kb, clone], env=self.env, check=True)
         run = lambda *a: subprocess.run([sys.executable, os.path.join(clone, "_tools", "kbgit.py"), *a], cwd=clone,  # noqa: E731
-                                        env=self.env, capture_output=True, text=True)
+                                        env=self.env, capture_output=True, text=True, encoding="utf-8")
         assert run("install-hooks").returncode == 0
         assert run("install-hooks", "--uninstall").returncode == 0
-        cfg = subprocess.run(["git", "config", "--get", "core.hooksPath"], cwd=clone, env=self.env, capture_output=True, text=True)
+        cfg = subprocess.run(["git", "config", "--get", "core.hooksPath"], cwd=clone, env=self.env, capture_output=True, text=True, encoding="utf-8")
         assert cfg.stdout.strip() == ""
         # an absolute core.hooksPath to the same .githooks counts as installed, and uninstalls
         subprocess.run(["git", "config", "core.hooksPath", os.path.join(clone, ".githooks")], cwd=clone, env=self.env, check=True)
         r = run("install-hooks")
         assert r.returncode == 0 and "already installed" in r.stdout, r.stdout
         assert run("install-hooks", "--uninstall").returncode == 0
-        cfg = subprocess.run(["git", "config", "--get", "core.hooksPath"], cwd=clone, env=self.env, capture_output=True, text=True)
+        cfg = subprocess.run(["git", "config", "--get", "core.hooksPath"], cwd=clone, env=self.env, capture_output=True, text=True, encoding="utf-8")
         assert cfg.stdout.strip() == ""

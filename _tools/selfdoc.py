@@ -85,7 +85,7 @@ def describing(docs, paths):
 
 
 def git(root, *args):
-    p = subprocess.run(["git", *args], cwd=root, capture_output=True, text=True)
+    p = subprocess.run(["git", *args], cwd=root, capture_output=True, text=True, encoding="utf-8")
     if p.returncode:
         raise SelfdocError(f"git {' '.join(args)}: {(p.stderr or p.stdout).strip()}")
     return p.stdout

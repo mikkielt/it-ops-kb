@@ -44,7 +44,7 @@ def copy_kb(tmp, name):
 
 def run(kb, tool, *args):
     p = subprocess.run([sys.executable, os.path.join(kb, "_tools", tool), *args],
-                       capture_output=True, text=True, errors="replace", timeout=TIMEOUT)
+                       capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=TIMEOUT)
     return p.returncode, p.stdout, p.stderr
 
 
@@ -80,7 +80,7 @@ def call(kb, tool, args, rc, expect="", check=None):
 def write(kb, rel, data):
     p = os.path.join(kb, rel)
     os.makedirs(os.path.dirname(p), exist_ok=True)
-    with open(p, "wb" if isinstance(data, bytes) else "w", **({} if isinstance(data, bytes) else {"encoding": "utf-8"})) as f:
+    with open(p, "wb" if isinstance(data, bytes) else "w", **({} if isinstance(data, bytes) else {"encoding": "utf-8", "newline": "\n"})) as f:
         f.write(data)
 
 

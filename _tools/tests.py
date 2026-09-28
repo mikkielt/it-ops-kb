@@ -8,7 +8,7 @@
   stress_test.py                   the stress suite (test_stress.py)
 
 Modules: test_kb.py (cohesion, lookup, ids, leaks), test_merge.py, test_history.py, test_sync.py, test_census.py,
-test_kb_mcp.py, test_research_merge.py, test_agent_bench.py, test_stress.py; shared fixtures and helpers in conftest.py.
+test_kb_mcp.py, test_research_merge.py, test_agent_bench.py, test_portability.py, test_stress.py; shared fixtures and helpers in conftest.py.
 pytest is run as `uv run --frozen python -m pytest` (uv creates .venv from uv.lock on first use), or with this Python
 when uv is missing but pytest and pytest-xdist are importable; otherwise exit 2 with how to install them. The tools
 under test stay stdlib-only.
@@ -42,9 +42,9 @@ def run_pytest(args, env=None, dist="loadscope"):
 
 def write_lint_baseline():
     lint = os.path.join(KB, ".claude", "skills", "kb-verify", "lint.py")
-    out = subprocess.run([sys.executable, lint], cwd=KB, capture_output=True, text=True, errors="replace")
+    out = subprocess.run([sys.executable, lint], cwd=KB, capture_output=True, text=True, encoding="utf-8", errors="replace")
     errs = sorted({ln.strip() for ln in (out.stdout + out.stderr).splitlines() if ln.startswith("ERROR")})
-    with open(os.path.join(TOOLS, "lint_baseline.txt"), "w", encoding="utf-8") as f:
+    with open(os.path.join(TOOLS, "lint_baseline.txt"), "w", encoding="utf-8", newline="\n") as f:
         f.write("".join(e + "\n" for e in errs))
     print(f"wrote {len(errs)} known lint errors to _tools/lint_baseline.txt")
     return 0

@@ -302,7 +302,7 @@ def fetch_doc(sid, url, rows):
     d = {k: v for k, v in d.items() if k != "hops"} | {"id": sid, "url": url,
                                                        "fetched_utc": datetime.datetime.now(datetime.timezone.utc).isoformat()}
     os.makedirs(os.path.dirname(cache_path(sid)), exist_ok=True)
-    with open(cache_path(sid), "w", encoding="utf-8") as f:
+    with open(cache_path(sid), "w", encoding="utf-8", newline="\n") as f:
         json.dump(d, f)
     return d
 
@@ -512,7 +512,7 @@ def cmd_snapshot(a):
 
 def _git(repo, *args):
     import subprocess
-    p = subprocess.run(["git", "-C", repo, *args], capture_output=True, text=True, errors="replace", timeout=600)
+    p = subprocess.run(["git", "-C", repo, *args], capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=600)
     return p.stdout if p.returncode == 0 else None
 
 
@@ -681,7 +681,7 @@ def save_doc(sid, d):
     os.makedirs(os.path.dirname(cache_path(sid)), exist_ok=True)
     if os.path.exists(cache_path(sid)):
         os.replace(cache_path(sid), prev_path(sid))
-    with open(cache_path(sid), "w", encoding="utf-8") as f:
+    with open(cache_path(sid), "w", encoding="utf-8", newline="\n") as f:
         json.dump({k: v for k, v in d.items() if k not in ("hops", "text")}, f)
 
 
@@ -794,7 +794,7 @@ def sitemap_added(row, segments, save=True):
     _added[name] = sorted(set(cur) - old) if old is not None and cur else []
     if save and cur:
         os.makedirs(os.path.dirname(path), exist_ok=True)
-        with open(path, "w", encoding="utf-8") as f:
+        with open(path, "w", encoding="utf-8", newline="\n") as f:
             json.dump(sorted(cur), f)
     return _added[name]
 

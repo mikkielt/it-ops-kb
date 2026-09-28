@@ -328,7 +328,7 @@ def kb_source(args):
 
 def git(*args, cwd=kbcommon.HOME):
     try:
-        p = subprocess.run(["git", *args], cwd=cwd, capture_output=True, text=True, timeout=10)
+        p = subprocess.run(["git", *args], cwd=cwd, capture_output=True, text=True, encoding="utf-8", timeout=10)
     except (OSError, subprocess.SubprocessError):
         return None
     return p.stdout.strip() if p.returncode == 0 else None
@@ -548,7 +548,7 @@ def register_local():
     code = 0
     for name, cfg in servers.items():
         try:
-            have = subprocess.run(["claude", "mcp", "get", name], cwd=kbcommon.HOME, capture_output=True, text=True, timeout=60)
+            have = subprocess.run(["claude", "mcp", "get", name], cwd=kbcommon.HOME, capture_output=True, text=True, encoding="utf-8", timeout=60)
         except OSError:
             print("the claude CLI is not installed: nothing registered", file=sys.stderr)
             return 1
@@ -556,13 +556,16 @@ def register_local():
             print(f"{name}: already registered")
             continue
         p = subprocess.run(["claude", "mcp", "add-json", "--scope", "local", name, json.dumps(cfg)], cwd=kbcommon.HOME,
-                           capture_output=True, text=True, timeout=60)
+                           capture_output=True, text=True, encoding="utf-8", timeout=60)
         print(f"{name}: " + ("registered (local scope)" if p.returncode == 0 else f"failed: {(p.stderr or p.stdout).strip()}"))
         code = code or p.returncode
     return code
 
 
 def main():
+    # JSON-RPC over stdio is UTF-8 with "\n" line ends on every OS; Windows would otherwise write the locale code page
+    # and "\r\n"
+    sys.stdout.reconfigure(encoding="utf-8", newline="\n")
     if "--register-local" in sys.argv[1:]:
         sys.exit(register_local())
     if "--status" in sys.argv[1:]:

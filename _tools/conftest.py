@@ -78,7 +78,7 @@ class Repo:
         return f"Repo({self.path!r})"
 
     def run_git(self, *args, env=None):
-        return subprocess.run(["git", *args], cwd=self.path, env={**self.env, **(env or {})}, capture_output=True, text=True)
+        return subprocess.run(["git", *args], cwd=self.path, env={**self.env, **(env or {})}, capture_output=True, text=True, encoding="utf-8")
 
     def git(self, *args, env=None):
         """git's stdout; AssertionError with its output when it fails."""
@@ -93,7 +93,7 @@ class Repo:
     def tool(self, name, *args, env=None):
         """Run this directory's own copy of _tools/NAME."""
         return subprocess.run([sys.executable, os.path.join(self.path, "_tools", name), *args], cwd=self.path,
-                              env={**self.env, **(env or {})}, capture_output=True, text=True, errors="replace")
+                              env={**self.env, **(env or {})}, capture_output=True, text=True, encoding="utf-8", errors="replace")
 
     def kbgit(self, *args):
         return self.tool("kbgit.py", *args)

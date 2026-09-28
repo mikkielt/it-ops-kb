@@ -23,8 +23,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3",
-            "args": ["${CLAUDE_PLUGIN_ROOT}/_tools/kb_hook.py"]
+            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/_tools/kbpy\" _tools/kb_hook.py"
           }
         ]
       }

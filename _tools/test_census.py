@@ -20,10 +20,10 @@ class TestCensusRules:
         import subprocess, sys
         from conftest import TOOLS
         for args in (["census.py", "--root", "no-such-root", "summary", "x.csv"], ["fetch.py", "--offline", "--root", "no-such-root"]):
-            p = subprocess.run([sys.executable, os.path.join(TOOLS, args[0]), *args[1:]], capture_output=True, text=True)
+            p = subprocess.run([sys.executable, os.path.join(TOOLS, args[0]), *args[1:]], capture_output=True, text=True, encoding="utf-8")
             assert p.returncode == 2 and "no such root" in p.stderr, p.stderr
         p = subprocess.run([sys.executable, os.path.join(TOOLS, "fetch.py"), "--offline", "--root", "public"],
-                           capture_output=True, text=True)
+                           capture_output=True, text=True, encoding="utf-8")
         assert p.returncode == 0 and p.stdout.startswith("ok="), p.stdout + p.stderr
 
     def test_classify(self):
@@ -175,7 +175,7 @@ class TestCensusLedger:
     def test_2_record_then_confirm_redates_the_article(self):
         res = os.path.join(self.tmp, "res.json")
         json.dump([{"id": self.ids[1], "outcome": "confirmed", "note": "re-read in full"}, {"id": "S1", "outcome": "nope"}],
-                  open(res, "w"))
+                  open(res, "w", encoding="utf-8", newline="\n"))
         p = self.tool("record", self.log, "--from", res)
         assert p.returncode == 1, p.stdout  # one bad item reported
         assert "recorded 1 outcome(s), skipped 1" in p.stdout

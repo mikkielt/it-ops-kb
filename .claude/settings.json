@@ -29,7 +29,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/session-start.sh"
+            "command": "sh \"${CLAUDE_PROJECT_DIR}/_tools/kbpy\" .claude/hooks/session_start.py"
           }
         ]
       }
@@ -39,11 +39,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"$CLAUDE_PROJECT_DIR/_tools/kb_hook.py\""
+            "command": "sh \"${CLAUDE_PROJECT_DIR}/_tools/kbpy\" _tools/kb_hook.py"
           },
           {
             "type": "command",
-            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/kb_change_router.py\""
+            "command": "sh \"${CLAUDE_PROJECT_DIR}/_tools/kbpy\" .claude/hooks/kb_change_router.py"
           }
         ]
       }

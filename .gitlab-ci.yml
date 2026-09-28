@@ -47,6 +47,36 @@ kb-tests-floor:
     - pip install --quiet uv
     - python3 _tools/tests.py
 
+# The same tests on Windows: GitLab.com's hosted Windows runner (beta, every tier, cost factor 1 against the Free
+# quota; kb/public/gitlab/hosted-runners-windows.md). A fresh Windows Server 2022 VM per job, PowerShell, no image:
+# its preinstalled `python` installs uv, and uv the pinned CPython; MinGit's own sh goes on PATH last, as Git Bash
+# would have it, so the launcher tests run too. Only when the tools, hooks or CI change (every push of kb content
+# alone would spend the monthly minutes); a new branch always runs it.
+kb-tests-windows:
+  stage: test
+  tags: [saas-windows-medium-amd64]
+  variables:
+    GIT_DEPTH: "0"
+  script:
+    - git config --global --add safe.directory '*'
+    - python --version
+    - python -m pip install --quiet --disable-pip-version-check uv
+    - |
+      $env:PATH = (python -c "import sysconfig; print(sysconfig.get_path('scripts'))") + ';' + $env:PATH
+      if (Test-Path C:\Git\usr\bin\sh.exe) { $env:PATH += ';C:\Git\usr\bin' }
+      uv --version
+      python _tools/tests.py
+      if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+  rules:
+    - changes:
+        - _tools/**/*
+        - .claude/**/*
+        - .claude-plugin/**/*
+        - .githooks/**/*
+        - .gitlab-ci.yml
+        - pyproject.toml
+        - uv.lock
+
 tool-stress:
   stage: test
   script:

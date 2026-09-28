@@ -61,7 +61,7 @@ def make_root(path, prefix="FXT"):
                                        f"EV-print-retention,{QUESTION},print/queues.md,good,\n"),
     }
     for rel, text in files.items():
-        with open(os.path.join(path, rel), "w", encoding="utf-8") as f:
+        with open(os.path.join(path, rel), "w", encoding="utf-8", newline="\n") as f:
             f.write(text)
     with open(os.path.join(path, "_sources.csv"), "w", encoding="utf-8", newline="") as f:
         w = csv.writer(f, lineterminator="\n")
@@ -79,7 +79,7 @@ def run(tool, *args, roots=None, data=None):
         env["CLAUDE_PLUGIN_DATA"] = data
     else:
         env["KB_INDEX"] = "0"
-    p = subprocess.run([sys.executable, os.path.join(TOOLS, tool), *args], capture_output=True, text=True, cwd=KB,
+    p = subprocess.run([sys.executable, os.path.join(TOOLS, tool), *args], capture_output=True, text=True, encoding="utf-8", cwd=KB,
                        env=env, timeout=180)
     return p.returncode, p.stdout + p.stderr
 
@@ -127,7 +127,7 @@ def test_status_and_server_texts(tmp_path):
     texts = []
     for extra in ({}, {"KB_ROOTS": root}):
         env = {**{k: v for k, v in os.environ.items() if k != "KB_ROOTS"}, **extra}
-        p = subprocess.run([sys.executable, "-c", code], cwd=TOOLS, capture_output=True, text=True, env=env, timeout=60)
+        p = subprocess.run([sys.executable, "-c", code], cwd=TOOLS, capture_output=True, text=True, encoding="utf-8", env=env, timeout=60)
         texts.append(json.loads(p.stdout))
     assert texts[0] == texts[1], "one server serves every root: its always-on texts do not depend on the roots"
     assert texts[0][1] == "it-ops-kb"
@@ -149,7 +149,7 @@ def test_index_files_of_two_root_sets_share_a_directory(tmp_path):
     run("rag.py", "pack", q, data=data)
     names = sorted(os.path.basename(p) for p in glob.glob(os.path.join(data, "kbindex-*.sqlite")))
     assert len(names) == 2 and sum(n.startswith("kbindex-r") for n in names) == 1, names
-    with open(os.path.join(root, "print", "queues.md"), "a", encoding="utf-8") as f:
+    with open(os.path.join(root, "print", "queues.md"), "a", encoding="utf-8", newline="\n") as f:
         f.write("\n")  # a new fingerprint: that root set rebuilds and prunes only its own old file
     run("rag.py", "pack", q, roots=root, data=data)
     after = sorted(os.path.basename(p) for p in glob.glob(os.path.join(data, "kbindex-*.sqlite")))

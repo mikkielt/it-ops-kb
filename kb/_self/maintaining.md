@@ -4,9 +4,9 @@ Read this before any edit, research, refresh, census, commit or push. A lookup n
 
 ## Setup (first session in a fresh clone)
 
-Run `/kb-setup` (Claude Code), or do the same by hand. In Claude Code on the web, `.claude/hooks/session-start.sh` (a SessionStart hook in `.claude/settings.json`) already installs the commit hooks, registers the MCP servers, runs `check.py` and points the new session to `kb/_self/work-left.md`, on every start, resume and `/clear`.
+Run `/kb-setup` (Claude Code), or do the same by hand. In Claude Code on the web, `.claude/hooks/session_start.py` (a SessionStart hook in `.claude/settings.json`) already installs the commit hooks, registers the MCP servers, runs `check.py` and points the new session to `kb/_self/work-left.md`, on every start, resume and `/clear`.
 
-1. **Python 3.11+** as `python3` (the floor in `pyproject.toml`). Nothing to install for the tools: they use the standard library only. The tests use pytest through uv (`pyproject.toml`, `uv.lock`) on the newest stable CPython, pinned in `.python-version` (3.14); `tests.py` installs both on first run. CI also runs them on 3.11 (`UV_PYTHON=3.11`). Moving the pin: edit `.python-version`, `uv lock`, the CI images, then the full gate.
+1. **Python 3.11+** as `python3` (the floor in `pyproject.toml`); on Windows `python` or `py -3`, plus Git for Windows, whose Git Bash runs the hooks. Every hook (`.claude/settings.json`, the plugin, `.githooks/`) starts its script through `sh _tools/kbpy`, which finds the interpreter on each OS. Nothing to install for the tools: they use the standard library only. The tests use pytest through uv (`pyproject.toml`, `uv.lock`) on the newest stable CPython, pinned in `.python-version` (3.14); `tests.py` installs both on first run. CI also runs them on 3.11 (`UV_PYTHON=3.11`) and on Windows (`kb/_self/git.md`). Moving the pin: edit `.python-version`, `uv lock`, the CI images, then the full gate.
 2. **Checks pass on a clean tree:**
    - `python3 _tools/check.py` -> `errors=0`
    - `python3 _tools/fetch.py --offline` -> `mismatch=0 unknown=0`

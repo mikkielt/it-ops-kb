@@ -53,14 +53,14 @@ def test_checks():
 def test_plant_rewrites_the_release_only_in_the_copy(tmp_path):
     pub = tmp_path / "kb" / "public"
     (pub / "privacy").mkdir(parents=True)
-    (pub / "privacy" / "presidio.md").write_text("latest 2.2.364 (2026-07-22), before it 2.2.363\nretrieved_utc: 2026-09-26\n")
-    (pub / "other.md").write_text("Presidio 2.2.364 of 2026-07-22\nsomething else of 2026-07-22\n")
+    (pub / "privacy" / "presidio.md").write_text("latest 2.2.364 (2026-07-22), before it 2.2.363\nretrieved_utc: 2026-09-26\n", encoding="utf-8", newline="\n")
+    (pub / "other.md").write_text("Presidio 2.2.364 of 2026-07-22\nsomething else of 2026-07-22\n", encoding="utf-8", newline="\n")
     (pub / "_sources.csv").write_text("id,url,retrieved_utc\nS802,https://pypi.org/pypi/presidio-analyzer/json,2026-09-26\n"
-                                      "S900,https://example.com,2026-09-26\n")
+                                      "S900,https://example.com,2026-09-26\n", encoding="utf-8", newline="\n")
     ab.plant(str(tmp_path))
-    assert (pub / "privacy" / "presidio.md").read_text() == "latest 2.2.361 (2026-02-12), before it 2.2.360\nretrieved_utc: 2026-02-20\n"
-    assert (pub / "other.md").read_text() == "Presidio 2.2.361 of 2026-02-12\nsomething else of 2026-07-22\n"
-    assert (pub / "_sources.csv").read_text() == ("id,url,retrieved_utc\nS802,https://pypi.org/pypi/presidio-analyzer/json,2026-02-20\n"
+    assert (pub / "privacy" / "presidio.md").read_text(encoding="utf-8") == "latest 2.2.361 (2026-02-12), before it 2.2.360\nretrieved_utc: 2026-02-20\n"
+    assert (pub / "other.md").read_text(encoding="utf-8") == "Presidio 2.2.361 of 2026-02-12\nsomething else of 2026-07-22\n"
+    assert (pub / "_sources.csv").read_text(encoding="utf-8") == ("id,url,retrieved_utc\nS802,https://pypi.org/pypi/presidio-analyzer/json,2026-02-20\n"
                                                   "S900,https://example.com,2026-09-26\n")
 
 

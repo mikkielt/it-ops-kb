@@ -105,7 +105,7 @@ def kb(tmp_path_factory):
 class TestCheckRule:
     def check(self, kb, rows):
         kbcommon.write_csv(os.path.join(kb, P(kbcommon.ANCHORS)), kbcommon.ANCHOR_COLS, rows)
-        p = subprocess.run([sys.executable, os.path.join(kb, "_tools", "check.py"), "--root", "public"], capture_output=True, text=True)
+        p = subprocess.run([sys.executable, os.path.join(kb, "_tools", "check.py"), "--root", "public"], capture_output=True, text=True, encoding="utf-8")
         return p.returncode, p.stdout
 
     def test_rule(self, kb):
@@ -240,7 +240,7 @@ def test_apply_confirms_unchanged_sources(kb):
     kbcommon.write_csv(log, F.LOG_COLS, [{"source_id": sid, "url": "u", "verdict": "unchanged", "signal": "etag",
                                           "evidence": "304 Not Modified", "baseline_utc": "2000-01-01T00:00:00Z"}])
     p = subprocess.run([sys.executable, os.path.join(kb, "_tools", "factdiff.py"), "apply", log, "--date", "2031-01-02"],
-                       capture_output=True, text=True)
+                       capture_output=True, text=True, encoding="utf-8")
     assert p.returncode == 0 and "sources confirmed=1" in p.stdout, p.stdout + p.stderr
     with open(os.path.join(kb, P("_sources.csv")), encoding="utf-8") as f:
         row = next(r for r in csv.DictReader(f) if r["id"] == sid)
@@ -249,7 +249,7 @@ def test_apply_confirms_unchanged_sources(kb):
     kbcommon.write_csv(log, F.LOG_COLS, [{"source_id": sid, "url": "u", "verdict": "unchanged", "signal": "etag",
                                           "evidence": "304", "baseline_utc": "2031-06-01T00:00:00Z"}])
     p = subprocess.run([sys.executable, os.path.join(kb, "_tools", "factdiff.py"), "apply", log, "--date", "2031-07-01"],
-                       capture_output=True, text=True)
+                       capture_output=True, text=True, encoding="utf-8")
     assert "sources confirmed=0 held back=1" in p.stdout, p.stdout + p.stderr
 
 
@@ -272,12 +272,12 @@ def test_snapshot_roundtrip_and_check_rule(kb, monkeypatch):
     assert body == DOC and head["licence"] == " ".join(copy["licence"].split()) and head["retrieved"] == "2031-01-02"
 
     def check():
-        p = subprocess.run([sys.executable, os.path.join(kb, "_tools", "check.py"), "--root", "public"], capture_output=True, text=True)
+        p = subprocess.run([sys.executable, os.path.join(kb, "_tools", "check.py"), "--root", "public"], capture_output=True, text=True, encoding="utf-8")
         return p.returncode, p.stdout
 
     assert check()[0] == 0, check()[1]
     bad = os.path.join(kb, P(f"{kbcommon.SNAPSHOTS}/{quote['id']}.txt"))
-    with open(bad, "w", encoding="utf-8") as f:
+    with open(bad, "w", encoding="utf-8", newline="\n") as f:
         f.write(f"source: {quote['id']}\nurl: x\n---\ntext\n")
     code, out = check()
     assert code == 1 and "only copy sources" in out and "lacks" in out, out
@@ -302,7 +302,7 @@ def test_apply_moves_a_fact_found_on_another_page(kb):
     base = {"source_id": sid, "url": "u", "verdict": "changed", "signal": "hash", "evidence": "x"}
     kbcommon.write_csv(log, F.LOG_COLS, [base, {**base, "fact": key, "path": rel, "line": line, "outcome": "moved", "target": target}])
     p = subprocess.run([sys.executable, os.path.join(kb, "_tools", "factdiff.py"), "apply", log, "--date", "2031-01-02"],
-                       capture_output=True, text=True)
+                       capture_output=True, text=True, encoding="utf-8")
     assert p.returncode == 0 and "facts moved=1" in p.stdout, p.stdout + p.stderr
     nid = F.kbid.source_id(target)
     with open(os.path.join(kb, P("_sources.csv")), encoding="utf-8") as f:
