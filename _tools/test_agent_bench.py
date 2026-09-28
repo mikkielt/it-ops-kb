@@ -64,6 +64,17 @@ def test_plant_rewrites_the_release_only_in_the_copy(tmp_path):
                                                   "S900,https://example.com,2026-09-26\n")
 
 
+def test_count_checks_read_the_kb_at_check_time(monkeypatch):
+    r = {"answer": "There are 2 partial Intune articles: remediations and win32-apps.", "tools": {}}
+    monkeypatch.setattr(ab, "partial_articles", lambda d, s: ["public/intune/remediations.md", "public/intune/win32-apps.md"])
+    assert ab.check("count:intune:partial", r) and ab.check("list:intune:partial", r)
+    monkeypatch.setattr(ab, "partial_articles", lambda d, s: ["public/intune/remediations.md"] * 3)
+    assert not ab.check("count:intune:partial", r)
+    monkeypatch.setattr(ab, "partial_articles", lambda d, s: [])
+    assert ab.check("count:intune:partial", {"answer": "None of them: no intune article is partial.", "tools": {}})
+    assert ab.check("list:intune:partial", r)
+
+
 @pytest.mark.git
 def test_stale_puts_the_remote_branch_ahead(tmp_path, monkeypatch):
     for k, v in git_env().items():

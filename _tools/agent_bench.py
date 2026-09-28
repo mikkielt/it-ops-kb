@@ -17,20 +17,28 @@ _cache/bench) with the kb and docs plugins loaded by --plugin-dir, no user setti
 `p*` partial knowledge (the kb answers one part; a line records the urls fetched and those a kb tool had already
 returned, `refetched`), `n*` a newer version upstream (a scratch clone planted with an older presidio release),
 `k*` a kb copy behind its remote (a scratch clone whose origin/main is 3 commits ahead). Checks are regexes over the
-answer, or `tool:NAME` (a tool called), `web` (a search or fetch) and `no-refetch`. Results:
-kb/_self/reports/token-usage.md ("Models and hand-off patterns" and later sections) and kb/_self/reports/benchmark-bare-vs-kb.md.
+answer, or `tool:NAME` (a tool called), `web` (a search or fetch) and `no-refetch`.
+
+Every `claude -p` it starts runs with hooks off (`--settings '{"disableAllHooks": true}'`, querylog.NO_HOOKS), so no
+run is captured, distilled or pushed by the query log of the clone or of a plugin. The kb arms run in this clone with
+the `kb` server registered at local scope for it; _tools/benchmarks.py runs this file from a throwaway clone whose
+query log is off and whose origin is a local bare repository. Results: kb/_self/reports/benchmarks.md.
 """
 import json, os, re, shutil, subprocess, sys, time
 from collections import Counter
 
 KB = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.join(KB, "_tools"))
+from querylog import NO_HOOKS  # noqa: E402  every run's hooks are off
 S = {
     "s1_fact": ("What is the default Windows LAPS password length? Answer from the kb with citation.", [r"\b14\b"]),
     "s2_fact_csv": ("Which TCP port does Delivery Optimization use for peer-to-peer traffic? Answer from the kb with citation.", [r"7680"]),
     "s3_multi": ("Answer from the kb, cite path:line for each: (1) default Windows LAPS password length; (2) the Delivery "
                  "Optimization peer-to-peer port; (3) which Claude Code version added the Elicitation hook.",
                  [r"\b14\b", r"7680", r"2\.1\.76"]),
-    "s4_count": ("How many intune articles in the kb have status partial? Give the number and list them.", [r"\b6\b", r"remediations"]),
+    # the count is read from the kb at check time (it was 6, remediations among them, when the scenario was written)
+    "s4_count": ("How many intune articles in the kb have status partial? Give the number and list them.",
+                 ["count:intune:partial", "list:intune:partial"]),
     "s5_none": ("How do I configure a Kubernetes cluster autoscaler on AWS EKS spot instances? Use the kb.",
                 [r"(?i)(not cover|doesn.t cover|does not cover|no coverage|not in the kb|kb lacks|isn.t in|none)"]),
     "s6_falsegood": ("Using the kb, how do I create and update the Group Policy Central Store with the Windows 11 24H2 ADMX "
@@ -249,10 +257,13 @@ def web(model, q):
     WebSearch and WebFetch."""
     empty = os.path.join(KB, "_cache", "bench-web")
     os.makedirs(empty, exist_ok=True)
-    cmd = ["claude", "-p", "--output-format", "stream-json", "--verbose", "--no-session-persistence", "--model", model,
-           "--strict-mcp-config", "--setting-sources", "project,local", "--allowedTools", "WebSearch", "WebFetch",
-           "--disallowedTools", "Bash", "Read", "Grep", "Glob", "Edit", "Write", "Agent", "Skill"]
-    return execute(cmd, q, cwd=empty)
+    return execute(web_argv(model), q, cwd=empty)
+
+
+def web_argv(model):
+    return ["claude", "-p", "--output-format", "stream-json", "--verbose", "--no-session-persistence", "--model", model,
+            "--strict-mcp-config", "--setting-sources", "project,local", *NO_HOOKS, "--allowedTools", "WebSearch",
+            "WebFetch", "--disallowedTools", "Bash", "Read", "Grep", "Glob", "Edit", "Write", "Agent", "Skill"]
 
 
 def git(*args, cwd):
@@ -317,13 +328,16 @@ def host(model, q, kb):
     settings, plugins or claude.ai connectors; the kb index kept in SCRATCH."""
     where = os.path.join(SCRATCH, "host")
     os.makedirs(where, exist_ok=True)
-    cmd = ["claude", "-p", "--output-format", "stream-json", "--verbose", "--no-session-persistence", "--model", model,
-           "--setting-sources", "project,local", "--plugin-dir", kb,
-           "--plugin-dir", os.path.join(KB, ".claude-plugin", "it-ops-kb-docs"),
-           "--allowedTools", "mcp__plugin_it-ops-kb_kb", "mcp__plugin_it-ops-kb-docs_microsoft-learn",
-           "mcp__plugin_it-ops-kb-docs_claude-code-docs", "mcp__plugin_it-ops-kb-docs_mcp-docs", "WebSearch", "WebFetch"]
     env = {"ENABLE_CLAUDEAI_MCP_SERVERS": "false", "KB_INDEX": os.path.join(SCRATCH, "index")}
-    return execute(cmd, q, cwd=where, env=env)
+    return execute(host_argv(model, kb), q, cwd=where, env=env)
+
+
+def host_argv(model, kb):
+    return ["claude", "-p", "--output-format", "stream-json", "--verbose", "--no-session-persistence", "--model", model,
+            "--setting-sources", "project,local", *NO_HOOKS, "--plugin-dir", kb,
+            "--plugin-dir", os.path.join(KB, ".claude-plugin", "it-ops-kb-docs"),
+            "--allowedTools", "mcp__plugin_it-ops-kb_kb", "mcp__plugin_it-ops-kb-docs_microsoft-learn",
+            "mcp__plugin_it-ops-kb-docs_claude-code-docs", "mcp__plugin_it-ops-kb-docs_mcp-docs", "WebSearch", "WebFetch"]
 
 
 def check(c, r):
@@ -334,7 +348,21 @@ def check(c, r):
         return bool(r["fetched"] or r["searches"])
     if c == "no-refetch":
         return not r["refetched"]
+    if c.startswith(("count:", "list:")):  # count:DOMAIN:STATUS, list:DOMAIN:STATUS against the kb at check time
+        kind, domain, status = c.split(":")
+        paths = partial_articles(domain, status)
+        if kind == "list":
+            return all(re.search(re.escape(p.rsplit("/", 1)[-1].removesuffix(".md")), r["answer"]) for p in paths)
+        n = len(paths)
+        return bool(re.search(rf"\b{n}\b", r["answer"]) or (n == 0 and re.search(r"(?i)\b(no|none|zero)\b", r["answer"])))
     return bool(re.search(c, r["answer"]))
+
+
+def partial_articles(domain, status):
+    """The article paths under `domain` with front-matter `status`, from this clone's kb."""
+    import kbfacts
+    return sorted(p for p, m in kbfacts.articles().items() if m.get("status") == status
+                  and kbfacts.bare(p).split("/", 1)[0] == domain)
 
 
 def run(cfg, scen, copies=None):
@@ -351,23 +379,26 @@ def run(cfg, scen, copies=None):
     elif cfg.startswith("web-"):
         r = web(MODEL[cfg[4:]], WEB_Q[scen])
     else:
-        model = cfg.split("+")[0]
-        prompt = q + (DELEGATE if "+delegate" in cfg else "")
-        extra = []
-        if "+escalate" in cfg:
-            extra = ["--agents", json.dumps(AGENTS), "--append-system-prompt", ROUTER]
-        if "+strict" in cfg:
-            extra += ["--disallowedTools", "mcp__microsoft-learn__microsoft_docs_search",
-                      "mcp__microsoft-learn__microsoft_docs_fetch", "mcp__microsoft-learn__microsoft_code_sample_search",
-                      "WebSearch", "WebFetch"]
-        cmd = ["claude", "-p", "--output-format", "stream-json", "--verbose", "--no-session-persistence",
-               "--model", MODEL[model], "--allowedTools", "WebSearch", "WebFetch", "mcp__kb", "Agent",
-               "mcp__microsoft-learn__microsoft_docs_search", "mcp__microsoft-learn__microsoft_docs_fetch"] + extra
-        r = execute(cmd, prompt)
+        r = execute(kb_argv(cfg), q + (DELEGATE if "+delegate" in cfg else ""))
     r = {"cfg": cfg, "scen": scen, **r}
     if "error" not in r:
         r["checks"] = [check(c, r) for c in checks]
     return r
+
+
+def kb_argv(cfg):
+    """A kb arm in this clone: the model alone (`haiku`, `sonnet`, `opus`), or with `+delegate`, `+escalate`,
+    `+strict`; the user's plugins and the clone's local-scope servers load as in a person's session."""
+    extra = []
+    if "+escalate" in cfg:
+        extra = ["--agents", json.dumps(AGENTS), "--append-system-prompt", ROUTER]
+    if "+strict" in cfg:
+        extra += ["--disallowedTools", "mcp__microsoft-learn__microsoft_docs_search",
+                  "mcp__microsoft-learn__microsoft_docs_fetch", "mcp__microsoft-learn__microsoft_code_sample_search",
+                  "WebSearch", "WebFetch"]
+    return ["claude", "-p", "--output-format", "stream-json", "--verbose", "--no-session-persistence", *NO_HOOKS,
+            "--model", MODEL[cfg.split("+")[0]], "--allowedTools", "WebSearch", "WebFetch", "mcp__kb", "Agent",
+            "mcp__microsoft-learn__microsoft_docs_search", "mcp__microsoft-learn__microsoft_docs_fetch"] + extra
 
 
 def summary(paths):
