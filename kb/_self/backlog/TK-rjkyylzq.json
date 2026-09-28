@@ -1,0 +1,24 @@
+{
+  "id": "TK-rjkyylzq",
+  "kind": "task",
+  "title": "Research GitLab push mirroring and push options on self-managed instances",
+  "status": "todo",
+  "parent": "ST-mmmn42ks",
+  "priority": "P2",
+  "rank": 1,
+  "goal": "kb/public holds DOC facts on GitLab push mirroring (tiers, what it pushes, protected-branch-only option) and on merge-request push options and auto-merge on self-managed GitLab",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/rag.py",
+        "pack",
+        "GitLab push mirroring tier self-managed"
+      ],
+      "match": "coverage: good"
+    }
+  ],
+  "touches": [
+    "kb/public/**"
+  ]
+}

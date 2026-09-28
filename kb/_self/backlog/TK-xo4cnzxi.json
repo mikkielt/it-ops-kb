@@ -1,0 +1,25 @@
+{
+  "id": "TK-xo4cnzxi",
+  "kind": "task",
+  "title": "kbgit.py check-lanes and the pre-push hook",
+  "status": "todo",
+  "parent": "ST-qx7aw7if",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "check-lanes reads the push range like check-trailers and the pre-push hook refuses a direct code-lane commit to main",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "check_lanes"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbgit.py",
+    "_tools/test_sync.py",
+    ".githooks/pre-push"
+  ]
+}

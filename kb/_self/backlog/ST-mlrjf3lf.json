@@ -1,0 +1,41 @@
+{
+  "id": "ST-mlrjf3lf",
+  "kind": "story",
+  "title": "Branches from the public home reach integration as merge requests",
+  "status": "draft",
+  "parent": "EP-rumrqsu5",
+  "sprint": "SP-v5xagbyv",
+  "priority": "P2",
+  "rank": 6,
+  "goal": "kbgit.py bridge <branch> fetches a branch of the publish remote (a cloud session's working branch or a contributor's pull request), rebases it on the integration main, runs the gate and sends it through sync's lanes (content straight to main, code as code/<id>); the publish remote's main moves only by publish; tests.py -k bridge covers a content and a code branch",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "bridge"
+      ]
+    }
+  ],
+  "depends_on": [
+    "ST-vcf3r6qv"
+  ],
+  "gates": [
+    {
+      "id": "public-prs",
+      "kind": "provisional",
+      "question": "What happens to pull requests opened on the public home?",
+      "options": [
+        "bridged to the integration remote; the pull request closes when publish brings the merge",
+        "merged on the public home, then pulled into integration",
+        "not accepted: the public home is read-only"
+      ],
+      "recommendation": "bridged to the integration remote; the pull request closes when publish brings the merge"
+    }
+  ],
+  "links": [
+    "kb/public/_answers.md#QK-plugin-host-cloud-session-push-automatic"
+  ],
+  "notes": "Cloud sessions clone only from GitHub and push only their working branch (_answers.md QK-plugin-host-cloud-session-push-automatic), so their work reaches the kb through this bridge."
+}

@@ -1,0 +1,26 @@
+{
+  "id": "TK-uxm5arrb",
+  "kind": "task",
+  "title": "git.md, backlog.md and maintaining.md describe the regime",
+  "status": "todo",
+  "parent": "ST-lhcjqkbq",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "the three docs describe roles, lanes, publish, bridge and optional host setup; the always-blocking list reads 'a push anywhere but the integration main, a code/<id> branch or a publish'",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/selfdoc.py",
+        "stale"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/git.md",
+    "kb/_self/backlog.md",
+    "kb/_self/maintaining.md",
+    "kb/_self/tools.md",
+    "README.md"
+  ]
+}

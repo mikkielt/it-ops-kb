@@ -1,0 +1,24 @@
+{
+  "id": "TK-b7l4x2ne",
+  "kind": "task",
+  "title": "Code-lane branch push with merge-request push options in sync",
+  "status": "todo",
+  "parent": "ST-vcf3r6qv",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "sync --push routes by lane, pushes code/<id> with the four push options, falls back to a plain branch push with an instruction when options are not advertised, and exits 0 once the branch is pushed",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "code_lane"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbgit.py",
+    "_tools/test_sync.py"
+  ]
+}

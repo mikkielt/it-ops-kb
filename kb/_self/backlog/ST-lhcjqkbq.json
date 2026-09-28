@@ -1,0 +1,40 @@
+{
+  "id": "ST-lhcjqkbq",
+  "kind": "story",
+  "title": "The git rules state the regime",
+  "status": "draft",
+  "parent": "EP-rumrqsu5",
+  "sprint": "SP-v5xagbyv",
+  "priority": "P2",
+  "rank": 8,
+  "goal": "kb/_self/git.md describes remote roles, the two lanes, check-lanes, publish, bridge, and optional per-host setup (GitLab protected branch and merge method, GitHub ruleset on the public home) with kb citations and no host-specific project details; kb/_self/backlog.md's Git section and always-blocking list name the integration main and the publish remote; AGENTS.md states the lane rule in one line; selfdoc.py stale lists nothing",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/selfdoc.py",
+        "stale"
+      ]
+    }
+  ],
+  "depends_on": [
+    "ST-vcf3r6qv",
+    "ST-qx7aw7if",
+    "ST-su4em5sl",
+    "ST-mlrjf3lf",
+    "ST-niikw55v"
+  ],
+  "gates": [
+    {
+      "id": "agents-rule",
+      "kind": "blocking",
+      "question": "Add to AGENTS.md: 'Content (kb roots, backlog items) lands by kbgit.py sync --push; code lands only through a code/<id> merge request that sync opens'?",
+      "options": [
+        "yes, that line",
+        "a reworded line (give it)",
+        "no AGENTS.md change; git.md only"
+      ],
+      "recommendation": "yes, that line"
+    }
+  ]
+}

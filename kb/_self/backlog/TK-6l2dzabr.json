@@ -1,0 +1,24 @@
+{
+  "id": "TK-6l2dzabr",
+  "kind": "task",
+  "title": "kb-sprint and kb-item land code items through merge requests",
+  "status": "todo",
+  "parent": "ST-niikw55v",
+  "priority": "P2",
+  "rank": 1,
+  "goal": "the kb-sprint and kb-item skills push code items with sync --push, check the merge on the next pass, then run done",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/selfdoc.py",
+        "stale"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md",
+    ".claude/skills/kb-item/SKILL.md",
+    ".claude/skills/kb-git-sync/SKILL.md"
+  ]
+}

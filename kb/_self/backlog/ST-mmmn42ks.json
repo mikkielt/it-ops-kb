@@ -1,0 +1,50 @@
+{
+  "id": "ST-mmmn42ks",
+  "kind": "story",
+  "title": "The kb covers the server side of the git regime",
+  "status": "draft",
+  "parent": "EP-rumrqsu5",
+  "sprint": "SP-v5xagbyv",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kb_pack answers with coverage good, from official sources: GitHub rulesets and branch protection on a public repository, GitHub auto-merge and required status checks, GitLab push options and auto-merge on a self-managed instance by tier, and GitLab push mirroring by tier",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/rag.py",
+        "pack",
+        "GitHub rulesets branch protection public repository"
+      ],
+      "match": "coverage: good"
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/rag.py",
+        "pack",
+        "GitHub auto-merge pull request required status checks"
+      ],
+      "match": "coverage: good"
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/rag.py",
+        "pack",
+        "GitLab push mirroring tier self-managed"
+      ],
+      "match": "coverage: good"
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/rag.py",
+        "pack",
+        "GitLab push options merge_request.create self-managed"
+      ],
+      "match": "coverage: good"
+    }
+  ],
+  "notes": "Worked with /kb-research; the kb today has GitLab auto-merge, merged results and protected branches, but no GitHub ruleset, GitHub auto-merge or push-mirror facts."
+}

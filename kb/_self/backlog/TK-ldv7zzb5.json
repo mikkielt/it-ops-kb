@@ -1,0 +1,24 @@
+{
+  "id": "TK-ldv7zzb5",
+  "kind": "task",
+  "title": "Research GitHub rulesets, branch protection and auto-merge for a public repository",
+  "status": "todo",
+  "parent": "ST-mmmn42ks",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kb/public holds DOC facts on GitHub rulesets and branch protection for public repositories, required status checks and pull-request auto-merge, with their plan availability",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/rag.py",
+        "pack",
+        "GitHub rulesets branch protection public repository"
+      ],
+      "match": "coverage: good"
+    }
+  ],
+  "touches": [
+    "kb/public/**"
+  ]
+}

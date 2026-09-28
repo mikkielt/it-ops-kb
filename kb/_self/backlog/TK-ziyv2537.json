@@ -1,0 +1,22 @@
+{
+  "id": "TK-ziyv2537",
+  "kind": "task",
+  "title": "AGENTS.md lane rule",
+  "status": "todo",
+  "parent": "ST-lhcjqkbq",
+  "priority": "P2",
+  "rank": 1,
+  "goal": "AGENTS.md carries the answered agents-rule line",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/selfdoc.py",
+        "stale"
+      ]
+    }
+  ],
+  "touches": [
+    "AGENTS.md"
+  ]
+}

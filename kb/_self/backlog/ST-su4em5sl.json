@@ -1,0 +1,60 @@
+{
+  "id": "ST-su4em5sl",
+  "kind": "story",
+  "title": "kbgit.py publish fast-forwards the public home",
+  "status": "draft",
+  "parent": "EP-rumrqsu5",
+  "sprint": "SP-v5xagbyv",
+  "priority": "P2",
+  "rank": 5,
+  "goal": "kbgit.py publish pushes the integration remote's main to the publish remote's main only as a fast-forward and only when backlog.py red-pipeline --status passes for it; it refuses when that commit's tree holds a root whose _root.md visibility is internal, a _private/ or _cache/ path, or a line the public leak scan flags; without a publish remote it prints a note and exits 0; tests.py -k publish plants each refusal",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "publish"
+      ]
+    }
+  ],
+  "depends_on": [
+    "ST-573udtxz"
+  ],
+  "gates": [
+    {
+      "id": "publish-push",
+      "kind": "blocking",
+      "question": "May kbgit.py publish push main to the publish remote (the public home)?",
+      "options": [
+        "yes, fast-forward only, after a green integration main",
+        "yes, but only by a person running the command",
+        "no: the public home is updated by hand"
+      ],
+      "recommendation": "yes, fast-forward only, after a green integration main"
+    },
+    {
+      "id": "publish-when",
+      "kind": "blocking",
+      "question": "When does publish run? This replaces the sprints' github gate answer (at sprint close only).",
+      "options": [
+        "at sprint close by the orchestrator, and by a person any time",
+        "after every green integration main",
+        "only by a person"
+      ],
+      "recommendation": "at sprint close by the orchestrator, and by a person any time"
+    },
+    {
+      "id": "public-content",
+      "kind": "blocking",
+      "question": "Which content may reach the public home?",
+      "options": [
+        "public roots and the code; never an internal root, _private/, _cache/ or a leak-scan hit (refused, not filtered)",
+        "the same, but internal roots are stripped from a published branch instead of refused",
+        "everything the integration main holds"
+      ],
+      "recommendation": "public roots and the code; never an internal root, _private/, _cache/ or a leak-scan hit (refused, not filtered)"
+    }
+  ],
+  "notes": "Refusing keeps one history on both remotes; stripping would fork it. A GitLab push mirror (optional host setup; ST-mmmn42ks “The kb covers the server side of the git regime” researches it) can replace the command where the integration host is trusted to decide what is public."
+}

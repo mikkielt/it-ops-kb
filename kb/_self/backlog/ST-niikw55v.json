@@ -1,0 +1,24 @@
+{
+  "id": "ST-niikw55v",
+  "kind": "story",
+  "title": "Sprint landing and done follow the lanes",
+  "status": "draft",
+  "parent": "EP-rumrqsu5",
+  "sprint": "SP-v5xagbyv",
+  "priority": "P2",
+  "rank": 7,
+  "goal": "backlog.py done accepts an item whose KB-Work commits are in the code lane only when they are reachable from the fetched integration main; /kb-sprint lands code items as merge requests and marks them done after the merge, content items as today; /kb-item does the same; tests.py -k done_lane plants an unmerged code item",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "done_lane"
+      ]
+    }
+  ],
+  "depends_on": [
+    "ST-vcf3r6qv"
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "id": "TK-mjrtkhoi",
+  "kind": "task",
+  "title": "kb-lane job on GitLab and GitHub",
+  "status": "todo",
+  "parent": "ST-qx7aw7if",
+  "priority": "P2",
+  "rank": 1,
+  "goal": ".gitlab-ci.yml and .github/workflows/kb.yml run kbgit.py check-lanes on pushes to main and fail the pipeline on a direct code-lane commit",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "ci_config"
+      ]
+    }
+  ],
+  "touches": [
+    ".gitlab-ci.yml",
+    ".github/workflows/kb.yml",
+    "_tools/test_kb.py"
+  ]
+}

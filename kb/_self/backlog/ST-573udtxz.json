@@ -1,0 +1,34 @@
+{
+  "id": "ST-573udtxz",
+  "kind": "story",
+  "title": "kbgit.py knows its remotes by role",
+  "status": "draft",
+  "parent": "EP-rumrqsu5",
+  "sprint": "SP-v5xagbyv",
+  "priority": "P2",
+  "rank": 2,
+  "goal": "kbgit.py and backlog.py red-pipeline read the integration remote from git config kb.integration (default origin) and the publish remote from kb.publish (unset: no publishing); sync, publish and the hooks use the roles, --remote still overrides; no host name or url appears in _tools; tests.py -k remote_roles covers a clone with and without a publish remote",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "remote_roles"
+      ]
+    }
+  ],
+  "gates": [
+    {
+      "id": "role-config",
+      "kind": "provisional",
+      "question": "Where does a clone record its remote roles?",
+      "options": [
+        "git config keys kb.integration and kb.publish (per clone, never committed)",
+        "a committed file naming remotes",
+        "remote names fixed by convention (origin, public)"
+      ],
+      "recommendation": "git config keys kb.integration and kb.publish (per clone, never committed)"
+    }
+  ]
+}

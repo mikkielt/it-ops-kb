@@ -1,0 +1,24 @@
+{
+  "id": "EP-rumrqsu5",
+  "kind": "epic",
+  "title": "Git regime: content and code lanes on any host, published to a public home",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "Every clone follows one git regime whatever host it lives on: kb content lands on the integration remote's main by direct push through kbgit.py sync --push; code (tools, hooks, skills, CI, process docs) lands only through a code/<id> branch merged by a merge or pull request; a CI job in .gitlab-ci.yml and in the GitHub workflow fails a push to main that carries a code-lane commit outside a merge; a clone with a publish remote fast-forwards it from a green integration main and never publishes an internal root, _private/ or _cache/; kb/_self/git.md, kb/_self/backlog.md and AGENTS.md state the regime.",
+  "relates_to": [
+    "ST-6dszsvk5",
+    "ST-3i3dl6xg",
+    "BG-ifszzzis"
+  ],
+  "links": [
+    "kb/_self/git.md",
+    "kb/_self/backlog.md",
+    "kb/public/gitlab/automated-merge-requests.md",
+    "kb/public/gitlab/protected-branches-tags.md",
+    "kb/public/gitlab/mr-approvals.md",
+    "kb/public/_answers.md#QK-plugin-host-cloud-session-push-automatic",
+    "kb/public/_answers.md#QK-automation-that-pushes-main-read-commit"
+  ],
+  "notes": "Roles, not hosts: the tools know an integration remote (where main moves and CI gates, default origin) and an optional publish remote (the public home); no host name, url, tier or project appears in tools or docs, and nothing detects which host a clone lives on. Server settings (protected branches, GitHub rulesets, push rules, mirrors) are optional per-host setup that git.md describes with kb citations; the regime holds without them: client-side refusal in sync and the pre-push hook, detection in CI. Protected branches are per branch, not per path (protected-branches-tags.md:23), and push rules and Code Owners are Premium (mr-approvals.md:37), so path enforcement cannot rely on the server. Autonomous writers (query log, research, ingest) write content paths only and keep direct push (ST-6dszsvk5 “Autonomous writers reach main only through kbgit.py sync --push”). Out of scope: changing any host's settings; new dependencies. Superseding the sprints' github gate answers (at sprint close only) is the publish-when gate of ST-su4em5sl “kbgit.py publish fast-forwards the public home”, not an edit to those sprints."
+}

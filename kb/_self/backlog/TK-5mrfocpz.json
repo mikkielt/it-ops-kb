@@ -1,0 +1,24 @@
+{
+  "id": "TK-5mrfocpz",
+  "kind": "task",
+  "title": "done checks code-lane items against the integration main",
+  "status": "todo",
+  "parent": "ST-niikw55v",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "backlog.py done refuses a code-lane item whose KB-Work commits are not on the integration main, naming the branch to merge",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "done_lane"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/test_backlog.py"
+  ]
+}

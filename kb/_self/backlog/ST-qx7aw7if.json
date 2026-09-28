@@ -1,0 +1,24 @@
+{
+  "id": "ST-qx7aw7if",
+  "kind": "story",
+  "title": "CI and the pre-push hook refuse a code-lane commit pushed straight to main",
+  "status": "draft",
+  "parent": "EP-rumrqsu5",
+  "sprint": "SP-v5xagbyv",
+  "priority": "P2",
+  "rank": 4,
+  "goal": "kbgit.py check-lanes [A..B] exits 1 listing each first-parent commit of main that is not a merge and touches the code lane (commits before the check's first commit exempt, as with trailers); the pre-push hook runs it for a push to main, and a kb-lane job runs it on pushes to main in .gitlab-ci.yml and .github/workflows/kb.yml; tests.py -k check_lanes plants a direct code commit and a merged one",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "check_lanes"
+      ]
+    }
+  ],
+  "depends_on": [
+    "ST-lyy6lyin"
+  ]
+}

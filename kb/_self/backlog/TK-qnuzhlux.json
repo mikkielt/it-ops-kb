@@ -1,0 +1,24 @@
+{
+  "id": "TK-qnuzhlux",
+  "kind": "task",
+  "title": "Lane classifier and kbgit.py lane",
+  "status": "todo",
+  "parent": "ST-lyy6lyin",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kbgit.py lane prints commit, lane and the code paths that decided it; the classifier is one function sync and check-lanes share",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "lane"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbgit.py",
+    "_tools/test_sync.py"
+  ]
+}

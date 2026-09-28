@@ -1,0 +1,43 @@
+{
+  "id": "ST-vcf3r6qv",
+  "kind": "story",
+  "title": "sync --push sends code-lane work as a merge request",
+  "status": "draft",
+  "parent": "EP-rumrqsu5",
+  "sprint": "SP-v5xagbyv",
+  "priority": "P2",
+  "rank": 3,
+  "goal": "kbgit.py sync --push sends content-only commits to the integration remote's main as today; with any code-lane commit it rebases on the integration main, runs the gate and pushes branch code/<id> (the KB-Work id, else the short hash) with the push options merge_request.create, merge_request.target=main, merge_request.auto_merge and merge_request.remove_source_branch; a remote that does not advertise push options gets the plain branch and the command prints that a merge or pull request must be opened from it; tests.py -k code_lane proves both against local bare remotes (receive.advertisePushOptions on and off)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "code_lane"
+      ]
+    }
+  ],
+  "depends_on": [
+    "ST-lyy6lyin",
+    "ST-573udtxz"
+  ],
+  "gates": [
+    {
+      "id": "branch-push",
+      "kind": "blocking",
+      "question": "May sync --push push code/<id> branches (not main) to the integration remote and open merge requests there?",
+      "options": [
+        "yes, code/<id> branches with auto-merge; the branch is deleted on merge",
+        "yes, but without auto-merge: a person merges",
+        "no: code stays on direct push"
+      ],
+      "recommendation": "yes, code/<id> branches with auto-merge; the branch is deleted on merge"
+    }
+  ],
+  "links": [
+    "kb/public/gitlab/automated-merge-requests.md",
+    "kb/public/_answers.md#QK-automation-that-pushes-main-read-commit"
+  ],
+  "notes": "On a GitLab without merged results pipelines the branch is tested as pushed, so sync rebases right before the push (automated-merge-requests.md:54). Auto-merge is cancelled by new commits on main under fast-forward or semi-linear merge methods (automated-merge-requests.md:24); git.md recommends the merge-commit method as optional host setup."
+}

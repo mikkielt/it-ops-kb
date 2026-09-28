@@ -1,0 +1,24 @@
+{
+  "id": "TK-h6oy6jlh",
+  "kind": "task",
+  "title": "kbgit.py publish with its safety refusals",
+  "status": "todo",
+  "parent": "ST-su4em5sl",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "publish checks fast-forward, pipeline status, internal roots, private paths and the leak scan, then pushes; each refusal exits 2 naming its cause",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "publish"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbgit.py",
+    "_tools/test_sync.py"
+  ]
+}

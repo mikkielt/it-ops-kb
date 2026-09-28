@@ -1,0 +1,37 @@
+{
+  "id": "ST-lyy6lyin",
+  "kind": "story",
+  "title": "kbgit.py sorts commits into content and code lanes",
+  "status": "draft",
+  "parent": "EP-rumrqsu5",
+  "sprint": "SP-v5xagbyv",
+  "priority": "P2",
+  "rank": 1,
+  "goal": "kbgit.py lane [A..B] prints each commit with its lane: content when every path is under a kb root (kb/<root>/**), kb/_querylog/**, kb/_self/backlog/** or is _tools/aliases.csv; code otherwise, a commit touching both included; tests.py -k lane covers each boundary with a planted commit",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "lane"
+      ]
+    }
+  ],
+  "relates_to": [
+    "ST-3i3dl6xg"
+  ],
+  "gates": [
+    {
+      "id": "lane-boundary",
+      "kind": "provisional",
+      "question": "Which paths are the content lane (direct push)? Everything else is the code lane (merge request).",
+      "options": [
+        "kb roots, kb/_querylog, kb/_self/backlog and _tools/aliases.csv (process docs in kb/_self/*.md go with the code they describe)",
+        "the same plus kb/_self/*.md process docs",
+        "kb roots only; backlog items and query-log data go through merge requests too"
+      ],
+      "recommendation": "kb roots, kb/_self/backlog and _tools/aliases.csv (process docs in kb/_self/*.md go with the code they describe)"
+    }
+  ]
+}

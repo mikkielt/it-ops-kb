@@ -32,5 +32,5 @@
       "by": "operator"
     }
   ],
-  "notes": "Run order 4 of 10; start after SP-liemltg2 “Autonomous work is safe” closes; start gate approved by the operator; run backlog.py start when its turn comes; next: SP-rks3vx5g “Codebase maintainability proven”. GitHub (claude) is brought level with kbgit.py sync --push --remote claude at sprint close only."
+  "notes": "Run order 4 of 11; start after SP-liemltg2 “Autonomous work is safe” closes; start gate approved by the operator; run backlog.py start when its turn comes; next: SP-v5xagbyv “Git regime on any host”. GitHub (claude) is brought level with kbgit.py sync --push --remote claude at sprint close only."
 }

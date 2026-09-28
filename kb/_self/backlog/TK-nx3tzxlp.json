@@ -1,0 +1,26 @@
+{
+  "id": "TK-nx3tzxlp",
+  "kind": "task",
+  "title": "Remote roles in kbgit.py and red-pipeline",
+  "status": "todo",
+  "parent": "ST-573udtxz",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "one helper resolves the integration and publish remotes from git config; sync, the pre-push hook and backlog.py red-pipeline call it",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "remote_roles"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbgit.py",
+    "_tools/backlog.py",
+    "_tools/test_sync.py",
+    "_tools/test_backlog.py"
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "id": "TK-k3uqihdk",
+  "kind": "task",
+  "title": "kbgit.py bridge",
+  "status": "todo",
+  "parent": "ST-mlrjf3lf",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "bridge fetches, rebases, gates and hands the commits to sync's lane routing; a conflict exits 3 as sync does",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "bridge"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbgit.py",
+    "_tools/test_sync.py"
+  ]
+}
