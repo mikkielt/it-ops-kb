@@ -1,0 +1,37 @@
+{
+  "id": "ST-b2yxgbrq",
+  "kind": "story",
+  "title": "A clone without Python says so at session start",
+  "status": "draft",
+  "parent": "EP-5p4ahbnq",
+  "sprint": "SP-fep4fpsx",
+  "priority": "P1",
+  "rank": 3,
+  "goal": "When _tools/kbpy finds no Python 3.11+, a synchronous SessionStart hook in the clone's settings and the plugin prints one systemMessage to the user naming what failed and how to install Python (on Windows: _tools/install-python.ps1), instead of every hook exiting 127 in silence.",
+  "checks": [
+    {
+      "run": [
+        "python",
+        "_tools/tests.py",
+        "-k",
+        "portability"
+      ]
+    },
+    {
+      "run": [
+        "git",
+        "grep",
+        "-n",
+        "-e",
+        "kbpy.*--notice",
+        "--",
+        ".claude/settings.json",
+        ".claude-plugin/plugin.json"
+      ]
+    }
+  ],
+  "links": [
+    "claude/hooks.md"
+  ],
+  "notes": "Today kbpy prints its message to stderr and exits 127, and each hook fails silently on every prompt and tool call. Only a synchronous SessionStart hook that prints a JSON object with systemMessage reaches the person (claude/hooks.md:65, DER S743)."
+}

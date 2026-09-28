@@ -1,0 +1,32 @@
+{
+  "id": "ST-yobkqbuh",
+  "kind": "story",
+  "title": "Pinned Python installer with a host conflict preflight",
+  "status": "draft",
+  "parent": "EP-5p4ahbnq",
+  "sprint": "SP-fep4fpsx",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "_tools/install-python.ps1 is committed: it installs the python.org CPython pinned in it (the minor version of .python-version) per user after checking its SHA-256 and signature, stops with exit 3 and changes nothing when its preflight finds a conflict on the host, and prints each conflict as a CONFLICT: line; a test plants conflicts and checks the stop; kb-setup and maintaining.md say how to run it and that every CONFLICT line goes to the user.",
+  "checks": [
+    {
+      "run": [
+        "python",
+        "_tools/tests.py",
+        "-k",
+        "install_python"
+      ]
+    },
+    {
+      "run": [
+        "git",
+        "grep",
+        "-n",
+        "CONFLICT",
+        "--",
+        ".claude/skills/kb-setup/SKILL.md"
+      ]
+    }
+  ],
+  "notes": "The script, the kb-setup paragraph and the maintaining.md lines are committed; the test and the tools.md entry are not yet (TK-5s6ehtxp). On a Windows host: a pinned-version host reports already installed and changes nothing; a planted PYTHONHOME stops it with exit 3. Untested there: the machine-PATH and in-place-upgrade conflicts, which a test can plant only in a scratch registry hive or PATH."
+}

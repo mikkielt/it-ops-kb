@@ -1,0 +1,25 @@
+{
+  "id": "TK-i6u6fcqq",
+  "kind": "task",
+  "title": "Research how permission rules match PowerShell tool calls",
+  "status": "todo",
+  "parent": "ST-sjayfohk",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "The kb states, from the Claude Code docs, the permission rule form for the PowerShell tool (its name in rules, how a command pattern and wildcard match, whether compound commands are split), and whether a Bash(...) rule ever covers a PowerShell call.",
+  "checks": [
+    {
+      "run": [
+        "python",
+        "_tools/rag.py",
+        "pack",
+        "PowerShell tool permission rule allow command pattern"
+      ],
+      "match": "coverage: good"
+    }
+  ],
+  "touches": [
+    "kb/public/**"
+  ],
+  "notes": "rag.py pack today returns public/claude/permissions-mcp.md with a check: line (it never mentions PowerShell): the kb lacks this. Sources: https://code.claude.com/docs/en/permissions.md and the tools reference. Work it with /kb-research."
+}

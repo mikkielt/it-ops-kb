@@ -1,25 +1,28 @@
 {
   "id": "TK-646m6u2v",
   "kind": "task",
-  "title": "Fix the Windows test failures",
+  "title": "backlog.py writes stderr as UTF-8 on Windows",
   "status": "todo",
   "parent": "BG-ovulgaal",
   "priority": "P1",
   "rank": 1,
-  "goal": "Every test named as failing on Windows passes there, and still passes on macOS and Linux.",
+  "goal": "The five test_backlog.py tests named in BG-ovulgaal pass on Windows: backlog.py reconfigures sys.stderr to UTF-8 as well as sys.stdout, so its refusal messages (curly-quoted titles) decode in the tests, and they still pass on macOS and Linux.",
   "checks": [
     {
       "run": [
         "python",
-        "_tools/tests.py"
+        "_tools/tests.py",
+        "-k",
+        "test_backlog"
       ]
     }
   ],
   "touches": [
-    "_tools/**"
+    "_tools/backlog.py",
+    "_tools/test_backlog.py"
   ],
   "depends_on": [
     "TK-kmunpvxo"
   ],
-  "notes": "Needs a Windows machine: work it in a Windows session of this clone. Narrow touches to the files the named tests point at before starting."
+  "notes": "Needs a Windows machine to confirm. Cause: backlog.py:1057 reconfigures only sys.stdout; the Refused messages printed to sys.stderr at backlog.py:1076 go out in the ANSI code page, byte 0x93 for a curly quote, and the reader thread of subprocess.run(text=True, encoding=\"utf-8\") raises UnicodeDecodeError, leaving p.stderr None. kbcommon.py:49 has a helper that reconfigures both streams; widen touches to _tools/kbcommon.py only if the fix changes it."
 }

@@ -1,0 +1,31 @@
+{
+  "id": "TK-mr6ehi7k",
+  "kind": "task",
+  "title": "The plugin-status tests stay under the Windows path limit",
+  "status": "todo",
+  "parent": "BG-ovulgaal",
+  "priority": "P1",
+  "rank": 3,
+  "goal": "test_kb_mcp.py::test_status_of_a_plugin_copy_from_a_directory_marketplace and ::test_status_says_how_far_an_installed_plugin_is_behind_its_marketplace pass on Windows with LongPathsEnabled 0 and a long user name: the plugin copy they build keeps every path under 260 characters.",
+  "checks": [
+    {
+      "run": [
+        "python",
+        "_tools/tests.py",
+        "-k",
+        "test_status_of_a_plugin_copy_from_a_directory_marketplace"
+      ]
+    },
+    {
+      "run": [
+        "python",
+        "_tools/tests.py",
+        "-k",
+        "test_status_says_how_far_an_installed_plugin_is_behind_its_marketplace"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/test_kb_mcp.py"
+  ]
+}

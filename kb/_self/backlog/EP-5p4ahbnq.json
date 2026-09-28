@@ -1,0 +1,14 @@
+{
+  "id": "EP-5p4ahbnq",
+  "kind": "epic",
+  "title": "A Windows clone works end to end",
+  "status": "draft",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "On Windows 11 with Git for Windows, a clone goes from no Python to a passing /kb-setup: _tools/install-python.ps1 installs the pinned Python and uv after a host conflict preflight, the skills and permission rules work from the PowerShell tool as well as the Bash tool, a missing interpreter is announced at session start, and tests.py and stress_test.py pass on Windows.",
+  "relates_to": [
+    "BG-ovulgaal",
+    "ST-vtlw7fsu"
+  ],
+  "notes": "Out of scope, host setup rather than repository changes: running kbgit.py install-hooks and kb_mcp.py --register-local in a clone (/kb-setup does), a remote layout, turning off the Store's App Execution Aliases, enabling LongPathsEnabled, running Claude Code unelevated. The test-suite failures are BG-ovulgaal in sprint SP-z7a5c76b."
+}

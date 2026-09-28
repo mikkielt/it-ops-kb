@@ -1,0 +1,25 @@
+{
+  "id": "TK-cdoww36l",
+  "kind": "task",
+  "title": "Research the python.org Windows installer's options and checksums",
+  "status": "todo",
+  "parent": "ST-yobkqbuh",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "The kb states, from python.org and docs.python.org, the Windows installer's unattended options the script uses (InstallAllUsers, PrependPath, Include_launcher, InstallLauncherAllUsers, Include_test, Shortcuts, /quiet), where a per-user install goes, that the installer ships no python3.exe, and how the release API publishes each file's SHA-256 and Sigstore bundle.",
+  "checks": [
+    {
+      "run": [
+        "python",
+        "_tools/rag.py",
+        "pack",
+        "python.org Windows installer PrependPath InstallAllUsers quiet"
+      ],
+      "match": "coverage: good"
+    }
+  ],
+  "touches": [
+    "kb/public/**"
+  ],
+  "notes": "Sources: https://docs.python.org/3/using/windows.html (installing without UI) and https://www.python.org/api/v2/downloads/release_file/ (sha256_sum, sigstore_bundle_file per file). Work it with /kb-research."
+}

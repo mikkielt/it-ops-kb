@@ -1,0 +1,32 @@
+{
+  "id": "ST-c4csesqq",
+  "kind": "story",
+  "title": "uv installs from a pinned official release",
+  "status": "draft",
+  "parent": "EP-5p4ahbnq",
+  "sprint": "SP-fep4fpsx",
+  "priority": "P1",
+  "rank": 1,
+  "goal": "_tools/install-python.ps1 also installs uv from Astral's official Windows release archive, pinned by version and SHA-256 in the script, per user and after the same preflight (another uv on PATH or a uv the install would replace is a CONFLICT); pip is no longer the way the docs install uv on Windows.",
+  "checks": [
+    {
+      "run": [
+        "python",
+        "_tools/tests.py",
+        "-k",
+        "install_python"
+      ]
+    },
+    {
+      "run": [
+        "git",
+        "grep",
+        "-n",
+        "astral-sh/uv/releases",
+        "--",
+        "_tools/install-python.ps1"
+      ]
+    }
+  ],
+  "notes": "Today uv reaches a Windows clone through python -m pip install uv, unpinned: pip trusts PyPI over TLS but checks no hash the repository holds."
+}

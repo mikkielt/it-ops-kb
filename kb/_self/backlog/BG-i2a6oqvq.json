@@ -1,0 +1,36 @@
+{
+  "id": "BG-i2a6oqvq",
+  "kind": "bug",
+  "title": "Two stress cases fail on Windows: the query exceeds the command-line limit",
+  "status": "draft",
+  "parent": "EP-5p4ahbnq",
+  "sprint": "SP-fep4fpsx",
+  "priority": "P1",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "python _tools/stress_test.py exits 0 on Windows: the 10k-word and 120k-char search cases pass their query without exceeding the Windows command-line limit, and still test the same input size on macOS and Linux.",
+  "repro": {
+    "run": [
+      "python",
+      "_tools/stress_test.py",
+      "-k",
+      "10k-word"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python",
+        "_tools/stress_test.py"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/test_stress.py"
+  ],
+  "links": [
+    "BG-ovulgaal",
+    "python/stdlib-windows-portability"
+  ],
+  "notes": "Needs a Windows machine to confirm. A local Windows run (Windows 11, cp1250 locale, Python 3.14.7, uv 0.12.19, Git for Windows 2.55, 8 xdist workers) at 3ff06b7: stress_test.py gives 2 failed, 86 passed, 1 skipped in 452 s. test_stress.py::test_base[search 10k-word query] and ::test_base[search 120k-char single token] (test_stress.py:140-141) pass the query as one argument; test_stress.py:46 run -> FileNotFoundError [WinError 206]: a Windows command line holds at most 32,767 characters. rag.py is not at fault. Options: feed the query another way if rag.py search can take one (then widen touches to _tools/rag.py), or cap the size on win32 below the limit and say so in the case's comment, as the 120k case already notes Linux's 128 KiB argv cap."
+}

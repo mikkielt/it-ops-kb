@@ -22,5 +22,6 @@
   "links": [
     "kb/public/_gaps.md",
     "python/stdlib-windows-portability"
-  ]
+  ],
+  "notes": "In a Windows clone whose Claude Code session had no Python on PATH, `claude mcp list` printed `SessionEnd hook [sh \"${CLAUDE_PROJECT_DIR}/_tools/kbpy\" _tools/querylog.py launch] failed: Hook cancelled`; not yet seen with Python on PATH."
 }

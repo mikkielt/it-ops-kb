@@ -19,5 +19,5 @@
   "touches": [
     "kb/_self/backlog/**"
   ],
-  "notes": "Needs a Windows machine: work it in a Windows session of this clone. faulthandler_timeout is a built-in pytest option: it dumps every thread's stack when one test runs longer than the timeout, without a new dependency."
+  "notes": "Needs a Windows machine. faulthandler_timeout is a built-in pytest option: it dumps every thread's stack when one test runs longer than the timeout, without a new dependency. The run is done and its results are in BG-ovulgaal's notes: 8 failing tests with their error lines and 3 causes, no hang, three slow tests with their stacks in TK-5vfbfjht. What remains is backlog.py done."
 }

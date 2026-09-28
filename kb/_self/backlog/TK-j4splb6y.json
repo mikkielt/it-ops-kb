@@ -1,0 +1,29 @@
+{
+  "id": "TK-j4splb6y",
+  "kind": "task",
+  "title": "Commit settings.json allow rules for the PowerShell tool",
+  "status": "todo",
+  "parent": "ST-sjayfohk",
+  "priority": "P1",
+  "rank": 1,
+  "goal": "Every read-only kb command allowed as Bash(...) in .claude/settings.json has a PowerShell rule in the form the kb documents, and maintaining.md says both tools are covered.",
+  "checks": [
+    {
+      "run": [
+        "git",
+        "grep",
+        "-n",
+        "PowerShell(",
+        "--",
+        ".claude/settings.json"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/settings.json",
+    "kb/_self/maintaining.md"
+  ],
+  "depends_on": [
+    "TK-i6u6fcqq"
+  ]
+}

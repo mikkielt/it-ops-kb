@@ -1,0 +1,39 @@
+{
+  "id": "TK-nnk226hn",
+  "kind": "task",
+  "title": "kbpy announces a missing Python at session start",
+  "status": "todo",
+  "parent": "ST-b2yxgbrq",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "sh _tools/kbpy --notice prints one JSON object with systemMessage (what failed, and on Windows _tools/install-python.ps1) and exits 0 when no Python 3.11+ is found, and prints nothing when one is; a synchronous SessionStart hook with a short timeout runs it in .claude/settings.json and .claude-plugin/plugin.json; test_portability.py runs it with a PATH lacking Python and with one; tools.md and plugin.md describe it.",
+  "checks": [
+    {
+      "run": [
+        "python",
+        "_tools/tests.py",
+        "-k",
+        "portability"
+      ]
+    },
+    {
+      "run": [
+        "git",
+        "grep",
+        "-n",
+        "kbpy.*--notice",
+        "--",
+        ".claude/settings.json",
+        ".claude-plugin/plugin.json"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbpy",
+    "_tools/test_portability.py",
+    ".claude/settings.json",
+    ".claude-plugin/plugin.json",
+    "kb/_self/tools.md",
+    "kb/_self/plugin.md"
+  ]
+}

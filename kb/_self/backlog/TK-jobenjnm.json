@@ -1,0 +1,28 @@
+{
+  "id": "TK-jobenjnm",
+  "kind": "task",
+  "title": "Skills use commands every shell parses",
+  "status": "todo",
+  "parent": "ST-sjayfohk",
+  "priority": "P1",
+  "rank": 2,
+  "goal": "No SKILL.md runs a command with an environment prefix or bare curl: kb-git-sync continues a rebase with git -c core.editor=true, kb-census adds KB-Verified with git commit --trailer, kb-setup tests reachability with curl.exe; git.md shows the --trailer form first.",
+  "checks": [
+    {
+      "run": [
+        "git",
+        "grep",
+        "-nE",
+        "(GIT_EDITOR|KB_VERIFIED)=|[^.]curl -s",
+        "--",
+        ".claude/skills"
+      ],
+      "exit": 1
+    }
+  ],
+  "touches": [
+    ".claude/skills/*/SKILL.md",
+    "kb/_self/git.md"
+  ],
+  "notes": "Today: kb-git-sync section 2 step 3 (GIT_EDITOR=true git -c merge.conflictStyle=diff3 rebase --continue), kb-census (KB_VERIFIED=<date> on commits), kb-setup step 4 (curl -sI; in Windows PowerShell 5.1 curl is an alias of Invoke-WebRequest and -sI fails). kb-research's rg, sed and cat run in the Bash tool (Git Bash) only; say so rather than rewrite them."
+}

@@ -22,5 +22,6 @@
   "touches": [
     ".gitlab-ci.yml",
     "kb/_self/git.md"
-  ]
+  ],
+  "notes": "The Windows suite takes 895 s on 8 local workers, and three tests run past 300 s without hanging (TK-5vfbfjht). On the 2-worker hosted runner a faulthandler_timeout under the slowest test prints stacks for tests that are only slow, and the job timeout needs room for a run well over 16 minutes."
 }

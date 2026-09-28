@@ -1,0 +1,42 @@
+{
+  "id": "TK-5s6ehtxp",
+  "kind": "task",
+  "title": "Commit install-python.ps1 with a planted-conflict test and its docs",
+  "status": "todo",
+  "parent": "ST-yobkqbuh",
+  "priority": "P1",
+  "rank": 1,
+  "goal": "_tools/install-python.ps1 is tracked; _tools/test_install_python.py checks on every OS that the pinned minor version equals .python-version and both hashes are 64 hex digits, and on Windows plants PYTHONHOME and a foreign python3.exe and asserts exit 3, CONFLICT lines and no download; kb-setup step 1, maintaining.md (Setup and Moving the pin) and tools.md describe the script.",
+  "checks": [
+    {
+      "run": [
+        "python",
+        "_tools/tests.py",
+        "-k",
+        "install_python"
+      ]
+    },
+    {
+      "run": [
+        "git",
+        "grep",
+        "-n",
+        "install-python.ps1",
+        "--",
+        ".claude/skills/kb-setup/SKILL.md",
+        "kb/_self/maintaining.md",
+        "kb/_self/tools.md"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/install-python.ps1",
+    "_tools/test_install_python.py",
+    ".claude/skills/kb-setup/SKILL.md",
+    "kb/_self/maintaining.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "TK-cdoww36l"
+  ]
+}
