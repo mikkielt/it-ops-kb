@@ -29,6 +29,9 @@ changed topic X / source S / answer QK-..." without reading diffs:
   KB-Answers:             _answers.md answer ids (`<root>:<id>` outside public) whose section was added, edited or removed
   KB-Verified: YYYY-MM-DD only on request (`trailers --verified`, or KB_VERIFIED=YYYY-MM-DD in the hook's environment, or
                           `git commit --trailer "KB-Verified: 2026-09-25"`): the commit confirms its sources are current.
+  KB-Auto:                written by querylog.py on its automatic commits, once, values from AUTO_VALUES (querylog,
+                          eval, alias, expansion, gap, research, revert); never computed here. check-trailers flags a
+                          second KB-Auto line or a value outside the list.
 One line per key, values sorted and joined by ", ". A key with more than MAX_IDS (40) values is written as a count,
 e.g. `KB-Sources-Added: 312 ids (see diff)`: trailers cannot wrap, and `log` finds such commits by their diff anyway.
 A commit is diffed against its first parent (the empty tree for a root commit). Merge commits carry no trailers and
@@ -1059,6 +1062,8 @@ TRAILERS_SINCE = "e5dadde122a08111128e48eec9656c5d617ab631"
 MAX_IDS = 40  # more values than this: "N ids (see diff)" instead of the list
 KEYS = ("KB-Topics", "KB-Sources-Added", "KB-Sources-Changed", "KB-Sources-Superseded", "KB-Answers")
 VERIFIED = "KB-Verified"
+AUTO = "KB-Auto"  # querylog.py's automatic commits (kb/_self/querylog.md, Delivery)
+AUTO_VALUES = ("querylog", "eval", "alias", "expansion", "gap", "research", "revert")
 NOUN = {"KB-Topics": "topics", "KB-Answers": "answers"}
 SUMMARY = re.compile(r"^(\d+) (?:ids|topics|answers) \(see diff\)$")
 KEY_LINE = re.compile(r"^(" + "|".join(re.escape(k) for k in KEYS) + r")\s*:", re.I)
@@ -1269,7 +1274,7 @@ def trailer_lines(computed, verified=None):
 def parse_trailers(text):
     """{canonical key: [values]} of the KB-* trailers in `git log %(trailers:only,unfold)` output."""
     out = {}
-    canon = {k.lower(): k for k in KEYS + (VERIFIED,)}
+    canon = {k.lower(): k for k in KEYS + (VERIFIED, AUTO)}
     for ln in (text or "").splitlines():
         k, sep, v = ln.partition(":")
         if sep and k.strip().lower() in canon:
@@ -1587,11 +1592,14 @@ def trailer_audit(rng, quiet=False):
         v = have.get(VERIFIED)
         if v and (len(v) > 1 or not valid_date(v[0])):
             wrong.append(VERIFIED)
+        auto = have.get(AUTO)
+        if auto and (len(auto) > 1 or not all(x.strip() in AUTO_VALUES for x in auto[0].split(","))):
+            wrong.append(AUTO)
         kb += bool(want)
         if wrong:
             lines = [f"BAD {short} {date} {subject[:70]}"]
             for k in wrong:
-                exp = next((ln for ln in trailer_lines(want) if ln.startswith(k + ":")), f"(no {k})" if k != VERIFIED else "YYYY-MM-DD, once")
+                exp = next((ln for ln in trailer_lines(want) if ln.startswith(k + ":")), {VERIFIED: "YYYY-MM-DD, once", AUTO: "once, of " + "|".join(AUTO_VALUES)}.get(k, f"(no {k})"))
                 lines.append(f"    {k}: has {', '.join(have.get(k, [])) or '(none)'}; expected {exp}")
             bad.append((sha, lines))
     return len(recs), kb, bad

@@ -2,7 +2,7 @@
 """The query log pipeline: capture, distill, learn and apply for kb lookups (stdlib only).
 
 kb/_self/querylog.md is the design, and the Query log items of kb/_self/work-left.md build the commands in order.
-Capture, distill, learn and a local apply are built; apply's push is not yet.
+Capture, distill, learn, a local apply and apply's direct push are built.
 
   querylog.py capture   the capture hook (UserPromptSubmit, PostToolUse, PostToolUseFailure and Stop, async, in
                         .claude/settings.json and the plugin): reads one hook event as JSON on stdin and appends at
@@ -23,15 +23,28 @@ Capture, distill, learn and a local apply are built; apply's push is not yet.
                         gap-candidate and report-only source findings; writes one findings file,
                         findings/<yyyy-mm>/<run-id>.jsonl, holding only the records that change a finding's state
                         (none: no file). Exit 0
-  querylog.py apply [--store DIR]
+  querylog.py apply [--store DIR] [--hold ID ...]
                         the store's open eval findings (default: the local store) -> changes in this clone's working
                         tree, never committed or pushed: each eval row is written together with its fix (alias rows,
                         or the question as a doc2query expansion of one of the article's facts), the first candidate
                         with which every `rag.py eval` question passes, the mean pack of the eval questions does not
                         grow and off-kb `good` does not rise; an alias term already in an alias file or held by the kb
                         is refused. No accepted fix: the miss becomes a gap candidate (`no-fix`) and its fix
-                        `rejected`. Source and gap findings are left alone. One findings file records each outcome
+                        `rejected`. Source and gap findings are left alone, and so are the findings named by --hold
+                        and those recorded `apply-failed` (FAILED_RETRIES). One findings file records each outcome
                         (none: no file). Exit 0, 1 when `rag.py eval` fails before any change
+  querylog.py apply --push
+                        the direct push, from a clone (explicit in every mode but `off`), under the distill lock:
+                        fetch origin; check the CI of the last automatic commit on origin/main with `glab` or `gh`
+                        (skipped with a note when neither is signed in; the host comes from origin's url, else
+                        FALLBACK_GITLAB_HOST): a finished failure is red and gets a revert commit (KB-Auto: revert)
+                        that keeps the store's files and records its findings `apply-failed`, an unfinished pipeline
+                        stops the run; then the worktree's apply on origin/main's kb/_querylog in the worktree beside
+                        the spool, one commit with its KB-Auto trailer, and `kbgit.py sync --push` (gate, rebase on
+                        origin/main, push to origin only). A conflict sync cannot resolve pushes
+                        querylog/<run-id> with `-o merge_request.create -o merge_request.target=main`, main unchanged,
+                        and later runs leave that branch's findings alone until main holds them. Exit 0 (pushed,
+                        nothing to push, CI pending, conflict branch pushed), 1 a step failed, 2 refused, 3 the lock
   querylog.py check [DIR]  the store gates over DIR (default kb/_querylog): header and provenance fields, entry fields,
                         identifiers, fetch entries, duplicate ids and the findings files; one line per problem, exit 1
                         when there is any
@@ -1478,7 +1491,9 @@ def write_findings(store, entries, new, states, kb_commit=None):
 # --- apply: open findings -> eval rows with their fixes, in the working tree (querylog.md, Learn and apply) --------
 
 APPLY_STATES = ("applied", "rejected", "no-fix")  # fix written / fix failed its gates / a miss with no accepted fix
-FINDING_STATES = LEARN_STATES + APPLY_STATES
+APPLY_FAILED = "apply-failed"  # its automatic commit turned CI red and was reverted (apply --push)
+FINDING_STATES = LEARN_STATES + APPLY_STATES + (APPLY_FAILED,)
+FAILED_RETRIES = 0  # times a finding recorded apply-failed is applied again: never
 FIX_KINDS = ("alias", "expansion")
 ALIAS_CANDIDATES = 3  # canonical words tried per alias finding: the article's file-name words, then its title's
 EXPANSION_CANDIDATES = 3  # facts of the article tried per expansion finding, most words shared with the question first
@@ -1696,16 +1711,33 @@ def apply_one(ev, fix, entry, gate, base):
     return out
 
 
-def apply(store=None, gate=None, kb_commit=None, out=print):
+def failed_counts(store):
+    """{finding id: how many apply-failed records it has} across the store's findings files."""
+    out = {}
+    for p in findings_files(store):
+        try:
+            objs = load_run(p)
+        except (OSError, ValueError):
+            continue
+        for _, rec in objs[1:]:
+            if rec.get("state") == APPLY_FAILED and isinstance(rec.get("id"), str):
+                out[rec["id"]] = out.get(rec["id"], 0) + 1
+    return out
+
+
+def apply(store=None, gate=None, kb_commit=None, out=print, hold=()):
     """One apply over `store` (default: the local store beside the spool): every open eval finding with its open fix
     finding, in id order, into the working tree of this clone, then one findings file with each outcome. Source and
-    gap findings are left as they are. 0; 1 when `rag.py eval` fails before any change."""
+    gap findings are left as they are, and so are the findings in `hold` (pending on a conflict branch) and those
+    recorded apply-failed more than FAILED_RETRIES times, even when a later record opens them again. 0; 1 when
+    `rag.py eval` fails before any change."""
     store = Path(store or places()[0] / "store")
     gate = gate or Gate()
     entries = store_entries(store)
     last = finding_states(store)
-    evals = sorted((r for r in last.values() if r.get("kind") == "eval" and r.get("state") == "open"),
-                   key=lambda r: r["id"])
+    failed = failed_counts(store)
+    evals = sorted((r for r in last.values() if r.get("kind") == "eval" and r.get("state") == "open"
+                    and r["id"] not in hold and failed.get(r["id"], 0) <= FAILED_RETRIES), key=lambda r: r["id"])
     if not evals:
         out("apply: nothing to apply")
         return 0
@@ -1714,7 +1746,8 @@ def apply(store=None, gate=None, kb_commit=None, out=print):
         out(f"apply: rag.py eval fails before any change ({base['passed']} of {base['n']} pass); nothing applied")
         return 1
     by_entry = {e["id"]: e for _, e in entries}
-    fixes = {r["entry"]: r for r in last.values() if r.get("kind") in FIX_KINDS and r.get("state") == "open"}
+    fixes = {r["entry"]: r for r in last.values() if r.get("kind") in FIX_KINDS and r.get("state") == "open"
+             and r["id"] not in hold and failed.get(r["id"], 0) <= FAILED_RETRIES}
     new = []
     for ev in evals:
         entry = by_entry.get(ev.get("entry"))
@@ -1733,6 +1766,373 @@ def apply(store=None, gate=None, kb_commit=None, out=print):
                  f"offkb-good={base['offkb_good']}->{m['offkb_good']}")
     out(said)
     return 0
+
+
+# --- apply --push: the gate, a rebase on origin/main, the push to origin only (querylog.md, Delivery) ----------------
+
+REMOTE, BRANCH = "origin", "main"  # the repository the clone came from, and the branch automatic commits land on
+CONFLICT_BRANCH_PREFIX = "querylog/"  # a conflict sync cannot resolve goes to querylog/<run-id>, as a merge request
+MR_OPTIONS = ("merge_request.create", f"merge_request.target={BRANCH}")  # push options: no token, no auto-merge
+FALLBACK_GITLAB_HOST = "gitlab.com"  # only when origin's url names no host
+WORKTREE_NAME = "worktree"  # beside the spool: automatic commits are made there, never in the person's checkout
+STORE_REL = "kb/_querylog"
+GITLAB_RED = ("failed",)
+GITLAB_UNFINISHED = ("created", "waiting_for_resource", "preparing", "waiting_for_callback", "pending", "running",
+                     "canceling", "scheduled")
+GITHUB_RED = ("failure", "timed_out", "startup_failure")  # conclusions of a completed run
+LOOKBACK = 200  # first-parent commits of origin/main searched for the last automatic commit
+
+
+def run_cmd(argv, cwd=None, env=None, timeout=600):
+    """(exit code, stdout, stderr) of a command given as an argument list; 127 when it cannot start or times out."""
+    try:
+        p = subprocess.run(list(argv), cwd=None if cwd is None else str(cwd), env=env, capture_output=True, text=True,
+                           encoding="utf-8", errors="replace", timeout=timeout, stdin=subprocess.DEVNULL)
+    except (OSError, subprocess.SubprocessError) as e:
+        return 127, "", str(e)
+    return p.returncode, p.stdout, p.stderr
+
+
+def origin_forge(url):
+    """(forge, host, project path) of a remote url: https or ssh urls and the scp form user@host:path. A url that
+    names no host (a local path, file://) gets FALLBACK_GITLAB_HOST and its last two path segments. `github` for
+    github.com, else `gitlab`."""
+    u = (url or "").strip()
+    host, path = None, u
+    if re.match(r"[a-z][a-z0-9+.-]*://", u, re.I):
+        s = urlsplit(u)
+        host, path = (s.hostname if s.scheme.lower() != "file" else None), s.path
+    else:
+        m = re.fullmatch(r"(?:[^@/\\]+@)?([^:/\\]{2,}):(?!//)(.*)", u)  # a Windows drive (C:\...) is no host
+        if m:
+            host, path = m.group(1), m.group(2)
+    path = path.replace("\\", "/").strip("/")
+    if path.endswith(".git"):
+        path = path[:-4]
+    if not host:
+        return "gitlab", FALLBACK_GITLAB_HOST, "/".join(path.split("/")[-2:])
+    host = host.lower()
+    return ("github" if host == "github.com" else "gitlab"), host, path
+
+
+def pipeline_verdict(forge, statuses):
+    """`red`, `pending` or `ok` from the CI states of one commit: only a finished failure is red (`failed` on
+    GitLab; a completed run concluded failure, timed_out or startup_failure on GitHub); an unfinished state is
+    pending; manual, skipped, canceled and success are ok. GitHub: `statuses` are (status, conclusion) pairs."""
+    if forge == "github":
+        if any(s == "completed" and c in GITHUB_RED for s, c in statuses):
+            return "red"
+        return "pending" if any(s != "completed" for s, _ in statuses) else "ok"
+    if any(s in GITLAB_RED for s in statuses):
+        return "red"
+    return "pending" if any(s in GITLAB_UNFINISHED for s in statuses) else "ok"
+
+
+def ci_status(url, sha, run):
+    """(verdict, detail) of the CI of commit `sha` on origin's forge: verdict `red`, `pending`, `ok`, `none` (no
+    pipeline) or `skip` (no signed-in glab or gh, or the call failed: the check is skipped)."""
+    import urllib.parse
+    forge, host, project = origin_forge(url)
+    cli = "gh" if forge == "github" else "glab"
+    code, _, err = run([cli, "auth", "status", "--hostname", host])
+    if code:
+        return "skip", f"{cli} is not signed in to {host} ({(err.strip().splitlines() or ['not installed'])[-1][:80]})"
+    if forge == "github":
+        argv = ["gh", "run", "list", "--commit", sha, "-R", f"{host}/{project}", "--json", "status,conclusion",
+                "-L", "100"]
+    else:
+        argv = ["glab", "api", "--hostname", host,
+                f"projects/{urllib.parse.quote(project, safe='')}/pipelines?sha={sha}&per_page=1"]
+    code, o, err = run(argv)
+    try:
+        data = json.loads(o) if code == 0 else None
+    except ValueError:
+        data = None
+    if not isinstance(data, list):
+        return "skip", f"{' '.join(argv[:2])} failed ({(err.strip().splitlines() or ['no JSON list'])[-1][:80]})"
+    if forge == "github":
+        states = [(r.get("status"), r.get("conclusion")) for r in data if isinstance(r, dict)]
+        shown = ", ".join(f"{s}/{c}" if c else str(s) for s, c in states)
+    else:
+        states = [r.get("status") for r in data[:1] if isinstance(r, dict)]  # the newest pipeline of the commit
+        shown = ", ".join(map(str, states))
+    if not states:
+        return "none", f"no pipeline for {sha[:9]} on {host}"
+    return pipeline_verdict(forge, states), f"{cli} on {host}: {shown}"
+
+
+def auto_kinds(paths):
+    """The KB-Auto values of a commit changing `paths`; ValueError naming a path apply never writes."""
+    kinds = set()
+    for p in paths:
+        if p.startswith(STORE_REL + "/"):
+            kinds.add("querylog")
+        elif re.fullmatch(r"kb/[^/]+/_retrieval/lookup_eval\.csv", p):
+            kinds.add("eval")
+        elif p == "_tools/aliases.csv" or re.fullmatch(r"kb/[^/]+/_retrieval/aliases\.csv", p):
+            kinds.add("alias")
+        elif re.fullmatch(r"kb/[^/]+/_retrieval/doc2query/expansions\.csv", p):
+            kinds.add("expansion")
+        elif re.fullmatch(r"kb/[^/]+/_gaps\.md", p):
+            kinds.add("gap")
+        else:
+            raise ValueError(p)
+    return sorted(kinds)
+
+
+class Pusher:
+    """One `apply --push` in the worktree `wt` of the clone at `home`. `run` starts every command (git, kbgit.py
+    sync, glab, gh); `apply_step(wt, store, hold, out)` applies the store's findings in the worktree."""
+
+    def __init__(self, home, qdir, run, apply_step, out):
+        self.home, self.wt, self.run, self.out = Path(home), Path(qdir) / WORKTREE_NAME, run, out
+        self.apply_step = apply_step or self.apply_in_worktree
+        self.up = f"refs/remotes/{REMOTE}/{BRANCH}"
+
+    def git(self, *args, cwd=None):
+        return self.run(["git", *args], cwd=str(cwd or self.wt))
+
+    def say(self, text):
+        self.out(f"apply --push: {text}")
+
+    def fetch(self):
+        """origin's main and its conflict branches (pruned: a merged branch that GitLab deleted goes)."""
+        return self.git("fetch", "--quiet", "--prune", REMOTE, f"+refs/heads/{BRANCH}:{self.up}",
+                        f"+refs/heads/{CONFLICT_BRANCH_PREFIX}*:refs/remotes/{REMOTE}/{CONFLICT_BRANCH_PREFIX}*",
+                        cwd=self.home)
+
+    def reset(self):
+        """The worktree at origin/main, detached and clean (a rebase or revert left over is abandoned)."""
+        if not (self.wt / ".git").exists():
+            self.git("worktree", "prune", cwd=self.home)
+            return self.git("worktree", "add", "--quiet", "--detach", str(self.wt), self.up, cwd=self.home)
+        for op in (("rebase", "--abort"), ("revert", "--abort"), ("cherry-pick", "--abort")):
+            self.git(*op)
+        code, o, e = self.git("checkout", "--quiet", "--force", "--detach", self.up)
+        if code == 0:
+            code, o, e = self.git("clean", "-fdq")
+        return code, o, e
+
+    def last_automatic(self):
+        """(sha of the last commit on origin/main with a KB-Auto trailer, its values, the push tip: the same commit or
+        the kbgit fix commits sync added right after it), or None."""
+        import kbgit
+        code, o, _ = self.git("log", "--first-parent", "-n", str(LOOKBACK),
+                              "--format=%H%x1f%s%x1f%(trailers:key=KB-Auto,valueonly,separator=%x2C)%x1e", self.up)
+        recs = [r.strip("\n").split("\x1f") for r in o.split("\x1e") if r.strip()] if code == 0 else []
+        for i, (sha, _, auto) in enumerate(recs):
+            values = [v.strip() for v in auto.split(",") if v.strip()]
+            if values:
+                tip = i
+                while tip > 0 and recs[tip - 1][1] == kbgit.FIX_COMMIT:
+                    tip -= 1
+                return sha, values, [r[0] for r in reversed(recs[tip:i + 1])]
+        return None
+
+    def held(self):
+        """Finding ids pending on a conflict branch of origin that main does not hold yet: the records of the
+        findings files the branch adds."""
+        code, o, _ = self.git("for-each-ref", "--format=%(refname)", f"refs/remotes/{REMOTE}/{CONFLICT_BRANCH_PREFIX}")
+        ids = set()
+        for ref in o.split() if code == 0 else []:
+            if self.git("merge-base", "--is-ancestor", ref, self.up)[0] == 0:
+                continue
+            base = self.git("merge-base", ref, self.up)[1].strip()
+            if not base:
+                continue
+            files = self.git("diff", "--name-only", "--diff-filter=A", base, ref, "--", f"{STORE_REL}/{FINDINGS}")[1]
+            for f in files.split():
+                text = self.git("show", f"{ref}:{f}")[1]
+                for line in text.splitlines()[1:]:
+                    try:
+                        rec = json.loads(line)
+                    except ValueError:
+                        continue
+                    if isinstance(rec, dict) and isinstance(rec.get("id"), str):
+                        ids.add(rec["id"])
+        return ids
+
+    def apply_in_worktree(self, wt, store, hold, out):
+        """The worktree's own querylog.py apply on its own kb and store."""
+        argv = [sys.executable, str(wt / "_tools" / "querylog.py"), "apply", "--store", str(store)]
+        for h in sorted(hold):
+            argv += ["--hold", h]
+        code, o, e = self.run(argv, cwd=str(wt))
+        for line in (o + (e if code else "")).strip().splitlines():
+            out(line)
+        return code
+
+    def changed(self):
+        code, o, _ = self.git("status", "--porcelain", "--untracked-files=all", "-z")
+        paths = []
+        for rec in o.split("\0") if code == 0 else []:
+            if len(rec) > 3:
+                paths.append(rec[3:])
+        return sorted(set(paths))
+
+    def commit(self, subject, body, kinds):
+        """One commit of the worktree's changes with its KB-Auto trailer, then its KB-* trailers. The data files
+        apply appends rows to change no doc that describes them (kb/_self/map.csv), so those docs are named in a
+        Self-Reviewed trailer, which keeps `selfdoc.py stale` in sync's gate quiet."""
+        import kbgit, selfdoc
+        assert all(k in kbgit.AUTO_VALUES for k in kinds), kinds
+        trailers = [f"{kbgit.AUTO}: " + ", ".join(kinds)]
+        reviewed = sorted(selfdoc.describing(selfdoc.load_map(str(self.wt)), self.changed()))
+        if reviewed:
+            trailers.append(f"{selfdoc.REVIEWED}: " + ", ".join(reviewed))
+        code, o, e = self.git("add", "--all")
+        if code == 0:
+            code, o, e = self.git("commit", "--quiet", "--no-verify", "-m", subject, "-m", body,
+                                  "-m", "\n".join(trailers))
+        if code == 0:
+            code, o, e = self.run([sys.executable, str(self.wt / "_tools" / "kbgit.py"), "trailers", "--amend"],
+                                  cwd=str(self.wt))
+        if code:
+            self.say(f"commit failed: {(o + e).strip()[-300:]}")
+        return code
+
+    def deliver(self, run_id):
+        """kbgit.py sync --push from the worktree (fetch, rebase on origin/main, fix, gate, push to origin). A
+        conflict it cannot resolve (exit 3) pushes the commits as they were before the rebase to
+        querylog/<run-id> with the merge-request push options, and main stays as it was."""
+        mine = self.git("rev-parse", "HEAD")[1].strip()
+        code, o, e = self.run([sys.executable, str(self.wt / "_tools" / "kbgit.py"), "sync", "--push",
+                               "--remote", REMOTE, "--branch", BRANCH], cwd=str(self.wt))
+        report = [ln for ln in (o + e).splitlines() if ln.startswith(("gate ", "pushed:", "needs-human:", "CONFLICT"))]
+        for ln in report:
+            self.out("  " + ln)
+        if code == 0:
+            self.say(f"pushed {mine[:9]} to {REMOTE}/{BRANCH}")
+            return 0
+        if code != 3:
+            self.say(f"kbgit.py sync exit {code}: nothing pushed to {BRANCH}" +
+                     ("" if report else f"\n{(o + e).strip()[-600:]}"))
+            return code
+        self.git("rebase", "--abort")
+        branch = CONFLICT_BRANCH_PREFIX + run_id
+        argv = ["push"]
+        for opt in MR_OPTIONS:
+            argv += ["-o", opt]
+        code, o, e = self.git(*argv, REMOTE, f"{mine}:refs/heads/{branch}")
+        if code:
+            self.say(f"conflict, and the push of {branch} failed: {(o + e).strip()[-300:]}")
+            return 1
+        self.say(f"conflict: pushed {branch} with a merge request for {BRANCH}; its findings stay pending")
+        return 0
+
+    def check_ci(self, url):
+        """Before any new push: the CI of the last automatic commit's push. Red: a revert commit (an int exit code
+        is returned); pending: None (nothing pushed this run); else True."""
+        last = self.last_automatic()
+        if last is None:
+            return True
+        sha, values, commits = last
+        if "revert" in values:
+            return True
+        verdict, detail = ci_status(url, commits[-1], self.run)
+        if verdict == "skip":
+            self.say(f"note: CI status not checked: {detail}")
+            return True
+        if verdict == "pending":
+            self.say(f"CI of the last automatic commit {sha[:9]} is not finished ({detail}); nothing pushed this run")
+            return None
+        if verdict == "red":
+            self.say(f"CI of the last automatic commit {sha[:9]} is red ({detail}): reverting it")
+            return self.revert(sha, commits, detail)
+        return True
+
+    def revert(self, sha, commits, detail):
+        """A revert commit (KB-Auto: revert) of the automatic push `commits` that keeps the store's files, with one
+        findings file recording apply-failed for every finding those commits applied."""
+        code, o, e = self.git("revert", "--no-commit", *reversed(commits))
+        if code:
+            self.git("revert", "--abort")
+            self.say(f"the revert of {sha[:9]} does not apply cleanly; nothing pushed ({(o + e).strip()[-200:]})")
+            return 1
+        self.git("checkout", "HEAD", "--", STORE_REL)
+        store = self.wt / STORE_REL
+        added = self.git("diff", "--name-only", "--diff-filter=A", f"{commits[0]}^", commits[-1], "--",
+                         f"{STORE_REL}/{FINDINGS}")[1].split()
+        applied = {}
+        for f in added:
+            try:
+                objs = load_run(self.wt / f)
+            except (OSError, ValueError):
+                continue
+            for _, rec in objs[1:]:
+                if rec.get("state") == "applied" and isinstance(rec.get("id"), str):
+                    applied[rec["id"]] = rec
+        run_id = f"revert-{sha[:12]}"
+        if applied:
+            new = [{**{k: v for k, v in r.items() if k != "observed"}, "state": APPLY_FAILED,
+                    "observed": {"ci": detail[:200], "commit": sha[:12]}} for r in applied.values()]
+            run_id, _ = write_findings(store, store_entries(store), new, (APPLY_FAILED,),
+                                       self.git("rev-parse", "HEAD")[1].strip())
+        body = (f"This reverts commit {sha}" + (f" and the {len(commits) - 1} commit(s) after it" if len(commits) > 1
+                                                else "") +
+                f".\n\nIts pipeline is red ({detail}). The store's files stay; the {len(applied)} finding(s) it "
+                f"applied are recorded {APPLY_FAILED} and are never applied again.")
+        if self.commit(f"revert: query log commit {sha[:9]}", body, ["revert"]):
+            return 1
+        return self.deliver(run_id)
+
+    def __call__(self):
+        code, url, _ = self.git("remote", "get-url", REMOTE, cwd=self.home)
+        if code:
+            self.say(f"refused: {self.home} is not a git clone with a remote {REMOTE}")
+            return 2
+        code, o, e = self.fetch()
+        if code:
+            self.say(f"git fetch {REMOTE} failed; nothing pushed ({(o + e).strip()[-300:]})")
+            return 1
+        code, o, e = self.reset()
+        if code:
+            self.say(f"the worktree {self.wt} could not be set to {REMOTE}/{BRANCH}: {(o + e).strip()[-300:]}")
+            return 1
+        ok = self.check_ci(url.strip())
+        if ok is None:
+            return 0
+        if ok is not True:
+            return ok
+        hold = self.held()
+        if hold:
+            self.say(f"{len(hold)} finding(s) wait on a {CONFLICT_BRANCH_PREFIX} branch and are left alone")
+        store = self.wt / STORE_REL
+        code = self.apply_step(self.wt, store, hold, self.out)
+        if code:
+            return code
+        paths = self.changed()
+        if not paths:
+            self.say("nothing to push")
+            return 0
+        try:
+            kinds = auto_kinds(paths)
+        except ValueError as e:
+            self.say(f"refused: apply changed {e}, which it never writes; nothing committed")
+            return 1
+        runs = [Path(p).stem for p in paths if p.startswith(f"{STORE_REL}/{FINDINGS}/") and p.endswith(".jsonl")]
+        run_id = max(runs) if runs else self.git("rev-parse", "--short=12", "HEAD")[1].strip()
+        body = (f"Automatic commit of querylog.py apply --push, findings run {run_id}: the eval rows with their "
+                "fixes and the findings file that records each outcome (kb/_self/querylog.md, Delivery).")
+        if self.commit(f"chore(kb): query log apply {run_id}", body, kinds):
+            return 1
+        return self.deliver(run_id)
+
+
+def push(home=None, qdir=None, run=None, apply_step=None, out=print):
+    """`apply --push`: under the distill lock, the CI check of the last automatic commit (a revert when red), then
+    apply in the worktree beside the spool, one commit with its KB-Auto trailer, and kbgit.py sync --push to origin.
+    0 done (pushed, nothing to push, CI pending, or a conflict branch pushed), 1 a step failed, 2 refused, 3 another
+    distill or push holds the lock."""
+    qdir = Path(qdir or places()[0])
+    lock = acquire(qdir)
+    if lock is None:
+        out("apply --push: another distill or push holds the lock")
+        return 3
+    try:
+        return Pusher(home or HOME, qdir, run or run_cmd, apply_step, out)()
+    finally:
+        release(lock)
 
 
 def findings_problems(store, k=None):
@@ -1772,7 +2172,7 @@ def findings_problems(store, k=None):
             if r.get("state") not in FINDING_STATES:
                 out.append(f"{where}: unknown state {r.get('state')!r}")
             if r.get("kind") == "source":
-                if r.get("state") in APPLY_STATES:
+                if r.get("state") in APPLY_STATES + (APPLY_FAILED,):
                     out.append(f"{where}: a source finding is never applied")
                 if r.get("signal") not in SIGNALS:
                     out.append(f"{where}: unknown signal {r.get('signal')!r}")
@@ -1845,13 +2245,27 @@ def main(argv=None):
         import argparse
         ap = argparse.ArgumentParser(prog="querylog.py apply")
         ap.add_argument("--store", help="the store whose findings to apply and record (default: the local store)")
+        ap.add_argument("--hold", action="append", default=[], metavar="ID",
+                        help="leave this finding alone (a finding pending on a conflict branch; repeatable)")
+        ap.add_argument("--push", action="store_true",
+                        help="apply in the worktree beside the spool on origin/main's kb/_querylog, commit, and push "
+                             "to origin through kbgit.py sync")
         a = ap.parse_args(argv[1:])
+        if a.push and a.store:
+            print("apply --push: refused: the store is the worktree's kb/_querylog; --store is for a local apply",
+                  file=sys.stderr)
+            return 2
         if a.store is None:
             d, cfg = places()
             if (d / "DISABLED").exists() or read_mode(cfg) == "off":
                 print("apply: logging is off")
                 return 0
-        return apply(a.store)
+        if a.push:
+            if places()[0] != HOME / "_cache" / "querylog":
+                print("apply --push: refused: it pushes from a clone, not from a plugin host")
+                return 2
+            return push()
+        return apply(a.store, hold=set(a.hold))
     if argv[:1] == ["distill"]:
         import argparse
         ap = argparse.ArgumentParser(prog="querylog.py distill")

@@ -82,16 +82,7 @@ Kb facts the build rests on: `claude/hooks.md` (async hooks, `prompt_id`, `Stop`
 - **Allow Git push requests to the repository** is off (no CI job pushes);
 - `.gitlab-ci.yml` runs branch and tag pipelines only (a direct-push model), which fits this design unchanged.
 
-7. **Direct push** (`querylog.py apply --push`, through `kbgit.py sync`).
-
-   Done:
-   - the local gate runs, then a rebase on `origin/main`, then the push to `origin` only;
-   - an unresolvable conflict pushes a `querylog/<run-id>` branch with the MR push options and leaves the findings pending;
-   - red CI on the last automatic commit leads to a revert commit before any new push, and the finding is marked `apply failed` and never retried;
-   - the CI-status check uses `glab` or `gh` when signed in and is skipped with a note otherwise;
-   - the GitLab host comes from `origin`'s url.
-
-   Check: tests against a local bare remote (a planted conflict gives a branch and no push to `main`; a planted red status gives a revert; a retried failed finding fails the test). Then, once, on the real `origin`: one automatic commit lands on `main`, and one planted conflict ends as an open MR. Unchanged: people's `kbgit.py sync --push`.
+7. **Direct push, on the real `origin`:** once, `python3 _tools/querylog.py apply --push` lands one automatic commit on `main`, and one planted conflict ends as an open MR.
 8. **Gap entries, then opt-in research.**
 
    Done:
