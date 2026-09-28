@@ -11,6 +11,8 @@
   kbgit.py asof <YYYY-MM-DD | tag | rev> <path>            the file as of the last commit on or before that date (or at the tag)
   kbgit.py tag-census YYYY-MM-DD                           annotated tag census-YYYY-MM-DD on HEAD: "kb confirmed current" (no push)
   kbgit.py sync [--push] [--dry-run] [--remote origin] [--branch main]   fetch, rebase, fix, gate, push: the way to push
+  kbgit.py publish [--remote R] [--dry-run] [--rewrite]    push origin/main without kb/_querylog to the public home
+  kbgit.py check-public [REV]                              exit 1 when REV's history touches kb/_querylog (kbpublic.py)
 
 Roots. Every root in this repository's kb/ (kb/public and any kb/<name>/ with a _root.md; KB_ROOTS roots belong to
 other repositories) has its own ledgers: fix and fmt work on each root in turn, sync treats every root's ledgers and
@@ -47,7 +49,8 @@ re-running, `-m`, editor commits and --amend never duplicate them), skips merges
 message already has KB-* trailers, and never blocks a commit (any error is a warning). prepare-commit-msg only
 notes an --amend so commit-msg diffs against HEAD's parent. `git commit --no-verify` skips commit-msg: CI's
 check-trailers catches that. pre-push runs the sync gate plus `fix --check` before a plain `git push` of the checked-out
-branch and blocks it (exit 1) when a check fails; it skips sync's own push (KB_GATE_DONE=1), tags and deletes, and a
+branch and blocks it (exit 1) when a check fails; first, for any push, it refuses a ref whose history touches
+kb/_querylog on its way to the public home (kbpublic.py); the gate skips sync's own push (KB_GATE_DONE=1), tags and deletes, and a
 pushed ref that is not HEAD (with a note: the checks read the working tree). `git push --no-verify` skips it. Fix unpushed commits with `trailers --amend` (HEAD) or
 `git rebase --exec "python3 _tools/kbgit.py trailers --amend" @{upstream}`.
 
@@ -139,6 +142,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import kbcommon, kbid  # noqa: E402
 import build_index  # noqa: E402
 import ql_store  # noqa: E402
+import kbpublic  # noqa: E402
 
 KB = kbcommon.HOME  # the repository: git runs here, and every path kbgit names is relative to it
 ROOT = kbcommon.PUBLIC  # the root fix and the history commands work on now (use_root); the public root by default
@@ -1420,9 +1424,16 @@ def hook_pre_push(args, stdin):
     """The pre-push hook: run the sync gate (plus `fix --check`, which sync runs itself) before a plain `git push` of
     a branch. Exit 1 blocks the push. Skipped when `sync` pushes (it gated already: KB_GATE_DONE=1), for tag-only and
     delete-only pushes, and with a note when the pushed commit is not HEAD (the checks read the working tree)."""
+    remote = args[0] if args else "origin"
+    pushed = [(p[0], p[1]) for p in (ln.split() for ln in stdin.splitlines()) if len(p) == 4]
+    blocked = kbpublic.guard_push(remote, args[1] if len(args) > 1 else None, pushed, KB)
+    for ref, why in blocked:
+        print(f"kb pre-push: refused: {remote} is the public home and {ref} {why}; publish with "
+              "python3 _tools/kbgit.py publish (kb/_self/git.md, Public home)", file=sys.stderr)
+    if blocked:
+        return 1
     if os.environ.get("KB_GATE_DONE") == "1":
         return 0
-    remote = args[0] if args else "origin"
     head = rev_parse("HEAD")
     ups, other = [], []
     for ln in stdin.splitlines():
@@ -2172,6 +2183,10 @@ def cmd_sync(a):
     if busy:
         print(f"refused: {busy[0]} is in progress; finish it first ({busy[1]})")
         return 2
+    if kbpublic.is_public(a.remote, KB) and kbpublic.private_commits("HEAD", KB, limit=1):
+        print(f"refused: {a.remote} is the public home and HEAD's history touches {', '.join(kbpublic.PRIVATE)}; "
+              "sync pushes to the integration remote, publish to the public one (python3 _tools/kbgit.py publish)")
+        return 2
     staged, unstaged = dirty_paths()
     refuse = None
     if staged or unstaged:
@@ -2250,13 +2265,22 @@ def main():
     y.add_argument("--branch", default="main", help="the remote branch to rebase onto and push to (default main)")
     g = sub.add_parser("tag-census", help="annotated tag census-YYYY-MM-DD on HEAD (not pushed)")
     g.add_argument("date", metavar="YYYY-MM-DD")
+    pb = sub.add_parser("publish", help="push the projection of the integration main (no kb/_querylog) to the public home")
+    pb.add_argument("--remote", help=f"the public remote (default: git config {kbpublic.CONFIG_KEY})")
+    pb.add_argument("--source", default="origin/main", help="REMOTE/BRANCH to project (default origin/main)")
+    pb.add_argument("--branch", default="main", help="the public remote's branch (default main)")
+    pb.add_argument("--dry-run", action="store_true", help="fetch, project and report; push nothing")
+    pb.add_argument("--rewrite", action="store_true", help="replace a public branch that is not an ancestor (force with lease)")
+    cp = sub.add_parser("check-public", help="exit 1 listing commits of REV whose history touches kb/_querylog")
+    cp.add_argument("rev", nargs="?", help="a commit (default HEAD)")
     h = sub.add_parser("hook", help="internal: run by the .githooks scripts")
     h.add_argument("name", choices=HOOKS)
     h.add_argument("args", nargs="*")
     a = ap.parse_args()
     cmds = {"trailers": cmd_trailers, "install-hooks": cmd_install_hooks, "check-trailers": cmd_check_trailers,
             "log": cmd_log, "blame": cmd_blame, "asof": cmd_asof, "tag-census": cmd_tag_census, "hook": cmd_hook,
-            "sync": cmd_sync}
+            "sync": cmd_sync, "publish": lambda a: kbpublic.cmd_publish(a, KB),
+            "check-public": lambda a: kbpublic.cmd_check_public(a, KB)}
     if a.cmd in cmds:
         try:
             sys.exit(cmds[a.cmd](a))

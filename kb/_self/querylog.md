@@ -166,6 +166,7 @@ Every row has `id` (a fresh UUID), `ts` (UTC, milliseconds), `surface` and `v`, 
 ## Delivery
 
 - **Straight to `main` on `origin`**, the repository the clone came from: run files, findings, eval rows, aliases, expansions, gap entries and opt-in research, once the local gate passes and a rebase on `origin/main` is clean.
+- **Never to the public home.** When `origin` is the clone's public home (`git config kb.publishRemote`, `kb/_self/git.md`, Public home), `apply --push` refuses (exit 2) and the run files stay in the local store and the spool; a clone without a public home (a production clone) pushes as below.
 - **`querylog.py apply --push`** runs from a clone, by hand in every mode but `off` and from mode `auto`'s distill, under the distill lock (exit 3 when it is held):
   1. fetches `origin`'s `main` and its `querylog/` branches and resets the worktree (Distill) to `origin/main`;
   2. deletes the spool rows of the entries whose local run file `origin/main` already holds (a push whose deletion did not run, a conflict branch merged since);
@@ -176,7 +177,7 @@ Every row has `id` (a fresh UUID), `ts` (UTC, milliseconds), `surface` and `v`, 
   7. pushes both commits at once with the worktree's `kbgit.py sync --push` (fetch, rebase, fix, the gate, `git push origin HEAD:main`);
   8. once that push reached `origin/main`, deletes the spool rows of the entries of the run files it copied. A failed push or a conflict branch deletes nothing; the next run copies the same files again.
 
-  Nothing new and no change from `learn` and `apply` pushes nothing. Exit 0 when it pushed, had nothing to push, waited on CI or pushed a conflict branch; 1 when a step failed (a red gate pushes nothing); 2 refused (no `origin`, a plugin host with no recorded install source, a cloud session on a detached `HEAD`, `--store` with `--push`).
+  Nothing new and no change from `learn` and `apply` pushes nothing. Exit 0 when it pushed, had nothing to push, waited on CI or pushed a conflict branch; 1 when a step failed (a red gate pushes nothing); 2 refused (no `origin`, `origin` the public home, a plugin host with no recorded install source, a cloud session on a detached `HEAD`, `--store` with `--push`).
 - **Trailers:** each commit carries `KB-Auto:` with its values from `querylog`, `eval`, `alias`, `expansion`, `gap`, `research`, `revert`, taken from the paths it changes (`gap` for a root's `_gaps.md`; `research` for its articles, `_sources.csv`, `_conflicts.md` and the coverage files build_index regenerates; a path `apply` never writes is refused and nothing is committed, and so is a change that removes or edits an existing fact line, ledger line or source row against `HEAD`), then its KB-* trailers (`kbgit.py trailers --amend`), and `Self-Reviewed:` for the docs `kb/_self/map.csv` gives those data files, since appended rows change no doc. `kbgit.py check-trailers` flags a second `KB-Auto` line or an unknown value.
 - **`origin` only.** Mirroring to other remotes (`claude` on GitHub) stays a person's job.
 - **No hard-coded host.** The forge and host come from `origin`'s url (https, ssh or `user@host:path`): `github.com` is GitHub, any other host GitLab, and a url with no host (a local path) GitLab.com (`FALLBACK_GITLAB_HOST`).

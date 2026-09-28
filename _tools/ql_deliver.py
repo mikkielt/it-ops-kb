@@ -9,6 +9,7 @@ import json, os, re, shutil, sys, urllib.parse
 from pathlib import Path
 from urllib.parse import urlsplit
 
+import kbpublic
 from ql_base import (DISABLED_NAME, HOME, STORE_REL, acquire, now, places, plugin_data, read_json, release, run_cmd,
                      write_text)
 from ql_distill import spool_delivered
@@ -531,6 +532,10 @@ class Pusher:
         code, url, _ = self.git("remote", "get-url", REMOTE, cwd=self.home)
         if code:
             self.say(f"refused: {self.home} is not a git clone with a remote {REMOTE}")
+            return 2
+        if kbpublic.is_public(REMOTE, str(self.home), url.strip()):
+            self.say(f"refused: {REMOTE} ({url.strip()}) is the public home, which never gets {STORE_REL} "
+                     f"(kb/_self/git.md, Public home); the run files stay in the local store and the spool")
             return 2
         if self.cloud:
             branch = self.working_branch()

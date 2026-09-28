@@ -55,6 +55,20 @@ jobs:
       - run: pip install --quiet uv
       - run: python3 _tools/stress_test.py
 
+  # The public home never gets the query log's store (kb/_self/git.md, Public home): a pushed ref whose history
+  # touches kb/_querylog fails. Runs only where the repository variable KB_PUBLIC_HOME is `true`; a clone hosted
+  # elsewhere without it keeps its store.
+  kb-public:
+    if: vars.KB_PUBLIC_HOME == 'true'
+    runs-on: ubuntu-latest
+    container: python:3.14
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+      - run: python3 _tools/kbgit.py check-public HEAD
+
   # What the push gate adds beyond tests.py, on the pushed range: KB-* trailers and the kb's own docs.
   kb-push-range:
     if: github.event_name == 'push' && github.ref_type == 'branch'

@@ -1,0 +1,297 @@
+#!/usr/bin/env python3
+"""The public home (stdlib only): what never reaches it, which remote it is, and the history published there.
+
+  kbgit.py publish [--remote R] [--source origin/main] [--branch main] [--dry-run] [--rewrite]
+  kbgit.py check-public [REV]
+
+The integration remote (`origin`) holds everything; the public home (GitHub) holds the same history without the
+PRIVATE paths: the query log's store `kb/_querylog/` is kept on the integration remote only. Both hosts cannot carry
+the same `main`, so the public home gets a projection of it:
+
+  projection  every commit of the source is rewritten with the PRIVATE paths removed from its tree and its parents
+              replaced by their projections; its author, committer, dates and message stay byte for byte (a
+              signature goes, since it no longer matches). A commit whose tree carries no PRIVATE path and whose
+              parents are unchanged is its own projection, so the history before the query log keeps its hashes (and
+              the census tags stay valid). A commit that changed only PRIVATE paths becomes nothing: its projection is
+              its parent's. The projection is a pure function of the source history, so every clone computes the same
+              commits and each publish fast-forwards the last one.
+  publish     fetches the source and the public home, projects the source, verifies the projection carries no
+              PRIVATE path, and pushes it to the public home's BRANCH as a fast-forward. When the public home's branch
+              is not an ancestor (a commit pushed there directly, or a history from before the projection) it refuses,
+              exit 1, unless --rewrite, which pushes with --force-with-lease against the tip it fetched: the one-time
+              move to the projection, or a decision to drop what was pushed there directly. `refs/kb/published` keeps
+              the last projection. Without a public remote it prints a note and exits 0.
+  guard       a push to a public remote of a ref whose history touches a PRIVATE path is refused: the pre-push hook
+              (for every pushed branch and tag, sync's own push included), `kbgit.py sync` before it rebases, and the
+              query log's push (ql_deliver) when `origin` is public. `check-public` is the same check for CI on the
+              public home: exit 1 listing the commits of REV (default HEAD) that touch a PRIVATE path.
+
+The public home is set per clone: `git config kb.publishRemote <remote>`. A remote is public when it is that remote or
+its url is that remote's url. A clone without it (a production clone on its own host) has no public home: nothing is
+guarded there, and the query log pushes its store to `origin` as before. Exit (publish): 0 published or nothing to do, 1 refused (not a fast-forward, or the projection still
+carries a PRIVATE path) or the push failed, 2 bad arguments, no source, or a git error. Exit (check-public): 0 clean,
+1 a PRIVATE path found, 2 a git error.
+"""
+import os, re, subprocess, sys
+
+PRIVATE = ("kb/_querylog",)  # repository paths kept on the integration remote only (kb/_self/git.md, Public home)
+CONFIG_KEY = "kb.publishRemote"
+PUBLISHED_REF = "refs/kb/published"
+ZERO_RE = re.compile(r"^0+$")
+
+
+def run(args, cwd, stdin=None, env=None):
+    """(code, stdout bytes, stderr text) of git ARGS in CWD."""
+    p = subprocess.run(["git", *args], cwd=cwd, input=stdin, capture_output=True,
+                       env={**os.environ, **env} if env else None)
+    return p.returncode, p.stdout, p.stderr.decode("utf-8", "replace")
+
+
+def out(args, cwd):
+    code, o, _ = run(args, cwd)
+    return o.decode("utf-8", "replace").strip() if code == 0 else None
+
+
+def publish_remote(cwd):
+    """The configured public remote's name, or None."""
+    return out(["config", "--get", CONFIG_KEY], cwd) or None
+
+
+def is_public(remote, cwd, url=None):
+    """Whether pushing to REMOTE (a remote name or a url; URL is its url when known) reaches the public home. False
+    in a clone without one."""
+    named = publish_remote(cwd)
+    if not named:
+        return False
+    if remote == named:
+        return True
+    if url is None:
+        url = out(["remote", "get-url", remote], cwd) or remote
+    return url == out(["remote", "get-url", named], cwd)
+
+
+def private_commits(rev, cwd, limit=20):
+    """The commits reachable from REV that touch a PRIVATE path (newest first, at most LIMIT), or None on a git
+    error. A root commit that adds one counts, so an empty list means no tree in REV's history holds one."""
+    code, o, _ = run(["log", f"-{limit}", "--format=%H", rev, "--", *PRIVATE], cwd)
+    return o.decode().split() if code == 0 else None
+
+
+class Projector:
+    """Projects commits of the repository at CWD: projection(rev) is the commit of REV's history without PRIVATE."""
+
+    def __init__(self, cwd):
+        self.cwd = cwd
+        self.hexlen = 64 if out(["rev-parse", "--show-object-format"], cwd) == "sha256" else 40
+        self.cat = subprocess.Popen(["git", "cat-file", "--batch"], cwd=cwd, stdin=subprocess.PIPE,
+                                    stdout=subprocess.PIPE)
+        self.trees, self.commits, self.tree_of = {}, {}, {}
+        self.private = [tuple(p.split("/")) for p in PRIVATE]
+
+    def close(self):
+        self.cat.stdin.close()
+        self.cat.wait()
+
+    def read(self, sha):
+        self.cat.stdin.write(sha.encode() + b"\n")
+        self.cat.stdin.flush()
+        head = self.cat.stdout.readline().split()
+        if len(head) != 3:
+            raise RuntimeError(f"git cat-file: no object {sha}")
+        body = self.cat.stdout.read(int(head[2]))
+        self.cat.stdout.read(1)
+        return head[1].decode(), body
+
+    def write(self, kind, body):
+        code, o, e = run(["hash-object", "-t", kind, "-w", "--stdin"], self.cwd, stdin=body)
+        if code:
+            raise RuntimeError(f"git hash-object: {e.strip()}")
+        return o.decode().strip()
+
+    def entries(self, tree):
+        """[(mode, name, sha)] of a tree object, in stored order."""
+        _, body = self.read(tree)
+        n, i, res = self.hexlen // 2, 0, []
+        while i < len(body):
+            sp, nul = body.index(b" ", i), body.index(b"\0", i)
+            res.append((body[i:sp], body[sp + 1:nul], body[nul + 1:nul + 1 + n].hex()))
+            i = nul + 1 + n
+        return res
+
+    def filter_tree(self, tree, paths):
+        """TREE without the PATHS (tuples of names), written when it changed; the same sha when it did not."""
+        key = (tree, paths)
+        if key in self.trees:
+            return self.trees[key]
+        here = {p[0] for p in paths if len(p) == 1}
+        below = {}
+        for p in paths:
+            if len(p) > 1:
+                below.setdefault(p[0], []).append(p[1:])
+        new, changed = [], False
+        for mode, name, sha in self.entries(tree):
+            dec = name.decode("utf-8", "surrogateescape")
+            if dec in here:
+                changed = True
+                continue
+            if dec in below and mode == b"40000":
+                sub = self.filter_tree(sha, tuple(below[dec]))
+                changed |= sub != sha
+                sha = sub
+            new.append((mode, name, sha))
+        res = tree
+        if changed:
+            res = self.write("tree", b"".join(m + b" " + nm + b"\0" + bytes.fromhex(s) for m, nm, s in new))
+        self.trees[key] = res
+        return res
+
+    def commit_tree(self, sha):
+        if sha not in self.tree_of:
+            _, body = self.read(sha)
+            self.tree_of[sha] = body[5:5 + self.hexlen].decode()
+        return self.tree_of[sha]
+
+    def project(self, tip):
+        """The projection of TIP (a commit sha), computed for its whole history, oldest first."""
+        code, o, e = run(["rev-list", "--topo-order", "--reverse", "--parents", tip], self.cwd)
+        if code:
+            raise RuntimeError(f"git rev-list: {e.strip()}")
+        for line in o.decode().splitlines():
+            sha, *parents = line.split()
+            if sha in self.commits:
+                continue
+            _, body = self.read(sha)
+            head, sep, msg = body.partition(b"\n\n")
+            tree = head[5:5 + self.hexlen].decode()
+            self.tree_of[sha] = tree
+            new_tree = self.filter_tree(tree, tuple(self.private))
+            new_parents = list(dict.fromkeys(self.commits[p] for p in parents))
+            if new_tree == tree and new_parents == parents:
+                self.commits[sha] = sha
+                continue
+            if new_parents and len(new_parents) == 1 and new_tree == self.commit_tree(new_parents[0]) and \
+                    (len(parents) > 1 or tree != self.commit_tree(parents[0])):
+                self.commits[sha] = new_parents[0]  # it changed only PRIVATE paths (or merged nothing public)
+                continue
+            lines, skip = [], False
+            for ln in head.split(b"\n"):
+                if ln.startswith(b" ") and skip:
+                    continue  # the continuation of a dropped multi-line header
+                skip = False
+                if ln.startswith((b"gpgsig", b"gpgsig-sha256 ", b"mergetag ")):
+                    skip = True
+                    continue
+                if ln.startswith(b"tree "):
+                    lines.append(b"tree " + new_tree.encode())
+                    lines += [b"parent " + p.encode() for p in new_parents]
+                elif not ln.startswith(b"parent "):
+                    lines.append(ln)
+            self.commits[sha] = self.write("commit", b"\n".join(lines) + sep + msg)
+            self.tree_of[self.commits[sha]] = new_tree
+        return self.commits[tip]
+
+
+def project(tip, cwd):
+    """The projection of the commit TIP in the repository at CWD."""
+    p = Projector(cwd)
+    try:
+        return p.project(tip)
+    finally:
+        p.close()
+
+
+def is_ancestor(a, b, cwd):
+    return run(["merge-base", "--is-ancestor", a, b], cwd)[0] == 0
+
+
+def cmd_publish(a, cwd):
+    remote = a.remote or publish_remote(cwd)
+    if not remote:
+        print(f"note: no public remote (git config {CONFIG_KEY} <remote>); nothing published")
+        return 0
+    src_remote, _, src_branch = a.source.partition("/")
+    if not src_branch or out(["remote", "get-url", src_remote], cwd) is None or out(["remote", "get-url", remote], cwd) is None:
+        print(f"refused: no remote {remote!r}, or the source {a.source!r} is not REMOTE/BRANCH of a remote")
+        return 2
+    if remote == src_remote:
+        print(f"refused: the public remote {remote!r} is the source's remote; publish goes from integration to public")
+        return 2
+    for r, b in ((src_remote, src_branch), (remote, a.branch)):
+        code, _, e = run(["fetch", "--quiet", r, f"+refs/heads/{b}:refs/remotes/{r}/{b}"], cwd)
+        if code and not (r == remote and "couldn't find remote ref" in e):
+            print(f"refused: git fetch {r} {b} failed: {e.strip()[-300:]}")
+            return 2
+    src = out(["rev-parse", "--verify", "--quiet", f"refs/remotes/{a.source}^{{commit}}"], cwd)
+    if not src:
+        print(f"refused: {a.source} has no commit")
+        return 2
+    try:
+        proj = project(src, cwd)
+    except RuntimeError as exc:
+        print(f"refused: {exc}")
+        return 2
+    left = private_commits(proj, cwd)
+    if left is None or left:
+        print(f"refused: the projection {proj[:12]} still touches {', '.join(PRIVATE)} in {left}")
+        return 1
+    tip = out(["rev-parse", "--verify", "--quiet", f"refs/remotes/{remote}/{a.branch}^{{commit}}"], cwd)
+    print(f"source: {a.source} {src[:12]}; projection: {proj[:12]}" + (" (the same commit)" if src == proj else ""))
+    print(f"public: {remote}/{a.branch} " + (tip[:12] if tip else "(none)"))
+    if tip == proj:
+        print("publish: nothing to do (the public home has the projection)")
+        run(["update-ref", PUBLISHED_REF, proj], cwd)
+        return 0
+    ff = tip is None or is_ancestor(tip, proj, cwd)
+    if not ff and not a.rewrite:
+        print(f"refused: {remote}/{a.branch} {tip[:12]} is not an ancestor of the projection: commits were pushed there "
+              f"directly, or it holds a history from before the projection. Bring them to {a.source} first, or pass "
+              f"--rewrite to replace it (force push with lease)")
+        return 1
+    n = out(["rev-list", "--count", proj if tip is None else f"{tip}..{proj}"], cwd)
+    how = "fast-forward" if ff else "rewrite (force with lease)"
+    if a.dry_run:
+        print(f"dry run: would push {proj[:12]} to {remote}/{a.branch}: {how}, {n} commit(s)")
+        return 0
+    args = ["push", remote, f"{proj}:refs/heads/{a.branch}"]
+    if not ff:
+        args.insert(1, f"--force-with-lease=refs/heads/{a.branch}:{tip}")
+    code, o, e = run(args, cwd, env={"KB_GATE_DONE": "1"})  # the source was gated on integration; the guard still runs
+    if code:
+        print(f"push failed: {(o.decode() + e).strip()[-600:]}")
+        return 1
+    run(["update-ref", PUBLISHED_REF, proj], cwd)
+    run(["update-ref", f"refs/remotes/{remote}/{a.branch}", proj], cwd)
+    print(f"published: {proj[:12]} to {remote}/{a.branch}: {how}, {n} commit(s)")
+    return 0
+
+
+def cmd_check_public(a, cwd):
+    rev = a.rev or "HEAD"
+    bad = private_commits(rev, cwd)
+    if bad is None:
+        print(f"check-public: git error reading {rev}")
+        return 2
+    for sha in bad:
+        print(f"private: {sha[:12]} touches {', '.join(PRIVATE)}")
+    print(f"check-public: {'clean' if not bad else 'FAILED'} ({rev}; kept off the public home: {', '.join(PRIVATE)})")
+    return 1 if bad else 0
+
+
+def guard_push(remote, url, refs, cwd):
+    """The pre-push guard: [(ref, reason)] of pushed refs (local ref, local sha) that would carry a PRIVATE path to a
+    public remote. Deletes are skipped."""
+    if not is_public(remote, cwd, url):
+        return []
+    res = []
+    for ref, sha in refs:
+        if ZERO_RE.match(sha):
+            continue
+        bad = private_commits(sha, cwd, limit=3)
+        if bad is None or bad:
+            res.append((ref, f"its history touches {', '.join(PRIVATE)}" + (f" ({', '.join(b[:9] for b in bad)})"
+                                                                              if bad else " (git error)")))
+    return res
+
+
+if __name__ == "__main__":
+    sys.exit("run it as: python3 _tools/kbgit.py publish | check-public")

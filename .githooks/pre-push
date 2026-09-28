@@ -1,13 +1,19 @@
 #!/bin/sh
 # it-ops-kb: run the push gate (the checks `kbgit.py sync --push` runs) before a plain `git push` of a branch.
 # Enabled by `python3 _tools/kbgit.py install-hooks` (git config core.hooksPath .githooks). Blocks the push when a
-# check fails; `sync` sets KB_GATE_DONE=1 for its own push (it gated already). `git push --no-verify` skips it, and CI
-# reports what it would have caught. Without Python (_tools/kbpy exits 127) the push goes through with a warning.
-[ "${KB_GATE_DONE:-}" = "1" ] && exit 0
+# check fails. First, for every push, it refuses a ref whose history touches kb/_querylog on its way to the public
+# home (kbpublic.py); `sync` sets KB_GATE_DONE=1 for its own push, which skips only the gate (it gated already).
+# `git push --no-verify` skips it, and CI reports what it would have caught. Without Python (_tools/kbpy exits 127)
+# the push goes through with a warning, except to the public home (git config kb.publishRemote), which it refuses.
 top=$(git rev-parse --show-toplevel 2>/dev/null) || exit 0
 sh "$top/_tools/kbpy" _tools/kbgit.py hook pre-push "$@"
 rc=$?
 if [ "$rc" = 127 ]; then
+  pub=$(git config --get kb.publishRemote 2>/dev/null)
+  if [ -n "$pub" ] && { [ "${1:-}" = "$pub" ] || [ "${2:-}" = "$(git remote get-url "$pub" 2>/dev/null)" ]; }; then
+    echo "kb pre-push: no Python found; the public-home guard cannot run, push refused" >&2
+    exit 1
+  fi
   echo "kb pre-push: no Python found; push not checked" >&2
   exit 0
 fi
