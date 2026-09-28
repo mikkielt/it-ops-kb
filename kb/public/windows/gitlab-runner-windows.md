@@ -50,6 +50,8 @@ status: complete
 | safe.directory switch | `safe_directory_checkout` / `RUNNER_SAFE_DIRECTORY_CHECKOUT` | S410 |
 | Default safe.directory (shell executor) | false | S411 |
 
+Related: `gitlab/hosted-runners-windows.md` (GitLab.com's own Windows runners: tier, tag, image, cost).
+
 ## Examples
 - SNIPPET: install and start the runner service as the Built-in System Account (the gMSA line is a community-reported variant, not documented by GitLab); context: GitLab Runner 19.5 on Windows, elevated prompt; checked: no [DOC S406, COMMUNITY S414: `.\gitlab-runner.exe install` / `start` for the Built-in System Account (S406); `install --user "DOMAIN\name$"` with no password for a gMSA (S414, community-reported)]
 ```powershell

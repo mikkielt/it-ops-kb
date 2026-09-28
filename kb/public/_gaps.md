@@ -1030,3 +1030,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
 ## python/uv-projects
 
 - **Installing Python packages behind a corporate proxy or from an internal package index** (pip and uv index settings, proxy variables, custom CA certificates, offline installs): a real lookup came back `weak` with only unrelated supply-chain facts. Looked in the kb 2026-09-28 (`rag.py pack`, grep for index-url, PIP_INDEX_URL, UV_INDEX, proxy in `python/`). Needs the pip configuration and uv index and network docs. (topic: python/uv-projects)
+
+## python/stdlib-windows-portability
+
+- **Whether a detached child started by a Claude Code hook on Windows survives the hook's exit** (a job object that kills children on close, and whether `CREATE_BREAKAWAY_FROM_JOB` is needed): not in the Claude Code hooks reference or the Python subprocess docs, looked 2026-09-28. Needs a Windows test of the `SessionEnd` launcher (query-log item 4). (topic: python/stdlib-windows-portability)

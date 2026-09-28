@@ -1,9 +1,9 @@
 ---
 topic: claude/hooks
 priority: P1
-applies_to: "Claude Code 2.1.281 docs (retrieved 2026-09-23; UserPromptSubmit, common input, async and Stop sections re-read 2026-09-27; SessionEnd re-read 2026-09-28)"
+applies_to: "Claude Code 2.1.281 docs (retrieved 2026-09-23; UserPromptSubmit, common input, async and Stop sections re-read 2026-09-27; SessionEnd and Windows command hooks read 2026-09-28)"
 retrieved_utc: 2026-09-28
-sources: [S743, S746, S1800]
+sources: [S743, S746, S1800, S-h5sble4p, S-sjuwcuhk]
 status: complete
 ---
 # Hooks relevant to MCP tools
@@ -49,6 +49,17 @@ instead, so a hook can answer a prompt without a model call.
 - `SessionEnd` hooks share a 1.5-second budget on exit, `/clear` and interactive `/resume`. A per-hook `timeout` raises the budget to the highest such value in settings files, up to 60 seconds, but timeouts on plugin-provided hooks do not raise it; `CLAUDE_CODE_SESSIONEND_HOOKS_TIMEOUT_MS` sets the budget explicitly and, since v2.1.268, also the timeout of each hook without its own. [DOC S743]
 - On a `claude -p` run stopped by SIGTERM, only `SessionEnd` hooks still run before exit (`claude/ci-and-headless.md`). [DOC S1800]
 - A `SessionEnd` hook that must do more than about a second of work (a batch job, a network push) fits only as a launcher that starts a detached process and returns; from a plugin it cannot win more time with `timeout`, and an environment variable is a per-user setting, not something a repository can ship. [DER S743: the 1.5-second shared budget, the plugin exception and the variable above]
+
+### Command hooks on Windows
+- A command hook runs in exec form when `args` is set: `command` is resolved as an executable on `PATH` and spawned with `args` as the argument vector, with no shell and no tokenization on any platform. [DOC S743]
+- Without `args` a command hook runs in shell form: the `command` string goes to `sh -c` on macOS and Linux, to Git Bash on Windows, or to PowerShell when Git Bash is not installed. [DOC S743]
+- The command hook field `shell` accepts `"bash"` or `"powershell"`; it defaults to `"bash"`, or to `"powershell"` on Windows without Git Bash, and is ignored when `args` is set. [DOC S743]
+- On Windows, exec form needs `command` to resolve to a real executable such as a `.exe`; `.cmd` and `.bat` shims cannot be spawned without a shell, so run them in shell form. [DOC S743]
+- Both forms substitute the path placeholders and export `CLAUDE_PROJECT_DIR`, `CLAUDE_PLUGIN_ROOT` and `CLAUDE_PLUGIN_DATA` to the hook process; in shell form each placeholder should be wrapped in double quotes. [DOC S743]
+- In a PowerShell shell-form hook, `${CLAUDE_PROJECT_DIR}` (rewritten to `${env:NAME}` since v2.1.198) or `$env:CLAUDE_PROJECT_DIR` works; the bare `$CLAUDE_PROJECT_DIR` resolves to `$null` there. [DOC S743]
+- On macOS and Linux, command hooks run in their own session without a controlling terminal; Windows has no `/dev/tty`. [DOC S743]
+- Git for Windows is optional for native Windows Claude Code; with it, Claude Code uses Git Bash for the Bash tool (`CLAUDE_CODE_GIT_BASH_PATH` names `bash.exe` when it is not found), and without it shell commands go through the PowerShell tool. [DOC S-h5sble4p]
+- A hook command that must run on every OS cannot rely on one interpreter name in exec form: on Windows the name must be a real `.exe` on `PATH`, and `python3` is only a compatibility alias there (`python/stdlib-windows-portability.md`). Shell form reaches a POSIX shell on macOS, Linux and Windows with Git Bash, where a small launcher can try `python3`, `python` and `py -3` in turn; without Git Bash the command reaches PowerShell instead. [DER S743, S-h5sble4p, S-sjuwcuhk: shell-form shells and the exec-form `.exe` rule above; the `python3` alias in the Python docs]
 
 ## Reference
 | Event | MCP relevance | Replace data |

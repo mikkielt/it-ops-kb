@@ -1848,6 +1848,19 @@ _Agent: kb-research_
 
 _Agent: kb-research_
 
+## QK-query-log-portability-windows. What does the query-log build need to know to run the kb's hooks and tools on Windows: how Claude Code runs hook commands there, GitLab.com hosted Windows runners, and the Python stdlib for detached processes and locks without fcntl
+- Shell-form hooks (no `args`) run in `sh -c` on macOS and Linux, Git Bash on Windows, and PowerShell when Git Bash is missing; exec form (`args`) spawns `command` with no shell and on Windows needs a real `.exe`. [DOC S743]
+- Git for Windows is optional for native Windows Claude Code; without it shell commands go through PowerShell. [DOC S-h5sble4p]
+- On Windows the documented Python commands are `python`, `py` and `pymanager`; `python3` is a compatibility alias, not recommended. [DOC S-sjuwcuhk]
+- GitLab.com hosted Windows runners are Free, Premium and Ultimate, beta, tag `saas-windows-medium-amd64`, Windows 2022, PowerShell, no `image`; cost factor 1 against a Free quota of 400 compute minutes a month. [DOC S-klcfyqim, S-lfuz2ssn] The image ships Chocolatey Python 3.13.2 and MinGit with only `cmd` on `PATH`. [CODE S-6kqbpp6w: cookbooks/preinstalled-software/attributes/default.rb#L26-L33]
+- `start_new_session` is POSIX only; Windows detaches with `DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP`. [DOC S-dabwnzz5]
+- `fcntl` is Unix only; `O_EXCL` exists on Unix and Windows, `os.mkdir` raises `FileExistsError`, and on Windows `os.kill` with any signal but the two console events terminates the process. [DOC S-oavxfpsn, S-ew7mucsg]
+- Conclusion: hooks reach the interpreter through one shell-form launcher that tries `python3`, `python` and `py -3` (Git Bash on Windows); CI adds a Free-tier Windows job that calls `python` in PowerShell; the lock is an `O_EXCL` file with an age rule, never an `os.kill(pid, 0)` probe on Windows. [DER S743, S-sjuwcuhk, S-klcfyqim, S-lfuz2ssn, S-ew7mucsg]
+- Open: whether Claude Code's hook process on Windows sits in a job object that ends a detached child (`CREATE_BREAKAWAY_FROM_JOB`) is undocumented; and hooks on Windows without Git Bash reach PowerShell, where a POSIX launcher cannot run. [UNK]
+- See claude/hooks.md, gitlab/hosted-runners-windows.md, python/stdlib-windows-portability.md.
+
+_Agent: kb-research_
+
 ## R1. Reuse candidates
 
 - **Highest leverage: `pydantic-settings` as a `dependency` for a project's config-file/env-var/flags

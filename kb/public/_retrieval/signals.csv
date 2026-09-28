@@ -343,3 +343,8 @@ linguist-generated,agents/repository-ingestion
 linguist-vendored,agents/repository-ingestion
 gitlab-generated,agents/repository-ingestion
 check-attr,agents/repository-ingestion
+DETACHED_PROCESS,python/stdlib-windows-portability
+CREATE_NEW_PROCESS_GROUP,python/stdlib-windows-portability
+start_new_session,python/stdlib-windows-portability
+msvcrt,python/stdlib-windows-portability
+saas-windows-medium-amd64,gitlab/hosted-runners-windows

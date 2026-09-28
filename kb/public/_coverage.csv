@@ -81,7 +81,7 @@ autopilot/device-preparation,P1,complete,autopilot/device-preparation.md;autopil
 autopilot/lifecycle,P1,complete,autopilot/lifecycle.md,5
 claude/data-retention,P1,complete,claude/data-retention.md,6
 claude/elicitation,P1,complete,claude/elicitation.md,5
-claude/hooks,P1,complete,claude/hooks.md,3
+claude/hooks,P1,complete,claude/hooks.md,5
 claude/managed-mcp,P1,complete,claude/managed-mcp.md,2
 claude/messages-api,P1,complete,claude/messages-api.md;claude/models.csv;claude/api-limits.csv,10
 claude/otel-monitoring,P1,complete,claude/otel-monitoring.md,4
@@ -125,6 +125,7 @@ gitlab/pipelines-rules,P0,complete,gitlab/pipelines-rules.md,6
 gitlab/protected-branches-tags,P0,complete,gitlab/protected-branches-tags.md,3
 gitlab/variables,P0,complete,gitlab/variables.md,2
 gitlab/automated-merge-requests,P3,complete,gitlab/automated-merge-requests.md,5
+gitlab/hosted-runners-windows,P3,complete,gitlab/hosted-runners-windows.md,5
 gpo/admx-central-store,P1,complete,gpo/admx-central-store.md,8
 gpo/dsc-group-policy-adapter,P2,complete,gpo/dsc-group-policy-adapter.md,3
 gpo/gpo-export,P2,complete,gpo/gpo-export.md,5
@@ -223,6 +224,7 @@ python/ruff,P2,complete,python/ruff.md,8
 python/stdlib-sqlite3-csv,P2,complete,python/stdlib-sqlite3-csv.md,3
 python/uv-projects,P2,complete,python/uv-projects.md,11
 python/version-lifecycle,P2,complete,python/version-lifecycle.md;python/version-lifecycle.csv,8
+python/stdlib-windows-portability,P3,partial,python/stdlib-windows-portability.md,6
 reuse/device-identity-correlation,P2,complete,reuse/device-identity-correlation.md,7
 reuse/drift-detection,P2,complete,reuse/drift-detection.md,5
 reuse/layered-settings-resolution,P2,complete,reuse/layered-settings-resolution.md,3
