@@ -6,7 +6,7 @@
   "parent": "ST-55lva2xl",
   "priority": "P2",
   "rank": 3,
-  "goal": "map runs dotnet msbuild -getProperty:TargetFrameworkMoniker,LangVersion -getItem:PackageReference,ProjectReference (never -target) and dotnet package list --format json --no-restore per project, and npm ls --all --json --package-lock-only plus tsc --showConfig and --listFilesOnly where a tsconfig.json exists; fake dotnet, npm and tsc scripts in the tests prove the argument lists.",
+  "goal": "map runs dotnet msbuild -getProperty:TargetFrameworkMoniker,LangVersion -getItem:PackageReference,ProjectReference (never -target) and dotnet package list --format json --no-restore per project, and npm ls --all --json --package-lock-only plus tsc --showConfig and --listFilesOnly where a tsconfig.json exists, with a tsc found on PATH and never through npx; fake dotnet, npm and tsc scripts in the tests prove the argument lists.",
   "checks": [
     {
       "run": [
@@ -34,7 +34,9 @@
         "approve",
         "no: .NET stays unmapped"
       ],
-      "recommendation": "approve only after checking what evaluation without -target runs"
+      "recommendation": "approve only after checking what evaluation without -target runs",
+      "answer": "approve",
+      "by": "operator"
     },
     {
       "id": "run-node",
@@ -44,7 +46,9 @@
         "approve",
         "no: Node and TypeScript stay unmapped"
       ],
-      "recommendation": "approve"
+      "recommendation": "approve",
+      "answer": "approve: installed tsc only, never npx",
+      "by": "operator"
     }
   ]
 }

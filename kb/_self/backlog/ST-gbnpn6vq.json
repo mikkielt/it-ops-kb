@@ -41,7 +41,9 @@
         "approve: counts of the kb's own background runs only, no text",
         "no: overhead stays unmeasured"
       ],
-      "recommendation": "approve: counts of the kb's own background runs only, no text"
+      "recommendation": "approve: counts of the kb's own background runs only, no text",
+      "answer": "approve: counts of the kb's own background runs only, no text",
+      "by": "operator"
     }
   ]
 }

@@ -6,7 +6,7 @@
   "parent": "EP-o2bjijfp",
   "priority": "P3",
   "rank": 0,
-  "goal": "backlog.py red-pipeline and the query-log revert compute a fingerprint of a failure (failed job, first failing test id or normalised first error line) and store it on the bug they file; when an open bug already carries the same fingerprint they add the new pipeline to that bug's links instead of filing another; tests.py -k fingerprint proves two red pipelines failing the same way give one bug and a different failure gives a second.",
+  "goal": "backlog.py red-pipeline and the query-log revert compute a fingerprint of a failure (failed job, first failing test id or normalised first error line) and store it in the bug's links as 'fingerprint <12 hex>', the way 'pipeline <id>' is stored, with no new item field; when an open bug already carries the same fingerprint they add the new pipeline to that bug's links instead of filing another; tests.py -k fingerprint proves two red pipelines failing the same way give one bug and a different failure gives a second.",
   "checks": [
     {
       "run": [

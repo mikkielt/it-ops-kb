@@ -13,7 +13,7 @@
         "python3",
         "_tools/tests.py",
         "-k",
-        "pins"
+        "pin_files"
       ]
     },
     {
@@ -23,7 +23,8 @@
         "survey",
         ".",
         "--pins"
-      ]
+      ],
+      "match": "requires-python"
     }
   ],
   "links": [

@@ -13,7 +13,15 @@
         "python3",
         "_tools/tests.py",
         "-k",
-        "topics_for"
+        "import_topics"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "imports_arg"
       ]
     },
     {

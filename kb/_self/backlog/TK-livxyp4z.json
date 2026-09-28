@@ -6,14 +6,14 @@
   "parent": "ST-kj72lcgb",
   "priority": "P2",
   "rank": 2,
-  "goal": "rag.py topics-for --imports and kb_topics_for's imports argument reach topics_for(imports=True); test_kb_mcp covers the argument; kb/_self/tools.md and the kb-review-workspace skill say when to use it.",
+  "goal": "rag.py topics-for --imports and kb_topics_for's imports argument reach topics_for(imports=True); test_kb_mcp covers the argument in tests named imports_arg; kb/_self/tools.md and the kb-review-workspace skill say when to use it.",
   "checks": [
     {
       "run": [
         "python3",
         "_tools/tests.py",
         "-k",
-        "topics_for"
+        "imports_arg"
       ]
     }
   ],

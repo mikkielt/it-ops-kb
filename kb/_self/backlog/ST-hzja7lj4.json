@@ -6,14 +6,22 @@
   "parent": "EP-vpb7u3us",
   "priority": "P2",
   "rank": 5,
-  "goal": "/kb-backlog writes each item's asks and refs from the packs it already runs while planning, never kb facts; /kb-sprint plan adds research tasks for required asks that are not sufficient and puts them first; kb/_self/backlog.md describes the knowledge field, research tasks and briefs.",
+  "goal": "/kb-backlog writes each item's asks and refs from the packs it already runs while planning, never kb facts; /kb-sprint plan adds research tasks for required asks that are not sufficient and puts them first; kb/_self/backlog.md describes the knowledge field, research tasks and briefs. Tests named knowledge_planning prove the skills' router entries.",
   "checks": [
     {
       "run": [
         "python3",
         "_tools/tests.py",
         "-k",
-        "backlog or router"
+        "knowledge_planning"
+      ]
+    },
+    {
+      "run": [
+        "grep",
+        "-c",
+        "research: true",
+        "kb/_self/backlog.md"
       ]
     }
   ],

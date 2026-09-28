@@ -1,11 +1,11 @@
 {
   "id": "ST-6dszsvk5",
   "kind": "story",
-  "title": "Autonomous writes reach main by the path the operator chose",
+  "title": "Autonomous writers reach main only through kbgit.py sync --push",
   "status": "draft",
   "priority": "P2",
   "rank": 0,
-  "goal": "kb/_self/git.md and kb/_self/querylog.md name the one path by which autonomous writers (query-log apply, and research or ingest when they push on their own) reach origin's main, and kbgit.py and the query log's delivery follow it; tests.py -k autonomous_write proves that path and that no autonomous writer pushes another way.",
+  "goal": "kb/_self/git.md names kbgit.py sync --push as the only path by which an autonomous writer (query-log apply, and research or ingest when they push on their own) reaches origin's main, with the automatic revert and bug item on a red pipeline; tests.py -k autonomous_write proves that each of them pushes only through kbgit.py sync --push (a planted direct git push in a fixture writer fails the test) and that a red automatic push is reverted and files one bug.",
   "checks": [
     {
       "run": [
@@ -30,7 +30,9 @@
         "branch, merge request, merged-results pipeline, auto-merge when green",
         "merge request for research and ingest, direct push for the query log's small fixes"
       ],
-      "recommendation": "branch, merge request, merged-results pipeline, auto-merge when green"
+      "recommendation": "branch, merge request, merged-results pipeline, auto-merge when green",
+      "answer": "direct push through kbgit.py sync --push, with the automatic revert and bug on a red pipeline (today's path)",
+      "by": "operator"
     }
   ],
   "links": [

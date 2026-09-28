@@ -11,6 +11,13 @@
     {
       "run": [
         "python3",
+        "-c",
+        "import re,sys;t=open('kb/public/_gaps.md',encoding='utf-8').read();S=('agents/codebase-mapping','windows/powershell-static-analysis','agents/coding-agent-codebase-context');bad=[b.strip()[:70] for s in S for b in re.split(r'\\n(?=- )',t.split('## '+s+'\\n',1)[1].split('\\n## ',1)[0]) if b.strip().startswith('- **') and not re.search(r'\\n  - (Resolved|Tried) ',b)];print('open without Resolved or Tried:',len(bad),*bad,sep='\\n');sys.exit(1 if bad else 0)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
         "_tools/check.py"
       ],
       "match": "errors=0"

@@ -6,14 +6,14 @@
   "parent": "ST-kj72lcgb",
   "priority": "P2",
   "rank": 1,
-  "goal": "kbfacts has an imports reader per format (Python ast in-process on source text with a size cap, package.json, go.mod, csproj/Directory.Packages.props via xml.etree, PowerShell #Requires and .psd1 RequiredModules via regex) and topics_for(imports=True) matches signals only against those names, skipping generated or vendored files by .gitattributes; planted fixtures prove each reader and the comment-only case.",
+  "goal": "kbfacts has an imports reader per format (Python ast in-process on source text with a size cap, package.json, go.mod, csproj/Directory.Packages.props via xml.etree, PowerShell #Requires and .psd1 RequiredModules via regex) and topics_for(imports=True) matches signals only against those names, skipping generated or vendored files by .gitattributes; tests named import_topics with planted fixtures prove each reader and the comment-only case.",
   "checks": [
     {
       "run": [
         "python3",
         "_tools/tests.py",
         "-k",
-        "topics_for"
+        "import_topics"
       ]
     }
   ],

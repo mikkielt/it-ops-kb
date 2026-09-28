@@ -5,14 +5,14 @@
   "status": "draft",
   "priority": "P3",
   "rank": 0,
-  "goal": "kb_pack results reach the model as search_result blocks with native citations, once MCP or Claude Code carries them from MCP tool results (block format in agents/hybrid-retrieval.md).",
+  "goal": "kb_pack results reach the model as search_result blocks with native citations, once MCP or Claude Code carries them from MCP tool results (block format in agents/hybrid-retrieval.md). Tests named search_result_citations prove the block shape.",
   "checks": [
     {
       "run": [
         "python3",
         "_tools/tests.py",
         "-k",
-        "kb_mcp"
+        "search_result_citations"
       ]
     }
   ],

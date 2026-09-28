@@ -34,7 +34,9 @@
         "approve",
         "no: Go stays unmapped"
       ],
-      "recommendation": "approve"
+      "recommendation": "approve",
+      "answer": "approve",
+      "by": "operator"
     },
     {
       "id": "run-cargo",
@@ -44,7 +46,9 @@
         "approve",
         "no: Rust stays unmapped"
       ],
-      "recommendation": "approve"
+      "recommendation": "approve",
+      "answer": "approve",
+      "by": "operator"
     }
   ]
 }

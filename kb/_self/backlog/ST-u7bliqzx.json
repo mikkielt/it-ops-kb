@@ -15,6 +15,14 @@
         "-k",
         "brief"
       ]
+    },
+    {
+      "run": [
+        "grep",
+        "-x",
+        "Verdict: build",
+        "kb/_self/reports/backlog-briefs.md"
+      ]
     }
   ],
   "depends_on": [
@@ -30,7 +38,10 @@
         "drop the brief, keep asks and research tasks",
         "measure again with another setup"
       ],
-      "recommendation": "build only if the with-brief arm used fewer tokens in every run"
+      "recommendation": "build only if the with-brief arm used fewer tokens in every run",
+      "answer": "build if the with-brief arm used fewer tokens and had no more refused dones than the arm without it in every run; otherwise drop the brief and keep asks and research tasks; kb/_self/reports/backlog-briefs.md states which held",
+      "by": "operator"
     }
-  ]
+  ],
+  "notes": "With 'Verdict: drop' in the report this item's check cannot pass: drop it (backlog.py drop)."
 }
