@@ -48,7 +48,9 @@ Any change ends with `/kb-verify`, then `python3 _tools/kbgit.py sync --push` (`
 - **Real misses feed the eval set, every time.** A failed real-world lookup (a `/it-ops-kb:kb-gap` report, a wrong or `weak`/`none` `kb:` answer, a pack a session had to redo) is re-run with `python3 _tools/rag.py pack "<question>"`, worded as asked (placeholders for private names):
   - the kb has the answer but the pack misses its article or gives a false verdict: a `kb/public/_retrieval/lookup_eval.csv` row (`kb/_self/content-rules.md`, Ledgers); when the miss is paraphrase, expand only that article (`kb/_self/doc2query.md`);
   - the kb lacks the fact: a `_gaps.md` entry, then `/kb-research`;
-  - a row that fails only through the open verdict problems in `kb/_self/work-left.md` (a false `good` on common words that one unrelated fact holds together) stays out of the file, which has no expected-failure column; name it in the commit instead.
+  - a row that fails only through the false `good` no verdict rule separates (`kb/_self/tools.md`, the `check:` line) stays out of the file, which has no expected-failure column; name it in the commit instead.
+- **Open ledger entries are state, not work items.** Real disagreements stay in `_conflicts.md` until a source settles them, and an entry that needs a lab, a login or unpublished information carries a dated note of what was tried and what it still needs; `python3 _tools/rag.py audit --entries` lists them per article.
+- **`AGENTS.md` has a 4 KB cap** (4096 bytes, tested) and fills nearly all of it: an addition needs a cut elsewhere (`wc -c AGENTS.md`). Maintainer detail goes in `kb/_self/`, never there.
 - A change to `_tools/`, `.claude/`, `.claude-plugin/`, `.githooks/` or a rule changes what `kb/_self/` says: run `python3 _tools/selfdoc.py stale --since @{upstream}` and update the docs it lists in the same commit (`/kb-self`).
 - **The gate before proposing a commit** (about 60 s in all):
   - `python3 _tools/check.py` and `python3 _tools/build_index.py --check`;

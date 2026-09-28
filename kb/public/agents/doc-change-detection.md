@@ -18,8 +18,8 @@ answers conditional requests with `304`. Learn sitemaps are split per product an
 docs repository's `.openpublishing.redirection*.json` and served as `301`, sometimes to an anchor on another
 page. Old text comes from the public MicrosoftDocs repository at the page's commit, or from web archives
 through Memento (RFC 7089) and the Wayback CDX API. A page that answers `200` with error content (a soft
-404) is caught by fetching a random sibling URL and comparing the two. Design context: `kb/_self/work-left.md`,
-"Fact diff".
+404) is caught by fetching a random sibling URL and comparing the two. Design context: `kb/_self/tools.md`,
+"fact diff", and `kb/_self/reports/fact-diff.md`.
 
 ## Facts
 ### Microsoft Learn page version signals
