@@ -29,7 +29,9 @@
         "done",
         "not now"
       ],
-      "recommendation": "done"
+      "recommendation": "done",
+      "answer": "done",
+      "by": "operator"
     }
   ]
 }
