@@ -422,6 +422,21 @@ class TestFixes:
         assert rc == 0 and says(said, "apply --push: nothing to push") and self.main4 == self.main3, said
         assert self.st4[EVAL] == [] and self.st4[GAPS] == [] and self.st4["gate"] == []
 
+    def test_red_ci_revert_files_a_bug(self):
+        """The revert commit also adds one bug item: severity S2, the status repro, naming the pipeline and the
+        reverted findings; the commit carries only KB-Auto: revert."""
+        w = self.w
+        rev = w.remote.git("diff", "--name-status", self.main1, self.main3, "--", "kb/_self/backlog").split("\n")
+        rows = [r.split("\t") for r in rev if r.strip()]
+        assert len(rows) == 1 and rows[0][0] == "A", rows
+        bug = json.loads(w.show(rows[0][1], self.main3))
+        assert bug["kind"] == "bug" and bug["severity"] == "S2" and bug["status"] == "draft", bug
+        assert bug["repro"] == {"run": ["python3", "_tools/backlog.py", "red-pipeline", "--status"]}, bug
+        assert "pipeline 1" in bug["title"] and "Pipeline 1 of commit" in bug["notes"], bug
+        reverted = sorted(r["id"] for r in self.st3["findings"].values() if r["state"] == ql_store.APPLY_FAILED)
+        assert reverted and all(i in bug["notes"] for i in reverted), bug["notes"]
+        assert [v for _, v in w.commits(self.main1)][0] == "revert"  # in the revert commit itself
+
 
 # ---------------------------------------------------------------- a miss the kb answers on HEAD
 

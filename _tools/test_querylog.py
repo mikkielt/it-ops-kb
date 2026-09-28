@@ -2230,7 +2230,8 @@ class TestPushRules:
         research = ["kb/public/windows/laps.md", "kb/public/_sources.csv", "kb/public/_conflicts.md",
                     "kb/public/_coverage.csv", "kb/public/_coverage.md", "kb/team/infra/dns/zones.md"]
         assert ql_deliver.auto_kinds(paths + research) == ["alias", "eval", "expansion", "gap", "querylog", "research"]
-        for p in ("_tools/kbfacts.py", "kb/_self/tools.md", "kb/public/_answers.md", "kb/public/_anchors.csv",
+        assert ql_deliver.auto_kinds(["kb/_self/backlog/BG-abcdefgh.json"]) == ["revert"]  # a revert's bug item
+        for p in ("_tools/kbfacts.py", "kb/_self/tools.md", "kb/_self/backlog.md", "kb/_self/backlog/x/y.json", "kb/public/_answers.md", "kb/public/_anchors.csv",
                   "README.md", "kb/public/_retrieval/signals.csv", "kb/public/_snapshots/S100.txt"):
             with pytest.raises(ValueError, match=re.escape(p)):  # planted: a path apply never writes
                 ql_deliver.auto_kinds(paths + [p])

@@ -171,7 +171,7 @@ Several sprints may be active at once. Each has its own horizon.
   - the operator;
   - a sprint review;
   - a red pipeline: `python3 _tools/backlog.py red-pipeline` reads the newest finished pipeline of `origin`'s `main` (`glab api`, `gh` on GitHub; a note and no filing when neither is signed in) and, when it failed and no automatic revert (`KB-Auto: revert`) covers it, files one bug for it: `S1` when the `kb-tests` job failed (the gate itself is red on `main`), else `S2`. An item that already names `pipeline <id>` stops a second bug. The bug's repro is `red-pipeline --status`, which exits 1 while the newest finished pipeline is red, so the bug is done when `main` is green. An async `SessionStart` hook runs it silently in every clone, and the bug it files is an uncommitted item file until someone commits it. It answers the failure of a red `main` that nobody filed;
-  - a query-log revert (its automatic filing is an open story in the backlog).
+  - a query-log revert: the revert commit of a red automatic push adds one `S2` bug item of its own (same repro, `red-pipeline --status`), naming the failed pipeline and the reverted findings (`kb/_self/querylog.md`, Delivery), so `red-pipeline` files no second one.
 
 ## Git
 

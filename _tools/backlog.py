@@ -918,6 +918,20 @@ def covered_by_revert(root, sha):
     return False
 
 
+def red_bug(pid, sha, sev, jobs=(), url=None, extra=""):
+    """A red-main bug item (not saved): it names `pipeline PID` (the marker red-pipeline files by), its repro is
+    the status of main's latest finished pipeline, and `extra` closes its notes."""
+    marker = f"pipeline {pid}"
+    return {"id": new_id("bug"), "kind": "bug",
+            "title": f"Red main {marker}: {', '.join(jobs) or 'no failed job read'}"[:200],
+            "status": "draft", "priority": "P1" if sev == "S1" else "P2", "rank": 0, "severity": sev,
+            "goal": f"The latest finished pipeline of main is green: `{' '.join(STATUS_REPRO)}` exits 0.",
+            "repro": {"run": list(STATUS_REPRO)},
+            "notes": (f"{marker.capitalize()} of commit {str(sha)[:12]} failed"
+                      + (f" in {', '.join(jobs)}" if jobs else "") + (f": {url}" if url else "") + "."
+                      + (" " + extra if extra else ""))[:TEXT_MAX]}
+
+
 def cmd_red_pipeline(bl, a):
     if not a.status:
         run(["git", "fetch", "-q", "origin", "main"], cwd=bl.root)
@@ -942,12 +956,7 @@ def cmd_red_pipeline(bl, a):
     jobs = p["jobs"]
     sev = "S1" if any(j in GATE_JOBS for j in jobs) else "S2"
     active = [i for i, it in bl.items.items() if it.get("kind") == "sprint" and it.get("status") == "active"]
-    it = {"id": new_id("bug"), "kind": "bug", "title": f"Red main {marker}: {', '.join(jobs) or 'no failed job read'}"[:200],
-          "status": "draft", "priority": "P1" if sev == "S1" else "P2", "rank": 0, "severity": sev,
-          "goal": f"The latest finished pipeline of main is green: `{' '.join(STATUS_REPRO)}` exits 0.",
-          "repro": {"run": STATUS_REPRO},
-          "notes": f"{marker.capitalize()} of commit {str(p['sha'])[:12]} failed"
-                   + (f" in {', '.join(jobs)}" if jobs else "") + (f": {p['url']}" if p.get("url") else "") + "."}
+    it = red_bug(p["id"], p["sha"], sev, jobs, p.get("url"))
     if sev == "S1" and len(active) == 1:
         it.update(sprint=active[0], status="todo")
     ok, code, _ = run_check(bl.root, it["repro"])

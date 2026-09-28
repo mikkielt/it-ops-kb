@@ -96,25 +96,37 @@ def pipeline_verdict(forge, statuses):
     return "pending" if any(s in GITLAB_UNFINISHED for s in statuses) else "ok"
 
 
-def ci_status(url, sha, run):
-    """(verdict, detail) of the CI of commit `sha` on origin's forge: verdict `red`, `pending`, `ok`, `none` (no
-    pipeline) or `skip` (no signed-in glab or gh, or the call failed: the check is skipped)."""
+def ci_pipeline(url, sha, run):
+    """(verdict, detail, pipeline) of the CI of commit `sha` on origin's forge: verdict `red`, `pending`, `ok`,
+    `none` (no pipeline) or `skip` (no signed-in glab or gh, or the call failed: the check is skipped). `pipeline`
+    is {id, url, status} of the newest pipeline (GitHub: the first red run), or None."""
     forge = origin_forge(url)[0]
     data, cli, note = forge_list(
-        url, run, lambda repo: ["gh", "run", "list", "--commit", sha, "-R", repo, "--json", "status,conclusion",
-                                "-L", "100"],
+        url, run, lambda repo: ["gh", "run", "list", "--commit", sha, "-R", repo, "--json",
+                                "status,conclusion,databaseId,url", "-L", "100"],
         lambda project: f"projects/{project}/pipelines?sha={sha}&per_page=1")
     if data is None:
-        return "skip", note
+        return "skip", note, None
     if forge == "github":
-        states = [(r.get("status"), r.get("conclusion")) for r in data if isinstance(r, dict)]
+        runs = [r for r in data if isinstance(r, dict)]
+        states = [(r.get("status"), r.get("conclusion")) for r in runs]
         shown = ", ".join(f"{s}/{c}" if c else str(s) for s, c in states)
+        pick = next((r for r in runs if r.get("conclusion") in GITHUB_RED), runs[0] if runs else {})
+        pipe = {"id": pick.get("databaseId"), "url": pick.get("url"),
+                "status": f"{pick.get('status')}/{pick.get('conclusion')}"}
     else:
-        states = [r.get("status") for r in data[:1] if isinstance(r, dict)]  # the newest pipeline of the commit
+        runs = [r for r in data[:1] if isinstance(r, dict)]  # the newest pipeline of the commit
+        states = [r.get("status") for r in runs]
         shown = ", ".join(map(str, states))
+        pipe = {"id": runs[0].get("id"), "url": runs[0].get("web_url"), "status": runs[0].get("status")} if runs else {}
     if not states:
-        return "none", f"no pipeline for {sha[:9]} on {origin_forge(url)[1]}"
-    return pipeline_verdict(forge, states), f"{note}: {shown}"
+        return "none", f"no pipeline for {sha[:9]} on {origin_forge(url)[1]}", None
+    return pipeline_verdict(forge, states), f"{note}: {shown}", pipe
+
+
+def ci_status(url, sha, run):
+    """(verdict, detail) of `ci_pipeline`."""
+    return ci_pipeline(url, sha, run)[:2]
 
 
 def auto_log(run, cwd, *revs, sha="%H"):
@@ -137,6 +149,8 @@ def auto_kinds(paths):
             kinds.add("querylog")
         elif re.fullmatch(r"kb/[^/]+/_retrieval/lookup_eval\.csv", p):
             kinds.add("eval")
+        elif re.fullmatch(r"kb/_self/backlog/[A-Z]{2}-[a-z0-9]+\.json", p):  # the bug item of a revert
+            kinds.add("revert")
         elif p == "_tools/aliases.csv" or re.fullmatch(r"kb/[^/]+/_retrieval/aliases\.csv", p):
             kinds.add("alias")
         elif re.fullmatch(r"kb/[^/]+/_retrieval/doc2query/expansions\.csv", p):
@@ -439,7 +453,7 @@ class Pusher:
         sha, values, commits = last
         if "revert" in values:
             return True
-        verdict, detail = ci_status(url, commits[-1], self.run)
+        verdict, detail, pipe = ci_pipeline(url, commits[-1], self.run)
         if verdict == "skip":
             self.say(f"note: CI status not checked: {detail}")
             return True
@@ -452,12 +466,33 @@ class Pusher:
             return True
         if verdict == "red":
             self.say(f"CI of the last automatic commit {sha[:9]} is red ({detail}): reverting it")
-            return self.revert(sha, commits, detail)
+            return self.revert(sha, commits, detail, pipe)
         return True
 
-    def revert(self, sha, commits, detail):
+    def file_bug(self, sha, applied, pipe):
+        """One bug item (severity S2) in the worktree for the red pipeline of the reverted push, unless the
+        backlog already names that pipeline; its id, or None. Its repro is backlog.py red-pipeline --status: it fails
+        while main's latest finished pipeline is red."""
+        import backlog
+        bl = backlog.Backlog(self.wt)
+        pid = pipe.get("id") if pipe.get("id") is not None else f"of commit {sha[:12]}"
+        marker = f"pipeline {pid}"
+        for it in bl.items.values():
+            if re.search(rf"\b{re.escape(marker)}\b", " ".join(str(it.get(f, "")) for f in ("title", "goal", "notes"))):
+                return None
+        ids = sorted(applied)
+        extra = (f"Its push {sha[:12]} was reverted (KB-Auto: revert); reverted findings: "
+                 f"{', '.join(ids) or 'none applied'}; the pipeline's status was "
+                 f"{pipe.get('status') or 'failed'}.")
+        it = backlog.red_bug(pid, sha, "S2", (), pipe.get("url"), extra)
+        it["title"] = f"Red main {marker}: query log push {sha[:9]} reverted"
+        bl.save(it)
+        return it["id"]
+
+    def revert(self, sha, commits, detail, pipe=None):
         """A revert commit (KB-Auto: revert) of the automatic push `commits` that keeps the store's files, with one
-        findings file recording apply-failed for every finding those commits applied."""
+        findings file recording apply-failed for every finding those commits applied and one bug item (severity
+        S2, repro: main's latest pipeline status) naming the failed pipeline and the reverted findings."""
         code, o, e = self.git("revert", "--no-commit", *reversed(commits))
         if code:
             self.git("revert", "--abort")
@@ -482,10 +517,12 @@ class Pusher:
                     "observed": {"ci": detail[:200], "commit": sha[:12]}} for r in applied.values()]
             run_id, _ = write_findings(store, store_entries(store), new, (APPLY_FAILED,),
                                        self.git("rev-parse", "HEAD")[1].strip())
+        filed = self.file_bug(sha, applied, pipe or {})
         body = (f"This reverts commit {sha}" + (f" and the {len(commits) - 1} commit(s) after it" if len(commits) > 1
                                                 else "") +
                 f".\n\nIts pipeline is red ({detail}). The store's files stay; the {len(applied)} finding(s) it "
-                f"applied are recorded {APPLY_FAILED} and are never applied again.")
+                f"applied are recorded {APPLY_FAILED} and are never applied again." +
+                (f" Bug item {filed} records the red pipeline." if filed else ""))
         if self.commit(f"revert: query log commit {sha[:9]}", body, ["revert"]):
             return 1
         return self.deliver(run_id)
