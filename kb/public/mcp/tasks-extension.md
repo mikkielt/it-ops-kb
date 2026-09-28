@@ -2,8 +2,8 @@
 topic: mcp/tasks-extension
 priority: P1
 applies_to: "MCP Tasks extension io.modelcontextprotocol/tasks for 2026-07-28"
-retrieved_utc: 2026-09-26
-sources: [S713, S714, S715, S718, S701]
+retrieved_utc: 2026-09-28
+sources: [S713, S714, S715, S718, S701, S740, S746]
 status: complete
 ---
 # Tasks extension (`io.modelcontextprotocol/tasks`)
@@ -25,7 +25,7 @@ and may `tasks/cancel`. `tasks/result` (blocking) and `tasks/list` were removed.
 - Optional `notifications/tasks` via `subscriptions/listen`; polling is the default. [DOC S713]
 - Extensions are disabled by default and need explicit opt-in; SDKs may choose whether to implement them. [DOC S714]
 - The community-maintained extension matrix lists no Tasks column and no Claude Code row. [DOC S715]
-- Whether Claude Code declares the Tasks extension: not documented in Claude Code MCP docs or changelog. [UNK]
+- Claude Code's MCP page lists the client capabilities it declares on 2026-07-28 connections (elicitation form and URL) and names no Tasks extension; the changelog has no Tasks entry either. [DER S740, S746: pages searched 2026-09-28]
 
 ## Reference
 | Method | Direction | Purpose |

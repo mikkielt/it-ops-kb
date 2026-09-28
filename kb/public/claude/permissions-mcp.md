@@ -2,8 +2,8 @@
 topic: claude/permissions-mcp
 priority: P1
 applies_to: "Claude Code 2.1.281 docs (retrieved 2026-09-23)"
-retrieved_utc: 2026-09-26
-sources: [S742, S740, S743, S746]
+retrieved_utc: 2026-09-28
+sources: [S742, S740, S743, S746, S-vrff4evh]
 status: complete
 ---
 # Permission rules for MCP tools
@@ -26,7 +26,8 @@ Parameter-level matching for MCP tools is only possible via `--disallowedTools` 
 - `_meta["anthropic/requiresUserInteraction"]: true` (the JSON boolean only) on a tool in `tools/list` forces its permission prompt on every call, even in acceptEdits/auto/bypassPermissions, with no "don't ask again"; matching allow rules do not skip it; `dontAsk` mode denies it; with `--permission-prompt-tool` an `allow` result is converted to a deny, while the Agent SDK `canUseTool` callback can approve it. Requires v2.1.199+. [DOC S740]
 - Plugin-bundled server tools are named `mcp__plugin_<plugin>_<server>__<tool>`. [DOC S743]
 - Claude Code displays tool annotations and titles in the `/mcp` view (since 1.0.44). [DOC S746]
-- Whether Claude Code uses `readOnlyHint`/`destructiveHint` in permission decisions: not documented in permissions or MCP pages. [UNK]
+- In the Agent SDK, `readOnlyHint` (default false) decides whether a custom tool may run in parallel with other read-only tools, and `destructiveHint` (default true) is informational only. [DOC S-vrff4evh]
+- Neither the permissions page nor the MCP page says Claude Code's permission prompts use `readOnlyHint` or `destructiveHint`; the documented permission annotation is `anthropic/requiresUserInteraction`. [DER S742, S740, S-vrff4evh: annotations named on each page]
 
 ## Reference
 | Rule | Matches |

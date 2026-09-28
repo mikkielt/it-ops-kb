@@ -2,7 +2,7 @@
 topic: claude/elicitation
 priority: P1
 applies_to: "Claude Code 2.1.281 docs (retrieved 2026-09-23)"
-retrieved_utc: 2026-09-27
+retrieved_utc: 2026-09-28
 sources: [S740, S743, S745, S746, S710]
 status: complete
 ---
@@ -30,8 +30,9 @@ as a legacy `elicitation/create` request unless `MCP_PROTOCOL_NEGOTIATION=auto` 
 - 2.1.281 (2026-09-23) "Added MCP URL-mode elicitation on 2026-07-28 protocol connections". [DOC S746]
 - 2.1.238 fixed stdio MCP servers receiving a `server/discover` request before `initialize`. [DOC S746]
 - 2.1.117 fixed `elicitation/create` requests auto-cancelling in print/SDK mode when the server finishes connecting mid-turn. [DOC S746]
-- Form-mode elicitation delivered as MRTR (`InputRequiredResult`) on 2026-07-28 connections: no explicit statement found in docs or changelog. [UNK]
-- Behaviour of elicitation in non-interactive `-p` mode without a hook: not documented beyond the 2.1.117 fix. [UNK]
+- On 2026-07-28 connections Claude Code declares `elicitation: {form: {}, url: {}}` in its client capabilities, so a server can request either mode through the protocol's standard elicitation request. [DOC S740]
+- Since the 2026-07-28 revision's standard request is `InputRequiredResult` (MRTR), form mode on those connections goes through MRTR. [DER S740, S710: declared capability plus the revision's only elicitation mechanism]
+- No page documents what happens to an elicitation in non-interactive `-p` mode without an `Elicitation` hook beyond the 2.1.117 fix; the MCP page names the hook as the way to answer without a dialog. [DER S740, S746: searched mcp, hooks, headless and CLI pages]
 
 ## Reference
 | Server transport | Default protocol in Claude Code (v2 runtime) | Elicitation delivery |

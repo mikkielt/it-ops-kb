@@ -2,8 +2,8 @@
 topic: claude/enterprise-admin
 priority: P2
 applies_to: "Claude Code docs and Anthropic help center (retrieved 2026-09-26)"
-retrieved_utc: 2026-09-26
-sources: [S-gxtvjkv7, S-hoagpet2, S-xsggrooz, S-fqe5wkdo, S-2ym4fr2c, S-dkaaodgp, S-i3esfwsh]
+retrieved_utc: 2026-09-28
+sources: [S-gxtvjkv7, S-hoagpet2, S-xsggrooz, S-fqe5wkdo, S-2ym4fr2c, S-dkaaodgp, S-i3esfwsh, S-7cq3hwv7]
 status: complete
 ---
 
@@ -36,7 +36,7 @@ scope are covered in `claude/data-retention.md` (not repeated here).
 - Admin: can invite and remove members and cancel invitations, create/modify chats and use projects, and view usage analytics on Enterprise; cannot invite/remove Admins or Owners, modify roles, touch billing, enable integrations/capabilities, or manage Enterprise security and data controls. [DOC S-2ym4fr2c]
 - User/Member: most restricted role; can create/modify chats and use projects; no access to billing, membership management, integrations, security controls, or analytics (data exports are Primary Owner only). [DOC S-2ym4fr2c]
 - Enterprise plans support custom roles that control feature access at the group level: members whose role is set to "Custom" have no default permissions, and their access comes entirely from the custom roles assigned to their groups. [DOC S-2ym4fr2c]
-- Custom roles granting scoped admin access (e.g. billing, identity, or privacy) without full Owner rights. [UNK: not in S-2ym4fr2c as re-read 2026-09-27]
+- Custom roles can also grant admin permissions for areas such as billing, identity or privacy without making the member an Owner; each admin area is set to No access, Can view or Can manage, and roles are managed under Organization settings > Roles by Owners, Primary Owners and custom roles with Identity & Access set to Can manage. [DOC S-7cq3hwv7]
 - Only Owners and Primary Owners can view/pay invoices and add or modify billing methods, and only the Primary Owner can provision new seats; Admins can manage membership but have no billing permissions. [DOC S-2ym4fr2c]
 
 ### Claude Code seats on Team/Enterprise

@@ -2,9 +2,9 @@
 topic: claude/data-retention
 priority: P1
 applies_to: "Claude Code docs and Claude API retention page (retrieved 2026-09-23)"
-retrieved_utc: 2026-09-26
-sources: [S747, S748, S749]
-status: partial
+retrieved_utc: 2026-09-28
+sources: [S747, S748, S749, S-6lfftobj, S-nqy6npap, S-qrxvz4ph]
+status: complete
 ---
 # Claude data retention and ZDR scope per surface
 
@@ -29,7 +29,10 @@ chat, Cowork, analytics metadata, or data processed by MCP servers. Local transc
 - API page: Claude Teams and Enterprise product interfaces are not ZDR-eligible (except Claude Code via Enterprise with ZDR); Claude for Excel not eligible. [DOC S749]
 - Covered Models (Fable 5.1, Mythos 5.1, Fable 5, Mythos 5) require 30-day retention and are not available under ZDR unless expressly authorized. [DOC S749]
 - Under ZDR the API does not block non-eligible features; using one steps outside ZDR for that data. [DOC S749]
-- privacy.claude.com / support.claude.com pages for consumer/commercial terms were not fetched in this pass. [UNK]
+- Privacy Center (consumer, 2026-07-01): a deleted chat leaves chat history at once and back-end storage within 30 days; if model training is allowed, data may be kept de-identified for up to 5 years; Incognito chats are never used for training. [DOC S-6lfftobj]
+- Privacy Center (commercial, 2026-07-01): API inputs and outputs are deleted within 30 days of receipt or generation unless a longer-retention service (Files API), an agreement such as ZDR, Usage Policy enforcement or law applies; Incognito chats are deleted within 30 days unless flagged. [DOC S-nqy6npap]
+- Both articles: inputs and outputs flagged by trust and safety systems are kept up to 2 years and classification scores up to 7 years; feedback submissions 5 years. [DOC S-6lfftobj, S-nqy6npap]
+- Under a ZDR agreement Anthropic still keeps User Safety classifier results; ZDR applies only to eligible Anthropic APIs, products that use the Commercial organization's API key (including Claude Code through the API) and Claude Code for Enterprise plans, and it is applied per organization. [DOC S-qrxvz4ph]
 
 ## Reference
 | Surface | Standard retention | ZDR possible |
