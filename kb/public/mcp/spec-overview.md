@@ -2,8 +2,8 @@
 topic: mcp/spec-overview
 priority: P1
 applies_to: "MCP specification 2026-07-28"
-retrieved_utc: 2026-09-26
-sources: [S700, S701, S703, S704, S717, S719, S711, S714]
+retrieved_utc: 2026-09-28
+sources: [S700, S701, S703, S704, S717, S719, S711, S714, S-q6ob42dw]
 status: complete
 files: [mcp/schema/2026-07-28/README.md, mcp/schema/2026-07-28/schema.ts, mcp/schema/2026-07-28/schema.json]
 ---
@@ -16,6 +16,7 @@ handshake, no protocol sessions, per-request `_meta` carries version and capabil
 `server/discover`, and server-to-client requests are replaced by Multi Round-Trip Requests (MRTR).
 
 ## Facts
+- The specification repository's GitHub release `2026-07-28` was published on 2026-07-28, after a `2026-07-28-RC` release on 2026-05-29; the previous release was `2025-11-25`. [DOC S-q6ob42dw]
 - Spec directories present: 2024-11-05, 2025-03-26, 2025-06-18, 2025-11-25, 2026-07-28, draft; docs.json labels "Version 2026-07-28 (latest)". [DOC S719]
 - The authoritative protocol requirements are based on the TypeScript schema `schema/2026-07-28/schema.ts`; it declares `LATEST_PROTOCOL_VERSION = "2026-07-28"`. [DOC S700, S711]
 - Licence: new code and specification contributions are Apache-2.0; unrelicensed earlier contributions remain MIT; documentation (excluding specifications) is CC-BY-4.0. [DOC S717]

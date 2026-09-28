@@ -11,8 +11,11 @@ Merged from `_parts/<agent>/conflicts.md`.
 ## agents-authz
 
 - **MCP authorization spec: scope-selection strategy is new since the pinned 2026-07-28 revision.** `mcp/authorization.md` (S707) reflects the 2026-07-28 revision (DCR deprecation, `iss` validation, CIMD) and does not mention a `WWW-Authenticate: scope=` challenge, `scopes_supported` least-privilege guidance, or the step-up authorization flow. The draft revision fetched for this part (S2045) adds all three. Not a contradiction — S2045 is a **later draft** than S707's pinned revision — but a reader of `mcp/authorization.md` alone would not know per-scope/per-tool authorization exists at all in the spec lineage. Recorded here rather than edited into `mcp/authorization.md` (not this agent's file to edit). [DOC S707, S2045]
+  - Reviewed 2026-09-28, not a source disagreement: a later draft adds scope guidance to the pinned 2026-07-28 revision; stays as a reader warning until the next spec release.
 - **PIM-for-Groups latency: two different numbers for two different things, easily conflated.** S1282 (prior pass) states the PIM active-assignment write itself is "within seconds." S2052 (this pass, same Microsoft product surface) states downstream SCIM provisioning of that membership into an application takes "2-10 minutes" for the first five activations per 10 seconds, else 40 minutes. Not a contradiction — they measure different steps of the same activation — but a reader citing only one page would get an incomplete and potentially wrong latency estimate for "how long until PIM activation takes effect," since the answer depends on which consumer (Entra role engine vs a SCIM-provisioned app vs a token-caching client) is asked. [DOC S1282, S2052] (topic: agents/agent-rbac)
+  - Reviewed 2026-09-28, not a source disagreement: two steps of one activation; `auth/propagation-latency.md` gives both.
 - **GitLab PAT maximum lifetime**: this part's WebFetch summary of S2046 states the 400-day maximum "extended... in GitLab 17.6 (feature flag controlled)"; a separate, unrelated data-retention policy can independently specify keeping temporal history for "400 days". No actual disagreement between sources — noted only because the same number (400) can appear in two unrelated contexts and a future reader should not conflate them. (topic: agents/api-tokens-issue-and-store)
+  - Reviewed 2026-09-28, not a source disagreement: the same number in unrelated contexts; closed.
 
 ## agents-copilot
 
@@ -98,15 +101,19 @@ was wrong and the kb now says Apache-2.0. [DOC S1891] (topic: agents/agent-evalu
   the old repo commits already in `_sources.csv` (S639-S646) remain correct for logs/code conventions only.
 - CaMeL's own paper title on arXiv is "Defeating Prompt Injections by Design" (S2006); the PROMPT-agents brief
   refers to it by the informal name "CaMeL" only. No factual conflict, just a naming note. (topic: agents/prompt-injection-design-patterns)
+  - Reviewed 2026-09-28, not a source disagreement: a naming note; closed.
 
 ## agents-mcp
 
 ### Cognition's own position on multi-agents shifted between its two posts
 - "Don't Build Multi-Agents" (S1926, 2025-06-12) argues against multi-agent designs in general, citing context fragmentation and implicit decision conflicts, and recommends single-threaded linear agents as the default. (topic: agents/subagents-vs-deterministic-tools)
+  - Reviewed 2026-09-28, not a source disagreement: the same vendor revising its own position; the newer post is the current view.
 - "Multi-Agents: What's Actually Working" (S1927, undated follow-up) walks this back: Cognition has since shipped multi-agent setups where multiple agents contribute intelligence but writes stay single-threaded. This is the same vendor revising its own earlier absolute claim, not two vendors disagreeing — recorded per PROMPT.md rule 6 (page contradicts an older one). [DOC/COMMUNITY S1926, S1927] (topic: agents/subagents-vs-deterministic-tools)
+  - Reviewed 2026-09-28, not a source disagreement: see the entry above; closed.
 
 ### Token multiplier for multi-agent vs chat is a single number, but its downstream restatement varies
 - Anthropic's own post (S1921) states multi-agent systems use "about 15×" the tokens of a chat interaction, and agents alone use "about 4×." Secondary community sources (S1929, S1934) restate the 15× figure faithfully, but none of the fetched sources gave a chat-relative token multiplier specifically for a **single non-multi-agent tool-using agent with a deterministic step removed** — that comparison (subagent-with-tool vs same task solved by one deterministic MCP tool call) is not published anywhere found in this pass and is treated as `DER` in answers.md, not a sourced number. [DOC S1921; DER] (topic: agents/agent-overuse-patterns)
+  - Reviewed 2026-09-28, not a source disagreement: restatements agree with the source; the missing single-agent multiplier is unpublished, so it stays DER.
 
 ## agents-ner
 
@@ -118,6 +125,7 @@ was wrong and the kb now says Apache-2.0. [DOC S1891] (topic: agents/agent-evalu
   where possible (S-tks3v5p5, S2086, S2090; S-tks3v5p5, which supersedes S2085, no longer mentions registries, so the ghcr/MCR evidence is now S2087, the Docker Hub description read via the v2 API, and S-g33kybfp, whose Helm sample defaults to `ghcr.io/data-privacy-stack`), but two Docker Hub / GitHub samples fetched via search (S2087,
   S2088) still resolve under the `microsoft/*` namespace — recorded as the same fork/rename lag already
   noted in `privacy/presidio.md`'s own sources, not a new conflict.
+  - Reviewed 2026-09-28, not a source disagreement: a repository move; `privacy/presidio.md` cites the current org.
 - **Azure Text PII character-limit figures.** The on-premises **container** doc (S2091, directly fetched)
   states a synchronous limit of 5,120 characters per document, up to 10 documents per call. A search-index
   summary of the cloud (non-container) service (cited as S2093) reports a different limit — the first
@@ -186,6 +194,7 @@ No direct factual conflicts found between official sources in this batch.
 ### on-prem / Windows / ConfigMgr / SQL
 
 - None identified this session for the topics researched (kerberos, ntlm-deprecation, ldap-smb-signing, gmsa-dmsa, configmgr-rbac-auth, sql-authz, ad-jit-membership). No two official sources were found to disagree; the ConfigMgr-NTLM community forum report (S1213) is consistent with, not contradicting, the official 2509 release note (S307) — it just adds real-world fallout detail.
+  - Closed 2026-09-28: a no-conflict record for an old session.
 
 ### Entra / Graph / MSAL / GitLab
 
@@ -197,53 +206,83 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
 - CAE scope wording: the CAE concept page (S1347) says the initial implementation covers Exchange Online, Teams and SharePoint Online, while the CAE developer guidance and claims-challenge pages (S1354, S1355) say Microsoft Graph sends claims challenges and honours critical events for clients that declare `cp1`. Reading both: automatic critical-event enforcement is documented for the three services; Graph enforcement is opt-in per client. [DER S1347,S1354,S1355] (topic: auth/token-lifetimes-cae)
   - Resolved 2026-09-27: the same pinned page (still the live commit) also says Exchange Online, SharePoint Online, Teams and MS Graph evaluate key Conditional Access policies themselves, and the Zero Trust CAE page (S-yc5geeul) describes Graph checking Entra's token events; "initial implementation" is history, not a limit, so the pages agree. (topic: auth/token-lifetimes-cae)
 - No source-vs-source factual conflicts were found in this agent's own research (key management, propagation latency, revocation, audit events, threats).
+  - Closed 2026-09-28: a no-conflict record for an old session.
 
 ## dsc
 
 - **3.3.0 release notes vs 3.3.0 binaries.** S118 lists MCP `--what-if` (#1697), the Group Policy template adapter (#1686), the environment variable resource (#1675), File/Content (#1676), UpdateList `--what-if` (#1616) and the `--required-version` rename (#1610). None of these are in the 3.3.0 zip or binary (S114, S116); all except the GP adapter are in 3.4.0-preview.1 (S115, S117). (topic: dsc/releases-feature-matrix)
+  - Reviewed 2026-09-28, still open: fixed release artifacts; the kb follows the binaries. Closes only if the release notes are edited.
 - **Git tag `v3.3.0` vs the shipped 3.3.0 source.** The tag points at main 4b49240, where `dsc/Cargo.toml` = `3.4.0-preview.1` (S110). The 3.3.0 binaries match `release/v3.3` ea572fa, `3.3.0` (S111, S144). The release has `target_commitish: main` (S113). (topic: dsc/releases-feature-matrix)
+  - Reviewed 2026-09-28, still open: the tag and the release branch are fixed history; the kb follows `release/v3.3`.
 - **3.4.0-preview.1 release notes vs zip.** S119 lists "Add Group Policy template adapter"; the adapter is in source (S121) but absent from `data.build.json` (S120) and from the zip (S115). (topic: dsc/releases-feature-matrix)
+  - Reviewed 2026-09-28, still open: fixed release artifacts; the kb follows the zip.
 - **PROMPT.md premise vs evidence.** The prompt says the Group Policy adapter shipped in 3.4.0-preview.1. The zip (S115) and packaging list (S120) show it did not. (topic: dsc/releases-feature-matrix)
+  - Reviewed 2026-09-28, not a source disagreement: a brief's premise, not a source; the kb follows the zip. Closed.
 - **`directives.version` docs/tests vs behaviour.** The CLI help (S116) and the type docs (S104) imply matching against the dsc version. The engine compares against the dsc-lib crate version 3.2.0 (S102, S112), so `'>=3.3, <3.4'` fails on dsc 3.3.0 (observed, S116). The tests (S123) do not catch it. (topic: dsc/directives)
+  - Reviewed 2026-09-28, still open: behaviour observed on 3.3.0; needs a lab run on a later release to see whether it is fixed.
 - **SemanticVersionReq type docs vs binary.** S104 says bare versions without an operator, `x` wildcards and build metadata are forbidden. The 3.3.0 binary accepts `'3.3'`, `'1.x'`, `'3.3.0+abc'` in `directives.version` (S116). (topic: dsc/directives)
+  - Reviewed 2026-09-28, still open: needs a lab run on a later release.
 - **Static published schemas vs engine schemas.** Repo bundled `config/document.json` (S146; build config `version: v3.1.0`, S137) has no `directives` property. `dsc schema -t configuration` from the 3.3.0 binary (S116) has it. The binary's `$schema` enum also has no v3.3 URI. (topic: dsc/schemas)
+  - Reviewed 2026-09-28, still open: the published schema is still the v3.1.0 build per the pinned sources; recheck at the next schema publish.
 - **Learn CLI exit codes vs code.** The Learn page (S135, ms.date 2025-03-25) documents exit codes 0 to 6. The code (S101) defines 0 to 10 (7 resource not found, 8 assertion failed, 9 server failed, 10 Bicep failed). (topic: dsc/cli-reference)
+  - Reviewed 2026-09-28, still open: Learn search (dsc-3.0 view) still lists exit codes 0 to 6.
 - **Repo doc title vs CLI.** `docs/reference/cli/server/index.md` (S136) documents `dsc mcp`. The 3.3.0 command is `dsc server` with alias `mcp` (S100, S116). (topic: dsc/mcp-server)
+  - Reviewed 2026-09-28, still open: not re-read; the kb follows the binary (`dsc server`, alias `mcp`).
 - **3.3.0 UpdateList manifest key.** The 3.3.0 `windowsupdate.dsc.resource.json` uses `preTest: true` (S114); the engine's field is `implementsPretest` (S105). 3.4.0-preview.1 uses `implementsPretest` (S115). (topic: dsc/manifests-diff)
+  - Reviewed 2026-09-28, still open: fixed in 3.4.0-preview.1; a 3.3.0 artifact that stays as shipped.
 
 ## ident
 
 - Graph device `extensionAttributes`: listed on the v1.0 resource page (S504) but not declared on the v1.0 CSDL `device` EntityType (S500); declared in beta CSDL (S501). (topic: graph/csdl-device)
+  - Reviewed 2026-09-28, still open: CSDL not re-downloaded; needs a fresh `$metadata` read.
 - managedDevice `$filter` notes: out-of-line CSDL Annotations (S500) state `$filter` for `azureADDeviceId`, `serialNumber`, `deviceName`, `model`, `manufacturer`, `operatingSystem`, `userPrincipalName` and others; the inline CSDL descriptions and the v1.0 resource page (S506) don't. Flagged per row in graph/csdl-managedDevice.properties.csv.
+  - Reviewed 2026-09-28, still open: CSDL not re-downloaded; per-row flags stay in the CSV.
 - managedDevice entity set description (S500) says combinations "must use 'and', not 'or'", while property annotations (S500) state "Supports $filter operator 'eq' and 'or'". (topic: graph/csdl-managedDevice)
+  - Reviewed 2026-09-28, still open: CSDL not re-downloaded; test with a live tenant query to settle.
 - Graph device `id`: `$filter` support stated on resource page (S504), not in CSDL (S500). (topic: graph/csdl-device)
+  - Reviewed 2026-09-28, still open: CSDL not re-downloaded.
 - Device deletion: manage-device-identities (S546, ms.date 2026-06-17) calls deletion "a nonrecoverable activity"; device soft delete preview (S547, ms.date 2026-04-05) keeps deleted devices recoverable for 30 days. (topic: entra/stale-devices)
   - Re-read 2026-09-27, still open: manage-device-identities (updated_at 2026-08-25) still calls deletion a nonrecoverable activity and does not mention the soft-delete preview. (topic: entra/stale-devices)
 - Hybrid device ID origin: sync references map objectGUID to deviceID (S549, S550); the registration flow says DRS "creates a device ID" (S548) and Graph says deviceId is set by DRS at registration (S504). (topic: entra/hybrid-deviceid-objectguid)
   - Re-checked 2026-09-27 (Learn search): no page reconciles the sync mapping with DRS 'creates a device ID'. Still open. (topic: entra/hybrid-deviceid-objectguid)
 - LDAP MaxValRange: ntdsutil article (S569) gives default 1,500; S570 says Windows Server 2008 R2+ hard-codes a maximum of 5,000 overriding higher policy values (different quantities, not a direct contradiction; listed for clarity). (topic: ad/ldap-paging-filters)
+  - Reviewed 2026-09-28, not a source disagreement: different quantities (default vs hard cap); closed.
 - Licence of microsoftgraph/microsoft-graph-docs-contrib: `LICENSE` is CC BY 4.0, `LICENSE.md` is CC BY-NC-ND 3.0 US (both at commit 4ad99fd37a9e). Only facts and short quotes from this repo are stored in kb.
+  - Reviewed 2026-09-28, still open: two licence files in one repository; the kb keeps facts and short quotes only.
 
 ## infra
 
 - gMSA host support: S400 (manage gMSA) says gMSA works on "Any Windows Server domain-joined server". S403 (understand service accounts, choosing table) shows gMSA "No" for "App runs on Windows Server". One of the two cells is wrong. (topic: windows/gmsa)
+  - Reviewed 2026-09-28, still open: Learn search shows the understand-service-accounts table still has gMSA 'No' for 'App runs on Windows Server' while the manage-gMSA page says any Windows Server domain-joined server.
 - PowerShell `Default` execution policy: S420 (about_Execution_Policies 7.5) says `Default` = RemoteSigned for Windows clients and servers, yet the same page says all-Undefined gives Restricted on clients. S421 (5.1) says Default = Restricted on clients and RemoteSigned on servers. (topic: windows/execution-policy-signing)
+  - Reviewed 2026-09-28, still open: Learn search (about_Execution_Policies, 7.6 view) still says `Default` is RemoteSigned for clients and servers and all-Undefined gives Restricted on clients.
 - ConfigMgr PowerShell execution policy values: S423 (client settings) documents three values (Bypass, Restricted, All Signed; default All Signed). S425 (SMS_ConfigMgrClientAgentConfig WMI, ms.date 2016) lists only 0=Bypass and 1=Restricted. (topic: windows/execution-policy-signing)
+  - Reviewed 2026-09-28, still open: not re-read; the WMI class page is dated 2016.
 - sp_cleanup_temporal_history scope: S462's front matter monikerRange is Azure SQL DB / Fabric only, but its applies-to include (`sqlserver2017-asdb-asdbmi-fabricsqldb`) names SQL Server 2017+ and MI. (topic: sqlserver/temporal-tables)
+  - Reviewed 2026-09-28, still open: not re-read; a front-matter metadata mismatch.
 - GitLab Runner licence: S416 (runner repo LICENSE) is MIT for the whole repo with no docs exception. The GitLab monorepo LICENSE (S452) puts `doc/` under CC BY-SA 4.0, and docs.gitlab.com is published under CC BY-SA. Runner docs were treated as CC BY-SA (summarized only). (topic: windows/gitlab-runner-windows)
+  - Reviewed 2026-09-28, still open: two licence statements; the kb keeps summaries only.
 - GitLab Runner `--password`: the CLI help (S413) says "(required)". Issue 27895 (S414, COMMUNITY) says it isn't required for a gMSA. (topic: windows/gitlab-runner-windows)
+  - Reviewed 2026-09-28, still open: official help vs a community issue; a lab registration with a gMSA would settle it.
 
 ## later
 
 - Graph TCM `configurationMonitor.status`: beta reference page (S945) lists only `active`, `unknownFutureValue`; v1.0 page (S944) and both CSDLs (S956, S957) include `inactive`. (topic: graph/tcm-apis)
+  - Reviewed 2026-09-28, still open: the v1.0 page still lists `active`, `inactive`, `unknownFutureValue`; the beta page was not re-read.
 - Graph TCM `snapshotJobStatus`: reference page (S946) says `partiallySuccessful` is an evolvable member after `unknownFutureValue` needing `Prefer: include-unknown-enum-members`; CSDL (S956) orders `partiallySuccessful`=4 before `unknownFutureValue`=5. (topic: graph/tcm-apis)
+  - Reviewed 2026-09-28, still open: not re-read; enum order in CSDL vs page text.
 - Graph TCM `monitorMode` enum values differ between v1.0 CSDL (`monitorOnly`=0, `unknownFutureValue`=1) and beta CSDL (`monitorOnly`=1, `unknownFutureValue`=5) (S956 vs S957). (topic: graph/tcm-apis)
+  - Reviewed 2026-09-28, still open: CSDLs not re-downloaded; v1.0 page still lists `monitorOnly`, `unknownFutureValue`.
 - Graph TCM delegated permissions: setup page (S941) says delegated monitor management needs "any privileged role"; per-API permission tables (S951, S952) name delegated scopes `ConfigurationMonitoring.Read.All`/`ReadWrite.All`. Likely both apply; not stated together. (topic: graph/tcm-apis)
+  - Reviewed 2026-09-28, still open: the Get and Update pages still list delegated `ConfigurationMonitoring.*` scopes; the setup page's role requirement was not re-read.
 - Get-GPOReport (S920): OUTPUTS says "None", but description and example 3 say the report is written to the display without `-Path`. (topic: gpo/gpo-export)
   - Re-read 2026-09-27, still open: the live windowsserver2025-ps page still says Outputs None / 'This cmdlet does not generate any output'. (topic: gpo/gpo-export)
 - Gateway service account page (S909): recommends the gateway app over services.msc for changing the account, but the gMSA procedure on the same page uses services.msc. (topic: powerbi/on-prem-gateway-sql)
+  - Reviewed 2026-09-28, still open: not re-read; an internal inconsistency on one page.
 - Power BI refresh limit wording: S901 says "Power BI Pro: up to 8"; S900 says "shared capacity: eight". Same number, different basis (licence vs capacity). (topic: powerbi/scheduled-refresh)
+  - Reviewed 2026-09-28, not a source disagreement: same number on two bases; closed.
 - RLS page (S910): says RLS can be configured in Desktop or the service, but also says roles previously defined in the service must be re-created in Desktop. (topic: powerbi/row-level-security)
+  - Reviewed 2026-09-28, still open: not re-read; an internal inconsistency on one page.
 
 ## mcp
 
@@ -251,8 +290,11 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
   - Resolved 2026-09-28: not a disagreement. The Privacy Center ZDR article (S-qrxvz4ph, 2026-06-09) lists both routes: products that use a Commercial organization's API key, including Claude Code through the API, and Claude Code for Enterprise plans. The code.claude.com page describes the Enterprise route and names pay-as-you-go API-key ZDR as a migration source. (topic: claude/data-retention)
 - Claude Code docs (S740) confirm a default MCP output cap of 25,000 tokens, and add a fixed 10,000-token warning and per-tool `anthropic/maxResultSizeChars` override (not a conflict, recorded for completeness). (topic: mcp/python-sdk)
 - A project pinning `mcp>=2.2,<2.3` would need to note: SDK docs (S720/S728) state `ctx.elicit()` fails on 2026-07-28 connections, while Claude Code (S740) connects stdio servers on the earlier protocol by default: behaviour depends on the client's negotiation setting (`MCP_PROTOCOL_NEGOTIATION`), not on the SDK alone. (topic: claude/elicitation)
+  - Reviewed 2026-09-28, not a source disagreement: a negotiation-dependent behaviour, not two sources disagreeing.
 - Claude Code changelog 2.1.76 (S746) says elicitation was added for "form fields or browser URL"; 2.1.281 (S746) says URL-mode elicitation was "Added ... on 2026-07-28 protocol connections" — URL mode existed on legacy connections before, and was only added for the new protocol later. (topic: claude/elicitation)
+  - Reviewed 2026-09-28, not a source disagreement: two changelog entries for two protocol versions; closed.
 - MCP extensions overview (S714) links `/specification/draft/...` for `_meta` rules and `server/discover`, while the spec pages are versioned 2026-07-28 (link target mismatch, no normative conflict found). (topic: mcp/tasks-extension)
+  - Reviewed 2026-09-28, not a source disagreement: a link-target mismatch with no normative conflict.
 
 ## mecm1
 
@@ -268,6 +310,7 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
   - Re-read 2026-09-27, still open: the live class page (updated_at 2026-08-28) still describes DiscoveredValue and InstanceData in non-compliant terms. (topic: mecm/sql-views-compliance)
 - Version-support pages: updates.md front matter ms.date 2024-12-04 yet it lists 2603 (May 2026) (S217); content newer than its date stamp. Not a factual disagreement, noted for freshness checks. (topic: mecm/versions-lifecycle)
   - Not a factual disagreement; left as a freshness note. (topic: mecm/versions-lifecycle)
+  - Reviewed 2026-09-28, not a source disagreement: a stale date stamp; closed.
 
 ## mecm2
 
@@ -293,6 +336,7 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
 - **Collect diagnostics and Graph.** collect-diagnostics.md says diagnostics "can't be collected or downloaded by calling Microsoft Graph directly". Its reference links still list the Graph actions createDeviceLogCollectionRequest and createDownloadUrl (S616). (topic: intune/collect-diagnostics)
   - Re-read 2026-09-27, still open: the live page (updated_at 2026-08-05) still says diagnostics can't be collected or downloaded through Graph directly and still lists createDeviceLogCollectionRequest, createDownloadUrl, downloadAppDiagnostics and appDiagnostics under Reference links. (topic: intune/collect-diagnostics)
 - **MDE machine $filter.** get-machines (S621) lists 14 filterable properties, including aadDeviceId, id, version, deviceValue, machineTags and lastIpAddress. exposed-apis-odata-samples (S628) lists only 8 for Machine and leaves out aadDeviceId. https://learn.microsoft.com/defender-endpoint/api/get-machines vs https://learn.microsoft.com/defender-endpoint/api/exposed-apis-odata-samples (topic: defender/machine-resource)
+  - Reviewed 2026-09-28, still open: not re-read; Defender pages stay `quote`.
 - **MDE permissions.** get-machines (S621) accepts Machine.Read.All and Machine.Read. get-machine-by-id (S622) lists only Machine.ReadWrite.All and Machine.ReadWrite. (topic: defender/machine-resource)
   - Re-read 2026-09-27, still open: get-machine-by-id still lists only the ReadWrite permissions. (topic: defender/machine-resource)
 - **MDE property table vs examples.** rbacGroupId is typed String (S620), but the examples show the number 140 (S621, S622). isAadJoined appears in the examples but not in the property table. (topic: defender/machine-resource)
@@ -311,8 +355,10 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
   the fetch was made via the `microsoft/presidio` URL, which GitHub transparently redirects. No
   factual disagreement, just a naming/ownership change worth flagging to other agents citing Presidio
   under the `microsoft` org.
+  - Reviewed 2026-09-28, not a source disagreement: a repository move; closed.
 - **Snipe-IT org rename.** Same pattern: `snipeio`/`snipe` org references resolve to
   `grokability/snipe-it` in the current GitHub API response (S1012). (topic: prior-art/device-identity-correlation)
+  - Reviewed 2026-09-28, not a source disagreement: a repository move; closed.
 - **Licence ambiguity via GitHub API.** hashicorp/vault, pyca/cryptography, inspec/inspec,
   fleetdm/fleet and ansible/awx all report `license.spdx_id: NOASSERTION` from the GitHub API despite
   each project publishing a licence file/statement on its own site or repo (Vault: BUSL-1.1 since
@@ -320,15 +366,19 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
   recorded the GitHub API's literal answer as UNK/NOASSERTION rather than asserting the believed
   licence without re-fetching each project's own LICENSE file — treat these as needing a LICENSE-file
   check, not as confirmed licences.
+  - Resolved 2026-09-28: the LICENSE files were read at pinned commits (S-b43o3ma3, S-6onf7joh, S-tvp7vziq, S-y47upe33, S-lscdap53); see the `reuse` entry below.
 
 ## privacy
 
 - Presidio CHANGELOG vs release 2.2.364: the CHANGELOG (S800) has no `[2.2.364]` section. Items that shipped in 2.2.364 per the release notes (S801), e.g. the threshold flag (#2114), PH_UMID (#2045) and the cryptography bump (#2144), sit under `[unreleased]` together with post-release items such as UuidRecognizer (S807). (topic: privacy/presidio)
+  - Reviewed 2026-09-28, still open: no new release since 2.2.364 (PyPI, 2026-09-28), so the CHANGELOG still has no section for it.
 - EDPB Guidelines 01/2025 consultation end: the news item (S873) says "until 28 February 2025". The consultation page (S872) shows the feedback period "17 January - 14 March 2025". (topic: privacy/gdpr-pseudonymisation)
   - Re-read 2026-09-27, still open: the consultation page and the EDPB consultations list both show 17 January - 14 March 2025 (23:59 CET); the news item keeps 28 February 2025. The consultation page is the operative record. (topic: privacy/gdpr-pseudonymisation)
 - spaCy en_core_web_lg versions: GitHub releases have 3.8.0 (2024-09-30, S850). The Hugging Face repo was last modified 2023-11-21 with 3.7.1 (S851). Both say MIT. (topic: privacy/spacy-model-licence)
+  - Reviewed 2026-09-28, still open: two distribution channels at different versions; the kb follows GitHub releases.
 - Nemotron-PII size: the dataset card (S-dcu4qhyp) says 100,000 records, 50k train and 50k test; the Hugging Face datasets-server `size` endpoint (read 2026-09-27) reports 100,000 rows in each of the train and test splits (200,000 in all). The kb states the card's figure. (topic: privacy/gliner-models)
 - NIST SP 800-38G: the page at /pubs/sp/800/38/g/final is the 2016-03-29 version, marked withdrawn (S865). The current final is /upd1/final (S866). Both carry the same number, "SP 800-38G". (topic: privacy/nist-sp800-38g)
+  - Reviewed 2026-09-28, not a source disagreement: a withdrawn edition and its update; the kb cites the update. Closed.
 
 ## reuse
 
@@ -341,6 +391,7 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
   non-standard LICENSE file heading/format); Fleet is MIT for its core with three carve-outs (`docs/`
   CC BY-SA 4.0, `ee/` its own licence, client JS "MIT Expat") — GitHub's NOASSERTION reflects that
   mixed-licence structure rather than an absence of licensing. [S1002,S1009,S1014,S1018 vs S1102,S1103,S1104,S1105,S1106]
+  - Resolved 2026-09-28: settled by the LICENSE files, now pinned at commits in `_sources.csv`.
 - No other disagreements found between sources this session.
 
 ## security
@@ -350,12 +401,16 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
 - **Group Policy reapplication vs common belief (and the first draft of `policy-precedence.md`):**
   - The Group Policy processing page states that a client-side extension reapplies settings only when its GPOs or GPO list change (S1592). The Part A first draft had said registry-based policy reapplies at every refresh "by default" [UNK].
   - The official text wins. So DSC drift on a GPO-managed value can persist until the next GPO change or forced refresh. (topic: security/policy-precedence)
+  - Reviewed 2026-09-28, not a source disagreement: a corrected draft; the official text is in the article. Closed.
 - **LSA protection value meaning:**
   - The Microsoft 24H2 baseline sets `Lsa\RunAsPPL=1` (S1472). The LSA page defines `1` as "with a UEFI variable" and `2` as "without" (S1477).
   - The Windows 11 22H2+ default enablement is without a UEFI variable (S1477). A baseline-conformant device is therefore locked in firmware, and reverting needs the opt-out tool.
   - Not a factual conflict. It is a difference between the default and the baseline that affects rollback. (topic: security/first-baseline-candidates)
+  - Reviewed 2026-09-28, not a source disagreement: a default-vs-baseline difference; closed.
 - **Intune baseline vs GPO baseline as two writers:** Intune's Windows baseline 24H2 is derived from the same SCT baseline (S1475), and `MDMWinsOverGP` defaults to 0 (S1412). Estates that deploy both have two sources for many values; GP wins for mapped Policy CSP settings. (topic: security/policy-precedence)
+  - Reviewed 2026-09-28, not a source disagreement: a design note; closed.
 - **Microsoft baseline vs STIG on account lockout:** baseline `LockoutBadCount=10`; STIG `WN11-AC-000010` requires 3 or less. Baseline `LockoutDuration=10`; STIG `WN11-AC-000005` requires 15 minutes or more. (S1472, S1470) (topic: security/settings-crosswalk)
+  - Reviewed 2026-09-28, still open: a real policy difference between publishers; the 25H2 and WS2025 2602 baselines keep the same lockout values (crosswalk columns `ms_25h2`, `ms_ws2025`).
 
 ### A: device settings catalog
 
@@ -372,6 +427,7 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
 ### B: management plane
 
 - **Device-log retention below CIS minimum, audit retention above it.** A design that keeps a 400-day audit table comfortably clears CIS Controls v8.1 Safeguard 8.10 (90-day minimum retention for audit logs), but normalized device logs kept only 30 days (diagnostic rather than security logs) sit below that minimum. See `security/logging-monitoring.md` § Conflicts. [DER S1492]
+  - Reviewed 2026-09-28, not a source disagreement: a design check, not a source conflict.
 - **PyPI Trusted Publishing and self-managed GitLab.** A third-party blog (S1510, COMMUNITY) claims PyPI supports self-managed GitLab. The official *Adding a Trusted Publisher* page (S1597, retrieved 2026-09-24) says only gitlab.com projects are supported, and the official page wins. (topic: security/supply-chain)
   - Re-read 2026-09-27, now a PyPI-internal disagreement: PyPI's own blog (S-5ry5zerr, 2025-11-10) and 2025 review (S-cos7wdpw) confirm the GitLab Self-Managed beta, and Warehouse supports custom GitLab issuers (CODE S-5t26tmbz); the user docs (S1597) and troubleshooting page still say gitlab.com only. The article states both; the blog is the newer statement. (topic: security/supply-chain)
 
@@ -495,6 +551,7 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
   both along with the PT explanation. (rechecked 2026-09-26, kept — explained as a TZ/rounding artifact, not
   resolved to a single date) (topic: windows/powershell-7)
 - Telemetry opt-out: the Differences page (S-awsrthdz) says telemetry can only be disabled with POWERSHELL_TELEMETRY_OPTOUT, while about_Telemetry (S-62djuv2f) adds the Windows "Send optional diagnostic data" setting from PowerShell 7.6.2. The kb now states both, each with its own source. (topic: windows/powershell-7)
+  - Reviewed 2026-09-28, still open: not re-read; the kb states both with their sources.
 
 ## auth/ntlm-deprecation
 
@@ -511,6 +568,7 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
 ## agents/content-safety-prompt-shields
 
 - Blocklist matching: the kb said exact-match or regex; the custom-categories page (S-plv2ekwg) says blocklists allow only exact text matching and no image matching. Corrected to exact-match only. (topic: agents/content-safety-prompt-shields)
+  - Resolved 2026-09-28: a kb correction already made; closed.
 
 ## agents/shared-ner-service
 
@@ -524,6 +582,7 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
 ## agents/instruction-and-context-limits
 
 - Copilot Studio instructions limit: Microsoft documents 8,000 characters (S1960, S-jexpr3gv); a community article (S1843) says some configurations enforce 2,000 characters after deployment, citing a Microsoft Q&A thread. (topic: agents/instruction-and-context-limits)
+  - Reviewed 2026-09-28, still open: official limit vs a community report; a deployed agent test would settle it.
 
 ## agents/a2a-protocol
 
@@ -538,6 +597,7 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
 ## agents/foundry-agent-service
 
 - The Foundry capability reference (S-eh6okx77) marks Browser automation, Computer use, Image generation, SharePoint and Fabric connectors, Fabric IQ and Work IQ as preview; the kb table had them as GA. The capability reference says preview status can vary by feature, region and API version, so per-tool pages remain the authority. (topic: agents/foundry-agent-service)
+  - Reviewed 2026-09-28, still open: not re-read; per-tool pages remain the authority.
 
 ## auth/configmgr-rbac-auth
 
@@ -581,6 +641,7 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
 ## graph/permissions
 
 - Permissions reference (S524) says application Device.ReadWrite.All does not allow device deletion, but the Delete device permissions include (S515) lists Device.ReadWrite.All as the application permission for DELETE /devices/{id}. Recorded in graph/permissions.md:24. (topic: graph/permissions)
+  - Reviewed 2026-09-28, still open: not re-read; a tenant test of DELETE with Device.ReadWrite.All would settle it.
 
 ## graph/microsoft365dsc
 
@@ -590,6 +651,7 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
 ## intune/ios-android-management
 
 - Minimum iOS version for account driven user enrollment: the Apple enrollment guide (S-wdoafrjc) says "Starting with iOS 13 and newer", while the Apple User Enrollment overview (S-7synnxi2) and the account-driven setup page (S-fdtw5sil) say iOS/iPadOS 15 or later (14.9 and earlier fall back to user enrollment with Company Portal). Kb follows 15+. (topic: intune/ios-android-management)
+  - Reviewed 2026-09-28, still open: not re-read; the kb follows 15+.
 - End of Intune support for Android device administrator on GMS devices: the Android enrollment guide (S-3v22wodo) says August 2024; the device administrator page (S-pcr6rjdl) says end of 2024. Both re-read 2026-09-27. (topic: intune/ios-android-management)
 
 ## prior-art/secret-vault-encryption
@@ -617,6 +679,7 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
 
 - PyPI's Adding a Trusted Publisher page (S1597) says GitLab self-managed instances are not supported, while Socket (S1510, 2025-11-14) reports PyPI opened a beta for GitLab Self-Managed with manual onboarding. (topic: security/supply-chain)
   - See the re-read note above: the beta is confirmed by PyPI itself (S-5ry5zerr); the docs page is out of date. (topic: security/supply-chain)
+  - Reviewed 2026-09-28, not a source disagreement: duplicate of the supply-chain entry above, which records PyPI's own blog confirming the beta.
 
 ## windows/bitlocker
 
@@ -626,11 +689,14 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
 ## windows/delivery-optimization
 
 - DOCacheHost with several Connected Cache servers: the DO reference (S-7olkz3h6) says clients round-robin across connection attempts and can download from several cache servers simultaneously; the Policy CSP note (S-3dmxye5u) says clients don't talk to several servers at once and round-robin until one connects; the configure page (S-kyd2lkfv) says clients connect in list order. (topic: windows/delivery-optimization)
+  - Reviewed 2026-09-28, still open: not re-read; three pages describe the behaviour differently. A lab capture would settle it.
 - MCC HTTPS: the secure-content-delivery page (S-s4n26zjf) still says nodes use HTTP and HTTPS support is planned; the HTTPS overview (S-umnfbn5b) says since GA nodes can be configured for HTTPS (Intune Win32 apps and Teams). (topic: windows/delivery-optimization)
+  - Reviewed 2026-09-28, still open: Learn search shows the secure-content-delivery page still says HTTPS support is planned, while the HTTPS overview describes GA HTTPS for Win32 apps and Teams.
 
 ## windows/laps
 
 - Invalid ADPasswordEncryptionPrincipal: Configure policy settings for Windows LAPS (S-twjwzzdw) says the Domain Admins default applies only when unset and an invalid name causes a policy processing failure with no backup; the LAPS CSP page (S-jmzxsdjr) says the device falls back to Domain Admins. (topic: windows/laps)
+  - Reviewed 2026-09-28, still open: Learn search shows both pages unchanged: the LAPS CSP page says the device falls back to Domain Admins; the policy settings page says a policy processing failure occurs.
 
 ## windows/windows-update-management
 
@@ -639,11 +705,14 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
 ## intune
 
 - Endpoint analytics in Adoption Score: the Intune page (S-m5aovwzr, updated_at 2026-04-09) still describes the Adoption Score Endpoint analytics page (score, 180-day trend, startup performance), while the Microsoft 365 Adoption Score page (S-3l57sxrb, updated_at 2026-09-23) says Endpoint analytics was retired from Adoption Score starting 2026-01-22, complete February 2026. The newer M365 page is the likelier current state. (topic: intune/device-inventory-analytics)
+  - Reviewed 2026-09-28, still open: not re-read; the newer Microsoft 365 page is followed.
 - Linux personal devices: the end-user page Enroll Linux device in Intune (S-dnply3ya, updated_at 2026-04-29) says enrolled Linux devices are corporate-owned and personal devices aren't supported, while the admin deployment guide (S-5vopvhhm) and platform guide (S-nvad3j6y) say employees can enroll their personal Linux devices. (topic: intune/linux-management)
+  - Reviewed 2026-09-28, still open: not re-read.
 
 ## entra
 
 - Blueprints per pro-code agent: the Agent 365 Copilot Studio identity page (S-ketmxnue, updated_at 2026-05-19) says each pro-code agent has its own blueprint, while Entra's planning guide (S-3tt3ywvk, updated_at 2026-08-14) defaults to one blueprint per trust boundary with several agent identities under it. Follow the Entra guide for design; the Agent 365 sentence reads as a simplification. (topic: entra/agent-id)
+  - Reviewed 2026-09-28, still open: not re-read; the Entra guide is followed for design.
 
 ## windows/smart-app-control
 

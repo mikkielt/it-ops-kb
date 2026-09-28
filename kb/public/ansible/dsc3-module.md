@@ -2,8 +2,8 @@
 topic: ansible/dsc3-module
 priority: P3
 applies_to: "ansible.windows collection 3.8.0 (dsc3 added in 3.4.0)"
-retrieved_utc: 2026-09-26
-sources: [S930, S931, S932, S934, S935]
+retrieved_utc: 2026-09-28
+sources: [S930, S931, S932, S934, S935, S-g5j4nkll]
 status: complete
 ---
 
@@ -15,6 +15,7 @@ The DSC v3 module exists: its name is `ansible.windows.dsc3` (not `microsoft.dsc
 PowerShell DSC (v1/v2, PS 5.x) single-resource module; it does not run on PowerShell 7 and points users to `dsc3`.
 
 ## Facts
+- `win_dsc` declares check-mode support: it always runs the resource's `Test` method and calls `Set` only when not in check mode, reporting `changed` when the resource is not in the desired state. [CODE S-g5j4nkll: plugins/modules/win_dsc.ps1#L480-L500]
 - ansible.windows 3.8.0 lists two DSC modules: `dsc3` ("Sets or checks DSC v3 configuration state") and `win_dsc` ("Invokes a PowerShell DSC configuration"). [DOC S930]
 - `dsc3` was added in ansible.windows 3.4.0; FQCN `ansible.windows.dsc3`. [DOC S931]
 - `dsc3` calls `dsc config set` or `dsc config test` with `config` as the configuration document; `dsc` must be on PATH, and dsc uses PATH for resource discovery. [DOC S931]
@@ -36,7 +37,7 @@ PowerShell DSC (v1/v2, PS 5.x) single-resource module; it does not run on PowerS
 |---|---|---|
 | Engine | PowerShell DSC (PS 5.x, WinRM listener) | Microsoft DSC v3 `dsc.exe` |
 | Unit | one resource per task | whole configuration document |
-| Check mode | (not stated on page) | `dsc config test` |
+| Check mode | supported: runs `Test` only (source, S-g5j4nkll; not stated on the doc page) | `dsc config test` |
 | PowerShell 7 | not supported | n/a (calls dsc.exe) |
 | Added | (not stated on page) | ansible.windows 3.4.0 |
 

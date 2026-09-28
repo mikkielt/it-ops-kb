@@ -14,14 +14,14 @@ Every topic of this root with its priority (the research order, not importance),
 | `agents/agent-evaluation` | P1 | complete | `agents/agent-evaluation.md` | 30 |
 | `agents/agent-overuse-patterns` | P1 | complete | `agents/agent-overuse-patterns.md`, `agents/agent-overuse-patterns.csv` | 29 |
 | `agents/agent-rbac` | P1 | complete | `agents/agent-rbac.md` | 18 |
-| `agents/api-tokens-issue-and-store` | P1 | complete | `agents/api-tokens-issue-and-store.md`, `agents/api-tokens.csv`, `agents/secret-storage-options.csv` | 14 |
-| `agents/copilot-studio-inventory` | P1 | complete | `agents/copilot-studio-inventory.md`, `agents/copilot-studio-feature-map.csv` | 21 |
+| `agents/api-tokens-issue-and-store` | P1 | complete | `agents/api-tokens-issue-and-store.md`, `agents/api-tokens.csv`, `agents/secret-storage-options.csv` | 15 |
+| `agents/copilot-studio-inventory` | P1 | complete | `agents/copilot-studio-inventory.md`, `agents/copilot-studio-feature-map.csv` | 23 |
 | `agents/eval-question-baseline` | P1 | complete | `agents/eval-question-baseline.md`, `agents/eval-question-baseline.csv` | 3 |
 | `agents/foundry-agent-service` | P1 | complete | `agents/foundry-agent-service.md`, `agents/foundry-agent-tools.csv` | 16 |
 | `agents/instruction-and-context-limits` | P1 | complete | `agents/instruction-and-context-limits.md`, `agents/instruction-and-context-limits.csv` | 38 |
 | `agents/m365-copilot-extensibility` | P1 | complete | `agents/m365-copilot-extensibility.md`, `agents/declarative-agent-manifest.csv` | 26 |
 | `agents/mcp-stress-testing` | P1 | complete | `agents/mcp-stress-testing.md` | 11 |
-| `agents/own-chatbot-architecture` | P1 | complete | `agents/own-chatbot-architecture.md` | 15 |
+| `agents/own-chatbot-architecture` | P1 | complete | `agents/own-chatbot-architecture.md` | 17 |
 | `agents/shared-ner-service` | P1 | complete | `agents/shared-ner-service.md` | 35 |
 | `agents/subagents-vs-deterministic-tools` | P1 | complete | `agents/subagents-vs-deterministic-tools.md` | 27 |
 | `agents/a2a-protocol` | P2 | complete | `agents/a2a-protocol.md`, `agents/a2a/a2a-proto-digest.md`, `agents/a2a/a2a.proto` | 15 |
@@ -43,7 +43,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `agents/windows-agentic-platform` | P2 | complete | `agents/windows-agentic-platform.md`, `agents/windows-ai-policies.csv` | 16 |
 | `agents/doc-change-detection` | P3 | complete | `agents/doc-change-detection.md` | 22 |
 | `agents/langgraph` | P3 | complete | `agents/langgraph.md` | 11 |
-| `ansible/dsc3-module` | P3 | complete | `ansible/dsc3-module.md` | 5 |
+| `ansible/dsc3-module` | P3 | complete | `ansible/dsc3-module.md` | 6 |
 | `ansible/windows-ssh` | P3 | complete | `ansible/windows-ssh.md` | 1 |
 | `arch/docs-home-options` | P1 | complete | `arch/docs-home-options.md` | 4 |
 | `arch/gitlab-ci-components` | P1 | complete | `arch/gitlab-ci-components.md` | 7 |
@@ -176,7 +176,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `mcp/elicitation` | P1 | complete | `mcp/elicitation.md` | 6 |
 | `mcp/python-sdk` | P1 | complete | `mcp/python-sdk.md` | 19 |
 | `mcp/security-best-practices` | P1 | complete | `mcp/security-best-practices.md` | 2 |
-| `mcp/spec-overview` | P1 | complete | `mcp/spec-overview.md`, `mcp/schema/2026-07-28/README.md`, `mcp/schema/2026-07-28/schema.ts`, `mcp/schema/2026-07-28/schema.json` | 8 |
+| `mcp/spec-overview` | P1 | complete | `mcp/spec-overview.md`, `mcp/schema/2026-07-28/README.md`, `mcp/schema/2026-07-28/schema.ts`, `mcp/schema/2026-07-28/schema.json` | 9 |
 | `mcp/tasks-extension` | P1 | complete | `mcp/tasks-extension.md` | 7 |
 | `mcp/tools` | P1 | complete | `mcp/tools.md` | 7 |
 | `mcp/transports-stdio` | P1 | complete | `mcp/transports-stdio.md` | 6 |

@@ -3,7 +3,7 @@ topic: agents/api-tokens-issue-and-store
 priority: P1
 applies_to: "GitLab (docs current 2026-09), python keyring 25.7.0, msal-extensions (main branch 2026-09), Azure Key Vault (docs 2025-12), HashiCorp Vault (docs current 2026-09), Claude Code 2.1.x"
 retrieved_utc: 2026-09-28
-sources: [S449, S740, S1297, S2041, S2043, S2044, S2046, S2047, S2048, S2049, S2054, S2055, S2056, S2057]
+sources: [S449, S740, S1297, S2041, S2043, S2044, S2046, S2047, S2048, S2049, S2054, S2055, S2056, S2057, S-2spmezqp]
 status: complete
 files: [agents/api-tokens.csv, agents/secret-storage-options.csv]
 ---
@@ -27,6 +27,7 @@ Encrypted, DPAPI-NG, age/sops) and `mcp/authorization.md` (MCP OAuth 2.1, DCR de
   every workstation.
 
 ## Facts
+- Vault's MSSQL plugin page configures a dynamic role with `default_ttl="1h"` and `max_ttl="24h"` in its worked examples (SQL Server and Azure SQL), and warns that without a `revocation_statement` Vault runs a default revocation procedure. [DOC S-2spmezqp]
 
 ### Issuing
 - **OBO** (On-Behalf-Of): exchanges a token issued to a middle-tier API for a downstream-API token,

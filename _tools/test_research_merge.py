@@ -162,7 +162,9 @@ class TestResearchMergeInGit:
     def research_b(cls, d):
         d.append(P("_sources.csv"), rows(FIRST, B_URLS, "Keeper Security", "not verified (summarized only)"))
         t = d.read(FILE_B)
-        t = t.replace("S2056, S2057]\nstatus: complete\n", f"S2056, S2057, {', '.join(LEG[:3])}]\nstatus: partial\n", 1)
+        t, n = re.subn(r"^(sources: \[[^\]\n]*)\]\nstatus: complete\n", lambda m: f"{m[1]}, {', '.join(LEG[:3])}]\nstatus: partial\n",
+                       t, count=1, flags=re.M)
+        assert n == 1, f"{ARTICLE_B} front matter no longer ends sources:/status: complete: update the test"
         t = t.replace("\n## Reference: each option's threat", f"\n{KEEPER}\n\n"
                       f"- Keeper Secrets Manager serves secrets through a zero-knowledge client device. [COMMUNITY {LEG[0]}]\n"
                       f"- Its Python SDK binds with a one-time access token. [COMMUNITY {LEG[1]}]\n"

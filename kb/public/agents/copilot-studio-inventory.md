@@ -3,7 +3,7 @@ topic: agents/copilot-studio-inventory
 priority: P1
 applies_to: "Microsoft Copilot Studio (standard harness, GitHub Copilot harness, Copilot chat harness), docs current 2026-09-25"
 retrieved_utc: 2026-09-28
-sources: [S1960, S1961, S1962, S1963, S1964, S1965, S1966, S1967, S1972, S1973, S1974, S1975, S1977, S1978, S1979, S1980, S1981, S1982, S1983, S1984, S-jby7reko]
+sources: [S1960, S1961, S1962, S1963, S1964, S1965, S1966, S1967, S1972, S1973, S1974, S1975, S1977, S1978, S1979, S1980, S1981, S1982, S1983, S1984, S-jby7reko, S-vyhrpdjp, S2126]
 status: complete
 files: [agents/copilot-studio-feature-map.csv]
 ---
@@ -29,6 +29,8 @@ files: [agents/copilot-studio-feature-map.csv]
   `agents/copilot-studio-feature-map.csv` (31 rows).
 
 ## Facts
+- Copilot Credits billing rates: classic answer 1, generative answer 2, agent action 5 (computer use is billed at this rate), tenant graph grounding 10, agent flow actions 13 per 100 actions; text and generative AI tools 0.1 (basic), 1.5 (standard) or 10 (premium) Copilot Credits per 1K tokens; content processing 8 per page. Usage by Microsoft 365 Copilot-licensed users in employee-facing agents is not charged, except computer use. [DOC S-vyhrpdjp]
+- Copilot Studio can connect an agent to any agent that speaks the A2A protocol (Agents page > Add agent > A2A agent, endpoint URL, then None, API key or OAuth 2.0 authentication); A2A connections use the custom connector infrastructure, so they can reach agents on-premises or in a virtual network. [DOC S2126]
 
 - Billing FAQ: publishing needs a Microsoft 365 Copilot licence, or a Copilot Studio User License with credits allocated to the environment or drawn from the tenant pool (trial licences don't qualify); credit usage resets on the first day of each month with no carry-over; a proactive greeting is a billed Copilot Credit even when the user never replies; test-chat messages are not billed; agents built with Copilot Studio for Teams consume no credits. [DOC S1980]
 

@@ -2,8 +2,8 @@
 topic: agents/own-chatbot-architecture
 priority: P1
 applies_to: "Microsoft 365 Agents SDK (GA), Bot Framework SDK (retiring), Azure AI Foundry Agent Service, docs current 2026-09-25"
-retrieved_utc: 2026-09-27
-sources: [S1961, S1964, S1965, S1966, S1967, S1968, S1969, S1970, S1971, S1972, S1974, S1975, S1976, S1977, S1985]
+retrieved_utc: 2026-09-28
+sources: [S1961, S1964, S1965, S1966, S1967, S1968, S1969, S1970, S1971, S1972, S1974, S1975, S1976, S1977, S1985, S-2rginmyk, S-cwgzp4nu]
 status: complete
 ---
 
@@ -20,8 +20,8 @@ status: complete
   platform offering prompt agents (config-only), voice-based prompt agents, and hosted agents
   (bring-your-own container, any framework), with native MCP tool support, Entra agent identities,
   and A2A protocol support (v1.0 GA). [DOC S1970]
-- No fetched source confirms Teams AI library's current relationship to the Agents SDK; that gap is
-  recorded in `_parts/agents-copilot/gaps.md`.
+- "Teams AI" has been renamed "Teams SDK": the `microsoft/teams-ai` repository now hosts Teams SDK v2 docs, with language repositories `teams.ts`, `teams.net` and `teams.py`, and stays compatible with Bot Framework-based agents. [DOC S-2rginmyk]
+- The Bot Framework SDK repository is archived: support tickets for the Bot Framework SDK are no longer serviced as of 2025-12-31, and Microsoft points to the Microsoft 365 Agents SDK (GA; C#, JavaScript, Python) or Copilot Studio instead. [DOC S-cwgzp4nu]
 
 ## Facts
 

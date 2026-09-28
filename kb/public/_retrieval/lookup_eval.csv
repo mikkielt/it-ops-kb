@@ -125,3 +125,5 @@ EV-pseudonymised-data-always-personal-data-after,Is pseudonymised data always pe
 EV-remote-desktop-enabled-default-windows-11,Is Remote Desktop enabled by default on Windows 11?,security/first-baseline-candidates.md,good,
 EV-changed-cis-windows-11-enterprise-benchmark,What changed in CIS Windows 11 Enterprise benchmark 5.1.0?,security/baselines-catalog.md,good,
 EV-endpoint-privilege-management-agent-log-files,Where are the Endpoint Privilege Management agent log files on a Windows device?,intune/endpoint-privilege-management.md;intune/collect-diagnostics.md,good,
+EV-teams-ai-library-renamed-teams-sdk,Is the Teams AI library renamed to Teams SDK?,agents/own-chatbot-architecture.md,good,
+EV-ansible-windows-win-dsc-support-check,Does ansible.windows.win_dsc support check mode?,ansible/dsc3-module.md,good,

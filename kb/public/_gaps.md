@@ -29,6 +29,7 @@ Merged from `_parts/<agent>/gaps.md`.
 - **Still open: S2051 (Microsoft Entra Agent ID announcement) was read only as a WebSearch synthesis in the prior pass, not independently WebFetched.** Not re-attempted this pass (WebSearch budget exhausted; WebFetch of the same URL was not separately retried since S2040 already carries the load-bearing mechanics). Treated as DOC per the prior pass's reasoning; flagged for a direct fetch in a future pass. [DOC, flagged] (topic: agents/agent-rbac)
   - Superseded 2026-09-28: the availability claim now rests on the Entra licensing page (S-ooc6gvno: Agent ID for all Entra customers, Agent 365 licence for security features) and the Agent ID overview (S-4zkj3ag3), not on S2051. (topic: agents/agent-rbac)
 - **Narrowed, not closed: HashiCorp Vault's own numeric SLA or default TTL for a *SQL Server* (MSSQL) dynamic role specifically** — the database-secrets-engine page (S2054) gives the *engine's* default (1h/24h TTL) but no MSSQL-specific example or caveat distinct from the generic default; not pursued further this pass (the generic default answers the design-relevance question adequately per the fact already recorded in `answers.md`). [DOC S2054 for the generic default; UNK for an MSSQL-specific worked example] (topic: agents/api-tokens-issue-and-store)
+  - Resolved 2026-09-28: Vault's MSSQL plugin page (S-2spmezqp) shows `default_ttl="1h"`/`max_ttl="24h"` for SQL Server and Azure SQL roles and the default revocation procedure; no SLA is published. (topic: agents/api-tokens-issue-and-store)
 
 ## agents-copilot
 
@@ -45,24 +46,29 @@ Merged from `_parts/<agent>/gaps.md`.
   Agents SDK docs (S1968) do not mention Teams AI library by name, and GitHub search for
   `microsoft/teams-ai` was not run as a fallback. QG18/QG19's Teams AI library coverage rests on
   general knowledge, not a fetched source, and is marked `[UNK]` in the topic file. [UNK] (topic: agents/own-chatbot-architecture)
+  - Resolved 2026-09-28: `microsoft/teams-ai` README at a pinned commit (S-2rginmyk) says Teams AI is now Teams SDK (site microsoft.github.io/teams-sdk). (topic: agents/own-chatbot-architecture)
 - **Azure Bot Service SDK overview page** (`learn.microsoft.com/en-us/azure/bot-service/bot-service-overview-introduction`)
   returned HTTP 404 on fetch. The Bot Framework SDK retirement statement is instead sourced from the
   GitHub README (S1976) via WebSearch summary rather than a direct WebFetch of the README file
   itself; the exact retirement date (Dec 31, 2025) was not independently cross-checked against a
   second Microsoft Learn page. [UNK, low confidence in exact day-of-month] (topic: agents/own-chatbot-architecture)
+  - Resolved 2026-09-28: the archived botbuilder-dotnet README read directly at a pinned commit (S-cwgzp4nu) states that support tickets are no longer serviced as of December 31, 2025, and points to the Agents SDK. (topic: agents/own-chatbot-architecture)
 - **Copilot Credits pricing rates (currency amounts) and the "billing rates" table** referenced by
   S1961 (`requirements-messages-management#copilot-credits-billing-rates`) were not fetched; only
   the mechanism (pay-as-you-go, prepurchase, prepaid pack) is confirmed, not the actual credit
   price. Tried: 0 direct fetch attempts (out of the ~40-page budget spent on breadth over this one
   page). [UNK] (topic: agents/copilot-studio-inventory)
+  - Partly resolved 2026-09-28: the billing rates table in credits (S-vyhrpdjp) is now DOC; currency prices per credit sit on the commercial pricing page and licensing guide, not on Learn, and stay out of the kb. (topic: agents/copilot-studio-inventory)
 - **A2A protocol support inside Copilot Studio specifically** (as opposed to Foundry Agent Service,
   which explicitly states A2A v1.0 GA and v0.3 preview per S1970) was not confirmed either way for
   Copilot Studio connected agents. Topic 9 (`agents-a2a-cache`) owns A2A depth; flagged here only
   because QG17's "connected agents" line needed it. [UNK] (topic: agents/copilot-studio-inventory)
+  - Resolved 2026-09-28: Copilot Studio documents connecting an A2A agent (S2126); recorded in `agents/copilot-studio-inventory.md`. (topic: agents/copilot-studio-inventory)
 - **Solution export file format details (topic YAML inside a solution .zip, component schema)**
   were not fetched beyond the code-editor YAML sample (S1963) and the ALM overview (S1967); no page
   was fetched that documents the exact solution .zip layout for a Copilot Studio agent (that lives
   under Power Platform ALM docs, `/power-platform/alm/`, not fetched). [UNK] (topic: agents/copilot-studio-inventory)
+  - Tried 2026-09-28, still open: Learn search surfaced no Copilot Studio page documenting the solution .zip layout; the Power Platform solution file format is only described generically. Reading an exported solution in a lab would settle it. (topic: agents/copilot-studio-inventory)
 
 ## agents-errors
 
@@ -124,6 +130,7 @@ Remaining gaps:
   "inspect_ai MCP tool server". Found only an "MCP Registry" reference in unrelated GitHub navigation
   chrome, no MCP-target class documented in the fetched pages. [UNK, recorded in
   `agents/agent-evaluation.md`]
+  - Resolved 2026-09-28 (already covered by S-wwrpen3s): the Inspect docs `tools-mcp.qmd` at main f87b57a5 list `mcp_server_stdio()`, `mcp_server_http()` and `mcp_server_sandbox()`. (topic: agents/agent-evaluation)
 - **No vendor (Anthropic/OpenAI/UK AISI) tool or guidance names ConfigMgr, AdminService or a similarly
   shaped internal MCP server specifically.** Every mapping in `agents/mcp-stress-testing.md` from a QG11 stress dimension to
   a concrete tool is therefore `DER`, not `DOC`. This is expected (such a server is not a public product) and is not
@@ -140,6 +147,7 @@ Remaining gaps:
 - **DeepEval's exact latest released version/date** was not visible in the fetched GitHub README excerpt
   (only commit count). Not pursued further (budget); the licence (Apache-2.0) and MCP metric names were
   the load-bearing facts for QG9 and were confirmed. [UNK] (topic: agents/agent-evaluation)
+  - Resolved 2026-09-28: PyPI shows DeepEval 4.2.6 uploaded 2026-09-24; kept out of the article because it moves weekly. (topic: agents/agent-evaluation)
 - **No vendor page was found publishing a numeric contamination-control cadence** (e.g. "rotate golden-set
   questions every N days") beyond Anthropic's qualitative "run continuously" / "nearly 100% pass rate"
   guidance (S1896); a specific regression cadence number is therefore left to the adopting
@@ -164,13 +172,16 @@ Remaining gaps:
 - QG21: could not fetch the full PDF text of arXiv 2506.08837 with attribution-quality precision beyond WebFetch's
   own extraction; pattern names and one-line trade-offs are taken from that extraction (S2005) and are not verified
   against the original section headings word-for-word. (topic: agents/prompt-injection-design-patterns)
+  - Tried 2026-09-28, not re-attempted: the facts cite the abstract page; a full-text read is only needed for exact quotations. (topic: agents/prompt-injection-design-patterns)
 - QG24: per-engineer cost attribution specific to a *stdio MCP server tool* (rather than whole-session cost) is not
   published anywhere found; Claude Code's MCP-attribution feature in `/usage` attributes by MCP *server*, not by
   individual MCP *tool* within a server. Recorded as a gap in `agent-cost-governance.md`. (topic: agents/agent-cost-governance)
+  - Tried 2026-09-28, still undocumented: the Claude Code MCP and analytics pages give session-level cost only; per-tool attribution would need the server's own logging. (topic: agents/agent-cost-governance)
 
 ## agents-mcp
 
 - **No published per-call latency number for Claude subagent spawn overhead** (only qualitative "fresh context, higher latency" from S1923). Tried: code.claude.com/docs/en/sub-agents (S1923, qualitative only), WebSearch for "claude code subagent spawn latency milliseconds" style queries returned no vendor number. [UNK] (topic: agents/subagents-vs-deterministic-tools)
+  - Tried 2026-09-28, still none published: the Claude Code subagent docs describe fresh context only; a number needs a measurement. (topic: agents/subagents-vs-deterministic-tools)
 - **No vendor-published success-rate/eval-pass-rate threshold for "replace this subagent with a tool."** Anthropic's evals guidance (S1935) describes *how* to measure tool-use quality (task success, tool-call count, token count, error rate) but does not publish a numeric threshold at which a workflow step should convert from agent-driven to hard-coded. Tried: S1920, S1935, S1936; no vendor number found. Recorded as `DER` in answers.md instead. [UNK] (topic: agents/subagents-vs-deterministic-tools)
   - Tried 2026-09-27: re-read S1896 and a WebSearch; the guidance says an eval at 100% tracks regressions but gives no improvement signal, and publishes no numeric threshold for replacing a subagent with a tool. Still open. (topic: agents/subagents-vs-deterministic-tools)
   - Tried 2026-09-28, still none published: recorded as a DER absence in `agents/subagents-vs-deterministic-tools.md`; a threshold would have to come from the operator's own eval baseline. (topic: agents/subagents-vs-deterministic-tools)
@@ -258,6 +269,7 @@ Remaining gaps:
   text, and why no further searches (e.g. for additional Thoughtworks Radar entries, more published
   cost/latency numbers, or a second Google source) could be run. This is a session-level constraint, not a
   per-topic 3-attempt stop. [UNK — recorded as the governing constraint on this part's remaining gaps]
+  - Closed 2026-09-28: a note about an old session's budget, not a knowledge gap; the affected items were revisited in later waves.
 
 ## agents-wiki
 
@@ -279,6 +291,7 @@ Remaining gaps:
 - **No Microsoft-documented way for Linux (Python gssapi/pyspnego/requests-gssapi, adutil, mssql-conf) to retrieve a gMSA's `msDS-ManagedPassword` and turn it into a keytab.** Tried: `adutil keytab createauto` (requires explicit `--password`, built for conventional AD accounts per S1606), Microsoft Learn search for "gMSA Linux", MIT Kerberos docs. Only AWS's `credentials-fetcher` (S1607/S1608, COMMUNITY, Apache-2.0, AWS open source) claims to fetch gMSA credentials over LDAP for Linux. Verification: could be checked by running `credentials-fetcher` against a lab AD gMSA and a lab Linux host, watching whether it produces a usable keytab/ticket — out of scope for this research pass. (topic: arch/kerberos-linux-containers)
   - Tried 2026-09-28, still none: recorded as a DER absence (adutil options, AWS daemon only). Needs Microsoft to document it; not resolvable by web research. (topic: arch/kerberos-linux-containers)
 - **No stated Windows-Server-version floor specific to Kubernetes gMSA** beyond the general Windows-container gMSA fix history (2019 fixes for hostname/race-condition issues); kubernetes.io doesn't restate a minimum OS build. Tried: kubernetes.io gmsa page (S1600) — silent on this; would need a targeted Microsoft Learn "Windows container OS compatibility" cross-reference. [UNK, recorded in arch/k8s-gmsa-windows.md]
+  - Tried 2026-09-28, still none: the kubernetes.io gMSA task page (main) marks the feature stable since v1.18 and uses an ltsc2019 image in examples, but states no Windows Server minimum. (topic: arch/k8s-gmsa-windows)
 - **No GA date for Azure Arc-enabled Kubernetes workload identity federation** — page (S1609) still labelled preview at retrieval (updated 2025-11-18). No separate GA announcement found via search. Verification: not checkable without a live Azure subscription; recheck by re-reading S1609 periodically for a status change. (topic: arch/workload-identity-onprem-k8s)
   - Resolved 2026-09-28: the Arc-enabled Kubernetes release notes (S-vspquxtf) announce general availability with agent 1.32.7 (February 2026); the conceptual page title still says preview. (topic: arch/workload-identity-onprem-k8s)
 - **`Authentication=ActiveDirectoryDefault` behavior for msodbcsql18 against on-prem/Arc-enabled SQL Server specifically** was not confirmed by a fetched page (search summary only, centered on Azure SQL DB/MI). Tried: WebSearch only, did not fetch the full ODBC Entra ID page content beyond the search summary. Could be closed with one more WebFetch of S1610 if this specific mode becomes load-bearing. (topic: arch/sql-auth-containers)
@@ -296,6 +309,7 @@ Remaining gaps:
 - GitLab's semantic-versioning requirement for Catalog releases: found stated in prose docs plus a
   still-open backend enforcement issue (#427286) — unclear from official docs alone whether
   non-semver tags are currently rejected at release time or only informally required. `arch/gitlab-ci-components.md` [UNK]
+  - Closed 2026-09-28: a found item recorded for completeness, no open question.
 
 ## auth
 
@@ -303,7 +317,9 @@ Remaining gaps:
 
 Closed this pass (see kerberos.md, ntlm-deprecation.md, ad-jit-membership.md, configmgr-rbac-auth.md):
 - RC4-in-Kerberos deprecation dates — found and dated (S1215, S1216, S1217). (topic: auth/kerberos)
+  - Closed 2026-09-28: found item, no open question. (topic: auth/kerberos)
 - AD PAM TTL vs Kerberos ticket lifetime — found (S1219): TTL propagates directly into TGT lifetime. (topic: auth/ad-jit-membership)
+  - Closed 2026-09-28: found item; the early-removal edge case is tracked in its own entry. (topic: auth/ad-jit-membership)
 - ConfigMgr RBAC mechanics (QA2) — read 3 official pages (S1218 + 2 more); no provider-cache statement exists, confirmed UNK, LAB line recorded.
   - Partly resolved 2026-09-27: the Kerberos part is now DOC (S-ffrzumip: a group change does not affect the current TGT or its service tickets); no ConfigMgr page documents a provider cache (Configure role-based administration S-iqal4gqk read in full), recorded as a DER absence. (topic: auth/configmgr-rbac-auth)
 
@@ -405,16 +421,24 @@ Still open: (topic: auth/configmgr-rbac-auth)
   - Partly resolved 2026-09-27: a Protected Users admin can run the ConfigMgr console for only 4 hours at a time (S-iqal4gqk); the AdminService, SQL and WAM legs still need the lab. (topic: auth/kerberos)
 - **GitLab account block and non-PAT credentials.** The moderate-users doc (S-dhnetmt7) says a blocked user cannot sign in or access repositories and a deactivated user cannot use the API, and S1377 covers PAT auto-revocation only for Enterprise users; neither states what a block does to CI/CD job tokens, runner authentication tokens (`glrt-`) or open web sessions. Tried 2026-09-27: moderate_users.md and personal_access_tokens.md at pinned commits. (topic: auth/revocation)
 - **Windows cache lifetime of DPAPI-NG group keys.** MS-GKDI (S-53ajdzoj) says clients SHOULD cache group keys per domain and security descriptor but gives no lifetime, and no page covers a deleted group. Verification: remove a user from the SID= group, then call NCryptUnprotectSecret on the same machine without and after a reboot. (topic: auth/key-management-options)
+  - Tried 2026-09-28, still open: MS-GKDI gives only the SHOULD-cache rule; no page states a lifetime. Needs a lab measurement or a protocol clarification. (topic: auth/key-management-options)
 
 ## dsc
 
 - **Windows-host execution not done.** Q20 behaviour (Service/FirewallRuleList native what-if; elevation check in what-if) is from code and manifests (S105, S114, S138, S139). Tried: macOS arm64 binaries (S116/S117), which do not include Windows resources. Needs a Windows 11 lab run. [UNK] (topic: dsc/what-if)
+  - Still open 2026-09-28: needs a Windows host run of dsc 3.3.0; not answerable by web research. (topic: dsc/what-if)
 - **What-if for group resources and adapters in a config.** The "error (pretest, no what-if)" classification for Microsoft.DSC/Group, Assertion, Include and the PowerShell adapters is derived from their manifest flags plus `invoke_set` (S105). Not run. [UNK] (topic: dsc/what-if)
+  - Still open 2026-09-28: needs a lab run; the source-based classification stands. (topic: dsc/what-if)
 - **MCP `what_if` on 3.3.0 ignored at runtime.** The conclusion is from source (no field, no `deny_unknown_fields`; S108) and binary strings (S114). An MCP stdio call was not captured in this session. [DER only] (topic: dsc/mcp-server)
+  - Still open 2026-09-28: runtime confirmation needs a lab MCP session against dsc 3.3.0. (topic: dsc/mcp-server)
 - **Official directives documentation.** No Learn or repo doc page for `directives` was found. Tried: MicrosoftDocs/PowerShell-Docs-DSC `dsc/docs-conceptual/dsc-3.0/reference/schemas/config/document.md` (S145), repo `docs/reference/schemas/config/*.md` on release/v3.3, and a grep of all repo docs for "directives". Only code and tests document it. (topic: dsc/schemas)
+  - Tried 2026-09-28, still none: Learn has no dsc-3.x page for `directives`; the facts rest on the schema and CLI help. (topic: dsc/schemas)
 - **Learn docs lag behind 3.2/3.3.** The Learn CLI pages (dsc-3.0 moniker) are dated 2025; there are no pages for `function`, `server`/`mcp`, directives, `secret()` or settings/policy. Facts come from code at the pinned commits. (topic: dsc/cli-reference)
+  - Re-checked 2026-09-28: still true of the Learn CLI pages; facts rest on the release binaries and repo docs. (topic: dsc/cli-reference)
 - **Trace leakage at `debug` level for adapters.** Tested only with `Microsoft.DSC.Debug/Echo`. Adapter paths (PowerShell) were not tested. (topic: dsc/secrets)
+  - Still open 2026-09-28: needs a lab run with a PowerShell adapter resource. (topic: dsc/secrets)
 - **Generated schemas and help text** (`schemas/generated-*`, `cli/help-*.txt`, `functions-3.3.0.csv`) are outputs of running the release binaries (sources S116/S117 = the tarballs). They cannot be re-downloaded byte-for-byte from a URL. `fetch.py --verify` should verify the tarball hash only. (topic: dsc/schemas)
+  - Closed 2026-09-28: a provenance note (outputs of running the release binaries), not a knowledge gap. (topic: dsc/schemas)
 
 ## ident
 
@@ -427,11 +451,13 @@ Still open: (topic: auth/configmgr-rbac-auth)
 - Throttling limit for `windowsAutopilotDeviceIdentity`: not listed in any `includes/throttling-intune-*.md` in docs-contrib (grep of all includes). UNK. (topic: graph/throttling)
   - Resolved 2026-09-28 as a documented absence: the live throttling page (S-ma3wej5u, updated 2026-09-17) lists only Autopilot events, policy status details and deployment-profile policy set items; recorded as DER. (topic: graph/throttling)
 - Intune RBAC needed for delegated Graph calls on managedDevices / Autopilot identities: API pages S518-S523 state only Graph permissions. Not searched further in memdocs (budget). UNK. (topic: graph/permissions)
+  - Resolved 2026-09-28: Intune's Graph-access guide (S-ilovbr2g) gives the Intune Service Administrator and licence requirement; per-call RBAC permissions are still not on the API pages. (topic: graph/permissions)
 - `dsregcmd /status` Tenant details fields: documented only through sample output on S544; not extracted. (topic: entra/dsregcmd)
   - Resolved 2026-09-27: the section's visibility rule, MDM URL note and sample field names are now DOC in entra/dsregcmd.md (S544); the page still has no per-field descriptions, so the CSV stays without them. (topic: entra/dsregcmd)
 - `msDS-LogonTimeSyncInterval` default value when unset: not on schema page S563. Not searched further (budget). UNK. (topic: ad/computer-attributes)
   - Resolved 2026-09-28: the lastLogonTimestamp schema page (S-7365hqko: 14 days minus a random percentage of 5 days) and KB 2679653 (S-gv5dk5hs: default updates only at 9 to 14 days) give the effective default. (topic: ad/computer-attributes)
 - managedDevice beta List/Delete API pages don't exist under `intune-devices-manageddevice-*` in beta (only Get); beta permissions for list/delete not captured. (topic: graph/permissions)
+  - Tried 2026-09-28, unchanged: the v1.0 pages carry the permissions; no beta list/delete pages were found. (topic: graph/permissions)
 
 ## infra
 
@@ -448,15 +474,18 @@ Still open: (topic: auth/configmgr-rbac-auth)
 - **Ownership chaining vs DENY for the audit table**: not read (sql-docs ownership-chains page not checked). [UNK] (topic: sqlserver/insert-only-audit)
   - Resolved 2026-09-28: the current Ownership Chains page is gone (404); the archived 2008 R2 page (S-qkecle6c) states that permissions on a same-owner referenced object are not evaluated, and the current tutorial (S-yjcvd3to) shows access through a procedure; the DENY consequence is recorded as DER. (topic: sqlserver/insert-only-audit)
 - **Free-tier author self-approval**: approvals `_index.md` (S441) says Free approvals are optional. Whether a Free author can approve their own MR is not stated on the pages read. [UNK] (topic: gitlab/mr-approvals)
+  - Tried 2026-09-28, still open: the approval settings that stop author approval are Premium settings; no Free-tier statement found. A test project on GitLab Free would settle it. (topic: gitlab/mr-approvals)
 
 ## later
 
 - Power BI docs source repo: `MicrosoftDocs/powerbi-docs` and `MicrosoftDocs/data-integration` are not public (clone: "Repository not found"); learn pages point to private `powerbi-docs-pr`. Used throttled learn.microsoft.com HTML instead; no pinned raw URL possible for S900-S910 (only ms.date recorded).
+  - Re-checked 2026-09-28: still not public; Power BI pages stay `quote` under the Learn terms.
 - GPO backup on-disk layout (folder contents such as Backup.xml / gpreport.xml): not in the GroupPolicy cmdlet reference (S921); grep of MicrosoftDocs_windowsserverdocs, SupportArticles-docs, win32 clones for "bkupInfo.xml" / "gpreport.xml" found nothing. [UNK] (topic: gpo/gpo-export)
   - Tried 2026-09-27, still open: Learn search (Backup-GPO, IGPMGPO::Backup, Entra Domain Services GPO backup preview) describes backup contents (settings, GPO ID, ACLs) but not the folder layout; recorded as DER, with the IGPMGPO::Backup contents as DOC. (topic: gpo/gpo-export)
 - DSC v3 GroupPolicyTemplate adapter: which released version first ships it is left to dsc/ (only the main-branch manifest was checked, S924). [UNK] (topic: gpo/dsc-group-policy-adapter)
   - Resolved 2026-09-27: the v3.3.0 release notes (S118) list the adapter (PR #1686), and the manifest exists at tag v3.3.0 (pinned in S-3yuoi2qa) but returns 404 at v3.3.0-rc.2, rc.1, preview.1 and preview.4 and v3.2.3. (topic: gpo/dsc-group-policy-adapter)
 - `ansible.windows.win_dsc` check-mode support: the docs page as fetched shows no attributes table; not confirmed. [UNK] (topic: ansible/dsc3-module)
+  - Resolved 2026-09-28: `win_dsc.ps1` at tag 3.8.0 (S-g5j4nkll) sets `supports_check_mode` and skips `Set` in check mode; recorded as CODE. (topic: ansible/dsc3-module)
 - powerbi/configmgr-views.md depends on mecm/sql-views-compliance.md (other agent); that file did not exist at time of writing.
   - Resolved 2026-09-27: mecm/sql-views-compliance.md exists; the dependency is satisfied. (topic: mecm/sql-views-compliance)
   - Closed 2026-09-28: the article now also carries the Power BI Report Server integration facts (S-djtnspkg) and moves to complete. (topic: powerbi/configmgr-views)
@@ -478,6 +507,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
 - privacy.claude.com / support.claude.com commercial-terms pages not fetched (time budget); retention facts come from code.claude.com data-usage/ZDR and platform.claude.com API retention pages. (topic: claude/data-retention)
   - Resolved 2026-09-28: the Privacy Center consumer, commercial and ZDR-scope articles read directly (S-6lfftobj, S-nqy6npap, S-qrxvz4ph); facts added. (topic: claude/data-retention)
 - MCP spec repo is a shallow clone: git history for 2026-07-28 release date not available; release date inferred only from the version string and SDK v2.0.0 release date (2026-07-28). (topic: mcp/spec-overview)
+  - Resolved 2026-09-28: the repository's GitHub releases (S-q6ob42dw) show `2026-07-28` published 2026-07-28 and the RC on 2026-05-29. (topic: mcp/spec-overview)
 - Enterprise-Managed Authorization's stable date is not in `mcp/registry-and-extensions.md`: the ext-auth file at commit fb374c7d (S-hrri7kcy, added in the auth wave 2026-09-27) marks it Stable, promoted by PR #29 merged 2026-06-18. For the mcp wave to write up. (topic: mcp/registry-and-extensions)
 
 ## mecm1
@@ -501,6 +531,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
 - Collect client logs programmatic retrieval (WMI class / AdminService route for Support_*.zip): not documented. (topic: mecm/collect-client-logs)
   - Tried 2026-09-27, still open: re-grep of the memdocs archive for Support_ and diagnostic files (only Resource Explorer and client-notification pages), live Learn search; no WMI class, SQL view or AdminService route is tied to diagnostic files. The article records the absence as DER. (topic: mecm/collect-client-logs)
 - learn.microsoft.com URLs were derived from repo paths (intune/configmgr/...) and not fetched; historic URL form was learn.microsoft.com/mem/configmgr/... . Raw pinned URLs in sources.csv are authoritative.
+  - Closed 2026-09-28: the ConfigMgr sources were re-read at the census and in the mecm wave; a provenance note only.
 
 ## mecm2
 
@@ -544,11 +575,13 @@ Still open: (topic: auth/configmgr-rbac-auth)
 - **Exact channel string for ModernDeployment-Diagnostics-Provider/Autopilot.** Only the Event Viewer path is documented (autopilot/troubleshooting-faq.yml). The channel name in this kb is derived (DER). (topic: logs/sources)
   - Narrowed 2026-09-28: the Autopilot device-registration troubleshooting article (S-6lmczs32) collects `microsoft-windows-moderndeployment-diagnostics-provider-autopilot.evtx`, which matches the derived channel name; no page spells the channel string itself, so it stays DER. (topic: logs/sources)
 - **ConfigMgr-specific Windows event channels.** None are documented in the clones. ConfigMgr writes log files instead (see mecm/log-files.csv).
+  - Tried 2026-09-28, still none documented: ConfigMgr logs to files (`mecm/log-files.csv`); recorded as an absence.
 - **Query length limit for multi-device query.** Not stated. (topic: intune/device-query)
   - Tried 2026-09-27, still open: the live multi-device page (updated_at 2026-09-02) Known limitations list joins, records, rate and export limits but no query length; the 2,048-character limit is stated only for single-device query. (topic: intune/device-query)
 - **ECS base fields (@timestamp, message).** base.yml was not fetched. (topic: logs/ecs-log-fields)
   - Resolved 2026-09-28: `schemas/base.yml` and `schemas/event.yml` read at the same commit (S-okri4cz3, S-gho2sfjp). (topic: logs/ecs-log-fields)
 - **Licence of the Defender learn pages.** The MicrosoftDocs/defender-docs repo is private, so the licence could not be checked. That content is summarised only.
+  - Re-checked 2026-09-28: `MicrosoftDocs/defender-docs` still returns 404, so Defender pages stay `quote`.
 
 ## priorart
 
@@ -609,6 +642,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
 ## privacy
 
 - Next Presidio release date / version: not announced. Tried GitHub releases API (S801), PyPI JSON (S802), CHANGELOG `[unreleased]` (S800). (topic: privacy/presidio)
+  - Re-checked 2026-09-28: PyPI still shows presidio-analyzer 2.2.364 (2026-07-22); no next release announced. (topic: privacy/presidio)
 - spaCy `en_core_web_lg` training-data source licences (`LICENSES_SOURCES`): not read. The fetch of https://huggingface.co/spacy/en_core_web_lg/raw/557bf75.../LICENSES_SOURCES was declined during the session. spacy.io/models/en (S852) renders details client-side, so the static HTML has no licence text. The model licence itself (MIT) is confirmed by S850 and S851. (topic: privacy/spacy-model-licence)
   - Resolved 2026-09-27: LICENSES_SOURCES read at sha 557bf75 (S-kujx3zxn): OntoNotes 5 commercial (licensed by Explosion), ClearNLP citation only, WordNet 3.0 License, Explosion Vectors CC0. (topic: privacy/spacy-model-licence)
 - nvidia/gliner-PII full label list (55+): not in the model card (S860) or the HF API (S859). The dataset card and NVIDIA licence text were not fetched (the nvidia.com licence is not on an allowed host). (topic: privacy/gliner-models)
@@ -618,6 +652,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
 - CJEU C-413/23 P full judgment text: not fetched. Used press release 107/25 (S875) only. (topic: privacy/gdpr-pseudonymisation)
   - Resolved 2026-09-27: the full judgment was read on EUR-Lex (S-2s2xlwgf; operative part, paras 80-86 and 111). (topic: privacy/gdpr-pseudonymisation)
 - `surrogate_ahds` operator behaviour over REST: not checked. (topic: privacy/presidio-operators-deanonymize)
+  - Still open 2026-09-28: needs a running presidio-anonymizer container with the AHDS operator configured; the docs describe only the Python API. (topic: privacy/presidio-operators-deanonymize)
 
 ## reuse
 
@@ -729,6 +764,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
 - QS17: exact GitLab **subscription tier** (Free/Premium/Ultimate) gating for Dependency Scanning vs. SLSA attestation vs. artifact signing was not confirmed against `docs.gitlab.com/subscriptions/features/` in this pass — only the existence and mechanics of the features (`security/supply-chain.md`) were confirmed, not their tier gate. `Verification: cross-check docs.gitlab.com/subscriptions/features/ for the tier of Dependency Scanning, SLSA provenance attestation, and container/artifact signing before using this for a purchasing or gate decision.`
   - Resolved 2026-09-27: GitLab docs at commit 9f1632e: dependency scanning by SBOM Ultimate on all offerings (S1511); SLSA level 3 attestations Ultimate, GitLab.com only, Experiment (S-l6ia2wz4); Sigstore keyless signing all tiers, GitLab.com only (S-7d4nrwpk); runner artifact provenance metadata all tiers and offerings (S-hvhro6n5). (topic: security/supply-chain)
 - QS18 (Run Scripts + AllSigned): confirmed Run Scripts has no signing gate of its own and the client-side AllSigned policy is the enforcement point, but did not find an official page describing whether ConfigMgr's CI (compliance) script deployment path differs from Run Scripts on this point — assumed identical based on both using the same client-side PowerShell execution policy setting (already documented in `windows/execution-policy-signing.md`).
+  - Closed 2026-09-28: a confirmed item, no open question.
 - No official Microsoft page was found specifically discussing `dsc.exe` (or DSC v3 resource executables) under WDAC/App Control; general PowerShell WDAC script-enforcement mechanics were confirmed but not a DSC-specific statement. Community source only (S1519), not used as sole evidence for any `DOC` fact. (topic: security/script-and-code-signing)
   - Tried 2026-09-27, partly resolved: Microsoft's script-enforcement page (S-i4uarhme) now backs the PowerShell rules (option 11, .ps1/.psm1/.psd1, WinVerifyTrust root) and says unenlightened hosts are not controlled; no Microsoft page names `dsc.exe`, so its treatment as an executable is DER. DSC manifest signing is open issue #327 (S-zokdk7aw). (topic: security/script-and-code-signing)
 - PyPI Trusted Publishing's self-managed-GitLab support status is unresolved: the official `docs.pypi.org` page (S1509) does not list self-managed GitLab as supported, while a third-party (Socket) report (S1510, COMMUNITY) claims PyPI expanded support to self-managed GitLab. Recorded as a conflict-worthy discrepancy in `security/supply-chain.md` rather than asserted either way as `DOC`.
@@ -767,6 +803,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
   Toolkit and DISA STIG are zip downloads; CIS is licensed) or for Ansible (docs.ansible.com answered scripted
   requests with HTTP 429; the GitHub repos `ansible/ansible-documentation` and `ansible-collections/ansible.windows`
   remain readable through GitHub).
+  - Re-checked 2026-09-28: still none; the baselines were read from the SCT zips (S-bzyxqg37, S-p6phzp72) instead. (topic: agents/doc-lookup-sources)
 - The Claude Code Docs and MCP docs MCP servers carry no explicit GA statement; they are kept because Anthropic's
   own quickstart documents the first and both report version 1.0.0 with no preview label.
   - Tried 2026-09-27: `code.claude.com/docs/en/mcp-quickstart` and `/en/agent-sdk/mcp` use `https://code.claude.com/docs/mcp` as their first example server, but neither page carries a GA label. Still open. (topic: agents/doc-lookup-sources)
@@ -804,6 +841,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
 ## agents/agent-evaluation
 
 - Whether Amazon Bedrock AgentCore Evaluation (`inspect_ai`) has native stdio-MCP-target support, and whether Azure AI Foundry's evaluation SDK has explicit stdio-MCP-target support beyond a UI "MCP Registry" reference, were not confirmed on the fetched pages (2 lookups: product overview + evaluation-harness pages). (topic: agents/agent-evaluation)
+  - Partly resolved 2026-09-28: Inspect itself has `mcp_server_stdio()` (S-wwrpen3s); AgentCore Evaluation and Foundry's evaluation SDK were not re-read. (topic: agents/agent-evaluation)
 
 ## agents/coding-agents-mcp
 
@@ -936,13 +974,17 @@ Still open: (topic: auth/configmgr-rbac-auth)
 ## ad/krbtgt-password-reset
 
 - **Whether `New-KrbtgtKeys.ps1` is still actively maintained/recommended as of 2026, and its current exact parameters/behavior.** Microsoft's ransomware incident-response playbook (S-4cv3kd2v) links to `github.com/microsoft/New-KrbtgtKeys.ps1` as a recommended scripted process but the kb has not fetched the script repository itself (1 attempt: only the linking Learn page was fetched via MCP). [UNK] (topic: ad/krbtgt-password-reset)
+  - Tried 2026-09-28: `microsoft/New-KrbtgtKeys.ps1` is archived on GitHub (last push 2024-03-07), so it is not maintained; whether Microsoft still recommends it is not stated. (topic: ad/krbtgt-password-reset)
 - **A documented, Microsoft-stated minimum recommended KRBTGT reset cadence outside of a compromise response.** The fetched pages give the 180-day posture-assessment threshold (S-6mj4jpce) and the twice/10-hour compromise procedure (S-4ikiakpi), but no general "reset every N days as routine hygiene" policy statement was found in the pages searched. [UNK] (topic: ad/krbtgt-password-reset)
+  - Tried 2026-09-28, still none beyond the pages already cited; a routine cadence is not published. (topic: ad/krbtgt-password-reset)
 - **Closed 2026-09-26:** `New-KrbtgtKeys.ps1` status: the repository was archived on 2024-03-08 (S-vhwb6zo5); routine cadence: Microsoft says "on a regular schedule" with no fixed interval (S-nl7th7fi), 180 days only as the Defender for Identity check (S-6mj4jpce). (topic: ad/krbtgt-password-reset)
 
 ## gpo/admx-central-store
 
 - Whether GPMC/the Group Policy Editor chooses the Central Store over the local `C:\Windows\PolicyDefinitions` store by comparing file versions, or simply prefers the Central Store whenever present (subject only to `EnableLocalStoreOverride`), is not stated on `create-and-manage-central-store` or `group-policy-settings-show-as-extra-registry-settings`. Searched Microsoft Learn for "GPMC central store versus local store precedence"; no page found describing a version-comparison step. (topic: gpo/admx-central-store)
+  - Closed 2026-09-28: answered by the 2026-09-26 closing note below (`EnableLocalStoreOverride`, presence not version). (topic: gpo/admx-central-store)
 - Whether SYSVOL/Central Store replication specifically uses DFSR (versus legacy FRS on domains not yet migrated) is not stated on any fetched page for this topic; the DFSR mechanism is inferred, not confirmed, for this article. Searched Microsoft Learn for "Central Store DFSR replication SYSVOL"; no page directly names the replication engine in the Central Store context. (topic: gpo/admx-central-store)
+  - Closed 2026-09-28: answered by the 2026-09-26 closing note below (DFSR at 2008+ DFL). (topic: gpo/admx-central-store)
 - **Closed 2026-09-26:** no version comparison; `EnableLocalStoreOverride` 0 (default) uses the SYSVOL store when present, 1 the local one (S-xtwd545o); SYSVOL replicates with DFSR at the 2008+ domain functional level, FRS deprecated and blocked for new DCs from Windows Server 2019 (S-6glsfens, S-gvgapsup). (topic: gpo/admx-central-store)
 
 ## arch/kerberos-linux-containers

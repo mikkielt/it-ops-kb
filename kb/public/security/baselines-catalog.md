@@ -18,7 +18,7 @@ test-mode (visibility-only) DSC baseline approach. CIS publishes a Windows 11 En
 Windows 11 benchmark, both free-to-read PDFs, reported (COMMUNITY, terms page not fetched) as CC BY-NC-SA 4.0 for non-members (no bulk
 machine-readable export without CIS-SecureSuite/WorkBench). DISA's Windows 11 STIG is at V2R9 and the Server 2025 STIG at V1R3 (both benchmark date 2026-08-10), public, no registration. ACSC publishes both
 an Essential Eight maturity model and a Windows 11 hardening guide, both freely reusable with
-attribution. NCSC (UK)/BSI/ANSSI rows remain UNK.
+attribution. NCSC (UK), BSI and ANSSI publish narrower guidance (Intune packs, Windows 10 GPOs, a French Windows Server guide).
 
 ## Facts
 
