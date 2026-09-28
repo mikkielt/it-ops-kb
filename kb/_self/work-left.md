@@ -114,9 +114,10 @@ Kb facts the build rests on: `claude/hooks.md` (async hooks, `prompt_id`, `Stop`
     - the historical records and the new runs are data in one committed results file beside the report, one row per scenario, run and metric, and the report's comparison tables are generated from it, not typed;
     - new scenarios cover what changed since the last runs, at least: the query-log hooks (always-on cost, per-prompt latency of capture, the `SessionEnd` launcher), distill, learn and apply (run time, Haiku tokens per entry, the adoption gates' effect on eval pass rate, mean pack and off-kb `good`), redaction speed, research cost per accepted fact, `/kb-ingest` on a sample repository, a host plugin with team roots, and the hook launcher's start-up on each OS;
     - one command re-runs every scenario (or one named scenario), and each section names its command;
-    - every doc that cites the old reports (`design.md`, `token-efficiency.md`, `doc2query.md`, `plugin.md`, `querylog.md`, `tools.md`, `map.csv`, `README.md`, ...) points at the new sections, and the old files are gone.
+    - every doc that cites the old reports (`design.md`, `token-efficiency.md`, `doc2query.md`, `plugin.md`, `querylog.md`, `tools.md`, `map.csv`, `README.md`, ...) points at the new sections, and the old files are gone;
+    - `README.md` carries the new results: its opening comparison, the cost table and the benchmark section give the re-run numbers with their Claude Code version, kb size and date, name the new scenarios in a line each, and link the new report.
 
-    Check: `grep -rn "benchmark-bare-vs-kb\|reports/token-usage" kb/ _tools/ .claude/ .claude-plugin/ README.md AGENTS.md` prints nothing; `python3 _tools/tests.py` (doc cohesion and links) and `selfdoc.py stale` pass; re-running one old and one new scenario with its section's command reproduces its row within the noise the report states. Unchanged: each measurement's method, unless the report states the change beside its numbers.
+    Check: `grep -rn "benchmark-bare-vs-kb\|reports/token-usage" kb/ _tools/ .claude/ .claude-plugin/ README.md AGENTS.md` prints nothing; `python3 _tools/tests.py` (doc cohesion and links) and `selfdoc.py stale` pass; every number in `README.md` matches a row of the results file; re-running one old and one new scenario with its section's command reproduces its row within the noise the report states. Unchanged: each measurement's method, unless the report states the change beside its numbers.
 
 ## Watch
 
