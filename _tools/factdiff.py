@@ -622,7 +622,23 @@ def cmd_calibrate(a):
 
 # ---------------------------------------------------------------- detection
 
-LOG_COLS = ["source_id", "url", "verdict", "signal", "evidence", "fact", "path", "line", "outcome", "target", "note"]
+LOG_COLS = ["source_id", "url", "verdict", "signal", "evidence", "baseline_utc", "content_date", "fact", "path", "line", "outcome",
+            "target", "note"]
+DATE_KEYS = ("updated_at", "dateModified", "article:modified_time")  # a version key that is the content's own date
+
+
+def content_date(doc):
+    """The page's own content date (YYYY-MM-DD) from its version keys, or ''."""
+    v = (doc or {}).get("version") or {}
+    return next((v[k][:10] for k in DATE_KEYS if re.match(r"\d{4}-\d{2}-\d{2}", v.get(k, ""))), "")
+
+
+def confirmable(head, retrieved):
+    """Whether a source's `unchanged` (or all-verbatim) verdict proves its facts still hold: the text it was compared
+    with is no newer than the source's last confirmation (retrieved_utc), by the detection baseline's date or by the
+    page's own content date. A baseline taken after the last confirmation proves only that nothing changed since."""
+    r = (retrieved or "")[:10]
+    return bool(r) and any(d and d[:10] <= r for d in (head.get("baseline_utc", ""), head.get("content_date", "")))
 VERDICTS = ("unchanged", "changed", "new", "moved", "gone", "soft-404", "replaced", "error", "pinned")
 OUTCOMES = ("verbatim", "moved", "modified", "not-found", "unanchored", "dead")
 AUTO = ("verbatim", "moved")  # applied with no model: the anchor's passage found word for word
@@ -926,7 +942,9 @@ def cmd_detect(a):
             if verdict == "replaced" and found:
                 verdict, ev = "changed", ev + "; anchors still found: an edit, not a replacement"
         counts[verdict] += 1
-        base = {"source_id": sid, "url": srcs[sid]["url"], "verdict": verdict, "signal": signal, "evidence": ev}
+        base = {"source_id": sid, "url": srcs[sid]["url"], "verdict": verdict, "signal": signal, "evidence": ev,
+                "baseline_utc": state.get(sid, {}).get("detected_utc", "") if verdict != "new" else "",
+                "content_date": content_date(doc) or content_date(prev)}
         log.append({**base, "fact": "", "path": "", "line": "", "outcome": "", "target": "", "note": ""})
         for r in rows_f:
             log.append({**base, **r})
@@ -1074,7 +1092,10 @@ def repoint(path, key, old_id, new_id):
 def cmd_apply(a):
     """Apply what needs no model: sources whose facts were all found word for word (or that did not change) are
     confirmed and re-dated, their anchors dated; a fact found word for word on another page is re-pointed to a new
-    source row for that page. The rest waits for review (factdiff.py review)."""
+    source row for that page. The rest waits for review (factdiff.py review). A confirmation needs the compared text
+    to be no newer than the source's last confirmation (confirmable(); an anchor found word for word counts when it
+    was placed no later than that): the first baseline after a census proves nothing about the days between, so those
+    sources are `held back` until a census or refresh confirms them."""
     import build_index
     log, srcs = read_log(a.log), sources()
     date = a.date or today()
@@ -1083,20 +1104,25 @@ def cmd_apply(a):
     by_src = collections.defaultdict(list)
     for r in log:
         by_src[r["source_id"]].append(r)
-    confirmed, moved_to, n_verbatim, n_moved = {}, collections.defaultdict(list), 0, 0
+    confirmed, moved_to, n_verbatim, n_moved, held = {}, collections.defaultdict(list), 0, 0, 0
     for sid, rs in by_src.items():
         head = rs[0]
         fr = [r for r in rs if r["fact"]]
+        retrieved = srcs.get(sid, {}).get("retrieved_utc", "")
         if head["verdict"] == "unchanged":
+            if not confirmable(head, retrieved):
+                held += 1
+                continue
             confirmed[sid] = f"fact diff: unchanged ({head['signal']})"
             for k, rel, _, _ in facts.get(sid, []):
                 if (k, rel, sid) in anchors:
                     anchors[(k, rel, sid)]["verified_utc"] = date
         elif head["verdict"] in ("changed", "new", "moved") and fr and all(r["outcome"] == "verbatim" for r in fr) \
-                and len(fr) == len(facts.get(sid, [])):
+                and len(fr) == len(facts.get(sid, [])) and all(anchors[(r["fact"], r["path"], sid)]["verified_utc"][:10]
+                                                                <= retrieved[:10] for r in fr):
             confirmed[sid] = f"fact diff: {len(fr)} anchor(s) verbatim"
         for r in fr:
-            if r["outcome"] == "verbatim":
+            if r["outcome"] == "verbatim" and anchors[(r["fact"], r["path"], sid)]["verified_utc"][:10] <= retrieved[:10]:
                 anchors[(r["fact"], r["path"], sid)]["verified_utc"] = date
                 n_verbatim += 1
             elif r["outcome"] == "moved" and r["target"]:
@@ -1141,7 +1167,7 @@ def cmd_apply(a):
             if ids and "retrieved_utc" in fm and all(i in dated for i in ids) and str(fm["retrieved_utc"])[:10] != date \
                     and any(i in confirmed for i in ids):
                 articles.append((full, re.sub(r"(?m)^retrieved_utc:.*$", f"retrieved_utc: {date}", text, count=1)))
-    print(f"apply {date}: sources confirmed={len(confirmed)} facts verbatim={n_verbatim} facts moved={n_moved} "
+    print(f"apply {date}: sources confirmed={len(confirmed)} held back={held} facts verbatim={n_verbatim} facts moved={n_moved} "
           f"new source rows={len(new_rows)} articles re-dated={len(articles)}" + (" (dry run: nothing written)" if a.dry_run else ""))
     if a.dry_run:
         return 0

@@ -27,7 +27,7 @@ bucket:
                 (note `blocked`), or MicrosoftDocs/memdocs (archived: re-source to the live Learn page)
 Git work uses bare blobless clones in _cache/census/repos/ (git over https; api.github.com is never called).
 --factdiff LOG takes the verdicts of the census's first stage (factdiff.py detect, _census/factdiff-<date>.csv) for the
-sources it covers: unchanged, or every fact found word for word -> OK; gone or soft 404 with nothing moved -> GONE;
+sources it covers: unchanged, or every fact found word for word, against a text no newer than retrieved_utc -> OK; gone or soft 404 with nothing moved -> GONE;
 facts to review -> CHANGED, the evidence naming `factdiff.py review`. Pinned and errored sources are checked here.
 
 record fills outcome/outcome_note after phase 2 read a source in full:
@@ -482,10 +482,11 @@ def check_live(url, since, rec):
 
 # ---------------------------------------------------------------- check (phases 0-1)
 
-def factdiff_verdicts(path):
+def factdiff_verdicts(path, retrieved=None):
     """{source id: (http status, verdict)} from a fact diff log (factdiff.py detect, the census's first stage): a source
-    that did not change, or whose every fact was found word for word, is OK; a gone one GONE; one with facts to
-    review CHANGED. Pinned sources are left to the git checks here."""
+    that did not change, or whose every fact was found word for word, is OK when the text compared is no newer than
+    its retrieved_utc (by the detection baseline or the page's content date; else it is checked here); a gone one
+    GONE; one with facts to review CHANGED. Pinned sources are left to the git checks here."""
     with open(path, encoding="utf-8", newline="") as f:
         rows = list(csv.DictReader(f))
     by = defaultdict(list)
@@ -498,6 +499,10 @@ def factdiff_verdicts(path):
         if v in ("pinned", "error"):
             continue
         todo = [r for r in facts if r["outcome"] not in ("verbatim", "moved")]
+        rd = ((retrieved or {}).get(sid) or "")[:10]
+        proven = bool(rd) and any(d and d[:10] <= rd for d in (head.get("baseline_utc", ""), head.get("content_date", "")))
+        if v in ("unchanged", "changed", "new", "moved") and not todo and not proven:
+            continue  # compared with a text newer than the last confirmation: checked here instead
         if v == "unchanged":
             res = verdict("OK", f"fact diff: unchanged ({head['signal']}: {head['evidence']})", f"fact diff {head['signal']}")
         elif v in ("gone", "soft-404") and not [r for r in facts if r["outcome"] == "moved"]:
@@ -579,7 +584,7 @@ def cmd_check(a):
     if not rows:
         print("no source selected")
         return 2
-    fd = factdiff_verdicts(a.factdiff) if a.factdiff else {}
+    fd = factdiff_verdicts(a.factdiff, {r["id"]: r.get("retrieved_utc", "") for r in rows}) if a.factdiff else {}
     work = [(r, classify(r["url"])) for r in rows]
     print(f"phase 0: {len(work)} sources; " + ", ".join(f"{k}={n}" for k, n in sorted(Counter(c["kind"] for _, c in work).items())), flush=True)
     repos = sorted({c["repo"] for _, c in work if c["repo"]})

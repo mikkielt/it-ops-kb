@@ -1,6 +1,6 @@
 # Token efficiency: every technique and where it lives
 
-The catalogue of what this kb does to spend fewer tokens, turns and model calls, each with the file that does it and the measurement behind it. The reasoning and the headline numbers (when the kb pays off and when it does not) are in `kb/_self/design.md`; the measurements are in `kb/_self/reports/token-usage.md` (section names in quotes) and `kb/_self/reports/benchmark-bare-vs-kb.md`. Change a technique here only together with its code (`/kb-self`).
+The catalogue of what this kb does to spend fewer tokens, turns and model calls, each with the file that does it and the measurement behind it. The reasoning and the headline numbers (when the kb pays off and when it does not) are in `kb/_self/design.md`; the measurements are in `kb/_self/reports/token-usage.md` (section names in quotes), `kb/_self/reports/benchmark-bare-vs-kb.md` and `kb/_self/reports/fact-diff.md`. Change a technique here only together with its code (`/kb-self`).
 
 The cost model all of them follow: a lookup costs the agent's fixed start context times its turns, plus what the tools return. The facts are small (a fact line is under 100 tokens); the context around them is not ("Reading files without the lookup tools"). So each technique does one of five things: skip the model, cut turns, shrink tool output, shrink the always-loaded context, or send the work to a cheaper model.
 
@@ -10,6 +10,7 @@ The cost model all of them follow: a lookup costs the agent's fixed start contex
 - **`none` costs one line.** For `coverage: none` the hook adds one line naming the missing words ("say so and add nothing from memory") instead of the pack.
 - **Structural questions are tools, not reading.** Counts, lists and joins are `rag.py audit`, `facts` and `src --cited` (MCP `kb_audit`, `kb_facts`, `kb_source` with `cited`): 1 call and about 1k tokens, exact, against 28 calls and 363k effective input for an agent reading files ("Reading files without the lookup tools", T6).
 - **`kb_ask.py` answers counts and "who cites" with no model.** It detects them before routing and calls the audit and source tools: $0, 0.5 s [CODE _tools/kb_ask.py#tool_answer] ("Routing by verdict").
+- **Source changes are sorted without a model.** `_tools/factdiff.py` checks each source by its provider's cheapest reliable signal (`_tools/providers.csv`: a 304 to the stored ETag, the page's version id, a text hash), resolves each fact of a changed page against its anchor, and dates the unchanged and word-for-word ones in a `KB-Verified` commit; `review` gives a model only the facts whose passage changed, old and new passage each, never a page [CODE _tools/factdiff.py#review_items] ("Dry run on the entra domain" in `kb/_self/reports/fact-diff.md`: 73% of facts with no model, 31 times less text).
 - **The model runs at write time, not at lookup time.** doc2query expansions are generated once per fact and indexed; `pack` stays deterministic (`kb/_self/doc2query.md`).
 
 ## 2. Fewer turns

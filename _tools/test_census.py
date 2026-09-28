@@ -207,5 +207,12 @@ def test_factdiff_verdicts(tmp_path):
             {**base, "source_id": "S4", "verdict": "gone", "evidence": "HTTP 404"}, {**base, "source_id": "S4", "verdict": "gone", "fact": "c", "outcome": "dead"},
             {**base, "source_id": "S5", "verdict": "pinned"}]
     census.kbcommon.write_csv(str(log), factdiff.LOG_COLS, rows)
-    got = {k: v[1]["bucket"] for k, v in census.factdiff_verdicts(str(log)).items()}
+    rows[0]["content_date"] = "2031-01-01"
+    rows[1]["baseline_utc"] = "2031-01-01T00:00:00Z"
+    census.kbcommon.write_csv(str(log), factdiff.LOG_COLS, rows)
+    retrieved = {s: "2031-01-02" for s in ("S1", "S2", "S3", "S4", "S5")}
+    got = {k: v[1]["bucket"] for k, v in census.factdiff_verdicts(str(log), retrieved).items()}
     assert got == {"S1": "OK", "S2": "OK", "S3": "CHANGED", "S4": "GONE"}
+    # compared with a text newer than the last confirmation: left to the census's own checks
+    got = {k: v[1]["bucket"] for k, v in census.factdiff_verdicts(str(log), {s: "2030-12-01" for s in retrieved}).items()}
+    assert got == {"S3": "CHANGED", "S4": "GONE"}

@@ -16,7 +16,7 @@ Measurements behind `_tools/factdiff.py` and the cut-offs in `_tools/factdiff.to
 
 By tag kind, share located of the pairs with text: DOC 59%, COMMUNITY 56%, CODE 47%, DER 29% (a derivation rarely has one backing sentence). By provider: code.claude.com 76%, raw GitHub 70%, gitlab.com 68%, Learn 56%, modelcontextprotocol.io 47%, docs.gitlab.com 36%, github.com pages 28%, the generic long tail 33%. Quotes (25 words at most, `copy` and `quote` sources only) are kept on 6,236 located anchors; a quote that looks like an address, a home path, a token, a private network or a GUID is left out.
 
-The unlocated pairs are listed, not guessed: `python3 _tools/factdiff.py anchors --unlocated`. They are facts that condense a whole section or table, derivations, probe results (a page's headers, not its text) and facts whose page is client-rendered.
+The pass also spent the unauthenticated api.github.com allowance (60 requests an hour) on the 43 `api.github.com` sources, so research run at the same time got `403 rate limit exceeded` there (git over https, `git ls-remote`, is not limited). The unlocated pairs are listed, not guessed: `python3 _tools/factdiff.py anchors --unlocated`. They are facts that condense a whole section or table, derivations, probe results (a page's headers, not its text) and facts whose page is client-rendered.
 
 ### Anchor thresholds
 
@@ -55,3 +55,21 @@ The cut-offs of `_tools/factdiff.toml` other than the anchor's, each from real h
 **Soft 404 (`soft404_min`).** `python3 _tools/factdiff.py calibrate soft404 --hosts 200`: for each of the 173 hosts of the public sources (api.github.com left out for its rate limit), a real page and two made-up sibling urls. 153 hosts answered the made-up url with 404, 9 with 200 and 11 with another code (403, 401, 400, 202, errors). On the 8 hosts that answered 200 to both made-up urls, the two made-up pages had Jaccard similarity 1.0 every time; the real page against the made-up one was 0.0 on 3 hosts and 1.0 on 5, whose pages are client-rendered shells with the same text whatever the url. `soft404_min` is 0.8: any cut in (0, 1] separates the decidable hosts, and a shell host is never declared dead because the rule needs the page's previous version to have differed from the made-up page.
 
 **Known dead links.** The census logs hold 14 sources that answered 404; 13 were since superseded by a person. `detect_source` called each gone (hard 404) on 2026-09-28. For the 8 Learn ones, the facts now citing their successors were searched for as if the old page had just died (redirect, sitemap additions, then Learn search by the old page's title, the anchor's quote and the fact's words, hub pages left out): of 28 facts with an anchor on the successor, 10 were found word for word on the right successor page and none on a wrong page; 18 went to review with the best candidate page. The first attempt, searching by the fact's words only, found 1 of 28.
+
+## Dry run on the entra domain
+
+The `entra` domain: 86 cited sources (69 Learn pages, 17 raw files pinned at a commit in `MicrosoftDocs/entra-docs`), 160 fact-source pairs on Learn pages mapped to that repository.
+
+**Live, `python3 _tools/factdiff.py detect --dir entra --sitemaps`** (the day of the anchor baseline): 86 sources in 2 min 53 s, one request per 1.1 s per host; the 17 pinned files needed no request, all 69 Learn pages answered `304 Not Modified` to their stored ETag on the markdown form, and the Learn sitemap of the `entra` product was recorded as the next run's baseline. `factdiff.py apply --dry-run` would confirm all 69 (each page's `updated_at` is no later than its source's last confirmation) and re-date 2 articles whose sources were then all confirmed; `review` had nothing to show. No model was called and no page text was read by one.
+
+**Replay over eight months of real edits.** To see resolution on changed pages, the anchors were placed on each page's text as it stood in `MicrosoftDocs/entra-docs` on 2026-02-01 and resolved against today's text, as a detect run after that interval would (the provider search and sitemap steps off; a replay script over `factdiff.py`'s functions, not committed). 43 sources had both versions (14 were added after February, 3 are not in that repository); 11 did not change.
+
+| outcome | facts | model? |
+|---|---|---|
+| source unchanged: all its facts dated | 35 | no |
+| verbatim: the anchor's passage word for word on the changed page | 82 | no |
+| modified: a similar passage (similarity 0.85-1.00; one was only "does not" becoming "doesn't") | 7 | reads 2 passages |
+| not-found on the page (in a live run the search for other pages comes next) | 5 | reads 2 passages |
+| unanchored: no passage located in the February text (most facts were written from later text) | 31 | reads the fact and the best new passage |
+
+117 of 160 facts (73%) were settled with no model. The 43 review items, each the fact with its old and new passage, came to 24,212 characters, about 6k tokens; reading the changed pages instead (old and new version) would be 750,943 characters, about 190k tokens: 31 times more. The not-found items were real changes: an agent-identity licensing sentence that moved from "included with P2 while in preview" to "will require a Microsoft Agent 365 license", and a Conditional Access template list reworded.

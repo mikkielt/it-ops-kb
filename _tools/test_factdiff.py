@@ -238,13 +238,19 @@ def test_apply_confirms_unchanged_sources(kb):
     sid = next(r["id"] for r in rows if r["id"].startswith("S-") and "learn.microsoft.com" in r["url"] and not r["superseded_by"])
     log = os.path.join(kb, "log.csv")
     kbcommon.write_csv(log, F.LOG_COLS, [{"source_id": sid, "url": "u", "verdict": "unchanged", "signal": "etag",
-                                          "evidence": "304 Not Modified"}])
+                                          "evidence": "304 Not Modified", "baseline_utc": "2000-01-01T00:00:00Z"}])
     p = subprocess.run([sys.executable, os.path.join(kb, "_tools", "factdiff.py"), "apply", log, "--date", "2031-01-02"],
                        capture_output=True, text=True)
     assert p.returncode == 0 and "sources confirmed=1" in p.stdout, p.stdout + p.stderr
     with open(os.path.join(kb, P("_sources.csv")), encoding="utf-8") as f:
         row = next(r for r in csv.DictReader(f) if r["id"] == sid)
     assert row["retrieved_utc"] == "2031-01-02" and "confirmed 2031-01-02: fact diff: unchanged (etag)" in row["version_or_date"]
+    # a baseline newer than the source's last confirmation proves nothing about the days between: held back
+    kbcommon.write_csv(log, F.LOG_COLS, [{"source_id": sid, "url": "u", "verdict": "unchanged", "signal": "etag",
+                                          "evidence": "304", "baseline_utc": "2031-06-01T00:00:00Z"}])
+    p = subprocess.run([sys.executable, os.path.join(kb, "_tools", "factdiff.py"), "apply", log, "--date", "2031-07-01"],
+                       capture_output=True, text=True)
+    assert "sources confirmed=0 held back=1" in p.stdout, p.stdout + p.stderr
 
 
 def test_snapshot_roundtrip_and_check_rule(kb, monkeypatch):
