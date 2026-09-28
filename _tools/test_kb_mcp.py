@@ -15,7 +15,8 @@ TestPluginManifest  .claude-plugin/marketplace.json and the two plugins: it-ops-
                 it-ops-kb); no pinned version (users track commits); rag.py named only as the clone form; the GitLab
                 SSH remote. With the `claude` CLI installed, `claude plugin validate` passes for both.
 """
-import json, os, re, shutil, subprocess, sys
+import json, os, re, shutil, subprocess, sys, tempfile
+from pathlib import Path
 
 import pytest
 
@@ -372,15 +373,24 @@ class TestPluginManifest:
             assert all("No version specified" in w for w in warnings), "\n".join(warnings)
 
 
-def test_status_of_a_plugin_copy_from_a_directory_marketplace(tmp_path):
+@pytest.fixture
+def short_tmp():
+    """A temporary directory with a short path: a plugin copy under pytest's tmp_path (which holds the user name
+    and the test name) passes 260 characters on Windows without long paths, and copytree fails."""
+    d = tempfile.mkdtemp(prefix="kbs")
+    yield Path(d)
+    shutil.rmtree(d, ignore_errors=True)
+
+
+def test_status_of_a_plugin_copy_from_a_directory_marketplace(short_tmp):
     """A plugin installed from a local directory marketplace has no clone under plugins/marketplaces/: kb_status
     reports its version (the commit) as the commit instead of calling the copy unknown."""
     from conftest import copy_kb
     sha = "929d59973c2b"
-    home = copy_kb(str(tmp_path / "plugins" / "cache" / "it-ops-kb" / "it-ops-kb" / sha))
+    home = copy_kb(str(short_tmp / "plugins" / "cache" / "it-ops-kb" / "it-ops-kb" / sha))
     env = {k: v for k, v in os.environ.items() if k not in ("KB_ROOTS", "KB_INDEX", "CLAUDE_PLUGIN_DATA")}
     p = subprocess.run([sys.executable, os.path.join(home, "_tools", "kb_mcp.py"), "--status"], capture_output=True,
-                       text=True, encoding="utf-8", timeout=120, env=env, cwd=str(tmp_path))
+                       text=True, encoding="utf-8", timeout=120, env=env, cwd=str(short_tmp))
     assert p.returncode == 0, p.stdout + p.stderr
     assert f"installed_as: plugin it-ops-kb@it-ops-kb, version {sha}" in p.stdout, p.stdout
     assert f"commit: {sha}\n" in p.stdout, p.stdout
@@ -426,11 +436,11 @@ def test_status_says_how_far_a_clone_is_behind_its_remote(tmp_path):
 
 
 @pytest.mark.git
-def test_status_says_how_far_an_installed_plugin_is_behind_its_marketplace(tmp_path):
+def test_status_says_how_far_an_installed_plugin_is_behind_its_marketplace(short_tmp):
     """An installed plugin copy (no .git) is compared with the marketplace clone Claude Code keeps beside the cache:
     commits there after the copy's version mean the copy is older than the kb it follows."""
     from conftest import Repo, copy_kb
-    plugins = tmp_path / "plugins"
+    plugins = short_tmp / "plugins"
     mkt = Repo(plugins / "marketplaces" / "it-ops-kb")
     os.makedirs(mkt.path)
     mkt.git("init", "-q", "-b", "main")
@@ -438,7 +448,7 @@ def test_status_says_how_far_an_installed_plugin_is_behind_its_marketplace(tmp_p
     sha = mkt.rev("HEAD")[:12]
     mkt.git("reset", "-q", "--hard", _ahead(mkt, 2))
     home = copy_kb(str(plugins / "cache" / "it-ops-kb" / "it-ops-kb" / sha))
-    out = _status(home, tmp_path)
+    out = _status(home, short_tmp)
     assert f"commit: {sha}\n" in out and "behind_upstream: 2 commits\n" in out, out
     assert "update: /plugin marketplace update, then /reload-plugins" in out, out
 
