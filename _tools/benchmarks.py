@@ -552,6 +552,20 @@ def s_headless(b):
                    b.reps, "headless")
     runs += b.bench(["haiku", "sonnet", "opus", "router"], ["s4_count"], b.reps, "headless")
     b.bench_rows("headless", runs)
+    covered = {"s1_fact", "s2_fact_csv", "s3_multi", "h1_gmsa", "h2_applock", "x1_synth", "s7_web"}
+    for case, scens in (("covered (7)", covered), ("not covered (2)", {"s8_falsegood2", "o1_offkb"})):
+        by = {}
+        for r in runs:
+            if r["scen"] in scens and "error" not in r:
+                by.setdefault(r["cfg"], []).append(r)
+        for cfg, rs in by.items():
+            n = len(rs)
+            b.row("headless", case, cfg, "cost", sum(r["cost"] for r in rs) / n, n)
+            b.row("headless", case, cfg, "wall_s", sum(r["wall_s"] for r in rs) / n, n)
+            b.row("headless", case, cfg, "input", sum(r["in_uncached"] + r["cache_write"] + r["cache_read"] for r in rs) / n, n)
+            b.row("headless", case, cfg, "tool_calls", sum(sum(r.get("tools", {}).values()) for r in rs) / n, n)
+            full = sum(all(r.get("checks") or [False]) for r in rs)
+            b.row("headless", case, cfg, "fully_right", f"{full} of {n}", n)
 
 
 SUB_TASKS = {  # the subagent measurement's four questions, with agent_bench's checks
@@ -632,7 +646,14 @@ def s_router(b):
 
 def s_howto(b):
     """How-to questions answered by a SNIPPET: h1-h3 on Haiku and Sonnet."""
-    b.bench_rows("howto", b.bench(["haiku", "sonnet"], ["h1_gmsa", "h2_applock", "h3_mggraph"], b.reps, "howto"))
+    runs = b.bench(["haiku", "sonnet"], ["h1_gmsa", "h2_applock", "h3_mggraph"], b.reps, "howto")
+    b.bench_rows("howto", runs)
+    for cfg in ("haiku", "sonnet"):
+        rs = [r for r in runs if r["cfg"] == cfg and "error" not in r]
+        if rs:
+            b.row("howto", "h1-h3", cfg, "cost", sum(r["cost"] for r in rs), len(rs), note="sum over the three")
+            b.row("howto", "h1-h3", cfg, "checks", f"{sum(sum(map(bool, r['checks'])) for r in rs)}/"
+                  f"{sum(len(r['checks']) for r in rs)}", len(rs))
 
 
 def s_partial(b):
@@ -1378,7 +1399,7 @@ def s_ingest(b):
 
 
 TEAM_ARTICLE = """---
-topic: team/intune/compliance-naming
+topic: intune/compliance-naming
 priority: P2
 applies_to: "The team's Intune compliance policies"
 retrieved_utc: {date}
@@ -1422,7 +1443,7 @@ def s_host_roots(b):
     art.write_text(TEAM_ARTICLE.format(date=b.date), encoding="utf-8", newline="\n")
     with open(fork / "kb" / "team" / "_sources.csv", "a", encoding="utf-8", newline="\n") as f:
         f.write(f"TM-unavfdbc,https://wiki.corp.example.com/endpoint/intune-compliance-naming,Intune compliance naming,"
-                f"Endpoint team,internal,internal,{b.date},,,,\n")
+                f"Endpoint team,internal,quote,{b.date},,,,\n")
     subprocess.run([py, "_tools/build_index.py"], cwd=fork, capture_output=True, env=no_plugin_env())
     chk = subprocess.run([py, "_tools/check.py"], cwd=fork, capture_output=True, text=True, env=no_plugin_env()).stdout
     m = re.search(r"errors=(\d+)", chk)
