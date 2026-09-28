@@ -1,0 +1,18 @@
+{
+  "id": "BG-q67lvp5b",
+  "kind": "bug",
+  "title": "The backlog tests re-initialise the real repository under a pre-push hook",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "test_backlog.py's git helpers drop GIT_DIR, GIT_WORK_TREE and GIT_INDEX_FILE from their environment (as conftest.git_env does), so tests.py run by a pre-push hook in a worktree never runs git init or commit against the real repository; a planted GIT_DIR in the test environment leaves the real repository's core.bare and history unchanged.",
+  "repro": {
+    "run": [
+      "grep",
+      "-q",
+      "GIT_DIR",
+      "_tools/test_backlog.py"
+    ]
+  }
+}

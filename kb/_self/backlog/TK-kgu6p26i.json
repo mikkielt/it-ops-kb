@@ -2,7 +2,7 @@
   "id": "TK-kgu6p26i",
   "kind": "task",
   "title": "Plant a conflict and let apply --push open the merge request",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-pbonxqx4",
   "priority": "P1",
   "rank": 0,
@@ -24,5 +24,18 @@
     "_tools/aliases.csv",
     "kb/public/_answers.md"
   ],
-  "claimed_by": "orchestrator"
+  "evidence": {
+    "commit": "5cc77ea5d0817ffa0602f4d8985c610e2705a722",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/querylog.py",
+          "status"
+        ],
+        "exit": 0,
+        "sha256": "4649b1d5103c8e93"
+      }
+    ]
+  }
 }
