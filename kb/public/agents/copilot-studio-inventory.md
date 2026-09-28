@@ -175,6 +175,9 @@ files: [agents/copilot-studio-feature-map.csv]
   notes, sources).
 - Migration paths (export formats, SDKs, retirement dates) are in
   `agents/own-chatbot-architecture.md`, QG18/QG19 material.
+- Copilot Studio as an MCP client (network path to a self-hosted server, connector egress IPs and
+  service tags, VNet and gateway, `x-ms-agentic-protocol` definition, documented client behaviour):
+  `agents/copilot-studio-mcp-client.md`.
 - Declarative-agent manifest schema (capabilities, actions/plugins, MCP-server actions and MCP apps),
   Copilot connectors, custom engine agents, admin agent registry, and Copilot extensibility licensing
   tiers: `agents/m365-copilot-extensibility.md` (this article does not repeat that manifest schema or

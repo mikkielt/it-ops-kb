@@ -1,0 +1,74 @@
+source: S-6x6bb2f3
+url: https://learn.microsoft.com/en-us/power-automate/gateway-manage
+title: Manage an on-premises data gateway in Power Automate
+publisher: Microsoft (learn.microsoft.com)
+licence: CC BY 4.0 (public mirror MicrosoftDocs/power-automate-docs)
+retrieved: 2026-09-29
+changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
+---
+# Learn to manage on-premises data gateways - Power Automate | Microsoft Learn
+
+Install and manage an on-premises data gateway to securely integrate a variety of cloud-based apps with your on-premises data and apps through Power Automate.
+
+With a gateway, you can connect to on-premises data over the following connections.
+
+- Apache Impala
+- BizTalk Server
+- Custom connectors that you create
+- DB2
+- File System
+- Http with Microsoft Entra ID
+- Informix
+- MySQL
+- Oracle Database
+- PostgreSQL
+- SAP ERP
+- SharePoint
+- SQL Server
+- Teradata
+
+Important
+
+Microsoft SharePoint data gateways now support both HTTP and HTTPS traffic.
+
+## Prerequisites
+
+- The user name and password that you used to sign up for Power Automate.
+- Administrative permissions on a gateway.
+
+    You have these permissions by default for each gateway that you install. Also, an administrator of another gateway can grant you these permissions for that gateway.
+- A license that supports gateways. For more information, see the “Connectivity” section of the pricing page.
+
+Tip
+
+You can create a gateway and an on-premises connection for any environment.
+
+## Install a gateway
+
+To install a gateway, follow the steps in Install an on-premises data gateway. Install the gateway in standard mode because the *on-premises data gateway (personal mode)* is available only for Power BI.
+
+## View your gateways
+
+Sign in to Power Automate, and then select **Data** &gt; **Gateways** in the navigation pane on the left side.
+
+Note
+
+If you created or were given access to a gateway in Power Apps, that gateway appears in the **My gateways** list in Power Automate.
+
+## Cluster your gateways
+
+You can create high availability clusters of on-premises data gateway installations to avoid single points of failure in accessing on-premises data resources.
+
+By default, Power Automate uses the primary gateway in the cluster. If the primary gateway isn't available, the service switches to the next gateway in the cluster, and so on.
+
+Once you've set up a gateway cluster, you can allow traffic to be distributed across all gateways in the cluster.
+
+Follow these steps to distribute your traffic across your gateways:
+
+1. Select **Data** on the navigation bar on the left side.
+2. Select **Gateways**.
+3. Select any of your gateways.
+4. Select **Distribute requests across all active gateways in this cluster**.
+5. Select **Apply** to save your changes.
+
+For more information, see Understand gateways.

@@ -1978,6 +1978,17 @@ _Agent: kb-research_
 
 _Agent: kb-research_
 
+## QK-copilot-studio-reach-talk-self-hosted. How does Copilot Studio reach and talk to a self-hosted MCP server?
+- Copilot Studio calls an MCP server through a Power Platform connector (wizard or custom connector), so data policies apply and the call leaves from Power Platform's connector service. [DOC S1964]
+- Over the internet, allow the `AzureConnectors` tags of the environment's geo plus the regional `PowerPlatformPlex` tag, from the Service Tag Discovery API, refreshed at least every 90 days. [DOC S-oh3ybprh]
+- Privately, a VNet-enabled Managed Environment runs custom connectors (GA) in a delegated subnet; OAuth and token requests still go outside the VNet, and the endpoint needs a full-chain TLS certificate from a well-known CA. [DOC S-kyrgum3q, S-nt2bmgtl]
+- The custom connector's POST operation carries `x-ms-agentic-protocol: mcp-streamable-1.0`; only Streamable HTTP is supported, and only tools and resources (a resource only as a tool's output). [DOC S1964, S-wpjbqofq, S-rstajp7g, S-m75y4u2y]
+- Conclusion: a loopback server needs a public HTTPS front with authentication, or a private endpoint reached from a delegated subnet; build it stateless and accept the `initialize` handshake, since the client's protocol version and session use are not documented. [DER S1964, S-oh3ybprh, S-kyrgum3q, S703]
+- Open: whether MCP connectors use the delegated subnet or the on-premises data gateway, and the client's protocol version, sessions, instructions, annotations and content types. [UNK]
+- See agents/copilot-studio-mcp-client.md, agents/copilot-studio-inventory.md.
+
+_Agent: kb-research_
+
 ## R1. Reuse candidates
 
 - **Highest leverage: `pydantic-settings` as a `dependency` for a project's config-file/env-var/flags

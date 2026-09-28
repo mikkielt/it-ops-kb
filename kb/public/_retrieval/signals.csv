@@ -380,3 +380,7 @@ WindowsSandbox.admx,windows/windows-sandbox
 AllowClipboardRedirection,windows/windows-sandbox
 AllowVGPU,windows/windows-sandbox
 WDAGUtilityAccount,windows/windows-sandbox
+x-ms-agentic-protocol,agents/copilot-studio-mcp-client
+mcp-streamable-1.0,agents/copilot-studio-mcp-client
+powerplatformplex,agents/copilot-studio-mcp-client
+azureconnectors,agents/copilot-studio-mcp-client
