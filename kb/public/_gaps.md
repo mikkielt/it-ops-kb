@@ -1014,6 +1014,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
 
 - **Character limit of the Claude Projects instructions field.** The support article (S1859, re-read 2026-09-27) publishes no number; the field shows a live counter only inside the signed-in claude.ai UI. Tried 2026-09-27: S1859 re-read; Claude in Chrome was unavailable, and the counter is only visible in the signed-in UI, so reading it stays with a person. (topic: agents/instruction-and-context-limits)
   - Tried 2026-09-28, still open: S1859 re-read with curl, still no number; the article now records only that absence. Reading the counter needs a signed-in claude.ai session. (topic: agents/instruction-and-context-limits)
+- **how do I limit Windows Sandbox memory allocation through a wsb configuration file** The kb was asked this in a logged lookup of 2026-09-28, and no article answered it (query log finding F-23ff28af78ac). Looked in the kb 2026-09-28: `rag.py pack` gives `weak`, with this topic in the lead. Needs an official source that states it (`/kb-research`, or the query log's opt-in research). (topic: agents/instruction-and-context-limits)
 
 ## intune (complete articles)
 
@@ -1039,6 +1040,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
 ## claude/hooks
 
 - **The shape of `tool_response` for an MCP tool call in `PostToolUse`.** The hooks reference documents `tool_response` as "the result it returned" with a per-tool schema, and shows it for Write, Bash, Agent and ExitPlanMode, but not for an MCP tool (searched `code.claude.com/docs/en/hooks.md` for `tool_response` and `MCP`, 2026-09-28). The query log capture reads it defensively (a string, a content-block list or an object). [UNK] (topic: claude/hooks)
+- **Which hook input fields identify a subagent (agent_id, agent_type) in PostToolUse?** The kb was asked this in a logged lookup of 2026-09-28, and no article answered it (query log finding F-6c75fa8a8950). Looked in the kb 2026-09-28: `rag.py pack` gives `weak`, with this topic in the lead. Needs an official source that states it (`/kb-research`, or the query log's opt-in research). (topic: claude/hooks)
 
 ## gitlab/automated-merge-requests
 
