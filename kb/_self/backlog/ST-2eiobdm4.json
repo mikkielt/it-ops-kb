@@ -1,0 +1,27 @@
+{
+  "id": "ST-2eiobdm4",
+  "kind": "story",
+  "title": "The kb: hook hands the model the differential",
+  "status": "todo",
+  "parent": "EP-c7fzjhge",
+  "sprint": "SP-aikswrrl",
+  "priority": "P1",
+  "rank": 3,
+  "goal": "On a pack with a route line, _tools/kb_hook.py passes the model the pack with its kb has and kb lacks lines and one instruction: answer the has part from the pack and research only the lacks part in the live docs, labelled; a clean good pack keeps today's block-and-show answer with no model call.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "TestKbHook"
+      ]
+    }
+  ],
+  "depends_on": [
+    "ST-ysk3m7rt"
+  ],
+  "links": [
+    "_tools/kb_hook.py"
+  ]
+}

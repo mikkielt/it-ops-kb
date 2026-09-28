@@ -1,0 +1,36 @@
+{
+  "id": "TK-ny7zaojp",
+  "kind": "task",
+  "title": "Demote a flagged good to split",
+  "status": "todo",
+  "parent": "ST-ysk3m7rt",
+  "priority": "P1",
+  "rank": 3,
+  "goal": "A good pack with a check: line or a non-empty lacks set routes `split`; a test runs every eval row whose expected verdict is good and asserts the clean ones print no route line and are byte-identical to the pre-change output fixture.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "TestRoute"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/rag.py",
+        "eval"
+      ],
+      "match": "questions=(\\d+) passed=\\1 "
+    }
+  ],
+  "touches": [
+    "_tools/kbfacts.py",
+    "_tools/test_route.py",
+    "_tools/fixtures/route/**"
+  ],
+  "depends_on": [
+    "TK-huzcam4q"
+  ]
+}

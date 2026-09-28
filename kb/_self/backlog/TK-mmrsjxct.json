@@ -1,0 +1,25 @@
+{
+  "id": "TK-mmrsjxct",
+  "kind": "task",
+  "title": "learn's false-none rule over routed answers' urls",
+  "status": "todo",
+  "parent": "ST-hfzdlzai",
+  "priority": "P1",
+  "rank": 1,
+  "goal": "ql_learn.py flags a routed-web row whose answer urls intersect the _sources.csv urls as a false-none miss; tests plant one that intersects (a Microsoft Learn url the kb cites) and one that does not.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "TestLearn"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/ql_learn.py",
+    "_tools/ql_base.py",
+    "_tools/test_querylog.py"
+  ]
+}

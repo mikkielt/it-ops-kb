@@ -1,0 +1,26 @@
+{
+  "id": "TK-g7qzrued",
+  "kind": "task",
+  "title": "Document the false-none detector",
+  "status": "todo",
+  "parent": "ST-hfzdlzai",
+  "priority": "P1",
+  "rank": 2,
+  "goal": "kb/_self/querylog.md's learn section names the false-none rule.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "Cohesion or SelfDocs"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/querylog.md"
+  ],
+  "depends_on": [
+    "TK-mmrsjxct"
+  ]
+}

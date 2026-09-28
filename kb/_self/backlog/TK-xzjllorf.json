@@ -1,0 +1,29 @@
+{
+  "id": "TK-xzjllorf",
+  "kind": "task",
+  "title": "Run it and record the conclusions",
+  "status": "todo",
+  "parent": "ST-fhlyypxw",
+  "priority": "P1",
+  "rank": 2,
+  "goal": "The scenario's rows are in benchmarks.csv, the section says what they show, and kb/_self/design.md and token-efficiency.md cite it.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/benchmarks.py",
+        "report",
+        "--check"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/reports/benchmarks.*",
+    "kb/_self/design.md",
+    "kb/_self/token-efficiency.md",
+    "README.md"
+  ],
+  "depends_on": [
+    "TK-inhsi42b"
+  ]
+}

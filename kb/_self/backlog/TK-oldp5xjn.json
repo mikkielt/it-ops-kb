@@ -1,0 +1,34 @@
+{
+  "id": "TK-oldp5xjn",
+  "kind": "task",
+  "title": "Reword the none rule in AGENTS.md, kb-lookup and the server instructions",
+  "status": "todo",
+  "parent": "ST-uuaooyrm",
+  "priority": "P1",
+  "rank": 1,
+  "goal": "The three texts carry the new rule; the server instructions are no longer than before (a test compares their length to the old text's).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "Cohesion or SelfDocs"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "test_kb_mcp"
+      ]
+    }
+  ],
+  "touches": [
+    "AGENTS.md",
+    ".claude/skills/kb-lookup/SKILL.md",
+    "_tools/kb_mcp.py",
+    "_tools/test_kb_mcp.py"
+  ]
+}

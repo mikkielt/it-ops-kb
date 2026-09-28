@@ -1,0 +1,44 @@
+{
+  "id": "ST-ysk3m7rt",
+  "kind": "story",
+  "title": "kb_pack prints a route and what the kb has and lacks",
+  "status": "todo",
+  "parent": "EP-c7fzjhge",
+  "sprint": "SP-aikswrrl",
+  "priority": "P1",
+  "rank": 1,
+  "goal": "rag.py pack, pack -q and kb_pack print, under every weak or none verdict and every good verdict that carries a check: line or lacking terms, a `route: split|web` line, a `kb has:` line (the parts or key words with a cited line) and a `kb lacks:` line (the parts or key words with none), computed without a model; a clean good pack (no check: line, nothing lacking) prints byte for byte what it printed before and no route line.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "TestRoute"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/rag.py",
+        "eval"
+      ],
+      "match": "questions=(\\d+) passed=\\1 "
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/rag.py",
+        "pack",
+        "How do I run the Kubernetes Cluster Autoscaler on AWS EKS with spot instances?"
+      ],
+      "match": "(?m)^route: web"
+    }
+  ],
+  "links": [
+    "kb/_self/tools.md",
+    "kb/_self/reports/benchmarks.md",
+    "_tools/kbfacts.py#pack"
+  ],
+  "notes": "Operator answers: pack stays model-free, stdlib only; no new always-on tokens (the route and has/lacks lines print only on the flagged verdicts, never in server instructions); clean good unchanged. Route values: `web` for none, `split` for weak and for a flagged good; a clean good prints no route line (reader)."
+}

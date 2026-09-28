@@ -1,0 +1,27 @@
+{
+  "id": "TK-homvd6ia",
+  "kind": "task",
+  "title": "Document the route and differential lines",
+  "status": "todo",
+  "parent": "ST-ysk3m7rt",
+  "priority": "P1",
+  "rank": 4,
+  "goal": "kb/_self/tools.md, How the lookup tools decide, describes the route, kb has and kb lacks lines, the near-miss guard and the flagged-good demotion.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "Cohesion or SelfDocs"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "TK-e4i2gbqk",
+    "TK-ny7zaojp"
+  ]
+}

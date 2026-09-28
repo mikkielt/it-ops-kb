@@ -1,0 +1,39 @@
+{
+  "id": "ST-fhlyypxw",
+  "kind": "story",
+  "title": "A benchmark proves routing by verdict pays",
+  "status": "todo",
+  "parent": "EP-c7fzjhge",
+  "sprint": "SP-aikswrrl",
+  "priority": "P1",
+  "rank": 6,
+  "goal": "benchmarks.py run route-by-verdict measures kb_ask.py against the bare Sonnet web arm on the none questions (s5_none, o1_offkb), the flagged ones (s8_falsegood2, h2_applock) and clean covered ones (s1_fact, s3_multi), and its report section shows: none within 10% of the bare arm's cost, flagged below both the kb Sonnet arm and the bare arm, covered on the reader route as before.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/benchmarks.py",
+        "report",
+        "--check"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "test_benchmarks"
+      ]
+    }
+  ],
+  "depends_on": [
+    "ST-tobxg7ui",
+    "ST-2eiobdm4",
+    "ST-hfzdlzai",
+    "ST-uuaooyrm"
+  ],
+  "links": [
+    "kb/_self/reports/benchmarks.md"
+  ],
+  "notes": "Operator budget: paid runs up to $10 for this story. Fewer than 10% over bare on none is the bar the operator set; a miss is a finding for the review, not a reason to change the bar."
+}

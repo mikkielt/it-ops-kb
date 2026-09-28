@@ -1,0 +1,28 @@
+{
+  "id": "TK-gublrquf",
+  "kind": "task",
+  "title": "Split route runs the reader and the researcher and sums them",
+  "status": "todo",
+  "parent": "ST-tobxg7ui",
+  "priority": "P1",
+  "rank": 2,
+  "goal": "kb_ask.py on route split runs the reader on the has part and the researcher on the lacks part and prints one answer with the kb part cited and the live part labelled 'live docs, not in the kb'; the query-log row records route and both costs; INSUFFICIENT from the reader still escalates, tested with a stubbed claude.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "TestKbAskRoute"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kb_ask.py",
+    "_tools/test_kb_ask_route.py",
+    "_tools/agent_bench.py"
+  ],
+  "depends_on": [
+    "TK-3iesrs66"
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "id": "TK-e4i2gbqk",
+  "kind": "task",
+  "title": "Guard a false none: a near miss routes split, not web",
+  "status": "todo",
+  "parent": "ST-ysk3m7rt",
+  "priority": "P1",
+  "rank": 2,
+  "goal": "A none pack whose best article matches at least half the question's key terms, or whose lacking terms are only language or format names (T-SQL, PowerShell, JSON, ...), routes `split` instead of `web`; tests plant h2_applock's question (T-SQL false none) and an off-kb question and assert each route.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "TestRoute"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbfacts.py",
+    "_tools/test_route.py"
+  ],
+  "depends_on": [
+    "TK-huzcam4q"
+  ]
+}

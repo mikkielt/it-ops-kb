@@ -1,0 +1,45 @@
+{
+  "id": "ST-uuaooyrm",
+  "kind": "story",
+  "title": "none states what the kb has and lacks, then the live docs answer",
+  "status": "todo",
+  "parent": "EP-c7fzjhge",
+  "sprint": "SP-aikswrrl",
+  "priority": "P1",
+  "rank": 5,
+  "goal": "AGENTS.md, the /kb-lookup skill and kb_mcp.py's server instructions say: on none or a route line, state what the kb has and lacks, then research only the lacking part in the live docs and label it; never fill from memory; AGENTS.md stays within 4096 bytes.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "Cohesion or SelfDocs"
+      ]
+    }
+  ],
+  "depends_on": [
+    "ST-ysk3m7rt"
+  ],
+  "gates": [
+    {
+      "id": "rule",
+      "kind": "blocking",
+      "question": "AGENTS.md's none rule: keep 'say the kb does not cover it', or state the differential and then use the live docs?",
+      "options": [
+        "State diff, then live docs",
+        "Keep rule, route in tools only",
+        "Route bare, no kb mention"
+      ],
+      "recommendation": "State diff, then live docs",
+      "answer": "State diff, then live docs",
+      "by": "operator"
+    }
+  ],
+  "links": [
+    "AGENTS.md",
+    ".claude/skills/kb-lookup/SKILL.md",
+    "_tools/kb_mcp.py"
+  ],
+  "notes": "Server instructions are always-on text in hosts: the new wording must not be longer than the old (operator: no new always-on tokens)."
+}

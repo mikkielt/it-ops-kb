@@ -1,0 +1,27 @@
+{
+  "id": "TK-3jmn5ui3",
+  "kind": "task",
+  "title": "Document kb_ask.py's routes",
+  "status": "todo",
+  "parent": "ST-tobxg7ui",
+  "priority": "P1",
+  "rank": 3,
+  "goal": "kb/_self/tools.md's kb_ask.py row and kb/_self/token-efficiency.md describe the web and split routes.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "Cohesion or SelfDocs"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/tools.md",
+    "kb/_self/token-efficiency.md"
+  ],
+  "depends_on": [
+    "TK-gublrquf"
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "id": "ST-hfzdlzai",
+  "kind": "story",
+  "title": "The query log detects a false none from a routed answer's urls",
+  "status": "todo",
+  "parent": "EP-c7fzjhge",
+  "sprint": "SP-aikswrrl",
+  "priority": "P1",
+  "rank": 4,
+  "goal": "learn marks a logged lookup routed web whose answer cites a url that a root's _sources.csv holds (after url normalisation) as a false-none miss, written as a lookup_eval candidate like other misses, with no model call and no change to what the query log records or sends to the API.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "TestLearn"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/querylog.py",
+        "check"
+      ],
+      "match": "problems=0"
+    }
+  ],
+  "depends_on": [
+    "ST-tobxg7ui"
+  ],
+  "links": [
+    "kb/_self/querylog.md",
+    "_tools/ql_learn.py"
+  ],
+  "notes": "Deterministic; the url set is the answer text already stored in the row. Gate check: this changes no mode, redaction or API payload (always-blocking list); if the work finds it must, stop and raise a blocking gate."
+}

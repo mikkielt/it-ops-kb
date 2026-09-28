@@ -1,0 +1,24 @@
+{
+  "id": "TK-huzcam4q",
+  "kind": "task",
+  "title": "Compute the has/lacks differential and the route in kbfacts.pack",
+  "status": "todo",
+  "parent": "ST-ysk3m7rt",
+  "priority": "P1",
+  "rank": 1,
+  "goal": "kbfacts.pack and pack_many compute per part the key terms with and without a matching cited line and the route, and render the route, `kb has:` and `kb lacks:` lines on the flagged verdicts only.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "TestRoute"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbfacts.py",
+    "_tools/test_route.py"
+  ]
+}

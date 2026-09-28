@@ -1,0 +1,26 @@
+{
+  "id": "TK-inhsi42b",
+  "kind": "task",
+  "title": "route-by-verdict benchmark scenario",
+  "status": "todo",
+  "parent": "ST-fhlyypxw",
+  "priority": "P1",
+  "rank": 1,
+  "goal": "_tools/benchmarks.py has a route-by-verdict scenario and kb/_self/reports/benchmarks.md a section with its setup and generated tables.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "test_benchmarks"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/benchmarks.py",
+    "_tools/agent_bench.py",
+    "kb/_self/reports/benchmarks.md",
+    "kb/_self/reports/benchmarks.csv"
+  ]
+}

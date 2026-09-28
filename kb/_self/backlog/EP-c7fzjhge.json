@@ -1,0 +1,9 @@
+{
+  "id": "EP-c7fzjhge",
+  "kind": "epic",
+  "title": "Lookups route by verdict: the kb answers what it has, live docs what it lacks",
+  "status": "todo",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "A lookup the kb does not cover goes straight to a lean live-docs researcher, a partial one sends only what the kb lacks to that researcher, and a clean good pack keeps today's route; each route carries a has/lacks differential, and false none and false good verdicts are guarded and detected."
+}

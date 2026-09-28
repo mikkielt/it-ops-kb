@@ -1,0 +1,38 @@
+{
+  "id": "ST-tobxg7ui",
+  "kind": "story",
+  "title": "kb_ask.py routes by the pack's route line",
+  "status": "todo",
+  "parent": "EP-c7fzjhge",
+  "sprint": "SP-aikswrrl",
+  "priority": "P1",
+  "rank": 2,
+  "goal": "kb_ask.py sends route web to a lean Sonnet researcher at --effort low with the three docs servers, WebSearch and WebFetch and no kb tools, given the kb lacks line and the three nearest article titles as leads to verify; route split to the Haiku reader for the has part and the same researcher for the lacks part only, costs summed; a clean good pack keeps the reader route and its INSUFFICIENT escalation; --route prints the route and differential.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "TestKbAskRoute"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/kb_ask.py",
+        "--route",
+        "How do I run the Kubernetes Cluster Autoscaler on AWS EKS with spot instances?"
+      ],
+      "match": "web"
+    }
+  ],
+  "depends_on": [
+    "ST-ysk3m7rt"
+  ],
+  "links": [
+    "_tools/kb_ask.py#plan",
+    "_tools/kb_ask.py#claude_argv"
+  ],
+  "notes": "Operator answers: researcher = sonnet alias (Sonnet 5.5 now), --effort low, docs servers + WebSearch/WebFetch, no kb tools, lean start (LEAN). Keep the INSUFFICIENT escalation and test it."
+}

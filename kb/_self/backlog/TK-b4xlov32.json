@@ -1,0 +1,25 @@
+{
+  "id": "TK-b4xlov32",
+  "kind": "task",
+  "title": "kb_hook.py context for routed packs",
+  "status": "todo",
+  "parent": "ST-2eiobdm4",
+  "priority": "P1",
+  "rank": 1,
+  "goal": "kb_hook.py adds the differential instruction for route web and split and changes nothing for a clean good pack; tests cover the three cases with planted packs.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "TestKbHook"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kb_hook.py",
+    "_tools/test_kb.py",
+    "kb/_self/tools.md"
+  ]
+}

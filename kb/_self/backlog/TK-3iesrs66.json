@@ -1,0 +1,24 @@
+{
+  "id": "TK-3iesrs66",
+  "kind": "task",
+  "title": "Web and split routes in kb_ask.plan and its argv",
+  "status": "todo",
+  "parent": "ST-tobxg7ui",
+  "priority": "P1",
+  "rank": 1,
+  "goal": "kb_ask.plan returns kind web or split from the pack's route; claude_argv builds the web researcher's argv (no mcp__kb); the researcher's prompt names the lacks line and the nearest articles as leads; tests assert each argv and prompt with planted packs, and that a clean good plan and argv are unchanged.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "TestKbAskRoute"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kb_ask.py",
+    "_tools/test_kb_ask_route.py"
+  ]
+}
