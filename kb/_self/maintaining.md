@@ -33,8 +33,8 @@ The routing is also deterministic: `.claude/hooks/kb_change_router.py`, a UserPr
 | `/kb-research <question>` | research a question in the context of the topics the kb has, then extend them | content rules, tools, git |
 | `/kb-add-topic <domain>/<slug>` | research and write a new topic | content rules, tools, git |
 | `/kb-add-root <name>` | a new knowledge root beside `kb/public` (name, id prefix, visibility), created with `kbroot.py` and checked | content rules, git |
-| `/kb-refresh <topic\|dir\|file\|S-id>` | diff sources and update the facts | content rules, tools, git |
-| `/kb-census [date]` | confirm every source is current: mechanical checks, reading the undecided ones, dates only for what was confirmed, a sample check, the census tag | content rules, tools, git |
+| `/kb-refresh <topic\|dir\|file\|S-id>` | diff sources and update the facts: the fact diff first, then only the facts whose passage changed | content rules, tools, git |
+| `/kb-census [date]` | confirm every source is current: the fact diff first (no model: unchanged sources and facts found word for word are dated and committed), mechanical checks, reading the undecided ones, dates only for what was confirmed, a sample check, the census tag | content rules, tools, git |
 | `/kb-probe <provider>` | measure a documentation provider's change signals and update its registry row (`_tools/providers.csv`, or a root's `_providers.csv`) | web sources, tools, git |
 | `/kb-verify [prefixes]` | quality gate before a commit or a push | content rules, tools |
 | `/kb-git-sync [--push]` | sync with `origin/main` when `kbgit.py sync` stops (exit 1 or 3): resolves conflicts by meaning, fixes a red gate, pushes only when asked | git, content rules |

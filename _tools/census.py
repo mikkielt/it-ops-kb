@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Census: confirm that every source in _sources.csv is still current (stdlib only). /kb-census drives it.
 
-  census.py check [--date D] [--out PATH] [--jobs N] [--source ID ...]   phases 0-1: one mechanical verdict per source
+  census.py check [--date D] [--out PATH] [--jobs N] [--source ID ...] [--factdiff LOG]   phases 0-1: one verdict per source
   census.py record LOG --from RESULTS.json | --id ID --outcome O [--note T]   phase 2: what reading decided
   census.py confirm LOG [--date D] [--dry-run]     phase 3: dates and evidence for the confirmed sources and articles
   census.py sample LOG [--changed 0.10] [--ok 0.05] [--seed N]   phase 4: the sources an independent check re-reads
@@ -26,6 +26,9 @@ bucket:
   NEEDS-READING nothing mechanical decides it: no date on the page, an HTTP error, or the host is denied here
                 (note `blocked`), or MicrosoftDocs/memdocs (archived: re-source to the live Learn page)
 Git work uses bare blobless clones in _cache/census/repos/ (git over https; api.github.com is never called).
+--factdiff LOG takes the verdicts of the census's first stage (factdiff.py detect, _census/factdiff-<date>.csv) for the
+sources it covers: unchanged, or every fact found word for word -> OK; gone or soft 404 with nothing moved -> GONE;
+facts to review -> CHANGED, the evidence naming `factdiff.py review`. Pinned and errored sources are checked here.
 
 record fills outcome/outcome_note after phase 2 read a source in full:
   confirmed (the facts still hold), updated (facts rewritten, same source), superseded (a new row replaced it; the note
@@ -479,6 +482,36 @@ def check_live(url, since, rec):
 
 # ---------------------------------------------------------------- check (phases 0-1)
 
+def factdiff_verdicts(path):
+    """{source id: (http status, verdict)} from a fact diff log (factdiff.py detect, the census's first stage): a source
+    that did not change, or whose every fact was found word for word, is OK; a gone one GONE; one with facts to
+    review CHANGED. Pinned sources are left to the git checks here."""
+    with open(path, encoding="utf-8", newline="") as f:
+        rows = list(csv.DictReader(f))
+    by = defaultdict(list)
+    for r in rows:
+        by[r["source_id"]].append(r)
+    out = {}
+    for sid, rs in by.items():
+        head, facts = rs[0], [r for r in rs if r["fact"]]
+        v = head["verdict"]
+        if v in ("pinned", "error"):
+            continue
+        todo = [r for r in facts if r["outcome"] not in ("verbatim", "moved")]
+        if v == "unchanged":
+            res = verdict("OK", f"fact diff: unchanged ({head['signal']}: {head['evidence']})", f"fact diff {head['signal']}")
+        elif v in ("gone", "soft-404") and not [r for r in facts if r["outcome"] == "moved"]:
+            res = verdict("GONE", f"fact diff: {v} ({head['evidence']})")
+        elif not todo:
+            res = verdict("OK", f"fact diff: {v}, {len(facts)} fact(s) found word for word", "fact diff anchors verbatim")
+        else:
+            kinds = Counter(r["outcome"] for r in todo)
+            res = verdict("CHANGED", f"fact diff: {v}; review " + ", ".join(f"{k}={n}" for k, n in sorted(kinds.items()))
+                          + f" (factdiff.py review {os.path.basename(path)} --source {sid})")
+        out[sid] = ("", res)
+    return out
+
+
 def check_one(r, c):
     since = (r.get("retrieved_utc") or today())[:10]
     kind = c["kind"]
@@ -546,6 +579,7 @@ def cmd_check(a):
     if not rows:
         print("no source selected")
         return 2
+    fd = factdiff_verdicts(a.factdiff) if a.factdiff else {}
     work = [(r, classify(r["url"])) for r in rows]
     print(f"phase 0: {len(work)} sources; " + ", ".join(f"{k}={n}" for k, n in sorted(Counter(c["kind"] for _, c in work).items())), flush=True)
     repos = sorted({c["repo"] for _, c in work if c["repo"]})
@@ -556,6 +590,8 @@ def cmd_check(a):
 
     def one(item):
         r, c = item
+        if r["id"] in fd:
+            return r, c, fd[r["id"]][0], fd[r["id"]][1]
         try:
             st, res = check_one(r, c)
         except Exception as e:  # noqa: BLE001
@@ -714,6 +750,8 @@ def main():
     c.add_argument("--out", help="log path (default _census/<date>.csv)")
     c.add_argument("--jobs", type=int, default=16, help="parallel checks (default 16)")
     c.add_argument("--source", action="append", default=[], help="only these source ids (repeatable)")
+    c.add_argument("--factdiff", metavar="LOG", help="the fact diff log of the census's first stage: its sources take its "
+                                                     "verdicts, the rest are checked here")
     r = sub.add_parser("record", help="phase 2: record what reading a source decided")
     r.add_argument("log")
     r.add_argument("--from", dest="from_json", help="JSON list of {id, outcome, note}")

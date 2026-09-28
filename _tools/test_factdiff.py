@@ -273,3 +273,31 @@ def test_snapshot_roundtrip_and_check_rule(kb, monkeypatch):
     assert code == 1 and "only copy sources" in out and "lacks" in out, out
     os.remove(bad)
     os.remove(F.snapshot_path(copy["id"]))
+
+
+def test_apply_moves_a_fact_found_on_another_page(kb):
+    """apply on a `moved` row: a new source row for the target page, the fact's citation re-pointed, its anchor moved."""
+    import csv
+    root = kbcommon.Root("public", os.path.join(kb, P("")).rstrip("/"), "S", "public", "")
+    old_root = F.ROOT
+    F.ROOT = root
+    try:
+        facts = F.cited_facts("public")
+    finally:
+        F.ROOT = old_root
+    sid, fs = next((s, f) for s, f in sorted(facts.items()) if s.startswith("S-") and f[0][1].endswith(".md"))
+    key, rel, line, text = fs[0]
+    target = "https://learn.microsoft.com/en-us/placeholder/moved-page"
+    log = os.path.join(kb, "moved.csv")
+    base = {"source_id": sid, "url": "u", "verdict": "changed", "signal": "hash", "evidence": "x"}
+    kbcommon.write_csv(log, F.LOG_COLS, [base, {**base, "fact": key, "path": rel, "line": line, "outcome": "moved", "target": target}])
+    p = subprocess.run([sys.executable, os.path.join(kb, "_tools", "factdiff.py"), "apply", log, "--date", "2031-01-02"],
+                       capture_output=True, text=True)
+    assert p.returncode == 0 and "facts moved=1" in p.stdout, p.stdout + p.stderr
+    nid = F.kbid.source_id(target)
+    with open(os.path.join(kb, P("_sources.csv")), encoding="utf-8") as f:
+        rows = {r["id"]: r for r in csv.DictReader(f)}
+    assert nid in rows and rows[nid]["url"] == target and rows[nid]["licence"] == rows[sid]["licence"]
+    with open(os.path.join(kb, P(rel)), encoding="utf-8") as f:
+        text = f.read()
+    assert nid in text.split("\n---", 2)[0] and nid in text.split("\n---", 2)[1], "front matter and the fact both name it"

@@ -1060,6 +1060,11 @@ def repoint(path, key, old_id, new_id):
         if j >= len(lines) or old_id not in lines[j]:
             return False
         lines[j] = re.sub(rf"(?<![\w-]){re.escape(old_id)}(?![\w-])", new_id, lines[j])
+        for k, ln in enumerate(lines[:40]):  # an article lists its sources in its front matter
+            if k and ln == "---":
+                break
+            if ln.startswith("sources:") and new_id not in ln:
+                lines[k] = re.sub(r"\]\s*$", f", {new_id}]", ln)
         with open(full, "w", encoding="utf-8", newline="") as f:
             f.write("\n".join(lines))
         return True

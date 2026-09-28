@@ -193,3 +193,19 @@ class TestCensusLedger:
         assert {r["group"] for r in rows} == {"ok"}
         p = self.tool("summary", self.log)
         assert "sources=3 OK=1 CHANGED=1" in p.stdout
+
+
+def test_factdiff_verdicts(tmp_path):
+    """A fact diff log feeds the census: unchanged or all verbatim -> OK, gone -> GONE, facts to review -> CHANGED,
+    pinned left to the git checks."""
+    import factdiff
+    log = tmp_path / "factdiff.csv"
+    base = {c: "" for c in factdiff.LOG_COLS}
+    rows = [{**base, "source_id": "S1", "verdict": "unchanged", "signal": "etag", "evidence": "304"},
+            {**base, "source_id": "S2", "verdict": "changed"}, {**base, "source_id": "S2", "verdict": "changed", "fact": "a", "outcome": "verbatim"},
+            {**base, "source_id": "S3", "verdict": "changed"}, {**base, "source_id": "S3", "verdict": "changed", "fact": "b", "outcome": "modified"},
+            {**base, "source_id": "S4", "verdict": "gone", "evidence": "HTTP 404"}, {**base, "source_id": "S4", "verdict": "gone", "fact": "c", "outcome": "dead"},
+            {**base, "source_id": "S5", "verdict": "pinned"}]
+    census.kbcommon.write_csv(str(log), factdiff.LOG_COLS, rows)
+    got = {k: v[1]["bucket"] for k, v in census.factdiff_verdicts(str(log)).items()}
+    assert got == {"S1": "OK", "S2": "OK", "S3": "CHANGED", "S4": "GONE"}
