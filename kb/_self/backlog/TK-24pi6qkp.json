@@ -2,7 +2,7 @@
   "id": "TK-24pi6qkp",
   "kind": "task",
   "title": "Change learn's miss rule and test it",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-r4jcj3fn",
   "priority": "P1",
   "rank": 0,
@@ -22,5 +22,19 @@
     "_tools/test_querylog.py",
     "kb/_self/querylog.md"
   ],
-  "claimed_by": "sub-learn"
+  "evidence": {
+    "commit": "84e1e47d2a058864899b78c9a0f40a100141f973",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "TestLearn"
+        ],
+        "exit": 0,
+        "sha256": "93284fcc95d8ae56"
+      }
+    ]
+  }
 }
