@@ -2,8 +2,8 @@
 topic: gpo/admx-central-store
 priority: P1
 applies_to: "Group Policy Central Store, Windows Server domain controllers, Windows 10/11 clients (incl. 24H2/25H2)"
-retrieved_utc: 2026-09-26
-sources: [S-iymw4lcl, S-z4lluk64, S-xtwd545o, S-2lf5j2iv, S-6glsfens, S-gvgapsup]
+retrieved_utc: 2026-09-27
+sources: [S-iymw4lcl, S-z4lluk64, S-xtwd545o, S-2lf5j2iv, S-6glsfens, S-gvgapsup, S-63xwapyo, S-6es3rktr]
 status: complete
 ---
 
@@ -24,14 +24,14 @@ status: complete
 - Recommended update procedure: build a new folder named for the target version (e.g. `PolicyDefinitions-24H2`), copy in the OS's ADMX/ADML set, merge in any OS-extension or application ADMX/ADML, then rename the current `PolicyDefinitions` to a prior-version name (e.g. `PolicyDefinitions-23H2`) and rename the new folder to the production `PolicyDefinitions` name. [DOC S-iymw4lcl]
 - Rollback after a bad update: because the prior version was renamed rather than deleted, you can revert by renaming the folders back; the old folder can later be moved to an archive location outside SYSVOL once the new set is confirmed stable. [DOC S-iymw4lcl]
 - Windows 10 and later don't include Administrative Templates with the `.adm` extension, and the article recommends Windows 10 or later computers for Group Policy administration. [DOC S-iymw4lcl]
-- Group Policy tools ignore a legacy custom `.adm` file that an `.admx` file supersedes (e.g. `System.adm`, `Inetres.adm`). [UNK: not in S-iymw4lcl as re-read 2026-09-27]
+- Group Policy tools still read custom `.adm` files but ignore any `.adm` file an `.admx` file supersedes (`System.adm`, `Inetres.adm`, `Conf.adm`, `Wmplayer.adm`, `Wuau.adm`); settings edited into those files aren't read or shown by the Vista-and-later tools. [DOC S-63xwapyo]
 - The article links Administrative Templates (.admx) packages for Windows 11 2025 Update (25H2), 2024 Update (24H2), 2023 Update (23H2), 2022 Update (22H2, v3.0 and original), Windows 10 2022 Update (22H2), and Windows 10 1607/Windows Server 2016, plus Group Policy Settings Reference Spreadsheets for 25H2, 24H2, 23H2 (v2.0 and original) and Windows 10 22H2. [DOC S-iymw4lcl]
 - Caution: use the ADMX download packages only to populate the Central Store; replacing the files in `C:\Windows\PolicyDefinitions` (the per-machine local store) with them isn't supported. [DOC S-iymw4lcl]
 - The sysvol `PolicyDefinitions` folder is not auto-updated when local `.admx`/`.adml` files change on a client (by design, to limit network/disk load and avoid file-version conflicts); an admin must manually copy updated files to the Central Store to publish them. [DOC S-iymw4lcl]
 - A registry override, `EnableLocalStoreOverride` (`REG_DWORD`) under `HKLM\SOFTWARE\Policies\Microsoft\Windows\Group Policy`, controls store precedence for the Group Policy Editor: `0` (default) uses the SYSVOL `PolicyDefinitions` folder when present, `1` always uses the local `C:\Windows\PolicyDefinitions` folder instead. [DOC S-xtwd545o]
 - When the Central Store's ADMX/ADML are a different version than what a given DC or RSAT client expects, settings can show as "Extra Registry Settings" and become uneditable in the GUI (they can still be changed with `Set-GPRegistryValue` / `Remove-GPRegistryValue`); mismatched ADMX/ADML file sets with the same file names can't simply be merged. [DOC S-xtwd545o]
 - Known issue 1: after overwriting the Central Store with the Windows 10 templates, selecting the Policies node can raise `Namespace '<X>' is already defined as the target namespace for another file in the store`, naming the `.admx` file, line and column. [DOC S-iymw4lcl]
-- The cause of that error is two ADMX files in the store declaring the same target namespace (e.g. an old add-on file superseded by a new in-box one). [UNK: not in S-iymw4lcl as re-read 2026-09-27]
+- The cause of that error is two `.admx` files in the store that address the same policy namespace: `LocationProviderADM.admx` was renamed `Microsoft-Windows-Geolocation-WLPAdm.admx` in Windows 10 RTM, so copying the Windows 10 files over an older store leaves both; the fix is to delete one pair, or click OK since the message is informational. The same happens with `WinStoreUI.admx` and its replacement `WindowsStore.admx`. [DOC S-6es3rktr, S-63xwapyo]
 - Known ADML/ADMX mismatch error: `Resource $(string id="Win7Only)' referenced in attribute displayName could not be found` when opening `gpedit.msc` after updating to the Windows 10 1803 files, because the 1803 `SearchOCR.ADML` dropped the `Win7Only` string; fixed by taking the updated `SearchOCR.ADMX` and `SearchOCR.ADML` from the 1803 package, or worked around by adding the string back to the ADML. [DOC S-z4lluk64]
 - General guidance to avoid both known-issue classes: build the new `PolicyDefinitions` folder from a single, pristine base-OS release rather than layering partial updates over an existing store. [DOC S-iymw4lcl]
 - Third-party/vendor ADMX merge pattern (general, matches the Central Store layout): copy the vendor's `.admx` to the `PolicyDefinitions` folder and its `.adml` to the matching language subfolder (e.g. `en-US`); shown for Microsoft Edge's `msedge.admx`/`msedge.adml` copied into `%systemroot%\sysvol\domain\policies\PolicyDefinitions` and its `en-US` subfolder (Edge's second template, `msedgeupdate.admx`, manages Edge updates), after which new ADMX files replicate to other DCs at the next domain replication interval. [DOC S-2lf5j2iv]

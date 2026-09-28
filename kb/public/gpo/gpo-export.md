@@ -2,8 +2,8 @@
 topic: gpo/gpo-export
 priority: P2
 applies_to: "GroupPolicy PowerShell module (RSAT/GPMC), windowsserver2025-ps reference"
-retrieved_utc: 2026-09-26
-sources: [S920, S921, S922, S923]
+retrieved_utc: 2026-09-27
+sources: [S920, S921, S922, S923, S-moam7wlp]
 status: complete
 ---
 
@@ -28,7 +28,8 @@ The reference pages carry ms.date 12/20/2016 in all docsets (2016/2019/2022/2025
 - `Backup-GPO` backs up one GPO (`-Guid` alias `Id`, or `-Name` alias `DisplayName`) or all GPOs (`-All`) to a backup directory; the directory must already exist. [DOC S921]
 - `Backup-GPO -Path` (alias `BackupLocation`) is required and may be local or UNC; `-Comment` is stored in the backup; supports `-WhatIf`/`-Confirm`. [DOC S921]
 - `Backup-GPO` returns `Microsoft.GroupPolicy.GpoBackup` (DisplayName, GpoId, Id = backup id, BackupDirectory, CreationTime, DomainName, Comment in the example). [DOC S921]
-- The on-disk layout of a GPO backup folder is not described in the cmdlet reference. [UNK]
+- A GPMC backup transfers a GPO's contents from Active Directory to the file system and includes its policy settings, its GPO ID and its ACLs; the same method is used to export GPOs. [DOC S-moam7wlp]
+- No page describes the on-disk layout of a backup folder (files such as `Backup.xml`, `bkupInfo.xml` or `gpreport.xml`): re-read 2026-09-27, the Backup-GPO reference and the GPMC Backup method give only the directory and the returned backup object. Treat the folder as opaque and restore with `Restore-GPO` / `Import-GPO` rather than parsing it. [DER S921, S-moam7wlp: absence on both pages]
 - `Get-GPResultantSetOfPolicy [-Computer] [-User] -ReportType <Xml|Html> -Path` writes RSoP for a user, computer or both to a file. [DOC S923]
 
 ## Reference

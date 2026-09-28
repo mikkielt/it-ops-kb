@@ -435,7 +435,9 @@ Still open: (topic: auth/configmgr-rbac-auth)
 
 - Power BI docs source repo: `MicrosoftDocs/powerbi-docs` and `MicrosoftDocs/data-integration` are not public (clone: "Repository not found"); learn pages point to private `powerbi-docs-pr`. Used throttled learn.microsoft.com HTML instead; no pinned raw URL possible for S900-S910 (only ms.date recorded).
 - GPO backup on-disk layout (folder contents such as Backup.xml / gpreport.xml): not in the GroupPolicy cmdlet reference (S921); grep of MicrosoftDocs_windowsserverdocs, SupportArticles-docs, win32 clones for "bkupInfo.xml" / "gpreport.xml" found nothing. [UNK] (topic: gpo/gpo-export)
+  - Tried 2026-09-27, still open: Learn search (Backup-GPO, IGPMGPO::Backup, Entra Domain Services GPO backup preview) describes backup contents (settings, GPO ID, ACLs) but not the folder layout; recorded as DER, with the IGPMGPO::Backup contents as DOC. (topic: gpo/gpo-export)
 - DSC v3 GroupPolicyTemplate adapter: which released version first ships it is left to dsc/ (only the main-branch manifest was checked, S924). [UNK] (topic: gpo/dsc-group-policy-adapter)
+  - Resolved 2026-09-27: the v3.3.0 release notes (S118) list the adapter (PR #1686), and the manifest exists at tag v3.3.0 (pinned in S-3yuoi2qa) but returns 404 at v3.3.0-rc.2, rc.1, preview.1 and preview.4 and v3.2.3. (topic: gpo/dsc-group-policy-adapter)
 - `ansible.windows.win_dsc` check-mode support: the docs page as fetched shows no attributes table; not confirmed. [UNK] (topic: ansible/dsc3-module)
 - powerbi/configmgr-views.md depends on mecm/sql-views-compliance.md (other agent); that file did not exist at time of writing.
   - Resolved 2026-09-27: mecm/sql-views-compliance.md exists; the dependency is satisfied. (topic: mecm/sql-views-compliance)

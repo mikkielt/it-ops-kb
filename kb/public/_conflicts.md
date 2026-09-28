@@ -240,6 +240,7 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
 - Graph TCM `monitorMode` enum values differ between v1.0 CSDL (`monitorOnly`=0, `unknownFutureValue`=1) and beta CSDL (`monitorOnly`=1, `unknownFutureValue`=5) (S956 vs S957). (topic: graph/tcm-apis)
 - Graph TCM delegated permissions: setup page (S941) says delegated monitor management needs "any privileged role"; per-API permission tables (S951, S952) name delegated scopes `ConfigurationMonitoring.Read.All`/`ReadWrite.All`. Likely both apply; not stated together. (topic: graph/tcm-apis)
 - Get-GPOReport (S920): OUTPUTS says "None", but description and example 3 say the report is written to the display without `-Path`. (topic: gpo/gpo-export)
+  - Re-read 2026-09-27, still open: the live windowsserver2025-ps page still says Outputs None / 'This cmdlet does not generate any output'. (topic: gpo/gpo-export)
 - Gateway service account page (S909): recommends the gateway app over services.msc for changing the account, but the gMSA procedure on the same page uses services.msc. (topic: powerbi/on-prem-gateway-sql)
 - Power BI refresh limit wording: S901 says "Power BI Pro: up to 8"; S900 says "shared capacity: eight". Same number, different basis (licence vs capacity). (topic: powerbi/scheduled-refresh)
 - RLS page (S910): says RLS can be configured in Desktop or the service, but also says roles previously defined in the service must be re-created in Desktop. (topic: powerbi/row-level-security)

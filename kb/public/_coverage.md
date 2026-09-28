@@ -128,9 +128,9 @@ Every topic of this root with its priority (the research order, not importance),
 | `gitlab/pipelines-rules` | P0 | complete | `gitlab/pipelines-rules.md` | 5 |
 | `gitlab/protected-branches-tags` | P0 | complete | `gitlab/protected-branches-tags.md` | 3 |
 | `gitlab/variables` | P0 | complete | `gitlab/variables.md` | 2 |
-| `gpo/admx-central-store` | P1 | complete | `gpo/admx-central-store.md` | 6 |
-| `gpo/dsc-group-policy-adapter` | P2 | partial | `gpo/dsc-group-policy-adapter.md` | 1 |
-| `gpo/gpo-export` | P2 | complete | `gpo/gpo-export.md` | 4 |
+| `gpo/admx-central-store` | P1 | complete | `gpo/admx-central-store.md` | 8 |
+| `gpo/dsc-group-policy-adapter` | P2 | complete | `gpo/dsc-group-policy-adapter.md` | 3 |
+| `gpo/gpo-export` | P2 | complete | `gpo/gpo-export.md` | 5 |
 | `graph/batching-and-query` | P1 | complete | `graph/batching-and-query.md`, `graph/change-notification-lifetimes.csv` | 13 |
 | `graph/csdl-device` | P1 | complete | `graph/csdl-device.md`, `graph/csdl-device.properties.csv`, `graph/csdl/device.v1.0.xml`, `graph/csdl/device.beta.xml` | 5 |
 | `graph/csdl-managedDevice` | P1 | complete | `graph/csdl-managedDevice.md`, `graph/csdl-managedDevice.properties.csv`, `graph/csdl/managedDevice.v1.0.xml`, `graph/csdl/managedDevice.beta.xml` | 6 |
