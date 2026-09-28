@@ -31,7 +31,6 @@ The open work, and only that: a finished item leaves this file (its commit recor
 
 ## Fact diff
 
-- **Bulk snapshots of `copy` sources wait for a decision on size.** Only the `entra` domain's are committed; the rest would be 758 files, 11.4 MB of text, about 2.4 MB compressed ("Snapshots of copy sources" in `kb/_self/reports/fact-diff.md`). Until then their old text comes from the previous fetch in `_cache/` or a Wayback capture. `python3 _tools/factdiff.py snapshot` writes them.
 - **The first census after anchoring bootstraps the dates.** A detection baseline taken after a source's last confirmation proves nothing about the days between, so `apply` holds such sources back (Learn pages pass on their own `updated_at`); run `/kb-census` with its phase 0 once to start the chain.
 - **Unanchored facts** (`python3 _tools/factdiff.py anchors --unlocated`): 52% of fact-source pairs, derivations and section summaries above all. Splitting such facts, or anchoring a DER fact to the DOC facts it derives from, would shrink what a model reads when their source changes.
 - **Old text from a Learn page's public mirror at its `git_commit_id`** is not wired into `review` (it uses the snapshot, the previous fetch, a Wayback capture, then the anchor's quote); the census's clones of the MicrosoftDocs repositories could serve it.
