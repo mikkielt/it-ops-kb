@@ -56,6 +56,8 @@ kb/_self/plugin.md,.claude/hooks/kb_change_router.py
 kb/_self/design.md,kb/_self/reports/*.md
 kb/_self/design.md,_tools/kb_ask.py
 kb/_self/design.md,AGENTS.md
+kb/_self/alternatives.md,kb/_self/design.md
+kb/_self/alternatives.md,README.md
 kb/_self/token-efficiency.md,_tools/kbfacts.py
 kb/_self/token-efficiency.md,_tools/kb_mcp.py
 kb/_self/token-efficiency.md,_tools/kb_hook.py
