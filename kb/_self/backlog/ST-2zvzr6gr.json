@@ -2,7 +2,7 @@
   "id": "ST-2zvzr6gr",
   "kind": "story",
   "title": "A host MCP server embeds the kb over stdio",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-5sc7hr36",
   "sprint": "SP-4udo5jmw",
   "priority": "P2",

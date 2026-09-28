@@ -2,7 +2,7 @@
   "id": "ST-opes33cp",
   "kind": "story",
   "title": "The kb covers Copilot Studio as a remote MCP client",
-  "status": "draft",
+  "status": "done",
   "parent": "EP-5sc7hr36",
   "sprint": "SP-4udo5jmw",
   "priority": "P2",
@@ -56,5 +56,62 @@
         "eval"
       ]
     }
-  ]
+  ],
+  "links": [
+    "public/agents/copilot-studio-mcp-client.md"
+  ],
+  "evidence": {
+    "commit": "58f46c48041aadfc857b4c474d13bef4303ccaa8",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/rag.py",
+          "pack",
+          "Power Platform outbound IP addresses service tags Copilot Studio connector"
+        ],
+        "exit": 0,
+        "sha256": "7c618aec33cc4b3f"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/rag.py",
+          "pack",
+          "Copilot Studio MCP custom connector virtual network on-premises data gateway"
+        ],
+        "exit": 0,
+        "sha256": "76308dd8a71a2131"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/rag.py",
+          "pack",
+          "Copilot Studio MCP client protocol version sessions server instructions"
+        ],
+        "exit": 0,
+        "sha256": "93c14526640be53f"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/rag.py",
+          "pack",
+          "Copilot Studio custom connector x-ms-agentic-protocol mcp-streamable-1.0"
+        ],
+        "exit": 0,
+        "sha256": "63b94abb41da3dee"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/rag.py",
+          "eval"
+        ],
+        "exit": 0,
+        "sha256": "87b76063a77705d0"
+      }
+    ]
+  }
 }

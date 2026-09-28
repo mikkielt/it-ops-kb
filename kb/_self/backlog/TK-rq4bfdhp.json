@@ -2,7 +2,7 @@
   "id": "TK-rq4bfdhp",
   "kind": "task",
   "title": "Research the MCP client behaviour of Copilot Studio",
-  "status": "todo",
+  "status": "done",
   "parent": "ST-opes33cp",
   "priority": "P2",
   "rank": 1,
@@ -45,5 +45,38 @@
     "kb/public/_retrieval/**",
     "kb/public/_snapshots/**",
     "kb/public/_fetch_state.csv"
-  ]
+  ],
+  "evidence": {
+    "commit": "58f46c48041aadfc857b4c474d13bef4303ccaa8",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/rag.py",
+          "pack",
+          "Copilot Studio MCP client protocol version sessions server instructions"
+        ],
+        "exit": 0,
+        "sha256": "93c14526640be53f"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/rag.py",
+          "pack",
+          "Copilot Studio custom connector x-ms-agentic-protocol mcp-streamable-1.0"
+        ],
+        "exit": 0,
+        "sha256": "63b94abb41da3dee"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/check.py"
+        ],
+        "exit": 0,
+        "sha256": "d97d4feebcdcfc9e"
+      }
+    ]
+  }
 }

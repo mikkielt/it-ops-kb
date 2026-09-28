@@ -2,7 +2,7 @@
   "id": "TK-hhxtmayz",
   "kind": "task",
   "title": "Research Copilot Studio's network path to a self-hosted MCP server",
-  "status": "todo",
+  "status": "done",
   "parent": "ST-opes33cp",
   "priority": "P2",
   "rank": 0,
@@ -45,5 +45,38 @@
     "kb/public/_retrieval/**",
     "kb/public/_snapshots/**",
     "kb/public/_fetch_state.csv"
-  ]
+  ],
+  "evidence": {
+    "commit": "58f46c48041aadfc857b4c474d13bef4303ccaa8",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/rag.py",
+          "pack",
+          "Power Platform outbound IP addresses service tags Copilot Studio connector"
+        ],
+        "exit": 0,
+        "sha256": "7c618aec33cc4b3f"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/rag.py",
+          "pack",
+          "Copilot Studio MCP custom connector virtual network on-premises data gateway"
+        ],
+        "exit": 0,
+        "sha256": "76308dd8a71a2131"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/check.py"
+        ],
+        "exit": 0,
+        "sha256": "d97d4feebcdcfc9e"
+      }
+    ]
+  }
 }

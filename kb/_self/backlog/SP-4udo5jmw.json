@@ -2,7 +2,7 @@
   "id": "SP-4udo5jmw",
   "kind": "sprint",
   "title": "Copilot Studio reaches the kb both ways",
-  "status": "planned",
+  "status": "active",
   "goal": "Copilot Studio and other remote MCP clients can use the kb with one tool contract both ways: a host MCP server spawns kb_mcp.py over stdio (kb_mcp.py --roots, a contract test, kb/_self/embedding.md), and kb_http.py serves the same tools over stateless Streamable HTTP on loopback with Origin, bind and body guards and kb/public by default; a parity test proves both paths answer the same; kb/_self/hosting.md deploys the direct path on Azure Container Apps or App Service and on a VM as equals; and kb/public answers how Copilot Studio reaches and talks to a self-hosted MCP server.",
   "gates": [
     {
@@ -19,5 +19,5 @@
       "by": "operator"
     }
   ],
-  "notes": "Own track, outside the run order of the other sprints: start after SP-z7a5c76b “Delivery proven” closes and run beside the ordered sprints; start gate approved by the operator; run backlog.py start when its turn comes. It shares _tools/test_kb_mcp.py, kb/_self/plugin.md and kb/_self/tools.md with other sprints, so those items land one at a time. Its epic is EP-5sc7hr36 “Remote MCP clients use the kb directly and through a host MCP server”."
+  "notes": "Own track, beside the Windows sprints: the operator started it while SP-z7a5c76b “Delivery proven” runs, and another machine works the Windows sprints and pushes to both remotes, so every landing goes through kbgit.py sync --push. It shares _tools/test_kb_mcp.py, kb/_self/plugin.md and kb/_self/tools.md with other sprints, so those items land one at a time. Its epic is EP-5sc7hr36 “Remote MCP clients use the kb directly and through a host MCP server”."
 }

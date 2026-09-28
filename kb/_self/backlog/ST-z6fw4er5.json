@@ -2,7 +2,7 @@
   "id": "ST-z6fw4er5",
   "kind": "story",
   "title": "kb_http.py serves the kb over Streamable HTTP",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-5sc7hr36",
   "sprint": "SP-4udo5jmw",
   "priority": "P2",
