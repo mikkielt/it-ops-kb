@@ -1,0 +1,36 @@
+{
+  "id": "BG-vwzucnjk",
+  "kind": "bug",
+  "title": "horizon says a planned sprint waits on its start gate after the operator approved it",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "backlog.py horizon reports a planned sprint whose start gate the operator answered as approved, not started, with backlog.py start as the step that remains, and counts its items as waiting on that start, not on the operator; an unanswered start gate is still reported as the operator's question; test_backlog.py covers both.",
+  "repro": {
+    "run": [
+      "git",
+      "grep",
+      "-q",
+      "approved, not started",
+      "--",
+      "_tools/backlog.py"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "horizon_start"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/test_backlog.py",
+    "kb/_self/backlog.md"
+  ],
+  "notes": "cmd_horizon builds the cause for a sprint that is not active from the start gate's question alone (backlog.py, the cause dict under 'if status != active') and ignores its answer, so after the operator approved all nine planned sprints horizon --sprint SP-fep4fpsx “Windows ready” still printed 'waiting on the sprint's start gate: Approve this sprint's goal and committed items?' and '15 wait on the operator or a trigger'. A session reading it may ask the operator again instead of running backlog.py start."
+}
