@@ -82,7 +82,6 @@ Kb facts the build rests on: `claude/hooks.md` (async hooks, `prompt_id`, `Stop`
 - **Allow Git push requests to the repository** is off (no CI job pushes);
 - `.gitlab-ci.yml` runs branch and tag pipelines only (a direct-push model), which fits this design unchanged.
 
-6. **Apply, locally** (eval, alias and expansion rows; no push yet). Done: an eval row is written only with a fix that makes it pass; a finding with no accepted fix becomes a gap candidate; source findings are skipped. Check: `python3 _tools/rag.py eval` passes every question, off-kb `good` does not rise and the mean pack does not grow (`kb/_self/doc2query.md`); planted failures for an eval row without its fix, an alias colliding with an existing term, and `apply` acting on a source finding.
 7. **Direct push** (`querylog.py apply --push`, through `kbgit.py sync`).
 
    Done:

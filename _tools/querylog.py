@@ -2,7 +2,7 @@
 """The query log pipeline: capture, distill, learn and apply for kb lookups (stdlib only).
 
 kb/_self/querylog.md is the design, and the Query log items of kb/_self/work-left.md build the commands in order.
-Capture, distill and learn are built; apply is not yet: that command prints this text and exits 2.
+Capture, distill, learn and a local apply are built; apply's push is not yet.
 
   querylog.py capture   the capture hook (UserPromptSubmit, PostToolUse, PostToolUseFailure and Stop, async, in
                         .claude/settings.json and the plugin): reads one hook event as JSON on stdin and appends at
@@ -23,6 +23,15 @@ Capture, distill and learn are built; apply is not yet: that command prints this
                         gap-candidate and report-only source findings; writes one findings file,
                         findings/<yyyy-mm>/<run-id>.jsonl, holding only the records that change a finding's state
                         (none: no file). Exit 0
+  querylog.py apply [--store DIR]
+                        the store's open eval findings (default: the local store) -> changes in this clone's working
+                        tree, never committed or pushed: each eval row is written together with its fix (alias rows,
+                        or the question as a doc2query expansion of one of the article's facts), the first candidate
+                        with which every `rag.py eval` question passes, the mean pack of the eval questions does not
+                        grow and off-kb `good` does not rise; an alias term already in an alias file or held by the kb
+                        is refused. No accepted fix: the miss becomes a gap candidate (`no-fix`) and its fix
+                        `rejected`. Source and gap findings are left alone. One findings file records each outcome
+                        (none: no file). Exit 0, 1 when `rag.py eval` fails before any change
   querylog.py check [DIR]  the store gates over DIR (default kb/_querylog): header and provenance fields, entry fields,
                         identifiers, fetch entries, duplicate ids and the findings files; one line per problem, exit 1
                         when there is any
@@ -1446,17 +1455,283 @@ def learn(store=None, pack=None, kb_commit=None, registry=None, routes=None, cou
     if not new:
         out(f"learn: nothing new (findings={total})")
         return 0
-    new.sort(key=lambda r: (FINDING_KINDS.index(r["kind"]), r["id"]))
+    run_id, states = write_findings(store, entries, new, LEARN_STATES, kb_commit)
+    out(f"learn: run={run_id} records={len(new)} open={states['open']} fixed-since={states['fixed-since']} "
+        f"findings={total}")
+    return 0
+
+
+def write_findings(store, entries, new, states, kb_commit=None):
+    """One findings file of records `new` (kind order, then id), with the counts of `states`: (run id, counts)."""
+    new = sorted(new, key=lambda r: (FINDING_KINDS.index(r["kind"]), r["id"]))
     new = [{k: r[k] for k in FINDING_KEYS if k in r} for r in new]
     body = "".join(json.dumps(r, ensure_ascii=False, separators=(",", ":")) + "\n" for r in new)
     run_id = learn_run_id(store, [r for r, _ in entries], body)
-    states = {s: sum(1 for r in new if r["state"] == s) for s in LEARN_STATES}
+    counts = {s: sum(1 for r in new if r["state"] == s) for s in states}
     header = {"run": run_id, "pipeline": PIPELINE_VERSION, "retrieval": retrieval_version(),
-              "kb_commit": kb_commit or head_commit(), "counts": {"findings": len(new), **states}}
+              "kb_commit": kb_commit or head_commit(), "counts": {"findings": len(new), **counts}}
     path = _findings_dir(store) / f"{run_id[:4]}-{run_id[4:6]}" / f"{run_id}.jsonl"
     write_text(path, json.dumps(header, ensure_ascii=False, separators=(",", ":")) + "\n" + body)
-    out(f"learn: run={run_id} records={len(new)} open={states['open']} fixed-since={states['fixed-since']} "
-        f"findings={total}")
+    return run_id, counts
+
+
+# --- apply: open findings -> eval rows with their fixes, in the working tree (querylog.md, Learn and apply) --------
+
+APPLY_STATES = ("applied", "rejected", "no-fix")  # fix written / fix failed its gates / a miss with no accepted fix
+FINDING_STATES = LEARN_STATES + APPLY_STATES
+FIX_KINDS = ("alias", "expansion")
+ALIAS_CANDIDATES = 3  # canonical words tried per alias finding: the article's file-name words, then its title's
+EXPANSION_CANDIDATES = 3  # facts of the article tried per expansion finding, most words shared with the question first
+
+
+class Gate:
+    """pack and the kb gates on the working tree of this clone: `rag.py eval`, the off-kb verdicts, the pack size."""
+
+    @staticmethod
+    def fresh():
+        import kbfacts
+        kbfacts._FP[:] = [0.0, None]  # a file was just written: the next call fingerprints the kb again
+
+    def pack(self, question):
+        import kbfacts
+        self.fresh()
+        return kbfacts.pack(question, fmt="concise")
+
+    def measure(self):
+        """{n, passed, failed, chars {eval id: pack characters}, offkb_good} on the working tree."""
+        import kbcommon, kbfacts, rag
+        self.fresh()
+        res = rag.run_eval()
+        good = 0
+        for r in kbcommon.roots():
+            p = Path(r.path) / kbcommon.DATA_DIR / "doc2query" / "offkb_questions.txt"
+            if p.is_file():
+                qs = [q for q in p.read_text(encoding="utf-8").splitlines() if q.strip()]
+                good += sum(kbfacts.pack(q, fmt="concise")["verdict"] == "good" for q in qs)
+        return {"n": res["n"], "passed": res["passed"], "failed": [r["id"] for r in res["rows"] if not r["ok"]],
+                "chars": {r["id"]: r["chars"] for r in res["rows"]}, "offkb_good": good}
+
+    def targets(self, article):
+        """The files a fix for `article` writes: its root's eval set and expansions, and the aliases (the shared
+        _tools/aliases.csv for the public root, a root's own _retrieval/aliases.csv otherwise)."""
+        import kbcommon, kbfacts
+        r = kbcommon.root(kbfacts.root_name(article) or kbcommon.public().name)
+        data = Path(r.path) / kbcommon.DATA_DIR
+        return {"root": r.name, "eval": data / "lookup_eval.csv", "expansions": data / "doc2query" / "expansions.csv",
+                "aliases": Path(kbfacts.ALIASES) if r.name == kbcommon.public().name else data / "aliases.csv"}
+
+    def alias_terms(self):
+        """{term: canonical} of every alias file."""
+        import csv, kbfacts
+        out = {}
+        for p in kbfacts.alias_files():
+            with open(p, encoding="utf-8", newline="") as f:
+                for row in csv.DictReader(f):
+                    t = " ".join((row.get("term") or "").lower().split())
+                    if t:
+                        out.setdefault(t, (row.get("canonical") or "").strip().lower())
+        return out
+
+    def facts(self, article):
+        """[(line, text)] of the tagged facts of `article`."""
+        import kbfacts
+        return [(u["line"], u["text"]) for u in kbfacts.units(article) if u["path"] == article and u["tags"]]
+
+    def title(self, article):
+        import kbfacts
+        return (kbfacts.articles().get(article) or {}).get("title", "")
+
+
+CSV_HEADERS = {"eval": ["id", "question", "expect_paths", "expect_verdict", "allow_weak"],
+               "aliases": ["term", "canonical"], "expansions": ["key", "question"]}
+
+
+def csv_rows(path):
+    import csv
+    if not Path(path).is_file():
+        return []
+    with open(path, encoding="utf-8", newline="") as f:
+        return list(csv.reader(f))[1:]
+
+
+def append_rows(path, which, rows):
+    """Append `rows` to the CSV at `path` (its header first when the file is new); the file's bytes before, or None."""
+    import kbcommon
+    path = Path(path)
+    old = path.read_bytes() if path.is_file() else None
+    text = old.decode("utf-8") if old is not None else kbcommon.rows_text([CSV_HEADERS[which]])
+    if text and not text.endswith("\n"):
+        text += "\n"
+    write_text(path, text + kbcommon.rows_text(rows))
+    return old
+
+
+def restore(saved):
+    """Put back the files `append_rows` changed: their bytes before, or no file."""
+    for path, old in saved.items():
+        if old is None:
+            Path(path).unlink(missing_ok=True)
+        else:
+            Path(path).write_bytes(old)
+
+
+def alias_problems(terms, canonical, existing, unknown):
+    """Why aliasing `terms` to `canonical` collides with an existing term: a term already in an alias file, or a
+    word the kb holds (not among the question's `unknown` words); and a canonical word another product owns."""
+    out = []
+    for t in terms:
+        if t in existing:
+            out.append(f"alias {t}: already a term of {existing[t]}")
+        elif t not in unknown:
+            out.append(f"alias {t}: a word the kb holds")
+    if existing.get(canonical, canonical) != canonical:
+        out.append(f"alias {canonical}: a term of {existing[canonical]}")
+    return out
+
+
+def alias_fixes(finding, entry, gate, res):
+    """[(rows by file, problems)] per candidate canonical word: the words of the article's file name, then of its
+    title, each mapped to its alias group when it is a term of one, else a new group of its own."""
+    import kbfacts
+    article = finding["article"]
+    existing = gate.alias_terms()
+    unknown = unknown_words(entry["question"], res)
+    stem = Path(kbfacts.bare(article)).stem
+    words = []
+    for w in kbfacts.WORD.findall(stem.replace("-", " ") + " " + gate.title(article)):
+        w = w.lower()
+        c = existing.get(w, w)
+        if w not in kbfacts.STOP and len(w) > 2 and not w.isdigit() and c not in words:
+            words.append(c)
+    out = []
+    for c in words[:ALIAS_CANDIDATES]:
+        rows = [[t, c] for t in finding.get("terms") or []]
+        if c not in existing:
+            rows.append([c, c])
+        out.append(({"aliases": rows}, alias_problems(finding.get("terms") or [], c, existing, unknown)))
+    return out
+
+
+def expansion_fixes(finding, entry, gate):
+    """[(rows by file, [])] per candidate fact: the article's facts sharing the most words with the question."""
+    import kbfacts
+    q = set(kbfacts.terms(entry["question"]))
+    facts = sorted(gate.facts(finding["article"]), key=lambda f: (-len(q & set(kbfacts.terms(f[1]))), f[0]))
+    return [({"expansions": [[kbfacts.fact_key(text), entry["question"]]]}, [])
+            for _, text in facts[:EXPANSION_CANDIDATES]]
+
+
+def try_fix(fix, eval_row, targets, gate, base):
+    """Write the fix and the eval row, then hold the kb gates against `base`: every eval question passes, the pack of
+    the questions `base` measured does not grow on average, off-kb `good` does not rise. (ok, problems); the files
+    are put back unless ok."""
+    saved = {}
+    for which, rows in [*fix.items(), ("eval", [eval_row])]:
+        have = {tuple(r) for r in csv_rows(targets[which])}
+        rows = [r for r in rows if tuple(r) not in have]
+        if rows:
+            p = targets[which]
+            old = append_rows(p, which, rows)
+            saved.setdefault(p, old)
+    m = gate.measure()
+    problems = []
+    if m["passed"] != m["n"]:
+        problems.append(f"eval fails: {', '.join(m['failed'][:3])}")
+    ids = [i for i in base["chars"] if i in m["chars"]]
+    before = sum(base["chars"][i] for i in ids) / max(len(ids), 1)
+    after = sum(m["chars"][i] for i in ids) / max(len(ids), 1)
+    if after > before:
+        problems.append(f"mean pack grows: {before:.0f} -> {after:.0f} characters")
+    if m["offkb_good"] > base["offkb_good"]:
+        problems.append(f"off-kb good rises: {base['offkb_good']} -> {m['offkb_good']}")
+    if problems:
+        restore(saved)
+        gate.fresh()
+    return not problems, problems
+
+
+def apply_one(ev, fix, entry, gate, base):
+    """The records of one open eval finding and its fix finding (or None): the eval row with the first candidate fix
+    that passes the gates (both `applied`), else the miss promoted to a gap candidate (`no-fix`) and its fix
+    `rejected`. [] when the question passes on the working tree already (learn records that)."""
+    import kbid
+    question, article = entry["question"], ev["expect"]
+    res = gate.pack(question)
+    if passes(res, article):
+        return []
+    targets = gate.targets(article)
+    bare_path = article.split("/", 1)[1] if article.startswith(targets["root"] + "/") else article
+    eid = kbid.eval_id(question)
+    taken = {r[0]: r[1] for r in csv_rows(targets["eval"]) if len(r) > 1}
+    problems = []
+    if eid in taken and taken[eid] != question:
+        problems.append(f"eval id {eid} is taken by another question")
+    elif fix is None:
+        problems.append("no fix finding")
+    else:
+        cands = alias_fixes(fix, entry, gate, res) if fix["kind"] == "alias" else expansion_fixes(fix, entry, gate)
+        if not cands:
+            problems.append(f"no candidate {fix['kind']}")
+        row = [eid, question, bare_path, "good", ""]
+        for rows, why in cands:
+            if why:
+                problems += why
+                continue
+            ok, why = try_fix(rows, row, targets, gate, base)
+            if ok:
+                done = {k: v for k, v in ev.items() if k != "observed"}
+                return [{**done, "state": "applied", "observed": {"eval": eid}},
+                        {**{k: v for k, v in fix.items() if k != "observed"}, "state": "applied",
+                         "observed": {"rows": sum(len(v) for v in rows.values())}}]
+            problems += why
+    miss = {k: v for k, v in ev.items() if k != "observed"}
+    promoted = {**miss, "state": "no-fix", "stage": "candidate-gap",
+                "promotions": [*(ev.get("promotions") or []), {"from": ev.get("stage", "miss"), "to": "candidate-gap",
+                                                               "by": "apply"}],
+                "observed": {"gate": sorted(set(problems))[:6]}}
+    out = [promoted]
+    if fix is not None:
+        out.append({**{k: v for k, v in fix.items() if k != "observed"}, "state": "rejected",
+                    "observed": {"gate": sorted(set(problems))[:6]}})
+    return out
+
+
+def apply(store=None, gate=None, kb_commit=None, out=print):
+    """One apply over `store` (default: the local store beside the spool): every open eval finding with its open fix
+    finding, in id order, into the working tree of this clone, then one findings file with each outcome. Source and
+    gap findings are left as they are. 0; 1 when `rag.py eval` fails before any change."""
+    store = Path(store or places()[0] / "store")
+    gate = gate or Gate()
+    entries = store_entries(store)
+    last = finding_states(store)
+    evals = sorted((r for r in last.values() if r.get("kind") == "eval" and r.get("state") == "open"),
+                   key=lambda r: r["id"])
+    if not evals:
+        out("apply: nothing to apply")
+        return 0
+    base = gate.measure()
+    if base["passed"] != base["n"]:
+        out(f"apply: rag.py eval fails before any change ({base['passed']} of {base['n']} pass); nothing applied")
+        return 1
+    by_entry = {e["id"]: e for _, e in entries}
+    fixes = {r["entry"]: r for r in last.values() if r.get("kind") in FIX_KINDS and r.get("state") == "open"}
+    new = []
+    for ev in evals:
+        entry = by_entry.get(ev.get("entry"))
+        if entry and isinstance(entry.get("question"), str):
+            new += apply_one(ev, fixes.get(ev["entry"]), entry, gate, base)
+    if not new:
+        out("apply: nothing to apply")
+        return 0
+    run_id, counts = write_findings(store, entries, new, APPLY_STATES, kb_commit)
+    said = f"apply: run={run_id} records={len(new)} " + " ".join(f"{s}={n}" for s, n in counts.items())
+    if counts["applied"]:
+        m = gate.measure()
+        ids = [i for i in base["chars"] if i in m["chars"]]
+        mean = [round(sum(d["chars"][i] for i in ids) / max(len(ids), 1)) for d in (base, m)]
+        said += (f" eval={m['passed']}/{m['n']} mean-pack={mean[0]}->{mean[1]} "
+                 f"offkb-good={base['offkb_good']}->{m['offkb_good']}")
+    out(said)
     return 0
 
 
@@ -1494,9 +1769,11 @@ def findings_problems(store, k=None):
                 out.append(f"{where}: unknown fields: {', '.join(other)}")
             if r.get("kind") not in FINDING_KINDS:
                 out.append(f"{where}: unknown kind {r.get('kind')!r}")
-            if r.get("state") not in LEARN_STATES:
+            if r.get("state") not in FINDING_STATES:
                 out.append(f"{where}: unknown state {r.get('state')!r}")
             if r.get("kind") == "source":
+                if r.get("state") in APPLY_STATES:
+                    out.append(f"{where}: a source finding is never applied")
                 if r.get("signal") not in SIGNALS:
                     out.append(f"{where}: unknown signal {r.get('signal')!r}")
                 if not public_host(r.get("host"), k):
@@ -1509,6 +1786,11 @@ def findings_problems(store, k=None):
                 for pr in r.get("promotions") or []:
                     if not (isinstance(pr, dict) and pr.get("from") in STAGES and pr.get("to") in STAGES):
                         out.append(f"{where}: a promotion without its from and to stages")
+    last = finding_states(store)
+    fixed = {r.get("entry") for r in last.values() if r.get("kind") in FIX_KINDS and r.get("state") == "applied"}
+    for r in last.values():
+        if r.get("kind") == "eval" and r.get("state") == "applied" and r.get("entry") not in fixed:
+            out.append(f"findings: eval finding {r.get('id')} is applied without its fix")
     return out
 
 
@@ -1559,6 +1841,17 @@ def main(argv=None):
                 print("learn: logging is off")
                 return 0
         return learn(a.store)
+    if argv[:1] == ["apply"]:
+        import argparse
+        ap = argparse.ArgumentParser(prog="querylog.py apply")
+        ap.add_argument("--store", help="the store whose findings to apply and record (default: the local store)")
+        a = ap.parse_args(argv[1:])
+        if a.store is None:
+            d, cfg = places()
+            if (d / "DISABLED").exists() or read_mode(cfg) == "off":
+                print("apply: logging is off")
+                return 0
+        return apply(a.store)
     if argv[:1] == ["distill"]:
         import argparse
         ap = argparse.ArgumentParser(prog="querylog.py distill")

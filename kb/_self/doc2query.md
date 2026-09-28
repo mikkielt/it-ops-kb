@@ -38,4 +38,4 @@ See `kb/_self/reports/token-usage.md`, "doc2query".
 - **Round 1:** pilot 90% -> 97.5%, with the weight tuned on the test set.
 - **Round 2 (fresh arms):** no change, 95% both ways.
 
-The whole kb is not expanded. Expand an article when real lookups show paraphrase misses in it.
+The whole kb is not expanded. Expand an article when real lookups show paraphrase misses in it. `querylog.py apply` does so from the query log: the logged question becomes an expansion of one of the article's facts, kept only under the adoption gates above (the eval set at 100% with the new eval row, off-kb `good` not rising, the mean pack not growing) instead of the ingest filter (`kb/_self/querylog.md`, Learn and apply).

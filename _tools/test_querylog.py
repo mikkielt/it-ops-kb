@@ -1,4 +1,4 @@
-"""Query log tests (kb/_self/querylog.md: Capture, Distill, Store, Learn; `python3 _tools/tests.py -k querylog`).
+"""Query log tests (kb/_self/querylog.md: Capture, Distill, Store, Learn and apply; `python3 _tools/tests.py -k querylog`).
 
   TestHookRows      the capture hook (`querylog.py capture`) with recorded hook events on stdin: one row per event
                     with a fresh UUID id; prompt, kb MCP, fetch and Stop rows; fetch rows keep host and path only,
@@ -40,6 +40,13 @@
                     table, and every registry host has a routes row (planted: a row without one); no stage finding
                     for a host with the needed level; source findings read the registry and the routes table
   TestFindingsGates the findings gates of `check`, each with a planted failure
+  TestApply         in a kb copy, `learn` then `apply` on the fixture store (a paraphrase and an unknown word): each
+                    eval row lands with its expansion or alias, `rag.py eval` passes, the mean pack and off-kb `good`
+                    do not rise; a miss with no accepted fix becomes a gap candidate and its fix `rejected`, as new
+                    records; a second apply and learn change nothing; planted: an eval row without its fix fails
+  TestApplyGates    apply with stub gates: planted failures for an eval row without its fix finding, a fix that fails
+                    the gates (files put back), an alias term colliding with an existing term, source findings
+                    (never applied), a red eval before any change; convergence
 Every run writes under a temporary plugin data directory (conftest.querylog_env), never the clone's own spool, and no
 test calls the real `claude`: Haiku is the recorded reply file or a stub.
 """
@@ -1344,7 +1351,260 @@ class TestFindingsGates:
         (lambda o: o[1].update(promotions=[{"from": "miss"}]), "a promotion without its from and to stages"),
         (lambda o: o[-1].update(host="wiki.acme-corp.pl"), "source host is not a public host"),
         (lambda o: o[-1].update(signal="vibes"), "unknown signal 'vibes'"),
+        (lambda o: o[-1].update(state="applied"), "a source finding is never applied"),
+        (lambda o: o[1].update(state="applied"), "is applied without its fix"),
     ])
     def test_findings_gates(self, learned, tmp_path, change, problem):
         problems = self.planted(learned, tmp_path, change)
         assert any(problem in p for p in problems), problems
+
+
+# --- apply ------------------------------------------------------------------------------------------------------------
+
+E = lambda n: f"55555555-0000-4000-8000-0000000000{n}"  # noqa: E731
+ALIAS_Q = "Which zqxlapsor setting picks the backup directory?"  # a word the kb never holds, for LAPS
+PARAPHRASE_Q = "How long is the default password?"  # every word known; the pack on HEAD misses the LAPS article
+
+
+def apply_store(tmp_path, name="store"):
+    """The fixture store with a1 a paraphrase an expansion fixes and a2 an unknown word an alias fixes; a3 (its best
+    article cannot be reached without breaking the eval set), a4 (a gap) and the fetches as they are."""
+    store = learn_store(tmp_path, name)
+    (p,) = querylog.run_files(store)
+    objs = jsonl(p)
+    for o in objs:
+        o["question"] = {E("a1"): PARAPHRASE_Q, E("a2"): ALIAS_Q}.get(o.get("id"), o.get("question"))
+        if o.get("question") is None:
+            o.pop("question")
+    p.write_text("".join(json.dumps(o, separators=(",", ":")) + "\n" for o in objs), encoding="utf-8", newline="\n")
+    return store
+
+
+KB_DATA = ("kb/public/_retrieval/lookup_eval.csv", "kb/public/_retrieval/doc2query/expansions.csv",
+           "_tools/aliases.csv")
+
+
+@pytest.fixture(scope="module")
+def applied(tmp_path_factory):
+    """A kb copy and the apply store after `learn` then `apply` in the copy: (home, store, env, apply's output,
+    the copy's kb data files before)."""
+    base = tmp_path_factory.mktemp("apply")
+    home = Path(copy_kb(str(base / "kb")))
+    store = apply_store(base)
+    env = querylog_env(base / "data", home=str(home), base={**os.environ, "KB_INDEX": str(home / "_cache")})
+    before = {f: (home / f).read_bytes() for f in KB_DATA}
+    ql = [sys.executable, str(home / "_tools" / "querylog.py")]
+    said = []
+    for cmd in ("learn", "apply"):
+        p = subprocess.run([*ql, cmd, "--store", str(store)], capture_output=True, text=True, encoding="utf-8",
+                           env=env, cwd=home, timeout=600)
+        assert p.returncode == 0, p.stdout + p.stderr
+        said.append(p.stdout.strip())
+    return home, store, env, said, before
+
+
+def kb_rows(home, rel):
+    return querylog.csv_rows(Path(home) / rel)
+
+
+class TestApply:
+    def test_eval_rows_come_with_their_fixes(self, applied):
+        home, store, env, said, before = applied
+        assert said[1].startswith("apply: run=") and "applied=4 rejected=1 no-fix=1" in said[1], said
+        m = re.search(r"eval=(\d+)/(\d+) mean-pack=(\d+)->(\d+) offkb-good=(\d+)->(\d+)", said[1])
+        passed, n, mean0, mean1, good0, good1 = map(int, m.groups())
+        assert passed == n and mean1 <= mean0 and good1 <= good0, said[1]  # the doc2query.md measurements
+        added = {rel: kb_rows(home, rel)[len(querylog.csv_rows(Path(KB) / rel)):] for rel in KB_DATA}
+        import kbfacts, kbid
+        assert added["kb/public/_retrieval/lookup_eval.csv"] == [
+            [kbid.eval_id(PARAPHRASE_Q), PARAPHRASE_Q, "windows/laps.md", "good", ""],
+            [kbid.eval_id(ALIAS_Q), ALIAS_Q, "windows/laps.md", "good", ""]]
+        assert added["_tools/aliases.csv"] == [["zqxlapsor", "laps"]]  # into the existing laps group
+        ((key, q),) = added["kb/public/_retrieval/doc2query/expansions.csv"]
+        facts = {kbfacts.fact_key(u["text"]) for u in kbfacts.units(LAPS) if u["path"] == LAPS and u["tags"]}
+        assert q == PARAPHRASE_Q and key in facts
+        p = subprocess.run([sys.executable, str(home / "_tools" / "rag.py"), "eval"], capture_output=True, text=True,
+                           encoding="utf-8", env=env, cwd=home, timeout=600)
+        assert p.returncode == 0 and f"questions={n} passed={n}" in p.stdout, p.stdout[-400:]
+        p = subprocess.run([sys.executable, str(home / "_tools" / "doc2query.py"), "stale"], capture_output=True,
+                           text=True, encoding="utf-8", env=env, cwd=home, timeout=600)
+        assert p.returncode == 0, p.stdout
+
+    def test_outcomes_are_new_records(self, applied):
+        home, store, env, said, before = applied
+        (_, learned), (_, outcomes) = findings(store)
+        now = by_id(store)
+        kinds = {(r["kind"], r.get("entry")): r for r in now.values()}
+        for n in ("a1", "a2"):
+            assert kinds[("eval", E(n))]["state"] == "applied"
+        assert kinds[("expansion", E("a1"))]["state"] == "applied" and kinds[("alias", E("a2"))]["state"] == "applied"
+        miss = kinds[("eval", E("a3"))]  # no accepted fix: a gap candidate, the promotion on the finding
+        assert (miss["state"], miss["stage"]) == ("no-fix", "candidate-gap")
+        assert miss["promotions"] == [{"from": "miss", "to": "candidate-gap", "by": "apply"}]
+        assert kinds[("expansion", E("a3"))]["state"] == "rejected" and kinds[("expansion", E("a3"))]["observed"]["gate"]
+        assert not [r for r in outcomes if r["kind"] in ("source", "gap")]  # left alone
+        assert {r["id"] for r in learned} >= {r["id"] for r in outcomes}  # the learn file is not edited
+        assert querylog.store_problems(store) == []
+
+    def test_a_second_apply_changes_nothing(self, applied):
+        home, store, env, said, before = applied
+        tree_before = tree(store), {f: (home / f).read_bytes() for f in KB_DATA}
+        ql = [sys.executable, str(home / "_tools" / "querylog.py")]
+        for cmd, want in (("apply", "apply: nothing to apply"), ("learn", "learn: nothing new (findings=10)")):
+            p = subprocess.run([*ql, cmd, "--store", str(store)], capture_output=True, text=True, encoding="utf-8",
+                               env=env, cwd=home, timeout=600)
+            assert (p.returncode, p.stdout.strip()) == (0, want), p.stdout + p.stderr
+        assert (tree(store), {f: (home / f).read_bytes() for f in KB_DATA}) == tree_before
+
+    def test_an_eval_row_without_its_fix_fails_the_eval(self, tmp_path):
+        import kbid, rag  # planted: the row alone, on this clone, which has no zqxlapsor alias
+        f = tmp_path / "lookup_eval.csv"
+        f.write_text(f"id,question,expect_paths,expect_verdict,allow_weak\n{kbid.eval_id(ALIAS_Q)},{ALIAS_Q},"
+                     "windows/laps.md,good,\n", encoding="utf-8", newline="\n")
+        assert rag.run_eval(str(f))["passed"] == 0
+
+    def test_cli_off(self, tmp_path):
+        (tmp_path / "data" / "querylog").mkdir(parents=True)
+        (tmp_path / "data" / "querylog" / "config.json").write_text('{"mode": "off"}', encoding="utf-8")
+        p = subprocess.run([sys.executable, QL, "apply"], capture_output=True, text=True, encoding="utf-8",
+                           env=querylog_env(tmp_path / "data"), timeout=120)
+        assert (p.returncode, p.stdout) == (0, "apply: logging is off\n")
+
+
+class StubGate(querylog.Gate):
+    """The kb gates on three files in a temporary directory: the eval set, the aliases and the expansions. A new eval
+    row passes when `works` and some fix row was written with it; `measure` counts its calls."""
+
+    def __init__(self, d, works=True, unknown=("zqxlapsor", "plomkinator")):
+        import kbfacts
+        self.files = {"eval": d / "lookup_eval.csv", "aliases": d / "aliases.csv", "expansions": d / "expansions.csv"}
+        self.files["eval"].write_text("id,question,expect_paths,expect_verdict,allow_weak\nEV-old,Old?,a/b.md,good,\n",
+                                      encoding="utf-8", newline="\n")
+        self.files["aliases"].write_text("term,canonical\nsccm,configmgr\nconfigmgr,configmgr\nlaps,laps\n",
+                                         encoding="utf-8", newline="\n")
+        self.files["expansions"].write_text("key,question\n", encoding="utf-8", newline="\n")
+        self.first = {k: p.read_bytes() for k, p in self.files.items()}
+        self.works, self.missing, self.measured = works, [kbfacts.stem(w) for w in unknown], 0
+
+    def fresh(self):
+        pass
+
+    def pack(self, question):
+        return {"verdict": "none", "paths": [], "missing": self.missing}
+
+    def measure(self):
+        self.measured += 1
+        rows = querylog.csv_rows(self.files["eval"])
+        fixed = any(self.files[k].read_bytes() != self.first[k] for k in ("aliases", "expansions"))
+        passed = len(rows) if self.works and fixed else 1
+        return {"n": len(rows), "passed": passed, "failed": [r[0] for r in rows[passed:]],
+                "chars": {r[0]: 100 for r in rows}, "offkb_good": 0}
+
+    def targets(self, article):
+        return {"root": "public", **self.files}
+
+    def facts(self, article):
+        return [(10, "PasswordLength default 14 characters."), (11, "Password age default 30 days.")]
+
+    def title(self, article):
+        return "Windows LAPS: policy"
+
+
+def unknown_pack(q):
+    import kbfacts
+    return {"verdict": "none", "paths": [], "missing": [kbfacts.stem(w) for w in ("zqxlapsor", "plomkinator")]}
+
+
+@pytest.fixture
+def stub_store(tmp_path):
+    """The fixture store after one learn where every miss fails and zqxlapsor and plomkinator are unknown words:
+    eval findings for a1, a2 and a3, an alias for a2, expansions for a1 and a3, a gap and source findings."""
+    store = learn_store(tmp_path)
+    run_learn(store, unknown_pack)
+    return store
+
+
+def run_apply(store, gate):
+    said = []
+    rc = querylog.apply(store, gate=gate, kb_commit="0" * 40, out=said.append)
+    return rc, said
+
+
+class TestApplyGates:
+    def test_applied_with_stub_gates_then_converges(self, stub_store, tmp_path):
+        gate = StubGate(tmp_path)
+        rc, said = run_apply(stub_store, gate)
+        assert rc == 0 and "applied=6 rejected=0 no-fix=0" in said[0], said
+        assert [r[0] for r in querylog.csv_rows(gate.files["aliases"])][-3:] == ["laps", "zqxlapsor", "plomkinator"]
+        first = tree(stub_store), {k: p.read_bytes() for k, p in gate.files.items()}
+        n = gate.measured
+        assert run_apply(stub_store, gate) == (0, ["apply: nothing to apply"])
+        assert (tree(stub_store), {k: p.read_bytes() for k, p in gate.files.items()}) == first
+        assert gate.measured == n  # nothing open: no gate ran
+        assert querylog.store_problems(stub_store) == []
+
+    def test_an_eval_row_is_never_written_without_its_fix(self, stub_store, tmp_path):
+        (p,) = querylog.findings_files(stub_store)  # planted: learn's fix records gone
+        objs = jsonl(p)
+        objs = [objs[0]] + [o for o in objs[1:] if o["kind"] not in querylog.FIX_KINDS]
+        objs[0]["counts"]["findings"] = len(objs) - 1
+        p.write_text("".join(json.dumps(o) + "\n" for o in objs), encoding="utf-8", newline="\n")
+        gate = StubGate(tmp_path)
+        rc, said = run_apply(stub_store, gate)
+        assert rc == 0 and "applied=0 rejected=0 no-fix=3" in said[0], said
+        assert {k: p.read_bytes() for k, p in gate.files.items()} == gate.first
+        recs = [r for r in by_id(stub_store).values() if r["kind"] == "eval"]
+        assert all(r["observed"]["gate"] == ["no fix finding"] and r["stage"] == "candidate-gap" for r in recs)
+
+    def test_a_fix_that_fails_the_gates_is_put_back(self, stub_store, tmp_path):
+        gate = StubGate(tmp_path, works=False)  # planted: no fix makes the new eval row pass
+        rc, said = run_apply(stub_store, gate)
+        assert rc == 0 and "applied=0 rejected=3 no-fix=3" in said[0], said
+        assert {k: p.read_bytes() for k, p in gate.files.items()} == gate.first  # every file as it was
+        assert querylog.store_problems(stub_store) == []
+
+    @pytest.mark.parametrize("unknown,terms,problem", [
+        (("sccm",), ["sccm"], "alias sccm: already a term of configmgr"),
+        ((), ["password"], "alias password: a word the kb holds"),
+    ])
+    def test_an_alias_colliding_with_an_existing_term_is_refused(self, tmp_path, unknown, terms, problem):
+        store = learn_store(tmp_path)
+        run_learn(store, unknown_pack)
+        (p,) = querylog.findings_files(store)
+        objs = jsonl(p)
+        for o in objs[1:]:
+            if o["kind"] == "alias":
+                o["terms"] = terms  # planted: a term an alias file or the kb already holds
+        p.write_text("".join(json.dumps(o) + "\n" for o in objs), encoding="utf-8", newline="\n")
+        gate = StubGate(tmp_path, unknown=unknown)
+        run_apply(store, gate)
+        assert gate.files["aliases"].read_bytes() == gate.first["aliases"]
+        rec = next(r for r in by_id(store).values() if r["kind"] == "alias")
+        assert rec["state"] == "rejected" and problem in rec["observed"]["gate"], rec
+        miss = by_id(store)[querylog.finding_id("eval", E("a2"))]
+        assert (miss["state"], miss["stage"]) == ("no-fix", "candidate-gap")
+
+    def test_alias_problems(self):
+        existing = {"sccm": "configmgr", "configmgr": "configmgr", "laps": "laps"}
+        assert querylog.alias_problems(["zqx"], "laps", existing, ["zqx"]) == []
+        assert querylog.alias_problems(["sccm"], "laps", existing, ["sccm"]) == ["alias sccm: already a term of configmgr"]
+        assert querylog.alias_problems(["laps"], "laps", existing, []) == ["alias laps: already a term of laps"]
+        assert querylog.alias_problems(["zqx"], "laps", existing, []) == ["alias zqx: a word the kb holds"]
+        assert querylog.alias_problems(["zqx"], "sccm", existing, ["zqx"]) == ["alias sccm: a term of configmgr"]
+
+    def test_source_findings_are_never_applied(self, tmp_path):
+        store = learn_store(tmp_path)
+        run_learn(store, passing)  # every miss passes: only source findings stay open
+        assert {r["kind"] for r in by_id(store).values() if r["state"] == "open"} == {"source"}
+        gate = StubGate(tmp_path)
+        before = tree(store)
+        assert run_apply(store, gate) == (0, ["apply: nothing to apply"])
+        assert tree(store) == before and gate.measured == 0
+        assert {k: p.read_bytes() for k, p in gate.files.items()} == gate.first
+
+    def test_a_red_eval_before_any_change_applies_nothing(self, stub_store, tmp_path):
+        gate = StubGate(tmp_path)
+        gate.measure = lambda: {"n": 2, "passed": 1, "failed": ["EV-x"], "chars": {}, "offkb_good": 0}
+        before = tree(stub_store)
+        rc, said = run_apply(stub_store, gate)
+        assert rc == 1 and "nothing applied" in said[0] and tree(stub_store) == before
