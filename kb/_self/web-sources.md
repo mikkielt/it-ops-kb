@@ -14,16 +14,17 @@ How the kb reads web pages, which route each source family takes, and the runboo
 | `learn.microsoft.com` | `microsoft_docs_search` (chunks; often enough to decide which page) | `microsoft_docs_fetch` of the url you cite | WebFetch; the undocumented `?accept=text/markdown` form in anything an agent relies on (`agents/doc-change-detection.md`) |
 | `code.claude.com`, `modelcontextprotocol.io` | the server's search tool | the section only: `rg -n -C 8 "<words>" <page>.mdx` on the docs filesystem, or `sed -n` a line range; `cat` the whole page only when the section cannot be found | WebFetch of the HTML page |
 | `github.com/.../blob/<ref>/...`, `gitlab.com/.../-/blob/...` | WebSearch, the repository tree | the same file at the same ref from `raw.githubusercontent.com` or `/-/raw/`; releases and tags from `api.github.com` | the HTML blob page |
+| `docs.gitlab.com` | WebSearch | the page's source file under `doc/` in `gitlab-org/gitlab`, read raw at a commit (`/-/raw/`): the site has no markdown form (its registry row) | WebFetch of the HTML page |
 | sites that publish `llms.txt` or `.md` pages (`platform.claude.com`) | `llms.txt` | the page's `.md` form | the HTML page |
 | PyPI | `pypi.org/pypi/<name>/json` | the same JSON | the project page |
 | PDF documents | WebSearch | download with `curl` into `_cache/`, read with the Read tool by page range | WebFetch (it returns little or nothing from a PDF) |
 | anything else | WebSearch | `curl` the page and find the sentence in its text; WebFetch only to locate the passage | a WebFetch summary as the quote |
 
-A staged family adds its row here.
+A staged family adds its row here. Every host of `_tools/providers.csv` has a row here, and the query log's `learn` reads this table for a host's staging level when the registry has no row for it (`kb/_self/querylog.md`, Learn and apply; tested).
 
 ## When a family needs staging
 
-Stage a host (or a set of hosts one vendor runs) when any of these holds, and name the trigger in the commit body:
+Stage a host (or a set of hosts one vendor runs) when any of these holds, and name the trigger in the commit body. The query log's `learn` reports hosts that meet the Share or Failures trigger (its numbers in `_tools/querylog.py` are tested against the ones here):
 
 1. **Share.** It backs at least 25 rows of a root's `_sources.csv`, or at least 5% of them (count hosts with Python's `csv` and `urllib.parse`).
 2. **Failures.** Three or more failures on the host across `_fetch_state.csv` (`error`), census `NEEDS-READING` verdicts and `_gaps.md` notes (403, bot pages, title-only or empty WebFetch results, truncated pages).

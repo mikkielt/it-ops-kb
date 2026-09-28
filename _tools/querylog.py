@@ -2,7 +2,7 @@
 """The query log pipeline: capture, distill, learn and apply for kb lookups (stdlib only).
 
 kb/_self/querylog.md is the design, and the Query log items of kb/_self/work-left.md build the commands in order.
-Capture and distill are built; learn and apply are not yet: those commands print this text and exit 2.
+Capture, distill and learn are built; apply is not yet: that command prints this text and exits 2.
 
   querylog.py capture   the capture hook (UserPromptSubmit, PostToolUse, PostToolUseFailure and Stop, async, in
                         .claude/settings.json and the plugin): reads one hook event as JSON on stdin and appends at
@@ -17,8 +17,15 @@ Capture and distill are built; learn and apply are not yet: those commands print
                         batches, then the rules and the leak scan again. --replay answers the Haiku calls from a
                         recorded reply file ({"replies": [...]}) instead of `claude -p`. Exit 0 done (or nothing to
                         do), 3 another distill holds the lock
+  querylog.py learn [--store DIR]
+                        the store's run files and the kb at HEAD -> findings (default: the local store): every judged
+                        miss re-run with pack first (`fixed-since` when it now passes), then eval, alias, expansion,
+                        gap-candidate and report-only source findings; writes one findings file,
+                        findings/<yyyy-mm>/<run-id>.jsonl, holding only the records that change a finding's state
+                        (none: no file). Exit 0
   querylog.py check [DIR]  the store gates over DIR (default kb/_querylog): header and provenance fields, entry fields,
-                        identifiers, fetch entries and duplicate ids; one line per problem, exit 1 when there is any
+                        identifiers, fetch entries, duplicate ids and the findings files; one line per problem, exit 1
+                        when there is any
   querylog.py where     prints the mode, the config file, the spool directory and whether capture writes
 
 Tools write their own rows with `record(surface, session_id, **fields)`: kb_hook.py (`kb:` prompts), kb_ask.py (one
@@ -1104,7 +1111,405 @@ def store_problems(store=None, k=None):
             out.append(f"{rel}:{hn}: header fields a header never has: {', '.join(extra)}")
         for n, e in entries:
             out += entry_problems(e, f"{rel}:{n}", k)
-    return out + duplicate_ids(store)
+    return out + duplicate_ids(store) + findings_problems(store, k)
+
+
+# --- learn: the store and the kb at HEAD -> findings (querylog.md, Learn and apply) ---------------------------------
+
+FINDINGS = "findings"
+FINDING_KINDS = ("eval", "alias", "expansion", "gap", "source")
+LEARN_STATES = ("open", "fixed-since")  # the states learn writes; a record in any other state is apply's to change
+STAGES = ("miss", "candidate-gap", "gap", "candidate-fact", "claim")
+SIGNALS = ("stage", "route")  # a host that needs staging, a fetch by a tool its route avoids
+FINDING_ID = re.compile(r"F-[0-9a-f]{12}")
+FINDING_KEYS = ("id", "kind", "state", "stage", "promotions", "entry", "expect", "article", "terms", "signal", "host",
+                "level", "needs", "triggers", "tool", "route", "observed")
+FAILED = re.compile(r"http-[45]\d\d|empty|truncated|error")  # fetch outcomes that count as failures on the host
+WEB_SOURCES = HOME / "kb" / "_self" / "web-sources.md"
+ROUTE_HOST = re.compile(r"(?:[a-z0-9-]+\.)+[a-z]{2,}")
+FILE_SUFFIXES = ("txt", "md", "mdx", "json", "html", "xml", "csv", "py", "yml", "yaml")  # `llms.txt` is no host
+
+
+def _findings_dir(store):
+    return Path(store) / FINDINGS
+
+
+def findings_files(store):
+    """The findings files of a store, oldest run first: findings/<yyyy-mm>/<run-id>.jsonl."""
+    d = _findings_dir(store)
+    return sorted(d.glob("*/*.jsonl"), key=lambda p: p.stem) if d.is_dir() else []
+
+
+def finding_states(store):
+    """{finding id: its last record} across the store's findings files, in run order."""
+    last = {}
+    for p in findings_files(store):
+        try:
+            objs = load_run(p)
+        except (OSError, ValueError):
+            continue
+        for _, rec in objs[1:]:
+            if isinstance(rec.get("id"), str):
+                last[rec["id"]] = rec
+    return last
+
+
+def finding_id(*parts):
+    import hashlib
+    return "F-" + hashlib.sha256("|".join(parts).encode("utf-8")).hexdigest()[:12]
+
+
+# --- where a host stands: the provider registry, else the routes table of web-sources.md ---------------------------
+
+def routes_table(text=None):
+    """The rows of the routes table ("Routes by family" in kb/_self/web-sources.md): {family, find, read, avoid,
+    hosts}, `hosts` being the host names its family, find and read cells name in backticks."""
+    text = WEB_SOURCES.read_text(encoding="utf-8") if text is None else text
+    m = re.search(r"^## Routes by family\n(.*?)(?=^## )", text, re.M | re.S)
+    out = []
+    for line in (m.group(1) if m else "").splitlines():
+        cells = [c.strip() for c in line.strip().strip("|").split("|")] if line.startswith("|") else []
+        if len(cells) != 4 or cells[0] in ("family", "") or set(cells[0]) <= set("-: "):
+            continue
+        hosts = []
+        for cell in cells[:3]:
+            for tok in re.findall(r"`([^`]+)`", cell):
+                h = tok.split("/", 1)[0].lower()
+                if ROUTE_HOST.fullmatch(h) and h.rsplit(".", 1)[-1] not in FILE_SUFFIXES and h not in hosts:
+                    hosts.append(h)
+        out.append(dict(zip(("family", "find", "read", "avoid"), cells), hosts=hosts))
+    return out
+
+
+def registry_row(host, registry=None):
+    """The provider-registry row (_tools/providers.csv, or a root's _providers.csv) serving `host`, not the `*` one."""
+    import provider
+    row = provider.for_url(f"https://{host}/", provider.providers() if registry is None else registry)
+    return row if row and "*" not in (row.get("match") or "").split() else None
+
+
+def staging_level(host, registry=None, routes=None):
+    """(level, where from) of a host (kb/_self/web-sources.md, Staging levels): 3 with a provider-registry row, else 1
+    with a row of the routes table, else 0."""
+    if registry_row(host, registry):
+        return 3, "registry"
+    if any(host in r["hosts"] for r in (routes_table() if routes is None else routes)):
+        return 1, "routes"
+    return 0, None
+
+
+def registry_problems(registry=None, routes=None):
+    """A registry row whose host the routes table does not name: a staged family adds its routes row first, so the
+    two sources of a host's level agree. The shared registry only; a root's own providers are its team's."""
+    import provider
+    rows = provider._read(provider.SHARED) if registry is None else registry
+    hosts = {h for r in (routes_table() if routes is None else routes) for h in r["hosts"]}
+    out = []
+    for r in rows:
+        if r.get("_root"):
+            continue
+        for m in (r.get("match") or "").split():
+            h = m.split("/", 1)[0].lower()
+            if m != "*" and h not in hosts:
+                out.append(f"provider {r.get('provider')}: {h} has a registry row but no row in the routes table")
+    return out
+
+
+# --- the staging triggers (web-sources.md, "When a family needs staging"): the numbers a test holds equal to the doc
+
+STAGE_SHARE_ROWS = 25  # Share: a host backing at least this many rows of a root's _sources.csv
+STAGE_SHARE_PERCENT = 5  # Share: or at least this share of them
+STAGE_FAILURES = 3  # Failures: this many failed fetches on the host
+STAGE_NEEDED_LEVEL = 1  # what a Share or Failures trigger asks for first: a route
+NUMBER_WORDS = {w: i for i, w in enumerate(("zero", "one", "two", "three", "four", "five", "six", "seven", "eight",
+                                            "nine", "ten"))}
+
+
+def doc_triggers(text=None):
+    """{share_rows, share_percent, failures} as the staging triggers of web-sources.md state them (None when absent)."""
+    text = WEB_SOURCES.read_text(encoding="utf-8") if text is None else text
+    m = re.search(r"^## When a family needs staging\n(.*?)(?=^## )", text, re.M | re.S)
+    sec = m.group(1) if m else ""
+
+    def num(rx):
+        g = re.search(rx, sec, re.I)
+        if not g:
+            return None
+        v = g.group(1).lower()
+        return int(v) if v.isdigit() else NUMBER_WORDS.get(v)
+    return {"share_rows": num(r"\*\*Share\.\*\*[^\n]*?at least (\d+) rows"),
+            "share_percent": num(r"\*\*Share\.\*\*[^\n]*?at least (\d+)%"),
+            "failures": num(r"\*\*Failures\.\*\*\s*(\w+) or more failures")}
+
+
+def trigger_problems(text=None):
+    """Each staging trigger whose number in querylog.py differs from web-sources.md."""
+    ours = {"share_rows": STAGE_SHARE_ROWS, "share_percent": STAGE_SHARE_PERCENT, "failures": STAGE_FAILURES}
+    doc = doc_triggers(text)
+    return [f"trigger {k}: querylog.py has {v}, web-sources.md has {doc[k]}" for k, v in ours.items() if doc[k] != v]
+
+
+def kb_host_counts():
+    """({host: [(rows, the root's rows) per root]} from the roots' _sources.csv, {host: fetch errors} from their
+    _fetch_state.csv), read at HEAD."""
+    import csv, kbcommon
+    share, errors = {}, {}
+    for r in kbcommon.roots():
+        for name, col in (("_sources.csv", None), ("_fetch_state.csv", "error")):
+            p = Path(r.path) / name
+            if not p.is_file():
+                continue
+            with open(p, encoding="utf-8-sig", newline="") as f:
+                rows = list(csv.DictReader(f))
+            counts = {}
+            for row in rows:
+                h, _ = host_path(row.get("url") or "")
+                if h and (col is None or (row.get(col) or "").strip()):
+                    counts[h] = counts.get(h, 0) + 1
+            for h, n in counts.items():
+                if col:
+                    errors[h] = errors.get(h, 0) + n
+                else:
+                    share.setdefault(h, []).append((n, len(rows)))
+    return share, errors
+
+
+def share_trigger(per_root):
+    """Whether a host backs at least STAGE_SHARE_ROWS rows, or STAGE_SHARE_PERCENT percent, of some root's sources."""
+    return any(n >= STAGE_SHARE_ROWS or n * 100 >= STAGE_SHARE_PERCENT * total for n, total in per_root)
+
+
+# --- the findings -----------------------------------------------------------------------------------------------------
+
+def store_entries(store):
+    """[(run id, entry)] of the store's run files, each entry id once (its first run)."""
+    out, seen = [], set()
+    for p in run_files(store):
+        try:
+            objs = load_run(p)
+        except (OSError, ValueError):
+            continue
+        for _, e in objs[1:]:
+            if isinstance(e.get("id"), str) and e["id"] not in seen:
+                seen.add(e["id"])
+                out.append((p.stem, e))
+    return out
+
+
+def is_miss(e):
+    """A judged miss: Haiku judged the lookup missed or partly answered, or the pack's verdict was weak or none."""
+    return isinstance(e.get("question"), str) and (e.get("judged") in ("missed", "partly")
+                                                    or e.get("verdict") in ("weak", "none"))
+
+
+def passes(res, best):
+    """Whether a pack on HEAD answers the question: `good`, with the article that answers it among the pack's (the
+    eval rule, rag.py run_eval); without one, `good` with no `check:` line."""
+    if res.get("verdict") != "good":
+        return False
+    return best in res.get("paths", []) if best else not (res.get("unmatched") or res.get("spread"))
+
+
+def unknown_words(question, res):
+    """The question's words, lower case, whose stems the pack reports as nowhere in the kb."""
+    import kbfacts
+    missing = set(res.get("missing") or [])
+    out = []
+    for w in kbfacts.WORD.findall(question):
+        w = w.lower()
+        if kbfacts.stem(w) in missing and w not in out:
+            out.append(w)
+    return out
+
+
+def default_pack(question):
+    import kbfacts
+    return kbfacts.pack(question, fmt="concise")
+
+
+def miss_findings(e, res):
+    """The findings of one judged miss after its re-run on HEAD: eval (an article answers it) with its fix, alias
+    (the question uses a word the kb never holds) or expansion (every word is known: a paraphrase), or a gap
+    candidate (no candidate article answers it). All `fixed-since` when the re-run passes."""
+    best = e.get("best")
+    ok = passes(res, best)
+    state = "fixed-since" if ok else "open"
+    obs = {"verdict": res.get("verdict"), "paths": list(res.get("paths") or [])[:4]}
+    if not best:
+        return [{"id": finding_id("gap", e["id"]), "kind": "gap", "state": state, "stage": "candidate-gap",
+                 "promotions": [{"from": "miss", "to": "candidate-gap", "by": "learn"}], "entry": e["id"],
+                 "observed": obs}]
+    out = [{"id": finding_id("eval", e["id"]), "kind": "eval", "state": state, "stage": "miss", "entry": e["id"],
+            "expect": best, "observed": obs}]
+    if not ok:
+        terms = unknown_words(e["question"], res)
+        if terms:
+            out.append({"id": finding_id("alias", e["id"]), "kind": "alias", "state": "open", "stage": "miss",
+                        "entry": e["id"], "article": best, "terms": terms, "observed": obs})
+        else:
+            out.append({"id": finding_id("expansion", e["id"]), "kind": "expansion", "state": "open", "stage": "miss",
+                        "entry": e["id"], "article": best, "observed": obs})
+    return out
+
+
+def host_fetches(entries):
+    """{host: {failures, entries, webfetch}} of the fetches the store's entries record."""
+    hosts = {}
+    for _, e in entries:
+        items = [f for f in e.get("fetches") or [] if isinstance(f, dict)]
+        if e.get("host"):
+            items.append({k: e[k] for k in FETCH_KEYS if k in e})
+        for f in items:
+            h = f.get("host")
+            if not isinstance(h, str):
+                continue
+            n = f.get("n") if isinstance(f.get("n"), int) else 1
+            s = hosts.setdefault(h, {"failures": 0, "entries": set(), "webfetch": set()})
+            s["entries"].add(e["id"])
+            if isinstance(f.get("outcome"), str) and FAILED.fullmatch(f["outcome"]):
+                s["failures"] += n
+            if f.get("tool") == "WebFetch":
+                s["webfetch"].add(e["id"])
+    return hosts
+
+
+def source_findings(entries, registry=None, routes=None, counts=None):
+    """Report-only findings on the hosts the store's fetches name: `stage` when a Share or Failures trigger holds
+    and the host has less than STAGE_NEEDED_LEVEL; `route` when WebFetch read a host whose route avoids it."""
+    routes = routes_table() if routes is None else routes
+    share, errors = kb_host_counts() if counts is None else counts
+    out = []
+    for host, s in sorted(host_fetches(entries).items()):
+        level, _ = staging_level(host, registry, routes)
+        per_root = share.get(host, [])
+        rows = max((n for n, _ in per_root), default=0)
+        failures = s["failures"] + errors.get(host, 0)
+        triggers = [t for t, hit in (("share", share_trigger(per_root)), ("failures", failures >= STAGE_FAILURES))
+                    if hit]
+        if triggers and level < STAGE_NEEDED_LEVEL:
+            out.append({"id": finding_id("source", "stage", host), "kind": "source", "state": "open",
+                        "signal": "stage", "host": host, "level": level, "needs": STAGE_NEEDED_LEVEL,
+                        "triggers": triggers, "observed": {"rows": rows, "failures": failures,
+                                                           "entries": len(s["entries"])}})
+        route = next((r for r in routes if host in r["hosts"]), None)
+        if s["webfetch"] and route and "WebFetch" in route["avoid"]:
+            out.append({"id": finding_id("source", "route", host), "kind": "source", "state": "open",
+                        "signal": "route", "host": host, "tool": "WebFetch", "route": route["family"].replace("`", ""),
+                        "observed": {"entries": len(s["webfetch"])}})
+    return out
+
+
+def _key(rec):
+    return {k: v for k, v in rec.items() if k != "observed"}
+
+
+def learn_run_id(store, entries_runs, body):
+    """`<time>Z-<8 hex>`: the time of the newest run file, or one second after the newest findings file when that is
+    later, so the findings files sort in the order they were written; the hex is a hash of the records. The same
+    store and HEAD give the same name in any clone."""
+    def t(run):
+        return datetime.datetime.strptime(run[:16], "%Y%m%dT%H%M%SZ").replace(tzinfo=datetime.timezone.utc)
+    when = max(t(r) for r in entries_runs)
+    done = findings_files(store)
+    if done:
+        when = max(when, t(done[-1].stem) + datetime.timedelta(seconds=1))
+    import hashlib
+    return f"{when.strftime('%Y%m%dT%H%M%SZ')}-{hashlib.sha256(body.encode('utf-8')).hexdigest()[:8]}"
+
+
+def learn(store=None, pack=None, kb_commit=None, registry=None, routes=None, counts=None, out=print):
+    """One learn over `store` (default: the local store beside the spool): every judged miss re-run with `pack` on
+    HEAD, the source findings, then one findings file holding only the records that change a finding's state. 0."""
+    store = Path(store or places()[0] / "store")
+    pack = pack or default_pack
+    entries = store_entries(store)
+    if not entries:
+        out("learn: no run files")
+        return 0
+    derived = {}
+    for _, e in entries:
+        if is_miss(e):
+            for rec in miss_findings(e, pack(e["question"])):
+                derived[rec["id"]] = rec
+    for rec in source_findings(entries, registry, routes, counts):
+        derived[rec["id"]] = rec
+    last = finding_states(store)
+    new = []
+    for fid, rec in derived.items():
+        prev = last.get(fid)
+        if prev is None or (prev.get("state") in LEARN_STATES and _key(prev) != _key(rec)):
+            new.append(rec)
+    for fid, prev in last.items():  # an open finding learn no longer derives: the kb at HEAD handles it now
+        if fid not in derived and prev.get("state") == "open":
+            new.append({**{k: v for k, v in prev.items() if k != "observed"}, "state": "fixed-since"})
+    total = len({**last, **{r["id"]: r for r in new}})
+    if not new:
+        out(f"learn: nothing new (findings={total})")
+        return 0
+    new.sort(key=lambda r: (FINDING_KINDS.index(r["kind"]), r["id"]))
+    new = [{k: r[k] for k in FINDING_KEYS if k in r} for r in new]
+    body = "".join(json.dumps(r, ensure_ascii=False, separators=(",", ":")) + "\n" for r in new)
+    run_id = learn_run_id(store, [r for r, _ in entries], body)
+    states = {s: sum(1 for r in new if r["state"] == s) for s in LEARN_STATES}
+    header = {"run": run_id, "pipeline": PIPELINE_VERSION, "retrieval": retrieval_version(),
+              "kb_commit": kb_commit or head_commit(), "counts": {"findings": len(new), **states}}
+    path = _findings_dir(store) / f"{run_id[:4]}-{run_id[4:6]}" / f"{run_id}.jsonl"
+    write_text(path, json.dumps(header, ensure_ascii=False, separators=(",", ":")) + "\n" + body)
+    out(f"learn: run={run_id} records={len(new)} open={states['open']} fixed-since={states['fixed-since']} "
+        f"findings={total}")
+    return 0
+
+
+def findings_problems(store, k=None):
+    """The findings gates: a header with the run's provenance naming its file, records with a finding id, a known
+    kind, state and stage, an entry the store holds, and a source finding's public host and signal."""
+    store = Path(store)
+    ids = {e["id"] for _, e in store_entries(store)}
+    out = []
+    for p in findings_files(store):
+        rel = p.relative_to(store).as_posix()
+        try:
+            objs = load_run(p)
+        except (OSError, ValueError) as e:
+            out.append(f"{rel}: not a findings file ({e})")
+            continue
+        if not objs:
+            out.append(f"{rel}: empty findings file")
+            continue
+        (hn, h), recs = objs[0], objs[1:]
+        missing = [key for key in HEADER_KEYS if key not in h]
+        if missing:
+            out.append(f"{rel}:{hn}: header lacks {', '.join(missing)}")
+        m = RUN_ID.fullmatch(str(h.get("run", "")))
+        if "run" in h and not (m and h["run"] == p.stem and p.parent.name == f"{m.group(1)}-{m.group(2)}"):
+            out.append(f"{rel}:{hn}: run id does not name this file")
+        if isinstance(h.get("counts"), dict) and h["counts"].get("findings") != len(recs):
+            out.append(f"{rel}:{hn}: counts.findings is {h['counts'].get('findings')}, the file has {len(recs)}")
+        for n, r in recs:
+            where = f"{rel}:{n}"
+            if not (isinstance(r.get("id"), str) and FINDING_ID.fullmatch(r["id"])):
+                out.append(f"{where}: finding id is not F-<12 hex>")
+            other = sorted(set(r) - set(FINDING_KEYS))
+            if other:
+                out.append(f"{where}: unknown fields: {', '.join(other)}")
+            if r.get("kind") not in FINDING_KINDS:
+                out.append(f"{where}: unknown kind {r.get('kind')!r}")
+            if r.get("state") not in LEARN_STATES:
+                out.append(f"{where}: unknown state {r.get('state')!r}")
+            if r.get("kind") == "source":
+                if r.get("signal") not in SIGNALS:
+                    out.append(f"{where}: unknown signal {r.get('signal')!r}")
+                if not public_host(r.get("host"), k):
+                    out.append(f"{where}: source host is not a public host")
+            elif r.get("kind") in FINDING_KINDS:
+                if r.get("stage") not in STAGES:
+                    out.append(f"{where}: unknown stage {r.get('stage')!r}")
+                if r.get("entry") not in ids:
+                    out.append(f"{where}: entry {r.get('entry')} is in no run file of the store")
+                for pr in r.get("promotions") or []:
+                    if not (isinstance(pr, dict) and pr.get("from") in STAGES and pr.get("to") in STAGES):
+                        out.append(f"{where}: a promotion without its from and to stages")
+    return out
 
 
 def check(argv):
@@ -1143,6 +1548,17 @@ def main(argv=None):
         return hook_launch()
     if argv[:1] == ["check"] and len(argv) <= 2:
         return check(argv[1:])
+    if argv[:1] == ["learn"]:
+        import argparse
+        ap = argparse.ArgumentParser(prog="querylog.py learn")
+        ap.add_argument("--store", help="the store to learn from and write findings to (default: the local store)")
+        a = ap.parse_args(argv[1:])
+        if a.store is None:
+            d, cfg = places()
+            if (d / "DISABLED").exists() or read_mode(cfg) == "off":
+                print("learn: logging is off")
+                return 0
+        return learn(a.store)
     if argv[:1] == ["distill"]:
         import argparse
         ap = argparse.ArgumentParser(prog="querylog.py distill")

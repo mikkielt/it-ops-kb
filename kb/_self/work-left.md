@@ -82,12 +82,6 @@ Kb facts the build rests on: `claude/hooks.md` (async hooks, `prompt_id`, `Stop`
 - **Allow Git push requests to the repository** is off (no CI job pushes);
 - `.gitlab-ci.yml` runs branch and tag pipelines only (a direct-push model), which fits this design unchanged.
 
-5. **Learn** (`querylog.py learn`). Done: every judged miss is re-run on `HEAD` first (`fixed-since` when it now passes); fixtures give findings of each kind; source findings read the registry and the routes table, not a copy. Check:
-   - two `learn` runs on the same store and `HEAD` give byte-identical findings files;
-   - a test fails when a trigger in `querylog.py` differs from `web-sources.md`;
-   - no source finding appears for a host that already has the needed level.
-
-   Unchanged: `learn` writes findings only.
 6. **Apply, locally** (eval, alias and expansion rows; no push yet). Done: an eval row is written only with a fix that makes it pass; a finding with no accepted fix becomes a gap candidate; source findings are skipped. Check: `python3 _tools/rag.py eval` passes every question, off-kb `good` does not rise and the mean pack does not grow (`kb/_self/doc2query.md`); planted failures for an eval row without its fix, an alias colliding with an existing term, and `apply` acting on a source finding.
 7. **Direct push** (`querylog.py apply --push`, through `kbgit.py sync`).
 
