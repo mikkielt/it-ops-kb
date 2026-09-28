@@ -2,7 +2,7 @@
   "id": "TK-kmunpvxo",
   "kind": "task",
   "title": "Name the failing and the hanging tests on Windows",
-  "status": "todo",
+  "status": "done",
   "parent": "BG-ovulgaal",
   "priority": "P1",
   "rank": 0,
@@ -19,5 +19,19 @@
   "touches": [
     "kb/_self/backlog/**"
   ],
-  "notes": "Needs a Windows machine. faulthandler_timeout is a built-in pytest option: it dumps every thread's stack when one test runs longer than the timeout, without a new dependency. The run is done and its results are in BG-ovulgaal's notes: 8 failing tests with their error lines and 3 causes, no hang, three slow tests with their stacks in TK-5vfbfjht. What remains is backlog.py done."
+  "notes": "Needs a Windows machine. faulthandler_timeout is a built-in pytest option: it dumps every thread's stack when one test runs longer than the timeout, without a new dependency. The run is done and its results are in BG-ovulgaal's notes: 8 failing tests with their error lines and 3 causes, no hang, three slow tests with their stacks in TK-5vfbfjht. What remains is backlog.py done.",
+  "evidence": {
+    "commit": "4f403eeb2705e26a15052f99f7a3d2fbb16e4370",
+    "checks": [
+      {
+        "run": [
+          "python",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "efd6c5c3a7a7b323"
+      }
+    ]
+  }
 }
