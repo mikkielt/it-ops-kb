@@ -17,6 +17,33 @@
       "recommendation": "approve",
       "answer": "approve",
       "by": "operator"
+    },
+    {
+      "id": "github",
+      "kind": "blocking",
+      "question": "Should sprint pushes also go to GitHub (the claude remote), besides GitLab origin?",
+      "options": [
+        "after each push",
+        "GitLab only",
+        "at sprint close only"
+      ],
+      "recommendation": "after each push",
+      "answer": "at sprint close only",
+      "by": "operator"
+    },
+    {
+      "id": "push-while-red",
+      "kind": "blocking",
+      "question": "While this Windows host's test gate is red only on the TK-646m6u2v, TK-e2rhs3kv and TK-mr6ehi7k failures, how is sprint work pushed?",
+      "options": [
+        "hold: commit and done locally, push with kbgit.py sync --push once green",
+        "git push --no-verify on those known failures",
+        "ask the operator before each push"
+      ],
+      "recommendation": "hold: commit and done locally, push with kbgit.py sync --push once green",
+      "answer": "hold: commit and done locally, push with kbgit.py sync --push once green",
+      "by": "operator"
     }
-  ]
+  ],
+  "notes": "Run order 1 of 10; next: SP-fep4fpsx “Windows ready”. GitHub (claude) is brought level with kbgit.py sync --push --remote claude at sprint close only."
 }

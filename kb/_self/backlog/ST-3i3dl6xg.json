@@ -45,7 +45,9 @@
         "only the sections the report marks independent",
         "none: keep kbgit.py whole"
       ],
-      "recommendation": "only the sections the report marks independent"
+      "recommendation": "only the sections the report marks independent",
+      "answer": "only the sections the report marks independent",
+      "by": "operator"
     }
   ],
   "notes": "The file already has section rules: io, text, _sources.csv, renumbering, answer ids, _fetch_state.csv, Markdown ledgers, baseline (merge and fix); trailers and hooks; history (log, blame, asof, census tag); sync. Tests that patch kbgit attributes must patch the kg_ module that now owns the name. A task whose section the report says to keep is dropped with the report's reason."

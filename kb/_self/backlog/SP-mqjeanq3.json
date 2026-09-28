@@ -14,7 +14,23 @@
         "change",
         "cancel"
       ],
-      "recommendation": "approve"
+      "recommendation": "approve",
+      "answer": "approve",
+      "by": "operator"
+    },
+    {
+      "id": "github",
+      "kind": "blocking",
+      "question": "Should sprint pushes also go to GitHub (the claude remote), besides GitLab origin?",
+      "options": [
+        "after each push",
+        "GitLab only",
+        "at sprint close only"
+      ],
+      "recommendation": "after each push",
+      "answer": "at sprint close only",
+      "by": "operator"
     }
-  ]
+  ],
+  "notes": "Run order 8 of 10; start after SP-ufr3qnff “Items know their kb facts” closes; start gate approved by the operator; run backlog.py start when its turn comes; next: SP-xb45i7t4 “Commands replace hand-written scripts”. GitHub (claude) is brought level with kbgit.py sync --push --remote claude at sprint close only."
 }

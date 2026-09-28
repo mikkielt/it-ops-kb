@@ -47,7 +47,9 @@
         "only the scenario families",
         "none: keep benchmarks.py whole"
       ],
-      "recommendation": "harness, report and the four scenario families"
+      "recommendation": "harness, report and the four scenario families",
+      "answer": "harness, report and the four scenario families",
+      "by": "operator"
     }
   ],
   "notes": "Families by the registry: lookup (headless, subagents, models, router, howto, partial, files-*, host-lookups, always-on, kb-lookup-agent, navigation), retrieval (retrieval, verdict, doc2query, tool-speed), querylog (querylog-hooks, querylog-pipeline, redaction, research), install (ingest, host-roots, kbpy, new-model). No paid run is needed to prove the move: report --check and the unit tests cover it."
