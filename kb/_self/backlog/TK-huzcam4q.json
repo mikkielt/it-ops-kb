@@ -2,7 +2,7 @@
   "id": "TK-huzcam4q",
   "kind": "task",
   "title": "Compute the has/lacks differential and the route in kbfacts.pack",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-ysk3m7rt",
   "priority": "P1",
   "rank": 1,
@@ -20,5 +20,6 @@
   "touches": [
     "_tools/kbfacts.py",
     "_tools/test_route.py"
-  ]
+  ],
+  "claimed_by": "pack-route"
 }
