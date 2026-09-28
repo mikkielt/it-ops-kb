@@ -20,7 +20,9 @@ Tools (all read-only; they wrap rag.py and kbfacts.py and read the kb files, nev
   kb_source  source rows by id (legacy S123 or hash S-xxxxxxxx), with superseded_by, like `rag.py src`; `cited`
              adds every file line that names each id
   kb_status  how current this copy is: its commit and date, the latest census-* tag (or _census/ log), source and
-             topic counts, the newest retrieved_utc, and the roots it serves
+             topic counts, the newest retrieved_utc, the roots it serves, and how many commits it is behind the branch
+             it follows (a clone's upstream, or an installed plugin's marketplace clone; local refs, never the
+             network) with the update command. When it is behind, kb_pack opens with one `kb copy:` line saying so.
   kb_topics_for  kb topics that code touches, like `rag.py topics-for`: the curated signals of each root's signals.csv
              found in the files or text given (paths relative to the host project, CLAUDE_PROJECT_DIR or the cwd)
 
@@ -37,7 +39,7 @@ client's `server/discover` gets supportedVersions, and each modern request's `_m
 (-32022 UnsupportedProtocolVersionError otherwise). Every result carries `resultType: "complete"`, which 2026-07-28
 requires. Only JSON-RPC messages go to stdout; the server exits on EOF.
 """
-import contextlib, csv, io, json, os, re, subprocess, sys, threading
+import contextlib, csv, io, json, os, re, subprocess, sys, threading, time
 
 TOOLS = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, TOOLS)
@@ -134,7 +136,8 @@ TOOL_LIST = [
      "annotations": {"title": "Resolve source ids", **READ_ONLY}},
     {"name": "kb_status", "title": "kb freshness",
      "description": DOCS + "How current this copy of the kb is: commit and date, latest census (the date the kb was "
-                    "confirmed current), number of sources and topics, newest retrieved_utc, the roots it serves.",
+                    "confirmed current), number of sources and topics, newest retrieved_utc, the roots it serves, and how many "
+                    "commits it is behind the kb it follows (as of the last fetch) with the update command.",
      "inputSchema": {"type": "object", "properties": {}, "additionalProperties": False},
      "annotations": {"title": "kb freshness", **READ_ONLY}},
     {"name": "kb_topics_for", "title": "kb topics for code",
@@ -224,7 +227,26 @@ def kb_pack(args):
         raise ToolError(f"at most {kbfacts.MAX_QUESTIONS} questions per call")
     budget = min(max(int(args.get("budget") or 1200), 200), 6000)
     with guarded():
-        return kbfacts.pack_many(questions, budget, domain_of(args), fmt_of(args, "detailed"), root_of(args))["text"]
+        text = kbfacts.pack_many(questions, budget, domain_of(args), fmt_of(args, "detailed"), root_of(args))["text"]
+    note = behind_note()
+    return f"{note}\n\n{text}" if note else text
+
+
+def behind_note():
+    """One line for kb_pack when this copy is behind the branch it follows (local refs, no network), else "":
+    a model asked how current the kb is answered from the facts' dates without calling kb_status ("Partial
+    knowledge, newer versions and stale copies" in kb/_self/reports/token-usage.md). Recomputed at most once a
+    minute."""
+    now = time.time()
+    if now - _BEHIND[0] > 60:
+        home, commit, repo, _ = copy_commit()
+        up = upstream(repo, commit, plugin=repo != home) if commit else {}
+        _BEHIND[:] = [now, f"kb copy: {up['behind_upstream']} behind {up['upstream']}; newer facts may exist. Tell the "
+                           f"user, and to update: {up['update'].split(' (')[0]}." if up.get("update") else ""]
+    return _BEHIND[1]
+
+
+_BEHIND = [0.0, ""]
 
 
 def kb_facts(args):
@@ -312,28 +334,39 @@ def git(*args, cwd=kbcommon.HOME):
     return p.stdout.strip() if p.returncode == 0 else None
 
 
-def status():
-    """{key: value} describing this copy: a git clone reports its HEAD; an installed plugin copy (no .git, in
-    plugins/cache/<marketplace>/<plugin>/<version>/) reports its version, and reads commit dates and tags from the
-    marketplace clone Claude Code keeps beside the cache, when that clone has the commit."""
-    info = {"kb_dir": kbcommon.KB_DIR}
+def copy_commit():
+    """(home, commit, repo holding it, {installed_as, commit}) for this copy: a git clone's HEAD, or an installed
+    plugin copy's version resolved in the marketplace clone Claude Code keeps beside the cache (plugins/cache/
+    <marketplace>/<plugin>/<version>/); commit None when neither has it."""
+    extra = {}
     home = kbcommon.HOME  # the clone or plugin copy that holds the kb
     commit = git("rev-parse", "HEAD", cwd=home) if os.path.exists(os.path.join(home, ".git")) else None
     repo = home if commit else None
     parts = os.path.normpath(home).split(os.sep)
     if not commit and len(parts) >= 4 and parts[-4] == "cache":
-        info["installed_as"] = f"plugin {parts[-2]}@{parts[-3]}, version {parts[-1]}"
+        extra["installed_as"] = f"plugin {parts[-2]}@{parts[-3]}, version {parts[-1]}"
         mkt = os.path.join(os.sep.join(parts[:-4]), "marketplaces", parts[-3])
         if re.fullmatch(r"[0-9a-f]{7,40}", parts[-1]):
             if os.path.isdir(os.path.join(mkt, ".git")):
                 commit = git("rev-parse", "--verify", "-q", parts[-1] + "^{commit}", cwd=mkt)
                 repo = mkt if commit else None
             if not commit:  # no marketplace clone has it (a local directory marketplace keeps none): the version is the commit
-                info["commit"] = parts[-1]
+                extra["commit"] = parts[-1]
+    return home, commit, repo, extra
+
+
+def status():
+    """{key: value} describing this copy: a git clone reports its HEAD; an installed plugin copy (no .git, in
+    plugins/cache/<marketplace>/<plugin>/<version>/) reports its version, and reads commit dates and tags from the
+    marketplace clone Claude Code keeps beside the cache, when that clone has the commit."""
+    info = {"kb_dir": kbcommon.KB_DIR}
+    home, commit, repo, extra = copy_commit()
+    info.update(extra)
     if commit:
         info["commit"] = commit[:12]
         info["commit_date"] = git("show", "-s", "--format=%cI", commit, cwd=repo) or "unknown"
         info["census_tag"] = git("describe", "--tags", "--abbrev=0", "--match", "census-*", commit, cwd=repo) or "none"
+        info.update(upstream(repo, commit, plugin=repo != home))
     info.setdefault("commit", "unknown (not a git clone or an installed plugin copy)")
     pub = kbcommon.public()
     census_dir = os.path.join(pub.path, kbcommon.CENSUS_DIR)
@@ -353,6 +386,31 @@ def status():
     info["roots"] = "; ".join(f"{r.name} (prefix {r.id_prefix}, {r.visibility}, {counts[r.name][0] or 0} topics, "
                               f"{counts[r.name][1]} sources)" for r in kbcommon.roots())
     return info
+
+
+def upstream(repo, commit, plugin):
+    """How far `commit` is behind the branch its copy follows, from local refs only (the tools never contact a
+    remote): a clone's upstream branch (or origin/HEAD, origin/main), or the HEAD of the marketplace clone Claude
+    Code keeps for an installed plugin, which marketplace updates move. {} when there is none."""
+    target = git("rev-parse", "--abbrev-ref", "--symbolic-full-name", "@{upstream}", cwd=repo)
+    if not target:
+        target = "HEAD" if plugin else next((r for r in ("origin/HEAD", "origin/main")
+                                             if git("rev-parse", "--verify", "-q", r, cwd=repo)), None)
+    counts = git("rev-list", "--left-right", "--count", f"{commit}...{target}", cwd=repo) if target else None
+    if not counts:
+        return {}
+    ahead, behind = (int(n) for n in counts.split())
+    gitdir = git("rev-parse", "--absolute-git-dir", cwd=repo) or ""
+    marks = [os.path.join(gitdir, "FETCH_HEAD")] + ([os.path.join(gitdir, "logs", "refs", "remotes", *target.split("/"))]
+                                                    if target != "HEAD" else [os.path.join(gitdir, "logs", "HEAD")])
+    seen = max((os.path.getmtime(m) for m in marks if os.path.isfile(m)), default=None)
+    name = "marketplace clone" if plugin and target == "HEAD" else target
+    out = {"upstream": name + (f", last fetched {time.strftime('%Y-%m-%d', time.gmtime(seen))}" if seen else ""),
+           "behind_upstream": f"{behind} commits" + (f", {ahead} ahead" if ahead else "")}
+    if behind:
+        out["update"] = ("/plugin marketplace update, then /reload-plugins" if plugin else
+                         f"git -C {repo} pull --ff-only") + " (this copy is older than the kb it follows)"
+    return out
 
 
 def root_counts():

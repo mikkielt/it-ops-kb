@@ -1288,6 +1288,9 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
     if spread:
         out.append(f"check: no single fact holds half the key words (at most {spread[0]} of {spread[1]}); the facts may "
                    "be about something related. Answer only if a cited line answers the question itself.")
+    fresh = freshness(question, missing, st.arts.get(paths[0] if paths else (order[0] if order else ""), {}))
+    if fresh:
+        out.append(fresh)
     if verdict == "none":
         out.append("The kb does not cover this. Do not answer from the hits below; say so, or research it with /kb-research.")
     for h, items in groups if verdict != "none" else [(g[0], g[1][:2]) for g in groups[:1]]:
@@ -1299,6 +1302,24 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
     return {"verdict": verdict, "missing": missing, "matched": sorted(hit), "informative": informative, "known": known,
             "unmatched": unmatched, "spread": spread, "paths": paths, "sources": [s[0] for s in srcs], "source_rows": srcs,
             "text": "\n".join(out)}
+
+
+LATEST = re.compile(r"(?i)\b(latest|newest|most recent)\b|\bcurrent (version|release|build)\b")
+VERSION = re.compile(r"\bv?\d+(\.\d+){1,3}\b")
+
+
+def freshness(question, missing, meta):
+    """A note for a question about the latest release, or naming a version the kb never mentions: the kb's facts
+    are as of the lead article's retrieval, so the answer needs the live source and the version it is for. Models
+    otherwise report the kb's newest version as the latest ("Partial knowledge, newer versions and stale copies" in
+    kb/_self/reports/token-usage.md). None when neither applies."""
+    versions = [v for v in dict.fromkeys(m.group(0) for m in VERSION.finditer(question)) if stem(v.lower()) in missing]
+    if not (LATEST.search(question) or versions):
+        return None
+    said = ([f"these facts are as of {meta['retrieved_utc']}"] if meta.get("retrieved_utc") else []) + (
+        [f"the kb never names {', '.join(versions)}"] if versions else [])
+    return (f"freshness: {'; '.join(said) or 'a kb fact is as of its retrieval'}. A newer release may exist: check the "
+            "cited source live and say which version your answer is for.")
 
 
 def clip(text, n):

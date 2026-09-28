@@ -254,6 +254,36 @@ One run per cell, so the cost difference is within noise; Haiku's h2 check is th
 - Not covered: the kb arms cost the same or slightly more; Sonnet stopped at `none` on the Purview question; Opus was right in all 4 runs.
 - A run refused by a usage limit returns "You've hit your session limit" at $0; `agent_bench.py` records it as an error, not an answer.
 
+## Partial knowledge, newer versions and stale copies
+
+**Setup:** Claude Code 2.1.283; Haiku 4.5 and Sonnet 5; 266 topics, 2,644 sources in one root (`kb/public`). `_tools/agent_bench.py` host scenarios: one `claude -p --output-format stream-json` per run in an empty directory, the kb plugin and the docs plugin loaded with `--plugin-dir`, `--setting-sources project,local`, claude.ai connectors off (`ENABLE_CLAUDEAI_MCP_SERVERS=false`), the kb index in the scratch directory; allowed tools: the kb and docs servers, WebSearch and WebFetch. 2 runs per scenario and model. Scoring is read from the stream, not from the answer's own account: every url a kb tool returned, every url a fetch tool (WebFetch, `microsoft_docs_fetch`) read, the searches, the tools called, and regexes over the answer.
+
+Scenarios, each with its ground truth:
+- **Partial knowledge.** `p1_partial`: Entra ID sign-in log retention with P1 (in the kb: 30 days) and Intune audit log retention (not in the kb; Microsoft Learn: two years). `p2_partial`: where the Intune EPM agent installs (in the kb) and its log file names (the kb records them as undocumented, a DER absence from its `_gaps.md` entry). Checks: both parts right, a search or fetch made, no url the pack had cited fetched again (`no-refetch`).
+- **A newer version upstream.** A scratch clone planted so that presidio-analyzer 2.2.361 (2026-02-12) is the newest release, the articles retrieved 2026-02-20; PyPI's latest is 2.2.364 (2026-07-22), which still lacks `UuidRecognizer` (the unplanted kb, `privacy/presidio.md`). `n1_newer`: "what is the latest presidio-analyzer release?"; `n2_newer`: "does 2.2.364 include the UuidRecognizer?" (the planted copy says it was merged after 2.2.361). Checks: the right answer (2.2.364; no), the kb's version named, a live check made.
+- **An older kb than its remote.** A scratch clone of `HEAD` whose `origin/main` is 3 commits ahead (as a fetch that brought newer commits leaves it). `k1_stale`: "which Claude Code version added the Elicitation hook? ... tell me how current the kb copy you are using is." Checks: 2.1.76, `kb_status` called, the answer says the copy is behind or how to update it.
+
+Before the fixes below (20 runs, $1.20):
+
+| scenario | model | cost per run | input per run | checks passed | fetches (of them urls the kb had cited) | searches |
+|---|---|---|---|---|---|---|
+| p1 partial | Haiku | $0.047, $0.037 | 82k, 111k | 4/4, 4/4 | 0, 0 | 1, 1 |
+| p1 partial | Sonnet | $0.215, $0.110 | 178k, 146k | 4/4, 4/4 | 0, 0 | 1, 1 |
+| p2 partial | Haiku | $0.024, $0.071 | 50k, 129k | 3/4 (no search), 3/4 (answer wrong) | 0, 1 (0) | 0, 1 |
+| p2 partial | Sonnet | $0.158, $0.106 | 193k, 139k | 4/4, 4/4 | 0, 0 | 2, 1 |
+| n1 newer | Haiku | $0.020, $0.020 | 49k, 48k | 1/3, 1/3 | 0, 0 | 0, 0 |
+| n1 newer | Sonnet | $0.065, $0.063 | 96k, 96k | 1/3, 1/3 | 0, 0 | 0, 0 |
+| n2 newer | Haiku | $0.019, $0.026 | 47k, 95k | 1/3, 1/3 | 0, 0 | 0, 0 |
+| n2 newer | Sonnet | $0.044, $0.026 | 63k, 95k | 1/3, 1/3 | 0, 0 | 0, 0 |
+| k1 stale | Haiku | $0.028, $0.026 | 74k, 96k | 1/3, 1/3 | 0, 0 | 0, 0 |
+| k1 stale | Sonnet | $0.061, $0.031 | 98k, 97k | 2/3, 1/3 | 0, 0 | 0, 0 |
+
+What it shows:
+- **Partial knowledge works as intended.** In 8 of 8 runs no url the pack had cited (5-18 per run) was fetched again, and every answer kept the kb's part with its `path:line` and filled only the gap, labelled. The gap was filled by `microsoft_docs_search` in 7 runs (search excerpts, no page fetch); one Haiku run used WebSearch and WebFetch on a page the kb did not cite, then drifted from EPM to the Intune Management Extension's logs. When the kb records an absence (p2), Sonnet confirmed it live and Haiku once trusted it without a search. Nothing to fix.
+- **Nobody checked for a newer release.** In 8 of 8 `n*` runs the model answered from the planted copy without any live call: "the latest release is 2.2.361" (n1, 4 of 4, Sonnet adding "as of the kb's last check, 2026-02-20"), and for 2.2.364 Haiku inferred "likely to include it" (wrong, 2 of 2) while Sonnet said it could not confirm and told the user to check (2 of 2). The pack showed the article's `retrieved 2026-02-20` and, for n2, `coverage: none; not in the kb: 2.2.364`.
+- **Nobody said the copy was stale.** `kb_status` showed commit, date and census but nothing about the remote, and 1 of 4 runs called it; all 4 called the copy current from the facts' retrieval dates ("as current as the kb gets").
+- A Haiku run once called a tool name it made up (`mcp__plugin_it-ops_kb__kb_pack`) before the right one: a wasted turn, not a wrong answer.
+
 ## Tool speed
 
 **Setup:** Python 3.11 in a Linux container, 259 topics, 85 eval questions; "before" is the corpus rebuilt in memory by every process (and by the MCP server after 30 s idle), with a second chunker for `search`; "now" is the persisted `sqlite3` index keyed by a file fingerprint, one engine, and memoized stemming. Output was byte-identical on every tool surface (255 packs in three formats, search, facts, audit, `src --cited`, `topics-for`, show, the `kb:` hook, an MCP session, the checks and the git history commands).

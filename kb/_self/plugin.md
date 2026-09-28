@@ -7,7 +7,7 @@ The repository root is a Claude Code plugin marketplace (`.claude-plugin/marketp
 **`it-ops-kb`** (the repository root, `.claude-plugin/plugin.json`):
 - **the `kb` MCP server** (`_tools/kb_mcp.py`, stdlib Python over stdio). Every tool description starts "Documentation facts from it-ops-kb (not live device or directory data)", so a project that also has live MECM/AD tools keeps them apart. Tools:
   - `kb_pack`: the evidence pack (coverage verdict, fact lines with `path:line`, source urls); `questions` batches up to 6 parts in one call. It is always loaded (`anthropic/alwaysLoad`), so the first lookup needs no tool-search round trip.
-  - `kb_facts`, `kb_audit`, `kb_search`, `kb_show`, `kb_source`, `kb_status` (the copy's commit and date, and the latest census).
+  - `kb_facts`, `kb_audit`, `kb_search`, `kb_show`, `kb_source`, `kb_status` (the copy's commit and date, the latest census, and how many commits it is behind the marketplace clone or upstream branch it follows, as of the last fetch). When the copy is behind, every `kb_pack` opens with a `kb copy: N commits behind ...` line naming the update command, so a model tells the user without calling `kb_status`.
   - `kb_topics_for`: the kb topics that code touches (MSAL classes, AdminService routes, Negotiate/SPN, LDAP libraries, Graph scopes, ...), from `kb/public/_retrieval/signals.csv`.
   - `response_format`: `kb_facts`, `kb_audit` and `kb_search` answer `concise` by default (no url footer), `kb_pack` `detailed`.
 - **`/it-ops-kb:kb-lookup`**, which Claude may also invoke on its own. A single fact is one `kb_pack` call in the session that asked.
@@ -44,7 +44,7 @@ The second install is optional (the documentation servers). From a shell: `claud
 
 To try a working tree without installing: `claude --plugin-dir <path to the clone>` (and `--plugin-dir <clone>/.claude-plugin/it-ops-kb-docs`). Scripts in bare mode (`claude -p --bare`) skip installed plugins, so they must pass `--plugin-dir` too.
 
-Check it: `/mcp` lists `plugin:it-ops-kb:kb` as connected. Then call `kb_status` (start there whenever freshness matters): it answers with the kb commit, its date and the latest census tag. Then ask a question in the kb's domains (for example "what does the kb say about Kerberos constrained delegation versus on-behalf-of?"); the answer should cite `path:line`, the fact's tag and the source url.
+Check it: `/mcp` lists `plugin:it-ops-kb:kb` as connected. Then call `kb_status` (start there whenever freshness matters): it answers with the kb commit, its date, the latest census tag and `behind_upstream` (commits the marketplace has that this copy lacks, as of the last marketplace update). Then ask a question in the kb's domains (for example "what does the kb say about Kerberos constrained delegation versus on-behalf-of?"); the answer should cite `path:line`, the fact's tag and the source url.
 
 Update: the plugin sets no `version`, so every new commit on `main` is a new version. `/plugin marketplace update it-ops-kb` in a session (or `claude plugin update it-ops-kb@it-ops-kb` from a shell), then `/reload-plugins` or a new session. Or turn on background updates once: `/plugin`, then **Marketplaces**, `it-ops-kb`, **Enable auto-update**.
 

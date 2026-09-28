@@ -783,3 +783,16 @@ class TestLeaks:
         big = [(f, os.path.getsize(os.path.join(KB, f))) for f in tracked() if os.path.getsize(os.path.join(KB, f)) > MAX_BYTES]
         assert not big, f"files over {MAX_BYTES // 2**20} MB:\n" + "\n".join(f"  {f}: {s} bytes" for f, s in big)
 
+
+
+def test_freshness_note_for_latest_or_unnamed_versions():
+    """A question about the latest release, or naming a version the kb never mentions, gets a `freshness:` line
+    (the kb's facts are as of the lead article's retrieval: check the source live); other questions get none."""
+    latest = kbfacts.pack("What is the latest presidio-analyzer release?")["text"]
+    assert re.search(r"^freshness: these facts are as of \d{4}-\d{2}-\d{2}\. A newer release", latest, re.M), latest[:400]
+    unnamed = kbfacts.pack("Does presidio-analyzer 2.2.999 include the UuidRecognizer?")["text"]
+    assert "; the kb never names 2.2.999. " in unnamed, unnamed[:400]
+    assert "freshness:" not in kbfacts.pack("What is the default Windows LAPS password length?")["text"]
+    assert kbfacts.freshness("q v1.2 25H2 CMPivot", ["25h2", "v1.2", "cmpivot"], {}) == (
+        "freshness: the kb never names v1.2. A newer release may exist: check the cited source live and "
+        "say which version your answer is for.")

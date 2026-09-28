@@ -8,7 +8,7 @@
   stress_test.py                   the stress suite (test_stress.py)
 
 Modules: test_kb.py (cohesion, lookup, ids, leaks), test_merge.py, test_history.py, test_sync.py, test_census.py,
-test_kb_mcp.py, test_research_merge.py, test_stress.py; shared fixtures and helpers in conftest.py.
+test_kb_mcp.py, test_research_merge.py, test_agent_bench.py, test_stress.py; shared fixtures and helpers in conftest.py.
 pytest is run as `uv run --frozen python -m pytest` (uv creates .venv from uv.lock on first use), or with this Python
 when uv is missing but pytest and pytest-xdist are importable; otherwise exit 2 with how to install them. The tools
 under test stay stdlib-only.

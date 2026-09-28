@@ -10,10 +10,17 @@ expected answer element. CONFIG: `haiku`, `sonnet`, `opus` (that model answers a
 the lookup to the Haiku kb-lookup agent); `haiku+escalate` (Haiku told to hand live-docs work to a Sonnet agent
 defined with --agents); `+strict` also denies the docs tools (note: the deny reaches subagents too); `router`
 (kb_ask.py's routing); `web-haiku`, `web-sonnet`, `web-opus` (a typical
-web-search session: no kb, no MCP servers, no project files, only WebSearch and WebFetch). Results:
+web-search session: no kb, no MCP servers, no project files, only WebSearch and WebFetch).
+
+Host scenarios (HOST) run `haiku`, `sonnet` or `opus` in an empty directory under BENCH_SCRATCH (default
+_cache/bench) with the kb and docs plugins loaded by --plugin-dir, no user settings or claude.ai connectors:
+`p*` partial knowledge (the kb answers one part; a line records the urls fetched and those a kb tool had already
+returned, `refetched`), `n*` a newer version upstream (a scratch clone planted with an older presidio release),
+`k*` a kb copy behind its remote (a scratch clone whose origin/main is 3 commits ahead). Checks are regexes over the
+answer, or `tool:NAME` (a tool called), `web` (a search or fetch) and `no-refetch`. Results:
 kb/_self/reports/token-usage.md ("Models and hand-off patterns" and later sections) and kb/_self/reports/benchmark-bare-vs-kb.md.
 """
-import json, os, re, subprocess, sys, time
+import json, os, re, shutil, subprocess, sys, time
 from collections import Counter
 
 KB = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -53,7 +60,38 @@ S = {
     "o1_offkb": ("How do I run the Kubernetes Cluster Autoscaler on AWS EKS with spot instances? Check the kb first; if "
                  "it lacks this, use live docs or web search and label the source.",
                  [r"(?i)spot", r"(?i)auto ?scaling group|node ?group|ASG"]),
+    # host scenarios (HOST below): run in an empty host directory with the kb loaded by --plugin-dir.
+    # Partial knowledge: the kb answers one part; the other needs the web. `no-refetch`: no url a kb tool returned
+    # was fetched again; `web`: at least one search or fetch filled the gap.
+    "p1_partial": ("How long are Entra ID sign-in logs kept with a P1 licence, and how long does Intune keep its audit "
+                   "logs? Check the kb first; if it lacks part of this, use live docs or web search for that part and "
+                   "label the source.",
+                   [r"(?i)\b30\b ?days|30-day", r"(?i)two years|2 years|\b2-year|24 months", "web", "no-refetch"]),
+    "p2_partial": ("Where does the Intune EPM agent install itself on a Windows device, and what are the names of its log "
+                   "files? Check the kb first; if it lacks part of this, use live docs or web search for that part and "
+                   "label the source.",
+                   [r"(?i)Microsoft EPM Agent", r"(?i)not (officially )?documented|undocumented|does not (list|name|document)"
+                                                r"|doesn.t (list|name|document)|no (official|documented)|not (published|have)", "web", "no-refetch"]),
+    # A newer version upstream: the planted kb copy (plant()) says presidio-analyzer 2.2.361 is the latest, retrieved
+    # 2026-02-20; PyPI's latest is 2.2.364 (2026-07-22), which still lacks UuidRecognizer (kb/public/privacy/presidio.md).
+    "n1_newer": ("Using the kb: what is the latest presidio-analyzer release, and when was it published?",
+                 [r"2\.2\.364", r"2\.2\.361", "web"]),
+    "n2_newer": ("Using the kb: does presidio-analyzer 2.2.364 include the UuidRecognizer?",
+                 [r"(?i)^\W*no\b|2\.2\.364\W+(does not|doesn.t) (include|contain|ship)|(not|isn.t) (included |shipped |present )?"
+                  r"in (presidio-analyzer )?\*?\*?2\.2\.364|still unreleased",
+                  r"2\.2\.361", "web"]),
+    # An older kb than its remote: the stale clone (stale()) is 3 commits behind the origin/main it follows.
+    "k1_stale": ("Using the kb: which Claude Code version added the Elicitation hook? I need this to be current, so also "
+                 "tell me how current the kb copy you are using is.",
+                 [r"2\.1\.76", "tool:kb_status", r"(?i)\bbehind\b|out of date|outdated|not (up to date|current|the latest)"
+                                                  r"|newer commits|pull --ff-only|marketplace update|update (the|your) (kb|plugin|copy)"]),
 }
+HOST = {"p1_partial": "current", "p2_partial": "current", "n1_newer": "planted", "n2_newer": "planted", "k1_stale": "stale"}
+SCRATCH = os.environ.get("BENCH_SCRATCH") or os.path.join(KB, "_cache", "bench")
+STALE_BY = 3
+PLANT = [("2.2.364", "2.2.361"), ("2.2.363", "2.2.360")]  # every kb file: the copy's newest release is older
+PLANT_PRESIDIO = [("2026-07-22", "2026-02-12"), ("2026-06-28", "2025-09-09"), ("2026-07-27", "2026-02-17"),
+                  ("2026-09-23", "2026-02-20"), ("2026-09-26", "2026-02-20")]  # on every line naming presidio
 AGENTS = {"kb-live-docs": {
     "description": "Live-docs research for a question the it-ops-kb does not answer: searches Microsoft Learn, Claude Code "
                    "and MCP docs (web search last) and returns a short cited answer. Give it the question and what the kb had.",
@@ -71,25 +109,61 @@ DELEGATE = (" Delegate the kb lookup to the kb-lookup subagent (Haiku) and only 
             "yourself only if it reports the kb lacks the answer.")
 
 
-def execute(cmd, prompt, cwd=KB):
-    """Run one headless claude and parse its stream: the result fields (or {"error": ...})."""
-    t = time.time()
-    p = subprocess.run(cmd, cwd=cwd, input=prompt, capture_output=True, text=True, timeout=900)
-    wall = time.time() - t
-    tools, res, subs, path = Counter(), None, Counter(), []
-    for line in p.stdout.splitlines():
+URL = re.compile(r"https?://[^\s)\]>\"'`,]+")
+FETCHERS = ("WebFetch", "microsoft_docs_fetch")  # tools that read one page by url (a docs search reads none)
+
+
+def norm_url(u):
+    """A url as a comparable key: no scheme, www, locale segment, query, fragment or trailing slash; lower case."""
+    u = re.sub(r"^https?://(www\.)?", "", u.strip().lower()).split("#")[0].split("?")[0].rstrip("/.")
+    return re.sub(r"^(learn\.microsoft\.com)/[a-z]{2}-[a-z]{2}/", r"\1/", u)
+
+
+def parse(stdout):
+    """The stream-json events of one run: tool counts (main and subagents), the call route, every url a kb tool
+    returned, the urls a fetch tool read, the number of web and docs searches, and the result event."""
+    tools, subs, path, res = Counter(), Counter(), [], None
+    names, kb_urls, fetched, searches = {}, set(), [], 0
+    for line in stdout.splitlines():
         try:
             ev = json.loads(line)
         except ValueError:
             continue
+        content = (ev.get("message") or {}).get("content", []) if isinstance(ev.get("message"), dict) else []
         if ev.get("type") == "assistant":
-            for c in ev["message"].get("content", []):
-                if c.get("type") == "tool_use":
-                    name = c["name"] + (":" + c["input"].get("subagent_type", "") if c["name"] in ("Agent", "Task") else "")
-                    (subs if ev.get("parent_tool_use_id") else tools)[name] += 1
-                    path.append(("sub:" if ev.get("parent_tool_use_id") else "") + name.replace("mcp__", ""))
-        if ev.get("type") == "result":
+            for c in content:
+                if c.get("type") != "tool_use":
+                    continue
+                inp = c.get("input") or {}
+                name = c["name"] + (":" + inp.get("subagent_type", "") if c["name"] in ("Agent", "Task") else "")
+                names[c.get("id")] = c["name"]
+                (subs if ev.get("parent_tool_use_id") else tools)[name] += 1
+                path.append(("sub:" if ev.get("parent_tool_use_id") else "") + name.replace("mcp__", ""))
+                if c["name"].endswith(FETCHERS) and inp.get("url"):
+                    fetched.append(inp["url"])
+                elif c["name"] == "WebSearch" or c["name"].endswith(("docs_search", "_search_claude_code_docs",
+                                                                     "search_model_context_protocol")):
+                    searches += 1
+        elif ev.get("type") == "user":
+            for c in content:
+                if isinstance(c, dict) and c.get("type") == "tool_result" and "kb_" in names.get(c.get("tool_use_id"), ""):
+                    body = c.get("content")
+                    text = body if isinstance(body, str) else " ".join(b.get("text", "") for b in body or [] if isinstance(b, dict))
+                    kb_urls.update(norm_url(u) for u in URL.findall(text))
+        elif ev.get("type") == "result":
             res = ev
+    refetched = sorted({norm_url(u) for u in fetched} & kb_urls)
+    return {"tools": dict(tools), "sub_tools": dict(subs), "route": path, "kb_urls": len(kb_urls),
+            "fetched": fetched, "refetched": refetched, "searches": searches}, res
+
+
+def execute(cmd, prompt, cwd=KB, env=None):
+    """Run one headless claude and parse its stream: the result fields (or {"error": ...})."""
+    t = time.time()
+    p = subprocess.run(cmd, cwd=cwd, input=prompt, capture_output=True, text=True, timeout=900,
+                       env={**os.environ, **env} if env else None)
+    wall = time.time() - t
+    seen, res = parse(p.stdout)
     if not res:
         return {"error": p.stderr[-500:]}
     if res.get("is_error") or (not res.get("total_cost_usd") and re.search(r"(?i)hit your (session|usage) limit", res.get("result") or "")):
@@ -100,7 +174,7 @@ def execute(cmd, prompt, cwd=KB):
             "in_uncached": u["input_tokens"], "cache_write": u["cache_creation_input_tokens"],
             "cache_read": u["cache_read_input_tokens"], "out": u["output_tokens"],
             "models": {m: round(v["costUSD"], 4) for m, v in res.get("modelUsage", {}).items()},
-            "tools": dict(tools), "sub_tools": dict(subs), "route": path, "answer": res.get("result") or ""}
+            **seen, "answer": res.get("result") or ""}
 
 
 def add(a, b):
@@ -174,9 +248,98 @@ def web(model, q):
     return execute(cmd, q, cwd=empty)
 
 
-def run(cfg, scen):
+def git(*args, cwd):
+    return subprocess.run(["git", *args], cwd=cwd, capture_output=True, text=True, check=True).stdout.strip()
+
+
+def clone(name):
+    """A fresh clone of this repository's HEAD at SCRATCH/<name> (replacing one left by an earlier run)."""
+    dest = os.path.join(SCRATCH, name)
+    shutil.rmtree(dest, ignore_errors=True)
+    os.makedirs(SCRATCH, exist_ok=True)
+    subprocess.run(["git", "clone", "--quiet", KB, dest], check=True)
+    return dest
+
+
+def plant(dest):
+    """Make the copy at `dest` look retrieved before presidio 2.2.362-2.2.364 shipped: every kb file names 2.2.361
+    as the newest release, and the presidio articles and every line that names presidio (data rows, source rows)
+    carry February dates."""
+    for root, _, files in os.walk(os.path.join(dest, "kb", "public")):
+        for f in files:
+            if not f.endswith((".md", ".csv")):
+                continue
+            p = os.path.join(root, f)
+            with open(p, encoding="utf-8") as fh:
+                text = fh.read()
+            new = "".join(_swap(_swap(ln, PLANT), PLANT_PRESIDIO) if "presidio" in f + ln.lower() or "2.2.36" in ln
+                          else _swap(ln, PLANT) for ln in text.splitlines(keepends=True))
+            if new != text:
+                with open(p, "w", encoding="utf-8") as fh:
+                    fh.write(new)
+    return dest
+
+
+def _swap(s, pairs):
+    for a, b in pairs:
+        s = s.replace(a, b)
+    return s
+
+
+def stale(dest, by=STALE_BY):
+    """Put the remote-tracking branch of the clone at `dest` `by` empty commits ahead of its HEAD, as a fetch that
+    brought newer commits would: the copy runs today's code and is `by` commits behind the remote it follows."""
+    tip = git("rev-parse", "HEAD", cwd=dest)
+    tree = git("rev-parse", "HEAD^{tree}", cwd=dest)
+    for i in range(by):
+        tip = git("commit-tree", tree, "-p", tip, "-m", f"bench: upstream commit {i + 1}", cwd=dest)
+    branch = git("rev-parse", "--abbrev-ref", "HEAD", cwd=dest)
+    git("update-ref", f"refs/remotes/origin/{branch}", tip, cwd=dest)
+    return dest
+
+
+def kb_copy(kind):
+    """The directory a host run loads with --plugin-dir: this repository, or a scratch clone built for the scenario."""
+    if kind == "current":
+        return KB
+    return plant(clone("kb-planted")) if kind == "planted" else stale(clone("kb-stale"))
+
+
+def host(model, q, kb):
+    """A session in another project: an empty host directory, the kb and docs plugins by --plugin-dir, no user
+    settings, plugins or claude.ai connectors; the kb index kept in SCRATCH."""
+    where = os.path.join(SCRATCH, "host")
+    os.makedirs(where, exist_ok=True)
+    cmd = ["claude", "-p", "--output-format", "stream-json", "--verbose", "--no-session-persistence", "--model", model,
+           "--setting-sources", "project,local", "--plugin-dir", kb,
+           "--plugin-dir", os.path.join(KB, ".claude-plugin", "it-ops-kb-docs"),
+           "--allowedTools", "mcp__plugin_it-ops-kb_kb", "mcp__plugin_it-ops-kb-docs_microsoft-learn",
+           "mcp__plugin_it-ops-kb-docs_claude-code-docs", "mcp__plugin_it-ops-kb-docs_mcp-docs", "WebSearch", "WebFetch"]
+    env = {"ENABLE_CLAUDEAI_MCP_SERVERS": "false", "KB_INDEX": os.path.join(SCRATCH, "index")}
+    return execute(cmd, q, cwd=where, env=env)
+
+
+def check(c, r):
+    """One answer check: a regex over the answer, or a behaviour read from the tool calls."""
+    if c.startswith("tool:"):
+        return any(c[5:] in t for t in r["tools"])
+    if c == "web":
+        return bool(r["fetched"] or r["searches"])
+    if c == "no-refetch":
+        return not r["refetched"]
+    return bool(re.search(c, r["answer"]))
+
+
+def run(cfg, scen, copies=None):
     q, checks = S[scen]
-    if cfg == "router":
+    if scen in HOST:
+        if cfg not in MODEL:
+            raise SystemExit(f"{scen} runs only with {', '.join(MODEL)}")
+        copies = {} if copies is None else copies
+        if HOST[scen] not in copies:
+            copies[HOST[scen]] = kb_copy(HOST[scen])
+        r = host(MODEL[cfg], q, copies[HOST[scen]])
+    elif cfg == "router":
         r = route(q)
     elif cfg.startswith("web-"):
         r = web(MODEL[cfg[4:]], WEB_Q[scen])
@@ -196,7 +359,7 @@ def run(cfg, scen):
         r = execute(cmd, prompt)
     r = {"cfg": cfg, "scen": scen, **r}
     if "error" not in r:
-        r["checks"] = [bool(re.search(c, r["answer"])) for c in checks]
+        r["checks"] = [check(c, r) for c in checks]
     return r
 
 
@@ -207,9 +370,12 @@ def summary(paths):
             if "error" in r:
                 print(r["cfg"], r["scen"], "ERROR", r["error"][:100])
                 continue
+            if r["scen"] in S and "fetched" in r:  # re-score with today's checks: a corrected check needs no re-run
+                r["checks"] = [check(c, r) for c in S[r["scen"]][1]]
             print(f"{r['cfg']:22} {r['scen']:13} ${r['cost']:.3f} {r['wall_s']:5.0f}s turns={r['turns']} "
                   f"write={r['cache_write']} read={r['cache_read']} out={r['out']} "
-                  f"checks={''.join('Y' if c else 'n' for c in r['checks'])} {r['tools']} {r['sub_tools'] or ''}")
+                  f"checks={''.join('Y' if c else 'n' for c in r['checks'])} fetched={len(r.get('fetched', []))} "
+                  f"refetched={len(r.get('refetched', []))} searches={r.get('searches', 0)} {r['tools']} {r['sub_tools'] or ''}")
 
 
 def main():
@@ -217,11 +383,12 @@ def main():
         return summary(sys.argv[2:])
     out, cfgs, scens = sys.argv[1], sys.argv[2].split(","), sys.argv[3].split(",")
     reps = int(sys.argv[4]) if len(sys.argv) > 4 else 1
+    copies = {}  # host scenarios build each scratch kb copy once per invocation
     with open(out, "a") as f:
         for _ in range(reps):
             for cfg in cfgs:
                 for s in scens:
-                    r = run(cfg, s)
+                    r = run(cfg, s, copies)
                     f.write(json.dumps(r) + "\n")
                     f.flush()
                     print(cfg, s, r.get("cost"), r.get("wall_s"), r.get("checks"), r.get("tools"), flush=True)

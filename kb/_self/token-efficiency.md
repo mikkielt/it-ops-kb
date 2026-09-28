@@ -40,6 +40,7 @@ The cost model all of them follow: a lookup costs the agent's fixed start contex
 - **The plugin is split.** The documentation servers are a second plugin (`.claude-plugin/it-ops-kb-docs/.mcp.json`), so a host that needs only the kb does not carry three more servers' instructions.
 - **The hooks cost nothing when not used.** The `kb:` hook returns before loading the kb for a prompt without the prefix; the change router adds nothing to questions and harness messages; `.claude/hooks/session-start.sh` runs only in Claude Code on the web and prints a short status.
 - **Tool descriptions say what the tools are not.** Every kb tool starts "Documentation facts from it-ops-kb (not live device or directory data)" [CODE _tools/kb_mcp.py#DOCS], so a host with live MECM or AD tools does not call the wrong one and retry.
+- **Freshness notes only where they apply, not in the always-on instructions.** A pack about the latest release or a version the kb never names prints one `freshness:` line (the lead article's `retrieved_utc`: check the source live, say the version) [CODE _tools/kbfacts.py#freshness]; a copy behind the branch it follows opens every `kb_pack` with one `kb copy: N commits behind` line and the update command, read from local refs [CODE _tools/kb_mcp.py#behind_note]. Neither costs a token otherwise ("Partial knowledge, newer versions and stale copies").
 
 ## 5. A cheaper model, or none
 

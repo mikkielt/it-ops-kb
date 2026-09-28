@@ -19,7 +19,7 @@ import json, os, re, shutil, subprocess, sys
 
 import pytest
 
-from conftest import KB, P, Q, TOOLS
+from conftest import KB, P, Q, TOOLS, git_env
 
 SERVER = os.path.join(TOOLS, "kb_mcp.py")
 REMOTE = "git@gitlab.com:mikkielt/it-ops-kb.git"
@@ -382,6 +382,63 @@ def test_status_of_a_plugin_copy_from_a_directory_marketplace(tmp_path):
     assert p.returncode == 0, p.stdout + p.stderr
     assert f"installed_as: plugin it-ops-kb@it-ops-kb, version {sha}" in p.stdout, p.stdout
     assert f"commit: {sha}\n" in p.stdout, p.stdout
+
+
+def _status(home, cwd):
+    env = {k: v for k, v in git_env().items() if k not in ("KB_ROOTS", "KB_INDEX", "CLAUDE_PLUGIN_DATA")}
+    p = subprocess.run([sys.executable, os.path.join(home, "_tools", "kb_mcp.py"), "--status"], capture_output=True,
+                       text=True, timeout=120, env=env, cwd=str(cwd))
+    assert p.returncode == 0, p.stdout + p.stderr
+    return p.stdout
+
+
+def _ahead(repo, n):
+    """Commit n empty commits on top of HEAD without moving it; return the new tip."""
+    tip, tree = repo.rev("HEAD"), repo.rev("HEAD^{tree}")
+    for i in range(n):
+        tip = repo.git("commit-tree", tree, "-p", tip, "-m", f"upstream {i}").strip()
+    return tip
+
+
+@pytest.mark.git
+def test_status_says_how_far_a_clone_is_behind_its_remote(tmp_path):
+    """A clone whose origin/main holds newer commits (as of its last fetch) says how many and how to update, from
+    local refs only; one level with its remote says 0."""
+    from conftest import Repo, copy_kb
+    repo = Repo(copy_kb(str(tmp_path / "kb")))
+    repo.git("init", "-q", "-b", "main")
+    repo.git("add", "README.md")
+    repo.git("commit", "-q", "-m", "kb")
+    repo.git("update-ref", "refs/remotes/origin/main", repo.rev("HEAD"))
+    out = _status(repo.path, tmp_path)
+    assert "upstream: origin/main" in out and "behind_upstream: 0 commits\n" in out and "update:" not in out, out
+    repo.git("update-ref", "refs/remotes/origin/main", _ahead(repo, 3))
+    out = _status(repo.path, tmp_path)
+    assert "behind_upstream: 3 commits\n" in out, out
+    assert f"update: git -C {repo.path} pull --ff-only" in out, out
+    code = "import kb_mcp; print(kb_mcp.kb_pack({'question': 'default Windows LAPS password length'}))"
+    p = subprocess.run([sys.executable, "-c", code], cwd=os.path.join(repo.path, "_tools"), capture_output=True, text=True,
+                       timeout=300, env={**git_env(), "KB_INDEX": str(tmp_path / "index")})
+    assert p.stdout.startswith("kb copy: 3 commits behind origin/main"), p.stdout[:300] + p.stderr[-500:]
+    assert f"to update: git -C {repo.path} pull --ff-only.\n\ncoverage: good" in p.stdout, p.stdout[:300]
+
+
+@pytest.mark.git
+def test_status_says_how_far_an_installed_plugin_is_behind_its_marketplace(tmp_path):
+    """An installed plugin copy (no .git) is compared with the marketplace clone Claude Code keeps beside the cache:
+    commits there after the copy's version mean the copy is older than the kb it follows."""
+    from conftest import Repo, copy_kb
+    plugins = tmp_path / "plugins"
+    mkt = Repo(plugins / "marketplaces" / "it-ops-kb")
+    os.makedirs(mkt.path)
+    mkt.git("init", "-q", "-b", "main")
+    mkt.git("commit", "-q", "--allow-empty", "-m", "version")
+    sha = mkt.rev("HEAD")[:12]
+    mkt.git("reset", "-q", "--hard", _ahead(mkt, 2))
+    home = copy_kb(str(plugins / "cache" / "it-ops-kb" / "it-ops-kb" / sha))
+    out = _status(home, tmp_path)
+    assert f"commit: {sha}\n" in out and "behind_upstream: 2 commits\n" in out, out
+    assert "update: /plugin marketplace update, then /reload-plugins" in out, out
 
 
 def test_domain_is_matched_without_case_and_an_unknown_one_is_refused():
