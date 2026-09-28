@@ -83,15 +83,6 @@ Kb facts the build rests on: `claude/hooks.md` (async hooks, `prompt_id`, `Stop`
 - `.gitlab-ci.yml` runs branch and tag pipelines only (a direct-push model), which fits this design unchanged.
 
 7. **Direct push, on the real `origin`:** once, `python3 _tools/querylog.py apply --push` lands one automatic commit on `main`, and one planted conflict ends as an open MR.
-12. **Query log cleanup and test speed.** The query log grew one item at a time; bring its code, tests and doc to the size and shape the finished pipeline needs, and the test suite back to its speed before the query log.
-
-    Done:
-    - `_tools/querylog.py` is split into modules by stage (capture, distill, store and its gates, learn, apply, delivery, reporting), with one small entry point keeping every command and flag; no dead code, no helper that duplicates one in `kbcommon.py`, `kbgit.py` or `redact.py`, no branch kept only for a format nothing writes any more (the spool formats distill reads stay);
-    - `kb/_self/querylog.md` describes the finished pipeline once, in the order the data flows, without history of how it was built and without rules the code no longer has; `tools.md`, `map.csv` and `plugin.md` match the new modules;
-    - the query log tests share their expensive setup (one kb copy, one index build, one template clone and bare remote per session, copied per test) instead of rebuilding it per test, and a test that exercises the same path as another at a higher level is folded into it;
-    - the full `tests.py` wall time on the maintainer's machine is back to what it was at `3298593^` or lower, measured before and after in the commit body, with every scenario of the end-to-end item still tested and every planted failure still failing.
-
-    Check: `python3 _tools/tests.py` (full), `stress_test.py`, `querylog.py check` on the fixture store, the end-to-end tests, `ruff`, `/kb-verify`, `selfdoc.py stale`, and the before/after timings. Unchanged: every command, flag, spool, run-file and findings format, and the store gates' verdicts on the fixtures.
 13. **Research from the query log.** `querylog.py queue` lists the query log's open gap findings and the `_gaps.md` entries they wrote, and `/kb-research --queue [N]` works through the top N the way `/kb-research` works any question.
 
     Done:

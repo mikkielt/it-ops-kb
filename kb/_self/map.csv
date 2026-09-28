@@ -86,3 +86,6 @@ kb/_self/tools.md,_tools/kbpy
 kb/_self/plugin.md,_tools/kbpy
 kb/_self/querylog.md,_tools/querylog.py
 kb/_self/querylog.md,_tools/redact.py
+kb/_self/querylog.md,_tools/ql_*.py
+kb/_self/tools.md,_tools/querylog.py
+kb/_self/plugin.md,_tools/querylog.py
