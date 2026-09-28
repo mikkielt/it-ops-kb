@@ -2,7 +2,7 @@
   "id": "TK-kgu6p26i",
   "kind": "task",
   "title": "Plant a conflict and let apply --push open the merge request",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-pbonxqx4",
   "priority": "P1",
   "rank": 0,
@@ -23,5 +23,6 @@
     "kb/public/_retrieval/**",
     "_tools/aliases.csv",
     "kb/public/_answers.md"
-  ]
+  ],
+  "claimed_by": "orchestrator"
 }
