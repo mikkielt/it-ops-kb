@@ -2,7 +2,7 @@
 topic: agents/agent-caching
 priority: P1
 applies_to: "Anthropic prompt caching (Claude Developer Platform, retrieved 2026-09-25); Claude Code >=2.1.251; OpenAI Responses/Completions API; Azure OpenAI/Foundry Models; MCP spec 2026-07-28"
-retrieved_utc: 2026-09-26
+retrieved_utc: 2026-09-28
 sources: [S2130, S2131, S2132, S2133, S2134, S2135, S2136, S2159]
 status: complete
 ---
@@ -19,7 +19,7 @@ Anthropic prompt caching stores the KV state for an unchanged prefix, keyed by u
 
 - Up to 4 explicit cache breakpoints per request are supported via `cache_control` blocks [DOC S2130].
 - Two TTLs: 5-minute (default/ephemeral, refreshed on each cache hit) and 1-hour (opt-in, `"ttl": "1h"`) [DOC S2130].
-- Minimum cacheable prefix length is model-dependent: as low as 512 tokens for some newer/thinking-oriented models (per the fetched page: "Claude Fable 5.1, Mythos 5.1, Opus 5.5, Opus 5, Fable 5, Mythos 5"), 1,024 tokens for Sonnet 5 / Sonnet 4.6 / Sonnet 4.5 / Opus 4.8, 2,048 tokens for Opus 4.7/Mythos Preview, and 4,096 tokens for Haiku 4.5 and Opus 4.6/4.5 [DOC S2130].
+- Minimum cacheable prefix length is model-dependent: as low as 512 tokens for some newer/thinking-oriented models (per the fetched page: "Claude Fable 5.1, Mythos 5.1, Opus 5.5, Opus 5, Sonnet 5.5, Fable 5, Mythos 5"), 1,024 tokens for Sonnet 5 / Sonnet 4.6 / Sonnet 4.5 / Opus 4.8, 2,048 tokens for Opus 4.7/Mythos Preview, and 4,096 tokens for Haiku 4.5 and Opus 4.6/4.5 [DOC S2130].
 - Cache write pricing: 5-minute writes cost 1.25x the base input token price; 1-hour writes cost 2x [DOC S2130,S2131].
 - Cache read (hit and refresh) pricing: 0.1x base input price for all models except Claude Fable 5.1 and Claude Mythos 5.1 (0.025x) and Claude Opus 5.5 (0.05x); the prompt-caching and pricing pages give the same multipliers [DOC S2130, S2131].
 - Invalidation hierarchy: caching follows the order **tools → system → messages**; a change to tool definitions invalidates everything (tools, system, messages); toggling web search or citations, or switching `speed`, invalidates system+messages but not tools; a change to `tool_choice` or adding/removing images invalidates only the messages cache; thinking parameters and `output_config.effort` always invalidate messages and, depending on the model, tools and system too [DOC S2130]. This is the concrete "invalidation hierarchy" the assignment asked for.
@@ -68,6 +68,7 @@ this article's cache-write/cache-read pricing).
 | Anthropic (Haiku 4.5 / Opus 4.6-4.5) | 4,096 tokens | 5 min or 1 h | 1.25x / 2x | 0.1x |
 | Anthropic (Fable 5.1, Mythos 5.1) | 512 tokens | 5 min or 1 h | 1.25x / 2x | 0.025x |
 | Anthropic (Opus 5.5) | 512 tokens | 5 min or 1 h | 1.25x / 2x | 0.05x |
+| Anthropic (Sonnet 5.5) | 512 tokens | 5 min or 1 h | 1.25x / 2x | 0.1x |
 | Anthropic (Opus 5, Fable 5, Mythos 5) | 512 tokens | 5 min or 1 h | 1.25x / 2x | 0.1x |
 | OpenAI GPT-5.6+ | 1,024 visible tokens | 30 min (only option) | n/a (automatic) | ~0.1x |
 | OpenAI earlier models | varies | 5-10 min or 24h | n/a (automatic) | ~0.1x |

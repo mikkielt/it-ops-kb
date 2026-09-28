@@ -1966,6 +1966,18 @@ _Agent: kb-research_
 
 _Agent: kb-research_
 
+## QK-claude-sonnet-5-5-model-facts. What are Claude Sonnet 5.5's id, limits, pricing and caching rules?
+- API id and alias `claude-sonnet-5-5` (Bedrock `anthropic.claude-sonnet-5-5`), adaptive thinking, default effort `high`, 1M-token context window, 128K max output, reliable knowledge cutoff Jun 2026, retirement not sooner than 2027-09-28. [DOC S-eu3n3hyf]
+- Price per MTok: $2 input, $2.50 5-minute cache write, $4 1-hour cache write, $0.20 cache read, $10 output; batch $1 / $5. [DOC S2131]
+- Minimum cacheable prefix 512 tokens, the same as Opus 5.5 and Fable 5.1. [DOC S2130]
+- Supports the `output-300k-2026-03-24` batch beta (300,000 `max_tokens`). [DOC S-3pftmimx]
+- Rate limits per tier equal Sonnet 5's (Start 1,000 RPM / 2M ITPM / 400K OTPM) and are a separate limit from Sonnet 5 and Sonnet 4.x. [DOC S-5uxkh3j5]
+- Claude Code added it as `claude-sonnet-5-5`, the default Sonnet model on the Anthropic API. [DOC S746]
+- Conclusion: Sonnet 5.5 costs the same per token as Sonnet 5 and caches from a shorter prefix, so the kb's Sonnet cost estimates (list price $2 / $10) carry over unchanged; only the knowledge cutoff and the cache minimum differ. [DER S-eu3n3hyf, S2131, S2130]
+- See claude/models.csv, claude/messages-api.md, claude/api-limits.csv, agents/agent-caching.md.
+
+_Agent: kb-research_
+
 ## R1. Reuse candidates
 
 - **Highest leverage: `pydantic-settings` as a `dependency` for a project's config-file/env-var/flags

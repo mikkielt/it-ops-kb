@@ -2,7 +2,7 @@
 topic: claude/messages-api
 priority: P1
 applies_to: "Claude API (platform.claude.com/docs), Messages API, Message Batches API, Files API, Token Counting API, MCP connector (mcp-client-2025-11-20 beta), retrieved 2026-09-26"
-retrieved_utc: 2026-09-26
+retrieved_utc: 2026-09-28
 sources: [S-osulh6sh, S-eu3n3hyf, S-5uxkh3j5, S-3pftmimx, S-wbsmegvl, S-b4bqwu2v, S-jrsntqfg, S-qpqoaaqj, S-qso6o6wu, S1847]
 status: complete
 files: [claude/models.csv, claude/api-limits.csv]
@@ -97,7 +97,7 @@ repeat prompt caching (`agents/agent-caching.md`) or the HTTP/tool-pairing error
   /v1/messages/batches/{id}/cancel`) — poll `processing_status` on the retrieval endpoint until `ended` [DOC
   S-3pftmimx].
 - `output-300k-2026-03-24` beta header raises the batch `max_tokens` cap to 300,000 (standard cap 128k) on Claude
-  Opus 5.5, Opus 5, Opus 4.8, Opus 4.7, Opus 4.6, Sonnet 5, and Sonnet 4.6 [DOC S-3pftmimx, S-eu3n3hyf].
+  Opus 5.5, Opus 5, Opus 4.8, Opus 4.7, Opus 4.6, Sonnet 5.5, Sonnet 5, and Sonnet 4.6 [DOC S-3pftmimx, S-eu3n3hyf].
 - Batch requests still count toward the shared Message Batches API rate limits (RPM to all Batches endpoints, plus
   a cap on batch requests in the processing queue) — see `claude/api-limits.csv` [DOC S-5uxkh3j5].
 

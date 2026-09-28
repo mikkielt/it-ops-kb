@@ -460,9 +460,6 @@ d30c42262cf4,"LDAP filter special characters: asterisk, parenthesis, backslash, 
 f9afed7bacc7,prompt cache TTL options
 f9afed7bacc7,What time-to-live options are available for cached data?
 f9afed7bacc7,Claude cache: ephemeral vs. long-term retention periods
-649a15850639,prompt cache minimum prefix length
-649a15850639,What is the minimum token count for a cacheable prefix on different Claude models?
-649a15850639,"cache eligibility: token threshold by model (Haiku, Opus, Sonnet, Fable)"
 174c06de8cb6,prompt cache write cost
 174c06de8cb6,How much do cache writes cost compared to base input tokens?
 174c06de8cb6,Claude cached token pricing: 5-minute vs. 1-hour TTL

@@ -6,7 +6,8 @@
 
 Appends one JSON line per run: cost (USD), wall and API seconds, turns, uncached / cache-write / cache-read input
 tokens, output tokens, cost per model, tool calls of the main session and of subagents, and a regex check per
-expected answer element. CONFIG: `haiku`, `sonnet`, `opus` (that model answers alone); `opus+delegate` (asked to hand
+expected answer element. CONFIG: `haiku`, `sonnet`, `opus` (that model answers alone; `sonnet-5`,
+`sonnet-5-5` pin a model id where an alias would follow the newest); `opus+delegate` (asked to hand
 the lookup to the Haiku kb-lookup agent); `haiku+escalate` (Haiku told to hand live-docs work to a Sonnet agent
 defined with --agents); `+strict` also denies the docs tools (note: the deny reaches subagents too); `router`
 (kb_ask.py's routing); `web-haiku`, `web-sonnet`, `web-opus` (a typical
@@ -119,7 +120,9 @@ ROUTER = ("Routing for it-ops questions: call kb_pack first. If the pack's facts
           "them yourself with path:line and urls. If coverage is weak or none, or the facts are only about something "
           "related, do not research it yourself: send the question and what the kb had to the kb-live-docs agent, then "
           "relay its answer labelled 'live docs, not in the kb'.")
-MODEL = {"opus": "opus", "sonnet": "sonnet", "haiku": "haiku"}
+MODEL = {"opus": "opus", "sonnet": "sonnet", "haiku": "haiku",
+         # pinned ids, for comparing a new model with the one before it (benchmarks.py's `new-model`)
+         "sonnet-5": "claude-sonnet-5", "sonnet-5-5": "claude-sonnet-5-5"}
 DELEGATE = (" Delegate the kb lookup to the kb-lookup subagent (Haiku) and only relay its answer; do the live-docs step "
             "yourself only if it reports the kb lacks the answer.")
 

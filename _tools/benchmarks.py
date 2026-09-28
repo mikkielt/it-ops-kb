@@ -24,7 +24,7 @@ clone's spool, a plugin data directory of ~/.claude or a real remote. A clone ge
 --register-local` for its own path; they are removed at the end of the run.
 
 Paid scenarios (each a `claude -p` per case): headless, subagents, models, router, howto, partial, files-subagents,
-files-headless, host-lookups, always-on, kb-lookup-agent, retrieval and doc2query (their blind questions), research,
+files-headless, host-lookups, new-model, always-on, kb-lookup-agent, retrieval and doc2query (their blind questions), research,
 ingest, host-roots, querylog-pipeline (one real Haiku batch). The rest run no model.
 """
 import argparse, csv, datetime, io, json, os, platform, random, re, shutil, statistics, subprocess, sys, tempfile, time
@@ -1596,6 +1596,53 @@ def s_kbpy(b):
     b.row("kbpy", "launcher overhead", osname, "median_ms", (statistics.median(via) - statistics.median(direct)) * 1000, n)
 
 
+NEW_MODEL = ("sonnet-5-5", "sonnet-5")  # agent_bench.py configs: the new model, then the one it replaces
+NEW_MODEL_KB = ["s1_fact", "s3_multi", "s5_none", "s6_falsegood", "s8_falsegood2", "h1_gmsa", "h2_applock", "h3_mggraph",
+                "x1_synth", "o1_offkb"]
+NEW_MODEL_WEB = ["s1_fact", "x1_synth", "o1_offkb"]
+NEW_MODEL_HOST = ["p1_partial", "n1_newer", "k1_stale"]
+
+
+def s_new_model(b):
+    """A new model against the one it replaces, pinned by id in one batch: the kb arm on ten questions (facts,
+    false goods, off-kb, how-to snippets, a synthesis), the bare web arm on three, the host scenarios for partial
+    knowledge, a newer version and a stale copy, and the fixed context of "ok" in an empty directory and the clone."""
+    new, old = NEW_MODEL
+    runs = b.bench([new, old], NEW_MODEL_KB, b.reps, "new-model", parallel=True)
+    runs += b.bench([f"web-{new}", f"web-{old}"], NEW_MODEL_WEB, 1, "new-model", parallel=True)
+    runs += b.bench([new, old], NEW_MODEL_HOST, 1, "new-model", parallel=True)
+    b.bench_rows("new-model", runs)
+    for cfg in (new, old):
+        for case, scens in (("kb (10)", NEW_MODEL_KB), ("host (3)", NEW_MODEL_HOST)):
+            rs = [r for r in runs if r["cfg"] == cfg and r["scen"] in scens and "error" not in r]
+            if not rs:
+                continue
+            n = len(rs)
+            b.row("new-model", case, cfg, "cost", sum(r["cost"] for r in rs) / n, n)
+            b.row("new-model", case, cfg, "wall_s", sum(r["wall_s"] for r in rs) / n, n)
+            b.row("new-model", case, cfg, "input", sum(r["in_uncached"] + r["cache_write"] + r["cache_read"]
+                                                        for r in rs) / n, n)
+            b.row("new-model", case, cfg, "out", sum(r["out"] for r in rs) / n, n)
+            b.row("new-model", case, cfg, "tool_calls", sum(sum(r.get("tools", {}).values()) for r in rs) / n, n)
+            b.row("new-model", case, cfg, "checks", f"{sum(sum(map(bool, r['checks'])) for r in rs)}/"
+                  f"{sum(len(r['checks']) for r in rs)}", n)
+            b.row("new-model", case, cfg, "fully_right", f"{sum(all(r['checks'] or [False]) for r in rs)} of {n}", n)
+    empty = b.scratch / "empty"
+    empty.mkdir(exist_ok=True)
+    for cfg in (new, old):
+        model = agent_bench.MODEL[cfg]
+        for arm, cwd in (("empty directory", empty), ("clone", b.lookup())):
+            vals = [v for v in (claude_json(["claude", "-p", "--no-session-persistence", "--model", model, *NO_HOOKS],
+                                            OK_PROMPT, cwd) for _ in range(2)) if "error" not in v]
+            if vals:
+                b.row("new-model", f"ok, {arm}", cfg, "start_ctx", max(v["input"] for v in vals), len(vals), model,
+                      note="; ".join(str(v["input"]) for v in vals))
+                b.row("new-model", f"ok, {arm}", cfg, "out", max(v["usage"]["output_tokens"] for v in vals),
+                      len(vals), model)
+                b.row("new-model", f"ok, {arm}", cfg, "cost", sum(v["total_cost_usd"] for v in vals) / len(vals),
+                      len(vals), model)
+
+
 SCENARIOS = {  # name: (report section, function)
     "headless": ("Bare agent against agent with the kb: headless sessions", s_headless),
     "subagents": ("Bare agent against agent with the kb: subagents", s_subagents),
@@ -1619,6 +1666,7 @@ SCENARIOS = {  # name: (report section, function)
     "ingest": ("/kb-ingest on a sample repository", s_ingest),
     "host-roots": ("A host plugin with team roots", s_host_roots),
     "kbpy": ("Hook launcher start-up", s_kbpy),
+    "new-model": ("A new model against the one it replaces", s_new_model),
 }
 
 

@@ -401,6 +401,27 @@ What it shows:
 - **The freshness and stale-copy lines still reach the answer:** k1 kept 2/3 on both models (the copy reported behind, without calling `kb_status`); n1/n2 "using the kb" stayed inside the kb (1/3, no live check), as after the fixes.
 - **With leave to use the web** Haiku checked PyPI on n3 (3/3, $0.083) and both models answered "no" on n4 (2/3), Sonnet after 11 fetches ($0.489). Sonnet's n3 run failed with `529 Overloaded` and has no row.
 
+### A new model against the one it replaces
+**Setup:** `python3 _tools/benchmarks.py run new-model`: the new model and the one it replaces, pinned by id (`agent_bench.py` configs `sonnet-5-5` and `sonnet-5`, since the `sonnet` alias follows the newest), in one batch so that dollars compare. A curated set from the sections above: the kb arm on ten questions (`s1_fact`, `s3_multi` facts; `s5_none`, `o1_offkb` off the kb; `s6_falsegood`, `s8_falsegood2` false `good`s that need live docs; `h1`-`h3` how-to snippets, `h2_applock` the pack's false `none`; `x1_synth` a cross-topic synthesis), 2 runs each; the bare web arm on `s1_fact`, `x1_synth` and `o1_offkb`; the host scenarios `p1_partial`, `n1_newer` and `k1_stale`; and "Reply with the single word ok." in an empty directory and in the clone (2 runs each, the highest shown). `kb (10)` and `host (3)` are means per question over those cases.
+<!-- bench:records new-model -->
+| record | date | commit | Claude Code | kb topics | runs per cell | spend of the runs |
+|---|---|---|---|---|---|---|
+<!-- /bench -->
+<!-- bench:table new-model metrics=cost,wall_s,input,out,tool_calls,checks,fully_right cases=kb (10),host (3) -->
+| case | arm | cost | wall_s | input | out | tool_calls | checks | fully_right |
+|---|---|---|---|---|---|---|---|---|
+<!-- /bench -->
+Per question:
+<!-- bench:table new-model metrics=cost,wall_s,input,out,tool_calls,checks cases=s1_fact,s3_multi,s5_none,s6_falsegood,s8_falsegood2,h1_gmsa,h2_applock,h3_mggraph,x1_synth,o1_offkb,p1_partial,n1_newer,k1_stale -->
+| case | arm | cost | wall_s | input | out | tool_calls | checks |
+|---|---|---|---|---|---|---|---|
+<!-- /bench -->
+Fixed context:
+<!-- bench:table new-model metrics=start_ctx,out,cost cases=ok, empty directory,ok, clone -->
+| case | arm | start_ctx | out | cost |
+|---|---|---|---|---|
+<!-- /bench -->
+
 ## Reading files, hosts and start contexts
 
 ### Reading files without the lookup tools
