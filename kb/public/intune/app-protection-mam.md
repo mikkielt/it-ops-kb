@@ -3,7 +3,7 @@ topic: intune/app-protection-mam
 priority: P2
 applies_to: "Microsoft Intune app protection policies (APP/MAM) for iOS/iPadOS, Android and Windows; Microsoft Graph v1.0 managedAppPolicies (docs retrieved 2026-09-26)"
 retrieved_utc: 2026-09-27
-sources: [S-ngcvmu22, S-msbbtbup, S-qing6dzr, S-qjixnw4g, S-t4g3ekea, S-5cbvuypc, S-jgesqj52, S-eaeb5jdz, S-lu7ablj2, S-36mghzxu, S-27fiskhq, S-5fxhm5mr, S-qj62oq2o, S-xsnx4hlp, S-b3l5wbk6, S-p3vtkyrq, S-ssexz2ef, S-ehjdk3sn, S-gqqrls57, S-2jxyk3ra, S-j6tphfq3, S-x44btgzh]
+sources: [S-ngcvmu22, S-msbbtbup, S-qing6dzr, S-qjixnw4g, S-t4g3ekea, S-5cbvuypc, S-jgesqj52, S-eaeb5jdz, S-lu7ablj2, S-36mghzxu, S-27fiskhq, S-5fxhm5mr, S-qj62oq2o, S-xsnx4hlp, S-b3l5wbk6, S-p3vtkyrq, S-ssexz2ef, S-ehjdk3sn, S-gqqrls57, S-2jxyk3ra, S-j6tphfq3, S-x44btgzh, S-rvpreeft, S-d4yd34s7, S-hkj4rbxk]
 status: complete
 ---
 
@@ -23,7 +23,7 @@ status: complete
 - Company Portal is required on the device to receive app protection policies on **Android** (even when the device is not enrolled). [DOC S-qjixnw4g]
 - A user needs a Microsoft Entra account, an assigned Intune license, and membership in a security group targeted by an app protection policy that also targets the app in use; the user must sign in with that Entra account. [DOC S-qjixnw4g]
 - Windows app protection policy (Edge) requires Windows 11, or Windows 10 20H2+ with KB5031445. [DOC S-36mghzxu]
-- Windows Home edition is supported for MAM for Windows. [UNK: not in S-b3l5wbk6 as re-read 2026-09-27]
+- Windows MAM is available on the supported Windows versions (Data protection for Windows MAM), and the Intune supported-platforms list includes **Windows 11 Home**; so Home edition devices qualify, as long as they are unmanaged (not Entra joined or MDM enrolled). No page names Home explicitly for MAM (re-read 2026-09-27). [DER S-rvpreeft, S-d4yd34s7: MAM page points to the supported-platforms list, which lists Windows 11 Home]
 - Windows MAM cross-tenant Edge support (clipboard, protected downloads, watermarking) requires Microsoft Edge for Business version 147+ and Entra ID P1 or P2 for Conditional Access; same-tenant managed devices are **not** supported in that cross-tenant configuration. [DOC S-ehjdk3sn]
 - Any app integrating the **Intune App SDK**, or wrapped with the **Intune App Wrapping Tool**, can be managed by app protection policies; for wrapped line-of-business apps **all** app data counts as "corporate" (vs. only Exchange/OneDrive-for-work data for Microsoft 365 apps). [DOC S-qjixnw4g]
 - BYOD devices with app protection but no MDM enrollment cannot receive app deployment via Intune, certificate profiles, or company Wi-Fi/VPN profiles — those still require enrollment. [DOC S-qjixnw4g]
@@ -34,7 +34,6 @@ status: complete
 - If a device is already MDM-managed, Intune MAM enrollment for that app is blocked and app protection settings don't apply; conversely, if a device becomes MDM-managed *after* MAM enrollment, app protection settings stop applying. [DOC S-36mghzxu]
 - Recommended rollout: start the Windows app-protection Conditional Access policy in **Report-only**, verify via policy impact/report-only results, then switch to **On**; also exclude break-glass and service accounts, per the standard Conditional Access guidance. [DOC S-36mghzxu]
 - First sign-in flow: user is prompted to switch/add the Edge profile with the work account; selecting **Yes** ("remember my account… sign in to all apps") enrolls the browser profile in MAM; selecting **No, sign in to the app only** blocks MAM enrollment; if an MDM-enrollment prompt appears, selecting **No** keeps it MAM-only (Yes would MDM-enroll the device instead). [DOC S-36mghzxu]
-- Windows Edge sign-in/sync can also be blocked outright on unmanaged/noncompliant Windows, iOS and Android via a Conditional Access policy targeting the Edge app with MAM settings — this block is **not supported on iOS**. [UNK: not in S-ehjdk3sn as re-read 2026-09-27]
 - Cross-tenant Windows MAM known limitations: if device-level **Endpoint DLP** is enabled, Intune App Protection (MAM) policies can't apply to the Edge work profile (profile switching breaks) unless a policy bypasses this; from Edge 149+, when both a **Microsoft Defender for Cloud Apps DLP** policy and an app protection (MAM) policy would apply to the same tenant, the MDCA DLP policy takes precedence over the MAM app protection policy (Conditional Access itself still applies). [DOC S-ehjdk3sn]
 
 ### Data protection settings (iOS/Android)
@@ -81,7 +80,7 @@ status: complete
 - The same screen's **Get Started** option collects logs about the APP-enabled apps, to attach to a Microsoft support case; Edge diagnostic-log saving respects the app protection policy, so diagnostic data can't be saved to the local device. [DOC S-b3l5wbk6, S-p3vtkyrq]
 - Troubleshooting checklist for app protection deployment: the policy must be assigned to user groups (not device groups) that contain the user; the app must be in the Intune protected apps list (LOB apps on the latest Intune App SDK); the user must sign in to the app with the targeted corporate account (policies apply only in the work context); Android users need the latest Company Portal, which acts as the policy broker. [DOC S-b3l5wbk6]
 - The iOS/iPadOS share extension can open work data in unmanaged apps even when data transfer is restricted, because app protection can't control it without device management; Intune encrypts "corporate" data before it leaves the app instead. [DOC S-qjixnw4g]
-- Confirm Microsoft Authenticator is present when app-based Conditional Access is enabled. [UNK: not in S-b3l5wbk6 as re-read 2026-09-27]
+- App-based Conditional Access needs a broker app to register the device in Microsoft Entra ID: **Microsoft Authenticator** on iOS, **Company Portal** on Android; confirm it is installed when troubleshooting. [DOC S-hkj4rbxk]
 
 ## Reference
 | Mechanism | Delivers | Applies to | Enrollment needed | Source |

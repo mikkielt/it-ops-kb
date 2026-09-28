@@ -2,7 +2,7 @@
 topic: intune/device-query
 priority: P1
 applies_to: "Intune Advanced Analytics, docs ms.date 2026-09-01"
-retrieved_utc: 2026-09-26
+retrieved_utc: 2026-09-27
 sources: [S-oaxxx7xc, S-x35diqus, S-dlqk4ney, S-fol5b2wh]
 status: complete
 ---
@@ -33,7 +33,7 @@ max 3 joins. Both are Advanced Analytics features needing an add-on licence on t
 |---|---|---|
 | Rate | 15 / minute | 10 / minute, 1,000 / month |
 | Result | 128 kb characters | ~50,000 records |
-| Query length | 2,048 characters | [UNK] |
+| Query length | 2,048 characters | not documented (re-read 2026-09-27) [DER S-x35diqus: absence in Known limitations] |
 | Joins | – | max 3 |
 | Data | live via WNS | collected inventory |
 

@@ -285,14 +285,18 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
 ## ops
 
 - **Remediations schedule.** deploy-remediations.md offers Once, Hourly and Daily schedules, but the same page says custom script packages "are rerun every 24 hours" (S609). https://raw.githubusercontent.com/MicrosoftDocs/memdocs/4b5429df8b47046c6b251e572ee61199fb5d4a5d/intune/device-management/tools/deploy-remediations.md (topic: intune/remediations)
+  - Re-read 2026-09-27, still open: the live page still offers Once, Hourly (less than 24 hours) and Daily and still says custom script packages are rerun every 24 hours. (topic: intune/remediations)
 - **Collect diagnostics and Graph.** collect-diagnostics.md says diagnostics "can't be collected or downloaded by calling Microsoft Graph directly". Its reference links still list the Graph actions createDeviceLogCollectionRequest and createDownloadUrl (S616). (topic: intune/collect-diagnostics)
+  - Re-read 2026-09-27, still open: the live page (updated_at 2026-08-05) still says diagnostics can't be collected or downloaded through Graph directly and still lists createDeviceLogCollectionRequest, createDownloadUrl, downloadAppDiagnostics and appDiagnostics under Reference links. (topic: intune/collect-diagnostics)
 - **MDE machine $filter.** get-machines (S621) lists 14 filterable properties, including aadDeviceId, id, version, deviceValue, machineTags and lastIpAddress. exposed-apis-odata-samples (S628) lists only 8 for Machine and leaves out aadDeviceId. https://learn.microsoft.com/defender-endpoint/api/get-machines vs https://learn.microsoft.com/defender-endpoint/api/exposed-apis-odata-samples (topic: defender/machine-resource)
 - **MDE permissions.** get-machines (S621) accepts Machine.Read.All and Machine.Read. get-machine-by-id (S622) lists only Machine.ReadWrite.All and Machine.ReadWrite. (topic: defender/machine-resource)
   - Re-read 2026-09-27, still open: get-machine-by-id still lists only the ReadWrite permissions. (topic: defender/machine-resource)
 - **MDE property table vs examples.** rbacGroupId is typed String (S620), but the examples show the number 140 (S621, S622). isAadJoined appears in the examples but not in the property table. (topic: defender/machine-resource)
   - Re-read 2026-09-27, still open: the get-machine-by-id example still shows `"rbacGroupId": 140` and `isAadJoined`. (topic: defender/machine-resource)
 - **Device query operators.** The single-device table operators (S612) do not include `summarize`, yet the same page says its aggregation functions work with it. The multi-device page (S613) does list `summarize`. (topic: intune/device-query)
+  - Re-read the multi-device side only, 2026-09-27: it still uses summarize in its examples and Known limitations; the single-device page was not re-read. (topic: intune/device-query)
 - **Co-management query.** how-to-monitor (S603) lists four SMS_Client_ComanagementState fields: MachineId, MDMEnrolled, Authority and ComgmtPolicyPresent. The WQL in create-queries (S647) also filters on MDMProvisioned, which is not in that list. (topic: intune/co-management)
+  - Re-read the how-to-monitor side 2026-09-27 (Learn search): it still lists MachineId, MDMEnrolled, Authority and ComgmtPolicyPresent only. (topic: intune/co-management)
 
 ## priorart
 
@@ -621,3 +625,8 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
 ## windows/windows-update-management
 
 - Windows 10 consumer ESU end date: the kb said security updates through 2026-10-13; the consumer ESU page (S-fllu73v2, re-read 2026-09-27) now says the program and coverage run through 2027-10-12. Fact corrected from the source; the Learn ESU page (S-hdprezk3) gives no consumer end date. (topic: windows/windows-update-management)
+
+## intune
+
+- Endpoint analytics in Adoption Score: the Intune page (S-m5aovwzr, updated_at 2026-04-09) still describes the Adoption Score Endpoint analytics page (score, 180-day trend, startup performance), while the Microsoft 365 Adoption Score page (S-3l57sxrb, updated_at 2026-09-23) says Endpoint analytics was retired from Adoption Score starting 2026-01-22, complete February 2026. The newer M365 page is the likelier current state. (topic: intune/device-inventory-analytics)
+- Linux personal devices: the end-user page Enroll Linux device in Intune (S-dnply3ya, updated_at 2026-04-29) says enrolled Linux devices are corporate-owned and personal devices aren't supported, while the admin deployment guide (S-5vopvhhm) and platform guide (S-nvad3j6y) say employees can enroll their personal Linux devices. (topic: intune/linux-management)

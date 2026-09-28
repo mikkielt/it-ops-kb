@@ -2,8 +2,8 @@
 topic: intune/reports-export-api
 priority: P2
 applies_to: "Microsoft Intune reporting infrastructure, Microsoft Graph v1.0 and beta deviceManagementExportJob, docs retrieved 2026-09-26"
-retrieved_utc: 2026-09-26
-sources: [S-ls7jnt2q, S-7cnzcrhl, S-zh4stzuw, S-35rheh4q, S-vlctroci, S-scwd7dap, S-lqfdn2f7, S-6pobzvll, S-dk3pjswi, S-dghnu36r, S-haj5sdml, S-pswa3wmd]
+retrieved_utc: 2026-09-27
+sources: [S-ls7jnt2q, S-7cnzcrhl, S-zh4stzuw, S-35rheh4q, S-vlctroci, S-scwd7dap, S-lqfdn2f7, S-6pobzvll, S-dk3pjswi, S-dghnu36r, S-haj5sdml, S-pswa3wmd, S-7x2lmxhr]
 status: complete
 files: [intune/export-report-names.csv]
 ---
@@ -54,7 +54,7 @@ Intune reports migrated to its newer reporting infrastructure are exported throu
 - `deviceManagementReports` (the `deviceManagement/reports` singleton) exposes Stream-returning actions (no create/poll/download pattern) such as `getCachedReport`, `getHistoricalReport`, `getCompliancePolicyNonComplianceSummaryReport`, `getCompliancePolicyNonComplianceReport`, `getComplianceSettingNonComplianceReport`, `getDeviceNonComplianceReport`, `getReportFilters` and the configuration-policy/intent non-compliance reports, plus the `exportJobs` relationship documented above. [DOC S-6pobzvll]
 - `getCachedReport`: `POST /deviceManagement/reports/getCachedReport` with body properties `id`, `select`, `groupBy`, `orderBy`, `search`, `skip`, `top`; returns `200 OK` with a Stream. Same permission set as export job creation, plus the matching `.Read.All` scopes. [DOC S-vlctroci]
 - For bulk export of STIG audit data, Microsoft points to `exportJobs` instead of the per-setting cached-report pattern: no skip/top pagination (the full dataset in one downloadable file), one job for all settings instead of three calls per setting, and delivery through a temporary blob URL that avoids timeouts on large datasets. [DOC S-dghnu36r]
-- Applying that guidance to other reports (cached actions for small interactive queries, `exportJobs` for full datasets) is our generalisation; Microsoft states it only for the STIG audit reports. [UNK: not in S-vlctroci as re-read 2026-09-26]
+- Applying that guidance to other reports (cached actions for small interactive queries, `exportJobs` for full datasets) is this kb's generalisation: Microsoft states it only for the STIG audit reports (re-read 2026-09-26). [DER S-vlctroci: generalised from the STIG audit guidance]
 
 ### Throttling
 - The `exportJobs` API supports up to 100 requests per tenant per minute across all users and apps in the tenant. [DOC S-ls7jnt2q]
@@ -64,7 +64,7 @@ Intune reports migrated to its newer reporting infrastructure are exported throu
 ### Intune Data Warehouse / Power BI (legacy, being retired)
 - The Intune Data Warehouse is a separate OData-based reporting surface (historical Intune data, refreshed daily), read with GET from a per-tenant URL of the form `https://fef.{location}.manage.microsoft.com/ReportingService/DataWarehouseFEService/{entity-collection}?api-version={api-version}` (`v1.0` or `beta`), not through the `exportJobs` Graph API. [DOC S-scwd7dap, S-haj5sdml]
 - The Intune Data Warehouse (beta) connector v1 in Power BI is being retired: reports that use it must migrate to the Intune connector v2 or the OData Feed connector; Power BI reports created after November 2025 already use connector v2 and are unaffected. [DOC S-scwd7dap, S-lqfdn2f7]
-- The connector v1 transition began in late April 2026, runs over two weeks, and unmigrated reports then lose data access. [UNK: not in S-scwd7dap as re-read 2026-09-27]
+- The Intune what's new entry (week of April 20, 2026) says the v1 connector is retired: the transition runs gradually over two weeks starting 2026-04-20, customer communications began in late April 2026, and customers who don't migrate lose data access through the beta connector. [DOC S-7x2lmxhr]
 - Migration from connector v1: in Power BI Desktop, Transform Data > (each Intune query) > Advanced Editor; a data source of the form `Intune.Contents(x)` indicates connector v1 and must be replaced with `OData.Feed("<reporting_service_endpoint>", null, [Implementation="2.0", Query=[#"api-version"="v1.0"]])`; an optional `?maxHistoryDays=<n>` query parameter on the endpoint limits historical data pulled. [DOC S-lqfdn2f7]
 - The Intune Data Warehouse contains only Intune data: with co-management, retrieve Configuration Manager data from Configuration Manager (the page points to a Configuration Manager Power BI dashboard; cross-link `powerbi/configmgr-views.md`). [DOC S-scwd7dap]
 

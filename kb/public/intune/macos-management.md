@@ -2,8 +2,8 @@
 topic: intune/macos-management
 priority: P2
 applies_to: "Microsoft Intune service, macOS 13 and later, docs retrieved 2026-09-26"
-retrieved_utc: 2026-09-26
-sources: [S-arxx6gr5, S-rdfxhqsp, S-euxtbsnm, S-3t6iud2k, S-wqz6uke5, S-rsfjlxrr, S-4vuqeywj, S-u2qh2hnr, S-hubiwt4q, S-iw63dqdc, S-vtmdq4xp, S-643xsvbr, S-23euutj5, S-wl7oot25]
+retrieved_utc: 2026-09-27
+sources: [S-arxx6gr5, S-rdfxhqsp, S-euxtbsnm, S-3t6iud2k, S-wqz6uke5, S-rsfjlxrr, S-4vuqeywj, S-u2qh2hnr, S-hubiwt4q, S-iw63dqdc, S-vtmdq4xp, S-643xsvbr, S-23euutj5, S-wl7oot25, S-fxcmmurx, S-gjyh2735, S-ischppkc]
 status: complete
 ---
 
@@ -20,10 +20,11 @@ macOS devices enroll in Intune via **Automated Device Enrollment (ADE)** (former
 - ADE supports the ACME protocol for the device's management-profile certificate (better protection than SCEP); ACME requires **macOS 13.1 or later**; already-enrolled devices don't get an ACME cert unless they re-enroll. [DOC S-arxx6gr5]
 - Setting up ADE has three tasks: (1) get an enrollment program token (.p7m, trust relationship with Apple Business/School Manager), (2) create and assign an enrollment profile (renamed "enrollment policy" in the newer admin-center experience under **Enrollment program tokens > Enrollment policies**), (3) sync device records from Apple Business Manager and distribute devices. [DOC S-arxx6gr5, S-rdfxhqsp]
 - ADE prerequisites: access to Apple Business or Apple School Manager, MDM authority set to Intune, an Apple MDM push certificate in Intune, and an active ADE token (.p7m). [DOC S-arxx6gr5, S-rdfxhqsp]
-- A recommendation to create the push certificate with a Managed Apple ID rather than a personal Apple ID is not stated on the ADE overview or setup pages. [UNK: not in S-arxx6gr5 or S-rdfxhqsp as re-read 2026-09-27]
+- Add the Apple MDM push certificate with a **Managed Apple ID** from Apple Business Manager (or Apple School Manager), not a personal Apple ID: the certificate must stay manageable for the life of the deployment and a personal ID can become unavailable as staff change (macOS end-to-end guide). [DOC S-fxcmmurx]
 - To make Entra SSO available during Setup Assistant with modern authentication, create the Platform SSO settings-catalog policy **before** devices enroll — it is deployed to enrolling devices during ADE. [DOC S-rdfxhqsp]
 - Other enrollment methods: **Direct enrollment** (Apple Configurator, organization-owned kiosk-style devices without user affinity; "Enroll with user affinity" shows in the UI but won't work); **BYOD device enrollment** (user approved enrollment: the user downloads and runs the Company Portal installer package, since Company Portal for macOS isn't in the App Store or VPP, signs in and approves the enrollment policy; devices are marked personal by default). A **device enrollment manager (DEM)** account can be used for BYOD device enrollment but not with ADE or Direct enrollment. [DOC S-euxtbsnm]
-- The `https://aka.ms/EnrollMyMac` link, the 1,000-device DEM limit, and Direct enrollment's USB connection and no-wipe behavior are not stated on the macOS enrollment guide. [UNK: not in S-euxtbsnm as re-read 2026-09-27]
+- BYOD users can install the Company Portal app for Mac from `https://aka.ms/EnrollMyMac` (or use the Company Portal website); a device enrollment manager (DEM) account can enroll up to **1,000** devices, and DEM can't be used with Automated Device Enrollment. [DOC S-gjyh2735]
+- Direct enrollment (Apple Configurator, corporate-owned Macs) enrolls before distribution without wiping the device, suits a wired or unreliable connection, and needs physical access to each Mac; the pages read (2026-09-27) say nothing about a USB connection. [DOC S-ischppkc]
 
 ### Platform SSO
 - Platform SSO (part of the Microsoft Enterprise SSO plug-in, which also includes the separate "SSO app extension" feature) signs users into the Mac itself using Entra ID credentials, replacing local-account sign-in; it is included with all Intune licensing plans. [DOC S-3t6iud2k]

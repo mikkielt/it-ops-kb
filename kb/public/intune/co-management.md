@@ -2,8 +2,8 @@
 topic: intune/co-management
 priority: P1
 applies_to: "ConfigMgr current branch (docs in memdocs intune/configmgr/comanage), Intune service 2026-09"
-retrieved_utc: 2026-09-26
-sources: [S1593, S-evoxmu7g, S-4u7zysla, S-ygo5rdrm, S-plmd2yke]
+retrieved_utc: 2026-09-27
+sources: [S1593, S-evoxmu7g, S-4u7zysla, S-ygo5rdrm, S-plmd2yke, S-wnwinphx]
 status: complete
 ---
 # Co-management workloads
@@ -35,7 +35,8 @@ applying to a co-managed device whose *Device configuration* workload is in Intu
 - Documented WQL for co-managed devices also tests `MDMProvisioned = 1` (a field not in the S-ygo5rdrm field list). [DOC S-plmd2yke]
 - Deployment policies CoMgmtSettingsProd (targeted to All Systems, applicability: Windows 10 or later, not server OS) and a pilot policy; they count only devices where ConfigMgr applied the policy, not Intune enrolment. [DOC S-ygo5rdrm]
 - New co-managed devices (Windows 10 1803+) auto-enrol with the Entra *device* token, falling back to user token; see ComanagementHandler.log. [DOC S-ygo5rdrm]
-- The per-workload bitmask (`CoManagementFlags`) values are not documented in memdocs or SupportArticles clones. [UNK]
+- The co-management troubleshooting article's client log samples test workloads against a `workloadFlags` value with a bitwise AND: `ComplRelayAgent.log` checks workload **2** (compliance, the CA workload), `CIAgent.log` checks workload **4** (resource access) and `WUAHandler.log` checks workload **16** (Windows Update for Business); in the samples `CoManagementSettings_Capabilities` is `7`. Logs: `CoManagementHandler.log`, `ComplRelayAgent.log`, `CIAgent.log`, `WUAHandler.log` in `%WinDir%\CCM\logs`. [DOC S-wnwinphx]
+- No page gives the full per-workload bit table (the values for Endpoint Protection, device configuration, Office Click-to-Run and client apps are not shown; re-read 2026-09-27); treat 2, 4 and 16 as the only documented values. [DER S-wnwinphx, S-ygo5rdrm: three values appear only in log samples]
 
 ## Reference
 - `intune/compliance-policies.md` covers the Intune-side "Require device compliance from Configuration Manager" Windows compliance setting (co-managed devices only; Intune-only devices return not available) and the tenant-wide compliance policy settings — the counterpart to the Compliance policies workload below.

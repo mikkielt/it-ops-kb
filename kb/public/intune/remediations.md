@@ -2,9 +2,9 @@
 topic: intune/remediations
 priority: P1
 applies_to: "Intune service, docs ms.date 2025-09-08 / 2025-10-02 / 2026-04-07"
-retrieved_utc: 2026-09-26
+retrieved_utc: 2026-09-27
 sources: [S-dhhu3szl, S-a3au6nfp, S-ta4g5get]
-status: partial
+status: complete
 ---
 # Remediations (formerly Proactive Remediations)
 
@@ -32,7 +32,7 @@ scripts is not documented (the 200 KB limit is documented only for platform Powe
 - IME requires version 1.58.103.0 or later for remediations and other IME payloads. [DOC S-ta4g5get]
 - Remediation schedule health is logged in `HealthScripts.log`. [DOC S-ta4g5get]
 - Platform (non-remediation) PowerShell scripts: must be less than 200 KB (ASCII) and time out after 30 minutes. [DOC S-a3au6nfp]
-- Maximum remediation script file size and remediation script timeout: not stated in S-dhhu3szl. [UNK]
+- No maximum remediation script file size or remediation script timeout is documented: re-read 2026-09-27, the Remediations page's script requirements give only the 200-package, UTF-8 and 2,048-character output limits, and the IME page names HealthScripts.log but no timeout. Do not carry the platform-script 200 KB / 30-minute limits over to remediations without a lab test. [DER S-dhhu3szl, S-ta4g5get: absence on both pages]
 
 ## Reference
 Standalone Windows PowerShell platform scripts (Devices > Scripts and remediations > Platform scripts), which have no

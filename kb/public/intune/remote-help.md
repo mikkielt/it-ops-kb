@@ -2,7 +2,7 @@
 topic: intune/remote-help
 priority: P2
 applies_to: "Microsoft Intune Suite/standalone add-on Remote Help, Windows/macOS/Android/web app (docs current 2026-09-26)"
-retrieved_utc: 2026-09-26
+retrieved_utc: 2026-09-27
 sources: [S-f7i5faki, S-5h4qjmdq, S-f6g2wc4u, S-co4oj66f, S-xa4m3w2n]
 status: complete
 ---
@@ -73,7 +73,7 @@ Sessions are logged for reporting/audit (30 days) but never recorded.
 ### Conditional Access
 - Requiring MFA or a compliant device for helper accounts through Conditional Access is highly recommended;
   Conditional Access policies for Remote Help are supported only on **Windows and macOS**. [DOC S-f7i5faki]
-- Conditional Access applies only to attended sessions and not to unattended access. [UNK: not in S-f7i5faki as re-read 2026-09-27]
+- No current page says whether Conditional Access for Remote Help also covers unattended sessions: re-read 2026-09-27, the CA section supports only Windows and macOS, and the planning page's unattended requirements (physical, corporate-owned, Entra joined or hybrid joined x64 Windows devices) carry no CA statement. [DER S-f7i5faki: absence]
 
 ### Sessions: attended vs. unattended
 - Attended: the sharer must accept a view or full-control request; the helper can additionally request

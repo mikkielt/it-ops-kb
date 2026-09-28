@@ -2,8 +2,8 @@
 topic: intune/linux-management
 priority: P3
 applies_to: "Microsoft Intune Linux device management (Ubuntu Desktop, RedHat Enterprise Linux), docs retrieved 2026-09-26"
-retrieved_utc: 2026-09-26
-sources: [S-nvad3j6y, S-dvnl6gdu, S-5vopvhhm, S-vbmaayv5, S-37nh7xwg, S-iw63dqdc, S-qnpsgfc5, S-sdxlqqs5, S-mrquhzdn, S-ogsl4hbo]
+retrieved_utc: 2026-09-27
+sources: [S-nvad3j6y, S-dvnl6gdu, S-5vopvhhm, S-vbmaayv5, S-37nh7xwg, S-iw63dqdc, S-qnpsgfc5, S-sdxlqqs5, S-mrquhzdn, S-ogsl4hbo, S-dnply3ya, S-kakqvkfa]
 status: complete
 ---
 
@@ -17,7 +17,8 @@ Intune manages Linux desktops (Ubuntu Desktop and RHEL) as user-associated, corp
 ### Supported platforms and enrollment
 - Intune Linux enrollment supports Ubuntu Desktop 26.04 LTS and 24.04 LTS on x86/64, and RedHat Enterprise Linux (RHEL) 9 or 10. [DOC S-5vopvhhm]
 - The Linux compliance and Intune-app pages state Ubuntu Desktop support as physical or Hyper-V machines with x86/64 CPUs. [DOC S-dvnl6gdu, S-qnpsgfc5]
-- Azure VM support and a GNOME desktop requirement for Ubuntu Desktop are not stated on the current enrollment guide. [UNK: not in S-5vopvhhm as re-read 2026-09-27]
+- The end-user enrollment page lists Ubuntu Desktop 24.04 LTS or 26.04 LTS on physical, **Azure VM** or Hyper-V machines with x86/64 CPUs, and RHEL 9 or 10; devices need a **GNOME** desktop (included with Ubuntu Desktop); Ubuntu on WSL2 is not supported. [DOC S-dnply3ya]
+- The same end-user page says Linux devices enrolled in Intune are considered corporate-owned and enrollment isn't supported on personal devices, which contradicts the admin deployment guide (see `_conflicts.md`). [DOC S-dnply3ya]
 - Linux enrollment is supported for both organization-owned and personal/BYOD devices; employees with an assigned Intune license can enroll their personal Linux devices themselves whenever they want. [DOC S-5vopvhhm, S-nvad3j6y]
 - Enrollment is not supported for: Ubuntu Server, bulk enrollment (each device must be enrolled individually via the Microsoft Intune app), userless/kiosk or dedicated devices (a user must sign in with an org account), and device enrollment manager (DEM) accounts. [DOC S-5vopvhhm]
 - Enrolling a Linux device already enrolled in another MDM provider "hasn't been tested by Microsoft" — an untested, not officially unsupported, scenario. [DOC S-5vopvhhm]
@@ -30,7 +31,7 @@ Intune manages Linux desktops (Ubuntu Desktop and RHEL) as user-associated, corp
 
 ### Install / uninstall the Microsoft Intune app for Linux
 - The Microsoft Intune app package is published at `https://packages.microsoft.com/` (the Linux Software Repository for Microsoft Products). [DOC S-qnpsgfc5]
-- That the same repository serves .NET, PowerShell, Defender for Endpoint and SQL Server, and the `packages.microsoft.com/config/<Distribution>/<Version>/prod.(repo|list)` config paths, are not stated on the Intune app page. [UNK: not in S-qnpsgfc5 as re-read 2026-09-27]
+- The Linux software repository for Microsoft products (`packages.microsoft.com`) hosts, among others, .NET, PowerShell, Microsoft Defender for Endpoint, SQL Server and Microsoft Intune for Linux; manual repository configuration files follow `https://packages.microsoft.com/config/<Distribution>/<Version>/prod.(repo|list)`. [DOC S-kakqvkfa]
 - A sample install script for the Intune app and its dependencies, for both Ubuntu Desktop and RHEL, is published on GitHub (linked via `https://go.microsoft.com/fwlink/?linkid=2358529`). [DOC S-qnpsgfc5]
 - Uninstall on Ubuntu Desktop: `sudo apt remove intune-portal` (removes the app), then `sudo apt purge intune-portal` (also removes local device-registration configuration data). [DOC S-qnpsgfc5]
 - Uninstall on RHEL: `sudo dnf remove intune-portal`, then manually remove local registration data at `/var/opt/microsoft/mdatp`, `/etc/opt/microsoft/mdatp`, and `/opt/microsoft/mdatp`. [DOC S-qnpsgfc5]
@@ -58,7 +59,7 @@ Intune manages Linux desktops (Ubuntu Desktop and RHEL) as user-associated, corp
 - It can take up to **8 hours** after a device fixes a custom-compliance issue before a subsequent sync shows the device as compliant again. [DOC S-37nh7xwg]
 - On Linux, a user manually triggers a re-check via the Microsoft Intune app's **Refresh** control on the device-details page or the compliance-issues page, starting a new check-in with Intune (equivalent to the Company Portal website sync on Windows or **Check Status** in Company Portal on macOS). [DOC S-37nh7xwg]
 - Custom compliance settings feed into Conditional Access decisions the same way built-in compliance settings do, forming one compound rule set with them. [DOC S-37nh7xwg]
-- Prerequisite device states for custom compliance: Microsoft Entra joined (including Entra hybrid joined) or Microsoft Entra registered/Workplace joined (WPJ) devices. [UNK: not in S-37nh7xwg as re-read 2026-09-26; an older version of the page listed these prerequisites]
+- The current custom compliance page (updated_at 2026-09-17, re-read 2026-09-27) states no Entra join-state prerequisite; an older version listed Entra joined, hybrid joined or registered devices, so do not rely on that list. [DER S-37nh7xwg: absence on the current page]
 
 ### Custom device configuration (Bash scripts)
 - Custom device settings that aren't built in to Intune are delivered by importing an existing **Bash script** as a platform script, at **Devices > Manage devices > Scripts and remediations > Platform scripts > Add > Linux**. [DOC S-vbmaayv5]

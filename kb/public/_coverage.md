@@ -142,28 +142,28 @@ Every topic of this root with its priority (the research order, not importance),
 | `graph/microsoft365dsc` | P3 | partial | `graph/microsoft365dsc.md` | 10 |
 | `graph/tcm-apis` | P3 | complete | `graph/tcm-apis.md`, `graph/tcm-csdl-v1.0.xml`, `graph/tcm-csdl-beta.xml` | 32 |
 | `intune/assignment-filters-and-rbac` | P1 | complete | `intune/assignment-filters-and-rbac.md` | 9 |
-| `intune/co-management` | P1 | complete | `intune/co-management.md` | 5 |
-| `intune/collect-diagnostics` | P1 | complete | `intune/collect-diagnostics.md`, `intune/collect-diagnostics.csv` | 1 |
+| `intune/co-management` | P1 | complete | `intune/co-management.md` | 6 |
+| `intune/collect-diagnostics` | P1 | complete | `intune/collect-diagnostics.md`, `intune/collect-diagnostics.csv` | 2 |
 | `intune/device-query` | P1 | complete | `intune/device-query.md` | 4 |
-| `intune/endpoint-privilege-management` | P1 | partial | `intune/endpoint-privilege-management.md` | 13 |
+| `intune/endpoint-privilege-management` | P1 | complete | `intune/endpoint-privilege-management.md` | 15 |
 | `intune/ime-logs` | P1 | complete | `intune/ime-logs.md` | 1 |
-| `intune/mdmdiagnosticstool` | P1 | partial | `intune/mdmdiagnosticstool.md` | 3 |
-| `intune/remediations` | P1 | partial | `intune/remediations.md` | 3 |
+| `intune/mdmdiagnosticstool` | P1 | complete | `intune/mdmdiagnosticstool.md` | 3 |
+| `intune/remediations` | P1 | complete | `intune/remediations.md` | 3 |
 | `intune/remote-actions` | P1 | complete | `intune/remote-actions.md`, `intune/remote-actions.csv` | 27 |
 | `intune/tenant-attach` | P1 | complete | `intune/tenant-attach.md` | 5 |
-| `intune/app-protection-mam` | P2 | complete | `intune/app-protection-mam.md` | 22 |
-| `intune/certificates-pki` | P2 | partial | `intune/certificates-pki.md`, `intune/certificate-variables.csv` | 11 |
+| `intune/app-protection-mam` | P2 | complete | `intune/app-protection-mam.md` | 25 |
+| `intune/certificates-pki` | P2 | complete | `intune/certificates-pki.md`, `intune/certificate-variables.csv` | 11 |
 | `intune/compliance-policies` | P2 | complete | `intune/compliance-policies.md`, `intune/compliance-policies.csv` | 14 |
-| `intune/configuration-policies` | P2 | partial | `intune/configuration-policies.md` | 19 |
-| `intune/device-inventory-analytics` | P2 | complete | `intune/device-inventory-analytics.md` | 16 |
-| `intune/ios-android-management` | P2 | complete | `intune/ios-android-management.md` | 15 |
-| `intune/macos-management` | P2 | complete | `intune/macos-management.md` | 14 |
-| `intune/network-profiles` | P2 | partial | `intune/network-profiles.md` | 14 |
+| `intune/configuration-policies` | P2 | complete | `intune/configuration-policies.md` | 20 |
+| `intune/device-inventory-analytics` | P2 | complete | `intune/device-inventory-analytics.md` | 21 |
+| `intune/ios-android-management` | P2 | complete | `intune/ios-android-management.md` | 16 |
+| `intune/macos-management` | P2 | complete | `intune/macos-management.md` | 17 |
+| `intune/network-profiles` | P2 | complete | `intune/network-profiles.md` | 14 |
 | `intune/platform-scripts` | P2 | complete | `intune/platform-scripts.md` | 6 |
 | `intune/remote-help` | P2 | complete | `intune/remote-help.md`, `intune/remote-help.csv` | 5 |
-| `intune/reports-export-api` | P2 | complete | `intune/reports-export-api.md`, `intune/export-report-names.csv` | 12 |
+| `intune/reports-export-api` | P2 | complete | `intune/reports-export-api.md`, `intune/export-report-names.csv` | 13 |
 | `intune/win32-apps` | P2 | complete | `intune/win32-apps.md`, `intune/win32-apps.csv` | 9 |
-| `intune/linux-management` | P3 | complete | `intune/linux-management.md` | 10 |
+| `intune/linux-management` | P3 | complete | `intune/linux-management.md` | 12 |
 | `logs/ecs-log-fields` | P1 | complete | `logs/ecs-log-fields.md`, `logs/ecs-log.yml` | 5 |
 | `logs/otel-log-data-model` | P1 | complete | `logs/otel-log-data-model.md` | 1 |
 | `logs/otel-log-semconv` | P1 | complete | `logs/otel-log-semconv.md`, `logs/otel-semconv-log-registry.yaml`, `logs/otel-semconv-code-registry.yaml` | 5 |

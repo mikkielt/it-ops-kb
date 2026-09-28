@@ -165,9 +165,6 @@ e98c0797b1b3,does Intune enrollment count towards co-management policy deploymen
 0b84dcb98488,co-managed device token type windows 10 1803
 0b84dcb98488,What token does a new co-managed device use for enrollment?
 0b84dcb98488,does a co-managed computer register with Azure AD using device or user token
-052d156a36c1,CoManagementFlags documentation
-052d156a36c1,Where can I find the per-workload bitmask values for co-management?
-052d156a36c1,what do the co-management workload flags mean
 859daf1f34a0,MDM event log channels
 859daf1f34a0,How do I enable MDM debug logging in Event Viewer?
 859daf1f34a0,where are mobile device management diagnostic logs stored

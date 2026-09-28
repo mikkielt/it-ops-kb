@@ -2,8 +2,8 @@
 topic: intune/device-inventory-analytics
 priority: P2
 applies_to: "Intune Endpoint analytics, Intune Advanced Analytics (Intune Suite), docs retrieved 2026-09-26"
-retrieved_utc: 2026-09-26
-sources: [S-7dabdnod, S-emqg5tvg, S-rjiy4cip, S-6jy3vnik, S-mldzfsv6, S-sbldpqec, S-mhtox7ch, S-v26wvp2b, S-uiolk6la, S-ylp2o7ml, S-tiumn4r3, S-nwf5cf5q, S-pnhn6vx2, S-x35diqus, S-boionyor, S-hr6egysd]
+retrieved_utc: 2026-09-27
+sources: [S-7dabdnod, S-emqg5tvg, S-rjiy4cip, S-6jy3vnik, S-mldzfsv6, S-sbldpqec, S-mhtox7ch, S-v26wvp2b, S-uiolk6la, S-ylp2o7ml, S-tiumn4r3, S-nwf5cf5q, S-pnhn6vx2, S-x35diqus, S-boionyor, S-hr6egysd, S-m5aovwzr, S-3l57sxrb, S-3itrgwhj, S-vdrnoalt, S-6i4enlqz]
 status: complete
 ---
 
@@ -22,7 +22,8 @@ for that profile and for device query, which this article does not repeat.
 ### Endpoint analytics core
 - Endpoint analytics reports: Startup performance, Application reliability, Work from anywhere, and (with additional licensing) Advanced Analytics extensions. [DOC S-7dabdnod]
 - Endpoint analytics contributes to the "technology experiences" category of Microsoft Adoption Score, with device-level insights that complement organizational productivity metrics. [DOC S-7dabdnod]
-- That Adoption Score shows an organizational Endpoint analytics score, its 180-day trend, and Startup performance scores to roles outside Intune is not stated on the current page. [UNK: not in S-7dabdnod as re-read 2026-09-27]
+- The Intune page *Endpoint analytics in Microsoft Adoption Score* (updated_at 2026-04-09) says the Adoption Score **Endpoint analytics** page shares organizational insights with roles outside Intune: the current endpoint analytics score, its trend over the past 180 days, and Startup performance scores. [DOC S-m5aovwzr]
+- The Microsoft 365 Adoption Score page (updated_at 2026-09-23) says that starting 2026-01-22 the admin center retires the **Technology experiences** score and its three categories, including **Endpoint analytics**, from Adoption Score (rollout complete February 2026), so the Intune page above describes a retired view (see `_conflicts.md`). [DOC S-3l57sxrb]
 - Device platform requirement: Windows Pro, Pro Education, Enterprise, or Education. [DOC S-7dabdnod]
 - Supported device management: Intune-managed, co-managed (Intune + Configuration Manager), Configuration Manager via tenant attach, Microsoft Entra joined, Microsoft Entra hybrid joined; the Connected User Experiences and Telemetry (DiagTrack) service must be enabled and running. [DOC S-7dabdnod]
 - Network requirement for Intune-managed/co-managed devices: `https://*.events.data.microsoft.com` reachable (functional data upload endpoint); ConfigMgr-managed devices instead need `https://graph.windows.net` and `https://*.manage.microsoft.com` reachable from the site server role, not from the client. [DOC S-7dabdnod]
@@ -75,13 +76,13 @@ for that profile and for device query, which this article does not repeat.
 - With Advanced Analytics enabled: endpoint analytics reports gain Resource performance, Battery health, Anomalies, and Device scopes; single-device views gain Battery health, Device timeline (which **replaces** the per-device Application reliability tab), Resource performance, and Device query; the Devices node gains Device query for multiple devices; a STIG audit baseline becomes available. [DOC S-mhtox7ch]
 - Device query for multiple devices additionally requires a properties catalog policy configured and deployed (see `intune/device-query.md`). [DOC S-mhtox7ch]
 - Device query for multiple devices can export results to a .csv file (all or selected columns, up to 50,000 results). [DOC S-x35diqus]
-- That Advanced Analytics has no export connector to external monitoring tools is not stated on the current page. [UNK: not in S-mhtox7ch as re-read 2026-09-27]
+- Advanced Analytics provides no connector for its data to be used in other monitoring tools; some features, such as device query for multiple devices, export to .csv. [DOC S-3itrgwhj]
 - Endpoint analytics data from Intune/co-managed devices is processed every 24 hours (S-sbldpqec); clients need a restart to fully enable all analytics (S-rjiy4cip); device query retrieves live device data for troubleshooting (S-mhtox7ch). [DOC S-sbldpqec, S-rjiy4cip, S-mhtox7ch]
 
 ### Anomalies report
 - Monitors application hangs, app crashes, and Stop Error Restarts to flag device health regressions before they reach the help desk; correlates deployment/configuration changes to suggest root causes and groups affected/at-risk devices into device correlation groups (only generated for medium/high-severity anomalies). [DOC S-v26wvp2b]
 - Four detection models: threshold-based heuristic (fixed, non-customizable thresholds), paired t-tests (before/after a change on the same device), population Z-score (outlier devices/apps across the fleet, needs large datasets), time-series Z-score (sliding-window mean/stdev for temporal patterns). [DOC S-v26wvp2b]
-- That a high event volume is usually needed before something is flagged anomalous (so low-usage devices can show no anomalies) is not stated on the current page. [UNK: not in S-v26wvp2b as re-read 2026-09-27]
+- An anomaly can be missing from the anomalies report on correctly licensed devices because of volume and usage: the device must be actively used, enrolled in endpoint analytics with data collection on, and a high volume of events is usually needed before one is flagged anomalous. [DOC S-3itrgwhj]
 
 ### Device timeline
 - Per-device history of events (boot, sign-in, app crash/unresponsive, detected anomalies) reached via **Devices > Windows > (device) > User Experience > Device Timeline**; filterable by date, device, user, event source, event level. [DOC S-uiolk6la]
@@ -97,9 +98,9 @@ for that profile and for device query, which this article does not repeat.
 
 ### Device inventory (properties catalog) — see intune/device-query.md
 - The properties catalog is the Windows device configuration profile (Platform: Windows 10 and later; Profile type: Properties catalog) used to collect hardware, configuration (registry) and application properties from managed Windows devices. [DOC S-tiumn4r3]
-- Splitting app and device inventory across policies, and "collect" winning over "don't collect" when several policies target one device, is not stated on the current page. [UNK: not in S-tiumn4r3 as re-read 2026-09-27]
+- App and device inventory properties can be split across separate properties-catalog policies or combined in one; when several policies target a device, the device merges them, and on a conflict "collect" wins over "don't collect" for a property. [DOC S-vdrnoalt]
 - Required Application Properties (collected automatically with any property of that category): App Name, App Version, Architectures, Install Scope, Install Scope Platform User ID, Install Scope User ID, Publisher. [DOC S-tiumn4r3]
-- Optional app-inventory properties (Install location, Install date, Estimated size, Platform-specific app ID, Uninstall command, Modify command, Languages, Install Scope User Name) are not listed on the current page. [UNK: not in S-tiumn4r3 as re-read 2026-09-27]
+- App inventory (Windows, Entra joined) always collects App Name, App Version, Publisher, Architectures, Install Scope and the Install Scope user IDs; optional properties are Install location, Install date, Estimated size, Platform-specific app ID and its type, Uninstall command, Modify command, Languages and Install Scope User Name. [DOC S-vdrnoalt]
 - Registry key inventory (a properties catalog capability): supports single value, non-recursive all-values-under-a-key, and same-value-across-immediate-subkeys collection; includes detection logic that skips values flagged as potentially sensitive; initial-release limits are HKLM-only, 6 KB per value, 100 registry keys per device. [DOC S-tiumn4r3]
 - Client-side properties catalog logs are at `C:\Program Files\Microsoft Device Inventory Agent\Logs`, collectible via the Collect diagnostics remote action (see `intune/collect-diagnostics.md`). [DOC S-tiumn4r3]
 - Collection can only be stopped at the category level (remove every property in that category from the profile); deleting the whole policy still leaves the last-collected Device Inventory data visible for up to 28 days. [DOC S-tiumn4r3]
@@ -108,7 +109,7 @@ The full property list, KQL device-query entities/limits, and single-/multi-devi
 
 ### Graph API (beta)
 - Endpoint/Advanced Analytics data is exposed under `deviceManagement/userExperienceAnalytics*` beta Graph resources, e.g. `userExperienceAnalyticsAnomaly` and `userExperienceAnalyticsDeviceTimelineEvents`. [DOC S-nwf5cf5q, S-pnhn6vx2]
-- Further `userExperienceAnalytics*` beta resources named in earlier notes (`...RegressionSummary`, `...ResourcePerformance`, `...ImpactingProcess`, `...AppHealthAppPerformanceByAppVersion`, `...RemoteConnection`, `...NotAutopilotReadyDevice`) are not listed on the two pages cited above. [UNK: not in S-nwf5cf5q or S-pnhn6vx2 as re-read 2026-09-27]
+- The Graph beta reference at microsoft-graph-docs-contrib commit 4ad99fd3 has resource pages for `userExperienceAnalyticsRegressionSummary`, `...ResourcePerformance`, `...ImpactingProcess`, `...AppHealthAppPerformanceByAppVersion`, `...RemoteConnection` and `...NotAutopilotReadyDevice` (all beta, as with the other `userExperienceAnalytics*` resources). [DOC S-6i4enlqz]
 - Permissions differ per endpoint: `GET` of a `userExperienceAnalyticsDeviceTimelineEvents` item accepts `DeviceManagementConfiguration.Read.All`/`.ReadWrite.All` or `DeviceManagementManagedDevices.Read.All`/`.ReadWrite.All` (delegated or application); listing `userExperienceAnalyticsAnomaly` accepts only the two `DeviceManagementManagedDevices` scopes. [DOC S-pnhn6vx2, S-boionyor]
 - `GET /deviceManagement/userExperienceAnalyticsAnomaly` (list) is available in Global, US Government L4, US Government L5 (DOD), and China (21Vianet) national clouds. [DOC S-boionyor]
 - The `userExperienceAnalyticsAnomaly` resource page exists only for `/beta` (a request for its v1.0 view falls back to `view=graph-rest-beta`). [DOC S-nwf5cf5q]

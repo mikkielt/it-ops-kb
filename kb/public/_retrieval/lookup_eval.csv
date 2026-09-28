@@ -124,3 +124,4 @@ EV-sql-server-pick-up-windows-group,Does SQL Server pick up Windows group member
 EV-pseudonymised-data-always-personal-data-after,Is pseudonymised data always personal data after the CJEU SRB judgment?,privacy/gdpr-pseudonymisation.md,good,
 EV-remote-desktop-enabled-default-windows-11,Is Remote Desktop enabled by default on Windows 11?,security/first-baseline-candidates.md,good,
 EV-changed-cis-windows-11-enterprise-benchmark,What changed in CIS Windows 11 Enterprise benchmark 5.1.0?,security/baselines-catalog.md,good,
+EV-endpoint-privilege-management-agent-log-files,Where are the Endpoint Privilege Management agent log files on a Windows device?,intune/endpoint-privilege-management.md;intune/collect-diagnostics.md,good,

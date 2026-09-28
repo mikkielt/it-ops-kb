@@ -2,8 +2,8 @@
 topic: intune/collect-diagnostics
 priority: P1
 applies_to: "Intune device action Collect diagnostics, doc ms.date 2025-10-27"
-retrieved_utc: 2026-09-26
-sources: [S-6epv7qzl]
+retrieved_utc: 2026-09-27
+sources: [S-6epv7qzl, S617]
 status: complete
 ---
 # Collect diagnostics (Windows)
@@ -27,7 +27,7 @@ client logs travel through this path too.
 - Microsoft personnel might access device diagnostics; diagnostics may include user or device names. [DOC S-6epv7qzl]
 - App-protection diagnostics above 50 diagnostics or 4 MB can't be downloaded from the portal (mobile app diagnostics zone). [DOC S-6epv7qzl]
 - With KB5011543 (Win10) / KB5011563 (Win11) the zip is flattened, files named after the data collected. [DOC S-6epv7qzl]
-- `mdmdiagnosticstool.exe` appears in the command list without `-area` arguments; which areas the action requests is not stated. [UNK]
+- `mdmdiagnosticstool.exe` appears in the command list without `-area` arguments, and the page (re-read 2026-09-27, updated_at 2026-08-05) does not say which areas the action requests; read the collected `MdmDiagLogMetadata.json`, which records the arguments used (see `intune/mdmdiagnosticstool.md`). [DER S-6epv7qzl, S617: absence on this page; the metadata file is documented on the MDM logs page]
 
 ## Reference
 See `collect-diagnostics.csv` (columns kind, item, notes, source_id). Two paths are reproduced with the spelling

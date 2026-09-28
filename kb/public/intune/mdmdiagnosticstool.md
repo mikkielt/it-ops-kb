@@ -2,9 +2,9 @@
 topic: intune/mdmdiagnosticstool
 priority: P1
 applies_to: "Windows 10 1809+ / Windows 11, doc ms.date 2025-08-04"
-retrieved_utc: 2026-09-26
+retrieved_utc: 2026-09-27
 sources: [S617, S618, S-6epv7qzl]
-status: partial
+status: complete
 ---
 # MdmDiagnosticsTool.exe
 
@@ -20,7 +20,7 @@ No official page lists every accepted area.
 - `-area Autopilot;TPM -cab <path>` for self-deploying / pre-provisioning on physical devices; `-area DeviceProvisioning -cab <path>` for runtime provisioning on 1809+. [DOC S618]
 - DiagnosticLog CSP can enable/export channels remotely, e.g. `./Vendor/MSFT/DiagnosticLog/EtwLog/Channels/Microsoft-Windows-DeviceManagement-Enterprise-Diagnostics-Provider%2FDebug/State`. [DOC S617]
 - Intune Collect diagnostics runs `mdmdiagnosticstool.exe` and collects `%temp%\MDMDiagnostics\mdmlogs-<Date/Time>.cab`. [DOC S-6epv7qzl]
-- Complete list of valid `-area` values: not documented. [UNK]
+- No official page lists every valid `-area` value: re-read 2026-09-27, the MDM logs page, the Autopilot troubleshooting and known-issues pages and the co-management Autopilot page use only `DeviceEnrollment`, `DeviceProvisioning`, `Autopilot` and `TPM`, and the DiagnosticLog CSP page defines no area names. Scripts should use only those four. [DER S617, S618: absence; the four areas are the documented set]
 
 ## Reference
 | Area | Where documented |

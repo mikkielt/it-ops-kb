@@ -2,9 +2,9 @@
 topic: intune/certificates-pki
 priority: P2
 applies_to: "Microsoft Intune service 2026-09, Certificate Connector for Microsoft Intune, Microsoft Cloud PKI (Intune Suite/standalone add-on)"
-retrieved_utc: 2026-09-26
+retrieved_utc: 2026-09-27
 sources: [S-h44fxget, S-lcamnncm, S-hxbyw5pm, S-qe32ky2d, S-6fwniw6n, S-weleekge, S-4txttdx2, S-7war6bpq, S-wlkxstj4, S-hv24mjpy, S1224]
-status: partial
+status: complete
 files: [intune/certificate-variables.csv]
 ---
 
@@ -62,7 +62,7 @@ authority.
 - Connector service account: **SYSTEM** or a domain user that is a local admin on the connector server; needs Logon as Service, **Issue and Manage Certificates** on the CA (revocation only), **Read**+**Enroll** on every certificate template used, and access to the Key Storage Provider used by PFX Import. The Microsoft Entra account used to configure the connector needs the **Intune Administrator** role and an Intune license. The NDES application-pool account needs Read+Enroll on SCEP templates and membership in **IIS_IUSRS**. [DOC S-6fwniw6n]
 - NDES server-authentication certificate SAN must list every FQDN NDES responds to (internal and, unless behind Entra application proxy, external); bound to IIS Default Web Site on port 443. [DOC S-weleekge]
 - **Connector lifecycle**: each release is supported for **6 months**, keeps functioning (unsupported) for **18 months** after release, then may stop communicating with Intune. Status shows **Warning** for a deprecated connector during the 6-month grace period and **Error** after. [DOC S-hxbyw5pm]
-- Connectors older than **6.2101.13.0** were deprecated (April 2022), lost revocation (August 2022) and issuance (September 2022). [UNK: not in S-hxbyw5pm as re-read 2026-09-27]
+- Connectors older than **6.2101.13.0** were deprecated (April 2022, status Error), lost revocation (August 2022) and issuance (September 2022); this covers both the PFX Certificate Connector and the Microsoft Intune Connector, which the Certificate Connector for Microsoft Intune replaced on 2021-07-29 (the note sits in the page's "What's new for the Certificate Connector" section, confirmed 2026-09-27). [DOC S-hxbyw5pm]
 - **Allowed SCEP OIDs** (from connector version **6.2510.3.2002**, "SCEP validation service"): only `2.5.29.19` Basic Constraints, `2.5.29.14` Subject Key Identifier, `1.3.6.1.4.1.311.21.8` CA Version, `1.3.6.1.4.1.311.20.2` Certificate Template Name, `2.5.29.1` Authority Identifier (deprecated), `2.5.29.3` Certificate Policies (deprecated), `2.16.840.1.113730.1.11` Netscape Certificate Extension are allowed; unknown extensions are blocked. [DOC S-hxbyw5pm]
 - Logging: **Event Viewer > Applications and Services Logs > Microsoft > Intune > Certificate Connectors**, with an **Admin log** (one event per request) and an **Operational log** (more detail, ongoing operations), each defaulting to 50 MB with auto-archive; debug logging can be enabled per log. Event ID ranges: 0001-0999 general, 1000-1999 PKCS, 2000-2999 PKCS Import, 3000-3999 Revoke, 4000-4999 SCEP, 5000-5999 Connector Health. Selected SCEP events: 4003 request received, 4004/4005 verify success/failure, 4006/4007 issue success/failure, 4008/4009 notify success/attempt-failed. [DOC S-hxbyw5pm]
 - Diagnostic codes returned by the connector (`troubleshoot-certificate-connector-events`): `0x00000400` CA unavailable/unreachable; `0x00000402` RevokeCert access denied; `0x00000403`/`0x00000404` certificate not found (re-enroll connector); `0x00000405` certificate expired (re-enroll connector); `0x00000408` CRP SCEP encryption cert not found; `0x00000409` CRP SCEP signing cert not found; `0x00000410` SCEP challenge deserialize failed; `0x00000411` SCEP challenge expired (client retries with a new challenge); `0x0FFFFFFFF` unknown server-side error. [DOC S-hv24mjpy]

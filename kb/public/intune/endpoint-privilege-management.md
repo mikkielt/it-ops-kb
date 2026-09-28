@@ -2,9 +2,9 @@
 topic: intune/endpoint-privilege-management
 priority: P1
 applies_to: "Microsoft Intune Endpoint Privilege Management (EPM), Windows client only; Intune Suite or standalone EPM add-on (docs current 2026-09-26)"
-retrieved_utc: 2026-09-26
-sources: [S-eba3mlij, S-r5sb2fwp, S-apvm4dlk, S-3wkz47cw, S-6bhjc6zo, S-a5yicrda, S-qehphrta, S-2ht6rnrq, S-jjclu3pw, S-pfomdecu, S-7ljvlp5e, S-kv5b4jlr, S-7giv7rol]
-status: partial
+retrieved_utc: 2026-09-27
+sources: [S-eba3mlij, S-r5sb2fwp, S-apvm4dlk, S-3wkz47cw, S-6bhjc6zo, S-a5yicrda, S-qehphrta, S-2ht6rnrq, S-jjclu3pw, S-pfomdecu, S-7ljvlp5e, S-kv5b4jlr, S-7giv7rol, S-6epv7qzl, S-hepxqkky]
+status: complete
 ---
 
 # Intune Endpoint Privilege Management (EPM)
@@ -76,7 +76,7 @@ status: partial
 - Key `privilegeManagementElevation` properties: `id` (GUID derived from deviceId+eventDateTime), `deviceId`, `deviceName`, `eventDateTime`, `elevationType` (`undetermined`, `unmanagedElevation`, `zeroTouchElevation`, `userConfirmedElevation`, `supportApprovedElevation`, `unknownFutureValue`), `filePath`, `upn`, `userType` (`undetermined`, `azureAd`, `hybrid`, `local`), `productName`, `companyName`, `fileVersion`, `justification` (user input, capped 256 chars client-side, populated only for `userConfirmedElevation`/support-approved), `hash` (SHA-256), `internalName`, `fileDescription`, `certificatePayload`, `result` (Int32; `0`=success, nonzero=exit code; always `0` for unmanaged elevations), `processType` (`undefined`, `parent`, `child`), `ruleId`, `policyId`, `policyName`, `parentProcessName`, `systemInitiatedElevation` (bool). [DOC S-jjclu3pw]
 - The `privilegeManagementElevationRequest` beta resource models a pending support-approved request: `applicationDetail` (file path/hash/publisher etc.), `status` (`none`, `pending`, `approved`, `denied`, `expired`, `revoked`, `completed`, `unknownFutureValue`), `requestedByUserId`/`requestedByUserPrincipalName`, `requestedOnDeviceId`, `reviewCompletedByUserId`/`...UserPrincipalName`, `reviewCompletedDateTime`, `requestExpiryDateTime`, `reviewerJustification`; it exposes `deny` and `revoke` actions. [DOC S-pfomdecu]
 - `privilegeManagementElevationRequest` also exposes an `approve` action: `POST /deviceManagement/elevationRequests/{privilegeManagementElevationRequestId}/approve` with a `reviewerJustification` string body parameter, requiring `DeviceManagementConfiguration.ReadWrite.All` (delegated or application); it returns `200 OK` with the updated `privilegeManagementElevationRequest`. [DOC S-7giv7rol]
-- A PowerShell equivalent `Approve-MgBetaDeviceManagementElevationRequest` (`Microsoft.Graph.Beta.DeviceManagement.Actions`) is not named on the approve action page. [UNK: not in S-7giv7rol as re-read 2026-09-27]
+- The Graph PowerShell beta module `Microsoft.Graph.Beta.DeviceManagement.Actions` (2.25.0, the latest on the PowerShell Gallery on 2026-09-27) exports `Approve-MgBetaDeviceManagementElevationRequest`, `Deny-MgBetaDeviceManagementElevationRequest` and `Revoke-MgBetaDeviceManagementElevationRequest`; the approve action page itself does not name them, and the cmdlet's Learn page is in the search index but returns 404 when opened (2026-09-27). [DOC S-hepxqkky]
 
 ## Reference
 - `intune/rbac-built-in-roles.csv` lists the **Endpoint Privilege Manager** and **Endpoint Privilege Reader** built-in roles referenced above (purpose and key permissions columns); this article gives the full EPM-specific RBAC permission/rights detail those rows summarize.
@@ -84,7 +84,8 @@ status: partial
 - `windows/app-control.md` documents Windows Defender Application Control (WDAC), which governs whether an app may run at all; this article's FAQ fact above contrasts EPM (controls elevation of an already-allowed app) with WDAC (controls whether the app runs).
 - `intune/remote-help.md`: a separate Intune Suite add-on where a live helper answers UAC elevation prompts during a remote session (the Remote Help app's Elevation RBAC permission) — contrast with EPM's unattended, rule-based elevation of specific files with no helper present.
 - `windows/laps.md` documents Windows LAPS, a different least-privilege control (rotates a managed local admin account's password) that organizations typically deploy alongside EPM when removing standing local admin rights; see also (back-link added there).
-- EPM's exact log file names/paths and Windows Event Log channel weren't found in the fetched pages (searched troubleshooting and known-issues docs); the client folder and service are documented above. [UNK: EPM Agent log file names/event channel not found]
+- Intune **Collect diagnostics** gathers `%ProgramFiles%\Microsoft EPM Agent\Logs\*.*` and the registry key `HKLM\SOFTWARE\Microsoft\EPMAgent`, so the agent's logs live in the `Logs` folder under its install folder. [DOC S-6epv7qzl]
+- The individual EPM log file names and any Windows Event Log channel for the agent are not documented (EPM troubleshooting, known-issues and deployment-planning pages re-read 2026-09-27); use Collect diagnostics or the EpmTools cmdlets instead of a fixed file name. [DER S-6epv7qzl, S-r5sb2fwp: only the folder is named]
 
 ## Examples
 - Import EpmTools on a device that already has an EPM elevation settings policy, and inspect what the agent currently enforces:

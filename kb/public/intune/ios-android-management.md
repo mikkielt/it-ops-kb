@@ -2,8 +2,8 @@
 topic: intune/ios-android-management
 priority: P2
 applies_to: "Microsoft Intune service, iOS/iPadOS and Android device enrollment/management, docs retrieved 2026-09-26"
-retrieved_utc: 2026-09-26
-sources: [S-wdoafrjc, S-yiwjr2wo, S-w2fd3dgm, S-3v22wodo, S-zdoohqe4, S-jq73dzml, S-pcr6rjdl, S-7synnxi2, S-fdtw5sil, S-27rerlcs, S-4hhozw7m, S-lz7th2mw, S-h36g7sd3, S-dprypamg, S-jyy6biwj]
+retrieved_utc: 2026-09-27
+sources: [S-wdoafrjc, S-yiwjr2wo, S-w2fd3dgm, S-3v22wodo, S-zdoohqe4, S-jq73dzml, S-pcr6rjdl, S-7synnxi2, S-fdtw5sil, S-27rerlcs, S-4hhozw7m, S-lz7th2mw, S-h36g7sd3, S-dprypamg, S-jyy6biwj, S-ischppkc]
 status: complete
 ---
 
@@ -23,7 +23,7 @@ iOS/iPadOS enrollment splits into supervised **Automated Device Enrollment (ADE)
 - **Locked enrollment** (Yes/No) hides the "Remove Management Profile" button in Settings so users can't unenroll; required (Yes) for Microsoft Entra shared device mode. On devices added to ADE after original purchase (not bought through Apple Business/School originally), the remove-management button stays visible for the first 30 days after activation regardless of this setting. Company Portal's Remove Device/Factory Reset self-service actions are unavailable on ADE-enrolled devices regardless of Locked enrollment. [DOC S-w2fd3dgm]
 - ADE supports Entra shared device mode for frontline scenarios and Apple Shared iPad on iPadOS (both listed as supported scenarios alongside supervised mode, zero-touch, bulk enrollment, and single-user or userless devices); BYOD/personal devices, DEM accounts, and side-by-side management with another MDM are not supported. [DOC S-yiwjr2wo]
 - ADE supports ACME: when new devices enroll, the Intune management profile gets an ACME certificate; ACME needs **iOS 16.0+ / iPadOS 16.1+** (tvOS/visionOS 26.0+). [DOC S-yiwjr2wo]
-- That already-enrolled iOS/iPadOS devices get an ACME certificate only after re-enrolling is stated on the macOS ADE page (see `intune/macos-management.md`), not on the iOS/iPadOS ADE overview. [UNK: not in S-yiwjr2wo as re-read 2026-09-27]
+- The iOS/iPadOS ADE overview (re-read 2026-09-27) does not say whether already-enrolled devices get an ACME certificate; the macOS direct and ADE pages say already-enrolled Macs get one only after re-enrolling, so treat re-enrollment as required on iOS/iPadOS too until an iOS page states it. [DER S-yiwjr2wo, S-ischppkc: absence on the iOS page; macOS pages state the rule]
 
 ### iOS/iPadOS: BYOD enrollment (device enrollment vs. Apple User Enrollment)
 - **Device enrollment with Company Portal**: full device management (not just an app/feature), can deploy device-wide certificates, requires a user affinity (can be a DEM account); only ADE-enrolled devices can receive OS updates via MDM policy — plain device-enrolled BYOD devices cannot be forced to update via MDM. **Web based device enrollment** (iOS 15+) is the same flow via the Company Portal website instead of the app, letting users without a managed Apple ID enroll and access VPP apps. [DOC S-wdoafrjc]

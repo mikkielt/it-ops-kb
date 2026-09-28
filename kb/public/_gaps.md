@@ -505,12 +505,16 @@ Still open: (topic: auth/configmgr-rbac-auth)
 - **DeviceInfo JoinType values.** The advanced-hunting-deviceinfo-table page does not list them. (topic: defender/advanced-hunting)
   - Tried 2026-09-27, still open: Learn page and code-sample search, web search, GitHub code search; Microsoft's Azure-Sentinel hunting queries (S-axmpfgwf) match JoinType with `has_any ("Hybrid", "Azure AD", "Entra")`, so no exact value set is published. (topic: defender/machine-resource)
 - **Remediations script size limit and timeout.** Not in deploy-remediations.md or management-extension-windows.md (memdocs). The 200 KB and 30-minute figures cover platform scripts only (run-powershell-scripts-windows.md). (topic: intune/remediations)
+  - Tried 2026-09-27, still open: live Remediations page (script requirements), IME page and the Win32 troubleshooting page (HealthScripts.log covers remediations, custom compliance scripts and on-demand runs) name no size or timeout; Learn search for HealthScripts timeouts found none. The article records the absence as DER. (topic: intune/remediations)
 - **Full `-area` list for MDMDiagnosticsTool.** learn windows/client-management/diagnose-mdm-failures-in-windows-10 shows only DeviceEnrollment, DeviceProvisioning and Autopilot. memdocs and SupportArticles add TPM. No complete list found. The Windows client-management repo was not cloned. (topic: intune/mdmdiagnosticstool)
+  - Tried 2026-09-27, still open: Learn searches (mdm-collect-logs, DiagnosticLog CSP, Autopilot known issues and device association FAQ, co-management Autopilot enrollment, a registry-area query) show only DeviceEnrollment, DeviceProvisioning, Autopilot and TPM. The article records the absence as DER. Verification: run `mdmdiagnosticstool.exe /?` on a lab device (PL-LT-00123). (topic: intune/mdmdiagnosticstool)
 - **Co-management workload flags (CoManagementFlags).** A grep of the memdocs and SupportArticles clones found nothing. (topic: intune/co-management)
+  - Partly resolved 2026-09-27: the SupportArticles co-management troubleshooting page (S-wnwinphx) shows log samples testing workloadFlags 7 against workload 2 (compliance), 4 (resource access) and 16 (Windows Update for Business); the other workloads' bits are still undocumented. (topic: intune/co-management)
 - **Channel `Microsoft-Windows-DeviceManagement-Enterprise-Diagnostics-Provider/Operational`.** Not found in the memdocs, SupportArticles, entra or windowsserverdocs clones. (topic: logs/sources)
 - **Exact channel string for ModernDeployment-Diagnostics-Provider/Autopilot.** Only the Event Viewer path is documented (autopilot/troubleshooting-faq.yml). The channel name in this kb is derived (DER). (topic: logs/sources)
 - **ConfigMgr-specific Windows event channels.** None are documented in the clones. ConfigMgr writes log files instead (see mecm/log-files.csv).
 - **Query length limit for multi-device query.** Not stated. (topic: intune/device-query)
+  - Tried 2026-09-27, still open: the live multi-device page (updated_at 2026-09-02) Known limitations list joins, records, rate and export limits but no query length; the 2,048-character limit is stated only for single-device query. (topic: intune/device-query)
 - **ECS base fields (@timestamp, message).** base.yml was not fetched. (topic: logs/ecs-log-fields)
 - **Licence of the Defender learn pages.** The MicrosoftDocs/defender-docs repo is private, so the licence could not be checked. That content is summarised only.
 
@@ -804,26 +808,32 @@ Still open: (topic: auth/configmgr-rbac-auth)
 ## intune/app-protection-mam
 
 (Resolved 2026-09-26: `windowsInformationProtectionPolicy`/`mdmWindowsInformationProtectionPolicy` [S-2jxyk3ra, S-j6tphfq3] and `androidManagedAppProtection` [S-gqqrls57] full property references fetched. Article status flipped to complete.)
+- Windows MAM on Home edition, blocking Edge sign-in via Conditional Access, and the Authenticator check (three UNK lines, 2026-09-27): Home is now DER (Windows MAM page S-rvpreeft points to the supported-platforms list S-d4yd34s7, which lists Windows 11 Home); the broker requirement is DOC (S-hkj4rbxk). The Edge sign-in block claim (itself inconsistent: Windows, iOS and Android, but not iOS) was found on no current page (Learn searches on Edge MAM, the Windows app protection CA policy and the Edge iOS/Android pages) and was removed. (topic: intune/app-protection-mam)
 
 ## intune/certificates-pki
 
 - Imported-PFX certificate profile field-by-field configuration, DigiCert/third-party SCEP partner-specific SAN mapping tables, and the Graph `deviceManagementConfigurationPolicy`/certificate-profile REST bodies were named out of scope for this pass and not fetched (0 lookups spent, explicitly deferred at authoring time). (topic: intune/certificates-pki)
+  - Not researched 2026-09-27 (a scope note, not a failed lookup). Corrected the same day: the 6.2101.13.0 connector deprecation fact, marked UNK as missing from S-hxbyw5pm, is on that page's What's new for the Certificate Connector section and is now DOC. (topic: intune/certificates-pki)
 
 ## intune/configuration-policies
 
 - Whether the settings-catalog policy create/update body must set `technologies`/`platforms` explicitly, with a full worked JSON example, and whether there is a dedicated event-log ID range for configuration-policy (Policy CSP) apply failures distinct from the general DeviceManagement-Enterprise-Diagnostics-Provider channel, were not found on the fetched Graph reference and diagnostics pages (2 lookups: Graph settings-catalog create page, DM diagnostics-provider event ID list). (topic: intune/configuration-policies)
+  - Resolved 2026-09-27: the create page (S-4gg3zmhr, read at microsoft-graph-docs-contrib 4ad99fd3) lists platforms and technologies in its request-body table and sets both in its example; no Windows JSON example exists, so the article says to set both explicitly (DER). No event ID range is documented; failures appear as 'MDM ConfigurationManager: Command failure status' in the Admin channel (S-77gkdi7q, S-jicw45tl), recorded as DER. (topic: intune/configuration-policies)
 
 ## intune/device-inventory-analytics
 
 (Resolved 2026-09-26: re-confirmed no v1.0 `userExperienceAnalytics*` resource/method pages exist on Microsoft Learn — every page found resolves to `view=graph-rest-beta` only [S-nwf5cf5q]. Article status flipped to complete.)
+- Six UNK lines (claims no longer on the cited pages) re-checked 2026-09-27: all six are now DOC from other current pages: Advanced Analytics FAQ (S-3itrgwhj: no export connector; high event volume needed for anomalies), App inventory for Windows (S-vdrnoalt: optional properties; collect wins over don't collect), the Intune Adoption Score page (S-m5aovwzr, now contradicted by S-3l57sxrb, see _conflicts.md) and the Graph beta reference at 4ad99fd3 (S-6i4enlqz). (topic: intune/device-inventory-analytics)
 
 ## intune/endpoint-privilege-management
 
 - EPM Agent's own log file names/paths and Windows Event Log channel were not found on the EPM troubleshooting/known-issues/deployment-planning pages fetched this session (2 lookups, 2026-09-26); only the client install folder (`C:\Program Files\Microsoft EPM Agent`) and service name are documented on those pages. (topic: intune/endpoint-privilege-management)
+  - Partly resolved 2026-09-27: the Collect diagnostics page (S-6epv7qzl) collects %ProgramFiles%\Microsoft EPM Agent\Logs\*.* and HKLM\SOFTWARE\Microsoft\EPMAgent; file names and an event channel remain undocumented (Learn search on EPM logs found none). The Approve-/Deny-/Revoke-MgBetaDeviceManagementElevationRequest cmdlets are confirmed from the PowerShell Gallery listing (S-hepxqkky) because their Learn pages return 404. (topic: intune/endpoint-privilege-management)
 
 ## intune/network-profiles
 
 - Full Entra Private Access/Global Secure Access configuration (Quick Access setup steps, per-app segmentation, private DNS, Private Network Connector) was named out of scope for this pass and not fetched (0 lookups spent, explicitly deferred at authoring time; a dedicated `auth/` topic would need its own research pass). (topic: intune/network-profiles)
+  - Scope note, not a failed lookup (re-checked 2026-09-27): the article's UNK line restating it was removed from Facts; the Reference section keeps the out-of-scope list. A dedicated Global Secure Access topic would need its own research pass. (topic: intune/network-profiles)
 
 ## intune/remote-actions
 
@@ -904,3 +914,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
 ## agents/instruction-and-context-limits
 
 - **Character limit of the Claude Projects instructions field.** The support article (S1859, re-read 2026-09-27) publishes no number; the field shows a live counter only inside the signed-in claude.ai UI. Tried 2026-09-27: S1859 re-read; Claude in Chrome was unavailable, and the counter is only visible in the signed-in UI, so reading it stays with a person. (topic: agents/instruction-and-context-limits)
+
+## intune (complete articles)
+
+- Remaining UNK lines in complete intune articles, re-checked 2026-09-27: macOS Managed Apple ID, EnrollMyMac, DEM 1,000 and direct enrollment now DOC (S-fxcmmurx, S-gjyh2735, S-ischppkc; no USB statement found, the claim was dropped); Linux Azure VM and GNOME DOC (S-dnply3ya, which also contradicts BYOD support, see _conflicts.md), packages.microsoft.com DOC (S-kakqvkfa), custom compliance join-state prerequisites absent from the current page (DER); Data Warehouse connector v1 timing DOC from the what's new entry (S-7x2lmxhr); remote help CA for unattended sessions and iOS ACME re-enrollment remain undocumented (DER absences); the reports generalisation is now tagged DER. (topic: intune/macos-management)

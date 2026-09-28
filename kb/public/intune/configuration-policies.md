@@ -2,9 +2,9 @@
 topic: intune/configuration-policies
 priority: P2
 applies_to: "Microsoft Intune service 2026-09, Windows 10/11 client, Graph beta deviceManagementConfigurationPolicy"
-retrieved_utc: 2026-09-26
-sources: [S-lz7th2mw, S-ld2qiclx, S-hw4p6ks6, S-v3kf7d4m, S-vmpbvsv4, S-ytjbd4n5, S-4krq7dui, S-wz4ujka5, S-4gg3zmhr, S-v5cttaej, S1593, S-l5tq6fyo, S-xggskgmu, S-rhemzip3, S-hyfjrtuc, S-h7ijeucf, S-d2p4emn5, S-sjt243fo, S-jicw45tl]
-status: partial
+retrieved_utc: 2026-09-27
+sources: [S-lz7th2mw, S-ld2qiclx, S-hw4p6ks6, S-v3kf7d4m, S-vmpbvsv4, S-ytjbd4n5, S-4krq7dui, S-wz4ujka5, S-4gg3zmhr, S-v5cttaej, S1593, S-l5tq6fyo, S-xggskgmu, S-rhemzip3, S-hyfjrtuc, S-h7ijeucf, S-d2p4emn5, S-sjt243fo, S-jicw45tl, S-77gkdi7q]
+status: complete
 ---
 
 # Intune configuration policies: settings catalog, custom OMA-URI, ADMX, refresh
@@ -69,7 +69,8 @@ and `security/baselines-catalog.md` for the security-baseline flavor of settings
 - `POST /deviceManagement/configurationPolicies` creates a policy; requires delegated or application permission `DeviceManagementConfiguration.ReadWrite.All` (or `DeviceManagementEndpointSecurity.ReadWrite.All`); not supported for personal Microsoft accounts. Success returns `201 Created` with the new policy. [DOC S-4gg3zmhr]
 - Other operations on the same resource: List, Get, Update and Delete, and the `assign`, `createCopy` (body `displayName`, `description`; `POST .../configurationPolicies/{id}/createCopy`) and `reorder` actions; `GET /deviceManagement/configurationPolicies/{id}` accepts `DeviceManagementConfiguration.Read.All` in addition to the ReadWrite scopes. [DOC S-wz4ujka5, S-h7ijeucf, S-d2p4emn5]
 - A setting instance can be `#microsoft.graph.deviceManagementConfigurationChoiceSettingInstance`: `settingDefinitionId` (inherited from `deviceManagementConfigurationSettingInstance`) plus `choiceSettingValue` with a string `value` and optional nested `children`. [DOC S-sjt243fo]
-- Whether the request/create body must set `technologies` and `platforms` explicitly, and full worked JSON for a settings-catalog Windows policy via Graph, is not shown on the fetched pages. [UNK]
+- The Graph create page's request-body table lists `platforms` (`none`, `android`, `iOS`, `macOS`, `windows10X`, `windows10`, `linux`, `androidEnterprise`, `aosp`, `visionOS`, `tvOS`, ...) and `technologies` (`none`, `mdm`, `configManager`, `microsoftSense`, `mobileApplicationManagement`, `endpointPrivilegeManagement`, `enrollment`, ...) among the properties "required when you create" a policy; its one example body sets both (`android` / `mdm`). [DOC S-4gg3zmhr]
+- That table also lists generated and read-only properties (`id`, `createdDateTime`, `isAssigned`), so it does not separate truly required fields, and no Windows settings-catalog JSON example is published (re-read 2026-09-27): always set `platforms` (`windows10`) and `technologies` (`mdm`) explicitly on create. [DER S-4gg3zmhr: table and example read together]
 
 ## Reference
 - `agents/security-copilot-endpoint.md` — the Policy Configuration Agent (public preview, retiring 2026-08-31) that parses uploaded documents/plain-language requirements into settings-catalog policies, and Copilot in Intune's policy-summarization prompts, both act on the settings-catalog objects documented here.
@@ -86,7 +87,7 @@ and `security/baselines-catalog.md` for the security-baseline flavor of settings
 ### On-device diagnostics
 - Applied device-scope Policy CSP values land under `HKLM\SOFTWARE\Microsoft\PolicyManager\current\device\<Area>`, and the MDM provider's copy under `HKLM\SOFTWARE\Microsoft\PolicyManager\Providers\<GUID>\default\Device\<Area>`. [DER S-jicw45tl, S-4krq7dui: the BitLocker troubleshooting page shows both keys for the BitLocker area; generalized to other `./Device/Vendor/MSFT/Policy/Config/<Area>` areas of the Policy CSP]
 - `mdmdiagnosticstool.exe` collects an `MdmDiagReport_RegistryDump.reg` snapshot and `MDMDiagHtmlReport.html`/`MDMDiagReport.xml`, which include the applied Policy CSP / PolicyManager state for troubleshooting a configuration policy that did not apply — see `intune/mdmdiagnosticstool.md` for the sourced facts on the tool's areas and output.
-- Whether there is a dedicated event log ID range for configuration-policy (Policy CSP) apply failures, separate from the general `Microsoft-Windows-DeviceManagement-Enterprise-Diagnostics-Provider/Admin` channel already documented in `intune/mdmdiagnosticstool.md`, was not found on the pages read this pass. [UNK]
+- No dedicated event ID range for configuration-policy (Policy CSP) apply failures is documented (re-read 2026-09-27): Microsoft's guidance filters the `DeviceManagement-Enterprise-Diagnostics-Provider/Admin` channel by Critical/Error/Warning and searches for the CSP path, and failed commands appear as `MDM ConfigurationManager: Command failure status` entries naming the CSP URI and result. [DER S-jicw45tl, S-77gkdi7q: absence; guidance and message text from the two pages]
 
 ## Examples
 - Custom OMA-URI, enable telemetry minimum level on `PL-LT-00123`: Name `Allow Telemetry`, OMA-URI `./Vendor/MSFT/Policy/Config/System/AllowTelemetry`, Data type Integer, Value `1`.

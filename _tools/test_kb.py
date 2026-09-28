@@ -566,7 +566,8 @@ class TestLookup:
         assert "entra/bitlocker-key-deletion.md:" in ask(bitlocker, "--no-model")[1], "a good pack without a model"
         # counts and 'who cites' go to the audit and source tools, never to a model
         assert ask("How many intune articles are partial?", "--route")[1].startswith("kind=tool")
-        out = ask("How many intune articles in the kb have status partial?")[1]
+        # 'complete', not 'partial': the audit must list rows however many intune articles are still partial
+        out = ask("How many intune articles in the kb have status complete?")[1]
         assert out.startswith("| path | status |") and "intune/" in out and "articles=" in out, out
         assert "auth/kerberos.md:" in ask("Which files cite S1216?")[1]
         assert ask("Which articles cover BitLocker recovery key escrow?", "--route")[1].startswith("kind=good")
