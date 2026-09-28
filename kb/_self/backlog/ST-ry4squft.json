@@ -1,0 +1,66 @@
+{
+  "id": "ST-ry4squft",
+  "kind": "story",
+  "title": "Sprint workers run on the newest Sonnet through a kb-worker agent",
+  "status": "draft",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "A clone-only .claude/agents/kb-worker.md sets model: sonnet (the alias, which follows the newest Sonnet, never a pinned id or inherit) and effort: high; /kb-sprint run dispatches task and subtask subagents with subagent_type kb-worker and no model override, while S1 and S2 bugs, breakdowns of a story or bug with no tasks, the sprint review and every /kb-census subagent keep the session model. Tests named kb_worker prove each.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "kb_worker"
+      ]
+    }
+  ],
+  "gates": [
+    {
+      "id": "effort",
+      "kind": "blocking",
+      "question": "What effort should kb-worker run at on the newest Sonnet?",
+      "options": [
+        "medium",
+        "high",
+        "low"
+      ],
+      "recommendation": "medium",
+      "answer": "high",
+      "by": "operator"
+    },
+    {
+      "id": "scope",
+      "kind": "blocking",
+      "question": "Which subagents run on kb-worker?",
+      "options": [
+        "sprint items only",
+        "sprint items and census phase 2 readers",
+        "everything, sprint review and census sample check included"
+      ],
+      "recommendation": "sprint items only",
+      "answer": "sprint items only",
+      "by": "operator"
+    },
+    {
+      "id": "escalation",
+      "kind": "blocking",
+      "question": "Which sprint items still go to the session model instead of kb-worker?",
+      "options": [
+        "S1 and S2 bugs, and a story or bug with no tasks yet",
+        "none",
+        "an item whose done was refused twice"
+      ],
+      "recommendation": "S1 and S2 bugs, and a story or bug with no tasks yet",
+      "answer": "S1 and S2 bugs, and a story or bug with no tasks yet",
+      "by": "operator"
+    }
+  ],
+  "links": [
+    "kb/public/claude/skills-and-subagents.md",
+    "kb/public/claude/skills-and-subagents.csv",
+    "kb/_self/token-efficiency.md"
+  ],
+  "notes": "Failure it answers: /kb-sprint run starts subagents with no subagent_type or model, so every worker is general-purpose on the session model, a mechanical task included. The agent file's model field takes sonnet|opus|haiku|fable|full id|inherit and its effort field low|medium|high|xhigh|max (skills-and-subagents.csv:26 and :35, DOC S2157); the sonnet alias follows the newest Sonnet (token-efficiency.md, 'A model upgrade under an alias'). The newest Sonnet holds only while nothing overrides the definition: the orchestrator must not pass the Agent tool's model, and CLAUDE_CODE_SUBAGENT_MODEL_FORCE=1 skips a definition's model for teammates (skills-and-subagents.md:134, DOC S-qdxfqzln). Census readers stay on the session model: a false confirmation dates a stale fact as current, and no benchmark yet shows Sonnet's fact judgements hold. kb-worker stays out of plugin.json: the plugin's agent list is tested to be kb-lookup and kb-reviewer only."
+}

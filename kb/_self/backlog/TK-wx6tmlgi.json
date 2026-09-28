@@ -1,0 +1,42 @@
+{
+  "id": "TK-wx6tmlgi",
+  "kind": "task",
+  "title": "Document the kb-worker agent",
+  "status": "draft",
+  "parent": "ST-ry4squft",
+  "priority": "P1",
+  "rank": 2,
+  "goal": "kb/_self/token-efficiency.md section 5 lists kb-worker (the sonnet alias, what it runs, what stays on the session model), kb/_self/map.csv maps the agent file to its doc, and selfdoc.py check and stale pass",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/selfdoc.py",
+        "check"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/selfdoc.py",
+        "stale"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/selfdoc.py",
+        "map",
+        ".claude/agents/kb-worker.md"
+      ],
+      "match": "token-efficiency\\.md"
+    }
+  ],
+  "touches": [
+    "kb/_self/token-efficiency.md",
+    "kb/_self/map.csv"
+  ],
+  "depends_on": [
+    "TK-cwvnhup5"
+  ]
+}

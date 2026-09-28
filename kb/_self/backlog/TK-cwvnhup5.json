@@ -1,0 +1,24 @@
+{
+  "id": "TK-cwvnhup5",
+  "kind": "task",
+  "title": "kb-worker agent pinned to the sonnet alias",
+  "status": "draft",
+  "parent": "ST-ry4squft",
+  "priority": "P1",
+  "rank": 0,
+  "goal": ".claude/agents/kb-worker.md exists with name kb-worker, model sonnet (not a full model id, not inherit) and effort high, and is not listed in .claude-plugin/plugin.json; tests named kb_worker_agent prove it and fail on a planted pinned id",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "kb_worker_agent"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/agents/kb-worker.md",
+    "_tools/test_kb_mcp.py"
+  ]
+}
