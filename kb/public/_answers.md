@@ -1906,6 +1906,15 @@ _Agent: kb-research_
 
 _Agent: kb-research_
 
+## QK-windows-laps-back-up-password-windows. Can Windows LAPS back up the password of a Windows Server 2012 R2 member server to Azure?
+- Windows LAPS runs on Windows Server 2025 and later, Annual Channel 23H2 and later, and Windows Server 2022 and 2019 with the April 11, 2023 Update; Windows 11 23H2+, and Windows 11 22H2/21H2 and Windows 10 with that update. [DOC S1226]
+- Legacy Microsoft LAPS stays supported on the older Windows versions that previously supported it, until their normal end of support, and stores passwords in AD only, in clear text; it is deprecated from Windows 11 23H2. [DOC S1226]
+- Backing up to Microsoft Entra ID is a Windows LAPS scenario, for Entra-joined or hybrid-joined devices, with Entra ID Free or higher. [DOC S1226]
+- Conclusion: no. Windows Server 2012 R2 is not a Windows LAPS platform, so it cannot back up its local administrator password to Entra ID; legacy Microsoft LAPS to AD is the only Microsoft option there, and the lasting fix is moving the server to Windows Server 2019 or later. [DER S1226]
+- See windows/laps.md.
+
+_Agent: kb-research_
+
 ## R1. Reuse candidates
 
 - **Highest leverage: `pydantic-settings` as a `dependency` for a project's config-file/env-var/flags
