@@ -1631,15 +1631,15 @@ def s_new_model(b):
     empty.mkdir(exist_ok=True)
     for cfg in (new, old):
         model = agent_bench.MODEL[cfg]
-        for arm, cwd in (("empty directory", empty), ("clone", b.lookup())):
+        for arm, cwd in (("an empty directory", empty), ("the clone", b.lookup())):
             vals = [v for v in (claude_json(["claude", "-p", "--no-session-persistence", "--model", model, *NO_HOOKS],
                                             OK_PROMPT, cwd) for _ in range(2)) if "error" not in v]
             if vals:
-                b.row("new-model", f"ok, {arm}", cfg, "start_ctx", max(v["input"] for v in vals), len(vals), model,
+                b.row("new-model", f"ok in {arm}", cfg, "start_ctx", max(v["input"] for v in vals), len(vals), model,
                       note="; ".join(str(v["input"]) for v in vals))
-                b.row("new-model", f"ok, {arm}", cfg, "out", max(v["usage"]["output_tokens"] for v in vals),
+                b.row("new-model", f"ok in {arm}", cfg, "out", max(v["usage"]["output_tokens"] for v in vals),
                       len(vals), model)
-                b.row("new-model", f"ok, {arm}", cfg, "cost", sum(v["total_cost_usd"] for v in vals) / len(vals),
+                b.row("new-model", f"ok in {arm}", cfg, "cost", sum(v["total_cost_usd"] for v in vals) / len(vals),
                       len(vals), model)
 
 

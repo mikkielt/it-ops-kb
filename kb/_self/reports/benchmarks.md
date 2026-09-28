@@ -7,7 +7,7 @@ What a kb lookup costs an agent, against the same agent without the kb, and what
 - **Re-run:** `python3 _tools/benchmarks.py run` runs every scenario, `run <scenario>` one; each section names its command. Paid runs are fresh `claude -p` sessions; the rest run no model.
 - **Counting:** input is uncached + cache-write + cache-read input tokens, read from each run's result event or transcript, never from an agent's own account. Effective input weights cache writes 2x and cache reads 0.1x. Dollar costs compare only within one batch, since the run that pays a cache write varies; compare tokens across batches.
 - **Isolation:** every `claude -p` runs with hooks off (`--settings '{"disableAllHooks": true}'`) from a throwaway clone of `HEAD` whose query log is `off` and whose `origin` is a local bare repository; the kb and docs servers are registered at local scope for that clone and removed afterwards. The scenarios that measure the query log's hooks run them in a throwaway clone in mode `local` with a local bare `origin`, or as a copy of the plugin whose hook commands write under the scratch directory instead of `~/.claude/plugins/data/`. The historical runs had hooks on; a hook adds no context unless it prints, which the query log's never do.
-- **Repetitions:** the re-run uses 1 run per cell where the history used 2, except where a section says otherwise; the history's run-to-run spread (in its cells) is the noise a single run carries. Re-runs on this machine, with other work on it: timings moved by up to 15% (`capture`'s median 47-55 ms over four runs of `querylog-hooks`), `always-on`'s token counts by under 0.1% (8 tokens). Model aliases resolved to Haiku 4.5, Sonnet 5 and Opus 5.5.
+- **Repetitions:** the re-run uses 1 run per cell where the history used 2, except where a section says otherwise; the history's run-to-run spread (in its cells) is the noise a single run carries. Re-runs on this machine, with other work on it: timings moved by up to 15% (`capture`'s median 47-55 ms over four runs of `querylog-hooks`), `always-on`'s token counts by under 0.1% (8 tokens). Model aliases resolved to Haiku 4.5, Sonnet 5 and Opus 5.5. From Claude Code 2.1.284 `sonnet` resolves to Sonnet 5.5, so a re-run's Sonnet arms change model; "A new model against the one it replaces" compares the two pinned by id.
 
 Spend of the runs of each scenario, per record (paid `claude -p` runs, the Haiku and Sonnet calls made through the query log's own commands included):
 
@@ -25,13 +25,14 @@ Spend of the runs of each scenario, per record (paid `claude -p` runs, the Haiku
 | ingest | 2026-09-28 | 1 | 6,947,437 | 26,909 | $2.06 |
 | kb-lookup-agent | 2026-09-28 | 3 | 74,652 | 845 | $0.12 |
 | models | 2026-09-28 | 28 | 2,788,545 | 26,211 | $4.01 |
+| new-model | 2026-09-28 | 60 | 6,125,840 | 59,832 | $6.62 |
 | partial | 2026-09-28 | 13 | 2,522,765 | 21,392 | $1.79 |
 | querylog-pipeline | 2026-09-28 | 1 | 7,250 | 2,608 | $0.03 |
 | research | 2026-09-28 | 1 | 112,904 | 2,809 | $0.21 |
 | retrieval | 2026-09-28 | 1 | 16,352 | 3,331 | $0.07 |
 | router | 2026-09-28 | 22 | 358,198 | 8,244 | $0.30 |
 | subagents | 2026-09-28 | 24 | 724,378 | 23,213 | $3.30 |
-| all | | 234 | 24,683,408 | 253,678 | $25.39 |
+| all | | 294 | 30,809,248 | 313,510 | $32.01 |
 <!-- /bench -->
 
 ## Lookups against the web
@@ -406,21 +407,70 @@ What it shows:
 <!-- bench:records new-model -->
 | record | date | commit | Claude Code | kb topics | runs per cell | spend of the runs |
 |---|---|---|---|---|---|---|
+| 2026-09-28 | 2026-09-28 | bb6e13e | 2.1.284 | 277 | 2 | $6.62 |
 <!-- /bench -->
 <!-- bench:table new-model metrics=cost,wall_s,input,out,tool_calls,checks,fully_right cases=kb (10),host (3) -->
 | case | arm | cost | wall_s | input | out | tool_calls | checks | fully_right |
 |---|---|---|---|---|---|---|---|---|
+| kb (10) | sonnet-5-5 | $0.108 | 16 s | 90,140 | 1,161 | 1.9 | 46/46 | 20 of 20 |
+| host (3) | sonnet-5-5 | $0.127 | 14 s | 127,096 | 1,018 | 5 | 8/10 | 2 of 3 |
+| kb (10) | sonnet-5 | $0.106 | 15 s | 111,844 | 703 | 1.5 | 44/46 | 18 of 20 |
+| host (3) | sonnet-5 | $0.172 | 26 s | 244,344 | 1,386 | 7.3 | 6/10 | 1 of 3 |
 <!-- /bench -->
 Per question:
 <!-- bench:table new-model metrics=cost,wall_s,input,out,tool_calls,checks cases=s1_fact,s3_multi,s5_none,s6_falsegood,s8_falsegood2,h1_gmsa,h2_applock,h3_mggraph,x1_synth,o1_offkb,p1_partial,n1_newer,k1_stale -->
 | case | arm | cost | wall_s | input | out | tool_calls | checks |
 |---|---|---|---|---|---|---|---|
+| s1_fact | sonnet-5-5 | $0.100 | 11 s | 62,678 | 424 | 1 | 2/2 |
+| s3_multi | sonnet-5-5 | $0.107 | 11 s | 65,906 | 692 | 1 | 6/6 |
+| s5_none | sonnet-5-5 | $0.052 | 8 s | 62,667 | 320 | 1 | 2/2 |
+| s6_falsegood | sonnet-5-5 | $0.098 | 18 s | 101,354 | 1,709 | 2 | 4/4 |
+| s8_falsegood2 | sonnet-5-5 | $0.165 | 23 s | 142,712 | 1,596 | 3 | 4/4 |
+| h1_gmsa | sonnet-5-5 | $0.098 | 14 s | 63,294 | 1,014 | 1 | 6/6 |
+| h2_applock | sonnet-5-5 | $0.075 | 14 s | 96,367 | 1,036 | 2.5 | 6/6 |
+| h3_mggraph | sonnet-5-5 | $0.080 | 14 s | 98,376 | 1,383 | 2 | 6/6 |
+| x1_synth | sonnet-5-5 | $0.119 | 17 s | 67,428 | 1,253 | 1 | 6/6 |
+| o1_offkb | sonnet-5-5 | $0.186 | 33 s | 140,618 | 2,182 | 4 | 4/4 |
+| s1_fact | sonnet-5 | $0.148 | 9 s | 88,208 | 174 | 1 | 2/2 |
+| s3_multi | sonnet-5 | $0.110 | 9 s | 91,264 | 276 | 1 | 6/6 |
+| s5_none | sonnet-5 | $0.059 | 10 s | 87,546 | 294 | 1 | 2/2 |
+| s6_falsegood | sonnet-5 | $0.087 | 21 s | 113,452 | 1,448 | 1.5 | 4/4 |
+| s8_falsegood2 | sonnet-5 | $0.096 | 12 s | 87,484 | 283 | 1 | 2/4 |
+| h1_gmsa | sonnet-5 | $0.114 | 15 s | 113,038 | 802 | 1.5 | 6/6 |
+| h2_applock | sonnet-5 | $0.114 | 16 s | 133,308 | 698 | 2 | 6/6 |
+| h3_mggraph | sonnet-5 | $0.079 | 16 s | 134,192 | 730 | 2 | 6/6 |
+| x1_synth | sonnet-5 | $0.125 | 15 s | 136,925 | 876 | 2 | 6/6 |
+| o1_offkb | sonnet-5 | $0.130 | 25 s | 133,024 | 1,444 | 2 | 4/4 |
+| s1_fact | web-sonnet-5-5 | $0.061 | 9 s | 55,799 | 523 | 2 | 1/1 |
+| x1_synth | web-sonnet-5-5 | $0.201 | 32 s | 109,571 | 2,764 | 9 | 3/3 |
+| o1_offkb | web-sonnet-5-5 | $0.132 | 24 s | 66,467 | 2,682 | 4 | 2/2 |
+| s1_fact | web-sonnet-5 | $0.075 | 10 s | 69,717 | 426 | 2 | 1/1 |
+| x1_synth | web-sonnet-5 | $0.371 | 89 s | 297,405 | 6,242 | 13 | 3/3 |
+| o1_offkb | web-sonnet-5 | $0.169 | 43 s | 101,452 | 2,686 | 6 | 2/2 |
+| p1_partial | sonnet-5-5 | $0.251 | 22 s | 241,493 | 1,809 | 9 | 4/4 |
+| n1_newer | sonnet-5-5 | $0.064 | 7 s | 69,762 | 475 | 2 | 1/3 |
+| k1_stale | sonnet-5-5 | $0.067 | 12 s | 70,033 | 769 | 4 | 3/3 |
+| p1_partial | sonnet-5 | $0.373 | 59 s | 486,797 | 3,203 | 17 | 4/4 |
+| n1_newer | sonnet-5 | $0.063 | 11 s | 104,666 | 343 | 2 | 0/3 |
+| k1_stale | sonnet-5 | $0.079 | 9 s | 141,569 | 611 | 3 | 2/3 |
 <!-- /bench -->
 Fixed context:
-<!-- bench:table new-model metrics=start_ctx,out,cost cases=ok, empty directory,ok, clone -->
+<!-- bench:table new-model metrics=start_ctx,out,cost cases=ok in an empty directory,ok in the clone -->
 | case | arm | start_ctx | out | cost |
 |---|---|---|---|---|
+| ok in an empty directory | sonnet-5-5 | 24,574 | 4 | $0.053 |
+| ok in the clone | sonnet-5-5 | 31,012 | 4 | $0.076 |
+| ok in an empty directory | sonnet-5 | 37,187 | 4 | $0.042 |
+| ok in the clone | sonnet-5 | 43,625 | 4 | $0.045 |
 <!-- /bench -->
+
+What it shows (Sonnet 5.5 against Sonnet 5, Claude Code 2.1.284):
+- **Same cost, more right, on the kb questions:** $0.108 and 16 s per question against $0.106 and 15 s, all 20 runs fully right against 18 of 20. The two misses were Sonnet 5 on the Purview false `good` (`s8_falsegood2`): it stopped at the pack on both runs (1 tool call, 2/4), where Sonnet 5.5 went on to the live docs (3 tool calls, 4/4, $0.165 against $0.096). `h2_applock`'s false `none` passed on both models.
+- **Less input, more output:** 90k input per kb question against 112k (-19%), and 1,161 output tokens against 703 (+65%); 1.9 tool calls against 1.5. The same per-token price ($2 / $10) turns that into the same dollars.
+- **A smaller fixed context:** "ok" starts at 24.6k tokens in an empty directory and 31.0k in the clone, against 37.2k and 43.6k (12.6k less in each). What makes up the difference is not measured here. The two "ok" runs still cost more on Sonnet 5.5 ($0.053 against $0.042).
+- **Host scenarios cheaper and better:** $0.127 and 14 s per question against $0.172 and 26 s, at 127k input against 244k and 5 tool calls against 7.3; checks 8/10 against 6/10. `p1_partial` took 9 tool calls against 17 ($0.251 against $0.373). `k1_stale` passed 3/3 (2/3). The planted older copy (`n1_newer`, "using the kb") still stays inside the kb on both models (1/3 and 0/3).
+- **Bare web search got cheaper:** Sonnet 5.5 without the kb answered `x1_synth` for $0.201 in 32 s with 9 tool calls, against Sonnet 5's $0.371, 89 s and 13 calls. The kb arm still wins that synthesis ($0.119, 17 s). On the single fact `s1_fact`, web search ($0.061) now costs less than the kb arm ($0.100), which also loads the user's plugins. On the off-kb `o1_offkb`, the kb arm pays for a pack plus research ($0.186 against $0.132).
+- One batch of 2 runs per kb cell and 1 per host and web cell: the history's run-to-run spread (Opus `s1_fact`: $0.296 against $0.206) applies to any one cell. The means over the ten kb questions are steadier.
 
 ## Reading files, hosts and start contexts
 
