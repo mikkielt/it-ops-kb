@@ -94,18 +94,22 @@ def num(v):
     """The value as one number: itself, or the mean of the numbers a historical cell holds (`$0.043 / $0.051`, a
     range `9-12 s`); None when it holds none, or several of different kinds (`2/2`)."""
     s = str(v).strip()
-    if not s or re.fullmatch(r"\d+/\d+(, \d+/\d+)*", s):
+    if not s or re.search(r"\d+ ?(/|of) ?\d+", s):  # a count of a total (`2/2`, `11 of 14`) has no one value
         return None
     try:
         return float(s)
     except ValueError:
         pass
+    s = re.sub(r"\([^)]*\)", " ", s)  # `22,038 (all 4)`: the words in brackets qualify the number
+    s = re.sub(r"(\d[\d,]*(?:\.\d+)?)k\b", lambda m: str(float(m.group(1).replace(",", "")) * 1000), s)
     ns = [abs(n) for n in numbers(re.sub(r"(\d)-(\d)", r"\1 \2", s))]
     return sum(ns) / len(ns) if ns else None
 
 
-FORMATS = {"cost": "${:.3f}", "cost_est": "${:.3f}", "wall_s": "{:.0f} s", "api_s": "{:.0f} s", "input": "{:.0f}",
-           "out": "{:.0f}", "turns": "{:.1f}", "tool_calls": "{:.1f}", "requests": "{:.1f}", "start_ctx": "{:.0f}",
+FORMATS = {"cost": "${:.3f}", "cost_est": "${:.3f}", "wall_s": "{:.0f} s", "api_s": "{:.0f} s", "input": "{:,.0f}",
+           "out": "{:,.0f}", "turns": "g1", "tool_calls": "g1", "requests": "g1", "start_ctx": "{:,.0f}",
+           "effective_input": "{:,.0f}", "chars_per_s": "{:,.0f}", "median_us": "{:.1f} us", "size_mb": "{:.1f} MB",
+           "input_per_entry": "{:,.0f}", "out_per_entry": "{:,.0f}", "cost_per_fact": "${:.3f}",
            "ms": "{:.1f} ms", "s": "{:.2f} s", "time": "{:.2f} s", "pct": "{:.1f}%"}
 
 
@@ -118,6 +122,8 @@ def fmt(metric, v):
         return s
     kind = metric if metric in FORMATS else metric.rsplit("_", 1)[-1]
     f = FORMATS.get(kind)
+    if f == "g1":
+        return f"{round(x, 1):g}"
     if f:
         return f.format(x)
     return f"{x:,.0f}" if x == int(x) and abs(x) >= 1000 else (f"{x:g}")
@@ -136,7 +142,8 @@ def records(rows, scenario):
     for r in rows:
         if r["scenario"] == scenario and r["record"] not in seen:
             seen[r["record"]] = r
-    return sorted(seen.items(), key=lambda kv: (kv[1]["date"], kv[0]))
+    order = list(seen)
+    return sorted(seen.items(), key=lambda kv: (kv[1]["date"], kv[0] == kv[1]["date"], order.index(kv[0])))
 
 
 def table(rows, scenario, metrics, cases=None, arms=None):
@@ -171,7 +178,8 @@ def records_table(rows, scenario):
     out = ["| record | date | commit | Claude Code | kb topics | runs per cell | spend of the runs |", "|---|---|---|---|---|---|---|"]
     for rec, first in records(rows, scenario):
         mine = [r for r in rows if r["scenario"] == scenario and r["record"] == rec]
-        runs = sorted({r["runs"] for r in mine if r["runs"] and r["metric"] != "spend_usd"}, key=lambda x: float(x))
+        counts = [r["runs"] for r in mine if r["runs"] and r["case"] != "all paid runs"]
+        runs = [max(set(counts), key=counts.count)] if counts else []
         total = [float(r["value"]) for r in mine if r["metric"] == "spend_usd" and _isnum(r["value"])]
         spend = total[0] if total else sum(float(r["value"]) * float(r["runs"] or 1) for r in mine
                                            if r["metric"] in ("cost", "cost_est") and _isnum(r["value"]))
@@ -452,6 +460,7 @@ class Bench:
 
 
 SPEND = {"usd": 0.0, "input": 0, "out": 0, "runs": 0}  # every paid run of this process
+RAW = {}  # the file a scenario's own stream runs are appended to
 
 
 def spent(cost, inp, out):
@@ -484,6 +493,9 @@ def stream_run(argv, prompt, cwd, env=None):
     """One stream-json run parsed as agent_bench does (cost, tokens, tool calls, route, answer)."""
     r = agent_bench.execute(argv, prompt, cwd=str(cwd), env=env)
     _spent_run(r)
+    if RAW.get("path"):  # every run's parsed stream, for checking a row against its source
+        with open(RAW["path"], "a", encoding="utf-8", newline="\n") as f:
+            f.write(json.dumps({"prompt": prompt[:300], **r}) + "\n")
     return r
 
 
@@ -1061,7 +1073,9 @@ def s_doc2query(b):
         if m and mode:
             b.row("doc2query", "eval set", f"expansion {mode}", "passed", f"{m.group(1)}/{m.group(2)}", 1)
             b.row("doc2query", "eval set", f"expansion {mode}", "mean_chars", int(m.group(3)), 1)
-            b.row("doc2query", "off-kb", f"expansion {mode}", "verdicts", m.group(4), 1)
+            v = dict(re.findall(r"'(\w+)': (\d+)", m.group(4)))
+            b.row("doc2query", "off-kb", f"expansion {mode}", "verdicts",
+                  ", ".join(f"{k} {v.get(k, '0')}" for k in ("good", "weak", "none")), 1)
 
 
 def _time(argv, n, cwd, env=None, stdin=None):
@@ -1642,6 +1656,8 @@ def main(argv=None):
         for n in names:
             start = len(b.rows)
             t = time.time()
+            RAW["path"] = b.scratch / "raw" / f"{n}-{b.date}-runs.jsonl"
+            RAW["path"].parent.mkdir(parents=True, exist_ok=True)
             try:
                 SCENARIOS[n][1](b)
             except Exception as e:  # one failed scenario does not lose the others' rows
