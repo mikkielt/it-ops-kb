@@ -1,9 +1,9 @@
 ---
 topic: claude/hooks
 priority: P1
-applies_to: "Claude Code 2.1.281 docs (retrieved 2026-09-23; UserPromptSubmit, common input, async and Stop sections re-read 2026-09-27; SessionEnd and Windows command hooks read 2026-09-28)"
+applies_to: "Claude Code 2.1.281 docs (retrieved 2026-09-23; UserPromptSubmit, common input, async and Stop sections re-read 2026-09-27; SessionEnd and Windows command hooks read 2026-09-28; tool event input, Stop input and disableAllHooks read 2026-09-28)"
 retrieved_utc: 2026-09-28
-sources: [S743, S746, S1800, S-h5sble4p, S-sjuwcuhk]
+sources: [S743, S746, S1800, S-h5sble4p, S-sjuwcuhk, S-3yod3u7q]
 status: complete
 ---
 # Hooks relevant to MCP tools
@@ -49,6 +49,16 @@ instead, so a hook can answer a prompt without a model call.
 - `SessionEnd` hooks share a 1.5-second budget on exit, `/clear` and interactive `/resume`. A per-hook `timeout` raises the budget to the highest such value in settings files, up to 60 seconds, but timeouts on plugin-provided hooks do not raise it; `CLAUDE_CODE_SESSIONEND_HOOKS_TIMEOUT_MS` sets the budget explicitly and, since v2.1.268, also the timeout of each hook without its own. [DOC S743]
 - On a `claude -p` run stopped by SIGTERM, only `SessionEnd` hooks still run before exit (`claude/ci-and-headless.md`). [DOC S1800]
 - A `SessionEnd` hook that must do more than about a second of work (a batch job, a network push) fits only as a launcher that starts a detached process and returns; from a plugin it cannot win more time with `timeout`, and an environment variable is a per-user setting, not something a repository can ship. [DER S743: the 1.5-second shared budget, the plugin exception and the variable above]
+
+### Tool event input
+- `PreToolUse` hooks receive `tool_name`, `tool_input` and `tool_use_id` beyond the common input fields; `PostToolUse` fires only after a tool executed successfully and its input holds `tool_input` (the arguments sent) and `tool_response` (the result returned), whose schema depends on the tool, plus an optional `duration_ms`. [DOC S743]
+- `PostToolUseFailure` hooks receive the same `tool_name` and `tool_input` as `PostToolUse`, with a top-level `error` string (its format varies by tool; generally the text Claude receives) and optional `is_interrupt` and `duration_ms`; it does not fire for calls rejected by validation or a permission denial. [DOC S743]
+- `tool_input` by tool: Bash and PowerShell `command`, `description`, `timeout`, `run_in_background`; WebFetch `url` and `prompt`; WebSearch `query` and optional `allowed_domains`, `blocked_domains`. [DOC S743]
+- On Windows where the PowerShell tool is enabled, Claude routes shell commands through it, and without Git Bash the Bash tool is not registered at all, so a hook that inspects shell commands matches `Bash|PowerShell`. [DOC S743]
+- WebFetch converts an HTML page to Markdown and runs its prompt on it with a small, fast model, so Claude usually receives that model's answer, not the page; large pages are truncated first, and a redirect to a different host returns a text result naming the original URL and the target instead of following it. [DOC S-3yod3u7q]
+- `Stop` hooks receive `stop_hook_active`, `last_assistant_message`, `background_tasks` and `session_crons` beyond the common input fields. [DOC S743]
+- `--settings '{"disableAllHooks": true}'` turns hooks off for one run and takes precedence over project and local settings; `disableAllHooks` outside managed settings cannot disable managed hooks. [DOC S743]
+- A logging hook on `PostToolUse` and `Stop` joins its rows to the prompt by `prompt_id`, a common input field, and a fetch's outcome needs `PostToolUseFailure` as well, since `PostToolUse` sees only successful calls. [DER S743: common input fields, PostToolUse and PostToolUseFailure input above]
 
 ### Command hooks on Windows
 - A command hook runs in exec form when `args` is set: `command` is resolved as an executable on `PATH` and spawned with `args` as the argument vector, with no shell and no tokenization on any platform. [DOC S743]

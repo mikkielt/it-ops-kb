@@ -1034,3 +1034,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
 ## python/stdlib-windows-portability
 
 - **Whether a detached child started by a Claude Code hook on Windows survives the hook's exit** (a job object that kills children on close, and whether `CREATE_BREAKAWAY_FROM_JOB` is needed): not in the Claude Code hooks reference or the Python subprocess docs, looked 2026-09-28. Needs a Windows test of the `SessionEnd` launcher (query-log item 4). (topic: python/stdlib-windows-portability)
+
+## claude/hooks
+
+- **The shape of `tool_response` for an MCP tool call in `PostToolUse`.** The hooks reference documents `tool_response` as "the result it returned" with a per-tool schema, and shows it for Write, Bash, Agent and ExitPlanMode, but not for an MCP tool (searched `code.claude.com/docs/en/hooks.md` for `tool_response` and `MCP`, 2026-09-28). The query log capture reads it defensively (a string, a content-block list or an object). [UNK] (topic: claude/hooks)

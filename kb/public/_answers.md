@@ -1861,6 +1861,17 @@ _Agent: kb-research_
 
 _Agent: kb-research_
 
+## QK-hook-input-fields-query-log-capture. Which hook input fields does a query log capture read: PostToolUse and PostToolUseFailure tool input and response, Stop input, and turning hooks off for one run
+- `PostToolUse` fires only after a successful tool call and carries `tool_name`, `tool_input`, `tool_response` (schema per tool) and `tool_use_id`; `PostToolUseFailure` carries `tool_name`, `tool_input` and an `error` string. [DOC S743]
+- `tool_input` holds `command` for Bash and PowerShell, `url` for WebFetch and `query` for WebSearch; on Windows shell commands may reach the PowerShell tool instead of Bash. [DOC S743]
+- `prompt_id` is a common input field (v2.1.196+), so tool and `Stop` rows join the prompt by it; `Stop` adds `last_assistant_message`. [DOC S743]
+- `--settings '{"disableAllHooks": true}'` turns every non-managed hook off for one `claude -p` run. [DOC S743]
+- Conclusion: capture hooks on `UserPromptSubmit`, `PostToolUse`, `PostToolUseFailure` and `Stop` see everything the query log's surfaces need; a fetch row takes host and path from `tool_input.url`, and a shell row reads `tool_input.command` only to find `curl` or `wget`. [DER S743]
+- Open: the shape of `tool_response` for an MCP tool call is not documented on the hooks page. [UNK]
+- See claude/hooks.md.
+
+_Agent: kb-research_
+
 ## R1. Reuse candidates
 
 - **Highest leverage: `pydantic-settings` as a `dependency` for a project's config-file/env-var/flags
