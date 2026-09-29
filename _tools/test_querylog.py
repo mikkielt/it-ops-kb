@@ -2581,7 +2581,9 @@ class TestJobVerdict:
         f.parent.mkdir(parents=True)
 
         def run(argv, cwd=None):
-            return (0, old, "") if argv[:2] == ["git", "show"] else (1, "", "")
+            if argv[:3] == ["git", "cat-file", "-e"]:
+                return 0, "", ""  # the file is at HEAD
+            return (0, old, "") if argv[:3] == ["git", "cat-file", "blob"] else (1, "", "")
         p = ql_deliver.Pusher(tmp_path, tmp_path, run, None, print)
         f.write_text(old + "- Two facts. [DOC S101]\n", encoding="utf-8", newline="\n")
         assert p.edited(["kb/public/a/b.md"]) == []

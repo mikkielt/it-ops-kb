@@ -308,6 +308,12 @@ class Pusher:
     def git(self, *args, cwd=None):
         return self.run(["git", *args], cwd=str(cwd or self.wt))
 
+    def blob(self, rev, path):
+        """(exit code, text, stderr) of the file `path` at `rev`. `cat-file` names the object without checking the
+        argument as a file name, which `git show REV:PATH` does and which fails as too long a file name on Windows in a
+        deep worktree."""
+        return self.git("cat-file", "blob", f"{rev}:{path}")
+
     def tool(self, name, *args):
         """The worktree's own copy of _tools/NAME, run in the worktree."""
         return self.run([sys.executable, str(self.wt / "_tools" / name), *args], cwd=str(self.wt))
@@ -364,7 +370,8 @@ class Pusher:
 
     def held(self):
         """Finding ids pending on a conflict branch of origin that main does not hold yet: the records of the
-        findings files the branch adds."""
+        findings files the branch adds. OSError when such a file cannot be read, so a held finding is never applied
+        for want of reading it."""
         code, o, _ = self.git("for-each-ref", "--format=%(refname)", f"refs/remotes/{REMOTE}/{CONFLICT_BRANCH_PREFIX}")
         ids = set()
         for ref in o.split() if code == 0 else []:
@@ -375,7 +382,9 @@ class Pusher:
                 continue
             files = self.git("diff", "--name-only", "--diff-filter=A", base, ref, "--", f"{STORE_REL}/{FINDINGS}")[1]
             for f in files.split():
-                text = self.git("show", f"{ref}:{f}")[1]
+                code, text, err = self.blob(ref, f)
+                if code:
+                    raise OSError(f"cannot read {ref}:{f}: {(text + err).strip()[-300:]}")
                 for line in text.splitlines()[1:]:
                     try:
                         rec = json.loads(line)
@@ -476,9 +485,13 @@ class Pusher:
         out = []
         for p in paths:
             f = self.wt / p
-            code, old, _ = self.git("show", f"HEAD:{p}")
-            if code == 0:
-                out += edit_problems(p, old, f.read_text(encoding="utf-8") if f.is_file() else "")
+            if self.git("cat-file", "-e", f"HEAD:{p}")[0]:
+                continue  # a new file: nothing to remove or edit
+            code, old, err = self.blob("HEAD", p)
+            if code:
+                out.append(f"{p}: cannot read it at HEAD: {(old + err).strip()[-300:]}")
+                continue
+            out += edit_problems(p, old, f.read_text(encoding="utf-8") if f.is_file() else "")
         return out
 
     def changed(self):
@@ -672,7 +685,11 @@ class Pusher:
             return 0
         if ok is not True:
             return ok
-        hold = self.held()
+        try:
+            hold = self.held()
+        except OSError as e:
+            self.say(f"the findings a {CONFLICT_BRANCH_PREFIX} branch holds could not be read; nothing pushed ({e})")
+            return 1
         if hold:
             self.say(f"{len(hold)} finding(s) wait on a {CONFLICT_BRANCH_PREFIX} branch and are left alone")
         store = self.wt / STORE_REL

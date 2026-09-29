@@ -668,6 +668,50 @@ def held_probe(w, branch, up):
     return "\n".join(out)
 
 
+class TestHeldOnLongPaths:
+    """held() reads a conflict branch's findings files without `git show REV:PATH`, which checks the argument as a
+    file name and fails as "Filename too long" on Windows in a deep worktree; a file it cannot read raises."""
+
+    @staticmethod
+    def world(tmp_path):
+        (tmp_path / "home").mkdir()
+        repo = Repo(tmp_path / "home", git_env())
+        repo.git("init", "-q", "-b", "main")
+        repo.write("README.md", "base\n")
+        repo.git("add", "-A")
+        repo.git("commit", "-q", "-m", "base")
+        repo.git("update-ref", "refs/remotes/origin/main", "HEAD")
+        rel = f"{ql_base.STORE_REL}/{ql_store.FINDINGS}/2026-09/20260929T000000Z-abcdef12.jsonl"
+        repo.git("checkout", "-q", "-b", "side")
+        repo.write(rel, '{"run":"20260929T000000Z-abcdef12"}\n{"id":"F-000000000001","kind":"gap"}\n')
+        repo.git("add", "-A")
+        repo.git("commit", "-q", "-m", "held")
+        repo.git("update-ref", f"refs/remotes/origin/{ql_deliver.CONFLICT_BRANCH_PREFIX}x", "HEAD")
+        repo.git("checkout", "-q", "main")
+        qdir = Path(repo.path) / "_cache" / "querylog"
+        repo.git("worktree", "add", "-q", "--detach", str(qdir / ql_deliver.WORKTREE_NAME), "main")
+        return repo, qdir
+
+    @staticmethod
+    def pusher(repo, qdir, fail):
+        def run(argv, cwd=None):
+            if fail(argv):
+                return 128, "", f"fatal: failed to stat '{argv[-1]}': Filename too long"
+            return ql_base.run_cmd(argv, cwd=cwd, env=git_env())
+        return ql_deliver.Pusher(repo.path, qdir, run, None, lambda s: None, cloud=False)
+
+    def test_held_reads_without_git_show(self, tmp_path):
+        repo, qdir = self.world(tmp_path)
+        windows = lambda argv: argv[1:2] == ["show"] and ":" in argv[-1]  # every git show REV:PATH fails
+        assert self.pusher(repo, qdir, windows).held() == {"F-000000000001"}
+
+    def test_a_held_file_it_cannot_read_raises(self, tmp_path):
+        repo, qdir = self.world(tmp_path)
+        unreadable = lambda argv: argv[1:2] in (["show"], ["cat-file"])
+        with pytest.raises(OSError, match="cannot read"):
+            self.pusher(repo, qdir, unreadable).held()
+
+
 class TestConflict:
     @pytest.fixture(scope="class", autouse=True)
     @classmethod
