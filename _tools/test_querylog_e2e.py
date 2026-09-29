@@ -1199,7 +1199,6 @@ class TestAutonomousConverge:
     def test_autonomous_converge_queue_exits_0_after_research(self):
         assert (self.first["queue"][0], self.second["queue"][0]) == (0, 0), (self.first["queue"], self.second["queue"])
 
-    @pytest.mark.xfail(strict=True, reason="BG-u5wubtmv: survey compares the working tree with HEAD, not with --rev")
     def test_autonomous_converge_survey_warns_of_a_checkout_off_the_commit(self):
         """The second survey reads --rev (the seed) from a clean clone whose HEAD is two commits past it: the files
         in the checkout are not the commit's, which the `worktree:` line is there to say."""

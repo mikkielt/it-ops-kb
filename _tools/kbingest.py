@@ -183,6 +183,18 @@ def resolve(repo, rev):
     return p.stdout.decode().strip() if p.returncode == 0 else None
 
 
+def off_commit(repo, commit):
+    """True when the checked-out tracked files are not COMMIT's: HEAD's tree differs from the commit's (another
+    commit with the same tree is fine) or a tracked file has uncommitted changes. Untracked files do not count. False
+    for a bare repository or one without a work tree."""
+    if git(repo, "rev-parse", "--is-inside-work-tree").stdout.strip() != b"true":
+        return False
+    trees = [git(repo, "rev-parse", "--verify", "--quiet", f"{r}^{{tree}}").stdout.strip() for r in ("HEAD", commit)]
+    if trees[0] != trees[1]:
+        return True
+    return bool(git(repo, "status", "--porcelain", "--untracked-files=no").stdout.strip())
+
+
 def tree(repo, commit):
     """[(path, type, object id, size)] of every entry at the commit (submodules have type `commit`, size 0)."""
     out = git(repo, "ls-tree", "-r", "-l", "-z", "--full-tree", commit).stdout
@@ -300,7 +312,7 @@ def cmd_survey(a):
     attrs, where = attributes(repo, commit, [p for p, k, _, _ in entries if k == "blob"])
     rows = classify(entries, attrs, a.max_bytes, lambda oids: contents(repo, oids))
     pushed = git(repo, "branch", "-r", "--contains", commit).stdout.strip()
-    dirty = git(repo, "status", "--porcelain", "--untracked-files=no").stdout.strip()
+    dirty = off_commit(repo, commit)
     date = git(repo, "show", "-s", "--format=%cs", commit).stdout.decode().strip()
 
     print(f"repo: {repo.name}")

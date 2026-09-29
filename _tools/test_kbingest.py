@@ -112,6 +112,35 @@ def test_refusals(repo, tmp_path):
     assert code == 0 and "remote: none" in out
 
 
+@requires_git
+def test_kbingest_survey_worktree_off_rev(tmp_path):
+    """The `worktree:` line compares the checked-out tree with --rev's, not the commit ids and not with HEAD alone."""
+    r = commit_files(tmp_path / "deploy", {"a.py": "x = 1\n"})
+    seed = r.rev("HEAD")
+    r.git("commit", "-q", "--allow-empty", "-m", "same tree")
+    same = r.rev("HEAD")
+
+    def warns(rev):
+        code, out = run("survey", r.path, "--rev", rev)
+        assert code == 0, out
+        return "\nworktree: differs from the commit" in out
+
+    assert not warns(seed)  # HEAD is another commit with the seed's tree
+    assert not warns(same)  # clean checkout at REV
+    r.write("a.py", "x = 2\n")
+    r.git("commit", "-q", "-am", "moved")
+    assert warns(seed)  # HEAD's tree is not REV's
+    r.git("checkout", "-q", "--detach", seed)
+    r.write("new.py", "y = 1\n")
+    assert not warns(seed)  # an untracked file does not count, as before
+    r.write("a.py", "x = 3\n")
+    assert warns(seed)  # an uncommitted change to a tracked file
+    bare = tmp_path / "bare.git"
+    r.git("clone", "-q", "--bare", r.path, str(bare))
+    code, out = run("survey", str(bare), "--rev", seed)
+    assert code == 0 and "worktree:" not in out, out  # a bare repository has no checkout
+
+
 def test_parse_remote_and_forge():
     cases = {
         "git@gitlab.corp.example.com:ops/deploy.git": ("gitlab.corp.example.com", "ops/deploy"),
