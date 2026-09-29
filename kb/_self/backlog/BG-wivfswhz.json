@@ -1,0 +1,17 @@
+{
+  "id": "BG-wivfswhz",
+  "kind": "bug",
+  "title": "plugin.md describes the kb: hook's none as one line",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kb/_self/plugin.md's kb: prompt hook bullet says a routed pack (weak, flagged good, none) goes to Claude with the differential, as kb/_self/tools.md, The kb: hook, does, and no longer says Claude gets one line saying so; TK-3yirm5en does not name that bullet.",
+  "repro": {
+    "run": [
+      "sh",
+      "-c",
+      "! grep -q \"Claude gets one line saying so\" kb/_self/plugin.md"
+    ]
+  }
+}
