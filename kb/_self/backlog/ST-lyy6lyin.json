@@ -40,7 +40,9 @@
         "the same plus kb/_self/*.md process docs",
         "kb roots only; backlog items and query-log data go through merge requests too"
       ],
-      "recommendation": "kb roots, kb/_querylog, kb/_self/backlog items, _tools/aliases.csv and _tools/lint_baseline.txt (process docs in kb/_self/*.md go with the code they describe)"
+      "recommendation": "kb roots, kb/_querylog, kb/_self/backlog items, _tools/aliases.csv and _tools/lint_baseline.txt (process docs in kb/_self/*.md go with the code they describe)",
+      "answer": "kb roots, kb/_querylog, kb/_self/backlog items, kb/_self/*.md process docs, _tools/aliases.csv and _tools/lint_baseline.txt",
+      "by": "operator"
     }
   ],
   "notes": "Content is what the autonomous writers write (ql_deliver.auto_kinds: the query-log store, root articles and ledgers, kb/<root>/_retrieval data, _tools/aliases.csv, the bug item of a revert) plus what kbgit.py fix rewrites after a rebase (kbgit.MECHANICAL, which holds _tools/lint_baseline.txt), so a sync that rebases content never turns into code. The classifier is its own module so ST-3i3dl6xg “kbgit.py is a CLI over kg_* modules” moves only CLI wiring; kbgit.py, backlog.py and the CI job import it."

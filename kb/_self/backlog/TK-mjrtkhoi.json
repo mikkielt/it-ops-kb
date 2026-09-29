@@ -37,7 +37,9 @@
         "automatically with allow_failure: true: a warning on the pipeline only",
         "manual, like the other jobs"
       ],
-      "recommendation": "automatically with allow_failure: false: main's pipeline turns red on a direct code commit, and backlog.py red-pipeline files a bug for it"
+      "recommendation": "automatically with allow_failure: false: main's pipeline turns red on a direct code commit, and backlog.py red-pipeline files a bug for it",
+      "answer": "automatically with allow_failure: false: main's pipeline turns red on a direct code commit, and backlog.py red-pipeline files a bug for it",
+      "by": "operator"
     }
   ]
 }

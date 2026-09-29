@@ -28,7 +28,9 @@
         "a committed file naming the remotes",
         "fixed names by convention (origin, and one name for the public home)"
       ],
-      "recommendation": "git config kb.integrationRemote (default origin) beside the existing kb.publishRemote, per clone, never committed"
+      "recommendation": "git config kb.integrationRemote (default origin) beside the existing kb.publishRemote, per clone, never committed",
+      "answer": "git config kb.integrationRemote (default origin) beside the existing kb.publishRemote, per clone, never committed",
+      "by": "operator"
     }
   ],
   "notes": "kb.publishRemote exists already (kbpublic.CONFIG_KEY; maintaining.md setup step 4; .githooks/pre-push reads it when Python is missing), so only the integration role is new. kbpublic.py is already imported by kbgit.py and ql_deliver.py; backlog.py imports it lazily as it does ql_deliver. ql_deliver.origin_forge keeps reading the forge from the remote's url (red-pipeline and the query log's CI check need it): roles name remotes, not hosts."

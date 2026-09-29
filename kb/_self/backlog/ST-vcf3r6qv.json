@@ -53,7 +53,9 @@
         "every job runs automatically on code/* branches",
         "every job stays manual: a person starts kb-tests on each merge request before auto-merge can merge"
       ],
-      "recommendation": "kb-tests and kb-trailers run automatically on code/* branches; every other job stays manual"
+      "recommendation": "kb-tests and kb-trailers run automatically on code/* branches; every other job stays manual",
+      "answer": "kb-tests and kb-trailers run automatically on code/* branches; every other job stays manual",
+      "by": "operator"
     },
     {
       "id": "branch-repush",
@@ -64,7 +66,9 @@
         "push to a new branch code/<id>-<n> and leave the old merge request for a person to close",
         "refuse with exit 2 naming the open merge request"
       ],
-      "recommendation": "push the rebased branch with --force-with-lease against the fetched tip, to code/* branches only, and send merge_request.auto_merge again (new commits on a merge request cancel auto-merge, automated-merge-requests.md:24)"
+      "recommendation": "push the rebased branch with --force-with-lease against the fetched tip, to code/* branches only, and send merge_request.auto_merge again (new commits on a merge request cancel auto-merge, automated-merge-requests.md:24)",
+      "answer": "push the rebased branch with --force-with-lease against the fetched tip, to code/* branches only, and send merge_request.auto_merge again (new commits on a merge request cancel auto-merge, automated-merge-requests.md:24)",
+      "by": "operator"
     }
   ],
   "links": [

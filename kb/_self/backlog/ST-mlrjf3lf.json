@@ -32,7 +32,9 @@
         "bridge closes it with gh pr close and a comment naming the integration commits, once they are on the integration main",
         "pull requests are not accepted: the public home is read-only for contributors"
       ],
-      "recommendation": "bridge prints the pull request's branch and the integration commits; a person closes it once publish brings them"
+      "recommendation": "bridge prints the pull request's branch and the integration commits; a person closes it once publish brings them",
+      "answer": "bridge prints the pull request's branch and the integration commits; a person closes it once publish brings them",
+      "by": "operator"
     }
   ],
   "links": [

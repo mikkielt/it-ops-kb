@@ -47,7 +47,9 @@
         "keep the answered line whole and move the Skills section's list of change skills to kb/_self/maintaining.md",
         "raise the cap"
       ],
-      "recommendation": "fold it into the Agent conduct sentence that ends 'GitHub gets only `kbgit.py publish`', as: 'Content lands by `kbgit.py sync --push`; code only through the `code/<id>` merge request sync opens; GitHub gets only `kbgit.py publish`.'"
+      "recommendation": "fold it into the Agent conduct sentence that ends 'GitHub gets only `kbgit.py publish`', as: 'Content lands by `kbgit.py sync --push`; code only through the `code/<id>` merge request sync opens; GitHub gets only `kbgit.py publish`.'",
+      "answer": "fold it into the Agent conduct sentence that ends 'GitHub gets only `kbgit.py publish`', as: 'Content lands by `kbgit.py sync --push`; code only through the `code/<id>` merge request sync opens; GitHub gets only `kbgit.py publish`.'",
+      "by": "operator"
     }
   ]
 }
