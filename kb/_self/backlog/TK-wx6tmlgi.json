@@ -2,7 +2,7 @@
   "id": "TK-wx6tmlgi",
   "kind": "task",
   "title": "Document the kb-worker agent",
-  "status": "todo",
+  "status": "done",
   "parent": "ST-ry4squft",
   "priority": "P1",
   "rank": 2,
@@ -38,5 +38,38 @@
   ],
   "depends_on": [
     "TK-cwvnhup5"
-  ]
+  ],
+  "evidence": {
+    "commit": "1b16137e8b2394e686973411fad5d4c4e4a038d8",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/selfdoc.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "3db513ebafdfe3a2"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/selfdoc.py",
+          "stale"
+        ],
+        "exit": 0,
+        "sha256": "87a3b1b935511a85"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/selfdoc.py",
+          "map",
+          ".claude/agents/kb-worker.md"
+        ],
+        "exit": 0,
+        "sha256": "195fef2c994b2634"
+      }
+    ]
+  }
 }
