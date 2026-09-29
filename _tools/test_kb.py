@@ -295,6 +295,51 @@ class TestCohesion:
         assert "@AGENTS.md" in (text("CLAUDE.md") or "")
         assert "kb/_self/" not in (text("CLAUDE.md") or ""), "kb/_self/ docs are read on demand, never imported"
 
+    OLD_NONE = ("say the kb does not cover it", "Say so. Do not fill the gap from memory", "say so and add nothing from memory",
+                "say so, or research it with /kb-research")
+
+    @staticmethod
+    def none_rule_problems(texts, instructions, agents_md):
+        """The none rule in each text it lives in (name -> text): what the kb has and lacks, the live docs for the rest,
+        never from memory, none of the old wordings; AGENTS.md and the server instructions within their sizes."""
+        out = []
+        for name, body in texts.items():
+            out += [f"{name}: old wording {old!r}" for old in TestCohesion.OLD_NONE if old in body]
+            out += [f"{name}: lacks {need!r}" for need in ("lacks", "live docs", "from memory") if need not in body]
+        if len(agents_md.encode()) > 4096:
+            out.append("AGENTS.md is over 4096 bytes")
+        if len(instructions) > 1004:
+            out.append("the server instructions are over 1,004 characters")
+        if "live docs, not in the kb" not in instructions:
+            out.append("the server instructions lack the label")
+        return out
+
+    def test_none_rule_texts(self):
+        sys.path.insert(0, TOOLS)
+        import kb_mcp
+        agents = text("AGENTS.md")
+        rule = [ln for ln in agents.splitlines() if ln.lstrip().startswith("- `none`")]
+        assert len(rule) == 1 and "`route:`" in rule[0], rule
+        skill = text(".claude/skills/kb-lookup/SKILL.md")
+        skill_rule = [ln for ln in skill.splitlines() if ln.lstrip().startswith("- `none`")]
+        agent_rule = [ln for ln in text(".claude/agents/kb-lookup.md").splitlines() if "`none`" in ln]
+        assert len(skill_rule) == 1 and len(agent_rule) == 1
+        assert "`route:`" in skill_rule[0] and "`route:`" in agent_rule[0]
+        pack_line = kbfacts.pack("How do I configure VMware Horizon instant clones?")["text"].splitlines()[1]
+        assert pack_line == kbfacts.NONE_SENTENCE
+        texts = {"AGENTS.md": rule[0], "kb-lookup skill": skill_rule[0] + skill.split("5. **Live docs", 1)[1].split("\n", 1)[0],
+                 "kb-lookup agent": agent_rule[0], "server instructions": kb_mcp.INSTRUCTIONS, "pack": pack_line}
+        assert self.none_rule_problems(texts, kb_mcp.INSTRUCTIONS, agents) == []
+        # planted failures: each old wording, a missing part, a size overrun
+        for name in texts:
+            for old in self.OLD_NONE:
+                assert self.none_rule_problems(dict(texts, **{name: texts[name] + " " + old}), kb_mcp.INSTRUCTIONS, agents), (name, old)
+            for need in ("lacks", "live docs", "from memory"):
+                assert self.none_rule_problems(dict(texts, **{name: texts[name].replace(need, "")}), kb_mcp.INSTRUCTIONS, agents), (name, need)
+        assert self.none_rule_problems(texts, kb_mcp.INSTRUCTIONS, agents + "x" * 4096)
+        assert self.none_rule_problems(texts, kb_mcp.INSTRUCTIONS + "x" * 1004, agents)
+        assert self.none_rule_problems(texts, kb_mcp.INSTRUCTIONS.replace("live docs, not in the kb", "the web"), agents)
+
     def test_agents_md_stays_small(self):
         size = len((text("AGENTS.md") or "").encode())
         assert size <= 4096, f"AGENTS.md is {size} bytes: it loads into every session and subagent; " \
@@ -691,15 +736,14 @@ class TestKbHookRoute:
         return res
 
     def test_web_has_the_instruction_and_no_fact_lines(self, monkeypatch):
-        head = ["coverage: none; not in the kb: b", "The kb does not cover this. Do not answer from the hits below; "
-                "say so, or research it with /kb-research.", "route: web", "kb has: a", "kb lacks: b"]
+        head = ["coverage: none; not in the kb: b", kbfacts.NONE_SENTENCE, "route: web", "kb has: a", "kb lacks: b"]
         self.planted(monkeypatch, "none", "web", head)
         out, row = kb_hook.respond("kb: a b")
         ctx = out["hookSpecificOutput"]["additionalContext"]
         assert "decision" not in out and row["answered"] is False
         assert self.INSTRUCTION in ctx and "never fill it from memory" in ctx and "State what it has and lacks" in ctx
         assert "route: web\nkb has: a\nkb lacks: b" in ctx and "fact number" not in ctx and "\n## " not in ctx
-        assert "research it with /kb-research" not in ctx and len(ctx) < 10000, len(ctx)
+        assert kbfacts.NONE_SENTENCE not in ctx and len(ctx) < 10000, len(ctx)
 
     def test_split_holds_the_pack_within_the_limit(self, monkeypatch):
         head = ["coverage: weak (best article matches 1 of 2 key words: a)", "route: split", "kb has: a", "kb lacks: b"]

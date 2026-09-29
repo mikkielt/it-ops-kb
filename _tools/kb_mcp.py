@@ -51,7 +51,7 @@ TOOLS = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, TOOLS)
 import rag, kbcommon, kbfacts  # noqa: E402
 
-NAME, VERSION = "kb", "1.2.0"
+NAME, VERSION = "kb", "1.3.0"
 MODERN = "2026-07-28"
 LEGACY = ("2025-11-25", "2025-06-18", "2025-03-26", "2024-11-05")
 SUPPORTED = [MODERN, *LEGACY]
@@ -60,12 +60,12 @@ MAX_LINES = 400
 INSTRUCTIONS = (
     "it-ops-kb: cited facts from official sources on Windows endpoint management (ConfigMgr, Intune, Autopilot, "
     "Entra ID, AD, Graph, GPO, Defender, DSC v3, SQL Server, Power BI, GitLab CI, Ansible, Python tooling, baselines, "
-    "identity, Presidio), MCP, Claude Code and AI agents. Call kb_pack first; several parts: one call with "
-    "questions=[...]. coverage good: answer from the pack (under a check: line, only if a cited line answers the "
-    "question itself); weak: one reworded kb_pack or one kb_show; none: say the kb does not cover it and add nothing "
-    "from memory. Tags: DOC official, CODE source code at a pinned commit (implementation, not a promise; say so), "
-    "DER derived; COMMUNITY and UNK are leads, not answers. SNIPPET: lines are tagged code examples. Cite path:line "
-    "and the footer url. Counts, lists, 'who cites X': kb_audit, kb_facts, kb_source cited=true. Never start a "
+    "identity, Presidio), MCP, Claude Code and AI agents. Call kb_pack first (several parts: questions=[...]). "
+    "coverage good: answer from the pack (with a check: line, only if a cited line answers it); weak: one reworded "
+    "kb_pack or one kb_show; none or a route: line: state what the kb has and lacks, research the rest in the live "
+    "docs, label it live docs, not in the kb; never from memory. Tags: DOC official, CODE source code at a pinned "
+    "commit (implementation, not a promise), DER derived; COMMUNITY and UNK are leads, not answers. Cite path:line "
+    "and the footer url. Counts, lists, who cites X: kb_audit, kb_facts, kb_source cited=true. Never start a "
     "general-purpose agent for a lookup; the kb-lookup agent only for long research. Documentation facts, not live "
     "device or directory data.")
 DOCS = "Documentation facts from it-ops-kb (not live device or directory data). "

@@ -4,15 +4,15 @@ An offline knowledge base of facts from official sources on Windows endpoint man
 
 ## Look things up: deterministic tools first
 
-- Answer lookups in the session that asked. Never start a general-purpose subagent for a lookup; several parts go in one `pack` call too; the `kb-lookup` agent only for long research whose output would fill the context (no cheaper, slower).
+- Answer lookups in the session that asked. Never start a general-purpose subagent for a lookup; the `kb-lookup` agent only for long research whose output would fill the context.
 - From a shell or a script: `python3 _tools/kb_ask.py "<question>"` answers at the lowest cost that works (routing in `kb/_self/tools.md`); `--route` shows the plan.
 - One call first: `kb_pack` (MCP) or `python3 _tools/rag.py pack "<question>"`; several parts in one call: `questions` / `pack -q PART -q PART`. It prints `coverage: good|weak|none`, the best fact lines by article with `root/path:line` and tag, and one footer of source urls; `root` keeps one root.
   - `good`: answer from the pack. A `check:` line under it flags a possible false `good`: answer only if a cited line answers the question itself, else treat it as `none`.
   - `weak`: one reworded pack, or one `show` of the article.
-  - `none`: say the kb does not cover it. Add nothing from memory.
-- Counts, lists and joins are tools, not reading: `rag.py audit [PREFIX] [--status partial] [--entries]` (per article: tag counts, linked gaps and conflicts), `rag.py facts PREFIX --tag UNK,COMMUNITY`, `rag.py src S123 --cited` (the row and each line citing it). MCP: `kb_audit`, `kb_facts`, `kb_source` with `cited`. `--format detailed` / `response_format` for full text and urls.
+  - `none` or a `route:` line: state what the kb has and lacks (`kb has:`, `kb lacks:`), answer the part it has, research only the rest in the live docs (below, else the web), never from memory.
+- Counts, lists and joins are tools, not reading: `rag.py audit [PREFIX] [--status partial] [--entries]` (per article: tag counts, linked gaps and conflicts), `rag.py facts PREFIX --tag UNK,COMMUNITY`, `rag.py src S123 --cited`. MCP: `kb_audit`, `kb_facts`, `kb_source` with `cited`. `--format detailed` / `response_format` for full text and urls.
 - Also: `rag.py show PATH:LINE -n 30`, `rag.py search "<keywords>" [-d DOMAIN] [--index]` (`--index` adds `_answers.md`, `_gaps.md`, `_conflicts.md` and the `kb/_self/` docs), `rag.py topics [DOMAIN]`.
-- `kb: <question>` from a person: a hook answers from the pack without the model when coverage is good, else passes the pack to you (`kb+:` always does).
+- `kb: <question>`: a hook answers from the pack when coverage is good, else passes it to you (`kb+:` always does).
 - The `/kb-lookup` skill is the same procedure.
 
 ## Tags

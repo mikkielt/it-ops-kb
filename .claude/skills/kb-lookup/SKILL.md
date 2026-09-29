@@ -12,7 +12,7 @@ Read-only. The `kb` tools hold documentation facts, not live device or directory
 1. **One pack.** Call `kb_pack` with the question as asked (in a clone: `python3 _tools/rag.py pack "<question>"`). A question with several parts: one call with `questions` = [part, part, ...] (up to 6; in a clone: `rag.py pack -q PART -q PART`). Read each `coverage:` line:
    - `good`: answer from the pack. Stop searching. A `check:` line under it flags a possible false `good` (a word of the question the lead article never mentions, or key words spread over separate facts): answer only if a cited line answers the question itself, else treat it as `none`.
    - `weak`: one more call, either `kb_pack` with the product's own terms or `kb_show` on the best `path:line` with `n` = 30 (`rag.py show PATH:LINE -n 30`). Then answer with what you have.
-   - `none`: the kb does not cover it. Say so. Do not fill the gap from memory.
+   - `none`, or a `route:` line (`split`: the kb has part of it; `web`: none of it): state what the kb has (`kb has:`) and lacks (`kb lacks:`), answer what it has from the pack, then research only what it lacks in the live docs (step 5). Never fill the gap from memory.
    - Open and closed gaps for the area: `kb_audit` with `entries` = true.
 2. **Counts, lists, joins**: use a tool, never read file after file.
    - Tag counts and linked gaps/conflicts per article: `kb_audit` (`rag.py audit PREFIX [--status partial] [--entries]`).
@@ -24,7 +24,7 @@ Read-only. The `kb` tools hold documentation facts, not live device or directory
    - Lead with the answer.
    - Then the supporting facts, each with `path:line`, tag and source url (from the pack's `sources:` footer; `kb_source` only for ids not in it).
    - Do not restate the whole pack. The user may have seen it (the `kb:` hook).
-5. **Live docs only on request or when the kb lacks it**, and only if the user wants the current state:
+5. **Live docs for what the kb lacks** (a `none` or a `route:` line), or when the user asks for the current state. A host may have the kb without the docs servers: then use the official documentation on the web.
    - Microsoft products: `microsoft_docs_search`, then `microsoft_docs_fetch`. Claude Code: `search_claude_code_docs`. MCP spec: `search_model_context_protocol`.
    - Label that part "live docs, not in the kb", with the url and today's date. In a clone, suggest `/kb-add-topic` or `/kb-refresh`.
    - Never call `submit_feedback`.

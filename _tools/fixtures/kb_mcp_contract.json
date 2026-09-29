@@ -1,5 +1,5 @@
 {
-  "instructions_sha256": "22e9e8802c98d3d26896eb2c206116211199c5b0d29e437f9dd2cddd924aac51",
+  "instructions_sha256": "b5e55e13f930c4c8cd8217d826f5adf04b3c8544e6f606e42729ecdce029e5b3",
   "tools": {
     "kb_pack": {
       "inputSchema": {
@@ -121,5 +121,5 @@
       "name": "kb_show"
     }
   },
-  "version": "1.2.0"
+  "version": "1.3.0"
 }

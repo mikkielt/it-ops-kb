@@ -572,6 +572,9 @@ STOP = kbid.STOP | {"about", "after", "all", "any", "also", "been", "but", "did"
                     "answer", "answers", "cite", "citation", "citations", "please", "explain", "tell", "give",
                     "describe", "briefly", "safely", "help", "need", "want", "know"}
 WORD = re.compile(r"\w+(?:[.\-]\w+)*")
+# the none rule as the pack prints it (the route lines follow it)
+NONE_SENTENCE = ("The kb does not cover this. Do not answer from the hits below; state what the kb has and lacks "
+                 "(the lines below), research the rest in the live docs, never from memory.")
 
 
 @functools.lru_cache(maxsize=None)
@@ -1298,7 +1301,7 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
     if fresh:
         out.append(fresh)
     if verdict == "none":
-        out.append("The kb does not cover this. Do not answer from the hits below; say so, or research it with /kb-research.")
+        out.append(NONE_SENTENCE)
     route = route_of(verdict, unmatched, spread, missing)
     has, lacks = own_words(question, hit), own_words(question, [t for t in informative if t not in hit])
     if route:
