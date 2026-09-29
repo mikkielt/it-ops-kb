@@ -2,7 +2,7 @@
   "id": "TK-mmrsjxct",
   "kind": "task",
   "title": "learn's false-none rule over a none entry's fetched urls",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-hfzdlzai",
   "priority": "P1",
   "rank": 1,
@@ -29,5 +29,29 @@
     "_tools/ql_learn.py",
     "_tools/test_querylog.py"
   ],
-  "claimed_by": "worker-mmrsjxct"
+  "evidence": {
+    "commit": "9cb820ecb3e57fdf300081a04878c31bd263f2aa",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "TestLearnFalseNone"
+        ],
+        "exit": 0,
+        "sha256": "648ac3c498667797"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "TestLearn"
+        ],
+        "exit": 0,
+        "sha256": "03c4aad27abe2cf2"
+      }
+    ]
+  }
 }
