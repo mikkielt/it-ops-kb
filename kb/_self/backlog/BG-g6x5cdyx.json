@@ -6,7 +6,7 @@
   "priority": "P3",
   "rank": 0,
   "severity": "S4",
-  "goal": "A test runs every selfdoc.py section command named in .claude/skills/*/SKILL.md and fails when one exits non-zero, so renaming a kb/_self heading a skill reads fails the gate",
+  "goal": "A test runs every selfdoc.py section command named in .claude/skills/*/SKILL.md and fails when one exits non-zero or its text holds a character Bash and PowerShell read differently (a backslash-escaped backtick, $(, a backtick), so renaming a heading a skill reads, or a command that parses in one shell only, fails the gate",
   "repro": {
     "run": [
       "python3",
@@ -27,5 +27,6 @@
   ],
   "touches": [
     "_tools/test_selfdoc.py"
-  ]
+  ],
+  "notes": "SP-qdq57zu3 retrospective: the kb-ingest section command escaped backticks and did not parse under PowerShell (BG-v2xwgr6m); no test parses the skills' commands for both shells."
 }
