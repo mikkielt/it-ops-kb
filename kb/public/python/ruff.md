@@ -2,8 +2,8 @@
 topic: python/ruff
 priority: P2
 applies_to: [ruff]
-retrieved_utc: 2026-09-28
-sources: [S-y3zhzpmv, S-7fmtkrv5, S-qgwumz4k, S-s3ytflwh, S-yfbe6ete, S-guaor3a5, S-my7mtswb, S-ntllah3f, S-okwkut4q, S-7e63teyx]
+retrieved_utc: 2026-09-29
+sources: [S-fy5sn7ch, S-h2lscnwe, S-oymini6d, S-y3zhzpmv, S-7fmtkrv5, S-qgwumz4k, S-s3ytflwh, S-yfbe6ete, S-guaor3a5, S-my7mtswb, S-ntllah3f, S-okwkut4q, S-7e63teyx]
 status: complete
 ---
 
@@ -75,8 +75,14 @@ since it sets `select = ["F"]` explicitly.
 - `ruff analyze graph` prints its map as pretty-printed JSON on stdout, with every path relative to the current working directory. [CODE S-7e63teyx: crates/ruff/src/commands/analyze_graph.rs#analyze_graph]
 - At ruff 0.16.9, `ruff analyze graph` warns that it is experimental and may change without warning unless `[tool.ruff.analyze] preview` (default false) is enabled, the setting that exposes unstable commands. [CODE S-7e63teyx: crates/ruff/src/commands/analyze_graph.rs#analyze_graph; CODE S-s3ytflwh: crates/ruff_workspace/src/options.rs#AnalyzeOptions]
 - Related: `agents/codebase-mapping.md` uses the graph as a Python import map for repository mapping. [DER S-7e63teyx: the JSON file-to-files map]
+- `C901` (`complex-structure`) reports a function whose McCabe complexity (one plus the number of decision points in it) exceeds `lint.mccabe.max-complexity`, which defaults to 10. This repository selects only `F`, so it does not run it. [CODE S-fy5sn7ch: crates/ruff_linter/src/rules/mccabe/rules/function_is_too_complex.rs doc comment; the default is in crates/ruff_workspace/src/options.rs#McCabeOptions]
+- The pylint-family size rules are per function, with defaults `max-statements` 50 (`PLR0915`), `max-branches` 12 (`PLR0912`) and `max-args` 5 (`PLR0913`). [CODE S-s3ytflwh: crates/ruff_workspace/src/options.rs#PylintOptions]
+- At 0.16.9 ruff registers no rule that limits a module's length: its rule table has `E501` (`line-too-long`, per line) and the per-function rules above, but nothing for pylint's `C0302`. A module-size gate needs pylint or a script; ruff cannot express one. [DER S-my7mtswb: no module-line rule in crates/ruff_linter/src/codes.rs at 0.16.9]
+- Pylint's `too-many-lines` (`C0302`) is the official module-size check. Its page calls the line count a proxy for cyclomatic complexity and says the usual cure is to split the file into a package with the same API, done early to keep a better version-control history. [DOC S-h2lscnwe]
+- Pylint's `max-module-lines` option defaults to 1000. [CODE S-oymini6d: pylint/checkers/format.py#max-module-lines]
 
 ## Reference
+- Related: `python/imports-and-modules.md` (module layout and import rules for a flat script directory).
 - SNIPPET: this repository's ruff config (Pyflakes-only linting, 200-column lines, tooling dirs excluded); context: ruff 0.16.9, pyproject.toml; checked: syntax [DER S-y3zhzpmv: `select = ["F"]` selects only Pyflakes rules per the prefix rule; DOC S-7fmtkrv5: default `line-length`/`indent-width` and excluded tooling directories]
 ```toml
 [tool.ruff]

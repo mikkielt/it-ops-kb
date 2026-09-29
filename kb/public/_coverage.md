@@ -137,6 +137,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `gitlab/variables` | P0 | complete | `gitlab/variables.md` | 2 |
 | `gitlab/automated-merge-requests` | P3 | complete | `gitlab/automated-merge-requests.md` | 29 |
 | `gitlab/detecting-mr-merges-in-ci` | P3 | complete | `gitlab/detecting-mr-merges-in-ci.md` | 14 |
+| `gitlab/git-history-queries` | P3 | complete | `gitlab/git-history-queries.md` | 7 |
 | `gitlab/git-trailers-and-hooks` | P3 | complete | `gitlab/git-trailers-and-hooks.md` | 11 |
 | `gitlab/github-branch-rules-and-auto-merge` | P3 | complete | `gitlab/github-branch-rules-and-auto-merge.md` | 18 |
 | `gitlab/hosted-runners-windows` | P3 | complete | `gitlab/hosted-runners-windows.md` | 5 |
@@ -234,12 +235,13 @@ Every topic of this root with its priority (the research order, not importance),
 | `privacy/presidio-operators-deanonymize` | P0 | complete | `privacy/presidio-operators-deanonymize.md` | 13 |
 | `privacy/presidio-recognizer-yaml` | P0 | complete | `privacy/presidio-recognizer-yaml.md`, `privacy/presidio-recognizer-registry.schema.json`, `privacy/presidio-example_recognizers.yaml` | 9 |
 | `privacy/spacy-model-licence` | P0 | complete | `privacy/spacy-model-licence.md` | 5 |
-| `python/pytest` | P2 | complete | `python/pytest.md` | 6 |
+| `python/pytest` | P2 | complete | `python/pytest.md` | 10 |
 | `python/pytest-xdist` | P2 | complete | `python/pytest-xdist.md` | 3 |
-| `python/ruff` | P2 | complete | `python/ruff.md` | 10 |
+| `python/ruff` | P2 | complete | `python/ruff.md` | 13 |
 | `python/stdlib-sqlite3-csv` | P2 | complete | `python/stdlib-sqlite3-csv.md` | 3 |
 | `python/uv-projects` | P2 | complete | `python/uv-projects.md` | 11 |
 | `python/version-lifecycle` | P2 | complete | `python/version-lifecycle.md`, `python/version-lifecycle.csv` | 8 |
+| `python/imports-and-modules` | P3 | complete | `python/imports-and-modules.md` | 8 |
 | `python/stdlib-windows-portability` | P3 | partial | `python/stdlib-windows-portability.md` | 9 |
 | `python/uv-windows-install` | P3 | partial | `python/uv-windows-install.md` | 3 |
 | `python/windows-python-install` | P3 | partial | `python/windows-python-install.md` | 4 |

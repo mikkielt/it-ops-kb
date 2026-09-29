@@ -2083,3 +2083,16 @@ _Agent: reuse_
 - See gitlab/protected-branches-tags.md, gitlab/github-branch-rules-and-auto-merge.md, gitlab/detecting-mr-merges-in-ci.md, gitlab/repository-mirroring.md, gitlab/automated-merge-requests.md, gitlab/git-trailers-and-hooks.md.
 
 _Agent: kb-research_
+
+## QK-python-modules-pytest-git-behave-large. How do Python modules, pytest and git behave when a large script or test file is split into flat-prefixed modules?
+- A script's directory is `sys.path[0]`, so sibling modules of a flat `_tools/` import by bare name whatever the working directory; `-P`, `PYTHONSAFEPATH` and `-I` remove that entry. [DOC S-kzlfvktk, S-d77lvlq4]
+- A top-level `from module import name` in a cycle fails because the first module has not finished; `import module`, imports inside functions, or a third shared module avoid it. [DOC S-uwxacpum]
+- An underscore name is a convention for non-public, and `import *` skips it; the language does not stop `from mod import _name`, so a check has to parse imports with `ast` (`Import`, `ImportFrom`, `level`). [DOC S-y3vaig55, S-pnak2iyz, S-nmpccgft, S-ci5jq2sq]
+- pytest `-k` matches file, class and function names, case-insensitively; node ids embed the file path, so moving a class changes its ids but not `-k ClassName`; a selector that matches nothing exits 5; without packages test files need unique names and their directory goes on `sys.path`. [DOC S-kthrpvjf, S-4riqrsyi; exit 5 run on pytest 9.1.1]
+- Git detects renames per commit by similarity (default 50%), `--follow` takes one file, `-L` cannot combine with pathspecs or `--stat`, and a deleted path can still be queried with `git log -- <path>`. [DOC S-kr4uocm7, S-45u5kgbq, S-hpl22yvu, S-vk5alhjj]
+- Ruff has per-function complexity and size rules (`C901` default 10, `PLR0915` 50) and none for module length; pylint's `C0302` (`max-module-lines` 1000) is the official module-size check. [CODE S-fy5sn7ch, S-s3ytflwh, S-oymini6d; DOC S-h2lscnwe]
+- Conclusion: a split of a flat script directory into prefixed modules is safe for imports if the facade is the only script entry point, helpers never import it, and test file names stay unique; test node ids change but `-k` class or function selectors and exit-5 gates still work. [DER S-kzlfvktk, S-4riqrsyi, S-kthrpvjf]
+- Open: whether a script imported back under its own name loads twice. [UNK]
+- See python/imports-and-modules.md, python/pytest.md, python/ruff.md, gitlab/git-history-queries.md.
+
+_Agent: kb-research_

@@ -1046,6 +1046,10 @@ Still open: (topic: auth/configmgr-rbac-auth)
 - **Which hook input fields identify a subagent (agent_id, agent_type) in PostToolUse?** The kb was asked this in a logged lookup of 2026-09-28, and no article answered it (query log finding F-6c75fa8a8950). Looked in the kb 2026-09-28: `rag.py pack` gives `weak`, with this topic in the lead. Needs an official source that states it (`/kb-research`, or the query log's opt-in research). (topic: claude/hooks)
   - Resolved 2026-09-28: common input fields `agent_id` (only inside a subagent) and `agent_type` identify the subagent in `PostToolUse` and other tool events (S743), and the Agent SDK sets them per language (S-av5665nf); answer QK-hook-input-fields-identify-subagent-posttooluse. (topic: claude/hooks)
 
+## python/imports-and-modules
+
+- **What happens when a file run as a script is also imported by another module under its own name** (whether it loads a second time as a separate module, which matters for a facade script that its helper modules might import back): the tutorial, the import reference and the `__main__` page at v3.14.7 say only that a script's `__name__` is `"__main__"`. Looked 2026-09-29. Needs the import system reference on `sys.modules['__main__']` or a run on a planted pair. (topic: python/imports-and-modules)
+
 ## gitlab/automated-merge-requests
 
 - The exit code of `glab auth status` when the host is not signed in: the generated command page (S-d6wuvfpd, gitlab-org/cli @37ebe99d `docs/source/auth/status.md`) describes the checks and flags but no exit status (2026-09-28). [UNK] (topic: gitlab/automated-merge-requests)
