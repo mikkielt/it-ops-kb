@@ -1,0 +1,24 @@
+{
+  "id": "BG-z57p5tle",
+  "kind": "bug",
+  "title": "kbingest map lets a repository's Directory.Build.rsp add MSBuild switches",
+  "status": "todo",
+  "sprint": "SP-fkyrld5h",
+  "priority": "P1",
+  "rank": 0,
+  "severity": "S1",
+  "goal": "DotnetMapper's dotnet msbuild argument list carries -noAutoResponse, so a Directory.Build.rsp committed in the project folder or above it (read automatically by MSBuild, turned off only by -noAutoResponse per Microsoft Learn msbuild-response-files) cannot add -target, -restore or -logger to the evaluation; a test named kbingest_map_dotnet_no_auto_response with a planted .rsp asserts the exact argument list, and a planted removal of the switch fails it (sprint review ST-ptn4bkh3 finding F1)",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/tests.py",
+      "-k",
+      "kbingest_map_dotnet_no_auto_response"
+    ]
+  },
+  "touches": [
+    "_tools/kbingest.py",
+    "_tools/test_kbingest.py",
+    "_tools/fixtures/kbingest/**"
+  ]
+}

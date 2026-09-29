@@ -1,0 +1,21 @@
+{
+  "id": "BG-t57twtvb",
+  "kind": "bug",
+  "title": "kbingest docs say map runs nothing from the repository while open bugs show paths that do",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kb/_self/tools.md's kbingest row and the kb-ingest skill's Map bullet state the guarantees kbingest map actually enforces (read-only argument lists, network-off environment, a tool resolved inside the worktree refused) and name the known limits still open (BG-2g3zo4g7, BG-v7k5h2bu, BG-lfrc7eev, BG-lnwercde) instead of an absolute 'nothing run from the repository'; reword again when those close (sprint SP-fkyrld5h review finding F10)",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;t=open('kb/_self/tools.md',encoding='utf-8').read();sys.exit(1 if 'nothing built, restored, installed or run from the repository' in t else 0)"
+    ]
+  },
+  "touches": [
+    "kb/_self/tools.md",
+    ".claude/skills/kb-ingest/SKILL.md"
+  ]
+}

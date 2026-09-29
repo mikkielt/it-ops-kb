@@ -1,0 +1,27 @@
+{
+  "id": "BG-v7k5h2bu",
+  "kind": "bug",
+  "title": "kbingest map leaves the MSBuild NuGet SDK resolver able to fetch an SDK",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "NETWORK_OFF sets MSBUILDDISABLENUGETSDKRESOLVER=1 (after confirming the variable in Microsoft docs and adding the fact to agents/codebase-mapping.md with a DOC source row), so an Sdk=\\\"X/1.0\\\" reference, a global.json msbuild-sdks entry or a repository NuGet.Config proxy cannot make evaluation download and import an SDK package; a missing SDK is a note; a test named kbingest_map_dotnet_no_sdk_resolver asserts the variable reaches dotnet (sprint SP-fkyrld5h review finding F5, inferred, not reproduced)",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/tests.py",
+      "-k",
+      "kbingest_map_dotnet_no_sdk_resolver"
+    ]
+  },
+  "touches": [
+    "_tools/kbingest.py",
+    "_tools/test_kbingest.py",
+    "_tools/fixtures/kbingest/**",
+    "kb/public/agents/codebase-mapping.md",
+    "kb/public/_sources.csv",
+    "kb/public/_coverage.csv",
+    "kb/public/_coverage.md"
+  ]
+}

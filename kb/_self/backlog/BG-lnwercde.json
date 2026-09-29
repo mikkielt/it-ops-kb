@@ -1,0 +1,22 @@
+{
+  "id": "BG-lnwercde",
+  "kind": "bug",
+  "title": "kbingest map runs cargo when rust-toolchain.toml names a toolchain path",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "CargoMapper reads rust-toolchain.toml and rust-toolchain at the worktree root as text and, when either sets a path key (a custom toolchain directory, per the rustup overrides page), skips Cargo with a note and runs no cargo command; a test named kbingest_map_cargo_toolchain_path proves no cargo call is logged (sprint SP-fkyrld5h review finding F7)",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/tests.py",
+      "-k",
+      "kbingest_map_cargo_toolchain_path"
+    ]
+  },
+  "touches": [
+    "_tools/kbingest.py",
+    "_tools/test_kbingest.py"
+  ]
+}

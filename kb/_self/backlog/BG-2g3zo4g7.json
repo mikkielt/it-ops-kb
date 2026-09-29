@@ -1,0 +1,22 @@
+{
+  "id": "BG-2g3zo4g7",
+  "kind": "bug",
+  "title": "kbingest map passes relative PATH entries to mapper children",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "scrub_env drops every PATH entry that is not absolute and every entry under the worktree, so a child resolving #!/usr/bin/env node or a rustup proxy in the worktree never runs a repository program such as node_modules/.bin/node; a test named kbingest_map_path_absolute_only with a planted relative entry proves it (sprint SP-fkyrld5h review finding F4)",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/tests.py",
+      "-k",
+      "kbingest_map_path_absolute_only"
+    ]
+  },
+  "touches": [
+    "_tools/kbingest.py",
+    "_tools/test_kbingest.py"
+  ]
+}

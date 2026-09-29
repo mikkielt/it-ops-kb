@@ -1,0 +1,23 @@
+{
+  "id": "BG-lfrc7eev",
+  "kind": "bug",
+  "title": "kbingest map copies repository-controlled MSBuild property values into the map",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "DotnetMapper keeps an evaluated value only when it fits its expected shape (a TFM, a LangVersion token, a NuGet package id and version) and notes the rest, and the map document is scanned with the leak shapes (SECRET_TEXT / kbcommon.leak_hits) before it is written, so a property function such as $([System.IO.File]::ReadAllText(...)) cannot carry a local file or environment value into the map and from there into kb facts; a test named kbingest_map_dotnet_value_shapes with a planted value proves it (sprint SP-fkyrld5h review finding F6)",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/tests.py",
+      "-k",
+      "kbingest_map_dotnet_value_shapes"
+    ]
+  },
+  "touches": [
+    "_tools/kbingest.py",
+    "_tools/test_kbingest.py",
+    "_tools/fixtures/kbingest/**"
+  ]
+}
