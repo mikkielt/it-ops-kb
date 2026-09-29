@@ -111,7 +111,7 @@ Set up the it-ops-kb knowledge base for this project, read-only:
    one kb_pack call with the question (MCP server `kb`; several parts: questions=[...]), or without it
    `python3 ~/src/it-ops-kb/_tools/rag.py pack "<question>"`; no subagent for a lookup. These are documentation
    facts, not live device or directory data. coverage: good -> answer
-   from the pack (with a check: line, only if a cited line answers the question itself); weak -> one more pack or kb_show; none -> say the kb does not cover it, add nothing from memory.
+   from the pack (with a check: line, only if a cited line answers the question itself); weak -> one more pack or kb_show; none or a route: line -> state what the kb has and lacks, answer the part it has, research only the rest in the live docs (the web when the host has no docs servers), label it "live docs, not in the kb", never from memory.
    Counts and lists: kb_audit, kb_facts, kb_source with cited=true. Every fact ends in one tag: DOC, CODE,
    DER, COMMUNITY or UNK; UNK and COMMUNITY are leads, not answers; CODE is implementation, not a documented promise. Cite path:line and the source url. Never call
    submit_feedback. The kb is read-only here; contribute through a clone of the repo (its kb/_self/maintaining.md).
