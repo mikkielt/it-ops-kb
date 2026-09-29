@@ -2,7 +2,7 @@
   "id": "ST-rgkc5fg5",
   "kind": "story",
   "title": "kb-tests-windows runs without a click on tool changes",
-  "status": "todo",
+  "status": "done",
   "parent": "EP-5p4ahbnq",
   "sprint": "SP-76inhw33",
   "priority": "P2",
@@ -30,5 +30,27 @@
     "kb/_self/git.md",
     "gitlab/automated-merge-requests"
   ],
-  "notes": "Both CI stories edit the kb-tests-windows block, so this one follows ST-jewmfu3n. The job runs on the project's docker-windows runner (ST-qmusneyk), not GitLab.com's hosted Windows runners, so an automatic run spends that runner's time, not the namespace's compute minutes. An optional job (allow_failure: true) does not count toward the pipeline status (gitlab/automated-merge-requests, DOC S-4darq3cp); red-pipeline never makes a pipeline unverified over kb-tests-windows."
+  "notes": "Both CI stories edit the kb-tests-windows block, so this one follows ST-jewmfu3n. The job runs on the project's docker-windows runner (ST-qmusneyk), not GitLab.com's hosted Windows runners, so an automatic run spends that runner's time, not the namespace's compute minutes. An optional job (allow_failure: true) does not count toward the pipeline status (gitlab/automated-merge-requests, DOC S-4darq3cp); red-pipeline never makes a pipeline unverified over kb-tests-windows.",
+  "evidence": {
+    "commit": "16e7b7c200b8951a4ea8612aac9191ac0ce1cb27",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import re,pathlib;t=pathlib.Path('.gitlab-ci.yml').read_text(encoding='utf-8');b=re.search(r'(?ms)^kb-tests-windows:\\n.*?(?=^\\S)',t).group(0);r=b.split('rules:',1)[1];assert 'when: manual' not in r and 'when: on_success' in r and 'allow_failure: true' in r,r"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/check.py"
+        ],
+        "exit": 0,
+        "sha256": "b389c4481654f5ba"
+      }
+    ]
+  }
 }
