@@ -2,7 +2,7 @@
   "id": "BG-5z3xfghs",
   "kind": "bug",
   "title": "pack answers none for a number the kb writes with a unit suffix (1.5 seconds vs 1.5-second)",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-c7fzjhge",
   "sprint": "SP-osxj4vmf",
   "priority": "P2",
@@ -24,5 +24,6 @@
     "F-6298df20a337",
     "public/claude/hooks.md:64"
   ],
-  "notes": "The pack's differential lists kb lacks: 1.5, and the pack shows hooks.md:63 but not line 64, which states the 1.5-second SessionEnd budget."
+  "notes": "The pack's differential lists kb lacks: 1.5, and the pack shows hooks.md:63 but not line 64, which states the 1.5-second SessionEnd budget.",
+  "claimed_by": "worker-unitnum"
 }

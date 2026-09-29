@@ -2,7 +2,7 @@
   "id": "ST-v3jzw42r",
   "kind": "story",
   "title": "docs.github.com and www.anthropic.com are staged providers",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-mzzucemv",
   "sprint": "SP-osxj4vmf",
   "priority": "P3",
@@ -31,5 +31,6 @@
   "links": [
     "F-88bfb93dc08f",
     "F-e1ebb2febe4b"
-  ]
+  ],
+  "claimed_by": "worker-providers"
 }
