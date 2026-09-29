@@ -2,7 +2,7 @@
   "id": "TK-y42nffg6",
   "kind": "task",
   "title": "Make the it-ops-kb-docs submit_feedback block one command that sh and PowerShell both parse",
-  "status": "doing",
+  "status": "done",
   "parent": "BG-qtphqxt2",
   "priority": "P2",
   "rank": 0,
@@ -29,5 +29,28 @@
     "_tools/test_kb_mcp.py",
     "kb/_self/plugin.md"
   ],
-  "claimed_by": "worker-qtphqxt2"
+  "evidence": {
+    "commit": "b6863008a32bc94119fbba897baf2a891947115a",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,sys; h=json.load(open('.claude-plugin/it-ops-kb-docs/.claude-plugin/plugin.json',encoding='utf-8'))['hooks']['PreToolUse']; sys.exit(1 if any('>&2' in x.get('command','') for e in h for x in e['hooks']) else 0)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "TestPluginManifest"
+        ],
+        "exit": 0,
+        "sha256": "7a5f00388ff53975"
+      }
+    ]
+  }
 }
