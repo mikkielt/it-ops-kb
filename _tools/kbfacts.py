@@ -45,8 +45,10 @@ The same index serves `search()` (rag.py search, kb_search): the corpus also hol
 its end the index files (README.md, each root's ledgers, the kb's own docs in kb/_self/), which only a search with
 `index` sees.
 """
-import array, bisect, csv, functools, hashlib, io, json, math, os, re, sqlite3, sys, tempfile, threading, time
+import array, ast, bisect, csv, functools, hashlib, io, json, math, os, re, sqlite3, subprocess, sys, tempfile, threading, time, warnings
+import xml.etree.ElementTree as ET
 from collections import Counter, defaultdict
+from fractions import Fraction
 
 TOOLS = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, TOOLS)
@@ -1449,9 +1451,15 @@ def _signals():
     for root, r in data_rows("signals.csv"):
         sig, topic = (r.get("signal") or "").strip(), (r.get("topic") or "").strip()
         if sig and topic:
-            rx = (r"(?<!\w)" if sig[0].isalnum() else "") + re.escape(sig) + (r"(?!\w)" if sig[-1].isalnum() else "")
-            out.append((sig, kbcommon.qualify(root, topic), re.compile(rx, re.I)))
+            out.append((sig, kbcommon.qualify(root, topic), signal_regex(sig)))
     return out
+
+
+def signal_regex(sig):
+    """The pattern of one signal: case-insensitive, whole word (a signal that starts or ends with punctuation matches
+    there as is)."""
+    rx = (r"(?<!\w)" if sig[0].isalnum() else "") + re.escape(sig) + (r"(?!\w)" if sig[-1].isalnum() else "")
+    return re.compile(rx, re.I)
 
 
 def code_files(paths, base=None):
@@ -1476,14 +1484,323 @@ def code_files(paths, base=None):
     return files, skipped
 
 
-def topics_for(paths=(), text="", base=None):
+# ---- imports mode: the package names a file declares, matched against the signals instead of its text
+
+MAX_AST_BYTES = 500_000  # Python source over this is not parsed (a parse tree costs many times the text)
+GENERATED_ATTRS = ("linguist-generated", "linguist-vendored")
+PY_SUFFIXES = (".py", ".pyi", ".pyw")
+MSBUILD_SUFFIXES = (".csproj", ".fsproj", ".vbproj", ".props", ".targets")
+PS_SUFFIXES = (".ps1", ".psm1")
+PACKAGE_JSON_SECTIONS = ("dependencies", "devDependencies", "peerDependencies", "optionalDependencies")
+PS_MODULE_NAME = re.compile(r"ModuleName\s*=\s*['\"]?([^'\";}\s,]+)", re.I)
+PS_HASHTABLE = re.compile(r"@\{[^{}]*\}")
+PS_REQUIRES = re.compile(r"^[ \t]*#requires[ \t]+(.*)$", re.I | re.M)
+PS_MODULES_SWITCH = re.compile(r"(?i)(?<!\S)-Modules?\s+")
+PS_NEXT_SWITCH = re.compile(r"\s-[A-Za-z]")
+PS_REQUIRED_MODULES = re.compile(r"(?im)^[ \t]*RequiredModules[ \t]*=[ \t]*")
+PS_QUOTED = re.compile(r"'([^'\r\n]+)'|\"([^\"\r\n]+)\"")
+PS_NAME = re.compile(r"[\w.\-]+")
+
+
+def _line_of(body, pos):
+    return body.count("\n", 0, pos) + 1
+
+
+def _line_of_name(body, name):
+    i = body.find(name)
+    return _line_of(body, i) if i >= 0 else 1
+
+
+def _python_imports(body):
+    """[(name, line)] of the import statements of Python source, read with ast.parse (the source is never run):
+    `import a.b` gives a.b, `from a.b import c` gives a.b.c (a.b for `*`). Relative imports name the project's own
+    modules and are left out; a source that does not parse gives none."""
+    if len(body) > MAX_AST_BYTES:
+        return []
+    try:
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            tree = ast.parse(body.lstrip("﻿"))
+    except (SyntaxError, ValueError, RecursionError, MemoryError):
+        return []
+    out = []
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            out += [(a.name, node.lineno) for a in node.names]
+        elif isinstance(node, ast.ImportFrom) and not node.level and node.module:
+            out += [(node.module if a.name == "*" else f"{node.module}.{a.name}", node.lineno) for a in node.names]
+    return sorted(set(out), key=lambda x: (x[1], x[0]))
+
+
+def _package_json_imports(body):
+    """The keys of dependencies, devDependencies, peerDependencies and optionalDependencies."""
+    try:
+        data = json.loads(body.lstrip("﻿"))
+    except (ValueError, RecursionError):
+        return []
+    if not isinstance(data, dict):
+        return []
+    names = []
+    for sec in PACKAGE_JSON_SECTIONS:
+        if isinstance(data.get(sec), dict):
+            names += [n for n in data[sec] if isinstance(n, str)]
+    return [(n, _line_of_name(body, json.dumps(n))) for n in dict.fromkeys(names)]
+
+
+def _go_mod_imports(body):
+    """The module paths of `require` (one line, or a block); replace, exclude and retract are not requirements."""
+    out, block = [], ""
+    for n, line in enumerate(body.splitlines(), start=1):
+        line = line.split("//", 1)[0].strip()
+        if not line:
+            continue
+        if line == ")":
+            block = ""
+            continue
+        opened = re.match(r"^(\w+)\s*\($", line)
+        if opened:
+            block = opened.group(1)
+            continue
+        parts = line.split()
+        if block == "require":
+            path = parts[0]
+        elif not block and parts[0] == "require" and len(parts) > 1:
+            path = parts[1]
+        else:
+            continue
+        out.append((path.strip("\"`"), n))
+    return out
+
+
+def _msbuild_imports(body):
+    """PackageReference / PackageVersion / GlobalPackageReference (Include, or Update in a props file) of an MSBuild
+    file, read with xml.etree (a document with a DOCTYPE is refused: no entity is ever expanded)."""
+    if re.search(r"<!(?:DOCTYPE|ENTITY)", body, re.I):
+        return []
+    try:
+        root = ET.fromstring(re.sub(r"^\s*<\?xml[^>]*\?>", "", body.lstrip("﻿")))
+    except (ET.ParseError, ValueError, RecursionError):
+        return []
+    names = []
+    for el in root.iter():
+        if isinstance(el.tag, str) and el.tag.rsplit("}", 1)[-1] in ("PackageReference", "PackageVersion", "GlobalPackageReference"):
+            name = el.get("Include") or el.get("Update")
+            if name:
+                names.append(name.strip())
+    return [(n, _line_of_name(body, n)) for n in dict.fromkeys(names)]
+
+
+def _blank_ps_comments(body):
+    """The PowerShell source with comments replaced by spaces (offsets and lines kept); `#` inside a quoted string
+    stays."""
+    out, i, n, quote = [], 0, len(body), ""
+    while i < n:
+        c = body[i]
+        if quote:
+            out.append(c)
+            if c == quote:
+                quote = ""
+        elif c in "'\"":
+            quote = c
+            out.append(c)
+        elif body.startswith("<#", i):
+            j = body.find("#>", i + 2)
+            j = n if j < 0 else j + 2
+            out.append("".join(ch if ch in "\r\n" else " " for ch in body[i:j]))
+            i = j
+            continue
+        elif c == "#":
+            j = body.find("\n", i)
+            j = n if j < 0 else j
+            out.append(" " * (j - i))
+            i = j
+            continue
+        else:
+            out.append(c)
+        i += 1
+    return "".join(out)
+
+
+def _ps_names(chunk, offset, body):
+    """[(name, line)] of a module list: hashtable `@{ModuleName='X'}` items, quoted names, or bare names."""
+    out = []
+    for m in PS_MODULE_NAME.finditer(chunk):
+        out.append((m.group(1), _line_of(body, offset + m.start(1))))
+    plain = PS_HASHTABLE.sub(lambda m: " " * len(m.group()), chunk)
+    quoted = list(PS_QUOTED.finditer(plain))
+    for m in quoted:
+        name = (m.group(1) or m.group(2)).strip()
+        if PS_NAME.fullmatch(name):
+            out.append((name, _line_of(body, offset + m.start())))
+    if not quoted:
+        out += [(m.group(), _line_of(body, offset + m.start())) for m in PS_NAME.finditer(plain)]
+    return out
+
+
+def _ps_requires_imports(body):
+    """Modules of `#Requires -Modules A, B` and `#Requires -Modules @{ModuleName='X'; ModuleVersion='1.0'}` lines. A
+    `#Requires` that sits inside a longer comment (`# #Requires ...`) is not a directive and is left out."""
+    out = []
+    for m in PS_REQUIRES.finditer(body):
+        sw = PS_MODULES_SWITCH.search(m.group(1))
+        if not sw:
+            continue
+        start = m.start(1) + sw.end()
+        rest = body[start:m.end(1)]
+        masked = PS_HASHTABLE.sub(lambda h: " " * len(h.group()), rest)
+        cut = PS_NEXT_SWITCH.search(masked)
+        out += _ps_names(rest[:cut.start() if cut else len(rest)], start, body)
+    return list(dict.fromkeys(out))
+
+
+def _psd1_imports(body):
+    """Modules of a manifest's `RequiredModules = @('A', @{ModuleName='B'; ModuleVersion='1.0'})` (comments blanked)."""
+    text = _blank_ps_comments(body)
+    out = []
+    for m in PS_REQUIRED_MODULES.finditer(text):
+        pos = m.end()
+        if text.startswith("@(", pos):
+            depth, quote, i = 0, "", pos + 1
+            while i < len(text):
+                c = text[i]
+                if quote:
+                    quote = "" if c == quote else quote
+                elif c in "'\"":
+                    quote = c
+                elif c == "(":
+                    depth += 1
+                elif c == ")":
+                    depth -= 1
+                    if depth == 0:
+                        break
+                i += 1
+            end = i
+        else:
+            end = text.find("\n", pos)
+            end = len(text) if end < 0 else end
+        out += _ps_names(text[pos:end], pos, text)
+    return list(dict.fromkeys(out))
+
+
+def import_reader(name):
+    """The reader of a file's imports by its name, or None: package.json (dependencies, devDependencies,
+    peerDependencies, optionalDependencies), go.mod (require), .py (ast), .csproj/.fsproj/.vbproj/.props/.targets
+    (PackageReference, PackageVersion), .ps1/.psm1 (#Requires -Modules) and .psd1 (RequiredModules)."""
+    base = name.replace("\\", "/").rsplit("/", 1)[-1].lower()
+    if base == "package.json":
+        return _package_json_imports
+    if base == "go.mod":
+        return _go_mod_imports
+    if base.endswith(PY_SUFFIXES):
+        return _python_imports
+    if base.endswith(MSBUILD_SUFFIXES):
+        return _msbuild_imports
+    if base.endswith(PS_SUFFIXES):
+        return _ps_requires_imports
+    if base.endswith(".psd1"):
+        return _psd1_imports
+    return None
+
+
+def imports_of(name, body):
+    """[(imported name, line)] a file declares, by the reader for its name (import_reader); a given text with no file
+    name (`name` empty) is read as Python, then as a PowerShell script. Nothing is executed."""
+    if name:
+        reader = import_reader(name)
+        return reader(body) if reader else []
+    return _python_imports(body) or _ps_requires_imports(body)
+
+
+def _repo_top(directory, cache):
+    """The directory holding the `.git` (a directory, or a file for a worktree) above `directory`, or None."""
+    chain, d, top = [], directory, None
+    while True:
+        if d in cache:
+            top = cache[d]
+            break
+        chain.append(d)
+        if os.path.exists(os.path.join(d, ".git")):
+            top = d
+            break
+        parent = os.path.dirname(d)
+        if parent == d:
+            break
+        d = parent
+    for c in chain:
+        cache[c] = top
+    return top
+
+
+def marked_files(fulls):
+    """{full path: attribute} of the files git marks `linguist-generated` or `linguist-vendored` (set, or true), from
+    `git check-attr` in the repository each file lives in; a file outside a repository, or a machine without git,
+    marks nothing. An unset or false attribute keeps the file."""
+    cache, groups = {}, defaultdict(dict)
+    for full in fulls:
+        real = os.path.realpath(full)
+        top = _repo_top(os.path.dirname(real), cache)
+        if top:
+            groups[top][os.path.relpath(real, top).replace(os.sep, "/")] = full
+    out = {}
+    for top, rels in groups.items():
+        data = b"".join(r.encode("utf-8", "surrogateescape") + b"\0" for r in rels)
+        try:
+            p = subprocess.run(["git", "-C", top, "check-attr", "--stdin", "-z", *GENERATED_ATTRS], input=data,
+                               capture_output=True, timeout=60)
+        except (OSError, subprocess.SubprocessError):
+            continue
+        if p.returncode:
+            continue
+        parts = p.stdout.split(b"\0")
+        for i in range(0, len(parts) - 2, 3):
+            rel, attr, val = (x.decode("utf-8", "surrogateescape") for x in parts[i:i + 3])
+            if val in ("set", "true") and rel in rels:
+                out.setdefault(rels[rel], attr)
+    return out
+
+
+def _topics_by_imports(found):
+    """{topic: {signals, where, imports, score}} for {import name: [where, count]}: a signal must match the whole
+    import name as a word. An import that matches signals of one topic counts 1 for it, one that matches signals of k
+    topics counts 1/k for each, so a specific import ranks its topic above a broad one."""
+    sigs = signals()
+    hits = defaultdict(lambda: {"signals": Counter(), "where": {}, "imports": [], "score": Fraction(0)})
+    for name in sorted(found):
+        where, n = found[name]
+        matched = [(sig, topic) for sig, topic, rx in sigs if rx.search(name)]
+        topics = sorted({t for _, t in matched})
+        for sig, topic in matched:
+            h = hits[topic]
+            h["signals"][sig] += n
+            h["where"].setdefault(sig, where)
+        for t in topics:
+            h = hits[t]
+            h["score"] += Fraction(1, len(topics))
+            h["imports"].append({"import": name, "where": where, "signals": sorted({s for s, tt in matched if tt == t}),
+                                 "topics": len(topics)})
+    return hits
+
+
+def topics_for(paths=(), text="", base=None, imports=False):
     """Rank kb topics for code: every signal found in the files (or in `text`) adds to its topic. Returns
     {"topics": [{topic, signals: {signal: count}, where: {signal: "path:line"}}], "files": n, "text": bool,
-    "skipped": [...]}."""
+    "skipped": [...]}.
+
+    imports=True matches the signals only against the package names the files declare (import_reader: Python
+    imports, package.json, go.mod, csproj and props, PowerShell #Requires and .psd1), so a signal that a comment, a
+    string or a docstring merely mentions finds nothing; files git marks linguist-generated or linguist-vendored are
+    skipped. Each topic then also has "imports": [{import, where, signals, topics}] and a "score" (see
+    _topics_by_imports), topics are ranked by score, and the result has "mode": "imports" and "imports": how many
+    distinct imports were found. A candidate to look at, never an owner of the code."""
     sources, skipped = [], []
     if text:
-        sources.append(("text", text))
+        sources.append(("text", text, None))
     files, skipped = code_files(paths, base) if paths else ([], [])
+    if imports:
+        files = [(s, f) for s, f in files if import_reader(s)]
+        marked = marked_files([f for _, f in files])
+        skipped += [f"{s}: {marked[f]}" for s, f in files if f in marked]
+        files = [(s, f) for s, f in files if f not in marked]
     for shown, full in files:
         try:
             if os.path.getsize(full) > MAX_FILE_BYTES:
@@ -1496,9 +1813,25 @@ def topics_for(paths=(), text="", base=None):
             continue
         if b"\0" in raw[:4096]:
             continue  # binary
-        sources.append((shown, raw.decode("utf-8", errors="replace")))
+        sources.append((shown, raw.decode("utf-8", errors="replace"), full))
+    if imports:
+        found = {}
+        for shown, body, full in sources:
+            if full and import_reader(shown) is _python_imports and len(body) > MAX_AST_BYTES:
+                skipped.append(f"{shown}: over {MAX_AST_BYTES // 1000} KB for the Python reader")
+                continue
+            for name, line in imports_of("" if full is None else shown, body):
+                cur = found.setdefault(name, [f"{shown}:{line}", 0])
+                cur[1] += 1
+        hits = _topics_by_imports(found)
+        ranked = sorted(hits.items(), key=lambda kv: (-kv[1]["score"], -len(kv[1]["imports"]), kv[0]))
+        topics = [{"topic": t, "signals": dict(h["signals"].most_common()), "where": h["where"],
+                   "imports": sorted(h["imports"], key=lambda i: (i["topics"], i["import"])),
+                   "score": round(float(h["score"]), 3)} for t, h in ranked]
+        return {"topics": topics, "files": len(sources) - (1 if text else 0), "text": bool(text), "skipped": skipped,
+                "mode": "imports", "imports": len(found)}
     hits = defaultdict(lambda: {"signals": Counter(), "where": {}})
-    for shown, body in sources:
+    for shown, body, _ in sources:
         for sig, topic, rx in signals():
             ms = list(rx.finditer(body))
             if ms:
@@ -1511,12 +1844,21 @@ def topics_for(paths=(), text="", base=None):
 
 
 def format_topics_for(res, limit=15):
-    out = [f"kb topics for {res['files']} file(s)" + (" and the given text" if res.get("text") else "") + ":"]
+    by_imports = res.get("mode") == "imports"
+    out = [f"kb topics for {res['files']} file(s)" + (" and the given text" if res.get("text") else "")
+           + (f" by their imports ({res.get('imports', 0)} found)" if by_imports else "") + ":"]
     for x in res["topics"][:limit]:
+        if by_imports:
+            via = ", ".join(f"{i['import']} ({i['where']}; {', '.join(i['signals'])}"
+                            + (f"; also {i['topics'] - 1} other topic(s)" if i["topics"] > 1 else "") + ")" for i in x["imports"])
+            out.append(f"- {x['topic']}  imports: {via}")
+            continue
         sigs = ", ".join(f"{s} ({n}, {x['where'][s]})" for s, n in x["signals"].items())
         out.append(f"- {x['topic']}  {sigs}")
     if not res["topics"]:
-        out.append("no kb signal found: the code touches none of the curated topics (each root's signals.csv)")
+        out.append("no kb signal found among the imports: none of the declared packages is a curated signal (each root's signals.csv)"
+                   if by_imports else
+                   "no kb signal found: the code touches none of the curated topics (each root's signals.csv)")
     elif len(res["topics"]) > limit:
         out.append(f"... +{len(res['topics']) - limit} more topics")
     out += [f"skipped: {s}" for s in res["skipped"][:10]]
