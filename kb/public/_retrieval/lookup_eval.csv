@@ -260,3 +260,4 @@ EV-github-auto-merge-pull-request-required,GitHub auto-merge pull request requir
 EV-gitlab-push-mirroring-tier-self-managed,GitLab push mirroring tier self-managed,gitlab/repository-mirroring.md,good,
 EV-ci-tell-merge-request-merge-direct,How does CI tell a merge request merge from a direct push to the default branch,gitlab/detecting-mr-merges-in-ci.md,good,
 EV-c-using-directive-javascript-import-require,C# using directive and JavaScript import require syntax for finding a file's dependencies,agents/codebase-mapping.md,good,
+EV-python-org-release-api-sha256-sigstore,python.org release API sha256 sigstore bundle,python/windows-python-install.md,good,

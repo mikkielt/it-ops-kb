@@ -2153,3 +2153,14 @@ _Agent: kb-research_
 - See agents/codebase-mapping.md, windows/powershell-static-analysis.md, agents/coding-agent-codebase-context.md.
 
 _Agent: kb-research_
+
+## QK-unattended-options-per-user-location-python3. What unattended options, per-user location, python3.exe and checksums does the python.org Windows installer have?
+- `/quiet` runs with no UI; `InstallAllUsers` (0), `PrependPath` (0), `Include_launcher` (1), `InstallLauncherAllUsers` (1), `Include_test` (1) and `Shortcuts` (1) are `name=value` options with those defaults. [DOC S-sjuwcuhk]
+- A per-user install goes to `%LocalAppData%\Programs\Python\PythonXY`; it needs no administrator unless the launcher is installed for all users or a C runtime update is needed. [DOC S-sjuwcuhk]
+- The installer's executables MSI installs `python.exe` and `pythonw.exe`; no `Tools/msi/` file at v3.14.7 names a `python3.exe`. [DER S-srwea6un: exe_python component group and a search of the MSI sources]
+- The release API lists per file `sha256_sum` and `sigstore_bundle_file`; from 3.14 Sigstore is the only release signature, verified with `python -m sigstore verify identity` against the release manager's identity and OIDC issuer. [DOC S-lkt7o42d, S-jzqdphnx]
+- Conclusion: `/quiet InstallAllUsers=0 InstallLauncherAllUsers=0 PrependPath=1 Include_test=0 Shortcuts=0` installs per user without elevation, a script must add `python3.exe` itself, and the pinned sha256 comes from the release API, with the Sigstore bundle as the documented signature check. [DER S-sjuwcuhk, S-srwea6un, S-lkt7o42d, S-jzqdphnx]
+- Open: whether the installers carry an Authenticode signature and its expected subject; whether a quiet per-user run with the default all-users launcher elevates or fails. [UNK]
+- See python/windows-python-install.md.
+
+_Agent: kb-research_

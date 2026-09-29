@@ -3,7 +3,7 @@ topic: python/windows-python-install
 priority: P3
 applies_to: "CPython 3.14.7 for Windows: the python.org full installer (deprecated since 3.14), the Python install manager, the py launcher, PEP 514 registry entries and the Microsoft Store python alias; python.org release API read 2026-09-29"
 retrieved_utc: 2026-09-29
-sources: [S-sjuwcuhk, S-lkt7o42d, S-4jodaif5, S-omr5o3jv]
+sources: [S-sjuwcuhk, S-lkt7o42d, S-jzqdphnx, S-srwea6un, S-4jodaif5, S-omr5o3jv]
 status: partial
 ---
 
@@ -30,13 +30,20 @@ A scripted per-user install of the pinned CPython from python.org uses the full 
 - A per-user quiet install that must never ask for elevation therefore passes `InstallAllUsers=0` and `InstallLauncherAllUsers=0` explicitly, since the launcher's all-users default is 1. [DER S-sjuwcuhk: the two defaults and the administrator sentence above]
 - Whether a quiet `InstallAllUsers=0` run with the default `InstallLauncherAllUsers=1` elevates or fails is not stated. [UNK: not in the Windows usage page; a lab run decides]
 - The installer's maintenance mode (Programs and Features, Uninstall/Change) offers Modify, Repair and Uninstall; Uninstall leaves the launcher, which has its own entry. [DOC S-sjuwcuhk]
-- That the python.org installer installs no `python3.exe` is not stated in the Python docs; the docs name `python.exe` and, with the install manager, a `python3` command. [UNK: absence not documented; the repository's `_tools/install-python.ps1` adds the link for that reason]
+- The Python docs do not state whether the full installer installs a `python3.exe`; they name `python.exe`, and a `python3` command only for the install manager. [DOC S-sjuwcuhk]
+- In the 3.14.7 installer sources, the `exe_python` component group of the executables MSI installs `python.exe` and `pythonw.exe` (plus `vcruntime140.dll`) into the install directory and writes their paths to the PEP 514 `InstallPath` key. [CODE S-srwea6un: Tools/msi/exe/exe_files.wxs#exe_python]
+- The python.org full installer (3.14.7) therefore ships no `python3.exe`: none of the 89 build files under `Tools/msi/` at the `v3.14.7` tag names one (the only `python3` entry is `python3.lib`), so `python3` on such a host reaches whatever else is on `PATH`, often the Store shortcut. [DER S-srwea6un: the exe_python component list, and a search of every `Tools/msi/` file at v3.14.7 on 2026-09-29]
 
 ### Release API: checksums and signatures
 - `https://www.python.org/api/v2/downloads/release_file/?release=<id>` returns one JSON object per release file with `name`, `url`, `sha256_sum`, `md5_sum`, `filesize`, `sigstore_bundle_file`, `sigstore_cert_file`, `sigstore_signature_file`, `gpg_signature_file` and `sbom_spdx2_file`; release id 1116 is Python 3.14.7 (released 2026-08-05). [DOC S-lkt7o42d]
 - The Windows files of 3.14.7 in that listing are the embeddable packages (32-bit, 64-bit, ARM64), the three installers and a `windows-3.14.7.json` release manifest; each has a `.sigstore` bundle, `.crt` and `.sig` beside it and an empty `gpg_signature_file`. [DOC S-lkt7o42d]
 - `sha256_sum` of `python-3.14.7-amd64.exe` is `9d9eb2709ef81bf5cd30db3c2096bdbc4ea10087c22e62f27d356b36f6ae9649` (33,258,168 bytes) and of `python-3.14.7-arm64.exe` `9a3fe120cc81bc2cb099550f794d8356811f96a86c7f438519243c3485db928d` (32,570,072 bytes); the 32-bit installer is `097fc03d4ac2de66ee1d73a0c5d2d323b5c0f14923f7207686ce93149a80f0a6`. [DOC S-lkt7o42d]
 - The pins in `_tools/install-python.ps1` (3.14.7, amd64 and arm64) equal these API values on 2026-09-29. [DER S-lkt7o42d: the two hashes above compared with the script]
+- CPython release artifacts are signed with Sigstore; from Python 3.14 Sigstore is the only signing and verification method, and OpenPGP signatures remain only for releases older than the 3.14 series (PEP 761). [DOC S-jzqdphnx]
+- Verifying needs the artifact, its `.sigstore` bundle, the expected signer identity (the release manager's email for that version, listed on the page) and OIDC issuer; for 3.14 the issuer is `https://github.com/login/oauth`. [DOC S-jzqdphnx]
+- python.org recommends the `sigstore` client from PyPI: `python -m sigstore verify identity --bundle <file>.sigstore --cert-identity <email> --cert-oidc-issuer <issuer> <file>`, which prints `OK: <file>` on success; `cosign` is the suggested standalone binary. [DOC S-jzqdphnx]
+- A pinned sha256 value can be checked against the bundle instead of the file (`sha256:<hex>` in place of the path), which needs sigstore-python 3.3.0 or later; verifying a bundle is offline by default, and `--offline` also stops TUF metadata updates. [DOC S-jzqdphnx]
+- A script that pins the release API's sha256 and then checks the installer's Windows Authenticode signature does not use the Sigstore bundle; the Python docs pages read here do not describe Authenticode signing of the installer. [DER S-jzqdphnx, S-sjuwcuhk: Sigstore is the documented release signature; the Windows usage page names Authenticode only for install manager index signatures]
 
 ### py launcher and the Python install manager
 - The Python install manager is installed from the Microsoft Store or from an MSIX downloaded from python.org (`Add-AppxPackage <path to MSIX>`); the two are identical, and Store, WinGet, MSIX and MSI installs can coexist and share configuration and runtimes. [DOC S-sjuwcuhk]
@@ -71,6 +78,7 @@ A scripted per-user install of the pinned CPython from python.org uses the full 
 | Pre-download components | `python-3.14.7-amd64.exe /layout <dir>` | S-sjuwcuhk |
 | Default per-user directory | `%LocalAppData%\Programs\Python\PythonXY` | S-sjuwcuhk |
 | Installer SHA-256 and Sigstore | `sha256_sum`, `sigstore_bundle_file` of the release file API | S-lkt7o42d |
+| Verify a Sigstore bundle | `python -m sigstore verify identity --bundle <file>.sigstore --cert-identity <email> --cert-oidc-issuer <issuer> <file>` | S-jzqdphnx |
 | List installs | `py -0p` | S-sjuwcuhk |
 | Registry roots | `HKCU\Software\Python`, `HKLM\Software\Python`, `HKLM\Software\Wow6432Node\Python` | S-4jodaif5 |
 | Store shortcut off | Settings, "Manage app execution aliases", "App Installer" Python entries Off | S-omr5o3jv |

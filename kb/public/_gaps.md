@@ -1040,6 +1040,10 @@ Still open: (topic: auth/configmgr-rbac-auth)
 - **Whether a detached child started by a Claude Code hook on Windows survives the hook's exit** (a job object that kills children on close, and whether `CREATE_BREAKAWAY_FROM_JOB` is needed): not in the Claude Code hooks reference or the Python subprocess docs, looked 2026-09-28. Needs a Windows test of the `SessionEnd` launcher (query-log item 4). (topic: python/stdlib-windows-portability)
   - Tried 2026-09-28: the launcher (`_tools/querylog.py launch`) now adds `CREATE_BREAKAWAY_FROM_JOB` and falls back without it when the job refuses breakaway. On macOS the detached distill wrote its run file after the launcher exited and after its process group was killed (`_tools/test_querylog.py`, TestLaunch). The Windows test, which runs the launcher inside a kill-on-close job that allows breakaway, has not run on Windows yet; still missing: that run, and what job, if any, Claude Code puts hook processes in on Windows. (topic: python/stdlib-windows-portability)
 
+## python/windows-python-install
+
+- **Whether python.org's Windows installers carry an Authenticode signature, and which signer subject to expect.** The Python docs' Windows usage page (S-sjuwcuhk) names Authenticode only for install manager index signatures; python.org's Sigstore page (S-jzqdphnx) and PEP 761 describe Sigstore and OpenPGP only. Looked 2026-09-29. `_tools/install-python.ps1` checks an Authenticode signer; an official statement of the expected subject is still missing. [UNK] (topic: python/windows-python-install)
+
 ## claude/hooks
 
 - **The shape of `tool_response` for an MCP tool call in `PostToolUse`.** The hooks reference documents `tool_response` as "the result it returned" with a per-tool schema, and shows it for Write, Bash, Agent and ExitPlanMode, but not for an MCP tool (searched `code.claude.com/docs/en/hooks.md` for `tool_response` and `MCP`, 2026-09-28). The query log capture reads it defensively (a string, a content-block list or an object). [UNK] (topic: claude/hooks)

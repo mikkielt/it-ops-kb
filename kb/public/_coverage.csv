@@ -239,7 +239,7 @@ python/imports-and-modules,P3,complete,python/imports-and-modules.md,8
 python/stdlib-argparse-json,P3,complete,python/stdlib-argparse-json.md,2
 python/stdlib-windows-portability,P3,partial,python/stdlib-windows-portability.md,9
 python/uv-windows-install,P3,partial,python/uv-windows-install.md,3
-python/windows-python-install,P3,partial,python/windows-python-install.md,4
+python/windows-python-install,P3,partial,python/windows-python-install.md,6
 reuse/device-identity-correlation,P2,complete,reuse/device-identity-correlation.md,7
 reuse/drift-detection,P2,complete,reuse/drift-detection.md,5
 reuse/layered-settings-resolution,P2,complete,reuse/layered-settings-resolution.md,3
