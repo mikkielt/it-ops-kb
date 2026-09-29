@@ -686,6 +686,10 @@ class TestConflict:
         cls.refs1 = w.remote.git("for-each-ref", "--format=%(refname)", "refs/heads").split()
         cls.opts = (Path(w.remote.path) / "push-options.txt").read_text(encoding="utf-8").splitlines()
         cls.again = w.distill()
+        # what the second run could see of the conflict branch, for a failure message
+        cls.seen = "\n".join((w.clone.git("for-each-ref", "--format=%(refname) %(objectname)", "refs/remotes/"),
+                               w.clone.git("ls-tree", "-r", "--name-only", cls.branch1 and f"origin/{cls.branch1}" or "HEAD",
+                                           "--", "kb/_querylog/findings")))
         cls.st = w.state()
         cls.refs2 = w.remote.git("for-each-ref", "--format=%(refname)", "refs/heads").split()
         cls.opts2 = (Path(w.remote.path) / "push-options.txt").read_text(encoding="utf-8").splitlines()
@@ -704,7 +708,8 @@ class TestConflict:
         assert self.spool1  # rows stay
         rc, said = self.again
         # the held entry stayed off main in the second run
-        assert w.show(GAPS) == self.gaps_main1, ("the second run put the held gap entry on main", said)
+        assert w.show(GAPS) == self.gaps_main1, "the second run put the held gap entry on main\n" + "\n".join(
+            said) + "\n--- refs and the branch's findings files:\n" + self.seen
         assert w.show(GAPS, branch) == self.gaps_branch1, ("the branch changed in the second run", said)
         assert rc == 0 and says(said, "finding(s) wait on a querylog/ branch and are left alone"), said
         st = self.st
