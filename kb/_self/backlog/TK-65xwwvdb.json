@@ -2,7 +2,7 @@
   "id": "TK-65xwwvdb",
   "kind": "task",
   "title": "kb_http.py: stateless POST /mcp over kb_mcp.handle",
-  "status": "todo",
+  "status": "done",
   "parent": "ST-z6fw4er5",
   "priority": "P2",
   "rank": 0,
@@ -20,5 +20,20 @@
   "touches": [
     "_tools/kb_http.py",
     "_tools/test_kb_http.py"
-  ]
+  ],
+  "evidence": {
+    "commit": "10c76bde27301951d3c2dd3f33569969068c47ef",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "kb_http_transport"
+        ],
+        "exit": 0,
+        "sha256": "a6b2d561c01f7336"
+      }
+    ]
+  }
 }
