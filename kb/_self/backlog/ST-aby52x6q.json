@@ -1,0 +1,41 @@
+{
+  "id": "ST-aby52x6q",
+  "kind": "story",
+  "title": "Agents and the change router name the Conduct for changes section, not all of maintaining.md",
+  "status": "draft",
+  "parent": "EP-hsyx42zz",
+  "sprint": "SP-bno4xpft",
+  "priority": "P1",
+  "rank": 1,
+  "goal": "AGENTS.md and .claude/hooks/kb_change_router.py send a change to python3 _tools/selfdoc.py section maintaining \"Conduct for changes\" instead of reading kb/_self/maintaining.md whole, the skill list is read only when picking a skill, and AGENTS.md stays under its 4 KB cap",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "change_router"
+      ]
+    }
+  ],
+  "touches": [
+    "AGENTS.md",
+    ".claude/hooks/kb_change_router.py",
+    "_tools/test_change_router.py",
+    "kb/_self/maintaining.md"
+  ],
+  "gates": [
+    {
+      "id": "agents-rule",
+      "kind": "blocking",
+      "question": "This story changes a rule in AGENTS.md (the read-before-change line). May it?",
+      "options": [
+        "approve",
+        "hold"
+      ],
+      "recommendation": "approve",
+      "answer": "approve",
+      "by": "operator"
+    }
+  ]
+}

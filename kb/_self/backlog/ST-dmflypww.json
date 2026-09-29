@@ -4,6 +4,7 @@
   "title": "Docs and skills describe decisions",
   "status": "draft",
   "parent": "EP-v56iwyry",
+  "sprint": "SP-jtfo4ael",
   "priority": "P2",
   "rank": 8,
   "goal": "content-rules.md, tools.md, AGENTS.md's Tags section, the kb-lookup skill and the MCP server instructions describe the DECISION tag, the two files and kbdecide.py; /kb-refresh and /kb-census run kbdecide.py sweep; selfdoc.py finds nothing stale.",

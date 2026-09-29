@@ -4,6 +4,7 @@
   "title": "kbingest map runs cargo when rust-toolchain.toml names a toolchain path",
   "status": "draft",
   "parent": "EP-g5hizdko",
+  "sprint": "SP-xourq2gj",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
@@ -16,6 +17,16 @@
       "kbingest_map_cargo_toolchain_path"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "kbingest"
+      ]
+    }
+  ],
   "touches": [
     "_tools/kbingest.py",
     "_tools/test_kbingest.py"

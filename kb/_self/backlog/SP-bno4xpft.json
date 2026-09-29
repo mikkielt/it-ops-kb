@@ -1,0 +1,22 @@
+{
+  "id": "SP-bno4xpft",
+  "kind": "sprint",
+  "title": "Agents read sections, not files",
+  "status": "planned",
+  "goal": "No always-loaded text, hook or skill sends an agent to read a whole kb/_self doc or another skill when a section serves: AGENTS.md and the change router name the Conduct for changes section, selfdoc.py section prints several sections in one call, kb-research, kb-refresh, kb-backlog and kb-worker name their sections, the change router is silent without a match and emits a skill set once per session, and the horizon hook stays under 1000 characters",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve",
+      "answer": "approve",
+      "by": "operator"
+    }
+  ]
+}

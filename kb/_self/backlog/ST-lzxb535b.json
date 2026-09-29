@@ -4,6 +4,7 @@
   "title": "A started sprint has touches on every work item",
   "status": "draft",
   "parent": "EP-o2bjijfp",
+  "sprint": "SP-4fbfzobr",
   "priority": "P2",
   "rank": 0,
   "goal": "backlog.py start refuses a sprint whose story, task or bug (other than its review story) has no touches, naming each, so done can check scope and the orchestrator can tell which items run in parallel; in SP-osxj4vmf none of the three work items had touches",

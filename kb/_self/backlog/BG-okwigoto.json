@@ -4,6 +4,7 @@
   "title": "The digest counts a miss as fixed when its gap candidate was superseded by a no-fix eval finding",
   "status": "draft",
   "parent": "EP-mzzucemv",
+  "sprint": "SP-4slunkaj",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
@@ -16,6 +17,16 @@
       "digest_superseded_gap_is_not_fixed"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "digest"
+      ]
+    }
+  ],
   "touches": [
     "_tools/ql_report.py",
     "_tools/test_querylog.py"

@@ -3,6 +3,7 @@
   "kind": "story",
   "title": "Checks that parse forge output use a recorded real sample",
   "status": "draft",
+  "sprint": "SP-ar52y6fk",
   "priority": "P2",
   "rank": 0,
   "goal": "Tests of red-pipeline and the query-log revert parse at least one recorded real GitLab.com job log (timestamps and stream markers kept, secrets and hosts replaced by placeholders) under _tools/fixtures/, and kb/_self/backlog.md's definition of done asks for a recorded real sample when a check parses a tool's or forge's output. Failure it answers: SP-liemltg2's fingerprint tests passed on synthetic logs while every real kb-tests-windows log gave one fingerprint (BG-jam2lysj).",
@@ -21,5 +22,8 @@
     "_tools/test_backlog.py",
     "_tools/test_querylog.py",
     "kb/_self/backlog.md"
+  ],
+  "relates_to": [
+    "BG-jam2lysj"
   ]
 }

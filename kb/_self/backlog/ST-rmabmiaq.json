@@ -4,6 +4,7 @@
   "title": "Roots keep decisions and decision makers in checked CSV files",
   "status": "draft",
   "parent": "EP-v56iwyry",
+  "sprint": "SP-jtfo4ael",
   "priority": "P2",
   "rank": 2,
   "goal": "kbcommon defines two files any root and kb/_self may hold. _decisions.csv: id (D-<8 base32>), text, by, by_ref, source, date, context (item, fact, source, article or domain references), status (proposed|active|invalidated|superseded), invalidated_reason, invalidated_date, supersedes, review_by (optional), links. decision-makers.csv: id, role, name, source, plus the root's storage policy for decision makers. kb/_self/decision-makers.csv is the central register; by_ref resolves to the root's own file or the central one. check.py reports a bad id, status, date, context reference or by_ref, and a name in a row of a root that is not internal. kbroot.py add creates both files empty. D is a reserved prefix.",

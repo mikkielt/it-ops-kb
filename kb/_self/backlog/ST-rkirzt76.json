@@ -3,16 +3,17 @@
   "kind": "story",
   "title": "A code task carries the kb/_self docs that describe it",
   "status": "draft",
+  "sprint": "SP-ar52y6fk",
   "priority": "P2",
   "rank": 0,
-  "goal": "backlog.py check warns when an open task's touches name files under _tools/, .claude/ or .claude-plugin/ whose kb/_self/map.csv docs are only in a later task's touches (one that depends on it), naming the docs, and /kb-backlog and /kb-sprint plan put a code change's doc lines in the same task, as kb/_self/git.md asks; a planted item in test_backlog.py shows the warning. Failure it answers: in SP-aikswrrl the route docs sat in docs tasks that depended on later code, so selfdoc refused pushes and the orchestrator wrote four docs commits outside any item.",
+  "goal": "backlog.py check warns when an open item's touches name files under _tools/, .claude/, .claude-plugin/ or .gitlab-ci.yml whose kb/_self/map.csv docs are in no item's touches, or only in a later task's touches (one that depends on it), naming the docs, and /kb-backlog and /kb-sprint plan put a code change's doc lines in the same task, as kb/_self/git.md asks; planted items in test_backlog.py show both warnings. Failures it answers: in SP-liemltg2 selfdoc stale flagged tools.md and plugin.md on docs outside every touches; in SP-aikswrrl the route docs sat in docs tasks that depended on later code, and the orchestrator wrote four docs commits outside any item.",
   "checks": [
     {
       "run": [
         "python3",
         "_tools/tests.py",
         "-k",
-        "docs_in_later_task"
+        "docs_in_later_task or touches_miss_docs"
       ]
     }
   ],

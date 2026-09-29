@@ -3,6 +3,7 @@
   "kind": "story",
   "title": "Each orchestrating session works in its own clone or worktree",
   "status": "draft",
+  "sprint": "SP-rhgeod5g",
   "priority": "P2",
   "rank": 0,
   "goal": "kb/_self/backlog.md and /kb-sprint say that a second orchestrator runs from its own clone or git worktree, never the checkout another session works in, and /kb-sprint run checks that git status shows only its own changes before it lands",

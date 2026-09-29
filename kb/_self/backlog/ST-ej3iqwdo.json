@@ -4,6 +4,7 @@
   "title": "The kb covers decision records",
   "status": "draft",
   "parent": "EP-v56iwyry",
+  "sprint": "SP-jtfo4ael",
   "priority": "P2",
   "rank": 1,
   "goal": "kb/public has a topic on decision records from official or primary sources (Nygard's ADR, MADR, status and supersession, context and consequences, where records live); rag.py pack on decision records reports coverage good.",

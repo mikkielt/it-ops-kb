@@ -1,0 +1,23 @@
+{
+  "id": "ST-mr4ua2ge",
+  "kind": "story",
+  "title": "kb-backlog names the runbook sections it needs, not the whole runbook",
+  "status": "draft",
+  "parent": "EP-hsyx42zz",
+  "sprint": "SP-bno4xpft",
+  "priority": "P1",
+  "rank": 4,
+  "goal": "The kb-backlog skill reads Levels, The item file, Priority and severity, Dependencies, gates and triggers, and Definition of done of kb/_self/backlog.md with selfdoc.py section and no longer says to read the whole runbook; selfdoc check passes",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/selfdoc.py",
+        "check"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-backlog/SKILL.md"
+  ]
+}

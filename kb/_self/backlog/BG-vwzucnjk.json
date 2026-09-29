@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "horizon says a planned sprint waits on its start gate after the operator approved it",
   "status": "draft",
+  "sprint": "SP-4fbfzobr",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",

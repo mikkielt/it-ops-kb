@@ -3,6 +3,8 @@
   "kind": "bug",
   "title": "tools.md lacks the route-by-verdict scenario and the router-pinned config",
   "status": "draft",
+  "parent": "EP-c7fzjhge",
+  "sprint": "SP-vpk5nrrc",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
@@ -19,5 +21,17 @@
       "--",
       "kb/_self/tools.md"
     ]
-  }
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/selfdoc.py",
+        "check"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/tools.md"
+  ]
 }

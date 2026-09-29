@@ -1,0 +1,22 @@
+{
+  "id": "SP-ar52y6fk",
+  "kind": "sprint",
+  "title": "Planning catches scope before work",
+  "status": "planned",
+  "goal": "Planning puts a tool change's docs, every consumer of a changed route, a new read-only command's allow rules and a repository-running task's threat checks into the items that need them; backlog.py check warns of tool touches whose docs sit outside every touches or only in a later task; forge-parsing checks use a recorded real log; selfdoc check flags a dead kb/_self section reference and a test holds every section heading the skills read",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve",
+      "answer": "approve",
+      "by": "operator"
+    }
+  ]
+}

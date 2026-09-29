@@ -1,0 +1,28 @@
+{
+  "id": "ST-w5gs2sas",
+  "kind": "story",
+  "title": "backlog.py find and tree --open answer does an item already cover this in a few lines",
+  "status": "draft",
+  "parent": "EP-hsyx42zz",
+  "sprint": "SP-xb45i7t4",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "backlog.py find WORDS prints the open items whose title or goal match, each with its parent chain, and tree --open leaves out done and dropped items; the kb-backlog and kb-sprint plan steps call find first",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "backlog_find"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/test_backlog.py",
+    ".claude/skills/kb-backlog/SKILL.md",
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/tools.md"
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "id": "ST-ovkf7nem",
+  "kind": "story",
+  "title": "The horizon SessionStart hook prints sprint titles without goals",
+  "status": "draft",
+  "parent": "EP-hsyx42zz",
+  "sprint": "SP-bno4xpft",
+  "priority": "P2",
+  "rank": 6,
+  "goal": "backlog.py horizon --hook prints each active sprint's id and title without its goal sentence and stays under 1000 characters for the current backlog; horizon without --hook is unchanged; a test holds the limit",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "horizon_hook"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/test_backlog.py"
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "id": "SP-jtfo4ael",
+  "kind": "sprint",
+  "title": "Operator decisions kept and cited",
+  "status": "planned",
+  "goal": "The kb covers decision records; roots keep decisions and decision makers in checked CSV files; facts cite them with a DECISION tag; kbdecide.py proposes, confirms, supersedes, invalidates and restores them; a backlog gate answer can be kept as one; broken context invalidates them; pack, show and audit handle them; and the docs and skills describe them",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ]
+}

@@ -4,6 +4,7 @@
   "title": "Facts cite decisions with a DECISION tag",
   "status": "draft",
   "parent": "EP-v56iwyry",
+  "sprint": "SP-jtfo4ael",
   "priority": "P2",
   "rank": 3,
   "goal": "[DECISION D-xxxxxxxx] and [DECISION D-xxxxxxxx: note] parse in kbfacts (KINDS); check.py resolves each id to a row of the root's _decisions.csv; kb_mcp's tag enum, ql_capture and the benchmarks' tag regex accept it; ql_research never emits it.",

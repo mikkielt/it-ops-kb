@@ -3,6 +3,7 @@
   "kind": "story",
   "title": "Planning puts every consumer of a changed route in the item's touches",
   "status": "draft",
+  "sprint": "SP-ar52y6fk",
   "priority": "P2",
   "rank": 0,
   "goal": "When /kb-backlog or /kb-sprint plan breaks down a change to how agents read docs or call a tool, the plan lists every consumer (skills, .claude/agents definitions, headless runs such as ql_research.py) and each is in some item's touches",

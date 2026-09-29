@@ -2,7 +2,7 @@
   "id": "TK-pewmd4vm",
   "kind": "task",
   "title": "kbdecide.py propose, confirm, supersede, invalidate, restore and list",
-  "status": "todo",
+  "status": "draft",
   "parent": "ST-rcceqbdr",
   "priority": "P2",
   "rank": 0,

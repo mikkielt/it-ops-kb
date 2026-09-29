@@ -4,6 +4,7 @@
   "title": "kbingest map leaves the MSBuild NuGet SDK resolver able to fetch an SDK",
   "status": "draft",
   "parent": "EP-g5hizdko",
+  "sprint": "SP-xourq2gj",
   "priority": "P2",
   "rank": 0,
   "severity": "S2",
@@ -16,6 +17,16 @@
       "kbingest_map_dotnet_no_sdk_resolver"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "kbingest"
+      ]
+    }
+  ],
   "touches": [
     "_tools/kbingest.py",
     "_tools/test_kbingest.py",

@@ -4,6 +4,7 @@
   "title": "kbingest map passes relative PATH entries to mapper children",
   "status": "draft",
   "parent": "EP-g5hizdko",
+  "sprint": "SP-xourq2gj",
   "priority": "P2",
   "rank": 0,
   "severity": "S2",
@@ -16,6 +17,16 @@
       "kbingest_map_path_absolute_only"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "kbingest"
+      ]
+    }
+  ],
   "touches": [
     "_tools/kbingest.py",
     "_tools/test_kbingest.py"

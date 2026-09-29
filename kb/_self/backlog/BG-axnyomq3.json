@@ -3,6 +3,8 @@
   "kind": "bug",
   "title": "kb_mcp sse_messages splits an SSE data line at U+2028, U+2029 and U+0085, so docs_search drops the reply",
   "status": "draft",
+  "parent": "EP-c7fzjhge",
+  "sprint": "SP-vpk5nrrc",
   "priority": "P2",
   "rank": 0,
   "severity": "S2",

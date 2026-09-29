@@ -1,0 +1,27 @@
+{
+  "id": "ST-3syrixq4",
+  "kind": "story",
+  "title": "One query-log run makes one commit",
+  "status": "draft",
+  "parent": "EP-mzzucemv",
+  "sprint": "SP-4slunkaj",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "querylog.py apply --push commits a run's store files and its learn and apply changes in one commit with KB-Auto: querylog and pushes once, instead of a store commit and an apply commit seconds apart; revert and conflict handling keep working on that one commit",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "querylog_one_commit_per_run"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/ql_deliver.py",
+    "_tools/test_querylog.py",
+    "_tools/test_querylog_e2e.py",
+    "kb/_self/querylog.md"
+  ]
+}

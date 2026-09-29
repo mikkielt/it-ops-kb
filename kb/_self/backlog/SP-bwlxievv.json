@@ -1,0 +1,22 @@
+{
+  "id": "SP-bwlxievv",
+  "kind": "sprint",
+  "title": "Bookkeeping runs itself",
+  "status": "planned",
+  "goal": "backlog.py claim, done, new, start and close commit their own item files with a fixed subject and KB-Work in the trailer block when given --commit, and backlog.py land ID rebases a work branch, records done, runs the gate once and pushes with kbgit.py sync --push; /kb-item and /kb-sprint land items with it",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve",
+      "answer": "approve",
+      "by": "operator"
+    }
+  ]
+}

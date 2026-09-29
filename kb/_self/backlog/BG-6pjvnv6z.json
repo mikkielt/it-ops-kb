@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "/kb-item picks items outside a started sprint whose work the push then refuses",
   "status": "draft",
+  "sprint": "SP-rhgeod5g",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
@@ -16,5 +17,17 @@
       "--",
       ".claude/skills/kb-item/SKILL.md"
     ]
-  }
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/selfdoc.py",
+        "check"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-item/SKILL.md"
+  ]
 }

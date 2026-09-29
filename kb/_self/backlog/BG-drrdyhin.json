@@ -4,6 +4,7 @@
   "title": "kbingest run_tool leaves the mapper's process group alive on an interrupt",
   "status": "draft",
   "parent": "EP-g5hizdko",
+  "sprint": "SP-xourq2gj",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
@@ -16,6 +17,16 @@
       "kbingest_map_interrupt_kills_group"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "kbingest"
+      ]
+    }
+  ],
   "touches": [
     "_tools/kbingest.py",
     "_tools/test_kbingest.py"

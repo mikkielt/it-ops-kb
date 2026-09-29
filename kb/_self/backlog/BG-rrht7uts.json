@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "test_research_merge copies sprint worktrees into its scenario clone",
   "status": "draft",
+  "sprint": "SP-rhgeod5g",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
@@ -14,6 +15,16 @@
       "import sys;t=open('_tools/test_research_merge.py',encoding='utf-8').read();sys.exit(0 if 'worktrees' in t or 'copy_kb' in t else 1)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "research_merge"
+      ]
+    }
+  ],
   "touches": [
     "_tools/test_research_merge.py"
   ]

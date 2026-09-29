@@ -4,6 +4,7 @@
   "title": "Decisions are invalidated when their context is",
   "status": "draft",
   "parent": "EP-v56iwyry",
+  "sprint": "SP-jtfo4ael",
   "priority": "P2",
   "rank": 6,
   "goal": "kbdecide.py sweep sets status invalidated with invalidated_reason and invalidated_date when a context work item is dropped (done or deleted at sprint close is not), a cited source has superseded_by, a context article or domain is gone, or review_by has passed; a context fact whose fact_key no longer exists is flagged relink, not invalidated, and kbdecide.py relink ID --fact PATH:LINE repoints it; no row is ever deleted.",

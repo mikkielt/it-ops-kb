@@ -1,0 +1,28 @@
+{
+  "id": "ST-wlmqf37j",
+  "kind": "story",
+  "title": "selfdoc.py section prints several sections in one call",
+  "status": "draft",
+  "parent": "EP-hsyx42zz",
+  "sprint": "SP-bno4xpft",
+  "priority": "P1",
+  "rank": 2,
+  "goal": "python3 _tools/selfdoc.py section takes several DOC HEADING pairs and prints each with its line numbers in one call, exit 1 naming any heading not found; the skills that list several section reads name them in one command; tools.md documents it",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "selfdoc_sections"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/selfdoc.py",
+    "_tools/test_selfdoc.py",
+    "kb/_self/tools.md",
+    ".claude/skills/*/SKILL.md",
+    ".claude/agents/kb-worker.md"
+  ]
+}

@@ -3,6 +3,7 @@
   "kind": "story",
   "title": "kb-sprint falls back when kb-worker is not loaded in the session",
   "status": "draft",
+  "sprint": "SP-rhgeod5g",
   "priority": "P2",
   "rank": 0,
   "goal": "/kb-sprint run step 3 says: when the Agent tool does not list kb-worker (agent files load at session start, so a session that added or changed it cannot use it), start the task on general-purpose with model sonnet and a brief that points the worker at .claude/agents/kb-worker.md; kb/_self/backlog.md, Working on items, says the same; a test named kb_worker_fallback checks both texts. Failure it answers: SP-liemltg2 created kb-worker and could not dispatch to it in the same session.",

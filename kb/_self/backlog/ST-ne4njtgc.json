@@ -1,0 +1,27 @@
+{
+  "id": "ST-ne4njtgc",
+  "kind": "story",
+  "title": "backlog.py close prints what the sprint delivered for the close commit",
+  "status": "draft",
+  "parent": "EP-o2bjijfp",
+  "sprint": "SP-4fbfzobr",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "backlog.py close SP --summary prints, before it deletes anything, each item of the sprint with its id, title, status and evidence commit, so the close commit body is written from it and only the retrospective is hand-written; the kb-sprint close step uses it",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "close_summary"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/test_backlog.py",
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/backlog.md"
+  ]
+}

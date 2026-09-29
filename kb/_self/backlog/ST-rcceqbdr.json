@@ -4,6 +4,7 @@
   "title": "kbdecide.py records decisions: agents propose, the operator confirms",
   "status": "draft",
   "parent": "EP-v56iwyry",
+  "sprint": "SP-jtfo4ael",
   "priority": "P2",
   "rank": 4,
   "goal": "_tools/kbdecide.py has propose (status proposed, source required), confirm --by operator (active), supersede OLD NEW, invalidate ID --reason, restore ID and list [--status] [--context]. The first decision in a root whose decision-makers.csv has no storage policy is refused with the question how the decision maker is saved there (role only, role and name, a reference to the central register), until the operator sets it with kbdecide.py makers ROOT --policy.",

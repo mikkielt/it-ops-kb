@@ -3,6 +3,8 @@
   "kind": "bug",
   "title": "provider.request leaves gzip-encoded bodies undecoded (python.org pages anchor as not-text)",
   "status": "draft",
+  "parent": "EP-mzzucemv",
+  "sprint": "SP-4slunkaj",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
@@ -13,5 +15,19 @@
       "-c",
       "import sys;sys.path.insert(0,'_tools');import provider;r=provider.request('https://www.python.org/downloads/metadata/sigstore/');sys.exit(r['body'][:2]==bytes([31,139]))"
     ]
-  }
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "provider"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/provider.py",
+    "_tools/test_provider.py"
+  ]
 }

@@ -4,6 +4,7 @@
   "title": "querylog.py apply help and tools.md describe the old gap step and name a Learn and apply section that no longer exists",
   "status": "draft",
   "parent": "EP-mzzucemv",
+  "sprint": "SP-4slunkaj",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
@@ -15,6 +16,15 @@
       "import pathlib,sys; t=[pathlib.Path(p).read_text(encoding='utf-8') for p in ('kb/_self/tools.md','kb/_self/doc2query.md','_tools/test_querylog.py','_tools/querylog.py')]; sys.exit(any('Learn and apply' in s or 'lead (not `none`)' in s for s in t))"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/selfdoc.py",
+        "check"
+      ]
+    }
+  ],
   "touches": [
     "_tools/querylog.py",
     "kb/_self/tools.md",

@@ -3,6 +3,8 @@
   "kind": "bug",
   "title": "kb_ask.py treats kb has: - and kb lacks: - as real parts",
   "status": "draft",
+  "parent": "EP-c7fzjhge",
+  "sprint": "SP-vpk5nrrc",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",

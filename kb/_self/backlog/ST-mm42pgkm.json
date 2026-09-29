@@ -4,6 +4,7 @@
   "title": "A task that runs a repository's programs plans its threat checks",
   "status": "draft",
   "parent": "EP-o2bjijfp",
+  "sprint": "SP-ar52y6fk",
   "priority": "P2",
   "rank": 0,
   "goal": "The /kb-backlog skill's plan step says that a task whose code runs a program from or against a repository gets checks, each with a planted failure, for: files the tool reads on its own (response files, config files in the project or its parents), toolchain or SDK redirects the repository can set, targets or scripts the tool runs as a side effect, PATH and current-directory program lookup (Windows included), and what the environment passes to the child. Answers the SP-fkyrld5h failure: the sprint review found three S1 holes in kbingest map (Directory.Build.rsp, global.json sdk.paths, cmd.exe current-directory lookup) and the follow-up research a fourth (BG-blajtxv2), none covered by an item check.",
@@ -26,5 +27,8 @@
         ".claude/skills/kb-backlog/SKILL.md"
       ]
     }
+  ],
+  "touches": [
+    ".claude/skills/kb-backlog/SKILL.md"
   ]
 }

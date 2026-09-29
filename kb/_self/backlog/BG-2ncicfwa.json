@@ -3,6 +3,8 @@
   "kind": "bug",
   "title": "Research closes a gap at claim without a Resolved note, so queue exits 1",
   "status": "draft",
+  "parent": "EP-mzzucemv",
+  "sprint": "SP-4slunkaj",
   "priority": "P2",
   "rank": 0,
   "severity": "S2",
@@ -16,6 +18,16 @@
       "--runxfail"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "queue or research"
+      ]
+    }
+  ],
   "touches": [
     "_tools/ql_research.py",
     "_tools/ql_apply.py",

@@ -3,6 +3,7 @@
   "kind": "story",
   "title": "A bug filed while landing is committed before its fix",
   "status": "draft",
+  "sprint": "SP-rhgeod5g",
   "priority": "P2",
   "rank": 0,
   "goal": "kb/_self/backlog.md (Working on items) and the kb-sprint and kb-item skills say that a bug filed during a landing is committed in its own commit before the commit that fixes it, since check-trailers refuses a KB-Work id whose item file is in neither the commit nor its parent; selfdoc check and the skill tests pass",
@@ -22,6 +23,11 @@
         "selfdoc"
       ]
     }
+  ],
+  "touches": [
+    "kb/_self/backlog.md",
+    ".claude/skills/kb-sprint/SKILL.md",
+    ".claude/skills/kb-item/SKILL.md"
   ],
   "notes": "From the SP-4udo5jmw retrospective: two review bugs were committed after their fix commits and check-trailers refused the push."
 }

@@ -1,0 +1,27 @@
+{
+  "id": "ST-axnnlsim",
+  "kind": "story",
+  "title": "backlog.py claim, done, new, start and close commit their item files with --commit",
+  "status": "draft",
+  "parent": "EP-o2bjijfp",
+  "sprint": "SP-bwlxievv",
+  "priority": "P1",
+  "rank": 1,
+  "goal": "With --commit, backlog.py claim, done, new, start and close commit only the item files they wrote, with a fixed conventional subject and KB-Work: <ids> in the last trailer paragraph beside the session's own trailers passed with --trailer; kbgit.py check-trailers passes on each such commit; kb/_self/backlog.md and tools.md name the flag",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "backlog_commit_flag"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/test_backlog.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ]
+}

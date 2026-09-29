@@ -3,6 +3,8 @@
   "kind": "bug",
   "title": "The kb: hook blocks a good pack routed split by a word nowhere in the kb",
   "status": "draft",
+  "parent": "EP-c7fzjhge",
+  "sprint": "SP-vpk5nrrc",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",

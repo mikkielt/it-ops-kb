@@ -3,6 +3,8 @@
   "kind": "bug",
   "title": "The raw-read hint fires on sed -i -n, an in-place edit",
   "status": "draft",
+  "parent": "EP-c7fzjhge",
+  "sprint": "SP-vpk5nrrc",
   "priority": "P3",
   "rank": 0,
   "severity": "S4",

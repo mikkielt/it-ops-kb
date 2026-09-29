@@ -7,7 +7,7 @@
   "sprint": "SP-xb45i7t4",
   "priority": "P3",
   "rank": 0,
-  "goal": "backlog.py set ID changes notes, links, touches, checks, depends_on, relates_to, priority, rank and sprint, and backlog.py gate add ID adds a gate with question, options and recommendation, each followed by the same validation as check; status, claimed_by and evidence stay writable only by claim, release, start, close, drop and done; the skills no longer say to edit item JSON",
+  "goal": "backlog.py set ID changes goal, severity, repro, notes, links, touches, checks, depends_on, relates_to, priority, rank and sprint, and backlog.py gate add ID adds a gate with question, options and recommendation, each followed by the same validation as check; status, claimed_by and evidence stay writable only by claim, release, start, close, drop and done; the skills no longer say to edit item JSON",
   "checks": [
     {
       "run": [

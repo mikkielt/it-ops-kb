@@ -4,6 +4,7 @@
   "title": "kbingest docs say map runs nothing from the repository while open bugs show paths that do",
   "status": "draft",
   "parent": "EP-g5hizdko",
+  "sprint": "SP-xourq2gj",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
@@ -15,9 +16,25 @@
       "import sys;t=open('kb/_self/tools.md',encoding='utf-8').read();sys.exit(1 if 'nothing built, restored, installed or run from the repository' in t else 0)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/selfdoc.py",
+        "check"
+      ]
+    }
+  ],
   "touches": [
     "kb/_self/tools.md",
     ".claude/skills/kb-ingest/SKILL.md"
+  ],
+  "depends_on": [
+    "BG-2g3zo4g7",
+    "BG-blajtxv2",
+    "BG-lfrc7eev",
+    "BG-lnwercde",
+    "BG-v7k5h2bu"
   ],
   "relates_to": [
     "BG-2g3zo4g7",

@@ -4,6 +4,7 @@
   "title": "A server limited to one small root answers coverage none although the root holds the answer",
   "status": "draft",
   "parent": "EP-5sc7hr36",
+  "sprint": "SP-vpk5nrrc",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
@@ -15,5 +16,27 @@
       "-k",
       "embed_roots_small_root_is_good"
     ]
-  }
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "embed_roots_small_root_is_good"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/rag.py",
+        "eval"
+      ],
+      "match": "passed=(\\d+) verdict_ok=\\1"
+    }
+  ],
+  "touches": [
+    "_tools/kbfacts.py",
+    "_tools/test_kb_root.py"
+  ]
 }

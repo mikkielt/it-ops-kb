@@ -1,0 +1,22 @@
+{
+  "id": "SP-rhgeod5g",
+  "kind": "sprint",
+  "title": "Sprint workers land clean",
+  "status": "planned",
+  "goal": "kb-worker reads kb/_self by section, runs the sync gate's own checks and only its item checks and fast tests before it commits, and can run rag.py eval in its worktree; /kb-sprint falls back when kb-worker is not loaded, runs each orchestrator in its own clone or worktree, commits a bug filed while landing before its fix, and removes the sprint's worktrees and work branches at close; /kb-item joins an item to a started sprint before its work; test_research_merge ignores sprint worktrees",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve",
+      "answer": "approve",
+      "by": "operator"
+    }
+  ]
+}

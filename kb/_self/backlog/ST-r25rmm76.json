@@ -4,6 +4,7 @@
   "title": "A backlog gate answer can be kept as a decision",
   "status": "draft",
   "parent": "EP-v56iwyry",
+  "sprint": "SP-jtfo4ael",
   "priority": "P2",
   "rank": 5,
   "goal": "backlog.py answer ID GATE --answer TEXT --by operator --record writes an active decision whose source names the item and gate and whose context is the item; closing the sprint leaves the decision active.",

@@ -4,6 +4,7 @@
   "title": "A sprint subagent can run rag.py eval in its worktree",
   "status": "draft",
   "parent": "EP-o2bjijfp",
+  "sprint": "SP-rhgeod5g",
   "priority": "P3",
   "rank": 0,
   "goal": "A kb-worker or sprint subagent in an isolation worktree runs python3 _tools/rag.py eval without a guard refusing it; the story first names the guard that refused every command containing eval in SP-osxj4vmf (repo hook, plugin hook or harness), then either allows the command or documents the pytest wrapper as the sprint gate in kb/_self/backlog.md",

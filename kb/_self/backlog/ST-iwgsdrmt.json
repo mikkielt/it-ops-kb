@@ -4,6 +4,7 @@
   "title": "kb-worker runs the sync gate's own checks before it commits",
   "status": "draft",
   "parent": "EP-o2bjijfp",
+  "sprint": "SP-rhgeod5g",
   "priority": "P2",
   "rank": 0,
   "goal": "The kb-worker agent's instructions (.claude/agents/kb-worker.md) have it run, before each commit, python3 _tools/kbgit.py fix --check and, when its touches include _tools/, python3 _tools/tests.py -k \"ruff or tools_map\" beside the item's own -k selection, so a fixture that fails ruff or does not parse, or an unsorted ledger, is caught in the worktree and not at the orchestrator's sync gate; the kb_worker_agent test holds both phrases. Answers the SP-fkyrld5h failure: TK-yuqgx56h fixtures broke the sync gate (ruff, selfdoc map-tools) and TK-yg4pe6fv left _sources.csv unsorted (stress suite).",
@@ -25,5 +26,9 @@
         "kb_worker_agent"
       ]
     }
+  ],
+  "touches": [
+    ".claude/agents/kb-worker.md",
+    "_tools/test_kb_mcp.py"
   ]
 }

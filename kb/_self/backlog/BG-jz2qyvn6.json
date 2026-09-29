@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "kb-worker.md still tells a sprint subagent to read maintaining.md and backlog.md whole",
   "status": "draft",
+  "sprint": "SP-bno4xpft",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",

@@ -3,6 +3,8 @@
   "kind": "bug",
   "title": "kbingest.py survey says nothing when the checkout is at another commit than --rev",
   "status": "draft",
+  "parent": "EP-g5hizdko",
+  "sprint": "SP-xourq2gj",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
@@ -16,6 +18,16 @@
       "--runxfail"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "kbingest or survey_warns"
+      ]
+    }
+  ],
   "touches": [
     "_tools/kbingest.py",
     "_tools/test_kbingest.py",

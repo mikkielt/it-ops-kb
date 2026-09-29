@@ -1,0 +1,22 @@
+{
+  "id": "SP-vpk5nrrc",
+  "kind": "sprint",
+  "title": "Lookups reach the right reader",
+  "status": "planned",
+  "goal": "Every lookup route delivers each part where its verdict sends it: a near-miss none split prints its facts, the kb: hook lets every routed pack through, a several-part split loses no part and reads empty has/lacks lines as empty, an end-to-end route test runs the lookup eval questions, tools.md names the route-by-verdict scenario; kb_mcp parses SSE replies holding U+2028, U+2029 and U+0085, kb_http reads a chunked POST, a small-root server answers its own question good, and the raw-read hint ignores sed -i -n",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve",
+      "answer": "approve",
+      "by": "operator"
+    }
+  ]
+}
