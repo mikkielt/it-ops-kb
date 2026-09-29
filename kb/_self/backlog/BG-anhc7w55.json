@@ -2,8 +2,9 @@
   "id": "BG-anhc7w55",
   "kind": "bug",
   "title": "factdiff.old_passage builds its revision path with backslashes on Windows, so it never reads the snapshot at HEAD",
-  "status": "draft",
+  "status": "doing",
   "parent": "EP-5p4ahbnq",
+  "sprint": "SP-76inhw33",
   "priority": "P2",
   "rank": 0,
   "severity": "S2",
@@ -18,5 +19,6 @@
   "touches": [
     "_tools/factdiff.py",
     "_tools/test_factdiff.py"
-  ]
+  ],
+  "claimed_by": "orchestrator-SP-76inhw33"
 }

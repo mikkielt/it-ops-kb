@@ -2,8 +2,9 @@
   "id": "BG-cdhbugkz",
   "kind": "bug",
   "title": "runners.md has no setup steps for the docker-windows runner",
-  "status": "draft",
+  "status": "doing",
   "parent": "EP-5p4ahbnq",
+  "sprint": "SP-76inhw33",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
@@ -17,5 +18,6 @@
   },
   "touches": [
     "kb/_self/runners.md"
-  ]
+  ],
+  "claimed_by": "orchestrator-SP-76inhw33"
 }
