@@ -2,7 +2,7 @@
   "id": "ST-btrfvdhi",
   "kind": "story",
   "title": "Review sprint: Section reads run without prompts",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-qdq57zu3",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "orchestrator-SP-qdq57zu3"
+  "evidence": {
+    "commit": "1a821b2b5ccba381141e6629c7bc4828c9f91089",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "3a8dee2312eac70f"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "f2703af5fcd5c770"
+      }
+    ]
+  }
 }
