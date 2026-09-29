@@ -2,7 +2,7 @@
   "id": "BG-as65f4wv",
   "kind": "bug",
   "title": "settings.json does not allow the read-only selfdoc.py section command",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-qdq57zu3",
   "priority": "P2",
   "rank": 0,
@@ -35,5 +35,37 @@
   "touches": [
     ".claude/settings.json"
   ],
-  "claimed_by": "orchestrator-SP-qdq57zu3"
+  "evidence": {
+    "commit": "2054d4ab4b10c20b1b8ba45527e2e8bf475544a0",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "powershell_rules_mirror_bash"
+        ],
+        "exit": 0,
+        "sha256": "a6477c542890b11c"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,sys; a=json.load(open('.claude/settings.json',encoding='utf-8'))['permissions']['allow']; sys.exit(0 if all(f'{s}(python3 _tools/selfdoc.py {c} *)' in a for s in ('Bash','PowerShell') for c in ('section','map-tools')) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,sys; a=json.load(open('.claude/settings.json'))['permissions']['allow']; sys.exit(0 if 'Bash(python3 _tools/selfdoc.py section *)' in a and 'PowerShell(python3 _tools/selfdoc.py section *)' in a else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
