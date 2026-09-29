@@ -2,7 +2,7 @@
   "id": "TK-ebth6nop",
   "kind": "task",
   "title": "Pack in the kb_mcp tests with the kb copy line off, and prove it in a behind clone",
-  "status": "doing",
+  "status": "done",
   "parent": "BG-sq4kwuyo",
   "priority": "P1",
   "rank": 0,
@@ -20,5 +20,19 @@
   "touches": [
     "_tools/test_kb_mcp.py"
   ],
-  "claimed_by": "worker-sq4kwuyo"
+  "evidence": {
+    "commit": "18ac9183512360277abec5a1fdbd8eb71e2493b9",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "kb_mcp_pack_ignores_freshness_banner"
+        ],
+        "exit": 0,
+        "sha256": "b0fe8033dbf1f6c1"
+      }
+    ]
+  }
 }
