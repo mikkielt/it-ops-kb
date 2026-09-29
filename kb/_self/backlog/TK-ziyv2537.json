@@ -2,7 +2,7 @@
   "id": "TK-ziyv2537",
   "kind": "task",
   "title": "AGENTS.md lane rule",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-lhcjqkbq",
   "priority": "P2",
   "rank": 1,
@@ -65,5 +65,39 @@
       "by": "operator"
     }
   ],
-  "claimed_by": "mac-first"
+  "evidence": {
+    "commit": "64e8802c6d8e4375f2b8a846f5cbdfcf11405f80",
+    "checks": [
+      {
+        "run": [
+          "grep",
+          "-c",
+          "-F",
+          "code/<id>",
+          "AGENTS.md"
+        ],
+        "exit": 0,
+        "sha256": "4355a46b19d348dc"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "test_agents_md_stays_small"
+        ],
+        "exit": 0,
+        "sha256": "f2e892985eb41b55"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/selfdoc.py",
+          "stale"
+        ],
+        "exit": 0,
+        "sha256": "87a3b1b935511a85"
+      }
+    ]
+  }
 }
