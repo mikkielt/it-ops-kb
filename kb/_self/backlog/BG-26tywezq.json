@@ -2,7 +2,7 @@
   "id": "BG-26tywezq",
   "kind": "bug",
   "title": "A none-verdict gap candidate never leaves candidate-gap: no gap entry, no queue item, no eval finding",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-mzzucemv",
   "sprint": "SP-osxj4vmf",
   "priority": "P2",
@@ -25,5 +25,19 @@
     "F-6298df20a337"
   ],
   "notes": "querylog.py queue prints gaps=0 while digest 2026-W40 counts gap: open 1. apply's gap step promotes only a candidate with an article in the lead (not none), and learn's false-none rule needs fetched urls, which this mcp entry has none of.",
-  "claimed_by": "worker-gapcand"
+  "evidence": {
+    "commit": "9b982653e6ebbf9c480a56b62ebaee44241e99cd",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "none_candidate_gap_is_not_stranded"
+        ],
+        "exit": 0,
+        "sha256": "2c5855533aa4f226"
+      }
+    ]
+  }
 }
