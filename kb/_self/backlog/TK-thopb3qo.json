@@ -1,0 +1,102 @@
+{
+  "id": "TK-thopb3qo",
+  "kind": "task",
+  "title": "Set up the docker-linux runner in WSL2 Ubuntu and document both runners",
+  "status": "todo",
+  "parent": "ST-33lzmm5e",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "A GitLab Runner with the docker executor, tag docker-linux, concurrent 2, runs as a systemd service in WSL2 Ubuntu on the Windows runner's PC, kept running across sign-outs and restarts by a startup task, and is online for the project; its token went from glab api straight into gitlab-runner register and appears in no repository file; kb/_self/runners.md describes the docker-windows and docker-linux runners (host prerequisites, install, register, keep-alive, how to check them), with placeholders for host and user names, and has its map.csv row and README entry.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import pathlib;t=pathlib.Path('kb/_self/runners.md').read_text(encoding='utf-8');assert 'docker-linux' in t and 'docker-windows' in t and 'glrt-' not in t"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/selfdoc.py",
+        "check"
+      ]
+    },
+    {
+      "run": [
+        "glab",
+        "api",
+        "projects/mikkielt%2Fit-ops-kb/runners?tag_list=docker-linux&status=online"
+      ],
+      "match": "\"online\":\\s*true"
+    },
+    {
+      "run": [
+        "git",
+        "grep",
+        "-q",
+        "-I",
+        "-E",
+        "glrt-[A-Za-z0-9_-]{20}"
+      ],
+      "exit": 1
+    }
+  ],
+  "touches": [
+    "kb/_self/runners.md",
+    "kb/_self/map.csv",
+    "kb/_self/README.md"
+  ],
+  "gates": [
+    {
+      "id": "linux-host",
+      "kind": "blocking",
+      "question": "Which Linux host should the Linux runner live in?",
+      "options": [
+        "WSL2 Ubuntu on the Windows runner's PC",
+        "a Hyper-V Ubuntu VM"
+      ],
+      "recommendation": "WSL2 Ubuntu on the Windows runner's PC",
+      "answer": "WSL2 Ubuntu on the Windows runner's PC",
+      "by": "operator"
+    },
+    {
+      "id": "token",
+      "kind": "blocking",
+      "question": "How is the runner's authentication token created?",
+      "options": [
+        "the agent, glab api piped into gitlab-runner register",
+        "the operator registers it by hand"
+      ],
+      "recommendation": "the agent, glab api piped into gitlab-runner register",
+      "answer": "the agent, glab api piped into gitlab-runner register",
+      "by": "operator"
+    },
+    {
+      "id": "concurrency",
+      "kind": "blocking",
+      "question": "How many Linux jobs may run at once?",
+      "options": [
+        "1",
+        "2",
+        "4"
+      ],
+      "recommendation": "2",
+      "answer": "2",
+      "by": "operator"
+    },
+    {
+      "id": "restart",
+      "kind": "blocking",
+      "question": "May the agent enable WSL2, which may need a Windows restart the operator does?",
+      "options": [
+        "yes, after checking a restart is really needed",
+        "not now"
+      ],
+      "recommendation": "yes, after checking a restart is really needed",
+      "answer": "yes, after checking a restart is really needed",
+      "by": "operator"
+    }
+  ],
+  "notes": "Host work done by the orchestrating session with the operator (elevated, may need a restart); the commit is only the doc."
+}

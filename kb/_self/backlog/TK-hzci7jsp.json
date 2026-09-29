@@ -1,0 +1,34 @@
+{
+  "id": "TK-hzci7jsp",
+  "kind": "task",
+  "title": "Tag the Linux jobs docker-linux and start the gate jobs on their own",
+  "status": "todo",
+  "parent": "ST-33lzmm5e",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "In .gitlab-ci.yml every job without the docker-windows tag carries tags: [docker-linux]; kb-tests and kb-trailers have when: on_success with allow_failure: true (kb-tests-floor and tool-stress stay manual); the header comment says which jobs start on their own; kb/_self/git.md names the two self-hosted runners (pointing to kb/_self/runners.md) and says the gate jobs start on their own.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import re,pathlib;t=pathlib.Path('.gitlab-ci.yml').read_text(encoding='utf-8');jobs=dict(re.findall(r'(?ms)^([a-z][\\w-]*):\\n(.*?)(?=^\\S|\\Z)',t));jobs={k:v for k,v in jobs.items() if 'stage:' in v};bad=[k for k,v in jobs.items() if 'docker-windows' not in v and 'docker-linux' not in v];auto=[k for k in ('kb-tests','kb-trailers') if 'when: manual' in jobs[k].split('rules:',1)[1] or 'when: on_success' not in jobs[k].split('rules:',1)[1]];assert len(jobs)>=5 and not bad and not auto,(sorted(jobs),bad,auto)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/selfdoc.py",
+        "stale"
+      ]
+    }
+  ],
+  "touches": [
+    ".gitlab-ci.yml",
+    "kb/_self/git.md"
+  ],
+  "depends_on": [
+    "TK-thopb3qo"
+  ],
+  "notes": "Lands only once the docker-linux runner is online, or the tagged jobs sit pending."
+}
