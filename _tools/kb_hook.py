@@ -15,8 +15,9 @@
                     instruction, a pack with a route as for kb:.
   anything else     no output: the prompt goes to the model unchanged.
 
-The same script answers a PreToolUse event on Bash (a JSON event with `tool_input`): a command that reads a kb article
-whole (cat, head, tail, sed -n or grep -n on a `kb/<root>/**/*.md` path, or a root's `_gaps.md`) gets additionalContext
+The same script answers a PreToolUse event on Bash or PowerShell (a JSON event with `tool_input`): a command that reads a
+kb article whole (cat, head, tail, sed -n or grep -n on a `kb/<root>/**/*.md` path, or a root's `_gaps.md`; under
+PowerShell Get-Content, gc, cat, type, Select-String or sls, a backslash or slash in the path) gets additionalContext
 naming the rag.py tools that print only the lines a lookup needs (raw_read_nudge). It never sets a permission decision,
 so the command runs as it would without the hook; any other command, and any input it cannot read, gets no output.
 
@@ -101,13 +102,22 @@ RAW_NUDGE = ("This command reads a kb article as a whole file. For a lookup the 
              "`rag.py pack \"<question>\"` first. The command runs unchanged; read the whole file only to edit it.")
 
 
-def is_raw_read(command):
+PS_READS = ("get-content", "gc", "cat", "type", "select-string", "sls")  # PowerShell verbs (any case) that read a file
+
+
+def is_raw_read(command, powershell=False):
     """True when one command of a shell line reads a kb article or a root's _gaps.md with cat, head, tail, sed -n or
-    grep -n. A path after `>` (a write), a command that merely names the path (rag.py show ...) and sed -i are not."""
-    if not isinstance(command, str) or "kb/" not in command or ".md" not in command:
+    grep -n; with `powershell` (a PowerShell tool event) with Get-Content, gc, cat, type, Select-String or sls, and a
+    backslash in a path is a separator. A path after `>` (a write), a command that merely names the path
+    (rag.py show ...), sed -i and Set-Content are not."""
+    if not isinstance(command, str):
+        return False
+    if powershell:
+        command = command.replace("\\", "/")  # a backslash is no escape in PowerShell, and kb/... is the one path form
+    if "kb/" not in command or ".md" not in command:
         return False  # the common case returns before shlex is loaded
     import shlex
-    lex = shlex.shlex(command.replace("\n", " ; "), posix=True, punctuation_chars=True)
+    lex = shlex.shlex(command.replace("\n", " ; "), posix=not powershell, punctuation_chars=True)
     lex.whitespace_split = True
     try:
         tokens = list(lex)
@@ -122,11 +132,14 @@ def is_raw_read(command):
             cur.append(t)
     segments.append(cur)
     for seg in segments:
-        while seg and (re.match(r"^\w+=", seg[0]) or seg[0] in ("sudo", "command", "time", "env")):
+        while seg and not powershell and (re.match(r"^\w+=", seg[0]) or seg[0] in ("sudo", "command", "time", "env")):
             seg = seg[1:]
         if not seg:
             continue
         verb, args, paths, skip = os.path.basename(seg[0]), seg[1:], [], False
+        if powershell:  # quotes stay in the tokens; `a.md,b.md` is a list; the verb's case and module prefix do not matter
+            verb = verb.strip("'\"").lower()
+            args = [x.strip("'\"") for a in args for x in a.split(",")]
         for a in args:
             if skip:  # the target of a redirect
                 skip = False
@@ -137,6 +150,10 @@ def is_raw_read(command):
                 if m and not m.group(1).startswith("_"):
                     paths.append(a)
         if not paths:
+            continue
+        if powershell:
+            if verb in PS_READS:
+                return True
             continue
         shorts = [a[1:] for a in args if re.match(r"^-[A-Za-z]+$", a)]
         if verb in ("cat", "head", "tail"):
@@ -149,11 +166,12 @@ def is_raw_read(command):
 
 
 def raw_read_nudge(event):
-    """The PreToolUse answer for a Bash event whose command reads a kb article whole, else None (no output)."""
+    """The PreToolUse answer for a Bash or PowerShell event whose command reads a kb article whole, else None (no
+    output). Both tools send the command as tool_input.command (kb/public/claude/hooks.md)."""
     try:
-        tool_input = event.get("tool_input")
-        if event.get("tool_name", "Bash") == "Bash" and isinstance(tool_input, dict) \
-                and is_raw_read(tool_input.get("command")):
+        tool_input, tool = event.get("tool_input"), event.get("tool_name", "Bash")
+        if tool in ("Bash", "PowerShell") and isinstance(tool_input, dict) \
+                and is_raw_read(tool_input.get("command"), powershell=tool == "PowerShell"):
             return {"hookSpecificOutput": {"hookEventName": "PreToolUse", "additionalContext": RAW_NUDGE}}
     except Exception:  # a hint is never worth breaking a command over
         pass

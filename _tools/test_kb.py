@@ -784,7 +784,7 @@ class TestKbHookRoute:
 
 
 class TestRawReadNudge:
-    """kb_hook on a PreToolUse Bash event: a whole-file read of a kb article gets a hint and runs; all else is silent."""
+    """kb_hook on a PreToolUse Bash or PowerShell event: a whole-file read of a kb article gets a hint and runs; all else is silent."""
     READS = ["cat kb/public/claude/hooks.md", "cat ./kb/public/claude/hooks.md kb/public/ad/gpo.md",
              "sed -n 1,40p kb/public/claude/hooks.md", "sed -n '20,30p' kb/public/x/y.md", "head -n 40 kb/public/x/y.md",
              "tail -20 kb/public/x/y.md", "grep -n LAPS kb/public/windows/laps.md", "grep -in laps kb/public/windows/laps.md",
@@ -844,9 +844,45 @@ class TestRawReadNudge:
                            text=True, encoding="utf-8", timeout=60)
         assert p.returncode == 0, "an ordinary command must not load shlex"
 
-    def test_raw_read_nudge_hook_is_registered_on_bash_only(self):
+    PS_READS = ["Get-Content kb/public/claude/hooks.md", "Get-Content .\\kb\\public\\claude\\hooks.md -TotalCount 40",
+                "gc 'kb\\public\\x\\y.md' -Raw", "GET-CONTENT -Path kb/public/x/y.md",
+                "get-content -LiteralPath \"kb\\public\\x\\y.md\"", "cat kb\\public\\x\\y.md", "type kb\\public\\x\\y.md",
+                "Select-String -Path kb\\public\\windows\\laps.md -Pattern LAPS", "sls LAPS kb/public/windows/laps.md",
+                "Select-String -Pattern LAPS -Path kb\\public\\a.md,kb\\public\\b.md",
+                "Get-Content C:\\work\\it-ops-kb\\kb\\public\\x\\y.md | Select-Object -First 5",
+                "Get-Content kb\\acme\\_gaps.md", "Microsoft.PowerShell.Management\\Get-Content kb\\public\\x\\y.md",
+                "& cat kb\\public\\x\\y.md", "Get-ChildItem kb\\public; Get-Content kb\\public\\x\\y.md",
+                "Get-Location\nGet-Content kb\\public\\x\\y.md"]
+    PS_SILENT = ["Get-ChildItem kb\\public\\claude", "Get-Content README.md", "Get-Content kb\\_self\\maintaining.md",
+                 "Get-Content kb\\public\\_sources.csv", "Get-Content _tools\\kb_hook.py",
+                 "Select-String -Path _tools\\*.py -Pattern kb", "Set-Content kb\\public\\x\\y.md -Value notes",
+                 "Add-Content kb/public/x/y.md -Value notes", "Get-Content notes.txt | Set-Content kb\\public\\x\\y.md",
+                 "Get-Content notes.txt > kb\\public\\x\\y.md", "Get-Content notes.txt >> kb\\public\\x\\y.md",
+                 "Remove-Item kb\\public\\x\\y.md", "python3 _tools/rag.py show kb\\public\\claude\\hooks.md:23 -n 30",
+                 "git add kb\\public\\x\\y.md", "Write-Output 'cat kb/public/x/y.md'", "Get-Content 'kb\\public\\x\\y.md",
+                 "Get-Item kb\\public\\x\\y.md", "", "   "]
+
+    def test_raw_read_nudge_recognises_powershell_reads(self):
+        for command in self.PS_READS:
+            out = kb_hook.raw_read_nudge(self.event(command, tool_name="PowerShell"))
+            assert out is not None, f"no hint for: {command!r}"
+            assert set(out) == {"hookSpecificOutput"} and out["hookSpecificOutput"]["additionalContext"] == kb_hook.RAW_NUDGE
+        # the PowerShell tool sends the command as tool_input.command, like Bash (public/claude/hooks.md)
+        out = self.run_hook(json.dumps(self.event(self.PS_READS[0], tool_name="PowerShell")))
+        assert json.loads(out)["hookSpecificOutput"]["additionalContext"] == kb_hook.RAW_NUDGE
+
+    def test_raw_read_nudge_is_silent_for_other_powershell_commands(self):
+        for command in self.PS_SILENT:
+            assert kb_hook.raw_read_nudge(self.event(command, tool_name="PowerShell")) is None, f"hint for: {command!r}"
+        assert self.run_hook(json.dumps(self.event("Get-Content kb\\_self\\tools.md", tool_name="PowerShell"))) == ""
+        # the PowerShell verbs are not Bash's, and Bash's `sed -n` is not a PowerShell command
+        assert kb_hook.raw_read_nudge(self.event("Get-Content kb/public/x/y.md")) is None
+        assert kb_hook.raw_read_nudge(self.event("sed -n 1,40p kb/public/x/y.md", tool_name="PowerShell")) is None
+        assert kb_hook.raw_read_nudge(self.event("Get-Content kb/public/x/y.md", tool_name="Read")) is None
+
+    def test_raw_read_nudge_hook_is_registered_on_bash_and_powershell(self):
         entries = json.loads(text(".claude/settings.json"))["hooks"]["PreToolUse"]
-        assert [e["matcher"] for e in entries] == ["Bash"], entries
+        assert [e["matcher"] for e in entries] == ["Bash|PowerShell"], entries
         cmds = [h["command"] for e in entries for h in e["hooks"]]
         assert cmds == ['sh "${CLAUDE_PROJECT_DIR}/_tools/kbpy" _tools/kb_hook.py'], cmds
 
