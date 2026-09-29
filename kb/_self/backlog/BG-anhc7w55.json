@@ -1,0 +1,22 @@
+{
+  "id": "BG-anhc7w55",
+  "kind": "bug",
+  "title": "factdiff.old_passage builds its revision path with backslashes on Windows, so it never reads the snapshot at HEAD",
+  "status": "draft",
+  "parent": "EP-5p4ahbnq",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "factdiff.old_passage reads the snapshot at HEAD on Windows: the path it gives git cat-file uses forward slashes (os.path.relpath gives backslashes there, which git does not match against tree paths), and TestRevisionReadsWithoutGitShow plants the snapshot in a subdirectory, so the separator is exercised and the test fails when the path is native.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import re,pathlib,sys; t=pathlib.Path('_tools/factdiff.py').read_text(encoding='utf-8'); m=re.search(r'def old_passage.*?(?=\\ndef )', t, re.S); b=m.group(0) if m else ''; sys.exit(1 if 'relpath(snapshot_path(sid), kbcommon.HOME)' in b and 'as_posix' not in b and 'os.sep' not in b else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/factdiff.py",
+    "_tools/test_factdiff.py"
+  ]
+}
