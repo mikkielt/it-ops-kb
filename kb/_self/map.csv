@@ -103,3 +103,5 @@ kb/_self/usage.md,_tools/ql_store.py
 kb/_self/usage.md,_tools/ql_report.py
 kb/_self/tools.md,_tools/kbusage.py
 kb/_self/querylog.md,_tools/kbusage.py
+kb/_self/embedding.md,_tools/kb_mcp.py
+kb/_self/embedding.md,_tools/fixtures/kb_mcp_contract.json
