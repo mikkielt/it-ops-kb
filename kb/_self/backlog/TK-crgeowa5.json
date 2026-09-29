@@ -2,7 +2,7 @@
   "id": "TK-crgeowa5",
   "kind": "task",
   "title": "PreToolUse hint for whole-file reads of kb articles",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-mkaeoctd",
   "priority": "P2",
   "rank": 0,
@@ -22,5 +22,19 @@
     "_tools/test_kb.py",
     ".claude/settings.json"
   ],
-  "claimed_by": "worker-crgeowa5"
+  "evidence": {
+    "commit": "fbb7dd5bf25606e4271110dd4203777126a5d70e",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "raw_read_nudge"
+        ],
+        "exit": 0,
+        "sha256": "7dd38bdc52eaaa9d"
+      }
+    ]
+  }
 }
