@@ -2,7 +2,7 @@
   "id": "TK-ojeshylk",
   "kind": "task",
   "title": "The query-log revert reuses the fingerprint",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-47hdgt5a",
   "priority": "P2",
   "rank": 1,
@@ -24,5 +24,19 @@
   "depends_on": [
     "TK-y7sdxuaa"
   ],
-  "claimed_by": "worker-ojeshylk"
+  "evidence": {
+    "commit": "bd0a1b3caea0f1c6cf631e5774e103b476c64782",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "fingerprint"
+        ],
+        "exit": 0,
+        "sha256": "ddde34787389dcb0"
+      }
+    ]
+  }
 }
