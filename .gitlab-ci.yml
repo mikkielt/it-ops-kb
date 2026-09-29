@@ -1,9 +1,10 @@
 # CI for it-ops-kb: the tests (Python 3.14, the 3.11 floor, Windows), the stress suite and KB-* commit trailers. The
 # tools are stdlib Python; the tests run with pytest and pytest-xdist, which uv installs from uv.lock (pyproject.toml's
 # dev group). A pipeline is created for every branch push and every tag; the query log's conflict MR (a
-# `querylog/<run-id>` branch, kb/_self/querylog.md) runs through the branch rule. Every job is manual: `when: manual`
-# with `allow_failure: true` in its rules, since a manual job in `rules` otherwise blocks the pipeline
-# (docs.gitlab.com/ci/jobs/job_control). No job writes to the repository.
+# `querylog/<run-id>` branch, kb/_self/querylog.md) runs through the branch rule. Every job but kb-tests-windows on
+# tool changes is manual: `when: manual` with `allow_failure: true` in its rules, since a manual job in `rules`
+# otherwise blocks the pipeline (docs.gitlab.com/ci/jobs/job_control). kb-tests-windows starts on its own for tool
+# changes, also with `allow_failure: true`. No job writes to the repository.
 workflow:
   rules:
     - if: $CI_COMMIT_BRANCH
@@ -105,7 +106,8 @@ kb-tests-windows:
         - .gitlab-ci.yml
         - pyproject.toml
         - uv.lock
-      when: manual
+      # starts on its own for tool changes, no click needed
+      when: on_success
       allow_failure: true
 
 tool-stress:
