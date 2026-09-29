@@ -2,7 +2,7 @@
   "id": "TK-xg74cb2a",
   "kind": "task",
   "title": "selfdoc.py map-tools prints the symbols and tests of _tools",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-3p6lizv4",
   "priority": "P2",
   "rank": 0,
@@ -24,5 +24,19 @@
   "depends_on": [
     "TK-jsx4wea4"
   ],
-  "claimed_by": "worker-xg74cb2a"
+  "evidence": {
+    "commit": "49cb8b3fc3b9c4c68c10c9a47d8645abfe96b86e",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "tools_map"
+        ],
+        "exit": 0,
+        "sha256": "be37891de0c83abb"
+      }
+    ]
+  }
 }
