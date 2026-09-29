@@ -2,7 +2,7 @@
   "id": "TK-5ddnrhz3",
   "kind": "task",
   "title": ".NET and Node/TypeScript mappers",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-55lva2xl",
   "priority": "P2",
   "rank": 3,
@@ -50,5 +50,6 @@
       "answer": "approve: installed tsc only, never npx",
       "by": "operator"
     }
-  ]
+  ],
+  "claimed_by": "worker-5ddnrhz3"
 }
