@@ -33,7 +33,9 @@
         "14",
         "since the newest commit an open intake bug names"
       ],
-      "recommendation": "7: older commits are history and stay as they are (backlog.md, Git)"
+      "recommendation": "7: older commits are history and stay as they are (backlog.md, Git)",
+      "answer": "7",
+      "by": "operator"
     }
   ]
 }

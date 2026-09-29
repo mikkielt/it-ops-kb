@@ -1,0 +1,20 @@
+{
+  "id": "SP-osxj4vmf",
+  "kind": "sprint",
+  "title": "Query-log misses reach a fix",
+  "status": "planned",
+  "goal": "Every miss the query log records reaches a fix or a queued gap: a number written with a unit suffix no longer gives a false none, a none-verdict gap candidate leaves candidate-gap, and the hosts with open stage findings are staged providers, so the store holds no open finding older than three days.",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ]
+}

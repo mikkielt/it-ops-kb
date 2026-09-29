@@ -34,7 +34,9 @@
         "4",
         "72"
       ],
-      "recommendation": "24: a sprint run lands and closes an item within a session; a day covers an interrupted one"
+      "recommendation": "24: a sprint run lands and closes an item within a session; a day covers an interrupted one",
+      "answer": "24",
+      "by": "operator"
     }
   ]
 }
