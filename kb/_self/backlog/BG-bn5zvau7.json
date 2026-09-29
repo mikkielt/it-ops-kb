@@ -1,0 +1,40 @@
+{
+  "id": "BG-bn5zvau7",
+  "kind": "bug",
+  "title": "kb-setup says install-python.ps1 can install only uv",
+  "status": "doing",
+  "sprint": "SP-fep4fpsx",
+  "priority": "P1",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kb-setup step 1 says install-python.ps1 always installs the pinned Python as well as uv, and that a Windows host with another Python that lacks only uv installs the pinned uv release by hand as python/uv-windows-install shows.",
+  "repro": {
+    "run": [
+      "git",
+      "grep",
+      "-q",
+      "-e",
+      "uv-windows-install",
+      "--",
+      ".claude/skills/kb-setup/SKILL.md"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "git",
+        "grep",
+        "-q",
+        "-e",
+        "uv-windows-install",
+        "--",
+        ".claude/skills/kb-setup/SKILL.md"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-setup/SKILL.md"
+  ],
+  "notes": "Found by the fresh-context review of SP-fep4fpsx “Windows ready” (ST-xqx3ffyu).",
+  "claimed_by": "windows-laptop"
+}
