@@ -573,8 +573,10 @@ class TestLookup:
         bitlocker = "Does deleting an Entra device also delete its BitLocker recovery keys?"
         code, out, err = ask(bitlocker, "--route")
         assert code == 0 and out.startswith("kind=good verdict=good parts=1 model=haiku"), out + err
-        code, out, _ = ask("What is the Intel Wi-Fi Roaming Aggressiveness setting?", "--route")
+        code, out, _ = ask("What is the maximum email attachment size?", "--route")  # weak (lookup eval)
         assert out.startswith("kind=split") and "model=sonnet" in out and "route: split" in out, out
+        code, out, _ = ask("What is the Intel Wi-Fi Roaming Aggressiveness setting?", "--route")  # none
+        assert out.startswith("kind=web") and "model=sonnet" in out and "route: web" in out, out
         assert "model=opus" in ask("Intel Wi-Fi roaming", "--route", "--model", "opus")[1]
         assert "entra/bitlocker-key-deletion.md:" in ask(bitlocker, "--no-model")[1], "a good pack without a model"
         # counts and 'who cites' go to the audit and source tools, never to a model
