@@ -1,0 +1,18 @@
+{
+  "id": "BG-3i46pccw",
+  "kind": "bug",
+  "title": "kbingest map may run a repository rustc through .cargo/config.toml build.rustc",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "Whether cargo metadata --no-deps invokes rustc (so a repository .cargo/config.toml build.rustc, build.rustc-wrapper or a [target] runner under the worktree would run) is settled from an official or CODE source recorded in the kb, and CargoMapper skips Cargo with a note when a repository cargo config names such a program, or the kb records why it cannot run; a test named kbingest_map_cargo_config_rustc proves the skip (sprint SP-xourq2gj review lead 4, unverified)",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/tests.py",
+      "-k",
+      "kbingest_map_cargo_config_rustc"
+    ]
+  }
+}

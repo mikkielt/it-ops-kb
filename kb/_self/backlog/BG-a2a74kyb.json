@@ -1,0 +1,18 @@
+{
+  "id": "BG-a2a74kyb",
+  "kind": "bug",
+  "title": "kbingest map resolves a mapper tool from the Python process's working folder on Windows",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "tool_exe and run_tool resolve a tool with shutil.which against the scrubbed PATH only: on Windows shutil.which puts the current directory first unless the parent process's own environment has NoDefaultCurrentDirectoryInExePath (scrub_env sets it only in the child's), so a dotnet.cmd, npm.cmd, cargo.exe or go.exe in the working folder (the source clone in plugin mode or map .) is run and under_worktree does not flag it; a test named kbingest_map_which_ignores_parent_cwd with a planted tool in the working folder proves it is never chosen (sprint SP-xourq2gj review finding 1)",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/tests.py",
+      "-k",
+      "kbingest_map_which_ignores_parent_cwd"
+    ]
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "id": "BG-mt6jyzkh",
+  "kind": "bug",
+  "title": "kbingest map copies MSBuild error text carrying evaluated values into its notes",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "A failed dotnet msbuild call's stderr no longer carries repository-evaluated values into the map's notes: the note names the MSBuild error code and project without the message text (or the text is shape-checked), so a property function such as ReadAllText feeding an Import path cannot put a local file's content into a note that only the leak scan guards; a test named kbingest_map_dotnet_note_values with a planted MSB4019 message proves it (sprint SP-xourq2gj review finding 2)",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/tests.py",
+      "-k",
+      "kbingest_map_dotnet_note_values"
+    ]
+  }
+}

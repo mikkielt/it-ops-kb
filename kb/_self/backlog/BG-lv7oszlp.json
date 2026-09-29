@@ -1,0 +1,18 @@
+{
+  "id": "BG-lv7oszlp",
+  "kind": "bug",
+  "title": "kbingest map's .NET value shapes accept the machine's own host and user names",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "A .NET evaluated value equal to or containing the mapping machine's host name or user name (a property set from GetEnvironmentVariable('COMPUTERNAME') or 'USERNAME') is left out of the map with a note, since a TFM or package id shape alone accepts any single token; a test named kbingest_map_dotnet_machine_names with a planted PL-LT-00123 host and jan.kowalski user proves it (sprint SP-xourq2gj review finding 3)",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/tests.py",
+      "-k",
+      "kbingest_map_dotnet_machine_names"
+    ]
+  }
+}
