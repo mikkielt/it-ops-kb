@@ -1,0 +1,23 @@
+{
+  "id": "ST-mxqz7fmn",
+  "kind": "story",
+  "title": "Route checks run the lookup eval questions end to end",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "A test named route_eval_end_to_end runs every lookup-eval question through kbfacts.pack, kb_hook.py --test and kb_ask.plan with split_prompt/web_prompt (no model) and asserts per route that the hook lets a routed pack through, no prompt carries 'kb has: -' or 'kb lacks: -' as a part, every part of a several-part question reaches the reader or the researcher, and a split pack never carries the none sentence; kb/_self/backlog.md's definition of done asks a check over real inputs besides planted ones. Failure it answers: SP-aikswrrl's item checks passed on worker-chosen planted packs while the review found four route defects (BG-ed6ci57t, BG-zrzme2li, BG-ou6nahcx, BG-bxkqdtk6).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "route_eval_end_to_end"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/test_route.py",
+    "kb/_self/backlog.md"
+  ]
+}
