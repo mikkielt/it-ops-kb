@@ -2036,6 +2036,17 @@ _Agent: kb-research_
 
 _Agent: kb-research_
 
+## QK-stdlib-rules-make-hand-edited-csv. Which stdlib and Claude Code facts do a valid `_sources.csv` row writer, `set` and `gate add` subcommands, stable JSON edits and a transcript usage rollup rest on?
+- CSV row: open with `newline=''`; `DictWriter` needs `fieldnames`, fills a missing key with `restval` (default empty string) and raises `ValueError` on an extra key unless `extrasaction='ignore'`; the writer ends rows with `'\r\n'` unless `lineterminator` says otherwise; `QUOTE_MINIMAL` quotes fields holding the delimiter, quote character or line-break characters and doubles inner quotes, which is the RFC 4180 form. [DOC S-utoe3wfw, S-xq53ipsf]
+- Subcommands: `add_subparsers(required=True, dest=...)` plus `set_defaults(func=...)` per subparser; `add_mutually_exclusive_group(required=True)` rejects two or none of its options; a usage error exits with status 2 through `ArgumentParser.error`. [DOC S-w47ijsvq]
+- JSON edits: `json.dumps` keeps insertion order, sorts only with `sort_keys=True`, escapes non-ASCII unless `ensure_ascii=False`, and with `indent` set uses `(',', ': ')` separators. [DOC S-zzvrhdyd]
+- Transcript usage: the entry format of Claude Code transcripts is internal and version-specific, no schema is documented; documented per-tool data is in hook input (`tool_name`, `tool_input`, `tool_use_id`, `PostToolBatch.tool_calls`), in the subagent file layout, and in telemetry events. [DOC S743, S-uzkb4duq, S2157]
+- Conclusion: only the transcript field names (which record carries `tool_use` blocks and token usage) have no official source, so a rollup over transcripts is observed behaviour that must skip lines it cannot read; the other rules are documented. [DER S743, S-uzkb4duq, S-utoe3wfw, S-w47ijsvq, S-zzvrhdyd]
+- Open: the transcript record fields for tool calls and token usage are undocumented (existing gap in `_gaps.md`, claude/hooks). [UNK]
+- See python/stdlib-sqlite3-csv.md, python/stdlib-argparse-json.md, claude/hooks.md.
+
+_Agent: kb-research_
+
 ## R1. Reuse candidates
 
 - **Highest leverage: `pydantic-settings` as a `dependency` for a project's config-file/env-var/flags

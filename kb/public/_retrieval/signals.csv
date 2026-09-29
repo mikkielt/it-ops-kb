@@ -388,3 +388,8 @@ CI_COMMIT_BEFORE_SHA,gitlab/detecting-mr-merges-in-ci
 GITHUB_EVENT_PATH,gitlab/detecting-mr-merges-in-ci
 commits/:sha/merge_requests,gitlab/detecting-mr-merges-in-ci
 remote_mirrors,gitlab/repository-mirroring
+add_subparsers,python/stdlib-argparse-json
+add_mutually_exclusive_group,python/stdlib-argparse-json
+sort_keys,python/stdlib-argparse-json
+extrasaction,python/stdlib-sqlite3-csv
+RFC 4180,python/stdlib-sqlite3-csv

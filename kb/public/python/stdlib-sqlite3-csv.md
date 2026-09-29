@@ -2,8 +2,8 @@
 topic: python/stdlib-sqlite3-csv
 priority: P2
 applies_to: [python, csv, sqlite3]
-retrieved_utc: 2026-09-27
-sources: [S-utoe3wfw, S-rle6nqpc, S-syrr7enn]
+retrieved_utc: 2026-09-29
+sources: [S-utoe3wfw, S-rle6nqpc, S-syrr7enn, S-xq53ipsf]
 status: complete
 ---
 
@@ -40,6 +40,29 @@ defaults changed in 3.12 (opt-in) with a documented future default change.
   is not optional) since a writer has no input row to infer them from. Both accept a `dialect`
   parameter (default `'excel'`) and arbitrary `**fmtparams` overrides on top of it, exactly like
   `csv.reader`/`csv.writer`. [DOC S-utoe3wfw]
+- `DictWriter(f, fieldnames, restval='', extrasaction='raise', dialect='excel', *args, **kwds)`: a row
+  dict missing a key of `fieldnames` gets `restval` (default the empty string) in that column; a dict
+  with a key not in `fieldnames` raises `ValueError` under the default `extrasaction='raise'` and drops
+  the extra key silently under `'ignore'`. Other keyword arguments go to the underlying `writer`. A
+  writer row must be an iterable of strings or numbers (a `DictWriter` row a dict whose values are
+  passed through `str` first); `writeheader()` (3.2+) writes the `fieldnames` row. [DOC S-utoe3wfw]
+- The writer terminates each row with `Dialect.lineterminator`, default `'\r\n'`, so a `csv.writer`
+  file opened with `newline=''` has CRLF line ends on every platform; `csv.reader` ignores
+  `lineterminator` and recognises either `'\r'` or `'\n'` as end of line. A field containing the
+  delimiter, the quote character, `'\r'`, `'\n'` or a `lineterminator` character is quoted under
+  `QUOTE_MINIMAL`; with `doublequote=True` (default) a quote character inside a field is doubled, and
+  with `doublequote=False` and no `escapechar` the writer raises `csv.Error` on a field holding one.
+  Pass `lineterminator='\n'` for LF output. [DOC S-utoe3wfw]
+- The `csv` docs say "there is no formal specification in existence" for CSV; RFC 4180 (October 2005,
+  category Informational, not a standard) documents the format "followed by most implementations":
+  records end with CRLF, the last record may or may not have a line break, an optional header line
+  comes first, and each line should hold the same number of fields. [DOC S-xq53ipsf]
+- RFC 4180: fields containing line breaks, double quotes or commas should be enclosed in double
+  quotes, and a double quote inside a quoted field is escaped by preceding it with another double
+  quote (`"b""bb"`); fields may or may not be quoted otherwise, spaces are part of a field, and the
+  last field of a record is not followed by a comma. Python's default `excel` dialect with
+  `QUOTE_MINIMAL` and `doublequote=True` produces this form apart from quoting only when needed.
+  [DOC S-xq53ipsf; DER S-utoe3wfw: the dialect defaults quoted above match the RFC rules]
 - `sqlite3` wraps a *third-party* SQLite C library, not one Python ships source for; the actual runtime
   version linked into a given Python build can therefore vary by platform/build and is only knowable
   at runtime via `sqlite3.sqlite_version` (a version string) or `sqlite3.sqlite_version_info` (a tuple

@@ -238,10 +238,11 @@ Every topic of this root with its priority (the research order, not importance),
 | `python/pytest` | P2 | complete | `python/pytest.md` | 10 |
 | `python/pytest-xdist` | P2 | complete | `python/pytest-xdist.md` | 3 |
 | `python/ruff` | P2 | complete | `python/ruff.md` | 13 |
-| `python/stdlib-sqlite3-csv` | P2 | complete | `python/stdlib-sqlite3-csv.md` | 3 |
+| `python/stdlib-sqlite3-csv` | P2 | complete | `python/stdlib-sqlite3-csv.md` | 4 |
 | `python/uv-projects` | P2 | complete | `python/uv-projects.md` | 11 |
 | `python/version-lifecycle` | P2 | complete | `python/version-lifecycle.md`, `python/version-lifecycle.csv` | 8 |
 | `python/imports-and-modules` | P3 | complete | `python/imports-and-modules.md` | 8 |
+| `python/stdlib-argparse-json` | P3 | complete | `python/stdlib-argparse-json.md` | 2 |
 | `python/stdlib-windows-portability` | P3 | partial | `python/stdlib-windows-portability.md` | 9 |
 | `python/uv-windows-install` | P3 | partial | `python/uv-windows-install.md` | 3 |
 | `python/windows-python-install` | P3 | partial | `python/windows-python-install.md` | 4 |
