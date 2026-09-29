@@ -2,7 +2,7 @@
   "id": "TK-jbo6civt",
   "kind": "task",
   "title": "Parse backlog claim, done and release into work rows",
-  "status": "todo",
+  "status": "draft",
   "parent": "ST-n77nrtv7",
   "priority": "P2",
   "rank": 0,

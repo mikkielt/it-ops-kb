@@ -2,7 +2,7 @@
   "id": "TK-fqombzfc",
   "kind": "task",
   "title": "Document kbingest map in the ingest skill and the tool docs",
-  "status": "todo",
+  "status": "draft",
   "parent": "ST-55lva2xl",
   "priority": "P2",
   "rank": 4,

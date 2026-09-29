@@ -2,7 +2,7 @@
   "id": "TK-e3ouzras",
   "kind": "task",
   "title": "code/* branch pipelines run the gate jobs without a click",
-  "status": "todo",
+  "status": "draft",
   "parent": "ST-vcf3r6qv",
   "priority": "P2",
   "rank": 0,

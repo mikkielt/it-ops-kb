@@ -2,7 +2,7 @@
   "id": "TK-crgeowa5",
   "kind": "task",
   "title": "PreToolUse hint for whole-file reads of kb articles",
-  "status": "todo",
+  "status": "draft",
   "parent": "ST-mkaeoctd",
   "priority": "P2",
   "rank": 0,

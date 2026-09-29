@@ -2,7 +2,7 @@
   "id": "TK-3pbbbi4i",
   "kind": "task",
   "title": "Document the raw-read hint",
-  "status": "todo",
+  "status": "draft",
   "parent": "ST-mkaeoctd",
   "priority": "P2",
   "rank": 0,

@@ -2,7 +2,7 @@
   "id": "TK-yoyjegdq",
   "kind": "task",
   "title": "Research which pipeline auto-merge reads on a branch-pipeline project, and the GitHub token permission for the commit pulls endpoint",
-  "status": "todo",
+  "status": "draft",
   "parent": "ST-mmmn42ks",
   "priority": "P2",
   "rank": 2,

@@ -2,7 +2,7 @@
   "id": "TK-n7nzihhs",
   "kind": "task",
   "title": "Move sync to kg_sync.py",
-  "status": "todo",
+  "status": "draft",
   "parent": "ST-3i3dl6xg",
   "priority": "P2",
   "rank": 3,

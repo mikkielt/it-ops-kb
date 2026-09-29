@@ -2,7 +2,7 @@
   "id": "TK-ldv7zzb5",
   "kind": "task",
   "title": "Research GitHub rulesets, branch protection and auto-merge for a public repository",
-  "status": "todo",
+  "status": "draft",
   "parent": "ST-mmmn42ks",
   "priority": "P2",
   "rank": 0,

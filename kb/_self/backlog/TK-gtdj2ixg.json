@@ -2,7 +2,7 @@
   "id": "TK-gtdj2ixg",
   "kind": "task",
   "title": "backlog.py selectors counts the tests each -k check collects",
-  "status": "todo",
+  "status": "draft",
   "parent": "ST-7atbtpz5",
   "priority": "P2",
   "rank": 1,

@@ -2,7 +2,7 @@
   "id": "ST-55lva2xl",
   "kind": "story",
   "title": "Opt-in read-only toolchain mapping in kbingest",
-  "status": "todo",
+  "status": "draft",
   "parent": "EP-g5hizdko",
   "sprint": "SP-fkyrld5h",
   "priority": "P2",

@@ -2,7 +2,7 @@
   "id": "TK-xg74cb2a",
   "kind": "task",
   "title": "selfdoc.py map-tools prints the symbols and tests of _tools",
-  "status": "todo",
+  "status": "draft",
   "parent": "ST-3p6lizv4",
   "priority": "P2",
   "rank": 0,

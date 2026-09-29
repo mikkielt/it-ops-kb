@@ -2,7 +2,7 @@
   "id": "TK-rjkyylzq",
   "kind": "task",
   "title": "Research GitLab push mirroring and push options on self-managed instances",
-  "status": "todo",
+  "status": "draft",
   "parent": "ST-mmmn42ks",
   "priority": "P2",
   "rank": 1,

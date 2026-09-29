@@ -2,7 +2,7 @@
   "id": "TK-4lqw5k2j",
   "kind": "task",
   "title": "Route subagent counts by worktree branch; overlaps to the sprint line",
-  "status": "todo",
+  "status": "draft",
   "parent": "ST-jn7qeb2b",
   "priority": "P2",
   "rank": 0,
