@@ -2,7 +2,7 @@
   "id": "TK-oldp5xjn",
   "kind": "task",
   "title": "Reword the none rule in AGENTS.md, kb-lookup, the server instructions and the pack",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-uuaooyrm",
   "priority": "P1",
   "rank": 1,
@@ -57,5 +57,6 @@
     "_tools/test_kb.py",
     "_tools/test_kb_mcp.py"
   ],
-  "notes": "test_kb_mcp fails while the clone is behind origin (the server's freshness note); run it on a synced tree. kb_hook.py's none wording changes in TK-b4xlov32 “kb_hook.py context for routed packs”."
+  "notes": "test_kb_mcp fails while the clone is behind origin (the server's freshness note); run it on a synced tree. kb_hook.py's none wording changes in TK-b4xlov32 “kb_hook.py context for routed packs”.",
+  "claimed_by": "worker-oldp5xjn"
 }
