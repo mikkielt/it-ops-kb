@@ -1,0 +1,24 @@
+{
+  "id": "TK-ebth6nop",
+  "kind": "task",
+  "title": "Pack in the kb_mcp tests with the kb copy line off, and prove it in a behind clone",
+  "status": "doing",
+  "parent": "BG-sq4kwuyo",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "Every test in test_kb_mcp.py that asserts kb_pack text runs the server with KB_NO_UPSTREAM=1 through one helper, the behind-clone tests clear it, and test_kb_mcp_pack_ignores_freshness_banner plants a clone 3 commits behind its origin/main: the helper's pack opens with coverage:, the same pack without it with the kb copy line",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "kb_mcp_pack_ignores_freshness_banner"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/test_kb_mcp.py"
+  ],
+  "claimed_by": "worker-sq4kwuyo"
+}
