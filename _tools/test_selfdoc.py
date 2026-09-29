@@ -1,6 +1,8 @@
 """selfdoc.py tests: which kb docs are behind the files they describe (`python3 _tools/tests.py -k selfdoc`).
 
 TestSelfdocRules   map globs (`*` within a directory, `**` across, `-` never), the map reader, describing().
+TestSelfdocSection section DOC HEADING: the section down to the next heading of its level, subsections kept, fenced
+                   code and front matter never headings, case-insensitive, `##` pins the level, no match exits 1.
 TestSelfdocInGit   (marker git) a throwaway repo with a map, two docs and the files they describe: a commit to a
                    described file makes its doc stale, editing or committing the doc clears it, --since compares a
                    revision with the working tree, and check reports a missing doc, a dead pattern and an unmapped doc.
@@ -36,6 +38,93 @@ class TestSelfdocRules:
         (tmp_path / S / "map.csv").write_text("path,glob\nx,y\n", encoding="utf-8", newline="\n")
         with pytest.raises(selfdoc.SelfdocError, match="doc,pattern"):
             selfdoc.load_map(str(tmp_path))
+
+
+DOC = """\
+---
+name: demo
+# a front matter comment, not a heading
+---
+
+# Title
+
+intro
+
+## Alpha
+
+alpha text
+```
+# not a heading, in a fence
+## Alpha
+```
+
+### Alpha detail   ##
+
+detail text
+
+## Beta  Section
+
+beta text
+
+~~~
+```
+## still fenced
+~~~
+
+## alpha
+
+second alpha
+"""
+
+
+class TestSelfdocSection:
+    @pytest.fixture
+    def root(self, tmp_path):
+        os.makedirs(tmp_path / S)
+        (tmp_path / S / "demo.md").write_text(DOC, encoding="utf-8", newline="\n")
+        return str(tmp_path)
+
+    def test_selfdoc_section_runs_to_the_next_heading_of_its_level(self, root):
+        found, _ = selfdoc.section("demo", "Beta Section", root)
+        assert found == [[(22, "## Beta  Section"), (23, ""), (24, "beta text"), (25, ""), (26, "~~~"), (27, "```"),
+                          (28, "## still fenced"), (29, "~~~")]], "fenced lines belong to the section and never end it"
+
+    def test_selfdoc_section_keeps_subsections_and_ignores_fences_and_front_matter(self, root):
+        found, heads = selfdoc.section(f"{S}/demo.md", "alpha", root)
+        assert [(b[0][0], b[-1][0]) for b in found] == [(10, 20), (31, 33)], "both headings of that text, any case"
+        assert (18, "### Alpha detail   ##") in found[0], "a subsection is part of its section"
+        assert (15, "## Alpha") in found[0] and (14, "# not a heading, in a fence") in found[0]
+        assert heads == ["# Title", "## Alpha", "### Alpha detail", "## Beta  Section", "## alpha"]
+
+    def test_selfdoc_section_pins_the_level(self, root):
+        found, _ = selfdoc.section("demo", "### alpha detail", root)
+        assert [(b[0][0], b[-1][0]) for b in found] == [(18, 20)], "a higher heading (## Beta) ends a ### section"
+        assert selfdoc.section("demo", "#### alpha detail", root)[0] == []
+        assert [b[0][0] for b in selfdoc.section("demo", "## Alpha", root)[0]] == [10, 31]
+
+    def test_selfdoc_section_no_match_names_the_headings(self, root):
+        found, heads = selfdoc.section("demo", "# a front matter comment, not a heading", root)
+        assert found == [] and heads[0] == "# Title", "front matter comments are not headings"
+        found, heads = selfdoc.section("demo", "Gamma", root)
+        assert found == [] and "## Beta  Section" in heads
+
+    def test_selfdoc_section_bad_doc_is_an_error(self, root):
+        with pytest.raises(selfdoc.SelfdocError, match="no such doc"):
+            selfdoc.section("nope", "x", root)
+
+    def test_selfdoc_section_cli_no_match_exits_1_and_lists_headings(self, capsys):
+        """The planted failure: a heading the doc does not have."""
+        assert selfdoc.main(["section", f"{S}/backlog.md", "No Such Heading"]) == 1
+        out = capsys.readouterr().out
+        assert "NO SECTION 'No Such Heading'" in out and "  ## Definition of done" in out
+
+    def test_selfdoc_section_cli_prints_line_numbers(self, capsys):
+        assert selfdoc.main(["section", "backlog", "definition of DONE"]) == 0
+        out = capsys.readouterr().out.splitlines()
+        assert out[0].startswith("backlog:") and out[1].endswith(": ## Definition of done") and out[1].split(":")[0].isdigit()
+        assert not any("## Working on items" in ln for ln in out)
+        assert selfdoc.main(["section", "nope", "x"]) == 2
+
 
 
 @pytest.mark.git
