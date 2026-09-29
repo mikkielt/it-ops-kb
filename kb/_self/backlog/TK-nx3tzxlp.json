@@ -2,7 +2,7 @@
   "id": "TK-nx3tzxlp",
   "kind": "task",
   "title": "Remote roles in kbgit.py and red-pipeline",
-  "status": "draft",
+  "status": "todo",
   "parent": "ST-573udtxz",
   "priority": "P2",
   "rank": 0,

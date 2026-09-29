@@ -2,7 +2,7 @@
   "id": "ST-qx7aw7if",
   "kind": "story",
   "title": "CI and the pre-push hook refuse a code-lane commit pushed straight to main",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-rumrqsu5",
   "sprint": "SP-v5xagbyv",
   "priority": "P2",

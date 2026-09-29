@@ -2,7 +2,7 @@
   "id": "ST-vcf3r6qv",
   "kind": "story",
   "title": "sync --push sends code-lane work as a merge request",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-rumrqsu5",
   "sprint": "SP-v5xagbyv",
   "priority": "P2",
