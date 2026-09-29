@@ -2199,3 +2199,17 @@ _Agent: kb-research_
 - See windows/powershell-static-analysis.md.
 
 _Agent: kb-research_
+
+## QK-dotnet-package-list-read-msbuild-response. Does `dotnet package list` read MSBuild response files, which dotnet commands do, and what does MSBuild evaluation do?
+- `MSBuild.exe` reads `MSBuild.rsp` from its own directory and, since 15.6, the first `Directory.Build.rsp` in the project's folder or above; `-noAutoResponse` is the only documented way to skip both, and it is rejected inside `MSBuild.rsp`. [DOC S-kyv336v3, S-5mnhlz54, S-x6akuiwp]
+- In SDK 10.0.401 every MSBuild-forwarding command (`build`, `clean`, `msbuild`, `pack`, `publish`, `restore`, `run`, `test`, `store`, and the restore steps of `package add` and `package list`) calls MSBuild's command-line entry point and adds no `-noAutoResponse`; the parser reads no environment variable that turns response files off. [CODE S-l7o6het5: src/Cli/Microsoft.DotNet.Cli.Utils/MSBuildForwardingAppWithoutLogging.cs#ExecuteInProc]
+- `dotnet package list` without `--no-restore` runs `-target:Restore` through that command line, so response files apply; with `--no-restore` it runs only NuGet's XPlat command, which loads the project through the MSBuild API and reads no response file. [CODE S-afgd57ln: src/Cli/dotnet/Commands/Package/List/PackageListCommand.cs#Execute]
+- Under `--no-restore`, once the assets file exists, NuGet still runs the targets `CollectPackageReferences` and `CollectCentralPackageVersions`, and MSBuild adds `InitialTargets` and targets hooked before or after them. [CODE S-ebazgtwi: src/nuget-client/src/NuGet.Core/NuGet.CommandLine.XPlat/Utility/MSBuildAPIUtility.cs#GetPackageReferencesFromTargets]
+- Evaluation reads the import chain (`Directory.Build.props`/`.targets`, `Sdk.props`/`Sdk.targets`), turns environment variables into properties, runs property functions (which can read files, environment variables and the registry) and resolves SDKs, where a versioned `Sdk` or global.json `msbuild-sdks` makes the NuGet resolver query feeds; no task runs. [DOC S-z35np3zd, S-rgn6ezsf, S-e54zbsgw]
+- `MSBUILDDISABLENUGETSDKRESOLVER=1` disables the NuGet SDK resolver in the implementation; no official page documents it. [CODE S-7j4xac2a: src/nuget-client/src/NuGet.Core/Microsoft.Build.NuGetSdkResolver/NuGetSdkResolver.cs#NuGetSdkResolver]
+- global.json `sdk.paths` (.NET 10) searches SDK folders absolute or relative to the global.json, first match wins, for commands that engage the .NET SDK, not for an apphost, `dotnet app.dll` or `dotnet exec`. [DOC S-zihpu7lj]
+- Conclusion: `dotnet package list --no-restore` does not read a repository's `Directory.Build.rsp`, but it can run targets once an assets file exists; `dotnet msbuild -getProperty` does read it unless `-noAutoResponse` is given. Both rest on SDK 10.0.401's implementation, not on a promise. [DER S-afgd57ln, S-l7o6het5, S-z2n27rkl, S-ebazgtwi: the restore goes through MSBuildApp.Main, the no-restore path through the Project API]
+- Open: an official page for `MSBUILDDISABLENUGETSDKRESOLVER`, and whether `MSBuild.exe` and Visual Studio honour `sdk.paths` (see `_gaps.md`). [UNK]
+- See agents/codebase-mapping.md.
+
+_Agent: kb-research_
