@@ -2,7 +2,7 @@
   "id": "TK-nx3tzxlp",
   "kind": "task",
   "title": "Remote roles in kbgit.py and red-pipeline",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-573udtxz",
   "priority": "P2",
   "rank": 0,
@@ -45,5 +45,19 @@
     }
   ],
   "notes": "ql_deliver.py and backlog.py red-pipeline are also worked by SP-z7a5c76b “Delivery proven”, which runs first: rebase on it.",
-  "claimed_by": "worker-nx3tzxlp"
+  "evidence": {
+    "commit": "b8696cb308f6077fd19e7ca2d4dd86487060ec81",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "TestRemoteRoles"
+        ],
+        "exit": 0,
+        "sha256": "dc66f3125cc1ea6b"
+      }
+    ]
+  }
 }
