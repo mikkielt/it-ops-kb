@@ -679,6 +679,10 @@ class TestConflict:
             return rc
         cls.first = w.distill(step=plant)
         cls.main1, cls.spool1 = w.main(), w.spool()
+        pushed = [s for s in cls.first[1] if "conflict: pushed" in s]
+        cls.branch1 = pushed[0].split("pushed ", 1)[1].split(" ", 1)[0] if pushed else None
+        cls.gaps_main1 = w.show(GAPS)
+        cls.gaps_branch1 = w.show(GAPS, cls.branch1) if cls.branch1 else None
         cls.refs1 = w.remote.git("for-each-ref", "--format=%(refname)", "refs/heads").split()
         cls.opts = (Path(w.remote.path) / "push-options.txt").read_text(encoding="utf-8").splitlines()
         cls.again = w.distill()
@@ -695,8 +699,13 @@ class TestConflict:
         assert branch == ql_deliver.CONFLICT_BRANCH_PREFIX + Path(self.planted_rel).stem
         assert self.main1 == self.planted  # nothing of the run reached main
         assert self.opts == list(ql_deliver.MR_OPTIONS)
-        assert w.show(GAPS, branch) != w.show(GAPS) and self.spool1  # the gap entry waits on the branch; rows stay
+        # the gap entry reached the branch in the first run (each half says which one failed, with the runs' lines)
+        assert self.gaps_branch1 != self.gaps_main1, ("the first run's branch lacks the gap entry", self.first[1])
+        assert self.spool1  # rows stay
         rc, said = self.again
+        # the held entry stayed off main in the second run
+        assert w.show(GAPS) == self.gaps_main1, ("the second run put the held gap entry on main", said)
+        assert w.show(GAPS, branch) == self.gaps_branch1, ("the branch changed in the second run", said)
         assert rc == 0 and says(said, "finding(s) wait on a querylog/ branch and are left alone"), said
         st = self.st
         assert self.refs2 == self.refs1 and len(self.refs1) == 2  # main and the one branch, no second branch
