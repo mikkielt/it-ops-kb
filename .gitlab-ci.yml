@@ -1,10 +1,12 @@
 # CI for it-ops-kb: the tests (Python 3.14, the 3.11 floor, Windows), the stress suite and KB-* commit trailers. The
 # tools are stdlib Python; the tests run with pytest and pytest-xdist, which uv installs from uv.lock (pyproject.toml's
 # dev group). A pipeline is created for every branch push and every tag; the query log's conflict MR (a
-# `querylog/<run-id>` branch, kb/_self/querylog.md) runs through the branch rule. Every job but kb-tests-windows on
-# tool changes is manual: `when: manual` with `allow_failure: true` in its rules, since a manual job in `rules`
-# otherwise blocks the pipeline (docs.gitlab.com/ci/jobs/job_control). kb-tests-windows starts on its own for tool
-# changes, also with `allow_failure: true`. No job writes to the repository.
+# `querylog/<run-id>` branch, kb/_self/querylog.md) runs through the branch rule. Every job runs on the project's own
+# runners (kb/_self/runners.md): the Linux jobs name `docker-linux`, kb-tests-windows `docker-windows`, so no job
+# waits on GitLab.com's shared-runner quota. The gate jobs kb-tests and kb-trailers start on their own for every
+# pipeline they are in, and kb-tests-windows for tool changes, each with `allow_failure: true`; kb-tests-floor and
+# tool-stress stay manual (`when: manual`, also with `allow_failure: true`, since a manual job in `rules` otherwise
+# blocks the pipeline: docs.gitlab.com/ci/jobs/job_control). No job writes to the repository.
 workflow:
   rules:
     - if: $CI_COMMIT_BRANCH
@@ -29,6 +31,7 @@ stages: [test]
 # a full clone keeps the commits the research-merge scenario replays.
 kb-tests:
   stage: test
+  tags: [docker-linux]
   image: python:3.14
   variables:
     GIT_DEPTH: "0"
@@ -37,13 +40,14 @@ kb-tests:
     - pip install --quiet uv
     - python3 _tools/tests.py
   rules:
-    - when: manual
+    - when: on_success
       allow_failure: true
 
 # The tools' floor (pyproject.toml requires-python >=3.11): the same tests on the image's Python 3.11 instead of the
 # 3.14 pinned in .python-version (UV_PYTHON takes precedence over it), without the git scenarios.
 kb-tests-floor:
   stage: test
+  tags: [docker-linux]
   image: python:3.11
   variables:
     UV_PYTHON: "3.11"
@@ -112,6 +116,7 @@ kb-tests-windows:
 
 tool-stress:
   stage: test
+  tags: [docker-linux]
   script:
     - pip install --quiet uv
     - python3 _tools/stress_test.py
@@ -127,6 +132,7 @@ tool-stress:
 # image has it. GIT_DEPTH 0 (full clone): a shallow clone may miss the before sha or the exemption cutoff commit.
 kb-trailers:
   stage: test
+  tags: [docker-linux]
   image: python:3.14
   variables:
     GIT_DEPTH: "0"
@@ -135,5 +141,5 @@ kb-trailers:
     - python3 _tools/kbgit.py check-trailers
   rules:
     - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH
-      when: manual
+      when: on_success
       allow_failure: true
