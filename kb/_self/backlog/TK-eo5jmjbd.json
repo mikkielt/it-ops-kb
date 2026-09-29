@@ -2,7 +2,7 @@
   "id": "TK-eo5jmjbd",
   "kind": "task",
   "title": "Contract test for the tools a host server re-exposes",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-2zvzr6gr",
   "priority": "P2",
   "rank": 1,
@@ -21,5 +21,6 @@
     "_tools/fixtures/kb_mcp_contract.json",
     "_tools/test_kb_mcp.py",
     "_tools/kb_mcp.py"
-  ]
+  ],
+  "claimed_by": "contract-agent"
 }

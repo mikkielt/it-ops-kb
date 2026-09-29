@@ -2,7 +2,7 @@
   "id": "TK-3tcjb42a",
   "kind": "task",
   "title": "kb_http.py serves kb/public unless --roots names more",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-z6fw4er5",
   "priority": "P2",
   "rank": 2,
@@ -23,5 +23,6 @@
   ],
   "depends_on": [
     "TK-ux5ufed5"
-  ]
+  ],
+  "claimed_by": "roots-http-agent"
 }
