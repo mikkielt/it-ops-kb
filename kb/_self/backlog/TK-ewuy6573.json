@@ -2,7 +2,7 @@
   "id": "TK-ewuy6573",
   "kind": "task",
   "title": "Parse pin files at the commit in kbingest.py",
-  "status": "draft",
+  "status": "todo",
   "parent": "ST-gmey37if",
   "priority": "P2",
   "rank": 1,

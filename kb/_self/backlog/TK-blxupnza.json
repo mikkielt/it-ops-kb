@@ -2,7 +2,7 @@
   "id": "TK-blxupnza",
   "kind": "task",
   "title": "Research the open gaps of windows/powershell-static-analysis",
-  "status": "draft",
+  "status": "todo",
   "parent": "ST-rjxacpdh",
   "priority": "P2",
   "rank": 1,

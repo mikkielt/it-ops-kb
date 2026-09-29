@@ -2,7 +2,7 @@
   "id": "TK-dbm2lfbf",
   "kind": "task",
   "title": "kbingest.py reports CODE facts whose evidence moved at a new commit",
-  "status": "draft",
+  "status": "todo",
   "parent": "ST-rrrgvspb",
   "priority": "P2",
   "rank": 0,

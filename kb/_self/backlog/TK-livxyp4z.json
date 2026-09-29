@@ -2,7 +2,7 @@
   "id": "TK-livxyp4z",
   "kind": "task",
   "title": "Expose --imports in rag.py, kb_topics_for and the docs",
-  "status": "draft",
+  "status": "todo",
   "parent": "ST-kj72lcgb",
   "priority": "P2",
   "rank": 2,

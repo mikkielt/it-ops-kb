@@ -2,7 +2,7 @@
   "id": "SP-fkyrld5h",
   "kind": "sprint",
   "title": "Ingestion maps code natively",
-  "status": "planned",
+  "status": "active",
   "goal": "kbingest reports toolchain pins and read-only tool-native maps, topics_for matches code by imports, /kb-ingest and the plugin docs use them, and the codebase-mapping topics' gaps are worked",
   "gates": [
     {
