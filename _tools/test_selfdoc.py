@@ -115,6 +115,22 @@ class TestSelfdocSection:
         with pytest.raises(selfdoc.SelfdocError, match="no such doc"):
             selfdoc.section("nope", "x", root)
 
+    def test_selfdoc_section_refuses_a_file_outside_the_repository(self, root, tmp_path_factory):
+        """The planted failure: an absolute path or a `../` path to a file outside the repository is no doc."""
+        outside = tmp_path_factory.mktemp("outside") / "secret.md"
+        outside.write_text("# Host Database\nvalue\n", encoding="utf-8", newline="\n")
+        for name in (str(outside), os.path.relpath(outside, root)):
+            with pytest.raises(selfdoc.SelfdocError, match="no such doc"):
+                selfdoc.section(name, "Host Database", root)
+        assert selfdoc.section(os.path.join(root, S, "demo.md"), "alpha", root)[0], "an absolute path inside still works"
+
+    def test_selfdoc_section_ignores_backticks_in_headings(self, root):
+        doc = os.path.join(root, S, "ticks.md")
+        with open(doc, "w", encoding="utf-8", newline="\n") as f:
+            f.write("# T\n\n## 6. Roots beside `kb/public`\n\ntext\n")
+        for heading in ("6. Roots beside kb/public", "6. Roots beside `kb/public`"):
+            assert [b[0][0] for b in selfdoc.section("ticks", heading, root)[0]] == [3], heading
+
     def test_selfdoc_section_cli_no_match_exits_1_and_lists_headings(self, capsys):
         """The planted failure: a heading the doc does not have."""
         assert selfdoc.main(["section", f"{S}/backlog.md", "No Such Heading"]) == 1

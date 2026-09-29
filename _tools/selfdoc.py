@@ -184,13 +184,15 @@ FENCE_RX = re.compile(r" {0,3}(`{3,}|~{3,})")
 
 
 def resolve_doc(name, root=KB):
-    """The file DOC names: a path from the repository root (or absolute), else a name under kb/_self, with or without `.md`."""
+    """The file DOC names: a path from the repository root (or absolute), else a name under kb/_self, with or without
+    `.md`. A file outside the repository is refused, so the command's allow rule opens no read beyond the clone."""
     base = pathlib.Path(root)
+    inside = base.resolve()
     for cand in (name, f"{SELF_REL}/{name}"):
         for path in (base / cand, base / (cand + ".md")):
-            if path.is_file():
+            if path.is_file() and inside in path.resolve().parents:
                 return path
-    raise SelfdocError(f"no such doc: {name} (looked for it from the repository root and under {SELF_REL}/)")
+    raise SelfdocError(f"no such doc: {name} (a file in the repository, from its root or under {SELF_REL}/)")
 
 
 def headings(text_lines):
@@ -215,7 +217,9 @@ def headings(text_lines):
 
 
 def norm_heading(text):
-    return " ".join(text.split()).casefold()
+    """Heading text compared without case, runs of spaces or backticks, so a command can name a heading that has code
+    spans without quoting a backtick (PowerShell's escape character)."""
+    return " ".join(text.replace("`", "").split()).casefold()
 
 
 def sections(text_lines, heading):
