@@ -131,5 +131,5 @@ def test_conflicts_stop_before_any_download(tmp_path):
     conflicts = [ln for ln in said.splitlines() if ln.strip().startswith("CONFLICT")]
     assert p.returncode == 3, said
     assert any("PYTHONHOME" in ln for ln in conflicts), said
-    assert any("python3.exe" in ln for ln in conflicts), said
+    assert any(str(target / "python3.exe") in ln for ln in conflicts), said  # the planted file, not a PATH hit
     assert list(out.iterdir()) == [], "nothing is downloaded when the preflight finds a conflict"

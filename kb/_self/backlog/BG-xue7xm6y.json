@@ -1,0 +1,38 @@
+{
+  "id": "BG-xue7xm6y",
+  "kind": "bug",
+  "title": "The planted python3.exe conflict test matches any python3.exe line",
+  "status": "doing",
+  "sprint": "SP-fep4fpsx",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "test_conflicts_stop_before_any_download asserts a CONFLICT line naming the planted file's own path, so a host with a python3.exe on its machine PATH cannot make it pass without the planted-file check.",
+  "repro": {
+    "run": [
+      "git",
+      "grep",
+      "-q",
+      "-F",
+      "-e",
+      "str(target / \"python3.exe\")",
+      "--",
+      "_tools/test_install_python.py"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "install_python"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/test_install_python.py"
+  ],
+  "notes": "Found by the fresh-context review of SP-fep4fpsx “Windows ready” (ST-xqx3ffyu).",
+  "claimed_by": "windows-laptop"
+}
