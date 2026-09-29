@@ -2,7 +2,7 @@
   "id": "TK-jsx4wea4",
   "kind": "task",
   "title": "selfdoc.py section prints one section of a kb/_self doc or SKILL.md",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-pqmnnxvm",
   "priority": "P2",
   "rank": 0,
@@ -20,5 +20,6 @@
   "touches": [
     "_tools/selfdoc.py",
     "_tools/test_selfdoc.py"
-  ]
+  ],
+  "claimed_by": "worker-jsx4wea4"
 }

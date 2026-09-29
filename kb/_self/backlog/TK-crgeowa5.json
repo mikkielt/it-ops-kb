@@ -2,7 +2,7 @@
   "id": "TK-crgeowa5",
   "kind": "task",
   "title": "PreToolUse hint for whole-file reads of kb articles",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-mkaeoctd",
   "priority": "P2",
   "rank": 0,
@@ -21,5 +21,6 @@
     "_tools/kb_hook.py",
     "_tools/test_kb.py",
     ".claude/settings.json"
-  ]
+  ],
+  "claimed_by": "worker-crgeowa5"
 }
