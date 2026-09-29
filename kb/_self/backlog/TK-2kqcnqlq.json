@@ -1,0 +1,23 @@
+{
+  "id": "TK-2kqcnqlq",
+  "kind": "task",
+  "title": "Record the Linux runner's CPU, memory and concurrency cap in runners.md",
+  "status": "doing",
+  "parent": "ST-33lzmm5e",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kb/_self/runners.md says the docker-linux runner's WSL VM is capped at processors=4 and memory=8GB in kb-runner's .wslconfig and the runner runs concurrent = 1, why (the local sync gate and the CI share the host's CPUs; uncapped, local gate tests hit their timeouts), and how the cap is changed (a one-off task as kb-runner, then a VM restart).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import pathlib;t=pathlib.Path('kb/_self/runners.md').read_text(encoding='utf-8');assert 'processors=4' in t and 'memory=8GB' in t and 'concurrent = 1' in t"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/runners.md"
+  ],
+  "claimed_by": "orchestrator-SP-76inhw33"
+}
