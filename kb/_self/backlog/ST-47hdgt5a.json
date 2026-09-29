@@ -2,7 +2,7 @@
   "id": "ST-47hdgt5a",
   "kind": "story",
   "title": "Automatic bugs deduplicate by failure fingerprint",
-  "status": "todo",
+  "status": "done",
   "parent": "EP-o2bjijfp",
   "sprint": "SP-liemltg2",
   "priority": "P3",
@@ -40,5 +40,20 @@
     "kb/_self/backlog.md",
     "kb/_self/querylog.md",
     "_tools/backlog.py"
-  ]
+  ],
+  "evidence": {
+    "commit": "fb73e8fb663bdf27a7d16ce4c4604224b504d0e8",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "fingerprint"
+        ],
+        "exit": 0,
+        "sha256": "cb053988288cb5fa"
+      }
+    ]
+  }
 }

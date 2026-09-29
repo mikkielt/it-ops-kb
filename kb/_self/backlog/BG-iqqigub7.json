@@ -2,7 +2,7 @@
   "id": "BG-iqqigub7",
   "kind": "bug",
   "title": "A KB-Work line outside the last paragraph is no trailer, and done then checks no commit",
-  "status": "todo",
+  "status": "done",
   "sprint": "SP-liemltg2",
   "priority": "P2",
   "rank": 0,
@@ -30,5 +30,30 @@
     "kb/_self/backlog.md",
     "kb/_self/git.md"
   ],
-  "notes": "Seen in sprint SP-z7a5c76b: commits 70a78af and da0bc12 put KB-Work in a paragraph before Co-Authored-By, so git reads no trailer and done's scope check passed on zero commits. The repro fails until the planted-commit test exists and passes."
+  "notes": "Seen in sprint SP-z7a5c76b: commits 70a78af and da0bc12 put KB-Work in a paragraph before Co-Authored-By, so git reads no trailer and done's scope check passed on zero commits. The repro fails until the planted-commit test exists and passes.",
+  "evidence": {
+    "commit": "fb73e8fb663bdf27a7d16ce4c4604224b504d0e8",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "kb_work_outside_trailers"
+        ],
+        "exit": 0,
+        "sha256": "c58c7b2fd0cfdc4e"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "kb_work_outside_trailers"
+        ],
+        "exit": 0,
+        "sha256": "c58c7b2fd0cfdc4e"
+      }
+    ]
+  }
 }
