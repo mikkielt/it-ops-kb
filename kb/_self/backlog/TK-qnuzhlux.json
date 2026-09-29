@@ -2,7 +2,7 @@
   "id": "TK-qnuzhlux",
   "kind": "task",
   "title": "Lane classifier and kbgit.py lane",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-lyy6lyin",
   "priority": "P2",
   "rank": 0,
@@ -35,5 +35,6 @@
     "kb/_self/tools.md",
     "kb/_self/map.csv"
   ],
-  "notes": "The sync gate runs selfdoc.py stale, so the docs of a new command go in the same commit."
+  "notes": "The sync gate runs selfdoc.py stale, so the docs of a new command go in the same commit.",
+  "claimed_by": "worker-qnuzhlux"
 }
