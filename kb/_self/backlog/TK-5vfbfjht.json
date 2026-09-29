@@ -2,11 +2,11 @@
   "id": "TK-5vfbfjht",
   "kind": "task",
   "title": "The slow sync and query-log tests fit the Windows CI budget",
-  "status": "todo",
+  "status": "doing",
   "parent": "BG-ovulgaal",
   "priority": "P1",
   "rank": 2,
-  "goal": "On the kb-tests-windows hosted runner no test runs past 300 s: the test_sync.py scenario fixture, test_querylog.py applied and the test_querylog_e2e.py scenario, which start child kbgit.py sync --push and query-log pipelines, take less time on Windows, and the job finishes inside its timeout.",
+  "goal": "In the kb-tests-windows job no test runs past 300 s: the test_sync.py scenario fixture, test_querylog.py applied and the test_querylog_e2e.py scenario, which start child kbgit.py sync --push and query-log pipelines, take less time on Windows, and the job finishes inside its timeout.",
   "checks": [
     {
       "run": [
@@ -25,5 +25,6 @@
     "ST-qmusneyk",
     "TK-kmunpvxo"
   ],
-  "notes": "The sync scenarios now clone the shared seed and the same-line conflict case runs as its own class (local 8-worker fixture 448 s -> 321 s). On the hosted runner (job 16794362441, before that change) the fixtures past 300 s were test_sync.py TestSyncInGit 379 s and test_querylog_e2e.py TestFixes 323 s; TestApply 262 s, TestResearch 254 s. Half of TestFixes is one querylog.py apply in a fresh worktree (51 s alone here): apply measures the whole eval set before and after each fix, so a further cut is a change to ql_apply, not the tests. What remains: a kb-tests-windows run with --durations showing no test past 300 s."
+  "notes": "In kb-tests-windows job 16804081257 on the docker-windows runner (main c0ccafeb, --durations=15) no test runs past 300 s: the slowest are the setups of test_querylog_e2e.py TestAutonomousConverge 220 s, TestFixes 170 s, test_querylog.py TestApply 160 s and test_sync.py TestSyncInGit 148 s, and the whole suite takes 24 min. The sync scenarios clone the shared seed and the same-line conflict case runs as its own class. Half of TestFixes is one querylog.py apply in a fresh worktree: apply measures the whole eval set before and after each fix, so a further cut is a change to ql_apply, not the tests.",
+  "claimed_by": "orchestrator-mac-sprint-run"
 }
