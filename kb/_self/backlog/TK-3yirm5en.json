@@ -2,7 +2,7 @@
   "id": "TK-3yirm5en",
   "kind": "task",
   "title": "Document the none rule in kb/_self",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-uuaooyrm",
   "priority": "P1",
   "rank": 2,
@@ -53,5 +53,6 @@
   ],
   "depends_on": [
     "TK-oldp5xjn"
-  ]
+  ],
+  "claimed_by": "worker-3yirm5en"
 }
