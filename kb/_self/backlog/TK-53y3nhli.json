@@ -2,7 +2,7 @@
   "id": "TK-53y3nhli",
   "kind": "task",
   "title": "Research the open gaps of agents/coding-agent-codebase-context",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-rjxacpdh",
   "priority": "P2",
   "rank": 2,
@@ -37,5 +37,26 @@
   "depends_on": [
     "TK-blxupnza"
   ],
-  "claimed_by": "worker-53y3nhli"
+  "evidence": {
+    "commit": "a46cddf8b4bb65f52e77f01c374085c43e6a5db0",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/check.py"
+        ],
+        "exit": 0,
+        "sha256": "bb5e86032b20adbe"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/rag.py",
+          "eval"
+        ],
+        "exit": 0,
+        "sha256": "c47b63d42ffd1cc0"
+      }
+    ]
+  }
 }
