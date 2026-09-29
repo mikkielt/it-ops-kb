@@ -2,7 +2,7 @@
   "id": "BG-tlubx3fz",
   "kind": "bug",
   "title": "The Python notice names paths a plugin host cannot run",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-fep4fpsx",
   "priority": "P1",
   "rank": 0,
@@ -37,5 +37,33 @@
     "kb/_self/tools.md"
   ],
   "notes": "Found by the fresh-context review of SP-fep4fpsx “Windows ready” (ST-xqx3ffyu).",
-  "claimed_by": "windows-laptop"
+  "evidence": {
+    "commit": "f17109a9371819ba77a69edb78b62981ac8500ac",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "portability"
+        ],
+        "exit": 0,
+        "sha256": "3cc291e97df4b856"
+      },
+      {
+        "run": [
+          "git",
+          "grep",
+          "-q",
+          "-F",
+          "-e",
+          "$here/install-python.ps1",
+          "--",
+          "_tools/kbpy"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
