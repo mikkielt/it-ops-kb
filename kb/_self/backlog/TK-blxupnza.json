@@ -2,7 +2,7 @@
   "id": "TK-blxupnza",
   "kind": "task",
   "title": "Research the open gaps of windows/powershell-static-analysis",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-rjxacpdh",
   "priority": "P2",
   "rank": 1,
@@ -30,5 +30,17 @@
   "depends_on": [
     "TK-yg4pe6fv"
   ],
-  "claimed_by": "worker-blxupnza"
+  "evidence": {
+    "commit": "235944534098154f08b29a1f8632c80a18b85763",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/check.py"
+        ],
+        "exit": 0,
+        "sha256": "a6f84649c7a96073"
+      }
+    ]
+  }
 }
