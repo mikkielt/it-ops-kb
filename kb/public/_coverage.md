@@ -103,7 +103,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `claude/settings-and-scopes` | P2 | complete | `claude/settings-and-scopes.md`, `claude/settings-keys.csv`, `claude/env-vars.csv` | 11 |
 | `claude/skills-and-subagents` | P2 | complete | `claude/skills-and-subagents.md`, `claude/skills-and-subagents.csv` | 5 |
 | `claude/large-codebases` | P3 | complete | `claude/large-codebases.md` | 3 |
-| `claude/powershell-tool` | P3 | partial | `claude/powershell-tool.md` | 5 |
+| `claude/powershell-tool` | P3 | partial | `claude/powershell-tool.md` | 6 |
 | `defender/machine-resource` | P1 | complete | `defender/machine-resource.md`, `defender/machine-properties.csv` | 9 |
 | `defender/mde-onboarding` | P1 | complete | `defender/mde-onboarding.md` | 23 |
 | `defender/permissions-limits` | P1 | complete | `defender/permissions-limits.md` | 6 |

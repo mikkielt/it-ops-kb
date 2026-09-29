@@ -2164,3 +2164,15 @@ _Agent: kb-research_
 - See python/windows-python-install.md.
 
 _Agent: kb-research_
+
+## QK-claude-code-permission-rules-match-powershell. How do Claude Code permission rules match PowerShell tool calls, and does a Bash rule ever cover one?
+- Rules name the tool: `PowerShell` or `PowerShell(*)` matches every command, `PowerShell(<pattern>)` one form; the docs' examples are `PowerShell(Get-ChildItem *)`, `PowerShell(git commit *)` and deny `PowerShell(Remove-Item *)`. [DOC S742]
+- Same shape as Bash rules: `*` at any position, `:*` equal to a trailing ` *`; common aliases are canonicalised (`gci`, `ls`, `dir` match `Get-ChildItem`) and matching is case-insensitive. [DOC S742]
+- Claude Code parses the PowerShell AST; `|`, `;` and on PowerShell 7+ `&&` and `||` split a compound command, and a rule must match every subcommand. [DOC S742]
+- The tool is on by default on Windows (automatically without Git Bash; for claude.ai and Console accounts with Git Bash); `CLAUDE_CODE_USE_POWERSHELL_TOOL=1` or `0`, in the environment or the settings `env` block, turns it on or off. [DOC S-3yod3u7q]
+- The no-prompt read-only set, wrapper stripping and environment-assignment stripping are documented for Bash commands only. [DOC S742]
+- Conclusion: no page says a `Bash(...)` rule covers a PowerShell call, so each read-only kb command gets a `PowerShell(<command> *)` rule beside its `Bash(...)` rule, and a piped or `;`-chained PowerShell command needs a rule for every part. [DER S742, S743: rule format names the tool; one `if` rule matches one tool's calls]
+- Open: whether any PowerShell command counts as read-only without a rule, whether wrappers and `$env:` assignments are stripped before matching, and whether `allowed-tools: PowerShell(...)` works in skills. [UNK]
+- See claude/powershell-tool.md, claude/permissions-mcp.md.
+
+_Agent: kb-research_
