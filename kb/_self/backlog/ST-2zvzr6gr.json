@@ -2,7 +2,7 @@
   "id": "ST-2zvzr6gr",
   "kind": "story",
   "title": "A host MCP server embeds the kb over stdio",
-  "status": "todo",
+  "status": "done",
   "parent": "EP-5sc7hr36",
   "sprint": "SP-4udo5jmw",
   "priority": "P2",
@@ -29,5 +29,29 @@
     "ST-opes33cp",
     "TK-yittxcs5"
   ],
-  "notes": "The operator's TypeScript server reaches the kb over stdio: no network hop and no authentication between them; the host needs Python 3.11+ and a clone at a census tag."
+  "notes": "The operator's TypeScript server reaches the kb over stdio: no network hop and no authentication between them; the host needs Python 3.11+ and a clone at a census tag.",
+  "evidence": {
+    "commit": "7b1c5da240652f517d6b44e7dd5b3c071ed1882b",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "embed"
+        ],
+        "exit": 0,
+        "sha256": "2e6e4d97cb5b0a68"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/selfdoc.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "3db513ebafdfe3a2"
+      }
+    ]
+  }
 }

@@ -1,0 +1,27 @@
+{
+  "id": "BG-yokyoj6u",
+  "kind": "bug",
+  "title": "kb_pack shows the clone's absolute path to remote clients in its kb copy line",
+  "status": "doing",
+  "parent": "EP-5sc7hr36",
+  "sprint": "SP-4udo5jmw",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "A kb served to an audience outside the team (kb_http.py, or kb_mcp.py under --roots) never puts the clone's absolute path or a git pull command in kb_pack or kb_status output: behind_note in kb_mcp.py is off or reworded without the path when the server is limited by --roots or HEAD is detached at a census tag; test_kb_http_no_local_path plants a clone behind its upstream and proves no absolute path reaches an HTTP answer",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/tests.py",
+      "-k",
+      "kb_http_no_local_path"
+    ]
+  },
+  "touches": [
+    "_tools/kb_mcp.py",
+    "_tools/test_kb_mcp.py",
+    "_tools/test_kb_http.py",
+    "_tools/kb_http.py"
+  ],
+  "claimed_by": "path-bug-agent"
+}
