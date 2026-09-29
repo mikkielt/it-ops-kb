@@ -10,14 +10,22 @@
                                         the user's plugins and MCP servers;
                                         if the facts are only about something related it answers INSUFFICIENT and
                                         the question goes on to step 4 (the verdict counts words, not meaning);
-                                     4. weak or none -> Sonnet at low effort with the kb and the live-docs servers.
-  kb_ask.py --route "<question>"     print the plan (kind, parts, verdict, model), run nothing
+                                     4. a pack routed web (the kb lacks the question) -> one Sonnet researcher at low
+                                        effort with the live-docs servers and WebSearch/WebFetch, no kb server; it gets
+                                        the question, the pack's `kb lacks:` line and up to three nearest article titles
+                                        as leads to verify; its `--output-format json` result is printed (an error
+                                        result's errors go to stderr, exit 1);
+                                     5. a pack routed split (the kb has part of it) -> the same researcher for now, given
+                                        the whole pack (kind=split).
+                                     A weak or none pack without a `route:` line plans split.
+  kb_ask.py --route "<question>"     print the plan (kind, parts, verdict, model and, for web and split, the pack's
+                                     route, kb has and kb lacks lines), run nothing
   kb_ask.py --no-model "<question>"  print a good pack, or a count answer, without calling a model
   kb_ask.py --model M "<question>"   override the routed model of step 3 or 4
   kb_ask.py -v "<question>"          also print the route to stderr
 
 Every run writes one query log spool row (kb/_self/querylog.md, Capture): the question, the route taken (`tool`,
-`good`, `weak`, `plan` for --route, with `escalated` when the reader answered INSUFFICIENT), the verdict, the kb
+`good`, `web`, `split`, `plan` for --route, with `escalated` when the reader answered INSUFFICIENT), the verdict, the kb
 lines of the pack (path:line, tag, verdict) and the model. Its own `claude -p` runs with hooks off, so the session it starts never logs itself.
 
 Why (kb/_self/reports/benchmarks.md, "Routing by verdict"): a Haiku session costs a fifth of a Sonnet one and an eighth of an
@@ -38,6 +46,7 @@ DOCS = ["mcp__microsoft-learn__microsoft_docs_search", "mcp__microsoft-learn__mi
 # claude -p without the user's plugins and MCP servers (project and local settings still apply) and with every hook
 # off, so the query log's capture hooks never log kb_ask.py's own session (it writes its own row)
 LEAN = ["--setting-sources", "project,local", "--strict-mcp-config", *kbcommon.NO_HOOKS]
+WEB = ["WebSearch", "WebFetch"]  # the researcher's built-in tools: `--tools` limits them, `--allowedTools` approves them
 SENTINEL = "INSUFFICIENT"
 RULES = ("Answer from the kb evidence below: lead with the answer, then each supporting fact with its path:line, tag "
          "and source url. COMMUNITY and UNK facts are leads, not answers; a CODE fact is implementation read from "
@@ -48,6 +57,13 @@ READER = RULES + (f" If the facts are about something related but do not answer 
 RESEARCHER = RULES + (" If the evidence does not answer the question, or only a related one, research the missing part "
                       "in the live docs (Microsoft Learn, Claude Code docs, MCP docs; web search last) and label it "
                       "'live docs, not in the kb' with its url.")
+
+WEB_RESEARCHER = ("The kb does not cover this question, or the part named on the `kb lacks` line. Research it in the live "
+                  "docs: Microsoft Learn, Claude Code docs and MCP docs first, web search last. WebSearch returns titles "
+                  "and urls only: fetch a page with WebFetch (or a docs tool) before you state a fact from it. The "
+                  "nearest kb articles are leads to verify, not answers. Answer with the source url of each fact and "
+                  "label the answer 'live docs, not in the kb'. Never fill gaps from memory; if the live docs do not "
+                  "answer, say so.")
 
 # ---------------------------------------------------------------- questions the tools answer without a model
 
@@ -114,12 +130,32 @@ def split_parts(question):
 
 # ---------------------------------------------------------------- routing
 
+ROUTE_LINE = re.compile(r"^route: (web|split)\s*$", re.M)
+HAS_LINE = re.compile(r"^kb has: (.*\S)\s*$", re.M)
+LACKS_LINE = re.compile(r"^kb lacks: (.*\S)\s*$", re.M)
+ARTICLE_LINE = re.compile(r"^## (\S+)  (.+?)  \[", re.M)
+MAX_LEADS = 3
+
+
 def plan(question, model=None):
-    """{kind: tool|good|weak, parts, verdict, text (the packs), model}."""
+    """{kind: good|web|split, parts, verdict, text (the packs), route (web, split or None), has, lacks (the packs'
+    `kb has:` and `kb lacks:` lines, one entry per line), leads ([(path, title)]: the up to 3 nearest articles), model}.
+    The kind follows the pack's `route:` line (a pack of several parts starts with one overall line); a clean good
+    pack has none and stays `good`. A weak or none pack without the line plans `split`, the route that keeps the kb's
+    evidence in front of the model."""
     parts = split_parts(question)
     res = kbfacts.pack_many(parts)
-    kind = "good" if res["verdict"] == "good" else "weak"
-    return {"kind": kind, "parts": parts, "verdict": res["verdict"], "text": res["text"],
+    text = res["text"]
+    m = ROUTE_LINE.search(text)
+    route = m.group(1) if m else (None if res["verdict"] == "good" else "split")
+    kind = route or "good"
+    leads, seen = [], set()
+    for path, title in ARTICLE_LINE.findall(text):
+        if path not in seen:
+            seen.add(path)
+            leads.append((path, title))
+    return {"kind": kind, "parts": parts, "verdict": res["verdict"], "text": text, "route": route,
+            "has": HAS_LINE.findall(text), "lacks": LACKS_LINE.findall(text), "leads": leads[:MAX_LEADS],
             "model": model or ("haiku" if kind == "good" else "sonnet")}
 
 
@@ -127,15 +163,58 @@ def prompt(question, pack_text):
     return f"Question: {question}\n\n<kb_evidence>\n{pack_text}\n</kb_evidence>"
 
 
-def claude_argv(model, tools):
+def web_prompt(question, p):
+    """The web researcher's input: the question, what the kb lacks and the nearest articles as leads (not the pack)."""
+    out = [f"Question: {question}"]
+    if p["lacks"]:
+        out += ["", "The kb lacks: " + "; ".join(p["lacks"])]
+    if p["leads"]:
+        out += ["", "Nearest kb articles, leads to verify in the live docs (not answers):"]
+        out += [f"- {title} ({path})" for path, title in p["leads"]]
+    return "\n".join(out)
+
+
+def claude_argv(model, tools, output=None):
+    """The claude -p argument list. tools=False: the reader (no tools, no --effort). tools=True: the researcher, the lean
+    start: the docs servers' config only (no kb server), built-in tools limited to WebSearch and WebFetch (`--tools`;
+    `--allowedTools` only approves), `--effort low`. output="json" adds `--output-format json` (one result object with
+    `result`, `total_cost_usd`, `is_error`); left out, the caller sets its own format."""
     argv = ["claude", "-p", "--no-session-persistence", "--model", model, *LEAN]
     if tools:
-        argv += ["--mcp-config", DOCS_MCP, "--mcp-config", json.dumps({"mcpServers": {"kb": {
-            "command": sys.executable, "args": [os.path.join(HOME, "_tools", "kb_mcp.py")]}}}),
-                 "--effort", "low", "--allowedTools", "mcp__kb", *DOCS]
+        argv += ["--mcp-config", DOCS_MCP, "--tools", ",".join(WEB), "--effort", "low", "--allowedTools", *WEB, *DOCS]
     else:
         argv += ["--tools", ""]
+    if output:
+        argv += ["--output-format", output]
     return argv
+
+
+def parse_result(stdout):
+    """(text, cost, ok) of a `claude -p --output-format json` result, or None when stdout is not one. text is `result`, or
+    for an error result (is_error, or an `error_*` subtype) its `errors` joined; cost is total_cost_usd or None."""
+    try:
+        r = json.loads(stdout)
+    except ValueError:
+        return None
+    if not isinstance(r, dict):
+        return None
+    cost = r.get("total_cost_usd")
+    cost = float(cost) if isinstance(cost, (int, float)) and not isinstance(cost, bool) else None
+    if r.get("is_error") or str(r.get("subtype", "")).startswith("error"):
+        errs = r.get("errors")
+        errs = "\n".join(str(e) for e in errs) if isinstance(errs, list) else errs
+        return str(errs or r.get("result") or r.get("subtype") or "claude -p failed"), cost, False
+    return str(r.get("result") or ""), cost, True
+
+
+def research(model, system, user):
+    """The researcher's (text, cost, ok): a claude -p with the docs servers and WebSearch/WebFetch."""
+    argv = claude_argv(model, tools=True, output="json") + ["--append-system-prompt", system]
+    p = subprocess.run(argv, cwd=HOME, input=user, capture_output=True, text=True, encoding="utf-8")
+    got = parse_result(p.stdout)
+    if got is None:
+        raise SystemExit(p.stderr or f"claude -p exited {p.returncode} without a JSON result")
+    return got
 
 
 def read(model, system, user):
@@ -189,6 +268,9 @@ def run(row):
         print(line)
         for i, part in enumerate(p["parts"], 1):
             print(f"part {i}: {part}")
+        if p["route"]:
+            print("\n".join([f"route: {p['route']}"] + [f"kb has: {h}" for h in p["has"]]
+                            + [f"kb lacks: {x}" for x in p["lacks"]]))
         return 0
     row["model"] = None if a.no_model and p["kind"] == "good" else p["model"]
     if a.no_model and p["kind"] == "good":
@@ -208,8 +290,13 @@ def run(row):
         log(f"reader said {SENTINEL}; escalating to sonnet")
         p["model"] = "sonnet" if not a.model else a.model
         row.update(escalated=True, model=p["model"])
-    argv = claude_argv(p["model"], tools=True) + ["--append-system-prompt", RESEARCHER]
-    return subprocess.run(argv, cwd=HOME, input=prompt(q, p["text"]) + note, text=True, encoding="utf-8").returncode
+    if p["kind"] == "web":
+        text, cost, ok = research(p["model"], WEB_RESEARCHER, web_prompt(q, p))
+    else:  # split (the whole pack, until the reader takes the kb has part) and the reader's INSUFFICIENT
+        text, cost, ok = research(p["model"], RESEARCHER, prompt(q, p["text"]) + note)
+    log(f"researcher {p['model']} total_cost_usd={cost}")
+    print(text.strip(), file=sys.stdout if ok else sys.stderr)
+    return 0 if ok else 1
 
 
 if __name__ == "__main__":
