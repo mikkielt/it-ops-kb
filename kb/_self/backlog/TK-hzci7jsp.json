@@ -2,7 +2,7 @@
   "id": "TK-hzci7jsp",
   "kind": "task",
   "title": "Tag the Linux jobs docker-linux and start the gate jobs on their own",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-33lzmm5e",
   "priority": "P2",
   "rank": 0,
@@ -31,5 +31,27 @@
     "TK-thopb3qo"
   ],
   "notes": "Lands only once the docker-linux runner is online, or the tagged jobs sit pending.",
-  "claimed_by": "orchestrator-SP-76inhw33"
+  "evidence": {
+    "commit": "d0a002f2e7cb887078f35ffb27af5a0d36b13edb",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import re,pathlib;t=pathlib.Path('.gitlab-ci.yml').read_text(encoding='utf-8');jobs=dict(re.findall(r'(?ms)^([a-z][\\w-]*):\\n(.*?)(?=^\\S|\\Z)',t));jobs={k:v for k,v in jobs.items() if 'stage:' in v};bad=[k for k,v in jobs.items() if 'docker-windows' not in v and 'docker-linux' not in v];auto=[k for k in ('kb-tests','kb-trailers') if 'when: manual' in jobs[k].split('rules:',1)[1] or 'when: on_success' not in jobs[k].split('rules:',1)[1]];assert len(jobs)>=5 and not bad and not auto,(sorted(jobs),bad,auto)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/selfdoc.py",
+          "stale"
+        ],
+        "exit": 0,
+        "sha256": "87a3b1b935511a85"
+      }
+    ]
+  }
 }
