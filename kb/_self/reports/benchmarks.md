@@ -30,9 +30,10 @@ Spend of the runs of each scenario, per record (paid `claude -p` runs, the Haiku
 | querylog-pipeline | 2026-09-28 | 1 | 7,250 | 2,608 | $0.03 |
 | research | 2026-09-28 | 1 | 112,904 | 2,809 | $0.21 |
 | retrieval | 2026-09-28 | 1 | 16,352 | 3,331 | $0.07 |
+| route-by-verdict | 2026-09-29 | 36 | 2,723,008 | 57,099 | $3.73 |
 | router | 2026-09-28 | 22 | 358,198 | 8,244 | $0.30 |
 | subagents | 2026-09-28 | 24 | 724,378 | 23,213 | $3.30 |
-| all | | 294 | 30,809,248 | 313,510 | $32.01 |
+| all | | 330 | 33,532,256 | 370,609 | $35.75 |
 <!-- /bench -->
 
 ## Lookups against the web
@@ -342,14 +343,35 @@ A miss is a finding for the sprint review, not a reason to change the bar.
 <!-- bench:records route-by-verdict -->
 | record | date | commit | Claude Code | kb topics | runs per cell | spend of the runs |
 |---|---|---|---|---|---|---|
+| 2026-09-29 | 2026-09-29 | 15fb0d9 | 2.1.284 | 288 | 2 | $3.73 |
 <!-- /bench -->
 
 <!-- bench:table route-by-verdict metrics=pack_route,cost,wall_s,checks,limit_ratio,bar -->
 | case | arm | pack_route | cost | wall_s | checks | limit_ratio | bar |
 |---|---|---|---|---|---|---|---|
+| s5_none | router-pinned | web | $0.119 | 36 s | 2/2 | 0.87x | holds |
+| o1_offkb | router-pinned | web | $0.110 | 34 s | 4/4 | 0.89x | holds |
+| s8_falsegood2 | router-pinned | web | $0.100 | 25 s | 4/4 | 0.71x | holds |
+| h2_applock | router-pinned | split | $0.055 | 20 s | 6/6 | 0.92x | holds |
+| s1_fact | router-pinned | good | $0.013 | 6 s | 2/2 | - | holds |
+| s3_multi | router-pinned | good | $0.011 | 10 s | 6/6 | - | holds |
+| s5_none | web-sonnet-5-5 | - | $0.124 | 26 s | 0/2 | - | - |
+| o1_offkb | web-sonnet-5-5 | - | $0.112 | 23 s | 4/4 | - | - |
+| s8_falsegood2 | web-sonnet-5-5 | - | $0.128 | 22 s | 2/4 | - | - |
+| h2_applock | web-sonnet-5-5 | - | $0.060 | 14 s | 6/6 | - | - |
+| s1_fact | web-sonnet-5-5 | - | $0.053 | 9 s | 2/2 | - | - |
+| s3_multi | web-sonnet-5-5 | - | $0.299 | 48 s | 6/6 | - | - |
+| s5_none | sonnet-5-5 | - | $0.186 | 30 s | 2/2 | - | - |
+| o1_offkb | sonnet-5-5 | - | $0.121 | 26 s | 4/4 | - | - |
+| s8_falsegood2 | sonnet-5-5 | - | $0.111 | 21 s | 4/4 | - | - |
+| h2_applock | sonnet-5-5 | - | $0.096 | 14 s | 6/6 | - | - |
+| s1_fact | sonnet-5-5 | - | $0.097 | 10 s | 2/2 | - | - |
+| s3_multi | sonnet-5-5 | - | $0.072 | 12 s | 6/6 | - | - |
 <!-- /bench -->
 
 Model runs of the arms, per case and arm; `route` of each arm is in `benchmarks.csv`.
+
+**Conclusions (record 2026-09-29, 2 runs per cell).** The bar holds in all six cases. On the three uncovered questions (`web`) the router cost 0.71-0.89 of the bare web arm and passed every check, while the bare arm missed both checks of `s5_none` and half of `s8_falsegood2`: handing the researcher what the kb lacks, with the nearest articles as leads, made the web answer both cheaper and more often right. The Purview false `good` (`s8_falsegood2`) now packs `none` and routes `web`. On the near miss (`h2_applock`, `split`) the router cost $0.055 against $0.060 (web) and $0.096 (kb Sonnet), with every check passed. The two covered questions stayed on the reader, at $0.011-0.013 against $0.053-0.299 for the Sonnet arms. The kb Sonnet arm passed every check too, at a higher cost than the router on all six questions.
 
 ### How-to questions and SNIPPET units
 
