@@ -2,7 +2,7 @@
   "id": "TK-4rdnf3da",
   "kind": "task",
   "title": "Go and Rust mappers",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-55lva2xl",
   "priority": "P2",
   "rank": 2,
@@ -51,5 +51,19 @@
       "by": "operator"
     }
   ],
-  "claimed_by": "worker-4rdnf3da"
+  "evidence": {
+    "commit": "85fac5c58d1ebd9a889da828ca1b17e539ca2411",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "kbingest_map"
+        ],
+        "exit": 0,
+        "sha256": "c635cce5e576e44a"
+      }
+    ]
+  }
 }
