@@ -2,7 +2,7 @@
   "id": "BG-z57p5tle",
   "kind": "bug",
   "title": "kbingest map lets a repository's Directory.Build.rsp add MSBuild switches",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-fkyrld5h",
   "priority": "P1",
   "rank": 0,
@@ -20,5 +20,6 @@
     "_tools/kbingest.py",
     "_tools/test_kbingest.py",
     "_tools/fixtures/kbingest/**"
-  ]
+  ],
+  "claimed_by": "fixer-s1"
 }
