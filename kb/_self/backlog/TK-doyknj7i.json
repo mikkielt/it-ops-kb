@@ -2,7 +2,7 @@
   "id": "TK-doyknj7i",
   "kind": "task",
   "title": "Document failure fingerprints",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-47hdgt5a",
   "priority": "P2",
   "rank": 2,
@@ -23,5 +23,18 @@
   "depends_on": [
     "TK-ojeshylk"
   ],
-  "claimed_by": "orchestrator-mac-sprint-run"
+  "evidence": {
+    "commit": "2c9c4ee40ebf86abe8956307a37f6aad8a7ce846",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/selfdoc.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "3db513ebafdfe3a2"
+      }
+    ]
+  }
 }
