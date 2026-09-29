@@ -2,7 +2,7 @@
   "id": "ST-sjayfohk",
   "kind": "story",
   "title": "Skills and permission rules work from the PowerShell tool",
-  "status": "todo",
+  "status": "done",
   "parent": "EP-5p4ahbnq",
   "sprint": "SP-fep4fpsx",
   "priority": "P1",
@@ -35,5 +35,34 @@
     "claude/hooks.md",
     "claude/permissions-mcp.md"
   ],
-  "notes": "On Windows Claude Code routes shell commands through the PowerShell tool where it is enabled (claude/hooks.md:71, DOC S743), and .claude/settings.json allows only Bash(python3 ...) rules, so the same read-only commands prompt there."
+  "notes": "On Windows Claude Code routes shell commands through the PowerShell tool where it is enabled (claude/hooks.md:71, DOC S743), and .claude/settings.json allows only Bash(python3 ...) rules, so the same read-only commands prompt there.",
+  "evidence": {
+    "commit": "70b2dfd33ffb8351cb655def1da673e820167fa9",
+    "checks": [
+      {
+        "run": [
+          "git",
+          "grep",
+          "-n",
+          "PowerShell(",
+          "--",
+          ".claude/settings.json"
+        ],
+        "exit": 0,
+        "sha256": "0a95e53061a8820a"
+      },
+      {
+        "run": [
+          "git",
+          "grep",
+          "-nE",
+          "(GIT_EDITOR|KB_VERIFIED)=|[^.]curl -s",
+          "--",
+          ".claude/skills"
+        ],
+        "exit": 1,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
