@@ -2,7 +2,7 @@
   "id": "TK-ux5ufed5",
   "kind": "task",
   "title": "kb_mcp.py --roots limits the served roots",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-2zvzr6gr",
   "priority": "P2",
   "rank": 0,
@@ -30,5 +30,6 @@
     "_tools/test_kb_mcp.py",
     "_tools/kbcommon.py",
     "_tools/kbfacts.py"
-  ]
+  ],
+  "claimed_by": "roots-agent"
 }
