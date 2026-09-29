@@ -2,7 +2,7 @@
   "id": "TK-yg4pe6fv",
   "kind": "task",
   "title": "Research the open gaps of agents/codebase-mapping",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-rjxacpdh",
   "priority": "P2",
   "rank": 0,
@@ -28,5 +28,17 @@
     "kb/public/_retrieval/signals.csv",
     "_tools/aliases.csv"
   ],
-  "claimed_by": "worker-yg4pe6fv"
+  "evidence": {
+    "commit": "f81f7647896cee4a91ac98085f9425a3211eb96e",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/check.py"
+        ],
+        "exit": 0,
+        "sha256": "a6f84649c7a96073"
+      }
+    ]
+  }
 }
