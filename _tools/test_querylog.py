@@ -2457,11 +2457,17 @@ class TestPushRules:
                 return 0, "", ""
             if argv[0] == "gh":
                 return 0, json.dumps([{"status": "completed", "conclusion": "failure"}]), ""
+            if "/jobs?" in argv[-1]:
+                return 0, json.dumps([{"id": 9, "name": "kb-trailers", "status": "success"},
+                                      {"id": 8, "name": "kb-tests", "status": "success"},
+                                      {"id": 10, "name": "kb-tests-windows", "status": "manual"}]), ""
             return 0, json.dumps([{"id": 7, "status": "manual"}]), ""
         sha = "b" * 40
         assert ql_deliver.ci_status("git@gitlab.corp.example.com:grp/sub/proj.git", sha, run)[0] == "ok"
-        assert calls[-1] == ["glab", "api", "--hostname", "gitlab.corp.example.com",
-                             f"projects/grp%2Fsub%2Fproj/pipelines?sha={sha}&per_page=1"]
+        assert calls[-2:] == [["glab", "api", "--hostname", "gitlab.corp.example.com",
+                               f"projects/grp%2Fsub%2Fproj/pipelines?sha={sha}&per_page=1"],
+                              ["glab", "api", "--hostname", "gitlab.corp.example.com",
+                               "projects/grp%2Fsub%2Fproj/pipelines/7/jobs?per_page=100"]]
         assert ql_deliver.ci_status("https://github.com/o/r.git", sha, run)[0] == "red"
         assert calls[-1][:6] == ["gh", "run", "list", "--commit", sha, "-R"] and calls[-1][6] == "github.com/o/r"
 
@@ -2473,6 +2479,84 @@ class TestPushRules:
         def broken(argv, cwd=None):
             return (0, "", "") if argv[1] == "auth" else (1, "", "HTTP 404")
         assert ql_deliver.ci_status("/x/y.git", "c" * 40, broken) == ("skip", "glab api failed (HTTP 404)")
+
+
+QUOTA = {"status": "failed", "failure_reason": "ci_quota_exceeded", "allow_failure": True}
+PASSED = [{"name": "kb-trailers", "status": "success"}, {"name": "kb-tests", "status": "success"}]
+
+
+class TestJobVerdict:
+    """A GitLab pipeline read by its jobs (recorded job lists, no network): every job is manual with allow_failure,
+    so the pipeline's status says success whatever the jobs did."""
+
+    @pytest.mark.parametrize("jobs,want", [
+        (PASSED, ("ok", [], [])),
+        (PASSED + [{"name": "kb-tests-windows", "status": "manual"}, {"name": "tool-stress", **QUOTA},
+                   {"name": "kb-tests-floor", "status": "skipped"}], ("ok", [], [])),
+        ([{"name": "kb-trailers", **QUOTA}, {"name": "kb-tests", **QUOTA}, {"name": "kb-tests-floor", **QUOTA}],
+         ("unverified", [], ["kb-tests failed (ci_quota_exceeded)", "kb-trailers failed (ci_quota_exceeded)"])),
+        ([{"name": "kb-trailers", "status": "manual"}, {"name": "kb-tests", "status": "manual"}],
+         ("unverified", [], ["kb-tests manual", "kb-trailers manual"])),
+        ([{"name": "kb-trailers", "status": "success"}, {"name": "kb-tests", "status": "skipped"}],
+         ("unverified", [], ["kb-tests skipped"])),
+        ([{"name": "kb-trailers", "status": "canceled"}, {"name": "kb-tests", "status": "success"}],
+         ("unverified", [], ["kb-trailers canceled"])),
+        ([{"name": "kb-tests", "status": "failed"}, {"name": "kb-trailers", "status": "success"}],
+         ("unverified", [], ["kb-tests failed"])),  # no failure_reason: not shown to have run
+        ([{"name": "kb-tests", "status": "success"}], ("unverified", [], ["kb-trailers not in the pipeline"])),
+        ([], ("unverified", [], ["kb-tests not in the pipeline", "kb-trailers not in the pipeline"])),
+        (None, ("unverified", [], ["the pipeline's jobs could not be read"])),
+        ([{"name": "kb-tests", "status": "running"}, {"name": "kb-trailers", "status": "manual"}],
+         ("pending", [], ["kb-tests running", "kb-trailers manual"])),
+        ([{"name": "kb-tests", "status": "failed", "failure_reason": "script_failure", "allow_failure": True},
+          {"name": "kb-trailers", "status": "success"}], ("red", ["kb-tests"], ["kb-tests failed (script_failure)"])),
+        (PASSED + [{"name": "kb-tests-windows", "status": "failed", "failure_reason": "script_failure"}],
+         ("red", ["kb-tests-windows"], [])),
+        ([{"name": "kb-tests", "status": "success"}, {"name": "kb-tests", **QUOTA}, {"name": "kb-trailers", "status": "success"}],
+         ("ok", [], [])),  # the newest entry of a name counts (the API lists newest first)
+    ])
+    def test_gate_jobs_decide(self, jobs, want):
+        assert ql_deliver.job_verdict(jobs) == want
+
+    def run(self, pipeline_status, jobs):
+        calls = []
+
+        def run(argv, cwd=None):
+            calls.append(argv)
+            if argv[1:3] == ["auth", "status"]:
+                return 0, "", ""
+            if "/jobs?" in argv[-1]:
+                return (0, json.dumps(jobs), "") if jobs is not None else (1, "", "HTTP 500")
+            return 0, json.dumps([{"id": 7, "status": pipeline_status}]), ""
+        return ql_deliver.ci_pipeline("git@gitlab.corp.example.com:grp/proj.git", "d" * 40, run), calls
+
+    def test_a_success_pipeline_whose_gate_never_ran_is_unverified(self):
+        jobs = [{"name": "kb-tests-windows", "status": "manual"}, {"name": "kb-trailers", **QUOTA},
+                {"name": "tool-stress", **QUOTA}, {"name": "kb-tests-floor", **QUOTA}, {"name": "kb-tests", **QUOTA}]
+        (verdict, detail, pipe), _ = self.run("success", jobs)
+        assert verdict == "unverified" and pipe["id"] == 7, detail
+        assert detail.endswith("success; kb-tests failed (ci_quota_exceeded), kb-trailers failed (ci_quota_exceeded)")
+        assert self.run("manual", [{"name": "kb-tests", "status": "manual"}])[0][0] == "unverified"
+        assert self.run("success", None)[0][0] == "unverified"
+        assert self.run("success", PASSED)[0][0] == "ok"
+
+    def test_a_failed_script_under_allow_failure_is_red(self):
+        (verdict, detail, _), _ = self.run("success", PASSED + [{"name": "tool-stress", "status": "failed",
+                                                                  "failure_reason": "script_failure"}])
+        assert verdict == "red" and detail.endswith("script failed in tool-stress"), detail
+
+    @pytest.mark.parametrize("status,want", [("failed", "red"), ("running", "pending"), ("pending", "pending")])
+    def test_the_pipeline_status_still_decides_a_failure_or_an_unfinished_run(self, status, want):
+        (verdict, _, _), calls = self.run(status, None)
+        assert verdict == want and not any("/jobs?" in c[-1] for c in calls)  # no job list needed
+
+    def test_the_revert_fingerprint_names_a_script_that_ran(self):
+        import backlog
+        jobs = [{"id": 1, "name": "kb-lint", **QUOTA},
+                {"id": 2, "name": "kb-tests", "status": "failed", "failure_reason": "script_failure"}]
+        run = fingerprint_forge(jobs, {2: "FAILED _tools/test_x.py::test_a - assert 1 == 2\n"})
+        failure, fp = ql_deliver.pipeline_failure("https://gitlab.example.com/team/kb.git", {"id": 3}, run)
+        assert fp == backlog.failure_fingerprint("kb-tests", "_tools/test_x.py::test_a"), failure
 
     def test_auto_kinds(self):
         import kbgit
@@ -2592,10 +2676,13 @@ def run_here(argv, cwd=None, env=None):
     return ql_base.run_cmd(argv, cwd=cwd, env=env)
 
 
-def pipeline(status):
+def pipeline(status, jobs=()):
+    """A signed-in glab that answers one pipeline of `status` for any commit, and `jobs` as its job list."""
     def ci(argv):
         if argv[1:3] == ["auth", "status"]:
             return 0, "", "Logged in"
+        if "/jobs?" in argv[-1]:
+            return 0, json.dumps(list(jobs)), ""
         return 0, json.dumps([{"id": 1, "status": status}]), ""
     return ci
 

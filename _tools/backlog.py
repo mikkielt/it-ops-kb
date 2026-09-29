@@ -30,13 +30,15 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                                           items, what waits on which gate or trigger, the critical path
   backlog.py goal ID                      a /goal condition for the item: its end state, checks and scope
   backlog.py red-pipeline [--status|--hook]   the newest finished pipeline of origin's main (glab api, gh on GitHub;
-                                          a note when neither is signed in): when it failed and no automatic revert
-                                          covers it, one bug (S1 when the kb-tests job failed, else S2) unless an item
-                                          already names that pipeline; a failure fingerprint (the first failed job and
-                                          its first failing test or error line) in the bug's links, and a pipeline
-                                          failing the same way joins that open bug's links instead. --status: exit 0
-                                          green, 1 red or unreadable (the bug's repro). --hook: the async SessionStart
-                                          form, silent
+                                          a note when neither is signed in), on GitLab read by its jobs: red when a
+                                          job's script failed, unverified when a gate job (kb-tests, kb-trailers) did
+                                          not succeed. When red and no automatic revert covers it, one bug (S1 when
+                                          the kb-tests job failed, else S2) unless an item already names that
+                                          pipeline; a failure fingerprint (the first failed job and its first failing
+                                          test or error line) in the bug's links, and a pipeline failing the same way
+                                          joins that open bug's links instead. --status: exit 0 green, 1 red,
+                                          unverified (naming the gate jobs) or unreadable (the bug's repro). --hook:
+                                          the async SessionStart form, silent
 
 --root DIR (before the command) runs against another clone. Exit: 0 ok, 1 a refused command or check errors,
 2 bad arguments or an unknown id.
@@ -860,8 +862,8 @@ def cmd_horizon(bl, a):
     return 0
 
 
-GITLAB_FINISHED = ("success", "failed", "canceled", "skipped")
-GATE_JOBS = ("kb-tests",)  # a red one means the gate every push runs fails on main itself: S1; any other job: S2
+GITLAB_FINISHED = ("success", "failed", "canceled", "skipped", "manual")  # manual: waits on a person, read by its jobs
+S1_JOBS = ("kb-tests",)  # a red one means the gate every push runs fails on main itself: S1; any other job: S2
 STATUS_REPRO = ["python3", "_tools/backlog.py", "red-pipeline", "--status"]
 
 
@@ -933,15 +935,19 @@ def add_pipeline(bl, iid, pid):
 
 
 def latest_pipeline(root):
-    """(pipeline, note): the newest finished pipeline of origin's main as {id, sha, url, red, jobs}, a red one with
-    `failure` and `fingerprint` read from the log of its first failed job (by name), or None with the note that says
-    why not (no origin, glab or gh not signed in, a failed call, no finished pipeline)."""
-    from ql_deliver import GITHUB_RED, forge_list, origin_forge
+    """(pipeline, note): the newest finished pipeline of origin's main as {id, sha, url, red, jobs, unverified}, a red
+    one with `failure` and `fingerprint` read from the log of its first failed job (by name), or None with the note
+    that says why not (no origin, glab or gh not signed in, a failed call, no finished pipeline). On GitLab a pipeline
+    waiting on manual jobs counts as finished, and one whose status is no failure is read by its jobs
+    (`ql_deliver.job_verdict`): red when a job's script failed, else `unverified` says how each gate job did not
+    succeed."""
+    from ql_deliver import GITHUB_RED, RAN_AND_FAILED, forge_list, gitlab_jobs, job_verdict, origin_forge
     code, url, _ = run(["git", "remote", "get-url", "origin"], cwd=root)
     if code:
         return None, "no origin remote"
     url = url.strip()
     forge, host, project = origin_forge(url)
+    quoted = project.replace("/", "%2F")
     data, cli, note = forge_list(
         url, run, lambda repo: ["gh", "run", "list", "--branch", "main", "-R", repo, "--json",
                                 "databaseId,headSha,status,conclusion,url", "-L", "30"],
@@ -951,32 +957,36 @@ def latest_pipeline(root):
     for r in data:
         if not isinstance(r, dict):
             continue
+        jobs = None
         if forge == "github":
             if r.get("status") != "completed":
                 continue
             p = {"id": r.get("databaseId"), "sha": r.get("headSha"), "url": r.get("url"),
-                 "red": r.get("conclusion") in GITHUB_RED}
+                 "red": r.get("conclusion") in GITHUB_RED, "unverified": []}
         else:
             if r.get("status") not in GITLAB_FINISHED:
                 continue
-            p = {"id": r.get("id"), "sha": r.get("sha"), "url": r.get("web_url"), "red": r.get("status") == "failed"}
+            p = {"id": r.get("id"), "sha": r.get("sha"), "url": r.get("web_url"), "red": r.get("status") == "failed",
+                 "unverified": []}
+            jobs = gitlab_jobs(host, quoted, p["id"], run)
+            if not p["red"]:
+                verdict, _, unpassed = job_verdict(jobs)
+                p["red"] = verdict == "red"
+                p["unverified"] = unpassed if verdict in ("pending", "unverified") else []
         p["jobs"] = []
         if p["red"]:
             if forge == "github":
                 code, o, _ = run(["gh", "run", "view", str(p["id"]), "-R", f"{host}/{project}", "--json", "jobs"])
-                key, bad = "jobs", ("failure", "timed_out", "startup_failure")
-                field = "conclusion"
+                try:
+                    js = json.loads(o) if code == 0 else {}
+                except ValueError:
+                    js = {}
+                js = js.get("jobs", []) if isinstance(js, dict) else []
+                bad, field = ("failure", "timed_out", "startup_failure"), "conclusion"
             else:
-                quoted = project.replace("/", "%2F")
-                code, o, _ = run(["glab", "api", "--hostname", host,
-                                  f"projects/{quoted}/pipelines/{p['id']}/jobs?scope=failed&per_page=100"])
-                key, bad, field = None, ("failed",), "status"
-            try:
-                js = json.loads(o) if code == 0 else []
-                js = js.get(key, []) if key and isinstance(js, dict) else js
-                failed = [j for j in js if isinstance(j, dict) and j.get(field) in bad and j.get("name")]
-            except (ValueError, AttributeError, TypeError):
-                failed = []
+                js, bad, field = jobs or [], ("failed",), "status"
+            failed = [j for j in js if isinstance(j, dict) and j.get(field) in bad and j.get("name")]
+            failed = [j for j in failed if j.get("failure_reason") in RAN_AND_FAILED] or failed  # scripts that ran
             p["jobs"] = [j["name"] for j in failed]
             if failed:
                 first = min(failed, key=lambda j: str(j["name"]))  # the failed job the fingerprint names
@@ -1037,11 +1047,14 @@ def cmd_red_pipeline(bl, a):
     if p is None:
         say(f"red-pipeline: not checked: {note}")
         return 1 if a.status else 0
+    unpassed = p.get("unverified") or []
+    state = "red" if p["red"] else "unverified" if unpassed else "green"
+    why = f": a gate job did not pass: {', '.join(unpassed)}" if state == "unverified" else ""
     if a.status:
-        say(f"red-pipeline: latest finished pipeline {p['id']} of main is {'red' if p['red'] else 'green'} ({note})")
-        return 1 if p["red"] else 0
+        say(f"red-pipeline: latest finished pipeline {p['id']} of main is {state}{why} ({note})")
+        return 0 if state == "green" else 1
     if not p["red"]:
-        say(f"red-pipeline: latest finished pipeline {p['id']} of main is green: nothing to file")
+        say(f"red-pipeline: latest finished pipeline {p['id']} of main is {state}{why}: nothing to file")
         return 0
     marker = f"pipeline {p['id']}"
     for iid, it in bl.items.items():
@@ -1052,7 +1065,7 @@ def cmd_red_pipeline(bl, a):
         say(f"red-pipeline: {marker} is covered by an automatic revert (or its history is unreadable): nothing to file")
         return 0
     jobs = p["jobs"]
-    sev = "S1" if any(j in GATE_JOBS for j in jobs) else "S2"
+    sev = "S1" if any(j in S1_JOBS for j in jobs) else "S2"
     active = [i for i, it in bl.items.items() if it.get("kind") == "sprint" and it.get("status") == "active"]
     fp = p.get("fingerprint")
     it = red_bug(p["id"], p["sha"], sev, jobs, p.get("url"),

@@ -59,8 +59,8 @@ import pytest
 import ql_base, ql_deliver, ql_distill, ql_research, ql_store
 from conftest import GIT, Repo, git_env, querylog_env
 from test_querylog import (ALIAS_Q, BAD_QUOTE, E, FIXTURES, LAPS, LAPS_GAP_Q, LEGACY_QUOTE, PAGE, PAGE_URL,
-                           PARAPHRASE_Q, PUSH_OPTIONS_HOOK, REJECT_HOOK, SH, apply_store, c, cand, golden_store, jsonl,
-                           pipeline, prompt, reply, run_here, serve, signed_out, stop, tool)
+                           PARAPHRASE_Q, PASSED, PUSH_OPTIONS_HOOK, QUOTA, REJECT_HOOK, SH, apply_store, c, cand,
+                           golden_store, jsonl, pipeline, prompt, reply, run_here, serve, signed_out, stop, tool)
 
 pytestmark = [pytest.mark.skipif(not GIT, reason="git is not installed"), pytest.mark.git]
 
@@ -715,24 +715,31 @@ class TestCiNotRed:
     def scenario(cls, tmp_path_factory, seed):
         w = cls.w = World(tmp_path_factory.mktemp("e2e-ci"), seed)
         cls.said = {}
-        for name, status in (("win32", None), ("laps_length", "running"), (None, "manual"), ("do_port", "skipped")):
+        windows = [{"name": "kb-tests-windows", "status": "manual"}]
+        for name, key, ci in (("win32", None, signed_out), ("laps_length", "running", pipeline("running")),
+                              (None, "unverified", pipeline("success", windows + [{"name": "kb-trailers", **QUOTA},
+                                                                                  {"name": "kb-tests", **QUOTA}])),
+                              ("do_port", "green", pipeline("manual", windows + PASSED))):
             if name:
                 s = sid()
                 w.lookup(name, s)
                 w.end(s)
-            w.ci = pipeline(status) if status else signed_out
-            cls.said[status] = (w.distill(), w.main(), w.spool())
+            w.ci = ci
+            cls.said[key] = (w.distill(), w.main(), w.spool())
         cls.st = w.state()
 
-    def test_unfinished_ci_holds_the_push_and_manual_or_skipped_do_not(self):
+    def test_unfinished_or_unverified_ci_holds_the_push_and_a_passed_gate_does_not(self):
         (_, first, _) = self.said[None]
         (rc, said), main, spool = self.said["running"]
         assert rc == 0 and main == first and spool, said
         assert says(said, "is not finished (glab on gitlab.com: running); nothing pushed this run"), said
-        for status in ("manual", "skipped"):
-            (rc, said), main, spool = self.said[status]
-            assert rc == 0 and main != first and spool == [] and says(said, "apply --push: pushed "), (status, said)
-            assert not says(said, "is red") and not says(said, "not finished"), said
+        (rc, said), main, spool = self.said["unverified"]  # success, but the gate jobs never ran
+        assert rc == 0 and main == first and spool, said
+        assert says(said, "is not verified: a gate job did not pass (glab on gitlab.com: success; kb-tests failed "
+                          "(ci_quota_exceeded), kb-trailers failed (ci_quota_exceeded)); nothing pushed this run"), said
+        (rc, said), main, spool = self.said["green"]  # the gate passed; kb-tests-windows still manual
+        assert rc == 0 and main != first and spool == [] and says(said, "apply --push: pushed "), said
+        assert not says(said, "is red") and not says(said, "not finished") and not says(said, "not verified"), said
         st = self.st
         assert len(st["runs"]) == 3 and st["gate"] == [], st["gate"]
         assert all(c[:2] in (["glab", "auth"], ["glab", "api"]) for c in self.w.calls)

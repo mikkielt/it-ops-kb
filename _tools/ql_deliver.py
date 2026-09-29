@@ -27,6 +27,11 @@ GITLAB_RED = ("failed",)
 GITLAB_UNFINISHED = ("created", "waiting_for_resource", "preparing", "waiting_for_callback", "pending", "running",
                      "canceling", "scheduled")
 GITHUB_RED = ("failure", "timed_out", "startup_failure")  # conclusions of a completed run
+# The jobs that must succeed for a GitLab pipeline to count as green: every job in .gitlab-ci.yml is manual with
+# allow_failure, so the pipeline's own status says success whatever they did. The other jobs (kb-tests-floor,
+# tool-stress, kb-tests-windows) make it red when their script failed, and never unverified.
+GATE_JOBS = ("kb-tests", "kb-trailers")
+RAN_AND_FAILED = ("script_failure",)  # a failed job's failure_reason when its script ran and exited non-zero
 LOOKBACK = 200  # first-parent commits of origin/main searched for the last automatic commit
 REFUSALS = (  # a push refused for want of rights, as the remote words it (kb: gitlab/automated-merge-requests.md)
     ("gitlab", re.compile(r"You are not allowed to (?:push code|force push code|upload code)\b[^\n]*")),
@@ -97,10 +102,60 @@ def pipeline_verdict(forge, statuses):
     return "pending" if any(s in GITLAB_UNFINISHED for s in statuses) else "ok"
 
 
+def job_verdict(jobs, gate=GATE_JOBS):
+    """(verdict, failed, unpassed) of a GitLab pipeline read by its jobs (the list `pipelines/<id>/jobs` answers,
+    newest first; None when it could not be read), not by its status:
+    - `red` when a job's script ran and failed (status `failed`, failure_reason in RAN_AND_FAILED), whichever job;
+    - else `pending` when a gate job is unfinished;
+    - else `unverified` when a gate job did not succeed: manual, skipped, canceled, failed without running (such as
+      ci_quota_exceeded), missing from the pipeline, or the list unreadable;
+    - else `ok`.
+    `failed` names the jobs whose script failed, sorted; `unpassed` says how each gate job did not succeed
+    (`kb-tests manual`, `kb-tests failed (ci_quota_exceeded)`, `kb-trailers not in the pipeline`)."""
+    if not isinstance(jobs, list):
+        return "unverified", [], ["the pipeline's jobs could not be read"]
+    latest = {}  # a job name's newest entry
+    for j in jobs:
+        if isinstance(j, dict) and j.get("name") and j["name"] not in latest:
+            latest[j["name"]] = j
+    failed = sorted(n for n, j in latest.items()
+                    if j.get("status") == "failed" and j.get("failure_reason") in RAN_AND_FAILED)
+    unpassed, waiting = [], False
+    for name in gate:
+        j = latest.get(name)
+        if j is None:
+            unpassed.append(f"{name} not in the pipeline")
+            continue
+        s = j.get("status")
+        if s == "success":
+            continue
+        waiting = waiting or s in GITLAB_UNFINISHED
+        why = j.get("failure_reason") if s == "failed" else None
+        unpassed.append(f"{name} {s}" + (f" ({why})" if why else ""))
+    if failed:
+        return "red", failed, unpassed
+    if waiting:
+        return "pending", [], unpassed
+    return ("unverified" if unpassed else "ok"), [], unpassed
+
+
+def gitlab_jobs(host, quoted, pid, run):
+    """The jobs of GitLab pipeline `pid` in project `quoted` (URL-encoded path), as `glab api` answers them, or None
+    when the call fails or answers no JSON list."""
+    code, o, _ = run(["glab", "api", "--hostname", host, f"projects/{quoted}/pipelines/{pid}/jobs?per_page=100"])
+    try:
+        data = json.loads(o) if code == 0 else None
+    except ValueError:
+        data = None
+    return data if isinstance(data, list) else None
+
+
 def ci_pipeline(url, sha, run):
     """(verdict, detail, pipeline) of the CI of commit `sha` on origin's forge: verdict `red`, `pending`, `ok`,
-    `none` (no pipeline) or `skip` (no signed-in glab or gh, or the call failed: the check is skipped). `pipeline`
-    is {id, url, status} of the newest pipeline (GitHub: the first red run), or None."""
+    `unverified` (GitLab: a gate job did not succeed, `job_verdict`), `none` (no pipeline) or `skip` (no signed-in
+    glab or gh, or the call failed: the check is skipped). On GitLab a pipeline whose status is no failure and not
+    unfinished is read by its jobs. `pipeline` is {id, url, status} of the newest pipeline (GitHub: the first red
+    run), or None."""
     forge = origin_forge(url)[0]
     data, cli, note = forge_list(
         url, run, lambda repo: ["gh", "run", "list", "--commit", sha, "-R", repo, "--json",
@@ -122,12 +177,22 @@ def ci_pipeline(url, sha, run):
         pipe = {"id": runs[0].get("id"), "url": runs[0].get("web_url"), "status": runs[0].get("status")} if runs else {}
     if not states:
         return "none", f"no pipeline for {sha[:9]} on {origin_forge(url)[1]}", None
-    return pipeline_verdict(forge, states), f"{note}: {shown}", pipe
+    verdict = pipeline_verdict(forge, states)
+    if forge == "gitlab" and verdict == "ok":  # a status that is no failure is read by the pipeline's gate jobs
+        _, host, project = origin_forge(url)
+        jobs = gitlab_jobs(host, urllib.parse.quote(project, safe=""), pipe.get("id"), run)
+        verdict, failed, unpassed = job_verdict(jobs)
+        if failed:
+            shown += f"; script failed in {', '.join(failed)}"
+        elif unpassed:
+            shown += f"; {', '.join(unpassed)}"
+    return verdict, f"{note}: {shown}", pipe
 
 
 def pipeline_failure(url, pipe, run):
     """(failure, fingerprint) of the red pipeline `pipe` ({id, ...}) on origin's forge, computed as backlog.py does
-    for main's pipeline: the first failed job by name, what failed first in its log (`backlog.first_failure`), and
+    for main's pipeline: the first failed job by name (among the jobs whose script ran and failed, when there are
+    any), what failed first in its log (`backlog.first_failure`), and
     `backlog.failure_fingerprint` of the two. ('', None) when no failed job can be read (no id, a failed call)."""
     import backlog
     pid = pipe.get("id")
@@ -148,6 +213,7 @@ def pipeline_failure(url, pipe, run):
         failed = [j for j in js if isinstance(j, dict) and j.get(field) in bad and j.get("name")]
     except (ValueError, AttributeError, TypeError):
         failed = []
+    failed = [j for j in failed if j.get("failure_reason") in RAN_AND_FAILED] or failed  # a script that ran first
     if not failed:
         return "", None
     first = min(failed, key=lambda j: str(j["name"]))
@@ -483,7 +549,7 @@ class Pusher:
 
     def check_ci(self, url):
         """Before any new push: the CI of the last automatic commit's push. Red: a revert commit (an int exit code
-        is returned); pending: None (nothing pushed this run); else True."""
+        is returned); pending or unverified (a gate job did not pass): None (nothing pushed this run); else True."""
         last = self.last_automatic()
         if last is None:
             return True
@@ -496,6 +562,10 @@ class Pusher:
             return True
         if verdict == "pending":
             self.say(f"CI of the last automatic commit {sha[:9]} is not finished ({detail}); nothing pushed this run")
+            return None
+        if verdict == "unverified":
+            self.say(f"CI of the last automatic commit {sha[:9]} is not verified: a gate job did not pass ({detail}); "
+                     "nothing pushed this run")
             return None
         if verdict == "red" and values == ["querylog"]:
             self.say(f"note: CI of the last automatic commit {sha[:9]} is red ({detail}); it changed only "

@@ -387,6 +387,8 @@ def forge(monkeypatch, repo, pipelines, jobs=(), signed_in=True, logs=None):
             if argv[-1].endswith("/trace"):
                 jid = int(argv[-1].split("/")[-2])
                 return (0, logs[jid], "") if logs and jid in logs else (1, "", "404 Not Found")
+            if "/jobs?" in argv[-1] and jobs is None:
+                return 1, "", "500 Internal Server Error"
             return 0, json.dumps(jobs if "/jobs?" in argv[-1] else pipelines), ""
         return real(argv, cwd=cwd)
 
@@ -432,12 +434,81 @@ def test_red_pipeline_gate_job_is_s1_and_joins_the_active_sprint(sprint, monkeyp
     assert bug["severity"] == "S1" and bug["sprint"] == sprint["sp"] and bug["status"] == "todo"
 
 
+GATE_PASSED = [{"id": 3, "name": "kb-trailers", "status": "success"}, {"id": 2, "name": "kb-tests", "status": "success"}]
+
+
 def test_red_pipeline_green_files_nothing(repo, monkeypatch, capsys):
     forge(monkeypatch, repo, [{"id": 5, "sha": head(repo), "status": "success"},
-                              {"id": 4, "sha": head(repo), "status": "failed"}])
+                              {"id": 4, "sha": head(repo), "status": "failed"}], jobs=GATE_PASSED)
     assert red_pipeline(repo) == 0
     assert bugs(repo) == [] and "green" in capsys.readouterr().out
     assert red_pipeline(repo, "--status") == 0
+
+
+def test_red_pipeline_unrun_gate_is_not_green(repo, monkeypatch, capsys):
+    """The job list of a main pipeline whose status says success while no job ran (every job manual with
+    allow_failure, the CI minutes quota spent): unverified, never green; each planted gate state keeps it so."""
+    quota = {"status": "failed", "failure_reason": "ci_quota_exceeded", "allow_failure": True}
+    pipelines = [{"id": 61, "sha": head(repo), "status": "success"}]
+    jobs = [{"id": 15, "name": "kb-tests-windows", "status": "manual", "allow_failure": True},
+            {"id": 14, "name": "kb-trailers", **quota}, {"id": 13, "name": "tool-stress", **quota},
+            {"id": 12, "name": "kb-tests-floor", **quota}, {"id": 11, "name": "kb-tests", **quota}]
+    forge(monkeypatch, repo, pipelines, jobs=jobs)
+    capsys.readouterr()
+    assert red_pipeline(repo, "--status") == 1
+    out = capsys.readouterr().out
+    assert "pipeline 61 of main is unverified" in out, out
+    assert "kb-tests failed (ci_quota_exceeded), kb-trailers failed (ci_quota_exceeded)" in out, out
+    assert "kb-tests-floor" not in out and "tool-stress" not in out and "kb-tests-windows" not in out, out
+    assert red_pipeline(repo) == 0 and bugs(repo) == []  # unverified is not red: nothing filed
+    assert "unverified" in capsys.readouterr().out
+    # planted: every other way a gate job does not pass, on a pipeline whose status is no failure
+    for status, gate, said in (
+            ("manual", [{"name": "kb-tests", "status": "manual"}, {"name": "kb-trailers", "status": "manual"}],
+             "kb-tests manual, kb-trailers manual"),
+            ("success", [{"name": "kb-tests", "status": "skipped"}, {"name": "kb-trailers", "status": "success"}],
+             "kb-tests skipped"),
+            ("canceled", [{"name": "kb-tests", "status": "canceled"}, {"name": "kb-trailers", "status": "success"}],
+             "kb-tests canceled"),
+            ("success", [{"name": "kb-tests", "status": "success"}], "kb-trailers not in the pipeline"),
+            ("success", [{"name": "kb-tests", "status": "running"}, {"name": "kb-trailers", "status": "success"}],
+             "kb-tests running")):
+        pipelines[0]["status"] = status
+        jobs[:] = [{"id": i, **j} for i, j in enumerate(gate)]
+        assert red_pipeline(repo, "--status") == 1, (status, gate)
+        out = capsys.readouterr().out
+        assert "is unverified" in out and said in out, out
+    assert red_pipeline(repo) == 0 and bugs(repo) == []
+    # the gate ran and passed: the other jobs, manual or never started, leave main green
+    pipelines[0]["status"] = "success"
+    jobs[:] = [{"id": 15, "name": "kb-tests-windows", "status": "manual"}, {"id": 13, "name": "tool-stress", **quota},
+               {"id": 14, "name": "kb-trailers", "status": "success"}, {"id": 11, "name": "kb-tests", "status": "success"}]
+    capsys.readouterr()
+    assert red_pipeline(repo, "--status") == 0
+    assert "pipeline 61 of main is green" in capsys.readouterr().out
+    # planted: a job list glab cannot read is no proof either
+    monkeypatch.undo()
+    sh(repo, "git", "remote", "remove", "origin")
+    forge(monkeypatch, repo, pipelines, jobs=None)
+    assert red_pipeline(repo, "--status") == 1
+    assert "the pipeline's jobs could not be read" in capsys.readouterr().out
+
+
+def test_red_pipeline_failed_script_under_allow_failure_is_red(sprint, monkeypatch):
+    """A job whose script ran and failed under allow_failure leaves the pipeline's status success: its job list makes
+    it red, S1 when it is kb-tests, and the fingerprint names that job, not the one that never started."""
+    repo = sprint["repo"]
+    forge(monkeypatch, repo, [{"id": 62, "sha": head(repo), "status": "success"}],
+          jobs=[{"id": 14, "name": "kb-trailers", "status": "success"},
+                {"id": 12, "name": "kb-tests-floor", "status": "failed", "failure_reason": "ci_quota_exceeded"},
+                {"id": 11, "name": "kb-tests", "status": "failed", "failure_reason": "script_failure",
+                 "allow_failure": True}],
+          logs={11: "FAILED _tools/test_x.py::test_a - assert 1 == 2\n"})
+    assert red_pipeline(repo, "--status") == 1
+    assert red_pipeline(repo) == 0
+    (bug,) = [x for x in bugs(repo) if "pipeline 62" in x["title"]]
+    assert bug["severity"] == "S1" and bug["title"].endswith(": kb-tests"), bug["title"]
+    assert f"fingerprint {backlog.failure_fingerprint('kb-tests', '_tools/test_x.py::test_a')}" in bug["links"]
 
 
 def test_red_pipeline_status_is_the_repro_of_a_red_main(repo, monkeypatch):
