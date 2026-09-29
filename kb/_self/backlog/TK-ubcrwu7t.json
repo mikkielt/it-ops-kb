@@ -1,0 +1,25 @@
+{
+  "id": "TK-ubcrwu7t",
+  "kind": "task",
+  "title": "The query-log conflict scenario passes on the Windows CI job",
+  "status": "doing",
+  "parent": "BG-ovulgaal",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "_tools/test_querylog_e2e.py::TestConflict passes on the kb-tests-windows job: the querylog/<run-id> branch holds the gap entry and main does not after the second run, with the cause fixed where it lies (test or ql_deliver) and a test that reproduces it on any OS.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "TestConflict"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/test_querylog_e2e.py",
+    "_tools/ql_deliver.py"
+  ],
+  "claimed_by": "worker-ovulgaal"
+}
