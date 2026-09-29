@@ -2,7 +2,7 @@
   "id": "BG-cdhbugkz",
   "kind": "bug",
   "title": "runners.md has no setup steps for the docker-windows runner",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-5p4ahbnq",
   "sprint": "SP-76inhw33",
   "priority": "P2",
@@ -19,5 +19,18 @@
   "touches": [
     "kb/_self/runners.md"
   ],
-  "claimed_by": "orchestrator-SP-76inhw33"
+  "evidence": {
+    "commit": "5fafdec725422261b706dbb98a17c2b8f0cc657e",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import re,pathlib,sys; t=pathlib.Path('kb/_self/runners.md').read_text(encoding='utf-8'); sys.exit(0 if re.search(r'(?m)^## The docker-windows runner', t) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
