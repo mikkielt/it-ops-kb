@@ -2,7 +2,7 @@
   "id": "TK-b7l4x2ne",
   "kind": "task",
   "title": "Code-lane branch push with merge-request push options in sync",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-vcf3r6qv",
   "priority": "P2",
   "rank": 0,
@@ -25,5 +25,6 @@
   ],
   "depends_on": [
     "TK-e3ouzras"
-  ]
+  ],
+  "claimed_by": "worker-b7l4x2ne"
 }
