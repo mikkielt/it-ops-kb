@@ -2,7 +2,7 @@
   "id": "ST-fhlyypxw",
   "kind": "story",
   "title": "A benchmark proves routing by verdict pays",
-  "status": "todo",
+  "status": "done",
   "parent": "EP-c7fzjhge",
   "sprint": "SP-aikswrrl",
   "priority": "P1",
@@ -52,5 +52,52 @@
   "links": [
     "kb/_self/reports/benchmarks.md"
   ],
-  "notes": "Operator budget: paid runs up to $10 for this story. Within 10% of bare on none is the bar the operator set; a miss is a finding for the review (a bug), not a reason to change the bar. The case of each question is the route its pack takes on the run's commit, not a fixed label: s8_falsegood2 packs `none` on HEAD now, not a flagged good. The kb Sonnet arm follows the server instructions, hence the dependency on ST-uuaooyrm; the kb: hook and the query log are not measured here. `--model` aliases move, so a reproducible benchmark pins the full name (claude/ci-and-headless.md:85, DOC S-ezqg74ki). The last two checks pass now: they guard the report and the benchmark tests."
+  "notes": "Operator budget: paid runs up to $10 for this story. Within 10% of bare on none is the bar the operator set; a miss is a finding for the review (a bug), not a reason to change the bar. The case of each question is the route its pack takes on the run's commit, not a fixed label: s8_falsegood2 packs `none` on HEAD now, not a flagged good. The kb Sonnet arm follows the server instructions, hence the dependency on ST-uuaooyrm; the kb: hook and the query log are not measured here. `--model` aliases move, so a reproducible benchmark pins the full name (claude/ci-and-headless.md:85, DOC S-ezqg74ki). The last two checks pass now: they guard the report and the benchmark tests.",
+  "evidence": {
+    "commit": "0c94ef59eb176234330a2a1a783314b22398228b",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/benchmarks.py",
+          "list"
+        ],
+        "exit": 0,
+        "sha256": "dca5f73927489a2c"
+      },
+      {
+        "run": [
+          "git",
+          "grep",
+          "-q",
+          "-e",
+          "^route-by-verdict,",
+          "--",
+          "kb/_self/reports/benchmarks.csv"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/benchmarks.py",
+          "report",
+          "--check"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "test_benchmarks or test_agent_bench"
+        ],
+        "exit": 0,
+        "sha256": "d79e69d8188cb3e3"
+      }
+    ]
+  }
 }
