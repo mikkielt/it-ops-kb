@@ -113,11 +113,21 @@
     ],
     "PreToolUse": [
       {
-        "matcher": "Bash|PowerShell",
+        "matcher": "Bash",
         "hooks": [
           {
             "type": "command",
             "command": "sh \"${CLAUDE_PROJECT_DIR}/_tools/kbpy\" _tools/kb_hook.py"
+          }
+        ]
+      },
+      {
+        "matcher": "PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "shell": "powershell",
+            "command": "$p = 'import sys; sys.exit(sys.version_info < (3, 11))'; foreach ($c in 'python3', 'python', 'py -3') { $e, $a = -split $c; try { & $e $a -c $p *>$null } catch { continue }; if ($LASTEXITCODE -eq 0) { & $e $a \"$env:CLAUDE_PROJECT_DIR/_tools/kb_hook.py\"; exit $LASTEXITCODE } }; exit 127"
           }
         ]
       }

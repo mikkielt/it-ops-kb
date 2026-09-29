@@ -881,10 +881,14 @@ class TestRawReadNudge:
         assert kb_hook.raw_read_nudge(self.event("Get-Content kb/public/x/y.md", tool_name="Read")) is None
 
     def test_raw_read_nudge_hook_is_registered_on_bash_and_powershell(self):
+        # one entry per tool: Bash through sh, PowerShell through `shell: powershell` (no sh without Git Bash);
+        # test_portability.py gates the launcher forms and that each call fires the hint once
         entries = json.loads(text(".claude/settings.json"))["hooks"]["PreToolUse"]
-        assert [e["matcher"] for e in entries] == ["Bash|PowerShell"], entries
-        cmds = [h["command"] for e in entries for h in e["hooks"]]
-        assert cmds == ['sh "${CLAUDE_PROJECT_DIR}/_tools/kbpy" _tools/kb_hook.py'], cmds
+        assert [e["matcher"] for e in entries] == ["Bash", "PowerShell"], entries
+        hooks = [h for e in entries for h in e["hooks"]]
+        assert hooks[0]["command"] == 'sh "${CLAUDE_PROJECT_DIR}/_tools/kbpy" _tools/kb_hook.py', hooks
+        assert hooks[1]["shell"] == "powershell" and "/_tools/kb_hook.py" in hooks[1]["command"], hooks
+        assert len(hooks) == 2, hooks
 
 
 class TestIds:

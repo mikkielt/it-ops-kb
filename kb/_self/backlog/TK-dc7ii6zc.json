@@ -27,6 +27,7 @@
   "touches": [
     ".claude/settings.json",
     "_tools/test_portability.py",
+    "_tools/test_kb.py",
     "kb/_self/tools.md",
     "kb/_self/maintaining.md"
   ],
