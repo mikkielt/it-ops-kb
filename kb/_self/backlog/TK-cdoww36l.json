@@ -2,7 +2,7 @@
   "id": "TK-cdoww36l",
   "kind": "task",
   "title": "Research the python.org Windows installer's options and checksums",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-yobkqbuh",
   "priority": "P1",
   "rank": 0,
@@ -21,5 +21,6 @@
   "touches": [
     "kb/public/**"
   ],
-  "notes": "Sources: https://docs.python.org/3/using/windows.html (installing without UI) and https://www.python.org/api/v2/downloads/release_file/ (sha256_sum, sigstore_bundle_file per file). Work it with /kb-research."
+  "notes": "Sources: https://docs.python.org/3/using/windows.html (installing without UI) and https://www.python.org/api/v2/downloads/release_file/ (sha256_sum, sigstore_bundle_file per file). Work it with /kb-research.",
+  "claimed_by": "research-worker"
 }

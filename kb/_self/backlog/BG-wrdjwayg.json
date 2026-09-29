@@ -2,7 +2,7 @@
   "id": "BG-wrdjwayg",
   "kind": "bug",
   "title": "Test kb copies include Claude Code worktrees and fail on Windows",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-fep4fpsx",
   "priority": "P1",
   "rank": 0,
@@ -33,5 +33,32 @@
     "_tools/conftest.py"
   ],
   "notes": "Seen while a kb-sprint research subagent ran in .claude/worktrees/agent-*: kbgit.py sync's fast tests failed 3 test_kb.py tests (shutil.Error, WinError 206 path too long, copying the worktree's kb/public/dsc/manifests files into the test's copy). copy_kb copies the whole repository less a few ignore patterns.",
-  "claimed_by": "windows-laptop"
+  "evidence": {
+    "commit": "9601f7a249addd52576a05c9213202e3f7a0d28f",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "test_check_py_reads_a_tag_wrapped_after_its_kind"
+        ],
+        "exit": 0,
+        "sha256": "9d23ba55716fcc2f"
+      },
+      {
+        "run": [
+          "git",
+          "grep",
+          "-q",
+          "-e",
+          "worktrees",
+          "--",
+          "_tools/conftest.py"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
