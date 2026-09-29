@@ -2,7 +2,7 @@
   "id": "TK-meigcodb",
   "kind": "task",
   "title": "Cap MCP output for this project",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-o6krms2n",
   "priority": "P2",
   "rank": 0,
@@ -19,5 +19,6 @@
   "touches": [
     ".claude/settings.json",
     "kb/_self/tools.md"
-  ]
+  ],
+  "claimed_by": "orchestrator-SP-mqjeanq3"
 }
