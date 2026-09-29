@@ -16,8 +16,12 @@ TestPluginManifest  .claude-plugin/marketplace.json and the two plugins: it-ops-
                 SSH remote. With the `claude` CLI installed, `claude plugin validate` passes for both.
 test_embed_roots_*  `--roots NAME[,NAME]` (a host embedding the server): only the named roots in every tool and
                 kb_status, every root without it, and an unknown or missing name refused at the start on stderr.
+test_embed_contract_*  kb_mcp.py as a host server's stdio child: the names and input schemas of kb_pack, kb_search and
+                kb_show and the instructions' sha256 match _tools/fixtures/kb_mcp_contract.json unless kb_mcp.VERSION
+                moved; one call of each answers in shape; a planted schema change is caught. After a VERSION bump:
+                `uv run --frozen python _tools/test_kb_mcp.py --write-contract`.
 """
-import json, os, re, shutil, subprocess, sys, tempfile
+import hashlib, json, os, re, shutil, subprocess, sys, tempfile
 from pathlib import Path
 
 import pytest
@@ -574,3 +578,106 @@ def test_embed_roots_refuses_an_unknown_name(tmp_path, args, message):
     assert p.returncode == 2, (p.returncode, p.stdout, p.stderr)
     assert p.stdout == "" and not out, p.stdout
     assert message in p.stderr and "Traceback" not in p.stderr, p.stderr
+
+
+CONTRACT = Path(TOOLS) / "fixtures" / "kb_mcp_contract.json"
+EMBEDDED = ("kb_pack", "kb_search", "kb_show")  # the tools a host server re-exposes
+REGENERATE = "uv run --frozen python _tools/test_kb_mcp.py --write-contract"
+CONTRACT_CALLS = {"kb_pack": {"question": "What is the default Windows LAPS password length?"},
+                  "kb_search": {"query": "kerberos constrained delegation", "k": 2},
+                  "kb_show": {"path": "README.md:1", "n": 2}}
+
+
+def live_contract():
+    """kb_mcp.py spawned as a host server spawns it (a stdio child): initialize, tools/list and one tools/call of
+    each embedded tool. Returns the contract as the fixture pins it (VERSION, a sha256 of the instructions, the
+    embedded tools' names and input schemas) and {tool: result} of the calls."""
+    env = {k: v for k, v in os.environ.items() if k not in ("KB_ROOTS", "CLAUDE_PLUGIN_DATA")}
+    msgs = [{"jsonrpc": "2.0", "id": 1, "method": "initialize",
+             "params": {"protocolVersion": "2025-06-18", "capabilities": {}, "clientInfo": {"name": "host", "version": "0"}}},
+            {"jsonrpc": "2.0", "method": "notifications/initialized"},
+            {"jsonrpc": "2.0", "id": 2, "method": "tools/list"}]
+    msgs += [{"jsonrpc": "2.0", "id": 10 + i, "method": "tools/call", "params": {"name": n, "arguments": CONTRACT_CALLS[n]}}
+             for i, n in enumerate(EMBEDDED)]
+    p = subprocess.run([sys.executable, SERVER], input="".join(json.dumps(m) + "\n" for m in msgs), capture_output=True,
+                       text=True, encoding="utf-8", timeout=300, env=env, cwd=os.sep)
+    assert p.returncode == 0, p.stderr
+    by_id = {r.get("id"): r for r in map(json.loads, p.stdout.splitlines())}
+    init, tools = by_id[1]["result"], {t["name"]: t for t in by_id[2]["result"]["tools"]}
+    contract = {"version": init["serverInfo"]["version"],
+                "instructions_sha256": hashlib.sha256(init["instructions"].encode("utf-8")).hexdigest(),
+                "tools": {n: {"name": n, "inputSchema": tools[n]["inputSchema"]} for n in EMBEDDED if n in tools}}
+    return contract, {n: by_id[10 + i].get("result") for i, n in enumerate(EMBEDDED)}
+
+
+def contract_mismatch(pinned, live):
+    """None when the live contract may stand: it equals the pinned one, or VERSION moved (a bump with the fixture
+    regenerated is the sanctioned way to change what a host re-exposes). Else what differs, and how to fix it."""
+    if pinned == live or pinned.get("version") != live.get("version"):
+        return None
+    parts = [k for k in ("version", "instructions_sha256") if pinned.get(k) != live.get(k)]
+    have, want = live.get("tools") or {}, pinned.get("tools") or {}
+    parts += [f"tools.{n}" for n in sorted(set(have) | set(want)) if have.get(n) != want.get(n)]
+    return (f"the tools a host server re-exposes changed at the same kb_mcp.VERSION {live.get('version')}: "
+            f"{', '.join(parts)} differ from {CONTRACT.name}. A host embedding kb_mcp.py relies on them: bump "
+            f"kb_mcp.VERSION and regenerate the fixture with `{REGENERATE}`, or undo the change.")
+
+
+def write_contract():
+    """Regenerate _tools/fixtures/kb_mcp_contract.json from the live server (run by hand after a VERSION bump)."""
+    contract, _ = live_contract()
+    CONTRACT.write_text(json.dumps(contract, indent=2, sort_keys=True, ensure_ascii=False) + "\n", encoding="utf-8",
+                        newline="\n")
+    print(f"wrote {CONTRACT} (kb_mcp {contract['version']})")
+
+
+@pytest.fixture(scope="module")
+def embed_live():
+    return live_contract()
+
+
+def test_embed_contract_matches_the_fixture(embed_live):
+    """The names and input schemas of kb_pack, kb_search and kb_show and the instructions' digest are what the
+    fixture pins, unless kb_mcp.VERSION moved."""
+    pinned = json.loads(CONTRACT.read_text(encoding="utf-8"))
+    live, _ = embed_live
+    assert set(pinned) == {"version", "instructions_sha256", "tools"} and sorted(pinned["tools"]) == sorted(EMBEDDED), \
+        f"{CONTRACT.name} pins {sorted(pinned)}; regenerate it with `{REGENERATE}`"
+    assert contract_mismatch(pinned, live) is None, contract_mismatch(pinned, live)
+
+
+def test_embed_contract_calls_answer_in_shape(embed_live):
+    """One tools/call of each embedded tool answers with a text block and isError false; kb_pack's text has a
+    coverage line. The text itself follows the kb's content and is not pinned."""
+    _, calls = embed_live
+    for name in EMBEDDED:
+        r = calls[name]
+        assert r is not None, f"{name}: no result"
+        assert r["isError"] is False, (name, r)
+        assert r["content"] and r["content"][0]["type"] == "text" and r["content"][0]["text"].strip(), (name, r)
+    text = calls["kb_pack"]["content"][0]["text"]
+    assert re.search(r"(?m)^coverage: (good|weak|none)\b", text), text[:300]
+
+
+@pytest.mark.parametrize("change, part", [
+    (lambda c: c["tools"]["kb_search"]["inputSchema"]["properties"]["k"].update(maximum=50), "tools.kb_search"),
+    (lambda c: c["tools"]["kb_pack"]["inputSchema"].update(required=["question"]), "tools.kb_pack"),
+    (lambda c: c["tools"].pop("kb_show"), "tools.kb_show"),
+    (lambda c: c.update(instructions_sha256="0" * 64), "instructions_sha256"),
+], ids=["schema", "required", "tool-gone", "instructions"])
+def test_embed_contract_planted_failure(change, part):
+    """Planted failure: a copy of the fixture with one schema or the digest changed is a mismatch at the same
+    VERSION, naming the part and how to regenerate; the same change with VERSION moved is accepted."""
+    pinned = json.loads(CONTRACT.read_text(encoding="utf-8"))
+    live = json.loads(json.dumps(pinned))
+    change(live)
+    message = contract_mismatch(pinned, live)
+    assert message and part in message and REGENERATE in message and "kb_mcp.VERSION" in message, message
+    assert contract_mismatch(pinned, {**live, "version": pinned["version"] + ".1"}) is None
+    assert contract_mismatch(pinned, json.loads(json.dumps(pinned))) is None
+
+
+if __name__ == "__main__":
+    if sys.argv[1:] != ["--write-contract"]:
+        sys.exit(f"usage: {REGENERATE}")
+    write_contract()

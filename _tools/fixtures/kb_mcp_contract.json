@@ -1,0 +1,125 @@
+{
+  "instructions_sha256": "22e9e8802c98d3d26896eb2c206116211199c5b0d29e437f9dd2cddd924aac51",
+  "tools": {
+    "kb_pack": {
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "budget": {
+            "default": 1200,
+            "description": "tokens per part",
+            "maximum": 6000,
+            "minimum": 200,
+            "type": "integer"
+          },
+          "domain": {
+            "description": "one domain, e.g. 'auth'",
+            "type": "string"
+          },
+          "question": {
+            "description": "the question, or 3-10 keywords",
+            "type": "string"
+          },
+          "questions": {
+            "description": "parts of a multi-part question, a verdict each (instead of question)",
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 6,
+            "minItems": 1,
+            "type": "array"
+          },
+          "response_format": {
+            "default": "detailed",
+            "description": "concise: no url footer",
+            "enum": [
+              "concise",
+              "detailed"
+            ],
+            "type": "string"
+          },
+          "root": {
+            "description": "one root, e.g. 'public'",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "name": "kb_pack"
+    },
+    "kb_search": {
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "domain": {
+            "description": "limit to one domain directory, e.g. 'auth' or 'dsc'",
+            "type": "string"
+          },
+          "index": {
+            "default": false,
+            "description": "also search each root's ledgers (_answers.md, _gaps.md, _conflicts.md, _coverage.csv), README.md and the kb's own docs (kb/_self/)",
+            "type": "boolean"
+          },
+          "k": {
+            "default": 8,
+            "description": "number of hits",
+            "maximum": 20,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "query": {
+            "description": "3-8 keywords, e.g. 'pim activation latency'",
+            "type": "string"
+          },
+          "response_format": {
+            "default": "concise",
+            "description": "concise: no url footer",
+            "enum": [
+              "concise",
+              "detailed"
+            ],
+            "type": "string"
+          },
+          "root": {
+            "description": "one root, e.g. 'public'",
+            "type": "string"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "type": "object"
+      },
+      "name": "kb_search"
+    },
+    "kb_show": {
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "line": {
+            "description": "first line (overrides :LINE)",
+            "minimum": 1,
+            "type": "integer"
+          },
+          "n": {
+            "default": 40,
+            "description": "number of lines",
+            "maximum": 400,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "path": {
+            "description": "a path as the tools print it, optionally with :LINE (e.g. 'public/auth/kerberos.md:42')",
+            "type": "string"
+          }
+        },
+        "required": [
+          "path"
+        ],
+        "type": "object"
+      },
+      "name": "kb_show"
+    }
+  },
+  "version": "1.2.0"
+}
