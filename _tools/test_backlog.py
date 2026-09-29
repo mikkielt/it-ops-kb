@@ -2,8 +2,9 @@
 
 Each refusal has a planted failure: a bug whose repro passes, a non-canonical file, a cycle, a blocking gate an
 agent answers, a sprint started without the operator, a failing check, a commit outside `touches` (and the revert
-that clears it), a review with an unconfirmed provisional answer, a malformed KB-Work trailer. The repository's
-own backlog must pass `backlog.py check`.
+that clears it), a review with an unconfirmed provisional answer, a malformed KB-Work trailer, a worked item of a
+planned sprint, and a KB-Work id whose item is unclaimed or not in a started sprint. The repository's own backlog
+must pass `backlog.py check`.
 """
 import json, os, subprocess, sys
 from pathlib import Path
@@ -252,6 +253,67 @@ def test_work_trailer(monkeypatch):
     assert not kbgit.work_ok("abc", ["TK-bbbbbbbb"])  # no such item
     assert not kbgit.work_ok("abc", ["task 7"])  # not an id
     assert not kbgit.work_ok("abc", ["TK-aaaaaaaa", "TK-aaaaaaaa"])  # a second line
+
+
+def test_started_sprint_check_refuses_worked_item_of_planned_sprint(repo):
+    """A planned sprint's items stay draft until start: a task under its story is created draft, and check reports a
+    todo, doing or done item of it (planted: the story set to todo)."""
+    b(repo, "new", "sprint", "--title", "Planned", "--goal", "g")
+    sp = item(repo, "Planned")["id"]
+    b(repo, "new", "story", "--title", "S", "--sprint", sp, "--goal", "g", "--check", "true")
+    st = item(repo, "S")["id"]
+    b(repo, "new", "task", "--title", "T", "--parent", st, "--goal", "g", "--touch", "src/**", "--check", "true")
+    assert item(repo, "T")["status"] == "draft"
+    assert b(repo, "check")[0] == 0
+    edit(repo, st, status="todo")
+    code, out = b(repo, "check")
+    assert code == 1 and f"{st} “S”: status todo while its sprint {sp} “Planned” is planned" in out, out
+    assert "not in a started sprint" in out
+
+
+def test_started_sprint_work_state():
+    """kbgit.work_state judges a KB-Work id by its item at the commit: claimed, in an active sprint."""
+    files = {
+        "SP-aaaaaaaa": {"kind": "sprint", "status": "active"},
+        "SP-bbbbbbbb": {"kind": "sprint", "status": "planned"},
+        "ST-aaaaaaaa": {"kind": "story", "status": "doing", "sprint": "SP-aaaaaaaa"},
+        "TK-aaaaaaaa": {"kind": "task", "status": "doing", "parent": "ST-aaaaaaaa"},
+        "TK-bbbbbbbb": {"kind": "task", "status": "todo", "parent": "ST-aaaaaaaa"},
+        "ST-bbbbbbbb": {"kind": "story", "status": "doing", "sprint": "SP-bbbbbbbb"},
+        "BG-aaaaaaaa": {"kind": "bug", "status": "doing"},
+        "BG-bbbbbbbb": {"kind": "bug", "status": "done", "sprint": "SP-aaaaaaaa"},
+        "ST-cccccccc": {"kind": "story", "status": "todo", "sprint": "SP-aaaaaaaa", "review": True},
+    }
+    load = lambda rel: json.dumps(files[Path(rel).stem]) if Path(rel).stem in files else None  # noqa: E731
+    code = ["src/a.txt", "kb/_self/backlog/TK-aaaaaaaa.json"]
+    state = lambda ids, paths=code: kbgit.work_state([ids], paths, load)  # noqa: E731
+    assert state("TK-aaaaaaaa, BG-bbbbbbbb") == []  # claimed or done, in an active sprint (the task through its story)
+    assert state("SP-aaaaaaaa, SP-bbbbbbbb, ST-cccccccc") == []  # the sprint and review items themselves
+    assert ["not claimed" in x for x in state("TK-bbbbbbbb")] == [True]  # planted: unclaimed
+    assert state("ST-bbbbbbbb") == ["ST-bbbbbbbb is not in a started sprint (SP-bbbbbbbb is planned)"]  # planted
+    assert state("BG-aaaaaaaa") == ["BG-aaaaaaaa is not in a started sprint (no sprint)"]  # planted: no sprint
+    assert state("TK-bbbbbbbb, ST-bbbbbbbb", ["kb/_self/backlog/TK-bbbbbbbb.json"]) == []  # a backlog-planning commit
+
+
+def test_started_sprint_check_trailers_refuses_unclaimed_work(sprint, monkeypatch):
+    """check-trailers (trailer_audit, which the pre-push hook and sync's gate run) refuses a commit not yet on
+    origin/main whose KB-Work item is not claimed, and leaves one already on origin/main alone."""
+    repo, tk = sprint["repo"], sprint["tk"]
+    commit(repo, "plan")
+    monkeypatch.setattr(kbgit, "KB", str(repo))
+    kbgit._WANT.clear()
+    (repo / "src" / "b.txt").write_text("b\n", encoding="utf-8")
+    commit(repo, "write b", tk)  # planted: the task is todo, not claimed
+    _, _, bad = kbgit.trailer_audit("HEAD", quiet=True)
+    assert len(bad) == 1 and any("not claimed" in ln for ln in bad[0][1]), bad
+    assert kbgit.trailer_audit("HEAD", quiet=True, work_state_on=False)[2] == []
+    sh(repo, "git", "update-ref", "refs/remotes/origin/main", "HEAD")
+    assert kbgit.trailer_audit("HEAD", quiet=True)[2] == []  # history stays as it is
+    assert b(repo, "claim", tk, "--by", "agent-1")[0] == 0
+    commit(repo, "claim", tk)  # a backlog-planning commit
+    (repo / "src" / "b.txt").write_text("b2\n", encoding="utf-8")
+    commit(repo, "write b again", tk)
+    assert kbgit.trailer_audit("origin/main..HEAD", quiet=True)[2] == []
 
 
 def test_repository_backlog_is_valid():

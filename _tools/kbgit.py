@@ -36,7 +36,11 @@ changed topic X / source S / answer QK-..." without reading diffs:
                           second KB-Auto line or a value outside the list.
   KB-Work:                written by the agent on a commit that works on backlog items (kb/_self/backlog.md), once,
                           comma-separated item ids; never computed here. check-trailers flags a second line or an id
-                          whose item file is in neither the commit nor its parent.
+                          whose item file is in neither the commit nor its parent, and, on a commit not yet on
+                          origin/main, an id whose item is not claimed (doing or done at the commit) or is not in a
+                          started sprint (its sprint active at the commit). Exempt from that: a backlog-planning commit
+                          (only kb/_self/backlog/*.json changed), a sprint and a sprint's review story. The commit-msg
+                          hook warns about it; the pre-push hook and sync's gate refuse it.
 One line per key, values sorted and joined by ", ". A key with more than MAX_IDS (40) values is written as a count,
 e.g. `KB-Sources-Added: 312 ids (see diff)`: trailers cannot wrap, and `log` finds such commits by their diff anyway.
 A commit is diffed against its first parent (the empty tree for a root commit). Merge commits carry no trailers and
@@ -135,7 +139,7 @@ Exit (fix, fmt): 0 clean (or fixed), 1 --check and something would change, 2 a p
 Exit (history): 0 ok; 1 check-trailers found bad commits, log found nothing, asof/blame found no such file or line;
 2 bad arguments, not a git clone, or a git error. Hooks always exit 0.
 """
-import argparse, csv, datetime, io, os, re, shlex, stat, subprocess, sys
+import argparse, csv, datetime, io, json, os, re, shlex, stat, subprocess, sys
 from collections import Counter
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -1074,6 +1078,7 @@ AUTO_VALUES = ("querylog", "eval", "alias", "expansion", "gap", "research", "rev
 WORK = "KB-Work"  # the backlog items a commit works on (kb/_self/backlog.md); written by the agent, never computed
 WORK_ID = re.compile(r"(?:EP|ST|TK|SB|BG|SP)-[a-z2-7]{8}")
 BACKLOG = "kb/_self/backlog"
+WORK_LINE = re.compile(r"KB-Work\s*:\s*(.*\S)\s*$", re.I)
 NOUN = {"KB-Topics": "topics", "KB-Answers": "answers"}
 SUMMARY = re.compile(r"^(\d+) (?:ids|topics|answers) \(see diff\)$")
 KEY_LINE = re.compile(r"^(" + "|".join(re.escape(k) for k in KEYS) + r")\s*:", re.I)
@@ -1408,6 +1413,12 @@ def hook_commit_msg(args):
     if new != msg:
         with open(args[0], "w", encoding="utf-8", newline="") as f:
             f.write(new)
+    work = [m.group(1) for m in (WORK_LINE.match(ln) for ln in new.splitlines()) if m]
+    if len(work) == 1:  # a warning only: the commit goes through, and check-trailers refuses it before a push
+        staged = lambda rel: blob(INDEX, rel) if blob(INDEX, rel) is not None else blob(base, rel)  # noqa: E731
+        for why in work_state(work, changed_paths(base, INDEX), staged):
+            print(f"kbgit.py commit-msg: {WORK}: {why}; check-trailers (the pre-push hook, sync's gate) refuses this "
+                  "commit: work lands only for a claimed item of a started sprint", file=sys.stderr)
 
 
 def cmd_hook(a):
@@ -1576,9 +1587,10 @@ class BlobReader:
 _WANT = {}  # sha -> computed trailers: sync audits the same commits twice
 
 
-def trailer_audit(rng, quiet=False):
+def trailer_audit(rng, quiet=False, work_state_on=True):
     """(commits checked, kb commits, [(sha, lines describing what is wrong)]) for a range A..B or one commit;
-    None when the range is not valid here."""
+    None when the range is not valid here. `work_state_on`: also judge the KB-Work items of the commits not yet on
+    origin/main (work_state); refresh_trailers leaves it off, since rewriting trailers cannot fix that."""
     spec = [rng] if ".." in rng else [rng + "^!"]
     since = rev_parse(TRAILERS_SINCE)
     if since:
@@ -1613,15 +1625,21 @@ def trailer_audit(rng, quiet=False):
         if auto and (len(auto) > 1 or not all(x.strip() in AUTO_VALUES for x in auto[0].split(","))):
             wrong.append(AUTO)
         work = have.get(WORK)
+        state = []
         if work and not work_ok(sha, work):
             wrong.append(WORK)
+        elif work and work_state_on and not on_origin_main(sha):
+            paths = changes[sha][1] if sha in changes else changed_paths(first_parent(sha), sha)
+            state = work_state(work, paths, lambda rel: at_or_parent(sha, rel))
         kb += bool(want)
-        if wrong:
+        if wrong or state:
             lines = [f"BAD {short} {date} {subject[:70]}"]
             for k in wrong:
                 exp = next((ln for ln in trailer_lines(want) if ln.startswith(k + ":")), {VERIFIED: "YYYY-MM-DD, once", AUTO: "once, of " + "|".join(AUTO_VALUES),
                                                                                                  WORK: "once, backlog item ids that exist at the commit or its parent"}.get(k, f"(no {k})"))
                 lines.append(f"    {k}: has {', '.join(have.get(k, [])) or '(none)'}; expected {exp}")
+            for why in state:
+                lines.append(f"    {WORK}: {why}; work lands only for a claimed item of a started sprint")
             bad.append((sha, lines))
     return len(recs), kb, bad
 
@@ -1635,6 +1653,64 @@ def work_ok(sha, values):
     return bool(ids) and all(WORK_ID.fullmatch(i) and (blob(sha, f"{BACKLOG}/{i}.json") is not None
                                                       or blob(sha + "^", f"{BACKLOG}/{i}.json") is not None)
                              for i in ids)
+
+
+WORKED = ("doing", "done")  # a claimed item (done drops claimed_by but was claimed to get there)
+BACKLOG_FILE = re.compile(re.escape(BACKLOG) + r"/[^/]+\.json")
+
+
+def work_state(values, paths, load):
+    """[problem lines] for the KB-Work ids of a commit not yet on origin/main (kb/_self/backlog.md, Git): each id's
+    item must be claimed (doing, or done) and in a started (active) sprint, read from the backlog at the commit.
+    `load(rel)` is a file's text at the commit, else at its parent (a sprint close deletes the files), or None.
+    Exempt: a backlog-planning commit (it changes only item files: new items, claims, gates, a sprint's plan, start
+    or close), and the sprint and review items themselves. An id with no item file is work_ok's to report."""
+    if paths and all(BACKLOG_FILE.fullmatch(p) for p in paths):
+        return []
+    cache = {}
+
+    def get(i):
+        if i not in cache:
+            text = load(f"{BACKLOG}/{i}.json")
+            try:
+                cache[i] = json.loads(text) if text else None
+            except ValueError:
+                cache[i] = None
+        return cache[i] if isinstance(cache[i], dict) else None
+
+    out = []
+    for i in (x.strip() for x in values[0].split(",") if x.strip()):
+        it = get(i)
+        if it is None or it.get("kind") == "sprint" or it.get("review"):
+            continue
+        if it.get("status") not in WORKED:
+            out.append(f"{i} is {it.get('status')}, not claimed (backlog.py claim)")
+        sp, cur, seen = None, it, {i}
+        while cur is not None:
+            sp = cur.get("sprint")
+            if sp or not cur.get("parent") or cur["parent"] in seen:
+                break
+            seen.add(cur["parent"])
+            cur = get(cur["parent"])
+        state = (get(sp) or {}).get("status") if sp else None
+        if state != "active":
+            out.append(f"{i} is not in a started sprint" + (f" ({sp} is {state or 'missing'})" if sp else " (no sprint)"))
+    return out
+
+
+def at_or_parent(sha, rel):
+    """A file's text at a commit, else at its first parent (a sprint close deletes the item files), else None."""
+    text = blob(sha, rel)
+    return text if text is not None else blob(sha + "^", rel)
+
+
+def on_origin_main(sha):
+    """True when the commit is already on origin/main: its KB-Work items are history, judged when it landed."""
+    main = rev_parse("refs/remotes/origin/main")
+    if not main:
+        return False
+    p = git_run("merge-base", "--is-ancestor", sha, main)
+    return p is not None and p.returncode == 0
 
 
 def cmd_check_trailers(a):
@@ -2040,7 +2116,7 @@ def commit_fix(r):
 def refresh_trailers(r, up):
     """Rewrite the KB-* trailers of the unpushed commits whose trailers no longer match their diff
     (a rebase that resolved conflicts or renumbered ids changes the diffs). Only up..HEAD is touched."""
-    audit = trailer_audit(f"{up}..HEAD", quiet=True)
+    audit = trailer_audit(f"{up}..HEAD", quiet=True, work_state_on=False)
     if not audit or not audit[2]:
         return True
     exe = " ".join(shlex.quote(x) for x in (sys.executable, os.path.join(KB, "_tools", "kbgit.py"), "trailers", "--amend"))

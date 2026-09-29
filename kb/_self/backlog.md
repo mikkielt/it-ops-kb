@@ -55,7 +55,7 @@ Items describe the present, never a history: no dated logs, no "tried X on Monda
 
 Only `draft`, `todo`, `doing`, `done` and `dropped` are stored. Whether an item is ready or waiting is computed on every call, never stored, so it cannot go stale. `backlog.py show ID` prints what an item waits on. An item is ready when all of these hold:
 - it is `todo` (or `doing`, claimed by you);
-- its sprint is active (`/kb-item` may take an item outside any sprint: `next --any`);
+- its sprint is active (`/kb-item` may take an item outside any sprint: `next --any`, but its work lands only once it is in a started sprint, Git below);
 - every `depends_on` item is `done`;
 - no blocking gate on it or an ancestor is unanswered;
 - every trigger on it or an ancestor has fired;
@@ -138,7 +138,7 @@ A sprint is a goal and the stories and bugs committed to it. It ends when its go
 1. **Plan** (`/kb-backlog epic "<outcome>"` or `/kb-backlog`, then `/kb-sprint plan`):
    - `backlog.py new sprint --title T --goal G` creates the sprint with its blocking `start` gate and its review story;
    - stories and bugs join the sprint with `"sprint": "SP-..."`, and tasks are broken down with `touches` and `checks`;
-   - everything stays `draft`.
+   - everything stays `draft`: `backlog.py check` reports an item whose status is `todo`, `doing` or `done` while its sprint is planned (not in a started sprint), and `new` creates a task or subtask under such a sprint's story as `draft`.
 2. **Start**: the operator approves the goal and the committed items (`answer SP start --answer approve --by operator`). Then `backlog.py start SP` turns the drafts into `todo`.
    - Inside a running sprint, agents add tasks, subtasks and bugs freely.
    - A new story goes to the backlog for a later sprint, unless the operator adds it.
@@ -177,6 +177,7 @@ Several sprints may be active at once. Each has its own horizon.
 
 - Work lands on `main` directly through `python3 _tools/kbgit.py sync --push`, as for every change (`kb/_self/git.md`).
 - Every commit that works on an item ends with `KB-Work: <id>[, <id>]`, one line, before the KB-* trailers the hook adds. `python3 _tools/kbgit.py check-trailers` flags a second line, or an id whose item file is in neither the commit nor its parent.
+- Work lands only for a claimed item of a started sprint. On a commit not yet on `origin/main`, `check-trailers` refuses a `KB-Work` id whose item, as the commit has it, is not `doing` or `done` (not claimed), or whose sprint is not active (not in a started sprint). The pre-push hook and `sync`'s gate run it, so such work is not pushed; the commit-msg hook warns when the commit is made. Exempt: a backlog-planning commit (it changes only item files: new items, claims, gates, a sprint's plan, start or close), and the sprint and review items themselves. An item outside any sprint joins a started sprint before its work lands. Commits already on `origin/main` are history and stay as they are.
 - Changing an item's JSON (claim, gate answers, done) goes in the same commit as the work, or in its own commit with the same trailer.
 
 ## Writing about items

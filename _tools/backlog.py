@@ -7,7 +7,8 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                                           a new item (KIND: epic, story, task, subtask, bug, sprint); prints its id
                                           and title. A bug's --repro must fail now; a sprint gets its start gate and
                                           its review story
-  backlog.py check                        validate every item (fields, links, cycles, canonical form); exit 1 on errors
+  backlog.py check                        validate every item (fields, links, cycles, canonical form, and a planned
+                                          sprint's items still draft); exit 1 on errors
   backlog.py fmt                          rewrite every item in canonical form
   backlog.py list [--kind K] [--status S] [--sprint ID]   one line per item: id, kind, status, priority, title
   backlog.py tree [ID] [--sprint ID]      the hierarchy under an item, a sprint or everything
@@ -48,6 +49,7 @@ KINDS = {"epic": "EP", "story": "ST", "task": "TK", "subtask": "SB", "bug": "BG"
 PREFIX_KIND = {v: k for k, v in KINDS.items()}
 ID_RE = re.compile(r"\b(?:EP|ST|TK|SB|BG|SP)-[a-z2-7]{8}\b")
 STATUSES = ("draft", "todo", "doing", "done", "dropped")
+WORKED = ("todo", "doing", "done")  # statuses an item of a planned sprint cannot have: it stays draft until start
 SPRINT_STATUSES = ("planned", "active")
 PRIORITIES = ("P1", "P2", "P3")
 SEVERITIES = ("S1", "S2", "S3", "S4")
@@ -286,6 +288,10 @@ def validate(bl):
         st = it.get("status")
         if st == "doing" and not it.get("claimed_by"):
             e("status doing needs claimed_by")
+        sp = bl.sprint_of(iid) if kind != "sprint" else None
+        if st in WORKED and sp in bl.items and bl.items[sp].get("status") == "planned":
+            e(f"status {st} while its sprint {bl.label(sp)} is planned: not in a started sprint "
+              f"(a planned sprint's items stay draft until backlog.py start)")
         if st == "done" and kind in NEEDS_CHECKS + ("bug",) and not it.get("evidence"):
             e("status done without evidence (set only by backlog.py done)")
     # cycles over depends_on and parent
@@ -464,6 +470,10 @@ def cmd_new(bl, a):
     for k in ("parent", "sprint", "goal"):
         if getattr(a, k):
             it[k] = getattr(a, k)
+    if it["status"] == "todo" and a.parent in bl.items:  # a task of a planned sprint stays draft until its start
+        sp = bl.sprint_of(a.parent)
+        if bl.items.get(sp, {}).get("status") == "planned":
+            it["status"] = "draft"
     if kind == "bug":
         if not a.severity or not a.repro:
             raise Refused("a bug needs --severity and --repro")
