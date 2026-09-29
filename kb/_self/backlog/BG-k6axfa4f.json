@@ -1,0 +1,18 @@
+{
+  "id": "BG-k6axfa4f",
+  "kind": "bug",
+  "title": "test_research_merge fixtures fail: git push of the seed clone hits unpacker error",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "python3 _tools/tests.py -k research_merge exits 0 in a fresh git worktree of main: the six TestResearchMergeInGit tests no longer error at conftest.py's push (unable to read a blob, remote early EOF, unpacker error)",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/tests.py",
+      "-k",
+      "test_answers_distinct_and_whole"
+    ]
+  }
+}
