@@ -2,8 +2,8 @@
 topic: python/stdlib-windows-portability
 priority: P3
 applies_to: "CPython 3.14.7 documentation (release tag); stdlib behaviour on Windows versus POSIX for detached processes, file locks, text files and interpreter names"
-retrieved_utc: 2026-09-28
-sources: [S-dabwnzz5, S-ew7mucsg, S-oavxfpsn, S-f5bnvamj, S-ntbllsvy, S-sjuwcuhk]
+retrieved_utc: 2026-09-29
+sources: [S-dabwnzz5, S-ew7mucsg, S-oavxfpsn, S-f5bnvamj, S-ntbllsvy, S-sjuwcuhk, S-6bobcclf, S-e4zz24dq, S-ttcgrkbl]
 status: partial
 ---
 
@@ -48,6 +48,15 @@ commands are `python` and `py`; `python3` exists only as a compatibility alias.
 - `py` selects a runtime with `-V:<TAG>` given before any other option; for an official release whose tag starts with `3` the `V:` may be omitted, so `py -3` asks for a Python 3 runtime. [DOC S-sjuwcuhk]
 - A script that must find the interpreter on every OS tries `python3`, then `python`, then `py -3`, and checks that the one it found runs (a `-c` probe), since a name on `PATH` can be an alias rather than the runtime. [DER S-sjuwcuhk: command names above]
 
+### Command-line length
+- `CreateProcessW` takes the command line as one string, `lpCommandLine`, whose maximum length is 32,767 characters (written 32767 in shell scripts) including the terminating null character; with a null `lpApplicationName`, the module-name part is limited to `MAX_PATH`. [DOC S-6bobcclf]
+- Command Prompt (`cmd.exe`) limits the string it processes to 8191 characters (8,191): the command line, individual environment variables inherited by other processes, and all variable expansions; the limit also applies to commands in a batch file it runs. [DOC S-e4zz24dq]
+- Command Prompt ignores an inherited environment variable longer than 8191 characters even though the Win32 limit is 32,767; Microsoft's workaround is a parameter file named on the command line, with the program reading its parameters from it. [DOC S-e4zz24dq]
+- When `args` is a sequence, `subprocess` converts it to one string using the MS C runtime quoting rules before `CreateProcess`, so quoting can make the string longer than the arguments alone. [DOC S-dabwnzz5]
+- With `shell=True` on Windows, the shell is `%COMSPEC%` (normally `cmd.exe`), and the docs say `shell=True` is needed only for shell built-ins such as `dir` or `copy`, not for batch files or console executables. [DOC S-dabwnzz5]
+- The system error code for a command line, path or extension that is too long is 206, `ERROR_FILENAME_EXCED_RANGE`: "The filename or extension is too long." A `[WinError 206]` from `subprocess` is therefore the string limit above, not a missing program. [DOC S-ttcgrkbl; DER S-6bobcclf: the 32,767-character maximum and the error code meaning]
+- A child started with a list of arguments and `shell=False` faces the 32,767-character limit (and its quoted form counts); through `cmd /c` the 8191 limit applies. A test or tool that must pass more than about 30,000 characters to a Windows child sends it through stdin or a file, not argv. [DER S-6bobcclf, S-e4zz24dq, S-dabwnzz5: the two limits and `subprocess`'s conversion; the "about 30,000" margin allows for quoting and the program path]
+
 ## Reference
 | Need | POSIX | Windows | Source |
 |---|---|---|---|
@@ -57,8 +66,9 @@ commands are `python` and `py`; `python3` exists only as a compatibility alias.
 | Advisory lock | `fcntl.flock` | `msvcrt.locking` | S-oavxfpsn, S-f5bnvamj |
 | Is PID alive | `os.kill(pid, 0)` | not `os.kill` (terminates) | S-ew7mucsg |
 | Interpreter | `python3` | `python`, `py -3` | S-sjuwcuhk |
+| Longest command line | not this limit | 32,767 characters (`CreateProcessW`); 8191 through `cmd.exe` | S-6bobcclf, S-e4zz24dq |
 
-Related: `python/stdlib-sqlite3-csv.md` (csv files open with `newline=''`); `claude/hooks.md` (how Claude Code runs
+Related: `python/windows-python-install.md` (installing Python and the Store `python3` shortcut); `python/stdlib-sqlite3-csv.md` (csv files open with `newline=''`); `claude/hooks.md` (how Claude Code runs
 hook commands on Windows); `gitlab/hosted-runners-windows.md` (a Windows CI job for these tools).
 
 ## Examples

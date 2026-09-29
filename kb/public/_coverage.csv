@@ -97,6 +97,7 @@ claude/plugins,P2,complete,claude/plugins.md;claude/plugins.csv,14
 claude/settings-and-scopes,P2,complete,claude/settings-and-scopes.md;claude/settings-keys.csv;claude/env-vars.csv,11
 claude/skills-and-subagents,P2,complete,claude/skills-and-subagents.md;claude/skills-and-subagents.csv,4
 claude/large-codebases,P3,complete,claude/large-codebases.md,3
+claude/powershell-tool,P3,partial,claude/powershell-tool.md,5
 defender/machine-resource,P1,complete,defender/machine-resource.md;defender/machine-properties.csv,9
 defender/mde-onboarding,P1,complete,defender/mde-onboarding.md,23
 defender/permissions-limits,P1,complete,defender/permissions-limits.md,6
@@ -230,7 +231,9 @@ python/ruff,P2,complete,python/ruff.md,10
 python/stdlib-sqlite3-csv,P2,complete,python/stdlib-sqlite3-csv.md,3
 python/uv-projects,P2,complete,python/uv-projects.md,11
 python/version-lifecycle,P2,complete,python/version-lifecycle.md;python/version-lifecycle.csv,8
-python/stdlib-windows-portability,P3,partial,python/stdlib-windows-portability.md,6
+python/stdlib-windows-portability,P3,partial,python/stdlib-windows-portability.md,9
+python/uv-windows-install,P3,partial,python/uv-windows-install.md,3
+python/windows-python-install,P3,partial,python/windows-python-install.md,4
 reuse/device-identity-correlation,P2,complete,reuse/device-identity-correlation.md,7
 reuse/drift-detection,P2,complete,reuse/drift-detection.md,5
 reuse/layered-settings-resolution,P2,complete,reuse/layered-settings-resolution.md,3

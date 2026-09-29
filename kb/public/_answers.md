@@ -2009,6 +2009,20 @@ _Agent: kb-research_
 
 _Agent: kb-research_
 
+## QK-windows-ready-python-uv-powershell. What must a Windows install script, its tests and the skills know about the python.org installer, the Store python3 shortcut, uv's release, command-line limits and the PowerShell tool?
+- python.org's full installer takes `/quiet` plus `name=value` options (defaults `InstallAllUsers=0`, `PrependPath=0`, `Include_launcher=1`, `InstallLauncherAllUsers=1`, `Include_test=1`); it is deprecated since 3.14 and not produced for 3.16+. [DOC S-sjuwcuhk]
+- The release API gives each installer's `sha256_sum` and Sigstore bundle; the repository's pins for 3.14.7 amd64 and arm64 match. [DOC S-lkt7o42d]
+- Existing installs are found through the `py` launcher (`py -0p`) and PEP 514 keys under `HKCU`/`HKLM` `Software\Python` (and `Wow6432Node`); `HKCU` wins over `HKLM`. [DOC S-sjuwcuhk, S-4jodaif5]
+- The Store `python`/`python3` shortcut is an app execution alias; run with arguments it returns an error code (not given), and it is disabled under "Manage app execution aliases" ("App Installer" Python entries). A python.org install on `PATH` takes priority. [DOC S-omr5o3jv]
+- uv 0.12.19 publishes `uv-x86_64-pc-windows-msvc.zip` and `uv-aarch64-pc-windows-msvc.zip` (each with `uv.exe`, `uvx.exe`, `uvw.exe`) with a `.sha256` asset per archive and a `sha256.sum`; its `uv-installer.ps1` installs to `$HOME\.local\bin`, edits `HKCU\Environment` `Path` and does no checksum check. [DER S-kqisz7ri, S-xkajf5v5, S-tqxtar5b: release assets, the install docs and the installer script text]
+- A Windows command line holds at most 32,767 characters (`CreateProcessW`), 8191 through `cmd.exe`; error 206 `ERROR_FILENAME_EXCED_RANGE` is the "too long" error. [DOC S-6bobcclf, S-e4zz24dq, S-ttcgrkbl]
+- PowerShell tool rules are `PowerShell(<pattern>)`, same shape as Bash rules, aliases canonicalised, compound commands split and each part must match; skills pick the shell with `shell: powershell`. [DOC S742, S-dfhq4kbv]
+- Conclusion: a preflight can decide "conflict or not" from `PATH` (WindowsApps entries), `py -0p`, PEP 514 keys and `PYTHONHOME`/`PYTHONPATH`; a per-user quiet install should pass `InstallLauncherAllUsers=0` explicitly; a pinned uv download is verified against the release's `.sha256` value because the installer script does not; a Bash allow rule does not cover the PowerShell tool, so settings need both. [DER S-sjuwcuhk, S-omr5o3jv, S-kqisz7ri, S742, S743]
+- Open: the Store shortcut's exit code, whether a quiet per-user run with the default all-users launcher elevates, that the python.org installer ships no `python3.exe`, and whether `allowed-tools` accepts `PowerShell(...)` are not documented. [UNK]
+- See python/windows-python-install.md, python/uv-windows-install.md, python/stdlib-windows-portability.md, claude/powershell-tool.md.
+
+_Agent: kb-research_
+
 ## R1. Reuse candidates
 
 - **Highest leverage: `pydantic-settings` as a `dependency` for a project's config-file/env-var/flags

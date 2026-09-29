@@ -96,7 +96,7 @@ instead, so a hook can answer a prompt without a model call.
 | ElicitationResult | override user answer | `action`, `content` |
 | UserPromptSubmit | answer or gate a prompt before the model | `decision: "block"` + `reason`, `additionalContext` |
 
-Related: `claude/plugins.md` — a plugin's `hooks/hooks.json` and manifest `hooks` key use this same event/matcher
+Related: `claude/powershell-tool.md` — the PowerShell tool, its `PowerShell(...)` permission rules and skill `shell: powershell`. `claude/plugins.md` — a plugin's `hooks/hooks.json` and manifest `hooks` key use this same event/matcher
 shape and are merged together at load. `claude/settings-and-scopes.md` — `allowManagedHooksOnly`, `disableAllHooks`,
 `allowedHttpHookUrls`, and the security-approval dialog required for a server-managed or MDM-delivered hook.
 `claude/agent-sdk.md` — the Agent SDK runs this same hook engine (`options.hooks` callbacks plus settings-file
