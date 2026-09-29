@@ -2,7 +2,7 @@
   "id": "TK-k3uqihdk",
   "kind": "task",
   "title": "kbgit.py bridge",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-mlrjf3lf",
   "priority": "P2",
   "rank": 0,
@@ -24,5 +24,19 @@
     "kb/_self/git.md",
     "kb/_self/tools.md"
   ],
-  "claimed_by": "worker-k3uqihdk"
+  "evidence": {
+    "commit": "53b4588df6e724af6c15f637812e4fed651fdcef",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "TestBridge"
+        ],
+        "exit": 0,
+        "sha256": "e2e2b6cfe985d17e"
+      }
+    ]
+  }
 }
