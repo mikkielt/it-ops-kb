@@ -2,7 +2,7 @@
   "id": "ST-v2y75lcj",
   "kind": "story",
   "title": "Review sprint: Ingestion runs nothing from the repository",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-xourq2gj",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,6 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "claimed_by": "sprint-review-xourq2gj"
 }
