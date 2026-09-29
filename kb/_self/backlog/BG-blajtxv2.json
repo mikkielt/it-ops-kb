@@ -2,7 +2,7 @@
   "id": "BG-blajtxv2",
   "kind": "bug",
   "title": "kbingest map's dotnet package list step can run repository targets",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-g5hizdko",
   "sprint": "SP-xourq2gj",
   "priority": "P2",
@@ -49,5 +49,6 @@
   ],
   "links": [
     "kb/public/agents/codebase-mapping.md:174"
-  ]
+  ],
+  "claimed_by": "fix-blajtxv2"
 }
