@@ -1,4 +1,4 @@
-"""Tests of _tools/install-python.ps1, the pinned python.org installer for a Windows clone without Python
+r"""Tests of _tools/install-python.ps1, the pinned python.org installer for a Windows clone without Python
 (`python3 _tools/tests.py -k install_python`).
 
   test_pin_matches_the_project      every OS: the pinned version's minor is .python-version's, both SHA-256 pins are
