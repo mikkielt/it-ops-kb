@@ -1,0 +1,33 @@
+{
+  "id": "BG-zrzme2li",
+  "kind": "bug",
+  "title": "kb_ask.py treats kb has: - and kb lacks: - as real parts",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kb_ask.py and agent_bench.route read a 'kb has: -' or 'kb lacks: -' line as empty, so a split pack with an empty side is read whole as documented and no researcher prompt says 'The kb lacks: -'; TestKbAskRoute plants both lines.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import kb_ask;p=kb_ask.plan('file share quota');assert p['lacks']!=['-'],p['lacks']"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "TestKbAskRoute"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kb_ask.py",
+    "_tools/agent_bench.py",
+    "_tools/test_kb_ask_route.py",
+    "_tools/test_agent_bench.py"
+  ]
+}

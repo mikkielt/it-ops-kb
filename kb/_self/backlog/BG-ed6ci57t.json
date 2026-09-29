@@ -1,0 +1,31 @@
+{
+  "id": "BG-ed6ci57t",
+  "kind": "bug",
+  "title": "The kb: hook blocks a good pack routed split by a word nowhere in the kb",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kb_hook.py lets every pack with a route through to the model with the differential, a good pack routed split by a word nowhere in the kb included (it decides on res['route'], not on unmatched and spread alone); TestKbHookRoute plants such a pack.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import subprocess,sys;o=subprocess.run([sys.executable,'_tools/kb_hook.py','--test','kb: What is the default Windows LAPS password length for frobnicated devices?'],capture_output=True,text=True).stdout;assert 'route: split' not in o or '\"block\"' not in o,o[:300]"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "TestKbHookRoute"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kb_hook.py",
+    "_tools/test_kb.py"
+  ]
+}

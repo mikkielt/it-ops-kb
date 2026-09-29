@@ -1,0 +1,31 @@
+{
+  "id": "BG-bxkqdtk6",
+  "kind": "bug",
+  "title": "A near-miss none routed split still tells the reader not to answer from its hits",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "A none pack that routes split (a near miss) prints the facts and source footer a weak pack would, without the none sentence that forbids answering from its hits, so the kb: hook and kb_ask.py's split reader can answer the part the kb has (the sp_getapplock lines with @LockTimeout = 0 and sp_releaseapplock); TestRoute asserts it for the h2_applock question.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import kbfacts;r=kbfacts.pack('Show T-SQL that takes an exclusive session-owned application lock without waiting, fails if it is held, and releases it.');t=r['text'] if isinstance(r,dict) else r;assert 'Do not answer from the hits' not in t,t[:300]"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "TestRoute"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbfacts.py",
+    "_tools/test_route.py"
+  ]
+}
