@@ -16,7 +16,7 @@ Read these sections of the `kb/_self/` docs first, not the whole docs, each with
 - `python3 _tools/selfdoc.py section plugin "6. A team's own knowledge: roots beside kb/public"` (a team's own roots; `section` matches headings without their backticks)
 - `python3 _tools/selfdoc.py section git "Workflow"` (commits and pushes)
 
-Facts on the signals used below: `agents/repository-ingestion.md`. Run each command on its own (no `;`, `&&`, pipes or loops).
+Facts on the signals used below: `agents/repository-ingestion.md`; on the mapping tools (ctags JSON, language servers, each language's own read-only commands, toolchain pins) `agents/codebase-mapping.md`; on reading PowerShell without running it (`#Requires`, manifests, the AST) `windows/powershell-static-analysis.md`. Run each command on its own (no `;`, `&&`, pipes or loops).
 
 ## 1. Where am I, and where do the facts land
 
@@ -57,6 +57,16 @@ The test for every candidate: a teammate or an agent would ask a question that t
 3. **Operations:** pipeline stages and what triggers them, deploy targets, schedules, required CI variables (names), service accounts and permission scopes, ports, the other services and vendor products it depends on. Where it uses a vendor product the kb covers (Graph scopes, Intune, ConfigMgr), cite the team fact in this root and point to the public topic in Reference; do not restate public facts.
 4. **Behaviour that surprises:** defaults, limits, retries, timeouts, error handling, feature flags, anything a comment warns about.
 
+Where the leads for items 2 to 4 come from in a large or unfamiliar codebase, cheapest first:
+- the pins (`survey --pins`): the runtime and framework an interface targets;
+- the `map` output, when step 3 made one: `packages` and `entry_points` name the interfaces, `imports` say which file depends on which;
+- Universal Ctags JSON (`--output-format=json`) or a language server, when the user or the session already has one, for the symbols of a file the map does not cover;
+- PowerShell: `#Requires`, manifests and the AST (`Parser.ParseFile`), which parse without running the script (`windows/powershell-static-analysis.md`).
+
+Each is a lead to a file, never a citation: the fact is written from that file read at the pinned commit. Where a tool gave no lead (no toolchain, a note in the map), the files are read and the plan says so.
+
+Write a `CODE` fact only for a claim that matters outside source browsing: an interface, a contract, an entry point, generated output, security or persistence behaviour. Never one per symbol, import or map row: the map lists what a reader can open, the fact says what it means for a teammate's question. Each `CODE` fact cites the file and `path#symbol` and names the map relation it rests on (step 6). The pins go on the source row and in `applies_to`, never in a fact.
+
 Leave out: what the code says line by line (the repository stays the source; the kb holds what answers questions across services), formatting and lint settings, tests except as evidence for behaviour (cite them as `CODE`), commit history and authors, and personal data. A command a teammate runs (deploy, run locally) can be a `SNIPPET:` with `checked: no|syntax|run`.
 
 ## 5. Topics
@@ -69,7 +79,7 @@ Leave out: what the code says line by line (the repository stays the source; the
 
 Follow the contract of `/kb-add-topic` steps 3 to 5 (source rows first, one tag per fact, four sections, `build_index.py`), in `<KB>/kb/<root>/`:
 - **Source rows** in the root's `_sources.csv`, one per file cited: url from `python3 <KB>/_tools/kbingest.py url <repo> <path> --rev <sha>`, id from `python3 <KB>/_tools/kbid.py url <URL> --root <root>`. Title `<repo> <path> at <short sha>`; publisher the team; `version_or_date` `<tag or branch> @<short sha> (<commit date>)`, and on the row of a pin file the pins it declares (`; python-version 3.14`); `licence` the repository's licence (SPDX id, reuse `copy`) or `internal: <team> repository, no licence file` (reuse `quote`: paraphrase, quotes of 25 words or fewer).
-- **Facts:** `[CODE <P>-xxxxxxxx: path#symbol]` (or `path#L10-L20`), `[DOC <P>-xxxxxxxx]` for the team's docs, `[DER ...: how]` for what combines them. In your own words. `applies_to` names the repository, the commit and the pins that bear on the topic (the runtime or framework its code targets).
+- **Facts:** `[CODE <P>-xxxxxxxx: path#symbol]` (or `path#L10-L20`), `[DOC <P>-xxxxxxxx]` for the team's docs, `[DER ...: how]` for what combines them. In your own words. The map relation a `CODE` fact rests on goes after the pointer in the same tag (`[CODE <P>-xxxxxxxx: src/app.py#run, imported by src/cli.py]`; the lint takes the first `path#symbol` of the note as the pointer and accepts the text after it), else in the sentence; a fact that rests on no relation needs none. `applies_to` names the repository, the commit and the pins that bear on the topic (the runtime or framework its code targets).
 - **Retrieval data** in the root's `_retrieval/signals.csv`: the repository's distinctive names (service and module names, API routes, CLI names), so `kb_topics_for` maps code, the host project's included, to these topics. One `_retrieval/lookup_eval.csv` row per topic (`python3 <KB>/_tools/kbid.py eval "<question>"`) keeps it findable.
 - What the repository does not say (a production value, an owner) goes to the root's `_gaps.md`, ending `(topic: <domain>/<slug>)`.
 
@@ -85,5 +95,5 @@ With `KB_ROOTS=<dir>` in front of each command for a root kept outside the clone
 
 - **Clone of the fork:** `/kb-verify`, then commit in the clone, `feat(kb): ingest <repo> into <root>`, the body naming the repository, the commit and what was left out and why; push with `python3 <KB>/_tools/kbgit.py sync --push` only to the remote the user confirmed (the fork's), never to the upstream kb with an internal root.
 - **`KB_ROOTS` directory:** commit in that repository with its own git (`git -C <dir>`), same message; `kbgit.py` does not work there.
-- **Later commits of the repository:** `git -C <repo> diff --stat <old sha> <new sha>` names the topics whose files changed; re-source them at the new commit (a new row per file, `superseded_by` on the old one) with `/kb-refresh <root>/<domain>/<slug>`.
-- Report: root and where it lives, the commit, topics written with facts by tag, source rows, signal and eval rows, what was left out (counts per reason, and any file read despite a skip), secret-flagged files (names only), and what the user must decide.
+- **Later commits of the repository:** first `python3 <KB>/_tools/kbingest.py drift <repo> --rev <new sha> --root <root>` (`--prefix` narrows it; `--remote HOST/PROJECT` when the clone has no origin). It is read-only and rewrites no fact, source row or date; exit 1 means findings. Report each `finding KIND KBPATH:LINE SOURCE-ID PATH#SYMBOL DETAIL` line to the user with its fact and kind (`file-missing`, `moved`, `symbol-missing`, `changed`; `unverifiable` means the commit or file is not in the clone: fetch and run again). The user decides which facts to revisit. `git -C <repo> diff --stat <old sha> <new sha>` names the topics whose files changed, which covers the DOC facts drift does not compare. Re-source what the user chose at the new commit (a new row per file, `superseded_by` on the old one) with `/kb-refresh <root>/<domain>/<slug>`.
+- Report: root and where it lives, the commit, topics written with facts by tag, source rows, signal and eval rows, what was left out (counts per reason, and any file read despite a skip), secret-flagged files (names only), drift findings on a later commit, and what the user must decide.
