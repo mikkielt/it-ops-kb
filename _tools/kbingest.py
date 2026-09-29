@@ -1284,7 +1284,8 @@ PROJECT_EXTS = (".csproj", ".fsproj", ".vbproj")
 class DotnetMapper(Mapper):
     """Per kept .csproj, .fsproj or .vbproj, run in the project's own directory (the SDK the nearest global.json names
     is the one that runs):
-      `dotnet msbuild PROJECT -getProperty:TargetFrameworkMoniker,LangVersion -getItem:PackageReference,ProjectReference`
+      `dotnet msbuild -noAutoResponse PROJECT -getProperty:TargetFrameworkMoniker,LangVersion
+       -getItem:PackageReference,ProjectReference`
       `dotnet package list --format json --no-restore` (.NET 10 SDK; only where the directory has one project file).
     Without `-target` MSBuild only evaluates the project (MSBuild 17.8+; kb agents/codebase-mapping): no target and
     no task runs, nothing is built or restored, and `-restore` and `-target` are never passed. Evaluation still reads
@@ -1321,7 +1322,10 @@ class DotnetMapper(Mapper):
         if ctx.readable(proj) is None:
             return
         folder, base = folder_of(proj), proj.rsplit("/", 1)[-1]
-        ev = ctx.json(["dotnet", "msbuild", base, "-getProperty:TargetFrameworkMoniker,LangVersion",
+        # -noAutoResponse: MSBuild reads a Directory.Build.rsp from the project's folder or any folder above it by
+        # itself, so the repository could add -target, -restore or -logger; only this switch turns that off
+        # (https://learn.microsoft.com/visualstudio/msbuild/msbuild-response-files, "Disabling response files")
+        ev = ctx.json(["dotnet", "msbuild", "-noAutoResponse", base, "-getProperty:TargetFrameworkMoniker,LangVersion",
                        "-getItem:PackageReference,ProjectReference"], label=f"dotnet msbuild {proj}", cwd=folder)
         listed = None
         if alone:

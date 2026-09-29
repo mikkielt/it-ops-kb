@@ -2,8 +2,8 @@
 named TOOL runs it).
 
 It answers only the exact argument lists the mappers may run, exits 64 for any other (`dotnet msbuild -target:Build`,
-`dotnet package list` without `--no-restore`, `npm ls` without `--package-lock-only`, any `npx` call), and appends one
-JSON line per call (arguments, working directory, the environment variables that matter) to the file KB_FAKE_LOG.
+`dotnet msbuild` without `-noAutoResponse`, `dotnet package list` without `--no-restore`, `npm ls` without
+`--package-lock-only`, any `npx` call), and appends one JSON line per call (arguments, working directory, the environment variables that matter) to the file KB_FAKE_LOG.
 KB_FAKE_MODE picks a planted misbehaviour: `fail` (exit 101), `array` (go list prints an array), `garbage` (go list
 prints a truncated object after a good one), `outside` (a package directory or a project reference outside the
 worktree), `noassets` (dotnet package list finds no assets file), `problems` (npm ls prints its tree and exits 1)."""
@@ -134,9 +134,9 @@ elif tool == "cargo" and args == ["metadata", "--format-version", "1", "--no-dep
     print(cargo_metadata())
 elif tool == "dotnet" and args == ["--version"]:
     print("10.0.100")
-elif (tool == "dotnet" and len(args) == 4 and args[0] == "msbuild" and args[2:] == [PROPS, ITEMS]
-      and args[1].endswith(PROJECT_EXTS) and (here / args[1]).is_file()):
-    print(json.dumps(msbuild_eval(args[1]), indent=2))
+elif (tool == "dotnet" and len(args) == 5 and args[:2] == ["msbuild", "-noAutoResponse"] and args[3:] == [PROPS, ITEMS]
+      and args[2].endswith(PROJECT_EXTS) and (here / args[2]).is_file()):
+    print(json.dumps(msbuild_eval(args[2]), indent=2))
 elif tool == "dotnet" and args == ["package", "list", "--format", "json", "--no-restore"]:
     if mode == "noassets":
         sys.stderr.write("error: No assets file was found for `App.csproj`. Please run restore.\nsecond line\n")

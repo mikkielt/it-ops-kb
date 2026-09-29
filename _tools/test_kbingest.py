@@ -662,13 +662,15 @@ def test_kbingest_map_rel_keeps_only_paths_inside_the_worktree(tmp_path):
 
 WEB_TOOLS = ("dotnet", "npm", "tsc")
 MSBUILD_TAIL = ["-getProperty:TargetFrameworkMoniker,LangVersion", "-getItem:PackageReference,ProjectReference"]
+NO_RSP = "-noAutoResponse"  # no Directory.Build.rsp of the repository adds switches
 PKG_LIST = ["package", "list", "--format", "json", "--no-restore"]
 NPM_LS = ["ls", "--all", "--json", "--package-lock-only"]
 CSPROJ = '<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net8.0</TargetFramework></PropertyGroup></Project>\n'
 DOTNET_CALLS = [(["--version"], "."),
-                (["msbuild", "App.csproj", *MSBUILD_TAIL], "src/App"), (PKG_LIST, "src/App"),
-                (["msbuild", "Lib.csproj", *MSBUILD_TAIL], "src/Lib"), (PKG_LIST, "src/Lib"),
-                (["msbuild", "A.csproj", *MSBUILD_TAIL], "tools"), (["msbuild", "B.fsproj", *MSBUILD_TAIL], "tools")]
+                (["msbuild", NO_RSP, "App.csproj", *MSBUILD_TAIL], "src/App"), (PKG_LIST, "src/App"),
+                (["msbuild", NO_RSP, "Lib.csproj", *MSBUILD_TAIL], "src/Lib"), (PKG_LIST, "src/Lib"),
+                (["msbuild", NO_RSP, "A.csproj", *MSBUILD_TAIL], "tools"),
+                (["msbuild", NO_RSP, "B.fsproj", *MSBUILD_TAIL], "tools")]
 NODE_CALLS = [(["--version"], "."), (NPM_LS, "."), (NPM_LS, "web")]
 TSC_CALLS = [(["--version"], "."), (["--showConfig"], "."), (["--listFilesOnly"], "."),
              (["--showConfig"], "web"), (["--listFilesOnly"], "web")]
@@ -736,14 +738,15 @@ def test_kbingest_map_dotnet_runs_the_exact_commands_per_project(webrepo, tmp_pa
 
 @requires_git
 def test_kbingest_map_dotnet_planted_target_restore_and_unpinned_list_are_refused(webrepo, tmp_path, monkeypatch):
-    """Planted: a mapper that adds `-target:Build`, one that adds `-restore`, one whose package list may restore, and
-    one that names no property; the fake exits 64 for each, so the exact lists above are checked, not merely logged."""
+    """Planted: a mapper that adds `-target:Build`, one that adds `-restore`, one whose package list may restore, one
+    that names no property, and one that lets a Directory.Build.rsp apply; the fake exits 64 for each, so the exact lists above are checked, not merely logged."""
     install_lang(tmp_path, monkeypatch, WEB_TOOLS)
     bad = {
-        "dotnet msbuild -target": ["dotnet", "msbuild", "App.csproj", *MSBUILD_TAIL, "-target:Build"],
-        "dotnet msbuild -restore": ["dotnet", "msbuild", "App.csproj", "-restore", *MSBUILD_TAIL],
-        "dotnet msbuild -t": ["dotnet", "msbuild", "App.csproj", *MSBUILD_TAIL, "-t:Restore"],
-        "dotnet msbuild none": ["dotnet", "msbuild", "App.csproj"],
+        "dotnet msbuild -target": ["dotnet", "msbuild", NO_RSP, "App.csproj", *MSBUILD_TAIL, "-target:Build"],
+        "dotnet msbuild -restore": ["dotnet", "msbuild", NO_RSP, "App.csproj", "-restore", *MSBUILD_TAIL],
+        "dotnet msbuild -t": ["dotnet", "msbuild", NO_RSP, "App.csproj", *MSBUILD_TAIL, "-t:Restore"],
+        "dotnet msbuild none": ["dotnet", "msbuild", NO_RSP, "App.csproj"],
+        "dotnet msbuild with rsp": ["dotnet", "msbuild", "App.csproj", *MSBUILD_TAIL],
         "dotnet package list": ["dotnet", "package", "list", "--format", "json"],
         "dotnet build": ["dotnet", "build", "App.csproj", "--no-restore"],
     }
@@ -755,6 +758,22 @@ def test_kbingest_map_dotnet_planted_target_restore_and_unpinned_list_are_refuse
         code, doc = fake_map(webrepo, tmp_path, monkeypatch, Bad())
         assert code == 0
         assert any(n.startswith(f"{label}: exit 64: fakelang: unexpected arguments") for n in notes_of(doc)), (label, doc["notes"])
+
+
+@requires_git
+def test_kbingest_map_dotnet_no_auto_response(tmp_path, monkeypatch):
+    """Planted: a Directory.Build.rsp at the root and one in the project's folder, each adding -target, -restore and
+    -logger. MSBuild reads them by itself unless -noAutoResponse is passed, so every msbuild call carries it."""
+    log = install_lang(tmp_path, monkeypatch, ("dotnet",))
+    rsp = "-target:Build\n-restore\n-logger:FileLogger,Microsoft.Build;logfile=out.log\n"
+    r = commit_files(tmp_path / "rsp", {"Directory.Build.rsp": rsp, "src/App/Directory.Build.rsp": rsp,
+                                        "src/App/App.csproj": CSPROJ, "src/App/Program.cs": "class P {}\n"})
+    code, doc = fake_map(r, tmp_path, monkeypatch, kbingest.DotnetMapper())
+    assert code == 0
+    assert seen(log, "dotnet") == [(["--version"], "."), (["msbuild", NO_RSP, "App.csproj", *MSBUILD_TAIL], "src/App"),
+                                   (PKG_LIST, "src/App")]
+    assert doc["packages"][0]["framework"] == ".NETCoreApp,Version=v8.0"  # the fake answered the exact list
+    assert not any("exit 64" in n for n in notes_of(doc)), doc["notes"]
 
 
 @requires_git
