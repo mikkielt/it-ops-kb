@@ -2,7 +2,7 @@
   "id": "ST-v2y75lcj",
   "kind": "story",
   "title": "Review sprint: Ingestion runs nothing from the repository",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-xourq2gj",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "sprint-review-xourq2gj"
+  "evidence": {
+    "commit": "1ce7784fa86957375b9acb9fd9a4753b430afde2",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "97d0f0f3952a93ff"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "a53206be08c020d9"
+      }
+    ]
+  }
 }
