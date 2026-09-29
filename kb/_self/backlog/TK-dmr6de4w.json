@@ -2,7 +2,7 @@
   "id": "TK-dmr6de4w",
   "kind": "task",
   "title": "kb-ingest step 4 takes interfaces and entry points from pins and maps",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-rrrgvspb",
   "priority": "P2",
   "rank": 1,
@@ -41,5 +41,39 @@
   "depends_on": [
     "TK-dbm2lfbf"
   ],
-  "claimed_by": "worker-dmr6de4w"
+  "evidence": {
+    "commit": "f8d55f37ddc751a9c64b4bcd42d316a53094e9eb",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "change_router"
+        ],
+        "exit": 0,
+        "sha256": "626077d9f70dbc3f"
+      },
+      {
+        "run": [
+          "grep",
+          "-c",
+          "-e",
+          "codebase-mapping",
+          ".claude/skills/kb-ingest/SKILL.md"
+        ],
+        "exit": 0,
+        "sha256": "53c234e5e8472b6a"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/selfdoc.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "3db513ebafdfe3a2"
+      }
+    ]
+  }
 }

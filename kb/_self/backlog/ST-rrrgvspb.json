@@ -2,7 +2,7 @@
   "id": "ST-rrrgvspb",
   "kind": "story",
   "title": "/kb-ingest cites tool-native maps and symbol pointers",
-  "status": "todo",
+  "status": "done",
   "parent": "EP-g5hizdko",
   "sprint": "SP-fkyrld5h",
   "priority": "P2",
@@ -37,5 +37,31 @@
     "kb/public/agents/codebase-mapping.md",
     "kb/public/windows/powershell-static-analysis.md",
     "kb/_self/content-rules.md"
-  ]
+  ],
+  "evidence": {
+    "commit": "f8d55f37ddc751a9c64b4bcd42d316a53094e9eb",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "change_router"
+        ],
+        "exit": 0,
+        "sha256": "626077d9f70dbc3f"
+      },
+      {
+        "run": [
+          "grep",
+          "-c",
+          "-e",
+          "codebase-mapping",
+          ".claude/skills/kb-ingest/SKILL.md"
+        ],
+        "exit": 0,
+        "sha256": "53c234e5e8472b6a"
+      }
+    ]
+  }
 }
