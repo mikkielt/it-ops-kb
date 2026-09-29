@@ -2,7 +2,7 @@
   "id": "TK-hjqm7l7y",
   "kind": "task",
   "title": "Run setup on a clean Windows 11 host and write the report",
-  "status": "doing",
+  "status": "dropped",
   "parent": "ST-jqa24js3",
   "priority": "P2",
   "rank": 0,
@@ -21,5 +21,5 @@
     "kb/_self/map.csv",
     "kb/_self/README.md"
   ],
-  "claimed_by": "orchestrator-with-operator"
+  "notes": "Dropped: operator 2026-09-29: not run in Windows Sandbox or on another clean host in this sprint; the operator will troubleshoot setup on a live host later. No report written: none may be written without a real run."
 }
