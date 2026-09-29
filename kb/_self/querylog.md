@@ -165,7 +165,7 @@ Every row has `id` (a fresh UUID), `ts` (UTC, milliseconds), `surface` and `v`, 
 
 ## Delivery
 
-- **Straight to `main` on `origin`**, the repository the clone came from: run files, findings, eval rows, aliases, expansions, gap entries and opt-in research, once the local gate passes and a rebase on `origin/main` is clean.
+- **Straight to `main` on `origin`**, the repository the clone came from: run files, findings, eval rows, aliases, expansions, gap entries and opt-in research, once the local gate passes and a rebase on `origin/main` is clean. `kbgit.py sync --push` is the only path by which they reach it, the revert of a red push included (CI before any new push, below); the one other push is a conflict branch, never `main` (`kb/_self/git.md`, Workflow; `TestAutonomousWrite` in `_tools/test_sync.py`).
 - **Never to the public home.** When `origin` is the clone's public home (`git config kb.publishRemote`, `kb/_self/git.md`, Public home), `apply --push` refuses (exit 2) and the run files stay in the local store and the spool; a clone without a public home (a production clone) pushes as below.
 - **`querylog.py apply --push`** runs from a clone, by hand in every mode but `off` and from mode `auto`'s distill, under the distill lock (exit 3 when it is held):
   1. fetches `origin`'s `main` and its `querylog/` branches and resets the worktree (Distill) to `origin/main`;
