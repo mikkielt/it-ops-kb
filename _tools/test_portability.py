@@ -3,10 +3,12 @@ needs, and the hooks read and write UTF-8 whatever the locale (`python3 _tools/t
 
   TestHookCommands   gate: every command hook in .claude/settings.json and the plugin is `sh "<root>/_tools/kbpy"
                      <script> [word...]` in shell form (words: a subcommand such as `capture`, nothing a shell would
-                     read), and every .githooks script calls kbpy, never an interpreter by name (planted: an
-                     interpreter by name, exec form, shell syntax after the script, a git hook with python3)
+                     read) or the launcher's own `--notice`, and every .githooks script calls kbpy, never an
+                     interpreter by name (planted: an interpreter by name, exec form, shell syntax after the script, a
+                     git hook with python3); both files start their SessionStart hooks with a synchronous `--notice`
   TestLauncher       _tools/kbpy with stub interpreters: python3 first on POSIX; on Windows (OS=Windows_NT) a python3
-                     alias that fails its probe is skipped for python, then py -3; exit 127 when none is found
+                     alias that fails its probe is skipped for python, then py -3; exit 127 when none is found;
+                     `--notice` prints one JSON systemMessage only when none is found, and exits 0
   TestHookEncoding   kb_hook.py and the change router under a cp1252 locale read a UTF-8 prompt and answer in UTF-8
                      (planted: kb_hook.py without its reconfigure lines loses the prompt)
 Needs `sh` for the launcher and shell-form cases (macOS, Linux, Git Bash); they skip without it.
@@ -21,6 +23,7 @@ TOOLS = os.path.dirname(os.path.abspath(__file__))
 KB = os.path.dirname(TOOLS)
 SH = shutil.which("sh")
 LAUNCH = re.compile(r'sh "\$\{(?P<var>CLAUDE_PROJECT_DIR|CLAUDE_PLUGIN_ROOT)\}/_tools/kbpy" (?P<script>[\w./-]+\.py)(?: (?:--)?[a-z][\w-]*)*$')
+NOTICE = re.compile(r'sh "\$\{(?P<var>CLAUDE_PROJECT_DIR|CLAUDE_PLUGIN_ROOT)\}/_tools/kbpy" --notice')
 needs_sh = pytest.mark.skipif(not SH, reason="no sh on PATH (Windows without Git Bash)")
 
 
@@ -43,6 +46,9 @@ def launcher_offenders(cfg, var):
     bad = []
     for event, h in command_hooks(cfg):
         m = LAUNCH.fullmatch(h.get("command", ""))
+        n = NOTICE.fullmatch(h.get("command", ""))
+        if n and "args" not in h and n.group("var") == var:
+            continue
         if "args" in h or not m or m.group("var") != var or not os.path.isfile(os.path.join(KB, m.group("script"))):
             bad.append(f"{event}: {h.get('command')} {h.get('args', '')}".strip())
     return bad
@@ -55,6 +61,13 @@ def githook_offenders(texts):
 
 
 class TestHookCommands:
+    @pytest.mark.parametrize("rel", [".claude/settings.json", ".claude-plugin/plugin.json"])
+    def test_session_starts_with_the_python_notice(self, rel):
+        """Without Python every other hook exits 127 in silence: the first SessionStart hook is kbpy --notice,
+        synchronous (an async hook's systemMessage reaches Claude, not the person) with a short timeout."""
+        first = load(rel)["hooks"]["SessionStart"][0]["hooks"][0]
+        assert NOTICE.fullmatch(first["command"]) and not first.get("async") and 0 < first.get("timeout", 0) <= 10, first
+
     def test_settings_hooks_go_through_the_launcher(self):
         cfg = load(".claude/settings.json")
         assert sum(1 for _ in command_hooks(cfg)) >= 3
@@ -158,6 +171,18 @@ class TestLauncher:
         rc, out, err = self.run(tmp_path, {"python3": 9009}, True, "_tools/x.py")
         assert (rc, out) == (127, "")
         assert "no Python 3.11+ found" in err and "_tools/x.py" in err
+
+    def test_notice_is_silent_with_python(self, tmp_path):
+        for windows in (False, True):
+            assert self.run(tmp_path, {"python3": 0}, windows, "--notice")[:2] == (0, "")
+
+    def test_notice_tells_the_person_without_python(self, tmp_path):
+        rc, out, _ = self.run(tmp_path, {"python3": 9009}, True, "--notice")
+        msg = json.loads(out)["systemMessage"]
+        assert rc == 0 and "no Python 3.11+ found" in msg and "_tools/install-python.ps1" in msg, out
+        (tmp_path / "posix").mkdir()
+        rc, out, _ = self.run(tmp_path / "posix", {}, False, "--notice")
+        assert rc == 0 and "install-python.ps1" not in json.loads(out)["systemMessage"], out
 
     def test_no_script_is_a_usage_error(self, tmp_path):
         rc, _, err = self.run(tmp_path, {"python3": 0}, False)

@@ -30,6 +30,11 @@
         "hooks": [
           {
             "type": "command",
+            "command": "sh \"${CLAUDE_PROJECT_DIR}/_tools/kbpy\" --notice",
+            "timeout": 10
+          },
+          {
+            "type": "command",
             "command": "sh \"${CLAUDE_PROJECT_DIR}/_tools/kbpy\" .claude/hooks/session_start.py"
           },
           {
