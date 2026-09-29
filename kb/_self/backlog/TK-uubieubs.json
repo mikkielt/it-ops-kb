@@ -2,7 +2,7 @@
   "id": "TK-uubieubs",
   "kind": "task",
   "title": "map command: scratch worktree, runner and JSON format",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-55lva2xl",
   "priority": "P2",
   "rank": 1,
@@ -22,5 +22,19 @@
     "_tools/test_kbingest.py",
     "_tools/fixtures/kbingest/**"
   ],
-  "claimed_by": "worker-uubieubs"
+  "evidence": {
+    "commit": "2ea01220a9b451c821d3c5809c8d6822f8a1afa4",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "kbingest_map"
+        ],
+        "exit": 0,
+        "sha256": "77c22c9f383df5be"
+      }
+    ]
+  }
 }
