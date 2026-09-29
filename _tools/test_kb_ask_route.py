@@ -1,8 +1,9 @@
 """kb_ask.py routes by the pack's `route:` line, tested on planted packs and a planted `claude -p` (never the real CLI).
 
   TestKbAskRoute   plan() reads route, kb has, kb lacks and the nearest articles from the pack; claude_argv's researcher
-                   and reader; a web run's prompt, its printed result and error result; --route's lines; a clean good
-                   plan, argv and run stay as they were
+                   and reader; a web run's prompt, its printed result and error result; --route's lines; a split run's
+                   reader and researcher, its one answer, the costs -v prints and sums, the reader's INSUFFICIENT and
+                   the error results; a clean good plan, argv and run stay as they were
 """
 import json, subprocess, sys
 
@@ -219,13 +220,89 @@ class TestKbAskRoute:
         with pytest.raises(SystemExit):
             ask(monkeypatch, capsys, Q)
 
-    def test_a_split_run_still_gives_the_researcher_the_whole_pack(self, monkeypatch, capsys):
+    def test_a_split_run_reads_the_kb_part_researches_the_rest_and_prints_one_answer(self, monkeypatch, capsys):
         plant(monkeypatch, SPLIT_PACK, "weak")
-        claude = Claude(monkeypatch, result())
+        claude = Claude(monkeypatch, result(result="The default length is 14 (public/windows/laps.md:12, DOC S9).",
+                                            total_cost_usd=0.001),
+                        result(result="Okta rotation: see https://example.com/okta", total_cost_usd=0.02))
+        code, out, err, row = ask(monkeypatch, capsys, "-v", Q)
+        (r_argv, r_in), (w_argv, w_in) = claude.calls
+        p = kb_ask.plan(Q)
+        assert code == 0 and out == ("The default length is 14 (public/windows/laps.md:12, DOC S9).\n\n"
+                                     "Live docs, not in the kb:\nOkta rotation: see https://example.com/okta\n")
+        assert flag(r_argv, "--model") == "haiku" and "--effort" not in r_argv and flag(r_argv, "--tools") == ""
+        assert flag(r_argv, "--output-format") == "json" and flag(r_argv, "--append-system-prompt") == kb_ask.SPLIT_READER
+        assert r_in == kb_ask.split_prompt(Q, p) and SPLIT_PACK in r_in
+        assert "Answer only the part the kb has: LAPS, password" in r_in and "The kb lacks: Okta, rotation" in r_in
+        assert flag(w_argv, "--model") == "sonnet" and flag(w_argv, "--effort") == "low"
+        assert flag(w_argv, "--append-system-prompt") == kb_ask.WEB_RESEARCHER and "mcp__kb" not in " ".join(w_argv)
+        assert w_in == kb_ask.web_prompt(Q, p) and "kb_evidence" not in w_in and "The kb lacks: Okta, rotation" in w_in
+        assert "reader haiku total_cost_usd=0.001" in err and "researcher sonnet total_cost_usd=0.02" in err
+        assert "total_cost_usd=0.021 (reader + researcher)" in err
+        assert row["route"] == "split" and "escalated" not in row and not any("cost" in k for k in row), row
+
+    def test_a_split_run_without_v_prints_no_cost(self, monkeypatch, capsys):
+        plant(monkeypatch, SPLIT_PACK, "weak")
+        Claude(monkeypatch, result(), result())
+        assert "total_cost_usd" not in ask(monkeypatch, capsys, Q)[2]
+
+    def test_a_split_run_honours_the_model_override_for_the_researcher_only(self, monkeypatch, capsys):
+        plant(monkeypatch, SPLIT_PACK, "weak")
+        claude = Claude(monkeypatch, result(), result())
+        ask(monkeypatch, capsys, "--model", "opus", Q)
+        assert [flag(argv, "--model") for argv, _ in claude.calls] == ["haiku", "opus"]
+
+    def test_a_split_reader_insufficient_sends_the_whole_question_to_the_researcher(self, monkeypatch, capsys):
+        plant(monkeypatch, SPLIT_PACK, "weak")
+        claude = Claude(monkeypatch, result(result="INSUFFICIENT: the length of the LAPS password", total_cost_usd=0.001),
+                        result(result="live answer, https://example.com/laps", total_cost_usd=0.03))
+        code, out, err, row = ask(monkeypatch, capsys, "-v", Q)
+        (_, _), (w_argv, w_in) = claude.calls
+        assert code == 0 and out == "live answer, https://example.com/laps\n", "the researcher's answer only"
+        assert row["route"] == "split" and row["escalated"] is True
+        assert w_in.startswith(f"Question: {Q}") and "The kb lacks" not in w_in, "the whole question, not the lacks part"
+        assert "INSUFFICIENT: the length of the LAPS password" in w_in and "kb_evidence" not in w_in
+        assert flag(w_argv, "--append-system-prompt") == kb_ask.WEB_RESEARCHER and flag(w_argv, "--effort") == "low"
+        assert "total_cost_usd=0.031 (reader + researcher)" in err
+
+    def test_a_split_reader_error_result_stops_before_the_researcher(self, monkeypatch, capsys):
+        plant(monkeypatch, SPLIT_PACK, "weak")
+        claude = Claude(monkeypatch, json.dumps({"type": "result", "subtype": "error_during_execution", "is_error": True,
+                                                 "errors": ["reader failed"], "total_cost_usd": 0.001}))
+        code, out, err, row = ask(monkeypatch, capsys, Q)
+        assert code == 1 and out == "" and err == "reader failed\n" and len(claude.calls) == 1 and row["route"] == "split"
+
+    def test_a_split_researcher_error_result_keeps_the_kb_part_and_exits_1(self, monkeypatch, capsys):
+        plant(monkeypatch, SPLIT_PACK, "weak")
+        Claude(monkeypatch, result(result="The default length is 14."),
+               json.dumps({"type": "result", "subtype": "error_max_turns", "is_error": True, "errors": ["ran out of turns"],
+                           "total_cost_usd": 0.5}))
+        code, out, err, _ = ask(monkeypatch, capsys, "-v", Q)
+        assert code == 1 and out == "The default length is 14.\n" and "ran out of turns\n" in err
+        assert "total_cost_usd=0.5" in err, "the failed run still costs"
+
+    def test_a_split_run_without_a_json_result_stops(self, monkeypatch, capsys):
+        plant(monkeypatch, SPLIT_PACK, "weak")
+        Claude(monkeypatch, "The default length is 14.\n")  # a plain-text reader answer is not a result object
+        with pytest.raises(SystemExit):
+            ask(monkeypatch, capsys, Q)
+
+    def test_cost_sum_skips_a_run_without_a_cost(self):
+        assert kb_ask.cost_sum(0.1, 0.2) == 0.3 and kb_ask.cost_sum(None, 0.2) == 0.2 and kb_ask.cost_sum(None, None) is None
+
+    def test_a_split_pack_without_a_has_or_lacks_line_is_read_whole_and_escalates_on_insufficient(self, monkeypatch, capsys):
+        text = "coverage: weak\n\n## public/windows/laps.md  Windows LAPS  [complete, x]\n- public/windows/laps.md:12 A (DOC S9)"
+        plant(monkeypatch, text, "weak")
+        claude = Claude(monkeypatch, "The default length is 14.\n")
         code, out, _, row = ask(monkeypatch, capsys, Q)
         (argv, stdin), = claude.calls
-        assert code == 0 and out == "the answer\n" and row["route"] == "split"
-        assert stdin == kb_ask.prompt(Q, SPLIT_PACK) and flag(argv, "--append-system-prompt") == kb_ask.RESEARCHER
+        assert code == 0 and out == "The default length is 14.\n" and row["route"] == "split"
+        assert argv == kb_ask.claude_argv("haiku", False) + ["--append-system-prompt", kb_ask.READER]
+        assert stdin == kb_ask.prompt(Q, text)
+        claude = Claude(monkeypatch, "INSUFFICIENT: the port\n", result())
+        code, out, _, row = ask(monkeypatch, capsys, Q)
+        assert code == 0 and out == "the answer\n" and row["escalated"] is True and row["route"] == "split"
+        assert [flag(argv, "--model") for argv, _ in claude.calls] == ["haiku", "sonnet"]
 
     def test_a_clean_good_run_still_reads_and_escalates_on_insufficient(self, monkeypatch, capsys):
         plant(monkeypatch, GOOD_PACK, "good")

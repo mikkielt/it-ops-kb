@@ -15,8 +15,13 @@
                                         the question, the pack's `kb lacks:` line and up to three nearest article titles
                                         as leads to verify; its `--output-format json` result is printed (an error
                                         result's errors go to stderr, exit 1);
-                                     5. a pack routed split (the kb has part of it) -> the same researcher for now, given
-                                        the whole pack (kind=split).
+                                     5. a pack routed split (the kb has part of it) -> the Haiku reader answers the `kb has:`
+                                        part from the pack and the same researcher only the `kb lacks:` part, each with
+                                        `--output-format json`; one answer is printed, the kb part first, then the live
+                                        part under "Live docs, not in the kb:"; -v prints each run's total_cost_usd and
+                                        their sum. A reader INSUFFICIENT sends the whole question to the researcher
+                                        (`escalated`). A split pack that lacks its `kb has:` or `kb lacks:` line cannot be
+                                        divided: the reader answers the whole question from the pack, as in step 3.
                                      A weak or none pack without a `route:` line plans split.
   kb_ask.py --route "<question>"     print the plan (kind, parts, verdict, model and, for web and split, the pack's
                                      route, kb has and kb lacks lines), run nothing
@@ -48,12 +53,16 @@ DOCS = ["mcp__microsoft-learn__microsoft_docs_search", "mcp__microsoft-learn__mi
 LEAN = ["--setting-sources", "project,local", "--strict-mcp-config", *kbcommon.NO_HOOKS]
 WEB = ["WebSearch", "WebFetch"]  # the researcher's built-in tools: `--tools` limits them, `--allowedTools` approves them
 SENTINEL = "INSUFFICIENT"
+READER_MODEL = "haiku"
+LIVE_LABEL = "Live docs, not in the kb:"
 RULES = ("Answer from the kb evidence below: lead with the answer, then each supporting fact with its path:line, tag "
          "and source url. COMMUNITY and UNK facts are leads, not answers; a CODE fact is implementation read from "
          "source code, not a documented promise: say so; a `(no tag)` line is untagged article "
          "content. Never fill gaps from memory.")
 READER = RULES + (f" If the facts are about something related but do not answer what was asked, reply with one line "
                   f"only: `{SENTINEL}: <what is missing>`.")
+SPLIT_READER = READER + (" The kb covers only part of the question: answer the part you are told to and leave the rest to "
+                         "the live-docs researcher.")
 RESEARCHER = RULES + (" If the evidence does not answer the question, or only a related one, research the missing part "
                       "in the live docs (Microsoft Learn, Claude Code docs, MCP docs; web search last) and label it "
                       "'live docs, not in the kb' with its url.")
@@ -163,10 +172,19 @@ def prompt(question, pack_text):
     return f"Question: {question}\n\n<kb_evidence>\n{pack_text}\n</kb_evidence>"
 
 
-def web_prompt(question, p):
-    """The web researcher's input: the question, what the kb lacks and the nearest articles as leads (not the pack)."""
+def split_prompt(question, p):
+    """The split reader's input: the question, the part to answer (kb has), the part it leaves to the researcher (kb lacks)
+    and the pack."""
+    return (f"Question: {question}\n\nAnswer only the part the kb has: {'; '.join(p['has'])}. The kb lacks: "
+            f"{'; '.join(p['lacks'])}. A live-docs researcher answers that part: do not answer it and do not say it is missing."
+            f"\n\n<kb_evidence>\n{p['text']}\n</kb_evidence>")
+
+
+def web_prompt(question, p, whole=False):
+    """The web researcher's input: the question, what the kb lacks and the nearest articles as leads (not the pack).
+    whole=True leaves the lacks line out: the whole question is the researcher's (a split reader said INSUFFICIENT)."""
     out = [f"Question: {question}"]
-    if p["lacks"]:
+    if p["lacks"] and not whole:
         out += ["", "The kb lacks: " + "; ".join(p["lacks"])]
     if p["leads"]:
         out += ["", "Nearest kb articles, leads to verify in the live docs (not answers):"]
@@ -217,10 +235,15 @@ def research(model, system, user):
     return got
 
 
-def read(model, system, user):
-    """The reader's answer: a tool-less claude -p."""
-    p = subprocess.run(claude_argv(model, tools=False) + ["--append-system-prompt", system], cwd=HOME, input=user,
-                       capture_output=True, text=True, encoding="utf-8")
+def read(model, system, user, output=None):
+    """The reader's answer: a tool-less claude -p. Its stdout, or with output="json" the (text, cost, ok) of its result."""
+    p = subprocess.run(claude_argv(model, tools=False, output=output) + ["--append-system-prompt", system], cwd=HOME,
+                       input=user, capture_output=True, text=True, encoding="utf-8")
+    if output:
+        got = parse_result(p.stdout)
+        if got is None:
+            raise SystemExit(p.stderr or f"claude -p exited {p.returncode} without a JSON result")
+        return got
     if p.returncode:
         raise SystemExit(p.stderr or f"claude -p exited {p.returncode}")
     return p.stdout
@@ -232,6 +255,40 @@ VERBOSE = False
 def log(msg):
     if VERBOSE:
         print(f"kb_ask: {msg}", file=sys.stderr)
+
+
+def cost_sum(*costs):
+    """The sum of the runs' total_cost_usd that reported one, rounded to the cent's millionth; None when none did."""
+    known = [c for c in costs if c is not None]
+    return round(sum(known), 6) if known else None
+
+
+def split(q, p, row):
+    """A split run: the reader answers the kb has part, the researcher the kb lacks part; one answer, the kb part first and
+    the live part under its label. A reader INSUFFICIENT gives the whole question to the researcher (row escalated). An error
+    result of either run prints its errors to stderr and exits 1 (the kb part, when there is one, still goes to stdout)."""
+    kb_text, kb_cost, ok = read(READER_MODEL, SPLIT_READER, split_prompt(q, p), output="json")
+    log(f"reader {READER_MODEL} total_cost_usd={kb_cost}")
+    if not ok:
+        print(kb_text, file=sys.stderr)
+        return 1
+    escalated = kb_text.lstrip().startswith(SENTINEL)
+    if escalated:
+        note = f"\n\nA first reader of the kb evidence said: {kb_text.strip().splitlines()[0]}"
+        log(f"reader said {SENTINEL}; the whole question goes to the researcher")
+        row.update(escalated=True)
+        live, live_cost, ok = research(p["model"], WEB_RESEARCHER, web_prompt(q, p, whole=True) + note)
+    else:
+        live, live_cost, ok = research(p["model"], WEB_RESEARCHER, web_prompt(q, p))
+    log(f"researcher {p['model']} total_cost_usd={live_cost}")
+    log(f"total_cost_usd={cost_sum(kb_cost, live_cost)} (reader + researcher)")
+    if not ok:
+        if not escalated:
+            print(kb_text.strip())
+        print(live, file=sys.stderr)
+        return 1
+    print(live.strip() if escalated else f"{kb_text.strip()}\n\n{LIVE_LABEL}\n{live.strip()}")
+    return 0
 
 
 def main():
@@ -280,20 +337,23 @@ def run(row):
         print("kb_ask: the claude CLI is not on PATH; the evidence follows\n", file=sys.stderr)
         print(p["text"])
         return 2
-    note = ""
-    if p["kind"] == "good":
-        text = read(p["model"], READER, prompt(q, p["text"]))
-        if not text.lstrip().startswith(SENTINEL):
-            print(text.strip())
-            return 0
-        note = f"\n\nA first reader of this evidence said: {text.strip().splitlines()[0]}"
-        log(f"reader said {SENTINEL}; escalating to sonnet")
-        p["model"] = "sonnet" if not a.model else a.model
-        row.update(escalated=True, model=p["model"])
     if p["kind"] == "web":
         text, cost, ok = research(p["model"], WEB_RESEARCHER, web_prompt(q, p))
-    else:  # split (the whole pack, until the reader takes the kb has part) and the reader's INSUFFICIENT
-        text, cost, ok = research(p["model"], RESEARCHER, prompt(q, p["text"]) + note)
+        log(f"researcher {p['model']} total_cost_usd={cost}")
+        print(text.strip(), file=sys.stdout if ok else sys.stderr)
+        return 0 if ok else 1
+    if p["kind"] == "split" and p["has"] and p["lacks"]:
+        return split(q, p, row)
+    # good, and a split pack that cannot be divided: the reader answers the whole question from the pack
+    text = read(p["model"] if p["kind"] == "good" else READER_MODEL, READER, prompt(q, p["text"]))
+    if not text.lstrip().startswith(SENTINEL):
+        print(text.strip())
+        return 0
+    note = f"\n\nA first reader of this evidence said: {text.strip().splitlines()[0]}"
+    log(f"reader said {SENTINEL}; escalating to {a.model or 'sonnet'}")
+    p["model"] = "sonnet" if not a.model else a.model
+    row.update(escalated=True, model=p["model"])
+    text, cost, ok = research(p["model"], RESEARCHER, prompt(q, p["text"]) + note)
     log(f"researcher {p['model']} total_cost_usd={cost}")
     print(text.strip(), file=sys.stdout if ok else sys.stderr)
     return 0 if ok else 1
