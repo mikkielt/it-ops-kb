@@ -23,6 +23,9 @@ test_embed_roots_*  `--roots NAME[,NAME]` (a host embedding the server): only th
 test_status_*   how far a clone or an installed plugin is behind the kb it follows, from local refs: the update
                 command (checking out the newest census tag for a clone detached at one), and under --roots the
                 kb copy line and kb_status keep the staleness but name no local path and no command.
+test_kb_mcp_pack_ignores_freshness_banner  the tests that assert pack text start the server with quiet_upstream
+                (KB_NO_UPSTREAM=1), so they pass in a clone or worktree behind its upstream: in a planted behind
+                clone the pack opens with its verdict that way and with the kb copy line without it.
 test_embed_contract_*  kb_mcp.py as a host server's stdio child: the names and input schemas of kb_pack, kb_search and
                 kb_show and the instructions' sha256 match _tools/fixtures/kb_mcp_contract.json unless kb_mcp.VERSION
                 moved; one call of each answers in shape; a planted schema change is caught. After a VERSION bump:
@@ -38,6 +41,18 @@ from conftest import KB, P, Q, TOOLS, git_env
 SERVER = os.path.join(TOOLS, "kb_mcp.py")
 REMOTE = "git@gitlab.com:mikkielt/it-ops-kb.git"
 DOCS_PLUGIN = ".claude-plugin/it-ops-kb-docs"
+
+
+def quiet_upstream(env=None):
+    """`env` (default os.environ) with KB_NO_UPSTREAM=1. A clone or worktree behind the branch it follows (a CI
+    checkout, a sprint worktree while main moves on) opens every kb_pack with a `kb copy: N commits behind` line
+    above `coverage:`; every test that asserts pack text starts the server with this, so the line is left out."""
+    return {**(os.environ if env is None else env), "KB_NO_UPSTREAM": "1"}
+
+
+def follow_upstream(env):
+    """`env` without KB_NO_UPSTREAM, for the tests that plant a behind clone and assert the kb copy line."""
+    return {k: v for k, v in env.items() if k != "KB_NO_UPSTREAM"}
 
 
 def load(rel):
@@ -164,7 +179,7 @@ class TestKbServer:
         ]
         stdin = "".join(json.dumps(m) + "\n" for m in msgs) + "this is not json\n"
         cls.proc = subprocess.run([sys.executable, SERVER], input=stdin, capture_output=True, text=True, encoding="utf-8", timeout=60,
-                                  cwd=os.sep, env={**os.environ, "KB_NO_UPSTREAM": "1"})  # CI's main moves past the checkout
+                                  cwd=os.sep, env=quiet_upstream())
         cls.lines = [ln for ln in cls.proc.stdout.splitlines() if ln.strip()]
         cls.replies = [json.loads(ln) for ln in cls.lines]
         cls.by_id = {r.get("id"): r for r in cls.replies}
@@ -563,7 +578,7 @@ def test_status_says_how_far_a_clone_is_behind_its_remote(tmp_path):
     assert f"update: git -C {repo.path} pull --ff-only" in out, out
     code = "import kb_mcp; print(kb_mcp.kb_pack({'question': 'default Windows LAPS password length'}))"
     p = subprocess.run([sys.executable, "-c", code], cwd=os.path.join(repo.path, "_tools"), capture_output=True, text=True, encoding="utf-8",
-                       timeout=300, env={**git_env(), "KB_INDEX": str(tmp_path / "index")})
+                       timeout=300, env=follow_upstream(git_env(KB_INDEX=str(tmp_path / "index"))))
     assert p.stdout.startswith("kb copy: 3 commits behind origin/main"), p.stdout[:300] + p.stderr[-500:]
     assert f"to update: git -C {repo.path} pull --ff-only.\n\ncoverage: good" in p.stdout, p.stdout[:300]
 
@@ -587,10 +602,41 @@ def _pack_and_status(repo, tmp_path, roots=None):
             "print('=====')\n"
             "print(kb_mcp.kb_status({}))")
     p = subprocess.run([sys.executable, "-c", code], cwd=os.path.join(repo.path, "_tools"), capture_output=True,
-                       text=True, encoding="utf-8", timeout=300, env={**git_env(), "KB_INDEX": "0"})
+                       text=True, encoding="utf-8", timeout=300, env=follow_upstream(git_env(KB_INDEX="0")))
     assert p.returncode == 0, p.stderr[-1000:]
     pack, _, status = p.stdout.partition("=====\n")
     return pack, status
+
+
+@pytest.mark.git
+def test_kb_mcp_pack_ignores_freshness_banner(tmp_path):
+    """Planted failure: a clone 3 commits behind its origin/main (a worktree while main moves on). Its server started
+    as the pack tests start it (quiet_upstream) opens kb_pack with `coverage:`, one verdict per question; started
+    without it, the same packs open with the kb copy line that the pack tests' assertions would trip on."""
+    repo = _behind_clone(tmp_path)
+    calls = [{"question": "What is the default Windows LAPS password length?"},
+             {"questions": ["Does deleting an Entra device delete its BitLocker keys?",
+                            "When is NTLMv1 disabled by default?"]}]
+    msgs = [{"jsonrpc": "2.0", "id": 0, "method": "initialize",
+             "params": {"protocolVersion": "2025-06-18", "capabilities": {}, "clientInfo": {"name": "test", "version": "0"}}}]
+    msgs += [{"jsonrpc": "2.0", "id": i, "method": "tools/call", "params": {"name": "kb_pack", "arguments": a}}
+             for i, a in enumerate(calls, start=1)]
+
+    def packs(env):
+        p = subprocess.run([sys.executable, os.path.join(repo.path, "_tools", "kb_mcp.py")],
+                           input="".join(json.dumps(m) + "\n" for m in msgs), capture_output=True, text=True,
+                           encoding="utf-8", timeout=300, env=env, cwd=os.sep)
+        assert p.returncode == 0, p.stderr[-1000:]
+        by_id = {r.get("id"): r for r in map(json.loads, p.stdout.splitlines())}
+        return [by_id[i]["result"]["content"][0]["text"] for i in range(1, len(calls) + 1)]
+
+    env = git_env(KB_INDEX="0")
+    for text in packs(follow_upstream(env)):
+        assert text.startswith("kb copy: 3 commits behind origin/main"), text[:300]
+    single, batch = packs(quiet_upstream(env))
+    assert single.startswith("coverage: ") and "kb copy:" not in single, single[:300]
+    assert batch.startswith("# Q1: ") and "kb copy:" not in batch, batch[:300]
+    assert len(re.findall(r"(?m)^coverage: ", batch)) == 2, batch[:600]
 
 
 @pytest.mark.git
@@ -659,7 +705,7 @@ def test_domain_is_matched_without_case_and_an_unknown_one_is_refused():
             "    except kb_mcp.ToolError as e:\n"
             "        out[d] = str(e)\n"
             "print(json.dumps(out))")
-    env = {**{k: v for k, v in os.environ.items() if k not in ("KB_ROOTS", "CLAUDE_PLUGIN_DATA")}, "KB_NO_UPSTREAM": "1"}
+    env = quiet_upstream({k: v for k, v in os.environ.items() if k not in ("KB_ROOTS", "CLAUDE_PLUGIN_DATA")})
     p = subprocess.run([sys.executable, "-c", code], cwd=TOOLS, capture_output=True, text=True, encoding="utf-8", env=env, timeout=180)
     out = json.loads(p.stdout.strip().splitlines()[-1])
     assert out["pack"].startswith("coverage: good") and "public/intune/" in out["pack"], out["pack"][:300]
@@ -674,7 +720,7 @@ def test_domain_is_matched_without_case_and_an_unknown_one_is_refused():
 def _embedded(roots_dir, *args, calls=()):
     """kb_mcp.py started as a host embeds it: KB_ROOTS names a team's root directory, `args` the flags (--roots);
     `calls` are (tool, arguments) sent after the handshake. Returns the process and {id: (isError, text)}."""
-    env = {k: v for k, v in os.environ.items() if k not in ("KB_ROOTS", "KB_INDEX", "CLAUDE_PLUGIN_DATA")}
+    env = quiet_upstream({k: v for k, v in os.environ.items() if k not in ("KB_ROOTS", "KB_INDEX", "CLAUDE_PLUGIN_DATA")})
     env.update({"KB_ROOTS": roots_dir, "KB_INDEX": "0"})
     msgs = [{"jsonrpc": "2.0", "id": 0, "method": "initialize",
              "params": {"protocolVersion": "2025-06-18", "capabilities": {}, "clientInfo": {"name": "host", "version": "0"}}}]
@@ -779,7 +825,7 @@ def live_contract():
     """kb_mcp.py spawned as a host server spawns it (a stdio child): initialize, tools/list and one tools/call of
     each embedded tool. Returns the contract as the fixture pins it (VERSION, a sha256 of the instructions, the
     embedded tools' names and input schemas) and {tool: result} of the calls."""
-    env = {k: v for k, v in os.environ.items() if k not in ("KB_ROOTS", "CLAUDE_PLUGIN_DATA")}
+    env = quiet_upstream({k: v for k, v in os.environ.items() if k not in ("KB_ROOTS", "CLAUDE_PLUGIN_DATA")})
     msgs = [{"jsonrpc": "2.0", "id": 1, "method": "initialize",
              "params": {"protocolVersion": "2025-06-18", "capabilities": {}, "clientInfo": {"name": "host", "version": "0"}}},
             {"jsonrpc": "2.0", "method": "notifications/initialized"},
