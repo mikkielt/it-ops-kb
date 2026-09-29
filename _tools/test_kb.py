@@ -774,6 +774,74 @@ class TestKbHookRoute:
         assert self.INSTRUCTION not in ctx and ctx.endswith("coverage: good")
 
 
+class TestRawReadNudge:
+    """kb_hook on a PreToolUse Bash event: a whole-file read of a kb article gets a hint and runs; all else is silent."""
+    READS = ["cat kb/public/claude/hooks.md", "cat ./kb/public/claude/hooks.md kb/public/ad/gpo.md",
+             "sed -n 1,40p kb/public/claude/hooks.md", "sed -n '20,30p' kb/public/x/y.md", "head -n 40 kb/public/x/y.md",
+             "tail -20 kb/public/x/y.md", "grep -n LAPS kb/public/windows/laps.md", "grep -in laps kb/public/windows/laps.md",
+             "cat kb/public/_gaps.md", "cat kb/acme/_gaps.md", "cat kb/acme/net/vpn.md",
+             "cd /work/it-ops-kb && cat /work/it-ops-kb/kb/public/x/y.md | head -5", "FOO=1 cat kb/public/x/y.md",
+             "git status\ncat kb/public/x/y.md"]
+    SILENT = ["ls kb/public/claude", "cat README.md", "cat _tools/kb_hook.py", "cat kb/_self/backlog.md",
+              "cat kb/public/_sources.csv", "grep -rn LAPS kb/public", "grep LAPS kb/public/windows/laps.md",
+              "sed -i s/a/b/ kb/public/x/y.md", "sed s/a/b/ kb/public/x/y.md", "cat notes > kb/public/x/y.md",
+              "cat notes >> kb/public/x/y.md", "python3 _tools/rag.py show kb/public/claude/hooks.md:23 -n 30",
+              "python3 _tools/rag.py search \"laps\" --index", "git add kb/public/x/y.md", "wc -l kb/public/x/y.md",
+              "echo cat kb/public/x/y.md", "cat \"kb/public/x/y.md", "", "   "]
+
+    @staticmethod
+    def event(command, **extra):
+        return dict({"hook_event_name": "PreToolUse", "tool_name": "Bash", "tool_input": {"command": command}}, **extra)
+
+    def run_hook(self, stdin):
+        p = subprocess.run([sys.executable, os.path.join(TOOLS, "kb_hook.py")], input=stdin, capture_output=True,
+                           text=True, encoding="utf-8", cwd=KB, timeout=60)
+        assert p.returncode == 0, p.stderr
+        return p.stdout
+
+    def test_raw_read_nudge_names_the_rag_tools_and_decides_nothing(self):
+        for command in self.READS:
+            out = kb_hook.raw_read_nudge(self.event(command))
+            assert out is not None, f"no hint for: {command!r}"
+            spec = out["hookSpecificOutput"]
+            assert spec["hookEventName"] == "PreToolUse" and set(spec) == {"hookEventName", "additionalContext"}, spec
+            ctx = spec["additionalContext"]  # no permissionDecision: the command runs as it would without the hook
+            for name in ("rag.py show", "rag.py facts", "rag.py audit", "search", "--index"):
+                assert name in ctx, (command, name)
+
+    def test_raw_read_nudge_is_silent_for_other_commands(self):
+        for command in self.SILENT:
+            assert kb_hook.raw_read_nudge(self.event(command)) is None, f"hint for: {command!r}"
+        assert kb_hook.raw_read_nudge(self.event("cat kb/public/x/y.md", tool_name="Read")) is None
+
+    def test_raw_read_nudge_survives_odd_input(self):
+        for odd in [{}, {"tool_input": None}, {"tool_input": []}, {"tool_input": {}}, {"tool_input": {"command": None}},
+                    {"tool_input": {"command": ["cat", "kb/public/x.md"]}}, {"tool_input": {"command": 7}}, {"tool_name": 3}]:
+            assert kb_hook.raw_read_nudge(odd) is None, odd
+        for stdin in ["", "not json", "[]", "null", "\"cat kb/public/x/y.md\"", "{\"tool_input\": 5}"]:
+            assert self.run_hook(stdin) == "", stdin
+
+    def test_raw_read_nudge_end_to_end_prints_json_only_for_a_read(self):
+        out = self.run_hook(json.dumps(self.event("sed -n 1,20p kb/public/claude/hooks.md")))
+        assert json.loads(out)["hookSpecificOutput"]["additionalContext"] == kb_hook.RAW_NUDGE
+        assert self.run_hook(json.dumps(self.event("python3 _tools/rag.py show kb/public/claude/hooks.md:23"))) == ""
+        assert self.run_hook(json.dumps(self.event("cat kb/_self/maintaining.md"))) == ""
+        # a UserPromptSubmit event is untouched
+        assert self.run_hook(json.dumps({"prompt": "cat kb/public/claude/hooks.md"})) == ""
+
+    def test_raw_read_nudge_returns_before_shlex_for_a_command_without_a_kb_path(self):
+        p = subprocess.run([sys.executable, "-c", "import sys, kb_hook; kb_hook.raw_read_nudge({'tool_input': "
+                            "{'command': 'ls -la'}}); sys.exit('shlex' in sys.modules)"], cwd=TOOLS, capture_output=True,
+                           text=True, encoding="utf-8", timeout=60)
+        assert p.returncode == 0, "an ordinary command must not load shlex"
+
+    def test_raw_read_nudge_hook_is_registered_on_bash_only(self):
+        entries = json.loads(text(".claude/settings.json"))["hooks"]["PreToolUse"]
+        assert [e["matcher"] for e in entries] == ["Bash"], entries
+        cmds = [h["command"] for e in entries for h in e["hooks"]]
+        assert cmds == ['sh "${CLAUDE_PROJECT_DIR}/_tools/kbpy" _tools/kb_hook.py'], cmds
+
+
 class TestIds:
     URL ="https://learn.microsoft.com/en-us/windows/security/example"
 

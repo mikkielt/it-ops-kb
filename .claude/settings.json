@@ -104,6 +104,17 @@
         ]
       }
     ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh \"${CLAUDE_PROJECT_DIR}/_tools/kbpy\" _tools/kb_hook.py"
+          }
+        ]
+      }
+    ],
     "PostToolUse": [
       {
         "matcher": "mcp__kb__.*|mcp__plugin_it-ops-kb_kb__.*|WebFetch|mcp__microsoft-learn__.*|mcp__claude-code-docs__.*|mcp__mcp-docs__.*|mcp__plugin_it-ops-kb-docs_.*|Bash|PowerShell",
