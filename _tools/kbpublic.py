@@ -3,6 +3,7 @@
 
   kbgit.py publish [--remote R] [--source REMOTE/main] [--branch main] [--dry-run] [--rewrite]
   kbgit.py check-public [REV]
+  kbgit.py bridge BRANCH [--push] [--dry-run] [--remote R]
 
 The integration remote (git config kb.integrationRemote, default `origin`) holds everything; the public home (GitHub) holds the same history without the
 PRIVATE paths: the query log's store `kb/_querylog/` is kept on the integration remote only. Both hosts cannot carry
@@ -32,6 +33,12 @@ the same `main`, so the public home gets a projection of it:
               (for every pushed branch and tag, sync's own push included), `kbgit.py sync` before it rebases, and the
               query log's push (ql_deliver) when `origin` is public. `check-public` is the same check for CI on the
               public home: exit 1 listing the commits of REV (default HEAD) that touch a PRIVATE path.
+
+bridge      the way back: a branch pushed to the public home (a pull request there) reaches the integration remote.
+              bridge_range fetches the public home's main and BRANCH (nothing is ever pushed there), takes the commits
+              not on its main (main..BRANCH) and refuses, exit 1, when one touches a PRIVATE path. `kbgit.py bridge`
+              rebases them (`git rebase --onto <integration>/main <public>/main`: cherry-picked, never merged, since
+              the public main is a projection of the integration main) and hands them to sync's gate and lane routing.
 
 The public home is set per clone: `git config kb.publishRemote <remote>`. A remote is public when it is that remote or
 its url is that remote's url. A clone without it (a production clone on its own host) has no public home: nothing is
@@ -304,6 +311,42 @@ def ci_refusals(src, url, cwd, run_ci=None):
     from ql_base import run_cmd
     verdict, detail, _ = ql_deliver.ci_pipeline(url, src, run_ci or CI_RUN or run_cmd)
     return [] if verdict == "ok" else [f"the CI verdict of the source commit {src[:12]} is {verdict}: {detail}"]
+
+
+class BridgeError(Exception):
+    """A bridge refusal: CODE is the exit code (1 refused, 2 bad arguments), the message says why."""
+
+    def __init__(self, code, msg):
+        super().__init__(msg)
+        self.code = code
+
+
+def bridge_range(pub, branch, cwd):
+    """(main sha, tip sha, [commit shas oldest first]) of the public home PUB's main and BRANCH, both fetched into
+    refs/remotes/PUB/. The commits are main..BRANCH. Raises BridgeError: 2 when PUB is no remote or main or BRANCH
+    is missing there, 1 when a commit touches a PRIVATE path. Nothing is pushed to PUB."""
+    if not pub or out(["remote", "get-url", pub], cwd) is None:
+        raise BridgeError(2, f"no public remote (git config {CONFIG_KEY} <remote>); the bridge reads the branch from it")
+    if out(["check-ref-format", "--branch", branch], cwd) is None:
+        raise BridgeError(2, f"{branch!r} is not a valid branch name")
+    tips = []
+    for b in ("main", branch):
+        code, _, e = run(["fetch", "--quiet", pub, f"+refs/heads/{b}:refs/remotes/{pub}/{b}"], cwd)
+        if code:
+            raise BridgeError(2, f"git fetch {pub} {b} failed: {e.strip()[-300:]}")
+        tips.append(out(["rev-parse", "--verify", "--quiet", f"refs/remotes/{pub}/{b}^{{commit}}"], cwd))
+    main, tip = tips
+    if not main or not tip:
+        raise BridgeError(2, f"{pub} has no commit for main or {branch}")
+    rng = f"{main}..{tip}"
+    bad = private_commits(rng, cwd)
+    if bad is None:
+        raise BridgeError(2, f"git error reading {pub}/main..{pub}/{branch}")
+    if bad:
+        raise BridgeError(1, f"{pub}/{branch} touches {', '.join(PRIVATE)} in {', '.join(b[:9] for b in bad)}: "
+                             "the query log's store stays on the integration remote; nothing was bridged")
+    commits = (out(["rev-list", "--reverse", rng], cwd) or "").split()
+    return main, tip, commits
 
 
 def cmd_publish(a, cwd):

@@ -19,7 +19,10 @@ from types import SimpleNamespace
 import pytest
 
 import kbgit, kbpublic
-from conftest import TOOLS, Repo, requires_git
+from conftest import TOOLS, Repo, git_env, requires_git
+from test_sync import RECORD_OPTIONS, SyncScenario, clones
+from conftest import P
+import kbid
 
 pytestmark = [pytest.mark.git, requires_git]
 
@@ -323,3 +326,112 @@ class TestRemoteRoles:
         assert origin_constants('"""origin is fine in a docstring about origin/main"""\nremote = kbpublic.integration_remote(cwd)\n') == []
         for name, why in ROLE_SKIP.items():
             assert (Path(TOOLS) / name).exists() and why, name  # a skip names a file that exists, with its reason
+
+
+class TestBridge(SyncScenario):
+    """kbgit.py bridge against local bare remotes: a branch of the public home to the integration remote, by lane."""
+
+    @pytest.fixture
+    def world(self, tmp_path, kb_seed):
+        env = git_env(KB_SYNC_NO_TESTS="1")
+        remote, (a, b), base = clones(kb_seed, str(tmp_path), env, ("a", "b"))
+        w = type("World", (), {})()
+        w.env, w.remote, w.a, w.b, w.base, w.bare = env, remote, a, b, base, Repo(remote, env)
+        pub = os.path.join(str(tmp_path), "pub.git")
+        Repo(str(tmp_path), env).git("clone", "-q", "--bare", remote, pub)
+        w.pub = Repo(pub, env)
+        a.git("remote", "add", "pub", pub)
+        a.git("config", "kb.publishRemote", "pub")
+        w.c = Repo(os.path.join(str(tmp_path), "c"), env)  # a contributor's clone of the public home
+        Repo(str(tmp_path), env).git("clone", "-q", pub, w.c.path)
+        w.c.git("checkout", "-q", "-b", "feature")
+        return w
+
+    @staticmethod
+    def advertise(w):
+        w.bare.git("config", "receive.advertisePushOptions", "true")
+        hook = Path(w.remote) / "hooks" / "pre-receive"
+        hook.write_text(RECORD_OPTIONS, encoding="utf-8", newline="\n")
+        hook.chmod(0o755)
+
+    @staticmethod
+    def refs(repo):
+        return repo.git("for-each-ref", "--format=%(refname) %(objectname)")
+
+    def push_feature(self, w):
+        w.c.git("push", "-q", "--no-verify", "origin", "feature")
+
+    def test_content_branch_goes_to_main(self, world):
+        w = world
+        self.advertise(w)
+        self.add_source(w.c, "S-", "https://learn.microsoft.com/en-us/sync-test/bridge1", "bridge1")
+        self.article(w.c, "bridge1", [kbid.source_id("https://learn.microsoft.com/en-us/sync-test/bridge1")], ["Bridge fact."])
+        self.commit(w.c, "docs(kb): bridge test")
+        self.push_feature(w)
+        before = self.refs(w.pub)
+        d = w.a.kbgit("bridge", "feature", "--dry-run")
+        assert d.returncode == 0 and "lane: content" in d.stdout and w.bare.rev("main") == w.base, d.stdout + d.stderr
+        r = w.a.kbgit("bridge", "feature", "--push")
+        assert r.returncode == 0, r.stdout + r.stderr
+        assert w.bare.git("show", "main:" + P("windows/sync-test-bridge1.md")).count("Bridge fact.") == 1
+        assert "docs(kb): bridge test" in w.bare.git("log", "-3", "--format=%s", "main")  # a fix commit may follow it
+        assert "public branch: pub/feature" in r.stdout and w.bare.rev("main")[:7] in r.stdout
+        assert "closed by a person" in r.stdout
+        assert self.refs(w.pub) == before  # the public home was only read
+        assert w.a.git("branch", "--show-current").strip() == "main" and "bridge/feature" not in w.a.git("branch")
+
+    def test_code_branch_goes_to_a_code_branch(self, world):
+        w = world
+        self.advertise(w)
+        w.c.write("_tools/bridge_test.txt", "code\n")
+        w.c.git("add", "-A")
+        w.c.git("commit", "-q", "-m", "chore(tools): bridge test")
+        self.push_feature(w)
+        before = self.refs(w.pub)
+        r = w.a.kbgit("bridge", "feature", "--push")
+        assert r.returncode == 0, r.stdout + r.stderr
+        branches = w.bare.git("for-each-ref", "--format=%(refname:short)", "refs/heads/").split()
+        assert w.bare.rev("main") == w.base and len(branches) == 2 and any(b.startswith("code/") for b in branches)
+        assert "merge_request.create" in (Path(w.remote) / "pushed-options.txt").read_text(encoding="utf-8")
+        assert self.refs(w.pub) == before
+
+    def test_conflict_exits_3_with_the_rebase_in_progress(self, world):
+        w = world
+        w.c.write("README.md", "contributor\n")
+        w.c.git("add", "-A")
+        w.c.git("commit", "-q", "-m", "docs: contributor readme")
+        self.push_feature(w)
+        w.b.write("README.md", "integration\n")
+        w.b.git("add", "-A")
+        w.b.git("commit", "-q", "-m", "docs: integration readme")
+        w.b.git("push", "-q", "--no-verify", "origin", "HEAD:main")
+        before, main = self.refs(w.pub), w.bare.rev("main")
+        r = w.a.kbgit("bridge", "feature", "--push")
+        assert r.returncode == 3, r.stdout + r.stderr
+        assert "CONFLICT" in r.stdout and "needs-human: README.md" in r.stdout
+        assert os.path.isdir(os.path.join(w.a.path, ".git", "rebase-merge"))
+        assert w.bare.rev("main") == main and self.refs(w.pub) == before
+
+    def test_query_log_store_is_refused(self, world):
+        w = world
+        w.c.write("kb/_querylog/2026-09/r1.jsonl", "{}\n")
+        w.c.git("add", "-A")
+        w.c.git("commit", "-q", "-m", "chore(kb): store")
+        self.push_feature(w)
+        before, main = self.refs(w.pub), w.bare.rev("main")
+        r = w.a.kbgit("bridge", "feature", "--push")
+        assert r.returncode == 1 and "kb/_querylog" in r.stdout, r.stdout + r.stderr
+        assert w.bare.rev("main") == main and self.refs(w.pub) == before
+        assert w.a.git("branch", "--show-current").strip() == "main"
+
+    def test_bad_arguments(self, world):
+        w = world
+        r = w.a.kbgit("bridge", "no-such-branch")
+        assert r.returncode == 2, r.stdout + r.stderr
+        w.a.git("config", "--unset", "kb.publishRemote")
+        r = w.a.kbgit("bridge", "feature")
+        assert r.returncode == 2 and "no public remote" in r.stdout
+        w.a.git("config", "kb.publishRemote", "pub")
+        w.a.write("README.md", "dirty\n")
+        r = w.a.kbgit("bridge", "feature", "--push")
+        assert r.returncode == 2 and "uncommitted changes" in r.stdout

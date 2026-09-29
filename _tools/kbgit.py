@@ -13,6 +13,7 @@
   kbgit.py tag-census YYYY-MM-DD                           annotated tag census-YYYY-MM-DD on HEAD: "kb confirmed current" (no push)
   kbgit.py sync [--push] [--dry-run] [--remote R] [--branch main]   fetch, rebase, fix, gate, push: the way to push
   kbgit.py publish [--remote R] [--dry-run] [--rewrite]    push the integration main without kb/_querylog to the public home
+  kbgit.py bridge BRANCH [--push] [--dry-run] [--remote R]  a public-home branch to the integration remote: rebase, gate, push by lane
   kbgit.py check-public [REV]                              exit 1 when REV's history touches kb/_querylog (kbpublic.py)
 
 Roots. Every root in this repository's kb/ (kb/public and any kb/<name>/ with a _root.md; KB_ROOTS roots belong to
@@ -2066,9 +2067,10 @@ def conflict_help(r, up, base, orig, manual, mech, step):
     print(f"Or give up: git rebase --abort  (back to {short(orig)}, nothing lost)")
 
 
-def do_rebase(r, up, base, orig):
-    """Rebase HEAD onto up, resolving conflicts in MECHANICAL paths with fix. 0 done, 2 git refused, 3 manual."""
-    code, out = gitx(*REBASE, up, env=NO_EDITOR)
+def do_rebase(r, up, base, orig, since=None):
+    """Rebase HEAD onto up, resolving conflicts in MECHANICAL paths with fix. 0 done, 2 git refused, 3 manual. SINCE
+    (the bridge): only the commits after it, `git rebase --onto up since`."""
+    code, out = gitx(*REBASE, *(["--onto", up, since] if since else [up]), env=NO_EDITOR)
     for _ in range(1000):
         if not rebasing():
             if code:
@@ -2343,7 +2345,12 @@ def sync_once(a, r):
     return 0
 
 
-def cmd_sync(a):
+def new_report(push):
+    return {"push": push, "ahead": 0, "behind": 0, "rebased": 0, "auto": [], "fixed": [], "renumbered": [], "refreshed": 0,
+            "fix_commit": None, "gate": [], "pushed": "no", "notes": []}
+
+
+def cmd_sync(a, r=None):
     a.remote = a.remote or kbpublic.integration_remote(KB)
     if git("rev-parse", "--is-inside-work-tree") is None or not rev_parse("HEAD"):
         print("refused: not a git clone with commits (or git is missing)")
@@ -2370,8 +2377,7 @@ def cmd_sync(a):
             return 2
     if not hooks_path_is_ours(git("config", "--get", "core.hooksPath")):
         print("note: commit hooks not installed (python3 _tools/kbgit.py install-hooks); sync repairs trailers of what it rebases")
-    r = {"push": a.push, "ahead": 0, "behind": 0, "rebased": 0, "auto": [], "fixed": [], "renumbered": [], "refreshed": 0,
-         "fix_commit": None, "gate": [], "pushed": "no", "notes": []}
+    r = r if r is not None else new_report(a.push)
     code = sync_once(a, r)
     if code == "retry":
         print("fetching again and rebasing once more")
@@ -2400,6 +2406,99 @@ def cmd_sync(a):
         print(f"gate {label}: {result}")
     print(f"pushed: {r['pushed']}")
     print(f"sync: exit {code}")
+    return code
+
+
+BRIDGE_PREFIX = "bridge/"
+
+
+def bridge_dry_run(a, pub, main, tip, commits):
+    """What bridge would do, from the public commits alone: their lane and the target branch."""
+    print(f"dry run: {len(commits)} commit(s) of {pub}/{a.branch} not on {pub}/main")
+    lane, branch = lane_plan(main, tip)
+    print(f"lane: {lane}; " + (f"would push branch {branch} with merge-request push options, main would not move"
+                              if branch else f"would push to {a.remote}/main"))
+    print("nothing checked out, rebased, fixed, committed or pushed")
+    return 0
+
+
+def cmd_bridge(a):
+    """A branch of the public home to the integration remote (kb/_self/git.md, Public home): its commits not on the
+    public main, rebased onto the integration main on a local branch bridge/BRANCH and sent through sync (gate, lane
+    routing). Exit as sync: 0 pushed (or nothing to do, or no --push), 1 refused or gate red, 2 bad arguments, 3 conflict."""
+    a.remote = a.remote or kbpublic.integration_remote(KB)
+    pub = kbpublic.publish_remote(KB)
+    if git("rev-parse", "--is-inside-work-tree") is None or not rev_parse("HEAD"):
+        print("refused: not a git clone with commits (or git is missing)")
+        return 2
+    if pub and pub == a.remote:
+        print(f"refused: {pub!r} is both the public home and the integration remote")
+        return 2
+    if git("remote", "get-url", a.remote) is None:
+        print(f"refused: no integration remote {a.remote!r}")
+        return 2
+    busy = in_progress()
+    if busy:
+        print(f"refused: {busy[0]} is in progress; finish it first ({busy[1]})")
+        return 2
+    staged, unstaged = dirty_paths()
+    if (staged or unstaged) and not a.dry_run:
+        print("refused: uncommitted changes; commit them (git commit) or stash them (git stash) first")
+        for p in staged:
+            print(f"  staged:   {p}")
+        for p in unstaged:
+            print(f"  unstaged: {p}")
+        return 2
+    try:
+        main_sha, tip, commits = kbpublic.bridge_range(pub, a.branch, KB)
+    except kbpublic.BridgeError as e:
+        print(f"refused: {e}")
+        return e.code
+    print(f"{pub}/{a.branch}: {len(commits)} commit(s) not on {pub}/main")
+    if not commits:
+        print("bridge: nothing to bridge")
+        return 0
+    if a.dry_run:
+        return bridge_dry_run(a, pub, main_sha, tip, commits)
+    code, o = gitx("fetch", "--quiet", a.remote, f"+refs/heads/main:refs/remotes/{a.remote}/main")
+    if code:
+        print(f"git fetch {a.remote} failed:\n" + o.rstrip())
+        return 2
+    up = rev_parse(f"refs/remotes/{a.remote}/main")
+    if not up:
+        print(f"refused: {a.remote}/main has no commit")
+        return 2
+    head = (git("symbolic-ref", "--quiet", "--short", "HEAD") or "").strip()
+    was = head or rev_parse("HEAD")
+    tmp = BRIDGE_PREFIX + a.branch
+    code, o = gitx("checkout", "-q", "-B", tmp, tip)
+    if code:
+        print(f"git checkout {tmp} failed:\n" + o.rstrip())
+        return 2
+    r = new_report(a.push)
+    r["target"] = f"{a.remote}/main"
+    base = (git("merge-base", up, tip) or "").strip() or None
+    code = do_rebase(r, up, base, tip, since=main_sha)
+    if code == 3:
+        print(f"The bridged commits are on {tmp}, the rebase is in progress. After resolving, run "
+              "python3 _tools/kbgit.py sync --push there; your branch " + (head or short(was)) + " is untouched.")
+        return 3
+    if not code:
+        r["rebased"] = len(commits)
+        a2 = argparse.Namespace(remote=a.remote, branch="main", push=a.push, dry_run=False)
+        code = cmd_sync(a2, r)
+    if code == 3:
+        return 3
+    pushed = str(r["pushed"]).startswith("yes")
+    listing = (git("log", "--reverse", "--format=%h", "-n", str(r["ahead"] + (1 if r["fixed"] else 0)), "HEAD") or "").split()
+    gitx("checkout", "-q", *(["--detach"] if not head else []), was)
+    if pushed:
+        gitx("branch", "-D", tmp)
+        print(f"public branch: {pub}/{a.branch}")
+        print("integration commits: " + " ".join(listing))
+        print(f"the pull request on the public home is closed by a person once publish brings these commits ({pub} was only read)")
+    else:
+        print(f"the bridged commits stay on {tmp}; {head or short(was)} is checked out again")
     return code
 
 
@@ -2445,6 +2544,11 @@ def main():
     pb.add_argument("--branch", default="main", help="the public remote's branch (default main)")
     pb.add_argument("--dry-run", action="store_true", help="fetch, project and report; push nothing")
     pb.add_argument("--rewrite", action="store_true", help="replace a public branch that is not an ancestor (force with lease)")
+    br = sub.add_parser("bridge", help="a branch of the public home to the integration remote: rebase its commits, gate, push by lane")
+    br.add_argument("branch", help="the branch on the public home (its commits not on the public main)")
+    br.add_argument("--push", action="store_true", help="push after a green gate (as sync --push); the public home is never written")
+    br.add_argument("--dry-run", action="store_true", help="fetch and report the commits and the lane; check out and push nothing")
+    br.add_argument("--remote", help=f"the integration remote (default: git config {kbpublic.INTEGRATION_KEY}, else origin)")
     cp = sub.add_parser("check-public", help="exit 1 listing commits of REV whose history touches kb/_querylog")
     cp.add_argument("rev", nargs="?", help="a commit (default HEAD)")
     h = sub.add_parser("hook", help="internal: run by the .githooks scripts")
@@ -2453,7 +2557,7 @@ def main():
     a = ap.parse_args()
     cmds = {"trailers": cmd_trailers, "install-hooks": cmd_install_hooks, "check-trailers": cmd_check_trailers, "lane": cmd_lane,
             "log": cmd_log, "blame": cmd_blame, "asof": cmd_asof, "tag-census": cmd_tag_census, "hook": cmd_hook,
-            "sync": cmd_sync, "publish": lambda a: kbpublic.cmd_publish(a, KB),
+            "sync": cmd_sync, "bridge": cmd_bridge, "publish": lambda a: kbpublic.cmd_publish(a, KB),
             "check-public": lambda a: kbpublic.cmd_check_public(a, KB)}
     if a.cmd in cmds:
         try:
