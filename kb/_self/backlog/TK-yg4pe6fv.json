@@ -2,7 +2,7 @@
   "id": "TK-yg4pe6fv",
   "kind": "task",
   "title": "Research the open gaps of agents/codebase-mapping",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-rjxacpdh",
   "priority": "P2",
   "rank": 0,
@@ -27,5 +27,6 @@
     "kb/public/_coverage.md",
     "kb/public/_retrieval/signals.csv",
     "_tools/aliases.csv"
-  ]
+  ],
+  "claimed_by": "worker-yg4pe6fv"
 }

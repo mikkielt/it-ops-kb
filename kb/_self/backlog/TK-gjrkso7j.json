@@ -2,7 +2,7 @@
   "id": "TK-gjrkso7j",
   "kind": "task",
   "title": "kb-reviewer prefers the LSP tool over grep when it is active",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-lewvvodh",
   "priority": "P2",
   "rank": 1,
@@ -19,5 +19,6 @@
   ],
   "touches": [
     ".claude/agents/kb-reviewer.md"
-  ]
+  ],
+  "claimed_by": "orchestrator"
 }

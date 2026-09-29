@@ -2,7 +2,7 @@
   "id": "TK-uubieubs",
   "kind": "task",
   "title": "map command: scratch worktree, runner and JSON format",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-55lva2xl",
   "priority": "P2",
   "rank": 1,
@@ -21,5 +21,6 @@
     "_tools/kbingest.py",
     "_tools/test_kbingest.py",
     "_tools/fixtures/kbingest/**"
-  ]
+  ],
+  "claimed_by": "worker-uubieubs"
 }

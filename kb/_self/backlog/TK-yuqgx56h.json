@@ -2,7 +2,7 @@
   "id": "TK-yuqgx56h",
   "kind": "task",
   "title": "Extract imports and match signals against them in kbfacts",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-kj72lcgb",
   "priority": "P2",
   "rank": 1,
@@ -21,5 +21,6 @@
     "_tools/kbfacts.py",
     "_tools/test_kbfacts*.py",
     "_tools/fixtures/topics_for/**"
-  ]
+  ],
+  "claimed_by": "worker-yuqgx56h"
 }
