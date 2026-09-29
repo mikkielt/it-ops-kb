@@ -1,6 +1,6 @@
 # Tools
 
-Every tool is stdlib-only Python in `_tools/`, run as `python3 _tools/<tool>`. Each tool's docstring (`--help`) is its full reference; this file is the one table of what exists and how the lookup tools decide. The read tools span every root (`kb/public` and any root a team adds; `_tools/kbcommon.py`, "Roots") and name files and topics by qualified path, `<root>/<path in root>` (`public/intune/win32-apps.md:12`); `--root NAME` (MCP: `root`) keeps one root. Lookup rules for agents are in `AGENTS.md`.
+Every tool is stdlib-only Python in `_tools/`, run as `python3 _tools/<tool>`. Each tool's docstring (`--help`) is its full reference; this file is the one table of what exists and how the lookup tools decide. The read tools span every root (`kb/public` and any root a team adds; `_tools/kbcommon.py`, "Roots") and name files and topics by qualified path, `<root>/<path in root>` (`public/intune/win32-apps.md:12`); `--root NAME` (MCP: `root`) keeps one root. Lookup rules for agents are in `AGENTS.md`. Skills and subagents read the part of a doc they need with `python3 _tools/selfdoc.py section DOC HEADING` (the `selfdoc.py` row below), not the whole file.
 
 ## Commands
 

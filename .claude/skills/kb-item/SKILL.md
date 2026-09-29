@@ -6,7 +6,15 @@ argument-hint: "[ID | next]"
 
 # Work one backlog item
 
-Read `kb/_self/backlog.md` first (the item file, the definition of done, gates), then `kb/_self/maintaining.md`. The item's own change may also need its skill (a new topic: `/kb-add-topic`; facts: `/kb-refresh` or `/kb-research`; tools and docs: `/kb-self`).
+Read these sections of the `kb/_self/` docs first, not the whole docs, each with its own command (`selfdoc.py section` prints the section under a heading with its line numbers):
+- `python3 _tools/selfdoc.py section backlog "The item file"`
+- `python3 _tools/selfdoc.py section backlog "Dependencies, gates and triggers"`
+- `python3 _tools/selfdoc.py section backlog "Definition of done"`
+- `python3 _tools/selfdoc.py section backlog "Working on items"`
+- `python3 _tools/selfdoc.py section backlog "Git"` (the `KB-Work` trailer)
+- `python3 _tools/selfdoc.py section maintaining "Conduct for changes"` (the gate, commit messages)
+
+The item's own change may also need its skill (a new topic: `/kb-add-topic`; facts: `/kb-refresh` or `/kb-research`; tools and docs: `/kb-self`).
 
 Run each command on its own (no `;`, `&&`, pipes into other tools or loops): the shared permission rules match single commands, so a chained command asks for approval or is refused in a headless run.
 

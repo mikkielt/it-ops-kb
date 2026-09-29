@@ -8,7 +8,15 @@ argument-hint: "<repository path or url> [root name] [what the facts should answ
 
 Request: $ARGUMENTS. The facts come from one repository at one pinned commit: its code as `CODE`, its own docs (README, `docs/`, ADRs, runbooks) as `DOC`, so the kb answers questions across a team's services beside `kb/public`. This is a conversation, not a script: at each **Ask** below, propose what you would do and why, and wait for the user.
 
-Read `kb/_self/maintaining.md` first, then `kb/_self/content-rules.md` (Roots, CODE, Licensing), `kb/_self/plugin.md` section 6 (a team's own roots) and `kb/_self/git.md`. Facts on the signals used below: `agents/repository-ingestion.md`. Run each command on its own (no `;`, `&&`, pipes or loops).
+Read these sections of the `kb/_self/` docs first, not the whole docs, each with its own command (`selfdoc.py section` prints the section under a heading with its line numbers):
+- `python3 _tools/selfdoc.py section maintaining "Conduct for changes"` (the gate, commit messages)
+- `python3 _tools/selfdoc.py section content-rules "Roots"`
+- `python3 _tools/selfdoc.py section content-rules "CODE: what the implementation does"`
+- `python3 _tools/selfdoc.py section content-rules "Licensing and privacy"`
+- ``python3 _tools/selfdoc.py section plugin "6. A team's own knowledge: roots beside \`kb/public\`"`` (a team's own roots; the escaped backticks are part of the heading)
+- `python3 _tools/selfdoc.py section git "Workflow"` (commits and pushes)
+
+Facts on the signals used below: `agents/repository-ingestion.md`. Run each command on its own (no `;`, `&&`, pipes or loops).
 
 ## 1. Where am I, and where do the facts land
 

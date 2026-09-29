@@ -8,7 +8,12 @@ argument-hint: "[path prefixes to limit the contract checks, e.g. auth dsc/what-
 
 Report only: change no file, even to fix a finding.
 
-Read `kb/_self/maintaining.md` first, then the `kb/_self/` files this skill relies on: `kb/_self/content-rules.md` (what to write), `kb/_self/tools.md` (the commands) and `kb/_self/git.md` (commits and pushes). `AGENTS.md` covers lookups only.
+Read these sections of the `kb/_self/` docs first, not the whole docs, each with its own command (`selfdoc.py section` prints the section under a heading with its line numbers). This skill only reports, so it needs the gate and the fact rules; the commands are spelled out in the steps below:
+- `python3 _tools/selfdoc.py section maintaining "Conduct for changes"` (the gate)
+- `python3 _tools/selfdoc.py section content-rules "Facts and tags"`
+- `python3 _tools/selfdoc.py section content-rules "Ledgers and retrieval data"`
+
+`AGENTS.md` covers lookups only.
 
 Run each command on its own (no `;`, `&&`, pipes into other tools or loops): the shared permission rules match single commands, so a chained command asks for approval or is refused in a headless run.
 

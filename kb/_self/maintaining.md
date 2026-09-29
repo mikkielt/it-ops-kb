@@ -2,6 +2,8 @@
 
 Read this before any edit, research, refresh, census, commit or push. A lookup needs only `AGENTS.md`, which every session and subagent loads; this file is read on demand, so it never costs a lookup anything. The other rules are split by job (see `kb/_self/README.md`): `kb/_self/content-rules.md` for what you write, `kb/_self/tools.md` for the commands, `kb/_self/git.md` for commits and pushes, `kb/_self/plugin.md` for the plugin.
 
+Read the sections you need, not whole docs: `python3 _tools/selfdoc.py section DOC HEADING` prints one section of a `kb/_self` doc (`DOC` a name such as `maintaining`, `HEADING` its text, case-insensitive). Each skill names the sections it uses by heading, so renaming a heading means updating the skills that name it (`selfdoc.py section` exits 1 and lists the doc's headings when none matches). The gate and the commit rules are the section "Conduct for changes" below.
+
 ## Setup (first session in a fresh clone)
 
 Run `/kb-setup` (Claude Code), or do the same by hand. In Claude Code on the web, `.claude/hooks/session_start.py` (a SessionStart hook in `.claude/settings.json`) already installs the commit hooks, registers the MCP servers, runs `check.py` and points the new session to the backlog, on every start, resume and `/clear`; in every clone a `SessionStart` hook prints the backlog's horizon, except after `/clear` (`kb/_self/backlog.md`). The query log's `SessionStart` hooks start its distill and show its weekly digest once per ISO week, and its `SessionEnd` hook starts the distill (`kb/_self/querylog.md`, Distill and Reporting).

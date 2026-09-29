@@ -6,7 +6,7 @@ argument-hint: "[--since REV | <doc path, e.g. kb/_self/tools.md> | all | --repo
 
 # Update the kb's own docs
 
-Read `kb/_self/README.md` first (what each doc is for and the rules for keeping them current), then `kb/_self/maintaining.md` (conduct and the gate). The docs describe the code as it is now; the code, the tools' docstrings and the config files are the source of truth.
+Read `kb/_self/README.md` first (what each doc is for and the rules for keeping them current), then the section on conduct and the gate, not the whole of `maintaining.md`: `python3 _tools/selfdoc.py section maintaining "Conduct for changes"`. The docs describe the code as it is now; the code, the tools' docstrings and the config files are the source of truth.
 
 Run each command on its own (no `;`, `&&`, pipes into other tools or loops): the shared permission rules match single commands, so a chained command asks for approval or is refused in a headless run.
 

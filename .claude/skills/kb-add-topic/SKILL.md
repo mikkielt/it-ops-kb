@@ -8,7 +8,16 @@ argument-hint: "<domain>/<topic-slug> and what it should cover"
 
 Request: $ARGUMENTS. If the domain, slug or scope is unclear, ask before researching.
 
-Read `kb/_self/maintaining.md` first, then the `kb/_self/` files this skill relies on: `kb/_self/content-rules.md` (what to write), `kb/_self/tools.md` (the commands) and `kb/_self/git.md` (commits and pushes). `AGENTS.md` covers lookups only.
+Read these sections of the `kb/_self/` docs first, not the whole docs, each with its own command (`selfdoc.py section` prints the section under a heading with its line numbers). The layout, ids and licence table are in the steps below; the commands are spelled out there too:
+- `python3 _tools/selfdoc.py section maintaining "Conduct for changes"` (the gate, commit messages)
+- `python3 _tools/selfdoc.py section content-rules "Facts and tags"`
+- `python3 _tools/selfdoc.py section content-rules "CODE: what the implementation does"`
+- `python3 _tools/selfdoc.py section content-rules "SNIPPET: a code example with evidence"`
+- `python3 _tools/selfdoc.py section content-rules "Ledgers and retrieval data"`
+- `python3 _tools/selfdoc.py section content-rules "Licensing and privacy"`
+- `python3 _tools/selfdoc.py section git "Workflow"` (commits and pushes)
+
+`AGENTS.md` covers lookups only.
 
 Run each command on its own (no `;`, `&&`, pipes into other tools or loops): the shared permission rules match single commands, so a chained command asks for approval or is refused in a headless run.
 

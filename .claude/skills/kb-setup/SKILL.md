@@ -7,7 +7,10 @@ description: Use when the it-ops-kb clone is fresh, a check or MCP server fails 
 
 Work from the repository root. Change no kb content (the only changes are the local git setting in step 3, the local-scope MCP servers in step 4 and the per-user query log file in step 5). Do every step even if an earlier one fails, then report.
 
-Read `kb/_self/maintaining.md` first, then the `kb/_self/` files this skill relies on: `kb/_self/content-rules.md` (what to write), `kb/_self/tools.md` (the commands) and `kb/_self/git.md` (commits and pushes). `AGENTS.md` covers lookups only.
+Read this section of the `kb/_self/` docs first, not the whole doc (`selfdoc.py section` prints the section under a heading with its line numbers). Nothing is committed and no kb content is written, so no other section is needed; the commands are spelled out in the steps below:
+- `python3 _tools/selfdoc.py section maintaining "Setup (first session in a fresh clone)"`
+
+`AGENTS.md` covers lookups only.
 
 Run each command on its own (no `;`, `&&`, pipes into other tools or loops): the shared permission rules match single commands, so a chained command asks for approval or is refused in a headless run.
 

@@ -6,7 +6,10 @@ argument-hint: "[epic \"<outcome>\" | \"<what to plan>\" | bug \"<defect>\" | tr
 
 # Plan the backlog
 
-Read `kb/_self/backlog.md` first (levels, fields, priority and severity, gates, the definition of done), then `kb/_self/maintaining.md`. `python3 _tools/backlog.py` with `-h` is the command reference.
+Read `kb/_self/backlog.md` first, the whole runbook (levels, fields, priority and severity, gates, the definition of done: planning uses nearly all of it), then this section, with its own command (`selfdoc.py section` prints the section under a heading with its line numbers):
+- `python3 _tools/selfdoc.py section maintaining "Conduct for changes"` (the gate, commit messages)
+
+`python3 _tools/backlog.py` with `-h` is the command reference.
 
 Run each command on its own (no `;`, `&&`, pipes into other tools or loops): the shared permission rules match single commands, so a chained command asks for approval or is refused in a headless run.
 
