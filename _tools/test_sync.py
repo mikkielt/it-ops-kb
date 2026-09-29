@@ -1,15 +1,16 @@
 """Sync tests: `kbgit.py sync` against a throwaway remote (`python3 _tools/tests.py -k sync`).
 
   TestSyncRules            sync's argument handling and path classes (no git needed)
-  TestSyncInGit            (marker git) a copy of the kb committed into a temp repo, a bare clone of it as the "remote" (never the
-                           real origin) and two clones A and B with the hooks installed. In order:
+  TestSyncInGit            (marker git) a bare clone of the run's shared kb seed (conftest.kb_seed) as the "remote" (never
+                           the real origin) and two clones A and B with the hooks installed. In order:
                            1. A adds a source row and an article and pushes with `sync --push`; B (now behind) adds
                               another source row and an answer: `sync --dry-run` changes nothing, a dirty tree is
                               refused (exit 2), then `sync --push` rebases, fixes, passes the gate and pushes;
                            2. A and B both take the legacy id S9999 for different urls, both head an answer
                               QK-sync-shared (different questions): A's pushed S9999 and QK-sync-shared stay, B's sync
                               renumbers its own (citations and mentions follow), trailers are refreshed and check.py passes;
-                           3. A and B edit the same article line: B's sync stops with exit 3, the rebase in progress.
+  TestSyncConflictInGit    (marker git) the same set-up, apart so the two run in parallel: A pushes an article and B pulls
+                           it, then A and B edit the same line: B's sync stops with exit 3, the rebase in progress.
                            The gate skips tests.py here (KB_SYNC_NO_TESTS=1: no recursive test run). Skipped without git.
   TestPrePushInGit         (marker git) the pre-push hook blocks a plain push when the gate fails; tags and sync pushes pass.
 """
@@ -18,7 +19,21 @@ import csv, io, os, re, shutil
 import pytest
 
 import kbgit, kbid
-from conftest import P, Repo, copy_kb, git_env, requires_git
+from conftest import P, Repo, git_env, requires_git
+
+
+def clones(kb_seed, tmp, env, names):
+    """A bare clone of the shared seed as the remote and one clone per name with the hooks installed: (remote, clones,
+    base commit). The seed is committed once per run: a fresh kb tree is slow to read the first time on Windows."""
+    top, remote = Repo(tmp, env), os.path.join(tmp, "remote.git")
+    top.git("clone", "-q", "--bare", str(kb_seed[0]), remote)
+    out = []
+    for n in names:
+        d = Repo(os.path.join(tmp, n), env)
+        top.git("clone", "-q", remote, d.path)
+        assert d.kbgit("install-hooks").returncode == 0
+        out.append(d)
+    return remote, out, kb_seed[1]
 
 
 def rows(text):
@@ -45,9 +60,38 @@ class TestSyncRules:
         assert not kbgit.REJECTED.search("fatal: Could not read from remote repository.")
 
 
+class SyncScenario:
+    """Helpers of the sync scenarios: a source row, an article, a commit, a file on the remote."""
+
+    @classmethod
+    def add_source(cls, d, sid, url, tag):
+        sid = kbid.source_id(url) if sid == "S-" else sid
+        buf = io.StringIO()
+        csv.writer(buf, lineterminator="\n").writerow([sid, url, f"Sync test {tag}", "Microsoft", "MIT", "copy", "2026-09-25", "v", "", "",
+                                                         ""])
+        d.append(P("_sources.csv"), buf.getvalue())
+
+    @classmethod
+    def article(cls, d, name, sids, facts):
+        d.write(P(f"windows/sync-test-{name}.md"),
+                f"---\ntopic: windows/sync-test-{name}\npriority: P3\napplies_to: [test]\nretrieved_utc: 2026-09-25\n"
+                f"sources: [{', '.join(sids)}]\nstatus: partial\n---\n# Sync test {name}\n\n## Summary\n\nTest.\n\n## Facts\n\n"
+                + "".join(f"- {f} [DOC {sids[0]}]\n" for f in facts) + "\n## Reference\n\n## Examples\n")
+
+    @classmethod
+    def commit(cls, d, msg):
+        r = d.tool("build_index.py")
+        assert r.returncode == 0, r.stdout + r.stderr
+        d.git("add", "-A")
+        d.git("commit", "-q", "-m", msg)
+
+    def remote_file(self, rel):
+        return Repo(self.remote, self.env).git("show", f"main:{rel}")
+
+
 @requires_git
 @pytest.mark.git
-class TestSyncInGit:
+class TestSyncInGit(SyncScenario):
     URL_A1, URL_B1 = "https://learn.microsoft.com/en-us/sync-test/a1", "https://learn.microsoft.com/en-us/sync-test/b1"
     URL_A2, URL_B2 = "https://learn.microsoft.com/en-us/sync-test/a2", "https://learn.microsoft.com/en-us/sync-test/b2"
     Q_B = "Does the sync test answer survive a rebase?"
@@ -60,21 +104,10 @@ class TestSyncInGit:
 
     @pytest.fixture(scope="class", autouse=True)
     @classmethod
-    def scenario(cls, tmp_path_factory):
+    def scenario(cls, tmp_path_factory, kb_seed):
         cls.tmp = str(tmp_path_factory.mktemp("kb-sync"))
         cls.env = git_env(KB_SYNC_NO_TESTS="1")
-        top = Repo(cls.tmp, cls.env)
-        seed = Repo(copy_kb(os.path.join(cls.tmp, "seed"), skip=("_fetch_state.csv",)), cls.env)
-        seed.git("init", "-q", "-b", "main")
-        seed.git("add", "-A")
-        seed.git("commit", "-q", "-m", "base")
-        cls.remote = os.path.join(cls.tmp, "remote.git")
-        top.git("clone", "-q", "--bare", seed.path, cls.remote)
-        cls.a, cls.b = Repo(os.path.join(cls.tmp, "a"), cls.env), Repo(os.path.join(cls.tmp, "b"), cls.env)
-        for d in (cls.a, cls.b):
-            top.git("clone", "-q", cls.remote, d.path)
-            assert d.kbgit("install-hooks").returncode == 0
-        cls.base = cls.a.git("rev-parse", "HEAD").strip()
+        cls.remote, (cls.a, cls.b), cls.base = clones(kb_seed, cls.tmp, cls.env, ("a", "b"))
 
         # 1. A: a source row + an article; B: another source row + an answer
         cls.add_source(cls.a, "S-", cls.URL_A1, "a1")
@@ -123,48 +156,8 @@ class TestSyncInGit:
         cls.push_b4 = cls.b.kbgit("sync", "--push")
         cls.b4_log = cls.b.git("log", "--format=%s%x1f%(trailers:key=KB-Answers,valueonly,unfold)%x1e", "-n", "5")
 
-        # 3. the same article line edited on both sides
-        cls.pull_a = cls.a.kbgit("sync")
-        for d, who in ((cls.a, "clone a now words it"), (cls.b, "clone b words it")):
-            d.write(P("windows/sync-test-a.md"), d.read(P("windows/sync-test-a.md")).replace(
-                "The first fact from clone a.", f"The first fact, as {who}."))
-            cls.commit(d, "docs(kb): reword the first fact")
-        cls.push_a3 = cls.a.kbgit("sync", "--push")
-        cls.b3_head = cls.b.rev("HEAD")
-        cls.push_b3 = cls.b.kbgit("sync", "--push")
-        cls.b3_rebasing = os.path.isdir(cls.b.file(".git/rebase-merge")) or os.path.isdir(cls.b.file(".git/rebase-apply"))
-        cls.b3_again = cls.b.kbgit("sync", "--push")
-        cls.b.git("rebase", "--abort")
-        cls.b3_after_abort = cls.b.rev("HEAD")
         yield
         shutil.rmtree(cls.tmp, ignore_errors=True)
-
-    # ---------------------------------------------------------------- helpers
-
-    @classmethod
-    def add_source(cls, d, sid, url, tag):
-        sid = kbid.source_id(url) if sid == "S-" else sid
-        buf = io.StringIO()
-        csv.writer(buf, lineterminator="\n").writerow([sid, url, f"Sync test {tag}", "Microsoft", "MIT", "copy", "2026-09-25", "v", "", "",
-                                                         ""])
-        d.append(P("_sources.csv"), buf.getvalue())
-
-    @classmethod
-    def article(cls, d, name, sids, facts):
-        d.write(P(f"windows/sync-test-{name}.md"),
-                f"---\ntopic: windows/sync-test-{name}\npriority: P3\napplies_to: [test]\nretrieved_utc: 2026-09-25\n"
-                f"sources: [{', '.join(sids)}]\nstatus: partial\n---\n# Sync test {name}\n\n## Summary\n\nTest.\n\n## Facts\n\n"
-                + "".join(f"- {f} [DOC {sids[0]}]\n" for f in facts) + "\n## Reference\n\n## Examples\n")
-
-    @classmethod
-    def commit(cls, d, msg):
-        r = d.tool("build_index.py")
-        assert r.returncode == 0, r.stdout + r.stderr
-        d.git("add", "-A")
-        d.git("commit", "-q", "-m", msg)
-
-    def remote_file(self, rel):
-        return Repo(self.remote, self.env).git("show", f"main:{rel}")
 
     # ---------------------------------------------------------------- tests
 
@@ -246,9 +239,45 @@ class TestSyncInGit:
         subjects = dict(ln.strip("\n").split("\x1f") for ln in self.b4_log.split("\x1e") if "\x1f" in ln)
         assert subjects.get(f"docs(kb): answer {kbid.answer_id(self.Q_FOOT_B)}", "").strip() == kbid.answer_id(self.Q_FOOT_B)
 
+
+
+
+@requires_git
+@pytest.mark.git
+class TestSyncConflictInGit(SyncScenario):
+    URL_A1 = TestSyncInGit.URL_A1
+
+    @pytest.fixture(scope="class", autouse=True)
+    @classmethod
+    def scenario(cls, tmp_path_factory, kb_seed):
+        cls.tmp = str(tmp_path_factory.mktemp("kb-sync-conflict"))
+        cls.env = git_env(KB_SYNC_NO_TESTS="1")
+        cls.remote, (cls.a, cls.b), cls.base = clones(kb_seed, cls.tmp, cls.env, ("a", "b"))
+        cls.add_source(cls.a, "S-", cls.URL_A1, "a1")
+        cls.article(cls.a, "a", [kbid.source_id(cls.URL_A1)], ["The first fact from clone a."])
+        cls.commit(cls.a, "docs(kb): sync test a1")
+        cls.push_a1 = cls.a.kbgit("sync", "--push")
+        assert cls.push_a1.returncode == 0, cls.push_a1.stdout + cls.push_a1.stderr
+        cls.pull_b = cls.b.kbgit("sync")
+
+        # the same article line edited on both sides
+        for d, who in ((cls.a, "clone a now words it"), (cls.b, "clone b words it")):
+            d.write(P("windows/sync-test-a.md"), d.read(P("windows/sync-test-a.md")).replace(
+                "The first fact from clone a.", f"The first fact, as {who}."))
+            cls.commit(d, "docs(kb): reword the first fact")
+        cls.push_a3 = cls.a.kbgit("sync", "--push")
+        cls.b3_head = cls.b.rev("HEAD")
+        cls.push_b3 = cls.b.kbgit("sync", "--push")
+        cls.b3_rebasing = os.path.isdir(cls.b.file(".git/rebase-merge")) or os.path.isdir(cls.b.file(".git/rebase-apply"))
+        cls.b3_again = cls.b.kbgit("sync", "--push")
+        cls.b.git("rebase", "--abort")
+        cls.b3_after_abort = cls.b.rev("HEAD")
+        yield
+        shutil.rmtree(cls.tmp, ignore_errors=True)
+
     def test_same_line_edit_needs_a_human(self):
-        assert self.pull_a.returncode == 0, self.pull_a.stdout + self.pull_a.stderr
-        assert "pushed: no (without --push)" in self.pull_a.stdout
+        assert self.pull_b.returncode == 0, self.pull_b.stdout + self.pull_b.stderr
+        assert "pushed: no (without --push)" in self.pull_b.stdout
         assert self.push_a3.returncode == 0, self.push_a3.stdout + self.push_a3.stderr
         r = self.push_b3
         assert r.returncode == 3, r.stdout + r.stderr
@@ -271,20 +300,11 @@ class TestPrePushInGit:
 
     @pytest.fixture(scope="class", autouse=True)
     @classmethod
-    def scenario(cls, tmp_path_factory):
+    def scenario(cls, tmp_path_factory, kb_seed):
         tmp = str(tmp_path_factory.mktemp("kb-prepush"))
         env = git_env(KB_SYNC_NO_TESTS="1")
-        top = Repo(tmp, env)
-        seed = Repo(copy_kb(os.path.join(tmp, "seed"), skip=("_fetch_state.csv",)), env)
-        seed.git("init", "-q", "-b", "main")
-        seed.git("add", "-A")
-        seed.git("commit", "-q", "-m", "base")
-        cls.remote = Repo(os.path.join(tmp, "remote.git"), env)
-        top.git("clone", "-q", "--bare", seed.path, cls.remote.path)
-        c = cls.c = Repo(os.path.join(tmp, "c"), env)
-        top.git("clone", "-q", cls.remote.path, c.path)
-        assert c.kbgit("install-hooks").returncode == 0
-        cls.base = c.rev("HEAD")
+        remote, (c,), cls.base = clones(kb_seed, tmp, env, ("c",))
+        cls.remote, cls.c = Repo(remote, env), c
         # a hand edit of the generated _coverage.csv: build_index.py --check fails
         c.write(P("_coverage.csv"), c.read(P("_coverage.csv")).replace(",P1,", ",P9,", 1))
         c.git("commit", "-qam", "chore: hand edit")
