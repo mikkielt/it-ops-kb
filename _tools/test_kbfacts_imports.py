@@ -38,12 +38,20 @@ def names(fixture):
     return sorted(n for n, _ in kbfacts.imports_of(fixture, (FIX / fixture).read_text(encoding="utf-8")))
 
 
+def py(tmp_path, name):
+    """A Python fixture stored as `<name>.txt` (a .py file in the tree would be linted and scanned), copied under its
+    own name into `tmp_path`: its path."""
+    dst = tmp_path / name
+    dst.write_text((FIX / f"{name}.txt").read_text(encoding="utf-8"), encoding="utf-8", newline="\n")
+    return dst
+
+
 def topics(res):
     return {x["topic"]: x for x in res["topics"]}
 
 
-def test_import_topics_python_reader_reads_imports_not_comments():
-    got = kbfacts.imports_of("app.py", (FIX / "app.py").read_text(encoding="utf-8"))
+def test_import_topics_python_reader_reads_imports_not_comments(tmp_path):
+    got = kbfacts.imports_of("app.py", py(tmp_path, "app.py").read_text(encoding="utf-8"))
     assert sorted(n for n, _ in got) == ["gssapi", "ldap3.Connection", "ldap3.Server", "msal", "os", "requests_kerberos",
                                          "vendorlib"]
     assert dict(got)["msal"] == 3 and dict(got)["ldap3.Server"] == 4 and dict(got)["gssapi"] == 9
@@ -58,11 +66,12 @@ def test_import_topics_python_never_runs_the_source(tmp_path):
     assert not marker.exists()
 
 
-def test_import_topics_python_unparsable_and_oversize_give_none(monkeypatch):
-    assert kbfacts.imports_of("broken.py", (FIX / "broken.py").read_text(encoding="utf-8")) == []
+def test_import_topics_python_unparsable_and_oversize_give_none(monkeypatch, tmp_path):
+    app = py(tmp_path, "app.py")
+    assert kbfacts.imports_of("broken.py", py(tmp_path, "broken.py").read_text(encoding="utf-8")) == []
     monkeypatch.setattr(kbfacts, "MAX_AST_BYTES", 10)
-    assert kbfacts.imports_of("app.py", (FIX / "app.py").read_text(encoding="utf-8")) == []
-    res = kbfacts.topics_for([str(FIX / "app.py")], imports=True)
+    assert kbfacts.imports_of("app.py", app.read_text(encoding="utf-8")) == []
+    res = kbfacts.topics_for([str(app)], imports=True)
     assert res["topics"] == [] and any("over" in s and "Python reader" in s for s in res["skipped"])
 
 
@@ -108,22 +117,24 @@ def test_import_topics_unknown_file_names_have_no_reader():
     assert kbfacts.imports_of("README.md", "import msal") == []
 
 
-def test_import_topics_comment_only_signal_is_found_lexically_not_by_imports():
-    lexical = kbfacts.topics_for([str(FIX / "notes.py")])
+def test_import_topics_comment_only_signal_is_found_lexically_not_by_imports(tmp_path):
+    notes = py(tmp_path, "notes.py")
+    lexical = kbfacts.topics_for([str(notes)])
     assert set(topics(lexical)) == {MSAL, LDAP, KERB}
     assert "mode" not in lexical
-    by_imports = kbfacts.topics_for([str(FIX / "notes.py")], imports=True)
+    by_imports = kbfacts.topics_for([str(notes)], imports=True)
     assert by_imports["topics"] == [] and by_imports["mode"] == "imports" and by_imports["imports"] == 0
     assert by_imports["files"] == 1
 
 
-def test_import_topics_match_signals_against_the_import_names_only():
-    res = kbfacts.topics_for([str(FIX / "app.py"), str(FIX / "package.json")], imports=True)
+def test_import_topics_match_signals_against_the_import_names_only(tmp_path):
+    app = py(tmp_path, "app.py")
+    res = kbfacts.topics_for([str(app), str(FIX / "package.json")], imports=True)
     t = topics(res)
     assert set(t) == {MSAL, LDAP, KERB}  # `kinit` and the docstring's kerberos are not imports; requests_kerberos is no word match
     assert [i["import"] for i in t[KERB]["imports"]] == ["gssapi"]
     assert sorted(i["import"] for i in t[LDAP]["imports"]) == ["ldap3.Connection", "ldap3.Server", "ldapjs"]
-    assert {i["import"]: i["where"] for i in t[MSAL]["imports"]} == {"msal": f"{FIX / 'app.py'}:3",
+    assert {i["import"]: i["where"] for i in t[MSAL]["imports"]} == {"msal": f"{app}:3",
                                                                        "@azure/msal-node": f"{FIX / 'package.json'}:5"}
     assert res["imports"] == 11  # distinct import names of the two files
     json.dumps(res)  # plain data for rag.py --json and kb_mcp
@@ -145,8 +156,8 @@ def test_import_topics_text_is_read_as_python_then_powershell():
     assert kbfacts.topics_for(text="# import msal\nprint('ldap3')\n", imports=True)["topics"] == []
 
 
-def test_import_topics_lexical_mode_is_unchanged_by_the_signature():
-    res = kbfacts.topics_for([str(FIX / "app.py")])
+def test_import_topics_lexical_mode_is_unchanged_by_the_signature(tmp_path):
+    res = kbfacts.topics_for([str(py(tmp_path, "app.py"))])
     assert set(res) == {"topics", "files", "text", "skipped"}
     assert set(topics(res)) == {MSAL, LDAP, KERB}
     assert set(topics(res)[KERB]["signals"]) == {"kerberos", "kinit", "gssapi"}  # the docstring and the comment count
