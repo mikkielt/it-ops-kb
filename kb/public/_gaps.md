@@ -1094,6 +1094,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
   - Tried 2026-09-29: Microsoft Learn search for the variable (returns only MSB4236, MSB4271 and other MSBuild error pages), the "Use MSBuild project SDKs" page (S-e54zbsgw) and the MSBuild command-line reference (S-5mnhlz54); a GitHub code search finds it only in NuGet.Client and dotnet/dotnet sources and their string resources. Needs a NuGet or MSBuild docs page (for example an MSBuild environment-variables page) that names it. (topic: agents/codebase-mapping)
 - **Which hosts honour global.json `sdk.paths` besides the `dotnet` CLI.** The global.json page (S-zihpu7lj) says the paths apply to commands that engage the .NET SDK and not to an apphost, `dotnet app.dll` or `dotnet exec`; it does not say whether `MSBuild.exe`, Visual Studio or other MSBuild API hosts, whose .NET SDK resolver calls hostfxr's `hostfxr_resolve_sdk2` (S-42ml7nxg), apply them too. (topic: agents/codebase-mapping)
   - Tried 2026-09-29: the global.json page, the "Use MSBuild project SDKs" page and the SDK 10.0.401 resolver wrapper code; hostfxr's SDK resolution (dotnet/runtime `src/native/corehost/fxr`) was not read. Needs that code at the runtime tag shipped with SDK 10.0.401, or a page that lists the hosts. (topic: agents/codebase-mapping)
+- **cargo metadata --no-deps invokes rustc .cargo/config.toml build.rustc** The kb was asked this in a logged lookup of 2026-09-29, and no article answered it (query log finding F-68c59a20a679). Looked in the kb 2026-09-29: `rag.py pack` gives `weak`, with this topic in the lead. Needs an official source that states it (`/kb-research`, or the query log's opt-in research). (topic: agents/codebase-mapping)
 
 ## windows/powershell-static-analysis
 
@@ -1144,3 +1145,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
 ## mecm/collect-client-logs
 
 - **What is the maximum email attachment size?** The kb was asked this in a logged lookup of 2026-09-29, and no article answered it (query log finding F-bd7367a45f3a). Looked in the kb 2026-09-29: `rag.py pack` gives `weak`, with this topic in the lead. Needs an official source that states it (`/kb-research`, or the query log's opt-in research). (topic: mecm/collect-client-logs)
+
+## privacy/nist-sp800-38g
+
+- **architecture decision records ADR format status superseded** The kb was asked this in a logged lookup of 2026-09-28, and no article answered it (query log finding F-f3230e66064f). Looked in the kb 2026-09-29: `rag.py pack` gives `weak`, with this topic in the lead. Needs an official source that states it (`/kb-research`, or the query log's opt-in research). (topic: privacy/nist-sp800-38g)
