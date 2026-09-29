@@ -2,7 +2,7 @@
   "id": "TK-6pi2udtb",
   "kind": "task",
   "title": "Read files at a revision with git cat-file in factdiff.py and kbgit.py",
-  "status": "doing",
+  "status": "done",
   "parent": "BG-n4r5e3dj",
   "priority": "P2",
   "rank": 0,
@@ -30,5 +30,28 @@
     "_tools/test_factdiff.py",
     "_tools/test_history.py"
   ],
-  "claimed_by": "worker-6pi2udtb"
+  "evidence": {
+    "commit": "8f89bb8ff6fe05788c5d7e160f1f4bff40124eff",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "RevisionReadsWithoutGitShow"
+        ],
+        "exit": 0,
+        "sha256": "69ed511d00c4bdcc"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import re,pathlib;hits=[f for f in ('_tools/factdiff.py','_tools/kbgit.py') if re.search(r'\"show\", f\"\\{', pathlib.Path(f).read_text(encoding='utf-8'))];assert not hits,hits"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
