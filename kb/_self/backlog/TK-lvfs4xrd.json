@@ -2,7 +2,7 @@
   "id": "TK-lvfs4xrd",
   "kind": "task",
   "title": "A main pipeline is read by its gate jobs: an unrun gate is unverified, a failed script is red",
-  "status": "doing",
+  "status": "done",
   "parent": "BG-meuqnbjg",
   "priority": "P2",
   "rank": 0,
@@ -43,5 +43,39 @@
     "kb/_self/querylog.md",
     "kb/_self/tools.md"
   ],
-  "claimed_by": "worker-meuqnbjg"
+  "evidence": {
+    "commit": "57a331bdb84a8a279b0194eb893818d3e725d452",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "red_pipeline_unrun_gate_is_not_green"
+        ],
+        "exit": 0,
+        "sha256": "d0cec2ee998b7b3c"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "TestJobVerdict"
+        ],
+        "exit": 0,
+        "sha256": "1b4886dce532d757"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "TestCiNotRed"
+        ],
+        "exit": 0,
+        "sha256": "0895a97042a247b6"
+      }
+    ]
+  }
 }
