@@ -2,7 +2,7 @@
   "id": "BG-u5wubtmv",
   "kind": "bug",
   "title": "kbingest.py survey says nothing when the checkout is at another commit than --rev",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-g5hizdko",
   "sprint": "SP-xourq2gj",
   "priority": "P3",
@@ -33,5 +33,30 @@
     "_tools/test_kbingest.py",
     "_tools/test_querylog_e2e.py"
   ],
-  "claimed_by": "fix-u5wubtmv"
+  "evidence": {
+    "commit": "59232de9159fdc4fcd2083a50f332868320df083",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "kbingest or survey_warns"
+        ],
+        "exit": 0,
+        "sha256": "034827b27a1a58cb"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "survey_warns_of_a_checkout_off_the_commit",
+          "--runxfail"
+        ],
+        "exit": 0,
+        "sha256": "d33f197b47bec723"
+      }
+    ]
+  }
 }
