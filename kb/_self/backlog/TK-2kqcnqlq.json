@@ -2,7 +2,7 @@
   "id": "TK-2kqcnqlq",
   "kind": "task",
   "title": "Record the Linux runner's CPU, memory and concurrency cap in runners.md",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-33lzmm5e",
   "priority": "P2",
   "rank": 0,
@@ -19,5 +19,18 @@
   "touches": [
     "kb/_self/runners.md"
   ],
-  "claimed_by": "orchestrator-SP-76inhw33"
+  "evidence": {
+    "commit": "4e77af7677a66012f2275b21d4c2f37323d71aaf",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import pathlib;t=pathlib.Path('kb/_self/runners.md').read_text(encoding='utf-8');assert 'processors=4' in t and 'memory=8GB' in t and 'concurrent = 1' in t"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
