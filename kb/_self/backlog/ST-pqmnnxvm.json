@@ -2,7 +2,7 @@
   "id": "ST-pqmnnxvm",
   "kind": "story",
   "title": "Skills read the process docs by section, not whole",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-hsyx42zz",
   "sprint": "SP-mqjeanq3",
   "priority": "P2",
@@ -40,5 +40,19 @@
     }
   ],
   "notes": "Baseline census: tool results of 314 transcripts of this project (52 sessions, 262 subagent runs), about 4 characters a token; each result is also re-read from cache on every later turn of its session. Whole-file cat/sed of maintaining.md, content-rules.md, tools.md, querylog.md and the older MAINTAINING.md: about 1.5M characters over about 170 calls; kb-add-topic/SKILL.md read as a file about 62 times (440k characters), kb-research/SKILL.md 13 times (200k). Eight skills open with 'read maintaining.md first, then content-rules.md, tools.md and git.md'. selfdoc.py (stale, map, check) and rag.py show do not print a doc section by heading. Kb facts: public/agents/subagents-vs-deterministic-tools.md:122 (progressive disclosure, DOC S1936), public/claude/skills-and-subagents.md:70 (the skills frontmatter preloads whole skills into a subagent, DOC S2157), public/claude/large-codebases.md:33 (DOC S-4jj4dtg4), public/agents/instruction-and-context-limits.md:114 (DOC S1855). Measure: repeat the census on a comparable sample and compare characters read from these paths.",
-  "claimed_by": "orchestrator-SP-mqjeanq3"
+  "evidence": {
+    "commit": "0885348fc742ec4a9923a243825a0975b10442fd",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "selfdoc_section"
+        ],
+        "exit": 0,
+        "sha256": "df3ff551295154ac"
+      }
+    ]
+  }
 }
