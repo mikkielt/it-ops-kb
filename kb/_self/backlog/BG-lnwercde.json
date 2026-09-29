@@ -2,7 +2,7 @@
   "id": "BG-lnwercde",
   "kind": "bug",
   "title": "kbingest map runs cargo when rust-toolchain.toml names a toolchain path",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-g5hizdko",
   "sprint": "SP-xourq2gj",
   "priority": "P3",
@@ -31,5 +31,29 @@
     "_tools/kbingest.py",
     "_tools/test_kbingest.py"
   ],
-  "claimed_by": "fix-lnwercde"
+  "evidence": {
+    "commit": "496c2f8d57c42adffe0a9032a4c3c3718de13097",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "kbingest"
+        ],
+        "exit": 0,
+        "sha256": "ca98f90df6d5183d"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "kbingest_map_cargo_toolchain_path"
+        ],
+        "exit": 0,
+        "sha256": "7c4f65f2c9e4b4fd"
+      }
+    ]
+  }
 }
