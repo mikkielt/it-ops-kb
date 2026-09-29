@@ -1,0 +1,35 @@
+{
+  "id": "TK-dc7ii6zc",
+  "kind": "task",
+  "title": "Split the raw-read PreToolUse hook so PowerShell calls start it through PowerShell, not sh",
+  "status": "doing",
+  "parent": "BG-rcwroffk",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "The PreToolUse raw-read hook in .claude/settings.json is two entries: matcher Bash runs sh _tools/kbpy as before, matcher PowerShell runs with shell powershell a PowerShell command that finds python3, python or py -3 (3.11+) and runs _tools/kb_hook.py, so each tool call fires one hook and a Windows host without Git Bash gets the hint; test_portability gates the form and runs the PowerShell command with stub interpreters where PowerShell exists",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,sys; h=json.load(open('.claude/settings.json',encoding='utf-8'))['hooks']['PreToolUse']; sys.exit(0 if any('PowerShell' in e.get('matcher','') and any(x.get('shell')=='powershell' and not x.get('command','').startswith('sh ') for x in e['hooks']) for e in h) else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "portability"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/settings.json",
+    "_tools/test_portability.py",
+    "kb/_self/tools.md",
+    "kb/_self/maintaining.md"
+  ],
+  "notes": "Hooks that still start through sh after this task (each fails as a non-blocking hook error on Windows without Git Bash, where shell form goes to PowerShell): .claude/settings.json SessionStart (kbpy --notice, session_start.py, querylog launch, querylog digest, backlog red-pipeline, backlog horizon), SessionEnd (querylog launch), UserPromptSubmit (kb_hook.py, kb_change_router.py, querylog capture), PreToolUse matcher Bash (fine: the Bash tool exists only with Git Bash), PostToolUse, PostToolUseFailure and Stop (querylog capture); .claude-plugin/plugin.json: every hook (kb_hook.py, querylog capture, launch, digest, kbpy --notice). The it-ops-kb-docs plugin's submit_feedback block needs no sh but does not parse in PowerShell: BG-qtphqxt2. .githooks run in git's own sh (Git for Windows), not Claude Code's hook shell. Design: one entry per tool (Bash: sh kbpy; PowerShell: shell powershell, inline finder), not two entries on Bash|PowerShell, so no call fires the hint twice; the PowerShell entry fires only on PowerShell tool calls, which on Linux and macOS need pwsh (opt-in), the executable a powershell-shell hook needs.",
+  "claimed_by": "worker-rcwroffk"
+}
