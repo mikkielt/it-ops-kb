@@ -2,7 +2,7 @@
   "id": "TK-aitnzkal",
   "kind": "task",
   "title": "stdio and HTTP answer the same, against one contract",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-z6fw4er5",
   "priority": "P2",
   "rank": 3,
@@ -32,5 +32,29 @@
     "TK-65xwwvdb",
     "TK-eo5jmjbd"
   ],
-  "claimed_by": "parity-agent"
+  "evidence": {
+    "commit": "7a2ac56bdb0c07d0e24b9e05a82cf8ddf1c6fa91",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "kb_http_parity"
+        ],
+        "exit": 0,
+        "sha256": "2a3db3ec405283c5"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "embed_contract"
+        ],
+        "exit": 0,
+        "sha256": "6dce25bb6a3d2560"
+      }
+    ]
+  }
 }
