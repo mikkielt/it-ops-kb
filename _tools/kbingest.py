@@ -324,13 +324,14 @@ MAP_TIMEOUT = 60  # seconds per mapper command
 MAP_MAX_FILES = 2000  # files one per-file mapper maps before it stops with a note
 MAP_MAX_OUTPUT = 64 * 1024 * 1024  # bytes of a command's output that are parsed
 NOTE_LIMIT = 20  # notes one language keeps before it counts the rest
-# what makes a mapper command's environment offline: proxies that refuse, the tools' own offline switches
+# what makes a mapper command's environment offline: proxies that refuse, the tools' own offline switches (RUSTUP_AUTO_INSTALL=0:
+# a rustup cargo proxy never installs the absent toolchain a rust-toolchain.toml names)
 NETWORK_OFF = {
     "HTTP_PROXY": "http://127.0.0.1:9", "HTTPS_PROXY": "http://127.0.0.1:9", "ALL_PROXY": "http://127.0.0.1:9",
     "http_proxy": "http://127.0.0.1:9", "https_proxy": "http://127.0.0.1:9", "all_proxy": "http://127.0.0.1:9",
     "NO_PROXY": "", "no_proxy": "",
     "GOTOOLCHAIN": "local", "GOPROXY": "off", "GOFLAGS": "-mod=readonly",
-    "CARGO_NET_OFFLINE": "true", "npm_config_offline": "true", "npm_config_update_notifier": "false",
+    "CARGO_NET_OFFLINE": "true", "RUSTUP_AUTO_INSTALL": "0", "npm_config_offline": "true", "npm_config_update_notifier": "false",
     "COREPACK_ENABLE_NETWORK": "0", "DOTNET_CLI_TELEMETRY_OPTOUT": "1", "DOTNET_NOLOGO": "1",
     "DOTNET_SKIP_FIRST_TIME_EXPERIENCE": "1", "PIP_NO_INDEX": "1", "GIT_TERMINAL_PROMPT": "0",
     "PYTHONDONTWRITEBYTECODE": "1",

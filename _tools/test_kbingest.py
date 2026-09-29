@@ -515,6 +515,7 @@ def test_kbingest_map_cargo_runs_the_exact_command_and_reads_the_workspace(langr
     for c in calls:
         assert c["tool"] == "cargo" and Path(c["cwd"]).name == "tree" and not Path(c["cwd"]).exists()
         assert c["env"]["CARGO_NET_OFFLINE"] == "true" and c["env"]["KB_TEST_API_TOKEN"] is None
+        assert c["env"]["RUSTUP_AUTO_INSTALL"] == "0", "a rustup cargo proxy must not install a pinned toolchain"
     assert doc["tools"] == {"rust": {"tool": "cargo", "version": "cargo 1.80.0 (fake 2026-01-01)"}}
     assert doc["packages"] == [{"language": "rust", "name": "app", "path": ".", "version": "0.4.0"},
                                {"language": "rust", "name": "core", "path": "crates/core", "version": "0.4.0"}]

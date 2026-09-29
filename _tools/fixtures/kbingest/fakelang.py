@@ -12,7 +12,7 @@ from pathlib import Path
 tool, args = sys.argv[1], sys.argv[2:]
 mode = os.environ.get("KB_FAKE_MODE", "")
 here = Path.cwd()
-WATCH = ("GOTOOLCHAIN", "GOPROXY", "GOFLAGS", "CARGO_NET_OFFLINE", "HTTPS_PROXY", "http_proxy", "KB_TEST_API_TOKEN")
+WATCH = ("GOTOOLCHAIN", "GOPROXY", "GOFLAGS", "CARGO_NET_OFFLINE", "RUSTUP_AUTO_INSTALL", "HTTPS_PROXY", "http_proxy", "KB_TEST_API_TOKEN")
 log = os.environ.get("KB_FAKE_LOG")
 if log:
     with open(log, "a", encoding="utf-8", newline="\n") as f:

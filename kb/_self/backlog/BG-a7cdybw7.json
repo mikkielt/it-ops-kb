@@ -18,6 +18,7 @@
   "touches": [
     "_tools/kbingest.py",
     "_tools/test_kbingest.py",
+    "_tools/fixtures/kbingest/**",
     "kb/public/agents/codebase-mapping.md",
     "kb/public/_sources.csv",
     "kb/public/_coverage.csv",
