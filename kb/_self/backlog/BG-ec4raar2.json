@@ -1,0 +1,31 @@
+{
+  "id": "BG-ec4raar2",
+  "kind": "bug",
+  "title": "done refuses a story or bug with touches whose work was committed under its tasks",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "backlog.py done's KB-Work rule counts commits naming the item or any of its descendants, so a story or bug with touches whose tasks carried the work is done without an extra commit; a test in test_backlog.py closes such a story, and a planted story with no commit under it or its tasks is still refused",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import pathlib; t=pathlib.Path('_tools/backlog.py').read_text(encoding='utf-8'); assert 'not item_commits(bl.root, [iid] + bl.descendants(iid))' in t"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "kb_work_outside_trailers"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/test_backlog.py"
+  ]
+}
