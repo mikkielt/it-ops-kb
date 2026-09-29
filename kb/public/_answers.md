@@ -2187,3 +2187,15 @@ _Agent: kb-research_
 - See python/uv-windows-install.md.
 
 _Agent: kb-research_
+
+## QK-parsing-powershell-script-parser-parsefile-run. Does parsing a PowerShell script with Parser.ParseFile run any code?
+- The Learn API pages describe `ParseFile` and `ParseInput` as returning a `ScriptBlockAst`, tokens and parse errors; none says in so many words that nothing executes. [DER S-k7hdd27i, S-oeqxq56y: the pages describe parsing only]
+- At PowerShell v7.6.6 both methods tokenize, build the AST, set `ScriptRequirements` and run the post-parse checks (symbol resolution, then semantic checks). [CODE S-ia7is5xj: engine/parser/Parser.cs#Parser.ParseFile]
+- A `using module` statement is resolved during the parse with `Get-Module -FullyQualifiedName <name> -ListAvailable`; a missing module is the parse error `ModuleNotFoundDuringParse`. [CODE S-4bjgu6jw: engine/parser/SymbolResolver.cs#SymbolResolver.GetModulesFromUsingModule]
+- Its classes come from parsing the module's root script for `TypeDefinitionAst` nodes, not from importing it. [CODE S-vbfv4per: engine/Modules/PSModuleInfo.cs#PSModuleInfo.GetExportedTypeDefinitions]
+- A `configuration` block loads the default DSC CIM keywords during the parse. [CODE S-ia7is5xj: engine/parser/Parser.cs#Parser.ConfigurationStatementRule]
+- Conclusion: the parser runs none of the parsed script's code, but a parse can list available modules and load DSC keywords, so a missing `using module` target shows up as a parse error on a machine without it. This is the implementation at v7.6.6, not a documented promise. [DER S-ia7is5xj, S-4bjgu6jw, S-vbfv4per, S-ouafwanl]
+- Open: no Microsoft page states non-execution as a guarantee. [UNK]
+- See windows/powershell-static-analysis.md.
+
+_Agent: kb-research_

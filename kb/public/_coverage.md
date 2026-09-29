@@ -291,6 +291,6 @@ Every topic of this root with its priority (the research order, not importance),
 | `windows/windows-365` | P2 | complete | `windows/windows-365.md` | 19 |
 | `windows/windows-update-management` | P2 | complete | `windows/windows-update-management.md`, `windows/windows-update-management.csv` | 19 |
 | `windows/winget` | P2 | complete | `windows/winget.md`, `windows/winget-policies.csv` | 14 |
-| `windows/powershell-static-analysis` | P3 | complete | `windows/powershell-static-analysis.md` | 17 |
+| `windows/powershell-static-analysis` | P3 | complete | `windows/powershell-static-analysis.md` | 21 |
 | `windows/windows-sandbox` | P3 | complete | `windows/windows-sandbox.md` | 4 |
 <!-- coverage:end -->
