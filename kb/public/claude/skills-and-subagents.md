@@ -2,8 +2,8 @@
 topic: claude/skills-and-subagents
 priority: P2
 applies_to: "Claude Code docs (code.claude.com), skills/sub-agents/agent-teams, retrieved 2026-09-26"
-retrieved_utc: 2026-09-26
-sources: [S2158, S2157, S-qdxfqzln]
+retrieved_utc: 2026-09-29
+sources: [S2158, S2157, S-qdxfqzln, S-ezqg74ki]
 status: complete
 ---
 
@@ -92,6 +92,13 @@ shared task list and direct inter-agent messaging on top of ordinary subagent de
   available to subagents; model = `CLAUDE_CODE_SUBAGENT_MODEL` if set and nothing else assigns one, else the main
   conversation's model), plus helper agents `claude` (catch-all, no fixed model, also the default background-session
   agent), `statusline-setup` (Sonnet), `claude-code-guide` (Haiku). [DOC S2157]
+- A subagent's model comes from the first of these that applies: (1) the `model` parameter Claude passes for that invocation, (2) the definition's `model` frontmatter (`inherit` = the main conversation's model), (3) `CLAUDE_CODE_SUBAGENT_MODEL` set to an alias or model id, (4) the main conversation's model; before v2.1.251 the environment variable came first and overrode the other two, and `inherit` in the variable equals leaving it unset. [DOC S2157]
+- The `model` field takes an alias (`sonnet`, `opus`, `haiku`, `fable`), a full model id, or `inherit`. A family alias in the invocation parameter or the frontmatter resolves to the main conversation's exact model when that model belongs to the same family (so a `sonnet` definition in a Sonnet session runs on the session's Sonnet); an alias in `CLAUDE_CODE_SUBAGENT_MODEL` always resolves to the version the alias names. [DOC S2157]
+- The `sonnet` alias means the latest Sonnet for the provider (Sonnet 5.5 on the Anthropic API at this reading, Sonnet 4.6 on Claude Platform on AWS, Sonnet 4.5 on Bedrock and Google Cloud's Agent Platform), and aliases move to newer versions as Claude Code releases advance; a full model id pins one version. [DOC S-ezqg74ki]
+- `CLAUDE_CODE_SUBAGENT_MODEL` is a default: a definition's `model` or a model Claude passes still wins; adding `CLAUDE_CODE_SUBAGENT_MODEL_FORCE=1` (v2.1.257+) makes it apply to every subagent, teammate and workflow agent, and set alone it runs them on the main conversation's model. [DOC S2157]
+- A per-invocation `model` also holds when the subagent is resumed or sent a follow-up (from v2.1.211; earlier it reverted to the definition's model); subagents inherit the main conversation's extended-thinking setting (from v2.1.198), and `/tasks` names each subagent's model, with its effort when the definition sets one (v2.1.242+). [DOC S2157]
+- When an organization's `availableModels` allowlist blocks a subagent's requested model, Claude Code runs it on the newest permitted version of the family for a family alias, and otherwise on the inherited model, with a warning in interactive sessions. [DOC S2157, S-ezqg74ki]
+- A definition's `model: sonnet` keeps a subagent on the Sonnet alias only while nothing assigns a model earlier in the order: an orchestrator that passes a `model` for the invocation, or a session that sets `CLAUDE_CODE_SUBAGENT_MODEL_FORCE=1` with a model, replaces it. [DER S2157: the resolution order above and the FORCE rule]
 - `CLAUDE_CODE_DISABLE_EXPLORE_PLAN_AGENTS=1` removes only Explore/Plan (Claude reads/explores directly instead);
   `CLAUDE_AGENT_SDK_DISABLE_BUILTIN_AGENTS=1` removes all built-in types in non-interactive mode/Agent SDK sessions.
   [DOC S2157]

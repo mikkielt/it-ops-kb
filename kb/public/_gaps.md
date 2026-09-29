@@ -1047,6 +1047,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
 ## gitlab/automated-merge-requests
 
 - The exit code of `glab auth status` when the host is not signed in: the generated command page (S-d6wuvfpd, gitlab-org/cli @37ebe99d `docs/source/auth/status.md`) describes the checks and flags but no exit status (2026-09-28). [UNK] (topic: gitlab/automated-merge-requests)
+- A failure fingerprint for deduplicating automatic bugs from red pipelines: GitLab's and GitHub's docs describe the job and check-run status fields (already cited here) but neither documents a signature or grouping key for a repeated CI failure, so the fingerprint scheme is the project's own design, not a vendor fact. Looked in docs.gitlab.com and the kb 2026-09-29. [UNK] (topic: gitlab/automated-merge-requests)
 
 ## security/management-plane-hardening
 

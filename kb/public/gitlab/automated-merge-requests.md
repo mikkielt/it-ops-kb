@@ -70,7 +70,7 @@ A script can open a merge request, set it to auto-merge and ask for its source b
 | `merge_request.remove_source_branch` | delete source branch on merge | S-2d2dlaeq |
 | `merge_request.merge_when_pipeline_succeeds` | deprecated 17.11 | S-2d2dlaeq |
 
-See also `gitlab/pipelines-rules.md` (MR pipelines, `merge_request_event`), `gitlab/mr-approvals.md` (approval tiers), `gitlab/protected-branches-tags.md`, `agents/docs-maintenance-agents.md` (committing machine-written data).
+See also `gitlab/git-trailers-and-hooks.md` (commit trailers, `commit-msg` and `pre-push` hooks), `gitlab/pipelines-rules.md` (MR pipelines, `merge_request_event`), `gitlab/mr-approvals.md` (approval tiers), `gitlab/protected-branches-tags.md`, `agents/docs-maintenance-agents.md` (committing machine-written data).
 
 ## Examples
 - SNIPPET: push a bot branch as an auto-merging MR that deletes its branch on merge; context: Git 2.10+, GitLab 17.11+ (`auto_merge`), SSH remote; checked: no [DER S-2d2dlaeq: options from the push-options table]

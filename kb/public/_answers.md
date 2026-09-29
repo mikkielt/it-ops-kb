@@ -1989,6 +1989,26 @@ _Agent: kb-research_
 
 _Agent: kb-research_
 
+## QK-counts-git-trailer-commit-msg-pre. What counts as a git trailer and how do commit-msg and pre-push hooks see it?
+- A trailer block is the last group of lines of the message, preceded by a blank line; its lines are all `Key: value` trailers, or it holds a Git-generated or user-configured trailer and is at least 25% trailers. [DOC S-wtbq3lvm]
+- `git interpret-trailers --parse` prints only those trailers, and `git log --format=%(trailers)` shows the same set. [DOC S-wtbq3lvm, S-d6iv4nbm]
+- `commit-msg` gets the message file as its one argument; `pre-push` gets the remote's name and location and one stdin line per ref (`<local-ref> <local-object> <remote-ref> <remote-object>`, zero object name for a missing remote ref); `--no-verify` skips both. [DOC S-7dwkyip6, S-ziyhuwyc, S-l6s4hfqp]
+- `--trailer` adds nothing when an identical neighbouring trailer exists (`trailer.ifexists` default `addIfDifferentNeighbor`). [DOC S-wjfrtzpf]
+- Conclusion: a `KB-Work` line in a paragraph above the final trailer paragraph is plain text to git, so a checker that means to agree with git calls `git interpret-trailers --parse` and does not rely on the hooks alone, since `--no-verify` skips them. [DER S-wtbq3lvm, S-7dwkyip6: `--parse` run on three messages]
+- Open: no official source names a failure-fingerprint scheme for deduplicating CI failures; that design is the project's own (see `_gaps.md`). [UNK]
+- See gitlab/git-trailers-and-hooks.md, gitlab/automated-merge-requests.md.
+
+_Agent: kb-research_
+
+## QK-order-claude-code-picks-subagent-model. In what order does Claude Code pick a subagent's model, and does the sonnet alias in a definition stay in force?
+- Order: the `model` parameter of the invocation, then the definition's `model` (`inherit` = main model), then `CLAUDE_CODE_SUBAGENT_MODEL`, then the main conversation's model; before v2.1.251 the environment variable came first. [DOC S2157]
+- The `sonnet` alias means the latest Sonnet for the provider and moves with Claude Code releases; a full id pins one version. [DOC S-ezqg74ki]
+- A family alias resolves to the main conversation's own model when it is in that family; `CLAUDE_CODE_SUBAGENT_MODEL_FORCE=1` (v2.1.257+) makes the environment variable win over definitions. [DOC S2157]
+- Conclusion: a `kb-worker` definition with `model: sonnet` follows the newest Sonnet only if the dispatcher passes no `model` for the invocation and no FORCE variable is set; a test can check the definition file and the dispatch text, not the runtime choice. [DER S2157, S-ezqg74ki: resolution order and alias rule]
+- See claude/skills-and-subagents.md.
+
+_Agent: kb-research_
+
 ## R1. Reuse candidates
 
 - **Highest leverage: `pydantic-settings` as a `dependency` for a project's config-file/env-var/flags
