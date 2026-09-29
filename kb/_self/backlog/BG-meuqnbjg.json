@@ -21,6 +21,21 @@
     "ST-fcirbjny",
     "BG-jam2lysj"
   ],
+  "gates": [
+    {
+      "id": "gate-jobs",
+      "kind": "provisional",
+      "question": "Which jobs of a main pipeline must succeed for main to be green, and what do the other jobs and a failed script mean?",
+      "options": [
+        "kb-tests and kb-trailers are the gate: green only when both succeeded; a job whose script ran and failed (failure_reason script_failure) makes the pipeline red whichever job it is (S1 for kb-tests, else S2), since every job is allow_failure; kb-tests-floor, tool-stress and kb-tests-windows never make it unverified when manual, skipped, canceled or failed without running",
+        "every job the pipeline has must succeed (kb-tests-windows waits on the project runner; tool-stress and kb-tests-windows exist only when their paths changed)",
+        "kb-tests, kb-trailers and kb-tests-windows when the pipeline has it; the rest as in the first option"
+      ],
+      "recommendation": "kb-tests and kb-trailers are the gate: green only when both succeeded; a job whose script ran and failed (failure_reason script_failure) makes the pipeline red whichever job it is (S1 for kb-tests, else S2), since every job is allow_failure; kb-tests-floor, tool-stress and kb-tests-windows never make it unverified when manual, skipped, canceled or failed without running",
+      "answer": "kb-tests and kb-trailers are the gate: green only when both succeeded; a job whose script ran and failed (failure_reason script_failure) makes the pipeline red whichever job it is (S1 for kb-tests, else S2), since every job is allow_failure; kb-tests-floor, tool-stress and kb-tests-windows never make it unverified when manual, skipped, canceled or failed without running",
+      "by": "agent"
+    }
+  ],
   "links": [
     "pipeline 2892882880"
   ],
