@@ -2,7 +2,7 @@
   "id": "TK-yuqgx56h",
   "kind": "task",
   "title": "Extract imports and match signals against them in kbfacts",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-kj72lcgb",
   "priority": "P2",
   "rank": 1,
@@ -22,5 +22,19 @@
     "_tools/test_kbfacts*.py",
     "_tools/fixtures/topics_for/**"
   ],
-  "claimed_by": "worker-yuqgx56h"
+  "evidence": {
+    "commit": "e55ececb0ddc09eda373128d3e49812c63caee7a",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "import_topics"
+        ],
+        "exit": 0,
+        "sha256": "ff738e9e8b74229c"
+      }
+    ]
+  }
 }
