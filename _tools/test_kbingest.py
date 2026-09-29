@@ -4,8 +4,14 @@ A throwaway repository with planted files: secret files, vendored and generated 
 by header), a binary and an oversized file are left out; an unset attribute keeps a file; a secret shape in a kept
 file is flagged; an uncommitted change is not read; the pinned urls pass the CODE lint's pinned-source rule; remote
 urls lose their credentials; the refusals exit 2.
+
+The map command (`test_kbingest_map_*`): the scratch worktree is removed and holds the commit, not the working tree;
+`python -m ast` in a subprocess maps a Python repository (imports, packages, entry points; a file named ast.py is never
+run, vendored files are not mapped); a fake toolchain on PATH proves output parsing, the timeout, a missing tool, a bad
+exit and output that is not JSON as notes, and that the environment is network-off and drops credentials; a map goes
+under _cache/ingest/, never under kb/.
 """
-import subprocess, sys
+import json, os, subprocess, sys, time
 from pathlib import Path
 
 import pytest
@@ -13,6 +19,8 @@ import pytest
 from conftest import Repo, TOOLS, git_env, requires_git
 
 import kbfacts, kbingest
+
+FAKE = Path(TOOLS) / "fixtures" / "kbingest" / "fakemap.py"
 
 TOOL = str(Path(TOOLS) / "kbingest.py")
 SECRET_LINE = "pass" + "word: '" + "x" * 12 + "'\n"  # built here so the leak scan of this file stays clean
@@ -114,3 +122,295 @@ def test_parse_remote_and_forge():
     assert kbingest.pin_url("github", "github.com", "o/r", "ab" * 20, "a b.py") == \
         f"https://raw.githubusercontent.com/o/r/{'ab' * 20}/a%20b.py"
     assert kbingest.pin_url("github", "ghe.corp.example.com", "o/r", "ab" * 20, "a.py") is None
+
+
+# ---- map ---------------------------------------------------------------------------------------------------------
+
+def commit_files(path, files):
+    r = Repo(path)
+    Path(r.path).mkdir(parents=True)
+    r.git("init", "-q", "-b", "main")
+    for rel, text in files.items():
+        r.write(rel, text)
+    r.git("add", "-A")
+    r.git("commit", "-q", "-m", "init")
+    return r
+
+
+@pytest.fixture(scope="module")
+def pyrepo(tmp_path_factory):
+    r = commit_files(tmp_path_factory.mktemp("map") / "deploy", {
+        "pkg/__init__.py": "",
+        "pkg/core.py": "import os, sys\nfrom . import util\nfrom pkg.sub import thing as t\nimport a.b as ab\n"
+                       "NOTE = 'Import(names=[alias(name=\"in_a_string\")])'\n\ndef main():\n    pass\n",
+        "pkg/util.py": "from .. import up\nfrom .sibling import x\n",
+        "pkg/sub/__init__.py": "", "pkg/sub/thing.py": "import json\n",
+        "pkg/__main__.py": "from pkg import core\ncore.main()\n",
+        "src/lib/__init__.py": "", "src/lib/x.py": "import re\n",
+        "run.py": "import json\n\nif __name__ == '__main__':\n    print(json.dumps({}))\n",
+        "tests/test_run.py": "import pytest\n",
+        "broken.py": "def (:\n",
+        "ast.py": "raise SystemExit(7)\n",  # `python -m ast` in the worktree root must not run this
+        "vendor/lib.py": "import vendored_only\n",
+        ".env": "TOKEN=x\n",
+        "pyproject.toml": "[project]\nname = 'deploy'\n\n[project.scripts]\ndeploy = 'pkg.core:main'\n",
+        "a.fake": "x\n", "b.fake": "y\n",
+    })
+    r.write("run.py", "import uncommitted_mod\n")  # not committed: the map reads the commit
+    return r
+
+
+def map_run(repo, out, *args, scratch=None):
+    env = git_env()
+    if scratch is not None:
+        env.update(TMPDIR=str(scratch), TEMP=str(scratch), TMP=str(scratch))
+    p = subprocess.run([sys.executable, TOOL, "map", repo.path, "--out", str(out), *args], capture_output=True,
+                       text=True, encoding="utf-8", errors="replace", env=env, timeout=120)
+    return p.returncode, p.stdout + p.stderr
+
+
+def worktree_count(repo):
+    return sum(1 for ln in repo.git("worktree", "list", "--porcelain").splitlines() if ln.startswith("worktree "))
+
+
+@requires_git
+def test_kbingest_map_python_ast_subprocess(pyrepo, tmp_path):
+    scratch = tmp_path / "scratch"
+    scratch.mkdir()
+    out = tmp_path / "deploy.json"
+    code, text = map_run(pyrepo, out, "--lang", "python", scratch=scratch)
+    assert code == 0, text
+    doc = json.loads(out.read_text(encoding="utf-8"))
+    assert doc["format"] == 1 and doc["commit"] == pyrepo.rev("HEAD") and doc["repo"] == "deploy"
+    assert doc["tools"]["python"]["tool"] == "python" and doc["tools"]["python"]["version"].startswith("Python 3.")
+    assert "fake" not in doc["tools"]  # --lang python
+    assert {(p["name"], p["path"]) for p in doc["packages"]} == \
+        {("pkg", "pkg"), ("pkg.sub", "pkg/sub"), ("lib", "src/lib")}
+    imports = {i["path"]: i["imports"] for i in doc["imports"]}
+    assert imports["pkg/core.py"] == [".util", "a.b", "os", "pkg.sub", "sys"]  # the string that looks like a node is not one
+    assert imports["pkg/util.py"] == ["..up", ".sibling"]
+    assert imports["run.py"] == ["json"]  # the commit, not the working tree
+    assert "vendored_only" not in json.dumps(doc) and not any(k.startswith("vendor/") for k in imports)
+    kinds = {(e["path"], e["kind"]) for e in doc["entry_points"]}
+    assert {("run.py", "main-guard"), ("pkg/__main__.py", "module-main")} <= kinds
+    assert ("pyproject.toml", "console-script") in kinds
+    notes = [n["note"] for n in doc["notes"]]
+    assert any(n.startswith("python -m ast broken.py: exit 1") for n in notes), notes  # a syntax error is a note
+    assert not any("exit 7" in n for n in notes), "the repository's ast.py ran"
+    assert worktree_count(pyrepo) == 1 and list(scratch.iterdir()) == []  # the scratch worktree and its directory are gone
+    assert pyrepo.path not in json.dumps(doc) and str(scratch) not in json.dumps(doc)
+
+
+@requires_git
+def test_kbingest_map_planted_ast_shadow_is_not_run(tmp_path):
+    """Planted: a repository whose ast.py would print a marker if `-m ast` ran it from the working directory."""
+    r = commit_files(tmp_path / "shadow", {"ast.py": "import sys\nsys.stderr.write('SHADOW RAN\\n')\nsys.exit(7)\n",
+                                           "m.py": "import os\n"})
+    out = tmp_path / "shadow.json"
+    code, text = map_run(r, out, "--lang", "python")
+    doc = json.loads(out.read_text(encoding="utf-8"))
+    assert code == 0 and "SHADOW RAN" not in text + json.dumps(doc), text
+    assert {i["path"]: i["imports"] for i in doc["imports"]} == {"ast.py": ["sys"], "m.py": ["os"]}  # parsed, not run
+
+
+@requires_git
+def test_kbingest_map_symlink_is_not_followed(tmp_path):
+    outside = tmp_path / "outside.py"
+    outside.write_text("import stolen_module\n", encoding="utf-8")
+    r = Repo(tmp_path / "links")
+    Path(r.path).mkdir()
+    r.git("init", "-q", "-b", "main")
+    r.write("ok.py", "import os\n")
+    try:
+        os.symlink(outside, Path(r.path) / "link.py")
+    except (OSError, NotImplementedError, AttributeError):
+        pytest.skip("symbolic links are not available here")
+    r.git("add", "-A")
+    r.git("commit", "-q", "-m", "init")
+    if r.git("ls-files", "-s", "link.py").split()[0] != "120000":
+        pytest.skip("git stores no symbolic link here")
+    out = tmp_path / "links.json"
+    code, text = map_run(r, out)
+    doc = json.loads(out.read_text(encoding="utf-8"))
+    assert code == 0 and "stolen_module" not in json.dumps(doc), text
+    assert any(n["note"].startswith("link.py: not a regular file") for n in doc["notes"]), doc["notes"]
+
+
+# The fake toolchain: `fakemap` on PATH is a shim over fixtures/kbingest/fakemap.py.
+
+def install_fake(tmp_path, monkeypatch, name="fakemap"):
+    bindir = tmp_path / "bin"
+    bindir.mkdir(exist_ok=True)
+    if os.name == "nt":
+        (bindir / f"{name}.cmd").write_text(f'@"{sys.executable}" "{FAKE}" %*\r\n', encoding="utf-8", newline="")
+    else:
+        shim = bindir / name
+        shim.write_text(f'#!/bin/sh\nexec "{sys.executable}" "{FAKE}" "$@"\n', encoding="utf-8", newline="\n")
+        shim.chmod(0o755)
+    monkeypatch.setenv("PATH", str(bindir) + os.pathsep + os.environ.get("PATH", ""))
+    return bindir
+
+
+class FakeMapper(kbingest.Mapper):
+    language = "fake"
+    name = "fakemap"
+    tool = "fakemap"
+
+    def __init__(self, *steps, tool="fakemap"):
+        self.steps, self.tool, self.seen = steps or ("list",), tool, {}
+
+    def files(self, rows):
+        return sorted(p for p, _k in rows if p.endswith(".fake"))
+
+    def map(self, ctx, files):
+        for step in self.steps:
+            data = ctx.json([self.tool, step], label=f"fakemap {step}")
+            self.seen[step] = data
+            if isinstance(data, dict):
+                for pkg in data.get("packages", []):
+                    ctx.add_package(pkg["name"], pkg["path"])
+                for path, mods in data.get("imports", {}).items():
+                    ctx.add_imports(path, mods)
+                for ep in data.get("entry_points", []):
+                    ctx.add_entry_point(ep["path"], ep["kind"], ep.get("name"))
+
+
+def fake_map(pyrepo, tmp_path, monkeypatch, mapper, *args):
+    monkeypatch.setattr(kbingest, "MAPPERS", [mapper])
+    out = tmp_path / "fake.json"
+    code = kbingest.main(["map", pyrepo.path, "--out", str(out), *args])
+    return code, json.loads(out.read_text(encoding="utf-8"))
+
+
+@requires_git
+def test_kbingest_map_fake_toolchain_output_is_parsed(pyrepo, tmp_path, monkeypatch):
+    install_fake(tmp_path, monkeypatch)
+    code, doc = fake_map(pyrepo, tmp_path, monkeypatch, FakeMapper("list"))
+    assert code == 0
+    assert doc["tools"] == {"fake": {"tool": "fakemap", "version": "fakemap 1.2.3 (fake toolchain)"}}
+    assert doc["packages"] == [{"language": "fake", "name": "app", "path": "src"}]
+    assert doc["imports"] == [{"language": "fake", "path": "src/a.fake", "imports": ["x", "y"]}]  # sorted, de-duplicated
+    assert doc["entry_points"] == [{"language": "fake", "path": "src/a.fake", "kind": "main", "name": "app"}]
+    assert doc["notes"] == []  # an unknown field in the tool's output is ignored, not a note
+
+
+@requires_git
+def test_kbingest_map_fake_toolchain_timeout_is_a_note(pyrepo, tmp_path, monkeypatch):
+    """Planted: a tool that sleeps 60 s under --timeout 2."""
+    install_fake(tmp_path, monkeypatch)
+    started = time.monotonic()
+    code, doc = fake_map(pyrepo, tmp_path, monkeypatch, FakeMapper("sleep", "list"), "--timeout", "2")
+    assert time.monotonic() - started < 40
+    assert code == 0
+    assert {"language": "fake", "note": "fakemap sleep: timed out after 2s"} in doc["notes"], doc["notes"]
+    assert doc["packages"] and doc["imports"], "the next command still ran after the timeout"
+    assert worktree_count(pyrepo) == 1
+
+
+@requires_git
+def test_kbingest_map_missing_toolchain_is_a_note(pyrepo, tmp_path, monkeypatch):
+    """Planted: a mapper whose program is on no PATH."""
+    code, doc = fake_map(pyrepo, tmp_path, monkeypatch, FakeMapper("list", tool="no-such-toolchain-kb"))
+    assert code == 0, "a missing toolchain is a note, not an error"
+    assert doc["tools"] == {} and doc["packages"] == [] and doc["imports"] == []
+    assert doc["notes"] == [{"language": "fake",
+                             "note": "toolchain not installed: fakemap (2 fake files not mapped)"}]
+
+
+@requires_git
+def test_kbingest_map_bad_output_and_exit_are_notes(pyrepo, tmp_path, monkeypatch):
+    """Planted: output that is not JSON, and a non-zero exit with a stderr message."""
+    install_fake(tmp_path, monkeypatch)
+    code, doc = fake_map(pyrepo, tmp_path, monkeypatch, FakeMapper("garbage", "fail", "list"))
+    assert code == 0
+    notes = [n["note"] for n in doc["notes"]]
+    assert any(n.startswith("fakemap garbage: output is not JSON") for n in notes), notes
+    assert "fakemap fail: exit 3: boom: cannot read the project" in notes, notes  # the first stderr line only
+    assert doc["packages"], "the command after the failures still ran"
+
+
+@requires_git
+def test_kbingest_map_mapper_crash_is_a_note_and_the_worktree_goes(pyrepo, tmp_path, monkeypatch):
+    install_fake(tmp_path, monkeypatch)
+
+    class Crashing(FakeMapper):
+        def map(self, ctx, files):
+            raise ValueError("planted")
+
+    code, doc = fake_map(pyrepo, tmp_path, monkeypatch, Crashing("list"))
+    assert code == 0
+    assert doc["notes"] == [{"language": "fake", "note": "fakemap: mapper failed: ValueError: planted"}]
+    assert worktree_count(pyrepo) == 1
+
+
+@requires_git
+def test_kbingest_map_environment_is_network_off(pyrepo, tmp_path, monkeypatch):
+    """Planted: a credential and a proxy in the caller's environment, and a harmless variable that must pass."""
+    install_fake(tmp_path, monkeypatch)
+    monkeypatch.setenv("KB_TEST_API_TOKEN", "planted-token")
+    monkeypatch.setenv("KB_TEST_KEEP", "kept")
+    monkeypatch.setenv("http_proxy", "http://proxy.corp.example.com:3128")
+    m = FakeMapper("env")
+    code, doc = fake_map(pyrepo, tmp_path, monkeypatch, m)
+    assert code == 0
+    env = m.seen["env"]["env"]
+    assert env["KB_TEST_API_TOKEN"] is None, "a credential reached the mapper command"
+    assert env["KB_TEST_KEEP"] == "kept"
+    assert env["http_proxy"] == "http://127.0.0.1:9" and env["HTTPS_PROXY"] == "http://127.0.0.1:9"
+    assert env["GOTOOLCHAIN"] == "local" and env["GOPROXY"] == "off"
+    assert env["CARGO_NET_OFFLINE"] == "true" and env["npm_config_offline"] == "true"
+    files = m.seen["env"]["files"]  # the command ran in the worktree of the commit
+    assert "pkg" in files and "a.fake" in files and "uncommitted_mod" not in json.dumps(files)
+    assert "planted-token" not in json.dumps(doc)
+
+
+def test_kbingest_map_scrub_env():
+    env = kbingest.scrub_env({"PATH": "/bin", "GITLAB_TOKEN": "t", "AWS_SECRET_ACCESS_KEY": "s", "Https_Proxy": "p",
+                              "HOME": "/home/jan.kowalski", "GOTOOLCHAIN": "auto"})
+    assert env["PATH"] == "/bin" and env["HOME"] == "/home/jan.kowalski"
+    assert "GITLAB_TOKEN" not in env and "AWS_SECRET_ACCESS_KEY" not in env and "Https_Proxy" not in env
+    assert env["GOTOOLCHAIN"] == "local"  # offline settings win over the caller's
+
+
+def test_kbingest_map_notes_are_capped():
+    ctx = kbingest.MapCtx("/nowhere", {}, 1, "fake")
+    for i in range(kbingest.NOTE_LIMIT + 5):
+        ctx.note(f"n{i} /nowhere/x")
+    ctx.finish()
+    assert len(ctx.notes) == kbingest.NOTE_LIMIT + 1 and ctx.notes[-1] == "5 more notes left out"
+    assert ctx.notes[0] == "n0 <worktree>/x"  # the scratch path never reaches the map
+
+
+@requires_git
+def test_kbingest_map_refusals(pyrepo, tmp_path):
+    kb = Path(kbingest.kbcommon.KB_DIR)
+    code, text = map_run(pyrepo, kb / "public" / "map.json")
+    assert code == 2 and "never under kb/" in text and not (kb / "public" / "map.json").exists()
+    assert map_run(pyrepo, tmp_path / "x.json", "--lang", "cobol")[0] == 2
+    assert map_run(pyrepo, tmp_path / "x.json", "--rev", "no-such-rev")[0] == 2
+    assert not (tmp_path / "x.json").exists()
+    bad = Repo(tmp_path / "plain")
+    Path(bad.path).mkdir()
+    assert map_run(bad, tmp_path / "y.json")[0] == 2  # not a repository
+    assert worktree_count(pyrepo) == 1
+
+
+@requires_git
+def test_kbingest_map_default_output_is_under_cache_ingest(pyrepo, tmp_path, monkeypatch):
+    monkeypatch.setattr(kbingest, "INGEST_CACHE", tmp_path / "_cache" / "ingest")
+    monkeypatch.setattr(kbingest, "MAPPERS", [FakeMapper("list", tool="no-such-toolchain-kb")])  # a note, still a map
+    assert kbingest.main(["map", pyrepo.path]) == 0
+    written = list((tmp_path / "_cache" / "ingest").iterdir())
+    assert [p.name for p in written] == [f"deploy-{pyrepo.rev('HEAD')[:12]}.json"]
+    assert not kbingest.under_kb(written[0])
+    assert kbingest.under_kb(Path(kbingest.kbcommon.KB_DIR) / "public" / "x.json")
+
+
+def test_kbingest_map_ast_parser_planted_nodes():
+    dump = "Module(\n body=[\n  Expr(\n   value=Constant(value='Import(names=[alias(name=\"x\")])')),\n  Import(\n   names=[\n    alias(name='a.b', asname='c')]),\n" \
+           "  ImportFrom(\n   module='m',\n   names=[\n    alias(name='n')],\n   level=2)])"
+    assert kbingest.ast_imports_and_main(dump) == ({"a.b", "..m"}, False)
+    guard = "Module(\n body=[\n  If(\n   test=Compare(\n    left=Name(id='__name__', ctx=Load()),\n    ops=[Eq()],\n    comparators=[\n     Constant(value='__main__')]),\n   body=[\n    Pass()])])"
+    assert kbingest.ast_imports_and_main(guard) == (set(), True)
+    other = guard.replace("'__main__'", "'other'")
+    assert kbingest.ast_imports_and_main(other) == (set(), False)
