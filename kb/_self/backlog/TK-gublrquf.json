@@ -2,7 +2,7 @@
   "id": "TK-gublrquf",
   "kind": "task",
   "title": "Split route runs the reader and the researcher and sums them",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-tobxg7ui",
   "priority": "P1",
   "rank": 2,
@@ -33,5 +33,29 @@
     "TK-3iesrs66"
   ],
   "notes": "agent_bench.route mirrors kb_ask's routing for the benchmarks; it changes in TK-inhsi42b “route-by-verdict benchmark scenario”, not here.",
-  "claimed_by": "worker-gublrquf"
+  "evidence": {
+    "commit": "34b25af73c78021047d3f656649e5bb65bc6f964",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "TestKbAskRoute"
+        ],
+        "exit": 0,
+        "sha256": "7e98da2ffa1e2cee"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "test_kb_ask"
+        ],
+        "exit": 0,
+        "sha256": "c1fbd6e8c6d35906"
+      }
+    ]
+  }
 }
