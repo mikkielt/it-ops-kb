@@ -2,7 +2,7 @@
   "id": "TK-22gyfp2h",
   "kind": "task",
   "title": "Skills read the sections they need",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-pqmnnxvm",
   "priority": "P2",
   "rank": 0,
@@ -24,5 +24,18 @@
   "depends_on": [
     "TK-jsx4wea4"
   ],
-  "claimed_by": "worker-22gyfp2h"
+  "evidence": {
+    "commit": "530be5576b2a1030660781c2c4dabcc5f8703630",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/selfdoc.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "3db513ebafdfe3a2"
+      }
+    ]
+  }
 }
