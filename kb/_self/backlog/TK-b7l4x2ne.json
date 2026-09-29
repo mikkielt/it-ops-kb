@@ -2,7 +2,7 @@
   "id": "TK-b7l4x2ne",
   "kind": "task",
   "title": "Code-lane branch push with merge-request push options in sync",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-vcf3r6qv",
   "priority": "P2",
   "rank": 0,
@@ -26,5 +26,19 @@
   "depends_on": [
     "TK-e3ouzras"
   ],
-  "claimed_by": "worker-b7l4x2ne"
+  "evidence": {
+    "commit": "0eebaa229ba8dc7872fc0ff12fd6766cd8d13968",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "TestCodeLaneSync"
+        ],
+        "exit": 0,
+        "sha256": "5277948122d91be5"
+      }
+    ]
+  }
 }
