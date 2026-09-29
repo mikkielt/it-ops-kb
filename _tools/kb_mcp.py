@@ -9,7 +9,7 @@
                                      servers of .claude-plugin/it-ops-kb-docs/.mcp.json at local scope (`claude mcp
                                      add --scope local`: this machine and this clone only), skipping names already there
 
-Tools (all read-only; they wrap rag.py and kbfacts.py and read the kb files, never the network):
+Tools (all read-only; the kb_* tools wrap rag.py and kbfacts.py and read the kb files, never the network):
   kb_pack    the evidence pack for a question, like `rag.py pack`: a coverage verdict (good, weak, none), the best fact
              lines grouped by article with path:line and tag, and one footer of the cited sources' urls. Call it first.
              `questions` (1-6) batches the parts of a multi-part question: a section per part, one shared footer.
@@ -31,6 +31,14 @@ Tools (all read-only; they wrap rag.py and kbfacts.py and read the kb files, nev
              found in the files or text given (paths relative to the host project, CLAUDE_PROJECT_DIR or the cwd);
              a server limited to named roots (--roots) refuses paths, which would read its own files, and takes text
 
+Live docs (the unlimited stdio server only: off under --roots and with KB_LIVE_DOCS=0, and kb_http.py never serves them): two more tools call the remote
+documentation servers of .claude-plugin/it-ops-kb-docs/.mcp.json over Streamable HTTP and keep each answer 7 days on disk
+(`_cache/live-docs/`, or ${CLAUDE_PLUGIN_DATA}/live-docs; KB_DOCS_CACHE names another directory), keyed by server, tool
+and arguments; an older entry is fetched again, an error is never stored:
+  docs_search  server (microsoft-learn, claude-code-docs, mcp-docs) + query: the server's search tool
+  docs_fetch   server + target: microsoft-learn's page fetch (target = page url), or the other two servers' read-only
+               filesystem tool (target = a command such as `head -200 /path/page.mdx`)
+
 One server serves every root (kb/public, a team's kb/<name>/, the KB_ROOTS directories), or only those --roots
 names, in every tool and kb_status: paths and topics print qualified (`public/intune/x.md:12`), and kb_pack,
 kb_search, kb_facts and kb_audit take an optional `root`, one of the served roots.
@@ -45,7 +53,8 @@ client's `server/discover` gets supportedVersions, and each modern request's `_m
 (-32022 UnsupportedProtocolVersionError otherwise). Every result carries `resultType: "complete"`, which 2026-07-28
 requires. Only JSON-RPC messages go to stdout; the server exits on EOF.
 """
-import contextlib, csv, io, json, os, re, subprocess, sys, threading, time
+import contextlib, csv, hashlib, http.client, io, json, os, re, subprocess, sys, threading, time
+import urllib.error, urllib.request
 
 TOOLS = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, TOOLS)
@@ -500,6 +509,219 @@ HANDLERS = {"kb_pack": kb_pack, "kb_facts": kb_facts, "kb_audit": kb_audit, "kb_
             "kb_topics_for": kb_topics_for}
 
 
+# ---------------------------------------------------------------- live docs
+
+DOCS_TTL_S = 7 * 24 * 3600  # a cached answer is served for 7 days, then fetched again
+DOCS_TIMEOUT_S = 60
+DOCS_PROTOCOL = "2025-11-25"
+# per server, the remote tool each kind of call reaches and the argument that carries the text. Only these are called:
+# never a server's submit_feedback (it posts text outside this repository).
+LIVE_SERVERS = {
+    "microsoft-learn": {"search": ("microsoft_docs_search", "query"), "fetch": ("microsoft_docs_fetch", "url")},
+    "claude-code-docs": {"search": ("search_claude_code_docs", "query"),
+                         "fetch": ("query_docs_filesystem_claude_code_docs", "command")},
+    "mcp-docs": {"search": ("search_model_context_protocol", "query"),
+                 "fetch": ("query_docs_filesystem_model_context_protocol", "command")},
+}
+
+
+def live_enabled():
+    """True for the team's own stdio server (main() sets LIVE_ON when no --roots limits it) unless KB_LIVE_DOCS=0;
+    kb_http.py never sets it, so a remote client cannot make this machine fetch pages or fill its cache."""
+    return LIVE_ON[0] and os.environ.get("KB_LIVE_DOCS") != "0"
+
+
+LIVE_ON = [False]
+
+
+def docs_urls():
+    """{server: url} from the docs plugin's .mcp.json, the one place the urls live."""
+    try:
+        with open(DOCS_MCP, encoding="utf-8") as f:
+            servers = json.load(f)["mcpServers"]
+    except (OSError, ValueError, KeyError) as e:
+        raise ToolError(f"cannot read the docs servers from {os.path.basename(DOCS_MCP)}: {e}")
+    return {n: c["url"] for n, c in servers.items() if isinstance(c, dict) and c.get("url")}
+
+
+def docs_cache_dir():
+    where = os.environ.get("KB_DOCS_CACHE")
+    return where or os.path.join(os.environ.get("CLAUDE_PLUGIN_DATA") or os.path.join(kbcommon.HOME, "_cache"), "live-docs")
+
+
+def docs_cache_key(server, tool, arguments):
+    canonical = json.dumps([server, tool, arguments], sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
+
+def docs_cache_read(key, now):
+    """(text, fetched) stored under `key` when it is younger than DOCS_TTL_S (and not from the future), else None: a
+    missing, unreadable or expired entry is fetched again."""
+    try:
+        with open(os.path.join(docs_cache_dir(), key + ".json"), encoding="utf-8") as f:
+            entry = json.load(f)
+        fetched, text = float(entry["fetched"]), entry["text"]
+        return (text, fetched) if isinstance(text, str) and 0 <= now - fetched < DOCS_TTL_S else None
+    except (OSError, ValueError, KeyError, TypeError):
+        return None
+
+
+def docs_cache_write(key, server, tool, arguments, text, now):
+    """Store one answer with the time it was fetched. Best effort: a cache that cannot be written only costs a refetch."""
+    entry = {"server": server, "tool": tool, "arguments": arguments, "fetched": now,
+             "fetched_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(now)), "text": text}
+    folder = docs_cache_dir()
+    try:
+        os.makedirs(folder, exist_ok=True)
+        tmp = os.path.join(folder, f"{key}.{os.getpid()}.tmp")
+        with open(tmp, "w", encoding="utf-8", newline="\n") as f:
+            json.dump(entry, f, ensure_ascii=False)
+        os.replace(tmp, os.path.join(folder, key + ".json"))
+    except OSError as e:
+        print(f"kb_mcp: live-docs cache not written: {e}", file=sys.stderr)
+
+
+def sse_messages(body):
+    """The JSON-RPC messages in a text/event-stream body: each event's `data:` lines joined by newlines."""
+    out, data = [], []
+    for line in body.splitlines() + [""]:
+        if line.startswith("data:"):
+            data.append(line[6:] if line.startswith("data: ") else line[5:])
+        elif not line and data:
+            try:
+                out.append(json.loads("\n".join(data)))
+            except ValueError:
+                pass
+            data = []
+    return out
+
+
+class RemoteMcp:
+    """A minimal Streamable HTTP MCP client (the 2025-11-25 handshake): POST initialize; keep the `Mcp-Session-Id` the
+    server returns and send it, with the negotiated `MCP-Protocol-Version`, on every later request; POST
+    notifications/initialized; then tools/call. A reply is application/json or text/event-stream; either yields the
+    JSON-RPC message whose id matches the request."""
+
+    def __init__(self, url, timeout=DOCS_TIMEOUT_S):
+        self.url, self.timeout, self.session, self.version, self.next_id = url, timeout, None, None, 0
+
+    def post(self, message):
+        headers = {"Content-Type": "application/json", "Accept": "application/json, text/event-stream",
+                   "User-Agent": "it-ops-kb-live-docs/1"}
+        if self.session:
+            headers["Mcp-Session-Id"] = self.session
+        if self.version:
+            headers["MCP-Protocol-Version"] = self.version
+        req = urllib.request.Request(self.url, data=json.dumps(message).encode("utf-8"), headers=headers, method="POST")
+        try:
+            with urllib.request.urlopen(req, timeout=self.timeout) as r:
+                body = r.read().decode("utf-8", "replace")
+                ctype = (r.headers.get_content_type() or "").lower()
+                session = r.headers.get("Mcp-Session-Id")
+        except urllib.error.HTTPError as e:
+            raise ToolError(f"{self.url}: HTTP {e.code}")
+        except (urllib.error.URLError, http.client.HTTPException, OSError, ValueError) as e:  # ValueError: a malformed url
+            raise ToolError(f"{self.url}: {getattr(e, 'reason', e)}")
+        if session:
+            self.session = session
+        if "id" not in message:  # a notification: 202, no body to read
+            return None
+        for m in sse_messages(body) if ctype == "text/event-stream" else self.json_messages(body):
+            if isinstance(m, dict) and m.get("id") == message["id"]:
+                return m
+        raise ToolError(f"{self.url}: no reply to {message.get('method')}")
+
+    @staticmethod
+    def json_messages(body):
+        try:
+            data = json.loads(body)
+        except ValueError:
+            return []
+        return data if isinstance(data, list) else [data]
+
+    def request(self, method, params):
+        self.next_id += 1
+        reply = self.post({"jsonrpc": "2.0", "id": self.next_id, "method": method, "params": params})
+        if "error" in reply:
+            err = reply["error"]
+            raise ToolError(f"{self.url}: {method}: {err.get('message', err) if isinstance(err, dict) else err}")
+        return reply.get("result") or {}
+
+    def start(self):
+        init = self.request("initialize", {"protocolVersion": DOCS_PROTOCOL, "capabilities": {},
+                                           "clientInfo": {"name": "it-ops-kb", "version": VERSION}})
+        self.version = init.get("protocolVersion") or DOCS_PROTOCOL
+        self.post({"jsonrpc": "2.0", "method": "notifications/initialized"})
+
+    def call(self, tool, arguments):
+        """The text of a tools/call result; an isError result or an empty one is a ToolError (never cached)."""
+        res = self.request("tools/call", {"name": tool, "arguments": arguments})
+        text = "\n".join(c.get("text", "") for c in res.get("content") or [] if isinstance(c, dict) and c.get("type") == "text")
+        if res.get("isError"):
+            raise ToolError(f"{self.url}: {tool} failed: {text.strip()[:300]}")
+        if not text.strip():
+            raise ToolError(f"{self.url}: {tool} returned no text")
+        return text
+
+
+def docs_call(args, kind):
+    """One live-docs call: the cache first, else the remote server. The text comes under a one-line header naming the
+    server, the fetch date and whether it came from the cache."""
+    server = str(args.get("server") or "").strip()
+    if server not in LIVE_SERVERS:
+        raise ToolError(f"server must be one of {', '.join(LIVE_SERVERS)}")
+    field = "query" if kind == "search" else "target"
+    value = str(args.get(field) or "").strip()
+    if not value:
+        raise ToolError(f"{field} is empty")
+    tool, arg_name = LIVE_SERVERS[server][kind]
+    arguments = {arg_name: value}
+    key, now = docs_cache_key(server, tool, arguments), time.time()
+    hit = docs_cache_read(key, now)
+    if hit:
+        text, fetched, how = hit[0], hit[1], "from the cache, "
+    else:
+        url = docs_urls().get(server)
+        if not url:
+            raise ToolError(f"{server}: no url in {os.path.basename(DOCS_MCP)}")
+        client = RemoteMcp(url)
+        client.start()
+        text, fetched, how = client.call(tool, arguments), now, ""
+        docs_cache_write(key, server, tool, arguments, text, now)
+    when = time.strftime("%Y-%m-%d", time.gmtime(fetched))
+    return f"live docs, not in the kb: {server} {tool} ({how}fetched {when}; kept {DOCS_TTL_S // 86400} days)\n\n{text}"
+
+
+def docs_search(args):
+    return docs_call(args, "search")
+
+
+def docs_fetch(args):
+    return docs_call(args, "fetch")
+
+
+LIVE_DOCS = "Live documentation from a remote docs server (not kb facts, not live device or directory data), kept 7 days on disk. "
+SERVER_PROP = {"type": "string", "enum": list(LIVE_SERVERS),
+               "description": "microsoft-learn (Microsoft products), claude-code-docs (Claude Code), mcp-docs (the MCP specification)"}
+LIVE_ANNOTATIONS = {"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True, "openWorldHint": True}
+LIVE_TOOL_LIST = [
+    {"name": "docs_search", "title": "Search the live docs",
+     "description": LIVE_DOCS + "Search one docs server; the same server and query again within 7 days is answered from "
+                    "disk. Use when kb_pack has no answer; label the answer live docs, not in the kb.",
+     "inputSchema": {"type": "object", "properties": {"server": SERVER_PROP, "query": {"type": "string", "description": "search text"}},
+                     "required": ["server", "query"], "additionalProperties": False},
+     "annotations": {"title": "Search the live docs", **LIVE_ANNOTATIONS}},
+    {"name": "docs_fetch", "title": "Read a live docs page",
+     "description": LIVE_DOCS + "Read one page: microsoft-learn takes the page url; claude-code-docs and mcp-docs take a "
+                    "read-only command on their docs filesystem, e.g. `head -200 /path/page.mdx`. Cached like docs_search.",
+     "inputSchema": {"type": "object", "properties": {"server": SERVER_PROP, "target": {
+         "type": "string", "description": "microsoft-learn: the page url; the others: a command such as `head -200 /path/page.mdx`"}},
+         "required": ["server", "target"], "additionalProperties": False},
+     "annotations": {"title": "Read a live docs page", **LIVE_ANNOTATIONS}},
+]
+LIVE_HANDLERS = {"docs_search": docs_search, "docs_fetch": docs_fetch}
+
+
 # ---------------------------------------------------------------- protocol
 
 def result(msg_id, res):
@@ -544,15 +766,17 @@ def handle(msg):
     if method == "ping":
         return result(msg_id, {})
     if method == "tools/list":
-        return result(msg_id, {"tools": TOOL_LIST, "ttlMs": 3600000, "cacheScope": "public"})
+        return result(msg_id, {"tools": TOOL_LIST + (LIVE_TOOL_LIST if live_enabled() else []), "ttlMs": 3600000,
+                               "cacheScope": "public"})
     if method == "tools/call":
         name, args = params.get("name"), params.get("arguments") or {}
-        if name not in HANDLERS:
+        handlers = {**HANDLERS, **LIVE_HANDLERS} if live_enabled() else HANDLERS
+        if name not in handlers:
             return error(msg_id, -32602, f"Unknown tool: {name}")
         if not isinstance(args, dict):
             return error(msg_id, -32602, "arguments must be an object")
         try:
-            text, is_error = HANDLERS[name](args), False
+            text, is_error = handlers[name](args), False
         except ToolError as e:
             text, is_error = f"error: {e}", True
         except (TypeError, ValueError) as e:
@@ -626,6 +850,9 @@ def main():
     if "--status" in sys.argv[1:]:
         print(kb_status({}))
         return
+    # the team's own stdio server offers the live-docs tools; a server limited to named roots (--roots: a host's child, which
+    # serves clients outside the team) and kb_http.py, which calls handle() alone, do not
+    LIVE_ON[0] = not limited()
     threading.Thread(target=warm, daemon=True).start()
     serve()
 

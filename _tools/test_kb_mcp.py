@@ -26,6 +26,11 @@ test_status_*   how far a clone or an installed plugin is behind the kb it follo
 test_kb_mcp_pack_ignores_freshness_banner  the tests that assert pack text start the server with quiet_upstream
                 (KB_NO_UPSTREAM=1), so they pass in a clone or worktree behind its upstream: in a planted behind
                 clone the pack opens with its verdict that way and with the kb copy line without it.
+test_live_docs_cache_*  docs_search and docs_fetch against an in-process HTTP stub (no network): the client's
+                handshake (session id and protocol version echoed, JSON and SSE replies); the same server and query
+                within 7 days makes no second HTTP call, an 8-day-old entry makes one; a query, a server or a tool
+                that differs is its own entry; an error is never cached; only the unlimited stdio server lists the tools;
+                _cache/ is git-ignored; planted failures (a broken cache, an ignored expiry) are caught.
 test_embed_contract_*  kb_mcp.py as a host server's stdio child: the names and input schemas of kb_pack, kb_search and
                 kb_show and the instructions' sha256 match _tools/fixtures/kb_mcp_contract.json unless kb_mcp.VERSION
                 moved; one call of each answers in shape; a planted schema change is caught. After a VERSION bump:
@@ -203,11 +208,15 @@ class TestKbServer:
 
     def test_tools_list(self):
         tools = {t["name"]: t for t in self.by_id[2]["result"]["tools"]}
-        assert sorted(tools) == ["kb_audit", "kb_facts", "kb_pack", "kb_search", "kb_show", "kb_source", "kb_status",
-                                         "kb_topics_for"]
+        assert sorted(tools) == ["docs_fetch", "docs_search", "kb_audit", "kb_facts", "kb_pack", "kb_search", "kb_show",
+                                 "kb_source", "kb_status", "kb_topics_for"]
         for t in tools.values():
             assert t["inputSchema"]["type"] == "object"
             assert t["annotations"]["readOnlyHint"]
+            if t["name"].startswith("docs_"):  # the live-docs tools say they are neither kb facts nor live device data
+                assert t["description"].startswith("Live documentation from a remote docs server (not kb facts, not live "
+                                                   "device or directory data)"), t["name"]
+                continue
             assert t["description"].startswith("Documentation facts from it-ops-kb (not live device or directory data)"), \
                             f"{t['name']}: a host's live MECM/AD tools must not be confused with the kb"
         assert tools["kb_search"]["inputSchema"]["required"] == ["query"]
@@ -467,7 +476,7 @@ class TestPluginManifest:
         name it only as the clone form of a kb tool (in brackets, after saying so)."""
         sys.path.insert(0, TOOLS)
         import kb_mcp
-        for text in [kb_mcp.INSTRUCTIONS] + [t["description"] for t in kb_mcp.TOOL_LIST]:
+        for text in [kb_mcp.INSTRUCTIONS] + [t["description"] for t in kb_mcp.TOOL_LIST + kb_mcp.LIVE_TOOL_LIST]:
             assert "rag.py" not in text
         for rel in (".claude/agents/kb-lookup.md", ".claude/agents/kb-reviewer.md", ".claude/skills/kb-review-workspace/SKILL.md",
                     ".claude/skills/kb-gap/SKILL.md"):
@@ -908,6 +917,262 @@ def test_embed_contract_planted_failure(change, part):
     assert message and part in message and REGENERATE in message and "kb_mcp.VERSION" in message, message
     assert contract_mismatch(pinned, {**live, "version": pinned["version"] + ".1"}) is None
     assert contract_mismatch(pinned, json.loads(json.dumps(pinned))) is None
+
+
+# ---------------------------------------------------------------- live docs (a local HTTP stub, never the network)
+
+DAY = 86400
+
+
+class DocsStub:
+    """A Streamable HTTP MCP server on 127.0.0.1: /sse answers as text/event-stream, /json as application/json. It
+    hands out an Mcp-Session-Id at initialize and answers a later request without that id and the negotiated
+    MCP-Protocol-Version with 400, so a client that skips them fails. `calls` lists every tools/call as
+    (path, tool, arguments); `mode` "error" answers them with isError, "http500" with a 500."""
+
+    def __init__(self):
+        import http.server, threading
+        self.calls, self.posts, self.mode = [], [], "ok"
+        stub = self
+
+        class Handler(http.server.BaseHTTPRequestHandler):
+            def log_message(self, *a):
+                pass
+
+            def send(self, status, body=b"", ctype="application/json", extra=()):
+                self.send_response(status)
+                self.send_header("Content-Type", ctype)
+                self.send_header("Content-Length", str(len(body)))
+                for k, v in extra:
+                    self.send_header(k, v)
+                self.end_headers()
+                self.wfile.write(body)
+
+            def do_POST(self):
+                msg = json.loads(self.rfile.read(int(self.headers["Content-Length"])))
+                stub.posts.append((self.path, msg.get("method"), dict(self.headers)))
+                if "text/event-stream" not in self.headers.get("Accept", "") or "application/json" not in self.headers.get("Accept", ""):
+                    return self.send(406)
+                if msg.get("method") != "initialize" and (self.headers.get("Mcp-Session-Id") != "sess-1"
+                                                          or self.headers.get("MCP-Protocol-Version") != "2025-11-25"):
+                    return self.send(400)
+                if "id" not in msg:
+                    return self.send(202)
+                if msg["method"] == "initialize":
+                    res, extra = {"protocolVersion": "2025-11-25", "capabilities": {"tools": {}},
+                                  "serverInfo": {"name": "stub", "version": "0"}}, [("Mcp-Session-Id", "sess-1")]
+                elif msg["method"] == "tools/call":
+                    p = msg["params"]
+                    stub.calls.append((self.path, p["name"], p["arguments"]))
+                    if stub.mode == "http500":
+                        return self.send(500)
+                    res, extra = {"content": [{"type": "text", "text": f"result {len(stub.calls)} for {json.dumps(p['arguments'], sort_keys=True)}"}],
+                                  "isError": stub.mode == "error"}, []
+                    if stub.mode == "error":
+                        res["content"][0]["text"] = "the docs server failed"
+                else:
+                    return self.send(200, json.dumps({"jsonrpc": "2.0", "id": msg["id"], "error": {"code": -32601, "message": "no"}}).encode())
+                body = json.dumps({"jsonrpc": "2.0", "id": msg["id"], "result": res})
+                if self.path == "/sse":  # a notification first, then the reply, split over two data lines' worth of events
+                    note = json.dumps({"jsonrpc": "2.0", "method": "notifications/message", "params": {}})
+                    self.send(200, f"event: message\ndata: {note}\n\nevent: message\ndata: {body}\n\n".encode(), "text/event-stream", extra)
+                else:
+                    self.send(200, body.encode(), "application/json", extra)
+
+        self.server = http.server.ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+        self.port = self.server.server_address[1]
+        threading.Thread(target=self.server.serve_forever, daemon=True).start()
+
+    def close(self):
+        self.server.shutdown()
+        self.server.server_close()
+
+
+@pytest.fixture
+def live_docs(tmp_path, monkeypatch):
+    """(kb_mcp, stub): kb_mcp's docs urls point at the stub, its cache at tmp_path."""
+    sys.path.insert(0, TOOLS)
+    import kb_mcp
+    stub = DocsStub()
+    mcp = tmp_path / "docs.mcp.json"
+    base = f"http://127.0.0.1:{stub.port}"
+    mcp.write_text(json.dumps({"mcpServers": {"microsoft-learn": {"type": "http", "url": base + "/sse"},
+                                              "claude-code-docs": {"type": "http", "url": base + "/json"},
+                                              "mcp-docs": {"type": "http", "url": base + "/sse"}}}), encoding="utf-8")
+    monkeypatch.setattr(kb_mcp, "DOCS_MCP", str(mcp))
+    monkeypatch.setenv("KB_DOCS_CACHE", str(tmp_path / "cache"))
+    yield kb_mcp, stub
+    stub.close()
+
+
+def cache_files(tmp_path):
+    return sorted((tmp_path / "cache").glob("*.json")) if (tmp_path / "cache").is_dir() else []
+
+
+def age_entries(tmp_path, days):
+    """Rewrite every stored entry as fetched `days` ago."""
+    import time
+    for f in cache_files(tmp_path):
+        entry = json.loads(f.read_text(encoding="utf-8"))
+        entry["fetched"] = time.time() - days * DAY
+        f.write_text(json.dumps(entry), encoding="utf-8")
+
+
+def repeat_costs(kb_mcp, stub, tmp_path, days_between):
+    """HTTP tools/calls made by one docs_search, then the same one again after the entry aged `days_between` days:
+    (calls after the first, calls after the second, the two answers)."""
+    args = {"server": "microsoft-learn", "query": "windows laps password length"}
+    first = kb_mcp.docs_search(args)
+    after_first = len(stub.calls)
+    age_entries(tmp_path, days_between)
+    second = kb_mcp.docs_search(args)
+    return after_first, len(stub.calls), (first, second)
+
+
+def test_live_docs_cache_repeat_within_7_days_makes_no_http_call(live_docs, tmp_path):
+    kb_mcp, stub = live_docs
+    first, total, (a, b) = repeat_costs(kb_mcp, stub, tmp_path, days_between=6)
+    assert (first, total) == (1, 1), "a repeat 6 days later is served from disk"
+    assert "from the cache" not in a and "(from the cache, fetched " in b
+    assert a.split("\n\n", 1)[1] == b.split("\n\n", 1)[1], "the cached text is the fetched text"
+    assert a.startswith("live docs, not in the kb: microsoft-learn microsoft_docs_search")
+
+
+def test_live_docs_cache_8_day_old_entry_is_fetched_again(live_docs, tmp_path):
+    kb_mcp, stub = live_docs
+    first, total, (a, b) = repeat_costs(kb_mcp, stub, tmp_path, days_between=8)
+    assert (first, total) == (1, 2), "an entry older than 7 days is fetched again"
+    assert "from the cache" not in b and a.split("\n\n", 1)[1] != b.split("\n\n", 1)[1]
+    entry = json.loads(cache_files(tmp_path)[0].read_text(encoding="utf-8"))
+    assert entry["text"] == b.split("\n\n", 1)[1] and entry["server"] == "microsoft-learn", "the entry was replaced"
+    assert kb_mcp.DOCS_TTL_S == 7 * DAY
+
+
+@pytest.mark.parametrize("plant", ["broken-cache", "ignored-expiry"])
+def test_live_docs_cache_planted_failure(live_docs, tmp_path, monkeypatch, plant):
+    """Planted failures: a cache that never hits makes the repeat a second HTTP call, and a cache that ignores the
+    age serves an 8-day-old entry; the two tests above would fail on each."""
+    kb_mcp, stub = live_docs
+    if plant == "broken-cache":
+        monkeypatch.setattr(kb_mcp, "docs_cache_read", lambda key, now: None)
+        first, total, _ = repeat_costs(kb_mcp, stub, tmp_path, days_between=0)
+        assert (first, total) == (1, 2), "the repeat within 7 days would not be served from disk"
+    else:
+        monkeypatch.setattr(kb_mcp, "DOCS_TTL_S", 10 ** 9)
+        first, total, _ = repeat_costs(kb_mcp, stub, tmp_path, days_between=8)
+        assert (first, total) == (1, 1), "the 8-day-old entry would still be served"
+
+
+def test_live_docs_cache_key_is_server_tool_and_arguments(live_docs, tmp_path):
+    kb_mcp, stub = live_docs
+    kb_mcp.docs_search({"server": "mcp-docs", "query": "elicitation"})
+    kb_mcp.docs_search({"server": "mcp-docs", "query": "  elicitation "})  # the same query, trimmed
+    assert len(stub.calls) == 1
+    kb_mcp.docs_search({"server": "mcp-docs", "query": "sampling"})  # another query
+    kb_mcp.docs_search({"server": "claude-code-docs", "query": "elicitation"})  # another server
+    kb_mcp.docs_fetch({"server": "mcp-docs", "target": "elicitation"})  # another tool, same text
+    assert len(stub.calls) == 4 and len({f.name for f in cache_files(tmp_path)}) == 4
+    for f in cache_files(tmp_path):
+        assert f.stem == kb_mcp.docs_cache_key(*[json.loads(f.read_text(encoding="utf-8"))[k] for k in ("server", "tool", "arguments")])
+    assert kb_mcp.docs_cache_key("a", "t", {"query": "x", "n": 1}) == kb_mcp.docs_cache_key("a", "t", {"n": 1, "query": "x"})
+
+
+def test_live_docs_cache_never_stores_an_error(live_docs, tmp_path):
+    kb_mcp, stub = live_docs
+    args = {"server": "claude-code-docs", "query": "hooks"}
+    for mode, message in (("error", "docs server failed"), ("http500", "HTTP 500")):
+        stub.mode = mode
+        with pytest.raises(kb_mcp.ToolError, match=message):
+            kb_mcp.docs_search(args)
+        assert cache_files(tmp_path) == [], mode
+    stub.mode = "ok"
+    before = len(stub.calls)
+    assert "from the cache" not in kb_mcp.docs_search(args), "after the failures the next call goes to the server"
+    assert len(stub.calls) == before + 1 and len(cache_files(tmp_path)) == 1
+
+
+def test_live_docs_cache_ignores_an_unreadable_entry(live_docs, tmp_path):
+    kb_mcp, stub = live_docs
+    kb_mcp.docs_search({"server": "mcp-docs", "query": "roots"})
+    cache_files(tmp_path)[0].write_text("{not json", encoding="utf-8")
+    assert "from the cache" not in kb_mcp.docs_search({"server": "mcp-docs", "query": "roots"})
+    assert len(stub.calls) == 2
+
+
+def test_live_docs_cache_client_speaks_streamable_http(live_docs):
+    """initialize, then notifications/initialized, then tools/call, with the session id and negotiated version on the
+    later requests (the stub answers 400 otherwise), over an SSE and a JSON reply; each server's own tool and
+    argument name."""
+    kb_mcp, stub = live_docs
+    kb_mcp.docs_search({"server": "microsoft-learn", "query": "q"})  # /sse
+    kb_mcp.docs_fetch({"server": "claude-code-docs", "target": "head -20 /hooks.mdx"})  # /json
+    kb_mcp.docs_fetch({"server": "microsoft-learn", "target": "https://learn.microsoft.com/example"})
+    kb_mcp.docs_search({"server": "mcp-docs", "query": "q"})
+    assert [m for p, m, _ in stub.posts[:3]] == ["initialize", "notifications/initialized", "tools/call"]
+    assert stub.posts[0][2]["Accept"] == "application/json, text/event-stream"
+    assert stub.calls == [("/sse", "microsoft_docs_search", {"query": "q"}),
+                          ("/json", "query_docs_filesystem_claude_code_docs", {"command": "head -20 /hooks.mdx"}),
+                          ("/sse", "microsoft_docs_fetch", {"url": "https://learn.microsoft.com/example"}),
+                          ("/sse", "search_model_context_protocol", {"query": "q"})]
+
+
+def test_live_docs_cache_sse_events_are_parsed():
+    sys.path.insert(0, TOOLS)
+    import kb_mcp
+    body = 'event: message\ndata: {"id": 1,\ndata:  "result": {}}\n\n: comment\ndata:{"id": 2}\n\ndata: not json\n\n'
+    assert kb_mcp.sse_messages(body) == [{"id": 1, "result": {}}, {"id": 2}]
+
+
+def test_live_docs_cache_rejects_bad_arguments(live_docs):
+    kb_mcp, stub = live_docs
+    for fn, args in ((kb_mcp.docs_search, {"server": "elsewhere", "query": "x"}), (kb_mcp.docs_search, {"server": "mcp-docs"}),
+                     (kb_mcp.docs_fetch, {"server": "mcp-docs", "target": " "})):
+        with pytest.raises(kb_mcp.ToolError):
+            fn(args)
+    assert stub.posts == [], "nothing is sent for a bad call"
+
+
+def test_live_docs_cache_tools_are_listed_by_the_stdio_server_only(monkeypatch):
+    """handle() serves the live-docs tools only after main() turned them on, so kb_http.py (which calls handle() alone)
+    never offers them; KB_LIVE_DOCS=0 turns them off for the stdio server."""
+    monkeypatch.delenv("KB_LIVE_DOCS", raising=False)
+    sys.path.insert(0, TOOLS)
+    import kb_mcp
+    listing = {"jsonrpc": "2.0", "id": 1, "method": "tools/list"}
+    call = {"jsonrpc": "2.0", "id": 2, "method": "tools/call", "params": {"name": "docs_search", "arguments": {}}}
+    names = lambda: {t["name"] for t in kb_mcp.handle(listing)["result"]["tools"]}  # noqa: E731
+    assert names() == set(kb_mcp.HANDLERS) and kb_mcp.handle(call)["error"]["code"] == -32602
+    monkeypatch.setattr(kb_mcp, "LIVE_ON", [True])
+    assert names() == set(kb_mcp.HANDLERS) | {"docs_search", "docs_fetch"}
+    assert kb_mcp.handle(call)["result"]["isError"] is True, "listed: an empty query is a tool error, not an unknown tool"
+    monkeypatch.setenv("KB_LIVE_DOCS", "0")
+    assert names() == set(kb_mcp.HANDLERS)
+
+
+def test_live_docs_cache_tools_are_off_under_roots():
+    """A server limited to named roots (a host's child, serving clients outside the team) lists no live-docs tool and
+    refuses a call to one; the unlimited server lists them (TestKbServer.test_tools_list)."""
+    msgs = [{"jsonrpc": "2.0", "id": 1, "method": "tools/list"},
+            {"jsonrpc": "2.0", "id": 2, "method": "tools/call", "params": {"name": "docs_search", "arguments": {"server": "mcp-docs", "query": "x"}}}]
+    p = subprocess.run([sys.executable, SERVER, "--roots", "public"], input="".join(json.dumps(m) + "\n" for m in msgs),
+                       capture_output=True, text=True, encoding="utf-8", timeout=120, env=quiet_upstream(), cwd=os.sep)
+    assert p.returncode == 0, p.stderr
+    by_id = {r["id"]: r for r in map(json.loads, p.stdout.splitlines())}
+    assert not {"docs_search", "docs_fetch"} & {t["name"] for t in by_id[1]["result"]["tools"]}
+    assert by_id[2]["error"]["code"] == -32602
+
+
+def test_live_docs_cache_lives_under_the_ignored_cache_directory(monkeypatch):
+    sys.path.insert(0, TOOLS)
+    import kb_mcp
+    monkeypatch.delenv("KB_DOCS_CACHE", raising=False)
+    monkeypatch.delenv("CLAUDE_PLUGIN_DATA", raising=False)
+    folder = Path(kb_mcp.docs_cache_dir())
+    assert folder == Path(kb_mcp.kbcommon.HOME) / "_cache" / "live-docs"
+    p = subprocess.run(["git", "check-ignore", "-q", "_cache/live-docs/0000.json"], cwd=KB, capture_output=True)
+    assert p.returncode == 0, ".gitignore must cover _cache/ (the cache is never committed)"
+    monkeypatch.setenv("CLAUDE_PLUGIN_DATA", "/plugin-data")
+    assert Path(kb_mcp.docs_cache_dir()) == Path("/plugin-data") / "live-docs"
 
 
 if __name__ == "__main__":
