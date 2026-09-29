@@ -1,0 +1,20 @@
+{
+  "id": "BG-rrht7uts",
+  "kind": "bug",
+  "title": "test_research_merge copies sprint worktrees into its scenario clone",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "TestResearchMergeInGit builds its scenario tree without .claude/worktrees (as conftest.copy_kb does), so python3 _tools/tests.py -k research_merge passes in a clone where /kb-sprint subagent worktrees exist; today its fixture copies them, git add -A records their gitlinks, and the push to the scenario remote fails with 'unable to read <blob>' in all six tests",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;t=open('_tools/test_research_merge.py',encoding='utf-8').read();sys.exit(0 if 'worktrees' in t or 'copy_kb' in t else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/test_research_merge.py"
+  ]
+}
