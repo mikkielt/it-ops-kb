@@ -2,7 +2,7 @@
   "id": "ST-b2yxgbrq",
   "kind": "story",
   "title": "A clone without Python says so at session start",
-  "status": "todo",
+  "status": "done",
   "parent": "EP-5p4ahbnq",
   "sprint": "SP-fep4fpsx",
   "priority": "P1",
@@ -33,5 +33,34 @@
   "links": [
     "claude/hooks.md"
   ],
-  "notes": "Today kbpy prints its message to stderr and exits 127, and each hook fails silently on every prompt and tool call. Only a synchronous SessionStart hook that prints a JSON object with systemMessage reaches the person (claude/hooks.md:65, DER S743)."
+  "notes": "Today kbpy prints its message to stderr and exits 127, and each hook fails silently on every prompt and tool call. Only a synchronous SessionStart hook that prints a JSON object with systemMessage reaches the person (claude/hooks.md:65, DER S743).",
+  "evidence": {
+    "commit": "9e714be3295fe2cca153c34bc5234354bc839e58",
+    "checks": [
+      {
+        "run": [
+          "python",
+          "_tools/tests.py",
+          "-k",
+          "portability"
+        ],
+        "exit": 0,
+        "sha256": "a2962ba130a9cd88"
+      },
+      {
+        "run": [
+          "git",
+          "grep",
+          "-n",
+          "-e",
+          "kbpy.*--notice",
+          "--",
+          ".claude/settings.json",
+          ".claude-plugin/plugin.json"
+        ],
+        "exit": 0,
+        "sha256": "faddcb82b7521a78"
+      }
+    ]
+  }
 }
