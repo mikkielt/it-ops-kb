@@ -14,6 +14,8 @@ TestPluginManifest  .claude-plugin/marketplace.json and the two plugins: it-ops-
                 servers and a PreToolUse hook blocking submit_feedback); no root .mcp.json (it would load into
                 it-ops-kb); no pinned version (users track commits); rag.py named only as the clone form; the GitLab
                 SSH remote. With the `claude` CLI installed, `claude plugin validate` passes for both.
+test_embed_roots_*  `--roots NAME[,NAME]` (a host embedding the server): only the named roots in every tool and
+                kb_status, every root without it, and an unknown or missing name refused at the start on stderr.
 """
 import json, os, re, shutil, subprocess, sys, tempfile
 from pathlib import Path
@@ -476,3 +478,99 @@ def test_domain_is_matched_without_case_and_an_unknown_one_is_refused():
     p = subprocess.run([sys.executable, os.path.join(TOOLS, "rag.py"), "pack", "noncompliance actions", "-d", "nosuch"],
                        capture_output=True, text=True, encoding="utf-8", env=env, timeout=180)
     assert p.returncode == 1 and "no domain 'nosuch'" in p.stderr and "coverage:" not in p.stdout, p.stdout + p.stderr
+
+
+def _embedded(roots_dir, *args, calls=()):
+    """kb_mcp.py started as a host embeds it: KB_ROOTS names a team's root directory, `args` the flags (--roots);
+    `calls` are (tool, arguments) sent after the handshake. Returns the process and {id: (isError, text)}."""
+    env = {k: v for k, v in os.environ.items() if k not in ("KB_ROOTS", "KB_INDEX", "CLAUDE_PLUGIN_DATA")}
+    env.update({"KB_ROOTS": roots_dir, "KB_INDEX": "0"})
+    msgs = [{"jsonrpc": "2.0", "id": 0, "method": "initialize",
+             "params": {"protocolVersion": "2025-06-18", "capabilities": {}, "clientInfo": {"name": "host", "version": "0"}}}]
+    msgs += [{"jsonrpc": "2.0", "id": i, "method": "tools/call", "params": {"name": n, "arguments": a}}
+             for i, (n, a) in enumerate(calls, start=1)]
+    p = subprocess.run([sys.executable, SERVER, *args], input="".join(json.dumps(m) + "\n" for m in msgs),
+                       capture_output=True, text=True, encoding="utf-8", timeout=180, env=env, cwd=os.sep)
+    out = {}
+    for ln in p.stdout.splitlines():
+        r = json.loads(ln)
+        if r.get("id") and "result" in r:
+            out[r["id"]] = (r["result"]["isError"], r["result"]["content"][0]["text"])
+    return p, out
+
+
+def test_embed_roots_serves_only_the_named_root(tmp_path):
+    """--roots fixture: every tool and kb_status see the team's root alone; the public root is not served."""
+    from test_kb_root import QUESTION, SID, URL, make_root
+    root = str(tmp_path / "team-kb")
+    make_root(root)
+    p, out = _embedded(root, "--roots", "fixture", calls=[
+        ("kb_pack", {"question": QUESTION}),
+        ("kb_pack", {"question": "What is the default Windows LAPS password length?"}),
+        ("kb_search", {"query": "kerberos constrained delegation"}),
+        ("kb_facts", {"prefix": "print"}),
+        ("kb_audit", {"prefix": "intune"}),
+        ("kb_show", {"path": Q("auth/kerberos.md") + ":1", "n": 1}),
+        ("kb_source", {"ids": ["S100", SID]}),
+        ("kb_status", {}),
+        ("kb_pack", {"question": QUESTION, "root": "public"}),
+        ("kb_topics_for", {"text": "new PublicClientApplication(c); the spooler service"}),
+    ])
+    assert p.returncode == 0, p.stderr
+    # the verdict is not asserted: a root of one article has no word rare enough to count (kbfacts.pack)
+    assert "fixture/print/queues.md:" in out[1][1] and "public/" not in out[1][1], out[1]
+    assert "coverage: none" in out[2][1] and "public/" not in out[2][1], out[2][1][:300]
+    assert "public/" not in out[3][1], out[3][1][:300]
+    assert "fixture/print/queues.md" in out[4][1] and "public/" not in out[4][1], out[4][1][:300]
+    assert out[5][0] and "no article matches" in out[5][1], out[5]
+    assert out[6][0] and "not a path inside the kb" in out[6][1], out[6]
+    assert "S100  UNKNOWN id" in out[7][1] and f"{SID}  Print queue retention\n  url: {URL}" in out[7][1], out[7][1]
+    status = out[8][1]
+    assert "roots: fixture (prefix FXT, internal, " in status and "public (prefix" not in status, status
+    assert "census_log: none" in status and "sources: 1 (0 superseded)" in status, status
+    assert out[9][0] and "no root 'public'; roots: fixture" in out[9][1], out[9]
+    assert "fixture/print/queues" in out[10][1] and "public/" not in out[10][1], out[10][1]
+
+
+def test_embed_roots_names_several_roots_and_status_follows(tmp_path):
+    """--roots public,fixture serves both; --roots public leaves the team's root out of the pack and kb_status."""
+    from test_kb_root import QUESTION, make_root
+    root = str(tmp_path / "team-kb")
+    make_root(root)
+    p, out = _embedded(root, "--roots=fixture,public", calls=[("kb_status", {})])
+    assert p.returncode == 0, p.stderr
+    assert "roots: public (prefix S, public, " in out[1][1] and "; fixture (prefix FXT, " in out[1][1], out[1][1]
+    p, out = _embedded(root, "--roots", "public", calls=[("kb_pack", {"question": QUESTION}), ("kb_status", {})])
+    assert p.returncode == 0, p.stderr
+    assert "fixture/" not in out[1][1], out[1][1][:300]
+    assert "roots: public (prefix S, public, " in out[2][1] and "fixture" not in out[2][1], out[2][1]
+    assert "census_log: public/_census/" in out[2][1], out[2][1]
+
+
+def test_embed_roots_default_serves_every_root(tmp_path):
+    """Without --roots the server serves every root, as the plugin starts it."""
+    from test_kb_root import QUESTION, make_root
+    root = str(tmp_path / "team-kb")
+    make_root(root)
+    p, out = _embedded(root, calls=[("kb_status", {}), ("kb_pack", {"question": QUESTION})])
+    assert p.returncode == 0, p.stderr
+    assert "roots: public (prefix S, public, " in out[1][1] and "; fixture (prefix FXT, " in out[1][1], out[1][1]
+    assert "fixture/print/queues.md:" in out[2][1], out[2][1][:300]
+
+
+@pytest.mark.parametrize("args, message", [
+    (["--roots", "fixture,no-such-root"], "no root 'no-such-root'; roots: public, fixture"),
+    (["--roots=nosuch", "--status"], "no root 'nosuch'; roots: public, fixture"),
+    (["--roots"], "--roots needs one or more root names"),
+    (["--roots", " , "], "--roots needs one or more root names"),
+])
+def test_embed_roots_refuses_an_unknown_name(tmp_path, args, message):
+    """Planted failure: a --roots name that is no root stops the start before the server answers anything, with
+    the error on stderr (naming the roots there are) and nothing on stdout."""
+    from test_kb_root import make_root
+    root = str(tmp_path / "team-kb")
+    make_root(root)
+    p, out = _embedded(root, *args, calls=[("kb_status", {})])
+    assert p.returncode == 2, (p.returncode, p.stdout, p.stderr)
+    assert p.stdout == "" and not out, p.stdout
+    assert message in p.stderr and "Traceback" not in p.stderr, p.stderr

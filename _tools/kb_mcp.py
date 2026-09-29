@@ -3,6 +3,8 @@
 
   python3 _tools/kb_mcp.py            serve on stdin/stdout (newline-delimited JSON-RPC 2.0); logs go to stderr
   python3 _tools/kb_mcp.py --status   print kb_status once and exit (a quick check from a shell)
+  python3 _tools/kb_mcp.py --roots NAME[,NAME]   serve (or --status) only the named roots, repository roots or
+                                     KB_ROOTS directories; an unknown name stops the start with an error on stderr
   python3 _tools/kb_mcp.py --register-local   in a clone: register this server as `kb` and the three documentation
                                      servers of .claude-plugin/it-ops-kb-docs/.mcp.json at local scope (`claude mcp
                                      add --scope local`: this machine and this clone only), skipping names already there
@@ -26,8 +28,9 @@ Tools (all read-only; they wrap rag.py and kbfacts.py and read the kb files, nev
   kb_topics_for  kb topics that code touches, like `rag.py topics-for`: the curated signals of each root's signals.csv
              found in the files or text given (paths relative to the host project, CLAUDE_PROJECT_DIR or the cwd)
 
-One server serves every root (kb/public, a team's kb/<name>/, the KB_ROOTS directories): paths and topics print
-qualified (`public/intune/x.md:12`), and kb_pack, kb_search, kb_facts and kb_audit take an optional `root`.
+One server serves every root (kb/public, a team's kb/<name>/, the KB_ROOTS directories), or only those --roots
+names, in every tool and kb_status: paths and topics print qualified (`public/intune/x.md:12`), and kb_pack,
+kb_search, kb_facts and kb_audit take an optional `root`, one of the served roots.
 
 response_format: `concise` or `detailed` on kb_pack (default detailed: answers need the urls), kb_facts, kb_audit
 and kb_search (default concise). Every tool description starts with "Documentation facts from it-ops-kb", so a
@@ -370,7 +373,9 @@ def status():
     info.setdefault("commit", "unknown (not a git clone or an installed plugin copy)")
     pub = kbcommon.public()
     census_dir = os.path.join(pub.path, kbcommon.CENSUS_DIR)
-    logs = sorted(f[:-4] for f in os.listdir(census_dir) if re.fullmatch(r"\d{4}-\d{2}-\d{2}\.csv", f)) if os.path.isdir(census_dir) else []
+    served = pub in kbcommon.roots()  # a server limited to other roots (--roots) reports no public census log
+    logs = sorted(f[:-4] for f in os.listdir(census_dir) if re.fullmatch(r"\d{4}-\d{2}-\d{2}\.csv", f)) \
+        if served and os.path.isdir(census_dir) else []
     info["census_log"] = kbcommon.qualify(pub, f"{kbcommon.CENSUS_DIR}/{logs[-1]}.csv") if logs else "none"
     try:
         rows = list(kbfacts.source_rows().values())
@@ -568,11 +573,33 @@ def main():
     sys.stdout.reconfigure(encoding="utf-8", newline="\n")
     if "--register-local" in sys.argv[1:]:
         sys.exit(register_local())
+    try:
+        kbcommon.serve_only(roots_arg(sys.argv[1:]))
+    except (ValueError, kbcommon.RootError) as e:
+        print(f"kb_mcp: {e}", file=sys.stderr)
+        sys.exit(2)
     if "--status" in sys.argv[1:]:
         print(kb_status({}))
         return
     threading.Thread(target=warm, daemon=True).start()
     serve()
+
+
+def roots_arg(argv):
+    """The names `--roots NAME[,NAME]` (or `--roots=...`) gives, [] without the flag; ValueError when it names
+    none."""
+    names = None
+    for i, a in enumerate(argv):
+        if a == "--roots":
+            names = argv[i + 1] if i + 1 < len(argv) else ""
+        elif a.startswith("--roots="):
+            names = a.split("=", 1)[1]
+    if names is None:
+        return []
+    out = [n.strip() for n in names.split(",") if n.strip()]
+    if not out:
+        raise ValueError("--roots needs one or more root names: --roots NAME[,NAME]")
+    return out
 
 
 def warm():

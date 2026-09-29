@@ -24,8 +24,11 @@ line inside it. Tools that span roots name a file by its qualified path `<root>/
 and a topic by `<root>/<topic>`.
 
   roots()                     [Root] in order: public first, then kb/<name>/ by name, then the KB_ROOTS dirs
+                              (only the named ones after serve_only)
+  serve_only(names)           limit roots() to the named roots for this process (kb_mcp.py --roots); RootError
+                              names an unknown one; serving() gives the names, () when every root is served
   root(name)                  the Root of that name (KeyError when there is none)
-  public()                    the public Root
+  public()                    the public Root (whether served or not)
   qualify(root, rel)          `<root name>/<rel>`
   split(qpath)                (Root, rel) of a qualified path; (None, qpath) when its first part names no root
   path_of(qpath)              the absolute path of a qualified path (a root's file), else of a repository path
@@ -288,10 +291,11 @@ def load_root(path):
     return Root(name, path, prefix, vis, meta.get("description", ""))
 
 
-_ROOTS = []
+_ROOTS = []  # every root, loaded once
+_SERVED = []  # serve_only's names; empty: every root
 
 
-def roots():
+def _all_roots():
     """Every root, in order: public first, then kb/<name>/ by name, then the KB_ROOTS directories. RootError when a
     ROOT_FILE is malformed, or two roots share a name or an id prefix."""
     if _ROOTS:
@@ -311,6 +315,27 @@ def roots():
     return list(out)
 
 
+def roots():
+    """The roots the tools serve, in _all_roots() order: every root, or only those serve_only() named."""
+    return [r for r in _all_roots() if not _SERVED or r.name in _SERVED]
+
+
+def serve_only(names):
+    """Limit roots(), and every tool built on it, to the named roots for the rest of this process (a server started
+    for one team's roots). RootError, naming every root, when a name is no root; an empty list serves every root."""
+    names = [n.strip() for n in names if n and n.strip()]
+    known = [r.name for r in _all_roots()]
+    unknown = [n for n in names if n not in known]
+    if unknown:
+        raise RootError(f"no root {', '.join(map(repr, unknown))}; roots: {', '.join(known)}")
+    _SERVED[:] = names
+
+
+def serving():
+    """The names serve_only() limited the roots to, () when every root is served."""
+    return tuple(_SERVED)
+
+
 def root(name):
     for r in roots():
         if r.name == name:
@@ -319,7 +344,7 @@ def root(name):
 
 
 def public():
-    return roots()[0]
+    return _all_roots()[0]
 
 
 def qualify(r, rel):

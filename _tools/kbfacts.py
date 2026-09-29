@@ -951,7 +951,7 @@ def index_path(fp):
     """Where the index for fingerprint `fp` lives, or None when KB_INDEX=0: KB_INDEX (a directory), else the
     plugin's data directory (CLAUDE_PLUGIN_DATA, survives plugin updates), else _cache/ in this repository, else a
     temp directory. One file per fingerprint and doc2query mode, so a new index never replaces a file a server has
-    open. One index covers every root; with KB_ROOTS set the files are named `kbindex-r<hash of the root set>-...`,
+    open. One index covers every served root; with KB_ROOTS set or the roots limited the files are named `kbindex-r<hash of the root set>-...`,
     so servers with different root sets can share CLAUDE_PLUGIN_DATA without pruning each other's index (store())."""
     where = os.environ.get("KB_INDEX", "")
     if where == "0":
@@ -965,8 +965,10 @@ def index_path(fp):
 
 def _root_key():
     """'' for this repository's roots alone, else `r<8 hex>-` for the root set KB_ROOTS adds (the fingerprint is
-    hex, so never starts with r)."""
-    extra = [r.path for r in kbcommon.roots() if os.path.dirname(r.path) != kbcommon.KB_DIR]
+    hex, so never starts with r); a server limited to some roots (kbcommon.serve_only) keys on every root it serves."""
+    extra = [r.path for r in kbcommon.roots() if kbcommon.serving() or os.path.dirname(r.path) != kbcommon.KB_DIR]
+    if kbcommon.serving():
+        extra.insert(0, "only")
     return "r" + hashlib.sha1(os.pathsep.join(extra).encode()).hexdigest()[:8] + "-" if extra else ""
 
 
