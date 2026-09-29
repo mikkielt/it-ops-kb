@@ -2,7 +2,7 @@
   "id": "TK-aitnzkal",
   "kind": "task",
   "title": "stdio and HTTP answer the same, against one contract",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-z6fw4er5",
   "priority": "P2",
   "rank": 3,
@@ -31,5 +31,6 @@
   "depends_on": [
     "TK-65xwwvdb",
     "TK-eo5jmjbd"
-  ]
+  ],
+  "claimed_by": "parity-agent"
 }

@@ -2,7 +2,7 @@
   "id": "TK-m4dvkqhc",
   "kind": "task",
   "title": "Write kb/_self/embedding.md, the contract for a host MCP server",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-2zvzr6gr",
   "priority": "P2",
   "rank": 2,
@@ -34,5 +34,6 @@
   "depends_on": [
     "TK-ux5ufed5",
     "TK-eo5jmjbd"
-  ]
+  ],
+  "claimed_by": "embed-doc-agent"
 }

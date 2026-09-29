@@ -2,7 +2,7 @@
   "id": "TK-eo5jmjbd",
   "kind": "task",
   "title": "Contract test for the tools a host server re-exposes",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-2zvzr6gr",
   "priority": "P2",
   "rank": 1,
@@ -22,5 +22,19 @@
     "_tools/test_kb_mcp.py",
     "_tools/kb_mcp.py"
   ],
-  "claimed_by": "contract-agent"
+  "evidence": {
+    "commit": "6a337766c5dd477cdea45938c82accd550fda215",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "embed_contract"
+        ],
+        "exit": 0,
+        "sha256": "971b2341ec7b2d9b"
+      }
+    ]
+  }
 }
