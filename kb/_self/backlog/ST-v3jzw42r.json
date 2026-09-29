@@ -1,0 +1,34 @@
+{
+  "id": "ST-v3jzw42r",
+  "kind": "story",
+  "title": "docs.github.com and www.anthropic.com are staged providers",
+  "status": "draft",
+  "parent": "EP-mzzucemv",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "_tools/providers.csv has probed rows serving docs.github.com and www.anthropic.com (/kb-probe), with their routes-table rows in kb/_self/web-sources.md, so learn records the open stage source findings F-88bfb93dc08f and F-e1ebb2febe4b as no longer open",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/provider.py",
+        "list"
+      ],
+      "exit": 0,
+      "match": "docs\\.github\\.com/"
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/provider.py",
+        "list"
+      ],
+      "exit": 0,
+      "match": "www\\.anthropic\\.com/"
+    }
+  ],
+  "links": [
+    "F-88bfb93dc08f",
+    "F-e1ebb2febe4b"
+  ]
+}

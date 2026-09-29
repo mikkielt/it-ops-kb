@@ -1,0 +1,28 @@
+{
+  "id": "BG-meuqnbjg",
+  "kind": "bug",
+  "title": "red-pipeline and apply --push read a main pipeline whose gate jobs never ran as green",
+  "status": "todo",
+  "parent": "EP-mzzucemv",
+  "sprint": "SP-z7a5c76b",
+  "priority": "P1",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "backlog.py red-pipeline and querylog.py apply --push read a main pipeline by its gate jobs (kb-tests, kb-trailers), not by the pipeline status: a pipeline whose gate job is manual, skipped, canceled or failed under allow_failure is unverified, never green; red-pipeline --status exits 1 on it and says which job did not pass, and apply --push stops as for an unfinished pipeline; test_red_pipeline_unrun_gate_is_not_green proves it from recorded job lists",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/tests.py",
+      "-k",
+      "red_pipeline_unrun_gate_is_not_green"
+    ]
+  },
+  "relates_to": [
+    "ST-fcirbjny",
+    "BG-jam2lysj"
+  ],
+  "links": [
+    "pipeline 2892882880"
+  ],
+  "notes": "Pipeline 2892882880 of main reports success while kb-tests, kb-tests-floor, kb-trailers and tool-stress failed without starting and kb-tests-windows is manual: .gitlab-ci.yml makes every job manual with allow_failure: true, so the pipeline status is success whatever the jobs did."
+}

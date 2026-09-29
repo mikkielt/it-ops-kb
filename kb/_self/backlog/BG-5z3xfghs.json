@@ -1,0 +1,28 @@
+{
+  "id": "BG-5z3xfghs",
+  "kind": "bug",
+  "title": "pack answers none for a number the kb writes with a unit suffix (1.5 seconds vs 1.5-second)",
+  "status": "draft",
+  "parent": "EP-c7fzjhge",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "rag.py pack 'SessionEnd hook input fields reason budget 1.5 seconds' answers coverage: good with public/claude/hooks.md:64 in the pack, because a number in the question matches the same number joined to a unit in a fact (1.5-second); kb/public/_retrieval/lookup_eval.csv holds the question, rag.py eval passes, and test_pack_number_with_unit_suffix_is_good proves the matching",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/tests.py",
+      "-k",
+      "pack_number_with_unit_suffix_is_good"
+    ]
+  },
+  "relates_to": [
+    "TK-e4i2gbqk",
+    "BG-26tywezq"
+  ],
+  "links": [
+    "F-6298df20a337",
+    "public/claude/hooks.md:64"
+  ],
+  "notes": "The pack's differential lists kb lacks: 1.5, and the pack shows hooks.md:63 but not line 64, which states the 1.5-second SessionEnd budget."
+}

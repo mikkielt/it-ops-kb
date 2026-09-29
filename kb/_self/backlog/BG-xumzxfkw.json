@@ -1,0 +1,24 @@
+{
+  "id": "BG-xumzxfkw",
+  "kind": "bug",
+  "title": "A KB-Work line outside the trailer block passes check-trailers, and done counts the claim commit as the work",
+  "status": "draft",
+  "parent": "EP-o2bjijfp",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kbgit.py check-trailers and the commit-msg hook refuse a commit whose body has a KB-Work line that git does not read as a trailer (a blank line before Co-Authored-By), and backlog.py done counts only commits that change a file other than the item files as an item's work, so the touches scope check sees the real work commits; test_check_trailers_flags_kb_work_outside_trailers and a done test with only a claim commit prove it",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/tests.py",
+      "-k",
+      "check_trailers_flags_kb_work_outside_trailers"
+    ]
+  },
+  "relates_to": [
+    "BG-t7tx2byg",
+    "BG-ec4raar2"
+  ],
+  "notes": "Work commits with KB-Work in a paragraph before Co-Authored-By: 7219acbb, ac03d1b3, 9cb820ec, 8da30157. Their items passed done through the claim commit alone, which carries the trailer and changes only kb/_self/backlog/."
+}

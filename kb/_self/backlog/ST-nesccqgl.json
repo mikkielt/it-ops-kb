@@ -1,0 +1,29 @@
+{
+  "id": "ST-nesccqgl",
+  "kind": "story",
+  "title": "Research for a planned sprint lands under its item",
+  "status": "draft",
+  "parent": "EP-o2bjijfp",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "A research task or story of a planned (not started) sprint can land its kb content commits with KB-Work and be proven by backlog.py done without starting the sprint, as backlog.md states; check-trailers accepts such a commit only when it changes kb content and the item files, never _tools/, .claude/ or CI; ST-rjxacpdh, TK-nytjligk and the ST-mmmn42ks tasks, whose research landed without KB-Work, are closed or dropped with the commit named",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "research_lands_before_sprint_start"
+      ],
+      "exit": 0
+    }
+  ],
+  "relates_to": [
+    "ST-wgymzw72",
+    "ST-rjxacpdh",
+    "ST-fria7ro7",
+    "ST-mmmn42ks",
+    "BG-6pjvnv6z"
+  ],
+  "notes": "Research landed ahead of planned sprints without KB-Work, because check-trailers refuses work for items outside a started sprint: 7d1175f7 (meets ST-rjxacpdh's goal), b6baa207 (TK-nytjligk), d0db1b38 (the ST-mmmn42ks tasks). Changing check-trailers is a rule change: the runbook and git.md change with it."
+}
