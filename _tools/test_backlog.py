@@ -3,8 +3,9 @@
 Each refusal has a planted failure: a bug whose repro passes, a non-canonical file, a cycle, a blocking gate an
 agent answers, a sprint started without the operator, a failing check, a commit outside `touches` (and the revert
 that clears it), a review with an unconfirmed provisional answer, a malformed KB-Work trailer, a worked item of a
-planned sprint, and a KB-Work id whose item is unclaimed or not in a started sprint. The repository's own backlog
-must pass `backlog.py check`.
+planned sprint, a KB-Work id whose item is unclaimed or not in a started sprint, and red pipelines that fail
+the same way (one bug) or differently (a second), or the same way as a closed bug (a new one). The repository's
+own backlog must pass `backlog.py check`.
 """
 import json, os, subprocess, sys
 from pathlib import Path
@@ -323,8 +324,9 @@ def test_repository_backlog_is_valid():
 
 # ---- red-pipeline: a planted red and a green pipeline on origin's main, glab and gh replaced (no network)
 
-def forge(monkeypatch, repo, pipelines, jobs=(), signed_in=True):
-    """origin is a GitLab project; `glab` answers the given pipelines (newest first) and failed jobs."""
+def forge(monkeypatch, repo, pipelines, jobs=(), signed_in=True, logs=None):
+    """origin is a GitLab project; `glab` answers the given pipelines (newest first), failed jobs and job logs
+    (`logs`: job id -> trace text). The lists and the dict are read on every call: a test changes them in place."""
     sh(repo, "git", "remote", "add", "origin", "https://gitlab.example.com/team/kb.git")
     sh(repo, "git", "update-ref", "refs/remotes/origin/main", "HEAD")
     real = backlog.run
@@ -335,6 +337,9 @@ def forge(monkeypatch, repo, pipelines, jobs=(), signed_in=True):
         if argv[0] in ("glab", "gh"):
             if argv[1] == "auth":
                 return (0, "", "") if signed_in else (1, "", "not logged in")
+            if argv[-1].endswith("/trace"):
+                jid = int(argv[-1].split("/")[-2])
+                return (0, logs[jid], "") if logs and jid in logs else (1, "", "404 Not Found")
             return 0, json.dumps(jobs if "/jobs?" in argv[-1] else pipelines), ""
         return real(argv, cwd=cwd)
 
@@ -420,3 +425,68 @@ def test_red_pipeline_notes_when_not_signed_in(repo, monkeypatch, capsys):
     assert red_pipeline(repo) == 0
     assert "not signed in" in capsys.readouterr().out and bugs(repo) == []
     assert red_pipeline(repo, "--status") == 1
+
+
+# ---- failure fingerprint: planted logs of red pipelines, the same failure twice and a different one
+
+def test_fingerprint_names_the_first_failing_test_or_normalised_error_line():
+    log = ("2026-09-01T10:00:00.1234567Z \x1b[31msection_start:1700000000:tests\x1b[0m\n"
+           "_tools/test_a.py::test_one PASSED\n"
+           "_tools/test_b.py::test_two FAILED\n"
+           "FAILED _tools/test_c.py::test_three - assert 1 == 2\n")
+    assert backlog.first_failure(log) == "_tools/test_b.py::test_two"
+    a = backlog.first_failure("2026-09-01T10:00:00Z check: error in kb/x.md:12 (sha 0123abcd9)\nERROR: Job failed\n")
+    b_ = backlog.first_failure("2026-09-02T11:30:01Z check: error in kb/x.md:57 (sha fedcba987)\nERROR: Job failed\n")
+    assert a == b_ == "check: error in kb/x.md:<n> (sha <hex>)"
+    assert backlog.first_failure("all good\n") == "" and backlog.first_failure(None) == ""
+    fp = backlog.failure_fingerprint("kb-tests", a)
+    assert len(fp) == 12 and int(fp, 16) >= 0
+    assert fp == backlog.failure_fingerprint("kb-tests", b_)
+    assert fp != backlog.failure_fingerprint("kb-tests-windows", a)  # another job
+    assert fp != backlog.failure_fingerprint("kb-tests", "_tools/test_b.py::test_two")  # another failure
+
+
+def test_fingerprint_same_failure_one_bug_different_failure_a_second(repo, monkeypatch, capsys):
+    sha = head(repo)
+    pipelines = [{"id": 901, "sha": sha, "status": "failed"}]
+    jobs = [{"id": 11, "name": "lint", "status": "failed"}, {"id": 10, "name": "check", "status": "failed"}]
+    logs = {10: "2026-09-01T10:00:00Z FAILED _tools/test_x.py::test_a - assert 3 == 4\n", 11: "lint error\n"}
+    forge(monkeypatch, repo, pipelines, jobs=jobs, logs=logs)
+    assert red_pipeline(repo) == 0
+    (first,) = bugs(repo)
+    fp = backlog.failure_fingerprint("check", "_tools/test_x.py::test_a")  # the first failed job by name
+    assert first["links"] == ["pipeline 901", f"fingerprint {fp}"]
+    assert "_tools/test_x.py::test_a" in first["notes"]
+    # a later pipeline failing the same way (other job ids, times and numbers): no second bug, its pipeline is added
+    pipelines[:] = [{"id": 902, "sha": sha, "status": "failed"}]
+    jobs[:] = [{"id": 20, "name": "check", "status": "failed"}]
+    logs.clear()
+    logs[20] = "2026-09-03T08:15:42Z FAILED _tools/test_x.py::test_a - assert 7 == 9\n"
+    capsys.readouterr()
+    assert red_pipeline(repo) == 0
+    assert "fails the same way" in capsys.readouterr().out
+    (same,) = bugs(repo)
+    assert same["id"] == first["id"] and same["links"] == ["pipeline 901", f"fingerprint {fp}", "pipeline 902"]
+    assert backlog.validate(backlog.Backlog(repo)) == []
+    assert red_pipeline(repo) == 0 and len(bugs(repo)) == 1  # 902 again: named in the links, nothing filed
+    # a different failure: a second bug with its own fingerprint
+    pipelines[:] = [{"id": 903, "sha": sha, "status": "failed"}]
+    logs[20] = "FAILED _tools/test_y.py::test_b - KeyError\n"
+    assert red_pipeline(repo) == 0
+    second = [x for x in bugs(repo) if x["id"] != first["id"]]
+    assert len(second) == 1
+    assert second[0]["links"] == ["pipeline 903", f"fingerprint {backlog.failure_fingerprint('check', '_tools/test_y.py::test_b')}"]
+
+
+def test_fingerprint_of_a_closed_bug_files_a_new_one(repo, monkeypatch):
+    sha = head(repo)
+    pipelines = [{"id": 31, "sha": sha, "status": "failed"}]
+    forge(monkeypatch, repo, pipelines, jobs=[{"id": 5, "name": "check", "status": "failed"}],
+          logs={5: "Traceback (most recent call last):\n"})
+    assert red_pipeline(repo) == 0
+    (old,) = bugs(repo)
+    edit(repo, old["id"], status="dropped")  # planted: only an open bug takes the pipeline
+    pipelines[:] = [{"id": 32, "sha": sha, "status": "failed"}]
+    assert red_pipeline(repo) == 0
+    new = [x for x in bugs(repo) if x["id"] != old["id"]]
+    assert len(new) == 1 and "pipeline 32" in new[0]["links"] and new[0]["links"][1] == old["links"][1]
