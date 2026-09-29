@@ -4,8 +4,13 @@ TestRoute   kbfacts.pack and pack_many: a weak, a none and a check-flagged good 
             `kb lacks:` after the coverage, check:, freshness: and none-sentence lines and before the first article; a
             clean good pack prints none of them; `has` and `lacks` are the question's own words in question order;
             a none whose only missing words are language or format names routes split; route_of names each flagged case; a several-part pack starts with one overall route line.
+TestRouteEvalSet   every lookup_eval.csv row expected good, read on HEAD (no stored pack text): a clean good pack
+            prints no route, kb has or kb lacks line, a flagged one prints `route: split`, and every good pack routed
+            split has a check: line or a word nowhere in the kb, so a rule that demotes clean goods fails; the
+            check on one pack is planted-failure tested.
 """
 import kbfacts
+import rag
 
 OTHER_NONE_Q = "How do I configure VMware Horizon instant clones?"
 OTHER_CLEAN_Q = "Does deleting an Entra device also delete its BitLocker recovery keys?"
@@ -137,3 +142,58 @@ class TestRoute:
     def test_a_single_question_prints_exactly_the_packs_text(self):
         for q in (CLEAN_Q, WEAK_Q, NONE_Q):
             assert kbfacts.pack_many([q])["text"] == kbfacts.pack(q)["text"], q
+
+
+def good_pack_problems(res):
+    """What is wrong with a `good` pack of the eval set, as a list of strings (empty: fine). A clean good pack (no
+    check: line, no word nowhere in the kb) prints no route, kb has or kb lacks line; a flagged one routes split and
+    prints the block once. A route without a check: line or a missing word is a demoted clean good."""
+    lines = res["text"].splitlines()
+    checked = any(ln.startswith("check: ") for ln in lines)
+    flagged = checked or bool(res["missing"])
+    routed = [ln for ln in lines if ln.startswith(ROUTE_LINES)]
+    out = []
+    if flagged:
+        if res["route"] != "split" or lines.count("route: split") != 1:
+            out.append(f"flagged (check: {checked}, missing {res['missing']}) but route {res['route']!r}")
+        if len(routed) != 3:
+            out.append(f"flagged but {len(routed)} route lines")
+    else:
+        if res["route"] is not None or routed:
+            out.append(f"clean good but route {res['route']!r} and {len(routed)} route lines")
+    return out
+
+
+class TestRouteEvalSet:
+    def test_clean_good_packs_keep_their_text_and_flagged_ones_route_split(self):
+        cases = [(root, c) for root, c in rag.eval_cases() if c["expect_verdict"] == "good"]
+        assert cases, "the eval set has no row expected good"
+        bad, clean, flagged = [], 0, 0
+        for root, c in cases:
+            res = kbfacts.pack(c["question"])
+            if res["verdict"] != "good":  # the verdict itself is `rag.py eval`'s check
+                continue
+            problems = good_pack_problems(res)
+            bad += [f"{c['id']}: {p}" for p in problems]
+            if res["route"]:
+                flagged += 1
+            else:
+                clean += 1
+        assert not bad, "\n".join(bad)
+        assert clean > flagged, f"most good packs are clean, got {clean} clean and {flagged} flagged"
+
+    def test_the_check_names_a_demoted_clean_good_and_a_missed_flag(self):
+        clean = kbfacts.pack(CLEAN_Q)
+        assert good_pack_problems(clean) == []
+        flagged = kbfacts.pack(FLAGGED_Q)
+        assert good_pack_problems(flagged) == []
+        # planted: a clean good pack that a rule demoted to split, with its route lines printed
+        demoted = dict(clean, route="split", text=clean["text"].replace(
+            "\n\n", "\nroute: split\nkb has: LAPS\nkb lacks: -\n\n", 1))
+        assert any("clean good but route" in p for p in good_pack_problems(demoted)), good_pack_problems(demoted)
+        # planted: a flagged good pack that lost its route
+        lost = dict(flagged, route=None, text="\n".join(ln for ln in flagged["text"].splitlines()
+                                                          if not ln.startswith(ROUTE_LINES)))
+        assert any("flagged" in p for p in good_pack_problems(lost)), good_pack_problems(lost)
+        # planted: a word nowhere in the kb on an otherwise clean good pack must route it
+        assert good_pack_problems(dict(clean, missing=["eks"])), "a missing word flags a good pack"
