@@ -2,7 +2,7 @@
   "id": "TK-cwvnhup5",
   "kind": "task",
   "title": "kb-worker agent pinned to the sonnet alias",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-ry4squft",
   "priority": "P1",
   "rank": 0,
@@ -21,5 +21,19 @@
     ".claude/agents/kb-worker.md",
     "_tools/test_kb_mcp.py"
   ],
-  "claimed_by": "worker-cwvnhup5"
+  "evidence": {
+    "commit": "2639af1a4e228e713b03b8096fd6e39611f4d5e8",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "kb_worker_agent"
+        ],
+        "exit": 0,
+        "sha256": "5ccded70ef84a872"
+      }
+    ]
+  }
 }
