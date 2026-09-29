@@ -942,9 +942,11 @@ def latest_pipeline(root):
     (`ql_deliver.job_verdict`): red when a job's script failed, else `unverified` says how each gate job did not
     succeed."""
     from ql_deliver import GITHUB_RED, RAN_AND_FAILED, forge_list, gitlab_jobs, job_verdict, origin_forge
-    code, url, _ = run(["git", "remote", "get-url", "origin"], cwd=root)
+    import kbpublic
+    remote = kbpublic.integration_remote(root)
+    code, url, _ = run(["git", "remote", "get-url", remote], cwd=root)
     if code:
-        return None, "no origin remote"
+        return None, f"no {remote} remote"
     url = url.strip()
     forge, host, project = origin_forge(url)
     quoted = project.replace("/", "%2F")
@@ -1007,7 +1009,8 @@ def latest_pipeline(root):
 def covered_by_revert(root, sha):
     """True when an automatic revert (KB-Auto: revert) on origin/main reverts the automatic push that `sha` ends;
     None when the history cannot be read. The revert commit names the first commit of that push."""
-    code, o, _ = run(["git", "log", f"{sha}..origin/main", "--format=%B%x1e"], cwd=root)
+    import kbpublic
+    code, o, _ = run(["git", "log", f"{sha}..{kbpublic.integration_remote(root)}/main", "--format=%B%x1e"], cwd=root)
     if code:
         return None
     for body in o.split("\x1e"):
@@ -1042,7 +1045,8 @@ def red_bug(pid, sha, sev, jobs=(), url=None, extra="", fingerprint=None):
 
 def cmd_red_pipeline(bl, a):
     if not a.status:
-        run(["git", "fetch", "-q", "origin", "main"], cwd=bl.root)
+        import kbpublic
+        run(["git", "fetch", "-q", kbpublic.integration_remote(bl.root), "main"], cwd=bl.root)
     p, note = latest_pipeline(bl.root)
     if p is None:
         say(f"red-pipeline: not checked: {note}")

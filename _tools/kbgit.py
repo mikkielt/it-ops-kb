@@ -11,8 +11,8 @@
   kbgit.py blame <path:line>                               the commit that wrote that line, and the sources it cites
   kbgit.py asof <YYYY-MM-DD | tag | rev> <path>            the file as of the last commit on or before that date (or at the tag)
   kbgit.py tag-census YYYY-MM-DD                           annotated tag census-YYYY-MM-DD on HEAD: "kb confirmed current" (no push)
-  kbgit.py sync [--push] [--dry-run] [--remote origin] [--branch main]   fetch, rebase, fix, gate, push: the way to push
-  kbgit.py publish [--remote R] [--dry-run] [--rewrite]    push origin/main without kb/_querylog to the public home
+  kbgit.py sync [--push] [--dry-run] [--remote R] [--branch main]   fetch, rebase, fix, gate, push: the way to push
+  kbgit.py publish [--remote R] [--dry-run] [--rewrite]    push the integration main without kb/_querylog to the public home
   kbgit.py check-public [REV]                              exit 1 when REV's history touches kb/_querylog (kbpublic.py)
 
 Roots. Every root in this repository's kb/ (kb/public and any kb/<name>/ with a _root.md; KB_ROOTS roots belong to
@@ -1439,7 +1439,7 @@ def hook_pre_push(args, stdin):
     """The pre-push hook: run the sync gate (plus `fix --check`, which sync runs itself) before a plain `git push` of
     a branch. Exit 1 blocks the push. Skipped when `sync` pushes (it gated already: KB_GATE_DONE=1), for tag-only and
     delete-only pushes, and with a note when the pushed commit is not HEAD (the checks read the working tree)."""
-    remote = args[0] if args else "origin"
+    remote = args[0] if args else kbpublic.integration_remote(KB)
     pushed = [(p[0], p[1]) for p in (ln.split() for ln in stdin.splitlines()) if len(p) == 4]
     blocked = kbpublic.guard_push(remote, args[1] if len(args) > 1 else None, pushed, KB)
     for ref, why in blocked:
@@ -1720,8 +1720,9 @@ def at_or_parent(sha, rel):
 
 
 def on_origin_main(sha):
-    """True when the commit is already on origin/main: its KB-Work items are history, judged when it landed."""
-    main = rev_parse("refs/remotes/origin/main")
+    """True when the commit is already on the integration remote's main: its KB-Work items are history, judged when
+    it landed."""
+    main = rev_parse(f"refs/remotes/{kbpublic.integration_remote(KB)}/main")
     if not main:
         return False
     p = git_run("merge-base", "--is-ancestor", sha, main)
@@ -1953,7 +1954,7 @@ def cmd_tag_census(a):
         print("git tag failed: " + (p.stderr.decode("utf-8", "replace") if p else "no git"))
         return 2
     print(f"created annotated tag {name} on {head[:12]}\n" + msg.rstrip())
-    print(f"not pushed; to share it: git push origin {name}")
+    print(f"not pushed; to share it: git push {kbpublic.integration_remote(KB)} {name}")
     return 0
 
 
@@ -2264,6 +2265,7 @@ def sync_once(a, r):
 
 
 def cmd_sync(a):
+    a.remote = a.remote or kbpublic.integration_remote(KB)
     if git("rev-parse", "--is-inside-work-tree") is None or not rev_parse("HEAD"):
         print("refused: not a git clone with commits (or git is missing)")
         return 2
@@ -2354,13 +2356,13 @@ def main():
     y = sub.add_parser("sync", help="fetch, rebase onto REMOTE/BRANCH, fix, run the gate, push with --push")
     y.add_argument("--push", action="store_true", help="push HEAD to REMOTE/BRANCH after a green gate (plain push, never --force)")
     y.add_argument("--dry-run", action="store_true", help="fetch and report what would happen; rebase, commit and push nothing")
-    y.add_argument("--remote", default="origin", help="the remote (default origin)")
+    y.add_argument("--remote", help=f"the remote (default: the integration remote, git config {kbpublic.INTEGRATION_KEY}, else origin)")
     y.add_argument("--branch", default="main", help="the remote branch to rebase onto and push to (default main)")
     g = sub.add_parser("tag-census", help="annotated tag census-YYYY-MM-DD on HEAD (not pushed)")
     g.add_argument("date", metavar="YYYY-MM-DD")
     pb = sub.add_parser("publish", help="push the projection of the integration main (no kb/_querylog) to the public home")
     pb.add_argument("--remote", help=f"the public remote (default: git config {kbpublic.CONFIG_KEY})")
-    pb.add_argument("--source", default="origin/main", help="REMOTE/BRANCH to project (default origin/main)")
+    pb.add_argument("--source", help="REMOTE/BRANCH to project (default: the integration remote's main)")
     pb.add_argument("--branch", default="main", help="the public remote's branch (default main)")
     pb.add_argument("--dry-run", action="store_true", help="fetch, project and report; push nothing")
     pb.add_argument("--rewrite", action="store_true", help="replace a public branch that is not an ancestor (force with lease)")

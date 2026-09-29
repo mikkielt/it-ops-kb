@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """The public home (stdlib only): what never reaches it, which remote it is, and the history published there.
 
-  kbgit.py publish [--remote R] [--source origin/main] [--branch main] [--dry-run] [--rewrite]
+  kbgit.py publish [--remote R] [--source REMOTE/main] [--branch main] [--dry-run] [--rewrite]
   kbgit.py check-public [REV]
 
-The integration remote (`origin`) holds everything; the public home (GitHub) holds the same history without the
+The integration remote (git config kb.integrationRemote, default `origin`) holds everything; the public home (GitHub) holds the same history without the
 PRIVATE paths: the query log's store `kb/_querylog/` is kept on the integration remote only. Both hosts cannot carry
 the same `main`, so the public home gets a projection of it:
 
@@ -36,6 +36,8 @@ import os, re, subprocess, sys
 
 PRIVATE = ("kb/_querylog",)  # repository paths kept on the integration remote only (kb/_self/git.md, Public home)
 CONFIG_KEY = "kb.publishRemote"
+INTEGRATION_KEY = "kb.integrationRemote"
+CLONE_REMOTE = "origin"  # what `git clone` names its source: the integration remote unless INTEGRATION_KEY says otherwise
 PUBLISHED_REF = "refs/kb/published"
 ZERO_RE = re.compile(r"^0+$")
 
@@ -55,6 +57,14 @@ def out(args, cwd):
 def publish_remote(cwd):
     """The configured public remote's name, or None."""
     return out(["config", "--get", CONFIG_KEY], cwd) or None
+
+
+def integration_remote(cwd):
+    """The integration remote's name: git config kb.integrationRemote, else the clone's source (CLONE_REMOTE)."""
+    try:
+        return out(["config", "--get", INTEGRATION_KEY], cwd) or CLONE_REMOTE
+    except OSError:  # no such directory: not a clone yet
+        return CLONE_REMOTE
 
 
 def is_public(remote, cwd, url=None):
@@ -209,9 +219,10 @@ def cmd_publish(a, cwd):
     if not remote:
         print(f"note: no public remote (git config {CONFIG_KEY} <remote>); nothing published")
         return 0
-    src_remote, _, src_branch = a.source.partition("/")
+    source = a.source or f"{integration_remote(cwd)}/main"
+    src_remote, _, src_branch = source.partition("/")
     if not src_branch or out(["remote", "get-url", src_remote], cwd) is None or out(["remote", "get-url", remote], cwd) is None:
-        print(f"refused: no remote {remote!r}, or the source {a.source!r} is not REMOTE/BRANCH of a remote")
+        print(f"refused: no remote {remote!r}, or the source {source!r} is not REMOTE/BRANCH of a remote")
         return 2
     if remote == src_remote:
         print(f"refused: the public remote {remote!r} is the source's remote; publish goes from integration to public")
@@ -221,9 +232,9 @@ def cmd_publish(a, cwd):
         if code and not (r == remote and "couldn't find remote ref" in e):
             print(f"refused: git fetch {r} {b} failed: {e.strip()[-300:]}")
             return 2
-    src = out(["rev-parse", "--verify", "--quiet", f"refs/remotes/{a.source}^{{commit}}"], cwd)
+    src = out(["rev-parse", "--verify", "--quiet", f"refs/remotes/{source}^{{commit}}"], cwd)
     if not src:
-        print(f"refused: {a.source} has no commit")
+        print(f"refused: {source} has no commit")
         return 2
     try:
         proj = project(src, cwd)
@@ -235,7 +246,7 @@ def cmd_publish(a, cwd):
         print(f"refused: the projection {proj[:12]} still touches {', '.join(PRIVATE)} in {left}")
         return 1
     tip = out(["rev-parse", "--verify", "--quiet", f"refs/remotes/{remote}/{a.branch}^{{commit}}"], cwd)
-    print(f"source: {a.source} {src[:12]}; projection: {proj[:12]}" + (" (the same commit)" if src == proj else ""))
+    print(f"source: {source} {src[:12]}; projection: {proj[:12]}" + (" (the same commit)" if src == proj else ""))
     print(f"public: {remote}/{a.branch} " + (tip[:12] if tip else "(none)"))
     if tip == proj:
         print("publish: nothing to do (the public home has the projection)")
@@ -244,7 +255,7 @@ def cmd_publish(a, cwd):
     ff = tip is None or is_ancestor(tip, proj, cwd)
     if not ff and not a.rewrite:
         print(f"refused: {remote}/{a.branch} {tip[:12]} is not an ancestor of the projection: commits were pushed there "
-              f"directly, or it holds a history from before the projection. Bring them to {a.source} first, or pass "
+              f"directly, or it holds a history from before the projection. Bring them to {source} first, or pass "
               f"--rewrite to replace it (force push with lease)")
         return 1
     n = out(["rev-list", "--count", proj if tip is None else f"{tip}..{proj}"], cwd)

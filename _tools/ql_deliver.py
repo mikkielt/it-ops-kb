@@ -17,7 +17,8 @@ from ql_research import edit_problems
 from ql_store import (APPLY_FAILED, FINDINGS, LEARN_STATES, USAGE, finding_states, findings_files, leak_problems,
                       load_run, run_files, store_entries, usage_files, write_findings)
 
-REMOTE, BRANCH = "origin", "main"  # the repository the clone came from, and the branch automatic commits land on
+REMOTE = kbpublic.integration_remote(HOME)  # the integration remote of this clone (git config kb.integrationRemote); a Pusher asks its own home
+BRANCH = "main"  # the branch automatic commits land on
 CONFLICT_BRANCH_PREFIX = "querylog/"  # a conflict sync cannot resolve goes to querylog/<run-id>, as a merge request
 MR_OPTIONS = ("merge_request.create", f"merge_request.target={BRANCH}")  # push options: no token, no auto-merge
 FALLBACK_GITLAB_HOST = "gitlab.com"  # only when origin's url names no host
@@ -300,8 +301,9 @@ class Pusher:
         self.apply_step = apply_step or self.learn_and_apply
         self.research = list(research or ["--clone", str(self.home)])
         self.cloud = cloud_session() if cloud is None else cloud
+        self.remote = kbpublic.integration_remote(self.home)  # the remote automatic commits go to
         self.branch = BRANCH  # the branch automatic commits are pushed to
-        self.up = f"refs/remotes/{REMOTE}/{BRANCH}"  # the ref the worktree starts from
+        self.up = f"refs/remotes/{self.remote}/{BRANCH}"  # the ref the worktree starts from
         self.landed = False  # set when deliver pushed to self.branch
         self.refused = None  # the push output line that refused a push for want of rights (push_refusal)
         self.now_dt = now_dt  # the time the spool is read at (default: now)
@@ -325,14 +327,14 @@ class Pusher:
     def fetch(self):
         """origin's main and its conflict branches (pruned: a merged branch that GitLab deleted goes); in a cloud
         session on another branch, that branch too, which the worktree then starts from once origin has it."""
-        main = f"refs/remotes/{REMOTE}/{BRANCH}"
-        code, o, e = self.git("fetch", "--quiet", "--prune", REMOTE, f"+refs/heads/{BRANCH}:{main}",
-                              f"+refs/heads/{CONFLICT_BRANCH_PREFIX}*:refs/remotes/{REMOTE}/{CONFLICT_BRANCH_PREFIX}*",
+        main = f"refs/remotes/{self.remote}/{BRANCH}"
+        code, o, e = self.git("fetch", "--quiet", "--prune", self.remote, f"+refs/heads/{BRANCH}:{main}",
+                              f"+refs/heads/{CONFLICT_BRANCH_PREFIX}*:refs/remotes/{self.remote}/{CONFLICT_BRANCH_PREFIX}*",
                               cwd=self.home)
         if code or self.branch == BRANCH:
             return code, o, e
-        ref = f"refs/remotes/{REMOTE}/{self.branch}"
-        code, o, e = self.git("fetch", "--quiet", REMOTE, f"+refs/heads/{self.branch}:{ref}", cwd=self.home)
+        ref = f"refs/remotes/{self.remote}/{self.branch}"
+        code, o, e = self.git("fetch", "--quiet", self.remote, f"+refs/heads/{self.branch}:{ref}", cwd=self.home)
         if code == 0:
             self.up = ref
         elif re.search(r"couldn't find remote ref", o + e, re.I):
@@ -373,7 +375,7 @@ class Pusher:
         """Finding ids pending on a conflict branch of origin that main does not hold yet: the records of the
         findings files the branch adds. OSError when such a file cannot be read, so a held finding is never applied
         for want of reading it."""
-        code, o, _ = self.git("for-each-ref", "--format=%(refname)", f"refs/remotes/{REMOTE}/{CONFLICT_BRANCH_PREFIX}")
+        code, o, _ = self.git("for-each-ref", "--format=%(refname)", f"refs/remotes/{self.remote}/{CONFLICT_BRANCH_PREFIX}")
         ids = set()
         for ref in o.split() if code == 0 else []:
             if self.git("merge-base", "--is-ancestor", ref, self.up)[0] == 0:
@@ -450,7 +452,7 @@ class Pusher:
         """The spool rows of the entries `ids`, whose run file is on origin/main, are deleted."""
         n = spool_delivered(self.qdir, ids, self.now_dt)
         if n:
-            self.say(f"deleted the spool rows of {n} entries whose run file is on {REMOTE}/{self.branch}")
+            self.say(f"deleted the spool rows of {n} entries whose run file is on {self.remote}/{self.branch}")
 
     def bring(self, new, kept):
         """The local files `new` copied into the worktree's store, the worktree's `querylog.py check` and the leak
@@ -460,7 +462,7 @@ class Pusher:
             write_text(store / rel, Path(src).read_text(encoding="utf-8"))
         if kept:
             self.say(f"{len(kept)} local findings file(s) stay local (apply's outcomes, or findings "
-                     f"{REMOTE}/{BRANCH} already records)")
+                     f"{self.remote}/{BRANCH} already records)")
         code, o, e = self.tool("querylog.py", "check", str(store))
         problems = [ln for ln in o.splitlines() if ln.strip() and not ln.startswith("querylog check:")] if code else []
         if code and not problems:
@@ -530,12 +532,12 @@ class Pusher:
         another branch, whose proxy takes pushes to that branch only, nothing is pushed then. A push the remote
         refused for want of rights is recorded in `refused`."""
         mine = self.git("rev-parse", "HEAD")[1].strip()
-        code, o, e = self.tool("kbgit.py", "sync", "--push", "--remote", REMOTE, "--branch", self.branch)
+        code, o, e = self.tool("kbgit.py", "sync", "--push", "--remote", self.remote, "--branch", self.branch)
         report = [ln for ln in (o + e).splitlines() if ln.startswith(("gate ", "pushed:", "needs-human:", "CONFLICT"))]
         for ln in report:
             self.out("  " + ln)
         if code == 0:
-            self.say(f"pushed {mine[:9]} to {REMOTE}/{self.branch}")
+            self.say(f"pushed {mine[:9]} to {self.remote}/{self.branch}")
             self.landed = True
             return 0
         if code != 3:
@@ -546,14 +548,14 @@ class Pusher:
             return code
         self.git("rebase", "--abort")
         if self.branch != BRANCH:
-            self.say(f"conflict with {REMOTE}/{self.branch}: nothing pushed (this session pushes to its working "
+            self.say(f"conflict with {self.remote}/{self.branch}: nothing pushed (this session pushes to its working "
                      f"branch only); its findings stay pending")
             return 1
         branch = CONFLICT_BRANCH_PREFIX + run_id
         argv = ["push"]
         for opt in MR_OPTIONS:
             argv += ["-o", opt]
-        code, o, e = self.git(*argv, REMOTE, f"{mine}:refs/heads/{branch}")
+        code, o, e = self.git(*argv, self.remote, f"{mine}:refs/heads/{branch}")
         if code:
             self.refused = push_refusal(o + e)
             self.say(f"conflict, and the push of {branch} failed: {(o + e).strip()[-300:]}")
@@ -655,12 +657,12 @@ class Pusher:
         return self.deliver(run_id)
 
     def __call__(self):
-        code, url, _ = self.git("remote", "get-url", REMOTE, cwd=self.home)
+        code, url, _ = self.git("remote", "get-url", self.remote, cwd=self.home)
         if code:
-            self.say(f"refused: {self.home} is not a git clone with a remote {REMOTE}")
+            self.say(f"refused: {self.home} is not a git clone with a remote {self.remote}")
             return 2
-        if kbpublic.is_public(REMOTE, str(self.home), url.strip()):
-            self.say(f"refused: {REMOTE} ({url.strip()}) is the public home, which never gets {STORE_REL} "
+        if kbpublic.is_public(self.remote, str(self.home), url.strip()):
+            self.say(f"refused: {self.remote} ({url.strip()}) is the public home, which never gets {STORE_REL} "
                      f"(kb/_self/git.md, Public home); the run files stay in the local store and the spool")
             return 2
         if self.cloud:
@@ -673,7 +675,7 @@ class Pusher:
                 self.say(f"cloud session: automatic commits go to its working branch {branch}")
         code, o, e = self.fetch()
         if code:
-            self.say(f"git fetch {REMOTE} failed; nothing pushed ({(o + e).strip()[-300:]})")
+            self.say(f"git fetch {self.remote} failed; nothing pushed ({(o + e).strip()[-300:]})")
             return 1
         code, o, e = self.reset()
         if code:
@@ -773,7 +775,7 @@ def install_url(root=None, run=None):
         return f"https://github.com/{src['repo']}.git"
     for d in (entry.get("installLocation"), src.get("path"), plugins / "marketplaces" / name):
         if isinstance(d, (str, Path)) and str(d) and (Path(d) / ".git").exists():
-            code, o, _ = run(["git", "remote", "get-url", REMOTE], cwd=str(d))
+            code, o, _ = run(["git", "remote", "get-url", kbpublic.CLONE_REMOTE], cwd=str(d))
             if code == 0 and o.strip():
                 return o.strip()
     return None
@@ -785,9 +787,9 @@ def managed_clone(qdir, url, run, out):
     failed (nothing is left behind)."""
     clone = Path(qdir) / CLONE_NAME
     if (clone / ".git").exists():
-        code, o, _ = run(["git", "remote", "get-url", REMOTE], cwd=str(clone))
+        code, o, _ = run(["git", "remote", "get-url", kbpublic.CLONE_REMOTE], cwd=str(clone))
         if code or o.strip() != url:
-            run(["git", "remote", "set-url", REMOTE, url], cwd=str(clone))
+            run(["git", "remote", "set-url", kbpublic.CLONE_REMOTE, url], cwd=str(clone))
         return clone
     if clone.exists():
         shutil.rmtree(clone, ignore_errors=True)

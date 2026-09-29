@@ -9,12 +9,14 @@
                    public home (git config kb.publishRemote); a clone without one pushes it; the pre-push hook of a kb
                    clone refuses a plain push to the public home.
 """
-import argparse, os
+import argparse, ast, os, shutil
+from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
-import kbpublic
-from conftest import Repo, requires_git
+import kbgit, kbpublic
+from conftest import TOOLS, Repo, requires_git
 
 pytestmark = [pytest.mark.git, requires_git]
 
@@ -143,3 +145,98 @@ class TestGuard:
         c.git("config", "--unset", "kb.publishRemote")
         p = c.run_git("push", "pub", "HEAD:refs/heads/main", env={"KB_GATE_DONE": "1"})
         assert p.returncode == 0, p.stderr
+
+
+# ---- the integration remote by role: a clone whose integration remote is not named origin
+
+ROLE_SKIP = {  # _tools files that may hold the string constant 'origin', each with its reason
+    "kbpublic.py": "resolves the role: CLONE_REMOTE is git's name for a clone's source",
+    "census.py": "the remote of a source repository's own clone, not this repository's",
+    "kbingest.py": "the remote of an ingested repository's own clone, not this repository's",
+    "benchmarks.py": "a fixture clone's remote",
+    "kb_mcp.py": "upstream() falls back to origin/HEAD: BG-kpv2cxxw",
+}
+
+
+def origin_constants(text):
+    """[(line, value)] of the string constants of the module text that are `origin` or start with `origin/`."""
+    return sorted((n.lineno, n.value) for n in ast.walk(ast.parse(text))
+                  if isinstance(n, ast.Constant) and isinstance(n.value, str) and (n.value == "origin" or n.value.startswith("origin/")))
+
+
+class TestRemoteRoles:
+    @pytest.fixture
+    def clone(self, tmp_path):
+        """A repository with a copy of _tools whose only remotes are `integ` (bare, its integration remote) and `pub`."""
+        top = Repo(tmp_path)
+        integ, pub = Repo(tmp_path / "integ.git"), Repo(tmp_path / "pub.git")
+        top.git("init", "-q", "--bare", "-b", "main", integ.path)
+        top.git("init", "-q", "--bare", "-b", "main", pub.path)
+        r = Repo(tmp_path / "work")
+        shutil.copytree(TOOLS, r.file("_tools"), ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
+        r.git("init", "-q", "-b", "main")
+        commit(r, {"README.md": "a\n", "kb/public/a.md": "fact\n"}, "one")
+        r.git("remote", "add", "integ", integ.path)
+        r.git("remote", "add", "pub", pub.path)
+        r.git("push", "-q", "--no-verify", "integ", "HEAD:main")
+        r.git("config", "kb.integrationRemote", "integ")
+        return r
+
+    def test_role_resolution(self, clone):
+        assert kbpublic.integration_remote(clone.path) == "integ"
+        clone.git("config", "--unset", "kb.integrationRemote")
+        assert kbpublic.integration_remote(clone.path) == "origin"
+
+    def test_sync_names_the_integration_remote(self, clone):
+        p = clone.kbgit("sync", "--dry-run")
+        assert "integ/main" in p.stdout and "origin" not in p.stdout + p.stderr, p.stdout + p.stderr
+        p = clone.kbgit("sync", "--dry-run", "--remote", "pub")  # --remote still overrides
+        assert "pub/main" in p.stdout, p.stdout + p.stderr
+
+    @pytest.mark.parametrize("public", [True, False])
+    def test_publish_names_the_integration_remote(self, clone, public):
+        if public:
+            clone.git("config", "kb.publishRemote", "pub")
+        p = clone.kbgit("publish", "--dry-run")
+        assert p.returncode == 0 and "origin" not in p.stdout + p.stderr, p.stdout + p.stderr
+        if public:
+            assert "source: integ/main" in p.stdout
+        else:
+            assert "no public remote" in p.stdout
+
+    def test_red_pipeline_names_the_integration_remote(self, clone, monkeypatch, capsys):
+        import backlog
+        calls = []
+
+        def fake(argv, cwd=None):
+            calls.append(argv)
+            return 1, "", "stub"
+
+        monkeypatch.setattr(backlog, "run", fake)
+        backlog.cmd_red_pipeline(SimpleNamespace(root=clone.path), argparse.Namespace(status=False))
+        assert ["git", "fetch", "-q", "integ", "main"] in calls
+        assert "no integ remote" in capsys.readouterr().out
+        assert not any("origin" in " ".join(c) for c in calls)
+
+    def test_pusher_and_hook_resolve_the_role(self, clone, monkeypatch):
+        import ql_deliver
+        p = ql_deliver.Pusher(clone.path, Path(clone.path) / "q", lambda argv, cwd=None: (1, "", ""), None, print, cloud=False)
+        assert p.remote == "integ" and p.up == "refs/remotes/integ/main"
+        monkeypatch.setattr(kbgit, "KB", clone.path)
+        assert kbpublic.integration_remote(kbgit.KB) == "integ"
+
+    def test_no_tool_holds_the_string_origin(self):
+        found = {}
+        for f in sorted(Path(TOOLS).glob("*.py")):
+            if f.name.startswith(("test_", "conftest")) or f.name in ROLE_SKIP:
+                continue
+            hits = origin_constants(f.read_text(encoding="utf-8"))
+            if hits:
+                found[f.name] = hits
+        assert not found, f"a tool names the remote origin instead of asking kbpublic.integration_remote: {found}"
+
+    def test_scan_reports_a_planted_origin(self):
+        assert origin_constants('x = ["git", "fetch", "origin"]\ny = "origin/main"\nz = "origins"\n') == [(1, "origin"), (2, "origin/main")]
+        assert origin_constants('"""origin is fine in a docstring about origin/main"""\nremote = kbpublic.integration_remote(cwd)\n') == []
+        for name, why in ROLE_SKIP.items():
+            assert (Path(TOOLS) / name).exists() and why, name  # a skip names a file that exists, with its reason

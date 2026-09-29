@@ -172,7 +172,7 @@ Several sprints may be active at once. Each has its own horizon.
   - an agent at any time;
   - the operator;
   - a sprint review;
-  - a red pipeline: `python3 _tools/backlog.py red-pipeline` reads the newest finished pipeline of `origin`'s `main` (`glab api`, `gh` on GitHub; a note and no filing when neither is signed in; on GitLab one waiting on manual jobs counts as finished). On GitLab it reads the pipeline by its jobs, not by its status, since every job in `.gitlab-ci.yml` has `allow_failure: true` (the gate jobs `kb-tests` and `kb-trailers` start on their own, `kb-tests-windows` for tool changes, the rest are manual) and the status says success whatever they did (`ql_deliver.job_verdict`):
+  - a red pipeline: `python3 _tools/backlog.py red-pipeline` reads the newest finished pipeline of the integration remote's `main` (`glab api`, `gh` on GitHub; a note and no filing when neither is signed in; on GitLab one waiting on manual jobs counts as finished). On GitLab it reads the pipeline by its jobs, not by its status, since every job in `.gitlab-ci.yml` has `allow_failure: true` (the gate jobs `kb-tests` and `kb-trailers` start on their own, `kb-tests-windows` for tool changes, the rest are manual) and the status says success whatever they did (`ql_deliver.job_verdict`):
     - **red**: the pipeline failed, or a job's script ran and failed (`failure_reason` `script_failure`), whichever job;
     - **unverified**: a gate job (`kb-tests`, `kb-trailers`) did not succeed: manual, skipped, canceled, still running, failed without running (such as `ci_quota_exceeded`), missing, or the job list unreadable. `kb-tests-floor`, `tool-stress` and `kb-tests-windows` never make it unverified;
     - **green**: neither.
