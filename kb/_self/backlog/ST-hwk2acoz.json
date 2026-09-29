@@ -2,42 +2,80 @@
   "id": "ST-hwk2acoz",
   "kind": "story",
   "title": "The gate runs only what a change can break",
-  "status": "draft",
+  "status": "doing",
   "parent": "EP-hlnsqx4f",
+  "sprint": "SP-ddjk2p5l",
   "priority": "P1",
   "rank": 0,
-  "goal": "kbgit.py sync, the pre-push hook and /kb-verify choose their checks from the changed paths: a change to kb content, ledgers or backlog items only runs the content checks (check.py, build_index.py --check, fetch.py --offline, doc2query.py stale, the leak and secret scans, rag.py eval); a change under _tools/ or .claude/ also runs the test files mapped to the modules it touched; the full tests.py and stress_test.py run only when asked (a sprint review, a manual CI job, or an explicit flag), and a test proves each lane with a planted change.",
+  "goal": "python3 _tools/tests.py --changed REV runs only the test files a change can break: a changed _tools/X.py selects every test file that imports X or runs it as a script, directly or through the tools it imports (computed from the code, not a hand list); kb content, ledgers and kb/_self docs select test_kb.py's content classes; backlog items and the query log store select none (their own check runs in the gate); conftest.py, pyproject.toml, uv.lock, tests.py and any path no rule knows select everything. kbgit.py's gate runs the content checks only for the paths that need them, drops build_index.py --check where sync's own fix just rebuilt the index files, and runs tests.py --changed instead of the whole fast subset; maintaining.md, git.md and tools.md state the one gate. A test fails when a tool module is reached by no test file, and planted changes prove each lane.",
   "checks": [
     {
       "run": [
         "python3",
         "_tools/tests.py",
         "-k",
-        "gate_lanes"
+        "testmap"
       ],
       "exit": 0
     },
     {
       "run": [
         "python3",
-        "_tools/kbgit.py",
-        "sync",
-        "--dry-run"
+        "_tools/testmap.py",
+        "select",
+        "--paths",
+        "_tools/backlog.py"
+      ],
+      "exit": 0,
+      "match": "test_backlog\\.py"
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/testmap.py",
+        "select",
+        "--paths",
+        "kb/public/python/pytest.md"
+      ],
+      "exit": 0,
+      "match": "test_kb\\.py::TestLookup"
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/testmap.py",
+        "select",
+        "--paths",
+        "_tools/conftest.py"
+      ],
+      "exit": 0,
+      "match": "all"
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/testmap.py",
+        "orphans"
       ],
       "exit": 0
     }
   ],
   "touches": [
-    "_tools/kbgit.py",
+    "_tools/testmap.py",
+    "_tools/test_testmap.py",
     "_tools/tests.py",
+    "_tools/kbgit.py",
     "_tools/test_sync.py",
     "_tools/test_kb.py",
-    ".githooks/**",
+    "_tools/test_querylog_e2e.py",
+    "_tools/fixtures/querylog/**",
+    "kb/public/_retrieval/lookup_eval.csv",
     ".claude/skills/kb-verify/**",
     "kb/_self/maintaining.md",
     "kb/_self/git.md",
     "kb/_self/tools.md",
-    "AGENTS.md"
+    "kb/_self/map.csv",
+    "kb/_self/backlog/**"
   ],
   "relates_to": [
     "EP-rumrqsu5",
@@ -53,7 +91,9 @@
         "those plus the in-process content tests of test_kb.py (cohesion, leaks, lookup) and backlog.py check, under a minute",
         "the current fast tests.py subset (KB_TESTS_FAST=1) as today"
       ],
-      "recommendation": "those plus the in-process content tests of test_kb.py (cohesion, leaks, lookup) and backlog.py check, under a minute"
+      "recommendation": "those plus the in-process content tests of test_kb.py (cohesion, leaks, lookup) and backlog.py check, under a minute",
+      "answer": "the content checks the paths need plus test_kb.py's content classes (TestCohesion, TestSelfDocs, TestLookup, TestIds, TestLeaks); backlog items run backlog.py check, the query log store querylog.py check",
+      "by": "operator"
     },
     {
       "id": "full-suite-when",
@@ -64,7 +104,9 @@
         "nightly on the self-hosted runner plus sprint reviews",
         "on every tool change (as today), content changes excepted"
       ],
-      "recommendation": "a sprint review story's checks, and a manual CI job before a tool change is merged"
+      "recommendation": "a sprint review story's checks, and a manual CI job before a tool change is merged",
+      "answer": "only on request: a sprint review story's checks, a manual CI job, or an explicit run; a push runs the mapped selection",
+      "by": "operator"
     }
   ],
   "links": [
@@ -72,5 +114,6 @@
     "kb/_self/maintaining.md (Conduct for changes: the gate)",
     "kb/_self/git.md (Workflow: sync's gate)"
   ],
-  "notes": "The operator's direction (2026-09-30): the full suite on every small change makes development several times slower for little gain, worst with several agents gating in parallel on one host. Most agent commits change only content, ledgers or backlog items. Measured on the Windows host: a full tests.py run takes 18-20 minutes of wall time and 7,700-8,300 worker-seconds, stress_test.py about 8 minutes, while the content checks take seconds (check.py 0.9 s, build_index --check 0.5 s, fetch --offline 0.2 s, doc2query stale 0.4 s, kbgit fix --check 1.5 s, rag eval 5.3 s). The module-to-test map for tool changes is data (a table beside tests.py) with a test that fails when a test file names no module or a tool module maps to no test file. Changing AGENTS.md or maintaining.md's gate rule is a rule change, hence the blocking gates."
+  "notes": "The operator's direction (2026-09-30): the full suite on every small change makes development several times slower for little gain, worst with several agents gating in parallel on one host. Most agent commits change only content, ledgers or backlog items. Measured on the Windows host: a full tests.py run takes 18-20 minutes of wall time and 7,700-8,300 worker-seconds, stress_test.py about 8 minutes, while the content checks take seconds (check.py 0.9 s, build_index --check 0.5 s, fetch --offline 0.2 s, doc2query stale 0.4 s, kbgit fix --check 1.5 s, rag eval 5.3 s). The module-to-test map for tool changes is data (a table beside tests.py) with a test that fails when a test file names no module or a tool module maps to no test file. Changing AGENTS.md or maintaining.md's gate rule is a rule change, hence the blocking gates. The operator (2026-09-30) asked for this at critical priority, to be run and closed at once in sprint SP-ddjk2p5l “Focused gate”, and answered both gates in the session: map the touched code to its tests and run only them, and remove from the gate what is not required.",
+  "claimed_by": "win-second"
 }
