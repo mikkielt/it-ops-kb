@@ -2,7 +2,7 @@
   "id": "TK-ckrurjei",
   "kind": "task",
   "title": "Make kb-tests-windows start on its own for tool changes",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-rgkc5fg5",
   "priority": "P2",
   "rank": 0,
@@ -29,5 +29,6 @@
   ],
   "depends_on": [
     "TK-kchnnl4k"
-  ]
+  ],
+  "claimed_by": "worker-ckrurjei"
 }
