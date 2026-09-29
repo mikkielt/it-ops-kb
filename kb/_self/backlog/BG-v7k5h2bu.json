@@ -2,7 +2,7 @@
   "id": "BG-v7k5h2bu",
   "kind": "bug",
   "title": "kbingest map leaves the MSBuild NuGet SDK resolver able to fetch an SDK",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-g5hizdko",
   "sprint": "SP-xourq2gj",
   "priority": "P2",
@@ -34,5 +34,6 @@
   ],
   "links": [
     "kb/public/agents/codebase-mapping.md:128 (MSBUILDDISABLENUGETSDKRESOLVER, CODE S-7j4xac2a; no Learn page)"
-  ]
+  ],
+  "claimed_by": "fix-v7k5h2bu"
 }
