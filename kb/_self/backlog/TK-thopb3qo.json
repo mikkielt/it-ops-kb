@@ -2,7 +2,7 @@
   "id": "TK-thopb3qo",
   "kind": "task",
   "title": "Set up the docker-linux runner in WSL2 Ubuntu and document both runners",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-33lzmm5e",
   "priority": "P2",
   "rank": 0,
@@ -98,5 +98,6 @@
       "by": "operator"
     }
   ],
-  "notes": "Host work done by the orchestrating session with the operator (elevated, may need a restart); the commit is only the doc."
+  "notes": "Host work done by the orchestrating session with the operator (elevated, may need a restart); the commit is only the doc.",
+  "claimed_by": "orchestrator-with-operator"
 }

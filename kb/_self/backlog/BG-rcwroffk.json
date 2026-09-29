@@ -2,7 +2,7 @@
   "id": "BG-rcwroffk",
   "kind": "bug",
   "title": "Hook commands need sh, so the raw-read hint cannot fire under PowerShell without Git Bash",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-5p4ahbnq",
   "sprint": "SP-76inhw33",
   "priority": "P2",
@@ -15,5 +15,6 @@
       "-c",
       "import json,sys; h=json.load(open('.claude/settings.json',encoding='utf-8'))['hooks']['PreToolUse']; sys.exit(0 if any('PowerShell' in e.get('matcher','') and any(x.get('shell')=='powershell' and not x.get('command','').startswith('sh ') for x in e['hooks']) for e in h) else 1)"
     ]
-  }
+  },
+  "claimed_by": "worker-rcwroffk"
 }
