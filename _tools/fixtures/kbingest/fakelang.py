@@ -7,9 +7,13 @@ It answers only the exact argument lists the mappers may run, exits 64 for any o
 KB_FAKE_MODE picks a planted misbehaviour: `fail` (exit 101), `array` (go list prints an array), `garbage` (go list
 prints a truncated object after a good one), `outside` (a package directory or a project reference outside the
 worktree), `problems` (npm ls prints its tree and exits 1), `planted` (msbuild evaluates properties and items to a
-file's text, an environment value or a token)."""
+file's text, an environment value or a token).
+Its msbuild stands in for the NuGet SDK resolver too: a project whose Sdk names a version (`Sdk="Name/1.2.3"`), or
+under a global.json with an `msbuild-sdks` entry, has its SDK fetched (a line in the file SDK_FETCHED beside
+KB_FAKE_LOG) unless MSBUILDDISABLENUGETSDKRESOLVER is 1, when it fails as MSBuild does for an SDK it cannot find."""
 import json
 import os
+import re
 import sys
 from pathlib import Path
 
@@ -18,7 +22,7 @@ mode = os.environ.get("KB_FAKE_MODE", "")
 here = Path.cwd()
 WATCH = ("GOTOOLCHAIN", "GOPROXY", "GOFLAGS", "CARGO_NET_OFFLINE", "RUSTUP_AUTO_INSTALL", "HTTPS_PROXY", "http_proxy",
          "KB_TEST_API_TOKEN", "npm_config_offline", "npm_config_ignore_scripts", "COREPACK_ENABLE_NETWORK",
-         "DOTNET_CLI_TELEMETRY_OPTOUT", "DOTNET_NOLOGO", "MSBUILDDISABLENODEREUSE")
+         "DOTNET_CLI_TELEMETRY_OPTOUT", "DOTNET_NOLOGO", "MSBUILDDISABLENODEREUSE", "MSBUILDDISABLENUGETSDKRESOLVER")
 log = os.environ.get("KB_FAKE_LOG")
 if log:
     with open(log, "a", encoding="utf-8", newline="\n") as f:
@@ -107,6 +111,26 @@ def msbuild_eval(project):
                       "ProjectReference": [{"Identity": r, "FullPath": "y"} for r in refs]}}
 
 
+SDK_FETCHED = "sdk-fetched.txt"
+
+
+def nuget_sdks(project):
+    """The SDKs PROJECT would have the NuGet SDK resolver fetch: a versioned Sdk attribute (`Name/1.2.3`) and the
+    `msbuild-sdks` entries of each global.json from the working directory up."""
+    text = (here / project).read_text(encoding="utf-8")
+    sdks = [m for m in re.findall(r'Sdk="([^"]+)"', text) if "/" in m]
+    for folder in (here, *here.parents):
+        gj = folder / "global.json"
+        if gj.is_file():
+            try:
+                doc = json.loads(gj.read_text(encoding="utf-8"))
+            except ValueError:
+                continue
+            if isinstance(doc, dict) and isinstance(doc.get("msbuild-sdks"), dict):
+                sdks += [f"{k}/{v}" for k, v in doc["msbuild-sdks"].items()]
+    return sdks
+
+
 def npm_tree():
     tree = {"version": "1.2.0", "name": "web", "dependencies": {
         "express": {"version": "4.19.2", "resolved": "https://registry.example.com/express",
@@ -145,6 +169,13 @@ elif tool == "dotnet" and args == ["--version"]:
     print("10.0.100")
 elif (tool == "dotnet" and len(args) == 5 and args[:2] == ["msbuild", "-noAutoResponse"] and args[3:] == [PROPS, ITEMS]
       and args[2].endswith(PROJECT_EXTS) and (here / args[2]).is_file()):
+    sdks = nuget_sdks(args[2])
+    if sdks and os.environ.get("MSBUILDDISABLENUGETSDKRESOLVER") == "1":
+        sys.stderr.write(f"{args[2]} : error MSB4236: The SDK '{sdks[0]}' specified could not be found.\n")
+        sys.exit(1)
+    if sdks and log:  # the resolver queried the feeds and imported the package: the attack succeeded
+        with open(Path(log).with_name(SDK_FETCHED), "a", encoding="utf-8", newline="\n") as f:
+            f.write("".join(s + "\n" for s in sdks))
     print(json.dumps(msbuild_eval(args[2]), indent=2))
 elif tool == "npm" and args == ["--version"]:
     print("10.8.2")

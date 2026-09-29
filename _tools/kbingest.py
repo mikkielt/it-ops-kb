@@ -848,7 +848,10 @@ MAP_MAX_PROJECTS = 50  # projects one per-project mapper (.NET, npm, tsc) maps b
 MAP_MAX_OUTPUT = 64 * 1024 * 1024  # bytes of a command's output that are parsed
 NOTE_LIMIT = 20  # notes one language keeps before it counts the rest
 # what makes a mapper command's environment offline: proxies that refuse, the tools' own offline switches (RUSTUP_AUTO_INSTALL=0:
-# a rustup cargo proxy never installs the absent toolchain a rust-toolchain.toml names)
+# a rustup cargo proxy never installs the absent toolchain a rust-toolchain.toml names; MSBUILDDISABLENUGETSDKRESOLVER=1:
+# MSBuild's NuGet SDK resolver resolves no SDK, so a versioned Sdk="Name/1.2.3" or a global.json msbuild-sdks entry
+# queries no feed and imports no package. That variable is read by the resolver's current implementation, not
+# documented on Microsoft Learn: kb agents/codebase-mapping, CODE)
 NETWORK_OFF = {
     "HTTP_PROXY": "http://127.0.0.1:9", "HTTPS_PROXY": "http://127.0.0.1:9", "ALL_PROXY": "http://127.0.0.1:9",
     "http_proxy": "http://127.0.0.1:9", "https_proxy": "http://127.0.0.1:9", "all_proxy": "http://127.0.0.1:9",
@@ -857,7 +860,7 @@ NETWORK_OFF = {
     "CARGO_NET_OFFLINE": "true", "RUSTUP_AUTO_INSTALL": "0", "npm_config_offline": "true", "npm_config_update_notifier": "false",
     "npm_config_ignore_scripts": "true", "COREPACK_ENABLE_NETWORK": "0", "DOTNET_CLI_TELEMETRY_OPTOUT": "1",
     "DOTNET_NOLOGO": "1", "DOTNET_SKIP_FIRST_TIME_EXPERIENCE": "1", "MSBUILDDISABLENODEREUSE": "1",
-    "PIP_NO_INDEX": "1", "GIT_TERMINAL_PROMPT": "0",
+    "MSBUILDDISABLENUGETSDKRESOLVER": "1", "PIP_NO_INDEX": "1", "GIT_TERMINAL_PROMPT": "0",
     "PYTHONDONTWRITEBYTECODE": "1",
 }
 SECRET_ENV = re.compile(r"(?i)token|secret|passw|credential|api[_-]?key|private[_-]?key|auth|cookie|session")
@@ -1358,8 +1361,10 @@ class DotnetMapper(Mapper):
     every import the project pulls in (Directory.Build.props, the SDK's .props and .targets, NuGet's obj/*.g.props when
     present) and expands property functions, which are calls to .NET methods (live docs, Microsoft Learn, "Property
     functions" and "How MSBuild builds projects": evaluation runs no task, and targets are only created in memory). A
-    project whose Sdk names a NuGet version (`Sdk="Name/1.0"`) would be resolved from a feed; the mapper environment
-    refuses proxies, so that fails as a note. The packages are the evaluated PackageReference items with the version
+    project whose Sdk names a NuGet version (`Sdk="Name/1.0"`), or a global.json msbuild-sdks entry, would be resolved
+    from a feed by the NuGet SDK resolver; the mapper environment switches that resolver off
+    (MSBUILDDISABLENUGETSDKRESOLVER, NETWORK_OFF) and refuses proxies besides, so the missing SDK fails the evaluation
+    as a note. The packages are the evaluated PackageReference items with the version
     each asks for, not a resolved one: `dotnet package list` is not run, because once ProjectAssetsFile names an
     existing file (a committed obj/project.assets.json) it builds NuGet's collection targets, and with them the
     project's InitialTargets and any repository target hooked to them (kb agents/codebase-mapping). Each evaluated

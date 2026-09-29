@@ -941,6 +941,30 @@ def test_kbingest_map_dotnet_sdk_paths(tmp_path, monkeypatch):
 
 
 @requires_git
+def test_kbingest_map_dotnet_no_sdk_resolver(tmp_path, monkeypatch):
+    """Planted: a project whose Sdk names a NuGet version, and one under a global.json with an msbuild-sdks entry. The
+    NuGet SDK resolver would query the feeds and import the package (the fake records it); with
+    MSBUILDDISABLENUGETSDKRESOLVER=1 from NETWORK_OFF it resolves nothing, so evaluation fails and the map has a note."""
+    log = install_lang(tmp_path, monkeypatch, ("dotnet",))
+    fetched = log.with_name("sdk-fetched.txt")  # fakelang.SDK_FETCHED: the SDKs its resolver fetched
+    versioned = CSPROJ.replace('Sdk="Microsoft.NET.Sdk"', 'Sdk="Planted.Sdk/1.2.3"')
+    repos = {"versioned": {"src/App/App.csproj": versioned, "src/App/Program.cs": "class P {}\n"},
+             "sdks": {"global.json": '{"msbuild-sdks": {"Planted.Sdk": "1.2.3"}}\n',
+                      "src/App/App.csproj": CSPROJ.replace('Sdk="Microsoft.NET.Sdk"', 'Sdk="Planted.Sdk"'),
+                      "src/App/Program.cs": "class P {}\n"}}
+    for name, files in repos.items():
+        code, doc = fake_map(commit_files(tmp_path / name, files), tmp_path, monkeypatch, kbingest.DotnetMapper())
+        assert code == 0
+        msbuild = [c for c in calls_of(log) if c["args"][:1] == ["msbuild"]]
+        assert msbuild and all(c["env"]["MSBUILDDISABLENUGETSDKRESOLVER"] == "1" for c in msbuild), name
+        assert not fetched.exists(), (name, fetched.read_text(encoding="utf-8"))
+        assert any(n.startswith("dotnet msbuild src/App/App.csproj: exit 1: ") and "MSB4236" in n
+                   for n in notes_of(doc)), (name, doc["notes"])
+        assert "framework" not in doc["packages"][0], name
+        log.unlink()
+
+
+@requires_git
 def test_kbingest_map_dotnet_failures_and_odd_references_are_notes(webrepo, tmp_path, monkeypatch):
     install_lang(tmp_path, monkeypatch, WEB_TOOLS)
     monkeypatch.setenv("KB_FAKE_MODE", "outside")  # a ProjectReference that leaves the worktree
