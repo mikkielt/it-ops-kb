@@ -1,0 +1,48 @@
+{
+  "id": "ST-jqa24js3",
+  "kind": "story",
+  "title": "A clean Windows 11 host goes from no Python to a passing /kb-setup, on record",
+  "status": "todo",
+  "parent": "EP-5p4ahbnq",
+  "sprint": "SP-76inhw33",
+  "priority": "P2",
+  "rank": 30,
+  "goal": "kb/_self/reports/windows-fresh-host.md records one run on a clean Windows 11 host with Git for Windows and no Python: install-python.ps1's preflight and install output, the /kb-setup pass/fail report, and a final line result: pass; every failure found on the way is filed as a bug.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import pathlib,re;t=pathlib.Path('kb/_self/reports/windows-fresh-host.md').read_text(encoding='utf-8');assert re.search(r'(?m)^result: pass$',t)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/check.py"
+      ]
+    }
+  ],
+  "gates": [
+    {
+      "id": "clean-host",
+      "kind": "blocking",
+      "question": "Which clean Windows 11 host should the from-scratch /kb-setup run on?",
+      "options": [
+        "Windows Sandbox on a Windows 11 Pro machine",
+        "a fresh Hyper-V VM",
+        "another spare machine",
+        "drop this story"
+      ],
+      "recommendation": "Windows Sandbox on a Windows 11 Pro machine",
+      "answer": "Windows Sandbox on a Windows 11 Pro machine",
+      "by": "operator"
+    }
+  ],
+  "links": [
+    "kb/_self/maintaining.md",
+    "python/windows-python-install",
+    "windows/windows-sandbox"
+  ],
+  "notes": "Windows Sandbox starts clean each time and is available on Windows 11 Pro with virtualization enabled (windows/windows-sandbox, DOC S-yexfxr4v); since 24H2 inbox Store apps are missing inside it, so the Store python3 alias is absent too. Claude Code must be installed inside the host for /kb-setup. The report uses placeholders (PL-LT-00123, jan.kowalski) for host and user names."
+}

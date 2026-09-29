@@ -1,0 +1,32 @@
+{
+  "id": "TK-3vkrs2ug",
+  "kind": "task",
+  "title": "Make the test_install_python.py module docstring raw",
+  "status": "todo",
+  "parent": "BG-boi4hwf7",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "The module docstring of _tools/test_install_python.py is a raw string (or escapes its backslashes), so the file compiles with -W error::SyntaxWarning and python3 _tools/tests.py reports no SyntaxWarning from it.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "install_python"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-W",
+        "error::SyntaxWarning",
+        "-c",
+        "import ast,sys; compile(open('_tools/test_install_python.py',encoding='utf-8').read(),'t','exec')"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/test_install_python.py"
+  ]
+}

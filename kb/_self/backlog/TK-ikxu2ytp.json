@@ -1,0 +1,33 @@
+{
+  "id": "TK-ikxu2ytp",
+  "kind": "task",
+  "title": "Register the raw-read hint for the PowerShell tool and recognise PowerShell reads",
+  "status": "todo",
+  "parent": "BG-f3empmjg",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "The PreToolUse raw-read hint entry in .claude/settings.json matches Bash|PowerShell; kb_hook.is_raw_read recognises Get-Content, gc, cat, type and Select-String on a kb article; test_kb.py covers the PowerShell reads and the Bash|PowerShell matcher (replacing test_raw_read_nudge_hook_is_registered_on_bash_only); kb/_self/tools.md describes the hint for both tools.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "raw_read_nudge"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,sys; h=json.load(open('.claude/settings.json',encoding='utf-8'))['hooks']['PreToolUse']; sys.exit(0 if any('PowerShell' in e.get('matcher','') and any('kb_hook.py' in x.get('command','') for x in e['hooks']) for e in h) else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/settings.json",
+    "_tools/kb_hook.py",
+    "_tools/test_kb.py",
+    "kb/_self/tools.md"
+  ]
+}

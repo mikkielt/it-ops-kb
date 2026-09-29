@@ -1,0 +1,33 @@
+{
+  "id": "TK-6pi2udtb",
+  "kind": "task",
+  "title": "Read files at a revision with git cat-file in factdiff.py and kbgit.py",
+  "status": "todo",
+  "parent": "BG-n4r5e3dj",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "factdiff.calibrate_history, kbgit.show and kbgit cmd_asof read a file at a revision with git cat-file blob REV:PATH, never git show REV:PATH; a TestRevisionReadsWithoutGitShow class in test_factdiff.py and in test_history.py drives each reader with a runner that fails every git show REV:PATH as Filename too long (as TestHeldOnLongPaths in test_querylog_e2e.py does for ql_deliver) and asserts the content is still read.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "RevisionReadsWithoutGitShow"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import re,pathlib;hits=[f for f in ('_tools/factdiff.py','_tools/kbgit.py') if re.search(r'\"show\", f\"\\{', pathlib.Path(f).read_text(encoding='utf-8'))];assert not hits,hits"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/factdiff.py",
+    "_tools/kbgit.py",
+    "_tools/test_factdiff.py",
+    "_tools/test_history.py"
+  ]
+}

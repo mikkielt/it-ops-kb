@@ -1,0 +1,24 @@
+{
+  "id": "TK-hjqm7l7y",
+  "kind": "task",
+  "title": "Run setup on a clean Windows 11 host and write the report",
+  "status": "todo",
+  "parent": "ST-jqa24js3",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kb/_self/reports/windows-fresh-host.md holds the host description (Windows build, Git for Windows version, no Python), install-python.ps1's output, the /kb-setup report and a final line result: pass, with placeholders for every host or user name.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import pathlib,re;t=pathlib.Path('kb/_self/reports/windows-fresh-host.md').read_text(encoding='utf-8');assert re.search(r'(?m)^result: pass$',t)"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/reports/windows-fresh-host.md",
+    "kb/_self/map.csv",
+    "kb/_self/README.md"
+  ]
+}

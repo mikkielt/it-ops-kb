@@ -2,7 +2,9 @@
   "id": "BG-n4r5e3dj",
   "kind": "bug",
   "title": "factdiff.py and kbgit.py read files at a revision with git show REV:PATH, which fails on long Windows paths",
-  "status": "draft",
+  "status": "todo",
+  "parent": "EP-5p4ahbnq",
+  "sprint": "SP-76inhw33",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
@@ -18,6 +20,6 @@
     "_tools/factdiff.py",
     "_tools/kbgit.py",
     "_tools/test_factdiff.py",
-    "_tools/test_kbgit.py"
+    "_tools/test_history.py"
   ]
 }
