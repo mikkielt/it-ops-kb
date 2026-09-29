@@ -2,7 +2,7 @@
   "id": "ST-ry4squft",
   "kind": "story",
   "title": "Sprint workers run on the newest Sonnet through a kb-worker agent",
-  "status": "todo",
+  "status": "done",
   "sprint": "SP-liemltg2",
   "priority": "P1",
   "rank": 0,
@@ -63,5 +63,20 @@
     "kb/public/claude/skills-and-subagents.csv",
     "kb/_self/token-efficiency.md"
   ],
-  "notes": "Failure it answers: /kb-sprint run starts subagents with no subagent_type or model, so every worker is general-purpose on the session model, a mechanical task included. The agent file's model field takes sonnet|opus|haiku|fable|full id|inherit and its effort field low|medium|high|xhigh|max (skills-and-subagents.csv:26 and :35, DOC S2157); the sonnet alias follows the newest Sonnet (token-efficiency.md, 'A model upgrade under an alias'). The newest Sonnet holds only while nothing overrides the definition: the orchestrator must not pass the Agent tool's model, and CLAUDE_CODE_SUBAGENT_MODEL_FORCE=1 skips a definition's model for teammates (skills-and-subagents.md:134, DOC S-qdxfqzln). Census readers stay on the session model: a false confirmation dates a stale fact as current, and no benchmark yet shows Sonnet's fact judgements hold. kb-worker stays out of plugin.json: the plugin's agent list is tested to be kb-lookup and kb-reviewer only."
+  "notes": "Failure it answers: /kb-sprint run starts subagents with no subagent_type or model, so every worker is general-purpose on the session model, a mechanical task included. The agent file's model field takes sonnet|opus|haiku|fable|full id|inherit and its effort field low|medium|high|xhigh|max (skills-and-subagents.csv:26 and :35, DOC S2157); the sonnet alias follows the newest Sonnet (token-efficiency.md, 'A model upgrade under an alias'). The newest Sonnet holds only while nothing overrides the definition: the orchestrator must not pass the Agent tool's model, and CLAUDE_CODE_SUBAGENT_MODEL_FORCE=1 skips a definition's model for teammates (skills-and-subagents.md:134, DOC S-qdxfqzln). Census readers stay on the session model: a false confirmation dates a stale fact as current, and no benchmark yet shows Sonnet's fact judgements hold. kb-worker stays out of plugin.json: the plugin's agent list is tested to be kb-lookup and kb-reviewer only.",
+  "evidence": {
+    "commit": "31526c3de42eca810c17f43a86dda8c1f6ea4ba1",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "kb_worker"
+        ],
+        "exit": 0,
+        "sha256": "3eddb33a36f20066"
+      }
+    ]
+  }
 }
