@@ -2,7 +2,7 @@
   "id": "ST-btrfvdhi",
   "kind": "story",
   "title": "Review sprint: Section reads run without prompts",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-qdq57zu3",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,6 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "claimed_by": "orchestrator-SP-qdq57zu3"
 }
