@@ -2,7 +2,7 @@
   "id": "TK-homvd6ia",
   "kind": "task",
   "title": "Document the route and differential lines",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-ysk3m7rt",
   "priority": "P1",
   "rank": 4,
@@ -35,5 +35,6 @@
   "depends_on": [
     "TK-e4i2gbqk",
     "TK-ny7zaojp"
-  ]
+  ],
+  "claimed_by": "orchestrator-mac-sprint-run"
 }
