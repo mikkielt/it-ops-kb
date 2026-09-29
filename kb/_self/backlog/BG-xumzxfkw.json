@@ -18,7 +18,6 @@
     ]
   },
   "relates_to": [
-    "BG-t7tx2byg",
     "BG-ec4raar2"
   ],
   "notes": "Work commits with KB-Work in a paragraph before Co-Authored-By: 7219acbb, ac03d1b3, 9cb820ec, 8da30157. Their items passed done through the claim commit alone, which carries the trailer and changes only kb/_self/backlog/."
