@@ -2,7 +2,7 @@
   "id": "BG-wivfswhz",
   "kind": "bug",
   "title": "plugin.md describes the kb: hook's none as one line",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-aikswrrl",
   "priority": "P2",
   "rank": 0,
@@ -15,5 +15,18 @@
       "! grep -q \"Claude gets one line saying so\" kb/_self/plugin.md"
     ]
   },
-  "claimed_by": "orchestrator-mac-sprint-run"
+  "evidence": {
+    "commit": "ea3debc93252c1543446c9466054344dfb2ffaf1",
+    "checks": [
+      {
+        "run": [
+          "sh",
+          "-c",
+          "! grep -q \"Claude gets one line saying so\" kb/_self/plugin.md"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }

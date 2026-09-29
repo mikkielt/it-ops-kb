@@ -2,7 +2,7 @@
   "id": "TK-3jmn5ui3",
   "kind": "task",
   "title": "Document kb_ask.py's routes",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-tobxg7ui",
   "priority": "P1",
   "rank": 3,
@@ -49,5 +49,47 @@
   "depends_on": [
     "TK-gublrquf"
   ],
-  "claimed_by": "orchestrator-mac-sprint-run"
+  "evidence": {
+    "commit": "ea3debc93252c1543446c9466054344dfb2ffaf1",
+    "checks": [
+      {
+        "run": [
+          "git",
+          "grep",
+          "-q",
+          "-F",
+          "-e",
+          "kind=split",
+          "--",
+          "kb/_self/tools.md"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "git",
+          "grep",
+          "-q",
+          "-F",
+          "-e",
+          "`split`",
+          "--",
+          "kb/_self/querylog.md"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "TestCohesion or TestSelfDocs"
+        ],
+        "exit": 0,
+        "sha256": "2690ea5e327fe4f9"
+      }
+    ]
+  }
 }
