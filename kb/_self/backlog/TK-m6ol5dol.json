@@ -2,7 +2,7 @@
   "id": "TK-m6ol5dol",
   "kind": "task",
   "title": "Test that autonomous writers push only through kbgit.py sync --push",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-6dszsvk5",
   "priority": "P2",
   "rank": 0,
@@ -23,5 +23,19 @@
     "_tools/ql_research.py",
     "_tools/kbingest.py"
   ],
-  "claimed_by": "worker-m6ol5dol"
+  "evidence": {
+    "commit": "e6bdb60062416bf9d3c647a3a84d8b469605ffcc",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "autonomous_write"
+        ],
+        "exit": 0,
+        "sha256": "5bf578389dd2d11c"
+      }
+    ]
+  }
 }
