@@ -563,3 +563,48 @@ def test_kb_http_parity_planted_failure(parity):
     assert parity_diff(stdio, schema) == [2]
     message = contract_mismatch(json.loads(CONTRACT.read_text(encoding="utf-8")), contract_of(schema))
     assert message and "tools.kb_show" in message, message
+
+
+def test_kb_http_topics_for_paths_refused(tmp_path):
+    """A limited server (kb_http.py always is) must not read the paths a client names: they are the server's files."""
+    secret = tmp_path / "outside"
+    secret.mkdir()
+    (secret / "app.ps1").write_text("Get-IntuneWin32App -Id x\n", encoding="utf-8", newline="\n")
+    env = {k: v for k, v in os.environ.items() if k not in ("KB_ROOTS", "KB_INDEX", "CLAUDE_PLUGIN_DATA")}
+    _, out = served_calls(env | {"KB_INDEX": "0"}, [], [("kb_topics_for", {"paths": [str(secret)]}),
+                                                        ("kb_topics_for", {"text": "Get-IntuneWin32App"})])
+    (err1, text1), (err2, _) = out
+    assert err1 and "paths is off" in text1, text1
+    assert str(secret) not in text1 and "app.ps1" not in text1, text1
+    assert not err2, "text still answers on a limited server"
+
+
+def test_kb_http_topics_for_paths_still_read_when_unlimited(tmp_path):
+    """Planted-failure counterpart: the team's own unlimited server keeps reading paths."""
+    import kbcommon
+    (tmp_path / "app.ps1").write_text("Get-IntuneWin32App -Id x\n", encoding="utf-8", newline="\n")
+    assert not kbcommon.serving()
+    out = kb_mcp.kb_topics_for({"paths": [str(tmp_path)]})
+    assert "paths is off" not in out
+
+
+def test_kb_http_guard_stalled_body_times_out(port, monkeypatch):
+    """A client that announces a body and never sends it is dropped after the handler's timeout."""
+    import socket
+    import time
+    assert kb_http.Handler.timeout and 0 < kb_http.Handler.timeout <= 60, "the handler needs a finite socket timeout"
+    monkeypatch.setattr(kb_http.Handler, "timeout", 1)
+    s = socket.create_connection(("127.0.0.1", port), timeout=20)
+    try:
+        s.sendall(b"POST /mcp HTTP/1.1\r\nHost: 127.0.0.1\r\nContent-Type: application/json\r\n"
+                  b"Content-Length: 100\r\n\r\n")
+        start = time.monotonic()
+        data = b""
+        while True:
+            chunk = s.recv(4096)
+            if not chunk:
+                break
+            data += chunk
+        assert time.monotonic() - start < 15, "the stalled connection was held past the timeout"
+    finally:
+        s.close()

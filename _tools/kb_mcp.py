@@ -28,7 +28,8 @@ Tools (all read-only; they wrap rag.py and kbfacts.py and read the kb files, nev
              A server limited to named roots (--roots; kb_http.py always is) serves clients outside the team:
              kb_status and that line then name no local path and no update command (behind_note).
   kb_topics_for  kb topics that code touches, like `rag.py topics-for`: the curated signals of each root's signals.csv
-             found in the files or text given (paths relative to the host project, CLAUDE_PROJECT_DIR or the cwd)
+             found in the files or text given (paths relative to the host project, CLAUDE_PROJECT_DIR or the cwd);
+             a server limited to named roots (--roots) refuses paths, which would read its own files, and takes text
 
 One server serves every root (kb/public, a team's kb/<name>/, the KB_ROOTS directories), or only those --roots
 names, in every tool and kb_status: paths and topics print qualified (`public/intune/x.md:12`), and kb_pack,
@@ -484,6 +485,10 @@ def kb_topics_for(args):
     text = str(args.get("text") or "")
     if not paths and not text.strip():
         raise ToolError("give paths or text")
+    if paths and limited():
+        # a server limited by --roots answers clients outside the team: reading their paths would read the server's
+        # own files, outside the served roots
+        raise ToolError("paths is off on a server limited to named roots (--roots); give text")
     base = os.environ.get("CLAUDE_PROJECT_DIR") or os.getcwd()
     with guarded():
         return kbfacts.format_topics_for(kbfacts.topics_for(paths, text, base))
