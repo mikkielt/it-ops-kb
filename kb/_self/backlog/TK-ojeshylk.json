@@ -2,7 +2,7 @@
   "id": "TK-ojeshylk",
   "kind": "task",
   "title": "The query-log revert reuses the fingerprint",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-47hdgt5a",
   "priority": "P2",
   "rank": 1,
@@ -23,5 +23,6 @@
   ],
   "depends_on": [
     "TK-y7sdxuaa"
-  ]
+  ],
+  "claimed_by": "worker-ojeshylk"
 }

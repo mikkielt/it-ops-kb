@@ -2,7 +2,7 @@
   "id": "TK-4feakz4i",
   "kind": "task",
   "title": "done refuses an item with touches and no KB-Work commit on HEAD",
-  "status": "todo",
+  "status": "doing",
   "parent": "BG-iqqigub7",
   "priority": "P2",
   "rank": 0,
@@ -20,5 +20,6 @@
   "touches": [
     "_tools/backlog.py",
     "_tools/test_backlog.py"
-  ]
+  ],
+  "claimed_by": "worker-4feakz4i"
 }
