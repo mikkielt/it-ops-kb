@@ -2,7 +2,7 @@
   "id": "TK-mmpfnlb2",
   "kind": "task",
   "title": "tools.md and the maintaining runbook point to the tools map",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-3p6lizv4",
   "priority": "P2",
   "rank": 0,
@@ -22,5 +22,6 @@
   ],
   "depends_on": [
     "TK-xg74cb2a"
-  ]
+  ],
+  "claimed_by": "orchestrator-SP-mqjeanq3"
 }
