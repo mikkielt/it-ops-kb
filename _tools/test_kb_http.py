@@ -10,6 +10,10 @@ test_kb_http_guard_*  the refusals before routing, each beside the request it mu
                 Origin not in --allow-origin (an allowed one and no Origin pass), 415 for a POST that is not
                 application/json (with a charset it passes), 413 for a body over --max-body (one at the cap
                 passes), and no start on a non-loopback --bind without --bind-any (loopback and --bind-any pass).
+test_kb_http_roots_*  the script as a subprocess with the test_kb_root.py fixture root in KB_ROOTS (the root limit
+                is process-wide, so it never runs in this process): by default only public is served over HTTP
+                (kb_pack and kb_status leave the fixture out), --roots public,fixture serves both, and an unknown
+                or empty --roots stops the start with exit 2 and nothing bound.
 """
 import http.client, json, os, subprocess, sys, threading
 from concurrent.futures import ThreadPoolExecutor
@@ -329,3 +333,75 @@ def test_kb_http_guard_help_names_the_options():
         assert word in out.stdout, word
     bad = subprocess.run([sys.executable, SCRIPT, "--max-body", "0"], capture_output=True, text=True, encoding="utf-8")
     assert bad.returncode == 2 and "--max-body" in bad.stderr
+
+
+def roots_env(tmp_path):
+    """The environment with the test_kb_root.py fixture root as a KB_ROOTS directory and no shared index."""
+    from test_kb_root import make_root
+    root = tmp_path / "team-kb"
+    make_root(str(root))
+    env = {k: v for k, v in os.environ.items() if k not in ("KB_ROOTS", "KB_INDEX", "CLAUDE_PLUGIN_DATA")}
+    return env | {"KB_ROOTS": str(root), "KB_INDEX": "0"}
+
+
+def served_calls(env, args, calls):
+    """Start the script with `args` on a free port, send each (tool, arguments) as a tools/call over HTTP, stop it.
+    Returns (startup line, [(isError, text)])."""
+    p = subprocess.Popen([sys.executable, SCRIPT, "--port", "0", *args], stderr=subprocess.PIPE,
+                         stdout=subprocess.DEVNULL, text=True, encoding="utf-8", env=env)
+    try:
+        line = p.stderr.readline()
+        assert line.startswith("kb_http: serving http://127.0.0.1:"), line
+        port = int(line.rsplit(":", 1)[1].split("/")[0])
+        out = []
+        for i, (name, arguments) in enumerate(calls, start=1):
+            status, _, reply = rpc(port, {"jsonrpc": "2.0", "id": i, "method": "tools/call",
+                                          "params": {"name": name, "arguments": arguments}})
+            assert status == 200, (status, reply)
+            out.append((reply["result"]["isError"], reply["result"]["content"][0]["text"]))
+        return line, out
+    finally:
+        p.terminate()
+        p.communicate(timeout=30)
+
+
+def test_kb_http_roots_default_serves_public_only(tmp_path):
+    from test_kb_root import QUESTION
+    line, out = served_calls(roots_env(tmp_path), [], [("kb_status", {}), ("kb_pack", {"question": QUESTION}),
+                                                       ("kb_pack", {"question": QUESTION, "root": "fixture"})])
+    assert line.rstrip().endswith(", roots public"), line
+    assert "roots: public (prefix S, public, " in out[0][1] and "fixture" not in out[0][1], out[0][1]
+    assert "fixture/" not in out[1][1], out[1][1][:300]
+    assert out[2][0] and "no root 'fixture'; roots: public" in out[2][1], out[2]
+    assert kb_http.ROOTS == ("public",)
+
+
+def test_kb_http_roots_names_the_full_set(tmp_path):
+    from test_kb_root import QUESTION
+    line, out = served_calls(roots_env(tmp_path), ["--roots", "public,fixture"],
+                             [("kb_status", {}), ("kb_pack", {"question": QUESTION})])
+    assert line.rstrip().endswith(", roots public,fixture"), line
+    assert "roots: public (prefix S, public, " in out[0][1] and "; fixture (prefix FXT, " in out[0][1], out[0][1]
+    assert "fixture/print/queues.md:" in out[1][1], out[1][1][:300]
+    # the named set is the whole set: --roots fixture leaves public out
+    _, out = served_calls(roots_env(tmp_path / "alone"), ["--roots=fixture"], [("kb_status", {})])
+    assert "roots: fixture (prefix FXT, " in out[0][1] and "public (prefix" not in out[0][1], out[0][1]
+
+
+@pytest.mark.parametrize("args, message", [
+    (["--roots", "public,no-such-root"], "kb_http: no root 'no-such-root'; roots: public, fixture"),
+    (["--roots", "nosuch"], "kb_http: no root 'nosuch'; roots: public, fixture"),
+    (["--roots", " , "], "kb_http: --roots needs one or more root names"),
+])
+def test_kb_http_roots_unknown_name_stops_the_start(tmp_path, args, message):
+    """Planted failure: a --roots name that is no root exits 2 before anything is bound, with the error on stderr."""
+    p = subprocess.run([sys.executable, SCRIPT, "--port", "0", *args], capture_output=True, text=True,
+                       encoding="utf-8", env=roots_env(tmp_path), timeout=120)
+    assert p.returncode == 2, (p.returncode, p.stdout, p.stderr)
+    assert message in p.stderr and "serving" not in p.stderr and "Traceback" not in p.stderr, p.stderr
+    assert p.stdout == ""
+
+
+def test_kb_http_roots_help_names_the_option():
+    out = subprocess.run([sys.executable, SCRIPT, "--help"], capture_output=True, text=True, encoding="utf-8")
+    assert out.returncode == 0 and "--roots NAME[,NAME]" in out.stdout and "not access control" in out.stdout

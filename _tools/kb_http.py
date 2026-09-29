@@ -10,6 +10,15 @@
   python3 _tools/kb_http.py --allow-origin O  a browser origin (scheme://host[:port]) whose requests are served;
                                               repeatable; none by default
   python3 _tools/kb_http.py --max-body N      the largest request body in bytes (default 1048576, 1 MiB)
+  python3 _tools/kb_http.py --roots NAME[,NAME]
+                                              the roots to serve, repository roots or KB_ROOTS directories, as the
+                                              full set (`--roots public,team` serves both); default: public only.
+                                              An unknown name stops the start before anything is bound, exit 2
+
+Roots: this server serves only kb/public unless --roots names more, where kb_mcp.py serves every root by default.
+A hosted endpoint answers clients outside the team that runs it, and a root is a filter on what the tools read,
+not access control: an internal root is served only when --roots names it. The limit is kbcommon.serve_only, the
+same one kb_mcp.py --roots sets, so every tool and kb_status see the named roots alone; the startup line lists them.
 
 The endpoint is `/mcp`. Every JSON-RPC message goes to kb_mcp.handle, so the tools, the instructions and both
 handshakes are the stdio server's: a legacy client's `initialize` (2025-11-25 and earlier, as Copilot Studio uses)
@@ -46,7 +55,7 @@ sends. Requests are served on threads (ThreadingHTTPServer); the calls into kb_m
 tools redirect the process-wide stdout while they work.
 
 Exit codes: 0 after an interrupt, 1 when the address cannot be bound, 2 for a bad option (a non-loopback --bind
-without --bind-any among them).
+without --bind-any, and a --roots name that is no root, among them).
 """
 import argparse, ipaddress, json, socket, sys, threading
 from http import HTTPStatus
@@ -56,13 +65,14 @@ from urllib.parse import urlsplit
 
 TOOLS = Path(__file__).resolve().parent
 sys.path.insert(0, str(TOOLS))
-import kb_mcp  # noqa: E402
+import kb_mcp, kbcommon  # noqa: E402
 
 HOST = "127.0.0.1"
 PORT = 8080
 ENDPOINT = "/mcp"
 MAX_BODY = 1 << 20  # 1 MiB: the module docstring says why
 JSON_TYPE = "application/json"
+ROOTS = ("public",)  # served when --roots is not given: the module docstring says why
 DRAIN = 64 << 10  # a refused body up to this size is read and dropped before the refusal is sent
 MODERN_STATUS = {-32022: HTTPStatus.BAD_REQUEST, -32602: HTTPStatus.BAD_REQUEST, -32601: HTTPStatus.NOT_FOUND}
 _HANDLE_LOCK = threading.Lock()
@@ -257,7 +267,8 @@ def serve(port=PORT, host=HOST, bind_any=False, allow_origins=(), max_body=MAX_B
     threading.Thread(target=kb_mcp.warm, daemon=True).start()
     if not ipaddress.ip_address(httpd.server_address[0]).is_loopback:
         print("kb_http: warning: listening outside loopback, with no authentication (--bind-any)", file=sys.stderr)
-    print(f"kb_http: serving {url(httpd)}", file=sys.stderr, flush=True)
+    print(f"kb_http: serving {url(httpd)}, roots {','.join(r.name for r in kbcommon.roots())}", file=sys.stderr,
+          flush=True)
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:
@@ -276,6 +287,8 @@ def main(argv=None):
                     help="a browser origin to serve (scheme://host[:port]); repeatable")
     ap.add_argument("--max-body", type=int, default=MAX_BODY, metavar="BYTES",
                     help=f"largest request body in bytes (default {MAX_BODY})")
+    ap.add_argument("--roots", metavar="NAME[,NAME]",
+                    help=f"the roots to serve, as the full set (default {','.join(ROOTS)})")
     args = ap.parse_args(argv)
     if not 0 <= args.port <= 65535:
         ap.error("--port must be 0-65535")
@@ -285,6 +298,11 @@ def main(argv=None):
         check_bind(args.bind, args.bind_any)
     except ValueError as e:
         ap.error(str(e))
+    try:  # before binding: a wrong name never serves anything
+        kbcommon.serve_only(kb_mcp.roots_arg(["--roots", args.roots]) if args.roots is not None else list(ROOTS))
+    except (ValueError, kbcommon.RootError) as e:
+        print(f"kb_http: {e}", file=sys.stderr)
+        return 2
     return serve(args.port, args.bind, args.bind_any, args.allow_origin, args.max_body)
 
 
