@@ -13,7 +13,8 @@ TestPluginManifest  .claude-plugin/marketplace.json and the two plugins: it-ops-
                 so the kb's agents/ articles never load, the kb: hook) and it-ops-kb-docs (the three documentation
                 servers and a PreToolUse hook blocking submit_feedback); no root .mcp.json (it would load into
                 it-ops-kb); no pinned version (users track commits); rag.py named only as the clone form; the GitLab
-                SSH remote. With the `claude` CLI installed, `claude plugin validate` passes for both.
+                SSH remote. With the `claude` CLI installed, `claude plugin validate` passes for both. The clone-only
+                kb-worker agent (test_kb_worker_agent*): the sonnet alias, effort high, not in plugin.json.
 test_embed_roots_*  `--roots NAME[,NAME]` (a host embedding the server): only the named roots in every tool and
                 kb_status, every root without it, and an unknown or missing name refused at the start on stderr.
 test_status_*   how far a clone or an installed plugin is behind the kb it follows, from local refs: the update
@@ -39,6 +40,26 @@ DOCS_PLUGIN = ".claude-plugin/it-ops-kb-docs"
 def load(rel):
     with open(os.path.join(KB, rel), encoding="utf-8") as f:
         return json.load(f)
+
+
+KB_WORKER = ".claude/agents/kb-worker.md"
+
+
+def kb_worker_problems(text, plugin_agents):
+    """What is wrong with the kb-worker agent file `text` and the plugin's agent list: [] when nothing."""
+    head = text.split("\n---", 1)[0]
+    fm = dict(re.findall(r"(?m)^(\w+):[ \t]*(.*?)[ \t]*$", head))
+    problems = []
+    if fm.get("name") != "kb-worker":
+        problems.append(f"name is {fm.get('name')!r}, not kb-worker")
+    if fm.get("model") != "sonnet":
+        problems.append(f"model is {fm.get('model')!r}: the sonnet alias follows the newest Sonnet; "
+                        "a full id pins one and inherit takes the session's")
+    if fm.get("effort") != "high":
+        problems.append(f"effort is {fm.get('effort')!r}, not high")
+    if any(Path(a).name == Path(KB_WORKER).name for a in plugin_agents):
+        problems.append("kb-worker is listed in plugin.json: it is a clone-only agent")
+    return problems
 
 
 class TestKbServer:
@@ -323,6 +344,28 @@ class TestPluginManifest:
             assert not re.search(r"(?m)^effort:", f.read().split("\n---", 1)[0]), "effort in a skill overrides the host session's"
         for d in ("commands", "output-styles", "workflows", "themes", "monitors", "hooks", "bin"):
             assert not os.path.exists(os.path.join(KB, d)), f"{d}/ at the root would load as a plugin component"
+
+    def test_kb_worker_agent(self):
+        """kb-worker, the sprint item worker, runs on the sonnet alias (the newest Sonnet) at high effort and stays
+        out of the plugin: a clone-only agent."""
+        with open(os.path.join(KB, KB_WORKER), encoding="utf-8") as f:
+            text = f.read()
+        assert kb_worker_problems(text, self.plugin["agents"]) == []
+        body = text.split("\n---", 1)[1]
+        for phrase in ("touches", "work/<id>", "KB-Work", "Never push", "new bug", "gate"):
+            assert phrase in body, f"the worker brief names {phrase!r}"
+
+    def test_kb_worker_agent_planted_failures(self):
+        """Each rule fails on a planted copy: a pinned id, inherit, no model, another effort, a plugin listing."""
+        with open(os.path.join(KB, KB_WORKER), encoding="utf-8") as f:
+            text = f.read()
+        agents = self.plugin["agents"]
+        for old, new in (("model: sonnet", "model: claude-sonnet-5"), ("model: sonnet", "model: inherit"),
+                         ("model: sonnet\n", ""), ("effort: high", "effort: medium"), ("name: kb-worker", "name: worker")):
+            planted = text.replace(old, new, 1)
+            assert planted != text, old
+            assert kb_worker_problems(planted, agents), f"not caught: {old!r} -> {new!r}"
+        assert kb_worker_problems(text, agents + ["./" + KB_WORKER]), "not caught: kb-worker listed in plugin.json"
 
     def test_shipped_texts_mark_rag_py_as_clone_only(self):
         """A host has no _tools/rag.py on its path: the server's texts and the agents never name it, and the skills
