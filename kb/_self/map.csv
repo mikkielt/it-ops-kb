@@ -46,6 +46,7 @@ kb/_self/git.md,.githooks/*
 kb/_self/git.md,.gitattributes
 kb/_self/git.md,.gitlab-ci.yml
 kb/_self/git.md,.github/workflows/*
+kb/_self/runners.md,.gitlab-ci.yml
 kb/_self/plugin.md,.claude-plugin/**
 kb/_self/plugin.md,.claude/agents/*.md
 kb/_self/plugin.md,.claude/skills/kb-lookup/SKILL.md

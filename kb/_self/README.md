@@ -13,6 +13,7 @@ Everything an agent needs to run, change and ship this kb, except the lookup rul
 | `kb/_self/git.md` | committing, syncing, merging, reading the history | rules |
 | `kb/_self/plugin.md` | changing the plugin, installing it in another project, a team's own roots (`/kb-add-root`, `KB_ROOTS`) | rules and runbook |
 | `kb/_self/embedding.md` | embedding the kb in another team's MCP server: the stdio child's command, roots, re-exposed tools, copied instructions, restarts and the contract test | contract |
+| `kb/_self/runners.md` | setting up, moving or checking the project's two self-hosted GitLab runners (`docker-windows` on the host, `docker-linux` in WSL 2) | runbook |
 | `kb/_self/hosting.md` | serving the kb to a remote MCP client by url (a Copilot Studio agent): which path to pick, and the runbook for `_tools/kb_http.py` behind an authenticating TLS front end | runbook |
 | `kb/_self/design.md` | how the kb works and why; when it is token-efficient and when it is not | explanation |
 | `kb/_self/alternatives.md` | comparing the kb with similar tools: what each overlaps with, how it differs, its licence, and when the kb or another tool fits | comparison |
