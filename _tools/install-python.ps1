@@ -1,6 +1,7 @@
 <#
 .SYNOPSIS
-  it-ops-kb: download the pinned official CPython installer from python.org, verify it, install it per user.
+  it-ops-kb: download the pinned official CPython installer from python.org and the pinned uv from its GitHub
+  release, verify them, install them per user.
 
 .DESCRIPTION
   For a Windows machine with no Python (kb/_self/maintaining.md, Setup step 1). No winget, no Store.
@@ -12,7 +13,11 @@
   5. Installs quietly for the current user (no admin): python.exe and the py launcher, on the user PATH.
   6. Adds python3.exe beside python.exe (a hard link), because the python.org installer ships none and every
      skill and permission rule in this repository runs `python3`; without it `python3` reaches the Store stub.
-  7. Reports which python, python3 and py a new session will start.
+  7. uv (unless -SkipUv): downloads uv-<arch>-pc-windows-msvc.zip of the pinned uv from
+     https://github.com/astral-sh/uv/releases/download/<version>/, verifies its SHA-256 against the pin, puts uv.exe,
+     uvx.exe and uvw.exe in %USERPROFILE%\.local\bin (the folder uv's own installer uses) and adds that folder to
+     the user PATH. The tests run through uv (_tools/tests.py); pip is not used.
+  8. Reports which python, python3, py and uv a new session will start.
 
   Preflight findings, one line each, prefixed for whoever reads the output (an agent relays them to the user):
     CONFLICT: the install would replace, shadow or be shadowed by something already on the host. Not installed.
@@ -20,8 +25,11 @@
   Conflicts: running elevated; another patch of the same minor version installed for this user (the installer
   upgrades it in place); the same minor version installed for all users; a python/python3/py on the machine PATH
   that a new session would start instead (the machine PATH comes before the user PATH); PYTHONHOME or PYTHONPATH
-  set; a python3.exe in the target folder that is not python.exe.
+  set; a python3.exe in the target folder that is not python.exe; a uv.exe in %USERPROFILE%\.local\bin that is not
+  the pinned uv (the install would replace it), in %USERPROFILE%\.cargo\bin (uv's folder before 0.5.0) or in
+  another folder on the machine or user PATH (two uv on PATH: the first one runs).
   The pinned version already installed for this user: nothing is downloaded; only the python3.exe link is checked.
+  The same for the pinned uv.
 
   Exit codes: 0 installed or already installed (or -CheckOnly with no conflict); 1 error (download, checksum,
   signature, installer); 3 conflicts found, nothing changed.
@@ -29,6 +37,8 @@
   The pin: $Pin below. It follows .python-version (the minor version). Moving it: take the version and the
   "sha256_sum" of the "Windows installer (64-bit)" and "(ARM64)" files from python.org's release API,
   https://www.python.org/api/v2/downloads/release_file/?release=<id> (ids: /api/v2/downloads/release/).
+  The uv pin: $UvPin below. Moving it: the release's uv-x86_64-pc-windows-msvc.zip.sha256 and
+  uv-aarch64-pc-windows-msvc.zip.sha256 assets (kb/public/python/uv-windows-install.md).
   Windows PowerShell 5.1 or PowerShell 7.
 
 .EXAMPLE
@@ -46,7 +56,8 @@ param(
   [switch]$CheckOnly,
   [switch]$DownloadOnly,
   [switch]$AcceptConflicts,
-  [switch]$SkipPython3Alias
+  [switch]$SkipPython3Alias,
+  [switch]$SkipUv
 )
 
 $ErrorActionPreference = 'Stop'
@@ -59,6 +70,15 @@ $Pin = @{
     arm64 = '9a3fe120cc81bc2cb099550f794d8356811f96a86c7f438519243c3485db928d'
   }
   Signer  = 'Python Software Foundation'
+}
+
+# Pinned 2026-09-29 from the .sha256 assets of https://github.com/astral-sh/uv/releases/tag/0.12.19.
+$UvPin = @{
+  Version = '0.12.19'
+  Sha256  = @{
+    amd64 = '6dbb02d79e419522f1c500f0adb1cddcff0cda7d59b0d66ea7f5e3b4a1b2f5f0'
+    arm64 = '115b54cb823bc48260670f5782001add6067ac8d98d18c8263a833704e287de9'
+  }
 }
 
 if (-not $Arch) {
@@ -82,6 +102,13 @@ if ($Arch -eq 'arm64') { $targetDir += '-arm64' }
 $python = Join-Path $targetDir 'python.exe'
 $python3 = Join-Path $targetDir 'python3.exe'
 $storeStubDir = Join-Path $env:LOCALAPPDATA 'Microsoft\WindowsApps'
+$uvVersion = $UvPin.Version
+$uvFile = 'uv-' + @{ amd64 = 'x86_64'; arm64 = 'aarch64' }[$Arch] + '-pc-windows-msvc.zip'
+$uvUrl = "https://github.com/astral-sh/uv/releases/download/$uvVersion/$uvFile"
+$uvZip = Join-Path $OutDir $uvFile
+$uvDir = Join-Path $env:USERPROFILE '.local\bin'
+$uv = Join-Path $uvDir 'uv.exe'
+$uvInstalled = $false
 
 $Findings = New-Object System.Collections.Generic.List[object]
 function Add-Finding([string]$Level, [string]$Text) {
@@ -239,7 +266,27 @@ foreach ($name in 'python', 'python3') {
   }
 }
 
+if (-not $SkipUv) {
+  if (Test-Path -LiteralPath $uv) {
+    $uvSays = try { (& $uv --version 2>$null | Select-Object -First 1) } catch { '' }
+    if ("$uvSays" -match "^uv $([regex]::Escape($uvVersion))( |$)") {
+      $uvInstalled = $true
+      Add-Finding 'NOTE' "uv $uvVersion (the pinned version) is already installed at $uv."
+    } else {
+      Add-Finding 'CONFLICT' "$uv exists and is not uv ${uvVersion} ('$uvSays'). Installing would replace it."
+    }
+  }
+  $legacyUv = Join-Path $env:USERPROFILE '.cargo\bin\uv.exe'
+  $uvElsewhere = @($legacyUv) + @(@(Get-PathDirs 'Machine') + @(Get-PathDirs 'User') | ForEach-Object { Join-Path $_ 'uv.exe' })
+  foreach ($other in ($uvElsewhere | Select-Object -Unique)) {
+    if ((Test-Path -LiteralPath $other -PathType Leaf) -and -not (Test-SameDir (Split-Path $other) $uvDir)) {
+      Add-Finding 'CONFLICT' "Another uv is at $other. With two on PATH the first one runs, and 'uv self update' or pip may move it. Remove it, or accept that both stay."
+    }
+  }
+}
+
 Write-Host "Preflight for Python $version ($Arch), target $targetDir"
+if (-not $SkipUv) { Write-Host "Preflight for uv $uvVersion, target $uvDir" }
 $conflicts = @($Findings | Where-Object { $_.Level -eq 'CONFLICT' })
 foreach ($f in $Findings) { Write-Host "$($f.Level): $($f.Text)" }
 if ($Findings.Count -eq 0) { Write-Host 'Preflight: nothing on this host conflicts with the install.' }
@@ -293,9 +340,9 @@ if ($alreadyInstalled -and -not $DownloadOnly) {
 
   if ($DownloadOnly) {
     Write-Host "Verified installer: $installer"
-    exit 0
   }
-
+}
+if (-not $alreadyInstalled -and -not $DownloadOnly) {
   # ---- 5. Install -------------------------------------------------------------------------------------------------
   # Per-user install, documented options: https://docs.python.org/3/using/windows.html#installing-without-ui
   $installArgs = @(
@@ -321,7 +368,7 @@ if ($alreadyInstalled -and -not $DownloadOnly) {
 }
 
 # ---- 6. python3.exe ---------------------------------------------------------------------------------------------
-if (-not $SkipPython3Alias) {
+if (-not $SkipPython3Alias -and -not $DownloadOnly) {
   if (-not (Test-Path -LiteralPath $python3)) {
     New-Item -ItemType HardLink -Path $python3 -Target $python | Out-Null
     Write-Host "Added $python3 (hard link to python.exe; the uninstaller leaves it, delete it by hand)"
@@ -330,8 +377,54 @@ if (-not $SkipPython3Alias) {
   }
 }
 
-# ---- 7. What a new session starts -------------------------------------------------------------------------------
+# ---- 7. uv ------------------------------------------------------------------------------------------------------
+if (-not $SkipUv) {
+  if ($uvInstalled -and -not $DownloadOnly) {
+    Write-Host "uv $uvVersion is already installed at ${uv}: nothing downloaded or installed."
+  } else {
+    [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
+    Write-Host "Downloading $uvUrl"
+    $oldProgress = $ProgressPreference
+    $ProgressPreference = 'SilentlyContinue'
+    try {
+      Invoke-WebRequest -Uri $uvUrl -OutFile $uvZip -UseBasicParsing
+    } finally {
+      $ProgressPreference = $oldProgress
+    }
+    $expected = $UvPin.Sha256[$Arch]
+    $actual = (Get-FileHash -Path $uvZip -Algorithm SHA256).Hash.ToLowerInvariant()
+    if ($actual -ne $expected) {
+      Remove-Item -Path $uvZip -Force
+      Write-Error "SHA-256 mismatch for ${uvFile}: expected $expected, got $actual. File deleted." -ErrorAction Continue
+      exit 1
+    }
+    Write-Host "SHA-256 OK: $actual"
+    if ($DownloadOnly) {
+      Write-Host "Verified archive: $uvZip"
+    } else {
+      $unpacked = Join-Path $OutDir "uv-$uvVersion-unpacked"
+      if (Test-Path -LiteralPath $unpacked) { Remove-Item -LiteralPath $unpacked -Recurse -Force }
+      Expand-Archive -LiteralPath $uvZip -DestinationPath $unpacked
+      New-Item -ItemType Directory -Force -Path $uvDir | Out-Null
+      foreach ($exe in 'uv.exe', 'uvx.exe', 'uvw.exe') {
+        Copy-Item -LiteralPath (Join-Path $unpacked $exe) -Destination (Join-Path $uvDir $exe) -Force
+      }
+      Remove-Item -LiteralPath $unpacked -Recurse -Force
+      Remove-Item -Path $uvZip -Force
+      $userPath = [Environment]::GetEnvironmentVariable('Path', 'User')
+      if (-not (@(Get-PathDirs 'User') | Where-Object { Test-SameDir $_ $uvDir })) {
+        [Environment]::SetEnvironmentVariable('Path', ((@($userPath -split ';' | Where-Object { $_ }) + $uvDir) -join ';'), 'User')
+        Write-Host "Added $uvDir to the user PATH"
+      }
+      Write-Host "Installed uv $uvVersion in $uvDir"
+    }
+  }
+}
+if ($DownloadOnly) { exit 0 }
+
+# ---- 8. What a new session starts -------------------------------------------------------------------------------
 & $python --version
+if (-not $SkipUv) { & $uv --version }
 $after = Get-Resolution $false
 foreach ($name in 'python', 'python3', 'py') {
   $hits = $after[$name]

@@ -3,11 +3,16 @@
 
   test_pin_matches_the_project      every OS: the pinned version's minor is .python-version's, both SHA-256 pins are
                                     64 hex digits (planted: a pin text with a short hash is refused)
+  test_uv_pin_is_complete           every OS: the uv pin names a version and a 64-hex SHA-256 per architecture, and the
+                                    script downloads from uv's official GitHub release
   test_conflicts_stop_before_any_download
                                     Windows: a planted PYTHONHOME and a foreign python3.exe in the target folder stop
                                     the script with exit 3 and a CONFLICT line each, and nothing is downloaded. It runs
                                     with -DownloadOnly into an empty folder, so a preflight that misses them could at
                                     worst download there, never install.
+  test_uv_conflicts_stop_before_any_download
+                                    Windows: a foreign uv.exe in %USERPROFILE%\.local\bin (the install would replace
+                                    it) and one in %USERPROFILE%\.cargo\bin stop the script the same way.
 """
 import os, re, shutil, subprocess
 
@@ -19,8 +24,9 @@ SCRIPT = os.path.join(TOOLS, "install-python.ps1")
 POWERSHELL = shutil.which("powershell") or shutil.which("pwsh")
 
 
-def pin(text):
-    """(version, {arch: sha256}) of the script's $Pin block."""
+def pin(text, name="Pin"):
+    """(version, {arch: sha256}) of the script's $Pin (or $UvPin) block."""
+    text = re.search(rf"^\${name} = @\{{.*?^\}}", text, re.M | re.S).group(0)
     version = re.search(r"^\s*Version\s*=\s*'([\d.]+)'", text, re.M).group(1)
     hashes = dict(re.findall(r"^\s*(amd64|arm64)\s*=\s*'([0-9a-fA-F]*)'", text, re.M))
     return version, hashes
@@ -43,10 +49,43 @@ def test_pin_matches_the_project():
     assert pin_problems(planted, project) == ["amd64: not a SHA-256"]
 
 
+def test_uv_pin_is_complete():
+    with open(SCRIPT, encoding="utf-8") as f:
+        text = f.read()
+    version, hashes = pin(text, "UvPin")
+    assert re.fullmatch(r"\d+\.\d+\.\d+", version), version
+    assert sorted(hashes) == ["amd64", "arm64"] and all(re.fullmatch(r"[0-9a-f]{64}", h) for h in hashes.values()), hashes
+    assert "https://github.com/astral-sh/uv/releases/download/" in text
+
+
+def run_script(tmp_path, env, *args):
+    out = tmp_path / "out"
+    out.mkdir()
+    p = subprocess.run([POWERSHELL, "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-File", SCRIPT,
+                        "-DownloadOnly", "-OutDir", str(out), "-Arch", "amd64", *args], capture_output=True, text=True,
+                       encoding="utf-8", errors="replace", env={**os.environ, **env}, timeout=300)
+    said = p.stdout + p.stderr
+    return p.returncode, said, [ln for ln in said.splitlines() if ln.strip().startswith("CONFLICT")], list(out.iterdir())
+
+
+@pytest.mark.skipif(os.name != "nt" or not POWERSHELL, reason="the script runs on Windows only")
+def test_uv_conflicts_stop_before_any_download(tmp_path):
+    home = tmp_path / "home"
+    for rel in (".local/bin", ".cargo/bin"):
+        (home / rel).mkdir(parents=True)
+        (home / rel / "uv.exe").write_bytes(b"not uv")
+    rc, said, conflicts, downloaded = run_script(tmp_path, {"USERPROFILE": str(home)})
+    assert rc == 3, said
+    assert any(str(home / ".local" / "bin" / "uv.exe") in ln and "replace" in ln for ln in conflicts), said
+    assert any(str(home / ".cargo" / "bin" / "uv.exe") in ln for ln in conflicts), said
+    assert downloaded == [], "nothing is downloaded when the preflight finds a conflict"
+
+
 @pytest.mark.skipif(os.name != "nt" or not POWERSHELL, reason="the script runs on Windows only")
 def test_conflicts_stop_before_any_download(tmp_path):
     local = tmp_path / "LocalAppData"
-    minor = "".join(pin(open(SCRIPT, encoding="utf-8").read())[0].split(".")[:2])
+    with open(SCRIPT, encoding="utf-8") as f:
+        minor = "".join(pin(f.read())[0].split(".")[:2])
     target = local / "Programs" / "Python" / f"Python{minor}"
     target.mkdir(parents=True)
     (target / "python3.exe").write_bytes(b"not python")  # a python3.exe with no python.exe beside it
