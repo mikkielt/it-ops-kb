@@ -2,7 +2,7 @@
   "id": "ST-o6krms2n",
   "kind": "story",
   "title": "Live-docs searches are reused, not paid again",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-hsyx42zz",
   "sprint": "SP-mqjeanq3",
   "priority": "P3",
@@ -54,5 +54,6 @@
       "by": "operator"
     }
   ],
-  "notes": "Baseline census: tool results of 314 transcripts of this project (52 sessions, 262 subagent runs), about 4 characters a token; each result is also re-read from cache on every later turn of its session. Per call: search_claude_code_docs about 26k characters, microsoft_docs_search about 22k, microsoft_docs_fetch about 10k, WebFetch about 7.5k; about 1.4M characters in all. No MAX_MCP_OUTPUT_TOKENS in the project settings, so results ride the default cap and are paid in full; fetch.py's _cache serves source verification, not the docs servers; no PostToolUse hook trims MCP output. Kb facts: public/claude/tool-output-limits.md:12,18 (MAX_MCP_OUTPUT_TOKENS, anthropic/maxResultSizeChars, DOC S745 S740), public/claude/hooks.md:29,32 (updatedMCPToolOutput, DOC S743), public/agents/doc-lookup-sources.md:23 (DOC S2177), public/claude/otel-monitoring.md:18 (tool_result_size_bytes, DOC S744). The output cap alone is a small task; the cache is the saving."
+  "notes": "Baseline census: tool results of 314 transcripts of this project (52 sessions, 262 subagent runs), about 4 characters a token; each result is also re-read from cache on every later turn of its session. Per call: search_claude_code_docs about 26k characters, microsoft_docs_search about 22k, microsoft_docs_fetch about 10k, WebFetch about 7.5k; about 1.4M characters in all. No MAX_MCP_OUTPUT_TOKENS in the project settings, so results ride the default cap and are paid in full; fetch.py's _cache serves source verification, not the docs servers; no PostToolUse hook trims MCP output. Kb facts: public/claude/tool-output-limits.md:12,18 (MAX_MCP_OUTPUT_TOKENS, anthropic/maxResultSizeChars, DOC S745 S740), public/claude/hooks.md:29,32 (updatedMCPToolOutput, DOC S743), public/agents/doc-lookup-sources.md:23 (DOC S2177), public/claude/otel-monitoring.md:18 (tool_result_size_bytes, DOC S744). The output cap alone is a small task; the cache is the saving.",
+  "claimed_by": "orchestrator-SP-mqjeanq3"
 }
