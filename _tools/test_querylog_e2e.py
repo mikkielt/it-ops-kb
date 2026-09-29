@@ -38,6 +38,11 @@ remote, the findings, the eval file, the ledgers, the spool and the gate (the st
   TestSessions      an open session is not distilled; one closed by SessionEnd and one idle for a day are
   TestPushFailure   a refused push keeps the spool; the next push delivers, and the spool goes after it; a leak in a
                     local run file blocks the push (planted)
+  TestAutonomousConverge  querylog learn, apply (no push, research on from a recorded reply) and queue,
+                    backlog.py red-pipeline (glab answered in this process) and kbingest.py survey, twice on one clone
+                    and its committed store with the first run's output committed between: the second run changes no
+                    file, files no item and runs or queues no research (`tests.py -k autonomous_converge`); planted:
+                    a removed bug item is filed again, and the check sees it
 
 The SessionEnd hook runs while the test holds the distill lock, so the launcher marks the session closed and starts
 no distill of its own: distill runs in this process with the recorded Haiku and with `glab` and `gh` as stubs. The
@@ -46,16 +51,16 @@ worktree's research answers from a recorded reply and page, and its `querylog.py
 nothing is written to this clone's own spool. Every scenario is marked `git` (tests.py runs them; KB_TESTS_FAST=1,
 kbgit.py sync's gate, leaves them out).
 """
-import datetime, json, os, re, shlex, shutil, subprocess, sys, uuid
+import datetime, difflib, io, json, os, re, shlex, shutil, subprocess, sys, uuid
 from pathlib import Path
 
 import pytest
 
 import ql_base, ql_deliver, ql_distill, ql_research, ql_store
-from conftest import GIT, Repo, git_env
-from test_querylog import (ALIAS_Q, BAD_QUOTE, FIXTURES, LAPS, LAPS_GAP_Q, LEGACY_QUOTE, PAGE, PAGE_URL, PARAPHRASE_Q,
-                           PUSH_OPTIONS_HOOK, REJECT_HOOK, SH, c, cand, golden_store, jsonl, pipeline, prompt, reply,
-                           run_here, serve, signed_out, stop, tool)
+from conftest import GIT, Repo, git_env, querylog_env
+from test_querylog import (ALIAS_Q, BAD_QUOTE, E, FIXTURES, LAPS, LAPS_GAP_Q, LEGACY_QUOTE, PAGE, PAGE_URL,
+                           PARAPHRASE_Q, PUSH_OPTIONS_HOOK, REJECT_HOOK, SH, apply_store, c, cand, golden_store, jsonl,
+                           pipeline, prompt, reply, run_here, serve, signed_out, stop, tool)
 
 pytestmark = [pytest.mark.skipif(not GIT, reason="git is not installed"), pytest.mark.git]
 
@@ -935,3 +940,183 @@ class TestPushFailure:
         assert "refused: the store gates fail on the local store's files; nothing committed or pushed" in text, text
         assert f"2026-09/{self.leak_run}.jsonl:2: an identifier in `question`" in text, text
         assert f"2026-09/{self.leak_run}.jsonl:2: the leak scan flags an identifier (email)" in text, text
+
+
+# ---------------------------------------------------------------- autonomous maintenance converges on unchanged input
+
+CONVERGE_GAP = E("d1")  # a lookup the LAPS article does not answer: a _gaps.md entry, then research on it
+CONVERGE_PIPELINE = 4242  # the failed pipeline glab reports for origin's main
+CONVERGE_STEPS = ("learn", "apply", "queue", "red", "survey")
+QUEUED = re.compile(r"\bqueued=(\d+)")
+
+
+def converge_store(tmp, home):
+    """The fixture store of test_querylog.apply_store (an alias, an expansion, a fix that fails its gates, a gap off
+    the kb's domains, source findings) plus a gap under the LAPS article, written as the clone's kb/_querylog."""
+    src = apply_store(tmp, "converge-store")
+    (p,) = ql_store.run_files(src)
+    objs = jsonl(p)
+    objs.append({"id": CONVERGE_GAP, "surface": "prompt", "day": "2026-09-27", "tools": ["kb_pack"],
+                 "question": LAPS_GAP_Q, "verdict": "weak", "articles": [LAPS],
+                 "citations": [{"line": f"{LAPS}:18", "verdict": "weak"}], "cited": "pack", "judged": "missed"})
+    objs[0]["counts"]["entries"] += 1
+    store = home / ql_base.STORE_REL
+    dst = store / p.relative_to(src)
+    dst.parent.mkdir(parents=True)
+    dst.write_text("".join(json.dumps(o, separators=(",", ":")) + "\n" for o in objs), encoding="utf-8", newline="\n")
+    return store
+
+
+def red_pipeline_here(home, sha):
+    """`backlog.py red-pipeline` on the clone at `home`, in this process (the seam of test_backlog.py): glab is
+    signed in and answers one failed pipeline of `sha` on main, and the bug's repro (`red-pipeline --status`) runs in
+    this process with the same answers, so nothing reaches the network. (exit code, output)."""
+    import backlog
+    real = backlog.run
+    pipelines = [{"id": CONVERGE_PIPELINE, "sha": sha, "status": "failed",
+                  "web_url": f"https://gitlab.example.com/team/kb/-/pipelines/{CONVERGE_PIPELINE}"}]
+    jobs = [{"name": "kb-lint", "status": "failed"}]
+
+    def fake(argv, cwd=None):
+        if argv[0] in ("glab", "gh"):
+            if argv[1] == "auth":
+                return 0, "", "Logged in"
+            return 0, json.dumps(jobs if "/jobs?" in argv[-1] else pipelines), ""
+        return real(argv, cwd=cwd)
+
+    def call(argv):
+        out, saved = io.TextIOWrapper(io.BytesIO(), encoding="utf-8"), (sys.stdout, sys.stderr)
+        sys.stdout = sys.stderr = out
+        try:
+            code = backlog.main(argv)
+        finally:
+            sys.stdout, sys.stderr = saved
+        out.flush()
+        return code, out.buffer.getvalue().decode("utf-8")
+
+    def check(root, c):
+        assert c["run"][1:3] == ["_tools/backlog.py", "red-pipeline"], c
+        code, out = call(["--root", str(root), *c["run"][2:]])
+        return code == c.get("exit", 0), code, out
+
+    with pytest.MonkeyPatch.context() as mp:
+        mp.setattr(backlog, "run", fake)
+        mp.setattr(backlog, "run_check", check)
+        return call(["--root", str(home), "red-pipeline"])
+
+
+class TestAutonomousConverge:
+    """querylog learn and apply (no --push: the kb changes stay in the working tree), querylog queue, backlog.py
+    red-pipeline and kbingest.py survey, run twice on one clone and its committed store, the first run's output
+    committed in between: the second run changes no file, files no backlog item and runs or queues no research.
+    Research is on (answered from the recorded reply and page), so a research run the second apply started shows in
+    the day's count. Planted: the filed bug removed and committed, red-pipeline files it again and the check sees it."""
+
+    @pytest.fixture(scope="class", autouse=True)
+    @classmethod
+    def scenario(cls, tmp_path_factory, seed):
+        tmp = Path(tmp_path_factory.mktemp("e2e-converge"))
+        w = cls.w = World(tmp, seed)
+        home = w.home
+        cls.items0 = sorted(p.name for p in (home / "kb" / "_self" / "backlog").glob("*.json"))
+        store = converge_store(tmp, home)
+        w.clone.git("add", "-A")
+        w.clone.git("commit", "-q", "-m", "test: the fixture store")
+        data = tmp / "data"
+        cfg = data / "querylog" / "config.json"
+        cfg.parent.mkdir(parents=True)
+        cfg.write_text('{"mode": "local", "research": true, "research_daily": 5}', encoding="utf-8")
+        shutil.copy(PAGE, tmp / "page.html")
+        replay = tmp / "research.json"
+        replay.write_text(json.dumps({"replies": [reply(cand())] * 4, "pages": {PAGE_URL: "page.html"}}),
+                          encoding="utf-8")
+        env_ = querylog_env(data, home=str(home), base={**w.env, "KB_INDEX": str(home / "_cache")})
+        ql = [sys.executable, str(home / "_tools" / "querylog.py")]
+
+        def tool(argv):
+            p = subprocess.run(argv, capture_output=True, text=True, encoding="utf-8", env=env_, cwd=home,
+                               timeout=900)
+            return p.returncode, (p.stdout + p.stderr).strip()
+
+        def cycle():  # the survey first: it reports uncommitted changes, which the other steps' output would be
+            got = {"survey": tool([sys.executable, str(home / "_tools" / "kbingest.py"), "survey", str(home),
+                                   "--rev", w.base, "--files"])}
+            got.update(learn=tool([*ql, "learn", "--store", str(store)]),
+                       apply=tool([*ql, "apply", "--store", str(store), "--replay-research", str(replay)]),
+                       queue=tool([*ql, "queue", "--store", str(store)]),
+                       red=red_pipeline_here(home, w.base))
+            got["research"] = ql_base.read_json(data / "querylog" / ql_research.RESEARCH_RUNS_NAME, {}).get("runs")
+            got["changed"] = w.clone.git("status", "--porcelain", "--untracked-files=all").splitlines()
+            got["items"] = sorted(p.name for p in (home / "kb" / "_self" / "backlog").glob("*.json"))
+            return got
+
+        cls.first = cycle()
+        w.clone.git("add", "-A")
+        w.clone.git("commit", "-q", "-m", "test: the first run's output")
+        cls.head1 = w.clone.rev("HEAD")
+        cls.second = cycle()
+        cls.head2 = w.clone.rev("HEAD")
+        new = sorted(set(cls.first["items"]) - set(cls.items0))
+        if len(new) == 1:  # planted: the filed bug removed and committed
+            w.clone.git("rm", "-q", f"kb/_self/backlog/{new[0]}")
+            w.clone.git("commit", "-q", "-m", "test: planted: the red-main bug removed")
+        cls.planted = red_pipeline_here(home, w.base), w.clone.git("status", "--porcelain",
+                                                                   "--untracked-files=all").splitlines()
+
+    @staticmethod
+    def exited(got, step):
+        """The step ran: exit 0, or for `queue` exit 1 whose only problem is a gap research closed at claim without
+        a Resolved note on its _gaps.md entry (test_autonomous_converge_queue_exits_0_after_research)."""
+        code, said = got[step]
+        if step == "queue" and code == 1:
+            problems = [ln.strip() for ln in said.splitlines() if ln.strip().startswith("problem:")]
+            known = re.compile(rf"problem: {ql_store.finding_id('gap', CONVERGE_GAP)}: closed at claim, but its entry "
+                               rf"{re.escape(GAPS)}:\d+ has no Resolved note")
+            return len(problems) == 1 and known.fullmatch(problems[0]) is not None
+        return code == 0
+
+    def test_autonomous_converge_the_first_run_changes_the_kb(self):
+        first = self.first
+        for step in CONVERGE_STEPS:
+            assert self.exited(first, step), (step, first[step])
+        changed = {ln[3:] for ln in first["changed"]}
+        assert any(p.startswith(f"{ql_base.STORE_REL}/findings/") for p in changed), changed
+        for rel in (EVAL, ALIASES, EXPANSIONS, GAPS, ARTICLE, SOURCES):
+            assert rel in changed, (rel, changed)
+        new = set(first["items"]) - set(self.items0)
+        assert len(new) == 1 and "red-pipeline: new bug" in first["red"][1], first["red"]
+        assert first["research"] == 1, first["apply"]  # the LAPS gap researched once
+
+    def test_autonomous_converge_the_second_run_changes_nothing(self):
+        first, second = self.first, self.second
+        for step in CONVERGE_STEPS:
+            assert self.exited(second, step), (step, second[step])
+        assert second["changed"] == [] and self.head2 == self.head1, second["changed"]
+        assert second["items"] == first["items"], "a second run filed a backlog item"
+        assert f"pipeline {CONVERGE_PIPELINE} already filed" in second["red"][1], second["red"]
+        assert second["research"] == first["research"], second["apply"]  # no research run started
+        m = QUEUED.search(second["queue"][1])
+        day = re.compile(r"\bday=\S+")  # HEAD's day: the commit between the runs may cross midnight
+        assert m and m.group(1) == "0", second["queue"]  # nothing queued for research
+        assert day.sub("", second["queue"][1]) == day.sub("", first["queue"][1]), second["queue"]
+        diff = [ln for ln in difflib.unified_diff(first["survey"][1].splitlines(), second["survey"][1].splitlines(),
+                                                  lineterm="", n=0)]
+        assert diff == [], diff  # the survey writes nothing and reads the pinned commit alike
+        assert ql_store.store_problems(self.w.home / ql_base.STORE_REL) == []
+
+    @pytest.mark.xfail(strict=True, reason="BG-2ncicfwa: research closes a gap at claim without a Resolved note, "
+                                           "so queue reports it as a closed gap that reappears")
+    def test_autonomous_converge_queue_exits_0_after_research(self):
+        assert (self.first["queue"][0], self.second["queue"][0]) == (0, 0), (self.first["queue"], self.second["queue"])
+
+    @pytest.mark.xfail(strict=True, reason="BG-u5wubtmv: survey compares the working tree with HEAD, not with --rev")
+    def test_autonomous_converge_survey_warns_of_a_checkout_off_the_commit(self):
+        """The second survey reads --rev (the seed) from a clean clone whose HEAD is two commits past it: the files
+        in the checkout are not the commit's, which the `worktree:` line is there to say."""
+        assert self.head2 != self.w.base and self.second["changed"] == []
+        assert "\nworktree: differs from the commit" in self.second["survey"][1], self.second["survey"][1][:600]
+
+    def test_autonomous_converge_a_planted_change_is_seen(self):
+        (code, said), changed = self.planted
+        assert code == 0 and "red-pipeline: new bug" in said, said
+        assert len(changed) == 1 and changed[0].startswith("?? kb/_self/backlog/BG-"), changed
