@@ -3,7 +3,7 @@ topic: claude/hooks
 priority: P1
 applies_to: "Claude Code 2.1.281 docs (retrieved 2026-09-23; UserPromptSubmit, common input, async and Stop sections re-read 2026-09-27; SessionEnd and Windows command hooks read 2026-09-28; tool event input, Stop input and disableAllHooks read 2026-09-28; SessionStart, systemMessage and output caps read 2026-09-28; subagent input fields read 2026-09-28)"
 retrieved_utc: 2026-09-29
-sources: [S743, S745, S746, S1800, S2157, S-h5sble4p, S-sjuwcuhk, S-3yod3u7q, S-av5665nf, S-uzkb4duq]
+sources: [S743, S745, S746, S1800, S2157, S-h5sble4p, S-sjuwcuhk, S-3yod3u7q, S-av5665nf, S-uzkb4duq, S-npnkw4t2]
 status: complete
 ---
 # Hooks relevant to MCP tools
@@ -84,6 +84,13 @@ instead, so a hook can answer a prompt without a model call.
 - `Stop` hooks receive `stop_hook_active`, `last_assistant_message`, `background_tasks` and `session_crons` beyond the common input fields. [DOC S743]
 - `--settings '{"disableAllHooks": true}'` turns hooks off for one run and takes precedence over project and local settings; `disableAllHooks` outside managed settings cannot disable managed hooks. [DOC S743]
 - A logging hook on `PostToolUse` and `Stop` joins its rows to the prompt by `prompt_id`, a common input field, and a fetch's outcome needs `PostToolUseFailure` as well, since `PostToolUse` sees only successful calls. [DER S743: common input fields, PostToolUse and PostToolUseFailure input above]
+
+### Reading a Bash command in a hook script
+- `shlex.split(s)` splits a string with shell-like quoting in POSIX mode by default and leaves comments in place (`comments=False`); passing `None` raises an exception since Python 3.12 instead of reading stdin. [DOC S-npnkw4t2]
+- `shlex.shlex(text, posix=True, punctuation_chars=True)` returns each run of the characters `();<>|&` as its own token, so `a && b; c` yields `a`, `&&`, `b`, `;`, `c`; without `punctuation_chars` a word such as `b;` stays one token. [DOC S-npnkw4t2]
+- The `shlex` page calls its parsing short of a full shell parser and says the tokens returned may be invalid for shells, so the caller does its own checks; `punctuation_chars` also lets `~-./*?=` stay inside words, which keeps a path such as `kb/public/claude/hooks.md` one token. [DOC S-npnkw4t2]
+- The `shlex` page names no exception for an unclosed quote (run locally, `shlex.split("cat 'a")` raises `ValueError`), so a hook that parses `tool_input.command` catches `ValueError` and prints nothing instead of failing; a `PreToolUse` hook that exits 0 with no output adds nothing. [UNK]
+- A `PreToolUse` hook that only adds context for `cat`, `sed`, `head`, `tail` or `grep` on a path can split the command with `punctuation_chars=True` into segments at `|`, `;`, `&&` and `||`, take the first token of each segment as the command name and test its later tokens against the path pattern; it does not need to resolve `$(...)` or variables, since a miss only loses a hint. [DER S-npnkw4t2, S743: tokens per segment; `additionalContext` reaches Claude without blocking]
 
 ### Command hooks on Windows
 - A command hook runs in exec form when `args` is set: `command` is resolved as an executable on `PATH` and spawned with `args` as the argument vector, with no shell and no tokenization on any platform. [DOC S743]

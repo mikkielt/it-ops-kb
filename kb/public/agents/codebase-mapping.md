@@ -2,8 +2,8 @@
 topic: agents/codebase-mapping
 priority: P3
 applies_to: "Python 3.14 stdlib; npm 11.20, Node.js 22/24, TypeScript website @6556b08; Go 1.27.1 (go.dev @f2661d9); rustup 1.29.1, Cargo @797e8a9; Maven compiler plugin 3.16.0, dependency plugin 3.11.0, Gradle 9.8.0; .NET SDK 7.0.200 to 10, MSBuild 17.8+; Universal Ctags 6.2.1; LSP 3.17/3.18; Tree-sitter 0.27.0; SCIP 0.10.0; Dev Container spec @c95ffee, asdf 0.20.2, mise 2026.9.16; Claude Code code intelligence plugins (retrieved 2026-09-28)"
-retrieved_utc: 2026-09-28
-sources: [S-ci5jq2sq, S-gcxnhiij, S-73jqrgsc, S-j7sjakc5, S-7e63teyx, S-4qptrwkx, S-p7etrhxc, S-73rwtmys, S-3cfiqwbl, S-dbslj57x, S-e2zwkzvw, S-za45gi6s, S-hbmr57xf, S-q3muwtlb, S-j645b5a2, S-3e3kl7vi, S-ff6may7t, S-st5dilla, S-ecfbexjo, S-me5pwvu4, S-5i5f44rp, S-hvxiebin, S-uwukziri, S-bwtnlzvy, S-orgevefw, S-qb643f4y, S-7cn5bcww, S-6ei7z5hd, S-cmdzei72, S-w5jn4cwh, S-2u4dktv3, S-f62n2ltd, S-ehcgsi7s, S-zihpu7lj, S-6fmskgi2, S-xmboehyd, S-mrtq3wwm, S-zr5edtyi, S-awr5xive, S-f3dxxlte, S-vpvmrtpz, S-lxrnlf4d, S-xdf63oro, S-3dlonliy, S-j2laoer5, S-43wwsm7t, S-cgtbvuug, S-3yod3u7q, S-4jj4dtg4, S-loh54u4h, S-cvfkrw4j, S-223vfyli, S-4xsjlwlt, S-d7lm5uzs, S-6k54ouks, S-3a7yfcq7, S-3zv32lrc, S-jixwe4dj, S-sqwzg5ex, S-pwf7njbf]
+retrieved_utc: 2026-09-29
+sources: [S-ci5jq2sq, S-5gm7nwzj, S-gmmkbalr, S-gcxnhiij, S-73jqrgsc, S-j7sjakc5, S-7e63teyx, S-4qptrwkx, S-p7etrhxc, S-73rwtmys, S-3cfiqwbl, S-dbslj57x, S-e2zwkzvw, S-za45gi6s, S-hbmr57xf, S-q3muwtlb, S-j645b5a2, S-3e3kl7vi, S-ff6may7t, S-st5dilla, S-ecfbexjo, S-me5pwvu4, S-5i5f44rp, S-hvxiebin, S-uwukziri, S-bwtnlzvy, S-orgevefw, S-qb643f4y, S-7cn5bcww, S-6ei7z5hd, S-cmdzei72, S-w5jn4cwh, S-2u4dktv3, S-f62n2ltd, S-ehcgsi7s, S-zihpu7lj, S-6fmskgi2, S-xmboehyd, S-mrtq3wwm, S-zr5edtyi, S-awr5xive, S-f3dxxlte, S-vpvmrtpz, S-lxrnlf4d, S-xdf63oro, S-3dlonliy, S-j2laoer5, S-43wwsm7t, S-cgtbvuug, S-3yod3u7q, S-4jj4dtg4, S-loh54u4h, S-cvfkrw4j, S-223vfyli, S-4xsjlwlt, S-d7lm5uzs, S-6k54ouks, S-3a7yfcq7, S-3zv32lrc, S-jixwe4dj, S-sqwzg5ex, S-pwf7njbf]
 status: complete
 ---
 
@@ -28,6 +28,19 @@ language server. The per-language cookbook is `agents/codebase-mapping.csv`; Pow
 - `py_compile` compiles a file and writes the byte-code cache file, so it changes the tree it checks; its CLI compiles only the files named and exits non-zero if any fails. [DOC S-j7sjakc5]
 - `ast.parse` builds a tree and executes nothing, being `compile()` in AST-only mode; for an untrusted repository it is best run in a separate process because of the crash risk. [DER S-ci5jq2sq: the PyCF_ONLY_AST equivalence and the stack-depth warning]
 - `ruff analyze graph` prints a map from each Python file to the files it imports (or, with `--direction dependents`, the files that import it) as JSON with paths relative to the working directory; at ruff 0.16.9 it warns that it is experimental unless preview is on. Details: `python/ruff.md`. [CODE S-7e63teyx: crates/ruff/src/commands/analyze_graph.rs#analyze_graph]
+
+### Python: a symbol map built from `ast`
+- Every `ast.expr` and `ast.stmt` node has `lineno`, `col_offset`, `end_lineno` and `end_col_offset`; `lineno` and `end_lineno` are the first and last line of the node's source text, counted from 1, and the column offsets are UTF-8 byte offsets. [DOC S-ci5jq2sq]
+- `FunctionDef`, `AsyncFunctionDef` (same fields) and `ClassDef` carry `name`, `body` and `decorator_list`, the decorators stored outermost first; a map that lists `async def` functions must handle `AsyncFunctionDef` as its own node type, not as a `FunctionDef`. [DOC S-ci5jq2sq]
+- `ast.get_docstring(node, clean=True)` returns the docstring of a `FunctionDef`, `AsyncFunctionDef`, `ClassDef` or `Module` node, or `None` when it has none; with `clean` true it removes the indentation with `inspect.cleandoc`. [DOC S-ci5jq2sq]
+- `inspect.cleandoc` strips all leading whitespace from a docstring's first line, removes the whitespace that can be removed uniformly from the second line on, then drops empty lines at the start and the end and expands tabs, so the first non-empty line of a cleaned docstring starts at column 0 and `splitlines()[0]` is its summary line. [DER S-5gm7nwzj: the described steps applied to the first line]
+- `ast.walk(node)` yields `node` and all its descendants in no specified order, so a map that must list a class's methods in file order uses `ast.iter_child_nodes(node)`, which yields the direct children only, or sorts by `lineno`. [DER S-ci5jq2sq: walk documents no order; iter_child_nodes documents direct children]
+- The `ast` page does not say whether `lineno` of a decorated function or class is its first decorator's line or its `def` or `class` line; a map that prints `file:line` for `rag.py show` reads the value from the tree and does not assume either. [UNK]
+
+### Markdown: finding a section's heading and end
+- An ATX heading is an opening run of 1 to 6 `#` characters that is followed by a space, a tab or the end of the line and preceded by at most three spaces of indentation; its level is the number of `#` characters, and an optional closing run of `#` is stripped. [DOC S-gmmkbalr]
+- A fenced code block opens with at least three backticks or tildes (not mixed) and ends at a closing fence of the same character and at least the same length; a fence left open runs to the end of the document. Lines inside are literal text, so a `# ` line inside a fence is not a heading. [DOC S-gmmkbalr]
+- A section reader that finds headings with a line-by-line scan therefore tracks whether it is inside a fence (opening fence character and length) before it tests a line for `#`; this kb's articles put shell snippets and `#` comments in fences. [DER S-gmmkbalr: fenced content is literal; the kb's own `SNIPPET:` blocks (`kb/_self/content-rules.md`)]
 
 ### Node.js and TypeScript
 - package.json `engines` is advisory: npm only warns, and only when the package is installed as a dependency, unless `engine-strict` is set. [DOC S-4qptrwkx]

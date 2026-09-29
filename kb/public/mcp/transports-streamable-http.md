@@ -3,7 +3,7 @@ topic: mcp/transports-streamable-http
 priority: P2
 applies_to: "MCP specification 2026-07-28"
 retrieved_utc: 2026-09-26
-sources: [S-l4qgsnr4, S706, S703, S-ssijfmsu, S-gm6b6ci6, S704, S716, S707]
+sources: [S-l4qgsnr4, S-cm7rkvrx, S-iw3x3th7, S708, S706, S703, S-ssijfmsu, S-gm6b6ci6, S704, S716, S707]
 status: complete
 ---
 # Streamable HTTP transport (2026-07-28)
@@ -55,6 +55,15 @@ patterns.
 - Compatibility matrix highlight: Legacy client vs Modern server fails (HTTP: request missing required headers, rejected `400`); Dual-era client vs Legacy server works by falling back to `initialize` after a `4xx` with no recognized modern error body. [DOC S703]
 - Authorization for Streamable HTTP SHOULD conform to the MCP authorization spec (OAuth 2.1 subset); see mcp/authorization.md. [DOC S704, S707]
 - Streamable HTTP security controls (Origin validation, localhost binding) sit alongside the broader guidance in mcp/security-best-practices.md (SSRF blocking of private IP ranges, state-handle binding, local-server consent). [DOC S716]
+
+### Legacy (2025-11-25) client over HTTP, for a server that has not moved to 2026-07-28
+- A 2025-11-25 client starts with a POST of an `initialize` request naming its protocol version, capabilities and client info; after a successful result it POSTs a `notifications/initialized` notification, and it SHOULD NOT send requests other than pings before the server has answered `initialize`. [DOC S-iw3x3th7]
+- If the server supports the requested protocol version it MUST answer with the same one, otherwise with another version it supports; a client that does not support the version in the answer SHOULD disconnect. [DOC S-iw3x3th7]
+- Every POST carries an `Accept` header listing both `application/json` and `text/event-stream`, and a reply to a request is one JSON object or an SSE stream, which the client MUST handle both; a notification or a response the server accepts gets `202 Accepted` with no body. [DOC S-cm7rkvrx]
+- A server MAY put a session id in an `MCP-Session-Id` header on the HTTP response that holds the `InitializeResult`; a client that receives one MUST send it in that header on all its later requests, a server that requires one SHOULD answer a request without it `400 Bad Request`, and a `404` to a request that carried a session id means the client MUST start over with a new `InitializeRequest` without an id. [DOC S-cm7rkvrx]
+- A client SHOULD end a session it no longer needs with an HTTP DELETE carrying the session id, and the server MAY answer `405 Method Not Allowed`. [DOC S-cm7rkvrx]
+- After initialization the client MUST send `MCP-Protocol-Version: <negotiated version>` on all later requests; a server that gets none and has no other way to tell assumes `2025-03-26`, and one that gets an unsupported value MUST answer `400 Bad Request`. [DOC S-cm7rkvrx]
+- In the 2026-07-28 `tools.mdx`, cache metadata (`ttlMs`, `cacheScope`) is described only for `tools/list` results; the page defines none for a `tools/call` result, so a client that stores results of `tools/call` chooses its own key and lifetime. [DER S708: a search of the page for cache terms finds only the `tools/list` result]
 
 ## Reference
 See mcp/spec-overview.md for the per-request `_meta` fields (`io.modelcontextprotocol/protocolVersion`,

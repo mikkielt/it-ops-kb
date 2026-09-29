@@ -2119,3 +2119,14 @@ _Agent: kb-research_
 - See claude/skills-and-subagents.md, agents/subagents-vs-deterministic-tools.md, agents/agent-planning-and-done.md.
 
 _Agent: kb-research_
+
+## QK-external-facts-reading-less-kb-own. Which external facts do a section reader, a _tools symbol map, a raw-read hint and a live-docs cache rest on?
+- Section reader: an ATX heading is 1 to 6 `#` followed by a space, tab or end of line; a `#` line inside a backtick or tilde fence is literal text, so the reader tracks fences before testing for headings. [DOC S-gmmkbalr]
+- Symbol map: `lineno` and `end_lineno` are 1-based first and last source lines; `FunctionDef`, `AsyncFunctionDef` and `ClassDef` carry `decorator_list`; `ast.get_docstring` takes function, async function, class or module nodes and cleans with `inspect.cleandoc`; `ast.walk` has no defined order. [DOC S-ci5jq2sq, S-5gm7nwzj]
+- Raw-read hint: `PreToolUse` gets `tool_input.command` for Bash, and `additionalContext` reaches Claude without a block; `shlex` with `punctuation_chars=True` splits `&&`, `;` and `|` into their own tokens but is not a full shell parser. [DOC S743, S-npnkw4t2]
+- Live-docs cache: the three docs endpoints answer a plain POST `initialize` with SSE, forbid storing their responses in `Cache-Control`, and (Learn) issue a session id that later requests did not need; the spec's cache metadata covers `tools/list` only, and a legacy client sends `initialize`, `notifications/initialized`, `MCP-Session-Id` and `MCP-Protocol-Version`. [DOC S-cm7rkvrx, S-iw3x3th7] [DER S2177, S2180, S2181, S708]
+- Conclusion: none of the four items needs a further external source; the cache's lifetime and key are the project's own choice, because no cache lifetime for `tools/call` results exists in the spec or the response headers. [DER S708, S2177, S2180, S2181]
+- Open: whether `lineno` of a decorated function is its decorator line or its `def` line is not stated on the `ast` page. [UNK]
+- See agents/codebase-mapping.md, claude/hooks.md, mcp/transports-streamable-http.md, agents/doc-lookup-sources.md, claude/tool-output-limits.md.
+
+_Agent: kb-research_

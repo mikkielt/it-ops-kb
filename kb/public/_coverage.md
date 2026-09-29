@@ -43,7 +43,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `agents/security-copilot-endpoint` | P2 | complete | `agents/security-copilot-endpoint.md` | 24 |
 | `agents/windows-agentic-platform` | P2 | complete | `agents/windows-agentic-platform.md`, `agents/windows-ai-policies.csv` | 16 |
 | `agents/agent-planning-and-done` | P3 | complete | `agents/agent-planning-and-done.md` | 6 |
-| `agents/codebase-mapping` | P3 | complete | `agents/codebase-mapping.md`, `agents/codebase-mapping.csv` | 60 |
+| `agents/codebase-mapping` | P3 | complete | `agents/codebase-mapping.md`, `agents/codebase-mapping.csv` | 62 |
 | `agents/coding-agent-codebase-context` | P3 | complete | `agents/coding-agent-codebase-context.md` | 15 |
 | `agents/doc-change-detection` | P3 | complete | `agents/doc-change-detection.md` | 36 |
 | `agents/langgraph` | P3 | complete | `agents/langgraph.md` | 11 |
@@ -90,7 +90,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `autopilot/lifecycle` | P1 | complete | `autopilot/lifecycle.md` | 5 |
 | `claude/data-retention` | P1 | complete | `claude/data-retention.md` | 6 |
 | `claude/elicitation` | P1 | complete | `claude/elicitation.md` | 5 |
-| `claude/hooks` | P1 | complete | `claude/hooks.md` | 10 |
+| `claude/hooks` | P1 | complete | `claude/hooks.md` | 11 |
 | `claude/managed-mcp` | P1 | complete | `claude/managed-mcp.md` | 2 |
 | `claude/messages-api` | P1 | complete | `claude/messages-api.md`, `claude/models.csv`, `claude/api-limits.csv` | 10 |
 | `claude/otel-monitoring` | P1 | complete | `claude/otel-monitoring.md` | 4 |
@@ -197,7 +197,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `mcp/transports-stdio` | P1 | complete | `mcp/transports-stdio.md` | 6 |
 | `mcp/registry-and-extensions` | P2 | complete | `mcp/registry-and-extensions.md` | 17 |
 | `mcp/resources-prompts` | P2 | complete | `mcp/resources-prompts.md` | 7 |
-| `mcp/transports-streamable-http` | P2 | complete | `mcp/transports-streamable-http.md` | 8 |
+| `mcp/transports-streamable-http` | P2 | complete | `mcp/transports-streamable-http.md` | 11 |
 | `mecm/adminservice` | P0 | complete | `mecm/adminservice.md`, `mecm/adminservice-routes.csv` | 21 |
 | `mecm/application-model` | P0 | complete | `mecm/application-model.md` | 4 |
 | `mecm/baselines` | P0 | complete | `mecm/baselines.md` | 7 |
