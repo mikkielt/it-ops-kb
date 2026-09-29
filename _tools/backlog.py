@@ -668,6 +668,9 @@ def cmd_done(bl, a):
                  if in_scope(ln[3:].strip('"'), globs) and not in_scope(ln[3:].strip('"'), ())]
         if dirty:
             problems.append("uncommitted changes in scope (checks run on HEAD): " + ", ".join(dirty[:5]))
+        if it.get("touches") and not item_commits(bl.root, [iid]):
+            problems.append(f"no commit on HEAD carries the trailer KB-Work: {iid} "
+                            "(git reads a trailer only in the message's last paragraph, with the others)")
         for sha, path in out_of_scope(bl.root, item_commits(bl.root, [iid] + bl.descendants(iid)), globs):
             problems.append(f"commit {sha[:10]} changed {path}, outside touches (revert it, or widen touches)")
     if problems:

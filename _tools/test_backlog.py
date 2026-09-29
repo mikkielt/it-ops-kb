@@ -138,6 +138,8 @@ def test_next_orders_s1_bugs_first(sprint):
 def test_done_refuses_failing_check_and_scope_then_passes(sprint):
     repo, tk = sprint["repo"], sprint["tk"]
     assert b(repo, "claim", tk, "--by", "agent-1")[0] == 0
+    (repo / "src" / "x.txt").write_text("x\n", encoding="utf-8")
+    commit(repo, "start", tk)
     code, out = b(repo, "done", tk)
     assert code == 1 and "check(s) failed" in out
     (repo / "src" / "b.txt").write_text("b\n", encoding="utf-8")
@@ -151,6 +153,22 @@ def test_done_refuses_failing_check_and_scope_then_passes(sprint):
     assert code == 0, out
     it = item(repo, "Task")
     assert it["status"] == "done" and it["evidence"]["commit"] and "claimed_by" not in it
+
+
+def test_done_refuses_kb_work_outside_trailers(sprint):
+    """A KB-Work line in a paragraph before Co-Authored-By is no trailer for git: done sees no commit and refuses."""
+    repo, tk = sprint["repo"], sprint["tk"]
+    assert b(repo, "claim", tk, "--by", "agent-1")[0] == 0
+    (repo / "src" / "b.txt").write_text("b\n", encoding="utf-8")
+    sh(repo, "git", "add", "-A")
+    sh(repo, "git", "commit", "-qm", f"write b\n\nKB-Work: {tk}\n\nCo-Authored-By: A <a@example.com>")
+    code, out = b(repo, "done", tk)
+    assert code == 1 and "no commit on HEAD carries the trailer" in out
+    (repo / "src" / "y.txt").write_text("y\n", encoding="utf-8")
+    sh(repo, "git", "add", "-A")
+    sh(repo, "git", "commit", "-qm", f"more\n\nCo-Authored-By: A <a@example.com>\nKB-Work: {tk}")
+    code, out = b(repo, "done", tk)
+    assert code == 0, out
 
 
 def test_check_interpreter_argv(monkeypatch, tmp_path):
