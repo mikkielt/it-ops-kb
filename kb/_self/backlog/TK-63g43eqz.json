@@ -2,7 +2,7 @@
   "id": "TK-63g43eqz",
   "kind": "task",
   "title": "kb-sprint dispatches item workers to kb-worker",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-ry4squft",
   "priority": "P1",
   "rank": 1,
@@ -25,5 +25,19 @@
   "depends_on": [
     "TK-cwvnhup5"
   ],
-  "claimed_by": "worker-63g43eqz"
+  "evidence": {
+    "commit": "7043e4091d8d0533d59f6eeaef8482bef03c96a3",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "kb_worker_dispatch"
+        ],
+        "exit": 0,
+        "sha256": "5ccded70ef84a872"
+      }
+    ]
+  }
 }
