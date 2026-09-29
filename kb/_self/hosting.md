@@ -136,3 +136,62 @@ server {
 ```
 
 The validator accepts a bearer token only when its signature checks against the tenant's published signing keys (`https://login.microsoftonline.com/00000000-0000-0000-0000-000000000000/v2.0/.well-known/openid-configuration`), its `iss` is that tenant's v2.0 issuer, its `aud` is the kb app registration's client id or Application ID URI, it has not expired, and, for an instance that serves an internal root, it carries the app role that audience is given. Entra ID as an MCP server's authorization server: `kb/public/auth/delegation-kcd-obo.md`.
+
+## 4. On Azure: Container Apps or App Service
+
+Azure Container Apps or Azure App Service (Linux, custom container) runs the same image; the platform's ingress terminates TLS and its built-in authentication with Microsoft Entra ID checks every request before it reaches the container. The setting names below are the Azure CLI's; the portal has the same ones under Ingress (or TLS/SSL) and Authentication.
+
+**The image**, built from a clone made with `--single-branch` at a census tag, as on the VM (a fresh clone holds no `_cache/` or `_private/`). The Dockerfile lives with the build pipeline, not in the kb:
+
+```dockerfile
+FROM python:3.11-slim
+RUN apt-get update && apt-get install -y --no-install-recommends git \
+ && rm -rf /var/lib/apt/lists/* && useradd --system --create-home kb
+COPY --chown=kb:kb . /srv/it-ops-kb
+USER kb
+ENV KB_INDEX=/tmp/kb-index
+EXPOSE 8080
+ENTRYPOINT ["sh", "-c", "exec python3 /srv/it-ops-kb/_tools/kb_http.py --bind 0.0.0.0 --bind-any --port 8080 --roots \"${SERVE_ROOTS:-public}\""]
+```
+
+Any Python 3.11+ base image does; git stays in the image so `kb_status` reports the census tag. `KB_INDEX` points into the container's own file system: each replica builds its index when it starts, so keep at least one replica running (Container Apps `--min-replicas 1`; App Service Always On). The image tag names the census tag (`<registry>/kb-http:census-YYYY-MM-DD`), and the app pulls it with its managed identity, not a registry password.
+
+**Keeping the guards meaningful.** Inside a container the platform's ingress reaches the server over the container's network, not loopback, so the image binds `0.0.0.0` with `--bind-any`. That is safe only while the platform is the one way in:
+- ingress on HTTPS only: Container Apps HTTP ingress with `allowInsecure` false (the default), App Service with HTTPS Only on, and no second port or path exposed;
+- built-in authentication set to require authentication and answer 401 to an unauthenticated request, with no excluded paths, so nothing reaches `/mcp` without a valid token;
+- in Container Apps, other apps of the same environment can call an app by name: give the kb apps an environment of their own;
+- platform CORS stays off and the image passes no `--allow-origin`, so a browser's `Origin` still reaches the server and gets 403.
+
+**Container Apps**, one app per audience (`kb-public` here; an internal audience's app sets `SERVE_ROOTS=public,<root>` and has its own token audience):
+
+```sh
+az containerapp create --name kb-public --resource-group <rg> --environment <kb environment> \
+  --image <registry>/kb-http:census-YYYY-MM-DD --registry-server <registry> --registry-identity system \
+  --ingress external --target-port 8080 --min-replicas 1 --env-vars SERVE_ROOTS=public
+az containerapp auth microsoft update --name kb-public --resource-group <rg> \
+  --client-id <kb app client id> --tenant-id 00000000-0000-0000-0000-000000000000 \
+  --issuer https://login.microsoftonline.com/00000000-0000-0000-0000-000000000000/v2.0 \
+  --allowed-token-audiences api://<kb app client id>
+az containerapp auth update --name kb-public --resource-group <rg> \
+  --enabled true --unauthenticated-client-action Return401 --require-https true
+```
+
+**App Service**, one web app per audience on a Linux plan:
+
+```sh
+az webapp create --name kb-public --resource-group <rg> --plan <linux plan> \
+  --container-image-name <registry>/kb-http:census-YYYY-MM-DD \
+  --assign-identity [system] --acr-use-identity --acr-identity [system] --https-only true
+az webapp config appsettings set --name kb-public --resource-group <rg> --settings WEBSITES_PORT=8080 SERVE_ROOTS=public
+az webapp config set --name kb-public --resource-group <rg> --always-on true
+az webapp auth microsoft update --name kb-public --resource-group <rg> \
+  --client-id <kb app client id> --tenant-id 00000000-0000-0000-0000-000000000000 \
+  --issuer https://login.microsoftonline.com/00000000-0000-0000-0000-000000000000/v2.0 \
+  --allowed-token-audiences api://<kb app client id>
+az webapp auth update --name kb-public --resource-group <rg> \
+  --enabled true --unauthenticated-client-action Return401 --require-https true
+```
+
+The app's identity needs pull rights on the registry (AcrPull) in both. A client secret, if the identity provider setup asks for one, is a platform secret or app setting reference, never a value in a script in the repository. The token checks are those of the VM section: the tenant's v2.0 issuer, the kb app registration as audience, and for an internal audience the app role it requires (App Service and Container Apps can also restrict the calling client applications and identities). Entra ID in front of an MCP server on App Service: `kb/public/auth/delegation-kcd-obo.md`.
+
+**The census-tag update** is a scheduled pipeline job, the Azure form of the VM's timer: it lists the census tags, and when the newest is not the deployed image's tag it clones at that tag, builds and pushes `kb-http:<tag>`, and points each app at it (`az containerapp update --image`, `az webapp config container set --container-image-name`), which restarts it on the new kb.
