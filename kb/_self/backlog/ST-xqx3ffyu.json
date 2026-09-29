@@ -2,7 +2,7 @@
   "id": "ST-xqx3ffyu",
   "kind": "story",
   "title": "Review sprint: Windows ready",
-  "status": "todo",
+  "status": "done",
   "sprint": "SP-fep4fpsx",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,27 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "evidence": {
+    "commit": "3682182f9bc90cc8a78799580bc31a6ef592827b",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "abbd447b9c5db689"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "4aa4edbf76d9b2fa"
+      }
+    ]
+  }
 }
