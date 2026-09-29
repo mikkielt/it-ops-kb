@@ -48,6 +48,11 @@
                     HEAD: eval, alias, expansion, gap candidate and source; every judged miss is re-run first
                     (`fixed-since` when it passes); learn writes findings only; two runs on the same store and HEAD
                     give byte-identical files, also in another copy; a HEAD change writes one new file
+  TestLearnFalseNone a none entry whose fetched pages a source row holds (host and path, without scheme, www, query,
+                    fragment, trailing slash, `.md` or Learn's locale segment) is an eval finding at stage miss whose
+                    `expect` is the article with the most citing lines (ties by path) and `observed` the source ids,
+                    in place of a gap; planted: a page no article cites, a weak verdict, a failed fetch, no fetch
+                    (the findings they give now); fixed-since once the pack answers; a second learn writes nothing
   TestSourceFindings  the staging triggers equal web-sources.md (planted: a changed number in the doc or the code); a
                     host's level comes from the provider registry (a root's _providers.csv too), else the routes
                     table, and every registry host has a routes row (planted: a row without one); no stage finding
@@ -1778,6 +1783,147 @@ class TestLearn:
         p = subprocess.run([sys.executable, QL, "learn"], capture_output=True, text=True, encoding="utf-8",
                            env=querylog_env(tmp_path / "data"), timeout=120)
         assert (p.returncode, p.stdout) == (0, "learn: logging is off\n")
+
+
+FN = "55555555-0000-4000-8000-0000000000{}"
+LEARN_URL = "https://learn.microsoft.com/en-us/windows-server/identity/laps/laps-overview"
+HOOKS = "public/claude/hooks.md"
+
+
+def none_entry(n, question, *fetches, **extra):
+    """A stored lookup with verdict none whose session fetched `fetches` (host, path, outcome)."""
+    return {"id": FN.format(n), "surface": "prompt", "day": "2026-09-27", "tools": ["kb_pack"], "question": question,
+            "verdict": "none", "articles": [], "judged": "missed",
+            "fetches": [{"tool": "WebFetch", "host": h, "path": p, "outcome": o, "n": 1} for h, p, o in fetches],
+            **extra}
+
+
+def plant_entries(store, *entries):
+    """Append `entries` to the store's run file and count them in its header."""
+    run = ql_store.run_files(store)[0]
+    lines = run.read_text(encoding="utf-8").splitlines()
+    header = json.loads(lines[0])
+    header["counts"]["entries"] += len(entries)
+    lines = [json.dumps(header, separators=(",", ":"))] + lines[1:] + [json.dumps(e) for e in entries]
+    run.write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
+
+
+@pytest.fixture
+def planted_kb(monkeypatch):
+    """A kb whose sources and citations are three planted rows: a Learn page cited by two articles (three lines and
+    one) and by a data file and a ledger, a Claude Code page cited with `.md`, and a page no article cites."""
+    import kbfacts
+    rows = {"S9001": {"url": LEARN_URL + "?view=windows-server-2025#top"},
+            "S9002": {"url": "https://code.claude.com/docs/en/hooks.md"},
+            "S9003": {"url": "https://www.vendor.example.org/docs/only-in-a-ledger/"},
+            "S9004": {"url": ""}}
+    cites = {"S9001": [(LAPS, 8), (LAPS, 12), (LAPS, 20), ("public/intune/win32-apps.md", 5),
+                       ("public/windows/laps.csv", 1), ("public/windows/laps.csv", 2), ("public/_answers.md", 9)],
+             "S9002": [(HOOKS, 6), (HOOKS, 21), ("public/agents/headless-agent-runtimes.md", 43)],
+             "S9003": [("public/_answers.md", 3)]}
+    arts = {p: {} for p in (LAPS, "public/intune/win32-apps.md", HOOKS, "public/agents/headless-agent-runtimes.md")}
+    monkeypatch.setattr(kbfacts, "source_rows", lambda: rows)
+    monkeypatch.setattr(kbfacts, "articles", lambda: arts)
+    monkeypatch.setattr(kbfacts, "cited_lines", lambda ids: {i: cites.get(i, []) for i in ids})
+
+
+class TestLearnFalseNone:
+    """A none entry whose fetched pages the kb cites is a false none: an eval finding at stage miss whose `expect` is
+    the article citing them most, in place of a gap finding."""
+
+    def learned(self, tmp_path, pack, *entries):
+        store = learn_store(tmp_path)
+        plant_entries(store, *entries)
+        run_learn(store, pack)
+        return store
+
+    def found(self, store, n):
+        return {r["kind"]: r for r in by_id(store).values() if r.get("entry") == FN.format(n)}
+
+    def test_the_kb_cites_a_learn_page_the_lookup_fetched(self, tmp_path, planted_kb):
+        e = none_entry("f1", "How do I back up a LAPS password to Entra ID?",
+                       ("learn.microsoft.com", "/pl-pl/windows-server/identity/laps/laps-overview/", "http-200"))
+        store = self.learned(tmp_path, failing, e)
+        got = self.found(store, "f1")
+        assert set(got) == {"eval", "expansion"}  # every word known: the paraphrase fix, and no gap finding
+        ev = got["eval"]
+        assert (ev["stage"], ev["state"], ev["expect"]) == ("miss", "open", LAPS)  # 3 lines against 1
+        assert ev["observed"] == {"verdict": "none", "paths": [], "sources": ["S9001"]}
+        assert got["expansion"]["article"] == LAPS
+        assert ql_store.store_problems(store) == []
+
+    def test_the_kb_cites_a_claude_code_page_with_md(self, tmp_path, planted_kb):
+        e = none_entry("f3", "Which hook events does Claude Code run?", ("code.claude.com", "/docs/en/hooks", "http-200"))
+        got = self.found(self.learned(tmp_path, failing, e), "f3")
+        assert (got["eval"]["stage"], got["eval"]["expect"], got["eval"]["observed"]["sources"]) == (
+            "miss", HOOKS, ["S9002"])
+        assert "gap" not in got
+
+    def test_a_page_the_kb_does_not_cite_stays_a_gap(self, tmp_path, planted_kb):
+        pages = [("learn.microsoft.com", "/en-us/windows-server/identity/laps/other-page", "http-200"),
+                 ("www.vendor.example.org", "/docs/only-in-a-ledger", "http-200")]  # cited by a ledger only
+        e = none_entry("f2", "Is there a LAPS page the kb lacks?", *pages)
+        got = self.found(self.learned(tmp_path, failing, e), "f2")
+        assert set(got) == {"gap"} and got["gap"]["stage"] == "candidate-gap"
+        assert "sources" not in got["gap"]["observed"]
+
+    def test_a_second_learn_writes_nothing(self, tmp_path, planted_kb):
+        es = [none_entry("f1", "How do I back up a LAPS password to Entra ID?",
+                         ("learn.microsoft.com", "/pl-pl/windows-server/identity/laps/laps-overview/", "http-200")),
+              none_entry("f2", "Is there a LAPS page the kb lacks?",
+                         ("learn.microsoft.com", "/en-us/windows-server/identity/laps/other-page", "http-200")),
+              none_entry("f3", "Which hook events does Claude Code run?",
+                         ("code.claude.com", "/docs/en/hooks", "http-200"))]
+        store = self.learned(tmp_path, failing, *es)
+        first = tree(store)
+        rc, said = run_learn(store, failing)
+        assert rc == 0 and said[0].startswith("learn: nothing new") and tree(store) == first
+
+    def test_fixed_since_once_the_pack_answers(self, tmp_path, planted_kb):
+        e = none_entry("f1", "How do I back up a LAPS password to Entra ID?",
+                       ("learn.microsoft.com", "/en-us/windows-server/identity/laps/laps-overview", "http-200"))
+        store = self.learned(tmp_path, failing, e)
+        run_learn(store, passing)  # the pack on HEAD now finds the LAPS article
+        got = {r["id"]: r for r in by_id(store).values()}
+        assert got[ql_store.finding_id("eval", e["id"])]["state"] == "fixed-since"
+        assert not any(r["state"] == "open" for r in got.values() if r.get("entry") == e["id"])
+
+    def test_only_a_none_entry_whose_fetch_read_a_page(self, tmp_path, planted_kb):
+        page = ("learn.microsoft.com", "/en-us/windows-server/identity/laps/laps-overview", "http-200")
+        weak = none_entry("d1", "A weak lookup that fetched a cited page?", page, verdict="weak", judged="partly")
+        dead = none_entry("d2", "A none lookup whose fetch failed?", (*page[:2], "http-404"))
+        empty = none_entry("d3", "A none lookup with no fetch?")
+        store = self.learned(tmp_path, failing, weak, dead, empty)
+        for n in ("d1", "d2", "d3"):  # a weak verdict, a fetch that read nothing, no fetch: the findings they give now
+            assert set(self.found(store, n)) == {"gap"}, n
+
+    def test_the_article_citing_most_wins_and_ties_go_by_path(self, planted_kb):
+        pages = ql_learn.KbPages()
+        page = ("learn.microsoft.com", "/en-us/windows-server/identity/laps/laps-overview", "http-200")
+        assert pages.match(none_entry("e1", "q", page)) == (LAPS, ["S9001"])
+        both = none_entry("e2", "q", page, ("code.claude.com", "/docs/en/hooks/", "http-200"))
+        assert pages.match(both) == (LAPS, ["S9001", "S9002"])  # the lines of both sources add up per article
+        tie = none_entry("e3", "q", ("code.claude.com", "/docs/en/hooks", "http-200"),
+                         ("learn.microsoft.com", "/docs/en/nothing", "http-200"))
+        assert pages.match(tie)[0] == HOOKS
+        pages._lines["S9002"] = {HOOKS: 1, "public/agents/headless-agent-runtimes.md": 1}
+        assert pages.match(tie)[0] == "public/agents/headless-agent-runtimes.md"  # equal counts: the earlier path
+
+    @pytest.mark.parametrize("host,path,key", [
+        ("Learn.Microsoft.com", "/EN-US/windows/x/", "learn.microsoft.com/windows/x"),
+        ("learn.microsoft.com", "/en-us", "learn.microsoft.com"),
+        ("learn.microsoft.com", "/pl-pl/windows/x?view=y#z", "learn.microsoft.com/windows/x"),
+        ("www.example.org", "/a/b.md", "example.org/a/b"),
+        ("code.claude.com", "/docs/en/hooks.md/", "code.claude.com/docs/en/hooks"),
+        ("example.org", "/en-us/a", "example.org/en-us/a"),  # only Learn has a locale segment
+        ("example.org", None, "example.org"), (None, "/a", None), ("", "/a", None)])
+    def test_page_key(self, host, path, key):
+        assert ql_learn.page_key(host, path) == key
+
+    def test_the_kb_at_head_cites_the_hooks_page(self, tmp_path):
+        e = none_entry("k1", "Which hook events does Claude Code run?", ("code.claude.com", "/docs/en/hooks", "http-200"))
+        hit = ql_learn.KbPages().match(e)
+        assert hit and hit[0].startswith("public/claude/") and "S743" in hit[1]
 
 
 class TestSourceFindings:

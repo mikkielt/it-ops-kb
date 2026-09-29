@@ -1,6 +1,7 @@
 """The query log's learn (kb/_self/querylog.md, Learn): the store's run files and the kb at HEAD become findings, and
 only findings: every judged miss re-run with pack first (`fixed-since` when it now passes), then eval, alias,
-expansion and gap-candidate findings, and report-only source findings on the hosts the store's fetches name. One
+expansion and gap-candidate findings, and report-only source findings on the hosts the store's fetches name. A
+lookup with verdict none whose fetched pages the kb cites is a false none: an eval finding, in place of a gap. One
 findings file holds the records that change a finding's state (none: no file).
 """
 import csv, re
@@ -14,6 +15,8 @@ WEB_SOURCES = HOME / "kb" / "_self" / "web-sources.md"
 ROUTE_HOST = re.compile(r"(?:[a-z0-9-]+\.)+[a-z]{2,}")
 FILE_SUFFIXES = ("txt", "md", "mdx", "json", "html", "xml", "csv", "py", "yml", "yaml")  # `llms.txt` is no host
 FAILED = re.compile(r"http-[45]\d\d|empty|truncated|error")  # fetch outcomes that count as failures on the host
+NO_PAGE = re.compile(r"http-[45]\d\d|empty|error")  # fetch outcomes with no page read: no evidence for a false none
+LEARN_LOCALE = re.compile(r"^/[a-z]{2}-[a-z]{2}(?=/|$)")  # Microsoft Learn's locale segment (agent_bench.norm_url)
 # the staging triggers (web-sources.md, "When a family needs staging"): the numbers a test holds equal to the doc
 STAGE_SHARE_ROWS = 25  # Share: a host backing at least this many rows of a root's _sources.csv
 STAGE_SHARE_PERCENT = 5  # Share: or at least this share of them
@@ -170,10 +173,11 @@ def default_pack(question):
     return kbfacts.pack(question, fmt="concise")
 
 
-def miss_findings(e, res):
+def miss_findings(e, res, sources=None):
     """The findings of one judged miss after its re-run on HEAD: eval (an article answers it) with its fix, alias
     (the question uses a word the kb never holds) or expansion (every word is known: a paraphrase), or a gap
-    candidate (no candidate article answers it). All `fixed-since` when the re-run passes."""
+    candidate (no candidate article answers it). All `fixed-since` when the re-run passes. `sources`: the source ids
+    that led to the article `e["best"]` (a false none), kept in the eval finding's `observed`."""
     best = e.get("best")
     ok = passes(res, best)
     state = "fixed-since" if ok else "open"
@@ -183,7 +187,7 @@ def miss_findings(e, res):
                  "promotions": [{"from": "miss", "to": "candidate-gap", "by": "learn"}], "entry": e["id"],
                  "observed": obs}]
     out = [{"id": finding_id("eval", e["id"]), "kind": "eval", "state": state, "stage": "miss", "entry": e["id"],
-            "expect": best, "observed": obs}]
+            "expect": best, "observed": {**obs, "sources": list(sources)} if sources else obs}]
     if not ok:
         terms = unknown_words(e["question"], res)
         if terms:
@@ -193,6 +197,80 @@ def miss_findings(e, res):
             out.append({"id": finding_id("expansion", e["id"]), "kind": "expansion", "state": "open", "stage": "miss",
                         "entry": e["id"], "article": best, "observed": obs})
     return out
+
+
+# ---------------------------------------------------------------- a false none: the kb cites a page the lookup fetched
+
+def page_key(host, path):
+    """A page as a comparable key: host and path in lower case, without www, Learn's locale segment, query, fragment,
+    trailing slash or `.md` (a page's source row may name its Markdown form). None without a host."""
+    if not isinstance(host, str) or not host.strip():
+        return None
+    host = host.strip().lower()
+    host = host[4:] if host.startswith("www.") else host
+    path = str(path or "").split("#")[0].split("?")[0].strip().lower().rstrip("/")
+    if path.endswith(".md"):
+        path = path[:-3].rstrip("/")
+    if host == "learn.microsoft.com":
+        path = LEARN_LOCALE.sub("", path)
+    return host + path
+
+
+class KbPages:
+    """The pages the kb cites, read at HEAD once and only when a lookup needs them: `match(entry)` gives the article
+    that a none entry's fetched pages point at and the ids of the sources it matched."""
+
+    def __init__(self):
+        self._ids = None
+        self._lines = {}
+
+    def source_ids(self, key):
+        """The ids of the sources (every root's _sources.csv) whose url is the page `key`."""
+        import kbfacts
+        if self._ids is None:
+            self._ids = {}
+            for sid, row in kbfacts.source_rows().items():
+                k = page_key(*host_path(row.get("url") or ""))
+                if k:
+                    self._ids.setdefault(k, []).append(sid)
+        return self._ids.get(key, [])
+
+    def article_lines(self, sid):
+        """{article: the number of its lines citing source `sid`}: articles only, never data files or ledgers."""
+        import kbfacts
+        if sid not in self._lines:
+            arts = kbfacts.articles()
+            counts = {}
+            for path, _ in kbfacts.cited_lines([sid]).get(sid, []):
+                if path in arts:
+                    counts[path] = counts.get(path, 0) + 1
+            self._lines[sid] = counts
+        return self._lines[sid]
+
+    def match(self, e):
+        """(article, source ids) for a none entry whose fetched pages the kb cites (a false none), else None: the
+        pages the entry fetched (a fetch that read no page aside) whose host and path a source row holds, and the
+        article with the most lines citing those sources (ties by path). Only sources an article cites count."""
+        if e.get("verdict") != "none":
+            return None
+        items = [f for f in e.get("fetches") or [] if isinstance(f, dict)]
+        if e.get("host"):
+            items.append({k: e[k] for k in FETCH_KEYS if k in e})
+        ids = []
+        for f in items:
+            if isinstance(f.get("outcome"), str) and NO_PAGE.fullmatch(f["outcome"]):
+                continue
+            key = page_key(f.get("host"), f.get("path"))
+            for sid in self.source_ids(key) if key else []:
+                if sid not in ids and self.article_lines(sid):
+                    ids.append(sid)
+        totals = {}
+        for sid in ids:
+            for art, n in self.article_lines(sid).items():
+                totals[art] = totals.get(art, 0) + n
+        if not totals:
+            return None
+        return min(totals, key=lambda a: (-totals[a], a)), sorted(ids)
 
 
 def host_fetches(entries):
@@ -258,17 +336,20 @@ def later_stage(prev, rec):
 
 def learn(store=None, pack=None, kb_commit=None, registry=None, routes=None, counts=None, out=print):
     """One learn over `store` (default: the local store beside the spool): every judged miss re-run with `pack` on
-    HEAD, the source findings, then one findings file holding only the records that change a finding's state. 0."""
+    HEAD (a none entry whose fetched pages the kb cites is an eval finding for the article citing them most), the
+    source findings, then one findings file holding only the records that change a finding's state. 0."""
     store = Path(store or places()[0] / "store")
     pack = pack or default_pack
     entries = store_entries(store)
     if not entries:
         out("learn: no run files")
         return 0
-    derived = {}
+    derived, pages = {}, KbPages()
     for _, e in entries:
         if is_miss(e):
-            for rec in miss_findings(e, pack(e["question"])):
+            hit = pages.match(e)  # a false none: the kb cites a page the lookup fetched, so an eval and no gap
+            for rec in miss_findings({**e, "best": hit[0]} if hit else e, pack(e["question"]),
+                                     hit[1] if hit else None):
                 derived[rec["id"]] = rec
     for rec in source_findings(entries, registry, routes, counts):
         derived[rec["id"]] = rec
