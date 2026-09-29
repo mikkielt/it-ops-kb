@@ -1,0 +1,27 @@
+{
+  "id": "BG-6atznqdu",
+  "kind": "bug",
+  "title": "kb_topics_for reads any server path on a server limited by --roots",
+  "status": "todo",
+  "parent": "EP-5sc7hr36",
+  "sprint": "SP-4udo5jmw",
+  "priority": "P1",
+  "rank": 0,
+  "severity": "S1",
+  "goal": "On a server limited by --roots (every kb_http.py), kb_topics_for refuses its paths argument with a tool error and still answers text, so no request reads, lists or confirms files outside the served roots; unlimited local servers keep paths; test_kb_http_topics_for_paths_refused calls it over HTTP with a path outside the served roots and proves the refusal",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/tests.py",
+      "-k",
+      "kb_http_topics_for_paths_refused"
+    ]
+  },
+  "touches": [
+    "_tools/kb_mcp.py",
+    "_tools/test_kb_http.py",
+    "kb/_self/tools.md",
+    "kb/_self/embedding.md",
+    "kb/_self/hosting.md"
+  ]
+}

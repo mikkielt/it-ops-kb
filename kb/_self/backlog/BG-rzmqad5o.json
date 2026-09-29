@@ -1,0 +1,24 @@
+{
+  "id": "BG-rzmqad5o",
+  "kind": "bug",
+  "title": "kb_http.py has no socket timeout, so a stalled body holds a thread",
+  "status": "todo",
+  "parent": "EP-5sc7hr36",
+  "sprint": "SP-4udo5jmw",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kb_http.py's handler has a socket timeout, so a client that announces a body under --max-body and never sends it is dropped instead of holding a thread; test_kb_http_guard_stalled_body_times_out proves it",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/tests.py",
+      "-k",
+      "kb_http_guard_stalled_body_times_out"
+    ]
+  },
+  "touches": [
+    "_tools/kb_http.py",
+    "_tools/test_kb_http.py"
+  ]
+}

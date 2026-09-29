@@ -2,7 +2,7 @@
   "id": "ST-brxajkgl",
   "kind": "story",
   "title": "Review sprint: Copilot Studio reaches the kb both ways",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-4udo5jmw",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,6 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "claimed_by": "orchestrator"
 }
