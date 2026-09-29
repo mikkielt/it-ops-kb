@@ -31,7 +31,9 @@
         "keep it only when the evaluated ProjectAssetsFile does not exist (it then always fails, so this is dropping it with a note)",
         "keep it as is and document the risk"
       ],
-      "recommendation": "drop the call: packages come from -getItem:PackageReference"
+      "recommendation": "drop the call: packages come from -getItem:PackageReference",
+      "answer": "drop the call: packages come from -getItem:PackageReference",
+      "by": "operator"
     }
   ],
   "links": [
