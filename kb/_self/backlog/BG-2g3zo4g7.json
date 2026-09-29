@@ -2,7 +2,7 @@
   "id": "BG-2g3zo4g7",
   "kind": "bug",
   "title": "kbingest map passes relative PATH entries to mapper children",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-g5hizdko",
   "sprint": "SP-xourq2gj",
   "priority": "P2",
@@ -31,5 +31,29 @@
     "_tools/kbingest.py",
     "_tools/test_kbingest.py"
   ],
-  "claimed_by": "fix-2g3zo4g7"
+  "evidence": {
+    "commit": "c67a4dba6cd42bf9e61f827704b24696dba26186",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "kbingest"
+        ],
+        "exit": 0,
+        "sha256": "e3f9e8d2f33a3159"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "kbingest_map_path_absolute_only"
+        ],
+        "exit": 0,
+        "sha256": "ce7e97c9d425c266"
+      }
+    ]
+  }
 }
