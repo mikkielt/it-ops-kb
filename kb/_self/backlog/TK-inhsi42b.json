@@ -2,7 +2,7 @@
   "id": "TK-inhsi42b",
   "kind": "task",
   "title": "route-by-verdict benchmark scenario",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-fhlyypxw",
   "priority": "P1",
   "rank": 1,
@@ -33,5 +33,28 @@
     "kb/_self/reports/benchmarks.md"
   ],
   "notes": "The existing `router` scenario keeps its section, Routing by verdict; the new section needs its own name. agent_bench.WEB_Q has o1_offkb but no s5_none today.",
-  "claimed_by": "worker-inhsi42b"
+  "evidence": {
+    "commit": "438c1834ed42493e2e97169d9f0b0f29dd982a62",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/benchmarks.py",
+          "list"
+        ],
+        "exit": 0,
+        "sha256": "dca5f73927489a2c"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "test_benchmarks or test_agent_bench"
+        ],
+        "exit": 0,
+        "sha256": "d79e69d8188cb3e3"
+      }
+    ]
+  }
 }
