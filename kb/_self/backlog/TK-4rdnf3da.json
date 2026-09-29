@@ -2,7 +2,7 @@
   "id": "TK-4rdnf3da",
   "kind": "task",
   "title": "Go and Rust mappers",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-55lva2xl",
   "priority": "P2",
   "rank": 2,
@@ -50,5 +50,6 @@
       "answer": "approve",
       "by": "operator"
     }
-  ]
+  ],
+  "claimed_by": "worker-4rdnf3da"
 }
