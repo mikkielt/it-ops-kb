@@ -1,0 +1,17 @@
+{
+  "id": "BG-kpv2cxxw",
+  "kind": "bug",
+  "title": "kb_mcp.py upstream() falls back to origin/HEAD instead of the integration remote",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kb_mcp.upstream() reads the integration remote (kbpublic.integration_remote) instead of the string origin/HEAD and origin/main, and the origin scan in TestRemoteRoles no longer names kb_mcp.py.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys, pathlib; sys.exit(int('origin/' in pathlib.Path('_tools/kb_mcp.py').read_text(encoding='utf-8')))"
+    ]
+  }
+}
