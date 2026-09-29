@@ -22,8 +22,9 @@
   rag.py src S1824 --cited                 also every file line that names the id
   rag.py eval [--file FILE]                pack against the lookup eval sets (every root's lookup_eval.csv, or FILE):
                                            expected article found, verdict
-  rag.py topics-for PATH... | --keywords TEXT   kb topics that code touches, from the curated code signals in each
-                                           root's signals.csv (e.g. PublicClientApplication -> public/auth/msal-public-client)
+  rag.py topics-for PATH... | --keywords TEXT [--imports]   kb topics that code touches, from the curated code signals in
+                                           each root's signals.csv (e.g. PublicClientApplication -> public/auth/msal-public-client);
+                                           --imports matches only the packages the files declare, not comments or strings
 
 Roots: every command spans all roots (kb/public, a team's kb/<name>/, KB_ROOTS) and prints qualified paths and
 topics (`public/intune/x.md:12`); --root NAME (topics, search, pack, facts, audit) keeps one root. A DOMAIN or PREFIX
@@ -285,6 +286,7 @@ def main():
     au.add_argument("--format", choices=FORMATS, default="concise")
     tf = sub.add_parser("topics-for"); tf.add_argument("paths", nargs="*", help="files or directories of the code to map")
     tf.add_argument("--keywords", help="text to map instead of (or as well as) files")
+    tf.add_argument("--imports", action="store_true", help="match the signals against the packages the files declare (imports, manifests), not their text")
     ev = sub.add_parser("eval"); ev.add_argument("--file", help="one eval file (default: every root's lookup_eval.csv)")
     w = sub.add_parser("show"); w.add_argument("target"); w.add_argument("-n", type=positive_int, default=40)
     a = ap.parse_args()
@@ -374,7 +376,7 @@ def main():
     elif a.cmd == "topics-for":
         if not a.paths and not a.keywords:
             sys.exit("topics-for: give files or directories, or --keywords TEXT")
-        res = kbfacts.topics_for(a.paths, a.keywords or "")
+        res = kbfacts.topics_for(a.paths, a.keywords or "", imports=a.imports)
         if a.json:
             return print(json.dumps(res, indent=1))
         print(kbfacts.format_topics_for(res))

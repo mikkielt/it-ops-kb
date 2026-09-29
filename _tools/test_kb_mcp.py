@@ -18,6 +18,9 @@ TestPluginManifest  .claude-plugin/marketplace.json and the two plugins: it-ops-
                 dispatch (test_kb_worker_dispatch*): /kb-sprint run starts tasks and subtasks on it with no model
                 override, S1 and S2 bugs and breakdowns on the session model; the review, /kb-census and the
                 runbook agree.
+test_kb_topics_for_imports_arg_*  the imports argument of kb_topics_for and rag.py topics-for --imports reach imports mode
+                (a comment's name finds nothing, a declared package does); only the boolean true switches it; under --roots it
+                goes with text; a planted ignored argument is caught.
 test_embed_roots_*  `--roots NAME[,NAME]` (a host embedding the server): only the named roots in every tool and
                 kb_status, every root without it, and an unknown or missing name refused at the start on stderr.
 test_status_*   how far a clone or an installed plugin is behind the kb it follows, from local refs: the update
@@ -42,6 +45,8 @@ from pathlib import Path
 import pytest
 
 from conftest import KB, P, Q, TOOLS, git_env
+
+import kb_mcp  # noqa: E402  (conftest puts _tools on sys.path)
 
 SERVER = os.path.join(TOOLS, "kb_mcp.py")
 REMOTE = "git@gitlab.com:mikkielt/it-ops-kb.git"
@@ -776,6 +781,74 @@ def test_embed_roots_serves_only_the_named_root(tmp_path):
     assert "census_log: none" in status and "sources: 1 (0 superseded)" in status, status
     assert out[9][0] and "no root 'public'; roots: fixture" in out[9][1], out[9]
     assert "fixture/print/queues" in out[10][1] and "public/" not in out[10][1], out[10][1]
+
+
+MSAL_TOPIC = "public/auth/msal-public-client"
+
+
+def imports_arg_code(tmp_path):
+    """A directory with one file that declares msal and one whose comment only mentions PublicClientApplication."""
+    (tmp_path / "app.py").write_text("import msal\n", encoding="utf-8", newline="\n")
+    (tmp_path / "note.py").write_text("# PublicClientApplication is mentioned here, never imported\nprint(1)\n",
+                                      encoding="utf-8", newline="\n")
+    return str(tmp_path)
+
+
+def imports_arg_problems(default, by_imports):
+    """What the imports argument must change between the default answer and the one with imports: [] when it does."""
+    problems = []
+    if "by their imports" in default or "PublicClientApplication" not in default:
+        problems.append("the default answer is not the lexical one")
+    if "by their imports (1 found)" not in by_imports:
+        problems.append("the answer with imports is not in imports mode")
+    if f"- {MSAL_TOPIC}  imports: msal (" not in by_imports:
+        problems.append("the declared package msal did not find its topic")
+    if "PublicClientApplication" in by_imports:
+        problems.append("a name in a comment matched under imports")
+    return problems
+
+
+def test_kb_topics_for_imports_arg_reaches_imports_mode(tmp_path):
+    schema = next(t for t in kb_mcp.TOOL_LIST if t["name"] == "kb_topics_for")["inputSchema"]
+    assert schema["properties"]["imports"]["type"] == "boolean" and "imports" not in schema.get("required", [])
+    code = imports_arg_code(tmp_path)
+    default = kb_mcp.kb_topics_for({"paths": [code]})
+    by_imports = kb_mcp.kb_topics_for({"paths": [code], "imports": True})
+    assert not imports_arg_problems(default, by_imports), imports_arg_problems(default, by_imports)
+    assert kb_mcp.kb_topics_for({"paths": [code], "imports": False}) == default, "false is the default mode"
+    assert kb_mcp.kb_topics_for({"paths": [code], "imports": "true"}) == default, "only the boolean true switches"
+    text = kb_mcp.kb_topics_for({"text": "import msal\n", "imports": True})
+    assert f"- {MSAL_TOPIC}  imports: msal (text:1; msal)" in text, text
+
+
+def test_kb_topics_for_imports_arg_planted_failure(tmp_path):
+    """The checker fails when the argument is ignored, and when imports mode would read comments."""
+    code = imports_arg_code(tmp_path)
+    default = kb_mcp.kb_topics_for({"paths": [code]})
+    assert imports_arg_problems(default, default), "an ignored argument must be caught"
+    assert imports_arg_problems(default, default.replace("- ", "by their imports (1 found)\n- ")), "comment matches must be caught"
+
+
+def test_kb_topics_for_imports_arg_rag_flag(tmp_path):
+    code = imports_arg_code(tmp_path)
+    run = lambda *a: subprocess.run([sys.executable, os.path.join(TOOLS, "rag.py"), "topics-for", code, *a], capture_output=True,
+                                    text=True, encoding="utf-8", timeout=120, env=quiet_upstream()).stdout
+    assert not imports_arg_problems(run(), run("--imports")), run("--imports")
+    helped = subprocess.run([sys.executable, os.path.join(TOOLS, "rag.py"), "topics-for", "-h"], capture_output=True,
+                            text=True, encoding="utf-8", timeout=120).stdout
+    assert "--imports" in helped
+
+
+def test_kb_topics_for_imports_arg_under_roots_takes_text(tmp_path):
+    from test_kb_root import make_root
+    root = str(tmp_path / "team-kb")
+    make_root(root)
+    p, out = _embedded(root, "--roots", "fixture,public", calls=[
+        ("kb_topics_for", {"text": "import msal\n", "imports": True}),
+        ("kb_topics_for", {"paths": [str(tmp_path)], "imports": True})])
+    assert p.returncode == 0, p.stderr
+    assert not out[1][0] and f"- {MSAL_TOPIC}  imports: msal (text:1; msal)" in out[1][1], out[1]
+    assert out[2][0] and "paths is off" in out[2][1], out[2]
 
 
 def test_embed_roots_names_several_roots_and_status_follows(tmp_path):

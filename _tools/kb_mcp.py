@@ -29,6 +29,7 @@ Tools (all read-only; the kb_* tools wrap rag.py and kbfacts.py and read the kb 
              kb_status and that line then name no local path and no update command (behind_note).
   kb_topics_for  kb topics that code touches, like `rag.py topics-for`: the curated signals of each root's signals.csv
              found in the files or text given (paths relative to the host project, CLAUDE_PROJECT_DIR or the cwd);
+             imports=true matches only the packages the files declare (imports, manifests), not comments or strings;
              a server limited to named roots (--roots) refuses paths, which would read its own files, and takes text
 
 Live docs (the unlimited stdio server only: off under --roots and with KB_LIVE_DOCS=0, and kb_http.py never serves them): two more tools call the remote
@@ -162,7 +163,8 @@ TOOL_LIST = [
      "inputSchema": {"type": "object", "properties": {
          "paths": {"type": "array", "items": {"type": "string"}, "maxItems": 200,
                    "description": "files or directories of the code (absolute, or relative to the project directory)"},
-         "text": {"type": "string", "description": "code or keywords to map instead of (or as well as) files"}},
+         "text": {"type": "string", "description": "code or keywords to map instead of (or as well as) files"},
+         "imports": {"type": "boolean", "description": "match only declared packages, not comments or strings"}},
          "additionalProperties": False},
      "annotations": {"title": "kb topics for code", **READ_ONLY}},
 ]
@@ -502,7 +504,7 @@ def kb_topics_for(args):
         raise ToolError("paths is off on a server limited to named roots (--roots); give text")
     base = os.environ.get("CLAUDE_PROJECT_DIR") or os.getcwd()
     with guarded():
-        return kbfacts.format_topics_for(kbfacts.topics_for(paths, text, base))
+        return kbfacts.format_topics_for(kbfacts.topics_for(paths, text, base, imports=args.get("imports") is True))
 
 
 HANDLERS = {"kb_pack": kb_pack, "kb_facts": kb_facts, "kb_audit": kb_audit, "kb_search": kb_search, "kb_show": kb_show, "kb_source": kb_source, "kb_status": kb_status,
