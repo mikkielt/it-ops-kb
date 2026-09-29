@@ -1637,6 +1637,9 @@ MISS = {f"55555555-0000-4000-8000-0000000000{n}" for n in ("a1", "a2", "a3", "a4
 ANSWERED = "55555555-0000-4000-8000-0000000000a5"
 
 
+UNSTAGED = "docs.unstaged.example.com"  # the fixture store's level-0 host: no real registry or routes row serves it
+
+
 def learn_store(tmp_path, name="store"):
     """A copy of the fixture store: one run file with judged misses, an answered lookup and fetch.py requests."""
     dst = Path(tmp_path) / name
@@ -1708,9 +1711,11 @@ class TestLearn:
         assert all(r["stage"] == "miss" for r in recs if r["kind"] in ("eval", "alias", "expansion"))
         assert not any(r.get("entry") == ANSWERED for r in recs)  # an answered lookup is no miss
         src = {(r["signal"], r["host"]): r for r in recs if r["kind"] == "source"}
-        assert set(src) == {("stage", "www.anthropic.com"), ("stage", "arxiv.org"), ("route", "learn.microsoft.com")}
-        assert src[("stage", "www.anthropic.com")]["triggers"] == ["share"]
+        assert set(src) == {("stage", UNSTAGED), ("stage", "arxiv.org"), ("route", "learn.microsoft.com")}
+        assert src[("stage", UNSTAGED)]["triggers"] == ["failures"]
         assert src[("stage", "arxiv.org")]["triggers"] == ["failures"]
+        planted = ql_learn.source_findings(ql_store.store_entries(store), counts=({UNSTAGED: [(25, 400)]}, {}))
+        assert next(r for r in planted if r.get("host") == UNSTAGED)["triggers"] == ["share", "failures"]
         assert ql_store.store_problems(store) == []
 
     def test_learn_writes_findings_only(self, tmp_path, head_pack):
@@ -2050,7 +2055,7 @@ class TestSourceFindings:
         assert ql_learn.staging_level("raw.githubusercontent.com") == (3, "registry")
         assert ql_learn.staging_level("pypi.org") == (1, "routes")
         assert ql_learn.staging_level("platform.claude.com") == (1, "routes")
-        assert ql_learn.staging_level("www.anthropic.com") == (0, None)
+        assert ql_learn.staging_level(UNSTAGED) == (0, None)
         import kbcommon, provider  # a root's own _providers.csv counts as the registry
         team = tmp_path / "team"
         team.mkdir()
@@ -2080,15 +2085,15 @@ class TestSourceFindings:
         # learn.microsoft.com (registry) and pypi.org (routes) failed three times each, and learn.microsoft.com backs
         # far more than 25 sources: neither gets a stage finding
         assert ("stage", "learn.microsoft.com") not in hosts and ("stage", "pypi.org") not in hosts
-        assert ("stage", "www.anthropic.com") in hosts and ("stage", "arxiv.org") in hosts  # planted: level 0
+        assert ("stage", UNSTAGED) in hosts and ("stage", "arxiv.org") in hosts  # planted: level 0
 
     def test_source_findings_read_the_registry_and_the_routes_table(self, tmp_path, monkeypatch):
         import provider
         shared = tmp_path / "providers.csv"
-        row = ["anthropic", "www.anthropic.com/"] + [""] * (len(provider.COLS) - 2)
+        row = ["unstaged", UNSTAGED + "/"] + [""] * (len(provider.COLS) - 2)
         shared.write_text(Path(provider.SHARED).read_text(encoding="utf-8") + ",".join(row) + "\n",
                           encoding="utf-8", newline="\n")
-        assert ql_learn.registry_row("www.anthropic.com") is None
+        assert ql_learn.registry_row(UNSTAGED) is None
         monkeypatch.setattr(provider, "SHARED", str(shared))  # a registry row added: the host has level 3
         doc = ql_learn.WEB_SOURCES.read_text(encoding="utf-8").replace(
             "| PyPI |", "| `arxiv.org` | WebSearch | the abstract page | WebFetch |\n| PyPI |")
@@ -3887,7 +3892,7 @@ lookups: 16 (prompt 5, kb_ask 1, tool_fetch 10)
 verdicts: good 3, weak 1, none 2, no verdict 10
 judged: answered 1, partly 1, missed 3, not judged 11
 misses: 4, fixed: 2 (by the kb since 1, by apply 1, by research 0)
-fetches: 11, failed 9, result characters 1079632
+fetches: 13, failed 12, result characters 1079632
 usage: 0 of 16 lookups
 runs: 1, entries dropped by redaction 2
 finding records written: 8
