@@ -2,7 +2,7 @@
   "id": "BG-5wn4zjua",
   "kind": "bug",
   "title": "backlog.md says every CI job is manual, but kb-tests-windows starts on its own for tool changes",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-5p4ahbnq",
   "sprint": "SP-76inhw33",
   "priority": "P2",
@@ -22,5 +22,6 @@
   ],
   "depends_on": [
     "TK-hzci7jsp"
-  ]
+  ],
+  "claimed_by": "orchestrator-SP-76inhw33"
 }
