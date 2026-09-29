@@ -2,7 +2,7 @@
   "id": "TK-aks64xqa",
   "kind": "task",
   "title": "Convergence test over learn, apply, red-pipeline and survey",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-xp6nkjxi",
   "priority": "P2",
   "rank": 0,
@@ -20,5 +20,6 @@
   "touches": [
     "_tools/test_querylog_e2e.py",
     "_tools/fixtures/**"
-  ]
+  ],
+  "claimed_by": "worker-aks64xqa"
 }

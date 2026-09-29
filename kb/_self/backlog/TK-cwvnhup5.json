@@ -2,7 +2,7 @@
   "id": "TK-cwvnhup5",
   "kind": "task",
   "title": "kb-worker agent pinned to the sonnet alias",
-  "status": "draft",
+  "status": "doing",
   "parent": "ST-ry4squft",
   "priority": "P1",
   "rank": 0,
@@ -20,5 +20,6 @@
   "touches": [
     ".claude/agents/kb-worker.md",
     "_tools/test_kb_mcp.py"
-  ]
+  ],
+  "claimed_by": "worker-cwvnhup5"
 }

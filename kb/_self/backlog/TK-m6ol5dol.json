@@ -2,7 +2,7 @@
   "id": "TK-m6ol5dol",
   "kind": "task",
   "title": "Test that autonomous writers push only through kbgit.py sync --push",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-6dszsvk5",
   "priority": "P2",
   "rank": 0,
@@ -22,5 +22,6 @@
     "_tools/ql_deliver.py",
     "_tools/ql_research.py",
     "_tools/kbingest.py"
-  ]
+  ],
+  "claimed_by": "worker-m6ol5dol"
 }

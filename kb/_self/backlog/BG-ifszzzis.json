@@ -2,7 +2,7 @@
   "id": "BG-ifszzzis",
   "kind": "bug",
   "title": "Work lands for items outside a started sprint and nothing flags it",
-  "status": "draft",
+  "status": "doing",
   "sprint": "SP-liemltg2",
   "priority": "P1",
   "rank": 0,
@@ -47,5 +47,6 @@
   "relates_to": [
     "BG-iqqigub7"
   ],
-  "notes": "Failure it answers: commit 527223d landed TK-5s6ehtxp “Commit install-python.ps1 with a planted-conflict test and its docs” while its sprint SP-fep4fpsx “Windows ready” was planned, the task unclaimed and its dependency TK-cdoww36l open; check printed errors=0. Planned sprints also hold todo items (Windows ready, Ingestion maps code natively, Work has a measured cost and others) although the runbook keeps them draft until start. History stays as it is: check-trailers judges only commits not yet on origin/main."
+  "notes": "Failure it answers: commit 527223d landed TK-5s6ehtxp “Commit install-python.ps1 with a planted-conflict test and its docs” while its sprint SP-fep4fpsx “Windows ready” was planned, the task unclaimed and its dependency TK-cdoww36l open; check printed errors=0. Planned sprints also hold todo items (Windows ready, Ingestion maps code natively, Work has a measured cost and others) although the runbook keeps them draft until start. History stays as it is: check-trailers judges only commits not yet on origin/main.",
+  "claimed_by": "worker-ifszzzis"
 }
