@@ -2,7 +2,7 @@
   "id": "ST-mmmn42ks",
   "kind": "story",
   "title": "The kb covers the server side of the git regime",
-  "status": "todo",
+  "status": "done",
   "parent": "EP-rumrqsu5",
   "sprint": "SP-v5xagbyv",
   "priority": "P2",
@@ -83,5 +83,82 @@
     "kb/public/gitlab/automated-merge-requests.md",
     "kb/public/_answers.md#QK-each-host-enforce-server-side-content"
   ],
-  "notes": "The five pack checks pass at HEAD and are regression guards: a pack reads good on shared words, so they alone prove no new fact. The kb holds the facts they ask for (the linked articles, summed up in QK-each-host-enforce-server-side-content), so TK-ldv7zzb5 “Research GitHub rulesets, branch protection and auto-merge for a public repository” and TK-rjkyylzq “Research GitLab push mirroring and push options on self-managed instances” need only backlog.py done. The two grep checks are TK-yoyjegdq's and fail today. Worked with /kb-research."
+  "notes": "The five pack checks pass at HEAD and are regression guards: a pack reads good on shared words, so they alone prove no new fact. The kb holds the facts they ask for (the linked articles, summed up in QK-each-host-enforce-server-side-content), so TK-ldv7zzb5 “Research GitHub rulesets, branch protection and auto-merge for a public repository” and TK-rjkyylzq “Research GitLab push mirroring and push options on self-managed instances” need only backlog.py done. The two grep checks are TK-yoyjegdq's and fail today. Worked with /kb-research.",
+  "evidence": {
+    "commit": "17a714bdd1c1f38ec804a75813e6b4dd2fe3f8c6",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/rag.py",
+          "pack",
+          "GitHub rulesets branch protection public repository"
+        ],
+        "exit": 0,
+        "sha256": "e4fee5e763bf000b"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/rag.py",
+          "pack",
+          "GitHub auto-merge pull request required status checks"
+        ],
+        "exit": 0,
+        "sha256": "ad360aad270aa85d"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/rag.py",
+          "pack",
+          "GitLab push mirroring tier self-managed"
+        ],
+        "exit": 0,
+        "sha256": "fd00392c64c79770"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/rag.py",
+          "pack",
+          "GitLab push options merge_request.create self-managed"
+        ],
+        "exit": 0,
+        "sha256": "c250eb337ff7e755"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/rag.py",
+          "pack",
+          "CI tell merge request merge from direct push commit association API"
+        ],
+        "exit": 0,
+        "sha256": "18375b8ff3d80b83"
+      },
+      {
+        "run": [
+          "grep",
+          "-c",
+          "-i",
+          "-E",
+          "branch pipeline.*(auto-merge|merge check)|(auto-merge|merge check).*branch pipeline",
+          "kb/public/gitlab/automated-merge-requests.md"
+        ],
+        "exit": 0,
+        "sha256": "4355a46b19d348dc"
+      },
+      {
+        "run": [
+          "grep",
+          "-c",
+          "permission not read",
+          "kb/public/gitlab/detecting-mr-merges-in-ci.md"
+        ],
+        "exit": 1,
+        "sha256": "9a271f2a916b0b6e"
+      }
+    ]
+  }
 }
