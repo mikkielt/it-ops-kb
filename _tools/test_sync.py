@@ -537,6 +537,185 @@ class FixtureOrigin:
                 if n.endswith(".json")]
 
 
+RECORD_OPTIONS = """#!/bin/sh
+n=${GIT_PUSH_OPTION_COUNT:-0}
+i=0
+while [ "$i" -lt "$n" ]; do
+  eval "echo \\"\\$GIT_PUSH_OPTION_$i\\""
+  i=$((i + 1))
+done >> "$(dirname "$0")/../pushed-options.txt"
+echo "--" >> "$(dirname "$0")/../pushed-options.txt"
+"""
+
+
+@requires_git
+@pytest.mark.git
+class TestCodeLaneSync(SyncScenario):
+    """sync --push by lane against local bare remotes: content to main, code as a code/<id> branch with the merge
+    request push options (or without them when the remote does not advertise them)."""
+
+    @pytest.fixture
+    def world(self, tmp_path, kb_seed):
+        env = git_env(KB_SYNC_NO_TESTS="1")
+        remote, (a, b), base = clones(kb_seed, str(tmp_path), env, ("a", "b"))
+        w = type("World", (), {})()
+        w.env, w.remote, w.a, w.b, w.base, w.bare = env, remote, a, b, base, Repo(remote, env)
+        return w
+
+    @staticmethod
+    def advertise(w, on=True):
+        w.bare.git("config", "receive.advertisePushOptions", "true" if on else "false")
+        hook = Path(w.remote) / "hooks" / "pre-receive"
+        hook.write_text(RECORD_OPTIONS, encoding="utf-8", newline="\n")
+        hook.chmod(0o755)
+
+    @staticmethod
+    def options(w):
+        f = Path(w.remote) / "pushed-options.txt"
+        return [] if not f.exists() else [ln for ln in f.read_text(encoding="utf-8").splitlines() if ln != "--"]
+
+    @classmethod
+    def content(cls, d, n):
+        url = f"https://learn.microsoft.com/en-us/sync-test/lane{n}"
+        cls.add_source(d, "S-", url, f"lane{n}")
+        cls.article(d, f"lane{n}", [kbid.source_id(url)], [f"Lane fact {n}."])
+        cls.commit(d, f"docs(kb): lane test {n}")
+
+    @staticmethod
+    def code(d, n, work=None):
+        d.write(f"_tools/lane_test_{n}.txt", f"code {n}\n")
+        d.git("add", "-A")
+        d.git("commit", "-q", "-m", f"chore(tools): lane test {n}" + (f"\n\nKB-Work: {work}" if work else ""))
+
+    @staticmethod
+    def item(d, i):
+        """A sprint item (exempt from the claim rule) so a commit may name it in KB-Work."""
+        d.write(f"kb/_self/backlog/{i}.json", json.dumps({"id": i, "kind": "sprint", "title": "Lane test", "status": "active",
+                                                          "goal": "Lane test"}, indent=2) + "\n")
+        d.git("add", "-A")
+        d.git("commit", "-q", "-m", f"chore(backlog): plan {i}")
+
+    def branches(self, w):
+        return sorted(x.strip().replace("refs/heads/", "") for x in w.bare.git("for-each-ref", "--format=%(refname)", "refs/heads/").split())
+
+    def test_content_only_goes_to_main(self, world):
+        w = world
+        self.advertise(w)
+        self.content(w.a, 1)
+        r = w.a.kbgit("sync", "--push")
+        assert r.returncode == 0, r.stdout + r.stderr
+        assert self.branches(w) == ["main"]
+        assert w.bare.rev("main") == w.a.rev("HEAD")
+        assert self.options(w) == []
+        assert "lane: code" not in r.stdout
+
+    def test_code_goes_to_a_branch_with_options(self, world):
+        w = world
+        self.advertise(w)
+        self.code(w.a, 1)
+        head = w.a.rev("HEAD")
+        d = w.a.kbgit("sync", "--dry-run", "--push")
+        assert "lane: code" in d.stdout and f"code/{head[:9]}" in d.stdout and self.branches(w) == ["main"], d.stdout
+        r = w.a.kbgit("sync", "--push")
+        assert r.returncode == 0, r.stdout + r.stderr
+        branch = f"code/{head[:9]}"
+        assert self.branches(w) == [branch, "main"]
+        assert w.bare.rev("main") == w.base and w.bare.rev(branch) == head
+        assert w.a.rev("main") == head
+        assert self.options(w) == ["merge_request.create", "merge_request.target=main", "merge_request.auto_merge",
+                                   "merge_request.remove_source_branch"]
+        assert "main did not move" in r.stdout
+
+    def test_mixed_range_rides_content_along(self, world):
+        w = world
+        self.advertise(w)
+        self.content(w.a, 2)
+        self.code(w.a, 2)
+        self.content(w.a, 3)
+        r = w.a.kbgit("sync", "--push")
+        assert r.returncode == 0, r.stdout + r.stderr
+        assert w.bare.rev("main") == w.base
+        (branch,) = [x for x in self.branches(w) if x.startswith("code/")]
+        assert w.bare.rev(branch) == w.a.rev("HEAD")
+        assert w.bare.git("rev-list", "--count", f"{w.base}..{branch}").strip() >= "3"
+
+    def test_no_push_options_falls_back_and_says_so(self, world):
+        w = world
+        self.advertise(w, on=False)
+        self.code(w.a, 4)
+        r = w.a.kbgit("sync", "--push")
+        assert r.returncode == 0, r.stdout + r.stderr
+        assert any(x.startswith("code/") for x in self.branches(w))
+        assert self.options(w) == []
+        assert "does not support push options: open a merge or pull request from code/" in r.stdout, r.stdout
+
+    def test_repush_after_main_moved_uses_a_lease(self, world):
+        w = world
+        self.advertise(w)
+        self.item(w.a, "TK-aaaaaaaa")
+        self.code(w.a, 5, work="TK-aaaaaaaa")
+        first_run = w.a.kbgit("sync", "--push")
+        assert first_run.returncode == 0, first_run.stdout + first_run.stderr
+        (branch,) = [x for x in self.branches(w) if x.startswith("code/")]
+        first = w.bare.rev(branch)
+        self.content(w.b, 5)
+        assert w.b.kbgit("sync", "--push").returncode == 0  # main moves
+        self.advertise(w)
+        Path(w.remote, "pushed-options.txt").unlink()
+        r = w.a.kbgit("sync", "--push")
+        assert r.returncode == 0, r.stdout + r.stderr
+        assert "lease" in r.stdout
+        assert w.bare.rev(branch) != first and w.bare.rev(branch) == w.a.rev("HEAD")
+        assert w.bare.rev("main") == w.b.rev("HEAD")
+        assert "merge_request.auto_merge" in self.options(w)
+
+    def test_lease_refuses_a_branch_someone_else_moved(self, world, monkeypatch, capsys):
+        w = world
+        self.advertise(w)
+        self.item(w.a, "TK-aaaaaaaa")
+        self.code(w.a, 6, work="TK-aaaaaaaa")
+        first_run = w.a.kbgit("sync", "--push")
+        assert first_run.returncode == 0, first_run.stdout + first_run.stderr
+        (branch,) = [x for x in self.branches(w) if x.startswith("code/")]
+        self.content(w.b, 6)
+        assert w.b.kbgit("sync", "--push").returncode == 0
+        w.a.git("fetch", "-q", "origin")
+        w.a.git("rebase", "-q", "origin/main")  # not an ancestor of the remote branch any more
+        theirs = w.b.rev("HEAD")
+        w.b.git("checkout", "-q", "-b", "other")
+        real, moved = kbgit.gitx, []
+
+        def racing(*args, **kw):
+            if args and args[0] == "push" and not moved:
+                moved.append(1)
+                w.b.git("push", "-q", "origin", f"{theirs}:refs/heads/{branch}", "--force", "--no-verify")
+            return real(*args, **kw)
+
+        monkeypatch.setattr(kbgit, "KB", w.a.path)
+        monkeypatch.setattr(kbgit, "gitx", racing)
+        ns = type("A", (), dict(remote="origin", branch="main"))()
+        r = {"notes": []}
+        assert kbgit.push_branch(ns, r, branch, "origin/main") == 1
+        out = capsys.readouterr().out
+        assert "nothing was overwritten" in out and branch in out
+        assert w.bare.rev(branch) == theirs
+
+    def test_branch_id_is_the_first_work_id(self, world, monkeypatch):
+        w = world
+        self.code(w.a, 7, work="TK-aaaaaaaa")
+        self.code(w.a, 8, work="TK-bbbbbbbb")
+        monkeypatch.setattr(kbgit, "KB", w.a.path)
+        assert kbgit.lane_plan(w.base, "HEAD") == ("code", "code/TK-aaaaaaaa")
+        assert kbgit.lane_plan(w.a.rev("HEAD"), "HEAD") == ("content", None)
+
+    def test_only_code_branches_are_pushed_this_way(self, world, monkeypatch, capsys):
+        w = world
+        monkeypatch.setattr(kbgit, "KB", w.a.path)
+        ns = type("A", (), dict(remote="origin", branch="main"))()
+        assert kbgit.push_branch(ns, {"notes": []}, "main", "origin/main") == 2
+        assert "not a code/*" in capsys.readouterr().out
+
+
 def red(pid):
     def ci(argv):
         if argv[1:3] == ["auth", "status"]:
