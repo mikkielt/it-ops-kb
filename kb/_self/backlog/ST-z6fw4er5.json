@@ -2,7 +2,7 @@
   "id": "ST-z6fw4er5",
   "kind": "story",
   "title": "kb_http.py serves the kb over Streamable HTTP",
-  "status": "todo",
+  "status": "done",
   "parent": "EP-5sc7hr36",
   "sprint": "SP-4udo5jmw",
   "priority": "P2",
@@ -20,5 +20,20 @@
   ],
   "relates_to": [
     "TK-yittxcs5"
-  ]
+  ],
+  "evidence": {
+    "commit": "c96e48e770f8131edbf36f9864d2f79e606afb0d",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "kb_http"
+        ],
+        "exit": 0,
+        "sha256": "8f3083f978a04bbf"
+      }
+    ]
+  }
 }

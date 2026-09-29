@@ -2,7 +2,7 @@
   "id": "TK-otvfwb4a",
   "kind": "task",
   "title": "Document kb_http.py in tools, plugin and design docs",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-z6fw4er5",
   "priority": "P2",
   "rank": 3,
@@ -36,5 +36,28 @@
     "TK-3tcjb42a",
     "TK-aitnzkal"
   ],
-  "claimed_by": "http-doc-agent"
+  "evidence": {
+    "commit": "c96e48e770f8131edbf36f9864d2f79e606afb0d",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/selfdoc.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "3db513ebafdfe3a2"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "selfdoc"
+        ],
+        "exit": 0,
+        "sha256": "fdf89ea1b86f1d6c"
+      }
+    ]
+  }
 }

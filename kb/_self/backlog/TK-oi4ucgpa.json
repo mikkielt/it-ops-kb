@@ -2,7 +2,7 @@
   "id": "TK-oi4ucgpa",
   "kind": "task",
   "title": "hosting.md: path choice and the VM runbook",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-y6ee5kdv",
   "priority": "P2",
   "rank": 0,
@@ -36,5 +36,6 @@
     "kb/_self/hosting.md",
     "kb/_self/map.csv",
     "kb/_self/README.md"
-  ]
+  ],
+  "claimed_by": "hosting-agent"
 }
