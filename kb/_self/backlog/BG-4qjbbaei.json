@@ -1,0 +1,32 @@
+{
+  "id": "BG-4qjbbaei",
+  "kind": "bug",
+  "title": "backlog.py close leaves relates_to links to the items it deletes",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "backlog.py close removes the ids it deletes from every remaining item's relates_to (or refuses and names them), so backlog.py check passes right after a close; test_backlog.py's test_close_drops_relates_to plants an open item that relates to a closed one.",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/tests.py",
+      "-k",
+      "test_close_drops_relates_to"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "test_close_drops_relates_to"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/test_backlog.py"
+  ]
+}
