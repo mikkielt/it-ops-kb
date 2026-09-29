@@ -2,7 +2,7 @@
   "id": "TK-k3uqihdk",
   "kind": "task",
   "title": "kbgit.py bridge",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-mlrjf3lf",
   "priority": "P2",
   "rank": 0,
@@ -23,5 +23,6 @@
     "_tools/test_kbpublic.py",
     "kb/_self/git.md",
     "kb/_self/tools.md"
-  ]
+  ],
+  "claimed_by": "worker-k3uqihdk"
 }
