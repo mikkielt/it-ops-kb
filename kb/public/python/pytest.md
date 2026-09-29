@@ -3,7 +3,7 @@ topic: python/pytest
 priority: P2
 applies_to: [pytest]
 retrieved_utc: 2026-09-29
-sources: [S-kobs45hd, S-f5tpmzia, S-mgv7bfqe, S-h5gurdir, S-tivsgmaq, S-7pmymrvf, S-447ck3rx, S-4riqrsyi, S-kthrpvjf, S-6rttndpw]
+sources: [S-kobs45hd, S-f5tpmzia, S-mgv7bfqe, S-h5gurdir, S-tivsgmaq, S-7pmymrvf, S-447ck3rx, S-4riqrsyi, S-kthrpvjf, S-6rttndpw, S-ljxwhc7m, S-gmz4iyf3, S-ju3i6uxq, S-o7ja7dp2]
 status: complete
 ---
 
@@ -76,8 +76,20 @@ the built-in fixtures (`capsys`, `monkeypatch`, `tmp_path`, `tmp_path_factory`) 
 - pytest loads `conftest.py` files as local per-directory plugins: for each test path it loads `conftest.py` and `test*/conftest.py` beside it, parents first. For a `conftest.py` outside a package, `import conftest` can be ambiguous, so the docs advise to import nothing from a `conftest.py` (or to put it in a package). [DOC S-6rttndpw]
 - Splitting one test file into several in a flat test directory (no packages) is safe for discovery when each new file matches `python_files` (`test_*.py` here) and has a name no other test file uses; shared helpers belong in an ordinary importable module or in `conftest.py` fixtures, not in a helper imported from `conftest.py`. [DER S-4riqrsyi, S-6rttndpw, S-mgv7bfqe: from the import-mode and conftest rules above]
 
+### Speed: finding and removing repeated work
+- `--durations=N` shows the N slowest setup and test durations (`N=0` for all); `--durations-min` (default 0.005 s, 0.0 with `-vv`) is the shortest duration listed. [DOC S-mgv7bfqe, S-447ck3rx]
+- A fixture declared `scope="module"` is invoked once per test module instead of once per test function, and every test in the module gets the same instance; the docs give time-expensive setup (a network connection) as the reason. `scope` also accepts a callable (pytest 5.2+), run once at definition time with `fixture_name` and `config`, to choose the scope from a command-line option. [DOC S-ljxwhc7m]
+- `tmp_path_factory` is a session-scoped fixture that creates temporary directories from any fixture or test (`tmp_path_factory.mktemp("data")`); the docs' example builds an expensive file once per session in a `scope="session"` fixture instead of once per test in each `tmp_path`, to save time. [DOC S-gmz4iyf3]
+- Without `--basetemp`, `tmp_path` directories are created under `{temproot}/pytest-of-{user}/pytest-{num}/{testname}/`, where `{temproot}` is `tempfile.gettempdir()` unless the `PYTEST_DEBUG_TEMPROOT` environment variable overrides it; the last 3 run directories are kept by default. With `--basetemp=DIR`, `DIR` is used directly, is cleared blindly before each run, and keeps no older runs. [DOC S-gmz4iyf3, S-mgv7bfqe]
+- `-p no:NAME` stops a plugin from loading (for example `-p no:doctest`), on the command line, in `addopts`, or through `PYTEST_ADDOPTS` for one environment such as CI; the cache plugin behind `--lf` and `--ff` is named `cacheprovider`. [DOC S-447ck3rx, S-ju3i6uxq, S-o7ja7dp2]
+- `--disable-plugin-autoload` or `PYTEST_DISABLE_PLUGIN_AUTOLOAD` stops loading plugins found through entry points; only those given with `-p` or in `PYTEST_PLUGINS` then load (for example `PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 pytest -p xdist`). [DOC S-ju3i6uxq, S-mgv7bfqe]
+- The cache plugin keeps state between runs: `--lf` (`--last-failed`) runs only the previous failures, `--ff` (`--failed-first`) runs them first and then the rest, `--nf` (`--new-first`) runs new tests first and orders by file modification time, and `--lfnf none` with `--lf` runs nothing when there were no failures. [DOC S-o7ja7dp2]
+- `testpaths` limits where pytest looks for tests when none are named on the command line, which the reference says speeds up collection and avoids picking up unwanted tests; `norecursedirs` lists directory basename patterns that discovery does not enter. [DOC S-mgv7bfqe]
+- `--import-mode` takes `prepend` (default), `append` or `importlib`; the docs describe what each does to `sys.path` and module names, not a speed difference between them. [DOC S-mgv7bfqe, S-4riqrsyi]
+
 ## Reference
 - Related: `python/imports-and-modules.md` (`sys.path[0]`, circular imports, underscore names) and `gitlab/git-history-queries.md` (co-change and rename queries for a file split).
+- Speed of subprocess-heavy suites: `python/pytest-xdist.md` (worker count, distribution modes), `gitlab/git-test-repositories.md` (template repositories, local clones, fast-import), `python/interpreter-startup.md` (interpreter start options), `windows/dev-drive.md` and `defender/asr-and-antivirus.md` (where the temp root lives on Windows, and what not to exclude).
 - SNIPPET: this repository's INI-style pytest config (`[tool.pytest.ini_options]`); context: pytest 6.0+, pyproject.toml; checked: syntax [DOC S-kobs45hd,S-mgv7bfqe: `[tool.pytest.ini_options]` table, `testpaths`, `python_files` default, and `tmp_path_retention_policy` values]
 ```toml
 [tool.pytest.ini_options]

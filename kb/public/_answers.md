@@ -2213,3 +2213,16 @@ _Agent: kb-research_
 - See agents/codebase-mapping.md.
 
 _Agent: kb-research_
+
+## QK-subprocess-heavy-pytest-suite-run-faster. How can a subprocess-heavy pytest suite (throwaway git repositories, python and sh children) run faster on Windows without losing coverage?
+- Find the repeated work first: `--durations=N` lists the slowest setup and test durations, and `--collect-only -q` gives a list of test ids to compare before and after a change. [DOC S-mgv7bfqe, S-447ck3rx]
+- Build expensive state once: a `scope="module"` or `scope="session"` fixture runs once per module or session, and `tmp_path_factory.mktemp` gives it a directory; under xdist a session fixture runs once per worker. [DOC S-ljxwhc7m, S-gmz4iyf3, S-ng5lgn3p]
+- Copy a template repository instead of rebuilding it: a local `git clone` hard-links the objects, and `git fast-import` writes a whole history from one process; `gc.auto=0` and `maintenance.auto=false`, passed to every git child through `GIT_CONFIG_COUNT`, remove automatic housekeeping from repositories that live for one test. [DOC S-k2jlpd4u, S-4aovy2cm, S-miw74ti3, S-waqn37nq, S-kzv2kznr]
+- Start fewer interpreters: on Windows `subprocess` calls `CreateProcess()` for every child (no `vfork` or `posix_spawn`), `-S` and `-I` shorten the interpreter's start-up, and a test that does not need a real process can call a tool's `main()` in-process. [DOC S-dabwnzz5, S-d77lvlq4]
+- Size the worker pool knowingly: without `psutil`, `-n auto` gives one worker per logical CPU on Windows, and `PYTEST_XDIST_AUTO_NUM_WORKERS` sets it on every Python version; under `loadscope` one long class holds one worker to the end. [CODE S-qejsavhl: src/xdist/plugin.py#pytest_xdist_auto_num_workers]
+- On Windows, Defender real-time protection scans the files the suite creates; Microsoft's alternative to a folder exclusion is a trusted Dev Drive, where performance mode scans after the file open instead of during it. The per-user temp folder, pytest's default temp root, is on Microsoft's list of folders not to exclude; `--basetemp` or `PYTEST_DEBUG_TEMPROOT` moves the root. [DOC S-zhrbtrgz, S-mmdoupim, S-lkbn5y6v, S-gmz4iyf3]
+- Conclusion: most of the saving comes from not repeating setup (template repositories, fewer processes per test) and from a correct worker count, all without dropping a test; moving the temp root to a Dev Drive is a machine change for the operator, and its effect on this workload must be measured on the host. [DER S-k2jlpd4u, S-ljxwhc7m, S-qejsavhl, S-zhrbtrgz: from the bullets above]
+- Open: the per-process cost on Windows and how much Defender adds to it, the Dev Drive saving for this workload, and whether host scanning reaches writes inside a Hyper-V isolated CI container (see `_gaps.md`). [UNK]
+- See python/pytest.md, python/pytest-xdist.md, python/interpreter-startup.md, gitlab/git-test-repositories.md, windows/dev-drive.md, defender/asr-and-antivirus.md, windows/gitlab-runner-windows.md.
+
+_Agent: kb-research_

@@ -393,3 +393,15 @@ add_mutually_exclusive_group,python/stdlib-argparse-json
 sort_keys,python/stdlib-argparse-json
 extrasaction,python/stdlib-sqlite3-csv
 RFC 4180,python/stdlib-sqlite3-csv
+GIT_CONFIG_COUNT,gitlab/git-test-repositories
+git fast-import,gitlab/git-test-repositories
+maintenance.auto,gitlab/git-test-repositories
+PYTEST_DEBUG_TEMPROOT,python/pytest
+tmp_path_factory,python/pytest
+PYTEST_XDIST_AUTO_NUM_WORKERS,python/pytest-xdist
+--maxschedchunk,python/pytest-xdist
+PYTHON_CPU_COUNT,python/interpreter-startup
+-X importtime,python/interpreter-startup
+fsutil devdrv,windows/dev-drive
+PerformanceModeStatus,windows/dev-drive
+New-MpPerformanceRecording,defender/asr-and-antivirus
