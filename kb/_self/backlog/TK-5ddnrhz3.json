@@ -2,7 +2,7 @@
   "id": "TK-5ddnrhz3",
   "kind": "task",
   "title": ".NET and Node/TypeScript mappers",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-55lva2xl",
   "priority": "P2",
   "rank": 3,
@@ -51,5 +51,19 @@
       "by": "operator"
     }
   ],
-  "claimed_by": "worker-5ddnrhz3"
+  "evidence": {
+    "commit": "9d7b4e0c98312b7681e6ae85af5566c4fdc918a6",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "kbingest_map"
+        ],
+        "exit": 0,
+        "sha256": "6c3ce2f8be6cce7c"
+      }
+    ]
+  }
 }
