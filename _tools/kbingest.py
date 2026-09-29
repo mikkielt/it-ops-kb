@@ -37,6 +37,23 @@
       --showConfig`, `--listFilesOnly`) run per project directory. `tsc` is the one on PATH, never `npx` and never
       a program inside the worktree; a toolchain is never installed.
 
+  kbingest.py drift REPO [--rev NEW] [--root NAME] [--prefix TOPIC] [--remote HOST/PROJECT]
+      Read-only: writes no file. For each CODE fact (`[CODE S-id: path#symbol]`, or `path#L10-L20`) of the served roots
+      (or one --root, one --prefix) whose source row is a pinned url into this repository (the origin's host and
+      project, else --remote), compares the cited file at the url's commit with the file at NEW (default HEAD), both
+      read with `git cat-file`, and prints one tab-separated line per fact whose evidence differs:
+      `finding KIND KBPATH:LINE SOURCE-ID PATH#SYMBOL DETAIL`, then a `checked=N unchanged=N findings=N elsewhere=N`
+      line (`elsewhere`: CODE facts of other repositories, not compared). KIND is file-missing (the path is not at NEW
+      and git sees no rename), moved (renamed: the detail says what the symbol did there; or a line range that now
+      sits elsewhere), symbol-missing (no definition of the symbol at NEW: the detail tells whether it is still
+      mentioned), changed (the definition, or the lines of a range, read differently) or unverifiable (the pinned
+      commit or the file is not in the clone: fetch it). The symbol is the last segment of `Class.method` or
+      `mod::func`; a definition is found by a heuristic, not a parser: a keyword (def, class, function, fn, func,
+      struct, type, const, ...) then the name, the name at the start of a line as a key or constant, or a function head
+      `name(...) {` or with a type before it. Its body runs to the next line at the same or a lower indent, plus a
+      closing bracket, and is compared as text; a file that changed elsewhere, or a definition that only moved to
+      another line, is not a finding. It rewrites no fact, source row or date: the findings are for /kb-refresh.
+
 Everything is read at the commit (git ls-tree, check-attr --source, cat-file), never from the working tree, so the
 facts match the pinned urls. Left out, first reason wins:
   secret-file   names that hold keys or credentials: .env (not .env.example), *.pem, *.key, *.pfx, *.p12, *.jks,
@@ -56,16 +73,17 @@ Pinned urls: GitHub (github.com) as raw.githubusercontent.com/<owner>/<repo>/<co
 a self-managed host) as https://<host>/<project>/-/raw/<commit>/<path>. A host named neither github.com nor gitlab.*
 needs --forge; another forge gets no url (`url` refuses; the skill says what to do).
 
-Exit: 0 done, 1 `map` could not create its worktree, 2 refused (not a git repository, an unknown REV, `url` with no
-pinned url form, `map` with an unknown language or an --out under kb/).
+Exit: 0 done (`drift`: no finding), 1 `map` could not create its worktree or `drift` printed findings, 2 refused (not a
+git repository, an unknown REV, `url` with no pinned url form, `map` with an unknown language or an --out under kb/,
+`drift` with an unknown --root or a repository with no remote and no --remote).
 """
 import argparse, contextlib, json, os, posixpath, re, shutil, signal, subprocess, sys, tempfile
 from pathlib import Path
 from typing import NamedTuple
-from urllib.parse import quote, urlsplit
+from urllib.parse import quote, unquote, urlsplit
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-import kbcommon  # noqa: E402
+import kbcommon, kbfacts  # noqa: E402
 
 ATTRS = ("linguist-generated", "linguist-vendored", "gitlab-generated")
 KINDS = ("doc", "code", "config", "ci", "test", "other")
@@ -1560,6 +1578,222 @@ def cmd_map(a):
     return 0
 
 
+# ---------------------------------------------------------------- drift
+
+PIN_URLS = (re.compile(r"^https://raw\.githubusercontent\.com/([^/]+/[^/]+)/((?:refs/tags/)?[^/]+)/(.+)$"),
+            re.compile(r"^https://github\.com/([^/]+/[^/]+)/(?:blob|raw)/((?:refs/tags/)?[^/]+)/(.+)$"),
+            re.compile(r"^https://([^/?#]+/.+?)/-/(?:raw|blob)/((?:refs/tags/)?[^/?#]+)/(.+)$"))
+DEF_WORDS = ("def", "class", "function", "fn", "func", "fun", "struct", "enum", "trait", "interface", "type", "const",
+             "let", "var", "val", "static", "module", "namespace", "record", "impl", "filter", "workflow", "macro_rules!",
+             "configuration", "sub", "proc")
+MODIFIERS = (r"(?:(?:export|pub(?:\([^)]*\))?|public|private|protected|internal|static|async|abstract|override|final|"
+             r"extern|unsafe|default|declare|readonly|sealed|partial|virtual)\s+)*")
+NOT_A_TYPE = {"return", "await", "new", "throw", "yield", "else", "elif", "in", "and", "or", "not", "del", "print",
+              "assert", "raise", "case", "when", "if", "while", "for"}
+LINE_RANGE = re.compile(r"L(\d+)(?:-L?(\d+))?")
+
+
+def pin_parts(url):
+    """(host, project path, ref, file path) of a repository file url at a ref (GitHub raw or blob, GitLab -/raw or
+    -/blob), else None."""
+    for i, rx in enumerate(PIN_URLS):
+        m = rx.match(url.strip())
+        if m and not m.group(2).startswith("-"):  # a ref that looks like an option is no ref
+            rel = unquote(re.split(r"[?#]", m.group(3))[0])
+            if i < 2:
+                return "github.com", m.group(1), m.group(2), rel
+            host, _, project = m.group(1).partition("/")
+            return host.lower(), project, m.group(2), rel
+    return None
+
+
+def symbol_of(anchor):
+    """The name the last segment of a pointer's symbol gives (`Class.method`, `mod::func`, `a.b.key`), or None for
+    a line range (`L10-L20`)."""
+    segs = [s for s in re.split(r"[.:]+", anchor) if s]
+    return None if LINE_RANGE.fullmatch(anchor) or not segs else segs[-1]
+
+
+def indent_of(line):
+    return len(line) - len(line.lstrip())
+
+
+def definition_lines(lines, name):
+    """The 0-based indexes of the lines that define NAME, by a language-agnostic heuristic: a definition keyword
+    (def, class, function, fn, func, struct, type, const, ...) after any modifiers, then NAME as a whole word; or NAME
+    at the start of a line as a key or constant (`name:`, `name =`); or a function head (`name(...) {`, `name(...):`,
+    or a declaration with a type before NAME). A call is not a definition."""
+    n = re.escape(name)
+    word = rf"(?<![\w-]){n}(?![\w-])"
+    kw = re.compile(rf"^\s*{MODIFIERS}(?:{'|'.join(map(re.escape, DEF_WORDS))})\s[^\n]*?{word}")
+    key = re.compile(rf"^\s*{MODIFIERS}[\"']?{n}[\"']?\s*(?::|=(?!=))")
+    head = re.compile(rf"^\s*((?:[\w<>\[\],.*&?]+\s+)*){word}\s*\(")
+    found = []
+    for i, ln in enumerate(lines):
+        if kw.match(ln) or key.match(ln):
+            found.append(i)
+            continue
+        m = head.match(ln)
+        types = m.group(1).split() if m else []
+        if m and not (types and types[-1] in NOT_A_TYPE):
+            tail = ln.rstrip()
+            if tail.endswith(("{", ":")) or (types and not tail.endswith(";")):
+                found.append(i)
+    return found
+
+
+def span_of(lines, i):
+    """The definition at line I with its body: the following lines indented deeper (blank lines between them
+    included) and a closing `}`, `)` or `]` at the same indent."""
+    ind, out = indent_of(lines[i]), [lines[i]]
+    for ln in lines[i + 1:]:
+        if not ln.strip() or indent_of(ln) > ind:
+            out.append(ln)
+        else:
+            if indent_of(ln) == ind and ln.lstrip().startswith(("}", ")", "]")):
+                out.append(ln)
+            break
+    return "\n".join(x.rstrip() for x in out).rstrip()
+
+
+def blob_lines(repo, commit, rel, cache):
+    """The lines of file REL at COMMIT, or None when the commit has no such file (memoised in CACHE)."""
+    key = (commit, rel)
+    if key not in cache:
+        p = git(repo, "cat-file", "blob", f"{commit}:{rel}")
+        cache[key] = p.stdout.decode("utf-8", "replace").splitlines() if p.returncode == 0 else None
+    return cache[key]
+
+
+def renames(repo, old, new, cache):
+    """{old path: new path} of the files git sees renamed between the commits OLD and NEW."""
+    if (old, new) not in cache:
+        out = git(repo, "diff", "--name-status", "-M", "--diff-filter=R", "-z", old, new).stdout.split(b"\0")
+        cache[(old, new)] = {out[i + 1].decode("utf-8", "surrogateescape"): out[i + 2].decode("utf-8", "surrogateescape")
+                             for i in range(0, len(out) - 2, 3) if out[i].startswith(b"R")}
+    return cache[(old, new)]
+
+
+def compare_evidence(old_lines, new_lines, anchor):
+    """(kind, detail) when the evidence a pointer's ANCHOR names differs between two versions of a file, else None
+    (a line shift alone is no difference). Kinds: symbol-missing, changed, moved, unverifiable."""
+    rng = LINE_RANGE.fullmatch(anchor)
+    if rng:
+        a = int(rng.group(1))
+        b = int(rng.group(2) or a)
+        block = old_lines[a - 1:b] if 1 <= a <= b else []
+        if not block:
+            return "unverifiable", f"{anchor}: no such lines at the pinned commit"
+        if new_lines[a - 1:b] == block:
+            return None
+        for k in range(len(new_lines) - len(block) + 1):
+            if new_lines[k:k + len(block)] == block:
+                return "moved", f"lines {a}-{b} are now lines {k + 1}-{k + len(block)}"
+        return "changed", f"lines {a}-{b} no longer read as at the pinned commit"
+    name = symbol_of(anchor)
+    if name is None:
+        return "unverifiable", f"{anchor}: no symbol"
+    olds, news = definition_lines(old_lines, name), definition_lines(new_lines, name)
+    word = re.compile(rf"(?<![\w-]){re.escape(name)}(?![\w-])")
+    seen = sum(1 for x in new_lines if word.search(x))
+    if (olds and not news) or not seen:
+        return "symbol-missing", (f"{name} is no longer defined (still mentioned on {seen} lines)" if seen
+                                  else f"{name} does not occur")
+    if not olds:
+        return None if old_lines == new_lines else (
+            "changed", f"{name} has no definition the heuristic finds at the pinned commit, and the file changed")
+    want = span_of(old_lines, olds[0])
+    if any(span_of(new_lines, i) == want for i in news):
+        return None
+    return "changed", f"the definition of {name} differs (line {olds[0] + 1} at the pinned commit, line {news[0] + 1})"
+
+
+def drift_findings(repo, new, facts, sources, project):
+    """([(kb path, line, source id, pointer, kind, detail)], checked, elsewhere): each CODE citation in FACTS whose
+    source is a pinned url into the repository (PROJECT: host, lower-case project path) compared between the commit
+    of that url and NEW; `elsewhere` counts the citations of other sources."""
+    files, moves, commits, findings = {}, {}, {}, []
+    checked = elsewhere = 0
+    for u in facts:
+        for part in u["tags"]:
+            ptr = kbfacts.code_pointer(part) if part["kind"] == "CODE" else None
+            if not ptr:
+                continue
+            cands = []
+            for sid in part["ids"]:
+                pin = pin_parts((sources.get(sid) or {}).get("url") or "")
+                if pin and (pin[0], pin[1].lower()) == project:
+                    cands.append((sid, pin))
+            if not cands:
+                elsewhere += 1
+                continue
+            sid, pin = next(((s, p) for s, p in cands if p[3] == ptr[0] or p[3].endswith("/" + ptr[0])), cands[0])
+            checked += 1
+            path, anchor = ptr
+
+            def found(kind, detail):
+                findings.append((u["path"], u["line"], sid, f"{path}#{anchor}", kind, detail))
+            if pin[2] not in commits:
+                commits[pin[2]] = resolve(repo, pin[2])
+            old = commits[pin[2]]
+            if old is None:
+                found("unverifiable", f"the pinned commit {pin[2][:12]} is not in this clone")
+                continue
+            if old == new:
+                continue
+            before = blob_lines(repo, old, path, files)
+            if before is None:
+                found("unverifiable", f"{path} is not in the pinned commit {pin[2][:12]}")
+                continue
+            at, note = path, ""
+            after = blob_lines(repo, new, at, files)
+            if after is None:
+                at = renames(repo, old, new, moves).get(path)
+                if at is None:
+                    found("file-missing", f"{path} is not in {new[:12]}")
+                    continue
+                note, after = f"file moved to {at}", blob_lines(repo, new, at, files)
+            diff = compare_evidence(before, after or [], anchor)
+            if note:
+                found("moved", note + (f"; {diff[0]}: {diff[1]}" if diff else "; the cited evidence is unchanged"))
+            elif diff:
+                found(*diff)
+    return findings, checked, elsewhere
+
+
+def cmd_drift(a):
+    repo = Path(a.repo).expanduser().resolve()
+    new = resolve(repo, a.rev)
+    if new is None:
+        print(f"refused: {repo.name}: not a git repository, or {a.rev!r} names no commit")
+        return 2
+    if a.remote:
+        host, _, path = a.remote.strip().partition("/")
+        project = (host.lower(), path.strip("/").lower())
+    else:
+        r = remote_of(repo)
+        project = (r[1], r[2].lower()) if r else None
+    if not project or not project[1]:
+        print(f"refused: {repo.name} has no remote to match the source rows to; pass --remote HOST/PROJECT")
+        return 2
+    try:
+        names = [r.name for r in kbcommon.roots()]
+        if a.root and a.root not in names:
+            print(f"refused: no root {a.root!r} (roots: {', '.join(names)})")
+            return 2
+        facts = [u for u in kbfacts.units(a.prefix) if not a.root or kbfacts.root_name(u["path"]) == a.root]
+        sources = kbfacts.source_rows()
+    except (kbcommon.RootError, OSError) as e:
+        print(f"refused: {e}")
+        return 2
+    findings, checked, elsewhere = drift_findings(repo, new, facts, sources, project)
+    print(f"commit: {new} ({a.rev})")
+    for path, line, sid, label, kind, detail in sorted(findings):
+        print(f"finding\t{kind}\t{path}:{line}\t{sid}\t{label}\t{detail}")
+    print(f"checked={checked} unchanged={checked - len(findings)} findings={len(findings)} elsewhere={elsewhere}")
+    return 1 if findings else 0
+
+
 def main(argv=None):
     for stream in (sys.stdout, sys.stderr):
         try:
@@ -1587,8 +1821,14 @@ def main(argv=None):
     mp.add_argument("--lang", help="only these languages, comma-separated (default: every language with files)")
     mp.add_argument("--timeout", type=int, default=MAP_TIMEOUT, help="seconds per mapper command (default %(default)s)")
     mp.add_argument("--max-bytes", type=int, default=1_000_000)
+    d = sub.add_parser("drift", help="the CODE facts whose cited file or symbol moved, changed or vanished at a new commit")
+    d.add_argument("repo")
+    d.add_argument("--rev", default="HEAD", help="the new commit (default HEAD)")
+    d.add_argument("--root", help="only the facts of this kb root")
+    d.add_argument("--prefix", help="only the facts under this topic or path prefix (`dsc`, `public/dsc/what-if`)")
+    d.add_argument("--remote", help="HOST/PROJECT the source rows are matched to (default: the repository's origin)")
     a = ap.parse_args(argv)
-    return {"survey": cmd_survey, "url": cmd_url, "map": cmd_map}[a.cmd](a)
+    return {"survey": cmd_survey, "url": cmd_url, "map": cmd_map, "drift": cmd_drift}[a.cmd](a)
 
 
 if __name__ == "__main__":
