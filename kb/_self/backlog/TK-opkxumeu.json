@@ -2,7 +2,7 @@
   "id": "TK-opkxumeu",
   "kind": "task",
   "title": "Session-start hook runs publish",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-su4em5sl",
   "priority": "P2",
   "rank": 1,
@@ -27,5 +27,6 @@
   ],
   "depends_on": [
     "TK-h6oy6jlh"
-  ]
+  ],
+  "claimed_by": "worker-opkxumeu"
 }
