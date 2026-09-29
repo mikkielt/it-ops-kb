@@ -253,6 +253,14 @@ class TestCohesion:
             assert v.get("url", "").startswith("https://"), f"{s}: not an https url"
             assert "headers" not in v, f"{s}: shared config must not carry headers (credentials belong in user scope)"
 
+    def test_powershell_rules_mirror_bash(self):
+        """On Windows Claude Code runs shell commands through the PowerShell tool, and a Bash(...) rule never covers a
+        PowerShell call (public/claude/powershell-tool.md): each allowed read-only command has both rules."""
+        allow = json.loads(text(".claude/settings.json")).get("permissions", {}).get("allow", [])
+        bash = {r[len("Bash("):-1] for r in allow if r.startswith("Bash(")}
+        ps = {r[len("PowerShell("):-1] for r in allow if r.startswith("PowerShell(")}
+        assert bash and bash == ps, f"Bash only: {sorted(bash - ps)}; PowerShell only: {sorted(ps - bash)}"
+
     def test_skills_well_formed(self):
         skills = sorted(glob.glob(os.path.join(KB, ".claude", "skills", "*", "SKILL.md")))
         assert skills, "no skills found"

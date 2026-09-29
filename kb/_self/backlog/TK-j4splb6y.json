@@ -2,7 +2,7 @@
   "id": "TK-j4splb6y",
   "kind": "task",
   "title": "Commit settings.json allow rules for the PowerShell tool",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-sjayfohk",
   "priority": "P1",
   "rank": 1,
@@ -21,9 +21,11 @@
   ],
   "touches": [
     ".claude/settings.json",
+    "_tools/test_kb.py",
     "kb/_self/maintaining.md"
   ],
   "depends_on": [
     "TK-i6u6fcqq"
-  ]
+  ],
+  "claimed_by": "windows-laptop"
 }
