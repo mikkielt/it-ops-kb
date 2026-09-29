@@ -2,7 +2,7 @@
   "id": "ST-orkpm3gr",
   "kind": "story",
   "title": "Review sprint: Agents read less of the kb's own files",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-mqjeanq3",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "orchestrator-SP-mqjeanq3"
+  "evidence": {
+    "commit": "0fc24fe0629a365723f94c701ac51a57ae16dbe4",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "8911a402d608241f"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "6f13000f868ecb02"
+      }
+    ]
+  }
 }
