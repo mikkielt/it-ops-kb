@@ -1,0 +1,23 @@
+{
+  "id": "BG-63avtg3q",
+  "kind": "bug",
+  "title": "kbingest map fails two tests on Windows: the worktree path is not masked in notes, and a symlink checked out as a file is read",
+  "status": "draft",
+  "parent": "EP-g5hizdko",
+  "priority": "P1",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "On Windows, MapCtx.note masks the worktree root however the path is spelled (slash or backslash, as given or resolved), and the map's file reader treats a path git stores as a symbolic link (mode 120000) as not a regular file even when core.symlinks=false checked it out as a plain file; test_kbingest_map_notes_are_capped and test_kbingest_map_symlink_is_not_followed pass on Windows and Linux, so the sync gate is green on Windows hosts again.",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/tests.py",
+      "-k",
+      "kbingest_map_symlink_is_not_followed or kbingest_map_notes_are_capped"
+    ]
+  },
+  "touches": [
+    "_tools/kbingest.py",
+    "_tools/test_kbingest.py"
+  ]
+}
