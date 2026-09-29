@@ -2,7 +2,7 @@
   "id": "TK-lecrqyyo",
   "kind": "task",
   "title": "Pin and verify uv in install-python.ps1",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-c4csesqq",
   "priority": "P1",
   "rank": 1,
@@ -38,5 +38,31 @@
     "TK-i7vl5k4z",
     "TK-5s6ehtxp"
   ],
-  "claimed_by": "windows-laptop"
+  "evidence": {
+    "commit": "5a64630ddf0a91d607b1d17d04fea821fc6b3ad5",
+    "checks": [
+      {
+        "run": [
+          "python",
+          "_tools/tests.py",
+          "-k",
+          "install_python"
+        ],
+        "exit": 0,
+        "sha256": "63154b74e99ed0f9"
+      },
+      {
+        "run": [
+          "git",
+          "grep",
+          "-n",
+          "astral-sh/uv/releases",
+          "--",
+          "_tools/install-python.ps1"
+        ],
+        "exit": 0,
+        "sha256": "2de3e104e6827ea9"
+      }
+    ]
+  }
 }
