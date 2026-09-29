@@ -1917,10 +1917,12 @@ def drift_findings(repo, new, facts, sources, project):
                 continue
             sid, pin = next(((s, p) for s, p in cands if p[3] == ptr[0] or p[3].endswith("/" + ptr[0])), cands[0])
             checked += 1
-            path, anchor = ptr
+            label = f"{ptr[0]}#{ptr[1]}"
+            # a pointer may name the file by the last segments of its path (utils.ts for src/spec-node/utils.ts)
+            path, anchor = (pin[3] if pin[3].endswith("/" + ptr[0]) else ptr[0]), ptr[1]
 
             def found(kind, detail):
-                findings.append((u["path"], u["line"], sid, f"{path}#{anchor}", kind, detail))
+                findings.append((u["path"], u["line"], sid, label, kind, detail))
             if pin[2] not in commits:
                 commits[pin[2]] = resolve(repo, pin[2])
             old = commits[pin[2]]

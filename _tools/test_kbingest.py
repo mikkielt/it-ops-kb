@@ -1647,7 +1647,8 @@ class Drift:
     def run(self, *args, repo=None):
         return run("drift", str(repo or self.repo.path), *args, env=git_env(KB_ROOTS=str(self.root)))
 
-    def findings(self, out):
+    @staticmethod
+    def findings(out):
         """{kb line: (kind, path#symbol, detail)} of the finding lines."""
         got = {}
         for ln in out.splitlines():
@@ -1741,6 +1742,44 @@ def test_kbingest_drift_a_rename_with_a_changed_symbol_says_both(tmp_path):
     code, out = d.run("--root", "codefix")
     kind, _label, detail = d.findings(out)[d.at["moved"]]
     assert kind == "moved" and "lib/moved_here.go; changed: the definition of Moved differs" in detail, out
+
+
+@requires_git
+def test_kbingest_drift_suffix_pointer(tmp_path):
+    utils = "export function x() {\n  return 1;\n}\n\nexport function y() {\n  return 2;\n}\n"
+    repo = commit_files(tmp_path / "repo", {"src/spec-node/utils.ts": utils, "src/myutils.ts": utils})
+    repo.git("remote", "add", "origin", "https://gitlab.corp.example.com/team/repo.git")
+    old = repo.rev("HEAD")
+    repo.write("src/spec-node/utils.ts", "// header\n" + utils.split("\n\n")[0] + "\n")  # x shifts, y is removed
+    repo.git("add", "-A")
+    repo.git("commit", "-q", "-m", "second")
+    root = tmp_path / "suffix"
+    (root / "code").mkdir(parents=True)
+    (root / "_root.md").write_text("---\nroot: suffix\nid_prefix: SFX\nvisibility: internal\n"
+                                   "description: drift suffix fixture\n---\n", encoding="utf-8", newline="\n")
+    urls = {rel: kbingest.pin_url("gitlab", "gitlab.corp.example.com", "team/repo", old, rel)
+            for rel in ("src/spec-node/utils.ts", "src/myutils.ts")}
+    sids = {rel: kbid.source_id(u, "SFX") for rel, u in urls.items()}
+    rows = ["id,url,title,publisher,licence,reuse,retrieved_utc,version_or_date,artifact_sha256,used_in,superseded_by"]
+    rows += [f"{sids[rel]},{u},{rel},corp.example.com,internal,quote,2026-09-26,,,code/utils.md," for rel, u in urls.items()]
+    (root / "_sources.csv").write_text("\n".join(rows) + "\n", encoding="utf-8", newline="\n")
+    # (key, source file, pointer): a segment suffix, the exact path, and a suffix that is not on a segment boundary
+    cases = (("same", "src/spec-node/utils.ts", "utils.ts#x"), ("gone", "src/spec-node/utils.ts", "utils.ts#y"),
+             ("exact", "src/spec-node/utils.ts", "src/spec-node/utils.ts#x"), ("partial", "src/myutils.ts", "utils.ts#x"))
+    lines = ["---", "topic: code/utils", "priority: P1", "retrieved_utc: 2026-09-26", "status: partial", "---", "",
+             "# Utils", "", "## Facts"]
+    at = {}
+    for key, rel, ptr in cases:
+        at[key] = len(lines) + 1
+        lines.append(f"- The fact {key} reads {ptr}. [CODE {sids[rel]}: {ptr}]")
+    (root / "code" / "utils.md").write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
+    code, out = run("drift", str(repo.path), "--root", "suffix", env=git_env(KB_ROOTS=str(root)))
+    got = Drift.findings(out)
+    assert {key: got[line][0] for key, line in at.items() if line in got} == {
+        "gone": "symbol-missing", "partial": "unverifiable"}, out
+    assert got[at["gone"]][1] == "utils.ts#y", "the finding names the pointer as the fact wrote it"
+    assert "utils.ts is not in the pinned commit" in got[at["partial"]][2], out
+    assert code == 1 and out.splitlines()[-1] == "checked=4 unchanged=2 findings=2 elsewhere=0", out
 
 
 def test_kbingest_drift_pin_parts_read_the_forge_url_forms():
