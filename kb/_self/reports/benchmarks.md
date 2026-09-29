@@ -328,6 +328,29 @@ What it shows:
 - The reader's start context is 27.2k with the user's plugins and servers, 23.6k without them and 8.3k without tools, against 29.9k, 24.8k and 9.8k in the history: the lean `claude -p` still takes two thirds off.
 - Checks: 1/2 on the repeats of `s6_falsegood` and `s8_falsegood2`, where the history passed every check.
 
+### Routing by verdict against the bare agent
+
+**Setup:** `python3 _tools/benchmarks.py run route-by-verdict`: `kb_ask.py`'s routing (`agent_bench.py` config `router-pinned`, which follows `kb_ask.plan`: a good pack to a tool-less Haiku 4.5 reader, a web pack to a Sonnet 5.5 researcher with the docs servers and no kb server, a split pack to the reader and the researcher with their costs summed) against the bare Sonnet 5.5 web arm (`web-sonnet-5-5`: WebSearch and WebFetch, no kb) and the kb Sonnet 5.5 arm (`sonnet-5-5`: the kb and docs servers, following the server instructions), all three pinned by full model name in one batch so that dollars compare. Six questions: `s5_none` and `o1_offkb` (off the kb), `s8_falsegood2` (the Purview false `good`), `h2_applock` (the pack's false `none`), `s1_fact` and `s3_multi` (facts the kb has). Each arm's question is the same; the web arm gets it without "Answer from the kb" and with "Cite the source urls" (`agent_bench.WEB_Q`).
+
+The case of a question is the route its pack takes on the run's commit (`pack_route`: `web`, `split` or `good`), not a fixed label. The operator's bar, judged per case on each arm's mean cost (`bar`, with `limit_ratio`, the router's cost over its limit):
+- `web`: the router costs at most 110% of the bare web arm (`limit_ratio` at most 1);
+- `split`: it costs less than both other arms (`limit_ratio` under 1, over the cheaper of the two);
+- `good`: it stays on the reader route, with no escalation to the researcher.
+
+A miss is a finding for the sprint review, not a reason to change the bar.
+
+<!-- bench:records route-by-verdict -->
+| record | date | commit | Claude Code | kb topics | runs per cell | spend of the runs |
+|---|---|---|---|---|---|---|
+<!-- /bench -->
+
+<!-- bench:table route-by-verdict metrics=pack_route,cost,wall_s,checks,limit_ratio,bar -->
+| case | arm | pack_route | cost | wall_s | checks | limit_ratio | bar |
+|---|---|---|---|---|---|---|---|
+<!-- /bench -->
+
+Model runs of the arms, per case and arm; `route` of each arm is in `benchmarks.csv`.
+
 ### How-to questions and SNIPPET units
 
 **Setup:** `python3 _tools/benchmarks.py run howto`: h1 (gMSA, PowerShell), h2 (`sp_getapplock`, T-SQL) and h3 (Graph PowerShell app-only) on Haiku and Sonnet, one run each; `h1-h3` is the three questions' total. The history's `unchecked blocks` arm ran the kb before its code blocks became `SNIPPET:` units.

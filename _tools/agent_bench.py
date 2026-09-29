@@ -10,8 +10,8 @@ expected answer element. CONFIG: `haiku`, `sonnet`, `opus` (that model answers a
 `sonnet-5-5` pin a model id where an alias would follow the newest); `opus+delegate` (asked to hand
 the lookup to the Haiku kb-lookup agent); `haiku+escalate` (Haiku told to hand live-docs work to a Sonnet agent
 defined with --agents); `+strict` also denies the docs tools (note: the deny reaches subagents too); `router`
-(kb_ask.py's routing); `web-haiku`, `web-sonnet`, `web-opus` (a typical
-web-search session: no kb, no MCP servers, no project files, only WebSearch and WebFetch).
+(kb_ask.py's routing), `router-pinned` (the same with the routed models as full names); `web-haiku`, `web-sonnet`, `web-opus`,
+`web-sonnet-5-5` (a typical web-search session: no kb, no MCP servers, no project files, only WebSearch and WebFetch).
 
 Host scenarios (HOST) run `haiku`, `sonnet` or `opus` in an empty directory under BENCH_SCRATCH (default
 _cache/bench) with the kb and docs plugins loaded by --plugin-dir, no user settings or claude.ai connectors:
@@ -122,7 +122,7 @@ ROUTER = ("Routing for it-ops questions: call kb_pack first. If the pack's facts
           "relay its answer labelled 'live docs, not in the kb'.")
 MODEL = {"opus": "opus", "sonnet": "sonnet", "haiku": "haiku",
          # pinned ids, for comparing a new model with the one before it (benchmarks.py's `new-model`)
-         "sonnet-5": "claude-sonnet-5", "sonnet-5-5": "claude-sonnet-5-5"}
+         "sonnet-5": "claude-sonnet-5", "sonnet-5-5": "claude-sonnet-5-5", "haiku-4-5": "claude-haiku-4-5"}
 DELEGATE = (" Delegate the kb lookup to the kb-lookup subagent (Haiku) and only relay its answer; do the live-docs step "
             "yourself only if it reports the kb lacks the answer.")
 
@@ -195,19 +195,42 @@ def execute(cmd, prompt, cwd=KB, env=None):
             **seen, "answer": res.get("result") or ""}
 
 
-def add(a, b):
-    """Two runs of one question (reader, then escalation) as one row."""
+def add(a, b, sep="escalate"):
+    """Two runs of one question (reader, then escalation or the lacks part) as one row; `sep` joins their routes."""
     out = dict(b)
-    out["route"] = a.get("route", []) + ["escalate"] + b.get("route", [])
+    out["route"] = a.get("route", []) + [sep] + b.get("route", [])
     for k in ("wall_s", "api_s", "cost", "turns", "in_uncached", "cache_write", "cache_read", "out"):
         out[k] = round(a[k] + b[k], 4)
     out["models"] = {m: round(a["models"].get(m, 0) + b["models"].get(m, 0), 4) for m in {*a["models"], *b["models"]}}
     return out
 
 
-def route(q):
-    """kb_ask.py's routing as a benchmark run: tool answers cost nothing; a good pack goes to the tool-less reader,
-    whose INSUFFICIENT reply escalates to the researcher (costs summed)."""
+PIN = {"haiku": MODEL["haiku-4-5"], "sonnet": MODEL["sonnet-5-5"]}  # the routed aliases as full names (`router-pinned`)
+
+
+def _stream_argv(model, tools, system):
+    """kb_ask.claude_argv as a stream-json run (what execute parses) with `system` appended."""
+    import kb_ask
+    return kb_ask.claude_argv(model, tools, "stream-json") + ["--verbose", "--append-system-prompt", system]
+
+
+def _step(model, tools, system, user, steps):
+    """One run of the route (a stream-json `claude -p` of kb_ask.claude_argv) with `steps` put before its own route."""
+    r = execute(_stream_argv(model, tools, system), user)
+    if "error" not in r:
+        r["route"] = steps + r.get("route", [])
+    return r
+
+
+def route(q, pin=None):
+    """kb_ask.py's routing as a benchmark run, step for step (its plan, prompts and models): tool answers cost nothing;
+    a web pack (the kb lacks the question) goes to the no-kb researcher with the question, what the kb lacks and the
+    nearest articles; a split pack with a `kb has:` and a `kb lacks:` line goes to the Haiku reader for the kb has part
+    and to the researcher for the lacks part, their costs summed, and a reader INSUFFICIENT gives the whole question to
+    the researcher; a good pack, and a split pack that cannot be divided, go to the tool-less reader with the pack,
+    whose INSUFFICIENT escalates to the researcher with the pack. `pin` maps the routed aliases to full model names.
+    The route lists `pack:KIND`, then each run (`reader:MODEL`, `researcher:MODEL`), with `escalate` between an
+    escalation's two runs and `and` between a split's two."""
     sys.path.insert(0, os.path.join(KB, "_tools"))
     import kb_ask
     t = time.time()
@@ -217,21 +240,33 @@ def route(q):
                 "cache_write": 0, "cache_read": 0, "out": 0, "models": {}, "tools": {"kb_ask:tool": 1},
                 "sub_tools": {}, "route": ["kb_ask:tool"], "answer": tool}
     p = kb_ask.plan(q)
-    stream = ["--output-format", "stream-json", "--verbose"]
-    user = kb_ask.prompt(q, p["text"])
-    first = None
-    if p["kind"] == "good":
-        first = execute(kb_ask.claude_argv(p["model"], False)[:2] + stream + kb_ask.claude_argv(p["model"], False)[2:]
-                        + ["--append-system-prompt", kb_ask.READER], user)
-        first["route"] = [f"pack:{p['kind']}", f"reader:{p['model']}"] + first.get("route", [])
-        if "error" in first or not first["answer"].lstrip().startswith(kb_ask.SENTINEL):
+    name = lambda m: (pin or {}).get(m, m)  # noqa: E731
+    kind, researcher = p["kind"], name("sonnet")
+    if kind == "web":
+        return _step(researcher, True, kb_ask.WEB_RESEARCHER, kb_ask.web_prompt(q, p),
+                     [f"pack:{kind}", f"researcher:{researcher}"])
+    divided = kind == "split" and bool(p["has"] and p["lacks"])
+    reader = name(p["model"] if kind == "good" else kb_ask.READER_MODEL)
+    if divided:
+        system, user = kb_ask.SPLIT_READER, kb_ask.split_prompt(q, p)
+    else:
+        system, user = kb_ask.READER, kb_ask.prompt(q, p["text"])
+    first = _step(reader, False, system, user, [f"pack:{kind}", f"reader:{reader}"])
+    if "error" in first:
+        return first
+    said = first["answer"].strip()
+    insufficient = said.startswith(kb_ask.SENTINEL)
+    note = f"\n\nA first reader of {'the kb' if divided else 'this'} evidence said: {said.splitlines()[0] if said else ''}"
+    if not divided:  # the reader's INSUFFICIENT escalates with the pack
+        if not insufficient:
             return first
-        user += f"\n\nA first reader of this evidence said: {first['answer'].strip().splitlines()[0]}"
-    argv = kb_ask.claude_argv("sonnet", True)
-    second = execute(argv[:2] + stream + argv[2:] + ["--append-system-prompt", kb_ask.RESEARCHER], user)
-    if "error" not in second:
-        second["route"] = ([] if first else [f"pack:{p['kind']}"]) + ["researcher:sonnet"] + second.get("route", [])
-    return add(first, second) if first and "error" not in second else second
+        system, user = kb_ask.RESEARCHER, kb_ask.prompt(q, p["text"]) + note
+    elif insufficient:  # the whole question, no lacks line
+        system, user = kb_ask.WEB_RESEARCHER, kb_ask.web_prompt(q, p, whole=True) + note
+    else:
+        system, user = kb_ask.WEB_RESEARCHER, kb_ask.web_prompt(q, p)
+    second = _step(researcher, True, system, user, [f"researcher:{researcher}"])
+    return second if "error" in second else add(first, second, "escalate" if insufficient else "and")
 
 
 WEB_Q = {  # the same questions without the kb: what a session without it would be asked
@@ -252,6 +287,7 @@ WEB_Q = {  # the same questions without the kb: what a session without it would 
                  "works on ConfigMgr 2509 and later, what does the Python side need before the call, and what ConfigMgr "
                  "permission must the account have? Cite the source urls."),
     "o1_offkb": "How do I run the Kubernetes Cluster Autoscaler on AWS EKS with spot instances? Cite the source urls.",
+    "s5_none": ("How do I configure a Kubernetes cluster autoscaler on AWS EKS spot instances? Cite the source urls."),
 }
 
 
@@ -377,8 +413,8 @@ def run(cfg, scen, copies=None):
         if HOST[scen] not in copies:
             copies[HOST[scen]] = kb_copy(HOST[scen])
         r = host(MODEL[cfg], q, copies[HOST[scen]])
-    elif cfg == "router":
-        r = route(q)
+    elif cfg in ("router", "router-pinned"):
+        r = route(q, PIN if cfg == "router-pinned" else None)
     elif cfg.startswith("web-"):
         r = web(MODEL[cfg[4:]], WEB_Q[scen])
     else:

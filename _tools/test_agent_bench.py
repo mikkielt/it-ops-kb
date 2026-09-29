@@ -87,3 +87,115 @@ def test_stale_puts_the_remote_branch_ahead(tmp_path, monkeypatch):
     assert repo.rev("HEAD") == head
     assert repo.git("rev-list", "--count", "HEAD..origin/main").strip() == "3"
     assert os.listdir(tmp_path) == [".git"]
+
+
+# ---- route: kb_ask.py's routing as a benchmark run, with `claude` stubbed (no model is called)
+
+PLAN = {"good": {"kind": "good", "verdict": "good", "text": "PACK-GOOD", "route": None, "has": [], "lacks": [],
+                 "leads": [], "model": "haiku"},
+        "web": {"kind": "web", "verdict": "none", "text": "PACK-WEB", "route": "web", "has": [],
+                "lacks": ["Kubernetes autoscaling"], "leads": [("public/x/y.md", "Some title")], "model": "sonnet"},
+        "split": {"kind": "split", "verdict": "weak", "text": "PACK-SPLIT", "route": "split", "has": ["LAPS length"],
+                  "lacks": ["the Elicitation hook"], "leads": [], "model": "sonnet"}}
+
+
+@pytest.fixture
+def routed(monkeypatch):
+    """route() with kb_ask.plan planted and execute recording each run's argv and input, answering from a queue."""
+    import kb_ask
+    for attr, value in (("READER_MODEL", "haiku"), ("SPLIT_READER", kb_ask.READER + " part"),
+                        ("split_prompt", lambda q, p: f"SPLIT {q} has={p['has']} lacks={p['lacks']} {p['text']}")):
+        if not hasattr(kb_ask, attr):  # names of the split route, when this tree does not have it yet
+            monkeypatch.setattr(kb_ask, attr, value, raising=False)
+    web_prompt = kb_ask.web_prompt
+    if "whole" not in web_prompt.__code__.co_varnames:
+        monkeypatch.setattr(kb_ask, "web_prompt", lambda q, p, whole=False: web_prompt(
+            q, {**p, "lacks": [] if whole else p["lacks"]}), raising=False)
+    calls = []
+
+    def go(kind, answers, **plan):
+        monkeypatch.setattr(kb_ask, "plan", lambda q, model=None: {**PLAN[kind], **plan})
+        monkeypatch.setattr(kb_ask, "tool_answer", lambda q: None)
+        queue = list(answers)
+
+        def execute(argv, prompt, **kw):
+            calls.append((argv, prompt))
+            a = queue.pop(0)
+            return a if isinstance(a, dict) else {"wall_s": 1, "api_s": 1, "cost": 0.01, "turns": 1, "in_uncached": 1,
+                                                  "cache_write": 0, "cache_read": 0, "out": 1, "models": {"m": 0.01},
+                                                  "tools": {}, "sub_tools": {}, "route": [], "answer": a}
+        monkeypatch.setattr(ab, "execute", execute)
+        return calls
+    return go
+
+
+def _model(argv):
+    return argv[argv.index("--model") + 1]
+
+
+def test_route_web_asks_the_no_kb_researcher_with_the_question_and_what_the_kb_lacks(routed):
+    import kb_ask
+    calls = routed("web", ["live answer"])
+    r = ab.route("How do I autoscale?", ab.PIN)
+    (argv, prompt), = calls
+    assert "--mcp-config" in argv and _model(argv) == "claude-sonnet-5-5" and kb_ask.WEB_RESEARCHER in argv
+    assert "The kb lacks: Kubernetes autoscaling" in prompt and "Some title" in prompt and "PACK-WEB" not in prompt
+    assert r["route"] == ["pack:web", "researcher:claude-sonnet-5-5"] and r["answer"] == "live answer"
+    assert "--verbose" in argv and argv[argv.index("--output-format") + 1] == "stream-json"
+
+
+def test_route_good_stays_on_the_reader_and_escalates_on_insufficient(routed):
+    import kb_ask
+    calls = routed("good", ["14 characters"])
+    r = ab.route("q")
+    assert len(calls) == 1 and "--mcp-config" not in calls[0][0] and _model(calls[0][0]) == "haiku"
+    assert r["route"] == ["pack:good", "reader:haiku"]
+    calls.clear()
+    routed("good", ["INSUFFICIENT: only related", "live answer"])
+    r = ab.route("q", ab.PIN)
+    assert [_model(a) for a, _ in calls] == ["claude-haiku-4-5", "claude-sonnet-5-5"]
+    assert kb_ask.RESEARCHER in calls[1][0] and "PACK-GOOD" in calls[1][1] and "INSUFFICIENT: only related" in calls[1][1]
+    assert r["route"] == ["pack:good", "reader:claude-haiku-4-5", "escalate", "researcher:claude-sonnet-5-5"]
+    assert r["cost"] == 0.02 and r["turns"] == 2  # the two runs are summed
+
+
+def test_route_split_reads_the_kb_part_and_researches_the_lacks_part(routed):
+    import kb_ask
+    calls = routed("split", ["kb part", "live part"])
+    r = ab.route("q", ab.PIN)
+    (ra, rp), (sa, sp) = calls
+    assert _model(ra) == "claude-haiku-4-5" and "--mcp-config" not in ra and "PACK-SPLIT" in rp and "LAPS length" in rp
+    assert _model(sa) == "claude-sonnet-5-5" and kb_ask.WEB_RESEARCHER in sa
+    assert "The kb lacks: the Elicitation hook" in sp and "PACK-SPLIT" not in sp
+    assert r["route"] == ["pack:split", "reader:claude-haiku-4-5", "and", "researcher:claude-sonnet-5-5"]
+    assert r["cost"] == 0.02 and r["answer"] == "live part"
+
+
+def test_route_split_reader_insufficient_gives_the_whole_question_to_the_researcher(routed):
+    calls = routed("split", ["INSUFFICIENT: nothing", "live all"])
+    r = ab.route("q")
+    assert "The kb lacks" not in calls[1][1] and "INSUFFICIENT: nothing" in calls[1][1]
+    assert r["route"][2] == "escalate"
+
+
+def test_route_split_without_a_has_or_lacks_line_is_read_whole_like_good(routed):
+    import kb_ask
+    calls = routed("split", ["INSUFFICIENT: x", "live"], lacks=[])
+    ab.route("q")
+    assert calls[0][1] == kb_ask.prompt("q", "PACK-SPLIT") and kb_ask.RESEARCHER in calls[1][0]
+
+
+def test_route_returns_a_failed_run_instead_of_going_on(routed):
+    calls = routed("split", [{"error": "boom"}])
+    assert ab.route("q") == {"error": "boom"} and len(calls) == 1
+    calls.clear()
+    routed("web", [{"error": "boom"}])
+    assert "error" in ab.route("q")
+
+
+def test_the_pinned_arms_and_the_bare_question_of_s5_none():
+    assert ab.PIN == {"haiku": "claude-haiku-4-5", "sonnet": "claude-sonnet-5-5"}
+    assert ab.MODEL["sonnet-5-5"] == "claude-sonnet-5-5"
+    q = ab.WEB_Q["s5_none"]
+    assert "kubernetes cluster autoscaler" in q.lower() and "Use the kb" not in q and q.endswith("Cite the source urls.")
+    assert ab.S["s5_none"][0].startswith(q.replace(" Cite the source urls.", ""))

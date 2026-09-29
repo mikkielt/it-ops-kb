@@ -23,7 +23,7 @@ local bare origin, or as a plugin copy whose hooks write under the scratch direc
 clone's spool, a plugin data directory of ~/.claude or a real remote. A clone gets the servers of `kb_mcp.py
 --register-local` for its own path; they are removed at the end of the run.
 
-Paid scenarios (each a `claude -p` per case): headless, subagents, models, router, howto, partial, files-subagents,
+Paid scenarios (each a `claude -p` per case): headless, subagents, models, router, route-by-verdict, howto, partial, files-subagents,
 files-headless, host-lookups, new-model, always-on, kb-lookup-agent, retrieval and doc2query (their blind questions), research,
 ingest, host-roots, querylog-pipeline (one real Haiku batch). The rest run no model.
 """
@@ -110,7 +110,7 @@ FORMATS = {"cost": "${:.3f}", "cost_est": "${:.3f}", "wall_s": "{:.0f} s", "api_
            "out": "{:,.0f}", "turns": "g1", "tool_calls": "g1", "requests": "g1", "start_ctx": "{:,.0f}",
            "effective_input": "{:,.0f}", "chars_per_s": "{:,.0f}", "median_us": "{:.1f} us", "size_mb": "{:.1f} MB",
            "input_per_entry": "{:,.0f}", "out_per_entry": "{:,.0f}", "cost_per_fact": "${:.3f}",
-           "ms": "{:.1f} ms", "s": "{:.2f} s", "time": "{:.2f} s", "pct": "{:.1f}%"}
+           "ms": "{:.1f} ms", "s": "{:.2f} s", "time": "{:.2f} s", "pct": "{:.1f}%", "ratio": "{:.2f}x"}
 
 
 def fmt(metric, v):
@@ -705,6 +705,65 @@ def s_router(b):
             b.row("router", "start context", arm, "start_ctx", max(v["input"] for v in vals), len(vals), "haiku",
                   note="; ".join(str(v["input"]) for v in vals))
             b.row("router", "start context", arm, "cost", sum(v["total_cost_usd"] for v in vals) / len(vals), len(vals), "haiku")
+
+
+RBV_CASES = ["s5_none", "o1_offkb", "s8_falsegood2", "h2_applock", "s1_fact", "s3_multi"]
+RBV_ARMS = ["router-pinned", "web-sonnet-5-5", "sonnet-5-5"]  # kb_ask.py's routing, the bare web arm, the kb arm
+RBV_WEB_MARGIN = 1.10  # the operator's bar on a web pack: the router costs at most 110% of the bare web arm
+
+
+def pack_route(runs):
+    """The route a case's pack took (`good`, `web`, `split`, or `tool`), read from the router runs' routes."""
+    for r in runs:
+        route = r.get("route") or []
+        for step in route:
+            if step.startswith("pack:"):
+                return step[5:]
+        if "kb_ask:tool" in route:
+            return "tool"
+    return ""
+
+
+def verdict_bar(kind, router, web, kb, escalated=False):
+    """(holds, ratio) of the operator's bar for one case, from the arms' mean costs: on a web pack the router costs at
+    most 110% of the bare web arm (ratio: its cost over that limit); on a split pack it costs less than both other arms
+    (ratio: its cost over the cheaper); on a good pack it stays on the reader route, without escalating (no ratio).
+    holds is None when a cost, or the kind, is missing."""
+    if router is None:
+        return None, None
+    if kind == "good":
+        return (not escalated), None
+    if kind == "web" and web:
+        ratio = router / (web * RBV_WEB_MARGIN)
+        return ratio <= 1, ratio
+    if kind == "split" and web and kb:
+        ratio = router / min(web, kb)
+        return ratio < 1, ratio
+    return None, None
+
+
+def s_route_by_verdict(b):
+    """Routing by verdict against the bare web arm and the kb arm, all pinned by full model name: kb_ask.py's routing
+    (agent_bench.route, `router-pinned`: Haiku 4.5 reads, Sonnet 5.5 researches), `web-sonnet-5-5` (WebSearch and
+    WebFetch only) and `sonnet-5-5` (the kb and docs servers), on six questions. Per case it records the route the pack
+    took on this commit (`pack_route`: web, split or good), each arm's cost, time and checks, and whether the
+    operator's bar holds for the router (`bar` and `limit_ratio`, verdict_bar)."""
+    runs = b.bench(RBV_ARMS, RBV_CASES, b.reps, "route-by-verdict", parallel=True)
+    b.bench_rows("route-by-verdict", runs)
+    for case in RBV_CASES:
+        by = {arm: [r for r in runs if r["scen"] == case and r["cfg"] == arm and "error" not in r] for arm in RBV_ARMS}
+        rs = by["router-pinned"]
+        kind = pack_route(rs)
+        if not kind:
+            continue
+        cost = {arm: (sum(r["cost"] for r in v) / len(v) if v else None) for arm, v in by.items()}
+        escalated = any("escalate" in (r.get("route") or []) for r in rs)
+        holds, ratio = verdict_bar(kind, cost["router-pinned"], cost["web-sonnet-5-5"], cost["sonnet-5-5"], escalated)
+        b.row("route-by-verdict", case, "router-pinned", "pack_route", kind, len(rs))
+        b.row("route-by-verdict", case, "router-pinned", "bar", "no data" if holds is None else
+              ("holds" if holds else "misses"), len(rs))
+        if ratio is not None:
+            b.row("route-by-verdict", case, "router-pinned", "limit_ratio", ratio, len(rs))
 
 
 def s_howto(b):
@@ -1648,6 +1707,7 @@ SCENARIOS = {  # name: (report section, function)
     "subagents": ("Bare agent against agent with the kb: subagents", s_subagents),
     "models": ("Models and hand-off patterns", s_models),
     "router": ("Routing by verdict", s_router),
+    "route-by-verdict": ("Routing by verdict against the bare agent", s_route_by_verdict),
     "howto": ("How-to questions and SNIPPET units", s_howto),
     "partial": ("Partial knowledge, newer versions and stale copies", s_partial),
     "files-subagents": ("Reading files without the lookup tools", s_files_subagents),

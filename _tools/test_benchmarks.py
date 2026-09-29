@@ -156,3 +156,95 @@ def test_the_shims_are_executable_scripts(tmp_path):
     assert subprocess.run([*start, str(d / "claude"), "-p"]).returncode == 1
     d = bm.shim_dir(tmp_path / "log", tmp_path / "log.jsonl")
     assert "--output-format" in (d / "claude").read_text(encoding="utf-8")
+
+
+# ---- route-by-verdict
+
+def test_route_by_verdict_is_listed_with_its_section(capsys):
+    assert bm.main(["list"]) == 0
+    assert re.search(r"^route-by-verdict\s+Routing by verdict against the bare agent$", capsys.readouterr().out, re.M)
+    assert bm.SCENARIOS["route-by-verdict"][0] != bm.SCENARIOS["router"][0]  # the older section keeps its name
+    assert "route-by-verdict" in bm.__doc__.split("Paid scenarios")[1].split("The rest run no model")[0]
+    for case in bm.RBV_CASES:
+        assert case in agent_bench.S and case in agent_bench.WEB_Q, case
+    for arm in bm.RBV_ARMS:
+        cfg = arm[4:] if arm.startswith("web-") else arm
+        assert cfg == "router-pinned" or cfg in agent_bench.MODEL, arm
+
+
+def test_the_bar_on_a_web_pack_is_110_percent_of_the_bare_arm():
+    assert bm.verdict_bar("web", 0.11, 0.10, 0.20) == (True, pytest.approx(0.11 / 0.11))
+    holds, ratio = bm.verdict_bar("web", 0.111, 0.10, 0.20)  # planted: one tenth of a cent over the limit
+    assert holds is False and ratio > 1
+    assert bm.verdict_bar("web", None, 0.10, 0.20) == (None, None) and bm.verdict_bar("web", 0.05, None, 0.2) == (None, None)
+
+
+def test_the_bar_on_a_split_pack_is_below_both_other_arms():
+    assert bm.verdict_bar("split", 0.05, 0.10, 0.08)[0] is True
+    assert bm.verdict_bar("split", 0.09, 0.10, 0.08)[0] is False  # planted: below the web arm, not the kb arm
+    assert bm.verdict_bar("split", 0.08, 0.10, 0.08)[0] is False  # equal is not below
+    assert bm.verdict_bar("split", 0.05, 0.10, None) == (None, None)
+
+
+def test_the_bar_on_a_good_pack_is_the_reader_route_without_escalation():
+    assert bm.verdict_bar("good", 0.01, 0.2, 0.1) == (True, None)
+    assert bm.verdict_bar("good", 0.06, 0.2, 0.1, escalated=True) == (False, None)  # planted: it escalated
+    assert bm.verdict_bar("tool", 0, 0.2, 0.1) == (None, None)
+
+
+def test_pack_route_reads_the_first_pack_step():
+    assert bm.pack_route([{"route": ["pack:web", "researcher:m"]}]) == "web"
+    assert bm.pack_route([{"route": ["kb_ask:tool"]}]) == "tool"
+    assert bm.pack_route([{"route": []}, {"error": "x"}]) == ""
+
+
+def _run(cfg, scen, cost, route=(), wall=10.0):
+    return {"cfg": cfg, "scen": scen, "cost": cost, "wall_s": wall, "in_uncached": 10, "cache_write": 0, "cache_read": 0,
+            "out": 5, "turns": 2, "tools": {"WebSearch": 1}, "checks": [True], "route": list(route),
+            "models": {"claude-sonnet-5-5": cost}}
+
+
+def _bench(runs):
+    b = bm.Bench.__new__(bm.Bench)  # no claude call: the record's identity is planted
+    b.rows, b.reps, b.date, b.record, b.commit, b.cc, b.topics = [], 1, "2026-09-29", "2026-09-29", "abc1234", "2.1.290", "280"
+    seen = []
+    b.bench = lambda cfgs, scens, reps, tag, parallel=False: seen.append((cfgs, scens, reps, tag, parallel)) or runs
+    return b, seen
+
+
+def test_the_scenario_records_each_cases_route_arms_and_bar():
+    runs = []
+    for case, kind, router, web, kb in (("s5_none", "web", 0.05, 0.05, 0.06), ("s8_falsegood2", "split", 0.09, 0.10, 0.08),
+                                        ("s1_fact", "good", 0.004, 0.06, 0.10)):
+        runs += [_run("router-pinned", case, router, [f"pack:{kind}", "reader:m"]), _run("web-sonnet-5-5", case, web),
+                 _run("sonnet-5-5", case, kb)]
+    b, seen = _bench(runs)
+    bm.s_route_by_verdict(b)
+    assert seen == [(bm.RBV_ARMS, bm.RBV_CASES, 1, "route-by-verdict", True)]
+    got = {(r["case"], r["arm"], r["metric"]): r["value"] for r in b.rows}
+    assert got[("s5_none", "router-pinned", "pack_route")] == "web" and got[("s5_none", "router-pinned", "bar")] == "holds"
+    assert got[("s8_falsegood2", "router-pinned", "pack_route")] == "split"
+    assert got[("s8_falsegood2", "router-pinned", "bar")] == "misses"  # 0.09 is not below the kb arm's 0.08
+    assert got[("s1_fact", "router-pinned", "bar")] == "holds" and ("s1_fact", "router-pinned", "limit_ratio") not in got
+    assert got[("s5_none", "web-sonnet-5-5", "cost")] == 0.05
+    assert {r["scenario"] for r in b.rows} == {"route-by-verdict"}
+    assert "0.91x" in bm.table(b.rows, "route-by-verdict", ["limit_ratio"], cases=["s5_none"])
+
+
+def test_the_scenario_says_no_data_when_an_arm_failed():
+    runs = [_run("router-pinned", "s5_none", 0.05, ["pack:web"]), {"cfg": "web-sonnet-5-5", "scen": "s5_none", "error": "x"},
+            _run("sonnet-5-5", "s5_none", 0.06)]
+    b, _ = _bench(runs)
+    bm.s_route_by_verdict(b)
+    got = {(r["arm"], r["metric"]): r["value"] for r in b.rows if r["case"] == "s5_none"}
+    assert got[("router-pinned", "bar")] == "no data" and got[("web-sonnet-5-5", "errors")] == 1
+
+
+def test_the_routed_runs_have_hooks_off_and_pinned_models(monkeypatch):
+    seen = []
+    monkeypatch.setattr(agent_bench, "execute", lambda argv, prompt, **kw: seen.append(argv) or {"error": "stop"})
+    monkeypatch.setattr(kb_ask, "tool_answer", lambda q: None)
+    monkeypatch.setattr(kb_ask, "plan", lambda q, model=None: {"kind": "web", "text": "", "lacks": [], "leads": [], "has": [],
+                                                                "model": "sonnet", "verdict": "none", "route": "web"})
+    agent_bench.route("q", agent_bench.PIN)
+    assert seen and all(_hooks_off(a) for a in seen) and "claude-sonnet-5-5" in seen[0]
