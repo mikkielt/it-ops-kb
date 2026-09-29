@@ -136,6 +136,7 @@ Each item adds three parts of its own: the end state (`goal`), the commands that
 - the item waits on anything;
 - a file in scope has uncommitted changes (the checks run on `HEAD`);
 - the item has `touches` of its own and no commit reachable from `HEAD` carries its `KB-Work` trailer as git reads trailers;
+- a code-lane commit with its `KB-Work` trailer (lanes: `_tools/kblane.py`) is not an ancestor of `refs/remotes/<integration>/main` as last fetched, or that ref does not exist: it names the commits and the merge request `sync` opened for them (branch `code/<id>`); merge it, fetch, run `done` again. `done` does not fetch, and a content-lane commit never needs to be on the integration `main`;
 - a commit with its `KB-Work` trailer left a file outside `touches` changed at `HEAD` (a later revert clears that);
 - one of its checks fails;
 - a review story still has an agent's provisional answer.

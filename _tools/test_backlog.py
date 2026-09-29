@@ -25,7 +25,14 @@ def sh(root, *a):
     subprocess.run(list(a), cwd=root, check=True, capture_output=True)
 
 
+def land(root):
+    """Pretend the integration remote's main was fetched at HEAD: done's lane rule then sees every commit landed."""
+    sh(root, "git", "update-ref", "refs/remotes/origin/main", "HEAD")
+
+
 def b(root, *a):
+    if a[:1] == ("done",):
+        land(root)
     p = subprocess.run([sys.executable, TOOL, "--root", str(root), *a], cwd=root, capture_output=True, text=True,
                        encoding="utf-8")
     return p.returncode, p.stdout + p.stderr
@@ -210,6 +217,7 @@ def test_check_interpreter_is_the_one_running_backlog(sprint, tmp_path):
     run = lambda *a: subprocess.run([sys.executable, TOOL, "--root", str(repo), *a], cwd=repo, capture_output=True,  # noqa: E731
                                     text=True, encoding="utf-8", env=env)
     assert run("claim", tk, "--by", "agent-1").returncode == 0
+    land(repo)
     p = run("done", tk)
     assert p.returncode == 0, p.stdout + p.stderr
     assert item(repo, "Task")["status"] == "done"
@@ -948,3 +956,45 @@ def test_fingerprint_of_a_closed_bug_files_a_new_one(repo, monkeypatch):
     assert red_pipeline(repo) == 0
     new = [x for x in bugs(repo) if x["id"] != old["id"]]
     assert len(new) == 1 and "pipeline 32" in new[0]["links"] and new[0]["links"][1] == old["links"][1]
+
+
+class TestDoneLane:
+    """done reads the integration main as last fetched: a code-lane KB-Work commit must be its ancestor."""
+
+    def worked(self, sprint, path="src/b.txt"):
+        repo, tk = sprint["repo"], sprint["tk"]
+        assert b(repo, "claim", tk, "--by", "agent-1")[0] == 0
+        commit(repo, "claim", tk)
+        (repo / path).parent.mkdir(parents=True, exist_ok=True)
+        (repo / path).write_text("b\n", encoding="utf-8")
+        commit(repo, "write b", tk)
+        return repo, tk
+
+    def done(self, repo, tk):
+        p = subprocess.run([sys.executable, TOOL, "--root", str(repo), "done", tk], cwd=repo, capture_output=True,
+                           text=True, encoding="utf-8")
+        return p.returncode, p.stdout + p.stderr
+
+    def test_unmerged_code_commit_is_refused_naming_the_branch(self, sprint):
+        repo, tk = self.worked(sprint)
+        sh(repo, "git", "update-ref", "refs/remotes/origin/main", "HEAD~1")  # planted: the code commit is not on main
+        code, out = self.done(repo, tk)
+        assert code == 1 and "not on origin/main" in out and f"code/{tk}" in out, out
+
+    def test_missing_integration_ref_is_refused(self, sprint):
+        repo, tk = self.worked(sprint)
+        code, out = self.done(repo, tk)
+        assert code == 1 and "not fetched" in out, out
+
+    def test_merged_code_commit_passes(self, sprint):
+        repo, tk = self.worked(sprint)
+        land(repo)
+        code, out = self.done(repo, tk)
+        assert code == 0, out
+
+    def test_content_item_needs_no_integration_main(self, sprint):
+        repo, tk = self.worked(sprint, "kb/public/x/a.md")
+        edit(repo, tk, checks=[{"run": ["test", "-f", "kb/public/x/a.md"]}], touches=["kb/public/**"])
+        commit(repo, "widen", tk)
+        code, out = self.done(repo, tk)
+        assert code == 0, out
