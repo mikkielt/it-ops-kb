@@ -2096,3 +2096,15 @@ _Agent: kb-research_
 - See python/imports-and-modules.md, python/pytest.md, python/ruff.md, gitlab/git-history-queries.md.
 
 _Agent: kb-research_
+
+## QK-hook-identify-subagent-session-token-usage. How does a hook identify a subagent and its session, and where does the token usage of a session or subagent appear?
+- Every hook gets `session_id`, `transcript_path`, `cwd`, `hook_event_name` and (v2.1.196+) `prompt_id`; `agent_id` and `agent_type` are added only when the hook fires inside a subagent (or `agent_type` under `--agent`), so `agent_id` present means a subagent's call. [DOC S743]
+- A Bash command sees the session id as `CLAUDE_CODE_SESSION_ID` (same value as `session_id`, updated on `/clear`); no subagent id variable is documented. [DOC S745]
+- A Bash command that runs and exits non-zero fires `PostToolUseFailure` (`error` first line `Exit code N`), never `PostToolUse`. [DOC S743]
+- `SubagentStop` adds `agent_transcript_path` (`.../<session-id>/subagents/agent-<agent-id>.jsonl`); `transcript_path` stays the main session's file. [DOC S743, S2157]
+- Token usage: OpenTelemetry `claude_code.token.usage` (`type` input, output, cacheRead, cacheCreation) and `claude_code.cost.usage`, with `session.id`, `query_source` main, subagent or auxiliary, and `agent.name`; per request `claude_code.api_request` carries `input_tokens`, `output_tokens`, `cache_read_tokens`, `cache_creation_tokens`, `cost_usd`, `request_id`, `prompt.id`. [DOC S744]
+- Conclusion: a hook attributes a tool call to a subagent by `agent_id`, joins prompts by `prompt_id` and sessions by `session_id`; usage per subagent needs telemetry (`query_source` subagent) or the transcripts, whose entry format is internal and version-specific. [DER S743, S744, S745, S-uzkb4duq]
+- Open: the field names of `message.usage` inside transcript entries are not documented; only `requestId`, `message.uuid` and `parentUuid` (as join keys) are named in the docs. [UNK]
+- See claude/hooks.md, claude/otel-monitoring.md, claude/agent-sdk.md, agents/agent-caching.md.
+
+_Agent: kb-research_
