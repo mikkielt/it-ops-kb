@@ -36,7 +36,7 @@ You are the orchestrator. Loop:
    Brief it with:
    - the item's JSON and its `/goal` text (`python3 _tools/backlog.py goal ID`);
    - the runbook's Working on items;
-   - "commit on a local branch `work/<id>` with `KB-Work: <id>`, never push";
+   - "commit on a local branch `work/<id>` with `KB-Work: <id>` in the message's last paragraph, with `Co-Authored-By` and the other trailers; never push";
    - "file a bug for any defect outside the item, do not fix it";
    - "record a gate with a recommendation instead of guessing, and stop";
    - "never write the operator's decisions into docs or code".
@@ -67,7 +67,7 @@ The review story is ready once every other item is done or dropped. Its work:
    - a subagent brief that missed something;
    - a rule in `kb/_self/backlog.md` or a skill that got in the way.
    Show the list to the operator. Each change they accept becomes a backlog story (`/kb-backlog`) naming the failure it answers. Write nothing into the docs directly.
-3. Commit with `KB-Work: SP-...` and a body that lists:
+3. Commit with `KB-Work: SP-...` in the last trailer paragraph and a body that lists:
    - each closed item's id and title and what it delivered;
    - the retrospective's findings, each with the story it became or "no change".
 4. `python3 _tools/kbgit.py sync --push`.

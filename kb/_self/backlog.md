@@ -125,6 +125,7 @@ Each item adds three parts of its own: the end state (`goal`), the commands that
 `python3 _tools/backlog.py done ID` is the only way to `done`. It refuses when any of these hold:
 - the item waits on anything;
 - a file in scope has uncommitted changes (the checks run on `HEAD`);
+- the item has `touches` of its own and no commit reachable from `HEAD` carries its `KB-Work` trailer as git reads trailers;
 - a commit with its `KB-Work` trailer left a file outside `touches` changed at `HEAD` (a later revert clears that);
 - one of its checks fails;
 - a review story still has an agent's provisional answer.
@@ -177,7 +178,7 @@ Several sprints may be active at once. Each has its own horizon.
 ## Git
 
 - Work lands on `main` directly through `python3 _tools/kbgit.py sync --push`, as for every change (`kb/_self/git.md`).
-- Every commit that works on an item ends with `KB-Work: <id>[, <id>]`, one line, before the KB-* trailers the hook adds. `python3 _tools/kbgit.py check-trailers` flags a second line, or an id whose item file is in neither the commit nor its parent.
+- Every commit that works on an item ends with `KB-Work: <id>[, <id>]`, one line, in the message's last paragraph together with the other trailers (`Co-Authored-By` and the KB-* trailers the hook adds after them). Git reads trailers only in that paragraph: a `KB-Work` line in an earlier one, or with a blank line before `Co-Authored-By`, is no trailer, and `done` finds no commit for the item. `python3 _tools/kbgit.py check-trailers` flags a second line, or an id whose item file is in neither the commit nor its parent.
 - Work lands only for a claimed item of a started sprint. On a commit not yet on `origin/main`, `check-trailers` refuses a `KB-Work` id whose item, as the commit has it, is not `doing` or `done` (not claimed), or whose sprint is not active (not in a started sprint). The pre-push hook and `sync`'s gate run it, so such work is not pushed; the commit-msg hook warns when the commit is made. Exempt: a backlog-planning commit (it changes only item files: new items, claims, gates, a sprint's plan, start or close), and the sprint and review items themselves. An item outside any sprint joins a started sprint before its work lands. Commits already on `origin/main` are history and stay as they are.
 - Changing an item's JSON (claim, gate answers, done) goes in the same commit as the work, or in its own commit with the same trailer.
 

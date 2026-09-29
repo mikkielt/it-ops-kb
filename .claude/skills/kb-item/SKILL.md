@@ -28,7 +28,7 @@ Whenever you name an item (in chat, a question, a commit), give its id and its t
      - provisional: `python3 _tools/backlog.py answer ID GATE --provisional` and go on.
      In an interactive session, ask the operator at once as well.
 6. **Prove.**
-   1. Commit the work with the trailer `KB-Work: ID`.
+   1. Commit the work with the trailer `KB-Work: ID` in the message's last paragraph, with `Co-Authored-By` and the other trailers (no blank line between them).
    2. Run `python3 _tools/backlog.py done ID` and show its output. On refusal, fix what it names and run it again. Never edit `status` or `evidence` by hand.
    3. Commit the item file with the same trailer.
 7. **Land.**

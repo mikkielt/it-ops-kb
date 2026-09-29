@@ -54,4 +54,4 @@ List what needs deciding:
 Propose priority, severity, sprint or drop for each, in one AskUserQuestion batch. Apply the answers, then run `fmt` and `check`.
 
 ## Finish
-Commit the item files with a `KB-Work:` trailer naming the items. Commit only when the user asked. Then run `python3 _tools/kbgit.py sync --push` (`/kb-git-sync` when it stops).
+Commit the item files with a `KB-Work:` trailer naming the items, in the message's last paragraph with `Co-Authored-By` and the other trailers. Commit only when the user asked. Then run `python3 _tools/kbgit.py sync --push` (`/kb-git-sync` when it stops).
