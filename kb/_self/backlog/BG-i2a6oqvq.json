@@ -2,7 +2,7 @@
   "id": "BG-i2a6oqvq",
   "kind": "bug",
   "title": "Two stress cases fail on Windows: the query exceeds the command-line limit",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-5p4ahbnq",
   "sprint": "SP-fep4fpsx",
   "priority": "P1",

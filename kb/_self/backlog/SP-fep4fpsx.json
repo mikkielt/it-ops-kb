@@ -2,7 +2,7 @@
   "id": "SP-fep4fpsx",
   "kind": "sprint",
   "title": "Windows ready",
-  "status": "planned",
+  "status": "active",
   "goal": "A Windows 11 clone with Git for Windows goes from no Python to a passing /kb-setup: the pinned Python and uv install from their official releases after a host conflict preflight that tells the user about every conflict, the skills and permission rules work from the PowerShell tool, a clone without Python says so at session start, and stress_test.py passes on Windows, and item checks run with the interpreter that runs backlog.py, so done proves an item on a host whose python3 is the Store alias.",
   "gates": [
     {

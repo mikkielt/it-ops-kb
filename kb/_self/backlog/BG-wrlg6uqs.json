@@ -2,7 +2,7 @@
   "id": "BG-wrlg6uqs",
   "kind": "bug",
   "title": "Item checks fail on a host whose python3 is the Store alias",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-5p4ahbnq",
   "sprint": "SP-fep4fpsx",
   "priority": "P1",
