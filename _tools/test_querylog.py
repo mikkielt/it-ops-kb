@@ -3743,3 +3743,63 @@ class TestStatus:
             return p.returncode, p.stdout, p.stderr
         got = ql_report.reverted_commits(repo.path, run)
         assert [s for _, s in got] == ["revert: query log commit abc"]
+
+
+# ---- the revert's bug carries the failure fingerprint (backlog.py's) and joins an open bug with the same one
+
+def fingerprint_forge(jobs, logs):
+    """A signed-in glab stub for the revert's pipeline: its failed jobs and their traces (no network)."""
+    def run(argv, cwd=None):
+        if argv[1:3] == ["auth", "status"]:
+            return 0, "", "Logged in"
+        if "/jobs?scope=failed" in argv[-1]:
+            return 0, json.dumps(jobs), ""
+        m = re.search(r"/jobs/(\d+)/trace$", argv[-1])
+        return (0, logs.get(int(m.group(1)), ""), "") if m else (1, "", "unexpected call")
+    return run
+
+
+def fingerprint_pusher(tmp_path, run):
+    (tmp_path / "worktree" / "kb" / "_self" / "backlog").mkdir(parents=True)
+    return ql_deliver.Pusher(tmp_path, tmp_path / "q", run, None, lambda *_: None, cloud=False)
+
+
+def test_revert_fingerprint_is_backlogs_and_a_second_pipeline_joins_the_open_bug(tmp_path):
+    import backlog
+    url = "https://gitlab.example.com/team/kb.git"
+    jobs = [{"id": 11, "name": "lint", "status": "failed"}, {"id": 10, "name": "check", "status": "failed"}]
+    log = "2026-09-01T10:00:00Z FAILED _tools/test_x.py::test_a - assert 3 == 4\n"
+    run = fingerprint_forge(jobs, {10: log, 11: "lint error\n"})
+    failure, fp = ql_deliver.pipeline_failure(url, {"id": 901}, run)
+    assert failure == "_tools/test_x.py::test_a"
+    assert fp == backlog.failure_fingerprint("check", "_tools/test_x.py::test_a")  # the first failed job by name
+    pusher = fingerprint_pusher(tmp_path, run)
+    pipe = {"id": 901, "url": "https://x/901", "status": "failed", "failure": failure, "fingerprint": fp}
+    first = pusher.file_bug("a" * 40, {"F1": {}}, pipe)
+    bl = backlog.Backlog(pusher.wt)
+    assert list(bl.items) == [first] and bl.items[first]["severity"] == "S2"  # no open bug: exactly one S2 bug
+    assert bl.items[first]["links"] == ["pipeline 901", f"fingerprint {fp}"]
+    # planted: a later revert's pipeline that fails the same way (other job id, time and numbers) joins that bug
+    log2 = "2026-09-03T08:15:42Z FAILED _tools/test_x.py::test_a - assert 7 == 9\n"
+    run2 = fingerprint_forge([{"id": 20, "name": "check", "status": "failed"}], {20: log2})
+    failure2, fp2 = ql_deliver.pipeline_failure(url, {"id": 902}, run2)
+    assert fp2 == fp
+    again = pusher.file_bug("b" * 40, {}, {"id": 902, "failure": failure2, "fingerprint": fp2})
+    bl = backlog.Backlog(pusher.wt)
+    assert again == first and list(bl.items) == [first]  # no second bug
+    assert bl.items[first]["links"] == ["pipeline 901", f"fingerprint {fp}", "pipeline 902"]
+    assert pusher.file_bug("c" * 40, {}, {"id": 902, "fingerprint": fp}) is None  # the pipeline is already named
+    # a different failure files a second bug
+    other = pusher.file_bug("d" * 40, {}, {"id": 903, "fingerprint": backlog.failure_fingerprint("check", "other")})
+    assert other not in (None, first) and len(backlog.Backlog(pusher.wt).items) == 2
+
+
+def test_revert_fingerprint_unreadable_pipeline_files_a_bug_without_one(tmp_path):
+    import backlog
+    url = "https://gitlab.example.com/team/kb.git"
+    run = fingerprint_forge([], {})
+    assert ql_deliver.pipeline_failure(url, {"id": 5}, run) == ("", None)
+    assert ql_deliver.pipeline_failure(url, {}, run) == ("", None)
+    pusher = fingerprint_pusher(tmp_path, run)
+    bug = pusher.file_bug("e" * 40, {}, {"id": 5, "failure": "", "fingerprint": None})
+    assert backlog.Backlog(pusher.wt).items[bug]["links"] == ["pipeline 5"]

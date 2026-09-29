@@ -125,6 +125,42 @@ def ci_pipeline(url, sha, run):
     return pipeline_verdict(forge, states), f"{note}: {shown}", pipe
 
 
+def pipeline_failure(url, pipe, run):
+    """(failure, fingerprint) of the red pipeline `pipe` ({id, ...}) on origin's forge, computed as backlog.py does
+    for main's pipeline: the first failed job by name, what failed first in its log (`backlog.first_failure`), and
+    `backlog.failure_fingerprint` of the two. ('', None) when no failed job can be read (no id, a failed call)."""
+    import backlog
+    pid = pipe.get("id")
+    if pid is None:
+        return "", None
+    forge, host, project = origin_forge(url)
+    if forge == "github":
+        code, o, _ = run(["gh", "run", "view", str(pid), "-R", f"{host}/{project}", "--json", "jobs"])
+        key, bad, field, idkey = "jobs", ("failure", "timed_out", "startup_failure"), "conclusion", "databaseId"
+    else:
+        quoted = urllib.parse.quote(project, safe="")
+        code, o, _ = run(["glab", "api", "--hostname", host,
+                          f"projects/{quoted}/pipelines/{pid}/jobs?scope=failed&per_page=100"])
+        key, bad, field, idkey = None, ("failed",), "status", "id"
+    try:
+        js = json.loads(o) if code == 0 else []
+        js = js.get(key, []) if key and isinstance(js, dict) else js
+        failed = [j for j in js if isinstance(j, dict) and j.get(field) in bad and j.get("name")]
+    except (ValueError, AttributeError, TypeError):
+        failed = []
+    if not failed:
+        return "", None
+    first = min(failed, key=lambda j: str(j["name"]))
+    log, jid = "", first.get(idkey)
+    if jid is not None:
+        argv = (["gh", "api", "--hostname", host, f"repos/{project}/actions/jobs/{jid}/logs"] if forge == "github" else
+                ["glab", "api", "--hostname", host, f"projects/{quoted}/jobs/{jid}/trace"])
+        code, o, _ = run(argv)
+        log = o if code == 0 else ""
+    failure = backlog.first_failure(log)
+    return failure, backlog.failure_fingerprint(first["name"], failure)
+
+
 def ci_status(url, sha, run):
     """(verdict, detail) of `ci_pipeline`."""
     return ci_pipeline(url, sha, run)[:2]
@@ -467,7 +503,8 @@ class Pusher:
             return True
         if verdict == "red":
             self.say(f"CI of the last automatic commit {sha[:9]} is red ({detail}): reverting it")
-            return self.revert(sha, commits, detail, pipe)
+            failure, fp = pipeline_failure(url, pipe or {}, self.run)
+            return self.revert(sha, commits, detail, {**(pipe or {}), "failure": failure, "fingerprint": fp})
         return True
 
     def file_bug(self, sha, applied, pipe):
@@ -478,14 +515,19 @@ class Pusher:
         bl = backlog.Backlog(self.wt)
         pid = pipe.get("id") if pipe.get("id") is not None else f"of commit {sha[:12]}"
         marker = f"pipeline {pid}"
-        for it in bl.items.values():
-            if re.search(rf"\b{re.escape(marker)}\b", " ".join(str(it.get(f, "")) for f in ("title", "goal", "notes"))):
-                return None
+        if any(backlog.names_pipeline(it, marker) for it in bl.items.values()):
+            return None
+        fp = pipe.get("fingerprint")
+        dup = backlog.bug_with_fingerprint(bl, fp) if fp else None
+        if dup:  # an open bug already carries this way of failing: the pipeline joins it
+            backlog.add_pipeline(bl, dup, pid)
+            return dup
         ids = sorted(applied)
         extra = (f"Its push {sha[:12]} was reverted (KB-Auto: revert); reverted findings: "
                  f"{', '.join(ids) or 'none applied'}; the pipeline's status was "
-                 f"{pipe.get('status') or 'failed'}.")
-        it = backlog.red_bug(pid, sha, "S2", (), pipe.get("url"), extra)
+                 f"{pipe.get('status') or 'failed'}."
+                 + (f" It failed first on: {pipe['failure']}." if pipe.get("failure") else ""))
+        it = backlog.red_bug(pid, sha, "S2", (), pipe.get("url"), extra, fingerprint=fp)
         it["title"] = f"Red main {marker}: query log push {sha[:9]} reverted"
         bl.save(it)
         return it["id"]
