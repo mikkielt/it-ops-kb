@@ -17,6 +17,7 @@ kb/_self/maintaining.md,pyproject.toml
 kb/_self/tools.md,_tools/rag.py
 kb/_self/tools.md,_tools/kbfacts.py
 kb/_self/tools.md,_tools/kb_mcp.py
+kb/_self/tools.md,_tools/kb_http.py
 kb/_self/tools.md,_tools/kb_hook.py
 kb/_self/tools.md,_tools/kb_ask.py
 kb/_self/tools.md,_tools/agent_bench.py
@@ -51,12 +52,14 @@ kb/_self/plugin.md,.claude/skills/kb-lookup/SKILL.md
 kb/_self/plugin.md,.claude/skills/kb-review-workspace/SKILL.md
 kb/_self/plugin.md,.claude/skills/kb-gap/SKILL.md
 kb/_self/plugin.md,_tools/kb_mcp.py
+kb/_self/plugin.md,_tools/kb_http.py
 kb/_self/plugin.md,_tools/kb_hook.py
 kb/_self/plugin.md,_tools/kbcommon.py
 kb/_self/plugin.md,.claude/hooks/kb_change_router.py
 kb/_self/design.md,kb/_self/reports/*.md
 kb/_self/design.md,_tools/kb_ask.py
 kb/_self/design.md,AGENTS.md
+kb/_self/design.md,_tools/kb_http.py
 kb/_self/alternatives.md,kb/_self/design.md
 kb/_self/alternatives.md,README.md
 kb/_self/token-efficiency.md,_tools/kbfacts.py
