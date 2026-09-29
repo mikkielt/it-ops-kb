@@ -10,6 +10,7 @@
 | `python3 _tools/kbgit.py install-hooks [--uninstall]` | once per clone: `core.hooksPath=.githooks`, so commits get their KB-* trailers and a plain `git push` runs the gate |
 | `python3 _tools/kbgit.py trailers [--staged] [REV] [--verified YYYY-MM-DD]` | print the KB-* trailers of the staged change or of a commit; `--amend` rewrites HEAD's message with them |
 | `python3 _tools/kbgit.py check-trailers [A..B]` | exit 1 listing kb commits whose trailers are missing or wrong, a malformed `KB-Verified`, `KB-Auto` or `KB-Work` included (default: CI's push range, else `@{upstream}..HEAD`) |
+| `python3 _tools/kbgit.py lane [A..B or REV]` | each commit's short hash, its lane and the code paths that decided it (default: CI's push range, else `@{upstream}..HEAD`); `_tools/kblane.py` holds the classifier, see Lanes below |
 | `python3 _tools/kbgit.py log <S-id, topic, QK-id or path> [-n N]` | commits that touched it: by trailer, else by diff (`git log -G`) or path history |
 | `python3 _tools/kbgit.py blame PATH:LINE` / `asof <YYYY-MM-DD or tag> PATH` / `tag-census YYYY-MM-DD` | the commit that wrote a line plus its sources' urls / a file as of a date or tag / annotated tag `census-YYYY-MM-DD` on HEAD (not pushed) |
 
@@ -26,6 +27,10 @@ History commands exit 0 on success, 1 when check-trailers finds a bad commit or 
 - Never `git push --force`, never push with a red gate, never rewrite pushed history. The one exception is `kbgit.py publish --rewrite` on the public home (Public home), when a person decides to replace what was pushed there directly.
 - Exit 3 means a conflict in an article, tool or doc: the rebase is left in progress with the paths listed. Resolve it with `/kb-git-sync` (by meaning: both sides' facts kept, newer confirmed evidence wins a changed fact, real disagreements go to `_conflicts.md`), or by hand the same way, or back out with `git rebase --abort`. Exit 1 (red gate): `/kb-git-sync` fixes the cause, never the baseline.
 - Census tags: `python3 _tools/kbgit.py tag-census YYYY-MM-DD`, then `git push origin census-YYYY-MM-DD`. A census tag says "the kb was confirmed current as of this date" (the tag message counts the sources and the `_fetch_state.csv` checks); create it only after a full verification.
+
+## Lanes (`_tools/kblane.py`)
+
+A commit is in the `content` lane or the `code` lane. A path is content when it is under a kb root (`kb/<name>/**` for a name not starting with `_`), under `kb/_querylog/`, a backlog item (`kb/_self/backlog/*.json`), a process doc directly in `kb/_self/` (`kb/_self/*.md`), `_tools/aliases.csv` or `_tools/lint_baseline.txt`; every other path is code (`_tools/`, `.claude/`, `.githooks/`, the CI file, `AGENTS.md`, `README.md`, `kb/_self/map.csv` and any file in a subdirectory of `kb/_self/`). A commit is code when any path it changes against its first parent is code (a merge commit the same way, a root commit against the empty tree). Every path the query log's writers accept (`ql_deliver.auto_kinds`) and every `kbgit.MECHANICAL` path is content, so a sync that rebases content never becomes code. `kblane.py` imports neither `kbgit.py` nor `backlog.py`; `kbgit.py lane` is its command line (`_tools/test_kblane.py`).
 
 ## Public home (`_tools/kbpublic.py`)
 

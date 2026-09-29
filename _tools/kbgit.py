@@ -6,6 +6,7 @@
   kbgit.py trailers [--staged | REV | --amend] [--verified YYYY-MM-DD]   the KB-* trailers of the staged change or a commit
   kbgit.py install-hooks [--uninstall]                     core.hooksPath=.githooks: KB-* trailers, and the gate on a plain push
   kbgit.py check-trailers [A..B | REV]                     exit 1 listing kb commits whose KB-* trailers are missing or wrong
+  kbgit.py lane [A..B | REV]                               each commit's lane (content or code) and the code paths that decided it
   kbgit.py log <S-id | topic | QK-id | path> [-n N]        commits that touched it (trailers first, then diff/path history)
   kbgit.py blame <path:line>                               the commit that wrote that line, and the sources it cites
   kbgit.py asof <YYYY-MM-DD | tag | rev> <path>            the file as of the last commit on or before that date (or at the tag)
@@ -147,6 +148,7 @@ import kbcommon, kbid  # noqa: E402
 import build_index  # noqa: E402
 import ql_store  # noqa: E402
 import kbpublic  # noqa: E402
+import kblane  # noqa: E402
 
 KB = kbcommon.HOME  # the repository: git runs here, and every path kbgit names is relative to it
 ROOT = kbcommon.PUBLIC  # the root fix and the history commands work on now (use_root); the public root by default
@@ -1544,6 +1546,17 @@ def default_range():
     return "@{upstream}..HEAD" if rev_parse("@{upstream}") else "HEAD"
 
 
+def cmd_lane(a):
+    rng = a.range or default_range()
+    lanes = kblane.commit_lanes(KB, kblane.spec_of(rng))
+    if lanes is None:
+        print(f"{rng}: not a valid revision range here")
+        return 2
+    for short, lane, code in lanes:
+        print(f"{short} {lane}" + (f" {' '.join(code)}" if code else ""))
+    return 0
+
+
 def commit_changes(spec):
     """{sha: (first parent or "", [changed paths])} for the non-merge commits of `git log SPEC`, from one git call:
     the paths diff-tree gives against the first parent (no rename detection; a root commit lists every file)."""
@@ -2328,6 +2341,8 @@ def main():
     i.add_argument("--uninstall", action="store_true", help="unset core.hooksPath if it points at .githooks")
     c = sub.add_parser("check-trailers", help="exit 1 listing kb commits with missing or wrong KB-* trailers")
     c.add_argument("range", nargs="?", help="A..B or one commit (default: the CI push range, else @{upstream}..HEAD)")
+    ln = sub.add_parser("lane", help="each commit's lane, content or code, and the code paths that decided it")
+    ln.add_argument("range", nargs="?", help="A..B or one commit (default: the CI push range, else @{upstream}..HEAD)")
     lg = sub.add_parser("log", help="commits that touched a source id, topic, answer id or path")
     lg.add_argument("target")
     lg.add_argument("-n", type=int, default=20, help="show at most N commits (default 20)")
@@ -2355,7 +2370,7 @@ def main():
     h.add_argument("name", choices=HOOKS)
     h.add_argument("args", nargs="*")
     a = ap.parse_args()
-    cmds = {"trailers": cmd_trailers, "install-hooks": cmd_install_hooks, "check-trailers": cmd_check_trailers,
+    cmds = {"trailers": cmd_trailers, "install-hooks": cmd_install_hooks, "check-trailers": cmd_check_trailers, "lane": cmd_lane,
             "log": cmd_log, "blame": cmd_blame, "asof": cmd_asof, "tag-census": cmd_tag_census, "hook": cmd_hook,
             "sync": cmd_sync, "publish": lambda a: kbpublic.cmd_publish(a, KB),
             "check-public": lambda a: kbpublic.cmd_check_public(a, KB)}

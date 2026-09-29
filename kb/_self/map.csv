@@ -42,6 +42,7 @@ kb/_self/content-rules.md,_tools/build_index.py
 kb/_self/content-rules.md,.claude/skills/kb-verify/lint.py
 kb/_self/git.md,_tools/kbgit.py
 kb/_self/git.md,_tools/kbpublic.py
+kb/_self/git.md,_tools/kblane.py
 kb/_self/git.md,.githooks/*
 kb/_self/git.md,.gitattributes
 kb/_self/git.md,.gitlab-ci.yml
