@@ -2,7 +2,7 @@
   "id": "TK-rcspiyvx",
   "kind": "task",
   "title": "backlog.py check validates an item's knowledge asks and refs",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-ireqmpda",
   "priority": "P2",
   "rank": 0,
@@ -22,5 +22,19 @@
     "_tools/test_backlog.py",
     "kb/_self/tools.md"
   ],
-  "claimed_by": "worker-rcspiyvx"
+  "evidence": {
+    "commit": "fdcf26f4b02ad3f1a212ec068d7c97b93e80e85e",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "knowledge_refs"
+        ],
+        "exit": 0,
+        "sha256": "95569c0b9a21ab91"
+      }
+    ]
+  }
 }
