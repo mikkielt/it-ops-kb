@@ -857,11 +857,17 @@ SECRET_ENV = re.compile(r"(?i)token|secret|passw|credential|api[_-]?key|private[
 PROXY_ENV = re.compile(r"(?i)^(?:https?|all|ftp|no)_proxy$")
 
 
-def scrub_env(base=None):
-    """The environment of a mapper command: the caller's, without credentials and proxies, plus NETWORK_OFF."""
+def scrub_env(base=None, windows=None):
+    """The environment of a mapper command: the caller's, without credentials and proxies, plus NETWORK_OFF. On
+    Windows (WINDOWS, by default os.name) it also sets NoDefaultCurrentDirectoryInExePath: cmd.exe, which runs an npm
+    cmd-shim (tsc.cmd, npm.cmd), otherwise looks for a bare `node` in the working folder before PATH, and that folder
+    is the repository's (https://learn.microsoft.com/windows/win32/api/processenv/nf-processenv-needcurrentdirectoryforexepathw:
+    the variable's existence, not its value, drops the current directory from cmd.exe's search)."""
     env = {k: v for k, v in (os.environ if base is None else base).items()
            if not SECRET_ENV.search(k) and not PROXY_ENV.match(k)}
     env.update(NETWORK_OFF)
+    if os.name == "nt" if windows is None else windows:
+        env["NoDefaultCurrentDirectoryInExePath"] = "1"
     return env
 
 

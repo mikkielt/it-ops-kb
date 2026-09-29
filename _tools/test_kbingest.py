@@ -378,6 +378,17 @@ def test_kbingest_map_scrub_env():
     assert env["GOTOOLCHAIN"] == "local"  # offline settings win over the caller's
 
 
+def test_kbingest_map_windows_no_cwd_lookup():
+    """On Windows cmd.exe (an npm cmd-shim) finds a bare `node` in its working folder, the repository's, unless
+    NoDefaultCurrentDirectoryInExePath exists; scrub_env sets it there, and only there by default."""
+    base = {"PATH": "/bin"}
+    assert kbingest.scrub_env(base, windows=True)["NoDefaultCurrentDirectoryInExePath"] == "1"
+    assert kbingest.scrub_env({**base, "NoDefaultCurrentDirectoryInExePath": ""}, windows=True)[
+        "NoDefaultCurrentDirectoryInExePath"] == "1"
+    assert "NoDefaultCurrentDirectoryInExePath" not in kbingest.scrub_env(base, windows=False)
+    assert ("NoDefaultCurrentDirectoryInExePath" in kbingest.scrub_env(base)) == (os.name == "nt")
+
+
 def test_kbingest_map_notes_are_capped():
     ctx = kbingest.MapCtx("/nowhere", {}, 1, "fake")
     for i in range(kbingest.NOTE_LIMIT + 5):
