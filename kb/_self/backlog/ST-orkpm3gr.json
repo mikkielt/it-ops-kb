@@ -2,7 +2,7 @@
   "id": "ST-orkpm3gr",
   "kind": "story",
   "title": "Review sprint: Agents read less of the kb's own files",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-mqjeanq3",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,6 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "claimed_by": "orchestrator-SP-mqjeanq3"
 }
