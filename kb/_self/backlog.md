@@ -43,6 +43,7 @@ A story or bug too big for one push is split into two. A task too big for one co
 | `depends_on`, `relates_to` | hard dependencies (not ready until they are done); soft links |
 | `gates` | questions for the operator: `{"id", "kind": "blocking"\|"provisional", "question", "options", "recommendation", "answer", "by"}` |
 | `trigger` | an outside event it waits for: `{"when": text, "fired": false}` |
+| `knowledge` | the kb facts the work rests on: `{"ask": [questions], "refs": [...]}`, each ref a topic (`<domain>/<slug>` or `<root>/<domain>/<slug>`), a QK answer id (`QK-...`, `<root>:QK-...` outside `public`), a source id, or a fact (`<root>/<path>#<fact key>`, the 12-hex key `_anchors.csv` uses); `check` fails on a ref the clone's kb does not hold and reports a fact key no longer in its file as `stale knowledge` without failing |
 | `links`, `notes` | ledger entries, answers and docs it relates to; present-state notes |
 | `claimed_by`, `evidence` | written by `claim` and `done` only |
 
