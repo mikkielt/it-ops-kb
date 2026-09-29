@@ -1,0 +1,24 @@
+{
+  "id": "TK-qdx3oo6c",
+  "kind": "task",
+  "title": "Trailer detector",
+  "status": "todo",
+  "parent": "ST-qouhlhni",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "The detector and its tests in a throwaway repository: a KB-Work line before a blank line and Co-Authored-By (reported), a correct trailer (not reported), a _tools/ commit without KB-Work (reported), a KB-Auto commit (not reported)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "intake_trailers"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_intake.py",
+    "_tools/test_intake.py"
+  ]
+}

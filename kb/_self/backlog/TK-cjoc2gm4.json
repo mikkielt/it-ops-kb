@@ -1,0 +1,25 @@
+{
+  "id": "TK-cjoc2gm4",
+  "kind": "task",
+  "title": "bl_intake.py registry, fingerprints, dedup and the intake command",
+  "status": "todo",
+  "parent": "ST-tngq6z2j",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "bl_intake.py and backlog.py intake as the story states, with a planted duplicate and a planted passing --status in test_intake.py",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "intake_core"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_intake.py",
+    "_tools/backlog.py",
+    "_tools/test_intake.py"
+  ]
+}

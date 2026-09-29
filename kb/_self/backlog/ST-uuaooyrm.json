@@ -2,7 +2,7 @@
   "id": "ST-uuaooyrm",
   "kind": "story",
   "title": "none states what the kb has and lacks, then the live docs answer",
-  "status": "todo",
+  "status": "done",
   "parent": "EP-c7fzjhge",
   "sprint": "SP-aikswrrl",
   "priority": "P1",
@@ -88,5 +88,68 @@
     "_tools/kbfacts.py",
     "kb/_self/plugin.md"
   ],
-  "notes": "Server instructions are always-on text in hosts: the new wording must not be longer than the old (operator: no new always-on tokens); len(kb_mcp.INSTRUCTIONS) is 1,004 now. AGENTS.md is 4,095 of its 4,096 bytes, so the new rule needs a cut elsewhere in it (kb/_self/maintaining.md). A host may have the kb plugin without the docs plugin, so the rule names the live docs without assuming the docs servers are there."
+  "notes": "Server instructions are always-on text in hosts: the new wording must not be longer than the old (operator: no new always-on tokens); len(kb_mcp.INSTRUCTIONS) is 1,004 now. AGENTS.md is 4,095 of its 4,096 bytes, so the new rule needs a cut elsewhere in it (kb/_self/maintaining.md). A host may have the kb plugin without the docs plugin, so the rule names the live docs without assuming the docs servers are there.",
+  "evidence": {
+    "commit": "388495896b3040b4ea81024d89c099b71aff6e9c",
+    "checks": [
+      {
+        "run": [
+          "git",
+          "grep",
+          "-q",
+          "-F",
+          "-e",
+          "say the kb does not cover it",
+          "-e",
+          "Say so. Do not fill the gap from memory",
+          "-e",
+          "say so and add nothing from memory",
+          "-e",
+          "say so, or research it with /kb-research",
+          "--",
+          "AGENTS.md",
+          ".claude/skills/kb-lookup/SKILL.md",
+          ".claude/agents/kb-lookup.md",
+          "_tools/kb_mcp.py",
+          "_tools/kbfacts.py"
+        ],
+        "exit": 1,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "test_none_rule"
+        ],
+        "exit": 0,
+        "sha256": "cce33086429374e4"
+      },
+      {
+        "run": [
+          "git",
+          "grep",
+          "-q",
+          "-F",
+          "-e",
+          "none -> say the kb does not cover it",
+          "--",
+          "kb/_self/plugin.md"
+        ],
+        "exit": 1,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "TestCohesion or TestSelfDocs"
+        ],
+        "exit": 0,
+        "sha256": "70f2d3a6ac298ef9"
+      }
+    ]
+  }
 }

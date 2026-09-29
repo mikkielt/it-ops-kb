@@ -1,0 +1,24 @@
+{
+  "id": "TK-i2lkoxwv",
+  "kind": "task",
+  "title": "Stranded-findings detector",
+  "status": "todo",
+  "parent": "ST-wwmidxim",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "The detector and its tests with a planted stranded candidate-gap, a planted fresh one (not reported) and a stage source finding (a story)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "intake_stranded"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_intake.py",
+    "_tools/test_intake.py"
+  ]
+}

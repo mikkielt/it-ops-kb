@@ -1,0 +1,24 @@
+{
+  "id": "TK-hft3uklk",
+  "kind": "task",
+  "title": "Reduce the 2026-09-29 state to a fixture and replay it",
+  "status": "todo",
+  "parent": "ST-igaxxamb",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "_tools/fixtures/intake/ built from 2241f98b with placeholders only (no real hosts beyond the public ones the kb already names), and test_intake_replay asserting the story's candidates and a second run filing nothing",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "intake_replay"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/fixtures/intake/**",
+    "_tools/test_intake.py"
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "id": "TK-erssdgvw",
+  "kind": "task",
+  "title": "Drift detector",
+  "status": "todo",
+  "parent": "ST-f2ravix7",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "The detector and its tests: a doing item with an old work commit (reported), a todo item whose check passes (reported), one whose check fails (not reported), a check that exceeds the timeout (not reported, counted)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "intake_drift"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_intake.py",
+    "_tools/test_intake.py"
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "id": "ST-f2ravix7",
+  "kind": "story",
+  "title": "Intake detector: items drifted from their commits",
+  "status": "draft",
+  "parent": "EP-o2bjijfp",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "intake's drift detector reports one triage story listing each doing item whose KB-Work work commit on origin/main is older than DRIFT_HOURS with no done, and each draft or todo item with touches whose own checks already pass on HEAD (run with the item's checks, a per-check timeout, only for items whose touches changed since their file did); the fingerprint is the sorted item ids",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "intake_drift"
+      ]
+    }
+  ],
+  "depends_on": [
+    "ST-tngq6z2j"
+  ],
+  "relates_to": [
+    "ST-nesccqgl",
+    "BG-ec4raar2"
+  ],
+  "gates": [
+    {
+      "id": "drift-hours",
+      "kind": "provisional",
+      "question": "How long may a doing item sit after its work commit landed before drift reports it (DRIFT_HOURS)?",
+      "options": [
+        "24",
+        "4",
+        "72"
+      ],
+      "recommendation": "24: a sprint run lands and closes an item within a session; a day covers an interrupted one"
+    }
+  ]
+}

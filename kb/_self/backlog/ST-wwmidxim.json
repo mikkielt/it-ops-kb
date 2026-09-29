@@ -1,0 +1,40 @@
+{
+  "id": "ST-wwmidxim",
+  "kind": "story",
+  "title": "Intake detector: query-log findings stranded in a non-terminal state",
+  "status": "draft",
+  "parent": "EP-o2bjijfp",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "intake's stranded-findings detector reads the committed store kb/_querylog and reports each finding whose newest record is candidate-gap, open source, no-fix or apply-failed and older than STRANDED_DAYS on HEAD's commit day: a stage source finding becomes a story to probe its host's provider, any other a bug; the fingerprint is the finding id and its state",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "intake_stranded"
+      ]
+    }
+  ],
+  "depends_on": [
+    "ST-tngq6z2j"
+  ],
+  "relates_to": [
+    "BG-26tywezq",
+    "ST-v3jzw42r"
+  ],
+  "gates": [
+    {
+      "id": "stranded-days",
+      "kind": "provisional",
+      "question": "How many days without a new record make a non-terminal finding stranded (STRANDED_DAYS)?",
+      "options": [
+        "3",
+        "7",
+        "1"
+      ],
+      "recommendation": "3: learn and apply run on every distill, so three quiet days mean no stage will move the finding"
+    }
+  ]
+}

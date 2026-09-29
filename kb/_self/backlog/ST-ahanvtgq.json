@@ -1,0 +1,26 @@
+{
+  "id": "ST-ahanvtgq",
+  "kind": "story",
+  "title": "SessionStart runs intake and writes its drafts uncommitted",
+  "status": "draft",
+  "parent": "EP-o2bjijfp",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "The async SessionStart hook that runs red-pipeline --hook runs backlog.py intake --file --hook instead: silent, bounded by a timeout, writes draft item files that stay uncommitted until /kb-backlog triage commits them, never commits or pushes; /kb-backlog triage lists intake's uncommitted drafts first; the query log digest counts the week's intake candidates by detector",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "intake_hook or change_router"
+      ]
+    }
+  ],
+  "depends_on": [
+    "ST-wwmidxim",
+    "ST-qouhlhni",
+    "ST-f2ravix7",
+    "ST-uzqoj5du"
+  ]
+}

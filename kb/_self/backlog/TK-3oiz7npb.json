@@ -1,0 +1,26 @@
+{
+  "id": "TK-3oiz7npb",
+  "kind": "task",
+  "title": "Move the main-pipeline check into an intake detector",
+  "status": "todo",
+  "parent": "ST-uzqoj5du",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "red-pipeline calls the intake CI detector; its existing tests pass unchanged and test_intake.py asserts one bug for one red pipeline across intake and red-pipeline",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "intake_ci or red_pipeline"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_intake.py",
+    "_tools/backlog.py",
+    "_tools/test_intake.py",
+    "_tools/test_backlog.py"
+  ]
+}

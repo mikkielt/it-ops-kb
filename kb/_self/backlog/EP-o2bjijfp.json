@@ -5,8 +5,22 @@
   "status": "todo",
   "priority": "P3",
   "rank": 0,
-  "goal": "Defects the pipeline already detects reach the backlog as bugs without a person filing them.",
+  "goal": "Defects and drift that the pipeline, the query-log store, git history and the backlog already show reach the backlog as draft items without a person filing them, found by deterministic detectors and filed once per fingerprint.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "intake_replay"
+      ],
+      "exit": 0
+    }
+  ],
   "links": [
-    "kb/_self/backlog.md"
-  ]
+    "kb/_self/backlog.md",
+    "public/agents/agent-planning-and-done.md:44",
+    "public/agents/agent-overuse-patterns.md:14"
+  ],
+  "notes": "Intake uses no model: every detector is a rule over the store, git and item files. Its drafts stay uncommitted until /kb-backlog triage, so it adds no autonomous write path to main."
 }

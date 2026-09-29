@@ -2,7 +2,7 @@
   "id": "ST-tobxg7ui",
   "kind": "story",
   "title": "kb_ask.py routes by the pack's route line",
-  "status": "todo",
+  "status": "done",
   "parent": "EP-c7fzjhge",
   "sprint": "SP-aikswrrl",
   "priority": "P1",
@@ -33,5 +33,30 @@
     "_tools/kb_ask.py#plan",
     "_tools/kb_ask.py#claude_argv"
   ],
-  "notes": "Operator answers: researcher = sonnet alias, --effort low, docs servers + WebSearch/WebFetch, no kb tools, lean start (LEAN); keep the INSUFFICIENT escalation and test it. Facts: `--output-format json` gives `result`, `total_cost_usd`, `modelUsage`, `is_error` (claude/ci-and-headless.md:72, :74, DOC S1800, S-fmj24q2u); error subtypes carry `errors` in place of `result` and still the cost (:75, DOC S-fmj24q2u, S-isqfh6pr); two processes give two results a router adds (:80, DER S1800, S-isqfh6pr); `--effort low` is the lever for a lean Sonnet 5.5 run and Haiku 4.5 has no effort (:81, :84, DOC S-ezqg74ki; answer QK-lookup-router-s-result-fields-effort); `--allowedTools` does not restrict which tools exist, `--tools` does (claude/cli-flags.csv:10, S1824); WebSearch returns titles and urls only, WebFetch is lossy, and -p needs both in `--allowedTools` (agents/doc-lookup-sources.md:69-73, DOC S-3yod3u7q, DER). The Mintlify servers also offer query_docs_filesystem (agents/doc-lookup-sources.md:67, DOC S2182); never allow submit_feedback (AGENTS.md). The kb_ask row gets route `web` or `split` and no cost field: distill keeps only ENTRY_KEYS (ql_store.py), and storing cost would change what the store records. No `kb_ask.py --route` check: every kb_ask.py run writes a query log row, so a check would log into the operator's spool on each `done`. test_kb_ask (existing) passes now and guards test_kb_ask_routes and the row test."
+  "notes": "Operator answers: researcher = sonnet alias, --effort low, docs servers + WebSearch/WebFetch, no kb tools, lean start (LEAN); keep the INSUFFICIENT escalation and test it. Facts: `--output-format json` gives `result`, `total_cost_usd`, `modelUsage`, `is_error` (claude/ci-and-headless.md:72, :74, DOC S1800, S-fmj24q2u); error subtypes carry `errors` in place of `result` and still the cost (:75, DOC S-fmj24q2u, S-isqfh6pr); two processes give two results a router adds (:80, DER S1800, S-isqfh6pr); `--effort low` is the lever for a lean Sonnet 5.5 run and Haiku 4.5 has no effort (:81, :84, DOC S-ezqg74ki; answer QK-lookup-router-s-result-fields-effort); `--allowedTools` does not restrict which tools exist, `--tools` does (claude/cli-flags.csv:10, S1824); WebSearch returns titles and urls only, WebFetch is lossy, and -p needs both in `--allowedTools` (agents/doc-lookup-sources.md:69-73, DOC S-3yod3u7q, DER). The Mintlify servers also offer query_docs_filesystem (agents/doc-lookup-sources.md:67, DOC S2182); never allow submit_feedback (AGENTS.md). The kb_ask row gets route `web` or `split` and no cost field: distill keeps only ENTRY_KEYS (ql_store.py), and storing cost would change what the store records. No `kb_ask.py --route` check: every kb_ask.py run writes a query log row, so a check would log into the operator's spool on each `done`. test_kb_ask (existing) passes now and guards test_kb_ask_routes and the row test.",
+  "evidence": {
+    "commit": "388495896b3040b4ea81024d89c099b71aff6e9c",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "TestKbAskRoute"
+        ],
+        "exit": 0,
+        "sha256": "d1db7932df338d8f"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "test_kb_ask"
+        ],
+        "exit": 0,
+        "sha256": "f5c523667fe6ea12"
+      }
+    ]
+  }
 }

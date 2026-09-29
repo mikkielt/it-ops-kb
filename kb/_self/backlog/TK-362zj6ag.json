@@ -1,0 +1,29 @@
+{
+  "id": "TK-362zj6ag",
+  "kind": "task",
+  "title": "SessionStart hook, triage listing and digest line",
+  "status": "todo",
+  "parent": "ST-ahanvtgq",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "settings.json's async SessionStart hook runs intake --file --hook; kb-backlog's Triage section lists uncommitted intake drafts first; querylog.py digest prints intake candidates by detector",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "intake_hook or digest"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/settings.json",
+    "_tools/bl_intake.py",
+    "_tools/backlog.py",
+    "_tools/ql_report.py",
+    "_tools/test_intake.py",
+    "_tools/test_querylog.py",
+    ".claude/skills/kb-backlog/SKILL.md"
+  ]
+}

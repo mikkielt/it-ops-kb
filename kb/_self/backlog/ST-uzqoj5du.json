@@ -1,0 +1,27 @@
+{
+  "id": "ST-uzqoj5du",
+  "kind": "story",
+  "title": "red-pipeline becomes intake's CI detector",
+  "status": "draft",
+  "parent": "EP-o2bjijfp",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "The main-pipeline check of backlog.py red-pipeline (job-level, after BG-meuqnbjg) runs as one intake detector with the same fingerprint and links, so an intake run and red-pipeline file the same one bug; red-pipeline and red-pipeline --status stay as commands with unchanged output and exit codes",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "intake_ci or red_pipeline"
+      ]
+    }
+  ],
+  "depends_on": [
+    "ST-tngq6z2j",
+    "BG-meuqnbjg"
+  ],
+  "relates_to": [
+    "ST-fcirbjny"
+  ]
+}
