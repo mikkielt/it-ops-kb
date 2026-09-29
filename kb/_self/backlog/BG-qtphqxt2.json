@@ -2,7 +2,9 @@
   "id": "BG-qtphqxt2",
   "kind": "bug",
   "title": "The it-ops-kb-docs submit_feedback block hook does not parse in PowerShell, so it does not block without Git Bash",
-  "status": "draft",
+  "status": "doing",
+  "parent": "EP-5p4ahbnq",
+  "sprint": "SP-76inhw33",
   "priority": "P2",
   "rank": 0,
   "severity": "S2",
@@ -14,5 +16,6 @@
       "import json,sys; h=json.load(open('.claude-plugin/it-ops-kb-docs/.claude-plugin/plugin.json',encoding='utf-8'))['hooks']['PreToolUse']; sys.exit(1 if any('>&2' in x.get('command','') for e in h for x in e['hooks']) else 0)"
     ]
   },
-  "notes": "Found by BG-rcwroffk: the command `echo '...' >&2; exit 2` runs in PowerShell when Git Bash is absent (kb/public/claude/hooks.md, shell form), where `>&2` is a parser error (MissingFileSpecification): powershell.exe 5.1 exits 1, a non-blocking hook error, so submit_feedback goes through. Reproduced with powershell.exe -NoProfile -Command on Windows 11."
+  "notes": "Found by BG-rcwroffk: the command `echo '...' >&2; exit 2` runs in PowerShell when Git Bash is absent (kb/public/claude/hooks.md, shell form), where `>&2` is a parser error (MissingFileSpecification): powershell.exe 5.1 exits 1, a non-blocking hook error, so submit_feedback goes through. Reproduced with powershell.exe -NoProfile -Command on Windows 11.",
+  "claimed_by": "worker-qtphqxt2"
 }
