@@ -1,0 +1,19 @@
+{
+  "id": "BG-zxensn4o",
+  "kind": "bug",
+  "title": "A server limited to one small root answers coverage none although the root holds the answer",
+  "status": "draft",
+  "parent": "EP-5sc7hr36",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kb_mcp.py --roots with only a small root (the test_kb_root.py fixture root, one article) answers that root's own question with coverage: good, because kbfacts.pack's informative-word cut (a word counts only below 20% of indexed units) no longer empties the key words of a small index; a test named test_embed_roots_small_root_is_good proves it",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/tests.py",
+      "-k",
+      "embed_roots_small_root_is_good"
+    ]
+  }
+}

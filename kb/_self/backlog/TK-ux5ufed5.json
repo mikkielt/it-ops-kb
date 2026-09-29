@@ -2,7 +2,7 @@
   "id": "TK-ux5ufed5",
   "kind": "task",
   "title": "kb_mcp.py --roots limits the served roots",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-2zvzr6gr",
   "priority": "P2",
   "rank": 0,
@@ -31,5 +31,29 @@
     "_tools/kbcommon.py",
     "_tools/kbfacts.py"
   ],
-  "claimed_by": "roots-agent"
+  "evidence": {
+    "commit": "9d58a43609615e43fbb08a0ab92c8ead4e28ba09",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "embed_roots"
+        ],
+        "exit": 0,
+        "sha256": "94b71faa64821b6b"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "kb_mcp"
+        ],
+        "exit": 0,
+        "sha256": "7e5cf1d4c2c9560f"
+      }
+    ]
+  }
 }
