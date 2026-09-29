@@ -1333,6 +1333,19 @@ def capped(ctx, items, what):
 
 
 PROJECT_EXTS = (".csproj", ".fsproj", ".vbproj")
+# The shapes an evaluated .NET value must have to go into the map. Evaluation expands property functions, so a
+# repository can set a property to a file's text or an environment variable ($([System.IO.File]::ReadAllText(..)),
+# $([System.Environment]::GetEnvironmentVariable(..))); only a value of the expected shape is kept.
+NUGET_VERSION = r"(?:\d|\*)[0-9A-Za-z.*+-]*"  # 1.0.0-beta.1+meta, 8.*, *
+DOTNET_SHAPES = {
+    "TargetFrameworkMoniker": re.compile(r"\.?[A-Za-z][A-Za-z0-9.+-]*(?:,Version=v\d+(?:\.\d+){0,3})?"
+                                         r"(?:,Profile=[A-Za-z0-9.+-]+)?"),  # .NETCoreApp,Version=v8.0, net8.0-windows
+    "LangVersion": re.compile(r"(?i)latest(?:major|minor)?|preview|default|iso-[12]|\d{1,2}(?:\.\d{1,2})?"),
+    "PackageReference Identity": re.compile(r"[A-Za-z0-9_][A-Za-z0-9_.-]{0,99}"),  # NuGet: at most 100 characters
+    "PackageReference Version": re.compile(rf"{NUGET_VERSION}|[\[(] ?(?:{NUGET_VERSION})? ?(?:, ?(?:{NUGET_VERSION})? ?)?[\])]"),
+    "ProjectReference": re.compile(r"(?:[\w.()+ -]+[\\/])*[\w.()+ -]+\.\w*proj"),  # relative: no drive, no root
+}
+DOTNET_MAX_VALUE = 260
 
 
 class DotnetMapper(Mapper):
@@ -1349,7 +1362,8 @@ class DotnetMapper(Mapper):
     refuses proxies, so that fails as a note. The packages are the evaluated PackageReference items with the version
     each asks for, not a resolved one: `dotnet package list` is not run, because once ProjectAssetsFile names an
     existing file (a committed obj/project.assets.json) it builds NuGet's collection targets, and with them the
-    project's InitialTargets and any repository target hooked to them (kb agents/codebase-mapping)."""
+    project's InitialTargets and any repository target hooked to them (kb agents/codebase-mapping). Each evaluated
+    value is kept only when it has its shape (DOTNET_SHAPES), else left out with a note."""
     language = "dotnet"
     name = "dotnet"
     tool = "dotnet"
@@ -1413,12 +1427,12 @@ class DotnetMapper(Mapper):
         items = ev.get("Items") if isinstance(ev, dict) and isinstance(ev.get("Items"), dict) else {}
         extra = {"project": proj, "kind": "project"}
         for key, field in (("TargetFrameworkMoniker", "framework"), ("LangVersion", "langversion")):
-            if isinstance(props.get(key), str) and props[key]:
+            if self.shaped(ctx, proj, key, props.get(key)):
                 extra[field] = props[key]
         refs = []
         for item in items.get("ProjectReference") or ():
             ident = item.get("Identity") if isinstance(item, dict) else None
-            if not isinstance(ident, str) or not ident:
+            if not self.shaped(ctx, proj, "ProjectReference", ident):
                 continue
             target = posixpath.normpath(posixpath.join("" if folder == "." else folder, ident.replace("\\", "/")))
             if target == ".." or target.startswith("../"):
@@ -1427,13 +1441,30 @@ class DotnetMapper(Mapper):
                 refs.append(target)
         if refs:
             extra["references"] = sorted(set(refs))
-        packages = [i for i in items.get("PackageReference") or ()
-                    if isinstance(i, dict) and isinstance(i.get("Identity"), str) and i["Identity"]]
-        requested = {i["Identity"]: i["Version"] for i in packages if isinstance(i.get("Version"), str) and i["Version"]}
+        packages, requested = [], {}
+        for item in items.get("PackageReference") or ():
+            ident = item.get("Identity") if isinstance(item, dict) else None
+            if not self.shaped(ctx, proj, "PackageReference Identity", ident):
+                continue
+            packages.append(ident)
+            if self.shaped(ctx, proj, "PackageReference Version", item.get("Version"), f"PackageReference {ident} Version"):
+                requested[ident] = item["Version"]
         if requested:
             extra["requested"] = dict(sorted(requested.items()))
         ctx.add_package(base.rsplit(".", 1)[0], folder, **extra)
-        ctx.add_imports(proj, [i["Identity"] for i in packages])
+        ctx.add_imports(proj, packages)
+
+    @staticmethod
+    def shaped(ctx, proj, key, value, what=None):
+        """True when VALUE is a non-empty string of KEY's shape (DOTNET_SHAPES). A missing or empty value is False
+        without a note; any other is False with a note naming the project and the property, never the value, since
+        evaluation may have filled it from a file or the environment."""
+        if not isinstance(value, str) or not value:
+            return False
+        if len(value) <= DOTNET_MAX_VALUE and DOTNET_SHAPES[key].fullmatch(value):
+            return True
+        ctx.note(f"{proj}: {what or key}: the evaluated value is not of its shape, left out")
+        return False
 
 
 class NodeMapper(Mapper):
@@ -1560,7 +1591,8 @@ def first_line(r):
 def build_map(repo, commit, rev, rows, langs=None, timeout=MAP_TIMEOUT, base_env=None):
     """The map of the repository at COMMIT: for each language with kept files and an installed toolchain, its mapper's
     packages, imports and entry points, read in a scratch worktree. A missing toolchain and every failed command is a
-    note. ROWS is `classify`'s result: only kept files are mapped."""
+    note. ROWS is `classify`'s result: only kept files are mapped. The leak scan redacts the map before it is returned
+    (`redact_leaks`)."""
     kept = [(p, k) for p, verdict, k, _secret in rows if verdict == "keep"]
     links = symlinks(repo, commit)
     doc = {"format": MAP_FORMAT, "repo": Path(repo).name, "commit": commit, "rev": rev, "tools": {}, "packages": [],
@@ -1597,6 +1629,39 @@ def build_map(repo, commit, rev, rows, langs=None, timeout=MAP_TIMEOUT, base_env
             doc["imports"] += ctx.imports
             doc["entry_points"] += ctx.entry_points
             doc["notes"] += [{"language": m.language, "note": n} for n in ctx.notes]
+    return redact_leaks(doc)
+
+
+def redact_leaks(doc):
+    """DOC with every string the leak scan flags (kbcommon.leak_hits: a secret, a home folder, a private address, an
+    email or a GUID) replaced by `<redacted>`, and every mapping entry whose key it flags removed, with one note per
+    place naming where and the kinds, never the value. The rest of the map is kept: a tool's output or an evaluated
+    value can carry the environment or a file of the machine into the map, and from there into kb facts."""
+    found = []
+
+    def walk(value, where):
+        if isinstance(value, str):
+            hits = kbcommon.leak_hits(value)
+            if hits:
+                found.append((where, sorted({kind for kind, _ in hits})))
+                return "<redacted>"
+            return value
+        if isinstance(value, list):
+            return [walk(v, f"{where}[{i}]") for i, v in enumerate(value)]
+        if isinstance(value, dict):
+            out = {}
+            for k, v in value.items():
+                hits = kbcommon.leak_hits(k) if isinstance(k, str) else []
+                if hits:
+                    found.append((f"{where}: a key", sorted({kind for kind, _ in hits})))
+                else:
+                    out[k] = walk(v, f"{where}.{k}" if where else k)
+            return out
+        return value
+
+    doc = walk(doc, "")
+    doc["notes"] += [{"language": "map", "note": f"{where}: a value of the leak scan's shapes ({', '.join(kinds)}) "
+                      "redacted"} for where, kinds in found]
     return doc
 
 

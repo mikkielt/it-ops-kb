@@ -6,7 +6,8 @@ It answers only the exact argument lists the mappers may run, exits 64 for any o
 `--package-lock-only`, any `npx` call), and appends one JSON line per call (arguments, working directory, the environment variables that matter) to the file KB_FAKE_LOG.
 KB_FAKE_MODE picks a planted misbehaviour: `fail` (exit 101), `array` (go list prints an array), `garbage` (go list
 prints a truncated object after a good one), `outside` (a package directory or a project reference outside the
-worktree), `problems` (npm ls prints its tree and exits 1)."""
+worktree), `problems` (npm ls prints its tree and exits 1), `planted` (msbuild evaluates properties and items to a
+file's text, an environment value or a token)."""
 import json
 import os
 import sys
@@ -73,8 +74,29 @@ ITEMS = "-getItem:PackageReference,ProjectReference"
 PROJECT_EXTS = (".csproj", ".fsproj", ".vbproj")
 
 
+def planted_values():
+    """What property functions could evaluate to: a file's text, an environment value, a token (each built here, so
+    the leak scan of this file stays clean). Keyed by what the test looks for in the map."""
+    return {"file": "PLANTED-FILE-BODY line one\nline two of the file",
+            "home": "C:" + "\\".join(["", "Users", "planted-user", ".nuget", "packages"]),
+            "text": "PLANTED version from a file",
+            "id": "Planted Id From Environment",
+            "ref": "%" + "USERPROFILE%\\planted\\Planted.csproj",
+            "token": "1.0.0-" + "glpat" + "-" + "PLANTED" + "0" * 20,
+            "guid": "-".join(["5" * 8, "5" * 4, "5" * 4, "5" * 4, "5" * 12])}
+
+
 def msbuild_eval(project):
     """MSBuild's `-getProperty -getItem` JSON for PROJECT, a file of the working directory."""
+    if mode == "planted":  # LangVersion=$([System.IO.File]::ReadAllText(..)) and the like, as evaluation expands them
+        v = planted_values()
+        return {"Properties": {"TargetFrameworkMoniker": v["home"], "LangVersion": v["file"]},
+                "Items": {"PackageReference": [{"Identity": "Serilog", "Version": v["text"]},
+                                               {"Identity": v["id"], "Version": "1.0.0"},
+                                               {"Identity": "Newtonsoft.Json", "Version": v["token"]},
+                                               {"Identity": v["guid"], "Version": "[1.2.3,2.0)"},
+                                               {"Identity": "Polly", "Version": "8.*"}],
+                          "ProjectReference": [{"Identity": v["ref"]}, {"Identity": "..\\Lib\\Lib.csproj"}]}}
     if project == "Lib.csproj":
         return {"Properties": {"TargetFrameworkMoniker": ".NETStandard,Version=v2.0", "LangVersion": ""},
                 "Items": {"PackageReference": [], "ProjectReference": []}}

@@ -968,6 +968,72 @@ def test_kbingest_map_dotnet_cap_and_no_project(webrepo, tmp_path, monkeypatch):
 
 
 @requires_git
+def test_kbingest_map_dotnet_value_shapes(tmp_path, monkeypatch):
+    """Planted: a project whose properties and items are set through property functions
+    (LangVersion=$([System.IO.File]::ReadAllText(..)), a TargetFrameworkMoniker from the environment, a package
+    Version holding text or a token, a package id holding text or a GUID, a ProjectReference through %USERPROFILE%).
+    A value of the wrong shape is left out with a note naming the project and the property; one of the right shape
+    that the leak scan flags is redacted before the map is written. None of it reaches the map file."""
+    install_lang(tmp_path, monkeypatch, ("dotnet",))
+    monkeypatch.setenv("KB_FAKE_MODE", "planted")
+    r = commit_files(tmp_path / "shapes", {"src/App/App.csproj": CSPROJ, "src/App/Program.cs": "class P {}\n"})
+    code, doc = fake_map(r, tmp_path, monkeypatch, kbingest.DotnetMapper())
+    assert code == 0
+    text = (tmp_path / "fake.json").read_text(encoding="utf-8")
+    guid = "-".join(["5" * 8, "5" * 4, "5" * 4, "5" * 4, "5" * 12])
+    for planted in ("planted", "glpat", "userprofile", "line two", guid):
+        assert planted not in text.lower(), planted
+    assert doc["packages"] == [{"language": "dotnet", "name": "App", "path": "src/App", "project": "src/App/App.csproj",
+                                "kind": "project", "references": ["src/Lib/Lib.csproj"],
+                                "requested": {"Newtonsoft.Json": "<redacted>", "Polly": "8.*"}}]
+    assert doc["imports"] == [{"language": "dotnet", "path": "src/App/App.csproj",
+                               "imports": ["<redacted>", "Newtonsoft.Json", "Polly", "Serilog"]}]
+    shape = "the evaluated value is not of its shape, left out"
+    assert notes_of(doc) == [f"src/App/App.csproj: {what}: {shape}" for what in (
+        "TargetFrameworkMoniker", "LangVersion", "ProjectReference", "PackageReference Serilog Version",
+        "PackageReference Identity")] + [
+        "packages[0].requested: a key: a value of the leak scan's shapes (guid) redacted",
+        "packages[0].requested.Newtonsoft.Json: a value of the leak scan's shapes (secret) redacted",
+        "imports[0].imports[0]: a value of the leak scan's shapes (guid) redacted"]
+
+
+def test_kbingest_map_dotnet_value_shapes_accept_real_values():
+    good = {"TargetFrameworkMoniker": [".NETCoreApp,Version=v8.0", ".NETFramework,Version=v4.7.2,Profile=Client",
+                                       "net8.0-windows10.0.19041", "netstandard2.0"],
+            "LangVersion": ["latest", "12.0", "preview", "latestMajor", "default", "ISO-2", "9"],
+            "PackageReference Identity": ["Newtonsoft.Json", "Microsoft.Extensions.Hosting", "xunit_extra-1"],
+            "PackageReference Version": ["13.0.1", "[1.2.3,2.0)", "[1.0, 2.0]", "(,3.0)", "8.*", "*",
+                                         "1.0.0-beta.1+meta", "[1.2.3]"],
+            "ProjectReference": ["..\\Lib\\Lib.csproj", "../My Lib (x)/My.Lib.fsproj", "Db.sqlproj"]}
+    bad = {"TargetFrameworkMoniker": ["net8.0\n", "a b", "C:" + "\\x", "/usr/share/dotnet", "net8.0;rm"],
+           "LangVersion": ["latest\n", "123.4", "some file text", "$(HOME)"],
+           "PackageReference Identity": ["a b", "x" * 101, "%PATH%", "a/b"],
+           "PackageReference Version": ["text of a file", "1.0\n2.0", "abc", "1.0.0 extra", "1" * 300],
+           "ProjectReference": ["/abs/App.csproj", "C:" + "\\App.csproj", "%USERPROFILE%\\x.csproj", "a.txt",
+                                "$(HOME)/x.csproj", "x.csproj\n"]}
+    for key, values in good.items():
+        for v in values:
+            assert kbingest.DotnetMapper.shaped(None, "p", key, v), (key, v)
+    for key, values in bad.items():
+        ctx = kbingest.MapCtx(".", {}, 1, "dotnet")
+        for v in values:
+            assert not kbingest.DotnetMapper.shaped(ctx, "p", key, v), (key, v)
+        assert ctx.notes == [f"p: {key}: the evaluated value is not of its shape, left out"] * len(values)
+
+
+def test_kbingest_map_redact_leaks_keeps_the_rest():
+    token = "sk-" + "ant-" + "0" * 24
+    doc = {"tools": {"x": {"version": "1.0 " + token}}, "packages": [{"name": "ok", "k": {token: "v", "a": "b"}}],
+           "notes": [{"language": "x", "note": "fine"}]}
+    out = kbingest.redact_leaks(doc)
+    assert token not in json.dumps(out)
+    assert out["tools"] == {"x": {"version": "<redacted>"}} and out["packages"] == [{"name": "ok", "k": {"a": "b"}}]
+    assert [n["note"] for n in out["notes"]] == ["fine", "tools.x.version: a value of the leak scan's shapes (secret) "
+                                                 "redacted", "packages[0].k: a key: a value of the leak scan's shapes "
+                                                 "(secret) redacted"]
+
+
+@requires_git
 def test_kbingest_map_node_runs_npm_ls_with_package_lock_only_and_never_npx(webrepo, tmp_path, monkeypatch):
     log = install_lang(tmp_path, monkeypatch, WEB_TOOLS + ("npx",))
     monkeypatch.setenv("KB_TEST_API_TOKEN", "planted-token")
