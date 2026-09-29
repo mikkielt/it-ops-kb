@@ -2,7 +2,7 @@
   "id": "TK-ttoqoxzh",
   "kind": "task",
   "title": "Commit examples put KB-Work in the last trailer paragraph",
-  "status": "doing",
+  "status": "done",
   "parent": "BG-iqqigub7",
   "priority": "P2",
   "rank": 1,
@@ -26,5 +26,18 @@
   "depends_on": [
     "TK-4feakz4i"
   ],
-  "claimed_by": "orchestrator-mac-sprint-run"
+  "evidence": {
+    "commit": "3b72365cc77e16c4ef22954e0c82d432383dc1b3",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/selfdoc.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "3db513ebafdfe3a2"
+      }
+    ]
+  }
 }
