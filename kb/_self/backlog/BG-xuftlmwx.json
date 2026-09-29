@@ -2,7 +2,7 @@
   "id": "BG-xuftlmwx",
   "kind": "bug",
   "title": "kbingest map on Windows lets cmd.exe run a node found in the worktree folder",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-fkyrld5h",
   "priority": "P1",
   "rank": 0,
@@ -20,5 +20,19 @@
     "_tools/kbingest.py",
     "_tools/test_kbingest.py"
   ],
-  "claimed_by": "fixer-s1"
+  "evidence": {
+    "commit": "301202ebb91712d26b280162a50f4251486f4044",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "kbingest_map_windows_no_cwd_lookup"
+        ],
+        "exit": 0,
+        "sha256": "42186d7f52e0ea9e"
+      }
+    ]
+  }
 }

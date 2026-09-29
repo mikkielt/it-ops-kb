@@ -2,7 +2,7 @@
   "id": "BG-fogpwqmc",
   "kind": "bug",
   "title": "kbingest map lets a repository's global.json sdk.paths load an SDK from the worktree",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-fkyrld5h",
   "priority": "P1",
   "rank": 0,
@@ -21,5 +21,19 @@
     "_tools/test_kbingest.py",
     "_tools/fixtures/kbingest/**"
   ],
-  "claimed_by": "fixer-s1"
+  "evidence": {
+    "commit": "301202ebb91712d26b280162a50f4251486f4044",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "kbingest_map_dotnet_sdk_paths"
+        ],
+        "exit": 0,
+        "sha256": "9210c9a1683aaa64"
+      }
+    ]
+  }
 }
