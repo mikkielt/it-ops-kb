@@ -6,19 +6,21 @@
   "parent": "ST-niikw55v",
   "priority": "P2",
   "rank": 0,
-  "goal": "backlog.py done refuses a code-lane item whose KB-Work commits are not on the integration main, naming the branch to merge",
+  "goal": "backlog.py done refuses a code-lane item whose KB-Work commits are not ancestors of refs/remotes/<integration>/main, naming the code/<id> branch to merge; TestDoneLane in _tools/test_backlog.py plants an unmerged and a merged code item and a content item",
   "checks": [
     {
       "run": [
         "python3",
         "_tools/tests.py",
         "-k",
-        "done_lane"
+        "TestDoneLane"
       ]
     }
   ],
   "touches": [
     "_tools/backlog.py",
-    "_tools/test_backlog.py"
+    "_tools/test_backlog.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
   ]
 }

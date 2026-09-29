@@ -6,19 +6,22 @@
   "parent": "ST-mlrjf3lf",
   "priority": "P2",
   "rank": 0,
-  "goal": "bridge fetches, rebases, gates and hands the commits to sync's lane routing; a conflict exits 3 as sync does",
+  "goal": "kbpublic.py holds the bridge (fetch, the commits not on the publish main, the kb/_querylog refusal, rebase --onto the integration main) and kbgit.py bridge wires it to sync's gate and lane routing, with sync's exit codes (0 pushed, 1 refused or gate red, 2 bad arguments, 3 conflict); TestBridge in _tools/test_kbpublic.py covers content, code and a conflict",
   "checks": [
     {
       "run": [
         "python3",
         "_tools/tests.py",
         "-k",
-        "bridge"
+        "TestBridge"
       ]
     }
   ],
   "touches": [
+    "_tools/kbpublic.py",
     "_tools/kbgit.py",
-    "_tools/test_sync.py"
+    "_tools/test_kbpublic.py",
+    "kb/_self/git.md",
+    "kb/_self/tools.md"
   ]
 }

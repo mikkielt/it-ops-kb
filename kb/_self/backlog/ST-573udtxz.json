@@ -7,14 +7,14 @@
   "sprint": "SP-v5xagbyv",
   "priority": "P2",
   "rank": 2,
-  "goal": "kbgit.py and backlog.py red-pipeline read the integration remote from git config kb.integration (default origin) and the publish remote from kb.publish (unset: no publishing); sync, publish and the hooks use the roles, --remote still overrides; no host name or url appears in _tools; tests.py -k remote_roles covers a clone with and without a publish remote",
+  "goal": "kbpublic.py resolves both remote roles: integration_remote() reads git config kb.integrationRemote (default origin) and publish_remote() keeps reading kb.publishRemote (unset: no public home); kbgit.py sync and the pre-push hook, kbgit.py publish, backlog.py red-pipeline and ql_deliver.py take the integration remote from it and --remote/--source still override; no _tools/*.py other than kbpublic.py and the tests holds the string constant 'origin' or 'origin/...'; tests.py -k TestRemoteRoles covers a clone whose integration remote is not named origin, with and without a publish remote",
   "checks": [
     {
       "run": [
         "python3",
         "_tools/tests.py",
         "-k",
-        "remote_roles"
+        "TestRemoteRoles"
       ]
     }
   ],
@@ -24,11 +24,12 @@
       "kind": "provisional",
       "question": "Where does a clone record its remote roles?",
       "options": [
-        "git config keys kb.integration and kb.publish (per clone, never committed)",
-        "a committed file naming remotes",
-        "remote names fixed by convention (origin, public)"
+        "git config kb.integrationRemote (default origin) beside the existing kb.publishRemote, per clone, never committed",
+        "a committed file naming the remotes",
+        "fixed names by convention (origin, and one name for the public home)"
       ],
-      "recommendation": "git config keys kb.integration and kb.publish (per clone, never committed)"
+      "recommendation": "git config kb.integrationRemote (default origin) beside the existing kb.publishRemote, per clone, never committed"
     }
-  ]
+  ],
+  "notes": "kb.publishRemote exists already (kbpublic.CONFIG_KEY; maintaining.md setup step 4; .githooks/pre-push reads it when Python is missing), so only the integration role is new. kbpublic.py is already imported by kbgit.py and ql_deliver.py; backlog.py imports it lazily as it does ql_deliver. ql_deliver.origin_forge keeps reading the forge from the remote's url (red-pipeline and the query log's CI check need it): roles name remotes, not hosts."
 }

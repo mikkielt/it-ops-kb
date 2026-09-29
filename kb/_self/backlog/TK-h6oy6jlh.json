@@ -6,19 +6,22 @@
   "parent": "ST-su4em5sl",
   "priority": "P2",
   "rank": 0,
-  "goal": "publish checks fast-forward, pipeline status, internal roots, private paths and the leak scan, then pushes; each refusal exits 2 naming its cause",
+  "goal": "kbpublic.cmd_publish, after projecting and before pushing, checks that the source commit's integration CI verdict is ok (ql_deliver.ci_pipeline), that the projection's tree has no internal root and no _private/ or _cache/ path, and that the files it changes against the public tip have no leak-scan hit; each refusal exits 1 naming its cause and pushes nothing, and --dry-run reports the same; TestPublishSafety in _tools/test_kbpublic.py plants a red, a pending and an unreadable CI verdict (a stubbed run), an internal root, a _private file and a leaked address",
   "checks": [
     {
       "run": [
         "python3",
         "_tools/tests.py",
         "-k",
-        "publish"
+        "TestPublishSafety"
       ]
     }
   ],
   "touches": [
+    "_tools/kbpublic.py",
     "_tools/kbgit.py",
-    "_tools/test_sync.py"
-  ]
+    "_tools/test_kbpublic.py",
+    "kb/_self/git.md"
+  ],
+  "notes": "Existing refusals exit 1 (kbpublic.py docstring), so the new ones do too."
 }

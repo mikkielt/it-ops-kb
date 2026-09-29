@@ -1,0 +1,36 @@
+{
+  "id": "TK-yoyjegdq",
+  "kind": "task",
+  "title": "Research which pipeline auto-merge reads on a branch-pipeline project, and the GitHub token permission for the commit pulls endpoint",
+  "status": "todo",
+  "parent": "ST-mmmn42ks",
+  "priority": "P2",
+  "rank": 2,
+  "goal": "kb/public/gitlab/automated-merge-requests.md states, from a DOC or CODE source (or as UNK with a _gaps.md entry when no source states it), which pipeline GitLab's auto-merge and its successful-pipeline merge check read for a merge request when the project's workflow creates branch pipelines only (no merge_request_event rule), and which status such a pipeline has when every job in it is an optional manual job nobody started; kb/public/gitlab/detecting-mr-merges-in-ci.md states the GITHUB_TOKEN permission that GET /repos/{owner}/{repo}/commits/{commit_sha}/pulls needs, its Reference table no longer says 'permission not read', and the matching _gaps.md entry is resolved",
+  "checks": [
+    {
+      "run": [
+        "grep",
+        "-c",
+        "-i",
+        "-E",
+        "branch pipeline.*(auto-merge|merge check)|(auto-merge|merge check).*branch pipeline",
+        "kb/public/gitlab/automated-merge-requests.md"
+      ],
+      "exit": 0
+    },
+    {
+      "run": [
+        "grep",
+        "-c",
+        "permission not read",
+        "kb/public/gitlab/detecting-mr-merges-in-ci.md"
+      ],
+      "exit": 1
+    }
+  ],
+  "touches": [
+    "kb/public/**"
+  ],
+  "notes": "Open today: automated-merge-requests.md:22 says auto-merge needs a successful pipeline and :34 that optional manual jobs do not count toward a pipeline's status, but no page read says which pipeline a merge request reads when only branch pipelines exist (.gitlab-ci.yml's workflow creates branch and tag pipelines only) or whether a pipeline of unstarted manual jobs is success, manual or skipped; detecting-mr-merges-in-ci.md:43 and its _gaps.md entry leave the GitHub token permission open. The first fact names 'branch pipeline' and 'auto-merge' (or 'merge check') in one line, which the first check reads. TK-e3ouzras “code/* branch pipelines run the gate jobs without a click” and TK-mjrtkhoi “kb-lane job on GitLab and GitHub” do not assume the answers; TK-mjrtkhoi waits for the permission. Worked with /kb-research."
+}

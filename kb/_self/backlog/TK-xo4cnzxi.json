@@ -6,20 +6,24 @@
   "parent": "ST-qx7aw7if",
   "priority": "P2",
   "rank": 0,
-  "goal": "check-lanes reads the push range like check-trailers and the pre-push hook refuses a direct code-lane commit to main",
+  "goal": "kblane.py check_lanes(range, associate) lists the unmerged code-lane commits; kbgit.py check-lanes reads the range as check-trailers does (GitLab CI: CI_COMMIT_BEFORE_SHA..CI_COMMIT_SHA, only CI_COMMIT_SHA when before is all zeros; elsewhere @{upstream}..HEAD) and asks the forge from the CI variables with urllib, or with --forge none treats every code-lane commit as unmerged; kbgit.py hook pre-push refuses a push to the integration main that carries a code-lane commit, sync's own push included; TestCheckLanes in _tools/test_kblane.py covers a direct code commit, a merged one, a merge commit, an API error (exit 2) and the hook refusal",
   "checks": [
     {
       "run": [
         "python3",
         "_tools/tests.py",
         "-k",
-        "check_lanes"
+        "TestCheckLanes"
       ]
     }
   ],
   "touches": [
+    "_tools/kblane.py",
     "_tools/kbgit.py",
-    "_tools/test_sync.py",
-    ".githooks/pre-push"
-  ]
+    "_tools/test_kblane.py",
+    ".githooks/pre-push",
+    "kb/_self/git.md",
+    "kb/_self/tools.md"
+  ],
+  "notes": "No test calls a real forge: the client is tested against an injected opener or a stub server on loopback."
 }

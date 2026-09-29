@@ -1,0 +1,27 @@
+{
+  "id": "TK-e3ouzras",
+  "kind": "task",
+  "title": "code/* branch pipelines run the gate jobs without a click",
+  "status": "todo",
+  "parent": "ST-vcf3r6qv",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "In .gitlab-ci.yml the jobs the ci-code-branch gate of ST-vcf3r6qv “sync --push sends code-lane work as a merge request” names run without a click in pipelines of code/* branches (a first rule on $CI_COMMIT_BRANCH =~ /^code\\//), and every other job and branch keeps its rules; TestCiCodeBranch in _tools/test_ci_config.py reads the file as text and asserts it; git.md says what runs where",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "TestCiCodeBranch"
+      ]
+    }
+  ],
+  "touches": [
+    ".gitlab-ci.yml",
+    "_tools/test_ci_config.py",
+    "_tools/tests.py",
+    "kb/_self/git.md"
+  ],
+  "notes": "The test reads the YAML as text: no new dependency. kb-trailers' rule ($CI_PIPELINE_SOURCE == \"push\" && $CI_COMMIT_BRANCH) matches a code/* push. .github/workflows/kb.yml runs every job on every pushed branch already, so it needs no change."
+}

@@ -7,14 +7,22 @@
   "sprint": "SP-v5xagbyv",
   "priority": "P2",
   "rank": 5,
-  "goal": "kbgit.py publish pushes the integration remote's main to the publish remote's main only as a fast-forward and only when backlog.py red-pipeline --status passes for it; it refuses when that commit's tree holds a root whose _root.md visibility is internal, a _private/ or _cache/ path, or a line the public leak scan flags; without a publish remote it prints a note and exits 0; tests.py -k publish plants each refusal",
+  "goal": "kbgit.py publish keeps its projection and fast-forward rules and also refuses (exit 1, naming the cause, nothing pushed) when the integration CI verdict of the source commit is not ok (ql_deliver.ci_pipeline: red, pending, none, or skip when glab or gh cannot read it), when the projection's tree holds a root whose _root.md says visibility: internal or any path under a _private or _cache directory, or when a file the projection changes against the public tip has a leak-scan hit (kbcommon.leak_hits with _tools/tests_allowlist.txt); kbgit.py publish --hook, run by an async SessionStart hook beside red-pipeline, publishes silently in a clone with a publish remote, prints only a refusal, and does nothing without one; tests.py -k TestPublishSafety plants each refusal and -k TestPublishHook the hook",
   "checks": [
     {
       "run": [
         "python3",
         "_tools/tests.py",
         "-k",
-        "publish"
+        "TestPublishSafety"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "TestPublishHook"
       ]
     }
   ],
@@ -75,5 +83,10 @@
       "by": "operator"
     }
   ],
-  "notes": "Refusing keeps one history on both remotes; stripping would fork it. A GitLab push mirror (optional host setup; ST-mmmn42ks “The kb covers the server side of the git regime” researches it) can replace the command where the integration host is trusted to decide what is public."
+  "links": [
+    "kb/_self/git.md",
+    "kb/public/gitlab/repository-mirroring.md",
+    "kb/public/gitlab/github-branch-rules-and-auto-merge.md"
+  ],
+  "notes": "kbgit.py publish exists (kbpublic.py; git.md, Public home): it pushes the projection of the integration main without kb/_querylog as a fast-forward, refuses a public tip that is not an ancestor unless --rewrite, and prints a note without a publish remote; TestPublish covers that, so the checks name new classes. The projection keeps filtering the query-log store; the public-content answer (refused, not filtered) covers internal roots, _private/, _cache/ and leak-scan hits. 'Green' is ql_deliver.pipeline_verdict's ok: optional manual jobs never make a pipeline failed (automated-merge-requests.md:34, :66), so while the GitLab jobs are manual a green main says only that nothing failed (the gates of ST-vcf3r6qv and TK-mjrtkhoi decide what runs). A push mirror cannot stand in for publish: it has no path filter (repository-mirroring.md:38). On GitHub, restrict updates with a bypass for the publisher can make publish the only writer of the public main (github-branch-rules-and-auto-merge.md:39): optional host setup for git.md, no tool change. Each publish is a pure function of the source history, so sessions that publish the same main at once agree."
 }

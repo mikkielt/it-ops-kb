@@ -7,7 +7,7 @@
   "sprint": "SP-v5xagbyv",
   "priority": "P2",
   "rank": 0,
-  "goal": "kb_pack answers with coverage good, from official sources: GitHub rulesets and branch protection on a public repository, GitHub auto-merge and required status checks, GitLab push options and auto-merge on a self-managed instance by tier, and GitLab push mirroring by tier",
+  "goal": "kb/public answers from official sources what each host can enforce for the git regime: GitHub rulesets, branch protection and auto-merge on a public Free repository; GitLab push options, auto-merge, protected branches, push rules and server hooks by tier; push and pull mirroring by tier; how CI tells a merge request or pull request merge from a direct push; which pipeline GitLab's auto-merge reads on a project that creates branch pipelines only; and the permission the GitHub workflow token needs for the commit pulls endpoint",
   "checks": [
     {
       "run": [
@@ -44,7 +44,44 @@
         "GitLab push options merge_request.create self-managed"
       ],
       "match": "coverage: good"
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/rag.py",
+        "pack",
+        "CI tell merge request merge from direct push commit association API"
+      ],
+      "match": "coverage: good"
+    },
+    {
+      "run": [
+        "grep",
+        "-c",
+        "-i",
+        "-E",
+        "branch pipeline.*(auto-merge|merge check)|(auto-merge|merge check).*branch pipeline",
+        "kb/public/gitlab/automated-merge-requests.md"
+      ],
+      "exit": 0
+    },
+    {
+      "run": [
+        "grep",
+        "-c",
+        "permission not read",
+        "kb/public/gitlab/detecting-mr-merges-in-ci.md"
+      ],
+      "exit": 1
     }
   ],
-  "notes": "Worked with /kb-research; the kb today has GitLab auto-merge, merged results and protected branches, but no GitHub ruleset, GitHub auto-merge or push-mirror facts."
+  "links": [
+    "kb/public/gitlab/github-branch-rules-and-auto-merge.md",
+    "kb/public/gitlab/repository-mirroring.md",
+    "kb/public/gitlab/detecting-mr-merges-in-ci.md",
+    "kb/public/gitlab/protected-branches-tags.md",
+    "kb/public/gitlab/automated-merge-requests.md",
+    "kb/public/_answers.md#QK-each-host-enforce-server-side-content"
+  ],
+  "notes": "The five pack checks pass at HEAD and are regression guards: a pack reads good on shared words, so they alone prove no new fact. The kb holds the facts they ask for (the linked articles, summed up in QK-each-host-enforce-server-side-content), so TK-ldv7zzb5 “Research GitHub rulesets, branch protection and auto-merge for a public repository” and TK-rjkyylzq “Research GitLab push mirroring and push options on self-managed instances” need only backlog.py done. The two grep checks are TK-yoyjegdq's and fail today. Worked with /kb-research."
 }

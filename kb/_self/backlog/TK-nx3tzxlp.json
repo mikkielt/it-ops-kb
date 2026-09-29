@@ -6,21 +6,28 @@
   "parent": "ST-573udtxz",
   "priority": "P2",
   "rank": 0,
-  "goal": "one helper resolves the integration and publish remotes from git config; sync, the pre-push hook and backlog.py red-pipeline call it",
+  "goal": "kbpublic.integration_remote(cwd) returns kb.integrationRemote or origin; sync's --remote default and the pre-push hook in kbgit.py, publish's --source default, backlog.py latest_pipeline, covered_by_revert and red-pipeline's fetch, and ql_deliver.py's REMOTE use it; TestRemoteRoles in _tools/test_kbpublic.py plants a clone whose integration remote is 'integ' and checks that sync --dry-run, publish --dry-run and red-pipeline name it, and an ast scan of _tools/*.py (tests and kbpublic.py left out) finds no string constant 'origin' or 'origin/...'",
   "checks": [
     {
       "run": [
         "python3",
         "_tools/tests.py",
         "-k",
-        "remote_roles"
+        "TestRemoteRoles"
       ]
     }
   ],
   "touches": [
+    "_tools/kbpublic.py",
     "_tools/kbgit.py",
     "_tools/backlog.py",
-    "_tools/test_sync.py",
-    "_tools/test_backlog.py"
-  ]
+    "_tools/ql_deliver.py",
+    "_tools/test_kbpublic.py",
+    "kb/_self/git.md",
+    "kb/_self/tools.md",
+    "kb/_self/querylog.md",
+    "kb/_self/backlog.md",
+    "kb/_self/maintaining.md"
+  ],
+  "notes": "ql_deliver.py and backlog.py red-pipeline are also worked by SP-z7a5c76b “Delivery proven”, which runs first: rebase on it."
 }

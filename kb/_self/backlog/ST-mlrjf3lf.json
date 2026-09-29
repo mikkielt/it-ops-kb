@@ -7,35 +7,37 @@
   "sprint": "SP-v5xagbyv",
   "priority": "P2",
   "rank": 6,
-  "goal": "kbgit.py bridge <branch> fetches a branch of the publish remote (a cloud session's working branch or a contributor's pull request), rebases it on the integration main, runs the gate and sends it through sync's lanes (content straight to main, code as code/<id>); the publish remote's main moves only by publish; tests.py -k bridge covers a content and a code branch",
+  "goal": "kbgit.py bridge <branch> fetches the branch from the publish remote, takes its commits not on the publish remote's main, refuses (exit 1) when one touches kb/_querylog, rebases them onto the integration main (a conflict exits 3 with the rebase left in progress, as sync), runs the gate and sends them through sync's lane routing (content to main, code as code/<id>); it never writes to the publish remote; tests.py -k TestBridge covers a content branch, a code branch and a conflict with local bare remotes",
   "checks": [
     {
       "run": [
         "python3",
         "_tools/tests.py",
         "-k",
-        "bridge"
+        "TestBridge"
       ]
     }
   ],
   "depends_on": [
-    "ST-vcf3r6qv"
+    "ST-vcf3r6qv",
+    "ST-573udtxz"
   ],
   "gates": [
     {
       "id": "public-prs",
       "kind": "provisional",
-      "question": "What happens to pull requests opened on the public home?",
+      "question": "bridge rebases a public pull request's commits onto the integration main, so their hashes change and the public home never marks the pull request merged by itself. What happens to the pull request?",
       "options": [
-        "bridged to the integration remote; the pull request closes when publish brings the merge",
-        "merged on the public home, then pulled into integration",
-        "not accepted: the public home is read-only"
+        "bridge prints the pull request's branch and the integration commits; a person closes it once publish brings them",
+        "bridge closes it with gh pr close and a comment naming the integration commits, once they are on the integration main",
+        "pull requests are not accepted: the public home is read-only for contributors"
       ],
-      "recommendation": "bridged to the integration remote; the pull request closes when publish brings the merge"
+      "recommendation": "bridge prints the pull request's branch and the integration commits; a person closes it once publish brings them"
     }
   ],
   "links": [
-    "kb/public/_answers.md#QK-plugin-host-cloud-session-push-automatic"
+    "kb/public/_answers.md#QK-plugin-host-cloud-session-push-automatic",
+    "kb/public/gitlab/repository-mirroring.md"
   ],
-  "notes": "Cloud sessions clone only from GitHub and push only their working branch (_answers.md QK-plugin-host-cloud-session-push-automatic), so their work reaches the kb through this bridge."
+  "notes": "Cloud sessions clone from GitHub and push only their working branch (QK-plugin-host-cloud-session-push-automatic). Mirroring never brings pull requests and pull mirroring is Premium (repository-mirroring.md:18, :36); on Free a Git client fetch and push is the path (:39), which bridge is. git.md already says branches from the public home reach the integration remote by a rebase, never a merge of the two histories. The rebase changes the commits' hashes, so the public home does not see its pull request's commits reach main (detecting-mr-merges-in-ci.md:31 needs the same commits)."
 }

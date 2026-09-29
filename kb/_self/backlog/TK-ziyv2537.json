@@ -6,8 +6,26 @@
   "parent": "ST-lhcjqkbq",
   "priority": "P2",
   "rank": 1,
-  "goal": "AGENTS.md carries the answered agents-rule line",
+  "goal": "AGENTS.md carries the lane rule as the agents-rule and agents-cap gates of this task and of ST-lhcjqkbq “The git rules state the regime” answer it, within 4096 bytes",
   "checks": [
+    {
+      "run": [
+        "grep",
+        "-c",
+        "-F",
+        "code/<id>",
+        "AGENTS.md"
+      ],
+      "exit": 0
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "test_agents_md_stays_small"
+      ]
+    },
     {
       "run": [
         "python3",
@@ -18,5 +36,18 @@
   ],
   "touches": [
     "AGENTS.md"
+  ],
+  "gates": [
+    {
+      "id": "agents-cap",
+      "kind": "blocking",
+      "question": "AGENTS.md is 4095 of its 4096-byte cap (test_agents_md_stays_small), so the answered lane line needs a cut of about its own length. What gives way?",
+      "options": [
+        "fold it into the Agent conduct sentence that ends 'GitHub gets only `kbgit.py publish`', as: 'Content lands by `kbgit.py sync --push`; code only through the `code/<id>` merge request sync opens; GitHub gets only `kbgit.py publish`.'",
+        "keep the answered line whole and move the Skills section's list of change skills to kb/_self/maintaining.md",
+        "raise the cap"
+      ],
+      "recommendation": "fold it into the Agent conduct sentence that ends 'GitHub gets only `kbgit.py publish`', as: 'Content lands by `kbgit.py sync --push`; code only through the `code/<id>` merge request sync opens; GitHub gets only `kbgit.py publish`.'"
+    }
   ]
 }

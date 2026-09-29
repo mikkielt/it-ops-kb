@@ -7,18 +7,34 @@
   "sprint": "SP-v5xagbyv",
   "priority": "P2",
   "rank": 4,
-  "goal": "kbgit.py check-lanes [A..B] exits 1 listing each first-parent commit of main that is not a merge and touches the code lane (commits before the check's first commit exempt, as with trailers); the pre-push hook runs it for a push to main, and a kb-lane job runs it on pushes to main in .gitlab-ci.yml and .github/workflows/kb.yml; tests.py -k check_lanes plants a direct code commit and a merged one",
+  "goal": "kbgit.py check-lanes [A..B] exits 1 listing each code-lane commit of the range that no merged merge request or pull request introduced, by the forge's commit association API (GitLab GET /projects/:id/repository/commits/:sha/merge_requests?state=merged with CI_JOB_TOKEN; GitHub GET /repos/{owner}/{repo}/commits/{sha}/pulls with the workflow token), and exits 2 when the API cannot be read, never passing then; a merge commit passes when the commits it brings in pass; the pre-push hook refuses, with no API call, a push to the integration remote's main whose new commits hold a code-lane commit; a kb-lane job runs check-lanes on pushes to the default branch in .gitlab-ci.yml (GIT_DEPTH 0) and .github/workflows/kb.yml (fetch-depth 0, skipped where KB_PUBLIC_HOME is true); tests.py -k TestCheckLanes plants a direct code commit, a merged one and an API failure against a stub forge, and -k TestCiLaneJob reads both CI files",
   "checks": [
     {
       "run": [
         "python3",
         "_tools/tests.py",
         "-k",
-        "check_lanes"
+        "TestCheckLanes"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "TestCiLaneJob"
       ]
     }
   ],
   "depends_on": [
-    "ST-lyy6lyin"
-  ]
+    "ST-lyy6lyin",
+    "ST-573udtxz",
+    "ST-vcf3r6qv"
+  ],
+  "links": [
+    "kb/public/gitlab/detecting-mr-merges-in-ci.md",
+    "kb/public/gitlab/protected-branches-tags.md",
+    "kb/public/gitlab/github-branch-rules-and-auto-merge.md"
+  ],
+  "notes": "Facts: a merge commit message proves nothing, and fast-forward and squash merges leave none (detecting-mr-merges-in-ci.md:33); the association endpoints are the documented signal (:21 DOC S-ijtwicvp, :29 DOC S-o6lmrcgh) and a job token may call GitLab's (:22 DOC S-7zthwzzb); the range is CI_COMMIT_BEFORE_SHA..CI_COMMIT_SHA or before..after from the event (:32), before is all zeros for a new ref (:16); default depth is 20 on GitLab and 1 on GitHub (:25, :30), hence full clones. CI_PIPELINE_SOURCE after a merge is a gap (:20), so it is not used. Neither host enforces paths server-side on Free (protected-branches-tags.md:30, :35; github-branch-rules-and-auto-merge.md:38): the hook and this job are the enforcement points. Limits: GitHub marks a pull request merged when its commits reach main by a direct push (detecting-mr-merges-in-ci.md:31, DOC S-ldxeltib), so such a commit passes there; a squash commit's association is not in the kb, so it would be listed (fail-closed); code changed inside a merge commit itself passes. On the public home main moves only by publish, whose projected commits no pull request introduced, so the GitHub job is skipped there. It depends on ST-vcf3r6qv “sync --push sends code-lane work as a merge request” because the hook would otherwise refuse the sprint's own code pushes."
 }

@@ -6,8 +6,38 @@
   "parent": "ST-niikw55v",
   "priority": "P2",
   "rank": 1,
-  "goal": "the kb-sprint and kb-item skills push code items with sync --push, check the merge on the next pass, then run done",
+  "goal": "the kb-sprint and kb-item skills land a code item with sync --push (a code/<id> merge request), check the merge on the next pass, fetch, then run done; kb-git-sync covers a refused code/<id> push; the docs they map to agree",
   "checks": [
+    {
+      "run": [
+        "grep",
+        "-c",
+        "-F",
+        "code/<id>",
+        ".claude/skills/kb-sprint/SKILL.md"
+      ],
+      "exit": 0
+    },
+    {
+      "run": [
+        "grep",
+        "-c",
+        "-F",
+        "code/<id>",
+        ".claude/skills/kb-item/SKILL.md"
+      ],
+      "exit": 0
+    },
+    {
+      "run": [
+        "grep",
+        "-c",
+        "-F",
+        "code/<id>",
+        ".claude/skills/kb-git-sync/SKILL.md"
+      ],
+      "exit": 0
+    },
     {
       "run": [
         "python3",
@@ -19,6 +49,12 @@
   "touches": [
     ".claude/skills/kb-sprint/SKILL.md",
     ".claude/skills/kb-item/SKILL.md",
-    ".claude/skills/kb-git-sync/SKILL.md"
-  ]
+    ".claude/skills/kb-git-sync/SKILL.md",
+    "kb/_self/backlog.md",
+    "kb/_self/maintaining.md"
+  ],
+  "depends_on": [
+    "TK-5mrfocpz"
+  ],
+  "notes": "selfdoc.py stale passes today and is a regression guard; the grep checks fail today. AGENTS.md maps to every skill in kb/_self/map.csv: when it needs no edit the commit names it in Self-Reviewed."
 }

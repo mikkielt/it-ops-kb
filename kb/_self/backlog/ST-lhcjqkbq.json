@@ -7,8 +7,54 @@
   "sprint": "SP-v5xagbyv",
   "priority": "P2",
   "rank": 8,
-  "goal": "kb/_self/git.md describes remote roles, the two lanes, check-lanes, publish, bridge, and optional per-host setup (GitLab protected branch and merge method, GitHub ruleset on the public home) with kb citations and no host-specific project details; kb/_self/backlog.md's Git section and always-blocking list name the integration main and the publish remote; AGENTS.md states the lane rule in one line; selfdoc.py stale lists nothing",
+  "goal": "kb/_self/git.md opens with the regime by role (integration and publish remotes, content and code lanes, code/<id> merge requests, check-lanes, publish, bridge) and has an optional host setup section citing gitlab/protected-branches-tags.md, gitlab/automated-merge-requests.md, gitlab/github-branch-rules-and-auto-merge.md and gitlab/repository-mirroring.md, with no host name, url or project detail of this clone; kb/_self/backlog.md's always-blocking list and Git section name the integration main, code/<id> branches and publish instead of origin's main; AGENTS.md states the lane rule and stays within 4096 bytes; selfdoc.py stale lists nothing",
   "checks": [
+    {
+      "run": [
+        "grep",
+        "-c",
+        "github-branch-rules-and-auto-merge",
+        "kb/_self/git.md"
+      ],
+      "exit": 0
+    },
+    {
+      "run": [
+        "grep",
+        "-c",
+        "repository-mirroring",
+        "kb/_self/git.md"
+      ],
+      "exit": 0
+    },
+    {
+      "run": [
+        "grep",
+        "-c",
+        "-F",
+        "a push anywhere but `origin`'s `main`",
+        "kb/_self/backlog.md"
+      ],
+      "exit": 1
+    },
+    {
+      "run": [
+        "grep",
+        "-c",
+        "-F",
+        "code/<id>",
+        "AGENTS.md"
+      ],
+      "exit": 0
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "test_agents_md_stays_small"
+      ]
+    },
     {
       "run": [
         "python3",
@@ -38,5 +84,6 @@
       "answer": "yes, that line",
       "by": "operator"
     }
-  ]
+  ],
+  "notes": "Each code task documents its own command in git.md and tools.md (the sync gate runs selfdoc.py stale), so this story writes the overview, the host setup and the rules. The size test and selfdoc.py stale pass today and are regression guards."
 }

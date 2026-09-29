@@ -6,19 +6,24 @@
   "parent": "ST-vcf3r6qv",
   "priority": "P2",
   "rank": 0,
-  "goal": "sync --push routes by lane, pushes code/<id> with the four push options, falls back to a plain branch push with an instruction when options are not advertised, and exits 0 once the branch is pushed",
+  "goal": "kbgit.py sync --push routes by lane with kblane.py: a content-only range pushes to main as today; a range with a code-lane commit pushes code/<id> with the four push options, retries without them when the output says 'the receiving end does not support push options' and prints the instruction, and exits 0 once the branch is pushed; sync --dry-run names the lane and the branch; TestCodeLaneSync in _tools/test_sync.py covers content, code, mixed, and push options advertised and not",
   "checks": [
     {
       "run": [
         "python3",
         "_tools/tests.py",
         "-k",
-        "code_lane"
+        "TestCodeLaneSync"
       ]
     }
   ],
   "touches": [
     "_tools/kbgit.py",
-    "_tools/test_sync.py"
+    "_tools/test_sync.py",
+    "kb/_self/git.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "TK-e3ouzras"
   ]
 }

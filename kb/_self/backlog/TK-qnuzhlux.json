@@ -6,19 +6,34 @@
   "parent": "ST-lyy6lyin",
   "priority": "P2",
   "rank": 0,
-  "goal": "kbgit.py lane prints commit, lane and the code paths that decided it; the classifier is one function sync and check-lanes share",
+  "goal": "_tools/kblane.py holds the path and commit classifier; kbgit.py lane prints commit, lane and the deciding code paths; TestLanes in _tools/test_kblane.py plants a content-only, a code-only, a mixed, a merge and a backlog-item commit and asserts every auto_kinds and MECHANICAL path is content; git.md and tools.md name the command and kb/_self/map.csv maps kblane.py to git.md",
   "checks": [
     {
       "run": [
         "python3",
         "_tools/tests.py",
         "-k",
-        "lane"
+        "TestLanes"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/kbgit.py",
+        "lane",
+        "HEAD"
+      ],
+      "match": "\\b(content|code)\\b"
     }
   ],
   "touches": [
+    "_tools/kblane.py",
+    "_tools/test_kblane.py",
     "_tools/kbgit.py",
-    "_tools/test_sync.py"
-  ]
+    "_tools/tests.py",
+    "kb/_self/git.md",
+    "kb/_self/tools.md",
+    "kb/_self/map.csv"
+  ],
+  "notes": "The sync gate runs selfdoc.py stale, so the docs of a new command go in the same commit."
 }

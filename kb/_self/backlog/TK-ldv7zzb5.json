@@ -20,5 +20,6 @@
   ],
   "touches": [
     "kb/public/**"
-  ]
+  ],
+  "notes": "Its check passes at HEAD: gitlab/github-branch-rules-and-auto-merge.md holds rulesets on public Free repositories (:16), branch protection (:25), auto-merge and gh pr merge --auto (:31-34) and what a public Free repository cannot enforce per path (:38-39), DOC S-kyamdmco, S-bhojoaw6, S-dzbnhthc. Only backlog.py done is left."
 }
