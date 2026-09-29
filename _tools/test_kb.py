@@ -615,8 +615,8 @@ class TestLookup:
         missing = hook("kb: What is the Intel Wi-Fi Roaming Aggressiveness setting?")
         assert "decision" not in missing
         line = missing["hookSpecificOutput"]["additionalContext"]
-        assert line.startswith("it-ops-kb has no coverage for: ") and "Roaming" in line, line
-        assert "\n" not in line, "coverage none: one line, not the pack"
+        assert "route: web" in line and "kb lacks: " in line and "Roaming" in line, line
+        assert "live docs, not in the kb" in line and "\n## " not in line, "coverage none: the differential, no fact lines"
         p = subprocess.run([sys.executable, "-c", "import sys, kb_hook; kb_hook.answer('fix the build'); "
                             "sys.exit('kbfacts' in sys.modules)"], cwd=TOOLS, capture_output=True, text=True, encoding="utf-8", timeout=60)
         assert p.returncode == 0, "a prompt without kb: must return before kbfacts is loaded"
@@ -677,8 +677,61 @@ class TestLookup:
         assert kbfacts.pack("Does the Presidio analyzer REST API require authentication?")["verdict"] == "good"
 
 
+class TestKbHookRoute:
+    """kb_hook.respond on planted packs: a route hands the model the differential; a clean good pack does not."""
+    INSTRUCTION = "live docs, not in the kb"
+    FACTS = ["", "## public/x/a.md  A  [complete, retrieved 2026-09-27]"] + [
+        f"- public/x/a.md:{i} fact number {i} with words to fill a line. [DOC S1]" for i in range(1, 400)]
+
+    def planted(self, monkeypatch, verdict, route, head, facts=True, **extra):
+        text = "\n".join(head + (self.FACTS if facts else []))
+        res = {"verdict": verdict, "route": route, "has": ["a"], "lacks": ["b"], "missing": [], "unmatched": [],
+               "spread": None, "paths": ["public/x/a.md"], "text": text}
+        monkeypatch.setattr(kbfacts, "pack", lambda question: dict(res, **extra))
+        return res
+
+    def test_web_has_the_instruction_and_no_fact_lines(self, monkeypatch):
+        head = ["coverage: none; not in the kb: b", "The kb does not cover this. Do not answer from the hits below; "
+                "say so, or research it with /kb-research.", "route: web", "kb has: a", "kb lacks: b"]
+        self.planted(monkeypatch, "none", "web", head)
+        out, row = kb_hook.respond("kb: a b")
+        ctx = out["hookSpecificOutput"]["additionalContext"]
+        assert "decision" not in out and row["answered"] is False
+        assert self.INSTRUCTION in ctx and "never fill it from memory" in ctx and "State what it has and lacks" in ctx
+        assert "route: web\nkb has: a\nkb lacks: b" in ctx and "fact number" not in ctx and "\n## " not in ctx
+        assert "research it with /kb-research" not in ctx and len(ctx) < 10000, len(ctx)
+
+    def test_split_holds_the_pack_within_the_limit(self, monkeypatch):
+        head = ["coverage: weak (best article matches 1 of 2 key words: a)", "route: split", "kb has: a", "kb lacks: b"]
+        res = self.planted(monkeypatch, "weak", "split", head)
+        assert len(res["text"]) > 10000, "the planted pack must be too long for the limit"
+        for prefix in ("kb:", "kb+:"):
+            ctx = kb_hook.respond(f"{prefix} a b")[0]["hookSpecificOutput"]["additionalContext"]
+            assert self.INSTRUCTION in ctx and "Answer what it has from the pack below with path:line" in ctx, prefix
+            assert "route: split\nkb has: a\nkb lacks: b\n" in ctx and "fact number 1 " in ctx, prefix
+            assert "check: line" not in ctx and len(ctx) < 10000, (prefix, len(ctx))
+
+    def test_flagged_good_is_split_and_says_what_a_failed_check_means(self, monkeypatch):
+        head = ["coverage: good", "check: public/x/a.md never mentions B; the facts may be about something related.",
+                "route: split", "kb has: a", "kb lacks: -"]
+        self.planted(monkeypatch, "good", "split", head, facts=False, unmatched=["b"])
+        out, row = kb_hook.respond("kb: a b")
+        ctx = out["hookSpecificOutput"]["additionalContext"]
+        assert "decision" not in out and row["answered"] is False
+        assert self.INSTRUCTION in ctx and "treat the whole question as what the kb lacks" in ctx and "\ncheck: " in ctx
+
+    def test_clean_good_is_blocked_and_kb_plus_keeps_its_context(self, monkeypatch):
+        self.planted(monkeypatch, "good", None, ["coverage: good"], facts=False)
+        out, row = kb_hook.respond("kb: a b")
+        assert out["decision"] == "block" and out["reason"].startswith("coverage: good") and row["answered"] is True
+        assert self.INSTRUCTION not in json.dumps(out)
+        ctx = kb_hook.respond("kb+: a b")[0]["hookSpecificOutput"]["additionalContext"]
+        assert ctx.startswith("The kb: hook ran the kb evidence pack for this question (coverage: good). Answer from it")
+        assert self.INSTRUCTION not in ctx and ctx.endswith("coverage: good")
+
+
 class TestIds:
-    URL = "https://learn.microsoft.com/en-us/windows/security/example"
+    URL ="https://learn.microsoft.com/en-us/windows/security/example"
 
     def test_hash_id_is_deterministic_and_well_formed(self):
         sid = kbid.source_id(self.URL)

@@ -4,11 +4,15 @@
   kb: <question>    run the evidence pack (kbfacts.pack). coverage: good -> block the prompt and show the pack to the
                     user as the block reason: the model is never called and no tokens are spent; but a good pack
                     with a `check:` line (a name the lead article never mentions, or key words spread over separate
-                    facts: a possible false good) goes to the model as context, like weak, so the model decides. weak -> let the
-                    prompt through with the pack attached as context, so the model starts from the evidence and does
-                    not search again. none -> let it through with one line of context: the kb has no coverage for the
-                    missing words; say so and add nothing from memory.
-  kb+: <question>   always let the prompt through with the pack attached (the model reasons over it).
+                    facts: a possible false good) goes to the model as context, like weak, so the model decides.
+                    A pack with a route (weak and flagged good: `split`; none: `web`, kbfacts.route_of) lets the prompt
+                    through with the differential as context: an instruction to answer what the kb has from the pack
+                    with path:line and urls, research only what it lacks in the live docs, label that part 'live docs,
+                    not in the kb' with its url and never fill it from memory, then the pack (split) or only its
+                    coverage, route:, kb has: and kb lacks: lines (web: no fact lines), cut so the context stays under
+                    the 10,000 characters Claude Code keeps.
+  kb+: <question>   always let the prompt through (the model reasons over it): a clean good pack attached with a short
+                    instruction, a pack with a route as for kb:.
   anything else     no output: the prompt goes to the model unchanged.
 
 Claude Code runs it from .claude/settings.json (a clone) and from the plugin's plugin.json (an installed plugin); it
@@ -21,6 +25,8 @@ writes one query log spool row (querylog.record: the question, the verdict, the 
 import json, os, re, sys
 
 PREFIX = re.compile(r"^\s*kb(\+)?\s*:\s*(\S.*)$", re.I | re.S)
+LIMIT = 9500  # additionalContext is capped at 10,000 characters (kb/public/claude/hooks.md); keep the margin
+HEAD_LINES = ("coverage:", "check:", "freshness:", "route:", "kb has:", "kb lacks:")
 NOTE = ("\n\n(answered by the kb hook from the kb alone, without the model; ask again with `kb+:` to have Claude "
         "reason over these facts)")
 
@@ -48,18 +54,38 @@ def respond(prompt):
            "pack": res["text"]}  # main keeps the pack's kb lines (ql_capture.pack_lines), never its text
     if res["verdict"] == "good" and not forward and not res.get("unmatched") and not res.get("spread"):
         return {"decision": "block", "reason": res["text"] + NOTE}, dict(row, answered=True)
-    if res["verdict"] == "none":
-        words = [w for w in kbfacts.WORD.findall(question) if kbfacts.stem(w.lower()) in res["missing"]]
-        what = ", ".join(dict.fromkeys(words)) or question
-        return {"hookSpecificOutput": {"hookEventName": "UserPromptSubmit", "additionalContext":
-                f"it-ops-kb has no coverage for: {what}; say so and add nothing from memory"}}, dict(row, answered=False)
+    if res.get("route"):  # weak, none, or a flagged good: the differential (the kb has part, the live docs the rest)
+        return {"hookSpecificOutput": {"hookEventName": "UserPromptSubmit", "additionalContext": routed(res)}}, \
+            dict(row, answered=False)
     context = (f"The kb: hook ran the kb evidence pack for this question (coverage: {res['verdict']}). Answer from "
                "it with path:line and source urls. Search the kb again only if the pack misses what was asked."
-               + (" Its check: line flags a possible false good (a name the lead article never mentions, or key "
-                  "words spread over separate facts): if no cited line answers the question itself, say the kb does "
-                  "not cover it." if res.get("unmatched") or res.get("spread") else "")
                + "\n\n" + res["text"])
     return {"hookSpecificOutput": {"hookEventName": "UserPromptSubmit", "additionalContext": context}}, dict(row, answered=False)
+
+
+def routed(res):
+    """The context for a pack with a route (`web` or `split`): the differential instruction, then the pack (split) or
+    only its coverage, check:, freshness:, route:, kb has: and kb lacks: lines (web: no fact lines), cut to LIMIT."""
+    route, lines = res["route"], res["text"].splitlines()
+    live = ("research only what the kb lacks in the live docs (the docs servers when available, else the official "
+            "documentation on the web) and label that part 'live docs, not in the kb' with its url; never fill it "
+            "from memory. Do not search the kb again.")
+    if route == "web":
+        lines = [ln for ln in lines[:lines.index("")] if ln.startswith(HEAD_LINES)] if "" in lines else \
+            [ln for ln in lines if ln.startswith(HEAD_LINES)]
+        what = "The kb has no coverage for this question, so no fact lines follow. State what it has and lacks from " \
+               "the lines below, then " + live
+    else:
+        what = ("The kb covers part of this question. Answer what it has from the pack below with path:line and "
+                "source urls, then " + live
+                + (" The pack's check: line flags a possible false good: if no cited line answers the question "
+                   "itself, treat the whole question as what the kb lacks."
+                   if res.get("unmatched") or res.get("spread") else ""))
+    head = (f"The kb: hook ran the kb evidence pack for this question (coverage: {res['verdict']}, route: {route}). "
+            f"{what}\n\n")
+    while lines and len(head) + len("\n".join(lines)) > LIMIT:  # over 10,000 characters the context is saved to a file
+        lines.pop()
+    return head + "\n".join(lines)
 
 
 def main():
