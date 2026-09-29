@@ -2,7 +2,7 @@
   "id": "TK-g7qzrued",
   "kind": "task",
   "title": "Document the false-none detector",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-hfzdlzai",
   "priority": "P1",
   "rank": 2,
@@ -36,5 +36,34 @@
   "depends_on": [
     "TK-mmrsjxct"
   ],
-  "claimed_by": "orchestrator-mac-sprint-run"
+  "evidence": {
+    "commit": "c227aba08a97a0d4effc464735030ffe2b4d4ee5",
+    "checks": [
+      {
+        "run": [
+          "git",
+          "grep",
+          "-q",
+          "-i",
+          "-F",
+          "-e",
+          "false none",
+          "--",
+          "kb/_self/querylog.md"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "TestCohesion or TestSelfDocs"
+        ],
+        "exit": 0,
+        "sha256": "f33161ef055f0106"
+      }
+    ]
+  }
 }
