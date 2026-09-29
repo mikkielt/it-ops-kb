@@ -2,7 +2,7 @@
   "id": "TK-ewuy6573",
   "kind": "task",
   "title": "Parse pin files at the commit in kbingest.py",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-gmey37if",
   "priority": "P2",
   "rank": 1,
@@ -22,5 +22,19 @@
     "_tools/test_kbingest.py",
     "_tools/fixtures/kbingest/**"
   ],
-  "claimed_by": "worker-ewuy6573"
+  "evidence": {
+    "commit": "ba5f048cc3f3ff2762e18a8c83f5af1c0f4035f2",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "pin_files"
+        ],
+        "exit": 0,
+        "sha256": "ea2558596cdecab3"
+      }
+    ]
+  }
 }
