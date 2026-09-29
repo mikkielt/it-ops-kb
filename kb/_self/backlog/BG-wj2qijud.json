@@ -1,0 +1,23 @@
+{
+  "id": "BG-wj2qijud",
+  "kind": "bug",
+  "title": "tools.md lacks the route-by-verdict scenario and the router-pinned config",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kb/_self/tools.md's rows for agent_bench.py and benchmarks.py name the router-pinned config (the routed models as full names, following kb_ask.plan's web and split routes) and the route-by-verdict scenario, and selfdoc.py stale lists neither _tools/agent_bench.py nor _tools/benchmarks.py for it.",
+  "repro": {
+    "run": [
+      "git",
+      "grep",
+      "-q",
+      "-e",
+      "router-pinned",
+      "-e",
+      "route-by-verdict",
+      "--",
+      "kb/_self/tools.md"
+    ]
+  }
+}
