@@ -1,0 +1,18 @@
+{
+  "id": "BG-rcwroffk",
+  "kind": "bug",
+  "title": "Hook commands need sh, so the raw-read hint cannot fire under PowerShell without Git Bash",
+  "status": "draft",
+  "parent": "EP-5p4ahbnq",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "The PowerShell-side PreToolUse hook in .claude/settings.json starts without sh (a hook entry with shell powershell that runs kb_hook.py through a Python launcher), so a Windows host without Git Bash gets the raw-read hint; the other hooks that start through sh are checked for the same dependency",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import json,sys; h=json.load(open('.claude/settings.json',encoding='utf-8'))['hooks']['PreToolUse']; sys.exit(0 if any('PowerShell' in e.get('matcher','') and any(x.get('shell')=='powershell' and not x.get('command','').startswith('sh ') for x in e['hooks']) for e in h) else 1)"
+    ]
+  }
+}
