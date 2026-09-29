@@ -21,7 +21,8 @@
     "kb/public/_gaps.md"
   ],
   "depends_on": [
-    "BG-ovulgaal"
+    "BG-ovulgaal",
+    "BG-tmlqud7t"
   ],
   "gates": [
     {

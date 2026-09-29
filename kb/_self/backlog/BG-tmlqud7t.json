@@ -1,0 +1,42 @@
+{
+  "id": "BG-tmlqud7t",
+  "kind": "bug",
+  "title": "kb_mcp tests fail in CI when main moved after the pipeline's commit",
+  "status": "doing",
+  "sprint": "SP-z7a5c76b",
+  "priority": "P1",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "test_kb_mcp.py's tests that run kb_pack on the checkout (TestKbServer::test_kb_pack_audit_facts_cited, test_domain_is_matched_without_case_and_an_unknown_one_is_refused) pass whatever the checkout's upstream holds: they run with the behind notice off (an environment switch kb_mcp.behind_note honours, KB_NO_UPSTREAM=1) or strip it, and test_status_says_how_far_a_clone_is_behind_its_remote still proves the notice.",
+  "repro": {
+    "run": [
+      "git",
+      "grep",
+      "-q",
+      "-e",
+      "KB_NO_UPSTREAM",
+      "--",
+      "_tools/kb_mcp.py",
+      "_tools/test_kb_mcp.py"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "test_kb_mcp"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kb_mcp.py",
+    "_tools/test_kb_mcp.py"
+  ],
+  "relates_to": [
+    "TK-23djaz5l"
+  ],
+  "notes": "kb-tests-windows job 16794362441 (pipeline 2891453375, commit 4f99ec627) ran all tests and failed only these two: the runner fetched origin/main 7 commits past the pipeline's commit (the query log's automatic pushes), so kb_pack opened with `kb copy: 7 commits behind origin/main` before `coverage:`. Any CI job on a commit main has moved past fails them, on every OS. It blocks TK-23djaz5l, which needs a successful kb-tests-windows job.",
+  "claimed_by": "windows-laptop"
+}
