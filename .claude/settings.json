@@ -20,6 +20,8 @@
       "Bash(python3 _tools/fetch.py --status *)",
       "Bash(python3 _tools/stress_test.py *)",
       "Bash(python3 _tools/tests.py *)",
+      "Bash(python3 _tools/selfdoc.py section *)",
+      "Bash(python3 _tools/selfdoc.py map-tools *)",
       "Bash(python3 .claude/skills/kb-verify/lint.py *)",
       "PowerShell(python3 _tools/rag.py *)",
       "PowerShell(python3 _tools/backlog.py *)",
@@ -29,6 +31,8 @@
       "PowerShell(python3 _tools/fetch.py --status *)",
       "PowerShell(python3 _tools/stress_test.py *)",
       "PowerShell(python3 _tools/tests.py *)",
+      "PowerShell(python3 _tools/selfdoc.py section *)",
+      "PowerShell(python3 _tools/selfdoc.py map-tools *)",
       "PowerShell(python3 .claude/skills/kb-verify/lint.py *)"
     ],
     "deny": [
