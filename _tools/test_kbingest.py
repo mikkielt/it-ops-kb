@@ -777,6 +777,27 @@ def test_kbingest_map_dotnet_no_auto_response(tmp_path, monkeypatch):
 
 
 @requires_git
+def test_kbingest_map_dotnet_sdk_paths(tmp_path, monkeypatch):
+    """Planted: a global.json (with comments) that sets sdk.paths, once in a project's parent folder and once at the
+    root; a .NET 10 host would load an SDK from the worktree, so no dotnet command runs, not even the version."""
+    log = install_lang(tmp_path, monkeypatch, ("dotnet",))
+    paths = '{\n  // the SDK of the repository\n  "sdk": {"version": "10.0.100", "paths": [".dotnet", "$host$"],},\n}\n'
+    for name, where_ in (("nested", "src/global.json"), ("top", "global.json")):
+        r = commit_files(tmp_path / name, {"global.json": '{"sdk": {"version": "10.0.100"}}\n', where_: paths,
+                                           "src/App/App.csproj": CSPROJ, "src/App/Program.cs": "class P {}\n"})
+        code, doc = fake_map(r, tmp_path, monkeypatch, kbingest.DotnetMapper())
+        assert code == 0
+        assert calls_of(log) == [], name  # not even dotnet --version
+        assert notes_of(doc) == [f"{where_}: sets sdk.paths (an SDK from folders it names), .NET not mapped and no "
+                                 "dotnet command run"]
+        assert doc["tools"] == {} and doc["packages"] == []
+    bad = commit_files(tmp_path / "bad", {"global.json": '{"sdk": {"paths": [".dotnet"]\n',  # unterminated: declines
+                                          "App.csproj": CSPROJ})
+    code, doc = fake_map(bad, tmp_path, monkeypatch, kbingest.DotnetMapper())
+    assert calls_of(log) == [] and notes_of(doc)[0].startswith("global.json: not read (")
+
+
+@requires_git
 def test_kbingest_map_dotnet_failures_and_odd_references_are_notes(webrepo, tmp_path, monkeypatch):
     install_lang(tmp_path, monkeypatch, WEB_TOOLS)
     monkeypatch.setenv("KB_FAKE_MODE", "noassets")  # no obj/project.assets.json: --no-restore cannot list packages

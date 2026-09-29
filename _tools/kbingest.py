@@ -1037,7 +1037,8 @@ class MapCtx:
 class Mapper:
     """One language's mapper. `name` is what the map records; `tool` the program looked up on PATH; `files(rows)` the
     kept (path, kind) pairs it maps (none: the language is absent and the mapper does not run); `map(ctx, files)` runs
-    only read-only commands, through ctx, and records packages, imports and entry points."""
+    only read-only commands, through ctx, and records packages, imports and entry points. `preflight(ctx, files)` reads
+    files only, before any command of the language runs (the version probe included): a note declines the language."""
     language = ""
     name = ""
     tool = ""
@@ -1045,6 +1046,9 @@ class Mapper:
 
     def files(self, rows):
         return []
+
+    def preflight(self, ctx, files):
+        return None
 
     def map(self, ctx, files):
         raise NotImplementedError
@@ -1304,6 +1308,39 @@ class DotnetMapper(Mapper):
                       if path.endswith(PROJECT_EXTS + (".cs", ".fs", ".vb", ".sln", ".slnx"))
                       or path.rsplit("/", 1)[-1] == "global.json")
 
+    def preflight(self, ctx, files):
+        """A note when a global.json in a project's folder or above it (to the worktree root, where the version probe
+        runs) sets sdk.paths: the .NET 10+ host then loads an SDK from the folders it names, relative to the global.json,
+        which would be the repository's own code (https://learn.microsoft.com/dotnet/core/tools/global-json, `paths`).
+        One that is not a regular file or cannot be read declines too."""
+        folders = {"."}
+        for proj in files:
+            if proj.endswith(PROJECT_EXTS):
+                folder = folder_of(proj)
+                while folder != ".":
+                    folders.add(folder)
+                    folder = folder_of(folder)
+        for folder in sorted(folders):
+            rel = within(folder, "global.json")
+            path = ctx.root / rel
+            if not path.is_symlink() and not path.exists():
+                continue
+            why = None
+            if path.is_symlink() or not path.is_file():
+                why = "not a regular file"
+            else:
+                try:
+                    doc = jsonc(path.read_text(encoding="utf-8"))
+                except (OSError, UnicodeDecodeError, ValueError, RecursionError) as e:
+                    why = f"not read ({type(e).__name__})"
+                else:
+                    sdk = doc.get("sdk") if isinstance(doc, dict) else None
+                    if isinstance(sdk, dict) and "paths" in sdk:
+                        why = "sets sdk.paths (an SDK from folders it names)"
+            if why:
+                return f"{rel}: {why}, .NET not mapped and no dotnet command run"
+        return None
+
     def map(self, ctx, files):
         projects = [f for f in files if f.endswith(PROJECT_EXTS)]
         if not projects:
@@ -1514,6 +1551,8 @@ def build_map(repo, commit, rev, rows, langs=None, timeout=MAP_TIMEOUT, base_env
             elif inside:
                 ctx.note(f"{m.name}: found inside the worktree, the repository's own program is never run "
                          f"({len(files)} {m.language} files not mapped)")
+            elif (why := m.preflight(ctx, files)) is not None:
+                ctx.note(why)
             else:
                 v = run_tool([m.tool, *m.version_args], root, env, timeout)
                 ok = v.rc == 0 and not v.timed_out and not v.missing
