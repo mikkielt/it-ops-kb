@@ -2,7 +2,7 @@
   "id": "TK-dmr6de4w",
   "kind": "task",
   "title": "kb-ingest step 4 takes interfaces and entry points from pins and maps",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-rrrgvspb",
   "priority": "P2",
   "rank": 1,
@@ -40,5 +40,6 @@
   ],
   "depends_on": [
     "TK-dbm2lfbf"
-  ]
+  ],
+  "claimed_by": "worker-dmr6de4w"
 }
