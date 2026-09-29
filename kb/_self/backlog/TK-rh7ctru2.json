@@ -2,7 +2,7 @@
   "id": "TK-rh7ctru2",
   "kind": "task",
   "title": "git.md names kbgit.py sync --push as the one autonomous write path",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-6dszsvk5",
   "priority": "P2",
   "rank": 1,
@@ -23,5 +23,18 @@
   "depends_on": [
     "TK-m6ol5dol"
   ],
-  "claimed_by": "worker-rh7ctru2"
+  "evidence": {
+    "commit": "e91061705f9f52d10e443d2919d626a99e5363f0",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/selfdoc.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "3db513ebafdfe3a2"
+      }
+    ]
+  }
 }
