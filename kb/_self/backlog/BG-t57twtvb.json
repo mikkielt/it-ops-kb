@@ -2,7 +2,7 @@
   "id": "BG-t57twtvb",
   "kind": "bug",
   "title": "kbingest docs say map runs nothing from the repository while open bugs show paths that do",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-g5hizdko",
   "sprint": "SP-xourq2gj",
   "priority": "P3",
@@ -42,5 +42,6 @@
     "BG-lfrc7eev",
     "BG-lnwercde",
     "BG-blajtxv2"
-  ]
+  ],
+  "claimed_by": "fix-t57twtvb"
 }
