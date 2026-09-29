@@ -2,7 +2,7 @@
   "id": "TK-if7de5pb",
   "kind": "task",
   "title": "kb_ask.py rows carry the kb sources its researcher cites",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-hfzdlzai",
   "priority": "P1",
   "rank": 2,
@@ -52,5 +52,28 @@
     }
   ],
   "notes": "kb_ask.py's claude -p runs with hooks off, so its fetches are never logged (querylog.md, Spool); the only trace of its researcher's pages is its answer, which kb_ask.py reads from the JSON `result` (claude/ci-and-headless.md:72, DOC S1800). The store is committed and pushed to origin, so a new entry field is the operator's call.",
-  "claimed_by": "worker-if7de5pb"
+  "evidence": {
+    "commit": "379939b448e8dbbccef826b54900e112c2979708",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "TestLearnFalseNone"
+        ],
+        "exit": 0,
+        "sha256": "e0acd1cd7dabd106"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/querylog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "ca69e22a961e6b9a"
+      }
+    ]
+  }
 }
