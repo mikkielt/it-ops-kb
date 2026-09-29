@@ -2182,6 +2182,73 @@ def gate(r, up, fix_check=False):
     return all(ok for _, _, ok in results)
 
 
+CODE_BRANCH_PREFIX = "code/"  # a range with a code-lane commit goes to code/<id>, never to main
+NO_PUSH_OPTIONS = re.compile(r"receiving end does not support push options", re.I)
+
+
+def push_options(target):
+    """The merge-request push options of a code branch, in the order they are sent."""
+    return ["merge_request.create", f"merge_request.target={target}", "merge_request.auto_merge",
+            "merge_request.remove_source_branch"]
+
+
+def lane_plan(up, rev):
+    """(lane, branch) of the commits up..REV (all of REV's history without UP): the branch is code/<id> for a range
+    with a code-lane commit, else None. <id> is the first KB-Work id in the range, else REV's short hash."""
+    lanes = kblane.commit_lanes(KB, [f"{up}..{rev}"] if up else [rev])
+    if lanes is None or not any(lane == kblane.CODE for _, lane, _ in lanes):
+        return kblane.CONTENT, None
+    out = git("log", "--reverse", "--format=%(trailers:key=KB-Work,valueonly,unfold)", *([f"{up}..{rev}"] if up else [rev])) or ""
+    ids = [x for ln in out.splitlines() for x in re.split(r"[,\s]+", ln.strip()) if x]
+    return kblane.CODE, CODE_BRANCH_PREFIX + (ids[0] if ids else short(rev_parse(rev)))
+
+
+def push_branch(a, r, branch, target):
+    """Push HEAD as BRANCH (code/<id>) with the merge-request push options; a server without push options gets the
+    same push without them. An existing branch that is not an ancestor of HEAD is replaced with a lease on the tip
+    fetched here (code/* only: main is never forced). Returns an exit code."""
+    if not branch.startswith(CODE_BRANCH_PREFIX):
+        print(f"refused: {branch} is not a {CODE_BRANCH_PREFIX}* branch")
+        return 2
+    ref = f"refs/heads/{branch}"
+    tracking = f"refs/remotes/{a.remote}/{branch}"
+    code, out = gitx("fetch", "--quiet", a.remote, f"+{ref}:{tracking}")
+    if code and not re.search(r"couldn't find remote ref", out, re.I):
+        print(f"git fetch {a.remote} {branch} failed:\n" + out.rstrip())
+        return 2
+    tip = None if code else rev_parse(tracking)
+    argv = ["push"]
+    if tip and gitx("merge-base", "--is-ancestor", tip, "HEAD")[0] != 0:
+        argv.append(f"--force-with-lease={ref}:{tip}")
+        print(f"{branch} on {a.remote} is not an ancestor of the rebased work; replacing it with a lease on {short(tip)}")
+    elif not tip:
+        argv.append(f"--force-with-lease={ref}:")  # expects no such branch
+    opts = push_options(a.branch)
+    sent = [x for o in opts for x in ("-o", o)]
+    dest = [a.remote, f"HEAD:{ref}"]
+    code, out = gitx(*argv, *sent, *dest, env={"KB_GATE_DONE": "1"})  # gated above
+    if code and NO_PUSH_OPTIONS.search(out):
+        code, out = gitx(*argv, *dest, env={"KB_GATE_DONE": "1"})
+        opts = None
+    if code:
+        if REJECTED.search(out):
+            print(f"push of {branch} refused: it moved on {a.remote} since it was fetched, nothing was overwritten:\n" + out.rstrip())
+            r["pushed"] = f"no ({branch} moved on {a.remote})"
+        else:
+            print("git push failed:\n" + out.rstrip())
+            r["pushed"] = "no (push failed)"
+        return 1
+    r["pushed"] = f"yes: branch {branch} on {a.remote} ({short(rev_parse('HEAD'))}); {target} did not move"
+    if opts:
+        r["notes"].append(f"merge request for {a.branch} requested with push options: {', '.join(opts)}")
+    else:
+        r["notes"].append(f"{a.remote} does not support push options: open a merge or pull request from {branch} "
+                          f"into {a.branch}")
+    r["notes"].append(f"local {a.branch} is unchanged; the commits stay local until the merge request merges, a later "
+                      "sync then finds them on the integration branch")
+    return 0
+
+
 def sync_once(a, r):
     """One fetch -> rebase -> fix -> gate -> push round. Returns an exit code, or "retry" when the push was rejected."""
     target = f"{a.remote}/{a.branch}"
@@ -2206,6 +2273,9 @@ def sync_once(a, r):
     print(f"{target}: local {ahead} ahead, {behind} behind" + ("" if up else f" ({a.branch} does not exist on {a.remote} yet)"))
 
     if a.dry_run:
+        lane, branch = lane_plan(up, orig)
+        print(f"lane: {lane}; " + (f"would push branch {branch} with merge-request push options, {a.branch} would not move"
+                                    if branch else f"would push to {target}"))
         if behind:
             incoming, local = names("diff", "--name-only", base, up), names("diff", "--name-only", base, orig)
             both = sorted(set(incoming) & set(local))
@@ -2252,6 +2322,10 @@ def sync_once(a, r):
     if not now_ahead:
         r["pushed"] = "nothing to push"
         return 0
+    lane, branch = lane_plan(up, "HEAD")
+    if branch:
+        print(f"lane: code; pushing branch {branch}, {a.branch} does not move")
+        return push_branch(a, r, branch, target)
     code, out = gitx("push", a.remote, f"HEAD:refs/heads/{a.branch}", env={"KB_GATE_DONE": "1"})  # gated above
     if code:
         if REJECTED.search(out):
