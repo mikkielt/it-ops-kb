@@ -2,7 +2,7 @@
   "id": "TK-xo4cnzxi",
   "kind": "task",
   "title": "kbgit.py check-lanes and the pre-push hook",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-qx7aw7if",
   "priority": "P2",
   "rank": 0,
@@ -25,5 +25,6 @@
     "kb/_self/git.md",
     "kb/_self/tools.md"
   ],
-  "notes": "No test calls a real forge: the client is tested against an injected opener or a stub server on loopback."
+  "notes": "No test calls a real forge: the client is tested against an injected opener or a stub server on loopback.",
+  "claimed_by": "worker-xo4cnzxi"
 }
