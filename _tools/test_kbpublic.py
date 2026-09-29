@@ -5,11 +5,14 @@
                    keeps authors and messages, and is the same when computed twice.
   TestPublish      (marker git) publish to a bare public remote: a note without one, a first push, a fast-forward, a
                    refusal when the public branch is not an ancestor, and --rewrite.
+  TestPublishSafety (marker git) publish refuses, exit 1 and pushes nothing (a dry run reports the same), on a red, a
+                   pending, an unreadable or a missing CI verdict of the source commit (a stubbed run), an internal
+                   root, a _private path and a leaked address in a changed file.
   TestGuard        (marker git) guard_push and sync refuse a history with kb/_querylog only when the remote is the
                    public home (git config kb.publishRemote); a clone without one pushes it; the pre-push hook of a kb
                    clone refuses a plain push to the public home.
 """
-import argparse, ast, os, shutil
+import argparse, ast, json, os, shutil
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -46,8 +49,21 @@ def src(tmp_path):
     return r, shas
 
 
+def ci_stub(state=None, signed_in=True):
+    """A command runner for the CI check that answers as glab does: the newest pipeline of the commit is in STATE
+    (None: no pipeline), its gate jobs succeeded; signed_in False: glab is not signed in."""
+    def run(argv):
+        if argv[1:3] == ["auth", "status"]:
+            return (0, "", "") if signed_in else (1, "", "not signed in")
+        if "/jobs" in argv[-1]:
+            return 0, json.dumps([{"name": n, "status": "success"} for n in ("kb-tests", "kb-trailers")]), ""
+        return 0, json.dumps([] if state is None else [{"id": 7, "status": state, "web_url": "u"}]), ""
+    return run
+
+
 def ns(**kw):
-    base = {"remote": None, "source": "origin/main", "branch": "main", "dry_run": False, "rewrite": False}
+    base = {"remote": None, "source": "origin/main", "branch": "main", "dry_run": False, "rewrite": False,
+            "ci_run": ci_stub("success")}
     return argparse.Namespace(**{**base, **kw})
 
 
@@ -113,6 +129,73 @@ class TestPublish:
         assert kbpublic.cmd_check_public(argparse.Namespace(rev=shas[1]), r.path) == 0
         assert kbpublic.cmd_check_public(argparse.Namespace(rev=shas[-1]), r.path) == 1
         assert "FAILED" in capsys.readouterr().out
+
+
+class TestPublishSafety:
+    def prepare(self, src, tmp_path, files=None):
+        r, shas = src
+        pub = Repo(tmp_path / "pub.git")
+        Repo(tmp_path).git("init", "-q", "--bare", "-b", "main", pub.path)
+        origin = Repo(tmp_path / "origin.git")
+        Repo(tmp_path).git("clone", "-q", "--bare", r.path, origin.path)
+        r.git("remote", "add", "origin", origin.path)
+        r.git("remote", "add", "pub", pub.path)
+        r.git("config", "kb.publishRemote", "pub")
+        if files:
+            commit(r, files, "planted")
+            r.git("push", "-q", "--no-verify", "origin", "HEAD:main")
+        return r, pub
+
+    def refused(self, r, pub, capsys, cause, **kw):
+        """Every mode refuses with CAUSE, exit 1, and pushes nothing."""
+        for dry in (True, False):
+            assert kbpublic.cmd_publish(ns(dry_run=dry, **kw), r.path) == 1
+            text = capsys.readouterr().out
+            assert f"refused: " in text and cause in text and "nothing pushed" in text
+            assert pub.run_git("rev-parse", "main").returncode
+
+    @pytest.mark.parametrize("state, cause", [("failed", "is red"), ("running", "is pending"), (None, "is none")])
+    def test_ci_verdict(self, src, tmp_path, capsys, state, cause):
+        r, pub = self.prepare(src, tmp_path)
+        self.refused(r, pub, capsys, cause, ci_run=ci_stub(state))
+
+    def test_ci_unreadable(self, src, tmp_path, capsys):
+        r, pub = self.prepare(src, tmp_path)
+        self.refused(r, pub, capsys, "is skip", ci_run=ci_stub("success", signed_in=False))
+
+    def test_ci_ok_publishes(self, src, tmp_path):
+        r, pub = self.prepare(src, tmp_path)
+        assert kbpublic.cmd_publish(ns(), r.path) == 0 and pub.rev("main")
+
+    def test_internal_root(self, src, tmp_path, capsys):
+        r, pub = self.prepare(src, tmp_path, {"kb/team/_root.md": "---\nroot: team\nid_prefix: T\nvisibility: internal\n---\n"})
+        self.refused(r, pub, capsys, "the internal root kb/team")
+
+    def test_public_root_passes(self, src, tmp_path):
+        r, pub = self.prepare(src, tmp_path, {"kb/open/_root.md": "---\nroot: open\nid_prefix: O\nvisibility: public\n---\n"})
+        assert kbpublic.cmd_publish(ns(), r.path) == 0
+
+    @pytest.mark.parametrize("path", ["kb/public/_private/n.md", "tools/_cache/x.json"])
+    def test_private_and_cache_paths(self, src, tmp_path, capsys, path):
+        r, pub = self.prepare(src, tmp_path, {path: "x\n"})
+        self.refused(r, pub, capsys, f"holds {path}")
+
+    def test_leaked_address(self, src, tmp_path, capsys):
+        leak = ".".join(("192", "168", "4", "9"))  # built here so this file has no address of its own
+        r, pub = self.prepare(src, tmp_path, {"kb/public/leak.md": f"host at {leak}\n"})
+        self.refused(r, pub, capsys, "kb/public/leak.md has a leak-scan hit (ip)")
+
+    def test_leak_in_unchanged_file_and_allowlist(self, src, tmp_path):
+        leak = ".".join(("192", "168", "4", "9"))
+        r, pub = self.prepare(src, tmp_path, {"kb/public/leak.md": f"host at {leak}\n",
+                                              "_tools/tests_allowlist.txt": f"ip {leak}  # reviewed\n"})
+        assert kbpublic.cmd_publish(ns(), r.path) == 0  # allowed
+        commit(r, {"kb/public/other.md": "fine\n"}, "later", remove=[])
+        r.git("push", "-q", "--no-verify", "origin", "HEAD:main")
+        r.git("rm", "-q", "_tools/tests_allowlist.txt")
+        r.git("commit", "-q", "-m", "drop allowlist")
+        r.git("push", "-q", "--no-verify", "origin", "HEAD:main")
+        assert kbpublic.cmd_publish(ns(), r.path) == 0  # leak.md is not changed against the public tip: not scanned
 
 
 class TestGuard:
@@ -198,11 +281,11 @@ class TestRemoteRoles:
         if public:
             clone.git("config", "kb.publishRemote", "pub")
         p = clone.kbgit("publish", "--dry-run")
-        assert p.returncode == 0 and "origin" not in p.stdout + p.stderr, p.stdout + p.stderr
-        if public:
-            assert "source: integ/main" in p.stdout
+        assert "origin" not in p.stdout + p.stderr, p.stdout + p.stderr
+        if public:  # a local url has no forge to read the CI verdict from: the safety check refuses after naming the source
+            assert p.returncode == 1 and "source: integ/main" in p.stdout and "the CI verdict" in p.stdout, p.stdout
         else:
-            assert "no public remote" in p.stdout
+            assert p.returncode == 0 and "no public remote" in p.stdout
 
     def test_red_pipeline_names_the_integration_remote(self, clone, monkeypatch, capsys):
         import backlog

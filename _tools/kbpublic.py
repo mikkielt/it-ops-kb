@@ -16,11 +16,18 @@ the same `main`, so the public home gets a projection of it:
               its parent's. The projection is a pure function of the source history, so every clone computes the same
               commits and each publish fast-forwards the last one.
   publish     fetches the source and the public home, projects the source, verifies the projection carries no
-              PRIVATE path, and pushes it to the public home's BRANCH as a fast-forward. When the public home's branch
+              PRIVATE path, checks its safety (below), and pushes it to the public home's BRANCH as a fast-forward. When the public home's branch
               is not an ancestor (a commit pushed there directly, or a history from before the projection) it refuses,
               exit 1, unless --rewrite, which pushes with --force-with-lease against the tip it fetched: the one-time
               move to the projection, or a decision to drop what was pushed there directly. `refs/kb/published` keeps
               the last projection. Without a public remote it prints a note and exits 0.
+  safety      after the fast-forward check and before the push (a --dry-run runs them all and pushes nothing) every
+              cause is reported, exit 1, in this order: the projection's tree holds a root whose `_root.md` says
+              `visibility: internal`, or a path under a `_private` or `_cache` directory (any depth); a file the
+              projection changes against the public tip (every file when there is none) has a leak-scan hit
+              (kbcommon.leak_hits, allowing _tools/tests_allowlist.txt of the projection); the integration CI verdict of
+              the source commit (ql_deliver.ci_pipeline on the source remote's url) is not `ok`: red, pending,
+              unverified, none, or skip when glab or gh cannot read it. Content is refused, never filtered.
   guard       a push to a public remote of a ref whose history touches a PRIVATE path is refused: the pre-push hook
               (for every pushed branch and tag, sync's own push included), `kbgit.py sync` before it rebases, and the
               query log's push (ql_deliver) when `origin` is public. `check-public` is the same check for CI on the
@@ -40,6 +47,10 @@ INTEGRATION_KEY = "kb.integrationRemote"
 CLONE_REMOTE = "origin"  # what `git clone` names its source: the integration remote unless INTEGRATION_KEY says otherwise
 PUBLISHED_REF = "refs/kb/published"
 ZERO_RE = re.compile(r"^0+$")
+FORBIDDEN_RE = re.compile(r"(^|/)(_private|_cache)(/|$)")
+ALLOWLIST_PATH = "_tools/tests_allowlist.txt"
+URL_RX = re.compile(r"(?:https?|ssh|git)://\S+|(?<![\w.%+-])git@[\w.-]+:[\w./~-]+|\bssh(?:\s+-\w+)*\s+git@[\w.-]+")
+CI_RUN = None  # a command runner (argv -> (code, stdout, stderr)) for the CI check; None: ql_base.run_cmd. Tests stub it.
 
 
 def run(args, cwd, stdin=None, env=None):
@@ -214,6 +225,87 @@ def is_ancestor(a, b, cwd):
     return run(["merge-base", "--is-ancestor", a, b], cwd)[0] == 0
 
 
+def tree_files(rev, cwd):
+    """The paths of REV's tree, or None on a git error."""
+    code, o, _ = run(["ls-tree", "-r", "-z", "--name-only", rev], cwd)
+    return [x for x in o.decode("utf-8", "replace").split("\0") if x] if code == 0 else None
+
+
+def blobs(rev, paths, cwd):
+    """{path: text} of the utf-8 files PATHS of REV's tree (binary and unreadable ones are left out)."""
+    paths = [x for x in paths if "\n" not in x]
+    code, o, _ = run(["cat-file", "--batch"], cwd, stdin="".join(f"{rev}:{x}\n" for x in paths).encode("utf-8"))
+    res, pos = {}, 0
+    for x in paths:
+        end = o.find(b"\n", pos)
+        if code or end < 0:
+            break
+        head = o[pos:end].split()
+        pos = end + 1
+        if len(head) == 3 and head[1] == b"blob":
+            size = int(head[2])
+            try:
+                res[x] = o[pos:pos + size].decode("utf-8")
+            except UnicodeDecodeError:
+                pass
+            pos += size + 1
+    return res
+
+
+def allowlist(proj, cwd):
+    """{kind: lowercased values} of the projection's _tools/tests_allowlist.txt (leak scan exceptions)."""
+    allow = {}
+    for ln in blobs(proj, [ALLOWLIST_PATH], cwd).get(ALLOWLIST_PATH, "").splitlines():
+        ln = ln.split("#", 1)[0].strip()
+        if ln and len(ln.split(None, 1)) == 2:
+            kind, value = ln.split(None, 1)
+            allow.setdefault(kind, set()).add(value.strip().lower())
+    return allow
+
+
+def tree_refusals(proj, files, cwd):
+    """Causes: an internal root (a `_root.md` saying `visibility: internal`) or a _private or _cache path in the tree."""
+    import kbcommon
+    res = []
+    for x in files:
+        if FORBIDDEN_RE.search(x):
+            res.append(f"the projection's tree holds {x}, a path under _private or _cache")
+    for x, text in sorted(blobs(proj, [f for f in files if f.rsplit("/", 1)[-1] == kbcommon.ROOT_FILE], cwd).items()):
+        if kbcommon._meta(text).get("visibility") == "internal":
+            res.append(f"the projection's tree holds the internal root {x.rsplit('/', 1)[0] or '.'} ({x} says visibility: internal)")
+    return res
+
+
+def leak_refusals(proj, tip, files, cwd):
+    """Causes: a leak-scan hit in a file the projection changes against the public tip TIP (every file when None).
+    Vendor exports and snapshots (`/artifacts/`, `/_snapshots/`) are scanned for secrets only, as the tracked-file scan does."""
+    import kbcommon
+    if tip is None:
+        changed = files
+    else:
+        code, o, _ = run(["diff", "--name-only", "-z", "--diff-filter=ACMR", tip, proj], cwd)
+        if code:
+            return [f"git diff {tip[:12]} {proj[:12]} failed"]
+        changed = [x for x in o.decode("utf-8", "replace").split("\0") if x]
+    allow, res = allowlist(proj, cwd), []
+    for x, text in sorted(blobs(proj, changed, cwd).items()):
+        vendored = "/artifacts/" in x or f"/{kbcommon.SNAPSHOTS}/" in x
+        hits = kbcommon.leak_hits(URL_RX.sub("", text), allow)
+        hits += [h for h in kbcommon.leak_hits(text, allow) if h[0] == "secret" and h not in hits]
+        kinds = sorted({k for k, _ in hits if k == "secret" or not vendored})
+        if kinds:
+            res.append(f"{x} has a leak-scan hit ({', '.join(kinds)})")
+    return res
+
+
+def ci_refusals(src, url, cwd, run_ci=None):
+    """Causes: the integration CI verdict of the source commit SRC (remote url URL) is not ok. RUN_CI runs the CLIs."""
+    import ql_deliver
+    from ql_base import run_cmd
+    verdict, detail, _ = ql_deliver.ci_pipeline(url, src, run_ci or CI_RUN or run_cmd)
+    return [] if verdict == "ok" else [f"the CI verdict of the source commit {src[:12]} is {verdict}: {detail}"]
+
+
 def cmd_publish(a, cwd):
     remote = a.remote or publish_remote(cwd)
     if not remote:
@@ -257,6 +349,17 @@ def cmd_publish(a, cwd):
         print(f"refused: {remote}/{a.branch} {tip[:12]} is not an ancestor of the projection: commits were pushed there "
               f"directly, or it holds a history from before the projection. Bring them to {source} first, or pass "
               f"--rewrite to replace it (force push with lease)")
+        return 1
+    files = tree_files(proj, cwd)
+    if files is None:
+        print(f"refused: git ls-tree {proj[:12]} failed")
+        return 2
+    causes = tree_refusals(proj, files, cwd) + leak_refusals(proj, tip, files, cwd)
+    causes += ci_refusals(src, out(["remote", "get-url", src_remote], cwd), cwd, getattr(a, "ci_run", None))
+    if causes:
+        for c in causes:
+            print(f"refused: {c}")
+        print("nothing pushed" + (" (dry run)" if a.dry_run else ""))
         return 1
     n = out(["rev-list", "--count", proj if tip is None else f"{tip}..{proj}"], cwd)
     how = "fast-forward" if ff else "rewrite (force with lease)"
