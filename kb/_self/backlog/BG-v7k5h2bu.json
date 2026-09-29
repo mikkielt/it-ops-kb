@@ -2,7 +2,7 @@
   "id": "BG-v7k5h2bu",
   "kind": "bug",
   "title": "kbingest map leaves the MSBuild NuGet SDK resolver able to fetch an SDK",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-g5hizdko",
   "sprint": "SP-xourq2gj",
   "priority": "P2",
@@ -35,5 +35,29 @@
   "links": [
     "kb/public/agents/codebase-mapping.md:128 (MSBUILDDISABLENUGETSDKRESOLVER, CODE S-7j4xac2a; no Learn page)"
   ],
-  "claimed_by": "fix-v7k5h2bu"
+  "evidence": {
+    "commit": "af0b868bb2b566dbff152ebf9e07f05b639c083c",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "kbingest"
+        ],
+        "exit": 0,
+        "sha256": "05ebc5d47956597b"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "kbingest_map_dotnet_no_sdk_resolver"
+        ],
+        "exit": 0,
+        "sha256": "8925c4f121ff9063"
+      }
+    ]
+  }
 }
