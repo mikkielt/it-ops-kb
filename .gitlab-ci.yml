@@ -55,24 +55,34 @@ kb-tests-floor:
     - when: manual
       allow_failure: true
 
-# The same tests on Windows: GitLab.com's hosted Windows runner (kb/public/gitlab/hosted-runners-windows.md). A fresh
-# Windows Server 2022 VM per job, PowerShell, no image: its preinstalled `python` installs uv, and uv the pinned
-# CPython; MinGit's own sh goes on PATH last, as Git Bash would have it, so the launcher tests run too.
+# The same tests on Windows: the project's docker-windows runner. A fresh Windows Server 2025 container per job
+# (Hyper-V isolation, Windows PowerShell 5.1), one job at a time; a job waits as pending while the runner is offline.
+# The image's `python` installs uv, and uv the pinned CPython; MinGit (SHA-256 checked) puts git on PATH and its own
+# sh last, as Git Bash would have it, so the launcher tests run too.
 kb-tests-windows:
   stage: test
-  tags: [saas-windows-medium-amd64]
+  tags: [docker-windows]
+  image: python:3.14-windowsservercore-ltsc2025
   # The run takes longer than the gap between the query log's automatic pushes: once started, a newer pipeline on
   # main does not cancel it (auto_cancel on_new_commit conservative, the default).
   interruptible: false
   variables:
     GIT_DEPTH: "0"
+    MINGIT_URL: https://github.com/git-for-windows/git/releases/download/v2.56.0.windows.1/MinGit-2.56.0-64-bit.zip
+    MINGIT_SHA256: 064b440ff870ed5198527e8f3a92cdf5bd2fd0fedf5e718af95e3fdaddeff718
   script:
+    - |
+      $ProgressPreference = 'SilentlyContinue'
+      [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+      Invoke-WebRequest -UseBasicParsing -Uri $env:MINGIT_URL -OutFile C:\mingit.zip
+      if ((Get-FileHash C:\mingit.zip -Algorithm SHA256).Hash -ne $env:MINGIT_SHA256) { Write-Error 'MinGit SHA-256 mismatch'; exit 1 }
+      Expand-Archive C:\mingit.zip -DestinationPath C:\MinGit
+      $env:PATH = 'C:\MinGit\cmd;' + $env:PATH
     - git config --global --add safe.directory '*'
     - python --version
     - python -m pip install --quiet --disable-pip-version-check uv
     - |
-      $env:PATH = (python -c "import sysconfig; print(sysconfig.get_path('scripts'))") + ';' + $env:PATH
-      if (Test-Path C:\Git\usr\bin\sh.exe) { $env:PATH += ';C:\Git\usr\bin' }
+      $env:PATH = 'C:\MinGit\cmd;' + (python -c "import sysconfig; print(sysconfig.get_path('scripts'))") + ';' + $env:PATH + ';C:\MinGit\usr\bin'
       uv --version
       # a test past 900 s dumps every thread's stack (three fixtures take 300-450 s locally); the slowest are listed
       python _tools/tests.py -o faulthandler_timeout=900 --durations=15
