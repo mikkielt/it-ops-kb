@@ -2,7 +2,7 @@
   "id": "TK-e3ouzras",
   "kind": "task",
   "title": "code/* branch pipelines run the gate jobs without a click",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-vcf3r6qv",
   "priority": "P2",
   "rank": 0,
@@ -23,5 +23,21 @@
     "_tools/tests.py",
     "kb/_self/git.md"
   ],
-  "notes": "The test reads the YAML as text: no new dependency. kb-trailers' rule ($CI_PIPELINE_SOURCE == \"push\" && $CI_COMMIT_BRANCH) matches a code/* push. .github/workflows/kb.yml runs every job on every pushed branch already, so it needs no change."
+  "gates": [
+    {
+      "id": "code-branch-failure",
+      "kind": "provisional",
+      "question": "kb-tests and kb-trailers already start on their own in every branch pipeline, code/* included, but with allow_failure: true, so a failed test leaves the pipeline successful and auto-merge would merge the code/<id> merge request untested. How do they fail on code/* branches?",
+      "options": [
+        "allow_failure: false on code/* branches only: a failed gate job fails the branch pipeline and auto-merge waits; main and other branches keep allow_failure: true",
+        "keep allow_failure: true everywhere: auto-merge merges whatever the tests say",
+        "allow_failure: false on every branch, main included"
+      ],
+      "recommendation": "allow_failure: false on code/* branches only: a failed gate job fails the branch pipeline and auto-merge waits; main and other branches keep allow_failure: true",
+      "answer": "allow_failure: false on code/* branches only: a failed gate job fails the branch pipeline and auto-merge waits; main and other branches keep allow_failure: true",
+      "by": "agent"
+    }
+  ],
+  "notes": "The test reads the YAML as text: no new dependency. kb-trailers' rule ($CI_PIPELINE_SOURCE == \"push\" && $CI_COMMIT_BRANCH) matches a code/* push. .github/workflows/kb.yml runs every job on every pushed branch already, so it needs no change.",
+  "claimed_by": "mac-first"
 }
