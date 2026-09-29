@@ -1384,15 +1384,39 @@ class TestLaunch:
     @pytest.mark.parametrize("rel,var", [(".claude/settings.json", "CLAUDE_PROJECT_DIR"),
                                          (".claude-plugin/plugin.json", "CLAUDE_PLUGIN_ROOT")])
     def test_shell_form_launches(self, tmp_path, rel, var):
-        """The SessionEnd command as Claude Code runs it (`sh -c`, Git Bash on Windows)."""
+        """The SessionEnd command as Claude Code runs it (`sh -c`, Git Bash on Windows) starts the distill and returns
+        without waiting for it: the run file is written after the command returned (the distill settles for
+        LAUNCH_SETTLE_S first). No wall-clock bound here: sh and the interpreter probe cost what the host's load
+        makes them cost, and the launcher's own budget is held by the two tests above."""
         (h,) = load(rel)["hooks"]["SessionEnd"][0]["hooks"]
+        cmd = h["command"].replace("${" + var + "}", KB.replace("\\", "/"))
         plant_fetch_day(tmp_path)
-        env = querylog_env(tmp_path, base=dict(os.environ, **{var: KB}))
-        t0 = time.monotonic()
-        p = subprocess.run([SH, "-c", h["command"].replace("${" + var + "}", KB.replace("\\", "/"))],
-                           input=json.dumps(session_end()).encode("utf-8"), capture_output=True, env=env, timeout=120)
-        assert (p.returncode, p.stdout) == (0, b"") and time.monotonic() - t0 < 1.5, p.stderr
-        assert wait_for_run(tmp_path)
+        rc, out, err, returned = self.shell_run(tmp_path, cmd, var)
+        assert (rc, out) == (0, b""), err
+        files = wait_for_run(tmp_path)
+        assert files and files[0].stat().st_mtime > returned, err
+
+    @pytest.mark.skipif(not SH, reason="no sh on PATH (Windows without Git Bash)")
+    def test_shell_form_check_catches_a_waiting_launcher(self, tmp_path):
+        """Planted: a SessionEnd command that runs the distill itself, so it returns only after the run file exists,
+        fails the check test_shell_form_launches makes."""
+        (h,) = load(".claude/settings.json")["hooks"]["SessionEnd"][0]["hooks"]
+        assert h["command"].endswith(" launch"), h["command"]
+        cmd = h["command"][:-len("launch")] + "distill --settle 0"
+        cmd = cmd.replace("${CLAUDE_PROJECT_DIR}", KB.replace("\\", "/"))
+        plant_fetch_day(tmp_path)
+        _rc, _out, err, returned = self.shell_run(tmp_path, cmd, "CLAUDE_PROJECT_DIR")  # rc: the push step's, not ours
+        files = wait_for_run(tmp_path)
+        assert files, err
+        assert not files[0].stat().st_mtime > returned  # the check above would fail on this command
+
+    @staticmethod
+    def shell_run(data, cmd, var):
+        """(exit code, stdout, stderr, time it returned) of CMD under sh with the hook's input and environment."""
+        env = querylog_env(data, base=dict(os.environ, **{var: KB}))
+        p = subprocess.run([SH, "-c", cmd], input=json.dumps(session_end()).encode("utf-8"), capture_output=True,
+                           env=env, timeout=120)
+        return p.returncode, p.stdout, p.stderr, time.time()
 
     def test_session_start_picks_up_closed_sessions_only(self, tmp_path):
         sp = spool(tmp_path)
