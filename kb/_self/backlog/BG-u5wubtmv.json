@@ -2,7 +2,7 @@
   "id": "BG-u5wubtmv",
   "kind": "bug",
   "title": "kbingest.py survey says nothing when the checkout is at another commit than --rev",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-g5hizdko",
   "sprint": "SP-xourq2gj",
   "priority": "P3",
@@ -32,5 +32,6 @@
     "_tools/kbingest.py",
     "_tools/test_kbingest.py",
     "_tools/test_querylog_e2e.py"
-  ]
+  ],
+  "claimed_by": "fix-u5wubtmv"
 }
