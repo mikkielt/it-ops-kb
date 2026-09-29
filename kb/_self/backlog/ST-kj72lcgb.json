@@ -2,7 +2,7 @@
   "id": "ST-kj72lcgb",
   "kind": "story",
   "title": "topics_for matches code by its imports",
-  "status": "todo",
+  "status": "done",
   "parent": "EP-g5hizdko",
   "sprint": "SP-fkyrld5h",
   "priority": "P2",
@@ -37,5 +37,39 @@
     "_tools/kbfacts.py",
     "kb/public/agents/repository-ingestion.md",
     "kb/public/agents/codebase-mapping.md"
-  ]
+  ],
+  "evidence": {
+    "commit": "c83382882b94b6a770728a3d07e3f126ec71b89c",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "import_topics"
+        ],
+        "exit": 0,
+        "sha256": "0c2c185ce30efd28"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "imports_arg"
+        ],
+        "exit": 0,
+        "sha256": "3269f5cb243cab5f"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/rag.py",
+          "eval"
+        ],
+        "exit": 0,
+        "sha256": "c47b63d42ffd1cc0"
+      }
+    ]
+  }
 }

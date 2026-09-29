@@ -2,7 +2,7 @@
   "id": "TK-livxyp4z",
   "kind": "task",
   "title": "Expose --imports in rag.py, kb_topics_for and the docs",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-kj72lcgb",
   "priority": "P2",
   "rank": 2,
@@ -27,5 +27,19 @@
   "depends_on": [
     "TK-yuqgx56h"
   ],
-  "claimed_by": "worker-livxyp4z"
+  "evidence": {
+    "commit": "c83382882b94b6a770728a3d07e3f126ec71b89c",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "imports_arg"
+        ],
+        "exit": 0,
+        "sha256": "3e97f66ba5483388"
+      }
+    ]
+  }
 }
