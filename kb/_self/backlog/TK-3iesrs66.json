@@ -2,7 +2,7 @@
   "id": "TK-3iesrs66",
   "kind": "task",
   "title": "Web route in kb_ask.plan, its argv and its run",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-tobxg7ui",
   "priority": "P1",
   "rank": 1,
@@ -30,5 +30,29 @@
     "_tools/test_kb_ask_route.py",
     "_tools/test_kb.py"
   ],
-  "claimed_by": "worker-3iesrs66"
+  "evidence": {
+    "commit": "f2c3988f8cd6b306d0fd55f7afe92b01d0454975",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "TestKbAskRoute"
+        ],
+        "exit": 0,
+        "sha256": "dba423c6625c1edc"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "test_kb_ask"
+        ],
+        "exit": 0,
+        "sha256": "ccf16b92eb2b1703"
+      }
+    ]
+  }
 }
