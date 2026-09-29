@@ -2,7 +2,7 @@
   "id": "TK-doyknj7i",
   "kind": "task",
   "title": "Document failure fingerprints",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-47hdgt5a",
   "priority": "P2",
   "rank": 2,
@@ -22,5 +22,6 @@
   ],
   "depends_on": [
     "TK-ojeshylk"
-  ]
+  ],
+  "claimed_by": "orchestrator-mac-sprint-run"
 }
