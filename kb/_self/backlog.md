@@ -120,7 +120,7 @@ Every item meets the shared minimum, the same bar for every item (`agents/agent-
 - `/kb-self` has run when `_tools/`, `.claude/`, `.claude-plugin/` or `.gitlab-ci.yml` changed;
 - the commits carry their KB-* trailers and `KB-Work`, and went through `kbgit.py sync --push`.
 
-Each item adds three parts of its own: the end state (`goal`), the commands that prove it (`checks`), and what must not change (`touches`). Scrum has no acceptance criteria (DER S-2wwcyoa4), so the checks are the item's part of the bar.
+Each item adds three parts of its own: the end state (`goal`), the commands that prove it (`checks`), and what must not change (`touches`). Scrum has no acceptance criteria (DER S-2wwcyoa4), so the checks are the item's part of the bar. A check that runs a Python tool names `python3`; `done`, a bug's repro and `red-pipeline` run it with the interpreter that runs `backlog.py`, so a check proves the item on any host where the tool itself runs, a Windows Store `python3` alias or none on `PATH` included.
 
 `python3 _tools/backlog.py done ID` is the only way to `done`. It refuses when any of these hold:
 - the item waits on anything;

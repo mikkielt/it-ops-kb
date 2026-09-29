@@ -418,8 +418,13 @@ def out_of_scope(root, commits, globs):
 
 
 def run_check(root, c):
+    """Run one check without a shell. A check that names python3 or python runs with the interpreter running this
+    tool: on a host whose python3 is the Windows Store alias, or none on PATH, it still proves the item."""
+    argv = list(c["run"])
+    if argv and argv[0] in ("python3", "python"):
+        argv[0] = sys.executable
     try:
-        p = subprocess.run(c["run"], cwd=root, capture_output=True, text=True, encoding="utf-8", errors="replace",
+        p = subprocess.run(argv, cwd=root, capture_output=True, text=True, encoding="utf-8", errors="replace",
                            timeout=CHECK_TIMEOUT_S)
         code, out = p.returncode, (p.stdout or "") + (p.stderr or "")
     except (OSError, subprocess.TimeoutExpired) as e:

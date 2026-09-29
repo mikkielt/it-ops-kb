@@ -144,6 +144,41 @@ def test_done_refuses_failing_check_and_scope_then_passes(sprint):
     assert it["status"] == "done" and it["evidence"]["commit"] and "claimed_by" not in it
 
 
+def test_check_interpreter_argv(monkeypatch, tmp_path):
+    """run_check starts a python3 or python check with sys.executable (on Windows the venv launcher's base interpreter
+    directory holds a python3.exe, so the PATH plant below cannot fail there); other commands are left as they are."""
+    seen = []
+    monkeypatch.setattr(backlog.subprocess, "run", lambda argv, **k: seen.append(argv) or subprocess.CompletedProcess(argv, 0, "", ""))
+    for cmd in ("python3", "python", "git"):
+        assert backlog.run_check(tmp_path, {"run": [cmd, "x"]})[0]
+    assert seen == [[sys.executable, "x"], [sys.executable, "x"], ["git", "x"]]
+
+
+def test_check_interpreter_is_the_one_running_backlog(sprint, tmp_path):
+    """A check naming python3 runs with backlog.py's own interpreter: a python3 on PATH that fails (the Windows Store
+    alias exits 49) or none at all does not fail the item."""
+    import shutil
+    repo, tk = sprint["repo"], sprint["tk"]
+    edit(repo, tk, checks=[{"run": ["python3", "-c", "import os, sys; sys.exit(0 if os.path.isfile('src/b.txt') else 1)"]}])
+    commit(repo, "a python3 check")
+    (repo / "src" / "b.txt").write_text("b\n", encoding="utf-8")
+    commit(repo, "write b", tk)
+    bad = tmp_path / "bad-python"
+    bad.mkdir()
+    for name in ("python3", "python"):
+        (bad / name).write_text("#!/bin/sh\nexit 49\n", encoding="utf-8", newline="\n")
+        (bad / name).chmod(0o755)
+    # Windows cannot start the planted scripts: there PATH holds git's directory and no Python at all
+    path = os.path.dirname(shutil.which("git")) if os.name == "nt" else str(bad) + os.pathsep + os.environ["PATH"]
+    env = {**os.environ, "PATH": path}
+    run = lambda *a: subprocess.run([sys.executable, TOOL, "--root", str(repo), *a], cwd=repo, capture_output=True,  # noqa: E731
+                                    text=True, encoding="utf-8", env=env)
+    assert run("claim", tk, "--by", "agent-1").returncode == 0
+    p = run("done", tk)
+    assert p.returncode == 0, p.stdout + p.stderr
+    assert item(repo, "Task")["status"] == "done"
+
+
 def test_done_refuses_uncommitted_changes_in_scope(sprint):
     repo = sprint["repo"]
     (repo / "src" / "b.txt").write_text("b\n", encoding="utf-8")
