@@ -1122,6 +1122,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
 
 - **Which `CI_PIPELINE_SOURCE` the default-branch pipeline has after a merge request merge.** The predefined variables and job rules pages (docs.gitlab.com, master @9f1632e2, 2026-09-29) list the sources and say `push` is a Git push, but no page read says whether the pipeline that follows a merge has source `push` or another, or how it differs from a direct push; the Commits API association is the documented signal. Needs a page that states it or a lab run. [UNK] (topic: gitlab/detecting-mr-merges-in-ci)
 - **The permission the GitHub Actions workflow token needs for `GET /repos/{owner}/{repo}/commits/{commit_sha}/pulls`.** The OpenAPI description read (rest-api-description @2f44eaca) gives the parameters and responses but the permissions page for the endpoint was not read (2026-09-29); needs the REST permissions reference. [UNK] (topic: gitlab/detecting-mr-merges-in-ci)
+  - Resolved 2026-09-29: the REST commits page (S-xjpkoakf) gives the "Pull requests" repository permission (read) for fine-grained tokens, and the `GITHUB_TOKEN` key is `pull-requests` (S-yavpjhat). (topic: gitlab/detecting-mr-merges-in-ci)
 
 ## gitlab/github-branch-rules-and-auto-merge
 

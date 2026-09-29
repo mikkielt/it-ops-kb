@@ -3,7 +3,7 @@ topic: gitlab/detecting-mr-merges-in-ci
 priority: P3
 applies_to: "GitLab 19.x docs (gitlab-org/gitlab master @9f1632e2, 2026-09-27): predefined CI/CD variables, Commits API, job token access, merge methods, GIT_DEPTH; GitHub Docs (github/docs @aff94963b07a8), webhook push payload and REST OpenAPI description (rest-api-description @2f44eaca, version 1.1.4), actions/checkout v7.0.1"
 retrieved_utc: 2026-09-29
-sources: [S-74hldnly, S-ijtwicvp, S-7zthwzzb, S-6aknk2k6, S-cnz6lcyx, S-hvhro6n5, S-mogzcl4y, S453, S-ghaubuwp, S-l4z4kyf6, S-o6lmrcgh, S-a3twjpzx, S-ldxeltib, S-gifxe3nj]
+sources: [S-74hldnly, S-ijtwicvp, S-7zthwzzb, S-6aknk2k6, S-cnz6lcyx, S-hvhro6n5, S-mogzcl4y, S453, S-ghaubuwp, S-l4z4kyf6, S-o6lmrcgh, S-a3twjpzx, S-ldxeltib, S-gifxe3nj, S-xjpkoakf, S-yavpjhat]
 status: complete
 ---
 
@@ -27,6 +27,8 @@ A CI job that runs after a push to the default branch gets the push range from t
 - No push event is created when more than 5000 branches are pushed at once, or for tags when more than three tags are pushed at once. [DOC S-ghaubuwp]
 - `GITHUB_EVENT_PATH` is the path of a file on the runner holding the full event payload and `GITHUB_EVENT_NAME` the event name; `GITHUB_BASE_REF` is set only for `pull_request` and `pull_request_target`. [DOC S-l4z4kyf6]
 - `GET /repos/{owner}/{repo}/commits/{commit_sha}/pulls` lists the merged pull request that introduced the commit to the repository; for a commit not in the default branch it returns merged and open pull requests, and `commit_sha` can be a branch name; it takes `per_page` (default 30, at most 100) and `page` (default 1) and answers `409` on a conflict. [DOC S-o6lmrcgh]
+- The fine-grained token for `GET /repos/{owner}/{repo}/commits/{commit_sha}/pulls` needs the "Pull requests" repository permission (read); it works with GitHub App user and installation access tokens and fine-grained personal access tokens, and needs no token or permission when only public resources are requested. [DOC S-xjpkoakf]
+- A workflow's `GITHUB_TOKEN` takes `pull-requests: read|write|none` in its `permissions` key, and when any permission is specified every one not specified is set to `none`; a job that calls the pulls endpoint therefore lists `pull-requests: read` (and `contents: read` if it also checks out). [DER S-xjpkoakf, S-yavpjhat: the endpoint's permission mapped to the token key]
 - `actions/checkout` fetches a single commit by default (`fetch-depth: 1`); `fetch-depth: 0` fetches all history for all branches and tags. [DOC S-a3twjpzx]
 - Rebase and merge creates new commit SHAs and squash and merge one new commit, so a commit's SHA on the base branch differs from the SHA on the pull request branch; a pull request is also marked merged when its commits reach the default branch by a direct push. [DOC S-gifxe3nj, S-ldxeltib]
 - A check that runs on a push to the default branch takes the pushed range (`CI_COMMIT_BEFORE_SHA..CI_COMMIT_SHA` on GitLab, `before..after` from the event file on GitHub), lists its commits and, for each commit that changes protected paths, asks the platform for the merge request or pull request that introduced it; a commit with none reached the branch directly. A new branch has an all-zero before value on GitLab, so the range is the branch's commits not on the default branch. [DER S-74hldnly, S-ijtwicvp, S-ghaubuwp, S-o6lmrcgh: range variables and association endpoints]
@@ -40,7 +42,7 @@ A CI job that runs after a push to the default branch gets the push range from t
 | New ref | before is 40 zeros | not stated on the page read | S-74hldnly |
 | Default branch name | `CI_DEFAULT_BRANCH` | repository setting (API) | S-74hldnly |
 | Merge request or pull request of a commit | `GET /projects/:id/repository/commits/:sha/merge_requests` | `GET /repos/{owner}/{repo}/commits/{commit_sha}/pulls` | S-ijtwicvp, S-o6lmrcgh |
-| Token in CI | `CI_JOB_TOKEN` (`JOB-TOKEN` header) | workflow token (`GITHUB_TOKEN`), permission not read | S-7zthwzzb |
+| Token in CI | `CI_JOB_TOKEN` (`JOB-TOKEN` header) | workflow token (`GITHUB_TOKEN`), `pull-requests: read` | S-7zthwzzb, S-xjpkoakf, S-yavpjhat |
 | History available | `GIT_DEPTH` (default 20 in new projects) | `fetch-depth` (default 1) | S-hvhro6n5, S-mogzcl4y, S-a3twjpzx |
 | Merge without a merge commit | fast-forward merge, squash | squash and merge, rebase and merge | S-6aknk2k6, S-gifxe3nj |
 
