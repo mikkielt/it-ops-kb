@@ -157,7 +157,7 @@ Several sprints may be active at once. Each has its own horizon.
 ## Working on items
 
 - **One item** (`/kb-item ID`, or `/kb-item` for `next --any`):
-  1. claim it: `backlog.py claim ID --by <session>`;
+  1. claim it: `backlog.py claim ID --by <session>`, then commit the item file on its own with `KB-Work: ID` (a backlog-planning commit) before any work commit, since `check-trailers` reads the item as each commit has it;
   2. print its `/goal` condition;
   3. do the work within `touches`, and commit with `KB-Work: ID`;
   4. run `backlog.py done ID`;
