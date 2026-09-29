@@ -2,7 +2,7 @@
   "id": "ST-mlrjf3lf",
   "kind": "story",
   "title": "Branches from the public home reach integration as merge requests",
-  "status": "todo",
+  "status": "done",
   "parent": "EP-rumrqsu5",
   "sprint": "SP-v5xagbyv",
   "priority": "P2",
@@ -41,5 +41,20 @@
     "kb/public/_answers.md#QK-plugin-host-cloud-session-push-automatic",
     "kb/public/gitlab/repository-mirroring.md"
   ],
-  "notes": "Cloud sessions clone from GitHub and push only their working branch (QK-plugin-host-cloud-session-push-automatic). Mirroring never brings pull requests and pull mirroring is Premium (repository-mirroring.md:18, :36); on Free a Git client fetch and push is the path (:39), which bridge is. git.md already says branches from the public home reach the integration remote by a rebase, never a merge of the two histories. The rebase changes the commits' hashes, so the public home does not see its pull request's commits reach main (detecting-mr-merges-in-ci.md:31 needs the same commits)."
+  "notes": "Cloud sessions clone from GitHub and push only their working branch (QK-plugin-host-cloud-session-push-automatic). Mirroring never brings pull requests and pull mirroring is Premium (repository-mirroring.md:18, :36); on Free a Git client fetch and push is the path (:39), which bridge is. git.md already says branches from the public home reach the integration remote by a rebase, never a merge of the two histories. The rebase changes the commits' hashes, so the public home does not see its pull request's commits reach main (detecting-mr-merges-in-ci.md:31 needs the same commits).",
+  "evidence": {
+    "commit": "f9b4afb6c499d6e1be077297bd9c3a36afe642ae",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "TestBridge"
+        ],
+        "exit": 0,
+        "sha256": "9fdffa95d882d382"
+      }
+    ]
+  }
 }

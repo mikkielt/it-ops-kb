@@ -1,6 +1,6 @@
 # AGENTS.md
 
-An offline knowledge base of facts from official sources on Windows endpoint management and the AI agents that operate it: Markdown articles and CSV data in roots under `kb/` (`kb/public`, plus any a team adds), searched and checked by the stdlib Python tools in `_tools/`. This file covers lookups. **Before any change** (edit, research, refresh, census, commit, push), read `kb/_self/maintaining.md`. Overview for people: `README.md`.
+An offline knowledge base of facts from official sources on Windows endpoint management and the AI agents that operate it: Markdown articles and CSV data in roots under `kb/` (`kb/public`, plus any a team adds), searched and checked by the stdlib Python tools in `_tools/`. This file covers lookups. **Before any change** (edit, research, refresh, census, commit, push), read `kb/_self/maintaining.md`.
 
 ## Look things up: deterministic tools first
 
@@ -21,7 +21,7 @@ Every fact ends in a tag with ids from its root's `_sources.csv`: `DOC` (officia
 
 ## Live documentation (only when the kb lacks it)
 
-Three remote servers, no authentication, urls in `.claude-plugin/it-ops-kb-docs/.mcp.json` (the `it-ops-kb-docs` plugin elsewhere, `python3 _tools/kb_mcp.py --register-local` in a clone): `microsoft-learn` for every Microsoft product in the kb, `claude-code-docs` for Claude Code, `mcp-docs` for the MCP specification. Label their answers "live docs, not in the kb", with url and date.
+Three remote servers, no authentication, urls in `.claude-plugin/it-ops-kb-docs/.mcp.json`: `microsoft-learn` for every Microsoft product in the kb, `claude-code-docs` for Claude Code, `mcp-docs` for the MCP specification. Label their answers "live docs, not in the kb", with url and date.
 
 ## Skills
 
@@ -30,5 +30,5 @@ Three remote servers, no authentication, urls in `.claude-plugin/it-ops-kb-docs/
 ## Agent conduct
 
 - Never call a docs server's `submit_feedback` tool (denied in settings): it posts text outside the repo.
-- Placeholders only in examples outside `internal` roots: `PL-LT-00123`, `PL-SRV-0042`, `corp.example.com`, tenant `00000000-0000-0000-0000-000000000000`, `jan.kowalski`. Never add real hostnames, tenant or object ids, addresses, people or tokens; `_cache/` and `_private/` are never committed; GitHub gets only `kbgit.py publish`.
+- Placeholders only in examples outside `internal` roots: `PL-LT-00123`, `PL-SRV-0042`, `corp.example.com`, tenant `00000000-0000-0000-0000-000000000000`, `jan.kowalski`. Never add real hostnames, tenant or object ids, addresses, people or tokens; `_cache/` and `_private/` are never committed; content lands by `kbgit.py sync --push`; code only through the `code/<id>` merge request sync opens; GitHub gets only `kbgit.py publish`.
 - Run shell commands one at a time: permission rules match one command.
