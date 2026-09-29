@@ -2,7 +2,7 @@
   "id": "ST-573udtxz",
   "kind": "story",
   "title": "kbgit.py knows its remotes by role",
-  "status": "todo",
+  "status": "done",
   "parent": "EP-rumrqsu5",
   "sprint": "SP-v5xagbyv",
   "priority": "P2",
@@ -33,5 +33,20 @@
       "by": "operator"
     }
   ],
-  "notes": "kb.publishRemote exists already (kbpublic.CONFIG_KEY; maintaining.md setup step 4; .githooks/pre-push reads it when Python is missing), so only the integration role is new. kbpublic.py is already imported by kbgit.py and ql_deliver.py; backlog.py imports it lazily as it does ql_deliver. ql_deliver.origin_forge keeps reading the forge from the remote's url (red-pipeline and the query log's CI check need it): roles name remotes, not hosts."
+  "notes": "kb.publishRemote exists already (kbpublic.CONFIG_KEY; maintaining.md setup step 4; .githooks/pre-push reads it when Python is missing), so only the integration role is new. kbpublic.py is already imported by kbgit.py and ql_deliver.py; backlog.py imports it lazily as it does ql_deliver. ql_deliver.origin_forge keeps reading the forge from the remote's url (red-pipeline and the query log's CI check need it): roles name remotes, not hosts.",
+  "evidence": {
+    "commit": "565adc946c4cc0278a7758e0ba60ba1490dd44ca",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "TestRemoteRoles"
+        ],
+        "exit": 0,
+        "sha256": "42ef742f61e214d2"
+      }
+    ]
+  }
 }
