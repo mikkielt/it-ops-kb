@@ -55,7 +55,7 @@ kb-tests-floor:
     - when: manual
       allow_failure: true
 
-# The same tests on Windows: the project's docker-windows runner. A fresh Windows Server 2025 container per job
+# The same tests, then the stress suite, on Windows: the project's docker-windows runner. A fresh Windows Server 2025 container per job
 # (Hyper-V isolation, Windows PowerShell 5.1), one job at a time; a job waits as pending while the runner is offline.
 # The image's `python` installs uv, and uv the pinned CPython; MinGit (SHA-256 checked) puts git on PATH and its own
 # sh last, as Git Bash would have it, so the launcher tests run too.
@@ -92,6 +92,9 @@ kb-tests-windows:
       # a test past 900 s dumps every thread's stack (three fixtures take 300-450 s locally); the slowest are listed
       python _tools/tests.py -o faulthandler_timeout=900 --durations=15
       if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      # the stress suite on Windows too; PowerShell 5.1 does not stop on a native command's exit code
+      python _tools/stress_test.py
+      exit $LASTEXITCODE
   rules:
     - if: $CI_COMMIT_BRANCH
       changes:
