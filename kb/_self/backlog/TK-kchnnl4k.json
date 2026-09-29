@@ -2,7 +2,7 @@
   "id": "TK-kchnnl4k",
   "kind": "task",
   "title": "Add stress_test.py to the kb-tests-windows script",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-jewmfu3n",
   "priority": "P2",
   "rank": 0,
@@ -33,5 +33,6 @@
   "touches": [
     ".gitlab-ci.yml",
     "kb/_self/git.md"
-  ]
+  ],
+  "claimed_by": "worker-kchnnl4k"
 }

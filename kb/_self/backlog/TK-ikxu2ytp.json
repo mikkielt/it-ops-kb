@@ -2,7 +2,7 @@
   "id": "TK-ikxu2ytp",
   "kind": "task",
   "title": "Register the raw-read hint for the PowerShell tool and recognise PowerShell reads",
-  "status": "todo",
+  "status": "doing",
   "parent": "BG-f3empmjg",
   "priority": "P2",
   "rank": 0,
@@ -29,5 +29,6 @@
     "_tools/kb_hook.py",
     "_tools/test_kb.py",
     "kb/_self/tools.md"
-  ]
+  ],
+  "claimed_by": "worker-ikxu2ytp"
 }

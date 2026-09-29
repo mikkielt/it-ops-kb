@@ -2,7 +2,7 @@
   "id": "TK-6pi2udtb",
   "kind": "task",
   "title": "Read files at a revision with git cat-file in factdiff.py and kbgit.py",
-  "status": "todo",
+  "status": "doing",
   "parent": "BG-n4r5e3dj",
   "priority": "P2",
   "rank": 0,
@@ -29,5 +29,6 @@
     "_tools/kbgit.py",
     "_tools/test_factdiff.py",
     "_tools/test_history.py"
-  ]
+  ],
+  "claimed_by": "worker-6pi2udtb"
 }

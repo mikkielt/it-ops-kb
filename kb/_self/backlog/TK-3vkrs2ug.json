@@ -2,7 +2,7 @@
   "id": "TK-3vkrs2ug",
   "kind": "task",
   "title": "Make the test_install_python.py module docstring raw",
-  "status": "todo",
+  "status": "doing",
   "parent": "BG-boi4hwf7",
   "priority": "P2",
   "rank": 0,
@@ -28,5 +28,6 @@
   ],
   "touches": [
     "_tools/test_install_python.py"
-  ]
+  ],
+  "claimed_by": "worker-3vkrs2ug"
 }

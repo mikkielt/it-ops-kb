@@ -2,7 +2,7 @@
   "id": "TK-hjqm7l7y",
   "kind": "task",
   "title": "Run setup on a clean Windows 11 host and write the report",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-jqa24js3",
   "priority": "P2",
   "rank": 0,
@@ -20,5 +20,6 @@
     "kb/_self/reports/windows-fresh-host.md",
     "kb/_self/map.csv",
     "kb/_self/README.md"
-  ]
+  ],
+  "claimed_by": "orchestrator-with-operator"
 }
