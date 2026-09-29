@@ -32,6 +32,8 @@ def skip(src, names):
     disk on 2026-09-26)."""
     if os.path.abspath(src) == os.path.join(KB, "_cache"):  # the repository's cache, whatever the layout
         return {n for n in names if not n.startswith("kbindex-")}
+    if os.path.normcase(os.path.abspath(src)) == os.path.normcase(os.path.join(KB, ".claude")):
+        return set(SKIP(src, names)) | {"worktrees"}  # Claude Code's worktrees (sprint subagents): each a second kb
     return SKIP(src, names)
 
 
@@ -129,6 +131,14 @@ def base(tmp_path_factory):
 # ---------------------------------------------------------------- the pristine kb, hostile arguments, the tokenizer
 
 VOCAB = [w for w in read(KB, "README.md").lower().split() if w.isalpha() and len(w) > 3]
+# A Windows command line holds at most 32,767 characters (CreateProcess): there the long queries stay under it.
+ARG_MAX = 30000 if sys.platform == "win32" else None
+
+
+def words(n):
+    q = " ".join(random.choices(VOCAB, k=n))
+    return q[:q.rfind(" ", 0, ARG_MAX)] if ARG_MAX and len(q) > ARG_MAX else q
+
 top5 = lambda want: lambda out: want in [x["path"] for x in json.loads(out)]  # noqa: E731
 BASE_CASES = [  # (name, tool, args, rc, expect, check)
     ("baseline check.py", "check.py", [], 0, "", None),
@@ -137,8 +147,8 @@ BASE_CASES = [  # (name, tool, args, rc, expect, check)
     ("baseline rag search -u", "rag.py", ["search", "kerberos", "-u"], 0, "->", None),
     ("baseline rag src", "rag.py", ["src", "S100"], 0, "S100", None),
     ("baseline rag show", "rag.py", ["show", "README.md:1", "-n", "3"], 0, "it-ops-kb", None),
-    ("search 10k-word query", "rag.py", ["search", " ".join(random.choices(VOCAB, k=10000))], 0, "", None),
-    ("search 120k-char single token", "rag.py", ["search", "a" * 120000], 1, "no match", None),  # Linux caps one argv string at 128 KiB
+    ("search 10k-word query", "rag.py", ["search", words(10000)], 0, "", None),  # fewer on Windows (ARG_MAX)
+    ("search 120k-char single token", "rag.py", ["search", "a" * (ARG_MAX or 120000)], 1, "no match", None),  # Linux caps one argv string at 128 KiB, Windows a whole command line at 32,767
     ("search regex and shell characters", "rag.py", ["search", r".*[](){}^$|\?+ %s %n ' \" ; rm -rf /"], (0, 1), "", None),
     ("search unicode, emoji, RTL, zero-width", "rag.py", ["search", "zażółć 🔐 ключ 密钥 ‮kerberos​"], (0, 1), "", None),
     ("search -k 0 rejected", "rag.py", ["search", "kerberos", "-k", "0"], 2, "must be >= 1", None),
