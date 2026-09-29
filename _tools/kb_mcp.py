@@ -242,12 +242,14 @@ def behind_note():
     """One line for kb_pack when this copy is behind the branch it follows (local refs, no network), else "":
     a model asked how current the kb is answered from the facts' dates without calling kb_status ("Partial
     knowledge, newer versions and stale copies" in kb/_self/reports/benchmarks.md). Recomputed at most once a
-    minute.
+    minute. KB_NO_UPSTREAM=1 turns it off: the tests pack on a checkout whose upstream moves on its own (CI).
 
     Who sees what: the team's own server (the plugin, a clone, no --roots) names the update command, which holds
     the clone's absolute path. A server limited to named roots (limited(): --roots, and kb_http.py always) answers
     clients outside the team, who can neither run that command nor need the path: its line keeps the staleness, so
     a remote agent still says newer facts may exist, and names no upstream, path or command."""
+    if os.environ.get("KB_NO_UPSTREAM") == "1":
+        return ""
     now = time.time()
     if now - _BEHIND[0] > 60:
         home, commit, repo, _ = copy_commit()

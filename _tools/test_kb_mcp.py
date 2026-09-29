@@ -96,7 +96,8 @@ class TestKbServer:
              "params": {"name": "kb_show", "arguments": {"path": Q("auth/kerberos.md") + ":1", "n": 1}}},
         ]
         stdin = "".join(json.dumps(m) + "\n" for m in msgs) + "this is not json\n"
-        cls.proc = subprocess.run([sys.executable, SERVER], input=stdin, capture_output=True, text=True, encoding="utf-8", timeout=60, cwd=os.sep)
+        cls.proc = subprocess.run([sys.executable, SERVER], input=stdin, capture_output=True, text=True, encoding="utf-8", timeout=60,
+                                  cwd=os.sep, env={**os.environ, "KB_NO_UPSTREAM": "1"})  # CI's main moves past the checkout
         cls.lines = [ln for ln in cls.proc.stdout.splitlines() if ln.strip()]
         cls.replies = [json.loads(ln) for ln in cls.lines]
         cls.by_id = {r.get("id"): r for r in cls.replies}
@@ -535,7 +536,7 @@ def test_domain_is_matched_without_case_and_an_unknown_one_is_refused():
             "    except kb_mcp.ToolError as e:\n"
             "        out[d] = str(e)\n"
             "print(json.dumps(out))")
-    env = {k: v for k, v in os.environ.items() if k not in ("KB_ROOTS", "CLAUDE_PLUGIN_DATA")}
+    env = {**{k: v for k, v in os.environ.items() if k not in ("KB_ROOTS", "CLAUDE_PLUGIN_DATA")}, "KB_NO_UPSTREAM": "1"}
     p = subprocess.run([sys.executable, "-c", code], cwd=TOOLS, capture_output=True, text=True, encoding="utf-8", env=env, timeout=180)
     out = json.loads(p.stdout.strip().splitlines()[-1])
     assert out["pack"].startswith("coverage: good") and "public/intune/" in out["pack"], out["pack"][:300]
