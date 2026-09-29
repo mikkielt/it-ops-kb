@@ -2,7 +2,7 @@
   "id": "TK-uxm5arrb",
   "kind": "task",
   "title": "git.md, backlog.md and maintaining.md describe the regime",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-lhcjqkbq",
   "priority": "P2",
   "rank": 0,
@@ -50,5 +50,6 @@
     "kb/_self/maintaining.md",
     "kb/_self/tools.md",
     "README.md"
-  ]
+  ],
+  "claimed_by": "worker-uxm5arrb"
 }
