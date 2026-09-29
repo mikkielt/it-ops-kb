@@ -17,7 +17,7 @@ from ql_base import (ENTRY, HOME, LOCK_NAME, LOCK_STALE_S, acquire, claude_p, is
                      logging_off, one_line, places, plugin_data, read_json, read_mode, release, run_cmd, write_text)
 from ql_capture import ROW_FORMAT, SAFE_SESSION, TAGS, VERDICTS, add_usage, pack_lines
 from ql_store import (ARTICLE, CITATION, CITATIONS_MAX, ENTRY_KEYS, JUDGED, NAME, OUTCOME, QUESTION_MAX_CHARS,
-                      ROW_SURFACES, SKIPPED_KEY, URL_PATH, public_host)
+                      ROW_SURFACES, SKIPPED_KEY, SOURCES_MAX, URL_PATH, public_host)
 
 HAIKU_MODEL = "haiku"
 HAIKU_BATCH_ENTRIES = 25
@@ -252,6 +252,15 @@ def citations(kb, answer):
     return lines[:CITATIONS_MAX], ("pack" if lines else None)
 
 
+def ask_sources(kb):
+    """The kb source ids the kb_ask.py rows of one lookup carry in `sources` (the sources whose urls the researcher's
+    answer named), each once, sorted, at most SOURCES_MAX; only an id's shape is read, never a url or text."""
+    import kbid
+    ids = {x for r in kb if r.get("surface") == "kb_ask" and isinstance(r.get("sources"), list)
+           for x in r["sources"] if isinstance(x, str) and kbid.SOURCE_ID.fullmatch(x)}
+    return sorted(ids)[:SOURCES_MAX]
+
+
 def entry_of(rs, k):
     """(entry without the Haiku fields, what Haiku judges or None, why the entry is dropped or None), or None when
     the rows never used the kb. `rs` is one prompt's rows with the tools rows of its window, or a single tools row
@@ -295,7 +304,8 @@ def entry_of(rs, k):
     entry = {"id": first["id"], "surface": "prompt" if prompt else first.get("surface"), "day": ts_of(first)[:10],
              "intent": intent_, "tools": tools, "route": route,
              "verdict": worst(r.get("verdict") for r in kb), "articles": articles[:20],
-             "fetches": sorted(fetches.values(), key=lambda f: json.dumps(f, sort_keys=True))}
+             "fetches": sorted(fetches.values(), key=lambda f: json.dumps(f, sort_keys=True)),
+             "sources": ask_sources(kb)}
     answer = "\n".join(r["answer"] for r in rs if r.get("surface") == "stop" and isinstance(r.get("answer"), str))
     entry["citations"], entry["cited"] = citations(kb, answer)
     candidates = entry["articles"]

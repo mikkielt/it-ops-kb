@@ -9,13 +9,15 @@ from pathlib import Path
 
 from ql_base import HOME, places
 from ql_capture import host_path
-from ql_store import FETCH_KEYS, LEARN_STATES, STAGES, finding_id, finding_states, store_entries, write_findings
+from ql_store import (FETCH_KEYS, LEARN_STATES, SOURCES_MAX, STAGES, finding_id, finding_states, store_entries,
+                      write_findings)
 
 WEB_SOURCES = HOME / "kb" / "_self" / "web-sources.md"
 ROUTE_HOST = re.compile(r"(?:[a-z0-9-]+\.)+[a-z]{2,}")
 FILE_SUFFIXES = ("txt", "md", "mdx", "json", "html", "xml", "csv", "py", "yml", "yaml")  # `llms.txt` is no host
 FAILED = re.compile(r"http-[45]\d\d|empty|truncated|error")  # fetch outcomes that count as failures on the host
 NO_PAGE = re.compile(r"http-[45]\d\d|empty|error")  # fetch outcomes with no page read: no evidence for a false none
+ANSWER_URL = re.compile(r"https?://[^\s<>\"'`\[\]()]+")  # a url in an answer's text; Markdown and prose end it
 LEARN_LOCALE = re.compile(r"^/[a-z]{2}-[a-z]{2}(?=/|$)")  # Microsoft Learn's locale segment (agent_bench.norm_url)
 # the staging triggers (web-sources.md, "When a family needs staging"): the numbers a test holds equal to the doc
 STAGE_SHARE_ROWS = 25  # Share: a host backing at least this many rows of a root's _sources.csv
@@ -235,6 +237,15 @@ class KbPages:
                     self._ids.setdefault(k, []).append(sid)
         return self._ids.get(key, [])
 
+    def named_ids(self, text):
+        """The ids of the kb sources whose urls `text` names (the page comparison of page_key), sorted, at most
+        SOURCES_MAX; never the urls or the text."""
+        ids = set()
+        for url in ANSWER_URL.findall(text if isinstance(text, str) else ""):
+            key = page_key(*host_path(url.rstrip(".,;:!?*_")))
+            ids.update(self.source_ids(key) if key else [])
+        return sorted(ids)[:SOURCES_MAX]
+
     def article_lines(self, sid):
         """{article: the number of its lines citing source `sid`}: articles only, never data files or ledgers."""
         import kbfacts
@@ -250,13 +261,17 @@ class KbPages:
     def match(self, e):
         """(article, source ids) for a none entry whose fetched pages the kb cites (a false none), else None: the
         pages the entry fetched (a fetch that read no page aside) whose host and path a source row holds, and the
-        article with the most lines citing those sources (ties by path). Only sources an article cites count."""
+        sources its `sources` names (the ids a kb_ask.py researcher's answer cited, as good as a fetched page), and
+        the article with the most lines citing those sources (ties by path). Only sources an article cites count."""
         if e.get("verdict") != "none":
             return None
         items = [f for f in e.get("fetches") or [] if isinstance(f, dict)]
         if e.get("host"):
             items.append({k: e[k] for k in FETCH_KEYS if k in e})
         ids = []
+        for sid in e.get("sources") if isinstance(e.get("sources"), list) else []:
+            if isinstance(sid, str) and sid not in ids and self.article_lines(sid):
+                ids.append(sid)
         for f in items:
             if isinstance(f.get("outcome"), str) and NO_PAGE.fullmatch(f["outcome"]):
                 continue
@@ -271,6 +286,12 @@ class KbPages:
         if not totals:
             return None
         return min(totals, key=lambda a: (-totals[a], a)), sorted(ids)
+
+
+def answer_sources(text, pages=None):
+    """The ids of the kb sources whose urls a researcher's answer `text` names: what kb_ask.py's row keeps in
+    `sources`, since its `claude -p` runs with hooks off and its fetches are never logged."""
+    return (pages or KbPages()).named_ids(text)
 
 
 def host_fetches(entries):

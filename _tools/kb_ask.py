@@ -31,7 +31,10 @@
 
 Every run writes one query log spool row (kb/_self/querylog.md, Capture): the question, the route taken (`tool`,
 `good`, `web`, `split`, `plan` for --route, with `escalated` when the reader answered INSUFFICIENT), the verdict, the kb
-lines of the pack (path:line, tag, verdict) and the model. Its own `claude -p` runs with hooks off, so the session it starts never logs itself.
+lines of the pack (path:line, tag, verdict), the model and, for a web or split run, `sources`: the ids of the kb
+sources whose urls the researcher's answer names (never the urls or the text), which learn reads as pages the lookup
+fetched. Its own `claude -p` runs with hooks off, so the session it starts never logs itself and its fetches are never
+logged.
 
 Why (kb/_self/reports/benchmarks.md, "Routing by verdict"): a Haiku session costs a fifth of a Sonnet one and an eighth of an
 Opus one with the same answers, but a Haiku manager told to hand work to Sonnet did so once in four runs. The kb's
@@ -263,6 +266,18 @@ def cost_sum(*costs):
     return round(sum(known), 6) if known else None
 
 
+def note_sources(row, answer):
+    """Put on the spool row the ids of the kb sources whose urls the researcher's `answer` names (querylog.md, Surfaces).
+    Only ids go on the row, and a failure to read them never fails the answer."""
+    try:
+        import ql_learn
+        ids = ql_learn.answer_sources(answer)
+    except Exception:  # noqa: BLE001 - the log never fails a lookup
+        return
+    if ids:
+        row["sources"] = ids
+
+
 def split(q, p, row):
     """A split run: the reader answers the kb has part, the researcher the kb lacks part; one answer, the kb part first and
     the live part under its label. A reader INSUFFICIENT gives the whole question to the researcher (row escalated). An error
@@ -287,6 +302,7 @@ def split(q, p, row):
             print(kb_text.strip())
         print(live, file=sys.stderr)
         return 1
+    note_sources(row, live)
     print(live.strip() if escalated else f"{kb_text.strip()}\n\n{LIVE_LABEL}\n{live.strip()}")
     return 0
 
@@ -340,6 +356,8 @@ def run(row):
     if p["kind"] == "web":
         text, cost, ok = research(p["model"], WEB_RESEARCHER, web_prompt(q, p))
         log(f"researcher {p['model']} total_cost_usd={cost}")
+        if ok:
+            note_sources(row, text)
         print(text.strip(), file=sys.stdout if ok else sys.stderr)
         return 0 if ok else 1
     if p["kind"] == "split" and p["has"] and p["lacks"]:

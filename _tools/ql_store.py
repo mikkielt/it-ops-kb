@@ -16,7 +16,7 @@ HEADER_KEYS = ("run", "pipeline", "retrieval", "kb_commit", "counts")
 COUNT_KEYS = ("entries", "dropped", "waiting")
 SKIPPED_KEY = "skipped"  # a count a header holds only when distill skipped spool rows
 ENTRY_KEYS = ("id", "surface", "day", "intent", "tools", "route", "question", "verdict", "articles", "citations",
-              "cited", "judged", "best", "fetches", "tool", "fetcher", "host", "path", "outcome", "chars")
+              "cited", "judged", "best", "fetches", "sources", "tool", "fetcher", "host", "path", "outcome", "chars")
 CITATION_KEYS = ("line", "tag", "verdict")
 CITED = ("reply", "pack")  # the citations the reply named, else the pack's first lines
 FREE_TEXT_KEYS = ("summary",)  # an outcome in words: the entry's citations say what the kb gave
@@ -30,6 +30,7 @@ TEXT_KEYS = ("question",)
 JUDGED = ("answered", "partly", "missed")
 QUESTION_MAX_CHARS = 500
 CITATIONS_MAX = 5  # kb lines an entry keeps
+SOURCES_MAX = 10  # kb source ids an entry keeps: those a kb_ask.py researcher's answer named (never the urls)
 DAY = re.compile(r"\d{4}-\d{2}-\d{2}")
 OUTCOME = re.compile(r"http-[1-5]\d\d|empty|redirect-cross-host|truncated|error|unknown")
 RUN_ID = re.compile(r"(\d{4})(\d{2})\d{2}T\d{6}Z-[0-9a-f]{8}")
@@ -286,10 +287,13 @@ def closed_problems(e, where):
     anything else: free text has no field of its own in an entry."""
     def names(v, rx):
         return isinstance(v, list) and all(isinstance(x, str) and rx.fullmatch(x) for x in v)
+    import kbid
     checks = (("day", lambda v: isinstance(v, str) and DAY.fullmatch(v)), ("intent", lambda v: v in INTENTS),
               ("tools", lambda v: names(v, NAME)), ("route", lambda v: isinstance(v, str) and NAME.fullmatch(v)),
               ("verdict", lambda v: v in VERDICTS), ("articles", lambda v: names(v, ARTICLE)),
-              ("judged", lambda v: v in JUDGED), ("best", lambda v: isinstance(v, str) and ARTICLE.fullmatch(v)))
+              ("judged", lambda v: v in JUDGED), ("best", lambda v: isinstance(v, str) and ARTICLE.fullmatch(v)),
+              ("sources", lambda v: isinstance(v, list) and 0 < len(v) <= SOURCES_MAX and len(set(v)) == len(v)
+               and all(isinstance(x, str) and kbid.SOURCE_ID.fullmatch(x) for x in v)))
     return [f"{where}: `{key}` is not a {key} value: {e[key]!r:.60}" for key, ok in checks
             if key in e and not ok(e[key])]
 

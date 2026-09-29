@@ -52,7 +52,10 @@
                     fragment, trailing slash, `.md` or Learn's locale segment) is an eval finding at stage miss whose
                     `expect` is the article with the most citing lines (ties by path) and `observed` the source ids,
                     in place of a gap; planted: a page no article cites, a weak verdict, a failed fetch, no fetch
-                    (the findings they give now); fixed-since once the pack answers; a second learn writes nothing
+                    (the findings they give now); fixed-since once the pack answers; a second learn writes nothing;
+                    a kb_ask.py run routed web or split keeps on its row the ids of the kb sources its researcher's
+                    answer names (never urls or text), distill carries them into the entry, learn reads them like
+                    fetched pages (planted: an uncited source, an answer with no kb url, junk ids, an error result)
   TestSourceFindings  the staging triggers equal web-sources.md (planted: a changed number in the doc or the code); a
                     host's level comes from the provider registry (a root's _providers.csv too), else the routes
                     table, and every registry host has a routes row (planted: a row without one); no stage finding
@@ -1589,6 +1592,15 @@ class TestStore:
         else:
             assert any("fetch fields a fetch never keeps: command" in p for p in nested), nested
 
+    @pytest.mark.parametrize("value", [["https://learn.microsoft.com/en-us/windows/laps"], "S9001", ["the LAPS page"],
+                                       ["S9001", "S9001"], [], [1234], ["S9001?x=1"],
+                                       [f"S{n}" for n in range(1000, 1000 + ql_store.SOURCES_MAX + 1)]])
+    def test_sources_gate(self, tmp_path, value):
+        """`sources` holds kb source ids only: no url, no text, each once, at most SOURCES_MAX."""
+        assert planted(tmp_path / "ok", lambda o: o[5].update(sources=["S1216", "S-3yod3u7q"])) == []
+        problems = planted(tmp_path, lambda o: o[5].update(sources=value))
+        assert any("`sources` is not a sources value" in p for p in problems), problems
+
     def test_pack_and_search_never_return_a_querylog_line(self, kb_copy, tmp_path):
         env = {**{k: v for k, v in os.environ.items() if k not in ("KB_ROOTS",)}, "KB_INDEX": str(tmp_path / "index")}
         rag = [sys.executable, os.path.join(kb_copy, "_tools", "rag.py")]
@@ -1827,6 +1839,19 @@ def planted_kb(monkeypatch):
     monkeypatch.setattr(kbfacts, "cited_lines", lambda ids: {i: cites.get(i, []) for i in ids})
 
 
+ASK_Q = "What is the Intel Wi-Fi Roaming Aggressiveness setting?"
+ASK_LINES = """## public/intune/network-profiles.md  Intune network profiles  [complete, retrieved 2026-09-27]
+- public/intune/network-profiles.md:25 Profile types (DOC S1)"""
+ASK_WEB_PACK = f"coverage: none\nroute: web\nkb has: Wi-Fi\nkb lacks: Roaming\n\n{ASK_LINES}"
+ASK_SPLIT_PACK = f"coverage: weak\nroute: split\nkb has: Wi-Fi\nkb lacks: Roaming\n\n{ASK_LINES}"
+
+
+def ask_result(text):
+    """The JSON a planted `claude -p --output-format json` prints."""
+    return json.dumps({"type": "result", "subtype": "success", "is_error": False, "result": text,
+                       "total_cost_usd": 0.01})
+
+
 class TestLearnFalseNone:
     """A none entry whose fetched pages the kb cites is a false none: an eval finding at stage miss whose `expect` is
     the article citing them most, in place of a gap finding."""
@@ -1919,6 +1944,88 @@ class TestLearnFalseNone:
         ("example.org", None, "example.org"), (None, "/a", None), ("", "/a", None)])
     def test_page_key(self, host, path, key):
         assert ql_learn.page_key(host, path) == key
+
+    def ask(self, monkeypatch, capsys, pack, *outs):
+        """One kb_ask.py run over a planted pack and a planted `claude -p` (never the real CLI): (exit code, spool row)."""
+        import kb_ask
+        outs = list(outs)
+        monkeypatch.setattr(kb_ask.kbfacts, "pack_many",
+                            lambda parts, **kw: {"verdict": "none", "results": [], "text": pack})
+        monkeypatch.setattr(kb_ask.shutil, "which", lambda name: "/planted/claude")
+        monkeypatch.setattr(subprocess, "run", lambda argv, **kw: subprocess.CompletedProcess(argv, 0, outs.pop(0), ""))
+        monkeypatch.setattr(sys, "argv", ["kb_ask.py", ASK_Q])
+        row = {}
+        code = kb_ask.run(row)
+        capsys.readouterr()
+        return code, {"id": FN.format("c9"), "ts": "2026-09-27T10:00:00.000Z", "surface": "kb_ask", "v": 1, **row}
+
+    def test_a_kb_ask_row_carries_the_source_ids_its_researcher_cites(self, tmp_path, planted_kb, monkeypatch, capsys):
+        import redact
+        answer = (f"Back it up with the policy ([docs]({LEARN_URL}/?view=x#top)); events: "
+                  "https://code.claude.com/docs/en/hooks.")
+        code, row = self.ask(monkeypatch, capsys, ASK_WEB_PACK, ask_result(answer))
+        assert code == 0 and row["route"] == "web" and row["sources"] == ["S9001", "S9002"]
+        assert "learn.microsoft.com" not in json.dumps(row) and "policy" not in json.dumps(row)  # ids only
+        entry, _, drop = ql_distill.entry_of([row], redact.known())
+        assert drop is None and entry["sources"] == ["S9001", "S9002"] and entry["route"] == "web"
+        assert "https" not in json.dumps(entry) and "policy" not in json.dumps(entry)
+        store = self.learned(tmp_path, failing, entry)
+        got = {r["kind"]: r for r in by_id(store).values() if r.get("entry") == row["id"]}
+        assert set(got) == {"eval", "expansion"}, got  # a false none, as if the session had fetched the pages
+        assert (got["eval"]["stage"], got["eval"]["expect"]) == ("miss", LAPS)  # 3 lines of S9001 against 2 of S9002
+        assert got["eval"]["observed"]["sources"] == ["S9001", "S9002"]
+        assert ql_store.store_problems(store) == []
+        assert run_learn(store, failing)[1][0].startswith("learn: nothing new")  # converges
+
+    def test_a_kb_ask_row_names_only_the_researchers_answer(self, monkeypatch, capsys, planted_kb):
+        reader = f"The kb says so ({LEARN_URL}). "  # the reader's kb part is the kb's own answer, not a fetched page
+        live = "See https://code.claude.com/docs/en/hooks.md and https://example.org/none-of-the-kbs."
+        code, row = self.ask(monkeypatch, capsys, ASK_SPLIT_PACK, ask_result(reader), ask_result(live))
+        assert code == 0 and row["route"] == "split" and row["sources"] == ["S9002"]
+        code, row = self.ask(monkeypatch, capsys, ASK_SPLIT_PACK, ask_result("INSUFFICIENT: nothing"),
+                             ask_result(f"Everything is at {LEARN_URL}"))
+        assert code == 0 and row["escalated"] is True and row["sources"] == ["S9001"]
+
+    def test_no_sources_without_a_kb_url_or_a_researcher_answer(self, monkeypatch, capsys, planted_kb):
+        import redact
+        for answer in ("The live docs do not answer it.", "See https://example.org/none-of-the-kbs and S9001.", ""):
+            code, row = self.ask(monkeypatch, capsys, ASK_WEB_PACK, ask_result(answer))
+            assert code == 0 and "sources" not in row, answer
+        error = json.dumps({"type": "result", "subtype": "error_max_turns", "is_error": True,
+                            "errors": [f"gave up at {LEARN_URL}"]})
+        code, row = self.ask(monkeypatch, capsys, ASK_WEB_PACK, error)
+        assert code == 1 and "sources" not in row  # an error result's errors are no answer
+        entry, _, _ = ql_distill.entry_of([{**row, "sources": ["S9001"], "surface": "kb_hook"}], redact.known())
+        assert "sources" not in entry  # only a kb_ask.py row carries them
+
+    def test_a_source_no_article_cites_stays_a_gap(self, tmp_path, monkeypatch, capsys, planted_kb):
+        import redact
+        code, row = self.ask(monkeypatch, capsys, ASK_WEB_PACK,
+                             ask_result("Only https://www.vendor.example.org/docs/only-in-a-ledger."))
+        assert row["sources"] == ["S9003"]  # named, and in the kb: recorded as it is
+        entry, _, _ = ql_distill.entry_of([row], redact.known())
+        got = {r["kind"]: r for r in by_id(self.learned(tmp_path, failing, entry)).values()
+               if r.get("entry") == row["id"]}
+        assert set(got) == {"gap"} and "sources" not in got["gap"]["observed"]  # a ledger alone: no false none
+
+    def test_distill_keeps_only_source_ids(self, planted_kb):
+        import redact
+        row = {"id": FN.format("c8"), "ts": "2026-09-27T10:00:00.000Z", "surface": "kb_ask", "v": 1, "route": "web",
+               "question": ASK_Q, "verdict": "none",
+               "sources": [LEARN_URL, "S9001", 7, "the LAPS page", "S9001", "S-abcdefg2", "S9002"]}
+        entry, _, _ = ql_distill.entry_of([row], redact.known())
+        assert entry["sources"] == ["S-abcdefg2", "S9001", "S9002"]
+        assert "sources" not in ql_distill.entry_of([{**row, "sources": "S9001"}], redact.known())[0]
+        many = [f"S{n}" for n in range(1000, 1000 + 2 * ql_store.SOURCES_MAX)]
+        assert len(ql_distill.entry_of([{**row, "sources": many}], redact.known())[0]["sources"]) == ql_store.SOURCES_MAX
+
+    def test_an_entry_with_sources_learns_a_false_none_without_a_fetch(self, planted_kb):
+        e = none_entry("c7", "How do I back up a LAPS password to Entra ID?", sources=["S9001"])
+        assert ql_learn.KbPages().match(e) == (LAPS, ["S9001"])
+        assert ql_learn.KbPages().match({**e, "sources": ["S9003", "S9004", 4, "S0000"]}) is None  # none an article cites
+        assert ql_learn.KbPages().match({**e, "verdict": "weak"}) is None  # a none lookup only
+        failed = none_entry("c6", "q", ("code.claude.com", "/docs/en/hooks", "http-404"), sources=["S9002"])
+        assert ql_learn.KbPages().match(failed) == (HOOKS, ["S9002"])  # the failed fetch adds none, the source counts
 
     def test_the_kb_at_head_cites_the_hooks_page(self, tmp_path):
         e = none_entry("k1", "Which hook events does Claude Code run?", ("code.claude.com", "/docs/en/hooks", "http-200"))
