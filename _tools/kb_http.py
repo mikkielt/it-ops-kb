@@ -37,6 +37,7 @@ DNS rebinding, and recommends a loopback bind for a local server):
   body size       a POST whose Content-Length is over --max-body gets 413 Content Too Large, decided on the header.
                   The default 1 MiB is far above any real request (a tool call carries a question or a path, a
                   few KB) and bounds the memory one request can make a serving thread hold
+  stalled body    a connection that sends nothing for 30 seconds (a body announced and not sent) is dropped.
   A refusal is plain text and closes the connection. A refused body up to 64 KiB is read and dropped first, so the
   client is not reset before it reads the refusal; a larger one is never read.
 
@@ -112,6 +113,7 @@ class Handler(BaseHTTPRequestHandler):
     """One HTTP request to the MCP endpoint. `refuse` is the single place every request passes before routing."""
     protocol_version = "HTTP/1.1"
     server_version = "kb-http/" + kb_mcp.VERSION
+    timeout = 30  # seconds a connection may stall (a body announced and not sent) before it is dropped
 
     def refuse(self):
         """(status, message) that stops this request before it is routed, or None to let it through."""
