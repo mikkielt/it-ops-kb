@@ -3,7 +3,7 @@
   "kind": "sprint",
   "title": "Git regime on any host",
   "status": "active",
-  "goal": "Every clone, on any host, lands kb content on the integration main by direct push and code only through a code/<id> merge request; CI on GitLab and GitHub fails a code commit pushed straight to main; kbgit.py publish fast-forwards the public home from a green integration main without internal roots or private paths; branches from the public home reach integration through kbgit.py bridge; kb/_self/git.md, backlog.md and AGENTS.md state the regime.",
+  "goal": "Every clone, on any host, lands kb content on the integration main by direct push and code only through a code/<id> merge request; the pre-push hook refuses a code commit pushed straight to the integration main, and kbgit.py check-lanes reports one from the forge's commit association API; kbgit.py publish fast-forwards the public home from a green integration main without internal roots or private paths; branches from the public home reach integration through kbgit.py bridge; kb/_self/git.md, backlog.md and AGENTS.md state the regime.",
   "gates": [
     {
       "id": "start",

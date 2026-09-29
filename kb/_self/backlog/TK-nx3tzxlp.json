@@ -41,7 +41,7 @@
       ],
       "recommendation": "the scan leaves out census.py, kbingest.py and benchmarks.py by name, each with its reason (another repository's remote); kb_mcp.py's fallback is filed as a bug and left out by name until it is fixed",
       "answer": "the scan leaves out census.py, kbingest.py and benchmarks.py by name, each with its reason (another repository's remote); kb_mcp.py's fallback is filed as a bug and left out by name until it is fixed",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "notes": "ql_deliver.py and backlog.py red-pipeline are also worked by SP-z7a5c76b “Delivery proven”, which runs first: rebase on it.",

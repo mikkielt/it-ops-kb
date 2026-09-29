@@ -34,8 +34,8 @@
         "allow_failure: false on every branch, main included"
       ],
       "recommendation": "allow_failure: false on code/* branches only: a failed gate job fails the branch pipeline and auto-merge waits; main and other branches keep allow_failure: true",
-      "answer": "allow_failure: false on code/* branches only: a failed gate job fails the branch pipeline and auto-merge waits; main and other branches keep allow_failure: true",
-      "by": "agent"
+      "answer": "superseded by the all-manual CI decision (b8c95fc): every job is manual and merge requests merge on a skipped pipeline; the code/* rules are gone, no task",
+      "by": "operator"
     }
   ],
   "notes": "The test reads the YAML as text: no new dependency. kb-trailers' rule ($CI_PIPELINE_SOURCE == \"push\" && $CI_COMMIT_BRANCH) matches a code/* push. .github/workflows/kb.yml runs every job on every pushed branch already, so it needs no change.",
