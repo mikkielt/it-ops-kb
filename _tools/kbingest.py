@@ -942,7 +942,8 @@ def kill_tree(proc):
 
 def run_tool(args, cwd, env, timeout):
     """Run an argument list (never a shell) in CWD with ENV and a TIMEOUT in seconds; the process group dies with it.
-    A program not found on ENV's PATH is `missing`, not an error."""
+    A program not found on ENV's PATH is `missing`, not an error. An interrupt (any BaseException while it waits)
+    kills the process group too, then propagates."""
     exe = shutil.which(args[0], path=env.get("PATH"))
     if exe is None:
         return Run(127, b"", b"", missing=True)
@@ -965,6 +966,15 @@ def run_tool(args, cwd, env, timeout):
             for pipe in (proc.stdout, proc.stderr):
                 pipe.close()
         return Run(-1, out, err, timed_out=True)
+    except BaseException:  # an interrupt: the caller removes the worktree next, never under a live process group
+        kill_tree(proc)
+        for pipe in (proc.stdout, proc.stderr):
+            pipe.close()
+        try:
+            proc.wait(timeout=5)
+        except subprocess.TimeoutExpired:
+            pass
+        raise
 
 
 class MapCtx:

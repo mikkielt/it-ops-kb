@@ -8,8 +8,8 @@ urls lose their credentials; the refusals exit 2.
 The map command (`test_kbingest_map_*`): the scratch worktree is removed and holds the commit, not the working tree;
 `python -m ast` in a subprocess maps a Python repository (imports, packages, entry points; a file named ast.py is never
 run, vendored files are not mapped); a fake toolchain on PATH proves output parsing, the timeout, a missing tool, a bad
-exit and output that is not JSON as notes, and that the environment is network-off and drops credentials; a map goes
-under _cache/ingest/, never under kb/.
+exit and output that is not JSON as notes, and that the environment is network-off and drops credentials; an interrupt
+while a tool runs kills its process group and propagates; a map goes under _cache/ingest/, never under kb/.
 
 The pins (`test_kbingest_pin_files_*`): a throwaway repository holds every pin file of
 kb/public/agents/codebase-mapping.csv, and each parser returns its rows (file, pin, value); comments in global.json,
@@ -1248,6 +1248,69 @@ def test_kbingest_map_relative_path_entry_is_resolved_against_the_caller_not_the
     monkeypatch.chdir(caller)
     r = kbingest.run_tool(["probe"], tree, {"PATH": "bin"}, 30)
     assert r.rc == 0 and r.out.strip() == b"caller"
+
+
+def pid_alive(pid):
+    if os.name == "nt":  # os.kill(pid, 0) would terminate it on Windows
+        out = subprocess.run(["tasklist", "/FI", f"PID eq {pid}", "/NH", "/FO", "CSV"], capture_output=True,
+                             encoding="utf-8", errors="replace").stdout
+        return f'"{pid}"' in out
+    try:
+        os.kill(pid, 0)
+    except ProcessLookupError:
+        return False
+    except PermissionError:
+        return True
+    return True
+
+
+INTERRUPT_CHILD = """import subprocess, sys, time
+from pathlib import Path
+grandchild = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(60)"])
+Path(sys.argv[1] + ".tmp").write_text(f"{grandchild.pid}", encoding="utf-8")
+Path(sys.argv[1] + ".tmp").replace(sys.argv[1])
+time.sleep(60)
+"""
+
+
+def test_kbingest_map_interrupt_kills_group(tmp_path, monkeypatch):
+    """Planted: a mapper that starts a grandchild and sleeps, and a KeyboardInterrupt while run_tool waits for it."""
+    pidfile = tmp_path / "pids"
+    started = []
+    real_popen, real_communicate = subprocess.Popen.__init__, subprocess.Popen.communicate
+
+    def popen(self, *args, **kw):
+        real_popen(self, *args, **kw)
+        started.append(self.pid)
+
+    def communicate(self, *args, **kw):
+        if self.pid != started[0]:
+            return real_communicate(self, *args, **kw)
+        deadline = time.monotonic() + 30
+        while not pidfile.exists():
+            assert time.monotonic() < deadline, "the child never wrote its grandchild's pid"
+            time.sleep(0.05)
+        raise KeyboardInterrupt
+
+    monkeypatch.setattr(subprocess.Popen, "__init__", popen)
+    monkeypatch.setattr(subprocess.Popen, "communicate", communicate)
+    try:
+        with pytest.raises(KeyboardInterrupt):
+            kbingest.run_tool([sys.executable, "-c", INTERRUPT_CHILD, str(pidfile)], tmp_path, dict(os.environ), 60)
+        monkeypatch.undo()
+        pids = [started[0], int(pidfile.read_text(encoding="utf-8"))]
+        deadline = time.monotonic() + 10
+        while any(pid_alive(p) for p in pids) and time.monotonic() < deadline:
+            time.sleep(0.05)
+        assert not [p for p in pids if pid_alive(p)], "the process group outlived the interrupt"
+    finally:
+        monkeypatch.undo()
+        for pid in started[:1] + ([int(pidfile.read_text(encoding="utf-8"))] if pidfile.exists() else []):
+            if pid_alive(pid):
+                if os.name == "nt":
+                    subprocess.run(["taskkill", "/PID", str(pid), "/T", "/F"], capture_output=True)
+                else:
+                    os.kill(pid, 9)
 
 
 # ---- pins ----------------------------------------------------------------------------------------------------------
