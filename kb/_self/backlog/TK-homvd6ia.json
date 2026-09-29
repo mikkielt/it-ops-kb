@@ -2,7 +2,7 @@
   "id": "TK-homvd6ia",
   "kind": "task",
   "title": "Document the route and differential lines",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-ysk3m7rt",
   "priority": "P1",
   "rank": 4,
@@ -36,5 +36,33 @@
     "TK-e4i2gbqk",
     "TK-ny7zaojp"
   ],
-  "claimed_by": "orchestrator-mac-sprint-run"
+  "evidence": {
+    "commit": "79c56e6219c21e765612acf88e9f2f6b51a7c9d1",
+    "checks": [
+      {
+        "run": [
+          "git",
+          "grep",
+          "-q",
+          "-F",
+          "-e",
+          "kb lacks:",
+          "--",
+          "kb/_self/tools.md"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "TestCohesion or TestSelfDocs"
+        ],
+        "exit": 0,
+        "sha256": "df408a1c173038eb"
+      }
+    ]
+  }
 }
