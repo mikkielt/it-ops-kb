@@ -2,7 +2,7 @@
   "id": "TK-h6oy6jlh",
   "kind": "task",
   "title": "kbgit.py publish with its safety refusals",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-su4em5sl",
   "priority": "P2",
   "rank": 0,
@@ -24,5 +24,19 @@
     "kb/_self/git.md"
   ],
   "notes": "Existing refusals exit 1 (kbpublic.py docstring), so the new ones do too.",
-  "claimed_by": "worker-h6oy6jlh"
+  "evidence": {
+    "commit": "80ee6ca921a1411af61bfeb7ed1877f12dbefb49",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "TestPublishSafety"
+        ],
+        "exit": 0,
+        "sha256": "8e4f0c69838b32f3"
+      }
+    ]
+  }
 }
