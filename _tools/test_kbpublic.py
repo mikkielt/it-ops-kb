@@ -151,7 +151,7 @@ class TestPublishSafety:
         for dry in (True, False):
             assert kbpublic.cmd_publish(ns(dry_run=dry, **kw), r.path) == 1
             text = capsys.readouterr().out
-            assert f"refused: " in text and cause in text and "nothing pushed" in text
+            assert "refused: " in text and cause in text and "nothing pushed" in text
             assert pub.run_git("rev-parse", "main").returncode
 
     @pytest.mark.parametrize("state, cause", [("failed", "is red"), ("running", "is pending"), (None, "is none")])
