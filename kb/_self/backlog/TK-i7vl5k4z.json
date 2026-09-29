@@ -2,7 +2,7 @@
   "id": "TK-i7vl5k4z",
   "kind": "task",
   "title": "Research uv's official Windows release archives and checksums",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-c4csesqq",
   "priority": "P1",
   "rank": 0,
@@ -22,5 +22,19 @@
     "kb/public/**"
   ],
   "notes": "Sources: https://docs.astral.sh/uv/getting-started/installation/ and the GitHub release of the pinned uv version (its per-archive .sha256 files). Work it with /kb-research.",
-  "claimed_by": "research-worker"
+  "evidence": {
+    "commit": "23b925e529f28f049c373b70dd686d9eb780c3c2",
+    "checks": [
+      {
+        "run": [
+          "python",
+          "_tools/rag.py",
+          "pack",
+          "uv Windows release archive sha256 standalone install location"
+        ],
+        "exit": 0,
+        "sha256": "ccca1e5811a9fdf2"
+      }
+    ]
+  }
 }
