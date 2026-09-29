@@ -2,7 +2,7 @@
   "id": "BG-f3empmjg",
   "kind": "bug",
   "title": "The raw-read hint never fires under the PowerShell tool on Windows",
-  "status": "todo",
+  "status": "done",
   "parent": "EP-5p4ahbnq",
   "sprint": "SP-76inhw33",
   "priority": "P2",
@@ -31,5 +31,29 @@
     "_tools/kb_hook.py",
     "_tools/test_kb.py",
     "kb/_self/tools.md"
-  ]
+  ],
+  "evidence": {
+    "commit": "41f6df26eb4d757514a2cc459e9bdf61e45645b6",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "raw_read_nudge"
+        ],
+        "exit": 0,
+        "sha256": "478c6e8dc046f8d9"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,sys; h=json.load(open('.claude/settings.json',encoding='utf-8'))['hooks']['PreToolUse']; sys.exit(0 if any('PowerShell' in e.get('matcher','') and any('kb_hook.py' in x.get('command','') for x in e['hooks']) for e in h) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }

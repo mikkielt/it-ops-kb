@@ -2,7 +2,7 @@
   "id": "TK-ikxu2ytp",
   "kind": "task",
   "title": "Register the raw-read hint for the PowerShell tool and recognise PowerShell reads",
-  "status": "doing",
+  "status": "done",
   "parent": "BG-f3empmjg",
   "priority": "P2",
   "rank": 0,
@@ -30,5 +30,28 @@
     "_tools/test_kb.py",
     "kb/_self/tools.md"
   ],
-  "claimed_by": "worker-ikxu2ytp"
+  "evidence": {
+    "commit": "41f6df26eb4d757514a2cc459e9bdf61e45645b6",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "raw_read_nudge"
+        ],
+        "exit": 0,
+        "sha256": "07607c9542e0914c"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,sys; h=json.load(open('.claude/settings.json',encoding='utf-8'))['hooks']['PreToolUse']; sys.exit(0 if any('PowerShell' in e.get('matcher','') and any('kb_hook.py' in x.get('command','') for x in e['hooks']) for e in h) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
