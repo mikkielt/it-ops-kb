@@ -2,7 +2,7 @@
   "id": "BG-t7tx2byg",
   "kind": "bug",
   "title": "/kb-item commits work before its claim is committed, so check-trailers refuses the push",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-aikswrrl",
   "priority": "P1",
   "rank": 0,
@@ -38,5 +38,32 @@
     "BG-6pjvnv6z"
   ],
   "notes": "Failure it answers: in SP-liemltg2 a docs commit for TK-doyknj7i made after an uncommitted claim got the commit-msg warning \"is todo, not claimed\"; check-trailers would have refused its push, and the commit was redone with the claim committed first. /kb-item step 2 claims, step 6 commits the work, and the item file is committed only after done, so every /kb-item run hits this. /kb-sprint already commits claims before dispatch.",
-  "claimed_by": "worker-t7tx2byg"
+  "evidence": {
+    "commit": "15ea42c387c3d445a8a521d9e2f1c45249e49ec8",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "claim_committed_before_work"
+        ],
+        "exit": 0,
+        "sha256": "3ea50d24eb6b3970"
+      },
+      {
+        "run": [
+          "git",
+          "grep",
+          "-q",
+          "-i",
+          "commit the claim",
+          "--",
+          ".claude/skills/kb-item/SKILL.md"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
