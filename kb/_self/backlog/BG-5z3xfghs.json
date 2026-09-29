@@ -2,7 +2,7 @@
   "id": "BG-5z3xfghs",
   "kind": "bug",
   "title": "pack answers none for a number the kb writes with a unit suffix (1.5 seconds vs 1.5-second)",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-c7fzjhge",
   "sprint": "SP-osxj4vmf",
   "priority": "P2",
@@ -25,5 +25,19 @@
     "public/claude/hooks.md:64"
   ],
   "notes": "The pack's differential lists kb lacks: 1.5, and the pack shows hooks.md:63 but not line 64, which states the 1.5-second SessionEnd budget.",
-  "claimed_by": "worker-unitnum"
+  "evidence": {
+    "commit": "0bd396853897aa7e60542edf38d978ba544c4536",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "pack_number_with_unit_suffix_is_good"
+        ],
+        "exit": 0,
+        "sha256": "28b18f345525e0ff"
+      }
+    ]
+  }
 }
