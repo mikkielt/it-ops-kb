@@ -2,7 +2,7 @@
   "id": "TK-23djaz5l",
   "kind": "task",
   "title": "Run kb-tests-windows on main and record the result",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-vtlw7fsu",
   "priority": "P2",
   "rank": 0,
@@ -38,5 +38,6 @@
       "by": "operator"
     }
   ],
-  "notes": "Waits until the suite passes on Windows. Any push to main while the job runs cancels it (auto-cancel of redundant pipelines, jobs interruptible): start it when no push is expected for its whole run."
+  "notes": "Waits until the suite passes on Windows. Any push to main while the job runs cancels it (auto-cancel of redundant pipelines, jobs interruptible): start it when no push is expected for its whole run.",
+  "claimed_by": "orchestrator-mac-sprint-run"
 }
