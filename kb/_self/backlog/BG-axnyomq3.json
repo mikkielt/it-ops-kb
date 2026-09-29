@@ -1,0 +1,31 @@
+{
+  "id": "BG-axnyomq3",
+  "kind": "bug",
+  "title": "kb_mcp sse_messages splits an SSE data line at U+2028, U+2029 and U+0085, so docs_search drops the reply",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "kb_mcp.sse_messages splits an SSE body only at CR LF, CR and LF, so a JSON-RPC reply whose text holds U+2028, U+2029 or U+0085 unescaped is parsed and docs_search and docs_fetch return it",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys,json; sys.path.insert(0,'_tools'); import kb_mcp; m={'jsonrpc':'2.0','id':1,'result':{'content':[{'type':'text','text':'a b'}]}}; sys.exit(0 if kb_mcp.sse_messages('event: message\\ndata: '+json.dumps(m,ensure_ascii=False)+'\\n\\n')==[m] else 1)"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "live_docs_cache"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kb_mcp.py",
+    "_tools/test_kb_mcp.py"
+  ]
+}

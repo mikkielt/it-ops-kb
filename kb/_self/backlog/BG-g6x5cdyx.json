@@ -1,0 +1,31 @@
+{
+  "id": "BG-g6x5cdyx",
+  "kind": "bug",
+  "title": "No test holds the headings the skills read with selfdoc.py section",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "A test runs every selfdoc.py section command named in .claude/skills/*/SKILL.md and fails when one exits non-zero, so renaming a kb/_self heading a skill reads fails the gate",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/tests.py",
+      "-k",
+      "skill_section_headings"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "skill_section_headings"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/test_selfdoc.py"
+  ]
+}
