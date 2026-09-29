@@ -2,7 +2,7 @@
   "id": "TK-2274nh42",
   "kind": "task",
   "title": "plugin.md and kb-review-workspace advise a code intelligence plugin and Read deny rules",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-lewvvodh",
   "priority": "P2",
   "rank": 0,
@@ -29,5 +29,29 @@
     "kb/_self/plugin.md",
     ".claude/skills/kb-review-workspace/SKILL.md"
   ],
-  "claimed_by": "worker-2274nh42"
+  "evidence": {
+    "commit": "155c1349098e34669eb608306021189263494ab0",
+    "checks": [
+      {
+        "run": [
+          "grep",
+          "-c",
+          "-e",
+          "large-codebases",
+          "kb/_self/plugin.md"
+        ],
+        "exit": 0,
+        "sha256": "4355a46b19d348dc"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/selfdoc.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "3db513ebafdfe3a2"
+      }
+    ]
+  }
 }

@@ -2,7 +2,7 @@
   "id": "TK-gjrkso7j",
   "kind": "task",
   "title": "kb-reviewer prefers the LSP tool over grep when it is active",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-lewvvodh",
   "priority": "P2",
   "rank": 1,
@@ -20,5 +20,19 @@
   "touches": [
     ".claude/agents/kb-reviewer.md"
   ],
-  "claimed_by": "orchestrator"
+  "evidence": {
+    "commit": "155c1349098e34669eb608306021189263494ab0",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "plugin"
+        ],
+        "exit": 0,
+        "sha256": "b9269c6cc75d9323"
+      }
+    ]
+  }
 }
