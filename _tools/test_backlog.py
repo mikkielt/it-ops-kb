@@ -3,7 +3,8 @@
 Each refusal has a planted failure: a bug whose repro passes, a non-canonical file, a cycle, a blocking gate an
 agent answers, a sprint started without the operator, a failing check, a commit outside `touches` (and the revert
 that clears it), a review with an unconfirmed provisional answer, a malformed KB-Work trailer, a worked item of a
-planned sprint, a KB-Work id whose item is unclaimed or not in a started sprint, and red pipelines that fail
+planned sprint, a KB-Work id whose item is unclaimed or not in a started sprint (work committed before its claim
+commit included), and red pipelines that fail
 the same way (one bug) or differently (a second), or the same way as a closed bug (a new one). The repository's
 own backlog must pass `backlog.py check`.
 """
@@ -332,6 +333,34 @@ def test_started_sprint_check_trailers_refuses_unclaimed_work(sprint, monkeypatc
     commit(repo, "claim", tk)  # a backlog-planning commit
     (repo / "src" / "b.txt").write_text("b2\n", encoding="utf-8")
     commit(repo, "write b again", tk)
+    assert kbgit.trailer_audit("origin/main..HEAD", quiet=True)[2] == []
+
+
+def test_claim_committed_before_work(sprint, monkeypatch):
+    """/kb-item commits the claimed item file on its own right after `claim`, before any work commit: check-trailers
+    reads the item as each commit has it, so a work commit made while the claim is uncommitted is refused (planted:
+    the claim commit left out) and the same work after a claim commit passes."""
+    repo, tk = sprint["repo"], sprint["tk"]
+    rel = f"{backlog.REL_DIR}/{tk}.json"
+    commit(repo, "plan")
+    sh(repo, "git", "update-ref", "refs/remotes/origin/main", "HEAD")
+    monkeypatch.setattr(kbgit, "KB", str(repo))
+    kbgit._WANT.clear()
+
+    def only(path, msg):
+        sh(repo, "git", "add", "--", path)
+        sh(repo, "git", "commit", "-qm", msg, "-m", f"KB-Work: {tk}")
+
+    assert b(repo, "claim", tk, "--by", "agent-1")[0] == 0
+    (repo / "src" / "b.txt").write_text("b\n", encoding="utf-8")
+    only("src/b.txt", "write b")  # planted: the claim is still uncommitted
+    _, _, bad = kbgit.trailer_audit("origin/main..HEAD", quiet=True)
+    assert len(bad) == 1 and any("not claimed" in ln for ln in bad[0][1]), bad
+
+    sh(repo, "git", "reset", "-q", "origin/main")  # keeps the claim and the work in the working tree
+    kbgit._WANT.clear()
+    only(rel, "claim")  # the claim commit: a backlog-planning commit
+    only("src/b.txt", "write b")
     assert kbgit.trailer_audit("origin/main..HEAD", quiet=True)[2] == []
 
 

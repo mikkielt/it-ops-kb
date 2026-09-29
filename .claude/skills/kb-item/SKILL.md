@@ -14,7 +14,9 @@ Whenever you name an item (in chat, a question, a commit), give its id and its t
 
 1. **Pick.** Use the given id, or `python3 _tools/backlog.py next --any`. Then run `python3 _tools/backlog.py show ID` and say in one line which item and why.
    - If it waits on something, say what and stop. Offer the operator's answer to a blocking gate, or `python3 _tools/backlog.py fire ID` for a trigger that has happened.
-2. **Claim.** `python3 _tools/backlog.py claim ID --by <session or agent name>`.
+2. **Claim.**
+   1. `python3 _tools/backlog.py claim ID --by <session or agent name>`.
+   2. Commit the claim at once, before any work: stage only the item's file in `kb/_self/backlog/` and commit it on its own with the trailer `KB-Work: ID` (a backlog-planning commit). `check-trailers` reads the item as each commit has it, so work committed while the claim is uncommitted counts as unclaimed and its push is refused (`kb/_self/backlog.md`, Git).
 3. **Goal.** `python3 _tools/backlog.py goal ID` prints the condition. Keep it in view; the operator may set it as `/goal`.
 4. **Break down if needed.**
    - A story or bug with no tasks: add tasks (`new task --parent ID`, with `touches` and `checks`), one commit each.
