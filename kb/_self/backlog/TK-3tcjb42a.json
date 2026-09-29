@@ -2,7 +2,7 @@
   "id": "TK-3tcjb42a",
   "kind": "task",
   "title": "kb_http.py serves kb/public unless --roots names more",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-z6fw4er5",
   "priority": "P2",
   "rank": 2,
@@ -24,5 +24,19 @@
   "depends_on": [
     "TK-ux5ufed5"
   ],
-  "claimed_by": "roots-http-agent"
+  "evidence": {
+    "commit": "4dbbb23b9c20f1282e313f50dc232abd41a23c02",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "kb_http_roots"
+        ],
+        "exit": 0,
+        "sha256": "b4b4bb546be19fb5"
+      }
+    ]
+  }
 }
