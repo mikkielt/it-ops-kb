@@ -7,8 +7,10 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                                           a new item (KIND: epic, story, task, subtask, bug, sprint); prints its id
                                           and title. A bug's --repro must fail now; a sprint gets its start gate and
                                           its review story
-  backlog.py check                        validate every item (fields, links, cycles, canonical form, and a planned
-                                          sprint's items still draft); exit 1 on errors
+  backlog.py check                        validate every item (fields, links, cycles, canonical form, a planned
+                                          sprint's items still draft, and the kb references of its `knowledge`: a
+                                          missing one is an error, a fact key no longer found is reported as stale
+                                          knowledge); exit 1 on errors
   backlog.py fmt                          rewrite every item in canonical form
   backlog.py list [--kind K] [--status S] [--sprint ID]   one line per item: id, kind, status, priority, title
   backlog.py tree [ID] [--sprint ID]      the hierarchy under an item, a sprint or everything
@@ -65,7 +67,7 @@ IN_SPRINT = ("story", "bug")  # the kinds a sprint commits to; their tasks and s
 NEEDS_CHECKS = ("story", "bug", "task")
 NEEDS_TOUCHES = ("task", "subtask")
 ORDER = ("id", "kind", "title", "status", "parent", "sprint", "review", "priority", "rank", "severity", "goal",
-         "repro", "checks", "touches", "depends_on", "relates_to", "gates", "trigger", "links", "notes",
+         "repro", "checks", "touches", "depends_on", "relates_to", "gates", "trigger", "knowledge", "links", "notes",
          "claimed_by", "evidence")
 FIELDS = set(ORDER)
 # files any item's commits may change besides its `touches`: the tracker itself and what build_index.py regenerates
@@ -182,6 +184,143 @@ def _check_ok(c):
             and isinstance(c.get("exit", 0), int) and isinstance(c.get("match", ""), str))
 
 
+# ------------------------------------------------------------------ knowledge
+
+KNOWLEDGE_KEYS = ("ask", "refs")
+ANSWER_REF = re.compile(r"(?:([a-z0-9][a-z0-9-]*):)?(QK-[a-z0-9]+(?:-[a-z0-9]+)*)")  # `QK-<slug>`, `<root>:QK-<slug>`
+FACT_KEY = re.compile(r"[0-9a-f]{12}")
+
+
+class KbAtHead:
+    """The kb roots of a clone (kb/<name>/ with a _root.md), read on demand for the references of an item's
+    `knowledge`. Source ids, QK answer ids, topics and fact keys are resolved with the kb's own readers (kbid,
+    kbfacts), so a fact key is the one _anchors.csv and doc2query use. Files are read from the checkout, which is
+    HEAD once the work is committed."""
+
+    def __init__(self, root):
+        import kbcommon
+        self.roots, self._sources, self._facts = {}, None, {}
+        kb = Path(root) / "kb"
+        for p in sorted(kb.iterdir()) if kb.is_dir() else []:
+            if (p / kbcommon.ROOT_FILE).is_file():
+                try:
+                    self.roots[kbcommon.load_root(str(p)).name] = p
+                except kbcommon.RootError:
+                    continue  # check.py reports a malformed root
+
+    @staticmethod
+    def text(path):
+        try:
+            return Path(path).read_text(encoding="utf-8-sig", errors="replace")
+        except OSError:
+            return None
+
+    def split(self, qpath):
+        """(root name, path inside the root) of `<root>/<path>`; a path whose first part names no root is public's."""
+        head, _, rest = qpath.partition("/")
+        return (head, rest) if head in self.roots else ("public", qpath)
+
+    def source_ids(self):
+        """Every root's ids of its _sources.csv."""
+        import csv, io, kbcommon
+        if self._sources is None:
+            self._sources = set()
+            for p in self.roots.values():
+                text = self.text(p / kbcommon.SOURCES)
+                if text:
+                    self._sources.update(r.get("id", "") for r in csv.DictReader(io.StringIO(text, newline="")))
+        return self._sources
+
+    def answer_ids(self, root):
+        """The answer ids (`## <id>. ` headings) of a root's _answers.md."""
+        import kbcommon, kbid
+        p = self.roots.get(root)
+        return set(kbid.answer_ids(self.text(p / kbcommon.ANSWERS) or "")) if p else set()
+
+    def is_topic(self, qpath):
+        """Whether `<root>/<domain>/<slug>` (public's without the root) is an article of a root."""
+        import kbfacts
+        root, rel = self.split(qpath)
+        p = self.roots.get(root)
+        ok = p and rel and ".." not in rel.split("/") and not rel.startswith(("_", "."))
+        text = self.text(p / f"{rel}.md") if ok else None
+        return text is not None and kbfacts.is_article(text)
+
+    def fact_keys(self, qpath):
+        """The fact keys (kbfacts.fact_key) of the tagged facts of one article or data file `<root>/<path>`; None
+        when there is no such file."""
+        import kbfacts
+        if qpath not in self._facts:
+            root, rel = self.split(qpath)
+            p = self.roots.get(root)
+            ok = p and rel.endswith((".md", ".csv")) and ".." not in rel.split("/")
+            text = self.text(p / rel) if ok else None
+            if text is None:
+                units = None
+            elif rel.endswith(".md"):
+                units = kbfacts.md_units(rel, text) if kbfacts.is_article(text) else []
+            else:
+                units = kbfacts.csv_units(rel, text)
+            self._facts[qpath] = None if units is None else {kbfacts.fact_key(u["text"]) for u in units if u["tags"]}
+        return self._facts[qpath]
+
+
+def knowledge_check(bl, iid):
+    """([errors], [stale]) for the `knowledge` {ask: [questions], refs: [references]} of one item. A reference is a
+    topic id (`intune/win32-apps`, `<root>/<domain>/<slug>` outside public), a QK answer id (`QK-<slug>`,
+    `<root>:QK-<slug>`), a source id (`S2150`, `S-o3v6ozch`) or `<root>/<path>#<fact key>` (12 hex). One absent
+    from the kb is an error. A fact key no longer found in a file that exists (the fact was reworded or removed) is
+    stale: a finding `check` prints and does not count as an error, since a refresh of the kb rewords facts."""
+    know = bl.items[iid].get("knowledge")
+    if know is None:
+        return [], []
+    errs, stale = [], []
+    e = lambda msg: errs.append(f"{bl.label(iid)}: knowledge {msg}")  # noqa: E731
+    if not isinstance(know, dict) or set(know) - set(KNOWLEDGE_KEYS):
+        e("must be {ask: [questions], refs: [references]}")
+        return errs, stale
+    for f in KNOWLEDGE_KEYS:
+        if f in know and not (isinstance(know[f], list) and all(_text_ok(x) for x in know[f])):
+            e(f"{f} must be a list of non-empty texts")
+    if errs:
+        return errs, stale
+    import kbid
+    if not hasattr(bl, "kb"):
+        bl.kb = KbAtHead(bl.root)
+    kb = bl.kb
+    for ref in (r.strip() for r in know.get("refs", [])):
+        answer = ANSWER_REF.fullmatch(ref)
+        if "#" in ref:
+            path, _, key = ref.rpartition("#")
+            if not FACT_KEY.fullmatch(key):
+                e(f"ref {ref!r}: not <root>/<path>#<fact key> (12 lowercase hex characters)")
+            elif kb.fact_keys(path) is None:
+                e(f"ref {ref!r}: no article or data file {path!r} in the kb")
+            elif key not in kb.fact_keys(path):
+                stale.append(f"{bl.label(iid)}: stale knowledge: fact {key} is no longer in {path} "
+                             f"(reworded or removed)")
+        elif answer:
+            root = answer.group(1) or "public"
+            if root not in kb.roots:
+                e(f"ref {ref!r}: no kb root {root!r}")
+            elif answer.group(2) not in kb.answer_ids(root):
+                e(f"ref {ref!r}: no such answer in root {root!r}")
+        elif kbid.id_prefix(ref):
+            if ref not in kb.source_ids():
+                e(f"ref {ref!r}: no such source id in any root's _sources.csv")
+        elif "/" in ref:
+            if not kb.is_topic(ref):
+                e(f"ref {ref!r}: no such topic (an article of a kb root)")
+        else:
+            e(f"ref {ref!r}: not a topic id, QK answer id, source id or <root>/<path>#<fact key>")
+    return errs, stale
+
+
+def stale_knowledge(bl):
+    """The stale-knowledge findings of every item (knowledge_check)."""
+    return [x for iid in bl.items for x in knowledge_check(bl, iid)[1]]
+
+
 def validate(bl):
     errs = list(bl.load_errors)
     for iid, it in bl.items.items():
@@ -290,6 +429,7 @@ def validate(bl):
         if trig is not None and not (isinstance(trig, dict) and _text_ok(trig.get("when", ""))
                                      and isinstance(trig.get("fired", False), bool)):
             e("trigger must be {when: text, fired: bool}")
+        errs.extend(knowledge_check(bl, iid)[0])
         st = it.get("status")
         if st == "doing" and not it.get("claimed_by"):
             e("status doing needs claimed_by")
@@ -503,9 +643,10 @@ def cmd_new(bl, a):
 
 def cmd_check(bl, a):
     errs = validate(bl)
-    for x in errs:
+    stale = stale_knowledge(bl)
+    for x in errs + stale:
         say(x)
-    say(f"backlog check: items={len(bl.items)} errors={len(errs)}")
+    say(f"backlog check: items={len(bl.items)} errors={len(errs)} stale={len(stale)}")
     return 1 if errs else 0
 
 

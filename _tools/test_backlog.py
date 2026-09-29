@@ -377,6 +377,98 @@ def test_repository_backlog_is_valid():
     assert code == 0, out
 
 
+# ---- knowledge: an item's asks and kb references, resolved against the kb of the clone
+
+FACT = "Demo tools print their version. [DOC S100]"
+ARTICLE = f"---\ntopic: demo/tool\nstatus: partial\n---\n\n# Demo tool\n\n## Facts\n- {FACT}\n"
+CSV = "name,source,tag\nalpha,S100,DOC\n"
+
+
+@pytest.fixture
+def kb(repo):
+    """The repository gets a public kb root: a source, a QK answer, an article with one fact and a data file; a
+    story to carry `knowledge`."""
+    root = repo / "kb" / "public"
+    (root / "demo").mkdir(parents=True)
+    (root / "_root.md").write_text("---\nroot: public\nid_prefix: S\nvisibility: public\n---\n\n# public\n",
+                                   encoding="utf-8", newline="\n")
+    (root / "_sources.csv").write_text("id,url\nS100,https://example.com/a\nS-abcdefgh,https://example.com/b\n",
+                                       encoding="utf-8", newline="\n")
+    (root / "_answers.md").write_text("# Answers\n\n## QK-demo-question. What does the demo print?\n- It prints. "
+                                      "[DOC S100]\n", encoding="utf-8", newline="\n")
+    (root / "demo" / "tool.md").write_text(ARTICLE, encoding="utf-8", newline="\n")
+    (root / "demo" / "rows.csv").write_text(CSV, encoding="utf-8", newline="\n")
+    b(repo, "new", "epic", "--title", "Carrier", "--goal", "carries knowledge")
+    commit(repo, "kb")
+    return repo, item(repo, "Carrier")["id"]
+
+
+def key(text=FACT):
+    import kbfacts
+    return kbfacts.fact_key(text)
+
+
+def test_knowledge_refs_of_every_kind_resolve(kb):
+    repo, iid = kb
+    refs = ["demo/tool", "public/demo/tool", "QK-demo-question", "public:QK-demo-question", "S100", "S-abcdefgh",
+            f"public/demo/tool.md#{key()}", f"demo/tool.md#{key()}"]
+    edit(repo, iid, knowledge={"ask": ["What does the demo print?"], "refs": refs})
+    code, out = b(repo, "check")
+    assert code == 0 and "errors=0 stale=0" in out, out
+
+
+@pytest.mark.parametrize("ref, why", [
+    ("demo/absent", "no such topic"),
+    ("demo/tool.md", "no such topic"),  # a topic id has no extension
+    ("public/_answers", "no such topic"),  # a ledger is no article
+    ("QK-no-such-answer", "no such answer"),
+    ("other:QK-demo-question", "no kb root"),
+    ("S999", "no such source id"),
+    ("S-zzzzzzzz", "no such source id"),
+    ("public/demo/absent.md#" + "0" * 12, "no article or data file"),
+    ("public/demo/tool.md#abc", "12 lowercase hex"),
+    ("free text", "not a topic id"),
+])
+def test_knowledge_refs_missing_from_the_kb_are_refused(kb, ref, why):
+    repo, iid = kb
+    edit(repo, iid, knowledge={"refs": [ref]})
+    code, out = b(repo, "check")
+    assert code == 1 and why in out and f"{iid} “Carrier”: knowledge ref" in out, out
+
+
+def test_knowledge_refs_fact_of_a_data_file_and_a_reworded_fact(kb):
+    """A csv row's key resolves; the article's fact reworded (planted) is stale: printed, counted apart, exit 0."""
+    repo, iid = kb
+    csv_key = key("name=alpha; source=S100; tag=DOC")
+    edit(repo, iid, knowledge={"refs": [f"public/demo/rows.csv#{csv_key}", f"public/demo/tool.md#{key()}"]})
+    assert b(repo, "check")[0] == 0
+    art = repo / "kb" / "public" / "demo" / "tool.md"
+    art.write_text(ARTICLE.replace("print their version", "print their build"), encoding="utf-8", newline="\n")
+    code, out = b(repo, "check")
+    assert code == 0 and "errors=0 stale=1" in out, out
+    assert f"{iid} “Carrier”: stale knowledge: fact {key()} is no longer in public/demo/tool.md" in out
+    art.unlink()  # planted: the article removed is missing, not stale
+    code, out = b(repo, "check")
+    assert code == 1 and "no article or data file" in out, out
+
+
+def test_knowledge_refs_shape_is_checked(kb):
+    repo, iid = kb
+    for bad in ("text", {"asks": []}, {"ask": "one question"}, {"ask": [""]}, {"refs": [1]}):
+        edit(repo, iid, knowledge=bad)
+        code, out = b(repo, "check")
+        assert code == 1 and "knowledge" in out, (bad, out)
+    edit(repo, iid, knowledge={"ask": ["What does the demo print?"], "refs": []})
+    assert b(repo, "check")[0] == 0
+
+
+def test_knowledge_refs_without_a_kb_are_refused(repo):
+    b(repo, "new", "epic", "--title", "Carrier", "--goal", "g")
+    edit(repo, item(repo, "Carrier")["id"], knowledge={"refs": ["S100"]})
+    code, out = b(repo, "check")
+    assert code == 1 and "no such source id" in out, out
+
+
 # ---- red-pipeline: a planted red and a green pipeline on origin's main, glab and gh replaced (no network)
 
 def forge(monkeypatch, repo, pipelines, jobs=(), signed_in=True, logs=None):
