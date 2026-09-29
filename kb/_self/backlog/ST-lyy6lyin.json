@@ -2,7 +2,7 @@
   "id": "ST-lyy6lyin",
   "kind": "story",
   "title": "kbgit.py sorts commits into content and code lanes",
-  "status": "todo",
+  "status": "done",
   "parent": "EP-rumrqsu5",
   "sprint": "SP-v5xagbyv",
   "priority": "P2",
@@ -45,5 +45,30 @@
       "by": "operator"
     }
   ],
-  "notes": "Content is what the autonomous writers write (ql_deliver.auto_kinds: the query-log store, root articles and ledgers, kb/<root>/_retrieval data, _tools/aliases.csv, the bug item of a revert) plus what kbgit.py fix rewrites after a rebase (kbgit.MECHANICAL, which holds _tools/lint_baseline.txt), so a sync that rebases content never turns into code. The classifier is its own module so ST-3i3dl6xg “kbgit.py is a CLI over kg_* modules” moves only CLI wiring; kbgit.py, backlog.py and the CI job import it."
+  "notes": "Content is what the autonomous writers write (ql_deliver.auto_kinds: the query-log store, root articles and ledgers, kb/<root>/_retrieval data, _tools/aliases.csv, the bug item of a revert) plus what kbgit.py fix rewrites after a rebase (kbgit.MECHANICAL, which holds _tools/lint_baseline.txt), so a sync that rebases content never turns into code. The classifier is its own module so ST-3i3dl6xg “kbgit.py is a CLI over kg_* modules” moves only CLI wiring; kbgit.py, backlog.py and the CI job import it.",
+  "evidence": {
+    "commit": "d6d1333682fe1e291a9f20dcd7a34b2d09315bc8",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "TestLanes"
+        ],
+        "exit": 0,
+        "sha256": "ff6e333f58330b49"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/kbgit.py",
+          "lane",
+          "HEAD"
+        ],
+        "exit": 0,
+        "sha256": "181bc7b5a27207a4"
+      }
+    ]
+  }
 }
