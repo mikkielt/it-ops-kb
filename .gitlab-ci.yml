@@ -4,9 +4,11 @@
 # `querylog/<run-id>` branch, kb/_self/querylog.md) runs through the branch rule. Every job runs on the project's own
 # runners (kb/_self/runners.md): the Linux jobs name `docker-linux`, kb-tests-windows `docker-windows`, so no job
 # waits on GitLab.com's shared-runner quota. The gate jobs kb-tests and kb-trailers start on their own for every
-# pipeline they are in, and kb-tests-windows for tool changes, each with `allow_failure: true`; kb-tests-floor and
-# tool-stress stay manual (`when: manual`, also with `allow_failure: true`, since a manual job in `rules` otherwise
-# blocks the pipeline: docs.gitlab.com/ci/jobs/job_control). No job writes to the repository.
+# pipeline they are in, and kb-tests-windows for tool changes, each with `allow_failure: true`, except that on a code/*
+# branch (the merge request sync opens for code-lane work) the gate jobs' first rule makes them `allow_failure: false`,
+# so a failed gate fails the branch pipeline and auto-merge does not merge it; kb-tests-floor and tool-stress stay
+# manual (`when: manual`, also with `allow_failure: true`, since a manual job in `rules` otherwise blocks the pipeline:
+# docs.gitlab.com/ci/jobs/job_control). No job writes to the repository.
 workflow:
   rules:
     - if: $CI_COMMIT_BRANCH
@@ -40,6 +42,9 @@ kb-tests:
     - pip install --quiet uv
     - python3 _tools/tests.py
   rules:
+    - if: $CI_COMMIT_BRANCH =~ /^code\//
+      when: on_success
+      allow_failure: false
     - when: on_success
       allow_failure: true
 
@@ -140,6 +145,9 @@ kb-trailers:
     - git config --global --add safe.directory "$CI_PROJECT_DIR"
     - python3 _tools/kbgit.py check-trailers
   rules:
+    - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH =~ /^code\//
+      when: on_success
+      allow_failure: false
     - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH
       when: on_success
       allow_failure: true
