@@ -2,7 +2,7 @@
   "id": "BG-drrdyhin",
   "kind": "bug",
   "title": "kbingest run_tool leaves the mapper's process group alive on an interrupt",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-g5hizdko",
   "sprint": "SP-xourq2gj",
   "priority": "P3",
@@ -31,5 +31,29 @@
     "_tools/kbingest.py",
     "_tools/test_kbingest.py"
   ],
-  "claimed_by": "fix-drrdyhin"
+  "evidence": {
+    "commit": "1faf2a4fbe21233e110b7113d1f4b04e8c487450",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "kbingest"
+        ],
+        "exit": 0,
+        "sha256": "6b3bd61c57ec9edf"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "kbingest_map_interrupt_kills_group"
+        ],
+        "exit": 0,
+        "sha256": "fb2cb0807b0631fa"
+      }
+    ]
+  }
 }
