@@ -1,12 +1,24 @@
 #!/usr/bin/env python3
 """Survey a git repository before its knowledge goes into a kb root (stdlib only; the /kb-ingest skill).
 
-  kbingest.py survey REPO [--rev REV] [--forge gitlab|github] [--max-bytes N] [--files]
+  kbingest.py survey REPO [--rev REV] [--forge gitlab|github] [--max-bytes N] [--files] [--pins]
       REPO is a local clone. Prints the remote (host and project path, never credentials), the commit REV (default
       HEAD) resolves to, whether a remote-tracking branch holds it (as of the last fetch: else the pinned urls do
       not resolve for anyone else yet), the pinned url form a CODE source row takes, whether .gitattributes were read
       at the commit, then per top-level area the kept files by kind and the files left out. `--files` adds one
-      tab-separated line per file: `keep KIND PATH URL [secret]` or `skip REASON PATH`.
+      tab-separated line per file: `keep KIND PATH URL [secret]` or `skip REASON PATH`. `--pins` adds one tab-separated
+      line per pin, `pin FILE PIN VALUE`, and a `note: pins: FILE: ...` line per pin file that could not be read. The pin
+      files are those of kb/public/agents/codebase-mapping.csv: Python (.python-version, pyproject requires-python,
+      uv.lock), Node (package.json engines, devEngines, packageManager; .nvmrc), TypeScript (tsconfig extends), Go
+      (go.mod and go.work go, toolchain, use), Rust (rust-toolchain(.toml), Cargo.toml rust-version, edition), Java
+      (pom.xml maven.compiler.release and <release>, gradle-wrapper distributionUrl, build.gradle languageVersion),
+      .NET (global.json sdk, project and Directory.Build files TargetFramework(s) and LangVersion,
+      Directory.Packages.props, packages.lock.json), PowerShell (#Requires in .ps1/.psm1, .psd1 PowerShellVersion,
+      CompatiblePSEditions, RequiredModules) and environment (devcontainer.json image and features,
+      devcontainer-lock.json, .tool-versions, mise.toml). Pins come from the files the survey keeps, plus
+      packages.lock.json and uv.lock, which it leaves out as generated but which are pin files. They are read at the
+      commit with tomllib, json, xml.etree and line scans only: a file with comments (global.json, tsconfig.json,
+      devcontainer.json) has them scanned out, a .psd1 is read as text; nothing is run, imported or evaluated.
   kbingest.py url REPO PATH [--rev REV] [--forge gitlab|github]
       the pinned url of one file at the commit: the url of its source row (`kbid.py url <URL> --root NAME`).
 
@@ -298,6 +310,8 @@ def cmd_survey(a):
                 print("\t".join(["keep", what, path, url or "-"] + (["secret"] if secret else [])))
             else:
                 print("\t".join(["skip", what, path]))
+    if a.pins:
+        print_pins(entries, rows, repo, a.max_bytes)
     return 0
 
 
@@ -318,6 +332,485 @@ def cmd_url(a):
         return 2
     print(url)
     return 0
+
+
+# ---- pins: the toolchain versions a repository asks for, read as text at the commit -----------------------------------
+
+PIN_MAX_ROWS = 200  # rows one file adds before a note counts the rest
+PIN_VALUE_MAX = 200  # characters of a value
+PIN_LOCKS = re.compile(r"(?i)(?:^|/)(?:packages\.lock\.json|uv\.lock)$")  # pin files the survey leaves out as generated
+PIN_TABLE = "pin files: kb/public/agents/codebase-mapping.csv"
+
+
+class PinOut:
+    """Where one pin file's reader puts its rows and notes."""
+
+    def __init__(self, path, rows, notes):
+        self.path, self.rows, self.notes, self.count = path, rows, notes, 0
+
+    def add(self, pin, value):
+        text = " ".join(str(value).split())
+        if self.count == PIN_MAX_ROWS:
+            self.note(f"more than {PIN_MAX_ROWS} pins: the rest are not listed")
+        self.count += 1
+        if self.count <= PIN_MAX_ROWS:
+            self.rows.append((self.path, pin, text if len(text) <= PIN_VALUE_MAX else text[:PIN_VALUE_MAX - 3] + "..."))
+
+    def note(self, message):
+        self.notes.append((self.path, message))
+
+
+def jsonc(text):
+    """The value of JSON with comments and trailing commas (global.json, tsconfig.json, devcontainer.json): `//` and
+    `/* */` comments and a comma before `}` or `]` are dropped outside strings by a scan, then json.loads reads it.
+    Nothing is evaluated. ValueError when a comment or the JSON is malformed."""
+    text = text.lstrip("﻿")
+    out, i, n = [], 0, len(text)
+    while i < n:
+        c = text[i]
+        if c == '"':
+            j = i + 1
+            while j < n and text[j] != '"':
+                j += 2 if text[j] == "\\" else 1
+            out.append(text[i:j + 1])
+            i = j + 1
+        elif text.startswith("//", i):
+            j = text.find("\n", i)
+            i = n if j < 0 else j
+        elif text.startswith("/*", i):
+            j = text.find("*/", i + 2)
+            if j < 0:
+                raise ValueError("unterminated /* comment")
+            out.append(" ")
+            i = j + 2
+        elif c in "}]":
+            k = len(out) - 1
+            while k >= 0 and out[k].isspace():
+                k -= 1
+            if k >= 0 and out[k] == ",":
+                del out[k]
+            out.append(c)
+            i += 1
+        else:
+            out.append(c)
+            i += 1
+    return json.loads("".join(out))
+
+
+def toml_of(text):
+    import tomllib
+    return tomllib.loads(text)
+
+
+def xml_of(data):
+    """The root of an XML file with its namespaces dropped from tag names (a DOCTYPE's external entities are never
+    fetched: expat does not load them)."""
+    import xml.etree.ElementTree as ET
+    root = ET.fromstring(data)
+    for el in root.iter():
+        if isinstance(el.tag, str) and "}" in el.tag:
+            el.tag = el.tag.rsplit("}", 1)[1]
+    return root
+
+
+def lines_of(text):
+    """The non-blank lines of TEXT with `#` comments dropped and the ends trimmed."""
+    return [ln.split("#", 1)[0].strip() for ln in text.splitlines() if ln.split("#", 1)[0].strip()]
+
+
+def scalar(value):
+    """A pin's value as text: a string as is, a table as `key=value` pairs (a table of tables as its keys)."""
+    if isinstance(value, dict):
+        return ", ".join(f"{k}={scalar(v) if not isinstance(v, dict) else '{...}'}" for k, v in value.items())
+    if isinstance(value, list):
+        return ", ".join(scalar(v) for v in value)
+    if isinstance(value, bool):
+        return "true" if value else "false"
+    return str(value)
+
+
+def pin_python_version(text, out):
+    lines = lines_of(text)
+    if lines:
+        out.add("python-version", ", ".join(lines))
+    else:
+        out.note("empty: no version")
+
+
+def pin_pyproject(text, out):
+    v = toml_of(text).get("project", {})
+    if isinstance(v, dict) and "requires-python" in v:
+        out.add("requires-python", v["requires-python"])
+
+
+def pin_uv_lock(text, out):
+    doc = toml_of(text)
+    for key in ("requires-python", "version", "revision"):
+        if key in doc:
+            out.add(f"uv.lock {key}", doc[key])
+
+
+def pin_package_json(text, out):
+    doc = json.loads(text.lstrip("﻿"))
+    if not isinstance(doc, dict):
+        raise ValueError("not an object")
+    if isinstance(doc.get("engines"), dict):
+        for k, v in doc["engines"].items():
+            out.add(f"engines.{k}", scalar(v))
+    dev = doc.get("devEngines")
+    if isinstance(dev, dict):
+        for field, spec in dev.items():
+            for item in spec if isinstance(spec, list) else [spec]:
+                if isinstance(item, dict):
+                    on_fail = f" (onFail {item['onFail']})" if "onFail" in item else ""
+                    out.add(f"devEngines.{field}", f"{item.get('name', '?')} {item.get('version', '')}".rstrip() + on_fail)
+    if "packageManager" in doc:
+        out.add("packageManager", doc["packageManager"])
+
+
+def pin_nvmrc(text, out):
+    lines = lines_of(text)
+    if lines:
+        out.add(".nvmrc", lines[0])
+    else:
+        out.note("empty: no version")
+
+
+def pin_tsconfig(text, out):
+    doc = jsonc(text)
+    if isinstance(doc, dict) and "extends" in doc:
+        for item in doc["extends"] if isinstance(doc["extends"], list) else [doc["extends"]]:
+            out.add("extends", item)
+
+
+def pin_go_mod(text, out):
+    seen = set()
+    for ln in lines_of(text.replace("//", "#")):
+        parts = ln.split()
+        if parts[0] in ("go", "toolchain") and parts[0] not in seen:
+            seen.add(parts[0])
+            if len(parts) > 1:
+                out.add(parts[0], parts[1])
+            else:
+                out.note(f"`{parts[0]}` directive with no version")
+
+
+def pin_go_work(text, out):
+    pin_go_mod(text, out)
+    block = False
+    for ln in lines_of(text.replace("//", "#")):
+        parts = ln.split()
+        if block:
+            if parts[0] == ")":
+                block = False
+            else:
+                out.add("use", parts[0])
+        elif parts[0] == "use" and len(parts) > 1 and parts[1] == "(":
+            block = True
+        elif parts[0] == "use" and len(parts) > 1:
+            out.add("use", parts[1])
+    if block:
+        raise ValueError("`use (` block is not closed")
+
+
+def pin_rust_toolchain(text, out, legacy=False):
+    doc = None
+    if not legacy or "[toolchain]" in text or re.search(r"(?m)^\s*channel\s*=", text):
+        doc = toml_of(text)
+    if doc is not None:
+        t = doc.get("toolchain", {})
+        for key in ("channel", "path"):
+            if isinstance(t, dict) and key in t:
+                out.add(key, t[key])
+        return
+    lines = lines_of(text)
+    if lines:
+        out.add("channel", lines[0])
+    else:
+        out.note("empty: no channel")
+
+
+def pin_rust_toolchain_legacy(text, out):
+    pin_rust_toolchain(text, out, legacy=True)
+
+
+def pin_cargo(text, out):
+    doc = toml_of(text)
+    for scope, prefix in ((doc.get("package"), ""), ((doc.get("workspace") or {}).get("package"), "workspace.")):
+        if isinstance(scope, dict):
+            for key in ("rust-version", "edition"):
+                if key in scope:
+                    out.add(prefix + key, scalar(scope[key]))
+
+
+def pin_pom(data, out):
+    root = xml_of(data)
+    props = [e for e in root if e.tag == "properties"]
+    for block in props:
+        for e in block:
+            if e.tag in ("maven.compiler.release", "maven.compiler.source", "maven.compiler.target") and (e.text or "").strip():
+                out.add(e.tag, e.text.strip())
+    for parent in root.iter():
+        if parent.tag == "configuration":
+            for e in parent:
+                if e.tag == "release" and (e.text or "").strip():
+                    out.add("release", e.text.strip())
+
+
+def pin_gradle_wrapper(text, out):
+    for ln in text.splitlines():
+        m = re.match(r"\s*(distributionUrl|distributionSha256Sum)\s*[=:]\s*(.*?)\s*$", ln)
+        if m:
+            value = m.group(2).replace("\\:", ":").replace("\\=", "=")
+            if value:
+                out.add(m.group(1), value)
+            else:
+                out.note(f"{m.group(1)} has no value")
+
+
+def pin_gradle_build(text, out):
+    m = re.search(r"languageVersion\s*(?:=|\.set\s*\()\s*JavaLanguageVersion\.of\(\s*[\"']?(\d+)", text)
+    if m:
+        out.add("java.toolchain.languageVersion", m.group(1))
+
+
+def pin_global_json(text, out):
+    doc = jsonc(text)
+    sdk = doc.get("sdk") if isinstance(doc, dict) else None
+    if isinstance(sdk, dict):
+        for key in ("version", "rollForward", "allowPrerelease"):
+            if key in sdk:
+                out.add(f"sdk.{key}", scalar(sdk[key]))
+
+
+DOTNET_PROPS = ("TargetFramework", "TargetFrameworks", "TargetFrameworkVersion", "LangVersion")
+
+
+def pin_dotnet_project(data, out):
+    root = xml_of(data)
+    for e in root.iter():
+        if e.tag in DOTNET_PROPS and (e.text or "").strip():
+            out.add(e.tag, e.text.strip())
+
+
+def pin_central_packages(data, out):
+    root = xml_of(data)
+    for e in root.iter():
+        if e.tag in ("ManagePackageVersionsCentrally", "CentralPackageTransitivePinningEnabled") and (e.text or "").strip():
+            out.add(e.tag, e.text.strip())
+        elif e.tag in ("PackageVersion", "GlobalPackageReference"):
+            name = e.get("Include") or e.get("Update")
+            version = e.get("Version") or (e.findtext("Version") or "").strip()
+            if name:
+                out.add(f"{e.tag} {name}", version)
+
+
+def pin_packages_lock(text, out):
+    doc = json.loads(text.lstrip("﻿"))
+    if not isinstance(doc, dict):
+        raise ValueError("not an object")
+    if "version" in doc:
+        out.add("packages.lock.json version", doc["version"])
+    deps = doc.get("dependencies")
+    for tfm, pkgs in (deps.items() if isinstance(deps, dict) else []):
+        for name, info in (pkgs.items() if isinstance(pkgs, dict) else []):
+            if isinstance(info, dict) and info.get("type") == "Direct":
+                out.add(f"locked {tfm}/{name}", info.get("resolved", ""))
+
+
+def pin_requires(text, out):
+    for m in re.finditer(r"(?im)^[ \t]*#requires\b[ \t]*(.*)$", text):
+        value = re.split(r"\s#", m.group(1), maxsplit=1)[0].strip()
+        if value:
+            out.add("#Requires", value)
+        else:
+            out.note("#Requires with nothing after it")
+
+
+PSD1_KEYS = ("PowerShellVersion", "CompatiblePSEditions", "RequiredModules")
+
+
+def psd1_mask(text):
+    """TEXT with its comments (`# ...`, `<# ... #>`) blanked, outside strings. ValueError when a string or a block
+    comment is not closed. The file is only scanned: PowerShell never runs and Import-PowerShellDataFile is not used."""
+    out, i, n = [], 0, len(text)
+    while i < n:
+        c = text[i]
+        if c in "'\"":
+            j = i + 1
+            while True:
+                if j >= n:
+                    raise ValueError("unterminated string")
+                if c == '"' and text[j] == "`":
+                    j += 2
+                elif text[j] == c and text[j + 1:j + 2] == c:
+                    j += 2
+                elif text[j] == c:
+                    break
+                else:
+                    j += 1
+            out.append(text[i:j + 1])
+            i = j + 1
+        elif text.startswith("<#", i):
+            j = text.find("#>", i + 2)
+            if j < 0:
+                raise ValueError("unterminated <# block comment")
+            out.append(" ")
+            i = j + 2
+        elif c == "#":
+            j = text.find("\n", i)
+            i = n if j < 0 else j
+        else:
+            out.append(c)
+            i += 1
+    return "".join(out)
+
+
+def psd1_value(text, start):
+    """The expression that starts at START (after `Key =`): to a `;`, a line end (unless the line ends in a comma) or an
+    unmatched `}` outside strings and brackets. ValueError when a bracket or string is not closed."""
+    depth, i, n = 0, start, len(text)
+    while i < n:
+        c = text[i]
+        if c in "'\"":
+            j = i + 1
+            while j < n and not (text[j] == c and text[j + 1:j + 2] != c):
+                j += 2 if text[j] == c or (c == '"' and text[j] == "`") else 1
+            i = j + 1
+            continue
+        if c in "({[":
+            depth += 1
+        elif c in ")}]":
+            if depth == 0:
+                break
+            depth -= 1
+        elif depth == 0 and (c == ";" or (c == "\n" and not text[start:i].rstrip().endswith(","))):
+            break
+        i += 1
+    if depth:
+        raise ValueError("unbalanced brackets")
+    return text[start:i]
+
+
+def pin_psd1(text, out):
+    clean = psd1_mask(text)
+    for m in re.finditer(r"(?i)(?:^|[;{\n])[ \t]*['\"]?(" + "|".join(PSD1_KEYS) + r")['\"]?[ \t]*=[ \t]*", clean):
+        key = next(k for k in PSD1_KEYS if k.lower() == m.group(1).lower())
+        out.add(key, psd1_value(clean, m.end()).strip())
+
+
+def pin_devcontainer(text, out):
+    doc = jsonc(text)
+    if not isinstance(doc, dict):
+        raise ValueError("not an object")
+    if "image" in doc:
+        out.add("image", doc["image"])
+    features = doc.get("features")
+    for fid, opts in (features.items() if isinstance(features, dict) else []):
+        if isinstance(opts, dict):
+            value = scalar(opts["version"]) if "version" in opts else ("options: " + ", ".join(opts) if opts else "")
+        else:
+            value = scalar(opts)
+        out.add(f"feature {fid}", value)
+
+
+def pin_devcontainer_lock(text, out):
+    doc = jsonc(text)
+    features = doc.get("features") if isinstance(doc, dict) else None
+    for fid, info in (features.items() if isinstance(features, dict) else []):
+        if isinstance(info, dict):
+            out.add(f"locked feature {fid}", " ".join(str(info[k]) for k in ("version", "resolved") if k in info))
+
+
+def pin_tool_versions(text, out):
+    for ln in lines_of(text):
+        parts = ln.split()
+        if len(parts) > 1:
+            out.add(parts[0], " ".join(parts[1:]))
+        else:
+            out.note(f"`{parts[0]}` has no version")
+
+
+def pin_mise(text, out):
+    tools = toml_of(text).get("tools")
+    for name, spec in (tools.items() if isinstance(tools, dict) else []):
+        out.add(f"tools.{name}", scalar(spec["version"] if isinstance(spec, dict) and "version" in spec else spec))
+
+
+# (path pattern, reader, whether it reads bytes): the first pattern that matches a path picks its reader
+PIN_READERS = [
+    (re.compile(r"(?:^|/)\.python-version$"), pin_python_version, False),
+    (re.compile(r"(?:^|/)pyproject\.toml$"), pin_pyproject, False),
+    (re.compile(r"(?:^|/)uv\.lock$"), pin_uv_lock, False),
+    (re.compile(r"(?:^|/)package\.json$"), pin_package_json, False),
+    (re.compile(r"(?:^|/)\.nvmrc$"), pin_nvmrc, False),
+    (re.compile(r"(?:^|/)tsconfig[^/]*\.json$"), pin_tsconfig, False),
+    (re.compile(r"(?:^|/)go\.mod$"), pin_go_mod, False),
+    (re.compile(r"(?:^|/)go\.work$"), pin_go_work, False),
+    (re.compile(r"(?:^|/)rust-toolchain\.toml$"), pin_rust_toolchain, False),
+    (re.compile(r"(?:^|/)rust-toolchain$"), pin_rust_toolchain_legacy, False),
+    (re.compile(r"(?:^|/)Cargo\.toml$"), pin_cargo, False),
+    (re.compile(r"(?:^|/)pom\.xml$"), pin_pom, True),
+    (re.compile(r"(?:^|/)gradle-wrapper\.properties$"), pin_gradle_wrapper, False),
+    (re.compile(r"(?:^|/)build\.gradle(?:\.kts)?$"), pin_gradle_build, False),
+    (re.compile(r"(?:^|/)global\.json$"), pin_global_json, False),
+    (re.compile(r"(?:^|/)Directory\.Packages\.props$"), pin_central_packages, True),
+    (re.compile(r"(?i)(?:^|/)(?:Directory\.Build\.(?:props|targets)|[^/]+\.(?:cs|fs|vb)proj)$"), pin_dotnet_project, True),
+    (re.compile(r"(?:^|/)packages\.lock\.json$"), pin_packages_lock, False),
+    (re.compile(r"(?i)\.(?:ps1|psm1)$"), pin_requires, False),
+    (re.compile(r"(?i)\.psd1$"), pin_psd1, False),
+    (re.compile(r"(?:^|/)\.?devcontainer-lock\.json$"), pin_devcontainer_lock, False),
+    (re.compile(r"(?:^|/)\.?devcontainer\.json$"), pin_devcontainer, False),
+    (re.compile(r"(?:^|/)\.tool-versions$"), pin_tool_versions, False),
+    (re.compile(r"(?:^|/)(?:\.?mise(?:\.[A-Za-z0-9_-]+)?\.toml|\.config/mise(?:/config)?\.toml|\.?mise/config\.toml)$"),
+     pin_mise, False),
+]
+
+
+def pins(entries, rows, read, max_bytes=1_000_000):
+    """([(file, pin, value)], [(file, note)]): the pins of every pin file of the survey, read as text with tomllib,
+    json (comments and trailing commas scanned out), xml.etree and line scans; no file is run, imported or evaluated
+    (a .psd1 is scanned, never handed to PowerShell).
+
+    ENTRIES is `tree`'s result and ROWS `classify`'s: the files the survey KEEPS, plus `packages.lock.json` and
+    `uv.lock`, which it leaves out as generated by name but which are pin files (a file left out for any other
+    reason, and a lock file over MAX_BYTES, is never read). READ(oids) returns {oid: bytes}. A file that does not
+    parse gives a note and no rows; a reader's bug does too. Rows come in path order."""
+    kept = {r[0] for r in rows if r[1] == "keep"}
+    generated = {r[0] for r in rows if r[1] == "skip" and r[2] == "generated"}
+    todo = []
+    for path, kind, oid, size in entries:
+        if kind != "blob":
+            continue
+        if path in kept or (path in generated and PIN_LOCKS.search(path) and size <= max_bytes):
+            for rx, reader, binary in PIN_READERS:
+                if rx.search(path):
+                    todo.append((path, oid, reader, binary))
+                    break
+    data = read(sorted({oid for _, oid, _, _ in todo}))
+    out_rows, notes = [], []
+    for path, oid, reader, binary in sorted(todo, key=lambda t: t[0]):
+        if oid not in data:
+            notes.append((path, "not read: the blob is missing"))
+            continue
+        raw = data[oid]
+        out, before = PinOut(path, out_rows, notes), len(out_rows)
+        try:
+            reader(raw if binary else raw.decode("utf-8-sig", "replace"), out)
+        except Exception as e:  # noqa: BLE001 - a malformed or odd file must give a note, never lose the other files' pins
+            del out_rows[before:]
+            detail = " ".join(str(e).split())[:120]
+            notes.append((path, f"not read: {type(e).__name__}" + (f": {detail}" if detail else "")))
+    return out_rows, notes
+
+
+def print_pins(entries, rows, repo, max_bytes):
+    out_rows, notes = pins(entries, rows, lambda oids: contents(repo, oids), max_bytes)
+    print(f"pins: {len(out_rows)} in {len({r[0] for r in out_rows})} files ({PIN_TABLE}), read at the commit, never run")
+    for path, pin, value in out_rows:
+        print("\t".join(["pin", path, pin, value]))
+    for path, message in notes:
+        print(f"note: pins: {path}: {message}")
 
 
 # ---- map: read-only toolchain mapping in a scratch worktree ----------------------------------------------------------
@@ -1081,6 +1574,7 @@ def main(argv=None):
     s.add_argument("--forge", choices=("gitlab", "github"))
     s.add_argument("--max-bytes", type=int, default=1_000_000)
     s.add_argument("--files", action="store_true", help="one line per file")
+    s.add_argument("--pins", action="store_true", help="one line per toolchain pin (versions, runtimes, frameworks)")
     u = sub.add_parser("url", help="the pinned url of one file at the commit")
     u.add_argument("repo")
     u.add_argument("path")

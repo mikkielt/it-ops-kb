@@ -10,6 +10,12 @@ The map command (`test_kbingest_map_*`): the scratch worktree is removed and hol
 run, vendored files are not mapped); a fake toolchain on PATH proves output parsing, the timeout, a missing tool, a bad
 exit and output that is not JSON as notes, and that the environment is network-off and drops credentials; a map goes
 under _cache/ingest/, never under kb/.
+
+The pins (`test_kbingest_pin_files_*`): a throwaway repository holds every pin file of
+kb/public/agents/codebase-mapping.csv, and each parser returns its rows (file, pin, value); comments in global.json,
+tsconfig.json and devcontainer.json are scanned out and a .psd1 is scanned as text, never evaluated; lock files the
+survey leaves out as generated are still read, vendored ones are not; one malformed file per format is a note and does
+not lose the other files' rows; `survey --pins` prints them.
 """
 import json, os, subprocess, sys, time
 from pathlib import Path
@@ -974,3 +980,233 @@ def test_kbingest_map_relative_path_entry_is_resolved_against_the_caller_not_the
     monkeypatch.chdir(caller)
     r = kbingest.run_tool(["probe"], tree, {"PATH": "bin"}, 30)
     assert r.rc == 0 and r.out.strip() == b"caller"
+
+
+# ---- pins ----------------------------------------------------------------------------------------------------------
+
+PIN_FILES = {
+    ".python-version": "3.12\n# a comment\n",
+    "pyproject.toml": "[project]\nname = 'svc'\nrequires-python = \">=3.10\"\n",
+    "uv.lock": "version = 1\nrevision = 3\nrequires-python = \">=3.10\"\n",
+    "vendor/uv.lock": "version = 1\nrequires-python = \">=2.7\"\n",
+    "vendor/package.json": '{"engines": {"node": ">=4"}}\n',
+    "web/package.json": json.dumps({"name": "web", "engines": {"node": ">=20", "npm": "^10"},
+                                    "devEngines": {"runtime": {"name": "node", "version": "^20", "onFail": "error"},
+                                                   "packageManager": [{"name": "pnpm", "version": "9"}]},
+                                    "packageManager": "pnpm@9.1.0"}),
+    "web/.nvmrc": "v20.11.0\n",
+    "web/tsconfig.json": '{ // the base\n  "extends": ["@tsconfig/node20/tsconfig.json", "./base.json"], /* c */\n'
+                         '  "note": "a // b /* c */",\n  "compilerOptions": {"paths": {"@a/*": ["src/*",],},},\n}\n',
+    "go/go.mod": "module example.com/x\n\ngo 1.22.0\n\ntoolchain go1.22.3 // suggested\n\n"
+                 "require (\n\tgolang.org/x/text v0.14.0\n)\n",
+    "go/go.work": "go 1.23\n\nuse (\n\t./a // first\n\t./b\n)\nuse ./c\n",
+    "rs/rust-toolchain.toml": '[toolchain]\nchannel = "1.78.0"\ncomponents = ["clippy"]\n',
+    "rs/legacy/rust-toolchain": "nightly-2024-05-01\n",
+    "rs/Cargo.toml": '[package]\nname = "x"\nedition = "2021"\nrust-version = "1.70"\n',
+    "rs/ws/Cargo.toml": '[workspace]\nmembers = []\n\n[workspace.package]\nedition = "2024"\nrust-version = "1.85"\n',
+    "rs/member/Cargo.toml": '[package]\nname = "m"\nedition.workspace = true\nrust-version.workspace = true\n',
+    "java/pom.xml": '<?xml version="1.0"?>\n<project xmlns="http://maven.apache.org/POM/4.0.0"><properties>'
+                    '<maven.compiler.release>17</maven.compiler.release></properties><build><plugins><plugin>'
+                    '<configuration><release>21</release></configuration></plugin></plugins></build></project>\n',
+    "java/gradle/wrapper/gradle-wrapper.properties":
+        "distributionUrl=https\\://services.gradle.org/distributions/gradle-8.7-bin.zip\ndistributionSha256Sum=abc123\n",
+    "java/build.gradle.kts": "java { toolchain { languageVersion.set(JavaLanguageVersion.of(21)) } }\n",
+    "dn/global.json": '{\n  // pinned by the team\n  "sdk": {"version": "8.0.100", /* roll */ "rollForward": "latestFeature",},\n}\n',
+    "dn/src/App/App.csproj": '<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFrameworks>net8.0;net9.0</TargetFrameworks>'
+                             '<LangVersion>12.0</LangVersion></PropertyGroup></Project>\n',
+    "dn/Directory.Packages.props": '<Project><PropertyGroup><ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>'
+                                   '</PropertyGroup><ItemGroup><PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />'
+                                   '</ItemGroup></Project>\n',
+    "dn/src/App/packages.lock.json": json.dumps({"version": 1, "dependencies": {"net8.0": {
+        "Newtonsoft.Json": {"type": "Direct", "requested": "[13.0.3, )", "resolved": "13.0.3"},
+        "System.Memory": {"type": "Transitive", "resolved": "4.5.5"}}}}),
+    "ps/run.ps1": "#Requires -Version 5.1 # for the parser\nparam()\n#requires -Modules Az.Accounts\n",
+    "ps/Mod/Mod.psd1": "@{\n  # PowerShellVersion = '2.0'\n  PowerShellVersion = '5.1'\n  CompatiblePSEditions = @('Desktop', 'Core')\n"
+                       "  RequiredModules = @(\n    'Az.Accounts', # first\n    @{ ModuleName = 'Pester'; ModuleVersion = '5.5.0' },\n"
+                       "    \"$(Get-Date)\"\n  )\n  FunctionsToExport = $(Invoke-Expression 'boom')\n}\n",
+    "env/.devcontainer/devcontainer.json":
+        '{ // the image\n  "image": "mcr.microsoft.com/devcontainers/python:3.12",\n  "features": {\n'
+        '    "ghcr.io/devcontainers/features/node:1": {"version": "20"},\n    "ghcr.io/devcontainers/features/go:1": {},\n'
+        '    "ghcr.io/example/feat/tool:2": {"token": "not-a-real-value"},\n  },\n}\n',
+    "env/.devcontainer/devcontainer-lock.json": json.dumps({"features": {"ghcr.io/devcontainers/features/node:1": {
+        "version": "1.5.0", "resolved": "ghcr.io/devcontainers/features/node@sha256:0abc", "integrity": "sha256:0abc"}}}),
+    "env/.tool-versions": "nodejs 20.11.0 18.19.0 # two\npython 3.12.1\n",
+    "env/mise.toml": '[tools]\nnode = "20"\npython = ["3.12", "3.11"]\ngo = { version = "1.22", postinstall = "x" }\n',
+}
+
+
+def survey_pins(repo, max_bytes=1_000_000):
+    """(rows, notes) of the pins the way `survey --pins` finds them: the survey's tree, attributes and rules."""
+    commit = kbingest.resolve(repo.path, "HEAD")
+    entries = kbingest.tree(repo.path, commit)
+    attrs, _where = kbingest.attributes(repo.path, commit, [p for p, k, _, _ in entries if k == "blob"])
+    rows = kbingest.classify(entries, attrs, max_bytes, lambda oids: kbingest.contents(repo.path, oids))
+    return kbingest.pins(entries, rows, lambda oids: kbingest.contents(repo.path, oids), max_bytes)
+
+
+def pin_of(rows, path):
+    return [(pin, value) for f, pin, value in rows if f == path]
+
+
+@pytest.fixture(scope="module")
+def pinrepo(tmp_path_factory):
+    r = commit_files(tmp_path_factory.mktemp("pins") / "stack", PIN_FILES)
+    r.write(".python-version", "2.7\n")  # uncommitted: the pins are read at the commit
+    return r
+
+
+@requires_git
+def test_kbingest_pin_files_python_and_node(pinrepo):
+    rows, notes = survey_pins(pinrepo)
+    assert notes == []
+    assert pin_of(rows, ".python-version") == [("python-version", "3.12")]
+    assert pin_of(rows, "pyproject.toml") == [("requires-python", ">=3.10")]
+    assert ("uv.lock requires-python", ">=3.10") in pin_of(rows, "uv.lock")  # the survey leaves uv.lock out as generated
+    assert pin_of(rows, "vendor/uv.lock") == [] and pin_of(rows, "vendor/package.json") == []
+    assert pin_of(rows, "web/package.json") == [
+        ("engines.node", ">=20"), ("engines.npm", "^10"), ("devEngines.runtime", "node ^20 (onFail error)"),
+        ("devEngines.packageManager", "pnpm 9"), ("packageManager", "pnpm@9.1.0")]
+    assert pin_of(rows, "web/.nvmrc") == [(".nvmrc", "v20.11.0")]
+    assert pin_of(rows, "web/tsconfig.json") == [("extends", "@tsconfig/node20/tsconfig.json"), ("extends", "./base.json")]
+
+
+@requires_git
+def test_kbingest_pin_files_go_rust_and_java(pinrepo):
+    rows, _notes = survey_pins(pinrepo)
+    assert pin_of(rows, "go/go.mod") == [("go", "1.22.0"), ("toolchain", "go1.22.3")]
+    assert pin_of(rows, "go/go.work") == [("go", "1.23"), ("use", "./a"), ("use", "./b"), ("use", "./c")]
+    assert pin_of(rows, "rs/rust-toolchain.toml") == [("channel", "1.78.0")]
+    assert pin_of(rows, "rs/legacy/rust-toolchain") == [("channel", "nightly-2024-05-01")]
+    assert pin_of(rows, "rs/Cargo.toml") == [("rust-version", "1.70"), ("edition", "2021")]
+    assert pin_of(rows, "rs/ws/Cargo.toml") == [("workspace.rust-version", "1.85"), ("workspace.edition", "2024")]
+    assert pin_of(rows, "rs/member/Cargo.toml") == [("rust-version", "workspace=true"), ("edition", "workspace=true")]
+    assert pin_of(rows, "java/pom.xml") == [("maven.compiler.release", "17"), ("release", "21")]
+    assert pin_of(rows, "java/gradle/wrapper/gradle-wrapper.properties") == [
+        ("distributionUrl", "https://services.gradle.org/distributions/gradle-8.7-bin.zip"),
+        ("distributionSha256Sum", "abc123")]
+    assert pin_of(rows, "java/build.gradle.kts") == [("java.toolchain.languageVersion", "21")]
+
+
+@requires_git
+def test_kbingest_pin_files_dotnet(pinrepo):
+    rows, _notes = survey_pins(pinrepo)
+    assert pin_of(rows, "dn/global.json") == [("sdk.version", "8.0.100"), ("sdk.rollForward", "latestFeature")]
+    assert pin_of(rows, "dn/src/App/App.csproj") == [("TargetFrameworks", "net8.0;net9.0"), ("LangVersion", "12.0")]
+    assert pin_of(rows, "dn/Directory.Packages.props") == [
+        ("ManagePackageVersionsCentrally", "true"), ("PackageVersion Newtonsoft.Json", "13.0.3")]
+    # packages.lock.json is left out by the survey as generated, and still a pin file: direct packages only
+    assert pin_of(rows, "dn/src/App/packages.lock.json") == [
+        ("packages.lock.json version", "1"), ("locked net8.0/Newtonsoft.Json", "13.0.3")]
+
+
+@requires_git
+def test_kbingest_pin_files_powershell_is_read_as_text_never_evaluated(pinrepo):
+    rows, notes = survey_pins(pinrepo)
+    assert notes == []
+    assert pin_of(rows, "ps/run.ps1") == [("#Requires", "-Version 5.1"), ("#Requires", "-Modules Az.Accounts")]
+    psd1 = dict(pin_of(rows, "ps/Mod/Mod.psd1"))
+    assert psd1["PowerShellVersion"] == "'5.1'"  # the commented '2.0' line is not read
+    assert psd1["CompatiblePSEditions"] == "@('Desktop', 'Core')"
+    assert psd1["RequiredModules"].startswith("@( 'Az.Accounts',") and "ModuleVersion = '5.5.0'" in psd1["RequiredModules"]
+    assert '"$(Get-Date)"' in psd1["RequiredModules"]  # the subexpression stays text
+    assert "FunctionsToExport" not in psd1 and "boom" not in str(rows)
+
+
+@requires_git
+def test_kbingest_pin_files_environment(pinrepo):
+    rows, _notes = survey_pins(pinrepo)
+    dev = pin_of(rows, "env/.devcontainer/devcontainer.json")
+    assert dev == [("image", "mcr.microsoft.com/devcontainers/python:3.12"),
+                   ("feature ghcr.io/devcontainers/features/node:1", "20"),
+                   ("feature ghcr.io/devcontainers/features/go:1", ""),
+                   ("feature ghcr.io/example/feat/tool:2", "options: token")]  # an option's value is never copied
+    assert "not-a-real-value" not in str(rows)
+    assert pin_of(rows, "env/.devcontainer/devcontainer-lock.json") == [
+        ("locked feature ghcr.io/devcontainers/features/node:1", "1.5.0 ghcr.io/devcontainers/features/node@sha256:0abc")]
+    assert pin_of(rows, "env/.tool-versions") == [("nodejs", "20.11.0 18.19.0"), ("python", "3.12.1")]
+    assert pin_of(rows, "env/mise.toml") == [("tools.node", "20"), ("tools.python", "3.12, 3.11"), ("tools.go", "1.22")]
+
+
+MALFORMED = {
+    "good/.python-version": "3.13\n",
+    "json/package.json": '{"engines": ', "json/tsconfig.json": "{ /* never closed", "json/global.json": '{"sdk": {"version": "8",,}}',
+    "json/packages.lock.json": "{", "json/devcontainer.json": '{"image":', "json/devcontainer-lock.json": "[1,",
+    "toml/pyproject.toml": '[project\nrequires-python = ">=3"\n', "toml/Cargo.toml": "= =\n", "toml/uv.lock": "= broken\n",
+    "toml/rust-toolchain.toml": "[toolchain\n", "toml/mise.toml": "[tools\nnode =\n",
+    "xml/pom.xml": "<project><properties>", "xml/App.csproj": "<Project><PropertyGroup>", "xml/Directory.Packages.props": "not xml\n",
+    "text/Mod.psd1": "@{ RequiredModules = @( 'a'\n", "text/quote.psd1": "@{ PowerShellVersion = '5.1\n}\n",
+    "text/go.mod": "go\n", "text/go.work": "use (\n\t./a\n", "text/gradle-wrapper.properties": "distributionUrl=\n",
+    "text/.tool-versions": "nodejs\n", "text/.nvmrc": " \n", "text/.python-version": "# nothing\n",
+    "text/run.ps1": "#Requires\n",
+}
+
+
+@requires_git
+def test_kbingest_pin_files_one_malformed_file_per_format_is_a_note_not_a_crash(tmp_path):
+    r = commit_files(tmp_path / "bad", MALFORMED)
+    rows, notes = survey_pins(r)
+    bad = {p for p in MALFORMED if p.split("/")[0] != "good"}
+    assert {path for path, _ in notes} == bad, notes
+    assert all(message for _, message in notes)
+    assert rows == [("good/.python-version", "python-version", "3.13")], "the malformed files add no rows"
+
+
+@requires_git
+def test_kbingest_pin_files_a_reader_that_crashes_is_a_note(tmp_path, monkeypatch):
+    r = commit_files(tmp_path / "crash", {".python-version": "3.13\n", "go.mod": "go 1.22\n"})
+
+    def boom(text, out):
+        raise RuntimeError("planted")
+    monkeypatch.setattr(kbingest, "PIN_READERS", [(rx, boom if "go" in rx.pattern else f, b) for rx, f, b in kbingest.PIN_READERS])
+    rows, notes = survey_pins(r)
+    assert rows == [(".python-version", "python-version", "3.13")]
+    assert notes == [("go.mod", "not read: RuntimeError: planted")]
+
+
+@requires_git
+def test_kbingest_pin_files_only_kept_files_and_generated_locks_are_read(tmp_path):
+    r = commit_files(tmp_path / "scope", {
+        ".python-version": "3.13\n", "big/.python-version": "3.11\n" + "# pad\n" * 400, "pyproject.toml": "[project]\n",
+        "uv.lock": 'requires-python = ">=3.13"\n' + "# pad\n" * 400, ".gitattributes": "attr/.nvmrc linguist-vendored\n",
+        "attr/.nvmrc": "v18\n", "node_modules/pkg/.nvmrc": "v16\n"})
+    rows, notes = survey_pins(r, max_bytes=4000)
+    assert notes == []
+    assert {f for f, _, _ in rows} == {".python-version", "big/.python-version", "uv.lock"}, rows
+    rows, _ = survey_pins(r, max_bytes=100)
+    assert [f for f, _, _ in rows] == [".python-version"], "a file over --max-bytes, a lock file included, is not read"
+
+
+def test_kbingest_pin_files_row_cap_is_a_note():
+    rows, notes = [], []
+    out = kbingest.PinOut("Directory.Packages.props", rows, notes)
+    for i in range(kbingest.PIN_MAX_ROWS + 30):
+        out.add(f"PackageVersion P{i}", "1.0")
+    assert len(rows) == kbingest.PIN_MAX_ROWS and len(notes) == 1
+
+
+def test_kbingest_pin_files_jsonc_scanner():
+    assert kbingest.jsonc('{"a": "x // y", /* c */ "b": [1, 2,], // tail\n}') == {"a": "x // y", "b": [1, 2]}
+    assert kbingest.jsonc('﻿{"a": "q\\"/*not*/"}') == {"a": 'q"/*not*/'}
+    for bad in ('{"a": 1 /* open', '{"a": 1,,}', '{"a": "open'):
+        with pytest.raises(ValueError):
+            kbingest.jsonc(bad)
+
+
+@requires_git
+def test_kbingest_pin_files_survey_prints_the_pins(pinrepo):
+    code, out = run("survey", pinrepo.path, "--pins")
+    assert code == 0, out
+    lines = [ln.split("\t") for ln in out.splitlines() if ln.startswith("pin\t")]
+    assert ["pin", "pyproject.toml", "requires-python", ">=3.10"] in lines
+    assert ["pin", ".python-version", "python-version", "3.12"] in lines  # the commit's, not the working tree's 2.7
+    assert ["pin", "dn/global.json", "sdk.version", "8.0.100"] in lines
+    assert "pins: " in out and "codebase-mapping.csv" in out
+    assert not any(ln.startswith("pin\t") for ln in run("survey", pinrepo.path)[1].splitlines()), "--pins is opt-in"
+
+
+@requires_git
+def test_kbingest_pin_files_survey_prints_notes_for_malformed_files(tmp_path):
+    r = commit_files(tmp_path / "bad", {"package.json": "{", ".python-version": "3.13\n"})
+    code, out = run("survey", r.path, "--pins")
+    assert code == 0, out
+    assert "note: pins: package.json: not read: JSONDecodeError" in out and "pin\t.python-version\tpython-version\t3.13" in out
