@@ -1,4 +1,4 @@
-"""The `kb` MCP server over Streamable HTTP, _tools/kb_http.py (`python3 _tools/tests.py -k kb_http_transport`).
+"""The `kb` MCP server over Streamable HTTP, _tools/kb_http.py (`python3 _tools/tests.py -k kb_http`).
 
 test_kb_http_transport_*  one server per module, built on 127.0.0.1 port 0 and served on a thread: the legacy
                 initialize and the 2026-07-28 server/discover handshakes, tools/list and tools/call through
@@ -6,6 +6,10 @@ test_kb_http_transport_*  one server per module, built on 127.0.0.1 port 0 and s
                 and DELETE, 404 off the endpoint, no Mcp-Session-Id minted or echoed (even when the request sends
                 one), 400 for a parse error and a batch, era-aware statuses for JSON-RPC errors (404 and 400 for a
                 modern request, 200 for a legacy one), concurrent requests, and the script's own startup on --port 0.
+test_kb_http_guard_*  the refusals before routing, each beside the request it must still let through: 403 for an
+                Origin not in --allow-origin (an allowed one and no Origin pass), 415 for a POST that is not
+                application/json (with a charset it passes), 413 for a body over --max-body (one at the cap
+                passes), and no start on a non-loopback --bind without --bind-any (loopback and --bind-any pass).
 """
 import http.client, json, os, subprocess, sys, threading
 from concurrent.futures import ThreadPoolExecutor
@@ -192,3 +196,136 @@ def test_kb_http_transport_help_and_bad_port():
     assert out.returncode == 0 and "POST /mcp" in out.stdout and "Mcp-Session-Id" in out.stdout
     bad = subprocess.run([sys.executable, SCRIPT, "--port", "70000"], capture_output=True, text=True, encoding="utf-8")
     assert bad.returncode == 2 and "--port" in bad.stderr
+
+
+ALLOWED = "https://copilot.example.com"
+CAP = 256
+PING = {"jsonrpc": "2.0", "id": 200, "method": "ping"}
+
+
+@pytest.fixture(scope="module")
+def guarded():
+    """A server with one allowed Origin and a small body cap."""
+    httpd = kb_http.build(0, quiet=True, allow_origins=[ALLOWED], max_body=CAP)
+    t = threading.Thread(target=httpd.serve_forever, daemon=True)
+    t.start()
+    yield httpd.server_address[1]
+    httpd.shutdown()
+    httpd.server_close()
+
+
+def sized(n):
+    """A ping request body of exactly n bytes (JSON allows trailing whitespace)."""
+    raw = json.dumps(PING).encode("utf-8")
+    assert len(raw) <= n
+    return raw + b" " * (n - len(raw))
+
+
+def raw_post(port, headers, data=b""):
+    """POST with exactly these headers (http.client adds none of its own here): (status, headers, body)."""
+    conn = http.client.HTTPConnection("127.0.0.1", port, timeout=60)
+    try:
+        conn.putrequest("POST", "/mcp", skip_accept_encoding=True)
+        for k, v in headers.items():
+            conn.putheader(k, v)
+        conn.endheaders(data or None)
+        r = conn.getresponse()
+        return r.status, {k.lower(): v for k, v in r.getheaders()}, r.read()
+    finally:
+        conn.close()
+
+
+@pytest.mark.parametrize("origin", ["https://evil.example.net", "http://copilot.example.com", "null",
+                                    "https://copilot.example.com:8443"])
+def test_kb_http_guard_bad_origin_is_403(guarded, origin):
+    for method in ("POST", "GET", "DELETE"):
+        status, hdrs, raw = call(guarded, method=method, body=PING if method == "POST" else None,
+                                 headers={"Origin": origin})
+        assert status == 403, (method, origin)
+        assert hdrs["connection"] == "close"
+        assert b"Origin" in raw and b"result" not in raw
+    # off the endpoint too: the Origin is checked before the path is routed
+    assert call(guarded, body=PING, headers={"Origin": origin}, path="/")[0] == 403
+
+
+def test_kb_http_guard_allowed_or_absent_origin_passes(guarded, port):
+    for origin in (ALLOWED, ALLOWED.upper() + "/"):
+        status, _, reply = rpc(guarded, PING, {"Origin": origin})
+        assert status == 200 and reply["id"] == 200, origin
+    status, _, reply = rpc(guarded, PING)  # a server-to-server client sends no Origin
+    assert status == 200 and reply["id"] == 200
+    # planted failure: the default server allows no Origin, so the one allowed above is refused there
+    assert call(port, body=PING, headers={"Origin": ALLOWED})[0] == 403
+    assert call(port, body=PING)[0] == 200
+
+
+@pytest.mark.parametrize("ctype", ["text/plain", "application/x-www-form-urlencoded", "multipart/form-data; boundary=x",
+                                   "application/jsonx", None])
+def test_kb_http_guard_non_json_content_type_is_415(guarded, ctype):
+    data = json.dumps(PING).encode("utf-8")
+    headers = {"Content-Length": str(len(data))} | ({"Content-Type": ctype} if ctype else {})
+    status, hdrs, raw = raw_post(guarded, headers, data)
+    assert status == 415, ctype
+    assert hdrs["connection"] == "close"
+    assert b"application/json" in raw
+
+
+def test_kb_http_guard_json_content_type_passes(guarded):
+    for ctype in ("application/json", "application/json; charset=utf-8", "Application/JSON"):
+        status, _, reply = rpc(guarded, PING, {"Content-Type": ctype})
+        assert status == 200 and reply["id"] == 200, ctype
+    # GET and DELETE carry no body: their Content-Type is not checked on the way to 405
+    assert call(guarded, method="GET", headers={"Content-Type": "text/plain"})[0] == 405
+
+
+def test_kb_http_guard_body_over_cap_is_413(guarded):
+    status, hdrs, raw = call(guarded, body=sized(CAP + 1))
+    assert status == 413
+    assert hdrs["connection"] == "close"
+    assert str(CAP).encode("utf-8") in raw
+    # the Content-Length alone decides: a huge one is refused without a byte of body sent
+    assert raw_post(guarded, {"Content-Type": "application/json", "Content-Length": str(1 << 40)})[0] == 413
+
+
+def test_kb_http_guard_body_at_cap_passes(guarded, port):
+    status, _, reply = rpc(guarded, sized(CAP))
+    assert status == 200 and reply["id"] == 200
+    # planted failure: the default cap is far above this size, so the body refused above passes there
+    assert kb_http.MAX_BODY > CAP + 1
+    status, _, reply = rpc(port, sized(CAP + 1))
+    assert status == 200 and reply["id"] == 200
+
+
+@pytest.mark.parametrize("host", ["0.0.0.0", "192.0.2.10", "::", "2001:db8::1", "localhost", "not-an-ip"])
+def test_kb_http_guard_public_bind_refused(host):
+    with pytest.raises(ValueError):
+        kb_http.build(0, quiet=True, host=host)
+    bad = subprocess.run([sys.executable, SCRIPT, "--bind", host, "--port", "0"], capture_output=True, text=True,
+                         encoding="utf-8", timeout=60)
+    assert bad.returncode == 2 and "--bind" in bad.stderr and "serving" not in bad.stderr
+
+
+def test_kb_http_guard_loopback_or_bind_any_passes():
+    for host in ("127.0.0.1", "127.255.255.254", "::1"):
+        assert kb_http.check_bind(host).is_loopback
+    # planted failure: --bind-any lets the addresses refused above through the check
+    for host in ("0.0.0.0", "192.0.2.10", "::"):
+        assert str(kb_http.check_bind(host, bind_any=True)) == host
+    try:
+        httpd6 = kb_http.build(0, quiet=True, host="::1")
+    except OSError:
+        pytest.skip("no IPv6 loopback on this host")
+    try:
+        assert httpd6.server_address[0] == "::1"
+        assert kb_http.url(httpd6).startswith("http://[::1]:")
+    finally:
+        httpd6.server_close()
+
+
+def test_kb_http_guard_help_names_the_options():
+    out = subprocess.run([sys.executable, SCRIPT, "--help"], capture_output=True, text=True, encoding="utf-8")
+    assert out.returncode == 0
+    for word in ("--bind ", "--bind-any", "--allow-origin", "--max-body", "403", "413", "415"):
+        assert word in out.stdout, word
+    bad = subprocess.run([sys.executable, SCRIPT, "--max-body", "0"], capture_output=True, text=True, encoding="utf-8")
+    assert bad.returncode == 2 and "--max-body" in bad.stderr

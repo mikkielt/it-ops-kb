@@ -1,12 +1,33 @@
 #!/usr/bin/env python3
 """`kb` over Streamable HTTP: the read-only MCP server of kb_mcp.py on one HTTP endpoint (stdlib only).
 
-  python3 _tools/kb_http.py              serve http://127.0.0.1:8080/mcp until interrupted (Ctrl+C); logs go to stderr
-  python3 _tools/kb_http.py --port N     another port; 0 picks a free one (the startup line on stderr names it)
+  python3 _tools/kb_http.py                   serve http://127.0.0.1:8080/mcp until interrupted (Ctrl+C); logs to stderr
+  python3 _tools/kb_http.py --port N          another port; 0 picks a free one (the startup line on stderr names it)
+  python3 _tools/kb_http.py --bind ADDR       listen on another IP address (default 127.0.0.1); one outside loopback
+                                              (127.0.0.0/8, ::1) is refused, exit 2, unless --bind-any is given too
+  python3 _tools/kb_http.py --bind-any        allow a non-loopback --bind (0.0.0.0, a LAN address): the server has
+                                              no authentication, so put it behind something that has
+  python3 _tools/kb_http.py --allow-origin O  a browser origin (scheme://host[:port]) whose requests are served;
+                                              repeatable; none by default
+  python3 _tools/kb_http.py --max-body N      the largest request body in bytes (default 1048576, 1 MiB)
 
-The endpoint is `/mcp` on 127.0.0.1. Every JSON-RPC message goes to kb_mcp.handle, so the tools, the instructions
-and both handshakes are the stdio server's: a legacy client's `initialize` (2025-11-25 and earlier, as Copilot
-Studio uses) and a 2026-07-28 client's `server/discover` with the protocol version in each request's `_meta`.
+The endpoint is `/mcp`. Every JSON-RPC message goes to kb_mcp.handle, so the tools, the instructions and both
+handshakes are the stdio server's: a legacy client's `initialize` (2025-11-25 and earlier, as Copilot Studio uses)
+and a 2026-07-28 client's `server/discover` with the protocol version in each request's `_meta`.
+
+Guards, checked on every request before its path is routed (the MCP transport requires Origin validation against
+DNS rebinding, and recommends a loopback bind for a local server):
+  Origin          a request whose `Origin` header is not in --allow-origin gets 403 Forbidden (compared without
+                  case or a trailing slash; `null` is refused too). A request with no Origin header passes: it
+                  comes from a server-to-server client such as Copilot Studio's connector, not a browser page
+  Content-Type    a POST whose Content-Type is not `application/json` (parameters such as charset allowed), or
+                  that has none, gets 415 Unsupported Media Type: a browser page can send text/plain to another
+                  origin without a CORS preflight, but not application/json
+  body size       a POST whose Content-Length is over --max-body gets 413 Content Too Large, decided on the header.
+                  The default 1 MiB is far above any real request (a tool call carries a question or a path, a
+                  few KB) and bounds the memory one request can make a serving thread hold
+  A refusal is plain text and closes the connection. A refused body up to 64 KiB is read and dropped first, so the
+  client is not reset before it reads the refusal; a larger one is never read.
 
   POST /mcp         one JSON-RPC message per request body (UTF-8 JSON); batches are refused
     request         200 with the response as `application/json` (no SSE stream: every tool answers at once)
@@ -23,8 +44,11 @@ Studio uses) and a 2026-07-28 client's `server/discover` with the protocol versi
 Stateless: the server keeps no protocol session. It never mints an `Mcp-Session-Id`, and ignores one a client
 sends. Requests are served on threads (ThreadingHTTPServer); the calls into kb_mcp run one at a time, because the
 tools redirect the process-wide stdout while they work.
+
+Exit codes: 0 after an interrupt, 1 when the address cannot be bound, 2 for a bad option (a non-loopback --bind
+without --bind-any among them).
 """
-import argparse, json, sys, threading
+import argparse, ipaddress, json, socket, sys, threading
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -37,6 +61,9 @@ import kb_mcp  # noqa: E402
 HOST = "127.0.0.1"
 PORT = 8080
 ENDPOINT = "/mcp"
+MAX_BODY = 1 << 20  # 1 MiB: the module docstring says why
+JSON_TYPE = "application/json"
+DRAIN = 64 << 10  # a refused body up to this size is read and dropped before the refusal is sent
 MODERN_STATUS = {-32022: HTTPStatus.BAD_REQUEST, -32602: HTTPStatus.BAD_REQUEST, -32601: HTTPStatus.NOT_FOUND}
 _HANDLE_LOCK = threading.Lock()
 
@@ -76,6 +103,22 @@ class Handler(BaseHTTPRequestHandler):
 
     def refuse(self):
         """(status, message) that stops this request before it is routed, or None to let it through."""
+        origin = self.headers.get("Origin")
+        if origin is not None and norm_origin(origin) not in self.server.allow_origins:
+            return HTTPStatus.FORBIDDEN, f"forbidden: Origin {origin!r} is not allowed (kb_http.py --allow-origin)"
+        if self.command != "POST":
+            return None
+        media = (self.headers.get("Content-Type") or "").split(";", 1)[0].strip().lower()
+        if media != JSON_TYPE:
+            return (HTTPStatus.UNSUPPORTED_MEDIA_TYPE,
+                    f"unsupported media type: POST one JSON-RPC message as {JSON_TYPE}, not {media or 'no type'}")
+        try:
+            length = int(self.headers.get("Content-Length") or 0)
+        except ValueError:
+            return None  # do_POST answers a bad Content-Length with a JSON-RPC error
+        if length > self.server.max_body:
+            return (HTTPStatus.REQUEST_ENTITY_TOO_LARGE,
+                    f"content too large: {length} bytes, the limit is {self.server.max_body} (kb_http.py --max-body)")
         return None
 
     def routed(self):
@@ -83,12 +126,24 @@ class Handler(BaseHTTPRequestHandler):
         is already sent."""
         stop = self.refuse()
         if stop is not None:
-            self.send_plain(*stop)
+            self.discard_body()
+            self.send_plain(*stop, {"Connection": "close"})
             return False
         if urlsplit(self.path).path != ENDPOINT:
             self.send_plain(HTTPStatus.NOT_FOUND, f"not found: the MCP endpoint is {ENDPOINT}")
             return False
         return True
+
+    def discard_body(self):
+        """Read and drop a refused request's body when it is small (up to DRAIN bytes): closing a socket with unread
+        data resets the connection on most systems, and the client could lose the refusal. A larger body stays
+        unread, so it is never taken in."""
+        try:
+            length = int(self.headers.get("Content-Length") or 0)
+        except ValueError:
+            return
+        if 0 < length <= DRAIN:
+            self.rfile.read(length)
 
     def do_POST(self):
         if not self.routed():
@@ -145,24 +200,64 @@ class Handler(BaseHTTPRequestHandler):
             super().log_message(format, *args)
 
 
-def build(port=PORT, quiet=False):
-    """The server bound to HOST:port (0: a free port, in server_address) and not yet serving: tests run
-    serve_forever on a thread and call shutdown."""
-    httpd = ThreadingHTTPServer((HOST, port), Handler)
-    httpd.daemon_threads = True
+def norm_origin(origin):
+    """An Origin header or --allow-origin value as they are compared: lower case, no trailing slash."""
+    return origin.strip().rstrip("/").lower()
+
+
+def check_bind(host, bind_any=False):
+    """The address to listen on as an ip_address. ValueError when it is not an IP address, or when it is outside
+    loopback (127.0.0.0/8, ::1) and bind_any is not set."""
+    try:
+        ip = ipaddress.ip_address(host)
+    except ValueError:
+        raise ValueError(f"--bind takes an IP address, not {host!r}") from None
+    if not ip.is_loopback and not bind_any:
+        raise ValueError(f"--bind {host} is not a loopback address; the server has no authentication, "
+                         "so listening there needs --bind-any")
+    return ip
+
+
+class Server(ThreadingHTTPServer):
+    daemon_threads = True
+
+
+class Server6(Server):
+    address_family = socket.AF_INET6
+
+
+def build(port=PORT, quiet=False, host=HOST, bind_any=False, allow_origins=(), max_body=MAX_BODY):
+    """The server bound to host:port (0: a free port, in server_address) and not yet serving: tests run
+    serve_forever on a thread and call shutdown. ValueError, before anything is bound, for a host that
+    check_bind refuses."""
+    ip = check_bind(host, bind_any)
+    httpd = (Server6 if ip.version == 6 else Server)((str(ip), port), Handler)
     httpd.quiet = quiet
+    httpd.allow_origins = frozenset(norm_origin(o) for o in allow_origins)
+    httpd.max_body = max_body
     return httpd
 
 
-def serve(port=PORT):
+def url(httpd):
+    """The endpoint's url, as the startup line names it."""
+    host, port = httpd.server_address[:2]
+    return f"http://{f'[{host}]' if ':' in host else host}:{port}{ENDPOINT}"
+
+
+def serve(port=PORT, host=HOST, bind_any=False, allow_origins=(), max_body=MAX_BODY):
     """Serve until interrupted. Returns the exit code."""
     try:
-        httpd = build(port)
+        httpd = build(port, host=host, bind_any=bind_any, allow_origins=allow_origins, max_body=max_body)
+    except ValueError as e:
+        print(f"kb_http: {e}", file=sys.stderr)
+        return 2
     except OSError as e:
-        print(f"kb_http: cannot listen on {HOST}:{port}: {e}", file=sys.stderr)
+        print(f"kb_http: cannot listen on {host}:{port}: {e}", file=sys.stderr)
         return 1
     threading.Thread(target=kb_mcp.warm, daemon=True).start()
-    print(f"kb_http: serving http://{HOST}:{httpd.server_address[1]}{ENDPOINT}", file=sys.stderr, flush=True)
+    if not ipaddress.ip_address(httpd.server_address[0]).is_loopback:
+        print("kb_http: warning: listening outside loopback, with no authentication (--bind-any)", file=sys.stderr)
+    print(f"kb_http: serving {url(httpd)}", file=sys.stderr, flush=True)
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:
@@ -174,11 +269,23 @@ def serve(port=PORT):
 
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--port", type=int, default=PORT, help=f"TCP port on {HOST} (default {PORT}; 0 picks a free one)")
+    ap.add_argument("--port", type=int, default=PORT, help=f"TCP port (default {PORT}; 0 picks a free one)")
+    ap.add_argument("--bind", default=HOST, metavar="ADDR", help=f"IP address to listen on (default {HOST})")
+    ap.add_argument("--bind-any", action="store_true", help="allow a --bind address outside loopback")
+    ap.add_argument("--allow-origin", action="append", default=[], metavar="ORIGIN",
+                    help="a browser origin to serve (scheme://host[:port]); repeatable")
+    ap.add_argument("--max-body", type=int, default=MAX_BODY, metavar="BYTES",
+                    help=f"largest request body in bytes (default {MAX_BODY})")
     args = ap.parse_args(argv)
     if not 0 <= args.port <= 65535:
         ap.error("--port must be 0-65535")
-    return serve(args.port)
+    if args.max_body < 1:
+        ap.error("--max-body must be at least 1")
+    try:
+        check_bind(args.bind, args.bind_any)
+    except ValueError as e:
+        ap.error(str(e))
+    return serve(args.port, args.bind, args.bind_any, args.allow_origin, args.max_body)
 
 
 if __name__ == "__main__":
