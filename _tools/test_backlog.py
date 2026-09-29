@@ -47,6 +47,13 @@ def commit(root, msg, work=None):
     sh(root, "git", "commit", "-qm", msg, *(["-m", f"KB-Work: {work}"] if work else []))
 
 
+@pytest.fixture(autouse=True)
+def no_git_location(monkeypatch):
+    """A pre-push hook in a worktree sets these; inherited, git init and commit would act on the real repository."""
+    for k in ("GIT_DIR", "GIT_WORK_TREE", "GIT_INDEX_FILE"):
+        monkeypatch.delenv(k, raising=False)
+
+
 @pytest.fixture
 def repo(tmp_path):
     sh(tmp_path, "git", "init", "-q")
