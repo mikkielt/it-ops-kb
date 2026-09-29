@@ -15,7 +15,7 @@ The cost model all of them follow: a lookup costs the agent's fixed start contex
 
 ## 2. Fewer turns
 
-- **One call, one verdict, one stop rule.** `pack` returns `coverage: good|weak|none`, the best fact lines by article and one url footer; the verdict tells the agent when to stop: `good` answer, `weak` one reworded pack or one show, `none` say so [CODE _tools/kbfacts.py#pack] ("Lookup tools against reading files"). The same rule is in `AGENTS.md`, the `/kb-lookup` skill and the MCP server instructions [CODE _tools/kb_mcp.py#INSTRUCTIONS].
+- **One call, one verdict, one stop rule.** `pack` returns `coverage: good|weak|none`, the best fact lines by article and one url footer; the verdict tells the agent when to stop: `good` answer, `weak` one reworded pack or one show, `none` state what the kb has and lacks and research only the rest in the live docs [CODE _tools/kbfacts.py#pack] ("Lookup tools against reading files"). The same rule is in `AGENTS.md`, the `/kb-lookup` skill and the MCP server instructions [CODE _tools/kb_mcp.py#INSTRUCTIONS]; the pack's own none sentence carries it too [CODE _tools/kbfacts.py#NONE_SENTENCE].
 - **Batch pack.** Up to 6 parts in one call (`questions`, `rag.py pack -q PART -q PART`), a verdict each and one shared footer [CODE _tools/kbfacts.py#pack_many]; a cross-topic question took 2 turns instead of 6 ("Plugin in a host project").
 - **`kb_pack` is always loaded.** `_meta` `anthropic/alwaysLoad` on `kb_pack` only, so the first lookup needs no tool-search round trip; the other kb tools stay deferred [CODE _tools/kb_mcp.py#TOOL_LIST] ("Plugin in a host project").
 - **`kb_pack` defaults to `detailed`.** The urls come in the same call; making the agent resolve them would cost a turn.
