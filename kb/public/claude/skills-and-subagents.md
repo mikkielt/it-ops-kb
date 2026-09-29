@@ -3,7 +3,7 @@ topic: claude/skills-and-subagents
 priority: P2
 applies_to: "Claude Code docs (code.claude.com), skills/sub-agents/agent-teams, retrieved 2026-09-26"
 retrieved_utc: 2026-09-29
-sources: [S2158, S2157, S-qdxfqzln, S-ezqg74ki]
+sources: [S2158, S2157, S-qdxfqzln, S-ezqg74ki, S-bisz7fay]
 status: complete
 ---
 
@@ -99,6 +99,12 @@ shared task list and direct inter-agent messaging on top of ordinary subagent de
 - A per-invocation `model` also holds when the subagent is resumed or sent a follow-up (from v2.1.211; earlier it reverted to the definition's model); subagents inherit the main conversation's extended-thinking setting (from v2.1.198), and `/tasks` names each subagent's model, with its effort when the definition sets one (v2.1.242+). [DOC S2157]
 - When an organization's `availableModels` allowlist blocks a subagent's requested model, Claude Code runs it on the newest permitted version of the family for a family alias, and otherwise on the inherited model, with a warning in interactive sessions. [DOC S2157, S-ezqg74ki]
 - A definition's `model: sonnet` keeps a subagent on the Sonnet alias only while nothing assigns a model earlier in the order: an orchestrator that passes a `model` for the invocation, or a session that sets `CLAUDE_CODE_SUBAGENT_MODEL_FORCE=1` with a model, replaces it. [DER S2157: the resolution order above and the FORCE rule]
+- A non-fork subagent starts with a fresh, isolated context window: it does not see the parent's conversation history, the skills already invoked or the files already read; Claude writes a delegation message that summarises the task and the subagent works from it. A fork is the exception and inherits the parent conversation. [DOC S2157]
+- A non-fork subagent's startup context holds: its own system prompt (its markdown body or `prompt` field, plus appended environment details, not the Claude Code system prompt), the delegation prompt as its task message, every CLAUDE.md level the main conversation loads (including `AGENTS.md` files loaded as project instructions), a repository status snapshot, the full content of skills named in its `skills` field, and (v2.1.206+) a roster of named sibling agents when its tools include `SendMessage`. Explore and Plan skip CLAUDE.md and the status snapshot. [DOC S2157]
+- The context-window page says the subagent also has the same MCP servers and skills as the parent (minus a few tools such as plan-mode controls and, by default, `Agent`), and that the main session's auto memory is not included; a custom agent with `memory:` loads its own separate MEMORY.md instead. [DOC S-bisz7fay]
+- The docs' guidance on rules: the main conversation still holds the full CLAUDE.md when it reads a subagent's result, so most rules need not reach the subagent, but a rule that must, such as ignoring a directory, is restated in the delegation prompt. `omitClaudeMd: true` suits subagents that take everything from the delegation prompt. [DOC S2157]
+- A fork (fork mode is on by default in interactive sessions) sees the same system prompt, tools, model and message history as the main session; a non-fork subagent has a fresh context plus the prompt passed to it, and pays start-up time to gather context, which is the docs' stated reason to prefer a fork when latency matters or phases share context. [DOC S2157]
+- Only the subagent's final text comes back to the parent, plus a small metadata trailer with token counts and duration; the walkthrough's example has 6,100 tokens of file reads stay in the subagent and a 420-token result return. [DOC S-bisz7fay]
 - `CLAUDE_CODE_DISABLE_EXPLORE_PLAN_AGENTS=1` removes only Explore/Plan (Claude reads/explores directly instead);
   `CLAUDE_AGENT_SDK_DISABLE_BUILTIN_AGENTS=1` removes all built-in types in non-interactive mode/Agent SDK sessions.
   [DOC S2157]

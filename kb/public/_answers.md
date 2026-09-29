@@ -2108,3 +2108,14 @@ _Agent: kb-research_
 - See claude/hooks.md, claude/otel-monitoring.md, claude/agent-sdk.md, agents/agent-caching.md.
 
 _Agent: kb-research_
+
+## QK-subagent-brief-need-claude-code-subagent. What does a subagent brief need, what does a Claude Code subagent already receive, and does Scrum schedule research first?
+- A non-fork Claude Code subagent starts fresh: no parent conversation, invoked skills or read files; it gets its own system prompt, the delegation prompt, the CLAUDE.md hierarchy (Explore and Plan skip it), a repository status snapshot and preloaded skills. [DOC S2157, S-bisz7fay]
+- Anthropic: each subagent needs an objective, an output format, guidance on tools and sources, and clear task boundaries; short briefs made subagents duplicate work. [DOC S1921]
+- Rules that must bind a subagent are restated in the delegation prompt; large outputs go to storage with a lightweight reference passed back. [DOC S2157, S1921]
+- The 2020 Scrum Guide has no "spike" and no rule ordering research before dependent work; research is named only among the team's activities. [DER S-2wwcyoa4: absence in the guide's text, read 2026-09-29]
+- Conclusion: a brief that lists an item's kb facts by `path:line` belongs in the delegation prompt, because nothing else reaches a non-fork subagent except CLAUDE.md and preloaded skills; research-first ordering is our own convention. [DER S2157, S1921, S-2wwcyoa4: what a subagent receives versus what a brief adds]
+- Open: no official measurement shows a brief saves work; that is the sprint's own benchmark. [UNK]
+- See claude/skills-and-subagents.md, agents/subagents-vs-deterministic-tools.md, agents/agent-planning-and-done.md.
+
+_Agent: kb-research_

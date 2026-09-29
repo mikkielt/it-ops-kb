@@ -42,6 +42,10 @@ because no observed failure yet justifies scripting them.
 - Anthropic's own named multi-agent failure modes: excessive subagent spawning on simple queries,
   duplicated work from vague task descriptions, agents preferring SEO content over authoritative sources,
   and needless slowness from non-parallel execution. [DOC S1921]
+- What a delegation brief must hold, per Anthropic's Research system post: "Each subagent needs an objective, an output format, guidance on the tools and sources to use, and clear task boundaries"; without detailed task descriptions agents duplicate work, leave gaps or fail to find what is needed. [DOC S1921]
+- The post's example of a brief too short: an instruction such as "research the semiconductor shortage" led one subagent to the 2021 automotive chip crisis while two others duplicated work on 2025 supply chains, with no division of labour. [DOC S1921]
+- The post embedded effort-scaling rules in the lead's prompt because agents misjudge effort: simple fact-finding one agent with 3-10 tool calls, direct comparisons 2-4 subagents with 10-15 calls each, complex research more than 10 subagents with divided responsibilities. [DOC S1921]
+- The post advises subagents to write large outputs to external storage and pass lightweight references back to the coordinator, to avoid information loss and token overhead from copying output through the conversation (the "game of telephone"). [DOC S1921]
 - Code execution with MCP: presenting MCP servers as code APIs on a filesystem, so the agent reads only the
   tool definitions it needs for the task, cut one Drive→Salesforce task from 150,000 to 2,000 tokens
   (98.7%). [DOC S1922]
