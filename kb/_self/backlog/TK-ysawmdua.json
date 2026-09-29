@@ -2,7 +2,7 @@
   "id": "TK-ysawmdua",
   "kind": "task",
   "title": "backlog.py brief ID prints an item's packs and referenced facts",
-  "status": "draft",
+  "status": "todo",
   "parent": "ST-u7bliqzx",
   "priority": "P2",
   "rank": 0,
@@ -20,5 +20,8 @@
   "touches": [
     "_tools/backlog.py",
     "_tools/test_backlog.py"
+  ],
+  "depends_on": [
+    "ST-zptutwlf"
   ]
 }

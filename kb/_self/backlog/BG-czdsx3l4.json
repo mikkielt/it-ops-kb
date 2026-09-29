@@ -1,0 +1,22 @@
+{
+  "id": "BG-czdsx3l4",
+  "kind": "bug",
+  "title": "next lists a task as ready while its parent story waits on an unfinished depends_on",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "backlog.py next, horizon and claim treat an item as waiting while any ancestor story or bug has a depends_on item that is not done, with a planted failure in test_backlog.py; the runbook's depends_on line says so",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import json,pathlib,subprocess,sys;I={p.stem:json.loads(p.read_text(encoding='utf-8')) for p in pathlib.Path('kb/_self/backlog').glob('*.json')};A=lambda i:[I[i]['parent']]+A(I[i]['parent']) if I.get(i,{}).get('parent') in I else [];o=subprocess.run([sys.executable,'_tools/backlog.py','next','--any','--all'],capture_output=True,text=True).stdout.split();b=[i for i in o if i in I for p in A(i) if any(I.get(d,{}).get('status')!='done' for d in I[p].get('depends_on',[]))];print(b);sys.exit(bool(b))"
+    ]
+  },
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/test_backlog.py",
+    "kb/_self/backlog.md"
+  ]
+}

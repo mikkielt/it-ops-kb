@@ -2,7 +2,7 @@
   "id": "TK-w32po2v3",
   "kind": "task",
   "title": "Pick the benchmark task and write its compact brief",
-  "status": "draft",
+  "status": "done",
   "parent": "ST-zptutwlf",
   "priority": "P2",
   "rank": 0,
@@ -19,5 +19,20 @@
   ],
   "touches": [
     "kb/_self/reports/backlog-briefs.md"
-  ]
+  ],
+  "evidence": {
+    "commit": "adc1d939f15372b2670ab9337abb09b3ae091756",
+    "checks": [
+      {
+        "run": [
+          "grep",
+          "-c",
+          "^## Setup",
+          "kb/_self/reports/backlog-briefs.md"
+        ],
+        "exit": 0,
+        "sha256": "4355a46b19d348dc"
+      }
+    ]
+  }
 }

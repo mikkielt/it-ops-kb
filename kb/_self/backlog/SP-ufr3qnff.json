@@ -2,7 +2,7 @@
   "id": "SP-ufr3qnff",
   "kind": "sprint",
   "title": "Items know their kb facts",
-  "status": "planned",
+  "status": "active",
   "goal": "Items carry knowledge asks and refs with a derived state, the brief measurement has a verdict, and briefs and research-first scheduling are built or dropped by it",
   "gates": [
     {
