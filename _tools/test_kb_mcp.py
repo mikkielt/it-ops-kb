@@ -11,7 +11,9 @@ TestKbServer    _tools/kb_mcp.py as a subprocess over stdio: the legacy handshak
 TestPluginManifest  .claude-plugin/marketplace.json and the two plugins: it-ops-kb (from the root: the kb server, the
                 read-only kb-lookup, kb-review-workspace and kb-gap skills, the kb-lookup and kb-reviewer agents listed by path
                 so the kb's agents/ articles never load, the kb: hook) and it-ops-kb-docs (the three documentation
-                servers and a PreToolUse hook blocking submit_feedback); no root .mcp.json (it would load into
+                servers and a PreToolUse hook blocking submit_feedback: one command, run in each of sh, bash, dash,
+                pwsh and Windows PowerShell present, exits 2 with its reason on stderr; planted: the old `>&2`
+                command, a parser error in PowerShell); no root .mcp.json (it would load into
                 it-ops-kb); no pinned version (users track commits); rag.py named only as the clone form; the GitLab
                 SSH remote. With the `claude` CLI installed, `claude plugin validate` passes for both. The clone-only
                 kb-worker agent (test_kb_worker_agent*): the sonnet alias, effort high, not in plugin.json. Its
@@ -51,6 +53,23 @@ import kb_mcp  # noqa: E402  (conftest puts _tools on sys.path)
 SERVER = os.path.join(TOOLS, "kb_mcp.py")
 REMOTE = "git@gitlab.com:mikkielt/it-ops-kb.git"
 DOCS_PLUGIN = ".claude-plugin/it-ops-kb-docs"
+# Every shell a shell-form command hook can reach (kb/public/claude/hooks.md): sh -c on macOS and Linux, Git Bash on
+# Windows, PowerShell (pwsh, else Windows PowerShell, with -Command) on Windows without Git Bash; each one present runs.
+HOOK_SHELLS = ([(n, [p, "-c"]) for n in ("sh", "bash", "dash") if (p := shutil.which(n))]
+               + [(n, [p, "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-Command"])
+                  for n in ("pwsh", "powershell") if (p := shutil.which(n))])
+
+
+def block_offenders(cmd):
+    """The shells present in which the submit_feedback hook command `cmd` does not block: exit 2 blocks a PreToolUse
+    call with stderr as the reason, while any other exit (a PowerShell parser error exits 1) lets the call through."""
+    bad = []
+    for name, argv in HOOK_SHELLS:
+        p = subprocess.run(argv + [cmd], input=b'{"tool_name": "x"}', capture_output=True, timeout=60)
+        err = p.stderr.decode("utf-8", "replace").strip()
+        if p.returncode != 2 or p.stdout.strip() or "submit_feedback posts text to the docs vendor" not in err:
+            bad.append(f"{name}: exit {p.returncode}, stdout {p.stdout.strip()[:80]!r}, stderr {err[:120]!r}")
+    return bad
 
 
 def quiet_upstream(env=None):
@@ -509,13 +528,16 @@ class TestPluginManifest:
             assert rx.fullmatch(f"mcp__plugin_{self.docs['name']}_{s}__submit_feedback"), s
         assert not rx.fullmatch(f"mcp__plugin_{self.docs['name']}_microsoft-learn__microsoft_docs_search")
         h = hooks[0]["hooks"][0]
-        # shell form with no interpreter to find (the docs plugin has no _tools/kbpy): sh -c, or Git Bash on Windows
-        assert h["type"] == "command" and "args" not in h and "python" not in h["command"]
-        if shutil.which("sh"):
-            p = subprocess.run(["sh", "-c", h["command"]], input='{"tool_name": "x"}', capture_output=True, text=True,
-                               encoding="utf-8", timeout=30)
-            assert (p.returncode, p.stdout) == (2, "")
-            assert "submit_feedback" in p.stderr
+        # shell form with no interpreter to find (the docs plugin has no _tools/kbpy) and no `shell` field, so the
+        # host's default shell runs it: sh, Git Bash, or PowerShell on Windows without Git Bash
+        assert h["type"] == "command" and "args" not in h and "shell" not in h and "python" not in h["command"]
+        if not HOOK_SHELLS:
+            pytest.skip("no sh and no PowerShell on PATH")
+        assert block_offenders(h["command"]) == []
+        # planted: the old command, whose `>&2` is a parser error in PowerShell (exit 1, a non-blocking hook error)
+        old = "echo 'blocked by the it-ops-kb-docs plugin: submit_feedback posts text to the docs vendor' >&2; exit 2"
+        ps = [n for n, _ in HOOK_SHELLS if n in ("pwsh", "powershell")]
+        assert [b.split(":")[0] for b in block_offenders(old)] == ps
         assert "PreToolUse" not in self.plugin["hooks"], "the kb plugin has no docs servers to guard"
 
     def test_kb_prompt_hook_from_the_plugin_root(self):

@@ -17,7 +17,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "echo 'blocked by the it-ops-kb-docs plugin: submit_feedback posts text to the docs vendor, outside the kb; never call it' >&2; exit 2"
+            "command": "echo \\' >/dev/null; printf \"%s\\n\" \"blocked by the it-ops-kb-docs plugin: submit_feedback posts text to the docs vendor, outside the kb; never call it\" >& 2; exit 2; ' >$null; [Console]::Error.WriteLine(\"blocked by the it-ops-kb-docs plugin: submit_feedback posts text to the docs vendor, outside the kb; never call it\"); exit 2 #'"
           }
         ]
       }
