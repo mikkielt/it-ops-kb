@@ -171,7 +171,7 @@ az containerapp create --name kb-public --resource-group <rg> --environment <kb 
 az containerapp auth microsoft update --name kb-public --resource-group <rg> \
   --client-id <kb app client id> --tenant-id 00000000-0000-0000-0000-000000000000 \
   --issuer https://login.microsoftonline.com/00000000-0000-0000-0000-000000000000/v2.0 \
-  --allowed-token-audiences api://<kb app client id>
+  --allowed-token-audiences <kb app client id> api://<kb app client id>
 az containerapp auth update --name kb-public --resource-group <rg> \
   --enabled true --unauthenticated-client-action Return401 --require-https true
 ```
@@ -187,7 +187,7 @@ az webapp config set --name kb-public --resource-group <rg> --always-on true
 az webapp auth microsoft update --name kb-public --resource-group <rg> \
   --client-id <kb app client id> --tenant-id 00000000-0000-0000-0000-000000000000 \
   --issuer https://login.microsoftonline.com/00000000-0000-0000-0000-000000000000/v2.0 \
-  --allowed-token-audiences api://<kb app client id>
+  --allowed-token-audiences <kb app client id> api://<kb app client id>
 az webapp auth update --name kb-public --resource-group <rg> \
   --enabled true --unauthenticated-client-action Return401 --require-https true
 ```
@@ -195,3 +195,25 @@ az webapp auth update --name kb-public --resource-group <rg> \
 The app's identity needs pull rights on the registry (AcrPull) in both. A client secret, if the identity provider setup asks for one, is a platform secret or app setting reference, never a value in a script in the repository. The token checks are those of the VM section: the tenant's v2.0 issuer, the kb app registration as audience, and for an internal audience the app role it requires (App Service and Container Apps can also restrict the calling client applications and identities). Entra ID in front of an MCP server on App Service: `kb/public/auth/delegation-kcd-obo.md`.
 
 **The census-tag update** is a scheduled pipeline job, the Azure form of the VM's timer: it lists the census tags, and when the newest is not the deployed image's tag it clones at that tag, builds and pushes `kb-http:<tag>`, and points each app at it (`az containerapp update --image`, `az webapp config container set --container-image-name`), which restarts it on the new kb.
+
+## 5. Copilot Studio: the network path and the connection
+
+The client-side facts, with their sources, are in `kb/public/agents/copilot-studio-mcp-client.md`; this section applies them to either deployment above.
+
+**Where the calls come from.** Copilot Studio reaches an MCP server through a Power Platform connector, so each call leaves from Power Platform's connector service in the environment's region, not from the user's device. A loopback or intranet-only endpoint is unreachable; the front end needs one of:
+- **a public HTTPS endpoint** that allow-lists the `AzureConnectors` tags of the environment's geo and the regional `PowerPlatformPlex` tag, on top of authentication, never instead of it. An Azure NSG in front of the VM and App Service access restrictions (`--service-tag`) take service tags by name; Container Apps IP restrictions and a host firewall take CIDR ranges only, so they need the tags' ranges from the Service Tag Discovery API or its downloadable files, refreshed as the article says;
+- **a private endpoint** reached from a VNet-enabled Managed Environment through its delegated subnet (the VM's private address, a Container Apps environment with internal ingress, an App Service private endpoint). OAuth token requests still go over the public token endpoints, and whether an MCP connector uses the delegated subnet is not confirmed (the article's `UNK`), so try it before relying on it.
+
+**The certificate.** Power Platform accepts only a TLS certificate with its complete chain from a well-known root CA and cannot add a custom root, so an internal PKI certificate fails even on the private path. The VM's proxy serves the full chain (section 3); the platforms' default domains and their managed certificates are publicly trusted.
+
+**Connecting from the MCP onboarding wizard.** The server URL is the `/mcp` url, e.g. https://kb.corp.example.com/mcp. The orchestrator decides from the server name and description whether to call the server, and whether it reads the server's `instructions` is not documented, so the description carries what the kb covers, that it is documentation and not live data, and the coverage rules of `kb/_self/embedding.md`, section 4. Authentication:
+- **API key**: the header name the VM proxy checks (`X-Api-Key` in section 3) and the key from the vault; proof of concept on the VM only, since the Azure front end takes tokens.
+- **OAuth 2.0**: `_tools/kb_http.py` publishes no OAuth metadata (every path but `/mcp` is 404), so dynamic discovery finds nothing there unless the front end publishes that metadata itself; the manual option takes a client app registration's client id and secret, the tenant's authorize and token urls (https://login.microsoftonline.com/00000000-0000-0000-0000-000000000000/oauth2/v2.0/authorize and .../token), and the scope `api://<kb app client id>/.default`. The connector's own redirect URI goes on the client app registration, which accepts only its own tenant.
+
+**Connecting through a custom connector.** Import an OpenAPI (Swagger 2.0) file with `host` set to the public name, scheme `https`, and one operation, `POST /mcp` carrying `x-ms-agentic-protocol: mcp-streamable-1.0` (the article has the file as a snippet). Its security is OAuth 2.0 with Microsoft Entra ID as identity provider and the same scope. A Power Platform data policy that governs connectors governs this one too.
+
+**What the client leaves undocumented, and why it does not matter here.** The article lists what no Copilot Studio page states: the protocol version the client sends, whether it keeps `Mcp-Session-Id` sessions, whether it reads `instructions` or tool annotations, and which result content types it shows. The server does not depend on any of them:
+- it answers a legacy `initialize` (2025-11-25 and earlier, which Copilot Studio's handshake and cited transport revision point to) as well as a 2026-07-28 `server/discover`;
+- it is stateless: it never mints a session id and ignores one a client sends, so a client that keeps sessions and one that does not both work; a legacy request's JSON-RPC error stays HTTP 200, since a legacy client reads 404 as an expired session;
+- every answer is one `application/json` response (a tool result is one text block) on the Streamable HTTP transport Copilot Studio supports, with no SSE stream to keep open;
+- the kb's input schemas use none of the constructs the article lists as known schema issues, and the coverage rules also travel in the wizard description, for the case where `instructions` are not read.
