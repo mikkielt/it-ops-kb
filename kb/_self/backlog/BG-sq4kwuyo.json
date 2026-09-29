@@ -2,7 +2,7 @@
   "id": "BG-sq4kwuyo",
   "kind": "bug",
   "title": "kb_mcp tests fail when the clone is behind its upstream",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-aikswrrl",
   "priority": "P1",
   "rank": 0,
@@ -17,5 +17,19 @@
     ]
   },
   "notes": "Broke four subagent test runs and one push gate during SP-4udo5jmw while another machine pushed to origin.",
-  "claimed_by": "worker-sq4kwuyo"
+  "evidence": {
+    "commit": "62b209e09fa564ce28d96ef0505f01ec3194b47d",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "kb_mcp_pack_ignores_freshness_banner"
+        ],
+        "exit": 0,
+        "sha256": "4628b7b581274722"
+      }
+    ]
+  }
 }
