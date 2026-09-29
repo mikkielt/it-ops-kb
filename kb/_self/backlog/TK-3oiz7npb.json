@@ -2,7 +2,7 @@
   "id": "TK-3oiz7npb",
   "kind": "task",
   "title": "Move the main-pipeline check into an intake detector",
-  "status": "todo",
+  "status": "draft",
   "parent": "ST-uzqoj5du",
   "priority": "P2",
   "rank": 0,

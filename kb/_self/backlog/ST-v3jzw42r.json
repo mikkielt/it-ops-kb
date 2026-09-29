@@ -4,6 +4,7 @@
   "title": "docs.github.com and www.anthropic.com are staged providers",
   "status": "draft",
   "parent": "EP-mzzucemv",
+  "sprint": "SP-osxj4vmf",
   "priority": "P3",
   "rank": 0,
   "goal": "_tools/providers.csv has probed rows serving docs.github.com and www.anthropic.com (/kb-probe), with their routes-table rows in kb/_self/web-sources.md, so learn records the open stage source findings F-88bfb93dc08f and F-e1ebb2febe4b as no longer open",

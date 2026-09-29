@@ -4,6 +4,7 @@
   "title": "Replay of the 2026-09-29 state finds what the manual review found",
   "status": "draft",
   "parent": "EP-o2bjijfp",
+  "sprint": "SP-3brmvlnh",
   "priority": "P2",
   "rank": 0,
   "goal": "A fixture under _tools/fixtures/intake/ holds the query-log store, the item files and a git history reduced from commit 2241f98b; intake --dry-run over it reports the stranded gap F-6298df20a337, the stage findings F-88bfb93dc08f and F-e1ebb2febe4b, the four commits with an unread KB-Work (7219acbb, ac03d1b3, 9cb820ec, 8da30157) and the drifted items ST-rjxacpdh and TK-if7de5pb; a second --file run over its own output files nothing",

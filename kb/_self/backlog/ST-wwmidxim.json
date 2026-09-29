@@ -4,6 +4,7 @@
   "title": "Intake detector: query-log findings stranded in a non-terminal state",
   "status": "draft",
   "parent": "EP-o2bjijfp",
+  "sprint": "SP-3brmvlnh",
   "priority": "P2",
   "rank": 0,
   "goal": "intake's stranded-findings detector reads the committed store kb/_querylog and reports each finding whose newest record is candidate-gap, open source, no-fix or apply-failed and older than STRANDED_DAYS on HEAD's commit day: a stage source finding becomes a story to probe its host's provider, any other a bug; the fingerprint is the finding id and its state",

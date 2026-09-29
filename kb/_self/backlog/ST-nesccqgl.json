@@ -4,6 +4,7 @@
   "title": "Research for a planned sprint lands under its item",
   "status": "draft",
   "parent": "EP-o2bjijfp",
+  "sprint": "SP-3brmvlnh",
   "priority": "P2",
   "rank": 0,
   "goal": "A research task or story of a planned (not started) sprint can land its kb content commits with KB-Work and be proven by backlog.py done without starting the sprint, as backlog.md states; check-trailers accepts such a commit only when it changes kb content and the item files, never _tools/, .claude/ or CI; ST-rjxacpdh, TK-nytjligk and the ST-mmmn42ks tasks, whose research landed without KB-Work, are closed or dropped with the commit named",

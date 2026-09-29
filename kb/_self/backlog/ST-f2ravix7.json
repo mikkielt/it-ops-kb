@@ -4,6 +4,7 @@
   "title": "Intake detector: items drifted from their commits",
   "status": "draft",
   "parent": "EP-o2bjijfp",
+  "sprint": "SP-3brmvlnh",
   "priority": "P2",
   "rank": 0,
   "goal": "intake's drift detector reports one triage story listing each doing item whose KB-Work work commit on origin/main is older than DRIFT_HOURS with no done, and each draft or todo item with touches whose own checks already pass on HEAD (run with the item's checks, a per-check timeout, only for items whose touches changed since their file did); the fingerprint is the sorted item ids",

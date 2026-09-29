@@ -4,6 +4,7 @@
   "title": "A KB-Work line outside the trailer block passes check-trailers, and done counts the claim commit as the work",
   "status": "draft",
   "parent": "EP-o2bjijfp",
+  "sprint": "SP-3brmvlnh",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",

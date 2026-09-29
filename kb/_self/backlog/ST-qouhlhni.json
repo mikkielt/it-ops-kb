@@ -4,6 +4,7 @@
   "title": "Intake detector: work commits whose KB-Work git does not read",
   "status": "draft",
   "parent": "EP-o2bjijfp",
+  "sprint": "SP-3brmvlnh",
   "priority": "P2",
   "rank": 0,
   "goal": "intake's trailer detector reads origin/main's commits of the last TRAILER_WINDOW_DAYS and reports one bug per set of commits whose body has a KB-Work line that git reads as no trailer, or that change _tools/, .claude/, .githooks/ or .gitlab-ci.yml with no KB-Work trailer and no KB-Auto trailer; the fingerprint is the sorted short shas",

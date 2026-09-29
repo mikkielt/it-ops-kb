@@ -4,6 +4,7 @@
   "title": "backlog.py intake files deterministic candidates once, by fingerprint",
   "status": "draft",
   "parent": "EP-o2bjijfp",
+  "sprint": "SP-3brmvlnh",
   "priority": "P2",
   "rank": 0,
   "goal": "_tools/bl_intake.py holds a detector registry; python3 _tools/backlog.py intake prints each detector's candidates (kind, title, goal, repro, links with fingerprint <12 hex>) without writing, --file writes each new one as a draft item outside any sprint, and a candidate whose fingerprint an open item's links already carry is skipped; intake --status FINGERPRINT exits 1 while a detector still reports it, which is the repro of every bug intake files; the same inputs print the same lines in any clone; no model call",
