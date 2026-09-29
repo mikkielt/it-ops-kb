@@ -3,7 +3,7 @@
   "kind": "bug",
   "title": "kb_mcp tests fail when the clone is behind its upstream",
   "status": "draft",
-  "priority": "P2",
+  "priority": "P1",
   "rank": 0,
   "severity": "S3",
   "goal": "test_kb_mcp.py's pack assertions pass in a clone or worktree that is behind its upstream: the tests run kb_pack with the kb-copy freshness line switched off or strip it before asserting coverage, and a test named test_kb_mcp_pack_ignores_freshness_banner plants a behind state and proves it",
@@ -14,5 +14,6 @@
       "-k",
       "kb_mcp_pack_ignores_freshness_banner"
     ]
-  }
+  },
+  "notes": "Broke four subagent test runs and one push gate during SP-4udo5jmw while another machine pushed to origin."
 }
