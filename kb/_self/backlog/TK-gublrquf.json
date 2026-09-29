@@ -6,7 +6,7 @@
   "parent": "ST-tobxg7ui",
   "priority": "P1",
   "rank": 2,
-  "goal": "kb_ask.py on route split runs the reader on the has part and the researcher on the lacks part and prints one answer with the kb part cited and the live part labelled 'live docs, not in the kb'; the query-log row records route and both costs; INSUFFICIENT from the reader still escalates, tested with a stubbed claude.",
+  "goal": "On split kb_ask.py runs the reader on the kb has part and the researcher on the kb lacks part, prints one answer (kb part cited, live part labelled 'live docs, not in the kb' with its url), and with -v prints each run's total_cost_usd and their sum; a reader INSUFFICIENT sends the whole question to the researcher and sets `escalated`; the query log row's route is `split`; TestKbAskRoute covers split, the escalation and an error result with a stub `claude` on PATH printing planted JSON results.",
   "checks": [
     {
       "run": [
@@ -15,14 +15,22 @@
         "-k",
         "TestKbAskRoute"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "test_kb_ask"
+      ]
     }
   ],
   "touches": [
     "_tools/kb_ask.py",
-    "_tools/test_kb_ask_route.py",
-    "_tools/agent_bench.py"
+    "_tools/test_kb_ask_route.py"
   ],
   "depends_on": [
     "TK-3iesrs66"
-  ]
+  ],
+  "notes": "agent_bench.route mirrors kb_ask's routing for the benchmarks; it changes in TK-inhsi42b “route-by-verdict benchmark scenario”, not here."
 }

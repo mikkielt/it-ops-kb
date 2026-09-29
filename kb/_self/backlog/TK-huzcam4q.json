@@ -6,7 +6,7 @@
   "parent": "ST-ysk3m7rt",
   "priority": "P1",
   "rank": 1,
-  "goal": "kbfacts.pack and pack_many compute per part the key terms with and without a matching cited line and the route, and render the route, `kb has:` and `kb lacks:` lines on the flagged verdicts only.",
+  "goal": "kbfacts.pack returns `route` (None, `split` or `web`), `has` and `lacks` (the question's own words, not stems, in question order) and renders `route:`, `kb has:` and `kb lacks:` on weak, none and flagged good packs only, after the coverage, check:, freshness: and none sentence lines; pack_many adds one overall route line; _tools/test_route.py (class TestRoute) plants a weak, a none, a check-flagged good and a clean good question and asserts each pack's lines and their position.",
   "checks": [
     {
       "run": [
@@ -15,10 +15,19 @@
         "-k",
         "TestRoute"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "check_line"
+      ]
     }
   ],
   "touches": [
     "_tools/kbfacts.py",
     "_tools/test_route.py"
-  ]
+  ],
+  "notes": "The flagged-good rule is gate `flagged` on ST-ysk3m7rt “kb_pack prints a route and what the kb has and lacks” (provisional: go on with its recommendation). Map stems back to the question's words the way kb_hook.respond does for none today. The check_line check passes now: it guards the existing tests that read `check:` on the pack's second line."
 }

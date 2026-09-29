@@ -6,14 +6,27 @@
   "parent": "ST-hfzdlzai",
   "priority": "P1",
   "rank": 2,
-  "goal": "kb/_self/querylog.md's learn section names the false-none rule.",
+  "goal": "kb/_self/querylog.md's Learn section names the false none rule: which entries, the url comparison and the finding it writes.",
   "checks": [
+    {
+      "run": [
+        "git",
+        "grep",
+        "-q",
+        "-i",
+        "-F",
+        "-e",
+        "false none",
+        "--",
+        "kb/_self/querylog.md"
+      ]
+    },
     {
       "run": [
         "python3",
         "_tools/tests.py",
         "-k",
-        "Cohesion or SelfDocs"
+        "TestCohesion or TestSelfDocs"
       ]
     }
   ],

@@ -7,8 +7,16 @@
   "sprint": "SP-aikswrrl",
   "priority": "P1",
   "rank": 4,
-  "goal": "learn marks a logged lookup routed web whose answer cites a url that a root's _sources.csv holds (after url normalisation) as a false-none miss, written as a lookup_eval candidate like other misses, with no model call and no change to what the query log records or sends to the API.",
+  "goal": "querylog.py learn, with no model call, turns a stored entry with verdict none whose fetches (host and path) name a page a root's _sources.csv holds (compared without scheme, www, query, fragment, trailing slash or `.md`, and without Learn's locale segment) into an eval finding at stage miss whose `expect` is the article with the most lines citing that source, in place of a gap finding; other entries give the findings they give now; capture, redaction, the entry keys and what goes to the API are unchanged.",
   "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "TestLearnFalseNone"
+      ]
+    },
     {
       "run": [
         "python3",
@@ -31,7 +39,9 @@
   ],
   "links": [
     "kb/_self/querylog.md",
-    "_tools/ql_learn.py"
+    "_tools/ql_learn.py",
+    "_tools/ql_distill.py#entry_of",
+    "_tools/agent_bench.py#norm_url"
   ],
-  "notes": "Deterministic; the url set is the answer text already stored in the row. Gate check: this changes no mode, redaction or API payload (always-blocking list); if the work finds it must, stop and raise a blocking gate."
+  "notes": "The store never keeps the answer text (ql_distill.entry_of: Haiku judges the reply, which is never stored), so the urls are the pages the lookup's session fetched: a kb: or kb_pack lookup routed web researches in the session, and its WebFetch and docs-server fetches are stored as host and path (querylog.md, Surfaces). kb_ask.py's own claude -p runs with hooks off (querylog.md, Spool), so its lookups need TK-if7de5pb “kb_ask.py rows carry the kb sources its researcher cites”, behind gate `record`. agent_bench.norm_url is the normaliser to follow, plus a trailing `.md` (S743's url is https://code.claude.com/docs/en/hooks.md). TestLearn and querylog.py check pass now: they guard the existing findings and the store gates."
 }

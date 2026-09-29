@@ -1,0 +1,53 @@
+{
+  "id": "TK-if7de5pb",
+  "kind": "task",
+  "title": "kb_ask.py rows carry the kb sources its researcher cites",
+  "status": "todo",
+  "parent": "ST-hfzdlzai",
+  "priority": "P1",
+  "rank": 2,
+  "goal": "A kb_ask.py run routed web or split writes `sources` on its spool row: the ids of the kb sources whose urls its researcher's answer names (normalised as in TK-mmrsjxct), never the urls or text; distill carries them into the entry and learn treats them like fetched pages; kb/_self/querylog.md's kb_ask row and entry keys name the field; TestLearnFalseNone covers a kb_ask row.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "TestLearnFalseNone"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/querylog.py",
+        "check"
+      ],
+      "match": "problems=0"
+    }
+  ],
+  "touches": [
+    "_tools/kb_ask.py",
+    "_tools/ql_distill.py",
+    "_tools/ql_store.py",
+    "_tools/ql_learn.py",
+    "_tools/test_querylog.py",
+    "kb/_self/querylog.md"
+  ],
+  "depends_on": [
+    "TK-mmrsjxct"
+  ],
+  "gates": [
+    {
+      "id": "record",
+      "kind": "blocking",
+      "question": "May kb_ask.py rows and the stored entries gain `sources`, the kb source ids its researcher's answer cites (ids already in the kb, no urls or answer text), so learn sees a false none from kb_ask.py runs too?",
+      "options": [
+        "Record source ids",
+        "Leave kb_ask.py rows as they are: detect from session fetches only",
+        "Record the answer's urls as host and path, like fetch rows"
+      ],
+      "recommendation": "Record source ids"
+    }
+  ],
+  "notes": "kb_ask.py's claude -p runs with hooks off, so its fetches are never logged (querylog.md, Spool); the only trace of its researcher's pages is its answer, which kb_ask.py reads from the JSON `result` (claude/ci-and-headless.md:72, DOC S1800). The store is committed and pushed to origin, so a new entry field is the operator's call."
+}

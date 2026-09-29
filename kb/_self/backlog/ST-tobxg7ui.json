@@ -7,7 +7,7 @@
   "sprint": "SP-aikswrrl",
   "priority": "P1",
   "rank": 2,
-  "goal": "kb_ask.py sends route web to a lean Sonnet researcher at --effort low with the three docs servers, WebSearch and WebFetch and no kb tools, given the kb lacks line and the three nearest article titles as leads to verify; route split to the Haiku reader for the has part and the same researcher for the lacks part only, costs summed; a clean good pack keeps the reader route and its INSUFFICIENT escalation; --route prints the route and differential.",
+  "goal": "kb_ask.py plans kind `web` for a pack routed web, `split` for one routed split and `good` for a clean good pack. web: one Sonnet researcher (`--model sonnet --effort low`, the LEAN start, `--output-format json`, only the docs servers' config, built-in tools limited to WebSearch and WebFetch with `--tools`, those and the docs tools in `--allowedTools`, no kb server, no mcp__kb), given the question, the kb lacks line and up to three nearest article titles as leads to verify. split: the Haiku reader (no tools, no --effort) answers the kb has part from the pack and the same researcher only the kb lacks part; one answer, the kb part cited, the live part labelled 'live docs, not in the kb' with its url; the cost is the sum of both runs' total_cost_usd, printed with -v. A clean good pack keeps the reader route and its INSUFFICIENT escalation. --route prints the plan with the route, kb has and kb lacks lines.",
   "checks": [
     {
       "run": [
@@ -20,11 +20,10 @@
     {
       "run": [
         "python3",
-        "_tools/kb_ask.py",
-        "--route",
-        "How do I run the Kubernetes Cluster Autoscaler on AWS EKS with spot instances?"
-      ],
-      "match": "web"
+        "_tools/tests.py",
+        "-k",
+        "test_kb_ask"
+      ]
     }
   ],
   "depends_on": [
@@ -34,5 +33,5 @@
     "_tools/kb_ask.py#plan",
     "_tools/kb_ask.py#claude_argv"
   ],
-  "notes": "Operator answers: researcher = sonnet alias (Sonnet 5.5 now), --effort low, docs servers + WebSearch/WebFetch, no kb tools, lean start (LEAN). Keep the INSUFFICIENT escalation and test it."
+  "notes": "Operator answers: researcher = sonnet alias, --effort low, docs servers + WebSearch/WebFetch, no kb tools, lean start (LEAN); keep the INSUFFICIENT escalation and test it. Facts: `--output-format json` gives `result`, `total_cost_usd`, `modelUsage`, `is_error` (claude/ci-and-headless.md:72, :74, DOC S1800, S-fmj24q2u); error subtypes carry `errors` in place of `result` and still the cost (:75, DOC S-fmj24q2u, S-isqfh6pr); two processes give two results a router adds (:80, DER S1800, S-isqfh6pr); `--effort low` is the lever for a lean Sonnet 5.5 run and Haiku 4.5 has no effort (:81, :84, DOC S-ezqg74ki; answer QK-lookup-router-s-result-fields-effort); `--allowedTools` does not restrict which tools exist, `--tools` does (claude/cli-flags.csv:10, S1824); WebSearch returns titles and urls only, WebFetch is lossy, and -p needs both in `--allowedTools` (agents/doc-lookup-sources.md:69-73, DOC S-3yod3u7q, DER). The Mintlify servers also offer query_docs_filesystem (agents/doc-lookup-sources.md:67, DOC S2182); never allow submit_feedback (AGENTS.md). The kb_ask row gets route `web` or `split` and no cost field: distill keeps only ENTRY_KEYS (ql_store.py), and storing cost would change what the store records. No `kb_ask.py --route` check: every kb_ask.py run writes a query log row, so a check would log into the operator's spool on each `done`. test_kb_ask (existing) passes now and guards test_kb_ask_routes and the row test."
 }

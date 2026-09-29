@@ -7,8 +7,27 @@
   "sprint": "SP-aikswrrl",
   "priority": "P1",
   "rank": 6,
-  "goal": "benchmarks.py run route-by-verdict measures kb_ask.py against the bare Sonnet web arm on the none questions (s5_none, o1_offkb), the flagged ones (s8_falsegood2, h2_applock) and clean covered ones (s1_fact, s3_multi), and its report section shows: none within 10% of the bare arm's cost, flagged below both the kb Sonnet arm and the bare arm, covered on the reader route as before.",
+  "goal": "`benchmarks.py run route-by-verdict` runs kb_ask.py's routing (agent_bench.route, following kb_ask.plan's web and split routes) against the bare Sonnet web arm and the kb Sonnet arm on s5_none, o1_offkb, s8_falsegood2, h2_applock, s1_fact and s3_multi, with full model names, and benchmarks.csv holds its record; its report section gives per case (the route each question's pack takes on the run's commit: web, split, good) each arm's mean cost and time, the spend, and says for each case whether the operator's bar holds: web within 10% of the bare arm's cost, split below both other arms, good on the reader route as before.",
   "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/benchmarks.py",
+        "list"
+      ],
+      "match": "^route-by-verdict\\s"
+    },
+    {
+      "run": [
+        "git",
+        "grep",
+        "-q",
+        "-e",
+        "^route-by-verdict,",
+        "--",
+        "kb/_self/reports/benchmarks.csv"
+      ]
+    },
     {
       "run": [
         "python3",
@@ -22,18 +41,16 @@
         "python3",
         "_tools/tests.py",
         "-k",
-        "test_benchmarks"
+        "test_benchmarks or test_agent_bench"
       ]
     }
   ],
   "depends_on": [
     "ST-tobxg7ui",
-    "ST-2eiobdm4",
-    "ST-hfzdlzai",
     "ST-uuaooyrm"
   ],
   "links": [
     "kb/_self/reports/benchmarks.md"
   ],
-  "notes": "Operator budget: paid runs up to $10 for this story. Fewer than 10% over bare on none is the bar the operator set; a miss is a finding for the review, not a reason to change the bar."
+  "notes": "Operator budget: paid runs up to $10 for this story. Within 10% of bare on none is the bar the operator set; a miss is a finding for the review (a bug), not a reason to change the bar. The case of each question is the route its pack takes on the run's commit, not a fixed label: s8_falsegood2 packs `none` on HEAD now, not a flagged good. The kb Sonnet arm follows the server instructions, hence the dependency on ST-uuaooyrm; the kb: hook and the query log are not measured here. `--model` aliases move, so a reproducible benchmark pins the full name (claude/ci-and-headless.md:85, DOC S-ezqg74ki). The last two checks pass now: they guard the report and the benchmark tests."
 }

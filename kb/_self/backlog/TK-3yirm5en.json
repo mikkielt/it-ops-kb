@@ -1,0 +1,57 @@
+{
+  "id": "TK-3yirm5en",
+  "kind": "task",
+  "title": "Document the none rule in kb/_self",
+  "status": "todo",
+  "parent": "ST-uuaooyrm",
+  "priority": "P1",
+  "rank": 2,
+  "goal": "kb/_self/plugin.md, kb/_self/design.md and kb/_self/alternatives.md state the none rule as the new texts do: what the kb has and lacks, then the live docs for the lacking part, labelled.",
+  "checks": [
+    {
+      "run": [
+        "git",
+        "grep",
+        "-q",
+        "-F",
+        "-e",
+        "none -> say the kb does not cover it",
+        "--",
+        "kb/_self/plugin.md"
+      ],
+      "exit": 1
+    },
+    {
+      "run": [
+        "git",
+        "grep",
+        "-q",
+        "-F",
+        "-e",
+        "`none` means say so",
+        "-e",
+        "`none` means the agent adds nothing",
+        "--",
+        "kb/_self/design.md",
+        "kb/_self/alternatives.md"
+      ],
+      "exit": 1
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "TestCohesion or TestSelfDocs"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/plugin.md",
+    "kb/_self/design.md",
+    "kb/_self/alternatives.md"
+  ],
+  "depends_on": [
+    "TK-oldp5xjn"
+  ]
+}

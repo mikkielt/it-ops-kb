@@ -6,8 +6,19 @@
   "parent": "ST-fhlyypxw",
   "priority": "P1",
   "rank": 2,
-  "goal": "The scenario's rows are in benchmarks.csv, the section says what they show, and kb/_self/design.md and token-efficiency.md cite it.",
+  "goal": "benchmarks.csv holds a route-by-verdict record from one `benchmarks.py run route-by-verdict` whose spend is within $10; the section says per case whether the bar holds; kb/_self/design.md and kb/_self/token-efficiency.md cite the section, and README.md's numbers agree with the results file.",
   "checks": [
+    {
+      "run": [
+        "git",
+        "grep",
+        "-q",
+        "-e",
+        "^route-by-verdict,",
+        "--",
+        "kb/_self/reports/benchmarks.csv"
+      ]
+    },
     {
       "run": [
         "python3",
@@ -25,5 +36,6 @@
   ],
   "depends_on": [
     "TK-inhsi42b"
-  ]
+  ],
+  "notes": "Spend: the 2026-09-28 headless record's per-run cost means run from $0.03 (router, covered) to $0.19 (web-sonnet, covered) (kb/_self/reports/benchmarks.csv), so 6 questions x 3 arms x 3 reps (54 runs) can reach about $10 and `--reps 2` (36 runs) stays near $7. A bar missed is filed as a bug for the review."
 }

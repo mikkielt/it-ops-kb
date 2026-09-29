@@ -6,20 +6,43 @@
   "parent": "ST-2eiobdm4",
   "priority": "P1",
   "rank": 1,
-  "goal": "kb_hook.py adds the differential instruction for route web and split and changes nothing for a clean good pack; tests cover the three cases with planted packs.",
+  "goal": "kb_hook.py adds the differential instruction for route web and split and changes nothing for a clean good pack or kb+:; its docstring, kb/_self/tools.md and kb/_self/token-efficiency.md (none no longer costs one line with 'say so') describe it; test_kb.py's class TestKbHookRoute covers web, split, flagged good and clean good with planted packs and asserts the context length under 10,000 characters; test_kb_hook's none case follows the new context.",
   "checks": [
     {
       "run": [
         "python3",
         "_tools/tests.py",
         "-k",
-        "TestKbHook"
+        "TestKbHookRoute"
+      ]
+    },
+    {
+      "run": [
+        "git",
+        "grep",
+        "-q",
+        "-F",
+        "-e",
+        "say so and add nothing from memory",
+        "--",
+        "_tools/kb_hook.py",
+        "kb/_self/token-efficiency.md"
+      ],
+      "exit": 1
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "kb_hook"
       ]
     }
   ],
   "touches": [
     "_tools/kb_hook.py",
     "_tools/test_kb.py",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "kb/_self/token-efficiency.md"
   ]
 }

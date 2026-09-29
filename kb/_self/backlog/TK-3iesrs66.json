@@ -1,12 +1,12 @@
 {
   "id": "TK-3iesrs66",
   "kind": "task",
-  "title": "Web and split routes in kb_ask.plan and its argv",
+  "title": "Web route in kb_ask.plan, its argv and its run",
   "status": "draft",
   "parent": "ST-tobxg7ui",
   "priority": "P1",
   "rank": 1,
-  "goal": "kb_ask.plan returns kind web or split from the pack's route; claude_argv builds the web researcher's argv (no mcp__kb); the researcher's prompt names the lacks line and the nearest articles as leads; tests assert each argv and prompt with planted packs, and that a clean good plan and argv are unchanged.",
+  "goal": "kb_ask.plan returns kind web or split from the pack's route; claude_argv builds the researcher of ST-tobxg7ui “kb_ask.py routes by the pack's route line” (no mcp__kb, no kb server, `--tools` WebSearch,WebFetch, `--output-format json`) and stays callable as claude_argv(model, tools) for agent_bench.route; a web run prints the result's `result` (an error result's `errors`, exit 1); --route prints `kind=web` or `kind=split` with the route, kb has and kb lacks lines; _tools/test_kb_ask_route.py (class TestKbAskRoute) asserts each argv and prompt from planted packs, that the reader argv has no --effort, and that a clean good plan and argv are unchanged; test_kb_ask_routes' weak case expects kind=split.",
   "checks": [
     {
       "run": [
@@ -15,10 +15,19 @@
         "-k",
         "TestKbAskRoute"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "test_kb_ask"
+      ]
     }
   ],
   "touches": [
     "_tools/kb_ask.py",
-    "_tools/test_kb_ask_route.py"
+    "_tools/test_kb_ask_route.py",
+    "_tools/test_kb.py"
   ]
 }

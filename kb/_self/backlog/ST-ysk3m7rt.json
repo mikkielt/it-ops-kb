@@ -7,7 +7,7 @@
   "sprint": "SP-aikswrrl",
   "priority": "P1",
   "rank": 1,
-  "goal": "rag.py pack, pack -q and kb_pack print, under every weak or none verdict and every good verdict that carries a check: line or lacking terms, a `route: split|web` line, a `kb has:` line (the parts or key words with a cited line) and a `kb lacks:` line (the parts or key words with none), computed without a model; a clean good pack (no check: line, nothing lacking) prints byte for byte what it printed before and no route line.",
+  "goal": "rag.py pack, pack -q and kb_pack print, on every weak or none pack and every flagged good pack (a check: line, or a question word nowhere in the kb), three lines after the coverage, check:, freshness: and none sentence lines and before the first article: `route: web` (none) or `route: split` (weak, flagged good, and a near-miss none), `kb has:` (the question's own words the best article matches) and `kb lacks:` (its informative words the best article does not match), computed without a model; a pack of several parts starts with one overall route line (web when every part routes web, else split when any part routes); a clean good pack prints what it printed before, with no route line.",
   "checks": [
     {
       "run": [
@@ -21,24 +21,55 @@
       "run": [
         "python3",
         "_tools/rag.py",
-        "eval"
+        "pack",
+        "How do I run the Kubernetes Cluster Autoscaler on AWS EKS with spot instances?"
       ],
-      "match": "questions=(\\d+) passed=\\1 "
+      "match": "^route: web$"
     },
     {
       "run": [
         "python3",
         "_tools/rag.py",
         "pack",
-        "How do I run the Kubernetes Cluster Autoscaler on AWS EKS with spot instances?"
+        "Show T-SQL that takes an exclusive session-owned application lock without waiting, fails if it is held, and releases it."
       ],
-      "match": "(?m)^route: web"
+      "match": "^route: split$"
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "check_line"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/rag.py",
+        "eval"
+      ],
+      "match": "questions=(\\d+) passed=\\1 "
+    }
+  ],
+  "gates": [
+    {
+      "id": "flagged",
+      "kind": "provisional",
+      "question": "Which good packs are flagged and route split instead of the Haiku reader?",
+      "options": [
+        "A check: line or a word nowhere in the kb (3 of 170 eval good packs today)",
+        "Also any key word the best article does not match (3 plus 38 of 170 today)",
+        "Only a check: line (3 of 170)"
+      ],
+      "recommendation": "A check: line or a word nowhere in the kb (3 of 170 eval good packs today)"
     }
   ],
   "links": [
     "kb/_self/tools.md",
     "kb/_self/reports/benchmarks.md",
-    "_tools/kbfacts.py#pack"
+    "_tools/kbfacts.py#pack",
+    "kb/public/agents/hybrid-retrieval.md:110"
   ],
-  "notes": "Operator answers: pack stays model-free, stdlib only; no new always-on tokens (the route and has/lacks lines print only on the flagged verdicts, never in server instructions); clean good unchanged. Route values: `web` for none, `split` for weak and for a flagged good; a clean good prints no route line (reader)."
+  "notes": "Operator answers: pack stays model-free, stdlib only; no new always-on tokens (the lines print only on routed packs, never in server instructions or tool descriptions); clean good unchanged. The last two checks pass now on purpose: they guard the existing check: line tests (test_kb.py asserts `check:` on the pack's second line) and the lookup eval, which the new lines must not break. Routing on a lexical verdict has the shape of CRAG's corpus-then-web fallback, but the papers' gains do not transfer as numbers (agents/hybrid-retrieval.md:108-110, DOC S-dghvtpkr, DER S-5y6g7iij, S-dghvtpkr, S-yknt2enl). Measured on HEAD over lookup_eval.csv: 170 of the 174 rows expected good pack good; 3 carry a check: line, 0 a word nowhere in the kb, 38 a known word the best article does not match; which of these count as flagged is gate `flagged`."
 }
