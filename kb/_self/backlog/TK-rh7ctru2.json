@@ -2,7 +2,7 @@
   "id": "TK-rh7ctru2",
   "kind": "task",
   "title": "git.md names kbgit.py sync --push as the one autonomous write path",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-6dszsvk5",
   "priority": "P2",
   "rank": 1,
@@ -22,5 +22,6 @@
   ],
   "depends_on": [
     "TK-m6ol5dol"
-  ]
+  ],
+  "claimed_by": "worker-rh7ctru2"
 }

@@ -2,7 +2,7 @@
   "id": "TK-63g43eqz",
   "kind": "task",
   "title": "kb-sprint dispatches item workers to kb-worker",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-ry4squft",
   "priority": "P1",
   "rank": 1,
@@ -24,5 +24,6 @@
   ],
   "depends_on": [
     "TK-cwvnhup5"
-  ]
+  ],
+  "claimed_by": "worker-63g43eqz"
 }

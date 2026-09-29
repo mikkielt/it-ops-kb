@@ -2,7 +2,7 @@
   "id": "TK-y7sdxuaa",
   "kind": "task",
   "title": "red-pipeline computes a failure fingerprint and deduplicates on it",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-47hdgt5a",
   "priority": "P2",
   "rank": 0,
@@ -20,5 +20,6 @@
   "touches": [
     "_tools/backlog.py",
     "_tools/test_backlog.py"
-  ]
+  ],
+  "claimed_by": "worker-y7sdxuaa"
 }
