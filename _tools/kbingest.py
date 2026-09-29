@@ -197,6 +197,13 @@ def tree(repo, commit):
     return entries
 
 
+def symlinks(repo, commit):
+    """{path} of the entries at the commit that git stores as symbolic links (mode 120000)."""
+    out = git(repo, "ls-tree", "-r", "-z", "--full-tree", commit).stdout
+    return {rec.split(b"\t", 1)[1].decode("utf-8", "surrogateescape")
+            for rec in out.split(b"\0") if rec.startswith(b"120000 ")}
+
+
 def attributes(repo, commit, paths):
     """({path: {attr: info}}, where): the attributes at the commit, or of the working tree when this git has no
     `check-attr --source` (before 2.40)."""
@@ -934,16 +941,26 @@ def run_tool(args, cwd, env, timeout):
 class MapCtx:
     """What a mapper sees: the worktree ROOT, `run`/`json` for commands, `add_*` and `note` for results."""
 
-    def __init__(self, root, env, timeout, language):
+    def __init__(self, root, env, timeout, language, links=()):
         self.root, self.env, self.timeout, self.language = Path(root), env, timeout, language
+        self.links = frozenset(links)  # paths git stores as symbolic links, however the checkout wrote them
         self.packages, self.imports, self.entry_points, self.notes = [], [], [], []
         self._dropped = 0
+        spellings = {str(self.root), self.root.as_posix()}
+        try:
+            real = self.root.resolve()
+            spellings |= {str(real), real.as_posix()}
+        except OSError:
+            pass
+        self._root_spellings = sorted(spellings, key=len, reverse=True)  # on Windows a root has several
 
     def note(self, text):
         if len(self.notes) >= NOTE_LIMIT:
             self._dropped += 1
         else:
-            self.notes.append(text.replace(str(self.root), "<worktree>"))
+            for s in self._root_spellings:
+                text = text.replace(s, "<worktree>")
+            self.notes.append(text)
 
     def finish(self):
         if self._dropped:
@@ -960,9 +977,10 @@ class MapCtx:
         self.entry_points.append({"language": self.language, "path": path, "kind": kind, **({"name": name} if name else {})})
 
     def readable(self, rel):
-        """The file REL of the worktree, or None (with a note) when it is a symbolic link or not a file."""
+        """The file REL of the worktree, or None (with a note) when it is a symbolic link or not a file. A link counts
+        as one from git's mode too: with core.symlinks=false (Windows) git checks it out as a plain file."""
         p = self.root / rel
-        if p.is_symlink() or not p.is_file():
+        if rel in self.links or p.is_symlink() or not p.is_file():
             self.note(f"{rel}: not a regular file in the worktree (a symbolic link?), not read")
             return None
         return p
@@ -1137,7 +1155,7 @@ class PythonMapper(Mapper):
 
     def pyproject_scripts(self, ctx):
         p = ctx.root / "pyproject.toml"
-        if not p.is_file() or p.is_symlink():
+        if "pyproject.toml" in ctx.links or not p.is_file() or p.is_symlink():
             return
         try:
             import tomllib
@@ -1541,6 +1559,7 @@ def build_map(repo, commit, rev, rows, langs=None, timeout=MAP_TIMEOUT, base_env
     note. ROWS is `classify`'s result: only kept files are mapped."""
     env = scrub_env(base_env)
     kept = [(p, k) for p, verdict, k, _secret in rows if verdict == "keep"]
+    links = symlinks(repo, commit)
     doc = {"format": MAP_FORMAT, "repo": Path(repo).name, "commit": commit, "rev": rev, "tools": {}, "packages": [],
            "imports": [], "entry_points": [], "notes": []}
     with scratch_worktree(repo, commit) as root:
@@ -1550,7 +1569,7 @@ def build_map(repo, commit, rev, rows, langs=None, timeout=MAP_TIMEOUT, base_env
             files = m.files(kept)
             if not files:
                 continue
-            ctx = MapCtx(root, env, timeout, m.language)
+            ctx = MapCtx(root, env, timeout, m.language, links)
             exe, inside = tool_exe(m.tool, env, root)
             if exe is None:
                 ctx.note(f"toolchain not installed: {m.name} ({len(files)} {m.language} files not mapped)")

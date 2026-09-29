@@ -398,6 +398,32 @@ def test_kbingest_map_notes_are_capped():
     assert ctx.notes[0] == "n0 <worktree>/x"  # the scratch path never reaches the map
 
 
+def test_kbingest_map_masks_every_spelling_of_the_worktree(tmp_path):
+    ctx = kbingest.MapCtx(tmp_path, {}, 1, "fake")
+    ctx.note(f"a {tmp_path}{os.sep}x b {tmp_path.as_posix()}/y")
+    assert ctx.notes == ["a <worktree>" + os.sep + "x b <worktree>/y"]
+
+
+@requires_git
+def test_kbingest_map_git_symlink_checked_out_as_file_is_not_read(tmp_path):
+    """git with core.symlinks=false (Windows) writes a link as a plain file holding its target: the map still
+    treats the path as a link, from git's mode 120000, whatever the checkout wrote."""
+    r = Repo(tmp_path / "plainlinks")
+    Path(r.path).mkdir()
+    r.git("init", "-q", "-b", "main")
+    r.git("config", "core.symlinks", "false")
+    r.write("ok.py", "import os\n")
+    (tmp_path / "target.txt").write_text("../outside.py", encoding="utf-8")
+    blob = r.git("hash-object", "-w", str(tmp_path / "target.txt")).strip()
+    r.git("update-index", "--add", "--cacheinfo", f"120000,{blob},link.py")
+    r.git("add", "ok.py")
+    r.git("commit", "-q", "-m", "init")
+    assert kbingest.symlinks(r.path, "HEAD") == {"link.py"}
+    ctx = kbingest.MapCtx(tmp_path, {}, 1, "python", {"link.py"})
+    (tmp_path / "link.py").write_text("import stolen_module\n", encoding="utf-8")
+    assert ctx.readable("link.py") is None and ctx.notes[0].startswith("link.py: not a regular file")
+
+
 @requires_git
 def test_kbingest_map_refusals(pyrepo, tmp_path):
     kb = Path(kbingest.kbcommon.KB_DIR)
