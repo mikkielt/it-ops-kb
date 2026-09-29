@@ -2,7 +2,7 @@
   "id": "TK-e3ouzras",
   "kind": "task",
   "title": "code/* branch pipelines run the gate jobs without a click",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-vcf3r6qv",
   "priority": "P2",
   "rank": 0,
@@ -39,5 +39,19 @@
     }
   ],
   "notes": "The test reads the YAML as text: no new dependency. kb-trailers' rule ($CI_PIPELINE_SOURCE == \"push\" && $CI_COMMIT_BRANCH) matches a code/* push. .github/workflows/kb.yml runs every job on every pushed branch already, so it needs no change.",
-  "claimed_by": "mac-first"
+  "evidence": {
+    "commit": "0ea09b504ac2cbfbb0ea45d590767515e23ae908",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "TestCiCodeBranch"
+        ],
+        "exit": 0,
+        "sha256": "b3665f2f552f7b49"
+      }
+    ]
+  }
 }
