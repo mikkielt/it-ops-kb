@@ -2,7 +2,7 @@
   "id": "TK-5vfbfjht",
   "kind": "task",
   "title": "The slow sync and query-log tests fit the Windows CI budget",
-  "status": "todo",
+  "status": "doing",
   "parent": "BG-ovulgaal",
   "priority": "P1",
   "rank": 2,
@@ -24,5 +24,6 @@
   "depends_on": [
     "TK-kmunpvxo"
   ],
-  "notes": "Needs a Windows machine. A local Windows run (Windows 11, cp1250 locale, Python 3.14.7, uv 0.12.19, Git for Windows 2.55, 8 xdist workers) at 3ff06b7: no test hung; the suite took 895 s. faulthandler stacks of the three tests past 300 s, all waiting in subprocess.run on a child pipeline in a temp repo: test_sync.py:127 scenario (conftest.py:148 kbgit), test_querylog.py:1941 applied, test_querylog_e2e.py:365 scenario (:221 distill, :206 run, test_querylog.py:2339 run_here). test_child_survives_a_kill_on_close_job passes there. The CI job timeout is TK-xwwg2ozp."
+  "notes": "Needs a Windows machine. A local Windows run (Windows 11, cp1250 locale, Python 3.14.7, uv 0.12.19, Git for Windows 2.55, 8 xdist workers) at 3ff06b7: no test hung; the suite took 895 s. faulthandler stacks of the three tests past 300 s, all waiting in subprocess.run on a child pipeline in a temp repo: test_sync.py:127 scenario (conftest.py:148 kbgit), test_querylog.py:1941 applied, test_querylog_e2e.py:365 scenario (:221 distill, :206 run, test_querylog.py:2339 run_here). test_child_survives_a_kill_on_close_job passes there. The CI job timeout is TK-xwwg2ozp.",
+  "claimed_by": "windows-laptop"
 }
