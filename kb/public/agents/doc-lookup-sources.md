@@ -2,8 +2,8 @@
 topic: agents/doc-lookup-sources
 priority: P2
 applies_to: "stable (GA) MCP servers and public APIs that return current official documentation for this kb's domains, as of 2026-09-25"
-retrieved_utc: 2026-09-27
-sources: [S2176, S2177, S2178, S2179, S2180, S2181, S2182, S2183, S2184, S2185, S2186, S2187, S2188, S2189, S2190, S2191, S2192, S2193, S2194, S2195, S2196, S2197, S1809, S-el34o4bb, S-eutmp4xp, S-j7xzzcxj, S-yuwxbqz3, S-b6tooge2, S-ybuoluc4, S-rgy4dvjf, S452, S717, S-fvspfpxd, S-pxvdwitn, S-gupervu4, S-ke227men, S-fqi6xbbc, S-autbwi4y, S-eluaxz73, S-ekcs6zhr]
+retrieved_utc: 2026-09-29
+sources: [S2176, S2177, S2178, S2179, S2180, S2181, S2182, S2183, S2184, S2185, S2186, S2187, S2188, S2189, S2190, S2191, S2192, S2193, S2194, S2195, S2196, S2197, S1809, S-el34o4bb, S-eutmp4xp, S-j7xzzcxj, S-yuwxbqz3, S-b6tooge2, S-ybuoluc4, S-rgy4dvjf, S452, S717, S-fvspfpxd, S-pxvdwitn, S-gupervu4, S-ke227men, S-fqi6xbbc, S-autbwi4y, S-eluaxz73, S-ekcs6zhr, S-3yod3u7q, S-ehhvgjky, S742, S1824]
 status: complete
 ---
 
@@ -62,6 +62,15 @@ reading the current page.
 - Anthropic's Commercial Terms grant neither party rights to the other's content or intellectual property except as expressly stated. [DOC S-pxvdwitn]
 - No open licence was found for Anthropic's docs (code.claude.com, platform.claude.com), so fetched Anthropic text is summarized in this kb, with quotes of 25 words or fewer, not stored verbatim. [DER S-fvspfpxd, S-pxvdwitn]
 - Microsoft publishes security baselines through the Microsoft Download Center as the Security Compliance Toolkit zip (GPO backups, reports, spreadsheets, scripts), not through an API. [DOC S-eluaxz73] Red Hat's Ansible development tools MCP server is a Technology Preview aimed at playbook development, not a documentation lookup service. [DOC S-ekcs6zhr] No stable (GA) docs MCP server or API for Windows security baselines (SCT, DISA STIG, CIS) or for Ansible docs was found on 2026-09-27. [DER S-eluaxz73, S-ekcs6zhr: distribution channels read; absence of a GA docs server]
+
+### Live search tools a routed lookup can call (checked 2026-09-29)
+- Mintlify's generated MCP server has three tools: search (snippets with titles and links), query-docs-filesystem (shell-style reads of the site's virtual filesystem, including reads of several pages in one call) and submit-feedback; search takes optional `version` and `language` filters, and the skill.md files are exposed as MCP resources. [DOC S2182]
+- Microsoft Learn's `microsoft_docs_search` returns up to 10 chunks of at most 500 tokens each with title, url and excerpt, `microsoft_code_sample_search` up to 20 samples (optional `language` filter), and `microsoft_docs_fetch` a whole page as Markdown, so a search adds at most about 5,000 tokens of tool result. [DOC S2177] [DER S2177: 10 x 500 tokens]
+- Claude Code's `WebSearch` tool runs a query on Anthropic's web search backend and returns titles and urls only; it does not fetch the pages, so reading one takes a `WebFetch` call. One call may issue up to eight backend searches. [DOC S-3yod3u7q]
+- A Claude Code session may make at most 200 `WebSearch` calls, counted across subagents (v2.1.212 or later, `CLAUDE_CODE_MAX_WEB_SEARCHES_PER_SESSION` raises it); permission rules for `WebSearch` take no specifier, and the tool is available on the Claude API but not on Amazon Bedrock. [DOC S-3yod3u7q]
+- `WebFetch` asks for a url and a prompt and runs the prompt over the page with a small fast model, so it is lossy; it truncates large pages, caches a response 15 minutes, fails a page not downloaded within five minutes (v2.1.268 adds `CLAUDE_CODE_WEBFETCH_DEADLINE_MS`) and refuses hostnames without a dot. [DOC S-3yod3u7q]
+- In Manual and `acceptEdits` permission modes `WebFetch` prompts before a fetch except for a built-in set of preapproved documentation domains and domains a rule allows; the page does not list that set, and an explicit `WebFetch(domain:...)` rule overrides it. [DOC S-3yod3u7q] [UNK: whether Microsoft Learn or the Claude and MCP docs hosts are in the preapproved set]
+- `WebSearch` and `WebFetch` both need approval in a permission-prompting mode, and `-p` has no terminal to answer, so a headless researcher lists them in `--allowedTools` (which allows them without prompting and does not restrict which tools exist) or runs under a mode that skips the prompt. [DER S-3yod3u7q, S742, S1824: the prompt table and the `-p` no-TTY rule]
 
 ## Reference
 - `doc-lookup-sources.csv`: ranked table with endpoint, auth, tools, covered domains and status evidence.

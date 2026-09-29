@@ -2,8 +2,8 @@
 topic: claude/ci-and-headless
 priority: P2
 applies_to: "Claude Code v2.1.x (code.claude.com docs, retrieved 2026-09-26)"
-retrieved_utc: 2026-09-26
-sources: [S1800, S1801, S1802, S-32ilsmsf, S-l6l42j6e, S-pilcrlei, S1824]
+retrieved_utc: 2026-09-29
+sources: [S1800, S1801, S1802, S-32ilsmsf, S-l6l42j6e, S-pilcrlei, S1824, S-isqfh6pr, S-fmj24q2u, S-fksbud2r, S-ezqg74ki, S-eu3n3hyf, S2131, S-ehhvgjky, S2130]
 status: complete
 ---
 
@@ -67,6 +67,25 @@ article's `claude -p` exit-code/`--output-format` summary or its runtime-compari
 - Setting only `ANTHROPIC_BASE_URL` (no gateway credential) still routes requests through the gateway but does not replace a saved claude.ai subscription login — that login's usage limits and billing still apply; a full swap needs a gateway credential variable or `apiKeyHelper`, after which subscription usage limits no longer apply and billing is per-token to whoever owns the forwarded credential. [DOC S-pilcrlei]
 - A gateway that forwards Claude API traffic on to Anthropic must forward the OAuth capability in the `anthropic-beta` header for a subscription-backed session to keep working through it. [DOC S-pilcrlei]
 - Anthropic does not endorse, maintain, or audit third-party gateway products and does not support routing Claude Code to non-Claude models through any gateway. [DOC S-pilcrlei]
+
+### Result payload, cost fields, effort and price for scripted runs
+- `claude -p --output-format json` returns structured JSON with the text in `result`, the session id and metadata; the docs name `total_cost_usd` and a per-model cost breakdown among them, and `--json-schema` adds a `structured_output` field. [DOC S1800]
+- The Python Agent SDK documents `model_usage` keys in camelCase because it passes the value through unmodified from the underlying CLI process, so the CLI's JSON carries `modelUsage` with those keys; the docs do not print the CLI's JSON object as a whole, so its field-for-field equality with the SDK result message is not stated. [DOC S-fksbud2r] [UNK: equality with the SDK type not stated]
+- The SDK's success result message has `type: "result"`, `subtype: "success"`, `is_error`, `num_turns`, `result` (string), `stop_reason`, `duration_ms`, `duration_api_ms`, `total_cost_usd`, `usage`, `modelUsage` (model name to per-model usage), `permission_denials`, `session_id`, optional `structured_output` and `terminal_reason`. [DOC S-fmj24q2u]
+- The error result subtypes are `error_max_turns`, `error_during_execution`, `error_max_budget_usd` and `error_max_structured_output_retries`; their type has an `errors` array in place of `result` but still carries `num_turns`, `total_cost_usd`, `usage` and `modelUsage`. A crashed process's final `error_during_execution` result may carry them zeroed. [DOC S-fmj24q2u, S-isqfh6pr]
+- `usage` (keys `input_tokens`, `output_tokens`, `cache_creation_input_tokens`, `cache_read_input_tokens`) counts only the main agent loop and leaves out subagents; `total_cost_usd` and `modelUsage` include subagent requests, so whole-run accounting uses those two. [DOC S-fksbud2r, S-isqfh6pr]
+- Each `modelUsage` entry has `inputTokens`, `outputTokens`, `cacheReadInputTokens`, `cacheCreationInputTokens`, `webSearchRequests`, `costUSD`, `contextWindow` and `maxOutputTokens`; `thinkingTokens` (already inside `outputTokens`), `canonicalModel` and `provider` appear only when recorded. It covers the main loop, subagents and internal calls such as compaction, and leaves out the permission classifier and token-counting requests. [DOC S-fksbud2r]
+- `total_cost_usd` and `costUSD` are client-side estimates from a price table bundled at build time, can drift from the bill, and per-request fees such as web search are not part of the data-residency multiplier; the docs say not to bill anyone from them. [DOC S-isqfh6pr]
+- A run that continues an earlier conversation with `--continue` or `--resume` reports the whole conversation's total, earlier runs' spend included. [DOC S1800]
+- Two separate `claude -p` processes therefore give two result objects, each with its own `total_cost_usd`, and a router that runs a reader and a researcher sums the two; a `--resume` would instead report the running conversation total. [DER S1800, S-isqfh6pr: separate sessions vs the resume total]
+- Effort levels in Claude Code: Sonnet 5.5, Opus 5.5, Sonnet 5, Opus 5, Opus 4.8 and Opus 4.7 accept `low`, `medium`, `high`, `xhigh` and `max`; Opus 4.6 and Sonnet 4.6 accept `low`, `medium`, `high` and `max`; a model not listed does not support effort, and an unsupported level runs as the highest supported one at or below it. [DOC S-ezqg74ki]
+- Effort controls adaptive reasoning: lower effort is described as faster and cheaper for straightforward tasks; the scale is calibrated per model, so a level name is not the same amount of reasoning across models. [DOC S-ezqg74ki]
+- In Claude Code, `--effort` (or `CLAUDE_CODE_EFFORT_LEVEL`) is the first source of the session's effort, ahead of saved settings and the model default; the model default is `high` except `medium` for Opus 5.5 and Sonnet 5.5 and `xhigh` for Opus 4.7. The models overview lists Sonnet 5.5's default effort as `high`; that page describes the model, the Claude Code page describes the CLI's default. [DOC S-ezqg74ki, S-eu3n3hyf]
+- Thinking cannot be turned off on Sonnet 5.5 (nor Opus 5.5 or the Fable models): the model decides per step how much to think from the effort level, so `--effort low` is the lever for a lean run there. An organization's effort cap clamps a higher `--effort` silently under `json` and `stream-json` output. [DOC S-ezqg74ki]
+- `--model` takes an alias or a full name; `sonnet` is the latest Sonnet, `haiku` is described only as "the fast and efficient Haiku model" without a version, and aliases move over time, so a reproducible benchmark pins the full model name. [DOC S-ezqg74ki]
+- Claude API list prices per million tokens: Sonnet 5.5 $2 input, $10 output, $2.50 (5-minute) or $4 (1-hour) cache write, $0.20 cache read; Haiku 4.5 $1 input, $5 output, $1.25 or $2 cache write, $0.10 cache read. [DOC S2131]
+- Web search on the Claude API costs $10 per 1,000 searches on top of token costs; results retrieved in a conversation count as input tokens; a search that errors is not billed. [DOC S2131, S-ehhvgjky]
+- A cached prefix must reach the model's minimum: 512 tokens for Sonnet 5.5, 4,096 for Haiku 4.5 (see `agents/agent-caching`), so a lean reader prompt under 4,096 tokens cannot be cached on Haiku 4.5 at all. [DER S2130: minimums compared with a prompt size chosen by the caller]
 
 ## Reference
 

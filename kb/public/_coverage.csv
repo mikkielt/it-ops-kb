@@ -25,12 +25,12 @@ agents/azure-openai-deployments,P2,complete,agents/azure-openai-deployments.md;a
 agents/coding-agents-mcp,P2,complete,agents/coding-agents-mcp.md,9
 agents/content-safety-prompt-shields,P2,complete,agents/content-safety-prompt-shields.md;agents/content-safety-limits.csv,13
 agents/copilot-studio-mcp-client,P2,partial,agents/copilot-studio-mcp-client.md,14
-agents/doc-lookup-sources,P2,complete,agents/doc-lookup-sources.md;agents/doc-lookup-sources.csv,40
+agents/doc-lookup-sources,P2,complete,agents/doc-lookup-sources.md;agents/doc-lookup-sources.csv,44
 agents/docs-maintenance-agents,P2,complete,agents/docs-maintenance-agents.md,29
 agents/genai-telemetry,P2,complete,agents/genai-telemetry.md,5
 agents/github-copilot-admin,P2,complete,agents/github-copilot-admin.md,12
 agents/headless-agent-runtimes,P2,complete,agents/headless-agent-runtimes.md,18
-agents/hybrid-retrieval,P2,complete,agents/hybrid-retrieval.md,21
+agents/hybrid-retrieval,P2,complete,agents/hybrid-retrieval.md,24
 agents/mcp-server-lifecycle,P2,complete,agents/mcp-server-lifecycle.md,5
 agents/microsoft-agent-framework,P2,complete,agents/microsoft-agent-framework.md,21
 agents/prompt-injection-design-patterns,P2,complete,agents/prompt-injection-design-patterns.md,6
@@ -91,7 +91,7 @@ claude/otel-monitoring,P1,complete,claude/otel-monitoring.md,4
 claude/permissions-mcp,P1,complete,claude/permissions-mcp.md,5
 claude/tool-output-limits,P1,complete,claude/tool-output-limits.md,3
 claude/agent-sdk,P2,complete,claude/agent-sdk.md;claude/agent-sdk-options.csv,10
-claude/ci-and-headless,P2,complete,claude/ci-and-headless.md,7
+claude/ci-and-headless,P2,complete,claude/ci-and-headless.md,15
 claude/enterprise-admin,P2,complete,claude/enterprise-admin.md,8
 claude/plugins,P2,complete,claude/plugins.md;claude/plugins.csv,14
 claude/settings-and-scopes,P2,complete,claude/settings-and-scopes.md;claude/settings-keys.csv;claude/env-vars.csv,11

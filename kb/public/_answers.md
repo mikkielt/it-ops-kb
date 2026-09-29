@@ -2023,6 +2023,19 @@ _Agent: kb-research_
 
 _Agent: kb-research_
 
+## QK-lookup-router-s-result-fields-effort. What do a lookup router's result fields, effort levels, web search costs and abstention evidence say about routing kb then live docs?
+- The headless JSON result carries `total_cost_usd` (a client-side estimate, whole run including subagents), `modelUsage` per model with token counts, `webSearchRequests` and `costUSD`, `num_turns`, `is_error` and `result`; `usage` covers only the main loop. [DOC S-fmj24q2u, S-fksbud2r, S-isqfh6pr]
+- Two separate `claude -p` processes give two results whose costs a router adds; `--resume` reports the running total instead. [DER S1800, S-isqfh6pr]
+- `--effort low` is accepted by Sonnet 5.5 and not by Haiku 4.5 (effort unsupported); Sonnet 5.5's Claude Code default is `medium`, while the models overview gives `high`; thinking cannot be switched off on Sonnet 5.5. [DOC S-ezqg74ki, S-eu3n3hyf]
+- Prices per million tokens: Sonnet 5.5 $2 in, $10 out; Haiku 4.5 $1 in, $5 out; web search $10 per 1,000 searches plus tokens. [DOC S2131]
+- `WebSearch` returns titles and urls only (up to eight backend searches per call, 200 calls per session), `WebFetch` returns a small model's extraction of the page; the Microsoft Learn search returns up to 10 chunks of at most 500 tokens. [DOC S-3yod3u7q, S2177]
+- Self-RAG, CRAG and Adaptive-RAG all gate or extend retrieval on a signal about need or quality, and CRAG falls back to web search; the Sufficient Context paper adds that large models often answer instead of abstaining on insufficient context. [DOC S-5y6g7iij, S-dghvtpkr, S-yknt2enl, S-yi5xka25]
+- Conclusion: a verdict router's cost is the sum of its arms' `total_cost_usd`; the lean live-docs arm is cheapest on Sonnet 5.5 at low effort with tools limited to the docs servers plus `WebSearch`/`WebFetch` allowed by `--allowedTools`, and the papers support routing on a retrieval-quality signal but give no number for a lexical one. [DER S2131, S-ezqg74ki, S-3yod3u7q, S-dghvtpkr]
+- Open: whether the CLI JSON equals the SDK result type field for field; which domains `WebFetch` preapproves; result-size limits of the Mintlify servers; whether a Haiku reader prompt can cache (below its 4,096-token minimum it cannot). [UNK]
+- See claude/ci-and-headless.md, agents/doc-lookup-sources.md, agents/hybrid-retrieval.md, agents/agent-caching.md.
+
+_Agent: kb-research_
+
 ## R1. Reuse candidates
 
 - **Highest leverage: `pydantic-settings` as a `dependency` for a project's config-file/env-var/flags

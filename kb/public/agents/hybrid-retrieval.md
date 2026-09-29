@@ -2,8 +2,8 @@
 topic: agents/hybrid-retrieval
 priority: P2
 applies_to: "Azure AI Search hybrid/vector/semantic search (api-version 2026-04-01, retrieved 2026-09-26); Anthropic Contextual Retrieval (engineering post, retrieved 2026-09-26); pgvector (README/LICENSE at master, retrieved 2026-09-26); Elasticsearch RRF retriever (docs, retrieved 2026-09-26); Claude API search result blocks (retrieved 2026-09-27); doc2query and Doc2Query-- papers; Model2Vec v0.9.0; Sufficient Context paper; Anthropic reduce-hallucinations guide; Azure AI Search traffic analytics (retrieved 2026-09-27)"
-retrieved_utc: 2026-09-27
-sources: [S-pgtfj4fh, S-btrwp2yj, S-dh75h5qt, S-jt6qyh46, S-jaycbw5k, S-net4uvqm, S-idqwhfg2, S-z7wh2sbr, S-4hditql5, S-524t5qtl, S-76smovmo, S-fn6fxrr5, S-4c46o537, S2135, S-qpqoaaqj, S-jnq56sj3, S-sqbfbcyk, S-aqnin65g, S-yi5xka25, S-fovhkyzc, S-enf2tnxi]
+retrieved_utc: 2026-09-29
+sources: [S-pgtfj4fh, S-btrwp2yj, S-dh75h5qt, S-jt6qyh46, S-jaycbw5k, S-net4uvqm, S-idqwhfg2, S-z7wh2sbr, S-4hditql5, S-524t5qtl, S-76smovmo, S-fn6fxrr5, S-4c46o537, S2135, S-qpqoaaqj, S-jnq56sj3, S-sqbfbcyk, S-aqnin65g, S-yi5xka25, S-fovhkyzc, S-enf2tnxi, S-5y6g7iij, S-dghvtpkr, S-yknt2enl]
 status: complete
 ---
 
@@ -102,6 +102,12 @@ Hybrid retrieval combines a lexical ranker (BM25 or Elasticsearch's equivalent) 
 - A selective-generation method that uses the sufficiency signal for guided abstention raised the fraction of correct answers among responses by 2-10% for Gemini, GPT and Gemma. [DOC S-yi5xka25]
 - Anthropic's guidance to reduce hallucinations: explicitly allow Claude to say "I don't know"; for documents over 20k tokens, have it extract word-for-word quotes before the task; have it cite a supporting quote for each claim and retract claims it cannot support; best-of-N comparison flags inconsistencies. [DOC S-fovhkyzc]
 - `_tools/kb_ask.py` applies this pattern: its tool-less reader answers `INSUFFICIENT` when the packed facts are only related to the question, and the router escalates instead of answering. [DER S-yi5xka25, S-fovhkyzc: compared with `kb/_self/tools.md`, "`kb_ask.py` routing"]
+
+### Retrieval routing and abstention: primary papers (abstracts read 2026-09-29)
+- Self-RAG argues that retrieving a fixed number of passages regardless of whether retrieval is needed or the passages are relevant hurts versatility; it trains one LM to retrieve on demand and to critique passages and its own output with reflection tokens. [DOC S-5y6g7iij]
+- Corrective RAG (CRAG) adds a lightweight retrieval evaluator that scores the retrieved documents for a query and returns a confidence degree; the confidence picks the retrieval action, and large-scale web search is the extension when the static corpus returns sub-optimal documents. [DOC S-dghvtpkr]
+- Adaptive-RAG uses a smaller LM as a classifier of question complexity to choose between no retrieval, single-step and iterative retrieval, aiming to avoid overhead on simple queries and to cover multi-step ones. [DOC S-yknt2enl]
+- These have the shape of a verdict router: a cheap signal from the pack (`good`, `weak`, `none` plus a check line) picks kb only, kb plus live docs, or live docs, and CRAG's corpus-then-web fallback matches the `none` and `weak` routes. The papers' evaluators are trained models, whereas the pack's signal is lexical, so their reported gains do not transfer as numbers. [DER S-5y6g7iij, S-dghvtpkr, S-yknt2enl, S-yi5xka25: mapping to the kb_ask routing in `kb/_self/tools.md`]
 
 ### Query logging: search traffic analytics
 - Azure AI Search's search traffic analytics pattern collects telemetry on user interactions (clickstream events, keyboard inputs) to measure clickthrough rate and find which query inputs yield zero results; it sends custom events to Application Insights. [DOC S-enf2tnxi]

@@ -811,6 +811,8 @@ Still open: (topic: auth/configmgr-rbac-auth)
   whether `query-docs` results carry source urls: not read (2026-09-27; only the pinned README and
   context7.com/docs/adding-libraries were read). (topic: agents/doc-lookup-sources)
   - Resolved 2026-09-27: popularity thresholds 1/15/30/45 days (S-gupervu4); no published rate numbers, 429 with `Retry-After` (S-ke227men); Free 1,000 calls a month, Pro 2,000 per seat then $5 per 1,000 (S-fqi6xbbc); results carry source URLs (S-autbwi4y). (topic: agents/doc-lookup-sources)
+- Which documentation domains Claude Code's `WebFetch` preapproves (whether Microsoft Learn, the Claude Code docs and the MCP docs hosts are in the set), and any result-size cap of the Mintlify docs servers' search and filesystem tools: the tools reference says a built-in set exists but does not list it; looked in en/tools-reference, en/permissions and en/data-usage of the Claude Code docs (2026-09-29). (topic: agents/doc-lookup-sources)
+- Whether `claude -p --output-format json` prints the SDK result message field for field: the headless page names `result`, session id, `total_cost_usd`, a per-model breakdown and `structured_output` but no full object; a run of the CLI would show it (2026-09-29). (topic: claude/ci-and-headless)
 
 ## windows/smart-app-control
 
