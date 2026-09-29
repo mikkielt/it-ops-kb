@@ -444,20 +444,59 @@ class MapCtx:
             self.note(f"{what}: exit {r.rc}" + (f": {first}" if first else ""))
         return r
 
-    def json(self, args, label=None):
-        """The parsed JSON a command prints, or None (with a note)."""
-        what = label or " ".join(str(a) for a in args)[:100]
+    def output(self, args, what):
+        """The text a command prints, or None (with a note) when it failed, was not found or printed too much."""
         r = self.run(args, what)
         if r.missing or r.timed_out or r.rc != 0:
             return None
         if len(r.out) > MAP_MAX_OUTPUT:
             self.note(f"{what}: output over {MAP_MAX_OUTPUT} bytes, not parsed")
             return None
+        return r.out.decode("utf-8", "replace")
+
+    def json(self, args, label=None):
+        """The parsed JSON a command prints, or None (with a note)."""
+        what = label or " ".join(str(a) for a in args)[:100]
+        text = self.output(args, what)
+        if text is None:
+            return None
         try:
-            return json.loads(r.out.decode("utf-8", "replace"))
+            return json.loads(text)
         except ValueError as e:
             self.note(f"{what}: output is not JSON ({str(e)[:80]})")
             return None
+
+    def json_stream(self, args, label=None):
+        """The list of JSON values a command prints one after another (`go list -json`: objects with nothing between
+        them, not an array), or None (with a note) when the output is not such a stream."""
+        what = label or " ".join(str(a) for a in args)[:100]
+        text = self.output(args, what)
+        if text is None:
+            return None
+        dec, pos, values = json.JSONDecoder(), 0, []
+        try:
+            while True:
+                while pos < len(text) and text[pos].isspace():
+                    pos += 1
+                if pos >= len(text):
+                    return values
+                value, pos = dec.raw_decode(text, pos)
+                values.append(value)
+        except ValueError as e:
+            self.note(f"{what}: output is not a JSON stream ({str(e)[:80]})")
+            return None
+
+    def rel(self, path):
+        """PATH (absolute in the worktree, in either separator) as a relative `/` path (`.` for the root), or None
+        when it lies outside the worktree."""
+        if not isinstance(path, str) or not path:
+            return None
+        for base in (self.root, self.root.resolve()):
+            try:
+                return Path(path).relative_to(base).as_posix()
+            except ValueError:
+                continue
+        return None
 
 
 class Mapper:
@@ -571,7 +610,123 @@ class PythonMapper(Mapper):
                 ctx.add_entry_point("pyproject.toml", kind, f"{script} = {target}")
 
 
-MAPPERS = [PythonMapper()]
+def strings(value):
+    """The strings of a JSON list, else an empty list: a tool's field of another shape adds nothing."""
+    return [x for x in value if isinstance(x, str)] if isinstance(value, list) else []
+
+
+class GoMapper(Mapper):
+    """`go mod edit -json` (the module path, the go line, the requirements) and `go list -e -json ./...` (each package:
+    import path, directory, imports, and `main` as an entry point) at the worktree root. `GOTOOLCHAIN=local` and
+    `GOFLAGS=-mod=readonly` come from the mapper environment, so no toolchain or module is downloaded and go.mod is
+    not rewritten. Both commands read source; neither compiles or runs it."""
+    language = "go"
+    name = "go"
+    tool = "go"
+    version_args = ("version",)
+
+    def files(self, rows):
+        return sorted(path for path, _kind in rows
+                      if path.endswith(".go") or path.rsplit("/", 1)[-1] in ("go.mod", "go.work"))
+
+    def map(self, ctx, files):
+        have = set(files)
+        if "go.mod" not in have and "go.work" not in have:
+            ctx.note("no go.mod or go.work at the repository root: no Go module mapped")
+            return
+        nested = [f for f in files if f.endswith("/go.mod")]
+        if nested:
+            ctx.note(f"{len(nested)} nested go.mod file(s) not mapped (`go list ./...` stays in the root module)")
+        if "go.mod" in have:
+            mod = ctx.json(["go", "mod", "edit", "-json"], label="go mod edit -json")
+            if isinstance(mod, dict):
+                self.module(ctx, mod)
+        for pkg in ctx.json_stream(["go", "list", "-e", "-json", "./..."], label="go list -e -json ./...") or ():
+            if isinstance(pkg, dict):
+                self.package(ctx, pkg)
+            else:
+                ctx.note("go list -e -json ./...: a value that is not an object, left out")
+
+    def module(self, ctx, mod):
+        module = mod.get("Module") if isinstance(mod.get("Module"), dict) else {}
+        path = module.get("Path")
+        if not isinstance(path, str) or not path:
+            ctx.note("go mod edit -json: no module path")
+            return
+        extra = {k.lower(): mod[k] for k in ("Go", "Toolchain") if isinstance(mod.get(k), str)}
+        ctx.add_package(path, ".", kind="module", **extra)
+        ctx.add_imports("go.mod", [r["Path"] for r in mod.get("Require") or ()
+                                   if isinstance(r, dict) and isinstance(r.get("Path"), str)])
+
+    def package(self, ctx, pkg):
+        ip = pkg.get("ImportPath")
+        if not isinstance(ip, str) or not ip:
+            return
+        err = pkg.get("Error")
+        if isinstance(err, dict) and err.get("Err"):
+            ctx.note(f"{ip}: {(str(err['Err']).splitlines() or [''])[0][:150]}")
+        rel = ctx.rel(pkg.get("Dir"))
+        if rel is None:
+            ctx.note(f"{ip}: directory outside the worktree, not mapped")
+            return
+        mod = pkg.get("Module")
+        extra = {"module": mod["Path"]} if isinstance(mod, dict) and isinstance(mod.get("Path"), str) else {}
+        ctx.add_package(ip, rel, **extra)
+        ctx.add_imports(rel, strings(pkg.get("Imports")))
+        if pkg.get("Name") == "main":
+            ctx.add_entry_point(rel, "main", ip)
+
+
+class CargoMapper(Mapper):
+    """`cargo metadata --format-version 1 --no-deps --offline --locked` at the worktree root: the workspace members
+    (name, directory), their dependencies as imports and their `bin` targets as entry points. `--no-deps` fetches
+    nothing and `--locked` refuses to change Cargo.lock; the command reads manifests and builds nothing, so no build
+    script runs."""
+    language = "rust"
+    name = "cargo"
+    tool = "cargo"
+
+    def files(self, rows):
+        return sorted(path for path, _kind in rows if path.endswith(".rs") or path.rsplit("/", 1)[-1] == "Cargo.toml")
+
+    def map(self, ctx, files):
+        if "Cargo.toml" not in files:
+            ctx.note("no Cargo.toml at the repository root: no Cargo workspace mapped")
+            return
+        meta = ctx.json(["cargo", "metadata", "--format-version", "1", "--no-deps", "--offline", "--locked"],
+                        label="cargo metadata")
+        if not isinstance(meta, dict):
+            return
+        seen = set()
+        for pkg in meta.get("packages") or ():
+            if isinstance(pkg, dict) and isinstance(pkg.get("name"), str):
+                manifest = self.member(ctx, pkg)
+                if manifest:
+                    seen.add(manifest)
+        outside = [f for f in files if f.endswith("/Cargo.toml") and f not in seen]
+        if outside:
+            ctx.note(f"{len(outside)} Cargo.toml file(s) outside the root workspace not mapped")
+
+    def member(self, ctx, pkg):
+        name = pkg["name"]
+        manifest = ctx.rel(pkg.get("manifest_path"))
+        if manifest is None:
+            ctx.note(f"{name}: manifest outside the worktree, not mapped")
+            return None
+        extra = {"version": pkg["version"]} if isinstance(pkg.get("version"), str) else {}
+        ctx.add_package(name, manifest.rsplit("/", 1)[0] if "/" in manifest else ".", **extra)
+        ctx.add_imports(manifest, [d["name"] for d in pkg.get("dependencies") or ()
+                                   if isinstance(d, dict) and isinstance(d.get("name"), str)])
+        for target in pkg.get("targets") or ():
+            if isinstance(target, dict) and "bin" in strings(target.get("kind")):
+                src = ctx.rel(target.get("src_path"))
+                if src is not None:
+                    tname = target.get("name")
+                    ctx.add_entry_point(src, "bin", tname if isinstance(tname, str) else None)
+        return manifest
+
+
+MAPPERS = [PythonMapper(), GoMapper(), CargoMapper()]
 
 
 @contextlib.contextmanager

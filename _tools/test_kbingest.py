@@ -414,3 +414,238 @@ def test_kbingest_map_ast_parser_planted_nodes():
     assert kbingest.ast_imports_and_main(guard) == (set(), True)
     other = guard.replace("'__main__'", "'other'")
     assert kbingest.ast_imports_and_main(other) == (set(), False)
+
+
+# ---- Go and Rust mappers: a fake `go` and `cargo` (fixtures/kbingest/fakelang.py) that log every call ----------------
+
+FAKELANG = Path(TOOLS) / "fixtures" / "kbingest" / "fakelang.py"
+GO_CALLS = [["version"], ["mod", "edit", "-json"], ["list", "-e", "-json", "./..."]]
+CARGO_CALLS = [["--version"], ["metadata", "--format-version", "1", "--no-deps", "--offline", "--locked"]]
+
+
+@pytest.fixture(scope="module")
+def langrepo(tmp_path_factory):
+    return commit_files(tmp_path_factory.mktemp("lang") / "svc", {
+        "go.mod": "module corp.example.com/app\n\ngo 1.22\n", "main.go": "package main\n",
+        "internal/util/u.go": "package util\n", "cmd/tool/main.go": "package main\n",
+        "nested/go.mod": "module corp.example.com/nested\n", "nested/x.go": "package nested\n",
+        "broken/b.go": "package\n",
+        "Cargo.toml": "[workspace]\nmembers = ['crates/*']\n", "src/main.rs": "fn main() {}\n", "src/lib.rs": "",
+        "crates/core/Cargo.toml": "[package]\nname = 'core'\n", "crates/core/src/lib.rs": "",
+        "tools/Cargo.toml": "[package]\nname = 'tools'\n", "tools/src/main.rs": "fn main() {}\n",
+    })
+
+
+def install_lang(tmp_path, monkeypatch):
+    """`go` and `cargo` shims on PATH over fakelang.py; the calls they get are logged to the returned file."""
+    bindir = tmp_path / "langbin"
+    bindir.mkdir()
+    for name in ("go", "cargo"):
+        if os.name == "nt":
+            (bindir / f"{name}.cmd").write_text(f'@"{sys.executable}" "{FAKELANG}" {name} %*\r\n', encoding="utf-8",
+                                                newline="")
+        else:
+            shim = bindir / name
+            shim.write_text(f'#!/bin/sh\nexec "{sys.executable}" "{FAKELANG}" {name} "$@"\n', encoding="utf-8",
+                            newline="\n")
+            shim.chmod(0o755)
+    log = tmp_path / "calls.jsonl"
+    monkeypatch.setenv("PATH", str(bindir) + os.pathsep + os.environ.get("PATH", ""))
+    monkeypatch.setenv("KB_FAKE_LOG", str(log))
+    monkeypatch.delenv("KB_FAKE_MODE", raising=False)
+    return log
+
+
+def calls_of(log):
+    if not log.exists():
+        return []
+    return [json.loads(ln) for ln in log.read_text(encoding="utf-8").splitlines() if ln.strip()]
+
+
+def notes_of(doc):
+    return [n["note"] for n in doc["notes"]]
+
+
+@requires_git
+def test_kbingest_map_go_runs_the_exact_commands_and_reads_the_stream(langrepo, tmp_path, monkeypatch):
+    log = install_lang(tmp_path, monkeypatch)
+    monkeypatch.setenv("KB_TEST_API_TOKEN", "planted-token")
+    monkeypatch.setenv("HTTPS_PROXY", "http://proxy.corp.example.com:3128")
+    code, doc = fake_map(langrepo, tmp_path, monkeypatch, kbingest.GoMapper())
+    assert code == 0
+    calls = calls_of(log)
+    assert [c["args"] for c in calls] == GO_CALLS  # exactly these argument lists, in this order
+    for c in calls:
+        assert c["tool"] == "go"
+        assert (Path(c["cwd"]).name, Path(c["cwd"]).parent.name.startswith("kbingest-map-")) == ("tree", True)
+        assert not Path(c["cwd"]).exists()  # the scratch worktree is gone
+        assert c["env"]["GOTOOLCHAIN"] == "local" and c["env"]["GOPROXY"] == "off"
+        assert c["env"]["GOFLAGS"] == "-mod=readonly"
+        assert c["env"]["KB_TEST_API_TOKEN"] is None and c["env"]["HTTPS_PROXY"] == "http://127.0.0.1:9"
+    assert doc["tools"] == {"go": {"tool": "go", "version": "go version go1.22.3 fake/amd64"}}
+    app = "corp.example.com/app"
+    assert doc["packages"] == [
+        {"language": "go", "name": app, "path": ".", "kind": "module", "go": "1.22", "toolchain": "go1.22.3"},
+        {"language": "go", "name": app, "path": ".", "module": app},
+        {"language": "go", "name": app + "/internal/util", "path": "internal/util", "module": app},
+        {"language": "go", "name": app + "/cmd/tool", "path": "cmd/tool", "module": app},
+        {"language": "go", "name": app + "/broken", "path": "broken", "module": app},
+    ]
+    assert doc["imports"] == [
+        {"language": "go", "path": "go.mod", "imports": ["corp.example.com/lib", "example.org/x"]},
+        {"language": "go", "path": ".", "imports": ["corp.example.com/app/internal/util", "fmt"]},
+        {"language": "go", "path": "internal/util", "imports": ["strings"]},
+        {"language": "go", "path": "cmd/tool", "imports": ["os"]},
+    ]
+    assert doc["entry_points"] == [{"language": "go", "path": ".", "kind": "main", "name": app},
+                                   {"language": "go", "path": "cmd/tool", "kind": "main", "name": app + "/cmd/tool"}]
+    assert notes_of(doc) == ["1 nested go.mod file(s) not mapped (`go list ./...` stays in the root module)",
+                             app + "/broken: broken/b.go:1:1: expected 'package'"]  # first line of the package's error
+    assert "planted-token" not in json.dumps(doc) and str(tmp_path) not in json.dumps(doc)
+
+
+@requires_git
+def test_kbingest_map_cargo_runs_the_exact_command_and_reads_the_workspace(langrepo, tmp_path, monkeypatch):
+    log = install_lang(tmp_path, monkeypatch)
+    monkeypatch.setenv("KB_TEST_API_TOKEN", "planted-token")
+    code, doc = fake_map(langrepo, tmp_path, monkeypatch, kbingest.CargoMapper())
+    assert code == 0
+    calls = calls_of(log)
+    assert [c["args"] for c in calls] == CARGO_CALLS
+    for c in calls:
+        assert c["tool"] == "cargo" and Path(c["cwd"]).name == "tree" and not Path(c["cwd"]).exists()
+        assert c["env"]["CARGO_NET_OFFLINE"] == "true" and c["env"]["KB_TEST_API_TOKEN"] is None
+    assert doc["tools"] == {"rust": {"tool": "cargo", "version": "cargo 1.80.0 (fake 2026-01-01)"}}
+    assert doc["packages"] == [{"language": "rust", "name": "app", "path": ".", "version": "0.4.0"},
+                               {"language": "rust", "name": "core", "path": "crates/core", "version": "0.4.0"}]
+    assert doc["imports"] == [{"language": "rust", "path": "Cargo.toml", "imports": ["anyhow", "serde"]}]
+    assert doc["entry_points"] == [{"language": "rust", "path": "src/main.rs", "kind": "bin", "name": "app"}]  # not lib
+    assert notes_of(doc) == ["1 Cargo.toml file(s) outside the root workspace not mapped"]
+
+
+@requires_git
+def test_kbingest_map_go_and_rust_are_registered_and_selected_by_lang(langrepo, tmp_path, monkeypatch):
+    log = install_lang(tmp_path, monkeypatch)
+    out = tmp_path / "both.json"
+    assert kbingest.main(["map", langrepo.path, "--out", str(out), "--lang", "go,rust"]) == 0
+    doc = json.loads(out.read_text(encoding="utf-8"))
+    assert sorted(doc["tools"]) == ["go", "rust"]
+    assert [c["args"] for c in calls_of(log)] == GO_CALLS + CARGO_CALLS
+    log.unlink()
+    assert kbingest.main(["map", langrepo.path, "--out", str(out), "--lang", "rust"]) == 0
+    assert [c["tool"] for c in calls_of(log)] == ["cargo", "cargo"]  # --lang rust never starts go
+
+
+@requires_git
+def test_kbingest_map_fake_go_refuses_other_arguments(langrepo, tmp_path, monkeypatch):
+    """Planted: a mapper that adds `-deps`, and one that drops `--locked`; the fake exits 64, which proves the exact
+    argument lists above are checked by the fake and not merely logged."""
+    install_lang(tmp_path, monkeypatch)
+
+    class Deps(kbingest.GoMapper):
+        def map(self, ctx, files):
+            ctx.json_stream(["go", "list", "-e", "-json", "-deps", "./..."], label="go list -deps")
+
+    class Unlocked(kbingest.CargoMapper):
+        def map(self, ctx, files):
+            ctx.json(["cargo", "metadata", "--format-version", "1", "--no-deps", "--offline"], label="cargo metadata")
+
+    for mapper, label in ((Deps(), "go list -deps"), (Unlocked(), "cargo metadata")):
+        code, doc = fake_map(langrepo, tmp_path, monkeypatch, mapper)
+        assert code == 0
+        assert any(n.startswith(f"{label}: exit 64: fakelang: unexpected arguments") for n in notes_of(doc)), doc["notes"]
+
+
+@requires_git
+def test_kbingest_map_go_bad_output_is_a_note(langrepo, tmp_path, monkeypatch):
+    """Planted: a truncated object after good ones, and an array where the stream should be."""
+    install_lang(tmp_path, monkeypatch)
+    monkeypatch.setenv("KB_FAKE_MODE", "garbage")
+    code, doc = fake_map(langrepo, tmp_path, monkeypatch, kbingest.GoMapper())
+    assert code == 0
+    assert any(n.startswith("go list -e -json ./...: output is not a JSON stream") for n in notes_of(doc)), doc["notes"]
+    assert [p["name"] for p in doc["packages"]] == ["corp.example.com/app"]  # the module; no half-read package list
+    monkeypatch.setenv("KB_FAKE_MODE", "array")
+    code, doc = fake_map(langrepo, tmp_path, monkeypatch, kbingest.GoMapper())
+    assert "go list -e -json ./...: a value that is not an object, left out" in notes_of(doc)
+    assert doc["entry_points"] == []
+
+
+@requires_git
+def test_kbingest_map_go_package_outside_the_worktree_is_left_out(langrepo, tmp_path, monkeypatch):
+    install_lang(tmp_path, monkeypatch)
+    monkeypatch.setenv("KB_FAKE_MODE", "outside")
+    code, doc = fake_map(langrepo, tmp_path, monkeypatch, kbingest.GoMapper())
+    assert code == 0
+    assert "example.org/elsewhere: directory outside the worktree, not mapped" in notes_of(doc)
+    assert "example.org/elsewhere" not in [p["name"] for p in doc["packages"]]
+
+
+@requires_git
+def test_kbingest_map_go_and_cargo_failures_are_notes(langrepo, tmp_path, monkeypatch):
+    """Planted: every command exits 101 (a lock file that would change)."""
+    install_lang(tmp_path, monkeypatch)
+    monkeypatch.setenv("KB_FAKE_MODE", "fail")
+    code, doc = fake_map(langrepo, tmp_path, monkeypatch, kbingest.CargoMapper())
+    assert code == 0 and doc["packages"] == []
+    assert "cargo metadata: exit 101: error: the lock file needs to be updated but --locked was passed" in notes_of(doc)
+    code, doc = fake_map(langrepo, tmp_path, monkeypatch, kbingest.GoMapper())
+    assert code == 0 and doc["packages"] == []
+    assert "go mod edit -json: exit 101: error: the lock file needs to be updated but --locked was passed" in notes_of(doc)
+    assert any(n.startswith("go list -e -json ./...: exit 101") for n in notes_of(doc))
+
+
+@requires_git
+def test_kbingest_map_go_and_rust_without_a_root_manifest_run_nothing(tmp_path, monkeypatch):
+    """Planted: Go and Rust files with no go.mod or Cargo.toml at the root (only a nested one)."""
+    log = install_lang(tmp_path, monkeypatch)
+    r = commit_files(tmp_path / "loose", {"lib/a.go": "package lib\n", "sub/Cargo.toml": "[package]\n",
+                                          "sub/src/lib.rs": ""})
+    out = tmp_path / "loose.json"
+    assert kbingest.main(["map", r.path, "--out", str(out), "--lang", "go,rust"]) == 0
+    doc = json.loads(out.read_text(encoding="utf-8"))
+    assert [c["args"] for c in calls_of(log)] == [["version"], ["--version"]]  # only the version of each tool
+    assert notes_of(doc) == ["no go.mod or go.work at the repository root: no Go module mapped",
+                             "no Cargo.toml at the repository root: no Cargo workspace mapped"]
+    assert doc["packages"] == []
+
+
+@requires_git
+def test_kbingest_map_missing_go_and_cargo_are_notes(langrepo, tmp_path, monkeypatch):
+    """Planted: a PATH with neither program."""
+    empty = tmp_path / "empty"
+    empty.mkdir()
+    monkeypatch.delenv("KB_FAKE_MODE", raising=False)
+    real = kbingest.scrub_env
+    monkeypatch.setattr(kbingest, "scrub_env", lambda base=None: {**real(base), "PATH": str(empty)})
+    out = tmp_path / "none.json"
+    assert kbingest.main(["map", langrepo.path, "--out", str(out), "--lang", "go,rust"]) == 0
+    doc = json.loads(out.read_text(encoding="utf-8"))
+    assert doc["tools"] == {} and doc["packages"] == []
+    assert notes_of(doc) == ["toolchain not installed: go (7 go files not mapped)",
+                             "toolchain not installed: cargo (7 rust files not mapped)"]
+
+
+def lang_ctx(tmp_path):
+    return kbingest.MapCtx(tmp_path, kbingest.scrub_env(), 30, "go")
+
+
+def test_kbingest_map_json_stream_reads_concatenated_values(tmp_path):
+    ctx = lang_ctx(tmp_path)
+    prog = 'print(\'{"a": 1}{"b": [2]}\\n\\n  [3]\\n\')'
+    assert ctx.json_stream([sys.executable, "-c", prog], label="stream") == [{"a": 1}, {"b": [2]}, [3]]
+    assert ctx.json_stream([sys.executable, "-c", "pass"], label="empty") == []
+    assert ctx.notes == []
+    # Planted: a value cut short, and text that is no JSON at all
+    assert ctx.json_stream([sys.executable, "-c", 'print(\'{"a": 1} {"b"\')'], label="cut") is None
+    assert ctx.json_stream([sys.executable, "-c", "print('go: downloading x')"], label="text") is None
+    assert [n.split(" (")[0] for n in ctx.notes] == ["cut: output is not a JSON stream", "text: output is not a JSON stream"]
+
+
+def test_kbingest_map_rel_keeps_only_paths_inside_the_worktree(tmp_path):
+    ctx = lang_ctx(tmp_path)
+    assert ctx.rel(str(tmp_path / "a" / "b.go")) == "a/b.go"
+    assert ctx.rel(str(tmp_path)) == "."
+    assert ctx.rel(str(tmp_path.resolve() / "a")) == "a"
+    assert ctx.rel(str(tmp_path.parent / "elsewhere")) is None  # planted: a sibling directory
+    assert ctx.rel("") is None and ctx.rel(None) is None
