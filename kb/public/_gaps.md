@@ -1127,3 +1127,15 @@ Still open: (topic: auth/configmgr-rbac-auth)
 ## gitlab/repository-mirroring
 
 - **Whether GitLab Community Edition (as opposed to the Free tier of the Enterprise Edition) lacks any Free-tier feature named in the git-regime pages** (push mirroring, push options, protected branches, server hooks): the docs label pages by tier and offering (GitLab Self-Managed), not by edition; the pages read (2026-09-29) do not mention Community Edition. Needs the edition comparison page. [UNK] (topic: gitlab/repository-mirroring)
+
+## agents/agent-caching
+
+- **self-improving lookup pipeline findings deterministic rules before model judgement** The kb was asked this in a logged lookup of 2026-09-29, and no article answered it (query log finding F-26d83d5f6e31). Looked in the kb 2026-09-29: `rag.py pack` gives `weak`, with this topic in the lead. Needs an official source that states it (`/kb-research`, or the query log's opt-in research). (topic: agents/agent-caching)
+
+## arch/gitlab-ci-components
+
+- **GitLab CI job log timestamps format FF_TIMESTAMPS** The kb was asked this in a logged lookup of 2026-09-29, and no article answered it (query log finding F-98c7f667e2cd). Looked in the kb 2026-09-29: `rag.py pack` gives `none`, with this topic in the lead. Needs an official source that states it (`/kb-research`, or the query log's opt-in research). (topic: arch/gitlab-ci-components)
+
+## mecm/collect-client-logs
+
+- **What is the maximum email attachment size?** The kb was asked this in a logged lookup of 2026-09-29, and no article answered it (query log finding F-bd7367a45f3a). Looked in the kb 2026-09-29: `rag.py pack` gives `weak`, with this topic in the lead. Needs an official source that states it (`/kb-research`, or the query log's opt-in research). (topic: mecm/collect-client-logs)
