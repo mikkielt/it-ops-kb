@@ -2,7 +2,7 @@
   "id": "TK-nnk226hn",
   "kind": "task",
   "title": "kbpy announces a missing Python at session start",
-  "status": "todo",
+  "status": "done",
   "parent": "ST-b2yxgbrq",
   "priority": "P1",
   "rank": 0,
@@ -35,5 +35,33 @@
     ".claude-plugin/plugin.json",
     "kb/_self/tools.md",
     "kb/_self/plugin.md"
-  ]
+  ],
+  "evidence": {
+    "commit": "b02c9d113b34690bf7b3f037164f60bcce726260",
+    "checks": [
+      {
+        "run": [
+          "python",
+          "_tools/tests.py",
+          "-k",
+          "portability"
+        ],
+        "exit": 0,
+        "sha256": "990d39cd49efcef9"
+      },
+      {
+        "run": [
+          "git",
+          "grep",
+          "-n",
+          "kbpy.*--notice",
+          "--",
+          ".claude/settings.json",
+          ".claude-plugin/plugin.json"
+        ],
+        "exit": 0,
+        "sha256": "faddcb82b7521a78"
+      }
+    ]
+  }
 }
