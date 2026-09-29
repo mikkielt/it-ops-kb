@@ -2,7 +2,7 @@
   "id": "TK-e4i2gbqk",
   "kind": "task",
   "title": "Guard a false none: a near miss routes split, not web",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-ysk3m7rt",
   "priority": "P1",
   "rank": 2,
@@ -59,5 +59,39 @@
     "kb/_self/reports/benchmarks.md:149"
   ],
   "notes": "A best-article share such as \"half the key terms\" does not separate the two: the off-kb Kubernetes question matches 4 of 6 key words, so it would route split; no source sets such a threshold (gate `nearmiss`).",
-  "claimed_by": "worker-e4i2gbqk"
+  "evidence": {
+    "commit": "ac03d1b3fac4757dac5af9581b3cb68dc626697b",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "TestRoute"
+        ],
+        "exit": 0,
+        "sha256": "9887de6e495ac56d"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/rag.py",
+          "pack",
+          "Show T-SQL that takes an exclusive session-owned application lock without waiting, fails if it is held, and releases it."
+        ],
+        "exit": 0,
+        "sha256": "1dd991667457c29f"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/rag.py",
+          "pack",
+          "How do I run the Kubernetes Cluster Autoscaler on AWS EKS with spot instances?"
+        ],
+        "exit": 0,
+        "sha256": "df5b9c52a3fbf7a0"
+      }
+    ]
+  }
 }
