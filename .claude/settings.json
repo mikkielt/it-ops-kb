@@ -1,4 +1,7 @@
 {
+  "env": {
+    "MAX_MCP_OUTPUT_TOKENS": "10000"
+  },
   "permissions": {
     "allow": [
       "mcp__microsoft-learn__microsoft_docs_search",
