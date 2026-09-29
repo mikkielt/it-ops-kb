@@ -2,7 +2,7 @@
   "id": "BG-63avtg3q",
   "kind": "bug",
   "title": "kbingest map fails two tests on Windows: the worktree path is not masked in notes, and a symlink checked out as a file is read",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-g5hizdko",
   "sprint": "SP-76inhw33",
   "priority": "P1",
@@ -22,5 +22,19 @@
     "_tools/test_kbingest.py"
   ],
   "notes": "The operator put it in SP-76inhw33 “Windows clone complete” so a Windows host fixes and verifies it; the code belongs to SP-fkyrld5h “Ingestion maps code natively”.",
-  "claimed_by": "orchestrator-SP-76inhw33"
+  "evidence": {
+    "commit": "d65146b8262bb460678c50437dff7a991d323752",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "kbingest_map_symlink_is_not_followed or kbingest_map_notes_are_capped"
+        ],
+        "exit": 0,
+        "sha256": "64b5c8eddd183775"
+      }
+    ]
+  }
 }
