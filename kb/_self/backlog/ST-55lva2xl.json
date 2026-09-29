@@ -2,7 +2,7 @@
   "id": "ST-55lva2xl",
   "kind": "story",
   "title": "Opt-in read-only toolchain mapping in kbingest",
-  "status": "todo",
+  "status": "done",
   "parent": "EP-g5hizdko",
   "sprint": "SP-fkyrld5h",
   "priority": "P2",
@@ -40,5 +40,20 @@
     "kb/public/agents/codebase-mapping.md",
     "kb/public/agents/codebase-mapping.csv"
   ],
-  "notes": "Read-only forms and their side effects: agents/codebase-mapping.md, 'How it fits an ingesting agent'. The mapper tasks share kbingest.py, so they run one after another."
+  "notes": "Read-only forms and their side effects: agents/codebase-mapping.md, 'How it fits an ingesting agent'. The mapper tasks share kbingest.py, so they run one after another.",
+  "evidence": {
+    "commit": "ac6dffa9503673266cfc2378c1001a340e7e5864",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "kbingest_map"
+        ],
+        "exit": 0,
+        "sha256": "d572209899c298b0"
+      }
+    ]
+  }
 }

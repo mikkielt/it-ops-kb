@@ -2,7 +2,7 @@
   "id": "ST-gmey37if",
   "kind": "story",
   "title": "kbingest survey reports a repository's toolchain pins",
-  "status": "todo",
+  "status": "done",
   "parent": "EP-g5hizdko",
   "sprint": "SP-fkyrld5h",
   "priority": "P2",
@@ -33,5 +33,31 @@
     "kb/public/python/uv-projects.md",
     "kb/public/windows/powershell-static-analysis.md"
   ],
-  "notes": "The pins describe the repository at the commit; /kb-ingest puts them on the source row (ST-rrrgvspb), never on facts."
+  "notes": "The pins describe the repository at the commit; /kb-ingest puts them on the source row (ST-rrrgvspb), never on facts.",
+  "evidence": {
+    "commit": "ac6dffa9503673266cfc2378c1001a340e7e5864",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "pin_files"
+        ],
+        "exit": 0,
+        "sha256": "60b7ecde5f566126"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/kbingest.py",
+          "survey",
+          ".",
+          "--pins"
+        ],
+        "exit": 0,
+        "sha256": "05fdf1fab73ee374"
+      }
+    ]
+  }
 }

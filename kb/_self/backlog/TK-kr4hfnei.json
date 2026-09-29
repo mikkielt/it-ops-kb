@@ -2,7 +2,7 @@
   "id": "TK-kr4hfnei",
   "kind": "task",
   "title": "Document --pins in the ingest skill and the tool docs",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-gmey37if",
   "priority": "P2",
   "rank": 2,
@@ -33,5 +33,30 @@
   "depends_on": [
     "TK-ewuy6573"
   ],
-  "claimed_by": "worker-kr4hfnei"
+  "evidence": {
+    "commit": "ac6dffa9503673266cfc2378c1001a340e7e5864",
+    "checks": [
+      {
+        "run": [
+          "grep",
+          "-c",
+          "-e",
+          "--pins",
+          ".claude/skills/kb-ingest/SKILL.md"
+        ],
+        "exit": 0,
+        "sha256": "53c234e5e8472b6a"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "selfdoc"
+        ],
+        "exit": 0,
+        "sha256": "0662a74739971f23"
+      }
+    ]
+  }
 }
