@@ -2,7 +2,7 @@
   "id": "BG-5z3xfghs",
   "kind": "bug",
   "title": "pack answers none for a number the kb writes with a unit suffix (1.5 seconds vs 1.5-second)",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-c7fzjhge",
   "sprint": "SP-osxj4vmf",
   "priority": "P2",
