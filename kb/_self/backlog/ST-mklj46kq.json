@@ -1,0 +1,25 @@
+{
+  "id": "ST-mklj46kq",
+  "kind": "story",
+  "title": "selfdoc check flags a reference to a kb/_self section that no longer exists",
+  "status": "draft",
+  "parent": "EP-hsyx42zz",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "python3 _tools/selfdoc.py check reports each (kb/_self/<doc>.md, <Section>) or (<doc>, <Section>) reference in kb/_self/, AGENTS.md, skills and _tools/ docstrings whose heading is not in that doc, with a planted dead reference that fails it; the Learn and apply references that survived SP-osxj4vmf are what it answers",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "selfdoc_flags_dead_section_reference"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/selfdoc.py",
+    "_tools/test_kb.py",
+    "kb/_self/tools.md"
+  ]
+}

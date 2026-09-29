@@ -21,10 +21,6 @@
   "depends_on": [
     "ST-tngq6z2j"
   ],
-  "relates_to": [
-    "BG-26tywezq",
-    "ST-v3jzw42r"
-  ],
   "gates": [
     {
       "id": "stranded-days",

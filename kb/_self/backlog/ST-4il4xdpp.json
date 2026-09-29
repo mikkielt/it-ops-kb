@@ -1,0 +1,24 @@
+{
+  "id": "ST-4il4xdpp",
+  "kind": "story",
+  "title": "A sprint subagent can run rag.py eval in its worktree",
+  "status": "draft",
+  "parent": "EP-o2bjijfp",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "A kb-worker or sprint subagent in an isolation worktree runs python3 _tools/rag.py eval without a guard refusing it; the story first names the guard that refused every command containing eval in SP-osxj4vmf (repo hook, plugin hook or harness), then either allows the command or documents the pytest wrapper as the sprint gate in kb/_self/backlog.md",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/rag.py",
+        "eval"
+      ],
+      "match": "passed=(\\d+) verdict_ok=\\1"
+    }
+  ],
+  "touches": [
+    "kb/_self/backlog.md",
+    ".claude/settings.json"
+  ]
+}

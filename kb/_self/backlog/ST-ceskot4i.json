@@ -1,0 +1,23 @@
+{
+  "id": "ST-ceskot4i",
+  "kind": "story",
+  "title": "The query-log tests plant their own provider registry",
+  "status": "draft",
+  "parent": "EP-mzzucemv",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "No test in _tools/test_querylog.py depends on which hosts the real _tools/providers.csv serves: the staging tests read a registry they plant, so adding a real provider row (as www.anthropic.com in SP-osxj4vmf turned 6 tests red, and arxiv.org would again) changes no test result",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "querylog_tests_plant_their_registry"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/test_querylog.py"
+  ]
+}
