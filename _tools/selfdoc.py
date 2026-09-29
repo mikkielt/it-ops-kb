@@ -25,8 +25,18 @@ repository root or an absolute path, else a name under kb/_self (`maintaining` o
 heading's text, matched without regard to case or repeated spaces; a leading `##` also pins the level. Lines in fenced
 code blocks and a YAML front matter are never headings. A subsection belongs to its section; a heading that occurs more
 than once prints every section with that text. It needs no git.
+
+  selfdoc.py map-tools [FILE]      every module, class, function and method of _tools/*.py, one line each:
+                                   `path:line kind name — first docstring line`; FILE (a path, or a name such as `rag`)
+                                   narrows it to one file; exit 2 when FILE is not a Python file under _tools
+
+`map-tools` is built from `ast` on each run, and nothing of it is committed, so it cannot go stale. Kinds: `module`,
+`class`, `def` (`async` for `async def`), `method` (a def inside a class, named `Class.method`), `test` (a `test*`
+function or method of a `test_*.py` file). A file that does not parse is one `unparsed` line. `path:line` is the line of
+the `def` or `class` keyword (a decorator line is not it), so `sed -n 'LINE,+30p' path` reads the symbol. It lists the
+symbols so that a session reads the one it needs, not a whole tool.
 """
-import argparse, csv, functools, os, pathlib, re, subprocess, sys
+import argparse, ast, csv, functools, io, os, pathlib, re, subprocess, sys, tokenize, warnings
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import kbcommon  # noqa: E402
@@ -236,6 +246,137 @@ def section(doc, heading, root=KB):
     return found, [f"{'#' * lvl} {text}" for _, lvl, text in headings(text_lines)]
 
 
+TOOLS_REL = "_tools"
+DOC_MAX = 100  # a docstring's first line is cut here in the map
+DEFS = (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)
+MAP_LINE_RX = re.compile(r"(?P<path>.+?):(?P<line>\d+) (?P<kind>\w+) (?P<name>\S+)(?: — .*)?\Z")
+DEF_LINE_RX = re.compile(r"(?P<indent>\s*)(?P<kw>async\s+def|def|class)\s+(?P<name>\w+)")
+
+
+def tool_files(root=KB):
+    """[Path] of every Python file under _tools/, sorted, leaving out caches and hidden directories."""
+    base = pathlib.Path(root) / TOOLS_REL
+    return sorted(p for p in base.rglob("*.py") if p.is_file() and not any(
+        part.startswith((".", "__")) for part in p.relative_to(base).parts[:-1]))
+
+
+def resolve_tool(name, root=KB):
+    """The _tools Python file FILE names: a path from the repository root (or absolute), or a name under _tools with
+    or without `.py`."""
+    base = pathlib.Path(root)
+    tools = (base / TOOLS_REL).resolve()
+    for cand in (name, f"{TOOLS_REL}/{name}"):
+        for path in (base / cand, base / (cand + ".py")):
+            if path.is_file() and path.suffix == ".py" and tools in path.resolve().parents:
+                return path
+    raise SelfdocError(f"no such tool file: {name} (a .py file under {TOOLS_REL}/)")
+
+
+def first_line(doc):
+    """The first line of a docstring, cut to DOC_MAX characters; empty for none."""
+    lines_ = (doc or "").strip().splitlines()
+    text = " ".join(lines_[0].split()) if lines_ else ""
+    return text if len(text) <= DOC_MAX else text[:DOC_MAX - 1].rstrip() + "…"
+
+
+def symbols_of(tree, is_test_file):
+    """[(line, kind, qualified name, docstring first line)] of the classes, functions and methods of a module, by line.
+    A def or class inside another def is a detail of it and is not listed; one under an `if` or `try` is."""
+    out = []
+
+    def visit(node, prefix, in_class):
+        for child in ast.iter_child_nodes(node):
+            if isinstance(child, DEFS):
+                name = prefix + child.name
+                if isinstance(child, ast.ClassDef):
+                    kind = "class"
+                elif is_test_file and child.name.startswith("test_"):
+                    kind = "test"
+                elif in_class:
+                    kind = "method"
+                else:
+                    kind = "async" if isinstance(child, ast.AsyncFunctionDef) else "def"
+                out.append((child.lineno, kind, name, first_line(ast.get_docstring(child))))
+                if isinstance(child, ast.ClassDef):
+                    visit(child, name + ".", True)
+            elif not isinstance(child, ast.expr):  # compound statements: if, try, with, for, match
+                visit(child, prefix, in_class)
+
+    visit(tree, "", False)
+    return sorted(out, key=lambda s: s[0])
+
+
+def file_map(path, root=KB):
+    """[map line] of one file: its module line, then its symbols by line."""
+    rel = pathlib.Path(path).resolve().relative_to(pathlib.Path(root).resolve()).as_posix()
+    try:
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")  # a file's own SyntaxWarning (an escape in a docstring) is not the map's
+            tree = ast.parse(pathlib.Path(path).read_text(encoding="utf-8"), filename=rel)
+    except (SyntaxError, ValueError, UnicodeDecodeError) as e:
+        return [f"{rel}:{getattr(e, 'lineno', None) or 1} unparsed {pathlib.Path(rel).stem} — {type(e).__name__}"]
+    out = [(1, "module", pathlib.Path(rel).stem, first_line(ast.get_docstring(tree)))]
+    out += symbols_of(tree, pathlib.Path(rel).name.startswith("test_"))
+    return [f"{rel}:{no} {kind} {name}" + (f" — {doc}" if doc else "") for no, kind, name, doc in out]
+
+
+def map_tools(file=None, root=KB):
+    """[map line] of every _tools Python file, or of FILE alone."""
+    return [ln for p in ([resolve_tool(file, root)] if file else tool_files(root)) for ln in file_map(p, root)]
+
+
+def def_tokens(text):
+    """[(line, column, name)] of every `def` and `class` statement of Python source, read from its tokens (a `def` inside
+    a string is no token of that kind), for the check that the map and the code agree; [] when the source does not tokenize."""
+    out, prev, before = [], None, None
+    try:
+        for tok in tokenize.generate_tokens(io.StringIO(text).readline):
+            if tok.type == tokenize.NAME and prev is not None and prev.string in ("def", "class"):
+                first = before.start if prev.string == "def" and before is not None and before.string == "async" else prev.start
+                out.append((first[0], first[1], tok.string))
+            before, prev = prev, tok
+    except (tokenize.TokenError, SyntaxError, IndentationError):
+        return []
+    return out
+
+
+def check_map(map_lines, root=KB):
+    """[problem] where a map line does not hold in the code: the file or the line is missing, the line is not the `def` or
+    `class` of that name and kind, or a top-level def or class of a mapped file has no line in the map."""
+    problems, mapped, base = [], {}, pathlib.Path(root)
+    src = {}
+    for ln in map_lines:
+        m = MAP_LINE_RX.match(ln)
+        if not m:
+            problems.append(f"not a map line: {ln}")
+            continue
+        path, no, kind, name = m["path"], int(m["line"]), m["kind"], m["name"]
+        if path not in src:
+            try:
+                src[path] = (base / path).read_text(encoding="utf-8").splitlines()
+            except (OSError, UnicodeDecodeError):
+                src[path] = None
+        text = src[path]
+        if text is None:
+            problems.append(f"{path}: no such file (mapped: {name})")
+        elif kind in ("module", "unparsed"):
+            continue
+        elif not 1 <= no <= len(text):
+            problems.append(f"{path}:{no}: past the end of the file (mapped: {name})")
+        else:
+            d = DEF_LINE_RX.match(text[no - 1])
+            want = "class" if kind == "class" else "def"
+            if not d or d["name"] != name.rsplit(".", 1)[-1] or d["kw"].split()[-1] != want:
+                problems.append(f"{path}:{no}: `{name}` ({kind}) is not at that line")
+            else:
+                mapped.setdefault(path, set()).add(no)
+    for path, nos in mapped.items():
+        for k, col, name in def_tokens("\n".join(src[path]) + "\n"):
+            if col == 0 and k not in nos:
+                problems.append(f"{path}:{k}: `{name}` is in the code and not in the map")
+    return problems
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -247,8 +388,16 @@ def main(argv=None):
     c = sub.add_parser("section", help="one section of a doc, with line numbers")
     c.add_argument("doc", metavar="DOC", help="path from the repository root, or a name under kb/_self")
     c.add_argument("heading", metavar="HEADING", help="the heading's text (case-insensitive); `## text` pins the level")
+    t = sub.add_parser("map-tools", help="the symbols and tests of _tools/*.py, with file:line")
+    t.add_argument("file", metavar="FILE", nargs="?", help="one file: a path, or a name under _tools (`rag`)")
     a = ap.parse_args(argv)
     try:
+        if a.cmd == "map-tools":
+            out = map_tools(a.file)
+            print("\n".join(out))
+            kinds = [MAP_LINE_RX.match(ln)["kind"] for ln in out]
+            print(f"files={kinds.count('module') + kinds.count('unparsed')} symbols={len(kinds) - kinds.count('module') - kinds.count('unparsed')}")
+            return 0
         if a.cmd == "section":
             found, heads = section(a.doc, a.heading)
             if not found:

@@ -3,11 +3,14 @@
 TestSelfdocRules   map globs (`*` within a directory, `**` across, `-` never), the map reader, describing().
 TestSelfdocSection section DOC HEADING: the section down to the next heading of its level, subsections kept, fenced
                    code and front matter never headings, case-insensitive, `##` pins the level, no match exits 1.
+TestSelfdocToolsMap map-tools: modules, classes, defs, methods and tests with file:line and the first docstring line,
+                   FILE narrows it, a mapped name missing from the code (or a def missing from the map) fails
+                   check_map, and every _tools file of this repository parses and holds.
 TestSelfdocInGit   (marker git) a throwaway repo with a map, two docs and the files they describe: a commit to a
                    described file makes its doc stale, editing or committing the doc clears it, --since compares a
                    revision with the working tree, and check reports a missing doc, a dead pattern and an unmapped doc.
 """
-import os
+import functools, os
 
 import pytest
 
@@ -125,6 +128,169 @@ class TestSelfdocSection:
         assert not any("## Working on items" in ln for ln in out)
         assert selfdoc.main(["section", "nope", "x"]) == 2
 
+SAMPLE = '''\
+"""Sample tool: does one thing.
+
+More about it."""
+import sys
+
+
+def top(a):
+    """Top function.
+
+    Long text."""
+    def inner():
+        """Not listed: a detail of top."""
+    return inner
+
+
+@staticmethod
+def decorated():
+    pass
+
+
+async def fetch():
+    """Async one."""
+
+
+class Box:
+    """A box."""
+
+    def size(self):
+        """Its size."""
+
+    class Lid:
+        def close(self):
+            pass
+
+
+if sys.platform == "win32":
+    def only_here():
+        pass
+'''
+TEST_SAMPLE = '''\
+"""Tests of sample."""
+
+
+def helper():
+    pass
+
+
+class TestBox:
+    def test_size(self):
+        """Size is right."""
+
+    def check_helper(self):
+        pass
+
+
+def test_top():
+    pass
+'''
+
+
+class TestSelfdocToolsMap:
+    @pytest.fixture
+    def root(self, tmp_path):
+        tools = tmp_path / "_tools"
+        (tools / "__pycache__").mkdir(parents=True)
+        (tools / "sample.py").write_text(SAMPLE, encoding="utf-8", newline="\n")
+        (tools / "test_sample.py").write_text(TEST_SAMPLE, encoding="utf-8", newline="\n")
+        (tools / "broken.py").write_text("def f(:\n", encoding="utf-8", newline="\n")
+        (tools / "__pycache__" / "cached.py").write_text("def hidden(): pass\n", encoding="utf-8", newline="\n")
+        return tmp_path
+
+    def test_tools_map_lists_symbols_with_line_kind_and_first_docstring_line(self, root):
+        assert selfdoc.map_tools(root=root) == [
+            "_tools/broken.py:1 unparsed broken — SyntaxError",
+            "_tools/sample.py:1 module sample — Sample tool: does one thing.",
+            "_tools/sample.py:7 def top — Top function.",
+            "_tools/sample.py:17 def decorated",
+            "_tools/sample.py:21 async fetch — Async one.",
+            "_tools/sample.py:25 class Box — A box.",
+            "_tools/sample.py:28 method Box.size — Its size.",
+            "_tools/sample.py:31 class Box.Lid",
+            "_tools/sample.py:32 method Box.Lid.close",
+            "_tools/sample.py:37 def only_here",
+            "_tools/test_sample.py:1 module test_sample — Tests of sample.",
+            "_tools/test_sample.py:4 def helper",
+            "_tools/test_sample.py:8 class TestBox",
+            "_tools/test_sample.py:9 test TestBox.test_size — Size is right.",
+            "_tools/test_sample.py:12 method TestBox.check_helper",
+            "_tools/test_sample.py:16 test test_top",
+        ], "nested defs are left out, a decorated def is at its def line, caches are skipped, a broken file is one line"
+
+    def test_tools_map_file_narrows_and_names_resolve(self, root):
+        only = ["_tools/test_sample.py:1 module test_sample — Tests of sample."]
+        for name in ("test_sample", "test_sample.py", "_tools/test_sample.py", str(root / "_tools" / "test_sample.py")):
+            assert selfdoc.map_tools(name, root)[0] == only[0], name
+            assert all(ln.startswith("_tools/test_sample.py:") for ln in selfdoc.map_tools(name, root))
+        for bad in ("nope", "sample.txt", "../outside", "_tools"):
+            with pytest.raises(selfdoc.SelfdocError, match="no such tool file"):
+                selfdoc.map_tools(bad, root)
+
+    def test_tools_map_long_docstring_line_is_cut(self, tmp_path):
+        os.makedirs(tmp_path / "_tools")
+        (tmp_path / "_tools" / "long.py").write_text('def f():\n    """' + "word " * 60 + '"""\n', encoding="utf-8", newline="\n")
+        line = selfdoc.map_tools("long", tmp_path)[1]
+        assert line.endswith("…") and len(line.split(" — ", 1)[1]) == selfdoc.DOC_MAX
+
+    def test_tools_map_every_mapped_name_is_in_the_code(self, root):
+        lines = selfdoc.map_tools(root=root)
+        assert selfdoc.check_map(lines, root) == []
+
+    def test_tools_map_a_name_missing_from_the_code_fails_the_check(self, root):
+        """The planted failure: a map line naming a symbol the code does not have, or at the wrong line."""
+        lines = selfdoc.map_tools(root=root)
+        renamed = [ln.replace("def top", "def gone") for ln in lines]
+        assert selfdoc.check_map(renamed, root) == ["_tools/sample.py:7: `gone` (def) is not at that line",
+                                                    "_tools/sample.py:7: `top` is in the code and not in the map"]
+        moved = [ln.replace("sample.py:28 method", "sample.py:29 method") for ln in lines]
+        assert any(p.startswith("_tools/sample.py:29: `Box.size`") for p in selfdoc.check_map(moved, root))
+        assert selfdoc.check_map([ln.replace("class Box ", "def Box ") for ln in lines], root), "a class is not a def"
+        assert selfdoc.check_map(lines + ["_tools/sample.py:99 def late"], root) == [
+            "_tools/sample.py:99: past the end of the file (mapped: late)"]
+        assert selfdoc.check_map(lines + ["_tools/absent.py:3 def x"], root) == ["_tools/absent.py: no such file (mapped: x)"]
+        assert selfdoc.check_map(lines + ["garbage"], root) == ["not a map line: garbage"]
+
+    def test_tools_map_a_symbol_left_out_of_the_map_fails_the_check(self, root):
+        lines = [ln for ln in selfdoc.map_tools(root=root) if " def top " not in ln]
+        assert selfdoc.check_map(lines, root) == ["_tools/sample.py:7: `top` is in the code and not in the map"]
+
+    def test_tools_map_cli_prints_lines_and_a_count(self, root, capsys, monkeypatch):
+        monkeypatch.setattr(selfdoc, "map_tools", functools.partial(selfdoc.map_tools, root=root))
+        assert selfdoc.main(["map-tools", "sample"]) == 0
+        out = capsys.readouterr().out.splitlines()
+        assert out[0].startswith("_tools/sample.py:1 module sample") and out[-1] == "files=1 symbols=8"
+
+    def test_tools_map_cli_bad_file_exits_2(self, capsys):
+        assert selfdoc.main(["map-tools", "no-such-tool"]) == 2
+        assert "no such tool file" in capsys.readouterr().err
+
+    def test_tools_map_this_repository_parses_and_holds(self):
+        """Every _tools Python file is mapped, none unparsed, and each line is at its def or class in the code."""
+        lines = selfdoc.map_tools()
+        files = {ln.split(":", 1)[0] for ln in lines}
+        assert files == {p.relative_to(selfdoc.KB).as_posix() for p in selfdoc.tool_files()}
+        assert "_tools/selfdoc.py:1 module selfdoc" in "\n".join(ln.split(" — ")[0] for ln in lines)
+        assert not [ln for ln in lines if " unparsed " in ln.split(" — ")[0]]
+        assert selfdoc.check_map(lines) == []
+        assert any(ln.split(" — ")[0].endswith(" def check_map") for ln in lines)
+
+    def test_tools_map_this_repository_lists_every_test_function(self):
+        tests = {ln.split(" ")[0] for ln in selfdoc.map_tools() if ln.split(" ")[1] == "test"}
+        found = set()
+        for p in selfdoc.tool_files():
+            if p.name.startswith("test_"):
+                for no, _, name in selfdoc.def_tokens(p.read_text(encoding="utf-8")):
+                    if name.startswith("test_"):  # read from the tokens, so a `def test_x` inside a string does not count
+                        found.add(f"{p.relative_to(selfdoc.KB).as_posix()}:{no}")
+        assert tests == found and found
+
+    def test_tools_map_this_repository_tampered_map_fails(self):
+        lines = selfdoc.map_tools("selfdoc")
+        tampered = [ln.replace(" def check_map", " def check_map_gone") for ln in lines]
+        assert selfdoc.check_map(tampered) and not selfdoc.check_map(lines)
 
 
 @pytest.mark.git
