@@ -19,6 +19,8 @@ Roots: this server serves only kb/public unless --roots names more, where kb_mcp
 A hosted endpoint answers clients outside the team that runs it, and a root is a filter on what the tools read,
 not access control: an internal root is served only when --roots names it. The limit is kbcommon.serve_only, the
 same one kb_mcp.py --roots sets, so every tool and kb_status see the named roots alone; the startup line lists them.
+Being limited, it also names no local path or update command: a clone behind its upstream gets a `kb copy:` line
+in kb_pack without them, and kb_status leaves out kb_dir and update (kb_mcp.behind_note).
 
 The endpoint is `/mcp`. Every JSON-RPC message goes to kb_mcp.handle, so the tools, the instructions and both
 handshakes are the stdio server's: a legacy client's `initialize` (2025-11-25 and earlier, as Copilot Studio uses)

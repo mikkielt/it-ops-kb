@@ -16,6 +16,9 @@ TestPluginManifest  .claude-plugin/marketplace.json and the two plugins: it-ops-
                 SSH remote. With the `claude` CLI installed, `claude plugin validate` passes for both.
 test_embed_roots_*  `--roots NAME[,NAME]` (a host embedding the server): only the named roots in every tool and
                 kb_status, every root without it, and an unknown or missing name refused at the start on stderr.
+test_status_*   how far a clone or an installed plugin is behind the kb it follows, from local refs: the update
+                command (checking out the newest census tag for a clone detached at one), and under --roots the
+                kb copy line and kb_status keep the staleness but name no local path and no command.
 test_embed_contract_*  kb_mcp.py as a host server's stdio child: the names and input schemas of kb_pack, kb_search and
                 kb_show and the instructions' sha256 match _tools/fixtures/kb_mcp_contract.json unless kb_mcp.VERSION
                 moved; one call of each answers in shape; a planted schema change is caught. After a VERSION bump:
@@ -439,6 +442,66 @@ def test_status_says_how_far_a_clone_is_behind_its_remote(tmp_path):
                        timeout=300, env={**git_env(), "KB_INDEX": str(tmp_path / "index")})
     assert p.stdout.startswith("kb copy: 3 commits behind origin/main"), p.stdout[:300] + p.stderr[-500:]
     assert f"to update: git -C {repo.path} pull --ff-only.\n\ncoverage: good" in p.stdout, p.stdout[:300]
+
+
+def _behind_clone(tmp_path, n=3):
+    """A kb copy committed as a clone whose origin/main is n commits ahead of its HEAD (as of its last fetch)."""
+    from conftest import Repo, copy_kb
+    repo = Repo(copy_kb(str(tmp_path / "kb")))
+    repo.git("init", "-q", "-b", "main")
+    repo.git("add", "README.md")
+    repo.git("commit", "-q", "-m", "kb")
+    repo.git("update-ref", "refs/remotes/origin/main", _ahead(repo, n))
+    return repo
+
+
+def _pack_and_status(repo, tmp_path, roots=None):
+    """(kb_pack text, kb_status text) from the clone's kb_mcp, limited to `roots` (as --roots does) when given."""
+    code = ("import kb_mcp, kbcommon\n"
+            f"if {roots!r}: kbcommon.serve_only({roots!r})\n"
+            "print(kb_mcp.kb_pack({'question': 'default Windows LAPS password length'}))\n"
+            "print('=====')\n"
+            "print(kb_mcp.kb_status({}))")
+    p = subprocess.run([sys.executable, "-c", code], cwd=os.path.join(repo.path, "_tools"), capture_output=True,
+                       text=True, encoding="utf-8", timeout=300, env={**git_env(), "KB_INDEX": "0"})
+    assert p.returncode == 0, p.stderr[-1000:]
+    pack, _, status = p.stdout.partition("=====\n")
+    return pack, status
+
+
+@pytest.mark.git
+def test_status_names_no_local_path_when_limited_by_roots(tmp_path):
+    """Planted failure both ways: one clone behind its remote. Unlimited (the plugin, the team's own clone) the
+    kb copy line and kb_status name the clone's path and the pull command; limited by --roots (a server for clients
+    outside the team) they keep the staleness and name neither."""
+    repo = _behind_clone(tmp_path)
+    pack, status = _pack_and_status(repo, tmp_path)
+    assert pack.startswith("kb copy: 3 commits behind origin/main"), pack[:300]
+    assert f"to update: git -C {repo.path} pull --ff-only." in pack, pack[:300]
+    assert f"update: git -C {repo.path} pull --ff-only" in status and "kb_dir: " in status, status
+    pack, status = _pack_and_status(repo, tmp_path, roots=["public"])
+    assert pack.startswith("kb copy: 3 commits behind the kb it follows; newer facts may exist. Tell the user.\n"), \
+        pack[:300]
+    assert "behind_upstream: 3 commits\n" in status and "roots: public (prefix S" in status, status
+    for text in (pack, status):
+        assert repo.path not in text and os.path.realpath(repo.path) not in text, text[:600]
+        assert "git -C" not in text and "update:" not in text and "kb_dir:" not in text, text[:600]
+
+
+@pytest.mark.git
+def test_status_tells_a_clone_at_a_census_tag_to_check_out_the_newest(tmp_path):
+    """A clone detached at a census tag (a host pinned to a confirmed kb) cannot pull: it is told to check out the
+    newest census tag it has, or to fetch tags when it is at the newest; on a branch it is told to pull."""
+    repo = _behind_clone(tmp_path)
+    repo.git("tag", "census-2026-01-01")
+    repo.git("checkout", "-q", "--detach", "census-2026-01-01")
+    out = _status(repo.path, tmp_path)
+    assert f"update: git -C {repo.path} fetch --tags, then check out the newest census-* tag (" in out, out
+    repo.git("tag", "census-2026-02-01", "refs/remotes/origin/main~1")
+    out = _status(repo.path, tmp_path)
+    assert f"update: git -C {repo.path} checkout census-2026-02-01 (" in out and "pull" not in out, out
+    repo.git("checkout", "-q", "main")
+    assert f"update: git -C {repo.path} pull --ff-only (" in _status(repo.path, tmp_path)
 
 
 @pytest.mark.git

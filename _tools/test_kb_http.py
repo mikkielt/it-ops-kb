@@ -14,6 +14,8 @@ test_kb_http_roots_*  the script as a subprocess with the test_kb_root.py fixtur
                 is process-wide, so it never runs in this process): by default only public is served over HTTP
                 (kb_pack and kb_status leave the fixture out), --roots public,fixture serves both, and an unknown
                 or empty --roots stops the start with exit 2 and nothing bound.
+test_kb_http_no_local_path  the script started from a kb clone planted 3 commits behind its origin/main: kb_pack
+                still says the copy is behind, but no answer names the clone's path or a git command.
 test_kb_http_parity_*  the same initialize, tools/list and tools/call of kb_pack, kb_search and kb_show sent to
                 kb_mcp.py over stdio (--roots public) and to the script over POST /mcp (its default, public): the
                 JSON-RPC replies are identical, the HTTP ones match _tools/fixtures/kb_mcp_contract.json (the
@@ -410,6 +412,43 @@ def test_kb_http_roots_unknown_name_stops_the_start(tmp_path, args, message):
 def test_kb_http_roots_help_names_the_option():
     out = subprocess.run([sys.executable, SCRIPT, "--help"], capture_output=True, text=True, encoding="utf-8")
     assert out.returncode == 0 and "--roots NAME[,NAME]" in out.stdout and "not access control" in out.stdout
+
+
+@pytest.mark.git
+def test_kb_http_no_local_path(tmp_path):
+    """A clone behind its upstream served over HTTP (its clients are outside the team): kb_pack keeps the staleness
+    line, but neither kb_pack nor kb_status names the clone's absolute path or the git command that holds it."""
+    from conftest import git_env
+    from test_kb_mcp import _behind_clone
+    repo = _behind_clone(tmp_path)
+    env = {k: v for k, v in git_env().items() if k not in ("KB_ROOTS", "CLAUDE_PLUGIN_DATA")}
+    p = subprocess.Popen([sys.executable, os.path.join(repo.path, "_tools", "kb_http.py"), "--port", "0"],
+                         stderr=subprocess.PIPE, stdout=subprocess.DEVNULL, text=True, encoding="utf-8",
+                         env=env | {"KB_INDEX": "0"}, cwd=str(tmp_path))
+    try:
+        line = p.stderr.readline()
+        assert line.startswith("kb_http: serving http://127.0.0.1:"), line
+        port = int(line.rsplit(":", 1)[1].split("/")[0])
+        raw = {}
+        for i, (name, arguments) in enumerate([("kb_pack", {"question": "default Windows LAPS password length"}),
+                                               ("kb_status", {})], start=1):
+            status, _, body = call(port, body={"jsonrpc": "2.0", "id": i, "method": "tools/call",
+                                               "params": {"name": name, "arguments": arguments}})
+            assert status == 200, (status, body)
+            raw[name] = body.decode("utf-8")
+    finally:
+        p.terminate()
+        p.communicate(timeout=30)
+    pack = json.loads(raw["kb_pack"])["result"]["content"][0]["text"]
+    status_text = json.loads(raw["kb_status"])["result"]["content"][0]["text"]
+    assert pack.startswith("kb copy: 3 commits behind the kb it follows; newer facts may exist."), pack[:300]
+    assert "behind_upstream: 3 commits\n" in status_text + "\n", status_text
+    paths = {repo.path, os.path.realpath(repo.path), str(tmp_path), os.path.realpath(tmp_path)}
+    for name, body in raw.items():
+        text = json.loads(body)["result"]["content"][0]["text"]
+        for s in (body, text):
+            assert not any(pth in s for pth in paths), (name, text[:600])
+        assert "git -C" not in text and "pull --ff-only" not in text and "kb_dir:" not in text, (name, text[:600])
 
 
 PARITY_INIT = {"protocolVersion": "2025-06-18", "capabilities": {}, "clientInfo": {"name": "host", "version": "0"}}

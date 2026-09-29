@@ -25,6 +25,8 @@ Tools (all read-only; they wrap rag.py and kbfacts.py and read the kb files, nev
              topic counts, the newest retrieved_utc, the roots it serves, and how many commits it is behind the branch
              it follows (a clone's upstream, or an installed plugin's marketplace clone; local refs, never the
              network) with the update command. When it is behind, kb_pack opens with one `kb copy:` line saying so.
+             A server limited to named roots (--roots; kb_http.py always is) serves clients outside the team:
+             kb_status and that line then name no local path and no update command (behind_note).
   kb_topics_for  kb topics that code touches, like `rag.py topics-for`: the curated signals of each root's signals.csv
              found in the files or text given (paths relative to the host project, CLAUDE_PROJECT_DIR or the cwd)
 
@@ -239,14 +241,31 @@ def behind_note():
     """One line for kb_pack when this copy is behind the branch it follows (local refs, no network), else "":
     a model asked how current the kb is answered from the facts' dates without calling kb_status ("Partial
     knowledge, newer versions and stale copies" in kb/_self/reports/benchmarks.md). Recomputed at most once a
-    minute."""
+    minute.
+
+    Who sees what: the team's own server (the plugin, a clone, no --roots) names the update command, which holds
+    the clone's absolute path. A server limited to named roots (limited(): --roots, and kb_http.py always) answers
+    clients outside the team, who can neither run that command nor need the path: its line keeps the staleness, so
+    a remote agent still says newer facts may exist, and names no upstream, path or command."""
     now = time.time()
     if now - _BEHIND[0] > 60:
         home, commit, repo, _ = copy_commit()
         up = upstream(repo, commit, plugin=repo != home) if commit else {}
-        _BEHIND[:] = [now, f"kb copy: {up['behind_upstream']} behind {up['upstream']}; newer facts may exist. Tell the "
-                           f"user, and to update: {up['update'].split(' (')[0]}." if up.get("update") else ""]
+        if not up.get("stale"):
+            note = ""
+        elif limited():
+            note = f"kb copy: {up['behind_upstream']} behind the kb it follows; newer facts may exist. Tell the user."
+        else:
+            note = (f"kb copy: {up['behind_upstream']} behind {up['upstream']}; newer facts may exist. Tell the "
+                    f"user, and to update: {up['update'].split(' (')[0]}.")
+        _BEHIND[:] = [now, note]
     return _BEHIND[1]
+
+
+def limited():
+    """True when this server is limited to named roots (--roots; kb_http.py always is): its clients are outside the
+    team, so kb_status and kb_pack name no local path and no update command."""
+    return bool(kbcommon.serving())
 
 
 _BEHIND = [0.0, ""]
@@ -362,14 +381,14 @@ def status():
     """{key: value} describing this copy: a git clone reports its HEAD; an installed plugin copy (no .git, in
     plugins/cache/<marketplace>/<plugin>/<version>/) reports its version, and reads commit dates and tags from the
     marketplace clone Claude Code keeps beside the cache, when that clone has the commit."""
-    info = {"kb_dir": kbcommon.KB_DIR}
+    info = {} if limited() else {"kb_dir": kbcommon.KB_DIR}  # an absolute local path: the team's own server only
     home, commit, repo, extra = copy_commit()
     info.update(extra)
     if commit:
         info["commit"] = commit[:12]
         info["commit_date"] = git("show", "-s", "--format=%cI", commit, cwd=repo) or "unknown"
         info["census_tag"] = git("describe", "--tags", "--abbrev=0", "--match", "census-*", commit, cwd=repo) or "none"
-        info.update(upstream(repo, commit, plugin=repo != home))
+        info.update((k, v) for k, v in upstream(repo, commit, plugin=repo != home).items() if k != "stale")
     info.setdefault("commit", "unknown (not a git clone or an installed plugin copy)")
     pub = kbcommon.public()
     census_dir = os.path.join(pub.path, kbcommon.CENSUS_DIR)
@@ -396,7 +415,10 @@ def status():
 def upstream(repo, commit, plugin):
     """How far `commit` is behind the branch its copy follows, from local refs only (the tools never contact a
     remote): a clone's upstream branch (or origin/HEAD, origin/main), or the HEAD of the marketplace clone Claude
-    Code keeps for an installed plugin, which marketplace updates move. {} when there is none."""
+    Code keeps for an installed plugin, which marketplace updates move. {} when there is none. `stale` is True when
+    it is behind; `update`, the command that brings it level, only on an unlimited server (limited()), since it
+    names the clone's path. A clone detached at a census tag is told to check out the newest census tag, not to
+    pull."""
     target = git("rev-parse", "--abbrev-ref", "--symbolic-full-name", "@{upstream}", cwd=repo)
     if not target:
         target = "HEAD" if plugin else next((r for r in ("origin/HEAD", "origin/main")
@@ -413,9 +435,25 @@ def upstream(repo, commit, plugin):
     out = {"upstream": name + (f", last fetched {time.strftime('%Y-%m-%d', time.gmtime(seen))}" if seen else ""),
            "behind_upstream": f"{behind} commits" + (f", {ahead} ahead" if ahead else "")}
     if behind:
-        out["update"] = ("/plugin marketplace update, then /reload-plugins" if plugin else
-                         f"git -C {repo} pull --ff-only") + " (this copy is older than the kb it follows)"
+        out["stale"] = True
+        if not limited():
+            cmd = "/plugin marketplace update, then /reload-plugins" if plugin else \
+                census_update(repo, commit) or f"git -C {repo} pull --ff-only"
+            out["update"] = cmd + " (this copy is older than the kb it follows)"
     return out
+
+
+def census_update(repo, commit):
+    """The update command for a clone whose HEAD is detached at a census-* tag (a host pinned to a confirmed kb),
+    where `pull` fails: check out the newest census tag it has, or fetch the tags first when it is at the newest.
+    None when HEAD is on a branch or at no census tag."""
+    here = (git("tag", "--points-at", commit, "--list", "census-*", cwd=repo) or "").split()
+    if not here or git("symbolic-ref", "-q", "HEAD", cwd=repo):
+        return None
+    newest = (git("tag", "--list", "census-*", "--sort=-v:refname", cwd=repo) or "").split()[:1]
+    if newest and newest[0] not in here:
+        return f"git -C {repo} checkout {newest[0]}"
+    return f"git -C {repo} fetch --tags, then check out the newest census-* tag"
 
 
 def root_counts():
