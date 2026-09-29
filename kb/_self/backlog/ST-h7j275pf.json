@@ -1,0 +1,24 @@
+{
+  "id": "ST-h7j275pf",
+  "kind": "story",
+  "title": "Planning puts every consumer of a changed route in the item's touches",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "When /kb-backlog or /kb-sprint plan breaks down a change to how agents read docs or call a tool, the plan lists every consumer (skills, .claude/agents definitions, headless runs such as ql_research.py) and each is in some item's touches",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/selfdoc.py",
+        "check"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-backlog/SKILL.md",
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/backlog.md"
+  ],
+  "notes": "Failure it answers (SP-mqjeanq3 retrospective): TK-22gyfp2h converted the skills to read kb/_self by section but .claude/agents/kb-worker.md was in no item's touches (BG-jz2qyvn6), and TK-aos5k7mo moved kb-research and kb-refresh to the cached live-docs tools while the headless research run in ql_research.py kept the direct servers (BG-m4bpd4jm); the review found both."
+}

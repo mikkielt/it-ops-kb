@@ -7,7 +7,6 @@
   "rank": 0,
   "goal": "An agent changing one subsystem of _tools finds its code, its contracts and its tests by file name without loading unrelated subsystems: the large test files and kbgit.py and benchmarks.py are split along their change boundaries into flat-prefixed modules behind unchanged CLIs, a written standard and a test hold the layout, and a before-and-after navigation benchmark says whether splitting further pays",
   "relates_to": [
-    "ST-3p6lizv4",
     "EP-g5hizdko"
   ],
   "notes": "Sprint order: SP-z7a5c76b “Delivery proven”, SP-liemltg2 “Autonomous work is safe”, then SP-rks3vx5g “Codebase maintainability proven”, then SP-fkyrld5h “Ingestion maps code natively”; each start gate is answered in that order, since close deletes items and a cross-sprint depends_on would dangle. Layout: flat prefixes in _tools/ (ql_, kg_, bench_, test_ql_, test_kb_), as querylog.py over ql_*.py already does; no packages, no new runtime dependency, public CLI paths unchanged. Split by change boundaries, never by size; a story may end in a keep-whole verdict. Out of scope here: splitting kbfacts.py, factdiff.py and backlog.py (the co-change report gives them verdicts for a later sprint), dataclass conversions, renumbering exit codes. ST-3p6lizv4 “A generated map of _tools symbols and tests replaces reading their source” in SP-mqjeanq3 is the other half of the same aim."

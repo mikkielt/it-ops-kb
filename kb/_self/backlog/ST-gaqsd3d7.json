@@ -1,0 +1,23 @@
+{
+  "id": "ST-gaqsd3d7",
+  "kind": "story",
+  "title": "A task that adds a read-only command a skill calls carries its allow rules",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "An item that adds a read-only command that skills or subagents run also adds its Bash and PowerShell allow rules to .claude/settings.json, and /kb-backlog says so when it plans such a task",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/selfdoc.py",
+        "check"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-backlog/SKILL.md",
+    "kb/_self/backlog.md"
+  ],
+  "notes": "Failure it answers (SP-mqjeanq3 retrospective): selfdoc.py section shipped and the skills call it, but .claude/settings.json got no allow rule, so every section read asks for permission (BG-as65f4wv, filed by the TK-22gyfp2h worker and left in the backlog)."
+}
