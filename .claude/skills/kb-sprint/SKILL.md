@@ -29,7 +29,11 @@ Never answer the start gate yourself.
 You are the orchestrator. Loop:
 1. Run `python3 _tools/backlog.py horizon --sprint SP` and `python3 _tools/backlog.py next --sprint SP --all`.
 2. From the ready list, take up to four items whose `touches` do not overlap each other or any item in flight. Claim each: `python3 _tools/backlog.py claim ID --by <subagent name>`.
-3. Start one subagent per item with `isolation: "worktree"`. Brief it with:
+3. Start one subagent per item with `isolation: "worktree"`, on the agent its kind takes:
+   - a task or subtask: `subagent_type: "kb-worker"` (`.claude/agents/kb-worker.md`, the newest Sonnet at high effort);
+   - an `S1` or `S2` bug and its tasks and subtasks, and a story or bug with no tasks yet (its breakdown): a subagent on the session model (`subagent_type: "general-purpose"`).
+   Never pass the Agent tool's `model`: it replaces the agent's own model.
+   Brief it with:
    - the item's JSON and its `/goal` text (`python3 _tools/backlog.py goal ID`);
    - the runbook's Working on items;
    - "commit on a local branch `work/<id>` with `KB-Work: <id>`, never push";
@@ -50,7 +54,7 @@ You are the orchestrator. Loop:
 ## review SP
 The review story is ready once every other item is done or dropped. Its work:
 1. Confirm or change each provisional answer with the operator (`answer ID GATE --confirm`, or a new answer plus a task or bug for the change).
-2. Start a fresh-context reviewer subagent on the sprint's diff (`git log --grep "KB-Work"` over the sprint's items). Give it each item's goal. It reports only gaps that affect correctness or a goal.
+2. Start a fresh-context reviewer subagent on the session model (`subagent_type: "general-purpose"`, no `model`) on the sprint's diff (`git log --grep "KB-Work"` over the sprint's items). Give it each item's goal. It reports only gaps that affect correctness or a goal.
 3. File each gap as a bug (`/kb-backlog bug`): `S1` into this sprint, others to the backlog.
 4. `python3 _tools/backlog.py done <review id>`.
 

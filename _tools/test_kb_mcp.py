@@ -14,7 +14,10 @@ TestPluginManifest  .claude-plugin/marketplace.json and the two plugins: it-ops-
                 servers and a PreToolUse hook blocking submit_feedback); no root .mcp.json (it would load into
                 it-ops-kb); no pinned version (users track commits); rag.py named only as the clone form; the GitLab
                 SSH remote. With the `claude` CLI installed, `claude plugin validate` passes for both. The clone-only
-                kb-worker agent (test_kb_worker_agent*): the sonnet alias, effort high, not in plugin.json.
+                kb-worker agent (test_kb_worker_agent*): the sonnet alias, effort high, not in plugin.json. Its
+                dispatch (test_kb_worker_dispatch*): /kb-sprint run starts tasks and subtasks on it with no model
+                override, S1 and S2 bugs and breakdowns on the session model; the review, /kb-census and the
+                runbook agree.
 test_embed_roots_*  `--roots NAME[,NAME]` (a host embedding the server): only the named roots in every tool and
                 kb_status, every root without it, and an unknown or missing name refused at the start on stderr.
 test_status_*   how far a clone or an installed plugin is behind the kb it follows, from local refs: the update
@@ -59,6 +62,49 @@ def kb_worker_problems(text, plugin_agents):
         problems.append(f"effort is {fm.get('effort')!r}, not high")
     if any(Path(a).name == Path(KB_WORKER).name for a in plugin_agents):
         problems.append("kb-worker is listed in plugin.json: it is a clone-only agent")
+    return problems
+
+
+KB_SPRINT = ".claude/skills/kb-sprint/SKILL.md"
+KB_CENSUS = ".claude/skills/kb-census/SKILL.md"
+RUNBOOK = "kb/_self/backlog.md"
+
+
+def md_section(text, heading):
+    """The body under the Markdown heading line `heading` up to the next heading of the same or a higher level."""
+    level = len(heading) - len(heading.lstrip("#"))
+    m = re.search(rf"(?m)^{re.escape(heading)}[ \t]*$", text)
+    if not m:
+        return ""
+    end = re.search(rf"(?m)^#{{1,{level}}} ", text[m.end():])
+    return text[m.end():m.end() + end.start()] if end else text[m.end():]
+
+
+def kb_worker_dispatch_problems(sprint, census, runbook):
+    """What is wrong with how /kb-sprint (`sprint`), /kb-census (`census`) and the runbook (`runbook`) dispatch
+    subagents to kb-worker: [] when nothing."""
+    problems = []
+    run = md_section(sprint, "## run [SP]")
+    step3 = re.search(r"(?ms)^3\. Start one subagent.*?(?=^\d+\. )", run)
+    step3 = step3.group(0) if step3 else ""
+    if not re.search(r"(?m)^\s*- a task or subtask: `subagent_type: \"kb-worker\"`", step3):
+        problems.append("/kb-sprint run step 3 does not start a task or subtask with subagent_type kb-worker")
+    if not re.search(r"Never pass the Agent tool's `model`", step3):
+        problems.append("/kb-sprint run step 3 does not forbid passing a model")
+    session = [l for l in step3.splitlines() if "session model" in l]
+    if not any("`S1` or `S2` bug" in l and "no tasks yet" in l and "kb-worker" not in l for l in session):
+        problems.append("/kb-sprint run step 3 does not send S1 and S2 bugs and a story or bug with no tasks "
+                        "to the session model")
+    if "kb-worker" in md_section(sprint, "## review SP"):
+        problems.append("/kb-sprint review names kb-worker: the review keeps the session model")
+    if "kb-worker" in census:
+        problems.append("/kb-census names kb-worker: census subagents keep the session model")
+    work = md_section(runbook, "## Working on items")
+    bullet = next((l for l in work.splitlines() if "`kb-worker`" in l), "")
+    for phrase in ("task or subtask", "no `model`", "`S1` or `S2` bug", "no tasks yet", "session model",
+                   "sprint review", "`/kb-census`"):
+        if phrase not in bullet:
+            problems.append(f"the runbook's Working on items does not say {phrase!r} with kb-worker")
     return problems
 
 
@@ -366,6 +412,40 @@ class TestPluginManifest:
             assert planted != text, old
             assert kb_worker_problems(planted, agents), f"not caught: {old!r} -> {new!r}"
         assert kb_worker_problems(text, agents + ["./" + KB_WORKER]), "not caught: kb-worker listed in plugin.json"
+
+    @staticmethod
+    def dispatch_texts():
+        texts = []
+        for rel in (KB_SPRINT, KB_CENSUS, RUNBOOK):
+            with open(os.path.join(KB, rel), encoding="utf-8") as f:
+                texts.append(f.read())
+        return texts
+
+    def test_kb_worker_dispatch(self):
+        """/kb-sprint run starts each task or subtask on kb-worker with no model override; S1 and S2 bugs and a
+        story or bug with no tasks go to the session model; the review, /kb-census and the runbook agree."""
+        assert kb_worker_dispatch_problems(*self.dispatch_texts()) == []
+
+    def test_kb_worker_dispatch_planted_failures(self):
+        """Each rule fails on a planted copy of the skill, the census skill or the runbook."""
+        sprint, census, runbook = self.dispatch_texts()
+        plants = [
+            (0, '- a task or subtask: `subagent_type: "kb-worker"`', '- a task or subtask: `subagent_type: "general-purpose"`'),
+            (0, "Never pass the Agent tool's `model`", "Pass the Agent tool's `model: sonnet`"),
+            (0, "an `S1` or `S2` bug and its tasks", "an `S1` bug and its tasks"),
+            (0, "a story or bug with no tasks yet (its breakdown): a subagent on the session model",
+             "a story or bug with no tasks yet (its breakdown): `kb-worker`"),
+            (0, 'reviewer subagent on the session model (`subagent_type: "general-purpose"`',
+             'reviewer subagent on `kb-worker` (`subagent_type: "kb-worker"`'),
+            (1, "## Phase", "Start phase 2 readers on `kb-worker`.\n\n## Phase"),
+            (2, "started with no `model`", "started with a `model`"),
+            (2, "The sprint review and every `/kb-census` subagent never use `kb-worker`.", ""),
+        ]
+        for i, old, new in plants:
+            texts = [sprint, census, runbook]
+            texts[i] = texts[i].replace(old, new, 1)
+            assert texts[i] != [sprint, census, runbook][i], f"plant does not apply: {old!r}"
+            assert kb_worker_dispatch_problems(*texts), f"not caught: {old!r} -> {new!r}"
 
     def test_shipped_texts_mark_rag_py_as_clone_only(self):
         """A host has no _tools/rag.py on its path: the server's texts and the agents never name it, and the skills
