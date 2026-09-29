@@ -265,3 +265,4 @@ EV-gitlab-api-latest-pipeline-status-commit,GitLab API latest pipeline status fo
 EV-sessionstart-hook-stdout-added-context-shown,SessionStart hook stdout added as context shown to user systemMessage,gitlab/automated-merge-requests.md,good,
 EV-claude-code-web-cloud-session-git,Claude Code on the web cloud session git push origin proxy credentials,gitlab/automated-merge-requests.md,good,
 EV-claude-code-userpromptsubmit-hook-output-additionalcontext,Claude Code UserPromptSubmit hook output additionalContext decision block reason,claude/ci-and-headless.md,good,
+EV-sessionend-hook-input-fields-reason-budget,SessionEnd hook input fields reason budget 1.5 seconds,claude/hooks.md,good,

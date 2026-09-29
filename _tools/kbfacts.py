@@ -600,15 +600,19 @@ def key_terms(text):
 
 
 CAMEL = re.compile(r"[A-Z]+(?=[A-Z][a-z])|[A-Z]?[a-z]+|[A-Z]+|\d+")
+NUMBER = re.compile(r"\d+(?:\.\d+)+")  # a decimal or dotted number: its dot parts alone do not match it
 
 
 def terms(text, camel=True):
-    """Stems of the words, plus the parts of compounds: hyphen/dot parts (what-if -> what, if) and identifier parts
-    (approximateLastSignInDateTime -> approximate, last, sign, in, date, time; US_NPI -> us, npi)."""
+    """Stems of the words, plus the parts of compounds: hyphen/dot parts (what-if -> what, if), a number joined to a
+    unit by a hyphen as the number itself (1.5-second -> 1.5, so a question's `1.5 seconds` finds it) and identifier
+    parts (approximateLastSignInDateTime -> approximate, last, sign, in, date, time; US_NPI -> us, npi)."""
     out = []
     for w in WORD.findall(text):
         t = w.lower()
         parts = [t] + ([p for p in re.split(r"[.\-]", t) if p] if ("-" in t or "." in t) else [])
+        if "-" in t:
+            parts += [p for p in t.split("-") if NUMBER.fullmatch(p)]
         if camel and ("_" in w or re.search(r"[a-z][A-Z]", w)):
             parts += [p.lower() for seg in re.split(r"[_.\-]", w) for p in CAMEL.findall(seg)]
         out += [stem(p) for p in dict.fromkeys(parts) if p not in STOP and len(p) > 1]
@@ -761,7 +765,7 @@ def _corpus(domain):
 
 # ---------------------------------------------------------------- the pack index (postings; persisted with sqlite3)
 
-INDEX_VERSION = 4  # bump when the index layout or what goes into a unit's tf/own changes
+INDEX_VERSION = 5  # bump when the index layout or what goes into a unit's tf/own changes
 
 
 class Store:

@@ -709,6 +709,15 @@ class TestLookup:
                   "Where does dsc look for its policy settings file on Windows?"):
             assert kbfacts.pack(q)["verdict"] == "good", q
 
+    def test_pack_number_with_unit_suffix_is_good(self):
+        # a number joined to a unit by a hyphen (1.5-second, 30-day) is also indexed as the number, so a question
+        # that writes it apart (1.5 seconds) matches the fact; its dot parts (1, 5) alone never did
+        assert "1.5" in kbfacts.terms("a 1.5-second budget") and "30" in kbfacts.terms("a 30-day window")
+        assert "1.5" not in kbfacts.key_terms("a 1.5-second budget"), "parts never count as key words"
+        res = kbfacts.pack("SessionEnd hook input fields reason budget 1.5 seconds")
+        assert res["verdict"] == "good" and "1.5" not in res["lacks"], (res["verdict"], res["lacks"])
+        assert "public/claude/hooks.md:64 " in res["text"], res["text"]
+
     def test_off_domain_product_is_none(self):
         # a rare name no printable line holds: the subject is another product the kb only mentions in passing
         for q in ("How do I configure VMware Horizon instant clones?", "How do I deploy SAP GUI to Windows clients?",
