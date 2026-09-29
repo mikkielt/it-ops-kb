@@ -2,7 +2,7 @@
   "id": "TK-4feakz4i",
   "kind": "task",
   "title": "done refuses an item with touches and no KB-Work commit on HEAD",
-  "status": "doing",
+  "status": "done",
   "parent": "BG-iqqigub7",
   "priority": "P2",
   "rank": 0,
@@ -21,5 +21,19 @@
     "_tools/backlog.py",
     "_tools/test_backlog.py"
   ],
-  "claimed_by": "worker-4feakz4i"
+  "evidence": {
+    "commit": "4518a3bb99f7ada7a639779cb9890160c88501cf",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "kb_work_outside_trailers"
+        ],
+        "exit": 0,
+        "sha256": "94a0ce12c21ab550"
+      }
+    ]
+  }
 }
