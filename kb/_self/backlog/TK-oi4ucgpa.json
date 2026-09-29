@@ -2,7 +2,7 @@
   "id": "TK-oi4ucgpa",
   "kind": "task",
   "title": "hosting.md: path choice and the VM runbook",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-y6ee5kdv",
   "priority": "P2",
   "rank": 0,
@@ -37,5 +37,37 @@
     "kb/_self/map.csv",
     "kb/_self/README.md"
   ],
-  "claimed_by": "hosting-agent"
+  "evidence": {
+    "commit": "819ab76a248500f53c59850586e174d44d578e89",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import pathlib,sys; t=pathlib.Path('kb/_self/hosting.md').read_text(encoding='utf-8'); sys.exit(0 if all(w in t for w in ['embedding.md', 'systemd', '127.0.0.1', 'KB_INDEX', 'census']) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/selfdoc.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "3db513ebafdfe3a2"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "selfdoc"
+        ],
+        "exit": 0,
+        "sha256": "3256690906753a78"
+      }
+    ]
+  }
 }

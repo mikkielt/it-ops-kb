@@ -2,7 +2,7 @@
   "id": "ST-y6ee5kdv",
   "kind": "story",
   "title": "A runbook deploys kb_http.py behind an authenticating TLS proxy",
-  "status": "todo",
+  "status": "done",
   "parent": "EP-5sc7hr36",
   "sprint": "SP-4udo5jmw",
   "priority": "P2",
@@ -56,5 +56,38 @@
   "links": [
     "public/agents/copilot-studio-mcp-client.md",
     "public/agents/copilot-studio-inventory.md"
-  ]
+  ],
+  "evidence": {
+    "commit": "819ab76a248500f53c59850586e174d44d578e89",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import pathlib,sys; t=pathlib.Path('kb/_self/hosting.md').read_text(encoding='utf-8'); sys.exit(0 if all(w in t for w in ['embedding.md', 'systemd', 'Container Apps', 'App Service', 'AzureConnectors', 'x-ms-agentic-protocol']) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/selfdoc.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "3db513ebafdfe3a2"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "selfdoc"
+        ],
+        "exit": 0,
+        "sha256": "ca93e80f4b2c1594"
+      }
+    ]
+  }
 }

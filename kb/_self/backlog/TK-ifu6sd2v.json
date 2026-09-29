@@ -2,7 +2,7 @@
   "id": "TK-ifu6sd2v",
   "kind": "task",
   "title": "hosting.md: Azure Container Apps and App Service runbook",
-  "status": "todo",
+  "status": "done",
   "parent": "ST-y6ee5kdv",
   "priority": "P2",
   "rank": 1,
@@ -37,5 +37,38 @@
   ],
   "depends_on": [
     "TK-oi4ucgpa"
-  ]
+  ],
+  "evidence": {
+    "commit": "819ab76a248500f53c59850586e174d44d578e89",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import pathlib,sys; t=pathlib.Path('kb/_self/hosting.md').read_text(encoding='utf-8'); sys.exit(0 if all(w in t for w in ['Container Apps', 'App Service', 'Entra']) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/selfdoc.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "3db513ebafdfe3a2"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "selfdoc"
+        ],
+        "exit": 0,
+        "sha256": "61528a656c97fdab"
+      }
+    ]
+  }
 }
