@@ -2,16 +2,37 @@
   "id": "BG-as65f4wv",
   "kind": "bug",
   "title": "settings.json does not allow the read-only selfdoc.py section command",
-  "status": "draft",
+  "status": "todo",
+  "sprint": "SP-qdq57zu3",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
-  "goal": "The allow list of .claude/settings.json holds Bash and PowerShell rules for python3 _tools/selfdoc.py section *, so a skill or subagent reads a doc section without a permission prompt, and test_powershell_rules_mirror_bash still passes",
+  "goal": "The allow list of .claude/settings.json holds Bash and PowerShell rules for python3 _tools/selfdoc.py section * and map-tools *, so a skill or subagent reads a doc section or the tools map without a permission prompt, and test_powershell_rules_mirror_bash still passes",
   "repro": {
     "run": [
       "python3",
       "-c",
       "import json,sys; a=json.load(open('.claude/settings.json'))['permissions']['allow']; sys.exit(0 if 'Bash(python3 _tools/selfdoc.py section *)' in a and 'PowerShell(python3 _tools/selfdoc.py section *)' in a else 1)"
     ]
-  }
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "powershell_rules_mirror_bash"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,sys; a=json.load(open('.claude/settings.json',encoding='utf-8'))['permissions']['allow']; sys.exit(0 if all(f'{s}(python3 _tools/selfdoc.py {c} *)' in a for s in ('Bash','PowerShell') for c in ('section','map-tools')) else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/settings.json"
+  ]
 }
