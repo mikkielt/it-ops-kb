@@ -2,7 +2,7 @@
   "id": "TK-ziyv2537",
   "kind": "task",
   "title": "AGENTS.md lane rule",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-lhcjqkbq",
   "priority": "P2",
   "rank": 1,
@@ -64,5 +64,6 @@
       "answer": "drop the Live documentation parenthetical '(the `it-ops-kb-docs` plugin elsewhere, `python3 _tools/kb_mcp.py --register-local` in a clone)' (setup step 3 of kb/_self/maintaining.md says it) and 'Overview for people: `README.md`.': 4066 bytes",
       "by": "operator"
     }
-  ]
+  ],
+  "claimed_by": "mac-first"
 }
