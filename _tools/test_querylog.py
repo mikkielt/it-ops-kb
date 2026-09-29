@@ -2496,9 +2496,41 @@ QUOTA = {"status": "failed", "failure_reason": "ci_quota_exceeded", "allow_failu
 PASSED = [{"name": "kb-trailers", "status": "success"}, {"name": "kb-tests", "status": "success"}]
 
 
+DEFAULT_GATE = ql_deliver.GATE_JOBS
+
+
+class TestNoGateJobs:
+    """Every job is manual, so no job is a gate by default: a pipeline is never `unverified` for a job nobody
+    started, and a job whose script ran and failed still makes it red."""
+
+    def test_no_job_is_a_gate_by_default(self):
+        assert DEFAULT_GATE == ()
+
+    @pytest.mark.parametrize("jobs", [
+        [{"name": "kb-tests", "status": "manual"}, {"name": "kb-trailers", "status": "manual"}],
+        [{"name": "kb-tests", **QUOTA}, {"name": "kb-trailers", "status": "skipped"}],
+        [{"name": "kb-tests", "status": "canceled"}], [],
+    ])
+    def test_a_pipeline_whose_jobs_never_ran_is_ok(self, jobs):
+        assert ql_deliver.job_verdict(jobs) == ("ok", [], [])
+
+    def test_a_failed_script_is_red_and_an_unreadable_list_is_unverified(self):
+        failed = {"name": "kb-tests-windows", "status": "failed", "failure_reason": "script_failure"}
+        assert ql_deliver.job_verdict([failed, {"name": "kb-tests", "status": "manual"}]) == (
+            "red", ["kb-tests-windows"], [])
+        assert ql_deliver.job_verdict(None)[0] == "unverified"
+
+
+@pytest.fixture
+def gate_jobs(monkeypatch):
+    """The two jobs that were once gates, named again, for the tests of the gate mechanism."""
+    monkeypatch.setattr(ql_deliver, "GATE_JOBS", ("kb-tests", "kb-trailers"))
+
+
+@pytest.mark.usefixtures("gate_jobs")
 class TestJobVerdict:
-    """A GitLab pipeline read by its jobs (recorded job lists, no network): every job is manual with allow_failure,
-    so the pipeline's status says success whatever the jobs did."""
+    """A GitLab pipeline read by its jobs (recorded job lists, no network), with GATE_JOBS named: every job is manual
+    with allow_failure, so the pipeline's status says success whatever the jobs did."""
 
     @pytest.mark.parametrize("jobs,want", [
         (PASSED, ("ok", [], [])),

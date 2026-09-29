@@ -28,11 +28,11 @@ GITLAB_RED = ("failed",)
 GITLAB_UNFINISHED = ("created", "waiting_for_resource", "preparing", "waiting_for_callback", "pending", "running",
                      "canceling", "scheduled")
 GITHUB_RED = ("failure", "timed_out", "startup_failure")  # conclusions of a completed run
-# The jobs that must succeed for a GitLab pipeline to count as green: every job in .gitlab-ci.yml has allow_failure
-# (these two start on their own, the others on tool changes or by hand), so the pipeline's own status says success
-# whatever they did. The other jobs (kb-tests-floor,
-# tool-stress, kb-tests-windows) make it red when their script failed, and never unverified.
-GATE_JOBS = ("kb-tests", "kb-trailers")
+# The jobs that must succeed for a GitLab pipeline to count as green. None: every job in .gitlab-ci.yml is manual
+# with allow_failure, so a pipeline is never held for a job nobody started, and its own status says success whatever
+# the jobs did. A job whose script ran and failed makes it red (whichever job, kb-tests-windows included). Naming jobs
+# here makes a pipeline in which one did not succeed `unverified`.
+GATE_JOBS = ()
 RAN_AND_FAILED = ("script_failure",)  # a failed job's failure_reason when its script ran and exited non-zero
 LOOKBACK = 200  # first-parent commits of origin/main searched for the last automatic commit
 REFUSALS = (  # a push refused for want of rights, as the remote words it (kb: gitlab/automated-merge-requests.md)
@@ -104,16 +104,17 @@ def pipeline_verdict(forge, statuses):
     return "pending" if any(s in GITLAB_UNFINISHED for s in statuses) else "ok"
 
 
-def job_verdict(jobs, gate=GATE_JOBS):
+def job_verdict(jobs, gate=None):
     """(verdict, failed, unpassed) of a GitLab pipeline read by its jobs (the list `pipelines/<id>/jobs` answers,
     newest first; None when it could not be read), not by its status:
     - `red` when a job's script ran and failed (status `failed`, failure_reason in RAN_AND_FAILED), whichever job;
-    - else `pending` when a gate job is unfinished;
+    - else `pending` when a gate job (GATE_JOBS, none by default) is unfinished;
     - else `unverified` when a gate job did not succeed: manual, skipped, canceled, failed without running (such as
       ci_quota_exceeded), missing from the pipeline, or the list unreadable;
     - else `ok`.
     `failed` names the jobs whose script failed, sorted; `unpassed` says how each gate job did not succeed
     (`kb-tests manual`, `kb-tests failed (ci_quota_exceeded)`, `kb-trailers not in the pipeline`)."""
+    gate = GATE_JOBS if gate is None else gate
     if not isinstance(jobs, list):
         return "unverified", [], ["the pipeline's jobs could not be read"]
     latest = {}  # a job name's newest entry

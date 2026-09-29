@@ -3,7 +3,7 @@
   "kind": "sprint",
   "title": "Windows clone complete",
   "status": "active",
-  "goal": "The Windows gaps left after Windows ready are closed: revision reads survive long Windows paths, the raw-read hint fires under the PowerShell tool, the test suite compiles without a SyntaxWarning, kb-tests-windows runs stress_test.py and runs without a click on tool changes, and a clean Windows 11 host has gone from no Python to a passing /kb-setup on record.",
+  "goal": "The Windows gaps left after Windows ready are closed: revision reads survive long Windows paths, the raw-read hint fires under the PowerShell tool, the test suite compiles without a SyntaxWarning, kb-tests-windows runs stress_test.py and is offered on tool changes to start on a click, and a clean Windows 11 host has gone from no Python to a passing /kb-setup on record.",
   "gates": [
     {
       "id": "start",

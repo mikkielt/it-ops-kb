@@ -7,7 +7,7 @@
   "sprint": "SP-3brmvlnh",
   "priority": "P2",
   "rank": 0,
-  "goal": "The main-pipeline check of backlog.py red-pipeline (job-level, after BG-meuqnbjg) runs as one intake detector with the same fingerprint and links, so an intake run and red-pipeline file the same one bug; red-pipeline and red-pipeline --status stay as commands with unchanged output and exit codes",
+  "goal": "The main-pipeline check of backlog.py red-pipeline (job-level, after BG-meuqnbjg) runs as one intake detector with the same fingerprint and links, so an intake run and red-pipeline file the same one bug; red-pipeline and red-pipeline --status stay as commands with unchanged output and exit codes; with every job manual a pipeline no one started is green and files nothing",
   "checks": [
     {
       "run": [

@@ -2,7 +2,7 @@
   "id": "TK-mjrtkhoi",
   "kind": "task",
   "title": "kb-lane job on GitLab and GitHub",
-  "status": "todo",
+  "status": "dropped",
   "parent": "ST-qx7aw7if",
   "priority": "P2",
   "rank": 1,
@@ -41,5 +41,6 @@
       "answer": "automatically with allow_failure: false: main's pipeline turns red on a direct code commit, and backlog.py red-pipeline files a bug for it",
       "by": "operator"
     }
-  ]
+  ],
+  "notes": "Dropped: every CI job is manual, so a kb-lane job on push pipelines detects nothing; the pre-push hook of ST-qx7aw7if enforces the lanes"
 }

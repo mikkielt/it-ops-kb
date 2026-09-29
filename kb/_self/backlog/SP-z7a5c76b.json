@@ -3,7 +3,7 @@
   "kind": "sprint",
   "title": "Delivery proven",
   "status": "active",
-  "goal": "The query log's automatic delivery is proven on the real origin and on Windows, learn no longer turns lookups the judge found answered into gaps, and defects the pipeline detects reach the backlog as bugs without a person filing them.",
+  "goal": "The query log's automatic delivery is proven on the real origin and on Windows, learn no longer turns lookups the judge found answered into gaps, and a CI job someone started that fails its script reaches the backlog as a bug without a person filing it, with delivery and merge requests waiting on no pipeline.",
   "gates": [
     {
       "id": "start",

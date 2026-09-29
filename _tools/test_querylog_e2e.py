@@ -797,16 +797,18 @@ class TestCiNotRed:
         w = cls.w = World(tmp_path_factory.mktemp("e2e-ci"), seed)
         cls.said = {}
         windows = [{"name": "kb-tests-windows", "status": "manual"}]
-        for name, key, ci in (("win32", None, signed_out), ("laps_length", "running", pipeline("running")),
-                              (None, "unverified", pipeline("success", windows + [{"name": "kb-trailers", **QUOTA},
-                                                                                  {"name": "kb-tests", **QUOTA}])),
-                              ("do_port", "green", pipeline("manual", windows + PASSED))):
-            if name:
-                s = sid()
-                w.lookup(name, s)
-                w.end(s)
-            w.ci = ci
-            cls.said[key] = (w.distill(), w.main(), w.spool())
+        with pytest.MonkeyPatch.context() as mp:  # the gate mechanism, with the two once-gate jobs named
+            mp.setattr(ql_deliver, "GATE_JOBS", ("kb-tests", "kb-trailers"))
+            for name, key, ci in (("win32", None, signed_out), ("laps_length", "running", pipeline("running")),
+                                  (None, "unverified", pipeline("success", windows + [{"name": "kb-trailers", **QUOTA},
+                                                                                      {"name": "kb-tests", **QUOTA}])),
+                                  ("do_port", "green", pipeline("manual", windows + PASSED))):
+                if name:
+                    s = sid()
+                    w.lookup(name, s)
+                    w.end(s)
+                w.ci = ci
+                cls.said[key] = (w.distill(), w.main(), w.spool())
         cls.st = w.state()
 
     def test_unfinished_or_unverified_ci_holds_the_push_and_a_passed_gate_does_not(self):

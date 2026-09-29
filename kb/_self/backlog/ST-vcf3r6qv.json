@@ -7,7 +7,7 @@
   "sprint": "SP-v5xagbyv",
   "priority": "P2",
   "rank": 3,
-  "goal": "kbgit.py sync --push sends a content-only range to the integration remote's main as today; a range with any code-lane commit (its content commits ride along) is rebased on the integration main, gated and pushed as branch code/<id> (the first KB-Work id in the range, else HEAD's short hash) with the push options merge_request.create, merge_request.target=<branch>, merge_request.auto_merge and merge_request.remove_source_branch; when the remote answers that it does not support push options, sync pushes the same branch without them and prints that a merge or pull request must be opened from it; it exits 0 once the branch is pushed and never moves main; pipelines of code/* branches run the gate jobs without a click; tests.py -k TestCodeLaneSync proves both push paths against local bare remotes, and -k TestCiCodeBranch the CI rule",
+  "goal": "kbgit.py sync --push sends a content-only range to the integration remote's main as today; a range with any code-lane commit (its content commits ride along) is rebased on the integration main, gated and pushed as branch code/<id> (the first KB-Work id in the range, else HEAD's short hash) with the push options merge_request.create, merge_request.target=<branch>, merge_request.auto_merge and merge_request.remove_source_branch; when the remote answers that it does not support push options, sync pushes the same branch without them and prints that a merge or pull request must be opened from it; it exits 0 once the branch is pushed and never moves main; no pipeline job gates the merge request (every job is manual, the head pipeline is skipped, and the project's Skipped pipelines are considered successful setting lets auto-merge merge it); tests.py -k TestCodeLaneSync proves both push paths against local bare remotes",
   "checks": [
     {
       "run": [
@@ -15,14 +15,6 @@
         "_tools/tests.py",
         "-k",
         "TestCodeLaneSync"
-      ]
-    },
-    {
-      "run": [
-        "python3",
-        "_tools/tests.py",
-        "-k",
-        "TestCiCodeBranch"
       ]
     }
   ],
@@ -54,7 +46,7 @@
         "every job stays manual: a person starts kb-tests on each merge request before auto-merge can merge"
       ],
       "recommendation": "kb-tests and kb-trailers run automatically on code/* branches; every other job stays manual",
-      "answer": "kb-tests and kb-trailers run automatically on code/* branches; every other job stays manual",
+      "answer": "every job stays manual and no merge request waits on a pipeline: auto-merge merges the skipped head pipeline (Skipped pipelines are considered successful is on)",
       "by": "operator"
     },
     {
@@ -76,5 +68,5 @@
     "kb/public/gitlab/github-branch-rules-and-auto-merge.md",
     "kb/public/_answers.md#QK-automation-that-pushes-main-read-commit"
   ],
-  "notes": "Facts: push options are in every GitLab tier and offering (automated-merge-requests.md:53, DOC S-2d2dlaeq); -o to a server that does not advertise them stops with 'the receiving end does not support push options' before any ref is updated (:55, CODE S-iwjdorgq), so a retry without -o is safe (:56); a bare test remote needs receive.advertisePushOptions=true and a pre-receive hook can record GIT_PUSH_OPTION_* (:43-44, :68). Free has no merged results pipelines, so sync rebases right before the push (:62); auto-merge needs a successful pipeline (:22), and new commits on main cancel it under the fast-forward and semi-linear methods (:24), so git.md names the merge-commit method as optional host setup. The kb has no push options for GitHub pull requests; on a GitHub integration remote sync takes the fallback, and auto-merge there needs a branch protection rule (github-branch-rules-and-auto-merge.md:32). Whether GitLab's auto-merge reads a branch pipeline is open (TK-yoyjegdq); if it does not, the merge request waits visibly and never merges untested. From the push that lands this story, sync sends the sprint's remaining code items as merge requests: ST-niikw55v “Sprint landing and done follow the lanes” comes next for that reason."
+  "notes": "Facts: push options are in every GitLab tier and offering (automated-merge-requests.md:53, DOC S-2d2dlaeq); -o to a server that does not advertise them stops with 'the receiving end does not support push options' before any ref is updated (:55, CODE S-iwjdorgq), so a retry without -o is safe (:56); a bare test remote needs receive.advertisePushOptions=true and a pre-receive hook can record GIT_PUSH_OPTION_* (:43-44, :68). Free has no merged results pipelines, so sync rebases right before the push (:62); auto-merge needs a successful pipeline (:22), and new commits on main cancel it under the fast-forward and semi-linear methods (:24), so git.md names the merge-commit method as optional host setup. The kb has no push options for GitHub pull requests; on a GitHub integration remote sync takes the fallback, and auto-merge there needs a branch protection rule (github-branch-rules-and-auto-merge.md:32). Auto-merge reads the source branch's branch pipeline (automated-merge-requests.md:27); every job is manual, so that pipeline is `skipped` and merges because the project sets allow_merge_on_skipped_pipeline (:31). Nothing tests a merge request before it merges: the local gate does. From the push that lands this story, sync sends the sprint's remaining code items as merge requests: ST-niikw55v “Sprint landing and done follow the lanes” comes next for that reason."
 }

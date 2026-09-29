@@ -2,13 +2,11 @@
 # tools are stdlib Python; the tests run with pytest and pytest-xdist, which uv installs from uv.lock (pyproject.toml's
 # dev group). A pipeline is created for every branch push and every tag; the query log's conflict MR (a
 # `querylog/<run-id>` branch, kb/_self/querylog.md) runs through the branch rule. Every job runs on the project's own
-# runners (kb/_self/runners.md): the Linux jobs name `docker-linux`, kb-tests-windows `docker-windows`, so no job
-# waits on GitLab.com's shared-runner quota. The gate jobs kb-tests and kb-trailers start on their own for every
-# pipeline they are in, and kb-tests-windows for tool changes, each with `allow_failure: true`, except that on a code/*
-# branch (the merge request sync opens for code-lane work) the gate jobs' first rule makes them `allow_failure: false`,
-# so a failed gate fails the branch pipeline and auto-merge does not merge it; kb-tests-floor and tool-stress stay
-# manual (`when: manual`, also with `allow_failure: true`, since a manual job in `rules` otherwise blocks the pipeline:
-# docs.gitlab.com/ci/jobs/job_control). No job writes to the repository.
+# runners (kb/_self/runners.md): the Linux jobs name `docker-linux`, kb-tests-windows `docker-windows`. Every job is
+# manual (`when: manual`, `allow_failure: true`: a manual job in `rules` otherwise blocks the pipeline,
+# docs.gitlab.com/ci/jobs/job_control), so no push or merge request waits on a pipeline; the local push gate
+# (kb/_self/maintaining.md) is the gate, and a person starts a job to run it on the runners, kb-tests-windows above all
+# (the only Windows run). No job writes to the repository.
 workflow:
   rules:
     - if: $CI_COMMIT_BRANCH
@@ -42,10 +40,7 @@ kb-tests:
     - pip install --quiet uv
     - python3 _tools/tests.py
   rules:
-    - if: $CI_COMMIT_BRANCH =~ /^code\//
-      when: on_success
-      allow_failure: false
-    - when: on_success
+    - when: manual
       allow_failure: true
 
 # The tools' floor (pyproject.toml requires-python >=3.11): the same tests on the image's Python 3.11 instead of the
@@ -115,8 +110,8 @@ kb-tests-windows:
         - .gitlab-ci.yml
         - pyproject.toml
         - uv.lock
-      # starts on its own for tool changes, no click needed
-      when: on_success
+      # offered for tool changes, started by a click
+      when: manual
       allow_failure: true
 
 tool-stress:
@@ -145,9 +140,6 @@ kb-trailers:
     - git config --global --add safe.directory "$CI_PROJECT_DIR"
     - python3 _tools/kbgit.py check-trailers
   rules:
-    - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH =~ /^code\//
-      when: on_success
-      allow_failure: false
     - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH
-      when: on_success
+      when: manual
       allow_failure: true

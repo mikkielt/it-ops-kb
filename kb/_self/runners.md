@@ -1,6 +1,6 @@
 # CI runners: the project's own GitLab runners
 
-The project has two self-hosted GitLab runners on the same Windows 11 Pro machine (here `PL-LT-00123`, the operator `jan.kowalski`), so a job that names one of their tags never waits on GitLab.com's shared-runner quota. Which job names which tag, and when each starts, is in `.gitlab-ci.yml` and `kb/_self/git.md` (Workflow). This file is the runbook for the runners themselves. Neither runner's token is in the repository: each lives only in its runner's `config.toml`.
+The project has two self-hosted GitLab runners on the same Windows 11 Pro machine (here `PL-LT-00123`, the operator `jan.kowalski`), so a job that names one of their tags never waits on GitLab.com's shared-runner quota. Which job names which tag, and that every job starts on a click, is in `.gitlab-ci.yml` and `kb/_self/git.md` (Workflow). This file is the runbook for the runners themselves. Neither runner's token is in the repository: each lives only in its runner's `config.toml`.
 
 | tag | executor | where | runs |
 |---|---|---|---|

@@ -6,7 +6,7 @@
   "parent": "ST-uzqoj5du",
   "priority": "P2",
   "rank": 0,
-  "goal": "red-pipeline calls the intake CI detector; its existing tests pass unchanged and test_intake.py asserts one bug for one red pipeline across intake and red-pipeline",
+  "goal": "red-pipeline calls the intake CI detector; its existing tests pass unchanged and test_intake.py asserts one bug for one red pipeline across intake and red-pipeline; a pipeline whose jobs nobody started is green and files nothing",
   "checks": [
     {
       "run": [

@@ -15,6 +15,7 @@ import pytest
 
 import backlog
 import kbgit
+import ql_deliver
 
 TOOLS = os.path.dirname(os.path.abspath(__file__))
 TOOL = os.path.join(TOOLS, "backlog.py")
@@ -55,6 +56,13 @@ def no_git_location(monkeypatch):
     """A pre-push hook in a worktree sets these; inherited, git init and commit would act on the real repository."""
     for k in ("GIT_DIR", "GIT_WORK_TREE", "GIT_INDEX_FILE"):
         monkeypatch.delenv(k, raising=False)
+
+
+@pytest.fixture(autouse=True)
+def gate_jobs(monkeypatch):
+    """No job is a gate by default (every CI job is manual); these tests read pipelines with the two once-gate jobs
+    named, and the default is proved in test_querylog.py's TestNoGateJobs."""
+    monkeypatch.setattr(ql_deliver, "GATE_JOBS", ("kb-tests", "kb-trailers"))
 
 
 @pytest.fixture

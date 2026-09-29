@@ -31,13 +31,13 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
   backlog.py goal ID                      a /goal condition for the item: its end state, checks and scope
   backlog.py red-pipeline [--status|--hook]   the newest finished pipeline of origin's main (glab api, gh on GitHub;
                                           a note when neither is signed in), on GitLab read by its jobs: red when a
-                                          job's script failed, unverified when a gate job (kb-tests, kb-trailers) did
-                                          not succeed. When red and no automatic revert covers it, one bug (S1 when
+                                          job's script failed, unverified when the job list is unreadable or a job
+                                          in ql_deliver.GATE_JOBS (none) did not succeed. When red and no automatic revert covers it, one bug (S1 when
                                           the kb-tests job failed, else S2) unless an item already names that
                                           pipeline; a failure fingerprint (the first failed job and its first failing
                                           test or error line) in the bug's links, and a pipeline failing the same way
                                           joins that open bug's links instead. --status: exit 0 green, 1 red,
-                                          unverified (naming the gate jobs) or unreadable (the bug's repro). --hook:
+                                          unverified (naming any gate jobs) or unreadable (the bug's repro). --hook:
                                           the async SessionStart form, silent
 
 --root DIR (before the command) runs against another clone. Exit: 0 ok, 1 a refused command or check errors,
