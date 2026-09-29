@@ -2,12 +2,12 @@
   "id": "ST-33lzmm5e",
   "kind": "story",
   "title": "The pipeline jobs run on self-hosted runners and start on a click",
-  "status": "draft",
+  "status": "doing",
   "parent": "EP-5p4ahbnq",
   "sprint": "SP-76inhw33",
   "priority": "P1",
   "rank": 0,
-  "goal": "Every job in .gitlab-ci.yml runs on the project's own runners on the Windows runner's PC: the Linux jobs carry tags [docker-linux] and run on a GitLab Runner with the docker executor in WSL2 Ubuntu there (concurrent 2), kb-tests-windows keeps docker-windows, and every job is manual (when: manual, allow_failure: true) so no push or merge request waits on a pipeline; kb/_self/runners.md says how both runners are set up, without any token.",
+  "goal": "Every job in .gitlab-ci.yml runs on the project's own runners on the Windows runner's PC: the Linux jobs carry tags [docker-linux] and run on a GitLab Runner with the docker executor in WSL2 Ubuntu there (concurrent 1, at most 4 CPUs and 8 GB), kb-tests-windows keeps docker-windows, and every job is manual (when: manual, allow_failure: true) so no push or merge request waits on a pipeline; kb/_self/runners.md says how both runners are set up, without any token.",
   "checks": [
     {
       "run": [
@@ -39,5 +39,6 @@
     "windows/gitlab-runner-windows",
     "_tools/ql_deliver.py GATE_JOBS"
   ],
-  "notes": "Added to the running sprint by the operator: GitLab's shared runners ran out of quota (kb-tests and kb-trailers failed with ci_quota_exceeded). A docker-windows runner runs only Windows containers, so the Linux jobs need a Linux runner; Docker Desktop is out, since it switches the one engine the docker-windows runner needs in Windows mode. The kb lacks the WSL install and Linux runner registration facts: the setup follows the live docs."
+  "notes": "Added to the running sprint by the operator: GitLab's shared runners ran out of quota (kb-tests and kb-trailers failed with ci_quota_exceeded). A docker-windows runner runs only Windows containers, so the Linux jobs need a Linux runner; Docker Desktop is out, since it switches the one engine the docker-windows runner needs in Windows mode. The kb lacks the WSL install and Linux runner registration facts: the setup follows the live docs.",
+  "claimed_by": "orchestrator-SP-76inhw33"
 }
