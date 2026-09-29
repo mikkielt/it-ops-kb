@@ -2,7 +2,7 @@
   "id": "TK-5vfbfjht",
   "kind": "task",
   "title": "The slow sync and query-log tests fit the Windows CI budget",
-  "status": "doing",
+  "status": "todo",
   "parent": "BG-ovulgaal",
   "priority": "P1",
   "rank": 2,
@@ -24,6 +24,9 @@
   "depends_on": [
     "TK-kmunpvxo"
   ],
-  "notes": "Needs a Windows machine. A local Windows run (Windows 11, cp1250 locale, Python 3.14.7, uv 0.12.19, Git for Windows 2.55, 8 xdist workers) at 3ff06b7: no test hung; the suite took 895 s. faulthandler stacks of the three tests past 300 s, all waiting in subprocess.run on a child pipeline in a temp repo: test_sync.py:127 scenario (conftest.py:148 kbgit), test_querylog.py:1941 applied, test_querylog_e2e.py:365 scenario (:221 distill, :206 run, test_querylog.py:2339 run_here). test_child_survives_a_kill_on_close_job passes there. The CI job timeout is TK-xwwg2ozp.",
-  "claimed_by": "windows-laptop"
+  "trigger": {
+    "when": "GitLab.com CI compute minutes are available again for the project's namespace (monthly reset or added minutes): kb-tests-windows job 16795392138 failed with ci_quota_exceeded",
+    "fired": false
+  },
+  "notes": "The sync scenarios now clone the shared seed and the same-line conflict case runs as its own class (local 8-worker fixture 448 s -> 321 s). On the hosted runner (job 16794362441, before that change) the fixtures past 300 s were test_sync.py TestSyncInGit 379 s and test_querylog_e2e.py TestFixes 323 s; TestApply 262 s, TestResearch 254 s. Half of TestFixes is one querylog.py apply in a fresh worktree (51 s alone here): apply measures the whole eval set before and after each fix, so a further cut is a change to ql_apply, not the tests. What remains: a kb-tests-windows run with --durations showing no test past 300 s."
 }

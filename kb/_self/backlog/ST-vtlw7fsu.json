@@ -19,6 +19,10 @@
       "match": "\\| complete \\|"
     }
   ],
+  "trigger": {
+    "when": "GitLab.com CI compute minutes are available again for the project's namespace (monthly reset or added minutes): kb-tests-windows job 16795392138 failed with ci_quota_exceeded",
+    "fired": false
+  },
   "links": [
     "kb/public/_gaps.md",
     "python/stdlib-windows-portability"
