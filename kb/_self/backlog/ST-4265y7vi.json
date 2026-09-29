@@ -2,7 +2,7 @@
   "id": "ST-4265y7vi",
   "kind": "story",
   "title": "Review sprint: Autonomous work is safe",
-  "status": "todo",
+  "status": "done",
   "sprint": "SP-liemltg2",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,27 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "evidence": {
+    "commit": "23b361ad25d9feb88c9f81dbaf0aac28995f78d3",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "b1654fdfde27b030"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "dfd7bbe47a684d37"
+      }
+    ]
+  }
 }
