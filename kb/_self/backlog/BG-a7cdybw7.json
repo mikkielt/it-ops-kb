@@ -1,0 +1,26 @@
+{
+  "id": "BG-a7cdybw7",
+  "kind": "bug",
+  "title": "kbingest map lets a rustup cargo shim auto-install a pinned toolchain",
+  "status": "draft",
+  "sprint": "SP-fkyrld5h",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kbingest.NETWORK_OFF sets RUSTUP_AUTO_INSTALL=0 so a rustup cargo proxy never installs an absent toolchain named by rust-toolchain.toml during map (rustup's user guide: default 1 installs the active toolchain when absent, 0 disables it); a test with a fake cargo asserts the variable reaches the command; agents/codebase-mapping.md carries the rustup fact with a DOC source row",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import kbingest;sys.exit(0 if kbingest.NETWORK_OFF.get('RUSTUP_AUTO_INSTALL')=='0' else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/kbingest.py",
+    "_tools/test_kbingest.py",
+    "kb/public/agents/codebase-mapping.md",
+    "kb/public/_sources.csv",
+    "kb/public/_coverage.csv",
+    "kb/public/_coverage.md"
+  ]
+}
