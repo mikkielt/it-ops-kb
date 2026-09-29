@@ -2,7 +2,7 @@
   "id": "BG-lfrc7eev",
   "kind": "bug",
   "title": "kbingest map copies repository-controlled MSBuild property values into the map",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-g5hizdko",
   "sprint": "SP-xourq2gj",
   "priority": "P2",
@@ -31,5 +31,6 @@
     "_tools/kbingest.py",
     "_tools/test_kbingest.py",
     "_tools/fixtures/kbingest/**"
-  ]
+  ],
+  "claimed_by": "fix-lfrc7eev"
 }
