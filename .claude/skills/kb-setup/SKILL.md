@@ -41,7 +41,7 @@ A clone uses four servers at local scope (this machine and this clone only): `kb
 - Run `python3 _tools/kb_mcp.py --register-local`. It registers the missing ones with `claude mcp add-json --scope local` and reports `already registered` for the rest. This is the one change besides step 3; it is local to this user and clone and can be undone with `claude mcp remove <name>`.
 - Run `claude mcp list` and note each server's state. Servers registered in this session load only after a restart: tell the user to restart and run `/kb-setup` again for the calls below.
 - The deciding test is the read-only call below: a server that answers is a PASS, whatever `claude mcp list` says.
-- `Failed`: note the error. Test reachability with `curl -sI https://learn.microsoft.com/api/mcp` (any HTTP status means the host is reachable; proxies and firewalls are the usual cause).
+- `Failed`: note the error. Test reachability with `curl.exe -sI https://learn.microsoft.com/api/mcp` (`curl.exe` on Windows, where PowerShell 5.1 maps `curl` to `Invoke-WebRequest`; `curl` elsewhere) (any HTTP status means the host is reachable; proxies and firewalls are the usual cause).
 - `kb`: call `kb_status` and confirm it names this clone's commit. Before a restart, `python3 _tools/kb_mcp.py --status` shows the same from a shell.
 - For each connected server make one read-only call and confirm it returns content:
   - `microsoft_docs_search` with query `DSC v3 resource manifest`

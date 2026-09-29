@@ -17,7 +17,7 @@ Rules that hold throughout:
 - A pinned source whose upstream changed gets a **new source row** (the file at the new commit or release; id from `python3 _tools/kbid.py url <URL>`), the re-verified citations point to it, and the old row's `superseded_by` names it. Old rows are never edited in place or deleted.
 - `MicrosoftDocs/memdocs` is archived: its pins are re-sourced to the live Learn page (new row with the Learn url, `version_or_date` recording the page's `git_commit_id`/`updated_at`).
 - Read the full page before confirming or changing a fact (`microsoft_docs_fetch` for Learn, the `.mdx` page for Claude Code docs, git for pinned files). Paraphrase Learn text (quotes of 25 words or fewer). Placeholders only.
-- Never call `submit_feedback`. Never `--force` or `--no-verify`. One commit per logical step, with `KB_VERIFIED=<date>` on commits that confirm sources.
+- Never call `submit_feedback`. Never `--force` or `--no-verify`. One commit per logical step, with `--trailer "KB-Verified: <date>"` on commits that confirm sources.
 
 ## Phase 0: fact diff (no model)
 1. `python3 _tools/factdiff.py detect --date <date> --sitemaps` (every source; about 45 minutes at one request per 1.1 s per host, Learn being most of it). Each source is checked by its provider's cheapest reliable signal (`_tools/providers.csv`), then each fact of a changed, moved or gone source is resolved against its anchor. It writes `kb/public/_census/factdiff-<date>.csv`, the detection state in `_fetch_state.csv` and the snapshots of changed `copy` sources. Exit 1 only means some facts need review.
@@ -46,11 +46,11 @@ Scope: every row whose bucket is not OK and whose note is not `blocked`.
    > Return JSON only: {"outcomes": [{"id", "outcome", "note"}], "new_rows": [{all _sources.csv columns}], "superseded": {"old id": "new id"}, "gaps": [{"topic", "text"}], "conflicts": [{"topic", "text"}], "foreign_edits": [{"file", "line", "change"}]}.
 3. Apply the results yourself, one group at a time: append `new_rows` to `_sources.csv` with a CSV writer (`retrieved_utc` = the census date), set `superseded_by` on the old rows, add the gap and conflict bullets under the topic headings, make the foreign edits, then `python3 _tools/census.py record kb/public/_census/<date>.csv --from <outcomes.json>`.
 4. Re-anchor what phase 2 rewrote: `python3 _tools/factdiff.py anchor --file <each edited file>` (a reworded fact has a new key).
-5. Per group: `python3 _tools/build_index.py`, `python3 _tools/doc2query.py stale` (reworded facts orphan their expansion keys: `python3 _tools/doc2query.py prune` removes them), the gate (`check.py`, `build_index.py --check`, `kbgit.py fix --check`, `tests.py`, which runs `rag.py eval`), and a commit (`docs(kb): census <date>: <group>`, `KB_VERIFIED=<date>`). Sources with hash ids never collide across groups; `_sources.csv` is only ever written by you.
+5. Per group: `python3 _tools/build_index.py`, `python3 _tools/doc2query.py stale` (reworded facts orphan their expansion keys: `python3 _tools/doc2query.py prune` removes them), the gate (`check.py`, `build_index.py --check`, `kbgit.py fix --check`, `tests.py`, which runs `rag.py eval`), and a commit (`docs(kb): census <date>: <group>`, `git commit --trailer "KB-Verified: <date>"`). Sources with hash ids never collide across groups; `_sources.csv` is only ever written by you.
 
 ## Phase 3: dates, by script
 1. `python3 _tools/census.py confirm kb/public/_census/<date>.csv --date <date> --dry-run`, then without `--dry-run`. It sets `retrieved_utc` and a `confirmed <date>: <proof>` suffix in `version_or_date` for confirmed sources (bucket OK, or outcome confirmed/updated), `checked_utc` in `_fetch_state.csv`, and `retrieved_utc` of every article whose sources all carry the date.
-2. `python3 _tools/build_index.py`, the gate, and commit `docs(kb): census <date>: confirmed dates` with `KB_VERIFIED=<date>`.
+2. `python3 _tools/build_index.py`, the gate, and commit `docs(kb): census <date>: confirmed dates` with `git commit --trailer "KB-Verified: <date>"`.
 
 ## Phase 4: independent check, then the tag
 1. `python3 _tools/census.py sample kb/public/_census/<date>.csv --changed 0.10 --ok 0.05 --seed <any>`.
