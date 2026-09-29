@@ -2,7 +2,7 @@
   "id": "TK-23djaz5l",
   "kind": "task",
   "title": "Run kb-tests-windows on main and record the result",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-vtlw7fsu",
   "priority": "P2",
   "rank": 0,
@@ -39,5 +39,18 @@
     }
   ],
   "notes": "Waits until the suite passes on Windows. Any push to main while the job runs cancels it (auto-cancel of redundant pipelines, jobs interruptible): start it when no push is expected for its whole run.",
-  "claimed_by": "orchestrator-mac-sprint-run"
+  "evidence": {
+    "commit": "750cff114b0dddb77271243612abaaf21b7f5d80",
+    "checks": [
+      {
+        "run": [
+          "glab",
+          "api",
+          "projects/:fullpath/jobs?scope[]=success&per_page=100"
+        ],
+        "exit": 0,
+        "sha256": "ca88f187f740f538"
+      }
+    ]
+  }
 }
