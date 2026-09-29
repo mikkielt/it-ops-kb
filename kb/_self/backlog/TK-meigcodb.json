@@ -2,7 +2,7 @@
   "id": "TK-meigcodb",
   "kind": "task",
   "title": "Cap MCP output for this project",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-o6krms2n",
   "priority": "P2",
   "rank": 0,
@@ -20,5 +20,18 @@
     ".claude/settings.json",
     "kb/_self/tools.md"
   ],
-  "claimed_by": "orchestrator-SP-mqjeanq3"
+  "evidence": {
+    "commit": "e82ce6389dd5e0f3b7c6da68424d5fd60d0503fe",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/selfdoc.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "3db513ebafdfe3a2"
+      }
+    ]
+  }
 }
