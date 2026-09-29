@@ -2,7 +2,7 @@
   "id": "BG-yokyoj6u",
   "kind": "bug",
   "title": "kb_pack shows the clone's absolute path to remote clients in its kb copy line",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-5sc7hr36",
   "sprint": "SP-4udo5jmw",
   "priority": "P2",
@@ -23,5 +23,19 @@
     "_tools/test_kb_http.py",
     "_tools/kb_http.py"
   ],
-  "claimed_by": "path-bug-agent"
+  "evidence": {
+    "commit": "640fbb97a09f7c135bdaf374637b6f305cfaa75d",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "kb_http_no_local_path"
+        ],
+        "exit": 0,
+        "sha256": "1a26b82e8c0bfa35"
+      }
+    ]
+  }
 }
