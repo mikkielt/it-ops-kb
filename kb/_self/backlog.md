@@ -108,7 +108,7 @@ An `S1` bug joins the active sprint when it is filed and goes to the front of `n
   - which items wait on which gate or trigger (with its question and recommendation);
   - the next item;
   - the critical path, with the number of items that can run in parallel at each step.
-  A `SessionStart` hook (`horizon --hook`) prints it at the start of every session in a clone.
+  A `SessionStart` hook (`horizon --hook`) prints it at the start of every session in a clone except one `/clear` starts (matcher `startup|resume|compact|fork`).
 
 ## Definition of done
 
