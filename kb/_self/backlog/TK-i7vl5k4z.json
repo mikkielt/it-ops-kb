@@ -2,7 +2,7 @@
   "id": "TK-i7vl5k4z",
   "kind": "task",
   "title": "Research uv's official Windows release archives and checksums",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-c4csesqq",
   "priority": "P1",
   "rank": 0,
@@ -21,5 +21,6 @@
   "touches": [
     "kb/public/**"
   ],
-  "notes": "Sources: https://docs.astral.sh/uv/getting-started/installation/ and the GitHub release of the pinned uv version (its per-archive .sha256 files). Work it with /kb-research."
+  "notes": "Sources: https://docs.astral.sh/uv/getting-started/installation/ and the GitHub release of the pinned uv version (its per-archive .sha256 files). Work it with /kb-research.",
+  "claimed_by": "research-worker"
 }
