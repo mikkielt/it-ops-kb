@@ -134,6 +134,40 @@ class TestPublish:
         assert "FAILED" in capsys.readouterr().out
 
 
+class TestPublishHook:
+    setup = TestPublish.setup
+
+    def hook(self, r, **kw):
+        return kbpublic.cmd_publish_hook(ns(hook=True, **kw), r.path)
+
+    def test_no_remote_is_silent(self, src, tmp_path, capsys):
+        r, pub, origin = self.setup(src, tmp_path)
+        assert self.hook(r) == 0
+        assert capsys.readouterr().out == "" and pub.run_git("rev-parse", "main").returncode
+
+    def test_publishes_silently_when_ahead(self, src, tmp_path, capsys):
+        r, pub, origin = self.setup(src, tmp_path)
+        r.git("config", "kb.publishRemote", "pub")
+        assert self.hook(r) == 0
+        assert capsys.readouterr().out == ""
+        assert kbpublic.private_commits(pub.rev("main"), pub.path) == []
+        assert self.hook(r) == 0 and capsys.readouterr().out == ""  # nothing to do: still silent
+
+    def test_refusal_and_failed_push_print_and_exit_0(self, src, tmp_path, capsys):
+        r, pub, origin = self.setup(src, tmp_path)
+        r.git("config", "kb.publishRemote", "pub")
+        assert self.hook(r, ci_run=ci_stub("failed")) == 0
+        out = capsys.readouterr().out
+        assert "refused:" in out and "verdict" in out and "source:" not in out
+        assert pub.run_git("rev-parse", "main").returncode  # nothing was pushed
+        hooks = Path(pub.path) / "hooks"
+        hooks.mkdir(exist_ok=True)
+        (hooks / "pre-receive").write_text("#!/bin/sh\nexit 1\n", encoding="utf-8")
+        (hooks / "pre-receive").chmod(0o755)
+        assert self.hook(r) == 0
+        assert "push failed:" in capsys.readouterr().out
+
+
 class TestPublishSafety:
     def prepare(self, src, tmp_path, files=None):
         r, shas = src

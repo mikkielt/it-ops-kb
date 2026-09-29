@@ -12,7 +12,7 @@
   kbgit.py asof <YYYY-MM-DD | tag | rev> <path>            the file as of the last commit on or before that date (or at the tag)
   kbgit.py tag-census YYYY-MM-DD                           annotated tag census-YYYY-MM-DD on HEAD: "kb confirmed current" (no push)
   kbgit.py sync [--push] [--dry-run] [--remote R] [--branch main]   fetch, rebase, fix, gate, push: the way to push
-  kbgit.py publish [--remote R] [--dry-run] [--rewrite]    push the integration main without kb/_querylog to the public home
+  kbgit.py publish [--remote R] [--dry-run] [--rewrite] [--hook]    push the integration main without kb/_querylog to the public home
   kbgit.py bridge BRANCH [--push] [--dry-run] [--remote R]  a public-home branch to the integration remote: rebase, gate, push by lane
   kbgit.py check-public [REV]                              exit 1 when REV's history touches kb/_querylog (kbpublic.py)
 
@@ -2544,6 +2544,7 @@ def main():
     pb.add_argument("--branch", default="main", help="the public remote's branch (default main)")
     pb.add_argument("--dry-run", action="store_true", help="fetch, project and report; push nothing")
     pb.add_argument("--rewrite", action="store_true", help="replace a public branch that is not an ancestor (force with lease)")
+    pb.add_argument("--hook", action="store_true", help="the SessionStart form: print only a refusal or a failed push, exit 0 always")
     br = sub.add_parser("bridge", help="a branch of the public home to the integration remote: rebase its commits, gate, push by lane")
     br.add_argument("branch", help="the branch on the public home (its commits not on the public main)")
     br.add_argument("--push", action="store_true", help="push after a green gate (as sync --push); the public home is never written")
@@ -2557,7 +2558,7 @@ def main():
     a = ap.parse_args()
     cmds = {"trailers": cmd_trailers, "install-hooks": cmd_install_hooks, "check-trailers": cmd_check_trailers, "lane": cmd_lane,
             "log": cmd_log, "blame": cmd_blame, "asof": cmd_asof, "tag-census": cmd_tag_census, "hook": cmd_hook,
-            "sync": cmd_sync, "bridge": cmd_bridge, "publish": lambda a: kbpublic.cmd_publish(a, KB),
+            "sync": cmd_sync, "bridge": cmd_bridge, "publish": lambda a: (kbpublic.cmd_publish_hook if a.hook else kbpublic.cmd_publish)(a, KB),
             "check-public": lambda a: kbpublic.cmd_check_public(a, KB)}
     if a.cmd in cmds:
         try:
