@@ -2,7 +2,7 @@
   "id": "TK-b4xlov32",
   "kind": "task",
   "title": "kb_hook.py context for routed packs",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-2eiobdm4",
   "priority": "P1",
   "rank": 1,
@@ -45,5 +45,44 @@
     "kb/_self/tools.md",
     "kb/_self/token-efficiency.md"
   ],
-  "claimed_by": "worker-b4xlov32"
+  "evidence": {
+    "commit": "178087d30bb7b03d15f63b921bf8f4963fa9a0d3",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "TestKbHookRoute"
+        ],
+        "exit": 0,
+        "sha256": "3eddb33a36f20066"
+      },
+      {
+        "run": [
+          "git",
+          "grep",
+          "-q",
+          "-F",
+          "-e",
+          "say so and add nothing from memory",
+          "--",
+          "_tools/kb_hook.py",
+          "kb/_self/token-efficiency.md"
+        ],
+        "exit": 1,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "kb_hook"
+        ],
+        "exit": 0,
+        "sha256": "99ae2c69847eb325"
+      }
+    ]
+  }
 }
