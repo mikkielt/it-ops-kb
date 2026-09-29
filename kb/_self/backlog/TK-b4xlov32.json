@@ -2,7 +2,7 @@
   "id": "TK-b4xlov32",
   "kind": "task",
   "title": "kb_hook.py context for routed packs",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-2eiobdm4",
   "priority": "P1",
   "rank": 1,
@@ -44,5 +44,6 @@
     "_tools/test_kb.py",
     "kb/_self/tools.md",
     "kb/_self/token-efficiency.md"
-  ]
+  ],
+  "claimed_by": "worker-b4xlov32"
 }

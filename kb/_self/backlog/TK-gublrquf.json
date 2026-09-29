@@ -2,7 +2,7 @@
   "id": "TK-gublrquf",
   "kind": "task",
   "title": "Split route runs the reader and the researcher and sums them",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-tobxg7ui",
   "priority": "P1",
   "rank": 2,
@@ -32,5 +32,6 @@
   "depends_on": [
     "TK-3iesrs66"
   ],
-  "notes": "agent_bench.route mirrors kb_ask's routing for the benchmarks; it changes in TK-inhsi42b “route-by-verdict benchmark scenario”, not here."
+  "notes": "agent_bench.route mirrors kb_ask's routing for the benchmarks; it changes in TK-inhsi42b “route-by-verdict benchmark scenario”, not here.",
+  "claimed_by": "worker-gublrquf"
 }

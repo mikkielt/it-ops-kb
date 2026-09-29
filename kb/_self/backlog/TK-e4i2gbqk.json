@@ -2,7 +2,7 @@
   "id": "TK-e4i2gbqk",
   "kind": "task",
   "title": "Guard a false none: a near miss routes split, not web",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-ysk3m7rt",
   "priority": "P1",
   "rank": 2,
@@ -58,5 +58,6 @@
   "links": [
     "kb/_self/reports/benchmarks.md:149"
   ],
-  "notes": "A best-article share such as \"half the key terms\" does not separate the two: the off-kb Kubernetes question matches 4 of 6 key words, so it would route split; no source sets such a threshold (gate `nearmiss`)."
+  "notes": "A best-article share such as \"half the key terms\" does not separate the two: the off-kb Kubernetes question matches 4 of 6 key words, so it would route split; no source sets such a threshold (gate `nearmiss`).",
+  "claimed_by": "worker-e4i2gbqk"
 }
