@@ -2,8 +2,8 @@
 topic: windows/powershell-static-analysis
 priority: P3
 applies_to: "PowerShell 7.5 and Windows PowerShell 5.1 (#Requires, module manifests, Import-PowerShellDataFile, Get-Command); System.Management.Automation.Language parser API (SDK 7.4 to 7.6); PSScriptAnalyzer 1.18+"
-retrieved_utc: 2026-09-28
-sources: [S-6jyt4xkf, S-tsdqt57s, S-gw24iv7o, S-f3ndzkct, S-jhjw7ppr, S-oeqxq56y, S-o6gamymj, S-ffmai4hf, S-g6na73gp, S-yx6xgjzj, S-f4p734lc, S-z65pkysn]
+retrieved_utc: 2026-09-29
+sources: [S-oodal3ol, S-iass75od, S-3olari7o, S-62qzauot, S-k7hdd27i, S-6jyt4xkf, S-tsdqt57s, S-gw24iv7o, S-f3ndzkct, S-jhjw7ppr, S-oeqxq56y, S-o6gamymj, S-ffmai4hf, S-g6na73gp, S-yx6xgjzj, S-f4p734lc, S-z65pkysn]
 status: complete
 ---
 
@@ -39,6 +39,14 @@ familiar commands (`Import-Module`, `Test-ModuleManifest`, `Get-Command` with an
 - Since PSScriptAnalyzer 1.18.0, parse errors come back as diagnostic records with severity `ParseError`; `-EnableExit` sets the exit code to the number of error records. [DOC S-yx6xgjzj, S-g6na73gp]
 - Rule `PSUseCompatibleCommands` (disabled by default) checks commands against `TargetProfiles`, platform profiles named `<os>_<arch>_<osver>_<psver>_<psarch>_<dotnetver>_<edition>`; a command absent from the union profile is treated as local and ignored. The bundled profiles end at PowerShell 7.0. [DOC S-f4p734lc]
 - Rule `PSUseCompatibleSyntax` (disabled by default) flags syntax unsupported by the listed `TargetVersions` (e.g. `'5.1'`); run from PowerShell 3 or 4 it cannot detect newer syntax, since those versions cannot parse it. [DOC S-z65pkysn]
+- The Parser class page describes the parser as returning a `ScriptBlockAst`, tokens and error messages when a script cannot be parsed, and the `ParseFile` and `ParseInput` pages describe parsing only; no Learn page says in so many words that nothing is executed, so "the parser does not run the script" is a reading of what these pages describe. [DER S-k7hdd27i, S-oeqxq56y: the class page's description of its output; no page states non-execution]
+- The `DiagnosticRecord` class (PSScriptAnalyzer 1.25.0) has the properties `Message`, `Extent` (an `IScriptExtent`), `RuleName`, `Severity`, `ScriptPath`, the read-only `ScriptName` (the file name part of `ScriptPath`), `RuleSuppressionID`, `SuggestedCorrections` (nullable `IEnumerable<CorrectionExtent>`) and `IsSuppressed`. [CODE S-3olari7o: Engine/Generic/DiagnosticRecord.cs#DiagnosticRecord]
+- The custom-rule guide requires a `DiagnosticRecord` to carry at least `Message`, `Extent`, `RuleName` and `Severity`, and says `SuggestedCorrections` has been accepted since PSScriptAnalyzer 1.17.0. [DOC S-62qzauot]
+- The `Line` column of the default table view is not a `DiagnosticRecord` property in that class; a script that needs the position reads it from `Extent` (which is an `IScriptExtent`). [DER S-3olari7o, S-yx6xgjzj: the class has no line property; the table view in the Using page shows `Line`]
+- `using module <module-name>` takes a module name, a module specification hashtable (`ModuleName` plus one of `ModuleVersion`, `MaximumVersion` or `RequiredVersion`, optional `GUID`) or a path; a relative path resolves against the script that has the statement, and a name or specification is searched in `PSModulePath`. It imports classes and enumerations from the root module, which `Import-Module` and `#Requires` do not. [DOC S-oodal3ol]
+- `using namespace <.NET-namespace>` only shortens type names, and `using assembly <path>` loads .NET types from an assembly given as a fully qualified path at the start of execution; a `using` statement must come before any other statement in the script or module, cannot contain a variable, and is not the `Using:` scope modifier. [DOC S-oodal3ol]
+- `Import-Module -Name` (position 0, so `Import-Module Example.Tools` names a module) takes module names or file names and does not permit wildcards; without a path the module is looked up in `$Env:PSModulePath`. [DOC S-iass75od]
+- A mapper that matches PowerShell code by its module imports therefore reads four places: `#Requires -Modules` and `ScriptRequirements.RequiredModules`, `using module` statements, `Import-Module` command elements found with `FindAll` over `CommandAst` (the first argument, when it is a constant), and manifest `RequiredModules`; a module name held in a variable or built at run time is not visible without executing the script. [DER S-6jyt4xkf, S-oodal3ol, S-iass75od, S-tsdqt57s: the four documented import forms; variables are not `using`-legal and `-Name` takes a string]
 - A mapper that must not execute repository code can read a PowerShell repository's pins and public surface from the parser (`ScriptRequirements`, `FindAll` for `FunctionDefinitionAst`) and `Import-PowerShellDataFile` on each `.psd1`, and treat an explicit `FunctionsToExport` list as the module's public commands; a wildcard or missing list leaves the surface known only after an import, which it avoids. [DER S-oeqxq56y, S-ffmai4hf, S-o6gamymj, S-f3ndzkct, S-tsdqt57s, S-jhjw7ppr: the read-only APIs versus the importing commands]
 
 ## Reference
@@ -47,6 +55,8 @@ familiar commands (`Import-Module`, `Test-ModuleManifest`, `Get-Command` with an
 - Import-PowerShellDataFile: https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.utility/import-powershelldatafile?view=powershell-7.5
 - Parser class: https://learn.microsoft.com/en-us/dotnet/api/system.management.automation.language.parser?view=powershellsdk-7.4.0
 - Using PSScriptAnalyzer: https://learn.microsoft.com/en-us/powershell/utility-modules/psscriptanalyzer/using-scriptanalyzer
+- about_Using: https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_using?view=powershell-7.5; Import-Module: https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/import-module?view=powershell-7.5
+- Creating custom rules: https://learn.microsoft.com/en-us/powershell/utility-modules/psscriptanalyzer/create-custom-rule; DiagnosticRecord source: https://raw.githubusercontent.com/PowerShell/PSScriptAnalyzer/1.25.0/Engine/Generic/DiagnosticRecord.cs
 - Related: `agents/codebase-mapping.md` (the same approach across languages); `windows/powershell-7.md` (versions, editions and lifecycle the pins refer to).
 
 ## Examples

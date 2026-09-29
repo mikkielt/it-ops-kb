@@ -43,8 +43,8 @@ Every topic of this root with its priority (the research order, not importance),
 | `agents/security-copilot-endpoint` | P2 | complete | `agents/security-copilot-endpoint.md` | 24 |
 | `agents/windows-agentic-platform` | P2 | complete | `agents/windows-agentic-platform.md`, `agents/windows-ai-policies.csv` | 16 |
 | `agents/agent-planning-and-done` | P3 | complete | `agents/agent-planning-and-done.md` | 6 |
-| `agents/codebase-mapping` | P3 | complete | `agents/codebase-mapping.md`, `agents/codebase-mapping.csv` | 62 |
-| `agents/coding-agent-codebase-context` | P3 | complete | `agents/coding-agent-codebase-context.md` | 15 |
+| `agents/codebase-mapping` | P3 | complete | `agents/codebase-mapping.md`, `agents/codebase-mapping.csv` | 80 |
+| `agents/coding-agent-codebase-context` | P3 | complete | `agents/coding-agent-codebase-context.md` | 17 |
 | `agents/doc-change-detection` | P3 | complete | `agents/doc-change-detection.md` | 36 |
 | `agents/langgraph` | P3 | complete | `agents/langgraph.md` | 11 |
 | `agents/repository-ingestion` | P3 | complete | `agents/repository-ingestion.md` | 4 |
@@ -291,6 +291,6 @@ Every topic of this root with its priority (the research order, not importance),
 | `windows/windows-365` | P2 | complete | `windows/windows-365.md` | 19 |
 | `windows/windows-update-management` | P2 | complete | `windows/windows-update-management.md`, `windows/windows-update-management.csv` | 19 |
 | `windows/winget` | P2 | complete | `windows/winget.md`, `windows/winget-policies.csv` | 14 |
-| `windows/powershell-static-analysis` | P3 | complete | `windows/powershell-static-analysis.md` | 12 |
+| `windows/powershell-static-analysis` | P3 | complete | `windows/powershell-static-analysis.md` | 17 |
 | `windows/windows-sandbox` | P3 | complete | `windows/windows-sandbox.md` | 4 |
 <!-- coverage:end -->

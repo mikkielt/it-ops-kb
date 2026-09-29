@@ -725,3 +725,7 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
 ## windows/windows-sandbox
 
 - Printer redirection and video input defaults in the WindowsSandbox Policy CSP: the page (S-bgz3uymb) says that when `AllowPrinterRedirection` or `AllowVideoInput` is not configured the capability is disabled, and the .wsb page (S-hlmmxoye) agrees for a default sandbox, yet the same CSP page lists `Default Value` 1 (allowed) for both. It also maps `AllowWriteToMappedFolders` to the Group Policy name and registry value `AllowMappedFolders`. Read 2026-09-28; a device test (registry and sandbox behaviour with the policy unset) settles it. (topic: windows/windows-sandbox)
+
+## agents/codebase-mapping
+
+- **`tsc` with files named on the command line and a `tsconfig.json` present.** The TypeScript handbook page on tsconfig (S-3e3kl7vi) says `tsconfig.json` is ignored when input files are named on the command line; the TypeScript 7.0.2 native compiler source (S-gfjnysog, tag typescript/v7.0.2) reports an error in that case and offers `--ignoreConfig` to skip it. Both read 2026-09-29; the handbook is not versioned by release, so this may be a 7.0 behaviour change rather than a doc error; a run of `tsc 5.x` and `tsc 7.x` in a lab settles it. (topic: agents/codebase-mapping)

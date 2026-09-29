@@ -2,8 +2,8 @@
 topic: agents/coding-agent-codebase-context
 priority: P3
 applies_to: "Aider v0.86.2; GitHub Copilot repository indexing (github/docs @87a7556); VS Code Copilot workspace context (vscode-docs @0fc6a01); Cursor docs (retrieved 2026-09-28); OpenAI Codex AGENTS.md (docs retrieved 2026-09-28, code rust-v0.158.0); Gemini CLI v0.61.0; Anthropic context-engineering article (2025-09-29)"
-retrieved_utc: 2026-09-28
-sources: [S1855, S-yq3633pk, S-pht5euzf, S-q4hcjmq7, S-g6eifvzw, S-oqjcjt4q, S-5yij7tgr, S-v2sqknkh, S-4owuypm5, S-iuskapuz, S-zsi4cru4, S-c5olve2h, S-jomschqn, S-c4vaxr7q, S-mer4fr7g]
+retrieved_utc: 2026-09-29
+sources: [S1855, S-yq3633pk, S-pht5euzf, S-q4hcjmq7, S-g6eifvzw, S-oqjcjt4q, S-5yij7tgr, S-v2sqknkh, S-4owuypm5, S-iuskapuz, S-zsi4cru4, S-c5olve2h, S-jomschqn, S-c4vaxr7q, S-mer4fr7g, S-bci74yyr, S-fema44tc]
 status: complete
 ---
 
@@ -49,6 +49,8 @@ official statements per product. Claude Code's own settings for this are in `cla
 - The default is `32 * 1024` in the code at rust-v0.158.0. [CODE S-jomschqn: codex-rs/config/src/config_toml.rs#DEFAULT_PROJECT_DOC_MAX_BYTES]
 - Gemini CLI loads a global `~/.gemini/GEMINI.md`, workspace files, and just-in-time files found when a tool touches a directory (scanning it and its ancestors up to a trusted root), concatenating everything into every prompt. [DOC S-c4vaxr7q]
 - Gemini CLI's `context.fileName` accepts a list (e.g. `["AGENTS.md", "GEMINI.md"]`); memory discovery searches at most `context.discoveryMaxDirs` (default 200) directories and stops going up at `context.memoryBoundaryMarkers` (default `.git`). [DOC S-c4vaxr7q, S-mer4fr7g]
+- At v0.61.0 the source of `memoryDiscovery.ts` walks upward from each trusted root to the directory containing a boundary marker (`.git` by default), or to the trusted root when none is found, and `loadJitSubdirectoryMemory` loads context files for a path a tool touched from the deepest trusted root containing it, skipping paths outside every trusted root; the file has no downward directory scan, and `discoveryMaxDirs` (default 200) is stored in the core config (`config.ts`) with its use not found in these two files. [CODE S-bci74yyr: packages/core/src/utils/memoryDiscovery.ts#getEnvironmentMemoryPaths, loadJitSubdirectoryMemory; S-fema44tc: packages/core/src/config/config.ts#discoveryMaxDirs]
+- The Gemini CLI configuration page at v0.61.0 still describes a scan of subdirectories below the working directory limited to 200 directories, while the GEMINI.md page describes just-in-time loading on tool access; the source read supports the just-in-time reading for the files inspected, and the subdirectory-scan sentence is not confirmed by them. [DER S-mer4fr7g, S-c4vaxr7q, S-bci74yyr: the two docs pages against memoryDiscovery.ts]
 
 ### How it fits
 - None of these coding agents (Claude Code, GitHub Copilot, Cursor, Codex, Gemini CLI, Aider) loads the whole repository: the durable context is small scoped instruction files plus a map of names (files, symbols, imports), and code is fetched on demand by path, symbol, grep or index query. A kb that answers questions about the products a codebase uses fits the same pattern as an on-demand tool (an MCP server or skill) rather than loaded text. [DER S1855, S-yq3633pk, S-v2sqknkh, S-c5olve2h: just-in-time retrieval, ranked maps and capped instruction files]

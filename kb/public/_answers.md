@@ -2141,3 +2141,15 @@ _Agent: kb-research_
 - See agents/codebase-mapping.md, claude/hooks.md, mcp/transports-streamable-http.md, agents/doc-lookup-sources.md, claude/tool-output-limits.md.
 
 _Agent: kb-research_
+
+## QK-import-statements-each-language-use-name. Which import statements does each language use to name a dependency, and which map gaps remain for ingestion
+- Python names a module with `import a.b [as x]`, `from a.b import c` and relative `from .pkg import c`; `importlib.import_module` covers run-time names. [DOC S-572g5w55]
+- ECMAScript modules use `import ... from "m"`, `import "m"`, `export ... from "m"` (string-literal specifiers) and `import(expr)` (any expression); Node.js adds CommonJS `require(id)` and the `node:` prefix; TypeScript adds erased `import type` and `import x = require()`. [DOC S-qg4k7brn, S-vyrse2i6, S-px4fsmrd, S-eofsccvy]
+- C# uses `using N;`, `using static T;`, `using A = N.T;` and `global using`, and a project can add usings through `<Using>` items and implicit usings; Go uses `import "path"` with an optional name, `.` or `_`; PowerShell uses `using module`, `Import-Module` and `#Requires -Modules`. [DOC S-qpokkcte, S-caqpwc2e, S-oodal3ol, S-iass75od]
+- Read-only outputs now known: `go vet -json` (tree of package to analyzer to diagnostics), `npm ls --json` (nested dependencies with missing, invalid, extraneous markers), TypeScript 7.0.2 flags `--showConfig` and `--listFilesOnly`, Gradle Project Report (text and HTML only) and the Tooling API (evaluates the build). [CODE S-nkxy23mu, S-vstmwlcx, S-sipjyeoi, S-gfjnysog; DOC S-hssujrgr, S-a7wduz2b]
+- `dotnet list package --vulnerable` dates from the .NET 5 SDK (5.0.200); audit-sources support in `dotnet package list --vulnerable` from SDK 9.0.300, and it needs a feed. [DOC S-r6oc37x2]
+- Conclusion: an import extractor reads the literal specifier of each static form per language, ignores C#'s disposal `using`, and lists dynamic forms as unresolved; tool-native lists (`go list -json`, `ruff analyze graph`) give the same where the toolchain is installed. [DER S-572g5w55, S-qg4k7brn, S-qpokkcte, S-caqpwc2e, S-oodal3ol]
+- Open: whether a `devcontainer.json` `image` may carry a digest; the Gemini CLI consumer of `discoveryMaxDirs`; whether `Parser.ParseFile` never executes the script (no page says so). [UNK]
+- See agents/codebase-mapping.md, windows/powershell-static-analysis.md, agents/coding-agent-codebase-context.md.
+
+_Agent: kb-research_
