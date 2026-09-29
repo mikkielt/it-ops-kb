@@ -359,11 +359,13 @@ class TestRevisionReadsWithoutGitShow:
 
     def test_old_passage_reads_the_snapshot_at_head(self, repo, windows, monkeypatch):
         body = "The upload limit is 30 GB per package. Clients cache the content for 24 hours after download."
-        repo.write("snap.txt", "source: example\n---\n" + body + "\n")
+        # in a subdirectory, as snapshots are, so the path has a separator: os.path.join spells it natively
+        repo.write("kb/public/_snapshots/S-1.txt", "source: example\n---\n" + body + "\n")
         repo.git("add", "-A")
         repo.git("commit", "-q", "-m", "snapshot")
         monkeypatch.setattr(kbcommon, "HOME", repo.path)
-        monkeypatch.setattr(F, "snapshot_path", lambda sid: os.path.join(repo.path, "snap.txt"))
+        monkeypatch.setattr(F, "snapshot_path",
+                            lambda sid: os.path.join(repo.path, "kb", "public", "_snapshots", f"{sid}.txt"))
         monkeypatch.setattr(F, "prev_path", lambda sid: os.path.join(repo.path, "prev.json"))  # absent: no cached fetch
         sha = next(iter(F.Doc(body).shas))
         passage, where = F.old_passage("S-1", {"sha": sha}, "", {"url": "https://docs.example.com/a"})
