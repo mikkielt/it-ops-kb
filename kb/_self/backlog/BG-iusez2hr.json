@@ -1,0 +1,18 @@
+{
+  "id": "BG-iusez2hr",
+  "kind": "bug",
+  "title": "kbingest map keeps PATH entries under the source repository's own clone",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "scrub_env also drops every PATH entry under the source repository REPO given to kbingest map (its clone, not only the scratch worktree), so an operator PATH naming <clone>/node_modules/.bin or a direnv-added repository bin folder cannot make a mapper child run a repository program; a test named kbingest_map_path_outside_source_clone with a planted entry proves it (found while fixing BG-2g3zo4g7)",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/tests.py",
+      "-k",
+      "kbingest_map_path_outside_source_clone"
+    ]
+  }
+}
