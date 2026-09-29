@@ -2,7 +2,7 @@
   "id": "TK-sfkjs6gs",
   "kind": "task",
   "title": "Run both arms three times and record the verdict",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-zptutwlf",
   "priority": "P2",
   "rank": 1,
@@ -22,5 +22,6 @@
   ],
   "depends_on": [
     "TK-w32po2v3"
-  ]
+  ],
+  "claimed_by": "worker-sfkjs6gs"
 }
