@@ -1,0 +1,41 @@
+{
+  "id": "BG-tlubx3fz",
+  "kind": "bug",
+  "title": "The Python notice names paths a plugin host cannot run",
+  "status": "doing",
+  "sprint": "SP-fep4fpsx",
+  "priority": "P1",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kbpy --notice names install-python.ps1 by its full path beside kbpy ($here), so the message works from a plugin copy under CLAUDE_PLUGIN_ROOT as from a clone, and names no skill the plugin lacks; plugin.md says the same.",
+  "repro": {
+    "run": [
+      "git",
+      "grep",
+      "-q",
+      "-F",
+      "-e",
+      "$here/install-python.ps1",
+      "--",
+      "_tools/kbpy"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "portability"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbpy",
+    "_tools/test_portability.py",
+    "kb/_self/plugin.md",
+    "kb/_self/tools.md"
+  ],
+  "notes": "Found by the fresh-context review of SP-fep4fpsx “Windows ready” (ST-xqx3ffyu).",
+  "claimed_by": "windows-laptop"
+}

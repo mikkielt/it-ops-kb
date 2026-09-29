@@ -179,7 +179,9 @@ class TestLauncher:
     def test_notice_tells_the_person_without_python(self, tmp_path):
         rc, out, _ = self.run(tmp_path, {"python3": 9009}, True, "--notice")
         msg = json.loads(out)["systemMessage"]
-        assert rc == 0 and "no Python 3.11+ found" in msg and "_tools/install-python.ps1" in msg, out
+        # the installer by kbpy's own directory (a plugin copy is not the project), JSON-escaped on a Windows path
+        assert rc == 0 and "no Python 3.11+ found" in msg and os.path.join(KB, "_tools") + "/install-python.ps1" in msg, out
+        assert "kb-setup" not in msg, "the plugin has no /kb-setup"
         (tmp_path / "posix").mkdir()
         rc, out, _ = self.run(tmp_path / "posix", {}, False, "--notice")
         assert rc == 0 and "install-python.ps1" not in json.loads(out)["systemMessage"], out

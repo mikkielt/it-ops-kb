@@ -45,7 +45,15 @@ find_py() {
 if [ "$name" = "--notice" ]; then
   find_py && exit 0
   how="install Python 3.11+ and restart the session"
-  [ "${OS:-}" = "Windows_NT" ] && how="install Python 3.11+ (in PowerShell: _tools/install-python.ps1 -CheckOnly, then without -CheckOnly; see /kb-setup) and restart the session"
+  # the installer beside this file, by its full path: a plugin copy lives under CLAUDE_PLUGIN_ROOT, not the project
+  [ "${OS:-}" = "Windows_NT" ] && how="install Python 3.11+ (in PowerShell: $here/install-python.ps1 -CheckOnly, then without -CheckOnly) and restart the session"
+  # a JSON string: escape \ and " (a Windows path holds backslashes) in sh alone, since no tool may be on PATH
+  rest=$how how=
+  while [ -n "$rest" ]; do
+    c=${rest%"${rest#?}"}
+    rest=${rest#?}
+    case $c in \\|\") how="$how\\$c" ;; *) how="$how$c" ;; esac
+  done
   printf '{"systemMessage": "it-ops-kb: no Python 3.11+ found (tried python3, python%s): the kb hooks and tools do not run. To fix: %s."}\n' \
     "$([ "${OS:-}" = "Windows_NT" ] && echo ', py -3')" "$how"
   exit 0
