@@ -1,0 +1,23 @@
+{
+  "id": "BG-okwigoto",
+  "kind": "bug",
+  "title": "The digest counts a miss as fixed when its gap candidate was superseded by a no-fix eval finding",
+  "status": "draft",
+  "parent": "EP-mzzucemv",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "ql_report.digest counts a miss as fixed only when the finding that stands for it is fixed: a gap candidate that learn superseded (fixed-since) with an eval finding that apply recorded no-fix is not counted under fixed by the kb since; test_digest_superseded_gap_is_not_fixed proves it",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/tests.py",
+      "-k",
+      "digest_superseded_gap_is_not_fixed"
+    ]
+  },
+  "touches": [
+    "_tools/ql_report.py",
+    "_tools/test_querylog.py"
+  ]
+}
