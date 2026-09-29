@@ -16,5 +16,8 @@
         "new_in_active_sprint"
       ]
     }
+  ],
+  "relates_to": [
+    "ST-wgzgijlw"
   ]
 }

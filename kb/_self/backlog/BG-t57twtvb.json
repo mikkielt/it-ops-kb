@@ -3,10 +3,11 @@
   "kind": "bug",
   "title": "kbingest docs say map runs nothing from the repository while open bugs show paths that do",
   "status": "draft",
+  "parent": "EP-g5hizdko",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
-  "goal": "kb/_self/tools.md's kbingest row and the kb-ingest skill's Map bullet state the guarantees kbingest map actually enforces (read-only argument lists, network-off environment, a tool resolved inside the worktree refused) and name the known limits still open (BG-2g3zo4g7, BG-v7k5h2bu, BG-lfrc7eev, BG-lnwercde) instead of an absolute 'nothing run from the repository'; reword again when those close (sprint SP-fkyrld5h review finding F10)",
+  "goal": "kb/_self/tools.md's kbingest row and the kb-ingest skill's Map bullet state the guarantees kbingest map actually enforces (read-only argument lists, -noAutoResponse on dotnet msbuild, a network-off environment, a tool resolved inside the worktree refused, .NET skipped under a global.json sdk.paths) instead of 'nothing built, restored, installed or run from the repository' and 'never runs ... an MSBuild target', which BG-blajtxv2 shows is false while dotnet package list runs NuGet's collection targets; they name the known limits still open (BG-2g3zo4g7, BG-v7k5h2bu, BG-lfrc7eev, BG-lnwercde, BG-blajtxv2), and are reworded again as those close (sprint SP-fkyrld5h review finding F10)",
   "repro": {
     "run": [
       "python3",
@@ -17,5 +18,12 @@
   "touches": [
     "kb/_self/tools.md",
     ".claude/skills/kb-ingest/SKILL.md"
+  ],
+  "relates_to": [
+    "BG-2g3zo4g7",
+    "BG-v7k5h2bu",
+    "BG-lfrc7eev",
+    "BG-lnwercde",
+    "BG-blajtxv2"
   ]
 }

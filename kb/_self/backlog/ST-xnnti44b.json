@@ -6,8 +6,17 @@
   "parent": "EP-o2bjijfp",
   "priority": "P2",
   "rank": 0,
-  "goal": "The /kb-sprint close step removes, after the close commit is pushed, each subagent worktree under .claude/worktrees and each local work/<id> branch of the sprint's items whose commits are on origin/main (git worktree remove, git branch -d, never -D or --force), and reports any it kept and why; the skill names the commands. Answers the SP-fkyrld5h failure: leftover sprint worktrees made test_research_merge fail in the full tests.py (BG-rrht7uts) and dozens of stale worktree and work branches from past sprints remain in the clone.",
+  "goal": "The /kb-sprint close step, after the close commit is pushed, removes each subagent worktree under .claude/worktrees and each local work/<id> and worktree-agent-* branch of the sprint's items: it first runs `git cherry main <branch>` and removes only a branch whose every commit is on main (no '+' line), then `git worktree remove` (without --force, so a worktree with uncommitted files is kept and reported) and `git branch -D` (a branch landed by cherry-pick is not an ancestor of main, so -d refuses it); it never touches a locked worktree, another sprint's branch or _cache/querylog/worktree, and reports each one it kept and why; the skill names these commands. Answers the SP-fkyrld5h failure: leftover sprint worktrees made test_research_merge fail in the full tests.py (BG-rrht7uts) and dozens of stale worktrees and work branches from past sprints remained in the clone.",
   "checks": [
+    {
+      "run": [
+        "grep",
+        "-c",
+        "-e",
+        "git cherry main",
+        ".claude/skills/kb-sprint/SKILL.md"
+      ]
+    },
     {
       "run": [
         "grep",

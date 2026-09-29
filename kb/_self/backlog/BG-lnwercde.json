@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "kbingest map runs cargo when rust-toolchain.toml names a toolchain path",
   "status": "draft",
+  "parent": "EP-g5hizdko",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
