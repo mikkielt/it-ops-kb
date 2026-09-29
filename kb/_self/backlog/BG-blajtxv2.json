@@ -2,7 +2,7 @@
   "id": "BG-blajtxv2",
   "kind": "bug",
   "title": "kbingest map's dotnet package list step can run repository targets",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-g5hizdko",
   "sprint": "SP-xourq2gj",
   "priority": "P2",

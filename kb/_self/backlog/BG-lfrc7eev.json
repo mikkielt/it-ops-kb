@@ -2,7 +2,7 @@
   "id": "BG-lfrc7eev",
   "kind": "bug",
   "title": "kbingest map copies repository-controlled MSBuild property values into the map",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-g5hizdko",
   "sprint": "SP-xourq2gj",
   "priority": "P2",

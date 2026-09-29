@@ -2,7 +2,7 @@
   "id": "BG-2g3zo4g7",
   "kind": "bug",
   "title": "kbingest map passes relative PATH entries to mapper children",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-g5hizdko",
   "sprint": "SP-xourq2gj",
   "priority": "P2",

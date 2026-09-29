@@ -2,7 +2,7 @@
   "id": "BG-drrdyhin",
   "kind": "bug",
   "title": "kbingest run_tool leaves the mapper's process group alive on an interrupt",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-g5hizdko",
   "sprint": "SP-xourq2gj",
   "priority": "P3",

@@ -2,7 +2,7 @@
   "id": "BG-lnwercde",
   "kind": "bug",
   "title": "kbingest map runs cargo when rust-toolchain.toml names a toolchain path",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-g5hizdko",
   "sprint": "SP-xourq2gj",
   "priority": "P3",

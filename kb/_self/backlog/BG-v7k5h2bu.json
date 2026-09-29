@@ -2,7 +2,7 @@
   "id": "BG-v7k5h2bu",
   "kind": "bug",
   "title": "kbingest map leaves the MSBuild NuGet SDK resolver able to fetch an SDK",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-g5hizdko",
   "sprint": "SP-xourq2gj",
   "priority": "P2",

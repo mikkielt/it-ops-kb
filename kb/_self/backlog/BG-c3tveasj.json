@@ -2,7 +2,7 @@
   "id": "BG-c3tveasj",
   "kind": "bug",
   "title": "kbingest drift reads a suffix pointer's path instead of the source url's path",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-g5hizdko",
   "sprint": "SP-xourq2gj",
   "priority": "P3",
