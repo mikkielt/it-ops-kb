@@ -17,6 +17,18 @@
       "recommendation": "approve",
       "answer": "approve",
       "by": "operator"
+    },
+    {
+      "id": "github",
+      "kind": "blocking",
+      "question": "Should this sprint's commits also go to GitHub (the public home) at its close?",
+      "options": [
+        "publish at close",
+        "GitLab only"
+      ],
+      "recommendation": "GitLab only",
+      "answer": "publish at close",
+      "by": "operator"
     }
   ]
 }
