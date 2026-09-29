@@ -864,15 +864,43 @@ SECRET_ENV = re.compile(r"(?i)token|secret|passw|credential|api[_-]?key|private[
 PROXY_ENV = re.compile(r"(?i)^(?:https?|all|ftp|no)_proxy$")
 
 
-def scrub_env(base=None, windows=None):
+def under_worktree(path, root):
+    """True when the absolute PATH is ROOT or lies under it: as given or resolved, compared case-normalised (the
+    spellings MapCtx masks), or through an existing folder on its way that is ROOT itself (a case-insensitive file
+    system, a Windows short name, a second link to it). A path that cannot be resolved counts as inside."""
+    try:
+        real = Path(path).resolve()
+        paths = {os.path.normcase(str(p)) for p in (Path(path), real)}
+        tops = {os.path.normcase(str(p)) for p in (Path(root), Path(root).resolve())}
+        top = os.stat(root)
+    except (OSError, RuntimeError, ValueError):
+        return True
+    if any(p == t or p.startswith(t.rstrip("\\/") + os.sep) for p in paths for t in tops):
+        return True
+    for folder in (real, *real.parents):
+        try:
+            if os.path.samestat(os.stat(folder), top):
+                return True
+        except (OSError, ValueError):
+            continue
+    return False
+
+
+def scrub_env(base=None, windows=None, root=None):
     """The environment of a mapper command: the caller's, without credentials and proxies, plus NETWORK_OFF. On
     Windows (WINDOWS, by default os.name) it also sets NoDefaultCurrentDirectoryInExePath: cmd.exe, which runs an npm
     cmd-shim (tsc.cmd, npm.cmd), otherwise looks for a bare `node` in the working folder before PATH, and that folder
     is the repository's (https://learn.microsoft.com/windows/win32/api/processenv/nf-processenv-needcurrentdirectoryforexepathw:
-    the variable's existence, not its value, drops the current directory from cmd.exe's search)."""
+    the variable's existence, not its value, drops the current directory from cmd.exe's search).
+    PATH keeps only its absolute entries outside the worktree ROOT: a child resolves a relative entry (`.`,
+    `node_modules/.bin`, an empty one) against its own working folder, the repository's, so `#!/usr/bin/env node` or a
+    rustup proxy there would run the repository's program."""
     env = {k: v for k, v in (os.environ if base is None else base).items()
            if not SECRET_ENV.search(k) and not PROXY_ENV.match(k)}
     env.update(NETWORK_OFF)
+    for k in [k for k in env if k.upper() == "PATH"]:
+        env[k] = os.pathsep.join(e for e in env[k].split(os.pathsep) if e and Path(e).is_absolute()
+                                 and not (root is not None and under_worktree(e, root)))
     if os.name == "nt" if windows is None else windows:
         env["NoDefaultCurrentDirectoryInExePath"] = "1"
     return env
@@ -884,9 +912,7 @@ def tool_exe(tool, env, root):
     exe = shutil.which(tool, path=env.get("PATH"))
     if exe is None:
         return None, False
-    real = Path(os.path.abspath(exe)).resolve()
-    top = Path(root).resolve()
-    return exe, real == top or top in real.parents
+    return exe, under_worktree(os.path.abspath(exe), root)
 
 
 class Run(NamedTuple):
@@ -1557,12 +1583,12 @@ def build_map(repo, commit, rev, rows, langs=None, timeout=MAP_TIMEOUT, base_env
     """The map of the repository at COMMIT: for each language with kept files and an installed toolchain, its mapper's
     packages, imports and entry points, read in a scratch worktree. A missing toolchain and every failed command is a
     note. ROWS is `classify`'s result: only kept files are mapped."""
-    env = scrub_env(base_env)
     kept = [(p, k) for p, verdict, k, _secret in rows if verdict == "keep"]
     links = symlinks(repo, commit)
     doc = {"format": MAP_FORMAT, "repo": Path(repo).name, "commit": commit, "rev": rev, "tools": {}, "packages": [],
            "imports": [], "entry_points": [], "notes": []}
     with scratch_worktree(repo, commit) as root:
+        env = scrub_env(base_env, root=root)
         for m in MAPPERS:
             if langs and m.language not in langs:
                 continue

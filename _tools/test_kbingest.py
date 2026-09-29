@@ -371,9 +371,10 @@ def test_kbingest_map_environment_is_network_off(pyrepo, tmp_path, monkeypatch):
 
 
 def test_kbingest_map_scrub_env():
-    env = kbingest.scrub_env({"PATH": "/bin", "GITLAB_TOKEN": "t", "AWS_SECRET_ACCESS_KEY": "s", "Https_Proxy": "p",
+    bindir = os.path.abspath(os.sep + "bin")  # absolute on Windows too (a drive)
+    env = kbingest.scrub_env({"PATH": bindir, "GITLAB_TOKEN": "t", "AWS_SECRET_ACCESS_KEY": "s", "Https_Proxy": "p",
                               "HOME": "/home/jan.kowalski", "GOTOOLCHAIN": "auto"})
-    assert env["PATH"] == "/bin" and env["HOME"] == "/home/jan.kowalski"
+    assert env["PATH"] == bindir and env["HOME"] == "/home/jan.kowalski"
     assert "GITLAB_TOKEN" not in env and "AWS_SECRET_ACCESS_KEY" not in env and "Https_Proxy" not in env
     assert env["GOTOOLCHAIN"] == "local"  # offline settings win over the caller's
 
@@ -387,6 +388,86 @@ def test_kbingest_map_windows_no_cwd_lookup():
         "NoDefaultCurrentDirectoryInExePath"] == "1"
     assert "NoDefaultCurrentDirectoryInExePath" not in kbingest.scrub_env(base, windows=False)
     assert ("NoDefaultCurrentDirectoryInExePath" in kbingest.scrub_env(base)) == (os.name == "nt")
+
+
+def case_insensitive(folder):
+    probe = folder / "caseprobe"
+    probe.mkdir(exist_ok=True)
+    return (folder / "CASEPROBE").exists()
+
+
+def test_kbingest_map_path_absolute_only_scrub_env(tmp_path):
+    """Planted: relative and empty PATH entries, the worktree, a folder under it (also through a link and in another
+    case where the file system allows), beside entries outside it that stay, in order."""
+    root = tmp_path / "tree"
+    (root / "node_modules" / ".bin").mkdir(parents=True)
+    keep = [str(tmp_path / "bin"), str(tmp_path / "tree-sibling"), str(tmp_path / "not-yet-there")]
+    drop = ["node_modules/.bin", ".", "", os.path.join("..", "tree"), str(root), str(root / "node_modules" / ".bin"),
+            str(root / "no-such" / ".." / "node_modules")]
+    if case_insensitive(tmp_path):
+        drop.append(str(tmp_path / "TREE" / "node_modules" / ".bin"))
+    try:
+        os.symlink(root, tmp_path / "alias", target_is_directory=True)
+        drop.append(str(tmp_path / "alias" / "node_modules" / ".bin"))
+    except (OSError, NotImplementedError):
+        pass  # no symbolic links here (Windows without the privilege)
+    mixed = [drop[0], keep[0], *drop[1:4], keep[1], *drop[4:], keep[2]]
+    env = kbingest.scrub_env({"PATH": os.pathsep.join(mixed)}, root=root)
+    assert env["PATH"].split(os.pathsep) == keep
+    assert kbingest.scrub_env({"PATH": os.pathsep.join(mixed)})["PATH"].split(os.pathsep) == [
+        e for e in mixed if e and Path(e).is_absolute()]  # no worktree yet: the relative entries still go
+
+
+PLANTED = "kb-planted-node"  # a repository's node_modules/.bin/node, by a name no host has
+
+PATH_PROBE = ("import json, os, shutil, subprocess\n"
+              f"exe = shutil.which('{PLANTED}')\n"
+              "if exe:\n"
+              "    subprocess.run([exe], stdin=subprocess.DEVNULL)\n"
+              "print(json.dumps({'path': os.environ.get('PATH', ''), 'node': exe}))\n")
+
+
+class PathProbe(FakeMapper):
+    """Runs a child that looks a program up on its PATH from the worktree, as `#!/usr/bin/env node` does, and runs
+    it."""
+
+    def map(self, ctx, files):
+        self.seen["probe"] = ctx.json([sys.executable, "-I", "-c", PATH_PROBE], label="path probe")
+
+
+@requires_git
+def test_kbingest_map_path_absolute_only(tmp_path, monkeypatch):
+    """Planted: a repository with its own program in node_modules/.bin, and PATH entries that reach it from the mapper's
+    working folder: relative ones (`node_modules/.bin`, `.`, an empty one) and absolute ones under the worktree."""
+    r = Repo(tmp_path / "attack")
+    Path(r.path).mkdir()
+    r.git("init", "-q", "-b", "main")
+    r.write("src/a.fake", "x\n")
+    if os.name == "nt":
+        r.write(f"node_modules/.bin/{PLANTED}.cmd", '@echo ran> "%KB_TEST_MARK%"\r\n')
+    else:
+        r.write(f"node_modules/.bin/{PLANTED}", '#!/bin/sh\necho ran > "$KB_TEST_MARK"\n')
+        os.chmod(r.file(f"node_modules/.bin/{PLANTED}"), 0o755)
+    r.git("add", "-A")
+    r.git("commit", "-q", "-m", "init")
+    mark = tmp_path / "ran.txt"
+    monkeypatch.setenv("KB_TEST_MARK", str(mark))
+    scratch = tmp_path / "kbingest-map-known"  # where the worktree goes, so PATH can name folders under it
+    monkeypatch.setattr(kbingest.tempfile, "mkdtemp", lambda **kw: (scratch.mkdir(), str(scratch))[1])
+    tree = scratch / "tree"
+    bindir = install_fake(tmp_path, monkeypatch)
+    host = [e for e in os.environ["PATH"].split(os.pathsep) if e and Path(e).is_absolute()]
+    planted = [os.path.join("node_modules", ".bin"), ".", "", str(tree / "node_modules" / ".bin"), str(tree)]
+    if case_insensitive(tmp_path):
+        planted.append(str(scratch / "TREE" / "node_modules" / ".bin"))
+    monkeypatch.setenv("PATH", os.pathsep.join(planted + os.environ["PATH"].split(os.pathsep)))
+    m = PathProbe()
+    code, doc = fake_map(r, tmp_path, monkeypatch, m)
+    assert code == 0 and doc["tools"]["fake"]["tool"] == "fakemap", doc
+    probe = m.seen["probe"]
+    assert probe is not None, doc["notes"]
+    assert probe["node"] is None and not mark.exists(), ("the repository's program ran", probe)
+    assert probe["path"].split(os.pathsep) == host and str(bindir) in host  # the host's absolute entries, in order
 
 
 def test_kbingest_map_notes_are_capped():
@@ -661,7 +742,7 @@ def test_kbingest_map_missing_go_and_cargo_are_notes(langrepo, tmp_path, monkeyp
     empty.mkdir()
     monkeypatch.delenv("KB_FAKE_MODE", raising=False)
     real = kbingest.scrub_env
-    monkeypatch.setattr(kbingest, "scrub_env", lambda base=None: {**real(base), "PATH": str(empty)})
+    monkeypatch.setattr(kbingest, "scrub_env", lambda base=None, **kw: {**real(base, **kw), "PATH": str(empty)})
     out = tmp_path / "none.json"
     assert kbingest.main(["map", langrepo.path, "--out", str(out), "--lang", "go,rust"]) == 0
     doc = json.loads(out.read_text(encoding="utf-8"))
@@ -946,7 +1027,8 @@ def test_kbingest_map_typescript_never_uses_npx_or_the_repositorys_own_tsc(webre
     """Planted: PATH has no tsc but the worktree carries node_modules/.bin/tsc; and a mapper that goes through npx."""
     log = install_lang(tmp_path, monkeypatch, ("dotnet", "npm", "npx"))  # no tsc shim
     real = kbingest.scrub_env  # and no tsc of the host either: PATH holds the shims only
-    monkeypatch.setattr(kbingest, "scrub_env", lambda base=None: {**real(base), "PATH": str(tmp_path / "langbin")})
+    monkeypatch.setattr(kbingest, "scrub_env",
+                        lambda base=None, **kw: {**real(base, **kw), "PATH": str(tmp_path / "langbin")})
     code, doc = fake_map(webrepo, tmp_path, monkeypatch, kbingest.TypeScriptMapper())
     assert code == 0 and doc["packages"] == [] and doc["tools"] == {}
     assert notes_of(doc) == ["toolchain not installed: tsc (4 typescript files not mapped)"]
@@ -959,7 +1041,8 @@ def test_kbingest_map_typescript_never_uses_npx_or_the_repositorys_own_tsc(webre
     again = tmp_path / "again"
     again.mkdir()
     install_lang(again, monkeypatch, WEB_TOOLS + ("npx",))
-    monkeypatch.setattr(kbingest, "scrub_env", lambda base=None: {**real(base), "PATH": str(again / "langbin")})
+    monkeypatch.setattr(kbingest, "scrub_env",
+                        lambda base=None, **kw: {**real(base, **kw), "PATH": str(again / "langbin")})
     code, doc = fake_map(webrepo, tmp_path, monkeypatch, ViaNpx())
     assert any(n.startswith("npx tsc --showConfig: exit 64") for n in notes_of(doc)), doc["notes"]
 
@@ -1007,7 +1090,7 @@ def test_kbingest_map_missing_dotnet_npm_and_tsc_are_notes(webrepo, tmp_path, mo
     empty = tmp_path / "empty"
     empty.mkdir()
     real = kbingest.scrub_env
-    monkeypatch.setattr(kbingest, "scrub_env", lambda base=None: {**real(base), "PATH": str(empty)})
+    monkeypatch.setattr(kbingest, "scrub_env", lambda base=None, **kw: {**real(base, **kw), "PATH": str(empty)})
     out = tmp_path / "none.json"
     assert kbingest.main(["map", webrepo.path, "--out", str(out), "--lang", "dotnet,node,typescript"]) == 0
     doc = json.loads(out.read_text(encoding="utf-8"))
