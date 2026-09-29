@@ -2,7 +2,7 @@
   "id": "TK-aks64xqa",
   "kind": "task",
   "title": "Convergence test over learn, apply, red-pipeline and survey",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-xp6nkjxi",
   "priority": "P2",
   "rank": 0,
@@ -21,5 +21,19 @@
     "_tools/test_querylog_e2e.py",
     "_tools/fixtures/**"
   ],
-  "claimed_by": "worker-aks64xqa"
+  "evidence": {
+    "commit": "acf504d978b0544467007b13c523397d09f1093d",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "autonomous_converge"
+        ],
+        "exit": 0,
+        "sha256": "08c78d38259205f1"
+      }
+    ]
+  }
 }
