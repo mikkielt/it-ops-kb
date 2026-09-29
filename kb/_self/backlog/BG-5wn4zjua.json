@@ -1,0 +1,21 @@
+{
+  "id": "BG-5wn4zjua",
+  "kind": "bug",
+  "title": "backlog.md says every CI job is manual, but kb-tests-windows starts on its own for tool changes",
+  "status": "draft",
+  "parent": "EP-5p4ahbnq",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "kb/_self/backlog.md's red-pipeline paragraph no longer says every job in .gitlab-ci.yml is manual: it names kb-tests-windows as the job that starts on its own for tool changes (with allow_failure: true), so the reason given for reading the pipeline by its jobs stays true",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import pathlib,sys; sys.exit(1 if 'every job in `.gitlab-ci.yml` is manual' in pathlib.Path('kb/_self/backlog.md').read_text(encoding='utf-8') else 0)"
+    ]
+  },
+  "touches": [
+    "kb/_self/backlog.md"
+  ]
+}
