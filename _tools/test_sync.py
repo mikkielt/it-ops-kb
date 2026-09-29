@@ -626,6 +626,21 @@ class TestCodeLaneSync(SyncScenario):
                                    "merge_request.remove_source_branch"]
         assert "main did not move" in r.stdout
 
+    def test_a_push_to_another_branch_is_not_routed(self, world):
+        """A cloud session pushes its working branch (the only one its git proxy allows) whatever the lane: lanes
+        route pushes to main only. Planted failure: routing every target would push code/<id> here."""
+        w = world
+        self.advertise(w)
+        self.code(w.a, 5)
+        head = w.a.rev("HEAD")
+        d = w.a.kbgit("sync", "--dry-run", "--push", "--branch", "work")
+        assert "lane: not routed (a push to work)" in d.stdout, d.stdout
+        r = w.a.kbgit("sync", "--push", "--branch", "work")
+        assert r.returncode == 0, r.stdout + r.stderr
+        assert self.branches(w) == ["main", "work"]
+        assert w.bare.rev("work") == head and w.bare.rev("main") == w.base
+        assert self.options(w) == []
+
     def test_mixed_range_rides_content_along(self, world):
         w = world
         self.advertise(w)

@@ -2,7 +2,8 @@
   "id": "BG-7kug25eh",
   "kind": "bug",
   "title": "TestCloudInGit fails since sync --push sends code-lane work as a code branch",
-  "status": "draft",
+  "status": "done",
+  "sprint": "SP-v5xagbyv",
   "priority": "P2",
   "rank": 0,
   "severity": "S1",
@@ -13,6 +14,26 @@
       "_tools/tests.py",
       "-k",
       "TestCloudInGit"
+    ]
+  },
+  "touches": [
+    "_tools/kbgit.py",
+    "_tools/test_sync.py",
+    "kb/_self/git.md"
+  ],
+  "evidence": {
+    "commit": "9bc9666ec98ad63c4337030b3d058a3948e6a55e",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "TestCloudInGit"
+        ],
+        "exit": 0,
+        "sha256": "3f429af7a88fa777"
+      }
     ]
   }
 }
