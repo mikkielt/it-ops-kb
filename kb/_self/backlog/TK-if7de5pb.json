@@ -2,7 +2,7 @@
   "id": "TK-if7de5pb",
   "kind": "task",
   "title": "kb_ask.py rows carry the kb sources its researcher cites",
-  "status": "draft",
+  "status": "todo",
   "parent": "ST-hfzdlzai",
   "priority": "P1",
   "rank": 2,
@@ -46,7 +46,9 @@
         "Leave kb_ask.py rows as they are: detect from session fetches only",
         "Record the answer's urls as host and path, like fetch rows"
       ],
-      "recommendation": "Record source ids"
+      "recommendation": "Record source ids",
+      "answer": "Record source ids",
+      "by": "operator"
     }
   ],
   "notes": "kb_ask.py's claude -p runs with hooks off, so its fetches are never logged (querylog.md, Spool); the only trace of its researcher's pages is its answer, which kb_ask.py reads from the JSON `result` (claude/ci-and-headless.md:72, DOC S1800). The store is committed and pushed to origin, so a new entry field is the operator's call."

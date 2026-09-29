@@ -2,7 +2,7 @@
   "id": "TK-mmrsjxct",
   "kind": "task",
   "title": "learn's false-none rule over a none entry's fetched urls",
-  "status": "draft",
+  "status": "doing",
   "parent": "ST-hfzdlzai",
   "priority": "P1",
   "rank": 1,
@@ -28,5 +28,6 @@
   "touches": [
     "_tools/ql_learn.py",
     "_tools/test_querylog.py"
-  ]
+  ],
+  "claimed_by": "worker-mmrsjxct"
 }

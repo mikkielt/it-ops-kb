@@ -2,7 +2,7 @@
   "id": "TK-3iesrs66",
   "kind": "task",
   "title": "Web route in kb_ask.plan, its argv and its run",
-  "status": "draft",
+  "status": "doing",
   "parent": "ST-tobxg7ui",
   "priority": "P1",
   "rank": 1,
@@ -29,5 +29,6 @@
     "_tools/kb_ask.py",
     "_tools/test_kb_ask_route.py",
     "_tools/test_kb.py"
-  ]
+  ],
+  "claimed_by": "worker-3iesrs66"
 }

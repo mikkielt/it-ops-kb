@@ -2,7 +2,7 @@
   "id": "TK-huzcam4q",
   "kind": "task",
   "title": "Compute the has/lacks differential and the route in kbfacts.pack",
-  "status": "draft",
+  "status": "doing",
   "parent": "ST-ysk3m7rt",
   "priority": "P1",
   "rank": 1,
@@ -29,5 +29,6 @@
     "_tools/kbfacts.py",
     "_tools/test_route.py"
   ],
-  "notes": "The flagged-good rule is gate `flagged` on ST-ysk3m7rt “kb_pack prints a route and what the kb has and lacks” (provisional: go on with its recommendation). Map stems back to the question's words the way kb_hook.respond does for none today. The check_line check passes now: it guards the existing tests that read `check:` on the pack's second line."
+  "notes": "The flagged-good rule is gate `flagged` on ST-ysk3m7rt “kb_pack prints a route and what the kb has and lacks” (provisional: go on with its recommendation). Map stems back to the question's words the way kb_hook.respond does for none today. The check_line check passes now: it guards the existing tests that read `check:` on the pack's second line.",
+  "claimed_by": "worker-huzcam4q"
 }

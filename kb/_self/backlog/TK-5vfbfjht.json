@@ -22,11 +22,8 @@
     "_tools/conftest.py"
   ],
   "depends_on": [
+    "ST-qmusneyk",
     "TK-kmunpvxo"
   ],
-  "trigger": {
-    "when": "GitLab.com CI compute minutes are available again for the project's namespace (monthly reset or added minutes): kb-tests-windows job 16795392138 failed with ci_quota_exceeded",
-    "fired": false
-  },
   "notes": "The sync scenarios now clone the shared seed and the same-line conflict case runs as its own class (local 8-worker fixture 448 s -> 321 s). On the hosted runner (job 16794362441, before that change) the fixtures past 300 s were test_sync.py TestSyncInGit 379 s and test_querylog_e2e.py TestFixes 323 s; TestApply 262 s, TestResearch 254 s. Half of TestFixes is one querylog.py apply in a fresh worktree (51 s alone here): apply measures the whole eval set before and after each fix, so a further cut is a change to ql_apply, not the tests. What remains: a kb-tests-windows run with --durations showing no test past 300 s."
 }
