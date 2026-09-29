@@ -1,0 +1,34 @@
+{
+  "id": "BG-v2xwgr6m",
+  "kind": "bug",
+  "title": "The kb-ingest section command escapes backticks and does not parse under PowerShell",
+  "status": "doing",
+  "sprint": "SP-qdq57zu3",
+  "priority": "P1",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "selfdoc.py section ignores backticks when it compares headings, and kb-ingest/SKILL.md names the plugin section without backticks, so its command runs the same under Bash and PowerShell",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import subprocess,sys; r=subprocess.run([sys.executable,'_tools/selfdoc.py','section','plugin',\"6. A team's own knowledge: roots beside kb/public\"],capture_output=True,text=True); t=open('.claude/skills/kb-ingest/SKILL.md',encoding='utf-8').read(); sys.exit(0 if r.returncode==0 and chr(92)+chr(96) not in t else 1)"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "selfdoc_section"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/selfdoc.py",
+    "_tools/test_selfdoc.py",
+    ".claude/skills/kb-ingest/SKILL.md"
+  ],
+  "claimed_by": "orchestrator-SP-qdq57zu3"
+}

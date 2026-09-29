@@ -1,0 +1,33 @@
+{
+  "id": "BG-kqtygmvv",
+  "kind": "bug",
+  "title": "selfdoc.py section reads files outside the repository, which its allow rule now permits without a prompt",
+  "status": "doing",
+  "sprint": "SP-qdq57zu3",
+  "priority": "P1",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "selfdoc.py section refuses (exit 2) a DOC that resolves outside the repository, as map-tools already does for _tools, so its allow rule opens no read beyond the clone",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import subprocess,sys; r=subprocess.run([sys.executable,'_tools/selfdoc.py','section','/etc/hosts','Host Database'],capture_output=True,text=True); sys.exit(1 if r.stdout.strip() else 0)"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "selfdoc_section"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/selfdoc.py",
+    "_tools/test_selfdoc.py"
+  ],
+  "claimed_by": "orchestrator-SP-qdq57zu3"
+}
