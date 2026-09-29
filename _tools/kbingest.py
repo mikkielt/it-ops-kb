@@ -33,7 +33,7 @@
       output that is not JSON and a file that does not parse are notes, not errors. Python is mapped with
       `python -I -B -m ast` in a subprocess per file; another language is a Mapper subclass added to MAPPERS.
       Go and Cargo run at the root; .NET (`dotnet msbuild -getProperty -getItem`, never `-target` or `-restore`, and
-      `dotnet package list --no-restore`), npm (`npm ls --all --json --package-lock-only`) and TypeScript (`tsc
+      never `dotnet package list`), npm (`npm ls --all --json --package-lock-only`) and TypeScript (`tsc
       --showConfig`, `--listFilesOnly`) run per project directory. `tsc` is the one on PATH, never `npx` and never
       a program inside the worktree; a toolchain is never installed.
 
@@ -1337,18 +1337,19 @@ PROJECT_EXTS = (".csproj", ".fsproj", ".vbproj")
 
 class DotnetMapper(Mapper):
     """Per kept .csproj, .fsproj or .vbproj, run in the project's own directory (the SDK the nearest global.json names
-    is the one that runs):
+    is the one that runs), the one command:
       `dotnet msbuild -noAutoResponse PROJECT -getProperty:TargetFrameworkMoniker,LangVersion
        -getItem:PackageReference,ProjectReference`
-      `dotnet package list --format json --no-restore` (.NET 10 SDK; only where the directory has one project file).
     Without `-target` MSBuild only evaluates the project (MSBuild 17.8+; kb agents/codebase-mapping): no target and
     no task runs, nothing is built or restored, and `-restore` and `-target` are never passed. Evaluation still reads
     every import the project pulls in (Directory.Build.props, the SDK's .props and .targets, NuGet's obj/*.g.props when
     present) and expands property functions, which are calls to .NET methods (live docs, Microsoft Learn, "Property
     functions" and "How MSBuild builds projects": evaluation runs no task, and targets are only created in memory). A
     project whose Sdk names a NuGet version (`Sdk="Name/1.0"`) would be resolved from a feed; the mapper environment
-    refuses proxies, so that fails as a note. `--no-restore` keeps `dotnet package list` from restoring first (.NET 10
-    does otherwise), so it reports only where obj/project.assets.json exists, which a fresh checkout lacks: a note."""
+    refuses proxies, so that fails as a note. The packages are the evaluated PackageReference items with the version
+    each asks for, not a resolved one: `dotnet package list` is not run, because once ProjectAssetsFile names an
+    existing file (a committed obj/project.assets.json) it builds NuGet's collection targets, and with them the
+    project's InitialTargets and any repository target hooked to them (kb agents/codebase-mapping)."""
     language = "dotnet"
     name = "dotnet"
     tool = "dotnet"
@@ -1396,16 +1397,10 @@ class DotnetMapper(Mapper):
         if not projects:
             ctx.note("no .csproj, .fsproj or .vbproj file: no .NET project mapped")
             return
-        per_folder = {}
-        for proj in projects:
-            per_folder.setdefault(folder_of(proj), []).append(proj)
-        for folder, names in sorted(per_folder.items()):
-            if len(names) > 1:
-                ctx.note(f"{folder}: {len(names)} project files in one directory, dotnet package list not run")
         for proj in capped(ctx, projects, "projects"):
-            self.project(ctx, proj, len(per_folder[folder_of(proj)]) == 1)
+            self.project(ctx, proj)
 
-    def project(self, ctx, proj, alone):
+    def project(self, ctx, proj):
         if ctx.readable(proj) is None:
             return
         folder, base = folder_of(proj), proj.rsplit("/", 1)[-1]
@@ -1414,10 +1409,6 @@ class DotnetMapper(Mapper):
         # (https://learn.microsoft.com/visualstudio/msbuild/msbuild-response-files, "Disabling response files")
         ev = ctx.json(["dotnet", "msbuild", "-noAutoResponse", base, "-getProperty:TargetFrameworkMoniker,LangVersion",
                        "-getItem:PackageReference,ProjectReference"], label=f"dotnet msbuild {proj}", cwd=folder)
-        listed = None
-        if alone:
-            listed = ctx.json(["dotnet", "package", "list", "--format", "json", "--no-restore"],
-                              label=f"dotnet package list ({folder})", cwd=folder)
         props = ev.get("Properties") if isinstance(ev, dict) and isinstance(ev.get("Properties"), dict) else {}
         items = ev.get("Items") if isinstance(ev, dict) and isinstance(ev.get("Items"), dict) else {}
         extra = {"project": proj, "kind": "project"}
@@ -1436,26 +1427,13 @@ class DotnetMapper(Mapper):
                 refs.append(target)
         if refs:
             extra["references"] = sorted(set(refs))
-        resolved = self.resolved(listed)
-        if resolved:
-            extra["resolved"] = resolved
+        packages = [i for i in items.get("PackageReference") or ()
+                    if isinstance(i, dict) and isinstance(i.get("Identity"), str) and i["Identity"]]
+        requested = {i["Identity"]: i["Version"] for i in packages if isinstance(i.get("Version"), str) and i["Version"]}
+        if requested:
+            extra["requested"] = dict(sorted(requested.items()))
         ctx.add_package(base.rsplit(".", 1)[0], folder, **extra)
-        ctx.add_imports(proj, [i["Identity"] for i in items.get("PackageReference") or ()
-                               if isinstance(i, dict) and isinstance(i.get("Identity"), str)])
-
-    @staticmethod
-    def resolved(listed):
-        """{package id: resolved version} of the top-level packages `dotnet package list` reports (the first framework
-        that names one wins)."""
-        found = {}
-        projects = listed.get("projects") if isinstance(listed, dict) else None
-        for project in projects or ():
-            for fw in (project.get("frameworks") if isinstance(project, dict) else None) or ():
-                for pkg in (fw.get("topLevelPackages") if isinstance(fw, dict) else None) or ():
-                    if isinstance(pkg, dict) and isinstance(pkg.get("id"), str) \
-                            and isinstance(pkg.get("resolvedVersion"), str):
-                        found.setdefault(pkg["id"], pkg["resolvedVersion"])
-        return dict(sorted(found.items()))
+        ctx.add_imports(proj, [i["Identity"] for i in packages])
 
 
 class NodeMapper(Mapper):

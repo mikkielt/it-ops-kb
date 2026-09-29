@@ -2,11 +2,11 @@
 named TOOL runs it).
 
 It answers only the exact argument lists the mappers may run, exits 64 for any other (`dotnet msbuild -target:Build`,
-`dotnet msbuild` without `-noAutoResponse`, `dotnet package list` without `--no-restore`, `npm ls` without
+`dotnet msbuild` without `-noAutoResponse`, any `dotnet package list`, `npm ls` without
 `--package-lock-only`, any `npx` call), and appends one JSON line per call (arguments, working directory, the environment variables that matter) to the file KB_FAKE_LOG.
 KB_FAKE_MODE picks a planted misbehaviour: `fail` (exit 101), `array` (go list prints an array), `garbage` (go list
 prints a truncated object after a good one), `outside` (a package directory or a project reference outside the
-worktree), `noassets` (dotnet package list finds no assets file), `problems` (npm ls prints its tree and exits 1)."""
+worktree), `problems` (npm ls prints its tree and exits 1)."""
 import json
 import os
 import sys
@@ -85,19 +85,6 @@ def msbuild_eval(project):
                       "ProjectReference": [{"Identity": r, "FullPath": "y"} for r in refs]}}
 
 
-def package_list():
-    """`dotnet package list --format json` for the one project file of the working directory."""
-    found = sorted(x.name for x in here.iterdir() if x.name.endswith(PROJECT_EXTS))
-    if len(found) != 1:
-        sys.stderr.write("error: MSB1011: more than one project or solution file\n")
-        sys.exit(1)
-    top = [] if found[0] == "Lib.csproj" else [
-        {"id": "Newtonsoft.Json", "requestedVersion": "13.0.1", "resolvedVersion": "13.0.1"},
-        {"id": "Serilog", "requestedVersion": "3.*", "resolvedVersion": "3.1.1"}]
-    return {"version": 1, "parameters": "", "projects": [{"path": str(here / found[0]), "frameworks": [
-        {"framework": "net8.0", "topLevelPackages": top}]}]}
-
-
 def npm_tree():
     tree = {"version": "1.2.0", "name": "web", "dependencies": {
         "express": {"version": "4.19.2", "resolved": "https://registry.example.com/express",
@@ -137,11 +124,6 @@ elif tool == "dotnet" and args == ["--version"]:
 elif (tool == "dotnet" and len(args) == 5 and args[:2] == ["msbuild", "-noAutoResponse"] and args[3:] == [PROPS, ITEMS]
       and args[2].endswith(PROJECT_EXTS) and (here / args[2]).is_file()):
     print(json.dumps(msbuild_eval(args[2]), indent=2))
-elif tool == "dotnet" and args == ["package", "list", "--format", "json", "--no-restore"]:
-    if mode == "noassets":
-        sys.stderr.write("error: No assets file was found for `App.csproj`. Please run restore.\nsecond line\n")
-        sys.exit(1)
-    print(json.dumps(package_list(), indent=2))
 elif tool == "npm" and args == ["--version"]:
     print("10.8.2")
 elif tool == "npm" and args == ["ls", "--all", "--json", "--package-lock-only"] and (here / "package-lock.json").is_file():

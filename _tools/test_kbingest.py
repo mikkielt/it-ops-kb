@@ -781,12 +781,11 @@ def test_kbingest_map_rel_keeps_only_paths_inside_the_worktree(tmp_path):
 WEB_TOOLS = ("dotnet", "npm", "tsc")
 MSBUILD_TAIL = ["-getProperty:TargetFrameworkMoniker,LangVersion", "-getItem:PackageReference,ProjectReference"]
 NO_RSP = "-noAutoResponse"  # no Directory.Build.rsp of the repository adds switches
-PKG_LIST = ["package", "list", "--format", "json", "--no-restore"]
 NPM_LS = ["ls", "--all", "--json", "--package-lock-only"]
 CSPROJ = '<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net8.0</TargetFramework></PropertyGroup></Project>\n'
 DOTNET_CALLS = [(["--version"], "."),
-                (["msbuild", NO_RSP, "App.csproj", *MSBUILD_TAIL], "src/App"), (PKG_LIST, "src/App"),
-                (["msbuild", NO_RSP, "Lib.csproj", *MSBUILD_TAIL], "src/Lib"), (PKG_LIST, "src/Lib"),
+                (["msbuild", NO_RSP, "App.csproj", *MSBUILD_TAIL], "src/App"),
+                (["msbuild", NO_RSP, "Lib.csproj", *MSBUILD_TAIL], "src/Lib"),
                 (["msbuild", NO_RSP, "A.csproj", *MSBUILD_TAIL], "tools"),
                 (["msbuild", NO_RSP, "B.fsproj", *MSBUILD_TAIL], "tools")]
 NODE_CALLS = [(["--version"], "."), (NPM_LS, "."), (NPM_LS, "web")]
@@ -841,22 +840,23 @@ def test_kbingest_map_dotnet_runs_the_exact_commands_per_project(webrepo, tmp_pa
     assert doc["tools"] == {"dotnet": {"tool": "dotnet", "version": "10.0.100"}}
     app = {"language": "dotnet", "name": "App", "path": "src/App", "project": "src/App/App.csproj", "kind": "project",
            "framework": ".NETCoreApp,Version=v8.0", "langversion": "12.0", "references": ["src/Lib/Lib.csproj"],
-           "resolved": {"Newtonsoft.Json": "13.0.1", "Serilog": "3.1.1"}}
+           "requested": {"Newtonsoft.Json": "13.0.1", "Serilog": "3.1.1"}}
     lib = {"language": "dotnet", "name": "Lib", "path": "src/Lib", "project": "src/Lib/Lib.csproj", "kind": "project",
            "framework": ".NETStandard,Version=v2.0"}  # an empty LangVersion and no package: no field
     tool = {"language": "dotnet", "project": "tools/A.csproj", "kind": "project", "path": "tools", "name": "A",
-            "framework": ".NETCoreApp,Version=v8.0", "langversion": "12.0", "references": ["Lib/Lib.csproj"]}
+            "framework": ".NETCoreApp,Version=v8.0", "langversion": "12.0", "references": ["Lib/Lib.csproj"],
+            "requested": {"Newtonsoft.Json": "13.0.1", "Serilog": "3.1.1"}}
     assert doc["packages"] == [app, lib, tool, {**tool, "project": "tools/B.fsproj", "name": "B"}]
     assert doc["imports"][0] == {"language": "dotnet", "path": "src/App/App.csproj",
                                  "imports": ["Newtonsoft.Json", "Serilog"]}
     assert len(doc["imports"]) == 3  # Lib has none
-    assert notes_of(doc) == ["tools: 2 project files in one directory, dotnet package list not run"]
+    assert notes_of(doc) == []
     assert "npx" not in {c["tool"] for c in calls_of(log)} and "planted-token" not in json.dumps(doc)
 
 
 @requires_git
 def test_kbingest_map_dotnet_planted_target_restore_and_unpinned_list_are_refused(webrepo, tmp_path, monkeypatch):
-    """Planted: a mapper that adds `-target:Build`, one that adds `-restore`, one whose package list may restore, one
+    """Planted: a mapper that adds `-target:Build`, one that adds `-restore`, one that runs a package list, one
     that names no property, and one that lets a Directory.Build.rsp apply; the fake exits 64 for each, so the exact lists above are checked, not merely logged."""
     install_lang(tmp_path, monkeypatch, WEB_TOOLS)
     bad = {
@@ -866,6 +866,7 @@ def test_kbingest_map_dotnet_planted_target_restore_and_unpinned_list_are_refuse
         "dotnet msbuild none": ["dotnet", "msbuild", NO_RSP, "App.csproj"],
         "dotnet msbuild with rsp": ["dotnet", "msbuild", "App.csproj", *MSBUILD_TAIL],
         "dotnet package list": ["dotnet", "package", "list", "--format", "json"],
+        "dotnet package list --no-restore": ["dotnet", "package", "list", "--format", "json", "--no-restore"],
         "dotnet build": ["dotnet", "build", "App.csproj", "--no-restore"],
     }
     for label, args in bad.items():
@@ -888,10 +889,34 @@ def test_kbingest_map_dotnet_no_auto_response(tmp_path, monkeypatch):
                                         "src/App/App.csproj": CSPROJ, "src/App/Program.cs": "class P {}\n"})
     code, doc = fake_map(r, tmp_path, monkeypatch, kbingest.DotnetMapper())
     assert code == 0
-    assert seen(log, "dotnet") == [(["--version"], "."), (["msbuild", NO_RSP, "App.csproj", *MSBUILD_TAIL], "src/App"),
-                                   (PKG_LIST, "src/App")]
+    assert seen(log, "dotnet") == [(["--version"], "."), (["msbuild", NO_RSP, "App.csproj", *MSBUILD_TAIL], "src/App")]
     assert doc["packages"][0]["framework"] == ".NETCoreApp,Version=v8.0"  # the fake answered the exact list
     assert not any("exit 64" in n for n in notes_of(doc)), doc["notes"]
+
+
+@requires_git
+def test_kbingest_map_dotnet_no_package_list(tmp_path, monkeypatch):
+    """Planted: a project that commits obj/project.assets.json and a Directory.Build.targets with an InitialTargets
+    target and one hooked before and after NuGet's CollectPackageReferences. With an existing assets file `dotnet
+    package list --no-restore` builds those collection targets, and the repository's with them, so the mapper never
+    runs it: the packages and their versions come from the -getItem:PackageReference evaluation alone."""
+    log = install_lang(tmp_path, monkeypatch, ("dotnet",))
+    hooks = ('<Project InitialTargets="Planted">\n'
+             '  <Target Name="Planted"><Exec Command="echo planted" /></Target>\n'
+             '  <Target Name="Before" BeforeTargets="CollectPackageReferences"><Exec Command="echo before" /></Target>\n'
+             '  <Target Name="After" AfterTargets="CollectCentralPackageVersions"><Exec Command="echo after" /></Target>\n'
+             '</Project>\n')
+    r = commit_files(tmp_path / "assets", {"Directory.Build.targets": hooks, "src/App/App.csproj": CSPROJ,
+                                           "src/App/Program.cs": "class P {}\n",
+                                           "src/App/obj/project.assets.json": '{"version": 3, "targets": {}}\n'})
+    code, doc = fake_map(r, tmp_path, monkeypatch, kbingest.DotnetMapper())
+    assert code == 0
+    assert not [c for c in calls_of(log) if c["args"][:2] == ["package", "list"]], calls_of(log)
+    assert seen(log, "dotnet") == [(["--version"], "."), (["msbuild", NO_RSP, "App.csproj", *MSBUILD_TAIL], "src/App")]
+    assert doc["packages"][0]["requested"] == {"Newtonsoft.Json": "13.0.1", "Serilog": "3.1.1"}
+    assert doc["imports"] == [{"language": "dotnet", "path": "src/App/App.csproj",
+                               "imports": ["Newtonsoft.Json", "Serilog"]}]
+    assert notes_of(doc) == [], doc["notes"]
 
 
 @requires_git
@@ -918,13 +943,6 @@ def test_kbingest_map_dotnet_sdk_paths(tmp_path, monkeypatch):
 @requires_git
 def test_kbingest_map_dotnet_failures_and_odd_references_are_notes(webrepo, tmp_path, monkeypatch):
     install_lang(tmp_path, monkeypatch, WEB_TOOLS)
-    monkeypatch.setenv("KB_FAKE_MODE", "noassets")  # no obj/project.assets.json: --no-restore cannot list packages
-    code, doc = fake_map(webrepo, tmp_path, monkeypatch, kbingest.DotnetMapper())
-    assert code == 0
-    assert "dotnet package list (src/App): exit 1: error: No assets file was found for `App.csproj`. Please run restore." \
-        in notes_of(doc)
-    assert [p["name"] for p in doc["packages"]] == ["App", "Lib", "A", "B"]  # the evaluation still maps each project
-    assert all("resolved" not in p for p in doc["packages"])
     monkeypatch.setenv("KB_FAKE_MODE", "outside")  # a ProjectReference that leaves the worktree
     code, doc = fake_map(webrepo, tmp_path, monkeypatch, kbingest.DotnetMapper())
     assert "src/App/App.csproj: a project reference outside the worktree, left out" in notes_of(doc)
