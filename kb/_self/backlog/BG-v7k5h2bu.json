@@ -23,5 +23,8 @@
     "kb/public/_sources.csv",
     "kb/public/_coverage.csv",
     "kb/public/_coverage.md"
+  ],
+  "links": [
+    "kb/public/agents/codebase-mapping.md:128 (MSBUILDDISABLENUGETSDKRESOLVER, CODE S-7j4xac2a; no Learn page)"
   ]
 }

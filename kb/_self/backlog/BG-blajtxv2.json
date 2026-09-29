@@ -1,0 +1,26 @@
+{
+  "id": "BG-blajtxv2",
+  "kind": "bug",
+  "title": "kbingest map's dotnet package list step can run repository targets",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "DotnetMapper no longer runs dotnet package list: with --no-restore it reads no response file, but once ProjectAssetsFile names an existing file (an obj/project.assets.json the repository commits, or a path its own properties set) NuGet builds the targets CollectPackageReferences and CollectCentralPackageVersions, which also runs the project's InitialTargets and any repository target hooked before or after them, while on a fresh checkout it can only fail; packages come from the -getItem:PackageReference evaluation instead, the class docstring stops claiming no target runs, and a test named kbingest_map_dotnet_no_package_list proves no package list call is logged (kb: agents/codebase-mapping.md, the .NET response-file facts from S-dxri4xet, S-ebazgtwi, S-htkjt2zo)",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/tests.py",
+      "-k",
+      "kbingest_map_dotnet_no_package_list"
+    ]
+  },
+  "touches": [
+    "_tools/kbingest.py",
+    "_tools/test_kbingest.py",
+    "_tools/fixtures/kbingest/**"
+  ],
+  "links": [
+    "kb/public/agents/codebase-mapping.md:174"
+  ]
+}
