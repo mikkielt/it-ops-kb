@@ -31,7 +31,8 @@
   ],
   "touches": [
     ".claude/skills/kb-item/SKILL.md",
-    "_tools/test_backlog.py"
+    "_tools/test_backlog.py",
+    "kb/_self/backlog.md"
   ],
   "relates_to": [
     "BG-6pjvnv6z"
