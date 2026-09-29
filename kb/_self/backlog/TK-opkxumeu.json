@@ -2,7 +2,7 @@
   "id": "TK-opkxumeu",
   "kind": "task",
   "title": "Session-start hook runs publish",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-su4em5sl",
   "priority": "P2",
   "rank": 1,
@@ -28,5 +28,19 @@
   "depends_on": [
     "TK-h6oy6jlh"
   ],
-  "claimed_by": "worker-opkxumeu"
+  "evidence": {
+    "commit": "045da05590ca32464bdb0724c133d774a75c7345",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "TestPublishHook"
+        ],
+        "exit": 0,
+        "sha256": "8ce11c59d8acf51e"
+      }
+    ]
+  }
 }
