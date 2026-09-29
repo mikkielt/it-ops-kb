@@ -2,7 +2,7 @@
   "id": "SP-mqjeanq3",
   "kind": "sprint",
   "title": "Agents read less of the kb's own files",
-  "status": "planned",
+  "status": "active",
   "goal": "Skills read process docs by section, _tools is mapped without reading its source, lookup reads of whole kb articles get a hint to the rag.py tools, and repeated live-docs searches are served from a local cache",
   "gates": [
     {

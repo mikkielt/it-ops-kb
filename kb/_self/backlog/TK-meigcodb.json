@@ -2,7 +2,7 @@
   "id": "TK-meigcodb",
   "kind": "task",
   "title": "Cap MCP output for this project",
-  "status": "draft",
+  "status": "todo",
   "parent": "ST-o6krms2n",
   "priority": "P2",
   "rank": 0,
