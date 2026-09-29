@@ -2,7 +2,7 @@
   "id": "TK-xg74cb2a",
   "kind": "task",
   "title": "selfdoc.py map-tools prints the symbols and tests of _tools",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-3p6lizv4",
   "priority": "P2",
   "rank": 0,
@@ -23,5 +23,6 @@
   ],
   "depends_on": [
     "TK-jsx4wea4"
-  ]
+  ],
+  "claimed_by": "worker-xg74cb2a"
 }
