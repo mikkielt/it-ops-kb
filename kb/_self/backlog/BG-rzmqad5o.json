@@ -2,7 +2,7 @@
   "id": "BG-rzmqad5o",
   "kind": "bug",
   "title": "kb_http.py has no socket timeout, so a stalled body holds a thread",
-  "status": "todo",
+  "status": "done",
   "parent": "EP-5sc7hr36",
   "sprint": "SP-4udo5jmw",
   "priority": "P2",
@@ -20,5 +20,20 @@
   "touches": [
     "_tools/kb_http.py",
     "_tools/test_kb_http.py"
-  ]
+  ],
+  "evidence": {
+    "commit": "66d134ffd1759a1837750e1b4e7a445ea6b0bffb",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "kb_http_guard_stalled_body_times_out"
+        ],
+        "exit": 0,
+        "sha256": "c80b17fe075dc1f2"
+      }
+    ]
+  }
 }
