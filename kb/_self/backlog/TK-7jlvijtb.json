@@ -2,7 +2,7 @@
   "id": "TK-7jlvijtb",
   "kind": "task",
   "title": "The runbook defines the five knowledge states",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-i3t6i2to",
   "priority": "P2",
   "rank": 1,
@@ -22,5 +22,18 @@
   "depends_on": [
     "TK-st7glrao"
   ],
-  "claimed_by": "orchestrator"
+  "evidence": {
+    "commit": "1e158b47ae98a48a05278f2c9fd5dab4f506d6a3",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/selfdoc.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "3db513ebafdfe3a2"
+      }
+    ]
+  }
 }
