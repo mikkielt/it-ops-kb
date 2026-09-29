@@ -1,0 +1,18 @@
+{
+  "id": "ST-eoiljxkt",
+  "kind": "story",
+  "title": "kb-sprint says how to run workers from a second clone",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "The kb-sprint skill and kb/_self/backlog.md, Working on items, say how an orchestrator whose sprint runs in a separate clone (another sprint holds the session's own clone) gives each subagent its own worktree and work/<id> branch of that clone, since the Agent tool's isolation: worktree branches from the session's working directory; selfdoc.py check passes (SP-xourq2gj retrospective: the orchestrator created the worktrees by hand)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/selfdoc.py",
+        "check"
+      ]
+    }
+  ]
+}

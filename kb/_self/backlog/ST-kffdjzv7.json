@@ -1,0 +1,19 @@
+{
+  "id": "ST-kffdjzv7",
+  "kind": "story",
+  "title": "The sync gate runs the tests of the code a push changes",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "The fast tests.py of kbgit.py sync's gate also runs the slow tests that cover the files the pushed range changes (for example TestCloudInGit when _tools/kbgit.py or _tools/querylog.py changed), so a push that breaks them is refused locally instead of leaving the full suite red on main; a test plants a change that breaks a slow test and shows the gate fails (SP-xourq2gj retrospective: BG-7kug25eh left main red until a review story ran the full tests.py)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "sync_gate_runs_changed_slow_tests"
+      ]
+    }
+  ]
+}
