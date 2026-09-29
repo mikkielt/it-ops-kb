@@ -1,11 +1,13 @@
 """History tests: KB-* commit trailers, the commit-msg hook and the lookup commands (`python3 _tools/tests.py -k history`).
 
+  TestRevisionReadsWithoutGitShow  (marker git) show, blob and asof read a file at a revision with `git cat-file blob`
+                           while every `git show REV:PATH` fails as "Filename too long"; a throwaway repo, in process
   TestTrailerRules         trailer computation and formatting on in-memory text (no git needed)
   TestHistoryInGit         (marker git) a throwaway repo holding a tiny kb and a copy of _tools/ and .githooks/: install-hooks, then
                            commits with -m, the editor, --amend, KB_VERIFIED, a non-kb change and a --no-verify commit;
                            check-trailers, log, blame, asof, tag-census and `trailers --amend`. Skipped without git.
 """
-import os, re, shutil, subprocess, sys
+import argparse, os, re, shutil, subprocess, sys
 
 import pytest
 
@@ -20,6 +22,66 @@ ROOT_MD = "---\nroot: public\nid_prefix: S\nvisibility: public\ndescription: tes
 def team(rel):
     """A repository path in a second root `team` (kb/team/), beside the public root."""
     return f"{kbgit.KB_DIR_REL}/team/{rel}"
+
+
+@requires_git
+@pytest.mark.git
+class TestRevisionReadsWithoutGitShow:
+    """kbgit.show, kbgit.blob and `asof` (cmd_asof) read a file at a revision with `git cat-file blob REV:PATH`: `git show
+    REV:PATH` checks its argument as a file name and fails as "Filename too long" on Windows in a deep checkout. The runner
+    here fails every `git show REV:PATH` that way (as TestHeldOnLongPaths does for ql_deliver); the content is still read."""
+    OLD, NEW = "old text\n", "new text\n"
+
+    @pytest.fixture
+    def repo(self, tmp_path, monkeypatch):
+        r = Repo(tmp_path / "kb", git_env())
+        os.makedirs(r.path)
+        r.git("init", "-q", "-b", "main")
+        r.write("notes/a.txt", self.OLD)
+        r.git("add", "-A")
+        r.git("commit", "-q", "-m", "one", env={"GIT_AUTHOR_DATE": "2026-01-01T12:00:00+00:00", "GIT_COMMITTER_DATE": "2026-01-01T12:00:00+00:00"})
+        r.first = r.rev("HEAD")
+        r.write("notes/a.txt", self.NEW)
+        r.git("commit", "-q", "-a", "-m", "two", env={"GIT_AUTHOR_DATE": "2026-03-01T12:00:00+00:00", "GIT_COMMITTER_DATE": "2026-03-01T12:00:00+00:00"})
+        monkeypatch.setattr(kbgit, "KB", r.path)
+        return r
+
+    @pytest.fixture
+    def windows(self, monkeypatch):
+        """subprocess.run with every `git show REV:PATH` failing as git does on a path too long for Windows."""
+        real = subprocess.run
+
+        def run(argv, *a, **kw):
+            if argv[:1] == ["git"] and "show" in argv and ":" in argv[-1]:
+                return subprocess.CompletedProcess(argv, 128, b"", f"fatal: failed to stat '{argv[-1]}': Filename too long".encode())
+            return real(argv, *a, **kw)
+        monkeypatch.setattr(subprocess, "run", run)
+
+    def test_the_runner_fails_git_show(self, repo, windows):
+        assert kbgit.git("show", "HEAD:./notes/a.txt") is None
+        assert kbgit.git("cat-file", "blob", "HEAD:./notes/a.txt") == self.NEW
+
+    def test_show_reads_a_file_at_a_revision(self, repo, windows):
+        assert kbgit.show("HEAD", "notes/a.txt") == self.NEW
+        assert kbgit.show(repo.first, "notes/a.txt") == self.OLD
+        assert kbgit.show("HEAD", "notes/absent.txt") is None
+
+    def test_blob_reads_a_file_at_a_revision_and_in_the_index(self, repo, windows):
+        assert kbgit.blob(repo.first, "notes/a.txt") == self.OLD
+        repo.write("notes/a.txt", "staged text\n")
+        repo.git("add", "-A")
+        assert kbgit.blob(kbgit.INDEX, "notes/a.txt") == "staged text\n"
+        assert kbgit.blob("", "notes/a.txt") is None and kbgit.blob("HEAD", "notes/absent.txt") is None
+
+    def test_asof_reads_a_file_at_a_revision(self, repo, windows, capfd):
+        assert kbgit.cmd_asof(argparse.Namespace(when="2026-02-01", path="notes/a.txt")) == 0
+        assert capfd.readouterr().out == self.OLD
+        assert kbgit.cmd_asof(argparse.Namespace(when="2026-02-01", path="notes/absent.txt")) == 1
+        assert "did not exist" in capfd.readouterr().err
+
+    def test_a_file_absent_at_the_revision_is_reported(self, repo, windows, capfd):
+        assert kbgit.cmd_asof(argparse.Namespace(when="2025-01-01", path="notes/a.txt")) == 1
+        assert "no commit on or before" in capfd.readouterr().err
 
 
 class TestTrailerRules:

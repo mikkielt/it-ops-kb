@@ -545,7 +545,8 @@ def calibrate_history(repo, prefixes, since, pairs, seed):
     import difflib
     pos, neg, verb, tot, same, other, texts = [], [], 0, 0, [], [], []
     for commit, path in cands[:pairs]:
-        old, new = _git(repo, "show", f"{commit}^:{path}"), _git(repo, "show", f"{commit}:{path}")
+        # cat-file, not show: `git show REV:PATH` checks its argument as a file name ("Filename too long" on Windows)
+        old, new = _git(repo, "cat-file", "blob", f"{commit}^:{path}"), _git(repo, "cat-file", "blob", f"{commit}:{path}")
         if old is None or new is None:
             continue
         ot, nt = provider.doc_text(old.encode(), "text/markdown", path), provider.doc_text(new.encode(), "text/markdown", path)
@@ -998,7 +999,7 @@ def old_passage(sid, anchor, fact, src):
     """(passage, where) the fact rested on before the change: the snapshot at HEAD (copy sources), the previous
     cached document, a Wayback capture from the anchor's date, or the anchor's quote; (None, why) when none has it."""
     rel = os.path.relpath(snapshot_path(sid), kbcommon.HOME)
-    head = _git(kbcommon.HOME, "show", f"HEAD:{rel}")
+    head = _git(kbcommon.HOME, "cat-file", "blob", f"HEAD:{rel}")  # not `git show` (see calibrate_history)
     tries = []
     if head:
         tries.append((head.partition("\n---\n")[2], "snapshot at HEAD"))

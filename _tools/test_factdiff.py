@@ -5,6 +5,8 @@ TestAnchors   locating a fact's backing passage: a paraphrase is found, a window
               condenses two, an unrelated fact is left unlocated, a number decides between two sentences, statuses for
               failed fetches; quotes only from copy and quote sources.
 TestCheckRule check.py rejects malformed _anchors.csv rows (on a throwaway copy of the kb).
+TestRevisionReadsWithoutGitShow  (marker git) calibrate_history and old_passage read a file at a revision with
+              `git cat-file blob` while every `git show REV:PATH` fails as "Filename too long".
 """
 import os, shutil, subprocess, sys
 
@@ -12,7 +14,7 @@ import pytest
 
 import factdiff as F
 import kbcommon
-from conftest import P, copy_kb
+from conftest import P, Repo, copy_kb, git_env, requires_git
 
 DOC = """# Win32 apps
 
@@ -311,3 +313,58 @@ def test_apply_moves_a_fact_found_on_another_page(kb):
     with open(os.path.join(kb, P(rel)), encoding="utf-8") as f:
         text = f.read()
     assert nid in text.split("\n---", 2)[0] and nid in text.split("\n---", 2)[1], "front matter and the fact both name it"
+
+
+@requires_git
+@pytest.mark.git
+class TestRevisionReadsWithoutGitShow:
+    """calibrate_history and old_passage read a page at a revision with `git cat-file blob REV:PATH`: `git show REV:PATH`
+    checks its argument as a file name and fails as "Filename too long" on Windows in a deep checkout. The runner here
+    fails every `git show REV:PATH` that way (as TestHeldOnLongPaths does for ql_deliver) and the content is still read."""
+    OLD = "# Page\n\nThe upload limit is 30 GB per package. Clients cache the content for 24 hours after download.\n"
+    NEW = "# Page\n\nThe upload limit is 50 GB per package. Clients cache the content for 24 hours after download.\n"
+
+    @pytest.fixture
+    def repo(self, tmp_path):
+        r = Repo(tmp_path / "docs", git_env())
+        os.makedirs(r.path)
+        r.git("init", "-q", "-b", "main")
+        r.write("page.md", self.OLD)
+        r.git("add", "-A")
+        r.git("commit", "-q", "-m", "one")
+        r.write("page.md", self.NEW)
+        r.git("commit", "-q", "-a", "-m", "two")
+        return r
+
+    @pytest.fixture
+    def windows(self, monkeypatch):
+        """subprocess.run with every `git show REV:PATH` failing as git does on a path too long for Windows."""
+        real = subprocess.run
+
+        def run(argv, *a, **kw):
+            if argv[:1] == ["git"] and "show" in argv and ":" in argv[-1]:
+                empty = "" if kw.get("text") else b""
+                return subprocess.CompletedProcess(argv, 128, empty, f"fatal: failed to stat '{argv[-1]}': Filename too long")
+            return real(argv, *a, **kw)
+        monkeypatch.setattr(subprocess, "run", run)
+
+    def test_the_runner_fails_git_show(self, repo, windows):
+        assert F._git(repo.path, "show", "HEAD:page.md") is None
+        assert F._git(repo.path, "cat-file", "blob", "HEAD:page.md") == self.NEW
+        assert F._git(repo.path, "cat-file", "blob", "HEAD:absent.md") is None  # a path absent at the revision: None
+
+    def test_calibrate_history_reads_both_versions(self, repo, windows):
+        out = F.calibrate_history(repo.path, ["."], "2000-01-01", 5, 1)
+        assert out["pages"] == 1 and out["units"] > 0
+
+    def test_old_passage_reads_the_snapshot_at_head(self, repo, windows, monkeypatch):
+        body = "The upload limit is 30 GB per package. Clients cache the content for 24 hours after download."
+        repo.write("snap.txt", "source: example\n---\n" + body + "\n")
+        repo.git("add", "-A")
+        repo.git("commit", "-q", "-m", "snapshot")
+        monkeypatch.setattr(kbcommon, "HOME", repo.path)
+        monkeypatch.setattr(F, "snapshot_path", lambda sid: os.path.join(repo.path, "snap.txt"))
+        monkeypatch.setattr(F, "prev_path", lambda sid: os.path.join(repo.path, "prev.json"))  # absent: no cached fetch
+        sha = next(iter(F.Doc(body).shas))
+        passage, where = F.old_passage("S-1", {"sha": sha}, "", {"url": "https://docs.example.com/a"})
+        assert where == "snapshot at HEAD" and "30 GB" in passage

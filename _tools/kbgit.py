@@ -264,7 +264,9 @@ def git(*args, stdin=None):
 
 
 def show(rev, rel):
-    return git("show", f"{rev}:./{rel}")
+    # cat-file, not show: `git show REV:PATH` checks its argument as a file name, which fails as "Filename too long"
+    # on Windows in a deep checkout
+    return git("cat-file", "blob", f"{rev}:./{rel}")
 
 
 def merge_sides(given):
@@ -1127,7 +1129,7 @@ def blob(rev, rel):
     """Text of rel at a commit, in the index (rev INDEX) or nowhere (rev "" = the empty tree): None when absent."""
     if rev == "":
         return None
-    return git("show", (":" if rev is INDEX else rev + ":") + "./" + rel)
+    return git("cat-file", "blob", (":" if rev is INDEX else rev + ":") + "./" + rel)  # not `git show` (see show)
 
 
 def changed_paths(base, target):
@@ -1884,7 +1886,7 @@ def cmd_asof(a):
             return 2
     path = a.path[2:] if a.path.startswith("./") else a.path
     for cand in with_legacy(user_path(path)):  # before the kb moved, a root file sat at its root-relative path
-        p = git_run("show", f"{rev}:./{cand}")
+        p = git_run("cat-file", "blob", f"{rev}:./{cand}")  # not `git show` (see show)
         if p is not None and not p.returncode:
             break
     rec = (log_records("-1", rev) or [("", rev[:7], "", "", "")])[0]
