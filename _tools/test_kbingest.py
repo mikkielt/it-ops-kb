@@ -649,6 +649,44 @@ def test_kbingest_map_cargo_runs_the_exact_command_and_reads_the_workspace(langr
 
 
 @requires_git
+def test_kbingest_map_cargo_toolchain_path(tmp_path, monkeypatch):
+    """Planted: a rust-toolchain.toml, and a TOML-form legacy rust-toolchain, whose [toolchain] sets path; a rustup
+    proxy would run the toolchain in the worktree, so no cargo command runs, not even the version. A rust-toolchain.toml
+    that is not TOML and a legacy file of more than a name decline too; a channel, and a bare legacy name, still map."""
+    log = install_lang(tmp_path, monkeypatch, ("cargo",))
+    crate = {"Cargo.toml": "[package]\nname = 'app'\n", "src/main.rs": "fn main() {}\n"}
+    path_toml = '[toolchain]\npath = "tools/rust"\n'
+    for name, rel, text, why in (
+            ("toml", "rust-toolchain.toml", path_toml, "sets path (a toolchain from the directory it names)"),
+            ("legacy", "rust-toolchain", "# the repository's toolchain\n" + path_toml,
+             "sets path (a toolchain from the directory it names)"),
+            ("broken", "rust-toolchain.toml", '[toolchain\nchannel = "1.80"\n', "not read (TOMLDecodeError)"),
+            ("twoline", "rust-toolchain", "stable\ntools/rust\n", "not read (TOMLDecodeError)")):
+        r = commit_files(tmp_path / name, {**crate, rel: text})
+        code, doc = fake_map(r, tmp_path, monkeypatch, kbingest.CargoMapper())
+        assert code == 0
+        assert calls_of(log) == [], name  # not even cargo --version
+        assert notes_of(doc) == [f"{rel}: {why}, Cargo not mapped and no cargo command run"], name
+        assert doc["tools"] == {} and doc["packages"] == []
+    link = commit_files(tmp_path / "link", crate)  # a link out of the worktree, mode 120000 however it is checked out
+    (tmp_path / "target.txt").write_text("../outside/rust-toolchain.toml", encoding="utf-8")
+    blob = link.git("hash-object", "-w", str(tmp_path / "target.txt")).strip()
+    link.git("update-index", "--add", "--cacheinfo", f"120000,{blob},rust-toolchain.toml")
+    link.git("commit", "-q", "-m", "link")
+    code, doc = fake_map(link, tmp_path, monkeypatch, kbingest.CargoMapper())
+    assert code == 0 and calls_of(log) == []
+    assert notes_of(doc)[-1] == "rust-toolchain.toml: not a regular file, Cargo not mapped and no cargo command run"
+    for name, rel, text in (("channel", "rust-toolchain.toml", '[toolchain]\nchannel = "1.80"\n'),
+                            ("bare", "rust-toolchain", "1.80\n")):
+        r = commit_files(tmp_path / name, {**crate, rel: text})
+        code, doc = fake_map(r, tmp_path, monkeypatch, kbingest.CargoMapper())
+        assert code == 0
+        assert [c["args"] for c in calls_of(log)] == CARGO_CALLS, name
+        assert doc["tools"]["rust"]["tool"] == "cargo"
+        log.unlink()
+
+
+@requires_git
 def test_kbingest_map_go_and_rust_are_registered_and_selected_by_lang(langrepo, tmp_path, monkeypatch):
     log = install_lang(tmp_path, monkeypatch)
     out = tmp_path / "both.json"

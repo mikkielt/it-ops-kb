@@ -1291,6 +1291,42 @@ class CargoMapper(Mapper):
     def files(self, rows):
         return sorted(path for path, _kind in rows if path.endswith(".rs") or path.rsplit("/", 1)[-1] == "Cargo.toml")
 
+    def preflight(self, ctx, files):
+        """A note when a toolchain file at the worktree root (where every cargo command runs) sets `path`: a rustup
+        proxy then runs the toolchain in the directory it names, which would be the repository's own programs
+        (https://rust-lang.github.io/rustup/overrides.html, "The toolchain file"). The legacy `rust-toolchain` is TOML
+        or a bare toolchain name; one that is neither, a `rust-toolchain.toml` that is not TOML, and a toolchain file
+        that is not a regular file or cannot be read decline too."""
+        for rel in ("rust-toolchain", "rust-toolchain.toml"):
+            path = ctx.root / rel
+            if rel not in ctx.links and not path.is_symlink() and not path.exists():
+                continue
+            why = None
+            p = ctx.readable(rel)
+            if p is None:
+                why = "not a regular file"
+            else:
+                try:
+                    text = p.read_text(encoding="utf-8")
+                except (OSError, UnicodeDecodeError) as e:
+                    why = f"not read ({type(e).__name__})"
+                else:
+                    try:
+                        doc = toml_of(text)
+                    except (ValueError, RecursionError) as e:
+                        lines = lines_of(text)
+                        bare = (rel == "rust-toolchain" and len(lines) == 1
+                                and not re.search(r"[\[=/\\]", lines[0]))  # a name, never a path
+                        if not bare:
+                            why = f"not read ({type(e).__name__})"
+                    else:
+                        t = doc.get("toolchain")
+                        if isinstance(t, dict) and "path" in t:
+                            why = "sets path (a toolchain from the directory it names)"
+            if why:
+                return f"{rel}: {why}, Cargo not mapped and no cargo command run"
+        return None
+
     def map(self, ctx, files):
         if "Cargo.toml" not in files:
             ctx.note("no Cargo.toml at the repository root: no Cargo workspace mapped")
