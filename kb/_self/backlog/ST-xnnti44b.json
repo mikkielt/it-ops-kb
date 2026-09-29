@@ -1,0 +1,21 @@
+{
+  "id": "ST-xnnti44b",
+  "kind": "story",
+  "title": "/kb-sprint close removes the sprint's worktrees and work branches",
+  "status": "draft",
+  "parent": "EP-o2bjijfp",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "The /kb-sprint close step removes, after the close commit is pushed, each subagent worktree under .claude/worktrees and each local work/<id> branch of the sprint's items whose commits are on origin/main (git worktree remove, git branch -d, never -D or --force), and reports any it kept and why; the skill names the commands. Answers the SP-fkyrld5h failure: leftover sprint worktrees made test_research_merge fail in the full tests.py (BG-rrht7uts) and dozens of stale worktree and work branches from past sprints remain in the clone.",
+  "checks": [
+    {
+      "run": [
+        "grep",
+        "-c",
+        "-e",
+        "git worktree remove",
+        ".claude/skills/kb-sprint/SKILL.md"
+      ]
+    }
+  ]
+}

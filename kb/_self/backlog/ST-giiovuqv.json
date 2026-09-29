@@ -1,0 +1,20 @@
+{
+  "id": "ST-giiovuqv",
+  "kind": "story",
+  "title": "backlog.py new files a bug or task as todo inside an active sprint",
+  "status": "draft",
+  "parent": "EP-o2bjijfp",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "backlog.py new creates a bug with --sprint naming an active sprint, and a task or subtask under a story or bug of an active sprint, as todo (a planned sprint's items stay draft), so work filed during a run is ready without a hand edit of its JSON; test_backlog has a test named new_in_active_sprint with a planted draft. Answers the SP-fkyrld5h failure: BG-a7cdybw7 and the three S1 review bugs were created draft inside the active sprint and set to todo by hand.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "new_in_active_sprint"
+      ]
+    }
+  ]
+}
