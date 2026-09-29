@@ -831,3 +831,6 @@ ca9e09f7f8d3,Is NTLMv1 removed from Windows Server 2025?
 ca9e09f7f8d3,"Is NTLMv2 deprecated, and what should replace NTLM?"
 a6e294a5e6c2,Dataverse MCP server connect agents
 086dca5695ae,GitLab API latest pipeline status for a commit sha statuses manual skipped
+66adcbbf0608,SessionStart hook stdout added as context shown to user systemMessage
+88cdfd1d8a5e,Claude Code on the web cloud session git push origin proxy credentials
+e334a7cdc9b5,Claude Code UserPromptSubmit hook output additionalContext decision block reason

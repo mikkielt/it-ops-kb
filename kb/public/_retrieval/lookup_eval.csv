@@ -262,3 +262,6 @@ EV-ci-tell-merge-request-merge-direct,How does CI tell a merge request merge fro
 EV-c-using-directive-javascript-import-require,C# using directive and JavaScript import require syntax for finding a file's dependencies,agents/codebase-mapping.md,good,
 EV-python-org-release-api-sha256-sigstore,python.org release API sha256 sigstore bundle,python/windows-python-install.md,good,
 EV-gitlab-api-latest-pipeline-status-commit,GitLab API latest pipeline status for a commit sha statuses manual skipped,arch/gitlab-ci-components.md,good,
+EV-sessionstart-hook-stdout-added-context-shown,SessionStart hook stdout added as context shown to user systemMessage,gitlab/automated-merge-requests.md,good,
+EV-claude-code-web-cloud-session-git,Claude Code on the web cloud session git push origin proxy credentials,gitlab/automated-merge-requests.md,good,
+EV-claude-code-userpromptsubmit-hook-output-additionalcontext,Claude Code UserPromptSubmit hook output additionalContext decision block reason,claude/ci-and-headless.md,good,
