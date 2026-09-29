@@ -2176,3 +2176,14 @@ _Agent: kb-research_
 - See claude/powershell-tool.md, claude/permissions-mcp.md.
 
 _Agent: kb-research_
+
+## QK-pinned-uv-windows-release-archive-verified. How is a pinned uv Windows release archive verified: checksums, attestations and signatures?
+- uv 0.12.19 ships `uv-x86_64-pc-windows-msvc.zip` and `uv-aarch64-pc-windows-msvc.zip` at `https://github.com/astral-sh/uv/releases/download/0.12.19/<archive>`, each with a `<archive>.sha256` asset (`<sha256>  <archive name>`) and one `sha256.sum`. [DOC S-kqisz7ri]
+- The release notes say the artifacts carry GitHub Artifact Attestations, checked with `gh attestation verify <file> --repo astral-sh/uv`. [DOC S-kqisz7ri]
+- The zip's `uv.exe`, `uvx.exe` and `uvw.exe` have a valid Authenticode signature, which no Astral page documents. [DER S-kqisz7ri: `Get-AuthenticodeSignature` on the extracted files]
+- The standalone `install.ps1` puts them in `$HOME\.local\bin` (unless `UV_INSTALL_DIR` or the XDG variables say otherwise), edits the user `Path` unless `UV_NO_MODIFY_PATH=1`, and checks no checksum. [DER S-tqxtar5b, S-xkajf5v5]
+- Conclusion: a script without `gh` compares the zip's SHA-256 with a pin taken from the release's `.sha256` file; the attestation adds provenance where `gh` is available. [DER S-kqisz7ri, S-tqxtar5b]
+- Open: whether Authenticode signing of the binaries is a stable, documented practice. [UNK]
+- See python/uv-windows-install.md.
+
+_Agent: kb-research_

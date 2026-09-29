@@ -22,6 +22,10 @@ uv publishes each Windows build as a zip on its GitHub release (`uv-x86_64-pc-wi
 - SHA-256 of `uv-i686-pc-windows-msvc.zip`: `e1c2d19d1173a0e9f81ba3f95881ad741808133e372610889ff6870629218c7f`. [DOC S-kqisz7ri]
 - The GitHub release API also reports a `digest` (`sha256:...`) per asset, equal to these values for the Windows zips, and marks the 0.12.19 release `immutable`. [DOC S-kqisz7ri]
 - Download url form: `https://github.com/astral-sh/uv/releases/download/<version>/<archive name>`; the installer script's own header names `https://releases.astral.sh/github/uv/releases/download/<version>` as the source it fetches from. [DOC S-kqisz7ri, S-tqxtar5b]
+- The release notes list each archive with a checksum link on the `releases.astral.sh` mirror (`https://releases.astral.sh/github/uv/releases/download/0.12.19/<archive>` and `<archive>.sha256`), labelling `uv-x86_64-pc-windows-msvc.zip` "x64 Windows" and `uv-aarch64-pc-windows-msvc.zip` "ARM64 Windows". [DOC S-kqisz7ri]
+- The release notes state "The artifacts in this release have attestations generated with GitHub Artifact Attestations", verified with `gh attestation verify <file> --repo astral-sh/uv`, or offline against a downloaded bundle with `--bundle <file>`. [DOC S-kqisz7ri]
+- For each Windows zip's digest, GitHub's attestations API returns two sigstore bundles: SLSA provenance v1 from `.github/workflows/release.yml` in `astral-sh/uv`, and an in-toto release v0.2 attestation for `pkg:github/astral-sh/uv@0.12.19` whose subjects include every archive and its `.sha256` file. [DER S-kqisz7ri: `GET /repos/astral-sh/uv/attestations/sha256:<digest>` for the x86_64 and aarch64 digests, decoded 2026-09-29]
+- `uv.exe`, `uvx.exe` and `uvw.exe` in the 0.12.19 x86_64 zip carry a valid Authenticode signature (`Get-AuthenticodeSignature` status `Valid`, signer `CN="OpenAI OpCo, LLC"`); neither the install docs nor the release notes mention Authenticode, so the signer is not a documented promise. [DER S-kqisz7ri: the downloaded archive's files checked on Windows 11, 2026-09-29]
 - On 2026-09-29 the newest release was 0.12.20 (published 2026-09-28), so a pin at 0.12.19 is one patch release behind; a pin is a chosen value, not the latest. [DOC S-kqisz7ri: release API `latest`]
 
 ### The standalone installer
@@ -43,6 +47,7 @@ uv publishes each Windows build as a zip on its GitHub release (`uv-x86_64-pc-wi
 | Arm64 archive | `uv-aarch64-pc-windows-msvc.zip` | S-kqisz7ri |
 | Checksum files | `<archive>.sha256`, `sha256.sum` (release assets) | S-kqisz7ri |
 | Contents | `uv.exe`, `uvx.exe`, `uvw.exe` | S-kqisz7ri |
+| Provenance check | `gh attestation verify <file> --repo astral-sh/uv` | S-kqisz7ri |
 | Default per-user directory | `$HOME\.local\bin` | S-tqxtar5b, S-xkajf5v5 |
 | PATH registry key | `HKCU\Environment`, value `Path` | S-tqxtar5b |
 | Skip PATH edit | `UV_NO_MODIFY_PATH=1` | S-tqxtar5b, S-xkajf5v5 |

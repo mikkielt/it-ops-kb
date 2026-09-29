@@ -1035,6 +1035,10 @@ Still open: (topic: auth/configmgr-rbac-auth)
 
 - **Installing Python packages behind a corporate proxy or from an internal package index** (pip and uv index settings, proxy variables, custom CA certificates, offline installs): a real lookup came back `weak` with only unrelated supply-chain facts. Looked in the kb 2026-09-28 (`rag.py pack`, grep for index-url, PIP_INDEX_URL, UV_INDEX, proxy in `python/`). Needs the pip configuration and uv index and network docs. (topic: python/uv-projects)
 
+## python/uv-windows-install
+
+- **Whether Astral documents Authenticode signing of uv's Windows binaries** (the 0.12.19 `uv.exe`, `uvx.exe`, `uvw.exe` carry a valid signature, signer `OpenAI OpCo, LLC`): not in the uv install docs (`docs/getting-started/installation.md` at 0.12.19) or the 0.12.19 release notes, which name only SHA-256 files and GitHub Artifact Attestations; looked 2026-09-29. Needs an Astral page that states the signing practice and signer. [UNK] (topic: python/uv-windows-install)
+
 ## python/stdlib-windows-portability
 
 - **Whether a detached child started by a Claude Code hook on Windows survives the hook's exit** (a job object that kills children on close, and whether `CREATE_BREAKAWAY_FROM_JOB` is needed): not in the Claude Code hooks reference or the Python subprocess docs, looked 2026-09-28. Needs a Windows test of the `SessionEnd` launcher (query-log item 4). (topic: python/stdlib-windows-portability)
