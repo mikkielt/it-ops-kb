@@ -2,7 +2,7 @@
   "id": "TK-hzci7jsp",
   "kind": "task",
   "title": "Tag the Linux jobs docker-linux and start the gate jobs on their own",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-33lzmm5e",
   "priority": "P2",
   "rank": 0,
@@ -30,5 +30,6 @@
   "depends_on": [
     "TK-thopb3qo"
   ],
-  "notes": "Lands only once the docker-linux runner is online, or the tagged jobs sit pending."
+  "notes": "Lands only once the docker-linux runner is online, or the tagged jobs sit pending.",
+  "claimed_by": "orchestrator-SP-76inhw33"
 }
