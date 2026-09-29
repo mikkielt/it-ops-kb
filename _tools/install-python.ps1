@@ -127,6 +127,25 @@ function Test-SameDir([string]$A, [string]$B) {
   return ($A.TrimEnd('\')) -ieq ($B.TrimEnd('\'))
 }
 
+# Appends $Dir to the user PATH unless it is there. HKCU\Environment Path is read and written raw, keeping its
+# %VAR% entries and its value kind (ExpandString): [Environment]::Get/SetEnvironmentVariable('Path', ..., 'User')
+# would read the expanded text and write it back as a plain string, fixing every %VAR% entry to today's value.
+function Add-UserPathDir([string]$Dir, [string]$SubKey = 'Environment') {
+  $key = [Microsoft.Win32.Registry]::CurrentUser.OpenSubKey($SubKey, $true)
+  try {
+    $raw = [string]$key.GetValue('Path', '', [Microsoft.Win32.RegistryValueOptions]::DoNotExpandEnvironmentNames)
+    $there = @($raw -split ';' | Where-Object { $_ } | Where-Object {
+      (Test-SameDir ([Environment]::ExpandEnvironmentVariables($_)) $Dir) })
+    if ($there.Count -gt 0) { return }
+    $kind = if ($key.GetValueNames() -contains 'Path') { $key.GetValueKind('Path') } else { [Microsoft.Win32.RegistryValueKind]::ExpandString }
+    if ($kind -ne [Microsoft.Win32.RegistryValueKind]::String) { $kind = [Microsoft.Win32.RegistryValueKind]::ExpandString }
+    $key.SetValue('Path', ((@($raw -split ';' | Where-Object { $_ }) + $Dir) -join ';'), $kind)
+  } finally {
+    $key.Close()
+  }
+  Write-Host "Added $Dir to the user PATH (a new session sees it)"
+}
+
 # Every python.exe / python3.exe / py.exe a new session would find, in PATH order (machine PATH, then user PATH),
 # with the target folder prepended to the user PATH as the installer does.
 function Get-Resolution([bool]$WithTarget) {
@@ -411,14 +430,12 @@ if (-not $SkipUv) {
       }
       Remove-Item -LiteralPath $unpacked -Recurse -Force
       Remove-Item -Path $uvZip -Force
-      $userPath = [Environment]::GetEnvironmentVariable('Path', 'User')
-      if (-not (@(Get-PathDirs 'User') | Where-Object { Test-SameDir $_ $uvDir })) {
-        [Environment]::SetEnvironmentVariable('Path', ((@($userPath -split ';' | Where-Object { $_ }) + $uvDir) -join ';'), 'User')
-        Write-Host "Added $uvDir to the user PATH"
-      }
       Write-Host "Installed uv $uvVersion in $uvDir"
     }
   }
+  # Installed now or before: the folder must be on the user PATH either way (a run stopped before this step, or
+  # uv's own installer with UV_NO_MODIFY_PATH, leaves uv.exe there but off PATH).
+  if (-not $DownloadOnly) { Add-UserPathDir $uvDir }
 }
 if ($DownloadOnly) { exit 0 }
 

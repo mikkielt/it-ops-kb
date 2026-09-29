@@ -69,6 +69,38 @@ def run_script(tmp_path, env, *args):
 
 
 @pytest.mark.skipif(os.name != "nt" or not POWERSHELL, reason="the script runs on Windows only")
+def test_user_path_keeps_its_variables():
+    """Add-UserPathDir, run from the script's own text on a scratch HKCU key: a %VAR% entry stays unexpanded, the
+    value stays ExpandString, and a second call adds nothing. ([Environment]::SetEnvironmentVariable would write the
+    expanded text as a plain string.)"""
+    with open(SCRIPT, encoding="utf-8") as f:
+        text = f.read()
+    funcs = text[text.index("function Test-SameDir"):text.index("\n# Every python.exe")]
+    sub = "Software\\it-ops-kb-test-" + os.urandom(4).hex()
+    ps = funcs + f"""
+$sub = '{sub}'
+$k = [Microsoft.Win32.Registry]::CurrentUser.CreateSubKey($sub)
+$k.SetValue('Path', '%SystemRoot%\\kb-a;C:\\kb-b', [Microsoft.Win32.RegistryValueKind]::ExpandString)
+$k.Close()
+try {{
+  Add-UserPathDir 'C:\\kb-new' $sub | Out-Null
+  Add-UserPathDir 'C:\\kb-new\\' $sub | Out-Null
+  $k = [Microsoft.Win32.Registry]::CurrentUser.OpenSubKey($sub)
+  $k.GetValue('Path', '', [Microsoft.Win32.RegistryValueOptions]::DoNotExpandEnvironmentNames)
+  $k.GetValueKind('Path')
+  $k.Close()
+}} finally {{
+  [Microsoft.Win32.Registry]::CurrentUser.DeleteSubKeyTree($sub, $false)
+}}
+"""
+    p = subprocess.run([POWERSHELL, "-NoProfile", "-NonInteractive", "-Command", ps], capture_output=True, text=True,
+                       encoding="utf-8", errors="replace", timeout=120)
+    said = [ln for ln in p.stdout.split("\n") if ln.strip() and not ln.startswith("Added ")]
+    assert [ln.strip() for ln in said] == ["%SystemRoot%\\kb-a;C:\\kb-b;C:\\kb-new", "ExpandString"], p.stdout + p.stderr
+    assert p.stdout.count("Added ") == 1, "the second call finds the folder and adds nothing"
+
+
+@pytest.mark.skipif(os.name != "nt" or not POWERSHELL, reason="the script runs on Windows only")
 def test_uv_conflicts_stop_before_any_download(tmp_path):
     home = tmp_path / "home"
     for rel in (".local/bin", ".cargo/bin"):
