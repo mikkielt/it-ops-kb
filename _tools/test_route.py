@@ -3,12 +3,14 @@
 TestRoute   kbfacts.pack and pack_many: a weak, a none and a check-flagged good pack print `route:`, `kb has:` and
             `kb lacks:` after the coverage, check:, freshness: and none-sentence lines and before the first article; a
             clean good pack prints none of them; `has` and `lacks` are the question's own words in question order;
-            route_of names each flagged case; a several-part pack starts with one overall route line.
+            a none whose only missing words are language or format names routes split; route_of names each flagged case; a several-part pack starts with one overall route line.
 """
 import kbfacts
 
 OTHER_NONE_Q = "How do I configure VMware Horizon instant clones?"
 OTHER_CLEAN_Q = "Does deleting an Entra device also delete its BitLocker recovery keys?"
+NEAR_MISS_Q = ("Show T-SQL that takes an exclusive session-owned application lock without waiting, fails if it is held, "
+               "and releases it.")  # none, and t-sql is the only word nowhere in the kb
 NONE_Q = "How do I run the Kubernetes Cluster Autoscaler on AWS EKS with spot instances?"
 WEAK_Q = "email attachment size"
 FLAGGED_Q = "How do I integrate ServiceNow with Intune?"  # good, its check: line names ServiceNow
@@ -49,6 +51,22 @@ class TestRoute:
         assert block[1].startswith("kb has: ") and "Kubernetes" in block[1] and "instances" in block[1], block
         assert block[2].startswith("kb lacks: ") and "Autoscaler" in block[2] and "EKS" in block[2], block
 
+    def test_near_miss_none_routes_split_not_web(self):
+        res = kbfacts.pack(NEAR_MISS_Q)
+        assert res["verdict"] == "none" and res["missing"] == ["t-sql"], (res["verdict"], res["missing"])
+        assert res["route"] == "split", res["route"]
+        assert_placed(res)
+        assert "route: split" in res["text"].splitlines() and "route: web" not in res["text"].splitlines()
+        # the Kubernetes question is none with 4 of 6 key words matched, autoscaler and eks nowhere: not a near miss
+        off = kbfacts.pack(NONE_Q)
+        assert off["missing"] == ["autoscaler", "eks"] and len(off["matched"]) == 4, (off["missing"], off["matched"])
+        assert off["route"] == "web"
+
+    def test_several_parts_with_a_near_miss_route_split(self):
+        res = kbfacts.pack_many([NEAR_MISS_Q, NONE_Q])
+        assert res["route"] == "split" and res["text"].splitlines()[0] == "route: split"
+        assert kbfacts.pack_many([NONE_Q, OTHER_NONE_Q])["route"] == "web"
+
     def test_weak_routes_split(self):
         res = kbfacts.pack(WEAK_Q)
         assert res["verdict"] == "weak" and res["route"] == "split", (res["verdict"], res["route"])
@@ -84,6 +102,11 @@ class TestRoute:
 
     def test_route_of_names_each_flagged_case(self):
         assert kbfacts.route_of("none", [], None, []) == "web"
+        assert kbfacts.route_of("none", [], None, ["t-sql"]) == "split", "a near miss: only a language name is missing"
+        assert kbfacts.route_of("none", [], None, ["t-sql", "json", "powershell"]) == "split"
+        assert kbfacts.route_of("none", [], None, ["t-sql", "eks"]) == "web", "one other missing word: not a near miss"
+        assert kbfacts.route_of("none", [], None, ["autoscaler", "eks"]) == "web"
+        assert kbfacts.route_of("none", ["servicenow"], None, []) == "web", "no missing word: web, not a near miss"
         assert kbfacts.route_of("weak", [], None, []) == "split"
         assert kbfacts.route_of("good", ["servicenow"], None, []) == "split"
         assert kbfacts.route_of("good", [], (1, 6), []) == "split"

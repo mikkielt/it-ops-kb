@@ -1160,7 +1160,7 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
     fact among the top hits holds half of 4+ key words. A word that is a product alias (_tools/aliases.csv) counts as present where any alias of the product is;
     the other aliases rank at a lower weight but never count as key words. `budget` is in tokens (about 3.5
     characters each) and bounds the text. A `weak` or `none` pack, and a flagged `good` one (a `check:` line, or a
-    word nowhere in the kb), also prints `route:` (`split`, or `web` for a `none`), `kb has:` (the question's own words
+    word nowhere in the kb), also prints `route:` (`split`, or `web` for a `none` unless only language or format names are missing), `kb has:` (the question's own words
     the best article matches) and `kb lacks:` (its informative words it does not match), after the coverage, check:,
     freshness: and none-sentence lines; `route` is None for a clean `good` pack, whose text has no such line. fmt
     `concise` drops the article flags and the source url footer; footer=False leaves the footer out of the text (pack_many prints one shared footer). `domain` (bare `intune`
@@ -1314,13 +1314,19 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
             "sources": [s[0] for s in srcs], "source_rows": srcs, "text": "\n".join(out)}
 
 
+# language and format names: a question asking for a topic the kb covers in one of them (T-SQL for sp_getapplock) is a
+# near miss when they are the only words the kb lacks, not a topic it does not cover
+LANGUAGE_NAMES = frozenset(("t-sql", "tsql", "powershell", "python", "bash", "kql", "json", "yaml", "xml", "csv"))
+
+
 def route_of(verdict, unmatched, spread, missing):
     """Where a question goes after the pack: None (answer from the pack), `split` (the kb has part of it: answer what
     the pack holds, look up what it lacks in the live docs) or `web` (the kb does not cover it). A `good` pack is
     flagged, and routes `split`, when it has a `check:` line (`unmatched`, `spread`) or a word nowhere in the kb
-    (`missing`); a clean `good` routes nowhere."""
+    (`missing`); a clean `good` routes nowhere. A `none` pack routes `web`, except a near miss: when every word
+    nowhere in the kb is a language or format name (LANGUAGE_NAMES) it routes `split`."""
     if verdict == "none":
-        return "web"
+        return "split" if missing and all(t in LANGUAGE_NAMES for t in missing) else "web"
     if verdict == "weak" or unmatched or spread or missing:
         return "split"
     return None
