@@ -2,7 +2,7 @@
   "id": "TK-jsx4wea4",
   "kind": "task",
   "title": "selfdoc.py section prints one section of a kb/_self doc or SKILL.md",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-pqmnnxvm",
   "priority": "P2",
   "rank": 0,
@@ -21,5 +21,19 @@
     "_tools/selfdoc.py",
     "_tools/test_selfdoc.py"
   ],
-  "claimed_by": "worker-jsx4wea4"
+  "evidence": {
+    "commit": "7fa2f4db082b5387d8f9bf100fa431c967e0df2e",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "selfdoc_section"
+        ],
+        "exit": 0,
+        "sha256": "886af34017bede6a"
+      }
+    ]
+  }
 }
