@@ -1,0 +1,26 @@
+{
+  "id": "BG-2ncicfwa",
+  "kind": "bug",
+  "title": "Research closes a gap at claim without a Resolved note, so queue exits 1",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "A gap finding that apply's research promotes to claim leaves querylog.py queue at exit 0: research writes the Resolved note under its _gaps.md entry, or queue accepts a claim recorded by research; the strict xfail marker on test_autonomous_converge_queue_exits_0_after_research is removed.",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/tests.py",
+      "-k",
+      "queue_exits_0_after_research",
+      "--runxfail"
+    ]
+  },
+  "touches": [
+    "_tools/ql_research.py",
+    "_tools/ql_apply.py",
+    "_tools/test_querylog.py",
+    "_tools/test_querylog_e2e.py",
+    "kb/_self/querylog.md"
+  ]
+}

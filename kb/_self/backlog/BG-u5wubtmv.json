@@ -1,0 +1,24 @@
+{
+  "id": "BG-u5wubtmv",
+  "kind": "bug",
+  "title": "kbingest.py survey says nothing when the checkout is at another commit than --rev",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kbingest.py survey REPO --rev REV prints its worktree: line whenever the checked-out files are not REV's (HEAD's tree differs from REV's, or uncommitted changes), so an agent does not read the checkout for facts pinned to REV; the strict xfail marker on test_autonomous_converge_survey_warns_of_a_checkout_off_the_commit is removed.",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/tests.py",
+      "-k",
+      "survey_warns_of_a_checkout_off_the_commit",
+      "--runxfail"
+    ]
+  },
+  "touches": [
+    "_tools/kbingest.py",
+    "_tools/test_kbingest.py",
+    "_tools/test_querylog_e2e.py"
+  ]
+}
