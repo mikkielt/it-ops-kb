@@ -2,7 +2,7 @@
   "id": "BG-as65f4wv",
   "kind": "bug",
   "title": "settings.json does not allow the read-only selfdoc.py section command",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-qdq57zu3",
   "priority": "P2",
   "rank": 0,
@@ -34,5 +34,6 @@
   ],
   "touches": [
     ".claude/settings.json"
-  ]
+  ],
+  "claimed_by": "orchestrator-SP-qdq57zu3"
 }
