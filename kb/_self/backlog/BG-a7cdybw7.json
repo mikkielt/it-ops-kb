@@ -2,7 +2,7 @@
   "id": "BG-a7cdybw7",
   "kind": "bug",
   "title": "kbingest map lets a rustup cargo shim auto-install a pinned toolchain",
-  "status": "draft",
+  "status": "doing",
   "sprint": "SP-fkyrld5h",
   "priority": "P2",
   "rank": 0,
@@ -22,5 +22,6 @@
     "kb/public/_sources.csv",
     "kb/public/_coverage.csv",
     "kb/public/_coverage.md"
-  ]
+  ],
+  "claimed_by": "orchestrator"
 }
