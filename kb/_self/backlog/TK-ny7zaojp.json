@@ -2,7 +2,7 @@
   "id": "TK-ny7zaojp",
   "kind": "task",
   "title": "Clean good packs keep their text across the lookup eval set",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-ysk3m7rt",
   "priority": "P1",
   "rank": 3,
@@ -32,5 +32,6 @@
   "depends_on": [
     "TK-huzcam4q"
   ],
-  "notes": "The eval check passes now: it guards the verdicts, which this task must not move. Research agents add kb content while the sprint runs, so the test reads the eval set on HEAD rather than a stored pack text."
+  "notes": "The eval check passes now: it guards the verdicts, which this task must not move. Research agents add kb content while the sprint runs, so the test reads the eval set on HEAD rather than a stored pack text.",
+  "claimed_by": "worker-ny7zaojp"
 }

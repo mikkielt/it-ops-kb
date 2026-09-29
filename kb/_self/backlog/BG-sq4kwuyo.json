@@ -2,7 +2,7 @@
   "id": "BG-sq4kwuyo",
   "kind": "bug",
   "title": "kb_mcp tests fail when the clone is behind its upstream",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-aikswrrl",
   "priority": "P1",
   "rank": 0,
@@ -16,5 +16,6 @@
       "kb_mcp_pack_ignores_freshness_banner"
     ]
   },
-  "notes": "Broke four subagent test runs and one push gate during SP-4udo5jmw while another machine pushed to origin."
+  "notes": "Broke four subagent test runs and one push gate during SP-4udo5jmw while another machine pushed to origin.",
+  "claimed_by": "worker-sq4kwuyo"
 }
