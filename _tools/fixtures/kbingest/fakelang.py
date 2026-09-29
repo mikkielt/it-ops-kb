@@ -1,9 +1,12 @@
-"""A fake `go` and `cargo` for test_kbingest.py: `fakelang go|cargo ARGS...` (a shim on PATH named go or cargo runs it).
+"""A fake `go`, `cargo`, `dotnet`, `npm`, `tsc` and `npx` for test_kbingest.py: `fakelang TOOL ARGS...` (a shim on PATH
+named TOOL runs it).
 
-It answers only the exact argument lists the Go and Cargo mappers may run, exits 64 for any other, and appends one
+It answers only the exact argument lists the mappers may run, exits 64 for any other (`dotnet msbuild -target:Build`,
+`dotnet package list` without `--no-restore`, `npm ls` without `--package-lock-only`, any `npx` call), and appends one
 JSON line per call (arguments, working directory, the environment variables that matter) to the file KB_FAKE_LOG.
 KB_FAKE_MODE picks a planted misbehaviour: `fail` (exit 101), `array` (go list prints an array), `garbage` (go list
-prints a truncated object after a good one), `outside` (a package directory outside the worktree)."""
+prints a truncated object after a good one), `outside` (a package directory or a project reference outside the
+worktree), `noassets` (dotnet package list finds no assets file), `problems` (npm ls prints its tree and exits 1)."""
 import json
 import os
 import sys
@@ -12,7 +15,9 @@ from pathlib import Path
 tool, args = sys.argv[1], sys.argv[2:]
 mode = os.environ.get("KB_FAKE_MODE", "")
 here = Path.cwd()
-WATCH = ("GOTOOLCHAIN", "GOPROXY", "GOFLAGS", "CARGO_NET_OFFLINE", "RUSTUP_AUTO_INSTALL", "HTTPS_PROXY", "http_proxy", "KB_TEST_API_TOKEN")
+WATCH = ("GOTOOLCHAIN", "GOPROXY", "GOFLAGS", "CARGO_NET_OFFLINE", "RUSTUP_AUTO_INSTALL", "HTTPS_PROXY", "http_proxy",
+         "KB_TEST_API_TOKEN", "npm_config_offline", "npm_config_ignore_scripts", "COREPACK_ENABLE_NETWORK",
+         "DOTNET_CLI_TELEMETRY_OPTOUT", "DOTNET_NOLOGO", "MSBUILDDISABLENODEREUSE")
 log = os.environ.get("KB_FAKE_LOG")
 if log:
     with open(log, "a", encoding="utf-8", newline="\n") as f:
@@ -63,6 +68,57 @@ def cargo_metadata():
     })
 
 
+PROPS = "-getProperty:TargetFrameworkMoniker,LangVersion"
+ITEMS = "-getItem:PackageReference,ProjectReference"
+PROJECT_EXTS = (".csproj", ".fsproj", ".vbproj")
+
+
+def msbuild_eval(project):
+    """MSBuild's `-getProperty -getItem` JSON for PROJECT, a file of the working directory."""
+    if project == "Lib.csproj":
+        return {"Properties": {"TargetFrameworkMoniker": ".NETStandard,Version=v2.0", "LangVersion": ""},
+                "Items": {"PackageReference": [], "ProjectReference": []}}
+    refs = ["..\\..\\..\\other\\Other.csproj"] if mode == "outside" else ["..\\Lib\\Lib.csproj"]
+    return {"Properties": {"TargetFrameworkMoniker": ".NETCoreApp,Version=v8.0", "LangVersion": "12.0"},
+            "Items": {"PackageReference": [{"Identity": "Newtonsoft.Json", "Version": "13.0.1", "FullPath": "x"},
+                                           {"Identity": "Serilog", "Version": "3.1.1"}],
+                      "ProjectReference": [{"Identity": r, "FullPath": "y"} for r in refs]}}
+
+
+def package_list():
+    """`dotnet package list --format json` for the one project file of the working directory."""
+    found = sorted(x.name for x in here.iterdir() if x.name.endswith(PROJECT_EXTS))
+    if len(found) != 1:
+        sys.stderr.write("error: MSB1011: more than one project or solution file\n")
+        sys.exit(1)
+    top = [] if found[0] == "Lib.csproj" else [
+        {"id": "Newtonsoft.Json", "requestedVersion": "13.0.1", "resolvedVersion": "13.0.1"},
+        {"id": "Serilog", "requestedVersion": "3.*", "resolvedVersion": "3.1.1"}]
+    return {"version": 1, "parameters": "", "projects": [{"path": str(here / found[0]), "frameworks": [
+        {"framework": "net8.0", "topLevelPackages": top}]}]}
+
+
+def npm_tree():
+    tree = {"version": "1.2.0", "name": "web", "dependencies": {
+        "express": {"version": "4.19.2", "resolved": "https://registry.example.com/express",
+                    "dependencies": {"accepts": {"version": "1.3.8"}}},
+        "left-pad": {"version": "1.3.0", "overridden": False}}}
+    if mode == "problems":
+        tree["problems"] = ["missing: ghost@^1.0.0, required by web@1.2.0"]
+    return tree
+
+
+def tsc_config():
+    return {"compilerOptions": {"target": "es2022", "module": "esnext", "moduleResolution": "bundler", "strict": True,
+                                "outDir": "./dist"}, "files": ["./src/a.ts"], "include": ["src"]}
+
+
+def tsc_files():
+    lines = [here / "src" / "a.ts", here / "src" / "b.ts", here / "node_modules" / "left-pad" / "index.d.ts",
+             Path(sys.executable).parent / "typescript-install" / "lib.es2022.d.ts"]
+    return "".join(str(x) + "\n" for x in lines)
+
+
 if mode == "fail" and args[:1] not in (["version"], ["--version"]):
     sys.stderr.write("error: the lock file needs to be updated but --locked was passed\nsecond line\n")
     sys.exit(101)
@@ -76,6 +132,27 @@ elif tool == "cargo" and args == ["--version"]:
     print("cargo 1.80.0 (fake 2026-01-01)")
 elif tool == "cargo" and args == ["metadata", "--format-version", "1", "--no-deps", "--offline", "--locked"]:
     print(cargo_metadata())
+elif tool == "dotnet" and args == ["--version"]:
+    print("10.0.100")
+elif (tool == "dotnet" and len(args) == 4 and args[0] == "msbuild" and args[2:] == [PROPS, ITEMS]
+      and args[1].endswith(PROJECT_EXTS) and (here / args[1]).is_file()):
+    print(json.dumps(msbuild_eval(args[1]), indent=2))
+elif tool == "dotnet" and args == ["package", "list", "--format", "json", "--no-restore"]:
+    if mode == "noassets":
+        sys.stderr.write("error: No assets file was found for `App.csproj`. Please run restore.\nsecond line\n")
+        sys.exit(1)
+    print(json.dumps(package_list(), indent=2))
+elif tool == "npm" and args == ["--version"]:
+    print("10.8.2")
+elif tool == "npm" and args == ["ls", "--all", "--json", "--package-lock-only"] and (here / "package-lock.json").is_file():
+    print(json.dumps(npm_tree(), indent=2))
+    sys.exit(1 if mode == "problems" else 0)  # npm ls prints the tree, then exits 1 for the problems in it
+elif tool == "tsc" and args == ["--version"]:
+    print("Version 5.6.2")
+elif tool == "tsc" and args == ["--showConfig"] and (here / "tsconfig.json").is_file():
+    print(json.dumps(tsc_config(), indent=4))
+elif tool == "tsc" and args == ["--listFilesOnly"] and (here / "tsconfig.json").is_file():
+    sys.stdout.write(tsc_files())
 else:
     sys.stderr.write("fakelang: unexpected arguments: " + " ".join(args) + "\n")
     sys.exit(64)

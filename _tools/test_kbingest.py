@@ -436,11 +436,11 @@ def langrepo(tmp_path_factory):
     })
 
 
-def install_lang(tmp_path, monkeypatch):
-    """`go` and `cargo` shims on PATH over fakelang.py; the calls they get are logged to the returned file."""
+def install_lang(tmp_path, monkeypatch, names=("go", "cargo")):
+    """Shims on PATH over fakelang.py, one per NAME; the calls they get are logged to the returned file."""
     bindir = tmp_path / "langbin"
     bindir.mkdir()
-    for name in ("go", "cargo"):
+    for name in names:
         if os.name == "nt":
             (bindir / f"{name}.cmd").write_text(f'@"{sys.executable}" "{FAKELANG}" {name} %*\r\n', encoding="utf-8",
                                                 newline="")
@@ -650,3 +650,327 @@ def test_kbingest_map_rel_keeps_only_paths_inside_the_worktree(tmp_path):
     assert ctx.rel(str(tmp_path.resolve() / "a")) == "a"
     assert ctx.rel(str(tmp_path.parent / "elsewhere")) is None  # planted: a sibling directory
     assert ctx.rel("") is None and ctx.rel(None) is None
+
+
+# ---- .NET, Node and TypeScript mappers: fake `dotnet`, `npm`, `tsc` and `npx` (fakelang.py) ------------------------------
+
+WEB_TOOLS = ("dotnet", "npm", "tsc")
+MSBUILD_TAIL = ["-getProperty:TargetFrameworkMoniker,LangVersion", "-getItem:PackageReference,ProjectReference"]
+PKG_LIST = ["package", "list", "--format", "json", "--no-restore"]
+NPM_LS = ["ls", "--all", "--json", "--package-lock-only"]
+CSPROJ = '<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net8.0</TargetFramework></PropertyGroup></Project>\n'
+DOTNET_CALLS = [(["--version"], "."),
+                (["msbuild", "App.csproj", *MSBUILD_TAIL], "src/App"), (PKG_LIST, "src/App"),
+                (["msbuild", "Lib.csproj", *MSBUILD_TAIL], "src/Lib"), (PKG_LIST, "src/Lib"),
+                (["msbuild", "A.csproj", *MSBUILD_TAIL], "tools"), (["msbuild", "B.fsproj", *MSBUILD_TAIL], "tools")]
+NODE_CALLS = [(["--version"], "."), (NPM_LS, "."), (NPM_LS, "web")]
+TSC_CALLS = [(["--version"], "."), (["--showConfig"], "."), (["--listFilesOnly"], "."),
+             (["--showConfig"], "web"), (["--listFilesOnly"], "web")]
+
+
+@pytest.fixture(scope="module")
+def webrepo(tmp_path_factory):
+    return commit_files(tmp_path_factory.mktemp("web") / "site", {
+        "global.json": '{"sdk": {"version": "10.0.100"}}\n',
+        "src/App/App.csproj": CSPROJ, "src/App/Program.cs": "class P {}\n",
+        "src/Lib/Lib.csproj": CSPROJ, "src/Lib/L.cs": "class L {}\n",
+        "tools/A.csproj": CSPROJ, "tools/B.fsproj": CSPROJ, "tools/x.fs": "module X\n",
+        "package.json": '{"name": "site"}\n', "package-lock.json": "{}\n",
+        "web/package.json": '{"name": "web"}\n', "web/package-lock.json": "{}\n",
+        "docs/package.json": '{"name": "docs"}\n',
+        "tsconfig.json": "{}\n", "src/a.ts": "export const a = 1;\n",
+        "web/tsconfig.json": "{}\n", "web/src/a.ts": "export const b = 2;\n",
+        "node_modules/.bin/tsc": "#!/bin/sh\necho the repository's own tsc\n",  # in the tree, never on PATH
+    })
+
+
+def where(call):
+    """The directory a logged call ran in, relative to the scratch worktree (`tree`)."""
+    parts = Path(call["cwd"]).parts
+    top = next(i for i, part in enumerate(parts) if part.startswith("kbingest-map-"))  # .../kbingest-map-X/tree/DIR
+    return "/".join(parts[top + 2:]) or "."
+
+
+def seen(log, tool):
+    return [(c["args"], where(c)) for c in calls_of(log) if c["tool"] == tool]
+
+
+def flags(args):
+    return [a.lower() for a in args if a.startswith(("-", "/"))]
+
+
+@requires_git
+def test_kbingest_map_dotnet_runs_the_exact_commands_per_project(webrepo, tmp_path, monkeypatch):
+    log = install_lang(tmp_path, monkeypatch, WEB_TOOLS + ("npx",))
+    monkeypatch.setenv("KB_TEST_API_TOKEN", "planted-token")
+    code, doc = fake_map(webrepo, tmp_path, monkeypatch, kbingest.DotnetMapper())
+    assert code == 0
+    assert seen(log, "dotnet") == DOTNET_CALLS  # exactly these argument lists, each in its project's directory
+    for c in calls_of(log):
+        assert c["env"]["DOTNET_CLI_TELEMETRY_OPTOUT"] == "1" and c["env"]["MSBUILDDISABLENODEREUSE"] == "1"
+        assert c["env"]["KB_TEST_API_TOKEN"] is None and c["env"]["HTTPS_PROXY"] == "http://127.0.0.1:9"
+        assert not Path(c["cwd"]).exists()  # the scratch worktree is gone
+    for args, _dir in seen(log, "dotnet"):  # never a target, never a restore
+        assert not any(f.startswith(("-target", "-t:", "-restore", "-r", "/t", "/restore", "/r")) for f in flags(args))
+    assert doc["tools"] == {"dotnet": {"tool": "dotnet", "version": "10.0.100"}}
+    app = {"language": "dotnet", "name": "App", "path": "src/App", "project": "src/App/App.csproj", "kind": "project",
+           "framework": ".NETCoreApp,Version=v8.0", "langversion": "12.0", "references": ["src/Lib/Lib.csproj"],
+           "resolved": {"Newtonsoft.Json": "13.0.1", "Serilog": "3.1.1"}}
+    lib = {"language": "dotnet", "name": "Lib", "path": "src/Lib", "project": "src/Lib/Lib.csproj", "kind": "project",
+           "framework": ".NETStandard,Version=v2.0"}  # an empty LangVersion and no package: no field
+    tool = {"language": "dotnet", "project": "tools/A.csproj", "kind": "project", "path": "tools", "name": "A",
+            "framework": ".NETCoreApp,Version=v8.0", "langversion": "12.0", "references": ["Lib/Lib.csproj"]}
+    assert doc["packages"] == [app, lib, tool, {**tool, "project": "tools/B.fsproj", "name": "B"}]
+    assert doc["imports"][0] == {"language": "dotnet", "path": "src/App/App.csproj",
+                                 "imports": ["Newtonsoft.Json", "Serilog"]}
+    assert len(doc["imports"]) == 3  # Lib has none
+    assert notes_of(doc) == ["tools: 2 project files in one directory, dotnet package list not run"]
+    assert "npx" not in {c["tool"] for c in calls_of(log)} and "planted-token" not in json.dumps(doc)
+
+
+@requires_git
+def test_kbingest_map_dotnet_planted_target_restore_and_unpinned_list_are_refused(webrepo, tmp_path, monkeypatch):
+    """Planted: a mapper that adds `-target:Build`, one that adds `-restore`, one whose package list may restore, and
+    one that names no property; the fake exits 64 for each, so the exact lists above are checked, not merely logged."""
+    install_lang(tmp_path, monkeypatch, WEB_TOOLS)
+    bad = {
+        "dotnet msbuild -target": ["dotnet", "msbuild", "App.csproj", *MSBUILD_TAIL, "-target:Build"],
+        "dotnet msbuild -restore": ["dotnet", "msbuild", "App.csproj", "-restore", *MSBUILD_TAIL],
+        "dotnet msbuild -t": ["dotnet", "msbuild", "App.csproj", *MSBUILD_TAIL, "-t:Restore"],
+        "dotnet msbuild none": ["dotnet", "msbuild", "App.csproj"],
+        "dotnet package list": ["dotnet", "package", "list", "--format", "json"],
+        "dotnet build": ["dotnet", "build", "App.csproj", "--no-restore"],
+    }
+    for label, args in bad.items():
+        class Bad(kbingest.DotnetMapper):
+            def map(self, ctx, files, args=args, label=label):
+                ctx.json(args, label=label, cwd="src/App")
+
+        code, doc = fake_map(webrepo, tmp_path, monkeypatch, Bad())
+        assert code == 0
+        assert any(n.startswith(f"{label}: exit 64: fakelang: unexpected arguments") for n in notes_of(doc)), (label, doc["notes"])
+
+
+@requires_git
+def test_kbingest_map_dotnet_failures_and_odd_references_are_notes(webrepo, tmp_path, monkeypatch):
+    install_lang(tmp_path, monkeypatch, WEB_TOOLS)
+    monkeypatch.setenv("KB_FAKE_MODE", "noassets")  # no obj/project.assets.json: --no-restore cannot list packages
+    code, doc = fake_map(webrepo, tmp_path, monkeypatch, kbingest.DotnetMapper())
+    assert code == 0
+    assert "dotnet package list (src/App): exit 1: error: No assets file was found for `App.csproj`. Please run restore." \
+        in notes_of(doc)
+    assert [p["name"] for p in doc["packages"]] == ["App", "Lib", "A", "B"]  # the evaluation still maps each project
+    assert all("resolved" not in p for p in doc["packages"])
+    monkeypatch.setenv("KB_FAKE_MODE", "outside")  # a ProjectReference that leaves the worktree
+    code, doc = fake_map(webrepo, tmp_path, monkeypatch, kbingest.DotnetMapper())
+    assert "src/App/App.csproj: a project reference outside the worktree, left out" in notes_of(doc)
+    assert "references" not in doc["packages"][0]
+    monkeypatch.setenv("KB_FAKE_MODE", "fail")  # SDK not found, or no such project
+    code, doc = fake_map(webrepo, tmp_path, monkeypatch, kbingest.DotnetMapper())
+    assert code == 0 and doc["packages"][0]["name"] == "App" and "framework" not in doc["packages"][0]
+    assert any(n.startswith("dotnet msbuild src/App/App.csproj: exit 101") for n in notes_of(doc))
+
+
+@requires_git
+def test_kbingest_map_dotnet_cap_and_no_project(webrepo, tmp_path, monkeypatch):
+    log = install_lang(tmp_path, monkeypatch, WEB_TOOLS)
+    monkeypatch.setattr(kbingest, "MAP_MAX_PROJECTS", 1)
+    code, doc = fake_map(webrepo, tmp_path, monkeypatch, kbingest.DotnetMapper())
+    assert code == 0 and [p["name"] for p in doc["packages"]] == ["App"]
+    assert "stopped after 1 projects (3 not mapped)" in notes_of(doc)
+    log.unlink()
+    loose = commit_files(tmp_path / "loose", {"a.cs": "class A {}\n", "global.json": "{}\n"})
+    code, doc = fake_map(loose, tmp_path, monkeypatch, kbingest.DotnetMapper())
+    assert notes_of(doc) == ["no .csproj, .fsproj or .vbproj file: no .NET project mapped"]
+    assert seen(log, "dotnet") == [(["--version"], ".")]  # only the version
+
+
+@requires_git
+def test_kbingest_map_node_runs_npm_ls_with_package_lock_only_and_never_npx(webrepo, tmp_path, monkeypatch):
+    log = install_lang(tmp_path, monkeypatch, WEB_TOOLS + ("npx",))
+    monkeypatch.setenv("KB_TEST_API_TOKEN", "planted-token")
+    code, doc = fake_map(webrepo, tmp_path, monkeypatch, kbingest.NodeMapper())
+    assert code == 0
+    assert seen(log, "npm") == NODE_CALLS  # only where a package-lock.json sits beside package.json
+    for args, _dir in seen(log, "npm")[1:]:
+        assert "--package-lock-only" in args
+    for c in calls_of(log):
+        assert c["env"]["npm_config_offline"] == "true" and c["env"]["npm_config_ignore_scripts"] == "true"
+        assert c["env"]["COREPACK_ENABLE_NETWORK"] == "0" and c["env"]["KB_TEST_API_TOKEN"] is None
+    assert {c["tool"] for c in calls_of(log)} == {"npm"}  # no npx, no node, no other program
+    assert doc["tools"] == {"node": {"tool": "npm", "version": "10.8.2"}}
+    web = {"language": "node", "name": "web", "path": "web", "kind": "npm", "version": "1.2.0"}
+    assert doc["packages"] == [{**web, "path": "."}, web]
+    assert doc["imports"] == [{"language": "node", "path": "package.json", "imports": ["express", "left-pad"]},
+                              {"language": "node", "path": "web/package.json", "imports": ["express", "left-pad"]}]
+    assert notes_of(doc) == ["1 package.json file(s) without a package-lock.json beside them, npm ls not run"]
+
+
+@requires_git
+def test_kbingest_map_node_reads_the_tree_npm_prints_before_it_exits_1(webrepo, tmp_path, monkeypatch):
+    install_lang(tmp_path, monkeypatch, WEB_TOOLS)
+    monkeypatch.setenv("KB_FAKE_MODE", "problems")
+    code, doc = fake_map(webrepo, tmp_path, monkeypatch, kbingest.NodeMapper())
+    assert code == 0 and [p["path"] for p in doc["packages"]] == [".", "web"]
+    assert "npm ls (web): 1 problem(s), first: missing: ghost@^1.0.0, required by web@1.2.0" in notes_of(doc)
+    assert any(n.startswith("npm ls (web): exit 1") for n in notes_of(doc))
+    monkeypatch.setenv("KB_FAKE_MODE", "fail")  # exit 101 and nothing on stdout: no tree
+    code, doc = fake_map(webrepo, tmp_path, monkeypatch, kbingest.NodeMapper())
+    assert code == 0 and doc["packages"] == []
+    assert any(n.startswith("npm ls (.): exit 101") for n in notes_of(doc))
+
+
+@requires_git
+def test_kbingest_map_node_planted_missing_lock_only_and_npx_are_refused(webrepo, tmp_path, monkeypatch):
+    """Planted: `npm ls` without --package-lock-only (it would read node_modules), an `npm install`, an `npx tsc` and
+    an `npx npm ls`; the fake exits 64 and, for npx, logs the call, which the exact-list tests above prove absent."""
+    log = install_lang(tmp_path, monkeypatch, WEB_TOOLS + ("npx",))
+    bad = {
+        "npm ls": ["npm", "ls", "--all", "--json"],
+        "npm ls --package-lock": ["npm", "ls", "--all", "--json", "--package-lock"],
+        "npm install": ["npm", "install", "--package-lock-only"],
+        "npx tsc": ["npx", "tsc", "--showConfig"],
+        "npx npm ls": ["npx", "npm", "ls", "--all", "--json", "--package-lock-only"],
+    }
+    for label, args in bad.items():
+        class Bad(kbingest.NodeMapper):
+            def map(self, ctx, files, args=args, label=label):
+                ctx.json(args, label=label)
+
+        code, doc = fake_map(webrepo, tmp_path, monkeypatch, Bad())
+        assert code == 0
+        assert any(n.startswith(f"{label}: exit 64: fakelang: unexpected arguments") for n in notes_of(doc)), (label, doc["notes"])
+    assert {c["tool"] for c in calls_of(log)} >= {"npx"}  # the planted calls did reach the fake npx and were logged
+
+
+@requires_git
+def test_kbingest_map_typescript_runs_installed_tsc_showconfig_and_listfilesonly(webrepo, tmp_path, monkeypatch):
+    log = install_lang(tmp_path, monkeypatch, WEB_TOOLS + ("npx",))
+    code, doc = fake_map(webrepo, tmp_path, monkeypatch, kbingest.TypeScriptMapper())
+    assert code == 0
+    assert seen(log, "tsc") == TSC_CALLS  # no file on the command line: tsc reads the directory's tsconfig.json
+    assert {c["tool"] for c in calls_of(log)} == {"tsc"}  # the repository's node_modules/.bin/tsc and npx never ran
+    assert doc["tools"] == {"typescript": {"tool": "tsc", "version": "Version 5.6.2"}}
+    root = {"language": "typescript", "name": "tsconfig.json", "path": ".", "kind": "tsconfig", "target": "es2022",
+            "module": "esnext", "moduleResolution": "bundler", "strict": True,
+            "files": 2}  # the lib file outside the worktree and node_modules/ are not counted
+    assert doc["packages"] == [root, {**root, "name": "web/tsconfig.json", "path": "web"}]
+    assert doc["imports"] == [] and doc["notes"] == []
+
+
+@requires_git
+def test_kbingest_map_typescript_never_uses_npx_or_the_repositorys_own_tsc(webrepo, tmp_path, monkeypatch):
+    """Planted: PATH has no tsc but the worktree carries node_modules/.bin/tsc; and a mapper that goes through npx."""
+    log = install_lang(tmp_path, monkeypatch, ("dotnet", "npm", "npx"))  # no tsc shim
+    real = kbingest.scrub_env  # and no tsc of the host either: PATH holds the shims only
+    monkeypatch.setattr(kbingest, "scrub_env", lambda base=None: {**real(base), "PATH": str(tmp_path / "langbin")})
+    code, doc = fake_map(webrepo, tmp_path, monkeypatch, kbingest.TypeScriptMapper())
+    assert code == 0 and doc["packages"] == [] and doc["tools"] == {}
+    assert notes_of(doc) == ["toolchain not installed: tsc (4 typescript files not mapped)"]
+    assert calls_of(log) == []  # not even an npx fallback
+
+    class ViaNpx(kbingest.TypeScriptMapper):
+        def project(self, ctx, cfg):
+            ctx.json(["npx", "tsc", "--showConfig"], label="npx tsc --showConfig", cwd=".")
+
+    again = tmp_path / "again"
+    again.mkdir()
+    install_lang(again, monkeypatch, WEB_TOOLS + ("npx",))
+    monkeypatch.setattr(kbingest, "scrub_env", lambda base=None: {**real(base), "PATH": str(again / "langbin")})
+    code, doc = fake_map(webrepo, tmp_path, monkeypatch, ViaNpx())
+    assert any(n.startswith("npx tsc --showConfig: exit 64") for n in notes_of(doc)), doc["notes"]
+
+
+@requires_git
+def test_kbingest_map_typescript_failures_are_notes(webrepo, tmp_path, monkeypatch):
+    """Planted: a tsc that fails (an `extends` it cannot read), and a mapper that puts a file on the command line."""
+    install_lang(tmp_path, monkeypatch, WEB_TOOLS)
+    monkeypatch.setenv("KB_FAKE_MODE", "fail")
+    code, doc = fake_map(webrepo, tmp_path, monkeypatch, kbingest.TypeScriptMapper())
+    assert code == 0 and doc["packages"] == []
+    assert any(n.startswith("tsc --showConfig (web): exit 101") for n in notes_of(doc))
+    assert any(n.startswith("tsc --listFilesOnly (.): exit 101") for n in notes_of(doc))
+    monkeypatch.delenv("KB_FAKE_MODE")
+
+    class WithFile(kbingest.TypeScriptMapper):
+        def project(self, ctx, cfg):
+            ctx.json(["tsc", "--showConfig", "src/a.ts"], label="tsc with a file", cwd=".")
+
+    code, doc = fake_map(webrepo, tmp_path, monkeypatch, WithFile())
+    assert any(n.startswith("tsc with a file: exit 64") for n in notes_of(doc)), doc["notes"]
+    loose = commit_files(tmp_path / "loose", {"a.ts": "export {};\n"})
+    code, doc = fake_map(loose, tmp_path, monkeypatch, kbingest.TypeScriptMapper())
+    assert notes_of(doc) == ["no tsconfig.json: no TypeScript project mapped"]
+
+
+@requires_git
+def test_kbingest_map_dotnet_node_typescript_are_registered_and_selected_by_lang(webrepo, tmp_path, monkeypatch):
+    log = install_lang(tmp_path, monkeypatch, WEB_TOOLS + ("npx",))
+    out = tmp_path / "web.json"
+    assert kbingest.main(["map", webrepo.path, "--out", str(out), "--lang", "dotnet,node,typescript"]) == 0
+    doc = json.loads(out.read_text(encoding="utf-8"))
+    assert sorted(doc["tools"]) == ["dotnet", "node", "typescript"]
+    assert [(c["tool"], c["args"], where(c)) for c in calls_of(log)] == \
+        [("dotnet", a, d) for a, d in DOTNET_CALLS] + [("npm", a, d) for a, d in NODE_CALLS] + \
+        [("tsc", a, d) for a, d in TSC_CALLS]
+    log.unlink()
+    assert kbingest.main(["map", webrepo.path, "--out", str(out), "--lang", "typescript"]) == 0
+    assert {c["tool"] for c in calls_of(log)} == {"tsc"}  # --lang typescript never starts npm or dotnet
+
+
+@requires_git
+def test_kbingest_map_missing_dotnet_npm_and_tsc_are_notes(webrepo, tmp_path, monkeypatch):
+    """Planted: a PATH with none of the three programs (nothing is installed for the operator)."""
+    empty = tmp_path / "empty"
+    empty.mkdir()
+    real = kbingest.scrub_env
+    monkeypatch.setattr(kbingest, "scrub_env", lambda base=None: {**real(base), "PATH": str(empty)})
+    out = tmp_path / "none.json"
+    assert kbingest.main(["map", webrepo.path, "--out", str(out), "--lang", "dotnet,node,typescript"]) == 0
+    doc = json.loads(out.read_text(encoding="utf-8"))
+    assert doc["tools"] == {} and doc["packages"] == []
+    assert notes_of(doc) == ["toolchain not installed: dotnet (8 dotnet files not mapped)",
+                             "toolchain not installed: npm (3 node files not mapped)",
+                             "toolchain not installed: tsc (4 typescript files not mapped)"]
+
+
+@requires_git
+def test_kbingest_map_a_program_inside_the_worktree_is_never_run(webrepo, tmp_path, monkeypatch):
+    """Planted: PATH resolves `tsc` to a file under the worktree (as a relative or repository entry would)."""
+    log = install_lang(tmp_path, monkeypatch, WEB_TOOLS)
+    real = kbingest.tool_exe
+    monkeypatch.setattr(kbingest, "tool_exe", lambda tool, env, root: (real(tool, env, root)[0], True))
+    code, doc = fake_map(webrepo, tmp_path, monkeypatch, kbingest.TypeScriptMapper())
+    assert code == 0 and doc["tools"] == {} and doc["packages"] == []
+    assert notes_of(doc) == ["tsc: found inside the worktree, the repository's own program is never run "
+                             "(4 typescript files not mapped)"]
+    assert calls_of(log) == []
+
+
+def test_kbingest_map_tool_exe_tells_the_repositorys_program_from_the_installed_one(tmp_path):
+    root, outside = tmp_path / "tree", tmp_path / "usr"
+    (root / "node_modules" / ".bin").mkdir(parents=True)
+    outside.mkdir()
+    name = "tsc.cmd" if os.name == "nt" else "tsc"
+    for folder in (root / "node_modules" / ".bin", outside):
+        (folder / name).write_text("x\n", encoding="utf-8", newline="\n")
+        (folder / name).chmod(0o755)
+    exe, inside = kbingest.tool_exe("tsc", {"PATH": str(outside)}, root)
+    assert exe is not None and inside is False
+    exe, inside = kbingest.tool_exe("tsc", {"PATH": str(root / "node_modules" / ".bin")}, root)
+    assert exe is not None and inside is True  # planted: the repository's node_modules/.bin on PATH
+    assert kbingest.tool_exe("tsc", {"PATH": str(tmp_path / "nowhere")}, root) == (None, False)
+
+
+@pytest.mark.skipif(os.name == "nt", reason="a relative PATH entry resolves differently on Windows")
+def test_kbingest_map_relative_path_entry_is_resolved_against_the_caller_not_the_worktree(tmp_path, monkeypatch):
+    """Planted: PATH=bin, and both the caller's directory and the worktree hold bin/probe; only the caller's may run."""
+    caller, tree = tmp_path / "caller", tmp_path / "tree"
+    for base, text in ((caller, "caller"), (tree, "worktree")):
+        (base / "bin").mkdir(parents=True)
+        probe = base / "bin" / "probe"
+        probe.write_text(f"#!/bin/sh\necho {text}\n", encoding="utf-8", newline="\n")
+        probe.chmod(0o755)
+    monkeypatch.chdir(caller)
+    r = kbingest.run_tool(["probe"], tree, {"PATH": "bin"}, 30)
+    assert r.rc == 0 and r.out.strip() == b"caller"

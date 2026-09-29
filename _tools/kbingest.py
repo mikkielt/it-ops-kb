@@ -20,6 +20,10 @@
       `packages`, `imports` (per file), `entry_points` and `notes`. A missing toolchain, a timeout, a non-zero exit, an
       output that is not JSON and a file that does not parse are notes, not errors. Python is mapped with
       `python -I -B -m ast` in a subprocess per file; another language is a Mapper subclass added to MAPPERS.
+      Go and Cargo run at the root; .NET (`dotnet msbuild -getProperty -getItem`, never `-target` or `-restore`, and
+      `dotnet package list --no-restore`), npm (`npm ls --all --json --package-lock-only`) and TypeScript (`tsc
+      --showConfig`, `--listFilesOnly`) run per project directory. `tsc` is the one on PATH, never `npx` and never
+      a program inside the worktree; a toolchain is never installed.
 
 Everything is read at the commit (git ls-tree, check-attr --source, cat-file), never from the working tree, so the
 facts match the pinned urls. Left out, first reason wins:
@@ -43,7 +47,7 @@ needs --forge; another forge gets no url (`url` refuses; the skill says what to 
 Exit: 0 done, 1 `map` could not create its worktree, 2 refused (not a git repository, an unknown REV, `url` with no
 pinned url form, `map` with an unknown language or an --out under kb/).
 """
-import argparse, contextlib, json, os, re, shutil, signal, subprocess, sys, tempfile
+import argparse, contextlib, json, os, posixpath, re, shutil, signal, subprocess, sys, tempfile
 from pathlib import Path
 from typing import NamedTuple
 from urllib.parse import quote, urlsplit
@@ -322,6 +326,7 @@ MAP_FORMAT = 1
 INGEST_CACHE = Path(kbcommon.HOME) / "_cache" / "ingest"
 MAP_TIMEOUT = 60  # seconds per mapper command
 MAP_MAX_FILES = 2000  # files one per-file mapper maps before it stops with a note
+MAP_MAX_PROJECTS = 50  # projects one per-project mapper (.NET, npm, tsc) maps before it stops with a note
 MAP_MAX_OUTPUT = 64 * 1024 * 1024  # bytes of a command's output that are parsed
 NOTE_LIMIT = 20  # notes one language keeps before it counts the rest
 # what makes a mapper command's environment offline: proxies that refuse, the tools' own offline switches (RUSTUP_AUTO_INSTALL=0:
@@ -332,8 +337,9 @@ NETWORK_OFF = {
     "NO_PROXY": "", "no_proxy": "",
     "GOTOOLCHAIN": "local", "GOPROXY": "off", "GOFLAGS": "-mod=readonly",
     "CARGO_NET_OFFLINE": "true", "RUSTUP_AUTO_INSTALL": "0", "npm_config_offline": "true", "npm_config_update_notifier": "false",
-    "COREPACK_ENABLE_NETWORK": "0", "DOTNET_CLI_TELEMETRY_OPTOUT": "1", "DOTNET_NOLOGO": "1",
-    "DOTNET_SKIP_FIRST_TIME_EXPERIENCE": "1", "PIP_NO_INDEX": "1", "GIT_TERMINAL_PROMPT": "0",
+    "npm_config_ignore_scripts": "true", "COREPACK_ENABLE_NETWORK": "0", "DOTNET_CLI_TELEMETRY_OPTOUT": "1",
+    "DOTNET_NOLOGO": "1", "DOTNET_SKIP_FIRST_TIME_EXPERIENCE": "1", "MSBUILDDISABLENODEREUSE": "1",
+    "PIP_NO_INDEX": "1", "GIT_TERMINAL_PROMPT": "0",
     "PYTHONDONTWRITEBYTECODE": "1",
 }
 SECRET_ENV = re.compile(r"(?i)token|secret|passw|credential|api[_-]?key|private[_-]?key|auth|cookie|session")
@@ -346,6 +352,17 @@ def scrub_env(base=None):
            if not SECRET_ENV.search(k) and not PROXY_ENV.match(k)}
     env.update(NETWORK_OFF)
     return env
+
+
+def tool_exe(tool, env, root):
+    """(the program TOOL is on ENV's PATH, whether it lies inside ROOT): None when it is not found. A program that is
+    inside the worktree is the repository's own (a `node_modules/.bin` entry on PATH), and a mapper never runs it."""
+    exe = shutil.which(tool, path=env.get("PATH"))
+    if exe is None:
+        return None, False
+    real = Path(os.path.abspath(exe)).resolve()
+    top = Path(root).resolve()
+    return exe, real == top or top in real.parents
 
 
 class Run(NamedTuple):
@@ -376,6 +393,7 @@ def run_tool(args, cwd, env, timeout):
     exe = shutil.which(args[0], path=env.get("PATH"))
     if exe is None:
         return Run(127, b"", b"", missing=True)
+    exe = os.path.abspath(exe)  # a relative PATH entry is relative to this process, never to CWD (the repository's tree)
     kw = {"start_new_session": True} if os.name == "posix" else {"creationflags": subprocess.CREATE_NEW_PROCESS_GROUP}
     try:
         proc = subprocess.Popen([exe, *args[1:]], cwd=str(cwd), env=env, stdin=subprocess.DEVNULL,
@@ -432,9 +450,12 @@ class MapCtx:
             return None
         return p
 
-    def run(self, args, label=None, timeout=None):
-        """A Run of ARGS in the worktree; a missing program, a timeout and a non-zero exit each add a note."""
-        r = run_tool(list(args), self.root, self.env, timeout or self.timeout)
+    def run(self, args, label=None, timeout=None, cwd=None):
+        """A Run of ARGS in the worktree, or in its directory CWD (a `/` path relative to the root: a project's own
+        directory, where the SDK's global.json and the nearest tsconfig.json apply); a missing program, a timeout and
+        a non-zero exit each add a note."""
+        where = self.root if cwd in (None, "", ".") else self.root / cwd
+        r = run_tool(list(args), where, self.env, timeout or self.timeout)
         what = label or " ".join(str(a) for a in args)[:100]
         if r.missing:
             self.note(f"{what}: program not found on PATH")
@@ -445,20 +466,22 @@ class MapCtx:
             self.note(f"{what}: exit {r.rc}" + (f": {first}" if first else ""))
         return r
 
-    def output(self, args, what):
-        """The text a command prints, or None (with a note) when it failed, was not found or printed too much."""
-        r = self.run(args, what)
-        if r.missing or r.timed_out or r.rc != 0:
+    def output(self, args, what, cwd=None, nonzero_ok=False):
+        """The text a command prints, or None (with a note) when it failed, was not found or printed too much.
+        NONZERO_OK keeps the output of a command that exited non-zero (still with its note): `npm ls` prints its
+        tree, then exits 1 for the problems it lists."""
+        r = self.run(args, what, cwd=cwd)
+        if r.missing or r.timed_out or (r.rc != 0 and not (nonzero_ok and r.out.strip())):
             return None
         if len(r.out) > MAP_MAX_OUTPUT:
             self.note(f"{what}: output over {MAP_MAX_OUTPUT} bytes, not parsed")
             return None
         return r.out.decode("utf-8", "replace")
 
-    def json(self, args, label=None):
+    def json(self, args, label=None, cwd=None, nonzero_ok=False):
         """The parsed JSON a command prints, or None (with a note)."""
         what = label or " ".join(str(a) for a in args)[:100]
-        text = self.output(args, what)
+        text = self.output(args, what, cwd=cwd, nonzero_ok=nonzero_ok)
         if text is None:
             return None
         try:
@@ -727,7 +750,203 @@ class CargoMapper(Mapper):
         return manifest
 
 
-MAPPERS = [PythonMapper(), GoMapper(), CargoMapper()]
+def folder_of(path):
+    """The directory of a `/` path in the worktree, `.` for the root."""
+    return path.rsplit("/", 1)[0] if "/" in path else "."
+
+
+def within(folder, name):
+    """FOLDER/NAME as a `/` path (NAME alone in the root)."""
+    return name if folder == "." else f"{folder}/{name}"
+
+
+def capped(ctx, items, what):
+    """The first MAP_MAX_PROJECTS of ITEMS; a note counts the rest."""
+    if len(items) > MAP_MAX_PROJECTS:
+        ctx.note(f"stopped after {MAP_MAX_PROJECTS} {what} ({len(items) - MAP_MAX_PROJECTS} not mapped)")
+    return items[:MAP_MAX_PROJECTS]
+
+
+PROJECT_EXTS = (".csproj", ".fsproj", ".vbproj")
+
+
+class DotnetMapper(Mapper):
+    """Per kept .csproj, .fsproj or .vbproj, run in the project's own directory (the SDK the nearest global.json names
+    is the one that runs):
+      `dotnet msbuild PROJECT -getProperty:TargetFrameworkMoniker,LangVersion -getItem:PackageReference,ProjectReference`
+      `dotnet package list --format json --no-restore` (.NET 10 SDK; only where the directory has one project file).
+    Without `-target` MSBuild only evaluates the project (MSBuild 17.8+; kb agents/codebase-mapping): no target and
+    no task runs, nothing is built or restored, and `-restore` and `-target` are never passed. Evaluation still reads
+    every import the project pulls in (Directory.Build.props, the SDK's .props and .targets, NuGet's obj/*.g.props when
+    present) and expands property functions, which are calls to .NET methods (live docs, Microsoft Learn, "Property
+    functions" and "How MSBuild builds projects": evaluation runs no task, and targets are only created in memory). A
+    project whose Sdk names a NuGet version (`Sdk="Name/1.0"`) would be resolved from a feed; the mapper environment
+    refuses proxies, so that fails as a note. `--no-restore` keeps `dotnet package list` from restoring first (.NET 10
+    does otherwise), so it reports only where obj/project.assets.json exists, which a fresh checkout lacks: a note."""
+    language = "dotnet"
+    name = "dotnet"
+    tool = "dotnet"
+
+    def files(self, rows):
+        return sorted(path for path, _kind in rows
+                      if path.endswith(PROJECT_EXTS + (".cs", ".fs", ".vb", ".sln", ".slnx"))
+                      or path.rsplit("/", 1)[-1] == "global.json")
+
+    def map(self, ctx, files):
+        projects = [f for f in files if f.endswith(PROJECT_EXTS)]
+        if not projects:
+            ctx.note("no .csproj, .fsproj or .vbproj file: no .NET project mapped")
+            return
+        per_folder = {}
+        for proj in projects:
+            per_folder.setdefault(folder_of(proj), []).append(proj)
+        for folder, names in sorted(per_folder.items()):
+            if len(names) > 1:
+                ctx.note(f"{folder}: {len(names)} project files in one directory, dotnet package list not run")
+        for proj in capped(ctx, projects, "projects"):
+            self.project(ctx, proj, len(per_folder[folder_of(proj)]) == 1)
+
+    def project(self, ctx, proj, alone):
+        if ctx.readable(proj) is None:
+            return
+        folder, base = folder_of(proj), proj.rsplit("/", 1)[-1]
+        ev = ctx.json(["dotnet", "msbuild", base, "-getProperty:TargetFrameworkMoniker,LangVersion",
+                       "-getItem:PackageReference,ProjectReference"], label=f"dotnet msbuild {proj}", cwd=folder)
+        listed = None
+        if alone:
+            listed = ctx.json(["dotnet", "package", "list", "--format", "json", "--no-restore"],
+                              label=f"dotnet package list ({folder})", cwd=folder)
+        props = ev.get("Properties") if isinstance(ev, dict) and isinstance(ev.get("Properties"), dict) else {}
+        items = ev.get("Items") if isinstance(ev, dict) and isinstance(ev.get("Items"), dict) else {}
+        extra = {"project": proj, "kind": "project"}
+        for key, field in (("TargetFrameworkMoniker", "framework"), ("LangVersion", "langversion")):
+            if isinstance(props.get(key), str) and props[key]:
+                extra[field] = props[key]
+        refs = []
+        for item in items.get("ProjectReference") or ():
+            ident = item.get("Identity") if isinstance(item, dict) else None
+            if not isinstance(ident, str) or not ident:
+                continue
+            target = posixpath.normpath(posixpath.join("" if folder == "." else folder, ident.replace("\\", "/")))
+            if target == ".." or target.startswith("../"):
+                ctx.note(f"{proj}: a project reference outside the worktree, left out")
+            else:
+                refs.append(target)
+        if refs:
+            extra["references"] = sorted(set(refs))
+        resolved = self.resolved(listed)
+        if resolved:
+            extra["resolved"] = resolved
+        ctx.add_package(base.rsplit(".", 1)[0], folder, **extra)
+        ctx.add_imports(proj, [i["Identity"] for i in items.get("PackageReference") or ()
+                               if isinstance(i, dict) and isinstance(i.get("Identity"), str)])
+
+    @staticmethod
+    def resolved(listed):
+        """{package id: resolved version} of the top-level packages `dotnet package list` reports (the first framework
+        that names one wins)."""
+        found = {}
+        projects = listed.get("projects") if isinstance(listed, dict) else None
+        for project in projects or ():
+            for fw in (project.get("frameworks") if isinstance(project, dict) else None) or ():
+                for pkg in (fw.get("topLevelPackages") if isinstance(fw, dict) else None) or ():
+                    if isinstance(pkg, dict) and isinstance(pkg.get("id"), str) \
+                            and isinstance(pkg.get("resolvedVersion"), str):
+                        found.setdefault(pkg["id"], pkg["resolvedVersion"])
+        return dict(sorted(found.items()))
+
+
+class NodeMapper(Mapper):
+    """`npm ls --all --json --package-lock-only` in each directory that has a kept package.json and a package-lock.json
+    (the survey leaves lock files out, so the worktree is asked). `--package-lock-only` builds the tree from the lock
+    file: nothing is installed, no node_modules is read and no lifecycle script runs (`ls` runs none, and the mapper
+    environment sets npm_config_ignore_scripts and npm_config_offline besides). `npm ls` prints its JSON and then exits
+    1 when it has problems to list, so the output is read whatever the exit status."""
+    language = "node"
+    name = "npm"
+    tool = "npm"
+
+    def files(self, rows):
+        return sorted(path for path, _kind in rows
+                      if path.endswith((".js", ".mjs", ".cjs", ".jsx")) or path.rsplit("/", 1)[-1] == "package.json")
+
+    def map(self, ctx, files):
+        folders = sorted(folder_of(f) for f in files if f.rsplit("/", 1)[-1] == "package.json")
+        if not folders:
+            ctx.note("no package.json: no npm project mapped")
+            return
+        locked = [d for d in folders if (ctx.root / within(d, "package-lock.json")).exists()]
+        if len(locked) < len(folders):
+            ctx.note(f"{len(folders) - len(locked)} package.json file(s) without a package-lock.json beside them, "
+                     "npm ls not run")
+        for folder in capped(ctx, locked, "npm projects"):
+            if ctx.readable(within(folder, "package-lock.json")) is not None:
+                self.project(ctx, folder)
+
+    def project(self, ctx, folder):
+        tree = ctx.json(["npm", "ls", "--all", "--json", "--package-lock-only"], label=f"npm ls ({folder})",
+                        cwd=folder, nonzero_ok=True)
+        if not isinstance(tree, dict):
+            if tree is not None:
+                ctx.note(f"npm ls ({folder}): output is not an object")
+            return
+        deps = tree.get("dependencies") if isinstance(tree.get("dependencies"), dict) else {}
+        extra = {"kind": "npm"}
+        if isinstance(tree.get("version"), str):
+            extra["version"] = tree["version"]
+        name = tree["name"] if isinstance(tree.get("name"), str) and tree["name"] else folder
+        ctx.add_package(name, folder, **extra)
+        ctx.add_imports(within(folder, "package.json"), list(deps))
+        problems = strings(tree.get("problems"))
+        if problems:
+            ctx.note(f"npm ls ({folder}): {len(problems)} problem(s), first: {problems[0][:150]}")
+
+
+class TypeScriptMapper(Mapper):
+    """`tsc --showConfig` (the effective options after `extends`) and `tsc --listFilesOnly` (the files of the
+    compilation; it lists and stops) in each directory that has a kept tsconfig.json, with no file on the command line
+    (a named file makes tsc ignore tsconfig.json, and TypeScript 7 refuse it). `tsc` is the one found on PATH: the
+    mapper never goes through `npx` (which would run the repository's node_modules/.bin/tsc, or download one), and
+    build_map refuses a `tsc` that lies inside the worktree."""
+    language = "typescript"
+    name = "tsc"
+    tool = "tsc"
+
+    def files(self, rows):
+        return sorted(path for path, _kind in rows
+                      if path.endswith((".ts", ".tsx", ".mts", ".cts")) or path.rsplit("/", 1)[-1] == "tsconfig.json")
+
+    def map(self, ctx, files):
+        configs = [f for f in files if f.rsplit("/", 1)[-1] == "tsconfig.json"]
+        if not configs:
+            ctx.note("no tsconfig.json: no TypeScript project mapped")
+            return
+        for cfg in capped(ctx, configs, "tsconfig.json files"):
+            if ctx.readable(cfg) is not None:
+                self.project(ctx, cfg)
+
+    def project(self, ctx, cfg):
+        folder = folder_of(cfg)
+        conf = ctx.json(["tsc", "--showConfig"], label=f"tsc --showConfig ({folder})", cwd=folder)
+        listing = ctx.output(["tsc", "--listFilesOnly"], f"tsc --listFilesOnly ({folder})", cwd=folder)
+        if not isinstance(conf, dict) and listing is None:
+            return
+        options = conf.get("compilerOptions") if isinstance(conf, dict) else None
+        options = options if isinstance(options, dict) else {}
+        extra = {"kind": "tsconfig"}
+        for key in ("target", "module", "moduleResolution"):
+            if isinstance(options.get(key), str):
+                extra[key] = options[key]
+        if isinstance(options.get("strict"), bool):
+            extra["strict"] = options["strict"]
+        if listing is not None:
+            mine = [r for r in (ctx.rel(ln.strip()) for ln in listing.splitlines() if ln.strip())
+                    if r is not None and "node_modules/" not in r]
+            extra["files"] = len(mine)  # the compiler's own lib files and installed packages lie outside the worktree
+        ctx.add_package(cfg, folder, **extra)
+
+
+MAPPERS = [PythonMapper(), GoMapper(), CargoMapper(), DotnetMapper(), NodeMapper(), TypeScriptMapper()]
 
 
 @contextlib.contextmanager
@@ -774,8 +993,12 @@ def build_map(repo, commit, rev, rows, langs=None, timeout=MAP_TIMEOUT, base_env
             if not files:
                 continue
             ctx = MapCtx(root, env, timeout, m.language)
-            if shutil.which(m.tool, path=env.get("PATH")) is None:
+            exe, inside = tool_exe(m.tool, env, root)
+            if exe is None:
                 ctx.note(f"toolchain not installed: {m.name} ({len(files)} {m.language} files not mapped)")
+            elif inside:
+                ctx.note(f"{m.name}: found inside the worktree, the repository's own program is never run "
+                         f"({len(files)} {m.language} files not mapped)")
             else:
                 v = run_tool([m.tool, *m.version_args], root, env, timeout)
                 ok = v.rc == 0 and not v.timed_out and not v.missing
