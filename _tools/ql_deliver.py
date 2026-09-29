@@ -27,8 +27,9 @@ GITLAB_RED = ("failed",)
 GITLAB_UNFINISHED = ("created", "waiting_for_resource", "preparing", "waiting_for_callback", "pending", "running",
                      "canceling", "scheduled")
 GITHUB_RED = ("failure", "timed_out", "startup_failure")  # conclusions of a completed run
-# The jobs that must succeed for a GitLab pipeline to count as green: every job in .gitlab-ci.yml is manual with
-# allow_failure, so the pipeline's own status says success whatever they did. The other jobs (kb-tests-floor,
+# The jobs that must succeed for a GitLab pipeline to count as green: every job in .gitlab-ci.yml has allow_failure
+# (these two start on their own, the others on tool changes or by hand), so the pipeline's own status says success
+# whatever they did. The other jobs (kb-tests-floor,
 # tool-stress, kb-tests-windows) make it red when their script failed, and never unverified.
 GATE_JOBS = ("kb-tests", "kb-trailers")
 RAN_AND_FAILED = ("script_failure",)  # a failed job's failure_reason when its script ran and exited non-zero
