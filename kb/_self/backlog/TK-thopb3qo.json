@@ -2,7 +2,7 @@
   "id": "TK-thopb3qo",
   "kind": "task",
   "title": "Set up the docker-linux runner in WSL2 Ubuntu and document both runners",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-33lzmm5e",
   "priority": "P2",
   "rank": 0,
@@ -99,5 +99,48 @@
     }
   ],
   "notes": "Host work done by the orchestrating session with the operator (elevated, may need a restart); the commit is only the doc.",
-  "claimed_by": "orchestrator-with-operator"
+  "evidence": {
+    "commit": "d6d48bd8b009adfb5b7803d5d9c1047e66e58e06",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import pathlib;t=pathlib.Path('kb/_self/runners.md').read_text(encoding='utf-8');assert 'docker-linux' in t and 'docker-windows' in t and 'glrt-' not in t"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/selfdoc.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "3db513ebafdfe3a2"
+      },
+      {
+        "run": [
+          "glab",
+          "api",
+          "projects/mikkielt%2Fit-ops-kb/runners?tag_list=docker-linux&status=online"
+        ],
+        "exit": 0,
+        "sha256": "cf3e0296872a2403"
+      },
+      {
+        "run": [
+          "git",
+          "grep",
+          "-q",
+          "-I",
+          "-E",
+          "glrt-[A-Za-z0-9_-]{20}"
+        ],
+        "exit": 1,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
