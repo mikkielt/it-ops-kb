@@ -2,7 +2,7 @@
   "id": "TK-nx3tzxlp",
   "kind": "task",
   "title": "Remote roles in kbgit.py and red-pipeline",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-573udtxz",
   "priority": "P2",
   "rank": 0,
@@ -29,5 +29,21 @@
     "kb/_self/backlog.md",
     "kb/_self/maintaining.md"
   ],
-  "notes": "ql_deliver.py and backlog.py red-pipeline are also worked by SP-z7a5c76b “Delivery proven”, which runs first: rebase on it."
+  "gates": [
+    {
+      "id": "origin-scan",
+      "kind": "provisional",
+      "question": "The ast scan finds 'origin' outside this task's touches: census.py and kbingest.py (the remote of a source or ingested repository's own clone), benchmarks.py (a fixture clone) and kb_mcp.py upstream() (this clone's origin/HEAD fallback). kbingest.py belongs to another sprint. What does the scan do with them?",
+      "options": [
+        "the scan leaves out census.py, kbingest.py and benchmarks.py by name, each with its reason (another repository's remote); kb_mcp.py's fallback is filed as a bug and left out by name until it is fixed",
+        "widen this task's touches to all four files",
+        "scan only the files this task touches"
+      ],
+      "recommendation": "the scan leaves out census.py, kbingest.py and benchmarks.py by name, each with its reason (another repository's remote); kb_mcp.py's fallback is filed as a bug and left out by name until it is fixed",
+      "answer": "the scan leaves out census.py, kbingest.py and benchmarks.py by name, each with its reason (another repository's remote); kb_mcp.py's fallback is filed as a bug and left out by name until it is fixed",
+      "by": "agent"
+    }
+  ],
+  "notes": "ql_deliver.py and backlog.py red-pipeline are also worked by SP-z7a5c76b “Delivery proven”, which runs first: rebase on it.",
+  "claimed_by": "worker-nx3tzxlp"
 }
