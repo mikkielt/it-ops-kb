@@ -2,7 +2,7 @@
   "id": "TK-rcspiyvx",
   "kind": "task",
   "title": "backlog.py check validates an item's knowledge asks and refs",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-ireqmpda",
   "priority": "P2",
   "rank": 0,
@@ -20,5 +20,6 @@
   "touches": [
     "_tools/backlog.py",
     "_tools/test_backlog.py"
-  ]
+  ],
+  "claimed_by": "worker-rcspiyvx"
 }

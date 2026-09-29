@@ -2,7 +2,7 @@
   "id": "TK-w32po2v3",
   "kind": "task",
   "title": "Pick the benchmark task and write its compact brief",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-zptutwlf",
   "priority": "P2",
   "rank": 0,
@@ -19,5 +19,6 @@
   ],
   "touches": [
     "kb/_self/reports/backlog-briefs.md"
-  ]
+  ],
+  "claimed_by": "worker-w32po2v3"
 }
