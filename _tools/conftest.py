@@ -78,8 +78,13 @@ def git_env(**extra):
 
 
 def copy_kb(dst, skip=()):
-    shutil.copytree(KB, dst, ignore=shutil.ignore_patterns(".git", "_cache", "_private", "__pycache__", ".venv", ".pytest_cache",
-                                                        ".ruff_cache", *skip))
+    patterns = shutil.ignore_patterns(".git", "_cache", "_private", "__pycache__", ".venv", ".pytest_cache", ".ruff_cache", *skip)
+    claude = os.path.normcase(os.path.join(KB, ".claude"))
+
+    def ignore(d, names):  # and Claude Code's worktrees (sprint subagents): each is a whole second kb
+        return set(patterns(d, names)) | ({"worktrees"} if os.path.normcase(d) == claude else set())
+
+    shutil.copytree(KB, dst, ignore=ignore)
     return dst
 
 
