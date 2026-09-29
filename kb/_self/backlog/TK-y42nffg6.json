@@ -1,0 +1,33 @@
+{
+  "id": "TK-y42nffg6",
+  "kind": "task",
+  "title": "Make the it-ops-kb-docs submit_feedback block one command that sh and PowerShell both parse",
+  "status": "doing",
+  "parent": "BG-qtphqxt2",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "The it-ops-kb-docs plugin's PreToolUse submit_feedback hook is one shell-form command with no shell field and no interpreter that sh, bash, dash, Windows PowerShell 5.1 and pwsh all parse, each exiting 2 with the block message on stderr and nothing on stdout; test_kb_mcp runs it in every such shell present on the host, and the old '>&2' command fails that test under PowerShell (planted)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,sys; h=json.load(open('.claude-plugin/it-ops-kb-docs/.claude-plugin/plugin.json',encoding='utf-8'))['hooks']['PreToolUse']; sys.exit(1 if any('>&2' in x.get('command','') for e in h for x in e['hooks']) else 0)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "TestPluginManifest"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude-plugin/it-ops-kb-docs/.claude-plugin/plugin.json",
+    "_tools/test_kb_mcp.py",
+    "kb/_self/plugin.md"
+  ],
+  "claimed_by": "worker-qtphqxt2"
+}
