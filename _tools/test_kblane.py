@@ -1,12 +1,18 @@
-"""Lane tests: `python3 _tools/tests.py -k TestLanes`.
+"""Lane tests: `python3 _tools/tests.py -k TestLanes` and `-k TestCheckLanes`.
 
   TestLanes  the path classifier's boundaries (kb roots, the query log, backlog items, kb/_self process docs, the two
              tool data files, everything else code), every path ql_deliver.auto_kinds accepts and every
              kbgit.MECHANICAL path content, and (marker git) planted commits in a throwaway repository: a
              content-only, a code-only, a mixed, a merge and a backlog-item commit, and a root commit; `kbgit.py lane`
              prints them. Planted failures: a code path in a content commit and a content path in a code one flip the lane.
+  TestCheckLanes  check_lanes and `kbgit.py check-lanes` in a throwaway repository against an injected opener and a stub
+             forge on loopback: a direct code commit listed, a merged one (GitLab merge request, GitHub pull request
+             with merged_at) passing, an unmerged pull request listed, a merge commit judged by the commits it brings
+             in, an API failure (status, body, missing variables, no forge) exiting 2 and never passing, and the
+             pre-push hook refusing a code-lane commit for the integration main with no API call.
 """
-import ast, re
+import argparse, ast, io, json, re, threading, urllib.error
+from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 
 import pytest
@@ -110,3 +116,188 @@ class TestLanes:
         bad = subprocess.run([sys.executable, str(HERE / "kbgit.py"), "lane", "no-such-rev"], capture_output=True,
                              text=True, encoding="utf-8")
         assert bad.returncode == 2
+
+
+class Resp(io.BytesIO):
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *a):
+        self.close()
+
+
+def opener_of(answers, seen=None):
+    """An injected opener: answers[sha] is a list (the JSON body) or an exception to raise; every request is noted."""
+    def opener(req):
+        if seen is not None:
+            seen.append(req)
+        sha = req.full_url.split("/commits/")[1].split("/")[0]
+        got = answers.get(sha, [])
+        if isinstance(got, Exception):
+            raise got
+        return Resp(got if isinstance(got, bytes) else json.dumps(got).encode())
+    return opener
+
+
+class Stub(BaseHTTPRequestHandler):
+    """A stub GitLab: the commit named in `answers` gets its list or status; the JOB-TOKEN header is noted."""
+    answers, seen = {}, []
+
+    def do_GET(self):
+        type(self).seen.append((self.path, self.headers.get("JOB-TOKEN")))
+        sha = self.path.split("/commits/")[1].split("/")[0]
+        got = type(self).answers.get(sha, [])
+        body = json.dumps(got if isinstance(got, list) else []).encode()
+        self.send_response(got if isinstance(got, int) else 200)
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def log_message(self, *a):
+        pass
+
+
+@pytest.mark.git
+@requires_git
+class TestCheckLanes:
+    @pytest.fixture
+    def repo(self, tmp_path, monkeypatch):
+        (tmp_path / "origin.git").mkdir()
+        Repo(tmp_path / "origin.git").git("init", "-q", "--bare", "-b", "main")
+        (tmp_path / "w").mkdir()
+        r = Repo(tmp_path / "w")
+        r.git("init", "-q", "-b", "main")
+        r.base = commit(r, {"kb/public/a.md": "a\n"}, "base")
+        r.git("remote", "add", "origin", str(tmp_path / "origin.git"))
+        r.git("push", "-q", "origin", "main")
+        r.git("fetch", "-q", "origin")
+        r.code = commit(r, {"_tools/x.py": "1\n"}, "code")
+        r.content = commit(r, {"kb/public/b.md": "b\n"}, "content")
+        monkeypatch.setattr(kbgit, "KB", r.path)
+        monkeypatch.setattr(kbgit, "default_range", lambda: f"{r.base}..HEAD")
+        for k in ("CI_COMMIT_SHA", "CI_COMMIT_BEFORE_SHA", "GITLAB_CI", "GITHUB_ACTIONS", "GITHUB_TOKEN"):
+            monkeypatch.delenv(k, raising=False)
+        return r
+
+    def run(self, argv, capsys):
+        forge = argv[argv.index("--forge") + 1] if "--forge" in argv else "auto"
+        rng = next((x for x in argv if x != forge and x != "--forge"), None)
+        rc = kbgit.cmd_check_lanes(argparse.Namespace(range=rng, forge=forge))
+        return rc, capsys.readouterr().out
+
+    def lanes(self, repo, assoc):
+        return kblane.check_lanes(repo.path, [f"{repo.base}..HEAD"], assoc)
+
+    def test_direct_code_commit_is_listed_and_content_is_not(self, repo, capsys):
+        rc, out = self.run(["--forge", "none"], capsys)
+        assert rc == 1 and repo.code[:7] in out and "_tools/x.py" in out and repo.content[:7] not in out
+        assert "unmerged_code_commits=1" in out
+        # planted failure: a range of content commits alone passes
+        rc, out = self.run([f"{repo.code}..HEAD", "--forge", "none"], capsys)
+        assert rc == 0 and "unmerged_code_commits=0" in out
+
+    def test_a_merged_commit_passes_and_an_unmerged_one_is_listed(self, repo):
+        seen = []
+        merged = kblane.gitlab_associate(
+            {"CI_API_V4_URL": "https://gl.example.com/api/v4/", "CI_PROJECT_ID": "42", "CI_JOB_TOKEN": "tok"},
+            opener_of({repo.code: [{"iid": 3, "state": "merged"}]}, seen))
+        assert self.lanes(repo, merged) == []
+        req = seen[0]
+        assert req.full_url == f"https://gl.example.com/api/v4/projects/42/repository/commits/{repo.code}/merge_requests?state=merged"
+        assert req.get_header("Job-token") == "tok"
+        opened = kblane.gitlab_associate(
+            {"CI_API_V4_URL": "https://gl.example.com/api/v4", "CI_PROJECT_ID": "42", "CI_JOB_TOKEN": "tok"},
+            opener_of({repo.code: [{"iid": 3, "state": "opened"}]}))
+        assert [s for s, _ in self.lanes(repo, opened)] == [repo.code[:7]]
+        assert self.lanes(repo, kblane.forge_associate("none", {})) == self.lanes(repo, lambda sha: False)
+
+    def test_github_counts_only_a_merged_pull_request(self, repo):
+        env = {"GITHUB_API_URL": "https://api.example.com", "GITHUB_REPOSITORY": "o/r", "GITHUB_TOKEN": "t"}
+        seen = []
+        assert self.lanes(repo, kblane.github_associate(env, opener_of({repo.code: [{"merged_at": "2026-01-01T00:00:00Z"}]}, seen))) == []
+        assert seen[0].full_url == f"https://api.example.com/repos/o/r/commits/{repo.code}/pulls"
+        assert seen[0].get_header("Authorization") == "Bearer t"
+        assert len(self.lanes(repo, kblane.github_associate(env, opener_of({repo.code: [{"merged_at": None}]})))) == 1
+
+    def test_a_merge_commit_is_judged_by_the_commits_it_brings_in(self, repo):
+        repo.git("checkout", "-q", "-b", "side", repo.base)
+        side = commit(repo, {"_tools/side.py": "s\n"}, "side code")
+        repo.git("checkout", "-q", "main")
+        repo.git("merge", "-q", "--no-ff", "-m", "merge side", "side")
+        merge = repo.rev("HEAD")
+        asked = []
+
+        def assoc(sha):
+            asked.append(sha)
+            return sha == side or sha == repo.code
+        assert self.lanes(repo, assoc) == []
+        assert merge not in asked and side in asked  # the merge commit is not judged, its side is
+        # planted failure: the side commit unmerged is listed, the merge commit is still not
+        rows = self.lanes(repo, lambda sha: sha == repo.code)
+        assert [c for c, _ in rows] == [side[:7]]
+
+    def test_an_api_error_exits_2_and_never_passes(self, repo, capsys, monkeypatch):
+        for err in (urllib.error.HTTPError("u", 500, "boom", {}, None), urllib.error.URLError("down"), OSError("x"),
+                    b"not json", b"{}"):
+            assoc = kblane.gitlab_associate({"CI_API_V4_URL": "http://h/api", "CI_PROJECT_ID": "1", "CI_JOB_TOKEN": "t"},
+                                            opener_of({repo.code: err}))
+            with pytest.raises(kblane.ForgeError):
+                self.lanes(repo, assoc)
+        with pytest.raises(kblane.ForgeError):
+            kblane.gitlab_associate({"CI_API_V4_URL": "http://h"})
+        rc, out = self.run([], capsys)  # no CI variables: no forge to ask
+        assert rc == 2 and "nothing passes" in out
+        monkeypatch.setenv("GITLAB_CI", "true")
+        rc, out = self.run([], capsys)  # GitLab CI without its API variables
+        assert rc == 2 and "CI_JOB_TOKEN" in out
+        rc, out = self.run(["no-such-rev", "--forge", "none"], capsys)
+        assert rc == 2
+
+    def test_a_stub_forge_on_loopback(self, repo, capsys, monkeypatch):
+        Stub.answers, Stub.seen = {repo.code: [{"state": "merged"}]}, []
+        srv = HTTPServer(("127.0.0.1", 0), Stub)
+        t = threading.Thread(target=srv.serve_forever, daemon=True)
+        t.start()
+        try:
+            for k, v in (("GITLAB_CI", "true"), ("CI_API_V4_URL", f"http://127.0.0.1:{srv.server_port}/api/v4"),
+                         ("CI_PROJECT_ID", "7"), ("CI_JOB_TOKEN", "secret")):
+                monkeypatch.setenv(k, v)
+            rc, out = self.run([], capsys)
+            assert rc == 0 and "unmerged_code_commits=0" in out
+            assert Stub.seen == [(f"/api/v4/projects/7/repository/commits/{repo.code}/merge_requests?state=merged", "secret")]
+            Stub.answers = {repo.code: []}  # planted: nothing merged introduced it
+            rc, out = self.run([], capsys)
+            assert rc == 1 and repo.code[:7] in out
+            Stub.answers = {repo.code: 500}  # planted: the API fails
+            rc, out = self.run([], capsys)
+            assert rc == 2 and "unmerged_code_commits" not in out
+        finally:
+            srv.shutdown()
+            srv.server_close()
+
+    def hook(self, repo, capsys, remote_ref, local, remote_sha=None, remote="origin", monkeypatch=None):
+        rc = kbgit.hook_pre_push([remote], f"refs/heads/main {local} {remote_ref} {remote_sha or '0' * 40}\n")
+        return rc, capsys.readouterr().err
+
+    def test_pre_push_refuses_a_code_lane_commit_for_main(self, repo, capsys, monkeypatch):
+        monkeypatch.setenv("KB_GATE_DONE", "1")  # sync's own push: the gate is skipped, the lane refusal is not
+        monkeypatch.setattr(kblane, "urllib", None)  # any API call would fail loudly: the hook makes none
+        head = repo.rev("HEAD")
+        rc, err = self.hook(repo, capsys, "refs/heads/main", head)  # a new ref
+        assert rc == 1 and repo.code[:7] in err and "_tools/x.py" in err and "sync --push" in err
+        rc, err = self.hook(repo, capsys, "refs/heads/main", head, repo.base)
+        assert rc == 1 and repo.code[:7] in err
+        # planted failures: content only, another branch, another remote and a delete are not refused
+        rc, _ = self.hook(repo, capsys, "refs/heads/main", head, repo.code)
+        assert rc == 0
+        rc, _ = self.hook(repo, capsys, "refs/heads/code/TK-x", head, repo.base)
+        assert rc == 0
+        rc, _ = self.hook(repo, capsys, "refs/heads/main", head, repo.base, remote="other")
+        assert rc == 0
+        rc, _ = self.hook(repo, capsys, "refs/heads/main", "0" * 40, repo.base)
+        assert rc == 0
+        # a code commit the remote already has is not new
+        repo.git("push", "-q", "origin", "HEAD:main")
+        repo.git("fetch", "-q", "origin")
+        rc, _ = self.hook(repo, capsys, "refs/heads/main", head)
+        assert rc == 0

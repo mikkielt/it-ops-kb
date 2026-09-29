@@ -7,6 +7,7 @@
   kbgit.py install-hooks [--uninstall]                     core.hooksPath=.githooks: KB-* trailers, and the gate on a plain push
   kbgit.py check-trailers [A..B | REV]                     exit 1 listing kb commits whose KB-* trailers are missing or wrong
   kbgit.py lane [A..B | REV]                               each commit's lane (content or code) and the code paths that decided it
+  kbgit.py check-lanes [A..B | REV] [--forge F]           exit 1 listing code-lane commits no merged merge or pull request introduced
   kbgit.py log <S-id | topic | QK-id | path> [-n N]        commits that touched it (trailers first, then diff/path history)
   kbgit.py blame <path:line>                               the commit that wrote that line, and the sources it cites
   kbgit.py asof <YYYY-MM-DD | tag | rev> <path>            the file as of the last commit on or before that date (or at the tag)
@@ -57,7 +58,8 @@ notes an --amend so commit-msg diffs against HEAD's parent. `git commit --no-ver
 check-trailers catches that. pre-push runs the sync gate plus `fix --check` before a plain `git push` of the checked-out
 branch and blocks it (exit 1) when a check fails; first, for any push, it refuses a ref whose history touches
 kb/_querylog on its way to the public home (kbpublic.py); the gate skips sync's own push (KB_GATE_DONE=1), tags and deletes, and a
-pushed ref that is not HEAD (with a note: the checks read the working tree). `git push --no-verify` skips it. Fix unpushed commits with `trailers --amend` (HEAD) or
+pushed ref that is not HEAD (with a note: the checks read the working tree). Before the gate (sync's push included) it
+refuses a push to the integration main that carries a code-lane commit. `git push --no-verify` skips it. Fix unpushed commits with `trailers --amend` (HEAD) or
 `git rebase --exec "python3 _tools/kbgit.py trailers --amend" @{upstream}`.
 
 check-trailers without a range: in GitLab CI, CI_COMMIT_BEFORE_SHA..CI_COMMIT_SHA (only CI_COMMIT_SHA when the
@@ -1436,6 +1438,29 @@ def cmd_hook(a):
     return 0
 
 
+def lane_refusals(remote, stdin):
+    """[(remote ref, short hash, code paths)] of the new code-lane commits pushed to the integration remote's main
+    (pre-push stdin lines `local ref, local sha, remote ref, remote sha`): remote sha..local sha, or for a new ref
+    (or a remote sha this clone lacks) the commits no remote-tracking ref of REMOTE reaches. Merge commits already on
+    the remote are not new. No API call. Other remotes and branches are not judged."""
+    if remote != kbpublic.integration_remote(KB):
+        return []
+    res = []
+    for ln in stdin.splitlines():
+        parts = ln.split()
+        if len(parts) != 4 or parts[2] != f"refs/heads/{LANE_BRANCH}" or parts[1] == ZERO:
+            continue
+        _, local_sha, ref, remote_sha = parts
+        if remote_sha != ZERO and git("cat-file", "-e", remote_sha + "^{commit}") is not None:
+            spec = [f"{remote_sha}..{local_sha}"]
+        else:
+            spec = [local_sha, "--not", f"--remotes={remote}"]
+        for short, lane, code in kblane.commit_lanes(KB, spec) or []:
+            if lane == kblane.CODE:
+                res.append((ref, short, code))
+    return res
+
+
 def hook_pre_push(args, stdin):
     """The pre-push hook: run the sync gate (plus `fix --check`, which sync runs itself) before a plain `git push` of
     a branch. Exit 1 blocks the push. Skipped when `sync` pushes (it gated already: KB_GATE_DONE=1), for tag-only and
@@ -1447,6 +1472,13 @@ def hook_pre_push(args, stdin):
         print(f"kb pre-push: refused: {remote} is the public home and {ref} {why}; publish with "
               "python3 _tools/kbgit.py publish (kb/_self/git.md, Public home)", file=sys.stderr)
     if blocked:
+        return 1
+    refused = lane_refusals(remote, stdin)
+    for ref, short, code in refused:
+        print(f"kb pre-push: refused: {short} is a code-lane commit ({' '.join(code)}) and {ref} of {remote} is main; "
+              "code reaches main through a merge request: python3 _tools/kbgit.py sync --push sends it as a "
+              f"{CODE_BRANCH_PREFIX}<id> branch", file=sys.stderr)
+    if refused:
         return 1
     if os.environ.get("KB_GATE_DONE") == "1":
         return 0
@@ -1556,6 +1588,24 @@ def cmd_lane(a):
     for short, lane, code in lanes:
         print(f"{short} {lane}" + (f" {' '.join(code)}" if code else ""))
     return 0
+
+
+def cmd_check_lanes(a):
+    rng = a.range or default_range()
+    try:
+        bad = kblane.check_lanes(KB, kblane.spec_of(rng), kblane.forge_associate(a.forge, os.environ))
+    except kblane.ForgeError as e:
+        print(f"check-lanes {rng}: cannot read the forge's association API, so nothing passes: {e}")
+        return 2
+    if bad is None:
+        print(f"{rng}: not a valid revision range here")
+        return 2
+    for short, code in bad:
+        print(f"{short} code {' '.join(code)}: no merged merge request or pull request introduced it")
+    print(f"check-lanes {rng}: unmerged_code_commits={len(bad)}")
+    if bad:
+        print("code goes to main through a merge request: python3 _tools/kbgit.py sync --push")
+    return 1 if bad else 0
 
 
 def commit_changes(spec):
@@ -2583,6 +2633,10 @@ def main():
     c.add_argument("range", nargs="?", help="A..B or one commit (default: the CI push range, else @{upstream}..HEAD)")
     ln = sub.add_parser("lane", help="each commit's lane, content or code, and the code paths that decided it")
     ln.add_argument("range", nargs="?", help="A..B or one commit (default: the CI push range, else @{upstream}..HEAD)")
+    cl = sub.add_parser("check-lanes", help="exit 1 listing code-lane commits no merged merge or pull request introduced")
+    cl.add_argument("range", nargs="?", help="A..B or one commit (default: the CI push range, else @{upstream}..HEAD)")
+    cl.add_argument("--forge", choices=("auto", "gitlab", "github", "none"), default="auto",
+                    help="whom to ask (auto: the CI variables); none lists every code-lane commit")
     lg = sub.add_parser("log", help="commits that touched a source id, topic, answer id or path")
     lg.add_argument("target")
     lg.add_argument("-n", type=int, default=20, help="show at most N commits (default 20)")
@@ -2616,7 +2670,7 @@ def main():
     h.add_argument("name", choices=HOOKS)
     h.add_argument("args", nargs="*")
     a = ap.parse_args()
-    cmds = {"trailers": cmd_trailers, "install-hooks": cmd_install_hooks, "check-trailers": cmd_check_trailers, "lane": cmd_lane,
+    cmds = {"trailers": cmd_trailers, "install-hooks": cmd_install_hooks, "check-trailers": cmd_check_trailers, "lane": cmd_lane, "check-lanes": cmd_check_lanes,
             "log": cmd_log, "blame": cmd_blame, "asof": cmd_asof, "tag-census": cmd_tag_census, "hook": cmd_hook,
             "sync": cmd_sync, "bridge": cmd_bridge, "publish": lambda a: (kbpublic.cmd_publish_hook if a.hook else kbpublic.cmd_publish)(a, KB),
             "check-public": lambda a: kbpublic.cmd_check_public(a, KB)}
