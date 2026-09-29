@@ -2,7 +2,7 @@
   "id": "ST-ireqmpda",
   "kind": "story",
   "title": "A knowledge field on items: questions and stable kb references",
-  "status": "todo",
+  "status": "done",
   "parent": "EP-vpb7u3us",
   "sprint": "SP-ufr3qnff",
   "priority": "P2",
@@ -22,5 +22,20 @@
     "_tools/kbfacts.py",
     "kb/public/_anchors.csv"
   ],
-  "notes": "Fact keys are kbfacts.fact_key (12 hex), the same keys _anchors.csv and doc2query use; line numbers are never stored."
+  "notes": "Fact keys are kbfacts.fact_key (12 hex), the same keys _anchors.csv and doc2query use; line numbers are never stored.",
+  "evidence": {
+    "commit": "34bf9896dada3d0a3bcf2c2af5fb8d461dd6bb31",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "knowledge_refs"
+        ],
+        "exit": 0,
+        "sha256": "e3e84f30b2bb0b88"
+      }
+    ]
+  }
 }
