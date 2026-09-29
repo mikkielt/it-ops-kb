@@ -14,9 +14,14 @@ test_kb_http_roots_*  the script as a subprocess with the test_kb_root.py fixtur
                 is process-wide, so it never runs in this process): by default only public is served over HTTP
                 (kb_pack and kb_status leave the fixture out), --roots public,fixture serves both, and an unknown
                 or empty --roots stops the start with exit 2 and nothing bound.
+test_kb_http_parity_*  the same initialize, tools/list and tools/call of kb_pack, kb_search and kb_show sent to
+                kb_mcp.py over stdio (--roots public) and to the script over POST /mcp (its default, public): the
+                JSON-RPC replies are identical, the HTTP ones match _tools/fixtures/kb_mcp_contract.json (the
+                contract of test_kb_mcp.py's test_embed_contract_*), and a changed or missing reply is caught.
 """
-import http.client, json, os, subprocess, sys, threading
+import copy, hashlib, http.client, json, os, re, subprocess, sys, threading
 from concurrent.futures import ThreadPoolExecutor
+from pathlib import Path
 
 import pytest
 
@@ -405,3 +410,117 @@ def test_kb_http_roots_unknown_name_stops_the_start(tmp_path, args, message):
 def test_kb_http_roots_help_names_the_option():
     out = subprocess.run([sys.executable, SCRIPT, "--help"], capture_output=True, text=True, encoding="utf-8")
     assert out.returncode == 0 and "--roots NAME[,NAME]" in out.stdout and "not access control" in out.stdout
+
+
+PARITY_INIT = {"protocolVersion": "2025-06-18", "capabilities": {}, "clientInfo": {"name": "host", "version": "0"}}
+
+
+def parity_messages():
+    """The legacy handshake, tools/list and one tools/call of each tool a host re-exposes, with the contract test's
+    arguments: the same messages go to both transports."""
+    from test_kb_mcp import CONTRACT_CALLS, EMBEDDED
+    msgs = [{"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": PARITY_INIT},
+            {"jsonrpc": "2.0", "method": "notifications/initialized"},
+            {"jsonrpc": "2.0", "id": 2, "method": "tools/list"}]
+    return msgs + [{"jsonrpc": "2.0", "id": 10 + i, "method": "tools/call",
+                    "params": {"name": n, "arguments": CONTRACT_CALLS[n]}} for i, n in enumerate(EMBEDDED)]
+
+
+def parity_env():
+    """One environment for both servers: no KB_ROOTS directories or plugin data, so both see the repository's roots."""
+    return {k: v for k, v in os.environ.items() if k not in ("KB_ROOTS", "CLAUDE_PLUGIN_DATA")}
+
+
+def stdio_replies(msgs):
+    """{id: reply} from kb_mcp.py spawned as a host spawns it, limited to kb_http.py's default roots (public): the
+    two servers then serve one root set, both through kbcommon.serve_only."""
+    p = subprocess.run([sys.executable, str(Path(TOOLS) / "kb_mcp.py"), "--roots", ",".join(kb_http.ROOTS)],
+                       input="".join(json.dumps(m) + "\n" for m in msgs), capture_output=True, text=True,
+                       encoding="utf-8", timeout=300, env=parity_env(), cwd=Path(TOOLS).anchor)
+    assert p.returncode == 0, p.stderr
+    return {r["id"]: r for r in map(json.loads, p.stdout.splitlines()) if "id" in r}
+
+
+def http_replies(msgs):
+    """{id: reply} from the script started with its defaults on a free port, one POST /mcp per message; a
+    notification must come back 202 with no body, a request 200."""
+    p = subprocess.Popen([sys.executable, SCRIPT, "--port", "0"], stderr=subprocess.PIPE, stdout=subprocess.DEVNULL,
+                         text=True, encoding="utf-8", env=parity_env(), cwd=Path(TOOLS).anchor)
+    try:
+        line = p.stderr.readline()
+        assert line.startswith("kb_http: serving http://127.0.0.1:"), line
+        assert line.rstrip().endswith(", roots " + ",".join(kb_http.ROOTS)), line
+        port = int(line.rsplit(":", 1)[1].split("/")[0])
+        out = {}
+        for m in msgs:
+            status, _, reply = rpc(port, m)
+            if "id" not in m:
+                assert (status, reply) == (202, None), (m["method"], status, reply)
+                continue
+            assert status == 200, (m["method"], status, reply)
+            out[reply["id"]] = reply
+        return out
+    finally:
+        p.terminate()
+        p.communicate(timeout=30)
+
+
+def parity_diff(stdio, http):
+    """The ids whose JSON-RPC replies differ between the two transports, a missing reply included. Nothing is
+    normalised: both transports hand each message to kb_mcp.handle, so any difference is a defect."""
+    return sorted(i for i in set(stdio) | set(http) if stdio.get(i) != http.get(i))
+
+
+def contract_of(replies):
+    """The contract as _tools/fixtures/kb_mcp_contract.json pins it, read from the initialize and tools/list
+    replies: the fields test_kb_mcp.live_contract reads from stdio."""
+    from test_kb_mcp import EMBEDDED
+    init, tools = replies[1]["result"], {t["name"]: t for t in replies[2]["result"]["tools"]}
+    return {"version": init["serverInfo"]["version"],
+            "instructions_sha256": hashlib.sha256(init["instructions"].encode("utf-8")).hexdigest(),
+            "tools": {n: {"name": n, "inputSchema": tools[n]["inputSchema"]} for n in EMBEDDED if n in tools}}
+
+
+@pytest.fixture(scope="module")
+def parity():
+    msgs = parity_messages()
+    return stdio_replies(msgs), http_replies(msgs)
+
+
+def test_kb_http_parity_results_are_identical(parity):
+    """initialize, tools/list and tools/call of kb_pack, kb_search and kb_show answer the same over stdio and over
+    POST /mcp, whole JSON-RPC replies compared."""
+    stdio, http = parity
+    assert sorted(http) == [1, 2, 10, 11, 12], sorted(http)
+    diff = parity_diff(stdio, http)
+    assert diff == [], {i: (stdio.get(i), http.get(i)) for i in diff}
+    for i in (10, 11, 12):
+        r = http[i]["result"]
+        assert r["isError"] is False and r["content"][0]["text"].strip(), (i, r)
+
+
+def test_kb_http_parity_http_matches_the_contract(parity):
+    """The HTTP answers carry the contract a host server re-exposes: the names and input schemas of kb_pack,
+    kb_search and kb_show and the instructions' digest are the fixture's (unless kb_mcp.VERSION moved)."""
+    from test_kb_mcp import CONTRACT, contract_mismatch
+    pinned = json.loads(CONTRACT.read_text(encoding="utf-8"))
+    live = contract_of(parity[1])
+    assert contract_mismatch(pinned, live) is None, contract_mismatch(pinned, live)
+    assert live["version"] == kb_mcp.VERSION
+    assert re.search(r"(?m)^coverage: (good|weak|none)\b", parity[1][10]["result"]["content"][0]["text"])
+
+
+def test_kb_http_parity_planted_failure(parity):
+    """Planted failure: a copy of the HTTP replies with one tool's text changed, one reply dropped, or a schema
+    changed is caught by the comparison, and the schema change by the contract check too."""
+    from test_kb_mcp import CONTRACT, contract_mismatch
+    stdio, http = parity
+    changed = copy.deepcopy(http)
+    changed[11]["result"]["content"][0]["text"] += " "
+    assert parity_diff(stdio, changed) == [11]
+    assert parity_diff(stdio, {i: r for i, r in http.items() if i != 12}) == [12]
+    schema = copy.deepcopy(http)
+    next(t for t in schema[2]["result"]["tools"] if t["name"] == "kb_show")["inputSchema"]["properties"].pop("n")
+    assert parity_diff(stdio, schema) == [2]
+    message = contract_mismatch(json.loads(CONTRACT.read_text(encoding="utf-8")), contract_of(schema))
+    assert message and "tools.kb_show" in message, message
