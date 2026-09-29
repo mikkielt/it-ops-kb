@@ -52,7 +52,9 @@
         "Those, or a best article matching half the key words or more (routes the Kubernetes off-kb question split)",
         "No guard: every none routes web (h2_applock goes to the researcher alone)"
       ],
-      "recommendation": "Only when every word nowhere in the kb is a language or format name (T-SQL, PowerShell, Python, Bash, KQL, JSON, YAML, XML, CSV)"
+      "recommendation": "Only when every word nowhere in the kb is a language or format name (T-SQL, PowerShell, Python, Bash, KQL, JSON, YAML, XML, CSV)",
+      "answer": "Only when every word nowhere in the kb is a language or format name (T-SQL, PowerShell, Python, Bash, KQL, JSON, YAML, XML, CSV)",
+      "by": "operator"
     }
   ],
   "links": [

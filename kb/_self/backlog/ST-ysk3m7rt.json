@@ -62,7 +62,9 @@
         "Also any key word the best article does not match (3 plus 38 of 170 today)",
         "Only a check: line (3 of 170)"
       ],
-      "recommendation": "A check: line or a word nowhere in the kb (3 of 170 eval good packs today)"
+      "recommendation": "A check: line or a word nowhere in the kb (3 of 170 eval good packs today)",
+      "answer": "A check: line or a word nowhere in the kb (3 of 170 eval good packs today)",
+      "by": "operator"
     }
   ],
   "links": [
