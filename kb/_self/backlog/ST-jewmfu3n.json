@@ -2,7 +2,7 @@
   "id": "ST-jewmfu3n",
   "kind": "story",
   "title": "kb-tests-windows runs stress_test.py",
-  "status": "todo",
+  "status": "done",
   "parent": "EP-5p4ahbnq",
   "sprint": "SP-76inhw33",
   "priority": "P2",
@@ -33,5 +33,36 @@
   "links": [
     "kb/_self/git.md",
     "gitlab/hosted-runners-windows"
-  ]
+  ],
+  "evidence": {
+    "commit": "c75549847a9aaa15ee2dea9a08a3cdda0e8fb7b0",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import re,pathlib;t=pathlib.Path('.gitlab-ci.yml').read_text(encoding='utf-8');b=re.search(r'(?ms)^kb-tests-windows:\\n.*?(?=^\\S)',t).group(0);assert 'stress_test.py' in b.split('script:',1)[1],'no stress_test.py in the script'"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import pathlib;t=pathlib.Path('kb/_self/git.md').read_text(encoding='utf-8');assert 'stress_test.py' in t.split('kb-tests-windows',1)[1][:1500]"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/stress_test.py"
+        ],
+        "exit": 0,
+        "sha256": "729efeeb0c087179"
+      }
+    ]
+  }
 }
