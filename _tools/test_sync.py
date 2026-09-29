@@ -13,13 +13,23 @@
                            it, then A and B edit the same line: B's sync stops with exit 3, the rebase in progress.
                            The gate skips tests.py here (KB_SYNC_NO_TESTS=1: no recursive test run). Skipped without git.
   TestPrePushInGit         (marker git) the pre-push hook blocks a plain push when the gate fails; tags and sync pushes pass.
+  TestAutonomousWrite      (marker git; `tests.py -k autonomous_write`) the writers that run without a person reach
+                           origin's main only through `kbgit.py sync --push` (kb/_self/querylog.md, Delivery): the
+                           query log's `apply --push` (ql_deliver.Pusher) against a small fixture origin, every
+                           command it starts watched (WritePaths: a `git push` outside sync, or origin's main moving
+                           outside sync, is a violation), sync itself a stub that pushes HEAD, so the scenario takes
+                           seconds (the real sync is TestSyncInGit's); a red automatic push is reverted through sync
+                           and files one bug item, and the next run files none; research (ql_research) and ingest
+                           (kbingest.py) push nothing and start no `git push` or `git commit`; a planted direct push,
+                           through the pusher's `run` or around it, and a planted push in a writer's source fail.
 """
-import csv, io, os, re, shutil
+import ast, contextlib, csv, io, json, os, re, shutil, subprocess
+from pathlib import Path
 
 import pytest
 
 import kbgit, kbid
-from conftest import P, Repo, git_env, requires_git
+from conftest import TOOLS, P, Repo, git_env, requires_git
 
 
 def clones(kb_seed, tmp, env, names):
@@ -334,3 +344,337 @@ class TestPrePushInGit:
         assert self.good.returncode == 0, self.good.stdout + self.good.stderr
         assert "kb pre-push selfdoc.py stale" in self.good.stderr and "kb pre-push kbgit.py fix --check: ok" in self.good.stderr
         assert self.after_good == self.head
+
+
+# ---------------------------------------------------------------- autonomous writers
+
+def git_verb(argv):
+    """The git subcommand of an argument list (`git -C DIR -c K=V push ...` -> 'push'), or None when it is no git."""
+    argv = [str(a) for a in (argv if isinstance(argv, (list, tuple)) else [argv])]
+    if not argv or Path(argv[0]).name.lower() not in ("git", "git.exe"):
+        return None
+    i = 1
+    while i < len(argv) and argv[i].startswith("-"):
+        i += 2 if argv[i] in ("-C", "-c") else 1
+    return argv[i] if i < len(argv) else None
+
+
+def push_targets(argv):
+    """The destination refs of a `git push` argument list: the part after ':' of each refspec, the refspec itself
+    without one; [] for a push that names no refspec (git's push.default decides)."""
+    argv = [str(a) for a in argv]
+    rest = argv[argv.index("push") + 1:]
+    words, skip = [], False
+    for a in rest:
+        if skip:
+            skip = False
+        elif a in ("-o", "--push-option", "--repo", "--receive-pack", "--exec"):
+            skip = True
+        elif not a.startswith("-"):
+            words.append(a)
+    return [w.rsplit(":", 1)[-1].lstrip("+") for w in words[1:]]
+
+
+def main_target(ref):
+    return ref in ("main", "refs/heads/main", "HEAD")
+
+
+class WritePaths:
+    """Watches one autonomous writer run against the bare fixture `origin`: every process it starts (subprocess.Popen,
+    which subprocess.run and ql_base.run_cmd use) and origin's main before and after each command of the writer's
+    `run`. A violation is a `git push` to main (or naming no refspec) started outside `kbgit.py sync --push`, or
+    origin's main moving during a command that is not sync, or between commands (a push around `run`)."""
+
+    def __init__(self, origin, env):
+        self.origin, self.env = str(origin), env
+        self.in_sync = False
+        self.started, self.syncs, self.violations = [], [], []
+        self.main = self.origin_main()
+
+    def origin_main(self):
+        with self.quiet():
+            p = subprocess.run(["git", "rev-parse", "--verify", "--quiet", "refs/heads/main"], cwd=self.origin,
+                               env=self.env, capture_output=True, text=True, encoding="utf-8")
+        return p.stdout.strip() or None
+
+    @contextlib.contextmanager
+    def quiet(self):
+        """The watcher's own commands are not the writer's."""
+        was, self.in_sync = self.in_sync, None
+        try:
+            yield
+        finally:
+            self.in_sync = was
+
+    def seen(self, argv):
+        if self.in_sync is None:
+            return
+        argv = [str(a) for a in (argv if isinstance(argv, (list, tuple)) else [argv])]
+        self.started.append(argv)
+        if git_verb(argv) == "push" and not self.in_sync:
+            dst = push_targets(argv)
+            if not dst or any(main_target(d) for d in dst):
+                self.violations.append(f"git push outside kbgit.py sync --push: {' '.join(argv[1:])}")
+
+    @contextlib.contextmanager
+    def spying(self):
+        """subprocess.Popen replaced by a subclass that reports each argument list before it starts."""
+        orig, watch = subprocess.Popen, self
+
+        class Spy(orig):
+            def __init__(self, args, *a, **k):
+                watch.seen(args)
+                super().__init__(args, *a, **k)
+
+        subprocess.Popen = Spy
+        try:
+            yield self
+        finally:
+            subprocess.Popen = orig
+
+    def moved(self, during):
+        now = self.origin_main()
+        if now != self.main:
+            if during is None:
+                self.violations.append(f"origin's main moved outside any command: {self.main} -> {now}")
+            elif not during:
+                self.violations.append(f"origin's main moved during a command that is not sync: {self.main} -> {now}")
+            self.main = now
+
+    def wrap(self, run):
+        """The writer's `run`, watched: origin's main before and after each command."""
+        def watched(argv, cwd=None):
+            self.moved(None)
+            is_sync = len(argv) > 3 and Path(str(argv[1])).name == "kbgit.py" and list(argv[2:4]) == ["sync", "--push"]
+            code, o, e = run(argv, cwd=cwd)
+            self.moved(is_sync)
+            return code, o, e
+        return watched
+
+
+class FixtureOrigin:
+    """A small repository shaped like a kb for ql_deliver.Pusher (the query log's store with one run file, a public
+    `_gaps.md`, an empty doc map and backlog), its bare origin and a clone; `apply --push` runs in that clone's
+    worktree with sync, the trailers and the store check as stubs, `glab` answering `ci` (default: signed out)."""
+
+    def __init__(self, tmp, env):
+        from test_querylog import golden_store
+        self.tmp, self.env = Path(tmp), env
+        seed = Repo(self.tmp / "seed", env)
+        os.makedirs(seed.path)
+        seed.git("init", "-q", "-b", "main")
+        seed.write("kb/_self/map.csv", "doc,pattern\n")
+        seed.write("kb/_self/backlog/.keep", "")
+        seed.write(P("_gaps.md"), "# Gaps\n")
+        golden_store(Path(seed.path) / "kb" / "_querylog")
+        seed.git("add", "-A")
+        seed.git("commit", "-qm", "seed")
+        self.origin = self.tmp / "origin.git"
+        seed.git("clone", "-q", "--bare", seed.path, str(self.origin))
+        self.home = Repo(self.tmp / "home", env)
+        seed.git("clone", "-q", str(self.origin), self.home.path)
+        self.remote = Repo(self.origin, env)
+        self.base = self.remote.rev("main")
+        self.qdir = self.tmp / "q"
+        self.qdir.mkdir()
+        self.ci = None
+        self.n = 0
+        self.watch = None
+
+    def run(self, argv, cwd=None):
+        """git for real; the worktree's kbgit.py sync --push a stub that pushes HEAD to origin's branch, its
+        `trailers --amend` and `querylog.py check` passing stubs; glab and gh as `ci` answers."""
+        import ql_base
+        argv = [str(a) for a in argv]
+        if argv[0] in ("glab", "gh"):
+            return self.ci(argv) if self.ci else (1, "", "not logged in")
+        tool = Path(argv[1]).name if len(argv) > 1 else ""
+        if tool == "kbgit.py" and argv[2:4] == ["sync", "--push"]:
+            branch = argv[argv.index("--branch") + 1] if "--branch" in argv else "main"
+            self.watch.in_sync = True
+            try:
+                code, o, e = ql_base.run_cmd(["git", "push", "--quiet", "origin", f"HEAD:refs/heads/{branch}"],
+                                             cwd=cwd, env=self.env)
+            finally:
+                self.watch.in_sync = False
+            self.watch.syncs.append(argv[2:])
+            return code, ("pushed: yes\n" if code == 0 else ""), e
+        if tool in ("kbgit.py", "querylog.py"):
+            return 0, "", ""
+        return ql_base.run_cmd(argv, cwd=cwd, env=self.env)
+
+    def gap_step(self, wt, store, hold, out):
+        """What apply writes on its own: a `_gaps.md` entry and a findings file recording its finding applied."""
+        self.n += 1
+        run_id = f"20260928T1300{self.n:02d}Z-0000fe{self.n:02d}"
+        fid = f"F-00000000fe{self.n:02d}"
+        with open(Path(wt) / P("_gaps.md"), "a", encoding="utf-8", newline="\n") as f:
+            f.write(f"\n- **Autonomous write test question {self.n}?** ({fid}) (topic: windows/test)\n")
+        head = {"run": run_id, "pipeline": 5, "retrieval": 4, "kb_commit": "0" * 40,
+                "counts": {"findings": 1, "applied": 1}}
+        rec = {"id": fid, "kind": "gap", "state": "applied", "stage": "gap", "promotions": [],
+               "entry": "22222222-0000-4000-8000-0000000000a1", "article": P("windows/test.md")}
+        f = Path(store) / "findings" / "2026-09" / f"{run_id}.jsonl"
+        f.parent.mkdir(parents=True, exist_ok=True)
+        f.write_text("".join(json.dumps(o) + "\n" for o in (head, rec)), encoding="utf-8", newline="\n")
+        return 0
+
+    def apply_push(self, pusher_class=None, step=None):
+        """One `apply --push` of the clone, watched: (exit code, output lines, WritePaths)."""
+        import ql_deliver
+        said = []
+        self.watch = WritePaths(self.origin, self.env)
+        cls = pusher_class or ql_deliver.Pusher
+        p = cls(self.home.path, self.qdir, self.watch.wrap(self.run), step or (lambda *a: 0), said.append,
+                cloud=False)
+        with self.watch.spying():
+            rc = p()
+        self.watch.moved(None)
+        return rc, said, self.watch
+
+    def bugs(self, rev="main"):
+        return [n for n in self.remote.git("ls-tree", "--name-only", rev, "kb/_self/backlog/").split()
+                if n.endswith(".json")]
+
+
+def red(pid):
+    def ci(argv):
+        if argv[1:3] == ["auth", "status"]:
+            return 0, "", "Logged in"
+        return 0, json.dumps([{"id": pid, "status": "failed",
+                               "web_url": f"https://gitlab.corp.example.com/grp/proj/-/pipelines/{pid}"}]), ""
+    return ci
+
+
+def writer_push_calls(source):
+    """Lines of a writer's source that pass the git verb 'push' or 'commit' to a call or put it in an argument list."""
+    out = []
+    for node in ast.walk(ast.parse(source)):
+        items = list(node.args) if isinstance(node, ast.Call) else list(node.elts) if isinstance(
+            node, (ast.List, ast.Tuple)) else []
+        for a in items:
+            if isinstance(a, ast.Constant) and a.value in ("push", "commit"):
+                out.append(a.lineno)
+    return sorted(set(out))
+
+
+@requires_git
+@pytest.mark.git
+class TestAutonomousWrite:
+    PID = 4242
+
+    @pytest.fixture(scope="class", autouse=True)
+    @classmethod
+    def scenario(cls, tmp_path_factory):
+        import ql_deliver
+        cls.tmp = tmp_path_factory.mktemp("kb-autonomous")
+        cls.env = git_env()
+        cls.fx = fx = FixtureOrigin(cls.tmp / "one", cls.env)
+        cls.first = fx.apply_push(step=fx.gap_step)
+        cls.main1 = fx.remote.rev("main")
+        fx.ci = red(cls.PID)
+        cls.second = fx.apply_push(step=fx.gap_step)
+        cls.main2 = fx.remote.rev("main")
+        cls.log2 = fx.remote.git("log", "--format=%H%x1f%s%x1f%(trailers:key=KB-Auto,valueonly)%x1e",
+                                 f"{cls.main1}..main")
+        cls.third = fx.apply_push()
+        cls.main3 = fx.remote.rev("main")
+
+        class DirectPusher(ql_deliver.Pusher):
+            """A planted writer: its commits go to main by a plain `git push` through `run`."""
+            def deliver(self, run_id):
+                code, o, e = self.git("push", "--quiet", ql_deliver.REMOTE, f"HEAD:refs/heads/{ql_deliver.BRANCH}")
+                self.landed = code == 0
+                return code
+
+        class AroundPusher(ql_deliver.Pusher):
+            """A planted writer: its push goes around `run`, straight to subprocess."""
+            def deliver(self, run_id):
+                p = subprocess.run(["git", "push", "--quiet", ql_deliver.REMOTE, "HEAD:main"], cwd=str(self.wt),
+                                   env=cls.env, capture_output=True)
+                self.landed = p.returncode == 0
+                return p.returncode
+
+        cls.planted = {}
+        for name, klass in (("direct", DirectPusher), ("around", AroundPusher)):
+            f = FixtureOrigin(cls.tmp / name, cls.env)
+            cls.planted[name] = (f, f.apply_push(klass, f.gap_step))
+        yield
+        shutil.rmtree(cls.tmp, ignore_errors=True)
+
+    def test_autonomous_write_apply_push_goes_through_sync(self):
+        rc, said, w = self.first
+        assert rc == 0, said
+        assert w.violations == [], w.violations
+        assert w.syncs == [["sync", "--push", "--remote", "origin", "--branch", "main"]], said
+        assert self.main1 != self.fx.base
+        assert "Autonomous write test question 1?" in self.fx.remote.git("show", f"{self.main1}:{P('_gaps.md')}")
+        assert [git_verb(a) for a in w.started].count("push") == 1  # the one push is sync's
+
+    def test_autonomous_write_red_push_is_reverted_through_sync_with_one_bug(self):
+        rc, said, w = self.second
+        assert rc == 0, said
+        assert w.violations == [], w.violations
+        assert w.syncs == [["sync", "--push", "--remote", "origin", "--branch", "main"]], said
+        commits = [c.strip("\n").split("\x1f") for c in self.log2.split("\x1e") if "\x1f" in c]
+        assert len(commits) == 1, commits  # the revert only: nothing new is applied in the run that reverts
+        assert commits[0][1] == f"revert: query log commit {self.main1[:9]}"
+        assert commits[0][2].strip() == "revert"
+        assert "Autonomous write test question 1?" not in self.fx.remote.git("show", f"main:{P('_gaps.md')}")
+        bugs = self.fx.bugs()
+        assert len(bugs) == 1, bugs
+        item = json.loads(self.fx.remote.git("show", f"main:{bugs[0]}"))
+        assert item["kind"] == "bug" and item["severity"] == "S2" and f"pipeline {self.PID}" in item["title"]
+        failed = self.fx.remote.git("diff", "--name-only", "--diff-filter=A", self.main1, "main", "--",
+                                    "kb/_querylog/findings").split()
+        assert len(failed) == 1
+        assert '"apply-failed"' in self.fx.remote.git("show", f"main:{failed[0]}")
+
+    def test_autonomous_write_next_run_files_no_second_bug(self):
+        rc, said, w = self.third
+        assert rc == 0, said
+        assert w.violations == [] and w.syncs == [], (w.violations, said)
+        assert self.main3 == self.main2
+        assert len(self.fx.bugs()) == 1
+
+    @pytest.mark.parametrize("name", ["direct", "around"])
+    def test_autonomous_write_planted_direct_push_fails(self, name):
+        f, (rc, said, w) = self.planted[name]
+        assert f.remote.rev("main") != f.base, said  # the planted push did land ...
+        assert w.syncs == []
+        assert w.violations, "a direct git push to main must be a violation"  # ... and the watcher names it
+        assert any("git push outside kbgit.py sync --push" in v for v in w.violations), w.violations
+        assert any("origin's main moved" in v for v in w.violations), w.violations
+
+    def test_autonomous_write_research_and_ingest_do_not_push(self, tmp_path, capsys):
+        """ql_research's queue and close and kbingest.py's survey and url, run against a fixture clone of a fixture
+        origin: nothing pushed, no `git push` or `git commit` started; research's model run has no shell tool."""
+        import kbingest, ql_research
+        fx = FixtureOrigin(tmp_path / "rw", self.env)
+        store = Path(fx.home.path) / "kb" / "_querylog"
+        # a forge url for ingest's pinned urls; a push would still go to the fixture origin
+        fx.home.git("remote", "set-url", "origin", "https://gitlab.corp.example.com/grp/proj.git")
+        fx.home.git("remote", "set-url", "--push", "origin", str(fx.origin))
+        w = WritePaths(fx.origin, self.env)
+        with w.spying():
+            ql_research.queue(store=store, day="2026-09-29", kb_commit="0" * 40, out=lambda *a: None)
+            ql_research.close("F-000000000000", claim=True, store=store, day="2026-09-29", out=lambda *a: None)
+            assert kbingest.main(["survey", fx.home.path, "--files"]) == 0
+            assert kbingest.main(["url", fx.home.path, P("_gaps.md")]) == 0
+        w.moved(None)
+        capsys.readouterr()
+        assert w.violations == [] and fx.remote.rev("main") == fx.base, w.violations
+        assert [a for a in w.started if git_verb(a) in ("push", "commit")] == []
+        assert any(git_verb(a) for a in w.started)  # the spy saw ingest's git commands
+        argv = ql_research.research_argv()
+        tools = argv[argv.index("--tools") + 1].split(",")
+        assert set(tools) == set(ql_research.RESEARCH_TOOLS) and "Bash" not in tools and "PowerShell" not in tools
+        assert "--dangerously-skip-permissions" not in argv and not any("Bash" in a for a in argv)
+
+    @pytest.mark.parametrize("module", ["ql_research.py", "kbingest.py", "ql_apply.py", "ql_learn.py"])
+    def test_autonomous_write_writers_hold_no_push(self, module):
+        """The writers that do not push hold no git `push` or `commit` in their source; a planted one is found."""
+        source = Path(TOOLS, module).read_text(encoding="utf-8")
+        assert writer_push_calls(source) == [], module
+        planted = source + '\n\ndef sneak(repo):\n    return git(repo, "push", "origin", "HEAD:main")\n'
+        assert writer_push_calls(planted) == [len(planted.splitlines())]
