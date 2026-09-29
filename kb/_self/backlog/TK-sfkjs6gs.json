@@ -6,7 +6,7 @@
   "parent": "ST-zptutwlf",
   "priority": "P2",
   "rank": 1,
-  "goal": "The report records at least three runs per arm with turns, tool calls, tokens and requests from backlog.py cost ID --runs and whether checks passed first time, and ends with 'Verdict: build' or 'Verdict: drop' by the rule in the story",
+  "goal": "The report records at least three runs per arm with turns, tool calls, tokens and requests read with python3 _tools/kbusage.py from each run's subagent transcript and whether checks passed first time, and ends with 'Verdict: build' or 'Verdict: drop' by the rule in the story",
   "checks": [
     {
       "run": [

@@ -20,5 +20,8 @@
   "touches": [
     ".claude/skills/kb-backlog/SKILL.md",
     "_tools/test_change_router.py"
+  ],
+  "depends_on": [
+    "ST-zptutwlf"
   ]
 }

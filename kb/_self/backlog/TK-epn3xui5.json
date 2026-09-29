@@ -20,5 +20,8 @@
   "touches": [
     "_tools/backlog.py",
     "_tools/test_backlog.py"
+  ],
+  "depends_on": [
+    "ST-zptutwlf"
   ]
 }
