@@ -2,7 +2,7 @@
   "id": "BG-meuqnbjg",
   "kind": "bug",
   "title": "red-pipeline and apply --push read a main pipeline whose gate jobs never ran as green",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-mzzucemv",
   "sprint": "SP-z7a5c76b",
   "priority": "P1",
@@ -24,5 +24,6 @@
   "links": [
     "pipeline 2892882880"
   ],
-  "notes": "Pipeline 2892882880 of main reports success while kb-tests, kb-tests-floor, kb-trailers and tool-stress failed without starting and kb-tests-windows is manual: .gitlab-ci.yml makes every job manual with allow_failure: true, so the pipeline status is success whatever the jobs did."
+  "notes": "Pipeline 2892882880 of main reports success while kb-tests, kb-tests-floor, kb-trailers and tool-stress failed without starting and kb-tests-windows is manual: .gitlab-ci.yml makes every job manual with allow_failure: true, so the pipeline status is success whatever the jobs did.",
+  "claimed_by": "worker-meuqnbjg"
 }
