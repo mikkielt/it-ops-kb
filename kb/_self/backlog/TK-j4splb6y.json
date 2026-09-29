@@ -2,7 +2,7 @@
   "id": "TK-j4splb6y",
   "kind": "task",
   "title": "Commit settings.json allow rules for the PowerShell tool",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-sjayfohk",
   "priority": "P1",
   "rank": 1,
@@ -27,5 +27,21 @@
   "depends_on": [
     "TK-i6u6fcqq"
   ],
-  "claimed_by": "windows-laptop"
+  "evidence": {
+    "commit": "f0a50c6a8c762b8fde51ed824f4fa640eff36ea2",
+    "checks": [
+      {
+        "run": [
+          "git",
+          "grep",
+          "-n",
+          "PowerShell(",
+          "--",
+          ".claude/settings.json"
+        ],
+        "exit": 0,
+        "sha256": "0a95e53061a8820a"
+      }
+    ]
+  }
 }
