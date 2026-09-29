@@ -2,7 +2,7 @@
   "id": "ST-i3t6i2to",
   "kind": "story",
   "title": "Knowledge state per item, derived from the kb",
-  "status": "todo",
+  "status": "done",
   "parent": "EP-vpb7u3us",
   "sprint": "SP-ufr3qnff",
   "priority": "P2",
@@ -34,5 +34,20 @@
       "answer": "add",
       "by": "operator"
     }
-  ]
+  ],
+  "evidence": {
+    "commit": "bae18c9fc6a482ed91cf95b8e4b7f27ae83db982",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "knowledge_state"
+        ],
+        "exit": 0,
+        "sha256": "d9844704349d6f0f"
+      }
+    ]
+  }
 }

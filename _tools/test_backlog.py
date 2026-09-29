@@ -8,7 +8,7 @@ commit included), and red pipelines that fail
 the same way (one bug) or differently (a second), or the same way as a closed bug (a new one). The repository's
 own backlog must pass `backlog.py check`.
 """
-import json, os, subprocess, sys
+import argparse, json, os, re, shutil, subprocess, sys
 from pathlib import Path
 
 import pytest
@@ -467,6 +467,234 @@ def test_knowledge_refs_without_a_kb_are_refused(repo):
     edit(repo, item(repo, "Carrier")["id"], knowledge={"refs": ["S100"]})
     code, out = b(repo, "check")
     assert code == 1 and "no such source id" in out, out
+
+
+# ---- knowledge state: show, next and horizon run the pack on each ask and ref of an item's `knowledge`
+
+KS_TOOLS = ("backlog.py", "kbcommon.py", "kbfacts.py", "kbid.py", "ql_base.py", "aliases.csv")
+KS_SOURCES = ("id,url,title,superseded_by,used_in\n"
+              "S100,https://example.com/a,Zorbex agent guide,,demo/tool.md\n"
+              "S101,https://example.com/b,Plimt gadget firmware notes,,demo/gadget.md\n")
+KS_SUPERSEDED = KS_SOURCES.replace("Zorbex agent guide,,", "Zorbex agent guide,S101,")
+KS_FACTS = ["The zorbex agent prints its build number at startup.", "The zorbex agent retries failed uploads three times."]
+KS_GOOD = "How many times does the zorbex agent retry failed uploads?"
+KS_CHECK = KS_GOOD[:-1] + " for Plimt?"  # `good`, with a `check:` line: the lead article never mentions Plimt
+KS_WEAK = "Does the zorbex agent retry uploads with plimt firmware in quasar flash?"
+KS_NONE = "How do I configure the wumpus frobnicator?"
+
+
+def ks_article(topic, title, facts, source="S100"):
+    return (f"---\ntopic: {topic}\nstatus: partial\n---\n\n# {title}\n\n## Facts\n"
+            + "".join(f"- {f} [DOC {source}]\n" for f in facts))
+
+
+def ks_fact(n):
+    """The `<root>/<path>#<key>` ref of the n-th fact of the zorbex article."""
+    return f"public/demo/tool.md#{key(KS_FACTS[n] + ' [DOC S100]')}"
+
+
+def ks_states(out):
+    """{text: state} of the `knowledge <state> ask|ref: <text>` lines of an output (a trailing `(why)` cut off)."""
+    found = {}
+    for ln in out.splitlines():
+        m = re.match(r"\s*knowledge (\w+)\s+(?:ask|ref): (.*)$", ln)
+        if m:
+            found[re.sub(r" \([^()]*\)$", "", m.group(2))] = m.group(1)
+    return found
+
+
+class Ks:
+    """A started sprint (the `sprint` fixture) with its own copy of the tools and a small kb of invented words, so the
+    pack that show, next and horizon run answers from a corpus the test controls: two articles (zorbex, plimt) among
+    twelve filler ones, one QK answer, two sources and an empty conflicts ledger."""
+
+    def __init__(self, sprint):
+        self.repo, self.tk, self.bg, self.sp = sprint["repo"], sprint["tk"], sprint["bg"], sprint["sp"]
+        self.root = self.repo / "kb" / "public"
+        (self.repo / "_tools").mkdir()
+        for f in KS_TOOLS:
+            shutil.copy(os.path.join(TOOLS, f), self.repo / "_tools" / f)
+        (self.root / "demo").mkdir(parents=True)
+        files = {
+            "_root.md": "---\nroot: public\nid_prefix: S\nvisibility: public\n---\n\n# public\n",
+            "_sources.csv": KS_SOURCES,
+            "_answers.md": f"# Answers\n\n## QK-zorbex-retries. {KS_GOOD}\n- Three times. [DOC S100]\n",
+            "_conflicts.md": "# Conflicts\n",
+            "demo/tool.md": ks_article("demo/tool", "Zorbex sync agent", KS_FACTS),
+            "demo/gadget.md": ks_article("demo/gadget", "Plimt gadget", [
+                "The plimt gadget stores firmware in quasar flash.", "The plimt gadget resets after a wobble timeout."],
+                                         "S101"),
+            **{f"demo/filler{i}.md": ks_article(f"demo/filler{i}", f"Filler {i}", [
+                f"Filler{i}a widget{i}b gizmo{i}c runs {i}d.", f"Sprocket{i}e flange{i}f."]) for i in range(12)},
+        }
+        for rel, text in files.items():
+            self.write(rel, text)
+        self.env = {k: v for k, v in os.environ.items() if k not in ("KB_ROOTS", "CLAUDE_PLUGIN_DATA")} | {
+            "KB_INDEX": "0"}
+
+    def write(self, rel, text):
+        (self.root / rel).write_text(text, encoding="utf-8", newline="\n")
+
+    def run(self, *a):
+        """The copy of backlog.py in the repository, whose own kb is the one its pack reads."""
+        p = subprocess.run([sys.executable, str(self.repo / "_tools" / "backlog.py"), *a], cwd=self.repo,
+                           capture_output=True, text=True, encoding="utf-8", env=self.env)
+        return p.returncode, p.stdout + p.stderr
+
+    def know(self, asks=(), refs=(), item=None):
+        edit(self.repo, item or self.tk, knowledge={"ask": list(asks), "refs": list(refs)})
+
+    def show(self):
+        code, out = self.run("show", self.tk)
+        assert code == 0, out
+        return out
+
+
+@pytest.fixture
+def ks(sprint):
+    return Ks(sprint)
+
+
+def test_knowledge_state_each_ask_has_one_of_five_states(ks):
+    """A planted ask for each coverage: good, a good with a check line, weak and none."""
+    ks.know(asks=[KS_GOOD, KS_CHECK, KS_WEAK, KS_NONE])
+    out = ks.show()
+    assert ks_states(out) == {KS_GOOD: "sufficient", KS_CHECK: "partial", KS_WEAK: "partial", KS_NONE: "unknown"}, out
+    assert "check: line flags a possible false good" in out and "coverage weak" in out
+    assert "the kb does not cover it" in out
+
+
+def test_knowledge_state_refs_of_every_kind_are_sufficient_when_the_kb_covers_them(ks):
+    refs = ["demo/tool", "public/demo/tool", "QK-zorbex-retries", "S100", ks_fact(1)]
+    ks.know(refs=refs)
+    out = ks.show()
+    assert ks_states(out) == dict.fromkeys(refs, "sufficient"), out
+
+
+def test_knowledge_state_reworded_fact_is_stale_and_a_missing_ref_is_unknown(ks):
+    """The fact reworded (planted) is stale; an article, answer or source the kb lacks is unknown, never stale."""
+    ks.know(refs=[ks_fact(1), "demo/absent", "QK-no-answer", "S999"])
+    assert ks_states(ks.show())[ks_fact(1)] == "sufficient"
+    art = ks.root / "demo" / "tool.md"
+    ks.write("demo/tool.md", art.read_text(encoding="utf-8").replace("three times", "five times"))
+    out = ks.show()
+    assert ks_states(out) == {ks_fact(1): "stale", "demo/absent": "unknown", "QK-no-answer": "unknown",
+                              "S999": "unknown"}, out
+    assert f"fact {ks_fact(1).rpartition('#')[2]} is no longer in public/demo/tool.md" in out
+
+
+def test_knowledge_state_superseded_source_makes_refs_and_asks_stale(ks):
+    """S100 superseded (planted): the source, a fact citing it and an ask whose pack cites it are stale; the source
+    S101 that nothing supersedes is not."""
+    ks.know(asks=[KS_GOOD], refs=["S100", "S101", ks_fact(0)])
+    assert set(ks_states(ks.show()).values()) == {"sufficient"}
+    ks.write("_sources.csv", KS_SUPERSEDED)
+    out = ks.show()
+    assert ks_states(out) == {KS_GOOD: "stale", "S100": "stale", "S101": "sufficient", ks_fact(0): "stale"}, out
+    assert "source S100 is superseded by S101" in out
+
+
+def test_knowledge_state_open_conflict_entry_makes_the_article_conflicting_until_settled(ks):
+    """An open `_conflicts.md` entry naming demo/tool (planted): the topic, its fact, an ask its article answers and
+    a source the entry names are conflicting, another article is not. A `Resolved` note closes the entry."""
+    ks.know(asks=[KS_GOOD], refs=["demo/tool", ks_fact(0), "S100", "demo/gadget"])
+    entry = "- The two pages disagree on the retry count (S100). (topic: demo/tool)\n"
+    ks.write("_conflicts.md", "# Conflicts\n\n" + entry)
+    out = ks.show()
+    assert ks_states(out) == {KS_GOOD: "conflicting", "demo/tool": "conflicting", ks_fact(0): "conflicting",
+                              "S100": "conflicting", "demo/gadget": "sufficient"}, out
+    assert "open entry at public/_conflicts.md:3" in out
+    ks.write("_conflicts.md", "# Conflicts\n\n" + entry + "  - Resolved 2026-09-29: the later page settles it.\n")
+    assert set(ks_states(ks.show()).values()) == {"sufficient"}
+
+
+def test_knowledge_state_stale_wins_over_conflicting_and_both_over_coverage(ks):
+    ks.know(refs=["demo/tool", ks_fact(0)])
+    ks.write("_conflicts.md", "# Conflicts\n\n- Disagreement. (topic: demo/tool)\n")
+    assert set(ks_states(ks.show()).values()) == {"conflicting"}
+    ks.write("_sources.csv", KS_SUPERSEDED)
+    assert set(ks_states(ks.show()).values()) == {"stale"}
+
+
+def test_knowledge_state_next_and_horizon_print_it_and_the_hook_runs_no_pack(ks, monkeypatch, capsys):
+    ks.know(asks=[KS_GOOD, KS_NONE], refs=["demo/tool"])
+    ks.know(asks=[KS_GOOD, KS_NONE], refs=["demo/tool"], item=ks.bg)  # whichever of the two is next
+    want = {KS_GOOD: "sufficient", KS_NONE: "unknown", "demo/tool": "sufficient"}
+    for cmd in (("next", "--sprint", ks.sp, "--all"), ("horizon", "--sprint", ks.sp)):
+        code, out = ks.run(*cmd)
+        assert code == 0 and ks_states(out) == want, (cmd, out)
+    code, out = ks.run("horizon", "--sprint", ks.sp, "--hook")
+    assert code == 0 and "knowledge" not in out, out
+    # in this process with the pack counted: the hook asks it nothing, horizon asks it once per ask and ref
+    calls = []
+
+    def canned(self, question):
+        calls.append(question)
+        return {"verdict": "good", "sources": [], "paths": [], "unmatched": [], "spread": None}
+
+    monkeypatch.setattr(backlog.KnowledgeState, "pack", canned)
+    bl = backlog.Backlog(ks.repo)
+    backlog.cmd_horizon(bl, argparse.Namespace(sprint=ks.sp, hook=True))
+    assert calls == [] and "knowledge" not in capsys.readouterr().out
+    backlog.cmd_horizon(bl, argparse.Namespace(sprint=ks.sp, hook=False))
+    assert len(calls) == 3, calls
+    assert "knowledge sufficient" in capsys.readouterr().out
+
+
+def test_knowledge_state_is_reported_never_stored_and_never_changes_readiness(ks):
+    ready = ks.run("next", "--sprint", ks.sp, "--all")[1]
+    ks.know(asks=[KS_NONE], refs=["demo/absent"])  # every state a non-sufficient one: still nothing it waits on
+    before = {p.name: p.read_bytes() for p in (ks.repo / backlog.REL_DIR).glob("*.json")}
+    with_state = ks.run("next", "--sprint", ks.sp, "--all")[1]
+    assert [ln for ln in with_state.splitlines() if not ln.strip().startswith("knowledge")] == ready.splitlines()
+    assert ks_states(with_state) == {KS_NONE: "unknown", "demo/absent": "unknown"}
+    assert ks.show().rstrip().endswith("ready")
+    ks.run("horizon")
+    assert {p.name: p.read_bytes() for p in (ks.repo / backlog.REL_DIR).glob("*.json")} == before
+
+
+def test_knowledge_state_costs_nothing_for_items_without_knowledge(sprint):
+    """No item carries knowledge: next and horizon never load the pack (kbfacts stays unimported)."""
+    code = ("import sys; sys.path.insert(0, %r); import backlog\n"
+            "for cmd in (['next', '--all'], ['horizon']):\n"
+            "    backlog.main(['--root', %r] + cmd)\n"
+            "print('LOADED' if 'kbfacts' in sys.modules else 'NOT LOADED')\n") % (TOOLS, str(sprint["repo"]))
+    p = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True, encoding="utf-8")
+    assert p.returncode == 0 and p.stdout.strip().endswith("NOT LOADED"), p.stdout + p.stderr
+
+
+def test_knowledge_state_against_the_repositorys_own_kb(sprint):
+    """The real pack of this clone (`--root` names only where the backlog is): an eval-set question it answers `good`
+    with no check line, in an article with no open conflict entry, is sufficient; one about nothing the kb holds is
+    unknown. The ledger entries are the kb's own state, so the question is picked, not named."""
+    import rag
+
+    class Clone:
+        root, items = backlog.ROOT, {}
+
+    state = backlog.KnowledgeState(Clone())
+    good = next(c["question"] for _, c in rag.eval_cases() if c["expect_verdict"] == "good"
+                and state.of_ask(c["question"])[0] == "sufficient")
+    edit(sprint["repo"], sprint["tk"], knowledge={"ask": [good, KS_NONE]})
+    code, out = b(sprint["repo"], "show", sprint["tk"])
+    assert code == 0 and ks_states(out) == {good: "sufficient", KS_NONE: "unknown"}, out
+
+
+def test_knowledge_state_judge_maps_every_verdict(monkeypatch):
+    """The mapping alone, the pack canned: none -> unknown, weak -> partial, good -> sufficient, and a good with a
+    check line (an unmatched name, or facts spread apart) -> partial."""
+    class Empty:
+        root, items = "/nonexistent", {}
+
+    ks = backlog.KnowledgeState(Empty())
+    base = {"sources": [], "paths": [], "unmatched": [], "spread": None}
+    table = [({"verdict": "none"}, "unknown"), ({"verdict": "weak"}, "partial"), ({"verdict": "good"}, "sufficient"),
+             ({"verdict": "good", "unmatched": ["plimt"]}, "partial"),
+             ({"verdict": "good", "spread": (1, 4)}, "partial")]
+    for res, state in table:
+        monkeypatch.setattr(ks, "pack", lambda q, res=res: base | res)
+        assert ks.of_ask("q")[0] == state, res
+    assert {s for _, s in table} == set(backlog.STATES) - {"stale", "conflicting"}
 
 
 # ---- red-pipeline: a planted red and a green pipeline on origin's main, glab and gh replaced (no network)

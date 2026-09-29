@@ -70,6 +70,15 @@ GitLab's status categories match these states: Triage for `draft`, To do, In pro
 2. then the `priority` and `rank` of the story or bug on top;
 3. then the item's own `rank`.
 
+**Knowledge state.** `show`, `next` and `horizon` run `pack` in process (no network, no model) on each `ask` and each `ref` of an item's `knowledge` (The item file) and print one state for each:
+- `sufficient`: coverage `good` with no `check:` line (a `good` with one is `partial`);
+- `partial`: coverage `weak`;
+- `unknown`: coverage `none`, or a ref the kb does not hold;
+- `stale`: a fact key no longer found in its file, or a source the pack cites has `superseded_by` set in `_sources.csv`;
+- `conflicting`: the lead article (for a source ref, that source) has an open `_conflicts.md` entry.
+
+`stale` wins over `conflicting`, which wins over coverage. There is no other state. The state is computed on every call, never stored, and never changes readiness; `horizon --hook` runs no pack, and an item without `knowledge` costs nothing.
+
 ## Priority and severity
 
 Priority says when an item is scheduled; severity says how much a bug hurts. They are separate axes, as in GitLab's triage (`gitlab/work-items-planning.md`, DOC S-25zwwcdx).

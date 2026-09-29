@@ -14,9 +14,11 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
   backlog.py fmt                          rewrite every item in canonical form
   backlog.py list [--kind K] [--status S] [--sprint ID]   one line per item: id, kind, status, priority, title
   backlog.py tree [ID] [--sprint ID]      the hierarchy under an item, a sprint or everything
-  backlog.py show ID                      one item, its parent chain, children and what it waits on
+  backlog.py show ID                      one item, its parent chain, children, the knowledge state of each ask and
+                                          ref of its `knowledge` and what it waits on
   backlog.py next [--sprint ID] [--any] [--all]   the ready item to work on first (--all: every ready item in
-                                          order; --any: items outside an active sprint too, for single-item work)
+                                          order; --any: items outside an active sprint too, for single-item work),
+                                          with the knowledge state of each of its asks and refs
   backlog.py claim ID --by NAME           status doing, claimed by NAME;  backlog.py release ID  back to todo
   backlog.py answer ID GATE (--answer TEXT --by operator|agent | --provisional | --confirm)
                                           record a gate's answer: --provisional takes the recommendation as the
@@ -29,7 +31,8 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
   backlog.py start SPRINT                 activate a sprint whose start gate the operator answered; drafts become todo
   backlog.py close SPRINT                 delete a finished sprint, its items and the epics they finished
   backlog.py horizon [--sprint ID] [--hook]   how far each active sprint can go without the operator: reachable
-                                          items, what waits on which gate or trigger, the critical path
+                                          items, what waits on which gate or trigger, the critical path, the
+                                          knowledge state of the next item's asks and refs (--hook runs no pack)
   backlog.py goal ID                      a /goal condition for the item: its end state, checks and scope
   backlog.py red-pipeline [--status|--hook]   the newest finished pipeline of origin's main (glab api, gh on GitHub;
                                           a note when neither is signed in), on GitLab read by its jobs: red when a
@@ -44,6 +47,13 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
 
 --root DIR (before the command) runs against another clone. Exit: 0 ok, 1 a refused command or check errors,
 2 bad arguments or an unknown id.
+
+Knowledge state (show, next, horizon): one line `knowledge <state> ask|ref: <text>` per ask and per ref of an item's
+`knowledge`, each run through kbfacts.pack (no network, no model) and reported as one of sufficient (coverage good, no
+`check:` line), partial (weak, or good with a `check:` line), unknown (none, or a ref the kb does not hold), stale (a
+fact key no longer in its file, or a source with `superseded_by` set that the ref is or cites) or conflicting (an open
+`_conflicts.md` entry on its article); stale, then conflicting, override the coverage. Derived on every call, never
+stored, and no part of readiness. An item without `knowledge` costs nothing: the pack is not loaded.
 
 Every line that names an item prints its id and its title together.
 """
@@ -220,16 +230,21 @@ class KbAtHead:
         head, _, rest = qpath.partition("/")
         return (head, rest) if head in self.roots else ("public", qpath)
 
-    def source_ids(self):
-        """Every root's ids of its _sources.csv."""
+    def source_rows(self):
+        """{id: row} of every root's _sources.csv."""
         import csv, io, kbcommon
         if self._sources is None:
-            self._sources = set()
+            self._sources = {}
             for p in self.roots.values():
                 text = self.text(p / kbcommon.SOURCES)
                 if text:
-                    self._sources.update(r.get("id", "") for r in csv.DictReader(io.StringIO(text, newline="")))
+                    for r in csv.DictReader(io.StringIO(text, newline="")):
+                        self._sources.setdefault(r.get("id", ""), r)
         return self._sources
+
+    def source_ids(self):
+        """Every root's ids of its _sources.csv."""
+        return set(self.source_rows())
 
     def answer_ids(self, root):
         """The answer ids (`## <id>. ` headings) of a root's _answers.md."""
@@ -246,9 +261,9 @@ class KbAtHead:
         text = self.text(p / f"{rel}.md") if ok else None
         return text is not None and kbfacts.is_article(text)
 
-    def fact_keys(self, qpath):
-        """The fact keys (kbfacts.fact_key) of the tagged facts of one article or data file `<root>/<path>`; None
-        when there is no such file."""
+    def fact_units(self, qpath):
+        """{fact key (kbfacts.fact_key): its unit} for the tagged facts of one article or data file `<root>/<path>`;
+        None when there is no such file."""
         import kbfacts
         if qpath not in self._facts:
             root, rel = self.split(qpath)
@@ -261,8 +276,22 @@ class KbAtHead:
                 units = kbfacts.md_units(rel, text) if kbfacts.is_article(text) else []
             else:
                 units = kbfacts.csv_units(rel, text)
-            self._facts[qpath] = None if units is None else {kbfacts.fact_key(u["text"]) for u in units if u["tags"]}
+            self._facts[qpath] = None if units is None else {kbfacts.fact_key(u["text"]): u for u in units
+                                                             if u["tags"]}
         return self._facts[qpath]
+
+    def fact_keys(self, qpath):
+        """The fact keys (kbfacts.fact_key) of the tagged facts of one article or data file `<root>/<path>`; None
+        when there is no such file."""
+        units = self.fact_units(qpath)
+        return None if units is None else set(units)
+
+    def answer_question(self, root, aid):
+        """The question in the heading `## <aid>. <question>` of a root's _answers.md, or None."""
+        import kbcommon
+        p = self.roots.get(root)
+        m = re.search(rf"(?m)^## {re.escape(aid)}\.\s+(.+?)\s*$", (self.text(p / kbcommon.ANSWERS) or "") if p else "")
+        return m.group(1) if m else None
 
 
 def knowledge_check(bl, iid):
@@ -319,6 +348,145 @@ def knowledge_check(bl, iid):
 def stale_knowledge(bl):
     """The stale-knowledge findings of every item (knowledge_check)."""
     return [x for iid in bl.items for x in knowledge_check(bl, iid)[1]]
+
+
+# ------------------------------------------------------------------ knowledge state
+
+STATES = ("sufficient", "partial", "unknown", "stale", "conflicting")
+SETTLED_NOTE = re.compile(r"(?:^|\s)- (?:Resolved|Superseded) \d{4}-\d{2}-\d{2}\b")  # the notes that close an entry
+
+
+class KnowledgeState:
+    """The state of each ask and each ref of an item's `knowledge`, derived from the kb on every call and never
+    stored: the pack (kbfacts.pack: no network, no model) of the ask, or of the text a ref stands for (a topic's
+    title, a QK answer's question, a source's title, a fact's own text), then, in this order:
+      unknown      the ref is not in the kb, or the pack's coverage is `none` (or the pack could not run);
+      stale        a fact key no longer found in its file, or a source that the ref is, that the fact cites or that
+                   the pack cites has `superseded_by` set in _sources.csv;
+      conflicting  the ref's article (a source ref: any entry naming it), or the pack's lead article, has an open
+                   entry in _conflicts.md: an entry with no `- Resolved <date>` or `- Superseded <date>` note;
+      partial      coverage `weak`, or `good` with a `check:` line (a possible false good);
+      sufficient   coverage `good` with no `check:` line.
+    A pack whose coverage is `none` shows no article or source, so only what the ref itself is (its own fact, source
+    or article) can make it stale or conflicting. The pack is the one `rag.py pack "<text>"` prints, in this process."""
+
+    def __init__(self, bl):
+        import kbcommon, kbfacts
+        if not hasattr(bl, "kb"):
+            bl.kb = KbAtHead(bl.root)
+        self.kb, self.kf, self.kc, self._packs, self._open = bl.kb, kbfacts, kbcommon, {}, None
+
+    def pack(self, question):
+        if question not in self._packs:
+            self._packs[question] = self.kf.pack(question)
+        return self._packs[question]
+
+    def open_conflicts(self):
+        """([(entry, linked topics)]) of the entries of every root's _conflicts.md that no Resolved or Superseded
+        note closes."""
+        if self._open is None:
+            kf = self.kf
+            entries = kf.link_entries(kf.ledger_entries(self.kc.CONFLICTS))
+            self._open = [e for e in entries if not SETTLED_NOTE.search(e["text"])]
+        return self._open
+
+    def topic_of(self, qpath):
+        """The qualified topic of an article or of a data file that an article lists, or None."""
+        kf = self.kf
+        meta = kf.articles().get(qpath)
+        if meta:
+            return meta["topic"]
+        return next((t for t, files in kf.topic_files().items() if qpath in files), None)
+
+    def conflict_of(self, qpaths, source_id=None):
+        """The `file:line` of an open conflict entry that names one of the articles' topics (or the source id)."""
+        topics = {t for t in map(self.topic_of, qpaths) if t}
+        if not topics and not source_id:
+            return None
+        for e in self.open_conflicts():
+            if topics & set(e["explicit"]) or (source_id and source_id in e["ids"]):
+                return f"{e['file']}:{e['line']}"
+        return None
+
+    def superseded(self, ids):
+        rows = self.kb.source_rows()
+        return [(i, (rows[i].get("superseded_by") or "").strip()) for i in dict.fromkeys(ids)
+                if i in rows and (rows[i].get("superseded_by") or "").strip()]
+
+    def judge(self, question, articles=(), ids=(), source=None):
+        """(state, why) for a question; `articles` the qualified paths and `ids` the source ids the ref itself is or
+        cites; `source` the source id a source ref is."""
+        try:
+            res = self.pack(question)
+        except Exception as ex:  # a kb the pack cannot read: no evidence, so no better than unknown
+            return "unknown", f"the pack could not run: {type(ex).__name__}: {ex}"
+        covered = res["verdict"] != "none"
+        old = self.superseded(list(ids) + (res["sources"] if covered else []))
+        if old:
+            return "stale", "; ".join(f"source {i} is superseded by {new}" for i, new in old)
+        clash = self.conflict_of(list(articles) + (res["paths"][:1] if covered else []), source)
+        if clash:
+            return "conflicting", f"open entry at {clash}"
+        if not covered:
+            return "unknown", "the kb does not cover it: coverage none"
+        if res["verdict"] == "weak":
+            return "partial", "coverage weak"
+        if res["unmatched"] or res["spread"]:
+            return "partial", "coverage good, but the pack's check: line flags a possible false good"
+        return "sufficient", ""
+
+    def of_ask(self, question):
+        return self.judge(question)
+
+    def of_ref(self, ref):
+        """(state, why) for one reference, resolved as knowledge_check resolves it."""
+        kb, ref = self.kb, ref.strip()
+        answer = ANSWER_REF.fullmatch(ref)
+        if "#" in ref:
+            path, _, key = ref.rpartition("#")
+            units = kb.fact_units(path) if FACT_KEY.fullmatch(key) else None
+            if units is None:
+                return "unknown", "no such article or data file, or not a fact key"
+            if key not in units:
+                return "stale", f"fact {key} is no longer in {path}, reworded or removed"
+            u = units[key]
+            root, rel = kb.split(path)
+            text = self.kf.TAG.sub("", u["text"]).strip(" |")
+            return self.judge(text, [f"{root}/{rel}"], [i for t in u["tags"] for i in t["ids"]])
+        if answer:
+            root = answer.group(1) or "public"
+            question = kb.answer_question(root, answer.group(2)) if root in kb.roots else None
+            return self.judge(question, ()) if question else ("unknown", "no such answer")
+        import kbid
+        if kbid.id_prefix(ref):
+            row = kb.source_rows().get(ref)
+            return self.judge(row.get("title") or row.get("url") or ref, (), [ref], ref) if row else (
+                "unknown", "no such source id")
+        if "/" in ref and kb.is_topic(ref):
+            root, rel = kb.split(ref)
+            title = self.kf.front_matter(kb.text(kb.roots[root] / f"{rel}.md") or "")["title"]
+            return self.judge(title or rel, [f"{root}/{rel}.md"])
+        return "unknown", "no such topic"
+
+
+def knowledge_lines(bl, iid, indent="  "):
+    """One line per ask and per ref of an item's `knowledge`: `knowledge <state> ask|ref: <text>` and, for any state
+    but sufficient, why. [] for an item with no asks or refs, without loading the pack (a malformed field is
+    `check`'s to report)."""
+    know = bl.items[iid].get("knowledge")
+    if not isinstance(know, dict):
+        return []
+    todo = [(k, x) for k, f in (("ask", "ask"), ("ref", "refs")) for x in (know.get(f) if isinstance(know.get(f), list) else [])
+            if isinstance(x, str) and x.strip()]
+    if not todo:
+        return []
+    if not hasattr(bl, "state"):
+        bl.state = KnowledgeState(bl)
+    out = []
+    for kind, text in todo:
+        state, why = bl.state.of_ask(text) if kind == "ask" else bl.state.of_ref(text)
+        out.append(f"{indent}knowledge {state:<11} {kind}: {text.strip()}" + (f" ({why})" if why else ""))
+    return out
 
 
 def validate(bl):
@@ -708,6 +876,8 @@ def cmd_show(bl, a):
         say(f"sprint: {bl.label(sp)}")
     for c in bl.children(iid):
         say(f"child: {line(bl, c)}")
+    for x in knowledge_lines(bl, iid, indent=""):
+        say(x)
     w = waits(bl, iid)
     say("ready" if not w else "waits on:\n  " + "\n  ".join(w))
     return 0
@@ -720,6 +890,8 @@ def cmd_next(bl, a):
         return 1
     for i in ids if a.all else ids[:1]:
         say(line(bl, i))
+        for x in knowledge_lines(bl, i):
+            say(x)
     return 0
 
 
@@ -986,6 +1158,8 @@ def cmd_horizon(bl, a):
         nxt = ready(bl, sid)
         if nxt:
             lines.append(f"  next: {bl.label(nxt[0])}")
+            if not a.hook:  # the SessionStart hook runs no pack
+                lines += knowledge_lines(bl, nxt[0], indent="    ")
         if path:
             lines.append(f"  critical path ({len(path)} steps, parallel width per step {widths}): "
                          + " -> ".join(bl.label(i) for i in path))
