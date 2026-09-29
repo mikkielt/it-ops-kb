@@ -2,7 +2,7 @@
   "id": "ST-6dszsvk5",
   "kind": "story",
   "title": "Autonomous writers reach main only through kbgit.py sync --push",
-  "status": "todo",
+  "status": "done",
   "sprint": "SP-liemltg2",
   "priority": "P2",
   "rank": 0,
@@ -40,5 +40,20 @@
     "kb/_self/git.md",
     "kb/_self/querylog.md",
     "_tools/kbgit.py"
-  ]
+  ],
+  "evidence": {
+    "commit": "cb8936f075cef86283f211cc61c9715ccec8a471",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "autonomous_write"
+        ],
+        "exit": 0,
+        "sha256": "a199ab6ad22ac476"
+      }
+    ]
+  }
 }
