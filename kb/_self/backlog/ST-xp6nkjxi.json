@@ -2,7 +2,7 @@
   "id": "ST-xp6nkjxi",
   "kind": "story",
   "title": "Autonomous maintenance converges on unchanged input",
-  "status": "todo",
+  "status": "done",
   "sprint": "SP-liemltg2",
   "priority": "P2",
   "rank": 0,
@@ -30,5 +30,20 @@
       "answer": "add",
       "by": "operator"
     }
-  ]
+  ],
+  "evidence": {
+    "commit": "d977ffd1c9269262495505d3482220069fa999a3",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "autonomous_converge"
+        ],
+        "exit": 0,
+        "sha256": "5ecd49a4300284e7"
+      }
+    ]
+  }
 }
