@@ -2,7 +2,7 @@
   "id": "ST-5wc6ufrb",
   "kind": "story",
   "title": "Review sprint: Route by verdict",
-  "status": "todo",
+  "status": "done",
   "sprint": "SP-aikswrrl",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,27 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "evidence": {
+    "commit": "e8f4a179cbc337be23f553e9c8ff76405ace31c7",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "15449cf12d811544"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "b45a3f1bb13c684c"
+      }
+    ]
+  }
 }
