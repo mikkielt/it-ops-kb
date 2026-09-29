@@ -1,0 +1,22 @@
+{
+  "id": "BG-boi4hwf7",
+  "kind": "bug",
+  "title": "test_install_python.py docstring raises a SyntaxWarning for an invalid escape sequence",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "python3 _tools/tests.py reports no SyntaxWarning from _tools/test_install_python.py: its module docstring's Windows paths (%USERPROFILE%\\.local\\bin) are escaped or the docstring is raw",
+  "repro": {
+    "run": [
+      "python3",
+      "-W",
+      "error::SyntaxWarning",
+      "-c",
+      "import ast,sys; compile(open('_tools/test_install_python.py').read(),'t','exec')"
+    ]
+  },
+  "touches": [
+    "_tools/test_install_python.py"
+  ]
+}
