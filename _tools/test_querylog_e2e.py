@@ -647,6 +647,27 @@ class TestTwoClones:
 
 # ---------------------------------------------------------------- a conflict with origin/main
 
+def held_probe(w, branch, up):
+    """The git calls of ql_deliver.Pusher.held for one conflict branch, run in the clone and in the pusher's worktree,
+    with their exit codes and output: a failure message's evidence of which step drops the held ids."""
+    if not branch:
+        return "no conflict branch"
+    ref = f"refs/remotes/origin/{branch}"
+    out = []
+    for cwd in (Path(w.clone.path), w.q / ql_deliver.WORKTREE_NAME):
+        def g(*args):
+            code, o, e = ql_base.run_cmd(["git", *args], cwd=cwd, env=w.env)
+            out.append(f"[{cwd.name}] git {' '.join(args)} -> {code} {(o + e).strip()[:400]}")
+            return code, o
+        g("for-each-ref", "--format=%(refname)", f"refs/remotes/origin/{ql_deliver.CONFLICT_BRANCH_PREFIX}")
+        g("merge-base", "--is-ancestor", ref, up)
+        base = g("merge-base", ref, up)[1].strip()
+        files = g("diff", "--name-only", "--diff-filter=A", base, ref, "--", f"{ql_base.STORE_REL}/{ql_store.FINDINGS}")[1]
+        for f in files.split():
+            g("show", f"{ref}:{f}")
+    return "\n".join(out)
+
+
 class TestConflict:
     @pytest.fixture(scope="class", autouse=True)
     @classmethod
@@ -690,6 +711,8 @@ class TestConflict:
         cls.seen = "\n".join((w.clone.git("for-each-ref", "--format=%(refname) %(objectname)", "refs/remotes/"),
                                w.clone.git("ls-tree", "-r", "--name-only", cls.branch1 and f"origin/{cls.branch1}" or "HEAD",
                                            "--", "kb/_querylog/findings")))
+        cls.seen += "\n--- held()'s git calls, replayed against main as the second run found it:\n" + held_probe(
+            w, cls.branch1, cls.planted)
         cls.st = w.state()
         cls.refs2 = w.remote.git("for-each-ref", "--format=%(refname)", "refs/heads").split()
         cls.opts2 = (Path(w.remote.path) / "push-options.txt").read_text(encoding="utf-8").splitlines()
