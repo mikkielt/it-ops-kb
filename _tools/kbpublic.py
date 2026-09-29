@@ -422,6 +422,24 @@ def cmd_publish(a, cwd):
     return 0
 
 
+def cmd_publish_hook(a, cwd):
+    """The SessionStart form of publish: silent without a public remote or when there is nothing to publish, prints only
+    the refusal and push-failure lines of a run, and returns 0 whatever happened (a hook never breaks a session start)."""
+    import contextlib, io
+    try:
+        if not (a.remote or publish_remote(cwd)):
+            return 0
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            cmd_publish(a, cwd)
+        for line in buf.getvalue().splitlines():
+            if line.startswith(("refused:", "push failed:")):
+                print(f"kb publish {line}")
+    except Exception as exc:  # noqa: BLE001 - the hook must exit 0 on every outcome
+        print(f"kb publish hook: {type(exc).__name__}: {exc}"[:300])
+    return 0
+
+
 def cmd_check_public(a, cwd):
     rev = a.rev or "HEAD"
     bad = private_commits(rev, cwd)
