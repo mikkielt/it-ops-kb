@@ -2,7 +2,7 @@
   "id": "TK-dc7ii6zc",
   "kind": "task",
   "title": "Split the raw-read PreToolUse hook so PowerShell calls start it through PowerShell, not sh",
-  "status": "doing",
+  "status": "done",
   "parent": "BG-rcwroffk",
   "priority": "P2",
   "rank": 0,
@@ -32,5 +32,28 @@
     "kb/_self/maintaining.md"
   ],
   "notes": "Hooks that still start through sh after this task (each fails as a non-blocking hook error on Windows without Git Bash, where shell form goes to PowerShell): .claude/settings.json SessionStart (kbpy --notice, session_start.py, querylog launch, querylog digest, backlog red-pipeline, backlog horizon), SessionEnd (querylog launch), UserPromptSubmit (kb_hook.py, kb_change_router.py, querylog capture), PreToolUse matcher Bash (fine: the Bash tool exists only with Git Bash), PostToolUse, PostToolUseFailure and Stop (querylog capture); .claude-plugin/plugin.json: every hook (kb_hook.py, querylog capture, launch, digest, kbpy --notice). The it-ops-kb-docs plugin's submit_feedback block needs no sh but does not parse in PowerShell: BG-qtphqxt2. .githooks run in git's own sh (Git for Windows), not Claude Code's hook shell. Design: one entry per tool (Bash: sh kbpy; PowerShell: shell powershell, inline finder), not two entries on Bash|PowerShell, so no call fires the hint twice; the PowerShell entry fires only on PowerShell tool calls, which on Linux and macOS need pwsh (opt-in), the executable a powershell-shell hook needs.",
-  "claimed_by": "worker-rcwroffk"
+  "evidence": {
+    "commit": "a00d01a393fdaa1fd5abd3dfee323ffa846daa8a",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,sys; h=json.load(open('.claude/settings.json',encoding='utf-8'))['hooks']['PreToolUse']; sys.exit(0 if any('PowerShell' in e.get('matcher','') and any(x.get('shell')=='powershell' and not x.get('command','').startswith('sh ') for x in e['hooks']) for e in h) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "portability"
+        ],
+        "exit": 0,
+        "sha256": "1a550a39288229aa"
+      }
+    ]
+  }
 }
