@@ -97,7 +97,10 @@
                     HEAD is refused
   TestGapStep      a reproduced gap candidate with an article in the pack's lead becomes a dated _gaps.md entry at
                     the end of its topic's section (or a new section), once, the finding promoted candidate-gap ->
-                    gap; off the kb's domains, a lead no article holds, or a pass now: it stays a candidate
+                    gap, a none pack's too when its lead holds more than half the key words; off the kb's domains
+                    (no lead, a lead no article holds, a stray none lead) it is rejected; a pass now, or a none lead
+                    that holds the words the pack lacks, is left to learn, which makes the second an eval finding, so
+                    no gap candidate is stranded and the digest's open gaps are what the queue reaches
   TestQueue         the research queue on the gap step's entries (two topics): one item per question, ranked by the
                     logged lookups that asked it, then by age, grouped by topic, the top N; two copies of one store print the
                     same queue; a gap the pack answers now is recorded `fixed-since` and leaves it (learn leaves that
@@ -2210,7 +2213,7 @@ def kb_rows(home, rel):
 class TestApply:
     def test_eval_rows_come_with_their_fixes(self, applied):
         home, store, env, said, before = applied
-        assert said[1].startswith("apply: run=") and "applied=4 rejected=1 no-fix=1" in said[1], said
+        assert said[1].startswith("apply: run=") and "applied=4 rejected=2 no-fix=1" in said[1], said  # a4 off the kb
         m = re.search(r"eval=(\d+)/(\d+) mean-pack=(\d+)->(\d+) offkb-good=(\d+)->(\d+)", said[1])
         passed, n, mean0, mean1, good0, good1 = map(int, m.groups())
         assert passed == n and mean1 <= mean0 and good1 <= good0, said[1]  # the doc2query.md measurements
@@ -2242,7 +2245,10 @@ class TestApply:
         assert (miss["state"], miss["stage"]) == ("no-fix", "candidate-gap")
         assert miss["promotions"] == [{"from": "miss", "to": "candidate-gap", "by": "apply"}]
         assert kinds[("expansion", E("a3"))]["state"] == "rejected" and kinds[("expansion", E("a3"))]["observed"]["gate"]
-        assert not [r for r in outcomes if r["kind"] in ("source", "gap")]  # left alone
+        assert not [r for r in outcomes if r["kind"] == "source"]  # left alone
+        gap = kinds[("gap", E("a4"))]  # VMware Horizon: a none pack whose lead holds half its key words or fewer
+        assert (gap["state"], gap["stage"], gap["observed"]["gate"]) == ("rejected", "candidate-gap",
+                                                                          ["off the kb's domains"])
         assert {r["id"] for r in learned} >= {r["id"] for r in outcomes}  # the learn file is not edited
         assert ql_store.store_problems(store) == []
 
@@ -2334,7 +2340,7 @@ class TestApplyGates:
     def test_applied_with_stub_gates_then_converges(self, stub_store, tmp_path):
         gate = StubGate(tmp_path)
         rc, said = run_apply(stub_store, gate)
-        assert rc == 0 and "applied=6 rejected=0 no-fix=0" in said[0], said
+        assert rc == 0 and "applied=6 rejected=1 no-fix=0" in said[0], said  # the gap: off the kb's domains
         assert [r[0] for r in ql_apply.csv_rows(gate.files["aliases"])][-3:] == ["laps", "zqxlapsor", "plomkinator"]
         first = tree(stub_store), {k: p.read_bytes() for k, p in gate.files.items()}
         n = gate.measured
@@ -2351,7 +2357,7 @@ class TestApplyGates:
         p.write_text("".join(json.dumps(o) + "\n" for o in objs), encoding="utf-8", newline="\n")
         gate = StubGate(tmp_path)
         rc, said = run_apply(stub_store, gate)
-        assert rc == 0 and "applied=0 rejected=0 no-fix=3" in said[0], said
+        assert rc == 0 and "applied=0 rejected=1 no-fix=3" in said[0], said  # the gap: off the kb's domains
         assert {k: p.read_bytes() for k, p in gate.files.items()} == gate.first
         recs = [r for r in by_id(stub_store).values() if r["kind"] == "eval"]
         assert all(r["observed"]["gate"] == ["no fix finding"] and r["stage"] == "candidate-gap" for r in recs)
@@ -2359,7 +2365,7 @@ class TestApplyGates:
     def test_a_fix_that_fails_the_gates_is_put_back(self, stub_store, tmp_path):
         gate = StubGate(tmp_path, works=False)  # planted: no fix makes the new eval row pass
         rc, said = run_apply(stub_store, gate)
-        assert rc == 0 and "applied=0 rejected=3 no-fix=3" in said[0], said
+        assert rc == 0 and "applied=0 rejected=4 no-fix=3" in said[0], said  # two fixes and one alias, the gap
         assert {k: p.read_bytes() for k, p in gate.files.items()} == gate.first  # every file as it was
         assert ql_store.store_problems(stub_store) == []
 
@@ -2626,13 +2632,14 @@ class TestRetry:
 
     def test_held_findings_are_left_alone(self, stub_store, tmp_path):
         gate = StubGate(tmp_path)
-        hold = {i for i, r in by_id(stub_store).items() if r["kind"] in ("eval",) + ql_store.FIX_KINDS}
+        hold = {i for i, r in by_id(stub_store).items() if r["kind"] in ("eval", "gap") + ql_store.FIX_KINDS}
         said = []
         assert ql_apply.apply(stub_store, gate=gate, kb_commit="0" * 40, out=said.append, hold=hold) == 0
         assert said == ["apply: nothing to apply"] and gate.measured == 0
 
     def test_the_command_line(self, stub_store, capsys):
-        hold = sorted(i for i, r in by_id(stub_store).items() if r["kind"] in ("eval",) + ql_store.FIX_KINDS)
+        # the gap held too: this apply runs on the clone's own kb, which it must not write
+        hold = sorted(i for i, r in by_id(stub_store).items() if r["kind"] in ("eval", "gap") + ql_store.FIX_KINDS)
         argv = ["apply", "--store", str(stub_store)]
         for i in hold:
             argv += ["--hold", i]
@@ -3282,17 +3289,118 @@ class TestGapStep:
         assert (root / "_gaps.md").read_bytes() == text
 
     @pytest.mark.parametrize("res", [
-        {"verdict": "none", "paths": [], "missing": ["horizon"]},  # off the kb's domains
+        {"verdict": "none", "paths": [], "missing": ["horizon"]},  # no lead
         {"verdict": "weak", "paths": ["public/nowhere/x.csv"], "missing": []},  # a lead no article holds
-        {"verdict": "good", "paths": [LAPS], "missing": []},  # passes now: learn records it
+        {"verdict": "none", "paths": [LAPS], "matched": ["configur", "instant", "pool"],  # a stray none lead: 3 of 6
+         "known": ["clon", "configur", "horizon", "instant", "pool", "vmwar"], "lacks": ["VMware", "Horizon", "clone"]},
     ])
-    def test_a_gap_off_the_kb_or_fixed_stays_a_candidate(self, tmp_path, res):
+    def test_a_gap_off_the_kb_is_rejected(self, tmp_path, res):
         root = kb_root(tmp_path / "root")
         store = gap_store(tmp_path)
+        before = root_files(root)
+        rc, said = run_gap_apply(store, KbGate(root, res=res))
+        assert rc == 0 and "applied=0 rejected=1 no-fix=0" in said[0] and "gaps=" not in said[0], said
+        assert root_files(root) == before  # no topic takes its entry
+        rec = by_id(store)[GAP_ID]
+        assert (rec["state"], rec["stage"], rec["observed"]["gate"]) == ("rejected", "candidate-gap",
+                                                                          ["off the kb's domains"])
+        assert ql_store.store_problems(store) == []
+        assert run_gap_apply(store, KbGate(root, res=res)) == (0, ["apply: nothing to apply"])  # converges
+
+    @pytest.mark.parametrize("res", [
+        {"verdict": "good", "paths": [LAPS], "missing": []},  # passes now: learn records it
+        {"verdict": "none", "paths": [LAPS], "matched": ["budget", "hook", "sessionend"],  # the lead holds `1.5`:
+         "known": ["1.5", "budget", "hook", "sessionend"], "lacks": ["1.5"]},  # learn makes it an eval finding
+    ])
+    def test_a_gap_fixed_or_held_is_left_to_learn(self, tmp_path, res):
+        root = kb_root(tmp_path / "root")
+        store = gap_store(tmp_path)
+        gate = KbGate(root, res=res)
+        gate.facts = lambda article: [(9, "`SessionEnd` hooks share a 1.5-second budget on exit. [DOC S100]")]
         before = root_files(root), tree(store)
-        assert run_gap_apply(store, KbGate(root, res=res)) == (0, ["apply: nothing to apply"])
+        assert run_gap_apply(store, gate) == (0, ["apply: nothing to apply"])
         assert (root_files(root), tree(store)) == before
         assert (by_id(store)[GAP_ID]["state"], by_id(store)[GAP_ID]["stage"]) == ("open", "candidate-gap")
+
+    def test_a_none_gap_under_its_article_becomes_an_entry(self, tmp_path):
+        root = kb_root(tmp_path / "root")
+        store = gap_store(tmp_path)
+        res = {"verdict": "none", "paths": [LAPS], "matched": ["backup", "laps", "password"],
+               "known": ["azur", "backup", "laps", "password"], "lacks": ["Azure"]}  # 3 of 4: the LAPS topic
+        gate = KbGate(root, res=res)
+        gate.facts = lambda article: [(9, "Windows LAPS backs up the password to Active Directory. [DOC S100]")]
+        rc, said = run_gap_apply(store, gate)
+        assert rc == 0 and "gaps=1" in said[0], said
+        assert "gives `none`, with this topic in the lead" in (root / "_gaps.md").read_text(encoding="utf-8")
+        assert (by_id(store)[GAP_ID]["state"], by_id(store)[GAP_ID]["stage"]) == ("applied", "gap")
+
+    def test_none_candidate_gap_is_not_stranded(self, tmp_path, monkeypatch):
+        """Every open gap candidate reaches a next state (F-6298df20a337: a none pack whose lead article holds the
+        answer): learn turns the one the lead article holds into an eval finding, apply the one the kb lacks under
+        its article into a _gaps.md entry the queue lists, and the stray none into a rejection, so the digest's open
+        gaps are none but what the queue reaches."""
+        held_q, lacks_q, stray_q = ("SessionEnd hook input fields reason budget 1.5 seconds",
+                                    "Does SessionEnd hook input carry a zorblax field?", VMWARE_Q)
+        store = learn_store(tmp_path)
+        plant_entries(store, none_entry("ca", held_q), none_entry("cb", lacks_q))
+        packs = {held_q: {"verdict": "none", "paths": [LAPS], "matched": ["budget", "hook", "reason", "sessionend"],
+                          "known": ["1.5", "budget", "hook", "reason", "sessionend"], "lacks": ["1.5"], "missing": []},
+                 lacks_q: {"verdict": "none", "paths": [LAPS], "matched": ["hook", "input", "sessionend"],
+                           "known": ["field", "hook", "input", "sessionend"], "lacks": ["zorblax"],
+                           "missing": ["zorblax"]},
+                 stray_q: {"verdict": "none", "paths": [LAPS], "matched": ["configur", "instant", "pool"],
+                           "known": ["clon", "configur", "horizon", "instant", "pool", "vmwar"],
+                           "lacks": ["VMware", "Horizon", "clone"], "missing": []}}
+        pack = lambda q: packs.get(q) or passing(q)  # noqa: E731
+        facts = [(64, "`SessionEnd` hooks share a 1.5-second budget on exit, `/clear` and `/resume`. [DOC S100]")]
+        monkeypatch.setattr(ql_learn, "article_of", lambda path: path if path == LAPS else None)
+        monkeypatch.setattr(ql_learn, "article_facts", lambda article: facts if article == LAPS else [])
+        gap = {n: ql_store.finding_id("gap", E(n)) for n in ("ca", "cb", "a4")}
+        ev = ql_store.finding_id("eval", E("ca"))
+
+        def open_gaps():
+            week, lines_, _ = ql_report.digest(store, "2026-W40")
+            line = next((ln for ln in lines_ if ln.startswith("  gap: ")), "")
+            m = re.search(r"\bopen (\d+)", line)
+            return int(m.group(1)) if m else 0
+
+        # the store as it stood: three none misses, each an open gap candidate (the planted stranded state)
+        run_learn(store, lambda q: {**packs[q], "lacks": ["zorblax"]} if q in packs else passing(q))
+        assert {by_id(store)[gap[n]]["stage"] for n in gap} == {"candidate-gap"} and open_gaps() == 3
+        root = kb_root(tmp_path / "root")
+        gate = KbGate(root)
+        gate.pack, gate.facts = pack, ql_learn.article_facts
+        assert run_queue(store, gate)[1][0].startswith("queue: gaps=0 ")  # the digest counts 3 the queue cannot reach
+
+        rc, said = run_learn(store, pack)  # the lead article holds `1.5`: an eval finding, the gap candidate gone
+        assert rc == 0, said
+        now = by_id(store)
+        assert (now[ev]["kind"], now[ev]["state"], now[ev]["stage"], now[ev]["expect"]) == ("eval", "open", "miss", LAPS)
+        assert now[gap["ca"]]["state"] == "fixed-since"  # no longer an open candidate: it left candidate-gap
+        assert now[ql_store.finding_id("expansion", E("ca"))]["article"] == LAPS  # its fix, as for any eval miss
+
+        hold = {i for i, r in now.items() if r["kind"] in ("eval",) + ql_store.FIX_KINDS}  # the gap step alone
+        said = []
+        rc = ql_apply.apply(store, gate=gate, kb_commit="0" * 40, out=said.append, hold=hold, day=DAY)
+        assert rc == 0 and "applied=1 rejected=1" in said[0] and "gaps=1" in said[0], said
+        now = by_id(store)
+        assert (now[gap["cb"]]["state"], now[gap["cb"]]["stage"]) == ("applied", "gap")  # the kb lacks it
+        assert (now[gap["a4"]]["state"], now[gap["a4"]]["stage"]) == ("rejected", "candidate-gap")  # the stray lead
+        text = (root / "_gaps.md").read_text(encoding="utf-8")
+        assert gap["cb"] in text and gap["ca"] not in text and gap["a4"] not in text
+        rc, said = run_queue(store, gate)
+        assert rc == 0 and said[0].startswith("queue: gaps=1 queued=1 ") and listed(said) == [gap["cb"]], said
+        assert open_gaps() == 0  # no open gap the queue cannot reach
+        assert ql_store.store_problems(store) == []
+        before = tree(store), root_files(root)
+        assert run_learn(store, pack)[1][0].startswith("learn: nothing new")  # converges
+        assert ql_apply.apply(store, gate=gate, kb_commit="0" * 40, out=lambda _: None, hold=hold, day=DAY) == 0
+        assert (tree(store), root_files(root)) == before
+
+    def test_holds_word(self):
+        assert ql_learn.holds_word("1.5", "hooks share a 1.5-second budget") and ql_learn.holds_word("1.5", "is 1.5.")
+        assert not ql_learn.holds_word("1.5", "since v2.1.5 it") and not ql_learn.holds_word("1.5", "a 1.50 s wait")
+        assert ql_learn.holds_word("Azure", "backs up to azure.") and not ql_learn.holds_word("log", "a catalog")
 
     def test_add_under(self):
         assert ql_research.add_under("", "a/b", "- x") == "## a/b\n\n- x\n"

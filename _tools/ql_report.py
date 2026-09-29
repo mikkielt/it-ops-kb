@@ -135,17 +135,21 @@ def digest(store=None, week=None):
     judged_.append(("not judged", sum(1 for e in entries if e.get("judged") not in JUDGED)))
     misses = [e for e in entries if is_miss(e)]
     fixed = {"by the kb since": 0, "by apply": 0, "by research": 0}
-    for e in misses:
-        for kind in MISS_KINDS:
-            r = state.get(finding_id(kind, e["id"]))
-            if r is None:
-                continue
+    for e in misses:  # once per miss, and not while one of its findings is open (a gap learn turned into an eval)
+        recs = [(kind, state.get(finding_id(kind, e["id"]))) for kind in MISS_KINDS]
+        recs = [(kind, r) for kind, r in recs if r is not None]
+        if any(r.get("state") == "open" for _, r in recs):
+            continue
+        for kind, r in recs:
             if r.get("state") == "fixed-since":
                 fixed["by the kb since"] += 1
             elif r.get("state") == "applied" and kind == "eval":
                 fixed["by apply"] += 1
             elif r.get("state") == "applied" and r.get("stage") == "claim":
                 fixed["by research"] += 1
+            else:
+                continue
+            break
     items = []
     for e in entries:
         items += [f for f in e.get("fetches") or [] if isinstance(f, dict)]

@@ -1,7 +1,8 @@
 """The query log's learn (kb/_self/querylog.md, Learn): the store's run files and the kb at HEAD become findings, and
 only findings: every judged miss re-run with pack first (`fixed-since` when it now passes), then eval, alias,
 expansion and gap-candidate findings, and report-only source findings on the hosts the store's fetches name. A
-lookup with verdict none whose fetched pages the kb cites is a false none: an eval finding, in place of a gap. One
+lookup with verdict none whose fetched pages the kb cites is a false none: an eval finding, in place of a gap; so is
+a miss whose pack on HEAD is none with an article in the lead that holds every word the pack says the kb lacks. One
 findings file holds the records that change a finding's state (none: no file).
 """
 import csv, re
@@ -173,6 +174,57 @@ def unknown_words(question, res):
 def default_pack(question):
     import kbfacts
     return kbfacts.pack(question, fmt="concise")
+
+
+def article_of(path):
+    """The qualified article (.md) whose topic holds the qualified `path` (the article itself, a same-stem data file or
+    a file its `files:` lists), or None."""
+    import kbfacts
+    arts = kbfacts.articles()
+    if path in arts:
+        return path
+    for topic, files in sorted(kbfacts.topic_files().items()):
+        if path in files:
+            return next((q for q in files if q in arts and arts[q].get("topic") == topic), None)
+    return None
+
+
+def article_facts(article):
+    """[(line, text)] of the tagged facts of `article`."""
+    import kbfacts
+    return [(u["line"], u["text"]) for u in kbfacts.units(article) if u["path"] == article and u["tags"]]
+
+
+def holds_word(word, text):
+    """Whether `text` holds `word` as written, case aside, not inside a longer word or number (`1.5` in `1.5-second`,
+    not in `v2.1.5` or `1.50`)."""
+    return re.search(r"(?<![\w.])" + re.escape(word.lower()) + r"(?![\w]|\.\w)", text.lower()) is not None
+
+
+def domain_article(res, lead_of=None):
+    """The article whose topic a pack's question lies in, else None: the article of the pack's lead path, and for a
+    `none` pack only when that lead matches more than half of the question's key words the kb knows (`matched`
+    against `known`); a `none` lead with fewer is a stray word match (VMware Horizon led by an Azure OpenAI article)."""
+    if not res.get("paths"):
+        return None
+    if res.get("verdict") == "none" and len(res.get("matched") or []) * 2 <= len(res.get("known") or []):
+        return None
+    return (lead_of or article_of)(res["paths"][0])
+
+
+def held_article(res, lead_of=None, facts=None):
+    """The article that holds the answer to a `none` pack, else None: the pack's lead is an article of the question's
+    domain (`domain_article`), and one of its tagged facts holds, as written, every word the pack says the kb lacks
+    (`lacks`). The pack's words missed a fact that is there (a number with a unit suffix, a spelling its terms do not
+    split), so the miss is a retrieval miss for an eval finding, not a knowledge gap."""
+    lacks = [w for w in res.get("lacks") or [] if isinstance(w, str) and w.strip()]
+    if res.get("verdict") != "none" or not lacks:
+        return None
+    lead = domain_article(res, lead_of)
+    if lead is None or lead != res["paths"][0]:
+        return None
+    lines = (facts or article_facts)(lead)
+    return lead if any(all(holds_word(w, text) for w in lacks) for _, text in lines) else None
 
 
 def miss_findings(e, res, sources=None):
@@ -357,8 +409,9 @@ def later_stage(prev, rec):
 
 def learn(store=None, pack=None, kb_commit=None, registry=None, routes=None, counts=None, out=print):
     """One learn over `store` (default: the local store beside the spool): every judged miss re-run with `pack` on
-    HEAD (a none entry whose fetched pages the kb cites is an eval finding for the article citing them most), the
-    source findings, then one findings file holding only the records that change a finding's state. 0."""
+    HEAD (a none entry whose fetched pages the kb cites is an eval finding for the article citing them most, and so is
+    a miss whose none pack leads with an article holding the words it lacks, `held_article`), the source findings,
+    then one findings file holding only the records that change a finding's state. 0."""
     store = Path(store or places()[0] / "store")
     pack = pack or default_pack
     entries = store_entries(store)
@@ -368,9 +421,11 @@ def learn(store=None, pack=None, kb_commit=None, registry=None, routes=None, cou
     derived, pages = {}, KbPages()
     for _, e in entries:
         if is_miss(e):
+            res = pack(e["question"])
             hit = pages.match(e)  # a false none: the kb cites a page the lookup fetched, so an eval and no gap
-            for rec in miss_findings({**e, "best": hit[0]} if hit else e, pack(e["question"]),
-                                     hit[1] if hit else None):
+            held = None if hit else held_article(res)  # or the pack's lead article holds the words it says it lacks
+            hit = hit or ((held, None) if held else None)
+            for rec in miss_findings({**e, "best": hit[0]} if hit else e, res, hit[1] if hit else None):
                 derived[rec["id"]] = rec
     for rec in source_findings(entries, registry, routes, counts):
         derived[rec["id"]] = rec

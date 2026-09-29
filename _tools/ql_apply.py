@@ -8,7 +8,7 @@ import csv, datetime, re, sys
 from pathlib import Path
 
 from ql_base import HOME, one_line, places, restore, run_cmd, write_text
-from ql_learn import passes, unknown_words
+from ql_learn import article_facts, article_of, domain_article, held_article, passes, unknown_words
 from ql_research import add_under, research_one
 from ql_store import (APPLY_STATES, FIX_KINDS, failed_counts, finding_states, store_entries, write_findings)
 
@@ -70,8 +70,7 @@ class Gate:
 
     def facts(self, article):
         """[(line, text)] of the tagged facts of `article`."""
-        import kbfacts
-        return [(u["line"], u["text"]) for u in kbfacts.units(article) if u["path"] == article and u["tags"]]
+        return article_facts(article)
 
     def title(self, article):
         import kbfacts
@@ -80,14 +79,7 @@ class Gate:
     def article_of(self, path):
         """The qualified article (.md) whose topic holds the qualified `path` (the article itself, a same-stem data
         file or a file its `files:` lists), or None."""
-        import kbfacts
-        arts = kbfacts.articles()
-        if path in arts:
-            return path
-        for topic, files in sorted(kbfacts.topic_files().items()):
-            if path in files:
-                return next((q for q in files if q in arts and arts[q].get("topic") == topic), None)
-        return None
+        return article_of(path)
 
     def topic(self, article):
         """The topic of a qualified article, as its root's ledgers name it: `<domain>/<slug>`."""
@@ -277,15 +269,19 @@ def apply_one(ev, fix, entry, gate, base):
 def gap_one(g, entry, gate, day):
     """The record of one open gap candidate (kind gap, stage candidate-gap), re-run with pack on the working tree: it
     reproduces when it still fails (`passes` without a best article), and it lies in a kb domain when the pack's lead
-    path belongs to an article (a `none` verdict is off the kb's domains). Then a _gaps.md entry under the article's
-    topic, in the article's root, dated `day`, and the finding promoted from candidate-gap to gap (`applied`). []
-    when it passes now (learn records that) or lies outside the kb's domains (it stays a candidate)."""
+    path belongs to an article, for a `none` verdict only with more than half the key words in that lead
+    (`domain_article`). Then a _gaps.md entry under the article's topic, in the article's root, dated `day`, and the
+    finding promoted from candidate-gap to gap (`applied`). Off the kb's domains (no lead, a lead no article holds, a
+    `none` lead with half the key words or fewer) it is `rejected` at candidate-gap: no topic can take its entry. []
+    when it passes now or a `none` pack's lead article holds the words it lacks (`held_article`): learn records both,
+    the second as an eval finding."""
     res = gate.pack(entry["question"])
-    if passes(res, None) or res.get("verdict") == "none" or not res.get("paths"):
+    if passes(res, None) or held_article(res, gate.article_of, gate.facts):
         return []
-    article = gate.article_of(res["paths"][0])
+    article = domain_article(res, gate.article_of)
     if not article:
-        return []
+        return [{**without_observed(g), "state": "rejected",
+                 "observed": {"verdict": res.get("verdict"), "gate": ["off the kb's domains"]}}]
     topic = gate.topic(article)
     path = gate.ledger(article, "_gaps.md")
     text = path.read_text(encoding="utf-8") if path.is_file() else ""
