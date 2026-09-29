@@ -7,11 +7,18 @@ The project has two self-hosted GitLab runners on the same Windows 11 Pro machin
 | `docker-windows` | `docker-windows`, Hyper-V isolation | the Windows service `gitlab-runner` on the host (`C:\GitLab-Runner`), Docker Engine for Windows containers | `kb-tests-windows` |
 | `docker-linux` | `docker` | the service `gitlab-runner` under systemd in the WSL 2 distribution `Ubuntu-24.04` of the local account `kb-runner`, Docker Engine inside it; `concurrent = 1`, at most 4 CPUs and 8 GB | the Linux-image jobs that name `docker-linux` |
 
-Both are project runners, locked to this project, and neither takes untagged jobs: a job reaches them only by naming a tag.
+Both are project runners and neither takes untagged jobs: a job reaches them only by naming a tag. The Linux one is locked to this project; the Windows one is not locked and also carries the tag `windows`.
 
 ## Why WSL for Linux
 
 A `docker-windows` runner runs Windows containers only, and Docker Engine on the host serves Windows containers. Docker Desktop is left out: it switches the one engine between Windows and Linux containers, and the Windows runner needs it in Windows mode all the time. A Linux VM runs the Linux jobs instead, and WSL 2 is the lightest one Windows 11 has.
+
+## The docker-windows runner
+
+1. **Windows features and Docker Engine.** The host has the `Containers` and `Microsoft-Hyper-V` Windows features on, and Docker Engine for Windows containers (Moby) running as the Windows service `docker` from `C:\Program Files\docker` (`dockerd.exe --run-service`). On Windows 10 and 11, Windows Server containers use Hyper-V isolation by default, and Microsoft documents Docker Desktop there; Docker Desktop is left out on this host (Why WSL for Linux, above). For Windows Server, Microsoft's `install-docker-ce.ps1` (learn.microsoft.com/virtualization/windowscontainers/quick-start/set-up-environment) turns on the container features and installs the same engine; how the engine came onto this host is not recorded. Check it with `docker version` (Server: `windows/amd64`) and `Get-Service docker`.
+2. **GitLab Runner as a Windows service.** `gitlab-runner.exe` in `C:\GitLab-Runner`, installed as the service `gitlab-runner` (`.\gitlab-runner.exe install`, then `start`, from an elevated shell; `kb/public/windows/gitlab-runner-windows.md`), running as LocalSystem, start type Automatic, so it runs 24/7 without a sign-in. Restrict write access to that folder: a user who can replace the executable runs code as the service.
+3. **Create and register.** As for the Linux runner, tags and `run_untagged` are set when the runner is created in GitLab (a project runner with the tags `docker-windows` and `windows`, untagged jobs off), and `gitlab-runner register --non-interactive --url https://gitlab.com --token <token> --executor docker-windows --docker-image mcr.microsoft.com/windows/servercore:ltsc2025` takes its token without printing it.
+4. **Its config.toml** (`C:\GitLab-Runner\config.toml`): `concurrent = 1`; the runner's `shell = "powershell"` (Windows PowerShell 5.1, the default for `docker-windows`); under `[runners.docker]`, `isolation = "hyperv"`, the default image above and `volumes = ["c:\\cache"]`. A job's own `image:` replaces the default: `kb-tests-windows` uses `python:3.14-windowsservercore-ltsc2025`. The service rereads the file on change.
 
 ## The docker-linux runner
 
