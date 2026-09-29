@@ -1,0 +1,17 @@
+{
+  "id": "BG-hcn4jesz",
+  "kind": "bug",
+  "title": "codebase-mapping lists dotnet package list --no-restore as a read-only form",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kb/public/agents/codebase-mapping.md, the bullet naming the read-only forms of the mapping commands, and the .NET SNIPPET no longer present dotnet package list --no-restore as read-only, consistent with the bullet after it (with an existing ProjectAssetsFile it builds NuGet's collection targets and any repository target hooked to them); the .NET row of codebase-mapping.csv states the same limit",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import pathlib, sys; sys.exit('read-only forms are `GOTOOLCHAIN=local`, `--no-restore`' in pathlib.Path('kb/public/agents/codebase-mapping.md').read_text(encoding='utf-8'))"
+    ]
+  }
+}
