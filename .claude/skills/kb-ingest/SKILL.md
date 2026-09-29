@@ -13,7 +13,7 @@ Read these sections of the `kb/_self/` docs first, not the whole docs, each with
 - `python3 _tools/selfdoc.py section content-rules "Roots"`
 - `python3 _tools/selfdoc.py section content-rules "CODE: what the implementation does"`
 - `python3 _tools/selfdoc.py section content-rules "Licensing and privacy"`
-- ``python3 _tools/selfdoc.py section plugin "6. A team's own knowledge: roots beside \`kb/public\`"`` (a team's own roots; the escaped backticks are part of the heading)
+- `python3 _tools/selfdoc.py section plugin "6. A team's own knowledge: roots beside kb/public"` (a team's own roots; `section` matches headings without their backticks)
 - `python3 _tools/selfdoc.py section git "Workflow"` (commits and pushes)
 
 Facts on the signals used below: `agents/repository-ingestion.md`. Run each command on its own (no `;`, `&&`, pipes or loops).
