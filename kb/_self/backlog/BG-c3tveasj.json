@@ -2,7 +2,7 @@
   "id": "BG-c3tveasj",
   "kind": "bug",
   "title": "kbingest drift reads a suffix pointer's path instead of the source url's path",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-g5hizdko",
   "sprint": "SP-xourq2gj",
   "priority": "P3",
@@ -31,5 +31,29 @@
     "_tools/kbingest.py",
     "_tools/test_kbingest.py"
   ],
-  "claimed_by": "fix-c3tveasj"
+  "evidence": {
+    "commit": "3622a22f8737c01bf1692aaf93790cc6f5c9d029",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "kbingest"
+        ],
+        "exit": 0,
+        "sha256": "4787d43320bb68cd"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "ingest_drift_suffix_pointer"
+        ],
+        "exit": 0,
+        "sha256": "962b6aec13229213"
+      }
+    ]
+  }
 }
