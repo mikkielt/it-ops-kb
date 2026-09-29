@@ -2,7 +2,7 @@
   "id": "TK-rjkyylzq",
   "kind": "task",
   "title": "Research GitLab push mirroring and push options on self-managed instances",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-mmmn42ks",
   "priority": "P2",
   "rank": 1,
@@ -21,5 +21,6 @@
   "touches": [
     "kb/public/**"
   ],
-  "notes": "Its check passes at HEAD: gitlab/repository-mirroring.md holds push mirroring in every tier (:17, DOC S-4o7kkuoi), pull and bidirectional mirroring Premium (:18), protected-branches-only mirrors (:25), no path filter (:38) and no pull requests through mirroring (:36, :39); gitlab/automated-merge-requests.md holds push options in every tier (:53, DOC S-2d2dlaeq) and auto-merge (:21-25, DOC S-rivqro7b). Only backlog.py done is left."
+  "notes": "Its check passes at HEAD: gitlab/repository-mirroring.md holds push mirroring in every tier (:17, DOC S-4o7kkuoi), pull and bidirectional mirroring Premium (:18), protected-branches-only mirrors (:25), no path filter (:38) and no pull requests through mirroring (:36, :39); gitlab/automated-merge-requests.md holds push options in every tier (:53, DOC S-2d2dlaeq) and auto-merge (:21-25, DOC S-rivqro7b). Only backlog.py done is left.",
+  "claimed_by": "mac-first"
 }
