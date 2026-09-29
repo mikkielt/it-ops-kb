@@ -2,7 +2,7 @@
   "id": "TK-mmpfnlb2",
   "kind": "task",
   "title": "tools.md and the maintaining runbook point to the tools map",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-3p6lizv4",
   "priority": "P2",
   "rank": 0,
@@ -23,5 +23,18 @@
   "depends_on": [
     "TK-xg74cb2a"
   ],
-  "claimed_by": "orchestrator-SP-mqjeanq3"
+  "evidence": {
+    "commit": "62838f1dbe3e8db89d4e5fd768b3c45a0160314e",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/selfdoc.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "3db513ebafdfe3a2"
+      }
+    ]
+  }
 }
