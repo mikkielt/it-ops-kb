@@ -2,7 +2,7 @@
   "id": "BG-lfrc7eev",
   "kind": "bug",
   "title": "kbingest map copies repository-controlled MSBuild property values into the map",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-g5hizdko",
   "sprint": "SP-xourq2gj",
   "priority": "P2",
@@ -32,5 +32,29 @@
     "_tools/test_kbingest.py",
     "_tools/fixtures/kbingest/**"
   ],
-  "claimed_by": "fix-lfrc7eev"
+  "evidence": {
+    "commit": "017f70c8ba393b1974fb0fc355bcaac1bc76cb4b",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "kbingest"
+        ],
+        "exit": 0,
+        "sha256": "4df26ecfabd0692a"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "kbingest_map_dotnet_value_shapes"
+        ],
+        "exit": 0,
+        "sha256": "ce7e97c9d425c266"
+      }
+    ]
+  }
 }
