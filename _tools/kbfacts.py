@@ -1140,7 +1140,7 @@ def specific(st, question, named, known, keys, holders):
 
 
 def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", footer=True, root=None):
-    """Rank fact units for a question and return {verdict, missing, weak_words, groups, sources, text}.
+    """Rank fact units for a question and return {verdict, route, has, lacks, missing, matched, sources, text, ...}.
 
     The corpus is every fact unit plus the untagged bullets, table rows and data rows (Summary, Reference, Examples,
     untagged csv rows), which rank at UNTAGGED_WEIGHT and print with `(no tag)`: a word the kb has anywhere is never
@@ -1159,8 +1159,11 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
     `check:` note (verdict unchanged) when a name the question uses is nowhere in the lead article, or when no tagged
     fact among the top hits holds half of 4+ key words. A word that is a product alias (_tools/aliases.csv) counts as present where any alias of the product is;
     the other aliases rank at a lower weight but never count as key words. `budget` is in tokens (about 3.5
-    characters each) and bounds the text. fmt `concise` drops the article flags and the source url footer;
-    footer=False leaves the footer out of the text (pack_many prints one shared footer). `domain` (bare `intune`
+    characters each) and bounds the text. A `weak` or `none` pack, and a flagged `good` one (a `check:` line, or a
+    word nowhere in the kb), also prints `route:` (`split`, or `web` for a `none`), `kb has:` (the question's own words
+    the best article matches) and `kb lacks:` (its informative words it does not match), after the coverage, check:,
+    freshness: and none-sentence lines; `route` is None for a clean `good` pack, whose text has no such line. fmt
+    `concise` drops the article flags and the source url footer; footer=False leaves the footer out of the text (pack_many prints one shared footer). `domain` (bare `intune`
     or qualified `public/intune`) and `root` narrow the units (scope()); paths print qualified (`public/intune/x.md`)."""
     st = store(scope(domain, root))
     ranked, keys, holders, kdf = rank(st, question)
@@ -1296,6 +1299,10 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
         out.append(fresh)
     if verdict == "none":
         out.append("The kb does not cover this. Do not answer from the hits below; say so, or research it with /kb-research.")
+    route = route_of(verdict, unmatched, spread, missing)
+    has, lacks = own_words(question, hit), own_words(question, [t for t in informative if t not in hit])
+    if route:
+        out += [f"route: {route}", f"kb has: {', '.join(has) or '-'}", f"kb lacks: {', '.join(lacks) or '-'}"]
     for h, items in groups if verdict != "none" else [(g[0], g[1][:2]) for g in groups[:1]]:
         out += ["", h] + items
     if verdict == "none":
@@ -1303,8 +1310,31 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
     if srcs and footer and not concise:
         out += ["", "sources:"] + format_sources(srcs)
     return {"verdict": verdict, "missing": missing, "matched": sorted(hit), "informative": informative, "known": known,
-            "unmatched": unmatched, "spread": spread, "paths": paths, "sources": [s[0] for s in srcs], "source_rows": srcs,
-            "text": "\n".join(out)}
+            "unmatched": unmatched, "spread": spread, "route": route, "has": has, "lacks": lacks, "paths": paths,
+            "sources": [s[0] for s in srcs], "source_rows": srcs, "text": "\n".join(out)}
+
+
+def route_of(verdict, unmatched, spread, missing):
+    """Where a question goes after the pack: None (answer from the pack), `split` (the kb has part of it: answer what
+    the pack holds, look up what it lacks in the live docs) or `web` (the kb does not cover it). A `good` pack is
+    flagged, and routes `split`, when it has a `check:` line (`unmatched`, `spread`) or a word nowhere in the kb
+    (`missing`); a clean `good` routes nowhere."""
+    if verdict == "none":
+        return "web"
+    if verdict == "weak" or unmatched or spread or missing:
+        return "split"
+    return None
+
+
+def own_words(question, stems):
+    """The question's own words, in question order, whose stems are in `stems` (each stem once, the first spelling):
+    the stems the verdict counts, mapped back the way kb_hook.respond names the missing words."""
+    want, out = set(stems), {}
+    for w in WORD.findall(question):
+        t = stem(w.lower())
+        if w.lower() not in STOP and len(w) > 1 and t in want:
+            out.setdefault(t, w)
+    return list(out.values())
 
 
 LATEST = re.compile(r"(?i)\b(latest|newest|most recent)\b|\bcurrent (version|release|build)\b")
@@ -1346,14 +1376,18 @@ def pack_many(questions, budget=1200, domain=None, fmt="detailed", root=None):
     """One pack per question (1-6), each with its own coverage verdict, and one shared source footer:
     {verdict (the worst), results, text}. A single question gives exactly pack()'s text. With 3 or more questions
     each part gets 2 * budget / n tokens, at least PART_BUDGET_MIN (never more than budget): measured on the eval set,
-    800 tokens keep 98% of the expected article's fact lines that 1200 print, and a 6-part pack shrinks by a third."""
+    800 tokens keep 98% of the expected article's fact lines that 1200 print, and a 6-part pack shrinks by a third.
+    `route` is the overall route of the parts, printed as the pack's first line: `web` when every part routes web,
+    else `split` when any part routes; None (no line) when none does. One question gives its pack's route."""
     qs = [q.strip() for q in questions if q and q.strip()][:MAX_QUESTIONS]
     if len(qs) == 1:
         res = pack(qs[0], budget, domain, fmt=fmt, root=root)
-        return {"verdict": res["verdict"], "results": [res], "text": res["text"]}
+        return {"verdict": res["verdict"], "route": res["route"], "results": [res], "text": res["text"]}
     part = budget if len(qs) < 3 else max(min(budget, PART_BUDGET_MIN), 2 * budget // len(qs))
     results = [pack(q, part, domain, fmt=fmt, footer=False, root=root) for q in qs]
-    out, seen, srcs = [], set(), []
+    routes = [r["route"] for r in results if r["route"]]
+    route = None if not routes else "web" if all(r["route"] == "web" for r in results) else "split"
+    out, seen, srcs = ([f"route: {route}"] if route else []), set(), []
     for i, (q, res) in enumerate(zip(qs, results), start=1):
         out += [f"# Q{i}: {q}", res["text"], ""]
         for row in res["source_rows"]:
@@ -1363,7 +1397,7 @@ def pack_many(questions, budget=1200, domain=None, fmt="detailed", root=None):
     if srcs and fmt != "concise":
         out += ["sources:"] + format_sources(srcs)
     order = ("none", "weak", "good")
-    return {"verdict": min((r["verdict"] for r in results), key=order.index), "results": results,
+    return {"verdict": min((r["verdict"] for r in results), key=order.index), "route": route, "results": results,
             "text": "\n".join(out).rstrip()}
 
 
