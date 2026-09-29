@@ -2,7 +2,7 @@
   "id": "BG-xue7xm6y",
   "kind": "bug",
   "title": "The planted python3.exe conflict test matches any python3.exe line",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-fep4fpsx",
   "priority": "P2",
   "rank": 0,
@@ -34,5 +34,33 @@
     "_tools/test_install_python.py"
   ],
   "notes": "Found by the fresh-context review of SP-fep4fpsx “Windows ready” (ST-xqx3ffyu).",
-  "claimed_by": "windows-laptop"
+  "evidence": {
+    "commit": "811297dc5cfb7b2d6b5f50a0e30d42ed26f50cc1",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "install_python"
+        ],
+        "exit": 0,
+        "sha256": "6cee9e6058c7cb35"
+      },
+      {
+        "run": [
+          "git",
+          "grep",
+          "-q",
+          "-F",
+          "-e",
+          "str(target / \"python3.exe\")",
+          "--",
+          "_tools/test_install_python.py"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
