@@ -2,7 +2,7 @@
   "id": "BG-tmlqud7t",
   "kind": "bug",
   "title": "kb_mcp tests fail in CI when main moved after the pipeline's commit",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-z7a5c76b",
   "priority": "P1",
   "rank": 0,
@@ -32,11 +32,40 @@
   ],
   "touches": [
     "_tools/kb_mcp.py",
-    "_tools/test_kb_mcp.py"
+    "_tools/test_kb_mcp.py",
+    "kb/_self/tools.md"
   ],
   "relates_to": [
     "TK-23djaz5l"
   ],
   "notes": "kb-tests-windows job 16794362441 (pipeline 2891453375, commit 4f99ec627) ran all tests and failed only these two: the runner fetched origin/main 7 commits past the pipeline's commit (the query log's automatic pushes), so kb_pack opened with `kb copy: 7 commits behind origin/main` before `coverage:`. Any CI job on a commit main has moved past fails them, on every OS. It blocks TK-23djaz5l, which needs a successful kb-tests-windows job.",
-  "claimed_by": "windows-laptop"
+  "evidence": {
+    "commit": "1ac42ee1fe3a3efd8d934ac959c3e361aaa9f962",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "test_kb_mcp"
+        ],
+        "exit": 0,
+        "sha256": "d22caa6ac4d7c9c1"
+      },
+      {
+        "run": [
+          "git",
+          "grep",
+          "-q",
+          "-e",
+          "KB_NO_UPSTREAM",
+          "--",
+          "_tools/kb_mcp.py",
+          "_tools/test_kb_mcp.py"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
