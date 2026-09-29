@@ -2,7 +2,7 @@
   "id": "TK-rcspiyvx",
   "kind": "task",
   "title": "backlog.py check validates an item's knowledge asks and refs",
-  "status": "draft",
+  "status": "todo",
   "parent": "ST-ireqmpda",
   "priority": "P2",
   "rank": 0,
