@@ -2183,6 +2183,8 @@ def gate(r, up, fix_check=False):
 
 
 CODE_BRANCH_PREFIX = "code/"  # a range with a code-lane commit goes to code/<id>, never to main
+LANE_BRANCH = "main"  # lanes route a push to this branch only; a push to another branch (a cloud session's working
+# branch, which its git proxy allows alone) goes to that branch whatever its lane
 NO_PUSH_OPTIONS = re.compile(r"receiving end does not support push options", re.I)
 
 
@@ -2192,9 +2194,12 @@ def push_options(target):
             "merge_request.remove_source_branch"]
 
 
-def lane_plan(up, rev):
+def lane_plan(up, rev, target=LANE_BRANCH):
     """(lane, branch) of the commits up..REV (all of REV's history without UP): the branch is code/<id> for a range
-    with a code-lane commit, else None. <id> is the first KB-Work id in the range, else REV's short hash."""
+    with a code-lane commit, else None. <id> is the first KB-Work id in the range, else REV's short hash. A push to a
+    TARGET branch other than LANE_BRANCH is not routed: (None, None)."""
+    if target != LANE_BRANCH:
+        return None, None
     lanes = kblane.commit_lanes(KB, [f"{up}..{rev}"] if up else [rev])
     if lanes is None or not any(lane == kblane.CODE for _, lane, _ in lanes):
         return kblane.CONTENT, None
@@ -2273,8 +2278,8 @@ def sync_once(a, r):
     print(f"{target}: local {ahead} ahead, {behind} behind" + ("" if up else f" ({a.branch} does not exist on {a.remote} yet)"))
 
     if a.dry_run:
-        lane, branch = lane_plan(up, orig)
-        print(f"lane: {lane}; " + (f"would push branch {branch} with merge-request push options, {a.branch} would not move"
+        lane, branch = lane_plan(up, orig, a.branch)
+        print(f"lane: {lane or f'not routed (a push to {a.branch})'}; " + (f"would push branch {branch} with merge-request push options, {a.branch} would not move"
                                     if branch else f"would push to {target}"))
         if behind:
             incoming, local = names("diff", "--name-only", base, up), names("diff", "--name-only", base, orig)
@@ -2322,7 +2327,7 @@ def sync_once(a, r):
     if not now_ahead:
         r["pushed"] = "nothing to push"
         return 0
-    lane, branch = lane_plan(up, "HEAD")
+    lane, branch = lane_plan(up, "HEAD", a.branch)
     if branch:
         print(f"lane: code; pushing branch {branch}, {a.branch} does not move")
         return push_branch(a, r, branch, target)
