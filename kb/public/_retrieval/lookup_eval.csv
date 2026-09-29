@@ -255,3 +255,7 @@ EV-keep-claude-code-reading-generated-vendored,keep Claude Code from reading gen
 EV-copilot-cursor-codex-aider-get-codebase,"how do Copilot, Cursor, Codex and Aider get codebase context without loading the whole repository",agents/coding-agent-codebase-context.md,good,
 EV-coding-agent-find-relevant-code-large,how does a coding agent find relevant code in a large repository without loading the whole codebase,agents/coding-agent-codebase-context.md;claude/large-codebases.md,good,yes
 EV-dataverse-mcp-server-connect-agents,Dataverse MCP server connect agents,dsc/mcp-server.md,good,
+EV-github-rulesets-branch-protection-public-repository,GitHub rulesets branch protection public repository,gitlab/github-branch-rules-and-auto-merge.md,good,
+EV-github-auto-merge-pull-request-required,GitHub auto-merge pull request required status checks,gitlab/github-branch-rules-and-auto-merge.md,good,
+EV-gitlab-push-mirroring-tier-self-managed,GitLab push mirroring tier self-managed,gitlab/repository-mirroring.md,good,
+EV-ci-tell-merge-request-merge-direct,How does CI tell a merge request merge from a direct push to the default branch,gitlab/detecting-mr-merges-in-ci.md,good,

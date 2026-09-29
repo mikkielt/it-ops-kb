@@ -384,3 +384,7 @@ x-ms-agentic-protocol,agents/copilot-studio-mcp-client
 mcp-streamable-1.0,agents/copilot-studio-mcp-client
 powerplatformplex,agents/copilot-studio-mcp-client
 azureconnectors,agents/copilot-studio-mcp-client
+CI_COMMIT_BEFORE_SHA,gitlab/detecting-mr-merges-in-ci
+GITHUB_EVENT_PATH,gitlab/detecting-mr-merges-in-ci
+commits/:sha/merge_requests,gitlab/detecting-mr-merges-in-ci
+remote_mirrors,gitlab/repository-mirroring

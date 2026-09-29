@@ -1085,3 +1085,17 @@ Still open: (topic: auth/configmgr-rbac-auth)
 
 - **MCP connectors over the delegated subnet or the on-premises data gateway.** Custom connectors are VNet-supported (S-kyrgum3q) and gateway-capable in Power Automate (S-6x6bb2f3), but no page states that a connector with `x-ms-agentic-protocol: mcp-streamable-1.0` runs through either; checked the Copilot Studio MCP pages (S1964, S-rstajp7g, S-m75y4u2y, S-rvnsf5ty), the Copilot Studio VNet page (S-gcbkqdo3) and the custom connector overview (S-nt2bmgtl) on 2026-09-29. Needs a lab test or a Microsoft statement. (topic: agents/copilot-studio-mcp-client)
 - **Copilot Studio's MCP client protocol details.** The protocol version it sends in `initialize`, whether it keeps `Mcp-Session-Id` sessions, whether it reads server `instructions` or tool annotations, and which tool-result content types (text, image, embedded resource, `structuredContent`) it shows are not documented on the Copilot Studio MCP pages, the GitHub Copilot harness MCP page (S-adugdkcv) or the Azure MCP Server guide (S-wpjbqofq), read 2026-09-29. Needs a request log from a test server. (topic: agents/copilot-studio-mcp-client)
+
+## gitlab/detecting-mr-merges-in-ci
+
+- **Which `CI_PIPELINE_SOURCE` the default-branch pipeline has after a merge request merge.** The predefined variables and job rules pages (docs.gitlab.com, master @9f1632e2, 2026-09-29) list the sources and say `push` is a Git push, but no page read says whether the pipeline that follows a merge has source `push` or another, or how it differs from a direct push; the Commits API association is the documented signal. Needs a page that states it or a lab run. [UNK] (topic: gitlab/detecting-mr-merges-in-ci)
+- **The permission the GitHub Actions workflow token needs for `GET /repos/{owner}/{repo}/commits/{commit_sha}/pulls`.** The OpenAPI description read (rest-api-description @2f44eaca) gives the parameters and responses but the permissions page for the endpoint was not read (2026-09-29); needs the REST permissions reference. [UNK] (topic: gitlab/detecting-mr-merges-in-ci)
+
+## gitlab/github-branch-rules-and-auto-merge
+
+- **The text GitHub prints when a ruleset (not a branch protection rule) refuses a push** (`GH013`?): only `GH006` for branch protection is in the docs pages read (about-protected-branches, troubleshooting rulesets, 2026-09-29); needs the page that lists the ruleset refusal message. [UNK] (topic: gitlab/github-branch-rules-and-auto-merge)
+- **Whether the ruleset "Evaluate" enforcement status is available on a public repository with the Free plan.** The source text names it only under a plan condition (`repo-rules-enterprise`), so the plan is not stated in plain words (2026-09-29). [UNK] (topic: gitlab/github-branch-rules-and-auto-merge)
+
+## gitlab/repository-mirroring
+
+- **Whether GitLab Community Edition (as opposed to the Free tier of the Enterprise Edition) lacks any Free-tier feature named in the git-regime pages** (push mirroring, push options, protected branches, server hooks): the docs label pages by tier and offering (GitLab Self-Managed), not by edition; the pages read (2026-09-29) do not mention Community Edition. Needs the edition comparison page. [UNK] (topic: gitlab/repository-mirroring)
