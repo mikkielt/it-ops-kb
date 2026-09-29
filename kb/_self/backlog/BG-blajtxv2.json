@@ -2,7 +2,7 @@
   "id": "BG-blajtxv2",
   "kind": "bug",
   "title": "kbingest map's dotnet package list step can run repository targets",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-g5hizdko",
   "sprint": "SP-xourq2gj",
   "priority": "P2",
@@ -50,5 +50,29 @@
   "links": [
     "kb/public/agents/codebase-mapping.md:174"
   ],
-  "claimed_by": "fix-blajtxv2"
+  "evidence": {
+    "commit": "33084b30d5b2aacde137735e73eeed425b100b20",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "kbingest"
+        ],
+        "exit": 0,
+        "sha256": "b38b9ab112993d23"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "kbingest_map_dotnet_no_package_list"
+        ],
+        "exit": 0,
+        "sha256": "2ea0f8d8f71827fc"
+      }
+    ]
+  }
 }
