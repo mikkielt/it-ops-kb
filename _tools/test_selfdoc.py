@@ -3,7 +3,9 @@
 TestSelfdocRules   map globs (`*` within a directory, `**` across, `-` never), the map reader, describing().
 TestSelfdocSection section DOC HEADING: the section down to the next heading of its level, subsections kept, fenced
                    code and front matter never headings, case-insensitive, `##` pins the level, no match exits 1;
-                   several DOC HEADING pairs print in order in one call, a missing one exits 1, the rest still print.
+                   several DOC HEADING pairs print in order in one call, a missing one exits 1, the rest still print;
+                   every section command the skills and kb-worker.md name exits 0 and holds no backtick or `$(`
+                   (read differently by Bash and PowerShell) (`-k skill_section_headings`).
 TestSelfdocToolsMap map-tools: modules, classes, defs, methods and tests with file:line and the first docstring line,
                    FILE narrows it, a mapped name missing from the code (or a def missing from the map) fails
                    check_map, and every _tools file of this repository parses and holds.
@@ -171,25 +173,107 @@ class TestSelfdocSection:
             selfdoc.main(["section", "backlog", "Definition of done", "maintaining"])
         assert e.value.code == 2 and "has no HEADING" in capsys.readouterr().err, "an odd count is a usage error"
 
-    def test_selfdoc_sections_the_skills_name_resolve(self, capsys):
-        """Each `selfdoc.py section` command in a skill or in kb-worker.md is well formed and every pair it names
-        resolves (a renamed heading breaks it); a skill that reads several sections names them in one command."""
+    def test_skill_section_headings_resolve_and_parse_in_both_shells(self, capsys):
+        """Every `selfdoc.py section` command in a skill or in kb-worker.md, read from the files as they are now, is
+        DOC HEADING pairs that exits 0 (a renamed heading breaks it) and holds no character Bash and PowerShell read
+        differently; a skill that reads several sections names them in one command."""
         files = sorted(glob.glob(os.path.join(selfdoc.KB, ".claude", "skills", "*", "SKILL.md")))
         files.append(os.path.join(selfdoc.KB, ".claude", "agents", "kb-worker.md"))
         seen = 0
         for f in files:
             with open(f, encoding="utf-8") as fh:
                 text = fh.read()
-            rel = os.path.relpath(f, selfdoc.KB)
+            rel = os.path.relpath(f, selfdoc.KB).replace(os.sep, "/")
             assert not re.search(r"^- `python3 _tools/selfdoc\.py section [^`]+`.*\n- `python3 _tools/selfdoc\.py section ",
                                  text, re.M), f"{rel} lists several section reads as separate commands"
-            for cmd in re.findall(r"python3 _tools/selfdoc\.py section ([^`\n]+)", text):
-                args = shlex.split(cmd)
-                assert args and len(args) % 2 == 0, f"{rel}: {cmd!r} is not DOC HEADING pairs"
-                assert selfdoc.main(["section", *args]) == 0, f"{rel}: {cmd!r}: {capsys.readouterr().out[-300:]}"
-                capsys.readouterr()
+            cmds = section_commands(text)
+            assert len(cmds) == text.count(SECTION_CMD), f"{rel}: a section command outside a code span or fence"
+            for cmd in cmds:
+                assert not shell_problems(cmd), f"{rel}: {cmd!r} holds {shell_problems(cmd)}"
+                code, out = run_section(cmd, capsys)
+                assert code == 0, f"{rel}: {cmd!r} exits {code}: {out[-300:]}"
                 seen += 1
         assert seen, "no section command found in the skills"
+
+    def test_skill_section_headings_finds_commands_in_spans_and_fences(self):
+        text = ('Read `python3 _tools/selfdoc.py section backlog "Git"` first.\n'
+                '- ``python3 _tools/selfdoc.py section plugin "roots beside \\`kb/public\\`"`` (escaped)\n'
+                '```\npython3 _tools/selfdoc.py section maintaining "Conduct for changes" git "Workflow"\n```\n'
+                'Prose `selfdoc.py section` is no command.\n')
+        assert section_commands(text) == [
+            'python3 _tools/selfdoc.py section backlog "Git"',
+            'python3 _tools/selfdoc.py section plugin "roots beside \\`kb/public\\`"',
+            'python3 _tools/selfdoc.py section maintaining "Conduct for changes" git "Workflow"']
+
+    def test_skill_section_headings_planted_renamed_heading_fails(self, capsys):
+        """The planted failure: a skill names a heading its doc does not have (one renamed since)."""
+        code, out = run_section('python3 _tools/selfdoc.py section backlog "Definition of finished"', capsys)
+        assert code == 1 and "NO SECTION 'Definition of finished'" in out
+        code, _ = run_section('python3 _tools/selfdoc.py section backlog "Definition of done" maintaining', capsys)
+        assert code != 0, "an odd count is no DOC HEADING pairs"
+        assert run_section('python3 _tools/selfdoc.py section backlog "Definition of done"', capsys)[0] == 0
+
+    @pytest.mark.parametrize("cmd, problem", [
+        ('python3 _tools/selfdoc.py section plugin "roots beside \\`kb/public\\`"', "backslash-escaped backtick"),
+        ('python3 _tools/selfdoc.py section plugin "roots beside `kb/public`"', "backtick"),
+        ('python3 _tools/selfdoc.py section backlog "$(whoami)"', "$("),
+    ])
+    def test_skill_section_headings_planted_shell_specific_command_fails(self, cmd, problem):
+        """The planted failure: a command that parses in one shell only (the kb-ingest command BG-v2xwgr6m fixed)."""
+        assert problem in shell_problems(cmd)
+        assert not shell_problems('python3 _tools/selfdoc.py section plugin "6. A team\'s own knowledge: roots beside kb/public"')
+
+
+SECTION_CMD = "python3 _tools/selfdoc.py section"
+# what Bash and PowerShell read differently: the backtick is PowerShell's escape character (so a backslash-escaped
+# backtick escapes the character after it, a closing quote included), and `$(` runs a subexpression in both
+SHELL_SPECIFIC = (("\\`", "backslash-escaped backtick"), ("`", "backtick"), ("$(", "$("))
+
+
+def section_commands(text):
+    """The `selfdoc.py section` commands in Markdown TEXT as written: a fenced line starting with one, or the content of
+    an inline code span of any backtick run that holds one (from the command on), so an escaped backtick stays in."""
+    cmds, fence = [], None
+    for line in text.splitlines():
+        m = re.match(r"\s*(`{3,}|~{3,})", line)
+        if m and (fence is None or (m.group(1)[0] == fence[0] and len(m.group(1)) >= len(fence))):
+            fence = m.group(1) if fence is None else None
+            continue
+        if fence is not None:
+            if line.strip().startswith(SECTION_CMD):
+                cmds.append(line.strip())
+            continue
+        for m in re.finditer(r"(?<!`)(`+)(?!`)(.+?)(?<!`)\1(?!`)", line):
+            body = m.group(2)
+            if SECTION_CMD in body:
+                cmds.append(body[body.index(SECTION_CMD):].strip())
+    return cmds
+
+
+def shell_problems(cmd):
+    """The names of what CMD holds that Bash and PowerShell read differently; [] when it holds none."""
+    found, rest = [], cmd
+    for chars, name in SHELL_SPECIFIC:
+        if chars in rest:
+            found.append(name)
+            rest = rest.replace(chars, "")
+    return found
+
+
+def run_section(cmd, capsys):
+    """(exit code, output) of a `selfdoc.py section` command run with the argv a POSIX shell splits it into."""
+    capsys.readouterr()
+    try:
+        args = shlex.split(cmd[len(SECTION_CMD):])
+    except ValueError as e:
+        return 2, f"does not split: {e}"
+    try:
+        code = selfdoc.main(["section", *args])
+    except SystemExit as e:
+        code = e.code if isinstance(e.code, int) else 2
+    out = capsys.readouterr()
+    return code, out.out + out.err
+
 
 SAMPLE = '''\
 """Sample tool: does one thing.

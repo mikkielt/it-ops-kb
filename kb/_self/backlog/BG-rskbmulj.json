@@ -1,0 +1,21 @@
+{
+  "id": "BG-rskbmulj",
+  "kind": "bug",
+  "title": "A kb/_self heading rename does not select the test of the skills' section commands",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "testmap.py selects _tools/test_selfdoc.py (at least its skill_section_headings tests) for a change to a kb/_self/*.md doc, so renaming a heading a skill reads with selfdoc.py section fails the gate of the change that renames it",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import subprocess, sys; out = subprocess.run([sys.executable, '_tools/testmap.py', 'select', '--paths', 'kb/_self/backlog.md'], capture_output=True, text=True).stdout.split(); print(out); sys.exit(0 if 'all' in out or any(s.startswith('_tools/test_selfdoc.py') for s in out) else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/testmap.py",
+    "_tools/test_testmap.py"
+  ]
+}
