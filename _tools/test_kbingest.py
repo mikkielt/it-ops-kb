@@ -535,6 +535,30 @@ def test_kbingest_map_git_symlink_checked_out_as_file_is_not_read(tmp_path):
 
 
 @requires_git
+def test_kbingest_map_dotnet_global_json_git_symlink_is_not_a_regular_file(tmp_path):
+    """Planted: a global.json git stores as a symbolic link (mode 120000), checked out as a plain file whose text is
+    valid JSON (core.symlinks=false, as on Windows): the .NET preflight declines it from git's mode, never reads it."""
+    r = Repo(tmp_path / "sdklink")
+    Path(r.path).mkdir()
+    r.git("init", "-q", "-b", "main")
+    r.git("config", "core.symlinks", "false")
+    r.write("app/app.csproj", "<Project Sdk=\"Microsoft.NET.Sdk\" />\n")
+    (tmp_path / "target.txt").write_text('{"sdk": {"version": "10.0.100"}}', encoding="utf-8")
+    blob = r.git("hash-object", "-w", str(tmp_path / "target.txt")).strip()
+    r.git("update-index", "--add", "--cacheinfo", f"120000,{blob},global.json")
+    r.git("add", "app/app.csproj")
+    r.git("commit", "-q", "-m", "init")
+    links = kbingest.symlinks(r.path, "HEAD")
+    assert links == {"global.json"}
+    tree = tmp_path / "tree"
+    (tree / "app").mkdir(parents=True)
+    (tree / "global.json").write_text('{"sdk": {"version": "10.0.100"}}', encoding="utf-8")  # as the checkout writes it
+    ctx = kbingest.MapCtx(tree, {}, 1, "dotnet", links)
+    assert kbingest.DotnetMapper().preflight(ctx, ["app/app.csproj"]) == \
+        "global.json: not a regular file, .NET not mapped and no dotnet command run"
+
+
+@requires_git
 def test_kbingest_map_refusals(pyrepo, tmp_path):
     kb = Path(kbingest.kbcommon.KB_DIR)
     code, text = map_run(pyrepo, kb / "public" / "map.json")
@@ -1315,6 +1339,48 @@ def test_kbingest_map_relative_path_entry_is_resolved_against_the_caller_not_the
     monkeypatch.chdir(caller)
     r = kbingest.run_tool(["probe"], tree, {"PATH": "bin"}, 30)
     assert r.rc == 0 and r.out.strip() == b"caller"
+
+
+def plant_program(folder, name, text):
+    """A program NAME in FOLDER that prints TEXT: NAME.cmd on Windows, an executable script elsewhere."""
+    folder.mkdir(parents=True, exist_ok=True)
+    if os.name == "nt":
+        (folder / f"{name}.cmd").write_text(f"@echo {text}\r\n", encoding="utf-8", newline="")
+    else:
+        (folder / name).write_text(f"#!/bin/sh\necho {text}\n", encoding="utf-8", newline="\n")
+        (folder / name).chmod(0o755)
+
+
+@requires_git
+def test_kbingest_map_which_ignores_parent_cwd(tmp_path, monkeypatch):
+    """Planted: a program of the mapper tool's name in this process's working folder, which is the source clone
+    (`map .`) or the worktree root, with a relative PATH entry naming it, and the host's own program on PATH. On
+    Windows shutil.which searches the working folder first unless this process's own environment has
+    NoDefaultCurrentDirectoryInExePath, so the variable is removed here: only the installed program may be chosen."""
+    monkeypatch.delenv("NoDefaultCurrentDirectoryInExePath", raising=False)
+    installed, tree = tmp_path / "usr", tmp_path / "tree"
+    plant_program(installed, "kbprobe", "installed")
+    plant_program(tree, "kbprobe", "planted")
+    env = kbingest.scrub_env({"PATH": os.pathsep.join([".", str(installed)])}, root=tree)
+    monkeypatch.chdir(tree)
+    exe, inside = kbingest.tool_exe("kbprobe", env, tree)
+    assert exe is not None and Path(exe).parent == installed and inside is False, exe
+    r = kbingest.run_tool(["kbprobe"], tree, env, 30)
+    assert r.rc == 0 and r.out.strip() == b"installed", r
+    assert kbingest.which("kbprobe", "") is None  # no PATH: nothing, never the working folder
+    # the whole map, run from the source clone that holds the planted program at its root (so does the worktree)
+    mark = tmp_path / "ran.txt"
+    monkeypatch.setenv("KB_TEST_MARK", str(mark))
+    shim = ({"fakemap.cmd": '@echo ran> "%KB_TEST_MARK%"\r\n'} if os.name == "nt"
+            else {"fakemap": '#!/bin/sh\necho ran > "$KB_TEST_MARK"\n'})
+    r = commit_files(tmp_path / "clone", {"a.fake": "x\n", **shim})
+    for name in shim:
+        os.chmod(r.file(name), 0o755)
+    install_fake(tmp_path, monkeypatch)
+    monkeypatch.chdir(r.path)
+    code, doc = fake_map(r, tmp_path, monkeypatch, FakeMapper())
+    assert not mark.exists(), ("the repository's fakemap ran", doc["notes"])
+    assert code == 0 and doc["tools"]["fake"]["tool"] == "fakemap", doc
 
 
 def pid_alive(pid):
