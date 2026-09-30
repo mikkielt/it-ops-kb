@@ -2,7 +2,7 @@
   "id": "ST-5xyif4af",
   "kind": "story",
   "title": "The clean-account setup run is a repository script, so the fresh-host report can be re-run",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-5p4ahbnq",
   "sprint": "SP-hlfwfcx6",
   "priority": "P2",
@@ -18,5 +18,19 @@
       ]
     }
   ],
-  "claimed_by": "win-first"
+  "evidence": {
+    "commit": "27240e4e52e60d66f176f2abec24f58b23b7e5c7",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "clean_account_script"
+        ],
+        "exit": 0,
+        "sha256": "cb91c337d50ca8ce"
+      }
+    ]
+  }
 }
