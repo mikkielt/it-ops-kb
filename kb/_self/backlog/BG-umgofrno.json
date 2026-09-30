@@ -1,0 +1,25 @@
+{
+  "id": "BG-umgofrno",
+  "kind": "bug",
+  "title": "Sprint landing steps rebase on local main, which an orchestrator in its own worktree cannot move",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "/kb-sprint run step 4 and kb/_self/backlog.md (Working on items, One item and A sprint) name the ref an orchestrator in its own clone or worktree rebases onto: origin/main after git fetch, not local main, which another worktree has checked out (git refuses to check it out or rebase it there) and which falls behind; the text no longer contradicts the own-worktree rule. Found by the SP-rhgeod5g review.",
+  "repro": {
+    "run": [
+      "git",
+      "grep",
+      "-q",
+      "-e",
+      "rebase the branch on `origin/main`",
+      "--",
+      ".claude/skills/kb-sprint/SKILL.md"
+    ]
+  },
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/backlog.md"
+  ]
+}

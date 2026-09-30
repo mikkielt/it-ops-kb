@@ -1,0 +1,26 @@
+{
+  "id": "BG-2t2fdfol",
+  "kind": "bug",
+  "title": "The rule for a bug filed while landing leaves out that the bug must join a started sprint",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kb/_self/backlog.md (A bug filed while landing), /kb-sprint run step 4 and /kb-item Land say the bug is filed with --sprint SP (or its sprint field set to an active sprint) before its claim, since check-trailers (kbgit.py work_state) refuses a KB-Work id not in a started sprint and backlog.py new bug sets no sprint without --sprint. Found by the SP-rhgeod5g review.",
+  "repro": {
+    "run": [
+      "git",
+      "grep",
+      "-q",
+      "-e",
+      "--sprint",
+      "--",
+      ".claude/skills/kb-item/SKILL.md"
+    ]
+  },
+  "touches": [
+    "kb/_self/backlog.md",
+    ".claude/skills/kb-sprint/SKILL.md",
+    ".claude/skills/kb-item/SKILL.md"
+  ]
+}

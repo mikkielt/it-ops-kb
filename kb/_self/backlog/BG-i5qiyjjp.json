@@ -1,0 +1,24 @@
+{
+  "id": "BG-i5qiyjjp",
+  "kind": "bug",
+  "title": "kb-sprint close cleanup compares branches against a stale local main from the orchestrator's worktree",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "The /kb-sprint close cleanup fetches first and compares each branch against the integration ref (origin/main), not local main, in git cherry and in the git log trailer test: from an orchestrator in its own worktree local main stays behind (git refuses to move a branch another worktree has checked out), so git cherry main work/<id> printed about 140 '+' lines for a landed branch and the cleanup would keep every branch. Found by the SP-rhgeod5g review.",
+  "repro": {
+    "run": [
+      "git",
+      "grep",
+      "-q",
+      "-e",
+      "git cherry origin/main",
+      "--",
+      ".claude/skills/kb-sprint/SKILL.md"
+    ]
+  },
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md"
+  ]
+}

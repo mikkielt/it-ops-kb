@@ -1,0 +1,24 @@
+{
+  "id": "BG-6a7jiylf",
+  "kind": "bug",
+  "title": "kb-sprint close never recognises the harness's worktree-agent branches, which carry no commits",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "The /kb-sprint close cleanup also removes a worktree-agent-<x> branch the harness created for a sprint subagent: such a branch stays at its base commit while the subagent works on work/<id>, so it has no commits and no KB-Work trailers and the trailer test never matches it. The skill counts it as the sprint's when .claude/worktrees/agent-<x> had one of the sprint's work/<id> branches checked out (git worktree list --porcelain, read before removal) and removes it when it has no commits beyond origin/main. Found by the SP-rhgeod5g review.",
+  "repro": {
+    "run": [
+      "git",
+      "grep",
+      "-q",
+      "-e",
+      "no commits beyond",
+      "--",
+      ".claude/skills/kb-sprint/SKILL.md"
+    ]
+  },
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md"
+  ]
+}
