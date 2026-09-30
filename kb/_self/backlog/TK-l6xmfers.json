@@ -2,7 +2,7 @@
   "id": "TK-l6xmfers",
   "kind": "task",
   "title": "Docs name the kg_* modules",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-3i3dl6xg",
   "priority": "P2",
   "rank": 4,
@@ -33,5 +33,28 @@
   "depends_on": [
     "TK-gdwb7udj"
   ],
-  "claimed_by": "orchestrator-SP-rks3vx5g"
+  "evidence": {
+    "commit": "c3843acd9d69c4a012f4fd344170f2ed39252f63",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "selfdoc"
+        ],
+        "exit": 0,
+        "sha256": "16fd0c064464d94b"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/selfdoc.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "3db513ebafdfe3a2"
+      }
+    ]
+  }
 }
