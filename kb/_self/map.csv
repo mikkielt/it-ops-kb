@@ -24,6 +24,7 @@ kb/_self/tools.md,_tools/kb_hook.py
 kb/_self/tools.md,_tools/kb_ask.py
 kb/_self/tools.md,_tools/agent_bench.py
 kb/_self/tools.md,_tools/benchmarks.py
+kb/_self/tools.md,_tools/bench_*.py
 kb/_self/tools.md,_tools/doc2query.py
 kb/_self/tools.md,_tools/kbid.py
 kb/_self/tools.md,_tools/check.py
