@@ -2,7 +2,7 @@
   "id": "BG-gaz4xr7l",
   "kind": "bug",
   "title": "The name check misses Windows' 8.3 short form of a long profile name, which temp paths carry",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-5p4ahbnq",
   "sprint": "SP-2agxqrrv",
   "priority": "P1",
@@ -22,5 +22,19 @@
     "_tools/test_backlog.py",
     "kb/_self/backlog.md"
   ],
-  "claimed_by": "win-first"
+  "evidence": {
+    "commit": "976f9c39bbdf23ff7ae379c2bf6823556d4b7eeb",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "item_holds_host_names_short_form"
+        ],
+        "exit": 0,
+        "sha256": "cffe566ee597d19e"
+      }
+    ]
+  }
 }

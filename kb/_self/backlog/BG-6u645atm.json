@@ -2,7 +2,7 @@
   "id": "BG-6u645atm",
   "kind": "bug",
   "title": "Only backlog.py check withholds a host or user name: list, tree, show, claim and done print it",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-5p4ahbnq",
   "sprint": "SP-2agxqrrv",
   "priority": "P1",
@@ -22,5 +22,19 @@
     "_tools/test_backlog.py",
     "kb/_self/backlog.md"
   ],
-  "claimed_by": "win-first"
+  "evidence": {
+    "commit": "976f9c39bbdf23ff7ae379c2bf6823556d4b7eeb",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "never_printed_by_any_command"
+        ],
+        "exit": 0,
+        "sha256": "787347457d20c028"
+      }
+    ]
+  }
 }
