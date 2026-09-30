@@ -2,7 +2,7 @@
   "id": "ST-rjagiw6f",
   "kind": "story",
   "title": "A bug filed while landing is committed before its fix",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-rhgeod5g",
   "priority": "P2",
   "rank": 0,
@@ -29,5 +29,6 @@
     ".claude/skills/kb-sprint/SKILL.md",
     ".claude/skills/kb-item/SKILL.md"
   ],
-  "notes": "From the SP-4udo5jmw retrospective: two review bugs were committed after their fix commits and check-trailers refused the push."
+  "notes": "From the SP-4udo5jmw retrospective: two review bugs were committed after their fix commits and check-trailers refused the push.",
+  "claimed_by": "worker-rjagiw6f"
 }

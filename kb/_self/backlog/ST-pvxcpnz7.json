@@ -2,7 +2,7 @@
   "id": "ST-pvxcpnz7",
   "kind": "story",
   "title": "kb-sprint falls back when kb-worker is not loaded in the session",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-rhgeod5g",
   "priority": "P2",
   "rank": 0,
@@ -22,5 +22,19 @@
     "kb/_self/backlog.md",
     "_tools/test_kb_mcp.py"
   ],
-  "claimed_by": "worker-pvxcpnz7"
+  "evidence": {
+    "commit": "9f435f48abf14752024e56d5a6d20aacde6e9458",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "kb_worker_fallback"
+        ],
+        "exit": 0,
+        "sha256": "55a8c526262436a8"
+      }
+    ]
+  }
 }
