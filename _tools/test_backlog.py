@@ -201,6 +201,57 @@ def test_done_refuses_kb_work_outside_trailers(sprint):
     assert code == 0, out
 
 
+def story_with_touches(sprint):
+    """The fixture's story given touches of its own, as a story whose tasks carry its work has."""
+    repo, st = sprint["repo"], sprint["st"]
+    edit(repo, st, touches=["src/**"])
+    commit(repo, "story touches")
+    return repo, st, sprint["tk"]
+
+
+def finish_task(repo, tk):
+    """The task claimed, worked and done under its own KB-Work id; the story's id is on none of these commits."""
+    assert b(repo, "claim", tk, "--by", "agent-1")[0] == 0
+    commit(repo, "claim", tk)
+    (repo / "src" / "b.txt").write_text("b\n", encoding="utf-8")
+    commit(repo, "write b", tk)
+    code, out = b(repo, "done", tk)
+    assert code == 0, out
+    commit(repo, "task done", tk)
+
+
+def test_done_counts_descendant_commits_story_closes(sprint):
+    """A story with touches whose task's commits carried the work is done without a commit of its own."""
+    repo, st, tk = story_with_touches(sprint)
+    finish_task(repo, tk)
+    code, out = b(repo, "done", st)
+    assert code == 0, out
+    assert item(repo, "Story")["status"] == "done"
+
+
+def test_done_counts_descendant_commits_none_still_refused(sprint):
+    """Planted: a story with touches and no commit under its id or its task's ids is still refused."""
+    repo, st, tk = story_with_touches(sprint)
+    edit(repo, tk, status="done")  # the task closed by hand, with no work commit anywhere
+    (repo / "src" / "b.txt").write_text("b\n", encoding="utf-8")
+    commit(repo, "b, with no KB-Work trailer")
+    code, out = b(repo, "done", st)
+    assert code == 1 and "no commit on HEAD carries the trailer" in out, out
+
+
+def test_done_counts_descendant_commits_outside_touches(sprint):
+    """A task's commit outside the story's scope is still refused on the story."""
+    repo, st, tk = story_with_touches(sprint)
+    assert b(repo, "claim", tk, "--by", "agent-1")[0] == 0
+    (repo / "src" / "b.txt").write_text("b\n", encoding="utf-8")
+    (repo / "stray.txt").write_text("x\n", encoding="utf-8")
+    commit(repo, "write b and stray", tk)
+    edit(repo, tk, status="done")
+    commit(repo, "task done", tk)
+    code, out = b(repo, "done", st)
+    assert code == 1 and "stray.txt, outside touches" in out, out
+
+
 def test_check_interpreter_argv(monkeypatch, tmp_path):
     """run_check starts a python3 or python check with sys.executable (on Windows the venv launcher's base interpreter
     directory holds a python3.exe, so the PATH plant below cannot fail there); other commands are left as they are."""
@@ -1161,6 +1212,16 @@ class TestDoneLane:
         land(repo)
         code, out = self.done(repo, tk)
         assert code == 0, out
+
+    def test_done_counts_descendant_commits_unmerged_task_code(self, sprint):
+        """A story whose task's code commit is not on main is refused, naming the task's code branch."""
+        repo, st, tk = story_with_touches(sprint)
+        finish_task(repo, tk)
+        before = subprocess.run(["git", "log", "--format=%H", "--grep", "write b", "-1"], cwd=repo,
+                                capture_output=True, text=True, encoding="utf-8").stdout.strip()
+        sh(repo, "git", "update-ref", "refs/remotes/origin/main", f"{before}~1")  # planted: task code not on main
+        code, out = self.done(repo, st)
+        assert code == 1 and "not on origin/main" in out and f"code/{tk}" in out, out
 
     def test_content_item_needs_no_integration_main(self, sprint):
         repo, tk = self.worked(sprint, "kb/public/x/a.md")

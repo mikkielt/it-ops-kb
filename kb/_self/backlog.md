@@ -135,9 +135,9 @@ Each item adds three parts of its own: the end state (`goal`), the commands that
 `python3 _tools/backlog.py done ID` is the only way to `done`. It refuses when any of these hold:
 - the item waits on anything;
 - a file in scope has uncommitted changes (the checks run on `HEAD`);
-- the item has `touches` of its own and no commit reachable from `HEAD` carries its `KB-Work` trailer as git reads trailers;
-- a code-lane commit with its `KB-Work` trailer (lanes: `_tools/kblane.py`) is not an ancestor of `refs/remotes/<integration>/main` as last fetched, or that ref does not exist: it names the commits and the merge request `sync` opened for them (branch `code/<id>`); merge it, fetch, run `done` again. `done` does not fetch, and a content-lane commit never needs to be on the integration `main`;
-- a commit with its `KB-Work` trailer left a file outside `touches` changed at `HEAD` (a later revert clears that);
+- the item has `touches` of its own and no commit reachable from `HEAD` carries a `KB-Work` trailer, as git reads trailers, naming the item or one of its descendants (a story or bug whose tasks carried the work needs no commit of its own);
+- a code-lane commit whose `KB-Work` trailer names the item or one of its descendants (lanes: `_tools/kblane.py`) is not an ancestor of `refs/remotes/<integration>/main` as last fetched, or that ref does not exist: it names the commits and the merge requests `sync` opened for them (branch `code/<id>`, the id each commit names); merge them, fetch, run `done` again. `done` does not fetch, and a content-lane commit never needs to be on the integration `main`;
+- a commit whose `KB-Work` trailer names the item or one of its descendants left a file outside the scope (the item's `touches` with its descendants') changed at `HEAD` (a later revert clears that);
 - one of its checks fails;
 - a review story still has an agent's provisional answer.
 
