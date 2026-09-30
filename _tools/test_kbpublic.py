@@ -8,6 +8,8 @@
   TestPublishSafety (marker git) publish refuses, exit 1 and pushes nothing (a dry run reports the same), on a red, a
                    pending, an unreadable or a missing CI verdict of the source commit (a stubbed run), an internal
                    root, a _private path and a leaked address in a changed file.
+  TestPublishHistory (marker git) the same refusals for a commit of the range that adds what a later commit deletes,
+                   named by its hash, on a first publish too; a clean range and a value the parent's version holds pass.
   TestGuard        (marker git) guard_push and sync refuse a history with kb/_querylog only when the remote is the
                    public home (git config kb.publishRemote); a clone without one pushes it; the pre-push hook of a kb
                    clone refuses a plain push to the public home.
@@ -267,6 +269,72 @@ class TestPublishSafety:
         guid = "-".join(("3f2a4c1e", "0000", "4000", "8000", "00000000abcd"))
         r, pub = self.prepare(src, tmp_path, {"_tools/test_x.py": f"QID = '{guid}'\n"})
         self.refused(r, pub, capsys, "_tools/test_x.py has a leak-scan hit (guid)")
+
+
+class TestPublishHistory:
+    """Every commit to be pushed is checked, not only the projection's tree: a commit A that adds what a later commit
+    B deletes is refused, named by its short hash."""
+    prepare = TestPublishSafety.prepare
+
+    def planted(self, src, tmp_path, files, first=True):
+        """A published public home, then commit A adding FILES and commit B deleting them (A's hash). With FIRST
+        False nothing is published first: the whole history is walked."""
+        r, pub = self.prepare(src, tmp_path)
+        if first:
+            assert kbpublic.cmd_publish(ns(), r.path) == 0
+        a = commit(r, files, "add")
+        commit(r, {}, "delete", remove=list(files))
+        r.git("push", "-q", "--no-verify", "origin", "HEAD:main")
+        return r, pub, a
+
+    def refused_at(self, r, pub, capsys, a, cause):
+        tip = pub.run_git("rev-parse", "main").stdout.strip()
+        for dry in (True, False):
+            assert kbpublic.cmd_publish(ns(dry_run=dry), r.path) == 1
+            text = capsys.readouterr().out
+            assert f"refused: commit {a[:12]}" in text and cause in text and "nothing pushed" in text, text
+            assert pub.run_git("rev-parse", "main").stdout.strip() == tip
+
+    @pytest.mark.parametrize("first", [True, False])
+    def test_internal_root_deleted_later(self, src, tmp_path, capsys, first):
+        meta = "---\nroot: team\nid_prefix: T\nvisibility: internal\n---\n"  # the same blob for both roots
+        r, pub, a = self.planted(src, tmp_path, {"kb/team/_root.md": meta, "kb/team/notes.md": "internal\n",
+                                                 "kb/ops/_root.md": meta, "kb/ops/n.md": "internal\n"}, first)
+        self.refused_at(r, pub, capsys, a, "under the internal root kb/team")
+        self.refused_at(r, pub, capsys, a, "under the internal root kb/ops")
+
+    def test_private_path_deleted_later(self, src, tmp_path, capsys):
+        r, pub, a = self.planted(src, tmp_path, {"kb/public/_private/n.md": "x\n"})
+        self.refused_at(r, pub, capsys, a, "holds kb/public/_private/n.md")
+
+    def test_leak_removed_later(self, src, tmp_path, capsys):
+        leak = ".".join(("192", "168", "4", "9"))  # built here so this file has no address of its own
+        r, pub = self.prepare(src, tmp_path, {"kb/public/l.md": "host\n"})
+        assert kbpublic.cmd_publish(ns(), r.path) == 0
+        a = commit(r, {"kb/public/l.md": f"host {leak}\n"}, "add")
+        commit(r, {"kb/public/l.md": "host\n"}, "remove")
+        r.git("push", "-q", "--no-verify", "origin", "HEAD:main")
+        self.refused_at(r, pub, capsys, a, "kb/public/l.md has a leak-scan hit (ip)")
+
+    def test_clean_range_publishes(self, src, tmp_path):
+        r, pub = self.prepare(src, tmp_path)
+        assert kbpublic.cmd_publish(ns(), r.path) == 0
+        commit(r, {"kb/public/c.md": "c\n"}, "add")
+        head = commit(r, {}, "delete", remove=["kb/public/c.md"])
+        r.git("push", "-q", "--no-verify", "origin", "HEAD:main")
+        assert kbpublic.cmd_publish(ns(), r.path) == 0 and pub.rev("main") == kbpublic.project(head, r.path)
+
+    def test_value_in_parent_version_passes(self, src, tmp_path):
+        guid = "-".join(("3f2a4c1e", "0000", "4000", "8000", "00000000abcd"))  # built here so this file has none
+        r, pub = self.prepare(src, tmp_path, {"_tools/test_x.py": f"QID = '{guid}'\n",
+                                              "_tools/tests_allowlist.txt": f"guid {guid}  # reviewed\n"})
+        r.git("rm", "-q", "_tools/tests_allowlist.txt")
+        r.git("commit", "-q", "-m", "drop allowlist")
+        head = commit(r, {"_tools/test_x.py": f"QID = '{guid}'\nOTHER = 1\n"}, "change the file")
+        r.git("push", "-q", "--no-verify", "origin", "HEAD:main")
+        # nothing published yet: the whole history is walked; the GUID was allowlisted when it was added, and the
+        # later commit keeps a value its parent's version holds
+        assert kbpublic.cmd_publish(ns(), r.path) == 0 and pub.rev("main") == kbpublic.project(head, r.path)
 
 
 class TestGuard:
