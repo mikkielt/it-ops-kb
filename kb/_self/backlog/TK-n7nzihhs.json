@@ -2,7 +2,7 @@
   "id": "TK-n7nzihhs",
   "kind": "task",
   "title": "Move sync to kg_sync.py",
-  "status": "todo",
+  "status": "dropped",
   "parent": "ST-3i3dl6xg",
   "priority": "P2",
   "rank": 3,
@@ -27,7 +27,5 @@
     "_tools/test_sync.py",
     "_tools/conftest.py"
   ],
-  "depends_on": [
-    "TK-rgr3beid"
-  ]
+  "notes": "Dropped: kb/_self/reports/modules.md marks kbgit.py's sync section as co-changing with trailers (they use each other's names, 8 of 25 commits together); the operator's boundaries answer on ST-3i3dl6xg moves only independent sections"
 }

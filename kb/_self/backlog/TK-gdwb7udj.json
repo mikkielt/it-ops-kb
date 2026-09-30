@@ -20,6 +20,7 @@
     "_tools/kg_merge.py",
     "_tools/test_merge.py",
     "_tools/test_research_merge.py",
-    "_tools/conftest.py"
+    "_tools/conftest.py",
+    "_tools/kg_base.py"
   ]
 }
