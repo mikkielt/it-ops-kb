@@ -1,17 +1,19 @@
 """The benchmarks' harness: the results file, the isolation of a run (throwaway clones, plugin copies, a `claude` shim),
 the `Bench` a run is, the paid-run spend and the reading of a session's transcript (stdlib only).
 
-benchmarks.py runs the scenarios on this; bench_report.py holds the report tables. This module imports neither,
+benchmarks.py runs the scenarios on this; bench_report.py holds the report tables, and bench_lookup.py,
+bench_retrieval.py, bench_querylog.py and bench_install.py the scenarios. This module imports none of them,
 and benchmarks.py, the facade, holds the command line (kb/_self/code.md, Layout and Imports; the commands and the
 scenarios are described in kb/_self/reports/benchmarks.md).
 """
-import csv, datetime, io, json, os, shutil, subprocess, sys, time, uuid
+import csv, datetime, io, json, os, shutil, statistics, subprocess, sys, time, uuid
 from pathlib import Path
 
 import agent_bench
 from kbcommon import NO_HOOKS
 
 HOME = Path(__file__).resolve().parent.parent
+TOOLS = Path(__file__).resolve().parent
 
 RESULTS = HOME / "kb" / "_self" / "reports" / "benchmarks.csv"
 FIELDS = ["scenario", "record", "date", "commit", "claude_code", "kb_topics", "case", "arm", "model", "metric", "value",
@@ -393,3 +395,70 @@ def subagent(b, cwd, parent_model, agents, name, task, allowed, extra=(), env=No
     main, subs = transcript(sid)
     reqs = next(iter(subs.values()), [])
     return ev, reqs
+
+
+# ---------------------------------------------------------------------------------------------------- shared by the scenarios
+
+OK_PROMPT = "Reply with the single word ok."
+
+
+def task_argv(model, extra=()):
+    """The `claude -p` a task run starts: stream output, hooks off, no saved session."""
+    return ["claude", "-p", "--output-format", "stream-json", "--verbose", "--no-session-persistence", *NO_HOOKS,
+            "--model", model, *extra]
+
+
+def time_runs(argv, n, cwd, env=None, stdin=None):
+    """The seconds of `n` runs of `argv`."""
+    out = []
+    for _ in range(n):
+        t = time.perf_counter()
+        subprocess.run(argv, cwd=str(cwd), input=stdin, capture_output=True, text=True, encoding="utf-8",
+                       env=env or no_plugin_env())
+        out.append(time.perf_counter() - t)
+    return out
+
+
+def stat_rows(b, scenario, case, arm, secs, note="", time_s=False):
+    """The rows of a timing: the median and the 95th percentile in ms, and with `time_s` the median in seconds."""
+    ms = sorted(s * 1000 for s in secs)
+    if time_s:  # the median in seconds too, as the tool-speed history gives it
+        b.row(scenario, case, arm, "time", statistics.median(secs), len(ms), note=note)
+    b.row(scenario, case, arm, "median_ms", statistics.median(ms), len(ms), note=note)
+    b.row(scenario, case, arm, "p95_ms", ms[max(0, int(round(0.95 * len(ms))) - 1)], len(ms), note=note)
+
+
+MCP_CALLS = [("kb_pack", {"question": "default Windows LAPS password length"}), ("kb_search", {"query": "gMSA"}),
+             ("kb_audit", {"prefix": "intune"}), ("kb_facts", {"prefix": "auth/kerberos"}),
+             ("kb_source", {"id": "S1216", "cited": True}), ("kb_status", {}),
+             ("kb_pack", {"questions": ["LAPS password length", "Delivery Optimization port"]}),
+             ("kb_topics_for", {"paths": ["src/adminservice.ts"], "keywords": "AdminService Kerberos"}),
+             ("kb_show", {"path": "public/windows/laps.md:1"}), ("kb_search", {"query": "sp_getapplock"}),
+             ("kb_audit", {"prefix": "agents", "entries": True}), ("kb_pack", {"question": "Intune remediations limits"})]
+
+
+def mcp_session(clone, calls=MCP_CALLS):
+    """The kb server over stdio: initialize, then each call; returns (seconds to the initialize reply, total seconds,
+    the tool results' texts)."""
+    msgs = [{"jsonrpc": "2.0", "id": 0, "method": "initialize", "params": {"protocolVersion": "2025-06-18",
+            "capabilities": {}, "clientInfo": {"name": "bench", "version": "1"}}},
+            {"jsonrpc": "2.0", "method": "notifications/initialized"}]
+    msgs += [{"jsonrpc": "2.0", "id": i + 1, "method": "tools/call", "params": {"name": n, "arguments": a}}
+             for i, (n, a) in enumerate(calls)]
+    t = time.perf_counter()
+    p = subprocess.Popen([sys.executable, str(Path(clone) / "_tools" / "kb_mcp.py")], cwd=str(clone), stdin=subprocess.PIPE,
+                         stdout=subprocess.PIPE, text=True, encoding="utf-8", env=no_plugin_env())
+    p.stdin.write(json.dumps(msgs[0]) + "\n")
+    p.stdin.flush()
+    first = p.stdout.readline()
+    t_init = time.perf_counter() - t
+    texts = []
+    for m in msgs[1:]:
+        p.stdin.write(json.dumps(m) + "\n")
+        p.stdin.flush()
+        if "id" in m:
+            reply = json.loads(p.stdout.readline())
+            texts.append(" ".join(c.get("text", "") for c in (reply.get("result") or {}).get("content", [])))
+    p.stdin.close()
+    p.wait(timeout=60)
+    return t_init, time.perf_counter() - t, [first] + texts

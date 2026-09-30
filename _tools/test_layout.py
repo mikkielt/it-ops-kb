@@ -24,7 +24,6 @@ EXCEPTIONS = {
     ("provider", "fetch", "_PageText"): TOOL,
     ("ql_apply", "kbfacts", "_FP"): TOOL,
     ("test_backlog", "kbgit", "_WANT"): INSIDE,
-    ("test_benchmarks", "benchmarks", "_task_argv"): INSIDE,
     ("test_factdiff", "factdiff", "_added"): INSIDE,
     ("test_factdiff", "factdiff", "_git"): INSIDE,
     ("test_factdiff", "factdiff", "_madeup"): INSIDE,

@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-import agent_bench, bench_core, bench_report, benchmarks as bm, kb_ask
+import agent_bench, bench_core, bench_install, bench_lookup, bench_querylog, bench_report, benchmarks as bm, kb_ask
 from conftest import GIT, Repo, git_env
 from kbcommon import NO_HOOKS
 
@@ -86,7 +86,7 @@ def _hooks_off(argv):
 def test_every_claude_run_turns_hooks_off():
     argvs = [agent_bench.kb_argv(c) for c in ("haiku", "opus+delegate", "haiku+escalate", "sonnet+strict")]
     argvs += [agent_bench.web_argv("haiku"), agent_bench.host_argv("haiku", "/kb"), kb_ask.claude_argv("haiku", True),
-              kb_ask.claude_argv("haiku", False), bm._task_argv("sonnet")]
+              kb_ask.claude_argv("haiku", False), bench_core.task_argv("sonnet")]
     assert all(_hooks_off(a) for a in argvs)
     assert not _hooks_off(["claude", "-p", "--model", "haiku"])  # a run without it is caught
 
@@ -194,8 +194,8 @@ def test_the_shim_is_the_claude_that_path_resolves_and_runs(tmp_path):
 
 
 def test_a_scenario_without_sh_is_skipped_with_the_reason(tmp_path, monkeypatch, capsys):
-    monkeypatch.setattr(bm.shutil, "which", lambda *a, **k: None)
-    for scenario in (bm.s_kbpy, bm.s_querylog_hooks):
+    monkeypatch.setattr(bench_install.shutil, "which", lambda *a, **k: None)
+    for scenario in (bench_install.s_kbpy, bench_querylog.s_querylog_hooks):
         with pytest.raises(bench_core.Skip, match="no sh on PATH"):
             scenario(None)
 
@@ -222,37 +222,37 @@ def test_route_by_verdict_is_listed_with_its_section(capsys):
     assert re.search(r"^route-by-verdict\s+Routing by verdict against the bare agent$", capsys.readouterr().out, re.M)
     assert bm.SCENARIOS["route-by-verdict"][0] != bm.SCENARIOS["router"][0]  # the older section keeps its name
     assert "route-by-verdict" in bm.__doc__.split("Paid scenarios")[1].split("The rest run no model")[0]
-    for case in bm.RBV_CASES:
+    for case in bench_lookup.RBV_CASES:
         assert case in agent_bench.S and case in agent_bench.WEB_Q, case
-    for arm in bm.RBV_ARMS:
+    for arm in bench_lookup.RBV_ARMS:
         cfg = arm[4:] if arm.startswith("web-") else arm
         assert cfg == "router-pinned" or cfg in agent_bench.MODEL, arm
 
 
 def test_the_bar_on_a_web_pack_is_110_percent_of_the_bare_arm():
-    assert bm.verdict_bar("web", 0.11, 0.10, 0.20) == (True, pytest.approx(0.11 / 0.11))
-    holds, ratio = bm.verdict_bar("web", 0.111, 0.10, 0.20)  # planted: one tenth of a cent over the limit
+    assert bench_lookup.verdict_bar("web", 0.11, 0.10, 0.20) == (True, pytest.approx(0.11 / 0.11))
+    holds, ratio = bench_lookup.verdict_bar("web", 0.111, 0.10, 0.20)  # planted: one tenth of a cent over the limit
     assert holds is False and ratio > 1
-    assert bm.verdict_bar("web", None, 0.10, 0.20) == (None, None) and bm.verdict_bar("web", 0.05, None, 0.2) == (None, None)
+    assert bench_lookup.verdict_bar("web", None, 0.10, 0.20) == (None, None) and bench_lookup.verdict_bar("web", 0.05, None, 0.2) == (None, None)
 
 
 def test_the_bar_on_a_split_pack_is_below_both_other_arms():
-    assert bm.verdict_bar("split", 0.05, 0.10, 0.08)[0] is True
-    assert bm.verdict_bar("split", 0.09, 0.10, 0.08)[0] is False  # planted: below the web arm, not the kb arm
-    assert bm.verdict_bar("split", 0.08, 0.10, 0.08)[0] is False  # equal is not below
-    assert bm.verdict_bar("split", 0.05, 0.10, None) == (None, None)
+    assert bench_lookup.verdict_bar("split", 0.05, 0.10, 0.08)[0] is True
+    assert bench_lookup.verdict_bar("split", 0.09, 0.10, 0.08)[0] is False  # planted: below the web arm, not the kb arm
+    assert bench_lookup.verdict_bar("split", 0.08, 0.10, 0.08)[0] is False  # equal is not below
+    assert bench_lookup.verdict_bar("split", 0.05, 0.10, None) == (None, None)
 
 
 def test_the_bar_on_a_good_pack_is_the_reader_route_without_escalation():
-    assert bm.verdict_bar("good", 0.01, 0.2, 0.1) == (True, None)
-    assert bm.verdict_bar("good", 0.06, 0.2, 0.1, escalated=True) == (False, None)  # planted: it escalated
-    assert bm.verdict_bar("tool", 0, 0.2, 0.1) == (None, None)
+    assert bench_lookup.verdict_bar("good", 0.01, 0.2, 0.1) == (True, None)
+    assert bench_lookup.verdict_bar("good", 0.06, 0.2, 0.1, escalated=True) == (False, None)  # planted: it escalated
+    assert bench_lookup.verdict_bar("tool", 0, 0.2, 0.1) == (None, None)
 
 
 def test_pack_route_reads_the_first_pack_step():
-    assert bm.pack_route([{"route": ["pack:web", "researcher:m"]}]) == "web"
-    assert bm.pack_route([{"route": ["kb_ask:tool"]}]) == "tool"
-    assert bm.pack_route([{"route": []}, {"error": "x"}]) == ""
+    assert bench_lookup.pack_route([{"route": ["pack:web", "researcher:m"]}]) == "web"
+    assert bench_lookup.pack_route([{"route": ["kb_ask:tool"]}]) == "tool"
+    assert bench_lookup.pack_route([{"route": []}, {"error": "x"}]) == ""
 
 
 def _run(cfg, scen, cost, route=(), wall=10.0):
@@ -276,8 +276,8 @@ def test_the_scenario_records_each_cases_route_arms_and_bar():
         runs += [_run("router-pinned", case, router, [f"pack:{kind}", "reader:m"]), _run("web-sonnet-5-5", case, web),
                  _run("sonnet-5-5", case, kb)]
     b, seen = _bench(runs)
-    bm.s_route_by_verdict(b)
-    assert seen == [(bm.RBV_ARMS, bm.RBV_CASES, 1, "route-by-verdict", True)]
+    bench_lookup.s_route_by_verdict(b)
+    assert seen == [(bench_lookup.RBV_ARMS, bench_lookup.RBV_CASES, 1, "route-by-verdict", True)]
     got = {(r["case"], r["arm"], r["metric"]): r["value"] for r in b.rows}
     assert got[("s5_none", "router-pinned", "pack_route")] == "web" and got[("s5_none", "router-pinned", "bar")] == "holds"
     assert got[("s8_falsegood2", "router-pinned", "pack_route")] == "split"
@@ -292,7 +292,7 @@ def test_the_scenario_says_no_data_when_an_arm_failed():
     runs = [_run("router-pinned", "s5_none", 0.05, ["pack:web"]), {"cfg": "web-sonnet-5-5", "scen": "s5_none", "error": "x"},
             _run("sonnet-5-5", "s5_none", 0.06)]
     b, _ = _bench(runs)
-    bm.s_route_by_verdict(b)
+    bench_lookup.s_route_by_verdict(b)
     got = {(r["arm"], r["metric"]): r["value"] for r in b.rows if r["case"] == "s5_none"}
     assert got[("router-pinned", "bar")] == "no data" and got[("web-sonnet-5-5", "errors")] == 1
 
@@ -332,26 +332,26 @@ def test_navigation_is_listed_and_the_report_gives_its_command(capsys):
 
 
 def test_navigation_answers_are_checked_by_function_and_test_names():
-    assert {c: bm.nav_check(c, a) for c, a in RIGHT.items()} == {c: [True, True] for c in bm.NAV}
+    assert {c: bench_lookup.nav_check(c, a) for c, a in RIGHT.items()} == {c: [True, True] for c in bench_lookup.NAV}
     # planted wrong answers: a neighbouring function, a test of another rule, a path instead of names
     wrong = "Functions: ql_deliver.pipeline_verdict\nTests: test_pipeline_verdict_is_red_on_failed"
-    assert bm.nav_check("N1", wrong) == [False, False]
-    assert bm.nav_check("N1", "Functions: job_verdict\nTests: test_job_ran_is_not_a_test_of_this") == [True, False]
-    assert bm.nav_check("N2", "Functions: push_branch\nTests: test_branch_id_is_the_first_work_id") == [False, True]
-    assert bm.nav_check("N3", "_tools/benchmarks.py and _tools/test_benchmarks.py") == [False, False]
-    assert bm.nav_check("N3", "") == [False, False] and bm.nav_check("N3", None) == [False, False]
-    assert bm.nav_check("N1", "Functions: job_verdicts\nTests: xtest_a_timed_out_or_stuck_job_is_red") == [False, False]  # whole names
+    assert bench_lookup.nav_check("N1", wrong) == [False, False]
+    assert bench_lookup.nav_check("N1", "Functions: job_verdict\nTests: test_job_ran_is_not_a_test_of_this") == [True, False]
+    assert bench_lookup.nav_check("N2", "Functions: push_branch\nTests: test_branch_id_is_the_first_work_id") == [False, True]
+    assert bench_lookup.nav_check("N3", "_tools/benchmarks.py and _tools/test_benchmarks.py") == [False, False]
+    assert bench_lookup.nav_check("N3", "") == [False, False] and bench_lookup.nav_check("N3", None) == [False, False]
+    assert bench_lookup.nav_check("N1", "Functions: job_verdicts\nTests: xtest_a_timed_out_or_stuck_job_is_red") == [False, False]  # whole names
 
 
 def test_navigation_answers_name_code_that_exists_and_the_prompts_do_not_name_it():
     # no backlog tool file: an in-flight change to it is no concern of these names
-    text = "\n".join(p.read_text(encoding="utf-8") for p in sorted(bm.TOOLS.glob("*.py"))
+    text = "\n".join(p.read_text(encoding="utf-8") for p in sorted(bench_core.TOOLS.glob("*.py"))
                      if p.name not in ("backlog.py", "test_backlog.py"))
-    for case, spec in bm.NAV.items():
+    for case, spec in bench_lookup.NAV.items():
         assert spec["functions"] and spec["tests"], case
         for name in spec["functions"] + spec["tests"]:
             assert re.search(rf"^\s*def {name}\(", text, re.M), f"{case}: no def {name}"
-            assert not bm.nav_named(name, spec["prompt"] + bm.NAV_ASK), f"{case}: the prompt names {name}"
+            assert not bench_lookup.nav_named(name, spec["prompt"] + bench_lookup.NAV_ASK), f"{case}: the prompt names {name}"
         assert all(t.startswith("test_") for t in spec["tests"]) and not any(f.startswith("test_") for f in spec["functions"])
 
 
@@ -365,24 +365,24 @@ def test_navigation_files_read_are_the_distinct_files_the_tool_calls_name(tmp_pa
             ("Bash", {"command": "grep -rn x _tools/*.py"}), ("Bash", {"command": "echo \"unterminated _tools/x.csv"}),
             ("Read", {"file_path": "_tools/kbgit.py:120"}), ("Read", {}), ("WebFetch", {"url": "https://example.com/a.md"}),
             ("Bash", {}), ("Read", None)]
-    assert bm.nav_files(uses, root) == ["_tools/ql_deliver.py", "_tools/kbgit.py", "_tools/test_sync.py",
+    assert bench_lookup.nav_files(uses, root) == ["_tools/ql_deliver.py", "_tools/kbgit.py", "_tools/test_sync.py",
                                         "kb/_self/backlog.md", "_tools/x.csv"]
 
 
 def test_navigation_result_reads_turns_tools_files_and_input_from_the_stream(tmp_path):
     uses = [("Grep", {"pattern": "job_verdict"}), ("Read", {"file_path": "_tools/ql_deliver.py"}),
             ("Read", {"file_path": "_tools/test_querylog.py"})]
-    r = bm.nav_result(_nav_stream(uses, RIGHT["N1"], turns=4), tmp_path / "navigation", 12.34)
+    r = bench_lookup.nav_result(_nav_stream(uses, RIGHT["N1"], turns=4), tmp_path / "navigation", 12.34)
     assert (r["turns"], sum(r["tools"].values()), r["files_read"], r["wall_s"]) == (
         4, 3, ["_tools/ql_deliver.py", "_tools/test_querylog.py"], 12.3)
     assert r["in_uncached"] + r["cache_write"] + r["cache_read"] == 1110 and r["out"] == 40 and r["answer"] == RIGHT["N1"]
-    assert bm.nav_result("not json\n", tmp_path, 0) == {"error": "no result event"}
+    assert bench_lookup.nav_result("not json\n", tmp_path, 0) == {"error": "no result event"}
     refused = _nav_stream([], "hit a limit", is_error=True)
-    assert bm.nav_result(refused, tmp_path, 0) == {"error": "hit a limit"}  # a refused run is void, not a cheap answer
+    assert bench_lookup.nav_result(refused, tmp_path, 0) == {"error": "hit a limit"}  # a refused run is void, not a cheap answer
 
 
 def test_navigation_runs_with_hooks_off_read_only_tools_and_no_servers():
-    argv = bm.nav_argv()
+    argv = bench_lookup.nav_argv()
     assert _hooks_off(argv) and "--strict-mcp-config" in argv and argv[argv.index("--model") + 1] == "sonnet"
     allowed = argv[argv.index("--allowedTools") + 1:argv.index("--disallowedTools")]
     denied = argv[argv.index("--disallowedTools") + 1:]
@@ -398,16 +398,16 @@ def test_navigation_run_takes_the_answer_from_a_fake_claude(tmp_path, monkeypatc
         seen.update(argv=argv, **kw)
         return subprocess.CompletedProcess(argv, 0, _nav_stream([("Read", {"file_path": "_tools/kbgit.py"})], RIGHT["N2"]), "")
 
-    monkeypatch.setattr(bm.subprocess, "run", fake)
+    monkeypatch.setattr(bench_lookup.subprocess, "run", fake)
     monkeypatch.setitem(bench_core.RAW, "path", None)
     for k in ("usd", "input", "out", "runs"):
         monkeypatch.setitem(bench_core.SPEND, k, 0)
-    r = bm.nav_run(bm.nav_argv(), "question", tmp_path / "navigation")
+    r = bench_lookup.nav_run(bench_lookup.nav_argv(), "question", tmp_path / "navigation")
     assert r["answer"] == RIGHT["N2"] and r["files_read"] == ["_tools/kbgit.py"]
     assert seen["input"] == "question" and seen["cwd"] == str(tmp_path / "navigation") and _hooks_off(seen["argv"])
     assert "CLAUDE_PLUGIN_ROOT" not in seen["env"] and bench_core.SPEND["runs"] == 1
-    monkeypatch.setattr(bm.subprocess, "run", lambda argv, **kw: subprocess.CompletedProcess(argv, 1, "", "boom"))
-    assert bm.nav_run(bm.nav_argv(), "q", tmp_path)["error"] == "no result event: boom"
+    monkeypatch.setattr(bench_lookup.subprocess, "run", lambda argv, **kw: subprocess.CompletedProcess(argv, 1, "", "boom"))
+    assert bench_lookup.nav_run(bench_lookup.nav_argv(), "q", tmp_path)["error"] == "no result event: boom"
 
 
 def _nav_bench(tmp_path, arm="before", reps=1):
@@ -423,14 +423,14 @@ def test_navigation_records_each_cases_checks_files_turns_calls_and_input_under_
     files = {"N1": ["_tools/ql_deliver.py", "_tools/test_querylog.py"], "N2": ["_tools/kbgit.py"], "N3": ["_tools/benchmarks.py"]}
 
     def fake(argv, prompt, cwd):
-        case = next(c for c, s in bm.NAV.items() if prompt.startswith(s["prompt"]))
+        case = next(c for c, s in bench_lookup.NAV.items() if prompt.startswith(s["prompt"]))
         return {"wall_s": 5.0, "api_s": 4.0, "cost": 0.05, "turns": 3, "in_uncached": 10, "cache_write": 100,
                 "cache_read": 1000, "out": 40, "models": {"claude-sonnet-5-5": 0.05}, "tools": {"Read": len(files[case]) + 1},
                 "route": ["Grep"], "files_read": files[case], "answer": answers[case]}
 
-    monkeypatch.setattr(bm, "nav_run", fake)
+    monkeypatch.setattr(bench_lookup, "nav_run", fake)
     b = _nav_bench(tmp_path)
-    bm.s_navigation(b)
+    bench_lookup.s_navigation(b)
     got = {(r["case"], r["arm"], r["metric"]): r["value"] for r in b.rows}
     assert {r["scenario"] for r in b.rows} == {"navigation"} and {r["arm"] for r in b.rows} == {"before"}
     assert [got[(c, "before", "checks")] for c in ("N1", "N2", "N3")] == ["2/2", "0/2", "2/2"]  # the planted answer: none
@@ -438,21 +438,21 @@ def test_navigation_records_each_cases_checks_files_turns_calls_and_input_under_
     assert got[("N1", "before", "turns")] == 3 and got[("N1", "before", "tool_calls")] == 3
     assert got[("N1", "before", "input")] == 1110 and got[("N1-N3", "before", "files_read")] == 4
     assert got[("N1-N3", "before", "tool_calls")] == 3 + 2 + 2 and got[("N1-N3", "before", "turns")] == 9
-    monkeypatch.setattr(bm, "nav_run", lambda argv, prompt, cwd: {"error": "boom"})
+    monkeypatch.setattr(bench_lookup, "nav_run", lambda argv, prompt, cwd: {"error": "boom"})
     b = _nav_bench(tmp_path, arm="after")
-    bm.s_navigation(b)
+    bench_lookup.s_navigation(b)
     got = {(r["case"], r["arm"], r["metric"]): r["value"] for r in b.rows}
     assert got[("N1", "after", "errors")] == 1 and ("N1-N3", "after", "turns") not in got  # no sum from a failed case
 
 
 def test_navigation_arm_defaults_and_three_runs_are_one_row_each(tmp_path, monkeypatch):
-    monkeypatch.setattr(bm, "nav_run", lambda argv, prompt, cwd: {
+    monkeypatch.setattr(bench_lookup, "nav_run", lambda argv, prompt, cwd: {
         "wall_s": 1.0, "api_s": 1.0, "cost": 0.01, "turns": 2, "in_uncached": 1, "cache_write": 0, "cache_read": 9, "out": 1,
         "models": {}, "tools": {"Read": 2}, "route": [], "files_read": ["a.py", "b.py"],
-        "answer": RIGHT[next(c for c, s in bm.NAV.items() if prompt.startswith(s["prompt"]))]})
+        "answer": RIGHT[next(c for c, s in bench_lookup.NAV.items() if prompt.startswith(s["prompt"]))]})
     b = _nav_bench(tmp_path, reps=3)
     del b.arm  # a bench with no arm set, as the tests' fakes have
-    bm.s_navigation(b)
+    bench_lookup.s_navigation(b)
     rows = [r for r in b.rows if r["case"] == "N1" and r["metric"] in ("checks", "files_read")]
     assert {(r["arm"], r["metric"], r["value"], r["runs"]) for r in rows} == {("current", "checks", "6/6", 3),
                                                                              ("current", "files_read", 2, 3)}
