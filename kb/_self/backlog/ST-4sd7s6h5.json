@@ -2,7 +2,7 @@
   "id": "ST-4sd7s6h5",
   "kind": "story",
   "title": "Review sprint: Focused gate",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ddjk2p5l",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "win-second"
+  "evidence": {
+    "commit": "0a1350614a301756e73c3a07b7605f033242d4b1",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "747e723a5a99511f"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "005ac735056e3216"
+      }
+    ]
+  }
 }
