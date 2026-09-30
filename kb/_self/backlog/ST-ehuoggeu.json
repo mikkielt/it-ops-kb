@@ -2,7 +2,7 @@
   "id": "ST-ehuoggeu",
   "kind": "story",
   "title": "Review sprint: Query log findings land where they belong",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-4slunkaj",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "orchestrator-SP-4slunkaj"
+  "evidence": {
+    "commit": "28159815f2f3eebe6f7a00d01fe2c43b177f76c8",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "3043782ae6b0ee3a"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "41d4bcb3fc43c544"
+      }
+    ]
+  }
 }
