@@ -2,7 +2,7 @@
   "id": "ST-ceskot4i",
   "kind": "story",
   "title": "The query-log tests plant their own provider registry",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-mzzucemv",
   "sprint": "SP-4slunkaj",
   "priority": "P3",
@@ -20,5 +20,6 @@
   ],
   "touches": [
     "_tools/test_querylog.py"
-  ]
+  ],
+  "claimed_by": "worker-ceskot4i"
 }

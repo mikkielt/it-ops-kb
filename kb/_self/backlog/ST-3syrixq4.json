@@ -2,7 +2,7 @@
   "id": "ST-3syrixq4",
   "kind": "story",
   "title": "One query-log run makes one commit",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-mzzucemv",
   "sprint": "SP-4slunkaj",
   "priority": "P2",
@@ -24,5 +24,19 @@
     "_tools/test_querylog_e2e.py",
     "kb/_self/querylog.md"
   ],
-  "claimed_by": "worker-3syrixq4"
+  "evidence": {
+    "commit": "7df9ad71ae0ab60d7af90f446c1d828bc983213a",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "querylog_one_commit_per_run"
+        ],
+        "exit": 0,
+        "sha256": "4523f6a6e8569328"
+      }
+    ]
+  }
 }
