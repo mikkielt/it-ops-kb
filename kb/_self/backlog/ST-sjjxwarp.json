@@ -2,7 +2,7 @@
   "id": "ST-sjjxwarp",
   "kind": "story",
   "title": "Review sprint: Items know their kb facts",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ufr3qnff",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "orchestrator"
+  "evidence": {
+    "commit": "469d77e16cf8ca9f720581f3d5d8f30b1ee936d8",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "80deee392c69d8b3"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "267a97fc856a54d2"
+      }
+    ]
+  }
 }
