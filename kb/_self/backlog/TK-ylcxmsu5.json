@@ -2,7 +2,7 @@
   "id": "TK-ylcxmsu5",
   "kind": "task",
   "title": "Write the co-change report",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-snby6hcz",
   "priority": "P2",
   "rank": 0,
@@ -23,5 +23,21 @@
   "touches": [
     "kb/_self/reports/modules.md"
   ],
-  "claimed_by": "worker-ylcxmsu5"
+  "evidence": {
+    "commit": "c3fa75c92e53250dadc85d96d4ebcac04f9148a6",
+    "checks": [
+      {
+        "run": [
+          "git",
+          "grep",
+          "-c",
+          "^Verdict:",
+          "--",
+          "kb/_self/reports/modules.md"
+        ],
+        "exit": 0,
+        "sha256": "de2b246a723eeaf2"
+      }
+    ]
+  }
 }
