@@ -1142,6 +1142,14 @@ def search(query, k=8, domain=None, index=False, notes=None, root=None):
 
 TOPIC_SHARE = 0.6  # a word one article is about: that article, named after it, holds this share of its lines
 RARE_NAME = 0.01  # a name held by under this share of all lines is mentioned in passing, not covered
+COMMON_SHARE = 0.2  # a key word held by this share of the searched units or more is common, not informative
+
+
+def informative_words(keys, kdf, n):
+    """The key words that tell units apart: those held by under COMMON_SHARE of the n searched units, and always
+    those held by at most one, since a word one unit holds is never common. Without that floor a small index (a
+    root of one article: 3 units, cut below 0.6) keeps no word at all and every question is `none`."""
+    return [t for t in keys if kdf[t] < max(COMMON_SHARE * n, 2)]
 IDENT = re.compile(r"\w[_./]\w|^--?\w")  # python_files, list/get, ansible.windows.win_dsc, --frozen
 
 
@@ -1212,7 +1220,7 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
     st = store(scope(domain, root))
     ranked, keys, holders, kdf = rank(st, question)
     n = max(st.n, 1)
-    informative = [t for t in keys if kdf[t] < 0.2 * n]
+    informative = informative_words(keys, kdf, n)
     missing = [t for t in informative if not kdf[t]]
     scored = [(s, st.unit(i)) for s, i in ranked[:40]]
 

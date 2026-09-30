@@ -1,0 +1,34 @@
+{
+  "id": "BG-tdhieldl",
+  "kind": "bug",
+  "title": "tools.md and a test_kb_mcp.py comment say a one-article root has no informative word, but a word one unit holds now always counts",
+  "status": "doing",
+  "parent": "EP-c7fzjhge",
+  "sprint": "SP-vpk5nrrc",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "kb/_self/tools.md's verdict paragraph says a word held by a single unit always counts as a key word (kbfacts.informative_words, since BG-zxensn4o), and test_kb_mcp.py asserts coverage good for the fixture root's own question where its comment said the verdict could not be asserted",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;t=open('_tools/test_kb_mcp.py',encoding='utf-8').read();d=open('kb/_self/tools.md',encoding='utf-8').read();sys.exit(1 if 'has no word rare enough to count' in t or 'informative_words' not in d else 0)"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "embed_roots"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/tools.md",
+    "_tools/test_kb_mcp.py"
+  ],
+  "claimed_by": "mac-second"
+}
