@@ -2,7 +2,7 @@
   "id": "BG-4cm4e7d5",
   "kind": "bug",
   "title": "The PowerShell raw-read hook spends about 2 s in module auto-loading when an interpreter name is missing",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-5p4ahbnq",
   "sprint": "SP-hlfwfcx6",
   "priority": "P3",
@@ -20,5 +20,18 @@
     ".claude/settings.json",
     "_tools/test_portability.py"
   ],
-  "claimed_by": "win-first"
+  "evidence": {
+    "commit": "c2b13576ecd997c1f8392cd825421d318fe776f0",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,sys; s=open('.claude/settings.json',encoding='utf-8').read(); sys.exit(0 if 'PSModuleAutoLoadingPreference' in s else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
