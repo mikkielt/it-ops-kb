@@ -1,0 +1,21 @@
+{
+  "id": "BG-5utnrar6",
+  "kind": "bug",
+  "title": "kb_change_router.py exits 1 with a traceback on a non-string prompt",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "kb_change_router.py main() returns silently with exit 0 for any malformed event, including a non-string prompt; a test plants it",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import subprocess,sys; r=subprocess.run(['python3','.claude/hooks/kb_change_router.py'],input='{\"prompt\": 5, \"session_id\": \"x\"}',capture_output=True,text=True); sys.exit(r.returncode!=0 or 'Traceback' in r.stderr)"
+    ]
+  },
+  "touches": [
+    ".claude/hooks/kb_change_router.py",
+    "_tools/test_change_router.py"
+  ]
+}

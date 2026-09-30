@@ -1,0 +1,24 @@
+{
+  "id": "BG-blote7g5",
+  "kind": "bug",
+  "title": "The change router's once-per-session marker survives /compact and /clear, so a later change request after compaction gets no routing",
+  "status": "draft",
+  "parent": "EP-hsyx42zz",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "A SessionStart hook with matcher compact|clear removes that session's _cache/change_router marker (or the marker key changes on compaction), so the first change request after /compact is routed again; test_change_router plants the reset",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import json,sys; s=json.load(open('.claude/settings.json'))['hooks'].get('SessionStart',[]); sys.exit(not any('change_router' in h.get('command','') for m in s for h in m.get('hooks',[])))"
+    ]
+  },
+  "touches": [
+    ".claude/hooks/kb_change_router.py",
+    ".claude/settings.json",
+    "_tools/test_change_router.py",
+    "kb/_self/maintaining.md"
+  ]
+}

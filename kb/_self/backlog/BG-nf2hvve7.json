@@ -1,0 +1,22 @@
+{
+  "id": "BG-nf2hvve7",
+  "kind": "bug",
+  "title": "session_start.py still tells every cloud session to read kb/_self/maintaining.md whole",
+  "status": "draft",
+  "parent": "EP-hsyx42zz",
+  "priority": "P1",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "session_start.py's text names python3 _tools/selfdoc.py section maintaining \"Conduct for changes\" instead of the whole maintaining.md, and a test beside the router's no-whole-maintaining test holds it",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import subprocess,sys; o=subprocess.run(['python3','.claude/hooks/session_start.py','--test'],capture_output=True,text=True).stdout; sys.exit('read kb/_self/maintaining.md' in o)"
+    ]
+  },
+  "touches": [
+    ".claude/hooks/session_start.py",
+    "_tools/test_change_router.py"
+  ]
+}
