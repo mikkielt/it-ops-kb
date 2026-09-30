@@ -12,7 +12,7 @@
       "run": [
         "python3",
         "-c",
-        "import pathlib,re;t=pathlib.Path('kb/_self/reports/windows-fresh-host.md').read_text(encoding='utf-8');assert re.search(r'(?m)^result: pass$',t);assert not re.search(r'(?i)stowarzyszenie|avanga|ANW-PC', t)"
+        "import os,re; ps=set(); cn=os.environ.get('COMPUTERNAME','')\nfor n in (os.environ.get('USERNAME',''), cn):\n    ps.update(p.lower() for p in re.findall(r'[A-Z][a-z]+|[a-z]+|[A-Z0-9]+(?![a-z])', n) + [n] if len(p) >= 5)\nif '-' in cn: a, b = cn.split('-', 1); ps.add((a + '-' + b[:2]).lower())\nps -= {'users', 'admin', 'public', 'windows'}\nimport pathlib,sys\nt=pathlib.Path('kb/_self/reports/windows-fresh-host.md').read_text(encoding='utf-8')\nassert re.search(r'(?m)^result: pass$', t)\nassert not any(p in t.lower() for p in ps), 'a piece of this host name or user name is in the report'\n"
       ]
     },
     {
@@ -35,7 +35,7 @@
         "run": [
           "python3",
           "-c",
-          "import pathlib,re;t=pathlib.Path('kb/_self/reports/windows-fresh-host.md').read_text(encoding='utf-8');assert re.search(r'(?m)^result: pass$',t);assert not re.search(r'(?i)stowarzyszenie|avanga|ANW-PC', t)"
+          "import pathlib,re;t=pathlib.Path('kb/_self/reports/windows-fresh-host.md').read_text(encoding='utf-8');assert re.search(r'(?m)^result: pass$',t);assert not re.search(r'(?i)<host and user name pieces removed by BG-477tasb3>', t)"
         ],
         "exit": 0,
         "sha256": "e3b0c44298fc1c14"
