@@ -176,6 +176,15 @@ class TestToolChecks:
 
 
 class TestCohesion:
+    def test_session_start_names_the_focused_gate(self):
+        """The cloud SessionStart notice states the gate as maintaining.md does (kbgit.py sync with tests.py --changed),
+        not the old full gate run before every commit."""
+        with open(os.path.join(KB, ".claude", "hooks", "session_start.py"), encoding="utf-8") as f:
+            text = f.read()
+        assert "tests.py --changed" in text and "kbgit.py sync --push" in text
+        assert "about 60 s" not in text and "stress_test.py (~35 s)" not in text
+
+
     def test_generated_indexes_up_to_date(self):
         """_coverage.csv, the _coverage.md table and used_in are generated; a hand edit or a missed rebuild fails."""
         code, out = run(os.path.join(TOOLS, "build_index.py"), "--check")
