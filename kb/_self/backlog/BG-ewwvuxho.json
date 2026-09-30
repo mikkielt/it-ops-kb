@@ -1,0 +1,30 @@
+{
+  "id": "BG-ewwvuxho",
+  "kind": "bug",
+  "title": "tests.py given a test file still runs every test file",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "python3 _tools/tests.py _tools/test_x.py passes only that file (and its pytest arguments) to pytest, not the whole _tools directory beside it, so an item check such as tests.py _tools/test_testmap.py runs that file's tests and not the full suite; a test plants a path argument and sees _tools absent from the pytest targets",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import tests as t;s={};t.run_pytest=lambda a,**k:s.setdefault('a',a) and 0;t.main(['_tools/test_testmap.py']);assert t.TOOLS not in s['a'],'tests.py runs every test file when given one'"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "_tools/test_testmap.py"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/tests.py",
+    "_tools/test_testmap.py"
+  ]
+}
