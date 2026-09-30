@@ -2,7 +2,7 @@
   "id": "ST-76ftjodg",
   "kind": "story",
   "title": "A tool task plans its tools.md row in the same task",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-o2bjijfp",
   "sprint": "SP-ar52y6fk",
   "priority": "P2",
@@ -22,5 +22,20 @@
   "touches": [
     ".claude/skills/kb-backlog/SKILL.md"
   ],
-  "claimed_by": "worker-76ftjodg"
+  "evidence": {
+    "commit": "0adc219a6f0e85d5eb6fae6f2d4d609c883660be",
+    "checks": [
+      {
+        "run": [
+          "grep",
+          "-c",
+          "-e",
+          "selfdoc.py map",
+          ".claude/skills/kb-backlog/SKILL.md"
+        ],
+        "exit": 0,
+        "sha256": "4355a46b19d348dc"
+      }
+    ]
+  }
 }
