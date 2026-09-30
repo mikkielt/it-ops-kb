@@ -2,7 +2,7 @@
   "id": "ST-axnnlsim",
   "kind": "story",
   "title": "backlog.py claim, done, new, start and close commit their item files with --commit",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-o2bjijfp",
   "sprint": "SP-bwlxievv",
   "priority": "P1",
@@ -24,5 +24,19 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
-  "claimed_by": "worker-axnnlsim"
+  "evidence": {
+    "commit": "d4dace6b7e51455648f915ba089db279b110aaa7",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "backlog_commit_flag"
+        ],
+        "exit": 0,
+        "sha256": "d1f7704523eecf09"
+      }
+    ]
+  }
 }
