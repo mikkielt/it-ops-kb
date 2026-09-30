@@ -2,7 +2,7 @@
   "id": "BG-bxkqdtk6",
   "kind": "bug",
   "title": "A near-miss none routed split still tells the reader not to answer from its hits",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-c7fzjhge",
   "sprint": "SP-vpk5nrrc",
   "priority": "P2",
@@ -30,5 +30,28 @@
     "_tools/kbfacts.py",
     "_tools/test_route.py"
   ],
-  "claimed_by": "worker-bxkqdtk6"
+  "evidence": {
+    "commit": "0a2b7cf1aee26a468fa334599a5c639063693fca",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "TestRoute"
+        ],
+        "exit": 0,
+        "sha256": "31daf68fe018ccb4"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import kbfacts;r=kbfacts.pack('Show T-SQL that takes an exclusive session-owned application lock without waiting, fails if it is held, and releases it.');t=r['text'] if isinstance(r,dict) else r;assert 'Do not answer from the hits' not in t,t[:300]"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }

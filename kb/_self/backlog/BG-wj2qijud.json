@@ -2,7 +2,7 @@
   "id": "BG-wj2qijud",
   "kind": "bug",
   "title": "tools.md lacks the route-by-verdict scenario and the router-pinned config",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-c7fzjhge",
   "sprint": "SP-vpk5nrrc",
   "priority": "P2",
@@ -34,5 +34,33 @@
   "touches": [
     "kb/_self/tools.md"
   ],
-  "claimed_by": "mac-second"
+  "evidence": {
+    "commit": "0a2b7cf1aee26a468fa334599a5c639063693fca",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/selfdoc.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "3db513ebafdfe3a2"
+      },
+      {
+        "run": [
+          "git",
+          "grep",
+          "-q",
+          "-e",
+          "router-pinned",
+          "-e",
+          "route-by-verdict",
+          "--",
+          "kb/_self/tools.md"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
