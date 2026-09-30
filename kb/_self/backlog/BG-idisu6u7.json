@@ -2,7 +2,7 @@
   "id": "BG-idisu6u7",
   "kind": "bug",
   "title": "provider.request leaves gzip-encoded bodies undecoded (python.org pages anchor as not-text)",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-mzzucemv",
   "sprint": "SP-4slunkaj",
   "priority": "P2",
@@ -30,5 +30,28 @@
     "_tools/provider.py",
     "_tools/test_provider.py"
   ],
-  "claimed_by": "worker-idisu6u7"
+  "evidence": {
+    "commit": "271d7f36df56473c39803a921f2b04066d99179e",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "provider"
+        ],
+        "exit": 0,
+        "sha256": "043851741b150217"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import provider;r=provider.request('https://www.python.org/downloads/metadata/sigstore/');sys.exit(r['body'][:2]==bytes([31,139]))"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
