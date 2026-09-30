@@ -1,0 +1,29 @@
+{
+  "id": "BG-dyj3m6gl",
+  "kind": "bug",
+  "title": "code.md says each query-log stage has its own test_ql_<stage>.py, but ql_apply's tests live in test_ql_deliver.py",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "kb/_self/code.md's Layout rule describes the query-log test files as they are: one test_ql_ file per lifecycle stage of kb/_self/querylog.md (capture, distill, store, learn, deliver, research, report), with ql_apply's tests under deliver",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; t=open('kb/_self/code.md',encoding='utf-8').read(); sys.exit(1 if 'for each stage' in t and 'test_ql_' in t else 0)"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/selfdoc.py",
+        "check"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/code.md"
+  ]
+}
