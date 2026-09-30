@@ -11,6 +11,7 @@ Question: $ARGUMENTS. If it is empty or too broad to answer in one pass, ask for
 Read these sections of the `kb/_self/` docs first, not the whole docs, each with its own command (`selfdoc.py section` prints the section under a heading with its line numbers). The commands are spelled out in the steps below:
 - `python3 _tools/selfdoc.py section maintaining "Conduct for changes"` (the gate, commit messages)
 - `python3 _tools/selfdoc.py section content-rules "Facts and tags"`
+- `python3 _tools/selfdoc.py section content-rules "Ids"` (source and answer ids, CSV writing)
 - `python3 _tools/selfdoc.py section content-rules "Ledgers and retrieval data"`
 - `python3 _tools/selfdoc.py section content-rules "Licensing and privacy"`
 - `python3 _tools/selfdoc.py section git "Workflow"` (commits and pushes)
@@ -62,9 +63,12 @@ Run each command on its own (no `;`, `&&`, pipes into other tools or loops): the
 - Never call `submit_feedback`, sign up for anything, install software, or run a vendor CLI that changes state. Reading public docs only.
 
 ## 4. Write
-Follow the contract in `kb/_self/content-rules.md` and `.claude/skills/kb-add-topic/SKILL.md` (source rows first, written with Python's `csv` module; one tag per fact; `licence` and `reuse` on every source row; placeholders only).
+The contract in brief (the sections read above hold the rest):
+- Source rows first, in `_sources.csv` (`id,url,title,publisher,licence,reuse,retrieved_utc,version_or_date,artifact_sha256,used_in,superseded_by`), written with Python's `csv` module: `retrieved_utc` today, `version_or_date` the page's own version or date (else `retrieved <date>`), `used_in` and `superseded_by` empty.
+- `licence` and `reuse` on every row: copy an existing row's pair for the same host or repository (`python3 _tools/rag.py src <id>`), else read the licence where it is stated (the repository's LICENSE, the page footer, the terms page). Microsoft Learn by the "Licensing and privacy" section; Anthropic docs `Anthropic terms (no open licence)`, `quote`; an open-source repository or spec its SPDX id, `copy` (NC, ND or source-available: `quote`); vendor pages, blogs and forums with no open licence the terms' name, `quote`; terms you could not read: say so, `unknown`.
+- Each Facts bullet ends in exactly one tag; our own words, quotes of 25 words or fewer; placeholders only; `status: partial` when anything is `UNK`.
 - Extending an anchor topic: add bullets to its Facts section, add the new ids to its `sources:` header, update `retrieved_utc` and, if it changed, `status`. Do not edit `_coverage.csv`, the root's `_coverage.md` table or `used_in`: step 5 regenerates them.
-- New topic, only where step 2 decided one: create it as `/kb-add-topic` describes (priority `P3` unless the user gives one) in the domain step 2 chose, and link it from the anchor's Reference section and back.
+- New topic, only where step 2 decided one: create it with `/kb-add-topic <domain>/<slug>` (priority `P3` unless the user gives one) in the domain step 2 chose, and link it from the anchor's Reference section and back.
 - "How it fits": implications for this kb's frame (e.g. how an agent should call it, where secrets live, what tier an operation needs) are `DER` facts. State the derivation and the facts it rests on. Do not present a design choice as a vendor fact.
 - Add one answer to `_answers.md`, after the last `QK` entry (or at the end, before the `R` sections if there are none):
   ```
@@ -80,7 +84,7 @@ Follow the contract in `kb/_self/content-rules.md` and `.claude/skills/kb-add-to
   `QK-<slug>`: a short lowercase hyphenated slug of the question (e.g. `QK-dataverse-onprem-sync`); `python3 _tools/kbid.py answer "<question>"` suggests one and says if it is taken. Never number answers: parallel writers would pick the same number. `check.py` rejects a duplicate answer id.
 - New source rows take their id from `python3 _tools/kbid.py url <URL>`; never invent one.
 - Failed lookups go to `_gaps.md` under the anchor topic's heading: what you looked for and where, ending `(topic: <domain>/<slug>)`.
-- Retrieval data (`kb/_self/content-rules.md`): `kb/public/_retrieval/signals.csv` rows for a new topic's code names, `_tools/aliases.csv` rows for a product's other names, and a `kb/public/_retrieval/lookup_eval.csv` row for each step-1 pack that missed an article the kb already had (`none` or `weak` although an article answered it).
+- Retrieval data (the "Ledgers and retrieval data" section): `kb/public/_retrieval/signals.csv` rows for a new topic's code names, `_tools/aliases.csv` rows for a product's other names, and a `kb/public/_retrieval/lookup_eval.csv` row for each step-1 pack that missed an article the kb already had (`none` or `weak` although an article answered it).
 
 ## 5. Check
 - `python3 _tools/build_index.py` regenerates `_coverage.csv`, the root's `_coverage.md` table and `used_in` from what you wrote.
