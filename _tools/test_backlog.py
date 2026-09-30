@@ -5,7 +5,8 @@ its own code, a usage error, no tests selected), a non-canonical file, a cycle, 
 agent answers, a sprint started without the operator or with a work item without touches, a failing check, a commit outside `touches` (and the revert
 that clears it), a review with an unconfirmed provisional answer, a malformed KB-Work trailer, a worked item of a
 planned sprint, a KB-Work id whose item is unclaimed or not in a started sprint (work committed before its claim
-commit included), and red pipelines that fail
+commit included), a --commit commit with KB-Work outside its trailer paragraph or a file the command did not write,
+a KB-* or malformed --trailer, and red pipelines that fail
 the same way (one bug) or differently (a second), or the same way as a closed bug (a new one). The repository's
 own backlog must pass `backlog.py check`.
 """
@@ -1655,3 +1656,144 @@ class TestDoneLane:
         commit(repo, "widen", tk)
         code, out = self.done(repo, tk)
         assert code == 0, out
+
+
+class TestBacklogCommitFlag:
+    """--commit on claim, done, new, start and close commits exactly the item files the command wrote (not what was
+    staged or changed before it), with the fixed subject `chore(backlog): VERB ID "title"` and KB-Work in the last
+    trailer paragraph beside the session's --trailer lines, and check-trailers passes on the commit. Planted: a
+    commit with KB-Work before the trailer paragraph and one with a file outside the written set fail the same
+    check; a KB-* --trailer, a malformed one and --trailer without --commit are refused before anything is written."""
+
+    CO = "Co-Authored-By: A <a@example.com>"
+
+    @staticmethod
+    def out(repo, *a):
+        return subprocess.run(["git", *a], cwd=repo, capture_output=True, text=True, encoding="utf-8",
+                              check=True).stdout
+
+    def assert_commit(self, repo, verb, iid, title, ids, paths, monkeypatch, rev="HEAD"):
+        """The check each --commit commit passes: subject, trailer paragraph, changed paths, check-trailers."""
+        subject = self.out(repo, "log", "-1", "--format=%s", rev).strip()
+        assert subject == f'chore(backlog): {verb} {iid} "{title}"', subject
+        work = self.out(repo, "log", "-1", "--format=%(trailers:key=KB-Work,valueonly)", rev).strip()
+        assert work == ", ".join(ids), f"KB-Work trailer {work!r}"
+        last = self.out(repo, "log", "-1", "--format=%B", rev).strip().split("\n\n")[-1].splitlines()
+        assert last == [f"KB-Work: {', '.join(ids)}", self.CO], last
+        changed = self.out(repo, "show", "--name-only", "--format=", rev).split()
+        assert sorted(changed) == sorted(paths), changed
+        monkeypatch.setattr(kbgit, "KB", str(repo))
+        kbgit._WANT.clear()
+        assert kbgit.trailer_audit(rev, quiet=True)[2] == []
+
+    @staticmethod
+    def rel(*ids):
+        return [f"{backlog.REL_DIR}/{i}.json" for i in ids]
+
+    def test_backlog_commit_flag_claim_commits_only_its_item_file(self, sprint, monkeypatch):
+        repo, tk = sprint["repo"], sprint["tk"]
+        commit(repo, "plan")
+        (repo / "src" / "staged.txt").write_text("s\n", encoding="utf-8")
+        sh(repo, "git", "add", "src/staged.txt")  # staged before the command: stays staged, out of the commit
+        (repo / "src" / "a.txt").write_text("changed\n", encoding="utf-8")  # an unstaged change stays too
+        code, out = b(repo, "claim", tk, "--by", "agent-1", "--commit", "--trailer", self.CO)
+        assert code == 0 and "committed " in out, out
+        self.assert_commit(repo, "claim", tk, "Task", [tk], self.rel(tk), monkeypatch)
+        assert self.out(repo, "diff", "--cached", "--name-only").split() == ["src/staged.txt"]
+        assert self.out(repo, "diff", "--name-only").split() == ["src/a.txt"]
+
+    def test_backlog_commit_flag_done_commits_the_evidence(self, sprint, monkeypatch):
+        repo, tk = sprint["repo"], sprint["tk"]
+        commit(repo, "plan")
+        assert b(repo, "claim", tk, "--by", "agent-1", "--commit", "--trailer", self.CO)[0] == 0
+        (repo / "src" / "b.txt").write_text("b\n", encoding="utf-8")
+        commit(repo, "write b", tk)
+        work = self.out(repo, "rev-parse", "HEAD").strip()
+        code, out = b(repo, "done", tk, "--commit", "--trailer", self.CO)
+        assert code == 0 and "commit this with" not in out, out
+        self.assert_commit(repo, "done", tk, "Task", [tk], self.rel(tk), monkeypatch)
+        assert item(repo, "Task")["evidence"]["commit"] == work
+        assert not self.out(repo, "status", "--porcelain")
+
+    def test_backlog_commit_flag_new_files_the_item_and_a_sprint_its_review(self, sprint, monkeypatch):
+        repo = sprint["repo"]
+        commit(repo, "plan")
+        code, out = b(repo, "new", "bug", "--title", "Bug two", "--sprint", sprint["sp"], "--severity", "S3",
+                      "--repro", argstr(is_file("src/d.txt")), "--goal", "d exists", "--touch", "src/**",
+                      "--commit", "--trailer", self.CO)
+        assert code == 0, out
+        bg = item(repo, "Bug two")["id"]
+        self.assert_commit(repo, "file", bg, "Bug two", [bg], self.rel(bg), monkeypatch)
+        code, out = b(repo, "new", "sprint", "--title", "Next", "--goal", "later", "--commit", "--trailer", self.CO)
+        assert code == 0, out
+        sp, rv = item(repo, "Next")["id"], item(repo, "Review sprint: Next")["id"]
+        self.assert_commit(repo, "file", sp, "Next", [sp, rv], self.rel(sp, rv), monkeypatch)
+
+    def test_backlog_commit_flag_start_commits_the_sprint_and_its_items(self, repo, monkeypatch):
+        b(repo, "new", "sprint", "--title", "Sprint", "--goal", "ship b")
+        sp = item(repo, "Sprint")["id"]
+        b(repo, "new", "bug", "--title", "Bug", "--sprint", sp, "--severity", "S3", "--repro",
+          argstr(is_file("src/c.txt")), "--goal", "c exists", "--touch", "src/**")
+        bg, rv = item(repo, "Bug")["id"], item(repo, "Review sprint: Sprint")["id"]
+        assert b(repo, "answer", sp, "start", "--answer", "approve", "--by", "operator")[0] == 0
+        commit(repo, "plan")
+        code, out = b(repo, "start", sp, "--commit", "--trailer", self.CO)
+        assert code == 0, out
+        self.assert_commit(repo, "start", sp, "Sprint", [sp], self.rel(bg, rv, sp), monkeypatch)
+
+    def test_backlog_commit_flag_close_commits_the_deletions_with_the_summary(self, sprint, monkeypatch):
+        repo, tk, st, bg, rv, ep, sp = (sprint[k] for k in ("repo", "tk", "st", "bg", "rv", "ep", "sp"))
+        (repo / "src" / "b.txt").write_text("b\n", encoding="utf-8")
+        (repo / "src" / "c.txt").write_text("c\n", encoding="utf-8")
+        commit(repo, "b and c", f"{tk}, {bg}")
+        for iid in (tk, st, bg):
+            assert b(repo, "done", iid)[0] == 0
+        edit(repo, rv, checks=[{"run": PASS}])
+        commit(repo, "state")
+        assert b(repo, "done", rv)[0] == 0
+        assert b(repo, "done", ep)[0] == 0
+        commit(repo, "done all")
+        code, out = b(repo, "close", sp, "--commit", "--trailer", self.CO)
+        assert code == 0, out
+        self.assert_commit(repo, "close", sp, "Sprint", [sp], self.rel(ep, st, tk, bg, rv, sp), monkeypatch)
+        body = self.out(repo, "log", "-1", "--format=%b").split("\n\n")[0]
+        assert body.startswith(f"delivered by {sp} “Sprint”:") and f"- {bg} “Bug” (bug): done at " in body, body
+
+    def test_backlog_commit_flag_check_fails_on_planted_commits(self, sprint, monkeypatch):
+        """The check above is not vacuous: KB-Work outside the last paragraph, or a file the command did not write,
+        fails it."""
+        repo, tk = sprint["repo"], sprint["tk"]
+        commit(repo, "plan")
+        assert b(repo, "claim", tk, "--by", "agent-1")[0] == 0
+        sh(repo, "git", "add", "-A")
+        subject = f'chore(backlog): claim {tk} "Task"'
+        sh(repo, "git", "commit", "-qm", f"{subject}\n\nKB-Work: {tk}\n\n{self.CO}")  # planted: KB-Work in the body
+        with pytest.raises(AssertionError, match="KB-Work trailer"):
+            self.assert_commit(repo, "claim", tk, "Task", [tk], self.rel(tk), monkeypatch)
+        edit(repo, tk, claimed_by="agent-2")
+        (repo / "src" / "x.txt").write_text("x\n", encoding="utf-8")  # planted: a file outside the written set
+        sh(repo, "git", "add", "-A")
+        sh(repo, "git", "commit", "-qm", f"{subject}\n\nKB-Work: {tk}\n{self.CO}")
+        with pytest.raises(AssertionError, match="src/x.txt"):
+            self.assert_commit(repo, "claim", tk, "Task", [tk], self.rel(tk), monkeypatch)
+
+    def test_backlog_commit_flag_refuses_bad_trailers_before_writing(self, sprint):
+        repo, tk = sprint["repo"], sprint["tk"]
+        commit(repo, "plan")
+        head = self.out(repo, "rev-parse", "HEAD")
+        for extra in (["--commit", "--trailer", f"KB-Work: {tk}"], ["--commit", "--trailer", "no colon"],
+                      ["--commit", "--trailer", "A: b\nC: d"], ["--trailer", self.CO]):
+            code, out = b(repo, "claim", tk, "--by", "agent-1", *extra)
+            assert code == 1 and "--trailer" in out, (extra, out)
+        assert item(repo, "Task")["status"] == "todo" and self.out(repo, "rev-parse", "HEAD") == head
+        assert not self.out(repo, "status", "--porcelain")
+
+    def test_backlog_commit_flag_nothing_written_commits_nothing(self, sprint):
+        """A second claim by the same session rewrites the file unchanged: no empty commit."""
+        repo, tk = sprint["repo"], sprint["tk"]
+        commit(repo, "plan")
+        assert b(repo, "claim", tk, "--by", "agent-1", "--commit")[0] == 0
+        head = self.out(repo, "rev-parse", "HEAD")
+        code, out = b(repo, "claim", tk, "--by", "agent-1", "--commit")
+        assert code == 0 and "nothing committed" in out, out
+        assert self.out(repo, "rev-parse", "HEAD") == head

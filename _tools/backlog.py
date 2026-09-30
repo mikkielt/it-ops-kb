@@ -53,6 +53,12 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                                           --job <its first failed job>. --hook:
                                           the async SessionStart form, silent
 
+claim, done, new, start and close take --commit [--trailer 'KEY: VALUE']...: after the command succeeds, commit the
+item files it wrote or deleted and nothing else (`git commit --only`: what was staged before stays staged), subject
+`chore(backlog): claim|done|file|start|close ID "title"`, and a last paragraph of trailers: KB-Work: <ids> (the item;
+a new sprint and its review story), then each --trailer (the session's own, e.g. Co-Authored-By; a KB-* key is
+refused). close's commit body is its --summary list.
+
 --root DIR (before the command) runs against another clone. Exit: 0 ok, 1 a refused command or check errors,
 2 bad arguments or an unknown id.
 
@@ -128,6 +134,7 @@ class Backlog:
         self.dir = self.root / REL_DIR
         self.items, self.raw, self.load_errors = {}, {}, []
         self.withheld = set()  # items holding a piece of a host or user name: label() never prints their title
+        self.written = []  # repository paths of the item files this run wrote or deleted, first first (--commit)
         if self.dir.is_dir():
             for p in sorted(self.dir.glob("*.json")):
                 text = p.read_text(encoding="utf-8")
@@ -149,10 +156,17 @@ class Backlog:
             f.write(text)
         self.items[item["id"]] = item
         self.raw[item["id"]] = text
+        self.wrote(item["id"])
 
     def delete(self, iid):
         (self.dir / f"{iid}.json").unlink()
         self.items.pop(iid, None)
+        self.wrote(iid)
+
+    def wrote(self, iid):
+        rel = f"{REL_DIR}/{iid}.json"
+        if rel not in self.written:
+            self.written.append(rel)
 
     def get(self, iid):
         if iid not in self.items:
@@ -1107,6 +1121,56 @@ def say(line=""):
     print(withhold(line))
 
 
+# --commit: claim, done, new, start and close commit the item files they wrote, and nothing else
+COMMITS = ("claim", "done", "new", "start", "close")
+TRAILER_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9-]*:[ \t]*\S[^\r\n]*\Z")
+
+
+def trailer_problem(t):
+    """Why a --trailer value is refused, or None: one `Key: value` line whose key is not a KB-* one (KB-Work is the
+    command's own, the others are the commit-msg hook's)."""
+    if not TRAILER_RE.fullmatch(t):
+        return f"--trailer {t!r} is not one `Key: value` line"
+    if t.split(":", 1)[0].strip().upper().startswith("KB-"):
+        return f"--trailer {t!r}: KB-* trailers are written by backlog.py (KB-Work) and the commit-msg hook"
+    return None
+
+
+def commit_message(subject, ids, trailers=(), body=""):
+    """The commit message: the fixed subject, an optional body, and a last paragraph of trailers with KB-Work first
+    and the session's own after it (git reads trailers only in the last paragraph)."""
+    parts = [subject]
+    if body.strip():
+        parts.append(body.strip())
+    parts.append("\n".join([f"KB-Work: {', '.join(ids)}"] + [t.strip() for t in trailers]))
+    return "\n\n".join(parts) + "\n"
+
+
+def commit_written(bl, a, verb, iid, ids=None, body="", title=None):
+    """With --commit: commit exactly the item files this run wrote or deleted (`git commit --only`, so changes staged
+    before it stay staged and out of the commit), subject `chore(backlog): VERB ID "title"`, KB-Work: the ids."""
+    if not getattr(a, "commit", False):
+        return
+    tracked = set(git(bl.root, "ls-files", "--", *bl.written).splitlines()) if bl.written else set()
+    paths = [p for p in bl.written if p in tracked or (bl.root / p).exists()]  # not an untracked file it deleted
+    if not paths:
+        say("--commit: no item file written, nothing committed")
+        return
+    git(bl.root, "add", "-A", "--", *paths)
+    if not git(bl.root, "status", "--porcelain", "--", *paths).strip():
+        say("--commit: the item files are unchanged, nothing committed")
+        return
+    if title is None:
+        title = bl.items.get(iid, {}).get("title", "")
+    subject = withhold(f'chore(backlog): {verb} {iid} "{title}"' if title else f"chore(backlog): {verb} {iid}")
+    msg = commit_message(subject, ids or [iid], getattr(a, "trailer", None) or (), withhold(body) if body else "")
+    p = subprocess.run(["git", "commit", "-q", "-F", "-", "--only", "--", *paths], cwd=bl.root, input=msg,
+                       capture_output=True, text=True, encoding="utf-8", errors="replace")
+    if p.returncode != 0:
+        raise Refused(f"--commit: the item files are written but git commit failed: {(p.stderr or p.stdout).strip()}")
+    say(f"committed {git(bl.root, 'rev-parse', '--short=10', 'HEAD').strip()} {subject} ({len(paths)} item file(s))")
+
+
 def cmd_new(bl, a):
     kind = a.kind
     it = {"id": new_id(kind), "kind": kind, "title": a.title.strip()}
@@ -1123,6 +1187,7 @@ def cmd_new(bl, a):
               "checks": REVIEW_CHECKS}
         bl.save(rv)
         say(f"new sprint {bl.label(it['id'])}, review story {bl.label(rv['id'])}")
+        commit_written(bl, a, "file", it["id"], [it["id"], rv["id"]])
         return 0
     it.update(status="todo" if kind in ("task", "subtask") else "draft", priority=a.priority, rank=a.rank)
     for k in ("parent", "sprint", "goal"):
@@ -1156,6 +1221,7 @@ def cmd_new(bl, a):
     say(f"new {kind} {bl.label(it['id'])}")
     for x in errs:
         say(f"  to fill in: {x.split(': ', 1)[1]}")
+    commit_written(bl, a, "file", it["id"])
     return 0
 
 
@@ -1258,6 +1324,7 @@ def cmd_claim(bl, a):
     it.update(status="doing", claimed_by=a.by)
     bl.save(it)
     say(f"claimed {bl.label(iid)} for {a.by}")
+    commit_written(bl, a, "claim", iid)
     return 0
 
 
@@ -1372,7 +1439,8 @@ def cmd_done(bl, a):
     it.update(status="done", evidence={"commit": head, "checks": results})
     it.pop("claimed_by", None)
     bl.save(it)
-    say(f"done {bl.label(iid)} at {head[:10]}; commit this with the trailer KB-Work: {iid}")
+    say(f"done {bl.label(iid)} at {head[:10]}" + ("" if a.commit else f"; commit this with the trailer KB-Work: {iid}"))
+    commit_written(bl, a, "done", iid)
     return 0
 
 
@@ -1431,6 +1499,7 @@ def cmd_start(bl, a):
     sp["status"] = "active"
     bl.save(sp)
     say(f"started {bl.label(sid)}: {sp['goal']}")
+    commit_written(bl, a, "start", sid)
     return 0
 
 
@@ -1460,11 +1529,13 @@ def cmd_close(bl, a):
         rest = [c for c in bl.descendants(e) if c not in gone]
         if bl.items[e].get("status") == "done" and not rest:
             gone.add(e)
+    summary = [f"delivered by {bl.label(sid)}:"] + [summary_line(bl, i, gone)
+                                                  for i in sorted(gone, key=lambda i: summary_key(bl, i))]
     if a.summary:
-        say(f"delivered by {bl.label(sid)}:")
-        for i in sorted(gone, key=lambda i: summary_key(bl, i)):
-            say(summary_line(bl, i, gone))
+        for x in summary:
+            say(x)
         say()
+    title = bl.items[sid].get("title", "")
     for i in gone:
         say(f"deleted {line(bl, i)}")
     # a remaining item's relates_to is information only, and a depends_on on a deleted item that is not dropped is
@@ -1496,6 +1567,8 @@ def cmd_close(bl, a):
     label = bl.label(sid)
     bl.delete(sid)
     say(f"closed {label}; its items stay in git history (git log --grep 'KB-Work: <id>')")
+    # the body is the summary: the retrospective's findings, written by hand, go in with git commit --amend
+    commit_written(bl, a, "close", sid, body="\n".join(summary), title=title)
     return 0
 
 
@@ -1984,6 +2057,12 @@ def main(argv=None):
     p.add_argument("--status", action="store_true")
     p.add_argument("--job", help="read the newest pipeline of main in which this job ran (a red-main bug's repro)")
     p.add_argument("--hook", action="store_true")
+    for name in COMMITS:
+        p = sub.choices[name]
+        p.add_argument("--commit", action="store_true",
+                       help="commit the item files this command wrote, and only them, with a fixed subject and KB-Work")
+        p.add_argument("--trailer", action="append", default=[], metavar="'KEY: VALUE'",
+                       help="a trailer of the session's own after KB-Work in the commit (--commit only; repeatable)")
     a = ap.parse_args(argv)
     OUTPUT_ROOT[0] = a.root
     for s in (sys.stdout, sys.stderr):  # refusals go to stderr; on Windows a pipe defaults to the ANSI code page
@@ -2001,6 +2080,12 @@ def main(argv=None):
             return 0
     bl = Backlog(a.root)
     try:
+        if a.cmd in COMMITS:  # before the command writes anything
+            if a.trailer and not a.commit:
+                raise Refused("--trailer goes with --commit")
+            why = next(filter(None, map(trailer_problem, a.trailer)), None)
+            if why:
+                raise Refused(why)
         return globals()["cmd_" + a.cmd.replace("-", "_")](bl, a)
     except KeyError as e:
         print(withhold(f"no item {e.args[0]}"), file=sys.stderr)
