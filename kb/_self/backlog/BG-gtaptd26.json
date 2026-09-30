@@ -1,0 +1,34 @@
+{
+  "id": "BG-gtaptd26",
+  "kind": "bug",
+  "title": "next lists a task as ready while its story waits on an undone dependency",
+  "status": "todo",
+  "sprint": "SP-rks3vx5g",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "backlog.py waits() treats an ancestor's unmet depends_on as the item's own, as it does gates and triggers, so next, ready and horizon never offer a task or subtask whose story or bug depends on an item not done; a test in _tools/test_backlog.py plants that case and kb/_self/backlog.md says dependencies are inherited",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys,json,tempfile,pathlib;sys.path.insert(0,'_tools');import backlog as b;r=pathlib.Path(tempfile.mkdtemp());d=r/b.REL_DIR;d.mkdir(parents=True);w=lambda i,**k:(d/(i+'.json')).write_text(json.dumps(dict(id=i,title=i,**k)),encoding='utf-8');w('SP-a',kind='sprint',status='active');w('ST-a',kind='story',status='todo',sprint='SP-a',depends_on=['ST-b']);w('ST-b',kind='story',status='todo',sprint='SP-a');w('TK-a',kind='task',status='todo',parent='ST-a');bl=b.Backlog(r);assert 'TK-a' not in b.ready(bl),'task under a story that depends on an undone story is ready: '+str(b.ready(bl))"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "_tools/test_backlog.py",
+        "-k",
+        "depends"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/test_backlog.py",
+    "kb/_self/backlog.md"
+  ]
+}
