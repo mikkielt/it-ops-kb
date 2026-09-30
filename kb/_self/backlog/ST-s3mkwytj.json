@@ -2,7 +2,7 @@
   "id": "ST-s3mkwytj",
   "kind": "story",
   "title": "Review sprint: Retrospective guards",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-2agxqrrv",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "win-first"
+  "evidence": {
+    "commit": "f98eb22eb01c69f28470887e629683d3a592213a",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "efcabd731a25ea61"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "c4bd080a25b9eb3f"
+      }
+    ]
+  }
 }
