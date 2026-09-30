@@ -445,6 +445,49 @@ def test_review_needs_confirmed_provisional_answers_and_close_deletes(sprint):
     assert not list((Path(repo) / backlog.REL_DIR).glob("*.json"))
 
 
+def test_close_summary_lists_every_item_with_its_evidence_commit(sprint):
+    """close --summary prints, before the deletions, one line per item it deletes (the task, the review, a dropped
+    subtask and the finished epic included) with the commit done recorded, and then closes as usual."""
+    repo, tk, st, bg, rv, ep = (sprint[k] for k in ("repo", "tk", "st", "bg", "rv", "ep"))
+    b(repo, "new", "subtask", "--title", "Sub", "--parent", tk, "--goal", "x", "--touch", "src/**",
+      "--check", argstr(PASS))
+    sb = item(repo, "Sub")["id"]
+    assert b(repo, "drop", sb, "--why", "not needed")[0] == 0
+    (repo / "src" / "b.txt").write_text("b\n", encoding="utf-8")
+    (repo / "src" / "c.txt").write_text("c\n", encoding="utf-8")
+    commit(repo, "b and c", f"{tk}, {bg}")
+    work = subprocess.run(["git", "rev-parse", "HEAD"], cwd=repo, capture_output=True, text=True).stdout.strip()
+    for iid in (tk, st, bg):
+        code, out = b(repo, "done", iid)
+        assert code == 0, out
+    edit(repo, rv, checks=[{"run": PASS}])
+    commit(repo, "state")
+    assert b(repo, "done", rv)[0] == 0
+    assert b(repo, "done", ep)[0] == 0
+    code, out = b(repo, "close", sprint["sp"], "--summary")
+    assert code == 0, out
+    lines = out.splitlines()
+    assert lines[0] == f"delivered by {sprint['sp']} “Sprint”:", out
+    body = lines[1:lines.index("")]
+    assert any(x.startswith(f"- {ep} “Epic” (epic): done at ") for x in body)  # the finished epic goes too
+    assert f"  - {st} “Story” (story): done at {work[:10]}" in body
+    assert f"    - {tk} “Task” (task): done at {work[:10]}" in body
+    assert f"      - {sb} “Sub” (subtask): dropped, no evidence commit" in body
+    assert f"- {bg} “Bug” (bug): done at {work[:10]}" in body
+    assert any(x.startswith(f"- {rv} “Review sprint: Sprint” (story): done at ") for x in body)
+    assert len(body) == 6, body  # one line per deleted item, no more
+    assert body.index(f"  - {st} “Story” (story): done at {work[:10]}") < body.index(
+        f"    - {tk} “Task” (task): done at {work[:10]}")  # a child under its parent
+    assert out.index("delivered by") < out.index("deleted ")  # printed before anything goes
+    assert not list((Path(repo) / backlog.REL_DIR).glob("*.json"))
+
+
+def test_close_summary_refuses_open_items_and_deletes_nothing(sprint):
+    code, out = b(sprint["repo"], "close", sprint["sp"], "--summary")
+    assert code == 1 and "not finished" in out and "delivered by" not in out
+    assert item(sprint["repo"], "Sprint")["id"] == sprint["sp"]
+
+
 def test_close_refuses_open_items(sprint):
     code, out = b(sprint["repo"], "close", sprint["sp"])
     assert code == 1 and "not finished" in out
