@@ -57,7 +57,7 @@ Items describe the present, never a history: no dated logs, no "tried X on Monda
 Only `draft`, `todo`, `doing`, `done` and `dropped` are stored. Whether an item is ready or waiting is computed on every call, never stored, so it cannot go stale. `backlog.py show ID` prints what an item waits on. An item is ready when all of these hold:
 - it is `todo` (or `doing`, claimed by you);
 - its sprint is active (`/kb-item` may take an item outside any sprint: `next --any`, but its work lands only once it is in a started sprint, Git below);
-- every `depends_on` item is `done`;
+- every `depends_on` item of it or an ancestor is `done`;
 - no blocking gate on it or an ancestor is unanswered;
 - every trigger on it or an ancestor has fired;
 - it has no open children;
@@ -100,7 +100,7 @@ An `S1` bug joins the active sprint when it is filed and goes to the front of `n
 
 ## Dependencies, gates and triggers
 
-- **`depends_on`**: the item is not ready until each named item is `done`. `check` rejects a cycle and a dependency on a dropped item. GitLab's equivalent is **is blocked by** (`gitlab/work-items-planning.md`, DOC S-evjlv5hf).
+- **`depends_on`**: the item is not ready until each named item is `done`. Dependencies are inherited, as gates and triggers are: a task or subtask also waits on each undone `depends_on` item of every story, bug or task above it (`show` names the ancestor it comes through), so `next`, `ready` and `horizon` never offer work under a story that is not free to start, and `horizon` places it after that dependency on the critical path. `check` rejects a cycle and a dependency on a dropped item. GitLab's equivalent is **is blocked by** (`gitlab/work-items-planning.md`, DOC S-evjlv5hf).
 - **`relates_to`**: information only.
 - **Gates** are questions only the operator can settle. Each gate records its question, its options and a recommendation.
   - `blocking`: the item, and every item under or after it, waits until the operator answers: `backlog.py answer ID GATE --answer TEXT --by operator`. These are always blocking:
