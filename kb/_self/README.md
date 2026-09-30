@@ -9,6 +9,7 @@ Everything an agent needs to run, change and ship this kb, except the lookup rul
 |---|---|---|
 | `kb/_self/maintaining.md` | before any change: setup, the skills that change the kb, conduct, the gate | rules |
 | `kb/_self/content-rules.md` | writing articles, source rows, ledger entries or retrieval data | rules |
+| `kb/_self/code.md` | writing or changing Python in `_tools/`: standard library only, portability, git in tests, deterministic output, exit codes, planted failures, flat prefixed modules behind a CLI facade, import direction | rules |
 | `kb/_self/tools.md` | choosing or running a tool: commands, flags, exit codes, how pack decides | reference |
 | `kb/_self/git.md` | committing, syncing, merging, reading the history | rules |
 | `kb/_self/plugin.md` | changing the plugin, installing it in another project, a team's own roots (`/kb-add-root`, `KB_ROOTS`) | rules and runbook |
