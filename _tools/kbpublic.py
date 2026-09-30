@@ -23,11 +23,14 @@ the same `main`, so the public home gets a projection of it:
               move to the projection, or a decision to drop what was pushed there directly. `refs/kb/published` keeps
               the last projection. Without a public remote it prints a note and exits 0.
   safety      after the fast-forward check and before the push (a --dry-run runs them all and pushes nothing) every
-              cause is reported, exit 1, in this order: the projection's tree holds a root whose `_root.md` says
-              `visibility: internal`, or a path under a `_private` or `_cache` directory (any depth); a file the
-              projection changes against the public tip (every file when there is none) has a leak-scan hit
-              (kbcommon.leak_hits, allowing _tools/tests_allowlist.txt of the projection) that the tip's version of the
-              file does not already hold; the integration CI verdict of
+              cause is reported, exit 1, in this order. The checks cover every commit to be pushed (tip..projection,
+              the whole projected history when there is no tip), each by what it adds or changes against its first
+              parent, so a later commit that deletes a path or a value does not hide it: a commit writes a path under
+              a `_private` or `_cache` directory (any depth), or under a root whose `_root.md` says `visibility:
+              internal` in any commit of the range, at the tip or in the projection (the projection's tree is checked
+              too, for what the tip already holds); a file a commit writes has a leak-scan hit (kbcommon.leak_hits,
+              allowing _tools/tests_allowlist.txt of the commit and of the projection) that neither the parent's nor
+              the tip's version of the file already holds; the integration CI verdict of
               the source commit (ql_deliver.ci_pipeline on the source remote's url) is not `ok`: red, pending,
               unverified, none, or skip when glab or gh cannot read it. Content is refused, never filtered.
   guard       a push to a public remote of a ref whose history touches a PRIVATE path is refused: the pre-push hook
@@ -220,13 +223,18 @@ class Projector:
         return self.commits[tip]
 
 
-def project(tip, cwd):
-    """The projection of the commit TIP in the repository at CWD."""
+def project(tip, cwd, sources=None):
+    """The projection of the commit TIP in the repository at CWD. SOURCES, a dict, gets {projected sha: the oldest
+    source commit projected to it}."""
     p = Projector(cwd)
     try:
-        return p.project(tip)
+        res = p.project(tip)
     finally:
         p.close()
+    if sources is not None:
+        for s, c in p.commits.items():
+            sources.setdefault(c, s)
+    return res
 
 
 def is_ancestor(a, b, cwd):
@@ -239,36 +247,52 @@ def tree_files(rev, cwd):
     return [x for x in o.decode("utf-8", "replace").split("\0") if x] if code == 0 else None
 
 
-def blobs(rev, paths, cwd):
-    """{path: text} of the utf-8 files PATHS of REV's tree (binary and unreadable ones are left out)."""
-    paths = [x for x in paths if "\n" not in x]
-    code, o, _ = run(["cat-file", "--batch"], cwd, stdin="".join(f"{rev}:{x}\n" for x in paths).encode("utf-8"))
-    res, pos = {}, 0
-    for x in paths:
-        end = o.find(b"\n", pos)
-        if code or end < 0:
-            break
-        head = o[pos:end].split()
-        pos = end + 1
-        if len(head) == 3 and head[1] == b"blob":
-            size = int(head[2])
-            try:
-                res[x] = o[pos:pos + size].decode("utf-8")
-            except UnicodeDecodeError:
-                pass
-            pos += size + 1
+def texts(specs, cwd, chunk=2000):
+    """{spec: text} of the utf-8 blobs SPECS (object names: a sha or REV:PATH), read CHUNK at a time through one
+    `git cat-file --batch` each; binary, missing and unreadable ones are left out."""
+    specs = [x for x in dict.fromkeys(specs) if "\n" not in x]
+    res = {}
+    for i in range(0, len(specs), chunk):
+        part = specs[i:i + chunk]
+        code, o, _ = run(["cat-file", "--batch"], cwd, stdin="".join(f"{x}\n" for x in part).encode("utf-8"))
+        pos = 0
+        for x in part:
+            end = o.find(b"\n", pos)
+            if code or end < 0:
+                break
+            head = o[pos:end].split()
+            pos = end + 1
+            if len(head) == 3:
+                size = int(head[2])
+                if head[1] == b"blob":
+                    try:
+                        res[x] = o[pos:pos + size].decode("utf-8")
+                    except UnicodeDecodeError:
+                        pass
+                pos += size + 1
     return res
 
 
-def allowlist(proj, cwd):
-    """{kind: lowercased values} of the projection's _tools/tests_allowlist.txt (leak scan exceptions)."""
+def blobs(rev, paths, cwd):
+    """{path: text} of the utf-8 files PATHS of REV's tree (binary and unreadable ones are left out)."""
+    got = texts([f"{rev}:{x}" for x in paths], cwd)
+    return {x: got[f"{rev}:{x}"] for x in paths if f"{rev}:{x}" in got}
+
+
+def parse_allowlist(text):
+    """{kind: lowercased values} of the text of a _tools/tests_allowlist.txt (leak scan exceptions)."""
     allow = {}
-    for ln in blobs(proj, [ALLOWLIST_PATH], cwd).get(ALLOWLIST_PATH, "").splitlines():
+    for ln in text.splitlines():
         ln = ln.split("#", 1)[0].strip()
         if ln and len(ln.split(None, 1)) == 2:
             kind, value = ln.split(None, 1)
             allow.setdefault(kind, set()).add(value.strip().lower())
     return allow
+
+
+def allowlist(proj, cwd):
+    """{kind: lowercased values} of the projection's _tools/tests_allowlist.txt (leak scan exceptions)."""
+    return parse_allowlist(blobs(proj, [ALLOWLIST_PATH], cwd).get(ALLOWLIST_PATH, ""))
 
 
 def tree_refusals(proj, files, cwd):
@@ -294,24 +318,101 @@ def file_hits(path, text, allow):
     return [h for h in hits if h[0] == "secret" or not vendored]
 
 
-def leak_refusals(proj, tip, files, cwd):
-    """Causes: a leak-scan hit in a file the projection changes against the public tip TIP (every file when None).
-    A hit whose kind and value the tip's version of the same file already holds is public already: no cause."""
-    if tip is None:
-        changed = files
-    else:
-        code, o, _ = run(["diff", "--name-only", "-z", "--diff-filter=ACMR", tip, proj], cwd)
-        if code:
-            return [f"git diff {tip[:12]} {proj[:12]} failed"]
-        changed = [x for x in o.decode("utf-8", "replace").split("\0") if x]
-    allow, res = allowlist(proj, cwd), []
-    public = blobs(tip, changed, cwd) if tip is not None else {}
-    for x, text in sorted(blobs(proj, changed, cwd).items()):
-        known = set(file_hits(x, public[x], allow)) if x in public else set()
-        kinds = sorted({k for k, v in file_hits(x, text, allow) if (k, v) not in known})
-        if kinds:
-            res.append(f"{x} has a leak-scan hit ({', '.join(kinds)})")
+def history_changes(proj, tip, cwd):
+    """[(commit sha, [(status, old blob, new blob, path)])] of the commits TIP..PROJ (all of PROJ's history when TIP is
+    None), oldest first, from one `git log --raw` pass: a rename is a delete and an add, a merge is diffed against its
+    first parent. Raises RuntimeError on a git error."""
+    code, o, e = run(["log", "--topo-order", "--reverse", "--no-renames", "--raw", "-z", "--no-abbrev", "--root",
+                      "--diff-merges=first-parent", "--format=%x01%H", proj if tip is None else f"{tip}..{proj}"], cwd)
+    if code:
+        raise RuntimeError(f"git log: {e.strip()}")
+    res = []
+    for chunk in o.split(b"\x01")[1:]:
+        sha, _, rest = chunk.partition(b"\0")
+        fields = rest.lstrip(b"\n").split(b"\0")
+        changes = []
+        for meta, path in zip(fields[0::2], fields[1::2]):
+            _, _, old, new, status = meta.lstrip(b":").split()
+            changes.append((status.decode()[:1], old.decode(), new.decode(), path.decode("utf-8", "replace")))
+        res.append((sha.decode(), changes))
     return res
+
+
+def root_dir(path):
+    """The root directory of the `_root.md` at PATH ('' at the top)."""
+    return path.rsplit("/", 1)[0] if "/" in path else ""
+
+
+def history_refusals(proj, tip, files, cwd, sources=None):
+    """(tree causes, leak causes, paths named) of the commits publish would push: TIP..PROJ, all of PROJ's history when
+    TIP is None; FILES are the paths of PROJ's tree. A cause names the source commit (SOURCES: {projected sha: source
+    sha}, from project()) and the projected one when they differ. Each commit is checked by what it adds or changes
+    against its (first) parent, so a later commit that deletes a path or a value does not hide it:
+      tree  a path under a `_private` or `_cache` directory, or a path under a root that is internal (its `_root.md`
+            says `visibility: internal`) in any commit of the range, at TIP or at PROJ;
+      leak  a leak-scan hit that neither the parent's version nor TIP's version of the file holds, allowing the
+            _tools/tests_allowlist.txt of the commit and of PROJ.
+    Raises RuntimeError on a git error."""
+    import kbcommon
+    sources = sources or {}
+    name = lambda c: sources.get(c, c)[:12] + (f" (projected {c[:12]})" if sources.get(c, c) != c else "")  # noqa: E731
+    written = [(c, old, new, x) for c, ch in history_changes(proj, tip, cwd) for st, old, new, x in ch if st != "D"]
+    is_root = lambda x: x.rsplit("/", 1)[-1] == kbcommon.ROOT_FILE  # noqa: E731
+    roots = {}  # object name -> the _root.md paths it is (one blob can be several roots' file)
+    for c, old, new, x in written:
+        if is_root(x):
+            roots.setdefault(new, set()).add(x)
+    for rev, paths in ((tip, tree_files(tip, cwd) if tip else []), (proj, files)):
+        for x in paths or []:
+            if is_root(x):
+                roots.setdefault(f"{rev}:{x}", set()).add(x)
+    internal = sorted({root_dir(x) for spec, text in texts(list(roots), cwd).items()
+                       if kbcommon._meta(text).get("visibility") == "internal" for x in roots[spec]})
+    tree, named, under = [], set(), {}
+    for c, old, new, x in written:
+        if FORBIDDEN_RE.search(x):
+            tree.append(f"commit {name(c)} holds {x}, a path under _private or _cache")
+            named.add(x)
+        for r in internal:
+            if not r or x.startswith(r + "/"):
+                under.setdefault((c, r), []).append(x)
+                named.add(f"{r}/{kbcommon.ROOT_FILE}" if r else kbcommon.ROOT_FILE)
+                break
+    for (c, r), xs in under.items():
+        tree.append(f"commit {name(c)} writes {len(xs)} path(s) under the internal root {r or '.'} "
+                    f"({r + '/' if r else ''}{kbcommon.ROOT_FILE} says visibility: internal), e.g. {xs[0]}")
+    # leak: scan only the lines a commit adds (the new version's lines its parent's version lacks), a chunk of writes
+    # at a time; a hit there counts unless the parent's or the tip's whole version of the file holds it
+    pairs, added = list(dict.fromkeys((old, new, x) for c, old, new, x in written)), {}
+    for i in range(0, len(pairs), 500):
+        part = pairs[i:i + 500]
+        got = texts([s for old, new, x in part for s in (old, new) if not ZERO_RE.match(s)], cwd)
+        for old, new, x in part:
+            if new in got:
+                seen = set(got.get(old, "").splitlines())
+                text = "\n".join(ln for ln in got[new].splitlines() if ln not in seen)
+                if file_hits(x, text, {}):
+                    added[old, new, x] = text
+    rows = [(c, old, new, x) for c, old, new, x in written if (old, new, x) in added]
+    if not rows:
+        return tree, [], named
+    olds = texts([old for c, old, new, x in rows if not ZERO_RE.match(old)], cwd)
+    public = blobs(tip, [x for c, old, new, x in rows], cwd) if tip else {}
+    final = allowlist(proj, cwd)
+    commit_allow = texts([f"{c}:{ALLOWLIST_PATH}" for c, *_ in rows], cwd)
+    leak = []
+    for c, old, new, x in rows:
+        known = set()
+        for text in (olds.get(old), public.get(x)):
+            if text is not None:
+                known |= set(file_hits(x, text, {}))
+        allow = {k: set(vals) for k, vals in final.items()}
+        for k, vals in parse_allowlist(commit_allow.get(f"{c}:{ALLOWLIST_PATH}", "")).items():
+            allow.setdefault(k, set()).update(vals)
+        kinds = sorted({k for k, val in file_hits(x, added[old, new, x], allow) if (k, val) not in known})
+        if kinds:
+            leak.append(f"commit {name(c)}: {x} has a leak-scan hit ({', '.join(kinds)})")
+    return tree, leak, named
 
 
 def ci_refusals(src, url, cwd, run_ci=None):
@@ -380,8 +481,9 @@ def cmd_publish(a, cwd):
     if not src:
         print(f"refused: {source} has no commit")
         return 2
+    sources = {}
     try:
-        proj = project(src, cwd)
+        proj = project(src, cwd, sources)
     except RuntimeError as exc:
         print(f"refused: {exc}")
         return 2
@@ -406,7 +508,12 @@ def cmd_publish(a, cwd):
     if files is None:
         print(f"refused: git ls-tree {proj[:12]} failed")
         return 2
-    causes = tree_refusals(proj, files, cwd) + leak_refusals(proj, tip, files, cwd)
+    try:
+        tree, leak, named = history_refusals(proj, tip, files, cwd, sources)
+    except RuntimeError as exc:
+        print(f"refused: {exc}")
+        return 2
+    causes = tree + tree_refusals(proj, [x for x in files if x not in named], cwd) + leak  # a path the tip holds already
     causes += ci_refusals(src, out(["remote", "get-url", src_remote], cwd), cwd, getattr(a, "ci_run", None))
     if causes:
         for c in causes:
