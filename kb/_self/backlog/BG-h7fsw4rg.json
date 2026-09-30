@@ -2,7 +2,7 @@
   "id": "BG-h7fsw4rg",
   "kind": "bug",
   "title": "querylog.py apply --push help and querylog.md Distill still describe a separate store commit",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-mzzucemv",
   "sprint": "SP-4slunkaj",
   "priority": "P2",
@@ -20,5 +20,18 @@
     "_tools/querylog.py",
     "kb/_self/querylog.md"
   ],
-  "claimed_by": "worker-weaklead"
+  "evidence": {
+    "commit": "636385fe36cd74630687b4e4a365917423dd8627",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; a=open('_tools/querylog.py',encoding='utf-8').read(); b=open('kb/_self/querylog.md',encoding='utf-8').read(); sys.exit('and committed (KB-Auto: querylog)' in a or 'commit it with `KB-Auto: querylog` in the worktree, then' in b)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
