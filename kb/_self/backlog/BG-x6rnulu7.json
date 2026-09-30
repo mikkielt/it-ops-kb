@@ -2,8 +2,9 @@
   "id": "BG-x6rnulu7",
   "kind": "bug",
   "title": "tools.md's querylog.py apply row omits the gap step's weak-lead rule",
-  "status": "draft",
+  "status": "doing",
   "parent": "EP-mzzucemv",
+  "sprint": "SP-4slunkaj",
   "priority": "P2",
   "rank": 0,
   "severity": "S4",
@@ -18,5 +19,6 @@
   },
   "touches": [
     "kb/_self/tools.md"
-  ]
+  ],
+  "claimed_by": "orchestrator-SP-4slunkaj"
 }
