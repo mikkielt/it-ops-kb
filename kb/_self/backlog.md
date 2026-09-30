@@ -166,19 +166,19 @@ A sprint is a goal and the stories and bugs committed to it. It ends when its go
    - every gap becomes a bug, in this sprint if it is `S1`, else in the backlog;
    - `backlog.py check` and `tests.py` pass.
 5. **Retrospective**: from the sprint's evidence, list the process failures: refused `done`s, checks that passed on broken work, late gates, briefs that missed something, rules that got in the way. The operator picks which to act on. Each accepted change becomes a backlog story naming its failure (Changing this process, below). The findings go in the close commit's body, never into the docs.
-6. **Close**: `backlog.py close SP` refuses while anything is open. Otherwise it deletes the sprint, its items and the epics they finished, drops their ids from every remaining item's `relates_to` and `depends_on` (a done dependency is satisfied; one on a dropped item stays for `check` to report), and the commit carries `KB-Work: SP-...`. `close SP --summary` first prints one line per item it deletes (tasks, subtasks, the review, dropped items and the finished epics included): its id, title, kind, status and the commit `done` recorded in `evidence`, or `no evidence commit` for a dropped one. That list is the close commit's body; only the retrospective's findings are written by hand. The git history keeps all of it (The item file, above).
+6. **Close**: `backlog.py close SP` refuses while anything is open. Otherwise it deletes the sprint, its items and the epics they finished, drops their ids from every remaining item's `relates_to` and `depends_on` (a done dependency is satisfied; one on a dropped item stays for `check` to report), and the commit carries `KB-Work: SP-...`. `close SP --summary` first prints one line per item it deletes (tasks, subtasks, the review, dropped items and the finished epics included): its id, title, kind, status and the commit `done` recorded in `evidence`, or `no evidence commit` for a dropped one. That list is the close commit's body (`close SP --commit` writes it there); only the retrospective's findings are written by hand. The git history keeps all of it (The item file, above).
 
 Several sprints may be active at once. Each has its own horizon.
 
 ## Working on items
 
 - **One item** (`/kb-item ID`, or `/kb-item` for `next --any`):
-  1. claim it: `backlog.py claim ID --by <session>`, then commit the item file on its own with `KB-Work: ID` (a backlog-planning commit) before any work commit, since `check-trailers` reads the item as each commit has it;
+  1. claim it: `backlog.py claim ID --by <session> --commit --trailer 'Co-Authored-By: ...'`, which commits the item file on its own with `KB-Work: ID` (a backlog-planning commit; Git, below) before any work commit, since `check-trailers` reads the item as each commit has it;
   2. print its `/goal` condition;
   3. do the work within `touches`, and commit with `KB-Work: ID`;
   4. an item with a code-lane commit: run `/kb-verify` and `kbgit.py sync --push` first, which sends a `code/<id>` merge request; once it has merged, `git fetch` and rebase local `main` onto the integration `main`;
-  5. run `backlog.py done ID`;
-  6. commit the item file with the same trailer, then run `/kb-verify` and `kbgit.py sync --push` (a content-lane commit, straight to `main`). A content-only item skips the merge request.
+  5. run `backlog.py done ID --commit` (with the session's `--trailer` lines);
+  6. that commits the item file with the same trailer; then run `/kb-verify` and `kbgit.py sync --push` (a content-lane commit, straight to `main`). A content-only item skips the merge request.
 - **A sprint** (`/kb-sprint run SP`): one session is the orchestrator.
   - Each orchestrator runs from its own clone or git worktree, never the checkout another session works in: two sessions in one checkout land each other's uncommitted files. Before it lands a branch, `git status --short` shows only its own changes.
   - Ready items whose `touches` do not overlap run in parallel. Each goes to a subagent in its own git worktree (`isolation: "worktree"`) on a local branch `work/<id>`, never pushed.
@@ -214,6 +214,7 @@ Several sprints may be active at once. Each has its own horizon.
 - Every commit that works on an item ends with `KB-Work: <id>[, <id>]`, one line, in the message's last paragraph together with the other trailers (`Co-Authored-By` and the KB-* trailers the hook adds after them). Git reads trailers only in that paragraph: a `KB-Work` line in an earlier one, or with a blank line before `Co-Authored-By`, is no trailer, and `done` finds no commit for the item. `python3 _tools/kbgit.py check-trailers` flags a second line, or an id whose item file is in neither the commit nor its parent.
 - Work lands only for a claimed item of a started sprint. On a commit not yet on `origin/main`, `check-trailers` refuses a `KB-Work` id whose item, as the commit has it, is not `doing` or `done` (not claimed), or whose sprint is not active (not in a started sprint). The pre-push hook and `sync`'s gate run it, so such work is not pushed; the commit-msg hook warns when the commit is made. Exempt: a backlog-planning commit (it changes only item files: new items, claims, gates, a sprint's plan, start or close), and the sprint and review items themselves. An item outside any sprint joins a started sprint before its work lands. Commits already on `origin/main` are history and stay as they are.
 - Changing an item's JSON (claim, gate answers, done) goes in the same commit as the work, or in its own commit with the same trailer.
+- `--commit` on `claim`, `done`, `new`, `start` and `close` makes that commit: only the item files the command wrote or deleted (`git commit --only`: changes staged before it stay staged and out of it), the subject `chore(backlog): claim|done|file|start|close ID "title"`, and a last paragraph of `KB-Work: <ids>` (the item; a new sprint and its review story) followed by the session's own trailers, each passed as `--trailer 'KEY: VALUE'` (a `KB-*` key is refused: the command writes `KB-Work` and the hook the others). `check-trailers` passes on it.
 
 ## Writing about items
 
