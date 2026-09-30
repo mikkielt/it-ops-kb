@@ -39,6 +39,7 @@ You are the orchestrator. Loop:
    - a task or subtask: `subagent_type: "kb-worker"` (`.claude/agents/kb-worker.md`, the newest Sonnet at high effort);
    - an `S1` or `S2` bug and its tasks and subtasks, and a story or bug with no tasks yet (its breakdown): a subagent on the session model (`subagent_type: "general-purpose"`).
    Never pass the Agent tool's `model`: it replaces the agent's own model.
+   The one exception, a fallback: when the Agent tool does not list `kb-worker` (agent files load at session start, so a session that added or changed it cannot use it), start the task on `subagent_type: "general-purpose"` with `model: "sonnet"` (kb-worker's model; general-purpose would take the session's) and a brief that points the worker at `.claude/agents/kb-worker.md` and has it follow that file.
    Brief it with:
    - the item's JSON and its `/goal` text (`python3 _tools/backlog.py goal ID`);
    - the runbook's Working on items;
