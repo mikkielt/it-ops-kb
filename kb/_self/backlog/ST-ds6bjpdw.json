@@ -7,6 +7,16 @@
   "priority": "P2",
   "rank": 0,
   "goal": "Planning a sprint reads each committed item's goal for a step order the lane rules forbid (done or a push to main before a code/<id> merge request merges) and rewrites it or records a gate before start; answers SP-bwlxievv, where ST-cgzd655w's goal put done before sync --push for code items and only the worker's brief caught it",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "plan_goal_lane_order"
+      ]
+    }
+  ],
   "touches": [
     ".claude/skills/kb-sprint/SKILL.md",
     ".claude/skills/kb-backlog/SKILL.md",
