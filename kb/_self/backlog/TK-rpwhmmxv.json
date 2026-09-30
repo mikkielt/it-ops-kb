@@ -2,7 +2,7 @@
   "id": "TK-rpwhmmxv",
   "kind": "task",
   "title": "Audit Windows path tests and plant a directory separator where one is missing",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-3goqpgvd",
   "priority": "P2",
   "rank": 0,
@@ -19,5 +19,6 @@
   ],
   "touches": [
     "_tools/test_*.py"
-  ]
+  ],
+  "claimed_by": "worker-pathtests"
 }
