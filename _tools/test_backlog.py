@@ -1508,6 +1508,57 @@ def test_fingerprint_strips_gitlab_com_timestamp_and_stream_marker():
     assert backlog.first_failure("01E error: x\n") == "<n>E error: x"
 
 
+# ---- recorded real GitLab.com job logs (_tools/fixtures/forge_logs/): the synthetic logs above are the author's
+# guess at the format; these are what the forge sent, CRs, colour codes and section markers included
+
+FORGE_LOGS = Path(TOOLS) / "fixtures" / "forge_logs"
+REAL_WIN_FIRST = "_tools/test_kb_mcp.py::test_status_says_how_far_an_installed_plugin_is_behind_its_marketplace"
+REAL_LINUX_FIRST = "_tools/test_kb_http.py::test_kb_http_roots_default_serves_public_only"
+
+
+def real_forge_log(name):
+    """(job, log) of a recorded real job log: its lines joined byte for byte as the forge sent them."""
+    doc = json.loads((FORGE_LOGS / f"{name}.json").read_text(encoding="utf-8"))
+    return doc["job"], "".join(doc["lines"])
+
+
+def test_real_forge_log_first_failure_is_its_first_failing_test(monkeypatch):
+    win_job, win = real_forge_log("gitlab-com-kb-tests-windows")
+    lin_job, lin = real_forge_log("gitlab-com-kb-tests")
+    assert (win_job, lin_job) == ("kb-tests-windows", "kb-tests")
+    assert re.search(r"^\d{4}-\d\d-\d\dT[\d:.]+Z \d\d[OE] ", win, re.M) and "\r\n" in win and "\x1b[" in lin
+    assert backlog.first_failure(win) == REAL_WIN_FIRST
+    assert backlog.first_failure(lin) == REAL_LINUX_FIRST
+    # two real failures under one job name give two fingerprints, not the one every real log gave (BG-jam2lysj)
+    fps = {backlog.failure_fingerprint("kb-tests-windows", backlog.first_failure(x)) for x in (win, lin)}
+    assert len(fps) == 2
+    # planted: the parser without the GitLab.com timestamp and stream-marker rule reads no test id from either, only
+    # an error line with the runner's timestamp in it
+    monkeypatch.setattr(backlog, "LOG_PREFIX_RE", re.compile(r"^\s*(?:section_(?:start|end):\d+:\S+\s*)?"))
+    for log, test_id in ((win, REAL_WIN_FIRST), (lin, REAL_LINUX_FIRST)):
+        assert backlog.first_failure(log) != test_id and backlog.first_failure(log).startswith("<n>-<n>-<n>T")
+
+
+def test_real_forge_log_red_pipeline_files_one_bug_per_real_failure(repo, monkeypatch):
+    """red-pipeline end to end over the recorded logs: each real failure of kb-tests-windows files its own bug, whose
+    fingerprint names the test that failed first."""
+    sha = head(repo)
+    _, win = real_forge_log("gitlab-com-kb-tests-windows")
+    _, lin = real_forge_log("gitlab-com-kb-tests")
+    pipelines = [{"id": 801, "sha": sha, "status": "failed"}]
+    jobs = [{"id": 30, "name": "kb-tests-windows", "status": "failed", "failure_reason": "script_failure"}]
+    logs = {30: win}
+    forge(monkeypatch, repo, pipelines, jobs=jobs, logs=logs)
+    assert red_pipeline(repo) == 0
+    (first,) = bugs(repo)
+    assert f"fingerprint {backlog.failure_fingerprint('kb-tests-windows', REAL_WIN_FIRST)}" in first["links"]
+    pipelines[:] = [{"id": 802, "sha": sha, "status": "failed"}]
+    logs[30] = lin
+    assert red_pipeline(repo) == 0
+    (second,) = [x for x in bugs(repo) if x["id"] != first["id"]]
+    assert f"fingerprint {backlog.failure_fingerprint('kb-tests-windows', REAL_LINUX_FIRST)}" in second["links"]
+
+
 def test_fingerprint_same_failure_one_bug_different_failure_a_second(repo, monkeypatch, capsys):
     sha = head(repo)
     pipelines = [{"id": 901, "sha": sha, "status": "failed"}]

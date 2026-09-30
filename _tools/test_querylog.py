@@ -4757,3 +4757,27 @@ def test_revert_fingerprint_unreadable_pipeline_files_a_bug_without_one(tmp_path
     pusher = fingerprint_pusher(tmp_path, run)
     bug = pusher.file_bug("e" * 40, {}, {"id": 5, "failure": "", "fingerprint": None})
     assert backlog.Backlog(pusher.wt).items[bug]["links"] == ["pipeline 5"]
+
+
+def test_revert_fingerprint_of_a_real_forge_log_names_its_first_failing_test(tmp_path):
+    """The revert reads recorded real GitLab.com job logs (_tools/fixtures/forge_logs/: timestamps, stream markers,
+    CRs and colour codes as the forge sent them): each real failure gets the fingerprint of the test that failed
+    first, and two real failures of one job file two bugs, not one (BG-jam2lysj)."""
+    import backlog
+    url = "https://gitlab.example.com/team/kb.git"
+    logs = {}
+    for jid, name in ((40, "gitlab-com-kb-tests-windows"), (41, "gitlab-com-kb-tests")):
+        doc = json.loads((Path(TOOLS) / "fixtures" / "forge_logs" / f"{name}.json").read_text(encoding="utf-8"))
+        logs[jid] = "".join(doc["lines"])
+    want = {40: "_tools/test_kb_mcp.py::test_status_says_how_far_an_installed_plugin_is_behind_its_marketplace",
+            41: "_tools/test_kb_http.py::test_kb_http_roots_default_serves_public_only"}
+    pusher = fingerprint_pusher(tmp_path, fingerprint_forge([], {}))
+    filed = []
+    for pid, jid in ((911, 40), (912, 41)):
+        job = {"id": jid, "name": "kb-tests-windows", "status": "failed", "failure_reason": "script_failure"}
+        run = fingerprint_forge([job], logs)
+        failure, fp = ql_deliver.pipeline_failure(url, {"id": pid}, run)
+        assert failure == want[jid]
+        assert fp == backlog.failure_fingerprint("kb-tests-windows", want[jid])
+        filed.append(pusher.file_bug(f"{pid:040d}", {}, {"id": pid, "failure": failure, "fingerprint": fp}))
+    assert None not in filed and filed[0] != filed[1] and len(backlog.Backlog(pusher.wt).items) == 2
