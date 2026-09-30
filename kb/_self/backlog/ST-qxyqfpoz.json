@@ -2,7 +2,7 @@
   "id": "ST-qxyqfpoz",
   "kind": "story",
   "title": "Navigation cost has a baseline before the split",
-  "status": "todo",
+  "status": "done",
   "parent": "EP-uzf2w6ym",
   "sprint": "SP-rks3vx5g",
   "priority": "P2",
@@ -37,5 +37,42 @@
       "match": ":[1-9]"
     }
   ],
-  "notes": "Three runs per arm on Sonnet. Checks name functions and tests, never file paths, so the same scenario scores the split layout. Each prompt matches a file the sprint splits: test_querylog.py, kbgit.py and its tests, benchmarks.py."
+  "notes": "Three runs per arm on Sonnet. Checks name functions and tests, never file paths, so the same scenario scores the split layout. Each prompt matches a file the sprint splits: test_querylog.py, kbgit.py and its tests, benchmarks.py.",
+  "evidence": {
+    "commit": "ef1eb4acd0d49d6abb28a4e28523898a423b0020",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "navigation"
+        ],
+        "exit": 0,
+        "sha256": "8372721c590d8884"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/benchmarks.py",
+          "report",
+          "--check"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "git",
+          "grep",
+          "-c",
+          "^navigation,.*,before,",
+          "--",
+          "kb/_self/reports/benchmarks.csv"
+        ],
+        "exit": 0,
+        "sha256": "0bdfc2a5295a34eb"
+      }
+    ]
+  }
 }
