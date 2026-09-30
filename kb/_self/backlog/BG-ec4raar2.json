@@ -2,7 +2,7 @@
   "id": "BG-ec4raar2",
   "kind": "bug",
   "title": "done refuses a story or bug with touches whose work was committed under its tasks",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-4fbfzobr",
   "priority": "P2",
   "rank": 0,
@@ -27,6 +27,9 @@
   ],
   "touches": [
     "_tools/backlog.py",
-    "_tools/test_backlog.py"
-  ]
+    "_tools/test_backlog.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "claimed_by": "sprint-4fbfzobr-w4"
 }
