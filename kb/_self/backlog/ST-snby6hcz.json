@@ -2,7 +2,7 @@
   "id": "ST-snby6hcz",
   "kind": "story",
   "title": "A co-change report sets the split lines of the large modules",
-  "status": "todo",
+  "status": "done",
   "parent": "EP-uzf2w6ym",
   "sprint": "SP-rks3vx5g",
   "priority": "P2",
@@ -21,5 +21,22 @@
       "match": ":5$"
     }
   ],
-  "notes": "A one-off analysis from git log -L or per-commit hunk ranges, not a permanent tool. Only kbgit.py and benchmarks.py are split in this sprint; a verdict to split kbfacts.py, factdiff.py or backlog.py becomes a story for a later sprint."
+  "notes": "A one-off analysis from git log -L or per-commit hunk ranges, not a permanent tool. Only kbgit.py and benchmarks.py are split in this sprint; a verdict to split kbfacts.py, factdiff.py or backlog.py becomes a story for a later sprint.",
+  "evidence": {
+    "commit": "1031ca9e01befa1d9842100553e153387b6ef5b2",
+    "checks": [
+      {
+        "run": [
+          "git",
+          "grep",
+          "-c",
+          "^Verdict:",
+          "--",
+          "kb/_self/reports/modules.md"
+        ],
+        "exit": 0,
+        "sha256": "de2b246a723eeaf2"
+      }
+    ]
+  }
 }
