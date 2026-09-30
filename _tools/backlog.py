@@ -530,6 +530,7 @@ def stale_knowledge(bl):
 
 CODE_DIRS = ("_tools/", ".claude/", ".claude-plugin/")  # with CODE_FILES: the paths whose change needs /kb-self
 CODE_FILES = (".gitlab-ci.yml",)
+EVERY_TOOL = "_tools/*.py"  # a map pattern that matches this glob, read as a path, covers every tool: a standard doc
 OPEN_STATUSES = ("draft", "todo", "doing")
 
 
@@ -648,12 +649,15 @@ def docs_warnings(bl):
     """An open item whose own touches name code (CODE_DIRS, CODE_FILES) whose kb/_self/map.csv docs are in no open
     item's touches, or only in the touches of items that depend on it (a later task): kb/_self/git.md asks for a code
     change's doc lines in the same commit, and sync's selfdoc stale gate refuses the push without them. The item's own
-    scope (its touches and its descendants') covers a doc; a missing or unreadable map gives no warning."""
+    scope (its touches and its descendants') covers a doc; a missing or unreadable map gives no warning. A standard
+    doc, one with a map pattern that covers every _tools/*.py (EVERY_TOOL), describes no one change: selfdoc stale
+    still lists it, and a Self-Reviewed trailer clears it there, so it is no item's to carry."""
     import selfdoc
     try:
         docmap = selfdoc.load_map(str(bl.root))
     except selfdoc.SelfdocError:
         return []
+    docmap = {d: pats for d, pats in docmap.items() if not any(selfdoc.matches(p, EVERY_TOOL) for p in pats)}
     files = None
     literal = [p for pats in docmap.values() for p in pats if not re.search(r"[*?]", p)]
     open_ids = [i for i, it in bl.items.items() if it.get("kind") != "sprint" and it.get("status") in OPEN_STATUSES]
