@@ -932,16 +932,16 @@ def waits(bl, iid, any_sprint=False):
     sp = bl.sprint_of(iid)
     if not any_sprint and (not sp or bl.items.get(sp, {}).get("status") != "active"):
         out.append("not in an active sprint")
-    for i in [iid] + bl.ancestors(iid):
+    for i in [iid] + bl.ancestors(iid):  # an ancestor's gates, trigger and dependencies hold its descendants too
         a = bl.items[i]
         for g in open_gates(a):
             out.append(f"gate {i}/{g['id']}: {g['question']}")
         t = a.get("trigger")
         if t and not t.get("fired"):
             out.append(f"trigger on {bl.label(i)}: {t['when']}")
-    for d in it.get("depends_on", []):
-        if bl.items.get(d, {}).get("status") != "done":
-            out.append(f"depends on {bl.label(d)}")
+        for d in a.get("depends_on", []):
+            if bl.items.get(d, {}).get("status") != "done":
+                out.append(f"depends on {bl.label(d)}" + (f" (through {bl.label(i)})" if i != iid else ""))
     if it.get("review"):
         for s in bl.sprint_items(sp):
             if s != iid and bl.items[s].get("kind") in IN_SPRINT and bl.items[s].get("status") not in ("done", "dropped"):
@@ -1739,11 +1739,13 @@ def horizon(bl, sid):
                     f" [recommended: {g['recommendation']}]" if g.get("recommendation") else "")
             if it.get("trigger") and not it["trigger"].get("fired"):
                 cause[i] = f"trigger on {bl.label(x)}: {it['trigger']['when']}"
-        for d in bl.items[i].get("depends_on", []):
-            if d not in items and bl.items.get(d, {}).get("status") != "done":
-                cause[i] = f"outside this sprint: {bl.label(d)}"
-    # propagate: an item waits on what its dependencies, children and (for the review) the sprint wait on
-    edges = {i: [d for d in bl.items[i].get("depends_on", []) if d in items]
+            for d in it.get("depends_on", []):
+                if d not in items and bl.items.get(d, {}).get("status") != "done":
+                    cause[i] = f"outside this sprint: {bl.label(d)}"
+    # propagate: an item waits on what its own and its ancestors' dependencies, its children
+    # and (for the review) the sprint wait on
+    edges = {i: list(dict.fromkeys(d for x in [i] + bl.ancestors(i) for d in bl.items[x].get("depends_on", [])
+                                   if d in items))
              + [c for c in bl.children(i) if c in items] for i in items}
     for i in items:
         if bl.items[i].get("review"):

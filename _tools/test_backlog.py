@@ -495,6 +495,27 @@ def test_horizon_splits_reachable_from_gated(sprint):
     assert "Fix or drop?" in hook["hookSpecificOutput"]["additionalContext"]
 
 
+def test_task_inherits_its_storys_undone_depends_on(sprint):
+    """A story that depends on an undone item holds its tasks too, in waits, ready, next and horizon."""
+    repo, st, tk, bg = sprint["repo"], sprint["st"], sprint["tk"], sprint["bg"]
+    assert tk in backlog.ready(backlog.Backlog(repo))
+    edit(repo, st, depends_on=[bg])
+    bl = backlog.Backlog(repo)
+    assert any(w.startswith(f"depends on {bl.label(bg)} (through {bl.label(st)})") for w in backlog.waits(bl, tk))
+    assert tk not in backlog.ready(bl) and backlog.ready(bl) == [bg]
+    code, out = b(repo, "next", "--all")
+    assert code == 0 and tk not in out and bg in out, out
+    reach, stuck, path, widths = backlog.horizon(bl, sprint["sp"])
+    assert tk in reach and not stuck  # in-sprint: reachable, but after the bug on the critical path
+    assert path == [bg, tk, st, sprint["rv"]] and widths == [1, 1, 1, 1]
+    # a dependency outside the sprint holds the task as it holds the story
+    b(repo, "new", "story", "--title", "Elsewhere", "--parent", sprint["ep"], "--goal", "x",
+      "--check", argstr(is_file("src/x.txt")))
+    edit(repo, st, depends_on=[item(repo, "Elsewhere")["id"]])
+    reach, stuck, path, widths = backlog.horizon(backlog.Backlog(repo), sprint["sp"])
+    assert tk not in reach and any(tk in ids for c, ids in stuck.items() if c.startswith("outside this sprint"))
+
+
 def planned_sprint(repo):
     """A planned sprint with a bug besides its review; its start gate is unanswered."""
     b(repo, "new", "sprint", "--title", "Planned", "--goal", "ship c")
