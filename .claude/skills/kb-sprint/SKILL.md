@@ -50,11 +50,12 @@ You are the orchestrator. Loop:
    An item with a single commit and a narrow `touches` may be done in this session instead.
 4. When a subagent returns, land its branch yourself, one at a time:
    1. rebase it on `main`;
-   2. `python3 _tools/backlog.py done ID`;
-   3. commit the item file with the same trailer;
-   4. `/kb-verify` on the changed files;
-   5. `python3 _tools/kbgit.py sync --push` (`/kb-git-sync` when it stops).
-   If `done` refuses, send the reasons back to the same subagent (SendMessage) or release the item (`python3 _tools/backlog.py release ID`) and file what blocks it.
+   2. `/kb-verify` on the changed files;
+   3. an item with a code-lane commit (`_tools/kblane.py`): `python3 _tools/kbgit.py sync --push` (`/kb-git-sync` when it stops) sends the range, the claim commit riding along, as a `code/<id>` merge request; `main` does not move. Several items' code may ride one request. `done` waits for the merge: on the next pass check that the request merged, `git fetch`, rebase local `main` onto the integration `main` (the merged commits keep their hashes);
+   4. `python3 _tools/backlog.py done ID`;
+   5. commit the item file with the same trailer;
+   6. `python3 _tools/kbgit.py sync --push`: the item file, a content-lane commit, goes straight to `main`. A content-only item (its commits touch only kb roots and `kb/_self/*.md`) skips step 3 and lands here.
+   If `done` refuses, send the reasons back to the same subagent (SendMessage) or release the item (`python3 _tools/backlog.py release ID`) and file what blocks it; for an unmerged `code/<id>` request it names the request to merge.
 5. A provisional gate: take the recommendation (`answer ID GATE --provisional`) and go on. A blocking gate: its items wait. In an interactive session ask the operator now, in one batch with the recommendations.
 6. Stop when `next` prints nothing ready. Report the horizon: what landed, and what waits on which gate or trigger (each with its question).
 

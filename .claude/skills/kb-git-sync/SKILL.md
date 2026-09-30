@@ -61,6 +61,9 @@ Exit 3 with "the rebase is complete" means `fix` itself needs a decision (e.g. o
 - Never silence a check by editing `_tools/lint_baseline.txt`, `_tools/tests_allowlist.txt` or a test, unless the user agrees after you explain why.
 - Commit the fix as its own commit (`fix(kb): …`), then rerun `python3 _tools/kbgit.py sync`. Bad trailers are repaired by sync itself.
 - Push rejected twice: someone keeps pushing; wait, then rerun.
+- A `code/<id>` push refused (the branch moved on the remote, exit 1, nothing overwritten): `git fetch`, look at what moved (`git log origin/code/<id>`), rebase onto it or rerun sync, which replaces `code/<id>` with `--force-with-lease`. Never force outside `code/*`.
+- The remote takes no push options: open the merge or pull request by hand from the `code/<id>` branch sync pushed.
+- The pre-push hook refuses a direct push of a code-lane commit to the integration `main`: use `python3 _tools/kbgit.py sync --push`, which sends it as `code/<id>`.
 
 ## 4. Exit 2: refused
 Explain the reason sync printed and stop. Uncommitted changes: ask whether to commit them (one logical change per commit) or `git stash` them. An operation in progress: finish it (section 2 if it is this sync's rebase) or ask before `git rebase --abort`. Fetch failed: report it; do not retry in a loop.
