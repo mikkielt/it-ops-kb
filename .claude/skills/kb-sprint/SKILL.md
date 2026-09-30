@@ -78,3 +78,8 @@ The review story is ready once every other item is done or dropped. Its work:
    - the `delivered by` list `close --summary` printed, as it is;
    - the retrospective's findings, each with the story it became or "no change".
 4. `python3 _tools/kbgit.py sync --push`.
+5. **Clean up** once the close commit is pushed: the sprint's subagent worktrees under `.claude/worktrees/` and its local work branches. A branch is the sprint's when it is `work/<id>` for an id `close --summary` listed, or a `worktree-agent-*` branch whose commits' `KB-Work` trailers name one of those ids (`git log main..<branch> --format='%(trailers:key=KB-Work,valueonly)'`). `git worktree list --porcelain` gives each worktree's path, branch and `locked` line. For each such branch, one command at a time:
+   1. `git cherry main <branch>`: any `+` line is a commit not on `main`; keep the branch and its worktree;
+   2. `git worktree remove <path>` for the worktree that has it checked out, never with `--force`: a worktree with uncommitted files is refused and kept;
+   3. `git branch -D <branch>`: a branch landed by cherry-pick is not an ancestor of `main`, so `-d` refuses it.
+   Never touch a locked worktree, another sprint's branch or `_cache/querylog/worktree`. Report each worktree and branch kept and why (a `+` commit, uncommitted files, locked).
