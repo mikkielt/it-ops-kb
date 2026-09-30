@@ -255,20 +255,20 @@ def test_kbingest_map_symlink_is_not_followed(tmp_path):
     r = Repo(tmp_path / "links")
     Path(r.path).mkdir()
     r.git("init", "-q", "-b", "main")
-    r.write("ok.py", "import os\n")
-    try:
-        os.symlink(outside, Path(r.path) / "link.py")
+    r.write("pkg/ok.py", "import os\n")
+    try:  # in a subdirectory, so the path git lists and the map looks up has a separator
+        os.symlink(outside, Path(r.path) / "pkg" / "link.py")
     except (OSError, NotImplementedError, AttributeError):
         pytest.skip("symbolic links are not available here")
     r.git("add", "-A")
     r.git("commit", "-q", "-m", "init")
-    if r.git("ls-files", "-s", "link.py").split()[0] != "120000":
+    if r.git("ls-files", "-s", "pkg/link.py").split()[0] != "120000":
         pytest.skip("git stores no symbolic link here")
     out = tmp_path / "links.json"
     code, text = map_run(r, out)
     doc = json.loads(out.read_text(encoding="utf-8"))
     assert code == 0 and "stolen_module" not in json.dumps(doc), text
-    assert any(n["note"].startswith("link.py: not a regular file") for n in doc["notes"]), doc["notes"]
+    assert any(n["note"].startswith("pkg/link.py: not a regular file") for n in doc["notes"]), doc["notes"]
 
 
 # The fake toolchain: `fakemap` on PATH is a shim over fixtures/kbingest/fakemap.py.
@@ -522,16 +522,20 @@ def test_kbingest_map_git_symlink_checked_out_as_file_is_not_read(tmp_path):
     Path(r.path).mkdir()
     r.git("init", "-q", "-b", "main")
     r.git("config", "core.symlinks", "false")
-    r.write("ok.py", "import os\n")
-    (tmp_path / "target.txt").write_text("../outside.py", encoding="utf-8")
+    r.write("pkg/ok.py", "import os\n")
+    (tmp_path / "target.txt").write_text("../../outside.py", encoding="utf-8")
     blob = r.git("hash-object", "-w", str(tmp_path / "target.txt")).strip()
-    r.git("update-index", "--add", "--cacheinfo", f"120000,{blob},link.py")
-    r.git("add", "ok.py")
+    # in a subdirectory, so git's path has a separator a native spelling would change
+    r.git("update-index", "--add", "--cacheinfo", f"120000,{blob},pkg/link.py")
+    r.git("add", "pkg/ok.py")
     r.git("commit", "-q", "-m", "init")
-    assert kbingest.symlinks(r.path, "HEAD") == {"link.py"}
-    ctx = kbingest.MapCtx(tmp_path, {}, 1, "python", {"link.py"})
-    (tmp_path / "link.py").write_text("import stolen_module\n", encoding="utf-8")
-    assert ctx.readable("link.py") is None and ctx.notes[0].startswith("link.py: not a regular file")
+    links = kbingest.symlinks(r.path, "HEAD")
+    assert links == {"pkg/link.py"}
+    tree = tmp_path / "tree"
+    (tree / "pkg").mkdir(parents=True)
+    ctx = kbingest.MapCtx(tree, {}, 1, "python", links)
+    (tree / "pkg" / "link.py").write_text("import stolen_module\n", encoding="utf-8")  # as the checkout writes it
+    assert ctx.readable("pkg/link.py") is None and ctx.notes[0].startswith("pkg/link.py: not a regular file")
 
 
 @requires_git
@@ -542,20 +546,21 @@ def test_kbingest_map_dotnet_global_json_git_symlink_is_not_a_regular_file(tmp_p
     Path(r.path).mkdir()
     r.git("init", "-q", "-b", "main")
     r.git("config", "core.symlinks", "false")
-    r.write("app/app.csproj", "<Project Sdk=\"Microsoft.NET.Sdk\" />\n")
+    r.write("src/app/app.csproj", "<Project Sdk=\"Microsoft.NET.Sdk\" />\n")
     (tmp_path / "target.txt").write_text('{"sdk": {"version": "10.0.100"}}', encoding="utf-8")
     blob = r.git("hash-object", "-w", str(tmp_path / "target.txt")).strip()
-    r.git("update-index", "--add", "--cacheinfo", f"120000,{blob},global.json")
-    r.git("add", "app/app.csproj")
+    # in a folder above the project and below the root, so the path the preflight builds has a separator
+    r.git("update-index", "--add", "--cacheinfo", f"120000,{blob},src/global.json")
+    r.git("add", "src/app/app.csproj")
     r.git("commit", "-q", "-m", "init")
     links = kbingest.symlinks(r.path, "HEAD")
-    assert links == {"global.json"}
+    assert links == {"src/global.json"}
     tree = tmp_path / "tree"
-    (tree / "app").mkdir(parents=True)
-    (tree / "global.json").write_text('{"sdk": {"version": "10.0.100"}}', encoding="utf-8")  # as the checkout writes it
+    (tree / "src" / "app").mkdir(parents=True)
+    (tree / "src" / "global.json").write_text('{"sdk": {"version": "10.0.100"}}', encoding="utf-8")  # as the checkout writes it
     ctx = kbingest.MapCtx(tree, {}, 1, "dotnet", links)
-    assert kbingest.DotnetMapper().preflight(ctx, ["app/app.csproj"]) == \
-        "global.json: not a regular file, .NET not mapped and no dotnet command run"
+    assert kbingest.DotnetMapper().preflight(ctx, ["src/app/app.csproj"]) == \
+        "src/global.json: not a regular file, .NET not mapped and no dotnet command run"
 
 
 @requires_git
