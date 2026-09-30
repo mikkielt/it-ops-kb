@@ -2,7 +2,7 @@
   "id": "ST-rj55gtru",
   "kind": "story",
   "title": "backlog.py new refuses a repro that fails for its own error, not the defect",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-5p4ahbnq",
   "sprint": "SP-2agxqrrv",
   "priority": "P2",
@@ -26,5 +26,6 @@
   ],
   "depends_on": [
     "ST-sijsievb"
-  ]
+  ],
+  "claimed_by": "win-first-rj5"
 }

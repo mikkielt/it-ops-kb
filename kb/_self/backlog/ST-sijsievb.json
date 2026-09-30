@@ -2,7 +2,7 @@
   "id": "ST-sijsievb",
   "kind": "story",
   "title": "backlog.py check refuses an item that holds this host's computer or user name",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-5p4ahbnq",
   "sprint": "SP-2agxqrrv",
   "priority": "P1",
@@ -24,5 +24,19 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
-  "claimed_by": "win-first-sij"
+  "evidence": {
+    "commit": "c6e7b38090213199c415f23b27d7f7c41b6ab2e2",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "item_holds_host_names"
+        ],
+        "exit": 0,
+        "sha256": "cd9e05d7b79ce008"
+      }
+    ]
+  }
 }
