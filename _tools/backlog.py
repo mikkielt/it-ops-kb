@@ -1179,6 +1179,15 @@ def cmd_horizon(bl, a):
         items = bl.sprint_items(sid)
         done = sum(1 for i in items if bl.items[i].get("status") in ("done", "dropped"))
         reach, stuck, path, widths = horizon(bl, sid)
+        if a.hook:  # every session reads it: id and title, counts and the next id; horizon without --hook has the rest
+            nxt = ready(bl, sid)
+            waiting = sum(map(len, stuck.values()))
+            lines.append(f"sprint {bl.label(sid)}: {done}/{len(items)} done, {len(reach)} reachable"
+                         + (f", {waiting} wait on the operator or a trigger" if waiting else "")
+                         + (f", next {nxt[0]}" if nxt else ""))
+            for c, ids in stuck.items():
+                lines.append(f"  waiting on {c}: " + ", ".join(ids[:5]))
+            continue
         lines.append(f"sprint {bl.label(sid)} [{bl.items[sid].get('status')}]: goal {bl.items[sid].get('goal')}")
         lines.append(f"  {done}/{len(items)} done; {len(reach)} more reachable without the operator; "
                      f"{sum(map(len, stuck.values()))} wait on the operator or a trigger")
@@ -1198,7 +1207,8 @@ def cmd_horizon(bl, a):
     if a.hook:
         print(json.dumps({"systemMessage": text, "hookSpecificOutput": {
             "hookEventName": "SessionStart",
-            "additionalContext": text + "\nThe backlog runbook is kb/_self/backlog.md."}}, ensure_ascii=False))
+            "additionalContext": text + "\nGoals and critical paths: python3 _tools/backlog.py horizon. "
+                                        "The backlog runbook is kb/_self/backlog.md."}}, ensure_ascii=False))
     else:
         say(text)
     return 0
