@@ -16,8 +16,9 @@ without a source id, a bare [DER] (tags are parsed by _tools/kbfacts.py, the gra
 a CODE part without a `path#symbol` pointer or citing a source that is not pinned to a tag or commit; a `SNIPPET:`
 bullet without `context:`, a `checked: no|syntax|run` value, an evidence tag other than UNK, or a fenced block right
 below it; a `checked: syntax` json, toml or python block that does not parse.
-WARN: no H1 title; a Facts bullet mixing tag kinds; header source ids never cited in the body, or cited
-ids missing from the header.
+WARN: no H1 title; a Facts bullet mixing tag kinds; a DER Facts bullet (not a SNIPPET) that says it rests on a run or
+probe of our own (OBSERVED_RUN) and names no version (VERSION: 2.1.285, "version N", "vN"); header source ids never
+cited in the body, or cited ids missing from the header.
 """
 import csv, glob, json, os, re, sys
 
@@ -31,6 +32,25 @@ SID = kbid.SOURCE_ID  # hash source ids (S-k3f7q2zd) and legacy ones (S123)
 
 
 SNIPPET = re.compile(r"^- SNIPPET:", re.M)
+# A fact that says it rests on a run of our own (kb/_self/content-rules.md, Facts and tags): "observed on|in|by|with|
+# against|at|when|running|:", "measured" the same way, "probed", "the|a|this|that|same|one|each [word] probe
+# on|of|against|in|with|showed|found|returned|gave|was|answered", or "in the|a|one|two|three|each|both|these|those|N
+# [word] probe(s)|run(s)". Deliberately narrow: "an observed failure", "measured behavior", "a liveness probe" and
+# "a `-c` probe" (the thing, not our run of it) do not match.
+OBSERVED_RUN = re.compile(
+    r"\b(?:observed|measured)(?=\s*:|\s+(?:on|in|by|with|against|at|when|running)\b)"
+    r"|\bprobed\b"
+    r"|\b(?:the|a|this|that|same|one|each)\s+(?:\w+\s+)?probe\s+(?:on|of|against|in|with|showed|found|returned|gave|was|answered)\b"
+    r"|\bin\s+(?:the|a|one|two|three|each|both|these|those|\d+)\s+(?:\w+\s+)?(?:probe|run)s?\b", re.I)
+# The version such a fact must state: a dotted number (2.1.285, 3.3), "version N" or "vN".
+VERSION = re.compile(r"\b\d+\.\d+(?:\.\d+)*\b|\bversion\s+\d+|\bv\d+(?:\.\d+)*\b", re.I)
+
+
+def unversioned_run(item, kinds):
+    """Whether a Facts bullet is a DER fact resting on a run or probe that names no version (not a SNIPPET: its
+    `context:` carries the versions)."""
+    return ("DER" in kinds and not item.startswith("- SNIPPET:") and bool(OBSERVED_RUN.search(item))
+            and not VERSION.search(item))
 FENCE = re.compile(r"^```(\w*)[^\n]*\n(.*?)^```", re.M | re.S)
 
 
@@ -192,6 +212,8 @@ def lint_root(root, args, add):
                     add("ERROR", q(p), f"untagged fact: {item[2:80]!r}")
                 elif len(kinds) > 1:
                     add("WARN", q(p), f"fact mixes tags {sorted(kinds)}: {item[2:60]!r}")
+                if unversioned_run(item, kinds):
+                    add("WARN", q(p), f"DER fact rests on a run or probe but names no version: {item[2:60]!r}")
         cited = {s for tag in re.findall(r"\[(?:DOC|CODE|DER|COMMUNITY)[^\]]*\]", body) for s in SID.findall(tag)}
         fms = set(SID.findall(fm.get("sources", "")))
         if fms - cited:
