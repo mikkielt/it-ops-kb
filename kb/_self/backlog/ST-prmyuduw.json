@@ -1,0 +1,19 @@
+{
+  "id": "ST-prmyuduw",
+  "kind": "story",
+  "title": "done flags a repro or check that passes without doing its work",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "backlog.py new and done report a bug repro or item check that exits 0 while doing nothing in this clone (e.g. publish --dry-run printing 'no public remote; nothing published'), so a bug is not proved on a no-op as BG-uqmjlqfl was in SP-v5xagbyv; the item must name a check that runs the fixed code (a test selection) or the operator accepts the host-bound repro",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "test_done_flags_noop_check"
+      ]
+    }
+  ]
+}

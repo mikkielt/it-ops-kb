@@ -1,0 +1,19 @@
+{
+  "id": "ST-bvdd7rdd",
+  "kind": "story",
+  "title": "A kb/_self doc left stale by another change does not fail an unrelated item's done",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "selfdoc.py stale in an item's checks reports only staleness the item's own commits cause, or sync refuses to push a change that leaves a doc stale, so an item's done is not blocked by another sprint's commit (TK-uxm5arrb needed an empty Self-Reviewed commit for AGENTS.md after 17d0f58 in SP-v5xagbyv)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "test_foreign_stale_doc_does_not_fail_done"
+      ]
+    }
+  ]
+}

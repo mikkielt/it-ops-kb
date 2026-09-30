@@ -1,0 +1,22 @@
+{
+  "id": "ST-cbvpws5g",
+  "kind": "story",
+  "title": "kb-worker runs the lint check the sync gate runs",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": ".claude/agents/kb-worker.md tells a worker to run python3 _tools/tests.py -k ruff (or the gate's lint selection) before it reports, so a worker's lint error does not first turn the orchestrator's sync gate red, as a ruff F541 did in SP-v5xagbyv",
+  "checks": [
+    {
+      "run": [
+        "grep",
+        "-c",
+        "-i",
+        "-F",
+        "-k ruff",
+        ".claude/agents/kb-worker.md"
+      ],
+      "exit": 0
+    }
+  ]
+}

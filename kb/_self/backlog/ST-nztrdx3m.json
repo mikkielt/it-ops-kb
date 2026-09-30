@@ -1,0 +1,22 @@
+{
+  "id": "ST-nztrdx3m",
+  "kind": "story",
+  "title": "A gate about a size cap states each option's measured result",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "When /kb-backlog records a gate whose options change a capped file (AGENTS.md 4096 bytes, README.md), each option states the file's size after it, measured, so the operator is not asked twice as with TK-ziyv2537's agents-cap gate in SP-v5xagbyv, whose recommended fold was still 101 bytes over",
+  "checks": [
+    {
+      "run": [
+        "grep",
+        "-c",
+        "-i",
+        "-F",
+        "size after",
+        ".claude/skills/kb-backlog/SKILL.md"
+      ],
+      "exit": 0
+    }
+  ]
+}

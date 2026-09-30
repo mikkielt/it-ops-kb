@@ -1,0 +1,19 @@
+{
+  "id": "ST-cpekq3dq",
+  "kind": "story",
+  "title": "backlog.py new files a bug into a started sprint as todo",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "backlog.py new bug --sprint SP of a started sprint creates the item as todo, not draft, so it can be claimed at once, as the runbook's 'inside a running sprint agents add bugs freely' says; in SP-v5xagbyv three such bugs needed their status edited by hand before claim accepted them",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "test_new_bug_in_started_sprint_is_todo"
+      ]
+    }
+  ]
+}
