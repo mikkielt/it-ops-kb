@@ -1103,6 +1103,19 @@ def cmd_close(bl, a):
             gone.add(e)
     for i in gone:
         say(f"deleted {line(bl, i)}")
+    # a remaining item's relates_to is information only: drop the deleted ids, or check fails on dangling links
+    dead = gone | {sid}
+    for i, it in sorted(bl.items.items()):
+        rel = it.get("relates_to")
+        if i in dead or not isinstance(rel, list) or not dead.intersection(rel):
+            continue
+        keep = [r for r in rel if r not in dead]
+        if keep:
+            it["relates_to"] = keep
+        else:
+            it.pop("relates_to")
+        bl.save(it)
+        say(f"dropped relates_to {', '.join(r for r in rel if r in dead)} from {bl.label(i)}")
     for i in gone:
         bl.delete(i)
     label = bl.label(sid)
