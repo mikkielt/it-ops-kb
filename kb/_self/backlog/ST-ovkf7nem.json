@@ -2,7 +2,7 @@
   "id": "ST-ovkf7nem",
   "kind": "story",
   "title": "The horizon SessionStart hook prints sprint titles without goals",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-hsyx42zz",
   "sprint": "SP-bno4xpft",
   "priority": "P2",
@@ -21,5 +21,6 @@
   "touches": [
     "_tools/backlog.py",
     "_tools/test_backlog.py"
-  ]
+  ],
+  "claimed_by": "worker-ovkf7nem"
 }
