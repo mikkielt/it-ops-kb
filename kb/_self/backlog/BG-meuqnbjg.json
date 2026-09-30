@@ -32,8 +32,8 @@
         "kb-tests, kb-trailers and kb-tests-windows when the pipeline has it; the rest as in the first option"
       ],
       "recommendation": "kb-tests and kb-trailers are the gate: green only when both succeeded; a job whose script ran and failed (failure_reason script_failure) makes the pipeline red whichever job it is (S1 for kb-tests, else S2), since every job is allow_failure; kb-tests-floor, tool-stress and kb-tests-windows never make it unverified when manual, skipped, canceled or failed without running",
-      "answer": "kb-tests and kb-trailers are the gate: green only when both succeeded; a job whose script ran and failed (failure_reason script_failure) makes the pipeline red whichever job it is (S1 for kb-tests, else S2), since every job is allow_failure; kb-tests-floor, tool-stress and kb-tests-windows never make it unverified when manual, skipped, canceled or failed without running",
-      "by": "agent"
+      "answer": "Changed by the operator's CI-MANUAL decision (2026-09-29, the stop-and-watch notice; b8c95fc): every job in .gitlab-ci.yml is manual with allow_failure and there are no gate jobs (GATE_JOBS empty): a manual or unstarted job never makes a pipeline unverified or holds a push; a job whose script ran and failed is still red.",
+      "by": "operator"
     }
   ],
   "links": [
