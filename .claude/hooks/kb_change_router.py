@@ -6,19 +6,25 @@ plugin ships only kb_hook.py: a host cannot change the kb). The change skills ar
 routing deterministic instead of relying on the model to match a skill description.
 
   a prompt with a change verb (add, update, fix, refresh, research, commit, push, ..., or "work the query log")
+  whose words name a change skill
                   -> additional context naming the likely skill(s) from the prompt's words, then the one-line routing
                      for any change; the model decides (a question that only uses such a word can ignore it)
-  kb: / kb+: prompts, slash commands, a single question, prompts without a change verb, and messages from the
-  harness (a subagent's report, a task notification: they start with `<`, `[` or "Another Claude session")
+  the same skill set again in one session (a follow-up such as "commit it" after "commit and push this")
+                  -> no output: a marker per session_id under _cache/change_router/ records the sets already named
+  kb: / kb+: prompts, slash commands, a single question, prompts without a change verb or whose words name no change
+  skill, and messages from the harness (a subagent's report, a task notification: they start with `<`, `[` or
+  "Another Claude session")
                   -> no output: the prompt goes to the model unchanged
 
-`--test "<prompt>"` prints what the hook would add, for a check from a shell.
+`--test "<prompt>"` prints what the hook would add, for a check from a shell (no session, so no marker).
 """
-import json, re, sys
+import json, os, re, sys
 
 SECTION = "python3 _tools/selfdoc.py section maintaining"  # one section of kb/_self/maintaining.md, never the whole file
 CONDUCT = f'`{SECTION} "Conduct for changes"`'  # the rules and the gate, read before any change
-SKILLS = f'`{SECTION} "Skills that change the kb"`'  # the skill list, read only to pick a skill
+MARKERS = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "_cache",
+                       "change_router")  # one file per session: the skill sets already named in it
+SAFE_SESSION = re.compile(r"[A-Za-z0-9_-]{1,80}")  # a session id that is safe as a file name
 
 CHANGE = re.compile(r"\b(?:add|create|write|update|edit|change|modify|fix|correct|remove|delete|rename|move|refactor|"
                     r"implement|improve|extend|replace|commit|push|sync|merge|rebase|refresh|re-?verify|research|"
@@ -38,7 +44,7 @@ ROUTES = (  # (skill, when, pattern): the first three that match are named, in t
      r"\bsubtasks?\b|\b(?:file|triage) (?:a |an |the )?(?:bug|defect)s?\b"),
     ("kb-census", "confirm every source", r"\bcensus\b|\ball (?:the |kb )?sources\b|\bevery source\b"),
     ("kb-refresh", "facts of an existing topic, file or source id", r"\brefresh|\bre-?verify|\bre-?check|\boutdated\b|"
-     r"\bstale\b|\bout of date\b|\bsources? (?:has |have )?(?:changed|moved)\b|\bS-[a-z2-7]{8}\b|\bS\d{3,4}\b"),
+     r"\b(?:update|fix|correct)\b[^.\n]*\b(?:article|topic|facts?)\b|\bstale\b|\bout of date\b|\bsources? (?:has |have )?(?:changed|moved)\b|\bS-[a-z2-7]{8}\b|\bS\d{3,4}\b"),
     ("kb-ingest", "a team's repository into a root", r"\bingest|\bput (?:it|them) here\b|\brepo(?:sitor(?:y|ies))? into\b|"
      r"\b(?:source|import) (?:the |this |our |a |their )?(?:team'?s? )?(?:\S+ )?repo(?:sitor(?:y|ies))?\b"),
     ("kb-add-root", "a new knowledge root under kb/", r"\bnew (?:kb )?root\b|\b(?:add|create) (?:a |an )?(?:new )?(?:kb |knowledge )?root\b"),
@@ -57,18 +63,50 @@ ALWAYS = ("Any change: /kb-verify before committing, then `python3 _tools/kbgit.
           f"stops); a change to tools, skills, hooks, plugin or rules also /kb-self. Rules: {CONDUCT}.")
 
 
-def answer(prompt):
-    """The hook's JSON answer for a prompt, or None to let it through unchanged."""
+def routes(prompt):
+    """The (skill, when) pairs a change request's words name, at most three; [] for anything else."""
     p = (prompt or "").strip()
     if not p or p.startswith("/") or re.match(r"kb\+?\s*:", p, re.I) or HARNESS.match(p) or not CHANGE.search(p) \
             or QUESTION.match(p):
+        return []
+    return [(s, w) for s, w, rx in ROUTES if re.search(rx, p, re.I)][:3]
+
+
+def answer(prompt):
+    """The hook's JSON answer for a prompt, or None to let it through unchanged (no session state: see emit)."""
+    hits = routes(prompt)
+    if not hits:
         return None
-    hits = [(s, w) for s, w, rx in ROUTES if re.search(rx, p, re.I)][:3]
-    likely = "; ".join(f"/{s} ({w})" for s, w in hits) or f"none named by the wording; pick from the list in {SKILLS}"
+    likely = "; ".join(f"/{s} ({w})" for s, w in hits)
     text = ("it-ops-kb change routing (from the prompt's words; ignore it if the prompt only asks a question): make a "
             "change to the kb through its skill, invoked with the Skill tool, not by editing freehand. Likely: "
             f"{likely}. {ALWAYS}")
     return {"hookSpecificOutput": {"hookEventName": "UserPromptSubmit", "additionalContext": text}}
+
+
+def emit(event, markers=MARKERS):
+    """The answer for a hook event, or None when the prompt routes nowhere or its skill set was already named in the
+    event's session. A marker that cannot be read or written never blocks the prompt: the answer is given."""
+    prompt = event.get("prompt", "") if isinstance(event, dict) else ""
+    out = answer(prompt)
+    sid = event.get("session_id") if isinstance(event, dict) else None
+    if out is None or not (isinstance(sid, str) and SAFE_SESSION.fullmatch(sid)):
+        return out
+    key = "+".join(sorted(s for s, _ in routes(prompt)))
+    path = os.path.join(markers, sid + ".txt")
+    try:
+        with open(path, encoding="utf-8") as f:
+            if key in f.read().split():
+                return None
+    except (OSError, ValueError):
+        pass
+    try:
+        os.makedirs(markers, exist_ok=True)
+        with open(path, "a", encoding="utf-8", newline="\n") as f:
+            f.write(key + "\n")
+    except OSError:
+        pass
+    return out
 
 
 def main():
@@ -82,7 +120,7 @@ def main():
         event = json.load(sys.stdin)
     except ValueError:
         return  # not our input: never block a prompt on a parse error
-    out = answer(event.get("prompt", "") if isinstance(event, dict) else "")
+    out = emit(event)
     if out is not None:
         print(json.dumps(out, ensure_ascii=False))
 
