@@ -1,6 +1,7 @@
 """backlog.py in a throwaway git repository: items are created, validated, scheduled, finished and deleted.
 
-Each refusal has a planted failure: a bug whose repro passes, a non-canonical file, a cycle, a blocking gate an
+Each refusal has a planted failure: a bug whose repro passes or fails for its own error (not found, a SyntaxError in
+its own code, a usage error, no tests selected), a non-canonical file, a cycle, a blocking gate an
 agent answers, a sprint started without the operator or with a work item without touches, a failing check, a commit outside `touches` (and the revert
 that clears it), a review with an unconfirmed provisional answer, a malformed KB-Work trailer, a worked item of a
 planned sprint, a KB-Work id whose item is unclaimed or not in a started sprint (work committed before its claim
@@ -126,6 +127,67 @@ def test_new_items_validate(sprint):
 def test_bug_repro_must_fail_now(repo):
     code, out = b(repo, "new", "bug", "--title", "Not a bug", "--severity", "S4", "--repro", argstr(PASS), "--goal", "x")
     assert code == 1 and "must fail" in out
+
+
+def new_bug(repo, title, repro):
+    return b(repo, "new", "bug", "--title", title, "--severity", "S4", "--repro", repro, "--goal", "x")
+
+
+def refused_own_error(repo, repro, cause):
+    code, out = new_bug(repo, "Own error", repro)
+    assert code == 1 and "fails for its own error, not the defect" in out and cause in out, out
+    assert len(out) < 1500, out  # names the cause, does not dump the output
+    assert not list((Path(repo) / backlog.REL_DIR).glob("*.json")), "a refused repro files nothing"
+
+
+def test_repro_fails_for_its_own_error_command_not_found(repo):
+    refused_own_error(repo, "no-such-command-pl-lt-00123 --status", "cannot start")
+
+
+def test_repro_fails_for_its_own_error_syntax_error(repo):
+    # a Windows path in a Python string (\x is a broken escape), and statements whose newlines --repro's split lost
+    refused_own_error(repo, argstr(["python3", "-c", "import pathlib; pathlib.Path('kb\\public\\x.md')"]), "SyntaxError")
+    refused_own_error(repo, argstr(["python3", "-c", "import sys sys.exit(1)"]), "SyntaxError")
+    (repo / "broken.py").write_text("import sys\nif True\n    sys.exit(1)\n", encoding="utf-8")
+    refused_own_error(repo, "python3 broken.py", "cannot compile the repro's own code")
+
+
+def test_repro_fails_for_its_own_error_usage_error(repo):
+    refused_own_error(repo, argstr(["python3", TOOL, "list", "--no-such-flag"]), "rejects the repro's arguments")
+
+
+def test_repro_fails_for_its_own_error_no_tests_selected(repo):
+    pytest.importorskip("pytest")
+    (repo / "test_planted.py").write_text("def test_a():\n    assert False\n", encoding="utf-8")
+    refused_own_error(repo, "python3 -m pytest -q -p no:cacheprovider test_planted.py -k no_such_test",
+                      "selected no tests")
+
+
+def test_repro_fails_for_its_own_error_genuine_failures_accepted(repo):
+    """A failure of the code under test is a reproduction: an exit 1, an assertion, a SyntaxError the tested code
+    raises (not the repro's own), and a planted failing test that pytest selects."""
+    (repo / "test_planted.py").write_text("def test_a():\n    assert False\n", encoding="utf-8")
+    for title, repro in (
+            ("Exit", argstr(["python3", "-c", "import sys; sys.exit(1)"])),
+            ("Assert", argstr(["python3", "-c", "assert 1 == 2, 'PL-LT-00123 is missing'"])),
+            ("Compiled", argstr(["python3", "-c", "compile('x = (', 'm.py', 'exec')"])),
+            ("Pytest", "python3 -m pytest -q -p no:cacheprovider test_planted.py -k test_a")):
+        code, out = new_bug(repo, title, repro)
+        assert code == 0 and "own error" not in out, (title, out)
+        assert item(repo, title)["repro"]["run"] == shlex.split(repro)
+
+
+def test_repro_fails_for_its_own_error_classifier():
+    """own_failure on outputs no host can produce here: a shell's exit 127, cmd's lone message, a pytest run whose
+    selection was all deselected, and a tool's finding that mentions a missing command (accepted)."""
+    f = backlog.own_failure
+    assert "cannot start" in f(["bash", "-c", "x"], 127, "bash: line 1: x: command not found\n")
+    assert "cannot start" in f(["cmd", "/c", "x"], 1, "'x' is not recognized as an internal or external command,\n"
+                                                        "operable program or batch file.\n")
+    assert "selected no tests" in f(["python3", "_tools/tests.py", "-k", "nope"], 5, "12 deselected in 0.40s\n")
+    assert f(["python3", "t.py"], 1, "finding 1\nfinding 2\nfinding 3\nsetup.sh: x: command not found\n") is None
+    assert f(["python3", "t.py"], 2, "usage: t.py [-h]\n") is None  # exit 2 without argparse's error line
+    assert f(["python3", "t.py"], None, "Command 't.py' timed out after 1800 seconds") is None
 
 
 def test_check_finds_planted_errors(sprint):

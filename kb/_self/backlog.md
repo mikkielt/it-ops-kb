@@ -182,7 +182,13 @@ Several sprints may be active at once. Each has its own horizon.
   - The orchestrator lands them one at a time: rebase on `main`, the gate, `kbgit.py sync --push` (code goes as a `code/<id>` merge request, several items' code may share one), and on a later pass, once the request has merged and been fetched, `backlog.py done` and a second `kbgit.py sync --push` for the item file. Content-only items go `done`, commit, `sync --push`.
   - Items that share a file run one after another.
   - A subagent that finds a defect outside its item files a bug and does not fix it.
-- **Finding a defect**: `backlog.py new bug --title T --severity S --repro "CMD" --goal G`. The repro command must fail now; `new` refuses one that passes. Bugs come from:
+- **Finding a defect**: `backlog.py new bug --title T --severity S --repro "CMD" --goal G`. The repro command must fail now, and because of the defect. `new` refuses one that passes. It also refuses one that fails for its own error, naming the cause but not dumping the output:
+  - it cannot start: not found, exit 127 or 9009, or a shell's or `python -m`'s lone not-found message;
+  - Python cannot compile its own code: a `SyntaxError` in the `-c` string or in the script it names, such as a Windows path like `kb\public\x.md` inside a Python string, or statements whose newlines `--repro`'s split lost (use `/` and `;`, or a script);
+  - the tool it runs rejects its arguments: argparse's exit 2 with `usage:` and `error:`;
+  - a test run selected no tests: pytest's `no tests ran`, or exit 5 with everything deselected, such as a `-k` that matches nothing.
+
+  A failed assertion, a traceback from the code under test, or a tool that prints a finding and exits 1 counts as a reproduction. The repro that `red-pipeline` builds is its own command and does not go through this check. Bugs come from:
   - an agent at any time;
   - the operator;
   - a sprint review;

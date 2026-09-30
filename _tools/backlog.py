@@ -5,8 +5,10 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
   backlog.py new KIND --title T [--parent ID] [--sprint ID] [--priority P1|P2|P3] [--rank N] [--goal TEXT]
                  [--severity S1..S4] [--check CMD]... [--touch GLOB]... [--depends ID]... [--repro CMD]
                                           a new item (KIND: epic, story, task, subtask, bug, sprint); prints its id
-                                          and title. A bug's --repro must fail now; a sprint gets its start gate and
-                                          its review story
+                                          and title. A bug's --repro must fail now, and for the defect: one that
+                                          cannot start, dies of a SyntaxError in its own code, gets a usage error
+                                          (argparse exit 2) or runs no tests (pytest exit 5) is refused with the
+                                          cause; a sprint gets its start gate and its review story
   backlog.py check                        validate every item (fields, links, cycles, canonical form, a planned
                                           sprint's items still draft, and the kb references of its `knowledge`: a
                                           missing one is an error, a fact key no longer found is reported as stale
@@ -896,10 +898,62 @@ def run_check(root, c):
         p = subprocess.run(argv, cwd=root, capture_output=True, text=True, encoding="utf-8", errors="replace",
                            timeout=CHECK_TIMEOUT_S)
         code, out = p.returncode, (p.stdout or "") + (p.stderr or "")
-    except (OSError, subprocess.TimeoutExpired) as e:
+    except OSError as e:
+        code, out = None, f"cannot start: {e}"
+    except subprocess.TimeoutExpired as e:
         code, out = None, str(e)
     ok = code == c.get("exit", 0) and (not c.get("match") or re.search(c["match"], out, re.M) is not None)
     return ok, code, out
+
+
+SYNTAX_ERROR = re.compile(r"(SyntaxError|IndentationError|TabError)\b")
+FRAME = re.compile(r'File "([^"]*)", line \d+')
+NOT_FOUND = re.compile(r"is not recognized as an internal or external command"
+                       r"|^\S+: (line \d+: )?\S+: command not found$", re.M)
+
+
+def own_code(argv, path):
+    """True when a frame's file is the repro's own code: the -c string, or the script python runs (argv[1])."""
+    if path == "<string>":
+        return True
+    script = argv[1] if len(argv) > 1 and not argv[1].startswith("-") else None
+    if not script:
+        return False
+    p, s = (os.path.normcase(os.path.normpath(x)) for x in (path, script))
+    return p == s or p.endswith(os.sep + s)
+
+
+def own_failure(argv, code, out):
+    """Why a failing repro failed for its own error rather than the defect, or None when its failure may be the
+    defect's: it cannot start (not found; exit 127 or 9009, or a shell's or python -m's lone not-found message);
+    Python cannot compile its own code (a
+    SyntaxError in the -c string or the script it names, before anything is tested); the tool it runs rejects its
+    arguments (argparse's exit 2 with usage: and error:); or a pytest run selected no tests (exit 5, or no tests ran).
+    A failed assertion, a traceback from the code under test or a finding with exit 1 is a failure it accepts."""
+    lines = [ln.strip() for ln in out.strip().splitlines() if ln.strip()]
+    last = lines[-1][:200] if lines else ""
+    alone = len(lines) <= 3  # a shell's or interpreter's one message, not a tool's output that mentions one
+    if ((code is None and out.startswith("cannot start")) or code in (127, 9009)
+            or (alone and NOT_FOUND.search(out)) or (alone and argv[1:2] == ["-m"] and "No module named " in out)):
+        msg = next((ln[:200] for ln in lines if NOT_FOUND.search(ln) or "No module named " in ln), last)
+        return f"the command cannot start ({msg or f'exit {code}'})"
+    if code is None:
+        return None
+    for i, ln in enumerate(lines):
+        if not SYNTAX_ERROR.match(ln):
+            continue
+        frame = next((m for m in map(FRAME.search, reversed(lines[:i])) if m), None)  # the frame it points at
+        if frame and own_code(argv, frame.group(1)):
+            return (f"Python cannot compile the repro's own code ({ln[:200]}): it fails before it tests anything, "
+                    "whatever the defect does (a backslash in a Python string, or newlines lost in --repro's "
+                    "split: use / in paths and ; between statements, or put the code in a script)")
+    if code == 2 and re.search(r"^usage: ", out, re.M) and re.search(r"^\S+: error: ", out, re.M):
+        err = next((ln for ln in lines if re.match(r"\S+: error: ", ln)), last)[:200]
+        return (f"the tool rejects the repro's arguments ({err}): a usage error tests nothing (when the rejection is "
+                "the defect, write a repro that runs the tool and exits 1 on it)")
+    if re.search(r"\bno tests ran\b", out) or (code == 5 and re.search(r"\bdeselected\b", out)):
+        return f"the test run selected no tests (exit {code}: {last}): a -k or path that matches nothing reproduces nothing"
+    return None
 
 
 def parse_cmd(s):
@@ -944,9 +998,12 @@ def cmd_new(bl, a):
             raise Refused("a bug needs --severity and --repro")
         it["severity"] = a.severity
         it["repro"] = {"run": parse_cmd(a.repro)}
-        ok, code, _ = run_check(bl.root, it["repro"])
+        ok, code, out = run_check(bl.root, it["repro"])
         if ok:
             raise Refused(f"--repro passes now (exit {code}): it must fail until the bug is fixed")
+        why = own_failure(it["repro"]["run"], code, out)
+        if why:
+            raise Refused(f"--repro fails for its own error, not the defect: {why}")
     if a.check:
         it["checks"] = [{"run": parse_cmd(c)} for c in a.check]
     if a.touch:
