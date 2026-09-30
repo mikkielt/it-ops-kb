@@ -590,10 +590,15 @@ def docs_cache_write(key, server, tool, arguments, text, now):
         print(f"kb_mcp: live-docs cache not written: {e}", file=sys.stderr)
 
 
+SSE_EOL = re.compile(r"\r\n|\r|\n")
+
+
 def sse_messages(body):
-    """The JSON-RPC messages in a text/event-stream body: each event's `data:` lines joined by newlines."""
+    """The JSON-RPC messages in a text/event-stream body: each event's `data:` lines joined by newlines. A line ends
+    only at CR LF, CR or LF (the SSE grammar), not at every str.splitlines separator: JSON may carry U+2028, U+2029
+    and U+0085 unescaped inside a string."""
     out, data = [], []
-    for line in body.splitlines() + [""]:
+    for line in SSE_EOL.split(body) + [""]:
         if line.startswith("data:"):
             data.append(line[6:] if line.startswith("data: ") else line[5:])
         elif not line and data:
