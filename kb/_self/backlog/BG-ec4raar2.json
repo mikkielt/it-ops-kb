@@ -23,6 +23,14 @@
         "-k",
         "kb_work_outside_trailers"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "done_counts_descendant_commits"
+      ]
     }
   ],
   "touches": [
