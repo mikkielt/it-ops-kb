@@ -2,7 +2,7 @@
   "id": "BG-iug3utgu",
   "kind": "bug",
   "title": "kb-tests-windows fails 9 tests in the Windows container: six timeouts, a clock bound, a network call and the plugin-status commit line",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-5p4ahbnq",
   "sprint": "SP-hlfwfcx6",
   "priority": "P1",
@@ -16,5 +16,18 @@
       "import json,subprocess,sys; j=json.loads(subprocess.run(['glab','api','projects/86893494/jobs?scope[]=success&scope[]=failed&per_page=100'],capture_output=True,text=True).stdout); w=[x for x in j if x['name']=='kb-tests-windows' and x['ref']=='main']; sys.exit(0 if w and w[0]['status']=='success' else 1)"
     ]
   },
-  "claimed_by": "worker-winci"
+  "evidence": {
+    "commit": "307d5f262d949883a0b0a9029b04aa34de3388d1",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,subprocess,sys; j=json.loads(subprocess.run(['glab','api','projects/86893494/jobs?scope[]=success&scope[]=failed&per_page=100'],capture_output=True,text=True).stdout); w=[x for x in j if x['name']=='kb-tests-windows' and x['ref']=='main']; sys.exit(0 if w and w[0]['status']=='success' else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
