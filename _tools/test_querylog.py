@@ -2318,7 +2318,7 @@ def staging_results(tmp_path, head_pack):
     import inspect
     out = {}
     for fn in STAGING_TESTS:
-        d = tmp_path / f"{fn.__name__}-{len(out)}"
+        d = tmp_path / f"t{len(out)}"  # not the test name: a long profile path passes MAX_PATH on Windows
         d.mkdir(parents=True)
         mp = pytest.MonkeyPatch()
         args = {"tmp_path": d, "head_pack": head_pack, "monkeypatch": mp}
