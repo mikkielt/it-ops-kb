@@ -3,9 +3,9 @@
 
   kb: <question>    run the evidence pack (kbfacts.pack). coverage: good -> block the prompt and show the pack to the
                     user as the block reason: the model is never called and no tokens are spent; but a good pack
-                    with a `check:` line (a name the lead article never mentions, or key words spread over separate
-                    facts: a possible false good) goes to the model as context, like weak, so the model decides.
-                    A pack with a route (weak and flagged good: `split`; none: `web`, kbfacts.route_of) lets the prompt
+                    with a route (a `check:` line: a name the lead article never mentions, or key words spread over
+                    separate facts, a possible false good; or a word nowhere in the kb) goes to the model, so it decides.
+                    A pack with a route (weak and routed good: `split`; none: `web`, kbfacts.route_of) lets the prompt
                     through with the differential as context: an instruction to answer what the kb has from the pack
                     with path:line and urls, research only what it lacks in the live docs, label that part 'live docs,
                     not in the kb' with its url and never fill it from memory, then the pack (split) or only its
@@ -58,7 +58,7 @@ def respond(prompt):
                 {"question": question, "forward": forward, "verdict": "error"})
     row = {"question": question, "forward": forward, "verdict": res["verdict"], "articles": res["paths"][:20],
            "pack": res["text"]}  # main keeps the pack's kb lines (ql_capture.pack_lines), never its text
-    if res["verdict"] == "good" and not forward and not res.get("unmatched") and not res.get("spread"):
+    if res["verdict"] == "good" and not forward and not res.get("route"):  # a routed good (a check: line, a word not in the kb) goes on
         return {"decision": "block", "reason": res["text"] + NOTE}, dict(row, answered=True)
     if res.get("route"):  # weak, none, or a flagged good: the differential (the kb has part, the live docs the rest)
         return {"hookSpecificOutput": {"hookEventName": "UserPromptSubmit", "additionalContext": routed(res)}}, \
