@@ -2,7 +2,7 @@
   "id": "TK-q3ode6sr",
   "kind": "task",
   "title": "Find the job object Claude Code gives hook processes on Windows",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-vtlw7fsu",
   "priority": "P2",
   "rank": 1,
@@ -44,5 +44,19 @@
     }
   ],
   "notes": "Needs a Windows machine: work it in a Windows session of this clone. The Windows laptops with Claude Code and this clone are the machine the gate asks for.",
-  "claimed_by": "win-first"
+  "evidence": {
+    "commit": "44659a375085fb3410d903dbad19c19c2b6b1122",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/rag.py",
+          "audit",
+          "public/python/stdlib-windows-portability"
+        ],
+        "exit": 0,
+        "sha256": "b64142e58e1e4b04"
+      }
+    ]
+  }
 }

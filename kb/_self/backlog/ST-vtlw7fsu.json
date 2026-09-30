@@ -2,7 +2,7 @@
   "id": "ST-vtlw7fsu",
   "kind": "story",
   "title": "Prove the session-end launcher on Windows",
-  "status": "todo",
+  "status": "done",
   "parent": "EP-mzzucemv",
   "sprint": "SP-z7a5c76b",
   "priority": "P2",
@@ -26,5 +26,20 @@
     "kb/public/_gaps.md",
     "python/stdlib-windows-portability"
   ],
-  "notes": "In a Windows clone whose Claude Code session had no Python on PATH, `claude mcp list` printed `SessionEnd hook [sh \"${CLAUDE_PROJECT_DIR}/_tools/kbpy\" _tools/querylog.py launch] failed: Hook cancelled`; not yet seen with Python on PATH."
+  "notes": "In a Windows clone whose Claude Code session had no Python on PATH, `claude mcp list` printed `SessionEnd hook [sh \"${CLAUDE_PROJECT_DIR}/_tools/kbpy\" _tools/querylog.py launch] failed: Hook cancelled`; not yet seen with Python on PATH.",
+  "evidence": {
+    "commit": "44659a375085fb3410d903dbad19c19c2b6b1122",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/rag.py",
+          "audit",
+          "public/python/stdlib-windows-portability"
+        ],
+        "exit": 0,
+        "sha256": "b64142e58e1e4b04"
+      }
+    ]
+  }
 }
