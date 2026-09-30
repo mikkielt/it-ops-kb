@@ -31,7 +31,7 @@ EXCEPTIONS = {
     ("test_kb", "kbfacts", "_STORE"): INSIDE,
     ("test_kb_http", "test_kb_mcp", "_behind_clone"): HELPER,
     ("test_kb_root", "test_kb_mcp", "_embedded"): HELPER,
-    ("test_querylog", "ql_distill", "_distill"): INSIDE,
+    ("test_ql_distill", "ql_distill", "_distill"): INSIDE,
     ("test_querylog", "provider", "_read"): INSIDE,
 }
 
