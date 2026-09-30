@@ -724,22 +724,28 @@ def item_commits(root, ids):
     return out
 
 
-def unlanded_code(root, iid):
-    """(short hashes, remote) of the item's code-lane KB-Work commits on HEAD that are not ancestors of
-    refs/remotes/<integration>/main as last fetched; the hashes are [] when all are, and ["(no such ref)"] when the ref
-    is missing and there is a code-lane commit. Content-lane commits never count."""
+def unlanded_code(root, ids):
+    """(short hashes, remote, owners) of the code-lane KB-Work commits on HEAD naming any of the ids that are not
+    ancestors of refs/remotes/<integration>/main as last fetched; the hashes are [] when all are, and ["(no such ref)"]
+    when the ref is missing and there is a code-lane commit. The owners are the ids the late commits name, first seen
+    first, for the code/<id> branches sync opened. Content-lane commits never count."""
     import kblane, kbpublic
     remote = kbpublic.integration_remote(root)
-    code = [sha for sha, paths in item_commits(root, [iid]).items()
+    code = [sha for sha, paths in item_commits(root, ids).items()
             if kblane.paths_lane(paths)[0] == kblane.CODE]
     if not code:
-        return [], remote
+        return [], remote, []
     ref = f"refs/remotes/{remote}/main"
     if subprocess.run(["git", "rev-parse", "--verify", "-q", ref], cwd=root, capture_output=True).returncode:
-        return ["(no such ref)"], remote
-    return [sha[:10] for sha in code
+        return ["(no such ref)"], remote, []
+    late = [sha for sha in code
             if subprocess.run(["git", "merge-base", "--is-ancestor", sha, ref], cwd=root,
-                              capture_output=True).returncode], remote
+                              capture_output=True).returncode]
+    owners = []
+    for sha in late:
+        named = ID_RE.findall(git(root, "log", "-1", "--format=%(trailers:key=KB-Work,valueonly,separator=%x2C)", sha))
+        owners += [i for i in named if i in ids and i not in owners][:1]
+    return [sha[:10] for sha in late], remote, owners
 
 
 def blob_id(root, rev, path):
@@ -1006,17 +1012,19 @@ def cmd_done(bl, a):
                  if in_scope(ln[3:].strip('"'), globs) and not in_scope(ln[3:].strip('"'), ())]
         if dirty:
             problems.append("uncommitted changes in scope (checks run on HEAD): " + ", ".join(dirty[:5]))
-        if it.get("touches") and not item_commits(bl.root, [iid]):
-            problems.append(f"no commit on HEAD carries the trailer KB-Work: {iid} "
+        family = [iid] + bl.descendants(iid)
+        if it.get("touches") and not item_commits(bl.root, [iid] + bl.descendants(iid)):
+            problems.append(f"no commit on HEAD carries the trailer KB-Work: {iid} or one of its descendants' ids "
                             "(git reads a trailer only in the message's last paragraph, with the others)")
-        late, remote = unlanded_code(bl.root, iid)
+        late, remote, owners = unlanded_code(bl.root, family)
         if late == ["(no such ref)"]:
             problems.append(f"code commits of the item, and refs/remotes/{remote}/main is not fetched: fetch {remote}, "
                             "then run done again")
         elif late:
+            branches = ", ".join("code/" + o for o in owners or [iid])
             problems.append(f"code commit(s) {', '.join(late)} are not on {remote}/main: merge the merge request sync "
-                            f"opened for them (branch code/{iid}), fetch {remote} and run done again")
-        for sha, path in out_of_scope(bl.root, item_commits(bl.root, [iid] + bl.descendants(iid)), globs):
+                            f"opened for them (branch {branches}), fetch {remote} and run done again")
+        for sha, path in out_of_scope(bl.root, item_commits(bl.root, family), globs):
             problems.append(f"commit {sha[:10]} changed {path}, outside touches (revert it, or widen touches)")
     if problems:
         raise Refused(f"{bl.label(iid)} is not done:\n  " + "\n  ".join(problems))
