@@ -1218,6 +1218,19 @@ def test_live_docs_cache_sse_events_are_parsed():
     assert kb_mcp.sse_messages(body) == [{"id": 1, "result": {}}, {"id": 2}]
 
 
+def test_live_docs_cache_sse_splits_only_at_cr_and_lf():
+    """An SSE line ends only at CR LF, CR or LF: a reply whose text holds U+2028, U+2029, U+0085 (or another
+    str.splitlines separator) unescaped is one data line and parses whole."""
+    sys.path.insert(0, TOOLS)
+    import kb_mcp
+    text = "a b c\u0085d\x0be\x0cf\x1cg\x1dh\x1ei"
+    reply = {"jsonrpc": "2.0", "id": 1, "result": {"content": [{"type": "text", "text": text}]}}
+    data = json.dumps(reply, ensure_ascii=False)
+    assert kb_mcp.sse_messages("event: message\ndata: " + data + "\n\n") == [reply]
+    assert kb_mcp.sse_messages("event: message\r\ndata: " + data + "\r\n\r\n") == [reply]
+    assert kb_mcp.sse_messages("event: message\rdata: " + data + "\r\rdata: {\"id\": 2}") == [reply, {"id": 2}]
+
+
 def test_live_docs_cache_rejects_bad_arguments(live_docs):
     kb_mcp, stub = live_docs
     for fn, args in ((kb_mcp.docs_search, {"server": "elsewhere", "query": "x"}), (kb_mcp.docs_search, {"server": "mcp-docs"}),
