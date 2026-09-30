@@ -1,0 +1,26 @@
+{
+  "id": "ST-726xkktu",
+  "kind": "story",
+  "title": "Worktrees for sprint workers have the commit hooks",
+  "status": "draft",
+  "parent": "EP-o2bjijfp",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "A sprint worker's git worktree runs the repository's commit hooks, so its commits carry their KB-* trailers when made, not only after sync rewrites them; from the SP-4fbfzobr retrospective, where every worker commit lacked them.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "sprint_worktree_has_commit_hooks"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md",
+    ".claude/agents/kb-worker.md",
+    "kb/_self/backlog.md",
+    "kb/_self/git.md"
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "id": "ST-ltuy6qn2",
+  "kind": "story",
+  "title": "Sprint workers start from the orchestrator's branch tip",
+  "status": "draft",
+  "parent": "EP-o2bjijfp",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "A /kb-sprint worker in an isolation worktree starts on the orchestrator's branch tip (the claim commit included) without a hand checkout in its brief, and its work lands on that branch without a cherry-pick after the orchestrator rebased onto a merged request; from the SP-4fbfzobr retrospective, where every worker began on a stale base and all eight landed by cherry-pick.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "sprint_worker_starts_from_orchestrator_tip"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md",
+    ".claude/agents/kb-worker.md",
+    "kb/_self/backlog.md"
+  ]
+}

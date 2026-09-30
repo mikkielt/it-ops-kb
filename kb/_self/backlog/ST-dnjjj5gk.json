@@ -22,8 +22,5 @@
     "_tools/test_backlog.py",
     "_tools/test_querylog.py",
     "kb/_self/backlog.md"
-  ],
-  "relates_to": [
-    "BG-jam2lysj"
   ]
 }
