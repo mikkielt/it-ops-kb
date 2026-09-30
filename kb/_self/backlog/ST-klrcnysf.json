@@ -2,7 +2,7 @@
   "id": "ST-klrcnysf",
   "kind": "story",
   "title": "Query-log tests are split by lifecycle stage",
-  "status": "todo",
+  "status": "done",
   "parent": "EP-uzf2w6ym",
   "sprint": "SP-rks3vx5g",
   "priority": "P2",
@@ -45,5 +45,47 @@
     "ST-7atbtpz5",
     "ST-qxyqfpoz"
   ],
-  "notes": "Stages by class: capture (HookRows, Switches, ToolRows, NoHooks, HookConfig), distill (Distill, SpoolFormats, Lock, Launch), store (Store), learn (Learn, SourceFindings, FindingsGates), deliver (Apply, ApplyGates, PushRules, Retry, KbAutoTrailer, DeliverRules, Host*, CloudInGit), research (GapStep, Queue, QuoteCheck, ResearchConfig, Research, ResearchInKbCopy), report (Digest, DigestHook, Status). test_querylog_e2e.py stays whole. Moving keeps the -k selectors that match class and test names."
+  "notes": "Stages by class: capture (HookRows, Switches, ToolRows, NoHooks, HookConfig), distill (Distill, SpoolFormats, Lock, Launch), store (Store), learn (Learn, SourceFindings, FindingsGates), deliver (Apply, ApplyGates, PushRules, Retry, KbAutoTrailer, DeliverRules, Host*, CloudInGit), research (GapStep, Queue, QuoteCheck, ResearchConfig, Research, ResearchInKbCopy), report (Digest, DigestHook, Status). test_querylog_e2e.py stays whole. Moving keeps the -k selectors that match class and test names.",
+  "evidence": {
+    "commit": "58883075dda9ffadb8f38c6961b6a9ede28e1a8e",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "33995d566e584573"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "TestLearn or selfdoc or plugin or red_pipeline or change_router or files_a_bug"
+        ],
+        "exit": 0,
+        "sha256": "3397cc67713553c3"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "2ec1aac8cd39080f"
+      },
+      {
+        "run": [
+          "git",
+          "ls-files",
+          "--error-unmatch",
+          "_tools/test_querylog.py"
+        ],
+        "exit": 1,
+        "sha256": "13893a4a8c3c5624"
+      }
+    ]
+  }
 }
