@@ -1,0 +1,578 @@
+"""Query log tests, capture (kb/_self/querylog.md, Capture; `python3 _tools/tests.py -k TestHookRows`, and the other classes below).
+
+  TestHookRows      the capture hook (`querylog.py capture`) with recorded hook events on stdin: one row per event
+                    with a fresh UUID id; prompt, kb MCP, fetch and Stop rows; fetch rows keep host and path only,
+                    Bash and PowerShell only for curl and wget, never command text or results; fetches and answers
+                    only in a prompt that used the kb; the row size cap; stale spool files pruned
+  TestSwitches      mode `off`, the DISABLED marker and an unreadable config file write nothing (planted: the same
+                    events with the default mode write); where rows go in a clone and in a plugin host
+  TestToolRows      kb_hook.py, kb_ask.py, fetch.py and census.py write their own rows; the kb: hook's answer is
+                    unchanged
+  TestNoHooks       every `claude -p` the pipeline starts carries --settings {"disableAllHooks": true} (planted: an
+                    argument list without it, or with false), research's call included, and nothing is written
+                    unless a hook or a tool runs; research's only MCP tools are the kb server's cached docs_search
+                    and docs_fetch (planted: the direct docs servers), and a repeated search calls the docs server once
+  TestHookConfig    the capture hooks are async on UserPromptSubmit, PostToolUse, PostToolUseFailure and Stop in
+                    .claude/settings.json and the plugin, through kbpy, with matchers for the kb and fetch tools
+                    (planted: a synchronous capture hook, a missing event); the shell form runs end to end; the
+                    launcher runs on SessionEnd (synchronous) and SessionStart (async) in both files, and the digest
+                    hook on SessionStart, synchronous with its timeout (planted: async, no timeout, missing)
+Every run writes under a temporary plugin data directory (conftest.querylog_env), never the clone's own spool, and no
+test calls the real `claude`: Haiku is the recorded reply file or a stub. The helpers the classes share are in
+ql_testkit.py.
+"""
+import datetime, json, os, re, subprocess, sys, time, uuid
+from pathlib import Path
+
+import pytest
+
+import ql_base, ql_capture, ql_distill, ql_report, ql_research, ql_store
+from conftest import KB, TOOLS, querylog_env
+from ql_testkit import load, prompt, QL, serve, SH, SID, spool, stop, tool
+
+
+def lines(data):
+    """Every spool row under `data`, in file order per file."""
+    out = []
+    for f in sorted(spool(data).glob("*.jsonl")) if spool(data).is_dir() else []:
+        with open(f, encoding="utf-8") as fh:
+            out += [json.loads(line) for line in fh if line.strip()]
+    return out
+
+
+def raw(data):
+    return b"".join(f.read_bytes() for f in spool(data).glob("*.jsonl")) if spool(data).is_dir() else b""
+
+
+def hook(data, event, env=None):
+    """Run the capture hook with one event on stdin; returns (exit code, stdout)."""
+    p = subprocess.run([sys.executable, QL, "capture"], input=json.dumps(event, ensure_ascii=False).encode("utf-8"),
+                       capture_output=True, env=env or querylog_env(data), timeout=60)
+    return p.returncode, p.stdout
+
+
+PACK = ("coverage: good (best article matches 3 of 3 key words)\n\n## public/windows/laps.md  Windows LAPS\n"
+        "- public/windows/laps.md:24 The default length is 14. [DOC S-jmzxsdjr]\n"
+        "# Q2\ncoverage: weak (...)\n\n## public/intune/win32-apps.md  Win32 apps\n"
+        "- public/intune/win32-apps.md:49 A rule. (no tag)\n  (+3 more matching lines in public/intune/win32-apps.md)\n")
+
+
+def is_uuid4(s):
+    return uuid.UUID(s).version == 4 and str(uuid.UUID(s)) == s
+
+
+class TestHookRows:
+    def test_prompt_rows_one_per_event(self, tmp_path):
+        for i, text in enumerate(["kb: LAPS password length", "/kb-research hooks input", "hello there"]):
+            assert hook(tmp_path, prompt(text, pid=f"p{i}")) == (0, b"")
+        rows = lines(tmp_path)
+        assert [r["surface"] for r in rows] == ["prompt"] * 3
+        assert [r.get("kb_intent") for r in rows] == ["lookup", "skill", None]
+        assert [r["prompt"] for r in rows][2] == "hello there" and rows[0]["prompt_id"] == "p0"
+        assert len({r["id"] for r in rows}) == 3 and all(is_uuid4(r["id"]) for r in rows)
+        assert all(r["session_id"] == SID for r in rows)
+        assert all(r["v"] == ql_capture.ROW_FORMAT for r in rows)  # the row format distill branches on
+        assert [f.name for f in spool(tmp_path).iterdir()] == [f"{SID}.jsonl"]
+        datetime.datetime.fromisoformat(rows[0]["ts"].replace("Z", "+00:00"))
+
+    def test_change_request_counts_as_kb_use(self, tmp_path):
+        hook(tmp_path, prompt("please refresh the intune win32 apps topic"))
+        assert lines(tmp_path)[0]["kb_intent"] == "change"
+
+    def test_kb_mcp_row(self, tmp_path):
+        resp = [{"type": "text", "text": PACK}]
+        hook(tmp_path, tool("mcp__kb__kb_pack", {"questions": ["a", "b"], "budget": 900}, resp))
+        hook(tmp_path, tool("mcp__plugin_it-ops-kb_kb__kb_show", {"path": "public/windows/laps.md:12"}, {"content": resp}))
+        hook(tmp_path, tool("mcp__kb__kb_pack", {"question": "q"}, ok=False, error="server gone"))
+        a, b, c = lines(tmp_path)
+        assert (a["surface"], a["tool"], a["args"], a["verdict"], a["verdicts"]) == \
+               ("mcp", "kb_pack", {"questions": ["a", "b"]}, "weak", ["good", "weak"])
+        assert a["articles"] == ["public/windows/laps.md", "public/intune/win32-apps.md"] and a["prompt_id"] == "p1"
+        assert a["lines"] == [{"line": "public/windows/laps.md:24", "tag": "DOC", "verdict": "good"},
+                              {"line": "public/intune/win32-apps.md:49", "verdict": "weak"}]  # path:line, never text
+        assert (b["tool"], b["args"], b["verdict"]) == ("kb_show", {"path": "public/windows/laps.md:12"}, "weak")
+        assert (c["outcome"], "verdict" in c) == ("error", False)
+
+    def test_fetch_rows_keep_host_and_path_only(self, tmp_path):
+        hook(tmp_path, prompt("kb: windows laps"))
+        url = "https://jan:pw@Learn.Microsoft.com:443/en-us/windows/laps?view=secret-token#frag"
+        hook(tmp_path, tool("WebFetch", {"url": url, "prompt": "extract the private detail"}, {"result": "text"}))
+        hook(tmp_path, tool("mcp__microsoft-learn__microsoft_docs_fetch", {"url": "https://learn.microsoft.com/a?b=c"}, "t"))
+        hook(tmp_path, tool("mcp__claude-code-docs__query_docs_filesystem_claude_code_docs", {"command": "cat /en/x.mdx"}, "t"))
+        hook(tmp_path, tool("WebFetch", {"url": "https://example.org/gone"}, ok=False,
+                            error="Request failed with status code 404"))
+        rows = [r for r in lines(tmp_path) if r["surface"] == "fetch"]
+        assert [(r["tool"], r.get("host"), r.get("path"), r["outcome"]) for r in rows] == [
+            ("WebFetch", "learn.microsoft.com", "/en-us/windows/laps", "unknown"),
+            ("mcp__microsoft-learn__microsoft_docs_fetch", "learn.microsoft.com", "/a", "unknown"),
+            ("mcp__claude-code-docs__query_docs_filesystem_claude_code_docs", None, None, "unknown"),
+            ("WebFetch", "example.org", "/gone", "http-404")]
+        assert [r.get("chars") for r in rows] == [4, 1, 1, None]  # the result's characters; none for a failure
+        text = raw(tmp_path).decode("utf-8")
+        for secret in ("secret-token", "frag", "jan:pw", "view=", "private detail", "cat /en/x.mdx", ":443"):
+            assert secret not in text, secret
+
+    def test_fetch_outcome_classes(self, tmp_path):
+        hook(tmp_path, prompt("kb: x"))
+        hook(tmp_path, tool("WebFetch", {"url": "https://a.example.com/p"}, {"result": ""}))
+        hook(tmp_path, tool("WebFetch", {"url": "https://a.example.com/p"}, {"code": 200, "result": "page"}))
+        hook(tmp_path, tool("WebFetch", {"url": "https://a.example.com/p"},
+                            {"result": "REDIRECT DETECTED: https://a.example.com/p redirects to https://b.example.net/q"}))
+        hook(tmp_path, tool("WebFetch", {"url": "https://a.example.com/p"}, ok=False, error="timed out"))
+        assert [r["outcome"] for r in lines(tmp_path) if r["surface"] == "fetch"] == \
+               ["empty", "http-200", "redirect-cross-host", "error"]
+
+    def test_shell_rows_only_for_curl_and_wget(self, tmp_path):
+        hook(tmp_path, prompt("kb: x"))
+        cmds = [("Bash", "curl -sL -H 'Authorization: Bearer abc123' 'https://raw.example.com/o/r/main/f.md?token=zz'"),
+                ("Bash", "git status && ls -la https://not.fetched.example.com/"),
+                ("Bash", "echo done"),
+                ("PowerShell", "curl.exe -s https://ps.example.com/path/x.json"),
+                ("Bash", "cd /tmp && /usr/bin/wget -q -O - http://w.example.com/a/b"),
+                ("Bash", "curl -s \"$URL\"")]
+        for name, cmd in cmds:
+            hook(tmp_path, tool(name, {"command": cmd, "description": "d"}, {"stdout": "BODY-SECRET", "stderr": ""}))
+        rows = [r for r in lines(tmp_path) if r["surface"] == "fetch"]
+        assert [(r["tool"], r["fetcher"], r["host"], r["path"], r["outcome"]) for r in rows] == [
+            ("Bash", "curl", "raw.example.com", "/o/r/main/f.md", "unknown"),
+            ("PowerShell", "curl", "ps.example.com", "/path/x.json", "unknown"),
+            ("Bash", "wget", "w.example.com", "/a/b", "unknown")]
+        assert not any("chars" in r for r in rows)  # a shell command's output is never read, not even its length
+        text = raw(tmp_path).decode("utf-8")
+        for secret in ("Bearer", "abc123", "token=", "BODY-SECRET", "-sL", "git status", "wget -q"):
+            assert secret not in text, secret
+
+    def test_fetches_and_answers_only_beside_the_kb(self, tmp_path):
+        hook(tmp_path, prompt("what is the weather", pid="plain"))
+        hook(tmp_path, tool("WebFetch", {"url": "https://example.com/x"}, "t", pid="plain"))
+        hook(tmp_path, tool("Bash", {"command": "curl https://example.com/y"}, {}, pid="plain"))
+        hook(tmp_path, stop("It is sunny.", pid="plain"))
+        assert [r["surface"] for r in lines(tmp_path)] == ["prompt"]
+        hook(tmp_path, prompt("tell me about laps", pid="kb"))
+        hook(tmp_path, tool("mcp__kb__kb_pack", {"question": "laps"}, PACK, pid="kb"))
+        hook(tmp_path, tool("WebFetch", {"url": "https://example.com/x"}, "t", pid="kb"))
+        hook(tmp_path, stop("The LAPS password is 14 characters.", pid="kb"))
+        rows = lines(tmp_path)
+        assert [r["surface"] for r in rows] == ["prompt", "prompt", "mcp", "fetch", "stop"]
+        assert rows[-1]["answer"] == "The LAPS password is 14 characters." and rows[-1]["prompt_id"] == "kb"
+
+    def test_tool_rows_in_the_prompt_window_count_as_kb_use(self, tmp_path):
+        env = querylog_env(tmp_path)
+        hook(tmp_path, prompt("run the ask tool", pid="w"))
+        p = subprocess.run([sys.executable, "-c", "import ql_capture; ql_capture.record('kb_ask', question='q', route='plan')"],
+                           cwd=TOOLS, env=env, capture_output=True, timeout=60)
+        assert p.returncode == 0, p.stderr
+        hook(tmp_path, stop("answer", pid="w"))
+        assert [r["surface"] for r in lines(tmp_path)] == ["prompt", "stop", "kb_ask"]  # the session file sorts first
+
+    def test_row_size_cap_and_utf8(self, tmp_path):
+        hook(tmp_path, prompt("kb: " + "Łódź ☃ \"quoted\" " * 20000))
+        data = raw(tmp_path)
+        assert b"\r" not in data and data.endswith(b"\n")
+        line = data.decode("utf-8").rstrip("\n")
+        assert len(line) <= ql_capture.SPOOL_ROW_MAX_CHARS and "Łódź ☃" in line
+        assert json.loads(line)["prompt"].endswith(ql_capture.CUT)
+
+    def test_unsafe_session_id_goes_to_the_tools_file(self, tmp_path):
+        hook(tmp_path, prompt("hi", sid="../../escape"))
+        assert [f.name.startswith("tools-") for f in spool(tmp_path).iterdir()] == [True]
+        assert not (tmp_path / "escape.jsonl").exists()
+
+    def test_stale_spool_files_are_pruned(self, tmp_path):
+        spool(tmp_path).mkdir(parents=True)
+        old, new = spool(tmp_path) / "old.jsonl", spool(tmp_path) / "new.jsonl"
+        for f in (old, new):
+            f.write_text("{}\n", encoding="utf-8", newline="\n")
+        t = time.time() - (ql_capture.SPOOL_MAX_AGE_DAYS + 1) * 86400
+        os.utime(old, (t, t))
+        hook(tmp_path, prompt("hi"))
+        assert not old.exists() and new.exists()
+
+    def test_bad_input_never_fails(self, tmp_path):
+        for payload in (b"", b"not json", b"[1,2]", b'{"hook_event_name": "PostToolUse", "tool_input": "x"}'):
+            p = subprocess.run([sys.executable, QL, "capture"], input=payload, capture_output=True,
+                               env=querylog_env(tmp_path), timeout=60)
+            assert (p.returncode, p.stdout, p.stderr) == (0, b"", b"")
+        assert lines(tmp_path) == []
+
+
+class TestSwitches:
+    EVENTS = [prompt("kb: laps"), tool("mcp__kb__kb_pack", {"question": "laps"}, PACK),
+              tool("WebFetch", {"url": "https://example.com/x"}, "t"), stop("answer")]
+
+    def write_config(self, data, text):
+        d = Path(data) / "querylog"
+        d.mkdir(parents=True, exist_ok=True)
+        (d / "config.json").write_text(text, encoding="utf-8", newline="\n")
+
+    def run_all(self, data, mode="local"):
+        for ev in self.EVENTS:
+            assert hook(data, ev, querylog_env(data, mode=mode)) == (0, b"")
+        return lines(data)
+
+    def test_default_mode_is_auto_and_writes(self, tmp_path):
+        assert ql_base.DEFAULT_MODE == "auto"
+        rows = self.run_all(tmp_path, mode=None)  # planted: the same events with no config file do write
+        assert not (tmp_path / "querylog" / "config.json").exists()
+        assert [r["surface"] for r in rows] == ["prompt", "mcp", "fetch", "stop"]
+        self.write_config(tmp_path / "x", '{"mode": "local"}')
+        assert [r["surface"] for r in self.run_all(tmp_path / "x")] == ["prompt", "mcp", "fetch", "stop"]
+
+    @pytest.mark.parametrize("text", ['{"mode": "off"}', "{not json", '{"mode": "of"}', "[]"])
+    def test_off_or_unreadable_config_writes_nothing(self, tmp_path, text):
+        self.write_config(tmp_path, text)
+        assert self.run_all(tmp_path) == [] and not spool(tmp_path).exists()
+
+    def test_disabled_marker_writes_nothing(self, tmp_path):
+        (tmp_path / "querylog").mkdir()
+        (tmp_path / "querylog" / "DISABLED").write_text("", encoding="utf-8")
+        self.write_config(tmp_path, '{"mode": "auto"}')
+        assert self.run_all(tmp_path) == [] and not spool(tmp_path).exists()
+
+    def test_off_also_silences_tools(self, tmp_path):
+        self.write_config(tmp_path, '{"mode": "off"}')
+        p = subprocess.run([sys.executable, os.path.join(TOOLS, "kb_ask.py"), "--route", "windows laps password length"],
+                           env=querylog_env(tmp_path), capture_output=True, timeout=60)
+        assert p.returncode == 0 and lines(tmp_path) == []
+
+    def test_places(self, tmp_path, monkeypatch):
+        monkeypatch.delenv("CLAUDE_PLUGIN_DATA", raising=False)
+        monkeypatch.delenv("CLAUDE_PLUGIN_ROOT", raising=False)
+        assert ql_base.HOME.samefile(KB)
+        assert ql_base.places() == (ql_base.HOME / "_cache" / "querylog", ql_base.HOME / "_private" / "querylog.json")
+        monkeypatch.setenv("CLAUDE_PLUGIN_DATA", str(tmp_path))
+        monkeypatch.setenv("CLAUDE_PLUGIN_ROOT", str(tmp_path))  # another plugin's hook: not this copy
+        assert ql_base.places()[0] == ql_base.HOME / "_cache" / "querylog"
+        monkeypatch.setenv("CLAUDE_PLUGIN_ROOT", KB)
+        assert ql_base.places() == (tmp_path / "querylog", tmp_path / "querylog" / "config.json")
+
+    def test_where(self, tmp_path):
+        p = subprocess.run([sys.executable, QL, "where"], env=querylog_env(tmp_path, mode=None), capture_output=True,
+                           text=True, encoding="utf-8", timeout=60)
+        assert p.returncode == 0 and p.stdout.startswith("mode=auto ") and "writes=yes" in p.stdout
+        assert lines(tmp_path) == []
+
+
+@pytest.fixture
+def www():
+    with serve() as url:
+        yield url
+
+
+@pytest.fixture
+def inproc(tmp_path, monkeypatch):
+    """Capture in this process, under tmp_path."""
+    for k, v in querylog_env(tmp_path).items():
+        if k.startswith("CLAUDE_PLUGIN_") or k in ("NO_PROXY", "no_proxy"):
+            monkeypatch.setenv(k, v)
+    monkeypatch.setenv("NO_PROXY", "*")
+    monkeypatch.setenv("no_proxy", "*")
+    ql_capture.spool_dir.cache_clear()
+    yield tmp_path
+    ql_capture.spool_dir.cache_clear()
+
+
+class TestToolRows:
+    def test_kb_hook_row_and_unchanged_answer(self, tmp_path):
+        import kb_hook
+        q = "kb: intune win32 app detection rule"
+        ev = {"hook_event_name": "UserPromptSubmit", "session_id": SID, "prompt_id": "p9", "prompt": q}
+        p = subprocess.run([sys.executable, os.path.join(TOOLS, "kb_hook.py")], input=json.dumps(ev).encode("utf-8"),
+                           capture_output=True, env=querylog_env(tmp_path), timeout=120)
+        assert p.returncode == 0, p.stderr
+        assert json.loads(p.stdout.decode("utf-8")) == kb_hook.answer(q)
+        (row,) = lines(tmp_path)
+        assert (row["surface"], row["prompt_id"], row["question"], row["verdict"], row["answered"], row["forward"]) == \
+               ("kb_hook", "p9", "intune win32 app detection rule", "good", True, False)
+        assert "public/intune/win32-apps.md" in row["articles"] and is_uuid4(row["id"])
+        assert "reason" not in row and "text" not in row and "pack" not in row
+        assert row["lines"] and all(ql_store.CITATION.fullmatch(x["line"]) and set(x) <= {"line", "tag", "verdict"}
+                                    for x in row["lines"])  # the pack's kb lines as path:line, never their text
+
+    def test_plain_prompt_writes_nothing(self, tmp_path):
+        ev = {"hook_event_name": "UserPromptSubmit", "session_id": SID, "prompt_id": "p9", "prompt": "fix the build"}
+        p = subprocess.run([sys.executable, os.path.join(TOOLS, "kb_hook.py")], input=json.dumps(ev).encode("utf-8"),
+                           capture_output=True, env=querylog_env(tmp_path), timeout=120)
+        assert (p.returncode, p.stdout) == (0, b"") and not spool(tmp_path).exists()
+
+    def test_kb_ask_row(self, tmp_path):
+        for args in (["--route", "What is the default Windows LAPS password length?"],
+                     ["How many intune articles are partial?", "--route"]):
+            p = subprocess.run([sys.executable, os.path.join(TOOLS, "kb_ask.py"), *args], env=querylog_env(tmp_path),
+                               capture_output=True, timeout=120)
+            assert p.returncode == 0, p.stderr
+        a, b = lines(tmp_path)
+        assert (a["surface"], a["route"], a["verdict"], a["parts"]) == ("kb_ask", "plan", "good", 1)
+        assert a["lines"] and all(ql_store.CITATION.fullmatch(x["line"]) for x in a["lines"])
+        assert (b["route"], "verdict" in b, "session_id" in a) == ("tool", False, False)
+        assert [f.name for f in spool(tmp_path).iterdir()] == [f"tools-{a['ts'][:10]}.jsonl"]
+
+    def test_fetch_py_rows(self, inproc, www, monkeypatch):
+        import fetch
+        monkeypatch.setattr(fetch, "DELAY", 0)
+        assert fetch.fetch(www + "/ok?key=secret#frag")[0] == b"hello"
+        assert fetch.fetch(www + "/empty")[0] == b""
+        with pytest.raises(Exception):
+            fetch.fetch(www + "/missing")
+        rows = lines(inproc)
+        assert [(r["surface"], r["host"], r["path"], r["outcome"]) for r in rows] == [
+            ("tool_fetch", "127.0.0.1", "/ok", "http-200"), ("tool_fetch", "127.0.0.1", "/empty", "empty"),
+            ("tool_fetch", "127.0.0.1", "/missing", "http-404")]
+        assert [r.get("chars") for r in rows] == [5, 0, None]  # the body's characters, when one was read
+        assert b"secret" not in raw(inproc) and b"frag" not in raw(inproc)
+
+    def test_census_rows(self, inproc, www):
+        import census
+        assert census.fetch(www + "/ok?x=1")[0] == 200
+        assert census.fetch(www + "/missing")[0] == 404
+        assert census.fetch(www + "/ok", limit=3)[1] == "hel"
+        assert census.fetch("http://127.0.0.1:1/refused")[0] != 200
+        assert [r["outcome"] for r in lines(inproc)] == ["http-200", "http-404", "truncated", "error"]
+        assert [r.get("chars") for r in lines(inproc)] == [5, None, 3, None]
+
+    def test_request_outcome(self):
+        o = ql_capture.request_outcome
+        assert o(200, None, 5, "https://a.example.com/x", "https://b.example.com/y") == "redirect-cross-host"
+        assert o(200, None, 5, "https://a.example.com/x", "https://a.example.com/y") == "http-200"
+        assert (o(None, "boom"), o(200, None, 0), o(200, None, 10, limit=10), o()) == ("error", "empty", "truncated", "unknown")
+        assert ql_capture.host_path("ftp://x.example.com/a") == (None, None) and ql_capture.host_path("not a url") == (None, None)
+
+
+def hooks_off(argv):
+    """Whether a `claude -p` argument list turns every hook off for its run."""
+    for i, a in enumerate(argv[:-1]):
+        if a == "--settings":
+            try:
+                if json.loads(argv[i + 1]).get("disableAllHooks") is True:
+                    return True
+            except (ValueError, AttributeError):
+                pass
+    return False
+
+
+class TestNoHooks:
+    def test_pipeline_claude_runs_carry_disable_all_hooks(self):
+        import kb_ask, redact
+        for argv in (kb_ask.claude_argv("haiku", tools=False), kb_ask.claude_argv("sonnet", tools=True),
+                     redact.names_argv("haiku"), ql_research.research_argv()):
+            assert "-p" in argv and hooks_off(argv), argv
+
+    def test_distill_haiku_call(self, monkeypatch):
+        """distill's Haiku call is redact.names_argv as an argument list: hooks off, --model haiku, no tools."""
+        seen = {}
+
+        def fake_run(argv, **kw):
+            seen.update(argv=argv, **kw)
+            return subprocess.CompletedProcess(argv, 0, "[]", "")
+        monkeypatch.setattr(subprocess, "run", fake_run)
+        assert ql_distill.claude_haiku("prompt") == "[]"
+        argv = seen["argv"]
+        assert isinstance(argv, list) and "-p" in argv and hooks_off(argv), argv
+        assert argv[argv.index("--model") + 1] == ql_distill.HAIKU_MODEL == "haiku"
+        assert argv[argv.index("--tools") + 1] == "" and not seen.get("shell")
+        assert seen["input"] == "prompt" and seen["timeout"] == ql_distill.HAIKU_TIMEOUT_S
+
+    def test_research_call(self, monkeypatch):
+        """research's call is research_argv as an argument list, in an empty directory: hooks off, web search and
+        fetch the only built-in tools, the prompt on stdin."""
+        seen = {}
+
+        def fake_run(argv, **kw):
+            seen.update(argv=argv, **kw)
+            return subprocess.CompletedProcess(argv, 0, '{"facts": []}', "")
+        monkeypatch.setattr(subprocess, "run", fake_run)
+        assert ql_research.claude_research("prompt") == '{"facts": []}'
+        argv = seen["argv"]
+        assert isinstance(argv, list) and "-p" in argv and hooks_off(argv) and not seen.get("shell"), argv
+        assert argv[argv.index("--tools") + 1] == "WebSearch,WebFetch"
+        assert argv[argv.index("--permission-mode") + 1] == "dontAsk" and "--strict-mcp-config" in argv
+        assert seen["input"] == "prompt" and seen["timeout"] == ql_research.RESEARCH_TIMEOUT_S
+        assert seen["cwd"] and not Path(seen["cwd"]).exists()  # a temporary directory, gone after the run
+
+    def test_research_docs_go_through_the_kb_servers_cache(self):
+        """research's only MCP server is this copy's kb stdio server (no --roots, so it serves the live docs), and its
+        only MCP tools allowed are the kb server's cached docs_search and docs_fetch: not the documentation servers
+        themselves, not any other kb tool (planted: the docs plugin's .mcp.json and a direct docs tool fail)."""
+        import kb_mcp
+
+        def mcp_of(argv):
+            servers = json.loads(argv[argv.index("--mcp-config") + 1])["mcpServers"]
+            allowed = argv[argv.index("--allowedTools") + 1:]
+            return servers, [t for t in allowed if t.startswith("mcp__")]
+
+        argv = ql_research.research_argv()
+        servers, tools = mcp_of(argv)
+        assert list(servers) == ["kb"] and "--strict-mcp-config" in argv, servers
+        kb = servers["kb"]
+        assert Path(kb["args"][0]) == Path(TOOLS, "kb_mcp.py") and "--roots" not in kb["args"], kb
+        live = {t["name"] for t in kb_mcp.LIVE_TOOL_LIST}
+        assert sorted(tools) == sorted(f"mcp__kb__{n}" for n in live) == ["mcp__kb__docs_fetch", "mcp__kb__docs_search"]
+        assert not live & {t["name"] for t in kb_mcp.TOOL_LIST}
+        assert not any(t.startswith(("mcp__microsoft-learn", "mcp__claude-code-docs", "mcp__mcp-docs")) for t in argv)
+        docs = json.loads(Path(kb_mcp.DOCS_MCP).read_text(encoding="utf-8"))  # planted: the old, direct servers
+        i = argv.index("--mcp-config") + 1
+        planted = [*argv[:i], json.dumps(docs), *argv[i + 1:], "mcp__microsoft-learn__microsoft_docs_search"]
+        servers, tools = mcp_of(planted)
+        assert list(servers) != ["kb"] and "mcp__microsoft-learn__microsoft_docs_search" in tools
+
+    def test_research_repeat_search_within_7_days_calls_no_docs_server(self, tmp_path, monkeypatch):
+        """The tool research is allowed, called through the kb server's handler twice with the same arguments within
+        7 days, reaches the documentation server once: the second answer comes from the disk cache."""
+        import kb_mcp
+        calls = []
+
+        class Remote:
+            def __init__(self, url):
+                self.url = url
+
+            def start(self):
+                pass
+
+            def call(self, tool, arguments):
+                calls.append((self.url, tool, arguments))
+                return "page text"
+        monkeypatch.setattr(kb_mcp, "RemoteMcp", Remote)
+        monkeypatch.setattr(kb_mcp, "LIVE_ON", [True])
+        monkeypatch.setenv("KB_DOCS_CACHE", str(tmp_path / "cache"))
+        monkeypatch.delenv("KB_LIVE_DOCS", raising=False)
+        name = next(t for t in ql_research.RESEARCH_MCP_TOOLS if t.endswith("docs_search")).split("__", 2)[2]
+        msg = {"jsonrpc": "2.0", "method": "tools/call",
+               "params": {"name": name, "arguments": {"server": "microsoft-learn", "query": "windows laps"}}}
+        first = kb_mcp.handle({**msg, "id": 1})["result"]
+        second = kb_mcp.handle({**msg, "id": 2})["result"]
+        assert not first["isError"] and not second["isError"], (first, second)
+        assert len(calls) == 1 and calls[0][1] == "microsoft_docs_search", calls
+        assert "from the cache" in second["content"][0]["text"]
+
+    def test_planted_argument_lists_fail(self):
+        assert not hooks_off(["claude", "-p", "--model", "haiku"])
+        assert not hooks_off(["claude", "-p", "--settings", json.dumps({"disableAllHooks": False})])
+        assert not hooks_off(["claude", "-p", "--settings"])
+
+    def test_every_claude_p_in_the_pipeline_is_checked(self):
+        """The pipeline's modules build their `claude -p` lists only in the functions tested above."""
+        allowed = {"kb_ask.py": 1, "redact.py": 1, "ql_research.py": 1}
+        for p in [Path(TOOLS, n) for n in ("kb_ask.py", "redact.py", "querylog.py")] + sorted(Path(TOOLS).glob("ql_*.py")):
+            assert len(re.findall(r'"-p"', p.read_text(encoding="utf-8"))) == allowed.get(p.name, 0), p.name
+
+    def test_nothing_is_written_when_no_hook_runs(self, tmp_path):
+        """With hooks disabled Claude Code never starts the capture hook: importing the module, its help and `where`
+        write nothing, and neither does a plain prompt through kb_hook.py."""
+        env = querylog_env(tmp_path, mode=None)  # no config file, so the directory is the tools' to make; no distill
+        for argv in ([QL, "-h"], [QL, "where"], [QL], ["-c", "import querylog, kb_hook"]):
+            subprocess.run([sys.executable, *argv], cwd=TOOLS, env=env, capture_output=True, timeout=60)
+        assert not (tmp_path / "querylog").exists()
+
+
+CAPTURE_EVENTS = ("UserPromptSubmit", "PostToolUse", "PostToolUseFailure", "Stop")
+
+
+def capture_problems(cfg, var):
+    """What is wrong with the capture hooks of a settings or plugin file."""
+    want = f'sh "${{{var}}}/_tools/kbpy" _tools/querylog.py capture'
+    bad = []
+    for event in CAPTURE_EVENTS:
+        hs = [(g, h) for g in cfg.get("hooks", {}).get(event, []) for h in g.get("hooks", []) if "querylog.py" in h.get("command", "")]
+        if len(hs) != 1:
+            bad.append(f"{event}: {len(hs)} capture hooks")
+            continue
+        g, h = hs[0]
+        if h.get("command") != want or h.get("async") is not True or h.get("type") != "command":
+            bad.append(f"{event}: {h}")
+        if event.startswith("PostToolUse"):
+            rx = re.compile(g.get("matcher", "^$"))
+            names = ["mcp__kb__kb_pack", "mcp__plugin_it-ops-kb_kb__kb_search", "WebFetch", "Bash", "PowerShell",
+                     "mcp__microsoft-learn__microsoft_docs_fetch", "mcp__plugin_it-ops-kb-docs_claude-code-docs__x"]
+            bad += [f"{event}: matcher misses {n}" for n in names if not rx.fullmatch(n)]
+            bad += [f"{event}: matcher takes {n}" for n in ("Read", "Edit", "mcp__other__x") if rx.fullmatch(n)]
+    kb = [h for g in cfg["hooks"]["UserPromptSubmit"] for h in g["hooks"] if "kb_hook.py" in h["command"]]
+    if [h.get("async") for h in kb] != [None]:
+        bad.append("the kb: hook must stay synchronous: it answers")
+    return bad
+
+
+def launch_problems(cfg, var):
+    """What is wrong with the distill launcher hooks: one on SessionEnd (synchronous: it returns within the budget
+    anyway) and one async on SessionStart, both `sh "<root>/_tools/kbpy" _tools/querylog.py launch`."""
+    want = f'sh "${{{var}}}/_tools/kbpy" _tools/querylog.py launch'
+    bad = []
+    for event, is_async in (("SessionEnd", None), ("SessionStart", True)):
+        hs = [h for g in cfg.get("hooks", {}).get(event, []) for h in g.get("hooks", [])
+              if "querylog.py launch" in h.get("command", "")]
+        if [(h.get("command"), h.get("async"), h.get("type")) for h in hs] != [(want, is_async, "command")]:
+            bad.append(f"{event}: {hs}")
+    return bad
+
+
+def digest_problems(cfg, var):
+    """What is wrong with the digest hook: one synchronous SessionStart command hook (an async hook's systemMessage
+    reaches Claude, not the person) with the timeout DIGEST_HOOK_TIMEOUT_S, and no digest hook on another event."""
+    want = f'sh "${{{var}}}/_tools/kbpy" _tools/querylog.py digest --hook'
+    bad = []
+    for event, groups in cfg.get("hooks", {}).items():
+        hs = [h for g in groups for h in g.get("hooks", []) if "querylog.py digest" in h.get("command", "")]
+        got = [(h.get("command"), h.get("async"), h.get("type"), h.get("timeout")) for h in hs]
+        if event == "SessionStart" and got != [(want, None, "command", ql_report.DIGEST_HOOK_TIMEOUT_S)]:
+            bad.append(f"{event}: {hs}")
+        elif event != "SessionStart" and hs:
+            bad.append(f"{event}: a digest hook")
+    if "SessionStart" not in cfg.get("hooks", {}):
+        bad.append("SessionStart: no digest hook")
+    return bad
+
+
+class TestHookConfig:
+    def test_settings_and_plugin(self):
+        assert capture_problems(load(".claude/settings.json"), "CLAUDE_PROJECT_DIR") == []
+        assert capture_problems(load(".claude-plugin/plugin.json"), "CLAUDE_PLUGIN_ROOT") == []
+
+    def test_launcher_hooks(self):
+        assert launch_problems(load(".claude/settings.json"), "CLAUDE_PROJECT_DIR") == []
+        assert launch_problems(load(".claude-plugin/plugin.json"), "CLAUDE_PLUGIN_ROOT") == []
+        cfg = load(".claude/settings.json")
+        missing = json.loads(json.dumps(cfg))
+        del missing["hooks"]["SessionEnd"]
+        asleep = json.loads(json.dumps(cfg))
+        asleep["hooks"]["SessionEnd"][0]["hooks"][0]["async"] = True
+        assert launch_problems(missing, "CLAUDE_PROJECT_DIR") and launch_problems(asleep, "CLAUDE_PROJECT_DIR")
+
+    def test_digest_hook(self):
+        assert digest_problems(load(".claude/settings.json"), "CLAUDE_PROJECT_DIR") == []
+        assert digest_problems(load(".claude-plugin/plugin.json"), "CLAUDE_PLUGIN_ROOT") == []
+        cfg = load(".claude/settings.json")
+        asleep, slow, gone = (json.loads(json.dumps(cfg)) for _ in range(3))
+        for c in (asleep, slow, gone):
+            (h,) = [h for g in c["hooks"]["SessionStart"] for h in g["hooks"] if "digest" in h["command"]]
+            if c is asleep:
+                h["async"] = True
+            elif c is slow:
+                del h["timeout"]
+            else:
+                h["command"] = h["command"].replace("digest --hook", "launch")
+        for c in (asleep, slow, gone):
+            assert digest_problems(c, "CLAUDE_PROJECT_DIR")
+
+    def test_planted_configs_fail(self):
+        cfg = load(".claude/settings.json")
+        sync = json.loads(json.dumps(cfg))
+        del sync["hooks"]["Stop"][0]["hooks"][0]["async"]
+        missing = json.loads(json.dumps(cfg))
+        del missing["hooks"]["PostToolUseFailure"]
+        narrow = json.loads(json.dumps(cfg))
+        narrow["hooks"]["PostToolUse"][0]["matcher"] = "mcp__kb__.*"
+        assert capture_problems(sync, "CLAUDE_PROJECT_DIR") and capture_problems(missing, "CLAUDE_PROJECT_DIR")
+        assert any("misses WebFetch" in p for p in capture_problems(narrow, "CLAUDE_PROJECT_DIR"))
+        assert capture_problems(cfg, "CLAUDE_PLUGIN_ROOT")  # the wrong root variable
+
+    @pytest.mark.skipif(not SH, reason="no sh on PATH (Windows without Git Bash)")
+    @pytest.mark.parametrize("rel,var", [(".claude/settings.json", "CLAUDE_PROJECT_DIR"),
+                                         (".claude-plugin/plugin.json", "CLAUDE_PLUGIN_ROOT")])
+    def test_shell_form_runs_end_to_end(self, tmp_path, rel, var):
+        """The Stop capture command as Claude Code runs it (`sh -c`, Git Bash on Windows) after a kb: prompt."""
+        (h,) = load(rel)["hooks"]["Stop"][0]["hooks"]
+        env = querylog_env(tmp_path, base=dict(os.environ, **{var: KB}))
+        hook(tmp_path, prompt("kb: laps"), env)
+        p = subprocess.run([SH, "-c", h["command"].replace("${" + var + "}", KB.replace("\\", "/"))],
+                           input=json.dumps(stop("done")).encode("utf-8"), capture_output=True, env=env, timeout=120)
+        assert (p.returncode, p.stdout) == (0, b""), p.stderr
+        assert [r["surface"] for r in lines(tmp_path)] == ["prompt", "stop"]
