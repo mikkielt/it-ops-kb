@@ -32,7 +32,7 @@
       ],
       "recommendation": "leave the history: fix the tree only (the pieces are an organisation name fragment and a host name prefix, no credential; a rewrite is irreversible and the operator's)",
       "answer": "leave the history: fix the tree only (the pieces are an organisation name fragment and a host name prefix, no credential; a rewrite is irreversible and the operator's)",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "evidence": {
