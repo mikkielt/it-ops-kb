@@ -28,7 +28,9 @@
     "_tools/bench_core.py",
     "_tools/bench_report.py",
     "_tools/test_benchmarks.py",
-    "_tools/test_layout.py"
+    "_tools/test_layout.py",
+    "_tools/test_kbpublic.py",
+    "kb/_self/tools.md"
   ],
   "claimed_by": "worker-pwrigavm"
 }
