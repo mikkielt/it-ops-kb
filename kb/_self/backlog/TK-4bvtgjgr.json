@@ -2,7 +2,7 @@
   "id": "TK-4bvtgjgr",
   "kind": "task",
   "title": "Test the import direction of _tools modules",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-ef2tkepv",
   "priority": "P2",
   "rank": 1,
@@ -24,5 +24,19 @@
   "depends_on": [
     "TK-u4f5ba7a"
   ],
-  "claimed_by": "worker-4bvtgjgr"
+  "evidence": {
+    "commit": "0f6e0afbb8e44f19128e9bc3fde2ffa2efab107c",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "import_layers"
+        ],
+        "exit": 0,
+        "sha256": "bd427e1b66fca60d"
+      }
+    ]
+  }
 }
