@@ -35,7 +35,7 @@ NOTICE = re.compile(r'sh "\$\{(?P<var>CLAUDE_PROJECT_DIR|CLAUDE_PLUGIN_ROOT)\}/_
 needs_sh = pytest.mark.skipif(not SH, reason="no sh on PATH (Windows without Git Bash)")
 # The PowerShell twin of kbpy, inline in the hook so it needs no .ps1 (no execution policy): the same interpreters in
 # the same order, each probed for 3.11+, then the script with the hook's stdin; exit 127 when none is found.
-PS_HEAD = ("$p = 'import sys; sys.exit(sys.version_info < (3, 11))'; foreach ($c in 'python3', 'python', 'py -3') "
+PS_HEAD = ("$PSModuleAutoLoadingPreference = 'None'; $p = 'import sys; sys.exit(sys.version_info < (3, 11))'; foreach ($c in 'python3', 'python', 'py -3') "
            "{ $e, $a = -split $c; try { & $e $a -c $p *>$null } catch { continue }; if ($LASTEXITCODE -eq 0) { & $e $a ")
 PS_TAIL = "; exit $LASTEXITCODE } }; exit 127"
 PS_LAUNCH = re.compile(re.escape(PS_HEAD) + r'"\$env:(?P<var>CLAUDE_PROJECT_DIR|CLAUDE_PLUGIN_ROOT)/(?P<script>[\w./-]+\.py)"'
