@@ -9,9 +9,10 @@
              forge on loopback: a direct code commit listed, a merged one (GitLab merge request, GitHub pull request
              with merged_at) passing, an unmerged pull request listed, a merge commit judged by the commits it brings
              in, an API failure (status, body, missing variables, no forge) exiting 2 and never passing, and the
-             pre-push hook refusing a code-lane commit for the integration main with no API call.
+             pre-push hook refusing a code-lane commit for the integration main with no API call. The fixture drops
+             every forge variable a CI job sets and fails any request off loopback (planted: a GitLab job's variables).
 """
-import argparse, ast, io, json, re, threading, urllib.error
+import argparse, ast, io, json, re, threading, urllib.error, urllib.parse, urllib.request
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 
@@ -157,6 +158,27 @@ class Stub(BaseHTTPRequestHandler):
         pass
 
 
+# Every variable kblane.forge_associate reads: a GitLab or GitHub job sets them, and a test that kept them would ask
+# the real forge (a Windows container without its CA got an SSL error instead of the missing-variables message).
+FORGE_VARS = ("GITLAB_CI", "CI_API_V4_URL", "CI_PROJECT_ID", "CI_JOB_TOKEN",
+              "GITHUB_ACTIONS", "GITHUB_API_URL", "GITHUB_REPOSITORY", "GITHUB_TOKEN")
+
+
+class NetworkReached(AssertionError):
+    pass
+
+
+def loopback_only(urlopen):
+    """urlopen for the stub forge on 127.0.0.1 only: a request to any other host fails the test (not a ForgeError,
+    which the code under test would turn into exit 2 and hide)."""
+    def guarded(req, *a, **kw):
+        url = req.full_url if hasattr(req, "full_url") else str(req)
+        if urllib.parse.urlsplit(url).hostname not in ("127.0.0.1", "localhost"):
+            raise NetworkReached(f"a test reached the network: {url}")
+        return urlopen(req, *a, **kw)
+    return guarded
+
+
 @pytest.mark.git
 @requires_git
 class TestCheckLanes:
@@ -175,8 +197,9 @@ class TestCheckLanes:
         r.content = commit(r, {"kb/public/b.md": "b\n"}, "content")
         monkeypatch.setattr(kbgit, "KB", r.path)
         monkeypatch.setattr(kbgit, "default_range", lambda: f"{r.base}..HEAD")
-        for k in ("CI_COMMIT_SHA", "CI_COMMIT_BEFORE_SHA", "GITLAB_CI", "GITHUB_ACTIONS", "GITHUB_TOKEN"):
+        for k in ("CI_COMMIT_SHA", "CI_COMMIT_BEFORE_SHA", *FORGE_VARS):
             monkeypatch.delenv(k, raising=False)
+        monkeypatch.setattr(kblane.urllib.request, "urlopen", loopback_only(kblane.urllib.request.urlopen))
         return r
 
     def run(self, argv, capsys):
@@ -252,6 +275,21 @@ class TestCheckLanes:
         assert rc == 2 and "CI_JOB_TOKEN" in out
         rc, out = self.run(["no-such-rev", "--forge", "none"], capsys)
         assert rc == 2
+
+    def test_a_ci_job_leaves_no_forge_variable_and_reaches_no_network(self, repo, capsys, monkeypatch):
+        """The fixture removes every variable the forge lookup reads (the names come from kblane's own
+        missing-variables errors), and its guard fails a test that would ask a real forge. Planted: a GitLab job's
+        variables set after the fixture make check-lanes call out, and the guard stops it."""
+        for forge in ("gitlab", "github"):
+            with pytest.raises(kblane.ForgeError) as e:
+                kblane.forge_associate(forge, {})
+            needed = str(e.value).removeprefix("missing ").split(", ")
+            assert needed and set(needed) <= set(FORGE_VARS), needed
+        for k, v in (("GITLAB_CI", "true"), ("CI_API_V4_URL", "https://gitlab.example.com/api/v4"),
+                     ("CI_PROJECT_ID", "1"), ("CI_JOB_TOKEN", "t")):
+            monkeypatch.setenv(k, v)
+        with pytest.raises(NetworkReached, match="gitlab.example.com"):
+            self.run([], capsys)
 
     def test_a_stub_forge_on_loopback(self, repo, capsys, monkeypatch):
         Stub.answers, Stub.seen = {repo.code: [{"state": "merged"}]}, []
