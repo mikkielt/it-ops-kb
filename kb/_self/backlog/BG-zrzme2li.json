@@ -2,7 +2,7 @@
   "id": "BG-zrzme2li",
   "kind": "bug",
   "title": "kb_ask.py treats kb has: - and kb lacks: - as real parts",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-c7fzjhge",
   "sprint": "SP-vpk5nrrc",
   "priority": "P2",
@@ -32,5 +32,28 @@
     "_tools/test_kb_ask_route.py",
     "_tools/test_agent_bench.py"
   ],
-  "claimed_by": "worker-zrzme2li"
+  "evidence": {
+    "commit": "95d93dc3e686c3f23ef47b73579bc5dc4c9473f6",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "TestKbAskRoute"
+        ],
+        "exit": 0,
+        "sha256": "1a54db746f7e65a5"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import kb_ask;p=kb_ask.plan('file share quota');assert p['lacks']!=['-'],p['lacks']"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
