@@ -2,7 +2,7 @@
   "id": "TK-zzfiw2od",
   "kind": "task",
   "title": "Research deterministic checks before model judgement with /kb-research",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-ltkvptsz",
   "priority": "P2",
   "rank": 0,
@@ -30,5 +30,6 @@
     "kb/public/_retrieval/signals.csv",
     "kb/_querylog/findings/**",
     "_tools/aliases.csv"
-  ]
+  ],
+  "claimed_by": "worker-zzfiw2od"
 }
