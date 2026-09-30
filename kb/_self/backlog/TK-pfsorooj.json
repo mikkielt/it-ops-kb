@@ -2,7 +2,7 @@
   "id": "TK-pfsorooj",
   "kind": "task",
   "title": "kb_status gives git 60 s before it reports an installed plugin copy's version as its commit",
-  "status": "doing",
+  "status": "done",
   "parent": "BG-iug3utgu",
   "priority": "P1",
   "rank": 0,
@@ -20,5 +20,19 @@
   "touches": [
     "_tools/kb_mcp.py"
   ],
-  "claimed_by": "worker-winci"
+  "evidence": {
+    "commit": "2604cba1d05e03e3869d803bd9f6601416bec189",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "test_status"
+        ],
+        "exit": 0,
+        "sha256": "ed68b50981794325"
+      }
+    ]
+  }
 }
