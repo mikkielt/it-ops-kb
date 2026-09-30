@@ -2,7 +2,7 @@
   "id": "TK-63t2p7ix",
   "kind": "task",
   "title": "Runbook and tools doc name stale touches and selectors",
-  "status": "todo",
+  "status": "dropped",
   "parent": "ST-7atbtpz5",
   "priority": "P2",
   "rank": 2,
@@ -31,5 +31,6 @@
   "depends_on": [
     "TK-vzcpzdjf",
     "TK-gtdj2ixg"
-  ]
+  ],
+  "notes": "Dropped: its lines landed with the code they describe: the stale-touches check's with TK-vzcpzdjf, the selectors command's with TK-gtdj2ixg, since the sync gate's selfdoc stale needs code and docs in one range"
 }
