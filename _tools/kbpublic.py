@@ -30,9 +30,13 @@ the same `main`, so the public home gets a projection of it:
               internal` in any commit of the range, at the tip or in the projection (the projection's tree is checked
               too, for what the tip already holds); a file a commit writes has a leak-scan hit (kbcommon.leak_hits,
               allowing _tools/tests_allowlist.txt of the commit and of the projection) that neither the parent's nor
-              the tip's version of the file already holds; the integration CI verdict of
-              the source commit (ql_deliver.ci_pipeline on the source remote's url) is not `ok`: red, pending,
+              the tip's version of the file already holds and whose value no file of the tip holds (already public;
+              the tip's values are scanned once per tip and cached in _cache/publish/, as digests); the integration
+              CI verdict of the source commit (ql_deliver.ci_pipeline on the source remote's url) is not `ok`: red, pending,
               unverified, none, or skip when glab or gh cannot read it. Content is refused, never filtered.
+              Each commit's leak verdict is cached in _cache/publish/ per public tip and projection allowlist, so a
+              range is scanned once; `publish --hook` leaves a range with more than HOOK_BOUND uncached commits to a
+              publish by hand (one line, exit 0, nothing checked or pushed).
   guard       a push to a public remote of a ref whose history touches a PRIVATE path is refused: the pre-push hook
               (for every pushed branch and tag, sync's own push included), `kbgit.py sync` before it rebases, and the
               query log's push (ql_deliver) when `origin` is public. `check-public` is the same check for CI on the
@@ -50,7 +54,8 @@ guarded there, and the query log pushes its store to `origin` as before. Exit (p
 carries a PRIVATE path) or the push failed, 2 bad arguments, no source, or a git error. Exit (check-public): 0 clean,
 1 a PRIVATE path found, 2 a git error.
 """
-import os, re, subprocess, sys
+import hashlib, json, os, re, subprocess, sys
+from pathlib import Path
 
 PRIVATE = ("kb/_querylog",)  # repository paths kept on the integration remote only (kb/_self/git.md, Public home)
 CONFIG_KEY = "kb.publishRemote"
@@ -61,6 +66,8 @@ ZERO_RE = re.compile(r"^0+$")
 FORBIDDEN_RE = re.compile(r"(^|/)(_private|_cache)(/|$)")
 ALLOWLIST_PATH = "_tools/tests_allowlist.txt"
 URL_RX = re.compile(r"(?:https?|ssh|git)://\S+|(?<![\w.%+-])git@[\w.-]+:[\w./~-]+|\bssh(?:\s+-\w+)*\s+git@[\w.-]+")
+CACHE_DIR = ("_cache", "publish")  # the per-clone scan cache under the repository, never committed (its own .gitignore)
+HOOK_BOUND = 150  # uncached commits publish --hook checks at most; a longer range is left to a publish by hand (git.md)
 CI_RUN = None  # a command runner (argv -> (code, stdout, stderr)) for the CI check; None: ql_base.run_cmd. Tests stub it.
 
 
@@ -318,6 +325,56 @@ def file_hits(path, text, allow):
     return [h for h in hits if h[0] == "secret" or not vendored]
 
 
+def cache_load(cwd, name):
+    """The JSON of the cache file NAME under CACHE_DIR, or None when it is missing or unreadable (then recomputed)."""
+    try:
+        return json.loads(Path(cwd, *CACHE_DIR, name).read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+
+
+def cache_save(cwd, name, data, prefix):
+    """Writes DATA as the cache file NAME and removes the other files starting with PREFIX (an older tip's). The
+    directory ignores itself (a `.gitignore` of `*`), so a clone without `_cache/` in its own ignores never commits it.
+    A write that fails is left out: the cache only saves time."""
+    d = Path(cwd, *CACHE_DIR)
+    try:
+        d.mkdir(parents=True, exist_ok=True)
+        if not (d / ".gitignore").exists():
+            (d / ".gitignore").write_text("*\n", encoding="utf-8", newline="\n")
+        for old in d.glob(f"{prefix}*.json"):
+            if old.name != name:
+                old.unlink()
+        tmp = d / f"{name}.{os.getpid()}.tmp"
+        tmp.write_text(json.dumps(data), encoding="utf-8", newline="\n")
+        tmp.replace(d / name)
+    except OSError:
+        pass
+
+
+def hit_key(hit):
+    """A digest of a leak-scan hit (kind, value): the cache keeps digests, never the values."""
+    return hashlib.sha256("\0".join(hit).encode("utf-8")).hexdigest()
+
+
+def public_values(tip, cwd):
+    """{hit_key} of every leak-scan hit (file_hits without an allowlist) in any file of the public tip TIP's tree: the
+    values the public home already holds, whichever file holds them. Scanned once per tip and cached in
+    CACHE_DIR/public-<tip>.json; empty without a tip. Raises RuntimeError on a git error."""
+    if not tip:
+        return set()
+    name = f"public-{tip}.json"
+    got = cache_load(cwd, name)
+    if isinstance(got, list) and all(isinstance(x, str) for x in got):
+        return set(got)
+    files = tree_files(tip, cwd)
+    if files is None:
+        raise RuntimeError(f"git ls-tree {tip[:12]} failed")
+    res = {hit_key(h) for x, text in blobs(tip, files, cwd).items() for h in file_hits(x, text, {})}
+    cache_save(cwd, name, sorted(res), "public-")
+    return res
+
+
 def history_changes(proj, tip, cwd):
     """[(commit sha, [(status, old blob, new blob, path)])] of the commits TIP..PROJ (all of PROJ's history when TIP is
     None), oldest first, from one `git log --raw` pass: a rename is a delete and an add, a merge is diffed against its
@@ -343,20 +400,81 @@ def root_dir(path):
     return path.rsplit("/", 1)[0] if "/" in path else ""
 
 
-def history_refusals(proj, tip, files, cwd, sources=None):
+class LongRange(Exception):
+    """The range holds more uncached commits than the bound history_refusals was given: N of them."""
+
+    def __init__(self, n):
+        super().__init__(n)
+        self.n = n
+
+
+def leak_verdicts(written, proj, tip, final, cwd):
+    """{commit: [(path, kinds)]} of the leak check of WRITTEN [(commit, old blob, new blob, path)], the files the
+    commits write: a hit in the lines a commit adds that the public tip holds in no file (public_values), and neither
+    the parent's nor TIP's version of the file holds, allowing FINAL (PROJ's allowlist) and the commit's own. A commit
+    with no hit is left out."""
+    # scan only the lines a commit adds (the new version's lines its parent's version lacks), a chunk of writes at a
+    # time; the whole versions are read only for the files whose added lines hit
+    public = public_values(tip, cwd)
+    pairs, added = list(dict.fromkeys((old, new, x) for c, old, new, x in written)), {}
+    for i in range(0, len(pairs), 500):
+        part = pairs[i:i + 500]
+        got = texts([s for old, new, x in part for s in (old, new) if not ZERO_RE.match(s)], cwd)
+        for old, new, x in part:
+            if new in got:
+                seen = set(got.get(old, "").splitlines())
+                text = "\n".join(ln for ln in got[new].splitlines() if ln not in seen)
+                if any(hit_key(h) not in public for h in file_hits(x, text, {})):
+                    added[old, new, x] = text
+    rows = [(c, old, new, x) for c, old, new, x in written if (old, new, x) in added]
+    if not rows:
+        return {}
+    olds = texts([old for c, old, new, x in rows if not ZERO_RE.match(old)], cwd)
+    at_tip = blobs(tip, [x for c, old, new, x in rows], cwd) if tip else {}
+    commit_allow = texts([f"{c}:{ALLOWLIST_PATH}" for c, *_ in rows], cwd)
+    res = {}
+    for c, old, new, x in rows:
+        known = set()
+        for text in (olds.get(old), at_tip.get(x)):
+            if text is not None:
+                known |= set(file_hits(x, text, {}))
+        allow = {k: set(vals) for k, vals in final.items()}
+        for k, vals in parse_allowlist(commit_allow.get(f"{c}:{ALLOWLIST_PATH}", "")).items():
+            allow.setdefault(k, set()).update(vals)
+        kinds = sorted({k for k, val in file_hits(x, added[old, new, x], allow)
+                        if (k, val) not in known and hit_key((k, val)) not in public})
+        if kinds:
+            res.setdefault(c, []).append((x, kinds))
+    return res
+
+
+def history_refusals(proj, tip, files, cwd, sources=None, bound=None):
     """(tree causes, leak causes, paths named) of the commits publish would push: TIP..PROJ, all of PROJ's history when
     TIP is None; FILES are the paths of PROJ's tree. A cause names the source commit (SOURCES: {projected sha: source
     sha}, from project()) and the projected one when they differ. Each commit is checked by what it adds or changes
     against its (first) parent, so a later commit that deletes a path or a value does not hide it:
       tree  a path under a `_private` or `_cache` directory, or a path under a root that is internal (its `_root.md`
             says `visibility: internal`) in any commit of the range, at TIP or at PROJ;
-      leak  a leak-scan hit that neither the parent's version nor TIP's version of the file holds, allowing the
-            _tools/tests_allowlist.txt of the commit and of PROJ.
-    Raises RuntimeError on a git error."""
+      leak  a leak-scan hit that neither the parent's version nor TIP's version of the file holds, and whose value no
+            file of TIP holds (public_values: already public), allowing the _tools/tests_allowlist.txt of the commit
+            and of PROJ.
+    The leak verdict of each commit (its causes, often none) is cached per commit in
+    CACHE_DIR/verdicts-<TIP>-<digest of PROJ's allowlist>.json, the inputs it depends on beside the commit's own, so a
+    range already checked costs one `git log` the next time. With BOUND, raises LongRange before any scan when more
+    than BOUND commits of the range have no cached verdict. Raises RuntimeError on a git error."""
     import kbcommon
     sources = sources or {}
     name = lambda c: sources.get(c, c)[:12] + (f" (projected {c[:12]})" if sources.get(c, c) != c else "")  # noqa: E731
-    written = [(c, old, new, x) for c, ch in history_changes(proj, tip, cwd) for st, old, new, x in ch if st != "D"]
+    changes = history_changes(proj, tip, cwd)
+    final = blobs(proj, [ALLOWLIST_PATH], cwd).get(ALLOWLIST_PATH, "")
+    vname = f"verdicts-{tip or 'none'}-{hashlib.sha256(final.encode('utf-8')).hexdigest()[:16]}.json"
+    got = cache_load(cwd, vname)
+    verdicts = {c: v for c, v in (got.items() if isinstance(got, dict) else ())
+                if isinstance(v, list) and all(isinstance(h, list) and len(h) == 2 for h in v)}
+    todo = {c for c, _ in changes if c not in verdicts}
+    if bound is not None and len(todo) > bound:
+        raise LongRange(len(todo))
+    written = [(c, old, new, x) for c, ch in changes for st, old, new, x in ch if st != "D"]
     is_root = lambda x: x.rsplit("/", 1)[-1] == kbcommon.ROOT_FILE  # noqa: E731
     roots = {}  # object name -> the _root.md paths it is (one blob can be several roots' file)
     for c, old, new, x in written:
@@ -381,37 +499,11 @@ def history_refusals(proj, tip, files, cwd, sources=None):
     for (c, r), xs in under.items():
         tree.append(f"commit {name(c)} writes {len(xs)} path(s) under the internal root {r or '.'} "
                     f"({r + '/' if r else ''}{kbcommon.ROOT_FILE} says visibility: internal), e.g. {xs[0]}")
-    # leak: scan only the lines a commit adds (the new version's lines its parent's version lacks), a chunk of writes
-    # at a time; a hit there counts unless the parent's or the tip's whole version of the file holds it
-    pairs, added = list(dict.fromkeys((old, new, x) for c, old, new, x in written)), {}
-    for i in range(0, len(pairs), 500):
-        part = pairs[i:i + 500]
-        got = texts([s for old, new, x in part for s in (old, new) if not ZERO_RE.match(s)], cwd)
-        for old, new, x in part:
-            if new in got:
-                seen = set(got.get(old, "").splitlines())
-                text = "\n".join(ln for ln in got[new].splitlines() if ln not in seen)
-                if file_hits(x, text, {}):
-                    added[old, new, x] = text
-    rows = [(c, old, new, x) for c, old, new, x in written if (old, new, x) in added]
-    if not rows:
-        return tree, [], named
-    olds = texts([old for c, old, new, x in rows if not ZERO_RE.match(old)], cwd)
-    public = blobs(tip, [x for c, old, new, x in rows], cwd) if tip else {}
-    final = allowlist(proj, cwd)
-    commit_allow = texts([f"{c}:{ALLOWLIST_PATH}" for c, *_ in rows], cwd)
-    leak = []
-    for c, old, new, x in rows:
-        known = set()
-        for text in (olds.get(old), public.get(x)):
-            if text is not None:
-                known |= set(file_hits(x, text, {}))
-        allow = {k: set(vals) for k, vals in final.items()}
-        for k, vals in parse_allowlist(commit_allow.get(f"{c}:{ALLOWLIST_PATH}", "")).items():
-            allow.setdefault(k, set()).update(vals)
-        kinds = sorted({k for k, val in file_hits(x, added[old, new, x], allow) if (k, val) not in known})
-        if kinds:
-            leak.append(f"commit {name(c)}: {x} has a leak-scan hit ({', '.join(kinds)})")
+    if todo:
+        found = leak_verdicts([w for w in written if w[0] in todo], proj, tip, parse_allowlist(final), cwd)
+        verdicts.update({c: found.get(c, []) for c in todo})
+        cache_save(cwd, vname, verdicts, "verdicts-")
+    leak = [f"commit {name(c)}: {x} has a leak-scan hit ({', '.join(kinds)})" for c, _ in changes for x, kinds in verdicts[c]]
     return tree, leak, named
 
 
@@ -509,7 +601,10 @@ def cmd_publish(a, cwd):
         print(f"refused: git ls-tree {proj[:12]} failed")
         return 2
     try:
-        tree, leak, named = history_refusals(proj, tip, files, cwd, sources)
+        tree, leak, named = history_refusals(proj, tip, files, cwd, sources, HOOK_BOUND if getattr(a, "hook", False) else None)
+    except LongRange as exc:
+        print(f"publish by hand: {exc.n} commits to check (python3 _tools/kbgit.py publish)")
+        return 0
     except RuntimeError as exc:
         print(f"refused: {exc}")
         return 2
@@ -540,7 +635,9 @@ def cmd_publish(a, cwd):
 
 def cmd_publish_hook(a, cwd):
     """The SessionStart form of publish: silent without a public remote or when there is nothing to publish, prints only
-    the refusal and push-failure lines of a run, and returns 0 whatever happened (a hook never breaks a session start)."""
+    the refusal and push-failure lines of a run, and returns 0 whatever happened (a hook never breaks a session start).
+    A range with more than HOOK_BOUND commits whose verdict is not cached is not checked or pushed: one line asks for a
+    publish by hand, which has no bound and fills the cache."""
     import contextlib, io
     try:
         if not (a.remote or publish_remote(cwd)):
@@ -551,6 +648,8 @@ def cmd_publish_hook(a, cwd):
         for line in buf.getvalue().splitlines():
             if line.startswith(("refused:", "push failed:")):
                 print(f"kb publish {line}")
+            elif line.startswith("publish by hand:"):
+                print(f"kb publish: {line}")
     except Exception as exc:  # noqa: BLE001 - the hook must exit 0 on every outcome
         print(f"kb publish hook: {type(exc).__name__}: {exc}"[:300])
     return 0
