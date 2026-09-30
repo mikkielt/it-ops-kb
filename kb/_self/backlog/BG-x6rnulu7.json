@@ -1,0 +1,22 @@
+{
+  "id": "BG-x6rnulu7",
+  "kind": "bug",
+  "title": "tools.md's querylog.py apply row omits the gap step's weak-lead rule",
+  "status": "draft",
+  "parent": "EP-mzzucemv",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "kb/_self/tools.md's querylog.py apply row states, as querylog.md (Apply) and querylog.py apply help do, that the gap step takes a weak pack's lead only when it holds the question's subject and rejects a weak lead without the subject as off the kb's domains",
+  "repro": {
+    "run": [
+      "grep",
+      "-q",
+      "weak. lead without the subject",
+      "kb/_self/tools.md"
+    ]
+  },
+  "touches": [
+    "kb/_self/tools.md"
+  ]
+}
