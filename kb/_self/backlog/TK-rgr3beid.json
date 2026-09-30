@@ -2,7 +2,7 @@
   "id": "TK-rgr3beid",
   "kind": "task",
   "title": "Move history commands to kg_history.py",
-  "status": "draft",
+  "status": "todo",
   "parent": "ST-3i3dl6xg",
   "priority": "P2",
   "rank": 2,

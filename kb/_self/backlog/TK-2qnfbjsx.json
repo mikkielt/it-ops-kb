@@ -2,7 +2,7 @@
   "id": "TK-2qnfbjsx",
   "kind": "task",
   "title": "Move the test_kb.py classes and retarget items and docs",
-  "status": "draft",
+  "status": "todo",
   "parent": "ST-hnbfoyap",
   "priority": "P2",
   "rank": 0,

@@ -2,7 +2,7 @@
   "id": "SP-rks3vx5g",
   "kind": "sprint",
   "title": "Codebase maintainability proven",
-  "status": "planned",
+  "status": "active",
   "goal": "The query-log and kb tests, kbgit.py and benchmarks.py are split by subsystem into flat-prefixed modules behind unchanged commands, outputs and test names; kb/_self/code.md and an import test hold the layout; backlog check catches touches naming a moved file; and a navigation benchmark before and after the split has a verdict on splitting further",
   "gates": [
     {
