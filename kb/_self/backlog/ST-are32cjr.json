@@ -2,7 +2,7 @@
   "id": "ST-are32cjr",
   "kind": "story",
   "title": "Each orchestrating session works in its own clone or worktree",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-rhgeod5g",
   "priority": "P2",
   "rank": 0,
@@ -20,5 +20,6 @@
     ".claude/skills/kb-sprint/SKILL.md",
     "kb/_self/backlog.md"
   ],
-  "notes": "Failure it answers (SP-qdq57zu3 retrospective): two orchestrators shared one working tree; the other session's uncommitted ql_deliver.py and test_querylog_e2e.py edits blocked this sprint's kbgit.py sync and failed its review story's tests.py, and that session then pushed this sprint's local commits under its own gate."
+  "notes": "Failure it answers (SP-qdq57zu3 retrospective): two orchestrators shared one working tree; the other session's uncommitted ql_deliver.py and test_querylog_e2e.py edits blocked this sprint's kbgit.py sync and failed its review story's tests.py, and that session then pushed this sprint's local commits under its own gate.",
+  "claimed_by": "worker-are32cjr"
 }
