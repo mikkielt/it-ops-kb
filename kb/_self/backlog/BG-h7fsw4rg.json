@@ -1,0 +1,22 @@
+{
+  "id": "BG-h7fsw4rg",
+  "kind": "bug",
+  "title": "querylog.py apply --push help and querylog.md Distill still describe a separate store commit",
+  "status": "draft",
+  "parent": "EP-mzzucemv",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "querylog.py apply --push help and kb/_self/querylog.md Distill (Steps) say, as Delivery step 6 does, that the run's store files and learn and apply's changes land in one commit pushed once (found in the SP-4slunkaj review)",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; a=open('_tools/querylog.py',encoding='utf-8').read(); b=open('kb/_self/querylog.md',encoding='utf-8').read(); sys.exit('and committed (KB-Auto: querylog)' in a or 'commit it with `KB-Auto: querylog` in the worktree, then' in b)"
+    ]
+  },
+  "touches": [
+    "_tools/querylog.py",
+    "kb/_self/querylog.md"
+  ]
+}
