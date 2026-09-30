@@ -2,7 +2,7 @@
   "id": "TK-4bvtgjgr",
   "kind": "task",
   "title": "Test the import direction of _tools modules",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-ef2tkepv",
   "priority": "P2",
   "rank": 1,
@@ -23,5 +23,6 @@
   ],
   "depends_on": [
     "TK-u4f5ba7a"
-  ]
+  ],
+  "claimed_by": "worker-4bvtgjgr"
 }
