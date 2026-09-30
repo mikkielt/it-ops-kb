@@ -2,7 +2,7 @@
   "id": "TK-6l2dzabr",
   "kind": "task",
   "title": "kb-sprint and kb-item land code items through merge requests",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-niikw55v",
   "priority": "P2",
   "rank": 1,
@@ -57,5 +57,51 @@
     "TK-5mrfocpz"
   ],
   "notes": "selfdoc.py stale passes today and is a regression guard; the grep checks fail today. AGENTS.md maps to every skill in kb/_self/map.csv: when it needs no edit the commit names it in Self-Reviewed.",
-  "claimed_by": "worker-6l2dzabr"
+  "evidence": {
+    "commit": "a8eb74afa58a7be76bc647e48a7eabdd788c4035",
+    "checks": [
+      {
+        "run": [
+          "grep",
+          "-c",
+          "-F",
+          "code/<id>",
+          ".claude/skills/kb-sprint/SKILL.md"
+        ],
+        "exit": 0,
+        "sha256": "53c234e5e8472b6a"
+      },
+      {
+        "run": [
+          "grep",
+          "-c",
+          "-F",
+          "code/<id>",
+          ".claude/skills/kb-item/SKILL.md"
+        ],
+        "exit": 0,
+        "sha256": "53c234e5e8472b6a"
+      },
+      {
+        "run": [
+          "grep",
+          "-c",
+          "-F",
+          "code/<id>",
+          ".claude/skills/kb-git-sync/SKILL.md"
+        ],
+        "exit": 0,
+        "sha256": "1121cfccd5913f0a"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/selfdoc.py",
+          "stale"
+        ],
+        "exit": 0,
+        "sha256": "87a3b1b935511a85"
+      }
+    ]
+  }
 }

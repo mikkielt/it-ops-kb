@@ -2,7 +2,7 @@
   "id": "ST-niikw55v",
   "kind": "story",
   "title": "Sprint landing and done follow the lanes",
-  "status": "todo",
+  "status": "done",
   "parent": "EP-rumrqsu5",
   "sprint": "SP-v5xagbyv",
   "priority": "P2",
@@ -41,5 +41,42 @@
   "depends_on": [
     "ST-vcf3r6qv"
   ],
-  "notes": "done does not fetch (its checks run offline on HEAD); the skills fetch first. A merge-commit merge keeps the item's commit hashes, so its KB-Work commits are ancestors of main after the merge; squash and rebase merges make new ones (detecting-mr-merges-in-ci.md:23, :31), which is why git.md names the merge-commit method as host setup."
+  "notes": "done does not fetch (its checks run offline on HEAD); the skills fetch first. A merge-commit merge keeps the item's commit hashes, so its KB-Work commits are ancestors of main after the merge; squash and rebase merges make new ones (detecting-mr-merges-in-ci.md:23, :31), which is why git.md names the merge-commit method as host setup.",
+  "evidence": {
+    "commit": "a8eb74afa58a7be76bc647e48a7eabdd788c4035",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "TestDoneLane"
+        ],
+        "exit": 0,
+        "sha256": "c7ca805a16989b1d"
+      },
+      {
+        "run": [
+          "grep",
+          "-c",
+          "-F",
+          "code/<id>",
+          ".claude/skills/kb-sprint/SKILL.md"
+        ],
+        "exit": 0,
+        "sha256": "53c234e5e8472b6a"
+      },
+      {
+        "run": [
+          "grep",
+          "-c",
+          "-F",
+          "code/<id>",
+          ".claude/skills/kb-item/SKILL.md"
+        ],
+        "exit": 0,
+        "sha256": "53c234e5e8472b6a"
+      }
+    ]
+  }
 }
