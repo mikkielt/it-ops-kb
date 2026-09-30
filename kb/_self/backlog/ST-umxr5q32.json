@@ -2,7 +2,7 @@
   "id": "ST-umxr5q32",
   "kind": "story",
   "title": "The change router is silent without a match and names a skill set once per session",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-hsyx42zz",
   "sprint": "SP-bno4xpft",
   "priority": "P2",
@@ -23,5 +23,19 @@
     "_tools/test_change_router.py",
     "kb/_self/tools.md"
   ],
-  "claimed_by": "worker-umxr5q32"
+  "evidence": {
+    "commit": "4b63cdcc70f87b5add1df692d6f3f4cb554aa3a3",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "change_router_once"
+        ],
+        "exit": 0,
+        "sha256": "3eefdb241f7e39b4"
+      }
+    ]
+  }
 }
