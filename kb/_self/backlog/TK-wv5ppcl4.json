@@ -2,7 +2,7 @@
   "id": "TK-wv5ppcl4",
   "kind": "task",
   "title": "backlog.py new writes todo for an active sprint's item",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-jzeoos4h",
   "priority": "P3",
   "rank": 0,
@@ -22,5 +22,19 @@
     "_tools/test_backlog.py",
     "kb/_self/backlog.md"
   ],
-  "claimed_by": "sprint-4fbfzobr-w6"
+  "evidence": {
+    "commit": "c4baa31c4c8d6d28eb59aaf450a5e0769c56eeed",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "active_sprint_item_is_todo"
+        ],
+        "exit": 0,
+        "sha256": "25bcabcbdc45f919"
+      }
+    ]
+  }
 }
