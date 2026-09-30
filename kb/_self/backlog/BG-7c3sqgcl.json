@@ -1,0 +1,25 @@
+{
+  "id": "BG-7c3sqgcl",
+  "kind": "bug",
+  "title": "The publish history scan is too slow for the 60 s SessionStart hook on a long range",
+  "status": "doing",
+  "sprint": "SP-v5xagbyv",
+  "priority": "P1",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "the per-commit history scan of kbgit.py publish caches each source commit's verdict by sha under _cache/ so a range is scanned once, scans only the lines each commit adds, and publish --hook exits 0 quietly with one line ('publish by hand: N commits to check') when the uncached range exceeds a bound it can scan within the hook's timeout; TestPublishHookLongRange in _tools/test_kbpublic.py plants a long range and asserts the hook returns within its bound and a second run uses the cache; reported from a Windows clone where about 500 commits took over 5 minutes",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/tests.py",
+      "-k",
+      "TestPublishHookLongRange"
+    ]
+  },
+  "touches": [
+    "_tools/kbpublic.py",
+    "_tools/test_kbpublic.py",
+    "kb/_self/git.md"
+  ],
+  "claimed_by": "worker-publish-fixes"
+}
