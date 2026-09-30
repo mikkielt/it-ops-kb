@@ -790,7 +790,7 @@ def test_embed_roots_serves_only_the_named_root(tmp_path):
         ("kb_topics_for", {"text": "new PublicClientApplication(c); the spooler service"}),
     ])
     assert p.returncode == 0, p.stderr
-    # the verdict is not asserted: a root of one article has no word rare enough to count (kbfacts.pack)
+    assert "coverage: good" in out[1][1], out[1][1][:300]  # a word one unit holds counts (kbfacts.informative_words)
     assert "fixture/print/queues.md:" in out[1][1] and "public/" not in out[1][1], out[1]
     assert "coverage: none" in out[2][1] and "public/" not in out[2][1], out[2][1][:300]
     assert "public/" not in out[3][1], out[3][1][:300]
