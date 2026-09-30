@@ -8,7 +8,7 @@
   "priority": "P1",
   "rank": 0,
   "severity": "S3",
-  "goal": "python/stdlib-windows-portability states the probe's result for what it covered (headless claude -p, Claude Code 2.1.285, one run) and keeps interactive sessions and other versions as an open UNK, with a _gaps.md entry, so the article is partial again and the kb does not answer the general question as good. The repro is a text check: the fact's wording is the fix. From the SP-z7a5c76b review.",
+  "goal": "python/stdlib-windows-portability states the job-object result for what the probes covered (headless and interactive sessions of Claude Code 2.1.285, observed runs, not documented behaviour) and that a new version is re-checked with the same probe; _gaps.md records the interactive probe. The repro is a text check: the fact's wording is the fix. From the SP-z7a5c76b review.",
   "repro": {
     "run": [
       "python3",
@@ -19,7 +19,8 @@
   "touches": [
     "kb/public/python/stdlib-windows-portability.md",
     "kb/public/_gaps.md",
-    "kb/public/_coverage.*"
+    "kb/public/_coverage.*",
+    "kb/public/_answers.md"
   ],
   "claimed_by": "win-first"
 }
