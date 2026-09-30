@@ -758,6 +758,73 @@ class TestLookup:
         assert kbfacts.pack("Does the Presidio analyzer REST API require authentication?")["verdict"] == "good"
 
 
+FINGERPRINT_CHECK = r"""
+import hashlib, json, os, sys, time
+import kbcommon, kbfacts
+
+def reference():
+    # the fingerprint as it was computed before kb_entries: os.walk, then one os.stat per file
+    h = hashlib.sha1(f"{kbfacts.INDEX_VERSION}|{os.environ.get('KB_DOC2QUERY', '')}".encode())
+    rels = []
+    for r in kbcommon.roots():
+        for root, dirs, files in os.walk(r.path):
+            dirs[:] = sorted(d for d in dirs if d not in kbfacts.SKIP_DIRS and not d.startswith("."))
+            if root == r.path:
+                continue
+            rels += [kbcommon.qualify(r, os.path.relpath(os.path.join(root, f), r.path)) for f in sorted(files)
+                     if f.endswith((".md", ".csv"))]
+    extra = [*kbfacts.root_files((kbcommon.SOURCES,)), *kbfacts.index_files(), *kbfacts.alias_files(),
+             *kbfacts.data_files("signals.csv"), *kbfacts.data_files("doc2query/expansions.csv"),
+             os.path.join(kbfacts.TOOLS, "kbfacts.py"), os.path.join(kbfacts.TOOLS, "kbid.py"),
+             os.pathsep.join(r.path for r in kbcommon.roots())]
+    for rel in rels + extra:
+        try:
+            st = os.stat(kbcommon.path_of(rel))
+            h.update(f"{rel}\0{st.st_mtime_ns}\0{st.st_size}\n".encode())
+        except OSError:
+            h.update(f"{rel}\0-\n".encode())
+    return h.hexdigest()
+
+def now():
+    kbfacts._FP[:] = [0.0, None]
+    return kbfacts.fingerprint()
+
+root = os.environ["KB_ROOTS"]
+art = os.path.join(root, "print", "queues.md")
+out = {"files": list(kbfacts.kb_files()), "first": (now(), reference())}
+st = os.stat(art)
+os.utime(art, ns=(st.st_atime_ns, st.st_mtime_ns + 10**9))  # the time alone: the size is the same
+out["touched"] = (now(), reference())
+os.makedirs(os.path.join(root, "print", "deep"))
+with open(os.path.join(root, "print", "deep", "b.csv"), "w", encoding="utf-8", newline="\n") as f:
+    f.write("a,b\n1,2\n")
+out["added"] = (now(), reference())
+print(json.dumps(out))
+"""
+
+
+class TestFingerprint:
+    def test_the_listing_gives_the_per_file_stat_value(self, tmp_path):
+        """fingerprint() reads the domain files' times and sizes from the directory listing (kb_entries), yet gives
+        the value one os.stat per file gave; a change of a file's time alone, and a new file in a new directory, give
+        a new value (planted: a fingerprint that missed either would equal the one before)."""
+        from test_kb_root import make_root
+        root = str(tmp_path / "team-kb")
+        make_root(root)
+        env = {**os.environ, "KB_ROOTS": root, "KB_INDEX": "0"}
+        env.pop("KB_DOC2QUERY", None)
+        p = subprocess.run([sys.executable, "-c", FINGERPRINT_CHECK], cwd=TOOLS, capture_output=True, text=True,
+                           encoding="utf-8", env=env, timeout=120)
+        assert p.returncode == 0, p.stderr
+        out = json.loads(p.stdout)
+        assert "fixture/print/queues.md" in out["files"] and any(f.startswith("public/") for f in out["files"])
+        assert not any(f.startswith("fixture/_") for f in out["files"]), "a root's own files are ledgers"
+        for step in ("first", "touched", "added"):
+            got, want = out[step]
+            assert got == want, step
+        assert len({out[s][0] for s in ("first", "touched", "added")}) == 3, out
+
+
 class TestKbHookRoute:
     """kb_hook.respond on planted packs: a route hands the model the differential; a clean good pack does not."""
     INSTRUCTION = "live docs, not in the kb"
