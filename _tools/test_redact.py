@@ -2,7 +2,7 @@
 corpus (kb/_self/querylog.md, Redaction).
 
   positive   every identifier shape comes out as kb placeholders only, person and organisation names through the
-             Haiku stub, and the leak scan (kbcommon.leak_hits, the shapes of test_kb.py's TestLeaks) finds nothing in
+             Haiku stub, and the leak scan (kbcommon.leak_hits, the shapes of test_kb_leaks.py's TestLeaks) finds nothing in
              the output (planted: the raw corpus fails the scan, and so does `redact.py --scan`)
   negative   well-known SIDs, ids and hosts the public root contains, documentation values and the placeholders
              come out unchanged

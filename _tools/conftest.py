@@ -24,8 +24,12 @@ from pyproject.toml's dev group) or `uv run pytest`.
   SELF_REL              the kb's own docs directory relative to the repository (`_self`)
   timeout_s(seconds)    a subprocess timeout set on the project's Windows host, times KB_TEST_TIMEOUT_FACTOR (default
                         1, at least 1; kb-tests-windows sets 3): the limit follows a slower host
+  run(*args), tracked(), text(rel), pinned(), authored(), allowlist(), hits(...), fmt(...), URL_RX, ALLOWLIST
+                        what test_kb_cohesion.py, test_kb_lookup.py, test_kb_ids.py and test_kb_leaks.py share:
+                        a tool run, the tracked files and their text, the pinned and authored subsets, the leak
+                        scan's reviewed allowlist and its pattern search
 """
-import json, os, shutil, subprocess, sys, time
+import csv, functools, json, os, re, shutil, subprocess, sys, time
 from pathlib import Path
 
 import pytest
@@ -138,6 +142,98 @@ def copy_kb(dst, skip=()):
 
     shutil.copytree(KB, dst, ignore=ignore)
     return dst
+
+
+ALLOWLIST = os.path.join(TOOLS, "tests_allowlist.txt")  # the reviewed exceptions of the leak scan
+
+
+def run(*args):
+    p = subprocess.run([sys.executable, *args], cwd=KB, capture_output=True, text=True, encoding="utf-8", errors="replace")
+    return p.returncode, p.stdout + p.stderr
+
+
+@functools.lru_cache(maxsize=None)
+def tracked():
+    """Tracked files (git ls-files), or every file outside ignored dirs when git is unavailable (read once per run)."""
+    try:
+        out = subprocess.run(["git", "ls-files", "-z"], cwd=KB, capture_output=True, check=True).stdout
+        return tuple(sorted(f for f in out.decode().split("\0") if f))
+    except (OSError, subprocess.CalledProcessError):
+        out = []
+        for root, dirs, files in os.walk(KB):
+            dirs[:] = [d for d in dirs if d not in {".git", "_cache", "_private", "__pycache__", ".venv", ".pytest_cache",
+                                                    ".ruff_cache", ".uv-cache", "node_modules"}]  # never scan installed packages
+            out += [os.path.relpath(os.path.join(root, f), KB) for f in files]
+        return tuple(sorted(out))
+
+
+@functools.lru_cache(maxsize=None)
+def text(rel):
+    try:
+        with open(os.path.join(KB, rel), encoding="utf-8") as f:
+            return f.read()
+    except (UnicodeDecodeError, OSError):
+        return None
+
+
+def pinned():
+    """Repository paths of every root's pinned artifacts."""
+    out = set()
+    for r in kbcommon.roots():
+        with open(os.path.join(r.path, kbcommon.ARTIFACTS), encoding="utf-8-sig", newline="") as f:
+            out |= {kbcommon.repo_rel(x["path"], r.path) for x in csv.DictReader(f)}
+    return out
+
+
+def internal_prefixes():
+    """Repository path prefixes of the roots marked `visibility: internal`: they may hold real names and addresses."""
+    return tuple(kbcommon.repo_rel(".", r.path) + "/" for r in kbcommon.roots() if r.visibility != "public")
+
+
+@functools.lru_cache(maxsize=None)
+def authored():
+    """Tracked text files we wrote ourselves that the placeholders-only rule covers: not pinned artifacts, not vendor
+    exports under */artifacts/ or snapshots of copy sources under */_snapshots/, not files of internal roots (secrets are
+    checked everywhere: test_no_secrets)."""
+    p, internal = pinned(), internal_prefixes()
+    return tuple(f for f in tracked() if f not in p and "/artifacts/" not in f and f"/{kbcommon.SNAPSHOTS}/" not in f
+                 and not f.startswith(internal) and text(f) is not None)
+
+
+def allowlist():
+    out = {}
+    if os.path.exists(ALLOWLIST):
+        with open(ALLOWLIST, encoding="utf-8") as f:
+            lines = f.read().splitlines()
+        for ln in lines:
+            ln = ln.split("#", 1)[0].strip()
+            if ln:
+                kind, value = ln.split(None, 1)
+                out.setdefault(kind, set()).add(value.strip().lower())
+    return out
+
+
+# urls, including git remotes: ssh:// and the scp-like `git@host:path` form, and `ssh [-opts] git@host` (a remote or an
+# ssh login, not an e-mail address)
+URL_RX = re.compile(r"(?:https?|ssh|git)://\S+|(?<![\w.%+-])git@[\w.-]+:[\w./~-]+|\bssh(?:\s+-\w+)*\s+git@[\w.-]+")
+
+
+def hits(pattern, files, flags=0, strip_urls=False):
+    rx = re.compile(pattern, flags)
+    found = []
+    for f in files:
+        t = text(f)
+        if t is None:
+            continue
+        for n, ln in enumerate(t.splitlines(), 1):
+            src = URL_RX.sub("", ln) if strip_urls else ln
+            for m in rx.finditer(src):
+                found.append((f, n, m.group(0)))
+    return found
+
+
+def fmt(found, limit=20):
+    return "\n".join(f"  {f}:{n}: {v}" for f, n, v in found[:limit]) + (f"\n  ... +{len(found) - limit}" if len(found) > limit else "")
 
 
 @pytest.fixture(scope="session")

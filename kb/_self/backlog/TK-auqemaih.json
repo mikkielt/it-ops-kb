@@ -27,7 +27,7 @@
   "touches": [
     "_tools/kbcommon.py",
     "_tools/check.py",
-    "_tools/test_kb.py",
+    "_tools/test_kb_cohesion.py",
     "_tools/test_kb_root.py",
     "kb/_self/_decisions.csv",
     "kb/_self/decision-makers.csv"

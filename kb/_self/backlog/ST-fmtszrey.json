@@ -26,7 +26,7 @@
   ],
   "touches": [
     "_tools/kbid.py",
-    "_tools/test_kb.py",
+    "_tools/test_kb_ids.py",
     ".claude/skills/kb-add-topic/SKILL.md",
     ".claude/skills/kb-census/SKILL.md",
     ".claude/skills/kb-ingest/SKILL.md",

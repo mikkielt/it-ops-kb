@@ -439,7 +439,7 @@ def snapshot_path(sid):
 
 SNAPSHOT_MAX = _CFG.get("snapshot", {}).get("max_bytes", 500_000)
 # a private key header in a page (a vendor's sample key, or only the marker in a format note) trips the leak test
-# (test_kb.py, TestLeaks) and secret scanners on push: such a page keeps only its hash, like an oversized one
+# (test_kb_leaks.py, TestLeaks) and secret scanners on push: such a page keeps only its hash, like an oversized one
 KEY_BLOCK = re.compile(r"-----BEGIN (?:RSA |EC |OPENSSH |DSA |PGP |ENCRYPTED )?PRIVATE KEY(?: BLOCK)?-----")
 
 

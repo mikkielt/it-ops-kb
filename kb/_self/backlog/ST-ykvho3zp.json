@@ -56,7 +56,8 @@
   "touches": [
     "_tools/conftest.py",
     "_tools/test_stress.py",
-    "_tools/test_kb.py",
+    "_tools/test_kb_cohesion.py",
+    "_tools/test_kb_lookup.py",
     "kb/_self/tools.md"
   ],
   "depends_on": [

@@ -47,7 +47,7 @@ The same code runs on Linux, macOS and Windows.
 - **Flat modules in `_tools/`.** No packages: the directory is on `sys.path` for every script, and a package named like a script would shadow it.
 - **A subsystem is a prefix.** The query log's stages are `ql_*.py` modules (`ql_base.py` holds the shared ground, the others one stage each, except `ql_testkit.py`, which holds the query-log tests' shared helpers and is no stage; its tests are one `test_ql_<stage>.py` for each stage); `kbgit.py`'s are `kg_*.py` (`kg_base.py` the shared ground, `kg_merge.py` merge and ledger repair); `benchmarks.py`'s are `bench_*.py` (`bench_core.py` the harness, `bench_report.py` the report tables, `bench_lookup.py`, `bench_retrieval.py`, `bench_querylog.py` and `bench_install.py` the scenario families). A module's first lines say what it holds and which doc describes it.
 - **A CLI facade keeps the command.** `_tools/querylog.py`, `_tools/kbgit.py` and `_tools/benchmarks.py` are the scripts hooks and people run; each holds the command line, the usage text and the dispatch (`benchmarks.py` also the `SCENARIOS` registry), and the stages live in the prefixed modules beside it. A split moves code behind a facade and leaves the commands, their output, their exit codes and the test names as they were.
-- **Tests sit beside the tools** as `_tools/test_<subject>.py`, shared setup in `_tools/conftest.py`.
+- **Tests sit beside the tools** as `_tools/test_<subject>.py`, shared setup in `_tools/conftest.py`, which also holds the tracked-file scans that the kb content tests (`test_kb_cohesion.py`, `test_kb_lookup.py`, `test_kb_ids.py`, `test_kb_leaks.py`) share.
 
 ## Imports
 

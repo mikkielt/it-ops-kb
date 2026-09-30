@@ -37,15 +37,17 @@ RUNNERS = {"_tools/stress_test.py": {"_tools/test_stress.py"}}  # a suite's runn
 EVERYTHING = {"_tools/conftest.py", "_tools/tests.py", "_tools/testmap.py", "pyproject.toml", "uv.lock", ".python-version"}
 NO_TESTS = ("kb/_self/backlog/", "kb/_querylog/")
 CONTENT = ("kb/", "AGENTS.md", "README.md", "CLAUDE.md")
-# the tests that read the live kb: test_kb.py's content classes (TestToolChecks runs check.py and the contract lint on
-# it), the route eval set, the kb MCP server's answers and the kb's own signals.csv
-CONTENT_TESTS = ["_tools/test_kb.py::TestCohesion", "_tools/test_kb.py::TestSelfDocs", "_tools/test_kb.py::TestLookup",
-                 "_tools/test_kb.py::TestIds", "_tools/test_kb.py::TestLeaks", "_tools/test_kb.py::TestToolChecks",
+# the tests that read the live kb: the content classes of test_kb_cohesion.py, test_kb_lookup.py, test_kb_ids.py and
+# test_kb_leaks.py (TestToolChecks runs check.py and the contract lint on it), the route eval set, the kb MCP server's
+# answers and the kb's own signals.csv
+CONTENT_TESTS = ["_tools/test_kb_cohesion.py::TestCohesion", "_tools/test_kb_cohesion.py::TestSelfDocs",
+                 "_tools/test_kb_lookup.py::TestLookup", "_tools/test_kb_ids.py::TestIds",
+                 "_tools/test_kb_leaks.py::TestLeaks", "_tools/test_kb_cohesion.py::TestToolChecks",
                  "_tools/test_route.py::TestRouteEvalSet", "_tools/test_kb_mcp.py::TestKbServer", "_tools/test_kbfacts_imports.py"]
-LEAKS = "_tools/test_kb.py::TestLeaks"  # the repository-wide leak scan: part of every selection short of all
+LEAKS = "_tools/test_kb_leaks.py::TestLeaks"  # the repository-wide leak scan: part of every selection short of all
 # the tests that read every _tools/*.py by glob, not by import: part of every tool change's selection; ruff over every
 # tool, and the import layers of kb/_self/code.md parsed over every module
-TOOL_SCANS = ["_tools/test_kb.py::TestCohesion", "_tools/test_layout.py"]
+TOOL_SCANS = ["_tools/test_kb_cohesion.py::TestCohesion", "_tools/test_layout.py"]
 SEARCHED = ("_tools/", ".claude/", ".githooks/", ".claude-plugin/", ".github/", ".gitlab-ci.yml")
 WITH_CONTENT = (".claude/", ".githooks/")
 # names too common to say which file a string means; a path under a directory also searches these directory tokens

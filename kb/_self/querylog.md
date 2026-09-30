@@ -90,7 +90,7 @@ Every row has `id` (a fresh UUID), `ts` (UTC, milliseconds), `surface` and `v`, 
 ## Redaction (`_tools/redact.py`)
 
 1. **Rules** (stdlib `re`, `redact()`): key and token shapes (`kbcommon.SECRETS`), JWTs, UNC paths, home and drive paths, UPNs and emails, down-level `DOMAIN\name`, domain SIDs, GUIDs (hyphenated and bare), IPv6, IPv4, FQDNs, computer-name patterns, high-entropy strings, in that order. Each becomes the placeholder for its kind (table below).
-2. **The leak scan** on the stored question after the rules (`finish()`): the scan is `kbcommon.leak_hits`, the same shapes the tracked-file leak test (`_tools/test_kb.py`, TestLeaks) flags, so nothing the scan would catch reaches the store; a hit drops the entry.
+2. **The leak scan** on the stored question after the rules (`finish()`): the scan is `kbcommon.leak_hits`, the same shapes the tracked-file leak test (`_tools/test_kb_leaks.py`, TestLeaks) flags, so nothing the scan would catch reaches the store; a hit drops the entry.
 3. **Haiku** on the rule-redacted text only, to judge: it flags a question that names a person or an organisation, and that entry is dropped. Names rest on Haiku's flag, with no NER layer and no rewrite; the test corpus includes names. `redact.names_argv` is the Haiku call's argument list; `ql_distill.py` supplies the model, the caps, the timeout, the prompt and the reply's parsing.
 
 | kind | placeholder |

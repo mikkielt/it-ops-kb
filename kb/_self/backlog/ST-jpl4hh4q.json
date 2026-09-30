@@ -22,7 +22,7 @@
     ".gitlab-ci.yml",
     "kb/_self/runners.md",
     "kb/_self/git.md",
-    "_tools/test_kb.py"
+    "_tools/test_kb_cohesion.py"
   ],
   "depends_on": [
     "ST-4mcoplex",

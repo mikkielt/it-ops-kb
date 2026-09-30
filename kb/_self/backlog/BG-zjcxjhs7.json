@@ -17,7 +17,7 @@
   },
   "touches": [
     "_tools/selfdoc.py",
-    "_tools/test_kb.py",
+    "_tools/test_kb_cohesion.py",
     "kb/_self/tools.md",
     "kb/_self/README.md"
   ]
