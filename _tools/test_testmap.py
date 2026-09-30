@@ -34,8 +34,8 @@ def test_kb_content_selects_the_content_classes_only():
 
 
 def test_a_whole_file_absorbs_its_classes():
-    sel, _ = testmap.select(["kb/public/python/pytest.md", "_tools/test_kb.py"])
-    assert "_tools/test_kb.py" in sel and not any(n.startswith("_tools/test_kb.py::") for n in sel), sel
+    sel, _ = testmap.select(["kb/public/python/pytest.md", "_tools/test_kb_cohesion.py"])
+    assert "_tools/test_kb_cohesion.py" in sel and not any(n.startswith("_tools/test_kb_cohesion.py::") for n in sel), sel
 
 
 @pytest.mark.parametrize("path", ["_tools/conftest.py", "pyproject.toml", "uv.lock", "_tools/tests.py", "_tools/testmap.py",
@@ -136,7 +136,7 @@ def test_testmap_review_gaps_live_kb_tests_are_in_the_content_lane():
     """Planted (the sprint review's gaps): a kb article change selects every test that reads the live kb."""
     sel, _ = testmap.select(["kb/public/auth/kerberos.md"])
     for node in ("_tools/test_route.py::TestRouteEvalSet", "_tools/test_kb_mcp.py::TestKbServer",
-                 "_tools/test_kbfacts_imports.py", "_tools/test_kb.py::TestToolChecks", testmap.LEAKS):
+                 "_tools/test_kbfacts_imports.py", "_tools/test_kb_cohesion.py::TestToolChecks", testmap.LEAKS):
         assert node in sel, (node, sel)
 
 

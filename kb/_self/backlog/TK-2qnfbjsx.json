@@ -39,7 +39,7 @@
     }
   ],
   "touches": [
-    "_tools/test_kb.py",
+    "_tools/test_kb.py*",
     "_tools/test_kb_*.py",
     "_tools/conftest.py",
     "_tools/tests.py",

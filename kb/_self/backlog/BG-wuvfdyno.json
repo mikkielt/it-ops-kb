@@ -17,6 +17,6 @@
   },
   "touches": [
     ".claude/skills/kb-verify/lint.py",
-    "_tools/test_kb.py"
+    "_tools/test_kb_lookup.py"
   ]
 }
