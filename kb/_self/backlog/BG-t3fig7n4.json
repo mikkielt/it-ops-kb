@@ -2,7 +2,7 @@
   "id": "BG-t3fig7n4",
   "kind": "bug",
   "title": "querylog.py apply help and tools.md describe the old gap step and name a Learn and apply section that no longer exists",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-mzzucemv",
   "sprint": "SP-4slunkaj",
   "priority": "P3",
@@ -30,5 +30,6 @@
     "kb/_self/tools.md",
     "kb/_self/doc2query.md",
     "_tools/test_querylog.py"
-  ]
+  ],
+  "claimed_by": "worker-t3fig7n4"
 }
