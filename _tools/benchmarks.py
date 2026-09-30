@@ -2,10 +2,12 @@
 """The kb's benchmarks: every measurement of kb/_self/reports/benchmarks.md, run again by one command (stdlib only).
 
   benchmarks.py list                        the scenarios, each with its report section
-  benchmarks.py run [SCENARIO ...] [--reps N] [--out FILE]
+  benchmarks.py run [SCENARIO ...] [--reps N] [--arm ARM] [--out FILE]
                                             run every scenario, or the named ones, and write their rows to the results
                                             file (kb/_self/reports/benchmarks.csv; rows of the same scenario and date
-                                            are replaced), or to FILE; prints each scenario's rows and the spend
+                                            are replaced), or to FILE; prints each scenario's rows and the spend;
+                                            --arm names the arm of `navigation` (default `current`): a run replaces
+                                            only its own arm's rows
   benchmarks.py report [--check]            write the report's generated tables from the results file; --check writes
                                             nothing and exits 1 when a table, or a number in README.md, disagrees with
                                             the results file
@@ -25,9 +27,10 @@ clone's spool, a plugin data directory of ~/.claude or a real remote. A clone ge
 
 Paid scenarios (each a `claude -p` per case): headless, subagents, models, router, route-by-verdict, howto, partial, files-subagents,
 files-headless, host-lookups, new-model, always-on, kb-lookup-agent, retrieval and doc2query (their blind questions), research,
-ingest, host-roots, querylog-pipeline (one real Haiku batch). The rest run no model.
+ingest, host-roots, navigation (three prompts per arm), querylog-pipeline (one real Haiku batch). The rest run no
+model.
 """
-import argparse, csv, datetime, io, json, os, platform, random, re, shutil, statistics, subprocess, sys, tempfile, time
+import argparse, csv, datetime, io, json, os, platform, random, re, shlex, shutil, statistics, subprocess, sys, tempfile, time
 import uuid
 from pathlib import Path
 
@@ -75,10 +78,17 @@ def write_rows(rows, path=None):
     Path(path).write_text(buf.getvalue(), encoding="utf-8", newline="\n")
 
 
+ARMED = ("navigation",)  # scenarios whose run names one arm (--arm): a run replaces only its own arm's rows
+
+
+def _slot(r):
+    return r["scenario"], r["record"], r["arm"] if r["scenario"] in ARMED else ""
+
+
 def merge_rows(old, new):
-    """The results with `new` in place of every row of the same scenario and record."""
-    keys = {(r["scenario"], r["record"]) for r in new}
-    return [r for r in old if (r["scenario"], r["record"]) not in keys] + new
+    """The results with `new` in place of every row of the same scenario and record (and, for an ARMED scenario, arm)."""
+    keys = {_slot(r) for r in new}
+    return [r for r in old if _slot(r) not in keys] + new
 
 
 # ---------------------------------------------------------------------------------------------------- report tables
@@ -205,12 +215,18 @@ def spend_table(rows):
     got = {}
     for r in rows:
         if r["case"] == "all paid runs":
-            got.setdefault((r["scenario"], r["record"]), {"runs": r["runs"]})[r["metric"]] = r["value"]
+            got.setdefault((r["scenario"], r["record"], r["arm"]), {"runs": r["runs"]})[r["metric"]] = r["value"]
+    merged = {}  # an ARMED scenario's record holds one spend per arm: their sum
+    for (scen, rec, _), v in sorted(got.items()):
+        m = merged.setdefault((scen, rec), {"runs": 0})
+        m["runs"] += int(v["runs"] or 0)
+        for k in ("spend_input_tokens", "spend_output_tokens", "spend_usd"):
+            m[k] = m.get(k, 0) + float(v.get(k, 0))
     out = ["| scenario | record | paid runs | input tokens | output tokens | spend |", "|---|---|---|---|---|---|"]
     tot = [0, 0.0, 0.0, 0.0]
-    for (scen, rec), v in sorted(got.items()):
-        inp, outp, usd = (float(v.get(k, 0)) for k in ("spend_input_tokens", "spend_output_tokens", "spend_usd"))
-        tot = [tot[0] + int(v["runs"] or 0), tot[1] + inp, tot[2] + outp, tot[3] + usd]
+    for (scen, rec), v in sorted(merged.items()):
+        inp, outp, usd = (v.get(k, 0) for k in ("spend_input_tokens", "spend_output_tokens", "spend_usd"))
+        tot = [tot[0] + v["runs"], tot[1] + inp, tot[2] + outp, tot[3] + usd]
         out.append(f"| {scen} | {rec} | {v['runs']} | {inp:,.0f} | {outp:,.0f} | ${usd:.2f} |")
     out.append(f"| all | | {tot[0]} | {tot[1]:,.0f} | {tot[2]:,.0f} | ${tot[3]:.2f} |")
     return "\n".join(out)
@@ -395,6 +411,7 @@ class Bench:
         import kbfacts
         self.topics = str(len(kbfacts.articles()))
         self.rows, self._clones, self.registered = [], {}, []
+        self.arm = ""  # the arm of an ARMED scenario's rows (run --arm)
 
     def row(self, scenario, case, arm, metric, value, runs="", model="", note=""):
         if isinstance(value, float):
@@ -1723,6 +1740,168 @@ def s_new_model(b):
                       len(vals), model)
 
 
+NAV = {  # case: the question, the functions every right answer names, the tests of which a right answer names one. Only
+    # names, never a path: a file that moves, or a module that splits, leaves the answer right, and the scenario scores
+    # the new layout with the same prompts. Each question matches a file the code's split moves.
+    "N1": {"prompt": "In this repository, the query log's automatic push reads a GitLab pipeline by its jobs, not by its "
+                     "status, to decide whether the pushed commit is red and must be reverted: a job nobody started must "
+                     "not make it red, a job that timed out must. Which function decides that, and which tests pin it?",
+           "functions": ["job_verdict"],
+           "tests": ["test_a_failed_script_is_red_and_an_unreadable_list_is_unverified",
+                     "test_a_timed_out_or_stuck_job_is_red", "test_a_pipeline_whose_jobs_never_ran_is_ok"]},
+    "N2": {"prompt": "In this repository, `kbgit.py sync --push` sends a range of commits that changes code to a "
+                     "merge-request branch instead of main, named after a work id. Which function plans that (the lane "
+                     "and the branch) and which test pins which id names the branch?",
+           "functions": ["lane_plan"],
+           "tests": ["test_branch_id_is_the_first_work_id"]},
+    "N3": {"prompt": "In this repository, a benchmark scenario holds the router to a cost bar that depends on the "
+                     "verdict of the pack: on a web pack it may cost at most 110% of the bare web arm. Which function "
+                     "decides whether the bar holds, and which tests pin it?",
+           "functions": ["verdict_bar"],
+           "tests": ["test_the_bar_on_a_web_pack_is_110_percent_of_the_bare_arm",
+                     "test_the_bar_on_a_split_pack_is_below_both_other_arms",
+                     "test_the_bar_on_a_good_pack_is_the_reader_route_without_escalation"]},
+}
+NAV_ASK = (" Change no file. Answer in two lines and nothing else: `Functions:` and the exact names of the functions, "
+           "then `Tests:` and the exact names of the tests, no paths.")
+# read-only: files through Read, Grep, Glob and these commands; the kb's own tools as a session in a clone has them
+NAV_ALLOWED = ["Read", "Grep", "Glob", "Bash(git grep *)", "Bash(git ls-files *)", "Bash(grep *)", "Bash(ls *)",
+               "Bash(cat *)", "Bash(head *)", "Bash(tail *)", "Bash(sed -n *)", "Bash(wc *)",
+               "Bash(python3 _tools/rag.py *)", "Bash(python3 _tools/selfdoc.py *)"]
+NAV_DENIED = ["WebSearch", "WebFetch", "Agent", "Task", "Edit", "Write", "NotebookEdit"]
+NAV_FILE = re.compile(r"[\w./-]+\.(?:py|md|csv|json|toml|ya?ml|txt|ps1|sh)")  # no wildcard, no space
+
+
+def nav_named(name, answer):
+    return re.search(rf"(?<!\w){re.escape(name)}(?!\w)", answer or "") is not None
+
+
+def nav_check(case, answer):
+    """[functions, tests] of one answer: it names every function of the case, and at least one of its tests."""
+    spec = NAV[case]
+    return [all(nav_named(f, answer) for f in spec["functions"]), any(nav_named(t, answer) for t in spec["tests"])]
+
+
+def nav_path(p, root):
+    """A path as the clone holds it: relative, with `/`, whatever prefix the run's working directory had."""
+    p = str(p).strip().strip("\"'").replace("\\", "/")
+    p = re.sub(r":\d+(-\d+)?$", "", p)  # a line suffix
+    i = p.find(f"/{Path(root).name}/")
+    if i >= 0:
+        p = p[i + len(Path(root).name) + 2:]
+    return p[2:] if p.startswith("./") else p
+
+
+def nav_files(uses, root):
+    """The distinct files a run read, from its tool calls [(name, input)]: the `file_path` of Read, the `path` of Grep or
+    Glob when it names a file, and the files a Bash command names (an argument that ends in a file extension and has
+    no wildcard). A search over a directory reads no one file, so it adds none."""
+    seen = []
+    for name, inp in uses:
+        inp = inp if isinstance(inp, dict) else {}
+        cands = []
+        if name == "Read":
+            cands = [inp.get("file_path")]
+        elif name in ("Grep", "Glob"):
+            cands = [inp.get("path")]
+        elif name == "Bash":
+            cmd = str(inp.get("command") or "")
+            try:
+                cands = shlex.split(cmd)
+            except ValueError:
+                cands = cmd.split()
+        for c in cands:
+            if not c:
+                continue
+            p = nav_path(c, root)
+            if NAV_FILE.fullmatch(p) and p not in seen:
+                seen.append(p)
+    return seen
+
+
+def nav_uses(stdout):
+    """[(tool, input)] of every tool call in a stream-json run, in order."""
+    out = []
+    for line in stdout.splitlines():
+        try:
+            ev = json.loads(line)
+        except ValueError:
+            continue
+        msg = ev.get("message") if isinstance(ev, dict) else None
+        if isinstance(ev, dict) and ev.get("type") == "assistant" and isinstance(msg, dict):
+            out += [(c.get("name", ""), c.get("input")) for c in msg.get("content") or []
+                    if isinstance(c, dict) and c.get("type") == "tool_use"]
+    return out
+
+
+def nav_result(stdout, root, wall=0.0):
+    """One navigation run read from its stream: agent_bench's result fields (cost, turns, input, output, tool counts,
+    answer) and `files_read`, or {"error": ...} when the run has no result or was refused."""
+    seen, res = agent_bench.parse(stdout)
+    if not res:
+        return {"error": "no result event"}
+    if res.get("is_error"):
+        return {"error": str(res.get("result") or "is_error")[:200]}
+    u = res.get("usage") or {}
+    return {"wall_s": round(wall, 1), "api_s": round((res.get("duration_api_ms") or 0) / 1000, 1),
+            "cost": round(res.get("total_cost_usd") or 0, 4), "turns": res.get("num_turns", 0),
+            "in_uncached": u.get("input_tokens", 0), "cache_write": u.get("cache_creation_input_tokens", 0),
+            "cache_read": u.get("cache_read_input_tokens", 0), "out": u.get("output_tokens", 0),
+            "models": {m: round(v["costUSD"], 4) for m, v in (res.get("modelUsage") or {}).items()},
+            **seen, "files_read": nav_files(nav_uses(stdout), root), "answer": res.get("result") or ""}
+
+
+def nav_argv():
+    return _task_argv("sonnet", ["--strict-mcp-config", "--allowedTools", *NAV_ALLOWED, "--disallowedTools", *NAV_DENIED])
+
+
+def nav_run(argv, prompt, cwd):
+    """One `claude -p` run of a navigation question in `cwd`, hooks off, through nav_result."""
+    t = time.time()
+    try:
+        p = subprocess.run(argv, cwd=str(cwd), input=prompt, capture_output=True, text=True, encoding="utf-8",
+                           env=no_plugin_env(), timeout=900)
+    except subprocess.TimeoutExpired:
+        return {"error": "timed out after 900 s"}
+    r = nav_result(p.stdout, cwd, time.time() - t)
+    if "error" in r:
+        r["error"] += (": " + p.stderr.strip()[-300:]) if p.stderr.strip() else ""
+        return r
+    _spent_run(r)
+    if RAW.get("path"):
+        with open(RAW["path"], "a", encoding="utf-8", newline="\n") as f:
+            f.write(json.dumps({"prompt": prompt[:300], **r}) + "\n")
+    return r
+
+
+def s_navigation(b):
+    """Finding the code: three questions (a query-log delivery rule, a kbgit.py trailer or sync rule, a benchmark
+    scenario) put to fresh Sonnet sessions in a throwaway clone of HEAD, hooks off, read-only tools, no subagents, no
+    MCP servers. An answer is right when it names the case's function and one of its tests (nav_check). Rows per case
+    under the arm `--arm` names: turns, tool calls, files read and input tokens (means over `--reps` runs), the
+    answers that named the right functions and tests (`checks`: functions and tests, each a run counts), and their sums."""
+    arm = getattr(b, "arm", "") or "current"
+    clone = b.clone("navigation", "off")
+    runs = []
+    for case, spec in NAV.items():
+        for _ in range(b.reps):
+            r = nav_run(nav_argv(), spec["prompt"] + NAV_ASK, clone)
+            runs.append({**r, "cfg": arm, "scen": case, "checks": nav_check(case, r["answer"]) if "error" not in r else []})
+    b.bench_rows("navigation", runs)
+    ok = [r for r in runs if "error" not in r]
+    for case in NAV:
+        rs = [r for r in ok if r["scen"] == case]
+        if rs:
+            b.row("navigation", case, arm, "files_read", sum(len(r["files_read"]) for r in rs) / len(rs), len(rs))
+    if ok and len({r["scen"] for r in ok}) == len(NAV):
+        n = len(ok) / len(NAV)
+        b.row("navigation", "N1-N3", arm, "turns", sum(r["turns"] for r in ok) / n, len(ok))
+        b.row("navigation", "N1-N3", arm, "tool_calls", sum(sum(r["tools"].values()) for r in ok) / n, len(ok))
+        b.row("navigation", "N1-N3", arm, "files_read", sum(len(r["files_read"]) for r in ok) / n, len(ok))
+        b.row("navigation", "N1-N3", arm, "input", sum(r["in_uncached"] + r["cache_write"] + r["cache_read"]
+                                                       for r in ok) / n, len(ok))
+
+
 SCENARIOS = {  # name: (report section, function)
     "headless": ("Bare agent against agent with the kb: headless sessions", s_headless),
     "subagents": ("Bare agent against agent with the kb: subagents", s_subagents),
@@ -1748,6 +1927,7 @@ SCENARIOS = {  # name: (report section, function)
     "host-roots": ("A host plugin with team roots", s_host_roots),
     "kbpy": ("Hook launcher start-up", s_kbpy),
     "new-model": ("A new model against the one it replaces", s_new_model),
+    "navigation": ("Finding the code", s_navigation),
 }
 
 
@@ -1758,6 +1938,7 @@ def main(argv=None):
     r = sub.add_parser("run")
     r.add_argument("scenarios", nargs="*")
     r.add_argument("--reps", type=int, default=1)
+    r.add_argument("--arm", default="current", help="the arm of the navigation scenario's rows (default: current)")
     r.add_argument("--out")
     rep = sub.add_parser("report")
     rep.add_argument("--check", action="store_true")
@@ -1789,9 +1970,11 @@ def main(argv=None):
         print(f"unknown scenario: {', '.join(unknown)} (benchmarks.py list)", file=sys.stderr)
         return 2
     b = Bench(os.environ.get("BENCH_SCRATCH") or Path(tempfile.gettempdir()) / "it-ops-kb-bench", a.reps)
+    b.arm = a.arm
     out = Path(a.out) if a.out else RESULTS
     try:
         for n in names:
+            arm = b.arm if n in ARMED else ""  # the arm of the rows the runner itself adds
             start = len(b.rows)
             t = time.time()
             RAW["path"] = b.scratch / "raw" / f"{n}-{b.date}-runs.jsonl"
@@ -1802,11 +1985,11 @@ def main(argv=None):
                 print(f"{n}: skipped: {e}", flush=True)
                 continue
             except Exception as e:  # one failed scenario does not lose the others' rows
-                b.row(n, "run", "", "errors", 1, 1, note=f"{type(e).__name__}: {e}"[:200])
+                b.row(n, "run", arm, "errors", 1, 1, note=f"{type(e).__name__}: {e}"[:200])
             if SPEND["runs"]:
-                b.row(n, "all paid runs", "", "spend_usd", SPEND["usd"], SPEND["runs"])
-                b.row(n, "all paid runs", "", "spend_input_tokens", SPEND["input"], SPEND["runs"])
-                b.row(n, "all paid runs", "", "spend_output_tokens", SPEND["out"], SPEND["runs"])
+                b.row(n, "all paid runs", arm, "spend_usd", SPEND["usd"], SPEND["runs"])
+                b.row(n, "all paid runs", arm, "spend_input_tokens", SPEND["input"], SPEND["runs"])
+                b.row(n, "all paid runs", arm, "spend_output_tokens", SPEND["out"], SPEND["runs"])
             mine = b.rows[start:]
             print(f"{n}: {len(mine)} rows, ${SPEND['usd']:.2f} in {SPEND['runs']} paid runs, "
                   f"{time.time() - t:.0f} s", flush=True)
