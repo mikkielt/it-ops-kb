@@ -2,7 +2,7 @@
   "id": "BG-hgeke2ws",
   "kind": "bug",
   "title": "The raw-read hint fires on sed -i -n, an in-place edit",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-c7fzjhge",
   "sprint": "SP-vpk5nrrc",
   "priority": "P3",
@@ -30,5 +30,28 @@
     "_tools/kb_hook.py",
     "_tools/test_kb.py"
   ],
-  "claimed_by": "worker-hgeke2ws"
+  "evidence": {
+    "commit": "9e3f9c3a8bd6eb356164be74f7963492331e2725",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "raw_read_nudge"
+        ],
+        "exit": 0,
+        "sha256": "34122fd00cc915e6"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; sys.path.insert(0,'_tools'); import kb_hook; sys.exit(1 if kb_hook.is_raw_read(\"sed -i -n 's/a/b/p' kb/public/x.md\") else 0)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
