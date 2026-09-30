@@ -324,15 +324,17 @@ class TestRevisionReadsWithoutGitShow:
     OLD = "# Page\n\nThe upload limit is 30 GB per package. Clients cache the content for 24 hours after download.\n"
     NEW = "# Page\n\nThe upload limit is 50 GB per package. Clients cache the content for 24 hours after download.\n"
 
+    PAGE = "articles/page.md"  # in a subdirectory, so the path git prints and takes back has a separator
+
     @pytest.fixture
     def repo(self, tmp_path):
         r = Repo(tmp_path / "docs", git_env())
         os.makedirs(r.path)
         r.git("init", "-q", "-b", "main")
-        r.write("page.md", self.OLD)
+        r.write(self.PAGE, self.OLD)
         r.git("add", "-A")
         r.git("commit", "-q", "-m", "one")
-        r.write("page.md", self.NEW)
+        r.write(self.PAGE, self.NEW)
         r.git("commit", "-q", "-a", "-m", "two")
         return r
 
@@ -349,9 +351,9 @@ class TestRevisionReadsWithoutGitShow:
         monkeypatch.setattr(subprocess, "run", run)
 
     def test_the_runner_fails_git_show(self, repo, windows):
-        assert F._git(repo.path, "show", "HEAD:page.md") is None
-        assert F._git(repo.path, "cat-file", "blob", "HEAD:page.md") == self.NEW
-        assert F._git(repo.path, "cat-file", "blob", "HEAD:absent.md") is None  # a path absent at the revision: None
+        assert F._git(repo.path, "show", f"HEAD:{self.PAGE}") is None
+        assert F._git(repo.path, "cat-file", "blob", f"HEAD:{self.PAGE}") == self.NEW
+        assert F._git(repo.path, "cat-file", "blob", "HEAD:articles/absent.md") is None  # a path absent at the revision: None
 
     def test_calibrate_history_reads_both_versions(self, repo, windows):
         out = F.calibrate_history(repo.path, ["."], "2000-01-01", 5, 1)
