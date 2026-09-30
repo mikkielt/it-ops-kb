@@ -2,7 +2,7 @@
   "id": "ST-mxqz7fmn",
   "kind": "story",
   "title": "Route checks run the lookup eval questions end to end",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-c7fzjhge",
   "sprint": "SP-vpk5nrrc",
   "priority": "P2",
@@ -28,5 +28,19 @@
     "BG-ou6nahcx",
     "BG-zrzme2li"
   ],
-  "claimed_by": "worker-mxqz7fmn"
+  "evidence": {
+    "commit": "5a43c1de537dfaf72c8166025a667b451b5a1d01",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "route_eval_end_to_end"
+        ],
+        "exit": 0,
+        "sha256": "a5be80070a552e20"
+      }
+    ]
+  }
 }
