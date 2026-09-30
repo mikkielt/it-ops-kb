@@ -2,7 +2,7 @@
   "id": "TK-6wvrrngz",
   "kind": "task",
   "title": "Stress symlink mutations skip without the symlink privilege",
-  "status": "doing",
+  "status": "done",
   "parent": "BG-2j5ba56h",
   "priority": "P2",
   "rank": 0,
@@ -20,5 +20,19 @@
   "touches": [
     "_tools/test_stress.py"
   ],
-  "claimed_by": "worker-stduser"
+  "evidence": {
+    "commit": "2ea20e04faad8a49c698c02e7d3d00712ae39991",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/stress_test.py",
+          "-k",
+          "symlink"
+        ],
+        "exit": 0,
+        "sha256": "9e36a354aa2365d2"
+      }
+    ]
+  }
 }

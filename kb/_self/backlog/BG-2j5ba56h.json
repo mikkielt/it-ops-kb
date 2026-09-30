@@ -2,7 +2,7 @@
   "id": "BG-2j5ba56h",
   "kind": "bug",
   "title": "Tests need Git Bash's usr/bin tools and the symlink privilege, so tests.py and stress_test.py fail for a standard user outside Git Bash",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-5p4ahbnq",
   "sprint": "SP-hlfwfcx6",
   "priority": "P1",
@@ -16,5 +16,18 @@
       "import os,subprocess,sys; env=dict(os.environ); env['PATH']=os.pathsep.join(p for p in env['PATH'].split(os.pathsep) if 'usr' not in p.replace(chr(92),'/').lower().split('/')); sys.exit(subprocess.run([sys.executable,'_tools/tests.py','-k','test_bug_repro_must_fail_now or test_done_refuses_failing_check_and_scope_then_passes or test_the_shims_are_executable_scripts'],env=env).returncode)"
     ]
   },
-  "claimed_by": "worker-stduser"
+  "evidence": {
+    "commit": "2ea20e04faad8a49c698c02e7d3d00712ae39991",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os,subprocess,sys; env=dict(os.environ); env['PATH']=os.pathsep.join(p for p in env['PATH'].split(os.pathsep) if 'usr' not in p.replace(chr(92),'/').lower().split('/')); sys.exit(subprocess.run([sys.executable,'_tools/tests.py','-k','test_bug_repro_must_fail_now or test_done_refuses_failing_check_and_scope_then_passes or test_the_shims_are_executable_scripts'],env=env).returncode)"
+        ],
+        "exit": 0,
+        "sha256": "0a6a10908e7fb051"
+      }
+    ]
+  }
 }

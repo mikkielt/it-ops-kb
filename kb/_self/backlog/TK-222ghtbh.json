@@ -2,7 +2,7 @@
   "id": "TK-222ghtbh",
   "kind": "task",
   "title": "Backlog and benchmark tests run without Git Bash's usr/bin tools",
-  "status": "doing",
+  "status": "done",
   "parent": "BG-2j5ba56h",
   "priority": "P2",
   "rank": 0,
@@ -20,5 +20,18 @@
     "_tools/test_backlog.py",
     "_tools/test_benchmarks.py"
   ],
-  "claimed_by": "worker-stduser"
+  "evidence": {
+    "commit": "2ea20e04faad8a49c698c02e7d3d00712ae39991",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os,subprocess,sys; env=dict(os.environ); env['PATH']=os.pathsep.join(p for p in env['PATH'].split(os.pathsep) if 'usr' not in p.replace(chr(92),'/').lower().split('/')); sys.exit(subprocess.run([sys.executable,'_tools/tests.py','-k','test_backlog.py or test_benchmarks.py'],env=env).returncode)"
+        ],
+        "exit": 0,
+        "sha256": "df4cc8040578e5ef"
+      }
+    ]
+  }
 }

@@ -2,7 +2,9 @@
   "id": "BG-37t2orjz",
   "kind": "bug",
   "title": "test_kb_mcp's HOOK_SHELLS takes System32's WSL bash.exe for a hook shell, so the submit_feedback hook test fails outside Git Bash",
-  "status": "draft",
+  "status": "doing",
+  "parent": "EP-5p4ahbnq",
+  "sprint": "SP-hlfwfcx6",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
@@ -13,5 +15,6 @@
       "-c",
       "import os,subprocess,sys; env=dict(os.environ); env['PATH']=os.pathsep.join(p for p in env['PATH'].split(os.pathsep) if not {'usr','mingw64'} & set(p.replace(chr(92),'/').lower().split('/'))); sys.exit(subprocess.run([sys.executable,'_tools/tests.py','-k','test_submit_feedback_blocked_on_every_docs_server'],env=env).returncode)"
     ]
-  }
+  },
+  "claimed_by": "worker-shims"
 }

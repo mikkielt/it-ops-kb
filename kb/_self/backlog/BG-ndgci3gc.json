@@ -2,7 +2,9 @@
   "id": "BG-ndgci3gc",
   "kind": "bug",
   "title": "benchmarks.py's claude shims are extensionless scripts that Windows never resolves, and two scenarios run sh",
-  "status": "draft",
+  "status": "doing",
+  "parent": "EP-5p4ahbnq",
+  "sprint": "SP-hlfwfcx6",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
@@ -13,5 +15,6 @@
       "-c",
       "import shutil,sys,tempfile; sys.path.insert(0,'_tools'); import benchmarks as bm; d=bm.shim_dir(tempfile.mkdtemp()); sys.exit(0 if shutil.which('claude', path=str(d)) else 1)"
     ]
-  }
+  },
+  "claimed_by": "worker-shims"
 }
