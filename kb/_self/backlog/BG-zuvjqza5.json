@@ -2,7 +2,7 @@
   "id": "BG-zuvjqza5",
   "kind": "bug",
   "title": "testmap does not select test_layout.py when a _tools module changes",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-rks3vx5g",
   "priority": "P2",
   "rank": 0,
@@ -28,5 +28,27 @@
     "_tools/testmap.py",
     "_tools/test_testmap.py"
   ],
-  "claimed_by": "worker-zuvjqza5"
+  "evidence": {
+    "commit": "0c87b2a4cade4d4f036e7bab1632fe3a29a12520",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "_tools/test_testmap.py"
+        ],
+        "exit": 0,
+        "sha256": "fffd2c3346c1f975"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess,sys;o=subprocess.run([sys.executable,'_tools/testmap.py','select','--paths','_tools/kbfacts.py'],capture_output=True,text=True).stdout;assert '_tools/test_layout.py' in o,'test_layout.py not selected for a _tools module change'"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
