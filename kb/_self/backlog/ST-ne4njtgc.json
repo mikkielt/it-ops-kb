@@ -2,7 +2,7 @@
   "id": "ST-ne4njtgc",
   "kind": "story",
   "title": "backlog.py close prints what the sprint delivered for the close commit",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-o2bjijfp",
   "sprint": "SP-4fbfzobr",
   "priority": "P2",
@@ -22,6 +22,8 @@
     "_tools/backlog.py",
     "_tools/test_backlog.py",
     ".claude/skills/kb-sprint/SKILL.md",
-    "kb/_self/backlog.md"
-  ]
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "claimed_by": "sprint-4fbfzobr-w8"
 }
