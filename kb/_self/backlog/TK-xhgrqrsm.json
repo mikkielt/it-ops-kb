@@ -2,7 +2,7 @@
   "id": "TK-xhgrqrsm",
   "kind": "task",
   "title": "benchmarks.py navigation scenario",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-qxyqfpoz",
   "priority": "P2",
   "rank": 0,
@@ -23,5 +23,19 @@
     "kb/_self/reports/benchmarks.md",
     "kb/_self/tools.md"
   ],
-  "claimed_by": "worker-xhgrqrsm"
+  "evidence": {
+    "commit": "6a1dd6a8f3b2cd8091d779769751f31a60104a12",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "navigation"
+        ],
+        "exit": 0,
+        "sha256": "59a6024d9b71a05f"
+      }
+    ]
+  }
 }
