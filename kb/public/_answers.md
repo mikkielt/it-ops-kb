@@ -2247,3 +2247,16 @@ _Agent: kb-research_
 - See claude/cross-session-messaging.md, claude/skills-and-subagents.md.
 
 _Agent: kb-research_
+
+## QK-rule-based-code-based-checks-run. When do rule-based or code-based checks run before a model judge in graders, evals and self-improving pipelines?
+- Vendors rank code-based graders first: Anthropic advises deterministic graders where possible and LLM graders where necessary, and its platform docs order grading methods by fastest, most reliable, most scalable, with code-based grading first. [DOC S1896, S1898]
+- The reasons given: code-based graders are fast, cheap, objective and reproducible but brittle and lacking nuance; model graders are flexible but non-deterministic, more expensive and need calibration against human graders. [DOC S1896]
+- Cost makes the split concrete in Claude Code plugin evals: `regex`, `tool_used`, `tool_order` and `file_exists` graders cost nothing, `llm` and `baseline` graders call a judge model, and quick every-change suites should use only graders that call no judge. [DOC S-lkcsn2fs]
+- Between model steps, Anthropic's prompt-chaining workflow puts programmatic checks (a "gate") on intermediate results. [DOC S1920]
+- In OpenAI's self-evolving agents cookbook the eval combines two `python` graders, a `text_similarity` grader and an LLM judge; the Python graders catch domain fidelity and length early and the judge is a failsafe for edge cases, and the loop stops at a target score or a retry cap and can roll back. [DOC S-m2glighe]
+- promptfoo separates deterministic assertions from model-assisted ones, for agent traces too (`trajectory:tool-sequence` against `trajectory:goal-success`). [DOC S-ll5srdcw]
+- Conclusion: for a self-improving lookup or docs pipeline, run the rules first (contract, id, link and lint checks, exact-match and outcome checks) and pass only what they cannot decide to a model judge, tested with a planted failing and a planted valid input so a brittle rule cannot hide good results. The sources rank and combine graders; the strict run order is this kb's design, not a vendor rule. [DER S1896, S1898, S-lkcsn2fs, S1920, S-m2glighe]
+- Open: no vendor page was found that documents skipping the judge when a rule already fails, as a fixed order. [UNK]
+- See agents/agent-evaluation.md, agents/docs-maintenance-agents.md, agents/agent-planning-and-done.md.
+
+_Agent: kb-research_

@@ -1,9 +1,9 @@
 ---
 topic: agents/agent-evaluation
 priority: P1
-applies_to: "MCP Inspector v2, Inspect 0.x (AISI), DeepEval, promptfoo, PyRIT 1.1.0, garak, OpenAI evals (deprecating), tau-bench/tau2-bench v1.0.1, Anthropic eval guidance 2026-01, azure-ai-evaluation SDK + AI Red Teaming Agent (preview)"
-retrieved_utc: 2026-09-26
-sources: [S1880, S1881, S1883, S1884, S1885, S1886, S1887, S1888, S1889, S1890, S1891, S1892, S1893, S1894, S1895, S1896, S1898, S1899, S1900, S1901, S1902, S1903, S1904, S1905, S1935, S-zfg6jhgr, S-onkwuwst, S-p7dq3fku, S-6jcocxnl, S-wwrpen3s]
+applies_to: "MCP Inspector v2, Inspect 0.x (AISI), DeepEval, promptfoo, PyRIT 1.1.0, garak, OpenAI evals (deprecating), tau-bench/tau2-bench v1.0.1, Anthropic eval guidance 2026-01, azure-ai-evaluation SDK + AI Red Teaming Agent (preview), OpenAI cookbook self-evolving agents (commit 2182005b), promptfoo assertions (commit e6b46046), Claude Code plugin evals (2026-09)"
+retrieved_utc: 2026-09-30
+sources: [S1880, S1881, S1883, S1884, S1885, S1886, S1887, S1888, S1889, S1890, S1891, S1892, S1893, S1894, S1895, S1896, S1898, S1899, S1900, S1901, S1902, S1903, S1904, S1905, S1935, S-zfg6jhgr, S-onkwuwst, S-p7dq3fku, S-6jcocxnl, S-wwrpen3s, S1920, S-lkcsn2fs, S-m2glighe, S-ll5srdcw]
 status: complete
 ---
 
@@ -164,6 +164,76 @@ capability/safety-eval ground for an agent that happens to be hosted in Azure AI
   2024 paper); τ2-bench/τ3-bench (MIT-licensed repository, v1.0.1, 2026-07) continue the line and define
   task grading via `evaluation_criteria.actions` and a `reward_basis` gate. [DOC S1899, S1900]
 
+### Rule-based and code-based checks before a model judge (graders, evals, self-improving pipelines)
+- Anthropic's eval guidance names the methods of a **code-based grader**: string-match checks (exact, regex, fuzzy),
+  binary tests (fail-to-pass, pass-to-pass), static analysis (lint, type, security), outcome verification,
+  tool-call verification (tools used, parameters) and transcript analysis (turns taken, token usage). It lists them as
+  fast, cheap, objective, reproducible and easy to debug, and as brittle to valid variations, lacking in nuance and
+  limited for subjective tasks. [DOC S1896]
+- The same guidance lists **model-based graders** (rubric scoring, natural-language assertions, pairwise comparison,
+  reference-based evaluation, multi-judge consensus) as flexible and able to handle open-ended, freeform output, but
+  non-deterministic, more expensive than code, and needing calibration against human graders. [DOC S1896]
+- Anthropic advises "deterministic graders where possible, LLM graders where necessary or for additional flexibility",
+  with human graders used judiciously for validation. For a coding agent it says evaluations typically rely on unit
+  tests for correctness and an LLM rubric for overall code quality, with further graders added only as needed. [DOC S1896]
+- Anthropic warns that checking a fixed sequence of tool calls is too rigid, because agents find valid approaches the eval
+  designer did not expect; it is often better to grade what the agent produced than the path it took. A rule that rejects
+  valid output is a grading bug: Opus 4.5 first scored 42% on CORE-Bench and reached 95% once the grading, task-spec and
+  reproducibility problems were fixed, among them rigid grading that penalised "96.12" where "96.124991..." was expected. [DOC S1896]
+- Per task, Anthropic describes three ways to combine graders: weighted (the combined score must reach a threshold), binary
+  (every grader must pass) or a hybrid. Automated evals are the first line of defence before launch and in CI/CD on each
+  agent change; systematic human studies are reserved for calibrating LLM graders or judging subjective output. [DOC S1896]
+- Anthropic's platform docs rank grading methods by "fastest, most reliable, most scalable": code-based grading (exact
+  match, string match) first, as fastest and most reliable but lacking nuance; LLM-based grading is fast, flexible and suited
+  to complex judgment but to be tested for reliability before scaling; human grading is flexible and high quality but slow and
+  expensive, "avoid if possible". [DOC S1898]
+- OpenAI's evaluation guidance calls exact match, string match, ROUGE/BLEU, function-call accuracy and executable evals
+  "metric-based evals": numerical scores for filtering, ranking and automated regression testing, which may not fit a use
+  case and may miss nuance; it notes model judges are cheaper and more scalable than human evaluation. [DOC S1894]
+- `claude plugin eval` splits its graders by cost. `regex`, `tool_used`, `tool_order` and `file_exists` are computed from the
+  transcript and files and cost nothing; `llm` and `baseline` call a judge model (a small fast model by default) and add to
+  the run's cost, three short judge calls per such grader per run, with an `llm` grader passing on at least two of three
+  PASS votes. [DOC S-lkcsn2fs]
+- The plugin-eval page says an `llm` grader can answer differently between runs, more so the longer the text it reads: grade a
+  long output such as a generated file with a `regex` grader over its contents, and keep `llm` graders for short output. It
+  also advises one grader on the result (final message or produced file) and one on the steps (`tool_used`, `tool_order`). [DOC S-lkcsn2fs]
+- For predictable CI cost the plugin-eval page says to give quick every-change suites only graders that call no judge. With
+  `--max-cost-usd` set, nothing further starts once the ceiling is spent, and a run whose judge graders were skipped is
+  flagged `skippedPaidGraders`, its score not comparable and to be left out of trend charts. [DOC S-lkcsn2fs]
+- promptfoo groups its assertions into "deterministic eval metrics" (programmatic tests run on the output, such as `equals`,
+  `contains`, `regex`, `is-json`, `is-sql`, function-call schema checks, `latency`, `cost`) and "model-assisted eval metrics"
+  (which rely on LLMs or other models, such as `llm-rubric`, `factuality` and embedding-based `similar`); the page says some
+  assertions (`similar`, `llm-rubric`, `model-graded-*`) require an LLM provider. Each assertion takes a `weight`, and some a
+  `threshold`. [DOC S-ll5srdcw]
+- For agent traces promptfoo has both kinds: `trajectory:tool-used`, `trajectory:tool-args-match` and
+  `trajectory:tool-sequence` are deterministic checks on the traced tool calls, while `trajectory:goal-success` uses an LLM
+  judge to decide whether the run achieved its goal. [DOC S-ll5srdcw]
+- Anthropic's "Building effective agents" says a prompt-chaining workflow can add programmatic checks (a "gate") on any
+  intermediate step to ensure the process is still on track, and that the workflow trades latency for accuracy by making each
+  LLM call an easier task. Its evaluator-optimizer workflow (one LLM call generates, another evaluates and gives feedback in a
+  loop) fits when there are clear evaluation criteria and iterative refinement gives measurable value. [DOC S1920]
+- OpenAI's self-evolving agents cookbook describes a self-improving loop: a baseline agent's output gets feedback from human
+  reviewers or an LLM-as-a-judge, new prompts are tested through evals, and the outcomes are combined into an aggregated
+  score; the loop runs until the score passes a target (its example: 0.8) or the retries run out (its example: 10), and at
+  the limit engineers are alerted that manual improvement is needed. [DOC S-m2glighe]
+- That cookbook's eval balances "deterministic checks with semantic judgment" in four graders, each with its own pass
+  threshold: two `python` graders (exact chemical names from the source appear in the summary; length close to 100 words),
+  a `text_similarity` grader (cosine similarity to the source) and a rubric-driven `score_model` LLM judge. It says the
+  Python graders catch domain fidelity and length discipline early, which stabilizes optimization before semantic tuning,
+  and the LLM judge is a failsafe when edge cases slip past the deterministic checks. [DOC S-m2glighe]
+- The cookbook's own takeaways from that loop: optimization is not always successful, so being able to roll back the prompt
+  version matters, and the fidelity of the graders' information is crucial to a quality optimization. It keeps the prompt with
+  the highest cumulative grader score (ties go to the latest), not merely the last one that passed. [DOC S-m2glighe]
+- Derived order for a self-improving pipeline in this kb's frame (a lookup pipeline whose findings come from logged
+  questions, or a docs-maintenance job): run the deterministic rules first (contract and id checks, link and lint checks,
+  exact-match and outcome checks) and send only what passes them, or what no rule can decide, to a model judge. The sources
+  give a cost and reliability ranking and a gate between model steps, and they combine graders by weight or threshold; none
+  states a run order for rule graders and judge graders, so the order is a design choice, not a vendor rule. [DER S1896, S1898, S-lkcsn2fs, S1920, S-m2glighe: code-based graders are cheaper and reproducible, judge calls cost and vary, programmatic gates sit between model steps]
+- Derived limits of that order: a rule is brittle and can fail good output (the CORE-Bench case), so each rule needs a planted
+  failing input and a planted valid variation, and the model judge stays as the check for what rules cannot express; the
+  judge itself is calibrated against human review, and a loop that edits its own prompt or rules needs a rollback and a
+  retry cap, as the cookbook does. [DER S1896, S-m2glighe: brittleness of code graders, judge calibration, rollback and retry limit]
+
 ## Reference
 | Tool | Licence | Stdio MCP target | What it measures | Source |
 |---|---|---|---|---|
@@ -178,7 +248,7 @@ capability/safety-eval ground for an agent that happens to be hosted in Azure AI
 | Azure AI Evaluation SDK (`azure-ai-evaluation`) | Microsoft (vendor-hosted judge/backend) | not MCP-specific; agent inputs via query/response or OpenAI-style messages | IntentResolution, ToolCallAccuracy, TaskAdherence, Relevance, Groundedness (+ quality/RAG/safety/NLP evaluators); `evaluate()` batch runner | S-zfg6jhgr, S-6jcocxnl |
 | AI Red Teaming Agent (`azure-ai-evaluation[redteam]`, preview) | Microsoft (PyRIT-based; local mode not compatible with the new Foundry portal/SDK) | no MCP target; scans a model config, callback, or PyRIT `PromptChatTarget` | Attack Success Rate per risk category (violence/sexual/self-harm/hate-unfairness/+) and attack-complexity tier | S-onkwuwst, S-p7dq3fku |
 
-See also `agents/agent-planning-and-done.md` (definition of done, verification gates and task lists for agent work).
+See also `agents/agent-planning-and-done.md` (definition of done, verification gates and task lists for agent work) and `agents/docs-maintenance-agents.md` (deterministic guardrails that run before a model reviews a documentation change).
 
 ## Examples
 A DeepEval-style test case for a device-management MCP server would launch the server's stdio target, call

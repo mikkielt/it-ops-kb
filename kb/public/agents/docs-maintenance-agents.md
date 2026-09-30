@@ -2,8 +2,8 @@
 topic: agents/docs-maintenance-agents
 priority: P2
 applies_to: "DeepWiki (Cognition AI, 2025-04-25 launch); Mintlify llms.txt/AI-native docs (retrieved 2026-09-25); llms.txt spec v2 (2026-08-10); Swimm Auto-sync/Verify; GitHub Copilot Spaces (GA 2025-09-24); git union merge driver (v2.55.0), GitHub `GITHUB_TOKEN` and GitLab `[skip ci]` for automation commits (retrieved 2026-09-27)"
-retrieved_utc: 2026-09-27
-sources: [S1808, S1809, S1810, S1811, S1812, S1813, S1814, S1815, S1816, S1817, S1818, S1820, S1821, S1822, S1823, S1825, S-qso27noq, S-cfuusq2i, S-tpvi7ohn, S-k527bca2, S-rqjvl632, S-jgplbv5j, S-f2vfcma6, S-xote3xa2, S-sit75nzz, S-h6jpev6e, S-vmz33l7n, S-ivq5edtq, S-wane77q5]
+retrieved_utc: 2026-09-30
+sources: [S1808, S1809, S1810, S1811, S1812, S1813, S1814, S1815, S1816, S1817, S1818, S1820, S1821, S1822, S1823, S1825, S-qso27noq, S-cfuusq2i, S-tpvi7ohn, S-k527bca2, S-rqjvl632, S-jgplbv5j, S-f2vfcma6, S-xote3xa2, S-sit75nzz, S-h6jpev6e, S-vmz33l7n, S-ivq5edtq, S-wane77q5, S1896]
 status: complete
 ---
 
@@ -43,6 +43,7 @@ the vendor docs found this session state a fully-autonomous merge-with-no-review
 - Events caused by a GitHub Actions workflow's `GITHUB_TOKEN` do not create new workflow runs, to prevent recursive runs: a workflow that pushes with it does not trigger `push` workflows. The exceptions are `workflow_dispatch` and `repository_dispatch`, and `pull_request` opened, synchronize or reopened events, whose runs wait for approval; a GitHub App installation token or a personal access token avoids that. [DOC S-ivq5edtq]
 - On GitLab, `[ci skip]` or `[skip ci]` (any capitalization) in a commit message pushes without running a pipeline, and the `ci.skip` Git push option (Git 2.10+) does the same but does not skip merge request pipelines; a skipped pipeline is still created, empty, with status `skipped`. Pipeline execution and scan execution policies can restrict or disable the directive. [DOC S-wane77q5]
 - An append-only store that automation updates in a repository therefore needs three things: a union (or custom) merge driver so parallel appends do not conflict, a deduplicating pass after each merge because union keeps both sides' lines in any order, and a guard against the bot's own push re-triggering the job (GitHub's `GITHUB_TOKEN` rule, GitLab's `[skip ci]`). This kb's `kbgit.py fix` is such a pass for its union-merged ledgers. [DER S-vmz33l7n, S-ivq5edtq, S-wane77q5: combined from the three documented behaviours; `kb/_self/git.md`]
+- In a documentation-update pipeline the rule-based checks (Vale, markdownlint and lychee in the table below) need no model, so they can run before any model reviews a change and reject what a rule can decide. This is the same order Anthropic's eval guidance gives for graders: deterministic ones where possible, LLM ones where necessary; the model review keeps what rules cannot express (`agents/agent-evaluation.md`, rule-based checks before a model judge). [DER S1822, S1823, S-xote3xa2, S1896: linters and link checkers are deterministic; graders ranked deterministic-first]
 
 ## Reference
 - `agents/doc-change-detection.md`: detecting that a cited source page changed, moved or died (version signals, redirects, archives, soft 404s).

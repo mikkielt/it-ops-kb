@@ -844,6 +844,9 @@ Still open: (topic: auth/configmgr-rbac-auth)
 
 - Whether Amazon Bedrock AgentCore Evaluation (`inspect_ai`) has native stdio-MCP-target support, and whether Azure AI Foundry's evaluation SDK has explicit stdio-MCP-target support beyond a UI "MCP Registry" reference, were not confirmed on the fetched pages (2 lookups: product overview + evaluation-harness pages). (topic: agents/agent-evaluation)
   - Partly resolved 2026-09-28: Inspect itself has `mcp_server_stdio()` (S-wwrpen3s); AgentCore Evaluation and Foundry's evaluation SDK were not re-read. (topic: agents/agent-evaluation)
+- **self-improving lookup pipeline findings deterministic rules before model judgement** The kb was asked this in a logged lookup of 2026-09-29, and no article answered it (query log finding F-26d83d5f6e31). Looked in the kb 2026-09-29: `rag.py pack` gives `weak`, with this topic in the lead. Needs an official source that states it (`/kb-research`, or the query log's opt-in research). (topic: agents/agent-evaluation)
+  - Resolved 2026-09-30: `agents/agent-evaluation.md` now states, from Anthropic (S1896, S1898, S1920, S-lkcsn2fs), OpenAI (S1894, S-m2glighe) and promptfoo (S-ll5srdcw) documentation, how code-based and rule-based graders differ from a model judge in cost, reliability and brittleness, that programmatic gates sit between model steps, and how a self-improving loop combines Python graders with an LLM judge; the run order itself is a derived design choice (topic: agents/agent-evaluation)
+- **Whether any vendor documents running rule-based graders before a model judge, or skipping the judge when a rule already fails, as a fixed order.** Read 2026-09-30: Anthropic's evals article and platform docs (S1896, S1898), OpenAI's evaluation guidance and self-evolving agents cookbook (S1894, S-m2glighe), Claude Code plugin evals (S-lkcsn2fs) and promptfoo assertions (S-ll5srdcw) rank or combine graders by cost, weight and threshold, and Anthropic's prompt-chaining gate (S1920) sits between model steps; none states a run order for rule graders and judge graders. Needs a source that documents short-circuiting or staged grading. [UNK] (topic: agents/agent-evaluation)
 
 ## agents/coding-agents-mcp
 
@@ -1136,10 +1139,6 @@ Still open: (topic: auth/configmgr-rbac-auth)
 ## gitlab/repository-mirroring
 
 - **Whether GitLab Community Edition (as opposed to the Free tier of the Enterprise Edition) lacks any Free-tier feature named in the git-regime pages** (push mirroring, push options, protected branches, server hooks): the docs label pages by tier and offering (GitLab Self-Managed), not by edition; the pages read (2026-09-29) do not mention Community Edition. Needs the edition comparison page. [UNK] (topic: gitlab/repository-mirroring)
-
-## agents/agent-caching
-
-- **self-improving lookup pipeline findings deterministic rules before model judgement** The kb was asked this in a logged lookup of 2026-09-29, and no article answered it (query log finding F-26d83d5f6e31). Looked in the kb 2026-09-29: `rag.py pack` gives `weak`, with this topic in the lead. Needs an official source that states it (`/kb-research`, or the query log's opt-in research). (topic: agents/agent-caching)
 
 ## arch/gitlab-ci-components
 
