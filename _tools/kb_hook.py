@@ -122,11 +122,39 @@ def _ps_unassign(seg):
     return ([op.group(1)] if op.group(1) else []) + seg[2:]
 
 
+def _sed_options(args):
+    """(quiet, in_place) from a sed command's arguments, wherever the options stand. A short bundle is read letter by
+    letter: `n` is quiet, `i` (GNU, its suffix attached: -i.bak) or `I` (BSD) is in place and ends the bundle, as `e`,
+    `f` and `l` end it with their argument, which is the next token when nothing follows them (sed -n -e p). Long
+    forms: --quiet, --silent, --in-place, --in-place=SUFFIX."""
+    quiet = in_place = False
+    it = iter(args)
+    for a in it:
+        if a == "--quiet" or a == "--silent":
+            quiet = True
+        elif a == "--in-place" or a.startswith("--in-place="):
+            in_place = True
+        elif a.startswith("-") and not a.startswith("--") and len(a) > 1:
+            for k, c in enumerate(a[1:], 1):
+                if c == "n":
+                    quiet = True
+                elif c in "iI":
+                    in_place = True
+                    break
+                elif c in "efl":
+                    if k == len(a) - 1:
+                        next(it, None)
+                    break
+                elif not c.isalpha():
+                    break
+    return quiet, in_place
+
+
 def is_raw_read(command, powershell=False):
     """True when one command of a shell line reads a kb article or a root's _gaps.md with cat, head, tail, sed -n or
     grep -n; with `powershell` (a PowerShell tool event) with Get-Content, gc, cat, type, Select-String or sls, also
     after an assignment (`$t = gc ...`) or as `-Path:value`, and a backslash in a path is a separator. A path after `>` (a write), a command that merely names the path
-    (rag.py show ...), sed -i and Set-Content are not."""
+    (rag.py show ...), a sed with -i or --in-place among its options (an edit, -n or not) and Set-Content are not."""
     if not isinstance(command, str):
         return False
     if powershell:
@@ -177,8 +205,10 @@ def is_raw_read(command, powershell=False):
         shorts = [a[1:] for a in args if re.match(r"^-[A-Za-z]+$", a)]
         if verb in ("cat", "head", "tail"):
             return True
-        if verb == "sed" and (any("n" in s and "i" not in s for s in shorts) or "--quiet" in args or "--silent" in args):
-            return True
+        if verb == "sed":
+            quiet, in_place = _sed_options(args)
+            if quiet and not in_place:
+                return True
         if verb == "grep" and (any("n" in s for s in shorts) or "--line-number" in args):
             return True
     return False
