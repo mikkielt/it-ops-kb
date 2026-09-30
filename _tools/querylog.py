@@ -40,9 +40,12 @@ the ql_*.py modules beside it.
                         grow and off-kb `good` does not rise; an alias term already in an alias file or held by the kb
                         is refused. No accepted fix: the miss becomes a gap candidate (`no-fix`) and its fix
                         `rejected`. The gap step: an open gap candidate whose miss the pack still reproduces, with an
-                        article in the lead (not `none`), becomes a dated entry under that article's topic in its
-                        root's _gaps.md (candidate-gap -> gap). Research, only when the user's config turns it on
-                        (`research`, `research_daily`; --clone DIR reads that clone's config and daily count,
+                        article in the lead (for a `none` pack, only a lead that matches more than half of the
+                        question's key words the kb knows), becomes a dated entry under that article's topic in its
+                        root's _gaps.md (candidate-gap -> gap); one off the kb's domains (no lead, a lead no article
+                        holds, a stray `none` lead) is `rejected` at candidate-gap. Research, only when the user's
+                        config turns it on (`research`, `research_daily`; --clone DIR reads that clone's config and
+                        daily count,
                         --plugin-data DIR a plugin host's): at most the day's runs left and RESEARCH_RUNS_PER_APPLY,
                         one `claude -p` (hooks off) per gap finding, whose candidate facts are kept only when their
                         quote is on the page (quotecheck); accepted facts and their source rows are added (gap ->
