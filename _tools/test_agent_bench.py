@@ -209,6 +209,47 @@ def test_route_of_several_parts_reads_the_covered_part_and_researches_the_web_pa
     assert r["route"] == ["pack:split", "reader:haiku", "and", "researcher:sonnet"]
 
 
+def test_route_reads_a_dash_has_or_lacks_line_as_empty(monkeypatch):
+    """kb_ask's own plan over planted packs: a split pack with `kb lacks: -` (or `kb has: -`) is read whole like good,
+    a web pack's `kb lacks: -` never reaches the researcher, and a split part of several with `kb lacks: -` gives
+    only its kb has words."""
+    import kb_ask
+    monkeypatch.setattr(kb_ask, "tool_answer", lambda q: None)
+    calls = []
+
+    def execute(argv, prompt, **kw):
+        calls.append((argv, prompt))
+        return {"wall_s": 1, "api_s": 1, "cost": 0.01, "turns": 1, "in_uncached": 1, "cache_write": 0, "cache_read": 0,
+                "out": 1, "models": {"m": 0.01}, "tools": {}, "sub_tools": {}, "route": [], "answer": "a"}
+    monkeypatch.setattr(ab, "execute", execute)
+
+    def plant(pack, verdict):
+        monkeypatch.setattr(kb_ask.kbfacts, "pack_many", lambda parts, **kw: {"verdict": verdict, "results": [],
+                                                                              "text": pack})
+        calls.clear()
+
+    article = "\n## public/windows/laps.md  Windows LAPS  [complete, x]\n- public/windows/laps.md:12 14 (DOC S9)"
+    for has, lacks in (("LAPS, password", "-"), ("-", "Okta, rotation")):
+        pack = f"coverage: weak\nroute: split\nkb has: {has}\nkb lacks: {lacks}\n" + article
+        plant(pack, "weak")
+        r = ab.route("q")
+        (argv, prompt), = calls
+        assert prompt == kb_ask.prompt("q", pack) and kb_ask.READER in argv, "read whole, not divided"
+        assert r["route"] == ["pack:split", "reader:haiku"]
+    plant("coverage: none\nroute: web\nkb has: -\nkb lacks: -\n" + article, "none")
+    ab.route("q")
+    (argv, prompt), = calls
+    assert kb_ask.WEB_RESEARCHER in argv and "The kb lacks" not in prompt, prompt
+    plant("route: split\n# Q1: default LAPS password length\ncoverage: weak\nroute: split\nkb has: LAPS, password\n"
+          "kb lacks: -\n" + article + "\n\n# Q2: Kubernetes autoscaler on EKS\ncoverage: none\nroute: web\n"
+          "kb has: Kubernetes\nkb lacks: autoscaler, EKS\n## public/arch/k8s.md  Kubernetes  [complete, x]\n", "none")
+    r = ab.route("(1) default LAPS password length (2) Kubernetes autoscaler on EKS")
+    (_, rp), (_, sp) = calls
+    assert "Answer only the part the kb has: LAPS, password. The kb lacks: Kubernetes autoscaler on EKS." in rp, rp
+    assert "The kb lacks: Kubernetes autoscaler on EKS" in sp and "The kb lacks: -" not in sp and "; -" not in sp
+    assert r["route"] == ["pack:split", "reader:haiku", "and", "researcher:sonnet"]
+
+
 def test_route_returns_a_failed_run_instead_of_going_on(routed):
     calls = routed("split", [{"error": "boom"}])
     assert ab.route("q") == {"error": "boom"} and len(calls) == 1
