@@ -1,7 +1,8 @@
 """kb_ask.py routes by the pack's `route:` line, tested on planted packs and a planted `claude -p` (never the real CLI).
 
   TestKbAskRoute   plan() reads route, kb has, kb lacks and the nearest articles from the pack; claude_argv's researcher
-                   and reader; a web run's prompt, its printed result and error result; --route's lines; a split run's
+                   and reader; each part of several where its own route sends it (a covered part beside an
+                   uncovered one, planted and in the real kb); a web run's prompt, its printed result and error result; --route's lines; a split run's
                    reader and researcher, its one answer, the costs -v prints and sums, the reader's INSUFFICIENT and
                    the error results; a clean good plan, argv and run stay as they were
 """
@@ -55,6 +56,28 @@ kb has: rotation
 kb lacks: Okta
 ## public/auth/scim.md  SCIM provisioning  [partial, retrieved 2026-09-27]
 - public/auth/scim.md:4 A line (DOC S5)"""
+
+MIXED_PACK = """route: split
+# Q1: default LAPS password length
+coverage: good
+## public/windows/laps.md  Windows LAPS  [complete, retrieved 2026-09-27]
+- public/windows/laps.md:12 The default password length is 14 (DOC S9)
+
+# Q2: LAPS password rotation in Okta
+coverage: weak
+route: split
+kb has: LAPS, password
+kb lacks: Okta
+## public/windows/laps.md  Windows LAPS  [complete, retrieved 2026-09-27]
+- public/windows/laps.md:14 Rotation (DOC S9)
+
+# Q3: Kubernetes autoscaler on EKS
+coverage: none
+route: web
+kb has: Kubernetes
+kb lacks: autoscaler, EKS
+## public/arch/k8s.md  Kubernetes  [complete, retrieved 2026-09-27]
+- public/arch/k8s.md:4 A line (DOC S5)"""
 
 Q = "What is the Intel Wi-Fi Roaming Aggressiveness setting?"
 
@@ -123,7 +146,34 @@ class TestKbAskRoute:
     def test_plan_a_pack_of_several_parts_follows_its_overall_route_line(self, monkeypatch):
         plant(monkeypatch, MULTI_PACK, "none")
         p = kb_ask.plan("(1) default LAPS password length; (2) Okta rotation")
-        assert p["kind"] == "split" and p["has"] == ["rotation"] and p["lacks"] == ["Okta"], p
+        assert p["kind"] == "split", p
+        assert p["has"] == ["default LAPS password length"] and p["lacks"] == ["Okta rotation"], \
+            "the covered part to the reader, the web part whole to the researcher, never its kb has words to the reader"
+
+    def test_plan_sends_each_part_of_several_where_its_own_route_sends_it(self, monkeypatch):
+        plant(monkeypatch, MIXED_PACK, "none")
+        p = kb_ask.plan("(1) default LAPS password length (2) LAPS password rotation in Okta (3) Kubernetes autoscaler on EKS")
+        assert p["kind"] == "split"
+        assert p["has"] == ["default LAPS password length", "LAPS, password"], p
+        assert p["lacks"] == ["Okta", "Kubernetes autoscaler on EKS"], p
+        assert "Kubernetes" not in " ".join(p["has"]), "a web part's kb has words never go to the reader"
+        reader = kb_ask.split_prompt("q", p).split("The kb lacks")[0].split("Answer only")[-1]
+        assert "default LAPS password length" in reader and "Kubernetes" not in reader
+
+    def test_plan_a_pack_of_several_web_parts_gives_every_part_to_the_researcher(self, monkeypatch):
+        text = MULTI_PACK.replace("# Q1: default LAPS password length\ncoverage: good\n",
+                                  "# Q1: default LAPS password length\ncoverage: none\nroute: web\nkb has: LAPS\nkb lacks: length\n")
+        plant(monkeypatch, text.replace("route: split", "route: web", 1), "none")
+        p = kb_ask.plan("(1) default LAPS password length; (2) Okta rotation")
+        assert (p["kind"], p["has"], p["lacks"]) == ("web", [], ["default LAPS password length", "Okta rotation"]), p
+
+    def test_the_real_pack_of_a_covered_part_beside_an_uncovered_one_reads_the_covered_part(self):
+        q = ("(1) What is the default Windows LAPS password length? (2) How do I run the Kubernetes Cluster Autoscaler "
+             "on AWS EKS with spot instances?")
+        p = kb_ask.plan(q)
+        assert p["kind"] == "split" and len(p["parts"]) == 2, p
+        assert any("LAPS" in h for h in p["has"]) and not any("Kubernetes" in h for h in p["has"]), p["has"]
+        assert any("Autoscaler" in x for x in p["lacks"]), p["lacks"]
 
     def test_plan_a_weak_or_none_pack_without_a_route_line_is_split(self, monkeypatch):
         for verdict in ("weak", "none"):
@@ -240,6 +290,16 @@ class TestKbAskRoute:
         assert "reader haiku total_cost_usd=0.001" in err and "researcher sonnet total_cost_usd=0.02" in err
         assert "total_cost_usd=0.021 (reader + researcher)" in err
         assert row["route"] == "split" and "escalated" not in row and not any("cost" in k for k in row), row
+
+    def test_a_split_run_of_several_parts_reads_the_covered_part_and_researches_the_web_part(self, monkeypatch, capsys):
+        plant(monkeypatch, MULTI_PACK, "none")
+        q = "(1) default LAPS password length; (2) Okta rotation"
+        claude = Claude(monkeypatch, result(result="14 (public/windows/laps.md:12)."), result(result="Okta: live"))
+        code, out, _, row = ask(monkeypatch, capsys, q)
+        (_, r_in), (_, w_in) = claude.calls
+        assert code == 0 and out == "14 (public/windows/laps.md:12).\n\nLive docs, not in the kb:\nOkta: live\n"
+        assert "Answer only the part the kb has: default LAPS password length. The kb lacks: Okta rotation." in r_in
+        assert "The kb lacks: Okta rotation" in w_in and "kb_evidence" not in w_in and row["route"] == "split"
 
     def test_a_split_run_without_v_prints_no_cost(self, monkeypatch, capsys):
         plant(monkeypatch, SPLIT_PACK, "weak")

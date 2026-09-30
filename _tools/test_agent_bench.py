@@ -185,6 +185,30 @@ def test_route_split_without_a_has_or_lacks_line_is_read_whole_like_good(routed)
     assert calls[0][1] == kb_ask.prompt("q", "PACK-SPLIT") and kb_ask.RESEARCHER in calls[1][0]
 
 
+def test_route_of_several_parts_reads_the_covered_part_and_researches_the_web_part(monkeypatch):
+    """kb_ask's own plan over a planted pack: a covered part beside an uncovered one."""
+    import kb_ask
+    pack = ("route: split\n# Q1: default LAPS password length\ncoverage: good\n"
+            "## public/windows/laps.md  Windows LAPS  [complete, x]\n- public/windows/laps.md:12 14 (DOC S9)\n\n"
+            "# Q2: Kubernetes autoscaler on EKS\ncoverage: none\nroute: web\nkb has: Kubernetes\nkb lacks: autoscaler, EKS\n"
+            "## public/arch/k8s.md  Kubernetes  [complete, x]\n- public/arch/k8s.md:4 A (DOC S5)")
+    monkeypatch.setattr(kb_ask.kbfacts, "pack_many", lambda parts, **kw: {"verdict": "none", "results": [], "text": pack})
+    monkeypatch.setattr(kb_ask, "tool_answer", lambda q: None)
+    calls = []
+
+    def execute(argv, prompt, **kw):
+        calls.append((argv, prompt))
+        return {"wall_s": 1, "api_s": 1, "cost": 0.01, "turns": 1, "in_uncached": 1, "cache_write": 0, "cache_read": 0,
+                "out": 1, "models": {"m": 0.01}, "tools": {}, "sub_tools": {}, "route": [], "answer": "a"}
+    monkeypatch.setattr(ab, "execute", execute)
+    r = ab.route("(1) default LAPS password length (2) Kubernetes autoscaler on EKS")
+    (_, rp), (_, sp) = calls
+    reader = rp.split("The kb lacks")[0].split("Answer only")[-1]
+    assert "default LAPS password length" in reader and "Kubernetes" not in reader, rp
+    assert "The kb lacks: Kubernetes autoscaler on EKS" in sp and "kb_evidence" not in sp
+    assert r["route"] == ["pack:split", "reader:haiku", "and", "researcher:sonnet"]
+
+
 def test_route_returns_a_failed_run_instead_of_going_on(routed):
     calls = routed("split", [{"error": "boom"}])
     assert ab.route("q") == {"error": "boom"} and len(calls) == 1
