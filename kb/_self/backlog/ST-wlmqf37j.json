@@ -2,7 +2,7 @@
   "id": "ST-wlmqf37j",
   "kind": "story",
   "title": "selfdoc.py section prints several sections in one call",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-hsyx42zz",
   "sprint": "SP-bno4xpft",
   "priority": "P1",
@@ -25,5 +25,19 @@
     ".claude/skills/*/SKILL.md",
     ".claude/agents/kb-worker.md"
   ],
-  "claimed_by": "worker-wlmqf37j"
+  "evidence": {
+    "commit": "82b41cdcaaaabf029872aa4bc388721b429f0731",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "selfdoc_sections"
+        ],
+        "exit": 0,
+        "sha256": "912f8bc53ddfb294"
+      }
+    ]
+  }
 }
