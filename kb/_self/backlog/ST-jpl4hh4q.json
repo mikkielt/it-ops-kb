@@ -40,7 +40,9 @@
         "6",
         "raise the job timeout instead"
       ],
-      "recommendation": "4"
+      "recommendation": "4",
+      "answer": "6: the docker-windows runner already gives each job 6 vCPUs and 12 GB with a 3 h job timeout (kb/_self/git.md, Workflow; kb/_self/runners.md)",
+      "by": "operator"
     }
   ],
   "links": [

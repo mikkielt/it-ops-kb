@@ -66,7 +66,9 @@
         "drop those and keep only TestAutonomousWrite for the revert bug",
         "drop nothing: only merge setup, keep every test id"
       ],
-      "recommendation": "drop TestCaps, TestModesAuto[default] and the extra TestResearch runs; keep all three revert tests"
+      "recommendation": "drop TestCaps, TestModesAuto[default] and the extra TestResearch runs; keep all three revert tests",
+      "answer": "drop TestCaps, TestModesAuto[default] and the extra TestResearch runs; keep all three revert tests",
+      "by": "operator"
     },
     {
       "id": "incident-replay-seed",
@@ -76,7 +78,9 @@
         "move it onto the seed, keeping its fork commit",
         "keep the full-history clone"
       ],
-      "recommendation": "move it onto the seed, keeping its fork commit"
+      "recommendation": "move it onto the seed, keeping its fork commit",
+      "answer": "move it onto the seed, keeping its fork commit",
+      "by": "operator"
     }
   ],
   "links": [

@@ -72,7 +72,9 @@
         "hard links only for copies no test writes to (the stress suite's read-only base, the tests' read-only kb copies), plain copies elsewhere",
         "no hard links: keep plain copies and accept the first-open cost"
       ],
-      "recommendation": "hard links only for copies no test writes to (the stress suite's read-only base, the tests' read-only kb copies), plain copies elsewhere"
+      "recommendation": "hard links only for copies no test writes to (the stress suite's read-only base, the tests' read-only kb copies), plain copies elsewhere",
+      "answer": "hard links only for copies no test writes to (the stress suite's read-only base, the tests' read-only kb copies), plain copies elsewhere",
+      "by": "operator"
     }
   ],
   "links": [
