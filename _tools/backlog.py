@@ -15,6 +15,11 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                                           knowledge; no item may hold a piece of this host's computer or user
                                           name, read from the environment and never printed); exit 1 on errors
   backlog.py fmt                          rewrite every item in canonical form
+  backlog.py selectors                    one line per `tests.py -k` selector in the checks of open items: how many
+                                          tests pytest --collect-only finds for it now (NONE marks zero, error a
+                                          collection that failed), the item's id and title; exit 0 whatever the
+                                          counts (a selector often names a test its item has yet to write), 1
+                                          without pytest
   backlog.py list [--kind K] [--status S] [--sprint ID]   one line per item: id, kind, status, priority, title
   backlog.py tree [ID] [--sprint ID]      the hierarchy under an item, a sprint or everything
   backlog.py show ID                      one item, its parent chain, children, the knowledge state of each ask and
@@ -576,6 +581,67 @@ def stale_touches(bl):
                 out.append(f"{bl.label(iid)}: touches names {t}, which git history has and the working tree lacks "
                            f"(moved or deleted: name its new path, or drop it from touches)")
     return out
+
+
+def selector_of(argv):
+    """(display text, targets, -k expression, -m expression) for a check argv that runs tests.py with -k (other
+    pass-through flags are ignored), else None. The default -m is tests.py's own, `not stress`; a `--changed` run
+    selects by the change, not by name, so it is no selector."""
+    if not isinstance(argv, list) or "--changed" in argv:
+        return None
+    at = next((n for n, x in enumerate(argv) if isinstance(x, str) and re.split(r"[\\/]", x)[-1] == "tests.py"), None)
+    if at is None:
+        return None
+    k = m = None
+    targets = []
+    rest = [x for x in argv[at + 1:] if isinstance(x, str)]
+    n = 0
+    while n < len(rest):
+        if rest[n] in ("-k", "-m") and n + 1 < len(rest):
+            if rest[n] == "-k":
+                k = rest[n + 1]
+            else:
+                m = rest[n + 1]
+            n += 2
+            continue
+        if not rest[n].startswith("-"):
+            targets.append(rest[n])
+        n += 1
+    if k is None:
+        return None
+    return shlex.join(targets + ["-k", k] + (["-m", m] if m else [])), targets, k, m or "not stress"
+
+
+def collected(root, cmd, targets, k, m):
+    """How many tests pytest --collect-only selects under -m M -k K in TARGETS (default _tools), run from root: (count,
+    None), or (None, why) when the collection itself failed. Exit 5 (everything deselected) is a count of 0."""
+    argv = cmd + ["--collect-only", "-q", "--color=no", "-p", "no:cacheprovider", "-m", m, "-k", k] + (targets or ["_tools"])
+    try:
+        r = subprocess.run(argv, cwd=str(root), capture_output=True, text=True, encoding="utf-8", errors="replace",
+                           timeout=600)
+    except (OSError, subprocess.SubprocessError) as e:
+        return None, type(e).__name__
+    if r.returncode not in (0, 5):
+        return None, f"pytest exit {r.returncode}"
+    return sum(1 for ln in r.stdout.splitlines() if re.match(r"[^\s:]+\.py::", ln)), None
+
+
+def selector_rows(bl, cmd):
+    """[(count or None, why, selector text, item id)] for every tests.py -k selector in the checks of the open items,
+    each distinct selector collected once, fewest tests first (collection errors, then zeros)."""
+    seen, rows = {}, []
+    for iid, it in bl.items.items():
+        if it.get("kind") == "sprint" or it.get("status") not in OPEN_STATUSES:
+            continue
+        for c in it.get("checks", []) or []:
+            sel = selector_of(c.get("run") if isinstance(c, dict) else None)
+            if sel is None:
+                continue
+            text, targets, k, m = sel
+            if text not in seen:
+                seen[text] = collected(bl.root, cmd, targets, k, m)
+            rows.append((*seen[text], text, iid))
+    return sorted(rows, key=lambda r: (-1 if r[0] is None else r[0], r[2], r[3]))
 
 
 def docs_warnings(bl):
@@ -1267,6 +1333,21 @@ def cmd_check(bl, a):
         say(withhold_names(x, pieces))  # an error that quotes an item's text never prints a name either
     say(f"backlog check: items={len(bl.items)} errors={len(errs)} stale={len(stale)} warnings={len(warns)}")
     return 1 if errs else 0
+
+
+def cmd_selectors(bl, a):
+    import tests
+    cmd = tests.pytest_cmd()
+    if cmd is None:
+        raise Refused("pytest is needed to count the tests a selector collects: install uv (https://docs.astral.sh/uv/) "
+                      "and rerun, or `pip install pytest pytest-xdist`")
+    rows = selector_rows(bl, cmd)
+    for count, why, text, iid in rows:
+        flag = "error" if count is None else "NONE" if count == 0 else ""
+        say(f"{'?' if count is None else count:>5}  {flag:<5}  {text}  {bl.label(iid)}" + (f"  ({why})" if why else ""))
+    say(f"backlog selectors: checks={len(rows)} selectors={len({r[2] for r in rows})} "
+        f"none={sum(1 for r in rows if r[0] == 0)} errors={sum(1 for r in rows if r[0] is None)}")
+    return 0
 
 
 def cmd_fmt(bl, a):
@@ -2161,6 +2242,7 @@ def main(argv=None):
     p.add_argument("--repro")
     sub.add_parser("check")
     sub.add_parser("fmt")
+    sub.add_parser("selectors")
     p = sub.add_parser("list")
     p.add_argument("--kind", choices=list(KINDS))
     p.add_argument("--status")

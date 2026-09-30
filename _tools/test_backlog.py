@@ -246,7 +246,50 @@ def test_backlog_stale_touches_names_a_file_git_deleted(sprint):
     assert code == 0 and "errors=0" in out and "working tree lacks" not in out, out
 
 
-DOC_MAP = "doc,pattern\nkb/_self/tools.md,_tools/x.py\nkb/_self/plugin.md,.claude-plugin/**\n"
+def tests_check(*args):
+    return {"run": ["python3", "_tools/tests.py", *args]}
+
+
+def test_backlog_selectors_parse_the_selector_of_a_check():
+    """Only a tests.py run with -k is a selector; its targets and -m ride along, --changed and other tools are none."""
+    sel = backlog.selector_of
+    assert sel(["python3", "_tools/tests.py", "-k", "a or b"]) == ("-k 'a or b'", [], "a or b", "not stress")
+    assert sel(["python3", "C:\\kb\\_tools\\tests.py", "-k", "x"])[2] == "x"
+    assert sel(["python3", "_tools/tests.py", "_tools/test_x.py", "-k", "x", "-m", "git"]) == \
+        ("_tools/test_x.py -k x -m git", ["_tools/test_x.py"], "x", "git")
+    assert sel(["python3", "_tools/tests.py", "--changed", "origin/main", "-k", "x"]) is None
+    assert sel(["python3", "_tools/tests.py"]) is None
+    assert sel(["grep", "-c", "-k ruff", "f"]) is None and sel(["python3", "-c", "pass"]) is None
+
+
+def test_backlog_selectors_count_the_tests_each_k_collects(sprint):
+    """Planted: a selector that collects two known tests, one that collects nothing and one pytest cannot parse, on
+    open items; selectors prints each with its count, item id and title, marks the zero and the error, lists them
+    first, and exits 0. A done item's selector, a --changed run and a check that is no tests.py run are left out."""
+    repo, tk, st, bg = sprint["repo"], sprint["tk"], sprint["st"], sprint["bg"]
+    (repo / "_tools").mkdir()
+    (repo / "_tools" / "test_planted.py").write_text(
+        "def test_known_thing_one():\n    pass\n\n\ndef test_known_thing_two():\n    pass\n", encoding="utf-8")
+    edit(repo, tk, checks=[tests_check("-k", "known_thing"), tests_check("-k", "no_such_planted_test"),
+                           tests_check("--changed", "origin/main", "-k", "no_such_planted_test"), is_file("src/b.txt")])
+    edit(repo, st, checks=[tests_check("-k", "known_thing_one"), tests_check("-k", "(")])
+    edit(repo, bg, status="done", checks=[tests_check("-k", "done_items_never_listed")])
+    code, out = b(repo, "selectors")
+    assert code == 0, out
+    lines = out.splitlines()
+    assert len(lines) == 5, out
+    assert lines[0].split()[:2] == ["?", "error"] and "-k '('" in lines[0] and "pytest exit 4" in lines[0] and f"{st} “Story”" in lines[0], out
+    assert lines[1].split()[:2] == ["0", "NONE"] and "-k no_such_planted_test" in lines[1] \
+        and f"{tk} “Task”" in lines[1], out
+    assert lines[2].split()[0] == "1" and "NONE" not in lines[2] and "-k known_thing_one  " in lines[2] \
+        and f"{st} “Story”" in lines[2], out
+    assert lines[3].split()[0] == "2" and "NONE" not in lines[3] and "-k known_thing  " in lines[3] \
+        and f"{tk} “Task”" in lines[3], out
+    assert "done_items_never_listed" not in out and "src/b.txt" not in out and "--changed" not in out, out
+    assert lines[4] == "backlog selectors: checks=4 selectors=4 none=1 errors=1", out
+
+
+DOC_MAP ="doc,pattern\nkb/_self/tools.md,_tools/x.py\nkb/_self/plugin.md,.claude-plugin/**\n"
 
 
 @pytest.fixture
