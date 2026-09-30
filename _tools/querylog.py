@@ -41,9 +41,11 @@ the ql_*.py modules beside it.
                         is refused. No accepted fix: the miss becomes a gap candidate (`no-fix`) and its fix
                         `rejected`. The gap step: an open gap candidate whose miss the pack still reproduces, with an
                         article in the lead (for a `none` pack, only a lead that matches more than half of the
-                        question's key words the kb knows), becomes a dated entry under that article's topic in its
-                        root's _gaps.md (candidate-gap -> gap); one off the kb's domains (no lead, a lead no article
-                        holds, a stray `none` lead) is `rejected` at candidate-gap. Research, only when the user's
+                        question's key words the kb knows; for a `weak` pack, only a lead that holds the question's
+                        subject: a matched word in its topic or title, or a lacked word in its facts), becomes a dated
+                        entry under that article's topic in its root's _gaps.md (candidate-gap -> gap); one off the
+                        kb's domains (no lead, a lead no article holds, a stray `none` lead, a `weak` lead without the
+                        subject) is `rejected` at candidate-gap. Research, only when the user's
                         config turns it on (`research`, `research_daily`; --clone DIR reads that clone's config and
                         daily count,
                         --plugin-data DIR a plugin host's): at most the day's runs left and RESEARCH_RUNS_PER_APPLY,
