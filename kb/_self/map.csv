@@ -14,6 +14,8 @@ kb/_self/maintaining.md,.claude/settings.json
 kb/_self/maintaining.md,.claude/skills/*/SKILL.md
 kb/_self/maintaining.md,_tools/tests.py
 kb/_self/maintaining.md,pyproject.toml
+kb/_self/code.md,_tools/*.py
+kb/_self/code.md,pyproject.toml
 kb/_self/tools.md,_tools/rag.py
 kb/_self/tools.md,_tools/kbfacts.py
 kb/_self/tools.md,_tools/kb_mcp.py
