@@ -126,3 +126,62 @@ def test_probe_cli_needs_a_known_provider():
                                  "https://docs.gitlab.com/ci/", "https://www.example.org/any"])
 def test_every_family_has_a_provider(url):
     assert provider.for_url(url) is not None
+
+
+TEXT = "<html><body><p>Sigstore information for Python releases</p></body></html>\n".encode("utf-8") * 20
+
+
+def _deflate(data, wbits):
+    import zlib
+    c = zlib.compressobj(wbits=wbits)
+    return c.compress(data) + c.flush()
+
+
+@pytest.mark.parametrize("coding,wbits", [("gzip", 31), ("x-gzip", 31), ("deflate", 15), ("deflate", -15)])
+def test_decode_body_takes_off_the_content_encoding(coding, wbits):
+    assert provider.decode_body(_deflate(TEXT, wbits), coding) == TEXT
+    assert provider.decode_body(_deflate(TEXT, wbits), coding.upper()) == TEXT
+
+
+def test_decode_body_keeps_what_it_cannot_decode():
+    assert provider.decode_body(TEXT, "") == TEXT
+    assert provider.decode_body(TEXT, "identity") == TEXT
+    assert provider.decode_body(b"not gzip at all", "gzip") == b"not gzip at all"  # a lying header: the bytes as sent
+    assert provider.decode_body(b"\x28\xb5\x2f\xfd", "zstd") == b"\x28\xb5\x2f\xfd"  # an unknown coding: as sent
+    # a list of codings is undone last to first
+    assert provider.decode_body(_deflate(_deflate(TEXT, 15), 31), "deflate, gzip") == TEXT
+    # the limit caps the decoded size, as it caps a plain body
+    assert provider.decode_body(_deflate(TEXT, 31), "gzip", limit=10) == TEXT[:10]
+
+
+def test_request_decodes_a_gzip_body_sent_unasked(monkeypatch):
+    """www.python.org answers gzip without an Accept-Encoding: request() hands callers the text, not the gzip bytes."""
+    import http.server, threading
+    gz = _deflate(TEXT, 31)
+
+    class H(http.server.BaseHTTPRequestHandler):
+        def do_GET(self):
+            code = 200 if self.path == "/ok" else 404
+            self.send_response(code)
+            self.send_header("Content-Type", "text/html; charset=utf-8")
+            self.send_header("Content-Encoding", "gzip")
+            self.send_header("Content-Length", str(len(gz)))
+            self.end_headers()
+            self.wfile.write(gz)
+
+        def log_message(self, *a):
+            pass
+
+    srv = http.server.ThreadingHTTPServer(("127.0.0.1", 0), H)
+    threading.Thread(target=srv.serve_forever, daemon=True).start()
+    monkeypatch.setattr(provider, "DELAY", 0)
+    try:
+        base = f"http://127.0.0.1:{srv.server_address[1]}"
+        r = provider.request(base + "/ok")
+        assert r["status"] == 200 and r["body"] == TEXT and r["body"][:2] != bytes([31, 139])
+        assert r["headers"]["content-encoding"] == "gzip"  # the headers stay as the server sent them
+        e = provider.request(base + "/missing")  # an HTTP error body is decoded too
+        assert e["status"] == 404 and e["body"] == TEXT
+    finally:
+        srv.shutdown()
+        srv.server_close()

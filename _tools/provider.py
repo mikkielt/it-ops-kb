@@ -54,7 +54,7 @@ and a note naming the sample host. Exit: 0 ok, 1 the sample could not be fetched
 Library use (factdiff.py, census.py): providers(), for_url(), document() and doc_text().
 """
 import argparse, datetime, email.utils, hashlib, json, os, random, re, ssl, string, sys, time, urllib.error
-import urllib.parse, urllib.request
+import urllib.parse, urllib.request, zlib
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import kbcommon  # noqa: E402
@@ -145,8 +145,35 @@ class _Chain(urllib.request.HTTPRedirectHandler):
         return super().redirect_request(req, fp, code, msg, headers, newurl)
 
 
+def decode_body(body, encoding, limit=20_000_000):
+    """`body` with its Content-Encoding (gzip, x-gzip, deflate; a list is undone last to first) taken off, at most
+    `limit` bytes. urllib does not decode, and some servers (www.python.org) send gzip unasked. An unknown coding or
+    a body that does not decode is returned as it came."""
+    for coding in reversed([c.strip().lower() for c in (encoding or "").split(",") if c.strip()]):
+        if coding == "identity":
+            continue
+        if coding in ("gzip", "x-gzip"):
+            tries = (16 + zlib.MAX_WBITS,)
+        elif coding == "deflate":
+            tries = (zlib.MAX_WBITS, -zlib.MAX_WBITS)  # zlib-wrapped as the RFC says, or raw as some servers send
+        else:
+            return body
+        for wbits in tries:
+            try:
+                d = zlib.decompressobj(wbits)
+                out = d.decompress(body, limit)
+            except zlib.error:
+                continue
+            body = out
+            break
+        else:
+            return body
+    return body
+
+
 def request(url, headers=None, limit=20_000_000, method="GET"):
     """{status, headers (lowercase keys), body (bytes), final, hops, error}; one request per DELAY seconds per host.
+    A Content-Encoding body is decoded (decode_body); the headers stay as the server sent them.
     Never raises for HTTP or network errors: status is the code, or 0 with `error`."""
     host = urllib.parse.urlsplit(url).netloc
     wait = DELAY - (time.time() - _last.get(host, 0))
@@ -168,6 +195,8 @@ def request(url, headers=None, limit=20_000_000, method="GET"):
             pass
     except Exception as e:  # noqa: BLE001 - a change check must never stop a run
         out["error"] = f"{type(e).__name__}: {str(getattr(e, 'reason', e))[:120]}"
+    if out["body"] and out["headers"].get("content-encoding"):
+        out["body"] = decode_body(out["body"], out["headers"]["content-encoding"], limit)
     return out
 
 
