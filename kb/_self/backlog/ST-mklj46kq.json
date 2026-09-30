@@ -22,8 +22,5 @@
     "_tools/selfdoc.py",
     "_tools/test_kb.py",
     "kb/_self/tools.md"
-  ],
-  "relates_to": [
-    "BG-t3fig7n4"
   ]
 }
