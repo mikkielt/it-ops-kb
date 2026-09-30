@@ -1,0 +1,24 @@
+{
+  "id": "BG-zjcxjhs7",
+  "kind": "bug",
+  "title": "selfdoc check skips dead references to a removed doc, and sections holding a parenthesis, backtick or colon",
+  "status": "draft",
+  "parent": "EP-hsyx42zz",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "dead_section_refs reports a bare (<name>.md, Section) reference whose kb/_self doc no longer exists when no other file of that name is in the repository, a section text holding ( ) ` : or ; or wrapping onto the next line, and a reference into kb/_self/ subdirectories such as kb/_self/reports/; each with a planted case (SP-ar52y6fk review of ST-mklj46kq)",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys,tempfile,pathlib as P;sys.path.insert(0,'_tools');import selfdoc as S;r=P.Path(tempfile.mkdtemp());(r/'kb/_self').mkdir(parents=True);(r/'kb/_self/a.md').write_text('# A\\n## Real\\n');(r/'AGENTS.md').write_text('See (gone.md, Real) and (a.md, Missing (note)) and (a.md, Gone: x).\\n');p=S.dead_section_refs(str(r),{'AGENTS.md','kb/_self/a.md'});assert len(p)==3,p"
+    ]
+  },
+  "touches": [
+    "_tools/selfdoc.py",
+    "_tools/test_kb.py",
+    "kb/_self/tools.md",
+    "kb/_self/README.md"
+  ]
+}

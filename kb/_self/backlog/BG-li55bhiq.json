@@ -1,0 +1,23 @@
+{
+  "id": "BG-li55bhiq",
+  "kind": "bug",
+  "title": "No test holds that the sync gate and pre-push run selfdoc stale over the pushed range",
+  "status": "draft",
+  "parent": "EP-hsyx42zz",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "A test named test_selfdoc_gate_passes_since runs the kbgit gate (or reads its check list) and fails when the selfdoc stale call loses --since <upstream>, so dropping it from kbgit.py no longer leaves the range judgement of ST-qp5wsqab unguarded (SP-ar52y6fk review)",
+  "repro": {
+    "run": [
+      "grep",
+      "-c",
+      "-e",
+      "test_selfdoc_gate_passes_since",
+      "_tools/test_selfdoc.py"
+    ]
+  },
+  "touches": [
+    "_tools/test_selfdoc.py"
+  ]
+}
