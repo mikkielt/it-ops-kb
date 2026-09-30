@@ -2,7 +2,7 @@
   "id": "ST-akxkqwtv",
   "kind": "story",
   "title": "Review sprint: Lookups reach the right reader",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-vpk5nrrc",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "mac-second"
+  "evidence": {
+    "commit": "7731c4ce320b3546d5419de7bebd8a4df0ebdef7",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "68319860cf8d5fc0"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "1932fe4782435324"
+      }
+    ]
+  }
 }
