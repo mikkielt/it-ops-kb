@@ -2,7 +2,7 @@
   "id": "ST-mxqz7fmn",
   "kind": "story",
   "title": "Route checks run the lookup eval questions end to end",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-c7fzjhge",
   "sprint": "SP-vpk5nrrc",
   "priority": "P2",
@@ -27,5 +27,6 @@
     "BG-ed6ci57t",
     "BG-ou6nahcx",
     "BG-zrzme2li"
-  ]
+  ],
+  "claimed_by": "worker-mxqz7fmn"
 }
