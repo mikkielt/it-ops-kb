@@ -1,0 +1,33 @@
+{
+  "id": "ST-weieuayk",
+  "kind": "story",
+  "title": "A sprint brief names known failing tests and the bug filed for them",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "/kb-sprint run's brief names the tests the orchestrator already knows fail on the host, with the bug filed for each and its cause, so a worker neither re-files it nor guesses a cause; kb/_self/backlog.md Working on items says the same. Answers the SP-rhgeod5g failure: two workers each filed a duplicate bug with a wrong cause for the FORCE_COLOR failure the orchestrator had already diagnosed and filed as BG-brlya4vc.",
+  "checks": [
+    {
+      "run": [
+        "git",
+        "grep",
+        "-q",
+        "-e",
+        "known to fail",
+        "--",
+        ".claude/skills/kb-sprint/SKILL.md"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/selfdoc.py",
+        "check"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/backlog.md"
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "id": "ST-qd4j2fwg",
+  "kind": "story",
+  "title": "Sprint planning maps each goal clause to an item",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "/kb-sprint plan checks that each clause of the sprint goal is carried by a committed item, and drops a clause already met in the tree (naming the earlier item) before the operator approves; kb/_self/backlog.md Sprints says the same. Answers the SP-rhgeod5g failure: two goal clauses (kb-worker reads kb/_self by section; test_research_merge ignores sprint worktrees) were delivered before the sprint started, so no item carried them and close --summary could not name one.",
+  "checks": [
+    {
+      "run": [
+        "git",
+        "grep",
+        "-q",
+        "-e",
+        "goal clause",
+        "--",
+        ".claude/skills/kb-sprint/SKILL.md"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/selfdoc.py",
+        "check"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/backlog.md"
+  ]
+}
