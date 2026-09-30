@@ -22,6 +22,10 @@
                                         their sum. A reader INSUFFICIENT sends the whole question to the researcher
                                         (`escalated`). A split pack that lacks its `kb has:` or `kb lacks:` line cannot be
                                         divided: the reader answers the whole question from the pack, as in step 3.
+                                        In a pack of several parts each part goes where its own route sends it: a
+                                        part with no `route:` line to the reader whole, a `web` part to the
+                                        researcher whole (its `kb has:` words never to the reader), a `split` part's
+                                        `kb has:` words to the reader and its `kb lacks:` words to the researcher.
                                      A weak or none pack without a `route:` line plans split.
   kb_ask.py --route "<question>"     print the plan (kind, parts, verdict, model and, for web and split, the pack's
                                      route, kb has and kb lacks lines), run nothing
@@ -146,12 +150,43 @@ ROUTE_LINE = re.compile(r"^route: (web|split)\s*$", re.M)
 HAS_LINE = re.compile(r"^kb has: (.*\S)\s*$", re.M)
 LACKS_LINE = re.compile(r"^kb lacks: (.*\S)\s*$", re.M)
 ARTICLE_LINE = re.compile(r"^## (\S+)  (.+?)  \[", re.M)
+PART_HEAD = re.compile(r"^# Q\d+: (.*\S)\s*$", re.M)
 MAX_LEADS = 3
+
+
+def has_lacks(text):
+    """The `kb has:` and `kb lacks:` lines of one pack (or one part of a pack), one entry per line."""
+    return HAS_LINE.findall(text), LACKS_LINE.findall(text)
+
+
+def part_routes(text):
+    """(has, lacks) of a pack of several parts, each part where its own route sends it: a part with no `route:` line
+    (a clean good part, or a weak one the pack did not route) goes to the reader whole; a `web` part goes to the
+    researcher whole, its `kb has:` words never to the reader (they are only what the kb matched of a question it does
+    not cover); a `split` part gives its `kb has:` words to the reader and its `kb lacks:` words to the researcher.
+    None for a pack of one part (no `# Qn:` heads)."""
+    heads = list(PART_HEAD.finditer(text))
+    if not heads:
+        return None
+    has, lacks = [], []
+    for k, m in enumerate(heads):
+        body = text[m.end():heads[k + 1].start() if k + 1 < len(heads) else len(text)]
+        r = ROUTE_LINE.search(body)
+        if not r:
+            has.append(m.group(1))
+        elif r.group(1) == "web":
+            lacks.append(m.group(1))
+        else:
+            h, x = has_lacks(body)
+            has += h
+            lacks += x
+    return has, lacks
 
 
 def plan(question, model=None):
     """{kind: good|web|split, parts, verdict, text (the packs), route (web, split or None), has, lacks (the packs'
-    `kb has:` and `kb lacks:` lines, one entry per line), leads ([(path, title)]: the up to 3 nearest articles), model}.
+    `kb has:` and `kb lacks:` lines, one entry per line; for a routed pack of several parts, each part as its own route
+    sends it: part_routes), leads ([(path, title)]: the up to 3 nearest articles), model}.
     The kind follows the pack's `route:` line (a pack of several parts starts with one overall line); a clean good
     pack has none and stays `good`. A weak or none pack without the line plans `split`, the route that keeps the kb's
     evidence in front of the model."""
@@ -161,13 +196,14 @@ def plan(question, model=None):
     m = ROUTE_LINE.search(text)
     route = m.group(1) if m else (None if res["verdict"] == "good" else "split")
     kind = route or "good"
+    has, lacks = (route and part_routes(text)) or has_lacks(text)
     leads, seen = [], set()
     for path, title in ARTICLE_LINE.findall(text):
         if path not in seen:
             seen.add(path)
             leads.append((path, title))
     return {"kind": kind, "parts": parts, "verdict": res["verdict"], "text": text, "route": route,
-            "has": HAS_LINE.findall(text), "lacks": LACKS_LINE.findall(text), "leads": leads[:MAX_LEADS],
+            "has": has, "lacks": lacks, "leads": leads[:MAX_LEADS],
             "model": model or ("haiku" if kind == "good" else "sonnet")}
 
 
