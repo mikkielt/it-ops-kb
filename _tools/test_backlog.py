@@ -671,6 +671,79 @@ def test_repository_backlog_is_valid():
     assert code == 0, out
 
 
+# ---- host and user names: read from the environment, planted here as placeholders, never printed
+
+PLANTED_HOST, PLANTED_USER = "PL-LT-00123", "jan.kowalski"
+PLANTED_PIECES = ("pl-lt-00123", "pllt00123", "jan.kowalski", "jankowalski", "kowalski")
+
+
+@pytest.fixture
+def planted_names(monkeypatch):
+    """This host is PL-LT-00123 and its user jan.kowalski, in this process and in the backlog.py it starts."""
+    for k in backlog.HOST_ENV + backlog.USER_ENV:
+        monkeypatch.delenv(k, raising=False)
+    monkeypatch.setenv("COMPUTERNAME", PLANTED_HOST)
+    monkeypatch.setenv("USERNAME", PLANTED_USER)
+    monkeypatch.setattr(backlog.socket, "gethostname", lambda: PLANTED_HOST)
+
+
+def no_planted_piece(out):
+    low = out.lower()
+    return not any(p in low for p in PLANTED_PIECES)
+
+
+def test_item_holds_host_names_pieces_of_a_name():
+    assert backlog.name_pieces(PLANTED_HOST) == {"pl-lt-00123", "pllt00123"}  # pl, lt: too short; 00123: no letter
+    assert backlog.name_pieces(PLANTED_USER) == {"jan.kowalski", "jankowalski", "kowalski"}
+    assert backlog.name_pieces("JanKowalskiCorp") == {"jankowalskicorp", "kowalski"}  # CamelCase parts
+    assert backlog.name_pieces("PL-SRV-0042") == {"pl-srv-0042", "plsrv0042"}
+    assert backlog.name_pieces("XYZ-PC01") == {"xyz-pc01", "xyzpc01", "pc01"}  # 4 characters with a digit
+    for generic in ("runner", "root", "user", "admin", "container", "localhost", "DESKTOP"):
+        assert backlog.name_pieces(generic) == set(), generic
+    # a GitLab runner's host name: only its token and the whole name are pieces, not project or concurrent
+    assert backlog.name_pieces("runner-ab12cd34-project-42-concurrent-0") == {
+        "runner-ab12cd34-project-42-concurrent-0", "runnerab12cd34project42concurrent0", "ab12cd34"}
+
+
+def test_item_holds_host_names_read_from_the_environment(planted_names):
+    pieces = backlog.host_user_pieces()
+    assert set(pieces) == set(PLANTED_PIECES)
+    assert pieces["kowalski"] == "user" and pieces["pllt00123"] == "host"
+    assert backlog.host_user_pieces({"COMPUTERNAME": "runner", "USERNAME": "root"}) == {"pl-lt-00123": "host",
+                                                                                        "pllt00123": "host"}
+
+
+def test_item_holds_host_names_refused_without_the_piece(sprint, planted_names, capsys):
+    repo = sprint["repo"]
+    edit(repo, sprint["st"], goal="b exists on \\\\PL-LT-00123\\share")
+    edit(repo, sprint["tk"], title="Task for Kowalski", gates=[{"id": "g", "kind": "blocking",
+                                                                "question": "ask jan.kowalski first"}])
+    assert backlog.main(["--root", str(repo), "check"]) == 1
+    out = capsys.readouterr().out
+    assert no_planted_piece(out), "a planted name was printed"
+    # the id with its title withheld, which may hold the name too, and the field
+    assert f"{sprint['st']} (title withheld" in out and "“Story”" not in out, out
+    assert "field goal holds a piece of this host's computer name" in out
+    assert f"{sprint['tk']} (title withheld" in out and "field title holds a piece of this host's user name" in out
+    assert "field gates[0].question holds a piece of this host's user name" in out
+    code, out = b(repo, "check")  # the command line, the push gate's form
+    assert code == 1 and "errors=3" in out and no_planted_piece(out), "a planted name was printed"
+
+
+def test_item_holds_host_names_clean_item_passes(sprint, planted_names, capsys):
+    edit(sprint["repo"], sprint["st"], goal="b exists on \\\\PL-SRV-0042\\share for kowal")  # other names, a short one
+    assert backlog.main(["--root", str(sprint["repo"]), "check"]) == 0, capsys.readouterr().out
+    assert b(sprint["repo"], "check")[0] == 0
+
+
+def test_item_holds_host_names_real_backlog_passes_on_this_host():
+    """The names of the host running the tests, never spelled here: the real backlog holds no piece of them. (Not
+    the planted ones: the backlog writes those placeholders on purpose.)"""
+    assert backlog.items_holding_names(backlog.Backlog(os.path.dirname(TOOLS))) == {}
+    code, out = b(os.path.dirname(TOOLS), "check")
+    assert code == 0, out
+
+
 # ---- knowledge: an item's asks and kb references, resolved against the kb of the clone
 
 FACT = "Demo tools print their version. [DOC S100]"
