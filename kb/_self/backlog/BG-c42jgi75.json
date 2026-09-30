@@ -2,7 +2,7 @@
   "id": "BG-c42jgi75",
   "kind": "bug",
   "title": "kbingest.which() finds no mapper tool on Windows with Python 3.11, whose shutil.which ignores PATHEXT for a name with a folder",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-g5hizdko",
   "sprint": "SP-hlfwfcx6",
   "priority": "P1",
@@ -21,5 +21,19 @@
     "_tools/kbingest.py",
     "_tools/test_kbingest.py"
   ],
-  "claimed_by": "win-first"
+  "evidence": {
+    "commit": "748df9bd2194010eff6ad1368932ea4b37d2af8c",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "which_finds_a_pathext_tool_without_311_help"
+        ],
+        "exit": 0,
+        "sha256": "e841453e29d43dae"
+      }
+    ]
+  }
 }
