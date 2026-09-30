@@ -2,7 +2,7 @@
   "id": "BG-eybmld6m",
   "kind": "bug",
   "title": "The gap step files an off-kb question as a gap under an unrelated article when its pack is weak",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-mzzucemv",
   "sprint": "SP-4slunkaj",
   "priority": "P2",
@@ -59,5 +59,6 @@
     "kb/public/_gaps.md entry 'What is the maximum email attachment size?' (topic mecm/collect-client-logs)",
     "kb/_self/querylog.md (the gap step)"
   ],
-  "notes": "gap_one guards only a none lead (more than half the key words); a weak lead passes whatever word it lacks. The pack gives weak with 3 of 4 key words (attachment, maximum, size) and lacks email, the question's subject. The rule that tells a subject word from a qualifier is the fix's design; it must not move any rag.py eval row."
+  "notes": "gap_one guards only a none lead (more than half the key words); a weak lead passes whatever word it lacks. The pack gives weak with 3 of 4 key words (attachment, maximum, size) and lacks email, the question's subject. The rule that tells a subject word from a qualifier is the fix's design; it must not move any rag.py eval row.",
+  "claimed_by": "worker-eybmld6m"
 }
