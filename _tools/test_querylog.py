@@ -4323,6 +4323,23 @@ class TestDigest:
                            timeout=120)
         assert p.returncode == 2 and b"not an ISO week" in p.stderr
 
+    def test_digest_superseded_gap_is_not_fixed(self, tmp_path):
+        """A gap candidate learn superseded (fixed-since) by an eval finding that apply recorded no-fix is no fix:
+        the eval finding stands for the miss, and it is not fixed."""
+        store = digest_store(tmp_path / "store")
+        a4 = "55555555-0000-4000-8000-0000000000a4"
+        recs = [f_rec("gap", a4, "fixed-since", stage="candidate-gap",
+                      promotions=[{"from": "miss", "to": "candidate-gap", "by": "learn"}]),
+                f_rec("eval", a4, "no-fix", stage="candidate-gap", expect="public/windows/laps.md",
+                      promotions=[{"from": "miss", "to": "candidate-gap", "by": "apply"}])]
+        run = "20260927T233000Z-0000d3ce"
+        write_store_file(store / "findings" / "2026-09" / f"{run}.jsonl",
+                         {"run": run, "pipeline": 2, "retrieval": 4, "kb_commit": "0" * 40,
+                          "counts": {"findings": len(recs)}}, recs)
+        text = "\n".join(ql_report.digest(store, "2026-W39")[1])
+        assert "  gap: fixed-since 1" in text and "  eval: open 1, fixed-since 1, applied 1, no-fix 1" in text
+        assert "misses: 4, fixed: 2 (by the kb since 1, by apply 1, by research 0)" in text
+
     def test_distill_sums_result_characters_per_fetch(self):
         import redact
         rows = [{"id": "77777777-0000-4000-8000-000000000001", "ts": "2026-09-27T08:00:00.000Z", "surface": "prompt",
