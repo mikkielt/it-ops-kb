@@ -2186,7 +2186,8 @@ def gate_needs(paths):
 
     def why(hit, what):
         return f"{what} changed: {sorted(hit)[0]}" + (f" (+{len(hit) - 1})" if len(hit) > 1 else "") if hit else None
-    return {"check": why(content | tools, "kb content or a tool"),
+    root = {p for p in ps if "/" not in p}  # README.md, AGENTS.md: check.py validates their citations too
+    return {"check": why(content | tools | root, "kb content, a root file or a tool"),
             "fetch": why({p for p in ps if p in arts or p.endswith(("/_artifacts.csv", "/_sources.csv")) or p == "_tools/fetch.py"},
                          "a pinned artifact or its row"),
             "doc2query": why({p for p in content if p.endswith(".md") or "/doc2query/" in p} | ({"_tools/doc2query.py"} & ps),
@@ -2198,7 +2199,7 @@ def gate_needs(paths):
 
 def gate(r, up, fix_check=False):
     """The checks the changed paths (gate_paths) can break, then check-trailers on up..HEAD:
-    check.py for kb content or tools, fetch.py --offline for a pinned artifact or its row, doc2query.py stale for an
+    check.py for kb content, a root file (README.md, AGENTS.md) or a tool, fetch.py --offline for a pinned artifact or its row, doc2query.py stale for an
     article or its expansions, selfdoc.py stale --since UP for a file kb/_self describes (a `Self-Reviewed:` trailer
     clears a doc), backlog.py check for backlog items, querylog.py check for the query log store, and tests.py
     --changed UP (KB_TESTS_FAST=1: no git scenarios; testmap.py maps the paths to the test files they can break).

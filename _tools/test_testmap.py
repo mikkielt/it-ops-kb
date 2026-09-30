@@ -20,11 +20,11 @@ def test_a_tool_change_selects_the_test_files_that_reach_it():
     sel, _ = testmap.select(["_tools/backlog.py"])
     assert "_tools/test_backlog.py" in sel and "_tools/test_kb_http.py" not in sel, sel
     own = "_tools/test_testmap.py"  # names every tool it plants, so it reaches them too
-    assert [f for f in testmap.select(["_tools/kb_http.py"])[0] if f != own] == ["_tools/test_kb_http.py"]
+    assert [f for f in testmap.select(["_tools/kb_http.py"])[0] if f != own] ==         sorted(["_tools/test_kb_http.py", testmap.LEAKS] + testmap.TOOL_SCANS)
 
 
 def test_a_test_file_change_selects_itself():
-    assert testmap.select(["_tools/test_redact.py"])[0] == ["_tools/test_redact.py"]
+    assert testmap.select(["_tools/test_redact.py"])[0] == [testmap.LEAKS, "_tools/test_redact.py"]
 
 
 def test_kb_content_selects_the_content_classes_only():
@@ -35,7 +35,7 @@ def test_kb_content_selects_the_content_classes_only():
 
 def test_a_whole_file_absorbs_its_classes():
     sel, _ = testmap.select(["kb/public/python/pytest.md", "_tools/test_kb.py"])
-    assert sel == ["_tools/test_kb.py"], sel
+    assert "_tools/test_kb.py" in sel and not any(n.startswith("_tools/test_kb.py::") for n in sel), sel
 
 
 @pytest.mark.parametrize("path", ["_tools/conftest.py", "pyproject.toml", "uv.lock", "_tools/tests.py", "_tools/testmap.py",
@@ -44,8 +44,12 @@ def test_shared_setup_and_unknown_paths_select_everything(path):
     assert testmap.select([path])[0] == testmap.ALL
 
 
-def test_backlog_items_and_the_query_log_store_select_no_test():
-    assert testmap.select(["kb/_self/backlog/ST-x.json", "kb/_querylog/runs/2026/r.jsonl"])[0] == testmap.NONE
+def test_backlog_items_and_the_query_log_store_select_only_the_leak_scan():
+    assert testmap.select(["kb/_self/backlog/ST-x.json", "kb/_querylog/runs/2026/r.jsonl"])[0] == [testmap.LEAKS]
+
+
+def test_no_change_selects_no_test():
+    assert testmap.select([])[0] == testmap.NONE
 
 
 def test_a_fixture_selects_the_tests_that_name_its_directory():
@@ -79,7 +83,7 @@ def test_a_module_no_test_reaches_is_an_orphan(monkeypatch):
 
 
 def test_tests_py_changed_runs_nothing_when_no_test_can_be_affected(monkeypatch, capsys):
-    monkeypatch.setattr(testmap, "changed", lambda rev: ["kb/_self/backlog/ST-x.json"])
+    monkeypatch.setattr(testmap, "changed", lambda rev: [])
     monkeypatch.setattr(tests_py, "run_pytest", lambda *a, **k: pytest.fail("pytest must not start"))
     assert tests_py.main(["--changed", "HEAD"]) == 0
     assert "no test can be affected" in capsys.readouterr().out
@@ -126,6 +130,33 @@ def test_gate_tool_change_runs_check_and_selfdoc():
 def test_gate_pinned_artifact_runs_fetch():
     art = sorted(kbgit.artifact_paths())[0]
     assert "fetch" in ran([art]) and "fetch" in ran(["kb/public/_sources.csv"])
+
+
+def test_testmap_review_gaps_live_kb_tests_are_in_the_content_lane():
+    """Planted (the sprint review's gaps): a kb article change selects every test that reads the live kb."""
+    sel, _ = testmap.select(["kb/public/auth/kerberos.md"])
+    for node in ("_tools/test_route.py::TestRouteEvalSet", "_tools/test_kb_mcp.py::TestKbServer",
+                 "_tools/test_kbfacts_imports.py", "_tools/test_kb.py::TestToolChecks", testmap.LEAKS):
+        assert node in sel, (node, sel)
+
+
+def test_testmap_review_gaps_repository_scans_reach_every_change():
+    assert testmap.LEAKS in testmap.select(["kb/_self/backlog/ST-x.json"])[0]
+    assert set(testmap.TOOL_SCANS) <= set(testmap.select(["_tools/kbroot.py"])[0])
+
+
+def test_testmap_review_gaps_a_deleted_test_file_selects_no_missing_path(tmp_path):
+    gone = "_tools/test_" + "long_gone.py"  # built at run time, as a deleted file's name would arrive from git
+    sel, why = testmap.select([gone])
+    assert gone not in sel and why[0][1].startswith("a deleted test file"), (sel, why)
+
+
+def test_testmap_review_gaps_settings_json_selects_the_router_test():
+    assert "_tools/test_change_router.py" in testmap.select([".claude/settings.json"])[0]
+
+
+def test_testmap_review_gaps_root_files_run_check_py():
+    assert "check" in ran(["README.md"]) and "check" in ran(["AGENTS.md"])
 
 
 def test_gate_without_a_base_runs_every_check():

@@ -15,8 +15,11 @@ How a path maps (first rule that applies):
 - `_tools/<module>.py`: every test file that reaches the module. A file reaches a module when it imports it or names its
   script (a string `<module>.py`, as `tool("check.py")` or `[sys.executable, ".../kbgit.py"]` do), directly or through
   the modules it reaches the same way.
-- `kb/_self/backlog/**`, `kb/_querylog/**`: no tests (kbgit.py's gate runs `backlog.py check` and `querylog.py check`).
-- kb content (`kb/**`, `AGENTS.md`, `README.md`, `CLAUDE.md`): test_kb.py's content classes (CONTENT_TESTS).
+- `kb/_self/backlog/**`, `kb/_querylog/**`: no tests of their own (kbgit.py's gate runs `backlog.py check` and
+  `querylog.py check`).
+- kb content (`kb/**`, `AGENTS.md`, `README.md`, `CLAUDE.md`): the tests that read the live kb (CONTENT_TESTS).
+- a deleted test file or runner: nothing.
+Every selection short of all adds the repository-wide leak scan (LEAKS), and a tool module's adds ruff (TOOL_SCANS).
 - other paths under `_tools/`, `.claude/`, `.githooks/`, `.claude-plugin/`, `.github/`, `.gitlab-ci.yml`: the test files
   and modules whose string constants name the path, its file name or its directory (SEARCH_TOKENS), and for
   `.claude/` and `.githooks/` also the content classes; all tests when nothing names it.
@@ -33,12 +36,17 @@ RUNNERS = {"_tools/stress_test.py": {"_tools/test_stress.py"}}  # a suite's runn
 EVERYTHING = {"_tools/conftest.py", "_tools/tests.py", "_tools/testmap.py", "pyproject.toml", "uv.lock", ".python-version"}
 NO_TESTS = ("kb/_self/backlog/", "kb/_querylog/")
 CONTENT = ("kb/", "AGENTS.md", "README.md", "CLAUDE.md")
+# the tests that read the live kb: test_kb.py's content classes (TestToolChecks runs check.py and the contract lint on
+# it), the route eval set, the kb MCP server's answers and the kb's own signals.csv
 CONTENT_TESTS = ["_tools/test_kb.py::TestCohesion", "_tools/test_kb.py::TestSelfDocs", "_tools/test_kb.py::TestLookup",
-                 "_tools/test_kb.py::TestIds", "_tools/test_kb.py::TestLeaks"]
+                 "_tools/test_kb.py::TestIds", "_tools/test_kb.py::TestLeaks", "_tools/test_kb.py::TestToolChecks",
+                 "_tools/test_route.py::TestRouteEvalSet", "_tools/test_kb_mcp.py::TestKbServer", "_tools/test_kbfacts_imports.py"]
+LEAKS = "_tools/test_kb.py::TestLeaks"  # the repository-wide leak scan: part of every selection short of all
+TOOL_SCANS = ["_tools/test_kb.py::TestCohesion"]  # ruff over every tool: part of every tool change's selection
 SEARCHED = ("_tools/", ".claude/", ".githooks/", ".claude-plugin/", ".github/", ".gitlab-ci.yml")
 WITH_CONTENT = (".claude/", ".githooks/")
 # names too common to say which file a string means; a path under a directory also searches these directory tokens
-GENERIC = {"SKILL.md", "README.md", "__init__.py", "settings.json", "plugin.json", ".mcp.json", "fixtures", "_tools", ".claude"}
+GENERIC = {"SKILL.md", "README.md", "__init__.py", "plugin.json", ".mcp.json", "fixtures", "_tools", ".claude"}
 SEARCH_TOKENS = {".claude/skills/": ["skills"], ".claude/hooks/": ["hooks"], ".claude/agents/": ["agents"],
                  ".githooks/": [".githooks", "githooks"], ".claude-plugin/": [".claude-plugin"], ".github/": [".github"]}
 
@@ -137,13 +145,17 @@ def place(path):
     if rel in EVERYTHING:
         return ALL, "shared test setup: every test"
     if rel.startswith("_tools/test_") and rel.endswith(".py") and "/" not in rel[len("_tools/"):]:
+        if not os.path.exists(os.path.join(KB, *rel.split("/"))):
+            return NONE, "a deleted test file: nothing left to run"
         return {rel}, "a test file: itself"
     if rel in RUNNERS:
+        if not os.path.exists(os.path.join(KB, *rel.split("/"))):
+            return NONE, "a deleted runner: nothing left to run"
         return set(RUNNERS[rel]), "a suite's runner: its suite"
     if rel.startswith("_tools/") and rel.endswith(".py") and "/" not in rel[len("_tools/"):]:
         m = rel[len("_tools/"):-3]
         hits = {f"_tools/{t}" for t, ms in reach.items() if m in ms}
-        return (hits, f"test files that reach {m}") if hits else (ALL, f"no test file reaches {m}: every test")
+        return (hits | set(TOOL_SCANS), f"test files that reach {m}") if hits else (ALL, f"no test file reaches {m}: every test")
     if rel.startswith(NO_TESTS):
         return NONE, "backlog items and the query log store: the gate's own check"
     if rel.startswith(SEARCHED) or rel == ".gitlab-ci.yml":
@@ -167,6 +179,8 @@ def select(paths):
             return ALL, why
         if got != NONE:
             nodes |= got
+    if paths:
+        nodes.add(LEAKS)  # a secret or a private path can sit in any file
     files = {n for n in nodes if "::" not in n}
     nodes = {n for n in nodes if "::" not in n or n.split("::")[0] not in files}
     return (sorted(nodes) if nodes else NONE), why
