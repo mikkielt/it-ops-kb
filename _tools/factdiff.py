@@ -998,7 +998,7 @@ def _wayback_text(url, before):
 def old_passage(sid, anchor, fact, src):
     """(passage, where) the fact rested on before the change: the snapshot at HEAD (copy sources), the previous
     cached document, a Wayback capture from the anchor's date, or the anchor's quote; (None, why) when none has it."""
-    rel = os.path.relpath(snapshot_path(sid), kbcommon.HOME)
+    rel = os.path.relpath(snapshot_path(sid), kbcommon.HOME).replace(os.sep, "/")  # git matches tree paths with /
     head = _git(kbcommon.HOME, "cat-file", "blob", f"HEAD:{rel}")  # not `git show` (see calibrate_history)
     tries = []
     if head:
