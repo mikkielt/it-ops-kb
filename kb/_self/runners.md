@@ -7,7 +7,7 @@ The project has two self-hosted GitLab runners on the same Windows 11 Pro machin
 | `docker-windows` | `docker-windows`, Hyper-V isolation, 6 vCPUs and 12 GB per container | the Windows service `gitlab-runner` on the host (`C:\GitLab-Runner`), Docker Engine for Windows containers | `kb-tests-windows` |
 | `docker-linux` | `docker` | the service `gitlab-runner` under systemd in the WSL 2 distribution `Ubuntu-24.04` of the local account `kb-runner`, Docker Engine inside it; `concurrent = 1`, at most 4 CPUs and 8 GB | the Linux-image jobs that name `docker-linux` |
 
-Both are project runners and neither takes untagged jobs: a job reaches them only by naming a tag. The Linux one is locked to this project; the Windows one is not locked and also carries the tag `windows`.
+Both are project runners and neither takes untagged jobs: a job reaches them only by naming a tag. Both are locked to this project, so no other project's jobs run on this host; the Windows one also carries the tag `windows`.
 
 ## Why WSL for Linux
 
