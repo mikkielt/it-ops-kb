@@ -23,7 +23,9 @@
     "_tools/querylog.py",
     "_tools/test_querylog.py",
     "kb/_self/querylog.md",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "kb/_querylog/findings/**"
   ],
+  "notes": "Once the command exists, use it to record F-bd7367a45f3a rejected: BG-eybmld6m removed its _gaps.md entry on the operator's answer to its entry gate (remove the entry and record the finding rejected).",
   "claimed_by": "worker-q5anbskg"
 }
