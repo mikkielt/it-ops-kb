@@ -176,9 +176,9 @@ Every row has `id` (a fresh UUID), `ts` (UTC, milliseconds), `surface` and `v`, 
   2. deletes the spool rows of the entries whose local run file `origin/main` already holds (a push whose deletion did not run, a conflict branch merged since);
   3. checks CI (below);
   4. copies into the worktree's `kb/_querylog/`, at the same paths, the local store's run files and usage sidecars `origin/main` lacks, and its findings files `origin/main` lacks whose records are all in a state `learn` writes (`open`, `fixed-since`) for findings `origin/main` records none of; a local findings file holding `apply`'s outcomes describes changes to the clone's own working tree and stays local;
-  5. gates the copied files with the worktree's `querylog.py check` over its store and the leak scan (`redact.scan` over every value but the run, entry and finding ids); a problem commits and pushes nothing (exit 1); else one commit, `KB-Auto: querylog`;
-  6. runs the worktree's own `learn`, then its `apply`, on that store, and commits what they changed with its `KB-Auto` values;
-  7. pushes both commits at once with the worktree's `kbgit.py sync --push` (fetch, rebase, fix, the gate, `git push origin HEAD:main`);
+  5. gates the copied files with the worktree's `querylog.py check` over its store and the leak scan (`redact.scan` over every value but the run, entry and finding ids); a problem commits and pushes nothing (exit 1);
+  6. runs the worktree's own `learn`, then its `apply`, on that store, and makes one commit of the copied files and what they changed, with the `KB-Auto` values of all its paths (`querylog` among them; `chore(kb): query log apply <run-id>`, or `chore(kb): query log store, ...` when they changed nothing);
+  7. pushes that commit once with the worktree's `kbgit.py sync --push` (fetch, rebase, fix, the gate, `git push origin HEAD:main`);
   8. once that push reached `origin/main`, deletes the spool rows of the entries of the run files it copied. A failed push or a conflict branch deletes nothing; the next run copies the same files again.
 
   Nothing new and no change from `learn` and `apply` pushes nothing. Exit 0 when it pushed, had nothing to push, waited on CI or pushed a conflict branch; 1 when a step failed (a red gate pushes nothing); 2 refused (no `origin`, `origin` the public home, a plugin host with no recorded install source, a cloud session on a detached `HEAD`, `--store` with `--push`).
