@@ -177,6 +177,7 @@ Several sprints may be active at once. Each has its own horizon.
   5. run `backlog.py done ID`;
   6. commit the item file with the same trailer, then run `/kb-verify` and `kbgit.py sync --push` (a content-lane commit, straight to `main`). A content-only item skips the merge request.
 - **A sprint** (`/kb-sprint run SP`): one session is the orchestrator.
+  - Each orchestrator runs from its own clone or git worktree, never the checkout another session works in: two sessions in one checkout land each other's uncommitted files. Before it lands a branch, `git status --short` shows only its own changes.
   - Ready items whose `touches` do not overlap run in parallel. Each goes to a subagent in its own git worktree (`isolation: "worktree"`) on a local branch `work/<id>`, never pushed.
   - A task or subtask goes to the `kb-worker` agent (`.claude/agents/kb-worker.md`: the newest Sonnet at high effort), started with no `model`, which would replace the agent's. An `S1` or `S2` bug with its tasks and subtasks, and a story or bug with no tasks yet (its breakdown), go to a subagent on the session model. The sprint review and every `/kb-census` subagent never use `kb-worker`.
   - When the Agent tool does not list `kb-worker` (agent files load at session start, so a session that added or changed it cannot use it), the task goes to `general-purpose` with `model: sonnet`, the one `model` the orchestrator passes, and a brief that points the worker at `.claude/agents/kb-worker.md`.
