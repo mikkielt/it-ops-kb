@@ -2,7 +2,7 @@
   "id": "BG-q5anbskg",
   "kind": "bug",
   "title": "querylog.py close cannot record a gap finding rejected when its _gaps.md entry is removed",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-mzzucemv",
   "sprint": "SP-4slunkaj",
   "priority": "P2",
@@ -24,5 +24,6 @@
     "_tools/test_querylog.py",
     "kb/_self/querylog.md",
     "kb/_self/tools.md"
-  ]
+  ],
+  "claimed_by": "worker-q5anbskg"
 }
