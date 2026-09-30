@@ -6,7 +6,12 @@ argument-hint: "[epic \"<outcome>\" | \"<what to plan>\" | bug \"<defect>\" | tr
 
 # Plan the backlog
 
-Read `kb/_self/backlog.md` first, the whole runbook (levels, fields, priority and severity, gates, the definition of done: planning uses nearly all of it), then this section, with its own command (`selfdoc.py section` prints the section under a heading with its line numbers):
+Read these sections of the `kb/_self/` docs first, not the whole docs, each with its own command (`selfdoc.py section` prints the section under a heading with its line numbers):
+- `python3 _tools/selfdoc.py section backlog "Levels"` (the kinds and what each needs)
+- `python3 _tools/selfdoc.py section backlog "The item file"` (the fields)
+- `python3 _tools/selfdoc.py section backlog "Priority and severity"`
+- `python3 _tools/selfdoc.py section backlog "Dependencies, gates and triggers"` (the always-blocking gates)
+- `python3 _tools/selfdoc.py section backlog "Definition of done"` (the shared minimum; goal, checks and touches)
 - `python3 _tools/selfdoc.py section maintaining "Conduct for changes"` (the gate, commit messages)
 
 `python3 _tools/backlog.py` with `-h` is the command reference.
@@ -24,7 +29,7 @@ Whenever you name an item (in chat, a question, a commit), give its id and its t
    - each story is one verifiable capability that lands in one push, with a `goal` and `checks` (argv lists, no shell);
    - each task is one commit, with `touches` globs as narrow as the work allows;
    - `depends_on` wherever order matters;
-   - a gate for each question only the operator can settle (the always-blocking list is in the runbook), with options and a recommendation.
+   - a gate for each question only the operator can settle (the always-blocking list is in "Dependencies, gates and triggers"), with options and a recommendation.
 5. New stories and bugs stay `draft` and outside any sprint unless the operator says which sprint.
 6. `python3 _tools/backlog.py fmt`, then `python3 _tools/backlog.py check` must print `errors=0`.
 7. Show the result with `python3 _tools/backlog.py tree <epic>` and say what is still open.
@@ -44,7 +49,7 @@ An outcome that takes several pushes. Plan it as below, with these steps first:
 
 ## Bug ("<defect>")
 1. Reproduce it with one command that fails now and will pass once it is fixed (a test with `-k`, a tool call with `match`).
-2. Pick a severity by the runbook's table and a priority. An `S1` goes into the active sprint (`--sprint`), and you tell the operator at once.
+2. Pick a severity by the table in "Priority and severity" and a priority. An `S1` goes into the active sprint (`--sprint`), and you tell the operator at once.
 3. `python3 _tools/backlog.py new bug --title T --severity S --repro "CMD" --goal G [--parent EP] [--sprint SP]`. `new` refuses a repro that passes: then the defect is not reproduced yet.
 4. Add tasks only if the fix is known. Otherwise the bug stays one item, and `/kb-item` breaks it down.
 
