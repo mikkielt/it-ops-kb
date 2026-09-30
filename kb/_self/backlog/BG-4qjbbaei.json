@@ -2,7 +2,7 @@
   "id": "BG-4qjbbaei",
   "kind": "bug",
   "title": "backlog.py close leaves relates_to links to the items it deletes",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-4fbfzobr",
   "priority": "P1",
   "rank": 0,

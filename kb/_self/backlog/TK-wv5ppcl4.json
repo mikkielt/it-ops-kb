@@ -2,7 +2,7 @@
   "id": "TK-wv5ppcl4",
   "kind": "task",
   "title": "backlog.py new writes todo for an active sprint's item",
-  "status": "draft",
+  "status": "todo",
   "parent": "ST-jzeoos4h",
   "priority": "P3",
   "rank": 0,

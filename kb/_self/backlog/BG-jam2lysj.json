@@ -2,7 +2,7 @@
   "id": "BG-jam2lysj",
   "kind": "bug",
   "title": "The failure fingerprint misses the test id behind GitLab's stream marker, so different failures join one bug",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-4fbfzobr",
   "priority": "P2",
   "rank": 0,

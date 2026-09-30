@@ -2,7 +2,7 @@
   "id": "SP-4fbfzobr",
   "kind": "sprint",
   "title": "Backlog tool holds its own rules",
-  "status": "planned",
+  "status": "active",
   "goal": "backlog.py close leaves no dangling relates_to, done counts work committed under an item's tasks, horizon reports an approved planned sprint as waiting on start, new writes an active sprint's item as todo, start refuses a work item without touches, and the failure fingerprint reads the test id behind GitLab's timestamp and stream marker",
   "gates": [
     {

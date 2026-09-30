@@ -2,7 +2,7 @@
   "id": "BG-ec4raar2",
   "kind": "bug",
   "title": "done refuses a story or bug with touches whose work was committed under its tasks",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-4fbfzobr",
   "priority": "P2",
   "rank": 0,

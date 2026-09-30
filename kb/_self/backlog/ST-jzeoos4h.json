@@ -2,7 +2,7 @@
   "id": "ST-jzeoos4h",
   "kind": "story",
   "title": "An item filed into an active sprint starts as todo",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-4fbfzobr",
   "priority": "P3",
   "rank": 0,
