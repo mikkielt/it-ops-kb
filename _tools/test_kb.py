@@ -867,6 +867,16 @@ class TestKbHookRoute:
         assert "decision" not in out and row["answered"] is False
         assert self.INSTRUCTION in ctx and "treat the whole question as what the kb lacks" in ctx and "\ncheck: " in ctx
 
+    def test_good_split_by_a_word_nowhere_in_the_kb_is_let_through(self, monkeypatch):
+        head = ["coverage: good (best article matches 2 of 2 key words: a, b); not in the kb: zzq", "route: split",
+                "kb has: a, b", "kb lacks: zzq"]
+        self.planted(monkeypatch, "good", "split", head, facts=False, missing=["zzq"], lacks=["zzq"])
+        out, row = kb_hook.respond("kb: a b zzq")
+        assert "decision" not in out and row["answered"] is False, out
+        ctx = out["hookSpecificOutput"]["additionalContext"]
+        assert self.INSTRUCTION in ctx and "route: split\nkb has: a, b\nkb lacks: zzq" in ctx
+        assert "treat the whole question as what the kb lacks" not in ctx
+
     def test_clean_good_is_blocked_and_kb_plus_keeps_its_context(self, monkeypatch):
         self.planted(monkeypatch, "good", None, ["coverage: good"], facts=False)
         out, row = kb_hook.respond("kb: a b")

@@ -608,3 +608,69 @@ def test_kb_http_guard_stalled_body_times_out(port, monkeypatch):
         assert time.monotonic() - start < 15, "the stalled connection was held past the timeout"
     finally:
         s.close()
+
+
+def chunks(data, size=7):
+    """A body in chunked transfer coding: pieces of `size` bytes, the last chunk, no trailers."""
+    out = b"".join(b"%x\r\n%s\r\n" % (len(data[i:i + size]), data[i:i + size]) for i in range(0, len(data), size))
+    return out + b"0\r\n\r\n"
+
+
+def wire(port, *requests):
+    """Send raw requests on one connection, one after another: [(status, headers, body)] for each answer read
+    (fewer when the server closed the connection)."""
+    import socket
+    s = socket.create_connection(("127.0.0.1", port), timeout=20)
+    answers = []
+    try:
+        for req in requests:
+            try:
+                s.sendall(req)
+            except OSError:
+                break
+            r = http.client.HTTPResponse(s)
+            try:
+                r.begin()
+            except (http.client.HTTPException, OSError):
+                break
+            answers.append((r.status, {k.lower(): v for k, v in r.getheaders()}, r.read()))
+            if answers[-1][1].get("connection") == "close":
+                break
+    finally:
+        s.close()
+    return answers
+
+
+def chunked_post(path, body, extra=b""):
+    return (b"POST " + path.encode("ascii") + b" HTTP/1.1\r\nHost: 127.0.0.1\r\nContent-Type: application/json\r\n"
+            + extra + b"Transfer-Encoding: chunked\r\n\r\n" + body)
+
+
+def test_kb_http_chunked_body(guarded, port):
+    """A chunked POST /mcp (no Content-Length) is read chunk by chunk, not parsed as an empty body; one over the
+    cap is 413; a POST off the endpoint drops its body before the 404, so the next request on the connection works."""
+    ping = json.dumps(PING).encode("utf-8")
+    [(status, hdrs, raw)] = wire(port, chunked_post("/mcp", chunks(ping)))
+    assert status == 200, raw
+    assert json.loads(raw.decode("utf-8"))["id"] == 200
+    # a chunk extension and a trailer are read and dropped; the connection stays usable
+    ext = b"%x;name=value\r\n%s\r\n0\r\nX-Trailer: 1\r\n\r\n" % (len(ping), ping)
+    got = wire(port, chunked_post("/mcp", ext), chunked_post("/mcp", chunks(ping, 3)))
+    assert [a[0] for a in got] == [200, 200], got
+    # at the cap passes, one byte over is 413 as a Content-Length body over the cap is
+    assert wire(guarded, chunked_post("/mcp", chunks(sized(CAP))))[0][0] == 200
+    [(status, hdrs, raw)] = wire(guarded, chunked_post("/mcp", chunks(sized(CAP + 1))))
+    assert status == 413 and hdrs["connection"] == "close" and str(CAP).encode("utf-8") in raw
+    # off the endpoint: the body is read before the 404, so the ping after it is answered, not taken as garbage
+    for first in (chunked_post("/nope", chunks(ping)),
+                  b"POST /nope HTTP/1.1\r\nHost: 127.0.0.1\r\nContent-Type: application/json\r\n"
+                  b"Content-Length: %d\r\n\r\n%s" % (len(ping), ping)):
+        got = wire(port, first, chunked_post("/mcp", chunks(ping)))
+        assert [a[0] for a in got] == [404, 200], got
+        assert json.loads(got[1][2].decode("utf-8"))["id"] == 200
+    # broken framing, both headers, or another coding: refused, never a JSON-RPC parse error
+    [(status, hdrs, raw)] = wire(port, chunked_post("/mcp", b"zz\r\n{}\r\n0\r\n\r\n"))
+    assert status == 400 and hdrs["content-type"].startswith("text/plain") and b"-32700" not in raw
+    assert wire(port, chunked_post("/mcp", chunks(ping), b"Content-Length: %d\r\n" % len(ping)))[0][0] == 400
+    gz = chunked_post("/mcp", chunks(ping)).replace(b"Transfer-Encoding: chunked", b"Transfer-Encoding: gzip, chunked")
+    assert wire(port, gz)[0][0] == 501

@@ -37,9 +37,14 @@ DNS rebinding, and recommends a loopback bind for a local server):
   body size       a POST whose Content-Length is over --max-body gets 413 Content Too Large, decided on the header.
                   The default 1 MiB is far above any real request (a tool call carries a question or a path, a
                   few KB) and bounds the memory one request can make a serving thread hold
+  chunked body    a POST sent with `Transfer-Encoding: chunked` (and no Content-Length) is read chunk by chunk up
+                  to --max-body; one that runs past it gets 413 as an over-long body does, when the limit is
+                  reached. Any other transfer coding gets 501 Not Implemented; both Transfer-Encoding and
+                  Content-Length, or broken chunk framing, get 400 Bad Request
   stalled body    a connection that sends nothing for 30 seconds (a body announced and not sent) is dropped.
   A refusal is plain text and closes the connection. A refused body up to 64 KiB is read and dropped first, so the
-  client is not reset before it reads the refusal; a larger one is never read.
+  client is not reset before it reads the refusal; a larger one is never read. A 404 reads and drops its body the
+  same way, and closes the connection when the body was not read to its end.
 
   POST /mcp         one JSON-RPC message per request body (UTF-8 JSON); batches are refused
     request         200 with the response as `application/json` (no SSE stream: every tool answers at once)
@@ -60,7 +65,7 @@ tools redirect the process-wide stdout while they work.
 Exit codes: 0 after an interrupt, 1 when the address cannot be bound, 2 for a bad option (a non-loopback --bind
 without --bind-any, and a --roots name that is no root, among them).
 """
-import argparse, ipaddress, json, socket, sys, threading
+import argparse, ipaddress, json, re, socket, sys, threading
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -77,6 +82,8 @@ MAX_BODY = 1 << 20  # 1 MiB: the module docstring says why
 JSON_TYPE = "application/json"
 ROOTS = ("public",)  # served when --roots is not given: the module docstring says why
 DRAIN = 64 << 10  # a refused body up to this size is read and dropped before the refusal is sent
+CHUNK_SIZE = re.compile(rb"[0-9A-Fa-f]{1,16}")  # a chunk-size line's size, before any chunk extension
+LINE_MAX = 64 << 10  # the longest chunk-size or trailer line read
 MODERN_STATUS = {-32022: HTTPStatus.BAD_REQUEST, -32602: HTTPStatus.BAD_REQUEST, -32601: HTTPStatus.NOT_FOUND}
 _HANDLE_LOCK = threading.Lock()
 
@@ -122,6 +129,13 @@ class Handler(BaseHTTPRequestHandler):
             return HTTPStatus.FORBIDDEN, f"forbidden: Origin {origin!r} is not allowed (kb_http.py --allow-origin)"
         if self.command != "POST":
             return None
+        te = self.headers.get("Transfer-Encoding")
+        if te is not None:
+            if self.headers.get("Content-Length") is not None:
+                return HTTPStatus.BAD_REQUEST, "bad request: both Transfer-Encoding and Content-Length"
+            if [c.strip().lower() for c in te.split(",")] != ["chunked"]:
+                return (HTTPStatus.NOT_IMPLEMENTED,
+                        f"not implemented: Transfer-Encoding {te!r}; send chunked or a Content-Length")
         media = (self.headers.get("Content-Type") or "").split(";", 1)[0].strip().lower()
         if media != JSON_TYPE:
             return (HTTPStatus.UNSUPPORTED_MEDIA_TYPE,
@@ -144,23 +158,77 @@ class Handler(BaseHTTPRequestHandler):
             self.send_plain(*stop, {"Connection": "close"})
             return False
         if urlsplit(self.path).path != ENDPOINT:
-            self.send_plain(HTTPStatus.NOT_FOUND, f"not found: the MCP endpoint is {ENDPOINT}")
+            whole = self.discard_body()
+            self.send_plain(HTTPStatus.NOT_FOUND, f"not found: the MCP endpoint is {ENDPOINT}",
+                            None if whole else {"Connection": "close"})
             return False
         return True
+
+    def is_chunked(self):
+        return self.headers.get("Transfer-Encoding") is not None
+
+    def read_chunked(self, limit):
+        """The body of a chunked request, or None when it runs past `limit` bytes (reading stops there).
+        ValueError when the chunk framing is broken or the connection ends inside it."""
+        body = bytearray()
+        while True:
+            line = self.rfile.readline(LINE_MAX + 1)
+            if not line.endswith(b"\n"):
+                raise ValueError("chunk-size line cut off or too long")
+            size = line.split(b";", 1)[0].strip()
+            if not CHUNK_SIZE.fullmatch(size):
+                raise ValueError(f"bad chunk size {size[:20]!r}")
+            n = int(size, 16)
+            if n == 0:
+                break
+            if len(body) + n > limit:
+                return None
+            data = self.rfile.read(n)
+            if len(data) != n or self.rfile.readline(3) not in (b"\r\n", b"\n"):
+                raise ValueError("chunk data cut off or not ended by CRLF")
+            body += data
+        for _ in range(100):  # the trailer section: header lines up to an empty one, which are dropped
+            line = self.rfile.readline(LINE_MAX + 1)
+            if not line.endswith(b"\n"):
+                raise ValueError("trailer cut off or too long")
+            if line in (b"\r\n", b"\n"):
+                return bytes(body)
+        raise ValueError("too many trailer lines")
 
     def discard_body(self):
         """Read and drop a refused request's body when it is small (up to DRAIN bytes): closing a socket with unread
         data resets the connection on most systems, and the client could lose the refusal. A larger body stays
-        unread, so it is never taken in."""
+        unread, so it is never taken in. True when the body was read to its end (or there was none)."""
+        if self.is_chunked():
+            try:
+                return self.read_chunked(DRAIN) is not None
+            except (OSError, ValueError):
+                return False
         try:
             length = int(self.headers.get("Content-Length") or 0)
         except ValueError:
-            return
+            return False
+        if length == 0:
+            return True
         if 0 < length <= DRAIN:
-            self.rfile.read(length)
+            return len(self.rfile.read(length)) == length
+        return False
 
     def do_POST(self):
         if not self.routed():
+            return
+        if self.is_chunked():
+            try:
+                body = self.read_chunked(self.server.max_body)
+            except ValueError as e:
+                self.send_plain(HTTPStatus.BAD_REQUEST, f"bad request: chunked body: {e}", {"Connection": "close"})
+                return
+            if body is None:
+                self.send_plain(HTTPStatus.REQUEST_ENTITY_TOO_LARGE,
+                                f"content too large: the chunked body passed the limit of {self.server.max_body} "
+                                "bytes (kb_http.py --max-body)", {"Connection": "close"})
+                return
+            self.reply_to(body)
             return
         try:
             length = int(self.headers.get("Content-Length") or 0)
@@ -169,7 +237,10 @@ class Handler(BaseHTTPRequestHandler):
         if length < 0:
             self.send_json(HTTPStatus.BAD_REQUEST, kb_mcp.error(None, -32600, "Invalid Request: bad Content-Length"))
             return
-        body = self.rfile.read(length) if length else b""
+        self.reply_to(self.rfile.read(length) if length else b"")
+
+    def reply_to(self, body):
+        """Parse one request body and send its answer."""
         try:
             msg = json.loads(body.decode("utf-8"))
         except (UnicodeDecodeError, ValueError):
