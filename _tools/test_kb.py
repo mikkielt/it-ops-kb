@@ -405,6 +405,24 @@ class TestSelfDocs:
 
 
 class TestLookup:
+    def test_e2e_fixture_questions_keep_their_pack(self):
+        """The query log's end-to-end scenarios (test_querylog_e2e.py) route real lookups through the real kb: each
+        recorded question's verdict and lead article are pinned in fixtures/querylog/e2e.json (`pack`). A kb content
+        change that moves one fails here, in the content lane of `tests.py --changed`, instead of only in the
+        expensive e2e run it would otherwise break; re-pin it there once the scenario is checked against the change."""
+        import kbfacts
+        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "fixtures", "querylog", "e2e.json"), encoding="utf-8") as f:
+            lookups = json.load(f)["lookups"]
+        pinned = {n: lk for n, lk in lookups.items() if "pack" in lk}
+        assert len(pinned) == len([lk for lk in lookups.values() if "asked" in lk]), "every recorded question is pinned"
+        moved = []
+        for name, lk in pinned.items():
+            p = kbfacts.pack(lk["asked"])
+            got = {"verdict": p["verdict"], "lead": (p["paths"] or [None])[0]}
+            if got != lk["pack"]:
+                moved.append(f"{name}: {lk['asked']!r} pinned {lk['pack']}, now {got}")
+        assert not moved, "\n".join(moved)
+
     def test_search_finds_the_expected_article(self):
         """rag.py search (kb_search): the article that answers each query is in its top 5. The baseline any change to
         the search engine must keep, including prose and, with --index, the root

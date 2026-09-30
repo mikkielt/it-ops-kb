@@ -3,6 +3,8 @@
 
   tests.py                         every test module in _tools/ but the stress suite, in parallel
   tests.py -k Leak                 only tests whose name matches (pytest -k); other pytest arguments pass through
+  tests.py --changed [REV]         only the test files a change from REV's merge base (default HEAD: the working tree)
+                                   can break, from testmap.py's map; none when no test can be affected
   tests.py --write-lint-baseline   record today's lint errors as known debt in _tools/lint_baseline.txt
   KB_TESTS_FAST=1 tests.py         leave out the git scenarios (-m "not git"): kbgit.py sync's gate
   stress_test.py                   the stress suite (test_stress.py)
@@ -55,9 +57,23 @@ def main(argv):
     if "--write-lint-baseline" in argv:
         return write_lint_baseline()
     args = list(argv)
+    targets = [TOOLS]
+    if "--changed" in args:  # only the tests the change can break (testmap.py)
+        i = args.index("--changed")
+        rev = args[i + 1] if i + 1 < len(args) and not args[i + 1].startswith("-") else None
+        del args[i:i + (2 if rev else 1)]
+        import testmap
+        sel, _ = testmap.select(testmap.changed(rev or "HEAD"))
+        if sel == testmap.NONE:
+            print(f"tests.py --changed {rev or 'HEAD'}: no test can be affected by the changed paths (testmap.py explain)")
+            return 0
+        if sel != testmap.ALL:
+            targets = [os.path.join(KB, *n.split("::")[0].split("/")) + ("::" + n.split("::", 1)[1] if "::" in n else "") for n in sel]
+            print(f"tests.py --changed {rev or 'HEAD'}: {len(sel)} of {len(testmap.test_files())} test files or classes")
     if "-m" not in args:
         args = ["-m", "not stress and not git" if os.environ.get("KB_TESTS_FAST") == "1" else "not stress"] + args
-    return run_pytest([TOOLS] + args)
+    code = run_pytest(targets + args)
+    return 0 if code == 5 and targets != [TOOLS] else code  # 5: every selected test was deselected by -m
 
 
 if __name__ == "__main__":

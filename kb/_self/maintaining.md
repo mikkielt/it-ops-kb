@@ -59,13 +59,10 @@ Work is planned and tracked in the backlog (`kb/_self/backlog.md`); a commit tha
 - **Open ledger entries are state, not work items.** Real disagreements stay in `_conflicts.md` until a source settles them, and an entry that needs a lab, a login or unpublished information carries a dated note of what was tried and what it still needs; `python3 _tools/rag.py audit --entries` lists them per article.
 - **`AGENTS.md` has a 4 KB cap** (4096 bytes, tested) and fills nearly all of it: an addition needs a cut elsewhere (`wc -c AGENTS.md`). Maintainer detail goes in `kb/_self/`, never there.
 - A change to `_tools/`, `.claude/`, `.claude-plugin/`, `.githooks/` or a rule changes what `kb/_self/` says: run `python3 _tools/selfdoc.py stale --since @{upstream}` and update the docs it lists in the same commit (`/kb-self`).
-- **The gate before proposing a commit** (the full `tests.py` is most of it: about 20 minutes on the project's Windows host, `kb/_self/reports/test-suite-speed.md`):
-  - `python3 _tools/check.py` and `python3 _tools/build_index.py --check`;
-  - `python3 _tools/kbgit.py fix --check`;
-  - `python3 _tools/tests.py` (CI runs it; includes `rag.py eval` and the doc cohesion checks; lint errors in `_tools/lint_baseline.txt` are known debt, new ones fail);
-  - `python3 _tools/stress_test.py` when `_tools/` changed;
-  - `python3 _tools/fetch.py --offline`;
-  - after reworded or removed facts, `python3 _tools/doc2query.py stale`;
-  - `/kb-verify` shows no new errors in the files you touched.
+- **The gate is `python3 _tools/kbgit.py sync --push`** (`kb/_self/git.md`): it runs only what the changed paths can break, the checks each path needs and `tests.py --changed origin/main` (the test files `_tools/testmap.py` maps them to), so a content-only change gates in seconds. Do not run the full suites before it as a habit:
+  - `/kb-verify` reports on a change (contract lint, the docs check, the checks the paths need) before a commit;
+  - `python3 _tools/tests.py --changed` runs the mapped tests of the working tree while you work; `python3 _tools/testmap.py explain --since origin/main` says why each test file runs;
+  - the full `python3 _tools/tests.py` (about 20 minutes on the project's Windows host, `kb/_self/reports/test-suite-speed.md`) and `python3 _tools/stress_test.py` run on request: a sprint review's checks, a manual CI job, or a change whose risk the map cannot see (its `all` lane selects them anyway for shared test setup and unknown paths);
+  - after reworded or removed facts, `python3 _tools/doc2query.py stale` (the gate runs it for article changes).
 - `tests.py` scans tracked files only: stage new files (`git add`) before running it, or they pass unchecked.
 - Commit messages: conventional prefix (`docs(kb):`, `fix(kb):`, `feat(kb):`, `chore:`), imperative, body explaining why; your own trailers (e.g. `Co-Authored-By`) in the last paragraph, and the hook appends the KB-* ones after them. Commit only when asked. Push with `python3 _tools/kbgit.py sync --push` (`kb/_self/git.md`).
