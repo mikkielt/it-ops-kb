@@ -28,7 +28,9 @@
   ],
   "touches": [
     "_tools/backlog.py",
-    "_tools/test_backlog.py"
+    "_tools/test_backlog.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
   ],
   "notes": "Closing SP-liemltg2 and SP-aikswrrl each left dangling relates_to links that failed backlog.check until removed by hand.",
   "claimed_by": "sprint-4fbfzobr-w1"
