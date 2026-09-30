@@ -826,6 +826,8 @@ def cmd_new(bl, a):
         sp = bl.sprint_of(a.parent)
         if bl.items.get(sp, {}).get("status") == "planned":
             it["status"] = "draft"
+    if a.sprint and bl.items.get(a.sprint, {}).get("status") == "active":  # filed into a running sprint: ready now
+        it["status"] = "todo"
     if kind == "bug":
         if not a.severity or not a.repro:
             raise Refused("a bug needs --severity and --repro")

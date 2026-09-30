@@ -503,6 +503,21 @@ def test_started_sprint_check_refuses_worked_item_of_planned_sprint(repo):
     assert "not in a started sprint" in out
 
 
+def test_active_sprint_item_is_todo(sprint):
+    """A bug filed into an active sprint is ready at once (todo); one filed into a planned sprint stays draft."""
+    repo = sprint["repo"]
+    b(repo, "new", "bug", "--title", "Found", "--sprint", sprint["sp"], "--severity", "S3",
+      "--repro", argstr(is_file("src/d.txt")), "--goal", "d exists")
+    assert item(repo, "Found")["status"] == "todo"
+    b(repo, "new", "sprint", "--title", "Later", "--goal", "g")
+    later = item(repo, "Later")["id"]
+    b(repo, "new", "bug", "--title", "Queued", "--sprint", later, "--severity", "S3",
+      "--repro", argstr(is_file("src/e.txt")), "--goal", "e exists")
+    assert item(repo, "Queued")["status"] == "draft"
+    code, out = b(repo, "check")
+    assert code == 0 and "errors=0" in out, out
+
+
 def test_started_sprint_work_state():
     """kbgit.work_state judges a KB-Work id by its item at the commit: claimed, in an active sprint."""
     files = {
