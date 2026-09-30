@@ -257,6 +257,43 @@ def test_horizon_splits_reachable_from_gated(sprint):
     assert "Fix or drop?" in hook["hookSpecificOutput"]["additionalContext"]
 
 
+HOOK_LIMIT = 1000  # characters of the SessionStart hook's whole stdout, which every session in a clone reads
+
+
+def test_horizon_hook_prints_sprint_ids_and_titles_without_goals(sprint):
+    repo = sprint["repo"]
+    goals = {}
+    for n in range(4):
+        title = f"Long sprint {n}"
+        goals[title] = f"Goal sentence {n}: " + "every part of this outcome is spelled out at length, " * 6
+        b(repo, "new", "sprint", "--title", title, "--goal", goals[title])
+        sp = item(repo, title)["id"]
+        b(repo, "new", "bug", "--title", f"Bug {n}", "--sprint", sp, "--severity", "S3",
+          "--repro", argstr(is_file("src/c.txt")), "--goal", "c exists")
+        assert b(repo, "answer", sp, "start", "--answer", "approve", "--by", "operator")[0] == 0
+        code, out = b(repo, "start", sp)
+        assert code == 0, out
+    code, out = b(repo, "horizon", "--hook")
+    assert code == 0, out
+    hook = json.loads(out)
+    context = hook["hookSpecificOutput"]["additionalContext"]
+    for title, goal in goals.items():
+        sp = item(repo, title)["id"]
+        assert f"{sp} “{title}”" in context and f"{sp} “{title}”" in hook["systemMessage"], context
+        assert goal[:20] not in out
+    assert "ship b" not in out and sprint["sp"] in context
+    assert len(out) < HOOK_LIMIT, len(out)
+    code, out = b(repo, "horizon")  # without --hook: unchanged, goals and critical paths included
+    assert code == 0 and all(f"goal {g}" in out for g in goals.values()) and "goal ship b" in out
+    assert "critical path" in out
+
+
+def test_horizon_hook_of_the_repository_backlog_stays_under_the_limit():
+    code, out = b(os.path.dirname(TOOLS), "horizon", "--hook")
+    assert code == 0, out
+    assert len(out) < HOOK_LIMIT, (len(out), out)
+
+
 def test_review_needs_confirmed_provisional_answers_and_close_deletes(sprint):
     repo, bg = sprint["repo"], sprint["bg"]
     edit(repo, bg, gates=[{"id": "G1", "kind": "provisional", "question": "Name c?", "recommendation": "c.txt"}])
