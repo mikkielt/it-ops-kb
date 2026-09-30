@@ -15,7 +15,9 @@ the same `main`, so the public home gets a projection of it:
               parents are unchanged is its own projection, so the history before the query log keeps its hashes (and
               the census tags stay valid). A commit that changed only PRIVATE paths becomes nothing: its projection is
               its parent's. The projection is a pure function of the source history, so every clone computes the same
-              commits and each publish fast-forwards the last one.
+              commits and each publish fast-forwards the last one. Each source commit's projection is cached in
+              _cache/publish/ (projection_cache), so a publish projects only the commits it has not seen; objects are
+              hashed here and written in one `git hash-object --stdin-paths` per kind.
   publish     fetches the source and the public home, projects the source, verifies the projection carries no
               PRIVATE path, checks its safety (below), and pushes it to the public home's BRANCH as a fast-forward. When the public home's branch
               is not an ancestor (a commit pushed there directly, or a history from before the projection) it refuses,
@@ -54,7 +56,7 @@ guarded there, and the query log pushes its store to `origin` as before. Exit (p
 carries a PRIVATE path) or the push failed, 2 bad arguments, no source, or a git error. Exit (check-public): 0 clean,
 1 a PRIVATE path found, 2 a git error.
 """
-import hashlib, json, os, re, subprocess, sys
+import hashlib, json, os, re, subprocess, sys, tempfile
 from pathlib import Path
 
 PRIVATE = ("kb/_querylog",)  # repository paths kept on the integration remote only (kb/_self/git.md, Public home)
@@ -67,6 +69,7 @@ FORBIDDEN_RE = re.compile(r"(^|/)(_private|_cache)(/|$)")
 ALLOWLIST_PATH = "_tools/tests_allowlist.txt"
 URL_RX = re.compile(r"(?:https?|ssh|git)://\S+|(?<![\w.%+-])git@[\w.-]+:[\w./~-]+|\bssh(?:\s+-\w+)*\s+git@[\w.-]+")
 CACHE_DIR = ("_cache", "publish")  # the per-clone scan cache under the repository, never committed (its own .gitignore)
+PROJECTION_FORM = 1  # the projection's form: a change to how commits are projected bumps it, so no older cache is read
 HOOK_BOUND = 150  # uncached commits publish --hook checks at most; a longer range is left to a publish by hand (git.md)
 CI_RUN = None  # a command runner (argv -> (code, stdout, stderr)) for the CI check; None: ql_base.run_cmd. Tests stub it.
 
@@ -124,7 +127,7 @@ class Projector:
         self.hexlen = 64 if out(["rev-parse", "--show-object-format"], cwd) == "sha256" else 40
         self.cat = subprocess.Popen(["git", "cat-file", "--batch"], cwd=cwd, stdin=subprocess.PIPE,
                                     stdout=subprocess.PIPE)
-        self.trees, self.commits, self.tree_of = {}, {}, {}
+        self.trees, self.commits, self.tree_of, self.pending = {}, {}, {}, {}
         self.private = [tuple(p.split("/")) for p in PRIVATE]
 
     def close(self):
@@ -142,10 +145,27 @@ class Projector:
         return head[1].decode(), body
 
     def write(self, kind, body):
-        code, o, e = run(["hash-object", "-t", kind, "-w", "--stdin"], self.cwd, stdin=body)
-        if code:
-            raise RuntimeError(f"git hash-object: {e.strip()}")
-        return o.decode().strip()
+        """The sha of the object KIND with BODY, computed here; flush() writes it with the others."""
+        algo = "sha256" if self.hexlen == 64 else "sha1"
+        sha = hashlib.new(algo, f"{kind} {len(body)}\0".encode() + body).hexdigest()
+        self.pending.setdefault(kind, {})[sha] = body
+        return sha
+
+    def flush(self):
+        """Writes the pending objects, one `git hash-object -w --stdin-paths` per kind (trees before the commits that
+        name them), and checks git computed the sha write() gave each."""
+        with tempfile.TemporaryDirectory() as d:
+            for kind in ("tree", "commit"):
+                objs, paths = self.pending.pop(kind, {}), []
+                for i, body in enumerate(objs.values()):
+                    paths.append(Path(d, f"{kind}{i}"))
+                    paths[-1].write_bytes(body)
+                if not objs:
+                    continue
+                code, o, e = run(["hash-object", "-t", kind, "-w", "--no-filters", "--stdin-paths"], self.cwd,
+                                 stdin="".join(f"{x}\n" for x in paths).encode("utf-8"))
+                if code or o.decode().split() != list(objs):
+                    raise RuntimeError(f"git hash-object: {e.strip() or 'a written object has another sha'}")
 
     def entries(self, tree):
         """[(mode, name, sha)] of a tree object, in stored order."""
@@ -190,59 +210,90 @@ class Projector:
             self.tree_of[sha] = body[5:5 + self.hexlen].decode()
         return self.tree_of[sha]
 
-    def project(self, tip):
-        """The projection of TIP (a commit sha), computed for its whole history, oldest first."""
+    def present(self, shas):
+        """The SHAS that are commit objects of the repository (one `git cat-file --batch-check`)."""
+        shas = list(shas)
+        if not shas:
+            return set()
+        code, o, _ = run(["cat-file", "--batch-check"], self.cwd, stdin="".join(f"{x}\n" for x in shas).encode())
+        rows = [ln.split() for ln in o.decode("utf-8", "replace").splitlines()] if code == 0 else []
+        return {r[0] for r in rows if len(r) == 3 and r[1] == "commit"}
+
+    def project(self, tip, cached=None):
+        """The projection of TIP (a commit sha), computed for its whole history, oldest first. CACHED ({source sha:
+        projected sha}, an earlier run's) gives the projection of each commit it names whose projected commit is still in
+        the object store; the others are computed."""
         code, o, e = run(["rev-list", "--topo-order", "--reverse", "--parents", tip], self.cwd)
         if code:
             raise RuntimeError(f"git rev-list: {e.strip()}")
-        for line in o.decode().splitlines():
-            sha, *parents = line.split()
+        rows = [line.split() for line in o.decode().splitlines()]
+        cached = cached or {}
+        known = self.present({cached[r[0]] for r in rows if cached.get(r[0], r[0]) != r[0]})
+        for sha, *parents in rows:
             if sha in self.commits:
                 continue
-            _, body = self.read(sha)
-            head, sep, msg = body.partition(b"\n\n")
-            tree = head[5:5 + self.hexlen].decode()
-            self.tree_of[sha] = tree
-            new_tree = self.filter_tree(tree, tuple(self.private))
-            new_parents = list(dict.fromkeys(self.commits[p] for p in parents))
-            if new_tree == tree and new_parents == parents:
-                self.commits[sha] = sha
-                continue
-            if new_parents and len(new_parents) == 1 and new_tree == self.commit_tree(new_parents[0]) and \
-                    (len(parents) > 1 or tree != self.commit_tree(parents[0])):
-                self.commits[sha] = new_parents[0]  # it changed only PRIVATE paths (or merged nothing public)
-                continue
-            lines, skip = [], False
-            for ln in head.split(b"\n"):
-                if ln.startswith(b" ") and skip:
-                    continue  # the continuation of a dropped multi-line header
-                skip = False
-                if ln.startswith((b"gpgsig", b"gpgsig-sha256 ", b"mergetag ")):
-                    skip = True
-                    continue
-                if ln.startswith(b"tree "):
-                    lines.append(b"tree " + new_tree.encode())
-                    lines += [b"parent " + p.encode() for p in new_parents]
-                elif not ln.startswith(b"parent "):
-                    lines.append(ln)
-            self.commits[sha] = self.write("commit", b"\n".join(lines) + sep + msg)
-            self.tree_of[self.commits[sha]] = new_tree
+            got = cached.get(sha)
+            self.commits[sha] = got if got is not None and (got == sha or got in known) else self.rewrite(sha, parents)
+        self.flush()
         return self.commits[tip]
+
+    def rewrite(self, sha, parents):
+        """The projection of the commit SHA whose PARENTS are projected already."""
+        _, body = self.read(sha)
+        head, sep, msg = body.partition(b"\n\n")
+        tree = head[5:5 + self.hexlen].decode()
+        self.tree_of[sha] = tree
+        new_tree = self.filter_tree(tree, tuple(self.private))
+        new_parents = list(dict.fromkeys(self.commits[p] for p in parents))
+        if new_tree == tree and new_parents == parents:
+            return sha
+        if new_parents and len(new_parents) == 1 and new_tree == self.commit_tree(new_parents[0]) and \
+                (len(parents) > 1 or tree != self.commit_tree(parents[0])):
+            return new_parents[0]  # it changed only PRIVATE paths (or merged nothing public)
+        lines, skip = [], False
+        for ln in head.split(b"\n"):
+            if ln.startswith(b" ") and skip:
+                continue  # the continuation of a dropped multi-line header
+            skip = False
+            if ln.startswith((b"gpgsig", b"gpgsig-sha256 ", b"mergetag ")):
+                skip = True
+                continue
+            if ln.startswith(b"tree "):
+                lines.append(b"tree " + new_tree.encode())
+                lines += [b"parent " + p.encode() for p in new_parents]
+            elif not ln.startswith(b"parent "):
+                lines.append(ln)
+        res = self.write("commit", b"\n".join(lines) + sep + msg)
+        self.tree_of[res] = new_tree
+        return res
+
+def projection_cache(hexlen):
+    """The name of the projection cache file: one per PRIVATE, PROJECTION_FORM and object format, so a change of what the
+    projection removes or how never reads an older cache."""
+    key = json.dumps([PROJECTION_FORM, list(PRIVATE), hexlen]).encode("utf-8")
+    return f"projection-{hashlib.sha256(key).hexdigest()[:16]}.json"
 
 
 def project(tip, cwd, sources=None):
     """The projection of the commit TIP in the repository at CWD. SOURCES, a dict, gets {projected sha: the oldest
-    source commit projected to it}."""
+    source commit projected to it}. The projection of each source commit is cached in CACHE_DIR ({source sha: projected
+    sha}, projection_cache), so a later run projects only the commits not seen before; an entry whose projected commit
+    is missing from the object store is computed again, and a missing or corrupt cache means the whole history."""
     p = Projector(cwd)
+    name = projection_cache(p.hexlen)
+    got, sha_rx = cache_load(cwd, name), re.compile(f"[0-9a-f]{{{p.hexlen}}}")
+    cached = got if isinstance(got, dict) and all(isinstance(v, str) and sha_rx.fullmatch(k) and sha_rx.fullmatch(v)
+                                                  for k, v in got.items()) else {}
     try:
-        res = p.project(tip)
+        res = p.project(tip, cached)
     finally:
         p.close()
+    if any(cached.get(s) != c for s, c in p.commits.items()):
+        cache_save(cwd, name, {**cached, **p.commits}, "projection-")
     if sources is not None:
         for s, c in p.commits.items():
             sources.setdefault(c, s)
     return res
-
 
 def is_ancestor(a, b, cwd):
     return run(["merge-base", "--is-ancestor", a, b], cwd)[0] == 0
