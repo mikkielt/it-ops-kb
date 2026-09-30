@@ -161,6 +161,60 @@ def test_the_shims_are_executable_scripts(tmp_path):
     assert subprocess.run([*start, str(d / "claude"), "-p"]).returncode == 1
 
 
+def _fake_real(where):
+    """A stand-in for the real claude that prints one result event, so no test reaches the real CLI."""
+    where.mkdir(parents=True, exist_ok=True)
+    event = '{"result": "from-fake", "total_cost_usd": 0.5, "is_error": false}'
+    if os.name == "nt":
+        exe = where / "fake-claude.cmd"
+        exe.write_text(f"@echo {event}\r\n", encoding="utf-8", newline="")
+    else:
+        exe = where / "fake-claude"
+        exe.write_text(f"#!/bin/sh\ncat >/dev/null\necho '{event}'\n", encoding="utf-8", newline="\n")
+        exe.chmod(0o755)
+    return exe
+
+
+def test_the_shim_is_the_claude_that_path_resolves_and_runs(tmp_path):
+    # Windows resolves a command only by a PATHEXT extension: an extensionless shim is skipped and the real claude
+    # further down PATH runs instead, so which() must find the shim itself, and running what it found runs the shim
+    fail = bm.shim_dir(tmp_path / "fail")
+    found = shutil.which("claude", path=str(fail))
+    assert found and Path(found).parent == fail
+    assert subprocess.run([found, "-p"], input="", capture_output=True).returncode == 1
+    log = tmp_path / "log.jsonl"
+    sd = bm.shim_dir(tmp_path / "log", log, real=str(_fake_real(tmp_path / "real")))
+    found = shutil.which("claude", path=str(sd))
+    assert found and Path(found).parent == sd
+    p = subprocess.run([found, "-p", "--model", "haiku", "--output-format", "text"], input='{"i": 1}',
+                       capture_output=True, text=True)
+    assert (p.returncode, p.stdout) == (0, "from-fake")
+    [call] = [json.loads(ln) for ln in log.read_text(encoding="utf-8").splitlines()]
+    assert (call["items"], call["cost"], call["argv"][:3]) == (1, 0.5, ["-p", "--model", "haiku"])
+
+
+def test_a_scenario_without_sh_is_skipped_with_the_reason(tmp_path, monkeypatch, capsys):
+    monkeypatch.setattr(bm.shutil, "which", lambda *a, **k: None)
+    for scenario in (bm.s_kbpy, bm.s_querylog_hooks):
+        with pytest.raises(bm.Skip, match="no sh on PATH"):
+            scenario(None)
+
+    class FakeBench:  # no Bench: its start asks the real claude for its version
+        def __init__(self, scratch, reps):
+            self.scratch, self.rows, self.date = Path(scratch), [], "2026-01-01"
+
+        def close(self):
+            pass
+
+    monkeypatch.setattr(bm, "Bench", FakeBench)
+    monkeypatch.setattr(bm, "RAW", {})
+    monkeypatch.setenv("BENCH_SCRATCH", str(tmp_path / "scratch"))
+    out = tmp_path / "results.csv"
+    assert bm.main(["run", "kbpy", "--out", str(out)]) == 0
+    assert "kbpy: skipped: no sh on PATH" in capsys.readouterr().out
+    assert bm.read_rows(out) == []
+
+
 # ---- route-by-verdict
 
 def test_route_by_verdict_is_listed_with_its_section(capsys):

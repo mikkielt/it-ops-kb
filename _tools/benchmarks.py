@@ -340,15 +340,34 @@ sys.exit(1 if ev.get("is_error") else p.returncode)
 FAIL_SHIM = "#!/bin/sh\n# a `claude` that fails at once: a launched distill finds no model and its entries wait\nexit 1\n"
 
 
-def shim_dir(where, log=None):
-    """A directory holding a `claude` for PATH: the logging shim (log given) or one that always fails."""
+def shim_dir(where, log=None, real=None):
+    """A directory holding a `claude` for PATH: the logging shim (log given; it runs `real`, default the `claude` on
+    PATH now) or one that always fails. On Windows it also holds a `claude.cmd` that does the same: Windows resolves a
+    command only by a PATHEXT extension (shutil.which, CreateProcess), so the extensionless script alone is skipped
+    and the real `claude` further down PATH would run instead; the extensionless one stays for Git Bash."""
     d = Path(where)
     d.mkdir(parents=True, exist_ok=True)
     exe = d / "claude"
-    real = shutil.which("claude") or "claude"
+    real = real or shutil.which("claude") or "claude"
     exe.write_text(SHIM.format(real=real, log=str(log)) if log else FAIL_SHIM, encoding="utf-8", newline="\n")
     exe.chmod(0o755)
+    if os.name == "nt":
+        run = f'@"{sys.executable}" "{exe}" %*\r\n@exit /b %ERRORLEVEL%\r\n' if log else "@exit /b 1\r\n"
+        (d / "claude.cmd").write_text(run, encoding="utf-8", newline="")
     return d
+
+
+class Skip(Exception):
+    """A scenario that cannot run on this host; main prints the reason and writes no rows for it."""
+
+
+def need_sh():
+    """The `sh` the hook launcher scenarios start `_tools/kbpy` with, or Skip: PowerShell or cmd on Windows has no sh
+    on PATH unless Git for Windows' usr/bin is there."""
+    sh = shutil.which("sh")
+    if not sh:
+        raise Skip("no sh on PATH (Windows without Git Bash): run it from Git Bash")
+    return sh
 
 
 def no_plugin_env(extra=None):
@@ -1247,6 +1266,7 @@ def s_querylog_hooks(b):
     hooks, the SessionEnd launcher's return time (nothing to distill, and a closed session to distill: it starts a
     detached distill, whose `claude` here fails at once), and the weekly digest hook; all through `sh _tools/kbpy` of
     a throwaway clone, writing under a scratch plugin data directory in mode `local`."""
+    sh = need_sh()
     clone = b.clone("kb-hooks", "local")
     data = b.scratch / "ql-hooks-data"
     shutil.rmtree(data, ignore_errors=True)
@@ -1255,7 +1275,7 @@ def s_querylog_hooks(b):
     fail = shim_dir(b.scratch / "fail-shim")
     env = no_plugin_env({"CLAUDE_PLUGIN_ROOT": str(clone), "CLAUDE_PLUGIN_DATA": str(data), "KB_INDEX": str(clone / "_cache"),
                          "PATH": f"{fail}{os.pathsep}{os.environ.get('PATH', '')}"})
-    kbpy = ["sh", str(clone / "_tools" / "kbpy")]
+    kbpy = [sh, str(clone / "_tools" / "kbpy")]
     n = max(30, b.reps)
     sid = str(uuid.uuid4())
     events = {
@@ -1642,6 +1662,7 @@ def s_host_roots(b):
 def s_kbpy(b):
     """The hook launcher's start-up: a no-op script run by `sh _tools/kbpy` against the same script run by the
     interpreter directly, on this OS."""
+    sh = need_sh()
     d = b.scratch / "kbpy" / "_tools"
     d.mkdir(parents=True, exist_ok=True)
     shutil.copy(TOOLS / "kbpy", d / "kbpy")
@@ -1649,7 +1670,7 @@ def s_kbpy(b):
     osname = platform.system()
     n = max(50, b.reps)
     direct = _time([shutil.which("python3") or sys.executable, str(d.parent / "noop.py")], n, d.parent)
-    via = _time(["sh", str(d / "kbpy"), "noop.py"], n, d.parent)
+    via = _time([sh, str(d / "kbpy"), "noop.py"], n, d.parent)
     _stats(b, "kbpy", "python3 noop.py", osname, direct)
     _stats(b, "kbpy", "sh _tools/kbpy noop.py", osname, via)
     b.row("kbpy", "launcher overhead", osname, "median_ms", (statistics.median(via) - statistics.median(direct)) * 1000, n)
@@ -1777,6 +1798,9 @@ def main(argv=None):
             RAW["path"].parent.mkdir(parents=True, exist_ok=True)
             try:
                 SCENARIOS[n][1](b)
+            except Skip as e:  # nothing measured, so no row: an errors row would read as a failed run
+                print(f"{n}: skipped: {e}", flush=True)
+                continue
             except Exception as e:  # one failed scenario does not lose the others' rows
                 b.row(n, "run", "", "errors", 1, 1, note=f"{type(e).__name__}: {e}"[:200])
             if SPEND["runs"]:
