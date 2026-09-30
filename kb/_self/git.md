@@ -22,6 +22,8 @@ The tools work without any of this; it makes the host cooperate. Each setting is
 
 ## Commands (`_tools/kbgit.py`)
 
+`kbgit.py` is the command line: it parses the arguments and holds the trailers, the history commands and sync, which change together. Merge and ledger repair (`fix`, `fmt`, the `_sources.csv`, `_fetch_state.csv`, answer-id and Markdown-ledger merges, the lint baseline) live in `_tools/kg_merge.py`, and the names both share (the repository directory, the baseline path, `Problem`, the repository's roots) in `_tools/kg_base.py`; neither imports `kbgit.py` (`kb/_self/code.md`, Layout).
+
 | command | does |
 |---|---|
 | `python3 _tools/kbgit.py sync [--push] [--dry-run] [--remote R] [--branch B]` | the way to push: fetch, rebase onto the integration remote's `main` (`--remote` overrides), fix, gate, push (exit 0 done, 1 gate red or push rejected, 2 refused, 3 conflict needs `/kb-git-sync` or a human) |
