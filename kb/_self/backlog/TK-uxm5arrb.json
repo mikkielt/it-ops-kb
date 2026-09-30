@@ -2,7 +2,7 @@
   "id": "TK-uxm5arrb",
   "kind": "task",
   "title": "git.md, backlog.md and maintaining.md describe the regime",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-lhcjqkbq",
   "priority": "P2",
   "rank": 0,
@@ -51,5 +51,49 @@
     "kb/_self/tools.md",
     "README.md"
   ],
-  "claimed_by": "worker-uxm5arrb"
+  "evidence": {
+    "commit": "ee921ef8a1a812dbeddf50f5186ce136edcd275c",
+    "checks": [
+      {
+        "run": [
+          "grep",
+          "-c",
+          "github-branch-rules-and-auto-merge",
+          "kb/_self/git.md"
+        ],
+        "exit": 0,
+        "sha256": "53c234e5e8472b6a"
+      },
+      {
+        "run": [
+          "grep",
+          "-c",
+          "repository-mirroring",
+          "kb/_self/git.md"
+        ],
+        "exit": 0,
+        "sha256": "4355a46b19d348dc"
+      },
+      {
+        "run": [
+          "grep",
+          "-c",
+          "-F",
+          "a push anywhere but `origin`'s `main`",
+          "kb/_self/backlog.md"
+        ],
+        "exit": 1,
+        "sha256": "9a271f2a916b0b6e"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/selfdoc.py",
+          "stale"
+        ],
+        "exit": 0,
+        "sha256": "87a3b1b935511a85"
+      }
+    ]
+  }
 }

@@ -2,7 +2,7 @@
   "id": "TK-5mrfocpz",
   "kind": "task",
   "title": "done checks code-lane items against the integration main",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-niikw55v",
   "priority": "P2",
   "rank": 0,
@@ -23,5 +23,19 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
-  "claimed_by": "worker-5mrfocpz"
+  "evidence": {
+    "commit": "d9c16470f31696d8e72896d83f5dea377b9b3d63",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "TestDoneLane"
+        ],
+        "exit": 0,
+        "sha256": "d8c564b5723baf80"
+      }
+    ]
+  }
 }

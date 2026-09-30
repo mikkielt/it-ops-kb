@@ -2,7 +2,7 @@
   "id": "TK-xo4cnzxi",
   "kind": "task",
   "title": "kbgit.py check-lanes and the pre-push hook",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-qx7aw7if",
   "priority": "P2",
   "rank": 0,
@@ -26,5 +26,19 @@
     "kb/_self/tools.md"
   ],
   "notes": "No test calls a real forge: the client is tested against an injected opener or a stub server on loopback.",
-  "claimed_by": "worker-xo4cnzxi"
+  "evidence": {
+    "commit": "d9c16470f31696d8e72896d83f5dea377b9b3d63",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "TestCheckLanes"
+        ],
+        "exit": 0,
+        "sha256": "a7357429084ceed0"
+      }
+    ]
+  }
 }
