@@ -153,7 +153,7 @@ A sprint is a goal and the stories and bugs committed to it. It ends when its go
    - `backlog.py new sprint --title T --goal G` creates the sprint with its blocking `start` gate and its review story;
    - stories and bugs join the sprint with `"sprint": "SP-..."`, and tasks are broken down with `touches` and `checks`;
    - everything stays `draft`: `backlog.py check` reports an item whose status is `todo`, `doing` or `done` while its sprint is planned (not in a started sprint), and `new` creates a task or subtask under such a sprint's story as `draft`.
-2. **Start**: the operator approves the goal and the committed items (`answer SP start --answer approve --by operator`). Then `backlog.py start SP` turns the drafts into `todo`.
+2. **Start**: the operator approves the goal and the committed items (`answer SP start --answer approve --by operator`). Then `backlog.py start SP` turns the drafts into `todo`. It refuses, changing nothing, while a story, task or bug other than the review story has no `touches` of its own and no tasks and subtasks that all have them, naming each (a dropped item is exempt): `done` checks a commit against that scope, and the orchestrator reads it to tell which items run in parallel. `check` does not report it, so a sprint already running stays valid.
    - Inside a running sprint, agents add tasks, subtasks and bugs freely; `new --sprint SP` writes an item filed into an active sprint as `todo`, ready to claim.
    - A new story goes to the backlog for a later sprint, unless the operator adds it.
 3. **Run** (`/kb-sprint run`): work ready items in `next` order until the horizon shows nothing reachable. Then report what waits on whom.
