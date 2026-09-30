@@ -1144,10 +1144,6 @@ Still open: (topic: auth/configmgr-rbac-auth)
 
 - **GitLab CI job log timestamps format FF_TIMESTAMPS** The kb was asked this in a logged lookup of 2026-09-29, and no article answered it (query log finding F-98c7f667e2cd). Looked in the kb 2026-09-29: `rag.py pack` gives `none`, with this topic in the lead. Needs an official source that states it (`/kb-research`, or the query log's opt-in research). (topic: arch/gitlab-ci-components)
 
-## mecm/collect-client-logs
-
-- **What is the maximum email attachment size?** The kb was asked this in a logged lookup of 2026-09-29, and no article answered it (query log finding F-bd7367a45f3a). Looked in the kb 2026-09-29: `rag.py pack` gives `weak`, with this topic in the lead. Needs an official source that states it (`/kb-research`, or the query log's opt-in research). (topic: mecm/collect-client-logs)
-
 ## privacy/nist-sp800-38g
 
 - **architecture decision records ADR format status superseded** The kb was asked this in a logged lookup of 2026-09-28, and no article answered it (query log finding F-f3230e66064f). Looked in the kb 2026-09-29: `rag.py pack` gives `weak`, with this topic in the lead. Needs an official source that states it (`/kb-research`, or the query log's opt-in research). (topic: privacy/nist-sp800-38g)

@@ -8,7 +8,7 @@ import csv, datetime, re, sys
 from pathlib import Path
 
 from ql_base import HOME, one_line, places, restore, run_cmd, write_text
-from ql_learn import article_facts, article_of, domain_article, held_article, passes, unknown_words
+from ql_learn import article_facts, article_of, domain_article, held_article, holds_word, passes, unknown_words
 from ql_research import add_under, research_one
 from ql_store import (APPLY_STATES, FIX_KINDS, failed_counts, finding_states, store_entries, write_findings)
 
@@ -266,20 +266,37 @@ def apply_one(ev, fix, entry, gate, base):
 
 # ---------------------------------------------------------------- the gap step
 
+def weak_off_topic(res, article, gate):
+    """Whether a `weak` pack led by `article` lacks the question's subject: the pack names words it lacks, no word it
+    matched is a word of the lead's topic or title (the matched words are qualifiers such as maximum or size, not the
+    lead's subject), and none of the lead's tagged facts holds a lacked word as written (`holds_word`). 'What is the
+    maximum email attachment size?' led by mecm/collect-client-logs: matched attachment, maximum, size; lacks email."""
+    lacks = [w for w in res.get("lacks") or [] if isinstance(w, str) and w.strip()]
+    if res.get("verdict") != "weak" or not lacks:
+        return False
+    import kbfacts
+    names = {kbfacts.stem(w) for w in re.findall(r"[a-z0-9]+", f"{gate.topic(article)} {gate.title(article)}".lower())}
+    if names & set(res.get("matched") or []):
+        return False
+    return not any(holds_word(w, text) for _, text in gate.facts(article) for w in lacks)
+
+
 def gap_one(g, entry, gate, day):
     """The record of one open gap candidate (kind gap, stage candidate-gap), re-run with pack on the working tree: it
     reproduces when it still fails (`passes` without a best article), and it lies in a kb domain when the pack's lead
     path belongs to an article, for a `none` verdict only with more than half the key words in that lead
-    (`domain_article`). Then a _gaps.md entry under the article's topic, in the article's root, dated `day`, and the
-    finding promoted from candidate-gap to gap (`applied`). Off the kb's domains (no lead, a lead no article holds, a
-    `none` lead with half the key words or fewer) it is `rejected` at candidate-gap: no topic can take its entry. []
+    (`domain_article`), for a `weak` verdict only when that lead holds the question's subject (`weak_off_topic`). Then
+    a _gaps.md entry under the article's topic, in the article's root, dated `day`, and the finding promoted from
+    candidate-gap to gap (`applied`). Off the kb's domains (no lead, a lead no article holds, a `none` lead with half
+    the key words or fewer, a `weak` lead without the subject) it is `rejected` at candidate-gap: no topic can take its
+    entry. []
     when it passes now or a `none` pack's lead article holds the words it lacks (`held_article`): learn records both,
     the second as an eval finding."""
     res = gate.pack(entry["question"])
     if passes(res, None) or held_article(res, gate.article_of, gate.facts):
         return []
     article = domain_article(res, gate.article_of)
-    if not article:
+    if not article or weak_off_topic(res, article, gate):
         return [{**without_observed(g), "state": "rejected",
                  "observed": {"verdict": res.get("verdict"), "gate": ["off the kb's domains"]}}]
     topic = gate.topic(article)

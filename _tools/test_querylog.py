@@ -3463,6 +3463,45 @@ class TestGapStep:
         assert (root_files(root), tree(store)) == before
         assert (by_id(store)[GAP_ID]["state"], by_id(store)[GAP_ID]["stage"]) == ("open", "candidate-gap")
 
+    def test_gap_step_rejects_weak_off_domain(self, tmp_path):
+        """F-bd7367a45f3a: 'What is the maximum email attachment size?' packs `weak` with 3 of 4 key words, led by
+        mecm/collect-client-logs; the words it matched are qualifiers that name nothing of the lead's topic, and the
+        word it lacks, the subject, is in none of the lead's facts: off the kb's domains, no _gaps.md entry."""
+        root = kb_root(tmp_path / "root")
+        store = gap_store(tmp_path)
+        res = {"verdict": "weak", "paths": [LAPS, GMSA], "matched": ["attachment", "maximum", "size"],
+               "known": ["attachment", "email", "maximum", "size"], "lacks": ["email"], "missing": []}
+        gate = KbGate(root, res=res)
+        gate.title = lambda article: "Windows LAPS"
+        gate.facts = lambda article: [(9, "Windows LAPS backs up the password to Active Directory. [DOC S100]")]
+        before = root_files(root)
+        rc, said = run_gap_apply(store, gate)
+        assert rc == 0 and "applied=0 rejected=1 no-fix=0" in said[0] and "gaps=" not in said[0], said
+        assert root_files(root) == before
+        rec = by_id(store)[GAP_ID]
+        assert (rec["state"], rec["stage"], rec["observed"]["gate"]) == ("rejected", "candidate-gap",
+                                                                          ["off the kb's domains"])
+        assert ql_store.store_problems(store) == []
+
+    @pytest.mark.parametrize("res,fact", [
+        ({"verdict": "weak", "paths": [LAPS], "matched": ["laps", "maximum", "password"],  # names the lead's topic
+          "known": ["azur", "laps", "maximum", "password"], "lacks": ["Azure"], "missing": []},
+         "Windows LAPS backs up the password to Active Directory. [DOC S100]"),
+        ({"verdict": "weak", "paths": [LAPS], "matched": ["backup", "maximum", "size"],  # the lead's facts hold `Azure`
+          "known": ["azur", "backup", "maximum", "size"], "lacks": ["Azure"], "missing": []},
+         "Windows LAPS backs up the password to Azure or AD. [DOC S100]"),
+    ])
+    def test_gap_step_takes_weak_on_domain(self, tmp_path, res, fact):
+        root = kb_root(tmp_path / "root")
+        store = gap_store(tmp_path)
+        gate = KbGate(root, res=res)
+        gate.title = lambda article: "Windows LAPS"
+        gate.facts = lambda article: [(9, fact)]
+        rc, said = run_gap_apply(store, gate)
+        assert rc == 0 and "gaps=1" in said[0], said
+        assert "gives `weak`, with this topic in the lead" in (root / "_gaps.md").read_text(encoding="utf-8")
+        assert (by_id(store)[GAP_ID]["state"], by_id(store)[GAP_ID]["stage"]) == ("applied", "gap")
+
     def test_a_none_gap_under_its_article_becomes_an_entry(self, tmp_path):
         root = kb_root(tmp_path / "root")
         store = gap_store(tmp_path)

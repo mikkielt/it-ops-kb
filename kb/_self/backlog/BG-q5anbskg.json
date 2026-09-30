@@ -1,0 +1,28 @@
+{
+  "id": "BG-q5anbskg",
+  "kind": "bug",
+  "title": "querylog.py close cannot record a gap finding rejected when its _gaps.md entry is removed",
+  "status": "todo",
+  "parent": "EP-mzzucemv",
+  "sprint": "SP-4slunkaj",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "querylog.py close takes a way to record an open gap finding rejected (off the kb's domains) whose _gaps.md entry was removed by an operator decision, so a removed off-kb entry does not leave its finding open (the queue skips a finding without an entry, and the digest counts it open); a test proves it",
+  "repro": {
+    "run": [
+      "grep",
+      "-q",
+      "--",
+      "--reject",
+      "_tools/querylog.py"
+    ]
+  },
+  "touches": [
+    "_tools/ql_research.py",
+    "_tools/querylog.py",
+    "_tools/test_querylog.py",
+    "kb/_self/querylog.md",
+    "kb/_self/tools.md"
+  ]
+}
