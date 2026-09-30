@@ -121,6 +121,43 @@ class TestCensusInGit:
         assert census.split_ref(self.d, ["main", "edit.md"]) == ("main", "edit.md")
 
 
+@requires_git
+class TestHookEnvironment:
+    def test_planted_git_dir_leaves_its_repository_alone(self, tmp_path):
+        """A pre-push hook sets GIT_DIR (and in a worktree GIT_WORK_TREE) for the run it starts. A process that imports
+        conftest, as pytest does before any test, then runs census.repo_dir (its `fetch --force origin
+        +refs/heads/*:refs/heads/*`) leaves the repository those variables name as it was: without conftest's cleanup
+        git follows GIT_DIR and fetches that repository's origin over its branches and tags."""
+        import subprocess, sys
+        from conftest import TOOLS
+
+        def repo(name, text, *branches):
+            r = Repo(tmp_path / name)
+            os.makedirs(r.path)
+            r.git("init", "-q", "-b", branches[0])
+            r.write("a.md", text)
+            r.git("add", "-A")
+            r.git("commit", "-q", "-m", text)
+            for b in branches[1:]:
+                r.git("branch", b)
+            return r
+
+        upstream = repo("upstream", "upstream\n", "main")
+        upstream.git("tag", "v9.9.9")
+        hooked = repo("hooked", "hooked\n", "work", "main")  # its checked-out branch is one upstream lacks
+        hooked.git("remote", "add", "origin", upstream.path)
+        refs = ("for-each-ref", "--format=%(refname) %(objectname)")
+        before = hooked.git(*refs)
+        src = repo("src", "src\n", "main")
+        code = "import sys, conftest, census; d, err = census.repo_dir(sys.argv[1], base=sys.argv[2]); print(d or err)"
+        env = git_env(GIT_DIR=os.path.join(hooked.path, ".git"), GIT_WORK_TREE=hooked.path)
+        p = subprocess.run([sys.executable, "-c", code, src.path, str(tmp_path / "repos")], cwd=TOOLS, env=env,
+                           capture_output=True, text=True, encoding="utf-8", errors="replace")
+        assert p.returncode == 0, p.stdout + p.stderr
+        assert hooked.git(*refs) == before, f"the planted GIT_DIR's repository changed: {p.stdout}{p.stderr}"
+        assert os.path.isdir(os.path.join(p.stdout.strip(), "refs")), p.stdout  # the clone is where census put it
+
+
 class TestCensusLedger:
     @pytest.fixture(scope="class", autouse=True)
     @classmethod

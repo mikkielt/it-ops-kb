@@ -7,6 +7,8 @@ from pyproject.toml's dev group) or `uv run pytest`.
                         is there; `mode=None` writes none), so a distill it starts never delivers to a real remote
   git_env(**extra)      the environment of a git scenario: no global or system git config, a fixed author, and none
                         of the variables that would leak the outer repository, a CI run or a verification date into it
+  GIT_LOCATION          the git variables that name a repository (GIT_DIR, GIT_WORK_TREE, ...): removed from
+                        os.environ at import, so a run a git hook starts never acts on the hook's repository
   copy_kb(dst, skip)    a copy of the kb's working tree without .git, _cache, _private, __pycache__ (and `skip`)
   kb_seed               (fixture) a bare repository of a kb copy, committed once per run and shared by the xdist
                         workers: the origin a git scenario clones
@@ -29,6 +31,16 @@ import pytest
 TOOLS = os.path.dirname(os.path.abspath(__file__))
 KB = os.path.dirname(TOOLS)
 os.environ.pop("KB_ROOTS", None)  # the suite tests this repository; test_kb_root.py sets it per call
+# The variables that point git at one repository: `git rev-parse --local-env-vars` (what git itself unsets when it
+# enters another repository) without its GIT_CONFIG* ones (CI passes safe.directory in GIT_CONFIG_COUNT), plus
+# GIT_NAMESPACE. A git hook sets GIT_DIR (absolute in a worktree), and a run it starts inherits it: every git a test
+# runs, whatever its cwd, would act on the real repository, and census.repo_dir's
+# `fetch --force origin +refs/heads/*:refs/heads/*` would overwrite its branches and tags. So they go before any test.
+GIT_LOCATION = ("GIT_DIR", "GIT_WORK_TREE", "GIT_IMPLICIT_WORK_TREE", "GIT_INDEX_FILE", "GIT_COMMON_DIR",
+                "GIT_OBJECT_DIRECTORY", "GIT_ALTERNATE_OBJECT_DIRECTORIES", "GIT_GRAFT_FILE", "GIT_SHALLOW_FILE",
+                "GIT_REPLACE_REF_BASE", "GIT_NO_REPLACE_OBJECTS", "GIT_PREFIX", "GIT_NAMESPACE")
+for _k in GIT_LOCATION:
+    os.environ.pop(_k, None)
 if TOOLS not in sys.path:
     sys.path.insert(0, TOOLS)
 import kbcommon  # noqa: E402
@@ -51,7 +63,7 @@ SELF_REL = kbcommon.repo_rel(kbcommon.SELF)
 GIT = shutil.which("git")
 requires_git = pytest.mark.skipif(not GIT, reason="git is not installed")
 SOURCES_HEADER = "id,url,title,publisher,licence,reuse,retrieved_utc,version_or_date,artifact_sha256,used_in,superseded_by\n"
-LEAKY = ("KB_VERIFIED", "KB_TESTS_FAST", "CI_COMMIT_SHA", "CI_COMMIT_BEFORE_SHA", "GIT_DIR", "GIT_INDEX_FILE", "GIT_WORK_TREE")
+LEAKY = ("KB_VERIFIED", "KB_TESTS_FAST", "CI_COMMIT_SHA", "CI_COMMIT_BEFORE_SHA", *GIT_LOCATION)
 
 
 def pytest_configure(config):
