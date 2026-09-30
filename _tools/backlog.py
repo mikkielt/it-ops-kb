@@ -553,6 +553,31 @@ def dependents(bl, iid):
     return out
 
 
+def stale_touches(bl):
+    """An error for each open item whose touches names a path without glob characters that the working tree lacks and
+    that has a commit in git log: a file a move or a deletion stranded, so the item's scope (and `done`'s
+    outside-touches refusal) names nothing. A path no commit ever had is a file the item is yet to create: no error."""
+    history = {}
+    out = []
+    for iid, it in bl.items.items():
+        if it.get("kind") == "sprint" or it.get("status") not in OPEN_STATUSES:
+            continue
+        for t in it.get("touches", []) or []:
+            if not isinstance(t, str) or not t or re.search(r"[*?\[]", t) or (bl.root / t).exists():
+                continue
+            if t not in history:
+                try:
+                    r = subprocess.run(["git", "-C", str(bl.root), "log", "-1", "--format=%H", "HEAD", "--", t],
+                                       capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=60)
+                    history[t] = r.returncode == 0 and bool(r.stdout.strip())
+                except (OSError, subprocess.SubprocessError):
+                    history[t] = False
+            if history[t]:
+                out.append(f"{bl.label(iid)}: touches names {t}, which git history has and the working tree lacks "
+                           f"(moved or deleted: name its new path, or drop it from touches)")
+    return out
+
+
 def docs_warnings(bl):
     """An open item whose own touches name code (CODE_DIRS, CODE_FILES) whose kb/_self/map.csv docs are in no open
     item's touches, or only in the touches of items that depend on it (a later task): kb/_self/git.md asks for a code
@@ -1235,7 +1260,7 @@ def cmd_new(bl, a):
 
 def cmd_check(bl, a):
     pieces = host_user_pieces()
-    errs = validate(bl, pieces)
+    errs = validate(bl, pieces) + stale_touches(bl)
     stale = stale_knowledge(bl)
     warns = docs_warnings(bl)
     for x in errs + stale + warns:
