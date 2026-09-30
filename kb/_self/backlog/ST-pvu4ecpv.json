@@ -1,0 +1,9 @@
+{
+  "id": "ST-pvu4ecpv",
+  "kind": "story",
+  "title": "A planner lists the files that name a moved file or symbol",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "One read-only backlog.py command, given a file or symbol a task will move or delete, lists every tracked file that names it (imports, test_layout.py exceptions, test_kbpublic.py role lists, kb/_self CODE pointers and prose, backlog items), so the task's touches hold them before it starts; it answers SP-rks3vx5g, where TK-pwrigavm, TK-uhu2ankm, TK-mose67gs and TK-2qnfbjsx each had their touches widened mid-flight"
+}
