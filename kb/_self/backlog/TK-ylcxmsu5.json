@@ -2,7 +2,7 @@
   "id": "TK-ylcxmsu5",
   "kind": "task",
   "title": "Write the co-change report",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-snby6hcz",
   "priority": "P2",
   "rank": 0,
@@ -22,5 +22,6 @@
   ],
   "touches": [
     "kb/_self/reports/modules.md"
-  ]
+  ],
+  "claimed_by": "worker-ylcxmsu5"
 }
