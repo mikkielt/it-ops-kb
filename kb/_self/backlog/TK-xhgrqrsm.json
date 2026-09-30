@@ -2,7 +2,7 @@
   "id": "TK-xhgrqrsm",
   "kind": "task",
   "title": "benchmarks.py navigation scenario",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-qxyqfpoz",
   "priority": "P2",
   "rank": 0,
@@ -21,5 +21,6 @@
     "_tools/benchmarks.py",
     "_tools/test_benchmarks.py",
     "kb/_self/reports/benchmarks.md"
-  ]
+  ],
+  "claimed_by": "worker-xhgrqrsm"
 }
