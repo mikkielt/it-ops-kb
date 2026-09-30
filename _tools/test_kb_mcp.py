@@ -20,7 +20,8 @@ TestPluginManifest  .claude-plugin/marketplace.json and the two plugins: it-ops-
                 `kbgit.py fix --check` and, for a change to _tools/, the ruff and tools_map tests before a commit. Its
                 dispatch (test_kb_worker_dispatch*): /kb-sprint run starts tasks and subtasks on it with no model
                 override, S1 and S2 bugs and breakdowns on the session model; the review, /kb-census and the
-                runbook agree.
+                runbook agree. Its fallback (test_kb_worker_fallback*): when the Agent tool does not list kb-worker,
+                the skill and the runbook start the task on general-purpose with model sonnet, pointed at its file.
 test_kb_topics_for_imports_arg_*  the imports argument of kb_topics_for and rag.py topics-for --imports reach imports mode
                 (a comment's name finds nothing, a declared package does); only the boolean true switches it; under --roots it
                 goes with text; a planted ignored argument is caught.
@@ -191,6 +192,28 @@ def kb_worker_dispatch_problems(sprint, census, runbook):
                    "sprint review", "`/kb-census`"):
         if phrase not in bullet:
             problems.append(f"the runbook's Working on items does not say {phrase!r} with kb-worker")
+    return problems
+
+
+def kb_worker_fallback_problems(sprint, runbook):
+    """What is wrong with the fallback /kb-sprint run step 3 (`sprint`) and the runbook (`runbook`) give for a
+    session whose Agent tool does not list kb-worker: [] when nothing."""
+    problems = []
+    step3 = re.search(r"(?ms)^3\. Start one subagent.*?(?=^\d+\. )", md_section(sprint, "## run [SP]"))
+    work = md_section(runbook, "## Working on items")
+    for where, text in (("/kb-sprint run step 3", step3.group(0) if step3 else ""),
+                        ("the runbook's Working on items", work)):
+        line = next((l for l in text.splitlines() if "does not list `kb-worker`" in l), "")
+        if not line:
+            problems.append(f"{where} has no fallback for an Agent tool that does not list kb-worker")
+            continue
+        for phrase in ("session start", "general-purpose", "sonnet", "`.claude/agents/kb-worker.md`"):
+            if phrase not in line:
+                problems.append(f"{where}'s kb-worker fallback does not say {phrase!r}")
+        if not re.search(r"`model: \"?sonnet\"?`", line):
+            problems.append(f"{where}'s kb-worker fallback does not pass `model: sonnet`")
+        if "exception" not in line and "the one `model`" not in line:
+            problems.append(f"{where}'s kb-worker fallback does not mark itself the exception to passing no model")
     return problems
 
 
@@ -539,6 +562,31 @@ class TestPluginManifest:
             texts[i] = texts[i].replace(old, new, 1)
             assert texts[i] != [sprint, census, runbook][i], f"plant does not apply: {old!r}"
             assert kb_worker_dispatch_problems(*texts), f"not caught: {old!r} -> {new!r}"
+
+    def test_kb_worker_fallback(self):
+        """Agent files load at session start: when the Agent tool does not list kb-worker, /kb-sprint run and the
+        runbook start the task on general-purpose with model sonnet, briefed with .claude/agents/kb-worker.md."""
+        sprint, _, runbook = self.dispatch_texts()
+        assert kb_worker_fallback_problems(sprint, runbook) == []
+
+    def test_kb_worker_fallback_planted_failures(self):
+        """Each rule fails on a planted copy of the skill or the runbook."""
+        sprint, _, runbook = self.dispatch_texts()
+        plants = [
+            (0, "does not list `kb-worker`", "lists no workers"),
+            (0, '`model: "sonnet"`', "the session model"),
+            (0, "points the worker at `.claude/agents/kb-worker.md`", "briefs the worker"),
+            (0, "The one exception, a fallback", "A fallback"),
+            (1, "does not list `kb-worker`", "lists no workers"),
+            (1, "`general-purpose` with `model: sonnet`", "`general-purpose`"),
+            (1, "points the worker at `.claude/agents/kb-worker.md`", "briefs the worker"),
+            (1, "at session start", "late"),
+        ]
+        for i, old, new in plants:
+            texts = [sprint, runbook]
+            texts[i] = texts[i].replace(old, new, 1)
+            assert texts[i] != [sprint, runbook][i], f"plant does not apply: {old!r}"
+            assert kb_worker_fallback_problems(*texts), f"not caught: {old!r} -> {new!r}"
 
     def test_shipped_texts_mark_rag_py_as_clone_only(self):
         """A host has no _tools/rag.py on its path: the server's texts and the agents never name it, and the skills
