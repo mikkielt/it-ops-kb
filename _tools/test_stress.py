@@ -254,6 +254,17 @@ def unreadable(d):
     os.chmod(os.path.join(d, P("ad/secret.md")), 0)
 
 
+def symlink(src, dst):
+    """os.symlink, or a skip where Windows denies it: a standard user without Developer Mode lacks the privilege to
+    create symbolic links (WinError 1314), so the mutation cannot be planted there; any other error still fails."""
+    try:
+        os.symlink(src, dst)
+    except OSError as e:
+        if getattr(e, "winerror", None) == 1314:
+            pytest.skip(f"no symbolic links for this user (WinError 1314, Windows without Developer Mode): {e}")
+        raise
+
+
 MUTATIONS = [  # (name, mutate(copy), [(tool, args, rc[, expect[, check]]), ...])
     ("invalid UTF-8 .md", lambda d: write(d, P("ad/bad.md"), b"---\ntopic: ad/bad\n---\n# x \xff\xfe kerberos\n"), [
         ("rag.py", ["search", "kerberos"], 0), ("rag.py", ["topics", "ad"], 0),
@@ -292,9 +303,9 @@ MUTATIONS = [  # (name, mutate(copy), [(tool, args, rc[, expect[, check]]), ...]
         ("fetch.py", ["--offline"], 1, "MISMATCH"), ("check.py", [], 0)]),
     ("pinned artifact replaced by a directory", to_dir, [
         ("fetch.py", ["--offline"], 1, "is a directory"), ("check.py", [], 1, "is missing")]),
-    ("symlink loop", lambda d: os.symlink(os.path.join(d, P("ad")), os.path.join(d, P("ad"), "loop")), [
+    ("symlink loop", lambda d: symlink(os.path.join(d, P("ad")), os.path.join(d, P("ad"), "loop")), [
         ("rag.py", ["search", "kerberos"], 0), ("rag.py", ["topics"], 0), ("check.py", [], 0)]),
-    ("symlink to /etc", lambda d: os.symlink("/etc", os.path.join(d, P("ad"), "etc")), [
+    ("symlink to /etc", lambda d: symlink("/etc", os.path.join(d, P("ad"), "etc")), [
         ("rag.py", ["search", "kerberos"], 0), ("rag.py", ["show", "ad/etc/hosts"], 1, "outside the kb")]),
     pytest.param("unreadable .md", unreadable, [
         ("rag.py", ["search", "kerberos"], 0, "skipped " + Q("ad/secret.md")), ("rag.py", ["topics", "ad"], 0),
@@ -389,6 +400,25 @@ def test_mutation(tmp_path, name, mutate, calls):
         if why:
             failed.append(f"{tool} {' '.join(args)[:80]}: {'; '.join(why)}")
     assert not failed, "\n".join(failed)
+
+
+def test_symlink_mutations_skip_without_the_privilege(tmp_path, monkeypatch):
+    """Planted: os.symlink denied as for a standard Windows user (WinError 1314). Each symlink mutation skips with the
+    reason instead of failing; an error of another kind still fails it."""
+    denied = OSError(1, "A required privilege is not held by the client", None, 1314)
+    if getattr(denied, "winerror", None) is None:
+        denied.winerror = 1314  # POSIX: OSError has no winerror field of its own
+    raised = [denied]
+    monkeypatch.setattr(os, "symlink", lambda *a, **k: (_ for _ in ()).throw(raised[0]))
+    monkeypatch.setattr(sys.modules[__name__], "copy_kb", lambda tmp, name: str(tmp))  # the mutation fails first
+    cases = [m for m in MUTATIONS if isinstance(m, tuple) and str(m[0]).startswith("symlink")]
+    assert [c[0] for c in cases] == ["symlink loop", "symlink to /etc"]
+    for name, mutate, calls in cases:
+        with pytest.raises(pytest.skip.Exception, match="WinError 1314"):
+            test_mutation(tmp_path, name, mutate, calls)
+    raised[0] = PermissionError(13, "Access is denied")  # not the missing privilege: no skip
+    with pytest.raises(PermissionError):
+        test_mutation(tmp_path, *cases[0])
 
 
 # ---------------------------------------------------------------- generated index files: build_index.py
