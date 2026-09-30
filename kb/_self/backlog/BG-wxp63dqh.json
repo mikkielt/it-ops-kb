@@ -1,0 +1,43 @@
+{
+  "id": "BG-wxp63dqh",
+  "kind": "bug",
+  "title": "The focused gate misses live-kb tests, repo-wide scans and deleted test files",
+  "status": "doing",
+  "parent": "EP-hlnsqx4f",
+  "sprint": "SP-ddjk2p5l",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "testmap.py's content lane also selects test_route.py::TestRouteEvalSet, test_kb_mcp.py::TestKbServer, test_kbfacts_imports.py and test_kb.py::TestToolChecks; every selection short of all includes test_kb.py::TestLeaks, backlog items included; a changed tool module also selects test_kb.py::TestCohesion; README.md, AGENTS.md and CLAUDE.md make the gate run check.py; a deleted test file or runner selects nothing instead of a missing path; .claude/settings.json selects test_change_router.py; and test_testmap.py's testmap_review_gaps tests plant each case.",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/tests.py",
+      "-k",
+      "testmap_review_gaps"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "testmap"
+      ],
+      "exit": 0
+    }
+  ],
+  "touches": [
+    "_tools/testmap.py",
+    "_tools/test_testmap.py",
+    "_tools/kbgit.py",
+    "kb/_self/tools.md",
+    "kb/_self/git.md"
+  ],
+  "links": [
+    "ST-hwk2acoz sprint review (fresh-context reviewer, 2026-09-30)"
+  ],
+  "notes": "Found by the sprint review of SP-ddjk2p5l “Focused gate”: tests outside test_kb.py assert on the live kb (route eval set, kb_mcp server answers, the kb's signals.csv); the leak scan, ruff and the contract lint live in test_kb.py and were selected only for content paths; check.py also validates the root README.md and AGENTS.md; a deleted test file was passed to pytest as a missing path (exit 4); .claude/settings.json was a generic name.",
+  "claimed_by": "win-second"
+}

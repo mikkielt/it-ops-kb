@@ -1,0 +1,41 @@
+{
+  "id": "BG-rnjrtep7",
+  "kind": "bug",
+  "title": "The SessionStart hook and /kb-verify still describe the old full gate",
+  "status": "doing",
+  "parent": "EP-hlnsqx4f",
+  "sprint": "SP-ddjk2p5l",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": ".claude/hooks/session_start.py tells a new session the gate is kbgit.py sync with tests.py --changed (no 60 s full-gate claim), /kb-verify says which checks run only when their tests are selected, and test_kb.py's session_start_names_the_focused_gate test fails on the old wording.",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/tests.py",
+      "-k",
+      "session_start_names_the_focused_gate"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "session_start_names_the_focused_gate"
+      ],
+      "exit": 0
+    }
+  ],
+  "touches": [
+    ".claude/hooks/session_start.py",
+    ".claude/skills/kb-verify/SKILL.md",
+    "_tools/test_kb.py"
+  ],
+  "links": [
+    "ST-hwk2acoz sprint review (fresh-context reviewer, 2026-09-30)"
+  ],
+  "notes": "Found by the sprint review of SP-ddjk2p5l “Focused gate”: session_start.py still printed the old 60 s full gate with tests.py and stress_test.py for every commit.",
+  "claimed_by": "win-second"
+}
