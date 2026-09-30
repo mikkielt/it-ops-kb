@@ -2,7 +2,7 @@
   "id": "BG-2ncicfwa",
   "kind": "bug",
   "title": "Research closes a gap at claim without a Resolved note, so queue exits 1",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-mzzucemv",
   "sprint": "SP-4slunkaj",
   "priority": "P2",
@@ -34,5 +34,6 @@
     "_tools/test_querylog.py",
     "_tools/test_querylog_e2e.py",
     "kb/_self/querylog.md"
-  ]
+  ],
+  "claimed_by": "worker-2ncicfwa"
 }
