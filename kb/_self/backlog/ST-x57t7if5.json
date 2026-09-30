@@ -2,7 +2,7 @@
   "id": "ST-x57t7if5",
   "kind": "story",
   "title": "Review sprint: Windows clone complete",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-76inhw33",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "orchestrator-SP-76inhw33"
+  "evidence": {
+    "commit": "be7875fbd78e0a336f2f0071be9f6317a2da9a7f",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "cc53033421e0726d"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "f1998eb6ceb9f9be"
+      }
+    ]
+  }
 }
