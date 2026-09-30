@@ -2,7 +2,7 @@
   "id": "BG-gtaptd26",
   "kind": "bug",
   "title": "next lists a task as ready while its story waits on an undone dependency",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-rks3vx5g",
   "priority": "P2",
   "rank": 0,
@@ -30,5 +30,6 @@
     "_tools/backlog.py",
     "_tools/test_backlog.py",
     "kb/_self/backlog.md"
-  ]
+  ],
+  "claimed_by": "worker-gtaptd26"
 }
