@@ -2,7 +2,7 @@
   "id": "BG-zxensn4o",
   "kind": "bug",
   "title": "A server limited to one small root answers coverage none although the root holds the answer",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-5sc7hr36",
   "sprint": "SP-vpk5nrrc",
   "priority": "P2",
@@ -39,5 +39,38 @@
     "_tools/kbfacts.py",
     "_tools/test_kb_root.py"
   ],
-  "claimed_by": "worker-zxensn4o"
+  "evidence": {
+    "commit": "d595b1c06bef47eb2bdb5f1845c6c33d5d43aafb",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "embed_roots_small_root_is_good"
+        ],
+        "exit": 0,
+        "sha256": "13d390fca67603ed"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/rag.py",
+          "eval"
+        ],
+        "exit": 0,
+        "sha256": "94e600c67fda2afd"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "embed_roots_small_root_is_good"
+        ],
+        "exit": 0,
+        "sha256": "0044d9add5b16831"
+      }
+    ]
+  }
 }
