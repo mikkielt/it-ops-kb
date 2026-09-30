@@ -921,13 +921,31 @@ def scrub_env(base=None, windows=None, root=None):
     return env
 
 
+def which(tool, path):
+    """The absolute path of the program TOOL in the folders of the PATH string, in order, or None. Only those folders:
+    on Windows shutil.which searches this process's working folder first unless NoDefaultCurrentDirectoryInExePath is
+    in this process's own environment (scrub_env sets it in the child's only), and that folder can be the repository
+    being mapped (`map .`, the source clone in plugin mode). Each entry is searched as a folder of its own, which
+    shutil.which never prefixes with the working folder; an empty entry (the working folder on POSIX) is skipped. A TOOL
+    with a folder part is taken only when that part is absolute."""
+    if os.path.dirname(tool):
+        exe = shutil.which(tool) if os.path.isabs(tool) else None
+        return os.path.abspath(exe) if exe else None
+    for entry in (path or "").split(os.pathsep):
+        if entry:
+            exe = shutil.which(os.path.join(entry, tool))
+            if exe is not None:
+                return os.path.abspath(exe)  # a relative entry is relative to this process, never to the child's CWD
+    return None
+
+
 def tool_exe(tool, env, root):
     """(the program TOOL is on ENV's PATH, whether it lies inside ROOT): None when it is not found. A program that is
     inside the worktree is the repository's own (a `node_modules/.bin` entry on PATH), and a mapper never runs it."""
-    exe = shutil.which(tool, path=env.get("PATH"))
+    exe = which(tool, env.get("PATH"))
     if exe is None:
         return None, False
-    return exe, under_worktree(os.path.abspath(exe), root)
+    return exe, under_worktree(exe, root)
 
 
 class Run(NamedTuple):
@@ -956,10 +974,9 @@ def run_tool(args, cwd, env, timeout):
     """Run an argument list (never a shell) in CWD with ENV and a TIMEOUT in seconds; the process group dies with it.
     A program not found on ENV's PATH is `missing`, not an error. An interrupt (any BaseException while it waits)
     kills the process group too, then propagates."""
-    exe = shutil.which(args[0], path=env.get("PATH"))
+    exe = which(args[0], env.get("PATH"))  # never this process's working folder, whatever the platform
     if exe is None:
         return Run(127, b"", b"", missing=True)
-    exe = os.path.abspath(exe)  # a relative PATH entry is relative to this process, never to CWD (the repository's tree)
     kw = {"start_new_session": True} if os.name == "posix" else {"creationflags": subprocess.CREATE_NEW_PROCESS_GROUP}
     try:
         proc = subprocess.Popen([exe, *args[1:]], cwd=str(cwd), env=env, stdin=subprocess.DEVNULL,
