@@ -1,8 +1,8 @@
 """The change router hook (.claude/hooks/kb_change_router.py): a request to change the kb is routed to its skill
 (`python3 _tools/tests.py -k router`).
 
-Routing by the prompt's words; questions, kb: prompts and slash commands pass unchanged; every routed skill exists and
-is model-invocable; the hook is registered in .claude/settings.json and never shipped in the plugin; stdin/stdout JSON.
+Routing by the prompt's words; questions, kb: prompts, slash commands and prompts whose words name no change skill pass
+unchanged; a skill set is named once per session; every routed skill exists and is model-invocable; the hook is registered in .claude/settings.json and never shipped in the plugin; stdin/stdout JSON.
 """
 import glob, importlib.util, json, os, re, subprocess, sys
 
@@ -24,6 +24,7 @@ def likely(prompt):
 @pytest.mark.parametrize("prompt, skill", [
     ("update the Kerberos facts, S1216 changed", "kb-refresh"),
     ("refresh auth/kerberos", "kb-refresh"),
+    ("please update the Intune scope tags article", "kb-refresh"),
     ("add a new topic on Intune scope tags", "kb-add-topic"),
     ("create a new root for our MDM team's knowledge", "kb-add-root"),
     ("source ~/src/deploy and put it here", "kb-ingest"),
@@ -97,15 +98,11 @@ def test_hook_protocol():
         assert (p.returncode, p.stdout) == (0, ""), p.stderr
 
 
-@pytest.mark.parametrize("prompt", ["add a new topic on Intune scope tags", "please improve things"])
-def test_routes_to_sections_not_the_whole_maintaining_doc(prompt):
-    """A change is sent to the "Conduct for changes" section, and the skill list only to pick a skill: never to
-    kb/_self/maintaining.md as a whole file."""
-    text = router.answer(prompt)["hookSpecificOutput"]["additionalContext"]
+def test_routes_to_sections_not_the_whole_maintaining_doc():
+    """A change is sent to the "Conduct for changes" section, never to kb/_self/maintaining.md as a whole file."""
+    text = router.answer("add a new topic on Intune scope tags")["hookSpecificOutput"]["additionalContext"]
     assert "maintaining.md" not in text, text
     assert 'python3 _tools/selfdoc.py section maintaining "Conduct for changes"' in text, text
-    if "none named by the wording" in text:
-        assert 'section maintaining "Skills that change the kb"' in text, text
 
 
 def test_named_sections_exist():
@@ -114,7 +111,55 @@ def test_named_sections_exist():
     import selfdoc
     agents = open(os.path.join(KB, "AGENTS.md"), encoding="utf-8").read()
     assert "`kb/_self/maintaining.md`" not in agents, "AGENTS.md sends a change to the whole of maintaining.md"
-    for cmd in (router.CONDUCT, router.SKILLS):
-        heading = re.search(r'"([^"]+)"', cmd).group(1)
+    for heading in (re.search(r'"([^"]+)"', router.CONDUCT).group(1), "Skills that change the kb"):
+        cmd = f'python3 _tools/selfdoc.py section maintaining "{heading}"'
         assert selfdoc.section("maintaining", heading)[0], f"no section {heading!r} in kb/_self/maintaining.md"
         assert cmd.strip("`") in agents or heading in agents, f"AGENTS.md does not name the section {heading!r}"
+
+
+@pytest.mark.parametrize("prompt", ["please improve things", "update it", "change that please"])
+def test_change_router_once_silent_without_a_match(prompt, tmp_path):
+    """A change verb whose words name no change skill adds nothing: no generic "pick a skill" line."""
+    assert router.routes(prompt) == [] and router.answer(prompt) is None
+    assert router.emit({"prompt": prompt, "session_id": "s1"}, str(tmp_path)) is None
+    assert not os.listdir(tmp_path), "a prompt that routes nowhere leaves no marker"
+
+
+def test_change_router_once_per_session(tmp_path):
+    """A skill set is named once per session: the follow-up "commit it" adds no repeat context, another set or another
+    session is named again, and a session id unsafe as a file name (or none) keeps no marker."""
+    m = str(tmp_path)
+    first = router.emit({"prompt": "commit and push this", "session_id": "s1"}, m)
+    assert "/kb-git-sync (" in first["hookSpecificOutput"]["additionalContext"]
+    assert router.emit({"prompt": "commit it", "session_id": "s1"}, m) is None
+    assert router.emit({"prompt": "commit it", "session_id": "s2"}, m) == first
+    assert router.emit({"prompt": "refresh auth/kerberos", "session_id": "s1"}, m) is not None
+    assert router.emit({"prompt": "refresh auth/kerberos and commit it", "session_id": "s1"}, m) is not None
+    assert router.emit({"prompt": "commit it", "session_id": "../x"}, m) is not None
+    assert router.emit({"prompt": "commit it"}, m) is not None
+    assert sorted(os.listdir(m)) == ["s1.txt", "s2.txt"]
+
+
+def test_change_router_once_marker_errors_never_block(tmp_path):
+    """A marker directory that cannot be created (a file stands in its place) still gives the answer."""
+    blocked = tmp_path / "file"
+    blocked.write_text("x", encoding="utf-8")
+    for _ in range(2):
+        assert router.emit({"prompt": "commit it", "session_id": "s1"}, str(blocked / "markers")) is not None
+
+
+def test_change_router_once_hook_protocol():
+    """Through stdin: a session's second "commit it" prints nothing; the marker lives under _cache/change_router/."""
+    sid = f"test-once-{os.getpid()}"
+    marker = os.path.join(router.MARKERS, sid + ".txt")
+    assert router.MARKERS == os.path.join(KB, "_cache", "change_router")
+    run = lambda: subprocess.run([sys.executable, HOOK], input=json.dumps({"prompt": "commit it", "session_id": sid}),  # noqa: E731
+                                 capture_output=True, text=True, encoding="utf-8", timeout=30)
+    try:
+        first, second = run(), run()
+        assert first.returncode == 0 and "/kb-git-sync" in json.loads(first.stdout)["hookSpecificOutput"]["additionalContext"]
+        assert (second.returncode, second.stdout) == (0, ""), second.stderr
+        assert os.path.isfile(marker)
+    finally:
+        if os.path.exists(marker):
+            os.remove(marker)
