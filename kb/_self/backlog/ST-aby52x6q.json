@@ -2,7 +2,7 @@
   "id": "ST-aby52x6q",
   "kind": "story",
   "title": "Agents and the change router name the Conduct for changes section, not all of maintaining.md",
-  "status": "draft",
+  "status": "doing",
   "parent": "EP-hsyx42zz",
   "sprint": "SP-bno4xpft",
   "priority": "P1",
@@ -37,5 +37,6 @@
       "answer": "approve",
       "by": "operator"
     }
-  ]
+  ],
+  "claimed_by": "worker-aby52x6q"
 }

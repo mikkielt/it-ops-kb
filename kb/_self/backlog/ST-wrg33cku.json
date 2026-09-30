@@ -2,7 +2,7 @@
   "id": "ST-wrg33cku",
   "kind": "story",
   "title": "kb-research and kb-refresh cite content-rules sections, not whole files",
-  "status": "draft",
+  "status": "doing",
   "parent": "EP-hsyx42zz",
   "sprint": "SP-bno4xpft",
   "priority": "P1",
@@ -20,5 +20,6 @@
   "touches": [
     ".claude/skills/kb-research/SKILL.md",
     ".claude/skills/kb-refresh/SKILL.md"
-  ]
+  ],
+  "claimed_by": "worker-wrg33cku"
 }

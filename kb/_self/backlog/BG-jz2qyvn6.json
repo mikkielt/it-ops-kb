@@ -2,7 +2,7 @@
   "id": "BG-jz2qyvn6",
   "kind": "bug",
   "title": "kb-worker.md still tells a sprint subagent to read maintaining.md and backlog.md whole",
-  "status": "draft",
+  "status": "doing",
   "sprint": "SP-bno4xpft",
   "priority": "P2",
   "rank": 0,
@@ -26,5 +26,6 @@
   ],
   "touches": [
     ".claude/agents/kb-worker.md"
-  ]
+  ],
+  "claimed_by": "worker-jz2qyvn6"
 }

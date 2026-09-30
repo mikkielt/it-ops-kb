@@ -2,7 +2,7 @@
   "id": "ST-mr4ua2ge",
   "kind": "story",
   "title": "kb-backlog names the runbook sections it needs, not the whole runbook",
-  "status": "draft",
+  "status": "doing",
   "parent": "EP-hsyx42zz",
   "sprint": "SP-bno4xpft",
   "priority": "P1",
@@ -19,5 +19,6 @@
   ],
   "touches": [
     ".claude/skills/kb-backlog/SKILL.md"
-  ]
+  ],
+  "claimed_by": "worker-mr4ua2ge"
 }
