@@ -20,8 +20,8 @@ Whenever you name an item (in chat, a question, a subagent brief, a commit), giv
 
 ## plan "<goal>"
 1. Run `python3 _tools/backlog.py new sprint --title T --goal G`. It creates the sprint, its blocking `start` gate and its review story.
-2. Pick the stories and bugs with `python3 _tools/backlog.py tree` and `python3 _tools/backlog.py list --kind bug`: every `S1` and `P1`, then by priority and rank, as far as the goal needs. Set `"sprint"` on each. Break stories into tasks as `/kb-backlog` does, with `touches` and `checks`.
-3. `fmt` and `check`, then `python3 _tools/backlog.py horizon --sprint SP` (it shows the start gate as the one thing everything waits on).
+2. Pick the stories and bugs with `python3 _tools/backlog.py tree` and `python3 _tools/backlog.py list --kind bug`: every `S1` and `P1`, then by priority and rank, as far as the goal needs. Set `"sprint"` on each. Break stories into tasks as `/kb-backlog` does, with `touches` and `checks`; a task that changes code carries the `kb/_self/` docs `kb/_self/map.csv` maps to it in its own `touches`, not a later docs task.
+3. `fmt` and `check` (no warning about a committed item's docs: add the docs it names to that item's `touches`), then `python3 _tools/backlog.py horizon --sprint SP` (it shows the start gate as the one thing everything waits on).
 4. Ask the operator to approve the goal and the committed items (AskUserQuestion: approve / change / cancel). Show each item's id and title and the gates they will meet.
 
 ## start SP

@@ -223,6 +223,55 @@ def test_check_finds_planted_errors(sprint):
     assert f"{sprint['tk']} “Task”" in out  # an id is never printed without its title
 
 
+DOC_MAP = "doc,pattern\nkb/_self/tools.md,_tools/x.py\nkb/_self/plugin.md,.claude-plugin/**\n"
+
+
+@pytest.fixture
+def mapped(sprint):
+    """The sprint with a kb/_self/map.csv: tools.md describes _tools/x.py, plugin.md all of .claude-plugin/."""
+    repo = sprint["repo"]
+    (repo / "kb" / "_self").mkdir(parents=True, exist_ok=True)
+    (repo / "kb" / "_self" / "map.csv").write_text(DOC_MAP, encoding="utf-8", newline="\n")
+    (repo / ".claude-plugin").mkdir()
+    (repo / ".claude-plugin" / "plugin.json").write_text("{}\n", encoding="utf-8", newline="\n")
+    commit(repo, "map")
+    return sprint
+
+
+def test_check_warns_touches_miss_docs(mapped):
+    """Planted: a task whose touches name mapped code (a literal path and a glob) and none of its docs; check warns,
+    naming them, and exits 0. Its docs in the task's own touches clear the warning."""
+    repo, tk = mapped["repo"], mapped["tk"]
+    code, out = b(repo, "check")
+    assert code == 0 and "warnings=0" in out, out
+    edit(repo, tk, touches=["_tools/x.py", ".claude-plugin/*.json"])
+    code, out = b(repo, "check")
+    assert code == 0 and "errors=0" in out and "warnings=1" in out, out
+    assert (f"{tk} “Task”: touches code whose kb/_self/map.csv docs are in no item's touches: "
+            f"kb/_self/plugin.md, kb/_self/tools.md") in out, out
+    edit(repo, tk, touches=["_tools/x.py", ".claude-plugin/*.json", "kb/_self/tools.md", "kb/_self/plugin.md"])
+    code, out = b(repo, "check")
+    assert code == 0 and "warnings=0" in out, out
+
+
+def test_check_warns_docs_in_later_task(mapped):
+    """Planted: the code's doc only in a task that depends on the code task (a later task); check warns, naming the
+    doc and that task. The same doc in an item that does not depend on it is no warning."""
+    repo, st, tk = mapped["repo"], mapped["st"], mapped["tk"]
+    edit(repo, tk, touches=["_tools/x.py"])
+    b(repo, "new", "task", "--title", "Docs", "--parent", st, "--goal", "docs", "--touch", "kb/_self/tools.md",
+      "--depends", tk, "--check", argstr(PASS))
+    docs = item(repo, "Docs")["id"]
+    code, out = b(repo, "check")
+    assert code == 0 and "warnings=1" in out, out
+    assert (f"{tk} “Task”: the docs of its code are only in a later task's touches, {docs} “Docs” "
+            f"(it depends on this one): kb/_self/tools.md") in out, out
+    assert "in no item's touches" not in out, out
+    edit(repo, docs, depends_on=[])
+    code, out = b(repo, "check")
+    assert code == 0 and "warnings=0" in out, out
+
+
 def test_task_needs_parent_and_touches(repo):
     b(repo, "new", "epic", "--title", "E", "--goal", "g")
     code, out = b(repo, "new", "task", "--title", "Orphan", "--goal", "g")

@@ -499,6 +499,89 @@ def stale_knowledge(bl):
     return [x for iid in bl.items for x in knowledge_check(bl, iid)[1]]
 
 
+# ------------------------------------------------------------------ code and its docs
+
+CODE_DIRS = ("_tools/", ".claude/", ".claude-plugin/")  # with CODE_FILES: the paths whose change needs /kb-self
+CODE_FILES = (".gitlab-ci.yml",)
+OPEN_STATUSES = ("draft", "todo", "doing")
+
+
+def is_code(path):
+    return path in CODE_FILES or path.startswith(CODE_DIRS)
+
+
+def tracked_files(root):
+    try:
+        r = subprocess.run(["git", "-C", str(root), "ls-files"], capture_output=True, text=True, encoding="utf-8",
+                           errors="replace", timeout=60)
+    except (OSError, subprocess.SubprocessError):
+        return []
+    return r.stdout.splitlines() if r.returncode == 0 else []
+
+
+def dependents(bl, iid):
+    """The items that depend on iid, directly or through another item (later work)."""
+    out, todo = set(), [iid]
+    while todo:
+        cur = todo.pop()
+        for i, it in bl.items.items():
+            if cur in it.get("depends_on", []) and i not in out and i != iid:
+                out.add(i)
+                todo.append(i)
+    return out
+
+
+def docs_warnings(bl):
+    """An open item whose own touches name code (CODE_DIRS, CODE_FILES) whose kb/_self/map.csv docs are in no open
+    item's touches, or only in the touches of items that depend on it (a later task): kb/_self/git.md asks for a code
+    change's doc lines in the same commit, and sync's selfdoc stale gate refuses the push without them. The item's own
+    scope (its touches and its descendants') covers a doc; a missing or unreadable map gives no warning."""
+    import selfdoc
+    try:
+        docmap = selfdoc.load_map(str(bl.root))
+    except selfdoc.SelfdocError:
+        return []
+    files = None
+    literal = [p for pats in docmap.values() for p in pats if not re.search(r"[*?]", p)]
+    open_ids = [i for i, it in bl.items.items() if it.get("kind") != "sprint" and it.get("status") in OPEN_STATUSES]
+    out = []
+    for iid in open_ids:
+        paths = set()
+        for t in bl.items[iid].get("touches", []) or []:
+            if not isinstance(t, str) or not t:
+                continue
+            if not re.search(r"[*?]", t):
+                paths.add(t)
+                continue
+            if files is None:
+                files = tracked_files(bl.root)
+            rx = glob_re(t)
+            paths |= {p for p in list(files) + literal if rx.match(p)}
+        code = sorted(p for p in paths if is_code(p))
+        if not code:
+            continue
+        own = scope(bl, iid)
+        later = dependents(bl, iid)
+        missing, deferred = [], {}
+        for doc in sorted(selfdoc.describing(docmap, code)):
+            if in_scope(doc, own):
+                continue
+            holders = [i for i in open_ids if i != iid and in_scope(doc, bl.items[i].get("touches", []) or [])]
+            if not holders:
+                missing.append(doc)
+            elif all(h in later for h in holders):
+                for h in holders:
+                    deferred.setdefault(h, []).append(doc)
+        if missing:
+            out.append(f"{bl.label(iid)}: touches code whose kb/_self/map.csv docs are in no item's touches: "
+                       f"{', '.join(missing)} (add them to this item's touches: kb/_self/git.md, code and its docs "
+                       f"land in one commit)")
+        for h, docs in sorted(deferred.items()):
+            out.append(f"{bl.label(iid)}: the docs of its code are only in a later task's touches, "
+                       f"{bl.label(h)} (it depends on this one): {', '.join(docs)} (move them to this item's touches)")
+    return out
+
+
 # ------------------------------------------------------------------ knowledge state
 
 STATES = ("sufficient", "partial", "unknown", "stale", "conflicting")
@@ -1080,9 +1163,10 @@ def cmd_check(bl, a):
     pieces = host_user_pieces()
     errs = validate(bl, pieces)
     stale = stale_knowledge(bl)
-    for x in errs + stale:
+    warns = docs_warnings(bl)
+    for x in errs + stale + warns:
         say(withhold_names(x, pieces))  # an error that quotes an item's text never prints a name either
-    say(f"backlog check: items={len(bl.items)} errors={len(errs)} stale={len(stale)}")
+    say(f"backlog check: items={len(bl.items)} errors={len(errs)} stale={len(stale)} warnings={len(warns)}")
     return 1 if errs else 0
 
 

@@ -28,10 +28,11 @@ Whenever you name an item (in chat, a question, a commit), give its id and its t
    - an epic states the outcome;
    - each story is one verifiable capability that lands in one push, with a `goal` and `checks` (argv lists, no shell);
    - each task is one commit, with `touches` globs as narrow as the work allows;
+   - a task whose `touches` name code (`_tools/`, `.claude/`, `.claude-plugin/`, `.gitlab-ci.yml`) also names the `kb/_self/` docs that `kb/_self/map.csv` maps to that code (the rows whose pattern matches it), in the same task, never a later docs task that depends on it: `kb/_self/git.md` asks for them in the same commit, and sync's `selfdoc stale` gate refuses the push without them. `backlog.py check` warns about both misses, naming the docs;
    - `depends_on` wherever order matters;
    - a gate for each question only the operator can settle (the always-blocking list is in "Dependencies, gates and triggers"), with options and a recommendation.
 5. New stories and bugs stay `draft` and outside any sprint unless the operator says which sprint.
-6. `python3 _tools/backlog.py fmt`, then `python3 _tools/backlog.py check` must print `errors=0`.
+6. `python3 _tools/backlog.py fmt`, then `python3 _tools/backlog.py check` must print `errors=0`, and no warning about a new item's docs.
 7. Show the result with `python3 _tools/backlog.py tree <epic>` and say what is still open.
 
 ## Epic ("<outcome>")
