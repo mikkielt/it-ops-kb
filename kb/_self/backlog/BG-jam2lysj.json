@@ -27,7 +27,8 @@
   ],
   "touches": [
     "_tools/backlog.py",
-    "_tools/test_backlog.py"
+    "_tools/test_backlog.py",
+    "kb/_self/backlog.md"
   ],
   "claimed_by": "sprint-4fbfzobr-w2"
 }
