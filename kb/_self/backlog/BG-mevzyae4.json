@@ -2,7 +2,8 @@
   "id": "BG-mevzyae4",
   "kind": "bug",
   "title": "kbgit.py publish recomputes the whole projection on every run, most of the hook's 60 s on a long history",
-  "status": "draft",
+  "status": "doing",
+  "sprint": "SP-v5xagbyv",
   "priority": "P2",
   "rank": 0,
   "severity": "S2",
@@ -19,5 +20,6 @@
     "_tools/kbpublic.py",
     "_tools/test_kbpublic.py",
     "kb/_self/git.md"
-  ]
+  ],
+  "claimed_by": "worker-mevzyae4"
 }
