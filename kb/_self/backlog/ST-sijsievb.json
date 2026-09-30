@@ -2,8 +2,9 @@
   "id": "ST-sijsievb",
   "kind": "story",
   "title": "backlog.py check refuses an item that holds this host's computer or user name",
-  "status": "draft",
+  "status": "doing",
   "parent": "EP-5p4ahbnq",
+  "sprint": "SP-2agxqrrv",
   "priority": "P1",
   "rank": 0,
   "goal": "backlog.py check (and so the push gate) reads this host's computer and user names from the environment and refuses a backlog item holding a piece of either, naming the item and never printing the name; kb/_self/backlog.md says checks that guard against names read them from the environment. Failure it answers (SP-hlfwfcx6 retrospective): BG-477tasb3: checks written to keep the names out of a report spelled pieces of them, and the leak scan (addresses, tokens, GUIDs) does not look for names, so publish took them to the public home.",
@@ -16,5 +17,12 @@
         "item_holds_host_names"
       ]
     }
-  ]
+  ],
+  "touches": [
+    "_tools/backlog.py",
+    "_tools/test_backlog.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "claimed_by": "win-first-sij"
 }

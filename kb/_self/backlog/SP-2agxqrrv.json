@@ -1,0 +1,22 @@
+{
+  "id": "SP-2agxqrrv",
+  "kind": "sprint",
+  "title": "Retrospective guards",
+  "status": "active",
+  "goal": "backlog.py check refuses an item holding this host's computer or user name, backlog.py new refuses a repro that fails for its own error, and the content rules and kb-verify lint say how an observed run becomes a fact.",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve",
+      "answer": "approve",
+      "by": "operator"
+    }
+  ]
+}
