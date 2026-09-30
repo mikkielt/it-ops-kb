@@ -2,7 +2,7 @@
   "id": "ST-gaqsd3d7",
   "kind": "story",
   "title": "A task that adds a read-only command a skill calls carries its allow rules",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ar52y6fk",
   "priority": "P2",
   "rank": 0,
@@ -20,5 +20,6 @@
     ".claude/skills/kb-backlog/SKILL.md",
     "kb/_self/backlog.md"
   ],
-  "notes": "Failure it answers (SP-mqjeanq3 retrospective): selfdoc.py section shipped and the skills call it, but .claude/settings.json got no allow rule, so every section read asks for permission (BG-as65f4wv, filed by the TK-22gyfp2h worker and left in the backlog). A second failure (SP-qdq57zu3 retrospective): the allow rule added for selfdoc.py section let it read files outside the clone without a prompt until the review found it (BG-kqtygmvv)."
+  "notes": "Failure it answers (SP-mqjeanq3 retrospective): selfdoc.py section shipped and the skills call it, but .claude/settings.json got no allow rule, so every section read asks for permission (BG-as65f4wv, filed by the TK-22gyfp2h worker and left in the backlog). A second failure (SP-qdq57zu3 retrospective): the allow rule added for selfdoc.py section let it read files outside the clone without a prompt until the review found it (BG-kqtygmvv).",
+  "claimed_by": "orchestrator-SP-ar52y6fk"
 }

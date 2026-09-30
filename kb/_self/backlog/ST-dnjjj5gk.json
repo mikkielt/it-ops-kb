@@ -2,7 +2,7 @@
   "id": "ST-dnjjj5gk",
   "kind": "story",
   "title": "Checks that parse forge output use a recorded real sample",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ar52y6fk",
   "priority": "P2",
   "rank": 0,
@@ -23,5 +23,19 @@
     "_tools/test_querylog.py",
     "kb/_self/backlog.md"
   ],
-  "claimed_by": "worker-dnjjj5gk"
+  "evidence": {
+    "commit": "bcae10bb2ac6d7e5d6ffd90c6748bf588fd33422",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "real_forge_log"
+        ],
+        "exit": 0,
+        "sha256": "9f2a642374b16152"
+      }
+    ]
+  }
 }
